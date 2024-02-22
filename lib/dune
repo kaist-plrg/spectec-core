@@ -1,0 +1,9 @@
+(menhir
+  (modules parser)
+  (flags --no-stdlib --explain))
+
+(ocamllex
+  (modules lexer))
+
+(library
+ (name p4cherry))
