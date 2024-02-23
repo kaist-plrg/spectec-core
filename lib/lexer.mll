@@ -6,12 +6,12 @@
  *
  *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software 
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
- * License for the specific language governing permissions and limitations 
- * under the License. 
- *)
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+*)
 
 {
 open Lexing
@@ -85,9 +85,7 @@ let strip_prefix s =
 
 let parse_int n info =
   let value = int_of_string (sanitize n) in
-  { Number.tags = info;
-    Number.value = value;
-    Number.width_signed = None }
+  Number.{ tags = info; value; width_signed = None }
 
 let parse_width_int s n info =
   let l_s = String.length s in
@@ -104,9 +102,7 @@ let parse_width_int s n info =
     | _ -> 
       raise (Error "Illegal integer constant")
   in
-  { Number.tags = info;
-    Number.value = value;
-    Number.width_signed = width_signed }
+  Number.{ tags = info; value; width_signed }
 }
 
 let name = [ 'A'-'Z' 'a'-'z' '_' ] [ 'A'-'Z' 'a'-'z' '0'-'9' '_' ]*

@@ -16,4 +16,6 @@
 type t = Info.t t'
 and 'a t' =
   { tags: 'a;
-    str: string; }
+    str: string }
+
+let tags (t: 'a t'): 'a = t.tags

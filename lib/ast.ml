@@ -15,34 +15,34 @@
 
 open Util
 
-module rec KeyValue : sig 
-  type t = Info.t t' 
+module rec KeyValue : sig
+  type t = Info.t t'
   and 'a t' =
-    { tags : 'a;
-      key : Text.t;
-      value : Expression.t }
+    { tags: 'a;
+      key: Text.t;
+      value: Expression.t }
 end = struct
-  type t = Info.t t' 
+  type t = Info.t t'
   and 'a t' =
-    { tags : 'a;
-      key : Text.t;
-      value : Expression.t }
+    { tags: 'a;
+      key: Text.t;
+      value: Expression.t }
 end
 
-and Annotation : sig 
-  type body = Info.t body' 
+and Annotation : sig
+  type body = Info.t body'
   and 'a body' =
-    | Empty of 
+    | Empty of
         { tags: 'a }
-    | Unparsed of 
-        { tags: 'a; 
+    | Unparsed of
+        { tags: 'a;
           str: Text.t list }
-    | Expression of 
-        { tags: 'a; 
+    | Expression of
+        { tags: 'a;
           exprs: Expression.t list }
-    | KeyValue of 
-        { tags: 'a; 
-          k_v: KeyValue.t list }
+    | KeyValue of
+        { tags: 'a;
+          key_values: KeyValue.t list }
 
   type t = Info.t t'
   and 'a t' =
@@ -52,17 +52,17 @@ and Annotation : sig
 end = struct
   type body = Info.t body'
   and 'a body' =
-    | Empty of 
+    | Empty of
         { tags: 'a }
-    | Unparsed of 
-        { tags: 'a; 
+    | Unparsed of
+        { tags: 'a;
           str: Text.t list }
-    | Expression of 
-        { tags: 'a; 
+    | Expression of
+        { tags: 'a;
           exprs: Expression.t list }
-    | KeyValue of 
-        { tags: 'a; 
-          k_v: KeyValue.t list }
+    | KeyValue of
+        { tags: 'a;
+          key_values: KeyValue.t list }
 
   type t = Info.t t'
   and 'a t' =
@@ -71,7 +71,7 @@ end = struct
       body: body }
 end
 
-and Parameter : sig 
+and Parameter : sig
   type t = Info.t t'
   and 'a t' =
     { tags: 'a;
@@ -79,7 +79,7 @@ and Parameter : sig
       direction: Direction.t option;
       typ: Type.t;
       variable: Text.t;
-      opt_value: Expression.t option } 
+      opt_value: Expression.t option }
 end = struct
   type t = Info.t t'
   and 'a t' =
@@ -91,12 +91,14 @@ end = struct
       opt_value: Expression.t option }
 end
 
-and Op : sig 
+and Op : sig
   type un = Info.t un'
   and 'a un' =
     | Not of { tags: 'a }
     | BitNot of { tags: 'a }
-    | UMinus of { tags: 'a } 
+    | UMinus of { tags: 'a }
+
+  val tags_un: 'a un' -> 'a
 
   type bin = Info.t bin'
   and 'a bin' =
@@ -121,12 +123,20 @@ and Op : sig
     | PlusPlus of { tags: 'a }
     | And of { tags: 'a }
     | Or of { tags: 'a }
+
+  val tags_bin: 'a bin' -> 'a
 end = struct
   type un = Info.t un'
   and 'a un' =
     | Not of { tags: 'a }
     | BitNot of { tags: 'a }
-    | UMinus of { tags: 'a } 
+    | UMinus of { tags: 'a }
+
+  let tags_un (un: 'a un'): 'a =
+    match un with
+    | Not { tags }
+    | BitNot { tags }
+    | UMinus { tags } -> tags
 
   type bin = Info.t bin'
   and 'a bin' =
@@ -151,75 +161,117 @@ end = struct
     | PlusPlus of { tags: 'a }
     | And of { tags: 'a }
     | Or of { tags: 'a }
+
+  let tags_bin (bin: 'a bin'): 'a =
+    match bin with
+    | Plus { tags }
+    | PlusSat { tags }
+    | Minus { tags }
+    | MinusSat { tags }
+    | Mul { tags }
+    | Div { tags }
+    | Mod { tags }
+    | Shl { tags }
+    | Shr { tags }
+    | Le { tags }
+    | Ge { tags }
+    | Lt { tags }
+    | Gt { tags }
+    | Eq { tags }
+    | NotEq { tags }
+    | BitAnd { tags }
+    | BitXor{ tags }
+    | BitOr { tags }
+    | PlusPlus { tags }
+    | And { tags }
+    | Or { tags } -> tags
 end
 
-and Type : sig 
+and Type : sig
   type t = Info.t t'
   and 'a t' =
-    | Bool of { tags: 'a } 
-    | Error of { tags: 'a } 
-    | Integer of { tags: 'a } 
-    | IntType of 
+    | Bool of { tags: 'a }
+    | Error of { tags: 'a }
+    | Integer of { tags: 'a }
+    | IntType of
         { tags: 'a;
-          expr: Expression.t } 
-    | BitType of 
+          expr: Expression.t }
+    | BitType of
         { tags: 'a;
-          expr: Expression.t } 
-    | VarBit of 
+          expr: Expression.t }
+    | VarBit of
         { tags: 'a;
-          expr: Expression.t } 
-    | TypeName of 
+          expr: Expression.t }
+    | TypeName of
         { tags: 'a;
-          name: string }
+          name: Name.t }
     | SpecializedType of
         { tags: 'a;
           base: t;
-          args: t list } 
+          args: t list }
     | HeaderStack of
         { tags: 'a;
           header: t;
-          size:  Expression.t } 
-    | Tuple of 
+          size:  Expression.t }
+    | Tuple of
         { tags: 'a;
           args: t list }
-    | String of { tags: 'a } 
-    | Void of { tags: 'a } 
-    | DontCare of { tags: 'a } 
+    | String of { tags: 'a }
+    | Void of { tags: 'a }
+    | DontCare of { tags: 'a }
+
+  val tags: 'a t' -> 'a
 end = struct
   type t = Info.t t'
   and 'a t' =
-    | Bool of { tags: 'a } 
-    | Error of { tags: 'a } 
-    | Integer of { tags: 'a } 
-    | IntType of 
+    | Bool of { tags: 'a }
+    | Error of { tags: 'a }
+    | Integer of { tags: 'a }
+    | IntType of
         { tags: 'a;
-          expr: Expression.t } 
-    | BitType of 
+          expr: Expression.t }
+    | BitType of
         { tags: 'a;
-          expr: Expression.t } 
-    | VarBit of 
+          expr: Expression.t }
+    | VarBit of
         { tags: 'a;
-          expr: Expression.t } 
-    | TypeName of 
+          expr: Expression.t }
+    | TypeName of
         { tags: 'a;
-          name: string }
+          name: Name.t }
     | SpecializedType of
         { tags: 'a;
           base: t;
-          args: t list } 
+          args: t list }
     | HeaderStack of
         { tags: 'a;
           header: t;
-          size:  Expression.t } 
-    | Tuple of 
+          size:  Expression.t }
+    | Tuple of
         { tags: 'a;
           args: t list }
-    | String of { tags: 'a } 
-    | Void of { tags: 'a } 
-    | DontCare of { tags: 'a } 
+    | String of { tags: 'a }
+    | Void of { tags: 'a }
+    | DontCare of { tags: 'a }
+
+  let tags (t: 'a t'): 'a =
+    match t with
+    | Bool { tags }
+    | Error { tags }
+    | Integer { tags }
+    | IntType {tags; _}
+    | BitType {tags; _}
+    | VarBit {tags; _}
+    | TypeName {tags; _}
+    | SpecializedType {tags; _}
+    | HeaderStack {tags; _}
+    | Tuple {tags; _}
+    | String { tags }
+    | Void { tags }
+    | DontCare { tags } -> tags
 end
 
-and MethodPrototype : sig 
+and MethodPrototype : sig
   type t = Info.t t'
   and 'a t' =
     | Constructor of
@@ -265,7 +317,7 @@ end = struct
           params: Parameter.t list }
 end
 
-and Argument : sig 
+and Argument : sig
   type t = Info.t t'
   and 'a t' =
     | Expression of
@@ -289,38 +341,46 @@ end = struct
     | Missing of { tags: 'a }
 end
 
-and Direction : sig 
+and Direction : sig
   type t = Info.t t'
   and 'a t' =
     | In of { tags: 'a }
     | Out of { tags: 'a }
     | InOut of { tags: 'a }
+
+  val tags: 'a t' -> 'a
 end = struct
   type t = Info.t t'
   and 'a t' =
     | In of { tags: 'a }
     | Out of { tags: 'a }
     | InOut of { tags: 'a }
+
+  let tags (t: 'a t'): 'a =
+    match t with
+    | In { tags }
+    | Out { tags }
+    | InOut { tags } -> tags
 end
 
-and Expression : sig 
+and Expression : sig
   type t = Info.t t'
   and 'a t' =
-    | True of { tags: 'a } 
-    | False of { tags: 'a } 
-    | Int of 
+    | True of { tags: 'a }
+    | False of { tags: 'a }
+    | Int of
         { tags: 'a;
-          i: Number.t } 
-    | String of 
+          i: Number.t }
+    | String of
         { tags: 'a;
-          str: Text.t } 
-    | Name of 
+          str: Text.t }
+    | Name of
         { tags: 'a;
-          name: string } 
+          name: Name.t }
     | ArrayAccess of
         { tags: 'a;
           array: t;
-          index: t } 
+          index: t }
     | BitStringAccess of
         { tags: 'a;
           bits: t;
@@ -328,73 +388,76 @@ and Expression : sig
           hi: t }
     | List of
         { tags: 'a;
-          values: t list } 
+          values: t list }
     | Record of
         { tags: 'a;
-          entries: KeyValue.t list } 
+          entries: KeyValue.t list }
     | UnaryOp of
         { tags: 'a;
           op: Op.un;
-          arg: t } 
+          arg: t }
     | BinaryOp of
         { tags: 'a;
           op: Op.bin;
-          args: (t * t) } 
+          args: (t * t) }
     | Cast of
         { tags: 'a;
           typ: Type.t;
           expr: t }
     | TypeMember of
         { tags: 'a;
-          typ: string;
-          name: Text.t } 
-    | ErrorMember of 
+          typ: Name.t;
+          name: Text.t }
+    | ErrorMember of
         { tags: 'a;
-          err: Text.t } 
+          err: Text.t }
     | ExpressionMember of
         { tags: 'a;
           expr: t;
-          name: Text.t } 
+          name: Text.t }
     | Ternary of
         { tags: 'a;
           cond: t;
           tru: t;
-          fls: t } 
+          fls: t }
     | FunctionCall of
         { tags: 'a;
           func: t;
           type_args: Type.t list;
-          args: Argument.t list } 
+          args: Argument.t list }
     | NamelessInstantiation of
         { tags: 'a;
           typ: Type.t;
-          args: Argument.t list } 
+          args: Argument.t list }
     | Mask of
         { tags: 'a;
           expr: t;
-          mask: t } 
+          mask: t }
     | Range of
         { tags: 'a;
           lo: t;
           hi: t }
+
+  val tags: 'a t' -> 'a 
+  val update_tags: 'a t' -> 'a -> 'a t'
 end = struct
   type t = Info.t t'
   and 'a t' =
-    | True of { tags: 'a } 
-    | False of { tags: 'a } 
-    | Int of 
+    | True of { tags: 'a }
+    | False of { tags: 'a }
+    | Int of
         { tags: 'a;
-          i: Number.t } 
-    | String of 
+          i: Number.t }
+    | String of
         { tags: 'a;
-          str: Text.t } 
-    | Name of 
+          str: Text.t }
+    | Name of
         { tags: 'a;
-          name: string } 
+          name: Name.t }
     | ArrayAccess of
         { tags: 'a;
           array: t;
-          index: t } 
+          index: t }
     | BitStringAccess of
         { tags: 'a;
           bits: t;
@@ -402,63 +465,109 @@ end = struct
           hi: t }
     | List of
         { tags: 'a;
-          values: t list } 
+          values: t list }
     | Record of
         { tags: 'a;
-          entries: KeyValue.t list } 
+          entries: KeyValue.t list }
     | UnaryOp of
         { tags: 'a;
           op: Op.un;
-          arg: t } 
+          arg: t }
     | BinaryOp of
         { tags: 'a;
           op: Op.bin;
-          args: (t * t) } 
+          args: (t * t) }
     | Cast of
         { tags: 'a;
           typ: Type.t;
           expr: t }
     | TypeMember of
         { tags: 'a;
-          typ: string;
-          name: Text.t } 
-    | ErrorMember of 
+          typ: Name.t;
+          name: Text.t }
+    | ErrorMember of
         { tags: 'a;
-          err: Text.t } 
+          err: Text.t }
     | ExpressionMember of
         { tags: 'a;
           expr: t;
-          name: Text.t } 
+          name: Text.t }
     | Ternary of
         { tags: 'a;
           cond: t;
           tru: t;
-          fls: t } 
+          fls: t }
     | FunctionCall of
         { tags: 'a;
           func: t;
           type_args: Type.t list;
-          args: Argument.t list } 
+          args: Argument.t list }
     | NamelessInstantiation of
         { tags: 'a;
           typ: Type.t;
-          args: Argument.t list } 
+          args: Argument.t list }
     | Mask of
         { tags: 'a;
           expr: t;
-          mask: t } 
+          mask: t }
     | Range of
         { tags: 'a;
           lo: t;
           hi: t }
+
+    let tags (t: 'a t'): 'a =
+      match t with
+      | True { tags }
+      | False { tags }
+      | Int { tags; _ }
+      | String { tags; _ }
+      | Name { tags; _ }
+      | ArrayAccess { tags; _ }
+      | BitStringAccess { tags; _ }
+      | List { tags; _ }
+      | Record { tags; _ }
+      | UnaryOp { tags; _ }
+      | BinaryOp { tags; _ }
+      | Cast { tags; _ }
+      | TypeMember { tags; _ }
+      | ErrorMember { tags; _ }
+      | ExpressionMember { tags; _ }
+      | Ternary { tags; _ }
+      | FunctionCall { tags; _ }
+      | NamelessInstantiation { tags; _ }
+      | Mask { tags; _ }
+      | Range { tags; _ } -> tags
+
+    let update_tags (t: 'a t') (tags: 'a): 'a t' =
+      match t with
+      | True { tags = _ } -> True { tags }
+      | False { tags = _ } -> False { tags }
+      | Int { i; _ } -> Int { tags; i }
+      | String { str; _ } -> String { tags; str }
+      | Name { name; _ } -> Name { tags; name }
+      | ArrayAccess { array; index; _ } -> ArrayAccess { tags; array; index }
+      | BitStringAccess { bits; lo; hi; _ } -> BitStringAccess { tags; bits; lo; hi }
+      | List { values; _ } -> List { tags; values }
+      | Record { entries; _ } -> Record { tags; entries }
+      | UnaryOp { op; arg; _ } -> UnaryOp { tags; op; arg }
+      | BinaryOp {op; args; _} -> BinaryOp { tags; op; args }
+      | Cast { typ; expr; _ } -> Cast { tags; typ; expr }
+      | TypeMember { typ; name; _ } -> TypeMember { typ; name; tags }
+      | ErrorMember { err; _ } -> ErrorMember { err; tags }
+      | ExpressionMember { expr; name; _ } -> ExpressionMember { tags; expr; name }
+      | Ternary { cond; tru; fls; _ } -> Ternary { tags; cond; tru; fls }
+      | FunctionCall { func; type_args; args; _ } -> FunctionCall { tags; func; type_args; args }
+      | NamelessInstantiation { typ; args; _ } -> NamelessInstantiation { tags; typ; args }
+      | Mask { expr; mask; _ } -> Mask { tags; expr; mask }
+      | Range { lo; hi; _ } -> Range { tags; lo; hi }
 end
 
-and Table : sig 
+and Table : sig
   type action_ref = Info.t action_ref'
   and 'a action_ref' =
     { tags: 'a;
       annotations: Annotation.t list;
-      name: string;
+      name: Name.t;
       args: Argument.t list }
 
   type key = Info.t key'
@@ -501,7 +610,7 @@ end = struct
   and 'a action_ref' =
     { tags: 'a;
       annotations: Annotation.t list;
-      name: string;
+      name: Name.t;
       args: Argument.t list }
 
   type key = Info.t key'
@@ -541,7 +650,7 @@ end = struct
           value: Expression.t }
 end
 
-and Match : sig 
+and Match : sig
   type t = Info.t t'
   and 'a t' =
     | Default of { tags: 'a }
@@ -549,6 +658,8 @@ and Match : sig
     | Expression of
         { tags: 'a;
           expr: Expression.t }
+
+  val tags: 'a t' -> 'a
 end = struct
   type t = Info.t t'
   and 'a t' =
@@ -557,6 +668,12 @@ end = struct
     | Expression of
         { tags: 'a;
           expr: Expression.t }
+
+  let tags (t: 'a t'): 'a =
+    match t with
+    | Default { tags }
+    | DontCare { tags }
+    | Expression { tags; _ } -> tags
 end
 
 and Parser : sig
@@ -564,7 +681,7 @@ and Parser : sig
   and 'a case' =
     { tags: 'a;
       matches: Match.t list;
-      next: Text.t } 
+      next: Text.t }
 
   type transition = Info.t transition'
   and 'a transition' =
@@ -575,6 +692,9 @@ and Parser : sig
         { tags: 'a;
           exprs: Expression.t list;
           cases: case list }
+
+  val transition_tags: 'a transition' -> 'a
+  val update_transition_tags: 'a transition' -> 'a -> 'a transition'
 
   type state = Info.t state'
   and 'a state' =
@@ -588,7 +708,7 @@ end = struct
   and 'a case' =
     { tags: 'a;
       matches: Match.t list;
-      next: Text.t } 
+      next: Text.t }
 
   type transition = Info.t transition'
   and 'a transition' =
@@ -600,6 +720,16 @@ end = struct
           exprs: Expression.t list;
           cases: case list }
 
+  let transition_tags (t: 'a transition'): 'a =
+    match t with
+    | Direct { tags; _ }
+    | Select { tags; _ } -> tags
+
+  let update_transition_tags (t: 'a transition') (tags: 'a): 'a transition' =
+    match t with
+    | Direct { next; _ } -> Direct { tags; next }
+    | Select { exprs; cases; _ } -> Select { tags; exprs; cases }
+
   type state = Info.t state'
   and 'a state' =
     { tags: 'a;
@@ -609,303 +739,387 @@ end = struct
       transition: transition }
 end
 
-and Declaration : sig 
-  type t = Info.t t'
-  and 'a t' =
-    | Constant of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          typ: Type.t;
-          name: Text.t;
-          value: Expression.t }
-    | Instantiation of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          typ: Type.t;
-          args: Argument.t list;
-          name: Text.t;
-          init: Block.t option; }
-    | Parser of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list;
-          constructor_params: Parameter.t list;
-          locals: t list;
-          states: Parser.state list }
-    | Control of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list;
-          constructor_params: Parameter.t list;
-          locals: t list;
-          apply: Block.t }
-    | Function of
-        { tags: 'a;
-          return: Type.t;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list;
-          body: Block.t }
-    | ExternFunction of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          return: Type.t;
-          name: string;
-          type_params: string list;
-          params: Parameter.t list }
-    | Variable of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          typ: Type.t;
-          name: Text.t;
-          init: Expression.t option }
-    | ValueSet of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          typ: Type.t;
-          size: Expression.t;
-          name: Text.t }
-    | Action of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          params: Parameter.t list;
-          body: Block.t }
-    | Table of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          properties: Table.property list }
-    | Header of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          fields: field list }
-    | HeaderUnion of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          fields: field list }
-    | Struct of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          fields: field list }
-    | Error of
-        { tags: 'a;
-          members: string list }
-    | MatchKind of
-        { tags: 'a;
-          members: Text.t list }
-    | Enum of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          members: Text.t list }
-    | SerializableEnum of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          typ: Type.t;
-          name: Text.t;
-          members: (Text.t * Expression.t) list }
-    | ExternObject of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          type_params: Text.t list;
-          methods: MethodPrototype.t list }
-    | TypeDef of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          typ_or_decl: (Type.t, t) alternative }
-    | NewType of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          typ_or_decl: (Type.t, t) alternative }
-    | ControlType of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list }
-    | ParserType of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list }
-    | PackageType of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list }
-
-  and field = Info.t field'
+and Declaration : sig
+  type field = Info.t field'
   and 'a field' =
-    { tags: 'a; 
-      annotations: Annotation.t list;
-      typ: Type.t;
-      name: Text.t } 
-end = struct
-  type t = Info.t t'
-  and 'a t' =
-    | Constant of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          typ: Type.t;
-          name: Text.t;
-          value: Expression.t }
-    | Instantiation of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          typ: Type.t;
-          args: Argument.t list;
-          name: Text.t;
-          init: Block.t option; }
-    | Parser of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list;
-          constructor_params: Parameter.t list;
-          locals: t list;
-          states: Parser.state list }
-    | Control of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list;
-          constructor_params: Parameter.t list;
-          locals: t list;
-          apply: Block.t }
-    | Function of
-        { tags: 'a;
-          return: Type.t;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list;
-          body: Block.t }
-    | ExternFunction of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          return: Type.t;
-          name: string;
-          type_params: string list;
-          params: Parameter.t list }
-    | Variable of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          typ: Type.t;
-          name: Text.t;
-          init: Expression.t option }
-    | ValueSet of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          typ: Type.t;
-          size: Expression.t;
-          name: Text.t }
-    | Action of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          params: Parameter.t list;
-          body: Block.t }
-    | Table of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          properties: Table.property list }
-    | Header of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          fields: field list }
-    | HeaderUnion of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          fields: field list }
-    | Struct of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          fields: field list }
-    | Error of
-        { tags: 'a;
-          members: string list }
-    | MatchKind of
-        { tags: 'a;
-          members: Text.t list }
-    | Enum of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          members: Text.t list }
-    | SerializableEnum of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          typ: Type.t;
-          name: Text.t;
-          members: (Text.t * Expression.t) list }
-    | ExternObject of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          type_params: Text.t list;
-          methods: MethodPrototype.t list }
-    | TypeDef of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          typ_or_decl: (Type.t, t) alternative }
-    | NewType of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          typ_or_decl: (Type.t, t) alternative }
-    | ControlType of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list }
-    | ParserType of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list }
-    | PackageType of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list }
-
-  and field = Info.t field'
-  and 'a field' =
-    { tags: 'a; 
+    { tags: 'a;
       annotations: Annotation.t list;
       typ: Type.t;
       name: Text.t }
+
+  and t = Info.t t'
+  and 'a t' =
+    | Constant of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          typ: Type.t;
+          name: Text.t;
+          value: Expression.t }
+    | Instantiation of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          typ: Type.t;
+          args: Argument.t list;
+          name: Text.t;
+          init: Block.t option; }
+    | Parser of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list;
+          constructor_params: Parameter.t list;
+          locals: t list;
+          states: Parser.state list }
+    | Control of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list;
+          constructor_params: Parameter.t list;
+          locals: t list;
+          apply: Block.t }
+    | Function of
+        { tags: 'a;
+          return: Type.t;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list;
+          body: Block.t }
+    | ExternFunction of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          return: Type.t;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list }
+    | Variable of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          typ: Type.t;
+          name: Text.t;
+          init: Expression.t option }
+    | ValueSet of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          typ: Type.t;
+          size: Expression.t;
+          name: Text.t }
+    | Action of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          params: Parameter.t list;
+          body: Block.t }
+    | Table of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          properties: Table.property list }
+    | Header of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          fields: field list }
+    | HeaderUnion of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          fields: field list }
+    | Struct of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          fields: field list }
+    | Error of
+        { tags: 'a;
+          members: Text.t list }
+    | MatchKind of
+        { tags: 'a;
+          members: Text.t list }
+    | Enum of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          members: Text.t list }
+    | SerializableEnum of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          typ: Type.t;
+          name: Text.t;
+          members: (Text.t * Expression.t) list }
+    | ExternObject of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          type_params: Text.t list;
+          methods: MethodPrototype.t list }
+    | TypeDef of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          typ_or_decl: (Type.t, t) alternative }
+    | NewType of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          typ_or_decl: (Type.t, t) alternative }
+    | ControlType of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list }
+    | ParserType of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list }
+    | PackageType of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list }
+
+  val tags: 'a t' -> 'a
+  val name: t -> Text.t
+  val has_type_params: t -> bool
+end = struct
+  type field = Info.t field'
+  and 'a field' =
+    { tags: 'a;
+      annotations: Annotation.t list;
+      typ: Type.t;
+      name: Text.t }
+
+  and t = Info.t t'
+  and 'a t' =
+    | Constant of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          typ: Type.t;
+          name: Text.t;
+          value: Expression.t }
+    | Instantiation of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          typ: Type.t;
+          args: Argument.t list;
+          name: Text.t;
+          init: Block.t option }
+    | Parser of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list;
+          constructor_params: Parameter.t list;
+          locals: t list;
+          states: Parser.state list }
+    | Control of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list;
+          constructor_params: Parameter.t list;
+          locals: t list;
+          apply: Block.t }
+    | Function of
+        { tags: 'a;
+          return: Type.t;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list;
+          body: Block.t }
+    | ExternFunction of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          return: Type.t;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list }
+    | Variable of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          typ: Type.t;
+          name: Text.t;
+          init: Expression.t option }
+    | ValueSet of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          typ: Type.t;
+          size: Expression.t;
+          name: Text.t }
+    | Action of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          params: Parameter.t list;
+          body: Block.t }
+    | Table of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          properties: Table.property list }
+    | Header of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          fields: field list }
+    | HeaderUnion of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          fields: field list }
+    | Struct of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          fields: field list }
+    | Error of
+        { tags: 'a;
+          members: Text.t list }
+    | MatchKind of
+        { tags: 'a;
+          members: Text.t list }
+    | Enum of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          members: Text.t list }
+    | SerializableEnum of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          typ: Type.t;
+          name: Text.t;
+          members: (Text.t * Expression.t) list }
+    | ExternObject of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          type_params: Text.t list;
+          methods: MethodPrototype.t list }
+    | TypeDef of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          typ_or_decl: (Type.t, t) alternative }
+    | NewType of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          typ_or_decl: (Type.t, t) alternative }
+    | ControlType of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list }
+    | ParserType of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list }
+    | PackageType of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list }
+
+  let tags (t: 'a t'): 'a =
+    match t with
+    | Constant { tags; _ }
+    | Instantiation { tags; _ }
+    | Parser { tags; _ }
+    | Control { tags; _ }
+    | Function { tags; _ }
+    | ExternFunction { tags; _ }
+    | Variable { tags; _ }
+    | ValueSet { tags; _ }
+    | Action { tags; _ }
+    | Table { tags; _ }
+    | Header { tags; _ }
+    | HeaderUnion { tags; _ }
+    | Struct { tags; _ }
+    | Enum { tags; _ }
+    | SerializableEnum { tags; _ }
+    | ExternObject { tags; _ }
+    | TypeDef { tags; _ }
+    | NewType { tags; _ }
+    | ControlType { tags; _ }
+    | ParserType { tags; _ }
+    | PackageType { tags; _ } 
+    | Error { tags; _ }
+    | MatchKind { tags; _ } -> tags
+
+  let name t =
+    match t with
+    | Constant { name; _ }
+    | Instantiation { name; _ }
+    | Parser { name; _ }
+    | Control { name; _ }
+    | Function { name; _ }
+    | ExternFunction { name; _ }
+    | Variable { name; _ }
+    | ValueSet { name; _ }
+    | Action { name; _ }
+    | Table { name; _ }
+    | Header { name; _ }
+    | HeaderUnion { name; _ }
+    | Struct { name; _ }
+    | Enum { name; _ }
+    | SerializableEnum { name; _ }
+    | ExternObject { name; _ }
+    | TypeDef { name; _ }
+    | NewType { name; _ }
+    | ControlType { name; _ }
+    | ParserType { name; _ }
+    | PackageType { name; _ } -> name
+    | Error _
+    | MatchKind _ -> failwith "no name"
+
+  let has_type_params t =
+    match t with
+    | Constant _
+    | Instantiation _
+    | Parser _
+    | Control _
+    | Variable _
+    | ValueSet _
+    | Action _
+    | Table _
+    | Header _
+    | HeaderUnion _
+    | Struct _
+    | Enum _
+    | SerializableEnum _
+    | MatchKind _
+    | Error _
+    | TypeDef _
+    | NewType _ -> false
+    | Function { type_params; _ }
+    | ExternFunction { type_params; _ }
+    | ExternObject { type_params; _ }
+    | ControlType { type_params; _ }
+    | ParserType { type_params; _ }
+    | PackageType { type_params; _ } -> List.length type_params > 0
 end
 
-and Statement : sig 
+and Statement : sig
   type switch_label = Info.t switch_label'
   and 'a switch_label' =
-    | Default of { tags: 'a } 
-    | Name of 
+    | Default of { tags: 'a }
+    | Name of
         { tags: 'a;
-          name: Text.t } 
+          name: Text.t }
+
+  val tags_label: 'a switch_label' -> 'a 
 
   type switch_case = Info.t switch_case'
   and 'a switch_case' =
@@ -923,42 +1137,49 @@ and Statement : sig
         { tags: 'a;
           func: Expression.t;
           type_args: Type.t list;
-          args: Argument.t list } 
+          args: Argument.t list }
     | Assignment of
         { tags: 'a;
           lhs: Expression.t;
-          rhs: Expression.t } 
+          rhs: Expression.t }
     | DirectApplication of
         { tags: 'a;
           typ: Type.t;
-          args: Argument.t list } 
+          args: Argument.t list }
     | Conditional of
         { tags: 'a;
           cond: Expression.t;
           tru: t;
-          fls: t option } 
+          fls: t option }
     | BlockStatement of
         { tags: 'a;
-          block: Block.t } 
-    | Exit of { tags: 'a } 
-    | EmptyStatement of { tags: 'a } 
+          block: Block.t }
+    | Exit of { tags: 'a }
+    | EmptyStatement of { tags: 'a }
     | Return of
         { tags: 'a;
-          expr: Expression.t option } 
+          expr: Expression.t option }
     | Switch of
         { tags: 'a;
           expr: Expression.t;
-          cases: switch_case list } 
+          cases: switch_case list }
     | DeclarationStatement of
         { tags: 'a;
-          decl: Declaration.t } 
+          decl: Declaration.t }
+
+  val tags : 'a t' -> 'a
 end = struct
   type switch_label = Info.t switch_label'
   and 'a switch_label' =
-    | Default of { tags: 'a } 
-    | Name of 
+    | Default of { tags: 'a }
+    | Name of
         { tags: 'a;
-          name: Text.t } 
+          name: Text.t }
+
+  let tags_label (t: 'a switch_label'): 'a =
+    match t with
+    | Default { tags }
+    | Name { tags; _ } -> tags
 
   type switch_case = Info.t switch_case'
   and 'a switch_case' =
@@ -976,38 +1197,51 @@ end = struct
         { tags: 'a;
           func: Expression.t;
           type_args: Type.t list;
-          args: Argument.t list } 
+          args: Argument.t list }
     | Assignment of
         { tags: 'a;
           lhs: Expression.t;
-          rhs: Expression.t } 
+          rhs: Expression.t }
     | DirectApplication of
         { tags: 'a;
           typ: Type.t;
-          args: Argument.t list } 
+          args: Argument.t list }
     | Conditional of
         { tags: 'a;
           cond: Expression.t;
           tru: t;
-          fls: t option } 
+          fls: t option }
     | BlockStatement of
         { tags: 'a;
-          block: Block.t } 
-    | Exit of { tags: 'a } 
-    | EmptyStatement of { tags: 'a } 
+          block: Block.t }
+    | Exit of { tags: 'a }
+    | EmptyStatement of { tags: 'a }
     | Return of
         { tags: 'a;
-          expr: Expression.t option } 
+          expr: Expression.t option }
     | Switch of
         { tags: 'a;
           expr: Expression.t;
-          cases: switch_case list } 
+          cases: switch_case list }
     | DeclarationStatement of
         { tags: 'a;
-          decl: Declaration.t } 
+          decl: Declaration.t }
+
+  let tags (t: 'a t'): 'a =
+    match t with
+    | MethodCall { tags; _ }
+    | Assignment { tags; _ }
+    | DirectApplication { tags; _ }
+    | Conditional { tags; _ }
+    | BlockStatement { tags; _ }
+    | Exit {tags}
+    | EmptyStatement {tags}
+    | Return { tags; _ }
+    | Switch { tags; _ }
+    | DeclarationStatement { tags; _ } -> tags
 end
 
-and Block : sig 
+and Block : sig
   type t = Info.t t'
   and 'a t' =
     { tags: 'a;
