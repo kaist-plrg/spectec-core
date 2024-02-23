@@ -16,6 +16,7 @@
 %{
 module P4cherry = struct end
 open Ast
+open Name
 open Context
 
 let rec smash_annotations (l: Text.t list) (tok2: Text.t): Text.t list =
@@ -209,9 +210,11 @@ topDeclaration:
 | a = actionDeclaration
     { declare_var (Declaration.name a) false;
       a }
+(*
 | p = parserDeclaration
     { declare_type (Declaration.name p) (Declaration.has_type_params p);
       p }
+*)
 | c = controlDeclaration
     { declare_type (Declaration.name c) (Declaration.has_type_params c);
       c }
@@ -264,11 +267,11 @@ nonTypeName:
 | n = tableKwName
     { n }
 | info = APPLY
-    {{ str = "apply"; tags = info }}
+    { Text.{ tags = info; str = "apply" } }
 | info = STATE
-    {{ str = "state"; tags = info }}
+    { Text.{ tags = info; str = "state" } }
 | info = TYPE
-    {{ str = "type"; tags = info }}
+    { Text.{ tags = info; str = "type" } }
 ;
 
 name:
@@ -291,7 +294,7 @@ annotations:
 
 annotation:
 | info1 = AT name = name
-    { let info2 = name.tags in
+    { let info2 = Text.tags name in
       let body = Annotation.Empty {tags = info2} in
       let info' = Info.merge info1 info2 in
       Annotation.{ name; body; tags = info'  }}
@@ -422,7 +425,7 @@ annotationToken:
 | NAME TYPENAME
     { $1 }
 | STRING_LITERAL
-    { let info, str = $1.tags, $1.str in
+    { let info, str = Text.tags $1, $1.str in
       Text.{ tags = info; str = "\"" ^ str ^ "\"" } }
 | NUMBER
     { let num: Number.t = fst $1 in
@@ -514,7 +517,7 @@ parameter:
         | None -> Type.tags typ
         | Some dir -> Direction.tags dir
       in
-      let info' = Info.merge info1 variable.tags in
+      let info' = Info.merge info1 (Text.tags variable) in
       Parameter.{ annotations; direction; typ; variable; opt_value = None; tags = info' } }
 | annotations = optAnnotations direction = direction typ = typeRef
   variable = name ASSIGN value = expression
@@ -522,7 +525,7 @@ parameter:
         match (direction : Direction.t option) with
         | None -> Type.tags typ
         | Some dir -> Direction.tags dir in
-      let info' = Info.merge info1 variable.tags
+      let info' = Info.merge info1 (Text.tags variable)
       in
       Parameter.{ annotations; direction; typ; variable; opt_value = Some value; tags = info' } }
 ;
@@ -593,11 +596,10 @@ parserDeclaration:
   states = nonempty_list(parserState)
   info2 = R_BRACE
   pop_scope
-    { let open Declaration in
-      let (info1, annotations, name, type_params, params) = p_type in
+    { let (info1, annotations, name, type_params, params) = p_type in
       let tags = Info.merge info1 info2 in
       let locals = List.rev locals in
-      Parser { annotations; name; type_params; params; constructor_params; locals; states; tags } }
+      Declaration.Parser { tags; annotations; name; type_params; params; constructor_params; locals; states } }
 ;
 
 parserLocalElement:
@@ -820,7 +822,7 @@ methodPrototype:
       MethodPrototype.AbstractMethod { annotations; return; name; type_params; params; tags } }
 | annotations = optAnnotations name = name
   L_PAREN params = parameterList R_PAREN info2 = SEMICOLON
-    { let tags = Info.merge (name.tags) info2 in
+    { let tags = Info.merge (Text.tags name) info2 in
       MethodPrototype.Constructor { annotations; name; params; tags } }
 ;
 
@@ -929,7 +931,7 @@ typeOrVoid:
 | info = VOID
     { Type.Void { tags = info } }
 | name = varName
-  { let tags : Info.t = name.tags in
+  { let tags: Info.t = Text.tags name in
     Type.TypeName { tags; name = BareName name } }
 ;
 
@@ -1181,7 +1183,7 @@ switchCase:
 
 switchLabel:
 | name = name
-    { let tags = name.tags in
+    { let tags = Text.tags name in
       Statement.Name { tags; name } }
 | info = DEFAULT
     { Statement.Default { tags = info } }
@@ -1234,7 +1236,7 @@ tableProperty:
       Table.Custom { tags; annotations = annos; const = true; name = n; value = v } }
 | annos = optAnnotations
   n = nonTableKwName ASSIGN v = initialValue info2 = SEMICOLON
-    { let tags = Info.merge n.tags info2 in
+    { let tags = Info.merge (Text.tags n) info2 in
       Table.Custom { tags; annotations = annos; const = false; name = n; value = v } }
 ;
 
@@ -1267,20 +1269,20 @@ entry:
 
 actionRef:
 | annotations = optAnnotations name = name
-    { let tags = name.tags in
+    { let tags = Text.tags name in
       { tags; annotations; name = BareName name; args = [] } }
 | annotations = optAnnotations name = name
   L_PAREN args = argumentList info2 = R_PAREN
-    { let tags = Info.merge (name.tags) info2 in
+    { let tags = Info.merge (Text.tags name) info2 in
       { tags; annotations; name = BareName name; args } }
 | annotations = optAnnotations
-  info1 = dotPrefix go_toplevel name = nonTypeName go_local
-    { let tags = name.tags in
+  dotPrefix go_toplevel name = nonTypeName go_local
+    { let tags = Text.tags name in
       { tags; annotations; name = QualifiedName ([], name); args = [] } }
 | annotations = optAnnotations 
-  info1 = dotPrefix go_toplevel name = nonTypeName go_local
+  dotPrefix go_toplevel name = nonTypeName go_local
   L_PAREN args = argumentList info2 = R_PAREN
-    { let tags = Info.merge name.tags info2 in
+    { let tags = Info.merge (Text.tags name) info2 in
       { tags; annotations; name = QualifiedName ([], name); args } }
 ;
 
@@ -1340,7 +1342,7 @@ argument:
     { let tags = Expression.tags value in
       Argument.Expression { tags; value } }
 | key = name ASSIGN value = expression
-    { let tags = Info.merge key.tags (Expression.tags value) in
+    { let tags = Info.merge (Text.tags key) (Expression.tags value) in
       Argument.KeyValue { tags; key; value } }
 | info = DONTCARE
     { Argument.Missing { tags = info } }
@@ -1348,7 +1350,7 @@ argument:
 
 %inline kvPair:
 | key = name ASSIGN value = expression 
-    { let tags = Info.merge key.tags (Expression.tags value) in
+    { let tags = Info.merge (Text.tags key) (Expression.tags value) in
       KeyValue.{ tags; key; value } }
 
 kvList:
@@ -1368,10 +1370,10 @@ member:
 
 prefixedNonTypeName:
 | name = nonTypeName
-    { let tags = name.tags in
-    Expression.Name { tags; name = BareName name } }
+    { let tags = Text.tags name in
+      Expression.Name { tags; name = BareName name } }
 | info1 = dotPrefix go_toplevel name = nonTypeName go_local
-    { let tags = Info.merge info1 name.tags in
+    { let tags = Info.merge info1 (Text.tags name) in
       Expression.Name { tags; name = QualifiedName ([], name) } }
 ;
 
@@ -1379,7 +1381,7 @@ lvalue:
 | expr = prefixedNonTypeName
     { expr }
 | expr = lvalue DOT name = member
-    { let tags = Info.merge (Expression.tags expr) name.tags in
+    { let tags = Info.merge (Expression.tags expr) (Text.tags name) in
       Expression.ExpressionMember { tags; expr; name } }
 | array = lvalue L_BRACKET index = expression info2 = R_BRACKET
     { let tags = Info.merge (Expression.tags array) info2 in
@@ -1392,20 +1394,20 @@ lvalue:
 expression:
 | value = NUMBER
     { let value_int = fst value in 
-      let tags = value_int.tags in 
+      let tags = Number.tags value_int in 
       Expression.Int { tags; i = value_int } }
 | info1 = TRUE
     { Expression.True { tags = info1 } }
 | info1 = FALSE
     { Expression.False { tags = info1 } }
 | value = STRING_LITERAL
-    { let tags = value.tags in
+    { let tags = Text.tags value in
       Expression.String { tags; str = value } }
 | name = nonTypeName
-    { let tags = name.tags in
+    { let tags = Text.tags name in
       Expression.Name { tags; name = BareName name } }
 | info1 = dotPrefix go_toplevel name = nonTypeName go_local
-    { let tags = Info.merge info1 name.tags in
+    { let tags = Info.merge info1 (Text.tags name) in
       Expression.Name { tags; name = QualifiedName ([], name) } }
 | array = expression L_BRACKET index = expression info2 = R_BRACKET
     { let tags = Info.merge (Expression.tags array) info2 in
@@ -1438,13 +1440,13 @@ expression:
     { let tags = Info.merge info1 (Expression.tags expr) in
       Expression.Cast { tags; typ; expr } }
 | typ = prefixedTypeName DOT name = member
-    { let tags = name.tags in
+    { let tags = Text.tags name in
       Expression.TypeMember { tags; typ; name } }
 | info1 = ERROR DOT name = member
-    { let tags = Info.merge info1 name.tags in
+    { let tags = Info.merge info1 (Text.tags name) in
       Expression.ErrorMember { tags; err = name } }
 | expr = expression DOT name = member
-    { let tags = Info.merge (Expression.tags expr) name.tags in
+    { let tags = Info.merge (Expression.tags expr) (Text.tags name) in
       Expression.ExpressionMember { tags; expr; name } }
 | arg1 = expression op = binop arg2 = expression
     { let tags = Info.merge (Expression.tags arg1) (Expression.tags arg2) in

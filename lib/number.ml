@@ -18,3 +18,5 @@ and 'a t' =
   { tags: 'a;
     value: int;
     width_signed: (int * bool) option }
+
+let tags (t: 'a t'): 'a = t.tags
