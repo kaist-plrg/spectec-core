@@ -1,4 +1,4 @@
 (executable
  (public_name p4cherry)
  (name main)
- (libraries p4cherry core))
+ (libraries p4cherry))

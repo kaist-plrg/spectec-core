@@ -6,4 +6,7 @@
   (modules lexer))
 
 (library
- (name p4cherry))
+  (name p4cherry)
+  (modules
+    ast info name number text
+    context lexer parser util))
