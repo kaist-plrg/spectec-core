@@ -15,7 +15,8 @@ let () =
     | Lexer.Error msg ->
         Printf.sprintf "Lexer error: %s\n" msg |> failwith
     | Parser.Error ->
-        Printf.sprintf "Parser error at %d ~ %d\n" (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) |> failwith
+        let info = Lexer.info lexbuf in
+        Info.to_string info |> Printf.sprintf "Parser error at %s\n" |> failwith
     | _ ->
         failwith "?"
   in

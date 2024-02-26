@@ -210,11 +210,9 @@ topDeclaration:
 | a = actionDeclaration
     { declare_var (Declaration.name a) false;
       a }
-(*
 | p = parserDeclaration
     { declare_type (Declaration.name p) (Declaration.has_type_params p);
       p }
-*)
 | c = controlDeclaration
     { declare_type (Declaration.name c) (Declaration.has_type_params c);
       c }
@@ -627,7 +625,7 @@ parserState:
   info2 = R_BRACE
   pop_scope
      { let tags = Info.merge info1 info2 in
-       Parser.{ annotations; name; statements; transition; tags } }
+       { annotations; name; statements; transition; tags }: P4Parser.state }
 
 ;
 
@@ -654,18 +652,18 @@ parserBlockStatement:
 transitionStatement:
 | (* empty *)
     { let tags = Info.M "Compiler-generated reject transition" in
-      Parser.Direct { next = { tags; str = "reject" }; tags } }
+      P4Parser.Direct { next = { tags; str = "reject" }; tags } }
 | info1 = TRANSITION transition = stateExpression
     { (*let tags = Info.merge info1 (tags transition)
        snd transition)*)
       (* Not sure what's the type of transition but I'm guessing it's 'a transition'.*)
-      Parser.update_transition_tags transition (Info.merge info1 (Parser.transition_tags transition)) }
+      P4Parser.update_transition_tags transition (Info.merge info1 (P4Parser.transition_tags transition)) }
 ;
 
 stateExpression:
 | next = name info2 = SEMICOLON
-    { let tags = Info.merge next.tags info2 in
-       Parser.Direct { next = next; tags } }
+    { let tags = Info.merge (Text.tags next) info2 in
+       P4Parser.Direct { next = next; tags } }
 | select = selectExpression
     { select }
 ;
@@ -674,7 +672,7 @@ selectExpression:
 | info1 = SELECT L_PAREN exprs = expressionList R_PAREN
   L_BRACE cases = list(selectCase) info2 = R_BRACE
     { let tags = Info.merge info1 info2 in
-       Parser.Select { exprs; cases; tags } }
+       P4Parser.Select { exprs; cases; tags } }
 ;
 
 selectCase:
@@ -685,7 +683,7 @@ selectCase:
         | _ -> assert false
       in
       let tags = Info.merge info1 info2 in
-      Parser.{ matches; next; tags } }
+      P4Parser.{ matches; next; tags } }
 ;
 
 keysetExpression:
