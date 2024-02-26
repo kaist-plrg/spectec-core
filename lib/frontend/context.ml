@@ -14,8 +14,9 @@
 *)
 
 open Core
+open Syntax
 
-module StringMap = Map.Make(String)
+module SMap = Map.Make(String)
 
 type has_params = bool
 
@@ -23,15 +24,15 @@ type ident_kind =
   | TypeName of has_params
   | Ident of has_params
 
-type t = (ident_kind StringMap.t) list
+type t = (ident_kind SMap.t) list
 
 (* Current context, stored as a mutable global variable *)
-let context: t ref = ref [ StringMap.empty ]
+let context: t ref = ref [ SMap.empty ]
 let backup: t ref = ref []
 
 (* Resets context *)
 let reset () =
-  context := [ StringMap.empty ];
+  context := [ SMap.empty ];
   backup := []
 
 (* Associates [id] with [k] in map for current scope *)
@@ -40,7 +41,7 @@ let declare (id: Text.t) (k: ident_kind): unit =
   | [] ->
       failwith "ill-formed context"
   | m :: l ->
-      context := StringMap.set m ~key:id.str ~data:k :: l
+      context := SMap.set m ~key:id.str ~data:k :: l
 
 let declare_type id has_params = declare id (TypeName has_params)
 let declare_types types = List.iter types ~f:(fun s -> declare_type s false)
@@ -54,7 +55,7 @@ let get_kind (id: Text.t): ident_kind =
     | [] ->
         Ident false
     | m::rest ->
-        match StringMap.find m id.str with
+        match SMap.find m id.str with
         | None -> loop rest
         | Some k -> k in
   loop !context
@@ -69,17 +70,17 @@ let mark_template (id: Text.t) =
     function
     | [] -> []
     | m::rest ->
-        match StringMap.find m id.str with
+        match SMap.find m id.str with
         | None -> m :: loop rest
         | Some (TypeName _) ->
-          StringMap.set m ~key:id.str ~data:(TypeName true) :: rest
+          SMap.set m ~key:id.str ~data:(TypeName true) :: rest
         | Some (Ident _) ->
-          StringMap.set m ~key:id.str ~data:(Ident true) :: rest
+          SMap.set m ~key:id.str ~data:(Ident true) :: rest
   in
   context := loop !context
 
 (* Takes a snapshot of the current context. *)
-let push_scope () = context := StringMap.empty :: !context
+let push_scope () = context := SMap.empty :: !context
 
 (* Remove scope *)
 let pop_scope () =
@@ -115,5 +116,5 @@ let print_entry x k =
   | Ident false ->
       Printf.printf "%s : ident" x
 
-let print_map m = StringMap.iteri m ~f:(fun ~key:x ~data:k -> print_entry x k; print_endline "")
+let print_map m = SMap.iteri m ~f:(fun ~key:x ~data:k -> print_entry x k; print_endline "")
 let print_context () = List.iter !context ~f:(fun m -> print_map m; print_endline "----")

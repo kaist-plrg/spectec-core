@@ -13,7 +13,7 @@
  * under the License.
 *)
 
-open Util
+open Utils.Alternative
 
 module rec KeyValue : sig
   type t = Info.t t'

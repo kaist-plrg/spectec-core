@@ -1,13 +1,7 @@
-(menhir
-  (modules parser)
-  (flags --no-stdlib --explain))
-
-(ocamllex
-  (modules lexer))
-
 (library
-  (name p4cherry) 
-  (libraries core core_kernel core_unix)
-  (modules
-    ast info name number text
-    context lexer parser util))
+  (name p4cherry)
+  (modules)
+  (libraries
+    (re_export syntax)
+    (re_export frontend)
+    (re_export utils)))

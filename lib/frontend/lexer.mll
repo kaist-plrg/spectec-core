@@ -17,6 +17,7 @@
 open Lexing
 open Context
 open Parser
+open Syntax
 
 exception Error of string
 

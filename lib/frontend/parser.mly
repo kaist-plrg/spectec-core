@@ -15,8 +15,10 @@
 
 %{
 module P4cherry = struct end
+open Syntax
 open Ast
 open Name
+open Text
 open Context
 
 let rec smash_annotations (l: Text.t list) (tok2: Text.t): Text.t list =
@@ -34,25 +36,25 @@ let rec smash_annotations (l: Text.t list) (tok2: Text.t): Text.t list =
 
 (**************************** TOKENS ******************************)
 
-%token<Info.t> END
+%token<Syntax.Info.t> END
 %token TYPENAME IDENTIFIER
-%token<Text.t> NAME STRING_LITERAL
-%token<Number.t * string> NUMBER
-%token<Info.t> LE GE SHL AND OR NE EQ
-%token<Info.t> PLUS MINUS PLUS_SAT MINUS_SAT MUL DIV MOD
-%token<Info.t> BIT_OR BIT_AND BIT_XOR COMPLEMENT
-%token<Info.t> L_BRACKET R_BRACKET L_BRACE R_BRACE L_ANGLE L_ANGLE_ARGS R_ANGLE R_ANGLE_SHIFT L_PAREN R_PAREN
-%token<Info.t> ASSIGN COLON COMMA QUESTION DOT NOT SEMICOLON
-%token<Info.t> AT PLUSPLUS
-%token<Info.t> DONTCARE
-%token<Info.t> MASK RANGE
-%token<Info.t> TRUE FALSE
-%token<Info.t> ABSTRACT ACTION ACTIONS APPLY BOOL BIT CONST CONTROL DEFAULT DEFAULT_ACTION
-%token<Info.t> ELSE ENTRIES ENUM ERROR EXIT EXTERN HEADER HEADER_UNION IF IN INOUT
-%token<Info.t> INT KEY SELECT MATCH_KIND OUT PACKAGE PARSER RETURN STATE STRING STRUCT
-%token<Info.t> SWITCH TABLE THEN TRANSITION TUPLE TYPE TYPEDEF VARBIT VALUESET VOID
-%token<Info.t> PRAGMA PRAGMA_END
-%token<Text.t> UNEXPECTED_TOKEN
+%token<Syntax.Text.t> NAME STRING_LITERAL
+%token<Syntax.Number.t * string> NUMBER
+%token<Syntax.Info.t> LE GE SHL AND OR NE EQ
+%token<Syntax.Info.t> PLUS MINUS PLUS_SAT MINUS_SAT MUL DIV MOD
+%token<Syntax.Info.t> BIT_OR BIT_AND BIT_XOR COMPLEMENT
+%token<Syntax.Info.t> L_BRACKET R_BRACKET L_BRACE R_BRACE L_ANGLE L_ANGLE_ARGS R_ANGLE R_ANGLE_SHIFT L_PAREN R_PAREN
+%token<Syntax.Info.t> ASSIGN COLON COMMA QUESTION DOT NOT SEMICOLON
+%token<Syntax.Info.t> AT PLUSPLUS
+%token<Syntax.Info.t> DONTCARE
+%token<Syntax.Info.t> MASK RANGE
+%token<Syntax.Info.t> TRUE FALSE
+%token<Syntax.Info.t> ABSTRACT ACTION ACTIONS APPLY BOOL BIT CONST CONTROL DEFAULT DEFAULT_ACTION
+%token<Syntax.Info.t> ELSE ENTRIES ENUM ERROR EXIT EXTERN HEADER HEADER_UNION IF IN INOUT
+%token<Syntax.Info.t> INT KEY SELECT MATCH_KIND OUT PACKAGE PARSER RETURN STATE STRING STRUCT
+%token<Syntax.Info.t> SWITCH TABLE THEN TRANSITION TUPLE TYPE TYPEDEF VARBIT VALUESET VOID
+%token<Syntax.Info.t> PRAGMA PRAGMA_END
+%token<Syntax.Text.t> UNEXPECTED_TOKEN
 
 (**************************** PRIORITY AND ASSOCIATIVITY ******************************)
 

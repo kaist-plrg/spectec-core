@@ -1,4 +1,5 @@
-open P4cherry
+open Syntax
+open Frontend
 
 type error =
   | LexerError of string
