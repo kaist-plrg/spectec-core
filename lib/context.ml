@@ -14,7 +14,8 @@
 *)
 
 open Core
-open Util
+
+module StringMap = Map.Make(String)
 
 type has_params = bool
 
@@ -58,7 +59,7 @@ let get_kind (id: Text.t): ident_kind =
         | Some k -> k in
   loop !context
 
-let is_typename (id: Text.t) : bool =
+let is_typename (id: Text.t): bool =
   match get_kind id with
   | TypeName _ -> true
   | _ -> false
@@ -85,7 +86,7 @@ let pop_scope () =
   match !context with
   | [] -> failwith "ill-formed context"
   | [_] -> failwith "pop would produce ill-formed context"
-  | _::l ->
+  | _ :: l ->
       context := l
 
 let go_toplevel () =
@@ -94,7 +95,7 @@ let go_toplevel () =
     | [] -> failwith "ill-formed context"
     | [_] ->
         context := c
-    | _::l ->
+    | _ :: l ->
         loop l in
         backup := !context;
         loop !context

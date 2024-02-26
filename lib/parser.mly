@@ -293,28 +293,28 @@ annotations:
 annotation:
 | info1 = AT name = name
     { let info2 = Text.tags name in
-      let body = Annotation.Empty {tags = info2} in
-      let info' = Info.merge info1 info2 in
-      Annotation.{ name; body; tags = info'  }}
+      let body = Annotation.Empty { tags = info2 } in
+      let tags = Info.merge info1 info2 in
+      Annotation.{ tags; name; body } }
 | info1 = AT name = name info2 = L_PAREN body = annotationBody info3 = R_PAREN
     { let tags = Info.merge info2 info3 in
-      let body = Annotation.Unparsed { str = body; tags } in
-      let tags' = Info.merge info1 info3 in
-       Annotation.{ name; body; tags = tags'  }}
+      let body = Annotation.Unparsed { tags; str = body } in
+      let tags = Info.merge info1 info3 in
+      Annotation.{ tags; name; body } }
 | info1 = AT name = name info2 = L_BRACKET body = expressionList info3 = R_BRACKET
     { let tags = Info.merge info2 info3 in
-      let body = Annotation.Expression { exprs = body; tags } in
-      let tags' = Info.merge info1 info3 in
-       Annotation.{ name; body; tags = tags'  }}
+      let body = Annotation.Expression { tags; exprs = body } in
+      let tags = Info.merge info1 info3 in
+      Annotation.{ tags; name; body } }
 | info1 = AT name = name info2 = L_BRACKET body = kvList info3 = R_BRACKET
     { let tags = Info.merge info2 info3 in
-      let body = Annotation.KeyValue { key_values = body; tags } in
-      let tags' = Info.merge info1 info3 in
-       Annotation.{ name; body; tags = tags'  }}
+      let body = Annotation.KeyValue { tags; key_values = body } in
+      let tags = Info.merge info1 info3 in
+      Annotation.{ tags; name; body } }
 | info1 = PRAGMA name = name body = annotationBody info2 = PRAGMA_END
-    { let body = Annotation.Unparsed { str = body; tags = info2 } in
+    { let body = Annotation.Unparsed { tags = info2; str = body } in
       let tags = Info.merge info1 info2 in
-       Annotation.{ name; body; tags  }}
+      Annotation.{ tags; name; body }}
 ;
 
 annotationBody:
@@ -407,13 +407,13 @@ annotationToken:
 | TRUE
     { Text.{ tags = $1; str = "true" } }
 | TUPLE
-    { Text.{ tags=$1; str="tuple" } }
+    { Text.{ tags = $1; str = "tuple" } }
 | TYPEDEF
-    { Text.{ tags=$1; str="typedef" } }
+    { Text.{ tags = $1; str = "typedef" } }
 | VARBIT
-    { Text.{ tags=$1; str="varbit" } }
+    { Text.{ tags = $1; str = "varbit" } }
 | VALUESET
-    { Text.{ tags=$1; str="valueset" } }
+    { Text.{ tags = $1; str = "valueset" } }
 | VOID
     { Text.{ tags = $1; str = "void" } }
 | DONTCARE
@@ -523,8 +523,8 @@ parameter:
         match (direction : Direction.t option) with
         | None -> Type.tags typ
         | Some dir -> Direction.tags dir in
-      let info = Info.merge info1 (Text.tags variable) in
-      Parameter.{ tags = info; annotations; direction; typ; variable; opt_value = Some value } }
+      let tags = Info.merge info1 (Text.tags variable) in
+      Parameter.{ tags; annotations; direction; typ; variable; opt_value = Some value } }
 ;
 
 direction:
@@ -543,15 +543,15 @@ packageTypeDeclaration:
   name = push_name
   type_params = optTypeParameters
   L_PAREN params = parameterList info2 = R_PAREN
-    { let info = Info.merge info1 info2 in
-      Declaration.PackageType { tags = info; annotations; name; type_params; params } }
+    { let tags = Info.merge info1 info2 in
+      Declaration.PackageType { tags; annotations; name; type_params; params } }
 ;
 
 instantiation:
 | annotations = optAnnotations typ = typeRef
     L_PAREN args = argumentList R_PAREN name = name info2 = SEMICOLON
     { let info' = Info.merge (Type.tags typ) info2 in
-       Declaration.Instantiation { annotations; typ; args; name; init=None; tags = info'  } }
+       Declaration.Instantiation { annotations; typ; args; name; init=None; tags = info' } }
 | annotations = optAnnotations typ = typeRef
     L_PAREN args = argumentList R_PAREN name = name ASSIGN init = objInitializer info2 = SEMICOLON
     { let info' = Info.merge (Type.tags typ) info2 in
@@ -567,10 +567,10 @@ objInitializer:
 objDeclaration:
 | decl = functionDeclaration
     { let tags = Declaration.tags decl in
-      Statement.DeclarationStatement { decl; tags } }
+      Statement.DeclarationStatement { tags; decl } }
 | decl = instantiation
     { let tags = Declaration.tags decl in
-      Statement.DeclarationStatement { decl; tags } }
+      Statement.DeclarationStatement { tags; decl } }
 ;
 
 optConstructorParameters:
@@ -624,7 +624,7 @@ parserState:
   info2 = R_BRACE
   pop_scope
      { let tags = Info.merge info1 info2 in
-       { annotations; name; statements; transition; tags }: P4Parser.state }
+       { tags; annotations; name; statements; transition }: P4Parser.state }
 
 ;
 
@@ -637,7 +637,7 @@ parserStatement:
 | decl = constantDeclaration
 | decl = variableDeclaration
     { let tags = Declaration.tags decl in
-      Statement.DeclarationStatement { decl; tags } }
+      Statement.DeclarationStatement { tags; decl } }
 ;
 
 parserBlockStatement:
@@ -645,13 +645,13 @@ parserBlockStatement:
   info1 = L_BRACE statements = list(parserStatement) info2 = R_BRACE
      { let tags = Info.merge info1 info2 in
        let block = Block.{ annotations; statements; tags } in
-       Statement.BlockStatement { block = block; tags } }
+       Statement.BlockStatement { tags; block } }
 ;
 
 transitionStatement:
 | (* empty *)
     { let tags = Info.M "Compiler-generated reject transition" in
-      P4Parser.Direct { next = { tags; str = "reject" }; tags } }
+      P4Parser.Direct { tags; next = { tags; str = "reject" } } }
 | info1 = TRANSITION transition = stateExpression
     { (*let tags = Info.merge info1 (tags transition)
        snd transition)*)
@@ -662,7 +662,7 @@ transitionStatement:
 stateExpression:
 | next = name info2 = SEMICOLON
     { let tags = Info.merge (Text.tags next) info2 in
-       P4Parser.Direct { next = next; tags } }
+      P4Parser.Direct { tags; next } }
 | select = selectExpression
     { select }
 ;
@@ -671,7 +671,7 @@ selectExpression:
 | info1 = SELECT L_PAREN exprs = expressionList R_PAREN
   L_BRACE cases = list(selectCase) info2 = R_BRACE
     { let tags = Info.merge info1 info2 in
-       P4Parser.Select { exprs; cases; tags } }
+      P4Parser.Select { tags; exprs; cases } }
 ;
 
 selectCase:
@@ -682,7 +682,7 @@ selectCase:
         | _ -> assert false
       in
       let tags = Info.merge info1 info2 in
-      P4Parser.{ matches; next; tags } }
+      P4Parser.{ tags; matches; next } }
 ;
 
 keysetExpression:
@@ -700,17 +700,17 @@ tupleKeysetExpression:
 simpleKeysetExpression:
 | expr = expression
     { let tags = Expression.tags expr in
-      Match.Expression { expr; tags } }
+      Match.Expression { tags; expr } }
 | info = DONTCARE
-    { Match.DontCare {tags = info} }
+    { Match.DontCare { tags = info } }
 | info = DEFAULT
-    { Match.Default {tags = info} }
+    { Match.Default { tags = info } }
 | expr = expression MASK mask = expression
     { let tags = Info.merge (Expression.tags expr) (Expression.tags mask) in
-      Match.Expression { expr = Expression.Mask { expr; mask; tags }; tags } }
+      Match.Expression { tags; expr = Expression.Mask { tags; expr; mask } } }
 | lo = expression RANGE hi = expression
     { let tags = Info.merge (Expression.tags lo) (Expression.tags hi) in
-      Match.Expression {expr = Expression.Range { lo; hi; tags }; tags}}
+      Match.Expression { tags; expr = Expression.Range { tags; lo; hi } } }
 ;
 
 valueSetDeclaration:
@@ -724,7 +724,7 @@ valueSetDeclaration:
   info1 = VALUESET l_angle typ = typeName r_angle
   L_PAREN size = expression R_PAREN name = name info2 = SEMICOLON
     { let tags = Info.merge info1 info2 in
-      Declaration.ValueSet { annotations; typ; size; name; tags } }
+      Declaration.ValueSet { tags; annotations; typ; size; name } }
 ;
 
 (**************************** CONTROL ******************************)
@@ -737,8 +737,8 @@ controlDeclaration:
     { let info1, annotations, name, type_params, params = ct_decl in
       let tags = Info.merge info1 info2 in
       Declaration.Control
-        { annotations; name; type_params; params;
-          constructor_params; locals; apply; tags } }
+        { tags; annotations; name; type_params;
+          params; constructor_params; locals; apply } }
 ;
 
 controlTypeDeclaration:
@@ -754,9 +754,11 @@ controlLocalDeclaration:
 | c = constantDeclaration
     { c }
 | a = actionDeclaration
-    { declare_var (Declaration.name a) false; a }
+    { declare_var (Declaration.name a) false;
+      a }
 | t = tableDeclaration
-    { declare_var (Declaration.name t) false; t }
+    { declare_var (Declaration.name t) false;
+      t }
 | i = instantiation
     { i }
 | v = variableDeclaration
@@ -778,7 +780,7 @@ externDeclaration:
   pop_scope
      { let tags = Info.merge info1 info2 in
        let type_decl =
-          (Declaration.ExternObject { annotations; name; type_params; methods; tags }) in
+           (Declaration.ExternObject { tags; annotations; name; type_params; methods }) in
        declare_type name (Declaration.has_type_params type_decl);
        type_decl }
 | annotations = optAnnotations info1 = EXTERN
@@ -788,7 +790,7 @@ externDeclaration:
      { let (_, return, name, type_params, params) = func in
        let tags = Info.merge info1 info2 in
        let decl =
-          Declaration.ExternFunction { annotations; return; name; type_params; params; tags } in
+           Declaration.ExternFunction { tags; annotations; return; name; type_params; params } in
        declare_var name (Declaration.has_type_params decl);
        decl }
 ;
@@ -802,7 +804,8 @@ functionPrototype:
   push_scope
   type_params = optTypeParameters
   L_PAREN params = parameterList info2 = R_PAREN
-    { (Info.merge (Type.tags typ) info2, typ, name, type_params, params) }
+    { let tags = Info.merge (Type.tags typ) info2 in 
+      (tags, typ, name, type_params, params) }
 ;
 
 methodPrototype:
@@ -811,17 +814,17 @@ methodPrototype:
   info2 = SEMICOLON
     { let (info1, return, name, type_params, params) = func in
       let tags = Info.merge info1 info2 in
-       MethodPrototype.Method { annotations; return; name; type_params; params; tags } }
+      MethodPrototype.Method { tags; annotations; return; name; type_params; params } }
 | annotations = optAnnotations ABSTRACT func = functionPrototype
   pop_scope
   info2 = SEMICOLON
     { let (info1, return, name, type_params, params) = func in
       let tags = Info.merge info1 info2 in
-      MethodPrototype.AbstractMethod { annotations; return; name; type_params; params; tags } }
+      MethodPrototype.AbstractMethod { tags; annotations; return; name; type_params; params } }
 | annotations = optAnnotations name = name
   L_PAREN params = parameterList R_PAREN info2 = SEMICOLON
     { let tags = Info.merge (Text.tags name) info2 in
-      MethodPrototype.Constructor { annotations; name; params; tags } }
+      MethodPrototype.Constructor { tags; annotations; name; params } }
 ;
 
 (**************************** TYPES ******************************)
@@ -867,20 +870,20 @@ tupleType:
 headerStackType:
 | header = typeName L_BRACKET size = expression info2 = R_BRACKET
     { let tags = Info.merge (Type.tags header) info2 in
-       Type.HeaderStack { header; size; tags } }
+       Type.HeaderStack { tags; header; size } }
 ;
 
 specializedType:
 | base = prefixedType l_angle args = typeArgumentList info_r = r_angle
     { let tags = Info.merge (Type.tags base) info_r in
-      Type.SpecializedType { base; args; tags } }
+      Type.SpecializedType { tags; base; args } }
 ;
 
 baseType:
 | info = BOOL
-    { Type.Bool {tags = info} }
+    { Type.Bool { tags = info } }
 | info = ERROR
-    { Type.Error {tags = info} }
+    { Type.Error { tags = info } }
 | info = BIT
     { let width =
         Expression.Int
@@ -889,7 +892,7 @@ baseType:
                   value = 1;
                   width_signed = None; } }
       in
-      Type.BitType { expr = width; tags = info } }
+      Type.BitType { tags = info; expr = width } }
 | info1 = BIT l_angle value = NUMBER info_r = r_angle
     { let value_int : Number.t = fst value in 
       let value_info = value_int.tags in
@@ -1022,7 +1025,7 @@ structTypeDeclaration:
 structField:
 | annotations = optAnnotations typ = typeRef name = name info2 = SEMICOLON
     { let tags = Info.merge (Type.tags typ) info2 in
-      { tags; annotations; typ; name } : Declaration.field }
+      { tags; annotations; typ; name }: Declaration.field }
 ;
 
 (* TODO : add support for serializable enums *)

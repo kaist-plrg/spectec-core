@@ -13,10 +13,6 @@
  * under the License.
 *)
 
-open Core
-
-module StringMap = Map.Make(String)
-
 type ('a, 'b) alternative =
   | Left of 'a
   | Right of 'b
