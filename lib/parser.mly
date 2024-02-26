@@ -508,24 +508,23 @@ parameterList:
 ;
 
 parameter:
-| annotations = optAnnotations direction = direction
-  typ = typeRef variable = name
+| annotations = optAnnotations
+  direction = direction typ = typeRef variable = name
     { let info1 =
         match direction with
         | None -> Type.tags typ
         | Some dir -> Direction.tags dir
       in
-      let info' = Info.merge info1 (Text.tags variable) in
-      Parameter.{ annotations; direction; typ; variable; opt_value = None; tags = info' } }
-| annotations = optAnnotations direction = direction typ = typeRef
-  variable = name ASSIGN value = expression
+      let info = Info.merge info1 (Text.tags variable) in
+      Parameter.{ tags = info; annotations; direction; typ; variable; opt_value = None } }
+| annotations = optAnnotations
+  direction = direction typ = typeRef variable = name ASSIGN value = expression
     { let info1 =
         match (direction : Direction.t option) with
         | None -> Type.tags typ
         | Some dir -> Direction.tags dir in
-      let info' = Info.merge info1 (Text.tags variable)
-      in
-      Parameter.{ annotations; direction; typ; variable; opt_value = Some value; tags = info' } }
+      let info = Info.merge info1 (Text.tags variable) in
+      Parameter.{ tags = info; annotations; direction; typ; variable; opt_value = Some value } }
 ;
 
 direction:
@@ -544,8 +543,8 @@ packageTypeDeclaration:
   name = push_name
   type_params = optTypeParameters
   L_PAREN params = parameterList info2 = R_PAREN
-    { let info' = Info.merge info1 info2 in
-      Declaration.PackageType { annotations; name; type_params; params; tags = info' } }
+    { let info = Info.merge info1 info2 in
+      Declaration.PackageType { tags = info; annotations; name; type_params; params } }
 ;
 
 instantiation:
@@ -747,7 +746,8 @@ controlTypeDeclaration:
   name = push_name
   type_params = optTypeParameters
   L_PAREN params = parameterList info2 = R_PAREN
-     { (Info.merge info1 info2, annotations, name, type_params, params) }
+    { let info = Info.merge info1 info2 in
+      (info, annotations, name, type_params, params) }
 ;
 
 controlLocalDeclaration:
@@ -851,7 +851,7 @@ prefixedTypeName:
 prefixedType:
 | name = prefixedTypeName
     { let tags = Name.tags name in
-       Type.TypeName { tags ; name } }
+       Type.TypeName { tags; name } }
 
 typeName:
 | typ = prefixedType

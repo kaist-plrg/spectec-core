@@ -6,7 +6,8 @@
   (modules lexer))
 
 (library
-  (name p4cherry)
+  (name p4cherry) 
+  (libraries core core_kernel core_unix)
   (modules
     ast info name number text
     context lexer parser util))
