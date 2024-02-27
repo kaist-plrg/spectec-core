@@ -2,11 +2,14 @@ open Syntax
 open Frontend
 
 type error =
+  | PreprocessorError
   | LexerError of string
   | ParserError of Info.t
 
 let error_to_string (e : error) : string =
   match e with
+  | PreprocessorError ->
+    Printf.sprintf "preprocessor error"
   | LexerError s ->
     Printf.sprintf "lexer error: %s" s
   | ParserError info ->
@@ -29,6 +32,11 @@ let parse (lexbuf: Lexing.lexbuf) =
     Ok (Parser.p4program Lexer.lexer lexbuf)
   with Parser.Error -> Error (ParserError (Lexer.info lexbuf))
 
+let preprocess (includes: string list) (file: string) =
+  try
+    Ok (Preprocessor.preprocess includes file)
+  with _ -> Error (PreprocessorError)
+
 let () =
   if Array.length Sys.argv < 2 then (
     Printf.printf "Usage: %s <filename>\n" Sys.argv.(0);
@@ -38,12 +46,13 @@ let () =
   let filename = Sys.argv.(1) in
 
   let chan = open_in filename in
-  let input = In_channel.input_all chan in
+  let file = In_channel.input_all chan in
   close_in chan;
 
-  let _prog =
-    let input = handle_error (lex filename input) in 
-    handle_error (parse input)
+  let _program =
+    let program = handle_error (preprocess [] file) in
+    let program = handle_error (lex filename program) in 
+    handle_error (parse program)
   in
 
   print_endline "Parsing success. (TODO: print AST)"
