@@ -1,20 +1,23 @@
-NAME = p4cherry
+MAIN = p4cherry
+TEST = p4cherry-test
 
 # Compile
 
 .PHONY: build
 
-EXE = _build/default/bin/main.exe
+EXEMAIN = _build/default/bin/main.exe
+EXETEST = _build/default/bin/test.exe
 
 build:
-	rm -f ./$(NAME)
+	rm -f ./$(MAIN) ./$(TEST)
 	dune build && echo
-	ln -f $(EXE) ./$(NAME)
+	ln -f $(EXEMAIN) ./$(MAIN)
+	ln -f $(EXETEST) ./$(TEST)
 
 # Cleanup
 
 .PHONY: clean
 
 clean:
-	rm -f ./$(NAME)
+	rm -f ./$(NAME) ./$(TEST)
 	dune clean

@@ -15,12 +15,13 @@
 
 open Core
 
-let preprocess includes file =
+let preprocess includes filename =
     let cmd =
       String.concat ~sep:" "
         ([ "cc" ] @
            (List.map includes ~f:(Printf.sprintf "-I%s") @
-              [ "-undef"; "-nostdinc"; "-E"; "-x"; "c"; file ])) in
+              [ "-undef"; "-nostdinc"; "-E"; "-x"; "c"; filename ]))
+    in
     let in_chan = Core_unix.open_process_in cmd in
     let program = In_channel.input_all in_chan in
     let _ = Core_unix.close_process_in in_chan in

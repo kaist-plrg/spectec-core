@@ -1,4 +1,10 @@
 (executable
  (public_name p4cherry)
  (name main)
+ (modules main)
+ (libraries p4cherry core core_kernel core_unix))
+
+(executable
+ (name test)
+ (modules test)
  (libraries p4cherry core core_kernel core_unix))

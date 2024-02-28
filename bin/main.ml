@@ -1,58 +1,14 @@
-open Syntax
 open Frontend
 
-type error =
-  | PreprocessorError
-  | LexerError of string
-  | ParserError of Info.t
-
-let error_to_string (e : error) : string =
-  match e with
-  | PreprocessorError ->
-    Printf.sprintf "preprocessor error"
-  | LexerError s ->
-    Printf.sprintf "lexer error: %s" s
-  | ParserError info ->
-    Printf.sprintf "parser error: %s" (Info.to_string info)
-
-let handle_error (res: ('a, error) Result.t): 'a =
-  match res with
-  | Ok a -> a
-  | Error e -> failwith (error_to_string e)
-
-let lex (filename: string) (input: string) =
-  try 
-    let () = Lexer.reset () in
-    let () = Lexer.set_filename filename in
-    Ok (Lexing.from_string input)
-  with Lexer.Error s -> Error (LexerError s)
-
-let parse (lexbuf: Lexing.lexbuf) =
-  try
-    Ok (Parser.p4program Lexer.lexer lexbuf)
-  with Parser.Error -> Error (ParserError (Lexer.info lexbuf))
-
-let preprocess (includes: string list) (file: string) =
-  try
-    Ok (Preprocessor.preprocess includes file)
-  with _ -> Error (PreprocessorError)
-
 let () =
-  if Array.length Sys.argv < 2 then (
-    Printf.printf "Usage: %s <filename>\n" Sys.argv.(0);
+  if Array.length Sys.argv < 3 then (
+    Printf.printf "Usage: %s <include_dir> <filename>\n" Sys.argv.(0);
     exit 1
   );
-
-  let filename = Sys.argv.(1) in
-
-  let chan = open_in filename in
-  let file = In_channel.input_all chan in
-  close_in chan;
-
-  let _program =
-    let program = handle_error (preprocess [] file) in
-    let program = handle_error (lex filename program) in 
-    handle_error (parse program)
-  in
-
-  print_endline "Parsing success. (TODO: print AST)"
+  
+  let includes = Sys.argv.(1) in
+  let filename = Sys.argv.(2) in
+  let program = Parse.parse_file includes filename in
+  match program with
+  | Some _ -> print_endline "Ok"
+  | None -> print_endline "Error"

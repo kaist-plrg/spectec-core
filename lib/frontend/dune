@@ -8,4 +8,4 @@
 (library
   (name frontend) 
   (libraries syntax core core_kernel core_unix)
-  (modules lexer parser preprocessor context))
+  (modules lexer parser preprocessor context parse))
