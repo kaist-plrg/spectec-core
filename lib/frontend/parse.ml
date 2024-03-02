@@ -30,3 +30,7 @@ let parse_file (includes: string) (filename: string) =
   let* file = preprocess [ includes ] filename in
   let* program = lex filename file in 
   parse program
+
+let parse_string (filename: string) (file: string) =
+  let* program = lex filename file in 
+  parse program

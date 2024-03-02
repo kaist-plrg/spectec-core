@@ -73,11 +73,29 @@ let rec print_type (typ: Type.t) =
   | Error _ -> "error"
   | Integer _ -> "int"
   | IntType { expr; _ } ->
-      Printf.sprintf "int<%s>" (print_expr expr)
+      let sexpr = print_expr expr in
+      let sexpr =
+        match expr with
+        | Int _ -> sexpr
+        | _ -> "(" ^ sexpr ^ ")"
+      in
+      Printf.sprintf "int<%s>" sexpr
   | BitType { expr; _ } ->
-      Printf.sprintf "bit<%s>" (print_expr expr)
+      let sexpr = print_expr expr in
+      let sexpr =
+        match expr with
+        | Int _ -> sexpr
+        | _ -> "(" ^ sexpr ^ ")"
+      in
+      Printf.sprintf "bit<%s>" sexpr 
   | VarBit { expr; _ } ->
-      Printf.sprintf "varbit<%s>" (print_expr expr)
+      let sexpr = print_expr expr in
+      let sexpr =
+        match expr with
+        | Int _ -> sexpr
+        | _ -> "(" ^ sexpr ^ ")"
+      in
+      Printf.sprintf "varbit<%s>" sexpr 
   | TypeName { name; _ } ->
       print_name name
   | SpecializedType { base; args; _ } ->
@@ -148,7 +166,7 @@ and print_expr (expr: Expression.t) =
   | True _ -> "true"
   | False _ -> "false"
   | Int { i; _ } -> print_number i
-  | String { text; _ } -> print_text text
+  | String { text; _ } -> "\"" ^ print_text text ^ "\""
   | Name { name; _ } -> print_name name
   | ArrayAccess { array; index; _ } ->
       let sarray = print_expr array in
@@ -348,6 +366,10 @@ and print_parser_case (ident: int) (case: P4Parser.case) =
     List.map print_match case.matches
     |> String.concat ", "
   in
+  let smatches =
+    if List.length case.matches > 1 then "(" ^ smatches ^ ")"
+    else smatches
+  in
   let snext = print_text case.next in
   Printf.sprintf "%s%s: %s;\n"
     (print_ident ident) smatches snext
@@ -438,7 +460,7 @@ and print_table_property (ident: int) (property: Table.property) =
         if List.length entries > 0 then (print_ident (ident + 1)) ^ sentries
         else sentries
       in
-      Printf.sprintf "%sconst entries = {\n%s%s};\n"
+      Printf.sprintf "%sconst entries = {\n%s%s}\n"
         (print_ident ident) sentries (print_ident ident)
   | DefaultAction { action; const; _ } ->
       let saction = print_table_action_ref action in
@@ -471,8 +493,8 @@ and print_method_prototype (ident: int) (methodproto: MethodPrototype.t) =
         else ""
       in
       let sparams = List.map print_param params |> String.concat ", " in
-      Printf.sprintf "%sabstract %s%s(%s) %s;\n"
-        (print_ident ident) sreturn stype_params sparams sname
+      Printf.sprintf "%sabstract %s %s%s(%s);\n"
+        (print_ident ident) sreturn sname stype_params sparams
   | Method { return; name; type_params; params; _ } ->
       let sreturn = print_type return in
       let sname = print_text name in
@@ -482,8 +504,8 @@ and print_method_prototype (ident: int) (methodproto: MethodPrototype.t) =
         else ""
       in
       let sparams = List.map print_param params |> String.concat ", " in
-      Printf.sprintf "%s%s%s(%s) %s;\n"
-        (print_ident ident) sreturn stype_params sparams sname
+      Printf.sprintf "%s%s %s%s(%s);\n"
+        (print_ident ident) sreturn sname stype_params sparams
 
 
 (* Declarations *)
@@ -575,8 +597,8 @@ and print_decl (ident: int) (decl: Declaration.t) =
         else ""
       in
       let sparams = List.map print_param params |> String.concat ", " in
-      Printf.sprintf "%sextern %s%s %s(%s);\n"
-        (print_ident ident) sreturn stype_params sname sparams
+      Printf.sprintf "%sextern %s %s%s(%s);\n"
+        (print_ident ident) sreturn sname stype_params sparams
   | Variable { typ; name; init; _ } ->
       let styp = print_type typ in
       let sname = print_text name in
@@ -593,7 +615,7 @@ and print_decl (ident: int) (decl: Declaration.t) =
       let styp = print_type typ in
       let ssize = print_expr size in
       let sname = print_text name in
-      Printf.sprintf "%s%s<%s> %s;\n"
+      Printf.sprintf "%svalue_set<%s>(%s) %s;\n"
         (print_ident ident) styp ssize sname
   | Action { name; params; body; _ } ->
       let sname = print_text name in
@@ -691,7 +713,7 @@ and print_decl (ident: int) (decl: Declaration.t) =
         | Alternative.Right decl -> print_decl (ident + 1) decl
       in
       Printf.sprintf "%stypedef %s %s;\n"
-        (print_ident ident) sname styp_or_decl
+        (print_ident ident) styp_or_decl sname
   | NewType { name; typ_or_decl; _ } ->
       let sname = print_text name in
       let styp_or_decl =
@@ -700,7 +722,7 @@ and print_decl (ident: int) (decl: Declaration.t) =
         | Alternative.Right decl -> print_decl (ident + 1) decl
       in
       Printf.sprintf "%stype %s %s;\n"
-        (print_ident ident) sname styp_or_decl
+        (print_ident ident) styp_or_decl sname
   | ControlType { name; type_params; params; _ } ->
       let sname = print_text name in
       let stype_params = List.map print_text type_params |> String.concat ", " in
