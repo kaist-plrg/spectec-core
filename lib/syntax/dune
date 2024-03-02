@@ -1,4 +1,4 @@
 (library
   (name syntax)
   (libraries utils)
-  (modules ast info name number text))
+  (modules ast info name number text print))

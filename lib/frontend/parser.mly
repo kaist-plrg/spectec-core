@@ -1405,7 +1405,7 @@ expression:
     { Expression.False { tags = info1 } }
 | value = STRING_LITERAL
     { let tags = Text.tags value in
-      Expression.String { tags; str = value } }
+      Expression.String { tags; text = value } }
 | name = nonTypeName
     { let tags = Text.tags name in
       Expression.Name { tags; name = BareName name } }

@@ -373,7 +373,7 @@ and Expression : sig
           i: Number.t }
     | String of
         { tags: 'a;
-          str: Text.t }
+          text: Text.t }
     | Name of
         { tags: 'a;
           name: Name.t }
@@ -450,7 +450,7 @@ end = struct
           i: Number.t }
     | String of
         { tags: 'a;
-          str: Text.t }
+          text: Text.t }
     | Name of
         { tags: 'a;
           name: Name.t }
@@ -543,7 +543,7 @@ end = struct
       | True { tags = _ } -> True { tags }
       | False { tags = _ } -> False { tags }
       | Int { i; _ } -> Int { tags; i }
-      | String { str; _ } -> String { tags; str }
+      | String { text; _ } -> String { tags; text }
       | Name { name; _ } -> Name { tags; name }
       | ArrayAccess { array; index; _ } -> ArrayAccess { tags; array; index }
       | BitStringAccess { bits; lo; hi; _ } -> BitStringAccess { tags; bits; lo; hi }
