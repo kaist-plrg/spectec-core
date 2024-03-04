@@ -3,29 +3,6 @@ open Print
 open Utils
 open Alternative
 
-let dbg (expr: Expression.t) =
-  match expr with
-  | True _ -> "True"
-  | False _ -> "False"
-  | Int _ -> "Int"
-  | String _ -> "String"
-  | Name _ -> "Name"
-  | ArrayAccess _ -> "ArrayAccess"
-  | BitStringAccess _ -> "BitStringAccess"
-  | List _ -> "List"
-  | Record _ -> "Record"
-  | UnaryOp _ -> "UnaryOp"
-  | BinaryOp _ -> "BinaryOp"
-  | Cast _ -> "Cast"
-  | TypeMember _ -> "TypeMember"
-  | ErrorMember _ -> "ErrorMember"
-  | ExpressionMember _ -> "ExpressionMember"
-  | Ternary _ -> "Ternary"
-  | FunctionCall _ -> "FunctionCall"
-  | NamelessInstantiation _ -> "NamelessInstantiation"
-  | Mask _ -> "Mask"
-  | Range _ -> "Range"
-
 (* Utils *)
 
 let eq_option (eq: 'a -> 'a -> bool) (opt: 'a option) (opt': 'a option) =
@@ -315,8 +292,6 @@ and eq_expr (expr: Expression.t) (expr': Expression.t) =
       Printf.sprintf "eq_expr: %s does not equal %s"
         (print_expr expr) (print_expr expr')
       |> print_endline;
-      Printf.sprintf "lhs %s" (dbg expr) |> print_endline;
-      Printf.sprintf "rhs %s" (dbg expr') |> print_endline;
       false
 
 
