@@ -361,7 +361,7 @@ and print_match (mtch: Match.t) =
 
 (* Parsers *)
 
-and print_parser_case (ident: int) (case: P4Parser.case) =
+and print_parser_case (ident: int) (case: Parser.case) =
   let smatches =
     List.map print_match case.matches
     |> String.concat ", "
@@ -374,7 +374,7 @@ and print_parser_case (ident: int) (case: P4Parser.case) =
   Printf.sprintf "%s%s: %s;\n"
     (print_ident ident) smatches snext
 
-and print_parser_transition (ident: int) (transition: P4Parser.transition) =
+and print_parser_transition (ident: int) (transition: Parser.transition) =
   match transition with
   | Direct { next; _ } ->
       let snext = print_text next in
@@ -392,7 +392,7 @@ and print_parser_transition (ident: int) (transition: P4Parser.transition) =
       Printf.sprintf "%stransition select (%s) {\n%s%s}\n"
         (print_ident ident) sexprs scases (print_ident ident)
 
-and print_parser_state (ident: int) (state: P4Parser.state) =
+and print_parser_state (ident: int) (state: Parser.state) =
   let sname = print_text state.name in
   let sstmts =
     List.map (print_stmt (ident + 1)) state.statements

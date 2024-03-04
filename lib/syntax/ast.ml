@@ -676,7 +676,7 @@ end = struct
     | Expression { tags; _ } -> tags
 end
 
-and P4Parser : sig
+and Parser : sig
   type case = Info.t case'
   and 'a case' =
     { tags: 'a;
@@ -770,7 +770,7 @@ and Declaration : sig
           params: Parameter.t list;
           constructor_params: Parameter.t list;
           locals: t list;
-          states: P4Parser.state list }
+          states: Parser.state list }
     | Control of
         { tags: 'a;
           annotations: Annotation.t list;
@@ -918,7 +918,7 @@ end = struct
           params: Parameter.t list;
           constructor_params: Parameter.t list;
           locals: t list;
-          states: P4Parser.state list }
+          states: Parser.state list }
     | Control of
         { tags: 'a;
           annotations: Annotation.t list;

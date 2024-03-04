@@ -21,6 +21,9 @@ open Name
 open Text
 open Context
 
+(* A hack to avoid confilict btw this module and Ast.Parser *)
+module Parser = Ast.Parser
+
 let rec smash_annotations (l: Text.t list) (tok2: Text.t): Text.t list =
   match l with
   | [] -> [ tok2 ]
@@ -626,7 +629,7 @@ parserState:
   info2 = R_BRACE
   pop_scope
      { let tags = Info.merge info1 info2 in
-       { tags; annotations; name; statements; transition }: P4Parser.state }
+       { tags; annotations; name; statements; transition }: Parser.state }
 
 ;
 
@@ -653,18 +656,18 @@ parserBlockStatement:
 transitionStatement:
 | (* empty *)
     { let tags = Info.M "Compiler-generated reject transition" in
-      P4Parser.Direct { tags; next = { tags; str = "reject" } } }
+      Parser.Direct { tags; next = { tags; str = "reject" } } }
 | info1 = TRANSITION transition = stateExpression
     { (*let tags = Info.merge info1 (tags transition)
        snd transition)*)
       (* Not sure what's the type of transition but I'm guessing it's 'a transition'.*)
-      P4Parser.update_transition_tags transition (Info.merge info1 (P4Parser.transition_tags transition)) }
+      Parser.update_transition_tags transition (Info.merge info1 (Parser.transition_tags transition)) }
 ;
 
 stateExpression:
 | next = name info2 = SEMICOLON
     { let tags = Info.merge (Text.tags next) info2 in
-      P4Parser.Direct { tags; next } }
+      Parser.Direct { tags; next } }
 | select = selectExpression
     { select }
 ;
@@ -673,7 +676,7 @@ selectExpression:
 | info1 = SELECT L_PAREN exprs = expressionList R_PAREN
   L_BRACE cases = list(selectCase) info2 = R_BRACE
     { let tags = Info.merge info1 info2 in
-      P4Parser.Select { tags; exprs; cases } }
+      Parser.Select { tags; exprs; cases } }
 ;
 
 selectCase:
@@ -684,7 +687,7 @@ selectCase:
         | _ -> assert false
       in
       let tags = Info.merge info1 info2 in
-      P4Parser.{ tags; matches; next } }
+      Parser.{ tags; matches; next } }
 ;
 
 keysetExpression:
