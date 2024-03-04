@@ -1,7 +1,12 @@
 open Ast
 open Utils
 
+(* Utils *)
+
 let print_ident (ident: int) = String.make (ident * 2) ' '
+
+
+(* Basics *)
 
 let print_text (text: Text.t) = text.str
 
@@ -176,7 +181,7 @@ and print_expr (expr: Expression.t) =
       let sbits = print_expr bits in
       let slo = print_expr lo in
       let shi = print_expr hi in
-      Printf.sprintf "%s[%s:%s]" sbits slo shi
+      Printf.sprintf "%s[%s:%s]" sbits shi slo
   | List { values; _ } ->
       let svalues =
         List.map print_expr values
@@ -198,11 +203,11 @@ and print_expr (expr: Expression.t) =
       let arg1, arg2 = args in
       let sarg1 = print_expr arg1 in
       let sarg2 = print_expr arg2 in
-      Printf.sprintf "%s %s %s" sarg1 sop sarg2
+      Printf.sprintf "((%s) %s (%s))" sarg1 sop sarg2
   | Cast { typ; expr; _ } ->
       let styp = print_type typ in
       let sexpr = print_expr expr in
-      Printf.sprintf "(%s) %s" styp sexpr
+      Printf.sprintf "((%s) (%s))" styp sexpr
   | TypeMember { typ; name; _ } ->
       let styp = print_name typ in
       let sname = print_text name in
@@ -218,7 +223,7 @@ and print_expr (expr: Expression.t) =
       let scond = print_expr cond in
       let stru = print_expr tru in
       let sfls = print_expr fls in
-      Printf.sprintf "%s ? %s : %s" scond stru sfls
+      Printf.sprintf "((%s) ? (%s) : (%s))" scond stru sfls
   | FunctionCall { func; type_args; args; _ } ->
       let sfunc = print_expr func in
       let stype_args =

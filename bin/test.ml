@@ -1,32 +1,37 @@
 let program_dir = "test/program"
 let arch_dir = "test/arch"
 
+let (let*) = Option.bind
+
 let parse_file filename =
   try Frontend.Parse.parse_file arch_dir filename
-  with | _ -> None
+  with | _ ->
+    Printf.sprintf "Parser fail on file: %s" filename
+    |> print_endline;
+    None
 
 let parse_string filename file =
   try Frontend.Parse.parse_string filename file
-  with | _ -> None
+  with | _ ->
+    Printf.sprintf "Parser fail on string: %s" filename
+    |> print_endline;
+    None
 
-let print_and_parse filename program =
-  let file = program |> Syntax.Print.print_program in
-  parse_string filename file
+let roundtrip filename =
+  let* program = parse_file filename in
+  let file' = Syntax.Print.print_program program in
+  let* program' = parse_string filename file' in
+  if not (Syntax.Eq.eq_program program program') then
+    Printf.sprintf "Roundtrip fail: %s" filename
+    |> print_endline;
+    None
 
 let () =
   let files = Sys.readdir program_dir in
-  let total = Array.length files in
-  Array.iteri
-    (fun count filename ->
-      let filename = program_dir ^ "/" ^ filename in
-      match parse_file filename with
-      | None ->
-          Printf.sprintf "Parser fail: [%d/%d] %s" (count + 1) total filename
-          |> print_endline
-      | Some program ->
-          match print_and_parse filename program with
-          | None ->
-              Printf.sprintf "Roundtrip fail: [%d/%d] %s" (count + 1) total filename
-              |> print_endline
-          | Some _ -> ())
-    files;
+  Printf.sprintf "Running parser roundtrip tests on %d files" (Array.length files)
+  |> print_endline;
+  Array.iter
+    (fun filename ->
+      let filename = Printf.sprintf "%s/%s" program_dir filename in
+      roundtrip filename |> ignore)
+    files
