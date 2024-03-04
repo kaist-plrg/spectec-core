@@ -754,6 +754,9 @@ and print_decl (ident: int) (decl: Declaration.t) =
       Printf.sprintf "%spackage %s%s(%s);\n"
         (print_ident ident) sname stype_params sparams
 
+
+(* Program *)
+
 let print_program (program: program) =
   let Program decls = program in
   List.map (print_decl 0) decls |> String.concat "\n"
