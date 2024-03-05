@@ -5,101 +5,90 @@ open Alternative
 
 (* Utils *)
 
+let check (category: string) (eq: 'a -> 'a -> bool) (print: 'a -> string) (a: 'a) (b: 'a) =
+  let same = eq a b in
+  if not same then
+    Printf.sprintf "neq_%s: %s does not equal %s" category (print a) (print b)
+    |> print_endline;
+  same
+
 let eq_option (eq: 'a -> 'a -> bool) (opt: 'a option) (opt': 'a option) =
-  let res =
-    match opt, opt' with
-    | None, None -> true
-    | Some x, Some y -> eq x y
-    | _ -> false
-  in
-  if not res then "eq_option: neq" |> print_endline;
-  res
+  match opt, opt' with
+  | None, None -> true
+  | Some x, Some y -> eq x y
+  | _ -> false
 
 let eq_list (eq: 'a -> 'a -> bool) (l: 'a list) (l': 'a list) =
-  let res =
-    List.length l = List.length l' &&
-    List.for_all2 eq l l'
-  in
-  if not res then "eq_list: neq" |> print_endline;
-  res
+  List.length l = List.length l' &&
+  List.for_all2 eq l l'
 
 let eq_alternative
   (eq_a: 'a -> 'a -> bool) (eq_b: 'b -> 'b -> bool)
   (alt: ('a, 'b) alternative) (alt': ('a, 'b) alternative) =
-  let res =
-    match alt, alt' with
-    | Left x, Left y -> eq_a x y
-    | Right x, Right y -> eq_b x y
-    | _ -> false
-  in
-  if not res then "eq_alternative: neq" |> print_endline;
-  res
+  match alt, alt' with
+  | Left x, Left y -> eq_a x y
+  | Right x, Right y -> eq_b x y
+  | _ -> false
 
 
 (* Basics *)
 
-let eq_text (text: Text.t) (text': Text.t) =
-  let res = text.str = text'.str in
-  if not res then
-    Printf.sprintf "eq_text: %s does not equal %s"
-      (print_text text) (print_text text')
-    |> print_endline;
-  res
+let rec eq_text (text: Text.t) (text': Text.t) =
+  check "text" eq_text' print_text text text'
 
-let eq_number (number: Number.t) (number': Number.t) =
-  let res =
-    number.value = number'.value &&
-    match number.width_signed, number'.width_signed with
-    | None, None -> true
-    | Some (width, signed), Some (width', signed') ->
-        width = width' && signed = signed'
-    | _ -> false
-  in
-  if not res then
-    Printf.sprintf "eq_number: %s does not equal %s"
-      (print_number number) (print_number number')
-    |> print_endline;
-  res
+and eq_text' (text: Text.t) (text': Text.t) =
+  text.str = text'.str
 
-let eq_name (name: Name.t) (name': Name.t) =
+let rec eq_number (number: Number.t) (number': Number.t) =
+  check "number" eq_number' print_number number number'
+
+and eq_number' (number: Number.t) (number': Number.t) =
+  number.value = number'.value &&
+  match number.width_signed, number'.width_signed with
+  | None, None -> true
+  | Some (width, signed), Some (width', signed') ->
+      width = width' && signed = signed'
+  | _ -> false
+
+let rec eq_name (name: Name.t) (name': Name.t) =
+  check "name" eq_name' print_name name name'
+
+and eq_name' (name: Name.t) (name': Name.t) =
   match name, name' with
   | BareName name, BareName name' ->
       eq_text name name'
   | QualifiedName (prefix, name), QualifiedName (prefix', name') ->
       eq_list eq_text prefix prefix' &&
       eq_text name name'
-  | _ ->
-      Printf.sprintf "eq_name: %s does not equal %s"
-        (print_name name) (print_name name')
-      |> print_endline;
-      false
+  | _ -> false
 
-let eq_direction (dir: Direction.t) (dir': Direction.t) =
+let rec eq_direction (dir: Direction.t) (dir': Direction.t) =
+  check "direction" eq_direction' print_direction dir dir'
+
+and eq_direction' (dir: Direction.t) (dir': Direction.t) =
   match dir, dir' with
   | In _, In _
   | Out _, Out _
   | InOut _, InOut _ -> true
-  | _ ->
-      Printf.sprintf "eq_direction: %s does not equal %s"
-        (print_direction dir) (print_direction dir')
-      |> print_endline;
-      false
+  | _ -> false
 
 
 (* Operators *)
 
-let eq_unop (unop: Op.un) (unop': Op.un) =
+let rec eq_unop (unop: Op.un) (unop': Op.un) =
+  check "unop" eq_unop' print_unop unop unop'
+
+and eq_unop' (unop: Op.un) (unop': Op.un) =
   match unop, unop' with
   | Not _ , Not _ -> true
   | BitNot _, BitNot _ -> true
   | UMinus _, UMinus _ -> true
-  | _ ->
-      Printf.sprintf "eq_unop: %s does not equal %s"
-        (print_unop unop) (print_unop unop')
-      |> print_endline;
-      false
+  | _ -> false
 
-let eq_binop (binop: Op.bin) (binop': Op.bin) =
+let rec eq_binop (binop: Op.bin) (binop': Op.bin) =
+  check "binop" eq_binop' print_binop binop binop'
+
+and eq_binop' (binop: Op.bin) (binop': Op.bin) =
   match binop, binop' with
   | Plus _, Plus _ -> true
   | PlusSat _, PlusSat _ -> true
@@ -122,16 +111,15 @@ let eq_binop (binop: Op.bin) (binop': Op.bin) =
   | PlusPlus _, PlusPlus _ -> true
   | And _, And _ -> true
   | Or _, Or _ -> true
-  | _ ->
-      Printf.sprintf "eq_binop: %s does not equal %s"
-        (print_binop binop) (print_binop binop')
-      |> print_endline;
-      false
+  | _ -> false
 
 
 (* Types *)
 
 let rec eq_type (typ: Type.t) (typ': Type.t) =
+  check "type" eq_type' print_type typ typ'
+
+and eq_type' (typ: Type.t) (typ': Type.t) =
   match typ, typ' with
   | Bool _, Bool _ -> true
   | Error _, Error _ -> true
@@ -162,16 +150,15 @@ let rec eq_type (typ: Type.t) (typ': Type.t) =
   | String _, String _ -> true
   | Void _, Void _ -> true
   | DontCare _, DontCare _ -> true
-  | _ ->
-      Printf.sprintf "eq_type: %s does not equal %s"
-        (print_type typ) (print_type typ')
-      |> print_endline;
-      false
+  | _ -> false
 
 
 (* Arguments and Prameters *)
 
 and eq_arg (arg: Argument.t) (arg': Argument.t) =
+  check "arg" eq_arg' print_arg arg arg'
+
+and eq_arg' (arg: Argument.t) (arg': Argument.t) =
   match arg, arg' with
   | Expression { value = value; _ },
     Expression { value = value'; _ } ->
@@ -181,40 +168,31 @@ and eq_arg (arg: Argument.t) (arg': Argument.t) =
       eq_text key key' &&
       eq_expr value value'
   | Missing _ , Missing _ -> true
-  | _ ->
-      Printf.sprintf "eq_arg: %s does not equal %s"
-        (print_arg arg) (print_arg arg')
-      |> print_endline;
-      false
+  | _ -> false
 
 and eq_param (param: Parameter.t) (param': Parameter.t) =
-  let res =
-    eq_option eq_direction param.direction param'.direction &&
-    eq_type param.typ param'.typ &&
-    eq_text param.variable param'.variable &&
-    eq_option eq_expr param.opt_value param'.opt_value
-  in
-  if not res then
-    Printf.sprintf "eq_param: %s does not equal %s"
-      (print_param param) (print_param param')
-    |> print_endline;
-  res
+  check "param" eq_param' print_param param param'
+
+and eq_param' (param: Parameter.t) (param': Parameter.t) =
+  eq_option eq_direction param.direction param'.direction &&
+  eq_type param.typ param'.typ &&
+  eq_text param.variable param'.variable &&
+  eq_option eq_expr param.opt_value param'.opt_value
 
 
 (* Expressions *)
 
 and eq_key_value (key_value: KeyValue.t) (key_value': KeyValue.t) =
-  let res =
-    eq_text key_value.key key_value'.key &&
-    eq_expr key_value.value key_value'.value
-  in
-  if not res then
-    Printf.sprintf "eq_key_value: %s does not equal %s"
-      (print_key_value key_value) (print_key_value key_value')
-    |> print_endline;
-  res
+  check "key_value" eq_key_value' print_key_value key_value key_value'
+
+and eq_key_value' (key_value: KeyValue.t) (key_value': KeyValue.t) =
+  eq_text key_value.key key_value'.key &&
+  eq_expr key_value.value key_value'.value
 
 and eq_expr (expr: Expression.t) (expr': Expression.t) =
+  check "expr" eq_expr' print_expr expr expr'
+
+and eq_expr' (expr: Expression.t) (expr': Expression.t) =
   match expr, expr' with
   | True _, True _ -> true
   | False _, False _ -> true
@@ -288,28 +266,32 @@ and eq_expr (expr: Expression.t) (expr': Expression.t) =
     Range { lo = lo'; hi = hi'; _ } ->
       eq_expr lo lo' &&
       eq_expr hi hi'
-  | _ ->
-      Printf.sprintf "eq_expr: %s does not equal %s"
-        (print_expr expr) (print_expr expr')
-      |> print_endline;
-      false
+  | _ -> false
 
 
 (* Statements *)
 
+and eq_block (block: Block.t) (block': Block.t) =
+  check "block" eq_block' (print_block 0) block block'
+
+and eq_block' (block: Block.t) (block': Block.t) =
+  eq_list eq_stmt block.statements block'.statements
+
 and eq_switch_label (label: Statement.switch_label) (label': Statement.switch_label) =
+  check "switch_label" eq_switch_label' print_switch_label label label'
+
+and eq_switch_label' (label: Statement.switch_label) (label': Statement.switch_label) =
   match label, label' with
   | Default _, Default _ -> true
   | Name { name = name; _ },
     Name { name = name'; _ } ->
       eq_text name name'
-  | _ ->
-      Printf.sprintf "eq_switch_label: %s does not equal %s"
-        (print_switch_label label) (print_switch_label label')
-      |> print_endline;
-      false
+  | _ -> false
 
 and eq_switch_case (case: Statement.switch_case) (case': Statement.switch_case) =
+  check "switch_case" eq_switch_case' (print_switch_case 0) case case'
+
+and eq_switch_case' (case: Statement.switch_case) (case': Statement.switch_case) =
   match case, case' with
   | Action { label = label; code = code; _ },
     Action { label = label'; code = code'; _ } ->
@@ -318,21 +300,12 @@ and eq_switch_case (case: Statement.switch_case) (case': Statement.switch_case) 
   | FallThrough { label = label; _ },
     FallThrough { label = label'; _ } ->
       eq_switch_label label label'
-  | _ ->
-      Printf.sprintf "eq_switch_case: %s does not equal %s"
-        (print_switch_case 0 case) (print_switch_case 0 case')
-      |> print_endline;
-      false
-
-and eq_block (block: Block.t) (block': Block.t) =
-  let res = eq_list eq_stmt block.statements block'.statements in
-  if not res then
-    Printf.sprintf "eq_block: %s does not equal %s"
-      (print_block 0 block) (print_block 0 block')
-    |> print_endline;
-  res
+  | _ -> false
 
 and eq_stmt (stmt: Statement.t) (stmt': Statement.t) =
+  check "stmt" eq_stmt' (print_stmt 0) stmt stmt'
+
+and eq_stmt' (stmt: Statement.t) (stmt': Statement.t) =
   match stmt, stmt' with
   | MethodCall { func = func; type_args = type_args; args = args; _ },
     MethodCall { func = func'; type_args = type_args'; args = args'; _ } ->
@@ -367,43 +340,39 @@ and eq_stmt (stmt: Statement.t) (stmt': Statement.t) =
   | DeclarationStatement { decl = decl; _ },
     DeclarationStatement { decl = decl'; _ } ->
       eq_decl decl decl'
-  | _ ->
-      Printf.sprintf "eq_stmt: %s does not equal %s"
-        (print_stmt 0 stmt) (print_stmt 0 stmt')
-      |> print_endline;
-      false
+  | _ -> false
 
 
 (* Matches *)
 
 and eq_match (mtch: Match.t) (mtch': Match.t) =
+  check "match" eq_match' print_match mtch mtch'
+
+and eq_match' (mtch: Match.t) (mtch': Match.t) =
   match mtch, mtch' with
   | Default _, Default _ -> true
   | DontCare _, DontCare _ -> true
   | Expression { expr = expr; _ },
     Expression { expr = expr'; _ } ->
       eq_expr expr expr'
-  | _ ->
-      Printf.sprintf "eq_match: %s does not equal %s"
-        (print_match mtch) (print_match mtch')
-      |> print_endline;
-      false
+  | _ -> false
 
 
 (* Parsers *)
 
 and eq_parser_case (case: Parser.case) (case': Parser.case) =
-  let res =
-    eq_list eq_match case.matches case'.matches &&
-    eq_text case.next case'.next
-  in
-  if not res then
-    Printf.sprintf "eq_parser_case: %s does not equal %s"
-      (print_parser_case 0 case) (print_parser_case 0 case')
-    |> print_endline;
-  res
+  check "parser_case" eq_parser_case' (print_parser_case 0) case case'
+
+and eq_parser_case' (case: Parser.case) (case': Parser.case) =
+  eq_list eq_match case.matches case'.matches &&
+  eq_text case.next case'.next
 
 and eq_parser_transition (transition: Parser.transition) (transition': Parser.transition) =
+  check
+    "parser_transition" eq_parser_transition'
+    (print_parser_transition 0) transition transition'
+
+and eq_parser_transition' (transition: Parser.transition) (transition': Parser.transition) =
   match transition, transition' with
   | Direct { next = next; _ },
     Direct { next = next'; _ } ->
@@ -412,61 +381,48 @@ and eq_parser_transition (transition: Parser.transition) (transition': Parser.tr
     Select { exprs = exprs'; cases = cases'; _ } ->
       eq_list eq_expr exprs exprs' &&
       eq_list eq_parser_case cases cases'
-  | _ ->
-      Printf.sprintf "eq_parser_transition: %s does not equal %s"
-        (print_parser_transition 0 transition) (print_parser_transition 0 transition')
-      |> print_endline;
-      false
+  | _ -> false
 
 and eq_parser_state (state: Parser.state) (state': Parser.state) =
-  let res =
-    eq_text state.name state'.name &&
-    eq_list eq_stmt state.statements state'.statements &&
-    eq_parser_transition state.transition state'.transition
-  in
-  if not res then
-    Printf.sprintf "eq_parser_state: %s does not equal %s"
-      (print_parser_state 0 state) (print_parser_state 0 state')
-    |> print_endline;
-  res
+  check
+    "parser_state" eq_parser_state'
+    (print_parser_state 0) state state'
+
+and eq_parser_state' (state: Parser.state) (state': Parser.state) =
+  eq_text state.name state'.name &&
+  eq_list eq_stmt state.statements state'.statements &&
+  eq_parser_transition state.transition state'.transition
 
 
 (* Tables *)
 
 and eq_table_action_ref (action_ref: Table.action_ref) (action_ref': Table.action_ref) =
-  let res =
-    eq_name action_ref.name action_ref'.name &&
-    eq_list eq_arg action_ref.args action_ref'.args
-  in
-  if not res then
-    Printf.sprintf "eq_table_action_ref: %s does not equal %s"
-      (print_table_action_ref action_ref) (print_table_action_ref action_ref')
-    |> print_endline;
-  res
+  check "table_action_ref" eq_table_action_ref' print_table_action_ref action_ref action_ref'
+
+and eq_table_action_ref' (action_ref: Table.action_ref) (action_ref': Table.action_ref) =
+  eq_name action_ref.name action_ref'.name &&
+  eq_list eq_arg action_ref.args action_ref'.args
 
 and eq_table_key (key: Table.key) (key': Table.key) =
-  let res =
-    eq_expr key.key key'.key &&
-    eq_text key.match_kind key'.match_kind
-  in
-  if not res then
-    Printf.sprintf "eq_table_key: %s does not equal %s"
-      (print_table_key key) (print_table_key key')
-    |> print_endline;
-  res
+  check "table_key" eq_table_key' print_table_key key key'
+
+and eq_table_key' (key: Table.key) (key': Table.key) =
+  eq_expr key.key key'.key &&
+  eq_text key.match_kind key'.match_kind
 
 and eq_table_entry (entry: Table.entry) (entry': Table.entry) =
-  let res =
-    eq_list eq_match entry.matches entry'.matches &&
-    eq_table_action_ref entry.action entry'.action
-  in
-  if not res then
-    Printf.sprintf "eq_table_entry: %s does not equal %s"
-      (print_table_entry entry) (print_table_entry entry')
-    |> print_endline;
-  res
+  check "table_entry" eq_table_entry' print_table_entry entry entry'
+
+and eq_table_entry' (entry: Table.entry) (entry': Table.entry) =
+  eq_list eq_match entry.matches entry'.matches &&
+  eq_table_action_ref entry.action entry'.action
 
 and eq_table_property (property: Table.property) (property': Table.property) =
+  check
+    "table_property" eq_table_property'
+    (print_table_property 0) property property'
+
+and eq_table_property' (property: Table.property) (property': Table.property) =
   match property, property' with
   | Key { keys = keys; _ },
     Key { keys = keys'; _ } ->
@@ -486,17 +442,18 @@ and eq_table_property (property: Table.property) (property': Table.property) =
       const = const' &&
       eq_text name name' &&
       eq_expr value value'
-  | _ ->
-      Printf.sprintf "eq_table_property: %s does not equal %s"
-        (print_table_property 0 property) (print_table_property 0 property')
-      |> print_endline;
-      false
+  | _ -> false
 
 
 (* Methods *)
 
-and eq_method_prototype (methodproto: MethodPrototype.t) (methodproto': MethodPrototype.t) =
-  match methodproto, methodproto' with
+and eq_method_prototype (proto: MethodPrototype.t) (proto': MethodPrototype.t) =
+  check
+    "methodproto" eq_method_prototype'
+    (print_method_prototype 0) proto proto'
+
+and eq_method_prototype' (proto: MethodPrototype.t) (proto': MethodPrototype.t) =
+  match proto, proto' with
   | Constructor { name = name; params = params; _ },
     Constructor { name = name'; params = params'; _ } ->
       eq_text name name' &&
@@ -517,27 +474,24 @@ and eq_method_prototype (methodproto: MethodPrototype.t) (methodproto': MethodPr
       eq_text name name' &&
       eq_list eq_text type_params type_params' &&
       eq_list eq_param params params'
-  | _ ->
-      Printf.sprintf "eq_method_prototype: %s does not equal %s"
-        (print_method_prototype 0 methodproto) (print_method_prototype 0 methodproto')
-      |> print_endline;
-      false
+  | _ -> false
 
 
 (* Declarations *)
 
 and eq_decl_field (field: Declaration.field) (field': Declaration.field) =
-  let res =
-    eq_type field.typ field'.typ &&
-    eq_text field.name field'.name
-  in
-  if not res then
-    Printf.sprintf "eq_decl_field: %s does not equal %s"
-      (print_decl_field 0 field) (print_decl_field 0 field')
-    |> print_endline;
-  res
+  check
+    "decl_field" eq_decl_field'
+    (print_decl_field 0) field field'
+
+and eq_decl_field' (field: Declaration.field) (field': Declaration.field) =
+  eq_type field.typ field'.typ &&
+  eq_text field.name field'.name
 
 and eq_decl (decl: Declaration.t) (decl': Declaration.t) =
+  check "decl" eq_decl' (print_decl 0) decl decl'
+
+and eq_decl' (decl: Declaration.t) (decl': Declaration.t) =
   match decl, decl' with
   | Constant { typ = typ; name = name; value = value; _ },
     Constant { typ = typ'; name = name'; value = value'; _ } ->
@@ -667,11 +621,7 @@ and eq_decl (decl: Declaration.t) (decl': Declaration.t) =
       eq_text name name' &&
       eq_list eq_text type_params type_params' &&
       eq_list eq_param params params'
-  | _ ->
-      Printf.sprintf "eq_decl: %s does not equal %s"
-        (print_decl 0 decl) (print_decl 0 decl')
-      |> print_endline;
-      false
+  | _ -> false
 
 
 (* Program *)
