@@ -15,83 +15,34 @@
 
 open Utils.Alternative
 
-module rec KeyValue : sig
+(* Basics *)
+
+module Direction : sig
   type t = Info.t t'
   and 'a t' =
-    { tags: 'a;
-      key: Text.t;
-      value: Expression.t }
+    | In of { tags: 'a }
+    | Out of { tags: 'a }
+    | InOut of { tags: 'a }
+
+  val tags: 'a t' -> 'a
 end = struct
   type t = Info.t t'
   and 'a t' =
-    { tags: 'a;
-      key: Text.t;
-      value: Expression.t }
+    | In of { tags: 'a }
+    | Out of { tags: 'a }
+    | InOut of { tags: 'a }
+
+  let tags (t: 'a t'): 'a =
+    match t with
+    | In { tags }
+    | Out { tags }
+    | InOut { tags } -> tags
 end
 
-and Annotation : sig
-  type body = Info.t body'
-  and 'a body' =
-    | Empty of
-        { tags: 'a }
-    | Unparsed of
-        { tags: 'a;
-          str: Text.t list }
-    | Expression of
-        { tags: 'a;
-          exprs: Expression.t list }
-    | KeyValue of
-        { tags: 'a;
-          key_values: KeyValue.t list }
 
-  type t = Info.t t'
-  and 'a t' =
-    { tags: 'a;
-      name: Text.t;
-      body: body }
-end = struct
-  type body = Info.t body'
-  and 'a body' =
-    | Empty of
-        { tags: 'a }
-    | Unparsed of
-        { tags: 'a;
-          str: Text.t list }
-    | Expression of
-        { tags: 'a;
-          exprs: Expression.t list }
-    | KeyValue of
-        { tags: 'a;
-          key_values: KeyValue.t list }
+(* Operators *)
 
-  type t = Info.t t'
-  and 'a t' =
-    { tags: 'a;
-      name: Text.t;
-      body: body }
-end
-
-and Parameter : sig
-  type t = Info.t t'
-  and 'a t' =
-    { tags: 'a;
-      annotations: Annotation.t list;
-      direction: Direction.t option;
-      typ: Type.t;
-      variable: Text.t;
-      opt_value: Expression.t option }
-end = struct
-  type t = Info.t t'
-  and 'a t' =
-    { tags: 'a;
-      annotations: Annotation.t list;
-      direction: Direction.t option;
-      typ: Type.t;
-      variable: Text.t;
-      opt_value: Expression.t option }
-end
-
-and Op : sig
+module Op : sig
   type un = Info.t un'
   and 'a un' =
     | Not of { tags: 'a }
@@ -187,7 +138,10 @@ end = struct
     | Or { tags } -> tags
 end
 
-and Type : sig
+
+(* Types *)
+
+module rec Type : sig
   type t = Info.t t'
   and 'a t' =
     | Bool of { tags: 'a }
@@ -271,51 +225,8 @@ end = struct
     | DontCare { tags } -> tags
 end
 
-and MethodPrototype : sig
-  type t = Info.t t'
-  and 'a t' =
-    | Constructor of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          params: Parameter.t list }
-    | AbstractMethod of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          return: Type.t;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list }
-    | Method of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          return: Type.t;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list }
-end = struct
-  type t = Info.t t'
-  and 'a t' =
-    | Constructor of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          name: Text.t;
-          params: Parameter.t list }
-    | AbstractMethod of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          return: Type.t;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list }
-    | Method of
-        { tags: 'a;
-          annotations: Annotation.t list;
-          return: Type.t;
-          name: Text.t;
-          type_params: Text.t list;
-          params: Parameter.t list }
-end
+
+(* Arguments and Parameters *)
 
 and Argument : sig
   type t = Info.t t'
@@ -341,26 +252,86 @@ end = struct
     | Missing of { tags: 'a }
 end
 
-and Direction : sig
+and Parameter : sig
   type t = Info.t t'
   and 'a t' =
-    | In of { tags: 'a }
-    | Out of { tags: 'a }
-    | InOut of { tags: 'a }
-
-  val tags: 'a t' -> 'a
+    { tags: 'a;
+      annotations: Annotation.t list;
+      direction: Direction.t option;
+      typ: Type.t;
+      variable: Text.t;
+      opt_value: Expression.t option }
 end = struct
   type t = Info.t t'
   and 'a t' =
-    | In of { tags: 'a }
-    | Out of { tags: 'a }
-    | InOut of { tags: 'a }
+    { tags: 'a;
+      annotations: Annotation.t list;
+      direction: Direction.t option;
+      typ: Type.t;
+      variable: Text.t;
+      opt_value: Expression.t option }
+end
 
-  let tags (t: 'a t'): 'a =
-    match t with
-    | In { tags }
-    | Out { tags }
-    | InOut { tags } -> tags
+
+(* Annotations *)
+
+and Annotation : sig
+  type body = Info.t body'
+  and 'a body' =
+    | Empty of
+        { tags: 'a }
+    | Unparsed of
+        { tags: 'a;
+          str: Text.t list }
+    | Expression of
+        { tags: 'a;
+          exprs: Expression.t list }
+    | KeyValue of
+        { tags: 'a;
+          key_values: KeyValue.t list }
+
+  type t = Info.t t'
+  and 'a t' =
+    { tags: 'a;
+      name: Text.t;
+      body: body }
+end = struct
+  type body = Info.t body'
+  and 'a body' =
+    | Empty of
+        { tags: 'a }
+    | Unparsed of
+        { tags: 'a;
+          str: Text.t list }
+    | Expression of
+        { tags: 'a;
+          exprs: Expression.t list }
+    | KeyValue of
+        { tags: 'a;
+          key_values: KeyValue.t list }
+
+  type t = Info.t t'
+  and 'a t' =
+    { tags: 'a;
+      name: Text.t;
+      body: body }
+end
+
+
+(* Expressions *)
+
+and KeyValue : sig
+  type t = Info.t t'
+  and 'a t' =
+    { tags: 'a;
+      key: Text.t;
+      value: Expression.t }
+end = struct
+  type t = Info.t t'
+  and 'a t' =
+    { tags: 'a;
+      key: Text.t;
+      value: Expression.t }
 end
 
 and Expression : sig
@@ -562,6 +533,250 @@ end = struct
       | Range { lo; hi; _ } -> Range { tags; lo; hi }
 end
 
+
+(* Statements *)
+
+and Statement : sig
+  type switch_label = Info.t switch_label'
+  and 'a switch_label' =
+    | Default of { tags: 'a }
+    | Name of
+        { tags: 'a;
+          name: Text.t }
+
+  val tags_label: 'a switch_label' -> 'a 
+
+  type switch_case = Info.t switch_case'
+  and 'a switch_case' =
+    | Action of
+        { tags: 'a;
+          label: switch_label;
+          code: Block.t }
+    | FallThrough of
+        { tags: 'a;
+          label: switch_label }
+
+  type t = Info.t t'
+  and 'a t' =
+    | MethodCall of
+        { tags: 'a;
+          func: Expression.t;
+          type_args: Type.t list;
+          args: Argument.t list }
+    | Assignment of
+        { tags: 'a;
+          lhs: Expression.t;
+          rhs: Expression.t }
+    | DirectApplication of
+        { tags: 'a;
+          typ: Type.t;
+          args: Argument.t list }
+    | Conditional of
+        { tags: 'a;
+          cond: Expression.t;
+          tru: t;
+          fls: t option }
+    | BlockStatement of
+        { tags: 'a;
+          block: Block.t }
+    | Exit of { tags: 'a }
+    | EmptyStatement of { tags: 'a }
+    | Return of
+        { tags: 'a;
+          expr: Expression.t option }
+    | Switch of
+        { tags: 'a;
+          expr: Expression.t;
+          cases: switch_case list }
+    | DeclarationStatement of
+        { tags: 'a;
+          decl: Declaration.t }
+
+  val tags : 'a t' -> 'a
+end = struct
+  type switch_label = Info.t switch_label'
+  and 'a switch_label' =
+    | Default of { tags: 'a }
+    | Name of
+        { tags: 'a;
+          name: Text.t }
+
+  let tags_label (t: 'a switch_label'): 'a =
+    match t with
+    | Default { tags }
+    | Name { tags; _ } -> tags
+
+  type switch_case = Info.t switch_case'
+  and 'a switch_case' =
+    | Action of
+        { tags: 'a;
+          label: switch_label;
+          code: Block.t }
+    | FallThrough of
+        { tags: 'a;
+          label: switch_label }
+
+  type t = Info.t t'
+  and 'a t' =
+    | MethodCall of
+        { tags: 'a;
+          func: Expression.t;
+          type_args: Type.t list;
+          args: Argument.t list }
+    | Assignment of
+        { tags: 'a;
+          lhs: Expression.t;
+          rhs: Expression.t }
+    | DirectApplication of
+        { tags: 'a;
+          typ: Type.t;
+          args: Argument.t list }
+    | Conditional of
+        { tags: 'a;
+          cond: Expression.t;
+          tru: t;
+          fls: t option }
+    | BlockStatement of
+        { tags: 'a;
+          block: Block.t }
+    | Exit of { tags: 'a }
+    | EmptyStatement of { tags: 'a }
+    | Return of
+        { tags: 'a;
+          expr: Expression.t option }
+    | Switch of
+        { tags: 'a;
+          expr: Expression.t;
+          cases: switch_case list }
+    | DeclarationStatement of
+        { tags: 'a;
+          decl: Declaration.t }
+
+  let tags (t: 'a t'): 'a =
+    match t with
+    | MethodCall { tags; _ }
+    | Assignment { tags; _ }
+    | DirectApplication { tags; _ }
+    | Conditional { tags; _ }
+    | BlockStatement { tags; _ }
+    | Exit {tags}
+    | EmptyStatement {tags}
+    | Return { tags; _ }
+    | Switch { tags; _ }
+    | DeclarationStatement { tags; _ } -> tags
+end
+
+and Block : sig
+  type t = Info.t t'
+  and 'a t' =
+    { tags: 'a;
+      annotations: Annotation.t list;
+      statements: Statement.t list }
+end = struct
+  type t = Info.t t'
+  and 'a t' =
+    { tags: 'a;
+      annotations: Annotation.t list;
+      statements: Statement.t list }
+end
+
+
+(* Matches *)
+
+and Match : sig
+  type t = Info.t t'
+  and 'a t' =
+    | Default of { tags: 'a }
+    | DontCare of { tags: 'a }
+    | Expression of
+        { tags: 'a;
+          expr: Expression.t }
+
+  val tags: 'a t' -> 'a
+end = struct
+  type t = Info.t t'
+  and 'a t' =
+    | Default of { tags: 'a }
+    | DontCare of { tags: 'a }
+    | Expression of
+        { tags: 'a;
+          expr: Expression.t }
+
+  let tags (t: 'a t'): 'a =
+    match t with
+    | Default { tags }
+    | DontCare { tags }
+    | Expression { tags; _ } -> tags
+end
+
+
+(* Parsers *)
+
+and Parser : sig
+  type case = Info.t case'
+  and 'a case' =
+    { tags: 'a;
+      matches: Match.t list;
+      next: Text.t }
+
+  type transition = Info.t transition'
+  and 'a transition' =
+    | Direct of
+        { tags: 'a;
+          next: Text.t }
+    | Select of
+        { tags: 'a;
+          exprs: Expression.t list;
+          cases: case list }
+
+  val transition_tags: 'a transition' -> 'a
+  val update_transition_tags: 'a transition' -> 'a -> 'a transition'
+
+  type state = Info.t state'
+  and 'a state' =
+    { tags: 'a;
+      annotations: Annotation.t list;
+      name: Text.t;
+      statements: Statement.t list;
+      transition: transition }
+end = struct
+  type case = Info.t case'
+  and 'a case' =
+    { tags: 'a;
+      matches: Match.t list;
+      next: Text.t }
+
+  type transition = Info.t transition'
+  and 'a transition' =
+    | Direct of
+        { tags: 'a;
+          next: Text.t }
+    | Select of
+        { tags: 'a;
+          exprs: Expression.t list;
+          cases: case list }
+
+  let transition_tags (t: 'a transition'): 'a =
+    match t with
+    | Direct { tags; _ }
+    | Select { tags; _ } -> tags
+
+  let update_transition_tags (t: 'a transition') (tags: 'a): 'a transition' =
+    match t with
+    | Direct { next; _ } -> Direct { tags; next }
+    | Select { exprs; cases; _ } -> Select { tags; exprs; cases }
+
+  type state = Info.t state'
+  and 'a state' =
+    { tags: 'a;
+      annotations: Annotation.t list;
+      name: Text.t;
+      statements: Statement.t list;
+      transition: transition }
+end
+
+(* Tables *)
+
 and Table : sig
   type action_ref = Info.t action_ref'
   and 'a action_ref' =
@@ -650,94 +865,57 @@ end = struct
           value: Expression.t }
 end
 
-and Match : sig
+
+(* Methods *)
+
+and MethodPrototype : sig
   type t = Info.t t'
   and 'a t' =
-    | Default of { tags: 'a }
-    | DontCare of { tags: 'a }
-    | Expression of
+    | Constructor of
         { tags: 'a;
-          expr: Expression.t }
-
-  val tags: 'a t' -> 'a
+          annotations: Annotation.t list;
+          name: Text.t;
+          params: Parameter.t list }
+    | AbstractMethod of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          return: Type.t;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list }
+    | Method of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          return: Type.t;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list }
 end = struct
   type t = Info.t t'
   and 'a t' =
-    | Default of { tags: 'a }
-    | DontCare of { tags: 'a }
-    | Expression of
+    | Constructor of
         { tags: 'a;
-          expr: Expression.t }
-
-  let tags (t: 'a t'): 'a =
-    match t with
-    | Default { tags }
-    | DontCare { tags }
-    | Expression { tags; _ } -> tags
+          annotations: Annotation.t list;
+          name: Text.t;
+          params: Parameter.t list }
+    | AbstractMethod of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          return: Type.t;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list }
+    | Method of
+        { tags: 'a;
+          annotations: Annotation.t list;
+          return: Type.t;
+          name: Text.t;
+          type_params: Text.t list;
+          params: Parameter.t list }
 end
 
-and Parser : sig
-  type case = Info.t case'
-  and 'a case' =
-    { tags: 'a;
-      matches: Match.t list;
-      next: Text.t }
 
-  type transition = Info.t transition'
-  and 'a transition' =
-    | Direct of
-        { tags: 'a;
-          next: Text.t }
-    | Select of
-        { tags: 'a;
-          exprs: Expression.t list;
-          cases: case list }
-
-  val transition_tags: 'a transition' -> 'a
-  val update_transition_tags: 'a transition' -> 'a -> 'a transition'
-
-  type state = Info.t state'
-  and 'a state' =
-    { tags: 'a;
-      annotations: Annotation.t list;
-      name: Text.t;
-      statements: Statement.t list;
-      transition: transition }
-end = struct
-  type case = Info.t case'
-  and 'a case' =
-    { tags: 'a;
-      matches: Match.t list;
-      next: Text.t }
-
-  type transition = Info.t transition'
-  and 'a transition' =
-    | Direct of
-        { tags: 'a;
-          next: Text.t }
-    | Select of
-        { tags: 'a;
-          exprs: Expression.t list;
-          cases: case list }
-
-  let transition_tags (t: 'a transition'): 'a =
-    match t with
-    | Direct { tags; _ }
-    | Select { tags; _ } -> tags
-
-  let update_transition_tags (t: 'a transition') (tags: 'a): 'a transition' =
-    match t with
-    | Direct { next; _ } -> Direct { tags; next }
-    | Select { exprs; cases; _ } -> Select { tags; exprs; cases }
-
-  type state = Info.t state'
-  and 'a state' =
-    { tags: 'a;
-      annotations: Annotation.t list;
-      name: Text.t;
-      statements: Statement.t list;
-      transition: transition }
-end
+(* Declarations *)
 
 and Declaration : sig
   type field = Info.t field'
@@ -1111,148 +1289,7 @@ end = struct
     | PackageType { type_params; _ } -> List.length type_params > 0
 end
 
-and Statement : sig
-  type switch_label = Info.t switch_label'
-  and 'a switch_label' =
-    | Default of { tags: 'a }
-    | Name of
-        { tags: 'a;
-          name: Text.t }
 
-  val tags_label: 'a switch_label' -> 'a 
-
-  type switch_case = Info.t switch_case'
-  and 'a switch_case' =
-    | Action of
-        { tags: 'a;
-          label: switch_label;
-          code: Block.t }
-    | FallThrough of
-        { tags: 'a;
-          label: switch_label }
-
-  type t = Info.t t'
-  and 'a t' =
-    | MethodCall of
-        { tags: 'a;
-          func: Expression.t;
-          type_args: Type.t list;
-          args: Argument.t list }
-    | Assignment of
-        { tags: 'a;
-          lhs: Expression.t;
-          rhs: Expression.t }
-    | DirectApplication of
-        { tags: 'a;
-          typ: Type.t;
-          args: Argument.t list }
-    | Conditional of
-        { tags: 'a;
-          cond: Expression.t;
-          tru: t;
-          fls: t option }
-    | BlockStatement of
-        { tags: 'a;
-          block: Block.t }
-    | Exit of { tags: 'a }
-    | EmptyStatement of { tags: 'a }
-    | Return of
-        { tags: 'a;
-          expr: Expression.t option }
-    | Switch of
-        { tags: 'a;
-          expr: Expression.t;
-          cases: switch_case list }
-    | DeclarationStatement of
-        { tags: 'a;
-          decl: Declaration.t }
-
-  val tags : 'a t' -> 'a
-end = struct
-  type switch_label = Info.t switch_label'
-  and 'a switch_label' =
-    | Default of { tags: 'a }
-    | Name of
-        { tags: 'a;
-          name: Text.t }
-
-  let tags_label (t: 'a switch_label'): 'a =
-    match t with
-    | Default { tags }
-    | Name { tags; _ } -> tags
-
-  type switch_case = Info.t switch_case'
-  and 'a switch_case' =
-    | Action of
-        { tags: 'a;
-          label: switch_label;
-          code: Block.t }
-    | FallThrough of
-        { tags: 'a;
-          label: switch_label }
-
-  type t = Info.t t'
-  and 'a t' =
-    | MethodCall of
-        { tags: 'a;
-          func: Expression.t;
-          type_args: Type.t list;
-          args: Argument.t list }
-    | Assignment of
-        { tags: 'a;
-          lhs: Expression.t;
-          rhs: Expression.t }
-    | DirectApplication of
-        { tags: 'a;
-          typ: Type.t;
-          args: Argument.t list }
-    | Conditional of
-        { tags: 'a;
-          cond: Expression.t;
-          tru: t;
-          fls: t option }
-    | BlockStatement of
-        { tags: 'a;
-          block: Block.t }
-    | Exit of { tags: 'a }
-    | EmptyStatement of { tags: 'a }
-    | Return of
-        { tags: 'a;
-          expr: Expression.t option }
-    | Switch of
-        { tags: 'a;
-          expr: Expression.t;
-          cases: switch_case list }
-    | DeclarationStatement of
-        { tags: 'a;
-          decl: Declaration.t }
-
-  let tags (t: 'a t'): 'a =
-    match t with
-    | MethodCall { tags; _ }
-    | Assignment { tags; _ }
-    | DirectApplication { tags; _ }
-    | Conditional { tags; _ }
-    | BlockStatement { tags; _ }
-    | Exit {tags}
-    | EmptyStatement {tags}
-    | Return { tags; _ }
-    | Switch { tags; _ }
-    | DeclarationStatement { tags; _ } -> tags
-end
-
-and Block : sig
-  type t = Info.t t'
-  and 'a t' =
-    { tags: 'a;
-      annotations: Annotation.t list;
-      statements: Statement.t list }
-end = struct
-  type t = Info.t t'
-  and 'a t' =
-    { tags: 'a;
-      annotations: Annotation.t list;
-      statements: Statement.t list }
-end
+(* Program *)
 
 type program = Program of Declaration.t list
