@@ -3,7 +3,7 @@ open Utils
 
 (* Utils *)
 
-let print_ident (ident: int) = String.make (ident * 2) ' '
+let print_indent (indent: int) = String.make (indent * 2) ' '
 
 
 (* Basics *)
@@ -258,32 +258,32 @@ and print_expr (expr: Expression.t) =
 
 (* Statements *)
 
+and print_block ?(prefix = "") (indent: int) (block: Block.t) =
+  let sstmts =
+    List.map (print_stmt (indent + 1)) block.statements
+    |> String.concat ""
+  in
+  Printf.sprintf "%s{\n%s%s}\n"
+    prefix sstmts (print_indent indent)
+
 and print_switch_label (label: Statement.switch_label) =
   match label with
   | Default _ -> "default"
   | Name { name; _ } -> print_text name
 
-and print_switch_case (ident: int) (case: Statement.switch_case) =
+and print_switch_case (indent: int) (case: Statement.switch_case) =
   match case with
   | Action { label; code; _ } ->
       let slabel = print_switch_label label in
-      let scode = print_block ident code in
+      let scode = print_block indent code in
       Printf.sprintf "%s%s: %s"
-        (print_ident ident) slabel scode
+        (print_indent indent) slabel scode
   | FallThrough { label; _ } ->
       let slabel = print_switch_label label in
       Printf.sprintf "%s%s:\n"
-        (print_ident ident) slabel
+        (print_indent indent) slabel
 
-and print_block ?(prefix = "") (ident: int) (block: Block.t) =
-  let sstmts =
-    List.map (print_stmt (ident + 1)) block.statements
-    |> String.concat ""
-  in
-  Printf.sprintf "%s{\n%s%s}\n"
-    prefix sstmts (print_ident ident)
-
-and print_stmt (ident: int) (stmt: Statement.t) =
+and print_stmt (indent: int) (stmt: Statement.t) =
   match stmt with
   | MethodCall { func; type_args; args; _ } ->
       let sfunc = print_expr func in
@@ -297,12 +297,12 @@ and print_stmt (ident: int) (stmt: Statement.t) =
       in
       let sargs = List.map print_arg args |> String.concat ", " in
       Printf.sprintf "%s%s%s(%s);\n"
-        (print_ident ident) sfunc stype_args sargs
+        (print_indent indent) sfunc stype_args sargs
   | Assignment { lhs; rhs; _ } ->
       let slhs = print_expr lhs in
       let srhs = print_expr rhs in
       Printf.sprintf "%s%s = %s;\n"
-        (print_ident ident) slhs srhs
+        (print_indent indent) slhs srhs
   | DirectApplication { typ; args; _ } ->
       let styp = print_type typ in
       let sargs =
@@ -310,28 +310,28 @@ and print_stmt (ident: int) (stmt: Statement.t) =
         |> String.concat ", "
       in
       Printf.sprintf "%s%s.apply(%s);\n"
-        (print_ident ident) styp sargs
+        (print_indent indent) styp sargs
   | Conditional { cond; tru; fls; _ } ->
       let scond = print_expr cond in
-      let stru = print_stmt ident tru in
+      let stru = print_stmt indent tru in
       let sfls = 
         match fls with
         | None -> ""
         | Some fls ->
-            let sfls = print_stmt ident fls in
+            let sfls = print_stmt indent fls in
             Printf.sprintf "%selse\n%s"
-              (print_ident ident) sfls
+              (print_indent indent) sfls
       in
       Printf.sprintf "%sif (%s)\n%s%s\n"
-        (print_ident ident) scond stru sfls
+        (print_indent indent) scond stru sfls
   | BlockStatement { block; _ } ->
-      let sblock = print_block ident block in
+      let sblock = print_block indent block in
       Printf.sprintf "%s%s"
-        (print_ident ident) sblock 
+        (print_indent indent) sblock 
   | Exit _ ->
-      Printf.sprintf "%sexit;\n" (print_ident ident) 
+      Printf.sprintf "%sexit;\n" (print_indent indent) 
   | EmptyStatement _ ->
-      Printf.sprintf "%s;\n" (print_ident ident)
+      Printf.sprintf "%s;\n" (print_indent indent)
   | Return { expr; _ } ->
       let sexpr =
         match expr with
@@ -341,19 +341,19 @@ and print_stmt (ident: int) (stmt: Statement.t) =
             Printf.sprintf " %s" sexpr
       in
       Printf.sprintf "%sreturn%s;\n"
-        (print_ident ident) sexpr
+        (print_indent indent) sexpr
   | Switch { expr; cases; _ } ->
       let sexpr = print_expr expr in
       let scases =
-        List.map (print_switch_case (ident + 1)) cases
+        List.map (print_switch_case (indent + 1)) cases
         |> String.concat ""
       in
       Printf.sprintf "%sswitch (%s) {\n%s%s}\n"
-        (print_ident ident) sexpr scases (print_ident ident)
+        (print_indent indent) sexpr scases (print_indent indent)
   | DeclarationStatement { decl; _ } ->
-      let sdecl = print_decl ident decl in
+      let sdecl = print_decl indent decl in
       Printf.sprintf "%s%s"
-        (print_ident ident) sdecl
+        (print_indent indent) sdecl
 
 
 (* Matches *)
@@ -364,9 +364,10 @@ and print_match (mtch: Match.t) =
   | DontCare _ -> "_"
   | Expression { expr; _ } -> print_expr expr
 
+
 (* Parsers *)
 
-and print_parser_case (ident: int) (case: Parser.case) =
+and print_parser_case (indent: int) (case: Parser.case) =
   let smatches =
     List.map print_match case.matches
     |> String.concat ", "
@@ -377,35 +378,35 @@ and print_parser_case (ident: int) (case: Parser.case) =
   in
   let snext = print_text case.next in
   Printf.sprintf "%s%s: %s;\n"
-    (print_ident ident) smatches snext
+    (print_indent indent) smatches snext
 
-and print_parser_transition (ident: int) (transition: Parser.transition) =
+and print_parser_transition (indent: int) (transition: Parser.transition) =
   match transition with
   | Direct { next; _ } ->
       let snext = print_text next in
       Printf.sprintf "%stransition %s;\n"
-        (print_ident ident) snext
+        (print_indent indent) snext
   | Select { exprs; cases; _ } ->
       let sexprs =
         List.map print_expr exprs
         |> String.concat ", "
       in
       let scases =
-        List.map (print_parser_case (ident + 1)) cases
+        List.map (print_parser_case (indent + 1)) cases
         |> String.concat ""
       in
       Printf.sprintf "%stransition select (%s) {\n%s%s}\n"
-        (print_ident ident) sexprs scases (print_ident ident)
+        (print_indent indent) sexprs scases (print_indent indent)
 
-and print_parser_state (ident: int) (state: Parser.state) =
+and print_parser_state (indent: int) (state: Parser.state) =
   let sname = print_text state.name in
   let sstmts =
-    List.map (print_stmt (ident + 1)) state.statements
+    List.map (print_stmt (indent + 1)) state.statements
     |> String.concat "\n"
   in
-  let strans = print_parser_transition (ident + 1) state.transition in
+  let strans = print_parser_transition (indent + 1) state.transition in
   Printf.sprintf "%sstate %s {\n%s%s%s}\n"
-    (print_ident ident) sname sstmts strans (print_ident ident)
+    (print_indent indent) sname sstmts strans (print_indent indent)
 
 (* Tables *)
 
@@ -432,63 +433,63 @@ and print_table_entry (entry: Table.entry) =
   let saction = print_table_action_ref entry.action in
   Printf.sprintf "%s: %s" smatches saction
 
-and print_table_property (ident: int) (property: Table.property) =
+and print_table_property (indent: int) (property: Table.property) =
   match property with
   | Key { keys; _ } ->
       let skeys =
         List.map print_table_key keys
-        |> String.concat (Printf.sprintf "%s" (print_ident (ident + 1)))
+        |> String.concat (Printf.sprintf "%s" (print_indent (indent + 1)))
       in
       let skeys =
-        if List.length keys > 0 then (print_ident (ident + 1)) ^ skeys
+        if List.length keys > 0 then (print_indent (indent + 1)) ^ skeys
         else skeys
       in
       Printf.sprintf "%skey = {\n%s%s}\n"
-        (print_ident ident) skeys (print_ident ident)
+        (print_indent indent) skeys (print_indent indent)
   | Actions { actions; _ } ->
       let sactions =
         List.map print_table_action_ref actions
-        |> String.concat (Printf.sprintf "%s" (print_ident (ident + 1)))
+        |> String.concat (Printf.sprintf "%s" (print_indent (indent + 1)))
       in
       let sactions =
-        if List.length actions > 0 then (print_ident (ident + 1)) ^ sactions
+        if List.length actions > 0 then (print_indent (indent + 1)) ^ sactions
         else sactions
       in
       Printf.sprintf "%sactions = {\n%s%s}\n"
-        (print_ident ident) sactions (print_ident ident)
+        (print_indent indent) sactions (print_indent indent)
   | Entries { entries; _ } ->
       let sentries =
         List.map print_table_entry entries
-        |> String.concat (Printf.sprintf "%s" (print_ident (ident + 1)))
+        |> String.concat (Printf.sprintf "%s" (print_indent (indent + 1)))
       in
       let sentries =
-        if List.length entries > 0 then (print_ident (ident + 1)) ^ sentries
+        if List.length entries > 0 then (print_indent (indent + 1)) ^ sentries
         else sentries
       in
       Printf.sprintf "%sconst entries = {\n%s%s}\n"
-        (print_ident ident) sentries (print_ident ident)
+        (print_indent indent) sentries (print_indent indent)
   | DefaultAction { action; const; _ } ->
       let saction = print_table_action_ref action in
       let sconst = if const then "const " else "" in
       Printf.sprintf "%s%sdefault_action = %s"
-        (print_ident ident) sconst saction
+        (print_indent indent) sconst saction
   | Custom { const; name; value; _ } ->
       let sconst = if const then "const " else "" in
       let sname = print_text name in
       let svalue = print_expr value in
       Printf.sprintf "%s%s%s = %s;\n"
-        (print_ident ident) sconst sname svalue
+        (print_indent indent) sconst sname svalue
 
 
 (* Methods *)
 
-and print_method_prototype (ident: int) (methodproto: MethodPrototype.t) =
-  match methodproto with
+and print_method_prototype (indent: int) (proto: MethodPrototype.t) =
+  match proto with
   | Constructor { name; params; _ } ->
       let sname = print_text name in
       let sparams = List.map print_param params |> String.concat ", " in
       Printf.sprintf "%s%s(%s);\n"
-        (print_ident ident) sname sparams
+        (print_indent indent) sname sparams
   | AbstractMethod { return; name; type_params; params; _ } ->
       let sreturn = print_type return in
       let sname = print_text name in
@@ -499,7 +500,7 @@ and print_method_prototype (ident: int) (methodproto: MethodPrototype.t) =
       in
       let sparams = List.map print_param params |> String.concat ", " in
       Printf.sprintf "%sabstract %s %s%s(%s);\n"
-        (print_ident ident) sreturn sname stype_params sparams
+        (print_indent indent) sreturn sname stype_params sparams
   | Method { return; name; type_params; params; _ } ->
       let sreturn = print_type return in
       let sname = print_text name in
@@ -510,25 +511,25 @@ and print_method_prototype (ident: int) (methodproto: MethodPrototype.t) =
       in
       let sparams = List.map print_param params |> String.concat ", " in
       Printf.sprintf "%s%s %s%s(%s);\n"
-        (print_ident ident) sreturn sname stype_params sparams
+        (print_indent indent) sreturn sname stype_params sparams
 
 
 (* Declarations *)
 
-and print_decl_field (ident: int) (field: Declaration.field) =
+and print_decl_field (indent: int) (field: Declaration.field) =
   let styp = print_type field.typ in
   let sname = print_text field.name in
   Printf.sprintf "%s%s %s;\n"
-    (print_ident ident) styp sname
+    (print_indent indent) styp sname
 
-and print_decl (ident: int) (decl: Declaration.t) =
+and print_decl (indent: int) (decl: Declaration.t) =
   match decl with
   | Constant { typ; name; value; _ } ->
       let styp = print_type typ in
       let sname = print_text name in
       let svalue = print_expr value in
       Printf.sprintf "%sconst %s %s = %s;\n"
-        (print_ident ident) styp sname svalue
+        (print_indent indent) styp sname svalue
   | Instantiation { typ; args; name; init; _ } ->
       let styp = print_type typ in
       let sargs = List.map print_arg args |> String.concat ", " in
@@ -537,11 +538,11 @@ and print_decl (ident: int) (decl: Declaration.t) =
         match init with
         | None -> ""
         | Some init ->
-            let sinit = print_block (ident + 1) init in
+            let sinit = print_block (indent + 1) init in
             Printf.sprintf " = %s" sinit
       in
       Printf.sprintf "%s%s(%s) %s%s;\n"
-        (print_ident ident) styp sargs sname sinit
+        (print_indent indent) styp sargs sname sinit
   | Parser { name; type_params; params; constructor_params; locals; states; _ } ->
       let sname = print_text name in
       let stype_params = List.map print_text type_params |> String.concat ", " in
@@ -555,11 +556,11 @@ and print_decl (ident: int) (decl: Declaration.t) =
         if List.length constructor_params > 0 then "(" ^ scons_params ^ ")"
         else ""
       in
-      let slocals = List.map (print_decl (ident + 1)) locals |> String.concat "" in
-      let sstates = List.map (print_parser_state (ident + 1)) states |> String.concat "" in
+      let slocals = List.map (print_decl (indent + 1)) locals |> String.concat "" in
+      let sstates = List.map (print_parser_state (indent + 1)) states |> String.concat "" in
       Printf.sprintf "%sparser %s%s(%s)%s {\n%s%s%s}\n"
-        (print_ident ident) sname stype_params sparams scons_params
-        slocals sstates (print_ident ident)
+        (print_indent indent) sname stype_params sparams scons_params
+        slocals sstates (print_indent indent)
   | Control { name; type_params; params; constructor_params; locals; apply; _ } ->
       let sname = print_text name in
       let stype_params = List.map print_text type_params |> String.concat ", " in
@@ -573,14 +574,14 @@ and print_decl (ident: int) (decl: Declaration.t) =
         if List.length constructor_params > 0 then "(" ^ scons_params ^ ")"
         else ""
       in
-      let slocals = List.map (print_decl (ident + 1)) locals |> String.concat "" in
+      let slocals = List.map (print_decl (indent + 1)) locals |> String.concat "" in
       let sapply =
-        let sprefix = print_ident (ident + 1) ^ "apply " in
-        print_block ~prefix:sprefix (ident + 1) apply
+        let sprefix = print_indent (indent + 1) ^ "apply " in
+        print_block ~prefix:sprefix (indent + 1) apply
       in
       Printf.sprintf "%scontrol %s%s(%s)%s {\n%s%s%s}\n"
-        (print_ident ident) sname stype_params sparams scons_params
-        slocals sapply (print_ident ident)
+        (print_indent indent) sname stype_params sparams scons_params
+        slocals sapply (print_indent indent)
   | Function { return; name; type_params; params; body; _ } ->
       let sreturn = print_type return in
       let sname = print_text name in
@@ -590,9 +591,9 @@ and print_decl (ident: int) (decl: Declaration.t) =
         else ""
       in
       let sparams = List.map print_param params |> String.concat ", " in
-      let sbody = print_block (ident + 1) body in
+      let sbody = print_block (indent + 1) body in
       Printf.sprintf "%s%s %s%s(%s) %s\n"
-        (print_ident ident) sreturn sname stype_params sparams sbody
+        (print_indent indent) sreturn sname stype_params sparams sbody
   | ExternFunction { return; name; type_params; params; _ } ->
       let sreturn = print_type return in
       let sname = print_text name in
@@ -603,7 +604,7 @@ and print_decl (ident: int) (decl: Declaration.t) =
       in
       let sparams = List.map print_param params |> String.concat ", " in
       Printf.sprintf "%sextern %s %s%s(%s);\n"
-        (print_ident ident) sreturn sname stype_params sparams
+        (print_indent indent) sreturn sname stype_params sparams
   | Variable { typ; name; init; _ } ->
       let styp = print_type typ in
       let sname = print_text name in
@@ -615,73 +616,73 @@ and print_decl (ident: int) (decl: Declaration.t) =
             Printf.sprintf " = %s" sinit
       in
       Printf.sprintf "%s%s %s%s;\n"
-        (print_ident ident) styp sname sinit
+        (print_indent indent) styp sname sinit
   | ValueSet { typ; size; name; _ } ->
       let styp = print_type typ in
       let ssize = print_expr size in
       let sname = print_text name in
       Printf.sprintf "%svalue_set<%s>(%s) %s;\n"
-        (print_ident ident) styp ssize sname
+        (print_indent indent) styp ssize sname
   | Action { name; params; body; _ } ->
       let sname = print_text name in
       let sparams = List.map print_param params |> String.concat ", " in
-      let sbody = print_block ident body in
+      let sbody = print_block indent body in
       Printf.sprintf "%saction %s(%s) %s"
-        (print_ident ident) sname sparams sbody
+        (print_indent indent) sname sparams sbody
   | Table { name; properties; _ } ->
       let sname = print_text name in
-      let sproperties = List.map (print_table_property (ident + 1)) properties |> String.concat "" in
+      let sproperties = List.map (print_table_property (indent + 1)) properties |> String.concat "" in
       Printf.sprintf "%stable %s {\n%s%s}\n"
-        (print_ident ident) sname sproperties (print_ident ident)
+        (print_indent indent) sname sproperties (print_indent indent)
   | Header { name; fields; _ } ->
       let sname = print_text name in
-      let sfields = List.map (print_decl_field (ident + 1)) fields |> String.concat "" in
+      let sfields = List.map (print_decl_field (indent + 1)) fields |> String.concat "" in
       Printf.sprintf "%sheader %s {\n%s%s}\n"
-        (print_ident ident) sname sfields (print_ident ident)
+        (print_indent indent) sname sfields (print_indent indent)
   | HeaderUnion { name; fields; _ } ->
       let sname = print_text name in
-      let sfields = List.map (print_decl_field (ident + 1)) fields |> String.concat "" in
+      let sfields = List.map (print_decl_field (indent + 1)) fields |> String.concat "" in
       Printf.sprintf "%sheader_union %s {\n%s%s}\n"
-        (print_ident ident) sname sfields (print_ident ident)
+        (print_indent indent) sname sfields (print_indent indent)
   | Struct { name; fields; _ } ->
       let sname = print_text name in
-      let sfields = List.map (print_decl_field (ident + 1)) fields |> String.concat "" in
+      let sfields = List.map (print_decl_field (indent + 1)) fields |> String.concat "" in
       Printf.sprintf "%sstruct %s {\n%s%s}\n"
-        (print_ident ident) sname sfields (print_ident ident)
+        (print_indent indent) sname sfields (print_indent indent)
   | Error { members; _ } ->
       let smembers = 
         List.map print_text members
-        |> String.concat (Printf.sprintf ",\n%s" (print_ident (ident + 1)))
+        |> String.concat (Printf.sprintf ",\n%s" (print_indent (indent + 1)))
       in
       let smembers =
-        if List.length members > 0 then (print_ident (ident + 1)) ^ smembers
+        if List.length members > 0 then (print_indent (indent + 1)) ^ smembers
         else smembers
       in
       Printf.sprintf "%serror {\n%s\n%s}\n"
-        (print_ident ident) smembers (print_ident ident)
+        (print_indent indent) smembers (print_indent indent)
   | MatchKind { members; _ } ->
       let smembers = 
         List.map print_text members
-        |> String.concat (Printf.sprintf ",\n%s" (print_ident (ident + 1)))
+        |> String.concat (Printf.sprintf ",\n%s" (print_indent (indent + 1)))
       in
       let smembers =
-        if List.length members > 0 then (print_ident (ident + 1)) ^ smembers
+        if List.length members > 0 then (print_indent (indent + 1)) ^ smembers
         else smembers
       in
       Printf.sprintf "%smatch_kind {\n%s\n%s}\n"
-        (print_ident ident) smembers (print_ident ident)
+        (print_indent indent) smembers (print_indent indent)
   | Enum { name; members; _ } ->
       let sname = print_text name in
       let smembers = 
         List.map print_text members
-        |> String.concat (Printf.sprintf ",\n%s" (print_ident (ident + 1)))
+        |> String.concat (Printf.sprintf ",\n%s" (print_indent (indent + 1)))
       in
       let smembers =
-        if List.length members > 0 then (print_ident (ident + 1)) ^ smembers
+        if List.length members > 0 then (print_indent (indent + 1)) ^ smembers
         else smembers
       in
       Printf.sprintf "%senum %s {\n%s\n%s}\n"
-        (print_ident ident) sname smembers (print_ident ident)
+        (print_indent indent) sname smembers (print_indent indent)
   | SerializableEnum { typ; name; members; _ } ->
       let styp = print_type typ in
       let sname = print_text name in
@@ -692,14 +693,14 @@ and print_decl (ident: int) (decl: Declaration.t) =
             let sexpr = print_expr expr in
             Printf.sprintf "%s = %s" stext sexpr)
           members
-        |> String.concat (Printf.sprintf ",\n%s" (print_ident (ident + 1)))
+        |> String.concat (Printf.sprintf ",\n%s" (print_indent (indent + 1)))
       in
       let smembers =
-        if List.length members > 0 then (print_ident (ident + 1)) ^ smembers
+        if List.length members > 0 then (print_indent (indent + 1)) ^ smembers
         else smembers
       in
       Printf.sprintf "%senum %s %s {\n%s\n%s}\n"
-        (print_ident ident) styp sname smembers (print_ident ident)
+        (print_indent indent) styp sname smembers (print_indent indent)
   | ExternObject { name; type_params; methods; _ } ->
       let sname = print_text name in
       let stype_params = List.map print_text type_params |> String.concat ", " in
@@ -707,27 +708,27 @@ and print_decl (ident: int) (decl: Declaration.t) =
         if List.length type_params > 0 then "<" ^ stype_params ^ ">"
         else ""
       in
-      let smethods = List.map (print_method_prototype (ident + 1)) methods |> String.concat "" in
+      let smethods = List.map (print_method_prototype (indent + 1)) methods |> String.concat "" in
       Printf.sprintf "%sextern %s%s {\n%s%s}\n"
-        (print_ident ident) sname stype_params smethods (print_ident ident)
+        (print_indent indent) sname stype_params smethods (print_indent indent)
   | TypeDef { name; typ_or_decl; _ } ->
       let sname = print_text name in
       let styp_or_decl =
         match typ_or_decl with
         | Alternative.Left typ -> print_type typ
-        | Alternative.Right decl -> print_decl (ident + 1) decl
+        | Alternative.Right decl -> print_decl (indent + 1) decl
       in
       Printf.sprintf "%stypedef %s %s;\n"
-        (print_ident ident) styp_or_decl sname
+        (print_indent indent) styp_or_decl sname
   | NewType { name; typ_or_decl; _ } ->
       let sname = print_text name in
       let styp_or_decl =
         match typ_or_decl with
         | Alternative.Left typ -> print_type typ
-        | Alternative.Right decl -> print_decl (ident + 1) decl
+        | Alternative.Right decl -> print_decl (indent + 1) decl
       in
       Printf.sprintf "%stype %s %s;\n"
-        (print_ident ident) styp_or_decl sname
+        (print_indent indent) styp_or_decl sname
   | ControlType { name; type_params; params; _ } ->
       let sname = print_text name in
       let stype_params = List.map print_text type_params |> String.concat ", " in
@@ -737,7 +738,7 @@ and print_decl (ident: int) (decl: Declaration.t) =
       in
       let sparams = List.map print_param params |> String.concat ", " in
       Printf.sprintf "%scontrol %s%s(%s);\n"
-        (print_ident ident) sname stype_params sparams
+        (print_indent indent) sname stype_params sparams
   | ParserType { name; type_params; params; _ } ->
       let sname = print_text name in
       let stype_params = List.map print_text type_params |> String.concat ", " in
@@ -747,7 +748,7 @@ and print_decl (ident: int) (decl: Declaration.t) =
       in
       let sparams = List.map print_param params |> String.concat ", " in
       Printf.sprintf "%sparser %s%s(%s);\n"
-        (print_ident ident) sname stype_params sparams
+        (print_indent indent) sname stype_params sparams
   | PackageType { name; type_params; params; _ } ->
       let sname = print_text name in
       let stype_params = List.map print_text type_params |> String.concat ", " in
@@ -757,7 +758,7 @@ and print_decl (ident: int) (decl: Declaration.t) =
       in
       let sparams = List.map print_param params |> String.concat ", " in
       Printf.sprintf "%spackage %s%s(%s);\n"
-        (print_ident ident) sname stype_params sparams
+        (print_indent indent) sname stype_params sparams
 
 
 (* Program *)
