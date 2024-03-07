@@ -6,7 +6,16 @@ let () =
   
   let includes = Sys.argv.(1) in
   let filename = Sys.argv.(2) in
-  let program = Frontend.Parse.parse_file includes filename in
-  match program with
-  | Some program -> print_endline (Syntax.Print.print_program program)
-  | None -> print_endline "Error"
+
+  Printf.sprintf "Parsing %s with includes %s" filename includes
+  |> print_endline;
+  let program =
+    match Frontend.Parse.parse_file includes filename with
+    | Some program -> program
+    | None -> failwith "Error while parsing."
+  in
+
+  Printf.sprintf "Instantiating %s" filename
+  |> print_endline;
+  let _ = Instance.Instantiate.instantiate_program program in
+  ()

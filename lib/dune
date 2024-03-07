@@ -2,6 +2,7 @@
   (name p4cherry)
   (modules)
   (libraries
+    (re_export utils)
     (re_export syntax)
     (re_export frontend)
-    (re_export utils)))
+    (re_export instance)))

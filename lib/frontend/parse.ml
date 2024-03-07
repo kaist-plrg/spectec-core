@@ -1,6 +1,6 @@
 open Syntax
 
-let preprocess (includes: string list) (filename: string) =
+let preprocess (includes: string) (filename: string) =
   try
     Some (Preprocessor.preprocess includes filename)
   with _ -> 
@@ -27,10 +27,11 @@ let parse (lexbuf: Lexing.lexbuf) =
 let (let*) = Option.bind
 
 let parse_file (includes: string) (filename: string) =
-  let* file = preprocess [ includes ] filename in
-  let* program = lex filename file in 
-  parse program
+  let* file = preprocess includes filename in
+  let* tokens = lex filename file in 
+  parse tokens 
 
-let parse_string (filename: string) (file: string) =
-  let* program = lex filename file in 
-  parse program
+let parse_string (filename: string) (str: string) =
+  (* assume str is preprocessed *)
+  let* tokens = lex filename str in 
+  parse tokens 
