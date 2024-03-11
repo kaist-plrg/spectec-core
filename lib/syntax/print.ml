@@ -5,6 +5,17 @@ open Utils
 
 let print_indent (indent: int) = String.make (indent * 2) ' '
 
+let print_inline (s: string) =
+  let len = String.length s in
+  let rec replace acc i =
+    if i < len then
+      let c = s.[i] in
+      if c = '\n' then replace (acc ^ " ") (i + 1)
+      else replace (acc ^ String.make 1 c) (i + 1)
+    else acc
+  in
+  replace "" 0
+
 
 (* Basics *)
 
@@ -296,8 +307,13 @@ and print_stmt (indent: int) (stmt: Statement.t) =
         else ""
       in
       let sargs = List.map print_arg args |> String.concat ", " in
-      Printf.sprintf "%s%s%s(%s);\n"
-        (print_indent indent) sfunc stype_args sargs
+      let res =
+        Printf.sprintf "%s%s%s(%s);\n"
+          (print_indent indent) sfunc stype_args sargs
+      in
+      if (List.length args) > 0 then
+        print_endline res;
+      res
   | Assignment { lhs; rhs; _ } ->
       let slhs = print_expr lhs in
       let srhs = print_expr rhs in
