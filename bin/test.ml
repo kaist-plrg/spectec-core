@@ -6,6 +6,7 @@ let (let*) = Option.bind
 let parse_file_fails = ref 0
 let parse_string_fails = ref 0
 let roundtrip_fails = ref 0
+let instantiate_fails = ref 0
 
 let parse_file filename =
   try Frontend.Parse.parse_file arch_dir filename
@@ -34,7 +35,7 @@ let roundtrip filename =
   );
   Some program'
 
-let () =
+let test_parser () =
   let files = Sys.readdir program_dir in
   let total = Array.length files in
   Printf.sprintf "Running parser roundtrip tests on %d files" total
@@ -52,3 +53,42 @@ let () =
   let total = total - !parse_string_fails in
   Printf.sprintf "Roundtrip fails: %d / %d" !roundtrip_fails total
   |> print_endline
+
+let instantiate filename =
+  let* program = parse_file filename in
+  try Instance.Instantiate.instantiate_program program 
+  with | _ ->
+    instantiate_fails := !instantiate_fails + 1;
+    Printf.sprintf "Instantiation fail: %s" filename
+    |> print_endline;
+    None
+
+let test_instantiation () =
+  let files = Sys.readdir program_dir in
+  let total = Array.length files in
+  Printf.sprintf "Running instantiation tests on %d files" total
+  |> print_endline;
+  Array.iter
+    (fun filename ->
+      let filename = Printf.sprintf "%s/%s" program_dir filename in
+      instantiate filename |> ignore)
+    files;
+  Printf.sprintf "Parser fails on file: %d / %d" !parse_file_fails total
+  |> print_endline;
+  let total = total - !parse_file_fails in
+  Printf.sprintf "Instantiation fails: %d / %d" !instantiate_fails total
+  |> print_endline
+
+let rec parse_arguments args =
+  match args with
+  | [] -> None
+  | "-parse" :: _ -> Some "parse"
+  | "-instantiate" :: _ -> Some "instantiate"
+  | _ :: rest -> parse_arguments rest
+
+let () =
+  let args = Array.to_list Sys.argv in
+  match parse_arguments args with
+  | Some "parse" -> test_parser ()
+  | Some "instantiate" -> test_instantiation ()
+  | _ -> print_endline "Usage: [-parse | -instantiate]"

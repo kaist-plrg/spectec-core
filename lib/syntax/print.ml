@@ -307,13 +307,8 @@ and print_stmt (indent: int) (stmt: Statement.t) =
         else ""
       in
       let sargs = List.map print_arg args |> String.concat ", " in
-      let res =
-        Printf.sprintf "%s%s%s(%s);\n"
-          (print_indent indent) sfunc stype_args sargs
-      in
-      if (List.length args) > 0 then
-        print_endline res;
-      res
+      Printf.sprintf "%s%s%s(%s);\n"
+        (print_indent indent) sfunc stype_args sargs
   | Assignment { lhs; rhs; _ } ->
       let slhs = print_expr lhs in
       let srhs = print_expr rhs in
