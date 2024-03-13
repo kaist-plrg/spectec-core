@@ -1,4 +1,6 @@
 (library
   (name instance)
   (libraries syntax)
-  (modules instantiate))
+  (modules
+    instantiate
+    value cclosure object path))

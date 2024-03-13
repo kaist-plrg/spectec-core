@@ -1,167 +1,107 @@
 open Syntax
 open Ast
 
-(* Environment for instantiating a program,
-   holding closures of instantiable declarations *)
+type env = Value.env
+type cenv = Cclosure.cenv
+type store = Object.store
 
-module Path = struct
-  type t = string list
-  let compare = compare
-end
+(* Loading the result of a declaration
+   (other than instantiation) to env or cenv *)
 
-module Map = Map.Make(Path)
-
-module CClosure = struct
-  type t =
-    | CPackage of
-        { params: Parameter.t list; }
-    | CParser of
-        { params: Parameter.t list;
-          constructor_params: Parameter.t list;
-          locals: Declaration.t list;
-          states: Parser.state list; }
-    | CControl of
-        { params: Parameter.t list;
-          constructor_params: Parameter.t list;
-          locals: Declaration.t list;
-          apply: Block.t; }
-    | CExtern
-    | CTable of
-        { properties: Table.property list; }
-    | CValueSet
-    | CFunction
-end
-
-let print_cclosure (cclosure: CClosure.t) =
-  match cclosure with
-  | CClosure.CPackage { params } ->
-      Printf.sprintf "CPackage { params = (%s) }"
-        (String.concat ", " (List.map Print.print_param params))
-  | CClosure.CParser { params; constructor_params; _ } ->
-      Printf.sprintf "CParser { params = (%s); constructor_params = (%s) }"
-        (String.concat ", " (List.map Print.print_param params))
-        (String.concat ", " (List.map Print.print_param constructor_params))
-  | CClosure.CControl { params; constructor_params; _ } ->
-      Printf.sprintf "CControl { params = (%s); constructor_params = (%s) }"
-        (String.concat ", " (List.map Print.print_param params))
-        (String.concat ", " (List.map Print.print_param constructor_params))
-  | CClosure.CExtern -> "CExtern"
-  | CClosure.CTable { properties } ->
-      Print.print_inline
-        (Printf.sprintf "CTable { properties = (%s) }"
-          (String.concat ", " (List.map (Print.print_table_property 0) properties)))
-  | CClosure.CValueSet -> "CValueSet"
-  | CClosure.CFunction -> "CFunction"
-
-type env = CClosure.t Map.t
-
-
-let load
-  (env: env) (decl: Declaration.t): env =
+let rec load
+  (env: env) (cenv: cenv)
+  (decl: Declaration.t): (env * cenv) =
   match decl with
+  (* Loading constructor closures *)
   | PackageType { name; params; _ } ->
       Printf.sprintf "Loading package type %s" name.str |> print_endline;
       let name = name.str in
-      let closure = CClosure.CPackage { params; } in
-      Map.add [ name ] closure env
+      let cclos = Cclosure.Package { params; } in
+      let cenv = Cclosure.insert_cenv [ name ] cclos cenv in
+      (env, cenv)
   | Parser { name; params; constructor_params; locals; states; _ } ->
       Printf.sprintf "Loading parser %s" name.str |> print_endline;
       let name = name.str in
-      let closure =
-        CClosure.CParser { params; constructor_params; locals; states; }
+      let cclos =
+        Cclosure.Parser {
+          params;
+          cparams = constructor_params;
+          locals;
+          states; }
       in
-      Map.add [ name ] closure env
+      let cenv = Cclosure.insert_cenv [ name ] cclos cenv in
+      (env, cenv)
   | Control { name; params; constructor_params; locals; apply; _ } ->
       Printf.sprintf "Loading control %s" name.str |> print_endline;
       let name = name.str in
-      let closure = 
-        CClosure.CControl { params; constructor_params; locals; apply; }
+      let cclos = 
+        Cclosure.Control {
+          params;
+          cparams = constructor_params;
+          locals;
+          apply; }
       in
-      Map.add [ name ] closure env
+      let cenv = Cclosure.insert_cenv [ name ] cclos cenv in
+      (env, cenv)
   | ExternObject { name; _ } ->
       Printf.sprintf "Loading extern object %s" name.str |> print_endline;
       let name = name.str in
-      Map.add [ name ] CClosure.CExtern env
-  | Table { name; properties; _ } ->
-      Printf.sprintf "Loading table %s" name.str |> print_endline;
-      let name = name.str in
-      let closure = CClosure.CTable { properties; } in
-      Map.add [ name ] closure env
-  | ValueSet { name; _ } ->
-      Printf.sprintf "Loading value set %s" name.str |> print_endline;
-      let name = name.str in
-      Map.add [ name ] CClosure.CValueSet env
+      let cclos = Cclosure.Extern in
+      let cenv = Cclosure.insert_cenv [ name ] cclos cenv in
+      (env, cenv)
   | Function { name; _ } ->
       Printf.sprintf "(TODO) Loading function %s" name.str
       |> print_endline;
-      env
+      (env, cenv)
+  (* Loading constants *)
   | Constant { name; value; _ } ->
-      Printf.sprintf "(TODO) Loading constant %s = %s"
-        name.str (Print.print_expr value)
-      |> print_endline;
-      env
-  | _ -> env
+      Printf.sprintf "Loading constant %s" name.str |> print_endline;
+      let value = eval_static_expr env value in
+      let env = Value.insert_env [ name.str ] value env in
+      (env, cenv)
+  | _ -> (env, cenv)
 
-
-(* Instantiation produces a global store *)
-
-(* The stateful types of objects in P4_16 are
-   packages, parsers, controls, externs, tables, and value-sets
-   P4_16 functions are also considered to be in that group,
-   even if they happen to be pure functions of their arguments (Appendix F) *)
-
-module Instance = struct
-  type t =
-    | IPackage 
-    | IParser of
-        { params: Parameter.t list;
-          locals: Declaration.t list;
-          states: Parser.state list; }
-    | IControl of
-        { params: Parameter.t list;
-          locals: Declaration.t list;
-          apply: Block.t; }
-    | IExtern
-    | ITable of
-        { properties: Table.property list; }
-    | IValueSet
-    | IFunction
-end
-
-(* Instances should be distinguishable by their paths,
-   or fully-qualified names, so a store can be a flat map *)
-
-type store = Instance.t Map.t
-
-let print_store (store: store) =
-  Map.iter
-    (fun key value ->
-       Printf.printf "%s -> %s\n" (String.concat "." key)
-         (match value with
-          | Instance.IPackage -> "IPackage"
-          | Instance.IParser _ -> "IParser"
-          | Instance.IControl _ -> "IControl"
-          | Instance.IExtern -> "IExtern"
-          | Instance.ITable _ -> "ITable"
-          | Instance.IValueSet -> "IValueSet"
-          | Instance.IFunction -> "IFunction"))
-    store
 
 
 (* Evaluating instantiation arguments,
-   which may contain nameless instantiation. *)
+   which may contain nameless instantiation *)
 
-let rec eval_arg
-  (env: env) (store: store)
-  (path: string list) (expr: Expression.t): (env * store) =
+and eval_expr
+  (env: env) (cenv: cenv) (store: store)
+  (path: string list) (expr: Expression.t): (Value.t * store) =
   match expr with
   | NamelessInstantiation { typ; args; _ } ->
-      let _, store = instantiate_expr env store path typ args in
-      (env, store)
-  | _ -> (env, store)
+      let _, _, store = instantiate_expr env cenv store path typ args in
+      let value = Value.Ref (path @ [ Print.print_type typ ]) in
+      (value, store)
+  | _ ->
+      let value = eval_static_expr env expr in
+      (value, store)
+
+(* Evaluating compile-time known values *)
+
+and eval_static_expr
+  (_env: env) (expr: Expression.t): Value.t =
+  match expr with
+  | True _ ->
+      let base = Value.Bool true in
+      Value.Base base
+  | False _ ->
+      let base = Value.Bool false in
+      Value.Base base
+  | Int { i; _ } ->
+      let base = Value.Integer i.value in
+      Value.Base base
+  | String { text; _ } ->
+      let base = Value.String text.str in
+      Value.Base base
+  | _ ->
+      Printf.sprintf
+        "(TODO: eval_static_expr) %s" (Print.print_expr expr)
+      |> failwith 
 
 and eval_args
-  (env: env) (store: store)
+  (env: env) (cenv: cenv) (store: store)
   (path: string list)
   (params: Parameter.t list) (args: Argument.t list): (env * store) =
   (* TODO: assume there is no default argument *)
@@ -182,23 +122,21 @@ and eval_args
          | _ -> failwith "Instantiation argument must not be missing.")
       args
   in
-  let store =
-    List.fold_left2
-      (fun store param arg ->
-        let _, store = eval_arg env store (path @ [ param ]) arg in
-        store)
-      store params args 
-  in
-  (env, store)
+  List.fold_left2
+    (fun (env', store) param arg ->
+      let value, store = eval_expr env cenv store (path @ [ param ]) arg in
+      let env' = Value.insert_env [ param ] value env' in
+      (env', store))
+    (env, store) params args 
 
 (* Instantiation of a constructor closure *)
 
-and instantiate
-  (env: env) (store: store)
+and instantiate_cclosure
+  (env: env) (cenv: cenv) (store: store)
   (path: string list)
-  (cclosure: CClosure.t) (args: Argument.t list): (env * store) =
+  (cclosure: Cclosure.t) (args: Argument.t list): (env * cenv * store) =
   Printf.sprintf "Instantiating %s with args %s @ %s"
-    (print_cclosure cclosure) (String.concat ", " (List.map Print.print_arg args))
+    (Cclosure.print cclosure) (String.concat ", " (List.map Print.print_arg args))
     (String.concat "." path)
   |> print_endline;
   match cclosure with
@@ -207,131 +145,128 @@ and instantiate
   (* Every time a parser is instantiated, it causes:
      every extern and parser instantiation that is in the parser source code
      at its top level is instantiated 1 time (p4guide) *)
-  | CClosure.CParser { params; constructor_params; locals; states; _ } ->
-      let env, store = eval_args env store path constructor_params args in
-      let _, store =
+  | Cclosure.Parser { params; cparams; locals; states } ->
+      let _env, store = eval_args env cenv store path cparams args in
+      let _, _, store =
         List.fold_left
-          (fun (env, store) local -> instantiate_decl env store path local)
-          (env, store) locals
+          (fun (env, cenv, store) local ->
+            instantiate_decl env cenv store path local)
+          (env, cenv, store) locals
       in
       let stmts =
         List.concat_map
           (fun (state: Parser.state) -> state.statements)
           states
       in
-      let _, store =
+      let _, _, store =
         List.fold_left
-          (fun (env, store) stmt -> instantiate_stmt env store path stmt)
-          (env, store) stmts
+          (fun (env, cenv, store) stmt ->
+            instantiate_stmt env cenv store path stmt)
+          (env, cenv, store) stmts
       in
-      let iparser = Instance.IParser { params; locals; states; } in
-      let store = Map.add path iparser store in
-      (env, store)
+      let obj =
+        Object.Parser { scope = env; params; locals; states; }
+      in
+      let store = Object.insert_store path obj store in
+      (env, cenv, store)
   (* Every time a control is instantiated, it causes:
      1 instantiation of each table defined within it
      every extern and control instantiation that is in the control source code
      at its top level is instantiated 1 time (p4guide) *)
-  | CClosure.CControl { params; constructor_params; locals; apply; _ } ->
-      let env, store = eval_args env store path constructor_params args in
-      let _, store =
+  | Cclosure.Control { params; cparams; locals; apply; _ } ->
+      let _env, store = eval_args env cenv store path cparams args in
+      let _, _, store =
         List.fold_left
-          (fun (env, store) local -> instantiate_decl env store path local)
-          (env, store) locals
+          (fun (env, cenv, store) local ->
+            instantiate_decl env cenv store path local)
+          (env, cenv, store) locals
       in
       let stmts = apply.statements in
-      let _, store =
+      let _, _, store =
         List.fold_left
-         (fun (env, store) stmt -> instantiate_stmt env store path stmt)
-         (env, store) stmts
+         (fun (env, cenv, store) stmt ->
+           instantiate_stmt env cenv store path stmt)
+         (env, cenv, store) stmts
       in
-      let icontrol = Instance.IControl { params; locals; apply; } in
-      let store = Map.add path icontrol store in
-      (env, store)
-  (* Others do not have its body,
-     so we only need to evaluate the arguments *)
-  | CClosure.CPackage { params } ->
-      let _, store = eval_args env store path params args in
-      let store = Map.add path Instance.IPackage store in
-      (env, store)
-  | CClosure.CExtern ->
-      let store = Map.add path Instance.IExtern store in
-      (env, store)
-  (* There is no syntax for specifying parameters that are tables
-     Tables are only intended to be used from within the control
-     where they are defined (Appendix F) *)
-  | CClosure.CTable { properties } ->
-      let itable = Instance.ITable { properties; } in
-      let store = Map.add path itable store in
-      (env, store)
-  (* There is no syntax for specifying parameters that are value-sets 
-     (Appendix F) *)
-  | CClosure.CValueSet ->
-      let store = Map.add path Instance.IValueSet store in
-      (env, store)
-  | CClosure.CFunction ->
-      failwith "(TODO) Instantiating a function is not supported."
+      let obj = Object.Control { scope = env; params; locals; apply; } in
+      let store = Object.insert_store path obj store in
+      (env, cenv, store)
+  (* Others do not involve recursive instantiation other than the args *)
+  | Cclosure.Package { params } ->
+      let env, store = eval_args env cenv store path params args in
+      let obj = Object.Package { scope = env } in
+      let store = Object.insert_store path obj store in
+      (env, cenv, store)
+  | Cclosure.Extern ->
+      let obj = Object.Extern in
+      let store = Object.insert_store path obj store in
+      (env, cenv, store)
 
 and instantiate_expr
-  (env: env) (store: store)
-  (path: string list) (typ: Type.t) (args: Argument.t list): (env * store) =
+  (env: env) (cenv: cenv) (store: store)
+  (path: string list) (typ: Type.t) (args: Argument.t list): (env * cenv * store) =
     let typ = Print.print_type typ in
-    let cclosure = Map.find [ typ ] env in
-    instantiate env store path cclosure args
+    let cclosure = Cclosure.find_cenv [ typ ] cenv in
+    instantiate_cclosure env cenv store path cclosure args
 
 and instantiate_stmt
-  (env: env) (store: store)
-  (path: string list) (stmt: Statement.t): (env * store) =
+  (env: env) (cenv: cenv) (store: store)
+  (path: string list) (stmt: Statement.t): (env * cenv * store) =
     match stmt with
     | BlockStatement { block; _ } ->
         let stmts = block.statements in
         List.fold_left
-          (fun (env, store) stmt -> instantiate_stmt env store path stmt)
-          (env, store) stmts
+          (fun (env, cenv, store) stmt -> instantiate_stmt env cenv store path stmt)
+          (env, cenv, store) stmts
     | DirectApplication { typ; args; _ } ->
         let typ = Print.print_type typ in
-        let cclosure = Map.find [ typ ] env in
-        instantiate env store (path @ [ typ ]) cclosure args
+        let cclosure = Cclosure.find_cenv [ typ ] cenv in
+        instantiate_cclosure env cenv store (path @ [ typ ]) cclosure args
     | _ ->
-        (env, store)
+        (env, cenv, store)
 
 and instantiate_decl
-  (env: env) (store: store)
-  (path: string list) (decl: Declaration.t): (env * store) =
+  (env: env) (cenv: cenv) (store: store)
+  (path: string list) (decl: Declaration.t): (env * cenv * store) =
   match decl with
+  (* Explicit instantiation *)
   | Instantiation { typ; args; name; _ } ->
       let name = name.str in
       let typ = Print.print_type typ in
-      let cclosure = Map.find [ typ ] env in
-      instantiate env store (path @ [ name ]) cclosure args
+      let cclosure = Cclosure.find_cenv [ typ ] cenv in
+      instantiate_cclosure env cenv store (path @ [ name ]) cclosure args
   (* Each table evaluates to a table instance (18.2) *)
   (* There is no syntax for specifying parameters that are tables
      Tables are only intended to be used from within the control
      where they are defined (Appendix F) *)
-  | Table { name; _ } ->
-      let env = load env decl in
+  | Table { name; properties; _ } ->
       let name = name.str in
-      let cclosure = Map.find [ name ] env in
-      instantiate env store (path @ [ name ]) cclosure []
+      let obj = Object.Table { scope = env; properties; } in
+      let store' = Object.insert_store (path @ [ name ]) obj store in
+      (env, cenv, store')
   (* (TODO) is it correct to instantiate a value set at its declaration? *)
   (* There is no syntax for specifying parameters that are value-sets 
      (Appendix F) *)
   | ValueSet { name; _ } ->
-      let env = load env decl in
       let name = name.str in
-      let cclosure = Map.find [ name ] env in
-      instantiate env store (path @ [ name ]) cclosure []
+      let obj = Object.ValueSet in
+      let store' = Object.insert_store (path @ [ name ]) obj store in
+      (env, cenv, store')
+  (* Load declarations to either env or cenv *)
   | _ ->
-      (load env decl, store)
+      let env, cenv = load env cenv decl in
+      (env, cenv, store)
 
-let instantiate_program (program: program): store =
+let instantiate_program (program: program): Object.store =
   let Program decls = program in
-  let env = Map.empty in
-  let store = Map.empty in
-  let _, store =
+  let env = Value.empty_env in
+  let cenv = Cclosure.empty_cenv in
+  let store = Object.empty_store in
+  let _, _, store =
     List.fold_left
-      (fun (env, store) decl -> instantiate_decl env store [] decl)
-      (env, store) decls
+      (fun (env, cenv, store) decl -> instantiate_decl env cenv store [] decl)
+      (env, cenv, store) decls
   in
-  print_endline "Instantiation done.";
-  print_store store;
+  print_endline "\nInstantiation done.";
+  Object.print_store store |> print_endline;
   store
