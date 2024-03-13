@@ -1,8 +1,6 @@
 open Syntax
 open Ast
 
-type path = Path.Path.t
-
 (* Constructor closures *)
 
 type t =

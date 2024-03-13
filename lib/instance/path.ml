@@ -1,9 +1,8 @@
 type t = string list
-type key = t
 
-module Path = struct
-  type t = key 
-  let compare = compare
-end
-
-module PMap = Map.Make(Path)
+module PMap = Map.Make(
+  struct
+    type t = string list
+    let compare = compare
+  end
+)

@@ -72,7 +72,7 @@ and eval_expr
   match expr with
   | NamelessInstantiation { typ; args; _ } ->
       let _, _, store = instantiate_expr env cenv store path typ args in
-      let value = Value.Ref (path @ [ Print.print_type typ ]) in
+      let value = Value.Ref path in
       (value, store)
   | _ ->
       let value = eval_static_expr env expr in
@@ -81,7 +81,7 @@ and eval_expr
 (* Evaluating compile-time known values *)
 
 and eval_static_expr
-  (_env: env) (expr: Expression.t): Value.t =
+  (env: env) (expr: Expression.t): Value.t =
   match expr with
   | True _ ->
       let base = Value.Bool true in
@@ -95,6 +95,9 @@ and eval_static_expr
   | String { text; _ } ->
       let base = Value.String text.str in
       Value.Base base
+  | Name { name = BareName text; _ } ->
+      let text = text.str in
+      Value.find_env [ text ] env
   | _ ->
       Printf.sprintf
         "(TODO: eval_static_expr) %s" (Print.print_expr expr)
@@ -146,8 +149,8 @@ and instantiate_cclosure
      every extern and parser instantiation that is in the parser source code
      at its top level is instantiated 1 time (p4guide) *)
   | Cclosure.Parser { params; cparams; locals; states } ->
-      let _env, store = eval_args env cenv store path cparams args in
-      let _, _, store =
+      let env, store = eval_args env cenv store path cparams args in
+      let env, _, store =
         List.fold_left
           (fun (env, cenv, store) local ->
             instantiate_decl env cenv store path local)
@@ -158,7 +161,7 @@ and instantiate_cclosure
           (fun (state: Parser.state) -> state.statements)
           states
       in
-      let _, _, store =
+      let env, _, store =
         List.fold_left
           (fun (env, cenv, store) stmt ->
             instantiate_stmt env cenv store path stmt)
@@ -174,21 +177,23 @@ and instantiate_cclosure
      every extern and control instantiation that is in the control source code
      at its top level is instantiated 1 time (p4guide) *)
   | Cclosure.Control { params; cparams; locals; apply; _ } ->
-      let _env, store = eval_args env cenv store path cparams args in
-      let _, _, store =
+      let env, store = eval_args env cenv store path cparams args in
+      let env, _, store =
         List.fold_left
           (fun (env, cenv, store) local ->
             instantiate_decl env cenv store path local)
           (env, cenv, store) locals
       in
       let stmts = apply.statements in
-      let _, _, store =
+      let env, _, store =
         List.fold_left
          (fun (env, cenv, store) stmt ->
            instantiate_stmt env cenv store path stmt)
          (env, cenv, store) stmts
       in
-      let obj = Object.Control { scope = env; params; locals; apply; } in
+      let obj =
+        Object.Control { scope = env; params; locals; apply; }
+      in
       let store = Object.insert_store path obj store in
       (env, cenv, store)
   (* Others do not involve recursive instantiation other than the args *)
@@ -234,7 +239,12 @@ and instantiate_decl
       let name = name.str in
       let typ = Print.print_type typ in
       let cclosure = Cclosure.find_cenv [ typ ] cenv in
-      instantiate_cclosure env cenv store (path @ [ name ]) cclosure args
+      let env, cenv, store =
+        instantiate_cclosure env cenv store (path @ [ name ]) cclosure args
+      in
+      let value = Value.Ref (path @ [ name ]) in
+      let env = Value.insert_env [ name ] value env in
+      (env, cenv, store)
   (* Each table evaluates to a table instance (18.2) *)
   (* There is no syntax for specifying parameters that are tables
      Tables are only intended to be used from within the control
@@ -242,16 +252,20 @@ and instantiate_decl
   | Table { name; properties; _ } ->
       let name = name.str in
       let obj = Object.Table { scope = env; properties; } in
-      let store' = Object.insert_store (path @ [ name ]) obj store in
-      (env, cenv, store')
+      let store = Object.insert_store (path @ [ name ]) obj store in
+      let value = Value.Ref (path @ [ name ]) in
+      let env = Value.insert_env [ name ] value env in
+      (env, cenv, store)
   (* (TODO) is it correct to instantiate a value set at its declaration? *)
   (* There is no syntax for specifying parameters that are value-sets 
      (Appendix F) *)
   | ValueSet { name; _ } ->
       let name = name.str in
       let obj = Object.ValueSet in
-      let store' = Object.insert_store (path @ [ name ]) obj store in
-      (env, cenv, store')
+      let store = Object.insert_store (path @ [ name ]) obj store in
+      let value = Value.Ref (path @ [ name ]) in
+      let env = Value.insert_env [ name ] value env in
+      (env, cenv, store)
   (* Load declarations to either env or cenv *)
   | _ ->
       let env, cenv = load env cenv decl in

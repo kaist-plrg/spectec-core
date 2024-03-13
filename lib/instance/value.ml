@@ -7,7 +7,8 @@ type base =
 
 type t =
   | Base of base
-  | Ref of Path.Path.t
+  | Ref of Path.t
+
 
 (* Environment *)
 
@@ -18,6 +19,11 @@ let empty_env = Path.PMap.empty
 let insert_env
   (path: Path.t) (value: t) (env: env) =
   Path.PMap.add path value env
+
+let find_env
+  (path: Path.t) (env: env) =
+  Path.PMap.find path env
+
 
 (* Utils *)
 
