@@ -894,7 +894,7 @@ baseType:
         Expression.Int
           { tags = info;
             i = { tags = info;
-                  value = 1;
+                  value = Bigint.of_int 1;
                   width_signed = None; } }
       in
       Type.BitType { tags = info; expr = width } }

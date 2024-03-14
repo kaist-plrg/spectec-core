@@ -22,11 +22,11 @@ let print_inline (s: string) =
 let print_text (text: Text.t) = text.str
 
 let print_number (number: Number.t) =
-  let svalue = string_of_int number.value in
+  let svalue = Bigint.to_string number.value in
   match number.width_signed with
   | None -> svalue
   | Some (width, signed) ->
-      let swidth = string_of_int width in
+      let swidth = Bigint.to_string width in
       let ssigned = if signed then "s" else "w" in
       Printf.sprintf "%s%s%s" swidth ssigned svalue
 

@@ -1,4 +1,4 @@
 (library
   (name runtime)
-  (libraries syntax)
+  (libraries syntax bignum)
   (modules value object env store))

@@ -16,7 +16,7 @@
 type t = Info.t t'
 and 'a t' =
   { tags: 'a;
-    value: int;
-    width_signed: (int * bool) option }
+    value: Bigint.t;
+    width_signed: (Bigint.t * bool) option }
 
 let tags (t: 'a t'): 'a = t.tags

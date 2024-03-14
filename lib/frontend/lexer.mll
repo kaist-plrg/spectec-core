@@ -85,21 +85,21 @@ let strip_prefix s =
   String.sub s 2 (length - 2)
 
 let parse_int n info =
-  let value = int_of_string (sanitize n) in
+  let value = Bigint.of_string (sanitize n) in
   Number.{ tags = info; value; width_signed = None }
 
 let parse_width_int s n info =
   let l_s = String.length s in
   let width = String.sub s 0 (l_s - 1) in
   let sign = String.sub s (l_s - 1) 1 in
-  let value = int_of_string (sanitize n) in
+  let value = Bigint.of_string (sanitize n) in
   let width_signed = match sign with
       "s" ->
       if (int_of_string width < 2)
       then raise (Error "signed integers must have width at least 2")
-      else Some (int_of_string width, true)
+      else Some (Bigint.of_string width, true)
     | "w" ->
-      Some (int_of_string width, false)
+      Some (Bigint.of_string width, false)
     | _ -> 
       raise (Error "Illegal integer constant")
   in

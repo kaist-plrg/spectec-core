@@ -10,4 +10,5 @@
   (synopsis "P4Cherry: A to-be interpreter of the P4 Programming Language")
   (maintainers "99jaehyunlee@gmail.com")
   (depends
+    bignum
     (core (and (>= "v0.15.0") (< "v0.16.0")))))
