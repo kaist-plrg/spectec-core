@@ -105,6 +105,11 @@ and eval_static_expr
   | Name { name = BareName text; _ } ->
       let text = text.str in
       Env.find [ text ] env
+  | BitStringAccess { bits; lo; hi; _ } ->
+      let vbits = eval_static_expr env bits in
+      let vlo = eval_static_expr env lo in
+      let vhi = eval_static_expr env hi in
+      Numerics.eval_bitstring_access vbits vlo vhi
   | UnaryOp { op; arg; _ } ->
       let varg = eval_static_expr env arg in
       Numerics.eval_unop op varg

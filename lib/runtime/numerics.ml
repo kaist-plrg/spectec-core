@@ -27,6 +27,17 @@ let extract_base (value: Value.t): Value.base =
         (Value.print_value value)
       |> failwith
 
+let extract_bigint (bvalue: Value.base): Bigint.t =
+  match bvalue with
+  | AInt value -> value
+  | Int { value; _ } -> value
+  | Bit { value; _ } -> value
+  | _ ->
+      Printf.sprintf
+        "Not a bigint value: %s"
+        (Value.print_base_value bvalue)
+      |> failwith
+
 
 (* Bit manipulation *)
 
@@ -55,7 +66,7 @@ let rec of_two_complement (n: Bigint.t) (w: Bigint.t): Bigint.t =
   then of_two_complement Bigint.(n + w') w
   else n
 
-let bitstring_slice (n: Bigint.t) (m: Bigint.t) (l: Bigint.t): Bigint.t =
+let slice_bitstring (n: Bigint.t) (m: Bigint.t) (l: Bigint.t): Bigint.t =
   let slice_width = Bigint.(m + one - l) in
   if Bigint.(l < zero)
   then raise (Invalid_argument "bitslice x[y:z] must have y > z > 0");
@@ -66,7 +77,7 @@ let bitstring_slice (n: Bigint.t) (m: Bigint.t) (l: Bigint.t): Bigint.t =
 let rec bitwise_neg (n: Bigint.t) (w: Bigint.t): Bigint.t =
   if Bigint.(w > zero) then
     let w' = power_of_two Bigint.(w - one) in
-    let g = bitstring_slice n Bigint.(w - one) Bigint.(w - one) in
+    let g = slice_bitstring n Bigint.(w - one) Bigint.(w - one) in
     if Bigint.(g = zero)
     then bitwise_neg Bigint.(n + w') Bigint.(w - one)
     else bitwise_neg Bigint.(n - w') Bigint.(w - one)
@@ -652,3 +663,22 @@ let eval_binop
     eval_binop' op (extract_base lvalue) (extract_base rvalue)
   in
   Value.Base bvalue
+
+
+(* Bitslice evaluation *)
+
+let eval_bitstring_access'
+  (value: Bigint.t) (lvalue: Bigint.t) (hvalue: Bigint.t): Value.base =
+  let width = Bigint.(hvalue - lvalue + one) in
+  let value = slice_bitstring value hvalue lvalue in
+  Bit { value; width }
+
+
+let eval_bitstring_access
+  (value: Value.t) (lvalue: Value.t) (hvalue: Value.t): Value.t =
+  let extract value = extract_base value |> extract_bigint in
+  let bvalue =
+    eval_bitstring_access' (extract value) (extract lvalue) (extract hvalue)
+  in
+  Value.Base bvalue
+
