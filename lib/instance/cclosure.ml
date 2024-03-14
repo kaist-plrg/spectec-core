@@ -35,7 +35,7 @@ let find_cenv (path: Path.t) (cenv: cenv) =
 
 (* Utils *)
 
-let print (cclos: t) =
+let print_cclos (cclos: t) =
   match cclos with
   | Package { params } ->
       Printf.sprintf "Package { params = (%s) }"
@@ -49,3 +49,12 @@ let print (cclos: t) =
         (String.concat ", " (List.map Print.print_param params))
         (String.concat ", " (List.map Print.print_param cparams))
   | Extern -> "Extern"
+
+let print_cenv (cenv: cenv) =
+  Printf.sprintf "{ %s }"
+    (String.concat "; "
+      (List.map
+        (fun (path, cclos) ->
+          Printf.sprintf "%s -> %s" 
+            (String.concat "." path) (print_cclos cclos))
+        (Path.PMap.bindings cenv)))

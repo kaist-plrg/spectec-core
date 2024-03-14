@@ -144,14 +144,14 @@ and eval_args
 
 (* Instantiation of a constructor closure *)
 
-and instantiate_cclosure
+and instantiate_cclos
   (env: env) (cenv: cenv) (store: store)
   (path: string list)
-  (cclosure: Cclosure.t) (args: Argument.t list): (env * cenv * store) =
+  (cclos: Cclosure.t) (args: Argument.t list): (env * cenv * store) =
   Printf.eprintf "Instantiating %s with args %s @ %s\n"
-    (Cclosure.print cclosure) (String.concat ", " (List.map Print.print_arg args))
+    (Cclosure.print_cclos cclos) (String.concat ", " (List.map Print.print_arg args))
     (String.concat "." path);
-  match cclosure with
+  match cclos with
   (* The instantiation of a parser or control block recursively
      evaluates all stateful instantiations declared in the block (16.2) *)
   (* Every time a parser is instantiated, it causes:
@@ -220,8 +220,8 @@ and instantiate_expr
   (env: env) (cenv: cenv) (store: store)
   (path: string list) (typ: Type.t) (args: Argument.t list): (env * cenv * store) =
     let typ = Print.print_type typ in
-    let cclosure = Cclosure.find_cenv [ typ ] cenv in
-    instantiate_cclosure env cenv store path cclosure args
+    let cclos = Cclosure.find_cenv [ typ ] cenv in
+    instantiate_cclos env cenv store path cclos args
 
 and instantiate_stmt
   (env: env) (cenv: cenv) (store: store)
@@ -234,8 +234,8 @@ and instantiate_stmt
           (env, cenv, store) stmts
     | DirectApplication { typ; args; _ } ->
         let typ = Print.print_type typ in
-        let cclosure = Cclosure.find_cenv [ typ ] cenv in
-        instantiate_cclosure env cenv store (path @ [ typ ]) cclosure args
+        let cclos = Cclosure.find_cenv [ typ ] cenv in
+        instantiate_cclos env cenv store (path @ [ typ ]) cclos args
     | _ ->
         (env, cenv, store)
 
@@ -247,9 +247,9 @@ and instantiate_decl
   | Instantiation { typ; args; name; _ } ->
       let name = name.str in
       let typ = Print.print_type typ in
-      let cclosure = Cclosure.find_cenv [ typ ] cenv in
+      let cclos = Cclosure.find_cenv [ typ ] cenv in
       let env, cenv, store =
-        instantiate_cclosure env cenv store (path @ [ name ]) cclosure args
+        instantiate_cclos env cenv store (path @ [ name ]) cclos args
       in
       let value = Value.Ref (path @ [ name ]) in
       let env = Value.insert_env [ name ] value env in
