@@ -17,5 +17,13 @@ let () =
 
   Printf.sprintf "Instantiating %s" filename
   |> print_endline;
-  let _ = Instance.Instantiate.instantiate_program program in
+  let store =
+    match Instance.Instantiate.instantiate_program program with
+    | Some store -> store
+    | None -> failwith "Error while instantiating."
+  in
+
+  Printf.sprintf "Interpreting %s" filename
+  |> print_endline;
+  let _result = Interp.Interpreter.eval_program program store in
   ()

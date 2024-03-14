@@ -40,6 +40,10 @@ let insert_store
   (path: Path.t) (obj: t) (store: store) =
   Path.PMap.add path obj store
 
+let find_store
+  (path: Path.t) (store: store) =
+  Path.PMap.find path store
+
 
 (* Utils *)
 

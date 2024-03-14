@@ -5,4 +5,5 @@
     (re_export utils)
     (re_export syntax)
     (re_export frontend)
-    (re_export instance)))
+    (re_export instance)
+    (re_export interp)))

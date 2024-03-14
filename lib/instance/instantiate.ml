@@ -1,9 +1,12 @@
 open Syntax
 open Ast
 
+(* Environments *)
+
 type env = Value.env
 type cenv = Cclosure.cenv
 type store = Object.store
+
 
 (* Loading the result of a declaration
    (other than instantiation) to env or cenv *)
@@ -14,13 +17,11 @@ let rec load
   match decl with
   (* Loading constructor closures *)
   | PackageType { name; params; _ } ->
-      Printf.eprintf "Loading package type %s\n" name.str;
       let name = name.str in
       let cclos = Cclosure.Package { params; } in
       let cenv = Cclosure.insert_cenv [ name ] cclos cenv in
       (env, cenv)
   | Parser { name; params; constructor_params; locals; states; _ } ->
-      Printf.eprintf "Loading parser %s\n" name.str;
       let name = name.str in
       let cclos =
         Cclosure.Parser {
@@ -32,7 +33,6 @@ let rec load
       let cenv = Cclosure.insert_cenv [ name ] cclos cenv in
       (env, cenv)
   | Control { name; params; constructor_params; locals; apply; _ } ->
-      Printf.eprintf "Loading control %s\n" name.str;
       let name = name.str in
       let cclos = 
         Cclosure.Control {
@@ -44,17 +44,16 @@ let rec load
       let cenv = Cclosure.insert_cenv [ name ] cclos cenv in
       (env, cenv)
   | ExternObject { name; _ } ->
-      Printf.eprintf "Loading extern object %s\n" name.str;
       let name = name.str in
       let cclos = Cclosure.Extern in
       let cenv = Cclosure.insert_cenv [ name ] cclos cenv in
       (env, cenv)
   | Function { name; _ } ->
-      Printf.eprintf "(TODO) Loading function %s\n" name.str;
+      Printf.sprintf "(TODO: load) Loading function %s\n" name.str
+      |> print_endline;
       (env, cenv)
   (* Loading constants *)
   | Constant { name; value; _ } ->
-      Printf.eprintf "Loading constant %s\n" name.str;
       let value = eval_static_expr env value in
       let env = Value.insert_env [ name.str ] value env in
       (env, cenv)
@@ -148,9 +147,6 @@ and instantiate_cclos
   (env: env) (cenv: cenv) (store: store)
   (path: string list)
   (cclos: Cclosure.t) (args: Argument.t list): (env * cenv * store) =
-  Printf.eprintf "Instantiating %s with args %s @ %s\n"
-    (Cclosure.print_cclos cclos) (String.concat ", " (List.map Print.print_arg args))
-    (String.concat "." path);
   match cclos with
   (* The instantiation of a parser or control block recursively
      evaluates all stateful instantiations declared in the block (16.2) *)
@@ -280,7 +276,7 @@ and instantiate_decl
       let env, cenv = load env cenv decl in
       (env, cenv, store)
 
-let instantiate_program (program: program) =
+let instantiate_program' (program: program) =
   let Program decls = program in
   let env = Value.empty_env in
   let cenv = Cclosure.empty_cenv in
@@ -289,7 +285,14 @@ let instantiate_program (program: program) =
     List.fold_left
       (fun (env, cenv, store) decl -> instantiate_decl env cenv store [] decl)
       (env, cenv, store) decls
-  in
-  Printf.eprintf
-    "Instantiation result:\n%s" (Object.print_store store);
-  Some store
+  in 
+  store
+
+let instantiate_program (program: program) =
+  try
+    let store = instantiate_program' program in
+    Some store
+  with e ->
+    Printf.sprintf "instantiation error: %s\n" (Printexc.to_string e)
+    |> print_endline;
+    None
