@@ -1,7 +1,6 @@
 (library
   (name instance)
-  (libraries syntax)
+  (libraries syntax runtime utils)
   (modules
     instantiate
-    value cclosure object path
-    numerics))
+    cclosure cenv numerics))

@@ -1,3 +1,5 @@
+open Utils
+
 (* Values *)
 
 type base =
@@ -10,23 +12,6 @@ type base =
 type t =
   | Base of base
   | Ref of Path.t
-
-
-(* Environment *)
-(* Q. Should it be a list of lists, instead of a flat map,
-   to account for scoping/shadowing? *)
-
-and env = t Path.PMap.t
-
-let empty_env = Path.PMap.empty
-
-let insert_env
-  (path: Path.t) (value: t) (env: env) =
-  Path.PMap.add path value env
-
-let find_env
-  (path: Path.t) (env: env) =
-  Path.PMap.find path env
 
 
 (* Utils *)
@@ -45,10 +30,3 @@ let print_value (t: t) =
   match t with
   | Base bvalue -> print_base_value bvalue
   | Ref rvalue -> Printf.sprintf "Ref(%s)" (String.concat "." rvalue)
-
-let print_env (env: env) =
-  "{ " ^
-  (Path.PMap.bindings env
-  |> List.map (fun (p, v) -> Printf.sprintf "%s -> %s" (String.concat "." p) (print_value v))
-  |> String.concat ", ")
-  ^ " }"

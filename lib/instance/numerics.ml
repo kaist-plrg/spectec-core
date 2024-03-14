@@ -1,5 +1,6 @@
 open Syntax
 open Ast
+open Runtime
 
 let extract_base (value: Value.t): Value.base =
   match value with

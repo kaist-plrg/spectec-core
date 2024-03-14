@@ -1,4 +1,4 @@
 (library
   (name interp)
-  (libraries syntax instance)
+  (libraries syntax runtime instance)
   (modules interpreter))
