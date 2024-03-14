@@ -56,10 +56,11 @@ let test_parser () =
 
 let instantiate filename =
   let* program = parse_file filename in
-  try Instance.Instantiate.instantiate_program program 
-  with | _ ->
+  try Some (Instance.Instantiate.instantiate_program program) 
+  with e ->
     instantiate_fails := !instantiate_fails + 1;
-    Printf.sprintf "Instantiation fail: %s" filename
+    Printf.sprintf "Instantiation fail: %s due to %s"
+      filename (Printexc.to_string e)
     |> print_endline;
     None
 

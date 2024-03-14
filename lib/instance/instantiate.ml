@@ -50,7 +50,7 @@ let rec load
       let cenv = Cenv.insert [ name ] cclos cenv in
       (env, cenv)
   | Function { name; _ } ->
-      Printf.sprintf "(TODO: load) Loading function %s\n" name.str
+      Printf.sprintf "(TODO: load) Loading function %s" name.str
       |> print_endline;
       (env, cenv)
   (* Loading constants *)
@@ -108,6 +108,10 @@ and eval_static_expr
   | UnaryOp { op; arg; _ } ->
       let varg = eval_static_expr env arg in
       Numerics.eval_unop op varg
+  | BinaryOp { op; args = (arg_fst, arg_snd); _ } ->
+      let varg_fst = eval_static_expr env arg_fst in
+      let varg_snd = eval_static_expr env arg_snd in
+      Numerics.eval_binop op varg_fst varg_snd
   | _ ->
       Printf.sprintf
         "(TODO: eval_static_expr) %s" (Print.print_expr expr)
@@ -277,7 +281,7 @@ and instantiate_decl
       let env, cenv = load env cenv decl in
       (env, cenv, store)
 
-let instantiate_program' (program: program) =
+let instantiate_program (program: program) =
   let Program decls = program in
   let env = Env.empty in
   let cenv = Cenv.empty in
@@ -288,12 +292,3 @@ let instantiate_program' (program: program) =
       (env, cenv, store) decls
   in 
   store
-
-let instantiate_program (program: program) =
-  try
-    let store = instantiate_program' program in
-    Some store
-  with e ->
-    Printf.sprintf "instantiation error: %s\n" (Printexc.to_string e)
-    |> print_endline;
-    None

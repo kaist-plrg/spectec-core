@@ -3,4 +3,4 @@
   (libraries syntax runtime utils)
   (modules
     instantiate
-    cclosure cenv numerics))
+    cclosure cenv))

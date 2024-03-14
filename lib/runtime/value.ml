@@ -18,15 +18,15 @@ type t =
 
 let print_base_value (bvalue: base) =
   match bvalue with
-  | Bool b -> Printf.sprintf "Bool(%b)" b
-  | AInt i -> Printf.sprintf "AInt(%s)" (Bigint.to_string i)
+  | Bool value -> Printf.sprintf "Bool(%b)" value
+  | AInt value -> Printf.sprintf "AInt(%s)" (Bigint.to_string value)
   | Int { value; width } ->
       Printf.sprintf "Int(%s, %s)"
         (Bigint.to_string value) (Bigint.to_string width)
   | Bit { value; width } ->
       Printf.sprintf "Bit(%s, %s)"
         (Bigint.to_string value) (Bigint.to_string width)
-  | String s -> Printf.sprintf "String(%s)" s
+  | String value -> Printf.sprintf "String(%s)" value
 
 let print_value (t: t) =
   match t with
