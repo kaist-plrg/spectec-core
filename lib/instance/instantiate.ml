@@ -83,20 +83,31 @@ and eval_static_expr
   (env: env) (expr: Expression.t): Value.t =
   match expr with
   | True _ ->
-      let base = Value.Bool true in
-      Value.Base base
+      let bvalue = Value.Bool true in
+      Value.Base bvalue
   | False _ ->
-      let base = Value.Bool false in
-      Value.Base base
+      let bvalue = Value.Bool false in
+      Value.Base bvalue
   | Int { i; _ } ->
-      let base = Value.Integer i.value in
-      Value.Base base
+      let value = i.value in
+      let bvalue =
+        begin match i.width_signed with
+        | Some (width, signed) ->
+            if signed then Value.Int { value; width }
+            else Value.Bit { value; width }
+        | None -> Value.AInt value
+        end
+      in
+      Value.Base bvalue
   | String { text; _ } ->
-      let base = Value.String text.str in
-      Value.Base base
+      let bvalue = Value.String text.str in
+      Value.Base bvalue
   | Name { name = BareName text; _ } ->
       let text = text.str in
       Value.find_env [ text ] env
+  | UnaryOp { op; arg; _ } ->
+      let varg = eval_static_expr env arg in
+      Numerics.eval_unop op varg
   | _ ->
       Printf.sprintf
         "(TODO: eval_static_expr) %s" (Print.print_expr expr)

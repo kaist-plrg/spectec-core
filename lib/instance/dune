@@ -3,4 +3,5 @@
   (libraries syntax)
   (modules
     instantiate
-    value cclosure object path))
+    value cclosure object path
+    numerics))
