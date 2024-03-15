@@ -128,21 +128,29 @@ and eval_args
   (params: Parameter.t list) (args: Argument.t list): (env * store) =
   (* TODO: assume there is no default argument *)
   (assert (List.length params = List.length args));
-  let params =
-    List.map
-      (fun (param: Parameter.t) -> param.variable.str)
-      params
-  in
-  (* TODO: assume arguments are nameless,
-   but in reality named arguments can be in arbitrary order *)
-  let args =
-    List.map
+  (assert
+    ((List.for_all
       (fun (arg: Argument.t) ->
+        match arg with
+        | Expression _ -> true
+        | _ -> false)
+      args) ||
+    (List.for_all
+      (fun (arg: Argument.t) ->
+        match arg with
+        | KeyValue _ -> true
+        | _ -> false)
+      args)));
+  let params, args =
+    List.fold_left2
+      (fun (params, args) (param: Parameter.t) (arg: Argument.t) ->
          match arg with
-         | Expression { value; _ } -> value
-         | KeyValue _ -> failwith "(TODO) Named arguments are not supported."
+         | Expression { value; _ } ->
+             (params @ [ param.variable.str ], args @ [ value ])
+         | KeyValue { key; value; _ } ->
+             (params @ [ key.str ], args @ [ value ])
          | _ -> failwith "Instantiation argument must not be missing.")
-      args
+      ([], []) params args
   in
   List.fold_left2
     (fun (env', store) param arg ->
