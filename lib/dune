@@ -1,10 +1,10 @@
 (library
-  (name p4cherry)
-  (modules)
-  (libraries
-    (re_export utils)
-    (re_export syntax)
-    (re_export frontend)
-    (re_export runtime)
-    (re_export instance)
-    (re_export interp)))
+ (name p4cherry)
+ (modules)
+ (libraries
+  (re_export utils)
+  (re_export syntax)
+  (re_export frontend)
+  (re_export runtime)
+  (re_export instance)
+  (re_export interp)))

@@ -1,6 +1,4 @@
 (library
-  (name syntax)
-  (libraries utils bignum)
-  (modules
-    ast info name number text
-    eq pretty debug))
+ (name syntax)
+ (libraries utils bignum)
+ (modules ast info name number text eq pretty debug))

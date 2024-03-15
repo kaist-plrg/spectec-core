@@ -4,24 +4,24 @@ open Ast
 (* Constructor closures *)
 
 type t =
-  | Package of
-      { params: Parameter.t list; }
-  | Parser of
-      { params: Parameter.t list;
-        cparams: Parameter.t list;
-        locals: Declaration.t list;
-        states: Parser.state list; }
-  | Control of
-      { params: Parameter.t list;
-        cparams: Parameter.t list;
-        locals: Declaration.t list;
-        apply: Block.t; }
+  | Package of { params : Parameter.t list }
+  | Parser of {
+      params : Parameter.t list;
+      cparams : Parameter.t list;
+      locals : Declaration.t list;
+      states : Parser.state list;
+    }
+  | Control of {
+      params : Parameter.t list;
+      cparams : Parameter.t list;
+      locals : Declaration.t list;
+      apply : Block.t;
+    }
   | Extern
-
 
 (* Utils *)
 
-let print (cclos: t) =
+let print (cclos : t) =
   match cclos with
   | Package { params } ->
       Printf.sprintf "Package { params = (%s) }"

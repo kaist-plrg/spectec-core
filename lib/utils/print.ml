@@ -1,8 +1,8 @@
 (* Utils *)
 
-let print_indent (indent: int) = String.make (indent * 2) ' '
+let print_indent (indent : int) = String.make (indent * 2) ' '
 
-let print_inline (s: string) =
+let print_inline (s : string) =
   let len = String.length s in
   let rec replace acc i =
     if i < len then

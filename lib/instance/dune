@@ -1,6 +1,4 @@
 (library
-  (name instance)
-  (libraries syntax runtime utils)
-  (modules
-    instantiate
-    cclosure cenv))
+ (name instance)
+ (libraries syntax runtime utils)
+ (modules instantiate cclosure cenv))

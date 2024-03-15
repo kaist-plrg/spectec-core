@@ -14,6 +14,13 @@ build:
 	ln -f $(EXEMAIN) ./$(MAIN)
 	ln -f $(EXETEST) ./$(TEST)
 
+# Format
+
+.PHONY: fmt
+
+fmt:
+	dune build @fmt --auto-promote
+
 # Cleanup
 
 .PHONY: clean

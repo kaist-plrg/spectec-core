@@ -11,12 +11,14 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations
  * under the License.
-*)
+ *)
 
 type t = Info.t t'
-and 'a t' =
-  { tags: 'a;
-    value: Bigint.t;
-    width_signed: (Bigint.t * bool) option }
 
-let tags (t: 'a t'): 'a = t.tags
+and 'a t' = {
+  tags : 'a;
+  value : Bigint.t;
+  width_signed : (Bigint.t * bool) option;
+}
+
+let tags (t : 'a t') : 'a = t.tags

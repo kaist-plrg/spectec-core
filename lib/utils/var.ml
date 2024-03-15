@@ -1,5 +1,5 @@
 type t = string
 
-module VMap = Map.Make(String)
+module VMap = Map.Make (String)
 
-let print (var: t) = var
+let print (var : t) = var

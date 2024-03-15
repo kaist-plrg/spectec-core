@@ -1,8 +1,6 @@
 let program_dir = "test/program"
 let arch_dir = "test/arch"
-
-let (let*) = Option.bind
-
+let ( let* ) = Option.bind
 let parse_file_fails = ref 0
 let parse_string_fails = ref 0
 let roundtrip_fails = ref 0
@@ -10,18 +8,16 @@ let instantiate_fails = ref 0
 
 let parse_file filename =
   try Frontend.Parse.parse_file arch_dir filename
-  with | _ ->
+  with _ ->
     parse_file_fails := !parse_file_fails + 1;
-    Printf.sprintf "Parser fail on file: %s" filename
-    |> print_endline;
+    Printf.sprintf "Parser fail on file: %s" filename |> print_endline;
     None
 
 let parse_string filename file =
   try Frontend.Parse.parse_string filename file
-  with | _ ->
+  with _ ->
     parse_string_fails := !parse_string_fails + 1;
-    Printf.sprintf "Parser fail on string: %s" filename
-    |> print_endline;
+    Printf.sprintf "Parser fail on string: %s" filename |> print_endline;
     None
 
 let roundtrip filename =
@@ -30,9 +26,7 @@ let roundtrip filename =
   let* program' = parse_string filename file' in
   if not (Syntax.Eq.eq_program program program') then (
     roundtrip_fails := !roundtrip_fails + 1;
-    Printf.sprintf "Roundtrip fail: %s" filename
-    |> print_endline;
-  );
+    Printf.sprintf "Roundtrip fail: %s" filename |> print_endline);
   Some program'
 
 let test_parser () =
@@ -56,11 +50,11 @@ let test_parser () =
 
 let instantiate filename =
   let* program = parse_file filename in
-  try Some (Instance.Instantiate.instantiate_program program) 
+  try Some (Instance.Instantiate.instantiate_program program)
   with e ->
     instantiate_fails := !instantiate_fails + 1;
-    Printf.sprintf "Instantiation fail: %s due to %s"
-      filename (Printexc.to_string e)
+    Printf.sprintf "Instantiation fail: %s due to %s" filename
+      (Printexc.to_string e)
     |> print_endline;
     None
 

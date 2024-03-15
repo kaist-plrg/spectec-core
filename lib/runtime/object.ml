@@ -9,32 +9,30 @@ open Utils
    even if they happen to be pure functions of their arguments (Appendix F) *)
 
 type t =
-  | Package of
-      { scope: Env.t; }
-  | Parser of
-      { scope: Env.t;
-        params: Parameter.t list;
-        locals: Declaration.t list;
-        states: Parser.state list; }
-  | Control of
-      { scope: Env.t;
-        params: Parameter.t list;
-        locals: Declaration.t list;
-        apply: Block.t; }
+  | Package of { scope : Env.t }
+  | Parser of {
+      scope : Env.t;
+      params : Parameter.t list;
+      locals : Declaration.t list;
+      states : Parser.state list;
+    }
+  | Control of {
+      scope : Env.t;
+      params : Parameter.t list;
+      locals : Declaration.t list;
+      apply : Block.t;
+    }
   | Extern
-  | Table of
-      { scope: Env.t;
-        properties: Table.property list; }
+  | Table of { scope : Env.t; properties : Table.property list }
   | Function
   | ValueSet
 
-
 (* Utils *)
 
-let print ?(indent = 0) (obj: t) =
+let print ?(indent = 0) (obj : t) =
   match obj with
   | Package { scope } ->
-      Printf.sprintf "%sPackage {\n%sscope =\n%s }"      
+      Printf.sprintf "%sPackage {\n%sscope =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
         (Env.print scope ~indent:(indent + 3))
@@ -48,17 +46,11 @@ let print ?(indent = 0) (obj: t) =
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
         (Env.print scope ~indent:(indent + 3))
-  | Extern ->
-      Printf.sprintf "%sExtern"
-        (Print.print_indent indent)
+  | Extern -> Printf.sprintf "%sExtern" (Print.print_indent indent)
   | Table { scope; _ } ->
       Printf.sprintf "%sTable {\n%sscope =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
         (Env.print scope ~indent:(indent + 3))
-  | Function ->
-      Printf.sprintf "%sFunction"
-        (Print.print_indent indent)
-  | ValueSet ->
-      Printf.sprintf "%sValueSet"
-        (Print.print_indent indent)
+  | Function -> Printf.sprintf "%sFunction" (Print.print_indent indent)
+  | ValueSet -> Printf.sprintf "%sValueSet" (Print.print_indent indent)

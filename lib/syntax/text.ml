@@ -11,11 +11,9 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations
  * under the License.
-*)
+ *)
 
 type t = Info.t t'
-and 'a t' =
-  { tags: 'a;
-    str: string }
+and 'a t' = { tags : 'a; str : string }
 
-let tags (t: 'a t'): 'a = t.tags
+let tags (t : 'a t') : 'a = t.tags
