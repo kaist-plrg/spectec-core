@@ -6,3 +6,5 @@ module PMap = Map.Make(
     let compare = compare
   end
 )
+
+let print (path: t) = String.concat "." path

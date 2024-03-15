@@ -24,7 +24,7 @@ let extract_base (value: Value.t): Value.base =
   | _ ->
       Printf.sprintf
         "Not a base value: %s"
-        (Value.print_value value)
+        (Value.print value)
       |> failwith
 
 let extract_bigint (bvalue: Value.base): Bigint.t =
@@ -35,7 +35,7 @@ let extract_bigint (bvalue: Value.base): Bigint.t =
   | _ ->
       Printf.sprintf
         "Not a bigint value: %s"
-        (Value.print_base_value bvalue)
+        (Value.print_base bvalue)
       |> failwith
 
 
@@ -101,7 +101,7 @@ let eval_unop_not (value: Value.base): Value.base =
   | Bool b -> Bool (not b)
   | _ -> 
       Printf.sprintf "Not a boolean value: %s"
-        (Value.print_base_value value)
+        (Value.print_base value)
       |> failwith
 
 let eval_unop_bitnot (value: Value.base): Value.base =
@@ -112,7 +112,7 @@ let eval_unop_bitnot (value: Value.base): Value.base =
   | _ ->
       Printf.sprintf
         "Not a bit value: %s"
-        (Value.print_base_value value)
+        (Value.print_base value)
       |> failwith
 
 let eval_unop_uminus (value: Value.base): Value.base =
@@ -127,7 +127,7 @@ let eval_unop_uminus (value: Value.base): Value.base =
   | _ ->
       Printf.sprintf
         "Not an integer value: %s"
-        (Value.print_base_value value)
+        (Value.print_base value)
       |> failwith
 
 let eval_unop'
@@ -207,8 +207,8 @@ let rec eval_binop_plus
   | _ ->
       Printf.sprintf
         "Invalid addition: %s + %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let rec eval_binop_plussat
@@ -231,8 +231,8 @@ let rec eval_binop_plussat
   | _ ->
       Printf.sprintf
         "Invalid addition with saturation: %s (+) %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let rec eval_binop_minus
@@ -259,8 +259,8 @@ let rec eval_binop_minus
   | _ ->
       Printf.sprintf
         "Invalid subtraction: %s - %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let rec eval_binop_minussat
@@ -283,8 +283,8 @@ let rec eval_binop_minussat
   | _ ->
       Printf.sprintf
         "Invalid subtraction with saturation: %s (-) %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let rec eval_binop_mul 
@@ -311,8 +311,8 @@ let rec eval_binop_mul
   | _ ->
       Printf.sprintf
         "Invalid multiplication: %s * %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let eval_binop_div
@@ -326,8 +326,8 @@ let eval_binop_div
   | _ ->
       Printf.sprintf
         "Invalid division: %s / %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let eval_binop_mod
@@ -341,8 +341,8 @@ let eval_binop_mod
   | _ ->
       Printf.sprintf
         "Invalid modulo: %s %% %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let eval_binop_shl
@@ -374,8 +374,8 @@ let eval_binop_shl
   | _ ->
       Printf.sprintf
         "Invalid shift left: %s << %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let eval_binop_shr
@@ -415,8 +415,8 @@ let eval_binop_shr
   | _ ->
       Printf.sprintf
         "Invalid shift right: %s >> %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let rec eval_binop_le
@@ -437,8 +437,8 @@ let rec eval_binop_le
   | _ ->
       Printf.sprintf
         "Invalid less than or equal: %s <= %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let rec eval_binop_ge
@@ -459,8 +459,8 @@ let rec eval_binop_ge
   | _ ->
       Printf.sprintf
         "Invalid greater than or equal: %s >= %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let rec eval_binop_lt
@@ -481,8 +481,8 @@ let rec eval_binop_lt
   | _ ->
       Printf.sprintf
         "Invalid less than: %s < %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let rec eval_binop_gt
@@ -503,8 +503,8 @@ let rec eval_binop_gt
   | _ ->
       Printf.sprintf
         "Invalid greater than: %s > %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let rec eval_binop_eq
@@ -529,8 +529,8 @@ let rec eval_binop_eq
   | _ ->
       Printf.sprintf
         "Invalid equality: %s == %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let eval_binop_ne
@@ -551,8 +551,8 @@ let rec eval_binop_bitand
   | _ ->
       Printf.sprintf
         "Invalid bitwise and: %s & %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let rec eval_binop_bitxor
@@ -569,8 +569,8 @@ let rec eval_binop_bitxor
   | _ ->
       Printf.sprintf
         "Invalid bitwise xor: %s ^ %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let rec eval_binop_bitor
@@ -587,8 +587,8 @@ let rec eval_binop_bitor
   | _ ->
       Printf.sprintf
         "Invalid bitwise or: %s | %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let rec eval_binop_plusplus
@@ -606,8 +606,8 @@ let rec eval_binop_plusplus
   | _ ->
       Printf.sprintf
         "Invalid concatenation: %s ++ %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let eval_binop_and
@@ -617,8 +617,8 @@ let eval_binop_and
   | _ ->
       Printf.sprintf
         "Invalid and operator: %s && %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let eval_binop_or
@@ -628,8 +628,8 @@ let eval_binop_or
   | _ ->
       Printf.sprintf
         "Invalid or operator: %s || %s"
-        (Value.print_base_value lvalue)
-        (Value.print_base_value rvalue)
+        (Value.print_base lvalue)
+        (Value.print_base rvalue)
       |> failwith
 
 let eval_binop'

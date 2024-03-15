@@ -56,7 +56,7 @@ let rec load
   (* Loading constants *)
   | Constant { name; value; _ } ->
       let value = eval_static_expr env value in
-      let env = Env.insert [ name.str ] value env in
+      let env = Env.insert name.str value env in
       (env, cenv)
   | _ -> (env, cenv)
 
@@ -103,8 +103,8 @@ and eval_static_expr
       let bvalue = Value.String text.str in
       Value.Base bvalue
   | Name { name = BareName text; _ } ->
-      let text = text.str in
-      Env.find [ text ] env
+      let var = text.str in
+      Env.find var env
   | BitStringAccess { bits; lo; hi; _ } ->
       let vbits = eval_static_expr env bits in
       let vlo = eval_static_expr env lo in
@@ -147,7 +147,7 @@ and eval_args
   List.fold_left2
     (fun (env', store) param arg ->
       let value, store = eval_expr env cenv store (path @ [ param ]) arg in
-      let env' = Env.insert [ param ] value env' in
+      let env' = Env.insert param value env' in
       (env', store))
     (env, store) params args 
 
@@ -156,7 +156,7 @@ and eval_args
 and instantiate_cclos
   (env: env) (cenv: cenv) (store: store)
   (path: string list)
-  (cclos: Cclosure.t) (args: Argument.t list): (env * cenv * store) =
+  (cclos: Cclosure.t) (args: Argument.t list): (cenv * store) =
   match cclos with
   (* The instantiation of a parser or control block recursively
      evaluates all stateful instantiations declared in the block (16.2) *)
@@ -164,70 +164,78 @@ and instantiate_cclos
      every extern and parser instantiation that is in the parser source code
      at its top level is instantiated 1 time (p4guide) *)
   | Cclosure.Parser { params; cparams; locals; states } ->
-      let env, store = eval_args env cenv store path cparams args in
-      let env, _, store =
+      let env_parser = Env.enter env in
+      let env_parser, store =
+        eval_args env_parser cenv store path cparams args
+      in
+      let env_parser, cenv_parser, store =
         List.fold_left
           (fun (env, cenv, store) local ->
             instantiate_decl env cenv store path local)
-          (env, cenv, store) locals
+          (env_parser, cenv, store) locals
       in
       let stmts =
         List.concat_map
           (fun (state: Parser.state) -> state.statements)
           states
       in
-      let env, _, store =
+      let env_parser, _, store =
         List.fold_left
           (fun (env, cenv, store) stmt ->
             instantiate_stmt env cenv store path stmt)
-          (env, cenv, store) stmts
+          (env_parser, cenv_parser, store) stmts
       in
       let obj =
-        Object.Parser { scope = env; params; locals; states; }
+        Object.Parser { scope = env_parser; params; locals; states; }
       in
       let store = Store.insert path obj store in
-      (env, cenv, store)
+      (cenv, store)
   (* Every time a control is instantiated, it causes:
      1 instantiation of each table defined within it
      every extern and control instantiation that is in the control source code
      at its top level is instantiated 1 time (p4guide) *)
   | Cclosure.Control { params; cparams; locals; apply; _ } ->
-      let env, store = eval_args env cenv store path cparams args in
-      let env, _, store =
+      let env_control = Env.enter env in
+      let env_control, store =
+        eval_args env_control cenv store path cparams args
+      in
+      let env_control, cenv_control, store =
         List.fold_left
           (fun (env, cenv, store) local ->
             instantiate_decl env cenv store path local)
-          (env, cenv, store) locals
+          (env_control, cenv, store) locals
       in
       let stmts = apply.statements in
-      let env, _, store =
+      let env_control, _, store =
         List.fold_left
          (fun (env, cenv, store) stmt ->
            instantiate_stmt env cenv store path stmt)
-         (env, cenv, store) stmts
+         (env_control, cenv_control, store) stmts
       in
       let obj =
-        Object.Control { scope = env; params; locals; apply; }
+        Object.Control { scope = env_control; params; locals; apply; }
       in
       let store = Store.insert path obj store in
-      (env, cenv, store)
+      (cenv, store)
   (* Others do not involve recursive instantiation other than the args *)
   | Cclosure.Package { params } ->
-      let env, store = eval_args env cenv store path params args in
-      let obj = Object.Package { scope = env } in
+      let env_package = Env.enter env in
+      let env_package, store = eval_args env_package cenv store path params args in
+      let obj = Object.Package { scope = env_package } in
       let store = Store.insert path obj store in
-      (env, cenv, store)
+      (cenv, store)
   | Cclosure.Extern ->
       let obj = Object.Extern in
       let store = Store.insert path obj store in
-      (env, cenv, store)
+      (cenv, store)
 
 and instantiate_expr
   (env: env) (cenv: cenv) (store: store)
   (path: string list) (typ: Type.t) (args: Argument.t list): (env * cenv * store) =
     let typ = Print.print_type typ in
     let cclos = Cenv.find [ typ ] cenv in
-    instantiate_cclos env cenv store path cclos args
+    let cenv, store = instantiate_cclos env cenv store path cclos args in
+    (env, cenv, store)
 
 and instantiate_stmt
   (env: env) (cenv: cenv) (store: store)
@@ -241,7 +249,8 @@ and instantiate_stmt
     | DirectApplication { typ; args; _ } ->
         let typ = Print.print_type typ in
         let cclos = Cenv.find [ typ ] cenv in
-        instantiate_cclos env cenv store (path @ [ typ ]) cclos args
+        let cenv, store = instantiate_cclos env cenv store (path @ [ typ ]) cclos args in
+        (env, cenv, store)
     | _ ->
         (env, cenv, store)
 
@@ -254,11 +263,11 @@ and instantiate_decl
       let name = name.str in
       let typ = Print.print_type typ in
       let cclos = Cenv.find [ typ ] cenv in
-      let env, cenv, store =
+      let cenv, store =
         instantiate_cclos env cenv store (path @ [ name ]) cclos args
       in
       let value = Value.Ref (path @ [ name ]) in
-      let env = Env.insert [ name ] value env in
+      let env = Env.insert name value env in
       (env, cenv, store)
   (* Each table evaluates to a table instance (18.2) *)
   (* There is no syntax for specifying parameters that are tables
@@ -269,7 +278,7 @@ and instantiate_decl
       let obj = Object.Table { scope = env; properties; } in
       let store = Store.insert (path @ [ name ]) obj store in
       let value = Value.Ref (path @ [ name ]) in
-      let env = Env.insert [ name ] value env in
+      let env = Env.insert name value env in
       (env, cenv, store)
   (* (TODO) is it correct to instantiate a value set at its declaration? *)
   (* There is no syntax for specifying parameters that are value-sets 
@@ -279,7 +288,7 @@ and instantiate_decl
       let obj = Object.ValueSet in
       let store = Store.insert (path @ [ name ]) obj store in
       let value = Value.Ref (path @ [ name ]) in
-      let env = Env.insert [ name ] value env in
+      let env = Env.insert name value env in
       (env, cenv, store)
   (* Load declarations to either env or cenv *)
   | _ ->

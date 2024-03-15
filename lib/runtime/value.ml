@@ -16,7 +16,7 @@ type t =
 
 (* Utils *)
 
-let print_base_value (bvalue: base) =
+let print_base (bvalue: base) =
   match bvalue with
   | Bool value -> Printf.sprintf "Bool(%b)" value
   | AInt value -> Printf.sprintf "AInt(%s)" (Bigint.to_string value)
@@ -28,7 +28,7 @@ let print_base_value (bvalue: base) =
         (Bigint.to_string value) (Bigint.to_string width)
   | String value -> Printf.sprintf "String(%s)" value
 
-let print_value (t: t) =
+let print (t: t) =
   match t with
-  | Base bvalue -> print_base_value bvalue
+  | Base bvalue -> print_base bvalue
   | Ref rvalue -> Printf.sprintf "Ref(%s)" (String.concat "." rvalue)

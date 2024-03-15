@@ -1,27 +1,58 @@
 open Utils
 
 (* Environment *)
-(* Q. Should it be a list of lists, instead of a flat map,
-   to account for scoping/shadowing? *)
+(* Invariant:
+    1. the map is non-empty
+    2. the first element of the list is the most recent scope *)
 
-type t = Value.t Path.PMap.t
+type t = (Value.t Var.VMap.t) list
 
-let empty = Path.PMap.empty
+let empty = [ Var.VMap.empty ]
+
+let current (env: t) =
+  (assert ((List.length env) > 0));
+  (List.hd env, List.tl env)
+
+let enter (env: t) =
+  Var.VMap.empty :: env
+
+let exit (env: t) =
+  (assert ((List.length env) > 0));
+  List.tl env
 
 let insert
-  (path: Path.t) (value: Value.t) (env: t) =
-  Path.PMap.add path value env
+  (path: Var.t) (value: Value.t) (env: t) =
+  let (now, old) = current env in
+  let now = Var.VMap.add path value now in
+  now :: old
 
 let find
-  (path: Path.t) (env: t) =
-  Path.PMap.find path env
+  (var: Var.t) (env: t) =
+  let rec find' env =
+    match env with
+    | [] -> None
+    | now :: old ->
+      (match Var.VMap.find_opt var now with
+      | Some value -> Some value
+      | None -> find' old)
+  in
+  match find' env with
+  | Some value -> value
+  | None ->
+      Printf.sprintf
+        "Variable %s not found" (Var.print var)
+      |> failwith
 
 let print (env: t) =
-  "{ " ^
-  (Path.PMap.bindings env
-  |> List.map
-      (fun (p, v) ->
-        Printf.sprintf "%s -> %s"
-          (String.concat "." p) (Value.print_value v))
-  |> String.concat ", ")
-  ^ " }"
+  let print_binding var value acc =
+    Printf.sprintf "%s, %s -> %s"
+      acc (Var.print var) (Value.print value)
+  in
+  let rec print' env =
+    match env with
+    | [] -> ""
+    | now :: old ->
+        "[ " ^ (Var.VMap.fold print_binding now "") ^ " ] / "
+        ^ (print' old)
+  in
+  print' env
