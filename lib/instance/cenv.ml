@@ -40,16 +40,21 @@ let find
         "Variable %s not found" (Var.print var)
       |> failwith
 
-let print (cenv: t) =
+let print ?(indent = 0) (cenv: t) =
   let print_binding var cclos acc =
-    Printf.sprintf "%s, %s -> %s"
-      acc (Var.print var) (Cclosure.print cclos)
+    acc @ [
+      Printf.sprintf "%s: %s"
+        (Var.print var) (Cclosure.print cclos)
+    ]
   in
-  let rec print' cenv =
-    match cenv with
-    | [] -> ""
-    | now :: old ->
-        "[ " ^ (Var.VMap.fold print_binding now "") ^ " ] / "
-        ^ (print' old)
+  let print' acc cenv =
+    let bindings = Var.VMap.fold print_binding cenv [] in
+    let bindings = String.concat ", " bindings in
+    acc @ [
+      Printf.sprintf
+        "%s[ %s ]"
+        (Print.print_indent indent) bindings
+    ]
   in
-  print' cenv
+  let scenv = List.fold_left print' [] cenv in
+  String.concat "\n" scenv

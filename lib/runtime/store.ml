@@ -16,9 +16,15 @@ let find
   (path: Path.t) (store: t) =
   Path.PMap.find path store
 
-let print (store: t) =
+let print ?(indent = 0) (store: t) =
   let print_binding path obj acc =
-    Printf.sprintf "%s\n  %s -> %s"
-      acc (String.concat "." path) (Object.print_object obj)
+    acc @ [
+      Printf.sprintf "%s%s:\n%s%s"
+        (Print.print_indent (indent + 1))
+        (Path.print path)
+        (Print.print_indent (indent + 1))
+        (Object.print obj ~indent:(indent + 1))
+    ]
   in
-  "[" ^ (Path.PMap.fold print_binding store "") ^ "\n]"
+  let sstore = Path.PMap.fold print_binding store [] in
+  "[\n" ^ (String.concat "\n" sstore) ^ " ]"

@@ -119,7 +119,7 @@ and eval_static_expr
       Numerics.eval_binop op varg_fst varg_snd
   | _ ->
       Printf.sprintf
-        "(TODO: eval_static_expr) %s" (Print.print_expr expr)
+        "(TODO: eval_static_expr) %s" (Pretty.print_expr expr)
       |> failwith 
 
 and eval_args
@@ -234,7 +234,7 @@ and instantiate_cclos
 and instantiate_expr
   (env: env) (cenv: cenv) (store: store)
   (path: string list) (typ: Type.t) (args: Argument.t list): (env * cenv * store) =
-    let typ = Print.print_type typ in
+    let typ = Pretty.print_type typ in
     let cclos = Cenv.find typ cenv in
     let store = instantiate_cclos env cenv store path cclos args in
     (env, cenv, store)
@@ -249,7 +249,7 @@ and instantiate_stmt
           (fun (env, cenv, store) stmt -> instantiate_stmt env cenv store path stmt)
           (env, cenv, store) stmts
     | DirectApplication { typ; args; _ } ->
-        let typ = Print.print_type typ in
+        let typ = Pretty.print_type typ in
         let cclos = Cenv.find typ cenv in
         let store = instantiate_cclos env cenv store (path @ [ typ ]) cclos args in
         (env, cenv, store)
@@ -263,7 +263,7 @@ and instantiate_decl
   (* Explicit instantiation *)
   | Instantiation { typ; args; name; _ } ->
       let name = name.str in
-      let typ = Print.print_type typ in
+      let typ = Pretty.print_type typ in
       let cclos = Cenv.find typ cenv in
       let store =
         instantiate_cclos env cenv store (path @ [ name ]) cclos args

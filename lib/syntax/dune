@@ -3,4 +3,4 @@
   (libraries utils bignum)
   (modules
     ast info name number text
-    eq print debug))
+    eq pretty debug))

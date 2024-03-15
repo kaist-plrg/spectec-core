@@ -1,5 +1,6 @@
 open Syntax
 open Ast
+open Utils
 
 (* Stateful objects *)
 (* The stateful types of objects in P4_16 are
@@ -30,20 +31,34 @@ type t =
 
 (* Utils *)
 
-let print_object (obj: t) =
+let print ?(indent = 0) (obj: t) =
   match obj with
   | Package { scope } ->
-      Printf.sprintf "Package { scope = %s }"
-        (Env.print scope)
+      Printf.sprintf "%sPackage {\n%sscope =\n%s }"      
+        (Print.print_indent indent)
+        (Print.print_indent (indent + 2))
+        (Env.print scope ~indent:(indent + 3))
   | Parser { scope; _ } ->
-      Printf.sprintf "Parser { scope = %s }"
-        (Env.print scope)
+      Printf.sprintf "%sParser {\n%sscope =\n%s }"
+        (Print.print_indent indent)
+        (Print.print_indent (indent + 2))
+        (Env.print scope ~indent:(indent + 3))
   | Control { scope; _ } ->
-      Printf.sprintf "Control { scope = %s }"
-        (Env.print scope)
-  | Extern -> "Extern"
+      Printf.sprintf "%sControl {\n%sscope =\n%s }"
+        (Print.print_indent indent)
+        (Print.print_indent (indent + 2))
+        (Env.print scope ~indent:(indent + 3))
+  | Extern ->
+      Printf.sprintf "%sExtern"
+        (Print.print_indent indent)
   | Table { scope; _ } ->
-      Printf.sprintf "Table { scope = %s }"
-        (Env.print scope)
-  | Function -> "Function"
-  | ValueSet -> "ValueSet"
+      Printf.sprintf "%sTable {\n%sscope =\n%s }"
+        (Print.print_indent indent)
+        (Print.print_indent (indent + 2))
+        (Env.print scope ~indent:(indent + 3))
+  | Function ->
+      Printf.sprintf "%sFunction"
+        (Print.print_indent indent)
+  | ValueSet ->
+      Printf.sprintf "%sValueSet"
+        (Print.print_indent indent)

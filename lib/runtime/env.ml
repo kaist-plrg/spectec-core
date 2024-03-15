@@ -43,16 +43,21 @@ let find
         "Variable %s not found" (Var.print var)
       |> failwith
 
-let print (env: t) =
+let print ?(indent = 0) (env: t) =
   let print_binding var value acc =
-    Printf.sprintf "%s, %s -> %s"
-      acc (Var.print var) (Value.print value)
+    acc @ [
+      Printf.sprintf "%s: %s"
+        (Var.print var) (Value.print value)
+    ]
   in
-  let rec print' env =
-    match env with
-    | [] -> ""
-    | now :: old ->
-        "[ " ^ (Var.VMap.fold print_binding now "") ^ " ] / "
-        ^ (print' old)
+  let print' acc env =
+    let bindings = Var.VMap.fold print_binding env [] in
+    let bindings = String.concat ", " bindings in
+    acc @ [
+      Printf.sprintf
+        "%s[ %s ]"
+        (Print.print_indent indent) bindings
+    ]
   in
-  print' env
+  let senv = List.fold_left print' [] env in
+  String.concat "\n" senv

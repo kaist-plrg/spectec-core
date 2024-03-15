@@ -1,5 +1,5 @@
 open Ast
-open Print
+open Pretty
 open Utils
 open Alternative
 
