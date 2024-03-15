@@ -2,22 +2,54 @@ open Utils
 
 (* Constructor closure environment *)
 
-type t = Cclosure.t Path.PMap.t
+type t = (Cclosure.t Var.VMap.t) list
 
-let empty = Path.PMap.empty
+let empty = [ Var.VMap.empty ]
+
+let current (cenv: t) =
+  (assert ((List.length cenv) > 0));
+  (List.hd cenv, List.tl cenv)
+
+let enter (cenv: t) =
+  Var.VMap.empty :: cenv
+
+let exit (cenv: t) =
+  (assert ((List.length cenv) > 0));
+  List.tl cenv
 
 let insert
-  (path: Path.t) (cclos: Cclosure.t) (cenv: t) =
-  Path.PMap.add path cclos cenv
+  (var: Var.t) (cclos: Cclosure.t) (cenv: t) =
+  let (now, old) = current cenv in
+  let now = Var.VMap.add var cclos now in
+  now :: old
 
-let find (path: Path.t) (cenv: t) =
-  Path.PMap.find path cenv
+let find
+  (var: Var.t) (cenv: t) =
+  let rec find' cenv =
+    match cenv with
+    | [] -> None
+    | now :: old ->
+      (match Var.VMap.find_opt var now with
+      | Some value -> Some value
+      | None -> find' old)
+  in
+  match find' cenv with
+  | Some cclos -> cclos 
+  | None ->
+      Printf.sprintf
+        "Variable %s not found" (Var.print var)
+      |> failwith
 
 let print (cenv: t) =
-  Printf.sprintf "{ %s }"
-    (String.concat "; "
-      (List.map
-        (fun (path, cclos) ->
-          Printf.sprintf "%s -> %s" 
-            (String.concat "." path) (Cclosure.print_cclos cclos))
-        (Path.PMap.bindings cenv)))
+  let print_binding var cclos acc =
+    Printf.sprintf "%s, %s -> %s"
+      acc (Var.print var) (Cclosure.print cclos)
+  in
+  let rec print' cenv =
+    match cenv with
+    | [] -> ""
+    | now :: old ->
+        "[ " ^ (Var.VMap.fold print_binding now "") ^ " ] / "
+        ^ (print' old)
+  in
+  print' cenv

@@ -21,9 +21,9 @@ let exit (env: t) =
   List.tl env
 
 let insert
-  (path: Var.t) (value: Value.t) (env: t) =
+  (var: Var.t) (value: Value.t) (env: t) =
   let (now, old) = current env in
-  let now = Var.VMap.add path value now in
+  let now = Var.VMap.add var value now in
   now :: old
 
 let find

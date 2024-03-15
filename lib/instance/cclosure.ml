@@ -21,7 +21,7 @@ type t =
 
 (* Utils *)
 
-let print_cclos (cclos: t) =
+let print (cclos: t) =
   match cclos with
   | Package { params } ->
       Printf.sprintf "Package { params = (%s) }"
