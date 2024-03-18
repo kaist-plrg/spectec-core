@@ -15,22 +15,7 @@
 
 open Syntax
 open Ast
-
-(* Utils *)
-
-let extract_base (value : Value.t) : Value.base =
-  match value with
-  | Value.Base bvalue -> bvalue
-  | _ -> Printf.sprintf "Not a base value: %s" (Value.print value) |> failwith
-
-let extract_bigint (bvalue : Value.base) : Bigint.t =
-  match bvalue with
-  | AInt value -> value
-  | Int { value; _ } -> value
-  | Bit { value; _ } -> value
-  | _ ->
-      Printf.sprintf "Not a bigint value: %s" (Value.print_base bvalue)
-      |> failwith
+open Value
 
 (* Bit manipulation *)
 

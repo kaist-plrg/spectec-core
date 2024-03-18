@@ -11,7 +11,10 @@ let empty = Path.PMap.empty
 let insert (path : Path.t) (obj : Object.t) (store : t) =
   Path.PMap.add path obj store
 
-let find (path : Path.t) (store : t) = Path.PMap.find path store
+let find (path : Path.t) (store : t) =
+  match Path.PMap.find_opt path store with
+  | Some obj -> obj
+  | None -> Printf.sprintf "Path %s not found" (Path.print path) |> failwith
 
 let print ?(indent = 0) (store : t) =
   let print_binding path obj acc =

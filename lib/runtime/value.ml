@@ -8,12 +8,15 @@ type base =
   | Int of { value : Bigint.t; width : Bigint.t }
   | Bit of { value : Bigint.t; width : Bigint.t }
   | String of string
+  | Tuple of base list
+  | Struct of { entries : (string * base) list }
+  | Header of { valid : bool; entries : (string * base) list }
 
 type t = Base of base | Ref of Path.t
 
-(* Utils *)
+(* Printers *)
 
-let print_base (bvalue : base) =
+let rec print_base (bvalue : base) =
   match bvalue with
   | Bool value -> Printf.sprintf "%b" value
   | AInt value -> Printf.sprintf "%s" (Bigint.to_string value)
@@ -22,8 +25,38 @@ let print_base (bvalue : base) =
   | Bit { value; width } ->
       Printf.sprintf "%sw%s" (Bigint.to_string width) (Bigint.to_string value)
   | String value -> Printf.sprintf "\"%s\"" value
+  | Tuple values ->
+      Printf.sprintf "(%s)" (String.concat ", " (List.map print_base values))
+  | Struct { entries } ->
+      Printf.sprintf "{%s}"
+        (String.concat ", "
+           (List.map
+              (fun (key, value) ->
+                Printf.sprintf "%s: %s" key (print_base value))
+              entries))
+  | Header { valid; entries } ->
+      Printf.sprintf "Header(%b, {%s})" valid
+        (String.concat ", "
+           (List.map
+              (fun (key, value) ->
+                Printf.sprintf "%s: %s" key (print_base value))
+              entries))
 
 let print (t : t) =
   match t with
   | Base bvalue -> print_base bvalue
   | Ref rvalue -> Printf.sprintf "Ref(%s)" (String.concat "." rvalue)
+
+(* Utils *)
+
+let extract_base (value : t) : base =
+  match value with
+  | Base bvalue -> bvalue
+  | _ -> Printf.sprintf "Not a base value: %s" (print value) |> failwith
+
+let extract_bigint (bvalue : base) : Bigint.t =
+  match bvalue with
+  | AInt value -> value
+  | Int { value; _ } -> value
+  | Bit { value; _ } -> value
+  | _ -> Printf.sprintf "Not a bigint value: %s" (print_base bvalue) |> failwith

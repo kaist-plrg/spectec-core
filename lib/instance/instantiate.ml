@@ -56,7 +56,7 @@ and eval_expr (env : env) (cenv : cenv) (store : store) (path : string list)
     (expr : Expression.t) : Value.t * store =
   match expr with
   | NamelessInstantiation { typ; args; _ } ->
-      let _, _, store = instantiate_expr env cenv store path typ args in
+      let store = instantiate_expr env cenv store path typ args in
       let value = Value.Ref path in
       (value, store)
   | _ ->
@@ -94,6 +94,27 @@ and eval_static_expr (env : env) (expr : Expression.t) : Value.t =
       let vlo = eval_static_expr env lo in
       let vhi = eval_static_expr env hi in
       Numerics.eval_bitstring_access vbits vlo vhi
+  | List { values; _ } ->
+      let vvalues =
+        List.map
+          (fun value -> eval_static_expr env value |> Value.extract_base)
+          values
+      in
+      let bvalue = Value.Tuple vvalues in
+      Value.Base bvalue
+  | Record { entries; _ } ->
+      let ventries =
+        List.map
+          (fun (entry : KeyValue.t) ->
+            let key = entry.key.str in
+            let value =
+              eval_static_expr env entry.value |> Value.extract_base
+            in
+            (key, value))
+          entries
+      in
+      let bvalue = Value.Struct { entries = ventries } in
+      Value.Base bvalue
   | UnaryOp { op; arg; _ } ->
       let varg = eval_static_expr env arg in
       Numerics.eval_unop op varg
@@ -214,12 +235,11 @@ and instantiate_cclos (env : env) (cenv : cenv) (store : store)
       store
 
 and instantiate_expr (env : env) (cenv : cenv) (store : store)
-    (path : string list) (typ : Type.t) (args : Argument.t list) :
-    env * cenv * store =
+    (path : string list) (typ : Type.t) (args : Argument.t list) : store =
   let typ = Pretty.print_type typ in
   let cclos = Cenv.find typ cenv in
   let store = instantiate_cclos env cenv store path cclos args in
-  (env, cenv, store)
+  store
 
 and instantiate_stmt (env : env) (cenv : cenv) (store : store)
     (path : string list) (stmt : Statement.t) : env * cenv * store =

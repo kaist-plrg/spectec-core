@@ -27,7 +27,7 @@ type t =
   | Function
   | ValueSet
 
-(* Utils *)
+(* Printer *)
 
 let print ?(indent = 0) (obj : t) =
   match obj with
