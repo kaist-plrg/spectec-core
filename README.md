@@ -39,8 +39,8 @@ $ make
 
 This creates an executable `p4cherry` in the project root.
 
-## Parse an Example File
+## Run parser (full), instantiation (WIP), and interpreter (not yet) an Example File
 
 ```shell
-$ ./p4cherry example/example.p4
+$ ./p4cherry test/arch example/example.p4
 ```
