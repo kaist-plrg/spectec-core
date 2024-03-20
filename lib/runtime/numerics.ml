@@ -559,3 +559,55 @@ let eval_bitstring_access (value : Value.t) (lvalue : Value.t)
     eval_bitstring_access' (extract value) (extract lvalue) (extract hvalue)
   in
   Value.Base bvalue
+
+(* Type cast evaluation *)
+
+let eval_cast_to_bool (value : Value.base) : Value.base =
+  match value with
+  | Bool b -> Bool b
+  | Bit { width; value } when width = Bigint.one -> Bool Bigint.(value = one)
+  | AInt value -> Bool Bigint.(value = one)
+  | _ -> failwith "cast to bool undefined"
+
+let eval_cast_to_bit (width : Bigint.t) (value : Value.base) : Value.base =
+  match value with
+  | Bool b ->
+      let value = if b then Bigint.one else Bigint.zero in
+      Bit { value; width }
+  | Int { value; _ }
+  | Bit { value; _ }
+  | AInt value -> bit_of_raw_int value width
+  | _ ->
+      Printf.sprintf "(TODO) Cast to bitstring undefined: %s" (Value.print_base value)
+      |> failwith
+
+let eval_cast_to_int (width : Bigint.t) (value : Value.base) : Value.base =
+  match value with
+  | Bit { value; _ }
+  | Int { value; _ }
+  | AInt value -> int_of_raw_int value width
+  | _ ->
+      Printf.sprintf "(TODO) Cast to integer undefined: %s" (Value.print_base value)
+      |> failwith
+
+let rec eval_cast (tenv : Tenv.t) (typ : Type.t) (value : Value.t) : Value.t =
+  match typ with
+  | Bool _ ->
+      let bvalue = eval_cast_to_bool (Value.extract_base value) in
+      Value.Base bvalue
+  | BitType { expr = Int { i; _ }; _ } ->
+      let bvalue = eval_cast_to_bit i.value (Value.extract_base value) in
+      Value.Base bvalue
+  | IntType { expr = Int { i; _ }; _ } ->
+      let bvalue = eval_cast_to_int i.value (Value.extract_base value) in
+      Value.Base bvalue
+  | TypeName { name; _ } ->
+      begin match name with
+      | BareName name -> eval_cast tenv (Tenv.find name.str tenv) value
+      | _ ->
+          Printf.sprintf "(TODO) Cast to type %s undefined" (Pretty.print_type typ)
+          |> failwith
+      end
+  | _ ->
+      Printf.sprintf "(TODO) Cast to type %s undefined" (Pretty.print_type typ)
+      |> failwith

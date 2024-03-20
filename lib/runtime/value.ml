@@ -49,14 +49,14 @@ let print (t : t) =
 
 (* Utils *)
 
-let extract_base (value : t) : base =
-  match value with
-  | Base bvalue -> bvalue
-  | _ -> Printf.sprintf "Not a base value: %s" (print value) |> failwith
-
 let extract_bigint (bvalue : base) : Bigint.t =
   match bvalue with
   | AInt value -> value
   | Int { value; _ } -> value
   | Bit { value; _ } -> value
-  | _ -> Printf.sprintf "Not a bigint value: %s" (print_base bvalue) |> failwith
+  | _ -> Printf.sprintf "Not a int/bit value: %s" (print_base bvalue) |> failwith
+
+let extract_base (value : t) : base =
+  match value with
+  | Base bvalue -> bvalue
+  | _ -> Printf.sprintf "Not a base value: %s" (print value) |> failwith
