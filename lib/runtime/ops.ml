@@ -554,7 +554,7 @@ let eval_bitstring_access' (value : Bigint.t) (lvalue : Bigint.t)
 
 let eval_bitstring_access (value : Value.t) (lvalue : Value.t)
     (hvalue : Value.t) : Value.t =
-  let extract value = extract_base value |> extract_bigint in
+  let extract value = extract_bigint value in
   let bvalue =
     eval_bitstring_access' (extract value) (extract lvalue) (extract hvalue)
   in
@@ -590,24 +590,59 @@ let eval_cast_to_int (width : Bigint.t) (value : Value.base) : Value.base =
       Printf.sprintf "(TODO) Cast to integer undefined: %s" (Value.print_base value)
       |> failwith
 
-let rec eval_cast (tenv : Tenv.t) (typ : Type.t) (value : Value.t) : Value.t =
+let rec eval_cast_entries (entries: (string * Typ.base) list) (value: Value.base) : (string * Value.base) list =
+  match value with
+  | Tuple values ->
+      assert (List.length entries = List.length values);
+      List.map2
+        (fun (field, typ) value ->
+          let value = eval_cast typ (Value.Base value) |> Value.extract_base in
+          (field, value))
+      entries values
+  | Header { entries; _ }
+  | Struct { entries } -> entries
+  | _ ->
+      Printf.sprintf "(TODO) Cast to entries undefined: %s" (Value.print_base value)
+      |> failwith
+
+and eval_cast_tuple (typs : Typ.base list) (value : Value.base) : Value.base =
+  match value with
+  | Value.Tuple values ->
+      assert (List.length typs = List.length values);
+      let values =
+        List.map2
+          (fun typ value ->
+            eval_cast typ (Value.Base value)
+            |> Value.extract_base)
+          typs values
+      in
+      Value.Tuple values
+  | _ ->
+      Printf.sprintf "(TODO) Cast to tuple undefined: %s" (Value.print_base value)
+      |> failwith
+
+and eval_cast (typ : Typ.base) (value : Value.t) : Value.t =
   match typ with
-  | Bool _ ->
+  | Bool ->
       let bvalue = eval_cast_to_bool (Value.extract_base value) in
       Value.Base bvalue
-  | BitType { expr = Int { i; _ }; _ } ->
-      let bvalue = eval_cast_to_bit i.value (Value.extract_base value) in
+  | Bit { width } ->
+      let bvalue = eval_cast_to_bit width (Value.extract_base value) in
       Value.Base bvalue
-  | IntType { expr = Int { i; _ }; _ } ->
-      let bvalue = eval_cast_to_int i.value (Value.extract_base value) in
+  | Int { width } ->
+      let bvalue = eval_cast_to_int width (Value.extract_base value) in
       Value.Base bvalue
-  | TypeName { name; _ } ->
-      begin match name with
-      | BareName name -> eval_cast tenv (Tenv.find name.str tenv) value
-      | _ ->
-          Printf.sprintf "(TODO) Cast to type %s undefined" (Pretty.print_type typ)
-          |> failwith
-      end
+  | Tuple typs ->
+      let bvalues = eval_cast_tuple typs (Value.extract_base value) in
+      Value.Base bvalues
+  | Header { entries } ->
+      let entries = eval_cast_entries entries (Value.extract_base value) in
+      let bvalue = Value.Header { valid = true; entries } in
+      Value.Base bvalue
+  | Struct { entries } ->
+      let entries = eval_cast_entries entries (Value.extract_base value) in
+      let bvalue = Value.Struct { entries } in
+      Value.Base bvalue
   | _ ->
-      Printf.sprintf "(TODO) Cast to type %s undefined" (Pretty.print_type typ)
+      Printf.sprintf "(TODO) Cast to type %s undefined" (Typ.print (Typ.Base typ))
       |> failwith

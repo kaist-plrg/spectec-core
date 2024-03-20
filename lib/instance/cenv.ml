@@ -1,3 +1,5 @@
+open Syntax
+open Ast
 open Utils
 
 (* Constructor closure environment *)
@@ -32,7 +34,26 @@ let find (var : Var.t) (cenv : t) =
   in
   match find' cenv with
   | Some cclos -> cclos
-  | None -> Printf.sprintf "Variable %s not found" (Var.print var) |> failwith
+  | None -> Printf.sprintf "Constructor closure %s not found" (Var.print var) |> failwith
+
+let find_toplevel (var : Var.t) (cenv : t) =
+  let top = List.rev cenv |> List.hd in
+  match Var.VMap.find_opt var top with
+  | Some value -> value
+  | None -> Printf.sprintf "Constructor closure %s not found in top scope" (Var.print var) |> failwith
+
+let rec find_from_type (typ : Type.t) (cenv : t) =
+  match typ with
+  | Type.TypeName { name = Name.BareName text; _ } ->
+      find text.str cenv
+  | Type.TypeName { name = Name.QualifiedName ([], text); _ } ->
+      find_toplevel text.str cenv
+  (* (TODO) how to consider the type arguments? *)
+  | Type.SpecializedType { base; _ } ->
+      find_from_type base cenv
+  | _ ->
+    Printf.sprintf
+      "Constructor closure %s not found" (Pretty.print_type typ) |> failwith
 
 let print ?(indent = 0) (cenv : t) =
   let print_binding var cclos acc =

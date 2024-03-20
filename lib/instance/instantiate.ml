@@ -10,12 +10,34 @@ type tenv = Tenv.t
 type cenv = Cenv.t
 type store = Store.t
 
+(* Utils *)
+
+let rec extend_path_with_type (path : string list) (typ : Type.t) : string list =
+  match typ with
+  | TypeName { name; _ } ->
+      begin match name with
+      | BareName name -> path @ [ name.str ]
+      | QualifiedName (prefix, name) ->
+          List.map (fun (name : Text.t) -> name.str) (prefix @ [ name ])
+      end
+  (* (TODO) how to consider the type arguments? *)
+  | SpecializedType { base; _ } ->
+      extend_path_with_type path base
+  | _ ->
+      Printf.sprintf "(extend_path_with_type) Unexpected type: %s"
+        (Pretty.print_type typ)
+      |> failwith
+
+(* Instantiation *)
+
+(* Instantiating a declaration *)
+
 (* Loading the result of a declaration
-   (other than instantiation) to env or cenv *)
+   (other than instantiation) to env, tenv, or cenv *)
 
 let rec load (env : env) (tenv : tenv) (cenv : cenv) (decl : Declaration.t) : env * tenv * cenv =
   match decl with
-  (* Loading constructor closures *)
+  (* Loading constructor closures to cenv *)
   | PackageType { name; params; _ } ->
       let name = name.str in
       let cclos = Cclosure.Package { params } in
@@ -40,39 +62,107 @@ let rec load (env : env) (tenv : tenv) (cenv : cenv) (decl : Declaration.t) : en
       let cclos = Cclosure.Extern in
       let cenv = Cenv.insert name cclos cenv in
       (env, tenv, cenv)
-  (* Loading types *)
-  (* (TODO) assume typedefs and newtypes are at top level only *)
+  (* Loading types to tenv *)
+  (* (TODO) assume type declarations are at top level only *)
   | TypeDef { name; typ_or_decl; _ } ->
       let name = name.str in
       begin match typ_or_decl with
       | Alternative.Left typ ->
+          let typ = Static.eval_typ env tenv typ in
           let tenv = Tenv.insert name typ tenv in
           (env, tenv, cenv)
       | Alternative.Right _decl ->
-          Printf.sprintf "(TODO: load) Loading typedef %s" name
-          |> print_endline;
+          Printf.eprintf "(TODO: load) Loading typedef with decl %s\n" name;
           (env, tenv, cenv)
       end
-  (* (TODO) newtypes need special care when casting *)
   | NewType { name; typ_or_decl; _ } ->
       let name = name.str in
       begin match typ_or_decl with
       | Alternative.Left typ ->
+          let typ = Static.eval_typ env tenv typ in
           let tenv = Tenv.insert name typ tenv in
           (env, tenv, cenv)
       | Alternative.Right _decl ->
-          Printf.sprintf "(TODO: load) Loading newtype %s" name
-          |> print_endline;
+          Printf.eprintf "(TODO: load) Loading newtype with decl %s\n" name;
           (env, tenv, cenv)
       end
-  (* Loading constants *)
+  | Enum { name; members; _ } ->
+      let name = name.str in
+      let entries =
+        List.map
+          (fun (member: Text.t) -> member.str)
+          members
+      in
+      let btyp = Typ.Enum { entries } in
+      let typ = Typ.Base btyp in
+      let tenv = Tenv.insert name typ tenv in
+      (env, tenv, cenv)
+  | SerializableEnum { name; typ; members; _ } ->
+      let name = name.str in
+      let typ = Static.eval_base_typ env tenv typ in
+      let entries =
+        List.map
+          (fun member ->
+            let member : Text.t = fst member in
+            member.str)
+          members
+      in
+      let btyp = Typ.SEnum { typ; entries } in
+      let typ = Typ.Base btyp in
+      let tenv = Tenv.insert name typ tenv in
+      (env, tenv, cenv)
+  | Header { name; fields; _ } ->
+      let name = name.str in
+      let entries =
+        List.map
+          (fun (field: Declaration.field) ->
+            let name = field.name.str in
+            let typ = Static.eval_base_typ env tenv field.typ in
+            (name, typ))
+          fields
+      in
+      let btyp = Typ.Header { entries } in
+      let typ = Typ.Base btyp in
+      let tenv = Tenv.insert name typ tenv in
+      (env, tenv, cenv)
+  | HeaderUnion { name; fields; _ } ->
+      let name = name.str in
+      let entries =
+        List.map
+          (fun (field: Declaration.field) ->
+            let name = field.name.str in
+            let typ = Static.eval_base_typ env tenv field.typ in
+            (name, typ))
+          fields
+      in
+      let btyp = Typ.Union { entries } in
+      let typ = Typ.Base btyp in
+      let tenv = Tenv.insert name typ tenv in
+      (env, tenv, cenv)
+  | Struct { name; fields; _ } ->
+      let name = name.str in
+      let entries =
+        List.map
+          (fun (field: Declaration.field) ->
+            let name = field.name.str in
+            let typ = Static.eval_base_typ env tenv field.typ in
+            (name, typ))
+          fields
+      in
+      let btyp = Typ.Struct { entries } in
+      let typ = Typ.Base btyp in
+      let tenv = Tenv.insert name typ tenv in
+      (env, tenv, cenv)
+  (* Loading constants to env *)
   | Function { name; _ } ->
-      Printf.sprintf "(TODO: load) Loading function %s" name.str
-      |> print_endline;
+      Printf.eprintf "(TODO: load) Loading function %s\n" name.str;
       (env, tenv, cenv)
   (* Loading constants *)
-  | Constant { name; value; _ } ->
-      let value = eval_static_expr env tenv value in
+  (* (TODO) consider implicit casts? *)
+  | Constant { name; typ; value; _ } ->
+      let typ = Static.eval_base_typ env tenv typ in
+      let value = Static.eval_expr env tenv value in
+      let value = Ops.eval_cast typ value in
       let env = Env.insert name.str value env in
       (env, tenv, cenv)
   | _ -> (env, tenv, cenv)
@@ -88,74 +178,8 @@ and eval_expr (env : env) (tenv : tenv) (cenv : cenv) (store : store) (path : st
       let value = Value.Ref path in
       (value, store)
   | _ ->
-      let value = eval_static_expr env tenv expr in
+      let value = Static.eval_expr env tenv expr in
       (value, store)
-
-(* Evaluating compile-time known values *)
-
-and eval_static_expr (env : env) (tenv : tenv) (expr : Expression.t) : Value.t =
-  match expr with
-  | True _ ->
-      let bvalue = Value.Bool true in
-      Value.Base bvalue
-  | False _ ->
-      let bvalue = Value.Bool false in
-      Value.Base bvalue
-  | Int { i; _ } ->
-      let value = i.value in
-      let bvalue =
-        match i.width_signed with
-        | Some (width, signed) ->
-            if signed then Value.Int { value; width }
-            else Value.Bit { value; width }
-        | None -> Value.AInt value
-      in
-      Value.Base bvalue
-  | String { text; _ } ->
-      let bvalue = Value.String text.str in
-      Value.Base bvalue
-  | Name { name = BareName text; _ } ->
-      let var = text.str in
-      Env.find var env
-  | BitStringAccess { bits; lo; hi; _ } ->
-      let vbits = eval_static_expr env tenv bits in
-      let vlo = eval_static_expr env tenv lo in
-      let vhi = eval_static_expr env tenv hi in
-      Numerics.eval_bitstring_access vbits vlo vhi
-  | List { values; _ } ->
-      let vvalues =
-        List.map
-          (fun value -> eval_static_expr env tenv value |> Value.extract_base)
-          values
-      in
-      let bvalue = Value.Tuple vvalues in
-      Value.Base bvalue
-  | Record { entries; _ } ->
-      let ventries =
-        List.map
-          (fun (entry : KeyValue.t) ->
-            let key = entry.key.str in
-            let value =
-              eval_static_expr env tenv entry.value |> Value.extract_base
-            in
-            (key, value))
-          entries
-      in
-      let bvalue = Value.Struct { entries = ventries } in
-      Value.Base bvalue
-  | UnaryOp { op; arg; _ } ->
-      let varg = eval_static_expr env tenv arg in
-      Numerics.eval_unop op varg
-  | BinaryOp { op; args = arg_fst, arg_snd; _ } ->
-      let varg_fst = eval_static_expr env tenv arg_fst in
-      let varg_snd = eval_static_expr env tenv arg_snd in
-      Numerics.eval_binop op varg_fst varg_snd
-  | Cast { typ; expr; _ } ->
-      let vexpr = eval_static_expr env tenv expr in
-      Numerics.eval_cast tenv typ vexpr
-  | _ ->
-      Printf.sprintf "(TODO: eval_static_expr) %s" (Pretty.print_expr expr)
-      |> failwith
 
 and eval_args (env : env) (tenv : tenv) (cenv : cenv) (store : store) (path : string list)
     (params : Parameter.t list) (args : Argument.t list) : env * store =
@@ -177,7 +201,7 @@ and eval_args (env : env) (tenv : tenv) (cenv : cenv) (store : store) (path : st
         | Expression { value; _ } ->
             (params @ [ param.variable.str ], args @ [ value ])
         | KeyValue { key; value; _ } -> (params @ [ key.str ], args @ [ value ])
-        | _ -> failwith "Instantiation argument must not be missing.")
+        | _ -> failwith "(eval_args) Instantiation argument must not be missing.")
       ([], []) params args
   in
   List.fold_left2
@@ -267,8 +291,7 @@ and instantiate_cclos (env : env) (tenv : tenv) (cenv : cenv) (store : store)
 
 and instantiate_expr (env : env) (tenv : tenv) (cenv : cenv) (store : store)
     (path : string list) (typ : Type.t) (args : Argument.t list) : store =
-  let typ = Pretty.print_type typ in
-  let cclos = Cenv.find typ cenv in
+  let cclos = Cenv.find_from_type typ cenv in
   let store = instantiate_cclos env tenv cenv store path cclos args in
   store
 
@@ -282,10 +305,10 @@ and instantiate_stmt (env : env) (tenv : tenv) (cenv : cenv) (store : store)
           instantiate_stmt env tenv cenv store path stmt)
         (env, cenv, store) stmts
   | DirectApplication { typ; args; _ } ->
-      let typ = Pretty.print_type typ in
-      let cclos = Cenv.find typ cenv in
+      let cclos = Cenv.find_from_type typ cenv in
+      let cpath = extend_path_with_type path typ in
       let store =
-        instantiate_cclos env tenv cenv store (path @ [ typ ]) cclos args
+        instantiate_cclos env tenv cenv store cpath cclos args
       in
       (env, cenv, store)
   | _ -> (env, cenv, store)
@@ -294,12 +317,12 @@ and instantiate_decl (env : env) (tenv : tenv) (cenv : cenv) (store : store)
     (path : string list) (decl : Declaration.t) : env * tenv * cenv * store =
   match decl with
   (* Explicit instantiation *)
-  | Instantiation { typ; args; name; _ } ->
+  | Instantiation { name; typ; args; _ } ->
       let name = name.str in
-      let typ = Pretty.print_type typ in
-      let cclos = Cenv.find typ cenv in
+      let cclos = Cenv.find_from_type typ cenv in
+      let cpath = extend_path_with_type path typ in
       let store =
-        instantiate_cclos env tenv cenv store (path @ [ name ]) cclos args
+        instantiate_cclos env tenv cenv store cpath cclos args
       in
       let value = Value.Ref (path @ [ name ]) in
       let env = Env.insert name value env in

@@ -1,5 +1,3 @@
-open Syntax
-open Ast
 open Utils
 
 (* Type environment *)
@@ -7,7 +5,7 @@ open Utils
     1. the map is non-empty
     2. the first element of the list is the most recent scope *)
 
-type t = Type.t Var.VMap.t list
+type t = Typ.t Var.VMap.t list
 
 let empty = [ Var.VMap.empty ]
 
@@ -21,7 +19,7 @@ let exit (env : t) =
   assert (List.length env > 0);
   List.tl env
 
-let insert (var : Var.t) (typ : Type.t) (env : t) =
+let insert (var : Var.t) (typ : Typ.t) (env : t) =
   let now, old = current env in
   let now = Var.VMap.add var typ now in
   now :: old
@@ -39,9 +37,16 @@ let find (var : Var.t) (env : t) =
   | Some typ -> typ 
   | None -> Printf.sprintf "Type variable %s not found" (Var.print var) |> failwith
 
+let find_toplevel (var : Var.t) (env : t) =
+  let top = List.rev env |> List.hd in
+  match Var.VMap.find_opt var top with
+  | Some typ -> typ
+  | None -> Printf.sprintf "Type variable %s not found in top scope" (Var.print var)
+             |> failwith
+
 let print ?(indent = 0) (env : t) =
   let print_binding var typ acc =
-    acc @ [ Printf.sprintf "%s: %s" (Var.print var) (Pretty.print_type typ) ]
+    acc @ [ Printf.sprintf "%s: %s" (Var.print var) (Typ.print typ) ]
   in
   let print' acc env =
     let bindings = Var.VMap.fold print_binding env [] in

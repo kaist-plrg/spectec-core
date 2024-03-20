@@ -1,4 +1,6 @@
 (library
  (name runtime)
  (libraries syntax bignum)
- (modules tenv value env object store numerics))
+ (modules
+   typ tenv value env object store
+   ops static))
