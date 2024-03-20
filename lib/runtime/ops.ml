@@ -414,7 +414,18 @@ let rec eval_binop_gt (lvalue : Value.base) (rvalue : Value.base) : Value.base =
         (Value.print_base rvalue)
       |> failwith
 
-let rec eval_binop_eq (lvalue : Value.base) (rvalue : Value.base) : bool =
+let rec eval_binop_eq_entries (lentries: (string * Value.base) list) (rentries: (string * Value.base) list) : bool =
+  List.length lentries = List.length rentries
+  && List.for_all
+    (fun lentry ->
+      let (lfield, lvalue) = lentry in
+      try
+        let rvalue = List.assoc lfield rentries in
+        eval_binop_eq lvalue rvalue
+      with _ -> false)
+    lentries
+
+and eval_binop_eq (lvalue : Value.base) (rvalue : Value.base) : bool =
   match (lvalue, rvalue) with
   | Bool b1, Bool b2 -> b1 = b2
   | Bit { value = lvalue; _ }, Bit { value = rvalue; _ }
@@ -429,6 +440,15 @@ let rec eval_binop_eq (lvalue : Value.base) (rvalue : Value.base) : bool =
       eval_binop_eq lvalue (int_of_raw_int rvalue width)
   | AInt lvalue, Int { width; _ } ->
       eval_binop_eq (int_of_raw_int lvalue width) rvalue
+  | Header { valid = lvalid; entries = lentries }, Header { valid = rvalid; entries = rentries } ->
+      lvalid = rvalid
+      && eval_binop_eq_entries lentries rentries
+  | Struct { entries = lentries }, Struct { entries = rentries } ->
+      List.length lentries = List.length rentries
+      && eval_binop_eq_entries lentries rentries
+  | Tuple lvalues, Tuple rvalues ->
+      List.length lvalues = List.length rvalues
+      && List.for_all2 (fun lvalue rvalue -> eval_binop_eq lvalue rvalue) lvalues rvalues
   | _ ->
       Printf.sprintf "Invalid equality: %s == %s" (Value.print_base lvalue)
         (Value.print_base rvalue)
@@ -626,6 +646,10 @@ and eval_cast (typ : Typ.base) (value : Value.t) : Value.t =
   match typ with
   | Bool ->
       let bvalue = eval_cast_to_bool (Value.extract_base value) in
+      Value.Base bvalue
+  | AInt ->
+      let value = Value.extract_bigint value in
+      let bvalue = Value.AInt value in
       Value.Base bvalue
   | Bit { width } ->
       let bvalue = eval_cast_to_bit width (Value.extract_base value) in
