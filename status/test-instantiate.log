@@ -1,24 +1,24 @@
 Running instantiation tests on 625 files
-Instantiation fail: test/program/issue1304.p4 due to File "lib/instance/instantiate.ml", line 187, characters 2-8: Assertion failed
-Instantiation fail: test/program/named-arg1.p4 due to File "lib/instance/instantiate.ml", line 187, characters 2-8: Assertion failed
+Instantiation fail: test/program/issue1304.p4 due to File "lib/instance/instantiate.ml", line 177, characters 2-8: Assertion failed
+Instantiation fail: test/program/named-arg1.p4 due to File "lib/instance/instantiate.ml", line 177, characters 2-8: Assertion failed
 Instantiation fail: test/program/shift-int.p4 due to Failure("(TODO) Cast to type int undefined")
 Instantiation fail: test/program/factory2.p4 due to Failure("(TODO: eval_expr) createWidget(16w0, 8w0)")
-Instantiation fail: test/program/issue1334.p4 due to File "lib/instance/instantiate.ml", line 187, characters 2-8: Assertion failed
-Instantiation fail: test/program/issue1107.p4 due to File "lib/instance/instantiate.ml", line 187, characters 2-8: Assertion failed
-Instantiation fail: test/program/issue1566-bmv2.p4 due to File "lib/instance/instantiate.ml", line 187, characters 2-8: Assertion failed
+Instantiation fail: test/program/issue1334.p4 due to File "lib/instance/instantiate.ml", line 177, characters 2-8: Assertion failed
+Instantiation fail: test/program/issue1107.p4 due to File "lib/instance/instantiate.ml", line 177, characters 2-8: Assertion failed
+Instantiation fail: test/program/issue1566-bmv2.p4 due to File "lib/instance/instantiate.ml", line 177, characters 2-8: Assertion failed
 Instantiation fail: test/program/intType.p4 due to Failure("(TODO) Cast to type int undefined")
-Instantiation fail: test/program/issue561-bmv2.p4 due to File "lib/instance/instantiate.ml", line 187, characters 2-8: Assertion failed
-Instantiation fail: test/program/issue1937-2-bmv2.p4 due to File "lib/instance/instantiate.ml", line 187, characters 2-8: Assertion failed
+Instantiation fail: test/program/issue561-bmv2.p4 due to File "lib/instance/instantiate.ml", line 177, characters 2-8: Assertion failed
+Instantiation fail: test/program/issue1937-2-bmv2.p4 due to File "lib/instance/instantiate.ml", line 177, characters 2-8: Assertion failed
 Instantiation fail: test/program/issue1997.p4 due to Failure("(TODO) Cast to type int undefined")
-Instantiation fail: test/program/issue1937-3-bmv2.p4 due to File "lib/instance/instantiate.ml", line 187, characters 2-8: Assertion failed
-Instantiation fail: test/program/default-package-argument.p4 due to File "lib/instance/instantiate.ml", line 187, characters 2-8: Assertion failed
-Instantiation fail: test/program/issue1566.p4 due to File "lib/instance/instantiate.ml", line 187, characters 2-8: Assertion failed
+Instantiation fail: test/program/issue1937-3-bmv2.p4 due to File "lib/instance/instantiate.ml", line 177, characters 2-8: Assertion failed
+Instantiation fail: test/program/default-package-argument.p4 due to File "lib/instance/instantiate.ml", line 177, characters 2-8: Assertion failed
+Instantiation fail: test/program/issue1566.p4 due to File "lib/instance/instantiate.ml", line 177, characters 2-8: Assertion failed
 Instantiation fail: test/program/tlv.p4 due to Failure("(TODO) Cast to type int undefined")
-Instantiation fail: test/program/issue1937.p4 due to File "lib/instance/instantiate.ml", line 187, characters 2-8: Assertion failed
-Instantiation fail: test/program/issue1470-bmv2.p4 due to File "lib/instance/instantiate.ml", line 187, characters 2-8: Assertion failed
+Instantiation fail: test/program/issue1937.p4 due to File "lib/instance/instantiate.ml", line 177, characters 2-8: Assertion failed
+Instantiation fail: test/program/issue1470-bmv2.p4 due to File "lib/instance/instantiate.ml", line 177, characters 2-8: Assertion failed
 Instantiation fail: test/program/enum-folding.p4 due to Failure("(TODO: eval_expr) X.a")
 Instantiation fail: test/program/list-compare.p4 due to Failure("Invalid equality: (32w10, 32w20) == (32w30, 32w40)")
-Instantiation fail: test/program/issue1333.p4 due to File "lib/instance/instantiate.ml", line 187, characters 2-8: Assertion failed
+Instantiation fail: test/program/issue1333.p4 due to File "lib/instance/instantiate.ml", line 177, characters 2-8: Assertion failed
 Instantiation fail: test/program/factory1.p4 due to Failure("(TODO: eval_expr) createWidget(16w0, 8w0)")
 Parser fails on file: 0 / 625
 Instantiation fails: 21 / 625

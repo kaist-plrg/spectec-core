@@ -12,18 +12,13 @@ type store = Store.t
 
 (* Utils *)
 
-let rec extend_path_with_type (path : string list) (typ : Type.t) : string list
-    =
+let rec name_from_type (typ : Type.t) : string =
   match typ with
-  | TypeName { name; _ } -> (
-      match name with
-      | BareName name -> path @ [ name.str ]
-      | QualifiedName (prefix, name) ->
-          List.map (fun (name : Text.t) -> name.str) (prefix @ [ name ]))
-  (* (TODO) how to consider the type arguments? *)
-  | SpecializedType { base; _ } -> extend_path_with_type path base
+  | TypeName { name = BareName text; _ } -> text.str
+  (* (TODO) how to consider type arguments? *)
+  | SpecializedType { base; _ } -> name_from_type base
   | _ ->
-      Printf.sprintf "(extend_path_with_type) Unexpected type: %s"
+      Printf.sprintf "(name_from_type) Unexpected type: %s"
         (Pretty.print_type typ)
       |> failwith
 
@@ -301,9 +296,11 @@ and instantiate_stmt (env : env) (tenv : tenv) (cenv : cenv) (store : store)
           instantiate_stmt env tenv cenv store path stmt)
         (env, cenv, store) stmts
   | DirectApplication { typ; args; _ } ->
+      let name = name_from_type typ in
       let cclos = Cenv.find_from_type typ cenv in
-      let cpath = extend_path_with_type path typ in
-      let store = instantiate_cclos env tenv cenv store cpath cclos args in
+      let store = instantiate_cclos env tenv cenv store (path @ [ name ]) cclos args in
+      let value = Value.Ref (path @ [ name ]) in
+      let env = Env.insert name value env in
       (env, cenv, store)
   | _ -> (env, cenv, store)
 
@@ -314,8 +311,7 @@ and instantiate_decl (env : env) (tenv : tenv) (cenv : cenv) (store : store)
   | Instantiation { name; typ; args; _ } ->
       let name = name.str in
       let cclos = Cenv.find_from_type typ cenv in
-      let cpath = extend_path_with_type path typ in
-      let store = instantiate_cclos env tenv cenv store cpath cclos args in
+      let store = instantiate_cclos env tenv cenv store (path @ [ name ]) cclos args in
       let value = Value.Ref (path @ [ name ]) in
       let env = Env.insert name value env in
       (env, tenv, cenv, store)
