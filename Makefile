@@ -21,6 +21,13 @@ build:
 fmt:
 	dune build @fmt --auto-promote
 
+# Test Status
+
+.PHONY: test-status
+
+test-status:
+	cd status && ./test.sh
+
 # Cleanup
 
 .PHONY: clean
