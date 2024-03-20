@@ -54,10 +54,11 @@ let extract_base (value : t) : base =
   | Base bvalue -> bvalue
   | _ -> Printf.sprintf "Not a base value: %s" (print value) |> failwith
 
-let extract_bigint (value: t) : Bigint.t =
+let extract_bigint (value : t) : Bigint.t =
   let bvalue = extract_base value in
   match bvalue with
   | AInt value -> value
   | Int { value; _ } -> value
   | Bit { value; _ } -> value
-  | _ -> Printf.sprintf "Not a int/bit value: %s" (print_base bvalue) |> failwith
+  | _ ->
+      Printf.sprintf "Not a int/bit value: %s" (print_base bvalue) |> failwith

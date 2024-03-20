@@ -41,8 +41,9 @@ let find_toplevel (var : Var.t) (env : t) =
   let top = List.rev env |> List.hd in
   match Var.VMap.find_opt var top with
   | Some value -> value
-  | None -> Printf.sprintf "Variable %s not found in top scope" (Var.print var)
-             |> failwith
+  | None ->
+      Printf.sprintf "Variable %s not found in top scope" (Var.print var)
+      |> failwith
 
 let print ?(indent = 0) (env : t) =
   let print_binding var value acc =

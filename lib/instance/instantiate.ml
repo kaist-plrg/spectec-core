@@ -12,17 +12,16 @@ type store = Store.t
 
 (* Utils *)
 
-let rec extend_path_with_type (path : string list) (typ : Type.t) : string list =
+let rec extend_path_with_type (path : string list) (typ : Type.t) : string list
+    =
   match typ with
-  | TypeName { name; _ } ->
-      begin match name with
+  | TypeName { name; _ } -> (
+      match name with
       | BareName name -> path @ [ name.str ]
       | QualifiedName (prefix, name) ->
-          List.map (fun (name : Text.t) -> name.str) (prefix @ [ name ])
-      end
+          List.map (fun (name : Text.t) -> name.str) (prefix @ [ name ]))
   (* (TODO) how to consider the type arguments? *)
-  | SpecializedType { base; _ } ->
-      extend_path_with_type path base
+  | SpecializedType { base; _ } -> extend_path_with_type path base
   | _ ->
       Printf.sprintf "(extend_path_with_type) Unexpected type: %s"
         (Pretty.print_type typ)
@@ -35,7 +34,8 @@ let rec extend_path_with_type (path : string list) (typ : Type.t) : string list 
 (* Loading the result of a declaration
    (other than instantiation) to env, tenv, or cenv *)
 
-let rec load (env : env) (tenv : tenv) (cenv : cenv) (decl : Declaration.t) : env * tenv * cenv =
+let rec load (env : env) (tenv : tenv) (cenv : cenv) (decl : Declaration.t) :
+    env * tenv * cenv =
   match decl with
   (* Loading constructor closures to cenv *)
   | PackageType { name; params; _ } ->
@@ -64,35 +64,29 @@ let rec load (env : env) (tenv : tenv) (cenv : cenv) (decl : Declaration.t) : en
       (env, tenv, cenv)
   (* Loading types to tenv *)
   (* (TODO) assume type declarations are at top level only *)
-  | TypeDef { name; typ_or_decl; _ } ->
+  | TypeDef { name; typ_or_decl; _ } -> (
       let name = name.str in
-      begin match typ_or_decl with
+      match typ_or_decl with
       | Alternative.Left typ ->
           let typ = Static.eval_typ env tenv typ in
           let tenv = Tenv.insert name typ tenv in
           (env, tenv, cenv)
       | Alternative.Right _decl ->
           Printf.eprintf "(TODO: load) Loading typedef with decl %s\n" name;
-          (env, tenv, cenv)
-      end
-  | NewType { name; typ_or_decl; _ } ->
+          (env, tenv, cenv))
+  | NewType { name; typ_or_decl; _ } -> (
       let name = name.str in
-      begin match typ_or_decl with
+      match typ_or_decl with
       | Alternative.Left typ ->
           let typ = Static.eval_typ env tenv typ in
           let tenv = Tenv.insert name typ tenv in
           (env, tenv, cenv)
       | Alternative.Right _decl ->
           Printf.eprintf "(TODO: load) Loading newtype with decl %s\n" name;
-          (env, tenv, cenv)
-      end
+          (env, tenv, cenv))
   | Enum { name; members; _ } ->
       let name = name.str in
-      let entries =
-        List.map
-          (fun (member: Text.t) -> member.str)
-          members
-      in
+      let entries = List.map (fun (member : Text.t) -> member.str) members in
       let btyp = Typ.Enum { entries } in
       let typ = Typ.Base btyp in
       let tenv = Tenv.insert name typ tenv in
@@ -115,7 +109,7 @@ let rec load (env : env) (tenv : tenv) (cenv : cenv) (decl : Declaration.t) : en
       let name = name.str in
       let entries =
         List.map
-          (fun (field: Declaration.field) ->
+          (fun (field : Declaration.field) ->
             let name = field.name.str in
             let typ = Static.eval_base_typ env tenv field.typ in
             (name, typ))
@@ -129,7 +123,7 @@ let rec load (env : env) (tenv : tenv) (cenv : cenv) (decl : Declaration.t) : en
       let name = name.str in
       let entries =
         List.map
-          (fun (field: Declaration.field) ->
+          (fun (field : Declaration.field) ->
             let name = field.name.str in
             let typ = Static.eval_base_typ env tenv field.typ in
             (name, typ))
@@ -143,7 +137,7 @@ let rec load (env : env) (tenv : tenv) (cenv : cenv) (decl : Declaration.t) : en
       let name = name.str in
       let entries =
         List.map
-          (fun (field: Declaration.field) ->
+          (fun (field : Declaration.field) ->
             let name = field.name.str in
             let typ = Static.eval_base_typ env tenv field.typ in
             (name, typ))
@@ -170,8 +164,8 @@ let rec load (env : env) (tenv : tenv) (cenv : cenv) (decl : Declaration.t) : en
 (* Evaluating instantiation arguments,
    which may contain nameless instantiation *)
 
-and eval_expr (env : env) (tenv : tenv) (cenv : cenv) (store : store) (path : string list)
-    (expr : Expression.t) : Value.t * store =
+and eval_expr (env : env) (tenv : tenv) (cenv : cenv) (store : store)
+    (path : string list) (expr : Expression.t) : Value.t * store =
   match expr with
   | NamelessInstantiation { typ; args; _ } ->
       let store = instantiate_expr env tenv cenv store path typ args in
@@ -181,8 +175,9 @@ and eval_expr (env : env) (tenv : tenv) (cenv : cenv) (store : store) (path : st
       let value = Static.eval_expr env tenv expr in
       (value, store)
 
-and eval_args (env : env) (tenv : tenv) (cenv : cenv) (store : store) (path : string list)
-    (params : Parameter.t list) (args : Argument.t list) : env * store =
+and eval_args (env : env) (tenv : tenv) (cenv : cenv) (store : store)
+    (path : string list) (params : Parameter.t list) (args : Argument.t list) :
+    env * store =
   (* TODO: assume there is no default argument *)
   assert (List.length params = List.length args);
   assert (
@@ -201,7 +196,8 @@ and eval_args (env : env) (tenv : tenv) (cenv : cenv) (store : store) (path : st
         | Expression { value; _ } ->
             (params @ [ param.variable.str ], args @ [ value ])
         | KeyValue { key; value; _ } -> (params @ [ key.str ], args @ [ value ])
-        | _ -> failwith "(eval_args) Instantiation argument must not be missing.")
+        | _ ->
+            failwith "(eval_args) Instantiation argument must not be missing.")
       ([], []) params args
   in
   List.fold_left2
@@ -307,9 +303,7 @@ and instantiate_stmt (env : env) (tenv : tenv) (cenv : cenv) (store : store)
   | DirectApplication { typ; args; _ } ->
       let cclos = Cenv.find_from_type typ cenv in
       let cpath = extend_path_with_type path typ in
-      let store =
-        instantiate_cclos env tenv cenv store cpath cclos args
-      in
+      let store = instantiate_cclos env tenv cenv store cpath cclos args in
       (env, cenv, store)
   | _ -> (env, cenv, store)
 
@@ -321,9 +315,7 @@ and instantiate_decl (env : env) (tenv : tenv) (cenv : cenv) (store : store)
       let name = name.str in
       let cclos = Cenv.find_from_type typ cenv in
       let cpath = extend_path_with_type path typ in
-      let store =
-        instantiate_cclos env tenv cenv store cpath cclos args
-      in
+      let store = instantiate_cclos env tenv cenv store cpath cclos args in
       let value = Value.Ref (path @ [ name ]) in
       let env = Env.insert name value env in
       (env, tenv, cenv, store)
@@ -361,7 +353,8 @@ let instantiate_program (program : program) =
   let store = Store.empty in
   let _, _, _, store =
     List.fold_left
-      (fun (env, tenv, cenv, store) decl -> instantiate_decl env tenv cenv store [] decl)
+      (fun (env, tenv, cenv, store) decl ->
+        instantiate_decl env tenv cenv store [] decl)
       (env, tenv, cenv, store) decls
   in
   store

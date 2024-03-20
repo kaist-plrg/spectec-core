@@ -34,15 +34,17 @@ let find (var : Var.t) (env : t) =
         | None -> find' old)
   in
   match find' env with
-  | Some typ -> typ 
-  | None -> Printf.sprintf "Type variable %s not found" (Var.print var) |> failwith
+  | Some typ -> typ
+  | None ->
+      Printf.sprintf "Type variable %s not found" (Var.print var) |> failwith
 
 let find_toplevel (var : Var.t) (env : t) =
   let top = List.rev env |> List.hd in
   match Var.VMap.find_opt var top with
   | Some typ -> typ
-  | None -> Printf.sprintf "Type variable %s not found in top scope" (Var.print var)
-             |> failwith
+  | None ->
+      Printf.sprintf "Type variable %s not found in top scope" (Var.print var)
+      |> failwith
 
 let print ?(indent = 0) (env : t) =
   let print_binding var typ acc =

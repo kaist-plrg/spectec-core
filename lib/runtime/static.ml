@@ -10,15 +10,13 @@ type tenv = Tenv.t
 
 let rec eval_simplify_typ (tenv : tenv) (typ : Typ.t) : Typ.base =
   match typ with
-  | Base base ->
-      begin match base with
+  | Base base -> (
+      match base with
       | Typ.Name { name } -> eval_simplify_typ tenv (Tenv.find name tenv)
       | Typ.NewType { name } -> Tenv.find name tenv |> Typ.extract_base
-      | _ -> base
-      end
+      | _ -> base)
   | _ ->
-      Printf.sprintf "(TODO: eval_simplify_typ) %s" (Typ.print typ)
-      |> failwith
+      Printf.sprintf "(TODO: eval_simplify_typ) %s" (Typ.print typ) |> failwith
 
 let rec eval_typ (env : env) (tenv : tenv) (typ : Type.t) : Typ.t =
   match typ with
@@ -46,11 +44,7 @@ let rec eval_typ (env : env) (tenv : tenv) (typ : Type.t) : Typ.t =
   | Error _ -> Typ.Base Typ.Error
   | Tuple { args; _ } ->
       let vargs =
-        List.map
-          (fun arg ->
-            eval_typ env tenv arg
-            |> Typ.extract_base)
-          args
+        List.map (fun arg -> eval_typ env tenv arg |> Typ.extract_base) args
       in
       let btyp = Typ.Tuple vargs in
       Typ.Base btyp
@@ -61,8 +55,7 @@ let rec eval_typ (env : env) (tenv : tenv) (typ : Type.t) : Typ.t =
       let var = text.str in
       Tenv.find_toplevel var tenv
   | _ ->
-      Printf.sprintf "(TODO: eval_typ) %s" (Pretty.print_type typ)
-      |> failwith
+      Printf.sprintf "(TODO: eval_typ) %s" (Pretty.print_type typ) |> failwith
 
 and eval_base_typ (env : env) (tenv : tenv) (typ : Type.t) : Typ.base =
   eval_typ env tenv typ |> Typ.extract_base
@@ -114,9 +107,7 @@ and eval_expr (env : env) (tenv : tenv) (expr : Expression.t) : Value.t =
         List.map
           (fun (entry : KeyValue.t) ->
             let key = entry.key.str in
-            let value =
-              eval_expr env tenv entry.value |> Value.extract_base
-            in
+            let value = eval_expr env tenv entry.value |> Value.extract_base in
             (key, value))
           entries
       in
@@ -138,16 +129,14 @@ and eval_expr (env : env) (tenv : tenv) (expr : Expression.t) : Value.t =
       let vexpr = eval_expr env tenv expr |> Value.extract_base in
       let name = name.str in
       let bvalue =
-        begin match vexpr with
-        | Value.Header { entries; _ }
-        | Value.Struct { entries } -> List.assoc name entries
+        match vexpr with
+        | Value.Header { entries; _ } | Value.Struct { entries } ->
+            List.assoc name entries
         | _ ->
             Printf.sprintf "(eval_expr) %s cannot be accessed"
               (Value.print_base vexpr)
             |> failwith
-        end
       in
       Value.Base bvalue
   | _ ->
-      Printf.sprintf "(TODO: eval_expr) %s" (Pretty.print_expr expr)
-      |> failwith
+      Printf.sprintf "(TODO: eval_expr) %s" (Pretty.print_expr expr) |> failwith

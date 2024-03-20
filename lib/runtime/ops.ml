@@ -574,23 +574,24 @@ let eval_cast_to_bit (width : Bigint.t) (value : Value.base) : Value.base =
   | Bool b ->
       let value = if b then Bigint.one else Bigint.zero in
       Bit { value; width }
-  | Int { value; _ }
-  | Bit { value; _ }
-  | AInt value -> bit_of_raw_int value width
+  | Int { value; _ } | Bit { value; _ } | AInt value ->
+      bit_of_raw_int value width
   | _ ->
-      Printf.sprintf "(TODO) Cast to bitstring undefined: %s" (Value.print_base value)
+      Printf.sprintf "(TODO) Cast to bitstring undefined: %s"
+        (Value.print_base value)
       |> failwith
 
 let eval_cast_to_int (width : Bigint.t) (value : Value.base) : Value.base =
   match value with
-  | Bit { value; _ }
-  | Int { value; _ }
-  | AInt value -> int_of_raw_int value width
+  | Bit { value; _ } | Int { value; _ } | AInt value ->
+      int_of_raw_int value width
   | _ ->
-      Printf.sprintf "(TODO) Cast to integer undefined: %s" (Value.print_base value)
+      Printf.sprintf "(TODO) Cast to integer undefined: %s"
+        (Value.print_base value)
       |> failwith
 
-let rec eval_cast_entries (entries: (string * Typ.base) list) (value: Value.base) : (string * Value.base) list =
+let rec eval_cast_entries (entries : (string * Typ.base) list)
+    (value : Value.base) : (string * Value.base) list =
   match value with
   | Tuple values ->
       assert (List.length entries = List.length values);
@@ -598,11 +599,11 @@ let rec eval_cast_entries (entries: (string * Typ.base) list) (value: Value.base
         (fun (field, typ) value ->
           let value = eval_cast typ (Value.Base value) |> Value.extract_base in
           (field, value))
-      entries values
-  | Header { entries; _ }
-  | Struct { entries } -> entries
+        entries values
+  | Header { entries; _ } | Struct { entries } -> entries
   | _ ->
-      Printf.sprintf "(TODO) Cast to entries undefined: %s" (Value.print_base value)
+      Printf.sprintf "(TODO) Cast to entries undefined: %s"
+        (Value.print_base value)
       |> failwith
 
 and eval_cast_tuple (typs : Typ.base list) (value : Value.base) : Value.base =
@@ -612,13 +613,13 @@ and eval_cast_tuple (typs : Typ.base list) (value : Value.base) : Value.base =
       let values =
         List.map2
           (fun typ value ->
-            eval_cast typ (Value.Base value)
-            |> Value.extract_base)
+            eval_cast typ (Value.Base value) |> Value.extract_base)
           typs values
       in
       Value.Tuple values
   | _ ->
-      Printf.sprintf "(TODO) Cast to tuple undefined: %s" (Value.print_base value)
+      Printf.sprintf "(TODO) Cast to tuple undefined: %s"
+        (Value.print_base value)
       |> failwith
 
 and eval_cast (typ : Typ.base) (value : Value.t) : Value.t =
@@ -644,5 +645,6 @@ and eval_cast (typ : Typ.base) (value : Value.t) : Value.t =
       let bvalue = Value.Struct { entries } in
       Value.Base bvalue
   | _ ->
-      Printf.sprintf "(TODO) Cast to type %s undefined" (Typ.print (Typ.Base typ))
+      Printf.sprintf "(TODO) Cast to type %s undefined"
+        (Typ.print (Typ.Base typ))
       |> failwith
