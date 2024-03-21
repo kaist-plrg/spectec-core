@@ -298,7 +298,9 @@ and instantiate_stmt (env : env) (tenv : tenv) (cenv : cenv) (store : store)
   | DirectApplication { typ; args; _ } ->
       let name = name_from_type typ in
       let cclos = Cenv.find_from_type typ cenv in
-      let store = instantiate_cclos env tenv cenv store (path @ [ name ]) cclos args in
+      let store =
+        instantiate_cclos env tenv cenv store (path @ [ name ]) cclos args
+      in
       let value = Value.Ref (path @ [ name ]) in
       let env = Env.insert name value env in
       (env, cenv, store)
@@ -311,7 +313,9 @@ and instantiate_decl (env : env) (tenv : tenv) (cenv : cenv) (store : store)
   | Instantiation { name; typ; args; _ } ->
       let name = name.str in
       let cclos = Cenv.find_from_type typ cenv in
-      let store = instantiate_cclos env tenv cenv store (path @ [ name ]) cclos args in
+      let store =
+        instantiate_cclos env tenv cenv store (path @ [ name ]) cclos args
+      in
       let value = Value.Ref (path @ [ name ]) in
       let env = Env.insert name value env in
       (env, tenv, cenv, store)

@@ -2,9 +2,19 @@ open Syntax
 open Ast
 open Runtime
 
+(* (TODO) how to re-use tenv from the instantiation phase,
+   or should it also be part of the object field? *)
+(* (TODO) expression evaluation relies on the compile-time evaluation
+   in Runtime.Eval, which is not ideal. *)
+(* (TODO) register the store as a global referenced variable in OCaml *)
+
+(* Environments *)
+
 type env = Env.t
 type tenv = Tenv.t
 type store = Store.t
+
+(* Interpreter *)
 
 let eval_decl (_store : store) (env : env) (decl : Declaration.t) =
   match decl with
@@ -19,14 +29,15 @@ let eval_decl (_store : store) (env : env) (decl : Declaration.t) =
 
 let rec eval_stmt (store : store) (env : env) (stmt : Statement.t) =
   match stmt with
-  | Assignment { lhs = Expression.Name { name = Name.BareName text; _ }; rhs; _ } ->
+  | Assignment
+      { lhs = Expression.Name { name = Name.BareName text; _ }; rhs; _ } ->
       let rvalue = Static.eval_expr env Tenv.empty rhs in
       let env = Env.update text.str rvalue env in
       env
-  | Conditional { cond; tru; fls = Some fls; _ } ->
+  | Conditional { cond; tru; fls = Some fls; _ } -> (
       let vcond = Static.eval_expr env Tenv.empty cond in
       let vcond = Ops.eval_cast Typ.Bool vcond |> Value.extract_base in
-      begin match vcond with
+      match vcond with
       | Bool true ->
           let env = Env.enter env in
           let env = eval_stmt store env tru in
@@ -35,8 +46,7 @@ let rec eval_stmt (store : store) (env : env) (stmt : Statement.t) =
           let env = Env.enter env in
           let env = eval_stmt store env fls in
           Env.exit env
-      | _ -> assert false
-      end
+      | _ -> assert false)
   | BlockStatement { block; _ } -> eval_block store env block
   | DeclarationStatement { decl; _ } -> eval_decl store env decl
   | _ ->
@@ -53,7 +63,7 @@ and eval_block (store : store) (env : env) (block : Block.t) =
   in
   print_endline "Exiting block";
   print_endline (Env.print env);
-  Env.exit env 
+  Env.exit env
 
 let eval_object_apply (store : store) (obj : Object.t) (_args : Value.t list) =
   match obj with
