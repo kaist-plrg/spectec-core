@@ -19,11 +19,6 @@ let exit (env : t) =
   assert (List.length env > 0);
   List.tl env
 
-let insert (var : Var.t) (value : Value.t) (env : t) =
-  let now, old = current env in
-  let now = Var.VMap.add var value now in
-  now :: old
-
 let find (var : Var.t) (env : t) =
   let rec find' env =
     match env with
@@ -44,6 +39,22 @@ let find_toplevel (var : Var.t) (env : t) =
   | None ->
       Printf.sprintf "Variable %s not found in top scope" (Var.print var)
       |> failwith
+
+let insert (var : Var.t) (value : Value.t) (env : t) =
+  let now, old = current env in
+  let now = Var.VMap.add var value now in
+  now :: old
+
+let update (var : Var.t) (value : Value.t) (env : t) =
+  let rec update' env =
+    match env with
+    | [] -> Printf.sprintf "Variable %s not found" (Var.print var) |> failwith
+    | now :: old -> (
+        match Var.VMap.find_opt var now with
+        | Some _ -> Var.VMap.add var value now :: old
+        | None -> now :: update' old)
+  in
+  update' env
 
 let print ?(indent = 0) (env : t) =
   let print_binding var value acc =

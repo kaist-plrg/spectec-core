@@ -1,4 +1,4 @@
 (library
- (name interp)
+ (name run)
  (libraries syntax runtime instance)
- (modules interpreter))
+ (modules driver interpreter))

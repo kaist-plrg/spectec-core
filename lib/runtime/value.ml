@@ -45,7 +45,7 @@ let rec print_base (bvalue : base) =
 let print (t : t) =
   match t with
   | Base bvalue -> print_base bvalue
-  | Ref rvalue -> Printf.sprintf "Ref(%s)" (String.concat "." rvalue)
+  | Ref rvalue -> Printf.sprintf "*%s" (String.concat "." rvalue)
 
 (* Utils *)
 
