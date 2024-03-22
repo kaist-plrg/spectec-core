@@ -23,7 +23,7 @@ type t =
       apply : Block.t;
     }
   | Extern
-  | Table of { scope : Env.t; properties : Table.property list }
+  | Table of { properties : Table.property list }
   | Function
   | ValueSet
 
@@ -47,10 +47,6 @@ let print ?(indent = 0) (obj : t) =
         (Print.print_indent (indent + 2))
         (Env.print scope ~indent:(indent + 3))
   | Extern -> Printf.sprintf "%sExtern" (Print.print_indent indent)
-  | Table { scope; _ } ->
-      Printf.sprintf "%sTable {\n%sscope =\n%s }"
-        (Print.print_indent indent)
-        (Print.print_indent (indent + 2))
-        (Env.print scope ~indent:(indent + 3))
+  | Table _ -> "Table { }"
   | Function -> Printf.sprintf "%sFunction" (Print.print_indent indent)
   | ValueSet -> Printf.sprintf "%sValueSet" (Print.print_indent indent)

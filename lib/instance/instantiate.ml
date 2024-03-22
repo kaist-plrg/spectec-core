@@ -325,7 +325,7 @@ and instantiate_decl (env : env) (tenv : tenv) (cenv : cenv) (store : store)
      where they are defined (Appendix F) *)
   | Table { name; properties; _ } ->
       let name = name.str in
-      let obj = Object.Table { scope = env; properties } in
+      let obj = Object.Table { properties } in
       let store = Store.insert (path @ [ name ]) obj store in
       let value = Value.Ref (path @ [ name ]) in
       let env = Env.insert name value env in
