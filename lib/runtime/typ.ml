@@ -38,8 +38,7 @@ let rec print (t : t) =
       Printf.sprintf "(%s)" (String.concat ", " (List.map print typs))
   | Enum { entries } -> Printf.sprintf "enum{%s}" (String.concat ", " entries)
   | SEnum { typ; entries } ->
-      Printf.sprintf "enum<%s>{%s}" (print typ)
-        (String.concat ", " entries)
+      Printf.sprintf "enum<%s>{%s}" (print typ) (String.concat ", " entries)
   | Header { entries } ->
       Printf.sprintf "header{%s}"
         (String.concat ", "

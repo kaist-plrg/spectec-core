@@ -71,16 +71,14 @@ let eval_unop_not (value : Value.t) : Value.t =
   match value with
   | Bool b -> Bool (not b)
   | _ ->
-      Printf.sprintf "Not a boolean value: %s" (Value.print value)
-      |> failwith
+      Printf.sprintf "Not a boolean value: %s" (Value.print value) |> failwith
 
 let eval_unop_bitnot (value : Value.t) : Value.t =
   match value with
   | Bit { value; width } ->
       let value = bitwise_neg value width in
       Bit { value; width }
-  | _ ->
-      Printf.sprintf "Not a bit value: %s" (Value.print value) |> failwith
+  | _ -> Printf.sprintf "Not a bit value: %s" (Value.print value) |> failwith
 
 let eval_unop_uminus (value : Value.t) : Value.t =
   match value with
@@ -92,8 +90,7 @@ let eval_unop_uminus (value : Value.t) : Value.t =
       let value = Bigint.(power_of_two width - value) in
       Bit { value; width }
   | _ ->
-      Printf.sprintf "Not an integer value: %s" (Value.print value)
-      |> failwith
+      Printf.sprintf "Not an integer value: %s" (Value.print value) |> failwith
 
 let eval_unop (op : Op.un) (value : Value.t) : Value.t =
   match op with
@@ -141,8 +138,7 @@ let rec shift_bitstring_right (v : Bigint.t) (o : Bigint.t) (arith : bool)
       arith mx
   else v
 
-let rec eval_binop_plus (lvalue : Value.t) (rvalue : Value.t) : Value.t
-    =
+let rec eval_binop_plus (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       let value = of_two_complement Bigint.(lvalue + rvalue) width in
@@ -164,8 +160,7 @@ let rec eval_binop_plus (lvalue : Value.t) (rvalue : Value.t) : Value.t
         (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_plussat (lvalue : Value.t) (rvalue : Value.t) :
-    Value.t =
+let rec eval_binop_plussat (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       unsigned_op_sat lvalue rvalue width Bigint.( + )
@@ -184,8 +179,7 @@ let rec eval_binop_plussat (lvalue : Value.t) (rvalue : Value.t) :
         (Value.print lvalue) (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_minus (lvalue : Value.t) (rvalue : Value.t) :
-    Value.t =
+let rec eval_binop_minus (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       let value = of_two_complement Bigint.(lvalue - rvalue) width in
@@ -207,8 +201,7 @@ let rec eval_binop_minus (lvalue : Value.t) (rvalue : Value.t) :
         (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_minussat (lvalue : Value.t) (rvalue : Value.t) :
-    Value.t =
+let rec eval_binop_minussat (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       unsigned_op_sat lvalue rvalue width Bigint.( - )
@@ -227,8 +220,7 @@ let rec eval_binop_minussat (lvalue : Value.t) (rvalue : Value.t) :
         (Value.print lvalue) (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_mul (lvalue : Value.t) (rvalue : Value.t) : Value.t
-    =
+let rec eval_binop_mul (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       let value = of_two_complement Bigint.(lvalue * rvalue) width in
@@ -352,8 +344,8 @@ let rec eval_binop_le (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   | Int { width; _ }, AInt rvalue ->
       eval_binop_le lvalue (int_of_raw_int rvalue width)
   | _ ->
-      Printf.sprintf "Invalid less than or equal: %s <= %s"
-        (Value.print lvalue) (Value.print rvalue)
+      Printf.sprintf "Invalid less than or equal: %s <= %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
 let rec eval_binop_ge (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -456,8 +448,7 @@ and eval_binop_eq (lvalue : Value.t) (rvalue : Value.t) : bool =
 let eval_binop_ne (lvalue : Value.t) (rvalue : Value.t) : bool =
   not (eval_binop_eq lvalue rvalue)
 
-let rec eval_binop_bitand (lvalue : Value.t) (rvalue : Value.t) :
-    Value.t =
+let rec eval_binop_bitand (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       let value = Bigint.bit_and lvalue rvalue in
@@ -471,8 +462,7 @@ let rec eval_binop_bitand (lvalue : Value.t) (rvalue : Value.t) :
         (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_bitxor (lvalue : Value.t) (rvalue : Value.t) :
-    Value.t =
+let rec eval_binop_bitxor (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       let value = Bigint.bit_xor lvalue rvalue in
@@ -486,8 +476,7 @@ let rec eval_binop_bitxor (lvalue : Value.t) (rvalue : Value.t) :
         (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_bitor (lvalue : Value.t) (rvalue : Value.t) :
-    Value.t =
+let rec eval_binop_bitor (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       let value = Bigint.bit_or lvalue rvalue in
@@ -501,8 +490,7 @@ let rec eval_binop_bitor (lvalue : Value.t) (rvalue : Value.t) :
         (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_plusplus (lvalue : Value.t) (rvalue : Value.t) :
-    Value.t =
+let rec eval_binop_plusplus (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | ( Bit { value = lvalue; width = lwidth },
       Bit { value = rvalue; width = rwidth } ) ->
@@ -597,12 +585,11 @@ let eval_cast_to_int (width : Bigint.t) (value : Value.t) : Value.t =
   | Bit { value; _ } | Int { value; _ } | AInt value ->
       int_of_raw_int value width
   | _ ->
-      Printf.sprintf "(TODO) Cast to integer undefined: %s"
-        (Value.print value)
+      Printf.sprintf "(TODO) Cast to integer undefined: %s" (Value.print value)
       |> failwith
 
-let rec eval_cast_entries (entries : (string * Typ.t) list)
-    (value : Value.t) : (string * Value.t) list =
+let rec eval_cast_entries (entries : (string * Typ.t) list) (value : Value.t) :
+    (string * Value.t) list =
   match value with
   | Tuple values ->
       assert (List.length entries = List.length values);
@@ -613,21 +600,17 @@ let rec eval_cast_entries (entries : (string * Typ.t) list)
         entries values
   | Header { entries; _ } | Struct { entries } -> entries
   | _ ->
-      Printf.sprintf "(TODO) Cast to entries undefined: %s"
-        (Value.print value)
+      Printf.sprintf "(TODO) Cast to entries undefined: %s" (Value.print value)
       |> failwith
 
 and eval_cast_tuple (typs : Typ.t list) (value : Value.t) : Value.t =
   match value with
   | Value.Tuple values ->
       assert (List.length typs = List.length values);
-      let values =
-        List.map2 eval_cast typs values
-      in
+      let values = List.map2 eval_cast typs values in
       Value.Tuple values
   | _ ->
-      Printf.sprintf "(TODO) Cast to tuple undefined: %s"
-        (Value.print value)
+      Printf.sprintf "(TODO) Cast to tuple undefined: %s" (Value.print value)
       |> failwith
 
 and eval_cast (typ : Typ.t) (value : Value.t) : Value.t =
@@ -636,12 +619,9 @@ and eval_cast (typ : Typ.t) (value : Value.t) : Value.t =
   | AInt ->
       let value = Value.extract_bigint value in
       Value.AInt value
-  | Bit { width } ->
-      eval_cast_to_bit width value
-  | Int { width } ->
-      eval_cast_to_int width value
-  | Tuple typs ->
-      eval_cast_tuple typs value
+  | Bit { width } -> eval_cast_to_bit width value
+  | Int { width } -> eval_cast_to_int width value
+  | Tuple typs -> eval_cast_tuple typs value
   | Header { entries } ->
       let entries = eval_cast_entries entries value in
       Value.Header { valid = true; entries }
@@ -649,6 +629,5 @@ and eval_cast (typ : Typ.t) (value : Value.t) : Value.t =
       let entries = eval_cast_entries entries value in
       Value.Struct { entries }
   | _ ->
-      Printf.sprintf "(TODO) Cast to type %s undefined"
-        (Typ.print typ)
+      Printf.sprintf "(TODO) Cast to type %s undefined" (Typ.print typ)
       |> failwith

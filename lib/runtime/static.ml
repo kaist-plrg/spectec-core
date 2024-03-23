@@ -34,9 +34,7 @@ let rec eval_typ (env : env) (tenv : tenv) (typ : Type.t) : Typ.t =
   | String _ -> Typ.String
   | Error _ -> Typ.Error
   | Tuple { args; _ } ->
-      let vargs =
-        List.map (eval_typ env tenv) args
-      in
+      let vargs = List.map (eval_typ env tenv) args in
       Typ.Tuple vargs
   | TypeName { name = BareName text; _ } ->
       let var = text.str in
@@ -51,20 +49,16 @@ let rec eval_typ (env : env) (tenv : tenv) (typ : Type.t) : Typ.t =
 
 and eval_expr (env : env) (tenv : tenv) (expr : Expression.t) : Value.t =
   match expr with
-  | True _ ->
-      Value.Bool true
-  | False _ ->
-      Value.Bool false
-  | Int { i; _ } ->
+  | True _ -> Value.Bool true
+  | False _ -> Value.Bool false
+  | Int { i; _ } -> (
       let value = i.value in
-      begin match i.width_signed with
+      match i.width_signed with
       | Some (width, signed) ->
           if signed then Value.Int { value; width }
           else Value.Bit { value; width }
-      | None -> Value.AInt value
-      end
-  | String { text; _ } ->
-      Value.String text.str
+      | None -> Value.AInt value)
+  | String { text; _ } -> Value.String text.str
   | Name { name = BareName text; _ } ->
       let var = text.str in
       Env.find var env
@@ -77,9 +71,7 @@ and eval_expr (env : env) (tenv : tenv) (expr : Expression.t) : Value.t =
       let vhi = eval_expr env tenv hi in
       Ops.eval_bitstring_access vbits vlo vhi
   | List { values; _ } ->
-      let vvalues =
-        List.map (eval_expr env tenv) values
-      in
+      let vvalues = List.map (eval_expr env tenv) values in
       Value.Tuple vvalues
   | Record { entries; _ } ->
       let ventries =
@@ -103,16 +95,14 @@ and eval_expr (env : env) (tenv : tenv) (expr : Expression.t) : Value.t =
       let typ = eval_simplify_typ tenv typ in
       let vexpr = eval_expr env tenv expr in
       Ops.eval_cast typ vexpr
-  | ExpressionMember { expr; name; _ } ->
+  | ExpressionMember { expr; name; _ } -> (
       let vexpr = eval_expr env tenv expr in
       let name = name.str in
-      begin match vexpr with
+      match vexpr with
       | Value.Header { entries; _ } | Value.Struct { entries } ->
           List.assoc name entries
       | _ ->
-          Printf.sprintf "(eval_expr) %s cannot be accessed"
-            (Value.print vexpr)
-          |> failwith
-      end
+          Printf.sprintf "(eval_expr) %s cannot be accessed" (Value.print vexpr)
+          |> failwith)
   | _ ->
       Printf.sprintf "(TODO: eval_expr) %s" (Pretty.print_expr expr) |> failwith

@@ -30,15 +30,13 @@ let rec print (t : t) =
       Printf.sprintf "{%s}"
         (String.concat ", "
            (List.map
-              (fun (key, value) ->
-                Printf.sprintf "%s: %s" key (print value))
+              (fun (key, value) -> Printf.sprintf "%s: %s" key (print value))
               entries))
   | Header { valid; entries } ->
       Printf.sprintf "Header(%b, {%s})" valid
         (String.concat ", "
            (List.map
-              (fun (key, value) ->
-                Printf.sprintf "%s: %s" key (print value))
+              (fun (key, value) -> Printf.sprintf "%s: %s" key (print value))
               entries))
   | Ref rvalue -> Printf.sprintf "*%s" (String.concat "." rvalue)
 
@@ -49,5 +47,4 @@ let extract_bigint (t : t) : Bigint.t =
   | AInt value -> value
   | Int { value; _ } -> value
   | Bit { value; _ } -> value
-  | _ ->
-      Printf.sprintf "Not a int/bit value: %s" (print t) |> failwith
+  | _ -> Printf.sprintf "Not a int/bit value: %s" (print t) |> failwith
