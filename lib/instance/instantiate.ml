@@ -218,7 +218,7 @@ and instantiate_cclos (env : env) (tenv : tenv) (cenv : cenv) (store : store)
       let env_parser, store =
         eval_args env_parser tenv cenv_parser store path cparams args
       in
-      let env_parser, _tenv_parser, cenv_parser, store =
+      let env_parser, tenv_parser, cenv_parser, store =
         List.fold_left
           (fun (env, tenv, cenv, store) local ->
             instantiate_decl env tenv cenv store path local)
@@ -235,7 +235,10 @@ and instantiate_cclos (env : env) (tenv : tenv) (cenv : cenv) (store : store)
           (env_parser, cenv_parser, store)
           stmts
       in
-      let obj = Object.Parser { scope = env_parser; params; locals; states } in
+      let obj =
+        Object.Parser
+          { env = env_parser; tenv = tenv_parser; params; locals; states }
+      in
       let store = Store.insert path obj store in
       store
   (* Every time a control is instantiated, it causes:
@@ -248,7 +251,7 @@ and instantiate_cclos (env : env) (tenv : tenv) (cenv : cenv) (store : store)
       let env_control, store =
         eval_args env_control tenv cenv_control store path cparams args
       in
-      let env_control, _tenv_control, cenv_control, store =
+      let env_control, tenv_control, cenv_control, store =
         List.fold_left
           (fun (env, tenv, cenv, store) local ->
             instantiate_decl env tenv cenv store path local)
@@ -263,7 +266,10 @@ and instantiate_cclos (env : env) (tenv : tenv) (cenv : cenv) (store : store)
           (env_control, cenv_control, store)
           stmts
       in
-      let obj = Object.Control { scope = env_control; params; locals; apply } in
+      let obj =
+        Object.Control
+          { env = env_control; tenv = tenv_control; params; locals; apply }
+      in
       let store = Store.insert path obj store in
       store
   (* Others do not involve recursive instantiation other than the args *)
@@ -272,7 +278,7 @@ and instantiate_cclos (env : env) (tenv : tenv) (cenv : cenv) (store : store)
       let env_package, store =
         eval_args env_package tenv cenv store path params args
       in
-      let obj = Object.Package { scope = env_package } in
+      let obj = Object.Package { env = env_package; tenv } in
       let store = Store.insert path obj store in
       store
   | Cclosure.Extern ->

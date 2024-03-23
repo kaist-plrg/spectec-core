@@ -16,10 +16,11 @@ type store = Store.t
 
 (* Interpreter *)
 
-let eval_decl (_store : store) (env : env) (decl : Declaration.t) =
+let eval_decl (_store : store) (env : env) (tenv : tenv) (decl : Declaration.t)
+    =
   match decl with
   | Variable { name; init = Some value; _ } ->
-      let value = Static.eval_expr env Tenv.empty value in
+      let value = Static.eval_expr env tenv value in
       let env = Env.insert name.str value env in
       env
   | _ ->
@@ -27,38 +28,39 @@ let eval_decl (_store : store) (env : env) (decl : Declaration.t) =
       |> print_endline;
       env
 
-let rec eval_stmt (store : store) (env : env) (stmt : Statement.t) =
+let rec eval_stmt (store : store) (env : env) (tenv : tenv) (stmt : Statement.t)
+    =
   match stmt with
   | Assignment
       { lhs = Expression.Name { name = Name.BareName text; _ }; rhs; _ } ->
-      let rvalue = Static.eval_expr env Tenv.empty rhs in
+      let rvalue = Static.eval_expr env tenv rhs in
       let env = Env.update text.str rvalue env in
       env
   | Conditional { cond; tru; fls = Some fls; _ } -> (
-      let vcond = Static.eval_expr env Tenv.empty cond in
+      let vcond = Static.eval_expr env tenv cond in
       let vcond = Ops.eval_cast Typ.Bool vcond |> Value.extract_base in
       match vcond with
       | Bool true ->
           let env = Env.enter env in
-          let env = eval_stmt store env tru in
+          let env = eval_stmt store env tenv tru in
           Env.exit env
       | Bool false ->
           let env = Env.enter env in
-          let env = eval_stmt store env fls in
+          let env = eval_stmt store env tenv fls in
           Env.exit env
       | _ -> assert false)
-  | BlockStatement { block; _ } -> eval_block store env block
-  | DeclarationStatement { decl; _ } -> eval_decl store env decl
+  | BlockStatement { block; _ } -> eval_block store env tenv block
+  | DeclarationStatement { decl; _ } -> eval_decl store env tenv decl
   | _ ->
       Printf.sprintf "(TODO: eval_stmt) %s" (Pretty.print_stmt 0 stmt)
       |> print_endline;
       env
 
-and eval_block (store : store) (env : env) (block : Block.t) =
+and eval_block (store : store) (env : env) (tenv : tenv) (block : Block.t) =
   let env = Env.enter env in
   let env =
     List.fold_left
-      (fun env stmt -> eval_stmt store env stmt)
+      (fun env stmt -> eval_stmt store env tenv stmt)
       env block.statements
   in
   print_endline "Exiting block";
@@ -67,9 +69,8 @@ and eval_block (store : store) (env : env) (block : Block.t) =
 
 let eval_object_apply (store : store) (obj : Object.t) (_args : Value.t list) =
   match obj with
-  | Control { scope; apply; _ } ->
-      let env = scope in
-      let _env = eval_block store env apply in
+  | Control { env; tenv; apply; _ } ->
+      let _env = eval_block store env tenv apply in
       ()
   | _ ->
       Printf.sprintf "(TODO: eval_object) %s" (Object.print obj)
