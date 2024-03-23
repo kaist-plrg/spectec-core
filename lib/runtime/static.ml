@@ -8,46 +8,36 @@ type tenv = Tenv.t
 
 (* Compile-time evaluation of type simplification *)
 
-let rec eval_simplify_typ (tenv : tenv) (typ : Typ.t) : Typ.base =
+let rec eval_simplify_typ (tenv : tenv) (typ : Typ.t) : Typ.t =
   match typ with
-  | Base base -> (
-      match base with
-      | Typ.Name { name } -> eval_simplify_typ tenv (Tenv.find name tenv)
-      | Typ.NewType { name } -> Tenv.find name tenv |> Typ.extract_base
-      | _ -> base)
-  | _ ->
-      Printf.sprintf "(TODO: eval_simplify_typ) %s" (Typ.print typ) |> failwith
+  | Typ.Name { name } -> eval_simplify_typ tenv (Tenv.find name tenv)
+  | Typ.NewType { name } -> Tenv.find name tenv
+  | _ -> typ
 
 let rec eval_typ (env : env) (tenv : tenv) (typ : Type.t) : Typ.t =
   match typ with
-  | Bool _ -> Typ.Base Typ.Bool
-  | Integer _ -> Typ.Base Typ.AInt
+  | Bool _ -> Typ.Bool
+  | Integer _ -> Typ.AInt
   | IntType { expr; _ } ->
       let width = eval_expr env tenv expr |> Value.extract_bigint in
-      let btyp = Typ.Bit { width } in
-      Typ.Base btyp
+      Typ.Bit { width }
   | BitType { expr; _ } ->
       let width = eval_expr env tenv expr |> Value.extract_bigint in
-      let btyp = Typ.Bit { width } in
-      Typ.Base btyp
+      Typ.Bit { width }
   | VarBit { expr; _ } ->
       let width = eval_expr env tenv expr |> Value.extract_bigint in
-      let btyp = Typ.Bit { width } in
-      Typ.Base btyp
+      Typ.Bit { width }
   | HeaderStack { header; size; _ } ->
-      let vheader = eval_typ env tenv header in
-      let bheader = Typ.extract_base vheader in
+      let header = eval_typ env tenv header in
       let size = eval_expr env tenv size |> Value.extract_bigint in
-      let btyp = Typ.Array { typ = bheader; size } in
-      Typ.Base btyp
-  | String _ -> Typ.Base Typ.String
-  | Error _ -> Typ.Base Typ.Error
+      Typ.Array { typ = header; size }
+  | String _ -> Typ.String
+  | Error _ -> Typ.Error
   | Tuple { args; _ } ->
       let vargs =
-        List.map (fun arg -> eval_typ env tenv arg |> Typ.extract_base) args
+        List.map (eval_typ env tenv) args
       in
-      let btyp = Typ.Tuple vargs in
-      Typ.Base btyp
+      Typ.Tuple vargs
   | TypeName { name = BareName text; _ } ->
       let var = text.str in
       Tenv.find var tenv
@@ -57,32 +47,24 @@ let rec eval_typ (env : env) (tenv : tenv) (typ : Type.t) : Typ.t =
   | _ ->
       Printf.sprintf "(TODO: eval_typ) %s" (Pretty.print_type typ) |> failwith
 
-and eval_base_typ (env : env) (tenv : tenv) (typ : Type.t) : Typ.base =
-  eval_typ env tenv typ |> Typ.extract_base
-
 (* Compile-time evaluation of expressions *)
 
 and eval_expr (env : env) (tenv : tenv) (expr : Expression.t) : Value.t =
   match expr with
   | True _ ->
-      let bvalue = Value.Bool true in
-      Value.Base bvalue
+      Value.Bool true
   | False _ ->
-      let bvalue = Value.Bool false in
-      Value.Base bvalue
+      Value.Bool false
   | Int { i; _ } ->
       let value = i.value in
-      let bvalue =
-        match i.width_signed with
-        | Some (width, signed) ->
-            if signed then Value.Int { value; width }
-            else Value.Bit { value; width }
-        | None -> Value.AInt value
-      in
-      Value.Base bvalue
+      begin match i.width_signed with
+      | Some (width, signed) ->
+          if signed then Value.Int { value; width }
+          else Value.Bit { value; width }
+      | None -> Value.AInt value
+      end
   | String { text; _ } ->
-      let bvalue = Value.String text.str in
-      Value.Base bvalue
+      Value.String text.str
   | Name { name = BareName text; _ } ->
       let var = text.str in
       Env.find var env
@@ -96,23 +78,19 @@ and eval_expr (env : env) (tenv : tenv) (expr : Expression.t) : Value.t =
       Ops.eval_bitstring_access vbits vlo vhi
   | List { values; _ } ->
       let vvalues =
-        List.map
-          (fun value -> eval_expr env tenv value |> Value.extract_base)
-          values
+        List.map (eval_expr env tenv) values
       in
-      let bvalue = Value.Tuple vvalues in
-      Value.Base bvalue
+      Value.Tuple vvalues
   | Record { entries; _ } ->
       let ventries =
         List.map
           (fun (entry : KeyValue.t) ->
             let key = entry.key.str in
-            let value = eval_expr env tenv entry.value |> Value.extract_base in
+            let value = eval_expr env tenv entry.value in
             (key, value))
           entries
       in
-      let bvalue = Value.Struct { entries = ventries } in
-      Value.Base bvalue
+      Value.Struct { entries = ventries }
   | UnaryOp { op; arg; _ } ->
       let varg = eval_expr env tenv arg in
       Ops.eval_unop op varg
@@ -126,17 +104,15 @@ and eval_expr (env : env) (tenv : tenv) (expr : Expression.t) : Value.t =
       let vexpr = eval_expr env tenv expr in
       Ops.eval_cast typ vexpr
   | ExpressionMember { expr; name; _ } ->
-      let vexpr = eval_expr env tenv expr |> Value.extract_base in
+      let vexpr = eval_expr env tenv expr in
       let name = name.str in
-      let bvalue =
-        match vexpr with
-        | Value.Header { entries; _ } | Value.Struct { entries } ->
-            List.assoc name entries
-        | _ ->
-            Printf.sprintf "(eval_expr) %s cannot be accessed"
-              (Value.print_base vexpr)
-            |> failwith
-      in
-      Value.Base bvalue
+      begin match vexpr with
+      | Value.Header { entries; _ } | Value.Struct { entries } ->
+          List.assoc name entries
+      | _ ->
+          Printf.sprintf "(eval_expr) %s cannot be accessed"
+            (Value.print vexpr)
+          |> failwith
+      end
   | _ ->
       Printf.sprintf "(TODO: eval_expr) %s" (Pretty.print_expr expr) |> failwith

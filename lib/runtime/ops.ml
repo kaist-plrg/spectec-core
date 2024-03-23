@@ -55,34 +55,34 @@ let rec bitwise_neg (n : Bigint.t) (w : Bigint.t) : Bigint.t =
     else bitwise_neg Bigint.(n - w') Bigint.(w - one)
   else n
 
-let bit_of_raw_int (n : Bigint.t) (w : Bigint.t) : Value.base =
+let bit_of_raw_int (n : Bigint.t) (w : Bigint.t) : Value.t =
   let value = of_two_complement n w in
   let width = w in
   Bit { value; width }
 
-let int_of_raw_int (n : Bigint.t) (w : Bigint.t) : Value.base =
+let int_of_raw_int (n : Bigint.t) (w : Bigint.t) : Value.t =
   let value = of_two_complement n w in
   let width = w in
   Int { value; width }
 
 (* Unop evaluation *)
 
-let eval_unop_not (value : Value.base) : Value.base =
+let eval_unop_not (value : Value.t) : Value.t =
   match value with
   | Bool b -> Bool (not b)
   | _ ->
-      Printf.sprintf "Not a boolean value: %s" (Value.print_base value)
+      Printf.sprintf "Not a boolean value: %s" (Value.print value)
       |> failwith
 
-let eval_unop_bitnot (value : Value.base) : Value.base =
+let eval_unop_bitnot (value : Value.t) : Value.t =
   match value with
   | Bit { value; width } ->
       let value = bitwise_neg value width in
       Bit { value; width }
   | _ ->
-      Printf.sprintf "Not a bit value: %s" (Value.print_base value) |> failwith
+      Printf.sprintf "Not a bit value: %s" (Value.print value) |> failwith
 
-let eval_unop_uminus (value : Value.base) : Value.base =
+let eval_unop_uminus (value : Value.t) : Value.t =
   match value with
   | AInt value -> AInt (Bigint.neg value)
   | Int { value; width } ->
@@ -92,23 +92,19 @@ let eval_unop_uminus (value : Value.base) : Value.base =
       let value = Bigint.(power_of_two width - value) in
       Bit { value; width }
   | _ ->
-      Printf.sprintf "Not an integer value: %s" (Value.print_base value)
+      Printf.sprintf "Not an integer value: %s" (Value.print value)
       |> failwith
 
-let eval_unop' (op : Op.un) (value : Value.base) : Value.base =
+let eval_unop (op : Op.un) (value : Value.t) : Value.t =
   match op with
   | Not _ -> eval_unop_not value
   | BitNot _ -> eval_unop_bitnot value
   | UMinus _ -> eval_unop_uminus value
 
-let eval_unop (op : Op.un) (value : Value.t) : Value.t =
-  let bvalue = eval_unop' op (extract_base value) in
-  Value.Base bvalue
-
 (* Binop evaluation *)
 
 let unsigned_op_sat (l : Bigint.t) (r : Bigint.t) (w : Bigint.t)
-    (op : Bigint.t -> Bigint.t -> Bigint.t) : Value.base =
+    (op : Bigint.t -> Bigint.t -> Bigint.t) : Value.t =
   let x = power_of_two w in
   let n = op l r in
   let n' =
@@ -118,7 +114,7 @@ let unsigned_op_sat (l : Bigint.t) (r : Bigint.t) (w : Bigint.t)
   Bit { value = n'; width = w }
 
 let signed_op_sat (l : Bigint.t) (r : Bigint.t) (w : Bigint.t)
-    (op : Bigint.t -> Bigint.t -> Bigint.t) : Value.base =
+    (op : Bigint.t -> Bigint.t -> Bigint.t) : Value.t =
   let x = power_of_two Bigint.(w - one) in
   let n = op l r in
   let n' =
@@ -145,7 +141,7 @@ let rec shift_bitstring_right (v : Bigint.t) (o : Bigint.t) (arith : bool)
       arith mx
   else v
 
-let rec eval_binop_plus (lvalue : Value.base) (rvalue : Value.base) : Value.base
+let rec eval_binop_plus (lvalue : Value.t) (rvalue : Value.t) : Value.t
     =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
@@ -164,12 +160,12 @@ let rec eval_binop_plus (lvalue : Value.base) (rvalue : Value.base) : Value.base
       eval_binop_plus (int_of_raw_int lvalue width) rvalue
   | AInt lvalue, AInt rvalue -> AInt Bigint.(lvalue + rvalue)
   | _ ->
-      Printf.sprintf "Invalid addition: %s + %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid addition: %s + %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_plussat (lvalue : Value.base) (rvalue : Value.base) :
-    Value.base =
+let rec eval_binop_plussat (lvalue : Value.t) (rvalue : Value.t) :
+    Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       unsigned_op_sat lvalue rvalue width Bigint.( + )
@@ -185,11 +181,11 @@ let rec eval_binop_plussat (lvalue : Value.base) (rvalue : Value.base) :
       eval_binop_plussat (int_of_raw_int lvalue width) rvalue
   | _ ->
       Printf.sprintf "Invalid addition with saturation: %s (+) %s"
-        (Value.print_base lvalue) (Value.print_base rvalue)
+        (Value.print lvalue) (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_minus (lvalue : Value.base) (rvalue : Value.base) :
-    Value.base =
+let rec eval_binop_minus (lvalue : Value.t) (rvalue : Value.t) :
+    Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       let value = of_two_complement Bigint.(lvalue - rvalue) width in
@@ -207,12 +203,12 @@ let rec eval_binop_minus (lvalue : Value.base) (rvalue : Value.base) :
       eval_binop_minus (int_of_raw_int lvalue width) rvalue
   | AInt lvalue, AInt rvalue -> AInt Bigint.(lvalue - rvalue)
   | _ ->
-      Printf.sprintf "Invalid subtraction: %s - %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid subtraction: %s - %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_minussat (lvalue : Value.base) (rvalue : Value.base) :
-    Value.base =
+let rec eval_binop_minussat (lvalue : Value.t) (rvalue : Value.t) :
+    Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       unsigned_op_sat lvalue rvalue width Bigint.( - )
@@ -228,10 +224,10 @@ let rec eval_binop_minussat (lvalue : Value.base) (rvalue : Value.base) :
       eval_binop_minussat (int_of_raw_int lvalue width) rvalue
   | _ ->
       Printf.sprintf "Invalid subtraction with saturation: %s (-) %s"
-        (Value.print_base lvalue) (Value.print_base rvalue)
+        (Value.print lvalue) (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_mul (lvalue : Value.base) (rvalue : Value.base) : Value.base
+let rec eval_binop_mul (lvalue : Value.t) (rvalue : Value.t) : Value.t
     =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
@@ -250,33 +246,33 @@ let rec eval_binop_mul (lvalue : Value.base) (rvalue : Value.base) : Value.base
       eval_binop_mul (int_of_raw_int lvalue width) rvalue
   | AInt lvalue, AInt rvalue -> AInt Bigint.(lvalue * rvalue)
   | _ ->
-      Printf.sprintf "Invalid multiplication: %s * %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid multiplication: %s * %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let eval_binop_div (lvalue : Value.base) (rvalue : Value.base) : Value.base =
+let eval_binop_div (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | AInt lvalue, AInt rvalue -> AInt Bigint.(lvalue / rvalue)
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       let value = Bigint.(lvalue / rvalue) in
       Bit { value; width }
   | _ ->
-      Printf.sprintf "Invalid division: %s / %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid division: %s / %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let eval_binop_mod (lvalue : Value.base) (rvalue : Value.base) : Value.base =
+let eval_binop_mod (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | AInt lvalue, AInt rvalue -> AInt Bigint.(lvalue % rvalue)
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       let value = Bigint.(lvalue % rvalue) in
       Bit { value; width }
   | _ ->
-      Printf.sprintf "Invalid modulo: %s %% %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid modulo: %s %% %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let eval_binop_shl (lvalue : Value.base) (rvalue : Value.base) : Value.base =
+let eval_binop_shl (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ }
   | Bit { value = lvalue; width }, AInt rvalue ->
@@ -304,11 +300,11 @@ let eval_binop_shl (lvalue : Value.base) (rvalue : Value.base) : Value.base =
       in
       Int { value; width }
   | _ ->
-      Printf.sprintf "Invalid shift left: %s << %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid shift left: %s << %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let eval_binop_shr (lvalue : Value.base) (rvalue : Value.base) : Value.base =
+let eval_binop_shr (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ }
   | Bit { value = lvalue; width }, AInt rvalue ->
@@ -338,11 +334,11 @@ let eval_binop_shr (lvalue : Value.base) (rvalue : Value.base) : Value.base =
       in
       Bit { value; width }
   | _ ->
-      Printf.sprintf "Invalid shift right: %s >> %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid shift right: %s >> %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_le (lvalue : Value.base) (rvalue : Value.base) : Value.base =
+let rec eval_binop_le (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; _ }, Bit { value = rvalue; _ }
   | AInt lvalue, AInt rvalue ->
@@ -357,10 +353,10 @@ let rec eval_binop_le (lvalue : Value.base) (rvalue : Value.base) : Value.base =
       eval_binop_le lvalue (int_of_raw_int rvalue width)
   | _ ->
       Printf.sprintf "Invalid less than or equal: %s <= %s"
-        (Value.print_base lvalue) (Value.print_base rvalue)
+        (Value.print lvalue) (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_ge (lvalue : Value.base) (rvalue : Value.base) : Value.base =
+let rec eval_binop_ge (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; _ }, Bit { value = rvalue; _ }
   | AInt lvalue, AInt rvalue ->
@@ -375,10 +371,10 @@ let rec eval_binop_ge (lvalue : Value.base) (rvalue : Value.base) : Value.base =
       eval_binop_ge lvalue (int_of_raw_int rvalue width)
   | _ ->
       Printf.sprintf "Invalid greater than or equal: %s >= %s"
-        (Value.print_base lvalue) (Value.print_base rvalue)
+        (Value.print lvalue) (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_lt (lvalue : Value.base) (rvalue : Value.base) : Value.base =
+let rec eval_binop_lt (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; _ }, Bit { value = rvalue; _ }
   | AInt lvalue, AInt rvalue ->
@@ -392,11 +388,11 @@ let rec eval_binop_lt (lvalue : Value.base) (rvalue : Value.base) : Value.base =
   | Int { width; _ }, AInt rvalue ->
       eval_binop_lt lvalue (int_of_raw_int rvalue width)
   | _ ->
-      Printf.sprintf "Invalid less than: %s < %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid less than: %s < %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_gt (lvalue : Value.base) (rvalue : Value.base) : Value.base =
+let rec eval_binop_gt (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; _ }, Bit { value = rvalue; _ }
   | AInt lvalue, AInt rvalue ->
@@ -410,12 +406,12 @@ let rec eval_binop_gt (lvalue : Value.base) (rvalue : Value.base) : Value.base =
   | Int { width; _ }, AInt rvalue ->
       eval_binop_gt lvalue (int_of_raw_int rvalue width)
   | _ ->
-      Printf.sprintf "Invalid greater than: %s > %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid greater than: %s > %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_eq_entries (lentries : (string * Value.base) list)
-    (rentries : (string * Value.base) list) : bool =
+let rec eval_binop_eq_entries (lentries : (string * Value.t) list)
+    (rentries : (string * Value.t) list) : bool =
   List.length lentries = List.length rentries
   && List.for_all
        (fun lentry ->
@@ -426,7 +422,7 @@ let rec eval_binop_eq_entries (lentries : (string * Value.base) list)
          with _ -> false)
        lentries
 
-and eval_binop_eq (lvalue : Value.base) (rvalue : Value.base) : bool =
+and eval_binop_eq (lvalue : Value.t) (rvalue : Value.t) : bool =
   match (lvalue, rvalue) with
   | Bool b1, Bool b2 -> b1 = b2
   | Bit { value = lvalue; _ }, Bit { value = rvalue; _ }
@@ -453,15 +449,15 @@ and eval_binop_eq (lvalue : Value.base) (rvalue : Value.base) : bool =
            (fun lvalue rvalue -> eval_binop_eq lvalue rvalue)
            lvalues rvalues
   | _ ->
-      Printf.sprintf "Invalid equality: %s == %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid equality: %s == %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let eval_binop_ne (lvalue : Value.base) (rvalue : Value.base) : bool =
+let eval_binop_ne (lvalue : Value.t) (rvalue : Value.t) : bool =
   not (eval_binop_eq lvalue rvalue)
 
-let rec eval_binop_bitand (lvalue : Value.base) (rvalue : Value.base) :
-    Value.base =
+let rec eval_binop_bitand (lvalue : Value.t) (rvalue : Value.t) :
+    Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       let value = Bigint.bit_and lvalue rvalue in
@@ -471,12 +467,12 @@ let rec eval_binop_bitand (lvalue : Value.base) (rvalue : Value.base) :
   | AInt lvalue, Bit { width; _ } ->
       eval_binop_bitand (bit_of_raw_int lvalue width) rvalue
   | _ ->
-      Printf.sprintf "Invalid bitwise and: %s & %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid bitwise and: %s & %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_bitxor (lvalue : Value.base) (rvalue : Value.base) :
-    Value.base =
+let rec eval_binop_bitxor (lvalue : Value.t) (rvalue : Value.t) :
+    Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       let value = Bigint.bit_xor lvalue rvalue in
@@ -486,12 +482,12 @@ let rec eval_binop_bitxor (lvalue : Value.base) (rvalue : Value.base) :
   | AInt lvalue, Bit { width; _ } ->
       eval_binop_bitxor (bit_of_raw_int lvalue width) rvalue
   | _ ->
-      Printf.sprintf "Invalid bitwise xor: %s ^ %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid bitwise xor: %s ^ %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_bitor (lvalue : Value.base) (rvalue : Value.base) :
-    Value.base =
+let rec eval_binop_bitor (lvalue : Value.t) (rvalue : Value.t) :
+    Value.t =
   match (lvalue, rvalue) with
   | Bit { value = lvalue; width }, Bit { value = rvalue; _ } ->
       let value = Bigint.bit_or lvalue rvalue in
@@ -501,12 +497,12 @@ let rec eval_binop_bitor (lvalue : Value.base) (rvalue : Value.base) :
   | AInt lvalue, Bit { width; _ } ->
       eval_binop_bitor (bit_of_raw_int lvalue width) rvalue
   | _ ->
-      Printf.sprintf "Invalid bitwise or: %s | %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid bitwise or: %s | %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let rec eval_binop_plusplus (lvalue : Value.base) (rvalue : Value.base) :
-    Value.base =
+let rec eval_binop_plusplus (lvalue : Value.t) (rvalue : Value.t) :
+    Value.t =
   match (lvalue, rvalue) with
   | ( Bit { value = lvalue; width = lwidth },
       Bit { value = rvalue; width = rwidth } ) ->
@@ -518,28 +514,27 @@ let rec eval_binop_plusplus (lvalue : Value.base) (rvalue : Value.base) :
   | AInt lvalue, Bit { width; _ } ->
       eval_binop_plusplus (bit_of_raw_int lvalue width) rvalue
   | _ ->
-      Printf.sprintf "Invalid concatenation: %s ++ %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid concatenation: %s ++ %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let eval_binop_and (lvalue : Value.base) (rvalue : Value.base) : Value.base =
+let eval_binop_and (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bool b1, Bool b2 -> Bool (b1 && b2)
   | _ ->
-      Printf.sprintf "Invalid and operator: %s && %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid and operator: %s && %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let eval_binop_or (lvalue : Value.base) (rvalue : Value.base) : Value.base =
+let eval_binop_or (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | Bool b1, Bool b2 -> Bool (b1 || b2)
   | _ ->
-      Printf.sprintf "Invalid or operator: %s || %s" (Value.print_base lvalue)
-        (Value.print_base rvalue)
+      Printf.sprintf "Invalid or operator: %s || %s" (Value.print lvalue)
+        (Value.print rvalue)
       |> failwith
 
-let eval_binop' (op : Op.bin) (lvalue : Value.base) (rvalue : Value.base) :
-    Value.base =
+let eval_binop (op : Op.bin) (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match op with
   | Plus _ -> eval_binop_plus lvalue rvalue
   | PlusSat _ -> eval_binop_plussat lvalue rvalue
@@ -563,14 +558,10 @@ let eval_binop' (op : Op.bin) (lvalue : Value.base) (rvalue : Value.base) :
   | And _ -> eval_binop_and lvalue rvalue
   | Or _ -> eval_binop_or lvalue rvalue
 
-let eval_binop (op : Op.bin) (lvalue : Value.t) (rvalue : Value.t) : Value.t =
-  let bvalue = eval_binop' op (extract_base lvalue) (extract_base rvalue) in
-  Value.Base bvalue
-
 (* Bitslice evaluation *)
 
 let eval_bitstring_access' (value : Bigint.t) (lvalue : Bigint.t)
-    (hvalue : Bigint.t) : Value.base =
+    (hvalue : Bigint.t) : Value.t =
   let width = Bigint.(hvalue - lvalue + one) in
   let value = slice_bitstring value hvalue lvalue in
   Bit { value; width }
@@ -578,21 +569,18 @@ let eval_bitstring_access' (value : Bigint.t) (lvalue : Bigint.t)
 let eval_bitstring_access (value : Value.t) (lvalue : Value.t)
     (hvalue : Value.t) : Value.t =
   let extract value = extract_bigint value in
-  let bvalue =
-    eval_bitstring_access' (extract value) (extract lvalue) (extract hvalue)
-  in
-  Value.Base bvalue
+  eval_bitstring_access' (extract value) (extract lvalue) (extract hvalue)
 
 (* Type cast evaluation *)
 
-let eval_cast_to_bool (value : Value.base) : Value.base =
+let eval_cast_to_bool (value : Value.t) : Value.t =
   match value with
   | Bool b -> Bool b
   | Bit { width; value } when width = Bigint.one -> Bool Bigint.(value = one)
   | AInt value -> Bool Bigint.(value = one)
   | _ -> failwith "cast to bool undefined"
 
-let eval_cast_to_bit (width : Bigint.t) (value : Value.base) : Value.base =
+let eval_cast_to_bit (width : Bigint.t) (value : Value.t) : Value.t =
   match value with
   | Bool b ->
       let value = if b then Bigint.one else Bigint.zero in
@@ -601,77 +589,66 @@ let eval_cast_to_bit (width : Bigint.t) (value : Value.base) : Value.base =
       bit_of_raw_int value width
   | _ ->
       Printf.sprintf "(TODO) Cast to bitstring undefined: %s"
-        (Value.print_base value)
+        (Value.print value)
       |> failwith
 
-let eval_cast_to_int (width : Bigint.t) (value : Value.base) : Value.base =
+let eval_cast_to_int (width : Bigint.t) (value : Value.t) : Value.t =
   match value with
   | Bit { value; _ } | Int { value; _ } | AInt value ->
       int_of_raw_int value width
   | _ ->
       Printf.sprintf "(TODO) Cast to integer undefined: %s"
-        (Value.print_base value)
+        (Value.print value)
       |> failwith
 
-let rec eval_cast_entries (entries : (string * Typ.base) list)
-    (value : Value.base) : (string * Value.base) list =
+let rec eval_cast_entries (entries : (string * Typ.t) list)
+    (value : Value.t) : (string * Value.t) list =
   match value with
   | Tuple values ->
       assert (List.length entries = List.length values);
       List.map2
         (fun (field, typ) value ->
-          let value = eval_cast typ (Value.Base value) |> Value.extract_base in
+          let value = eval_cast typ value in
           (field, value))
         entries values
   | Header { entries; _ } | Struct { entries } -> entries
   | _ ->
       Printf.sprintf "(TODO) Cast to entries undefined: %s"
-        (Value.print_base value)
+        (Value.print value)
       |> failwith
 
-and eval_cast_tuple (typs : Typ.base list) (value : Value.base) : Value.base =
+and eval_cast_tuple (typs : Typ.t list) (value : Value.t) : Value.t =
   match value with
   | Value.Tuple values ->
       assert (List.length typs = List.length values);
       let values =
-        List.map2
-          (fun typ value ->
-            eval_cast typ (Value.Base value) |> Value.extract_base)
-          typs values
+        List.map2 eval_cast typs values
       in
       Value.Tuple values
   | _ ->
       Printf.sprintf "(TODO) Cast to tuple undefined: %s"
-        (Value.print_base value)
+        (Value.print value)
       |> failwith
 
-and eval_cast (typ : Typ.base) (value : Value.t) : Value.t =
+and eval_cast (typ : Typ.t) (value : Value.t) : Value.t =
   match typ with
-  | Bool ->
-      let bvalue = eval_cast_to_bool (Value.extract_base value) in
-      Value.Base bvalue
+  | Bool -> eval_cast_to_bool value
   | AInt ->
       let value = Value.extract_bigint value in
-      let bvalue = Value.AInt value in
-      Value.Base bvalue
+      Value.AInt value
   | Bit { width } ->
-      let bvalue = eval_cast_to_bit width (Value.extract_base value) in
-      Value.Base bvalue
+      eval_cast_to_bit width value
   | Int { width } ->
-      let bvalue = eval_cast_to_int width (Value.extract_base value) in
-      Value.Base bvalue
+      eval_cast_to_int width value
   | Tuple typs ->
-      let bvalues = eval_cast_tuple typs (Value.extract_base value) in
-      Value.Base bvalues
+      eval_cast_tuple typs value
   | Header { entries } ->
-      let entries = eval_cast_entries entries (Value.extract_base value) in
-      let bvalue = Value.Header { valid = true; entries } in
-      Value.Base bvalue
+      let entries = eval_cast_entries entries value in
+      Value.Header { valid = true; entries }
   | Struct { entries } ->
-      let entries = eval_cast_entries entries (Value.extract_base value) in
-      let bvalue = Value.Struct { entries } in
-      Value.Base bvalue
+      let entries = eval_cast_entries entries value in
+      Value.Struct { entries }
   | _ ->
       Printf.sprintf "(TODO) Cast to type %s undefined"
-        (Typ.print (Typ.Base typ))
+        (Typ.print typ)
       |> failwith

@@ -2,8 +2,6 @@ open Syntax
 open Ast
 open Runtime
 
-(* (TODO) how to re-use tenv from the instantiation phase,
-   or should it also be part of the object field? *)
 (* (TODO) expression evaluation relies on the compile-time evaluation
    in Runtime.Eval, which is not ideal. *)
 (* (TODO) register the store as a global referenced variable in OCaml *)
@@ -38,7 +36,7 @@ let rec eval_stmt (store : store) (env : env) (tenv : tenv) (stmt : Statement.t)
       env
   | Conditional { cond; tru; fls = Some fls; _ } -> (
       let vcond = Static.eval_expr env tenv cond in
-      let vcond = Ops.eval_cast Typ.Bool vcond |> Value.extract_base in
+      let vcond = Ops.eval_cast Typ.Bool vcond in
       match vcond with
       | Bool true ->
           let env = Env.enter env in

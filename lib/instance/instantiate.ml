@@ -82,13 +82,12 @@ let rec load (env : env) (tenv : tenv) (cenv : cenv) (decl : Declaration.t) :
   | Enum { name; members; _ } ->
       let name = name.str in
       let entries = List.map (fun (member : Text.t) -> member.str) members in
-      let btyp = Typ.Enum { entries } in
-      let typ = Typ.Base btyp in
+      let typ = Typ.Enum { entries } in
       let tenv = Tenv.insert name typ tenv in
       (env, tenv, cenv)
   | SerializableEnum { name; typ; members; _ } ->
       let name = name.str in
-      let typ = Static.eval_base_typ env tenv typ in
+      let typ = Static.eval_typ env tenv typ in
       let entries =
         List.map
           (fun member ->
@@ -96,8 +95,7 @@ let rec load (env : env) (tenv : tenv) (cenv : cenv) (decl : Declaration.t) :
             member.str)
           members
       in
-      let btyp = Typ.SEnum { typ; entries } in
-      let typ = Typ.Base btyp in
+      let typ = Typ.SEnum { typ; entries } in
       let tenv = Tenv.insert name typ tenv in
       (env, tenv, cenv)
   | Header { name; fields; _ } ->
@@ -106,12 +104,11 @@ let rec load (env : env) (tenv : tenv) (cenv : cenv) (decl : Declaration.t) :
         List.map
           (fun (field : Declaration.field) ->
             let name = field.name.str in
-            let typ = Static.eval_base_typ env tenv field.typ in
+            let typ = Static.eval_typ env tenv field.typ in
             (name, typ))
           fields
       in
-      let btyp = Typ.Header { entries } in
-      let typ = Typ.Base btyp in
+      let typ = Typ.Header { entries } in
       let tenv = Tenv.insert name typ tenv in
       (env, tenv, cenv)
   | HeaderUnion { name; fields; _ } ->
@@ -120,12 +117,11 @@ let rec load (env : env) (tenv : tenv) (cenv : cenv) (decl : Declaration.t) :
         List.map
           (fun (field : Declaration.field) ->
             let name = field.name.str in
-            let typ = Static.eval_base_typ env tenv field.typ in
+            let typ = Static.eval_typ env tenv field.typ in
             (name, typ))
           fields
       in
-      let btyp = Typ.Union { entries } in
-      let typ = Typ.Base btyp in
+      let typ = Typ.Union { entries } in
       let tenv = Tenv.insert name typ tenv in
       (env, tenv, cenv)
   | Struct { name; fields; _ } ->
@@ -134,12 +130,11 @@ let rec load (env : env) (tenv : tenv) (cenv : cenv) (decl : Declaration.t) :
         List.map
           (fun (field : Declaration.field) ->
             let name = field.name.str in
-            let typ = Static.eval_base_typ env tenv field.typ in
+            let typ = Static.eval_typ env tenv field.typ in
             (name, typ))
           fields
       in
-      let btyp = Typ.Struct { entries } in
-      let typ = Typ.Base btyp in
+      let typ = Typ.Struct { entries } in
       let tenv = Tenv.insert name typ tenv in
       (env, tenv, cenv)
   (* Loading constants to env *)
@@ -149,7 +144,7 @@ let rec load (env : env) (tenv : tenv) (cenv : cenv) (decl : Declaration.t) :
   (* Loading constants *)
   (* (TODO) consider implicit casts? *)
   | Constant { name; typ; value; _ } ->
-      let typ = Static.eval_base_typ env tenv typ in
+      let typ = Static.eval_typ env tenv typ in
       let value = Static.eval_expr env tenv value in
       let value = Ops.eval_cast typ value in
       let env = Env.insert name.str value env in
