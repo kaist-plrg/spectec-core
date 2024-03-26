@@ -18,5 +18,6 @@ let () =
   let store = Instance.Instantiate.instantiate_program program in
 
   Printf.sprintf "Interpreting %s" filename |> print_endline;
-  let _result = Run.Interpreter.eval_program store program in
+  Exec.Interpreter.register_store store;
+  let _result = Exec.Interpreter.eval_program program in
   ()

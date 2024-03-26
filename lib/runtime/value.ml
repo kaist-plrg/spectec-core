@@ -13,7 +13,7 @@ type t =
   | Header of { valid : bool; entries : (string * t) list }
   | Ref of Path.t
 
-(* Printers *)
+(* Printer *)
 
 let rec print (t : t) =
   match t with
@@ -41,6 +41,22 @@ let rec print (t : t) =
   | Ref rvalue -> Printf.sprintf "*%s" (String.concat "." rvalue)
 
 (* Utils *)
+
+let rec init (typ: Typ.t) : t =
+  match typ with
+  | Bool -> Bool false
+  | AInt -> AInt Bigint.zero
+  | Int { width } -> Int { value = Bigint.zero; width }
+  | Bit { width } -> Bit { value = Bigint.zero; width }
+  | String -> String ""
+  | Tuple types -> Tuple (List.map init types)
+  | Struct { entries } ->
+      let entries = List.map (fun (name, typ) -> (name, init typ)) entries in
+      Struct { entries }
+  | Header { entries } ->
+      let entries = List.map (fun (name, typ) -> (name, init typ)) entries in
+      Header { valid = false; entries }
+  | _ -> failwith "(TODO) init: not implemented"
 
 let extract_bigint (t : t) : Bigint.t =
   match t with

@@ -90,7 +90,7 @@ let test_simple_interpreter () =
   let store = Instance.Instantiate.instantiate_program program in
 
   Printf.sprintf "Driving %s" filename |> print_endline;
-  Run.Driver.drive_simple store
+  Exec.Driver.drive_simple store
 
 let rec parse_arguments args =
   match args with

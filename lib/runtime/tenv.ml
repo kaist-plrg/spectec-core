@@ -46,6 +46,8 @@ let find_toplevel (var : Var.t) (tenv : t) =
       Printf.sprintf "Type variable %s not found in top scope" (Var.print var)
       |> failwith
 
+(* Printer *)
+
 let print ?(indent = 0) (tenv : t) =
   let print_binding var typ acc =
     acc @ [ Printf.sprintf "%s: %s" (Var.print var) (Typ.print typ) ]

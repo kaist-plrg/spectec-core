@@ -4,15 +4,20 @@ open Ast
 (* Constructor closures *)
 
 type t =
-  | Package of { params : Parameter.t list }
+  | Package of {
+      params : Parameter.t list;
+      tparams : string list;
+  }
   | Parser of {
       params : Parameter.t list;
+      tparams : string list;
       cparams : Parameter.t list;
       locals : Declaration.t list;
       states : Parser.state list;
     }
   | Control of {
       params : Parameter.t list;
+      tparams : string list;
       cparams : Parameter.t list;
       locals : Declaration.t list;
       apply : Block.t;
@@ -23,7 +28,7 @@ type t =
 
 let print (cclos : t) =
   match cclos with
-  | Package { params } ->
+  | Package { params; _ } ->
       Printf.sprintf "Package { params = (%s) }"
         (String.concat ", " (List.map Pretty.print_param params))
   | Parser { params; cparams; _ } ->

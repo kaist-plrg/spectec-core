@@ -1,6 +1,6 @@
 open Utils
 
-(* Values *)
+(* Types *)
 
 type t =
   | Bool
@@ -21,7 +21,7 @@ type t =
   | NewType of { name : string }
   | Ref of Path.t
 
-(* Printers *)
+(* Printer *)
 
 let rec print (t : t) =
   match t with

@@ -16,6 +16,8 @@ let find (path : Path.t) (store : t) =
   | Some obj -> obj
   | None -> Printf.sprintf "Path %s not found" (Path.print path) |> failwith
 
+(* Printer *)
+
 let print ?(indent = 0) (store : t) =
   let print_binding path obj acc =
     acc

@@ -7,4 +7,4 @@
   (re_export frontend)
   (re_export runtime)
   (re_export instance)
-  (re_export run)))
+  (re_export exec)))

@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/*
 control ctrl() {
     apply {
         bit<32> a = 0;
@@ -37,3 +38,24 @@ control ctrl() {
 control noop();
 package p(noop _n);
 p(ctrl()) main;
+*/
+
+struct S {
+    bit<32> x;
+}
+
+control c(inout bit<32> b) {
+    apply {
+        //S s1;
+        //S s2;
+        //s2 = { 0 };
+        //s1 = s2;
+        //s2 = s1;
+        b = 32w777;
+    }
+}
+
+control proto(inout bit<32> _b);
+package top(proto _p);
+
+top(c()) main;

@@ -56,6 +56,18 @@ let update (var : Var.t) (value : Value.t) (env : t) =
   in
   update' env
 
+let update_toplevel (var : Var.t) (value : Value.t) (env : t) =
+  let renv = List.rev env in
+  let top, tail = List.hd renv, List.tl renv in
+  match Var.VMap.find_opt var top with
+  | Some _ -> Var.VMap.add var value top :: tail |> List.rev
+  | None ->
+      Printf.sprintf "Variable %s not found in top scope" (Var.print var)
+      |> failwith
+
+
+(* Printer *)
+
 let print ?(indent = 0) (env : t) =
   let print_binding var value acc =
     acc @ [ Printf.sprintf "%s: %s" (Var.print var) (Value.print value) ]
