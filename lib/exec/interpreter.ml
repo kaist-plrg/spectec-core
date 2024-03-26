@@ -13,7 +13,6 @@ type tenv = Tenv.t
 type store = Store.t
 
 let gstore = ref Store.empty
-
 let register_store (store : store) = gstore := store
 
 (* Interpreter *)
@@ -115,8 +114,7 @@ and eval_expr (env : env) (tenv : tenv) (expr : Expression.t) : Value.t =
   | _ ->
       Printf.sprintf "(TODO: eval_expr) %s" (Pretty.print_expr expr) |> failwith
 
-let eval_decl (env : env) (tenv : tenv) (decl : Declaration.t)
-    : env =
+let eval_decl (env : env) (tenv : tenv) (decl : Declaration.t) : env =
   match decl with
   | Variable { name; init = Some value; _ } ->
       let value = eval_expr env tenv value in
@@ -131,8 +129,7 @@ let eval_decl (env : env) (tenv : tenv) (decl : Declaration.t)
       |> print_endline;
       env
 
-let rec eval_stmt (env : env) (tenv : tenv) (stmt : Statement.t)
-    : env =
+let rec eval_stmt (env : env) (tenv : tenv) (stmt : Statement.t) : env =
   match stmt with
   (* (TODO) Perform implicit casts on assignment. *)
   | Assignment
@@ -160,8 +157,7 @@ let rec eval_stmt (env : env) (tenv : tenv) (stmt : Statement.t)
       |> print_endline;
       env
 
-and eval_block (env : env) (tenv : tenv) (block : Block.t) : env
-    =
+and eval_block (env : env) (tenv : tenv) (block : Block.t) : env =
   let env = Env.enter env in
   let env =
     List.fold_left
@@ -170,7 +166,8 @@ and eval_block (env : env) (tenv : tenv) (block : Block.t) : env
   in
   Env.exit env
 
-let copyin (caller_env : env) (callee_env : env) (tenv : tenv) (params : Parameter.t list) (args : Argument.t list) : env =
+let copyin (caller_env : env) (callee_env : env) (tenv : tenv)
+    (params : Parameter.t list) (args : Argument.t list) : env =
   (* (TODO) assume there is no default argument *)
   assert (List.length params = List.length args);
   (* It is illegal to use names only for some arguments:
@@ -186,34 +183,36 @@ let copyin (caller_env : env) (callee_env : env) (tenv : tenv) (params : Paramet
          args);
   (* Copy-in a single parameter-argument pair. *)
   let copyin' (env : env) (param : Parameter.t) (arg : Argument.t) =
-      match param.direction with
-      (* in parameters are initialized by copying the value of the
-         corresponding argument when the invocation is executed.
-         inout parameters behave like a combination of in and out
-         parameters simultaneously. *)
-      | Some (In _ | InOut _) ->
-          let param, arg =
-            match arg with
-            | Expression { value; _ } -> param.variable.str, value
-            | KeyValue { key; value; _ } -> key.str, value
-            | _ -> failwith "(TODO) (copyin) Support missing argument."
-          in
-          let value = eval_expr caller_env tenv arg in
-          Env.insert param value env
-      (* Direction out parameters are always initialized at the beginning
-         of the execution of the portion of the program that has the out
-         parameters. This initialization is not performed for parameters
-         with any direction that is not out. (6.8) *)
-      | Some (Out _) ->
-          let typ = param.typ in
-          let param = param.variable.str in
-          let value = Value.init (eval_typ callee_env tenv typ) in
-          Env.insert param value env
-      | None -> failwith "(TODO) (copyin) Non-directional parameter is not supported."
+    match param.direction with
+    (* in parameters are initialized by copying the value of the
+       corresponding argument when the invocation is executed.
+       inout parameters behave like a combination of in and out
+       parameters simultaneously. *)
+    | Some (In _ | InOut _) ->
+        let param, arg =
+          match arg with
+          | Expression { value; _ } -> (param.variable.str, value)
+          | KeyValue { key; value; _ } -> (key.str, value)
+          | _ -> failwith "(TODO) (copyin) Support missing argument."
+        in
+        let value = eval_expr caller_env tenv arg in
+        Env.insert param value env
+    (* Direction out parameters are always initialized at the beginning
+       of the execution of the portion of the program that has the out
+       parameters. This initialization is not performed for parameters
+       with any direction that is not out. (6.8) *)
+    | Some (Out _) ->
+        let typ = param.typ in
+        let param = param.variable.str in
+        let value = Value.init (eval_typ callee_env tenv typ) in
+        Env.insert param value env
+    | None ->
+        failwith "(TODO) (copyin) Non-directional parameter is not supported."
   in
   List.fold_left2 copyin' callee_env params args
 
-let copyout (caller_env : env) (callee_env : env) (_tenv : tenv) (params : Parameter.t list) (args : Argument.t list) : env =
+let copyout (caller_env : env) (callee_env : env) (_tenv : tenv)
+    (params : Parameter.t list) (args : Argument.t list) : env =
   (* (TODO) assume there is no default argument *)
   assert (List.length params = List.length args);
   (* It is illegal to use names only for some arguments:
@@ -237,7 +236,8 @@ let copyout (caller_env : env) (callee_env : env) (_tenv : tenv) (params : Param
         let var = text.str in
         Env.update_toplevel var value env
     | _ ->
-        Printf.sprintf "(TODO) (copyout) Write to l-value %s" (Pretty.print_expr arg)
+        Printf.sprintf "(TODO) (copyout) Write to l-value %s"
+          (Pretty.print_expr arg)
         |> failwith
   in
   (* Copy-out a single parameter-argument pair. *)
@@ -246,22 +246,24 @@ let copyout (caller_env : env) (callee_env : env) (_tenv : tenv) (params : Param
     | Some (InOut _ | Out _) ->
         let param, arg =
           match arg with
-          | Expression { value; _ } -> param.variable.str, value
-          | KeyValue { key; value; _ } -> key.str, value
+          | Expression { value; _ } -> (param.variable.str, value)
+          | KeyValue { key; value; _ } -> (key.str, value)
           | _ -> failwith "(TODO) (copyout) Support missing argument."
         in
         let value = Env.find param callee_env in
         write arg value env
     | Some (In _) -> env
-    | None -> failwith "(TODO) (copyout) Non-directional parameter is not supported."
+    | None ->
+        failwith "(TODO) (copyout) Non-directional parameter is not supported."
   in
   List.fold_left2 copyout' caller_env params args
 
-let eval_object_apply (caller_env : env) (obj : Object.t) (args : Argument.t list) =
+let eval_object_apply (caller_env : env) (obj : Object.t)
+    (args : Argument.t list) =
   print_endline "Called eval_object_apply";
-  (Object.print obj) |> print_endline;
-  (String.concat ", " (List.map Pretty.print_arg args)) |> print_endline;
-  (Env.print caller_env) |> print_endline;
+  Object.print obj |> print_endline;
+  String.concat ", " (List.map Pretty.print_arg args) |> print_endline;
+  Env.print caller_env |> print_endline;
   match obj with
   | Control { env; tenv; params; apply; _ } ->
       let callee_env = env in
@@ -269,7 +271,7 @@ let eval_object_apply (caller_env : env) (obj : Object.t) (args : Argument.t lis
       let callee_env = eval_block callee_env tenv apply in
       let caller_env = copyout caller_env callee_env tenv params args in
       print_endline "After eval_object_apply";
-      (Env.print caller_env) |> print_endline;
+      Env.print caller_env |> print_endline;
       ()
   | _ ->
       Printf.sprintf "(TODO: eval_object) %s" (Object.print obj)

@@ -4,10 +4,7 @@ open Ast
 (* Constructor closures *)
 
 type t =
-  | Package of {
-      params : Parameter.t list;
-      tparams : string list;
-  }
+  | Package of { params : Parameter.t list; tparams : string list }
   | Parser of {
       params : Parameter.t list;
       tparams : string list;

@@ -42,7 +42,7 @@ let rec print (t : t) =
 
 (* Utils *)
 
-let rec init (typ: Typ.t) : t =
+let rec init (typ : Typ.t) : t =
   match typ with
   | Bool -> Bool false
   | AInt -> AInt Bigint.zero

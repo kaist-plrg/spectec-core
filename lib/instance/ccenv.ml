@@ -52,7 +52,7 @@ let rec find_from_type (typ : Type.t) (ccenv : t) =
   | Type.TypeName { name = Name.BareName text; _ } -> (find text.str ccenv, [])
   | Type.TypeName { name = Name.QualifiedName ([], text); _ } ->
       (find_toplevel text.str ccenv, [])
-  | Type.SpecializedType { base; args; _ } -> 
+  | Type.SpecializedType { base; args; _ } ->
       let cclos, _ = find_from_type base ccenv in
       (cclos, args)
   | _ ->

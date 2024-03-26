@@ -39,7 +39,8 @@ let rec load (env : env) (tenv : tenv) (ccenv : ccenv) (decl : Declaration.t) :
       let cclos = Cclosure.Package { params; tparams } in
       let ccenv = Ccenv.insert name cclos ccenv in
       (env, tenv, ccenv)
-  | Parser { name; params; type_params; constructor_params; locals; states; _ } ->
+  | Parser { name; params; type_params; constructor_params; locals; states; _ }
+    ->
       let name = name.str in
       let tparams = List.map (fun (param : Text.t) -> param.str) type_params in
       let cparams = constructor_params in
@@ -48,7 +49,8 @@ let rec load (env : env) (tenv : tenv) (ccenv : ccenv) (decl : Declaration.t) :
       in
       let ccenv = Ccenv.insert name cclos ccenv in
       (env, tenv, ccenv)
-  | Control { name; params; type_params; constructor_params; locals; apply; _ } ->
+  | Control { name; params; type_params; constructor_params; locals; apply; _ }
+    ->
       let name = name.str in
       let tparams = List.map (fun (param : Text.t) -> param.str) type_params in
       let cparams = constructor_params in
@@ -159,10 +161,12 @@ let rec load (env : env) (tenv : tenv) (ccenv : ccenv) (decl : Declaration.t) :
 (* Evaluating instantiation arguments,
    which may contain nameless instantiation *)
 
-and eval_targs (env : env) (tenv : tenv) (tparams : string list) (typs : Type.t list) : tenv =
+and eval_targs (env : env) (tenv : tenv) (tparams : string list)
+    (typs : Type.t list) : tenv =
   print_endline "Evaluating type arguments";
   String.concat ", " tparams |> print_endline;
-  String.concat ", " (List.map (fun typ -> Pretty.print_type typ) typs) |> print_endline;
+  String.concat ", " (List.map (fun typ -> Pretty.print_type typ) typs)
+  |> print_endline;
   assert (List.length tparams = List.length typs);
   List.fold_left2
     (fun tenv tparam typ ->
@@ -210,7 +214,9 @@ and eval_args (env : env) (tenv : tenv) (ccenv : ccenv) (store : store)
   in
   List.fold_left2
     (fun (env', store) param arg ->
-      let value, store = eval_expr env tenv ccenv store (path @ [ param ]) arg in
+      let value, store =
+        eval_expr env tenv ccenv store (path @ [ param ]) arg
+      in
       let env' = Env.insert param value env' in
       (env', store))
     (env, store) params args
@@ -218,7 +224,8 @@ and eval_args (env : env) (tenv : tenv) (ccenv : ccenv) (store : store)
 (* Instantiation of a constructor closure *)
 
 and instantiate_cclos (env : env) (tenv : tenv) (ccenv : ccenv) (store : store)
-    (path : string list) (cclos : Cclosure.t) (args : Argument.t list) (_typs : Type.t list) : store =
+    (path : string list) (cclos : Cclosure.t) (args : Argument.t list)
+    (_typs : Type.t list) : store =
   match cclos with
   (* The instantiation of a parser or control block recursively
      evaluates all stateful instantiations declared in the block (16.2) *)
@@ -260,7 +267,8 @@ and instantiate_cclos (env : env) (tenv : tenv) (ccenv : ccenv) (store : store)
      1 instantiation of each table defined within it
      every extern and control instantiation that is in the control source code
      at its top level is instantiated 1 time (p4guide) *)
-  | Cclosure.Control { params; tparams = _tparams; cparams; locals; apply; _ } ->
+  | Cclosure.Control { params; tparams = _tparams; cparams; locals; apply; _ }
+    ->
       let env_control = Env.enter env in
       let tenv_control = Tenv.enter tenv in
       let ccenv_control = Ccenv.enter ccenv in
@@ -324,7 +332,8 @@ and instantiate_stmt (env : env) (tenv : tenv) (ccenv : ccenv) (store : store)
       let name = name_from_type typ in
       let cclos, targs = Ccenv.find_from_type typ ccenv in
       let store =
-        instantiate_cclos env tenv ccenv store (path @ [ name ]) cclos args targs
+        instantiate_cclos env tenv ccenv store (path @ [ name ]) cclos args
+          targs
       in
       let value = Value.Ref (path @ [ name ]) in
       let env = Env.insert name value env in
@@ -339,7 +348,8 @@ and instantiate_decl (env : env) (tenv : tenv) (ccenv : ccenv) (store : store)
       let name = name.str in
       let cclos, targs = Ccenv.find_from_type typ ccenv in
       let store =
-        instantiate_cclos env tenv ccenv store (path @ [ name ]) cclos args targs
+        instantiate_cclos env tenv ccenv store (path @ [ name ]) cclos args
+          targs
       in
       let value = Value.Ref (path @ [ name ]) in
       let env = Env.insert name value env in
