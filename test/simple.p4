@@ -40,18 +40,20 @@ package p(noop _n);
 p(ctrl()) main;
 */
 
+const bit<32> glob = 32w42;
+
 struct S {
     bit<32> x;
 }
 
 control c(inout bit<32> b) {
     apply {
-        //S s1;
-        //S s2;
-        //s2 = { 0 };
-        //s1 = s2;
-        //s2 = s1;
-        b = 32w777;
+        S s1;
+        S s2;
+        s2 = { 0 };
+        s1 = s2;
+        s2 = s1;
+        b = s2.x;
     }
 }
 

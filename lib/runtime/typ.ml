@@ -1,5 +1,3 @@
-open Utils
-
 (* Types *)
 
 type t =
@@ -19,7 +17,8 @@ type t =
   | Struct of { entries : (string * t) list }
   | Name of { name : string }
   | NewType of { name : string }
-  | Ref of Path.t
+  (* (TODO) A hack for now, representing objects *)
+  | Ref
 
 (* Printer *)
 
@@ -59,4 +58,4 @@ let rec print (t : t) =
               entries))
   | Name { name } -> name
   | NewType { name } -> name
-  | Ref rtyp -> Printf.sprintf "ref{%s}" (String.concat "." rtyp)
+  | Ref -> "ref"
