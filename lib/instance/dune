@@ -1,4 +1,4 @@
 (library
  (name instance)
  (libraries syntax runtime utils)
- (modules instantiate cclosure ccenv static))
+ (modules instantiate static))

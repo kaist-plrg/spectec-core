@@ -1,6 +1,7 @@
 open Syntax
 open Ast
 open Utils
+open Envs
 
 (* Stateful objects *)
 (* The stateful types of objects in P4_16 are
@@ -9,19 +10,19 @@ open Utils
    even if they happen to be pure functions of their arguments (Appendix F) *)
 
 type t =
-  | Package of { env : Env.t; tenv : Tenv.t; tdenv : Tdenv.t }
+  | Package of { env : env; tenv : tenv; tdenv : tdenv }
   | Parser of {
-      env : Env.t;
-      tenv : Tenv.t;
-      tdenv : Tdenv.t;
+      env : env;
+      tenv : tenv;
+      tdenv : tdenv;
       params : Parameter.t list;
       locals : Declaration.t list;
       states : Parser.state list;
     }
   | Control of {
-      env : Env.t;
-      tenv : Tenv.t;
-      tdenv : Tdenv.t;
+      env : env;
+      tenv : tenv;
+      tdenv : tdenv;
       params : Parameter.t list;
       locals : Declaration.t list;
       apply : Block.t;
@@ -39,29 +40,29 @@ let print ?(indent = 0) (obj : t) =
       Printf.sprintf "%sPackage {\n%senv =\n%s\n%stenv =\n%s\n%stdenv =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
-        (Env.Env.print env ~indent:(indent + 3))
+        (Env.print env ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
-        (Tenv.TEnv.print tenv ~indent:(indent + 3))
+        (TEnv.print tenv ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
-        (Tdenv.TDEnv.print tdenv ~indent:(indent + 3))
+        (TDEnv.print tdenv ~indent:(indent + 3))
   | Parser { env; tenv; tdenv; _ } ->
       Printf.sprintf "%sParser {\n%senv =\n%s\n%stenv = \n%s\n%stdenv =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
-        (Env.Env.print env ~indent:(indent + 3))
+        (Env.print env ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
-        (Tenv.TEnv.print tenv ~indent:(indent + 3))
+        (TEnv.print tenv ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
-        (Tdenv.TDEnv.print tdenv ~indent:(indent + 3))
+        (TDEnv.print tdenv ~indent:(indent + 3))
   | Control { env; tenv; tdenv; _ } ->
       Printf.sprintf "%sControl {\n%senv =\n%s\n%stenv =\n%s\n%stdenv =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
-        (Env.Env.print env ~indent:(indent + 3))
+        (Env.print env ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
-        (Tenv.TEnv.print tenv ~indent:(indent + 3))
+        (TEnv.print tenv ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
-        (Tdenv.TDEnv.print tdenv ~indent:(indent + 3))
+        (TDEnv.print tdenv ~indent:(indent + 3))
   | Extern -> Printf.sprintf "%sExtern" (Print.print_indent indent)
   | Table _ -> Printf.sprintf "%sTable" (Print.print_indent indent)
   | Function -> Printf.sprintf "%sFunction" (Print.print_indent indent)

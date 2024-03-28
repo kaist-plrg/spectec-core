@@ -1,15 +1,7 @@
 open Syntax
 open Ast
 open Runtime
-open Value
-open Typ
-open Env
-open Tdenv
-
-(* Environments *)
-
-type env = Env.t
-type tdenv = Tdenv.t
+open Envs
 
 (* Compile-time evaluation of type simplification *)
 

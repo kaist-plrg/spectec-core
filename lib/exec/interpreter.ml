@@ -3,9 +3,7 @@ open Ast
 open Runtime
 open Value
 open Typ
-open Env
-open Tenv
-open Tdenv
+open Envs
 
 (* (TODO) expression evaluation relies on the compile-time evaluation
    in Runtime.Eval, which is not ideal. *)
@@ -13,9 +11,6 @@ open Tdenv
 
 (* Environments *)
 
-type env = Env.t
-type tenv = TEnv.t
-type tdenv = Tdenv.t
 type store = Store.t
 
 let gstore = ref Store.empty
@@ -23,21 +18,21 @@ let register_store (store : store) = gstore := store
 
 (* Utils *)
 
-let rec init (typ : Typ.t) : Value.t =
+let rec default (typ : Typ.t) : Value.t =
   match typ with
   | Bool -> Bool false
   | AInt -> AInt Bigint.zero
   | Int { width } -> Int { value = Bigint.zero; width }
   | Bit { width } -> Bit { value = Bigint.zero; width }
   | String -> String ""
-  | Tuple types -> Tuple (List.map init types)
+  | Tuple types -> Tuple (List.map default types)
   | Struct { entries } ->
-      let entries = List.map (fun (name, typ) -> (name, init typ)) entries in
+      let entries = List.map (fun (name, typ) -> (name, default typ)) entries in
       Struct { entries }
   | Header { entries } ->
-      let entries = List.map (fun (name, typ) -> (name, init typ)) entries in
+      let entries = List.map (fun (name, typ) -> (name, default typ)) entries in
       Header { valid = false; entries }
-  | _ -> failwith "(TODO) init: not implemented"
+  | _ -> failwith "(TODO) default: not implemented"
 
 (* Interpreter *)
 
@@ -148,7 +143,7 @@ let eval_decl (env : env) (tenv : tenv) (tdenv : tdenv) (decl : Declaration.t) :
       (env, tenv)
   | Variable { name; typ; init = None; _ } ->
       let typ = eval_typ env tdenv typ in
-      let value = init typ in
+      let value = default typ in
       let env = Env.insert name.str value env in
       let tenv = TEnv.insert name.str typ tenv in
       (env, tenv)
@@ -221,7 +216,7 @@ let copyin (caller_env : env) (callee_env : env) (callee_tenv : tenv) (tdenv : t
   (* Copy-in a single parameter-argument pair. *)
   let copyin' ((env, tenv) : env * tenv) (param : Parameter.t) (arg : Argument.t) =
     match param.direction with
-    (* in parameters are initialized by copying the value of the
+    (* in parameters are defaultialized by copying the value of the
        corresponding argument when the invocation is executed.
        inout parameters behave like a combination of in and out
        parameters simultaneously. *)
@@ -237,14 +232,14 @@ let copyin (caller_env : env) (callee_env : env) (callee_tenv : tenv) (tdenv : t
         let env = Env.insert param value env in
         let tenv = TEnv.insert param typ tenv in
         (env, tenv)
-    (* Direction out parameters are always initialized at the beginning
+    (* Direction out parameters are always defaultialized at the beginning
        of the execution of the portion of the program that has the out
-       parameters. This initialization is not performed for parameters
+       parameters. This defaultialization is not performed for parameters
        with any direction that is not out. (6.8) *)
     | Some (Out _) ->
         let param, typ = param.variable.str, param.typ in
         let typ = eval_typ caller_env tdenv typ in
-        let value = init typ in
+        let value = default typ in
         let env = Env.insert param value env in
         let tenv = TEnv.insert param typ tenv in
         (env, tenv)

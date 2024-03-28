@@ -1,20 +1,11 @@
 open Syntax
 open Ast
 open Runtime
-open Env
-open Tenv
-open Tdenv
-open Value
-open Typ
-open Ccenv
+open Envs
 open Utils
 
-(* Environments *)
+(* Store *)
 
-type env = Env.t
-type tenv = Tenv.t
-type tdenv = Tdenv.t
-type ccenv = Ccenv.t
 type store = Store.t
 
 (* Utils *)
@@ -28,6 +19,25 @@ let rec name_from_type (typ : Type.t) : string =
       Printf.sprintf "(name_from_type) Unexpected type: %s"
         (Pretty.print_type typ)
       |> failwith
+
+let rec cclos_from_type (typ : Type.t) (ccenv : ccenv) : Cclosure.t * (Type.t list) =
+  match typ with
+  | Type.TypeName { name = Name.BareName text; _ } -> (CCEnv.find text.str ccenv, [])
+  | Type.TypeName { name = Name.QualifiedName ([], text); _ } ->
+      (CCEnv.find_toplevel text.str ccenv, [])
+  | Type.SpecializedType { base; args; _ } ->
+      let cclos, _ = cclos_from_type base ccenv in
+      (cclos, args)
+  | _ ->
+      Printf.sprintf "Constructor closure %s not found" (Pretty.print_type typ)
+      |> failwith
+
+(* Instantiation *)
+
+(* Instantiating a declaration *)
+
+(* Loading the result of a declaration
+   (other than instantiation) to env, tdenv, or ccenv *)
 
 (* Instantiation *)
 
@@ -336,7 +346,7 @@ and instantiate_cclos (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) 
 
 and instantiate_expr (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (store : store)
     (path : string list) (typ : Type.t) (args : Argument.t list) : store =
-  let cclos, targs = Ccenv.find_from_type typ ccenv in
+  let cclos, targs = cclos_from_type typ ccenv in
   let store = instantiate_cclos env tenv tdenv ccenv store path cclos args targs in
   store
 
@@ -351,7 +361,7 @@ and instantiate_stmt (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (
         (env, tenv, store) stmts
   | DirectApplication { typ; args; _ } ->
       let name = name_from_type typ in
-      let cclos, targs = Ccenv.find_from_type typ ccenv in
+      let cclos, targs = cclos_from_type typ ccenv in
       let store =
         instantiate_cclos env tenv tdenv ccenv store (path @ [ name ]) cclos args
           targs
@@ -369,7 +379,7 @@ and instantiate_decl (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (
   (* Explicit instantiation *)
   | Instantiation { name; typ; args; _ } ->
       let name = name.str in
-      let cclos, targs = Ccenv.find_from_type typ ccenv in
+      let cclos, targs = cclos_from_type typ ccenv in
       let store =
         instantiate_cclos env tenv tdenv ccenv store (path @ [ name ]) cclos args
           targs
