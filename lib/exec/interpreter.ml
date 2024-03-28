@@ -1,6 +1,11 @@
 open Syntax
 open Ast
 open Runtime
+open Value
+open Typ
+open Env
+open Tenv
+open Tdenv
 
 (* (TODO) expression evaluation relies on the compile-time evaluation
    in Runtime.Eval, which is not ideal. *)
@@ -9,19 +14,37 @@ open Runtime
 (* Environments *)
 
 type env = Env.t
-type tenv = Tenv.t
+type tenv = TEnv.t
 type tdenv = Tdenv.t
 type store = Store.t
 
 let gstore = ref Store.empty
 let register_store (store : store) = gstore := store
 
+(* Utils *)
+
+let rec init (typ : Typ.t) : Value.t =
+  match typ with
+  | Bool -> Bool false
+  | AInt -> AInt Bigint.zero
+  | Int { width } -> Int { value = Bigint.zero; width }
+  | Bit { width } -> Bit { value = Bigint.zero; width }
+  | String -> String ""
+  | Tuple types -> Tuple (List.map init types)
+  | Struct { entries } ->
+      let entries = List.map (fun (name, typ) -> (name, init typ)) entries in
+      Struct { entries }
+  | Header { entries } ->
+      let entries = List.map (fun (name, typ) -> (name, init typ)) entries in
+      Header { valid = false; entries }
+  | _ -> failwith "(TODO) init: not implemented"
+
 (* Interpreter *)
 
 let rec eval_simplify_typ (tdenv : tdenv) (typ : Typ.t) : Typ.t =
   match typ with
-  | Typ.Name { name } -> eval_simplify_typ tdenv (Tdenv.find name tdenv)
-  | Typ.NewType { name } -> Tdenv.find name tdenv
+  | Typ.Name { name } -> eval_simplify_typ tdenv (TDEnv.find name tdenv)
+  | Typ.NewType { name } -> TDEnv.find name tdenv
   | _ -> typ
 
 let rec eval_typ (env : env) (tdenv : tdenv) (typ : Type.t) : Typ.t =
@@ -29,17 +52,17 @@ let rec eval_typ (env : env) (tdenv : tdenv) (typ : Type.t) : Typ.t =
   | Bool _ -> Typ.Bool
   | Integer _ -> Typ.AInt
   | IntType { expr; _ } ->
-      let width = eval_expr env tdenv expr |> Value.extract_bigint in
+      let width = eval_expr env tdenv expr |> Ops.extract_bigint in
       Typ.Bit { width }
   | BitType { expr; _ } ->
-      let width = eval_expr env tdenv expr |> Value.extract_bigint in
+      let width = eval_expr env tdenv expr |> Ops.extract_bigint in
       Typ.Bit { width }
   | VarBit { expr; _ } ->
-      let width = eval_expr env tdenv expr |> Value.extract_bigint in
+      let width = eval_expr env tdenv expr |> Ops.extract_bigint in
       Typ.Bit { width }
   | HeaderStack { header; size; _ } ->
       let header = eval_typ env tdenv header in
-      let size = eval_expr env tdenv size |> Value.extract_bigint in
+      let size = eval_expr env tdenv size |> Ops.extract_bigint in
       Typ.Array { typ = header; size }
   | String _ -> Typ.String
   | Error _ -> Typ.Error
@@ -48,10 +71,10 @@ let rec eval_typ (env : env) (tdenv : tdenv) (typ : Type.t) : Typ.t =
       Typ.Tuple vargs
   | TypeName { name = BareName text; _ } ->
       let var = text.str in
-      Tdenv.find var tdenv
+      TDEnv.find var tdenv
   | TypeName { name = QualifiedName ([], text); _ } ->
       let var = text.str in
-      Tdenv.find_toplevel var tdenv
+      TDEnv.find_toplevel var tdenv
   | _ ->
       Printf.sprintf "(TODO: eval_typ) %s" (Pretty.print_type typ) |> failwith
 
@@ -121,13 +144,13 @@ let eval_decl (env : env) (tenv : tenv) (tdenv : tdenv) (decl : Declaration.t) :
       let typ = eval_typ env tdenv typ in
       let value = eval_expr env tdenv value in
       let env = Env.insert name.str value env in
-      let tenv = Tenv.insert name.str typ tenv in
+      let tenv = TEnv.insert name.str typ tenv in
       (env, tenv)
   | Variable { name; typ; init = None; _ } ->
       let typ = eval_typ env tdenv typ in
-      let value = Value.init typ in
+      let value = init typ in
       let env = Env.insert name.str value env in
-      let tenv = Tenv.insert name.str typ tenv in
+      let tenv = TEnv.insert name.str typ tenv in
       (env, tenv)
   | _ ->
       Printf.sprintf "(TODO: eval_decl) %s" (Pretty.print_decl 0 decl)
@@ -140,7 +163,7 @@ let rec eval_stmt (env : env) (tenv : tenv) (tdenv : tdenv) (stmt : Statement.t)
   | Assignment
       { lhs = Expression.Name { name = Name.BareName text; _ }; rhs; _ } ->
       let name = text.str in
-      let typ = Tenv.find name tenv in
+      let typ = TEnv.find name tenv in
       let rvalue = eval_expr env tdenv rhs in
       let rvalue = Ops.eval_cast typ rvalue in
       let env = Env.update name rvalue env in
@@ -149,7 +172,7 @@ let rec eval_stmt (env : env) (tenv : tenv) (tdenv : tdenv) (stmt : Statement.t)
       let vcond = eval_expr env tdenv cond in
       let vcond = Ops.eval_cast Typ.Bool vcond in
       let env = Env.enter env in
-      let tenv = Tenv.enter tenv in
+      let tenv = TEnv.enter tenv in
       let stmts =
         match vcond with
         | Bool true -> tru
@@ -157,7 +180,7 @@ let rec eval_stmt (env : env) (tenv : tenv) (tdenv : tdenv) (stmt : Statement.t)
         | _ -> assert false
       in
       let env, tenv = eval_stmt env tenv tdenv stmts in
-      let tenv = Tenv.exit tenv in
+      let tenv = TEnv.exit tenv in
       let env = Env.exit env in
       (env, tenv)
   | BlockStatement { block; _ } -> eval_block env tenv tdenv block
@@ -170,13 +193,13 @@ let rec eval_stmt (env : env) (tenv : tenv) (tdenv : tdenv) (stmt : Statement.t)
 
 and eval_block (env : env) (tenv : tenv) (tdenv : tdenv) (block : Block.t) : env * tenv =
   let env = Env.enter env in
-  let tenv = Tenv.enter tenv in
+  let tenv = TEnv.enter tenv in
   let env, tenv =
     List.fold_left
       (fun (env, tenv) stmt -> eval_stmt env tenv tdenv stmt)
       (env, tenv) block.statements
   in
-  let tenv = Tenv.exit tenv in
+  let tenv = TEnv.exit tenv in
   let env = Env.exit env in
   (env, tenv)
 
@@ -212,7 +235,7 @@ let copyin (caller_env : env) (callee_env : env) (callee_tenv : tenv) (tdenv : t
         let typ = eval_typ caller_env tdenv typ in
         let value = eval_expr caller_env tdenv arg in
         let env = Env.insert param value env in
-        let tenv = Tenv.insert param typ tenv in
+        let tenv = TEnv.insert param typ tenv in
         (env, tenv)
     (* Direction out parameters are always initialized at the beginning
        of the execution of the portion of the program that has the out
@@ -221,9 +244,9 @@ let copyin (caller_env : env) (callee_env : env) (callee_tenv : tenv) (tdenv : t
     | Some (Out _) ->
         let param, typ = param.variable.str, param.typ in
         let typ = eval_typ caller_env tdenv typ in
-        let value = Value.init typ in
+        let value = init typ in
         let env = Env.insert param value env in
-        let tenv = Tenv.insert param typ tenv in
+        let tenv = TEnv.insert param typ tenv in
         (env, tenv)
     | None ->
         failwith "(TODO) (copyin) Non-directional parameter is not supported."

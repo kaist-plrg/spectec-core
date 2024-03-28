@@ -1,6 +1,10 @@
 open Syntax
 open Ast
 open Runtime
+open Value
+open Typ
+open Env
+open Tdenv
 
 (* Environments *)
 
@@ -11,8 +15,8 @@ type tdenv = Tdenv.t
 
 let rec eval_simplify_typ (tdenv : tdenv) (typ : Typ.t) : Typ.t =
   match typ with
-  | Typ.Name { name } -> eval_simplify_typ tdenv (Tdenv.find name tdenv)
-  | Typ.NewType { name } -> Tdenv.find name tdenv
+  | Typ.Name { name } -> eval_simplify_typ tdenv (TDEnv.find name tdenv)
+  | Typ.NewType { name } -> TDEnv.find name tdenv
   | _ -> typ
 
 let rec eval_typ (env : env) (tdenv : tdenv) (typ : Type.t) : Typ.t =
@@ -20,17 +24,17 @@ let rec eval_typ (env : env) (tdenv : tdenv) (typ : Type.t) : Typ.t =
   | Bool _ -> Typ.Bool
   | Integer _ -> Typ.AInt
   | IntType { expr; _ } ->
-      let width = eval_expr env tdenv expr |> Value.extract_bigint in
+      let width = eval_expr env tdenv expr |> Ops.extract_bigint in
       Typ.Bit { width }
   | BitType { expr; _ } ->
-      let width = eval_expr env tdenv expr |> Value.extract_bigint in
+      let width = eval_expr env tdenv expr |> Ops.extract_bigint in
       Typ.Bit { width }
   | VarBit { expr; _ } ->
-      let width = eval_expr env tdenv expr |> Value.extract_bigint in
+      let width = eval_expr env tdenv expr |> Ops.extract_bigint in
       Typ.Bit { width }
   | HeaderStack { header; size; _ } ->
       let header = eval_typ env tdenv header in
-      let size = eval_expr env tdenv size |> Value.extract_bigint in
+      let size = eval_expr env tdenv size |> Ops.extract_bigint in
       Typ.Array { typ = header; size }
   | String _ -> Typ.String
   | Error _ -> Typ.Error
@@ -39,10 +43,10 @@ let rec eval_typ (env : env) (tdenv : tdenv) (typ : Type.t) : Typ.t =
       Typ.Tuple vargs
   | TypeName { name = BareName text; _ } ->
       let var = text.str in
-      Tdenv.find var tdenv
+      TDEnv.find var tdenv
   | TypeName { name = QualifiedName ([], text); _ } ->
       let var = text.str in
-      Tdenv.find_toplevel var tdenv
+      TDEnv.find_toplevel var tdenv
   | _ ->
       Printf.sprintf "(TODO: eval_typ) %s" (Pretty.print_type typ) |> failwith
 

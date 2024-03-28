@@ -1,6 +1,8 @@
 open Syntax
 open Ast
 open Runtime
+open Value
+open Env
 
 (* (TODO) how does a target arch invoke the blocks? *)
 (* (TODO) implement copy-in/out calling convention *)

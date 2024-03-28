@@ -1,80 +1,8 @@
+open Value
 open Utils
+open Stackenv
 
 (* Environment *)
-(* Invariant:
-    1. the map is non-empty
-    2. the first element of the list is the most recent scope *)
 
-type t = Value.t Var.VMap.t list
-
-let empty = [ Var.VMap.empty ]
-
-let current (env : t) =
-  assert (List.length env > 0);
-  (List.hd env, List.tl env)
-
-let enter (env : t) = Var.VMap.empty :: env
-
-let exit (env : t) =
-  assert (List.length env > 0);
-  List.tl env
-
-let find (var : Var.t) (env : t) =
-  let rec find' env =
-    match env with
-    | [] -> None
-    | now :: old -> (
-        match Var.VMap.find_opt var now with
-        | Some value -> Some value
-        | None -> find' old)
-  in
-  match find' env with
-  | Some value -> value
-  | None -> Printf.sprintf "Variable %s not found" (Var.print var) |> failwith
-
-let find_toplevel (var : Var.t) (env : t) =
-  let top = List.rev env |> List.hd in
-  match Var.VMap.find_opt var top with
-  | Some value -> value
-  | None ->
-      Printf.sprintf "Variable %s not found in top scope" (Var.print var)
-      |> failwith
-
-let insert (var : Var.t) (value : Value.t) (env : t) =
-  let now, old = current env in
-  let now = Var.VMap.add var value now in
-  now :: old
-
-let update (var : Var.t) (value : Value.t) (env : t) =
-  let rec update' env =
-    match env with
-    | [] -> Printf.sprintf "Variable %s not found" (Var.print var) |> failwith
-    | now :: old -> (
-        match Var.VMap.find_opt var now with
-        | Some _ -> Var.VMap.add var value now :: old
-        | None -> now :: update' old)
-  in
-  update' env
-
-let update_toplevel (var : Var.t) (value : Value.t) (env : t) =
-  let renv = List.rev env in
-  let top, tail = (List.hd renv, List.tl renv) in
-  match Var.VMap.find_opt var top with
-  | Some _ -> Var.VMap.add var value top :: tail |> List.rev
-  | None ->
-      Printf.sprintf "Variable %s not found in top scope" (Var.print var)
-      |> failwith
-
-(* Printer *)
-
-let print ?(indent = 0) (env : t) =
-  let print_binding var value acc =
-    acc @ [ Printf.sprintf "%s: %s" (Var.print var) (Value.print value) ]
-  in
-  let print' acc env =
-    let bindings = Var.VMap.fold print_binding env [] in
-    let bindings = String.concat ", " bindings in
-    acc @ [ Printf.sprintf "%s[ %s ]" (Print.print_indent indent) bindings ]
-  in
-  let senv = List.fold_left print' [] env in
-  String.concat "\n" senv
+module Env = StackEnv(Var)(Value)
+type t = Env.t

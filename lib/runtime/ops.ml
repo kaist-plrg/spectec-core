@@ -16,6 +16,7 @@
 open Syntax
 open Ast
 open Value
+open Typ
 
 (* Bit manipulation *)
 
@@ -64,6 +65,15 @@ let int_of_raw_int (n : Bigint.t) (w : Bigint.t) : Value.t =
   let value = of_two_complement n w in
   let width = w in
   Int { value; width }
+
+(* Value extraction *)
+
+let extract_bigint (value : Value.t) : Bigint.t =
+  match value with
+  | AInt value -> value
+  | Int { value; _ } -> value
+  | Bit { value; _ } -> value
+  | _ -> Printf.sprintf "Not a int/bit value: %s" (Value.print value) |> failwith
 
 (* Unop evaluation *)
 
@@ -617,7 +627,7 @@ and eval_cast (typ : Typ.t) (value : Value.t) : Value.t =
   match typ with
   | Bool -> eval_cast_to_bool value
   | AInt ->
-      let value = Value.extract_bigint value in
+      let value = extract_bigint value in
       Value.AInt value
   | Bit { width } -> eval_cast_to_bit width value
   | Int { width } -> eval_cast_to_int width value

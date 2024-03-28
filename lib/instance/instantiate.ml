@@ -1,6 +1,12 @@
 open Syntax
 open Ast
 open Runtime
+open Env
+open Tenv
+open Tdenv
+open Value
+open Typ
+open Ccenv
 open Utils
 
 (* Environments *)
@@ -38,7 +44,7 @@ let rec load (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (decl : D
       let name = name.str in
       let tparams = List.map (fun (param : Text.t) -> param.str) type_params in
       let cclos = Cclosure.Package { params; tparams } in
-      let ccenv = Ccenv.insert name cclos ccenv in
+      let ccenv = CCEnv.insert name cclos ccenv in
       (env, tenv, tdenv, ccenv)
   | Parser { name; params; type_params; constructor_params; locals; states; _ }
     ->
@@ -48,7 +54,7 @@ let rec load (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (decl : D
       let cclos =
         Cclosure.Parser { params; tparams; cparams; locals; states }
       in
-      let ccenv = Ccenv.insert name cclos ccenv in
+      let ccenv = CCEnv.insert name cclos ccenv in
       (env, tenv, tdenv, ccenv)
   | Control { name; params; type_params; constructor_params; locals; apply; _ }
     ->
@@ -58,12 +64,12 @@ let rec load (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (decl : D
       let cclos =
         Cclosure.Control { params; tparams; cparams; locals; apply }
       in
-      let ccenv = Ccenv.insert name cclos ccenv in
+      let ccenv = CCEnv.insert name cclos ccenv in
       (env, tenv, tdenv, ccenv)
   | ExternObject { name; _ } ->
       let name = name.str in
       let cclos = Cclosure.Extern in
-      let ccenv = Ccenv.insert name cclos ccenv in
+      let ccenv = CCEnv.insert name cclos ccenv in
       (env, tenv, tdenv, ccenv)
   (* Loading types to tdenv *)
   (* (TODO) assume type declarations are at top level only *)
@@ -72,7 +78,7 @@ let rec load (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (decl : D
       match typ_or_decl with
       | Alternative.Left typ ->
           let typ = Static.eval_typ env tdenv typ in
-          let tdenv = Tdenv.insert name typ tdenv in
+          let tdenv = TDEnv.insert name typ tdenv in
           (env, tenv, tdenv, ccenv)
       | Alternative.Right _decl ->
           Printf.eprintf "(TODO: load) Loading typedef with decl %s\n" name;
@@ -82,7 +88,7 @@ let rec load (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (decl : D
       match typ_or_decl with
       | Alternative.Left typ ->
           let typ = Static.eval_typ env tdenv typ in
-          let tdenv = Tdenv.insert name typ tdenv in
+          let tdenv = TDEnv.insert name typ tdenv in
           (env, tenv, tdenv, ccenv)
       | Alternative.Right _decl ->
           Printf.eprintf "(TODO: load) Loading newtype with decl %s\n" name;
@@ -91,7 +97,7 @@ let rec load (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (decl : D
       let name = name.str in
       let entries = List.map (fun (member : Text.t) -> member.str) members in
       let typ = Typ.Enum { entries } in
-      let tdenv = Tdenv.insert name typ tdenv in
+      let tdenv = TDEnv.insert name typ tdenv in
       (env, tenv, tdenv, ccenv)
   | SerializableEnum { name; typ; members; _ } ->
       let name = name.str in
@@ -104,7 +110,7 @@ let rec load (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (decl : D
           members
       in
       let typ = Typ.SEnum { typ; entries } in
-      let tdenv = Tdenv.insert name typ tdenv in
+      let tdenv = TDEnv.insert name typ tdenv in
       (env, tenv, tdenv, ccenv)
   | Header { name; fields; _ } ->
       let name = name.str in
@@ -117,7 +123,7 @@ let rec load (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (decl : D
           fields
       in
       let typ = Typ.Header { entries } in
-      let tdenv = Tdenv.insert name typ tdenv in
+      let tdenv = TDEnv.insert name typ tdenv in
       (env, tenv, tdenv, ccenv)
   | HeaderUnion { name; fields; _ } ->
       let name = name.str in
@@ -130,7 +136,7 @@ let rec load (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (decl : D
           fields
       in
       let typ = Typ.Union { entries } in
-      let tdenv = Tdenv.insert name typ tdenv in
+      let tdenv = TDEnv.insert name typ tdenv in
       (env, tenv, tdenv, ccenv)
   | Struct { name; fields; _ } ->
       let name = name.str in
@@ -143,14 +149,14 @@ let rec load (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (decl : D
           fields
       in
       let typ = Typ.Struct { entries } in
-      let tdenv = Tdenv.insert name typ tdenv in
+      let tdenv = TDEnv.insert name typ tdenv in
       (env, tenv, tdenv, ccenv)
   (* (TODO) A better representation of parser/control object types? *)
   | ParserType  { name; _ }
   | ControlType { name; _ } ->
       let name = name.str in
       let typ = Typ.Ref in
-      let tdenv = Tdenv.insert name typ tdenv in
+      let tdenv = TDEnv.insert name typ tdenv in
       (env, tenv, tdenv, ccenv)
   (* Loading constants to env *)
   | Function { name; _ } ->
@@ -163,7 +169,7 @@ let rec load (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (decl : D
       let value = Static.eval_expr env tdenv value in
       let value = Ops.eval_cast typ value in
       let env = Env.insert name.str value env in
-      let tenv = Tenv.insert name.str typ tenv in
+      let tenv = TEnv.insert name.str typ tenv in
       (env, tenv, tdenv, ccenv)
   | _ -> (env, tenv, tdenv, ccenv)
 
@@ -180,7 +186,7 @@ and eval_targs (env : env) (tdenv : tdenv) (tparams : string list)
   List.fold_left2
     (fun tdenv tparam typ ->
       let typ = Static.eval_typ env tdenv typ in
-      Tdenv.insert tparam typ tdenv)
+      TDEnv.insert tparam typ tdenv)
     tdenv tparams typs
 
 and eval_expr (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (store : store)
@@ -229,7 +235,7 @@ and eval_args (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (store :
       in
       let typ = Static.eval_typ env tdenv typ in
       let env = Env.insert param value env in
-      let tenv = Tenv.insert param typ tenv in
+      let tenv = TEnv.insert param typ tenv in
       (env, tenv, store))
     (env, tenv, store) params args
 
@@ -246,9 +252,9 @@ and instantiate_cclos (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) 
      at its top level is instantiated 1 time (p4guide) *)
   | Cclosure.Parser { params; tparams = _tparams; cparams; locals; states } ->
       let env_parser = Env.enter env in
-      let tenv_parser = Tenv.enter tenv in
-      let tdenv_parser = Tdenv.enter tdenv in
-      let ccenv_parser = Ccenv.enter ccenv in
+      let tenv_parser = TEnv.enter tenv in
+      let tdenv_parser = TDEnv.enter tdenv in
+      let ccenv_parser = CCEnv.enter ccenv in
       (* let tdenv_parser = eval_targs env tdenv_parser tparams typs in *)
       let env_parser, tenv_parser, store =
         eval_args env_parser tenv_parser tdenv_parser ccenv_parser store path cparams args
@@ -283,9 +289,9 @@ and instantiate_cclos (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) 
   | Cclosure.Control { params; tparams = _tparams; cparams; locals; apply; _ }
     ->
       let env_control = Env.enter env in
-      let tenv_control = Tenv.enter tenv in
-      let tdenv_control = Tdenv.enter tdenv in
-      let ccenv_control = Ccenv.enter ccenv in
+      let tenv_control = TEnv.enter tenv in
+      let tdenv_control = TDEnv.enter tdenv in
+      let ccenv_control = CCEnv.enter ccenv in
       (* let tdenv_control = eval_targs env tdenv_control tparams typs in *)
       let env_control, tenv_control, store =
         eval_args env_control tenv_control tdenv_control ccenv_control store path cparams args
@@ -314,8 +320,8 @@ and instantiate_cclos (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) 
   (* Others do not involve recursive instantiation other than the args *)
   | Cclosure.Package { params; tparams = _tparams } ->
       let env_package = Env.enter env in
-      let tenv_package = Tenv.enter tenv in
-      let tdenv_package = Tdenv.enter tdenv in
+      let tenv_package = TEnv.enter tenv in
+      let tdenv_package = TDEnv.enter tdenv in
       (* let tdenv_package = eval_targs env tdenv_package tparams typs in *)
       let env_package, _tenv_package, store =
         eval_args env_package tenv_package tdenv_package ccenv store path params args
@@ -353,7 +359,7 @@ and instantiate_stmt (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (
       let value = Value.Ref (path @ [ name ]) in
       let typ = Typ.Ref in
       let env = Env.insert name value env in
-      let tenv = Tenv.insert name typ tenv in
+      let tenv = TEnv.insert name typ tenv in
       (env, tenv, store)
   | _ -> (env, tenv, store)
 
@@ -382,7 +388,7 @@ and instantiate_decl (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (
       let value = Value.Ref (path @ [ name ]) in
       let typ = Typ.Ref in
       let env = Env.insert name value env in
-      let tenv = Tenv.insert name typ tenv in
+      let tenv = TEnv.insert name typ tenv in
       (env, tenv, tdenv, ccenv, store)
   (* (TODO) is it correct to instantiate a value set at its declaration? *)
   (* There is no syntax for specifying parameters that are value-sets
@@ -394,7 +400,7 @@ and instantiate_decl (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (
       let value = Value.Ref (path @ [ name ]) in
       let typ = Typ.Ref in
       let env = Env.insert name value env in
-      let tenv = Tenv.insert name typ tenv in
+      let tenv = TEnv.insert name typ tenv in
       (env, tenv, tdenv, ccenv, store)
   (* Load declarations to either env or ccenv *)
   | _ ->
@@ -404,9 +410,9 @@ and instantiate_decl (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv) (
 let instantiate_program (program : program) =
   let (Program decls) = program in
   let env = Env.empty in
-  let tenv = Tenv.empty in
-  let tdenv = Tdenv.empty in
-  let ccenv = Ccenv.empty in
+  let tenv = TEnv.empty in
+  let tdenv = TDEnv.empty in
+  let ccenv = CCEnv.empty in
   let store = Store.empty in
   let _, _, _, _, store =
     List.fold_left
