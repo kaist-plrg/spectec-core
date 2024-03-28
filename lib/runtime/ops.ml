@@ -73,7 +73,8 @@ let extract_bigint (value : Value.t) : Bigint.t =
   | AInt value -> value
   | Int { value; _ } -> value
   | Bit { value; _ } -> value
-  | _ -> Printf.sprintf "Not a int/bit value: %s" (Value.print value) |> failwith
+  | _ ->
+      Printf.sprintf "Not a int/bit value: %s" (Value.print value) |> failwith
 
 (* Unop evaluation *)
 

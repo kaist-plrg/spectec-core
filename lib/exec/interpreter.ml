@@ -133,7 +133,8 @@ and eval_expr (env : env) (tdenv : tdenv) (expr : Expression.t) : Value.t =
   | _ ->
       Printf.sprintf "(TODO: eval_expr) %s" (Pretty.print_expr expr) |> failwith
 
-let eval_decl (env : env) (tenv : tenv) (tdenv : tdenv) (decl : Declaration.t) : env * tenv =
+let eval_decl (env : env) (tenv : tenv) (tdenv : tdenv) (decl : Declaration.t) :
+    env * tenv =
   match decl with
   | Variable { name; typ; init = Some value; _ } ->
       let typ = eval_typ env tdenv typ in
@@ -152,7 +153,8 @@ let eval_decl (env : env) (tenv : tenv) (tdenv : tdenv) (decl : Declaration.t) :
       |> print_endline;
       (env, tenv)
 
-let rec eval_stmt (env : env) (tenv : tenv) (tdenv : tdenv) (stmt : Statement.t) : env * tenv =
+let rec eval_stmt (env : env) (tenv : tenv) (tdenv : tdenv) (stmt : Statement.t)
+    : env * tenv =
   match stmt with
   (* (TODO) Perform implicit casts on assignment. *)
   | Assignment
@@ -186,7 +188,8 @@ let rec eval_stmt (env : env) (tenv : tenv) (tdenv : tdenv) (stmt : Statement.t)
       |> print_endline;
       (env, tenv)
 
-and eval_block (env : env) (tenv : tenv) (tdenv : tdenv) (block : Block.t) : env * tenv =
+and eval_block (env : env) (tenv : tenv) (tdenv : tdenv) (block : Block.t) :
+    env * tenv =
   let env = Env.enter env in
   let tenv = TEnv.enter tenv in
   let env, tenv =
@@ -198,8 +201,9 @@ and eval_block (env : env) (tenv : tenv) (tdenv : tdenv) (block : Block.t) : env
   let env = Env.exit env in
   (env, tenv)
 
-let copyin (caller_env : env) (callee_env : env) (callee_tenv : tenv) (tdenv : tdenv)
-    (params : Parameter.t list) (args : Argument.t list) : env * tenv =
+let copyin (caller_env : env) (callee_env : env) (callee_tenv : tenv)
+    (tdenv : tdenv) (params : Parameter.t list) (args : Argument.t list) :
+    env * tenv =
   (* (TODO) assume there is no default argument *)
   assert (List.length params = List.length args);
   (* It is illegal to use names only for some arguments:
@@ -214,7 +218,8 @@ let copyin (caller_env : env) (callee_env : env) (callee_tenv : tenv) (tdenv : t
            match arg with KeyValue _ -> true | _ -> false)
          args);
   (* Copy-in a single parameter-argument pair. *)
-  let copyin' ((env, tenv) : env * tenv) (param : Parameter.t) (arg : Argument.t) =
+  let copyin' ((env, tenv) : env * tenv) (param : Parameter.t)
+      (arg : Argument.t) =
     match param.direction with
     (* in parameters are defaultialized by copying the value of the
        corresponding argument when the invocation is executed.
@@ -237,7 +242,7 @@ let copyin (caller_env : env) (callee_env : env) (callee_tenv : tenv) (tdenv : t
        parameters. This defaultialization is not performed for parameters
        with any direction that is not out. (6.8) *)
     | Some (Out _) ->
-        let param, typ = param.variable.str, param.typ in
+        let param, typ = (param.variable.str, param.typ) in
         let typ = eval_typ caller_env tdenv typ in
         let value = default typ in
         let env = Env.insert param value env in
@@ -299,7 +304,7 @@ let eval_object_apply (caller_env : env) (obj : Object.t)
     (args : Argument.t list) =
   print_endline "Called eval_object_apply on object:";
   Object.print obj |> print_endline;
-  "with arguments: " ^ (String.concat ", " (List.map Pretty.print_arg args))
+  "with arguments: " ^ String.concat ", " (List.map Pretty.print_arg args)
   |> print_endline;
   print_endline "and with environment:";
   Env.print caller_env |> print_endline;
@@ -307,7 +312,9 @@ let eval_object_apply (caller_env : env) (obj : Object.t)
   | Control { env; tenv; tdenv; params; apply; _ } ->
       let callee_env = env in
       let callee_tenv = tenv in
-      let callee_env, callee_tenv = copyin caller_env callee_env callee_tenv tdenv params args in
+      let callee_env, callee_tenv =
+        copyin caller_env callee_env callee_tenv tdenv params args
+      in
       let callee_env, _ = eval_block callee_env callee_tenv tdenv apply in
       let caller_env = copyout caller_env callee_env tdenv params args in
       print_endline "After eval_object_apply";

@@ -3,11 +3,21 @@
     1. the stack is non-empty
     2. the first element of the list is the most recent scope *)
 
-module StackEnv
-  (K: sig type t val print : t -> string val compare : t -> t -> int end)
-  (V: sig type t val print : t -> string end) = struct
+module StackEnv (K : sig
+  type t
+
+  val print : t -> string
+  val compare : t -> t -> int
+end) (V : sig
+  type t
+
+  val print : t -> string
+end) =
+struct
   type key = K.t
-  module KMap = Map.Make(K)
+
+  module KMap = Map.Make (K)
+
   type value = V.t
   type t = value KMap.t list
 
@@ -41,8 +51,7 @@ module StackEnv
     match KMap.find_opt var top with
     | Some value -> value
     | None ->
-        Printf.sprintf "K %s not found in top scope" (K.print var)
-        |> failwith
+        Printf.sprintf "K %s not found in top scope" (K.print var) |> failwith
 
   let insert var value env =
     let now, old = current env in
@@ -66,8 +75,7 @@ module StackEnv
     match KMap.find_opt var top with
     | Some _ -> KMap.add var value top :: tail |> List.rev
     | None ->
-        Printf.sprintf "K %s not found in top scope" (K.print var)
-        |> failwith
+        Printf.sprintf "K %s not found in top scope" (K.print var) |> failwith
 
   let print ?(indent = 0) (env : t) =
     let print_binding key value acc =
