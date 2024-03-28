@@ -30,23 +30,12 @@ let rec cclos_from_type (typ : Type.t) (ccenv : ccenv) :
   | Type.SpecializedType { base; args; _ } ->
       let cclos, _ = cclos_from_type base ccenv in
       (cclos, args)
-  | _ ->
-      Printf.sprintf "Constructor closure %s not found" (Pretty.print_type typ)
-      |> failwith
+  | _ -> assert false
 
 (* Instantiation *)
 
-(* Instantiating a declaration *)
-
 (* Loading the result of a declaration
-   (other than instantiation) to env, tdenv, or ccenv *)
-
-(* Instantiation *)
-
-(* Instantiating a declaration *)
-
-(* Loading the result of a declaration
-   (other than instantiation) to env, tdenv, or ccenv *)
+   (other than instantiation) to env, tenv, tdenv, or ccenv *)
 
 let rec load (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv)
     (decl : Declaration.t) : env * tenv * tdenv * ccenv =
@@ -174,7 +163,6 @@ let rec load (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv)
       Printf.eprintf "(TODO: load) Loading function %s\n" name.str;
       (env, tenv, tdenv, ccenv)
   (* Loading constants *)
-  (* (TODO) consider implicit casts? *)
   | Constant { name; typ; value; _ } ->
       let typ = Static.eval_typ env tdenv typ in
       let value = Static.eval_expr env tdenv value in

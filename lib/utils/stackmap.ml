@@ -1,9 +1,9 @@
-(* Stacked Environment *)
+(* Stacked map *)
 (* Invariant:
     1. the stack is non-empty
     2. the first element of the list is the most recent scope *)
 
-module StackEnv (K : sig
+module StackMap (K : sig
   type t
 
   val print : t -> string
@@ -33,49 +33,49 @@ struct
     assert (List.length env > 0);
     List.tl env
 
-  let find var env =
+  let find key env =
     let rec find' env =
       match env with
       | [] -> None
       | now :: old -> (
-          match KMap.find_opt var now with
+          match KMap.find_opt key now with
           | Some value -> Some value
           | None -> find' old)
     in
     match find' env with
     | Some value -> value
-    | None -> Printf.sprintf "K %s not found" (K.print var) |> failwith
+    | None -> Printf.sprintf "Key %s not found" (K.print key) |> failwith
 
-  let find_toplevel var env =
+  let find_toplevel key env =
     let top = List.rev env |> List.hd in
-    match KMap.find_opt var top with
+    match KMap.find_opt key top with
     | Some value -> value
     | None ->
-        Printf.sprintf "K %s not found in top scope" (K.print var) |> failwith
+        Printf.sprintf "Key %s not found in top scope" (K.print key) |> failwith
 
-  let insert var value env =
+  let insert key value env =
     let now, old = current env in
-    let now = KMap.add var value now in
+    let now = KMap.add key value now in
     now :: old
 
-  let update var value env =
+  let update key value env =
     let rec update' env =
       match env with
-      | [] -> Printf.sprintf "K %s not found" (K.print var) |> failwith
+      | [] -> Printf.sprintf "Key %s not found" (K.print key) |> failwith
       | now :: old -> (
-          match KMap.find_opt var now with
-          | Some _ -> KMap.add var value now :: old
+          match KMap.find_opt key now with
+          | Some _ -> KMap.add key value now :: old
           | None -> now :: update' old)
     in
     update' env
 
-  let update_toplevel var value env =
+  let update_toplevel key value env =
     let renv = List.rev env in
     let top, tail = (List.hd renv, List.tl renv) in
-    match KMap.find_opt var top with
-    | Some _ -> KMap.add var value top :: tail |> List.rev
+    match KMap.find_opt key top with
+    | Some _ -> KMap.add key value top :: tail |> List.rev
     | None ->
-        Printf.sprintf "K %s not found in top scope" (K.print var) |> failwith
+        Printf.sprintf "Key %s not found in top scope" (K.print key) |> failwith
 
   let print ?(indent = 0) (env : t) =
     let print_binding key value acc =
