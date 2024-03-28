@@ -255,17 +255,18 @@ and instantiate_cclos (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv)
       let env_parser = Env.enter env in
       let tenv_parser = TEnv.enter tenv in
       let tdenv_parser = TDEnv.enter tdenv in
+      let lenv_parser = LEnv.empty in
       let ccenv_parser = CCEnv.enter ccenv in
       (* let tdenv_parser = eval_targs env tdenv_parser tparams typs in *)
       let env_parser, tenv_parser, store =
         eval_args env_parser tenv_parser tdenv_parser ccenv_parser store path
           cparams args
       in
-      let env_parser, tenv_parser, tdenv_parser, ccenv_parser, store =
+      let env_parser, tenv_parser, tdenv_parser, lenv_parser, ccenv_parser, store =
         List.fold_left
-          (fun (env, tenv, tdenv, ccenv, store) local ->
-            instantiate_decl env tenv tdenv ccenv store path local)
-          (env_parser, tenv_parser, tdenv_parser, ccenv_parser, store)
+          (fun (env, tenv, tdenv, lenv, ccenv, store) local ->
+            instantiate_parser_local_decl env tenv tdenv lenv ccenv store path local)
+          (env_parser, tenv_parser, tdenv_parser, lenv_parser, ccenv_parser, store)
           locals
       in
       let stmts =
@@ -284,6 +285,7 @@ and instantiate_cclos (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv)
             env = env_parser;
             tenv = tenv_parser;
             tdenv = tdenv_parser;
+            lenv = lenv_parser;
             params;
             locals;
             states;
@@ -300,17 +302,18 @@ and instantiate_cclos (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv)
       let env_control = Env.enter env in
       let tenv_control = TEnv.enter tenv in
       let tdenv_control = TDEnv.enter tdenv in
+      let lenv_control = LEnv.empty in
       let ccenv_control = CCEnv.enter ccenv in
       (* let tdenv_control = eval_targs env tdenv_control tparams typs in *)
       let env_control, tenv_control, store =
         eval_args env_control tenv_control tdenv_control ccenv_control store
           path cparams args
       in
-      let env_control, tenv_control, tdenv_control, ccenv_control, store =
+      let env_control, tenv_control, tdenv_control, lenv_control, ccenv_control, store =
         List.fold_left
-          (fun (env, tenv, tdenv, ccenv, store) local ->
-            instantiate_decl env tenv tdenv ccenv store path local)
-          (env_control, tenv_control, tdenv_control, ccenv_control, store)
+          (fun (env, tenv, tdenv, lenv, ccenv, store) local ->
+            instantiate_control_local_decl env tenv tdenv lenv ccenv store path local)
+          (env_control, tenv_control, tdenv_control, lenv_control, ccenv_control, store)
           locals
       in
       let stmts = apply.statements in
@@ -327,6 +330,7 @@ and instantiate_cclos (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv)
             env = env_control;
             tenv = tenv_control;
             tdenv = tdenv_control;
+            lenv = lenv_control;
             params;
             locals;
             apply;
@@ -355,6 +359,8 @@ and instantiate_cclos (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv)
       let store = Store.insert path obj store in
       store
 
+(* Instantiate from expression *)
+
 and instantiate_expr (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv)
     (store : store) (path : string list) (typ : Type.t) (args : Argument.t list)
     : store =
@@ -363,6 +369,8 @@ and instantiate_expr (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv)
     instantiate_cclos env tenv tdenv ccenv store path cclos args targs
   in
   store
+
+(* Instantiate from statement *)
 
 and instantiate_stmt (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv)
     (store : store) (path : string list) (stmt : Statement.t) :
@@ -388,6 +396,72 @@ and instantiate_stmt (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv)
       (env, tenv, store)
   | _ -> (env, tenv, store)
 
+(* Instantiate from declaration *)
+
+and instantiate_parser_local_decl (env : env) (tenv : tenv) (tdenv : tdenv) (lenv : lenv) (ccenv : ccenv)
+    (store : store) (path : string list) (decl : Declaration.t) :
+    env * tenv * tdenv * lenv * ccenv * store =
+  (* parserLocalElement
+    : constantDeclaration
+    | instantiation
+    | variableDeclaration
+    | valueSetDeclaration; (13.2) *)
+  match decl with
+  (* (TODO) is it correct to instantiate a value set at its declaration? *)
+  (* There is no syntax for specifying parameters that are value-sets
+     (Appendix F) *)
+  | ValueSet { name; _ } ->
+      let name = name.str in
+      let obj = Object.ValueSet in
+      let store = Store.insert (path @ [ name ]) obj store in
+      let value = Value.Ref (path @ [ name ]) in
+      let typ = Typ.Ref in
+      let env = Env.insert name value env in
+      let tenv = TEnv.insert name typ tenv in
+      (env, tenv, tdenv, lenv, ccenv, store)
+  | Variable { name; _ } ->
+      let name = name.str in
+      let lenv = LEnv.insert name lenv in
+      (env, tenv, tdenv, lenv, ccenv, store)
+  | _ ->
+      let env, tenv, tdenv, ccenv, store =
+        instantiate_decl env tenv tdenv ccenv store path decl
+      in
+      (env, tenv, tdenv, lenv, ccenv, store)
+
+and instantiate_control_local_decl (env : env) (tenv : tenv) (tdenv : tdenv) (lenv : lenv) (ccenv : ccenv)
+    (store : store) (path : string list) (decl : Declaration.t) :
+    env * tenv * tdenv * lenv * ccenv * store =
+  (* controlLocalDeclaration
+    : constantDeclaration
+    | actionDeclaration
+    | tableDeclaration
+    | instantiation
+    | variableDeclaration; (14) *)
+  match decl with
+  (* Each table evaluates to a table instance (18.2) *)
+  (* There is no syntax for specifying parameters that are tables
+     Tables are only intended to be used from within the control
+     where they are defined (Appendix F) *)
+  | Table { name; properties; _ } ->
+      let name = name.str in
+      let obj = Object.Table { lenv; properties } in
+      let store = Store.insert (path @ [ name ]) obj store in
+      let value = Value.Ref (path @ [ name ]) in
+      let typ = Typ.Ref in
+      let env = Env.insert name value env in
+      let tenv = TEnv.insert name typ tenv in
+      (env, tenv, tdenv, lenv, ccenv, store)
+  | Variable { name; _ } ->
+      let name = name.str in
+      let lenv = LEnv.insert name lenv in
+      (env, tenv, tdenv, lenv, ccenv, store)
+  | _ ->
+      let env, tenv, tdenv, ccenv, store =
+        instantiate_decl env tenv tdenv ccenv store path decl
+      in
+      (env, tenv, tdenv, lenv, ccenv, store)
+
 and instantiate_decl (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv)
     (store : store) (path : string list) (decl : Declaration.t) :
     env * tenv * tdenv * ccenv * store =
@@ -402,31 +476,6 @@ and instantiate_decl (env : env) (tenv : tenv) (tdenv : tdenv) (ccenv : ccenv)
       in
       let value = Value.Ref (path @ [ name ]) in
       let env = Env.insert name value env in
-      (env, tenv, tdenv, ccenv, store)
-  (* Each table evaluates to a table instance (18.2) *)
-  (* There is no syntax for specifying parameters that are tables
-     Tables are only intended to be used from within the control
-     where they are defined (Appendix F) *)
-  | Table { name; properties; _ } ->
-      let name = name.str in
-      let obj = Object.Table { properties } in
-      let store = Store.insert (path @ [ name ]) obj store in
-      let value = Value.Ref (path @ [ name ]) in
-      let typ = Typ.Ref in
-      let env = Env.insert name value env in
-      let tenv = TEnv.insert name typ tenv in
-      (env, tenv, tdenv, ccenv, store)
-  (* (TODO) is it correct to instantiate a value set at its declaration? *)
-  (* There is no syntax for specifying parameters that are value-sets
-     (Appendix F) *)
-  | ValueSet { name; _ } ->
-      let name = name.str in
-      let obj = Object.ValueSet in
-      let store = Store.insert (path @ [ name ]) obj store in
-      let value = Value.Ref (path @ [ name ]) in
-      let typ = Typ.Ref in
-      let env = Env.insert name value env in
-      let tenv = TEnv.insert name typ tenv in
       (env, tenv, tdenv, ccenv, store)
   (* Load declarations to either env or ccenv *)
   | _ ->

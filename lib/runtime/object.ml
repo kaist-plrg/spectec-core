@@ -15,6 +15,7 @@ type t =
       env : env;
       tenv : tenv;
       tdenv : tdenv;
+      lenv : lenv;
       params : Parameter.t list;
       locals : Declaration.t list;
       states : Parser.state list;
@@ -23,12 +24,16 @@ type t =
       env : env;
       tenv : tenv;
       tdenv : tdenv;
+      lenv : lenv;
       params : Parameter.t list;
       locals : Declaration.t list;
       apply : Block.t;
     }
   | Extern
-  | Table of { properties : Table.property list }
+  | Table of {
+      lenv : lenv;
+      properties : Table.property list
+    }
   | Function
   | ValueSet
 
@@ -45,8 +50,8 @@ let print ?(indent = 0) (obj : t) =
         (TEnv.print tenv ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
         (TDEnv.print tdenv ~indent:(indent + 3))
-  | Parser { env; tenv; tdenv; _ } ->
-      Printf.sprintf "%sParser {\n%senv =\n%s\n%stenv = \n%s\n%stdenv =\n%s }"
+  | Parser { env; tenv; tdenv; lenv; _ } ->
+      Printf.sprintf "%sParser {\n%senv =\n%s\n%stenv = \n%s\n%stdenv =\n%s\n%slenv =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
         (Env.print env ~indent:(indent + 3))
@@ -54,8 +59,10 @@ let print ?(indent = 0) (obj : t) =
         (TEnv.print tenv ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
         (TDEnv.print tdenv ~indent:(indent + 3))
-  | Control { env; tenv; tdenv; _ } ->
-      Printf.sprintf "%sControl {\n%senv =\n%s\n%stenv =\n%s\n%stdenv =\n%s }"
+        (Print.print_indent (indent + 2))
+        (LEnv.print lenv ~indent:(indent + 3))
+  | Control { env; tenv; tdenv; lenv; _ } ->
+      Printf.sprintf "%sControl {\n%senv =\n%s\n%stenv =\n%s\n%stdenv =\n%s\n%slenv =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
         (Env.print env ~indent:(indent + 3))
@@ -63,7 +70,13 @@ let print ?(indent = 0) (obj : t) =
         (TEnv.print tenv ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
         (TDEnv.print tdenv ~indent:(indent + 3))
+        (Print.print_indent (indent + 2))
+        (LEnv.print lenv ~indent:(indent + 3))
   | Extern -> Printf.sprintf "%sExtern" (Print.print_indent indent)
-  | Table _ -> Printf.sprintf "%sTable" (Print.print_indent indent)
+  | Table { lenv; _ } ->
+      Printf.sprintf "%sTable {\n%slenv =\n%s }"
+        (Print.print_indent indent)
+        (Print.print_indent (indent + 2))
+        (LEnv.print lenv ~indent:(indent + 3))
   | Function -> Printf.sprintf "%sFunction" (Print.print_indent indent)
   | ValueSet -> Printf.sprintf "%sValueSet" (Print.print_indent indent)

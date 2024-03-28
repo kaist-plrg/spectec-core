@@ -14,32 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-/*
-control ctrl() {
-    apply {
-        bit<32> a = 0;
-        bit<32> b = 0;
-        bit<32> c = 0;
-
-        a = 0;
-        b = 1;
-        c = 2;
-        if (a == 0) {
-            b = 2;
-            c = 3;
-        } else {
-            b = 3;
-            c = 4;
-        }
-        c = 5;
-    }
-}
-
-control noop();
-package p(noop _n);
-p(ctrl()) main;
-*/
-
 const bit<32> glob = 32w42;
 
 struct S {
@@ -47,6 +21,26 @@ struct S {
 }
 
 control c(inout bit<32> b) {
+    bit<32> y = 1;
+
+    action a(inout bit<32> b, bit<32> d) {
+        b = d;
+    }
+
+    table t1 {
+        actions = { a(x); }
+        default_action = a(x, 0);
+    }
+
+    bit<32> z = 2;
+
+    table t2 {
+        actions = { a(x); }
+        default_action = a(x, 0);
+    }
+
+
+
     apply {
         S s1;
         S s2;

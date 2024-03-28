@@ -1,5 +1,6 @@
 open Utils
 open Stackmap
+open Stackset
 
 (* Environment *)
 
@@ -18,6 +19,12 @@ type tenv = TEnv.t
 module TDEnv = StackMap (Var) (Typ)
 
 type tdenv = TDEnv.t
+
+(* Local environment *)
+
+module LEnv = StackSet (Var)
+
+type lenv = LEnv.t
 
 (* Constructor closure environment *)
 
