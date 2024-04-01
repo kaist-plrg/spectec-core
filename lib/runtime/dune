@@ -1,4 +1,4 @@
 (library
  (name runtime)
  (libraries syntax bignum)
- (modules typ value cclosure func object envs store ops))
+ (modules typ value cclos func object envs store ops))

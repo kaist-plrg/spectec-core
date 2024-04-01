@@ -11,7 +11,8 @@ let rec eval_simplify_typ (tdenv : tdenv) (typ : Typ.t) : Typ.t =
   | Typ.NewType { name } -> TDEnv.find name tdenv
   | _ -> typ
 
-let rec eval_typ (cenv : cenv) (vsto : vsto) (tdenv : tdenv) (typ : Type.t) : Typ.t =
+let rec eval_typ (cenv : cenv) (vsto : vsto) (tdenv : tdenv) (typ : Type.t) :
+    Typ.t =
   match typ with
   | Bool _ -> Typ.Bool
   | Integer _ -> Typ.AInt
@@ -38,14 +39,14 @@ let rec eval_typ (cenv : cenv) (vsto : vsto) (tdenv : tdenv) (typ : Type.t) : Ty
       let var = text.str in
       TDEnv.find var tdenv
   (* (TODO) handle specialized types *)
-  | SpecializedType { base; _ } ->
-      eval_typ cenv vsto tdenv base
+  | SpecializedType { base; _ } -> eval_typ cenv vsto tdenv base
   | _ ->
       Printf.sprintf "(TODO: eval_typ) %s" (Pretty.print_type typ) |> failwith
 
 (* Compile-time evaluation of expressions *)
 
-and eval_expr (cenv : cenv) (vsto : vsto) (tdenv : tdenv) (expr : Expression.t) : Value.t =
+and eval_expr (cenv : cenv) (vsto : vsto) (tdenv : tdenv) (expr : Expression.t)
+    : Value.t =
   match expr with
   | True _ -> Value.Bool true
   | False _ -> Value.Bool false

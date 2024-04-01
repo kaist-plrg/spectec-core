@@ -5,7 +5,7 @@ open Envs
 
 (* Function (method) defined in a block *)
 
-type t = 
+type t =
   | Parser of {
       name : string;
       params : Parameter.t list;

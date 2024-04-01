@@ -11,24 +11,10 @@ open Envs
 
 type t =
   | Package of { tdenv : tdenv; tsto : tsto; vsto : vsto }
-  | Parser of {
-      tdenv : tdenv;
-      tsto : tsto;
-      vsto : vsto;
-      funcs : Func.t list;
-    }
-  | Control of {
-      tdenv : tdenv;
-      tsto : tsto;
-      vsto : vsto;
-      funcs : Func.t list;
-    }
+  | Parser of { tdenv : tdenv; tsto : tsto; vsto : vsto; funcs : Func.t list }
+  | Control of { tdenv : tdenv; tsto : tsto; vsto : vsto; funcs : Func.t list }
   | Extern
-  | Table of {
-      cenv : cenv;
-      lenv : lenv;
-      properties : Table.property list
-    }
+  | Table of { cenv : cenv; lenv : lenv; properties : Table.property list }
   | Function
   | ValueSet
 

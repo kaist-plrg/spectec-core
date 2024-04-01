@@ -34,11 +34,11 @@ struct
       | [] -> None
       | now :: old -> (
           match KSet.find_opt key now with
-          | Some key -> Some key 
+          | Some key -> Some key
           | None -> find' old)
     in
     match find' env with
-    | Some key -> key 
+    | Some key -> key
     | None -> Printf.sprintf "Key %s not found" (K.print key) |> failwith
 
   let find_toplevel key env =
@@ -54,9 +54,7 @@ struct
     now :: old
 
   let print ?(indent = 0) (env : t) =
-    let print_binding key acc =
-      acc @ [ K.print key ]
-    in
+    let print_binding key acc = acc @ [ K.print key ] in
     let print' acc env =
       let bindings = KSet.fold print_binding env [] in
       let bindings = String.concat ", " bindings in

@@ -8,7 +8,6 @@ module Env = StackMap (Var) (Value)
 
 type env = Env.t
 
-
 (* Constant environment *)
 
 module CEnv = StackSet (Var)
@@ -27,7 +26,6 @@ module VSto = StackMap (Var) (Value)
 
 type vsto = VSto.t
 
-
 (* Type environment *)
 
 module TEnv = StackSet (Var)
@@ -40,30 +38,29 @@ module TSto = StackMap (Var) (Typ)
 
 type tsto = TSto.t
 
-
 (* Type-alias environment *)
 
 module TDEnv = Map.Make (Var)
 
 type tdenv = Typ.t TDEnv.t
 
-
 (* Constructor closure environment *)
 
-module CCEnv = StackMap (Var) (Cclosure)
+module CCEnv = StackMap (Var) (Cclos)
 
 type ccenv = CCEnv.t
 
-
 (* Loaders *)
 
-let load_const (cenv : cenv) (tsto : tsto) (vsto : vsto) (name : string) (typ : Typ.t) (value : Value.t) : cenv * tsto * vsto =
+let load_const (cenv : cenv) (tsto : tsto) (vsto : vsto) (name : string)
+    (typ : Typ.t) (value : Value.t) : cenv * tsto * vsto =
   let cenv = CEnv.add name cenv in
   let tsto = TSto.add name typ tsto in
   let vsto = VSto.add name value vsto in
   (cenv, tsto, vsto)
 
-let load_var (lenv : lenv) (tsto : tsto) (name : string) (typ : Typ.t) : lenv * tsto =
+let load_var (lenv : lenv) (tsto : tsto) (name : string) (typ : Typ.t) :
+    lenv * tsto =
   let lenv = LEnv.add name lenv in
   let tsto = TSto.add name typ tsto in
   (lenv, tsto)
