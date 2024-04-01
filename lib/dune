@@ -6,5 +6,4 @@
   (re_export syntax)
   (re_export frontend)
   (re_export runtime)
-  (re_export instance)
-  (re_export exec)))
+  (re_export instance)))

@@ -1,4 +1,4 @@
 (library
  (name exec)
  (libraries syntax runtime instance)
- (modules driver interpreter))
+ (modules))

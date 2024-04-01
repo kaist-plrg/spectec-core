@@ -10,66 +10,61 @@ open Envs
    even if they happen to be pure functions of their arguments (Appendix F) *)
 
 type t =
-  | Package of { cenv: cenv; tenv : tenv; tdenv : tdenv }
+  | Package of { tdenv : tdenv; tsto : tsto; vsto : vsto }
   | Parser of {
-      cenv: cenv;
-      tenv : tenv;
       tdenv : tdenv;
-      lenv : lenv;
-      params : Parameter.t list;
-      locals : Declaration.t list;
-      states : Parser.state list;
+      tsto : tsto;
+      vsto : vsto;
+      funcs : Func.t list;
     }
   | Control of {
-      cenv: cenv;
-      tenv : tenv;
       tdenv : tdenv;
-      lenv : lenv;
-      params : Parameter.t list;
-      locals : Declaration.t list;
-      apply : Block.t;
+      tsto : tsto;
+      vsto : vsto;
+      funcs : Func.t list;
     }
   | Extern
   | Table of {
+      cenv : cenv;
       lenv : lenv;
       properties : Table.property list
     }
   | Function
   | ValueSet
 
-(* Printer *)
-
-let print ?(indent = 0) (obj : t) =
-  match obj with
-  | Package { cenv; tenv; _ } ->
-      Printf.sprintf "%sPackage {\n%scenv =\n%s\n%stenv =\n%s }"
+let print ?(indent = 0) (t : t) =
+  match t with
+  | Package { tsto; vsto; _ } ->
+      Printf.sprintf "%sPackage {\n%ststo =\n%s\n%svsto =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
-        (CEnv.print cenv ~indent:(indent + 3))
+        (TSto.print tsto ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
-        (TEnv.print tenv ~indent:(indent + 3))
-  | Parser { cenv; tenv; lenv; _ } ->
-      Printf.sprintf "%sParser {\n%scenv =\n%s\n%stenv =\n%s\n%slenv =\n%s }"
+        (VSto.print vsto ~indent:(indent + 3))
+  | Parser { tsto; vsto; funcs; _ } ->
+      Printf.sprintf "%sParser {\n%ststo =\n%s\n%svsto =\n%s\n%sfuncs =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
-        (CEnv.print cenv ~indent:(indent + 3))
+        (TSto.print tsto ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
-        (TEnv.print tenv ~indent:(indent + 3))
+        (VSto.print vsto ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
-        (LEnv.print lenv ~indent:(indent + 3))
-  | Control { cenv; tenv; lenv; _ } ->
-      Printf.sprintf "%sControl {\n%scenv =\n%s\n%stenv =\n%s\n%slenv =\n%s }"
+        (String.concat "\n" (List.map (Func.print ~indent:(indent + 3)) funcs))
+  | Control { tsto; vsto; funcs; _ } ->
+      Printf.sprintf "%sControl {\n%ststo =\n%s\n%svsto =\n%s\n%sfuncs =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
-        (CEnv.print cenv ~indent:(indent + 3))
+        (TSto.print tsto ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
-        (TEnv.print tenv ~indent:(indent + 3))
+        (VSto.print vsto ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
-        (LEnv.print lenv ~indent:(indent + 3))
+        (String.concat "\n" (List.map (Func.print ~indent:(indent + 3)) funcs))
   | Extern -> Printf.sprintf "%sExtern" (Print.print_indent indent)
-  | Table { lenv; _ } ->
-      Printf.sprintf "%sTable {\n%slenv =\n%s }"
+  | Table { cenv; lenv; _ } ->
+      Printf.sprintf "%sTable {\n%scenv =\n%s\n%slenv =\n%s }"
         (Print.print_indent indent)
+        (Print.print_indent (indent + 2))
+        (CEnv.print cenv ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
         (LEnv.print lenv ~indent:(indent + 3))
   | Function -> Printf.sprintf "%sFunction" (Print.print_indent indent)

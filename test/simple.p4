@@ -39,8 +39,6 @@ control c(inout bit<32> b) {
         default_action = a(x, 0);
     }
 
-
-
     apply {
         S s1;
         S s2;

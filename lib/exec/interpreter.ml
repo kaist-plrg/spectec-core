@@ -5,10 +5,6 @@ open Value
 open Typ
 open Envs
 
-(* (TODO) expression evaluation relies on the compile-time evaluation
-   in Runtime.Eval, which is not ideal. *)
-(* (TODO) register the store as a global referenced variable in OCaml *)
-
 (* Environments *)
 
 type store = Store.t
