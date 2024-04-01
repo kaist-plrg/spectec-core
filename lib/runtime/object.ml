@@ -41,35 +41,29 @@ type t =
 
 let print ?(indent = 0) (obj : t) =
   match obj with
-  | Package { env; tenv; tdenv } ->
-      Printf.sprintf "%sPackage {\n%senv =\n%s\n%stenv =\n%s\n%stdenv =\n%s }"
+  | Package { env; tenv; _ } ->
+      Printf.sprintf "%sPackage {\n%senv =\n%s\n%stenv =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
         (Env.print env ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
         (TEnv.print tenv ~indent:(indent + 3))
-        (Print.print_indent (indent + 2))
-        (TDEnv.print tdenv ~indent:(indent + 3))
-  | Parser { env; tenv; tdenv; lenv; _ } ->
-      Printf.sprintf "%sParser {\n%senv =\n%s\n%stenv = \n%s\n%stdenv =\n%s\n%slenv =\n%s }"
+  | Parser { env; tenv; lenv; _ } ->
+      Printf.sprintf "%sParser {\n%senv =\n%s\n%stenv =\n%s\n%slenv =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
         (Env.print env ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
         (TEnv.print tenv ~indent:(indent + 3))
-        (Print.print_indent (indent + 2))
-        (TDEnv.print tdenv ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
         (LEnv.print lenv ~indent:(indent + 3))
-  | Control { env; tenv; tdenv; lenv; _ } ->
-      Printf.sprintf "%sControl {\n%senv =\n%s\n%stenv =\n%s\n%stdenv =\n%s\n%slenv =\n%s }"
+  | Control { env; tenv; lenv; _ } ->
+      Printf.sprintf "%sControl {\n%senv =\n%s\n%stenv =\n%s\n%slenv =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
         (Env.print env ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
         (TEnv.print tenv ~indent:(indent + 3))
-        (Print.print_indent (indent + 2))
-        (TDEnv.print tdenv ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
         (LEnv.print lenv ~indent:(indent + 3))
   | Extern -> Printf.sprintf "%sExtern" (Print.print_indent indent)

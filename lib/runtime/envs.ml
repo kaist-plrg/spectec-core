@@ -16,9 +16,11 @@ type tenv = TEnv.t
 
 (* Type-alias environment *)
 
-module TDEnv = StackMap (Var) (Typ)
+module TDEnv = Map.Make (Var)
 
-type tdenv = TDEnv.t
+type tdenv = Typ.t TDEnv.t
+
+(* Constructor environment *)
 
 (* Local environment *)
 

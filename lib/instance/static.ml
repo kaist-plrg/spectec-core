@@ -33,12 +33,10 @@ let rec eval_typ (env : env) (tdenv : tdenv) (typ : Type.t) : Typ.t =
   | Tuple { args; _ } ->
       let vargs = List.map (eval_typ env tdenv) args in
       Typ.Tuple vargs
-  | TypeName { name = BareName text; _ } ->
-      let var = text.str in
-      TDEnv.find var tdenv
+  | TypeName { name = BareName text; _ }
   | TypeName { name = QualifiedName ([], text); _ } ->
       let var = text.str in
-      TDEnv.find_toplevel var tdenv
+      TDEnv.find var tdenv
   | _ ->
       Printf.sprintf "(TODO: eval_typ) %s" (Pretty.print_type typ) |> failwith
 

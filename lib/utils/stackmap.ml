@@ -53,7 +53,7 @@ struct
     | None ->
         Printf.sprintf "Key %s not found in top scope" (K.print key) |> failwith
 
-  let insert key value env =
+  let add key value env =
     let now, old = current env in
     let now = KMap.add key value now in
     now :: old

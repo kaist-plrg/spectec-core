@@ -48,7 +48,7 @@ struct
     | None ->
         Printf.sprintf "Key %s not found in top scope" (K.print key) |> failwith
 
-  let insert key env =
+  let add key env =
     let now, old = current env in
     let now = KSet.add key now in
     now :: old

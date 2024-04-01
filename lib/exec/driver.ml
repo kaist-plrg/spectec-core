@@ -15,7 +15,7 @@ let drive_simple (store : Store.t) =
   let tags = Info.M "" in
   let env = Env.empty in
   let env =
-    Env.insert "b"
+    Env.add "b"
       (Value.Bit { value = Bigint.of_int 42; width = Bigint.of_int 32 })
       env
   in

@@ -69,7 +69,7 @@ let rec eval_typ (env : env) (tdenv : tdenv) (typ : Type.t) : Typ.t =
       TDEnv.find var tdenv
   | TypeName { name = QualifiedName ([], text); _ } ->
       let var = text.str in
-      TDEnv.find_toplevel var tdenv
+      TDEnv.find var tdenv
   | _ ->
       Printf.sprintf "(TODO: eval_typ) %s" (Pretty.print_type typ) |> failwith
 
@@ -139,14 +139,14 @@ let eval_decl (env : env) (tenv : tenv) (tdenv : tdenv) (decl : Declaration.t) :
   | Variable { name; typ; init = Some value; _ } ->
       let typ = eval_typ env tdenv typ in
       let value = eval_expr env tdenv value in
-      let env = Env.insert name.str value env in
-      let tenv = TEnv.insert name.str typ tenv in
+      let env = Env.add name.str value env in
+      let tenv = TEnv.add name.str typ tenv in
       (env, tenv)
   | Variable { name; typ; init = None; _ } ->
       let typ = eval_typ env tdenv typ in
       let value = default typ in
-      let env = Env.insert name.str value env in
-      let tenv = TEnv.insert name.str typ tenv in
+      let env = Env.add name.str value env in
+      let tenv = TEnv.add name.str typ tenv in
       (env, tenv)
   | _ ->
       Printf.sprintf "(TODO: eval_decl) %s" (Pretty.print_decl 0 decl)
@@ -234,8 +234,8 @@ let copyin (caller_env : env) (callee_env : env) (callee_tenv : tenv)
         in
         let typ = eval_typ caller_env tdenv typ in
         let value = eval_expr caller_env tdenv arg in
-        let env = Env.insert param value env in
-        let tenv = TEnv.insert param typ tenv in
+        let env = Env.add param value env in
+        let tenv = TEnv.add param typ tenv in
         (env, tenv)
     (* Direction out parameters are always defaultialized at the beginning
        of the execution of the portion of the program that has the out
@@ -245,8 +245,8 @@ let copyin (caller_env : env) (callee_env : env) (callee_tenv : tenv)
         let param, typ = (param.variable.str, param.typ) in
         let typ = eval_typ caller_env tdenv typ in
         let value = default typ in
-        let env = Env.insert param value env in
-        let tenv = TEnv.insert param typ tenv in
+        let env = Env.add param value env in
+        let tenv = TEnv.add param typ tenv in
         (env, tenv)
     | None ->
         failwith "(TODO) (copyin) Non-directional parameter is not supported."
