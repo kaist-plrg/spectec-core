@@ -309,8 +309,8 @@ let eval_object_apply (caller_env : env) (obj : Object.t)
   print_endline "and with environment:";
   Env.print caller_env |> print_endline;
   match obj with
-  | Control { env; tenv; tdenv; params; apply; _ } ->
-      let callee_env = env in
+  | Control { cenv; tenv; tdenv; params; apply; _ } ->
+      let callee_env = cenv in
       let callee_tenv = tenv in
       let callee_env, callee_tenv =
         copyin caller_env callee_env callee_tenv tdenv params args

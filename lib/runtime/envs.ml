@@ -8,6 +8,12 @@ module Env = StackMap (Var) (Value)
 
 type env = Env.t
 
+(* Constant Environment *)
+
+module CEnv = StackMap (Var) (Value)
+
+type cenv = CEnv.t
+
 (* Type environment *)
 
 module TEnv = StackMap (Var) (Typ)
@@ -19,8 +25,6 @@ type tenv = TEnv.t
 module TDEnv = Map.Make (Var)
 
 type tdenv = Typ.t TDEnv.t
-
-(* Constructor environment *)
 
 (* Local environment *)
 

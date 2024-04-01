@@ -10,9 +10,9 @@ open Envs
    even if they happen to be pure functions of their arguments (Appendix F) *)
 
 type t =
-  | Package of { env : env; tenv : tenv; tdenv : tdenv }
+  | Package of { cenv: cenv; tenv : tenv; tdenv : tdenv }
   | Parser of {
-      env : env;
+      cenv: cenv;
       tenv : tenv;
       tdenv : tdenv;
       lenv : lenv;
@@ -21,7 +21,7 @@ type t =
       states : Parser.state list;
     }
   | Control of {
-      env : env;
+      cenv: cenv;
       tenv : tenv;
       tdenv : tdenv;
       lenv : lenv;
@@ -41,27 +41,27 @@ type t =
 
 let print ?(indent = 0) (obj : t) =
   match obj with
-  | Package { env; tenv; _ } ->
-      Printf.sprintf "%sPackage {\n%senv =\n%s\n%stenv =\n%s }"
+  | Package { cenv; tenv; _ } ->
+      Printf.sprintf "%sPackage {\n%scenv =\n%s\n%stenv =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
-        (Env.print env ~indent:(indent + 3))
+        (CEnv.print cenv ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
         (TEnv.print tenv ~indent:(indent + 3))
-  | Parser { env; tenv; lenv; _ } ->
-      Printf.sprintf "%sParser {\n%senv =\n%s\n%stenv =\n%s\n%slenv =\n%s }"
+  | Parser { cenv; tenv; lenv; _ } ->
+      Printf.sprintf "%sParser {\n%scenv =\n%s\n%stenv =\n%s\n%slenv =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
-        (Env.print env ~indent:(indent + 3))
+        (CEnv.print cenv ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
         (TEnv.print tenv ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
         (LEnv.print lenv ~indent:(indent + 3))
-  | Control { env; tenv; lenv; _ } ->
-      Printf.sprintf "%sControl {\n%senv =\n%s\n%stenv =\n%s\n%slenv =\n%s }"
+  | Control { cenv; tenv; lenv; _ } ->
+      Printf.sprintf "%sControl {\n%scenv =\n%s\n%stenv =\n%s\n%slenv =\n%s }"
         (Print.print_indent indent)
         (Print.print_indent (indent + 2))
-        (Env.print env ~indent:(indent + 3))
+        (CEnv.print cenv ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
         (TEnv.print tenv ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
