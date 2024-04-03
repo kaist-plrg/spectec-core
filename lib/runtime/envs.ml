@@ -1,12 +1,7 @@
 open Utils
+open Flatmap
 open Stackmap
 open Stackset
-
-(* (TODO: remove) Environment *)
-
-module Env = StackMap (Var) (Value)
-
-type env = Env.t
 
 (* Constant environment *)
 
@@ -40,9 +35,9 @@ type tsto = TSto.t
 
 (* Type-alias environment *)
 
-module TDEnv = Map.Make (Var)
+module TDEnv = FlatMap (Var) (Typ)
 
-type tdenv = Typ.t TDEnv.t
+type tdenv = TDEnv.t
 
 (* Loaders *)
 

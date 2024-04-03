@@ -58,12 +58,12 @@ and eval_expr (cenv : cenv) (vsto : vsto) (tdenv : tdenv) (expr : Expression.t)
           else Value.Bit { value; width }
       | None -> Value.AInt value)
   | String { text; _ } -> Value.String text.str
-  | Name { name = BareName text; _ } ->
-      let var = text.str in
-      find_value cenv vsto var
-  | Name { name = QualifiedName ([], text); _ } ->
-      let var = text.str in
-      find_value_toplevel cenv vsto var
+  | Name { name = BareName name; _ } ->
+      let name = name.str in
+      find_value cenv vsto name
+  | Name { name = QualifiedName ([], name); _ } ->
+      let name = name.str in
+      find_value_toplevel cenv vsto name 
   | BitStringAccess { bits; lo; hi; _ } ->
       let vbits = eval_expr cenv vsto tdenv bits in
       let vlo = eval_expr cenv vsto tdenv lo in

@@ -18,7 +18,8 @@ type t =
   | Function
   | ValueSet
 
-let print ?(indent = 0) (t : t) =
+let print (t : t) =
+  let indent = 1 in
   match t with
   | Package { cenv; tsto; vsto; _ } ->
       Printf.sprintf "%sPackage {\n%scenv =\n%s\n%ststo =\n%s\n%svsto =\n%s }"

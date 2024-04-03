@@ -1,33 +1,9 @@
 open Utils
+open Flatmap
 
-(* Global store of objects *)
+(* Global store *)
 (* Instances should be distinguishable by their paths,
    or fully-qualified names, so a store can be a flat map *)
 
-type t = Object.t Path.PMap.t
-
-let empty = Path.PMap.empty
-
-let insert (path : Path.t) (obj : Object.t) (store : t) =
-  Path.PMap.add path obj store
-
-let find (path : Path.t) (store : t) =
-  match Path.PMap.find_opt path store with
-  | Some obj -> obj
-  | None -> Printf.sprintf "Path %s not found" (Path.print path) |> failwith
-
-(* Printer *)
-
-let print ?(indent = 0) (store : t) =
-  let print_binding path obj acc =
-    acc
-    @ [
-        Printf.sprintf "%s%s:\n%s%s"
-          (Print.print_indent (indent + 1))
-          (Path.print path)
-          (Print.print_indent (indent + 1))
-          (Object.print obj ~indent:(indent + 1));
-      ]
-  in
-  let sstore = Path.PMap.fold print_binding store [] in
-  "[\n" ^ String.concat "\n" sstore ^ " ]"
+module GSto = FlatMap (Path) (Object)
+type store = GSto.t 

@@ -2,12 +2,13 @@ open Syntax
 open Ast
 open Envs
 open Runtime.Envs
+open Runtime.Store
 open Runtime
 open Utils
 
 (* Store *)
 
-type store = Runtime.Store.t
+type store = GSto.t
 
 (* Utils *)
 
@@ -50,8 +51,11 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
     =
   match decl with
   (* Loading constructor closures to ccenv *)
+  (* For package type declaration, also load to tdenv *)
   | PackageType { name; params; type_params; _ } ->
       let name = name.str in
+      let typ = Typ.Ref in
+      let tdenv = TDEnv.add name typ tdenv in
       let tparams = List.map (fun (param : Text.t) -> param.str) type_params in
       let cclos = Cclos.Package { params; tparams } in
       let ccenv = CCEnv.add name cclos ccenv in
@@ -72,8 +76,11 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let cclos = Cclos.Control { tdenv; cenv; tsto; vsto; params; tparams; cparams; locals; apply } in
       let ccenv = CCEnv.add name cclos ccenv in
       (cenv, tsto, vsto, tdenv, ccenv)
+  (* For package type declaration, also load to tdenv *)
   | ExternObject { name; _ } ->
       let name = name.str in
+      let typ = Typ.Ref in
+      let tdenv = TDEnv.add name typ tdenv in
       let cclos = Cclos.Extern in
       let ccenv = CCEnv.add name cclos ccenv in
       (cenv, tsto, vsto, tdenv, ccenv)
@@ -280,7 +287,7 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       (* Add constructor arguments to constant environment and value store *)
       (* let tdenv_local = eval_targs cenv tdenv_local tparams typs in *)
       let names, typs, values, store =
-        eval_args cenv_local tsto_local vsto_local tdenv ccenv store path
+        eval_args cenv tsto vsto tdenv ccenv store path
           cparams args
       in
       let cenv_local, tsto_local, vsto_local =
@@ -333,7 +340,7 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
             funcs = func_apply :: funcs_state;
           }
       in
-      let store = Store.insert path obj store in
+      let store = GSto.add path obj store in
       store
   (* Every time a control is instantiated, it causes:
      1 instantiation of each table defined within it
@@ -347,7 +354,7 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       (* Add constructor arguments to constant environment and value store *)
       (* let tdenv_local = eval_targs cenv tdenv_local tparams typs in *)
       let names, typs, values, store =
-        eval_args cenv_local tsto_local vsto_local tdenv ccenv store path
+        eval_args cenv tsto vsto tdenv ccenv store path
           cparams args
       in
       let cenv_local, tsto_local, vsto_local =
@@ -395,7 +402,7 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
             funcs = [ func_apply ];
           }
       in
-      let store = Store.insert path obj store in
+      let store = GSto.add path obj store in
       store
   (* Others do not involve recursive instantiation other than the args *)
   | Cclos.Package { params; tparams = _tparams } ->
@@ -405,7 +412,7 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       (* Add constructor arguments to constant environment and value store *)
       (* let tdenv_package = eval_targs cenv tdenv_package tparams typs in *)
       let names, typs, values, store =
-        eval_args cenv_package tsto_package vsto_package tdenv ccenv store path
+        eval_args cenv tsto vsto tdenv ccenv store path
           params args
       in
       let cenv_package, tsto_package, vsto_package =
@@ -417,11 +424,11 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let obj =
         Object.Package { tdenv; cenv = cenv_package; tsto = tsto_package; vsto = vsto_package }
       in
-      let store = Store.insert path obj store in
+      let store = GSto.add path obj store in
       store
   | Cclos.Extern ->
       let obj = Object.Extern in
-      let store = Store.insert path obj store in
+      let store = GSto.add path obj store in
       store
 
 (* Instantiate from expression *)
@@ -479,7 +486,7 @@ and instantiate_parser_local_decl (cenv : cenv) (lenv : lenv) (tsto : tsto)
   | ValueSet { name; _ } ->
       let name = name.str in
       let obj = Object.ValueSet in
-      let store = Store.insert (path @ [ name ]) obj store in
+      let store = GSto.add (path @ [ name ]) obj store in
       let typ = Typ.Ref in
       let value = Value.Ref (path @ [ name ]) in
       let cenv, tsto, vsto = load_const cenv tsto vsto name typ value in
@@ -515,7 +522,7 @@ and instantiate_control_local_decl (cenv : cenv) (lenv : lenv) (tsto : tsto)
   | Table { name; properties; _ } ->
       let name = name.str in
       let obj = Object.Table { cenv; lenv; properties } in
-      let store = Store.insert (path @ [ name ]) obj store in
+      let store = GSto.add (path @ [ name ]) obj store in
       let typ = Typ.Ref in
       let value = Value.Ref (path @ [ name ]) in
       let cenv, tsto, vsto = load_const cenv tsto vsto name typ value in
@@ -563,7 +570,7 @@ let instantiate_program (program : program) =
   let vsto = VSto.empty in
   let tdenv = TDEnv.empty in
   let ccenv = CCEnv.empty in
-  let store = Store.empty in
+  let store = GSto.empty in
   let _, _, _, _, _, store =
     List.fold_left
       (fun (cenv, tsto, vsto, tdenv, ccenv, store) decl ->
@@ -571,5 +578,4 @@ let instantiate_program (program : program) =
       (cenv, tsto, vsto, tdenv, ccenv, store)
       decls
   in
-  Store.print store |> print_endline;
   store

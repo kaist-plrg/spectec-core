@@ -1,4 +1,4 @@
 type t = string
 
-let print (var : t) = var
+let print (t : t) = t 
 let compare = String.compare
