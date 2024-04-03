@@ -44,12 +44,6 @@ module TDEnv = Map.Make (Var)
 
 type tdenv = Typ.t TDEnv.t
 
-(* Constructor closure environment *)
-
-module CCEnv = StackMap (Var) (Cclos)
-
-type ccenv = CCEnv.t
-
 (* Loaders *)
 
 let load_const (cenv : cenv) (tsto : tsto) (vsto : vsto) (name : string)

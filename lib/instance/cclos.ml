@@ -1,11 +1,16 @@
 open Syntax
 open Ast
+open Runtime.Envs
 
 (* Constructor closures *)
 
 type t =
   | Package of { params : Parameter.t list; tparams : string list }
   | Parser of {
+      tdenv : tdenv;
+      cenv : cenv;
+      tsto : tsto;
+      vsto : vsto;
       params : Parameter.t list;
       tparams : string list;
       cparams : Parameter.t list;
@@ -13,6 +18,10 @@ type t =
       states : Parser.state list;
     }
   | Control of {
+      tdenv : tdenv;
+      cenv : cenv;
+      tsto : tsto;
+      vsto : vsto;
       params : Parameter.t list;
       tparams : string list;
       cparams : Parameter.t list;
@@ -21,10 +30,8 @@ type t =
     }
   | Extern
 
-(* Utils *)
-
-let print (cclos : t) =
-  match cclos with
+let print (t : t) =
+  match t with
   | Package { params; _ } ->
       Printf.sprintf "Package { params = (%s) }"
         (String.concat ", " (List.map Pretty.print_param params))

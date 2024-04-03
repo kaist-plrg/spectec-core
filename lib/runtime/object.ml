@@ -10,7 +10,7 @@ open Envs
    even if they happen to be pure functions of their arguments (Appendix F) *)
 
 type t =
-  | Package of { tdenv : tdenv; tsto : tsto; vsto : vsto }
+  | Package of { tdenv : tdenv; cenv : cenv; tsto : tsto; vsto : vsto }
   | Parser of { tdenv : tdenv; tsto : tsto; vsto : vsto; funcs : Func.t list }
   | Control of { tdenv : tdenv; tsto : tsto; vsto : vsto; funcs : Func.t list }
   | Extern
@@ -20,9 +20,11 @@ type t =
 
 let print ?(indent = 0) (t : t) =
   match t with
-  | Package { tsto; vsto; _ } ->
-      Printf.sprintf "%sPackage {\n%ststo =\n%s\n%svsto =\n%s }"
+  | Package { cenv; tsto; vsto; _ } ->
+      Printf.sprintf "%sPackage {\n%scenv =\n%s\n%ststo =\n%s\n%svsto =\n%s }"
         (Print.print_indent indent)
+        (Print.print_indent (indent + 2))
+        (CEnv.print cenv ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
         (TSto.print tsto ~indent:(indent + 3))
         (Print.print_indent (indent + 2))

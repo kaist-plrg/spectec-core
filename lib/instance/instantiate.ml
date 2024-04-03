@@ -1,14 +1,23 @@
 open Syntax
 open Ast
-open Runtime
 open Envs
+open Runtime.Envs
+open Runtime
 open Utils
 
 (* Store *)
 
-type store = Store.t
+type store = Runtime.Store.t
 
 (* Utils *)
+
+let rec fold_left3 f acc xs ys zs =
+  match xs, ys, zs with
+  | [], [], [] -> acc
+  | x :: xs', y :: ys', z :: zs' ->
+      let acc' = f acc x y z in
+      fold_left3 f acc' xs' ys' zs'
+  | _, _, _ -> failwith "(fold_left3) Lists have different lengths"
 
 let rec name_from_type (typ : Type.t) : string =
   match typ with
@@ -52,7 +61,7 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let name = name.str in
       let tparams = List.map (fun (param : Text.t) -> param.str) type_params in
       let cparams = constructor_params in
-      let cclos = Cclos.Parser { params; tparams; cparams; locals; states } in
+      let cclos = Cclos.Parser { tdenv; cenv; tsto; vsto; params; tparams; cparams; locals; states } in
       let ccenv = CCEnv.add name cclos ccenv in
       (cenv, tsto, vsto, tdenv, ccenv)
   | Control { name; params; type_params; constructor_params; locals; apply; _ }
@@ -60,7 +69,7 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let name = name.str in
       let tparams = List.map (fun (param : Text.t) -> param.str) type_params in
       let cparams = constructor_params in
-      let cclos = Cclos.Control { params; tparams; cparams; locals; apply } in
+      let cclos = Cclos.Control { tdenv; cenv; tsto; vsto; params; tparams; cparams; locals; apply } in
       let ccenv = CCEnv.add name cclos ccenv in
       (cenv, tsto, vsto, tdenv, ccenv)
   | ExternObject { name; _ } ->
@@ -200,7 +209,7 @@ and eval_expr (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
 and eval_args (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
     (ccenv : ccenv) (store : store) (path : string list)
     (params : Parameter.t list) (args : Argument.t list) :
-    cenv * tsto * vsto * store =
+    string list * Typ.t list * Value.t list * store =
   (* (TODO) assume there is no default argument *)
   assert (List.length params = List.length args);
   (* It is illegal to use names only for some arguments:
@@ -227,15 +236,14 @@ and eval_args (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       ([], []) params args
   in
   List.fold_left2
-    (fun (cenv', tsto', vsto', store') param arg ->
+    (fun (names, typs, values, store) param arg ->
       let param, typ = param in
       let typ = Static.eval_typ cenv vsto tdenv typ in
-      let value, store' =
-        eval_expr cenv tsto vsto tdenv ccenv store' (path @ [ param ]) arg
+      let value, store =
+        eval_expr cenv tsto vsto tdenv ccenv store (path @ [ param ]) arg
       in
-      let cenv', tsto', vsto' = load_const cenv' tsto' vsto' param typ value in
-      (cenv', tsto', vsto', store'))
-    (cenv, tsto, vsto, store) params args
+      (names @ [ param ], typs @ [ typ ], values @ [ value ], store))
+    ([], [], [], store) params args
 
 (* Instantiation of a constructor closure *)
 
@@ -264,22 +272,28 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
   (* Every time a parser is instantiated, it causes:
      every extern and parser instantiation that is in the parser source code
      at its top level is instantiated 1 time (p4guide) *)
-  | Cclos.Parser { params; tparams = _tparams; cparams; locals; states } ->
-      let cenv_local = CEnv.enter cenv in
-      let tsto_local = TSto.enter tsto in
-      let vsto_local = VSto.enter vsto in
+  | Cclos.Parser { tdenv = tdenv_local; cenv = cenv_local; tsto = tsto_local; vsto = vsto_local; params; tparams = _tparams; cparams; locals; states } ->
+      let cenv_local = CEnv.enter cenv_local in
+      let tsto_local = TSto.enter tsto_local in
+      let vsto_local = VSto.enter vsto_local in
       let lenv_local = LEnv.empty in
       (* Add constructor arguments to constant environment and value store *)
       (* let tdenv_local = eval_targs cenv tdenv_local tparams typs in *)
-      let cenv_local, tsto_local, vsto_local, store =
+      let names, typs, values, store =
         eval_args cenv_local tsto_local vsto_local tdenv ccenv store path
           cparams args
+      in
+      let cenv_local, tsto_local, vsto_local =
+        fold_left3
+          (fun (cenv, tsto, vsto) name typ value ->
+            load_const cenv tsto vsto name typ value)
+          (cenv_local, tsto_local, vsto_local) names typs values
       in
       (* Instantiate local instantiations, load constants and local variables *)
       let cenv_local, lenv_local, tsto_local, vsto_local, store =
         List.fold_left
           (fun (cenv, lenv, tsto, vsto, store) local ->
-            instantiate_parser_local_decl cenv lenv tsto vsto tdenv ccenv store
+            instantiate_parser_local_decl cenv lenv tsto vsto tdenv_local ccenv store
               path local)
           (cenv_local, lenv_local, tsto_local, vsto_local, store)
           locals
@@ -313,7 +327,7 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let obj =
         Object.Parser
           {
-            tdenv;
+            tdenv = tdenv_local;
             tsto = tsto_local;
             vsto = vsto_local;
             funcs = func_apply :: funcs_state;
@@ -325,22 +339,28 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
      1 instantiation of each table defined within it
      every extern and control instantiation that is in the control source code
      at its top level is instantiated 1 time (p4guide) *)
-  | Cclos.Control { params; tparams = _tparams; cparams; locals; apply; _ } ->
-      let cenv_local = CEnv.enter cenv in
-      let tsto_local = TSto.enter tsto in
-      let vsto_local = VSto.enter vsto in
+  | Cclos.Control { tdenv = tdenv_local; cenv = cenv_local; tsto = tsto_local; vsto = vsto_local; params; tparams = _tparams; cparams; locals; apply; _ } ->
+      let cenv_local = CEnv.enter cenv_local in
+      let tsto_local = TSto.enter tsto_local in
+      let vsto_local = VSto.enter vsto_local in
       let lenv_local = LEnv.empty in
       (* Add constructor arguments to constant environment and value store *)
       (* let tdenv_local = eval_targs cenv tdenv_local tparams typs in *)
-      let cenv_local, tsto_local, vsto_local, store =
+      let names, typs, values, store =
         eval_args cenv_local tsto_local vsto_local tdenv ccenv store path
           cparams args
+      in
+      let cenv_local, tsto_local, vsto_local =
+        fold_left3
+          (fun (cenv, tsto, vsto) name typ value ->
+            load_const cenv tsto vsto name typ value)
+          (cenv_local, tsto_local, vsto_local) names typs values
       in
       (* Instantiate local instantiations, load constants and local variables *)
       let cenv_local, lenv_local, tsto_local, vsto_local, store =
         List.fold_left
           (fun (cenv, lenv, tsto, vsto, store) local ->
-            instantiate_control_local_decl cenv lenv tsto vsto tdenv ccenv store
+            instantiate_control_local_decl cenv lenv tsto vsto tdenv_local ccenv store
               path local)
           (cenv_local, lenv_local, tsto_local, vsto_local, store)
           locals
@@ -369,7 +389,7 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let obj =
         Object.Control
           {
-            tdenv;
+            tdenv = tdenv_local;
             tsto = tsto_local;
             vsto = vsto_local;
             funcs = [ func_apply ];
@@ -382,13 +402,20 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let cenv_package = CEnv.enter cenv in
       let tsto_package = TSto.enter tsto in
       let vsto_package = VSto.enter vsto in
+      (* Add constructor arguments to constant environment and value store *)
       (* let tdenv_package = eval_targs cenv tdenv_package tparams typs in *)
-      let _cenv_package, tsto_package, vsto_package, store =
+      let names, typs, values, store =
         eval_args cenv_package tsto_package vsto_package tdenv ccenv store path
           params args
       in
+      let cenv_package, tsto_package, vsto_package =
+        fold_left3
+          (fun (cenv, tsto, vsto) name typ value ->
+            load_const cenv tsto vsto name typ value)
+          (cenv_package, tsto_package, vsto_package) names typs values
+      in
       let obj =
-        Object.Package { tdenv; tsto = tsto_package; vsto = vsto_package }
+        Object.Package { tdenv; cenv = cenv_package; tsto = tsto_package; vsto = vsto_package }
       in
       let store = Store.insert path obj store in
       store
