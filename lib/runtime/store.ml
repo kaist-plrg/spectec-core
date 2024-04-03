@@ -6,4 +6,5 @@ open Flatmap
    or fully-qualified names, so a store can be a flat map *)
 
 module GSto = FlatMap (Path) (Object)
-type store = GSto.t 
+
+type store = GSto.t

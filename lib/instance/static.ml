@@ -63,7 +63,7 @@ and eval_expr (cenv : cenv) (vsto : vsto) (tdenv : tdenv) (expr : Expression.t)
       find_value cenv vsto name
   | Name { name = QualifiedName ([], name); _ } ->
       let name = name.str in
-      find_value_toplevel cenv vsto name 
+      find_value_toplevel cenv vsto name
   | BitStringAccess { bits; lo; hi; _ } ->
       let vbits = eval_expr cenv vsto tdenv bits in
       let vlo = eval_expr cenv vsto tdenv lo in
