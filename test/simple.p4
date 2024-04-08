@@ -14,42 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const bit<32> glob = 32w42;
+#include <core.p4>
 
-struct S {
-    bit<32> x;
+parser p()(bit b, bit c)
+{
+   state start {
+        bit z = b & c;
+        transition accept;
+   }
 }
 
-control c(inout bit<32> b) {
-    bit<32> y = 1;
+const bit bv = 1w0;
 
-    action a(inout bit<32> b, bit<32> d) {
-        b = d;
-    }
+parser nothing();
 
-    table t1 {
-        actions = { a(x); }
-        default_action = a(x, 0);
-    }
+package m(nothing n);
 
-    bit<32> z = 2;
-
-    table t2 {
-        actions = { a(x); }
-        default_action = a(x, 0);
-    }
-
-    apply {
-        S s1;
-        S s2;
-        s2 = { 0 };
-        s1 = s2;
-        s2 = s1;
-        b = s2.x;
-    }
-}
-
-control proto(inout bit<32> _b);
-package top(proto _p);
-
-top(c()) main;
+m(p(bv, 1w1)) main;

@@ -56,10 +56,26 @@ let load_var (lenv : lenv) (tsto : tsto) (name : string) (typ : Typ.t) :
 
 (* Finders *)
 
-let find_value (cenv : cenv) (vsto : vsto) (name : string) : Value.t =
+let find_const (cenv : cenv) (vsto : vsto) (name : string) : Value.t =
   let name = CEnv.find name cenv in
   VSto.find name vsto
 
-let find_value_toplevel (cenv : cenv) (vsto : vsto) (name : string) : Value.t =
+let find_const_toplevel (cenv : cenv) (vsto : vsto) (name : string) : Value.t =
   let name = CEnv.find_toplevel name cenv in
   VSto.find_toplevel name vsto
+
+let find_var (lenv : lenv) (vsto : vsto) (name : string) : Value.t =
+  let name = LEnv.find name lenv in
+  VSto.find name vsto
+
+let find_var_toplevel (lenv : lenv) (vsto : vsto) (name : string) : Value.t =
+  let name = LEnv.find_toplevel name lenv in
+  VSto.find_toplevel name vsto
+
+let find_value (cenv : cenv) (lenv : lenv) (vsto : vsto) (name : string) :
+    Value.t =
+  try find_const cenv vsto name with _ -> find_var lenv vsto name
+
+let find_value_toplevel (cenv : cenv) (lenv : lenv) (vsto : vsto) (name : string) :
+    Value.t =
+  try find_const_toplevel cenv vsto name with _ -> find_var_toplevel lenv vsto name
