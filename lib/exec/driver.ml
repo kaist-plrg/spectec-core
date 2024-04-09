@@ -2,23 +2,28 @@ open Syntax
 open Ast
 open Runtime
 open Envs
+open Store
 
-(* (TODO) how does a target arch invoke the blocks? *)
-(* (TODO) implement copy-in/out calling convention *)
+type store = GSto.t
 
 (* This drives simple.p4 after instantiation,
    by implicitly calling the control block, _n *)
 
-let drive_simple (store : Store.t) =
-  let controlobj = Store.find [ "main"; "_p" ] store in
+let drive_simple (store : store) =
+  let obj_control = GSto.find [ "main"; "_p" ] store in
   Interpreter.register_store store;
   let tags = Info.M "" in
-  let env = Env.empty in
-  let env =
-    Env.add "b"
+  let cenv = CEnv.empty in
+  let lenv = LEnv.empty in
+  let tsto = TSto.empty in
+  let vsto = VSto.empty in
+  let lenv = LEnv.add "b" lenv in
+  let vsto =
+    VSto.add "b"
       (Value.Bit { value = Bigint.of_int 42; width = Bigint.of_int 32 })
-      env
+      vsto
   in
+  let env = (cenv, lenv, tsto, vsto) in
   let args =
     [
       Argument.Expression
@@ -29,4 +34,9 @@ let drive_simple (store : Store.t) =
         };
     ]
   in
-  Interpreter.eval_object_apply env controlobj args
+  print_endline "Calling apply";
+  Interpreter.print_env env;
+  let env = Interpreter.eval_method_call env obj_control "apply" args in
+  print_endline "Returned from apply";
+  Interpreter.print_env env;
+  env

@@ -95,7 +95,7 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let name = name.str in
       match typ_or_decl with
       | Alternative.Left typ ->
-          let typ = Static.eval_typ cenv vsto tdenv typ in
+          let typ = Static.eval_typ tdenv cenv vsto typ in
           let tdenv = TDEnv.add name typ tdenv in
           (cenv, tsto, vsto, tdenv, ccenv)
       | Alternative.Right _decl ->
@@ -105,7 +105,7 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let name = name.str in
       match typ_or_decl with
       | Alternative.Left typ ->
-          let typ = Static.eval_typ cenv vsto tdenv typ in
+          let typ = Static.eval_typ tdenv cenv vsto typ in
           let tdenv = TDEnv.add name typ tdenv in
           (cenv, tsto, vsto, tdenv, ccenv)
       | Alternative.Right _decl ->
@@ -119,7 +119,7 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       (cenv, tsto, vsto, tdenv, ccenv)
   | SerializableEnum { name; typ; members; _ } ->
       let name = name.str in
-      let typ = Static.eval_typ cenv vsto tdenv typ in
+      let typ = Static.eval_typ tdenv cenv vsto typ in
       let entries =
         List.map
           (fun member ->
@@ -136,7 +136,7 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
         List.map
           (fun (field : Declaration.field) ->
             let name = field.name.str in
-            let typ = Static.eval_typ cenv vsto tdenv field.typ in
+            let typ = Static.eval_typ tdenv cenv vsto field.typ in
             (name, typ))
           fields
       in
@@ -149,7 +149,7 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
         List.map
           (fun (field : Declaration.field) ->
             let name = field.name.str in
-            let typ = Static.eval_typ cenv vsto tdenv field.typ in
+            let typ = Static.eval_typ tdenv cenv vsto field.typ in
             (name, typ))
           fields
       in
@@ -162,7 +162,7 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
         List.map
           (fun (field : Declaration.field) ->
             let name = field.name.str in
-            let typ = Static.eval_typ cenv vsto tdenv field.typ in
+            let typ = Static.eval_typ tdenv cenv vsto field.typ in
             (name, typ))
           fields
       in
@@ -181,8 +181,8 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
   (* Loading constants to constant environment and value store *)
   | Constant { name; typ; value; _ } ->
       let name = name.str in
-      let typ = Static.eval_typ cenv vsto tdenv typ in
-      let value = Static.eval_expr cenv vsto tdenv value |> Ops.eval_cast typ in
+      let typ = Static.eval_typ tdenv cenv vsto typ in
+      let value = Static.eval_expr tdenv cenv vsto value |> Ops.eval_cast typ in
       let cenv, tsto, vsto = load_const cenv tsto vsto name typ value in
       (cenv, tsto, vsto, tdenv, ccenv)
   | _ -> (cenv, tsto, vsto, tdenv, ccenv)
@@ -216,7 +216,7 @@ and eval_expr (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let value = Value.Ref path in
       (value, store)
   | _ ->
-      let value = Static.eval_expr cenv vsto tdenv expr in
+      let value = Static.eval_expr tdenv cenv vsto expr in
       (value, store)
 
 and eval_args (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
@@ -251,7 +251,7 @@ and eval_args (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
   List.fold_left2
     (fun (names, typs, values, store) param arg ->
       let param, typ = param in
-      let typ = Static.eval_typ cenv vsto tdenv typ in
+      let typ = Static.eval_typ tdenv cenv vsto typ in
       let value, store =
         eval_expr cenv tsto vsto tdenv ccenv store (path @ [ param ]) arg
       in
@@ -263,21 +263,10 @@ and eval_args (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
 and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
     (ccenv : ccenv) (store : store) (path : string list) (cclos : Cclos.t)
     (args : Argument.t list) (_typs : Type.t list) : store =
-  (* Variable declaration in control/parser local elements is transformed into an assignment *)
-  (* (TODO) handle default initializer *)
-  let variable_decl_to_assignment (decl : Declaration.t) : Statement.t option =
+  let var_decl_to_stmt (decl : Declaration.t) : Statement.t option =
     match decl with
-    | Variable { name; init = Some expr; tags; _ } ->
-        let stmt =
-          Statement.Assignment
-            {
-              lhs = Expression.Name { name = Name.BareName name; tags };
-              rhs = expr;
-              tags;
-            }
-        in
-        Some stmt
-    | _ -> None
+    | Variable { tags; _ } -> Some (DeclarationStatement { tags; decl })
+    | _ -> None 
   in
   match cclos with
   (* The instantiation of a parser or control block recursively
@@ -343,10 +332,12 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
             (funcs @ [ func ], store))
           ([], store) states
       in
-      let init = List.filter_map variable_decl_to_assignment locals in
+      (* Build a method apply *)
+      (* Conceptually, parser is an object with a single method, apply *)
+      let init = List.filter_map var_decl_to_stmt locals in
       let func_apply =
         Func.Parser
-          { name = "apply"; params; cenv = cenv_local; lenv = lenv_local; init }
+          { name = "apply"; params; cenv = cenv_local; lenv = LEnv.empty; init }
       in
       let obj =
         Object.Parser
@@ -393,7 +384,7 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
           names typs values
       in
       (* Instantiate local instantiations, load constants and local variables *)
-      let cenv_local, lenv_local, tsto_local, vsto_local, store =
+      let cenv_local, _lenv_local, tsto_local, vsto_local, store =
         List.fold_left
           (fun (cenv, lenv, tsto, vsto, store) local ->
             instantiate_control_local_decl cenv lenv tsto vsto tdenv_local ccenv
@@ -401,24 +392,24 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
           (cenv_local, lenv_local, tsto_local, vsto_local, store)
           locals
       in
-      (* Build a method out of apply *)
-      let init = List.filter_map variable_decl_to_assignment locals in
-      let body = apply.statements in
+      (* Build a method apply *)
+      (* Conceptually, control is an object with a single method, apply *)
+      let init = List.filter_map var_decl_to_stmt locals in
       let cenv_local, tsto_local, vsto_local, store =
         List.fold_left
           (fun (cenv, tsto, vsto, store) stmt ->
             instantiate_stmt cenv tsto vsto tdenv ccenv store path stmt)
           (cenv_local, tsto_local, vsto_local, store)
-          body
+          apply.statements
       in
+      let body = init @ [ BlockStatement { tags = apply.tags; block = apply } ] in
       let func_apply =
         Func.Control
           {
             name = "apply";
             params;
             cenv = cenv_local;
-            lenv = lenv_local;
-            init;
+            lenv = LEnv.empty;
             body;
           }
       in
@@ -530,7 +521,7 @@ and instantiate_parser_local_decl (cenv : cenv) (lenv : lenv) (tsto : tsto)
      must be parenthesized and compile-time known. (7.1.6.2) *)
   | Variable { name; typ; _ } ->
       let name = name.str in
-      let typ = Static.eval_typ cenv vsto tdenv typ in
+      let typ = Static.eval_typ tdenv cenv vsto typ in
       let lenv, tsto = load_var lenv tsto name typ in
       (cenv, lenv, tsto, vsto, store)
   | _ ->
@@ -566,7 +557,7 @@ and instantiate_control_local_decl (cenv : cenv) (lenv : lenv) (tsto : tsto)
      must be parenthesized and compile-time known. (7.1.6.2) *)
   | Variable { name; typ; _ } ->
       let name = name.str in
-      let typ = Static.eval_typ cenv vsto tdenv typ in
+      let typ = Static.eval_typ tdenv cenv vsto typ in
       let lenv, tsto = load_var lenv tsto name typ in
       (cenv, lenv, tsto, vsto, store)
   | _ ->

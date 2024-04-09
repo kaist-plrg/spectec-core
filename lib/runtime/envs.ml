@@ -79,3 +79,27 @@ let find_value (cenv : cenv) (lenv : lenv) (vsto : vsto) (name : string) :
 let find_value_toplevel (cenv : cenv) (lenv : lenv) (vsto : vsto) (name : string) :
     Value.t =
   try find_const_toplevel cenv vsto name with _ -> find_var_toplevel lenv vsto name
+
+let find_typ (cenv : cenv) (lenv : lenv) (tsto : tsto) (name : string) :
+    Typ.t =
+  try
+    let name = CEnv.find name cenv in
+    TSto.find name tsto
+  with _ ->
+    let name = LEnv.find name lenv in
+    TSto.find name tsto
+
+(* Adders *)
+
+let add_var (lenv : lenv) (tsto : tsto) (vsto : vsto) (name : string)
+    (typ : Typ.t) (value : Value.t) : lenv * tsto * vsto =
+  let lenv = LEnv.add name lenv in
+  let tsto = TSto.add name typ tsto in
+  let vsto = VSto.add name value vsto in
+  (lenv, tsto, vsto)
+
+(* Updaters *)
+
+let update_var (lenv : lenv) (vsto : vsto) (name : string) (value : Value.t) : vsto =
+  LEnv.find name lenv |> ignore;
+  VSto.add name value vsto

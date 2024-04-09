@@ -25,7 +25,6 @@ type t =
       params : Parameter.t list;
       cenv : cenv;
       lenv : lenv;
-      init : Statement.t list;
       body : Statement.t list;
     }
 
