@@ -46,8 +46,8 @@ let rec cclos_from_type (typ : Type.t) (ccenv : ccenv) : Cclos.t * Type.t list =
 (* Loading the result of a declaration
    (other than instantiation) to constant/type/typdef environment, value/type/object store *)
 
-let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
-    (ccenv : ccenv) (decl : Declaration.t) : cenv * tsto * vsto * tdenv * ccenv
+let rec load_decl (tdenv : tdenv) (cenv : cenv) (tsto : tsto) (vsto : vsto)
+    (ccenv : ccenv) (decl : Declaration.t) : tdenv * cenv * tsto * vsto * ccenv
     =
   match decl with
   (* Loading constructor closures to ccenv *)
@@ -59,7 +59,7 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let tparams = List.map (fun (param : Text.t) -> param.str) type_params in
       let cclos = Cclos.Package { params; tparams } in
       let ccenv = CCEnv.add name cclos ccenv in
-      (cenv, tsto, vsto, tdenv, ccenv)
+      (tdenv, cenv, tsto, vsto, ccenv)
   | Parser { name; params; type_params; constructor_params; locals; states; _ }
     ->
       let name = name.str in
@@ -70,7 +70,7 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
           { tdenv; cenv; tsto; vsto; params; tparams; cparams; locals; states }
       in
       let ccenv = CCEnv.add name cclos ccenv in
-      (cenv, tsto, vsto, tdenv, ccenv)
+      (tdenv, cenv, tsto, vsto, ccenv)
   | Control { name; params; type_params; constructor_params; locals; apply; _ }
     ->
       let name = name.str in
@@ -81,7 +81,7 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
           { tdenv; cenv; tsto; vsto; params; tparams; cparams; locals; apply }
       in
       let ccenv = CCEnv.add name cclos ccenv in
-      (cenv, tsto, vsto, tdenv, ccenv)
+      (tdenv, cenv, tsto, vsto, ccenv)
   (* For package type declaration, also load to tdenv *)
   | ExternObject { name; _ } ->
       let name = name.str in
@@ -89,7 +89,7 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let tdenv = TDEnv.add name typ tdenv in
       let cclos = Cclos.Extern in
       let ccenv = CCEnv.add name cclos ccenv in
-      (cenv, tsto, vsto, tdenv, ccenv)
+      (tdenv, cenv, tsto, vsto, ccenv)
   (* Loading types to type definition environment *)
   | TypeDef { name; typ_or_decl; _ } -> (
       let name = name.str in
@@ -97,26 +97,26 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       | Alternative.Left typ ->
           let typ = Static.eval_typ tdenv cenv vsto typ in
           let tdenv = TDEnv.add name typ tdenv in
-          (cenv, tsto, vsto, tdenv, ccenv)
+          (tdenv, cenv, tsto, vsto, ccenv)
       | Alternative.Right _decl ->
           Printf.eprintf "(TODO: load) Loading typedef with decl %s\n" name;
-          (cenv, tsto, vsto, tdenv, ccenv))
+          (tdenv, cenv, tsto, vsto, ccenv))
   | NewType { name; typ_or_decl; _ } -> (
       let name = name.str in
       match typ_or_decl with
       | Alternative.Left typ ->
           let typ = Static.eval_typ tdenv cenv vsto typ in
           let tdenv = TDEnv.add name typ tdenv in
-          (cenv, tsto, vsto, tdenv, ccenv)
+          (tdenv, cenv, tsto, vsto, ccenv)
       | Alternative.Right _decl ->
           Printf.eprintf "(TODO: load) Loading newtype with decl %s\n" name;
-          (cenv, tsto, vsto, tdenv, ccenv))
+          (tdenv, cenv, tsto, vsto, ccenv))
   | Enum { name; members; _ } ->
       let name = name.str in
       let entries = List.map (fun (member : Text.t) -> member.str) members in
       let typ = Typ.Enum { entries } in
       let tdenv = TDEnv.add name typ tdenv in
-      (cenv, tsto, vsto, tdenv, ccenv)
+      (tdenv, cenv, tsto, vsto, ccenv)
   | SerializableEnum { name; typ; members; _ } ->
       let name = name.str in
       let typ = Static.eval_typ tdenv cenv vsto typ in
@@ -129,7 +129,7 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       in
       let typ = Typ.SEnum { typ; entries } in
       let tdenv = TDEnv.add name typ tdenv in
-      (cenv, tsto, vsto, tdenv, ccenv)
+      (tdenv, cenv, tsto, vsto, ccenv)
   | Header { name; fields; _ } ->
       let name = name.str in
       let entries =
@@ -142,7 +142,7 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       in
       let typ = Typ.Header { entries } in
       let tdenv = TDEnv.add name typ tdenv in
-      (cenv, tsto, vsto, tdenv, ccenv)
+      (tdenv, cenv, tsto, vsto, ccenv)
   | HeaderUnion { name; fields; _ } ->
       let name = name.str in
       let entries =
@@ -155,7 +155,7 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       in
       let typ = Typ.Union { entries } in
       let tdenv = TDEnv.add name typ tdenv in
-      (cenv, tsto, vsto, tdenv, ccenv)
+      (tdenv, cenv, tsto, vsto, ccenv)
   | Struct { name; fields; _ } ->
       let name = name.str in
       let entries =
@@ -168,24 +168,24 @@ let rec load_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       in
       let typ = Typ.Struct { entries } in
       let tdenv = TDEnv.add name typ tdenv in
-      (cenv, tsto, vsto, tdenv, ccenv)
+      (tdenv, cenv, tsto, vsto, ccenv)
   (* (TODO) A better representation of parser/control object types? *)
   | ParserType { name; _ } | ControlType { name; _ } ->
       let name = name.str in
       let typ = Typ.Ref in
       let tdenv = TDEnv.add name typ tdenv in
-      (cenv, tsto, vsto, tdenv, ccenv)
+      (tdenv, cenv, tsto, vsto, ccenv)
   | Function { name; _ } ->
       Printf.eprintf "(TODO: load) Loading function %s\n" name.str;
-      (cenv, tsto, vsto, tdenv, ccenv)
+      (tdenv, cenv, tsto, vsto, ccenv)
   (* Loading constants to constant environment and value store *)
   | Constant { name; typ; value; _ } ->
       let name = name.str in
       let typ = Static.eval_typ tdenv cenv vsto typ in
       let value = Static.eval_expr tdenv cenv vsto value |> Ops.eval_cast typ in
       let cenv, tsto, vsto = load_const cenv tsto vsto name typ value in
-      (cenv, tsto, vsto, tdenv, ccenv)
-  | _ -> (cenv, tsto, vsto, tdenv, ccenv)
+      (tdenv, cenv, tsto, vsto, ccenv)
+  | _ -> (tdenv, cenv, tsto, vsto, ccenv)
 
 (* Evaluating instantiation arguments,
    which may contain nameless instantiation *)
@@ -205,13 +205,13 @@ and eval_targs (cenv : cenv) (tdenv : tdenv) (tparams : string list)
     tdenv tparams typs
 *)
 
-and eval_expr (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
+and eval_expr (tdenv : tdenv) (cenv : cenv) (tsto : tsto) (vsto : vsto)
     (ccenv : ccenv) (store : store) (path : string list) (expr : Expression.t) :
     Value.t * store =
   match expr with
   | NamelessInstantiation { typ; args; _ } ->
       let store =
-        instantiate_expr cenv tsto vsto tdenv ccenv store path typ args
+        instantiate_expr tdenv cenv tsto vsto ccenv store path typ args
       in
       let value = Value.Ref path in
       (value, store)
@@ -253,20 +253,20 @@ and eval_args (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let param, typ = param in
       let typ = Static.eval_typ tdenv cenv vsto typ in
       let value, store =
-        eval_expr cenv tsto vsto tdenv ccenv store (path @ [ param ]) arg
+        eval_expr tdenv cenv tsto vsto ccenv store (path @ [ param ]) arg
       in
       (names @ [ param ], typs @ [ typ ], values @ [ value ], store))
     ([], [], [], store) params args
 
 (* Instantiation of a constructor closure *)
 
-and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
+and instantiate_cclos (tdenv : tdenv) (cenv : cenv) (tsto : tsto) (vsto : vsto)
     (ccenv : ccenv) (store : store) (path : string list) (cclos : Cclos.t)
     (args : Argument.t list) (_typs : Type.t list) : store =
   let var_decl_to_stmt (decl : Declaration.t) : Statement.t option =
     match decl with
     | Variable { tags; _ } -> Some (DeclarationStatement { tags; decl })
-    | _ -> None 
+    | _ -> None
   in
   match cclos with
   (* The instantiation of a parser or control block recursively
@@ -306,7 +306,7 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let cenv_local, lenv_local, tsto_local, vsto_local, store =
         List.fold_left
           (fun (cenv, lenv, tsto, vsto, store) local ->
-            instantiate_parser_local_decl cenv lenv tsto vsto tdenv_local ccenv
+            instantiate_parser_local_decl tdenv_local cenv lenv tsto vsto ccenv
               store path local)
           (cenv_local, lenv_local, tsto_local, vsto_local, store)
           locals
@@ -321,7 +321,7 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
             let cenv_local, _tsto_local, _vsto_local, store =
               List.fold_left
                 (fun (cenv, tsto, vsto, store) stmt ->
-                  instantiate_stmt cenv tsto vsto tdenv ccenv store path stmt)
+                  instantiate_stmt tdenv cenv tsto vsto ccenv store path stmt)
                 (cenv_local, tsto_local, vsto_local, store)
                 body
             in
@@ -387,7 +387,7 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let cenv_local, _lenv_local, tsto_local, vsto_local, store =
         List.fold_left
           (fun (cenv, lenv, tsto, vsto, store) local ->
-            instantiate_control_local_decl cenv lenv tsto vsto tdenv_local ccenv
+            instantiate_control_local_decl tdenv_local cenv lenv tsto vsto ccenv
               store path local)
           (cenv_local, lenv_local, tsto_local, vsto_local, store)
           locals
@@ -398,20 +398,16 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let cenv_local, tsto_local, vsto_local, store =
         List.fold_left
           (fun (cenv, tsto, vsto, store) stmt ->
-            instantiate_stmt cenv tsto vsto tdenv ccenv store path stmt)
+            instantiate_stmt tdenv cenv tsto vsto ccenv store path stmt)
           (cenv_local, tsto_local, vsto_local, store)
           apply.statements
       in
-      let body = init @ [ BlockStatement { tags = apply.tags; block = apply } ] in
+      let body =
+        init @ [ BlockStatement { tags = apply.tags; block = apply } ]
+      in
       let func_apply =
         Func.Control
-          {
-            name = "apply";
-            params;
-            cenv = cenv_local;
-            lenv = LEnv.empty;
-            body;
-          }
+          { name = "apply"; params; cenv = cenv_local; lenv = LEnv.empty; body }
       in
       let obj =
         Object.Control
@@ -459,18 +455,18 @@ and instantiate_cclos (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
 
 (* Instantiate from expression *)
 
-and instantiate_expr (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
+and instantiate_expr (tdenv : tdenv) (cenv : cenv) (tsto : tsto) (vsto : vsto)
     (ccenv : ccenv) (store : store) (path : string list) (typ : Type.t)
     (args : Argument.t list) : store =
   let cclos, targs = cclos_from_type typ ccenv in
   let store =
-    instantiate_cclos cenv tsto vsto tdenv ccenv store path cclos args targs
+    instantiate_cclos tdenv cenv tsto vsto ccenv store path cclos args targs
   in
   store
 
 (* Instantiate from statement *)
 
-and instantiate_stmt (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
+and instantiate_stmt (tdenv : tdenv) (cenv : cenv) (tsto : tsto) (vsto : vsto)
     (ccenv : ccenv) (store : store) (path : string list) (stmt : Statement.t) :
     cenv * tsto * vsto * store =
   match stmt with
@@ -479,13 +475,13 @@ and instantiate_stmt (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       let stmts = block.statements in
       List.fold_left
         (fun (cenv, tsto, vsto, store) stmt ->
-          instantiate_stmt cenv tsto vsto tdenv ccenv store path stmt)
+          instantiate_stmt tdenv cenv tsto vsto ccenv store path stmt)
         (cenv, tsto, vsto, store) stmts
   | DirectApplication { typ; args; _ } ->
       let name = name_from_type typ in
       let cclos, targs = cclos_from_type typ ccenv in
       let store =
-        instantiate_cclos cenv tsto vsto tdenv ccenv store (path @ [ name ])
+        instantiate_cclos tdenv cenv tsto vsto ccenv store (path @ [ name ])
           cclos args targs
       in
       let typ = Typ.Ref in
@@ -496,8 +492,8 @@ and instantiate_stmt (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
 
 (* Instantiate from declaration *)
 
-and instantiate_parser_local_decl (cenv : cenv) (lenv : lenv) (tsto : tsto)
-    (vsto : vsto) (tdenv : tdenv) (ccenv : ccenv) (store : store)
+and instantiate_parser_local_decl (tdenv : tdenv) (cenv : cenv) (lenv : lenv)
+    (tsto : tsto) (vsto : vsto) (ccenv : ccenv) (store : store)
     (path : string list) (decl : Declaration.t) :
     cenv * lenv * tsto * vsto * store =
   (* parserLocalElement
@@ -525,13 +521,13 @@ and instantiate_parser_local_decl (cenv : cenv) (lenv : lenv) (tsto : tsto)
       let lenv, tsto = load_var lenv tsto name typ in
       (cenv, lenv, tsto, vsto, store)
   | _ ->
-      let cenv, tsto, vsto, _tdenv, _ccenv, store =
-        instantiate_decl cenv tsto vsto tdenv ccenv store path decl
+      let _tdenv, cenv, tsto, vsto, _ccenv, store =
+        instantiate_decl tdenv cenv tsto vsto ccenv store path decl
       in
       (cenv, lenv, tsto, vsto, store)
 
-and instantiate_control_local_decl (cenv : cenv) (lenv : lenv) (tsto : tsto)
-    (vsto : vsto) (tdenv : tdenv) (ccenv : ccenv) (store : store)
+and instantiate_control_local_decl (tdenv : tdenv) (cenv : cenv) (lenv : lenv)
+    (tsto : tsto) (vsto : vsto) (ccenv : ccenv) (store : store)
     (path : string list) (decl : Declaration.t) :
     cenv * lenv * tsto * vsto * store =
   (* controlLocalDeclaration
@@ -561,47 +557,47 @@ and instantiate_control_local_decl (cenv : cenv) (lenv : lenv) (tsto : tsto)
       let lenv, tsto = load_var lenv tsto name typ in
       (cenv, lenv, tsto, vsto, store)
   | _ ->
-      let cenv, tsto, vsto, _tdenv, _ccenv, store =
-        instantiate_decl cenv tsto vsto tdenv ccenv store path decl
+      let _tdenv, cenv, tsto, vsto, _ccenv, store =
+        instantiate_decl tdenv cenv tsto vsto ccenv store path decl
       in
       (cenv, lenv, tsto, vsto, store)
 
-and instantiate_decl (cenv : cenv) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
+and instantiate_decl (tdenv : tdenv) (cenv : cenv) (tsto : tsto) (vsto : vsto)
     (ccenv : ccenv) (store : store) (path : string list) (decl : Declaration.t)
-    : cenv * tsto * vsto * tdenv * ccenv * store =
+    : tdenv * cenv * tsto * vsto * ccenv * store =
   match decl with
   (* Explicit instantiation *)
   | Instantiation { name; typ; args; _ } ->
       let name = name.str in
       let cclos, targs = cclos_from_type typ ccenv in
       let store =
-        instantiate_cclos cenv tsto vsto tdenv ccenv store (path @ [ name ])
+        instantiate_cclos tdenv cenv tsto vsto ccenv store (path @ [ name ])
           cclos args targs
       in
       let typ = Typ.Ref in
       let value = Value.Ref (path @ [ name ]) in
       let cenv, tsto, vsto = load_const cenv tsto vsto name typ value in
-      (cenv, tsto, vsto, tdenv, ccenv, store)
+      (tdenv, cenv, tsto, vsto, ccenv, store)
   (* Load declarations *)
   | _ ->
-      let cenv, tsto, vsto, tdenv, ccenv =
-        load_decl cenv tsto vsto tdenv ccenv decl
+      let tdenv, cenv, tsto, vsto, ccenv =
+        load_decl tdenv cenv tsto vsto ccenv decl
       in
-      (cenv, tsto, vsto, tdenv, ccenv, store)
+      (tdenv, cenv, tsto, vsto, ccenv, store)
 
 let instantiate_program (program : program) =
   let (Program decls) = program in
+  let tdenv = TDEnv.empty in
   let cenv = CEnv.empty in
   let tsto = TSto.empty in
   let vsto = VSto.empty in
-  let tdenv = TDEnv.empty in
   let ccenv = CCEnv.empty in
   let store = GSto.empty in
   let _, _, _, _, _, store =
     List.fold_left
-      (fun (cenv, tsto, vsto, tdenv, ccenv, store) decl ->
-        instantiate_decl cenv tsto vsto tdenv ccenv store [] decl)
-      (cenv, tsto, vsto, tdenv, ccenv, store)
+      (fun (tdenv, cenv, tsto, vsto, ccenv, store) decl ->
+        instantiate_decl tdenv cenv tsto vsto ccenv store [] decl)
+      (tdenv, cenv, tsto, vsto, ccenv, store)
       decls
   in
   store

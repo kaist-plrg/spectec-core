@@ -66,8 +66,7 @@ let rec eval_simplify_typ (tdenv : tdenv) (typ : Typ.t) : Typ.t =
   | Typ.NewType { name } -> TDEnv.find name tdenv
   | _ -> typ
 
-let rec eval_typ (tdenv : tdenv) (env : env) (typ : Type.t) :
-    Typ.t =
+let rec eval_typ (tdenv : tdenv) (env : env) (typ : Type.t) : Typ.t =
   match typ with
   | Bool _ -> Typ.Bool
   | Integer _ -> Typ.AInt
@@ -98,8 +97,7 @@ let rec eval_typ (tdenv : tdenv) (env : env) (typ : Type.t) :
   | _ ->
       Printf.sprintf "(TODO: eval_typ) %s" (Pretty.print_type typ) |> failwith
 
-and eval_expr (tdenv : tdenv) (env : env) (expr : Expression.t)
-    : Value.t =
+and eval_expr (tdenv : tdenv) (env : env) (expr : Expression.t) : Value.t =
   let cenv, lenv, _tsto, vsto = env in
   match expr with
   | True _ -> Value.Bool true
@@ -164,8 +162,8 @@ and eval_expr (tdenv : tdenv) (env : env) (expr : Expression.t)
 
 let print_env (env : env) =
   let cenv, lenv, tsto, vsto = env in
-  Printf.sprintf "cenv:\n%s\nlenv:\n%s\ntsto:\n%s\nvsto:\n%s"
-    (CEnv.print cenv) (LEnv.print lenv) (TSto.print tsto) (VSto.print vsto)
+  Printf.sprintf "cenv:\n%s\nlenv:\n%s\ntsto:\n%s\nvsto:\n%s" (CEnv.print cenv)
+    (LEnv.print lenv) (TSto.print tsto) (VSto.print vsto)
   |> print_endline
 
 let rec eval_stmt (tdenv : tdenv) (env : env) (stmt : Statement.t) : env =
@@ -187,9 +185,9 @@ let rec eval_stmt (tdenv : tdenv) (env : env) (stmt : Statement.t) : env =
         | Bool false -> fls
         | _ -> assert false
       in
-      eval_stmt tdenv env body 
+      eval_stmt tdenv env body
   | BlockStatement { block; _ } -> eval_block tdenv env block.statements
-  | EmptyStatement _ -> env 
+  | EmptyStatement _ -> env
   | DeclarationStatement { decl; _ } -> eval_decl tdenv env decl
   | _ ->
       Printf.sprintf "(TODO: eval_stmt) %s" (Pretty.print_stmt 0 stmt)
@@ -226,16 +224,14 @@ and eval_decl (tdenv : tdenv) (env : env) (decl : Declaration.t) : env =
 (* Calling convention: Copy-in/out *)
 
 let copyin (tdenv : tdenv) (caller_env : env) (callee_env : env)
-    (params : Parameter.t list) (args : Argument.t list) :
-    env =
+    (params : Parameter.t list) (args : Argument.t list) : env =
   (* (TODO) assume there is no default argument *)
   assert (List.length params = List.length args);
   (* It is illegal to use names only for some arguments:
      either all or no arguments must specify the parameter name. (8.20) *)
   check_args args;
   (* Copy-in a single parameter-argument pair *)
-  let copyin' (callee_env : env) (param : Parameter.t)
-      (arg : Argument.t) =
+  let copyin' (callee_env : env) (param : Parameter.t) (arg : Argument.t) =
     let cenv, lenv, tsto, vsto = callee_env in
     match param.direction with
     (* in parameters are defaultialized by copying the value of the
@@ -318,24 +314,26 @@ let copyout (_tdenv : tdenv) (caller_env : env) (callee_env : env)
 
 (* Entry *)
 
-let eval_method_call (caller_env : env) (obj : Object.t) (mthd : string) (args : Argument.t list) =
+let eval_method_call (caller_env : env) (obj : Object.t) (mthd : string)
+    (args : Argument.t list) =
   match obj with
   | Control { tdenv; tsto; vsto; funcs } ->
-    let func =
-      List.find
-        (fun func -> match func with
-          | Control { name; _ } when name = mthd -> true
-          | _ -> false)
-        funcs
-    in
-    let params, cenv, lenv, body =
-      match func with
-      | Control { params; cenv; lenv; body; _ } -> params, cenv, lenv, body
-      | _ -> assert false
-    in
-    let callee_env = (cenv, lenv, tsto, vsto) in
-    let callee_env = copyin tdenv caller_env callee_env params args in
-    let callee_env = eval_block tdenv callee_env body in
-    let caller_env = copyout tdenv caller_env callee_env params args in
-    caller_env
+      let func =
+        List.find
+          (fun func ->
+            match func with
+            | Control { name; _ } when name = mthd -> true
+            | _ -> false)
+          funcs
+      in
+      let params, cenv, lenv, body =
+        match func with
+        | Control { params; cenv; lenv; body; _ } -> (params, cenv, lenv, body)
+        | _ -> assert false
+      in
+      let callee_env = (cenv, lenv, tsto, vsto) in
+      let callee_env = copyin tdenv caller_env callee_env params args in
+      let callee_env = eval_block tdenv callee_env body in
+      let caller_env = copyout tdenv caller_env callee_env params args in
+      caller_env
   | _ -> failwith "(TODO) eval_method"
