@@ -28,7 +28,15 @@ type t =
       locals : Declaration.t list;
       apply : Block.t;
     }
-  | Extern
+  | Extern of {
+      tdenv : tdenv;
+      cenv : cenv;
+      tsto : tsto;
+      vsto : vsto;
+      tparams : string list;
+      cparams : Parameter.t list;
+      methods : MethodPrototype.t list;
+    }
 
 let print (t : t) =
   match t with
@@ -43,4 +51,4 @@ let print (t : t) =
       Printf.sprintf "Control { params = (%s); constructor_params = (%s) }"
         (String.concat ", " (List.map Pretty.print_param params))
         (String.concat ", " (List.map Pretty.print_param cparams))
-  | Extern -> "Extern"
+  | Extern _ -> "Extern"

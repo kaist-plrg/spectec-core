@@ -83,12 +83,29 @@ let rec load_decl (tdenv : tdenv) (cenv : cenv) (tsto : tsto) (vsto : vsto)
       let ccenv = CCEnv.add name cclos ccenv in
       (tdenv, cenv, tsto, vsto, ccenv)
   (* For package type declaration, also load to tdenv *)
-  | ExternObject { name; _ } ->
+  | ExternObject { name; type_params; methods; _ } ->
       let name = name.str in
+      let tparams = List.map (fun (param : Text.t) -> param.str) type_params in
+      let cons, methods =
+        List.partition
+          (fun (mthd : MethodPrototype.t) ->
+            match mthd with
+            | Constructor { name = name_cons; _ } when name_cons.str = name ->
+                true
+            | _ -> false)
+          methods
+      in
+      (* (TODO) support overloaded constructors *)
+      assert (List.length cons <= 1);
+      let cparams =
+        match cons with Constructor { params; _ } :: [] -> params | _ -> []
+      in
+      let cclos =
+        Cclos.Extern { tdenv; cenv; tsto; vsto; tparams; cparams; methods }
+      in
+      let ccenv = CCEnv.add name cclos ccenv in
       let typ = Typ.Ref in
       let tdenv = TDEnv.add name typ tdenv in
-      let cclos = Cclos.Extern in
-      let ccenv = CCEnv.add name cclos ccenv in
       (tdenv, cenv, tsto, vsto, ccenv)
   (* Loading types to type definition environment *)
   | TypeDef { name; typ_or_decl; _ } -> (
@@ -334,10 +351,10 @@ and instantiate_cclos (tdenv : tdenv) (cenv : cenv) (tsto : tsto) (vsto : vsto)
       in
       (* Build a method apply *)
       (* Conceptually, parser is an object with a single method, apply *)
-      let init = List.filter_map var_decl_to_stmt locals in
+      let body = List.filter_map var_decl_to_stmt locals in
       let func_apply =
-        Func.Parser
-          { name = "apply"; params; cenv = cenv_local; lenv = LEnv.empty; init }
+        Func.Internal
+          { name = "apply"; params; cenv = cenv_local; lenv = LEnv.empty; body }
       in
       let obj =
         Object.Parser
@@ -406,7 +423,7 @@ and instantiate_cclos (tdenv : tdenv) (cenv : cenv) (tsto : tsto) (vsto : vsto)
         init @ [ BlockStatement { tags = apply.tags; block = apply } ]
       in
       let func_apply =
-        Func.Control
+        Func.Internal
           { name = "apply"; params; cenv = cenv_local; lenv = LEnv.empty; body }
       in
       let obj =
@@ -448,8 +465,21 @@ and instantiate_cclos (tdenv : tdenv) (cenv : cenv) (tsto : tsto) (vsto : vsto)
       in
       let store = GSto.add path obj store in
       store
-  | Cclos.Extern ->
-      let obj = Object.Extern in
+  | Cclos.Extern { tdenv; cenv; tsto; vsto; methods; _ } ->
+      let funcs =
+        List.fold_left
+          (fun funcs (mthd : MethodPrototype.t) ->
+            match mthd with
+            | Method { name; params; _ } ->
+                let name = name.str in
+                funcs @ [ Func.External { name; params; cenv } ]
+            | _ ->
+                Printf.eprintf "(TODO: instantiate) Method %s\n"
+                  (Pretty.print_method_prototype 0 mthd);
+                funcs)
+          [] methods
+      in
+      let obj = Object.Extern { tdenv; tsto; vsto; funcs } in
       let store = GSto.add path obj store in
       store
 
@@ -593,11 +623,11 @@ let instantiate_program (program : program) =
   let vsto = VSto.empty in
   let ccenv = CCEnv.empty in
   let store = GSto.empty in
-  let _, _, _, _, _, store =
+  let tdenv, _, _, _, ccenv, store =
     List.fold_left
       (fun (tdenv, cenv, tsto, vsto, ccenv, store) decl ->
         instantiate_decl tdenv cenv tsto vsto ccenv store [] decl)
       (tdenv, cenv, tsto, vsto, ccenv, store)
       decls
   in
-  store
+  (tdenv, ccenv, store)

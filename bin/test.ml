@@ -74,31 +74,11 @@ let test_instantiation () =
   Printf.sprintf "Instantiation fails: %d / %d" !instantiate_fails total
   |> print_endline
 
-let test_simple_interpreter () =
-  let includes = "test/arch" in
-  let filename = "test/simple.p4" in
-
-  Printf.sprintf "Parsing %s with includes %s" filename includes
-  |> print_endline;
-  let program =
-    match Frontend.Parse.parse_file includes filename with
-    | Some program -> program
-    | None -> failwith "Error while parsing."
-  in
-
-  Printf.sprintf "Instantiating %s" filename |> print_endline;
-  let store = Instance.Instantiate.instantiate_program program in
-
-  Printf.sprintf "Driving %s" filename |> print_endline;
-  let _ = Exec.Driver.drive_simple store in
-  ()
-
 let rec parse_arguments args =
   match args with
   | [] -> None
   | "-parse" :: _ -> Some "parse"
   | "-instantiate" :: _ -> Some "instantiate"
-  | "-simple" :: _ -> Some "simple"
   | _ :: rest -> parse_arguments rest
 
 let () =
@@ -106,5 +86,4 @@ let () =
   match parse_arguments args with
   | Some "parse" -> test_parser ()
   | Some "instantiate" -> test_instantiation ()
-  | Some "simple" -> test_simple_interpreter ()
   | _ -> print_endline "Usage: [-parse | -instantiate]"

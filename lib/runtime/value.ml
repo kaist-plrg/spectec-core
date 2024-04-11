@@ -8,6 +8,7 @@ type t =
   | Int of { value : Bigint.t; width : Bigint.t }
   | Bit of { value : Bigint.t; width : Bigint.t }
   | String of string
+  | Error
   | Tuple of t list
   | Struct of { entries : (string * t) list }
   | Header of { valid : bool; entries : (string * t) list }
@@ -22,6 +23,7 @@ let rec print (t : t) =
   | Bit { value; width } ->
       Printf.sprintf "%sw%s" (Bigint.to_string width) (Bigint.to_string value)
   | String value -> Printf.sprintf "\"%s\"" value
+  | Error -> "error"
   | Tuple values ->
       Printf.sprintf "(%s)" (String.concat ", " (List.map print values))
   | Struct { entries } ->

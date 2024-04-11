@@ -10,7 +10,11 @@ open Store
 type store = GSto.t
 
 let gsto = ref GSto.empty
-let register_store (store : store) = gsto := store
+
+let register_store (store : store) =
+  print_endline "Registering store";
+  (* GSto.print store |> print_endline; *)
+  gsto := store
 
 (* Environment *)
 
@@ -49,6 +53,7 @@ let rec default (typ : Typ.t) : Value.t =
   | Int { width } -> Int { value = Bigint.zero; width }
   | Bit { width } -> Bit { value = Bigint.zero; width }
   | String -> String ""
+  | Error -> Error
   | Tuple types -> Tuple (List.map default types)
   | Struct { entries } ->
       let entries = List.map (fun (name, typ) -> (name, default typ)) entries in
@@ -56,7 +61,9 @@ let rec default (typ : Typ.t) : Value.t =
   | Header { entries } ->
       let entries = List.map (fun (name, typ) -> (name, default typ)) entries in
       Header { valid = false; entries }
-  | _ -> failwith "(TODO) default: not implemented"
+  | _ ->
+      Printf.sprintf "(TODO) default: not implemented for %s" (Typ.print typ)
+      |> failwith
 
 (* Expression evaluation *)
 
@@ -236,7 +243,7 @@ let copyin (tdenv : tdenv) (caller_env : env) (callee_env : env)
     match param.direction with
     (* in parameters are defaultialized by copying the value of the
        corresponding argument when the invocation is executed. *)
-    | Some (In _) ->
+    | None | Some (In _) ->
         let param, typ, arg =
           match arg with
           | Expression { value; _ } -> (param.variable.str, param.typ, value)
@@ -270,8 +277,6 @@ let copyin (tdenv : tdenv) (caller_env : env) (callee_env : env)
         let value = eval_expr tdenv caller_env arg in
         let lenv, tsto, vsto = add_var lenv tsto vsto param typ value in
         (cenv, lenv, tsto, vsto)
-    | None ->
-        failwith "(TODO) (copyin) Non-directional parameter is not supported."
   in
   List.fold_left2 copyin' callee_env params args
 
@@ -306,9 +311,7 @@ let copyout (_tdenv : tdenv) (caller_env : env) (callee_env : env)
         let _, lenv_callee, _, vsto_callee = callee_env in
         let value = find_var lenv_callee vsto_callee param in
         write arg value env
-    | Some (In _) -> env
-    | None ->
-        failwith "(TODO) (copyout) Non-directional parameter is not supported."
+    | _ -> env
   in
   List.fold_left2 copyout' caller_env params args
 
@@ -317,18 +320,19 @@ let copyout (_tdenv : tdenv) (caller_env : env) (callee_env : env)
 let eval_method_call (caller_env : env) (obj : Object.t) (mthd : string)
     (args : Argument.t list) =
   match obj with
-  | Control { tdenv; tsto; vsto; funcs } ->
+  | Parser { tdenv; tsto; vsto; funcs } | Control { tdenv; tsto; vsto; funcs }
+    ->
       let func =
         List.find
           (fun func ->
             match func with
-            | Control { name; _ } when name = mthd -> true
+            | Internal { name; _ } when name = mthd -> true
             | _ -> false)
           funcs
       in
       let params, cenv, lenv, body =
         match func with
-        | Control { params; cenv; lenv; body; _ } -> (params, cenv, lenv, body)
+        | Internal { params; cenv; lenv; body; _ } -> (params, cenv, lenv, body)
         | _ -> assert false
       in
       let callee_env = (cenv, lenv, tsto, vsto) in

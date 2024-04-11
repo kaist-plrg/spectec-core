@@ -13,7 +13,7 @@ type t =
   | Package of { tdenv : tdenv; cenv : cenv; tsto : tsto; vsto : vsto }
   | Parser of { tdenv : tdenv; tsto : tsto; vsto : vsto; funcs : Func.t list }
   | Control of { tdenv : tdenv; tsto : tsto; vsto : vsto; funcs : Func.t list }
-  | Extern
+  | Extern of { tdenv : tdenv; tsto : tsto; vsto : vsto; funcs : Func.t list }
   | Table of { cenv : cenv; lenv : lenv; properties : Table.property list }
   | Function
   | ValueSet
@@ -48,7 +48,15 @@ let print (t : t) =
         (VSto.print vsto ~indent:(indent + 3))
         (Print.print_indent (indent + 2))
         (String.concat "\n" (List.map (Func.print ~indent:(indent + 3)) funcs))
-  | Extern -> Printf.sprintf "%sExtern" (Print.print_indent indent)
+  | Extern { tsto; vsto; funcs; _ } ->
+      Printf.sprintf "%sExtern {\n%ststo =\n%s\n%svsto =\n%s\n%sfuncs =\n%s }"
+        (Print.print_indent indent)
+        (Print.print_indent (indent + 2))
+        (TSto.print tsto ~indent:(indent + 3))
+        (Print.print_indent (indent + 2))
+        (VSto.print vsto ~indent:(indent + 3))
+        (Print.print_indent (indent + 2))
+        (String.concat "\n" (List.map (Func.print ~indent:(indent + 3)) funcs))
   | Table { cenv; lenv; _ } ->
       Printf.sprintf "%sTable {\n%scenv =\n%s\n%slenv =\n%s }"
         (Print.print_indent indent)
