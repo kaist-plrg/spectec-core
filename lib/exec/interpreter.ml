@@ -208,6 +208,13 @@ and eval_block (tdenv : tdenv) (env : env) (stmts : Statement.t list) : env =
   let env = List.fold_left (eval_stmt tdenv) env stmts in
   exit env
 
+(* State evaluation *)
+
+and eval_state (tdenv : tdenv) (env : env) (stmts : Statement.t list) (_transition : Parser.transition) : env =
+  let env = enter env in
+  let env = List.fold_left (eval_stmt tdenv) env stmts in
+  exit env
+
 (* Declaration evaluation *)
 
 and eval_decl (tdenv : tdenv) (env : env) (decl : Declaration.t) : env =
@@ -319,20 +326,33 @@ let copyout (_tdenv : tdenv) (caller_env : env) (callee_env : env)
 
 let eval_method_call (caller_env : env) (obj : Object.t) (mthd : string)
     (args : Argument.t list) =
+  let find_parser_func (func : string) = function
+    | Parser { name; _ } when name = func -> true
+    | _ -> false
+  in
+  let find_normal_func (func : string) = function
+    | Normal { name; _ } when name = func -> true
+    | _ -> false
+  in
   match obj with
-  | Parser { tdenv; tsto; vsto; funcs } | Control { tdenv; tsto; vsto; funcs }
-    ->
-      let func =
-        List.find
-          (fun func ->
-            match func with
-            | Internal { name; _ } when name = mthd -> true
-            | _ -> false)
-          funcs
+  | Parser { tdenv; tsto; vsto; funcs } ->
+      let func = List.find (find_parser_func mthd) funcs in
+      let params, cenv, lenv, body, transition =
+        match func with
+        | Parser { params; cenv; lenv; body; transition; _ } -> (params, cenv, lenv, body, transition)
+        | _ -> assert false
       in
+      let callee_env = (cenv, lenv, tsto, vsto) in
+      let callee_env = copyin tdenv caller_env callee_env params args in
+      let callee_env = eval_state tdenv callee_env body transition in
+      (* State transition logic should be here *)
+      let caller_env = copyout tdenv caller_env callee_env params args in
+      caller_env
+  | Control { tdenv; tsto; vsto; funcs } ->
+      let func = List.find (find_normal_func mthd) funcs in
       let params, cenv, lenv, body =
         match func with
-        | Internal { params; cenv; lenv; body; _ } -> (params, cenv, lenv, body)
+        | Normal { params; cenv; lenv; body; _ } -> (params, cenv, lenv, body)
         | _ -> assert false
       in
       let callee_env = (cenv, lenv, tsto, vsto) in

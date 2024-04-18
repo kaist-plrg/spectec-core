@@ -7,7 +7,7 @@ let print_inline (s : string) =
   let rec replace acc i =
     if i < len then
       let c = s.[i] in
-      if c = '\n' then replace (acc ^ " ") (i + 1)
+      if c = '\n' || c = '\t' then replace (acc ^ " ") (i + 1)
       else replace (acc ^ String.make 1 c) (i + 1)
     else acc
   in

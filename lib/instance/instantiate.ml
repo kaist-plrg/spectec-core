@@ -343,8 +343,8 @@ and instantiate_cclos (tdenv : tdenv) (cenv : cenv) (tsto : tsto) (vsto : vsto)
                 body
             in
             let func =
-              Func.State
-                { name; cenv = cenv_local; lenv = lenv_local; body; transition }
+              Func.Parser
+                { name; params = []; cenv = cenv_local; lenv = lenv_local; body; transition }
             in
             (funcs @ [ func ], store))
           ([], store) states
@@ -353,8 +353,10 @@ and instantiate_cclos (tdenv : tdenv) (cenv : cenv) (tsto : tsto) (vsto : vsto)
       (* Conceptually, parser is an object with a single method, apply *)
       let body = List.filter_map var_decl_to_stmt locals in
       let func_apply =
-        Func.Internal
-          { name = "apply"; params; cenv = cenv_local; lenv = LEnv.empty; body }
+        let tags = Info.M "" in
+        let transition_start = Parser.Direct { tags; next = { tags; str = "start" } } in
+        Func.Parser
+          { name = "apply"; params; cenv = cenv_local; lenv = LEnv.empty; body; transition = transition_start }
       in
       let obj =
         Object.Parser
@@ -423,7 +425,7 @@ and instantiate_cclos (tdenv : tdenv) (cenv : cenv) (tsto : tsto) (vsto : vsto)
         init @ [ BlockStatement { tags = apply.tags; block = apply } ]
       in
       let func_apply =
-        Func.Internal
+        Func.Normal
           { name = "apply"; params; cenv = cenv_local; lenv = LEnv.empty; body }
       in
       let obj =

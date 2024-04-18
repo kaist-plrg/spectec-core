@@ -44,6 +44,17 @@ let init_env tdenv =
 
 (* Architecture *)
 
+let apply_args (args : string list) =
+  List.map
+    (fun arg ->
+      Argument.Expression
+        {
+          tags = Info.M "";
+          value =
+            Expression.Name { tags = Info.M ""; name = BareName { tags = Info.M ""; str = arg } };
+        })
+    args
+
 let drive_instantiation (tdenv : tdenv) (ccenv : ccenv) (store : store) =
   let packet_in_cclos = CCEnv.find "packet_in" ccenv in
   let store =
@@ -54,64 +65,12 @@ let drive_instantiation (tdenv : tdenv) (ccenv : ccenv) (store : store) =
 
 let drive_parser_impl (_tdenv : tdenv) (env : env) (store : store) =
   let parser_impl = GSto.find [ "main"; "p" ] store in
-  let parser_impl_args =
-    let tags = Info.M "" in
-    [
-      Argument.Expression
-        {
-          tags;
-          value =
-            Expression.Name { tags; name = BareName { tags; str = "packet" } };
-        };
-      Argument.Expression
-        {
-          tags;
-          value =
-            Expression.Name { tags; name = BareName { tags; str = "hdr" } };
-        };
-      Argument.Expression
-        {
-          tags;
-          value =
-            Expression.Name { tags; name = BareName { tags; str = "meta" } };
-        };
-      Argument.Expression
-        {
-          tags;
-          value =
-            Expression.Name
-              { tags; name = BareName { tags; str = "standard_metadata" } };
-        };
-    ]
-  in
+  let parser_impl_args = apply_args [ "packet"; "hdr"; "meta"; "standard_metadata" ] in
   Interpreter.eval_method_call env parser_impl "apply" parser_impl_args
 
 let drive_ingress (_tdenv : tdenv) (env : env) (store : store) =
   let ingress = GSto.find [ "main"; "ig" ] store in
-  let ingress_args =
-    let tags = Info.M "" in
-    [
-      Argument.Expression
-        {
-          tags;
-          value =
-            Expression.Name { tags; name = BareName { tags; str = "hdr" } };
-        };
-      Argument.Expression
-        {
-          tags;
-          value =
-            Expression.Name { tags; name = BareName { tags; str = "meta" } };
-        };
-      Argument.Expression
-        {
-          tags;
-          value =
-            Expression.Name
-              { tags; name = BareName { tags; str = "standard_metadata" } };
-        };
-    ]
-  in
+  let ingress_args = apply_args [ "hdr"; "meta"; "standard_metadata" ] in
   Interpreter.eval_method_call env ingress "apply" ingress_args
 
 let drive (tdenv : tdenv) (ccenv : ccenv) (store : store) =
