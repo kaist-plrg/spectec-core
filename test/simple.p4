@@ -16,40 +16,35 @@ limitations under the License.
 
 const bit<32> glob = 32w42;
 
-struct S {
-    bit<32> x;
-}
+control c(inout bit<32> arg)(bit<32> carg) {
+    bit<32> x = 1;
 
-control c(inout bit<32> b) {
-    bit<32> y = 1;
-
-    action a(inout bit<32> b, bit<32> d) {
+    action a1(inout bit<32> b, bit<32> d) {
         b = d;
     }
 
     table t1 {
-        actions = { a(x); }
-        default_action = a(x, 0);
+        actions = { a1(x); }
+        default_action = a1(x, 0);
     }
 
-    bit<32> z = 2;
+    bit<32> x = 2;
+
+    action a2(inout bit<32> b, bit<32> d) {
+        b = d;
+    }
 
     table t2 {
-        actions = { a(x); }
-        default_action = a(x, 0);
+        actions = { a2(x); }
+        default_action = a2(x, 0);
     }
 
     apply {
-        S s1;
-        S s2;
-        s2 = { 0 };
-        s1 = s2;
-        s2 = s1;
-        b = s2.x;
+      bit<32> z = 3;
     }
 }
 
-control proto(inout bit<32> _b);
+control proto(inout bit<32> arg);
 package top(proto _p);
 
-top(c()) main;
+top(c(32w77)) main;

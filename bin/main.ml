@@ -16,9 +16,15 @@ let () =
   in
 
   Printf.sprintf "Instantiating %s" filename |> print_endline;
-  let tdenv, ccenv, store = Instance.Instantiate.instantiate_program program in
+  let tdenv, ccenv, ienv = Instance.Instantiate.instantiate_program program in
 
-  if target = "v1model" then (
-    Printf.sprintf "Interpreting %s" filename |> print_endline;
-    Exec.V1model.drive tdenv ccenv store |> ignore);
+  let arch =
+    match target with
+    | "v1model" -> Exec.V1model.drive
+    | "custom" -> Exec.Custom.drive
+    | _ -> failwith "Unknown target"
+  in
+
+  Printf.sprintf "Interpreting %s" filename |> print_endline;
+  arch tdenv ccenv ienv |> ignore;
   ()

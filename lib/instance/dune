@@ -1,4 +1,4 @@
 (library
  (name instance)
  (libraries syntax runtime utils)
- (modules instantiate static cclos envs))
+ (modules instantiate static))

@@ -1,4 +1,4 @@
 (library
  (name runtime)
  (libraries syntax bignum)
- (modules typ value func object envs store ops))
+ (modules domain pretty ops))

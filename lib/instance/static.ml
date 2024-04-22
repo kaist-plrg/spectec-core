@@ -1,107 +1,100 @@
-open Syntax
-open Ast
+open Syntax.Ast
 open Runtime
-open Envs
+open Runtime.Domain
+open Utils
 
 (* Compile-time evaluation of type simplification *)
 
-let rec eval_simplify_typ (tdenv : tdenv) (typ : Typ.t) : Typ.t =
+let rec eval_simplify_typ (tdenv : tdenv) (typ : typ) : typ =
   match typ with
-  | Typ.Name { name } -> eval_simplify_typ tdenv (TDEnv.find name tdenv)
-  | Typ.NewType { name } -> TDEnv.find name tdenv
+  | TName { name } -> eval_simplify_typ tdenv (Env.find name tdenv)
+  | TNewType { name } -> Env.find name tdenv
   | _ -> typ
 
-let rec eval_typ (tdenv : tdenv) (cenv : cenv) (vsto : vsto) (typ : Type.t) :
-    Typ.t =
+let rec eval_typ (tdenv : tdenv) (ienv : env) (vsto : vsto) (typ : Type.t) : typ
+    =
   match typ with
-  | Bool _ -> Typ.Bool
-  | Integer _ -> Typ.AInt
+  | Bool _ -> TBool
+  | Integer _ -> TAInt
   | IntType { expr; _ } ->
-      let width = eval_expr tdenv cenv vsto expr |> Ops.extract_bigint in
-      Typ.Bit { width }
+      let width = eval_expr tdenv ienv vsto expr |> Ops.extract_bigint in
+      TBit { width }
   | BitType { expr; _ } ->
-      let width = eval_expr tdenv cenv vsto expr |> Ops.extract_bigint in
-      Typ.Bit { width }
+      let width = eval_expr tdenv ienv vsto expr |> Ops.extract_bigint in
+      TBit { width }
   | VarBit { expr; _ } ->
-      let width = eval_expr tdenv cenv vsto expr |> Ops.extract_bigint in
-      Typ.Bit { width }
+      let width = eval_expr tdenv ienv vsto expr |> Ops.extract_bigint in
+      TBit { width }
   | HeaderStack { header; size; _ } ->
-      let header = eval_typ tdenv cenv vsto header in
-      let size = eval_expr tdenv cenv vsto size |> Ops.extract_bigint in
-      Typ.Array { typ = header; size }
-  | String _ -> Typ.String
-  | Error _ -> Typ.Error
+      let header = eval_typ tdenv ienv vsto header in
+      let size = eval_expr tdenv ienv vsto size |> Ops.extract_bigint in
+      TArray { typ = header; size }
+  | String _ -> TString
+  | Error _ -> TError
   | Tuple { args; _ } ->
-      let vargs = List.map (eval_typ tdenv cenv vsto) args in
-      Typ.Tuple vargs
+      let vargs = List.map (eval_typ tdenv ienv vsto) args in
+      TTuple vargs
   | TypeName { name = BareName text; _ }
   | TypeName { name = QualifiedName ([], text); _ } ->
       let var = text.str in
-      TDEnv.find var tdenv
+      Env.find var tdenv
   (* (TODO) handle specialized types *)
-  | SpecializedType { base; _ } -> eval_typ tdenv cenv vsto base
-  | _ ->
-      Printf.sprintf "(TODO: eval_typ) %s" (Pretty.print_type typ) |> failwith
+  | SpecializedType { base; _ } -> eval_typ tdenv ienv vsto base
+  | _ -> Printf.sprintf "(TODO: eval_typ) %s" "TODO" |> failwith
 
 (* Compile-time evaluation of expressions *)
 
-and eval_expr (tdenv : tdenv) (cenv : cenv) (vsto : vsto) (expr : Expression.t)
-    : Value.t =
+and eval_expr (tdenv : tdenv) (ienv : env) (vsto : vsto) (expr : Expression.t) :
+    value =
   match expr with
-  | True _ -> Value.Bool true
-  | False _ -> Value.Bool false
+  | True _ -> VBool true
+  | False _ -> VBool false
   | Int { i; _ } -> (
       let value = i.value in
       match i.width_signed with
       | Some (width, signed) ->
-          if signed then Value.Int { value; width }
-          else Value.Bit { value; width }
-      | None -> Value.AInt value)
-  | String { text; _ } -> Value.String text.str
-  | Name { name = BareName name; _ } ->
-      let name = name.str in
-      find_const cenv vsto name
+          if signed then VInt { value; width } else VBit { value; width }
+      | None -> VAInt value)
+  | String { text; _ } -> VString text.str
+  | Name { name = BareName name; _ }
   | Name { name = QualifiedName ([], name); _ } ->
       let name = name.str in
-      find_const_toplevel cenv vsto name
+      Scope.find name ienv vsto |> Option.get
   | BitStringAccess { bits; lo; hi; _ } ->
-      let vbits = eval_expr tdenv cenv vsto bits in
-      let vlo = eval_expr tdenv cenv vsto lo in
-      let vhi = eval_expr tdenv cenv vsto hi in
+      let vbits = eval_expr tdenv ienv vsto bits in
+      let vlo = eval_expr tdenv ienv vsto lo in
+      let vhi = eval_expr tdenv ienv vsto hi in
       Ops.eval_bitstring_access vbits vlo vhi
   | List { values; _ } ->
-      let vvalues = List.map (eval_expr tdenv cenv vsto) values in
-      Value.Tuple vvalues
+      let vvalues = List.map (eval_expr tdenv ienv vsto) values in
+      VTuple vvalues
   | Record { entries; _ } ->
       let ventries =
         List.map
           (fun (entry : KeyValue.t) ->
             let key = entry.key.str in
-            let value = eval_expr tdenv cenv vsto entry.value in
+            let value = eval_expr tdenv ienv vsto entry.value in
             (key, value))
           entries
       in
-      Value.Struct { entries = ventries }
+      VStruct { entries = ventries }
   | UnaryOp { op; arg; _ } ->
-      let varg = eval_expr tdenv cenv vsto arg in
+      let varg = eval_expr tdenv ienv vsto arg in
       Ops.eval_unop op varg
   | BinaryOp { op; args = arg_fst, arg_snd; _ } ->
-      let varg_fst = eval_expr tdenv cenv vsto arg_fst in
-      let varg_snd = eval_expr tdenv cenv vsto arg_snd in
+      let varg_fst = eval_expr tdenv ienv vsto arg_fst in
+      let varg_snd = eval_expr tdenv ienv vsto arg_snd in
       Ops.eval_binop op varg_fst varg_snd
   | Cast { typ; expr; _ } ->
-      let typ = eval_typ tdenv cenv vsto typ in
+      let typ = eval_typ tdenv ienv vsto typ in
       let typ = eval_simplify_typ tdenv typ in
-      let vexpr = eval_expr tdenv cenv vsto expr in
+      let vexpr = eval_expr tdenv ienv vsto expr in
       Ops.eval_cast typ vexpr
   | ExpressionMember { expr; name; _ } -> (
-      let vexpr = eval_expr tdenv cenv vsto expr in
+      let vexpr = eval_expr tdenv ienv vsto expr in
       let name = name.str in
       match vexpr with
-      | Value.Header { entries; _ } | Value.Struct { entries } ->
-          List.assoc name entries
+      | VHeader { entries; _ } | VStruct { entries } -> List.assoc name entries
       | _ ->
-          Printf.sprintf "(eval_expr) %s cannot be accessed" (Value.print vexpr)
-          |> failwith)
-  | _ ->
-      Printf.sprintf "(TODO: eval_expr) %s" (Pretty.print_expr expr) |> failwith
+          Printf.sprintf "(eval_expr) %s cannot be accessed" "TODO" |> failwith)
+  | _ -> Printf.sprintf "(TODO: eval_expr) %s" "TODO" |> failwith
