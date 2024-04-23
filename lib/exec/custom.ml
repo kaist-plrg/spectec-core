@@ -3,14 +3,10 @@ open Syntax.Ast
 open Runtime.Domain
 open Utils
 
-(* Environments *)
-
-type benv = env * env * tsto * vsto
-
 let add_known = Scope.add_double
 
 let init_benv _tdenv =
-  let cenv = Env.empty in
+  let genv = Env.empty in
   let lenv = Env.empty in
   let tsto = Heap.empty in
   let vsto = Heap.empty in
@@ -19,7 +15,7 @@ let init_benv _tdenv =
     let value = VBit { value = Bigint.of_int 42; width = Bigint.of_int 32 } in
     add_known "b" typ value lenv tsto vsto
   in
-  (cenv, lenv, tsto, vsto)
+  (genv, lenv, tsto, vsto)
 
 (* Architecture *)
 

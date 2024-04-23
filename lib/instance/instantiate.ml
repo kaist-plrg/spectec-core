@@ -2,6 +2,7 @@ open Syntax
 open Syntax.Ast
 open Runtime
 open Runtime.Domain
+open Runtime.Scope
 open Utils
 
 (* Utils *)
@@ -48,19 +49,55 @@ let check_args (args : Argument.t list) =
            match arg with KeyValue _ -> true | _ -> false)
          args)
 
-(* Scoping *)
-
-let add_known = Scope.add_double
-let add_unknown = Scope.add_single
-
 (* Instantiation *)
 
 (* Loading the result of a declaration (other than instantiation),
    to typedef/global/closure environment, and type / value store *)
 
+let load_local_const (tdenv : tdenv) (genv : env) (lenv : env) (tsto : tsto) (vsto : vsto)
+    (name : string) (typ : Type.t) (value : Expression.t) :
+    env * tsto * vsto =
+  let typ = Eval.eval_typ tdenv genv vsto typ in
+  let value = Eval.eval_expr tdenv genv vsto value |> Ops.eval_cast typ in
+  let lenv, tsto, vsto = add_var name typ value lenv tsto vsto in
+  (lenv, tsto, vsto)
+
+let load_local_variable (tdenv : tdenv) (genv : env) (lenv : env) (tsto : tsto) (vsto : vsto) (name : string) (typ : Type.t) :
+    env * tsto =
+  (* When using an expression for the size, the expression
+     must be parenthesized and compile-time known. (7.1.6.2) *)
+  let typ = Eval.eval_typ tdenv genv vsto typ in
+  (* (TODO) this statically allocates "some" local variables to the heap,
+     any better way to deal with block-local variable declaration? *)
+  let lenv, tsto = add_var_without_value name typ lenv tsto in
+  (lenv, tsto)
+
+let load_global_const (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
+    (name : string) (typ : Type.t) (value : Expression.t) :
+    env * tsto * vsto =
+  let typ = Eval.eval_typ tdenv genv vsto typ in
+  let value = Eval.eval_expr tdenv genv vsto value |> Ops.eval_cast typ in
+  let genv, tsto, vsto = add_var name typ value genv tsto vsto in
+  (genv, tsto, vsto)
+
+let load_record_fields (tdenv : tdenv) (genv : env) (vsto : vsto) (fields : Declaration.field list) :
+    (string * typ) list =
+  List.map
+    (fun (field : Declaration.field) ->
+      let name = field.name.str in
+      let typ = Eval.eval_typ tdenv genv vsto field.typ in
+      (name, typ))
+    fields
+
 let rec load_decl (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
     (ccenv : ccenv) (decl : Declaration.t) : tdenv * env * tsto * vsto * ccenv =
   match decl with
+  (* Loading constants to global constant environment and type/value stores *)
+  | Constant { name; typ; value; _ } ->
+      let genv, tsto, vsto =
+        load_global_const tdenv genv tsto vsto name.str typ value
+      in
+      (tdenv, genv, tsto, vsto, ccenv)
   (* Loading constructor closures to ccenv *)
   (* For package type declaration, also load to tdenv *)
   | PackageType { name; params; type_params; _ } ->
@@ -123,21 +160,21 @@ let rec load_decl (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
       let name = name.str in
       match typ_or_decl with
       | Alternative.Left typ ->
-          let typ = Static.eval_typ tdenv genv vsto typ in
+          let typ = Eval.eval_typ tdenv genv vsto typ in
           let tdenv = Env.add name typ tdenv in
           (tdenv, genv, tsto, vsto, ccenv)
       | Alternative.Right _decl ->
-          Printf.eprintf "(TODO: load) Loading typedef with decl %s\n" name;
+          Printf.printf "(TODO: load) Loading typedef with decl %s\n" name;
           (tdenv, genv, tsto, vsto, ccenv))
   | NewType { name; typ_or_decl; _ } -> (
       let name = name.str in
       match typ_or_decl with
       | Alternative.Left typ ->
-          let typ = Static.eval_typ tdenv genv vsto typ in
+          let typ = Eval.eval_typ tdenv genv vsto typ in
           let tdenv = Env.add name typ tdenv in
           (tdenv, genv, tsto, vsto, ccenv)
       | Alternative.Right _decl ->
-          Printf.eprintf "(TODO: load) Loading newtype with decl %s\n" name;
+          Printf.printf "(TODO: load) Loading newtype with decl %s\n" name;
           (tdenv, genv, tsto, vsto, ccenv))
   | Enum { name; members; _ } ->
       let name = name.str in
@@ -147,7 +184,7 @@ let rec load_decl (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
       (tdenv, genv, tsto, vsto, ccenv)
   | SerializableEnum { name; typ; members; _ } ->
       let name = name.str in
-      let typ = Static.eval_typ tdenv genv vsto typ in
+      let typ = Eval.eval_typ tdenv genv vsto typ in
       let entries =
         List.map
           (fun member ->
@@ -160,40 +197,19 @@ let rec load_decl (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
       (tdenv, genv, tsto, vsto, ccenv)
   | Header { name; fields; _ } ->
       let name = name.str in
-      let entries =
-        List.map
-          (fun (field : Declaration.field) ->
-            let name = field.name.str in
-            let typ = Static.eval_typ tdenv genv vsto field.typ in
-            (name, typ))
-          fields
-      in
+      let entries = load_record_fields tdenv genv vsto fields in
       let typ = THeader { entries } in
       let tdenv = Env.add name typ tdenv in
       (tdenv, genv, tsto, vsto, ccenv)
   | HeaderUnion { name; fields; _ } ->
       let name = name.str in
-      let entries =
-        List.map
-          (fun (field : Declaration.field) ->
-            let name = field.name.str in
-            let typ = Static.eval_typ tdenv genv vsto field.typ in
-            (name, typ))
-          fields
-      in
+      let entries = load_record_fields tdenv genv vsto fields in
       let typ = TUnion { entries } in
       let tdenv = Env.add name typ tdenv in
       (tdenv, genv, tsto, vsto, ccenv)
   | Struct { name; fields; _ } ->
       let name = name.str in
-      let entries =
-        List.map
-          (fun (field : Declaration.field) ->
-            let name = field.name.str in
-            let typ = Static.eval_typ tdenv genv vsto field.typ in
-            (name, typ))
-          fields
-      in
+      let entries = load_record_fields tdenv genv vsto fields in
       let typ = TStruct { entries } in
       let tdenv = Env.add name typ tdenv in
       (tdenv, genv, tsto, vsto, ccenv)
@@ -204,14 +220,7 @@ let rec load_decl (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
       let tdenv = Env.add name typ tdenv in
       (tdenv, genv, tsto, vsto, ccenv)
   | Function { name; _ } ->
-      Printf.eprintf "(TODO: load) Loading function %s\n" name.str;
-      (tdenv, genv, tsto, vsto, ccenv)
-  (* Loading constants to global constant environment and type/value stores *)
-  | Constant { name; typ; value; _ } ->
-      let name = name.str in
-      let typ = Static.eval_typ tdenv genv vsto typ in
-      let value = Static.eval_expr tdenv genv vsto value |> Ops.eval_cast typ in
-      let genv, tsto, vsto = add_known name typ value genv tsto vsto in
+      Printf.printf "(TODO: load) Loading function %s\n" name.str;
       (tdenv, genv, tsto, vsto, ccenv)
   | _ -> (tdenv, genv, tsto, vsto, ccenv)
 
@@ -228,7 +237,7 @@ and eval_targs (genv : env) (tdenv : tdenv) (tparams : string list)
   assert (List.length tparams = List.length typs);
   List.fold_left2
     (fun tdenv tparam typ ->
-      let typ = Static.eval_typ genv vsto tdenv typ in
+      let typ = Eval.eval_typ genv vsto tdenv typ in
       Env.add tparam typ tdenv)
     tdenv tparams typs
 *)
@@ -244,7 +253,7 @@ and eval_expr (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
       let value = VRef path in
       (value, ienv)
   | _ ->
-      let value = Static.eval_expr tdenv genv vsto expr in
+      let value = Eval.eval_expr tdenv genv vsto expr in
       (value, ienv)
 
 and eval_args (genv : env) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
@@ -265,7 +274,7 @@ and eval_args (genv : env) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
   let params, args = List.fold_left2 align_args ([], []) params args in
   List.fold_left2
     (fun (names, typs, values, ienv) (param, typ) arg ->
-      let typ = Static.eval_typ tdenv genv vsto typ in
+      let typ = Eval.eval_typ tdenv genv vsto typ in
       let value, ienv =
         eval_expr tdenv genv tsto vsto ccenv ienv (path @ [ param ]) arg
       in
@@ -306,7 +315,7 @@ and instantiate_cclos (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
       let lenv_local, tsto_local, vsto_local =
         fold_left3
           (fun (lenv, tsto, vsto) name typ value ->
-            add_known name typ value lenv tsto vsto)
+            add_var name typ value lenv tsto vsto)
           (lenv_local, tsto_local, vsto_local)
           names typs values
       in
@@ -315,9 +324,9 @@ and instantiate_cclos (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
         List.fold_left
           (fun (lenv, tsto) (param : Parameter.t) ->
             let name = param.variable.str in
-            let typ = Static.eval_typ tdenv_local genv vsto param.typ in
+            let typ = Eval.eval_typ tdenv_local genv vsto param.typ in
             (* (TODO) a better way to deal with block-local variables? *)
-            let lenv, tsto = add_unknown name typ lenv tsto in
+            let lenv, tsto = add_var_without_value name typ lenv tsto in
             (lenv, tsto))
           (lenv_local, tsto_local) params
       in
@@ -412,7 +421,7 @@ and instantiate_cclos (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
       let lenv_local, tsto_local, vsto_local =
         fold_left3
           (fun (lenv, tsto, vsto) name typ value ->
-            add_known name typ value lenv tsto vsto)
+            add_var name typ value lenv tsto vsto)
           (lenv_local, tsto_local, vsto_local)
           names typs values
       in
@@ -421,9 +430,9 @@ and instantiate_cclos (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
         List.fold_left
           (fun (lenv, tsto) (param : Parameter.t) ->
             let name = param.variable.str in
-            let typ = Static.eval_typ tdenv_local genv vsto param.typ in
+            let typ = Eval.eval_typ tdenv_local genv vsto param.typ in
             (* (TODO) a better way to deal with block-local variables? *)
-            let lenv, tsto = add_unknown name typ lenv tsto in
+            let lenv, tsto = add_var_without_value name typ lenv tsto in
             (lenv, tsto))
           (lenv_local, tsto_local) params
       in
@@ -477,7 +486,7 @@ and instantiate_cclos (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
       let genv_package, tsto_package, vsto_package =
         fold_left3
           (fun (genv, tsto, vsto) name typ value ->
-            add_known name typ value genv tsto vsto)
+            add_var name typ value genv tsto vsto)
           (genv_package, tsto_package, vsto_package)
           names typs values
       in
@@ -501,7 +510,7 @@ and instantiate_cclos (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
                 let name = name.str in
                 funcs @ [ FExtern { name; params; genv } ]
             | _ ->
-                Printf.eprintf "(TODO: instantiate) Method %s\n" "TODO";
+                Printf.printf "(TODO: instantiate) Method %s\n" "TODO";
                 funcs)
           [] methods
       in
@@ -546,28 +555,50 @@ and instantiate_stmt (tdenv : tdenv) (lenv : env) (tsto : tsto) (vsto : vsto)
       in
       let typ = TRef in
       let value = VRef (path @ [ name ]) in
-      let lenv, tsto, vsto = add_known name typ value lenv tsto vsto in
+      let lenv, tsto, vsto = add_var name typ value lenv tsto vsto in
       (lenv, tsto, vsto, ienv)
   | _ -> (lenv, tsto, vsto, ienv)
 
 (* Instantiate from declaration *)
 
+and instantiate_instantiation_decl (tdenv : tdenv) (genv : env) (tsto : tsto)
+    (vsto : vsto) (ccenv : ccenv) (ienv : ienv) (path : string list)
+    (name : string) (typ : Type.t) (args : Argument.t list) :
+    env * tsto * vsto * ienv =
+  let name = name in
+  let cclos, targs = cclos_from_type typ ccenv in
+  let ienv =
+    instantiate_cclos tdenv genv tsto vsto ccenv ienv (path @ [ name ])
+      cclos args targs
+  in
+  let typ = TRef in
+  let value = VRef (path @ [ name ]) in
+  let genv, tsto, vsto = add_var name typ value genv tsto vsto in
+  (genv, tsto, vsto, ienv)
+
 (* parserLocalElement
-   : constantDeclaration
-   | instantiation
-   | variableDeclaration
-   | valueSetDeclaration; (13.2) *)
+   : constantDeclaration | instantiation
+   | variableDeclaration | valueSetDeclaration; (13.2) *)
 
 and instantiate_parser_local_decl (tdenv : tdenv) (genv : env) (lenv : env)
     (tsto : tsto) (vsto : vsto) (ccenv : ccenv) (ienv : ienv)
     (path : string list) (decl : Declaration.t) : env * env * tsto * vsto * ienv
     =
   match decl with
+  | Instantiation { name; typ; args; _ } ->
+      let genv, tsto, vsto, ienv =
+        instantiate_instantiation_decl tdenv genv tsto vsto ccenv ienv path name.str typ args
+      in
+      (genv, lenv, tsto, vsto, ienv)
   | Constant { name; typ; value; _ } ->
-      let name = name.str in
-      let typ = Static.eval_typ tdenv genv vsto typ in
-      let value = Static.eval_expr tdenv genv vsto value |> Ops.eval_cast typ in
-      let lenv, tsto, vsto = add_known name typ value lenv tsto vsto in
+      let lenv, tsto, vsto =
+        load_local_const tdenv genv lenv tsto vsto name.str typ value
+      in
+      (genv, lenv, tsto, vsto, ienv)
+  | Variable { name; typ; _ } ->
+      let lenv, tsto =
+        load_local_variable tdenv genv lenv tsto vsto name.str typ
+      in
       (genv, lenv, tsto, vsto, ienv)
   (* (TODO) is it correct to instantiate a value set at its declaration? *)
   (* There is no syntax for specifying parameters that are value-sets
@@ -579,27 +610,13 @@ and instantiate_parser_local_decl (tdenv : tdenv) (genv : env) (lenv : env)
       let ienv = Env.add (Path.concat path) obj ienv in
       let typ = TRef in
       let value = VRef path in
-      let lenv, tsto, vsto = add_known name typ value lenv tsto vsto in
+      let lenv, tsto, vsto = add_var name typ value lenv tsto vsto in
       (genv, lenv, tsto, vsto, ienv)
-  (* When using an expression for the size, the expression
-     must be parenthesized and compile-time known. (7.1.6.2) *)
-  | Variable { name; typ; _ } ->
-      let name = name.str in
-      let typ = Static.eval_typ tdenv genv vsto typ in
-      (* (TODO) a better way to deal with block-local variable declaration? *)
-      let lenv, tsto = add_unknown name typ lenv tsto in
-      (genv, lenv, tsto, vsto, ienv)
-  | _ ->
-      let _tdenv, genv, tsto, vsto, _ccenv, ienv =
-        instantiate_decl tdenv genv tsto vsto ccenv ienv path decl
-      in
-      (genv, lenv, tsto, vsto, ienv)
+  | _ -> failwith "(instantiate_parser_local_decl) Unexpected declaration."
 
 (* controlLocalDeclaration
-   : constantDeclaration
-   | actionDeclaration
-   | tableDeclaration
-   | instantiation
+   : constantDeclaration | actionDeclaration
+   | tableDeclaration | instantiation
    | variableDeclaration; (14) *)
 
 and instantiate_control_local_decl (tdenv : tdenv) (genv : env) (lenv : env)
@@ -607,11 +624,23 @@ and instantiate_control_local_decl (tdenv : tdenv) (genv : env) (lenv : env)
     (path : string list) (decl : Declaration.t) : env * env * tsto * vsto * ienv
     =
   match decl with
+  | Instantiation { name; typ; args; _ } ->
+      let genv, tsto, vsto, ienv =
+        instantiate_instantiation_decl tdenv genv tsto vsto ccenv ienv path name.str typ args
+      in
+      (genv, lenv, tsto, vsto, ienv)
   | Constant { name; typ; value; _ } ->
-      let name = name.str in
-      let typ = Static.eval_typ tdenv genv vsto typ in
-      let value = Static.eval_expr tdenv genv vsto value |> Ops.eval_cast typ in
-      let lenv, tsto, vsto = add_known name typ value lenv tsto vsto in
+      let lenv, tsto, vsto =
+        load_local_const tdenv genv lenv tsto vsto name.str typ value
+      in
+      (genv, lenv, tsto, vsto, ienv)
+  | Variable { name; typ; _ } ->
+      let lenv, tsto =
+        load_local_variable tdenv genv lenv tsto vsto name.str typ
+      in
+      (genv, lenv, tsto, vsto, ienv)
+  | Action _ ->
+      Printf.printf "(TODO: instantiate) action\n";
       (genv, lenv, tsto, vsto, ienv)
   (* Each table evaluates to a table instance (18.2) *)
   (* There is no syntax for specifying parameters that are tables
@@ -624,36 +653,19 @@ and instantiate_control_local_decl (tdenv : tdenv) (genv : env) (lenv : env)
       let ienv = Env.add (Path.concat path) obj ienv in
       let typ = TRef in
       let value = VRef path in
-      let lenv, tsto, vsto = add_known name typ value lenv tsto vsto in
+      let lenv, tsto, vsto = add_var name typ value lenv tsto vsto in
       (genv, lenv, tsto, vsto, ienv)
-  (* When using an expression for the size, the expression
-     must be parenthesized and compile-time known. (7.1.6.2) *)
-  | Variable { name; typ; _ } ->
-      let name = name.str in
-      let typ = Static.eval_typ tdenv genv vsto typ in
-      let lenv, tsto = add_unknown name typ lenv tsto in
-      (genv, lenv, tsto, vsto, ienv)
-  | _ ->
-      let _tdenv, genv, tsto, vsto, _ccenv, ienv =
-        instantiate_decl tdenv genv tsto vsto ccenv ienv path decl
-      in
-      (genv, lenv, tsto, vsto, ienv)
+  | _ -> failwith "(instantiate_control_local_decl) Unexpected declaration."
 
-and instantiate_decl (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
+and instantiate_toplevel_decl (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
     (ccenv : ccenv) (ienv : ienv) (path : string list) (decl : Declaration.t) :
     tdenv * env * tsto * vsto * ccenv * ienv =
   match decl with
   (* Explicit instantiation *)
   | Instantiation { name; typ; args; _ } ->
-      let name = name.str in
-      let cclos, targs = cclos_from_type typ ccenv in
-      let ienv =
-        instantiate_cclos tdenv genv tsto vsto ccenv ienv (path @ [ name ])
-          cclos args targs
+      let genv, tsto, vsto, ienv =
+        instantiate_instantiation_decl tdenv genv tsto vsto ccenv ienv path name.str typ args
       in
-      let typ = TRef in
-      let value = VRef (path @ [ name ]) in
-      let genv, tsto, vsto = add_known name typ value genv tsto vsto in
       (tdenv, genv, tsto, vsto, ccenv, ienv)
   (* Load declarations *)
   | _ ->
@@ -664,17 +676,11 @@ and instantiate_decl (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
 
 let instantiate_program (program : program) =
   let (Program decls) = program in
-  let tdenv = Env.empty in
-  let genv = Env.empty in
-  let tsto = Heap.empty in
-  let vsto = Heap.empty in
-  let ccenv = Env.empty in
-  let ienv = Env.empty in
   let tdenv, _, _, _, ccenv, ienv =
     List.fold_left
       (fun (tdenv, genv, tsto, vsto, ccenv, ienv) decl ->
-        instantiate_decl tdenv genv tsto vsto ccenv ienv [] decl)
-      (tdenv, genv, tsto, vsto, ccenv, ienv)
+        instantiate_toplevel_decl tdenv genv tsto vsto ccenv ienv [] decl)
+      (Env.empty, Env.empty, Heap.empty, Heap.empty, Env.empty, Env.empty)
       decls
   in
   (tdenv, ccenv, ienv)

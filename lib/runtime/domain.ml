@@ -1,14 +1,13 @@
 open Syntax.Ast
 open Utils
-module Env = Scope.Env
-module Heap = Scope.Heap
+module Env = Utils.Scope.Env
+module Heap = Utils.Scope.Heap
 
 (* (TODO) maybe consider wrapping them inside modules later,
    but at the cost of having to write mutually-recursive modules
    in clumsy way. *)
 
 (* Values *)
-
 type value =
   | VBool of bool
   | VAInt of Bigint.t
@@ -113,9 +112,18 @@ and cclos =
     }
 
 (* Environments and Stores *)
+
+(* Typedef environment *)
 and tdenv = typ Env.t
+(* Constructor closure environment *)
 and ccenv = cclos Env.t
+(* Object environment *)
 and ienv = obj Env.t
+(* Environment, either global or local *)
 and env = Loc.t Env.t
+(* Value store *)
 and vsto = value Heap.t
+(* Type store *)
 and tsto = typ Heap.t
+(* Block environment *)
+and benv = env * env * tsto * vsto

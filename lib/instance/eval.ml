@@ -59,7 +59,7 @@ and eval_expr (tdenv : tdenv) (ienv : env) (vsto : vsto) (expr : Expression.t) :
   | Name { name = BareName name; _ }
   | Name { name = QualifiedName ([], name); _ } ->
       let name = name.str in
-      Scope.find name ienv vsto |> Option.get
+      Scope.find_single name ienv vsto |> Option.get
   | BitStringAccess { bits; lo; hi; _ } ->
       let vbits = eval_expr tdenv ienv vsto bits in
       let vlo = eval_expr tdenv ienv vsto lo in

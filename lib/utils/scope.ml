@@ -8,9 +8,17 @@ module Heap = struct
     Loc.max locs |> Loc.inc
 end
 
-let find var env heap =
+let find_single var env heap =
   match Env.find_opt var env with
   | Some loc -> Heap.find_opt loc heap
+  | None -> None
+
+let find_double var env heap heap' =
+  match Env.find_opt var env with
+  | Some loc -> (
+      match (Heap.find_opt loc heap, Heap.find_opt loc heap') with
+      | Some v, Some v' -> Some (v, v')
+      | _ -> None)
   | None -> None
 
 let add_single var v env heap =

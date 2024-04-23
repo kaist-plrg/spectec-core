@@ -3,21 +3,17 @@ open Syntax.Ast
 open Runtime.Domain
 open Utils
 
-(* Environments *)
-
-type benv = env * env * tsto * vsto
-
 let add_known = Scope.add_double
 
 let init_benv tdenv =
-  let cenv = Env.empty in
+  let genv = Env.empty in
   let lenv = Env.empty in
   let tsto = Heap.empty in
   let vsto = Heap.empty in
-  let cenv, tsto, vsto =
+  let genv, tsto, vsto =
     let typ = TRef in
     let value = VRef [ "packet" ] in
-    add_known "packet" typ value cenv tsto vsto
+    add_known "packet" typ value genv tsto vsto
   in
   let lenv, tsto, vsto =
     let typ = Env.find "headers" tdenv in
@@ -34,7 +30,7 @@ let init_benv tdenv =
     let value = Interpreter.default_value typ in
     add_known "standard_metadata" typ value lenv tsto vsto
   in
-  (cenv, lenv, tsto, vsto)
+  (genv, lenv, tsto, vsto)
 
 (* Architecture *)
 

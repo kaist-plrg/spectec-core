@@ -16,7 +16,7 @@
 open Syntax.Ast
 open Domain
 
-(* VBit manipulation *)
+(* Bit manipulation *)
 
 let rec shift_bitstring_left (v : Bigint.t) (o : Bigint.t) : Bigint.t =
   if Bigint.(o > zero) then
@@ -580,7 +580,7 @@ let eval_binop (op : Op.bin) (lvalue : value) (rvalue : value) : value =
   | And _ -> eval_binop_and lvalue rvalue
   | Or _ -> eval_binop_or lvalue rvalue
 
-(* VBitslice evaluation *)
+(* Bitslice evaluation *)
 
 let eval_bitstring_access' (value : Bigint.t) (lvalue : Bigint.t)
     (hvalue : Bigint.t) : value =
