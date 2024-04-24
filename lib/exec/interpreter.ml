@@ -44,9 +44,7 @@ let check_args (args : Argument.t list) =
 (* Value *)
 
 let extract_ref (value : value) : string =
-  match value with
-  | VRef ref -> String.concat "." ref
-  | _ -> assert false
+  match value with VRef ref -> String.concat "." ref | _ -> assert false
 
 let rec default_value (typ : typ) : value =
   match typ with
@@ -73,21 +71,53 @@ let rec default_value (typ : typ) : value =
 
 (* Statement evaluation *)
 
+(* lvalue
+   : prefixedNonTypeName | lvalue "." member
+   | lvalue "[" expression "]" | lvalue "[" expression ":" expression "]" *)
+
+let rec eval_write (tdenv : tdenv) (benv : benv) (arg : Expression.t)
+    (value : value) : benv =
+  match arg with
+  | Name { name = BareName text; _ } ->
+      let var = text.str in
+      let typ, _ = find_var var benv in
+      let value = Ops.eval_cast typ value in
+      let benv = update_value var value benv in
+      benv
+  (* (TODO) Ugly hack to get things done *)
+  | ExpressionMember { expr; name; _ } -> (
+      let vexpr = Eval.eval_expr tdenv benv expr in
+      let name = name.str in
+      match vexpr with
+      | VStruct { entries } ->
+          let entries =
+            List.map
+              (fun (k, v) -> if k = name then (k, value) else (k, v))
+              entries
+          in
+          let vexpr = VStruct { entries } in
+          let benv = eval_write tdenv benv expr vexpr in
+          benv
+      | _ ->
+          Printf.sprintf "(TODO: eval_write) Write to l-value %s"
+            (Runtime.Pretty.print_value vexpr)
+          |> failwith)
+  | _ ->
+      Printf.sprintf "(TODO: eval_write) Write to l-value %s"
+        (Syntax.Debug.debug_expr arg)
+      |> failwith
+
 let rec eval_stmt (tdenv : tdenv) (benv : benv) (stmt : Statement.t) : benv =
   match stmt with
-  | MethodCall { func; args; type_args = targs; _ } ->
-      (match func with
+  | MethodCall { func; args; type_args = targs; _ } -> (
+      match func with
       | ExpressionMember { expr; name; _ } ->
           let ref = Eval.eval_expr tdenv benv expr |> extract_ref in
           eval_method_call tdenv benv ref name.str args targs
       | _ -> failwith "(TODO: eval_stmt) MethodCall on non-ExpressionMember.")
-  | Assignment
-      { lhs = Expression.Name { name = Name.BareName text; _ }; rhs; _ } ->
-      let name = text.str in
-      let typ, _ = find_var name benv in
-      let value = Eval.eval_expr tdenv benv rhs |> Ops.eval_cast typ in
-      let benv = update_value name value benv in
-      benv
+  | Assignment { lhs; rhs; _ } ->
+      let value = Eval.eval_expr tdenv benv rhs in
+      eval_write tdenv benv lhs value
   | Conditional { cond; tru; fls = Some fls; _ } ->
       let vcond = Eval.eval_expr tdenv benv cond |> Ops.eval_cast TBool in
       let body =
@@ -121,29 +151,35 @@ and eval_state (tdenv : tdenv) (benv : benv) (stmts : Statement.t list) : benv =
   let _, _, tsto, vsto = List.fold_left (eval_stmt tdenv) benv stmts in
   (genv, lenv, tsto, vsto)
 
-and eval_state_transition (tdenv : tdenv) (benv : benv) (stmts : Statement.t list)
-    (transition : Parser.transition) (funcs : func list) : benv =
-  let genv, lenv, tsto, vsto = eval_state tdenv benv stmts in
+and eval_state_transition (tdenv : tdenv) (benv : benv)
+    (stmts : Statement.t list) (transition : Parser.transition)
+    (funcs : func list) : benv =
+  let benv = eval_state tdenv benv stmts in
   let next =
     match transition with
     | Direct { next; _ } -> next
     | Select { exprs; cases; _ } ->
-        let vexprs = List.map (fun expr -> Eval.eval_expr tdenv (genv, lenv, tsto, vsto) expr) exprs in
+        let vexprs =
+          List.map (fun expr -> Eval.eval_expr tdenv benv expr) exprs
+        in
         let find_match (mtch : Text.t option) (case : Parser.case) =
           let matchcases = case.matches in
           let next = case.next in
-          let find_match' (mtch : Text.t option) (vexpr : value) (matchcase : Match.t) =
+          let find_match' (mtch : Text.t option) (vexpr : value)
+              (matchcase : Match.t) =
             match mtch with
             | Some _ -> mtch
-            | None ->
+            | None -> (
                 match matchcase with
                 | Default _ | DontCare _ -> Some case.next
-                | Expression { expr; _ } ->
+                | Expression { expr; _ } -> (
                     let vmatch = Eval.eval_expr tdenv benv expr in
-                    match Ops.eval_binop (Eq { tags = Info.M "" }) vexpr vmatch with
+                    match
+                      Ops.eval_binop (Eq { tags = Info.M "" }) vexpr vmatch
+                    with
                     | VBool true -> Some next
                     | VBool false -> None
-                    | _ -> assert false
+                    | _ -> assert false))
           in
           List.fold_left2 find_match' mtch vexprs matchcases
         in
@@ -152,16 +188,18 @@ and eval_state_transition (tdenv : tdenv) (benv : benv) (stmts : Statement.t lis
   in
   match next.str with
   | "accept" | "reject" -> benv
-  | next ->
-    let find_state (func : string) = function
-      | FParser { name; _ } when name = func -> true
-      | _ -> false
-    in
-    let func = List.find (find_state next) funcs in
-    match func with
-    | FParser { genv; lenv; body; transition; _ } ->
-        eval_state_transition tdenv (genv, lenv, tsto, vsto) body transition funcs
-    | _ -> assert false
+  | next -> (
+      let find_state (func : string) = function
+        | FParser { name; _ } when name = func -> true
+        | _ -> false
+      in
+      let func = List.find (find_state next) funcs in
+      match func with
+      | FParser { genv; lenv; body; transition; _ } ->
+          let _, _, tsto, vsto = benv in
+          eval_state_transition tdenv (genv, lenv, tsto, vsto) body transition
+            funcs
+      | _ -> assert false)
 
 (* Declaration evaluation *)
 
@@ -184,13 +222,15 @@ and eval_decl (tdenv : tdenv) (benv : benv) (decl : Declaration.t) : benv =
 
 (* Calling convention: Copy-in/out *)
 
-and copyin (preallocated : bool) (tdenv : tdenv) (caller_env : benv) (callee_env : benv)
-    (params : Parameter.t list) (args : Argument.t list) : benv =
+and copyin (preallocated : bool) (tdenv : tdenv) (caller_env : benv)
+    (callee_env : benv) (params : Parameter.t list) (args : Argument.t list) :
+    benv =
   (* (TODO) assume there is no default argument *)
   assert (List.length params = List.length args);
   check_args args;
   (* Copy-in a single parameter-argument pair *)
-  let copyin_single (callee_env : benv) (param : Parameter.t) (arg : Argument.t) =
+  let copyin_single (callee_env : benv) (param : Parameter.t) (arg : Argument.t)
+      =
     match param.direction with
     (* in parameters are initialized by copying the value of the
        corresponding argument when the invocation is executed. *)
@@ -208,11 +248,10 @@ and copyin (preallocated : bool) (tdenv : tdenv) (caller_env : benv) (callee_env
         let benv =
           (* In the case of parser/control apply *)
           if preallocated then update_value param value callee_env
-          (* Otherwise *)
-          else (
+          else
             let genv, lenv, tsto, vsto = callee_env in
             let lenv, tsto, vsto = add_var param typ value lenv tsto vsto in
-            (genv, lenv, tsto, vsto))
+            (genv, lenv, tsto, vsto)
         in
         benv
     (* Direction out parameters are always initialized at the beginning
@@ -228,11 +267,10 @@ and copyin (preallocated : bool) (tdenv : tdenv) (caller_env : benv) (callee_env
         let benv =
           (* In the case of parser/control apply *)
           if preallocated then update_value param value callee_env
-          (* Otherwise *)
-          else (
+          else
             let genv, lenv, tsto, vsto = callee_env in
             let lenv, tsto, vsto = add_var param typ value lenv tsto vsto in
-            (genv, lenv, tsto, vsto))
+            (genv, lenv, tsto, vsto)
         in
         benv
     (* inout parameters behave like a combination of in and out
@@ -251,11 +289,10 @@ and copyin (preallocated : bool) (tdenv : tdenv) (caller_env : benv) (callee_env
         let benv =
           (* In the case of parser/control apply *)
           if preallocated then update_value param value callee_env
-          (* Otherwise *)
-          else (
+          else
             let genv, lenv, tsto, vsto = callee_env in
             let lenv, tsto, vsto = add_var param typ value lenv tsto vsto in
-            (genv, lenv, tsto, vsto))
+            (genv, lenv, tsto, vsto)
         in
         benv
   in
@@ -266,37 +303,6 @@ and copyout (tdenv : tdenv) (caller_env : benv) (callee_env : benv)
   (* (TODO) assume there is no default argument *)
   assert (List.length params = List.length args);
   check_args args;
-  (* Write a value to the l-value argument. *)
-  let rec write (arg : Expression.t) (value : value) (benv : benv) =
-    match arg with
-    | Name { name = BareName text; _ } ->
-        let var = text.str in
-        let benv = update_value var value benv in
-        benv
-    (* (TODO) Ugly hack to get things done *)
-    | ExpressionMember { expr; name; _ } ->
-        let vexpr = Eval.eval_expr tdenv benv expr in
-        let name = name.str in
-        (match vexpr with
-        | VStruct { entries } ->
-            let entries =
-              List.map
-                (fun (key, value) ->
-                  if key = name then (key, Eval.eval_expr tdenv callee_env expr) else (key, value))
-                entries
-            in
-            let vexpr = VStruct { entries } in
-            let benv = write expr vexpr benv in
-            benv
-        | _ ->
-            Printf.sprintf
-              "(TODO) (copyout) Write to l-value %s" (Runtime.Pretty.print_value vexpr)
-            |> failwith)
-    | _ ->
-        Printf.sprintf
-          "(TODO) (copyout) Write to l-value %s" (Syntax.Debug.debug_expr arg)
-        |> failwith
-  in
   (* Copy-out a single parameter-argument pair. *)
   let copyout_single (benv : benv) (param : Parameter.t) (arg : Argument.t) =
     match param.direction with
@@ -308,15 +314,15 @@ and copyout (tdenv : tdenv) (caller_env : benv) (callee_env : benv)
           | _ -> failwith "(TODO) (copyout) Support missing argument."
         in
         let _, value = find_var param callee_env in
-        write arg value benv
+        eval_write tdenv benv arg value
     | _ -> benv
   in
   List.fold_left2 copyout_single caller_env params args
 
 (* Entry *)
 
-and eval_method_call (caller_tdenv : tdenv) (caller_env : benv) (ref : string) (mthd : string)
-    (args : Argument.t list) (targs : Type.t list) =
+and eval_method_call (caller_tdenv : tdenv) (caller_env : benv) (ref : string)
+    (mthd : string) (args : Argument.t list) (targs : Type.t list) =
   (* Retrieve the object from the store. *)
   let obj = Env.find ref !ienv in
   let tdenv, tsto, vsto, funcs =
@@ -339,7 +345,9 @@ and eval_method_call (caller_tdenv : tdenv) (caller_env : benv) (ref : string) (
   | FParser { params; genv; lenv; body; transition; _ } ->
       let callee_env = (genv, lenv, tsto, vsto) in
       let callee_env = copyin true tdenv caller_env callee_env params args in
-      let callee_env = eval_state_transition tdenv callee_env body transition funcs in
+      let callee_env =
+        eval_state_transition tdenv callee_env body transition funcs
+      in
       let caller_env = copyout tdenv caller_env callee_env params args in
       caller_env
   | FNormal { params; genv; lenv; body; _ } ->

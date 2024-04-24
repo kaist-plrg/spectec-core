@@ -62,7 +62,8 @@ let drive_parser_impl (tdenv : tdenv) (benv : benv) =
   let parser_impl_args =
     apply_args [ "packet"; "hdr"; "meta"; "standard_metadata" ]
   in
-  Interpreter.eval_method_call tdenv benv parser_impl "apply" parser_impl_args []
+  Interpreter.eval_method_call tdenv benv parser_impl "apply" parser_impl_args
+    []
 
 let drive_ingress (tdenv : tdenv) (benv : benv) =
   let ingress = "main.ig" in
@@ -78,7 +79,9 @@ let drive (tdenv : tdenv) (ccenv : ccenv) (ienv : ienv) =
   (* Obtain parser object from store and call apply *)
   print_endline "Calling main.p.apply()";
   let benv = drive_parser_impl tdenv benv in
+  Interpreter.print_benv benv;
   (* Obtain control object from store and call apply *)
   print_endline "Calling main.ig.apply()";
-  let _ = drive_ingress tdenv benv in
+  let benv = drive_ingress tdenv benv in
+  Interpreter.print_benv benv;
   ()

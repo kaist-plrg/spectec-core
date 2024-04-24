@@ -74,7 +74,12 @@ and func =
       body : Statement.t list;
       transition : Parser.transition;
     }
-  | FExtern of { name : string; tparams : string list; params : Parameter.t list; genv : env }
+  | FExtern of {
+      name : string;
+      tparams : string list;
+      params : Parameter.t list;
+      genv : env;
+    }
 
 (* Constructor closure *)
 and cclos =
@@ -115,17 +120,24 @@ and cclos =
 
 (* Typedef environment *)
 and tdenv = typ Env.t
+
 (* Constructor closure environment *)
 and ccenv = cclos Env.t
+
 (* Object environment *)
 and ienv = obj Env.t
+
 (* Function environment *)
 and fenv = func Env.t
+
 (* Environment, either global or local *)
 and env = Loc.t Env.t
+
 (* Value store *)
 and vsto = value Heap.t
+
 (* Type store *)
 and tsto = typ Heap.t
+
 (* Block environment *)
 and benv = env * env * tsto * vsto

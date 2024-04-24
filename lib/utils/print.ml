@@ -13,7 +13,5 @@ let print_inline (s : string) =
     | ' ' :: ' ' :: tl -> reduce_spaces acc (' ' :: tl)
     | hd :: tl -> reduce_spaces (hd :: acc) tl
   in
-  s
-    |> String.to_seq |> List.of_seq
-    |> replace_newline [] |> reduce_spaces []
-    |> List.to_seq |> String.of_seq
+  s |> String.to_seq |> List.of_seq |> replace_newline [] |> reduce_spaces []
+  |> List.to_seq |> String.of_seq

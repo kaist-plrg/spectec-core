@@ -43,8 +43,8 @@ let rec eval_typ (tdenv : tdenv) (benv : benv) (typ : Type.t) : typ =
 
 (* Evaluation of type arguments *)
 
-and eval_targs (tdenv : tdenv) (tdenv_local : tdenv) (benv : benv) (tparams : string list)
-    (typs : Type.t list) : tdenv =
+and eval_targs (tdenv : tdenv) (tdenv_local : tdenv) (benv : benv)
+    (tparams : string list) (typs : Type.t list) : tdenv =
   assert (List.length tparams = List.length typs);
   List.fold_left2
     (fun tdenv_local tparam typ ->

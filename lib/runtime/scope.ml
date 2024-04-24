@@ -17,7 +17,6 @@ let find_var (name : string) (benv : benv) =
 (* Adders *)
 
 let add_var = Utils.Scope.add_double
-
 let add_var_without_value = Utils.Scope.add_single
 
 (* Updaters *)
