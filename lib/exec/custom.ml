@@ -34,19 +34,21 @@ let apply_args (args : string list) =
         })
     args
 
-let drive_proto (_tdenv : tdenv) (benv : benv) (ienv : ienv) =
-  let proto = Env.find "main._p" ienv in
+let drive_proto (tdenv : tdenv) (benv : benv) =
+  let proto = "main._p" in
   let proto_args = apply_args [ "b" ] in
-  Interpreter.eval_method_call benv proto "apply" proto_args
+  Interpreter.eval_method_call tdenv benv proto "apply" proto_args []
 
 let drive (tdenv : tdenv) (_ccenv : ccenv) (ienv : ienv) =
+  (* Register the store *)
+  Interpreter.register_store ienv;
   (* Build an environment to call control apply *)
   let benv = init_benv tdenv in
   print_endline "Initial environment:";
   Interpreter.print_benv benv;
   (* Obtain control object from store and call apply *)
   print_endline "Calling main._p.apply()";
-  let benv = drive_proto tdenv benv ienv in
+  let benv = drive_proto tdenv benv in
   print_endline "After the call:";
   Interpreter.print_benv benv;
   ()

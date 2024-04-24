@@ -3,12 +3,17 @@
 let print_indent (indent : int) = String.make (indent * 2) ' '
 
 let print_inline (s : string) =
-  let len = String.length s in
-  let rec replace acc i =
-    if i < len then
-      let c = s.[i] in
-      if c = '\n' || c = '\t' then replace (acc ^ " ") (i + 1)
-      else replace (acc ^ String.make 1 c) (i + 1)
-    else acc
+  let rec replace_newline acc = function
+    | [] -> acc
+    | '\n' :: tl -> replace_newline (' ' :: acc) tl
+    | hd :: tl -> replace_newline (hd :: acc) tl
   in
-  replace "" 0
+  let rec reduce_spaces acc = function
+    | [] -> acc
+    | ' ' :: ' ' :: tl -> reduce_spaces acc (' ' :: tl)
+    | hd :: tl -> reduce_spaces (hd :: acc) tl
+  in
+  s
+    |> String.to_seq |> List.of_seq
+    |> replace_newline [] |> reduce_spaces []
+    |> List.to_seq |> String.of_seq

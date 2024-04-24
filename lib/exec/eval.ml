@@ -41,6 +41,17 @@ let rec eval_typ (tdenv : tdenv) (benv : benv) (typ : Type.t) : typ =
   | SpecializedType { base; _ } -> eval_typ tdenv benv base
   | _ -> Printf.sprintf "(TODO: eval_typ) %s" "TODO" |> failwith
 
+(* Evaluation of type arguments *)
+
+and eval_targs (tdenv : tdenv) (tdenv_local : tdenv) (benv : benv) (tparams : string list)
+    (typs : Type.t list) : tdenv =
+  assert (List.length tparams = List.length typs);
+  List.fold_left2
+    (fun tdenv_local tparam typ ->
+      let typ = eval_typ tdenv benv typ in
+      Env.add tparam typ tdenv_local)
+    tdenv_local tparams typs
+
 (* Evaluation of expressions *)
 
 and eval_expr (tdenv : tdenv) (benv : benv) (expr : Expression.t) : value =

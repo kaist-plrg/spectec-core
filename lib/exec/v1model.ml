@@ -57,17 +57,17 @@ let drive_instantiation (tdenv : tdenv) (ccenv : ccenv) (ienv : ienv) =
   in
   ienv
 
-let drive_parser_impl (_tdenv : tdenv) (benv : benv) (ienv : ienv) =
-  let parser_impl = Env.find "main.p" ienv in
+let drive_parser_impl (tdenv : tdenv) (benv : benv) =
+  let parser_impl = "main.p" in
   let parser_impl_args =
     apply_args [ "packet"; "hdr"; "meta"; "standard_metadata" ]
   in
-  Interpreter.eval_method_call benv parser_impl "apply" parser_impl_args
+  Interpreter.eval_method_call tdenv benv parser_impl "apply" parser_impl_args []
 
-let drive_ingress (_tdenv : tdenv) (benv : benv) (ienv : ienv) =
-  let ingress = Env.find "main.ig" ienv in
+let drive_ingress (tdenv : tdenv) (benv : benv) =
+  let ingress = "main.ig" in
   let ingress_args = apply_args [ "hdr"; "meta"; "standard_metadata" ] in
-  Interpreter.eval_method_call benv ingress "apply" ingress_args
+  Interpreter.eval_method_call tdenv benv ingress "apply" ingress_args []
 
 let drive (tdenv : tdenv) (ccenv : ccenv) (ienv : ienv) =
   (* Instantiations that should be done by the architecture *)
@@ -77,8 +77,8 @@ let drive (tdenv : tdenv) (ccenv : ccenv) (ienv : ienv) =
   let benv = init_benv tdenv in
   (* Obtain parser object from store and call apply *)
   print_endline "Calling main.p.apply()";
-  let benv = drive_parser_impl tdenv benv ienv in
+  let benv = drive_parser_impl tdenv benv in
   (* Obtain control object from store and call apply *)
   print_endline "Calling main.ig.apply()";
-  let _ = drive_ingress tdenv benv ienv in
+  let _ = drive_ingress tdenv benv in
   ()

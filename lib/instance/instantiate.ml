@@ -72,6 +72,18 @@ let load_local_variable (tdenv : tdenv) (genv : env) (lenv : env) (tsto : tsto) 
   let lenv, tsto = add_var_without_value name typ lenv tsto in
   (lenv, tsto)
 
+let load_local_params (tdenv : tdenv) (genv : env) (lenv : env) (tsto : tsto) (vsto : vsto) (params : Parameter.t list) :
+    env * tsto =
+  List.fold_left
+    (fun (lenv, tsto) (param : Parameter.t) ->
+      let name = param.variable.str in
+      let typ = Eval.eval_typ tdenv genv vsto param.typ in
+      (* (TODO) this statically allocates "some" parameters to the heap,
+         any better way to deal with block-local variable declaration? *)
+      let lenv, tsto = add_var_without_value name typ lenv tsto in
+      (lenv, tsto))
+    (lenv, tsto) params
+
 let load_global_const (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
     (name : string) (typ : Type.t) (value : Expression.t) :
     env * tsto * vsto =
@@ -227,20 +239,14 @@ let rec load_decl (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
 (* Evaluating instantiation arguments,
    which may contain nameless instantiation *)
 
-(*
-and eval_targs (genv : env) (tdenv : tdenv) (tparams : string list)
+and eval_targs (tdenv : tdenv) (tdenv_local : tdenv) (genv : env) (vsto : vsto) (tparams : string list)
     (typs : Type.t list) : tdenv =
-  print_endline "Evaluating type arguments";
-  String.concat ", " tparams |> print_endline;
-  String.concat ", " (List.map (fun typ -> Pretty.print_type typ) typs)
-  |> print_endline;
   assert (List.length tparams = List.length typs);
   List.fold_left2
-    (fun tdenv tparam typ ->
-      let typ = Eval.eval_typ genv vsto tdenv typ in
-      Env.add tparam typ tdenv)
-    tdenv tparams typs
-*)
+    (fun tdenv_local tparam typ ->
+      let typ = Eval.eval_typ tdenv genv vsto typ in
+      Env.add tparam typ tdenv_local)
+    tdenv_local tparams typs
 
 and eval_expr (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
     (ccenv : ccenv) (ienv : ienv) (path : string list) (expr : Expression.t) :
@@ -281,11 +287,25 @@ and eval_args (genv : env) (tsto : tsto) (vsto : vsto) (tdenv : tdenv)
       (names @ [ param ], typs @ [ typ ], values @ [ value ], ienv))
     ([], [], [], ienv) params args
 
+and eval_cargs (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto) (lenv_local : env) (tsto_local : tsto) (vsto_local : vsto) (ccenv : ccenv) (ienv : ienv) (path : string list) (cparams : Parameter.t list) (args : Argument.t list) : env * tsto * vsto * ienv =
+  let names, typs, values, ienv =
+    eval_args genv tsto vsto tdenv ccenv ienv path cparams args
+  in
+  let lenv_local, tsto_local, vsto_local =
+    fold_left3
+      (fun (lenv, tsto, vsto) name typ value ->
+        add_var name typ value lenv tsto vsto)
+      (lenv_local, tsto_local, vsto_local)
+      names typs values
+  in
+  (lenv_local, tsto_local, vsto_local, ienv)
+
+
 (* Instantiation of a constructor closure *)
 
 and instantiate_cclos (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
     (ccenv : ccenv) (ienv : ienv) (path : string list) (cclos : cclos)
-    (args : Argument.t list) (_typs : Type.t list) : ienv =
+    (args : Argument.t list) (targs : Type.t list) : ienv =
   let var_decl_to_stmt (decl : Declaration.t) : Statement.t option =
     match decl with
     | Variable { tags; _ } -> Some (DeclarationStatement { tags; decl })
@@ -301,34 +321,20 @@ and instantiate_cclos (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
         tsto = tsto_local;
         vsto = vsto_local;
         params;
-        tparams = _tparams;
+        tparams;
         cparams;
         locals;
         states;
       } ->
       let lenv_local = Env.empty in
       (* Add constructor arguments to local environment and store *)
-      (* let tdenv_local = eval_targs genv tdenv_local tparams typs in *)
-      let names, typs, values, ienv =
-        eval_args genv tsto vsto tdenv ccenv ienv path cparams args
+      let tdenv_local = eval_targs tdenv tdenv_local genv vsto tparams targs in
+      let lenv_local, tsto_local, vsto_local, ienv =
+        eval_cargs tdenv genv tsto vsto lenv_local tsto_local vsto_local ccenv ienv path cparams args
       in
-      let lenv_local, tsto_local, vsto_local =
-        fold_left3
-          (fun (lenv, tsto, vsto) name typ value ->
-            add_var name typ value lenv tsto vsto)
-          (lenv_local, tsto_local, vsto_local)
-          names typs values
-      in
-      (* Load arguments into local environment and store *)
+      (* Load parameters into local environment and store *)
       let lenv_local, tsto_local =
-        List.fold_left
-          (fun (lenv, tsto) (param : Parameter.t) ->
-            let name = param.variable.str in
-            let typ = Eval.eval_typ tdenv_local genv vsto param.typ in
-            (* (TODO) a better way to deal with block-local variables? *)
-            let lenv, tsto = add_var_without_value name typ lenv tsto in
-            (lenv, tsto))
-          (lenv_local, tsto_local) params
+        load_local_params tdenv_local genv_local lenv_local tsto_local vsto_local params
       in
       (* Instantiate local instantiations, load constants and local variables *)
       let genv_local, lenv_local, tsto_local, vsto_local, ienv =
@@ -406,7 +412,7 @@ and instantiate_cclos (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
         tsto = tsto_local;
         vsto = vsto_local;
         params;
-        tparams = _tparams;
+        tparams;
         cparams;
         locals;
         apply;
@@ -414,27 +420,13 @@ and instantiate_cclos (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
       } ->
       let lenv_local = Env.empty in
       (* Add constructor arguments to local environment and store *)
-      (* let tdenv_local = eval_targs genv tdenv_local tparams typs in *)
-      let names, typs, values, ienv =
-        eval_args genv tsto vsto tdenv ccenv ienv path cparams args
+      let tdenv_local = eval_targs tdenv tdenv_local genv vsto tparams targs in
+      let lenv_local, tsto_local, vsto_local, ienv =
+        eval_cargs tdenv genv tsto vsto lenv_local tsto_local vsto_local ccenv ienv path cparams args
       in
-      let lenv_local, tsto_local, vsto_local =
-        fold_left3
-          (fun (lenv, tsto, vsto) name typ value ->
-            add_var name typ value lenv tsto vsto)
-          (lenv_local, tsto_local, vsto_local)
-          names typs values
-      in
-      (* Load arguments into local environment and store *)
+      (* Load parameters into local environment and store *)
       let lenv_local, tsto_local =
-        List.fold_left
-          (fun (lenv, tsto) (param : Parameter.t) ->
-            let name = param.variable.str in
-            let typ = Eval.eval_typ tdenv_local genv vsto param.typ in
-            (* (TODO) a better way to deal with block-local variables? *)
-            let lenv, tsto = add_var_without_value name typ lenv tsto in
-            (lenv, tsto))
-          (lenv_local, tsto_local) params
+        load_local_params tdenv_local genv_local lenv_local tsto_local vsto_local params
       in
       (* Instantiate local instantiations, load constants and local variables *)
       let genv_local, lenv_local, tsto_local, vsto_local, ienv =
@@ -474,12 +466,13 @@ and instantiate_cclos (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
       let ienv = Env.add (Path.concat path) obj ienv in
       ienv
   (* Others do not involve recursive instantiation other than the args *)
-  | CCPackage { params; tparams = _tparams } ->
+  | CCPackage { params; tparams } ->
+      let tdenv_package = tdenv in
       let genv_package = genv in
       let tsto_package = tsto in
       let vsto_package = vsto in
       (* Add constructor arguments to constant environment and value ienv *)
-      (* let tdenv_package = eval_targs genv tdenv_package tparams typs in *)
+      let tdenv_package = eval_targs tdenv tdenv_package genv vsto tparams targs in
       let names, typs, values, ienv =
         eval_args genv tsto vsto tdenv ccenv ienv path params args
       in
@@ -493,7 +486,7 @@ and instantiate_cclos (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
       let obj =
         OPackage
           {
-            tdenv;
+            tdenv = tdenv_package;
             genv = genv_package;
             tsto = tsto_package;
             vsto = vsto_package;
@@ -506,9 +499,10 @@ and instantiate_cclos (tdenv : tdenv) (genv : env) (tsto : tsto) (vsto : vsto)
         List.fold_left
           (fun funcs (mthd : MethodPrototype.t) ->
             match mthd with
-            | Method { name; params; _ } ->
+            | Method { name; params; type_params; _ } ->
                 let name = name.str in
-                funcs @ [ FExtern { name; params; genv } ]
+                let tparams = List.map (fun (param : Text.t) -> param.str) type_params in
+                funcs @ [ FExtern { name; tparams; params; genv } ]
             | _ ->
                 Printf.printf "(TODO: instantiate) Method %s\n" "TODO";
                 funcs)
