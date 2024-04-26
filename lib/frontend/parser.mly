@@ -21,7 +21,7 @@ open Name
 open Text
 open Context
 
-(* A hack to avoid confilict btw this module and Ast.Parser *)
+(* A hack to avoid conflict btw this module and Ast.Parser *)
 module Parser = Ast.Parser
 
 let rec smash_annotations (l: Text.t list) (tok2: Text.t): Text.t list =
