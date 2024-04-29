@@ -13,8 +13,10 @@ let init_bscope _tdenv =
   let sto = Sto.empty in
   let lenv, sto =
     let typ = Type.TBit { width = Bigint.of_int 32 } in
-    let value = Value.VBit { value = Bigint.of_int 42; width = Bigint.of_int 32 } in
-    add_var "b" typ value lenv sto 
+    let value =
+      Value.VBit { value = Bigint.of_int 42; width = Bigint.of_int 32 }
+    in
+    add_var "b" typ value lenv sto
   in
   (genv, lenv, sto)
 

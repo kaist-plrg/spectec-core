@@ -1,5 +1,6 @@
 open Syntax
 open Syntax.Ast
+
 (* A hack to avoid module name conflict *)
 module P4Type = Type
 open Domain
@@ -26,7 +27,8 @@ let rec name_from_type (typ : P4Type.t) : string =
   | _ ->
       Printf.sprintf "(name_from_type) Unexpected type: %s" "TODO" |> failwith
 
-let rec cclos_from_type (typ : P4Type.t) (ccenv : CcEnv.t) : Cclos.t * P4Type.t list =
+let rec cclos_from_type (typ : P4Type.t) (ccenv : CcEnv.t) :
+    Cclos.t * P4Type.t list =
   match typ with
   | P4Type.TypeName { name = Name.BareName text; _ }
   | P4Type.TypeName { name = Name.QualifiedName ([], text); _ } ->
@@ -57,16 +59,16 @@ let check_args (args : Argument.t list) =
 (* Loading the result of a declaration (other than instantiation),
    to typedef/global/closure environment, and type / value store *)
 
-let load_local_const (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t) (sto : Sto.t)
-    (name : string) (typ : P4Type.t) (value : Expression.t) :
+let load_local_const (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t)
+    (sto : Sto.t) (name : string) (typ : P4Type.t) (value : Expression.t) :
     Env.t * Sto.t =
   let typ = Eval.eval_typ tdenv genv sto typ in
   let value = Eval.eval_expr tdenv genv sto value |> Ops.eval_cast typ in
   let lenv, sto = add_var name typ value lenv sto in
   (lenv, sto)
 
-let load_local_variable (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t) (sto : Sto.t)
-    (name : string) (typ : P4Type.t) : Env.t * Sto.t =
+let load_local_variable (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t)
+    (sto : Sto.t) (name : string) (typ : P4Type.t) : Env.t * Sto.t =
   (* When using an expression for the size, the expression
      must be parenthesized and compile-time known. (7.1.6.2) *)
   let typ = Eval.eval_typ tdenv genv sto typ in
@@ -75,8 +77,8 @@ let load_local_variable (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t) (sto : S
   let lenv, sto = add_var_without_value name typ lenv sto in
   (lenv, sto)
 
-let load_local_params (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t) (sto : Sto.t)
-    (params : Parameter.t list) : Env.t * Sto.t =
+let load_local_params (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t)
+    (sto : Sto.t) (params : Parameter.t list) : Env.t * Sto.t =
   List.fold_left
     (fun (lenv, sto) (param : Parameter.t) ->
       let name = param.variable.str in
@@ -104,13 +106,12 @@ let load_record_fields (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
     fields
 
 let rec load_decl (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
-    (ccenv : CcEnv.t) (decl : Declaration.t) : TDEnv.t * Env.t * Sto.t * CcEnv.t =
+    (ccenv : CcEnv.t) (decl : Declaration.t) : TDEnv.t * Env.t * Sto.t * CcEnv.t
+    =
   match decl with
   (* Loading constants to global constant environment and type/value stores *)
   | Constant { name; typ; value; _ } ->
-      let genv, sto =
-        load_global_const tdenv genv sto name.str typ value
-      in
+      let genv, sto = load_global_const tdenv genv sto name.str typ value in
       (tdenv, genv, sto, ccenv)
   (* Loading constructor closures to ccenv *)
   (* For package type declaration, also load to tdenv *)
@@ -241,8 +242,8 @@ let rec load_decl (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
 (* Evaluating instantiation arguments,
    which may contain nameless instantiation *)
 
-and eval_targs (tdenv : TDEnv.t) (tdenv_local : TDEnv.t) (genv : Env.t) (sto : Sto.t)
-    (tparams : string list) (typs : P4Type.t list) : TDEnv.t =
+and eval_targs (tdenv : TDEnv.t) (tdenv_local : TDEnv.t) (genv : Env.t)
+    (sto : Sto.t) (tparams : string list) (typs : P4Type.t list) : TDEnv.t =
   assert (List.length tparams = List.length typs);
   List.fold_left2
     (fun tdenv_local tparam typ ->
@@ -250,24 +251,22 @@ and eval_targs (tdenv : TDEnv.t) (tdenv_local : TDEnv.t) (genv : Env.t) (sto : S
       TDEnv.add tparam typ tdenv_local)
     tdenv_local tparams typs
 
-and eval_expr (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
-    (ccenv : CcEnv.t) (ienv : IEnv.t) (path : string list) (expr : Expression.t) :
+and eval_expr (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t) (ccenv : CcEnv.t)
+    (ienv : IEnv.t) (path : string list) (expr : Expression.t) :
     Value.t * IEnv.t =
   match expr with
   | NamelessInstantiation { typ; args; _ } ->
-      let ienv =
-        instantiate_expr tdenv genv sto ccenv ienv path typ args
-      in
+      let ienv = instantiate_expr tdenv genv sto ccenv ienv path typ args in
       let value = Value.VRef path in
       (value, ienv)
   | _ ->
       let value = Eval.eval_expr tdenv genv sto expr in
       (value, ienv)
 
-and eval_args (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
-    (ccenv : CcEnv.t) (ienv : IEnv.t) (path : string list)
-    (params : Parameter.t list) (args : Argument.t list) :
-    string list * Type.t list * Value.t list * IEnv.t =
+and eval_args (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t) (ccenv : CcEnv.t)
+    (ienv : IEnv.t) (path : string list) (params : Parameter.t list)
+    (args : Argument.t list) : string list * Type.t list * Value.t list * IEnv.t
+    =
   (* (TODO) assume there is no default argument *)
   assert (List.length params = List.length args);
   check_args args;
@@ -290,18 +289,16 @@ and eval_args (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
     ([], [], [], ienv) params args
 
 and eval_cargs (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
-    (lenv_local : Env.t) (sto_local : Sto.t) (ccenv : CcEnv.t)
-    (ienv : IEnv.t) (path : string list) (cparams : Parameter.t list)
-    (args : Argument.t list) : Env.t * Sto.t * IEnv.t =
+    (lenv_local : Env.t) (sto_local : Sto.t) (ccenv : CcEnv.t) (ienv : IEnv.t)
+    (path : string list) (cparams : Parameter.t list) (args : Argument.t list) :
+    Env.t * Sto.t * IEnv.t =
   let names, typs, values, ienv =
     eval_args tdenv genv sto ccenv ienv path cparams args
   in
   let lenv_local, sto_local =
     fold_left3
-      (fun (lenv, sto) name typ value ->
-        add_var name typ value lenv sto)
-      (lenv_local, sto_local)
-      names typs values
+      (fun (lenv, sto) name typ value -> add_var name typ value lenv sto)
+      (lenv_local, sto_local) names typs values
   in
   (lenv_local, sto_local, ienv)
 
@@ -333,8 +330,8 @@ and instantiate_cclos (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
       (* Add constructor arguments to local environment and store *)
       let tdenv_local = eval_targs tdenv tdenv_local genv sto tparams targs in
       let lenv_local, sto_local, ienv =
-        eval_cargs tdenv genv sto lenv_local sto_local ccenv
-          ienv path cparams args
+        eval_cargs tdenv genv sto lenv_local sto_local ccenv ienv path cparams
+          args
       in
       (* Load parameters into local environment and store *)
       let lenv_local, sto_local =
@@ -344,8 +341,8 @@ and instantiate_cclos (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
       let genv_local, lenv_local, sto_local, ienv =
         List.fold_left
           (fun (genv, lenv, sto, ienv) local ->
-            instantiate_parser_local_decl tdenv_local genv lenv sto ccenv
-              ienv path local)
+            instantiate_parser_local_decl tdenv_local genv lenv sto ccenv ienv
+              path local)
           (genv_local, lenv_local, sto_local, ienv)
           locals
       in
@@ -375,8 +372,7 @@ and instantiate_cclos (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
                 }
             in
             (funcs @ [ func ], sto_local, ienv))
-          ([], sto_local, ienv)
-          states
+          ([], sto_local, ienv) states
       in
       (* Build a method apply *)
       (* Conceptually, parser is an object with a single method, apply *)
@@ -424,8 +420,8 @@ and instantiate_cclos (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
       (* Add constructor arguments to local environment and store *)
       let tdenv_local = eval_targs tdenv tdenv_local genv sto tparams targs in
       let lenv_local, sto_local, ienv =
-        eval_cargs tdenv genv sto lenv_local sto_local ccenv
-          ienv path cparams args
+        eval_cargs tdenv genv sto lenv_local sto_local ccenv ienv path cparams
+          args
       in
       (* Load parameters into local environment and store *)
       let lenv_local, sto_local =
@@ -435,8 +431,8 @@ and instantiate_cclos (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
       let genv_local, lenv_local, sto_local, ienv =
         List.fold_left
           (fun (genv, lenv, sto, ienv) local ->
-            instantiate_control_local_decl tdenv_local genv lenv sto ccenv
-              ienv path local)
+            instantiate_control_local_decl tdenv_local genv lenv sto ccenv ienv
+              path local)
           (genv_local, lenv_local, sto_local, ienv)
           locals
       in
@@ -459,11 +455,7 @@ and instantiate_cclos (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
       in
       let obj =
         Object.OControl
-          {
-            tdenv = tdenv_local;
-            sto = sto_local;
-            funcs = [ func_apply ];
-          }
+          { tdenv = tdenv_local; sto = sto_local; funcs = [ func_apply ] }
       in
       let ienv = IEnv.add (Path.concat path) obj ienv in
       ienv
@@ -481,18 +473,13 @@ and instantiate_cclos (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
       in
       let genv_package, sto_package =
         fold_left3
-          (fun (genv, sto) name typ value ->
-            add_var name typ value genv sto)
+          (fun (genv, sto) name typ value -> add_var name typ value genv sto)
           (genv_package, sto_package)
           names typs values
       in
       let obj =
         Object.OPackage
-          {
-            tdenv = tdenv_package;
-            genv = genv_package;
-            sto = sto_package;
-          }
+          { tdenv = tdenv_package; genv = genv_package; sto = sto_package }
       in
       let ienv = IEnv.add (Path.concat path) obj ienv in
       ienv
@@ -535,8 +522,8 @@ and instantiate_expr (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
    This has the effect of creating and applying a local instance of that type. (15.1) *)
 
 and instantiate_stmt (tdenv : TDEnv.t) (lenv : Env.t) (sto : Sto.t)
-    (ccenv : CcEnv.t) (ienv : IEnv.t) (path : string list) (stmt : Statement.t) :
-    Env.t * Sto.t * IEnv.t =
+    (ccenv : CcEnv.t) (ienv : IEnv.t) (path : string list) (stmt : Statement.t)
+    : Env.t * Sto.t * IEnv.t =
   match stmt with
   | BlockStatement { block; _ } ->
       let stmts = block.statements in
@@ -548,8 +535,8 @@ and instantiate_stmt (tdenv : TDEnv.t) (lenv : Env.t) (sto : Sto.t)
       let name = name_from_type typ in
       let cclos, targs = cclos_from_type typ ccenv in
       let ienv =
-        instantiate_cclos tdenv Env.empty Sto.empty ccenv ienv
-          (path @ [ name ]) cclos [] targs
+        instantiate_cclos tdenv Env.empty Sto.empty ccenv ienv (path @ [ name ])
+          cclos [] targs
       in
       let typ = Type.TRef in
       let value = Value.VRef (path @ [ name ]) in
@@ -559,15 +546,15 @@ and instantiate_stmt (tdenv : TDEnv.t) (lenv : Env.t) (sto : Sto.t)
 
 (* Instantiate from declaration *)
 
-and instantiate_instantiation_decl (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
-    (ccenv : CcEnv.t) (ienv : IEnv.t) (path : string list)
+and instantiate_instantiation_decl (tdenv : TDEnv.t) (genv : Env.t)
+    (sto : Sto.t) (ccenv : CcEnv.t) (ienv : IEnv.t) (path : string list)
     (name : string) (typ : P4Type.t) (args : Argument.t list) :
     Env.t * Sto.t * IEnv.t =
   let name = name in
   let cclos, targs = cclos_from_type typ ccenv in
   let ienv =
-    instantiate_cclos tdenv genv sto ccenv ienv (path @ [ name ]) cclos
-      args targs
+    instantiate_cclos tdenv genv sto ccenv ienv (path @ [ name ]) cclos args
+      targs
   in
   let typ = Type.TRef in
   let value = Value.VRef (path @ [ name ]) in
@@ -578,26 +565,22 @@ and instantiate_instantiation_decl (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t
    : constantDeclaration | instantiation
    | variableDeclaration | valueSetDeclaration; (13.2) *)
 
-and instantiate_parser_local_decl (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t)
-    (sto : Sto.t) (ccenv : CcEnv.t) (ienv : IEnv.t)
+and instantiate_parser_local_decl (tdenv : TDEnv.t) (genv : Env.t)
+    (lenv : Env.t) (sto : Sto.t) (ccenv : CcEnv.t) (ienv : IEnv.t)
     (path : string list) (decl : Declaration.t) : Env.t * Env.t * Sto.t * IEnv.t
     =
   match decl with
   | Instantiation { name; typ; args; _ } ->
       let genv, sto, ienv =
-        instantiate_instantiation_decl tdenv genv sto ccenv ienv path
-          name.str typ args
+        instantiate_instantiation_decl tdenv genv sto ccenv ienv path name.str
+          typ args
       in
       (genv, lenv, sto, ienv)
   | Constant { name; typ; value; _ } ->
-      let lenv, sto =
-        load_local_const tdenv genv lenv sto name.str typ value
-      in
+      let lenv, sto = load_local_const tdenv genv lenv sto name.str typ value in
       (genv, lenv, sto, ienv)
   | Variable { name; typ; _ } ->
-      let lenv, sto =
-        load_local_variable tdenv genv lenv sto name.str typ
-      in
+      let lenv, sto = load_local_variable tdenv genv lenv sto name.str typ in
       (genv, lenv, sto, ienv)
   (* (TODO) is it correct to instantiate a value set at its declaration? *)
   (* There is no syntax for specifying parameters that are value-sets
@@ -618,26 +601,22 @@ and instantiate_parser_local_decl (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t
    | tableDeclaration | instantiation
    | variableDeclaration; (14) *)
 
-and instantiate_control_local_decl (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t)
-    (sto : Sto.t) (ccenv : CcEnv.t) (ienv : IEnv.t)
+and instantiate_control_local_decl (tdenv : TDEnv.t) (genv : Env.t)
+    (lenv : Env.t) (sto : Sto.t) (ccenv : CcEnv.t) (ienv : IEnv.t)
     (path : string list) (decl : Declaration.t) : Env.t * Env.t * Sto.t * IEnv.t
     =
   match decl with
   | Instantiation { name; typ; args; _ } ->
       let genv, sto, ienv =
-        instantiate_instantiation_decl tdenv genv sto ccenv ienv path
-          name.str typ args
+        instantiate_instantiation_decl tdenv genv sto ccenv ienv path name.str
+          typ args
       in
       (genv, lenv, sto, ienv)
   | Constant { name; typ; value; _ } ->
-      let lenv, sto =
-        load_local_const tdenv genv lenv sto name.str typ value
-      in
+      let lenv, sto = load_local_const tdenv genv lenv sto name.str typ value in
       (genv, lenv, sto, ienv)
   | Variable { name; typ; _ } ->
-      let lenv, sto =
-        load_local_variable tdenv genv lenv sto name.str typ
-      in
+      let lenv, sto = load_local_variable tdenv genv lenv sto name.str typ in
       (genv, lenv, sto, ienv)
   | Action _ ->
       Printf.printf "(TODO: instantiate) action\n";
@@ -664,15 +643,13 @@ and instantiate_toplevel_decl (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
   (* Explicit instantiation *)
   | Instantiation { name; typ; args; _ } ->
       let genv, sto, ienv =
-        instantiate_instantiation_decl tdenv genv sto ccenv ienv path
-          name.str typ args
+        instantiate_instantiation_decl tdenv genv sto ccenv ienv path name.str
+          typ args
       in
       (tdenv, genv, sto, ccenv, ienv)
   (* Load declarations *)
   | _ ->
-      let tdenv, genv, sto, ccenv =
-        load_decl tdenv genv sto ccenv decl
-      in
+      let tdenv, genv, sto, ccenv = load_decl tdenv genv sto ccenv decl in
       (tdenv, genv, sto, ccenv, ienv)
 
 let instantiate_program (program : program) =

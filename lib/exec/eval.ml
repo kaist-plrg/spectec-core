@@ -55,7 +55,8 @@ and eval_targs (tdenv : TDEnv.t) (tdenv_local : TDEnv.t) (benv : benv)
 
 (* Evaluation of expressions *)
 
-and eval_expr (tdenv : TDEnv.t) (benv : benv) (expr : Ast.Expression.t) : Value.t =
+and eval_expr (tdenv : TDEnv.t) (benv : benv) (expr : Ast.Expression.t) :
+    Value.t =
   match expr with
   | True _ -> VBool true
   | False _ -> VBool false

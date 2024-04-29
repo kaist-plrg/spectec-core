@@ -1,5 +1,5 @@
 open Syntax
-open Domain 
+open Domain
 open Domain.Scope
 
 (* Compile-time evaluation of type simplification *)
@@ -10,8 +10,8 @@ let rec eval_simplify_typ (tdenv : TDEnv.t) (typ : Type.t) : Type.t =
   | TNewType { name } -> TDEnv.find name tdenv
   | _ -> typ
 
-let rec eval_typ (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t) (typ : Ast.Type.t) : Type.t
-    =
+let rec eval_typ (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
+    (typ : Ast.Type.t) : Type.t =
   match typ with
   | Bool _ -> TBool
   | Integer _ -> TAInt
@@ -43,8 +43,8 @@ let rec eval_typ (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t) (typ : Ast.Type.
 
 (* Compile-time evaluation of expressions *)
 
-and eval_expr (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t) (expr : Ast.Expression.t) :
-    Value.t =
+and eval_expr (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
+    (expr : Ast.Expression.t) : Value.t =
   match expr with
   | True _ -> VBool true
   | False _ -> VBool false

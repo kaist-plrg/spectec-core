@@ -1,5 +1,6 @@
 open Syntax
 open Syntax.Ast
+
 (* A hack to avoid module name conflict *)
 module P4Type = Type
 open Domain
@@ -98,14 +99,16 @@ let rec eval_write (tdenv : TDEnv.t) (bscope : bscope) (arg : Expression.t)
           let bscope = eval_write tdenv bscope expr vexpr in
           bscope
       | _ ->
-          Format.asprintf "(TODO: eval_write) Write to l-value %a" Value.pp vexpr
+          Format.asprintf "(TODO: eval_write) Write to l-value %a" Value.pp
+            vexpr
           |> failwith)
   | _ ->
       Printf.sprintf "(TODO: eval_write) Write to l-value %s"
         (Syntax.Debug.debug_expr arg)
       |> failwith
 
-let rec eval_stmt (tdenv : TDEnv.t) (bscope : bscope) (stmt : Statement.t) : bscope =
+let rec eval_stmt (tdenv : TDEnv.t) (bscope : bscope) (stmt : Statement.t) :
+    bscope =
   match stmt with
   | MethodCall { func; args; type_args = targs; _ } -> (
       match func with
@@ -136,7 +139,8 @@ let rec eval_stmt (tdenv : TDEnv.t) (bscope : bscope) (stmt : Statement.t) : bsc
 
 (* Block evaluation *)
 
-and eval_block (tdenv : TDEnv.t) (bscope : bscope) (stmts : Statement.t list) : bscope =
+and eval_block (tdenv : TDEnv.t) (bscope : bscope) (stmts : Statement.t list) :
+    bscope =
   let genv, lenv, _ = bscope in
   let _, _, sto = List.fold_left (eval_stmt tdenv) bscope stmts in
   (genv, lenv, sto)
@@ -144,7 +148,8 @@ and eval_block (tdenv : TDEnv.t) (bscope : bscope) (stmts : Statement.t list) : 
 (* State evaluation *)
 (* (TODO) Each states having a scope of functions would be desirable. *)
 
-and eval_state (tdenv : TDEnv.t) (bscope : bscope) (stmts : Statement.t list) : bscope =
+and eval_state (tdenv : TDEnv.t) (bscope : bscope) (stmts : Statement.t list) :
+    bscope =
   let genv, lenv, _ = bscope in
   let _, _, sto = List.fold_left (eval_stmt tdenv) bscope stmts in
   (genv, lenv, sto)
@@ -195,13 +200,13 @@ and eval_state_transition (tdenv : TDEnv.t) (bscope : bscope)
       match func with
       | Func.FParser { genv; lenv; body; transition; _ } ->
           let _, _, sto = bscope in
-          eval_state_transition tdenv (genv, lenv, sto) body transition
-            funcs
+          eval_state_transition tdenv (genv, lenv, sto) body transition funcs
       | _ -> assert false)
 
 (* Declaration evaluation *)
 
-and eval_decl (tdenv : TDEnv.t) (bscope : bscope) (decl : Declaration.t) : bscope =
+and eval_decl (tdenv : TDEnv.t) (bscope : bscope) (decl : Declaration.t) :
+    bscope =
   let genv, lenv, sto = bscope in
   match decl with
   | Variable { name; typ; init; _ } ->
@@ -227,8 +232,8 @@ and copyin (preallocated : bool) (tdenv : TDEnv.t) (caller_env : bscope)
   assert (List.length params = List.length args);
   check_args args;
   (* Copy-in a single parameter-argument pair *)
-  let copyin_single (callee_env : bscope) (param : Parameter.t) (arg : Argument.t)
-      =
+  let copyin_single (callee_env : bscope) (param : Parameter.t)
+      (arg : Argument.t) =
     match param.direction with
     (* in parameters are initialized by copying the value of the
        corresponding argument when the invocation is executed. *)
@@ -302,7 +307,8 @@ and copyout (tdenv : TDEnv.t) (caller_env : bscope) (callee_env : bscope)
   assert (List.length params = List.length args);
   check_args args;
   (* Copy-out a single parameter-argument pair. *)
-  let copyout_single (bscope : bscope) (param : Parameter.t) (arg : Argument.t) =
+  let copyout_single (bscope : bscope) (param : Parameter.t) (arg : Argument.t)
+      =
     match param.direction with
     | Some (InOut _ | Out _) ->
         let param, arg =
@@ -319,8 +325,9 @@ and copyout (tdenv : TDEnv.t) (caller_env : bscope) (callee_env : bscope)
 
 (* Entry *)
 
-and eval_method_call (caller_tdenv : TDEnv.t) (caller_env : bscope) (ref : string)
-    (mthd : string) (args : Argument.t list) (targs : P4Type.t list) =
+and eval_method_call (caller_tdenv : TDEnv.t) (caller_env : bscope)
+    (ref : string) (mthd : string) (args : Argument.t list)
+    (targs : P4Type.t list) =
   (* Retrieve the object from the store. *)
   let obj = IEnv.find ref !ienv in
   let tdenv, sto, funcs =

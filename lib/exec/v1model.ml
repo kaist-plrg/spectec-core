@@ -29,7 +29,7 @@ let init_bscope (tdenv : TDEnv.t) =
   let lenv, sto =
     let typ = TDEnv.find "standard_metadata_t" tdenv in
     let value = Interpreter.default_value typ in
-    add_var "standard_metadata" typ value lenv sto 
+    add_var "standard_metadata" typ value lenv sto
   in
   (genv, lenv, sto)
 
@@ -53,8 +53,8 @@ let apply_args (args : string list) =
 let drive_instantiation (tdenv : TDEnv.t) (ccenv : CcEnv.t) (ienv : IEnv.t) =
   let packet_in_cclos = Env.find "packet_in" ccenv in
   let ienv =
-    Instance.Instantiate.instantiate_cclos tdenv Env.empty Sto.empty
-      ccenv ienv [ "packet" ] packet_in_cclos [] []
+    Instance.Instantiate.instantiate_cclos tdenv Env.empty Sto.empty ccenv ienv
+      [ "packet" ] packet_in_cclos [] []
   in
   ienv
 
