@@ -400,7 +400,7 @@ and instantiate_cclos (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
             funcs = func_apply :: funcs_state;
           }
       in
-      let ienv = Env.add (Path.concat path) obj ienv in
+      let ienv = Env.add (Ds.Path.concat path) obj ienv in
       ienv
   (* The instantiation of a parser or control block recursively
      evaluates all stateful instantiations declared in the block (16.2) *)
@@ -457,7 +457,7 @@ and instantiate_cclos (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
         Object.OControl
           { tdenv = tdenv_local; sto = sto_local; funcs = [ func_apply ] }
       in
-      let ienv = IEnv.add (Path.concat path) obj ienv in
+      let ienv = IEnv.add (Ds.Path.concat path) obj ienv in
       ienv
   (* Others do not involve recursive instantiation other than the args *)
   | CCPackage { params; tparams } ->
@@ -481,7 +481,7 @@ and instantiate_cclos (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
         Object.OPackage
           { tdenv = tdenv_package; genv = genv_package; sto = sto_package }
       in
-      let ienv = IEnv.add (Path.concat path) obj ienv in
+      let ienv = IEnv.add (Ds.Path.concat path) obj ienv in
       ienv
   | CCExtern { tdenv; genv; sto; methods; _ } ->
       let funcs =
@@ -500,7 +500,7 @@ and instantiate_cclos (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
           [] methods
       in
       let obj = Object.OExtern { tdenv; sto; funcs } in
-      let ienv = IEnv.add (Path.concat path) obj ienv in
+      let ienv = IEnv.add (Ds.Path.concat path) obj ienv in
       ienv
 
 (* Instantiate from expression *)
@@ -589,7 +589,7 @@ and instantiate_parser_local_decl (tdenv : TDEnv.t) (genv : Env.t)
       let name = name.str in
       let obj = Object.OValueSet in
       let path = path @ [ name ] in
-      let ienv = Env.add (Path.concat path) obj ienv in
+      let ienv = IEnv.add (Ds.Path.concat path) obj ienv in
       let typ = Type.TRef in
       let value = Value.VRef path in
       let lenv, sto = add_var name typ value lenv sto in
@@ -629,7 +629,7 @@ and instantiate_control_local_decl (tdenv : TDEnv.t) (genv : Env.t)
       let name = name.str in
       let path = path @ [ name ] in
       let obj = Object.OTable { genv; lenv; properties } in
-      let ienv = IEnv.add (Path.concat path) obj ienv in
+      let ienv = IEnv.add (Ds.Path.concat path) obj ienv in
       let typ = Type.TRef in
       let value = Value.VRef path in
       let lenv, sto = add_var name typ value lenv sto in

@@ -8,8 +8,8 @@ end
 module Path = struct
   type t = string list
 
-  let pp fmt path = Format.fprintf fmt "%s" (String.concat "." path)
-  let concat = ( @ )
+  let concat path = String.concat "." path
+  let pp fmt path = Format.fprintf fmt "%s" (concat path)
   let compare = compare
 end
 
