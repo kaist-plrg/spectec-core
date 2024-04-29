@@ -1,4 +1,0 @@
-(library
- (name runtime)
- (libraries syntax bignum)
- (modules domain scope pretty ops))
