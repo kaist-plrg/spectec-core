@@ -1,58 +1,61 @@
-open Ds
+module TDEnv = Ds.Env (Type)
 
-module TDEnv = struct
-  type t = Type.t Env.t
-
-  let pp fmt tdenv =
-    let bindings =
-      Env.bindings tdenv
-      |> List.fold_left
-           (fun acc (var, typ) ->
-             acc @ [ Format.asprintf "%s : %a" var Type.pp typ ])
-           []
-    in
-    Format.fprintf fmt "%s" ("{ " ^ String.concat ", " bindings ^ " }")
-end
-
-module Env = struct
-  type t = Loc.t Env.t
-
-  let pp fmt env =
-    let bindings =
-      Env.bindings env
-      |> List.sort (fun (_, loc) (_, loc') -> Loc.compare loc loc')
-      |> List.fold_left
-           (fun acc (var, loc) ->
-             acc @ [ Printf.sprintf "%s : %s" var (Loc.print loc) ])
-           []
-    in
-    Format.fprintf fmt "%s" ("{ " ^ String.concat ", " bindings ^ " }")
-end
+module Env = Ds.AEnv
 
 module Sto = struct
-  type tsto = Type.t Heap.t
-  type vsto = Value.t Heap.t
-  type t = tsto * vsto
+  module TSto = Ds.Heap (Type)
+  module VSto = Ds.Heap (Value)
+  type t = TSto.t * VSto.t
 
-  let pp fmt sto =
-    let tsto, vsto = sto in
-    let tsto_bindings =
-      Heap.bindings tsto
-      |> List.sort (fun (loc, _) (loc', _) -> Loc.compare loc loc')
-      |> List.fold_left
-           (fun acc (loc, typ) ->
-             acc @ [ Format.asprintf "%s : %a" (Loc.print loc) Type.pp typ ])
-           []
-    in
-    let vsto_bindings =
-      Heap.bindings vsto
-      |> List.sort (fun (loc, _) (loc', _) -> Loc.compare loc loc')
-      |> List.fold_left
-           (fun acc (loc, value) ->
-             acc @ [ Format.asprintf "%s : %a" (Loc.print loc) Value.pp value ])
-           []
-    in
-    Format.fprintf fmt "%s, %s"
-      ("{ " ^ String.concat ", " tsto_bindings ^ " }")
-      ("{ " ^ String.concat ", " vsto_bindings ^ " }")
+  let empty = (TSto.empty, VSto.empty)
+
+  let find addr (tsto, vsto) =
+    let typ = TSto.find addr tsto in
+    let value = VSto.find addr vsto in
+    (typ, value)
+
+  let add addr typ value (tsto, vsto) =
+    let tsto = TSto.add addr typ tsto in
+    match value with
+    | None -> (tsto, vsto)
+    | Some value ->
+      let vsto = VSto.add addr value vsto in
+      (tsto, vsto)
+
+  let update addr value (tsto, vsto) =
+    let vsto = VSto.add addr value vsto in
+    (tsto, vsto)
+
+  let fresh (tsto, vsto) =
+    let fresh_tsto = TSto.fresh tsto in
+    let fresh_vsto = VSto.fresh vsto in
+    if fresh_tsto > fresh_vsto then fresh_tsto else fresh_vsto
+
+  let pp fmt (tsto, vsto) =
+    Format.fprintf fmt "%a, %a" TSto.pp tsto VSto.pp vsto
 end
+
+let find_var (name : Ds.Var.t) ((genv, lenv, sto) : Env.t * Env.t * Sto.t) : Type.t * Value.t =
+  let addr = try Env.find name lenv with Not_found -> Env.find name genv in
+  Sto.find addr sto
+
+let find_var_global (name : Ds.Var.t) ((genv, _, sto) : Env.t * Env.t * Sto.t) : Type.t * Value.t =
+  let addr = Env.find name genv in
+  Sto.find addr sto
+
+let add_var (name : Ds.Var.t) (typ : Type.t) (value : Value.t) (env : Env.t) (sto : Sto.t) : Env.t * Sto.t =
+  let addr = Sto.fresh sto in
+  let env = Env.add name addr env in
+  let sto = Sto.add addr typ (Some value) sto in
+  (env, sto)
+
+let add_var_without_value (name : Ds.Var.t) (typ : Type.t) (env : Env.t) (sto : Sto.t) : Env.t * Sto.t =
+  let addr = Sto.fresh sto in
+  let env = Env.add name addr env in
+  let sto = Sto.add addr typ None sto in
+  (env, sto)
+
+let update_value (name : Ds.Var.t) (value : Value.t) ((genv, lenv, sto) : Env.t * Env.t * Sto.t) =
+  let addr = Env.find name lenv in 
+  let sto = Sto.update addr value sto in
+  (genv, lenv, sto)

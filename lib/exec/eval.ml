@@ -1,17 +1,18 @@
-open Syntax.Ast
-open Runtime
-open Runtime.Domain
-open Runtime.Scope
+open Syntax
+open Domain
+open Domain.Scope
+
+type benv = Env.t * Env.t * Sto.t
 
 (* Type simplification *)
 
-let rec eval_simplify_typ (tdenv : tdenv) (typ : typ) : typ =
+let rec eval_simplify_typ (tdenv : TDEnv.t) (typ : Type.t) : Type.t =
   match typ with
-  | TName { name } -> eval_simplify_typ tdenv (Env.find name tdenv)
-  | TNewType { name } -> Env.find name tdenv
+  | TName { name } -> eval_simplify_typ tdenv (TDEnv.find name tdenv)
+  | TNewType { name } -> TDEnv.find name tdenv
   | _ -> typ
 
-let rec eval_typ (tdenv : tdenv) (benv : benv) (typ : Type.t) : typ =
+let rec eval_typ (tdenv : TDEnv.t) (benv : benv) (typ : Ast.Type.t) : Type.t =
   match typ with
   | Bool _ -> TBool
   | Integer _ -> TAInt
@@ -43,18 +44,18 @@ let rec eval_typ (tdenv : tdenv) (benv : benv) (typ : Type.t) : typ =
 
 (* Evaluation of type arguments *)
 
-and eval_targs (tdenv : tdenv) (tdenv_local : tdenv) (benv : benv)
-    (tparams : string list) (typs : Type.t list) : tdenv =
+and eval_targs (tdenv : TDEnv.t) (tdenv_local : TDEnv.t) (benv : benv)
+    (tparams : string list) (typs : Ast.Type.t list) : TDEnv.t =
   assert (List.length tparams = List.length typs);
   List.fold_left2
     (fun tdenv_local tparam typ ->
       let typ = eval_typ tdenv benv typ in
-      Env.add tparam typ tdenv_local)
+      TDEnv.add tparam typ tdenv_local)
     tdenv_local tparams typs
 
 (* Evaluation of expressions *)
 
-and eval_expr (tdenv : tdenv) (benv : benv) (expr : Expression.t) : value =
+and eval_expr (tdenv : TDEnv.t) (benv : benv) (expr : Ast.Expression.t) : Value.t =
   match expr with
   | True _ -> VBool true
   | False _ -> VBool false
@@ -71,7 +72,7 @@ and eval_expr (tdenv : tdenv) (benv : benv) (expr : Expression.t) : value =
       value
   | Name { name = QualifiedName ([], name); _ } ->
       let name = name.str in
-      let _, value = find_var_top name benv in
+      let _, value = find_var_global name benv in
       value
   | BitStringAccess { bits; lo; hi; _ } ->
       let vbits = eval_expr tdenv benv bits in
@@ -80,17 +81,17 @@ and eval_expr (tdenv : tdenv) (benv : benv) (expr : Expression.t) : value =
       Ops.eval_bitstring_access vbits vlo vhi
   | List { values; _ } ->
       let vvalues = List.map (eval_expr tdenv benv) values in
-      VTuple vvalues
+      Value.VTuple vvalues
   | Record { entries; _ } ->
       let ventries =
         List.map
-          (fun (entry : KeyValue.t) ->
+          (fun (entry : Ast.KeyValue.t) ->
             let key = entry.key.str in
             let value = eval_expr tdenv benv entry.value in
             (key, value))
           entries
       in
-      VStruct { entries = ventries }
+      Value.VStruct { entries = ventries }
   | UnaryOp { op; arg; _ } ->
       let varg = eval_expr tdenv benv arg in
       Ops.eval_unop op varg

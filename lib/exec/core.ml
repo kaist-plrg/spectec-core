@@ -1,5 +1,7 @@
-open Runtime.Domain
-open Runtime.Scope
+open Domain
+open Domain.Scope
+
+type benv = Env.t * Env.t * Sto.t
 
 (* (TODO) Hardcoded for basic_routing_explicit-bmv2.p4 test case,
    how to actually extract bits from a packet? Where should the
@@ -15,13 +17,13 @@ let extract (benv : benv) =
             (fun (key, value) ->
               if key = "etherType" then
                 ( key,
-                  VBit
+                  Value.VBit
                     { value = Bigint.of_int 0x0800; width = Bigint.of_int 16 }
                 )
               else (key, value))
             entries
         in
-        VHeader { valid = true; entries }
+        Value.VHeader { valid = true; entries }
     | _ -> assert false
   in
   let benv = update_value "hdr" vheader benv in
