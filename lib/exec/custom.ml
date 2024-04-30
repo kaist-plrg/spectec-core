@@ -1,9 +1,9 @@
 open Syntax
 open Syntax.Ast
-open Domain
-open Domain.Scope
-open Domain.Ccenv
-open Domain.Ienv
+open Runtime
+open Runtime.Scope
+open Runtime.Ccenv
+open Runtime.Ienv
 
 let init_bscope (tdenv : TDEnv.t) : bscope =
   let genv = Env.empty in

@@ -1,5 +1,5 @@
-open Domain
-open Domain.Scope
+open Runtime
+open Runtime.Scope
 
 (* Corresponds to extern packet_in { ... } *)
 module Packet = struct

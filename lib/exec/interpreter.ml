@@ -3,9 +3,9 @@ open Syntax.Ast
 
 (* A hack to avoid module name conflict *)
 module P4Type = Type
-open Domain
-open Domain.Scope
-open Domain.Ienv
+open Runtime
+open Runtime.Scope
+open Runtime.Ienv
 
 (* Store *)
 

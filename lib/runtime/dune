@@ -1,4 +1,4 @@
 (library
- (name domain)
+ (name runtime)
  (libraries syntax bignum)
  (modules ds value type scope func cclos object ccenv ienv ops))

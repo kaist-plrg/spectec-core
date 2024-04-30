@@ -1,6 +1,6 @@
 open Syntax
-open Domain
-open Domain.Scope
+open Runtime
+open Runtime.Scope
 
 (* Type simplification *)
 

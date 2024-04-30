@@ -1,4 +1,4 @@
 (library
  (name instance)
- (libraries syntax domain utils)
+ (libraries syntax runtime utils)
  (modules instantiate eval))
