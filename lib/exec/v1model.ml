@@ -5,8 +5,6 @@ open Domain.Scope
 open Domain.Ccenv
 open Domain.Ienv
 
-type bscope = Env.t * Env.t * Sto.t
-
 let init_bscope (tdenv : TDEnv.t) =
   let genv = Env.empty in
   let lenv = Env.empty in
@@ -31,7 +29,7 @@ let init_bscope (tdenv : TDEnv.t) =
     let value = Interpreter.default_value typ in
     add_var "standard_metadata" typ value lenv sto
   in
-  (genv, lenv, sto)
+  (tdenv, genv, lenv, sto)
 
 (* Architecture *)
 
@@ -50,39 +48,43 @@ let apply_args (args : string list) =
         })
     args
 
-let drive_instantiation (tdenv : TDEnv.t) (ccenv : CcEnv.t) (ienv : IEnv.t) =
+let drive_pkt_instantiation (tdenv : TDEnv.t) (ccenv : CcEnv.t) (ienv : IEnv.t) =
   let packet_in_cclos = Env.find "packet_in" ccenv in
   let ienv =
     Instance.Instantiate.instantiate_cclos tdenv Env.empty Sto.empty ccenv ienv
       [ "packet" ] packet_in_cclos [] []
   in
-  ienv
+  let bits = Array.init 272 (fun _ -> false) in
+  (* This sets etherType to 16w2048 *)
+  Array.set bits 100 true;
+  let pkt = Core.Packet.init bits in
+  (pkt, ienv)
 
-let drive_parser_impl (tdenv : TDEnv.t) (bscope : bscope) =
+let drive_parser_impl (bscope : bscope) =
   let parser_impl = "main.p" in
   let parser_impl_args =
     apply_args [ "packet"; "hdr"; "meta"; "standard_metadata" ]
   in
-  Interpreter.eval_method_call tdenv bscope parser_impl "apply" parser_impl_args
+  Interpreter.eval_method_call bscope parser_impl "apply" parser_impl_args
     []
 
-let drive_ingress (tdenv : TDEnv.t) (bscope : bscope) =
+let drive_ingress (bscope : bscope) =
   let ingress = "main.ig" in
   let ingress_args = apply_args [ "hdr"; "meta"; "standard_metadata" ] in
-  Interpreter.eval_method_call tdenv bscope ingress "apply" ingress_args []
+  Interpreter.eval_method_call bscope ingress "apply" ingress_args []
 
 let drive (tdenv : TDEnv.t) (ccenv : CcEnv.t) (ienv : IEnv.t) =
   (* Instantiations that should be done by the architecture *)
-  let ienv = drive_instantiation tdenv ccenv ienv in
+  let _pkt, ienv = drive_pkt_instantiation tdenv ccenv ienv in
   Interpreter.register_ienv ienv;
   (* Build an environment to call parser apply *)
   let bscope = init_bscope tdenv in
   (* Obtain parser object from store and call apply *)
-  print_endline "Calling main.p.apply()";
-  let bscope = drive_parser_impl tdenv bscope in
-  Interpreter.print_bscope bscope;
+  Format.printf "Calling main.p.apply()\n";
+  let bscope = drive_parser_impl bscope in
+  Format.printf "%a" pp bscope;
   (* Obtain control object from store and call apply *)
-  print_endline "Calling main.ig.apply()";
-  let bscope = drive_ingress tdenv bscope in
-  Interpreter.print_bscope bscope;
+  Format.printf "Calling main.ig.apply()\n";
+  let bscope = drive_ingress bscope in
+  Format.printf "%a" pp bscope;
   ()

@@ -67,7 +67,7 @@ let load_local_const (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t)
   let lenv, sto = add_var name typ value lenv sto in
   (lenv, sto)
 
-let load_local_variable (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t)
+let pre_load_local_variable (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t)
     (sto : Sto.t) (name : string) (typ : P4Type.t) : Env.t * Sto.t =
   (* When using an expression for the size, the expression
      must be parenthesized and compile-time known. (7.1.6.2) *)
@@ -77,7 +77,7 @@ let load_local_variable (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t)
   let lenv, sto = add_var_without_value name typ lenv sto in
   (lenv, sto)
 
-let load_local_params (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t)
+let pre_load_local_params (tdenv : TDEnv.t) (genv : Env.t) (lenv : Env.t)
     (sto : Sto.t) (params : Parameter.t list) : Env.t * Sto.t =
   List.fold_left
     (fun (lenv, sto) (param : Parameter.t) ->
@@ -335,7 +335,7 @@ and instantiate_cclos (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
       in
       (* Load parameters into local environment and store *)
       let lenv_local, sto_local =
-        load_local_params tdenv_local genv_local lenv_local sto_local params
+        pre_load_local_params tdenv_local genv_local lenv_local sto_local params
       in
       (* Instantiate local instantiations, load constants and local variables *)
       let genv_local, lenv_local, sto_local, ienv =
@@ -425,7 +425,7 @@ and instantiate_cclos (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
       in
       (* Load parameters into local environment and store *)
       let lenv_local, sto_local =
-        load_local_params tdenv_local genv_local lenv_local sto_local params
+        pre_load_local_params tdenv_local genv_local lenv_local sto_local params
       in
       (* Instantiate local instantiations, load constants and local variables *)
       let genv_local, lenv_local, sto_local, ienv =
@@ -580,7 +580,7 @@ and instantiate_parser_local_decl (tdenv : TDEnv.t) (genv : Env.t)
       let lenv, sto = load_local_const tdenv genv lenv sto name.str typ value in
       (genv, lenv, sto, ienv)
   | Variable { name; typ; _ } ->
-      let lenv, sto = load_local_variable tdenv genv lenv sto name.str typ in
+      let lenv, sto = pre_load_local_variable tdenv genv lenv sto name.str typ in
       (genv, lenv, sto, ienv)
   (* (TODO) is it correct to instantiate a value set at its declaration? *)
   (* There is no syntax for specifying parameters that are value-sets
@@ -616,7 +616,7 @@ and instantiate_control_local_decl (tdenv : TDEnv.t) (genv : Env.t)
       let lenv, sto = load_local_const tdenv genv lenv sto name.str typ value in
       (genv, lenv, sto, ienv)
   | Variable { name; typ; _ } ->
-      let lenv, sto = load_local_variable tdenv genv lenv sto name.str typ in
+      let lenv, sto = pre_load_local_variable tdenv genv lenv sto name.str typ in
       (genv, lenv, sto, ienv)
   | Action _ ->
       Printf.printf "(TODO: instantiate) action\n";

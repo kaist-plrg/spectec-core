@@ -5,9 +5,7 @@ open Domain.Scope
 open Domain.Ccenv
 open Domain.Ienv
 
-type bscope = Env.t * Env.t * Sto.t
-
-let init_bscope _tdenv =
+let init_bscope (tdenv : TDEnv.t) : bscope =
   let genv = Env.empty in
   let lenv = Env.empty in
   let sto = Sto.empty in
@@ -18,7 +16,7 @@ let init_bscope _tdenv =
     in
     add_var "b" typ value lenv sto
   in
-  (genv, lenv, sto)
+  (tdenv, genv, lenv, sto)
 
 (* Architecture *)
 
@@ -37,21 +35,20 @@ let apply_args (args : string list) =
         })
     args
 
-let drive_proto (tdenv : TDEnv.t) (bscope : bscope) =
+let drive_proto (bscope : bscope) =
   let proto = "main._p" in
   let proto_args = apply_args [ "b" ] in
-  Interpreter.eval_method_call tdenv bscope proto "apply" proto_args []
+  Interpreter.eval_method_call bscope proto "apply" proto_args []
 
 let drive (tdenv : TDEnv.t) (_ccenv : CcEnv.t) (ienv : IEnv.t) =
   (* Register the instantiated environment *)
   Interpreter.register_ienv ienv;
   (* Build an environment to call control apply *)
   let bscope = init_bscope tdenv in
-  print_endline "Initial environment:";
-  Interpreter.print_bscope bscope;
+  Format.printf "Initial environment:\n";
+  Format.printf "%a" pp bscope;
   (* Obtain control object from store and call apply *)
-  print_endline "Calling main._p.apply()";
-  let bscope = drive_proto tdenv bscope in
-  print_endline "After the call:";
-  Interpreter.print_bscope bscope;
+  Format.printf "Calling main._p.apply()\n";
+  let bscope = drive_proto bscope in
+  Format.printf "%a" pp bscope;
   ()
