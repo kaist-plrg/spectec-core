@@ -6,7 +6,7 @@ type t =
   | OParser of { tdenv : TDEnv.t; sto : Sto.t; funcs : Func.t list }
   | OControl of { tdenv : TDEnv.t; sto : Sto.t; funcs : Func.t list }
   | OExtern of { tdenv : TDEnv.t; sto : Sto.t; funcs : Func.t list }
-  | OTable of { genv : Env.t; lenv : Env.t; properties : Table.property list }
+  | OTable of { genv : Env.t; lenv : Env.t; keys : Table.key list; actions : Table.action_ref list; default : Table.action_ref option }
   | OFunction
   | OValueSet
 
