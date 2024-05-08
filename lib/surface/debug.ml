@@ -678,6 +678,6 @@ and debug_decl (indent : int) (decl : Declaration.t) =
 
 (* Program *)
 
-let debug_program (program : program) =
+let debug_program (program : p4program) =
   let (Program decls) = program in
   List.map (debug_decl 0) decls |> String.concat "\n"

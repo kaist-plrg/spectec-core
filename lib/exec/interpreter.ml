@@ -1,5 +1,5 @@
-open Syntax
-open Syntax.Ast
+open Surface 
+open Surface.Ast
 
 (* A hack to avoid module name conflict *)
 module P4Type = Type
@@ -66,8 +66,8 @@ let rec default_value (typ : Type.t) : Value.t =
    : prefixedNonTypeName | lvalue "." member
    | lvalue "[" expression "]" | lvalue "[" expression ":" expression "]" *)
 
-let rec eval_write (bscope : bscope) (arg : Expression.t)
-    (value : Value.t) : bscope =
+let rec eval_write (bscope : bscope) (arg : Expression.t) (value : Value.t) :
+    bscope =
   match arg with
   | Name { name = BareName text; _ } ->
       let var = text.str in
@@ -98,8 +98,7 @@ let rec eval_write (bscope : bscope) (arg : Expression.t)
         (Pretty.print_expr arg)
       |> failwith
 
-let rec eval_stmt (bscope : bscope) (stmt : Statement.t) :
-    bscope =
+let rec eval_stmt (bscope : bscope) (stmt : Statement.t) : bscope =
   match stmt with
   | MethodCall { func; args; type_args = targs; _ } -> (
       match func with
@@ -130,14 +129,13 @@ let rec eval_stmt (bscope : bscope) (stmt : Statement.t) :
   | DeclarationStatement { decl; _ } -> eval_decl bscope decl
   | _ ->
       Printf.sprintf "(TODO: eval_stmt) %s"
-        (Syntax.Pretty.print_stmt 0 stmt |> Utils.Print.print_inline)
+        (Surface.Pretty.print_stmt 0 stmt |> Utils.Print.print_inline)
       |> print_endline;
       bscope
 
 (* Block evaluation *)
 
-and eval_block (bscope : bscope) (stmts : Statement.t list) :
-    bscope =
+and eval_block (bscope : bscope) (stmts : Statement.t list) : bscope =
   let tdenv, genv, lenv, _ = bscope in
   let _, _, _, sto = List.fold_left eval_stmt bscope stmts in
   (tdenv, genv, lenv, sto)
@@ -145,23 +143,19 @@ and eval_block (bscope : bscope) (stmts : Statement.t list) :
 (* State evaluation *)
 (* (TODO) Each states having a scope of functions would be desirable *)
 
-and eval_state (bscope : bscope) (stmts : Statement.t list) :
-    bscope =
+and eval_state (bscope : bscope) (stmts : Statement.t list) : bscope =
   let tdenv, genv, lenv, _ = bscope in
   let _, _, _, sto = List.fold_left eval_stmt bscope stmts in
   (tdenv, genv, lenv, sto)
 
-and eval_state_transition (bscope : bscope)
-    (stmts : Statement.t list) (transition : Parser.transition)
-    (funcs : Func.t list) : bscope =
+and eval_state_transition (bscope : bscope) (stmts : Statement.t list)
+    (transition : Parser.transition) (funcs : Func.t list) : bscope =
   let bscope = eval_state bscope stmts in
   let next =
     match transition with
     | Direct { next; _ } -> next
     | Select { exprs; cases; _ } ->
-        let vexprs =
-          List.map (fun expr -> Eval.eval_expr bscope expr) exprs
-        in
+        let vexprs = List.map (fun expr -> Eval.eval_expr bscope expr) exprs in
         let find_match (mtch : Text.t option) (case : Parser.case) =
           let matchcases = case.matches in
           let next = case.next in
@@ -202,8 +196,7 @@ and eval_state_transition (bscope : bscope)
 
 (* Declaration evaluation *)
 
-and eval_decl (bscope : bscope) (decl : Declaration.t) :
-    bscope =
+and eval_decl (bscope : bscope) (decl : Declaration.t) : bscope =
   let tdenv, genv, lenv, sto = bscope in
   match decl with
   | Variable { name; typ; init; _ } ->
@@ -217,14 +210,15 @@ and eval_decl (bscope : bscope) (decl : Declaration.t) :
       let lenv, sto = add_var name typ value lenv sto in
       (tdenv, genv, lenv, sto)
   | _ ->
-      Printf.sprintf "(TODO: eval_decl) %s" (Pretty.print_decl 0 decl |> Utils.Print.print_inline) |> print_endline;
+      Printf.sprintf "(TODO: eval_decl) %s"
+        (Pretty.print_decl 0 decl |> Utils.Print.print_inline)
+      |> print_endline;
       bscope
 
 (* Calling convention: Copy-in/out *)
 
 and copyin (preload : bool) (caller_scope : bscope) (callee_scope : bscope)
-  (params : Parameter.t list) (args : Argument.t list) :
-    bscope =
+    (params : Parameter.t list) (args : Argument.t list) : bscope =
   (* (TODO) assume there is no default argument *)
   assert (List.length params = List.length args);
   check_args args;
@@ -375,35 +369,38 @@ and eval_extern_method_call (tdenv_callee : TDEnv.t) (sto_callee : Sto.t)
   match func with
   | FExtern { tparams; params; _ } ->
       let callee_scope = (tdenv_callee, Env.empty, Env.empty, sto_callee) in
-      let callee_scope = Eval.eval_targs caller_scope callee_scope tparams targs in
+      let callee_scope =
+        Eval.eval_targs caller_scope callee_scope tparams targs
+      in
       let callee_scope = copyin false caller_scope callee_scope params args in
       let callee_scope = Core.eval_builtin callee_scope mthd in
       let caller_scope = copyout caller_scope callee_scope params args in
       caller_scope
-  | _ -> Format.asprintf "(TODO: eval_extern_method_call) %a" Func.pp func |> failwith
+  | _ ->
+      Format.asprintf "(TODO: eval_extern_method_call) %a" Func.pp func
+      |> failwith
 
 and eval_table_call (caller_scope : bscope) (keys : Table.key list)
-  (actions : Table.action_ref list) (default : Table.action_ref option) =
-    let keys =
-      List.map
-        (fun ({ key; match_kind; _ } : Table.key) ->
-          let vkey = Eval.eval_expr caller_scope key in
-          Format.printf "Key = %a\n" Value.pp vkey;
-          (vkey, match_kind.str))
-        keys
-    in
-    let action = Control.match_action keys actions default in
-    match action with
-    | Some (Name.BareName name, _args)
-    | Some (Name.QualifiedName ([], name), _args) ->
-        (* (TODO) Evaluate the action, requires a func-env and -store? *)
-        Printf.printf "(TODO: eval_table_call) Action %s\n" name.str;
-        caller_scope
-    | _ -> caller_scope
+    (actions : Table.action_ref list) (default : Table.action_ref option) =
+  let keys =
+    List.map
+      (fun ({ key; match_kind; _ } : Table.key) ->
+        let vkey = Eval.eval_expr caller_scope key in
+        Format.printf "Key = %a\n" Value.pp vkey;
+        (vkey, match_kind.str))
+      keys
+  in
+  let action = Control.match_action keys actions default in
+  match action with
+  | Some (Name.BareName name, _args)
+  | Some (Name.QualifiedName ([], name), _args) ->
+      (* (TODO) Evaluate the action, requires a func-env and -store? *)
+      Printf.printf "(TODO: eval_table_call) Action %s\n" name.str;
+      caller_scope
+  | _ -> caller_scope
 
-and eval_method_call (caller_scope : bscope)
-    (ref : string) (mthd : string) (args : Argument.t list)
-    (targs : P4Type.t list) =
+and eval_method_call (caller_scope : bscope) (ref : string) (mthd : string)
+    (args : Argument.t list) (targs : P4Type.t list) =
   (* Retrieve the object from the store *)
   let obj = IEnv.find ref !ienv in
   (* Evaluate the method call, pattern-matched against the object type *)

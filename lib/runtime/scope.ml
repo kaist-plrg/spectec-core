@@ -35,9 +35,8 @@ module Sto = struct
     let fresh_vsto = VSto.fresh vsto in
     if fresh_tsto > fresh_vsto then fresh_tsto else fresh_vsto
 
-  let pp fmt (_tsto, vsto) =
-    Format.fprintf fmt "\t%a" VSto.pp vsto
-    (*Format.fprintf fmt "\ttsto: %a\n\tvsto: %a" TSto.pp tsto VSto.pp vsto*)
+  let pp fmt (_tsto, vsto) = Format.fprintf fmt "\t%a" VSto.pp vsto
+  (*Format.fprintf fmt "\ttsto: %a\n\tvsto: %a" TSto.pp tsto VSto.pp vsto*)
 end
 
 (* Block-local scope: typedef env, global env, local env, and a store *)
@@ -77,4 +76,5 @@ let update_value (name : Ds.Var.t) (value : Value.t)
   (tdenv, genv, lenv, sto)
 
 let pp fmt ((_tdenv, genv, lenv, sto) : bscope) =
-  Format.fprintf fmt "genv: %a\nlenv: %a\nsto:\n%a\n" Env.pp genv Env.pp lenv Sto.pp sto
+  Format.fprintf fmt "genv: %a\nlenv: %a\nsto:\n%a\n" Env.pp genv Env.pp lenv
+    Sto.pp sto

@@ -13,7 +13,7 @@
  * under the License.
  *)
 
-open Syntax
+open Surface
 
 (* Bit manipulation *)
 

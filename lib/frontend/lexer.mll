@@ -17,7 +17,7 @@
 open Lexing
 open Context
 open Parser
-open Syntax
+open Surface
 
 exception Error of string
 

@@ -1,4 +1,4 @@
-open Syntax
+open Surface
 open Runtime
 open Runtime.Scope
 
@@ -40,12 +40,13 @@ let rec eval_typ (bscope : bscope) (typ : Ast.Type.t) : Type.t =
       TDEnv.find var tdenv
   (* (TODO) handle specialized types *)
   | SpecializedType { base; _ } -> eval_typ bscope base
-  | _ -> Printf.sprintf "(TODO: eval_typ) %s" (Pretty.print_type typ) |> failwith
+  | _ ->
+      Printf.sprintf "(TODO: eval_typ) %s" (Pretty.print_type typ) |> failwith
 
 (* Evaluation of type arguments *)
 
 and eval_targs (caller_scope : bscope) (callee_scope : bscope)
-  (tparams : string list) (typs : Ast.Type.t list) : bscope =
+    (tparams : string list) (typs : Ast.Type.t list) : bscope =
   assert (List.length tparams = List.length typs);
   let tdenv_callee, lenv_callee, genv_callee, sto_callee = callee_scope in
   let tdenv_callee =
@@ -59,8 +60,7 @@ and eval_targs (caller_scope : bscope) (callee_scope : bscope)
 
 (* Evaluation of expressions *)
 
-and eval_expr (bscope : bscope) (expr : Ast.Expression.t) :
-    Value.t =
+and eval_expr (bscope : bscope) (expr : Ast.Expression.t) : Value.t =
   match expr with
   | True _ -> VBool true
   | False _ -> VBool false
@@ -115,5 +115,7 @@ and eval_expr (bscope : bscope) (expr : Ast.Expression.t) :
       match vexpr with
       | VHeader { entries; _ } | VStruct { entries } -> List.assoc name entries
       | _ ->
-          Format.asprintf "(eval_expr) %a cannot be accessed" Value.pp vexpr |> failwith)
-  | _ -> Printf.sprintf "(TODO: eval_expr) %s" (Pretty.print_expr expr) |> failwith
+          Format.asprintf "(eval_expr) %a cannot be accessed" Value.pp vexpr
+          |> failwith)
+  | _ ->
+      Printf.sprintf "(TODO: eval_expr) %s" (Pretty.print_expr expr) |> failwith

@@ -22,9 +22,9 @@ let parse_string filename file =
 
 let roundtrip filename =
   let* program = parse_file filename in
-  let file' = Syntax.Pretty.print_program program in
+  let file' = Surface.Pretty.print_program program in
   let* program' = parse_string filename file' in
-  if not (Syntax.Eq.eq_program program program') then (
+  if not (Surface.Eq.eq_program program program') then (
     roundtrip_fails := !roundtrip_fails + 1;
     Printf.sprintf "Roundtrip fail: %s" filename |> print_endline);
   Some program'

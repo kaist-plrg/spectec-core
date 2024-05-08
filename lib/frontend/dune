@@ -7,5 +7,5 @@
 
 (library
  (name frontend)
- (libraries syntax core core_kernel core_unix)
+ (libraries surface core core_kernel core_unix)
  (modules lexer parser preprocessor context parse))

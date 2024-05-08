@@ -1,4 +1,4 @@
-open Syntax.Ast
+open Surface.Ast
 open Scope
 
 type t =

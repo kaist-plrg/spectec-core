@@ -576,7 +576,7 @@ and eq_decl' (decl : Declaration.t) (decl' : Declaration.t) =
 
 (* Program *)
 
-and eq_program (program : program) (program' : program) =
+and eq_program (program : p4program) (program' : p4program) =
   let (Program decls) = program in
   let (Program decls') = program' in
   eq_list eq_decl decls decls'

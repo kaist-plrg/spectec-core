@@ -1,5 +1,5 @@
-open Syntax
-open Syntax.Ast
+open Surface
+open Surface.Ast
 
 (* A hack to avoid module name conflict *)
 module P4Type = Type
@@ -17,7 +17,9 @@ let rec name_from_type (typ : P4Type.t) : string =
   (* (TODO) how to consider type arguments? *)
   | P4Type.SpecializedType { base; _ } -> name_from_type base
   | _ ->
-      Printf.sprintf "(name_from_type) Unexpected type: %s" (Pretty.print_type typ) |> failwith
+      Printf.sprintf "(name_from_type) Unexpected type: %s"
+        (Pretty.print_type typ)
+      |> failwith
 
 let rec cclos_from_type (typ : P4Type.t) (ccenv : CcEnv.t) :
     Cclos.t * P4Type.t list =
@@ -257,8 +259,7 @@ and eval_expr (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t) (ccenv : CcEnv.t)
 
 and eval_args (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t) (ccenv : CcEnv.t)
     (ienv : IEnv.t) (path : string list) (params : Parameter.t list)
-    (args : Argument.t list) : (string * Type.t * Value.t) list * IEnv.t
-    =
+    (args : Argument.t list) : (string * Type.t * Value.t) list * IEnv.t =
   (* (TODO) assume there is no default argument *)
   assert (List.length params = List.length args);
   check_args args;
@@ -284,9 +285,7 @@ and eval_cargs (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
     (lenv_local : Env.t) (sto_local : Sto.t) (ccenv : CcEnv.t) (ienv : IEnv.t)
     (path : string list) (cparams : Parameter.t list) (args : Argument.t list) :
     Env.t * Sto.t * IEnv.t =
-  let bindings, ienv =
-    eval_args tdenv genv sto ccenv ienv path cparams args
-  in
+  let bindings, ienv = eval_args tdenv genv sto ccenv ienv path cparams args in
   let lenv_local, sto_local =
     List.fold_left
       (fun (lenv, sto) (name, typ, value) -> add_var name typ value lenv sto)
@@ -423,8 +422,8 @@ and instantiate_cclos (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
       let genv_local, lenv_local, sto_local, funcs, ienv =
         List.fold_left
           (fun (genv, lenv, sto, funcs, ienv) local ->
-            instantiate_control_local_decl tdenv_local genv lenv sto ccenv funcs ienv
-              path local)
+            instantiate_control_local_decl tdenv_local genv lenv sto ccenv funcs
+              ienv path local)
           (genv_local, lenv_local, sto_local, [], ienv)
           locals
       in
@@ -465,8 +464,10 @@ and instantiate_cclos (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
       in
       let genv_package, sto_package =
         List.fold_left
-          (fun (genv, sto) (name, typ, value) -> add_var name typ value genv sto)
-          (genv_package, sto_package) bindings
+          (fun (genv, sto) (name, typ, value) ->
+            add_var name typ value genv sto)
+          (genv_package, sto_package)
+          bindings
       in
       let obj =
         Object.OPackage
@@ -571,7 +572,9 @@ and instantiate_parser_local_decl (tdenv : TDEnv.t) (genv : Env.t)
       let lenv, sto = load_local_const tdenv genv lenv sto name.str typ value in
       (genv, lenv, sto, ienv)
   | Variable { name; typ; _ } ->
-      let lenv, sto = pre_load_local_variable tdenv genv lenv sto name.str typ in
+      let lenv, sto =
+        pre_load_local_variable tdenv genv lenv sto name.str typ
+      in
       (genv, lenv, sto, ienv)
   (* (TODO) is it correct to instantiate a value set at its declaration? *)
   (* There is no syntax for specifying parameters that are value-sets
@@ -593,9 +596,9 @@ and instantiate_parser_local_decl (tdenv : TDEnv.t) (genv : Env.t)
    | variableDeclaration; (14) *)
 
 and instantiate_control_local_decl (tdenv : TDEnv.t) (genv : Env.t)
-    (lenv : Env.t) (sto : Sto.t) (ccenv : CcEnv.t) (funcs : Func.t list) (ienv : IEnv.t)
-    (path : string list) (decl : Declaration.t) : Env.t * Env.t * Sto.t * Func.t list * IEnv.t
-    =
+    (lenv : Env.t) (sto : Sto.t) (ccenv : CcEnv.t) (funcs : Func.t list)
+    (ienv : IEnv.t) (path : string list) (decl : Declaration.t) :
+    Env.t * Env.t * Sto.t * Func.t list * IEnv.t =
   match decl with
   | Instantiation { name; typ; args; _ } ->
       let genv, sto, ienv =
@@ -607,10 +610,15 @@ and instantiate_control_local_decl (tdenv : TDEnv.t) (genv : Env.t)
       let lenv, sto = load_local_const tdenv genv lenv sto name.str typ value in
       (genv, lenv, sto, funcs, ienv)
   | Variable { name; typ; _ } ->
-      let lenv, sto = pre_load_local_variable tdenv genv lenv sto name.str typ in
+      let lenv, sto =
+        pre_load_local_variable tdenv genv lenv sto name.str typ
+      in
       (genv, lenv, sto, funcs, ienv)
   | Action { name; params; body; _ } ->
-      let func = Func.FAction { name = name.str; params; genv; lenv; body = body.statements } in
+      let func =
+        Func.FAction
+          { name = name.str; params; genv; lenv; body = body.statements }
+      in
       (genv, lenv, sto, funcs @ [ func ], ienv)
   (* Each table evaluates to a table instance (18.2) *)
   (* There is no syntax for specifying parameters that are tables
@@ -628,8 +636,10 @@ and instantiate_control_local_decl (tdenv : TDEnv.t) (genv : Env.t)
             | Actions { actions; _ } -> (keys, actions, default)
             | DefaultAction { action; _ } -> (keys, actions, Some action)
             | _ ->
-                Printf.printf "(TODO: instantiate_control_local_decl) Table property %s\n"
-                  (Pretty.print_table_property 0 property |> Utils.Print.print_inline);
+                Printf.printf
+                  "(TODO: instantiate_control_local_decl) Table property %s\n"
+                  (Pretty.print_table_property 0 property
+                  |> Utils.Print.print_inline);
                 (keys, actions, default))
           ([], [], None) properties
       in
@@ -657,7 +667,7 @@ and instantiate_toplevel_decl (tdenv : TDEnv.t) (genv : Env.t) (sto : Sto.t)
       let tdenv, genv, sto, ccenv = load_decl tdenv genv sto ccenv decl in
       (tdenv, genv, sto, ccenv, ienv)
 
-let instantiate_program (program : program) =
+let instantiate_program (program : p4program) =
   let (Program decls) = program in
   let tdenv, _, _, ccenv, ienv =
     List.fold_left

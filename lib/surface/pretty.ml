@@ -754,6 +754,6 @@ and print_decl (indent : int) (decl : Declaration.t) =
 
 (* Program *)
 
-let print_program (program : program) =
+let print_program (program : p4program) =
   let (Program decls) = program in
   List.map (print_decl 0) decls |> String.concat "\n"

@@ -1,4 +1,4 @@
-open Syntax
+open Surface
 
 let preprocess (includes : string) (filename : string) =
   try Some (Preprocessor.preprocess includes filename)

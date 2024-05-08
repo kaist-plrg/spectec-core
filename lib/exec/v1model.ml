@@ -1,5 +1,5 @@
-open Syntax
-open Syntax.Ast
+open Surface
+open Surface.Ast
 open Runtime
 open Runtime.Scope
 open Runtime.Ccenv
@@ -48,7 +48,8 @@ let apply_args (args : string list) =
         })
     args
 
-let drive_pkt_instantiation (tdenv : TDEnv.t) (ccenv : CcEnv.t) (ienv : IEnv.t) =
+let drive_pkt_instantiation (tdenv : TDEnv.t) (ccenv : CcEnv.t) (ienv : IEnv.t)
+    =
   let packet_in_cclos = Env.find "packet_in" ccenv in
   let ienv =
     Instance.Instantiate.instantiate_cclos tdenv Env.empty Sto.empty ccenv ienv
@@ -65,8 +66,7 @@ let drive_parser_impl (bscope : bscope) =
   let parser_impl_args =
     apply_args [ "packet"; "hdr"; "meta"; "standard_metadata" ]
   in
-  Interpreter.eval_method_call bscope parser_impl "apply" parser_impl_args
-    []
+  Interpreter.eval_method_call bscope parser_impl "apply" parser_impl_args []
 
 let drive_ingress (bscope : bscope) =
   let ingress = "main.ig" in

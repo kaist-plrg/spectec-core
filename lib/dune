@@ -3,6 +3,7 @@
  (modules)
  (libraries
   (re_export utils)
+  (re_export surface)
   (re_export syntax)
   (re_export frontend)
   (re_export runtime)

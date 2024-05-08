@@ -1,5 +1,5 @@
-open Syntax
-open Syntax.Ast
+open Surface
+open Surface.Ast
 open Runtime
 open Runtime.Scope
 open Runtime.Ccenv
