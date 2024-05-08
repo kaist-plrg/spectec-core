@@ -14,7 +14,7 @@
  *)
 
 open Core
-open Surface
+open Surface.Ast
 module SMap = Map.Make (String)
 
 type has_params = bool

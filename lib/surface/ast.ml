@@ -17,9 +17,63 @@ open Utils.Alternative
 
 (* Basics *)
 
-module Direction : sig
+module Text : sig
   type t = Info.t t'
 
+  and 'a t' = { tags : 'a; str : string }
+
+  val tags : 'a t' -> 'a
+end = struct
+  type t = Info.t t'
+
+  and 'a t' = { tags : 'a; str : string }
+
+  let tags (t : 'a t') : 'a = t.tags
+end
+
+module Number : sig
+  type t = Info.t t'
+
+  and 'a t' = {
+    tags : 'a;
+    value : Bigint.t;
+    width_signed : (Bigint.t * bool) option;
+  }
+
+  val tags : 'a t' -> 'a
+end = struct
+  type t = Info.t t'
+
+  and 'a t' = {
+    tags : 'a;
+    value : Bigint.t;
+    width_signed : (Bigint.t * bool) option;
+  }
+
+  let tags (t : 'a t') : 'a = t.tags
+end
+
+module Name : sig
+  type t = Info.t t'
+
+  and 'a t' = BareName of Text.t | QualifiedName of (Text.t list * Text.t)
+
+  val tags : Info.t t' -> Info.t
+end = struct
+  type t = Info.t t'
+
+  and 'a t' = BareName of Text.t | QualifiedName of (Text.t list * Text.t)
+
+  let tags (t : 'a t') : 'a =
+    match t with
+    | BareName name -> Text.tags name
+    | QualifiedName (prefix, name) ->
+        let infos = List.map Text.tags prefix in
+        List.fold_right Info.merge infos (Text.tags name)
+end
+
+module Direction : sig
+  type t = Info.t t'
   and 'a t' =
     | In of { tags : 'a }
     | Out of { tags : 'a }

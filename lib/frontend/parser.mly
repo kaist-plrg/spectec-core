@@ -15,21 +15,18 @@
 
 %{
 module P4cherry = struct end
-open Surface
-open Ast
-open Name
-open Text
 open Context
 
-(* A hack to avoid conflict btw this module and Ast.Parser *)
-module Parser = Ast.Parser
+(* A hack to avoid conflict btw this module and Surface.Parser *)
+module Parser = Surface.Ast.Parser
+open Surface.Ast
 
 let rec smash_annotations (l: Text.t list) (tok2: Text.t): Text.t list =
   match l with
   | [] -> [ tok2 ]
   | [ tok1 ] ->
-     if Info.follows tok1.tags tok2.tags then
-       [{ tags = Info.merge tok1.tags tok2.tags;
+     if Surface.Info.follows tok1.tags tok2.tags then
+       [{ tags = Surface.Info.merge tok1.tags tok2.tags;
          str = tok1.str ^ tok2.str }]
      else
        [ tok1; tok2 ]
@@ -41,8 +38,8 @@ let rec smash_annotations (l: Text.t list) (tok2: Text.t): Text.t list =
 
 %token<Surface.Info.t> END
 %token TYPENAME IDENTIFIER
-%token<Surface.Text.t> NAME STRING_LITERAL
-%token<Surface.Number.t * string> NUMBER
+%token<Surface.Ast.Text.t> NAME STRING_LITERAL
+%token<Surface.Ast.Number.t * string> NUMBER
 %token<Surface.Info.t> LE GE SHL AND OR NE EQ
 %token<Surface.Info.t> PLUS MINUS PLUS_SAT MINUS_SAT MUL DIV MOD
 %token<Surface.Info.t> BIT_OR BIT_AND BIT_XOR COMPLEMENT
@@ -57,7 +54,7 @@ let rec smash_annotations (l: Text.t list) (tok2: Text.t): Text.t list =
 %token<Surface.Info.t> INT KEY SELECT MATCH_KIND OUT PACKAGE PARSER RETURN STATE STRING STRUCT
 %token<Surface.Info.t> SWITCH TABLE THEN TRANSITION TUPLE TYPE TYPEDEF VARBIT VALUESET VOID
 %token<Surface.Info.t> PRAGMA PRAGMA_END
-%token<Surface.Text.t> UNEXPECTED_TOKEN
+%token<Surface.Ast.Text.t> UNEXPECTED_TOKEN
 
 (**************************** PRIORITY AND ASSOCIATIVITY ******************************)
 
@@ -80,9 +77,9 @@ let rec smash_annotations (l: Text.t list) (tok2: Text.t): Text.t list =
 %left DOT
 
 
-%start <Ast.p4program> p4program
-%start <Ast.Declaration.t> variableDeclaration
-%start <Ast.Declaration.t> typeDeclaration
+%start <p4program> p4program
+%start <Declaration.t> variableDeclaration
+%start <Declaration.t> typeDeclaration
 
 %%
 
@@ -299,26 +296,26 @@ annotation:
 | info1 = AT name = name
     { let info2 = Text.tags name in
       let body = Annotation.Empty { tags = info2 } in
-      let tags = Info.merge info1 info2 in
+      let tags = Surface.Info.merge info1 info2 in
       Annotation.{ tags; name; body } }
 | info1 = AT name = name info2 = L_PAREN body = annotationBody info3 = R_PAREN
-    { let tags = Info.merge info2 info3 in
+    { let tags = Surface.Info.merge info2 info3 in
       let body = Annotation.Unparsed { tags; str = body } in
-      let tags = Info.merge info1 info3 in
+      let tags = Surface.Info.merge info1 info3 in
       Annotation.{ tags; name; body } }
 | info1 = AT name = name info2 = L_BRACKET body = expressionList info3 = R_BRACKET
-    { let tags = Info.merge info2 info3 in
+    { let tags = Surface.Info.merge info2 info3 in
       let body = Annotation.Expression { tags; exprs = body } in
-      let tags = Info.merge info1 info3 in
+      let tags = Surface.Info.merge info1 info3 in
       Annotation.{ tags; name; body } }
 | info1 = AT name = name info2 = L_BRACKET body = kvList info3 = R_BRACKET
-    { let tags = Info.merge info2 info3 in
+    { let tags = Surface.Info.merge info2 info3 in
       let body = Annotation.KeyValue { tags; key_values = body } in
-      let tags = Info.merge info1 info3 in
+      let tags = Surface.Info.merge info1 info3 in
       Annotation.{ tags; name; body } }
 | info1 = PRAGMA name = name body = annotationBody info2 = PRAGMA_END
     { let body = Annotation.Unparsed { tags = info2; str = body } in
-      let tags = Info.merge info1 info2 in
+      let tags = Surface.Info.merge info1 info2 in
       Annotation.{ tags; name; body }}
 ;
 
@@ -520,7 +517,7 @@ parameter:
         | None -> Type.tags typ
         | Some dir -> Direction.tags dir
       in
-      let info = Info.merge info1 (Text.tags variable) in
+      let info = Surface.Info.merge info1 (Text.tags variable) in
       Parameter.{ tags = info; annotations; direction; typ; variable; opt_value = None } }
 | annotations = optAnnotations
   direction = direction typ = typeRef variable = name ASSIGN value = expression
@@ -528,7 +525,7 @@ parameter:
         match (direction : Direction.t option) with
         | None -> Type.tags typ
         | Some dir -> Direction.tags dir in
-      let tags = Info.merge info1 (Text.tags variable) in
+      let tags = Surface.Info.merge info1 (Text.tags variable) in
       Parameter.{ tags; annotations; direction; typ; variable; opt_value = Some value } }
 ;
 
@@ -548,24 +545,24 @@ packageTypeDeclaration:
   name = push_name
   type_params = optTypeParameters
   L_PAREN params = parameterList info2 = R_PAREN
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Declaration.PackageType { tags; annotations; name; type_params; params } }
 ;
 
 instantiation:
 | annotations = optAnnotations typ = typeRef
     L_PAREN args = argumentList R_PAREN name = name info2 = SEMICOLON
-    { let info' = Info.merge (Type.tags typ) info2 in
+    { let info' = Surface.Info.merge (Type.tags typ) info2 in
        Declaration.Instantiation { annotations; typ; args; name; init=None; tags = info' } }
 | annotations = optAnnotations typ = typeRef
     L_PAREN args = argumentList R_PAREN name = name ASSIGN init = objInitializer info2 = SEMICOLON
-    { let info' = Info.merge (Type.tags typ) info2 in
+    { let info' = Surface.Info.merge (Type.tags typ) info2 in
        Declaration.Instantiation { annotations; typ; args; name; init=Some init; tags = info' } }
 ;
 
 objInitializer:
 | L_BRACE statements = list(objDeclaration) R_BRACE
-    { let info' = Info.merge $1 $3 in
+    { let info' = Surface.Info.merge $1 $3 in
       Block.{ annotations = []; statements; tags = info' } }
 ;
 
@@ -599,7 +596,7 @@ parserDeclaration:
   info2 = R_BRACE
   pop_scope
     { let (info1, annotations, name, type_params, params) = p_type in
-      let tags = Info.merge info1 info2 in
+      let tags = Surface.Info.merge info1 info2 in
       let locals = List.rev locals in
       Declaration.Parser { tags; annotations; name; type_params; params; constructor_params; locals; states } }
 ;
@@ -619,7 +616,7 @@ parserTypeDeclaration:
 | annotations = optAnnotations info1 = PARSER
   name = push_name type_params = optTypeParameters
   L_PAREN params = parameterList info2 = R_PAREN
-    { let info = Info.merge info1 info2 in
+    { let info = Surface.Info.merge info1 info2 in
       (info, annotations, name, type_params, params) }
 ;
 
@@ -628,7 +625,7 @@ parserState:
   L_BRACE statements = list(parserStatement) transition = transitionStatement
   info2 = R_BRACE
   pop_scope
-     { let tags = Info.merge info1 info2 in
+     { let tags = Surface.Info.merge info1 info2 in
        { tags; annotations; name; statements; transition }: Parser.state }
 
 ;
@@ -648,25 +645,25 @@ parserStatement:
 parserBlockStatement:
 | annotations = optAnnotations
   info1 = L_BRACE statements = list(parserStatement) info2 = R_BRACE
-     { let tags = Info.merge info1 info2 in
+     { let tags = Surface.Info.merge info1 info2 in
        let block = Block.{ annotations; statements; tags } in
        Statement.BlockStatement { tags; block } }
 ;
 
 transitionStatement:
 | (* empty *)
-    { let tags = Info.M "Compiler-generated reject transition" in
+    { let tags = Surface.Info.M "Compiler-generated reject transition" in
       Parser.Direct { tags; next = { tags; str = "reject" } } }
 | info1 = TRANSITION transition = stateExpression
-    { (*let tags = Info.merge info1 (tags transition)
+    { (*let tags = Surface.Info.merge info1 (tags transition)
        snd transition)*)
       (* Not sure what's the type of transition but I'm guessing it's 'a transition'.*)
-      Parser.update_transition_tags transition (Info.merge info1 (Parser.transition_tags transition)) }
+      Parser.update_transition_tags transition (Surface.Info.merge info1 (Parser.transition_tags transition)) }
 ;
 
 stateExpression:
 | next = name info2 = SEMICOLON
-    { let tags = Info.merge (Text.tags next) info2 in
+    { let tags = Surface.Info.merge (Text.tags next) info2 in
       Parser.Direct { tags; next } }
 | select = selectExpression
     { select }
@@ -675,7 +672,7 @@ stateExpression:
 selectExpression:
 | info1 = SELECT L_PAREN exprs = expressionList R_PAREN
   L_BRACE cases = list(selectCase) info2 = R_BRACE
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Parser.Select { tags; exprs; cases } }
 ;
 
@@ -686,7 +683,7 @@ selectCase:
         | expr::_ -> Match.tags expr
         | _ -> assert false
       in
-      let tags = Info.merge info1 info2 in
+      let tags = Surface.Info.merge info1 info2 in
       Parser.{ tags; matches; next } }
 ;
 
@@ -711,10 +708,10 @@ simpleKeysetExpression:
 | info = DEFAULT
     { Match.Default { tags = info } }
 | expr = expression MASK mask = expression
-    { let tags = Info.merge (Expression.tags expr) (Expression.tags mask) in
+    { let tags = Surface.Info.merge (Expression.tags expr) (Expression.tags mask) in
       Match.Expression { tags; expr = Expression.Mask { tags; expr; mask } } }
 | lo = expression RANGE hi = expression
-    { let tags = Info.merge (Expression.tags lo) (Expression.tags hi) in
+    { let tags = Surface.Info.merge (Expression.tags lo) (Expression.tags hi) in
       Match.Expression { tags; expr = Expression.Range { tags; lo; hi } } }
 ;
 
@@ -728,7 +725,7 @@ valueSetDeclaration:
 | annotations = optAnnotations
   info1 = VALUESET l_angle typ = typeName r_angle
   L_PAREN size = expression R_PAREN name = name info2 = SEMICOLON
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Declaration.ValueSet { tags; annotations; typ; size; name } }
 ;
 
@@ -740,7 +737,7 @@ controlDeclaration:
   info2 = R_BRACE
   pop_scope
     { let info1, annotations, name, type_params, params = ct_decl in
-      let tags = Info.merge info1 info2 in
+      let tags = Surface.Info.merge info1 info2 in
       Declaration.Control
         { tags; annotations; name; type_params;
           params; constructor_params; locals; apply } }
@@ -751,7 +748,7 @@ controlTypeDeclaration:
   name = push_name
   type_params = optTypeParameters
   L_PAREN params = parameterList info2 = R_PAREN
-    { let info = Info.merge info1 info2 in
+    { let info = Surface.Info.merge info1 info2 in
       (info, annotations, name, type_params, params) }
 ;
 
@@ -783,7 +780,7 @@ externDeclaration:
   type_params = optTypeParameters
   L_BRACE methods = list(methodPrototype) info2 = R_BRACE
   pop_scope
-     { let tags = Info.merge info1 info2 in
+     { let tags = Surface.Info.merge info1 info2 in
        let type_decl =
            (Declaration.ExternObject { tags; annotations; name; type_params; methods }) in
        declare_type name (Declaration.has_type_params type_decl);
@@ -793,7 +790,7 @@ externDeclaration:
   pop_scope
   info2 = SEMICOLON
      { let (_, return, name, type_params, params) = func in
-       let tags = Info.merge info1 info2 in
+       let tags = Surface.Info.merge info1 info2 in
        let decl =
            Declaration.ExternFunction { tags; annotations; return; name; type_params; params } in
        declare_var name (Declaration.has_type_params decl);
@@ -809,7 +806,7 @@ functionPrototype:
   push_scope
   type_params = optTypeParameters
   L_PAREN params = parameterList info2 = R_PAREN
-    { let tags = Info.merge (Type.tags typ) info2 in 
+    { let tags = Surface.Info.merge (Type.tags typ) info2 in 
       (tags, typ, name, type_params, params) }
 ;
 
@@ -818,17 +815,17 @@ methodPrototype:
   pop_scope
   info2 = SEMICOLON
     { let (info1, return, name, type_params, params) = func in
-      let tags = Info.merge info1 info2 in
+      let tags = Surface.Info.merge info1 info2 in
       MethodPrototype.Method { tags; annotations; return; name; type_params; params } }
 | annotations = optAnnotations ABSTRACT func = functionPrototype
   pop_scope
   info2 = SEMICOLON
     { let (info1, return, name, type_params, params) = func in
-      let tags = Info.merge info1 info2 in
+      let tags = Surface.Info.merge info1 info2 in
       MethodPrototype.AbstractMethod { tags; annotations; return; name; type_params; params } }
 | annotations = optAnnotations name = name
   L_PAREN params = parameterList R_PAREN info2 = SEMICOLON
-    { let tags = Info.merge (Text.tags name) info2 in
+    { let tags = Surface.Info.merge (Text.tags name) info2 in
       MethodPrototype.Constructor { tags; annotations; name; params } }
 ;
 
@@ -851,9 +848,9 @@ namedType:
 
 prefixedTypeName:
 | name = NAME TYPENAME
-    { BareName name }
+    { Name.BareName name }
 | dotPrefix go_toplevel name = NAME TYPENAME go_local
-    { QualifiedName ([], name) }
+    { Name.QualifiedName ([], name) }
 ;
 
 prefixedType:
@@ -868,19 +865,19 @@ typeName:
 
 tupleType:
 | info1 = TUPLE l_angle elements = typeArgumentList info_r = r_angle
-    { let tags = Info.merge info1 info_r in
+    { let tags = Surface.Info.merge info1 info_r in
        Type.Tuple { tags; args = elements } }
 ;
 
 headerStackType:
 | header = typeName L_BRACKET size = expression info2 = R_BRACKET
-    { let tags = Info.merge (Type.tags header) info2 in
+    { let tags = Surface.Info.merge (Type.tags header) info2 in
        Type.HeaderStack { tags; header; size } }
 ;
 
 specializedType:
 | base = prefixedType l_angle args = typeArgumentList info_r = r_angle
-    { let tags = Info.merge (Type.tags base) info_r in
+    { let tags = Surface.Info.merge (Type.tags base) info_r in
       Type.SpecializedType { tags; base; args } }
 ;
 
@@ -902,28 +899,28 @@ baseType:
     { let value_int : Number.t = fst value in 
       let value_info = value_int.tags in
       let width = Expression.Int { i = value_int; tags = value_info } in
-      let tags = Info.merge info1 info_r in
+      let tags = Surface.Info.merge info1 info_r in
       Type.BitType { tags; expr = width } }
 | info1 = INT l_angle value = NUMBER info_r = r_angle
      { let value_int : Number.t = fst value in 
        let value_info = value_int.tags in 
        let width = Expression.Int { tags = value_info; i = value_int } in
-       let tags = Info.merge info1 info_r in
+       let tags = Surface.Info.merge info1 info_r in
       Type.IntType { tags; expr = width } }
 | info1 = VARBIT l_angle value = NUMBER info_r = r_angle 
      { let value_int : Number.t = fst value in 
        let value_info = value_int.tags in
        let max_width = Expression.Int { tags = value_info; i = value_int } in
-       let tags = Info.merge info1 info_r in
+       let tags = Surface.Info.merge info1 info_r in
       Type.VarBit { tags; expr = max_width } }
 | info1 = BIT l_angle L_PAREN width = expression R_PAREN info_r = r_angle
-    { let tags = Info.merge info1 info_r in
+    { let tags = Surface.Info.merge info1 info_r in
        Type.BitType { tags; expr = width } }
 | info1 = INT l_angle L_PAREN width = expression R_PAREN info_r = r_angle
-    { let tags = Info.merge info1 info_r in
+    { let tags = Surface.Info.merge info1 info_r in
        Type.IntType { tags; expr = width } }
 | info1 = VARBIT l_angle L_PAREN max_width = expression R_PAREN info_r = r_angle
-    { let tags = Info.merge info1 info_r in
+    { let tags = Surface.Info.merge info1 info_r in
        Type.VarBit { tags; expr = max_width; } }
 | info = INT
     { Type.Integer { tags = info } }
@@ -937,7 +934,7 @@ typeOrVoid:
 | info = VOID
     { Type.Void { tags = info } }
 | name = varName
-  { let tags: Info.t = Text.tags name in
+  { let tags: Surface.Info.t = Text.tags name in
     Type.TypeName { tags; name = BareName name } }
 ;
 
@@ -967,7 +964,7 @@ typeArg:
 | typ = typeRef
     { typ }
 | name = nonTypeName
-    { let tags: Info.t = Text.tags name in
+    { let tags: Surface.Info.t = Text.tags name in
       Type.TypeName { tags; name = BareName name } }
 | info = VOID
     { Type.Void { tags = info } }
@@ -1009,27 +1006,27 @@ derivedTypeDeclaration:
 headerTypeDeclaration:
 | annotations = optAnnotations info1 = HEADER name = name
   L_BRACE fields = list(structField) info2 = R_BRACE
-     { let tags = Info.merge info1 info2 in 
+     { let tags = Surface.Info.merge info1 info2 in 
        Declaration.Header { tags; annotations; name; fields } }
 ;
 
 headerUnionDeclaration:
 | annotations = optAnnotations info1 = HEADER_UNION name = name
   L_BRACE fields = list(structField) info2 = R_BRACE
-     { let tags = Info.merge info1 info2 in
+     { let tags = Surface.Info.merge info1 info2 in
        Declaration.HeaderUnion { tags; annotations; name; fields } }
 ;
 
 structTypeDeclaration:
 | annotations = optAnnotations info1 = STRUCT name = name
   L_BRACE fields = list(structField) info2 = R_BRACE
-     { let tags = Info.merge info1 info2 in 
+     { let tags = Surface.Info.merge info1 info2 in 
        Declaration.Struct { tags; annotations; name; fields } }
 ;
 
 structField:
 | annotations = optAnnotations typ = typeRef name = name info2 = SEMICOLON
-    { let tags = Info.merge (Type.tags typ) info2 in
+    { let tags = Surface.Info.merge (Type.tags typ) info2 in
       { tags; annotations; typ; name }: Declaration.field }
 ;
 
@@ -1037,25 +1034,25 @@ structField:
 enumDeclaration:
 | annotations = optAnnotations info1 = ENUM name = name
   L_BRACE members = identifierList info2 = R_BRACE
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Declaration.Enum { tags; annotations; name; members } }
 | annotations = optAnnotations info1 = ENUM typ = baseType
   name = name L_BRACE members = specifiedIdentifierList R_BRACE
-    { let tags = Info.merge info1 (Type.tags typ) in
+    { let tags = Surface.Info.merge info1 (Type.tags typ) in
       Declaration.SerializableEnum { tags; annotations; typ; name; members } }
 ;
 
 errorDeclaration:
 | info1 = ERROR L_BRACE members = identifierList info2 = R_BRACE
     { declare_vars members;
-      let tags = Info.merge info1 info2 in 
+      let tags = Surface.Info.merge info1 info2 in 
       Declaration.Error { tags; members } }
 ;
 
 matchKindDeclaration:
 | info1 = MATCH_KIND L_BRACE members = identifierList info2 = R_BRACE
     { declare_vars members;
-      let tags = Info.merge info1 info2 in
+      let tags = Surface.Info.merge info1 info2 in
       Declaration.MatchKind { tags; members } }
 ;
 
@@ -1074,19 +1071,19 @@ specifiedIdentifierList:
 typedefDeclaration:
 | annotations = optAnnotations info1 = TYPEDEF
   typ = typeRef name = name info2 = SEMICOLON
-    { let tags = Info.merge info1 info2 in 
+    { let tags = Surface.Info.merge info1 info2 in 
       Declaration.TypeDef { tags; annotations; name; typ_or_decl = Left typ }  }
 | annotations = optAnnotations info1 = TYPEDEF
   decl = derivedTypeDeclaration name = name info2 = SEMICOLON
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Declaration.TypeDef { tags; annotations; name; typ_or_decl = Right decl }  }
 | annotations = optAnnotations info1 = TYPE
   typ = typeRef name = name info2 = SEMICOLON
-    { let tags = Info.merge info1 info2 in 
+    { let tags = Surface.Info.merge info1 info2 in 
       Declaration.NewType { tags; annotations; name; typ_or_decl = Left typ }  }
 | annotations = optAnnotations info1 = TYPE
   decl = derivedTypeDeclaration name = name info2 = SEMICOLON
-    { let tags = Info.merge info1 info2 in 
+    { let tags = Surface.Info.merge info1 info2 in 
       Declaration.NewType { tags; annotations; name; typ_or_decl = Right decl }  }
 ;
 
@@ -1095,14 +1092,14 @@ typedefDeclaration:
 assignmentOrMethodCallStatement:
 | func = lvalue L_PAREN args = argumentList R_PAREN info2 = SEMICOLON
     { let type_args = [] in
-      let tags = Info.merge (Expression.tags func) info2 in 
+      let tags = Surface.Info.merge (Expression.tags func) info2 in 
       Statement.MethodCall { tags; func; type_args; args } }
 | func = lvalue l_angle type_args = typeArgumentList r_angle
     L_PAREN args = argumentList R_PAREN info2 = SEMICOLON
-    { let tags = Info.merge (Expression.tags func) info2 in
+    { let tags = Surface.Info.merge (Expression.tags func) info2 in
       Statement.MethodCall { tags; func; type_args; args } }
 | lhs = lvalue ASSIGN rhs = expression info2 = SEMICOLON
-    { let tags = Info.merge (Expression.tags lhs) info2 in 
+    { let tags = Surface.Info.merge (Expression.tags lhs) info2 in 
       Statement.Assignment { tags; lhs; rhs } }
 ;
 
@@ -1113,16 +1110,16 @@ emptyStatement:
 
 returnStatement:
 | info1 = RETURN info2 = SEMICOLON
-    { let tags = Info.merge info1 info2 in 
+    { let tags = Surface.Info.merge info1 info2 in 
       Statement.Return { tags; expr = None } }
 | info1 = RETURN expr = expression info2 = SEMICOLON
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Statement.Return { tags; expr = Some expr } }
 ;
 
 exitStatement:
 | info1 = EXIT info2 = SEMICOLON
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
        Statement.Exit { tags } }
 ;
 
@@ -1130,18 +1127,18 @@ conditionalStatement:
 | info1 = IF L_PAREN cond = expression R_PAREN tru = statement ELSE fls = statement
     { let info2 = Statement.tags fls in
       let fls = Some fls in
-      let tags = Info.merge info1 info2 in
+      let tags = Surface.Info.merge info1 info2 in
       Statement.Conditional { tags; cond; tru; fls } }
 | info1 = IF L_PAREN cond = expression R_PAREN tru = statement   %prec THEN
     { let fls = None in
-      let tags = Info.merge info1 (Statement.tags tru) in
+      let tags = Surface.Info.merge info1 (Statement.tags tru) in
       Statement.Conditional { tags; cond; tru; fls } }
 ;
 
 directApplication:
 | typ = typeName DOT APPLY
   L_PAREN args = argumentList R_PAREN info2 = SEMICOLON
-    { let tags = Info.merge (Type.tags typ) info2 in
+    { let tags = Surface.Info.merge (Type.tags typ) info2 in
       Statement.DirectApplication { tags; typ; args } }
 ;
 
@@ -1164,7 +1161,7 @@ blockStatement:
   push_scope
   statements = list(statementOrDeclaration) info2 = R_BRACE
   pop_scope
-    { let tags = Info.merge info1 info2 in 
+    { let tags = Surface.Info.merge info1 info2 in 
       Block.{ tags; annotations; statements } }
 ;
 
@@ -1172,7 +1169,7 @@ switchStatement:
 | info1 = SWITCH
   L_PAREN expr = expression R_PAREN
   L_BRACE cases = switchCases info2 = R_BRACE
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Statement.Switch { tags; expr; cases } }
 ;
 
@@ -1180,10 +1177,10 @@ switchCases: cases = list(switchCase) { cases };
 
 switchCase:
 | label = switchLabel COLON code = blockStatement
-    { let tags = Info.merge (Statement.tags_label label) code.Block.tags in
+    { let tags = Surface.Info.merge (Statement.tags_label label) code.Block.tags in
       Statement.Action { tags; label; code } }
 | label = switchLabel info2 = COLON
-    { let tags = Info.merge (Statement.tags_label label) info2 in
+    { let tags = Surface.Info.merge (Statement.tags_label label) info2 in
       Statement.FallThrough { tags; label } }
 ;
 
@@ -1211,7 +1208,7 @@ tableDeclaration:
 | annotations = optAnnotations
   info1 = TABLE name = name
   L_BRACE properties = tablePropertyList info2 = R_BRACE
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Declaration.Table { tags; annotations; name; properties } }
 ;
 
@@ -1222,27 +1219,27 @@ tablePropertyList:
 
 tableProperty:
 | info1 = KEY ASSIGN L_BRACE elts = keyElementList info2 = R_BRACE
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
     Table.Key { tags; keys = elts } }
 | info1 = ACTIONS ASSIGN L_BRACE acts = actionList info2 = R_BRACE
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Table.Actions { tags; actions = acts } }
 | info1 = CONST ENTRIES ASSIGN L_BRACE entries = entriesList info2 = R_BRACE
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Table.Entries { tags; entries = entries } }
 | info1 = CONST DEFAULT_ACTION ASSIGN act = actionRef info2 = SEMICOLON
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Table.DefaultAction { tags; action = act; const = true } }
 | info1 = DEFAULT_ACTION ASSIGN act = actionRef info2 = SEMICOLON
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Table.DefaultAction { tags; action = act; const = false } }
 | annos = optAnnotations
   info1 = CONST n = nonTableKwName ASSIGN v = initialValue info2 = SEMICOLON
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Table.Custom { tags; annotations = annos; const = true; name = n; value = v } }
 | annos = optAnnotations
   n = nonTableKwName ASSIGN v = initialValue info2 = SEMICOLON
-    { let tags = Info.merge (Text.tags n) info2 in
+    { let tags = Surface.Info.merge (Text.tags n) info2 in
       Table.Custom { tags; annotations = annos; const = false; name = n; value = v } }
 ;
 
@@ -1251,7 +1248,7 @@ keyElementList: elts = list(keyElement) { elts };
 keyElement:
 | key = expression COLON
   match_kind = name annotations = optAnnotations info2 = SEMICOLON
-    { let tags = Info.merge (Expression.tags key) info2 in
+    { let tags = Surface.Info.merge (Expression.tags key) info2 in
       Table.{ tags; annotations; key; match_kind } }
 ;
 
@@ -1269,7 +1266,7 @@ entriesList:
 entry:
 | matches = keysetExpression
   info1 = COLON act = actionRef annos = optAnnotations info2 = SEMICOLON
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Table.{ tags; annotations = annos; matches = matches; action = act } }
 ;
 
@@ -1279,7 +1276,7 @@ actionRef:
       { tags; annotations; name = BareName name; args = [] } }
 | annotations = optAnnotations name = name
   L_PAREN args = argumentList info2 = R_PAREN
-    { let tags = Info.merge (Text.tags name) info2 in
+    { let tags = Surface.Info.merge (Text.tags name) info2 in
       { tags; annotations; name = BareName name; args } }
 | annotations = optAnnotations
   dotPrefix go_toplevel name = nonTypeName go_local
@@ -1288,7 +1285,7 @@ actionRef:
 | annotations = optAnnotations 
   dotPrefix go_toplevel name = nonTypeName go_local
   L_PAREN args = argumentList info2 = R_PAREN
-    { let tags = Info.merge (Text.tags name) info2 in
+    { let tags = Surface.Info.merge (Text.tags name) info2 in
       { tags; annotations; name = QualifiedName ([], name); args } }
 ;
 
@@ -1298,7 +1295,7 @@ actionDeclaration:
 | annotations = optAnnotations
   info1 = ACTION name = name L_PAREN params = parameterList R_PAREN
   body = blockStatement
-    { let tags = Info.merge info1 body.Block.tags in
+    { let tags = Surface.Info.merge info1 body.Block.tags in
       Declaration.Action { tags; annotations; name; params; body } }
 ;
 
@@ -1308,7 +1305,7 @@ variableDeclaration:
 | annotations = optAnnotations
   typ = typeRef name = name init = optInitialValue info2 = SEMICOLON
     { declare_var name false;
-      let tags = Info.merge (Type.tags typ) info2 in
+      let tags = Surface.Info.merge (Type.tags typ) info2 in
       Declaration.Variable { tags; annotations; typ; name; init } }
 ;
 
@@ -1316,7 +1313,7 @@ constantDeclaration:
 | annotations = optAnnotations
   info1 = CONST typ = typeRef name = name ASSIGN value = initialValue
   info2 = SEMICOLON
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Declaration.Constant { tags; annotations; typ; name; value } }
 ;
 
@@ -1337,7 +1334,7 @@ initialValue:
 functionDeclaration:
 | func = functionPrototype body = blockStatement pop_scope
     { let (info1, return, name, type_params, params) = func in
-      let tags = Info.merge info1 body.Block.tags in
+      let tags = Surface.Info.merge info1 body.Block.tags in
       Declaration.Function { tags; return; name; type_params; params; body } }
 ;
 
@@ -1348,7 +1345,7 @@ argument:
     { let tags = Expression.tags value in
       Argument.Expression { tags; value } }
 | key = name ASSIGN value = expression
-    { let tags = Info.merge (Text.tags key) (Expression.tags value) in
+    { let tags = Surface.Info.merge (Text.tags key) (Expression.tags value) in
       Argument.KeyValue { tags; key; value } }
 | info = DONTCARE
     { Argument.Missing { tags = info } }
@@ -1356,7 +1353,7 @@ argument:
 
 %inline kvPair:
 | key = name ASSIGN value = expression 
-    { let tags = Info.merge (Text.tags key) (Expression.tags value) in
+    { let tags = Surface.Info.merge (Text.tags key) (Expression.tags value) in
       KeyValue.{ tags; key; value } }
 
 kvList:
@@ -1379,7 +1376,7 @@ prefixedNonTypeName:
     { let tags = Text.tags name in
       Expression.Name { tags; name = BareName name } }
 | info1 = dotPrefix go_toplevel name = nonTypeName go_local
-    { let tags = Info.merge info1 (Text.tags name) in
+    { let tags = Surface.Info.merge info1 (Text.tags name) in
       Expression.Name { tags; name = QualifiedName ([], name) } }
 ;
 
@@ -1387,13 +1384,13 @@ lvalue:
 | expr = prefixedNonTypeName
     { expr }
 | expr = lvalue DOT name = member
-    { let tags = Info.merge (Expression.tags expr) (Text.tags name) in
+    { let tags = Surface.Info.merge (Expression.tags expr) (Text.tags name) in
       Expression.ExpressionMember { tags; expr; name } }
 | array = lvalue L_BRACKET index = expression info2 = R_BRACKET
-    { let tags = Info.merge (Expression.tags array) info2 in
+    { let tags = Surface.Info.merge (Expression.tags array) info2 in
       Expression.ArrayAccess { tags; array; index } }
 | bits = lvalue L_BRACKET hi = expression COLON lo = expression info2 = R_BRACKET
-    { let tags = Info.merge (Expression.tags bits) info2 in
+    { let tags = Surface.Info.merge (Expression.tags bits) info2 in
       Expression.BitStringAccess { tags; bits; lo; hi } }
 ;
 
@@ -1413,63 +1410,63 @@ expression:
     { let tags = Text.tags name in
       Expression.Name { tags; name = BareName name } }
 | info1 = dotPrefix go_toplevel name = nonTypeName go_local
-    { let tags = Info.merge info1 (Text.tags name) in
+    { let tags = Surface.Info.merge info1 (Text.tags name) in
       Expression.Name { tags; name = QualifiedName ([], name) } }
 | array = expression L_BRACKET index = expression info2 = R_BRACKET
-    { let tags = Info.merge (Expression.tags array) info2 in
+    { let tags = Surface.Info.merge (Expression.tags array) info2 in
       Expression.ArrayAccess { tags; array; index } }
 | bits = expression L_BRACKET hi = expression COLON lo = expression info2 = R_BRACKET
-    { let tags = Info.merge (Expression.tags bits) info2 in
+    { let tags = Surface.Info.merge (Expression.tags bits) info2 in
       Expression.BitStringAccess { tags; bits; lo; hi } }
 | info1 = L_BRACE values = expressionList info2 = R_BRACE
-    { let tags = Info.merge info1 info2 in
+    { let tags = Surface.Info.merge info1 info2 in
       Expression.List { tags; values } }
 | info1 = L_BRACE entries = kvList info2 = R_BRACE 
-    { let tags = Info.merge info1 info2 in 
+    { let tags = Surface.Info.merge info1 info2 in 
       Expression.Record { tags; entries } }
 | L_PAREN exp = expression R_PAREN
     { exp }
 | info1 = NOT arg = expression %prec PREFIX
-    { let tags = Info.merge info1 (Expression.tags arg) in
+    { let tags = Surface.Info.merge info1 (Expression.tags arg) in
       Expression.UnaryOp { tags; op = Op.Not {tags = info1}; arg } }
 | info1 = COMPLEMENT arg = expression %prec PREFIX
-    { let tags = Info.merge info1 (Expression.tags arg) in
+    { let tags = Surface.Info.merge info1 (Expression.tags arg) in
     Expression.UnaryOp{ tags; op = Op.BitNot {tags = info1}; arg } }
 | info1 = MINUS arg = expression %prec PREFIX
-    { let tags = Info.merge info1 (Expression.tags arg) in
+    { let tags = Surface.Info.merge info1 (Expression.tags arg) in
       Expression.UnaryOp{ tags; op = UMinus {tags = info1}; arg } }
 | info1 = PLUS exp = expression %prec PREFIX
     { (*let info2,exp = exp in*)
-      let tags = Info.merge info1 (Expression.tags exp) in
+      let tags = Surface.Info.merge info1 (Expression.tags exp) in
       Expression.update_tags exp tags }
 | info1 = L_PAREN typ = typeRef R_PAREN expr = expression %prec PREFIX
-    { let tags = Info.merge info1 (Expression.tags expr) in
+    { let tags = Surface.Info.merge info1 (Expression.tags expr) in
       Expression.Cast { tags; typ; expr } }
 | typ = prefixedTypeName DOT name = member
     { let tags = Text.tags name in
       Expression.TypeMember { tags; typ; name } }
 | info1 = ERROR DOT name = member
-    { let tags = Info.merge info1 (Text.tags name) in
+    { let tags = Surface.Info.merge info1 (Text.tags name) in
       Expression.ErrorMember { tags; err = name } }
 | expr = expression DOT name = member
-    { let tags = Info.merge (Expression.tags expr) (Text.tags name) in
+    { let tags = Surface.Info.merge (Expression.tags expr) (Text.tags name) in
       Expression.ExpressionMember { tags; expr; name } }
 | arg1 = expression op = binop arg2 = expression
-    { let tags = Info.merge (Expression.tags arg1) (Expression.tags arg2) in
+    { let tags = Surface.Info.merge (Expression.tags arg1) (Expression.tags arg2) in
       Expression.BinaryOp { tags; op; args = (arg1, arg2) } }
 | cond = expression QUESTION tru = expression COLON fls = expression
-    { let tags = Info.merge (Expression.tags cond) (Expression.tags fls) in
+    { let tags = Surface.Info.merge (Expression.tags cond) (Expression.tags fls) in
       Expression.Ternary { tags; cond; tru; fls } }
 | func = expression l_angle type_args = realTypeArgumentList r_angle
   L_PAREN args = argumentList info2 = R_PAREN
-    { let tags = Info.merge (Expression.tags func) info2 in
+    { let tags = Surface.Info.merge (Expression.tags func) info2 in
       Expression.FunctionCall { tags; func; type_args; args } }
 | func = expression L_PAREN args = argumentList info2 = R_PAREN
     { let type_args = [] in
-      let tags = Info.merge (Expression.tags func) info2 in
+      let tags = Surface.Info.merge (Expression.tags func) info2 in
       Expression.FunctionCall { tags; func; type_args; args } }
 | typ = namedType L_PAREN args = argumentList info2 = R_PAREN
-    { let tags = Info.merge (Type.tags typ) info2 in
+    { let tags = Surface.Info.merge (Type.tags typ) info2 in
       Expression.NamelessInstantiation { tags; typ; args } }
 ;
 
@@ -1491,7 +1488,7 @@ expression:
 | info = SHL
     { Op.Shl { tags = info } }
 | info_r = r_angle info2 = R_ANGLE_SHIFT
-    { let tags = Info.merge info_r info2 in
+    { let tags = Surface.Info.merge info_r info2 in
       Op.Shr { tags } }
 | info = LE
     { Op.Le { tags = info } }

@@ -1,5 +1,4 @@
 open Ast
-open Surface
 open Surface.Ast
 
 (* Numbers *)
