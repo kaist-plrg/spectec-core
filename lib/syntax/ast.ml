@@ -118,7 +118,7 @@ and decl =
   | TypeDefD of { name : string; typ : typ option; decl : decl option }
   (* Object declarations *)
   (* Value Set *)
-  | ValSetD of { name : string; typ : typ; size : expr }
+  | ValueSetD of { name : string; typ : typ; size : expr }
   (* Parser *)
   | ParserTypeD of { name : string; tparams : string list; params : param list }
   | ParserD of {
@@ -156,7 +156,7 @@ and decl =
       params : param list;
       body : block;
     }
-  | ExtFuncD of {
+  | ExternFuncD of {
       name : string;
       rettyp : typ;
       tparams : string list;
@@ -176,7 +176,7 @@ and decl =
       tparams : string list;
       params : param list;
     }
-  | ExtObjD of { name : string; tparams : string list; methods : decl list }
+  | ExternObjectD of { name : string; tparams : string list; methods : decl list }
   (* Package *)
   | PackageTypeD of { name : string; tparams : string list; params : param list }
 

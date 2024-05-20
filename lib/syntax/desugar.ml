@@ -451,7 +451,7 @@ and desugar_decl (decl : Declaration.t) : decl =
       let name = name.str in
       let typ = desugar_type typ in
       let size = desugar_expr size in
-      ValSetD { name; typ; size }
+      ValueSetD { name; typ; size }
   | ParserType { name; type_params; params; _ } ->
       let name = name.str in
       let tparams = desugar_tparams type_params in
@@ -503,12 +503,12 @@ and desugar_decl (decl : Declaration.t) : decl =
       let rettyp = desugar_type return in
       let tparams = desugar_tparams type_params in
       let params = desugar_params params in
-      ExtFuncD { name; rettyp; tparams; params }
+      ExternFuncD { name; rettyp; tparams; params }
   | ExternObject { name; type_params; methods; _ } ->
       let name = name.str in
       let tparams = desugar_tparams type_params in
       let methods = desugar_methods methods in
-      ExtObjD { name; tparams; methods }
+      ExternObjectD { name; tparams; methods }
   | PackageType { name; type_params; params; _ } ->
       let name = name.str in
       let tparams = desugar_tparams type_params in
