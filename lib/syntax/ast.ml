@@ -8,93 +8,93 @@ type var = Top of string | Bare of string
 
 (* Unary and binary operators *)
 
-type unop = BNot | LNot | UMinus
+type unop = BNotOp | LNotOp | UMinusOp
 
 type binop =
-  | Plus
-  | SPlus
-  | Minus
-  | SMinus
-  | Mul
-  | Div
-  | Mod
-  | Shl
-  | Shr
-  | Le
-  | Ge
-  | Lt
-  | Gt
-  | Eq
-  | Ne
-  | BAnd
-  | BXor
-  | BOr
-  | Concat
-  | LAnd
-  | LOr
+  | PlusOp
+  | SPlusOp
+  | MinusOp
+  | SMinusOp
+  | MulOp
+  | DivOp
+  | ModOp
+  | ShlOp
+  | ShrOp
+  | LeOp
+  | GeOp
+  | LtOp
+  | GtOp
+  | EqOp
+  | NeOp
+  | BAndOp
+  | BXorOp
+  | BOrOp
+  | ConcatOp
+  | LAndOp
+  | LOrOp
 
 (* Types *)
 
 type typ =
-  | TVoid
-  | TBool
-  | TMatchKind
-  | TErr
-  | TStr
-  | TAInt
-  | TInt of expr
-  | TBit of expr
-  | TVBit of expr
-  | TName of var
-  | TSpec of var * typ list
-  | TStack of typ * expr
-  | TTuple of typ list
-  | TAny
+  | VoidT
+  | BoolT
+  | MatchKindT
+  | ErrT
+  | StrT
+  | AIntT
+  | IntT of expr
+  | BitT of expr
+  | VBitT of expr
+  | NameT of var
+  | SpecT of var * typ list
+  | StackT of typ * expr
+  | TupleT of typ list
+  | AnyT
 
 (* Parameters and Arguments *)
 and dir = No | In | Out | InOut
 and param = string * dir * typ * expr option
-and arg = AExpr of expr | AName of string * expr | AAny
+and arg = ExprA of expr | NameA of string * expr | AnyA
 
 (* Expressions *)
 and expr =
-  | EBool of bool
-  | ENum of num
-  | EStr of string
-  | EVar of var
-  | EList of expr list
-  | ERecord of (string * expr) list
-  | EUnop of unop * expr
-  | EBinop of binop * expr * expr
-  | ETern of expr * expr * expr
-  | ECast of typ * expr
-  | EMask of expr * expr
-  | ERange of expr * expr
-  | EAccArr of expr * expr
-  | EAccBit of expr * expr * expr
-  | EMemTyp of var * string
-  | EMemErr of string
-  | EMemExpr of expr * string
-  | ECall of expr * typ list * arg list
-  | EInst of typ * arg list
+  | BoolE of bool
+  | NumE of num
+  | StrE of string
+  | VarE of var
+  | ListE of expr list
+  | RecordE of (string * expr) list
+  | UnE of unop * expr
+  | BinE of binop * expr * expr
+  | TernE of expr * expr * expr
+  | CastE of typ * expr
+  | MaskE of expr * expr
+  | RangeE of expr * expr
+  | ArrAccE of expr * expr
+  | BitAccE of expr * expr * expr
+  | TypeAccE of var * string
+  | ErrAccE of string
+  | ExprAccE of expr * string
+  | CallE of expr * typ list * arg list
+  | InstE of typ * arg list
 
 (* Match-cases *)
-and mtch = MExpr of expr | MDefault | MAny
-and case = CCase of string | CDefault
+and mtch = ExprM of expr | DefaultM | AnyM
+and case = CaseC of string | DefaultC
 
 (* Statements *)
 and stmt =
-  | SEmpty
-  | SAssign of expr * expr
-  | SSwitch of expr * switch_case list
-  | SCond of expr * stmt * stmt
-  | SBlock of block
-  | SExit
-  | SReturn of expr option
-  | SCall of expr * typ list * arg list
-  | STrans of string
-  | SSelect of expr list * select_case list
-  | SDecl of decl
+  | EmptyI
+  | AssignI of expr * expr
+  | SwitchI of expr * switch_case list
+  | IfI of expr * stmt * stmt
+  | BlockI of block
+  | ExitI
+  | RetI of expr option
+  | CallI of expr * typ list * arg list
+  | TransI of string
+  | SelectI of expr list * select_case list
+  | DeclI of decl
 
 and switch_case = case * block
 and select_case = mtch list * string
@@ -103,25 +103,25 @@ and block = stmt list
 (* Declarations *)
 and decl =
   (* Constant, variable, and instance declarations *)
-  | DConst of { name : string; typ : typ; value : expr }
-  | DVar of { name : string; typ : typ; init : expr option }
-  | DInst of { name : string; typ : typ; args : arg list; init : block option }
+  | ConstD of { name : string; typ : typ; value : expr }
+  | VarD of { name : string; typ : typ; init : expr option }
+  | InstD of { name : string; typ : typ; args : arg list; init : block option }
   (* Type declarations *)
-  | DErr of { members : string list }
-  | DMatchKind of { members : string list }
-  | DStruct of { name : string; fields : (string * typ) list }
-  | DHeader of { name : string; fields : (string * typ) list }
-  | DUnion of { name : string; fields : (string * typ) list }
-  | DEnum of { name : string; members : string list }
-  | DSEnum of { name : string; typ : typ; members : (string * expr) list }
-  | DNewTyp of { name : string; typ : typ option; decl : decl option }
-  | DDefTyp of { name : string; typ : typ option; decl : decl option }
+  | ErrD of { members : string list }
+  | MatchKindD of { members : string list }
+  | StructD of { name : string; fields : (string * typ) list }
+  | HeaderD of { name : string; fields : (string * typ) list }
+  | UnionD of { name : string; fields : (string * typ) list }
+  | EnumD of { name : string; members : string list }
+  | SEnumD of { name : string; typ : typ; members : (string * expr) list }
+  | NewTypeD of { name : string; typ : typ option; decl : decl option }
+  | TypeDefD of { name : string; typ : typ option; decl : decl option }
   (* Object declarations *)
   (* Value Set *)
-  | DVSet of { name : string; typ : typ; size : expr }
+  | ValSetD of { name : string; typ : typ; size : expr }
   (* Parser *)
-  | DParserTyp of { name : string; tparams : string list; params : param list }
-  | DParser of {
+  | ParserTypeD of { name : string; tparams : string list; params : param list }
+  | ParserD of {
       name : string;
       tparams : string list;
       params : param list;
@@ -130,8 +130,8 @@ and decl =
       states : parser_state list;
     }
   (* Control *)
-  | DAction of { name : string; params : param list; body : block }
-  | DTable of {
+  | ActionD of { name : string; params : param list; body : block }
+  | TableD of {
       name : string;
       key : table_key list;
       actions : table_action list;
@@ -139,8 +139,8 @@ and decl =
       default : table_default option;
       custom : table_custom list;
     }
-  | DControlTyp of { name : string; tparams : string list; params : param list }
-  | DControl of {
+  | ControlTypeD of { name : string; tparams : string list; params : param list }
+  | ControlD of {
       name : string;
       tparams : string list;
       params : param list;
@@ -149,36 +149,36 @@ and decl =
       body : block;
     }
   (* Functions *)
-  | DFunc of {
+  | FuncD of {
       name : string;
       rettyp : typ;
       tparams : string list;
       params : param list;
       body : block;
     }
-  | DExtFunc of {
+  | ExtFuncD of {
       name : string;
       rettyp : typ;
       tparams : string list;
       params : param list;
     }
   (* Extern objects *)
-  | DCons of { name : string; params : param list }
-  | DAbstract of {
+  | ConsD of { name : string; params : param list }
+  | AbstractD of {
       name : string;
       rettyp : typ;
       tparams : string list;
       params : param list;
     }
-  | DMethod of {
+  | MethodD of {
       name : string;
       rettyp : typ;
       tparams : string list;
       params : param list;
     }
-  | DExtObj of { name : string; tparams : string list; methods : decl list }
+  | ExtObjD of { name : string; tparams : string list; methods : decl list }
   (* Package *)
-  | DPkgTyp of { name : string; tparams : string list; params : param list }
+  | PackageTypeD of { name : string; tparams : string list; params : param list }
 
 and parser_state = string * block
 and table_key = expr * string
