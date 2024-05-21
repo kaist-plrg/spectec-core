@@ -71,8 +71,7 @@ let rec desugar_type (typ : Type.t) : typ =
       TupleT targs
   | DontCare _ -> AnyT
 
-and desugar_types (typs : Type.t list) : typ list =
-  List.map desugar_type typs
+and desugar_types (typs : Type.t list) : typ list = List.map desugar_type typs
 
 (* Parameters and Arguments *)
 
@@ -106,8 +105,7 @@ and desugar_arg (arg : Argument.t) : arg =
       NameA (key, value)
   | Missing _ -> AnyA
 
-and desugar_args (args : Argument.t list) : arg list =
-  List.map desugar_arg args
+and desugar_args (args : Argument.t list) : arg list = List.map desugar_arg args
 
 (* Expressions *)
 
@@ -214,8 +212,8 @@ and desugar_switch_case (case : Statement.switch_case) : switch_case =
       | Name { name; _ } -> (CaseC name.str, [])
       | Default _ -> assert false)
 
-and desugar_switch_cases (cases : Statement.switch_case list) :
-    switch_case list =
+and desugar_switch_cases (cases : Statement.switch_case list) : switch_case list
+    =
   List.map desugar_switch_case cases
 
 and desugar_stmt (stmt : Statement.t) : stmt =
@@ -317,8 +315,8 @@ and desugar_table_action (action : Table.action_ref) : table_action =
   let args = desugar_args args in
   (var, args)
 
-and desugar_table_actions (actions : Table.action_ref list) :
-    table_action list =
+and desugar_table_actions (actions : Table.action_ref list) : table_action list
+    =
   List.map desugar_table_action actions
 
 and desugar_table_entry (entry : Table.entry) : table_entry =
@@ -337,8 +335,7 @@ and desugar_table_properties (properties : Table.property list) :
     * table_default option
     * table_custom list =
   List.fold_left
-    (fun (keys, actions, entries, default, customs)
-         (property : Table.property) ->
+    (fun (keys, actions, entries, default, customs) (property : Table.property) ->
       match property with
       | Key { keys; _ } ->
           let keys = desugar_table_keys keys in
@@ -399,9 +396,7 @@ and desugar_decl (decl : Declaration.t) : decl =
       let typ = desugar_type typ in
       let args = desugar_args args in
       let init =
-        Option.map
-          (fun (init : Block.t) -> desugar_stmts init.statements)
-          init
+        Option.map (fun (init : Block.t) -> desugar_stmts init.statements) init
       in
       InstD { name; typ; args; init }
   | Error { members; _ } ->

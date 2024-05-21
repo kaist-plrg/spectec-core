@@ -1,4 +1,4 @@
-open Surface 
+open Surface
 open Surface.Ast
 
 (* A hack to avoid module name conflict *)

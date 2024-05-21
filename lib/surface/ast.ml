@@ -19,13 +19,11 @@ open Utils.Alternative
 
 module Text : sig
   type t = Info.t t'
-
   and 'a t' = { tags : 'a; str : string }
 
   val tags : 'a t' -> 'a
 end = struct
   type t = Info.t t'
-
   and 'a t' = { tags : 'a; str : string }
 
   let tags (t : 'a t') : 'a = t.tags
@@ -55,13 +53,11 @@ end
 
 module Name : sig
   type t = Info.t t'
-
   and 'a t' = BareName of Text.t | QualifiedName of (Text.t list * Text.t)
 
   val tags : Info.t t' -> Info.t
 end = struct
   type t = Info.t t'
-
   and 'a t' = BareName of Text.t | QualifiedName of (Text.t list * Text.t)
 
   let tags (t : 'a t') : 'a =
@@ -74,6 +70,7 @@ end
 
 module Direction : sig
   type t = Info.t t'
+
   and 'a t' =
     | In of { tags : 'a }
     | Out of { tags : 'a }

@@ -5,6 +5,9 @@ module Var = struct
   let compare = String.compare
 end
 
+module VM = Map.Make (Var)
+module VS = Set.Make (Var)
+
 module Path = struct
   type t = string list
 
@@ -13,44 +16,57 @@ module Path = struct
   let compare = compare
 end
 
-module MakeScope = struct
-  module S = Set.Make (Var)
+module PM = Map.Make (Path)
 
-  type t = S.t
+module MakeVis (K : sig
+  type t
 
-  let empty = S.empty
-  let find = S.find_opt
-  let add = S.add
+  val compare : t -> t -> int
+  val pp : Format.formatter -> t -> unit
+end) =
+struct
+  module KS = Set.Make (K)
+
+  type t = KS.t
+
+  let empty = KS.empty
+  let find = KS.find_opt
+  let add = KS.add
 
   let pp fmt sp =
-    let elements = S.elements sp in
+    let elements = KS.elements sp in
     Format.fprintf fmt "{@[<hv>%a@]}"
       (Format.pp_print_list
          ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
-         Var.pp)
+         K.pp)
       elements
 end
 
-module MakeEnv (V : sig
+module MakeEnv (K : sig
+  type t
+
+  val compare : t -> t -> int
+  val pp : Format.formatter -> t -> unit
+end) (V : sig
   type t
 
   val pp : Format.formatter -> t -> unit
 end) =
 struct
-  module E = Map.Make (Var)
+  module KM = Map.Make (K)
 
-  type t = V.t E.t
+  type t = V.t KM.t
 
-  let empty = E.empty
-  let find = E.find_opt
-  let add = E.add
+  let empty = KM.empty
+  let find = KM.find_opt
+  let add = KM.add
 
   let pp fmt env =
-    let bindings = E.bindings env in
+    let bindings = KM.bindings env in
     Format.fprintf fmt "{@[<hv>%a@]}"
       (Format.pp_print_list
          ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
          (fun fmt (var, value) ->
-           Format.fprintf fmt "%a = %a" Var.pp var V.pp value))
+           Format.fprintf fmt "%a = %a" K.pp var V.pp value))
       bindings
 end

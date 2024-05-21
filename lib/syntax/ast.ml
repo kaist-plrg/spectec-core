@@ -139,7 +139,11 @@ and decl =
       default : table_default option;
       custom : table_custom list;
     }
-  | ControlTypeD of { name : string; tparams : string list; params : param list }
+  | ControlTypeD of {
+      name : string;
+      tparams : string list;
+      params : param list;
+    }
   | ControlD of {
       name : string;
       tparams : string list;
@@ -176,9 +180,17 @@ and decl =
       tparams : string list;
       params : param list;
     }
-  | ExternObjectD of { name : string; tparams : string list; methods : decl list }
+  | ExternObjectD of {
+      name : string;
+      tparams : string list;
+      methods : decl list;
+    }
   (* Package *)
-  | PackageTypeD of { name : string; tparams : string list; params : param list }
+  | PackageTypeD of {
+      name : string;
+      tparams : string list;
+      params : param list;
+    }
 
 and parser_state = string * block
 and table_key = expr * string
