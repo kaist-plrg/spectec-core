@@ -9,4 +9,5 @@
   (re_export runtime)
   (re_export runtime_)
   (re_export instance)
+  (re_export instance_)
   (re_export exec)))
