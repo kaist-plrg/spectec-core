@@ -17,10 +17,10 @@ let () =
 
   Printf.sprintf "Desugaring %s" filename
   |> print_endline;
-  let _program = Syntax.Desugar.desugar_program program in
+  let program = Syntax.Desugar.desugar_program program in
 
   Printf.sprintf "Instantiating %s" filename |> print_endline;
-  (*let _tdenv, _ccenv, _ienv = Instance_.Instantiate.instantiate_program program in*)
+  let _tdenv, _ccenv, _ienv = Instance_.Instantiate.instantiate_program program in
 
   (*
   let arch =

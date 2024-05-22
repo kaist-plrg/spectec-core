@@ -158,13 +158,10 @@ module Func = struct
       }
     | StateF of {
         vis_obj : vis_obj;
-        tparams : string list;
-        params : param list;
         body : block;
       }
     | ActionF of {
         vis_obj : vis_obj;
-        tparams : string list;
         params : param list;
         body : block;
       }

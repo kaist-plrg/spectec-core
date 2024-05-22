@@ -21,6 +21,36 @@ module ICtx = struct
   let new_obj env_glob env_obj =
     { glob = env_glob; obj = env_obj }
 
+  let add_td_glob name typ ctx =
+    let gtdenv, genv, gfenv = ctx.glob in
+    let gtdenv = TDEnv.add name typ gtdenv in
+    { ctx with glob = (gtdenv, genv, gfenv) }
+
+  let add_td_obj name typ ctx =
+    let otdenv, oenv, ofenv = ctx.obj in
+    let otdenv = TDEnv.add name typ otdenv in
+    { ctx with obj = (otdenv, oenv, ofenv) }
+
+  let add_var_glob name typ value ctx =
+    let gtdenv, genv, gfenv = ctx.glob in
+    let genv = Env.add name (typ, value) genv in
+    { ctx with glob = (gtdenv, genv, gfenv) }
+
+  let add_var_obj name typ value ctx =
+    let otdenv, oenv, ofenv = ctx.obj in
+    let oenv = Env.add name (typ, value) oenv in
+    { ctx with obj = (otdenv, oenv, ofenv) }
+
+  let add_func_glob name func ctx =
+    let gtdenv, genv, gfenv = ctx.glob in
+    let gfenv = FEnv.add name func gfenv in
+    { ctx with glob = (gtdenv, genv, gfenv) }
+
+  let add_func_obj name func ctx =
+    let otdenv, oenv, ofenv = ctx.obj in
+    let ofenv = FEnv.add name func ofenv in
+    { ctx with obj = (otdenv, oenv, ofenv) }
+
   let find_td name ctx =
     let gtdenv, _, _ = ctx.glob in
     let otdenv, _, _ = ctx.obj in
@@ -29,7 +59,7 @@ module ICtx = struct
         match value with Some _ -> value | None -> TDEnv.find name tdenv)
       None [ otdenv; gtdenv ]
 
-  let find_td_top name ctx =
+  let find_td_glob name ctx =
     let gtdenv, _, _ = ctx.glob in
     TDEnv.find name gtdenv
 

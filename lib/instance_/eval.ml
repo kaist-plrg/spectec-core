@@ -26,8 +26,10 @@ let rec eval_type (ictx: ICtx.t) (typ: typ): Type.t =
   | VBitT width ->
       let width = eval_expr ictx width |> Runtime_.Ops.extract_bigint in
       VBitT width
-  | NameT (Top name)
+  | NameT (Top name) -> ICtx.find_td_glob name ictx |> Option.get
   | NameT (Bare name) -> ICtx.find_td name ictx |> Option.get
+  (* (TODO) Handle specialized types *)
+  | SpecT (name, _) -> eval_type ictx (NameT name)
   | TupleT typs ->
       let typs = List.map (eval_type ictx) typs in
       TupleT typs

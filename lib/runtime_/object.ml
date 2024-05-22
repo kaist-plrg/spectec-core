@@ -60,12 +60,12 @@ end = struct
     | PackageO of { sto_obj : Sto.t }
 
   let pp fmt = function
-    | ValueSetO -> Format.fprintf fmt "value set"
+    | ValueSetO -> Format.fprintf fmt "valueset"
     | TableO _ -> Format.fprintf fmt "table"
     | ExternO _ -> Format.fprintf fmt "extern"
-    | ParserO _ -> Format.fprintf fmt "parser"
-    | ControlO _ -> Format.fprintf fmt "control"
-    | PackageO _ -> Format.fprintf fmt "package"
+    | ParserO { sto_obj; _ } -> Format.fprintf fmt "parser %a" Sto.pp sto_obj
+    | ControlO { sto_obj; _ } -> Format.fprintf fmt "control %a" Sto.pp sto_obj
+    | PackageO { sto_obj } -> Format.fprintf fmt "package %a" Sto.pp sto_obj
 end
 
 (* Store maps object identifiers (fully-qualified paths) to objects *)
