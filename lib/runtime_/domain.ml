@@ -32,6 +32,7 @@ struct
   let empty = KS.empty
   let find = KS.find_opt
   let add = KS.add
+  let mem = KS.mem
 
   let pp fmt sp =
     let elements = KS.elements sp in
@@ -60,12 +61,14 @@ struct
   let empty = KM.empty
   let find = KM.find_opt
   let add = KM.add
+  let fold = KM.fold
+  let filter = KM.filter
 
   let pp fmt env =
     let bindings = KM.bindings env in
     Format.fprintf fmt "{@[<hv>%a@]}"
       (Format.pp_print_list
-         ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
+         ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
          (fun fmt (var, value) ->
            Format.fprintf fmt "%a = %a" K.pp var V.pp value))
       bindings

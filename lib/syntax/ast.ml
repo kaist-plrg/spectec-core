@@ -59,8 +59,8 @@ and arg = ExprA of expr | NameA of string * expr | AnyA
 (* Expressions *)
 and expr =
   | BoolE of bool
-  | NumE of num
   | StrE of string
+  | NumE of num
   | VarE of var
   | ListE of expr list
   | RecordE of (string * expr) list
@@ -167,7 +167,7 @@ and decl =
       params : param list;
     }
   (* Extern objects *)
-  | ConsD of { name : string; params : param list }
+  | ConsD of { name : string; cparams : param list }
   | AbstractD of {
       name : string;
       rettyp : typ;
@@ -189,7 +189,7 @@ and decl =
   | PackageTypeD of {
       name : string;
       tparams : string list;
-      params : param list;
+      cparams : param list;
     }
 
 and parser_state = string * block

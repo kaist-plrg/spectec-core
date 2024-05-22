@@ -361,8 +361,8 @@ and desugar_method (mthd : MethodPrototype.t) : decl =
   match mthd with
   | Constructor { name; params; _ } ->
       let name = name.str in
-      let params = desugar_params params in
-      ConsD { name; params }
+      let cparams = desugar_params params in
+      ConsD { name; cparams }
   | AbstractMethod { name; return; type_params; params; _ } ->
       let name = name.str in
       let rettyp = desugar_type return in
@@ -507,12 +507,12 @@ and desugar_decl (decl : Declaration.t) : decl =
   | PackageType { name; type_params; params; _ } ->
       let name = name.str in
       let tparams = desugar_tparams type_params in
-      let params = desugar_params params in
-      PackageTypeD { name; tparams; params }
+      let cparams = desugar_params params in
+      PackageTypeD { name; tparams; cparams }
 
 and desugar_decls (decls : Declaration.t list) : decl list =
   List.map desugar_decl decls
 
-let desugar (program : p4program) : program =
+let desugar_program (program : p4program) : program =
   let (Program decls) = program in
   desugar_decls decls

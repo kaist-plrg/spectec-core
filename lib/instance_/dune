@@ -1,4 +1,4 @@
 (library
  (name instance_)
  (libraries syntax runtime_)
- (modules instantiate))
+ (modules instantiate eval))

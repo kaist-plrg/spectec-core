@@ -1,42 +1,98 @@
 open Base
-open Func
 
-module Context = struct
+(* ctx for instantiation:
+   The instantiation does not look into method/function body *)
+
+module ICtx = struct
   type t = {
-    typedef : TDEnv.t;
-    func : FEnv.t;
-    global : VTEnv.t;
-    block : VTEnv.t;
-    frame : VTEnv.t list;
+    glob : env_glob;
+    obj : env_obj;
   }
 
-  let empty typedef =
+  let empty =
     {
-      typedef;
-      func = FEnv.empty;
-      global = VTEnv.empty;
-      block = VTEnv.empty;
-      frame = [];
+      glob = (TDEnv.empty, Env.empty, FEnv.empty);
+      obj = (TDEnv.empty, Env.empty, FEnv.empty);
     }
 
-  let find name context =
+  let new_glob env_glob =
+    { glob = env_glob; obj = (TDEnv.empty, Env.empty, FEnv.empty) }
+
+  let new_obj env_glob env_obj =
+    { glob = env_glob; obj = env_obj }
+
+  let find_td name ctx =
+    let gtdenv, _, _ = ctx.glob in
+    let otdenv, _, _ = ctx.obj in
+    List.fold_left
+      (fun value tdenv ->
+        match value with Some _ -> value | None -> TDEnv.find name tdenv)
+      None [ otdenv; gtdenv ]
+
+  let find_td_top name ctx =
+    let gtdenv, _, _ = ctx.glob in
+    TDEnv.find name gtdenv
+
+  let find_var name ctx =
+    let _, genv, _ = ctx.glob in
+    let _, oenv, _ = ctx.obj in
+    List.fold_left
+      (fun value env ->
+        match value with Some _ -> value | None -> Env.find name env)
+      None [ oenv; genv ]
+
+  let find_var_top name ctx =
+    let _, genv, _ = ctx.glob in
+    Env.find name genv
+
+  let pp fmt ctx =
+    let _, genv, _ = ctx.glob in
+    let _, oenv, _ = ctx.obj in
+    Format.fprintf fmt "{@[<v 2>global = %a;@ object = %a@]}"
+      Env.pp genv Env.pp oenv
+end
+
+(* ctx for interpretation *)
+
+module Ctx = struct
+  type t = {
+    glob : env_glob;
+    obj : env_obj;
+    loc : env_loc;
+  }
+
+  let empty =
+    {
+      glob = (TDEnv.empty, Env.empty, FEnv.empty);
+      obj = (TDEnv.empty, Env.empty, FEnv.empty);
+      loc = (TDEnv.empty, []);
+    }
+
+  let find_var name ctx =
+    let _, genv, _ = ctx.glob in
+    let _, oenv, _ = ctx.obj in
+    let _, lenvs = ctx.loc in
     List.fold_left
       (fun value frame ->
-        match value with Some _ -> value | None -> VTEnv.find name frame)
+        match value with Some _ -> value | None -> Env.find name frame)
       None
-      (context.frame @ [ context.block; context.global ])
+      (lenvs @ [ oenv; genv ])
 
-  let enter_frame context =
-    { context with frame = VTEnv.empty :: context.frame }
+  let enter_frame ctx =
+    let ltdenv, lenvs = ctx.loc in
+    let loc = (ltdenv, Env.empty :: lenvs) in
+    { ctx with loc }
 
-  let exit_frame context =
-    match context.frame with
-    | [] -> context
-    | _ :: tl -> { context with frame = tl }
+  let exit_frame ctx =
+    let ltdenv, lenvs = ctx.loc in
+    let loc = (ltdenv, List.tl lenvs) in
+    { ctx with loc }
 
-  let pp fmt context =
-    Format.fprintf fmt "{@[<v 2>global = %a;@ block = %a;@ frame = %a@]}"
-      VTEnv.pp context.global VTEnv.pp context.block
-      (Format.pp_print_list VTEnv.pp)
-      context.frame
+  let pp fmt ctx =
+    let _, genv, _ = ctx.glob in
+    let _, oenv, _ = ctx.obj in
+    let _, lenvs = ctx.loc in
+    Format.fprintf fmt "{@[<v 2>global = %a;@ object = %a;@ local = %a@]}"
+      Env.pp genv Env.pp oenv
+      (Format.pp_print_list Env.pp) lenvs
 end

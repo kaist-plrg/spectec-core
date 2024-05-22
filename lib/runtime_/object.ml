@@ -1,7 +1,6 @@
 open Syntax.Ast
 open Domain
 open Base
-open Func
 
 (* Runtime representation of objects *)
 
@@ -16,22 +15,20 @@ module rec Object : sig
         custom : table_custom list;
         mthd : Func.t;
       }
-    | ExternO of { tdenv : TDEnv.t; mthd : FEnv.t }
+    | ExternO of { vis_glob : vis_glob; mthd : FEnv.t }
     | ParserO of {
-        tdenv : TDEnv.t;
-        gscope : VVis.t * FVis.t;
-        benv : VTEnv.t * FEnv.t;
-        lsto : Sto.t;
+        vis_glob : vis_glob;
+        env_obj : env_obj;
+        sto_obj : Sto.t;
         mthd : Func.t;
       }
     | ControlO of {
-        tdenv : TDEnv.t;
-        gscope : VVis.t * FVis.t;
-        benv : VTEnv.t * FEnv.t;
-        lsto : Sto.t;
+        vis_glob : vis_glob;
+        env_obj : env_obj;
+        sto_obj : Sto.t;
         mthd : Func.t;
       }
-    | PackageO of { lsto : Sto.t }
+    | PackageO of { sto_obj : Sto.t }
 
   val pp : Format.formatter -> t -> unit
 end = struct
@@ -46,23 +43,21 @@ end = struct
         custom : table_custom list;
         mthd : Func.t; (* "apply" *)
       }
-    | ExternO of { tdenv : TDEnv.t; mthd : FEnv.t (* method prototypes *) }
+    | ExternO of { vis_glob : vis_glob; mthd : FEnv.t (* method prototypes *) }
     (* Objects serving as wrappers *)
     | ParserO of {
-        tdenv : TDEnv.t; (* typedef environment *)
-        gscope : VVis.t * FVis.t; (* global scope *)
-        benv : VTEnv.t * FEnv.t; (* block environment for locals and states *)
-        lsto : Sto.t; (* local store *)
+        vis_glob : vis_glob; (* global scope *)
+        env_obj : env_obj; (* block environment for locals and states *)
+        sto_obj : Sto.t; (* local store *)
         mthd : Func.t; (* "apply" is the only entry point *)
       }
     | ControlO of {
-        tdenv : TDEnv.t; (* typedef environment *)
-        gscope : VVis.t * FVis.t; (* global scope *)
-        benv : VTEnv.t * FEnv.t; (* block environment for locals and actions *)
-        lsto : Sto.t; (* local store *)
+        vis_glob : vis_glob; (* global scope *)
+        env_obj : env_obj; (* block environment for locals and actions *)
+        sto_obj : Sto.t; (* local store *)
         mthd : Func.t; (* "apply" is the only entry point *)
       }
-    | PackageO of { lsto : Sto.t }
+    | PackageO of { sto_obj : Sto.t }
 
   let pp fmt = function
     | ValueSetO -> Format.fprintf fmt "value set"

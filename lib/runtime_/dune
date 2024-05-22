@@ -1,4 +1,4 @@
 (library
  (name runtime_)
  (libraries syntax bignum)
- (modules domain base func cclos object context))
+ (modules domain base cclos object context ops))
