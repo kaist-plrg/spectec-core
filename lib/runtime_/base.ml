@@ -186,3 +186,20 @@ module FEnv = MakeEnv (Var) (Func)
 type env_glob = TDEnv.t * Env.t * FEnv.t
 type env_obj = env_glob
 type env_loc = TDEnv.t * Env.t list
+
+(* Transition between visibility and environment *)
+
+let env_to_vis (env: TDEnv.t * Env.t * FEnv.t) =
+  let tdenv, env, fenv = env in
+  let tdvis = TDEnv.fold (fun name _ vis -> TDVis.add name vis) tdenv TDVis.empty in
+  let vis = Env.fold (fun var _ vis -> Vis.add var vis) env Vis.empty in
+  let fvis = FEnv.fold (fun fname _ vis -> FVis.add fname vis) fenv FVis.empty in
+  (tdvis, vis, fvis)
+
+let env_from_vis (env: TDEnv.t * Env.t * FEnv.t) (vis: TDVis.t * Vis.t * FVis.t) =
+  let tdenv, env, fenv = env in
+  let tdvis, vis, fvis = vis in
+  let tdenv = TDEnv.filter (fun name _ -> TDVis.mem name tdvis) tdenv in
+  let env = Env.filter (fun var _ -> Vis.mem var vis) env in
+  let fenv = FEnv.filter (fun fname _ -> FVis.mem fname fvis) fenv in
+  (tdenv, env, fenv)

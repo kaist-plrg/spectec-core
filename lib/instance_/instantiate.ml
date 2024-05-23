@@ -40,23 +40,6 @@ let var_decl_to_stmt = function
   | VarD { name; init = Some value; _ } -> Some (AssignI (VarE (Bare name), value))
   | _ -> None
 
-(* Environment and visibility management *)
-
-let env_to_vis (env: TDEnv.t * Env.t * FEnv.t) =
-  let tdenv, env, fenv = env in
-  let tdvis = TDEnv.fold (fun name _ vis -> TDVis.add name vis) tdenv TDVis.empty in
-  let vis = Env.fold (fun var _ vis -> Vis.add var vis) env Vis.empty in
-  let fvis = FEnv.fold (fun fname _ vis -> FVis.add fname vis) fenv FVis.empty in
-  (tdvis, vis, fvis)
-
-let env_from_vis (env: TDEnv.t * Env.t * FEnv.t) (vis: TDVis.t * Vis.t * FVis.t) =
-  let tdenv, env, fenv = env in
-  let tdvis, vis, fvis = vis in
-  let tdenv = TDEnv.filter (fun name _ -> TDVis.mem name tdvis) tdenv in
-  let env = Env.filter (fun var _ -> Vis.mem var vis) env in
-  let fenv = FEnv.filter (fun fname _ -> FVis.mem fname fvis) fenv in
-  (tdenv, env, fenv)
-
 (* Loading declarations to environments *)
 
 let load_obj_var (ictx: ICtx.t) (name : Var.t) (typ : typ) =
@@ -234,7 +217,7 @@ and instantiate_from_cclos (ccenv: CCEnv.t) (ictx_caller: ICtx.t) (path: Path.t)
       let ictx_callee =
         let env_glob = env_from_vis ictx_caller.glob vis_glob in
         let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
-        ICtx.new_obj env_glob env_obj
+        ICtx.init env_glob env_obj
       in
       let sto_callee = Sto.empty in
       (* Evaluate type arguments *)
@@ -281,7 +264,7 @@ and instantiate_from_cclos (ccenv: CCEnv.t) (ictx_caller: ICtx.t) (path: Path.t)
       let ictx_callee =
         let env_glob = env_from_vis ictx_caller.glob vis_glob in
         let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
-        ICtx.new_obj env_glob env_obj
+        ICtx.init env_glob env_obj
       in
       let sto_callee = Sto.empty in
       (* Evaluate type arguments *)
@@ -318,7 +301,7 @@ and instantiate_from_cclos (ccenv: CCEnv.t) (ictx_caller: ICtx.t) (path: Path.t)
       let ictx_callee =
         let env_glob = env_from_vis ictx_caller.glob vis_glob in
         let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
-        ICtx.new_obj env_glob env_obj
+        ICtx.init env_glob env_obj
       in
       let sto_callee = Sto.empty in
       (* Evaluate constructor arguments *)

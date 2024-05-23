@@ -10,4 +10,5 @@
   (re_export runtime_)
   (re_export instance)
   (re_export instance_)
-  (re_export exec)))
+  (re_export exec)
+  (re_export exec_)))

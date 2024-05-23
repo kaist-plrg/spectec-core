@@ -3,7 +3,7 @@ let () =
     Printf.printf "Usage: %s <target> <include_dir> <filename>\n" Sys.argv.(0);
     exit 1);
 
-  let _target = Sys.argv.(1) in
+  let target = Sys.argv.(1) in
   let includes = Sys.argv.(2) in
   let filename = Sys.argv.(3) in
 
@@ -20,17 +20,15 @@ let () =
   let program = Syntax.Desugar.desugar_program program in
 
   Printf.sprintf "Instantiating %s" filename |> print_endline;
-  let _tdenv, _ccenv, _ienv = Instance_.Instantiate.instantiate_program program in
+  let _ccenv, ictx, sto = Instance_.Instantiate.instantiate_program program in
 
-  (*
   let arch =
     match target with
-    | "v1model" -> Exec.V1model.drive
-    | "custom" -> Exec.Custom.drive
+    (*| "v1model" -> Exec.V1model.drive*)
+    | "custom" -> Exec_.Custom.drive
     | _ -> failwith "Unknown target"
   in
 
   Printf.sprintf "Interpreting %s" filename |> print_endline;
-  arch tdenv ccenv ienv |> ignore;
-  *)
+  arch sto ictx |> ignore;
   ()

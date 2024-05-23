@@ -26,7 +26,7 @@ control c(inout bit<32> b) {
     apply {
         S s1;
         S s2;
-        s2 = { 0 };
+        s2 = { 1 };
         s1 = s2;
         s2 = s1;
         b = s2.x;
