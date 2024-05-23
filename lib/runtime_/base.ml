@@ -8,7 +8,7 @@ module Vis = MakeVis (Var)
 module FVis = MakeVis (Var)
 
 type vis_glob = TDVis.t * Vis.t * FVis.t
-type vis_obj = vis_glob 
+type vis_obj = vis_glob
 
 (* Runtime representation of values *)
 
@@ -144,11 +144,11 @@ end
 module Func = struct
   type t =
     | FuncF of {
-        vis_glob: vis_glob;
-        tparams: string list;
-        params: param list;
-        ret: Type.t;
-        body: block;
+        vis_glob : vis_glob;
+        tparams : string list;
+        params : param list;
+        ret : Type.t;
+        body : block;
       }
     | MethodF of {
         vis_obj : vis_obj;
@@ -156,15 +156,8 @@ module Func = struct
         params : param list;
         body : block;
       }
-    | StateF of {
-        vis_obj : vis_obj;
-        body : block;
-      }
-    | ActionF of {
-        vis_obj : vis_obj;
-        params : param list;
-        body : block;
-      }
+    | StateF of { vis_obj : vis_obj; body : block }
+    | ActionF of { vis_obj : vis_obj; params : param list; body : block }
     | TableF of { vis_obj : vis_obj }
     | ExternF
 
@@ -189,14 +182,19 @@ type env_loc = TDEnv.t * Env.t list
 
 (* Transition between visibility and environment *)
 
-let env_to_vis (env: TDEnv.t * Env.t * FEnv.t) =
+let env_to_vis (env : TDEnv.t * Env.t * FEnv.t) =
   let tdenv, env, fenv = env in
-  let tdvis = TDEnv.fold (fun name _ vis -> TDVis.add name vis) tdenv TDVis.empty in
+  let tdvis =
+    TDEnv.fold (fun name _ vis -> TDVis.add name vis) tdenv TDVis.empty
+  in
   let vis = Env.fold (fun var _ vis -> Vis.add var vis) env Vis.empty in
-  let fvis = FEnv.fold (fun fname _ vis -> FVis.add fname vis) fenv FVis.empty in
+  let fvis =
+    FEnv.fold (fun fname _ vis -> FVis.add fname vis) fenv FVis.empty
+  in
   (tdvis, vis, fvis)
 
-let env_from_vis (env: TDEnv.t * Env.t * FEnv.t) (vis: TDVis.t * Vis.t * FVis.t) =
+let env_from_vis (env : TDEnv.t * Env.t * FEnv.t)
+    (vis : TDVis.t * Vis.t * FVis.t) =
   let tdenv, env, fenv = env in
   let tdvis, vis, fvis = vis in
   let tdenv = TDEnv.filter (fun name _ -> TDVis.mem name tdvis) tdenv in

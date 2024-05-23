@@ -2,16 +2,13 @@ open Syntax.Ast
 open Runtime_.Base
 open Runtime_.Context
 
-let rec eval_simplify_type (ctx: Ctx.t) (typ : Type.t) : Type.t =
+let rec eval_simplify_type (ctx : Ctx.t) (typ : Type.t) : Type.t =
   match typ with
-  | NameT name ->
-      Ctx.find_td name ctx
-      |> Option.get
-      |> eval_simplify_type ctx
+  | NameT name -> Ctx.find_td name ctx |> Option.get |> eval_simplify_type ctx
   | NewT name -> Ctx.find_td name ctx |> Option.get
   | _ -> typ
 
-let rec eval_type (ctx: Ctx.t) (typ: typ): Type.t =
+let rec eval_type (ctx : Ctx.t) (typ : typ) : Type.t =
   match typ with
   | BoolT -> BoolT
   | ErrT -> ErrT
@@ -35,7 +32,7 @@ let rec eval_type (ctx: Ctx.t) (typ: typ): Type.t =
       TupleT typs
   | _ -> Printf.sprintf "(TODO: eval_typ)" |> failwith
 
-and eval_expr (ctx: Ctx.t) (expr: expr): Value.t =
+and eval_expr (ctx : Ctx.t) (expr : expr) : Value.t =
   match expr with
   | BoolE b -> BoolV b
   | StrE str -> StrV str
@@ -50,7 +47,9 @@ and eval_expr (ctx: Ctx.t) (expr: expr): Value.t =
       let values = List.map (eval_expr ctx) values in
       TupleV values
   | RecordE fields ->
-      let fields = List.map (fun (name, expr) -> (name, eval_expr ctx expr)) fields in
+      let fields =
+        List.map (fun (name, expr) -> (name, eval_expr ctx expr)) fields
+      in
       StructV fields
   | UnE (op, arg) ->
       let varg = eval_expr ctx arg in
@@ -60,16 +59,12 @@ and eval_expr (ctx: Ctx.t) (expr: expr): Value.t =
       let varg_snd = eval_expr ctx arg_snd in
       Runtime_.Ops.eval_binop op varg_fst varg_snd
   | CastE (typ, arg) ->
-      let typ =
-        eval_type ctx typ
-        |> eval_simplify_type ctx
-      in
+      let typ = eval_type ctx typ |> eval_simplify_type ctx in
       let varg = eval_expr ctx arg in
       Runtime_.Ops.eval_cast typ varg
   | ExprAccE (expr, name) -> (
       let value = eval_expr ctx expr in
       match value with
-      | HeaderV (_, fields) | StructV fields ->
-          List.assoc name fields
+      | HeaderV (_, fields) | StructV fields -> List.assoc name fields
       | _ -> assert false)
   | _ -> Printf.sprintf "(TODO: eval_expr)" |> failwith

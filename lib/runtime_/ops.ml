@@ -275,14 +275,14 @@ let eval_binop_mod (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let eval_binop_shl (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (width, lvalue), BitV (_, rvalue)
-  | BitV (width, lvalue), AIntV rvalue ->
+  | BitV (width, lvalue), BitV (_, rvalue) | BitV (width, lvalue), AIntV rvalue
+    ->
       let value =
         of_two_complement (shift_bitstring_left lvalue rvalue) width
       in
       BitV (width, value)
-  | IntV (width, lvalue), BitV (_, rvalue)
-  | IntV (width, lvalue), AIntV rvalue ->
+  | IntV (width, lvalue), BitV (_, rvalue) | IntV (width, lvalue), AIntV rvalue
+    ->
       let value =
         to_two_complement (shift_bitstring_left lvalue rvalue) width
       in
@@ -307,8 +307,8 @@ let eval_binop_shl (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let eval_binop_shr (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (width, lvalue), BitV (_, rvalue)
-  | BitV (width, lvalue), AIntV rvalue ->
+  | BitV (width, lvalue), BitV (_, rvalue) | BitV (width, lvalue), AIntV rvalue
+    ->
       let value =
         of_two_complement
           (shift_bitstring_right lvalue rvalue false Bigint.zero)
@@ -341,8 +341,7 @@ let eval_binop_shr (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_le (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (_, lvalue), BitV (_, rvalue)
-  | AIntV lvalue, AIntV rvalue ->
+  | BitV (_, lvalue), BitV (_, rvalue) | AIntV lvalue, AIntV rvalue ->
       BoolV Bigint.(lvalue <= rvalue)
   | AIntV lvalue, BitV (width, _) ->
       eval_binop_le (bit_of_raw_int lvalue width) rvalue
@@ -359,8 +358,7 @@ let rec eval_binop_le (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_ge (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (_, lvalue), BitV (_, rvalue)
-  | AIntV lvalue, AIntV rvalue ->
+  | BitV (_, lvalue), BitV (_, rvalue) | AIntV lvalue, AIntV rvalue ->
       BoolV Bigint.(lvalue >= rvalue)
   | AIntV lvalue, BitV (width, _) ->
       eval_binop_ge (bit_of_raw_int lvalue width) rvalue
@@ -377,8 +375,7 @@ let rec eval_binop_ge (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_lt (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (_, lvalue), BitV (_, rvalue)
-  | AIntV lvalue, AIntV rvalue ->
+  | BitV (_, lvalue), BitV (_, rvalue) | AIntV lvalue, AIntV rvalue ->
       BoolV Bigint.(lvalue < rvalue)
   | AIntV lvalue, BitV (width, _) ->
       eval_binop_lt (bit_of_raw_int lvalue width) rvalue
@@ -395,8 +392,7 @@ let rec eval_binop_lt (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_gt (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (_, lvalue), BitV (_, rvalue)
-  | AIntV lvalue, AIntV rvalue ->
+  | BitV (_, lvalue), BitV (_, rvalue) | AIntV lvalue, AIntV rvalue ->
       BoolV Bigint.(lvalue > rvalue)
   | AIntV lvalue, BitV (width, _) ->
       eval_binop_gt (bit_of_raw_int lvalue width) rvalue
@@ -529,8 +525,7 @@ let eval_binop_or (lvalue : Value.t) (rvalue : Value.t) : Value.t =
         rvalue
       |> failwith
 
-let eval_binop (op : binop) (lvalue : Value.t) (rvalue : Value.t) : Value.t
-    =
+let eval_binop (op : binop) (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match op with
   | PlusOp -> eval_binop_plus lvalue rvalue
   | SPlusOp -> eval_binop_plussat lvalue rvalue

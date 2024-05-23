@@ -5,10 +5,7 @@ open Object
    The instantiation does not look into method/function body *)
 
 module ICtx = struct
-  type t = {
-    glob : env_glob;
-    obj : env_obj;
-  }
+  type t = { glob : env_glob; obj : env_obj }
 
   let empty =
     {
@@ -16,8 +13,7 @@ module ICtx = struct
       obj = (TDEnv.empty, Env.empty, FEnv.empty);
     }
 
-  let init env_glob env_obj =
-    { glob = env_glob; obj = env_obj }
+  let init env_glob env_obj = { glob = env_glob; obj = env_obj }
 
   let add_td_glob name typ ctx =
     let gtdenv, genv, gfenv = ctx.glob in
@@ -74,21 +70,19 @@ module ICtx = struct
     Env.find name genv
 
   let pp fmt ctx =
-    let _, genv, _ = ctx.glob in
-    let _, oenv, _ = ctx.obj in
-    Format.fprintf fmt "{@[<v 2>global = %a;@ object = %a@]}"
-      Env.pp genv Env.pp oenv
+    let _, genv, gfenv = ctx.glob in
+    let _, oenv, ofenv = ctx.obj in
+    Format.fprintf fmt
+      "{@;\
+       <1 2>@[<v 0>global = %a;@ global-func = %a;@ object = %a@ object-func = \
+       %a;@]@;\
+       <1 -2>}" Env.pp genv FEnv.pp gfenv Env.pp oenv FEnv.pp ofenv
 end
 
 (* ctx for interpretation *)
 
 module Ctx = struct
-  type t = {
-    glob : env_glob;
-    obj : env_obj;
-    loc : env_loc;
-    sto : Sto.t;
-  }
+  type t = { glob : env_glob; obj : env_obj; loc : env_loc; sto : Sto.t }
 
   let empty =
     {
@@ -131,8 +125,7 @@ module Ctx = struct
     let ltdenv, lenvs = ctx.loc in
     let sto = ctx.sto in
     let rec update_var' name typ value = function
-      | [] ->
-          Format.sprintf "Variable %s not found" name |> failwith
+      | [] -> Format.sprintf "Variable %s not found" name |> failwith
       | env :: rest -> (
           match Env.find name env with
           | Some _ ->
@@ -146,7 +139,12 @@ module Ctx = struct
       | genv :: oenv :: lenvs -> (genv, oenv, List.rev lenvs)
       | _ -> assert false
     in
-    { glob = (gtdenv, genv, gfenv); obj = (otdenv, oenv, ofenv); loc = (ltdenv, lenvs); sto }
+    {
+      glob = (gtdenv, genv, gfenv);
+      obj = (otdenv, oenv, ofenv);
+      loc = (ltdenv, lenvs);
+      sto;
+    }
 
   let find_td name ctx =
     let gtdenv, _, _ = ctx.glob in
@@ -186,10 +184,14 @@ module Ctx = struct
     { ctx with loc }
 
   let pp fmt ctx =
-    let _, genv, _ = ctx.glob in
-    let _, oenv, _ = ctx.obj in
+    let _, genv, gfenv = ctx.glob in
+    let _, oenv, ofenv = ctx.obj in
     let _, lenvs = ctx.loc in
-    Format.fprintf fmt "{@[<v 2>global = %a;@ object = %a;@ local = %a@]}"
-      Env.pp genv Env.pp oenv
-      (Format.pp_print_list Env.pp) lenvs
+    Format.fprintf fmt
+      "{@;\
+       <1 2>@[<v 0>global = %a;@ global-func = %a;@ object = %a;@ object-func \
+       = %a;@ loc = %a@]@;\
+       <1 -2>}" Env.pp genv FEnv.pp gfenv Env.pp oenv FEnv.pp ofenv
+      (Format.pp_print_list Env.pp)
+      lenvs
 end

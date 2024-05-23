@@ -63,9 +63,9 @@ end = struct
     | ValueSetO -> Format.fprintf fmt "valueset"
     | TableO _ -> Format.fprintf fmt "table"
     | ExternO _ -> Format.fprintf fmt "extern"
-    | ParserO { sto_obj; _ } -> Format.fprintf fmt "parser %a" Sto.pp sto_obj
-    | ControlO { sto_obj; _ } -> Format.fprintf fmt "control %a" Sto.pp sto_obj
-    | PackageO { sto_obj } -> Format.fprintf fmt "package %a" Sto.pp sto_obj
+    | ParserO { sto_obj; _ } -> Format.fprintf fmt "parser%a" Sto.pp sto_obj
+    | ControlO { sto_obj; _ } -> Format.fprintf fmt "control%a" Sto.pp sto_obj
+    | PackageO { sto_obj } -> Format.fprintf fmt "package%a" Sto.pp sto_obj
 end
 
 (* Store maps object identifiers (fully-qualified paths) to objects *)

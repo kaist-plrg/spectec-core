@@ -15,8 +15,7 @@ let () =
     | None -> failwith "Error while parsing."
   in
 
-  Printf.sprintf "Desugaring %s" filename
-  |> print_endline;
+  Printf.sprintf "Desugaring %s" filename |> print_endline;
   let program = Syntax.Desugar.desugar_program program in
 
   Printf.sprintf "Instantiating %s" filename |> print_endline;

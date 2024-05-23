@@ -2,16 +2,14 @@ open Syntax.Ast
 open Runtime_.Base
 open Runtime_.Context
 
-let rec eval_simplify_type (ictx: ICtx.t) (typ : Type.t) : Type.t =
+let rec eval_simplify_type (ictx : ICtx.t) (typ : Type.t) : Type.t =
   match typ with
   | NameT name ->
-      ICtx.find_td name ictx
-      |> Option.get
-      |> eval_simplify_type ictx
+      ICtx.find_td name ictx |> Option.get |> eval_simplify_type ictx
   | NewT name -> ICtx.find_td name ictx |> Option.get
   | _ -> typ
 
-let rec eval_type (ictx: ICtx.t) (typ: typ): Type.t =
+let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
   match typ with
   | BoolT -> BoolT
   | ErrT -> ErrT
@@ -35,7 +33,7 @@ let rec eval_type (ictx: ICtx.t) (typ: typ): Type.t =
       TupleT typs
   | _ -> Printf.sprintf "(TODO: eval_typ)" |> failwith
 
-and eval_expr (ictx: ICtx.t) (expr: expr): Value.t =
+and eval_expr (ictx : ICtx.t) (expr : expr) : Value.t =
   match expr with
   | BoolE b -> BoolV b
   | StrE str -> StrV str
@@ -52,10 +50,7 @@ and eval_expr (ictx: ICtx.t) (expr: expr): Value.t =
       let varg_snd = eval_expr ictx arg_snd in
       Runtime_.Ops.eval_binop op varg_fst varg_snd
   | CastE (typ, arg) ->
-      let typ =
-        eval_type ictx typ
-        |> eval_simplify_type ictx
-      in
+      let typ = eval_type ictx typ |> eval_simplify_type ictx in
       let varg = eval_expr ictx arg in
       Runtime_.Ops.eval_cast typ varg
   | _ -> Printf.sprintf "(TODO: eval_expr)" |> failwith

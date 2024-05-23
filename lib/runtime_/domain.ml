@@ -66,10 +66,10 @@ struct
 
   let pp fmt env =
     let bindings = KM.bindings env in
-    Format.fprintf fmt "{@[<hv>%a@]}"
+    Format.fprintf fmt "{ @[<hv>%a@] }"
       (Format.pp_print_list
          ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
          (fun fmt (var, value) ->
-           Format.fprintf fmt "%a = %a" K.pp var V.pp value))
+           Format.fprintf fmt "%a:%a" K.pp var V.pp value))
       bindings
 end

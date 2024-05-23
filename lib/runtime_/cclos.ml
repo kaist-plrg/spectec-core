@@ -31,7 +31,7 @@ module CClos = struct
     | PackageCC of {
         vis_glob : vis_glob;
         tparams : string list;
-        cparams : param list
+        cparams : param list;
       }
 
   let pp fmt = function
