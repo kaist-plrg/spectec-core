@@ -31,7 +31,7 @@ let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
   | TupleT typs ->
       let typs = List.map (eval_type ictx) typs in
       TupleT typs
-  | _ -> Printf.sprintf "(TODO: eval_typ)" |> failwith
+  | _ -> Format.asprintf "(TODO: eval_type) %a" Syntax.Print.print_type typ |> failwith
 
 and eval_expr (ictx : ICtx.t) (expr : expr) : Value.t =
   match expr with
@@ -53,4 +53,4 @@ and eval_expr (ictx : ICtx.t) (expr : expr) : Value.t =
       let typ = eval_type ictx typ |> eval_simplify_type ictx in
       let varg = eval_expr ictx arg in
       Runtime_.Ops.eval_cast typ varg
-  | _ -> Printf.sprintf "(TODO: eval_expr)" |> failwith
+  | _ -> Format.asprintf "(TODO: eval_expr) %a" Syntax.Print.print_expr expr |> failwith

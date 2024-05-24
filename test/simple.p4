@@ -41,6 +41,7 @@ control c(inout bit<32> arg)(bit<32> carg) {
 
     apply {
       bit<32> z = 3;
+      arg = carg + z;
     }
 }
 

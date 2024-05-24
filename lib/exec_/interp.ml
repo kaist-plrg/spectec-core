@@ -29,7 +29,8 @@ let interp_decl (ctx : Ctx.t) (decl : decl) =
       let typ = Eval.eval_type ctx typ in
       let value = Eval.eval_expr ctx value in
       Ctx.add_var_loc name typ value ctx
-  | _ -> failwith "TODO"
+  | _ ->
+      Format.asprintf "(TODO: interp_decl) %a" Syntax.Print.print_decl (0, decl) |> failwith
 
 (* Interpreter for statements *)
 
@@ -43,7 +44,8 @@ let interp_write (ctx : Ctx.t) (lvalue : expr) (value : Value.t) =
       let typ = Ctx.find_var name ctx |> Option.get |> fst in
       let value = Runtime_.Ops.eval_cast typ value in
       Ctx.update_var name typ value ctx
-  | _ -> failwith "TODO"
+  | _ ->
+      Format.asprintf "(TODO: interp_write) %a" Syntax.Print.print_expr lvalue |> failwith
 
 let rec interp_stmt (ctx : Ctx.t) (stmt : stmt) =
   match stmt with
@@ -52,7 +54,8 @@ let rec interp_stmt (ctx : Ctx.t) (stmt : stmt) =
       interp_write ctx lhs value
   | BlockI block -> interp_block ctx block
   | DeclI decl -> interp_decl ctx decl
-  | _ -> failwith "TODO"
+  | _ ->
+      Format.asprintf "(TODO: interp_stmt) %a" Syntax.Print.print_stmt (0, stmt) |> failwith
 
 and interp_block (ctx : Ctx.t) (block : block) =
   let ctx = Ctx.enter_frame ctx in
@@ -73,7 +76,7 @@ let copyin (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (params : param list)
       match arg with
       | ExprA value -> (pname, value)
       | NameA (pname, value) -> (pname, value)
-      | _ -> failwith "TODO"
+      | _ -> Format.asprintf "(TODO: copyin) %a" Syntax.Print.print_arg arg |> failwith
     in
     match dir with
     | No | In | InOut ->
@@ -97,7 +100,7 @@ let copyout (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (params : param list)
       match arg with
       | ExprA value -> (pname, value)
       | NameA (pname, value) -> (pname, value)
-      | _ -> failwith "TODO"
+      | _ -> Format.asprintf "(TODO: copyout) %a" Syntax.Print.print_arg arg |> failwith
     in
     match dir with
     | InOut | Out ->
