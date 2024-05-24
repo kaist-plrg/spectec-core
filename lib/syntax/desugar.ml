@@ -515,4 +515,5 @@ and desugar_decls (decls : Declaration.t list) : decl list =
 
 let desugar_program (program : p4program) : program =
   let (Program decls) = program in
-  desugar_decls decls
+  let program = desugar_decls decls in
+  program

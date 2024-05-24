@@ -79,8 +79,8 @@ and expr =
   | InstE of typ * arg list
 
 (* Match-cases *)
-and mtch = ExprM of expr | DefaultM | AnyM
 and case = CaseC of string | DefaultC
+and mtch = ExprM of expr | DefaultM | AnyM
 
 (* Statements *)
 and stmt =

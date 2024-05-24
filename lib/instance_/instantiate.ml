@@ -359,8 +359,7 @@ and instantiate_parser_obj_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (sto : Sto.t)
   | VarD { name; typ; _ } ->
       let ictx = load_obj_var ictx name typ in
       (ictx, sto)
-  (* There is no syntax for specifying parameters that are value-sets
-     (Appendix F) *)
+  (* There is no syntax for specifying parameters that are value-sets (Appendix F) *)
   | ValueSetD { name; _ } ->
       let path = path @ [ name ] in
       (* (TODO) What should be the runtime representation of value set? *)
