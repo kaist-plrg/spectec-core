@@ -1,54 +1,41 @@
-open Surface
-open Surface.Ast
-open Runtime
-open Runtime.Scope
-open Runtime.Ccenv
-open Runtime.Ienv
+open Syntax.Ast
+open Runtime.Domain
+open Runtime.Base
+open Runtime.Cclos
+open Runtime.Context
 
-let init_bscope (tdenv : TDEnv.t) : bscope =
-  let genv = Env.empty in
-  let lenv = Env.empty in
-  let sto = Sto.empty in
-  let lenv, sto =
-    let typ = Type.TBit { width = Bigint.of_int 32 } in
-    let value =
-      Value.VBit { value = Bigint.of_int 42; width = Bigint.of_int 32 }
-    in
-    add_var "b" typ value lenv sto
-  in
-  (tdenv, genv, lenv, sto)
+(* Imagine we have a "driver" context (Ctx.t) that,
+   i) can see all global variables, and
+   ii) can see all objects
+   Where the arguments to the "apply" methods of programmable blocks are
+   stored in the object-local scope of the "driver" context,
+   so that the mutations to the arguments are visible to the "driver" context
+*)
 
-(* Architecture *)
+let init (env_glob : env_glob) =
+  (* Initialize the context *)
+  let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
+  let env_loc = (TDEnv.empty, []) in
+  let ctx = Ctx.init env_glob env_obj env_loc in
+  (* Add "b" to the object environment *)
+  let typ = Runtime.Base.Type.BitT (Bigint.of_int 32) in
+  let value = Runtime.Base.Value.BitV (Bigint.of_int 32, Bigint.of_int 42) in
+  Ctx.add_var_obj "b" typ value ctx
 
-let apply_args (args : string list) =
-  List.map
-    (fun arg ->
-      Argument.Expression
-        {
-          tags = Info.M "";
-          value =
-            Expression.Name
-              {
-                tags = Info.M "";
-                name = BareName { tags = Info.M ""; str = arg };
-              };
-        })
-    args
+let make_args (args : Var.t list) =
+  List.map (fun arg -> ExprA (VarE (Bare arg))) args
 
-let drive_proto (bscope : bscope) =
-  let proto = "main._p" in
-  let proto_args = apply_args [ "b" ] in
-  Interpreter.eval_method_call bscope proto "apply" proto_args []
+let drive_proto (gctx : GCtx.t) (ctx : Ctx.t) =
+  let path = [ "main"; "_p" ] in
+  let obj_proto = GCtx.find_obj path gctx |> Option.get in
+  let targs = [] in
+  let args = make_args [ "b" ] in
+  Interp.interp_method_call ctx obj_proto "apply" targs args
 
-let drive (tdenv : TDEnv.t) (_ccenv : CcEnv.t) (ienv : IEnv.t) =
-  (* Register the instantiated environment *)
-  Interpreter.register_ienv ienv;
-  (* Build an environment to call control apply *)
-  let bscope = init_bscope tdenv in
-  Format.printf "Initial environment:\n";
-  Format.printf "%a" pp bscope;
-  (* Obtain control object from store and call apply *)
-  Format.printf "Calling main._p.apply()\n";
-  let bscope = drive_proto bscope in
-  Format.printf "%a" pp bscope;
+let drive (_ccenv : CCEnv.t) (gctx : GCtx.t) =
+  Interp.init gctx;
+  let ctx = init gctx.glob in
+  Format.printf "Initial context\n%a@\n" Ctx.pp ctx;
+  let ctx = drive_proto gctx ctx in
+  Format.printf "After calling main._p\n%a@\n" Ctx.pp ctx;
   ()

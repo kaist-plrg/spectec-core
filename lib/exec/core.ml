@@ -1,5 +1,5 @@
-open Runtime
-open Runtime.Scope
+open Runtime.Base
+open Runtime.Context
 
 (* Corresponds to extern packet_in { ... } *)
 module Packet = struct
@@ -29,75 +29,74 @@ module Packet = struct
     idx := !idx + size;
     bits
 
-  let rec sizeof (bscope : bscope) (typ : Type.t) =
+  let rec sizeof (ctx : Ctx.t) (typ : Type.t) =
     match typ with
-    | TBool -> 1
-    | TInt { width; _ } | TBit { width; _ } -> Bigint.to_int width |> Option.get
-    | THeader { entries; _ } ->
-        List.fold_left (fun acc (_, typ) -> acc + sizeof bscope typ) 0 entries
-    | TName _ | TNewType _ -> sizeof bscope (Eval.eval_simplify_typ bscope typ)
+    | BoolT -> 1
+    | IntT width | BitT width -> Bigint.to_int width |> Option.get
+    | HeaderT fields ->
+        List.fold_left (fun acc (_, typ) -> acc + sizeof ctx typ) 0 fields
+    | NameT _ | NewT _ -> Eval.eval_simplify_type ctx typ |> sizeof ctx
     | _ -> assert false
 
   let rec write (parsed_data : bool Array.t) (value : Value.t) =
     match value with
-    | VBool _ ->
+    | BoolV _ ->
         let bit = Array.get parsed_data 0 in
         let parsed_data =
           Array.sub parsed_data 1 (Array.length parsed_data - 1)
         in
-        let value = Value.VBool bit in
+        let value = Value.BoolV bit in
         (parsed_data, value)
-    | VInt { width; _ } ->
+    | IntV (width, _) ->
         let size = Bigint.to_int width |> Option.get in
         let bits = Array.sub parsed_data 0 size in
         let parsed_data =
           Array.sub parsed_data size (Array.length parsed_data - size)
         in
-        let value = Value.VInt { value = bits_to_int bits; width } in
+        let value = Value.IntV (width, bits_to_int bits) in
         (parsed_data, value)
-    | VBit { width; _ } ->
+    | BitV (width, _) ->
         let size = Bigint.to_int width |> Option.get in
         let bits = Array.sub parsed_data 0 size in
         let parsed_data =
           Array.sub parsed_data size (Array.length parsed_data - size)
         in
-        let value = Value.VBit { value = bits_to_int bits; width } in
+        let value = Value.BitV (width, bits_to_int bits) in
         (parsed_data, value)
-    | VStruct { entries; _ } ->
-        let parsed_data, entries =
+    | StructV fields ->
+        let parsed_data, fields =
           List.fold_left
             (fun (parsed_data, entries) (key, value) ->
               let parsed_data, value = write parsed_data value in
               (parsed_data, (key, value) :: entries))
-            (parsed_data, []) entries
+            (parsed_data, []) fields
         in
-        (parsed_data, Value.VStruct { entries })
-    | VHeader { entries; _ } ->
-        let parsed_data, entries =
+        (parsed_data, Value.StructV fields)
+    | HeaderV (_, fields) ->
+        let parsed_data, fields =
           List.fold_left
             (fun (parsed_data, entries) (key, value) ->
               let parsed_data, value = write parsed_data value in
               (parsed_data, (key, value) :: entries))
-            (parsed_data, []) entries
+            (parsed_data, []) fields
         in
-        (parsed_data, Value.VHeader { valid = true; entries })
+        (parsed_data, Value.HeaderV (true, fields))
     | _ ->
         Format.asprintf "Cannot write value %a to packet" Value.pp value
         |> failwith
 
   (* Corresponds to void extract<T>(out T hdr); *)
-  let extract (bscope : bscope) =
-    let theader, vheader = find_var "hdr" bscope in
-    let size = sizeof bscope theader in
+  let extract (ctx : Ctx.t) =
+    let typ, header = Ctx.find_var "hdr" ctx |> Option.get in
+    let size = sizeof ctx typ in
     let parsed_data = parse size in
-    let _, vheader = write parsed_data vheader in
-    let bscope = update_value "hdr" vheader bscope in
-    bscope
+    let _, header = write parsed_data header in
+    Ctx.update_var "hdr" typ header ctx
 end
 
 (* Entry point for builtin functions *)
 
-let eval_builtin (bscope : bscope) (mthd : string) =
+let interp_builtin (ctx : Ctx.t) (mthd : string) =
   match mthd with
-  | "extract" -> Packet.extract bscope
+  | "extract" -> Packet.extract ctx
   | _ -> "Unknown builtin method " ^ mthd |> failwith

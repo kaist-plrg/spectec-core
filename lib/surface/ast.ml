@@ -13,7 +13,7 @@
  * under the License.
  *)
 
-open Utils.Alternative
+type ('a, 'b) alternative = Left of 'a | Right of 'b
 
 (* Basics *)
 

@@ -1,4 +1,4 @@
 (library
  (name instance)
- (libraries surface runtime utils)
+ (libraries syntax runtime)
  (modules instantiate eval))

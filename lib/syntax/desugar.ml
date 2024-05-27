@@ -430,16 +430,16 @@ and desugar_decl (decl : Declaration.t) : decl =
       let name = name.str in
       let typ, decl =
         match typ_or_decl with
-        | Utils.Alternative.Left typ -> (Some (desugar_type typ), None)
-        | Utils.Alternative.Right decl -> (None, Some (desugar_decl decl))
+        | Left typ -> (Some (desugar_type typ), None)
+        | Right decl -> (None, Some (desugar_decl decl))
       in
       NewTypeD { name; typ; decl }
   | TypeDef { name; typ_or_decl; _ } ->
       let name = name.str in
       let typ, decl =
         match typ_or_decl with
-        | Utils.Alternative.Left typ -> (Some (desugar_type typ), None)
-        | Utils.Alternative.Right decl -> (None, Some (desugar_decl decl))
+        | Left typ -> (Some (desugar_type typ), None)
+        | Right decl -> (None, Some (desugar_decl decl))
       in
       TypeDefD { name; typ; decl }
   | ValueSet { name; typ; size; _ } ->

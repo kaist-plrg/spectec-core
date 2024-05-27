@@ -1,4 +1,4 @@
 (library
  (name exec)
- (libraries surface runtime instance)
- (modules interpreter eval core control v1model custom))
+ (libraries syntax runtime instance)
+ (modules interp eval core v1model custom))

@@ -1,8 +1,8 @@
 open Syntax.Ast
-open Runtime_.Domain
-open Runtime_.Base
-open Runtime_.Object
-open Runtime_.Context
+open Runtime.Domain
+open Runtime.Base
+open Runtime.Object
+open Runtime.Context
 
 (* Global environment *)
 
@@ -28,7 +28,7 @@ let interp_decl (ctx : Ctx.t) (decl : decl) =
   match decl with
   | VarD { name; typ; init = None } ->
       let typ = Eval.eval_type ctx typ in
-      let value = Runtime_.Ops.eval_default_value typ in
+      let value = Runtime.Ops.eval_default_value typ in
       Ctx.add_var_loc name typ value ctx
   | VarD { name; typ; init = Some value } ->
       let typ = Eval.eval_type ctx typ in
@@ -48,7 +48,7 @@ let rec interp_write (ctx : Ctx.t) (lvalue : expr) (value : Value.t) =
   match lvalue with
   | VarE (Bare name) ->
       let typ = Ctx.find_var name ctx |> Option.get |> fst in
-      let value = Runtime_.Ops.eval_cast typ value in
+      let value = Runtime.Ops.eval_cast typ value in
       Ctx.update_var name typ value ctx
   | ExprAccE (base, name) -> (
       let vbase = Eval.eval_expr ctx base in
@@ -149,7 +149,7 @@ and copyin adder (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (params : param list)
     (args : arg list) =
   (* (TODO) Assume there is no default argument *)
   assert (List.length params = List.length args);
-  Instance_.Instantiate.check_args args;
+  Instance.Instantiate.check_args args;
   let copyin' (ctx_callee : Ctx.t) (param : param) (arg : arg) =
     (* Resolve the argument-parameter order *)
     let pname, dir, typ, _ = param in
@@ -169,7 +169,7 @@ and copyin adder (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (params : param list)
         adder pname typ value ctx_callee
     | Out ->
         let typ = Eval.eval_type ctx_callee typ in
-        let value = Runtime_.Ops.eval_default_value typ in
+        let value = Runtime.Ops.eval_default_value typ in
         adder pname typ value ctx_callee
   in
   List.fold_left2 copyin' ctx_callee params args

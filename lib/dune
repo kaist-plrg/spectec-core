@@ -2,10 +2,9 @@
  (name p4cherry)
  (modules)
  (libraries
-  (re_export utils)
   (re_export surface)
   (re_export syntax)
   (re_export frontend)
-  (re_export runtime_)
-  (re_export instance_)
-  (re_export exec_)))
+  (re_export runtime)
+  (re_export instance)
+  (re_export exec)))

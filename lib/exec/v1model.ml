@@ -1,90 +1,131 @@
-open Surface
-open Surface.Ast
-open Runtime
-open Runtime.Scope
-open Runtime.Ccenv
-open Runtime.Ienv
+open Syntax.Ast
+open Runtime.Domain
+open Runtime.Base
+open Runtime.Cclos
+open Runtime.Context
 
-let init_bscope (tdenv : TDEnv.t) =
-  let genv = Env.empty in
-  let lenv = Env.empty in
-  let sto = Sto.empty in
-  let genv, sto =
-    let typ = Type.TRef in
-    let value = Value.VRef [ "packet" ] in
-    add_var "packet" typ value genv sto
+let path = []
+
+let ethernet_header_bits () : bool array =
+  [|
+    (* Destination MAC Address (48 bits): 01:23:45:67:89:AB *)
+    false; false; false; false; false; false; false; true;
+    false; false; false; false; true; false; true; true;
+    false; false; true; false; false; false; false; true;
+    false; true; true; false; true; true; true; false;
+    true; false; false; false; true; false; false; true;
+    true; false; true; true; false; true; false; true;
+    (* Source MAC Address (48 bits): CD:EF:01:23:45:67 *)
+    true; true; false; false; true; true; false; true;
+    true; true; true; true; false; false; false; true;
+    false; false; false; false; false; true; false; true;
+    false; false; false; false; false; true; true; false;
+    false; true; true; false; false; false; false; true;
+    false; true; true; false; true; true; true; false;
+    (* Ethertype (16 bits): 0800 (IPv4) *)
+    false; false; false; false; true; false; false; false;
+    false; false; false; false; false; false; false; false;
+  |]
+
+let ipv4_header_bits () : bool array =
+  [|
+    (* Version (4 bits): 0100 *)
+    false; true; false; false;
+    (* IHL (4 bits): 0101 *)
+    false; true; false; true;
+    (* Type of Service (8 bits): 00000000 *)
+    false; false; false; false; false; false; false; false;
+    (* Total Length (16 bits): 0000011000101000 (1576 in decimal) *)
+    false; false; false; false; false; true; true; false;
+    false; false; true; false; true; false; false; false;
+    (* Identification (16 bits): 1100100100110100 *)
+    true; true; false; false; true; false; false; true;
+    false; false; true; true; false; true; false; false;
+    (* Flags (3 bits): 010 *)
+    false; true; false;
+    (* Fragment Offset (13 bits): 0000000000000 *)
+    false; false; false; false; false; false; false; false;
+    false; false; false; false; false;
+    (* Time to Live (8 bits): 01000101 (69 in decimal) *)
+    false; true; false; false; false; false; true; false;
+    (* Protocol (8 bits): 00000110 (6 in decimal, TCP) *)
+    false; false; false; false; false; true; true; false;
+    (* Header Checksum (16 bits): 1000111110101111 *)
+    true; false; false; false; true; true; true; true;
+    true; false; true; false; true; true; true; true;
+    (* Source Address (32 bits): 11000000101010000000000100000001 (192.168.1.1) *)
+    true; true; false; false; false; false; false; false;
+    true; false; true; false; false; false; false; false;
+    false; false; false; false; false; false; false; true;
+    false; false; false; false; false; false; false; true;
+    (* Destination Address (32 bits): 11000000101010000000000100000010 (192.168.1.2) *)
+    true; true; false; false; false; false; false; false;
+    true; false; true; false; false; false; false; false;
+    false; false; false; false; false; false; false; true;
+    false; false; false; false; false; false; false; true;
+  |]
+
+let pkt () =
+  let bits = Array.append (ethernet_header_bits ()) (ipv4_header_bits ())  in
+  Core.Packet.init bits
+
+let init_instantiate_packet_in (ccenv : CCEnv.t) (gctx : GCtx.t) =
+  let cclos_packet_in = CCEnv.find "packet_in" ccenv |> Option.get in
+  let ictx = ICtx.init gctx.glob (TDEnv.empty, Env.empty, FEnv.empty) in
+  let sto = gctx.sto in
+  let path = [ "packet" ] in
+  let sto =
+    Instance.Instantiate.instantiate_from_cclos ccenv sto ictx path
+      cclos_packet_in [] []
   in
-  let lenv, sto =
-    let typ = TDEnv.find "headers" tdenv in
-    let value = Interpreter.default_value typ in
-    add_var "hdr" typ value lenv sto
+  ({ gctx with sto }, pkt ())
+
+let init (ccenv : CCEnv.t) (gctx : GCtx.t) =
+  (* Initialize the context *)
+  let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
+  let env_loc = (TDEnv.empty, []) in
+  let ctx = Ctx.init gctx.glob env_obj env_loc in
+  (* Add "packet" to the store and object environment *)
+  let gctx, _pkt = init_instantiate_packet_in ccenv gctx in
+  let ctx =
+    let typ = Type.RefT in
+    let value = Value.RefV [ "packet" ] in
+    Ctx.add_var_obj "packet" typ value ctx
   in
-  let lenv, sto =
-    let typ = TDEnv.find "metadata" tdenv in
-    let value = Interpreter.default_value typ in
-    add_var "meta" typ value lenv sto
+  (* Add "hdr" to the object environment *)
+  let ctx =
+    let typ = Ctx.find_td "headers" ctx |> Option.get in
+    let value = Runtime.Ops.eval_default_value typ in
+    Ctx.add_var_obj "hdr" typ value ctx
   in
-  let lenv, sto =
-    let typ = TDEnv.find "standard_metadata_t" tdenv in
-    let value = Interpreter.default_value typ in
-    add_var "standard_metadata" typ value lenv sto
+  (* Add "meta" to the object environment *)
+  let ctx =
+    let typ = Ctx.find_td "metadata" ctx |> Option.get in
+    let value = Runtime.Ops.eval_default_value typ in
+    Ctx.add_var_obj "meta" typ value ctx
   in
-  (tdenv, genv, lenv, sto)
-
-(* Architecture *)
-
-let apply_args (args : string list) =
-  List.map
-    (fun arg ->
-      Argument.Expression
-        {
-          tags = Info.M "";
-          value =
-            Expression.Name
-              {
-                tags = Info.M "";
-                name = BareName { tags = Info.M ""; str = arg };
-              };
-        })
-    args
-
-let drive_pkt_instantiation (tdenv : TDEnv.t) (ccenv : CcEnv.t) (ienv : IEnv.t)
-    =
-  let packet_in_cclos = Env.find "packet_in" ccenv in
-  let ienv =
-    Instance.Instantiate.instantiate_cclos tdenv Env.empty Sto.empty ccenv ienv
-      [ "packet" ] packet_in_cclos [] []
+  (* Add "standard_metadata" to the object environment *)
+  let ctx =
+    let typ = Ctx.find_td "standard_metadata_t" ctx |> Option.get in
+    let value = Runtime.Ops.eval_default_value typ in
+    Ctx.add_var_obj "standard_metadata" typ value ctx
   in
-  let bits = Array.init 272 (fun _ -> false) in
-  (* This sets etherType to 16w2048 *)
-  Array.set bits 100 true;
-  let pkt = Core.Packet.init bits in
-  (pkt, ienv)
+  (gctx, ctx)
 
-let drive_parser_impl (bscope : bscope) =
-  let parser_impl = "main.p" in
-  let parser_impl_args =
-    apply_args [ "packet"; "hdr"; "meta"; "standard_metadata" ]
-  in
-  Interpreter.eval_method_call bscope parser_impl "apply" parser_impl_args []
+let make_args (args : Var.t list) =
+  List.map (fun arg -> ExprA (VarE (Bare arg))) args
 
-let drive_ingress (bscope : bscope) =
-  let ingress = "main.ig" in
-  let ingress_args = apply_args [ "hdr"; "meta"; "standard_metadata" ] in
-  Interpreter.eval_method_call bscope ingress "apply" ingress_args []
+let drive_parser_impl (gctx : GCtx.t) (ctx : Ctx.t) =
+  let path = [ "main"; "p" ] in
+  let obj_parser_impl = GCtx.find_obj path gctx |> Option.get in
+  let targs = [] in
+  let args = make_args [ "packet"; "hdr"; "meta"; "standard_metadata" ] in
+  Interp.interp_method_call ctx obj_parser_impl "apply" targs args
 
-let drive (tdenv : TDEnv.t) (ccenv : CcEnv.t) (ienv : IEnv.t) =
-  (* Instantiations that should be done by the architecture *)
-  let _pkt, ienv = drive_pkt_instantiation tdenv ccenv ienv in
-  Interpreter.register_ienv ienv;
-  (* Build an environment to call parser apply *)
-  let bscope = init_bscope tdenv in
-  (* Obtain parser object from store and call apply *)
-  Format.printf "Calling main.p.apply()\n";
-  let bscope = drive_parser_impl bscope in
-  Format.printf "%a" pp bscope;
-  (* Obtain control object from store and call apply *)
-  Format.printf "Calling main.ig.apply()\n";
-  let bscope = drive_ingress bscope in
-  Format.printf "%a" pp bscope;
+let drive (ccenv : CCEnv.t) (gctx : GCtx.t) =
+  let gctx, ctx = init ccenv gctx in
+  Interp.init gctx;
+  Format.printf "Initial v1model driver context\n%a@." Ctx.pp ctx;
+  let ctx = drive_parser_impl gctx ctx in
+  Format.printf "\nAfter parser_impl call\n%a@." Ctx.pp ctx;
   ()

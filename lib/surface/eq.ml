@@ -1,7 +1,5 @@
 open Ast
-open Pretty
-open Utils
-open Alternative
+open Print
 
 (* Utils *)
 
