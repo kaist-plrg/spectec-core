@@ -23,8 +23,9 @@ parser P() {
 }
 
 parser Q() {
+    P() p;
     state start {
-        P.apply();
+        p.apply();
         transition accept;
     }
 }

@@ -19,7 +19,7 @@ let () =
   let program = Syntax.Desugar.desugar_program program in
 
   Printf.sprintf "Instantiating %s" filename |> print_endline;
-  let _ccenv, ictx, sto = Instance_.Instantiate.instantiate_program program in
+  let ccenv, gctx = Instance_.Instantiate.instantiate_program program in
 
   let arch =
     match target with
@@ -29,5 +29,5 @@ let () =
   in
 
   Printf.sprintf "Interpreting %s" filename |> print_endline;
-  arch sto ictx |> ignore;
+  arch ccenv gctx |> ignore;
   ()

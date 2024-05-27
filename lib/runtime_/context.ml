@@ -81,19 +81,39 @@ end
 
 (* ctx for interpretation *)
 
+module GCtx = struct
+  type t = { glob : env_glob; sto : Sto.t }
+
+  let empty = {
+    glob = (TDEnv.empty, Env.empty, FEnv.empty);
+    sto = Sto.empty;
+  }
+
+  let init env_glob sto = { glob = env_glob; sto }
+
+  let find_obj path ctx = Sto.find path ctx.sto
+
+  let pp fmt ctx =
+    let _, genv, gfenv = ctx.glob in
+    let sto = ctx.sto in
+    Format.fprintf fmt
+      "{@;\
+       <1 2>@[<v 0>global = %a;@ global-func = %a;@ sto = %a@]@;\
+       <1 -2>}" Env.pp genv FEnv.pp gfenv Sto.pp sto
+end
+
 module Ctx = struct
-  type t = { glob : env_glob; obj : env_obj; loc : env_loc; sto : Sto.t }
+  type t = { glob : env_glob; obj : env_obj; loc : env_loc }
 
   let empty =
     {
       glob = (TDEnv.empty, Env.empty, FEnv.empty);
       obj = (TDEnv.empty, Env.empty, FEnv.empty);
       loc = (TDEnv.empty, []);
-      sto = Sto.empty;
     }
 
-  let init env_glob env_obj env_loc sto =
-    { glob = env_glob; obj = env_obj; loc = env_loc; sto }
+  let init env_glob env_obj env_loc =
+    { glob = env_glob; obj = env_obj; loc = env_loc }
 
   let add_td_obj name typ ctx =
     let otdenv, oenv, ofenv = ctx.obj in
@@ -123,7 +143,6 @@ module Ctx = struct
     let gtdenv, genv, gfenv = ctx.glob in
     let otdenv, oenv, ofenv = ctx.obj in
     let ltdenv, lenvs = ctx.loc in
-    let sto = ctx.sto in
     let rec update_var' name typ value = function
       | [] -> Format.sprintf "Variable %s not found" name |> failwith
       | env :: rest -> (
@@ -143,7 +162,6 @@ module Ctx = struct
       glob = (gtdenv, genv, gfenv);
       obj = (otdenv, oenv, ofenv);
       loc = (ltdenv, lenvs);
-      sto;
     }
 
   let find_td name ctx =

@@ -6,8 +6,8 @@ open Runtime_.Context
 
 (* Global environment *)
 
-let env_glob = ref (TDEnv.empty, Env.empty, FEnv.empty)
-let init (_env_glob : env_glob) = env_glob := _env_glob
+let gctx = ref GCtx.empty
+let init (_gctx : GCtx.t) = gctx := _gctx
 
 (* Helper to fetch "apply" method *)
 
@@ -124,13 +124,13 @@ let interp_apply (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
 let interp_method_call (ctx : Ctx.t) (obj : Object.t) (mname : Var.t)
     (targs : typ list) (args : arg list) =
   match obj with
-  | ParserO { vis_glob; env_obj; sto_obj; mthd }
-  | ControlO { vis_glob; env_obj; sto_obj; mthd } ->
+  | ParserO { vis_glob; env_obj; mthd }
+  | ControlO { vis_glob; env_obj; mthd } ->
       assert (mname = "apply");
       let vis_obj, tparams, params, body = fetch_apply_method mthd in
-      let env_glob = env_from_vis !env_glob vis_glob in
+      let env_glob = env_from_vis (!gctx).glob vis_glob in
       let env_obj = env_from_vis env_obj vis_obj in
       let env_loc = (TDEnv.empty, []) in
-      let ctx_callee = Ctx.init env_glob env_obj env_loc sto_obj in
+      let ctx_callee = Ctx.init env_glob env_obj env_loc in
       interp_apply ctx ctx_callee tparams params targs args body
   | _ -> assert false
