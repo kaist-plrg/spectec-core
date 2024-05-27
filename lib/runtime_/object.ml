@@ -16,7 +16,7 @@ module Object = struct
         custom : table_custom list;
         mthd : Func.t; (* "apply" *)
       }
-    | ExternO of { vis_glob : vis_glob; mthd : FEnv.t (* method prototypes *) }
+    | ExternO of { vis_glob : vis_glob; env_obj : env_obj }
     (* Objects serving as wrappers *)
     | ParserO of {
         vis_glob : vis_glob; (* global scope *)

@@ -29,14 +29,13 @@ module Packet = struct
     idx := !idx + size;
     bits
 
-  let rec sizeof (ctx: Ctx.t) (typ : Type.t) =
+  let rec sizeof (ctx : Ctx.t) (typ : Type.t) =
     match typ with
     | BoolT -> 1
     | IntT width | BitT width -> Bigint.to_int width |> Option.get
     | HeaderT fields ->
-        List.fold_left (fun acc (_, typ) -> acc + sizeof ctx typ) 0 fields 
-    | NameT _ | NewT _ ->
-        Eval.eval_simplify_type ctx typ |> sizeof ctx
+        List.fold_left (fun acc (_, typ) -> acc + sizeof ctx typ) 0 fields
+    | NameT _ | NewT _ -> Eval.eval_simplify_type ctx typ |> sizeof ctx
     | _ -> assert false
 
   let rec write (parsed_data : bool Array.t) (value : Value.t) =
@@ -87,7 +86,7 @@ module Packet = struct
         |> failwith
 
   (* Corresponds to void extract<T>(out T hdr); *)
-  let extract (ctx: Ctx.t) =
+  let extract (ctx : Ctx.t) =
     let typ, header = Ctx.find_var "hdr" ctx |> Option.get in
     let size = sizeof ctx typ in
     let parsed_data = parse size in
@@ -97,7 +96,7 @@ end
 
 (* Entry point for builtin functions *)
 
-let eval_builtin (ctx: Ctx.t) (mthd : string) =
+let interp_builtin (ctx : Ctx.t) (mthd : string) =
   match mthd with
-  | "extract" -> Packet.extract ctx 
+  | "extract" -> Packet.extract ctx
   | _ -> "Unknown builtin method " ^ mthd |> failwith

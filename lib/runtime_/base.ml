@@ -10,63 +10,6 @@ module FVis = MakeVis (Var)
 type vis_glob = TDVis.t * Vis.t * FVis.t
 type vis_obj = vis_glob
 
-(* Runtime representation of values *)
-
-module Value = struct
-  type t =
-    | BoolV of bool
-    | AIntV of Bigint.t
-    | IntV of Bigint.t * Bigint.t
-    | BitV of Bigint.t * Bigint.t
-    | VBitV of Bigint.t * Bigint.t
-    | StrV of string
-    | ErrV of string
-    | TupleV of t list
-    | StructV of (string * t) list
-    | HeaderV of bool * (string * t) list
-    | UnionV of (string * t) list
-    | RefV of string list
-
-  let rec pp fmt value =
-    match value with
-    | BoolV b -> Format.fprintf fmt "%b" b
-    | AIntV i -> Format.fprintf fmt "%s" (Bigint.to_string i)
-    | IntV (w, i) ->
-        Format.fprintf fmt "%ss%s" (Bigint.to_string w) (Bigint.to_string i)
-    | BitV (w, i) ->
-        Format.fprintf fmt "%sw%s" (Bigint.to_string w) (Bigint.to_string i)
-    | VBitV (w, i) ->
-        Format.fprintf fmt "%sv%s" (Bigint.to_string w) (Bigint.to_string i)
-    | StrV s -> Format.fprintf fmt "\"%s\"" s
-    | ErrV s -> Format.fprintf fmt "%s" s
-    | TupleV vs ->
-        Format.fprintf fmt "(%a)"
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
-             pp)
-          vs
-    | StructV fs ->
-        Format.fprintf fmt "struct { %a }"
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
-             (fun fmt (f, v) -> Format.fprintf fmt "%s: %a" f pp v))
-          fs
-    | HeaderV (v, fs) ->
-        Format.fprintf fmt "header { %s, %a }"
-          (if v then "valid" else "invalid")
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
-             (fun fmt (f, v) -> Format.fprintf fmt "%s: %a" f pp v))
-          fs
-    | UnionV fs ->
-        Format.fprintf fmt "union { %a }"
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
-             (fun fmt (f, v) -> Format.fprintf fmt "%s: %a" f pp v))
-          fs
-    | RefV ps -> Format.fprintf fmt "ref %s" (String.concat "." ps)
-end
-
 (* Runtime representation of types *)
 
 module Type = struct
@@ -105,30 +48,87 @@ module Type = struct
              pp)
           ts
     | StructT fs ->
-        Format.fprintf fmt "struct { %a }"
+        Format.fprintf fmt "struct { @[<hv>%a@] }"
           (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (f, t) -> Format.fprintf fmt "%s: %a" f pp t))
           fs
     | HeaderT fs ->
-        Format.fprintf fmt "header { %a }"
+        Format.fprintf fmt "header { @[<hv>%a@] }"
           (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (f, t) -> Format.fprintf fmt "%s: %a" f pp t))
           fs
     | UnionT fs ->
-        Format.fprintf fmt "union { %a }"
+        Format.fprintf fmt "union { @[<hv>%a@] }"
           (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (f, t) -> Format.fprintf fmt "%s: %a" f pp t))
           fs
     | EnumT ms ->
-        Format.fprintf fmt "enum { %a }"
+        Format.fprintf fmt "enum { @[<hv>%a@] }"
           (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              Format.pp_print_string)
           ms
     | RefT -> Format.fprintf fmt "ref"
+end
+
+(* Runtime representation of values *)
+
+module Value = struct
+  type t =
+    | BoolV of bool
+    | AIntV of Bigint.t
+    | IntV of Bigint.t * Bigint.t
+    | BitV of Bigint.t * Bigint.t
+    | VBitV of Bigint.t * Bigint.t
+    | StrV of string
+    | ErrV of string
+    | TupleV of t list
+    | StructV of (string * t) list
+    | HeaderV of bool * (string * t) list
+    | UnionV of (string * t) list
+    | RefV of string list
+
+  let rec pp fmt value =
+    match value with
+    | BoolV b -> Format.fprintf fmt "%b" b
+    | AIntV i -> Format.fprintf fmt "%s" (Bigint.to_string i)
+    | IntV (w, i) ->
+        Format.fprintf fmt "%ss%s" (Bigint.to_string w) (Bigint.to_string i)
+    | BitV (w, i) ->
+        Format.fprintf fmt "%sw%s" (Bigint.to_string w) (Bigint.to_string i)
+    | VBitV (w, i) ->
+        Format.fprintf fmt "%sv%s" (Bigint.to_string w) (Bigint.to_string i)
+    | StrV s -> Format.fprintf fmt "\"%s\"" s
+    | ErrV s -> Format.fprintf fmt "%s" s
+    | TupleV vs ->
+        Format.fprintf fmt "(%a)"
+          (Format.pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+             pp)
+          vs
+    | StructV fs ->
+        Format.fprintf fmt "struct { @[<hv>%a@] }"
+          (Format.pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
+             (fun fmt (f, v) -> Format.fprintf fmt "%s: %a" f pp v))
+          fs
+    | HeaderV (v, fs) ->
+        Format.fprintf fmt "header { %s, @[<hv>%a@] }"
+          (if v then "valid" else "invalid")
+          (Format.pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
+             (fun fmt (f, v) -> Format.fprintf fmt "%s: %a" f pp v))
+          fs
+    | UnionV fs ->
+        Format.fprintf fmt "union { @[<hv>%a@] }"
+          (Format.pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
+             (fun fmt (f, v) -> Format.fprintf fmt "%s: %a" f pp v))
+          fs
+    | RefV ps -> Format.fprintf fmt "ref %s" (String.concat "." ps)
 end
 
 (* Type and value pairs *)
@@ -159,7 +159,12 @@ module Func = struct
     | StateF of { vis_obj : vis_obj; body : block }
     | ActionF of { vis_obj : vis_obj; params : param list; body : block }
     | TableF of { vis_obj : vis_obj }
-    | ExternF
+    (* (TODO) Consider return type, which may be a type variable *)
+    | ExternF of {
+        vis_obj : vis_obj;
+        tparams : string list;
+        params : param list; (* ret : Type.t; *)
+      }
 
   let pp fmt = function
     | FuncF _ -> Format.fprintf fmt "function"
@@ -167,7 +172,7 @@ module Func = struct
     | StateF _ -> Format.fprintf fmt "state"
     | ActionF _ -> Format.fprintf fmt "action"
     | TableF _ -> Format.fprintf fmt "table"
-    | ExternF -> Format.fprintf fmt "extern"
+    | ExternF _ -> Format.fprintf fmt "extern"
 end
 
 (* Environment of type variables, variables, and functions *)

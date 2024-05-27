@@ -391,10 +391,10 @@ and print_decl fmt (level, decl) =
   | MethodD { name; rettyp; tparams; params } ->
       F.fprintf fmt "%s%a %s%a%a;" (indent level) print_type rettyp name
         print_tparams tparams print_params params
-  | ExternObjectD { name; tparams; methods } ->
+  | ExternObjectD { name; tparams; mthds } ->
       F.fprintf fmt "%sextern object %s%a {\n%a\n%s}" (indent level) name
         print_tparams tparams print_decls
-        (level + 1, methods)
+        (level + 1, mthds)
         (indent level)
   | PackageTypeD { name; tparams; cparams } ->
       F.fprintf fmt "%spackage %s%a%a;" (indent level) name print_tparams

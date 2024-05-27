@@ -84,22 +84,18 @@ end
 module GCtx = struct
   type t = { glob : env_glob; sto : Sto.t }
 
-  let empty = {
-    glob = (TDEnv.empty, Env.empty, FEnv.empty);
-    sto = Sto.empty;
-  }
-
+  let empty = { glob = (TDEnv.empty, Env.empty, FEnv.empty); sto = Sto.empty }
   let init env_glob sto = { glob = env_glob; sto }
-
   let find_obj path ctx = Sto.find path ctx.sto
 
   let pp fmt ctx =
-    let _, genv, gfenv = ctx.glob in
+    let gtdenv, genv, gfenv = ctx.glob in
     let sto = ctx.sto in
     Format.fprintf fmt
       "{@;\
-       <1 2>@[<v 0>global = %a;@ global-func = %a;@ sto = %a@]@;\
-       <1 -2>}" Env.pp genv FEnv.pp gfenv Sto.pp sto
+       <1 2>@[<v 0>global = %a;@ global-func = %a;@ global-td = %a;@ sto = \
+       %a@]@;\
+       <1 -2>}" Env.pp genv FEnv.pp gfenv TDEnv.pp gtdenv Sto.pp sto
 end
 
 module Ctx = struct
@@ -119,6 +115,11 @@ module Ctx = struct
     let otdenv, oenv, ofenv = ctx.obj in
     let otdenv = TDEnv.add name typ otdenv in
     { ctx with obj = (otdenv, oenv, ofenv) }
+
+  let add_td_loc name typ ctx =
+    let ltdenv, lenvs = ctx.loc in
+    let ltdenv = TDEnv.add name typ ltdenv in
+    { ctx with loc = (ltdenv, lenvs) }
 
   let add_var_obj name typ value ctx =
     let otdenv, oenv, ofenv = ctx.obj in
@@ -191,6 +192,14 @@ module Ctx = struct
     let _, genv, _ = ctx.glob in
     Env.find name genv
 
+  let find_func name ctx =
+    let _, _, gfenv = ctx.glob in
+    let _, _, ofenv = ctx.obj in
+    List.fold_left
+      (fun value frame ->
+        match value with Some _ -> value | None -> FEnv.find name frame)
+      None [ ofenv; gfenv ]
+
   let enter_frame ctx =
     let ltdenv, lenvs = ctx.loc in
     let loc = (ltdenv, Env.empty :: lenvs) in
@@ -202,14 +211,15 @@ module Ctx = struct
     { ctx with loc }
 
   let pp fmt ctx =
-    let _, genv, gfenv = ctx.glob in
-    let _, oenv, ofenv = ctx.obj in
-    let _, lenvs = ctx.loc in
+    let gtdenv, genv, gfenv = ctx.glob in
+    let otdenv, oenv, ofenv = ctx.obj in
+    let ltdenv, lenvs = ctx.loc in
     Format.fprintf fmt
       "{@;\
-       <1 2>@[<v 0>global = %a;@ global-func = %a;@ object = %a;@ object-func \
-       = %a;@ loc = %a@]@;\
-       <1 -2>}" Env.pp genv FEnv.pp gfenv Env.pp oenv FEnv.pp ofenv
+       <1 2>@[<v 0>global = %a;@ global-func = %a;@ global-td = %a;@ object = \
+       %a;@ object-func = %a;@ object-td = %a;@ loc = %a;@ loc-td = %a@]@;\
+       <1 -2>}" Env.pp genv FEnv.pp gfenv TDEnv.pp gtdenv Env.pp oenv FEnv.pp
+      ofenv TDEnv.pp otdenv
       (Format.pp_print_list Env.pp)
-      lenvs
+      lenvs TDEnv.pp ltdenv
 end

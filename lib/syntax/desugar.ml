@@ -502,8 +502,8 @@ and desugar_decl (decl : Declaration.t) : decl =
   | ExternObject { name; type_params; methods; _ } ->
       let name = name.str in
       let tparams = desugar_tparams type_params in
-      let methods = desugar_methods methods in
-      ExternObjectD { name; tparams; methods }
+      let mthds = desugar_methods methods in
+      ExternObjectD { name; tparams; mthds }
   | PackageType { name; type_params; params; _ } ->
       let name = name.str in
       let tparams = desugar_tparams type_params in

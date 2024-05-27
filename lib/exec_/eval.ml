@@ -30,7 +30,9 @@ let rec eval_type (ctx : Ctx.t) (typ : typ) : Type.t =
   | TupleT typs ->
       let typs = List.map (eval_type ctx) typs in
       TupleT typs
-  | _ -> Format.asprintf "(TODO: eval_type) %a" Syntax.Print.print_type typ |> failwith
+  | _ ->
+      Format.asprintf "(TODO: eval_type) %a" Syntax.Print.print_type typ
+      |> failwith
 
 and eval_expr (ctx : Ctx.t) (expr : expr) : Value.t =
   match expr with
@@ -67,4 +69,6 @@ and eval_expr (ctx : Ctx.t) (expr : expr) : Value.t =
       match value with
       | HeaderV (_, fields) | StructV fields -> List.assoc name fields
       | _ -> assert false)
-  | _ -> Format.asprintf "(TODO: eval_expr) %a" Syntax.Print.print_expr expr |> failwith
+  | _ ->
+      Format.asprintf "(TODO: eval_expr) %a" Syntax.Print.print_expr expr
+      |> failwith

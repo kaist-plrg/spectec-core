@@ -1,19 +1,11 @@
 open Syntax.Ast
 open Domain
-open Base
 
 (* Constructor closures for instantiation *)
 
 module CClos = struct
   type t =
-    | ExternCC of {
-        vis_glob : vis_glob;
-        tparams : string list;
-        cparams : param list;
-        methods : decl list;
-      }
     | ParserCC of {
-        vis_glob : vis_glob;
         tparams : string list;
         params : param list;
         cparams : param list;
@@ -21,7 +13,6 @@ module CClos = struct
         states : parser_state list;
       }
     | ControlCC of {
-        vis_glob : vis_glob;
         tparams : string list;
         params : param list;
         cparams : param list;
@@ -29,16 +20,20 @@ module CClos = struct
         body : block;
       }
     | PackageCC of {
-        vis_glob : vis_glob;
         tparams : string list;
         cparams : param list;
       }
+    | ExternCC of {
+        tparams : string list;
+        cparams : param list;
+        mthds : decl list;
+      }
 
   let pp fmt = function
-    | ExternCC _ -> Format.fprintf fmt "extern"
     | ParserCC _ -> Format.fprintf fmt "parser"
     | ControlCC _ -> Format.fprintf fmt "control"
     | PackageCC _ -> Format.fprintf fmt "package"
+    | ExternCC _ -> Format.fprintf fmt "extern"
 end
 
 (* Environment for constructor closures *)

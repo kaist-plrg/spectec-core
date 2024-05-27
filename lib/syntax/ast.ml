@@ -180,11 +180,7 @@ and decl =
       tparams : string list;
       params : param list;
     }
-  | ExternObjectD of {
-      name : string;
-      tparams : string list;
-      methods : decl list;
-    }
+  | ExternObjectD of { name : string; tparams : string list; mthds : decl list }
   (* Package *)
   | PackageTypeD of {
       name : string;

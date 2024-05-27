@@ -1,4 +1,4 @@
 (library
  (name exec_)
  (libraries syntax runtime_ instance_)
- (modules interp eval custom))
+ (modules interp eval core v1model custom))

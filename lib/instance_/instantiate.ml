@@ -64,41 +64,37 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       (ccenv, ictx)
   (* Load constructor closures to ccenv *)
   | ParserD { name; tparams; params; cparams; locals; states } ->
-      let vis_glob = env_to_vis ictx.glob in
       let cclos =
-        CClos.ParserCC { vis_glob; tparams; params; cparams; locals; states }
+        CClos.ParserCC { tparams; params; cparams; locals; states }
       in
       let ccenv = CCEnv.add name cclos ccenv in
       (ccenv, ictx)
   | ControlD { name; tparams; params; cparams; locals; body } ->
-      let vis_glob = env_to_vis ictx.glob in
       let cclos =
-        CClos.ControlCC { vis_glob; tparams; params; cparams; locals; body }
+        CClos.ControlCC { tparams; params; cparams; locals; body }
       in
       let ccenv = CCEnv.add name cclos ccenv in
       (ccenv, ictx)
   (* For package type declaration, also load to tdenv *)
   | PackageTypeD { name; tparams; cparams } ->
-      let vis_glob = env_to_vis ictx.glob in
-      let cclos = CClos.PackageCC { vis_glob; tparams; cparams } in
+      let cclos = CClos.PackageCC { tparams; cparams } in
       let ccenv = CCEnv.add name cclos ccenv in
       let typ = Type.RefT in
       let ictx = ICtx.add_td_glob name typ ictx in
       (ccenv, ictx)
   (* For extern object declaration, also load to tdenv *)
-  | ExternObjectD { name; tparams; methods } ->
-      let vis_glob = env_to_vis ictx.glob in
-      let cons, methods =
+  | ExternObjectD { name; tparams; mthds } ->
+      let cons, mthds =
         List.partition
           (fun (mthd : decl) -> match mthd with ConsD _ -> true | _ -> false)
-          methods
+          mthds
       in
       (* (TODO) Handle overloaded constructors *)
       assert (List.length cons <= 1);
       let cparams =
         match cons with ConsD { cparams; _ } :: [] -> cparams | _ -> []
       in
-      let cclos = CClos.ExternCC { vis_glob; tparams; cparams; methods } in
+      let cclos = CClos.ExternCC { tparams; cparams; mthds } in
       let ccenv = CCEnv.add name cclos ccenv in
       let typ = Type.RefT in
       let ictx = ICtx.add_td_glob name typ ictx in
@@ -147,21 +143,22 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       let ictx = ICtx.add_td_glob name typ ictx in
       (ccenv, ictx)
   | _ ->
-      Printf.printf "(TODO: load_glob_decl) Load declaration\n";
+      Format.printf "(TODO: load_glob_decl) Load declaration %a\n" Syntax.Print.print_decl (0, decl);
       (ccenv, ictx)
 
 (* Instantiating objects *)
 
 let rec eval_targs (ictx_caller : ICtx.t) (ictx_callee : ICtx.t)
-    (tparams : string list) (typs : typ list) =
-  assert (List.length tparams = List.length typs);
+    (tparams : string list) (targs : typ list) =
+  assert (List.length tparams = List.length targs);
   List.fold_left2
-    (fun ictx_callee tparam typ ->
-      let typ = Eval.eval_type ictx_caller typ in
+    (fun ictx_callee tparam targ ->
+      let typ = Eval.eval_type ictx_caller targ in
       ICtx.add_td_obj tparam typ ictx_callee)
-    ictx_callee tparams typs
+    ictx_callee tparams targs
 
-and eval_expr (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t) (path : Path.t) (expr : expr) =
+and eval_expr (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t) (path : Path.t)
+    (expr : expr) =
   match expr with
   | InstE (typ, args) ->
       let sto = instantiate_from_expr ccenv sto ictx path typ args in
@@ -171,8 +168,9 @@ and eval_expr (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t) (path : Path.t) (e
       let value = Eval.eval_expr ictx expr in
       (sto, value)
 
-and eval_args (ccenv : CCEnv.t) (sto : Sto.t) (ictx_caller : ICtx.t) (ictx_callee : ICtx.t) (path : Path.t)
-    (params : param list) (args : arg list) =
+and eval_args (ccenv : CCEnv.t) (sto : Sto.t) (ictx_caller : ICtx.t)
+    (ictx_callee : ICtx.t) (path : Path.t) (params : param list)
+    (args : arg list) =
   (* (TODO) assume there is no default argument *)
   assert (List.length params = List.length args);
   check_args args;
@@ -190,24 +188,28 @@ and eval_args (ccenv : CCEnv.t) (sto : Sto.t) (ictx_caller : ICtx.t) (ictx_calle
     List.fold_left2
       (fun (sto, ictx_callee) (param, typ) arg ->
         let typ = Eval.eval_type ictx_caller typ in
-        let sto, value = eval_expr ccenv sto ictx_caller (path @ [ param ]) arg in
+        let sto, value =
+          eval_expr ccenv sto ictx_caller (path @ [ param ]) arg
+        in
         let ictx_callee = ICtx.add_var_obj param typ value ictx_callee in
         (sto, ictx_callee))
       (sto, ictx_callee) params args
   in
   (sto, ictx_callee)
 
-and eval_cargs (ccenv : CCEnv.t) (sto : Sto.t) (ictx_caller : ICtx.t) (ictx_callee : ICtx.t)
-    (path : Path.t) (cparams : param list) (cargs : arg list) =
+and eval_cargs (ccenv : CCEnv.t) (sto : Sto.t) (ictx_caller : ICtx.t)
+    (ictx_callee : ICtx.t) (path : Path.t) (cparams : param list)
+    (cargs : arg list) =
   eval_args ccenv sto ictx_caller ictx_callee path cparams cargs
 
-and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t) (ictx_caller : ICtx.t)
-    (path : Path.t) (cclos : CClos.t) (targs : typ list) (cargs : arg list) =
+and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
+    (ictx_caller : ICtx.t) (path : Path.t) (cclos : CClos.t) (targs : typ list)
+    (cargs : arg list) =
   match cclos with
-  | ParserCC { vis_glob; tparams; params; cparams; locals; states } ->
-      (* Initialize the environment and store for the parser object *)
+  | ParserCC { tparams; params; cparams; locals; states; _ } ->
+      (* Initialize the environment for the parser object *)
       let ictx_callee =
-        let env_glob = env_from_vis ictx_caller.glob vis_glob in
+        let env_glob = ictx_caller.glob in
         let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
         ICtx.init env_glob env_obj
       in
@@ -252,10 +254,10 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t) (ictx_caller : ICtx.t
           }
       in
       Sto.add path obj sto
-  | ControlCC { vis_glob; tparams; params; cparams; locals; body } ->
-      (* Initialize the environment and store for the control object *)
+  | ControlCC { tparams; params; cparams; locals; body; _ } ->
+      (* Initialize the environment for the control object *)
       let ictx_callee =
-        let env_glob = env_from_vis ictx_caller.glob vis_glob in
+        let env_glob = ictx_caller.glob in
         let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
         ICtx.init env_glob env_obj
       in
@@ -290,10 +292,10 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t) (ictx_caller : ICtx.t
           }
       in
       Sto.add path obj sto
-  | PackageCC { vis_glob; cparams; _ } ->
+  | PackageCC { cparams; _ } ->
       (* Initialize the environment and store for the parser object *)
       let ictx_callee =
-        let env_glob = env_from_vis ictx_caller.glob vis_glob in
+        let env_glob = ictx_caller.glob in
         let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
         ICtx.init env_glob env_obj
       in
@@ -303,10 +305,29 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t) (ictx_caller : ICtx.t
       in
       let obj = Object.PackageO in
       Sto.add path obj sto
-  | _ -> assert false
+  | ExternCC { cparams; mthds; _ } ->
+      (* Initialize the environment for the extern object *)
+      let ictx_callee =
+        let env_glob = ictx_caller.glob in
+        let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
+        ICtx.init env_glob env_obj
+      in
+      (* Evaluate constructor arguments *)
+      let sto, ictx_callee =
+        eval_cargs ccenv sto ictx_caller ictx_callee path cparams cargs
+      in
+      (* Evaluate methods *)
+      let ictx_callee =
+        List.fold_left instantiate_extern_obj_decl ictx_callee mthds
+      in
+      let obj =
+        Object.ExternO
+          { vis_glob = env_to_vis ictx_caller.glob; env_obj = ictx_callee.obj }
+      in
+      Sto.add path obj sto
 
-and instantiate_from_expr (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t) (path : Path.t)
-    (typ : typ) (args : arg list) =
+and instantiate_from_expr (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
+    (path : Path.t) (typ : typ) (args : arg list) =
   let cclos, targs = cclos_from_type typ ccenv in
   instantiate_from_cclos ccenv sto ictx path cclos targs args
 
@@ -394,6 +415,19 @@ and instantiate_control_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
       let sto = Sto.add path obj sto in
       (sto, ictx)
   | _ -> failwith "(instantiate_control_obj_decl) Unexpected declaration."
+
+and instantiate_extern_obj_decl (ictx : ICtx.t) (decl : decl) =
+  match decl with
+  | MethodD { name; tparams; params; _ } ->
+      let func =
+        Func.ExternF { vis_obj = env_to_vis ictx.obj; tparams; params }
+      in
+      ICtx.add_func_obj name func ictx
+  | AbstractD _ ->
+      Format.printf "(TODO: instantiate_extern_obj_decl) Load extern object %a"
+        Syntax.Print.print_decl (0, decl);
+      ictx
+  | _ -> assert false
 
 let instantiate_glob_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
     (path : Path.t) (decl : decl) =
