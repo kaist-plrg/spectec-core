@@ -35,8 +35,8 @@ let interp_decl (ctx : Ctx.t) (decl : decl) =
       let value = Eval.eval_expr ctx value in
       Ctx.add_var_loc name typ value ctx
   | _ ->
-      Format.asprintf "(TODO: interp_decl) %a" Syntax.Print.print_decl (0, decl)
-      |> failwith
+      Format.eprintf "(TODO: interp_decl) %a" Syntax.Print.print_decl (0, decl);
+      assert false
 
 (* Interpreter for statements *)
 
@@ -45,7 +45,6 @@ let interp_decl (ctx : Ctx.t) (decl : decl) =
    | lvalue "[" expression "]" | lvalue "[" expression ":" expression "]" *)
 
 let rec interp_write (ctx : Ctx.t) (lvalue : expr) (value : Value.t) =
-  Format.printf "WRITE %a to %a\n" Value.pp value Syntax.Print.print_expr lvalue;
   match lvalue with
   | VarE (Bare name) ->
       let typ = Ctx.find_var name ctx |> Option.get |> fst in
@@ -63,8 +62,8 @@ let rec interp_write (ctx : Ctx.t) (lvalue : expr) (value : Value.t) =
           interp_write ctx base (StructV fields)
       | _ -> assert false)
   | _ ->
-      Format.asprintf "(TODO: interp_write) %a" Syntax.Print.print_expr lvalue
-      |> failwith
+      Format.eprintf "(TODO: interp_write) %a" Syntax.Print.print_expr lvalue;
+      assert false
 
 let rec interp_stmt (ctx : Ctx.t) (stmt : stmt) =
   match stmt with
@@ -88,8 +87,8 @@ let rec interp_stmt (ctx : Ctx.t) (stmt : stmt) =
   | SelectI (exprs, cases) -> interp_select ctx exprs cases
   | DeclI decl -> interp_decl ctx decl
   | _ ->
-      Format.asprintf "(TODO: interp_stmt) %a" Syntax.Print.print_stmt (0, stmt)
-      |> failwith
+      Format.eprintf "(TODO: interp_stmt) %a" Syntax.Print.print_stmt (0, stmt);
+      assert false
 
 and interp_block (ctx : Ctx.t) (block : block) =
   let ctx = Ctx.enter_frame ctx in
@@ -159,8 +158,8 @@ and copyin adder (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (params : param list)
       | ExprA value -> (pname, value)
       | NameA (pname, value) -> (pname, value)
       | _ ->
-          Format.asprintf "(TODO: copyin) %a" Syntax.Print.print_arg arg
-          |> failwith
+          Format.eprintf "(TODO: copyin) %a" Syntax.Print.print_arg arg;
+          assert false
     in
     (* (TODO) Is it correct to evaluate the type at callee? *)
     match dir with
@@ -184,8 +183,8 @@ and copyout (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (params : param list)
       | ExprA value -> (pname, value)
       | NameA (pname, value) -> (pname, value)
       | _ ->
-          Format.asprintf "(TODO: copyout) %a" Syntax.Print.print_arg arg
-          |> failwith
+          Format.eprintf "(TODO: copyout) %a" Syntax.Print.print_arg arg;
+          assert false
     in
     match dir with
     | InOut | Out ->
@@ -219,7 +218,6 @@ and interp_apply (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
   (* Execute the body *)
   let ctx_callee = interp_block ctx_callee body in
   (* Copy-out from the object environment *)
-  Format.printf "CALLEE: %a\n" Ctx.pp ctx_callee;
   copyout ctx_caller ctx_callee params args
 
 and interp_method_call (ctx : Ctx.t) (obj : Object.t) (mname : Var.t)

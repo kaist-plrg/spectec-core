@@ -8,9 +8,7 @@ open Alternative
 let check (category : string) (eq : 'a -> 'a -> bool) (print : 'a -> string)
     (a : 'a) (b : 'a) =
   let same = eq a b in
-  if not same then
-    Printf.sprintf "neq_%s: %s does not equal %s" category (print a) (print b)
-    |> print_endline;
+  if not same then Format.eprintf "neq_%s: %s does not equal %s\n" category (print a) (print b);
   same
 
 let eq_option (eq : 'a -> 'a -> bool) (opt : 'a option) (opt' : 'a option) =

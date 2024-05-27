@@ -126,7 +126,7 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       let ictx = ICtx.add_td_glob name typ ictx in
       (ccenv, ictx)
   | SEnumD _ ->
-      Printf.printf "(TODO: load_glob_decl) Load serializable enum\n";
+      Format.eprintf "(TODO: load_glob_decl) Load serializable enum\n";
       (ccenv, ictx)
   | NewTypeD { name; typ; decl } | TypeDefD { name; typ; decl } -> (
       match (typ, decl) with
@@ -135,7 +135,7 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
           let ictx = ICtx.add_td_glob name typ ictx in
           (ccenv, ictx)
       | None, Some _ ->
-          Printf.printf "(TODO: load_glob_decl) Load typedef with decl\n";
+          Format.eprintf "(TODO: load_glob_decl) Load typedef with decl\n";
           (ccenv, ictx)
       | _ -> assert false)
   | ParserTypeD { name; _ } | ControlTypeD { name; _ } ->
@@ -143,7 +143,7 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       let ictx = ICtx.add_td_glob name typ ictx in
       (ccenv, ictx)
   | _ ->
-      Format.printf "(TODO: load_glob_decl) Load declaration %a\n" Syntax.Print.print_decl (0, decl);
+      Format.eprintf "(TODO: load_glob_decl) Load declaration %a\n" Syntax.Print.print_decl (0, decl);
       (ccenv, ictx)
 
 (* Instantiating objects *)
@@ -424,7 +424,7 @@ and instantiate_extern_obj_decl (ictx : ICtx.t) (decl : decl) =
       in
       ICtx.add_func_obj name func ictx
   | AbstractD _ ->
-      Format.printf "(TODO: instantiate_extern_obj_decl) Load extern object %a"
+      Format.eprintf "(TODO: instantiate_extern_obj_decl) Load extern object %a"
         Syntax.Print.print_decl (0, decl);
       ictx
   | _ -> assert false
@@ -454,6 +454,6 @@ let instantiate_program (program : program) =
       (ccenv, sto, ictx) program
   in
   let gctx = GCtx.init ictx.glob sto in
-  Format.printf "Instantiation done\n";
-  Format.printf "Instantiation context =\n%a\n" GCtx.pp gctx;
+  Format.eprintf "Instantiation done\n";
+  Format.eprintf "Instantiation context =\n%a\n" GCtx.pp gctx;
   (ccenv, gctx)
