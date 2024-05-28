@@ -33,6 +33,7 @@ struct
   let find = KS.find_opt
   let add = KS.add
   let mem = KS.mem
+  let union = KS.union
 
   let pp fmt sp =
     let elements = KS.elements sp in
@@ -61,6 +62,7 @@ struct
   let empty = KM.empty
   let find = KM.find_opt
   let add = KM.add
+  let map = KM.map
   let fold = KM.fold
   let filter = KM.filter
 

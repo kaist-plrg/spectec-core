@@ -18,15 +18,15 @@ let () =
   let program = Syntax.Desugar.desugar_program program in
 
   Format.printf "Instantiating %s\n" filename;
-  let ccenv, gctx = Instance.Instantiate.instantiate_program program in
+  let ccenv, sto, ctx = Instance.Instantiate.instantiate_program program in
 
   let arch =
     match target with
     | "v1model" -> Exec.V1model.drive
     | "custom" -> Exec.Custom.drive
-    | _ -> failwith "Unknown target"
+    | _ -> failwith "Unknown target: target = v1model | custom"
   in
 
   Format.printf "Interpreting %s\n" filename;
-  arch ccenv gctx |> ignore;
+  arch ccenv sto ctx |> ignore;
   ()

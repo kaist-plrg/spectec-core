@@ -30,6 +30,40 @@ let check_args (args : arg list) =
          (fun (arg : arg) -> match arg with NameA _ -> true | _ -> false)
          args)
 
+(* Helper to update visibility of functions *)
+
+let update_obj_vis (vis_obj_update : Vis.t) (fenv : FEnv.t) =
+  FEnv.map
+    (fun (func : Func.t) ->
+      match func with
+      | MethodF { vis_obj; tparams; params; body } ->
+          let tdvis_obj, vis_obj, fvis_obj = vis_obj in
+          let vis_obj = Vis.union vis_obj vis_obj_update in
+          let vis_obj = (tdvis_obj, vis_obj, fvis_obj) in
+          Func.MethodF { vis_obj; tparams; params; body }
+      | StateF { vis_obj; body } ->
+          let tdvis_obj, vis_obj, fvis_obj = vis_obj in
+          let vis_obj = Vis.union vis_obj vis_obj_update in
+          let vis_obj = (tdvis_obj, vis_obj, fvis_obj) in
+          Func.StateF { vis_obj; body }
+      | ActionF { vis_obj; params; body } ->
+          let tdvis_obj, vis_obj, fvis_obj = vis_obj in
+          let vis_obj = Vis.union vis_obj vis_obj_update in
+          let vis_obj = (tdvis_obj, vis_obj, fvis_obj) in
+          Func.ActionF { vis_obj; params; body }
+      | TableF { vis_obj } ->
+          let tdvis_obj, vis_obj, fvis_obj = vis_obj in
+          let vis_obj = Vis.union vis_obj vis_obj_update in
+          let vis_obj = (tdvis_obj, vis_obj, fvis_obj) in
+          Func.TableF { vis_obj }
+      | ExternF { vis_obj; tparams; params } ->
+          let tdvis_obj, vis_obj, fvis_obj = vis_obj in
+          let vis_obj = Vis.union vis_obj vis_obj_update in
+          let vis_obj = (tdvis_obj, vis_obj, fvis_obj) in
+          Func.ExternF { vis_obj; tparams; params }
+      | _ -> func)
+    fenv
+
 (* Helper to move object-local variable declarations into apply block *)
 
 let var_decl_to_stmt = function
@@ -245,11 +279,22 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
         let body = body_init @ [ TransI "start" ] in
         Func.MethodF { vis_obj; tparams = []; params; body }
       in
+      (* Reserve visibility for parameters *)
+      let vis_obj_param =
+        List.fold_left
+          (fun vis_obj_param (pname, _, _, _) -> Vis.add pname vis_obj_param)
+          Vis.empty params
+      in
+      let env_obj =
+        let tdenv, env, fenv = ictx_callee.obj in
+        let fenv = update_obj_vis vis_obj_param fenv in
+        (tdenv, env, fenv)
+      in
       let obj =
         Object.ParserO
           {
             vis_glob = env_to_vis ictx_callee.glob;
-            env_obj = ictx_callee.obj;
+            env_obj = env_obj;
             mthd = apply;
           }
       in
@@ -283,11 +328,22 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
         let body = body_init @ [ BlockI body ] in
         Func.MethodF { vis_obj; tparams = []; params; body }
       in
+      (* Reserve visibility for parameters *)
+      let vis_obj_param =
+        List.fold_left
+          (fun vis_obj_param (pname, _, _, _) -> Vis.add pname vis_obj_param)
+          Vis.empty params
+      in
+      let env_obj =
+        let tdenv, env, fenv = ictx_callee.obj in
+        let fenv = update_obj_vis vis_obj_param fenv in
+        (tdenv, env, fenv)
+      in
       let obj =
         Object.ControlO
           {
             vis_glob = env_to_vis ictx_callee.glob;
-            env_obj = ictx_callee.obj;
+            env_obj;
             mthd = apply;
           }
       in
@@ -453,7 +509,5 @@ let instantiate_program (program : program) =
         instantiate_glob_decl ccenv sto ictx [] decl)
       (ccenv, sto, ictx) program
   in
-  let gctx = GCtx.init ictx.glob sto in
-  Format.eprintf "Instantiation done\n";
-  Format.eprintf "Instantiation context =\n%a\n" GCtx.pp gctx;
-  (ccenv, gctx)
+  let ctx = Ctx.init ictx.glob ictx.obj (TDEnv.empty, []) in
+  (ccenv, sto, ctx)

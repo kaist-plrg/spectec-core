@@ -1,6 +1,7 @@
 open Syntax.Ast
 open Runtime.Domain
 open Runtime.Base
+open Runtime.Object
 open Runtime.Cclos
 open Runtime.Context
 
@@ -69,24 +70,19 @@ let pkt () =
   let bits = Array.append (ethernet_header_bits ()) (ipv4_header_bits ())  in
   Core.Packet.init bits
 
-let init_instantiate_packet_in (ccenv : CCEnv.t) (gctx : GCtx.t) =
+let init_instantiate_packet_in (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
   let cclos_packet_in = CCEnv.find "packet_in" ccenv |> Option.get in
-  let ictx = ICtx.init gctx.glob (TDEnv.empty, Env.empty, FEnv.empty) in
-  let sto = gctx.sto in
+  let ictx = ICtx.init ctx.env_glob ctx.env_obj in
   let path = [ "packet" ] in
   let sto =
     Instance.Instantiate.instantiate_from_cclos ccenv sto ictx path
       cclos_packet_in [] []
   in
-  ({ gctx with sto }, pkt ())
+  (sto, pkt ())
 
-let init (ccenv : CCEnv.t) (gctx : GCtx.t) =
-  (* Initialize the context *)
-  let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
-  let env_loc = (TDEnv.empty, []) in
-  let ctx = Ctx.init gctx.glob env_obj env_loc in
+let init (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
   (* Add "packet" to the store and object environment *)
-  let gctx, _pkt = init_instantiate_packet_in ccenv gctx in
+  let sto, _pkt = init_instantiate_packet_in ccenv sto ctx in
   let ctx =
     let typ = Type.RefT in
     let value = Value.RefV [ "packet" ] in
@@ -110,22 +106,22 @@ let init (ccenv : CCEnv.t) (gctx : GCtx.t) =
     let value = Runtime.Ops.eval_default_value typ in
     Ctx.add_var_obj "standard_metadata" typ value ctx
   in
-  (gctx, ctx)
+  (sto, ctx)
 
 let make_args (args : Var.t list) =
   List.map (fun arg -> ExprA (VarE (Bare arg))) args
 
-let drive_parser_impl (gctx : GCtx.t) (ctx : Ctx.t) =
+let drive_parser_impl (sto : Sto.t) (ctx : Ctx.t) =
   let path = [ "main"; "p" ] in
-  let obj_parser_impl = GCtx.find_obj path gctx |> Option.get in
+  let obj_parser_impl = Sto.find path sto |> Option.get in
   let targs = [] in
   let args = make_args [ "packet"; "hdr"; "meta"; "standard_metadata" ] in
   Interp.interp_method_call ctx obj_parser_impl "apply" targs args
 
-let drive (ccenv : CCEnv.t) (gctx : GCtx.t) =
-  let gctx, ctx = init ccenv gctx in
-  Interp.init gctx;
+let drive (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
+  let sto, ctx = init ccenv sto ctx in
+  Interp.init sto;
   Format.printf "Initial v1model driver context\n%a@." Ctx.pp ctx;
-  let ctx = drive_parser_impl gctx ctx in
+  let ctx = drive_parser_impl sto ctx in
   Format.printf "\nAfter parser_impl call\n%a@." Ctx.pp ctx;
   ()

@@ -4,10 +4,10 @@ open Runtime.Base
 open Runtime.Object
 open Runtime.Context
 
-(* Global environment *)
+(* Global store *)
 
-let gctx = ref GCtx.empty
-let init (_gctx : GCtx.t) = gctx := _gctx
+let sto = ref Sto.empty
+let init _sto = sto := _sto
 
 (* Helper to fetch "apply" or extern method *)
 
@@ -78,7 +78,7 @@ let rec interp_stmt (ctx : Ctx.t) (stmt : stmt) =
         | ExprAccE (ref, mname) ->
             let ref = Eval.eval_expr ctx ref in
             let path = match ref with RefV path -> path | _ -> assert false in
-            let obj = GCtx.find_obj path !gctx |> Option.get in
+            let obj = Sto.find path !sto |> Option.get in
             (obj, mname)
         | _ -> assert false
       in
@@ -99,21 +99,20 @@ and interp_trans (ctx : Ctx.t) (next : string) =
   if next = "accept" || next = "reject" then ctx
   else
     let state_next = Ctx.find_func next ctx |> Option.get in
-    (* (TODO) Visibility should be managed by the object *)
+    (* (TODO) For state transitions, do not change object visibility,
+       treating them as real "transitions", because states can be mutually recursive *)
     let _vis_obj, body =
       match state_next with
       | StateF { vis_obj; body } -> (vis_obj, body)
       | _ -> assert false
     in
     let ctx_next =
-      let env_glob = ctx.glob in
-      let env_obj = ctx.obj in
       let env_loc = (TDEnv.empty, []) in
-      Ctx.init env_glob env_obj env_loc
+      { ctx with env_loc }
     in
     (* (TODO) This is a tail-call *)
     let ctx_next = interp_block ctx_next body in
-    { ctx with obj = ctx_next.obj }
+    { ctx with env_obj = ctx_next.env_obj }
 
 and interp_select (ctx : Ctx.t) (exprs : expr list) (cases : select_case list) =
   let values = List.map (fun expr -> Eval.eval_expr ctx expr) exprs in
@@ -224,26 +223,24 @@ and interp_method_call (ctx : Ctx.t) (obj : Object.t) (mname : Var.t)
     (targs : typ list) (args : arg list) =
   match obj with
   | ExternO { vis_glob; env_obj } ->
+      (* Construct the callee context *)
+      let ctx_callee = Ctx.init ctx.env_glob env_obj (TDEnv.empty, []) in
       (* Find the method *)
-      let env_glob = env_from_vis !gctx.glob vis_glob in
-      let env_loc = (TDEnv.empty, []) in
-      let ctx_callee = Ctx.init env_glob env_obj env_loc in
       let mthd = Ctx.find_func mname ctx_callee |> Option.get in
-      (* Restrict the method's visibility *)
       let vis_obj, tparams, params = fetch_extern_method mthd in
-      let ctx_callee =
-        let env_obj = env_from_vis ctx_callee.obj vis_obj in
-        { ctx_callee with obj = env_obj }
-      in
+      (* Restrict the callee's visibility *)
+      let ctx_callee = { ctx_callee with vis_glob; vis_obj } in
       (* Evaluate the body *)
       interp_extern_mthd ctx ctx_callee mname tparams params targs args
   | ParserO { vis_glob; env_obj; mthd } | ControlO { vis_glob; env_obj; mthd }
     ->
+      (* Construct the callee context *)
+      let ctx_callee = Ctx.init ctx.env_glob env_obj (TDEnv.empty, []) in
+      (* Find the method *)
       assert (mname = "apply");
       let vis_obj, tparams, params, body = fetch_apply_method mthd in
-      let env_glob = env_from_vis !gctx.glob vis_glob in
-      let env_obj = env_from_vis env_obj vis_obj in
-      let env_loc = (TDEnv.empty, []) in
-      let ctx_callee = Ctx.init env_glob env_obj env_loc in
+      (* Restrict the callee's visibility *)
+      let ctx_callee = { ctx_callee with vis_glob; vis_obj } in
+      (* Evaluate the body *)
       interp_apply ctx ctx_callee tparams params targs args body
   | _ -> assert false
