@@ -30,35 +30,6 @@ let check_args (args : arg list) =
          (fun (arg : arg) -> match arg with NameA _ -> true | _ -> false)
          args)
 
-(* Helper to update visibility of functions *)
-
-let update_obj_vis' (vis_obj_update : Vis.t) (func : Func.t) =
-  match func with
-  | MethodF { vis_obj; tparams; params; body } ->
-      let tdvis_obj, vis_obj, fvis_obj = vis_obj in
-      let vis_obj = Vis.union vis_obj vis_obj_update in
-      let vis_obj = (tdvis_obj, vis_obj, fvis_obj) in
-      Func.MethodF { vis_obj; tparams; params; body }
-  | ActionF { vis_obj; params; body } ->
-      let tdvis_obj, vis_obj, fvis_obj = vis_obj in
-      let vis_obj = Vis.union vis_obj vis_obj_update in
-      let vis_obj = (tdvis_obj, vis_obj, fvis_obj) in
-      Func.ActionF { vis_obj; params; body }
-  | TableF { vis_obj } ->
-      let tdvis_obj, vis_obj, fvis_obj = vis_obj in
-      let vis_obj = Vis.union vis_obj vis_obj_update in
-      let vis_obj = (tdvis_obj, vis_obj, fvis_obj) in
-      Func.TableF { vis_obj }
-  | ExternF { vis_obj; tparams; params } ->
-      let tdvis_obj, vis_obj, fvis_obj = vis_obj in
-      let vis_obj = Vis.union vis_obj vis_obj_update in
-      let vis_obj = (tdvis_obj, vis_obj, fvis_obj) in
-      Func.ExternF { vis_obj; tparams; params }
-  | _ -> func
-
-let update_obj_vis (vis_obj_update : Vis.t) (fenv : FEnv.t) =
-  FEnv.map (update_obj_vis' vis_obj_update) fenv
-
 (* Helper to move object-local variable declarations into apply block *)
 
 let var_decl_to_stmt = function
@@ -231,6 +202,11 @@ and eval_cargs (ccenv : CCEnv.t) (sto : Sto.t) (ictx_caller : ICtx.t)
     (cargs : arg list) =
   eval_args ccenv sto ictx_caller ictx_callee path cparams cargs
 
+and pre_eval_params (ictx : ICtx.t) (params : param list) =
+  List.fold_left
+    (fun ictx (name, _, typ, _) -> load_obj_var ictx name typ)
+    ictx params
+
 and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
     (ictx_caller : ICtx.t) (path : Path.t) (cclos : CClos.t) (targs : typ list)
     (cargs : arg list) =
@@ -238,7 +214,7 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
   | ParserCC { tparams; params; cparams; locals; states; _ } ->
       (* Initialize the environment for the parser object *)
       let ictx_callee =
-        let env_glob = ictx_caller.glob in
+        let env_glob = ictx_caller.env_glob in
         let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
         ICtx.init env_glob env_obj
       in
@@ -248,6 +224,8 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
       let sto, ictx_callee =
         eval_cargs ccenv sto ictx_caller ictx_callee path cparams cargs
       in
+      (* Pre-evaluate parameters *)
+      let ictx_callee = pre_eval_params ictx_callee params in
       (* Evaluate locals *)
       let sto, ictx_callee =
         List.fold_left
@@ -266,29 +244,17 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
       in
       (* Build "apply" method *)
       let apply =
-        let vis_obj = env_to_vis ictx_callee.obj in
         (* Move object-local variable initializers into apply block *)
         let body_init = List.filter_map var_decl_to_stmt locals in
         (* Transition to the start state *)
         let body = body_init @ [ TransI "start" ] in
-        Func.MethodF { vis_obj; tparams = []; params; body }
-      in
-      (* Reserve visibility for parameters *)
-      let vis_obj_param =
-        List.fold_left
-          (fun vis_obj_param (pname, _, _, _) -> Vis.add pname vis_obj_param)
-          Vis.empty params
-      in
-      let env_obj =
-        let tdenv, env, fenv = ictx_callee.obj in
-        let fenv = update_obj_vis vis_obj_param fenv in
-        (tdenv, env, fenv)
+        Func.MethodF { vis_obj = ictx_callee.vis_obj; tparams = []; params; body }
       in
       let obj =
         Object.ParserO
           {
-            vis_glob = env_to_vis ictx_callee.glob;
-            env_obj = env_obj;
+            vis_glob = ictx_callee.vis_glob;
+            env_obj = ictx_callee.env_obj;
             mthd = apply;
           }
       in
@@ -296,7 +262,7 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
   | ControlCC { tparams; params; cparams; locals; body; _ } ->
       (* Initialize the environment for the control object *)
       let ictx_callee =
-        let env_glob = ictx_caller.glob in
+        let env_glob = ictx_caller.env_glob in
         let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
         ICtx.init env_glob env_obj
       in
@@ -306,38 +272,28 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
       let sto, ictx_callee =
         eval_cargs ccenv sto ictx_caller ictx_callee path cparams cargs
       in
-      (* Reserve visibility for parameters *)
-      let vis_obj_param =
-        List.fold_left
-          (fun vis_obj_param (pname, _, _, _) -> Vis.add pname vis_obj_param)
-          Vis.empty params
-      in
+      (* Pre-evaluate parameters *)
+      let ictx_callee = pre_eval_params ictx_callee params in
       (* Evaluate locals *)
       let sto, ictx_callee =
         List.fold_left
           (fun (sto, ictx_callee) local ->
-            instantiate_control_obj_decl ccenv sto ictx_callee vis_obj_param path local)
+            instantiate_control_obj_decl ccenv sto ictx_callee path local)
           (sto, ictx_callee) locals
       in
       (* Build "apply" method *)
       let apply =
-        let vis_obj = env_to_vis ictx_callee.obj in
         (* Move object-local variable initializers into apply block *)
         let body_init = List.filter_map var_decl_to_stmt locals in
         (* Transition to the start state *)
         let body = body_init @ [ BlockI body ] in
-        Func.MethodF { vis_obj; tparams = []; params; body }
-      in
-      let env_obj =
-        let tdenv, env, fenv = ictx_callee.obj in
-        let fenv = update_obj_vis vis_obj_param fenv in
-        (tdenv, env, fenv)
+        Func.MethodF { vis_obj = ictx_callee.vis_obj; tparams = []; params; body }
       in
       let obj =
         Object.ControlO
           {
-            vis_glob = env_to_vis ictx_callee.glob;
-            env_obj;
+            vis_glob = ictx_callee.vis_glob;
+            env_obj = ictx_callee.env_obj;
             mthd = apply;
           }
       in
@@ -345,7 +301,7 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
   | PackageCC { cparams; _ } ->
       (* Initialize the environment and store for the parser object *)
       let ictx_callee =
-        let env_glob = ictx_caller.glob in
+        let env_glob = ictx_caller.env_glob in
         let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
         ICtx.init env_glob env_obj
       in
@@ -358,7 +314,7 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
   | ExternCC { cparams; mthds; _ } ->
       (* Initialize the environment for the extern object *)
       let ictx_callee =
-        let env_glob = ictx_caller.glob in
+        let env_glob = ictx_caller.env_glob in
         let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
         ICtx.init env_glob env_obj
       in
@@ -372,7 +328,7 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
       in
       let obj =
         Object.ExternO
-          { vis_glob = env_to_vis ictx_caller.glob; env_obj = ictx_callee.obj }
+          { vis_glob = env_to_vis ictx_caller.env_glob; env_obj = ictx_callee.env_obj }
       in
       Sto.add path obj sto
 
@@ -434,7 +390,7 @@ and instantiate_parser_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
    | tableDeclaration | instantiation
    | variableDeclaration; (14) *)
 and instantiate_control_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
-    (vis_obj_param : Vis.t) (path : Path.t) (decl : decl) =
+    (path : Path.t) (decl : decl) =
   match decl with
   | InstD { name; typ; args; _ } ->
       instantiate_from_obj_decl ccenv sto ictx path name typ args
@@ -445,7 +401,7 @@ and instantiate_control_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
       let ictx = load_obj_var ictx name typ in
       (sto, ictx)
   | ActionD { name; params; body } ->
-      let func = Func.ActionF { vis_obj = env_to_vis ictx.obj; params; body } in
+      let func = Func.ActionF { vis_obj = env_to_vis ictx.env_obj; params; body } in
       let ictx = ICtx.add_func_obj name func ictx in
       (sto, ictx)
   (* Each table evaluates to a table instance (18.2) *)
@@ -455,10 +411,7 @@ and instantiate_control_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
   | TableD { name; key; actions; entries; default; custom } ->
       let path = path @ [ name ] in
       (* Build a dummy "apply" method for table *)
-      let apply =
-        Func.TableF { vis_obj = env_to_vis ictx.obj }
-        |> update_obj_vis' vis_obj_param
-      in
+      let apply = Func.TableF { vis_obj = ictx.vis_obj } in
       let obj =
         Object.TableO { key; actions; entries; default; custom; mthd = apply }
       in
@@ -473,7 +426,7 @@ and instantiate_extern_obj_decl (ictx : ICtx.t) (decl : decl) =
   match decl with
   | MethodD { name; tparams; params; _ } ->
       let func =
-        Func.ExternF { vis_obj = env_to_vis ictx.obj; tparams; params }
+        Func.ExternF { vis_obj = env_to_vis ictx.env_obj; tparams; params }
       in
       ICtx.add_func_obj name func ictx
   | AbstractD _ ->
@@ -506,5 +459,5 @@ let instantiate_program (program : program) =
         instantiate_glob_decl ccenv sto ictx [] decl)
       (ccenv, sto, ictx) program
   in
-  let ctx = Ctx.init ictx.glob ictx.obj (TDEnv.empty, []) in
+  let ctx = Ctx.init ictx.env_glob ictx.env_obj (TDEnv.empty, []) in
   (ccenv, sto, ctx)

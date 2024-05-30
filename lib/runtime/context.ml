@@ -4,78 +4,119 @@ open Base
    The instantiation does not look into method/function body *)
 
 module ICtx = struct
-  type t = { glob : env_glob; obj : env_obj }
+
+  (* vis_* always contains all names in env_*
+     object-local variables (including "apply" params) are
+     preferrably added only to vis_*, but to remember their types
+     (since their values should not known at compile time)
+     they are also added to env_* with default value *)
+  type t = {
+    env_glob : env_glob;
+    vis_glob : vis_glob;
+    env_obj : env_obj;
+    vis_obj : vis_obj;
+  }
 
   let empty =
     {
-      glob = (TDEnv.empty, Env.empty, FEnv.empty);
-      obj = (TDEnv.empty, Env.empty, FEnv.empty);
+      env_glob = (TDEnv.empty, Env.empty, FEnv.empty);
+      vis_glob = (TDVis.empty, Vis.empty, Vis.empty);
+      env_obj = (TDEnv.empty, Env.empty, FEnv.empty);
+      vis_obj = (TDVis.empty, Vis.empty, Vis.empty);
     }
 
-  let init env_glob env_obj = { glob = env_glob; obj = env_obj }
+  let init env_glob env_obj =
+    let vis_glob = env_to_vis env_glob in
+    let vis_obj = env_to_vis env_obj in
+    { env_glob; vis_glob; env_obj; vis_obj }
 
   let add_td_glob name typ ctx =
-    let gtdenv, genv, gfenv = ctx.glob in
+    let gtdenv, genv, gfenv = ctx.env_glob in
     let gtdenv = TDEnv.add name typ gtdenv in
-    { ctx with glob = (gtdenv, genv, gfenv) }
+    let gtdvis, gvis, gfvis = ctx.vis_glob in
+    let gtdvis = TDVis.add name gtdvis in
+    { ctx with env_glob = (gtdenv, genv, gfenv); vis_glob = (gtdvis, gvis, gfvis) }
 
   let add_td_obj name typ ctx =
-    let otdenv, oenv, ofenv = ctx.obj in
+    let otdenv, oenv, ofenv = ctx.env_obj in
     let otdenv = TDEnv.add name typ otdenv in
-    { ctx with obj = (otdenv, oenv, ofenv) }
+    let otdvis, ovis, ofvis = ctx.vis_obj in
+    let otdvis = TDVis.add name otdvis in
+    { ctx with env_obj = (otdenv, oenv, ofenv); vis_obj = (otdvis, ovis, ofvis) }
 
   let add_var_glob name typ value ctx =
-    let gtdenv, genv, gfenv = ctx.glob in
+    let gtdenv, genv, gfenv = ctx.env_glob in
     let genv = Env.add name (typ, value) genv in
-    { ctx with glob = (gtdenv, genv, gfenv) }
+    let gtdvis, gvis, gfvis = ctx.vis_glob in
+    let gvis = Vis.add name gvis in
+    { ctx with env_glob = (gtdenv, genv, gfenv); vis_glob = (gtdvis, gvis, gfvis) }
 
   let add_var_obj name typ value ctx =
-    let otdenv, oenv, ofenv = ctx.obj in
+    let otdenv, oenv, ofenv = ctx.env_obj in
     let oenv = Env.add name (typ, value) oenv in
-    { ctx with obj = (otdenv, oenv, ofenv) }
+    let otdvis, ovis, ofvis = ctx.vis_obj in
+    let ovis = Vis.add name ovis in
+    { ctx with env_obj = (otdenv, oenv, ofenv); vis_obj = (otdvis, ovis, ofvis) }
 
   let add_func_glob name func ctx =
-    let gtdenv, genv, gfenv = ctx.glob in
+    let gtdenv, genv, gfenv = ctx.env_glob in
     let gfenv = FEnv.add name func gfenv in
-    { ctx with glob = (gtdenv, genv, gfenv) }
+    let gtdvis, gvis, gfvis = ctx.vis_glob in
+    let gfvis = FVis.add name gfvis in
+    { ctx with env_glob = (gtdenv, genv, gfenv); vis_glob = (gtdvis, gvis, gfvis) }
 
   let add_func_obj name func ctx =
-    let otdenv, oenv, ofenv = ctx.obj in
+    let otdenv, oenv, ofenv = ctx.env_obj in
     let ofenv = FEnv.add name func ofenv in
-    { ctx with obj = (otdenv, oenv, ofenv) }
+    let otdvis, ovis, ofvis = ctx.vis_obj in
+    let ofvis = FVis.add name ofvis in
+    { ctx with env_obj = (otdenv, oenv, ofenv); vis_obj = (otdvis, ovis, ofvis) }
 
-  let find_td name ctx =
-    let gtdenv, _, _ = ctx.glob in
-    let otdenv, _, _ = ctx.obj in
-    List.fold_left
-      (fun value tdenv ->
-        match value with Some _ -> value | None -> TDEnv.find name tdenv)
-      None [ otdenv; gtdenv ]
+  let find finder name ctx = function
+  | Some value -> Some value
+  | None -> finder name ctx
 
   let find_td_glob name ctx =
-    let gtdenv, _, _ = ctx.glob in
+    let gtdenv, _, _ = env_from_vis ctx.env_glob ctx.vis_glob in
     TDEnv.find name gtdenv
 
-  let find_var name ctx =
-    let _, genv, _ = ctx.glob in
-    let _, oenv, _ = ctx.obj in
-    List.fold_left
-      (fun value env ->
-        match value with Some _ -> value | None -> Env.find name env)
-      None [ oenv; genv ]
+  let find_td_obj name ctx =
+    let otdenv, _, _ = env_from_vis ctx.env_obj ctx.vis_obj in
+    TDEnv.find name otdenv
+
+  let find_td name ctx =
+    find_td_obj name ctx
+    |> find find_td_glob name ctx
 
   let find_var_glob name ctx =
-    let _, genv, _ = ctx.glob in
+    let _, genv, _ = env_from_vis ctx.env_glob ctx.vis_glob in
     Env.find name genv
 
-  let pp fmt ctx =
-    let _, genv, gfenv = ctx.glob in
-    let _, oenv, ofenv = ctx.obj in
+  let find_var_obj name ctx =
+    let _, oenv, _ = env_from_vis ctx.env_obj ctx.vis_obj in
+    Env.find name oenv
+
+  let find_var name ctx =
+    find_var_obj name ctx
+    |> find find_var_glob name ctx
+
+  let pp_vis fmt ctx =
+    let gtdvis, gvis, gfvis = ctx.vis_glob in
+    let otdvis, ovis, ofvis = ctx.vis_obj in
     Format.fprintf fmt
       "{@;\
-       <1 2>@[<v 0>global = %a;@ global-func = %a;@ object = %a@ object-func = \
-       %a;@]@;\
-       <1 -2>}" Env.pp genv FEnv.pp gfenv Env.pp oenv FEnv.pp ofenv
+       <1 2>@[<v 0>global = %a;@ global-func = %a; global-td = %a;@ object = %a@ object-func = \
+       %a;@ object-td = %a@]@;\
+       <1 -2>}" Vis.pp gvis FVis.pp gfvis TDVis.pp gtdvis Vis.pp ovis FVis.pp ofvis TDVis.pp otdvis
+
+  let pp fmt ctx =
+    let gtdenv, genv, gfenv = env_from_vis ctx.env_glob ctx.vis_glob in
+    let otdenv, oenv, ofenv = env_from_vis ctx.env_obj ctx.vis_obj in
+    Format.fprintf fmt
+      "{@;\
+       <1 2>@[<v 0>global = %a;@ global-func = %a; global-td = %a;@ object = %a@ object-func = \
+       %a;@ object-td = %a@]@;\
+       <1 -2>}" Env.pp genv FEnv.pp gfenv TDEnv.pp gtdenv Env.pp oenv FEnv.pp ofenv TDEnv.pp otdenv
 end
 
 (* ctx for interpretation *)

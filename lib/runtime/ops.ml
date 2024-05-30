@@ -653,6 +653,7 @@ let rec eval_default_value (typ : Type.t) : Value.t =
         List.map (fun (name, typ) -> (name, eval_default_value typ)) entries
       in
       HeaderV (false, entries)
+  | RefT -> RefV []
   | _ ->
       Format.asprintf "(TODO) default_value: not implemented for %a" Type.pp typ
       |> failwith
