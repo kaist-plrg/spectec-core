@@ -209,7 +209,7 @@ and desugar_switch_case (case : Statement.switch_case) : switch_case =
       | Default _ -> (DefaultC, block))
   | FallThrough { label; _ } -> (
       match label with
-      | Name { name; _ } -> (CaseC name.str, [])
+      | Name { name; _ } -> (FallC name.str, [])
       | Default _ -> assert false)
 
 and desugar_switch_cases (cases : Statement.switch_case list) : switch_case list

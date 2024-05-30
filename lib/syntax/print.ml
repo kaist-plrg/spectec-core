@@ -227,7 +227,8 @@ and print_block fmt (level, block) =
 
 and print_case fmt case =
   match case with
-  | CaseC case -> F.fprintf fmt "case %s" case
+  | CaseC case
+  | FallC case -> F.fprintf fmt "case %s" case
   | DefaultC -> F.fprintf fmt "default"
 
 and print_switch_case fmt (level, switch_case) =

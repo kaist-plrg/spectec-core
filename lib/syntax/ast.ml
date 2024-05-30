@@ -79,7 +79,7 @@ and expr =
   | InstE of typ * arg list
 
 (* Match-cases *)
-and case = CaseC of string | DefaultC
+and case = CaseC of string | FallC of string | DefaultC
 and mtch = ExprM of expr | DefaultM | AnyM
 
 (* Statements *)

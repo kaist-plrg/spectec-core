@@ -22,6 +22,11 @@ let fetch_pbl_method (func : Func.t) =
       (vis_obj, tparams, params, body)
   | _ -> assert false
 
+let fetch_action (func : Func.t) =
+  match func with
+  | ActionF { vis_obj; params; body } -> (vis_obj, params, body)
+  | _ -> assert false
+
 let fetch_table_method (func : Func.t) =
   match func with
   | TableF { vis_obj } -> vis_obj
@@ -79,7 +84,8 @@ let rec interp_stmt (ctx : Ctx.t) (stmt : stmt) =
   | TransI next -> interp_trans ctx next
   | SelectI (exprs, cases) -> interp_select ctx exprs cases
   | DeclI decl -> interp_decl ctx decl
-  | SwitchI _ | ExitI | RetI _ ->
+  | SwitchI (expr, cases) -> interp_switch ctx expr cases
+  | ExitI | RetI _ ->
       Format.eprintf "(TODO: interp_stmt) %a" Syntax.Print.print_stmt (0, stmt);
       assert false
 
@@ -137,7 +143,33 @@ and interp_select (ctx : Ctx.t) (exprs : expr list) (cases : select_case list) =
   let next = List.fold_left select_cases None cases |> Option.get in
   interp_trans ctx next
 
-(* Interpreter: entry point of a P4 programmable block execution *)
+(* (TODO) assume switch on table apply result only,
+   for case with expression is not supported in Petr4 parser *)
+and interp_switch (ctx : Ctx.t) (expr : expr) (cases : switch_case list) =
+  let value = Eval.eval_expr ctx expr in
+  let value = match value with StrV s -> s | _ -> assert false in
+  let switch_cases (block_found : (bool * block option)) (case : switch_case) =
+    let case, block = case in
+    match block_found with
+    (* match complete *)
+    | (true, Some _) -> block_found
+    (* during fallthrough *)
+    | (true, None) -> (
+        match case with
+        | CaseC _ -> (true, Some block)
+        | FallC _ -> (true, None)
+        | DefaultC -> (true, Some block))
+    (* match not found *)
+    | (false, _) -> (
+        match case with
+        | CaseC case when case = value -> (true, Some block)
+        | FallC case when case = value -> (true, None)
+        | DefaultC -> (true, Some block)
+        | _ -> block_found)
+  in
+  let _, block = List.fold_left switch_cases (false, None) cases in
+  let block = match block with None -> [] | Some block -> block in
+  interp_block ctx block
 
 (* adder determines where to add the type argument, either object or local scope *)
 and interp_targs adder (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
@@ -225,25 +257,49 @@ and interp_pbl_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
   (* Copy-out from the object environment *)
   copyout ctx_caller ctx_callee params args
 
-and interp_table_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
-    (key : table_key list) (_actions : table_action list) (_entries : table_entry list)
-    (_default : table_default option) (_custom : table_custom list) =
-  (* Invoke the match-action table to get an action *)
-  let exprs = List.map fst key in
-  Format.pp_print_list
-    ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
-    (fun fmt expr -> Format.fprintf fmt "%a" Syntax.Print.print_expr expr)
-    Format.std_formatter exprs;
-  Format.fprintf Format.std_formatter "\n";
-  let values = List.map (Eval.eval_expr ctx_callee) exprs in
-  Format.pp_print_list
-    ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
-    (fun fmt value -> Format.fprintf fmt "%a" Value.pp value)
-    Format.std_formatter values;
-  Format.fprintf Format.std_formatter "\n";
-  (* Execute the action *)
+and interp_action_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
+    (params : param list) (args : arg list) (body : block) =
+  (* Enter the function frame *)
+  let ctx_callee = Ctx.enter_frame ctx_callee in
+  (* Copy-in to the local environment *)
+  let ctx_callee = copyin Ctx.add_var_loc ctx_caller ctx_callee params args in
+  (* Execute the body *)
+  let ctx_callee = interp_block ctx_callee body in
+  (* Copy-out from the local environment *)
+  let ctx_caller = copyout ctx_caller ctx_callee params args in
   (* Account for object-local mutations *)
   { ctx_caller with env_obj = ctx_callee.env_obj }
+
+and interp_table_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
+    (key : table_key list) (actions : table_action list) (entries : table_entry list)
+    (default : table_default option) (custom : table_custom list) =
+  (* Invoke the match-action table to get an action *)
+  let action = Control.match_action ctx_callee key actions entries default custom in
+  match action with
+  | None -> ctx_caller
+  | Some (action, args) ->
+    (* Find the action *)
+    (* (TODO) support inter-object call to global action *)
+    let action_name =
+      (match action with
+      | Top action ->
+          Format.eprintf "(TODO: interp_table_call) Implement top-level action call to %s\n" action;
+          assert false
+      | Bare action -> action)
+    in
+    let action = Ctx.find_func_obj action_name ctx_callee |> Option.get in
+    let vis_obj, params, body = fetch_action action in
+    (* Construct the callee context *)
+    let ctx_callee_callee =
+      Ctx.init ctx_callee.env_glob ctx_callee.env_obj (TDEnv.empty, [])
+    in
+    let ctx_callee_callee = { ctx_callee_callee with vis_obj } in
+    (* Execute the action *)
+    let ctx_callee = interp_action_call ctx_callee ctx_callee_callee params args body in
+    (* Account for object-local mutations *)
+    { ctx_caller with env_obj = ctx_callee.env_obj }
+
+(* Entry point of a P4 object method execution, including "apply" on programmable block *)
 
 and interp_method_call (ctx : Ctx.t) (obj : Object.t) (mname : Var.t)
     (targs : typ list) (args : arg list) =
