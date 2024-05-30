@@ -99,6 +99,7 @@ control ingress(inout headers hdr, inout metadata meta, inout standard_metadata_
         key = {
             meta.ingress_metadata.bd: exact;
         }
+        const entries = { 0x00 : set_vrf(12w42); };
         size = 65536;
     }
     table ipv4_fib {
@@ -110,6 +111,7 @@ control ingress(inout headers hdr, inout metadata meta, inout standard_metadata_
             meta.ingress_metadata.vrf: exact;
             hdr.ipv4.dstAddr         : exact;
         }
+        const entries = { (12w42, foo) : fib_hit_nexthop(16w0); };
         size = 131072;
     }
     table ipv4_fib_lpm {
@@ -140,6 +142,7 @@ control ingress(inout headers hdr, inout metadata meta, inout standard_metadata_
         key = {
             standard_metadata.ingress_port: exact;
         }
+        const entries = { 0x00 : set_bd(16w77); };
         size = 32768;
     }
     apply {

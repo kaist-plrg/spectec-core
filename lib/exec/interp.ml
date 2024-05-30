@@ -9,17 +9,22 @@ open Runtime.Context
 let sto = ref Sto.empty
 let init _sto = sto := _sto
 
-(* Helper to fetch "apply" or extern method *)
+(* Helper to fetch "apply" for pbl/table or extern method *)
 
-let fetch_apply_method (func : Func.t) =
+let fetch_extern_method (func : Func.t) =
+  match func with
+  | ExternF { vis_obj; tparams; params } -> (vis_obj, tparams, params)
+  | _ -> assert false
+
+let fetch_pbl_method (func : Func.t) =
   match func with
   | MethodF { vis_obj; tparams; params; body } ->
       (vis_obj, tparams, params, body)
   | _ -> assert false
 
-let fetch_extern_method (func : Func.t) =
+let fetch_table_method (func : Func.t) =
   match func with
-  | ExternF { vis_obj; tparams; params } -> (vis_obj, tparams, params)
+  | TableF { vis_obj } -> vis_obj
   | _ -> assert false
 
 (* Interpreter for declarations *)
@@ -43,7 +48,6 @@ let interp_decl (ctx : Ctx.t) (decl : decl) =
 (* lvalue
    : prefixedNonTypeName | lvalue "." member
    | lvalue "[" expression "]" | lvalue "[" expression ":" expression "]" *)
-
 let rec interp_write (ctx : Ctx.t) (lvalue : expr) (value : Value.t) =
   match lvalue with
   | VarE (Bare name) ->
@@ -68,49 +72,51 @@ let rec interp_write (ctx : Ctx.t) (lvalue : expr) (value : Value.t) =
 let rec interp_stmt (ctx : Ctx.t) (stmt : stmt) =
   match stmt with
   | EmptyI -> ctx
-  | AssignI (lhs, rhs) ->
-      let value = Eval.eval_expr ctx rhs in
-      interp_write ctx lhs value
+  | AssignI (lhs, rhs) -> interp_assign ctx lhs rhs
+  | IfI (cond, tru, fls) -> interp_if ctx cond tru fls
   | BlockI block -> interp_block ctx block
-  | CallI (func, targs, args) ->
-      let obj, mname =
-        match func with
-        | ExprAccE (ref, mname) ->
-            let ref = Eval.eval_expr ctx ref in
-            let path = match ref with RefV path -> path | _ -> assert false in
-            let obj = Sto.find path !sto |> Option.get in
-            (obj, mname)
-        | _ -> assert false
-      in
-      interp_method_call ctx obj mname targs args
+  | CallI (func, targs, args) -> interp_call ctx func targs args
   | TransI next -> interp_trans ctx next
   | SelectI (exprs, cases) -> interp_select ctx exprs cases
   | DeclI decl -> interp_decl ctx decl
-  | _ ->
+  | SwitchI _ | ExitI | RetI _ ->
       Format.eprintf "(TODO: interp_stmt) %a" Syntax.Print.print_stmt (0, stmt);
       assert false
+
+and interp_assign (ctx : Ctx.t) (lhs : expr) (rhs : expr) =
+  let value = Eval.eval_expr ctx rhs in
+  interp_write ctx lhs value
+
+and interp_if (ctx : Ctx.t) (cond : expr) (tru : stmt) (fls : stmt) =
+  let cond = Eval.eval_expr ctx cond |> Runtime.Ops.eval_cast Type.BoolT in
+  let cond = match cond with BoolV b -> b | _ -> assert false in
+  if cond then interp_stmt ctx tru else interp_stmt ctx fls
 
 and interp_block (ctx : Ctx.t) (block : block) =
   let ctx = Ctx.enter_frame ctx in
   let ctx = List.fold_left interp_stmt ctx block in
   Ctx.exit_frame ctx
 
+and interp_call (ctx : Ctx.t) (func : expr) (targs : typ list) (args : arg list) =
+  match func with
+  | ExprAccE (ref, mname) ->
+      let ref = Eval.eval_expr ctx ref in
+      let path = match ref with RefV path -> path | _ -> assert false in
+      let obj = Sto.find path !sto |> Option.get in
+      interp_method_call ctx obj mname targs args
+  | _ -> assert false
+
+(* (TODO) For state transitions, do not change object visibility,
+   treating them as real "transitions", because states can be mutually recursive *)
 and interp_trans (ctx : Ctx.t) (next : string) =
   if next = "accept" || next = "reject" then ctx
   else
     let state_next = Ctx.find_func next ctx |> Option.get in
-    (* (TODO) For state transitions, do not change object visibility,
-       treating them as real "transitions", because states can be mutually recursive *)
-    let _vis_obj, body =
-      match state_next with
-      | StateF { vis_obj; body } -> (vis_obj, body)
-      | _ -> assert false
-    in
+    let body = match state_next with StateF { body } -> body | _ -> assert false in
     let ctx_next =
       let env_loc = (TDEnv.empty, []) in
       { ctx with env_loc }
     in
-    (* (TODO) This is a tail-call *)
     let ctx_next = interp_block ctx_next body in
     { ctx with env_obj = ctx_next.env_obj }
 
@@ -193,7 +199,7 @@ and copyout (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (params : param list)
   in
   List.fold_left2 copyout' ctx_caller params args
 
-and interp_extern_mthd (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
+and interp_extern_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
     (mname : string) (tparams : Var.t list) (params : param list)
     (targs : typ list) (args : arg list) =
   (* Enter the function frame *)
@@ -209,7 +215,7 @@ and interp_extern_mthd (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
   (* Copy-out from the object environment *)
   copyout ctx_caller ctx_callee params args
 
-and interp_apply (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
+and interp_pbl_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
     (_tparams : Var.t list) (params : param list) (_targs : typ list)
     (args : arg list) (body : block) =
   (* Copy-in to the object environment *)
@@ -219,8 +225,31 @@ and interp_apply (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
   (* Copy-out from the object environment *)
   copyout ctx_caller ctx_callee params args
 
+and interp_table_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
+    (key : table_key list) (_actions : table_action list) (_entries : table_entry list)
+    (_default : table_default option) (_custom : table_custom list) =
+  (* Invoke the match-action table to get an action *)
+  let exprs = List.map fst key in
+  Format.pp_print_list
+    ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+    (fun fmt expr -> Format.fprintf fmt "%a" Syntax.Print.print_expr expr)
+    Format.std_formatter exprs;
+  Format.fprintf Format.std_formatter "\n";
+  let values = List.map (Eval.eval_expr ctx_callee) exprs in
+  Format.pp_print_list
+    ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+    (fun fmt value -> Format.fprintf fmt "%a" Value.pp value)
+    Format.std_formatter values;
+  Format.fprintf Format.std_formatter "\n";
+  (* Execute the action *)
+  (* Account for object-local mutations *)
+  { ctx_caller with env_obj = ctx_callee.env_obj }
+
 and interp_method_call (ctx : Ctx.t) (obj : Object.t) (mname : Var.t)
     (targs : typ list) (args : arg list) =
+  (* Difference between calling an extern method and a parser/control method
+     is that parameters are passed to the method-local scope for the former
+     and for the latter, it is the object-local scope *)
   match obj with
   | ExternO { vis_glob; env_obj } ->
       (* Construct the callee context *)
@@ -231,16 +260,28 @@ and interp_method_call (ctx : Ctx.t) (obj : Object.t) (mname : Var.t)
       (* Restrict the callee's visibility *)
       let ctx_callee = { ctx_callee with vis_glob; vis_obj } in
       (* Evaluate the body *)
-      interp_extern_mthd ctx ctx_callee mname tparams params targs args
+      interp_extern_call ctx ctx_callee mname tparams params targs args
   | ParserO { vis_glob; env_obj; mthd } | ControlO { vis_glob; env_obj; mthd }
     ->
       (* Construct the callee context *)
       let ctx_callee = Ctx.init ctx.env_glob env_obj (TDEnv.empty, []) in
       (* Find the method *)
       assert (mname = "apply");
-      let vis_obj, tparams, params, body = fetch_apply_method mthd in
+      let vis_obj, tparams, params, body = fetch_pbl_method mthd in
       (* Restrict the callee's visibility *)
       let ctx_callee = { ctx_callee with vis_glob; vis_obj } in
       (* Evaluate the body *)
-      interp_apply ctx ctx_callee tparams params targs args body
-  | _ -> assert false
+      interp_pbl_call ctx ctx_callee tparams params targs args body
+  | TableO { key; actions; entries; default; custom; mthd } ->
+      (* Construct the callee context *)
+      let ctx_callee = Ctx.init ctx.env_glob ctx.env_obj (TDEnv.empty, []) in
+      (* Find the method *)
+      assert (mname = "apply" && targs = [] && args = []);
+      let vis_obj = fetch_table_method mthd in
+      (* Restrict the callee's visibility *)
+      let ctx_callee = { ctx_callee with vis_obj } in
+      (* Evaluate the body *)
+      interp_table_call ctx ctx_callee key actions entries default custom
+  | _ ->
+      Format.eprintf "(TODO: interp_inter_call) %a\n" Object.pp obj;
+      assert false

@@ -69,6 +69,16 @@ and eval_expr (ctx : Ctx.t) (expr : expr) : Value.t =
       match value with
       | HeaderV (_, fields) | StructV fields -> List.assoc name fields
       | _ -> assert false)
-  | _ ->
+  | CallE (func, _targs, _args) -> (
+      let value, mname =
+        match func with
+        | ExprAccE (value, mname) -> (eval_expr ctx value, mname)
+        | _ -> assert false
+      in
+      match value with
+      | HeaderV (valid, _) when mname = "isValid" -> BoolV valid
+      | _ -> assert false)
+  | TernE _ | MaskE _ | RangeE _ | ArrAccE _ | BitAccE _ | TypeAccE _
+  | ErrAccE _ | InstE _ ->
       Format.asprintf "(TODO: eval_expr) %a" Syntax.Print.print_expr expr
       |> failwith

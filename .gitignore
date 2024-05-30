@@ -1,4 +1,9 @@
+# build and executables
 _build
 p4cherry
 p4cherry-test
 *.opam
+
+# logs
+log
+error

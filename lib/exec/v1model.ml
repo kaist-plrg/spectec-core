@@ -118,10 +118,19 @@ let drive_parser_impl (sto : Sto.t) (ctx : Ctx.t) =
   let args = make_args [ "packet"; "hdr"; "meta"; "standard_metadata" ] in
   Interp.interp_method_call ctx obj_parser_impl "apply" targs args
 
+let drive_ingress (sto : Sto.t) (ctx : Ctx.t) =
+  let path = [ "main"; "ig" ] in
+  let obj_ingress = Sto.find path sto |> Option.get in
+  let targs = [] in
+  let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
+  Interp.interp_method_call ctx obj_ingress "apply" targs args
+
 let drive (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
   let sto, ctx = init ccenv sto ctx in
   Interp.init sto;
   Format.printf "Initial v1model driver context\n%a@." Ctx.pp ctx;
   let ctx = drive_parser_impl sto ctx in
   Format.printf "\nAfter parser_impl call\n%a@." Ctx.pp ctx;
+  let ctx = drive_ingress sto ctx in
+  Format.printf "\nAfter ingress call\n%a@." Ctx.pp ctx;
   ()

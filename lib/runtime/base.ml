@@ -156,7 +156,7 @@ module Func = struct
         params : param list;
         body : block;
       }
-    | StateF of { vis_obj : vis_obj; body : block }
+    | StateF of { body : block }
     | ActionF of { vis_obj : vis_obj; params : param list; body : block }
     | TableF of { vis_obj : vis_obj }
     (* (TODO) Consider return type, which may be a type variable *)
