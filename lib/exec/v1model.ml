@@ -7,6 +7,8 @@ open Runtime.Context
 
 let path = []
 
+[@ocamlformat "disable"]
+
 let ethernet_header_bits () : bool array =
   [|
     (* Destination MAC Address (48 bits): 01:23:45:67:89:AB *)
@@ -66,8 +68,10 @@ let ipv4_header_bits () : bool array =
     false; false; false; false; false; false; false; true;
   |]
 
+[@ocamlformat "enable"]
+
 let pkt () =
-  let bits = Array.append (ethernet_header_bits ()) (ipv4_header_bits ())  in
+  let bits = Array.append (ethernet_header_bits ()) (ipv4_header_bits ()) in
   Core.Packet.init bits
 
 let init_instantiate_packet_in (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
@@ -111,26 +115,32 @@ let init (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
 let make_args (args : Var.t list) =
   List.map (fun arg -> ExprA (VarE (Bare arg))) args
 
-let drive_parser_impl (sto : Sto.t) (ctx : Ctx.t) =
-  let path = [ "main"; "p" ] in
-  let obj_parser_impl = Sto.find path sto |> Option.get in
+let drive_parser_impl (ctx : Ctx.t) =
+  let value = Value.RefV [ "main"; "p" ] in
   let targs = [] in
   let args = make_args [ "packet"; "hdr"; "meta"; "standard_metadata" ] in
-  Interp.interp_method_call ctx obj_parser_impl "apply" targs args
+  Interp.interp_method_call ctx value "apply" targs args |> fst
 
-let drive_ingress (sto : Sto.t) (ctx : Ctx.t) =
-  let path = [ "main"; "ig" ] in
-  let obj_ingress = Sto.find path sto |> Option.get in
+let drive_ingress (ctx : Ctx.t) =
+  let value = Value.RefV [ "main"; "ig" ] in
   let targs = [] in
   let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
-  Interp.interp_method_call ctx obj_ingress "apply" targs args
+  Interp.interp_method_call ctx value "apply" targs args |> fst
+
+let drive_egress (ctx : Ctx.t) =
+  let value = Value.RefV [ "main"; "eg" ] in
+  let targs = [] in
+  let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
+  Interp.interp_method_call ctx value "apply" targs args |> fst
 
 let drive (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
   let sto, ctx = init ccenv sto ctx in
   Interp.init sto;
   Format.printf "Initial v1model driver context\n%a@." Ctx.pp ctx;
-  let ctx = drive_parser_impl sto ctx in
+  let ctx = drive_parser_impl ctx in
   Format.printf "\nAfter parser_impl call\n%a@." Ctx.pp ctx;
-  let ctx = drive_ingress sto ctx in
+  let ctx = drive_ingress ctx in
   Format.printf "\nAfter ingress call\n%a@." Ctx.pp ctx;
+  let ctx = drive_egress ctx in
+  Format.printf "\nAfter egress call\n%a@." Ctx.pp ctx;
   ()

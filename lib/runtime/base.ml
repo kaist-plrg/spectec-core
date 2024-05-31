@@ -89,6 +89,8 @@ module Value = struct
     | StructV of (string * t) list
     | HeaderV of bool * (string * t) list
     | UnionV of (string * t) list
+    | EnumFieldV of string
+    | SEnumFieldV of string * t
     | RefV of string list
 
   let rec pp fmt value =
@@ -128,6 +130,8 @@ module Value = struct
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (f, v) -> Format.fprintf fmt "%s: %a" f pp v))
           fs
+    | EnumFieldV m -> Format.fprintf fmt "%s" m
+    | SEnumFieldV (m, v) -> Format.fprintf fmt "%s(%a)" m pp v
     | RefV ps -> Format.fprintf fmt "ref %s" (String.concat "." ps)
 end
 

@@ -19,10 +19,7 @@ module CClos = struct
         locals : decl list;
         body : block;
       }
-    | PackageCC of {
-        tparams : string list;
-        cparams : param list;
-      }
+    | PackageCC of { tparams : string list; cparams : param list }
     | ExternCC of {
         tparams : string list;
         cparams : param list;

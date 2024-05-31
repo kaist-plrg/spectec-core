@@ -85,7 +85,8 @@ let desugar_roundtrip filename =
 let test_desugar () =
   let files = Sys.readdir program_dir in
   let total = Array.length files in
-  Printf.sprintf "Running desugar roundtrip tests on %d files" total |> print_endline;
+  Printf.sprintf "Running desugar roundtrip tests on %d files" total
+  |> print_endline;
   Array.iter
     (fun filename ->
       let filename = Printf.sprintf "%s/%s" program_dir filename in
@@ -94,13 +95,13 @@ let test_desugar () =
   Printf.sprintf "Parser fails on file: %d / %d" !parse_file_fails total
   |> print_endline;
   let total = total - !parse_file_fails in
-  Printf.sprintf "Desugar fails: %d / %d" !desugar_fails total
-  |> print_endline;
+  Printf.sprintf "Desugar fails: %d / %d" !desugar_fails total |> print_endline;
   let total = total - !desugar_fails in
   Printf.sprintf "Parser fails on string: %d / %d" !parse_string_fails total
   |> print_endline;
   let total = total - !parse_string_fails in
-  Printf.sprintf "Desugar roundtrip fails: %d / %d" !desugar_roundtrip_fails total
+  Printf.sprintf "Desugar roundtrip fails: %d / %d" !desugar_roundtrip_fails
+    total
   |> print_endline
 
 let instantiate filename =
@@ -127,8 +128,7 @@ let test_instantiation () =
   Printf.sprintf "Parser fails on file: %d / %d" !parse_file_fails total
   |> print_endline;
   let total = total - !parse_file_fails in
-  Printf.sprintf "Desugar fails: %d / %d" !desugar_fails total
-  |> print_endline;
+  Printf.sprintf "Desugar fails: %d / %d" !desugar_fails total |> print_endline;
   let total = total - !desugar_fails in
   Printf.sprintf "Instantiation fails: %d / %d" !instantiate_fails total
   |> print_endline
@@ -139,8 +139,10 @@ let rec parse_arguments args (parsed_args : parsed_args) =
   match args with
   | [] -> parsed_args
   | "-parse" :: tl -> { parsed_args with parse = true } |> parse_arguments tl
-  | "-desugar" :: tl -> { parsed_args with desugar = true } |> parse_arguments tl
-  | "-instantiate" :: tl -> { parsed_args with instantiate = true } |> parse_arguments tl
+  | "-desugar" :: tl ->
+      { parsed_args with desugar = true } |> parse_arguments tl
+  | "-instantiate" :: tl ->
+      { parsed_args with instantiate = true } |> parse_arguments tl
   | _ :: tl -> parse_arguments tl parsed_args
 
 let () =
@@ -149,6 +151,15 @@ let () =
     { parse = false; desugar = false; instantiate = false }
     |> parse_arguments args
   in
-  if parsed_args.parse then (test_parser (); reset()) else ();
-  if parsed_args.desugar then (test_desugar (); reset()) else ();
-  if parsed_args.instantiate then (test_instantiation (); reset()) else ()
+  if parsed_args.parse then (
+    test_parser ();
+    reset ())
+  else ();
+  if parsed_args.desugar then (
+    test_desugar ();
+    reset ())
+  else ();
+  if parsed_args.instantiate then (
+    test_instantiation ();
+    reset ())
+  else ()

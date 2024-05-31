@@ -64,15 +64,11 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       (ccenv, ictx)
   (* Load constructor closures to ccenv *)
   | ParserD { name; tparams; params; cparams; locals; states } ->
-      let cclos =
-        CClos.ParserCC { tparams; params; cparams; locals; states }
-      in
+      let cclos = CClos.ParserCC { tparams; params; cparams; locals; states } in
       let ccenv = CCEnv.add name cclos ccenv in
       (ccenv, ictx)
   | ControlD { name; tparams; params; cparams; locals; body } ->
-      let cclos =
-        CClos.ControlCC { tparams; params; cparams; locals; body }
-      in
+      let cclos = CClos.ControlCC { tparams; params; cparams; locals; body } in
       let ccenv = CCEnv.add name cclos ccenv in
       (ccenv, ictx)
   (* For package type declaration, also load to tdenv *)
@@ -143,7 +139,8 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       let ictx = ICtx.add_td_glob name typ ictx in
       (ccenv, ictx)
   | _ ->
-      Format.eprintf "(TODO: load_glob_decl) Load declaration %a\n" Syntax.Print.print_decl (0, decl);
+      Format.eprintf "(TODO: load_glob_decl) Load declaration %a\n"
+        Syntax.Print.print_decl (0, decl);
       (ccenv, ictx)
 
 (* Instantiating objects *)
@@ -248,7 +245,8 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
         let body_init = List.filter_map var_decl_to_stmt locals in
         (* Transition to the start state *)
         let body = body_init @ [ TransI "start" ] in
-        Func.MethodF { vis_obj = ictx_callee.vis_obj; tparams = []; params; body }
+        Func.MethodF
+          { vis_obj = ictx_callee.vis_obj; tparams = []; params; body }
       in
       let obj =
         Object.ParserO
@@ -287,7 +285,8 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
         let body_init = List.filter_map var_decl_to_stmt locals in
         (* Transition to the start state *)
         let body = body_init @ [ BlockI body ] in
-        Func.MethodF { vis_obj = ictx_callee.vis_obj; tparams = []; params; body }
+        Func.MethodF
+          { vis_obj = ictx_callee.vis_obj; tparams = []; params; body }
       in
       let obj =
         Object.ControlO
@@ -328,7 +327,10 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
       in
       let obj =
         Object.ExternO
-          { vis_glob = env_to_vis ictx_caller.env_glob; env_obj = ictx_callee.env_obj }
+          {
+            vis_glob = env_to_vis ictx_caller.env_glob;
+            env_obj = ictx_callee.env_obj;
+          }
       in
       Sto.add path obj sto
 
@@ -401,7 +403,9 @@ and instantiate_control_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
       let ictx = load_obj_var ictx name typ in
       (sto, ictx)
   | ActionD { name; params; body } ->
-      let func = Func.ActionF { vis_obj = env_to_vis ictx.env_obj; params; body } in
+      let func =
+        Func.ActionF { vis_obj = env_to_vis ictx.env_obj; params; body }
+      in
       let ictx = ICtx.add_func_obj name func ictx in
       (sto, ictx)
   (* Each table evaluates to a table instance (18.2) *)

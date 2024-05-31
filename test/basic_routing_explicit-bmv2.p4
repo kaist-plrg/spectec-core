@@ -69,6 +69,7 @@ control egress(inout headers hdr, inout metadata meta, inout standard_metadata_t
         key = {
             meta.ingress_metadata.nexthop_index: exact;
         }
+        default_action = rewrite_src_dst_mac(48w1234, 48w5678);
         size = 32768;
     }
     apply {
@@ -111,7 +112,7 @@ control ingress(inout headers hdr, inout metadata meta, inout standard_metadata_
             meta.ingress_metadata.vrf: exact;
             hdr.ipv4.dstAddr         : exact;
         }
-        default_action = fib_hit_nexthop(16w0);
+        default_action = fib_hit_nexthop(16w77);
         size = 131072;
     }
     table ipv4_fib_lpm {
@@ -133,7 +134,7 @@ control ingress(inout headers hdr, inout metadata meta, inout standard_metadata_
         key = {
             meta.ingress_metadata.nexthop_index: exact;
         }
-        default_action = on_miss();
+        default_action = set_egress_details(9w35);
         size = 32768;
     }
     table port_mapping {

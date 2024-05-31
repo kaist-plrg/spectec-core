@@ -14,17 +14,16 @@ let init (ctx : Ctx.t) =
 let make_args (args : Var.t list) =
   List.map (fun arg -> ExprA (VarE (Bare arg))) args
 
-let drive_proto (sto : Sto.t) (ctx : Ctx.t) =
-  let path = [ "main"; "_p" ] in
-  let obj_proto = Sto.find path sto |> Option.get in
+let drive_proto (ctx : Ctx.t) =
+  let value = Value.RefV [ "main"; "_p" ] in
   let targs = [] in
   let args = make_args [ "b" ] in
-  Interp.interp_method_call ctx obj_proto "apply" targs args
+  Interp.interp_method_call ctx value "apply" targs args |> fst
 
 let drive (_ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
   let ctx = init ctx in
   Interp.init sto;
   Format.printf "Initial context\n%a@\n" Ctx.pp ctx;
-  let ctx = drive_proto sto ctx in
+  let ctx = drive_proto ctx in
   Format.printf "After calling main._p\n%a@\n" Ctx.pp ctx;
   ()
