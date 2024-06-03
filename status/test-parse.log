@@ -1,4 +1,5 @@
 Running parser roundtrip tests on 625 files
-Parser fails on file: 0 / 625
-Parser fails on string: 0 / 625
-Roundtrip fails: 0 / 625
+Parser fail on file: test/program/basic_routing-bmv2.p4
+Parser fails on file: 1 / 625
+Parser fails on string: 0 / 624
+Roundtrip fails: 0 / 624
