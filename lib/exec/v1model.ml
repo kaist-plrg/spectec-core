@@ -7,8 +7,6 @@ open Runtime.Context
 
 let path = []
 
-[@ocamlformat "disable"]
-
 let ethernet_header_bits () : bool array =
   [|
     (* Destination MAC Address (48 bits): 01:23:45:67:89:AB *)
@@ -28,7 +26,7 @@ let ethernet_header_bits () : bool array =
     (* Ethertype (16 bits): 0800 (IPv4) *)
     false; false; false; false; true; false; false; false;
     false; false; false; false; false; false; false; false;
-  |]
+  |] [@@ocamlformat "disable"]
 
 let ipv4_header_bits () : bool array =
   [|
@@ -66,9 +64,7 @@ let ipv4_header_bits () : bool array =
     true; false; true; false; false; false; false; false;
     false; false; false; false; false; false; false; true;
     false; false; false; false; false; false; false; true;
-  |]
-
-[@ocamlformat "enable"]
+  |] [@@ocamlformat "disable"]
 
 let pkt () =
   let bits = Array.append (ethernet_header_bits ()) (ipv4_header_bits ()) in
@@ -119,19 +115,19 @@ let drive_parser_impl (ctx : Ctx.t) =
   let value = Value.RefV [ "main"; "p" ] in
   let targs = [] in
   let args = make_args [ "packet"; "hdr"; "meta"; "standard_metadata" ] in
-  Interp.interp_method_call ctx value "apply" targs args |> fst
+  Interp.interp_method_call ctx value "apply" targs args |> snd
 
 let drive_ingress (ctx : Ctx.t) =
   let value = Value.RefV [ "main"; "ig" ] in
   let targs = [] in
   let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
-  Interp.interp_method_call ctx value "apply" targs args |> fst
+  Interp.interp_method_call ctx value "apply" targs args |> snd
 
 let drive_egress (ctx : Ctx.t) =
   let value = Value.RefV [ "main"; "eg" ] in
   let targs = [] in
   let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
-  Interp.interp_method_call ctx value "apply" targs args |> fst
+  Interp.interp_method_call ctx value "apply" targs args |> snd
 
 let drive (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
   let sto, ctx = init ccenv sto ctx in

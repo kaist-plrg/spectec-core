@@ -18,7 +18,7 @@ let drive_proto (ctx : Ctx.t) =
   let value = Value.RefV [ "main"; "_p" ] in
   let targs = [] in
   let args = make_args [ "b" ] in
-  Interp.interp_method_call ctx value "apply" targs args |> fst
+  Interp.interp_method_call ctx value "apply" targs args |> snd
 
 let drive (_ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
   let ctx = init ctx in

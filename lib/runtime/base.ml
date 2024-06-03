@@ -140,7 +140,7 @@ end
 module TypeValue = struct
   type t = Type.t * Value.t
 
-  let pp fmt (t, v) = Format.fprintf fmt "(%a, %a)" Type.pp t Value.pp v
+  let pp fmt (_, v) = Format.fprintf fmt "(%a)" Value.pp v
 end
 
 (* Runtime representation of functions *)

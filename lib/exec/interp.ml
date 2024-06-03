@@ -3,6 +3,7 @@ open Runtime.Domain
 open Runtime.Base
 open Runtime.Object
 open Runtime.Context
+open Runtime.Signal
 
 (* Global store *)
 
@@ -40,8 +41,8 @@ let fetch_struct_field (value : Value.t) (field : string) =
 let fetch_enum_member (value : Value.t) =
   match value with EnumFieldV member -> member | _ -> assert false
 
-(* Interpreter for expressions
-   assume: evaluation of bit width should never change the context *)
+(* Interpreter for type simplification,
+   Assume: evaluation of bit width should never change the context *)
 
 let rec interp_type (ctx : Ctx.t) (typ : typ) : Type.t =
   match typ with
@@ -68,6 +69,8 @@ let rec interp_type (ctx : Ctx.t) (typ : typ) : Type.t =
   | _ ->
       Format.asprintf "(TODO: eval_type) %a" Syntax.Print.print_type typ
       |> failwith
+
+(* Interpreter for expressions *)
 
 and interp_expr (ctx : Ctx.t) (expr : expr) : Ctx.t * Value.t =
   match expr with
@@ -120,18 +123,23 @@ and interp_expr (ctx : Ctx.t) (expr : expr) : Ctx.t * Value.t =
           (ctx, value)
       | _ -> assert false)
   | CallE (func, targs, args) ->
-      let ctx, value = interp_call ctx func targs args in
-      let value = Option.get value in
+      let sign, ctx = interp_call ctx func targs args in
+      let value =
+        match (sign : Sig.t) with
+        | Ret value -> Option.get value
+        (* (TODO) what if the function being called exits? *)
+        | _ -> assert false
+      in
       (ctx, value)
+  | TernE _ | MaskE _ | RangeE _ | ArrAccE _ | BitAccE _ | TypeAccE _
+  | ErrAccE _ ->
+      Format.asprintf "(TODO: interp_expr) %a" Syntax.Print.print_expr expr
+      |> failwith
   | InstE _ ->
       Format.eprintf
         "(interp_expr) Instantiation expression should have been evaluated in \
          instantiation.";
       assert false
-  | TernE _ | MaskE _ | RangeE _ | ArrAccE _ | BitAccE _ | TypeAccE _
-  | ErrAccE _ ->
-      Format.asprintf "(TODO: interp_expr) %a" Syntax.Print.print_expr expr
-      |> failwith
 
 and interp_exprs (ctx : Ctx.t) (exprs : expr list) : Ctx.t * Value.t list =
   List.fold_left
@@ -139,22 +147,6 @@ and interp_exprs (ctx : Ctx.t) (exprs : expr list) : Ctx.t * Value.t list =
       let ctx, value = interp_expr ctx expr in
       (ctx, values @ [ value ]))
     (ctx, []) exprs
-
-(* Interpreter for declarations *)
-
-and interp_decl (ctx : Ctx.t) (decl : decl) =
-  match decl with
-  | VarD { name; typ; init = None } ->
-      let typ = interp_type ctx typ in
-      let value = Runtime.Ops.eval_default_value typ in
-      Ctx.add_var_loc name typ value ctx
-  | VarD { name; typ; init = Some value } ->
-      let typ = interp_type ctx typ in
-      let ctx, value = interp_expr ctx value in
-      Ctx.add_var_loc name typ value ctx
-  | _ ->
-      Format.eprintf "(TODO: interp_decl) %a" Syntax.Print.print_decl (0, decl);
-      assert false
 
 (* Interpreter for statements *)
 
@@ -184,103 +176,185 @@ and interp_write (ctx : Ctx.t) (lvalue : expr) (value : Value.t) =
       Format.eprintf "(TODO: interp_write) %a" Syntax.Print.print_expr lvalue;
       assert false
 
-and interp_stmt (ctx : Ctx.t) (stmt : stmt) =
+and interp_stmt (sign : Sig.t) (ctx : Ctx.t) (stmt : stmt) =
   match stmt with
-  | EmptyI -> ctx
-  | AssignI (lhs, rhs) -> interp_assign ctx lhs rhs
-  | IfI (cond, tru, fls) -> interp_if ctx cond tru fls
-  | BlockI block -> interp_block ctx block
-  | CallI (func, targs, args) -> interp_call ctx func targs args |> fst
-  | TransI next -> interp_trans ctx next
-  | SelectI (exprs, cases) -> interp_select ctx exprs cases
-  | DeclI decl -> interp_decl ctx decl
-  | SwitchI (expr, cases) -> interp_switch ctx expr cases
-  | ExitI | RetI _ ->
-      Format.eprintf "(TODO: interp_stmt) %a" Syntax.Print.print_stmt (0, stmt);
-      assert false
+  | EmptyI -> (sign, ctx)
+  | AssignI (lhs, rhs) -> interp_assign sign ctx lhs rhs
+  | IfI (cond, tru, fls) -> interp_if sign ctx cond tru fls
+  | BlockI block -> interp_block sign ctx block
+  | CallI (func, targs, args) -> interp_call_as_stmt sign ctx func targs args
+  | TransI next -> interp_trans sign ctx next
+  | SelectI (exprs, cases) -> interp_select sign ctx exprs cases
+  | DeclI decl -> interp_decl sign ctx decl
+  | SwitchI (expr, cases) -> interp_switch sign ctx expr cases
+  | ExitI -> interp_exit sign ctx
+  | RetI expr -> interp_return sign ctx expr
 
-and interp_assign (ctx : Ctx.t) (lhs : expr) (rhs : expr) =
-  let ctx, value = interp_expr ctx rhs in
-  interp_write ctx lhs value
+and interp_assign (sign : Sig.t) (ctx : Ctx.t) (lhs : expr) (rhs : expr) =
+  match sign with
+  | Ret _ | Exit -> (sign, ctx)
+  | Cont ->
+      let ctx, value = interp_expr ctx rhs in
+      let ctx = interp_write ctx lhs value in
+      (sign, ctx)
 
-and interp_if (ctx : Ctx.t) (cond : expr) (tru : stmt) (fls : stmt) =
-  let ctx, cond = interp_expr ctx cond in
-  let cond = Runtime.Ops.eval_cast Type.BoolT cond in
-  let cond = match cond with BoolV b -> b | _ -> assert false in
-  if cond then interp_stmt ctx tru else interp_stmt ctx fls
+and interp_if (sign : Sig.t) (ctx : Ctx.t) (cond : expr) (tru : stmt)
+    (fls : stmt) =
+  match sign with
+  | Ret _ | Exit -> (sign, ctx)
+  | Cont ->
+      let ctx, cond = interp_expr ctx cond in
+      let cond = Runtime.Ops.eval_cast Type.BoolT cond in
+      let cond = match cond with BoolV b -> b | _ -> assert false in
+      let branch = if cond then tru else fls in
+      interp_stmt sign ctx branch
 
-and interp_block (ctx : Ctx.t) (block : block) =
-  let ctx = Ctx.enter_frame ctx in
-  let ctx = List.fold_left interp_stmt ctx block in
-  Ctx.exit_frame ctx
+and interp_block (sign : Sig.t) (ctx : Ctx.t) (block : block) =
+  match sign with
+  | Ret _ | Exit -> (sign, ctx)
+  | Cont ->
+      let ctx = Ctx.enter_frame ctx in
+      let sign, ctx =
+        List.fold_left
+          (fun (sign, ctx) stmt -> interp_stmt sign ctx stmt)
+          (sign, ctx) block
+      in
+      let ctx = Ctx.exit_frame ctx in
+      (sign, ctx)
+
+and interp_call_as_stmt (sign : Sig.t) (ctx : Ctx.t) (func : expr)
+    (targs : typ list) (args : arg list) =
+  match sign with
+  | Ret _ | Exit -> (sign, ctx)
+  | Cont ->
+      let sign, ctx = interp_call ctx func targs args in
+      let sign = match sign with Ret _ -> Sig.Cont | _ -> sign in
+      (sign, ctx)
 
 (* (TODO) For state transitions, do not change object visibility,
    treating them as real "transitions", because states can be mutually recursive *)
-and interp_trans (ctx : Ctx.t) (next : string) =
-  if next = "accept" || next = "reject" then ctx
-  else
-    let state_next = Ctx.find_func next ctx |> Option.get in
-    let body =
-      match state_next with StateF { body } -> body | _ -> assert false
-    in
-    let ctx_next =
-      let env_loc = (TDEnv.empty, []) in
-      { ctx with env_loc }
-    in
-    let ctx_next = interp_block ctx_next body in
-    { ctx with env_obj = ctx_next.env_obj }
-
-(* assume: evaluation of match case should never change the context *)
-and interp_select (ctx : Ctx.t) (exprs : expr list) (cases : select_case list) =
-  let ctx, values =
-    List.fold_left
-      (fun (ctx, values) expr ->
-        let ctx, value = interp_expr ctx expr in
-        (ctx, value :: values))
-      (ctx, []) exprs
-  in
-  let select_cases (next_found : string option) (case : select_case) =
-    match next_found with
-    | Some _ -> next_found
-    | None ->
-        let mtchs, next = case in
-        let select_mtch (mtch : mtch) (value : Value.t) =
-          match mtch with
-          | DefaultM | AnyM -> true
-          | ExprM expr -> interp_expr ctx expr |> snd = value
+(* exit statements are not allowed within parsers or functions. (12.5) *)
+and interp_trans (sign : Sig.t) (ctx : Ctx.t) (next : string) =
+  match sign with
+  | Ret _ | Exit ->
+      Format.eprintf "(interp_trans) Exit unallowed within parser.\n";
+      assert false
+  | Cont ->
+      (* (TODO) better handling of accept/reject *)
+      if next = "accept" || next = "reject" then (sign, ctx)
+      else
+        let state_next = Ctx.find_func next ctx |> Option.get in
+        let body =
+          match state_next with StateF { body } -> body | _ -> assert false
         in
-        if List.for_all2 select_mtch mtchs values then Some next else None
-  in
-  let next = List.fold_left select_cases None cases |> Option.get in
-  interp_trans ctx next
+        let ctx_next =
+          let env_loc = (TDEnv.empty, []) in
+          { ctx with env_loc }
+        in
+        let sign, ctx_next = interp_block sign ctx_next body in
+        assert (sign = Cont);
+        let ctx = { ctx with env_obj = ctx_next.env_obj } in
+        (sign, ctx)
+
+(* exit statements are not allowed within parsers or functions. (12.5) *)
+(* assume: evaluation of match case should never change the context *)
+and interp_select (sign : Sig.t) (ctx : Ctx.t) (exprs : expr list)
+    (cases : select_case list) =
+  match sign with
+  | Ret _ | Exit ->
+      Format.eprintf "(interp_select) Exit unallowed within parser.\n";
+      assert false
+  | Cont ->
+      let ctx, values =
+        List.fold_left
+          (fun (ctx, values) expr ->
+            let ctx, value = interp_expr ctx expr in
+            (ctx, value :: values))
+          (ctx, []) exprs
+      in
+      let select_cases (next_found : string option) (case : select_case) =
+        match next_found with
+        | Some _ -> next_found
+        | None ->
+            let mtchs, next = case in
+            let select_mtch (mtch : mtch) (value : Value.t) =
+              match mtch with
+              | DefaultM | AnyM -> true
+              | ExprM expr -> interp_expr ctx expr |> snd = value
+            in
+            if List.for_all2 select_mtch mtchs values then Some next else None
+      in
+      let next = List.fold_left select_cases None cases |> Option.get in
+      interp_trans sign ctx next
+
+and interp_decl (sign : Sig.t) (ctx : Ctx.t) (decl : decl) =
+  match sign with
+  | Ret _ | Exit -> (sign, ctx)
+  | Cont -> (
+      match decl with
+      | VarD { name; typ; init = None } ->
+          let typ = interp_type ctx typ in
+          let value = Runtime.Ops.eval_default_value typ in
+          let ctx = Ctx.add_var_loc name typ value ctx in
+          (sign, ctx)
+      | VarD { name; typ; init = Some value } ->
+          let typ = interp_type ctx typ in
+          let ctx, value = interp_expr ctx value in
+          let ctx = Ctx.add_var_loc name typ value ctx in
+          (sign, ctx)
+      | _ ->
+          Format.eprintf "(TODO: interp_decl) %a" Syntax.Print.print_decl
+            (0, decl);
+          assert false)
 
 (* (TODO) assume switch on table apply result only,
    for case with expression is not supported in Petr4 parser *)
-and interp_switch (ctx : Ctx.t) (expr : expr) (cases : switch_case list) =
-  let ctx, value = interp_expr ctx expr in
-  let value = fetch_enum_member value in
-  let switch_cases (block_found : bool * block option) (case : switch_case) =
-    let case, block = case in
-    match block_found with
-    (* match complete *)
-    | true, Some _ -> block_found
-    (* during fallthrough *)
-    | true, None -> (
-        match case with
-        | CaseC _ -> (true, Some block)
-        | FallC _ -> (true, None)
-        | DefaultC -> (true, Some block))
-    (* match not found *)
-    | false, _ -> (
-        match case with
-        | CaseC case when case = value -> (true, Some block)
-        | FallC case when case = value -> (true, None)
-        | DefaultC -> (true, Some block)
-        | _ -> block_found)
-  in
-  let _, block = List.fold_left switch_cases (false, None) cases in
-  let block = match block with None -> [] | Some block -> block in
-  interp_block ctx block
+and interp_switch (sign : Sig.t) (ctx : Ctx.t) (expr : expr)
+    (cases : switch_case list) =
+  match sign with
+  | Ret _ | Exit -> (sign, ctx)
+  | Cont ->
+      let ctx, value = interp_expr ctx expr in
+      let value = fetch_enum_member value in
+      let switch_cases (block_found : bool * block option) (case : switch_case)
+          =
+        let case, block = case in
+        match block_found with
+        (* match complete *)
+        | true, Some _ -> block_found
+        (* during fallthrough *)
+        | true, None -> (
+            match case with
+            | CaseC _ -> (true, Some block)
+            | FallC _ -> (true, None)
+            | DefaultC -> (true, Some block))
+        (* match not found *)
+        | false, _ -> (
+            match case with
+            | CaseC case when case = value -> (true, Some block)
+            | FallC case when case = value -> (true, None)
+            | DefaultC -> (true, Some block)
+            | _ -> block_found)
+      in
+      let _, block = List.fold_left switch_cases (false, None) cases in
+      let block = match block with None -> [] | Some block -> block in
+      interp_block sign ctx block
+
+and interp_exit (sign : Sig.t) (ctx : Ctx.t) =
+  match sign with Ret _ | Exit -> (sign, ctx) | Cont -> (Exit, ctx)
+
+and interp_return (sign : Sig.t) (ctx : Ctx.t) (expr : expr option) =
+  match sign with
+  | Ret _ | Exit -> (sign, ctx)
+  | Cont ->
+      let ctx, value =
+        match expr with
+        | Some expr ->
+            let ctx, value = interp_expr ctx expr in
+            (ctx, Some value)
+        | None -> (ctx, None)
+      in
+      (Ret value, ctx)
 
 (* Call semantics *)
 
@@ -311,10 +385,6 @@ and align_params_with_args (params : param list) (args : arg list) =
     ([], []) params args
 
 (* adder determines where to add the argument, either object or local scope *)
-(* (TODO; MAJOR) don't evaluate and copyin one-by-one,
-   instead, evaluate all arguments first and then copyin
-   because the evaluation of arguments can have side-effects on ctx_caller
-   so ctx_callee can be safely constructed only after all arguments are evaluated *)
 and copyin adder (ctx_callee : Ctx.t) (params : param list)
     (values : Value.t list) =
   let copyin' (ctx_callee : Ctx.t) (param : param) (value : Value.t) =
@@ -371,11 +441,11 @@ and interp_extern_method_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
   (* Copy-in to the object environment *)
   let ctx_callee = copyin Ctx.add_var_loc ctx_callee params values in
   (* Execute the body *)
-  let ctx_callee = Core.interp_builtin ctx_callee mname in
+  let sign, ctx_callee = Core.interp_builtin Sig.Cont ctx_callee mname in
   (* Copy-out from the object environment *)
   let ctx_caller = copyout ctx_caller ctx_callee params args in
   (* No need to account for global mutations since globals are immutable *)
-  (ctx_caller, None)
+  (sign, ctx_caller)
 
 and interp_pbl_apply_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
     (_tparams : Var.t list) (params : param list) (_targs : typ list)
@@ -387,11 +457,11 @@ and interp_pbl_apply_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
   (* Copy-in to the object environment *)
   let ctx_callee = copyin Ctx.add_var_obj ctx_callee params values in
   (* Execute the body *)
-  let ctx_callee = interp_block ctx_callee body in
+  let sign, ctx_callee = interp_block Sig.Cont ctx_callee body in
   (* Copy-out from the object environment *)
   let ctx_caller = copyout ctx_caller ctx_callee params args in
   (* No need to account for global mutations since globals are immutable *)
-  (ctx_caller, None)
+  (sign, ctx_caller)
 
 and interp_action_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
     (params : param list) (args : arg list) (body : block) =
@@ -404,12 +474,12 @@ and interp_action_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
   (* Copy-in to the local environment *)
   let ctx_callee = copyin Ctx.add_var_loc ctx_callee params values in
   (* Execute the body *)
-  let ctx_callee = interp_block ctx_callee body in
+  let sign, ctx_callee = interp_block Sig.Cont ctx_callee body in
   (* Copy-out from the local environment *)
   let ctx_caller = copyout ctx_caller ctx_callee params args in
   (* Account for object-local mutations *)
   let ctx_caller = { ctx_caller with env_obj = ctx_callee.env_obj } in
-  (ctx_caller, None)
+  (sign, ctx_caller)
 
 and interp_table_apply_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
     (key : table_key list) (actions : table_action list)
@@ -429,8 +499,9 @@ and interp_table_apply_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
   let hit =
     match fetch_struct_field value "hit" with BoolV b -> b | _ -> assert false
   in
-  let value = Some value in
-  if not hit then (ctx_caller, value)
+  if not hit then
+    let sign = Sig.Ret (Some value) in
+    (sign, ctx_caller)
   else
     let action, args = Option.get action in
     (* Find the action *)
@@ -452,12 +523,20 @@ and interp_table_apply_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
     in
     let ctx_callee_callee = { ctx_callee_callee with vis_obj } in
     (* Execute the action *)
-    let ctx_callee, _ =
+    let sign, ctx_callee =
       interp_action_call ctx_callee ctx_callee_callee params args body
+    in
+    let sign =
+      match sign with
+      | Cont -> Sig.Ret (Some value)
+      | Ret _ ->
+          Format.eprintf "(interp_table_call) Action should not return.\n";
+          assert false
+      | Exit -> sign
     in
     (* Propagate object-local mutations *)
     let ctx_caller = { ctx_caller with env_obj = ctx_callee.env_obj } in
-    (ctx_caller, value)
+    (sign, ctx_caller)
 
 and interp_object_method_call (ctx : Ctx.t) (obj : Object.t) (mname : Var.t)
     (targs : typ list) (args : arg list) =
@@ -505,7 +584,8 @@ and interp_method_call (ctx : Ctx.t) (value : Value.t) (mname : string)
   match value with
   | HeaderV (valid, _) when mname = "isValid" ->
       let value = Some (Value.BoolV valid) in
-      (ctx, value)
+      let sign = Sig.Ret value in
+      (sign, ctx)
   | RefV path ->
       let obj = Sto.find path !sto |> Option.get in
       interp_object_method_call ctx obj mname targs args

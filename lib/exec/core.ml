@@ -1,5 +1,6 @@
 open Runtime.Base
 open Runtime.Context
+open Runtime.Signal
 
 (* Corresponds to extern packet_in { ... } *)
 module Packet = struct
@@ -96,7 +97,14 @@ end
 
 (* Entry point for builtin functions *)
 
-let interp_builtin (ctx : Ctx.t) (mthd : string) =
-  match mthd with
-  | "extract" -> Packet.extract ctx
-  | _ -> "Unknown builtin method " ^ mthd |> failwith
+let interp_builtin (sign : Sig.t) (ctx : Ctx.t) (mthd : string) =
+  match sign with
+  | Ret _ | Exit -> (sign, ctx)
+  | Cont -> (
+      match mthd with
+      | "extract" ->
+          let ctx = Packet.extract ctx in
+          (sign, ctx)
+      | _ ->
+          Format.eprintf "Unknown builtin method %s." mthd;
+          assert false)
