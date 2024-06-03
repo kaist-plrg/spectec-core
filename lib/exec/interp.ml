@@ -137,7 +137,7 @@ and interp_exprs (ctx : Ctx.t) (exprs : expr list) : Ctx.t * Value.t list =
   List.fold_left
     (fun (ctx, values) expr ->
       let ctx, value = interp_expr ctx expr in
-      (ctx, value :: values))
+      (ctx, values @ [ value ]))
     (ctx, []) exprs
 
 (* Interpreter for declarations *)
@@ -284,60 +284,63 @@ and interp_switch (ctx : Ctx.t) (expr : expr) (cases : switch_case list) =
 
 (* Call semantics *)
 
+(* align parameters by argument order *)
+and align_params_with_args (params : param list) (args : arg list) =
+  (* (TODO) assume there is no default argument *)
+  assert (List.length params = List.length args);
+  Instance.Instantiate.check_args args;
+  let module PMap = Map.Make (String) in
+  let params_map =
+    List.fold_left
+      (fun params_map param ->
+        let pname, _, _, _ = param in
+        PMap.add pname param params_map)
+      PMap.empty params
+  in
+  List.fold_left2
+    (fun (params, args) param arg ->
+      match arg with
+      | ExprA arg -> (params @ [ param ], args @ [ arg ])
+      | NameA (pname, arg) ->
+          let param = PMap.find pname params_map in
+          (params @ [ param ], args @ [ arg ])
+      | _ ->
+          Format.eprintf "(TODO: align_params_with_args) %a"
+            Syntax.Print.print_arg arg;
+          assert false)
+    ([], []) params args
+
 (* adder determines where to add the argument, either object or local scope *)
 (* (TODO; MAJOR) don't evaluate and copyin one-by-one,
    instead, evaluate all arguments first and then copyin
    because the evaluation of arguments can have side-effects on ctx_caller
    so ctx_callee can be safely constructed only after all arguments are evaluated *)
-and copyin adder (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (params : param list)
-    (args : arg list) =
-  (* (TODO) Assume there is no default argument *)
-  assert (List.length params = List.length args);
-  Instance.Instantiate.check_args args;
-  let copyin' (ctxs : Ctx.t * Ctx.t) (param : param) (arg : arg) =
-    let ctx_caller, ctx_callee = ctxs in
-    (* Resolve the argument-parameter order *)
+and copyin adder (ctx_callee : Ctx.t) (params : param list)
+    (values : Value.t list) =
+  let copyin' (ctx_callee : Ctx.t) (param : param) (value : Value.t) =
     let pname, dir, typ, _ = param in
-    let pname, value =
-      match arg with
-      | ExprA value -> (pname, value)
-      | NameA (pname, value) -> (pname, value)
-      | _ ->
-          Format.eprintf "(TODO: copyin) %a" Syntax.Print.print_arg arg;
-          assert false
-    in
     (* (TODO) Is it correct to evaluate the type at callee? *)
     match dir with
     | No | In | InOut ->
         let typ = interp_type ctx_callee typ in
-        let ctx_caller, value = interp_expr ctx_caller value in
-        (ctx_caller, adder pname typ value ctx_callee)
+        adder pname typ value ctx_callee
     | Out ->
         let typ = interp_type ctx_callee typ in
-        let value = Runtime.Ops.eval_default_value typ in
-        (ctx_caller, adder pname typ value ctx_callee)
+        adder pname typ value ctx_callee
   in
-  List.fold_left2 copyin' (ctx_caller, ctx_callee) params args
+  List.fold_left2 copyin' ctx_callee params values
 
 and copyout (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (params : param list)
-    (args : arg list) =
-  let copyout' (ctx_caller : Ctx.t) (param : param) (arg : arg) =
+    (exprs : expr list) =
+  let copyout' (ctx_caller : Ctx.t) (param : param) (expr : expr) =
     let pname, dir, _, _ = param in
-    let pname, lvalue =
-      match arg with
-      | ExprA value -> (pname, value)
-      | NameA (pname, value) -> (pname, value)
-      | _ ->
-          Format.eprintf "(TODO: copyout) %a" Syntax.Print.print_arg arg;
-          assert false
-    in
     match dir with
     | InOut | Out ->
         let value = Ctx.find_var pname ctx_callee |> Option.get |> snd in
-        interp_write ctx_caller lvalue value
+        interp_write ctx_caller expr value
     | _ -> ctx_caller
   in
-  List.fold_left2 copyout' ctx_caller params args
+  List.fold_left2 copyout' ctx_caller params exprs
 
 (* adder determines where to add the type argument, either object or local scope *)
 and interp_targs adder (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
@@ -349,46 +352,57 @@ and interp_targs adder (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
       adder tparam targ ctx_callee)
     ctx_callee tparams targs
 
+and interp_args (ctx_caller : Ctx.t) (exprs : expr list) =
+  interp_exprs ctx_caller exprs
+
 and interp_extern_method_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
     (mname : string) (tparams : Var.t list) (params : param list)
     (targs : typ list) (args : arg list) =
   (* Enter the function frame *)
   let ctx_callee = Ctx.enter_frame ctx_callee in
+  (* Align the parameters with the arguments *)
+  let params, args = align_params_with_args params args in
+  (* Evaluate the arguments *)
+  let ctx_caller, values = interp_args ctx_caller args in
   (* Bind the type parameters *)
   let ctx_callee =
     interp_targs Ctx.add_td_loc ctx_caller ctx_callee tparams targs
   in
   (* Copy-in to the object environment *)
-  let ctx_caller, ctx_callee =
-    copyin Ctx.add_var_loc ctx_caller ctx_callee params args
-  in
+  let ctx_callee = copyin Ctx.add_var_loc ctx_callee params values in
   (* Execute the body *)
   let ctx_callee = Core.interp_builtin ctx_callee mname in
   (* Copy-out from the object environment *)
   let ctx_caller = copyout ctx_caller ctx_callee params args in
+  (* No need to account for global mutations since globals are immutable *)
   (ctx_caller, None)
 
 and interp_pbl_apply_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
     (_tparams : Var.t list) (params : param list) (_targs : typ list)
     (args : arg list) (body : block) =
+  (* Align the parameters with the arguments *)
+  let params, args = align_params_with_args params args in
+  (* Evaluate the arguments *)
+  let ctx_caller, values = interp_args ctx_caller args in
   (* Copy-in to the object environment *)
-  let ctx_caller, ctx_callee =
-    copyin Ctx.add_var_obj ctx_caller ctx_callee params args
-  in
+  let ctx_callee = copyin Ctx.add_var_obj ctx_callee params values in
   (* Execute the body *)
   let ctx_callee = interp_block ctx_callee body in
   (* Copy-out from the object environment *)
   let ctx_caller = copyout ctx_caller ctx_callee params args in
+  (* No need to account for global mutations since globals are immutable *)
   (ctx_caller, None)
 
 and interp_action_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
     (params : param list) (args : arg list) (body : block) =
   (* Enter the function frame *)
   let ctx_callee = Ctx.enter_frame ctx_callee in
+  (* Align the parameters with the arguments *)
+  let params, args = align_params_with_args params args in
+  (* Evaluate the arguments *)
+  let ctx_caller, values = interp_args ctx_caller args in
   (* Copy-in to the local environment *)
-  let ctx_caller, ctx_callee =
-    copyin Ctx.add_var_loc ctx_caller ctx_callee params args
-  in
+  let ctx_callee = copyin Ctx.add_var_loc ctx_callee params values in
   (* Execute the body *)
   let ctx_callee = interp_block ctx_callee body in
   (* Copy-out from the local environment *)
@@ -495,7 +509,10 @@ and interp_method_call (ctx : Ctx.t) (value : Value.t) (mname : string)
   | RefV path ->
       let obj = Sto.find path !sto |> Option.get in
       interp_object_method_call ctx obj mname targs args
-  | _ -> assert false
+  | _ ->
+      Format.eprintf "(TODO: interp_method_call) %a with %s\n" Value.pp value
+        mname;
+      assert false
 
 and interp_call (ctx : Ctx.t) (func : expr) (targs : typ list) (args : arg list)
     =
