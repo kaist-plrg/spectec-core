@@ -551,16 +551,16 @@ let eval_binop (op : binop) (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 (* Bitslice evaluation *)
 
-let eval_bitstring_access' (value : Bigint.t) (lvalue : Bigint.t)
-    (hvalue : Bigint.t) : Value.t =
+let eval_bitstring_access' (value : Bigint.t) (hvalue : Bigint.t)
+    (lvalue : Bigint.t) : Value.t =
   let width = Bigint.(hvalue - lvalue + one) in
   let value = slice_bitstring value hvalue lvalue in
   BitV (width, value)
 
-let eval_bitstring_access (value : Value.t) (lvalue : Value.t)
-    (hvalue : Value.t) : Value.t =
+let eval_bitstring_access (value : Value.t) (hvalue : Value.t)
+    (lvalue : Value.t) : Value.t =
   let extract value = extract_bigint value in
-  eval_bitstring_access' (extract value) (extract lvalue) (extract hvalue)
+  eval_bitstring_access' (extract value) (extract hvalue) (extract lvalue)
 
 (* Type cast evaluation *)
 

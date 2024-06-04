@@ -74,72 +74,128 @@ let rec interp_type (ctx : Ctx.t) (typ : typ) : Type.t =
 
 and interp_expr (ctx : Ctx.t) (expr : expr) : Ctx.t * Value.t =
   match expr with
-  | BoolE b -> (ctx, BoolV b)
-  | StrE str -> (ctx, StrV str)
-  | NumE (value, width_signed) ->
-      let value =
-        match width_signed with
-        | Some (width, signed) ->
-            if signed then Value.IntV (width, value)
-            else Value.BitV (width, value)
-        | None -> AIntV value
-      in
-      (ctx, value)
-  | VarE (Top name) ->
-      let value = Ctx.find_var_glob name ctx |> Option.get |> snd in
-      (ctx, value)
-  | VarE (Bare name) ->
-      let value = Ctx.find_var name ctx |> Option.get |> snd in
-      (ctx, value)
-  | ListE values ->
-      let ctx, values = interp_exprs ctx values in
-      let value = Value.TupleV values in
-      (ctx, value)
-  | RecordE fields ->
-      let names = List.map fst fields in
-      let ctx, values = List.map snd fields |> interp_exprs ctx in
-      let fields = List.map2 (fun name value -> (name, value)) names values in
-      let value = Value.StructV fields in
-      (ctx, value)
-  | UnE (op, arg) ->
-      let ctx, varg = interp_expr ctx arg in
-      let value = Runtime.Ops.eval_unop op varg in
-      (ctx, value)
-  | BinE (op, arg_fst, arg_snd) ->
-      let ctx, value_fst = interp_expr ctx arg_fst in
-      let ctx, value_snd = interp_expr ctx arg_snd in
-      let value = Runtime.Ops.eval_binop op value_fst value_snd in
-      (ctx, value)
-  | CastE (typ, arg) ->
-      let typ = interp_type ctx typ |> Eval.eval_simplify_type ctx in
-      let ctx, value = interp_expr ctx arg in
-      let value = Runtime.Ops.eval_cast typ value in
-      (ctx, value)
-  | ExprAccE (base, name) -> (
-      let ctx, value_base = interp_expr ctx base in
-      match value_base with
-      | HeaderV (_, fields) | StructV fields ->
-          let value = List.assoc name fields in
-          (ctx, value)
-      | _ -> assert false)
-  | CallE (func, targs, args) ->
-      let sign, ctx = interp_call ctx func targs args in
-      let value =
-        match (sign : Sig.t) with
-        | Ret value -> Option.get value
-        (* (TODO) what if the function being called exits? *)
-        | _ -> assert false
-      in
-      (ctx, value)
-  | TernE _ | MaskE _ | RangeE _ | ArrAccE _ | BitAccE _ | TypeAccE _
-  | ErrAccE _ ->
-      Format.asprintf "(TODO: interp_expr) %a" Syntax.Print.print_expr expr
-      |> failwith
+  | BoolE b -> interp_bool ctx b
+  | StrE s -> interp_str ctx s
+  | NumE (value, encoding) -> interp_num ctx value encoding
+  | VarE var -> interp_var ctx var
+  | ListE exprs -> interp_list ctx exprs
+  | RecordE fields -> interp_record ctx fields
+  | UnE (unop, expr) -> interp_unop ctx unop expr
+  | BinE (binop, expr_fst, expr_snd) -> interp_binop ctx binop expr_fst expr_snd
+  | TernE (cond, expr_tru, expr_fls) -> interp_ternop ctx cond expr_tru expr_fls
+  | CastE (typ, expr) -> interp_cast ctx typ expr
+  | MaskE _ -> interp_mask ctx
+  | RangeE _ -> interp_range ctx
+  | ArrAccE _ -> interp_arr_acc ctx
+  | BitAccE (base, expr_lo, expr_hi) ->
+      interp_bitstring_acc ctx base expr_lo expr_hi
+  | TypeAccE (var, member) -> interp_type_acc ctx var member
+  | ErrAccE _ -> interp_error_acc ctx
+  | ExprAccE (base, name) -> interp_expr_acc ctx base name
+  | CallE (func, targs, args) -> interp_call_as_expr ctx func targs args
   | InstE _ ->
       Format.eprintf
         "(interp_expr) Instantiation expression should have been evaluated in \
          instantiation.";
       assert false
+
+and interp_bool (ctx : Ctx.t) (b : bool) : Ctx.t * Value.t = (ctx, BoolV b)
+and interp_str (ctx : Ctx.t) (s : string) : Ctx.t * Value.t = (ctx, StrV s)
+
+and interp_num (ctx : Ctx.t) (value : Bigint.t)
+    (encoding : (Bigint.t * bool) option) : Ctx.t * Value.t =
+  let value =
+    match encoding with
+    | Some (width, signed) ->
+        if signed then Value.IntV (width, value) else Value.BitV (width, value)
+    | None -> AIntV value
+  in
+  (ctx, value)
+
+and interp_var (ctx : Ctx.t) (var : var) : Ctx.t * Value.t =
+  match var with
+  | Top name ->
+      let value = Ctx.find_var_glob name ctx |> Option.get |> snd in
+      (ctx, value)
+  | Bare name ->
+      let value = Ctx.find_var name ctx |> Option.get |> snd in
+      (ctx, value)
+
+and interp_list (ctx : Ctx.t) (exprs : expr list) : Ctx.t * Value.t =
+  let ctx, values = interp_exprs ctx exprs in
+  let value = Value.TupleV values in
+  (ctx, value)
+
+and interp_record (ctx : Ctx.t) (fields : (string * expr) list) :
+    Ctx.t * Value.t =
+  let names = List.map fst fields in
+  let ctx, values = List.map snd fields |> interp_exprs ctx in
+  let fields = List.map2 (fun name value -> (name, value)) names values in
+  let value = Value.StructV fields in
+  (ctx, value)
+
+and interp_unop (ctx : Ctx.t) (op : unop) (expr : expr) : Ctx.t * Value.t =
+  let ctx, value = interp_expr ctx expr in
+  let value = Runtime.Ops.eval_unop op value in
+  (ctx, value)
+
+and interp_binop (ctx : Ctx.t) (op : binop) (expr_fst : expr) (expr_snd : expr)
+    : Ctx.t * Value.t =
+  let ctx, values = interp_exprs ctx [ expr_fst; expr_snd ] in
+  let value_fst, value_snd = (List.nth values 0, List.nth values 1) in
+  let value = Runtime.Ops.eval_binop op value_fst value_snd in
+  (ctx, value)
+
+and interp_ternop (ctx : Ctx.t) (expr_cond : expr) (expr_tru : expr)
+    (expr_fls : expr) : Ctx.t * Value.t =
+  let ctx, value_cond = interp_expr ctx expr_cond in
+  let cond = match value_cond with BoolV b -> b | _ -> assert false in
+  let expr = if cond then expr_tru else expr_fls in
+  interp_expr ctx expr
+
+and interp_cast (ctx : Ctx.t) (typ : typ) (expr : expr) : Ctx.t * Value.t =
+  let typ = interp_type ctx typ |> Eval.eval_simplify_type ctx in
+  let ctx, value = interp_expr ctx expr in
+  let value = Runtime.Ops.eval_cast typ value in
+  (ctx, value)
+
+and interp_mask (_ctx : Ctx.t) : Ctx.t * Value.t = assert false
+and interp_range (_ctx : Ctx.t) : Ctx.t * Value.t = assert false
+and interp_arr_acc (_ctx : Ctx.t) : Ctx.t * Value.t = assert false
+
+and interp_bitstring_acc (ctx : Ctx.t) (base : expr) (expr_hi : expr)
+    (expr_lo : expr) : Ctx.t * Value.t =
+  let ctx, values = interp_exprs ctx [ base; expr_hi; expr_lo ] in
+  let value_base, value_hi, value_lo =
+    (List.nth values 0, List.nth values 1, List.nth values 2)
+  in
+  let value = Runtime.Ops.eval_bitstring_access value_base value_hi value_lo in
+  (ctx, value)
+
+and interp_type_acc (_ctx : Ctx.t) (_var : var) (_member : string) :
+    Ctx.t * Value.t =
+  assert false
+
+and interp_error_acc (_ctx : Ctx.t) : Ctx.t * Value.t = assert false
+
+and interp_expr_acc (ctx : Ctx.t) (base : expr) (name : string) :
+    Ctx.t * Value.t =
+  let ctx, value_base = interp_expr ctx base in
+  match value_base with
+  | HeaderV (_, fields) | StructV fields ->
+      let value = List.assoc name fields in
+      (ctx, value)
+  | _ -> assert false
+
+and interp_call_as_expr (ctx : Ctx.t) (func : expr) (targs : typ list)
+    (args : arg list) : Ctx.t * Value.t =
+  let sign, ctx = interp_call ctx func targs args in
+  let value =
+    match (sign : Sig.t) with
+    | Ret value -> Option.get value
+    | _ -> assert false
+  in
+  (ctx, value)
 
 and interp_exprs (ctx : Ctx.t) (exprs : expr list) : Ctx.t * Value.t list =
   List.fold_left
@@ -178,7 +234,7 @@ and interp_write (ctx : Ctx.t) (lvalue : expr) (value : Value.t) =
 
 and interp_stmt (sign : Sig.t) (ctx : Ctx.t) (stmt : stmt) =
   match stmt with
-  | EmptyI -> (sign, ctx)
+  | EmptyI -> interp_empty sign ctx
   | AssignI (lhs, rhs) -> interp_assign sign ctx lhs rhs
   | IfI (cond, tru, fls) -> interp_if sign ctx cond tru fls
   | BlockI block -> interp_block sign ctx block
@@ -189,6 +245,8 @@ and interp_stmt (sign : Sig.t) (ctx : Ctx.t) (stmt : stmt) =
   | SwitchI (expr, cases) -> interp_switch sign ctx expr cases
   | ExitI -> interp_exit sign ctx
   | RetI expr -> interp_return sign ctx expr
+
+and interp_empty (sign : Sig.t) (ctx : Ctx.t) = (sign, ctx)
 
 and interp_assign (sign : Sig.t) (ctx : Ctx.t) (lhs : expr) (rhs : expr) =
   match sign with
@@ -576,7 +634,7 @@ and interp_object_method_call (ctx : Ctx.t) (obj : Object.t) (mname : Var.t)
       (* Evaluate the body *)
       interp_table_apply_call ctx ctx_callee key actions entries default custom
   | _ ->
-      Format.eprintf "(TODO: interp_inter_call) %a\n" Object.pp obj;
+      Format.eprintf "(TODO: interp_object_method_call) %a\n" Object.pp obj;
       assert false
 
 and interp_method_call (ctx : Ctx.t) (value : Value.t) (mname : string)
