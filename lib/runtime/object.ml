@@ -16,16 +16,16 @@ module Object = struct
         custom : table_custom list;
         mthd : Func.t; (* "apply" *)
       }
-    | ExternO of { vis_glob : vis_glob; env_obj : env_obj }
+    | ExternO of { vis_glob : vis; env_obj : env }
     (* Objects serving as wrappers *)
     | ParserO of {
-        vis_glob : vis_glob; (* global scope *)
-        env_obj : env_obj; (* block environment for locals and states *)
+        vis_glob : vis; (* global scope *)
+        env_obj : env; (* block environment for locals and states *)
         mthd : Func.t; (* "apply" is the only entry point *)
       }
     | ControlO of {
-        vis_glob : vis_glob; (* global scope *)
-        env_obj : env_obj; (* block environment for locals and actions *)
+        vis_glob : vis; (* global scope *)
+        env_obj : env; (* block environment for locals and actions *)
         mthd : Func.t; (* "apply" is the only entry point *)
       }
     | PackageO

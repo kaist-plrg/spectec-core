@@ -25,6 +25,12 @@ let rec shift_bitstring_left (v : Bigint.t) (o : Bigint.t) : Bigint.t =
 
 let power_of_two (w : Bigint.t) : Bigint.t = shift_bitstring_left Bigint.one w
 
+let add_one_complement (v : Bigint.t) (w : Bigint.t) : Bigint.t =
+  let tmp = Bigint.(v + w) in
+  let thres = power_of_two (Bigint.of_int 16) in
+  if Bigint.(tmp >= thres) then Bigint.((tmp % thres) + one)
+  else Bigint.(tmp % thres)
+
 let rec to_two_complement (n : Bigint.t) (w : Bigint.t) : Bigint.t =
   let two = Bigint.(one + one) in
   let w' = power_of_two w in
@@ -43,7 +49,7 @@ let slice_bitstring (n : Bigint.t) (m : Bigint.t) (l : Bigint.t) : Bigint.t =
   if Bigint.(l < zero) then
     raise (Invalid_argument "bitslice x[y:z] must have y > z > 0");
   let shifted = Bigint.(n asr to_int_exn l) in
-  let mask = power_of_two Bigint.(slice_width - one) in
+  let mask = Bigint.(power_of_two slice_width - one) in
   Bigint.bit_and shifted mask
 
 let rec bitwise_neg (n : Bigint.t) (w : Bigint.t) : Bigint.t =
@@ -636,7 +642,9 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
 let rec eval_default_value (typ : Type.t) : Value.t =
   match typ with
   | BoolT -> BoolV false
-  | ErrT -> ErrV ""
+  | ErrT ms ->
+      assert (List.mem "NoError" ms);
+      ErrV "NoError"
   | StrT -> StrV ""
   | AIntT -> AIntV Bigint.zero
   | IntT width -> IntV (width, Bigint.zero)

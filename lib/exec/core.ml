@@ -105,6 +105,13 @@ let interp_builtin (sign : Sig.t) (ctx : Ctx.t) (mthd : string) =
       | "extract" ->
           let ctx = Packet.extract ctx in
           (sign, ctx)
+      (* (TODO) this should reside in v1model, not core *)
+      | "verify_checksum" ->
+          let ctx = Hash.verify_checksum ctx in
+          (sign, ctx)
+      | "update_checksum" ->
+          let ctx = Hash.update_checksum ctx in
+          (sign, ctx)
       | _ ->
-          Format.eprintf "Unknown builtin method %s." mthd;
+          Format.eprintf "Unknown builtin method %s\n." mthd;
           assert false)

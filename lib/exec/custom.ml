@@ -15,10 +15,10 @@ let make_args (args : Var.t list) =
   List.map (fun arg -> ExprA (VarE (Bare arg))) args
 
 let drive_proto (ctx : Ctx.t) =
-  let value = Value.RefV [ "main"; "_p" ] in
+  let func = ExprAccE (ExprAccE (VarE (Bare "main"), "_p"), "apply") in
   let targs = [] in
   let args = make_args [ "b" ] in
-  Interp.interp_method_call ctx value "apply" targs args |> snd
+  Interp.interp_call ctx func targs args |> snd
 
 let drive (_ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
   let ctx = init ctx in

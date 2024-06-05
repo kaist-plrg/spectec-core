@@ -112,22 +112,34 @@ let make_args (args : Var.t list) =
   List.map (fun arg -> ExprA (VarE (Bare arg))) args
 
 let drive_parser_impl (ctx : Ctx.t) =
-  let value = Value.RefV [ "main"; "p" ] in
+  let func = ExprAccE (ExprAccE (VarE (Bare "main"), "p"), "apply") in
   let targs = [] in
   let args = make_args [ "packet"; "hdr"; "meta"; "standard_metadata" ] in
-  Interp.interp_method_call ctx value "apply" targs args |> snd
+  Interp.interp_call ctx func targs args |> snd
+
+let drive_verify_checksum (ctx : Ctx.t) =
+  let func = ExprAccE (ExprAccE (VarE (Bare "main"), "vr"), "apply") in
+  let targs = [] in
+  let args = make_args [ "hdr"; "meta" ] in
+  Interp.interp_call ctx func targs args |> snd
 
 let drive_ingress (ctx : Ctx.t) =
-  let value = Value.RefV [ "main"; "ig" ] in
+  let func = ExprAccE (ExprAccE (VarE (Bare "main"), "ig"), "apply") in
   let targs = [] in
   let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
-  Interp.interp_method_call ctx value "apply" targs args |> snd
+  Interp.interp_call ctx func targs args |> snd
 
 let drive_egress (ctx : Ctx.t) =
-  let value = Value.RefV [ "main"; "eg" ] in
+  let func = ExprAccE (ExprAccE (VarE (Bare "main"), "eg"), "apply") in
   let targs = [] in
   let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
-  Interp.interp_method_call ctx value "apply" targs args |> snd
+  Interp.interp_call ctx func targs args |> snd
+
+let drive_compute_checksum (ctx : Ctx.t) =
+  let func = ExprAccE (ExprAccE (VarE (Bare "main"), "ck"), "apply") in
+  let targs = [] in
+  let args = make_args [ "hdr"; "meta" ] in
+  Interp.interp_call ctx func targs args |> snd
 
 let drive (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
   let sto, ctx = init ccenv sto ctx in
@@ -135,8 +147,12 @@ let drive (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
   Format.printf "Initial v1model driver context\n%a@." Ctx.pp ctx;
   let ctx = drive_parser_impl ctx in
   Format.printf "\nAfter parser_impl call\n%a@." Ctx.pp ctx;
+  let ctx = drive_verify_checksum ctx in
+  Format.printf "\nAfter verifyChecksum call\n%a@." Ctx.pp ctx;
   let ctx = drive_ingress ctx in
   Format.printf "\nAfter ingress call\n%a@." Ctx.pp ctx;
   let ctx = drive_egress ctx in
   Format.printf "\nAfter egress call\n%a@." Ctx.pp ctx;
+  let ctx = drive_compute_checksum ctx in
+  Format.printf "\nAfter computeChecksum call\n%a@." Ctx.pp ctx;
   ()

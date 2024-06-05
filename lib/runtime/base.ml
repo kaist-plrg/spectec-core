@@ -7,8 +7,7 @@ module TDVis = MakeVis (Var)
 module Vis = MakeVis (Var)
 module FVis = MakeVis (Var)
 
-type vis_glob = TDVis.t * Vis.t * FVis.t
-type vis_obj = vis_glob
+type vis = TDVis.t * Vis.t * FVis.t
 
 (* Runtime representation of types *)
 
@@ -20,7 +19,7 @@ module Type = struct
     | BitT of Bigint.t
     | VBitT of Bigint.t
     | StrT
-    | ErrT
+    | ErrT of string list
     | NameT of string
     | NewT of string
     | TupleT of t list
@@ -38,7 +37,12 @@ module Type = struct
     | BitT w -> Format.fprintf fmt "%sw" (Bigint.to_string w)
     | VBitT w -> Format.fprintf fmt "%sv" (Bigint.to_string w)
     | StrT -> Format.fprintf fmt "string"
-    | ErrT -> Format.fprintf fmt "error"
+    | ErrT ms ->
+        Format.fprintf fmt "error { @[<hv>%a@] }"
+          (Format.pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
+             Format.pp_print_string)
+          ms
     | NameT n -> Format.fprintf fmt "%s" n
     | NewT n -> Format.fprintf fmt "new %s" n
     | TupleT ts ->
@@ -148,35 +152,44 @@ end
 module Func = struct
   type t =
     | FuncF of {
-        vis_glob : vis_glob;
+        vis_glob : vis;
         tparams : string list;
         params : param list;
         ret : Type.t;
         body : block;
       }
+    (* (TODO) Consider return type, which may be a type variable *)
+    | ExternF of {
+        name : string;
+        vis_glob : vis;
+        tparams : string list;
+        params : param list; (* ret : Type.t; *)
+      }
     | MethodF of {
-        vis_obj : vis_obj;
+        vis_obj : vis;
         tparams : string list;
         params : param list;
         body : block;
       }
-    | StateF of { body : block }
-    | ActionF of { vis_obj : vis_obj; params : param list; body : block }
-    | TableF of { vis_obj : vis_obj }
-    (* (TODO) Consider return type, which may be a type variable *)
-    | ExternF of {
-        vis_obj : vis_obj;
+    | ExternMethodF of {
+        name : string;
+        vis_obj : vis;
         tparams : string list;
         params : param list; (* ret : Type.t; *)
       }
+    | StateF of { body : block }
+    (* The visibility of an action depends on its declaration position *)
+    | ActionF of { vis : vis; params : param list; body : block }
+    | TableF of { vis_obj : vis }
 
   let pp fmt = function
     | FuncF _ -> Format.fprintf fmt "function"
+    | ExternF _ -> Format.fprintf fmt "extern"
     | MethodF _ -> Format.fprintf fmt "method"
+    | ExternMethodF _ -> Format.fprintf fmt "extern"
     | StateF _ -> Format.fprintf fmt "state"
     | ActionF _ -> Format.fprintf fmt "action"
     | TableF _ -> Format.fprintf fmt "table"
-    | ExternF _ -> Format.fprintf fmt "extern"
 end
 
 (* Environment of type variables, variables, and functions *)
@@ -185,13 +198,12 @@ module TDEnv = MakeEnv (Var) (Type)
 module Env = MakeEnv (Var) (TypeValue)
 module FEnv = MakeEnv (Var) (Func)
 
-type env_glob = TDEnv.t * Env.t * FEnv.t
-type env_obj = env_glob
-type env_loc = TDEnv.t * Env.t list
+type env = TDEnv.t * Env.t * FEnv.t
+type env_stack = TDEnv.t * Env.t list
 
 (* Transition between visibility and environment *)
 
-let env_to_vis (env : TDEnv.t * Env.t * FEnv.t) =
+let env_to_vis (env : env) =
   let tdenv, env, fenv = env in
   let tdvis =
     TDEnv.fold (fun name _ vis -> TDVis.add name vis) tdenv TDVis.empty
@@ -202,8 +214,7 @@ let env_to_vis (env : TDEnv.t * Env.t * FEnv.t) =
   in
   (tdvis, vis, fvis)
 
-let env_from_vis (env : TDEnv.t * Env.t * FEnv.t)
-    (vis : TDVis.t * Vis.t * FVis.t) =
+let env_from_vis (env : env) (vis : vis) =
   let tdenv, env, fenv = env in
   let tdvis, vis, fvis = vis in
   let tdenv = TDEnv.filter (fun name _ -> TDVis.mem name tdvis) tdenv in

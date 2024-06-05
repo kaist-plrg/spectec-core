@@ -96,6 +96,10 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       let ictx = ICtx.add_td_glob name typ ictx in
       (ccenv, ictx)
   (* Load types to tdenv *)
+  | ErrD { members } ->
+      let typ = Type.ErrT members in
+      let ictx = ICtx.add_td_glob "error" typ ictx in
+      (ccenv, ictx)
   | StructD { name; fields } ->
       let fields =
         List.map (fun (name, typ) -> (name, Eval.eval_type ictx typ)) fields
@@ -137,6 +141,17 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
   | ParserTypeD { name; _ } | ControlTypeD { name; _ } ->
       let typ = Type.RefT in
       let ictx = ICtx.add_td_glob name typ ictx in
+      (ccenv, ictx)
+  (* Load functions to fenv *)
+  | ActionD { name; params; body } ->
+      let vis_glob = env_to_vis ictx.env_glob in
+      let func = Func.ActionF { vis = vis_glob; params; body } in
+      let ictx = ICtx.add_func_glob name func ictx in
+      (ccenv, ictx)
+  | ExternFuncD { name; tparams; params; _ } ->
+      let vis_glob = env_to_vis ictx.env_glob in
+      let func = Func.ExternF { name; vis_glob; tparams; params } in
+      let ictx = ICtx.add_func_glob name func ictx in
       (ccenv, ictx)
   | _ ->
       Format.eprintf "(TODO: load_glob_decl) Load declaration %a\n"
@@ -403,9 +418,7 @@ and instantiate_control_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
       let ictx = load_obj_var ictx name typ in
       (sto, ictx)
   | ActionD { name; params; body } ->
-      let func =
-        Func.ActionF { vis_obj = env_to_vis ictx.env_obj; params; body }
-      in
+      let func = Func.ActionF { vis = env_to_vis ictx.env_obj; params; body } in
       let ictx = ICtx.add_func_obj name func ictx in
       (sto, ictx)
   (* Each table evaluates to a table instance (18.2) *)
@@ -430,7 +443,8 @@ and instantiate_extern_obj_decl (ictx : ICtx.t) (decl : decl) =
   match decl with
   | MethodD { name; tparams; params; _ } ->
       let func =
-        Func.ExternF { vis_obj = env_to_vis ictx.env_obj; tparams; params }
+        Func.ExternMethodF
+          { name; vis_obj = env_to_vis ictx.env_obj; tparams; params }
       in
       ICtx.add_func_obj name func ictx
   | AbstractD _ ->

@@ -9,12 +9,7 @@ module ICtx = struct
      preferrably added only to vis_*, but to remember their types
      (since their values should not known at compile time)
      they are also added to env_* with default value *)
-  type t = {
-    env_glob : env_glob;
-    vis_glob : vis_glob;
-    env_obj : env_obj;
-    vis_obj : vis_obj;
-  }
+  type t = { env_glob : env; vis_glob : vis; env_obj : env; vis_obj : vis }
 
   let empty =
     {
@@ -144,11 +139,11 @@ end
 
 module Ctx = struct
   type t = {
-    env_glob : env_glob;
-    vis_glob : vis_glob;
-    env_obj : env_obj;
-    vis_obj : vis_obj;
-    env_loc : env_loc;
+    env_glob : env;
+    vis_glob : vis;
+    env_obj : env;
+    vis_obj : vis;
+    env_loc : env_stack;
   }
 
   let empty =

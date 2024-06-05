@@ -12,7 +12,7 @@ let rec eval_simplify_type (ictx : ICtx.t) (typ : Type.t) : Type.t =
 let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
   match typ with
   | BoolT -> BoolT
-  | ErrT -> ErrT
+  | ErrT -> ICtx.find_td_glob "error" ictx |> Option.get
   | StrT -> StrT
   | AIntT -> AIntT
   | IntT width ->
