@@ -97,7 +97,6 @@ module PacketIn = struct
     let size = sizeof ctx typ in
     let parsed_data = parse size in
     let _, header = write parsed_data header in
-    bits_to_string parsed_data |> Format.eprintf "Extracted data %s\n";
     Ctx.update_var "hdr" typ header ctx
 end
 

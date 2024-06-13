@@ -5,10 +5,6 @@ open Runtime.Object
 open Runtime.Context
 open Runtime.Signal
 
-(* Control flow for calls *)
-
-type flow = Intra | Inter
-
 (* Global store *)
 
 let sto = ref Sto.empty
@@ -188,6 +184,32 @@ and interp_error_acc (ctx : Ctx.t) (member : string) : Ctx.t * Value.t =
       if List.mem member members then (ctx, ErrV member) else assert false
   | _ -> assert false
 
+and interp_builtin_stack_acc (ctx : Ctx.t) (values : Value.t list)
+    (next : Bigint.t) (_size : Bigint.t) (name : string) =
+  match name with
+  (* hs.next: produces a reference to the element with index hs.nextIndex in the stack.
+     May only be used in a parser. If the stack's nextIndex counter is greater than or equal to size,
+     then evaluating this expression results in a transition to reject and sets the error to error.StackOutOfBounds.
+     If hs is an l-value, then hs.next is also an l-value. *)
+  | "next" ->
+      let idx = Bigint.to_int next |> Option.get in
+      let value = List.nth values idx in
+      (ctx, value)
+  (* hs.last: produces a reference to the element with index hs.nextIndex - 1 in the stack, if such an element exists.
+     May only be used in a parser. If the nextIndex counter is less than 1, or greater than size,
+     then evaluating this expression results in a transition to reject and sets the error to error.StackOutOfBounds.
+     Unlike hs.next, the resulting reference is never an l-value. *)
+  | "last" ->
+      let idx = (Bigint.to_int next |> Option.get) - 1 in
+      let value = List.nth values idx in
+      (ctx, value)
+  | _ ->
+      Format.eprintf
+        "(interp_builtin_stack_acc) %s member access not supported for header \
+         stack\n"
+        name;
+      assert false
+
 and interp_expr_acc (ctx : Ctx.t) (base : expr) (name : string) :
     Ctx.t * Value.t =
   let ctx, value_base = interp_expr ctx base in
@@ -198,22 +220,8 @@ and interp_expr_acc (ctx : Ctx.t) (base : expr) (name : string) :
   | RefV path ->
       let value = Value.RefV (path @ [ name ]) in
       (ctx, value)
-  (* hs.next: produces a reference to the element with index hs.nextIndex in the stack.
-     May only be used in a parser. If the stack's nextIndex counter is greater than or equal to size,
-     then evaluating this expression results in a transition to reject and sets the error to error.StackOutOfBounds.
-     If hs is an l-value, then hs.next is also an l-value. *)
-  | StackV (values, next, _) when name = "next" ->
-      let idx = Bigint.to_int next |> Option.get in
-      let value = List.nth values idx in
-      (ctx, value)
-  (* hs.last: produces a reference to the element with index hs.nextIndex - 1 in the stack, if such an element exists.
-     May only be used in a parser. If the nextIndex counter is less than 1, or greater than size,
-     then evaluating this expression results in a transition to reject and sets the error to error.StackOutOfBounds.
-     Unlike hs.next, the resulting reference is never an l-value. *)
-  | StackV (values, next, _) when name = "last" ->
-      let idx = (Bigint.to_int next |> Option.get) - 1 in
-      let value = List.nth values idx in
-      (ctx, value)
+  | StackV (values, next, size) ->
+      interp_builtin_stack_acc ctx values next size name
   | _ ->
       Format.eprintf "(TODO: interp_expr_acc) %a.%s\n" Value.pp value_base name;
       assert false
@@ -264,7 +272,7 @@ and interp_write (ctx : Ctx.t) (lvalue : expr) (value : Value.t) =
             List.mapi (fun i v -> if i = idx then value else v) values
           in
           (* (TODO) In order to enforce,
-             It is automatically advanced on each successful call to extract. (13.9)
+             "It is automatically advanced on each successful call to extract. (13.9)"
              Yet doesn't seem to be in the right place *)
           let next = Bigint.(next + one) in
           interp_write ctx base (StackV (values, next, size))
@@ -694,41 +702,45 @@ and interp_object_call (ctx : Ctx.t) (obj : Object.t) (fname : Var.t)
       interp_intra_app ctx ctx_table func targs args
   | _ -> assert false
 
-and interp_method_call (ctx : Ctx.t) (base : expr) (fname : string)
-    (targs : typ list) (args : arg list) =
-  let ctx, value_base = interp_expr ctx base in
-  match value_base with
-  (* Calling a built-in method of a non-object value *)
-  (* (TODO) implement "setValid" and "setInvalid" *)
-  (* In addition, headers support the following methods: ... (8.17) *)
-  | HeaderV (valid, _) when fname = "isValid" ->
-      let value = Some (Value.BoolV valid) in
+(* In addition, headers support the following methods: ... (8.17) *)
+and interp_builtin_header_call (ctx : Ctx.t) (base : expr) (_valid : bool)
+    (fields : (string * Value.t) list) (fname : string) (_targs : typ list)
+    (_args : arg list) =
+  match fname with
+  | "isValid" ->
+      let value = Some (Value.BoolV true) in
       let sign = Sig.Ret value in
       (sign, ctx)
-  | HeaderV (_valid, _) when fname = "setValid" -> assert false
-  | HeaderV (_valid, _) when fname = "setInvalid" -> assert false
-  (* Finally, P4 offers the following computations that
-     can be used to manipulate the elements at the
-     front and back of the stack: ... (8.18) *)
-  | StackV (values, idx, size) when fname = "pop_front" ->
+  | "setValid" ->
+      let value = Value.HeaderV (true, fields) in
+      let ctx = interp_write ctx base value in
+      let sign = Sig.Ret None in
+      (sign, ctx)
+  | "setInvalid" ->
+      let value = Value.HeaderV (false, fields) in
+      let ctx = interp_write ctx base value in
+      let sign = Sig.Ret None in
+      (sign, ctx)
+  | _ ->
+      Format.eprintf
+        "(interp_builtin_header_call) %s call not supported for header\n" fname;
+      assert false
+
+(* Finally, P4 offers the following computations that
+   can be used to manipulate the elements at the
+   front and back of the stack: ... (8.18) *)
+and interp_builtin_stack_call (ctx : Ctx.t) (base : expr)
+    (values : Value.t list) (idx : Bigint.t) (size : Bigint.t) (fname : string)
+    (_targs : typ list) (args : arg list) =
+  match fname with
+  | "pop_front" ->
       assert (List.length args = 1);
-      let ctx, count =
-        let expr =
-          match List.hd args with
-          | ExprA expr -> expr
-          | NameA (_, expr) -> expr
-          | _ -> assert false
-        in
-        interp_expr ctx expr
-      in
-      let count = Eval.unpack_value count |> Bigint.to_int |> Option.get in
-      let values =
-        List.fold_left
-          (fun (count, values) value ->
-            if count > 0 then (count - 1, values)
-            else (count, values @ [ value ]))
-          (count, []) values
-        |> snd
+      let count =
+        match List.hd args with
+        | ExprA expr ->
+            interp_expr ctx expr |> snd |> Eval.unpack_value |> Bigint.to_int
+            |> Option.get
+        | _ -> assert false
       in
       (* (TODO) How to fill the rest with default values? Should know the types *)
       let idx = Bigint.to_int idx |> Option.get in
@@ -737,6 +749,21 @@ and interp_method_call (ctx : Ctx.t) (base : expr) (fname : string)
       let ctx = interp_write ctx base value in
       let sign = Sig.Ret None in
       (sign, ctx)
+  | _ ->
+      Format.eprintf
+        "(interp_builtin_stack_call) %s call not supported for header stack\n"
+        fname;
+      assert false
+
+and interp_method_call (ctx : Ctx.t) (base : expr) (fname : string)
+    (targs : typ list) (args : arg list) =
+  let ctx, value_base = interp_expr ctx base in
+  match value_base with
+  (* Calling a built-in method of a non-object value *)
+  | HeaderV (valid, fields) ->
+      interp_builtin_header_call ctx base valid fields fname targs args
+  | StackV (values, idx, size) ->
+      interp_builtin_stack_call ctx base values idx size fname targs args
   (* Calling a method of an actual (user-defined) object *)
   | RefV path ->
       let obj = Sto.find path !sto |> Option.get in
@@ -748,23 +775,19 @@ and interp_method_call (ctx : Ctx.t) (base : expr) (fname : string)
 
 and interp_func_call (ctx : Ctx.t) (fname : var) (targs : typ list)
     (args : arg list) : Sig.t * Ctx.t =
-  let flow, func =
-    match fname with
-    | Top fname ->
-        let func = Ctx.find_func_glob fname ctx |> Option.get in
-        (Inter, func)
-    | Bare fname ->
-        let flow =
-          if Option.is_some (Ctx.find_func_obj fname ctx) then Intra else Inter
-        in
-        let func = Ctx.find_func fname ctx |> Option.get in
-        (flow, func)
-  in
-  match flow with
-  | Intra -> interp_intra_app ctx None func targs args
-  | Inter ->
+  match fname with
+  | Top fname ->
       let ctx_callee = Ctx.init ctx.env_glob env_empty env_stack_empty in
+      let func = Ctx.find_func_glob fname ctx |> Option.get in
       interp_inter_app ctx ctx_callee func targs args
+  | Bare fname -> (
+      let func = Ctx.find_func_obj fname ctx in
+      match func with
+      | Some func -> interp_intra_app ctx None func targs args
+      | None ->
+          let ctx_callee = Ctx.init ctx.env_glob env_empty env_stack_empty in
+          let func = Ctx.find_func_glob fname ctx |> Option.get in
+          interp_inter_app ctx ctx_callee func targs args)
 
 and interp_call (ctx : Ctx.t) (func : expr) (targs : typ list) (args : arg list)
     =

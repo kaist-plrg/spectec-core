@@ -5,8 +5,6 @@ open Runtime.Object
 open Runtime.Cclos
 open Runtime.Context
 
-let path = []
-
 let ethernet_header_bits () : bool array =
   [|
     (* Destination MAC Address (48 bits): 01:23:45:67:89:AB *)
@@ -158,41 +156,52 @@ let init (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
   in
   (sto, ctx)
 
+let make_func (path : string list) (func : string) =
+  let base, members =
+    match path with [] -> assert false | base :: members -> (base, members)
+  in
+  let expr =
+    List.fold_left
+      (fun acc member -> ExprAccE (acc, member))
+      (VarE (Bare base)) members
+  in
+  ExprAccE (expr, func)
+
 let make_args (args : Var.t list) =
   List.map (fun arg -> ExprA (VarE (Bare arg))) args
 
 let drive_p (ctx : Ctx.t) =
-  let func = ExprAccE (ExprAccE (VarE (Bare "main"), "p"), "apply") in
+  let func = make_func [ "main"; "p" ] "apply" in
   let targs = [] in
   let args = make_args [ "packet_in"; "hdr"; "meta"; "standard_metadata" ] in
   Interp.interp_call ctx func targs args |> snd
 
 let drive_vr (ctx : Ctx.t) =
-  let func = ExprAccE (ExprAccE (VarE (Bare "main"), "vr"), "apply") in
+  let func = make_func [ "main"; "vr" ] "apply" in
   let targs = [] in
   let args = make_args [ "hdr"; "meta" ] in
   Interp.interp_call ctx func targs args |> snd
 
 let drive_ig (ctx : Ctx.t) =
-  let func = ExprAccE (ExprAccE (VarE (Bare "main"), "ig"), "apply") in
+  let func = make_func [ "main"; "ig" ] "apply" in
   let targs = [] in
   let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
   Interp.interp_call ctx func targs args |> snd
 
 let drive_eg (ctx : Ctx.t) =
-  let func = ExprAccE (ExprAccE (VarE (Bare "main"), "eg"), "apply") in
+  let func = make_func [ "main"; "eg" ] "apply" in
   let targs = [] in
   let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
   Interp.interp_call ctx func targs args |> snd
 
 let drive_ck (ctx : Ctx.t) =
-  let func = ExprAccE (ExprAccE (VarE (Bare "main"), "ck"), "apply") in
+  let func = make_func [ "main"; "ck" ] "apply" in
   let targs = [] in
   let args = make_args [ "hdr"; "meta" ] in
   Interp.interp_call ctx func targs args |> snd
 
 let drive_dep (ctx : Ctx.t) =
-  let func = ExprAccE (ExprAccE (VarE (Bare "main"), "dep"), "apply") in
+  let func = make_func [ "main"; "dep" ] "apply" in
   let targs = [] in
   let args = make_args [ "packet_out"; "hdr" ] in
   Interp.interp_call ctx func targs args |> snd
