@@ -650,6 +650,13 @@ let rec eval_default_value (typ : Type.t) : Value.t =
   | IntT width -> IntV (width, Bigint.zero)
   | BitT width -> BitV (width, Bigint.zero)
   | VBitT width -> VBitV (width, Bigint.zero)
+  | StackT (typ, size) ->
+      let values =
+        List.init
+          (Bigint.to_int size |> Option.get)
+          (fun _ -> eval_default_value typ)
+      in
+      StackV (values, Bigint.zero, size)
   | TupleT types -> TupleV (List.map eval_default_value types)
   | StructT entries ->
       let entries =

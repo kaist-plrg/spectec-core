@@ -316,6 +316,16 @@ module Ctx = struct
        <1 -2>}" Vis.pp gvis FVis.pp gfvis TDVis.pp gtdvis Vis.pp ovis FVis.pp
       ofvis TDVis.pp otdvis
 
+  let pp_var fmt ctx =
+    let _, genv, _ = env_from_vis ctx.env_glob ctx.vis_glob in
+    let _, oenv, _ = env_from_vis ctx.env_obj ctx.vis_obj in
+    let _, lenvs = ctx.env_loc in
+    Format.fprintf fmt
+      "{@;<1 2>@[<v 0>global = %a;@ object = %a;@ loc = %a@]@;<1 -2>}" Env.pp
+      genv Env.pp oenv
+      (Format.pp_print_list Env.pp)
+      lenvs
+
   let pp fmt ctx =
     let gtdenv, genv, gfenv = env_from_vis ctx.env_glob ctx.vis_glob in
     let otdenv, oenv, ofenv = env_from_vis ctx.env_obj ctx.vis_obj in

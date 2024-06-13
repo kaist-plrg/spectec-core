@@ -28,6 +28,10 @@ let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
   | NameT (Bare name) -> ICtx.find_td name ictx |> Option.get
   (* (TODO) Handle specialized types *)
   | SpecT (name, _) -> eval_type ictx (NameT name)
+  | StackT (typ, size) ->
+      let typ = eval_type ictx typ in
+      let size = eval_expr ictx size |> Runtime.Ops.extract_bigint in
+      StackT (typ, size)
   | TupleT typs ->
       let typs = List.map (eval_type ictx) typs in
       TupleT typs
@@ -44,6 +48,8 @@ and eval_expr (ictx : ICtx.t) (expr : expr) : Value.t =
       | Some (width, signed) ->
           if signed then IntV (width, value) else BitV (width, value)
       | None -> AIntV value)
+  | VarE (Top name) -> ICtx.find_var_glob name ictx |> Option.get |> snd
+  | VarE (Bare name) -> ICtx.find_var name ictx |> Option.get |> snd
   | UnE (op, arg) ->
       let varg = eval_expr ictx arg in
       Runtime.Ops.eval_unop op varg

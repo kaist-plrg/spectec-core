@@ -9,6 +9,8 @@ module FVis = MakeVis (Var)
 
 type vis = TDVis.t * Vis.t * FVis.t
 
+let vis_empty = (TDVis.empty, Vis.empty, FVis.empty)
+
 (* Runtime representation of types *)
 
 module Type = struct
@@ -22,6 +24,7 @@ module Type = struct
     | ErrT of string list
     | NameT of string
     | NewT of string
+    | StackT of (t * Bigint.t)
     | TupleT of t list
     | StructT of (string * t) list
     | HeaderT of (string * t) list
@@ -45,6 +48,7 @@ module Type = struct
           ms
     | NameT n -> Format.fprintf fmt "%s" n
     | NewT n -> Format.fprintf fmt "new %s" n
+    | StackT (t, s) -> Format.fprintf fmt "%a[%s]" pp t (Bigint.to_string s)
     | TupleT ts ->
         Format.fprintf fmt "(%a)"
           (Format.pp_print_list
@@ -89,6 +93,7 @@ module Value = struct
     | VBitV of Bigint.t * Bigint.t
     | StrV of string
     | ErrV of string
+    | StackV of (t list * Bigint.t * Bigint.t)
     | TupleV of t list
     | StructV of (string * t) list
     | HeaderV of bool * (string * t) list
@@ -109,6 +114,12 @@ module Value = struct
         Format.fprintf fmt "%sv%s" (Bigint.to_string w) (Bigint.to_string i)
     | StrV s -> Format.fprintf fmt "\"%s\"" s
     | ErrV s -> Format.fprintf fmt "%s" s
+    | StackV (vs, _i, s) ->
+        Format.fprintf fmt "%a[%s]"
+          (Format.pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+             pp)
+          vs (Bigint.to_string s)
     | TupleV vs ->
         Format.fprintf fmt "(%a)"
           (Format.pp_print_list
@@ -200,6 +211,9 @@ module FEnv = MakeEnv (Var) (Func)
 
 type env = TDEnv.t * Env.t * FEnv.t
 type env_stack = TDEnv.t * Env.t list
+
+let env_empty = (TDEnv.empty, Env.empty, FEnv.empty)
+let env_stack_empty = (TDEnv.empty, [])
 
 (* Transition between visibility and environment *)
 

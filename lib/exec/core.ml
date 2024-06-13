@@ -3,7 +3,7 @@ open Runtime.Context
 open Runtime.Signal
 
 (* Corresponds to extern packet_in { ... } *)
-module Packet = struct
+module PacketIn = struct
   let data = ref (Array.init 0 (fun _ -> false))
   let idx = ref 0
   let len = ref 0
@@ -12,6 +12,11 @@ module Packet = struct
     data := bits;
     idx := 0;
     len := Array.length bits
+
+  let bits_to_string bits =
+    Array.to_list bits
+    |> List.map (fun b -> if b then "1" else "0")
+    |> String.concat ""
 
   let bits_to_int bits =
     let bits = Array.to_list bits |> List.rev |> Array.of_list in
@@ -69,7 +74,7 @@ module Packet = struct
           List.fold_left
             (fun (parsed_data, entries) (key, value) ->
               let parsed_data, value = write parsed_data value in
-              (parsed_data, (key, value) :: entries))
+              (parsed_data, entries @ [ (key, value) ]))
             (parsed_data, []) fields
         in
         (parsed_data, Value.StructV fields)
@@ -78,7 +83,7 @@ module Packet = struct
           List.fold_left
             (fun (parsed_data, entries) (key, value) ->
               let parsed_data, value = write parsed_data value in
-              (parsed_data, (key, value) :: entries))
+              (parsed_data, entries @ [ (key, value) ]))
             (parsed_data, []) fields
         in
         (parsed_data, Value.HeaderV (true, fields))
@@ -92,7 +97,49 @@ module Packet = struct
     let size = sizeof ctx typ in
     let parsed_data = parse size in
     let _, header = write parsed_data header in
+    bits_to_string parsed_data |> Format.eprintf "Extracted data %s\n";
     Ctx.update_var "hdr" typ header ctx
+end
+
+(* Corresponds to extern packet_out { ... } *)
+module PacketOut = struct
+  let data = ref (Array.init 0 (fun _ -> false))
+
+  let int_to_bits value size =
+    Array.init size (fun i -> value land (1 lsl i) > 0)
+    |> Array.to_list |> List.rev |> Array.of_list
+
+  let bits_to_string bits =
+    Array.to_list bits
+    |> List.map (fun b -> if b then "1" else "0")
+    |> String.concat ""
+
+  let rec deparse (value : Value.t) =
+    match value with
+    | BoolV b -> data := Array.append !data [| b |]
+    | IntV (width, value) ->
+        let size = Bigint.to_int width |> Option.get in
+        let value = Bigint.to_int value |> Option.get in
+        let bits = int_to_bits value size in
+        data := Array.append !data bits
+    | BitV (width, value) ->
+        let size = Bigint.to_int width |> Option.get in
+        let value = Bigint.to_int value |> Option.get in
+        let bits = int_to_bits value size in
+        data := Array.append !data bits
+    | StackV (values, _, _) -> List.iter deparse values
+    | StructV fields -> List.iter (fun (_, value) -> deparse value) fields
+    | HeaderV (valid, fields) ->
+        if valid then List.iter (fun (_, value) -> deparse value) fields else ()
+    | _ ->
+        Format.asprintf "Cannot deparse value %a to packet" Value.pp value
+        |> failwith
+
+  (* Corresponds to void emit<T>(in T hdr); *)
+  let emit (ctx : Ctx.t) =
+    let _, header = Ctx.find_var "hdr" ctx |> Option.get in
+    deparse header;
+    ctx
 end
 
 (* Entry point for builtin functions *)
@@ -103,7 +150,10 @@ let interp_builtin (sign : Sig.t) (ctx : Ctx.t) (mthd : string) =
   | Cont -> (
       match mthd with
       | "extract" ->
-          let ctx = Packet.extract ctx in
+          let ctx = PacketIn.extract ctx in
+          (sign, ctx)
+      | "emit" ->
+          let ctx = PacketOut.emit ctx in
           (sign, ctx)
       (* (TODO) this should reside in v1model, not core *)
       | "verify_checksum" ->

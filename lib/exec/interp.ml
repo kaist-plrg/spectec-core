@@ -14,13 +14,6 @@ type flow = Intra | Inter
 let sto = ref Sto.empty
 let init _sto = sto := _sto
 
-(* Helper to fetch fields of an action *)
-
-let fetch_action (func : Func.t) =
-  match func with
-  | ActionF { vis; params; body } -> (vis, params, body)
-  | _ -> assert false
-
 (* Helper to access aggregate value *)
 
 let fetch_struct_field (value : Value.t) (field : string) =
@@ -53,6 +46,10 @@ let rec interp_type (ctx : Ctx.t) (typ : typ) : Type.t =
   | NameT (Bare name) -> Ctx.find_td name ctx |> Option.get
   (* (TODO) Handle specialized types *)
   | SpecT (name, _) -> interp_type ctx (NameT name)
+  | StackT (typ, size) ->
+      let typ = interp_type ctx typ in
+      let size = interp_expr ctx size |> snd |> Runtime.Ops.extract_bigint in
+      StackT (typ, size)
   | TupleT typs ->
       let typs = List.map (interp_type ctx) typs in
       TupleT typs
@@ -76,11 +73,11 @@ and interp_expr (ctx : Ctx.t) (expr : expr) : Ctx.t * Value.t =
   | CastE (typ, expr) -> interp_cast ctx typ expr
   | MaskE _ -> interp_mask ctx
   | RangeE _ -> interp_range ctx
-  | ArrAccE _ -> interp_arr_acc ctx
-  | BitAccE (base, expr_lo, expr_hi) ->
-      interp_bitstring_acc ctx base expr_lo expr_hi
+  | ArrAccE (base, idx) -> interp_arr_acc ctx base idx
+  | BitAccE (base, idx_lo, idx_hi) ->
+      interp_bitstring_acc ctx base idx_lo idx_hi
   | TypeAccE (var, member) -> interp_type_acc ctx var member
-  | ErrAccE _ -> interp_error_acc ctx
+  | ErrAccE member -> interp_error_acc ctx member
   | ExprAccE (base, name) -> interp_expr_acc ctx base name
   | CallE (func, targs, args) -> interp_call_as_expr ctx func targs args
   | InstE _ ->
@@ -151,11 +148,21 @@ and interp_cast (ctx : Ctx.t) (typ : typ) (expr : expr) : Ctx.t * Value.t =
 
 and interp_mask (_ctx : Ctx.t) : Ctx.t * Value.t = assert false
 and interp_range (_ctx : Ctx.t) : Ctx.t * Value.t = assert false
-and interp_arr_acc (_ctx : Ctx.t) : Ctx.t * Value.t = assert false
 
-and interp_bitstring_acc (ctx : Ctx.t) (base : expr) (expr_hi : expr)
-    (expr_lo : expr) : Ctx.t * Value.t =
-  let ctx, values = interp_exprs ctx [ base; expr_hi; expr_lo ] in
+and interp_arr_acc (ctx : Ctx.t) (base : expr) (idx : expr) : Ctx.t * Value.t =
+  let ctx, values = interp_exprs ctx [ base; idx ] in
+  let value_base, value_idx = (List.nth values 0, List.nth values 1) in
+  match value_base with
+  (* (TODO) Insert bounds checking *)
+  | StackV (values, _, _) ->
+      let idx = Eval.unpack_value value_idx |> Bigint.to_int |> Option.get in
+      let value = List.nth values idx in
+      (ctx, value)
+  | _ -> assert false
+
+and interp_bitstring_acc (ctx : Ctx.t) (base : expr) (idx_hi : expr)
+    (idx_lo : expr) : Ctx.t * Value.t =
+  let ctx, values = interp_exprs ctx [ base; idx_hi; idx_lo ] in
   let value_base, value_hi, value_lo =
     (List.nth values 0, List.nth values 1, List.nth values 2)
   in
@@ -174,7 +181,12 @@ and interp_type_acc (ctx : Ctx.t) (var : var) (member : string) :
       if List.mem member members then (ctx, EnumFieldV member) else assert false
   | _ -> assert false
 
-and interp_error_acc (_ctx : Ctx.t) : Ctx.t * Value.t = assert false
+and interp_error_acc (ctx : Ctx.t) (member : string) : Ctx.t * Value.t =
+  let typ = Ctx.find_td_glob "error" ctx |> Option.get in
+  match typ with
+  | ErrT members ->
+      if List.mem member members then (ctx, ErrV member) else assert false
+  | _ -> assert false
 
 and interp_expr_acc (ctx : Ctx.t) (base : expr) (name : string) :
     Ctx.t * Value.t =
@@ -186,7 +198,25 @@ and interp_expr_acc (ctx : Ctx.t) (base : expr) (name : string) :
   | RefV path ->
       let value = Value.RefV (path @ [ name ]) in
       (ctx, value)
-  | _ -> assert false
+  (* hs.next: produces a reference to the element with index hs.nextIndex in the stack.
+     May only be used in a parser. If the stack's nextIndex counter is greater than or equal to size,
+     then evaluating this expression results in a transition to reject and sets the error to error.StackOutOfBounds.
+     If hs is an l-value, then hs.next is also an l-value. *)
+  | StackV (values, next, _) when name = "next" ->
+      let idx = Bigint.to_int next |> Option.get in
+      let value = List.nth values idx in
+      (ctx, value)
+  (* hs.last: produces a reference to the element with index hs.nextIndex - 1 in the stack, if such an element exists.
+     May only be used in a parser. If the nextIndex counter is less than 1, or greater than size,
+     then evaluating this expression results in a transition to reject and sets the error to error.StackOutOfBounds.
+     Unlike hs.next, the resulting reference is never an l-value. *)
+  | StackV (values, next, _) when name = "last" ->
+      let idx = (Bigint.to_int next |> Option.get) - 1 in
+      let value = List.nth values idx in
+      (ctx, value)
+  | _ ->
+      Format.eprintf "(TODO: interp_expr_acc) %a.%s\n" Value.pp value_base name;
+      assert false
 
 and interp_call_as_expr (ctx : Ctx.t) (func : expr) (targs : typ list)
     (args : arg list) : Ctx.t * Value.t =
@@ -228,6 +258,16 @@ and interp_write (ctx : Ctx.t) (lvalue : expr) (value : Value.t) =
       | HeaderV (valid, fields) ->
           let fields = update_field fields name in
           interp_write ctx base (HeaderV (valid, fields))
+      | StackV (values, next, size) when name = "next" ->
+          let idx = Bigint.to_int next |> Option.get in
+          let values =
+            List.mapi (fun i v -> if i = idx then value else v) values
+          in
+          (* (TODO) In order to enforce,
+             It is automatically advanced on each successful call to extract. (13.9)
+             Yet doesn't seem to be in the right place *)
+          let next = Bigint.(next + one) in
+          interp_write ctx base (StackV (values, next, size))
       | _ -> assert false)
   | _ ->
       Format.eprintf "(TODO: interp_write) %a" Syntax.Print.print_expr lvalue;
@@ -487,24 +527,22 @@ and interp_args (ctx_caller : Ctx.t) (exprs : expr list) =
 and interp_extern_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (fname : string)
     (tparams : Var.t list) (params : param list) (targs : typ list)
     (args : arg list) =
-  (* Enter the function frame *)
-  let ctx_callee = Ctx.enter_frame ctx_callee in
   (* Align the parameters with the arguments *)
   let params, args = align_params_with_args params args in
   (* Evaluate the arguments *)
   let ctx_caller, values = interp_args ctx_caller args in
-  (* Bind the type parameters *)
+  (* Enter the function frame, bind type parameters,
+     and copy-in to the local environment *)
+  let ctx_callee = Ctx.enter_frame ctx_callee in
   let ctx_callee =
     interp_targs Ctx.add_td_loc ctx_caller ctx_callee tparams targs
   in
-  (* Copy-in to the local environment *)
   let ctx_callee = copyin Ctx.add_var_loc ctx_callee params values in
   (* Execute the body *)
   let sign, ctx_callee = Core.interp_builtin Sig.Cont ctx_callee fname in
   (* Copy-out from the local environment *)
   let ctx_caller = copyout ctx_caller ctx_callee params args in
-  (* No need to account for global mutations since globals are immutable *)
-  (sign, ctx_caller)
+  (sign, ctx_caller, ctx_callee)
 
 and interp_extern_method_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
     (fname : string) (tparams : Var.t list) (params : param list)
@@ -525,8 +563,7 @@ and interp_extern_method_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
   let sign, ctx_callee = Core.interp_builtin Sig.Cont ctx_callee fname in
   (* Copy-out from the local environment *)
   let ctx_caller = copyout ctx_caller ctx_callee params args in
-  (* No need to account for global mutations since globals are immutable *)
-  (sign, ctx_caller)
+  (sign, ctx_caller, ctx_callee)
 
 and interp_method_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
     (_tparams : Var.t list) (params : param list) (_targs : typ list)
@@ -541,26 +578,22 @@ and interp_method_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
   let sign, ctx_callee = interp_block Sig.Cont ctx_callee body in
   (* Copy-out from the object environment *)
   let ctx_caller = copyout ctx_caller ctx_callee params args in
-  (* No need to account for global mutations since globals are immutable *)
-  (sign, ctx_caller)
+  (sign, ctx_caller, ctx_callee)
 
-and interp_action_call (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
+and interp_action_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
     (params : param list) (args : arg list) (body : block) =
-  (* Enter the function frame *)
-  let ctx_callee = Ctx.enter_frame ctx_callee in
   (* Align the parameters with the arguments *)
   let params, args = align_params_with_args params args in
   (* Evaluate the arguments *)
   let ctx_caller, values = interp_args ctx_caller args in
-  (* Copy-in to the local environment *)
+  (* Enter the function frame and copy-in to the local environment *)
+  let ctx_callee = Ctx.enter_frame ctx_callee in
   let ctx_callee = copyin Ctx.add_var_loc ctx_callee params values in
   (* Execute the body *)
   let sign, ctx_callee = interp_block Sig.Cont ctx_callee body in
   (* Copy-out from the local environment *)
   let ctx_caller = copyout ctx_caller ctx_callee params args in
-  (* Account for object-local mutations *)
-  let ctx_caller = { ctx_caller with env_obj = ctx_callee.env_obj } in
-  (sign, ctx_caller)
+  (sign, ctx_caller, ctx_callee)
 
 and interp_table_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) ctx_table =
   let key, actions, entries, default, custom = ctx_table in
@@ -580,87 +613,86 @@ and interp_table_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) ctx_table =
   in
   if not hit then
     let sign = Sig.Ret (Some value) in
-    (sign, ctx_caller)
+    (sign, ctx_caller, ctx_callee)
   else
     let action, args = Option.get action in
-    (* Find the action *)
-    (* (TODO) support inter-object call to global action *)
-    let action_name =
-      match action with
-      | Top action ->
-          Format.eprintf
-            "(TODO: interp_table_call) Implement top-level action call to %s\n"
-            action;
-          assert false
-      | Bare action -> action
-    in
-    let action = Ctx.find_func_obj action_name ctx_callee |> Option.get in
-    let vis_obj, params, body = fetch_action action in
-    (* Construct the callee context *)
-    let ctx_callee_callee =
-      Ctx.init ctx_callee.env_glob ctx_callee.env_obj (TDEnv.empty, [])
-    in
-    let ctx_callee_callee = { ctx_callee_callee with vis_obj } in
-    (* Execute the action *)
-    let sign, ctx_callee =
-      interp_action_call ctx_callee ctx_callee_callee params args body
-    in
+    (* Find and call the action *)
+    let sign, ctx_callee = interp_func_call ctx_callee action [] args in
     let sign =
-      match sign with
+      match (sign : Sig.t) with
       | Cont -> Sig.Ret (Some value)
       | Ret _ ->
           Format.eprintf "(interp_table_call) Action should not return.\n";
           assert false
       | Exit -> sign
     in
-    (* Propagate object-local mutations *)
-    let ctx_caller = { ctx_caller with env_obj = ctx_callee.env_obj } in
-    (sign, ctx_caller)
+    (sign, ctx_caller, ctx_callee)
 
-and interp_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) ctx_table
-    (func : Func.t) (targs : typ list) (args : arg list) =
+and interp_inter_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (func : Func.t)
+    (targs : typ list) (args : arg list) =
+  (* Construct the callee context and call the function *)
   (* Difference between calling an extern method and a parser/control method
      is that parameters are passed to the method-local scope for the former
      and for the latter, it is the object-local scope *)
-  match func with
-  | ExternMethodF { name; vis_obj; tparams; params } ->
-      let ctx_callee = { ctx_callee with vis_obj } in
-      interp_extern_method_app ctx_caller ctx_callee name tparams params targs
-        args
-  | MethodF { vis_obj; tparams; params; body } ->
-      let ctx_callee = { ctx_callee with vis_obj } in
-      interp_method_app ctx_caller ctx_callee tparams params targs args body
-  | TableF { vis_obj } ->
-      let ctx_callee = { ctx_callee with vis_obj } in
-      interp_table_app ctx_caller ctx_callee (Option.get ctx_table)
-  | _ -> assert false
+  let sign, ctx_caller, _ctx_callee =
+    match func with
+    | ExternF { name; vis_glob; tparams; params } ->
+        let ctx_callee = { ctx_callee with vis_glob } in
+        interp_extern_app ctx_caller ctx_callee name tparams params targs args
+    | ExternMethodF { name; vis_obj; tparams; params } ->
+        let ctx_callee = { ctx_callee with vis_obj } in
+        interp_extern_method_app ctx_caller ctx_callee name tparams params targs
+          args
+    | MethodF { vis_obj; tparams; params; body } ->
+        let ctx_callee = { ctx_callee with vis_obj } in
+        interp_method_app ctx_caller ctx_callee tparams params targs args body
+    | ActionF { vis; params; body } ->
+        let ctx_callee = { ctx_callee with vis_glob = vis } in
+        interp_action_app ctx_caller ctx_callee params args body
+    | _ -> assert false
+  in
+  (* Account for global mutations, which shouldn't happen *)
+  (sign, ctx_caller)
+
+and interp_intra_app (ctx_caller : Ctx.t) ctx_table (func : Func.t)
+    (_targs : typ list) (args : arg list) =
+  (* Construct the callee context and call the function *)
+  let sign, ctx_caller, ctx_callee =
+    match func with
+    | TableF { vis_obj } ->
+        let ctx_callee = { ctx_caller with vis_obj } in
+        interp_table_app ctx_caller ctx_callee (Option.get ctx_table)
+    | ActionF { vis; params; body } ->
+        let ctx_callee = { ctx_caller with vis_obj = vis } in
+        interp_action_app ctx_caller ctx_callee params args body
+    | _ -> assert false
+  in
+  (* Account for object-local mutations *)
+  let ctx_caller = { ctx_caller with env_obj = ctx_callee.env_obj } in
+  (sign, ctx_caller)
 
 and interp_object_call (ctx : Ctx.t) (obj : Object.t) (fname : Var.t)
     (targs : typ list) (args : arg list) =
   (* Resolve callee object's scope and find the callee method *)
-  let ctx_callee, ctx_table, func =
-    match obj with
-    | ExternO { vis_glob; env_obj } ->
-        let ctx_callee = Ctx.init ctx.env_glob env_obj (TDEnv.empty, []) in
-        let ctx_callee = { ctx_callee with vis_glob } in
-        let func = Ctx.find_func_obj fname ctx_callee |> Option.get in
-        (ctx_callee, None, func)
-    | ParserO { vis_glob; env_obj; mthd } | ControlO { vis_glob; env_obj; mthd }
-      ->
-        let ctx_callee = Ctx.init ctx.env_glob env_obj (TDEnv.empty, []) in
-        let ctx_callee = { ctx_callee with vis_glob } in
-        assert (fname = "apply");
-        let func = mthd in
-        (ctx_callee, None, func)
-    | TableO { key; actions; entries; default; custom; mthd } ->
-        let ctx_callee = Ctx.init ctx.env_glob ctx.env_obj (TDEnv.empty, []) in
-        let ctx_table = (key, actions, entries, default, custom) in
-        assert (fname = "apply" && targs = [] && args = []);
-        let func = mthd in
-        (ctx_callee, Some ctx_table, func)
-    | _ -> assert false
-  in
-  interp_app ctx ctx_callee ctx_table func targs args
+  match obj with
+  | ExternO { vis_glob; env_obj } ->
+      let ctx_callee = Ctx.init ctx.env_glob env_obj (TDEnv.empty, []) in
+      let ctx_callee = { ctx_callee with vis_glob } in
+      let func = Ctx.find_func_obj fname ctx_callee |> Option.get in
+      interp_inter_app ctx ctx_callee func targs args
+  | ParserO { vis_glob; env_obj; mthd } | ControlO { vis_glob; env_obj; mthd }
+    ->
+      let ctx_callee = Ctx.init ctx.env_glob env_obj (TDEnv.empty, []) in
+      let ctx_callee = { ctx_callee with vis_glob } in
+      assert (fname = "apply");
+      let func = mthd in
+      interp_inter_app ctx ctx_callee func targs args
+  | TableO { key; actions; entries; default; custom; mthd } ->
+      let ctx_table = Some (key, actions, entries, default, custom) in
+      assert (fname = "apply" && targs = [] && args = []);
+      let func = mthd in
+      interp_intra_app ctx ctx_table func targs args
+  | _ -> assert false
 
 and interp_method_call (ctx : Ctx.t) (base : expr) (fname : string)
     (targs : typ list) (args : arg list) =
@@ -675,7 +707,37 @@ and interp_method_call (ctx : Ctx.t) (base : expr) (fname : string)
       (sign, ctx)
   | HeaderV (_valid, _) when fname = "setValid" -> assert false
   | HeaderV (_valid, _) when fname = "setInvalid" -> assert false
-  (* Calling a method of an actual object *)
+  (* Finally, P4 offers the following computations that
+     can be used to manipulate the elements at the
+     front and back of the stack: ... (8.18) *)
+  | StackV (values, idx, size) when fname = "pop_front" ->
+      assert (List.length args = 1);
+      let ctx, count =
+        let expr =
+          match List.hd args with
+          | ExprA expr -> expr
+          | NameA (_, expr) -> expr
+          | _ -> assert false
+        in
+        interp_expr ctx expr
+      in
+      let count = Eval.unpack_value count |> Bigint.to_int |> Option.get in
+      let values =
+        List.fold_left
+          (fun (count, values) value ->
+            if count > 0 then (count - 1, values)
+            else (count, values @ [ value ]))
+          (count, []) values
+        |> snd
+      in
+      (* (TODO) How to fill the rest with default values? Should know the types *)
+      let idx = Bigint.to_int idx |> Option.get in
+      let idx = Bigint.of_int (idx + count) in
+      let value = Value.StackV (values, idx, size) in
+      let ctx = interp_write ctx base value in
+      let sign = Sig.Ret None in
+      (sign, ctx)
+  (* Calling a method of an actual (user-defined) object *)
   | RefV path ->
       let obj = Sto.find path !sto |> Option.get in
       interp_object_call ctx obj fname targs args
@@ -684,25 +746,8 @@ and interp_method_call (ctx : Ctx.t) (base : expr) (fname : string)
         value_base fname;
       assert false
 
-and interp_inter_app (ctx_caller : Ctx.t) (func : Func.t) (targs : typ list)
-    (args : arg list) =
-  match func with
-  | ExternF { name; vis_glob; tparams; params } ->
-      let ctx_callee =
-        Ctx.init ctx_caller.env_glob
-          (TDEnv.empty, Env.empty, FEnv.empty)
-          (TDEnv.empty, [])
-      in
-      let ctx_callee = { ctx_callee with vis_glob } in
-      interp_extern_app ctx_caller ctx_callee name tparams params targs args
-  | _ -> assert false
-
-and interp_intra_app (_ctx_caller : Ctx.t) (_func : Func.t) (_targs : typ list)
-    (_args : arg list) =
-  assert false
-
 and interp_func_call (ctx : Ctx.t) (fname : var) (targs : typ list)
-    (args : arg list) =
+    (args : arg list) : Sig.t * Ctx.t =
   let flow, func =
     match fname with
     | Top fname ->
@@ -716,8 +761,10 @@ and interp_func_call (ctx : Ctx.t) (fname : var) (targs : typ list)
         (flow, func)
   in
   match flow with
-  | Intra -> interp_intra_app ctx func targs args
-  | Inter -> interp_inter_app ctx func targs args
+  | Intra -> interp_intra_app ctx None func targs args
+  | Inter ->
+      let ctx_callee = Ctx.init ctx.env_glob env_empty env_stack_empty in
+      interp_inter_app ctx ctx_callee func targs args
 
 and interp_call (ctx : Ctx.t) (func : expr) (targs : typ list) (args : arg list)
     =
