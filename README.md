@@ -39,8 +39,15 @@ $ make
 
 This creates an executable `p4cherry` in the project root.
 
-## Run parser (full), instantiation (WIP), and interpreter (not yet) an Example File
+## Run parser (full), instantiation (WIP), and interpreter (WIP) for an Example File
+
+Instantiation and interpreter are work-in-progress.
+To name a few major missing features:
+- No type inference for generics (type params); all generics must be explicitly specified.
+- Tables evaluate to the default action regardless of the key.
+- Packets contents are hardcoded to match the format in test/petr4_sandbox_explicit-bmv2.p4.
+    - A temporary solution until STF is implemented.
 
 ```shell
-$ ./p4cherry test/arch example/example.p4
+$ ./p4cherry v1model test/arch test/petr4_sandbox_explicit-bmv2.p4
 ```
