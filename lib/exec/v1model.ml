@@ -101,7 +101,7 @@ let pkt_in () =
   let bits = sandbox_header_bits () in
   Core.PacketIn.init bits
 
-let pkt_out () = ()
+let pkt_out () = Core.PacketOut.init
 
 let make_func (path : string list) (func : string) =
   let base, members =
@@ -118,18 +118,15 @@ let make_args (args : Var.t list) =
   List.map (fun arg -> ExprA (VarE (Bare arg))) args
 
 module Make (Interp : INTERP) : ARCH = struct
-  let interp_extern (sign : Sig.t) (ctx : Ctx.t) (mthd : string) =
-    match sign with
-    | Ret _ | Exit -> (sign, ctx)
-    | Cont -> (
-        match mthd with
-        | "extract" -> Core.PacketIn.extract ctx |> fun ctx -> (sign, ctx)
-        | "emit" -> Core.PacketOut.emit ctx |> fun ctx -> (sign, ctx)
-        | "verify_checksum" -> Hash.verify_checksum ctx |> fun ctx -> (sign, ctx)
-        | "update_checksum" -> Hash.update_checksum ctx |> fun ctx -> (sign, ctx)
-        | _ ->
-            Format.eprintf "Unknown builtin extern method %s@." mthd;
-            assert false)
+  type extern = PacketIn of Core.PacketIn.t | PacketOut of Core.PacketOut.t
+
+  let pp_extern fmt = function
+    | PacketIn pkt_in -> Core.PacketIn.pp fmt pkt_in
+    | PacketOut pkt_out -> Core.PacketOut.pp fmt pkt_out
+
+  module EM = Map.Make (String)
+
+  let externs = ref EM.empty
 
   let init_instantiate_packet_in (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
     let cclos_packet_in = CCEnv.find "packet_in" ccenv |> Option.get in
@@ -139,7 +136,8 @@ module Make (Interp : INTERP) : ARCH = struct
       Instance.Instantiate.instantiate_from_cclos ccenv sto ictx path
         cclos_packet_in [] []
     in
-    (sto, pkt_in ())
+    externs := EM.add "packet_in" (PacketIn (pkt_in ())) !externs;
+    sto
 
   let init_instantiate_packet_out (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t)
       =
@@ -150,40 +148,34 @@ module Make (Interp : INTERP) : ARCH = struct
       Instance.Instantiate.instantiate_from_cclos ccenv sto ictx path
         cclos_packet_out [] []
     in
-    (sto, pkt_out ())
+    externs := EM.add "packet_out" (PacketOut (pkt_out ())) !externs;
+    sto
+
+  let init_var (ctx : Ctx.t) (tname : string) (vname : string) =
+    let typ = Ctx.find_td tname ctx |> Option.get in
+    let value = Runtime.Ops.eval_default_value typ in
+    Ctx.add_var_obj vname typ value ctx
 
   let init (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
     (* Add "packet_in" and "packet_out" to the store and object environment *)
-    let sto, _pkt_in = init_instantiate_packet_in ccenv sto ctx in
+    let sto = init_instantiate_packet_in ccenv sto ctx in
     let ctx =
       let typ = Type.RefT in
       let value = Value.RefV [ "packet_in" ] in
       Ctx.add_var_obj "packet_in" typ value ctx
     in
-    let sto, _pkt_out = init_instantiate_packet_out ccenv sto ctx in
+    let sto = init_instantiate_packet_out ccenv sto ctx in
     let ctx =
       let typ = Type.RefT in
       let value = Value.RefV [ "packet_out" ] in
       Ctx.add_var_obj "packet_out" typ value ctx
     in
     (* Add "hdr" to the object environment *)
-    let ctx =
-      let typ = Ctx.find_td "headers" ctx |> Option.get in
-      let value = Runtime.Ops.eval_default_value typ in
-      Ctx.add_var_obj "hdr" typ value ctx
-    in
+    let ctx = init_var ctx "headers" "hdr" in
     (* Add "meta" to the object environment *)
-    let ctx =
-      let typ = Ctx.find_td "metadata" ctx |> Option.get in
-      let value = Runtime.Ops.eval_default_value typ in
-      Ctx.add_var_obj "meta" typ value ctx
-    in
+    let ctx = init_var ctx "metadata" "meta" in
     (* Add "standard_metadata" to the object environment *)
-    let ctx =
-      let typ = Ctx.find_td "standard_metadata_t" ctx |> Option.get in
-      let value = Runtime.Ops.eval_default_value typ in
-      Ctx.add_var_obj "standard_metadata" typ value ctx
-    in
+    let ctx = init_var ctx "standard_metadata_t" "standard_metadata" in
     (sto, ctx)
 
   let drive_p (ctx : Ctx.t) =
@@ -236,15 +228,42 @@ module Make (Interp : INTERP) : ARCH = struct
 
   let drive (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
     let sto, ctx = init ccenv sto ctx in
-    Core.PacketIn.bits_to_string !Core.PacketIn.data
-    |> Format.printf "\nInput packet %s\n";
+    EM.find "packet_in" !externs
+    |> Format.printf "\nInput packet %a\n" pp_extern;
     Interp.init sto;
     let ctx =
       ctx |> drive_p |> drive_vr |> drive_ig |> drive_eg |> drive_ck
       |> drive_dep
     in
     Format.printf "\nFinal v1model driver context\n%a@." Ctx.pp_var ctx;
-    Core.PacketOut.bits_to_string !Core.PacketOut.data
-    |> Format.printf "\nOutput packet %s\n";
+    EM.find "packet_out" !externs
+    |> Format.printf "\nOutput packet %a\n" pp_extern;
     ()
+
+  (* (TODO) how to figure out on which extern object the mthd is called?
+     currently it assumes that "extract" is called on PacketIn, ... *)
+  let interp_extern (sign : Sig.t) (ctx : Ctx.t) (mthd : string) =
+    match sign with
+    | Ret _ | Exit -> (sign, ctx)
+    | Cont -> (
+        match mthd with
+        | "extract" -> (
+            match EM.find "packet_in" !externs with
+            | PacketIn pkt_in ->
+                let ctx, pkt_in = Core.PacketIn.extract ctx pkt_in in
+                externs := EM.add "packet_in" (PacketIn pkt_in) !externs;
+                (sign, ctx)
+            | _ -> assert false)
+        | "emit" -> (
+            match EM.find "packet_out" !externs with
+            | PacketOut pkt_out ->
+                let ctx, pkt_out = Core.PacketOut.emit ctx pkt_out in
+                externs := EM.add "packet_out" (PacketOut pkt_out) !externs;
+                (sign, ctx)
+            | _ -> assert false)
+        | "verify_checksum" -> Hash.verify_checksum ctx |> fun ctx -> (sign, ctx)
+        | "update_checksum" -> Hash.update_checksum ctx |> fun ctx -> (sign, ctx)
+        | _ ->
+            Format.eprintf "Unknown builtin extern method %s@." mthd;
+            assert false)
 end

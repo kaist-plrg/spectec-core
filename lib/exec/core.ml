@@ -1,141 +1,129 @@
 open Runtime.Base
 open Runtime.Context
 
-(* Corresponds to extern packet_in { ... } *)
+let bits_to_string bits =
+  Array.to_list bits
+  |> List.map (fun b -> if b then "1" else "0")
+  |> String.concat ""
+
+let bits_to_int bits =
+  let bits = Array.to_list bits |> List.rev |> Array.of_list in
+  let n = Array.length bits in
+  let rec aux i acc =
+    if i = n then acc
+    else
+      let acc = if bits.(i) then acc lor (1 lsl i) else acc in
+      aux (i + 1) acc
+  in
+  let n = aux 0 0 |> Bigint.of_int in
+  n
+
+let int_to_bits value size =
+  Array.init size (fun i -> value land (1 lsl i) > 0)
+  |> Array.to_list |> List.rev |> Array.of_list
+
+let rec sizeof (ctx : Ctx.t) (typ : Type.t) =
+  match typ with
+  | BoolT -> 1
+  | IntT width | BitT width -> Bigint.to_int width |> Option.get
+  | HeaderT fields ->
+      List.fold_left (fun acc (_, typ) -> acc + sizeof ctx typ) 0 fields
+  | NameT _ | NewT _ -> Eval.eval_simplify_type ctx typ |> sizeof ctx
+  | _ -> assert false
+
 module PacketIn = struct
-  let data = ref (Array.init 0 (fun _ -> false))
-  let idx = ref 0
-  let len = ref 0
+  type t = { bits : bool Array.t; idx : int; len : int }
 
-  let init bits =
-    data := bits;
-    idx := 0;
-    len := Array.length bits
+  let init bits = { bits; idx = 0; len = Array.length bits }
+  let pp fmt (pkt : t) = Format.fprintf fmt "%s" (bits_to_string pkt.bits)
 
-  let bits_to_string bits =
-    Array.to_list bits
-    |> List.map (fun b -> if b then "1" else "0")
-    |> String.concat ""
+  let parse (pkt : t) (size : int) =
+    let bits = Array.sub pkt.bits pkt.idx size in
+    ({ pkt with idx = pkt.idx + size }, bits)
 
-  let bits_to_int bits =
-    let bits = Array.to_list bits |> List.rev |> Array.of_list in
-    let n = Array.length bits in
-    let rec aux i acc =
-      if i = n then acc
-      else
-        let acc = if bits.(i) then acc lor (1 lsl i) else acc in
-        aux (i + 1) acc
-    in
-    let n = aux 0 0 |> Bigint.of_int in
-    n
-
-  let parse (size : int) =
-    let bits = Array.sub !data !idx size in
-    idx := !idx + size;
-    bits
-
-  let rec sizeof (ctx : Ctx.t) (typ : Type.t) =
-    match typ with
-    | BoolT -> 1
-    | IntT width | BitT width -> Bigint.to_int width |> Option.get
-    | HeaderT fields ->
-        List.fold_left (fun acc (_, typ) -> acc + sizeof ctx typ) 0 fields
-    | NameT _ | NewT _ -> Eval.eval_simplify_type ctx typ |> sizeof ctx
-    | _ -> assert false
-
-  let rec write (parsed_data : bool Array.t) (value : Value.t) =
+  let rec write (bits_in : bool Array.t) (value : Value.t) =
     match value with
     | BoolV _ ->
-        let bit = Array.get parsed_data 0 in
-        let parsed_data =
-          Array.sub parsed_data 1 (Array.length parsed_data - 1)
-        in
+        let bit = Array.get bits_in 0 in
+        let bits_in = Array.sub bits_in 1 (Array.length bits_in - 1) in
         let value = Value.BoolV bit in
-        (parsed_data, value)
+        (bits_in, value)
     | IntV (width, _) ->
         let size = Bigint.to_int width |> Option.get in
-        let bits = Array.sub parsed_data 0 size in
-        let parsed_data =
-          Array.sub parsed_data size (Array.length parsed_data - size)
-        in
+        let bits = Array.sub bits_in 0 size in
+        let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
         let value = Value.IntV (width, bits_to_int bits) in
-        (parsed_data, value)
+        (bits_in, value)
     | BitV (width, _) ->
         let size = Bigint.to_int width |> Option.get in
-        let bits = Array.sub parsed_data 0 size in
-        let parsed_data =
-          Array.sub parsed_data size (Array.length parsed_data - size)
-        in
+        let bits = Array.sub bits_in 0 size in
+        let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
         let value = Value.BitV (width, bits_to_int bits) in
-        (parsed_data, value)
+        (bits_in, value)
     | StructV fields ->
-        let parsed_data, fields =
+        let bits_in, fields =
           List.fold_left
-            (fun (parsed_data, entries) (key, value) ->
-              let parsed_data, value = write parsed_data value in
-              (parsed_data, entries @ [ (key, value) ]))
-            (parsed_data, []) fields
+            (fun (bits_in, fields) (key, value) ->
+              let bits_in, value = write bits_in value in
+              (bits_in, fields @ [ (key, value) ]))
+            (bits_in, []) fields
         in
-        (parsed_data, Value.StructV fields)
+        (bits_in, Value.StructV fields)
     | HeaderV (_, fields) ->
-        let parsed_data, fields =
+        let bits_in, fields =
           List.fold_left
-            (fun (parsed_data, entries) (key, value) ->
-              let parsed_data, value = write parsed_data value in
-              (parsed_data, entries @ [ (key, value) ]))
-            (parsed_data, []) fields
+            (fun (bits_in, fields) (key, value) ->
+              let bits_in, value = write bits_in value in
+              (bits_in, fields @ [ (key, value) ]))
+            (bits_in, []) fields
         in
-        (parsed_data, Value.HeaderV (true, fields))
+        (bits_in, Value.HeaderV (true, fields))
     | _ ->
         Format.asprintf "Cannot write value %a to packet" Value.pp value
         |> failwith
 
   (* Corresponds to void extract<T>(out T hdr); *)
-  let extract (ctx : Ctx.t) =
+  let extract (ctx : Ctx.t) (pkt : t) =
     let typ, header = Ctx.find_var "hdr" ctx |> Option.get in
-    let size = sizeof ctx typ in
-    let parsed_data = parse size in
-    let _, header = write parsed_data header in
-    Ctx.update_var "hdr" typ header ctx
+    let pkt, bits = sizeof ctx typ |> parse pkt in
+    let _, header = write bits header in
+    let ctx = Ctx.update_var "hdr" typ header ctx in
+    (ctx, pkt)
 end
 
-(* Corresponds to extern packet_out { ... } *)
 module PacketOut = struct
-  let data = ref (Array.init 0 (fun _ -> false))
+  type t = { bits : bool Array.t }
 
-  let int_to_bits value size =
-    Array.init size (fun i -> value land (1 lsl i) > 0)
-    |> Array.to_list |> List.rev |> Array.of_list
+  let init = { bits = [||] }
+  let pp fmt (pkt : t) = Format.fprintf fmt "%s" (bits_to_string pkt.bits)
 
-  let bits_to_string bits =
-    Array.to_list bits
-    |> List.map (fun b -> if b then "1" else "0")
-    |> String.concat ""
-
-  let rec deparse (value : Value.t) =
+  let rec deparse (pkt : t) (value : Value.t) =
     match value with
-    | BoolV b -> data := Array.append !data [| b |]
+    | BoolV b -> { bits = Array.append pkt.bits (Array.make 1 b) }
     | IntV (width, value) ->
         let size = Bigint.to_int width |> Option.get in
         let value = Bigint.to_int value |> Option.get in
         let bits = int_to_bits value size in
-        data := Array.append !data bits
+        { bits = Array.append pkt.bits bits }
     | BitV (width, value) ->
         let size = Bigint.to_int width |> Option.get in
         let value = Bigint.to_int value |> Option.get in
         let bits = int_to_bits value size in
-        data := Array.append !data bits
-    | StackV (values, _, _) -> List.iter deparse values
-    | StructV fields -> List.iter (fun (_, value) -> deparse value) fields
+        { bits = Array.append pkt.bits bits }
+    | StackV (values, _, _) -> List.fold_left deparse pkt values
+    | StructV fields ->
+        List.fold_left (fun pkt (_, value) -> deparse pkt value) pkt fields
     | HeaderV (valid, fields) ->
-        if valid then List.iter (fun (_, value) -> deparse value) fields else ()
+        if valid then
+          List.fold_left (fun pkt (_, value) -> deparse pkt value) pkt fields
+        else pkt
     | _ ->
         Format.asprintf "Cannot deparse value %a to packet" Value.pp value
         |> failwith
 
   (* Corresponds to void emit<T>(in T hdr); *)
-  let emit (ctx : Ctx.t) =
+  let emit (ctx : Ctx.t) (pkt : t) =
     let _, header = Ctx.find_var "hdr" ctx |> Option.get in
-    deparse header;
-    ctx
+    let pkt = deparse pkt header in
+    (ctx, pkt)
 end

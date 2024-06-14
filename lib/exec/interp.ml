@@ -762,6 +762,13 @@ module Make (Arch : ARCH) : INTERP = struct
               |> Option.get
           | _ -> assert false
         in
+        let values =
+          List.fold_left
+            (fun (count, values) value ->
+              if count > 0 then (count - 1, values) else (0, values @ [ value ]))
+            (count, []) values
+          |> snd
+        in
         (* (TODO) How to fill the rest with default values? Should know the types *)
         let idx = Bigint.to_int idx |> Option.get in
         let idx = Bigint.of_int (idx + count) in
