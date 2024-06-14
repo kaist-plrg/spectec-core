@@ -4,6 +4,8 @@ open Runtime.Base
 open Runtime.Object
 open Runtime.Cclos
 open Runtime.Context
+open Runtime.Signal
+open Driver
 
 let ethernet_header_bits () : bool array =
   [|
@@ -65,7 +67,6 @@ let ipv4_header_bits () : bool array =
   |] [@@ocamlformat "disable"]
 
 let sandbox_header_bits () : bool array =
-  (* 01 02 00 03 00 04 01 AA BB *)
   [|
     (* 01 *) false; false; false; false; false; false; false; true;
     (* 02 *) false; false; false; false; false; false; true; false;
@@ -102,60 +103,6 @@ let pkt_in () =
 
 let pkt_out () = ()
 
-let init_instantiate_packet_in (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
-  let cclos_packet_in = CCEnv.find "packet_in" ccenv |> Option.get in
-  let ictx = ICtx.init ctx.env_glob ctx.env_obj in
-  let path = [ "packet_in" ] in
-  let sto =
-    Instance.Instantiate.instantiate_from_cclos ccenv sto ictx path
-      cclos_packet_in [] []
-  in
-  (sto, pkt_in ())
-
-let init_instantiate_packet_out (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
-  let cclos_packet_out = CCEnv.find "packet_out" ccenv |> Option.get in
-  let ictx = ICtx.init ctx.env_glob ctx.env_obj in
-  let path = [ "packet_out" ] in
-  let sto =
-    Instance.Instantiate.instantiate_from_cclos ccenv sto ictx path
-      cclos_packet_out [] []
-  in
-  (sto, pkt_out ())
-
-let init (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
-  (* Add "packet_in" and "packet_out" to the store and object environment *)
-  let sto, _pkt_in = init_instantiate_packet_in ccenv sto ctx in
-  let sto, _pkt_out = init_instantiate_packet_out ccenv sto ctx in
-  let ctx =
-    let typ = Type.RefT in
-    let value = Value.RefV [ "packet_in" ] in
-    Ctx.add_var_obj "packet_in" typ value ctx
-  in
-  let ctx =
-    let typ = Type.RefT in
-    let value = Value.RefV [ "packet_out" ] in
-    Ctx.add_var_obj "packet_out" typ value ctx
-  in
-  (* Add "hdr" to the object environment *)
-  let ctx =
-    let typ = Ctx.find_td "headers" ctx |> Option.get in
-    let value = Runtime.Ops.eval_default_value typ in
-    Ctx.add_var_obj "hdr" typ value ctx
-  in
-  (* Add "meta" to the object environment *)
-  let ctx =
-    let typ = Ctx.find_td "metadata" ctx |> Option.get in
-    let value = Runtime.Ops.eval_default_value typ in
-    Ctx.add_var_obj "meta" typ value ctx
-  in
-  (* Add "standard_metadata" to the object environment *)
-  let ctx =
-    let typ = Ctx.find_td "standard_metadata_t" ctx |> Option.get in
-    let value = Runtime.Ops.eval_default_value typ in
-    Ctx.add_var_obj "standard_metadata" typ value ctx
-  in
-  (sto, ctx)
-
 let make_func (path : string list) (func : string) =
   let base, members =
     match path with [] -> assert false | base :: members -> (base, members)
@@ -170,60 +117,134 @@ let make_func (path : string list) (func : string) =
 let make_args (args : Var.t list) =
   List.map (fun arg -> ExprA (VarE (Bare arg))) args
 
-let drive_p (ctx : Ctx.t) =
-  let func = make_func [ "main"; "p" ] "apply" in
-  let targs = [] in
-  let args = make_args [ "packet_in"; "hdr"; "meta"; "standard_metadata" ] in
-  Interp.interp_call ctx func targs args |> snd
+module Make (Interp : INTERP) : ARCH = struct
+  let interp_extern (sign : Sig.t) (ctx : Ctx.t) (mthd : string) =
+    match sign with
+    | Ret _ | Exit -> (sign, ctx)
+    | Cont -> (
+        match mthd with
+        | "extract" -> Core.PacketIn.extract ctx |> fun ctx -> (sign, ctx)
+        | "emit" -> Core.PacketOut.emit ctx |> fun ctx -> (sign, ctx)
+        | "verify_checksum" -> Hash.verify_checksum ctx |> fun ctx -> (sign, ctx)
+        | "update_checksum" -> Hash.update_checksum ctx |> fun ctx -> (sign, ctx)
+        | _ ->
+            Format.eprintf "Unknown builtin extern method %s@." mthd;
+            assert false)
 
-let drive_vr (ctx : Ctx.t) =
-  let func = make_func [ "main"; "vr" ] "apply" in
-  let targs = [] in
-  let args = make_args [ "hdr"; "meta" ] in
-  Interp.interp_call ctx func targs args |> snd
+  let init_instantiate_packet_in (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
+    let cclos_packet_in = CCEnv.find "packet_in" ccenv |> Option.get in
+    let ictx = ICtx.init ctx.env_glob ctx.env_obj in
+    let path = [ "packet_in" ] in
+    let sto =
+      Instance.Instantiate.instantiate_from_cclos ccenv sto ictx path
+        cclos_packet_in [] []
+    in
+    (sto, pkt_in ())
 
-let drive_ig (ctx : Ctx.t) =
-  let func = make_func [ "main"; "ig" ] "apply" in
-  let targs = [] in
-  let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
-  Interp.interp_call ctx func targs args |> snd
+  let init_instantiate_packet_out (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t)
+      =
+    let cclos_packet_out = CCEnv.find "packet_out" ccenv |> Option.get in
+    let ictx = ICtx.init ctx.env_glob ctx.env_obj in
+    let path = [ "packet_out" ] in
+    let sto =
+      Instance.Instantiate.instantiate_from_cclos ccenv sto ictx path
+        cclos_packet_out [] []
+    in
+    (sto, pkt_out ())
 
-let drive_eg (ctx : Ctx.t) =
-  let func = make_func [ "main"; "eg" ] "apply" in
-  let targs = [] in
-  let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
-  Interp.interp_call ctx func targs args |> snd
+  let init (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
+    (* Add "packet_in" and "packet_out" to the store and object environment *)
+    let sto, _pkt_in = init_instantiate_packet_in ccenv sto ctx in
+    let ctx =
+      let typ = Type.RefT in
+      let value = Value.RefV [ "packet_in" ] in
+      Ctx.add_var_obj "packet_in" typ value ctx
+    in
+    let sto, _pkt_out = init_instantiate_packet_out ccenv sto ctx in
+    let ctx =
+      let typ = Type.RefT in
+      let value = Value.RefV [ "packet_out" ] in
+      Ctx.add_var_obj "packet_out" typ value ctx
+    in
+    (* Add "hdr" to the object environment *)
+    let ctx =
+      let typ = Ctx.find_td "headers" ctx |> Option.get in
+      let value = Runtime.Ops.eval_default_value typ in
+      Ctx.add_var_obj "hdr" typ value ctx
+    in
+    (* Add "meta" to the object environment *)
+    let ctx =
+      let typ = Ctx.find_td "metadata" ctx |> Option.get in
+      let value = Runtime.Ops.eval_default_value typ in
+      Ctx.add_var_obj "meta" typ value ctx
+    in
+    (* Add "standard_metadata" to the object environment *)
+    let ctx =
+      let typ = Ctx.find_td "standard_metadata_t" ctx |> Option.get in
+      let value = Runtime.Ops.eval_default_value typ in
+      Ctx.add_var_obj "standard_metadata" typ value ctx
+    in
+    (sto, ctx)
 
-let drive_ck (ctx : Ctx.t) =
-  let func = make_func [ "main"; "ck" ] "apply" in
-  let targs = [] in
-  let args = make_args [ "hdr"; "meta" ] in
-  Interp.interp_call ctx func targs args |> snd
+  let drive_p (ctx : Ctx.t) =
+    let func = make_func [ "main"; "p" ] "apply" in
+    let targs = [] in
+    let args = make_args [ "packet_in"; "hdr"; "meta"; "standard_metadata" ] in
+    Format.printf "\nBefore %a call\n%a@." Syntax.Print.print_expr func
+      Ctx.pp_var ctx;
+    Interp.interp_call ctx func targs args |> snd
 
-let drive_dep (ctx : Ctx.t) =
-  let func = make_func [ "main"; "dep" ] "apply" in
-  let targs = [] in
-  let args = make_args [ "packet_out"; "hdr" ] in
-  Interp.interp_call ctx func targs args |> snd
+  let drive_vr (ctx : Ctx.t) =
+    let func = make_func [ "main"; "vr" ] "apply" in
+    let targs = [] in
+    let args = make_args [ "hdr"; "meta" ] in
+    Format.printf "\nBefore %a call\n%a@." Syntax.Print.print_expr func
+      Ctx.pp_var ctx;
+    Interp.interp_call ctx func targs args |> snd
 
-let drive (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
-  let sto, ctx = init ccenv sto ctx in
-  Core.PacketIn.bits_to_string !Core.PacketIn.data
-  |> Format.printf "\nInput packet %s\n";
-  Interp.init sto;
-  Format.printf "\nInitial v1model driver context\n%a@." Ctx.pp_var ctx;
-  let ctx = drive_p ctx in
-  Format.printf "\nAfter main.p.apply call\n%a@." Ctx.pp_var ctx;
-  let ctx = drive_vr ctx in
-  Format.printf "\nAfter main.vr.apply call\n%a@." Ctx.pp_var ctx;
-  let ctx = drive_ig ctx in
-  Format.printf "\nAfter main.ig.apply call\n%a@." Ctx.pp_var ctx;
-  let ctx = drive_eg ctx in
-  Format.printf "\nAfter main.eg.apply call\n%a@." Ctx.pp_var ctx;
-  let ctx = drive_ck ctx in
-  Format.printf "\nAfter main.ck.apply call\n%a@." Ctx.pp_var ctx;
-  let ctx = drive_dep ctx in
-  Format.printf "\nAfter main.dep.apply call\n%a@." Ctx.pp_var ctx;
-  Core.PacketOut.bits_to_string !Core.PacketOut.data
-  |> Format.printf "\nOutput packet %s\n";
-  ()
+  let drive_ig (ctx : Ctx.t) =
+    let func = make_func [ "main"; "ig" ] "apply" in
+    let targs = [] in
+    let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
+    Format.printf "\nBefore %a call\n%a@." Syntax.Print.print_expr func
+      Ctx.pp_var ctx;
+    Interp.interp_call ctx func targs args |> snd
+
+  let drive_eg (ctx : Ctx.t) =
+    let func = make_func [ "main"; "eg" ] "apply" in
+    let targs = [] in
+    let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
+    Format.printf "\nBefore %a call\n%a@." Syntax.Print.print_expr func
+      Ctx.pp_var ctx;
+    Interp.interp_call ctx func targs args |> snd
+
+  let drive_ck (ctx : Ctx.t) =
+    let func = make_func [ "main"; "ck" ] "apply" in
+    let targs = [] in
+    let args = make_args [ "hdr"; "meta" ] in
+    Format.printf "\nBefore %a call\n%a@." Syntax.Print.print_expr func
+      Ctx.pp_var ctx;
+    Interp.interp_call ctx func targs args |> snd
+
+  let drive_dep (ctx : Ctx.t) =
+    let func = make_func [ "main"; "dep" ] "apply" in
+    let targs = [] in
+    let args = make_args [ "packet_out"; "hdr" ] in
+    Format.printf "\nBefore %a call\n%a@." Syntax.Print.print_expr func
+      Ctx.pp_var ctx;
+    Interp.interp_call ctx func targs args |> snd
+
+  let drive (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
+    let sto, ctx = init ccenv sto ctx in
+    Core.PacketIn.bits_to_string !Core.PacketIn.data
+    |> Format.printf "\nInput packet %s\n";
+    Interp.init sto;
+    let ctx =
+      ctx |> drive_p |> drive_vr |> drive_ig |> drive_eg |> drive_ck
+      |> drive_dep
+    in
+    Format.printf "\nFinal v1model driver context\n%a@." Ctx.pp_var ctx;
+    Core.PacketOut.bits_to_string !Core.PacketOut.data
+    |> Format.printf "\nOutput packet %s\n";
+    ()
+end

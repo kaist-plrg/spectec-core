@@ -1,6 +1,5 @@
 open Runtime.Base
 open Runtime.Context
-open Runtime.Signal
 
 (* Corresponds to extern packet_in { ... } *)
 module PacketIn = struct
@@ -140,27 +139,3 @@ module PacketOut = struct
     deparse header;
     ctx
 end
-
-(* Entry point for builtin functions *)
-
-let interp_builtin (sign : Sig.t) (ctx : Ctx.t) (mthd : string) =
-  match sign with
-  | Ret _ | Exit -> (sign, ctx)
-  | Cont -> (
-      match mthd with
-      | "extract" ->
-          let ctx = PacketIn.extract ctx in
-          (sign, ctx)
-      | "emit" ->
-          let ctx = PacketOut.emit ctx in
-          (sign, ctx)
-      (* (TODO) this should reside in v1model, not core *)
-      | "verify_checksum" ->
-          let ctx = Hash.verify_checksum ctx in
-          (sign, ctx)
-      | "update_checksum" ->
-          let ctx = Hash.update_checksum ctx in
-          (sign, ctx)
-      | _ ->
-          Format.eprintf "Unknown builtin method %s\n." mthd;
-          assert false)

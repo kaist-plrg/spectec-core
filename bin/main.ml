@@ -3,7 +3,7 @@ let () =
     Format.printf "Usage: %s <target> <include_dir> <filename>\n" Sys.argv.(0);
     exit 1);
 
-  let target = Sys.argv.(1) in
+  let arch = Sys.argv.(1) in
   let includes = Sys.argv.(2) in
   let filename = Sys.argv.(3) in
 
@@ -20,13 +20,16 @@ let () =
   Format.printf "Instantiating %s\n" filename;
   let ccenv, sto, ctx = Instance.Instantiate.instantiate_program program in
 
-  let arch =
-    match target with
-    | "v1model" -> Exec.V1model.drive
-    | "custom" -> Exec.Custom.drive
+  let (module Driver) =
+    let open Exec in
+    match arch with
+    | "v1model" ->
+        (module Driver.Make (V1model.Make) (Interp.Make) : Driver.DRIVER)
+    | "custom" ->
+        (module Driver.Make (Custom.Make) (Interp.Make) : Driver.DRIVER)
     | _ -> failwith "Unknown target: target = v1model | custom"
   in
 
   Format.printf "Interpreting %s\n" filename;
-  arch ccenv sto ctx |> ignore;
+  Driver.run ccenv sto ctx |> ignore;
   ()
