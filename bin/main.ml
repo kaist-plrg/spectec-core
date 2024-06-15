@@ -17,7 +17,7 @@ let () =
   in
 
   Format.printf "Desugaring %s\n" filename;
-  let program = Syntax.Desugar.desugar_program program in
+  let program = Frontend.Desugar.desugar_program program in
 
   Format.printf "Instantiating %s\n" filename;
   let ccenv, sto, ctx = Instance.Instantiate.instantiate_program program in

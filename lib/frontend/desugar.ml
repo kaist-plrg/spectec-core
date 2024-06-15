@@ -1,4 +1,4 @@
-open Ast
+open Syntax.Ast
 open Surface.Ast
 
 (* Numbers *)

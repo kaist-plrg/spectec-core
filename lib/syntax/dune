@@ -1,4 +1,4 @@
 (library
  (name syntax)
  (libraries bignum surface)
- (modules ast desugar print))
+ (modules ast print))

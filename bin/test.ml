@@ -65,7 +65,7 @@ let test_parser () =
   |> print_endline
 
 let desugar_program filename program =
-  try Some (Syntax.Desugar.desugar_program program)
+  try Some (Frontend.Desugar.desugar_program program)
   with _ ->
     desugar_fails := !desugar_fails + 1;
     Printf.sprintf "Desugar fail on file: %s" filename |> print_endline;
