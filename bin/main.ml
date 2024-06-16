@@ -32,10 +32,10 @@ let () =
         (module Driver.Make (Custom.Make) (Interp.Make) : Driver.DRIVER)
     | _ -> failwith "Unknown target: target = v1model | custom"
   in
-  let _stf =
+  let stf =
     match Stf.Parse.parse_file testname with
     | Some stf -> stf
     | None -> failwith "Error while parsing stf."
   in
-  Driver.run ccenv sto ctx |> ignore;
+  Driver.run ccenv sto ctx stf |> ignore;
   ()

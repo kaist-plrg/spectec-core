@@ -5,7 +5,7 @@ open Runtime.Context
 open Runtime.Signal
 
 module type ARCH = sig
-  val drive : CCEnv.t -> Sto.t -> Ctx.t -> unit
+  val drive : CCEnv.t -> Sto.t -> Ctx.t -> Stf.Ast.stmt list -> unit
   val interp_extern : Sig.t -> Ctx.t -> string -> Sig.t * Ctx.t
 end
 
@@ -15,7 +15,7 @@ module type INTERP = sig
 end
 
 module type DRIVER = sig
-  val run : CCEnv.t -> Sto.t -> Ctx.t -> unit
+  val run : CCEnv.t -> Sto.t -> Ctx.t -> Stf.Ast.stmt list -> unit
 end
 
 module Make

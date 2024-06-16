@@ -1,10 +1,52 @@
 open Runtime.Base
 open Runtime.Context
 
+let string_to_bits str =
+  let char_to_bits c =
+    match c with
+    | '0' -> [ false; false; false; false ]
+    | '1' -> [ false; false; false; true ]
+    | '2' -> [ false; false; true; false ]
+    | '3' -> [ false; false; true; true ]
+    | '4' -> [ false; true; false; false ]
+    | '5' -> [ false; true; false; true ]
+    | '6' -> [ false; true; true; false ]
+    | '7' -> [ false; true; true; true ]
+    | '8' -> [ true; false; false; false ]
+    | '9' -> [ true; false; false; true ]
+    | 'a' | 'A' -> [ true; false; true; false ]
+    | 'b' | 'B' -> [ true; false; true; true ]
+    | 'c' | 'C' -> [ true; true; false; false ]
+    | 'd' | 'D' -> [ true; true; false; true ]
+    | 'e' | 'E' -> [ true; true; true; false ]
+    | 'f' | 'F' -> [ true; true; true; true ]
+    | _ -> assert false
+  in
+  str |> String.to_seq |> List.of_seq |> List.map char_to_bits |> List.flatten
+  |> Array.of_list
+
 let bits_to_string bits =
-  Array.to_list bits
-  |> List.map (fun b -> if b then "1" else "0")
-  |> String.concat ""
+  let bits_to_int bits =
+    List.fold_left (fun i bit -> (i lsl 1) + if bit then 1 else 0) 0 bits
+  in
+  let int_to_char i =
+    if i < 10 then Char.chr (i + Char.code '0')
+    else Char.chr (i - 10 + Char.code 'A')
+  in
+  let len = Array.length bits in
+  let rec loop idx str =
+    if idx >= len then str
+    else
+      let bits = Array.sub bits idx (min 4 (len - idx)) |> Array.to_list in
+      let bits =
+        if List.length bits < 4 then
+          bits @ List.init (4 - List.length bits) (fun _ -> false)
+        else bits
+      in
+      let c = int_to_char (bits_to_int bits) in
+      loop (idx + 4) (str ^ String.make 1 c)
+  in
+  loop 0 ""
 
 let bits_to_int bits =
   let bits = Array.to_list bits |> List.rev |> Array.of_list in
@@ -34,7 +76,10 @@ let rec sizeof (ctx : Ctx.t) (typ : Type.t) =
 module PacketIn = struct
   type t = { bits : bool Array.t; idx : int; len : int }
 
-  let init bits = { bits; idx = 0; len = Array.length bits }
+  let init pkt =
+    let bits = string_to_bits pkt in
+    { bits; idx = 0; len = Array.length bits }
+
   let pp fmt (pkt : t) = Format.fprintf fmt "%s" (bits_to_string pkt.bits)
 
   let parse (pkt : t) (size : int) =
