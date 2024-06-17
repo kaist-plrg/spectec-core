@@ -1,190 +1,138 @@
-;; TODO ignore annotations for now
+;; Primitives
 
-syntax number = nat ;; TODO
+syntax num = nat
+syntax boolean = bool
+syntax str = text
+syntax path = str*
 
-;; Name
+;; Variable
 
 syntax name =
-  | BARE text
-  | QUALIFIED (text*, text)
-
-
-;; Key-value
-
-syntax keyval = text expr
-
-
-;; Parameter
-
-syntax param = dir? typ text expr?
-
+  | TOP str
+  | BARE str
 
 ;; Operators
 
-syntax unop = | NOT | BITNOT | MINUS
+syntax unop = | BNOT | LNOT | UMINUS
 
 syntax binop =
-  | PLUS | PLUSSAT | MINUS | MINUSSAT
-  | MUL | DIV | MOD
-  | SHL | SHR
-  | LE | GE | LT | GT | EQ | NEQ
+  | PLUS | SPLUS | MINUS | SMINUS
+  | MUL | DIV | MOD | SHL | SHR
+  | LE | GE | LT | GT |EQ | NE
   | BAND | BXOR | BOR
-  | INC
-  | LAND | LOR
+  | CONCAT | LAND | LOR
 
-;; Type
+;; Types
 
-syntax typ =
-  | BOOL
-  | ERR
-  | INT
-  | INTTYP expr
-  | BITTYP expr
-  | VARBIT expr
-  | TYPNAME name
-  | SPECIALIZEDTYP typ typ*
-  | HEADERSTACK typ expr
-  | TUP typ*
-  | STRING
-  | VOID
-  | DONTCARE
+syntax type =
+  | T_VOID
+  | T_BOOL
+  | T_MATCHKIND
+  | T_ERR
+  | T_STR
+  | T_AINT
+  | T_INT expr
+  | T_BIT expr
+  | T_VBIT expr
+  | T_NAME name
+  | T_SPEC name type*
+  | T_STACK type expr
+  | T_TUPLE type*
+  | T_ANY
 
+;; Parameters and Arguments
 
-;; Method Prototype
-
-syntax methodproto =
-  | CONS text param*
-  | ABSTRACT typ text text* param*
-  | METHOD typ text text* param*
-
-
-;; Argument
-
+syntax dir = | NO | IN | OUT | INOUT
+syntax param = str dir type expr?
+syntax tparam = str*
 syntax arg =
-  | EXPR expr
-  | KEYVAL text expr
-  | MISSING
+  | A_EXPR expr
+  | A_NAME str expr
+  | A_ANY
 
-
-;; Direction
-
-syntax dir = | IN | OUT | INOUT
-
-
-;; Expression
+;; Expressions
 
 syntax expr =
-  | TRUE
-  | FALSE
-  | INT number
-  | STRING text
-  | NAME name
-  | ARRACC expr expr
-  | BITACC expr expr expr
-  | LIST expr*
-  | RECORD keyval*
-  | UNOP unop expr
-  | BINOP binop expr expr
-  | CAST typ expr
-  | TYPMEM name text
-  | ERRMEM text
-  | EXPRMEM expr text
-  | TERNARY expr expr expr
-  | CALL typ* arg*
-  | NAMELESSINST typ arg*
-  | MASK expr expr
-  | RANGE expr expr
+  | E_BOOL boolean
+  | E_STR str
+  | E_NUM nat
+  | E_VAR name
+  | E_LIST expr*
+  | E_RECORD (str, expr)*
+  | E_UN unop expr
+  | E_BIN binop expr expr
+  | E_TERN expr expr expr
+  | E_CAST type expr
+  | E_MASK expr expr
+  | E_RANGE expr expr
+  | E_ARRACC expr expr
+  | E_BITACC expr expr expr
+  | E_TYPEACC name str
+  | E_ERRACC str
+  | E_EXPRACC expr str
+  | E_CALL expr type* arg*
+  | E_INST type arg*
 
-
-;; Match
-
-syntax match =
-  | DEFAULT
-  | DONTCARE
-  | EXPR expr
-
-
-;; Table
-
-syntax actionref = name arg*
-
-syntax tblkey = expr text
-
-syntax tblentry = match* actionref
-
-syntax tblprop =
-  | KEY tblkey*
-  | ACTIONS actionref*
-  | ENTRIES tblentry*
-  | DEFAULTACTION actionref bool
-  | CUSTOM bool text expr
-
-
-;; Parser
-
-syntax parsercase = match* text
-
-syntax parsertransition =
-  | DIRECT text
-  | SELECT expr* parsercase*
-
-syntax parserstate = text stmt* parsertransition
-
-
-;; Declaration
+;; Statements
 
 syntax block = stmt*
 
-syntax field = typ text
+syntax case = | C_CASE str | C_FALL str | C_DEFAULT
+syntax swcase = case block
 
-syntax decl =
-  | CONSTANT typ text expr
-  | INST typ arg* text block?
-  | PARSER text text* param* param* decl* parserstate*
-  | CONTROL text text* param* param* decl* block
-  | FUNC typ text text* param* block
-  | EXTFUNC typ text text* param*
-  | VAR typ text expr?
-  | VALSET typ expr text
-  | ACTION text param* block
-  | TABLE text tblprop*
-  | HEADER text field*
-  | HEADERUNION text field*
-  | STRUCT text field*
-  | ERROR text*
-  | MATCHKIND text*
-  | ENUM text text*
-  | SERENUM typ text (text, expr)*
-  | EXTOBJ text text* methodproto*
-  | TYPDEF text ;; TODO alternative
-  | NEWTYP text ;; TODO alternative
-  | CONTROLTYP text text* param*
-  | PARSERTYP text text* param*
-  | PACKAGETYP text text* param*
-
-
-;; Statement
-
-syntax switchlabel =
-  | DEFAULT
-  | NAME name
-
-syntax switchcase =
-  | ACTION switchlabel block
-  | FALLTHROUGH switchlabel
+syntax mtch = | M_EXPR expr | M_DEFAULT | M_ANY
+syntax selcase = mtch* str
 
 syntax stmt =
-  | METHODCALL expr typ* arg*
-  | ASSIGN expr expr
-  | DIRECTAPP typ arg*
-  | COND expr stmt stmt?
-  | BLOCK block
-  | EXIT
-  | EMPTY
-  | RETURN expr?
-  | SWITCH expr switchcase*
-  | DECL decl
+  | I_EMPTY
+  | I_ASSIGN expr expr
+  | I_SWITCH expr swcase*
+  | I_IF expr stmt stmt
+  | I_BLOCK block
+  | I_EXIT
+  | I_RET expr?
+  | I_CALL expr type* arg*
+  | I_TRANS str
+  | I_SELECT expr* selcase*
+  | I_DECL decl
 
+;; Declarations
+
+syntax state = str block
+
+syntax key = expr str
+syntax action = name arg*
+syntax entry = mtch* action
+syntax default = action boolean
+syntax custom = str expr boolean
+
+syntax decl =
+  | D_CONST str type expr
+  | D_VAR str type expr?
+  | D_INST str type arg* block?
+  | D_ERR str*
+  | D_MATCHKIND str*
+  | D_STRUCT str (str, type)*
+  | D_HEADER str (str, type)*
+  | D_UNION str (str, type)*
+  | D_ENUM str str*
+  | D_SENUM str type (str, expr)*
+  | D_NEWTYPE str type? decl?
+  | D_TYPEDEF str type? decl?
+  | D_VALUESET str type expr
+  | D_PARSERTYPE str tparam* param*
+  | D_PARSER str tparam* param* param* decl* state*
+  | D_ACTION str param* block
+  | D_TABLE str key* entry* default? custom*
+  | D_CONTROLTYPE str tparam* param*
+  | D_CONTROL str tparam* param* param* decl* block
+  | D_FUNC str type tparam* param* block
+  | D_EXTERNFUNC str type tparam* param*
+  | D_CONS str param*
+  | D_ABSTRACT str type tparam* param*
+  | D_METHOD str type tparam* param*
+  | D_EXTERNOBJECT str tparam* decl*
+  | D_PACKAGETYPE str tparam* param*
 
 ;; Program
 

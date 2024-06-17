@@ -1,0 +1,75 @@
+syntax set(syntax K) = K*
+syntax map(syntax K, syntax V) = (K, V)*
+
+;; Runtime type, Value, and Function
+
+syntax rtype =
+  | RT_BOOL
+  | RT_AINT
+  | RT_INT num
+  | RT_BIT num
+  | RT_VBIT num
+  | RT_STR
+  | RT_ERR str*
+  | RT_NAME str
+  | RT_NEW str
+  | RT_STACK rtype num
+  | RT_TUPLE rtype*
+  | RT_STRUCT (str, rtype)*
+  | RT_HEADER (str, rtype)*
+  | RT_UNION (str, rtype)*
+  | RT_ENUM str*
+  | RT_REF
+
+syntax tdvis = set(str)
+syntax tdenv = map(str, rtype)
+
+syntax val =
+  | V_BOOL boolean
+  | V_AINT num
+  | V_INT num num
+  | V_BIT num num
+  | V_VBIT num num
+  | V_STR str
+  | V_ERR str
+  | V_STACK val* num num
+  | V_TUPLE val*
+  | V_STRUCT (str, val)*
+  | V_HEADER boolean (str, val)*
+  | V_UNION (str, val)*
+  | V_ENUMFIELD str
+  | V_SENUMFIELD str val
+  | V_REF str*
+
+syntax vis = set(str)
+syntax env = map(str, val)
+
+syntax func =
+  | F_FUNC vis tparam* param* type block
+  | F_EXTERN str vis tparam* param*
+  | F_METHOD vis tparam* param* block
+  | F_EXTERNMETHOD str vis tparam* param*
+  | F_STATE block
+  | F_ACTION vis param* block
+  | F_TABLE vis
+
+syntax fvis = set(str)
+syntax fenv = map(str, func)
+
+;; Object
+
+syntax obj =
+  | O_VALUESET
+  | O_TABLE key* action* entry* default? custom* func
+  | O_EXTERN vis env
+  | O_PARSER vis env func
+  | O_CONTROL vis env func
+  | O_PACKAGE
+
+syntax sto = map(path, obj)
+
+def $find_obj(sto, path) : obj
+
+;; Signal
+
+syntax sig = | CONT | RET val? | EXIT

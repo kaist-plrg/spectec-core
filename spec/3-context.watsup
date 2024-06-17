@@ -1,0 +1,41 @@
+syntax genv = tdenv env fenv
+syntax gvis = tdvis vis fvis
+syntax oenv = tdenv env fenv
+syntax ovis = tdvis vis fvis
+syntax lenv = tdenv env*
+
+syntax ictx =
+  {
+    GLO (genv, gvis),
+    OBJ (oenv, ovis)
+  }
+
+syntax ctx =
+  {
+    GLO (genv, gvis),
+    OBJ (oenv, ovis),
+    LOC lenv
+  }
+
+def $inherit_glob(ctx) : ctx
+def $inherit_obj(ctx, vis, env) : ctx
+
+def $restrict_glob(ctx, vis) : ctx
+def $restrict_obj(ctx, vis) : ctx
+
+def $enter_frame(ctx) : ctx
+def $exit_frame(ctx) : ctx
+
+def $find_td_glob(ctx, str) : rtype
+def $find_td(ctx, str) : rtype
+
+def $find_var_glob(ctx, str) : val
+def $find_var(ctx, str) : val
+
+def $find_func_glob(ctx, str) : func
+def $find_func_obj(ctx, str) : func
+def $find_func(ctx, str) : func
+
+def $add_var_loc(ctx, str, rtype, val) : ctx
+
+def $write(ctx, expr, val) : ctx
