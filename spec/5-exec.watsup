@@ -53,19 +53,27 @@ rule Interp_call/method:
 
 rule Interp_fcall/top:
   sto ctx_caller |- (TOP id) type* arg* : sig ctx_caller'
+  ----
   -- if func = $find_func_glob(ctx_caller, id)
+  ----
   -- if ctx_callee = $inherit_glob(ctx_caller)
+  ----
   -- Interp_inter_call: sto ctx_caller ctx_callee |- func type* arg* : sig ctx_caller'
 
 rule Interp_fcall/bare-inter:
   sto ctx_caller |- (BARE id) type* arg* : sig ctx_caller'
+  ----
   -- if func = $find_func_glob(ctx_caller, id)
+  ----
   -- if ctx_callee = $inherit_glob(ctx_caller)
+  ----
   -- Interp_inter_call: sto ctx_caller ctx_callee |- func type* arg* : sig ctx_caller'
 
 rule Interp_fcall/bare-intra:
   sto ctx_caller |- (BARE id) type* arg* : sig ctx_caller'
+  ----
   -- if func = $find_func_obj(ctx_caller, id)
+  ----
   -- Interp_intra_call: sto ctx_caller |- func type* arg* : sig ctx_caller'
 
 
@@ -79,30 +87,46 @@ rule Interp_fcall/bare-intra:
 
 rule Interp_mcall/object-extern:
   sto ctx_caller |- expr_b mem type* arg* : sig ctx_caller''
+  ----
   -- Interp_expr: sto ctx_caller |- expr_b : ctx_caller' (V_REF path)
+  ----
   -- if O_EXTERN vis_glob env_obj = $find_obj(sto, path)
+  ----
   -- if ctx_callee = $inherit_obj(ctx_caller, vis_glob, env_obj)
+  ----
   -- if func = $find_func_obj(ctx_callee, mem)
+  ----
   -- Interp_inter_call: sto ctx_caller ctx_callee |- func type* arg* : sig ctx_caller''
 
 rule Interp_mcall/object-parser:
   sto ctx_caller |- expr_b "apply" type* arg* : sig ctx_caller''
+  ----
   -- Interp_expr: sto ctx_caller |- expr_b : ctx_caller' (V_REF path)
+  ----
   -- if O_PARSER vis_glob env_obj func = $find_obj(sto, path)
+  ----
   -- if ctx_callee = $inherit_obj(ctx_caller, vis_glob, env_obj)
+  ----
   -- Interp_inter_call: sto ctx_caller ctx_callee |- func type* arg* : sig ctx_caller''
 
 rule Interp_mcall/object-control:
   sto ctx_caller |- expr_b "apply" type* arg* : sig ctx_caller''
+  ----
   -- Interp_expr: sto ctx_caller |- expr_b : ctx_caller' (V_REF path)
+  ----
   -- if O_CONTROL vis_glob env_obj func = $find_obj(sto, path)
+  ----
   -- if ctx_callee = $inherit_obj(ctx_caller, vis_glob, env_obj)
+  ----
   -- Interp_inter_call: sto ctx_caller ctx_callee |- func type* arg* : sig ctx_caller''
 
 rule Interp_mcall/object-table:
   sto ctx_caller |- expr_b "apply" eps eps : sig ctx_caller''
+  ----
   -- Interp_expr: sto ctx_caller |- expr_b : ctx_caller' (V_REF path)
+  ----
   -- if O_TABLE key* action* entry* default custom* func = $find_obj(sto, path)
+  ----
   ;; TODO pass table info to intra_call relation
   -- Interp_intra_call: sto ctx_caller |- func eps eps : sig ctx_caller''
 
@@ -111,44 +135,68 @@ rule Interp_mcall/object-table:
 
 rule Interp_inter_call/extern:
   sto ctx_caller ctx_callee |- (F_EXTERN id vis_glob tparam* param*) type* arg* : sig ctx_caller''
+  ----
   -- if ctx_callee' = $restrict_glob(ctx_callee, vis_glob)
   -- if ctx_callee'' = $enter_frame(ctx_callee')
+  ----
   -- if (param'*, arg'*) = $align_args(param*, arg*)
+  ----
   ;; TODO consider type params
   -- Interp_args: sto ctx_caller |- arg'* : ctx_caller' val*
+  ----
   -- if ctx_callee''' = $copyin_loc(ctx_callee'', param*, val*)
+  ----
   -- Interp_extern: sto ctx_callee''' |- id : sig ctx_callee''''
+  ----
   -- if ctx_caller'' = $copyout(ctx_caller', ctx_callee''', param*, arg*)
 
 rule Interp_inter_call/extern_method:
   sto ctx_caller ctx_callee |- (F_EXTERNMETHOD id vis_obj tparam* param*) type* arg* : sig ctx_caller''
+  ----
   -- if ctx_callee' = $restrict_obj(ctx_callee, vis_obj)
   -- if ctx_callee'' = $enter_frame(ctx_callee')
+  ----
   -- if (param'*, arg'*) = $align_args(param*, arg*)
+  ----
   ;; TODO consider type params
   -- Interp_args: sto ctx_caller |- arg'* : ctx_caller' val*
+  ----
   -- if ctx_callee''' = $copyin_loc(ctx_callee'', param*, val*)
+  ----
   -- Interp_extern: sto ctx_callee''' |- id : sig ctx_callee''''
+  ----
   -- if ctx_caller'' = $copyout(ctx_caller', ctx_callee''', param*, arg*)
 
 rule Interp_inter_call/method:
   sto ctx_caller ctx_callee |- (F_METHOD vis_obj tparam* param* block) type* arg* : sig ctx_caller''
+  ----
   -- if ctx_callee' = $restrict_obj(ctx_callee, vis_obj)
+  ----
   -- if (param'*, arg'*) = $align_args(param*, arg*)
+  ----
   ;; TODO consider type params
   -- Interp_args: sto ctx_caller |- arg'* : ctx_caller' val*
+  ----
   -- if ctx_callee'' = $copyin_obj(ctx_callee', param*, val*)
+  ----
   -- Interp_stmts: sto CONT ctx_callee'' |- block : sig ctx_callee'''
+  ----
   -- if ctx_caller'' = $copyout(ctx_caller', ctx_callee''', param*, arg*)
 
 rule Interp_inter_call/action:
   sto ctx_caller ctx_callee |- (F_ACTION vis param* block) type* arg* : sig ctx_caler''
+  ----
   -- if ctx_callee = $restrict_glob(ctx_callee, vis)
   -- if ctx_callee'' = $enter_frame(ctx_callee')
+  ----
   -- if (param'*, arg'*) = $align_args(param*, arg*)
+  ----
   -- Interp_args: sto ctx_caller |- arg'* : ctx_caller' val*
+  ----
   -- if ctx_callee''' = $copyin_loc(ctx_callee'', param*, val*)
+  ----
   -- Interp_stmts: sto CONT ctx_callee''' |- block : sig ctx_callee''''
+  ----
   -- if ctx_caller'' = $copyout(ctx_caller', ctx_callee'''', param*, arg*)
 
 
@@ -159,13 +207,20 @@ rule Interp_inter_call/action:
 
 rule Interp_intra_call/action:
   sto ctx_caller |- (F_ACTION vis param* block) type* arg* : sig ctx_caller'''
+  ----
   -- if ctx_callee = $restrict_obj(ctx_caller, vis)
   -- if ctx_callee'' = $enter_frame(ctx_callee')
+  ----
   -- if (param'*, arg'*) = $align_args(param*, arg*)
+  ----
   -- Interp_args: sto ctx_caller |- arg'* : ctx_caller' val*
+  ----
   -- if ctx_callee''' = $copyin_loc(ctx_callee'', param*, val*)
+  ----
   -- Interp_stmts: sto CONT ctx_callee''' |- block : sig ctx_callee''''
+  ----
   -- if ctx_caller'' = $copyout(ctx_caller', ctx_callee'''', param*, arg*)
+  ----
   -- if ctx_caller''' = ctx_caller''[.OBJ = ctx_callee''''.OBJ]
 
 
@@ -185,7 +240,9 @@ rule Interp_exprs/base:
 
 rule Interp_exprs/rec:
   sto ctx |- expr expr* : ctx'' (val val*)
+  ----
   -- Interp_expr: sto ctx |- expr : ctx' val
+  ----
   -- Interp_exprs : sto ctx' |- expr* : ctx'' val*
 
 
@@ -218,25 +275,36 @@ rule Interp_expr/e_record:
 
 rule Interp_expr/e_un:
   sto ctx |- E_UN unop expr : ctx' val'
+  ----
   -- Interp_expr: sto ctx |- expr : ctx' val
+  ----
   -- if val' = $unop(unop, val)
 
 rule Interp_expr/e_bin:
   sto ctx |- E_BIN binop expr_l expr_r : ctx'' val
+  ----
   -- Interp_expr: sto ctx |- expr_l : ctx' val_l
+  ----
   -- Interp_expr: sto ctx' |- expr_r : ctx'' val_r
+  ----
   -- if val = $binop(binop, val_l, val_r)
 
 rule Interp_expr/e_tern-tru:
   sto ctx |- E_TERN expr_c expr_t expr_f : ctx'' val
+  ----
   -- Interp_expr: sto ctx |- expr_c : ctx' val_c
+  ----
   -- if V_BOOL true = $cast(val_c, T_BOOL)
+  ----
   -- Interp_expr: sto ctx |- expr_t : ctx'' val
 
 rule Interp_expr/e_tern-fls:
   sto ctx |- E_TERN expr_c expr_t expr_f : ctx'' val
+  ----
   -- Interp_expr: sto ctx |- expr_c : ctx' val_c
+  ----
   -- if V_BOOL false = $cast(val_c, T_BOOL)
+  ----
   -- Interp_expr: sto ctx |- expr_f : ctx'' val
 
 rule Interp_expr/e_cast:
@@ -251,16 +319,23 @@ rule Interp_expr/e_cast:
 
 rule Interp_expr/e_arracc:
   sto ctx |- E_ARRACC expr_b expr_i : ctx'' val
+  ----
   -- Interp_expr: sto ctx |- expr_b : ctx' (V_STACK val* num_i num_s)
+  ----
   -- Interp_expr: sto ctx' |- expr_i : ctx'' val_i
+  ----
   -- if i = $unpack(val_i)
   -- if val = val*[i]
 
 rule Interp_expr/e_bitacc:
   sto ctx |- E_BITACC expr_b expr_h expr_l : ctx''' val
+  ----
   -- Interp_expr: sto ctx |- expr_b : ctx' val_b
+  ----
   -- Interp_expr: sto ctx' |- expr_h : ctx'' val_h
+  ----
   -- Interp_expr: sto ctx'' |- expr_l : ctx''' val_l
+  ----
   -- if val = $bitslice(val_b, val_h, val_l)
 
 rule Interp_expr/e_typeacc-top:
@@ -318,7 +393,9 @@ rule Interp_stmts/base-exit:
 
 rule Interp_stmts/rec:
   sto CONT ctx |- stmt stmt* : sig' ctx''
+  ----
   -- Interp_stmt: sto CONT ctx |- stmt : sig ctx'
+  ----
   -- Interp_stmts: sto sig ctx' |- stmt* : sig' ctx''
 
 
@@ -334,23 +411,29 @@ rule Interp_stmt/i_assign-cont:
 
 rule Interp_stmt/i_assign-nocont:
   sto sig ctx |- I_ASSIGN expr_l expr_r : sig ctx
-  -- otherwise
+  ;;-- otherwise
 
 rule Interp_stmt/i_if-cont-tru:
   sto CONT ctx |- I_IF expr_c stmt_t stmt_f : sig ctx''
+  ----
   -- Interp_expr: sto ctx |- expr_c : ctx' val_c
+  ----
   -- if V_BOOL true = $cast(val_c, T_BOOL)
+  ----
   -- Interp_stmt: sto CONT ctx' |- stmt_t : sig ctx''
 
 rule Interp_stmt/i_if-cont-fls:
   sto CONT ctx |- I_IF expr_c stmt_t stmt_f : sig ctx''
+  ----
   -- Interp_expr: sto ctx |- expr_c : ctx' val_c
+  ----
   -- if V_BOOL false = $cast(val_c, T_BOOL)
+  ----
   -- Interp_stmt: sto CONT ctx' |- stmt_f : sig ctx''
 
 rule Interp_stmt/i_if-nocont:
   sto sig ctx |- I_IF expr_c stmt_t stmt_f : sig ctx
-  -- otherwise
+  ;;-- otherwise
 
 rule Interp_stmt/i_block:
   sto sig ctx |- I_BLOCK block : sig' ctx'
@@ -370,7 +453,7 @@ rule Interp_stmt/i_call-cont-exit:
 
 rule Interp_stmt/i_call-nocont:
   sto sig ctx |- I_CALL expr_f type* arg* : sig ctx
-  -- otherwise
+  ;;-- otherwise
 
 rule Interp_stmt/i_trans-accept:
   sto CONT ctx |- I_TRANS "accept" : CONT ctx
@@ -380,9 +463,12 @@ rule Interp_stmt/i_trans-reject:
 
 rule Interp_stmt/i_trans-next:
   sto CONT ctx |- I_TRANS next : CONT ctx'''
+  ----
   -- if F_STATE block = $find_func(ctx, next)
   -- if ctx' = ctx[.LOC = (eps eps)]
+  ----
   -- Interp_stmts: sto CONT ctx' |- block : CONT ctx''
+  ----
   -- if ctx''' = ctx[.OBJ = ctx''.OBJ]
 
 ;; TODO
@@ -390,19 +476,24 @@ rule Interp_stmt/i_trans-next:
 
 rule Interp_stmt/i_decl-cont-var-some:
   sto CONT ctx |- I_DECL (D_VAR id type expr?) : CONT ctx''
+  ----
   -- Interp_type: sto ctx |- type : rtype
+  ----
   -- Interp_expr: sto ctx |- expr : ctx' val
+  ----
   -- if ctx'' = $add_var_loc(ctx', id, rtype, val)
 
 rule Interp_stmt/i_decl-cont-var-none:
   sto CONT ctx |- I_DECL (D_VAR id type eps) : CONT ctx'
+  ----
   -- Interp_type: sto ctx |- type : rtype
+  ----
   -- if val = $default(rtype)
   -- if ctx' = $add_var_loc(ctx, id, rtype, val)
 
 rule Interp_stmt/i_decl-nocont:
   sto sig ctx |- I_DECL decl : sig ctx
-  -- otherwise
+  ;;-- otherwise
 
 ;; TODO
 ;; rule Interp_stmt/i_switch:
@@ -412,7 +503,7 @@ rule Interp_stmt/i_exit-cont:
 
 rule Interp_stmt/i_exit-nocont:
   sto sig ctx |- I_EXIT : sig ctx
-  -- otherwise
+  ;;-- otherwise
 
 rule Interp_stmt/i_return-cont-some:
   sto CONT ctx |- I_RET expr? : (RET val?) ctx'
@@ -423,4 +514,4 @@ rule Interp_stmt/i_return-cont-none:
 
 rule Interp_stmt/i_return-nocont:
   sto sig ctx |- I_RET expr : sig ctx
-  -- otherwise
+  ;;-- otherwise
