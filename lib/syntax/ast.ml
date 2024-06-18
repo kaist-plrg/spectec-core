@@ -4,7 +4,10 @@ type num = Bigint.t * (Bigint.t * bool) option
 
 (* Variable : top-level (prefixed with a dot) or bare name *)
 
-type var = Top of string | Bare of string
+type id = string
+type var = Top of id | Bare of id
+type field = string
+type path = id list
 
 (* Unary and binary operators *)
 
@@ -53,8 +56,9 @@ type typ =
 
 (* Parameters and Arguments *)
 and dir = No | In | Out | InOut
-and param = string * dir * typ * expr option
-and arg = ExprA of expr | NameA of string * expr | AnyA
+and param = id * dir * typ * expr option
+and tparam = id
+and arg = ExprA of expr | NameA of id * expr | AnyA
 
 (* Expressions *)
 and expr =
@@ -63,7 +67,7 @@ and expr =
   | NumE of num
   | VarE of var
   | ListE of expr list
-  | RecordE of (string * expr) list
+  | RecordE of (field * expr) list
   | UnE of unop * expr
   | BinE of binop * expr * expr
   | TernE of expr * expr * expr
@@ -72,15 +76,11 @@ and expr =
   | RangeE of expr * expr
   | ArrAccE of expr * expr
   | BitAccE of expr * expr * expr
-  | TypeAccE of var * string
-  | ErrAccE of string
-  | ExprAccE of expr * string
+  | TypeAccE of var * field
+  | ErrAccE of field
+  | ExprAccE of expr * field
   | CallE of expr * typ list * arg list
   | InstE of typ * arg list
-
-(* Match-cases *)
-and case = CaseC of string | FallC of string | DefaultC
-and mtch = ExprM of expr | DefaultM | AnyM
 
 (* Statements *)
 and stmt =
@@ -96,57 +96,61 @@ and stmt =
   | SelectI of expr list * select_case list
   | DeclI of decl
 
-and switch_case = case * block
-and select_case = mtch list * string
 and block = stmt list
+
+(* Match-cases for switch *)
+and case = CaseC of string | FallC of string | DefaultC
+and mtch = ExprM of expr | DefaultM | AnyM
+and switch_case = case * block
+and mtchkind = string
+
+(* Select-cases for select *)
+and label = string
+and select_case = mtch list * label
 
 (* Declarations *)
 and decl =
   (* Constant, variable, and instance declarations *)
-  | ConstD of { name : string; typ : typ; value : expr }
-  | VarD of { name : string; typ : typ; init : expr option }
-  | InstD of { name : string; typ : typ; args : arg list; init : block option }
+  | ConstD of { name : id; typ : typ; value : expr }
+  | VarD of { name : id; typ : typ; init : expr option }
+  | InstD of { name : id; typ : typ; args : arg list; init : block option }
   (* Type declarations *)
-  | ErrD of { members : string list }
-  | MatchKindD of { members : string list }
-  | StructD of { name : string; fields : (string * typ) list }
-  | HeaderD of { name : string; fields : (string * typ) list }
-  | UnionD of { name : string; fields : (string * typ) list }
-  | EnumD of { name : string; members : string list }
-  | SEnumD of { name : string; typ : typ; members : (string * expr) list }
-  | NewTypeD of { name : string; typ : typ option; decl : decl option }
-  | TypeDefD of { name : string; typ : typ option; decl : decl option }
+  | ErrD of { fields : field list }
+  | MatchKindD of { fields : field list }
+  | StructD of { name : id; fields : (field * typ) list }
+  | HeaderD of { name : id; fields : (field * typ) list }
+  | UnionD of { name : id; fields : (field * typ) list }
+  | EnumD of { name : id; fields : field list }
+  | SEnumD of { name : id; typ : typ; fields : (field * expr) list }
+  | NewTypeD of { name : id; typ : typ option; decl : decl option }
+  | TypeDefD of { name : id; typ : typ option; decl : decl option }
   (* Object declarations *)
   (* Value Set *)
-  | ValueSetD of { name : string; typ : typ; size : expr }
+  | ValueSetD of { name : id; typ : typ; size : expr }
   (* Parser *)
-  | ParserTypeD of { name : string; tparams : string list; params : param list }
+  | ParserTypeD of { name : id; tparams : tparam list; params : param list }
   | ParserD of {
-      name : string;
-      tparams : string list;
+      name : id;
+      tparams : tparam list;
       params : param list;
       cparams : param list;
       locals : decl list;
       states : parser_state list;
     }
   (* Control *)
-  | ActionD of { name : string; params : param list; body : block }
+  | ActionD of { name : id; params : param list; body : block }
   | TableD of {
-      name : string;
+      name : id;
       key : table_key list;
       actions : table_action list;
       entries : table_entry list;
       default : table_default option;
       custom : table_custom list;
     }
-  | ControlTypeD of {
-      name : string;
-      tparams : string list;
-      params : param list;
-    }
+  | ControlTypeD of { name : id; tparams : tparam list; params : param list }
   | ControlD of {
-      name : string;
-      tparams : string list;
+      name : id;
+      tparams : tparam list;
       params : param list;
       cparams : param list;
       locals : decl list;
@@ -154,46 +158,45 @@ and decl =
     }
   (* Functions *)
   | FuncD of {
-      name : string;
+      name : id;
       rettyp : typ;
-      tparams : string list;
+      tparams : tparam list;
       params : param list;
       body : block;
     }
   | ExternFuncD of {
-      name : string;
+      name : id;
       rettyp : typ;
-      tparams : string list;
+      tparams : tparam list;
       params : param list;
     }
   (* Extern objects *)
-  | ConsD of { name : string; cparams : param list }
+  | ConsD of { name : id; cparams : param list }
   | AbstractD of {
-      name : string;
+      name : id;
       rettyp : typ;
-      tparams : string list;
+      tparams : tparam list;
       params : param list;
     }
   | MethodD of {
-      name : string;
+      name : id;
       rettyp : typ;
-      tparams : string list;
+      tparams : tparam list;
       params : param list;
     }
-  | ExternObjectD of { name : string; tparams : string list; mthds : decl list }
+  | ExternObjectD of { name : id; tparams : tparam list; mthds : decl list }
   (* Package *)
-  | PackageTypeD of {
-      name : string;
-      tparams : string list;
-      cparams : param list;
-    }
+  | PackageTypeD of { name : id; tparams : tparam list; cparams : param list }
 
-and parser_state = string * block
-and table_key = expr * string
+(* Parser state machine *)
+and parser_state = label * block
+
+(* Table *)
+and table_key = expr * mtchkind
 and table_action = var * arg list
 and table_entry = mtch list * table_action
 and table_default = table_action * bool
-and table_custom = string * expr * bool
+and table_custom = field * expr * bool
 
 (* Program *)
 type program = decl list

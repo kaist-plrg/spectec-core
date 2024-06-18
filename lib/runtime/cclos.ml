@@ -6,22 +6,22 @@ open Domain
 module CClos = struct
   type t =
     | ParserCC of {
-        tparams : string list;
+        tparams : tparam list;
         params : param list;
         cparams : param list;
         locals : decl list;
         states : parser_state list;
       }
     | ControlCC of {
-        tparams : string list;
+        tparams : tparam list;
         params : param list;
         cparams : param list;
         locals : decl list;
         body : block;
       }
-    | PackageCC of { tparams : string list; cparams : param list }
+    | PackageCC of { tparams : tparam list; cparams : param list }
     | ExternCC of {
-        tparams : string list;
+        tparams : tparam list;
         cparams : param list;
         mthds : decl list;
       }

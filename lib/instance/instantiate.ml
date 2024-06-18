@@ -96,8 +96,8 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       let ictx = ICtx.add_td_glob name typ ictx in
       (ccenv, ictx)
   (* Load types to tdenv *)
-  | ErrD { members } ->
-      let typ = Type.ErrT members in
+  | ErrD { fields } ->
+      let typ = Type.ErrT fields in
       let ictx = ICtx.add_td_glob "error" typ ictx in
       (ccenv, ictx)
   | StructD { name; fields } ->
@@ -121,8 +121,8 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       let typ = Type.UnionT fields in
       let ictx = ICtx.add_td_glob name typ ictx in
       (ccenv, ictx)
-  | EnumD { name; members } ->
-      let typ = Type.EnumT members in
+  | EnumD { name; fields } ->
+      let typ = Type.EnumT fields in
       let ictx = ICtx.add_td_glob name typ ictx in
       (ccenv, ictx)
   | SEnumD _ ->
@@ -161,7 +161,7 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
 (* Instantiating objects *)
 
 let rec eval_targs (ictx_caller : ICtx.t) (ictx_callee : ICtx.t)
-    (tparams : string list) (targs : typ list) =
+    (tparams : tparam list) (targs : typ list) =
   assert (List.length tparams = List.length targs);
   List.fold_left2
     (fun ictx_callee tparam targ ->
@@ -355,7 +355,7 @@ and instantiate_from_expr (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
   instantiate_from_cclos ccenv sto ictx path cclos targs args
 
 and instantiate_from_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
-    (path : Path.t) (name : string) (typ : typ) (args : arg list) =
+    (path : Path.t) (name : id) (typ : typ) (args : arg list) =
   let path = path @ [ name ] in
   let cclos, targs = cclos_from_type typ ccenv in
   let sto = instantiate_from_cclos ccenv sto ictx path cclos targs args in
@@ -365,7 +365,7 @@ and instantiate_from_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
   (sto, ictx)
 
 and instantiate_from_glob_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
-    (path : Path.t) (name : string) (typ : typ) (args : arg list) =
+    (path : Path.t) (name : id) (typ : typ) (args : arg list) =
   let path = path @ [ name ] in
   let cclos, targs = cclos_from_type typ ccenv in
   let sto = instantiate_from_cclos ccenv sto ictx path cclos targs args in

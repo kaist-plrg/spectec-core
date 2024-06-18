@@ -21,15 +21,15 @@ module Type = struct
     | BitT of Bigint.t
     | VBitT of Bigint.t
     | StrT
-    | ErrT of string list
-    | NameT of string
-    | NewT of string
+    | ErrT of field list
+    | NameT of id
+    | NewT of id
     | StackT of (t * Bigint.t)
     | TupleT of t list
-    | StructT of (string * t) list
-    | HeaderT of (string * t) list
-    | UnionT of (string * t) list
-    | EnumT of string list
+    | StructT of (field * t) list
+    | HeaderT of (field * t) list
+    | UnionT of (field * t) list
+    | EnumT of field list
     | RefT
 
   let rec pp fmt typ =
@@ -92,15 +92,15 @@ module Value = struct
     | BitV of Bigint.t * Bigint.t
     | VBitV of Bigint.t * Bigint.t
     | StrV of string
-    | ErrV of string
+    | ErrV of field
     | StackV of (t list * Bigint.t * Bigint.t)
     | TupleV of t list
-    | StructV of (string * t) list
-    | HeaderV of bool * (string * t) list
-    | UnionV of (string * t) list
-    | EnumFieldV of string
-    | SEnumFieldV of string * t
-    | RefV of string list
+    | StructV of (field * t) list
+    | HeaderV of bool * (field * t) list
+    | UnionV of (field * t) list
+    | EnumFieldV of field
+    | SEnumFieldV of field * t
+    | RefV of path
 
   let rec pp fmt value =
     match value with
@@ -164,28 +164,28 @@ module Func = struct
   type t =
     | FuncF of {
         vis_glob : vis;
-        tparams : string list;
+        tparams : tparam list;
         params : param list;
         ret : Type.t;
         body : block;
       }
     (* (TODO) Consider return type, which may be a type variable *)
     | ExternF of {
-        name : string;
+        name : id;
         vis_glob : vis;
-        tparams : string list;
+        tparams : tparam list;
         params : param list; (* ret : Type.t; *)
       }
     | MethodF of {
         vis_obj : vis;
-        tparams : string list;
+        tparams : tparam list;
         params : param list;
         body : block;
       }
     | ExternMethodF of {
-        name : string;
+        name : id;
         vis_obj : vis;
-        tparams : string list;
+        tparams : tparam list;
         params : param list; (* ret : Type.t; *)
       }
     | StateF of { body : block }

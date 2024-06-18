@@ -14,13 +14,13 @@ module Make (Arch : ARCH) : INTERP = struct
 
   (* Helper to access aggregate value *)
 
-  let fetch_struct_field (value : Value.t) (field : string) =
+  let fetch_struct_field (value : Value.t) (field : field) =
     match value with
     | StructV fields -> List.assoc field fields
     | _ -> assert false
 
-  let fetch_enum_member (value : Value.t) =
-    match value with EnumFieldV member -> member | _ -> assert false
+  let fetch_enum_field (value : Value.t) =
+    match value with EnumFieldV field -> field | _ -> assert false
 
   (* Interpreter for type simplification,
      Assume: evaluation of bit width should never change the context *)
@@ -82,8 +82,8 @@ module Make (Arch : ARCH) : INTERP = struct
     | ArrAccE (base, idx) -> interp_arr_acc ctx base idx
     | BitAccE (base, idx_lo, idx_hi) ->
         interp_bitstring_acc ctx base idx_lo idx_hi
-    | TypeAccE (var, member) -> interp_type_acc ctx var member
-    | ErrAccE member -> interp_error_acc ctx member
+    | TypeAccE (var, field) -> interp_type_acc ctx var field
+    | ErrAccE field -> interp_error_acc ctx field
     | ExprAccE (base, name) -> interp_expr_acc ctx base name
     | CallE (func, targs, args) -> interp_call_as_expr ctx func targs args
     | InstE _ ->
@@ -119,7 +119,7 @@ module Make (Arch : ARCH) : INTERP = struct
     let value = Value.TupleV values in
     (ctx, value)
 
-  and interp_record (ctx : Ctx.t) (fields : (string * expr) list) :
+  and interp_record (ctx : Ctx.t) (fields : (field * expr) list) :
       Ctx.t * Value.t =
     let names = List.map fst fields in
     let ctx, values = List.map snd fields |> interp_exprs ctx in
@@ -178,7 +178,7 @@ module Make (Arch : ARCH) : INTERP = struct
     in
     (ctx, value)
 
-  and interp_type_acc (ctx : Ctx.t) (var : var) (member : string) :
+  and interp_type_acc (ctx : Ctx.t) (var : var) (field : field) :
       Ctx.t * Value.t =
     let typ =
       match var with
@@ -186,21 +186,20 @@ module Make (Arch : ARCH) : INTERP = struct
       | Bare name -> Ctx.find_td name ctx |> Option.get
     in
     match typ with
-    | EnumT members ->
-        if List.mem member members then (ctx, EnumFieldV member)
-        else assert false
+    | EnumT fields ->
+        if List.mem field fields then (ctx, EnumFieldV field) else assert false
     | _ -> assert false
 
-  and interp_error_acc (ctx : Ctx.t) (member : string) : Ctx.t * Value.t =
+  and interp_error_acc (ctx : Ctx.t) (field : field) : Ctx.t * Value.t =
     let typ = Ctx.find_td_glob "error" ctx |> Option.get in
     match typ with
-    | ErrT members ->
-        if List.mem member members then (ctx, ErrV member) else assert false
+    | ErrT fields ->
+        if List.mem field fields then (ctx, ErrV field) else assert false
     | _ -> assert false
 
   and interp_builtin_stack_acc (ctx : Ctx.t) (values : Value.t list)
-      (next : Bigint.t) (_size : Bigint.t) (name : string) =
-    match name with
+      (next : Bigint.t) (_size : Bigint.t) (field : field) =
+    match field with
     (* hs.next: produces a reference to the element with index hs.nextIndex in the stack.
        May only be used in a parser. If the stack's nextIndex counter is greater than or equal to size,
        then evaluating this expression results in a transition to reject and sets the error to error.StackOutOfBounds.
@@ -221,24 +220,24 @@ module Make (Arch : ARCH) : INTERP = struct
         Format.eprintf
           "(interp_builtin_stack_acc) %s member access not supported for \
            header stack\n"
-          name;
+          field;
         assert false
 
-  and interp_expr_acc (ctx : Ctx.t) (base : expr) (name : string) :
+  and interp_expr_acc (ctx : Ctx.t) (base : expr) (field : field) :
       Ctx.t * Value.t =
     let ctx, value_base = interp_expr ctx base in
     match value_base with
     | HeaderV (_, fields) | StructV fields ->
-        let value = List.assoc name fields in
+        let value = List.assoc field fields in
         (ctx, value)
     | RefV path ->
-        let value = Value.RefV (path @ [ name ]) in
+        let value = Value.RefV (path @ [ field ]) in
         (ctx, value)
     | StackV (values, next, size) ->
-        interp_builtin_stack_acc ctx values next size name
+        interp_builtin_stack_acc ctx values next size field
     | _ ->
         Format.eprintf "(TODO: interp_expr_acc) %a.%s\n" Value.pp value_base
-          name;
+          field;
         assert false
 
   and interp_call_as_expr (ctx : Ctx.t) (func : expr) (targs : typ list)
@@ -269,21 +268,21 @@ module Make (Arch : ARCH) : INTERP = struct
         let typ = Ctx.find_var name ctx |> Option.get |> fst in
         let value = Runtime.Ops.eval_cast typ value in
         Ctx.update_var name typ value ctx
-    | ExprAccE (base, name) -> (
+    | ExprAccE (base, field) -> (
         let ctx, value_base = interp_expr ctx base in
-        let update_field fields name =
+        let update_field fields field =
           List.map
-            (fun (k, v) -> if k = name then (k, value) else (k, v))
+            (fun (k, v) -> if k = field then (k, value) else (k, v))
             fields
         in
         match value_base with
         | StructV fields ->
-            let fields = update_field fields name in
+            let fields = update_field fields field in
             interp_write ctx base (StructV fields)
         | HeaderV (valid, fields) ->
-            let fields = update_field fields name in
+            let fields = update_field fields field in
             interp_write ctx base (HeaderV (valid, fields))
-        | StackV (values, next, size) when name = "next" ->
+        | StackV (values, next, size) when field = "next" ->
             let idx = Bigint.to_int next |> Option.get in
             let values =
               List.mapi (fun i v -> if i = idx then value else v) values
@@ -358,7 +357,7 @@ module Make (Arch : ARCH) : INTERP = struct
   (* (TODO) For state transitions, do not change object visibility,
      treating them as real "transitions", because states can be mutually recursive *)
   (* exit statements are not allowed within parsers or functions. (12.5) *)
-  and interp_trans (sign : Sig.t) (ctx : Ctx.t) (next : string) =
+  and interp_trans (sign : Sig.t) (ctx : Ctx.t) (next : label) =
     match sign with
     | Ret _ | Exit ->
         Format.eprintf "(interp_trans) Exit unallowed within parser.\n";
@@ -396,7 +395,7 @@ module Make (Arch : ARCH) : INTERP = struct
               (ctx, value :: values))
             (ctx, []) exprs
         in
-        let select_cases (next_found : string option) (case : select_case) =
+        let select_cases (next_found : label option) (case : select_case) =
           match next_found with
           | Some _ -> next_found
           | None ->
@@ -439,7 +438,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | Ret _ | Exit -> (sign, ctx)
     | Cont ->
         let ctx, value = interp_expr ctx expr in
-        let value = fetch_enum_member value in
+        let value = fetch_enum_field value in
         let switch_cases (block_found : bool * block option)
             (case : switch_case) =
           let case, block = case in
@@ -539,7 +538,7 @@ module Make (Arch : ARCH) : INTERP = struct
 
   (* adder determines where to add the type argument, either object or local scope *)
   and interp_targs adder (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
-      (tparams : string list) (targs : typ list) =
+      (tparams : tparam list) (targs : typ list) =
     assert (List.length tparams = List.length targs);
     List.fold_left2
       (fun ctx_callee tparam targ ->
@@ -551,7 +550,7 @@ module Make (Arch : ARCH) : INTERP = struct
     interp_exprs ctx_caller exprs
 
   and interp_extern_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
-      (fname : string) (tparams : Var.t list) (params : param list)
+      (fname : string) (tparams : tparam list) (params : param list)
       (targs : typ list) (args : arg list) =
     (* Align the parameters with the arguments *)
     let params, args = align_params_with_args params args in
@@ -571,7 +570,7 @@ module Make (Arch : ARCH) : INTERP = struct
     (sign, ctx_caller, ctx_callee)
 
   and interp_extern_method_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
-      (fname : string) (tparams : Var.t list) (params : param list)
+      (fname : string) (tparams : tparam list) (params : param list)
       (targs : typ list) (args : arg list) =
     (* Enter the function frame *)
     let ctx_callee = Ctx.enter_frame ctx_callee in
@@ -592,7 +591,7 @@ module Make (Arch : ARCH) : INTERP = struct
     (sign, ctx_caller, ctx_callee)
 
   and interp_method_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
-      (_tparams : Var.t list) (params : param list) (_targs : typ list)
+      (_tparams : tparam list) (params : param list) (_targs : typ list)
       (args : arg list) (body : block) =
     (* Align the parameters with the arguments *)
     let params, args = align_params_with_args params args in
@@ -724,7 +723,7 @@ module Make (Arch : ARCH) : INTERP = struct
 
   (* In addition, headers support the following methods: ... (8.17) *)
   and interp_builtin_header_call (ctx : Ctx.t) (base : expr) (_valid : bool)
-      (fields : (string * Value.t) list) (fname : string) (_targs : typ list)
+      (fields : (field * Value.t) list) (fname : string) (_targs : typ list)
       (_args : arg list) =
     match fname with
     | "isValid" ->
@@ -783,7 +782,7 @@ module Make (Arch : ARCH) : INTERP = struct
           fname;
         assert false
 
-  and interp_method_call (ctx : Ctx.t) (base : expr) (fname : string)
+  and interp_method_call (ctx : Ctx.t) (base : expr) (fname : id)
       (targs : typ list) (args : arg list) =
     let ctx, value_base = interp_expr ctx base in
     match value_base with

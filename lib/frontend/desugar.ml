@@ -256,23 +256,24 @@ and desugar_stmts (stmts : Statement.t list) : stmt list =
 
 (* Declarations *)
 
-and desugar_fields (fields : Declaration.field list) : (string * typ) list =
+and desugar_struct_fields (fields : Declaration.field list) :
+    (string * typ) list =
   List.map
     (fun (field : Declaration.field) ->
       let Declaration.{ name; typ; _ } = field in
       (name.str, desugar_type typ))
     fields
 
-and desugar_members (members : Text.t list) : string list =
-  List.map (fun (member : Text.t) -> member.str) members
+and desugar_fields (fields : Text.t list) : string list =
+  List.map (fun (field : Text.t) -> field.str) fields
 
-and desugar_serial_members (members : (Text.t * Expression.t) list) :
+and desugar_serial_fields (fields : (Text.t * Expression.t) list) :
     (string * expr) list =
   List.map
-    (fun (member : Text.t * Expression.t) ->
-      let field, value = member in
+    (fun (field : Text.t * Expression.t) ->
+      let field, value = field in
       (field.str, desugar_expr value))
-    members
+    fields
 
 and desugar_parser_case (case : Parser.case) : select_case =
   let Parser.{ matches; next; _ } = case in
@@ -399,33 +400,33 @@ and desugar_decl (decl : Declaration.t) : decl =
         Option.map (fun (init : Block.t) -> desugar_stmts init.statements) init
       in
       InstD { name; typ; args; init }
-  | Error { members; _ } ->
-      let members = desugar_members members in
-      ErrD { members }
-  | MatchKind { members; _ } ->
-      let members = desugar_members members in
-      MatchKindD { members }
+  | Error { members = fields; _ } ->
+      let fields = desugar_fields fields in
+      ErrD { fields }
+  | MatchKind { members = fields; _ } ->
+      let fields = desugar_fields fields in
+      MatchKindD { fields }
   | Struct { name; fields; _ } ->
       let name = name.str in
-      let fields = desugar_fields fields in
+      let fields = desugar_struct_fields fields in
       StructD { name; fields }
   | Header { name; fields; _ } ->
       let name = name.str in
-      let fields = desugar_fields fields in
+      let fields = desugar_struct_fields fields in
       HeaderD { name; fields }
   | HeaderUnion { name; fields; _ } ->
       let name = name.str in
-      let fields = desugar_fields fields in
+      let fields = desugar_struct_fields fields in
       UnionD { name; fields }
-  | Enum { name; members; _ } ->
+  | Enum { name; members = fields; _ } ->
       let name = name.str in
-      let members = desugar_members members in
-      EnumD { name; members }
-  | SerializableEnum { name; typ; members; _ } ->
+      let fields = desugar_fields fields in
+      EnumD { name; fields }
+  | SerializableEnum { name; typ; members = fields; _ } ->
       let name = name.str in
       let typ = desugar_type typ in
-      let members = desugar_serial_members members in
-      SEnumD { name; typ; members }
+      let fields = desugar_serial_fields fields in
+      SEnumD { name; typ; fields }
   | NewType { name; typ_or_decl; _ } ->
       let name = name.str in
       let typ, decl =
