@@ -4,8 +4,8 @@ Objects
 -------
 
 Objects are explicitly allocated at compile time via the instantiation phase.
-${:O_TABLE}, ${:O_VALUESET}, and ${:O_EXTERN} are stateful, i.e., they retain information across invocations.
-${:O_PARSER}, ${:O_CONTROL}, and ${:O_PACKAGE} are classified as objects, since they wrap around the stateful objects.
+${:OTABLE}, ${:OVALUESET}, and ${:OEXTERN} are stateful, i.e., they retain information across invocations.
+${:OPARSER}, ${:OCONTROL}, and ${:OPACKAGE} are classified as objects, since they wrap around the stateful objects.
 Yet, a table need not be instantiated explicitly, where a declaration is considered as an instantiation.
 
 $${syntax: obj}

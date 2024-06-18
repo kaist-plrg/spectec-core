@@ -1,6 +1,11 @@
 def $unop(unop, val) : val
+
 def $binop(binop, val, val) : val
-def $cast(val, type) : val
+
+def $cast(val, rtype) : val
+
 def $unpack(val) : num
+
 def $bitslice(val, val, val) : val
+
 def $default(rtype) : val

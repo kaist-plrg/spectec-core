@@ -1,0 +1,141 @@
+;;
+;; Big-step semantics for statements
+;;
+
+;; Folding sequence of statements
+
+rule Interp_stmts/base-empty:
+  S sig C |- eps : sig C
+
+rule Interp_stmts/base-ret:
+  S RET C |- stmt* : RET C 
+
+rule Interp_stmts/base-exit:
+  S EXIT C |- stmt* : EXIT C
+
+rule Interp_stmts/rec:
+  S CONT C |- stmt stmt* : sig' C''
+  ----
+  -- Interp_stmt: S CONT C |- stmt : sig C'
+  ----
+  -- Interp_stmts: S sig C' |- stmt* : sig' C''
+
+
+;; Rules for each statement
+
+rule Interp_stmt/i_empty:
+  S sig C |- I_EMPTY : sig C
+
+rule Interp_stmt/i_assign-cont:
+  S CONT C |- I_ASSIGN expr_l expr_r : CONT C''
+  ----
+  -- Interp_expr: S C |- expr_r : C' val_r
+  ----
+  -- Interp_write: S C' |- expr_l <- val_r -| C''
+
+rule Interp_stmt/i_assign-nocont:
+  S sig C |- I_ASSIGN expr_l expr_r : sig C
+  ;;-- otherwise
+
+rule Interp_stmt/i_if-cont-tru:
+  S CONT C |- I_IF expr_c stmt_t stmt_f : sig C''
+  ----
+  -- Interp_expr: S C |- expr_c : C' val_c
+  ----
+  -- if V_BOOL true = $cast(val_c, RT_BOOL)
+  ----
+  -- Interp_stmt: S CONT C' |- stmt_t : sig C''
+
+rule Interp_stmt/i_if-cont-fls:
+  S CONT C |- I_IF expr_c stmt_t stmt_f : sig C''
+  ----
+  -- Interp_expr: S C |- expr_c : C' val_c
+  ----
+  -- if V_BOOL false = $cast(val_c, RT_BOOL)
+  ----
+  -- Interp_stmt: S CONT C' |- stmt_f : sig C''
+
+rule Interp_stmt/i_if-nocont:
+  S sig C |- I_IF expr_c stmt_t stmt_f : sig C
+  ;;-- otherwise
+
+rule Interp_stmt/i_block:
+  S sig C |- I_BLOCK block : sig' C'
+  -- Interp_stmts: S sig C |- block : sig' C'
+
+rule Interp_stmt/i_call-cont-ret:
+  S CONT C |- I_CALL expr_f type* arg* : CONT C'
+  -- Interp_call: S C |- expr_f type* arg* : (RET val) C'
+
+rule Interp_stmt/i_call-cont-cont:
+  S CONT C |- I_CALL expr_f type* arg* : CONT C'
+  -- Interp_call: S C |- expr_f type* arg* : CONT C'
+
+rule Interp_stmt/i_call-cont-exit:
+  S CONT C |- I_CALL expr_f type* arg* : CONT C'
+  -- Interp_call: S C |- expr_f type* arg* : EXIT C'
+
+rule Interp_stmt/i_call-nocont:
+  S sig C |- I_CALL expr_f type* arg* : sig C
+  ;;-- otherwise
+
+rule Interp_stmt/i_trans-accept:
+  S CONT C |- I_TRANS "accept" : CONT C
+
+rule Interp_stmt/i_trans-reject:
+  S CONT C |- I_TRANS "reject" : CONT C
+
+rule Interp_stmt/i_trans-next:
+  S CONT C |- I_TRANS next : CONT C'''
+  ----
+  -- if F_STATE block = $find_func(C, next)
+  -- if C' = C[.LENV = (eps eps)]
+  ----
+  -- Interp_stmts: S CONT C' |- block : CONT C''
+  ----
+  -- if C''' = C[.OENV = C''.OENV]
+
+;; TODO
+;; rule Interp_stmt/i_select:
+
+rule Interp_stmt/i_decl-cont-var-some:
+  S CONT C |- I_DECL (D_VAR id type expr?) : CONT C''
+  ----
+  -- Interp_type: C |- type : rtype
+  ----
+  -- Interp_expr: S C |- expr : C' val
+  ----
+  -- if C'' = $add_var_loc(C', id, rtype, val)
+
+rule Interp_stmt/i_decl-cont-var-none:
+  S CONT C |- I_DECL (D_VAR id type eps) : CONT C'
+  ----
+  -- Interp_type: C |- type : rtype
+  ----
+  -- if val = $default(rtype)
+  -- if C' = $add_var_loc(C, id, rtype, val)
+
+rule Interp_stmt/i_decl-nocont:
+  S sig C |- I_DECL decl : sig C
+  ;;-- otherwise
+
+;; TODO
+;; rule Interp_stmt/i_switch:
+
+rule Interp_stmt/i_exit-cont:
+  S CONT C |- I_EXIT : EXIT C
+
+rule Interp_stmt/i_exit-nocont:
+  S sig C |- I_EXIT : sig C
+  ;;-- otherwise
+
+rule Interp_stmt/i_return-cont-some:
+  S CONT C |- I_RET expr? : (RET val?) C'
+  -- Interp_expr: S C |- expr : C' val
+
+rule Interp_stmt/i_return-cont-none:
+  S CONT C |- I_RET eps : (RET eps) C'
+
+rule Interp_stmt/i_return-nocont:
+  S sig C |- I_RET expr : sig C
+  ;;-- otherwise

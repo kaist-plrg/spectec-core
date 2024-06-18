@@ -4,6 +4,7 @@ p4cherry
 p4cherry-test
 *.opam
 doc/_sphinx
+doc/spectec
 
 # logs
 log

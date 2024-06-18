@@ -1,41 +1,55 @@
-syntax genv = tdenv env fenv
-syntax gvis = tdvis vis fvis
-syntax oenv = tdenv env fenv
-syntax ovis = tdvis vis fvis
-syntax lenv = tdenv env*
+syntax genv = env
+syntax gvis = vis 
+syntax oenv = env
+syntax ovis = vis
+syntax lenv = tdenv venv*
 
 syntax ictx =
   {
-    GLO (genv, gvis),
-    OBJ (oenv, ovis)
+    GENV genv, GVIS gvis,
+    OENV oenv, OVIS ovis
   }
+
+var IC : ictx
 
 syntax ctx =
   {
-    GLO (genv, gvis),
-    OBJ (oenv, ovis),
-    LOC lenv
+    GENV genv, GVIS gvis,
+    OENV oenv, OVIS ovis,
+    LENV lenv
   }
 
-def $inherit_glob(ctx) : ctx
-def $inherit_obj(ctx, vis, env) : ctx
+var C : ctx
 
-def $restrict_glob(ctx, vis) : ctx
-def $restrict_obj(ctx, vis) : ctx
+def $empty_context() : ctx hint(show NEW)
 
-def $enter_frame(ctx) : ctx
-def $exit_frame(ctx) : ctx
+def $enter_frame(ctx) : ctx hint(show ENTER %)
+def $exit_frame(ctx) : ctx  hint(show EXIT %)
 
-def $find_td_glob(ctx, str) : rtype
-def $find_td(ctx, str) : rtype
+;; Restrictions
 
-def $find_var_glob(ctx, str) : val
-def $find_var(ctx, str) : val
+def $restrict_glob(ctx, vis) : ctx hint(show RES_GLOB % BY %)
+def $restrict_obj(ctx, vis) : ctx  hint(show RES_OBJ % BY %)
 
-def $find_func_glob(ctx, str) : func
-def $find_func_obj(ctx, str) : func
-def $find_func(ctx, str) : func
+;; Finders
 
-def $add_var_loc(ctx, str, rtype, val) : ctx
+def $find_td_glob(ctx, id) : rtype
+def $find_td(ctx, id) : rtype
 
-def $write(ctx, expr, val) : ctx
+def $find_var_glob(ctx, id) : val
+def $find_var(ctx, id) : val
+
+def $find_var_type(ctx, id) : rtype
+
+def $find_func_glob(ctx, id) : func
+def $find_func_obj(ctx, id) : func
+def $find_func(ctx, id) : func
+
+;; Adders
+
+def $add_var_obj(ctx, id, rtype, val) : ctx
+def $add_var_loc(ctx, id, rtype, val) : ctx
+
+;; Updaters
+
+def $update_var(ctx, id, rtype, val) : ctx

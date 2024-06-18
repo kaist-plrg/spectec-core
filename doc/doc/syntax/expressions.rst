@@ -10,11 +10,13 @@ Variables
 
 Identifiers prefixed with a dot are always resolved in the top-level namespace.
 
-$${syntax+: name}
+$${syntax: id}
+$${syntax: name}
 
 Expressions
 -----------
 
+$${syntax: field}
 $${syntax: expr}
 
 The following operators are supported:

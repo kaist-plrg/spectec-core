@@ -10,11 +10,11 @@ Most functions carry a visibility set, which is a set of type, variable, and fun
 Functions are like closures in the sense that they capture the environment in which they are defined.
 However, the visibility is captured instead of the environment itself, allowing mutation of the environment external to the function.
 
-${:F_METHOD} is a method of a programmable parser or control block. (which should be "apply")
-${:F_EXTERNMETHOD} is a method of an external, fixed-function block.
-${:F_METHOD} is a state of a finite state machine described by a programmable parser block.
-Note that ${:F_STATE} are mutually recursive, and it does not have a visibility set, for it inherits the visibility set of the parser block.
-${:F_TABLE} is a method of a match-action table. (which should be "apply")
+${:FMETHOD} is a method of a programmable parser or control block. (which should be "apply")
+${:FEXTERNMETHOD} is a method of an external, fixed-function block.
+${:FMETHOD} is a state of a finite state machine described by a programmable parser block.
+Note that ${:FSTATE} are mutually recursive, and it does not have a visibility set, for it inherits the visibility set of the parser block.
+${:FTABLE} is a method of a match-action table. (which should be "apply")
 
 $${syntax: func}
 

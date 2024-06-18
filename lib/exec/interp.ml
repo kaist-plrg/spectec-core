@@ -520,6 +520,7 @@ module Make (Arch : ARCH) : INTERP = struct
           adder pname typ value ctx_callee
       | Out ->
           let typ = interp_type ctx_callee typ in
+          let value = Runtime.Ops.eval_default_value typ in
           adder pname typ value ctx_callee
     in
     List.fold_left2 copyin' ctx_callee params values

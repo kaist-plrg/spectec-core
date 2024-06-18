@@ -13,6 +13,7 @@ project = u'P4'
 title = u'P4 Specification'
 author = u'Anonymous Authors'
 extensions = [
+  'sphinx.ext.todo',
   'sphinx.ext.mathjax',
   'util.mathdef'
 ]
