@@ -1,4 +1,4 @@
-.. _syntax-declaration:
+.. _syntax-declarations:
 
 Declarations
 ------------

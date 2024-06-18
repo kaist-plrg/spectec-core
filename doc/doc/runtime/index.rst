@@ -5,8 +5,8 @@ Runtime
 
 .. toctree::
 
-   type
-   value
-   function
-   object
-   context
+   types
+   values
+   functions
+   objects
+   contexts

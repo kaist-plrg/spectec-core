@@ -1,7 +1,7 @@
-.. _runtime-value:
+.. _runtime-values:
 
-Value
------
+Values
+------
 
 $${syntax: val}
 

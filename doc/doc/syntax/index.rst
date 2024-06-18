@@ -5,7 +5,7 @@ Syntax
 
 .. toctree::
 
-   domain
-   expression
-   statement
-   declaration
+   conventions 
+   expressions
+   statements
+   declarations

@@ -8,11 +8,10 @@ sys.path.insert(0, pwd)
 master_doc = 'index'
 
 # General information about the project
-name = 'WebAssembly'
-project = u'WebAssembly'
-title = u'WebAssembly Specification'
+name = 'P4-Spec'
+project = u'P4'
+title = u'P4 Specification'
 author = u'Anonymous Authors'
-logo = 'static/webassembly.png'
 extensions = [
   'sphinx.ext.mathjax',
   'util.mathdef'
@@ -26,7 +25,7 @@ draft = ' (Auto-generated Draft ' + date.today().strftime("%Y-%m-%d") + ')'
 # built documents.
 #
 # The short X.Y version.
-version = u'2.0'
+version = u'0.0'
 # The full version, including alpha/beta/rc tags.
 release = version + draft
 
@@ -76,7 +75,6 @@ latex_documents = [
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
 #
-latex_logo = logo
 
 # For "manual" documents [part, chapter, or section].
 #

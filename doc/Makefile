@@ -25,6 +25,9 @@ CONF = doc/conf.py
 MATHDEF = doc/util/mathdef.py
 UTIL = util
 
+INPUTFILES = $(wildcard $(SPHINXDIR)/*/*.rst)
+SPLICEINPUT = $(strip $(patsubst $(SPHINXDIR)/%,%,$(subst " ", " ", $(INPUTFILES))))
+
 .PHONY: document
 
 document: doc $(CONF) $(MATHDEF)
@@ -38,7 +41,7 @@ setup: document
 .PHONY: splice
 
 splice: setup 
-	cd $(SPHINXDIR) && $(EXE) -l ../$(SPECDIR)/*.$(EXT) --splice-sphinx -p $(SPLICEINPUT) -w
+	cd $(SPHINXDIR) && $(EXE) -l ../$(SPECDIR)/*.$(EXT) --splice-sphinx -p $(SPLICEINPUT) -w -i
 	cd ..
 
 .PHONY: html
