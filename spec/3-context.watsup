@@ -14,6 +14,7 @@ var IC : ictx
 
 syntax ctx =
   {
+    PATH path, ID id,
     GENV genv, GVIS gvis,
     OENV oenv, OVIS ovis,
     LENV lenv
@@ -28,8 +29,8 @@ def $exit_frame(ctx) : ctx  hint(show EXIT %)
 
 ;; Restrictions
 
-def $restrict_glob(ctx, vis) : ctx hint(show RES_GLOB % BY %)
-def $restrict_obj(ctx, vis) : ctx  hint(show RES_OBJ % BY %)
+def $restrict_glob(ctx, vis) : ctx hint(show RESTRICT_GLOB % BY %)
+def $restrict_obj(ctx, vis) : ctx  hint(show RESTRICT_OBJ % BY %)
 
 ;; Finders
 

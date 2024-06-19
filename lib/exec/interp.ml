@@ -724,6 +724,7 @@ module Make (Arch : ARCH) : INTERP = struct
         let ctx_callee =
           Ctx.init path fid ctx.env_glob ctx.env_obj env_stack_empty
         in
+        let ctx_callee = { ctx_callee with vis_glob = ctx.vis_glob } in
         let ctx_table = Some (key, actions, entries, default, custom) in
         let func = mthd in
         interp_intra_app ctx ctx_callee ctx_table func targs args
@@ -818,6 +819,7 @@ module Make (Arch : ARCH) : INTERP = struct
       let ctx_callee =
         Ctx.init [] fid ctx.env_glob ctx.env_obj env_stack_empty
       in
+      let ctx_callee = { ctx_callee with vis_glob = ctx.vis_glob } in
       let func = Ctx.find_func_obj fid ctx |> Option.get in
       interp_intra_app ctx ctx_callee None func targs args
     in

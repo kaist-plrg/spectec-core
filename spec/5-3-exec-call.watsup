@@ -85,7 +85,7 @@ rule Interp_fcall/top:
   ----
   -- if func = $find_func_glob(C_caller, id)
   ----
-  -- if C_callee = $empty_context()[.GENV = C_caller.GENV]
+  -- if C_callee = $empty_context()[.ID = id][.GENV = C_caller.GENV]
   ----
   -- Interp_inter_call: S C_caller C_callee |- func type* arg* : sig C_caller'
 
@@ -94,7 +94,7 @@ rule Interp_fcall/bare-inter:
   ----
   -- if func = $find_func_glob(C_caller, id)
   ----
-  -- if C_callee = $empty_context()[.GENV = C_caller.GENV]
+  -- if C_callee = $empty_context()[.ID = id][.GENV = C_caller.GENV]
   ----
   -- Interp_inter_call: S C_caller C_callee |- func type* arg* : sig C_caller'
 
@@ -103,7 +103,11 @@ rule Interp_fcall/bare-intra:
   ----
   -- if func = $find_func_obj(C_caller, id)
   ----
-  -- Interp_intra_call: S C_caller |- func type* arg* : sig C_caller'
+  -- if C_callee = $empty_context()[.ID = id][.GENV = C_caller.GENV][.OENV = C_caller.OENV]
+  ----
+  -- if C_callee' = C_callee[.GVIS = C_caller.GVIS]
+  ----
+  -- Interp_intra_call: S C_caller C_callee' |- func type* arg* : sig C_caller'
 
 
 ;; Method call interpretation
@@ -121,7 +125,8 @@ rule Interp_mcall/object-extern:
   ----
   -- if O_EXTERN vis_glob env_obj = $find_obj(S, path)
   ----
-  -- if C_callee = $empty_context()[.GENV = C_caller.GENV][.OENV = env_obj]
+  -- if C_callee = $empty_context()[.PATH = path][.ID = mem][.GENV = C_caller.GENV][.OENV = env_obj]
+  ----
   -- if C_callee' = $restrict_glob(C_callee, vis_glob)
   ----
   -- if func = $find_func_obj(C_callee', mem)
@@ -135,7 +140,8 @@ rule Interp_mcall/object-parser:
   ----
   -- if O_PARSER vis_glob env_obj func = $find_obj(S, path)
   ----
-  -- if C_callee = $empty_context()[.GENV = C_caller.GENV][.OENV = env_obj]
+  -- if C_callee = $empty_context()[.PATH = path][.ID = "apply"][.GENV = C_caller.GENV][.OENV = env_obj]
+  ----
   -- if C_callee' = $restrict_glob(C_callee, vis_glob)
   ----
   -- Interp_inter_call: S C_caller C_callee' |- func type* arg* : sig C_caller''
@@ -147,7 +153,8 @@ rule Interp_mcall/object-control:
   ----
   -- if O_CONTROL vis_glob env_obj func = $find_obj(S, path)
   ----
-  -- if C_callee = $empty_context()[.GENV = C_caller.GENV][.OENV = env_obj]
+  -- if C_callee = $empty_context()[.PATH = path][.ID = "apply"][.GENV = C_caller.GENV][.OENV = env_obj]
+  ----
   -- if C_callee' = $restrict_glob(C_callee, vis_glob)
   ----
   -- Interp_inter_call: S C_caller C_callee' |- func type* arg* : sig C_caller''
@@ -159,14 +166,18 @@ rule Interp_mcall/object-table:
   ----
   -- if O_TABLE key* action* entry* default custom* func = $find_obj(S, path)
   ----
+  -- if C_callee = $empty_context()[.PATH = path][.ID = "apply"][.GENV = C_caller.GENV][.OENV = C_caller.OENV]
+  ----
+  -- if C_callee' = C_callee[.GVIS = C_caller.GVIS] 
+  ----
   ;; TODO pass table info to intra_call relation
-  -- Interp_intra_call: S C_caller |- func eps eps : sig C_caller''
+  -- Interp_intra_call: S C_caller C_callee' |- func eps eps : sig C_caller''
 
 
 ;; Inter-scoped call
 
 rule Interp_inter_call/extern:
-  S C_caller C_callee |- (F_EXTERN id vis_glob tparam* param*) type* arg* : sig C_caller''
+  S C_caller C_callee |- (F_EXTERN vis_glob tparam* param*) type* arg* : sig C_caller''
   ----
   -- if C_callee' = $restrict_glob(C_callee, vis_glob)
   -- if C_callee'' = $enter_frame(C_callee')
@@ -183,7 +194,7 @@ rule Interp_inter_call/extern:
   -- Copyouts: S C_caller' C_callee''' param* expr* ~> C_caller''
 
 rule Interp_inter_call/extern_method:
-  S C_caller C_callee |- (F_EXTERNMETHOD id vis_obj tparam* param*) type* arg* : sig C_caller''
+  S C_caller C_callee |- (F_EXTERNMETHOD vis_obj tparam* param*) type* arg* : sig C_caller''
   ----
   -- if C_callee' = $restrict_obj(C_callee, vis_obj)
   -- if C_callee'' = $enter_frame(C_callee')
@@ -238,9 +249,9 @@ rule Interp_inter_call/action:
 ;; rule Interp_intra_call/table:
 
 rule Interp_intra_call/action:
-  S C_caller |- (F_ACTION vis param* block) type* arg* : sig C_caller'''
+  S C_caller C_callee |- (F_ACTION vis param* block) type* arg* : sig C_caller'''
   ----
-  -- if C_callee = $restrict_obj(C_caller, vis)
+  -- if C_callee' = $restrict_obj(C_callee, vis)
   -- if C_callee'' = $enter_frame(C_callee')
   ----
   -- if (param'*, expr*) = $align_args(param*, arg*)

@@ -8,7 +8,7 @@ relation Interp_call: sto ctx |- expr type* arg* : sig ctx
 relation Interp_fcall: sto ctx |- name type* arg* : sig ctx
 relation Interp_mcall: sto ctx |- expr str type* arg* : sig ctx
 relation Interp_inter_call: sto ctx ctx |- func type* arg* : sig ctx
-relation Interp_intra_call: sto ctx |- func type* arg* : sig ctx
+relation Interp_intra_call: sto ctx ctx |- func type* arg* : sig ctx
 
 relation Interp_type : ctx |- type : rtype
 

@@ -56,9 +56,9 @@ def $write_field((str, val)*, str, val) : (str, val)*
 
 syntax func =
   | F_FUNC vis tparam* param* type block      hint(show FFUNC % % % % %)
-  | F_EXTERN str vis tparam* param*           hint(show FEXTERN % % % %)
+  | F_EXTERN vis tparam* param*               hint(show FEXTERN % % %)
   | F_METHOD vis tparam* param* block         hint(show FMETHOD % % % %)
-  | F_EXTERNMETHOD str vis tparam* param*     hint(show FEXTERNMETHOD % % % %)
+  | F_EXTERNMETHOD vis tparam* param*         hint(show FEXTERNMETHOD % % %)
   | F_STATE block                             hint(show FSTATE %)
   | F_ACTION vis param* block                 hint(show FACTION % % %)
   | F_TABLE vis                               hint(show FTABLE)

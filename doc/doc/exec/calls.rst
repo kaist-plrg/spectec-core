@@ -18,7 +18,7 @@ Function Calls
 A function identifier may be prefixed with a dot, in which the function should be found in the toplevel (global) context.
 A function may be found in the object context, in case of an action call.
 Rule Interp_inter_call is used for calls that go beyond the caller's object boundary.
-In such case, the callee's context first inherits the caller's global context. Then, it will be restricted by the global visibility of the callee function.
+In such case, the callee context first inherits the caller's global environment. Then, it will be restricted by the global visibility of the callee function afterwards.
 On the other hand, rule Interp_intra_call is used for calls that stay within the caller's object boundary.
 
 $${rule: Interp_fcall/top}
@@ -29,7 +29,7 @@ Method Calls
 ^^^^^^^^^^^^
 
 All method calls except "apply" on a table are inter-object calls.
-For inter-object calls, the callee's context inherits the caller's global context and takes the callee object's global visibility and object context.
+For inter-object calls, the callee context inherits the caller's global environment and takes the callee object's global visibility and object context.
 
 .. todo:: Specify rules for header/stack built-in calls
 
@@ -38,8 +38,8 @@ $${rule: Interp_mcall/object-parser}
 $${rule: Interp_mcall/object-control}
 $${rule: Interp_mcall/object-table}
 
-Restricting the Callee Context Visibility and Passing Control to the Callee
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Passing Control to the Callee with More Restrictions on Visibility
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now, calls are classified as either inter-object or intra-object calls.
 
@@ -74,14 +74,14 @@ $${rule+: Copyouts/*}
 Intra-object Calls
 ^^^^^^^^^^^^^^^^^^
 
-For intra-object calls, after evaluating the callee's body and copy-out, the caller context inherits the callee's object context to take the mutations of object-local variables into account.
+For intra-object calls, after evaluating the callee's body and copy-out, the caller context inherits the callee's object environment to take the mutations of object-local variables into account.
 
 $${rule: Interp_intra_call/action}
 
 Inter-object Calls
 ^^^^^^^^^^^^^^^^^^
 
-Since all globals are immutable in P4, the caller does not need to inherit the callee's global context after callee evaluation.
+Since all globals are immutable in P4, the caller does not need to inherit the callee's global environment after callee evaluation.
 
 $${rule: Interp_inter_call/extern}
 $${rule: Interp_inter_call/extern_method}
