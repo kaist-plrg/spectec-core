@@ -150,7 +150,7 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       (ccenv, ictx)
   | ExternFuncD { name; tparams; params; _ } ->
       let vis_glob = env_to_vis ictx.env_glob in
-      let func = Func.ExternF { name; vis_glob; tparams; params } in
+      let func = Func.ExternF { vis_glob; tparams; params } in
       let ictx = ICtx.add_func_glob name func ictx in
       (ccenv, ictx)
   | _ ->
@@ -444,7 +444,7 @@ and instantiate_extern_obj_decl (ictx : ICtx.t) (decl : decl) =
   | MethodD { name; tparams; params; _ } ->
       let func =
         Func.ExternMethodF
-          { name; vis_obj = env_to_vis ictx.env_obj; tparams; params }
+          { vis_obj = env_to_vis ictx.env_obj; tparams; params }
       in
       ICtx.add_func_obj name func ictx
   | AbstractD _ ->
@@ -477,5 +477,5 @@ let instantiate_program (program : program) =
         instantiate_glob_decl ccenv sto ictx [] decl)
       (ccenv, sto, ictx) program
   in
-  let ctx = Ctx.init ictx.env_glob ictx.env_obj (TDEnv.empty, []) in
+  let ctx = Ctx.init [] "" ictx.env_glob ictx.env_obj (TDEnv.empty, []) in
   (ccenv, sto, ctx)

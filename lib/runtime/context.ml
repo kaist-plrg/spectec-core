@@ -1,3 +1,4 @@
+open Domain
 open Base
 
 (* ctx for instantiation:
@@ -13,16 +14,18 @@ module ICtx = struct
 
   let empty =
     {
-      env_glob = (TDEnv.empty, Env.empty, FEnv.empty);
-      vis_glob = (TDVis.empty, Vis.empty, Vis.empty);
-      env_obj = (TDEnv.empty, Env.empty, FEnv.empty);
-      vis_obj = (TDVis.empty, Vis.empty, Vis.empty);
+      env_glob = env_empty;
+      vis_glob = vis_empty;
+      env_obj = env_empty;
+      vis_obj = vis_empty;
     }
 
   let init env_glob env_obj =
     let vis_glob = env_to_vis env_glob in
     let vis_obj = env_to_vis env_obj in
     { env_glob; vis_glob; env_obj; vis_obj }
+
+  (* Adders and updaters *)
 
   let add_td_glob name typ ctx =
     let gtdenv, genv, gfenv = ctx.env_glob in
@@ -90,6 +93,8 @@ module ICtx = struct
       vis_obj = (otdvis, ovis, ofvis);
     }
 
+  (* Finders *)
+
   let find finder name ctx = function
     | Some value -> Some value
     | None -> finder name ctx
@@ -113,6 +118,8 @@ module ICtx = struct
     Env.find name oenv
 
   let find_var name ctx = find_var_obj name ctx |> find find_var_glob name ctx
+
+  (* Pretty-printers *)
 
   let pp_vis fmt ctx =
     let gtdvis, gvis, gfvis = ctx.vis_glob in
@@ -139,6 +146,8 @@ end
 
 module Ctx = struct
   type t = {
+    path : Path.t;
+    func : Var.t;
     env_glob : env;
     vis_glob : vis;
     env_obj : env;
@@ -148,17 +157,21 @@ module Ctx = struct
 
   let empty =
     {
-      env_glob = (TDEnv.empty, Env.empty, FEnv.empty);
-      vis_glob = (TDVis.empty, Vis.empty, Vis.empty);
-      env_obj = (TDEnv.empty, Env.empty, FEnv.empty);
-      vis_obj = (TDVis.empty, Vis.empty, Vis.empty);
-      env_loc = (TDEnv.empty, []);
+      path = [];
+      func = "";
+      env_glob = env_empty;
+      vis_glob = vis_empty;
+      env_obj = env_empty;
+      vis_obj = vis_empty;
+      env_loc = env_stack_empty;
     }
 
-  let init env_glob env_obj env_loc =
+  let init path func env_glob env_obj env_loc =
     let vis_glob = env_to_vis env_glob in
     let vis_obj = env_to_vis env_obj in
-    { env_glob; vis_glob; env_obj; vis_obj; env_loc }
+    { path; func; env_glob; vis_glob; env_obj; vis_obj; env_loc }
+
+  (* Adders and updaters *)
 
   let add_td_obj name typ ctx =
     let otdenv, oenv, ofenv = ctx.env_obj in
@@ -208,6 +221,8 @@ module Ctx = struct
     }
 
   let update_var name typ value ctx =
+    let path = ctx.path in
+    let func = ctx.func in
     let gtdenv, genv, gfenv = ctx.env_glob in
     let _, gvis, _ = ctx.vis_glob in
     let otdenv, oenv, ofenv = ctx.env_obj in
@@ -239,12 +254,16 @@ module Ctx = struct
       | _ -> assert false
     in
     {
+      path;
+      func;
       env_glob = (gtdenv, genv, gfenv);
       vis_glob = ctx.vis_glob;
       env_obj = (otdenv, oenv, ofenv);
       vis_obj = ctx.vis_obj;
       env_loc = (ltdenv, lenvs);
     }
+
+  (* Finders *)
 
   let find finder name ctx = function
     | Some value -> Some value
@@ -296,6 +315,8 @@ module Ctx = struct
   let find_func name ctx =
     find_func_obj name ctx |> find find_func_glob name ctx
 
+  (* Frame management *)
+
   let enter_frame ctx =
     let ltdenv, lenvs = ctx.env_loc in
     let env_loc = (ltdenv, Env.empty :: lenvs) in
@@ -305,6 +326,8 @@ module Ctx = struct
     let ltdenv, lenvs = ctx.env_loc in
     let env_loc = (ltdenv, List.tl lenvs) in
     { ctx with env_loc }
+
+  (* Pretty-printers *)
 
   let pp_vis fmt ctx =
     let gtdvis, gvis, gfvis = ctx.vis_glob in

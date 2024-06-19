@@ -171,7 +171,6 @@ module Func = struct
       }
     (* (TODO) Consider return type, which may be a type variable *)
     | ExternF of {
-        name : id;
         vis_glob : vis;
         tparams : tparam list;
         params : param list; (* ret : Type.t; *)
@@ -183,7 +182,6 @@ module Func = struct
         body : block;
       }
     | ExternMethodF of {
-        name : id;
         vis_obj : vis;
         tparams : tparam list;
         params : param list; (* ret : Type.t; *)

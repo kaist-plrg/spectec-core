@@ -46,10 +46,10 @@ module Make (Arch : ARCH) : INTERP = struct
           interp_expr ctx width |> snd |> Runtime.Ops.extract_bigint
         in
         VBitT width
-    | NameT (Top name) -> Ctx.find_td_glob name ctx |> Option.get
-    | NameT (Bare name) -> Ctx.find_td name ctx |> Option.get
+    | NameT (Top id) -> Ctx.find_td_glob id ctx |> Option.get
+    | NameT (Bare id) -> Ctx.find_td id ctx |> Option.get
     (* (TODO) Handle specialized types *)
-    | SpecT (name, _) -> interp_type ctx (NameT name)
+    | SpecT (var, _) -> interp_type ctx (NameT var)
     | StackT (typ, size) ->
         let typ = interp_type ctx typ in
         let size = interp_expr ctx size |> snd |> Runtime.Ops.extract_bigint in
@@ -84,7 +84,7 @@ module Make (Arch : ARCH) : INTERP = struct
         interp_bitstring_acc ctx base idx_lo idx_hi
     | TypeAccE (var, field) -> interp_type_acc ctx var field
     | ErrAccE field -> interp_error_acc ctx field
-    | ExprAccE (base, name) -> interp_expr_acc ctx base name
+    | ExprAccE (base, field) -> interp_expr_acc ctx base field
     | CallE (func, targs, args) -> interp_call_as_expr ctx func targs args
     | InstE _ ->
         Format.eprintf
@@ -107,11 +107,11 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and interp_var (ctx : Ctx.t) (var : var) : Ctx.t * Value.t =
     match var with
-    | Top name ->
-        let value = Ctx.find_var_glob name ctx |> Option.get |> snd in
+    | Top id ->
+        let value = Ctx.find_var_glob id ctx |> Option.get |> snd in
         (ctx, value)
-    | Bare name ->
-        let value = Ctx.find_var name ctx |> Option.get |> snd in
+    | Bare id ->
+        let value = Ctx.find_var id ctx |> Option.get |> snd in
         (ctx, value)
 
   and interp_list (ctx : Ctx.t) (exprs : expr list) : Ctx.t * Value.t =
@@ -121,9 +121,9 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and interp_record (ctx : Ctx.t) (fields : (field * expr) list) :
       Ctx.t * Value.t =
-    let names = List.map fst fields in
-    let ctx, values = List.map snd fields |> interp_exprs ctx in
-    let fields = List.map2 (fun name value -> (name, value)) names values in
+    let fields, exprs = List.split fields in
+    let ctx, values = exprs |> interp_exprs ctx in
+    let fields = List.map2 (fun field value -> (field, value)) fields values in
     let value = Value.StructV fields in
     (ctx, value)
 
@@ -182,8 +182,8 @@ module Make (Arch : ARCH) : INTERP = struct
       Ctx.t * Value.t =
     let typ =
       match var with
-      | Top name -> Ctx.find_td_glob name ctx |> Option.get
-      | Bare name -> Ctx.find_td name ctx |> Option.get
+      | Top id -> Ctx.find_td_glob id ctx |> Option.get
+      | Bare id -> Ctx.find_td id ctx |> Option.get
     in
     match typ with
     | EnumT fields ->
@@ -264,10 +264,10 @@ module Make (Arch : ARCH) : INTERP = struct
      | lvalue "[" expression "]" | lvalue "[" expression ":" expression "]" *)
   and interp_write (ctx : Ctx.t) (lvalue : expr) (value : Value.t) =
     match lvalue with
-    | VarE (Bare name) ->
-        let typ = Ctx.find_var name ctx |> Option.get |> fst in
+    | VarE (Bare id) ->
+        let typ = Ctx.find_var id ctx |> Option.get |> fst in
         let value = Runtime.Ops.eval_cast typ value in
-        Ctx.update_var name typ value ctx
+        Ctx.update_var id typ value ctx
     | ExprAccE (base, field) -> (
         let ctx, value_base = interp_expr ctx base in
         let update_field fields field =
@@ -415,23 +415,23 @@ module Make (Arch : ARCH) : INTERP = struct
     | Ret _ | Exit -> (sign, ctx)
     | Cont -> (
         match decl with
-        | VarD { name; typ; init = None } ->
+        | VarD { name = id; typ; init = None } ->
             let typ = interp_type ctx typ in
             let value = Runtime.Ops.eval_default_value typ in
-            let ctx = Ctx.add_var_loc name typ value ctx in
+            let ctx = Ctx.add_var_loc id typ value ctx in
             (sign, ctx)
-        | VarD { name; typ; init = Some value } ->
+        | VarD { name = id; typ; init = Some value } ->
             let typ = interp_type ctx typ in
             let ctx, value = interp_expr ctx value in
-            let ctx = Ctx.add_var_loc name typ value ctx in
+            let ctx = Ctx.add_var_loc id typ value ctx in
             (sign, ctx)
         | _ ->
             Format.eprintf "(TODO: interp_decl) %a" Syntax.Print.print_decl
               (0, decl);
             assert false)
 
-  (* (TODO) assume switch on table apply result only,
-     for case with expression is not supported in Petr4 parser *)
+  (* (TODO) assume switch matches on table apply result only,
+     since case with expression is not supported in Petr4 parser *)
   and interp_switch (sign : Sig.t) (ctx : Ctx.t) (expr : expr)
       (cases : switch_case list) =
     match sign with
@@ -498,8 +498,8 @@ module Make (Arch : ARCH) : INTERP = struct
       (fun (params, args) param arg ->
         match arg with
         | ExprA arg -> (params @ [ param ], args @ [ arg ])
-        | NameA (pname, arg) ->
-            let param = PMap.find pname params_map in
+        | NameA (id, arg) ->
+            let param = PMap.find id params_map in
             (params @ [ param ], args @ [ arg ])
         | _ ->
             Format.eprintf "(TODO: align_params_with_args) %a"
@@ -511,26 +511,26 @@ module Make (Arch : ARCH) : INTERP = struct
   and copyin adder (ctx_callee : Ctx.t) (params : param list)
       (values : Value.t list) =
     let copyin' (ctx_callee : Ctx.t) (param : param) (value : Value.t) =
-      let pname, dir, typ, _ = param in
+      let id, dir, typ, _ = param in
       (* (TODO) Is it correct to evaluate the type at callee? *)
       match dir with
       | No | In | InOut ->
           let typ = interp_type ctx_callee typ in
-          adder pname typ value ctx_callee
+          adder id typ value ctx_callee
       | Out ->
           let typ = interp_type ctx_callee typ in
           let value = Runtime.Ops.eval_default_value typ in
-          adder pname typ value ctx_callee
+          adder id typ value ctx_callee
     in
     List.fold_left2 copyin' ctx_callee params values
 
   and copyout (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (params : param list)
       (exprs : expr list) =
     let copyout' (ctx_caller : Ctx.t) (param : param) (expr : expr) =
-      let pname, dir, _, _ = param in
+      let id, dir, _, _ = param in
       match dir with
       | InOut | Out ->
-          let value = Ctx.find_var pname ctx_callee |> Option.get |> snd in
+          let value = Ctx.find_var id ctx_callee |> Option.get |> snd in
           interp_write ctx_caller expr value
       | _ -> ctx_caller
     in
@@ -550,8 +550,8 @@ module Make (Arch : ARCH) : INTERP = struct
     interp_exprs ctx_caller exprs
 
   and interp_extern_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
-      (fname : string) (tparams : tparam list) (params : param list)
-      (targs : typ list) (args : arg list) =
+      (tparams : tparam list) (params : param list) (targs : typ list)
+      (args : arg list) =
     (* Align the parameters with the arguments *)
     let params, args = align_params_with_args params args in
     (* Evaluate the arguments *)
@@ -564,14 +564,14 @@ module Make (Arch : ARCH) : INTERP = struct
     in
     let ctx_callee = copyin Ctx.add_var_loc ctx_callee params values in
     (* Execute the body *)
-    let sign, ctx_callee = Arch.interp_extern Sig.Cont ctx_callee fname in
+    let sign, ctx_callee = Arch.interp_extern Sig.Cont ctx_callee in
     (* Copy-out from the local environment *)
     let ctx_caller = copyout ctx_caller ctx_callee params args in
     (sign, ctx_caller, ctx_callee)
 
   and interp_extern_method_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
-      (fname : string) (tparams : tparam list) (params : param list)
-      (targs : typ list) (args : arg list) =
+      (tparams : tparam list) (params : param list) (targs : typ list)
+      (args : arg list) =
     (* Enter the function frame *)
     let ctx_callee = Ctx.enter_frame ctx_callee in
     (* Align the parameters with the arguments *)
@@ -585,7 +585,7 @@ module Make (Arch : ARCH) : INTERP = struct
     (* Copy-in to the local environment *)
     let ctx_callee = copyin Ctx.add_var_loc ctx_callee params values in
     (* Execute the body *)
-    let sign, ctx_callee = Arch.interp_extern Sig.Cont ctx_callee fname in
+    let sign, ctx_callee = Arch.interp_extern Sig.Cont ctx_callee in
     (* Copy-out from the local environment *)
     let ctx_caller = copyout ctx_caller ctx_callee params args in
     (sign, ctx_caller, ctx_callee)
@@ -657,19 +657,19 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and interp_inter_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (func : Func.t)
       (targs : typ list) (args : arg list) =
-    (* Construct the callee context and call the function *)
+    (* Restrict the callee context and call the function *)
     (* Difference between calling an extern method and a parser/control method
        is that parameters are passed to the method-local scope for the former
        and for the latter, it is the object-local scope *)
     let sign, ctx_caller, _ctx_callee =
       match func with
-      | ExternF { name; vis_glob; tparams; params } ->
+      | ExternF { vis_glob; tparams; params } ->
           let ctx_callee = { ctx_callee with vis_glob } in
-          interp_extern_app ctx_caller ctx_callee name tparams params targs args
-      | ExternMethodF { name; vis_obj; tparams; params } ->
+          interp_extern_app ctx_caller ctx_callee tparams params targs args
+      | ExternMethodF { vis_obj; tparams; params } ->
           let ctx_callee = { ctx_callee with vis_obj } in
-          interp_extern_method_app ctx_caller ctx_callee name tparams params
-            targs args
+          interp_extern_method_app ctx_caller ctx_callee tparams params targs
+            args
       | MethodF { vis_obj; tparams; params; body } ->
           let ctx_callee = { ctx_callee with vis_obj } in
           interp_method_app ctx_caller ctx_callee tparams params targs args body
@@ -681,16 +681,17 @@ module Make (Arch : ARCH) : INTERP = struct
     (* Account for global mutations, which shouldn't happen *)
     (sign, ctx_caller)
 
-  and interp_intra_app (ctx_caller : Ctx.t) ctx_table (func : Func.t)
-      (_targs : typ list) (args : arg list) =
-    (* Construct the callee context and call the function *)
+  and interp_intra_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) ctx_table
+      (func : Func.t) (_targs : typ list) (args : arg list) =
+    (* Restrict the callee context and call the function *)
     let sign, ctx_caller, ctx_callee =
       match func with
       | TableF { vis_obj } ->
-          let ctx_callee = { ctx_caller with vis_obj } in
-          interp_table_app ctx_caller ctx_callee (Option.get ctx_table)
+          let ctx_callee = { ctx_callee with vis_obj } in
+          let ctx_table = Option.get ctx_table in
+          interp_table_app ctx_caller ctx_callee ctx_table
       | ActionF { vis; params; body } ->
-          let ctx_callee = { ctx_caller with vis_obj = vis } in
+          let ctx_callee = { ctx_callee with vis_obj = vis } in
           interp_action_app ctx_caller ctx_callee params args body
       | _ -> assert false
     in
@@ -698,34 +699,41 @@ module Make (Arch : ARCH) : INTERP = struct
     let ctx_caller = { ctx_caller with env_obj = ctx_callee.env_obj } in
     (sign, ctx_caller)
 
-  and interp_object_call (ctx : Ctx.t) (obj : Object.t) (fname : Var.t)
-      (targs : typ list) (args : arg list) =
+  and interp_object_call (ctx : Ctx.t) (path : Path.t) (obj : Object.t)
+      (fid : Var.t) (targs : typ list) (args : arg list) =
     (* Resolve callee object's scope and find the callee method *)
     match obj with
     | ExternO { vis_glob; env_obj } ->
-        let ctx_callee = Ctx.init ctx.env_glob env_obj (TDEnv.empty, []) in
+        let ctx_callee =
+          Ctx.init path fid ctx.env_glob env_obj (TDEnv.empty, [])
+        in
         let ctx_callee = { ctx_callee with vis_glob } in
-        let func = Ctx.find_func_obj fname ctx_callee |> Option.get in
+        let func = Ctx.find_func_obj fid ctx_callee |> Option.get in
         interp_inter_app ctx ctx_callee func targs args
     | ParserO { vis_glob; env_obj; mthd } | ControlO { vis_glob; env_obj; mthd }
       ->
-        let ctx_callee = Ctx.init ctx.env_glob env_obj (TDEnv.empty, []) in
+        assert (fid = "apply");
+        let ctx_callee =
+          Ctx.init path fid ctx.env_glob env_obj (TDEnv.empty, [])
+        in
         let ctx_callee = { ctx_callee with vis_glob } in
-        assert (fname = "apply");
         let func = mthd in
         interp_inter_app ctx ctx_callee func targs args
     | TableO { key; actions; entries; default; custom; mthd } ->
+        assert (fid = "apply" && targs = [] && args = []);
+        let ctx_callee =
+          Ctx.init path fid ctx.env_glob ctx.env_obj env_stack_empty
+        in
         let ctx_table = Some (key, actions, entries, default, custom) in
-        assert (fname = "apply" && targs = [] && args = []);
         let func = mthd in
-        interp_intra_app ctx ctx_table func targs args
+        interp_intra_app ctx ctx_callee ctx_table func targs args
     | _ -> assert false
 
   (* In addition, headers support the following methods: ... (8.17) *)
   and interp_builtin_header_call (ctx : Ctx.t) (base : expr) (_valid : bool)
-      (fields : (field * Value.t) list) (fname : string) (_targs : typ list)
+      (fields : (field * Value.t) list) (fid : string) (_targs : typ list)
       (_args : arg list) =
-    match fname with
+    match fid with
     | "isValid" ->
         let value = Some (Value.BoolV true) in
         let sign = Sig.Ret value in
@@ -742,17 +750,16 @@ module Make (Arch : ARCH) : INTERP = struct
         (sign, ctx)
     | _ ->
         Format.eprintf
-          "(interp_builtin_header_call) %s call not supported for header\n"
-          fname;
+          "(interp_builtin_header_call) %s call not supported for header\n" fid;
         assert false
 
   (* Finally, P4 offers the following computations that
      can be used to manipulate the elements at the
      front and back of the stack: ... (8.18) *)
   and interp_builtin_stack_call (ctx : Ctx.t) (base : expr)
-      (values : Value.t list) (idx : Bigint.t) (size : Bigint.t)
-      (fname : string) (_targs : typ list) (args : arg list) =
-    match fname with
+      (values : Value.t list) (idx : Bigint.t) (size : Bigint.t) (fid : string)
+      (_targs : typ list) (args : arg list) =
+    match fid with
     | "pop_front" ->
         assert (List.length args = 1);
         let count =
@@ -779,49 +786,54 @@ module Make (Arch : ARCH) : INTERP = struct
     | _ ->
         Format.eprintf
           "(interp_builtin_stack_call) %s call not supported for header stack\n"
-          fname;
+          fid;
         assert false
 
-  and interp_method_call (ctx : Ctx.t) (base : expr) (fname : id)
+  and interp_method_call (ctx : Ctx.t) (base : expr) (fid : id)
       (targs : typ list) (args : arg list) =
     let ctx, value_base = interp_expr ctx base in
     match value_base with
     (* Calling a built-in method of a non-object value *)
     | HeaderV (valid, fields) ->
-        interp_builtin_header_call ctx base valid fields fname targs args
+        interp_builtin_header_call ctx base valid fields fid targs args
     | StackV (values, idx, size) ->
-        interp_builtin_stack_call ctx base values idx size fname targs args
+        interp_builtin_stack_call ctx base values idx size fid targs args
     (* Calling a method of an actual (user-defined) object *)
     | RefV path ->
         let obj = Sto.find path !sto |> Option.get in
-        interp_object_call ctx obj fname targs args
+        interp_object_call ctx path obj fid targs args
     | _ ->
         Format.eprintf "(TODO: interp_method_call) %a with %s\n" Value.pp
-          value_base fname;
+          value_base fid;
         assert false
 
-  and interp_func_call (ctx : Ctx.t) (fname : var) (targs : typ list)
+  and interp_func_call (ctx : Ctx.t) (fid : var) (targs : typ list)
       (args : arg list) : Sig.t * Ctx.t =
-    match fname with
-    | Top fname ->
-        let ctx_callee = Ctx.init ctx.env_glob env_empty env_stack_empty in
-        let func = Ctx.find_func_glob fname ctx |> Option.get in
-        interp_inter_app ctx ctx_callee func targs args
-    | Bare fname -> (
-        let func = Ctx.find_func_obj fname ctx in
-        match func with
-        | Some func -> interp_intra_app ctx None func targs args
-        | None ->
-            let ctx_callee = Ctx.init ctx.env_glob env_empty env_stack_empty in
-            let func = Ctx.find_func_glob fname ctx |> Option.get in
-            interp_inter_app ctx ctx_callee func targs args)
+    let interp_inter_func_call (fid : Var.t) =
+      let ctx_callee = Ctx.init [] fid ctx.env_glob env_empty env_stack_empty in
+      let func = Ctx.find_func_glob fid ctx |> Option.get in
+      interp_inter_app ctx ctx_callee func targs args
+    in
+    let interp_intra_func_call (fid : Var.t) =
+      let ctx_callee =
+        Ctx.init [] fid ctx.env_glob ctx.env_obj env_stack_empty
+      in
+      let func = Ctx.find_func_obj fid ctx |> Option.get in
+      interp_intra_app ctx ctx_callee None func targs args
+    in
+    match fid with
+    | Top fid -> interp_inter_func_call fid
+    | Bare fid ->
+        if Option.is_some (Ctx.find_func_obj fid ctx) then
+          interp_intra_func_call fid
+        else interp_inter_func_call fid
 
   and interp_call (ctx : Ctx.t) (func : expr) (targs : typ list)
       (args : arg list) =
     match func with
     (* method call *)
-    | ExprAccE (expr, fname) -> interp_method_call ctx expr fname targs args
-    (* (TODO) function call *)
-    | VarE fname -> interp_func_call ctx fname targs args
+    | ExprAccE (expr, fid) -> interp_method_call ctx expr fid targs args
+    (* function call *)
+    | VarE fid -> interp_func_call ctx fid targs args
     | _ -> assert false
 end

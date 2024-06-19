@@ -32,6 +32,5 @@ module Make (Interp : INTERP) : ARCH = struct
     Format.printf "After calling main._p\n%a@\n" Ctx.pp ctx;
     ()
 
-  let interp_extern (_sign : Sig.t) (_ctx : Ctx.t) (_mthd : string) =
-    assert false
+  let interp_extern (_sign : Sig.t) (_ctx : Ctx.t) = assert false
 end

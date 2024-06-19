@@ -157,30 +157,32 @@ module Make (Interp : INTERP) : ARCH = struct
     Format.printf "\nFinal v1model driver context\n%a@." Ctx.pp_var ctx;
     ()
 
-  (* (TODO) how to figure out on which extern object the mthd is called?
-     currently it assumes that "extract" is called on PacketIn, ... *)
-  let interp_extern (sign : Sig.t) (ctx : Ctx.t) (mthd : string) =
+  let interp_extern (sign : Sig.t) (ctx : Ctx.t) =
+    let path, func = (ctx.path, ctx.func) in
     match sign with
     | Ret _ | Exit -> (sign, ctx)
     | Cont -> (
-        match mthd with
-        | "extract" -> (
+        match (path, func) with
+        | [ "packet_in" ], "extract" -> (
             match EM.find "packet_in" !externs with
             | PacketIn pkt_in ->
                 let ctx, pkt_in = Core.PacketIn.extract ctx pkt_in in
                 externs := EM.add "packet_in" (PacketIn pkt_in) !externs;
                 (sign, ctx)
             | _ -> assert false)
-        | "emit" -> (
+        | [ "packet_out" ], "emit" -> (
             match EM.find "packet_out" !externs with
             | PacketOut pkt_out ->
                 let ctx, pkt_out = Core.PacketOut.emit ctx pkt_out in
                 externs := EM.add "packet_out" (PacketOut pkt_out) !externs;
                 (sign, ctx)
             | _ -> assert false)
-        | "verify_checksum" -> Hash.verify_checksum ctx |> fun ctx -> (sign, ctx)
-        | "update_checksum" -> Hash.update_checksum ctx |> fun ctx -> (sign, ctx)
+        | [], "verify_checksum" ->
+            Hash.verify_checksum ctx |> fun ctx -> (sign, ctx)
+        | [], "update_checksum" ->
+            Hash.update_checksum ctx |> fun ctx -> (sign, ctx)
         | _ ->
-            Format.eprintf "Unknown builtin extern method %s@." mthd;
+            Format.eprintf "Unknown builtin extern method %a.%a@." Path.pp path
+              Var.pp func;
             assert false)
 end
