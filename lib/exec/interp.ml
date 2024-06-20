@@ -28,8 +28,6 @@ module Make (Arch : ARCH) : INTERP = struct
   let rec interp_type (ctx : Ctx.t) (typ : typ) : Type.t =
     match typ with
     | BoolT -> BoolT
-    | ErrT -> Ctx.find_td_glob "error" ctx |> Option.get
-    | StrT -> StrT
     | AIntT -> AIntT
     | IntT width ->
         let width =
@@ -46,6 +44,9 @@ module Make (Arch : ARCH) : INTERP = struct
           interp_expr ctx width |> snd |> Runtime.Ops.extract_bigint
         in
         VBitT width
+    | StrT -> StrT
+    | ErrT -> Ctx.find_td_glob "error" ctx |> Option.get
+    | MatchKindT -> Ctx.find_td_glob "match_kind" ctx |> Option.get
     | NameT (Top id) -> Ctx.find_td_glob id ctx |> Option.get
     | NameT (Bare id) -> Ctx.find_td id ctx |> Option.get
     (* (TODO) Handle specialized types *)
@@ -564,7 +565,7 @@ module Make (Arch : ARCH) : INTERP = struct
     in
     let ctx_callee = copyin Ctx.add_var_loc ctx_callee params values in
     (* Execute the body *)
-    let sign, ctx_callee = Arch.interp_extern Sig.Cont ctx_callee in
+    let sign, ctx_callee = Arch.interp_extern ctx_callee in
     (* Copy-out from the local environment *)
     let ctx_caller = copyout ctx_caller ctx_callee params args in
     (sign, ctx_caller, ctx_callee)
@@ -585,7 +586,7 @@ module Make (Arch : ARCH) : INTERP = struct
     (* Copy-in to the local environment *)
     let ctx_callee = copyin Ctx.add_var_loc ctx_callee params values in
     (* Execute the body *)
-    let sign, ctx_callee = Arch.interp_extern Sig.Cont ctx_callee in
+    let sign, ctx_callee = Arch.interp_extern ctx_callee in
     (* Copy-out from the local environment *)
     let ctx_caller = copyout ctx_caller ctx_callee params args in
     (sign, ctx_caller, ctx_callee)
@@ -620,18 +621,16 @@ module Make (Arch : ARCH) : INTERP = struct
     let ctx_caller = copyout ctx_caller ctx_callee params args in
     (sign, ctx_caller, ctx_callee)
 
-  and interp_table_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) ctx_table =
-    let key, actions, entries, default, custom = ctx_table in
+  and interp_table_app (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (table : table)
+      =
+    (* Evaluate the keys *)
+    let keys, actions, entries, default, custom = table in
+    let exprs, mtchs = List.split keys in
+    let ctx_caller, values = interp_exprs ctx_caller exprs in
+    let keys = List.combine values mtchs in
     (* Invoke the match-action table to get an action *)
-    let ctx_caller, key =
-      List.fold_left
-        (fun (ctx_caller, key) (expr, mtch) ->
-          let ctx_caller, value = interp_expr ctx_caller expr in
-          (ctx_caller, key @ [ (value, mtch) ]))
-        (ctx_caller, []) key
-    in
     let action, value =
-      Control.match_action ctx_callee key actions entries default custom
+      Control.match_action ctx_callee keys actions entries default custom
     in
     let hit =
       match fetch_struct_field value "hit" with
@@ -649,7 +648,7 @@ module Make (Arch : ARCH) : INTERP = struct
         match (sign : Sig.t) with
         | Cont -> Sig.Ret (Some value)
         | Ret _ ->
-            Format.eprintf "(interp_table_call) Action should not return.\n";
+            Format.eprintf "(interp_table_app) Action should not return.\n";
             assert false
         | Exit -> sign
       in
@@ -688,8 +687,8 @@ module Make (Arch : ARCH) : INTERP = struct
       match func with
       | TableF { vis_obj } ->
           let ctx_callee = { ctx_callee with vis_obj } in
-          let ctx_table = Option.get ctx_table in
-          interp_table_app ctx_caller ctx_callee ctx_table
+          let table = Option.get ctx_table in
+          interp_table_app ctx_caller ctx_callee table
       | ActionF { vis; params; body } ->
           let ctx_callee = { ctx_callee with vis_obj = vis } in
           interp_action_app ctx_caller ctx_callee params args body
@@ -719,13 +718,13 @@ module Make (Arch : ARCH) : INTERP = struct
         let ctx_callee = { ctx_callee with vis_glob } in
         let func = mthd in
         interp_inter_app ctx ctx_callee func targs args
-    | TableO { key; actions; entries; default; custom; mthd } ->
+    | TableO { table; mthd } ->
         assert (fid = "apply" && targs = [] && args = []);
         let ctx_callee =
           Ctx.init (path, fid) ctx.env_glob ctx.env_obj env_stack_empty
         in
         let ctx_callee = { ctx_callee with vis_glob = ctx.vis_glob } in
-        let ctx_table = Some (key, actions, entries, default, custom) in
+        let ctx_table = Some table in
         let func = mthd in
         interp_intra_app ctx ctx_callee ctx_table func targs args
     | _ -> assert false

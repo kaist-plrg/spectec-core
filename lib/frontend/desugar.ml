@@ -469,10 +469,8 @@ and desugar_decl (decl : Declaration.t) : decl =
       ActionD { name; params; body }
   | Table { name; properties; _ } ->
       let name = name.str in
-      let key, actions, entries, default, custom =
-        desugar_table_properties properties
-      in
-      TableD { name; key; actions; entries; default; custom }
+      let table = desugar_table_properties properties in
+      TableD { name; table }
   | ControlType { name; type_params; params; _ } ->
       let name = name.str in
       let tparams = desugar_tparams type_params in

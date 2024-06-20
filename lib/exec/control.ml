@@ -4,7 +4,7 @@ open Runtime.Context
 
 (* Logic for match-action table *)
 
-let match_action (_ctx : Ctx.t) (_key : (Value.t * string) list)
+let match_action (_ctx : Ctx.t) (_keys : (Value.t * mtchkind) list)
     (actions : table_action list) (_entries : table_entry list)
     (default : table_default option) (_custom : table_custom list) =
   (* Determine the action to be run *)

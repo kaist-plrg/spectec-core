@@ -355,7 +355,8 @@ and print_decl fmt (level, decl) =
   | ActionD { name; params; body } ->
       F.fprintf fmt "%saction %s%a\n%a" (indent level) name print_params params
         print_block (level, body)
-  | TableD { name; key; actions; entries; default; custom } ->
+  | TableD { name; table } ->
+      let key, actions, entries, default, custom = table in
       F.fprintf fmt "%stable %s {\n%a\n%a\n%a\n%a\n%a\n%s}" (indent level) name
         print_table_keys
         (level + 1, key)

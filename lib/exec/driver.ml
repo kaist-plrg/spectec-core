@@ -6,7 +6,7 @@ open Runtime.Signal
 
 module type ARCH = sig
   val drive : CCEnv.t -> Sto.t -> Ctx.t -> Stf.Ast.stmt list -> unit
-  val interp_extern : Sig.t -> Ctx.t -> Sig.t * Ctx.t
+  val interp_extern : Ctx.t -> Sig.t * Ctx.t
 end
 
 module type INTERP = sig

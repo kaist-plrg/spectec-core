@@ -8,14 +8,7 @@ module Object = struct
   type t =
     (* Objects that are actually stateful *)
     | ValueSetO
-    | TableO of {
-        key : table_key list;
-        actions : table_action list;
-        entries : table_entry list;
-        default : table_default option;
-        custom : table_custom list;
-        mthd : Func.t; (* "apply" *)
-      }
+    | TableO of { table : table; mthd : Func.t (* "apply" *) }
     | ExternO of { vis_glob : vis; env_obj : env }
     (* Objects serving as wrappers *)
     | ParserO of {

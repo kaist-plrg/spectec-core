@@ -139,14 +139,7 @@ and decl =
     }
   (* Control *)
   | ActionD of { name : id; params : param list; body : block }
-  | TableD of {
-      name : id;
-      key : table_key list;
-      actions : table_action list;
-      entries : table_entry list;
-      default : table_default option;
-      custom : table_custom list;
-    }
+  | TableD of { name : id; table : table }
   | ControlTypeD of { name : id; tparams : tparam list; params : param list }
   | ControlD of {
       name : id;
@@ -197,6 +190,13 @@ and table_action = var * arg list
 and table_entry = mtch list * table_action
 and table_default = table_action * bool
 and table_custom = field * expr * bool
+
+and table =
+  table_key list
+  * table_action list
+  * table_entry list
+  * table_default option
+  * table_custom list
 
 (* Program *)
 type program = decl list

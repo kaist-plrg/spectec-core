@@ -100,6 +100,10 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       let typ = Type.ErrT fields in
       let ictx = ICtx.add_td_glob "error" typ ictx in
       (ccenv, ictx)
+  | MatchKindD { fields } ->
+      let typ = Type.MatchKindT fields in
+      let ictx = ICtx.add_td_glob "match_kind" typ ictx in
+      (ccenv, ictx)
   | StructD { name; fields } ->
       let fields =
         List.map (fun (name, typ) -> (name, Eval.eval_type ictx typ)) fields
@@ -425,13 +429,11 @@ and instantiate_control_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
   (* There is no syntax for specifying parameters that are tables
      Tables are only intended to be used from within the control
      where they are defined (Appendix F) *)
-  | TableD { name; key; actions; entries; default; custom } ->
+  | TableD { name; table } ->
       let path = path @ [ name ] in
       (* Build a dummy "apply" method for table *)
       let apply = Func.TableF { vis_obj = ictx.vis_obj } in
-      let obj =
-        Object.TableO { key; actions; entries; default; custom; mthd = apply }
-      in
+      let obj = Object.TableO { table; mthd = apply } in
       let value = Value.RefV path in
       let typ = Type.RefT in
       let ictx = ICtx.add_var_obj name typ value ictx in

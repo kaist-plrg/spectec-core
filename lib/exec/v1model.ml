@@ -157,32 +157,29 @@ module Make (Interp : INTERP) : ARCH = struct
     Format.printf "\nFinal v1model driver context\n%a@." Ctx.pp_var ctx;
     ()
 
-  let interp_extern (sign : Sig.t) (ctx : Ctx.t) =
-    match sign with
-    | Ret _ | Exit -> (sign, ctx)
-    | Cont -> (
-        match ctx.id with
-        | [ "packet_in" ], "extract" -> (
-            match EM.find "packet_in" !externs with
-            | PacketIn pkt_in ->
-                let ctx, pkt_in = Core.PacketIn.extract ctx pkt_in in
-                externs := EM.add "packet_in" (PacketIn pkt_in) !externs;
-                (sign, ctx)
-            | _ -> assert false)
-        | [ "packet_out" ], "emit" -> (
-            match EM.find "packet_out" !externs with
-            | PacketOut pkt_out ->
-                let ctx, pkt_out = Core.PacketOut.emit ctx pkt_out in
-                externs := EM.add "packet_out" (PacketOut pkt_out) !externs;
-                (sign, ctx)
-            | _ -> assert false)
-        | [], "verify_checksum" ->
-            Hash.verify_checksum ctx |> fun ctx -> (sign, ctx)
-        | [], "update_checksum" ->
-            Hash.update_checksum ctx |> fun ctx -> (sign, ctx)
-        | _ ->
-            let path, func = ctx.id in
-            Format.eprintf "Unknown builtin extern method %a.%a@." Path.pp path
-              Var.pp func;
-            assert false)
+  let interp_extern (ctx : Ctx.t) =
+    match ctx.id with
+    | [ "packet_in" ], "extract" -> (
+        match EM.find "packet_in" !externs with
+        | PacketIn pkt_in ->
+            let ctx, pkt_in = Core.PacketIn.extract ctx pkt_in in
+            externs := EM.add "packet_in" (PacketIn pkt_in) !externs;
+            (Sig.Ret None, ctx)
+        | _ -> assert false)
+    | [ "packet_out" ], "emit" -> (
+        match EM.find "packet_out" !externs with
+        | PacketOut pkt_out ->
+            let ctx, pkt_out = Core.PacketOut.emit ctx pkt_out in
+            externs := EM.add "packet_out" (PacketOut pkt_out) !externs;
+            (Sig.Ret None, ctx)
+        | _ -> assert false)
+    | [], "verify_checksum" ->
+        Hash.verify_checksum ctx |> fun ctx -> (Sig.Ret None, ctx)
+    | [], "update_checksum" ->
+        Hash.update_checksum ctx |> fun ctx -> (Sig.Ret None, ctx)
+    | _ ->
+        let path, func = ctx.id in
+        Format.eprintf "Unknown builtin extern method %a.%a@." Path.pp path
+          Var.pp func;
+        assert false
 end

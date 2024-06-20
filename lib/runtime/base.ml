@@ -22,6 +22,7 @@ module Type = struct
     | VBitT of Bigint.t
     | StrT
     | ErrT of field list
+    | MatchKindT of field list
     | NameT of id
     | NewT of id
     | StackT of (t * Bigint.t)
@@ -40,12 +41,18 @@ module Type = struct
     | BitT w -> Format.fprintf fmt "%sw" (Bigint.to_string w)
     | VBitT w -> Format.fprintf fmt "%sv" (Bigint.to_string w)
     | StrT -> Format.fprintf fmt "string"
-    | ErrT ms ->
+    | ErrT fs ->
         Format.fprintf fmt "error { @[<hv>%a@] }"
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              Format.pp_print_string)
-          ms
+          fs
+    | MatchKindT fs ->
+        Format.fprintf fmt "match_kind { @[<hv>%a@] }"
+          (Format.pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
+             Format.pp_print_string)
+          fs
     | NameT n -> Format.fprintf fmt "%s" n
     | NewT n -> Format.fprintf fmt "new %s" n
     | StackT (t, s) -> Format.fprintf fmt "%a[%s]" pp t (Bigint.to_string s)
@@ -73,12 +80,12 @@ module Type = struct
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (f, t) -> Format.fprintf fmt "%s: %a" f pp t))
           fs
-    | EnumT ms ->
+    | EnumT fs ->
         Format.fprintf fmt "enum { @[<hv>%a@] }"
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              Format.pp_print_string)
-          ms
+          fs
     | RefT -> Format.fprintf fmt "ref"
 end
 
@@ -93,6 +100,7 @@ module Value = struct
     | VBitV of Bigint.t * Bigint.t
     | StrV of string
     | ErrV of field
+    | MatchKindV of field
     | StackV of (t list * Bigint.t * Bigint.t)
     | TupleV of t list
     | StructV of (field * t) list
@@ -114,6 +122,7 @@ module Value = struct
         Format.fprintf fmt "%sv%s" (Bigint.to_string w) (Bigint.to_string i)
     | StrV s -> Format.fprintf fmt "\"%s\"" s
     | ErrV s -> Format.fprintf fmt "%s" s
+    | MatchKindV s -> Format.fprintf fmt "%s" s
     | StackV (vs, _i, s) ->
         Format.fprintf fmt "%a[%s]"
           (Format.pp_print_list
@@ -145,8 +154,8 @@ module Value = struct
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (f, v) -> Format.fprintf fmt "%s: %a" f pp v))
           fs
-    | EnumFieldV m -> Format.fprintf fmt "%s" m
-    | SEnumFieldV (m, v) -> Format.fprintf fmt "%s(%a)" m pp v
+    | EnumFieldV f -> Format.fprintf fmt "%s" f
+    | SEnumFieldV (f, v) -> Format.fprintf fmt "%s(%a)" f pp v
     | RefV ps -> Format.fprintf fmt "ref %s" (String.concat "." ps)
 end
 

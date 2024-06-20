@@ -4,7 +4,6 @@ open Runtime.Base
 open Runtime.Object
 open Runtime.Cclos
 open Runtime.Context
-open Runtime.Signal
 open Driver
 
 module Make (Interp : INTERP) : ARCH = struct
@@ -32,5 +31,5 @@ module Make (Interp : INTERP) : ARCH = struct
     Format.printf "After calling main._p\n%a@\n" Ctx.pp ctx;
     ()
 
-  let interp_extern (_sign : Sig.t) (_ctx : Ctx.t) = assert false
+  let interp_extern (_ctx : Ctx.t) = assert false
 end
