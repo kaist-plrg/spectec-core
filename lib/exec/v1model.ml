@@ -158,11 +158,10 @@ module Make (Interp : INTERP) : ARCH = struct
     ()
 
   let interp_extern (sign : Sig.t) (ctx : Ctx.t) =
-    let path, func = (ctx.path, ctx.func) in
     match sign with
     | Ret _ | Exit -> (sign, ctx)
     | Cont -> (
-        match (path, func) with
+        match ctx.id with
         | [ "packet_in" ], "extract" -> (
             match EM.find "packet_in" !externs with
             | PacketIn pkt_in ->
@@ -182,6 +181,7 @@ module Make (Interp : INTERP) : ARCH = struct
         | [], "update_checksum" ->
             Hash.update_checksum ctx |> fun ctx -> (sign, ctx)
         | _ ->
+            let path, func = ctx.id in
             Format.eprintf "Unknown builtin extern method %a.%a@." Path.pp path
               Var.pp func;
             assert false)

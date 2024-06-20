@@ -146,8 +146,7 @@ end
 
 module Ctx = struct
   type t = {
-    path : Path.t;
-    func : Var.t;
+    id : Path.t * Var.t;
     env_glob : env;
     vis_glob : vis;
     env_obj : env;
@@ -157,8 +156,7 @@ module Ctx = struct
 
   let empty =
     {
-      path = [];
-      func = "";
+      id = ([], "");
       env_glob = env_empty;
       vis_glob = vis_empty;
       env_obj = env_empty;
@@ -166,10 +164,10 @@ module Ctx = struct
       env_loc = env_stack_empty;
     }
 
-  let init path func env_glob env_obj env_loc =
+  let init id env_glob env_obj env_loc =
     let vis_glob = env_to_vis env_glob in
     let vis_obj = env_to_vis env_obj in
-    { path; func; env_glob; vis_glob; env_obj; vis_obj; env_loc }
+    { id; env_glob; vis_glob; env_obj; vis_obj; env_loc }
 
   (* Adders and updaters *)
 
@@ -221,8 +219,7 @@ module Ctx = struct
     }
 
   let update_var name typ value ctx =
-    let path = ctx.path in
-    let func = ctx.func in
+    let id = ctx.id in
     let gtdenv, genv, gfenv = ctx.env_glob in
     let _, gvis, _ = ctx.vis_glob in
     let otdenv, oenv, ofenv = ctx.env_obj in
@@ -254,8 +251,7 @@ module Ctx = struct
       | _ -> assert false
     in
     {
-      path;
-      func;
+      id;
       env_glob = (gtdenv, genv, gfenv);
       vis_glob = ctx.vis_glob;
       env_obj = (otdenv, oenv, ofenv);

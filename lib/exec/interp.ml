@@ -705,7 +705,7 @@ module Make (Arch : ARCH) : INTERP = struct
     match obj with
     | ExternO { vis_glob; env_obj } ->
         let ctx_callee =
-          Ctx.init path fid ctx.env_glob env_obj (TDEnv.empty, [])
+          Ctx.init (path, fid) ctx.env_glob env_obj (TDEnv.empty, [])
         in
         let ctx_callee = { ctx_callee with vis_glob } in
         let func = Ctx.find_func_obj fid ctx_callee |> Option.get in
@@ -714,7 +714,7 @@ module Make (Arch : ARCH) : INTERP = struct
       ->
         assert (fid = "apply");
         let ctx_callee =
-          Ctx.init path fid ctx.env_glob env_obj (TDEnv.empty, [])
+          Ctx.init (path, fid) ctx.env_glob env_obj (TDEnv.empty, [])
         in
         let ctx_callee = { ctx_callee with vis_glob } in
         let func = mthd in
@@ -722,7 +722,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | TableO { key; actions; entries; default; custom; mthd } ->
         assert (fid = "apply" && targs = [] && args = []);
         let ctx_callee =
-          Ctx.init path fid ctx.env_glob ctx.env_obj env_stack_empty
+          Ctx.init (path, fid) ctx.env_glob ctx.env_obj env_stack_empty
         in
         let ctx_callee = { ctx_callee with vis_glob = ctx.vis_glob } in
         let ctx_table = Some (key, actions, entries, default, custom) in
@@ -763,23 +763,21 @@ module Make (Arch : ARCH) : INTERP = struct
     match fid with
     | "pop_front" ->
         assert (List.length args = 1);
-        let count =
-          match List.hd args with
-          | ExprA expr ->
-              interp_expr ctx expr |> snd |> Eval.unpack_value |> Bigint.to_int
-              |> Option.get
-          | _ -> assert false
+        let ctx, count =
+          (match List.hd args with ExprA expr -> expr | _ -> assert false)
+          |> interp_expr ctx
         in
+        let count = Eval.unpack_value count |> Bigint.to_int |> Option.get in
         let values =
-          List.fold_left
-            (fun (count, values) value ->
-              if count > 0 then (count - 1, values) else (0, values @ [ value ]))
-            (count, []) values
-          |> snd
+          let values = Array.of_list values in
+          let size = Bigint.to_int size |> Option.get in
+          Array.sub values count (size - count) |> Array.to_list
         in
         (* (TODO) How to fill the rest with default values? Should know the types *)
-        let idx = Bigint.to_int idx |> Option.get in
-        let idx = Bigint.of_int (idx + count) in
+        let idx =
+          let idx = Bigint.to_int idx |> Option.get in
+          Bigint.of_int (idx + count)
+        in
         let value = Value.StackV (values, idx, size) in
         let ctx = interp_write ctx base value in
         let sign = Sig.Ret None in
@@ -811,13 +809,15 @@ module Make (Arch : ARCH) : INTERP = struct
   and interp_func_call (ctx : Ctx.t) (fid : var) (targs : typ list)
       (args : arg list) : Sig.t * Ctx.t =
     let interp_inter_func_call (fid : Var.t) =
-      let ctx_callee = Ctx.init [] fid ctx.env_glob env_empty env_stack_empty in
+      let ctx_callee =
+        Ctx.init ([], fid) ctx.env_glob env_empty env_stack_empty
+      in
       let func = Ctx.find_func_glob fid ctx |> Option.get in
       interp_inter_app ctx ctx_callee func targs args
     in
     let interp_intra_func_call (fid : Var.t) =
       let ctx_callee =
-        Ctx.init [] fid ctx.env_glob ctx.env_obj env_stack_empty
+        Ctx.init ([], fid) ctx.env_glob ctx.env_obj env_stack_empty
       in
       let ctx_callee = { ctx_callee with vis_glob = ctx.vis_glob } in
       let func = Ctx.find_func_obj fid ctx |> Option.get in

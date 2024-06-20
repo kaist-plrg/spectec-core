@@ -477,5 +477,5 @@ let instantiate_program (program : program) =
         instantiate_glob_decl ccenv sto ictx [] decl)
       (ccenv, sto, ictx) program
   in
-  let ctx = Ctx.init [] "" ictx.env_glob ictx.env_obj (TDEnv.empty, []) in
+  let ctx = Ctx.init ([], "") ictx.env_glob ictx.env_obj (TDEnv.empty, []) in
   (ccenv, sto, ctx)
