@@ -51,7 +51,7 @@ type bit<32> PortIdInHeader_t;
 
 // Included here simply so I can use type PortId_t in my
 // locally-modified version of v1model.p4, called v1model-type.p4.
-#include "v1model-newtype.pp"
+#include "v1model-newtype.p4"
 
 
 header ethernet_t {

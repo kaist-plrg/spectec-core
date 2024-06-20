@@ -642,14 +642,14 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
 let rec eval_default_value (typ : Type.t) : Value.t =
   match typ with
   | BoolT -> BoolV false
-  | ErrT ms ->
-      assert (List.mem "NoError" ms);
-      ErrV "NoError"
-  | StrT -> StrV ""
   | AIntT -> AIntV Bigint.zero
   | IntT width -> IntV (width, Bigint.zero)
   | BitT width -> BitV (width, Bigint.zero)
   | VBitT width -> VBitV (width, Bigint.zero)
+  | ErrT ms ->
+      assert (List.mem "NoError" ms);
+      ErrV "NoError"
+  | StrT -> StrV ""
   | StackT (typ, size) ->
       let values =
         List.init
@@ -658,16 +658,22 @@ let rec eval_default_value (typ : Type.t) : Value.t =
       in
       StackV (values, Bigint.zero, size)
   | TupleT types -> TupleV (List.map eval_default_value types)
-  | StructT entries ->
-      let entries =
-        List.map (fun (name, typ) -> (name, eval_default_value typ)) entries
+  | StructT fields ->
+      let fields =
+        List.map (fun (field, typ) -> (field, eval_default_value typ)) fields
       in
-      StructV entries
-  | HeaderT entries ->
-      let entries =
-        List.map (fun (name, typ) -> (name, eval_default_value typ)) entries
+      StructV fields
+  | HeaderT fields ->
+      let fields =
+        List.map (fun (field, typ) -> (field, eval_default_value typ)) fields
       in
-      HeaderV (false, entries)
+      HeaderV (false, fields)
+  | UnionT fields ->
+      let fields =
+        List.map (fun (field, typ) -> (field, eval_default_value typ)) fields
+      in
+      HeaderV (false, fields)
+  | EnumT fields -> EnumFieldV (List.hd fields)
   | RefT -> RefV []
   | _ ->
       Format.asprintf "(TODO) default_value: not implemented for %a" Type.pp typ

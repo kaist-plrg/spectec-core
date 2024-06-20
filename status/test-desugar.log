@@ -1,4 +1,4 @@
-Running desugar roundtrip tests on 625 files
+Running desugar roundtrip tests on 624 files
 Parser fail on string: test/program/tuple.p4
 Parser fail on string: test/program/issue1062-bmv2.p4
 Parser fail on string: test/program/constant-in-calculation-bmv2.p4
@@ -33,7 +33,7 @@ Parser fail on string: test/program/v1model-const-entries-bmv2.p4
 Parser fail on string: test/program/action_param1.p4
 Parser fail on string: test/program/issue461-bmv2.p4
 Parser fail on string: test/program/factory2.p4
-Parser fail on file: test/program/basic_routing-bmv2.p4
+Parser fail on string: test/program/basic_routing-bmv2.p4
 Parser fail on string: test/program/match-on-exprs-bmv2.p4
 Parser fail on string: test/program/issue1334.p4
 Parser fail on string: test/program/standard_headers.p4
@@ -573,7 +573,7 @@ Parser fail on string: test/program/issue638-1.p4
 Parser fail on string: test/program/recursive-casts.p4
 Parser fail on string: test/program/complex.p4
 Parser fail on string: test/program/psa-meter4.p4
-Parser fails on file: 1 / 625
+Parser fails on file: 0 / 624
 Desugar fails: 11 / 624
-Parser fails on string: 554 / 613
-Desugar roundtrip fails: 8 / 59
+Parser fails on string: 555 / 613
+Desugar roundtrip fails: 8 / 58
