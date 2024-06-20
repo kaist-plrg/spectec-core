@@ -48,11 +48,6 @@ def $empty_context() : ctx hint(show NEW)
 def $enter_frame(ctx) : ctx hint(show ENTER %)
 def $exit_frame(ctx) : ctx  hint(show EXIT %)
 
-;; Restrictions
-
-def $restrict_glob(ctx, vis) : ctx hint(show RESTRICT_GLOB % BY %)
-def $restrict_obj(ctx, vis) : ctx  hint(show RESTRICT_OBJ % BY %)
-
 ;; Finders
 
 def $find_td_glob(ctx, id) : rtype

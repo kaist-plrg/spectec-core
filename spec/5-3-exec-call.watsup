@@ -127,7 +127,7 @@ rule Interp_mcall/object-extern:
   ----
   -- if C_callee = $empty_context()[.PATH = path][.ID = mem][.GENV = C_caller.GENV][.OENV = env_obj]
   ----
-  -- if C_callee' = $restrict_glob(C_callee, vis_glob)
+  -- if C_callee' = C_callee[.GVIS = vis_glob]
   ----
   -- if func = $find_func_obj(C_callee', mem)
   ----
@@ -142,7 +142,7 @@ rule Interp_mcall/object-parser:
   ----
   -- if C_callee = $empty_context()[.PATH = path][.ID = "apply"][.GENV = C_caller.GENV][.OENV = env_obj]
   ----
-  -- if C_callee' = $restrict_glob(C_callee, vis_glob)
+  -- if C_callee' = C_callee[.GVIS = vis_glob]
   ----
   -- Interp_inter_call: S C_caller C_callee' |- func type* arg* : sig C_caller''
 
@@ -155,7 +155,7 @@ rule Interp_mcall/object-control:
   ----
   -- if C_callee = $empty_context()[.PATH = path][.ID = "apply"][.GENV = C_caller.GENV][.OENV = env_obj]
   ----
-  -- if C_callee' = $restrict_glob(C_callee, vis_glob)
+  -- if C_callee' = C_callee[.GVIS = vis_glob]
   ----
   -- Interp_inter_call: S C_caller C_callee' |- func type* arg* : sig C_caller''
 
@@ -179,7 +179,7 @@ rule Interp_mcall/object-table:
 rule Interp_inter_call/extern:
   S C_caller C_callee |- (F_EXTERN vis_glob tparam* param*) type* arg* : sig C_caller''
   ----
-  -- if C_callee' = $restrict_glob(C_callee, vis_glob)
+  -- if C_callee' = C_callee[.GVIS = vis_glob]
   -- if C_callee'' = $enter_frame(C_callee')
   ----
   -- if (param'*, expr*) = $align_args(param*, arg*)
@@ -196,7 +196,7 @@ rule Interp_inter_call/extern:
 rule Interp_inter_call/extern_method:
   S C_caller C_callee |- (F_EXTERNMETHOD vis_obj tparam* param*) type* arg* : sig C_caller''
   ----
-  -- if C_callee' = $restrict_obj(C_callee, vis_obj)
+  -- if C_callee' = C_callee[.OVIS = vis_obj]
   -- if C_callee'' = $enter_frame(C_callee')
   ----
   -- if (param'*, expr*) = $align_args(param*, arg*)
@@ -213,7 +213,7 @@ rule Interp_inter_call/extern_method:
 rule Interp_inter_call/method:
   S C_caller C_callee |- (F_METHOD vis_obj tparam* param* block) type* arg* : sig C_caller''
   ----
-  -- if C_callee' = $restrict_obj(C_callee, vis_obj)
+  -- if C_callee' = C_callee[.OVIS = vis_obj]
   ----
   -- if (param'*, expr*) = $align_args(param*, arg*)
   ----
@@ -229,7 +229,7 @@ rule Interp_inter_call/method:
 rule Interp_inter_call/action:
   S C_caller C_callee |- (F_ACTION vis param* block) type* arg* : sig C_caler''
   ----
-  -- if C_callee = $restrict_glob(C_callee, vis)
+  -- if C_callee' = C_callee[.GVIS = vis]
   -- if C_callee'' = $enter_frame(C_callee')
   ----
   -- if (param'*, expr*) = $align_args(param*, arg*)
@@ -251,7 +251,7 @@ rule Interp_inter_call/action:
 rule Interp_intra_call/action:
   S C_caller C_callee |- (F_ACTION vis param* block) type* arg* : sig C_caller'''
   ----
-  -- if C_callee' = $restrict_obj(C_callee, vis)
+  -- if C_callee' = C_callee[.OVIS = vis]
   -- if C_callee'' = $enter_frame(C_callee')
   ----
   -- if (param'*, expr*) = $align_args(param*, arg*)
