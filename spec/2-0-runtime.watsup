@@ -14,24 +14,28 @@ var VIS : vis
 
 ;; Runtime type, value, and function
 
-syntax rtype =
-  | RT_BOOL                   hint(show TBOOL)
-  | RT_AINT                   hint(show TINT)
-  | RT_INT num                hint(show TINT%)
-  | RT_BIT num                hint(show TBIT%)
-  | RT_VBIT num               hint(show TVARBIT%)
-  | RT_STR                    hint(show TSTR)
-  | RT_ERR str*               hint(show TERR %)
-  | RT_NAME str               hint(show TVAR %)
-  | RT_NEW str                hint(show TNEW %)
-  | RT_STACK rtype num        hint(show TSTACK %`[%])
-  | RT_TUPLE rtype*           hint(show TTUPLE %)
-  | RT_STRUCT (str, rtype)*   hint(show TSTRUCT %)
-  | RT_HEADER (str, rtype)*   hint(show THEADER %)
-  | RT_UNION (str, rtype)*    hint(show TUNION %)
-  | RT_ENUM str*              hint(show TENUM %)
-  | RT_REF                    hint(show TREF %)
+;; Runtime Type
 
+syntax rtype =
+  | RT_BOOL                       hint(show TBOOL)
+  | RT_AINT                       hint(show TINT)
+  | RT_INT num                    hint(show TINT%)
+  | RT_BIT num                    hint(show TBIT%)
+  | RT_VBIT num                   hint(show TVARBIT%)
+  | RT_STR                        hint(show TSTR)
+  | RT_ERR field*                 hint(show TERR %)
+  | RT_MATCHKIND field*           hint(show TMATCHKIND %)
+  | RT_NAME str                   hint(show TVAR %)
+  | RT_NEW str                    hint(show TNEW %)
+  | RT_STACK rtype num            hint(show TSTACK %`[%])
+  | RT_TUPLE rtype*               hint(show TTUPLE %)
+  | RT_STRUCT (field, rtype)*     hint(show TSTRUCT %)
+  | RT_HEADER (field, rtype)*     hint(show THEADER %)
+  | RT_UNION (field, rtype)*      hint(show TUNION %)
+  | RT_ENUM field*                hint(show TENUM %)
+  | RT_REF                        hint(show TREF %)
+
+;; Value
 
 syntax val =
   | V_BOOL boolean                hint(show VBOOL %)
@@ -53,6 +57,7 @@ syntax val =
 def $find_field((str, val)*, str) : val
 def $write_field((str, val)*, str, val) : (str, val)* 
 
+;; Function
 
 syntax func =
   | F_FUNC vis tparam* param* type block      hint(show FFUNC % % % % %)
@@ -64,7 +69,7 @@ syntax func =
   | F_TABLE vis                               hint(show FTABLE)
 
 
-;; Environments for type, value, and functions
+;; Environments for runtime type, value, and functions
 
 syntax tdenv = map(id, rtype)
 syntax venv = map(id, val)
@@ -72,6 +77,27 @@ syntax fenv = map(id, func)
 syntax env = tdenv venv fenv
 
 var ENV : env
+
+def $env_to_vis(env) : vis
+
+
+;; Object Constructor Closure
+
+syntax cclos =
+  | CC_PARSER tparam* param* param* decl* state*      hint(show CCPARSER)
+  | CC_CONTROL tparam* param* param* decl* block      hint(show CCCONTROL)
+  | CC_PACKAGE tparam* param* decl*                   hint(show CCPACKAGE)
+  | CC_EXTERN tparam* param* decl*                    hint(show CCEXTERN)
+
+;; Environment for Constructor Closures
+
+syntax ccenv = map(id, cclos)
+
+var CCE : ccenv
+
+def $add_cclos(ccenv, id, cclos) : ccenv
+
+def $find_cclos(ccenv, id) : cclos
 
 
 ;; Object
@@ -84,8 +110,7 @@ syntax obj =
   | O_CONTROL vis env func                              hint(show OCONTROL % % %)
   | O_PACKAGE                                           hint(show OPACKAGE)
 
-
-;; Store for objects
+;; Store for Objects
 
 syntax sto = map(path, obj)
 

@@ -1,0 +1,59 @@
+;; Helper
+
+def $cclos_from_type(ccenv, type) : (cclos, type*)
+
+def $cclos_from_type(CCE, T_NAME name) = (cclos, eps)
+  -- if TOP id = name
+  -- if cclos = $find_cclos(CCE, id)
+def $cclos_from_type(CCE, T_NAME name) = (cclos, eps)
+  -- if BARE id = name
+  -- if cclos = $find_cclos(CCE, id)
+def $cclos_from_type(CCE, T_SPEC name type*) = (cclos, type*)
+  -- if TOP id = name
+  -- if cclos = $find_cclos(CCE, id)
+def $cclos_from_type(CCE, T_SPEC name type*) = (cclos, type*)
+  -- if BARE id = name
+  -- if cclos = $find_cclos(CCE, id)
+
+
+;; Instantiation from constructor closure
+
+;;def $instantiate_from_cclos(CCE, S, IC, path, CC_PARSER tparam* param* cparam* local* state*, targ*, arg*) =
+;;  ----
+;;  -- if IC_callee = $init_icontext(IC.GENV)
+;;  ----
+;;  -- Interp_static_types: IC |- targ* : rtype*
+;;  -- if IC_callee' = $add_tds_obj(IC_callee, tparam*, rtype*)
+;;  ----
+;;  -- if (param'*, expr*) = $align_args(param*, arg*)
+;;  -- Interp_static_exprs: IC |- expr* : val*
+;;  ----
+;;
+;;  ----
+;;  -- if obj = O_PARSER IC_callee.GVIS IC_callee.OENV apply
+;;  -- if S' = $add_sto(S, path, obj)
+
+
+;; Instantiation from global declaration
+
+def $instantiate_global_decls(CCE, S, IC, eps) = (CCE, S, IC)
+def $instantiate_global_decls(CCE, S, IC, decl decl*) = (CCE, S', IC')
+  ;; TODO consider when block is some
+  -- if decl = D_INST id type arg* block
+  -- if (cclos, targs) = $cclos_from_type(CCE, type)
+  -- if S' = $instantiate_from_cclos(CCE, S, IC, path, cclos, targs, args)
+  -- if val = V_REF path
+  -- if rtype = RT_REF
+  -- if IC' = $add_var_glob(IC, id, rtype, val)
+def $instantiate_global_decls(CCE, S, IC, decl decl*) = (CCE', S, IC')
+  -- otherwise
+  -- if (CCE', IC') = $load_global_decl(CCE, IC, decl)
+
+
+;; Entry point for instantiation
+
+def $instantiate(program) = (CCE', S', IC')
+  -- if CCE = eps
+  -- if S = eps 
+  -- if IC = $empty_icontext()
+  -- if (CCE', S', IC') = $instantiate_global_decls(CCE, S, IC, program)

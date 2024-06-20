@@ -1,0 +1,20 @@
+;;
+;; Collection of functions and relations (for they are mutually recursive)
+;;
+
+;; Static Evaluators
+
+relation Interp_static_type: ictx |- type : rtype
+relation Interp_static_types: ictx |- type* : rtype*
+relation Interp_static_expr: ictx |- expr : val
+relation Interp_static_exprs: ictx |- expr* : val*
+
+;; Loaders
+
+def $load_global_decl(ccenv, ictx, decl) : (ccenv, ictx)
+
+;; Instantiators
+
+def $instantiate(program) : (ccenv, sto, ictx)
+def $instantiate_global_decls(ccenv, sto, ictx, decl*) : (ccenv, sto, ictx)
+def $instantiate_from_cclos(ccenv, sto, ictx, path, cclos, type*, arg*) : sto

@@ -21,7 +21,6 @@ relation Interp_exprs : sto ctx |- expr* : ctx val*
 relation Interp_stmt: sto sig ctx |- stmt : sig ctx
 relation Interp_stmts: sto sig ctx |- block : sig ctx
 
-
 relation Interp_write : sto ctx |- expr <- val -| ctx
 
 rule Interp_write/e_var:

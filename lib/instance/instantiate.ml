@@ -7,7 +7,7 @@ open Runtime.Context
 
 (* Helpers to handle generic types without type inference at the moment *)
 
-let cclos_from_type (typ : typ) (ccenv : CCEnv.t) =
+let cclos_from_type (ccenv : CCEnv.t) (typ : typ) =
   match typ with
   | NameT (Top name) | NameT (Bare name) ->
       let cclos = CCEnv.find name ccenv |> Option.get in
@@ -44,7 +44,8 @@ let load_obj_var (ictx : ICtx.t) (name : Var.t) (typ : typ) =
      must be parenthesized and compile-time known. (7.1.6.2) *)
   let typ = Eval.eval_type ictx typ in
   let value = Runtime.Ops.eval_default_value typ in
-  ICtx.add_var_obj name typ value ictx
+  (* Do not add the variable to the visibility set *)
+  ICtx.add_var_obj_invisible name typ value ictx
 
 let load_obj_const (ictx : ICtx.t) (name : Var.t) (typ : typ) (value : expr) =
   let typ = Eval.eval_type ictx typ in
@@ -355,13 +356,13 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
 
 and instantiate_from_expr (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
     (path : Path.t) (typ : typ) (args : arg list) =
-  let cclos, targs = cclos_from_type typ ccenv in
+  let cclos, targs = cclos_from_type ccenv typ in
   instantiate_from_cclos ccenv sto ictx path cclos targs args
 
 and instantiate_from_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
     (path : Path.t) (name : id) (typ : typ) (args : arg list) =
   let path = path @ [ name ] in
-  let cclos, targs = cclos_from_type typ ccenv in
+  let cclos, targs = cclos_from_type ccenv typ in
   let sto = instantiate_from_cclos ccenv sto ictx path cclos targs args in
   let value = Value.RefV path in
   let typ = Type.RefT in
@@ -369,9 +370,9 @@ and instantiate_from_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
   (sto, ictx)
 
 and instantiate_from_glob_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
-    (path : Path.t) (name : id) (typ : typ) (args : arg list) =
-  let path = path @ [ name ] in
-  let cclos, targs = cclos_from_type typ ccenv in
+    (name : id) (typ : typ) (args : arg list) =
+  let path = [ name ] in
+  let cclos, targs = cclos_from_type ccenv typ in
   let sto = instantiate_from_cclos ccenv sto ictx path cclos targs args in
   let value = Value.RefV path in
   let typ = Type.RefT in
@@ -456,13 +457,11 @@ and instantiate_extern_obj_decl (ictx : ICtx.t) (decl : decl) =
   | _ -> assert false
 
 let instantiate_glob_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
-    (path : Path.t) (decl : decl) =
+    (decl : decl) =
   match decl with
   (* Explicit instantiation of a package *)
   | InstD { name; typ; args; _ } ->
-      let sto, ictx =
-        instantiate_from_glob_decl ccenv sto ictx path name typ args
-      in
+      let sto, ictx = instantiate_from_glob_decl ccenv sto ictx name typ args in
       (ccenv, sto, ictx)
   (* Load declaration to environments *)
   | _ ->
@@ -475,8 +474,7 @@ let instantiate_program (program : program) =
   let ictx = ICtx.empty in
   let ccenv, sto, ictx =
     List.fold_left
-      (fun (ccenv, sto, ictx) decl ->
-        instantiate_glob_decl ccenv sto ictx [] decl)
+      (fun (ccenv, sto, ictx) decl -> instantiate_glob_decl ccenv sto ictx decl)
       (ccenv, sto, ictx) program
   in
   let ctx = Ctx.init ([], "") ictx.env_glob ictx.env_obj (TDEnv.empty, []) in

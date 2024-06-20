@@ -4,6 +4,9 @@ syntax oenv = env
 syntax ovis = vis
 syntax lenv = tdenv venv*
 
+
+;; Instantiation Context
+
 syntax ictx =
   {
     GENV genv, GVIS gvis,
@@ -11,6 +14,22 @@ syntax ictx =
   }
 
 var IC : ictx
+
+;; Constructors
+
+def $empty_icontext() : ictx hint(show NEW)
+
+;; Adders
+
+def $add_td_glob(ictx, id, rtype) : ictx
+def $add_tds_obj(ictx, id*, rtype*) : ictx
+
+def $add_var_glob(ictx, id, rtype, val) : ictx
+
+def $add_func_glob(ictx, id, func) : ictx
+
+
+;; Interpretation Context
 
 syntax ctx =
   {
@@ -21,6 +40,8 @@ syntax ctx =
   }
 
 var C : ctx
+
+;; Constructors
 
 def $empty_context() : ctx hint(show NEW)
 
