@@ -6,15 +6,35 @@
 
 relation Interp_static_type: ictx |- type : rtype
 relation Interp_static_types: ictx |- type* : rtype*
-relation Interp_static_expr: ictx |- expr : val
-relation Interp_static_exprs: ictx |- expr* : val*
+relation Interp_static_expr: ccenv sto ictx path |- expr : sto val
+relation Interp_static_expr_read: ictx |- expr : val
+relation Interp_static_exprs: ccenv sto ictx path |- expr* : sto val*
 
 ;; Loaders
 
 def $load_global_decl(ccenv, ictx, decl) : (ccenv, ictx)
 
+def $load_parser_local_decls(ictx, decl*) : ictx
+def $load_parser_local_decl(ictx, decl) : ictx
+
+def $load_control_local_decls(ictx, decl*) : ictx
+def $load_control_local_decl(ictx, decl) : ictx
+
+def $load_extern_local_decls(ictx, decl*) : ictx
+def $load_extern_local_decl(ictx, decl) : ictx
+
+
 ;; Instantiators
 
 def $instantiate(program) : (ccenv, sto, ictx)
-def $instantiate_global_decls(ccenv, sto, ictx, decl*) : (ccenv, sto, ictx)
-def $instantiate_from_cclos(ccenv, sto, ictx, path, cclos, type*, arg*) : sto
+
+relation Instantiate_global_decls : ccenv sto ictx |- decl* : ccenv sto ictx
+relation Instantiate_global_decl : ccenv sto ictx |- decl : ccenv sto ictx
+
+relation Instantiate_parser_local_decls: ccenv sto ictx path |- decl* : sto ictx
+relation Instantiate_parser_local_decl: ccenv sto ictx path |- decl : sto ictx
+
+relation Instantiate_control_local_decls: ccenv sto ictx path |- decl* : sto ictx
+relation Instantiate_control_local_decl: ccenv sto ictx path |- decl : sto ictx
+
+relation Instantiate_cclos: ccenv sto ictx path |- cclos type* arg* : sto

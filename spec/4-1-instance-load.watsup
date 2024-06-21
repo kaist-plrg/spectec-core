@@ -1,10 +1,97 @@
+;; Load from parser-local declaration
+
+def $load_parser_local_decls(IC, eps) = IC
+def $load_parser_local_decls(IC, decl decl*) = IC''
+  -- if IC' = $load_parser_local_decl(IC, decl)
+  -- if IC'' = $load_parser_local_decls(IC', decl*)
+
+;; Loading constants
+
+def $load_parser_local_decl(IC, D_CONST id type expr) = IC'
+  -- Interp_static_type: IC |- type : rtype
+  -- Interp_static_expr_read: IC |- expr : val
+  -- if val' = $cast(val, rtype)
+  -- if IC' = $iadd_var_obj(IC, id, rtype, val')
+
+
+;; Loading local variables
+
+def $load_parser_local_decl(IC, D_VAR id type expr?) = IC'
+  -- Interp_static_type: IC |- type : rtype
+  -- Interp_static_expr_read: IC |- expr : val
+  -- if val' = $cast(val, rtype)
+  -- if IC' = $iadd_var_obj(IC, id, rtype, val')
+
+def $load_parser_local_decl(IC, D_VAR id type eps) = IC'
+  -- Interp_static_type: IC |- type : rtype
+  -- if val = $default(rtype)
+  -- if IC' = $iadd_var_obj(IC, id, rtype, val)
+
+
+;; Load from control-local declaration
+
+def $load_control_local_decls(IC, eps) = IC
+def $load_control_local_decls(IC, decl decl*) = IC''
+  -- if IC' = $load_control_local_decl(IC, decl)
+  -- if IC'' = $load_control_local_decls(IC', decl*)
+
+;; Loading constants
+
+def $load_control_local_decl(IC, D_CONST id type expr) = IC'
+  -- Interp_static_type: IC |- type : rtype
+  -- Interp_static_expr_read: IC |- expr : val
+  -- if val' = $cast(val, rtype)
+  -- if IC' = $iadd_var_obj(IC, id, rtype, val')
+
+
+;; Loading local variables
+
+def $load_control_local_decl(IC, D_VAR id type expr?) = IC'
+  -- Interp_static_type: IC |- type : rtype
+  -- Interp_static_expr_read: IC |- expr : val
+  -- if val' = $cast(val, rtype)
+  -- if IC' = $iadd_var_obj(IC, id, rtype, val')
+
+def $load_control_local_decl(IC, D_VAR id type eps) = IC'
+  -- Interp_static_type: IC |- type : rtype
+  -- if val = $default(rtype)
+  -- if IC' = $iadd_var_obj(IC, id, rtype, val)
+
+;; Loading local actions
+
+def $load_control_local_decl(IC, D_ACTION id param* block) = IC'
+  -- if ovis = $env_to_vis(IC.OENV) 
+  -- if func = F_ACTION ovis param* block
+  -- if IC' = $iadd_func_obj(IC, id, func)
+
+
+;; Load from extern-local declaration
+
+def $load_extern_local_decls(IC, eps) = IC
+def $load_extern_local_decls(IC, decl decl*) = IC''
+  -- if IC' = $load_extern_local_decl(IC, decl)
+  -- if IC'' = $load_extern_local_decls(IC', decl*)
+
+;; Loading methods
+
+;; TODO
+;; def $load_extern_local_decl(IC, D_ABSTRACT id type tparam* param*)
+
+def $load_extern_local_decl(IC, D_METHOD id type tparam* param*) = IC'
+  -- if ovis = $env_to_vis(IC.OENV)
+  -- if func = F_EXTERNMETHOD ovis tparam* param*
+  -- if IC' = $iadd_func_obj(IC, id, func)
+
+
+;; Load from global declaration
+
 ;; Loading constants
 
 def $load_global_decl(CCE, IC, D_CONST id type expr) = (CCE, IC')
   -- Interp_static_type: IC |- type : rtype
-  -- Interp_static_expr: IC |- expr : val
+  -- Interp_static_expr_read: IC |- expr : val
   -- if val' = $cast(val, rtype)
-  -- if IC' = $add_var_glob(IC, id, rtype, val')
+  -- if IC' = $iadd_var_glob(IC, id, rtype, val')
 
 
 ;; Loading constructor closures and type definitions
@@ -21,7 +108,7 @@ def $load_global_decl(CCE, IC, D_PACKAGETYPE id tparam* param*) = (CCE', IC')
   -- if cclos = CC_PACKAGE tparam* param*
   -- if CCE' = $add_cclos(CCE, id, cclos)
   -- if rtype = RT_REF
-  -- if IC' = $add_td_glob(IC, id, rtype)
+  -- if IC' = $iadd_td_glob(IC, id, rtype)
 
 def $load_global_decl(CCE, IC, D_EXTERNOBJECT id tparam* decl*) = (CCE', IC')
   ;; TODO this assumes that an extern object has a single constructor (no overloading)
@@ -30,37 +117,37 @@ def $load_global_decl(CCE, IC, D_EXTERNOBJECT id tparam* decl*) = (CCE', IC')
   -- if cclos = CC_EXTERN tparam* cparam* decl*
   -- if CCE' = $add_cclos(CCE, id, cclos)
   -- if rtype = RT_REF
-  -- if IC' = $add_td_glob(IC, id, rtype)
+  -- if IC' = $iadd_td_glob(IC, id, rtype)
 
 
 ;; Loading type definitions
 
 def $load_global_decl(CCE, IC, D_ERR field*) = (CCE, IC')
   -- if rtype = RT_ERR field*
-  -- if IC' = $add_td_glob(IC, "error", rtype)
+  -- if IC' = $iadd_td_glob(IC, "error", rtype)
 
 def $load_global_decl(CCE, IC, D_MATCHKIND field*) = (CCE, IC')
   -- if rtype = RT_MATCHKIND field*
-  -- if IC' = $add_td_glob(IC, "match_kind", rtype)
+  -- if IC' = $iadd_td_glob(IC, "match_kind", rtype)
 
 def $load_global_decl(CCE, IC, D_STRUCT id (field, type)*) = (CCE, IC')
   -- Interp_static_types: IC |- type* : rtype*
   -- if rtype = RT_STRUCT (field, rtype)*
-  -- if IC' = $add_td_glob(IC, id, rtype)
+  -- if IC' = $iadd_td_glob(IC, id, rtype)
 
 def $load_global_decl(CCE, IC, D_HEADER id (field, type)*) = (CCE, IC')
   -- Interp_static_types: IC |- type* : rtype*
   -- if rtype = RT_HEADER (field, rtype)*
-  -- if IC' = $add_td_glob(IC, id, rtype)
+  -- if IC' = $iadd_td_glob(IC, id, rtype)
 
 def $load_global_decl(CCE, IC, D_UNION id (field, type)*) = (CCE, IC')
   -- Interp_static_types: IC |- type* : rtype*
   -- if rtype = RT_UNION (field, rtype)*
-  -- if IC' = $add_td_glob(IC, id, rtype)
+  -- if IC' = $iadd_td_glob(IC, id, rtype)
 
 def $load_global_decl(CCE, IC, D_ENUM id field*) = (CCE, IC')
   -- if rtype = RT_ENUM field*
-  -- if IC' = $add_td_glob(IC, id, rtype)
+  -- if IC' = $iadd_td_glob(IC, id, rtype)
 
 ;; TODO
 ;; def $load_global_decl(CCE, IC, D_SENUM id type (field, expr)*)
@@ -68,20 +155,20 @@ def $load_global_decl(CCE, IC, D_ENUM id field*) = (CCE, IC')
 ;; TODO specify decl? case
 def $load_global_decl(CCE, IC, D_NEWTYPE id type? eps) = (CCE, IC')
   -- Interp_static_type: IC |- type : rtype
-  -- if IC' = $add_td_glob(IC, id, rtype)
+  -- if IC' = $iadd_td_glob(IC, id, rtype)
 
 ;; TODO specify decl? case
 def $load_global_decl(CCE, IC, D_TYPEDEF id type? eps) = (CCE, IC')
   -- Interp_static_type: IC |- type : rtype
-  -- if IC' = $add_td_glob(IC, id, rtype)
+  -- if IC' = $iadd_td_glob(IC, id, rtype)
 
 def $load_global_decl(CCE, IC, D_PARSERTYPE id tparam* param*) = (CCE, IC')
   -- if rtype = RT_REF
-  -- if IC' = $add_td_glob(IC, id, rtype)
+  -- if IC' = $iadd_td_glob(IC, id, rtype)
 
 def $load_global_decl(CCE, IC, D_CONTROLTYPE id tparam* param*) = (CCE, IC')
   -- if rtype = RT_REF
-  -- if IC' = $add_td_glob(IC, id, rtype)
+  -- if IC' = $iadd_td_glob(IC, id, rtype)
 
 
 ;; Loading functions
@@ -89,10 +176,10 @@ def $load_global_decl(CCE, IC, D_CONTROLTYPE id tparam* param*) = (CCE, IC')
 def $load_global_decl(CCE, IC, D_ACTION id param* block) = (CCE, IC')
   -- if vis_glob = $env_to_vis(IC.GENV)
   -- if func = F_ACTION vis_glob param* block
-  -- if IC' = $add_func_glob(IC, id, func)
+  -- if IC' = $iadd_func_glob(IC, id, func)
 
 ;; TODO consider return type
 def $load_global_decl(CCE, IC, D_EXTERNFUNC id type tparam* param*) = (CCE, IC')
   -- if vis_glob = $env_to_vis(IC.GENV)
   -- if func = F_EXTERN vis_glob tparam* param*
-  -- if IC' = $add_func_glob(IC, id, func)
+  -- if IC' = $iadd_func_glob(IC, id, func)

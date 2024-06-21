@@ -9,3 +9,5 @@ def $unpack(val) : num
 def $bitslice(val, val, val) : val
 
 def $default(rtype) : val
+
+def $align_args(param*, arg*) : (param*, expr*)

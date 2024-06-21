@@ -44,8 +44,7 @@ let load_obj_var (ictx : ICtx.t) (name : Var.t) (typ : typ) =
      must be parenthesized and compile-time known. (7.1.6.2) *)
   let typ = Eval.eval_type ictx typ in
   let value = Runtime.Ops.eval_default_value typ in
-  (* Do not add the variable to the visibility set *)
-  ICtx.add_var_obj_invisible name typ value ictx
+  ICtx.add_var_obj name typ value ictx
 
 let load_obj_const (ictx : ICtx.t) (name : Var.t) (typ : typ) (value : expr) =
   let typ = Eval.eval_type ictx typ in
@@ -348,7 +347,7 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
       let obj =
         Object.ExternO
           {
-            vis_glob = env_to_vis ictx_caller.env_glob;
+            vis_glob = env_to_vis ictx_callee.env_glob;
             env_obj = ictx_callee.env_obj;
           }
       in

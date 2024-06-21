@@ -71,11 +71,6 @@ module ICtx = struct
       vis_obj = (otdvis, ovis, ofvis);
     }
 
-  let add_var_obj_invisible name typ value ctx =
-    let otdenv, oenv, ofenv = ctx.env_obj in
-    let oenv = Env.add name (typ, value) oenv in
-    { ctx with env_obj = (otdenv, oenv, ofenv) }
-
   let add_func_glob name func ctx =
     let gtdenv, genv, gfenv = ctx.env_glob in
     let gfenv = FEnv.add name func gfenv in

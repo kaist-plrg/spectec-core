@@ -1,1 +1,9 @@
+rule Interp_static_expr/read:
+  CCE S IC path |- expr : S val
+  -- Interp_static_expr_read: IC |- expr : val
 
+rule Interp_static_expr/e_inst:
+  CCE S IC path |- E_INST type arg* : S' val
+  -- if (cclos, targ*) = $cclos_from_type(CCE, type)
+  -- Instantiate_cclos: CCE S IC path |- cclos targ* arg* : S'
+  -- if val = V_REF path

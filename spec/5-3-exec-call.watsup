@@ -2,11 +2,6 @@
 ;; Big-step semantics for calls
 ;;
 
-;; Helpers for calls
-
-def $align_args(param*, arg*) : (param*, expr*)
-
-
 ;; Copy-in/out calling convention
 
 def $copyin_loc'(ctx, param, val) : ctx

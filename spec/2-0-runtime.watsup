@@ -86,7 +86,7 @@ def $env_to_vis(env) : vis
 syntax cclos =
   | CC_PARSER tparam* param* param* decl* state*      hint(show CCPARSER)
   | CC_CONTROL tparam* param* param* decl* block      hint(show CCCONTROL)
-  | CC_PACKAGE tparam* param* decl*                   hint(show CCPACKAGE)
+  | CC_PACKAGE tparam* param*                         hint(show CCPACKAGE)
   | CC_EXTERN tparam* param* decl*                    hint(show CCEXTERN)
 
 ;; Environment for Constructor Closures
@@ -115,6 +115,8 @@ syntax obj =
 syntax sto = map(path, obj)
 
 var S : sto
+
+def $add_obj(sto, path, obj) : sto
 
 def $find_obj(sto, path) : obj
 

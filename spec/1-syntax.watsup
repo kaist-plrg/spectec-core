@@ -37,8 +37,8 @@ syntax type =
   | T_BIT expr          hint(show BIT%)
   | T_VBIT expr         hint(show VARBIT%)
   | T_NAME name         hint(show VAR %)
-  | T_SPEC name type*   hint(show SPEC %`{%}) ;; TODO why isn't <%> allowed as hint
-  | T_STACK type expr   hint(show STACK %[%])
+  | T_SPEC name type*   hint(show SPEC %<|%|>)
+  | T_STACK type expr   hint(show STACK %`[%])
   | T_TUPLE type*       hint(show TUPLE %)
   | T_ANY               hint(show ANY)
 
@@ -49,7 +49,7 @@ syntax param = id dir type expr?
 syntax tparam = id*
 syntax arg =
   | A_EXPR expr       hint(show %)
-  | A_NAME id expr   hint(show % = %)
+  | A_NAME id expr    hint(show % = %)
   | A_ANY             hint(show _)
 
 ;; Expressions
@@ -74,7 +74,7 @@ syntax expr =
   | E_TYPEACC name field      hint(show %.%)
   | E_ERRACC field            hint(show ERROR.%)
   | E_EXPRACC expr field      hint(show %.%)
-  | E_CALL expr type* arg*    hint(show %`{%}(%)) ;; TODO also, <> for type args
+  | E_CALL expr type* arg*    hint(show %<|%|>(%))
   | E_INST type arg*          hint(show %(%))
 
 ;; Statements
@@ -102,7 +102,7 @@ syntax stmt =
   | I_BLOCK block             hint(show `{ % })
   | I_EXIT                    hint(show EXIT)
   | I_RET expr?               hint(show RETURN %)
-  | I_CALL expr type* arg*    hint(show %`{%}(%)) ;; TODO, also type args
+  | I_CALL expr type* arg*    hint(show %<|%|>(%))
   | I_TRANS label             hint(show TRANSITION %)
   | I_SELECT expr* selcase*   hint(show SELECT (%) %)
   | I_DECL decl               hint(show %)
@@ -118,32 +118,32 @@ syntax default = action boolean
 syntax custom = field expr boolean
 
 syntax decl =
-  | D_CONST id type expr                             hint(show CONST %2 %1 = %3)
-  | D_VAR id type expr?                              hint(show %2 %1 = %3)
-  | D_INST id type arg* block?                       hint(show %2 %1(%3) %4)
-  | D_ERR field*                                     hint(show ERROR %)
-  | D_MATCHKIND field*                               hint(show MATCHKIND %)
-  | D_STRUCT id (field, type)*                       hint(show STRUCT % %)
-  | D_HEADER id (field, type)*                       hint(show HEADER % %)
-  | D_UNION id (field, type)*                        hint(show HEADER_UNION % %)
-  | D_ENUM id field*                                 hint(show ENUM % %)
-  | D_SENUM id type (field, expr)*                   hint(show ENUM % % %)
-  | D_NEWTYPE id type? decl?                         hint(show TYPE %2 %3 %1)
-  | D_TYPEDEF id type? decl?                         hint(show TYPEDEF %2 %3 %1)
-  | D_VALUESET id type expr                          hint(show VALUE_SET`{%2}(%3) %1)
-  | D_PARSERTYPE id tparam* param*                   hint(show PARSER %`{%}(%)) ;; TODO type params
-  | D_PARSER id tparam* param* param* decl* state*   hint(show PARSER %`{%}(%)(%) % %) ;; TODO type params
-  | D_ACTION id param* block                         hint(show ACTION %(%) %)
-  | D_TABLE id key* entry* default? custom*          hint(show TABLE % % % % %)
-  | D_CONTROLTYPE id tparam* param*                  hint(show CONTROL %`{%}(%)) ;; TODO type params
-  | D_CONTROL id tparam* param* param* decl* block   hint(show CONTROL %`{%}(%)(%) % %) ;; TODO type params
-  | D_FUNC id type tparam* param* block              hint(show %2 %1`{%3}(%4) %5) ;; TODO type params
-  | D_EXTERNFUNC id type tparam* param*              hint(show EXTERN %2 %1`{%3}(%4)) ;; TOOD type params
-  | D_CONS id param*                                 hint(show %(%))
-  | D_ABSTRACT id type tparam* param*                hint(show ABSTRACT %2 %1`{%3}(%4)) ;; TODO type params
-  | D_METHOD id type tparam* param*                  hint(show %2 %1`{%3}(%4)) ;; TODO type params
-  | D_EXTERNOBJECT id tparam* decl*                  hint(show EXTERN`{%} %) ;; TODO type params
-  | D_PACKAGETYPE id tparam* param*                  hint(show PACKAGE %`{%}(%)) ;; TODO type params
+  | D_CONST id type expr                              hint(show CONST %2 %1 = %3)
+  | D_VAR id type expr?                               hint(show %2 %1 = %3)
+  | D_INST id type arg* block?                        hint(show %2 %1(%3) %4)
+  | D_ERR field*                                      hint(show ERROR %)
+  | D_MATCHKIND field*                                hint(show MATCHKIND %)
+  | D_STRUCT id (field, type)*                        hint(show STRUCT % %)
+  | D_HEADER id (field, type)*                        hint(show HEADER % %)
+  | D_UNION id (field, type)*                         hint(show HEADER_UNION % %)
+  | D_ENUM id field*                                  hint(show ENUM % %)
+  | D_SENUM id type (field, expr)*                    hint(show ENUM % % %)
+  | D_NEWTYPE id type? decl?                          hint(show TYPE %2 %3 %1)
+  | D_TYPEDEF id type? decl?                          hint(show TYPEDEF %2 %3 %1)
+  | D_VALUESET id type expr                           hint(show VALUE_SET`{%2}(%3) %1)
+  | D_PARSERTYPE id tparam* param*                    hint(show PARSER %<|%|>(%))
+  | D_PARSER id tparam* param* param* decl* state*    hint(show PARSER %<|%|>(%)(%) % %)
+  | D_ACTION id param* block                          hint(show ACTION %(%) %)
+  | D_TABLE id key* action* entry* default? custom*   hint(show TABLE % % % % % %)
+  | D_CONTROLTYPE id tparam* param*                   hint(show CONTROL %<|%|>(%))
+  | D_CONTROL id tparam* param* param* decl* block    hint(show CONTROL %<|%|>(%)(%) % %)
+  | D_FUNC id type tparam* param* block               hint(show %2 %1<|%3|>(%4) %5)
+  | D_EXTERNFUNC id type tparam* param*               hint(show EXTERN %2 %1<|%3|>(%4))
+  | D_CONS id param*                                  hint(show %(%))
+  | D_ABSTRACT id type tparam* param*                 hint(show ABSTRACT %2 %1<|%3|>(%4))
+  | D_METHOD id type tparam* param*                   hint(show %2 %1<|%3|>(%4))
+  | D_EXTERNOBJECT id tparam* decl*                   hint(show EXTERN<|%|> %)
+  | D_PACKAGETYPE id tparam* param*                   hint(show PACKAGE %<|%|>(%))
 
 ;; Program
 
