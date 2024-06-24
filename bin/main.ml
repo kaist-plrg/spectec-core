@@ -28,8 +28,6 @@ let () =
     match arch with
     | "v1model" ->
         (module Driver.Make (V1model.Make) (Interp.Make) : Driver.DRIVER)
-    | "custom" ->
-        (module Driver.Make (Custom.Make) (Interp.Make) : Driver.DRIVER)
     | _ -> failwith "Unknown target: target = v1model | custom"
   in
   let stf =
