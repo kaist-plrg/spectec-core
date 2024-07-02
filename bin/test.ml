@@ -74,7 +74,7 @@ let desugar_program filename program =
 let desugar_roundtrip filename =
   let* program = parse_file filename in
   let* program' = desugar_program filename program in
-  let file' = Format.asprintf "%a" Syntax.Print.print_program program' in
+  let file' = Format.asprintf "%a" Syntax.Pp.pp_program program' in
   let* program'' = parse_string filename file' in
   if not (Surface.Eq.eq_program program program'') then (
     desugar_roundtrip_fails := !desugar_roundtrip_fails + 1;

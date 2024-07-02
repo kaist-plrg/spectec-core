@@ -37,8 +37,7 @@ let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
       let typs = List.map (eval_type ictx) typs in
       TupleT typs
   | _ ->
-      Format.asprintf "(TODO: eval_type) %a" Syntax.Print.print_type typ
-      |> failwith
+      Format.asprintf "(TODO: eval_type) %a" Syntax.Pp.pp_type typ |> failwith
 
 and eval_expr (ictx : ICtx.t) (expr : expr) : Value.t =
   match expr.it with
@@ -64,5 +63,4 @@ and eval_expr (ictx : ICtx.t) (expr : expr) : Value.t =
       let varg = eval_expr ictx arg in
       Runtime.Ops.eval_cast typ varg
   | _ ->
-      Format.asprintf "(TODO: eval_expr) %a" Syntax.Print.print_expr expr
-      |> failwith
+      Format.asprintf "(TODO: eval_expr) %a" Syntax.Pp.pp_expr expr |> failwith

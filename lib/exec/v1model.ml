@@ -89,48 +89,42 @@ module Make (Interp : INTERP) : ARCH = struct
     let func = make_func [ "main"; "p" ] "apply" in
     let targs = [] in
     let args = make_args [ "packet_in"; "hdr"; "meta"; "standard_metadata" ] in
-    Format.printf "\nBefore %a call\n%a@." Syntax.Print.print_expr func
-      Ctx.pp_var ctx;
+    Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_vr (ctx : Ctx.t) =
     let func = make_func [ "main"; "vr" ] "apply" in
     let targs = [] in
     let args = make_args [ "hdr"; "meta" ] in
-    Format.printf "\nBefore %a call\n%a@." Syntax.Print.print_expr func
-      Ctx.pp_var ctx;
+    Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_ig (ctx : Ctx.t) =
     let func = make_func [ "main"; "ig" ] "apply" in
     let targs = [] in
     let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
-    Format.printf "\nBefore %a call\n%a@." Syntax.Print.print_expr func
-      Ctx.pp_var ctx;
+    Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_eg (ctx : Ctx.t) =
     let func = make_func [ "main"; "eg" ] "apply" in
     let targs = [] in
     let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
-    Format.printf "\nBefore %a call\n%a@." Syntax.Print.print_expr func
-      Ctx.pp_var ctx;
+    Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_ck (ctx : Ctx.t) =
     let func = make_func [ "main"; "ck" ] "apply" in
     let targs = [] in
     let args = make_args [ "hdr"; "meta" ] in
-    Format.printf "\nBefore %a call\n%a@." Syntax.Print.print_expr func
-      Ctx.pp_var ctx;
+    Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_dep (ctx : Ctx.t) =
     let func = make_func [ "main"; "dep" ] "apply" in
     let targs = [] in
     let args = make_args [ "packet_out"; "hdr" ] in
-    Format.printf "\nBefore %a call\n%a@." Syntax.Print.print_expr func
-      Ctx.pp_var ctx;
+    Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_pipe (ctx : Ctx.t) =

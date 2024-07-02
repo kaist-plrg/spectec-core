@@ -172,7 +172,7 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       (ccenv, ictx)
   | _ ->
       Format.eprintf "(TODO: load_glob_decl) Load declaration %a\n"
-        Syntax.Print.print_decl (0, decl);
+        Syntax.Pp.pp_decl (0, decl);
       (ccenv, ictx)
 
 (* Instantiating objects *)
@@ -466,7 +466,7 @@ and instantiate_extern_obj_decl (ictx : ICtx.t) (decl : decl) =
       ICtx.add_func_obj id.it func ictx
   | AbstractD _ ->
       Format.eprintf "(TODO: instantiate_extern_obj_decl) Load extern object %a"
-        Syntax.Print.print_decl (0, decl);
+        Syntax.Pp.pp_decl (0, decl);
       ictx
   | _ -> assert false
 

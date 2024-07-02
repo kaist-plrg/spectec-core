@@ -27,7 +27,7 @@ let match_action (_ctx : Ctx.t) (_keys : (Value.t * mtch_kind) list)
       let action_run =
         Option.value ~default:(List.hd actions) action
         |> it |> fst
-        |> Format.asprintf "%a" Syntax.Print.print_var
+        |> Format.asprintf "%a" Syntax.Pp.pp_var
       in
       Value.EnumFieldV action_run
     in

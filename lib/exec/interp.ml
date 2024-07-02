@@ -60,8 +60,7 @@ module Make (Arch : ARCH) : INTERP = struct
         let typs = List.map (interp_type ctx) typs in
         TupleT typs
     | _ ->
-        Format.asprintf "(TODO: eval_type) %a" Syntax.Print.print_type typ
-        |> failwith
+        Format.asprintf "(TODO: eval_type) %a" Syntax.Pp.pp_type typ |> failwith
 
   (* Interpreter for expressions *)
 
@@ -300,7 +299,7 @@ module Make (Arch : ARCH) : INTERP = struct
             interp_write ctx base (StackV (values, next, size))
         | _ -> assert false)
     | _ ->
-        Format.eprintf "(TODO: interp_write) %a" Syntax.Print.print_expr lvalue;
+        Format.eprintf "(TODO: interp_write) %a" Syntax.Pp.pp_expr lvalue;
         assert false
 
   and interp_stmt (sign : Sig.t) (ctx : Ctx.t) (stmt : stmt) =
@@ -432,8 +431,7 @@ module Make (Arch : ARCH) : INTERP = struct
             let ctx = Ctx.add_var_loc id.it typ value ctx in
             (sign, ctx)
         | _ ->
-            Format.eprintf "(TODO: interp_decl) %a" Syntax.Print.print_decl
-              (0, decl);
+            Format.eprintf "(TODO: interp_decl) %a" Syntax.Pp.pp_decl (0, decl);
             assert false)
 
   (* (TODO) assume switch matches on table apply result only,
@@ -510,8 +508,8 @@ module Make (Arch : ARCH) : INTERP = struct
             let param = PMap.find id.it params_map in
             (params @ [ param ], args @ [ arg ])
         | _ ->
-            Format.eprintf "(TODO: align_params_with_args) %a"
-              Syntax.Print.print_arg arg;
+            Format.eprintf "(TODO: align_params_with_args) %a" Syntax.Pp.pp_arg
+              arg;
             assert false)
       ([], []) params args
 
