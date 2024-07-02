@@ -299,13 +299,13 @@ and print_decl fmt (level, decl) =
       | None ->
           F.fprintf fmt "%s%a %a%a;" (indent level) print_type typ print_id id
             print_args args)
-  | ErrD { fields } ->
-      F.fprintf fmt "%serror {\n%a\n%s}" (indent level) print_fields
-        (level + 1, fields)
+  | ErrD { members } ->
+      F.fprintf fmt "%serror {\n%a\n%s}" (indent level) print_members
+        (level + 1, members)
         (indent level)
-  | MatchKindD { fields } ->
-      F.fprintf fmt "%smatch_kind {\n%a\n%s}" (indent level) print_fields
-        (level + 1, fields)
+  | MatchKindD { members } ->
+      F.fprintf fmt "%smatch_kind {\n%a\n%s}" (indent level) print_members
+        (level + 1, members)
         (indent level)
   | StructD { id; fields } ->
       F.fprintf fmt "%sstruct %a {\n%a\n%s}" (indent level) print_id id
@@ -322,21 +322,16 @@ and print_decl fmt (level, decl) =
         print_struct_fields
         (level + 1, fields)
         (indent level)
-  | EnumD { id; fields } ->
+  | EnumD { id; members } ->
       F.fprintf fmt "%senum %a {\n%a\n%s}" (indent level) print_id id
-        print_fields
-        (level + 1, fields)
+        print_members
+        (level + 1, members)
         (indent level)
   | SEnumD { id; typ; fields } ->
       F.fprintf fmt "%senum %a %a {\n%a\n%s}" (indent level) print_type typ
-        print_id id
-        (Format.pp_print_list
-           ~pp_sep:(fun fmt () -> F.fprintf fmt "; ")
-           (fun fmt (id, expr) ->
-             F.fprintf fmt "%s%a %a"
-               (indent (level + 1))
-               print_id id print_expr expr))
-        fields (indent level)
+        print_id id print_serial_fields
+        (level + 1, fields)
+        (indent level)
   | NewTypeD { id; typ } -> (
       match typ with
       | Left typ ->
@@ -426,16 +421,6 @@ and print_decls fmt (indent, decls) =
     (Format.pp_print_list ~pp_sep:(fun fmt () -> F.fprintf fmt "\n") print_decl)
     (List.map (fun decl -> (indent, decl)) decls)
 
-and print_field fmt (level, field) =
-  F.fprintf fmt "%s%s" (indent level) field.it
-
-and print_fields fmt (level, fields) =
-  F.fprintf fmt "%a"
-    (Format.pp_print_list
-       ~pp_sep:(fun fmt () -> F.fprintf fmt "\n")
-       print_field)
-    (List.map (fun field -> (level, field)) fields)
-
 and print_struct_field fmt (level, field) =
   let id, typ = field in
   F.fprintf fmt "%s%a %a" (indent level) print_type typ print_id id
@@ -446,6 +431,27 @@ and print_struct_fields fmt (level, fields) =
        ~pp_sep:(fun fmt () -> F.fprintf fmt "\n")
        print_struct_field)
     (List.map (fun field -> (level, field)) fields)
+
+and print_serial_field fmt (level, field) =
+  let id, expr = field in
+  F.fprintf fmt "%s%a %a" (indent level) print_id id print_expr expr
+
+and print_serial_fields fmt (level, fields) =
+  F.fprintf fmt "%a"
+    (Format.pp_print_list
+       ~pp_sep:(fun fmt () -> F.fprintf fmt "; ")
+       print_serial_field)
+    (List.map (fun field -> (level, field)) fields)
+
+and print_member fmt (level, member) =
+  F.fprintf fmt "%s%s" (indent level) member.it
+
+and print_members fmt (level, members) =
+  F.fprintf fmt "%a"
+    (Format.pp_print_list
+       ~pp_sep:(fun fmt () -> F.fprintf fmt "\n")
+       print_member)
+    (List.map (fun member -> (level, member)) members)
 
 and print_parser_state fmt (level, parser_state) =
   let label, block = parser_state.it in

@@ -18,11 +18,14 @@ type path' = id' list
 type var = var' phrase
 and var' = Top of id | Bare of id
 
-type field = field' phrase
-and field' = string
+type member = member' phrase
+and member' = string
 
 type label = label' phrase
 and label' = string
+
+type mtch_kind = mtch_kind' phrase
+and mtch_kind' = string
 
 (* Unary and binary operators *)
 
@@ -74,15 +77,19 @@ and typ' =
   | TupleT of typ list
   | AnyT
 
-(* Parameters and Arguments *)
+(* Directions *)
 and dir = dir' phrase
 and dir' = No | In | Out | InOut
+
+(* Parameters *)
 and tparam = id
 and tparam' = id'
 and param = param' phrase
 and param' = id * dir * typ * expr option
 and cparam = param
 and cparam' = param'
+
+(* Arguments *)
 and arg = arg' phrase
 and arg' = ExprA of expr | NameA of id * expr | AnyA
 
@@ -95,7 +102,7 @@ and expr' =
   | NumE of num
   | VarE of var
   | ListE of expr list
-  | RecordE of (field * expr) list
+  | RecordE of (member * expr) list
   | UnE of unop * expr
   | BinE of binop * expr * expr
   | TernE of expr * expr * expr
@@ -104,9 +111,9 @@ and expr' =
   | RangeE of expr * expr
   | ArrAccE of expr * expr
   | BitAccE of expr * expr * expr
-  | TypeAccE of var * field
-  | ErrAccE of field
-  | ExprAccE of expr * field
+  | TypeAccE of var * member
+  | ErrAccE of member
+  | ExprAccE of expr * member
   | CallE of expr * typ list * arg list
   | InstE of typ * arg list
 
@@ -136,8 +143,6 @@ and mtch = mtch' phrase
 and mtch' = ExprM of expr | DefaultM | AnyM
 and switch_case = switch_case' phrase
 and switch_case' = case * block
-and mtch_kind = mtch_kind' phrase
-and mtch_kind' = string
 
 (* Select-cases for select *)
 and select_case = select_case' phrase
@@ -152,13 +157,13 @@ and decl' =
   | VarD of { id : id; typ : typ; init : expr option }
   | InstD of { id : id; typ : typ; args : arg list; init : block option }
   (* Type declarations *)
-  | ErrD of { fields : field list }
-  | MatchKindD of { fields : field list }
-  | StructD of { id : id; fields : (field * typ) list }
-  | HeaderD of { id : id; fields : (field * typ) list }
-  | UnionD of { id : id; fields : (field * typ) list }
-  | EnumD of { id : id; fields : field list }
-  | SEnumD of { id : id; typ : typ; fields : (field * expr) list }
+  | ErrD of { members : member list }
+  | MatchKindD of { members : member list }
+  | StructD of { id : id; fields : (member * typ) list }
+  | HeaderD of { id : id; fields : (member * typ) list }
+  | UnionD of { id : id; fields : (member * typ) list }
+  | EnumD of { id : id; members : member list }
+  | SEnumD of { id : id; typ : typ; fields : (member * expr) list }
   | NewTypeD of { id : id; typ : (typ, decl) alt }
   | TypeDefD of { id : id; typ : (typ, decl) alt }
   (* Object declarations *)
@@ -232,7 +237,7 @@ and table_entry' = mtch list * table_action
 and table_default = table_default' phrase
 and table_default' = table_action * bool
 and table_custom = table_custom' phrase
-and table_custom' = field * expr * bool
+and table_custom' = member * expr * bool
 
 and table =
   table_key list

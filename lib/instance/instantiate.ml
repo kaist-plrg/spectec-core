@@ -101,20 +101,20 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
   (* Load types to tdenv *)
-  | ErrD { fields } ->
-      let fields = List.map (fun field -> field.it) fields in
-      let typ = Type.ErrT fields in
+  | ErrD { members } ->
+      let members = List.map it members in
+      let typ = Type.ErrT members in
       let ictx = ICtx.add_td_glob "error" typ ictx in
       (ccenv, ictx)
-  | MatchKindD { fields } ->
-      let fields = List.map (fun field -> field.it) fields in
-      let typ = Type.MatchKindT fields in
+  | MatchKindD { members } ->
+      let members = List.map it members in
+      let typ = Type.MatchKindT members in
       let ictx = ICtx.add_td_glob "match_kind" typ ictx in
       (ccenv, ictx)
   | StructD { id; fields } ->
       let fields =
         List.map
-          (fun (field, typ) -> (field.it, Eval.eval_type ictx typ))
+          (fun (member, typ) -> (member.it, Eval.eval_type ictx typ))
           fields
       in
       let typ = Type.StructT fields in
@@ -123,7 +123,7 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
   | HeaderD { id; fields } ->
       let fields =
         List.map
-          (fun (field, typ) -> (field.it, Eval.eval_type ictx typ))
+          (fun (member, typ) -> (member.it, Eval.eval_type ictx typ))
           fields
       in
       let typ = Type.HeaderT fields in
@@ -132,15 +132,15 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
   | UnionD { id; fields } ->
       let fields =
         List.map
-          (fun (field, typ) -> (field.it, Eval.eval_type ictx typ))
+          (fun (member, typ) -> (member.it, Eval.eval_type ictx typ))
           fields
       in
       let typ = Type.UnionT fields in
       let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
-  | EnumD { id; fields } ->
-      let fields = List.map (fun field -> field.it) fields in
-      let typ = Type.EnumT fields in
+  | EnumD { id; members } ->
+      let members = List.map it members in
+      let typ = Type.EnumT members in
       let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
   | SEnumD _ ->
