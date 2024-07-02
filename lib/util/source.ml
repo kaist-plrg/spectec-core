@@ -13,7 +13,10 @@
  * under the License.
  *)
 
-type t =
+(* Information about the source location *)
+
+type info =
+  | M of string
   | I of {
       filename : string;
       line_start : int;
@@ -21,23 +24,21 @@ type t =
       col_start : int;
       col_end : int;
     }
-  | M of string
 
-let pp fmt _ = Format.pp_print_string fmt "<info>"
-let show _ = "<info>"
-let dummy = M ""
-
-let to_string = function
-  | M s -> s
-  | I { filename; line_start; line_end; col_start; col_end; _ } -> (
+let pp fmt = function
+  | M s -> Format.pp_print_string fmt s
+  | I { filename; line_start; line_end; col_start; col_end } -> (
       let f = "File " ^ filename ^ "," in
       match line_end with
       | None ->
-          Printf.sprintf "%s line %d, characters %d-%d" f line_start col_start
-            col_end
+          Format.fprintf fmt "%s line %d, characters %d-%d" f line_start
+            col_start col_end
       | Some line_end ->
-          Printf.sprintf "%s from line %d character %d to line %d character %d"
-            f line_start col_start line_end col_end)
+          Format.fprintf fmt
+            "%s from line %d character %d to line %d character %d" f line_start
+            col_start line_end col_end)
+
+let no_info = M ""
 
 let start_pos = function
   | M _ -> (Int.max_int, Int.max_int)
@@ -70,23 +71,24 @@ let follows i1 i2 =
       let l2, c2 = start_pos i2 in
       l1 = l2 && c1 = c2
 
-let file = function M _ -> "" | I { filename; _ } -> filename
+let merge i1 i2 =
+  match (i1, i2) with
+  | M _, _ -> i2
+  | _, M _ -> i1
+  | I { filename = f1; _ }, I { filename = f2; _ } when f1 = f2 ->
+      let line_start, col_start = min_pos (start_pos i1) (start_pos i2) in
+      let line_end, col_end = max_pos (end_pos i1) (end_pos i2) in
+      let line_end = if line_start = line_end then None else Some line_end in
+      I { filename = f1; line_start; line_end; col_start; col_end }
+  | _ ->
+      Format.eprintf "Cannot merge info from different files: %a and %a@" pp i1
+        pp i2;
+      assert false
 
-let merge (info1 : t) (info2 : t) =
-  match info2 with
-  | M _ -> info1
-  | I _ -> (
-      match info1 with
-      | M _ -> info2
-      | I _ ->
-          let start_l, start_c = min_pos (start_pos info1) (start_pos info2) in
-          let end_l, end_c = max_pos (end_pos info1) (end_pos info2) in
-          let end_l_opt = if start_l = end_l then None else Some end_l in
-          I
-            {
-              filename = file info1;
-              line_start = start_l;
-              line_end = end_l_opt;
-              col_start = start_c;
-              col_end = end_c;
-            })
+(* Phrase *)
+
+type 'a phrase = { it : 'a; at : info }
+
+let ( $ ) it at = { it; at }
+let it { it; _ } = it
+let at { at; _ } = at

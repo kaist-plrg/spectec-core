@@ -1,4 +1,4 @@
-open Surface
+open Util
 
 let preprocess (includes : string) (filename : string) =
   try Some (Preprocessor.preprocess includes filename)
@@ -19,7 +19,7 @@ let parse (lexbuf : Lexing.lexbuf) =
   try Some (Parser.p4program Lexer.lexer lexbuf)
   with Parser.Error ->
     let info = Lexer.info lexbuf in
-    Format.eprintf "parser error: %s\n" (Info.to_string info);
+    Format.eprintf "parser error: %a\n" Source.pp info;
     None
 
 let ( let* ) = Option.bind

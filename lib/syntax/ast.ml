@@ -1,19 +1,37 @@
-(* Numbers : value, width, signed *)
+open Util.Source
 
-type num = Bigint.t * (Bigint.t * bool) option
+type ('a, 'b) alt = Left of 'a | Right of 'b
 
-(* Variable : top-level (prefixed with a dot) or bare name *)
+(* Numbers *)
 
-type id = string
-type var = Top of id | Bare of id
-type field = string
+type num = num' phrase
+and num' = Bigint.t * (Bigint.t * bool) option
+
+(* Names *)
+
+type id = id' phrase
+and id' = string
+
 type path = id list
+type path' = id' list
+
+type var = var' phrase
+and var' = Top of id | Bare of id
+
+type field = field' phrase
+and field' = string
+
+type label = label' phrase
+and label' = string
 
 (* Unary and binary operators *)
 
-type unop = BNotOp | LNotOp | UMinusOp
+type unop = unop' phrase
+and unop' = BNotOp | LNotOp | UMinusOp
 
-type binop =
+type binop = binop' phrase
+
+and binop' =
   | PlusOp
   | SPlusOp
   | MinusOp
@@ -38,7 +56,9 @@ type binop =
 
 (* Types *)
 
-type typ =
+type typ = typ' phrase
+
+and typ' =
   | VoidT
   | BoolT
   | MatchKindT
@@ -55,13 +75,21 @@ type typ =
   | AnyT
 
 (* Parameters and Arguments *)
-and dir = No | In | Out | InOut
-and param = id * dir * typ * expr option
+and dir = dir' phrase
+and dir' = No | In | Out | InOut
 and tparam = id
-and arg = ExprA of expr | NameA of id * expr | AnyA
+and tparam' = id'
+and param = param' phrase
+and param' = id * dir * typ * expr option
+and cparam = param
+and cparam' = param'
+and arg = arg' phrase
+and arg' = ExprA of expr | NameA of id * expr | AnyA
 
 (* Expressions *)
-and expr =
+and expr = expr' phrase
+
+and expr' =
   | BoolE of bool
   | StrE of string
   | NumE of num
@@ -83,7 +111,9 @@ and expr =
   | InstE of typ * arg list
 
 (* Statements *)
-and stmt =
+and stmt = stmt' phrase
+
+and stmt' =
   | EmptyI
   | AssignI of expr * expr
   | SwitchI of expr * switch_case list
@@ -92,104 +122,117 @@ and stmt =
   | ExitI
   | RetI of expr option
   | CallI of expr * typ list * arg list
-  | TransI of string
+  | TransI of label
   | SelectI of expr list * select_case list
   | DeclI of decl
 
-and block = stmt list
+and block = block' phrase
+and block' = stmt list
 
 (* Match-cases for switch *)
-and case = CaseC of string | FallC of string | DefaultC
-and mtch = ExprM of expr | DefaultM | AnyM
-and switch_case = case * block
-and mtchkind = string
+and case = case' phrase
+and case' = CaseC of string | FallC of string | DefaultC
+and mtch = mtch' phrase
+and mtch' = ExprM of expr | DefaultM | AnyM
+and switch_case = switch_case' phrase
+and switch_case' = case * block
+and mtch_kind = mtch_kind' phrase
+and mtch_kind' = string
 
 (* Select-cases for select *)
-and label = string
-and select_case = mtch list * label
+and select_case = select_case' phrase
+and select_case' = mtch list * label
 
 (* Declarations *)
-and decl =
+and decl = decl' phrase
+
+and decl' =
   (* Constant, variable, and instance declarations *)
-  | ConstD of { name : id; typ : typ; value : expr }
-  | VarD of { name : id; typ : typ; init : expr option }
-  | InstD of { name : id; typ : typ; args : arg list; init : block option }
+  | ConstD of { id : id; typ : typ; value : expr }
+  | VarD of { id : id; typ : typ; init : expr option }
+  | InstD of { id : id; typ : typ; args : arg list; init : block option }
   (* Type declarations *)
   | ErrD of { fields : field list }
   | MatchKindD of { fields : field list }
-  | StructD of { name : id; fields : (field * typ) list }
-  | HeaderD of { name : id; fields : (field * typ) list }
-  | UnionD of { name : id; fields : (field * typ) list }
-  | EnumD of { name : id; fields : field list }
-  | SEnumD of { name : id; typ : typ; fields : (field * expr) list }
-  | NewTypeD of { name : id; typ : typ option; decl : decl option }
-  | TypeDefD of { name : id; typ : typ option; decl : decl option }
+  | StructD of { id : id; fields : (field * typ) list }
+  | HeaderD of { id : id; fields : (field * typ) list }
+  | UnionD of { id : id; fields : (field * typ) list }
+  | EnumD of { id : id; fields : field list }
+  | SEnumD of { id : id; typ : typ; fields : (field * expr) list }
+  | NewTypeD of { id : id; typ : (typ, decl) alt }
+  | TypeDefD of { id : id; typ : (typ, decl) alt }
   (* Object declarations *)
   (* Value Set *)
-  | ValueSetD of { name : id; typ : typ; size : expr }
+  | ValueSetD of { id : id; typ : typ; size : expr }
   (* Parser *)
-  | ParserTypeD of { name : id; tparams : tparam list; params : param list }
+  | ParserTypeD of { id : id; tparams : tparam list; params : param list }
   | ParserD of {
-      name : id;
+      id : id;
       tparams : tparam list;
       params : param list;
-      cparams : param list;
+      cparams : cparam list;
       locals : decl list;
       states : parser_state list;
     }
   (* Control *)
-  | ActionD of { name : id; params : param list; body : block }
-  | TableD of { name : id; table : table }
-  | ControlTypeD of { name : id; tparams : tparam list; params : param list }
+  | TableD of { id : id; table : table }
+  | ControlTypeD of { id : id; tparams : tparam list; params : param list }
   | ControlD of {
-      name : id;
+      id : id;
       tparams : tparam list;
       params : param list;
-      cparams : param list;
+      cparams : cparam list;
       locals : decl list;
       body : block;
     }
   (* Functions *)
+  | ActionD of { id : id; params : param list; body : block }
   | FuncD of {
-      name : id;
+      id : id;
       rettyp : typ;
       tparams : tparam list;
       params : param list;
       body : block;
     }
   | ExternFuncD of {
-      name : id;
+      id : id;
       rettyp : typ;
       tparams : tparam list;
       params : param list;
     }
   (* Extern objects *)
-  | ConsD of { name : id; cparams : param list }
+  | ConsD of { id : id; cparams : param list }
   | AbstractD of {
-      name : id;
+      id : id;
       rettyp : typ;
       tparams : tparam list;
       params : param list;
     }
   | MethodD of {
-      name : id;
+      id : id;
       rettyp : typ;
       tparams : tparam list;
       params : param list;
     }
-  | ExternObjectD of { name : id; tparams : tparam list; mthds : decl list }
+  | ExternObjectD of { id : id; tparams : tparam list; mthds : decl list }
   (* Package *)
-  | PackageTypeD of { name : id; tparams : tparam list; cparams : param list }
+  | PackageTypeD of { id : id; tparams : tparam list; cparams : param list }
 
 (* Parser state machine *)
-and parser_state = label * block
+and parser_state = parser_state' phrase
+and parser_state' = label * block
 
 (* Table *)
-and table_key = expr * mtchkind
-and table_action = var * arg list
-and table_entry = mtch list * table_action
-and table_default = table_action * bool
-and table_custom = field * expr * bool
+and table_key = table_key' phrase
+and table_key' = expr * mtch_kind
+and table_action = table_action' phrase
+and table_action' = var * arg list
+and table_entry = table_entry' phrase
+and table_entry' = mtch list * table_action
+and table_default = table_default' phrase
+and table_default' = table_action * bool
+and table_custom = table_custom' phrase
+and table_custom' = field * expr * bool
 
 and table =
   table_key list

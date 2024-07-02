@@ -13,24 +13,26 @@
  * under the License.
  *)
 
+open Util
+
 type ('a, 'b) alternative = Left of 'a | Right of 'b
 
 (* Basics *)
 
 module Text : sig
-  type t = Info.t t'
+  type t = Source.info t'
   and 'a t' = { tags : 'a; str : string }
 
   val tags : 'a t' -> 'a
 end = struct
-  type t = Info.t t'
+  type t = Source.info t'
   and 'a t' = { tags : 'a; str : string }
 
   let tags (t : 'a t') : 'a = t.tags
 end
 
 module Number : sig
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' = {
     tags : 'a;
@@ -40,7 +42,7 @@ module Number : sig
 
   val tags : 'a t' -> 'a
 end = struct
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' = {
     tags : 'a;
@@ -52,12 +54,12 @@ end = struct
 end
 
 module Name : sig
-  type t = Info.t t'
+  type t = Source.info t'
   and 'a t' = BareName of Text.t | QualifiedName of (Text.t list * Text.t)
 
-  val tags : Info.t t' -> Info.t
+  val tags : Source.info t' -> Source.info
 end = struct
-  type t = Info.t t'
+  type t = Source.info t'
   and 'a t' = BareName of Text.t | QualifiedName of (Text.t list * Text.t)
 
   let tags (t : 'a t') : 'a =
@@ -65,11 +67,11 @@ end = struct
     | BareName name -> Text.tags name
     | QualifiedName (prefix, name) ->
         let infos = List.map Text.tags prefix in
-        List.fold_right Info.merge infos (Text.tags name)
+        List.fold_right Source.merge infos (Text.tags name)
 end
 
 module Direction : sig
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' =
     | In of { tags : 'a }
@@ -78,7 +80,7 @@ module Direction : sig
 
   val tags : 'a t' -> 'a
 end = struct
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' =
     | In of { tags : 'a }
@@ -92,7 +94,7 @@ end
 (* Operators *)
 
 module Op : sig
-  type un = Info.t un'
+  type un = Source.info un'
 
   and 'a un' =
     | Not of { tags : 'a }
@@ -101,7 +103,7 @@ module Op : sig
 
   val tags_un : 'a un' -> 'a
 
-  type bin = Info.t bin'
+  type bin = Source.info bin'
 
   and 'a bin' =
     | Plus of { tags : 'a }
@@ -128,7 +130,7 @@ module Op : sig
 
   val tags_bin : 'a bin' -> 'a
 end = struct
-  type un = Info.t un'
+  type un = Source.info un'
 
   and 'a un' =
     | Not of { tags : 'a }
@@ -138,7 +140,7 @@ end = struct
   let tags_un (un : 'a un') : 'a =
     match un with Not { tags } | BitNot { tags } | UMinus { tags } -> tags
 
-  type bin = Info.t bin'
+  type bin = Source.info bin'
 
   and 'a bin' =
     | Plus of { tags : 'a }
@@ -192,7 +194,7 @@ end
 (* Types *)
 
 module rec Type : sig
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' =
     | Bool of { tags : 'a }
@@ -211,7 +213,7 @@ module rec Type : sig
 
   val tags : 'a t' -> 'a
 end = struct
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' =
     | Bool of { tags : 'a }
@@ -248,14 +250,14 @@ end
 
 (* Arguments and Parameters *)
 and Argument : sig
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' =
     | Expression of { tags : 'a; value : Expression.t }
     | KeyValue of { tags : 'a; key : Text.t; value : Expression.t }
     | Missing of { tags : 'a }
 end = struct
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' =
     | Expression of { tags : 'a; value : Expression.t }
@@ -264,7 +266,7 @@ end = struct
 end
 
 and Parameter : sig
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' = {
     tags : 'a;
@@ -275,7 +277,7 @@ and Parameter : sig
     opt_value : Expression.t option;
   }
 end = struct
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' = {
     tags : 'a;
@@ -289,7 +291,7 @@ end
 
 (* Annotations *)
 and Annotation : sig
-  type body = Info.t body'
+  type body = Source.info body'
 
   and 'a body' =
     | Empty of { tags : 'a }
@@ -297,10 +299,10 @@ and Annotation : sig
     | Expression of { tags : 'a; exprs : Expression.t list }
     | KeyValue of { tags : 'a; key_values : KeyValue.t list }
 
-  type t = Info.t t'
+  type t = Source.info t'
   and 'a t' = { tags : 'a; name : Text.t; body : body }
 end = struct
-  type body = Info.t body'
+  type body = Source.info body'
 
   and 'a body' =
     | Empty of { tags : 'a }
@@ -308,21 +310,21 @@ end = struct
     | Expression of { tags : 'a; exprs : Expression.t list }
     | KeyValue of { tags : 'a; key_values : KeyValue.t list }
 
-  type t = Info.t t'
+  type t = Source.info t'
   and 'a t' = { tags : 'a; name : Text.t; body : body }
 end
 
 (* Expressions *)
 and KeyValue : sig
-  type t = Info.t t'
+  type t = Source.info t'
   and 'a t' = { tags : 'a; key : Text.t; value : Expression.t }
 end = struct
-  type t = Info.t t'
+  type t = Source.info t'
   and 'a t' = { tags : 'a; key : Text.t; value : Expression.t }
 end
 
 and Expression : sig
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' =
     | True of { tags : 'a }
@@ -358,7 +360,7 @@ and Expression : sig
   val tags : 'a t' -> 'a
   val update_tags : 'a t' -> 'a -> 'a t'
 end = struct
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' =
     | True of { tags : 'a }
@@ -445,7 +447,7 @@ end
 
 (* Statements *)
 and Statement : sig
-  type switch_label = Info.t switch_label'
+  type switch_label = Source.info switch_label'
 
   and 'a switch_label' =
     | Default of { tags : 'a }
@@ -453,13 +455,15 @@ and Statement : sig
 
   val tags_label : 'a switch_label' -> 'a
 
-  type switch_case = Info.t switch_case'
+  type switch_case = Source.info switch_case'
 
   and 'a switch_case' =
     | Action of { tags : 'a; label : switch_label; code : Block.t }
     | FallThrough of { tags : 'a; label : switch_label }
 
-  type t = Info.t t'
+  val tags_case : 'a switch_case' -> 'a
+
+  type t = Source.info t'
 
   and 'a t' =
     | MethodCall of {
@@ -480,7 +484,7 @@ and Statement : sig
 
   val tags : 'a t' -> 'a
 end = struct
-  type switch_label = Info.t switch_label'
+  type switch_label = Source.info switch_label'
 
   and 'a switch_label' =
     | Default of { tags : 'a }
@@ -489,13 +493,16 @@ end = struct
   let tags_label (t : 'a switch_label') : 'a =
     match t with Default { tags } | Name { tags; _ } -> tags
 
-  type switch_case = Info.t switch_case'
+  type switch_case = Source.info switch_case'
 
   and 'a switch_case' =
     | Action of { tags : 'a; label : switch_label; code : Block.t }
     | FallThrough of { tags : 'a; label : switch_label }
 
-  type t = Info.t t'
+  let tags_case (t : 'a switch_case') : 'a =
+    match t with Action { tags; _ } | FallThrough { tags; _ } -> tags
+
+  type t = Source.info t'
 
   and 'a t' =
     | MethodCall of {
@@ -530,7 +537,7 @@ end = struct
 end
 
 and Block : sig
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' = {
     tags : 'a;
@@ -538,7 +545,7 @@ and Block : sig
     statements : Statement.t list;
   }
 end = struct
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' = {
     tags : 'a;
@@ -549,7 +556,7 @@ end
 
 (* Matches *)
 and Match : sig
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' =
     | Default of { tags : 'a }
@@ -558,7 +565,7 @@ and Match : sig
 
   val tags : 'a t' -> 'a
 end = struct
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' =
     | Default of { tags : 'a }
@@ -572,10 +579,10 @@ end
 
 (* Parsers *)
 and Parser : sig
-  type case = Info.t case'
+  type case = Source.info case'
   and 'a case' = { tags : 'a; matches : Match.t list; next : Text.t }
 
-  type transition = Info.t transition'
+  type transition = Source.info transition'
 
   and 'a transition' =
     | Direct of { tags : 'a; next : Text.t }
@@ -584,7 +591,7 @@ and Parser : sig
   val transition_tags : 'a transition' -> 'a
   val update_transition_tags : 'a transition' -> 'a -> 'a transition'
 
-  type state = Info.t state'
+  type state = Source.info state'
 
   and 'a state' = {
     tags : 'a;
@@ -594,10 +601,10 @@ and Parser : sig
     transition : transition;
   }
 end = struct
-  type case = Info.t case'
+  type case = Source.info case'
   and 'a case' = { tags : 'a; matches : Match.t list; next : Text.t }
 
-  type transition = Info.t transition'
+  type transition = Source.info transition'
 
   and 'a transition' =
     | Direct of { tags : 'a; next : Text.t }
@@ -611,7 +618,7 @@ end = struct
     | Direct { next; _ } -> Direct { tags; next }
     | Select { exprs; cases; _ } -> Select { tags; exprs; cases }
 
-  type state = Info.t state'
+  type state = Source.info state'
 
   and 'a state' = {
     tags : 'a;
@@ -624,7 +631,7 @@ end
 
 (* Tables *)
 and Table : sig
-  type action_ref = Info.t action_ref'
+  type action_ref = Source.info action_ref'
 
   and 'a action_ref' = {
     tags : 'a;
@@ -633,7 +640,7 @@ and Table : sig
     args : Argument.t list;
   }
 
-  type key = Info.t key'
+  type key = Source.info key'
 
   and 'a key' = {
     tags : 'a;
@@ -642,7 +649,7 @@ and Table : sig
     match_kind : Text.t;
   }
 
-  type entry = Info.t entry'
+  type entry = Source.info entry'
 
   and 'a entry' = {
     tags : 'a;
@@ -651,7 +658,7 @@ and Table : sig
     action : action_ref;
   }
 
-  type property = Info.t property'
+  type property = Source.info property'
 
   and 'a property' =
     | Key of { tags : 'a; keys : key list }
@@ -666,7 +673,7 @@ and Table : sig
         value : Expression.t;
       }
 end = struct
-  type action_ref = Info.t action_ref'
+  type action_ref = Source.info action_ref'
 
   and 'a action_ref' = {
     tags : 'a;
@@ -675,7 +682,7 @@ end = struct
     args : Argument.t list;
   }
 
-  type key = Info.t key'
+  type key = Source.info key'
 
   and 'a key' = {
     tags : 'a;
@@ -684,7 +691,7 @@ end = struct
     match_kind : Text.t;
   }
 
-  type entry = Info.t entry'
+  type entry = Source.info entry'
 
   and 'a entry' = {
     tags : 'a;
@@ -693,7 +700,7 @@ end = struct
     action : action_ref;
   }
 
-  type property = Info.t property'
+  type property = Source.info property'
 
   and 'a property' =
     | Key of { tags : 'a; keys : key list }
@@ -711,7 +718,7 @@ end
 
 (* Methods *)
 and MethodPrototype : sig
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' =
     | Constructor of {
@@ -737,7 +744,7 @@ and MethodPrototype : sig
         params : Parameter.t list;
       }
 end = struct
-  type t = Info.t t'
+  type t = Source.info t'
 
   and 'a t' =
     | Constructor of {
@@ -766,7 +773,7 @@ end
 
 (* Declarations *)
 and Declaration : sig
-  type field = Info.t field'
+  type field = Source.info field'
 
   and 'a field' = {
     tags : 'a;
@@ -775,7 +782,7 @@ and Declaration : sig
     name : Text.t;
   }
 
-  and t = Info.t t'
+  and t = Source.info t'
 
   and 'a t' =
     | Constant of {
@@ -934,7 +941,7 @@ and Declaration : sig
   val name : t -> Text.t
   val has_type_params : t -> bool
 end = struct
-  type field = Info.t field'
+  type field = Source.info field'
 
   and 'a field' = {
     tags : 'a;
@@ -943,7 +950,7 @@ end = struct
     name : Text.t;
   }
 
-  and t = Info.t t'
+  and t = Source.info t'
 
   and 'a t' =
     | Constant of {

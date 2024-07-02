@@ -15,6 +15,7 @@
 
 open Syntax.Ast
 open Base
+open Util.Source
 
 (* Bit manipulation *)
 
@@ -105,7 +106,7 @@ let eval_unop_uminus (value : Value.t) : Value.t =
   | _ -> Format.asprintf "Not an integer value: %a" Value.pp value |> failwith
 
 let eval_unop (op : unop) (value : Value.t) : Value.t =
-  match op with
+  match op.it with
   | BNotOp -> eval_unop_bitnot value
   | LNotOp -> eval_unop_not value
   | UMinusOp -> eval_unop_uminus value
@@ -532,7 +533,7 @@ let eval_binop_or (lvalue : Value.t) (rvalue : Value.t) : Value.t =
       |> failwith
 
 let eval_binop (op : binop) (lvalue : Value.t) (rvalue : Value.t) : Value.t =
-  match op with
+  match op.it with
   | PlusOp -> eval_binop_plus lvalue rvalue
   | SPlusOp -> eval_binop_plussat lvalue rvalue
   | MinusOp -> eval_binop_minus lvalue rvalue

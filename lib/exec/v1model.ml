@@ -6,6 +6,7 @@ open Runtime.Cclos
 open Runtime.Context
 open Runtime.Signal
 open Driver
+open Util.Source
 
 let make_func (path : string list) (func : string) =
   let base, members =
@@ -13,13 +14,17 @@ let make_func (path : string list) (func : string) =
   in
   let expr =
     List.fold_left
-      (fun acc member -> ExprAccE (acc, member))
-      (VarE (Bare base)) members
+      (fun acc member -> ExprAccE (acc, member $ no_info) $ no_info)
+      (VarE (Bare (base $ no_info) $ no_info) $ no_info)
+      members
   in
-  ExprAccE (expr, func)
+  ExprAccE (expr, func $ no_info) $ no_info
 
 let make_args (args : Var.t list) =
-  List.map (fun arg -> ExprA (VarE (Bare arg))) args
+  List.map
+    (fun arg ->
+      ExprA (VarE (Bare (arg $ no_info) $ no_info) $ no_info) $ no_info)
+    args
 
 module Make (Interp : INTERP) : ARCH = struct
   type extern = PacketIn of Core.PacketIn.t | PacketOut of Core.PacketOut.t

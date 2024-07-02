@@ -1,6 +1,7 @@
 open Syntax.Ast
 open Runtime.Base
 open Runtime.Context
+open Util.Source
 
 let rec eval_simplify_type (ictx : ICtx.t) (typ : Type.t) : Type.t =
   match typ with
@@ -10,7 +11,7 @@ let rec eval_simplify_type (ictx : ICtx.t) (typ : Type.t) : Type.t =
   | _ -> typ
 
 let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
-  match typ with
+  match typ.it with
   | BoolT -> BoolT
   | ErrT -> ICtx.find_td_glob "error" ictx |> Option.get
   | StrT -> StrT
@@ -24,10 +25,10 @@ let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
   | VBitT width ->
       let width = eval_expr ictx width |> Runtime.Ops.extract_bigint in
       VBitT width
-  | NameT (Top name) -> ICtx.find_td_glob name ictx |> Option.get
-  | NameT (Bare name) -> ICtx.find_td name ictx |> Option.get
+  | NameT { it = Top id; _ } -> ICtx.find_td_glob id.it ictx |> Option.get
+  | NameT { it = Bare id; _ } -> ICtx.find_td id.it ictx |> Option.get
   (* (TODO) Handle specialized types *)
-  | SpecT (name, _) -> eval_type ictx (NameT name)
+  | SpecT (name, _) -> eval_type ictx (NameT name $ no_info)
   | StackT (typ, size) ->
       let typ = eval_type ictx typ in
       let size = eval_expr ictx size |> Runtime.Ops.extract_bigint in
@@ -40,16 +41,17 @@ let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
       |> failwith
 
 and eval_expr (ictx : ICtx.t) (expr : expr) : Value.t =
-  match expr with
+  match expr.it with
   | BoolE b -> BoolV b
   | StrE str -> StrV str
-  | NumE (value, width_signed) -> (
+  | NumE { it = value, width_signed; _ } -> (
       match width_signed with
       | Some (width, signed) ->
           if signed then IntV (width, value) else BitV (width, value)
       | None -> AIntV value)
-  | VarE (Top name) -> ICtx.find_var_glob name ictx |> Option.get |> snd
-  | VarE (Bare name) -> ICtx.find_var name ictx |> Option.get |> snd
+  | VarE { it = Top id; _ } ->
+      ICtx.find_var_glob id.it ictx |> Option.get |> snd
+  | VarE { it = Bare id; _ } -> ICtx.find_var id.it ictx |> Option.get |> snd
   | UnE (op, arg) ->
       let varg = eval_expr ictx arg in
       Runtime.Ops.eval_unop op varg

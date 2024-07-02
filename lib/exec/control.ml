@@ -1,16 +1,19 @@
 open Syntax.Ast
 open Runtime.Base
 open Runtime.Context
+open Util.Source
 
 (* Logic for match-action table *)
 
-let match_action (_ctx : Ctx.t) (_keys : (Value.t * mtchkind) list)
+let match_action (_ctx : Ctx.t) (_keys : (Value.t * mtch_kind) list)
     (actions : table_action list) (_entries : table_entry list)
     (default : table_default option) (_custom : table_custom list) =
   (* Determine the action to be run *)
   (* Always give the default action for now *)
   let action =
-    match default with Some (action, _) -> Some action | None -> None
+    match default with
+    | Some { it = action, _; _ } -> Some action
+    | None -> None
   in
   (* Calling an apply method on a table instance returns a value with
      a struct type with three fields. This structure is synthesized
@@ -23,7 +26,7 @@ let match_action (_ctx : Ctx.t) (_keys : (Value.t * mtchkind) list)
     let action_run =
       let action_run =
         Option.value ~default:(List.hd actions) action
-        |> fst
+        |> it |> fst
         |> Format.asprintf "%a" Syntax.Print.print_var
       in
       Value.EnumFieldV action_run

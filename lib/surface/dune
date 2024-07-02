@@ -1,4 +1,4 @@
 (library
  (name surface)
- (libraries bignum)
- (modules ast info eq print))
+ (libraries bignum util)
+ (modules ast eq print))

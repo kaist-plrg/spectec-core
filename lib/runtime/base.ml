@@ -21,16 +21,16 @@ module Type = struct
     | BitT of Bigint.t
     | VBitT of Bigint.t
     | StrT
-    | ErrT of field list
-    | MatchKindT of field list
-    | NameT of id
-    | NewT of id
+    | ErrT of field' list
+    | MatchKindT of field' list
+    | NameT of id'
+    | NewT of id'
     | StackT of (t * Bigint.t)
     | TupleT of t list
-    | StructT of (field * t) list
-    | HeaderT of (field * t) list
-    | UnionT of (field * t) list
-    | EnumT of field list
+    | StructT of (field' * t) list
+    | HeaderT of (field' * t) list
+    | UnionT of (field' * t) list
+    | EnumT of field' list
     | RefT
 
   let rec pp fmt typ =
@@ -99,16 +99,16 @@ module Value = struct
     | BitV of Bigint.t * Bigint.t
     | VBitV of Bigint.t * Bigint.t
     | StrV of string
-    | ErrV of field
-    | MatchKindV of field
+    | ErrV of field'
+    | MatchKindV of field'
     | StackV of (t list * Bigint.t * Bigint.t)
     | TupleV of t list
-    | StructV of (field * t) list
-    | HeaderV of bool * (field * t) list
-    | UnionV of (field * t) list
-    | EnumFieldV of field
-    | SEnumFieldV of field * t
-    | RefV of path
+    | StructV of (field' * t) list
+    | HeaderV of bool * (field' * t) list
+    | UnionV of (field' * t) list
+    | EnumFieldV of field'
+    | SEnumFieldV of field' * t
+    | RefV of path'
 
   let rec pp fmt value =
     match value with
@@ -156,7 +156,7 @@ module Value = struct
           fs
     | EnumFieldV f -> Format.fprintf fmt "%s" f
     | SEnumFieldV (f, v) -> Format.fprintf fmt "%s(%a)" f pp v
-    | RefV ps -> Format.fprintf fmt "ref %s" (String.concat "." ps)
+    | RefV p -> Format.fprintf fmt "ref %s" (String.concat "." p)
 end
 
 (* Type and value pairs *)

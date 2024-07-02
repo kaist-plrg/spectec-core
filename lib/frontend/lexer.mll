@@ -18,6 +18,7 @@ open Lexing
 open Context
 open Parser
 open Surface.Ast
+open Util
 
 exception Error of string
 
@@ -28,7 +29,7 @@ let line_start    = ref 1
 type lexer_state =
   (* Nothing to recall from the previous tokens. *)
   | SRegular
-  | SRangle of Surface.Info.t
+  | SRangle of Source.info
   | SPragma
   (* We have seen a template *)
   | STemplate
@@ -63,13 +64,13 @@ let newline lexbuf =
   current_line := line_number() + 1 ;
   set_start_of_line (lexeme_end lexbuf)
 
-let info lexbuf : Surface.Info.t =
+let info lexbuf : Source.info =
   let f = filename () in
   let c1 = lexeme_start lexbuf in
   let c2 = lexeme_end lexbuf in
   let c = start_of_line () in
   let l = line_number() in
-  Surface.Info.I 
+  Source.I 
     { filename = f;
       line_start = l;
       line_end = None;
@@ -127,7 +128,7 @@ rule tokenize = parse
       { newline lexbuf; PRAGMA_END (info lexbuf) }
   | '"'
       { let str, end_info = (string lexbuf) in
-        STRING_LITERAL ({tags=Surface.Info.merge (info lexbuf) end_info; str}) }
+        STRING_LITERAL ({tags=Source.merge (info lexbuf) end_info; str}) }
   | whitespace
       { tokenize lexbuf }
   | '#'
@@ -410,7 +411,7 @@ let rec lexer (lexbuf:lexbuf): token =
       end
     | SRangle info1 -> 
       begin match tokenize lexbuf with
-      | R_ANGLE info2 when Surface.Info.follows info1 info2 -> 
+      | R_ANGLE info2 when Source.follows info1 info2 -> 
         lexer_state := SRegular;
         R_ANGLE_SHIFT info2
       | PRAGMA _ as token ->

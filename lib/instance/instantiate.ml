@@ -4,16 +4,17 @@ open Runtime.Base
 open Runtime.Cclos
 open Runtime.Object
 open Runtime.Context
+open Util.Source
 
 (* Helpers to handle generic types without type inference at the moment *)
 
 let cclos_from_type (ccenv : CCEnv.t) (typ : typ) =
-  match typ with
-  | NameT (Top name) | NameT (Bare name) ->
-      let cclos = CCEnv.find name ccenv |> Option.get in
+  match typ.it with
+  | NameT { it = Top id; _ } | NameT { it = Bare id; _ } ->
+      let cclos = CCEnv.find id.it ccenv |> Option.get in
       (cclos, [])
-  | SpecT (Top name, targs) | SpecT (Bare name, targs) ->
-      let cclos = CCEnv.find name ccenv |> Option.get in
+  | SpecT ({ it = Top id; _ }, targs) | SpecT ({ it = Bare id; _ }, targs) ->
+      let cclos = CCEnv.find id.it ccenv |> Option.get in
       (cclos, targs)
   | _ -> assert false
 
@@ -24,17 +25,18 @@ let cclos_from_type (ccenv : CCEnv.t) (typ : typ) =
 let check_args (args : arg list) =
   assert (
     List.for_all
-      (fun (arg : arg) -> match arg with ExprA _ -> true | _ -> false)
+      (fun (arg : arg) -> match arg.it with ExprA _ -> true | _ -> false)
       args
     || List.for_all
-         (fun (arg : arg) -> match arg with NameA _ -> true | _ -> false)
+         (fun (arg : arg) -> match arg.it with NameA _ -> true | _ -> false)
          args)
 
 (* Helper to move object-local variable declarations into apply block *)
 
-let var_decl_to_stmt = function
-  | VarD { name; init = Some value; _ } ->
-      Some (AssignI (VarE (Bare name), value))
+let var_decl_to_stmt (decl : decl) =
+  match decl.it with
+  | VarD { id; init = Some value; _ } ->
+      Some (AssignI (VarE (Bare id $ no_info) $ no_info, value) $ decl.at)
   | _ -> None
 
 (* Loading declarations to environments *)
@@ -57,105 +59,116 @@ let load_glob_const (ictx : ICtx.t) (name : Var.t) (typ : typ) (value : expr) =
   ICtx.add_var_glob name typ value ictx
 
 let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
-  match decl with
+  match decl.it with
   (* Load global const to genv *)
-  | ConstD { name; typ; value } ->
-      let ictx = load_glob_const ictx name typ value in
+  | ConstD { id; typ; value } ->
+      let ictx = load_glob_const ictx id.it typ value in
       (ccenv, ictx)
   (* Load constructor closures to ccenv *)
-  | ParserD { name; tparams; params; cparams; locals; states } ->
+  | ParserD { id; tparams; params; cparams; locals; states } ->
       let cclos = CClos.ParserCC { tparams; params; cparams; locals; states } in
-      let ccenv = CCEnv.add name cclos ccenv in
+      let ccenv = CCEnv.add id.it cclos ccenv in
       (ccenv, ictx)
-  | ControlD { name; tparams; params; cparams; locals; body } ->
+  | ControlD { id; tparams; params; cparams; locals; body } ->
       let cclos = CClos.ControlCC { tparams; params; cparams; locals; body } in
-      let ccenv = CCEnv.add name cclos ccenv in
+      let ccenv = CCEnv.add id.it cclos ccenv in
       (ccenv, ictx)
   (* For package type declaration, also load to tdenv *)
-  | PackageTypeD { name; tparams; cparams } ->
+  | PackageTypeD { id; tparams; cparams } ->
       let cclos = CClos.PackageCC { tparams; cparams } in
-      let ccenv = CCEnv.add name cclos ccenv in
+      let ccenv = CCEnv.add id.it cclos ccenv in
       let typ = Type.RefT in
-      let ictx = ICtx.add_td_glob name typ ictx in
+      let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
   (* For extern object declaration, also load to tdenv *)
-  | ExternObjectD { name; tparams; mthds } ->
+  | ExternObjectD { id; tparams; mthds } ->
       let cons, mthds =
         List.partition
-          (fun (mthd : decl) -> match mthd with ConsD _ -> true | _ -> false)
+          (fun (mthd : decl) ->
+            match mthd.it with ConsD _ -> true | _ -> false)
           mthds
       in
       (* (TODO) Handle overloaded constructors *)
       assert (List.length cons <= 1);
       let cparams =
-        match cons with ConsD { cparams; _ } :: [] -> cparams | _ -> []
+        match cons with
+        | { it = ConsD { cparams; _ }; _ } :: [] -> cparams
+        | _ -> []
       in
       let cclos = CClos.ExternCC { tparams; cparams; mthds } in
-      let ccenv = CCEnv.add name cclos ccenv in
+      let ccenv = CCEnv.add id.it cclos ccenv in
       let typ = Type.RefT in
-      let ictx = ICtx.add_td_glob name typ ictx in
+      let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
   (* Load types to tdenv *)
   | ErrD { fields } ->
+      let fields = List.map (fun field -> field.it) fields in
       let typ = Type.ErrT fields in
       let ictx = ICtx.add_td_glob "error" typ ictx in
       (ccenv, ictx)
   | MatchKindD { fields } ->
+      let fields = List.map (fun field -> field.it) fields in
       let typ = Type.MatchKindT fields in
       let ictx = ICtx.add_td_glob "match_kind" typ ictx in
       (ccenv, ictx)
-  | StructD { name; fields } ->
+  | StructD { id; fields } ->
       let fields =
-        List.map (fun (name, typ) -> (name, Eval.eval_type ictx typ)) fields
+        List.map
+          (fun (field, typ) -> (field.it, Eval.eval_type ictx typ))
+          fields
       in
       let typ = Type.StructT fields in
-      let ictx = ICtx.add_td_glob name typ ictx in
+      let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
-  | HeaderD { name; fields } ->
+  | HeaderD { id; fields } ->
       let fields =
-        List.map (fun (name, typ) -> (name, Eval.eval_type ictx typ)) fields
+        List.map
+          (fun (field, typ) -> (field.it, Eval.eval_type ictx typ))
+          fields
       in
       let typ = Type.HeaderT fields in
-      let ictx = ICtx.add_td_glob name typ ictx in
+      let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
-  | UnionD { name; fields } ->
+  | UnionD { id; fields } ->
       let fields =
-        List.map (fun (name, typ) -> (name, Eval.eval_type ictx typ)) fields
+        List.map
+          (fun (field, typ) -> (field.it, Eval.eval_type ictx typ))
+          fields
       in
       let typ = Type.UnionT fields in
-      let ictx = ICtx.add_td_glob name typ ictx in
+      let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
-  | EnumD { name; fields } ->
+  | EnumD { id; fields } ->
+      let fields = List.map (fun field -> field.it) fields in
       let typ = Type.EnumT fields in
-      let ictx = ICtx.add_td_glob name typ ictx in
+      let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
   | SEnumD _ ->
       Format.eprintf "(TODO: load_glob_decl) Load serializable enum\n";
       (ccenv, ictx)
-  | NewTypeD { name; typ; decl } | TypeDefD { name; typ; decl } -> (
-      match (typ, decl) with
-      | Some typ, None ->
+  | NewTypeD { id; typ } | TypeDefD { id; typ } -> (
+      match typ with
+      | Left typ ->
           let typ = Eval.eval_type ictx typ in
-          let ictx = ICtx.add_td_glob name typ ictx in
+          let ictx = ICtx.add_td_glob id.it typ ictx in
           (ccenv, ictx)
-      | None, Some _ ->
+      | Right _decl ->
           Format.eprintf "(TODO: load_glob_decl) Load typedef with decl\n";
-          (ccenv, ictx)
-      | _ -> assert false)
-  | ParserTypeD { name; _ } | ControlTypeD { name; _ } ->
+          (ccenv, ictx))
+  | ParserTypeD { id; _ } | ControlTypeD { id; _ } ->
       let typ = Type.RefT in
-      let ictx = ICtx.add_td_glob name typ ictx in
+      let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
   (* Load functions to fenv *)
-  | ActionD { name; params; body } ->
+  | ActionD { id; params; body } ->
       let vis_glob = env_to_vis ictx.env_glob in
       let func = Func.ActionF { vis = vis_glob; params; body } in
-      let ictx = ICtx.add_func_glob name func ictx in
+      let ictx = ICtx.add_func_glob id.it func ictx in
       (ccenv, ictx)
-  | ExternFuncD { name; tparams; params; _ } ->
+  | ExternFuncD { id; tparams; params; _ } ->
       let vis_glob = env_to_vis ictx.env_glob in
       let func = Func.ExternF { vis_glob; tparams; params } in
-      let ictx = ICtx.add_func_glob name func ictx in
+      let ictx = ICtx.add_func_glob id.it func ictx in
       (ccenv, ictx)
   | _ ->
       Format.eprintf "(TODO: load_glob_decl) Load declaration %a\n"
@@ -170,12 +183,12 @@ let rec eval_targs (ictx_caller : ICtx.t) (ictx_callee : ICtx.t)
   List.fold_left2
     (fun ictx_callee tparam targ ->
       let typ = Eval.eval_type ictx_caller targ in
-      ICtx.add_td_obj tparam typ ictx_callee)
+      ICtx.add_td_obj tparam.it typ ictx_callee)
     ictx_callee tparams targs
 
 and eval_expr (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t) (path : Path.t)
     (expr : expr) =
-  match expr with
+  match expr.it with
   | InstE (typ, args) ->
       let sto = instantiate_from_expr ccenv sto ictx path typ args in
       let value = Value.RefV path in
@@ -192,8 +205,8 @@ and eval_args (ccenv : CCEnv.t) (sto : Sto.t) (ictx_caller : ICtx.t)
   check_args args;
   (* Align by parameter order *)
   let align_args (params, args) (param : param) (arg : arg) =
-    let name, _, typ, _ = param in
-    match arg with
+    let name, _, typ, _ = param.it in
+    match arg.it with
     | ExprA value -> (params @ [ (name, typ) ], args @ [ value ])
     | NameA (name, value) -> (params @ [ (name, typ) ], args @ [ value ])
     | _ -> failwith "(eval_args) Instantiation argument must not be missing."
@@ -205,9 +218,9 @@ and eval_args (ccenv : CCEnv.t) (sto : Sto.t) (ictx_caller : ICtx.t)
       (fun (sto, ictx_callee) (param, typ) arg ->
         let typ = Eval.eval_type ictx_caller typ in
         let sto, value =
-          eval_expr ccenv sto ictx_caller (path @ [ param ]) arg
+          eval_expr ccenv sto ictx_caller (path @ [ param.it ]) arg
         in
-        let ictx_callee = ICtx.add_var_obj param typ value ictx_callee in
+        let ictx_callee = ICtx.add_var_obj param.it typ value ictx_callee in
         (sto, ictx_callee))
       (sto, ictx_callee) params args
   in
@@ -220,7 +233,7 @@ and eval_cargs (ccenv : CCEnv.t) (sto : Sto.t) (ictx_caller : ICtx.t)
 
 and pre_eval_params (ictx : ICtx.t) (params : param list) =
   List.fold_left
-    (fun ictx (name, _, typ, _) -> load_obj_var ictx name typ)
+    (fun ictx { it = name, _, typ, _; _ } -> load_obj_var ictx name.it typ)
     ictx params
 
 and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
@@ -252,10 +265,10 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
       (* Build methods out of states *)
       let ictx_callee =
         List.fold_left
-          (fun (ictx_callee : ICtx.t) (name, body) ->
+          (fun (ictx_callee : ICtx.t) { it = label, body; _ } ->
             (* (TODO) Ignore direct application for now *)
             let func = Func.StateF { body } in
-            ICtx.add_func_obj name func ictx_callee)
+            ICtx.add_func_obj label.it func ictx_callee)
           ictx_callee states
       in
       (* Build "apply" method *)
@@ -263,7 +276,8 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
         (* Move object-local variable initializers into apply block *)
         let body_init = List.filter_map var_decl_to_stmt locals in
         (* Transition to the start state *)
-        let body = body_init @ [ TransI "start" ] in
+        let body = body_init @ [ TransI ("start" $ no_info) $ no_info ] in
+        let body = body $ no_info in
         Func.MethodF
           { vis_obj = ictx_callee.vis_obj; tparams = []; params; body }
       in
@@ -303,7 +317,8 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
         (* Move object-local variable initializers into apply block *)
         let body_init = List.filter_map var_decl_to_stmt locals in
         (* Transition to the start state *)
-        let body = body_init @ [ BlockI body ] in
+        let body = body_init @ [ BlockI body $ no_info ] in
+        let body = body $ no_info in
         Func.MethodF
           { vis_obj = ictx_callee.vis_obj; tparams = []; params; body }
       in
@@ -359,7 +374,7 @@ and instantiate_from_expr (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
   instantiate_from_cclos ccenv sto ictx path cclos targs args
 
 and instantiate_from_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
-    (path : Path.t) (name : id) (typ : typ) (args : arg list) =
+    (path : Path.t) (name : Var.t) (typ : typ) (args : arg list) =
   let path = path @ [ name ] in
   let cclos, targs = cclos_from_type ccenv typ in
   let sto = instantiate_from_cclos ccenv sto ictx path cclos targs args in
@@ -369,7 +384,7 @@ and instantiate_from_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
   (sto, ictx)
 
 and instantiate_from_glob_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
-    (name : id) (typ : typ) (args : arg list) =
+    (name : Var.t) (typ : typ) (args : arg list) =
   let path = [ name ] in
   let cclos, targs = cclos_from_type ccenv typ in
   let sto = instantiate_from_cclos ccenv sto ictx path cclos targs args in
@@ -385,23 +400,23 @@ and instantiate_from_glob_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
    | variableDeclaration | valueSetDeclaration; (13.2) *)
 and instantiate_parser_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
     (path : Path.t) (decl : decl) =
-  match decl with
-  | InstD { name; typ; args; _ } ->
-      instantiate_from_obj_decl ccenv sto ictx path name typ args
-  | ConstD { name; typ; value } ->
-      let ictx = load_obj_const ictx name typ value in
+  match decl.it with
+  | InstD { id; typ; args; _ } ->
+      instantiate_from_obj_decl ccenv sto ictx path id.it typ args
+  | ConstD { id; typ; value } ->
+      let ictx = load_obj_const ictx id.it typ value in
       (sto, ictx)
-  | VarD { name; typ; _ } ->
-      let ictx = load_obj_var ictx name typ in
+  | VarD { id; typ; _ } ->
+      let ictx = load_obj_var ictx id.it typ in
       (sto, ictx)
   (* There is no syntax for specifying parameters that are value-sets (Appendix F) *)
-  | ValueSetD { name; _ } ->
-      let path = path @ [ name ] in
+  | ValueSetD { id; _ } ->
+      let path = path @ [ id.it ] in
       (* (TODO) What should be the runtime representation of value set? *)
       let obj = Object.ValueSetO in
       let value = Value.RefV path in
       let typ = Type.RefT in
-      let ictx = ICtx.add_var_obj name typ value ictx in
+      let ictx = ICtx.add_var_obj id.it typ value ictx in
       let sto = Sto.add path obj sto in
       (sto, ictx)
   | _ -> failwith "(instantiate_parser_obj_decl) Unexpected declaration."
@@ -412,43 +427,43 @@ and instantiate_parser_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
    | variableDeclaration; (14) *)
 and instantiate_control_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
     (path : Path.t) (decl : decl) =
-  match decl with
-  | InstD { name; typ; args; _ } ->
-      instantiate_from_obj_decl ccenv sto ictx path name typ args
-  | ConstD { name; typ; value } ->
-      let ictx = load_obj_const ictx name typ value in
+  match decl.it with
+  | InstD { id; typ; args; _ } ->
+      instantiate_from_obj_decl ccenv sto ictx path id.it typ args
+  | ConstD { id; typ; value } ->
+      let ictx = load_obj_const ictx id.it typ value in
       (sto, ictx)
-  | VarD { name; typ; _ } ->
-      let ictx = load_obj_var ictx name typ in
+  | VarD { id; typ; _ } ->
+      let ictx = load_obj_var ictx id.it typ in
       (sto, ictx)
-  | ActionD { name; params; body } ->
+  | ActionD { id; params; body } ->
       let func = Func.ActionF { vis = env_to_vis ictx.env_obj; params; body } in
-      let ictx = ICtx.add_func_obj name func ictx in
+      let ictx = ICtx.add_func_obj id.it func ictx in
       (sto, ictx)
   (* Each table evaluates to a table instance (18.2) *)
   (* There is no syntax for specifying parameters that are tables
      Tables are only intended to be used from within the control
      where they are defined (Appendix F) *)
-  | TableD { name; table } ->
-      let path = path @ [ name ] in
+  | TableD { id; table } ->
+      let path = path @ [ id.it ] in
       (* Build a dummy "apply" method for table *)
       let apply = Func.TableF { vis_obj = ictx.vis_obj } in
       let obj = Object.TableO { table; mthd = apply } in
       let value = Value.RefV path in
       let typ = Type.RefT in
-      let ictx = ICtx.add_var_obj name typ value ictx in
+      let ictx = ICtx.add_var_obj id.it typ value ictx in
       let sto = Sto.add path obj sto in
       (sto, ictx)
   | _ -> failwith "(instantiate_control_obj_decl) Unexpected declaration."
 
 and instantiate_extern_obj_decl (ictx : ICtx.t) (decl : decl) =
-  match decl with
-  | MethodD { name; tparams; params; _ } ->
+  match decl.it with
+  | MethodD { id; tparams; params; _ } ->
       let func =
         Func.ExternMethodF
           { vis_obj = env_to_vis ictx.env_obj; tparams; params }
       in
-      ICtx.add_func_obj name func ictx
+      ICtx.add_func_obj id.it func ictx
   | AbstractD _ ->
       Format.eprintf "(TODO: instantiate_extern_obj_decl) Load extern object %a"
         Syntax.Print.print_decl (0, decl);
@@ -457,10 +472,12 @@ and instantiate_extern_obj_decl (ictx : ICtx.t) (decl : decl) =
 
 let instantiate_glob_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
     (decl : decl) =
-  match decl with
+  match decl.it with
   (* Explicit instantiation of a package *)
-  | InstD { name; typ; args; _ } ->
-      let sto, ictx = instantiate_from_glob_decl ccenv sto ictx name typ args in
+  | InstD { id; typ; args; _ } ->
+      let sto, ictx =
+        instantiate_from_glob_decl ccenv sto ictx id.it typ args
+      in
       (ccenv, sto, ictx)
   (* Load declaration to environments *)
   | _ ->
