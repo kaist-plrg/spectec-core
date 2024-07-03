@@ -1,91 +1,91 @@
 Running instantiation tests on 624 files
-Instantiation fail: test/program/psa-action-profile4.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
-Instantiation fail: test/program/psa-counter3.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
-Instantiation fail: test/program/issue1304.p4 due to File "lib/instance/instantiate.ml", line 191, characters 2-8: Assertion failed
-Instantiation fail: test/program/psa-meter3.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
-Instantiation fail: test/program/named-arg1.p4 due to File "lib/instance/instantiate.ml", line 191, characters 2-8: Assertion failed
+Instantiation fail: test/program/psa-action-profile4.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-counter3.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
+Instantiation fail: test/program/issue1304.p4 due to File "lib/instance/instantiate.ml", line 204, characters 2-8: Assertion failed
+Instantiation fail: test/program/psa-meter3.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
+Instantiation fail: test/program/named-arg1.p4 due to File "lib/instance/instantiate.ml", line 204, characters 2-8: Assertion failed
 Instantiation fail: test/program/issue461-bmv2.p4 due to Failure("(TODO: eval_expr) CounterType.packets")
 Instantiation fail: test/program/factory2.p4 due to Failure("(TODO: eval_expr) createWidget(16w0, 8w0)")
-Instantiation fail: test/program/issue1334.p4 due to File "lib/instance/instantiate.ml", line 191, characters 2-8: Assertion failed
-Instantiation fail: test/program/psa-action-selector3.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/issue1334.p4 due to File "lib/instance/instantiate.ml", line 204, characters 2-8: Assertion failed
+Instantiation fail: test/program/psa-action-selector3.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Desugar fail on file: test/program/direct-call1.p4
-Instantiation fail: test/program/psa-action-profile1.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-action-profile1.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Instantiation fail: test/program/issue1006.p4 due to Invalid_argument("option is None")
-Instantiation fail: test/program/psa-counter6.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-counter6.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Instantiation fail: test/program/constsigned.p4 due to Failure("(TODO: eval_expr) zz2[0:0]")
 Instantiation fail: test/program/issue1210.p4 due to Failure("(TODO: eval_expr) { 9w192 }")
 Instantiation fail: test/program/struct1.p4 due to Failure("(TODO: eval_expr) { 10, 20 }")
-Instantiation fail: test/program/psa-action-selector2.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
-Instantiation fail: test/program/p4rt_digest_complex.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-action-selector2.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
+Instantiation fail: test/program/p4rt_digest_complex.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Desugar fail on file: test/program/issue1107.p4
 Desugar fail on file: test/program/issue1566-bmv2.p4
-Instantiation fail: test/program/psa-meter6.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
-Instantiation fail: test/program/psa-random.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-meter6.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-random.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Instantiation fail: test/program/struct_init-1.p4 due to Failure("(TODO: eval_expr) { _v = 9w192 }")
 Instantiation fail: test/program/serenum.p4 due to Invalid_argument("option is None")
-Instantiation fail: test/program/psa-counter2.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-counter2.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Instantiation fail: test/program/issue1829-4-bmv2.p4 due to Failure("(TODO: eval_expr) MeterType.packets")
 Instantiation fail: test/program/v1model-p4runtime-most-types1.p4 due to Invalid_argument("option is None")
 Instantiation fail: test/program/version.p4 due to Failure("(TODO: eval_expr) { 8w0, 8w1 }")
 Instantiation fail: test/program/rcp1.p4 due to Failure("(TODO: eval_expr) CounterType.packets_and_bytes")
 Desugar fail on file: test/program/direct-call.p4
-Instantiation fail: test/program/interface.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/interface.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Desugar fail on file: test/program/issue561-bmv2.p4
 Desugar fail on file: test/program/issue1937-2-bmv2.p4
 Instantiation fail: test/program/issue1653-complex-bmv2.p4 due to Invalid_argument("option is None")
-Instantiation fail: test/program/psa-hash.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-hash.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Desugar fail on file: test/program/issue1937-3-bmv2.p4
 Instantiation fail: test/program/cast-senum.p4 due to Invalid_argument("option is None")
-Instantiation fail: test/program/psa-register1.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
-Instantiation fail: test/program/psa-example-counters-bmv2.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-register1.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-example-counters-bmv2.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Instantiation fail: test/program/unused-counter-bmv2.p4 due to Failure("(TODO: eval_expr) CounterType.packets")
 Instantiation fail: test/program/issue1717.p4 due to Invalid_argument("option is None")
-Instantiation fail: test/program/default-package-argument.p4 due to File "lib/instance/instantiate.ml", line 191, characters 2-8: Assertion failed
-Instantiation fail: test/program/bitExtract.p4 due to Failure("(TODO: eval_expr) b[2:3]")
-Instantiation fail: test/program/issue1325-bmv2.p4 due to File "lib/runtime/ops.ml", line 650, characters 6-12: Assertion failed
+Instantiation fail: test/program/default-package-argument.p4 due to File "lib/instance/instantiate.ml", line 204, characters 2-8: Assertion failed
+Instantiation fail: test/program/bitExtract.p4 due to Failure("(TODO: eval_expr) b[3:2]")
+Instantiation fail: test/program/issue1325-bmv2.p4 due to File "lib/runtime/ops.ml", line 651, characters 6-12: Assertion failed
 Instantiation fail: test/program/action_selector_unused-bmv2.p4 due to Failure("(TODO: eval_expr) HashAlgorithm.identity")
 Instantiation fail: test/program/issue364-bmv2.p4 due to Failure("(TODO: eval_expr) CounterType.packets")
-Instantiation fail: test/program/psa-register2.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-register2.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Instantiation fail: test/program/struct_init.p4 due to Failure("(TODO: eval_expr) { 9w192 }")
 Instantiation fail: test/program/spec-ex14.p4 due to Failure("(TODO: eval_expr) { 32w0, 32w0 }")
-Instantiation fail: test/program/psa-test.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
-Instantiation fail: test/program/issue1208-1.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-test.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
+Instantiation fail: test/program/issue1208-1.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Instantiation fail: test/program/names.p4 due to Failure("(TODO: eval_expr) { 1w1 }")
 Instantiation fail: test/program/named_meter_1-bmv2.p4 due to Failure("(TODO: eval_expr) MeterType.packets")
 Instantiation fail: test/program/table-key-serenum.p4 due to Invalid_argument("option is None")
 Desugar fail on file: test/program/issue1566.p4
-Instantiation fail: test/program/psa-example-parser-checksum.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
-Instantiation fail: test/program/issue2342.p4 due to Failure("(TODO: eval_expr) 8w2[0:7]")
+Instantiation fail: test/program/psa-example-parser-checksum.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
+Instantiation fail: test/program/issue2342.p4 due to Failure("(TODO: eval_expr) 8w2[7:0]")
 Instantiation fail: test/program/issue1193-bmv2.p4 due to Failure("(TODO: eval_expr) CounterType.packets")
-Instantiation fail: test/program/psa-example-digest-bmv2.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-example-digest-bmv2.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Desugar fail on file: test/program/issue1937.p4
-Instantiation fail: test/program/psa-fwd-bmv2.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
-Instantiation fail: test/program/psa-register3.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
-Instantiation fail: test/program/psa-action-profile2.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-fwd-bmv2.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-register3.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-action-profile2.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Instantiation fail: test/program/table-entries-ser-enum-bmv2.p4 due to Invalid_argument("option is None")
-Instantiation fail: test/program/psa-example-register2-bmv2.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-example-register2-bmv2.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Instantiation fail: test/program/action_selector_shared-bmv2.p4 due to Failure("(TODO: eval_expr) HashAlgorithm.identity")
 Desugar fail on file: test/program/issue1470-bmv2.p4
-Instantiation fail: test/program/psa-action-selector1.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-action-selector1.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Instantiation fail: test/program/register-serenum.p4 due to Invalid_argument("option is None")
-Instantiation fail: test/program/psa-meter5.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-meter5.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Instantiation fail: test/program/enum-folding.p4 due to Failure("(TODO: eval_expr) X.a")
 Instantiation fail: test/program/v1model-digest-containing-ser-enum.p4 due to Invalid_argument("option is None")
-Instantiation fail: test/program/psa-counter1.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-counter1.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Instantiation fail: test/program/list-compare.p4 due to Failure("(TODO: eval_expr) { 10, 20 }")
-Instantiation fail: test/program/psa-meter1.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-meter1.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Instantiation fail: test/program/struct.p4 due to Failure("(TODO: eval_expr) { 32s10, 32s20 }")
-Instantiation fail: test/program/vss-example.p4 due to File "lib/runtime/ops.ml", line 650, characters 6-12: Assertion failed
-Instantiation fail: test/program/const.p4 due to Failure("(TODO: eval_expr) { 32w3, (bit<32>) z }")
-Instantiation fail: test/program/issue1333.p4 due to File "lib/instance/instantiate.ml", line 191, characters 2-8: Assertion failed
+Instantiation fail: test/program/vss-example.p4 due to File "lib/runtime/ops.ml", line 651, characters 6-12: Assertion failed
+Instantiation fail: test/program/const.p4 due to Failure("(TODO: eval_expr) { 32w3, ((bit<32>) (z)) }")
+Instantiation fail: test/program/issue1333.p4 due to File "lib/instance/instantiate.ml", line 204, characters 2-8: Assertion failed
 Instantiation fail: test/program/issue871.p4 due to Invalid_argument("option is None")
 Instantiation fail: test/program/named_meter_bmv2.p4 due to Failure("(TODO: eval_expr) MeterType.packets")
-Instantiation fail: test/program/psa-action-profile3.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-action-profile3.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Instantiation fail: test/program/factory1.p4 due to Failure("(TODO: eval_expr) createWidget(16w0, 8w0)")
-Instantiation fail: test/program/psa-counter4.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-counter4.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Desugar fail on file: test/program/direct-call2.p4
-Instantiation fail: test/program/psa-custom-type-counter-index.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
-Instantiation fail: test/program/psa-meter4.p4 due to File "lib/instance/instantiate.ml", line 89, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-custom-type-counter-index.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
+Instantiation fail: test/program/psa-meter4.p4 due to File "lib/instance/instantiate.ml", line 92, characters 6-12: Assertion failed
 Parser fails on file: 0 / 624
 Desugar fails: 11 / 624
 Instantiation fails: 76 / 613

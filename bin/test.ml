@@ -42,7 +42,7 @@ let parse_roundtrip filename =
   let* program' = parse_string filename file' in
   if not (Surface.Eq.eq_program program program') then (
     parse_roundtrip_fails := !parse_roundtrip_fails + 1;
-    Printf.sprintf "parse_roundtrip fail: %s" filename |> print_endline);
+    Printf.sprintf "Parser roundtrip fail: %s" filename |> print_endline);
   Some program'
 
 let test_parser () =
@@ -76,7 +76,8 @@ let desugar_roundtrip filename =
   let* program' = desugar_program filename program in
   let file' = Format.asprintf "%a" Syntax.Pp.pp_program program' in
   let* program'' = parse_string filename file' in
-  if not (Surface.Eq.eq_program program program'') then (
+  let* program''' = desugar_program filename program'' in
+  if not (Syntax.Eq.eq_program program' program''') then (
     desugar_roundtrip_fails := !desugar_roundtrip_fails + 1;
     Printf.sprintf "Desugar roundtrip fail: %s" filename |> print_endline;
     None)

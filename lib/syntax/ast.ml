@@ -139,12 +139,12 @@ and block' = stmt list
 (* Match-cases for switch *)
 and case = case' phrase
 and case' = CaseC of string | FallC of string | DefaultC
-and mtch = mtch' phrase
-and mtch' = ExprM of expr | DefaultM | AnyM
 and switch_case = switch_case' phrase
 and switch_case' = case * block
 
 (* Select-cases for select *)
+and mtch = mtch' phrase
+and mtch' = ExprM of expr | DefaultM | AnyM
 and select_case = select_case' phrase
 and select_case' = mtch list * label
 
@@ -179,8 +179,9 @@ and decl' =
       locals : decl list;
       states : parser_state list;
     }
-  (* Control *)
+  (* Table *)
   | TableD of { id : id; table : table }
+  (* Control *)
   | ControlTypeD of { id : id; tparams : tparam list; params : param list }
   | ControlD of {
       id : id;
@@ -206,7 +207,7 @@ and decl' =
       params : param list;
     }
   (* Extern objects *)
-  | ConsD of { id : id; cparams : param list }
+  | ConsD of { id : id; cparams : cparam list }
   | AbstractD of {
       id : id;
       rettyp : typ;
@@ -221,7 +222,7 @@ and decl' =
     }
   | ExternObjectD of { id : id; tparams : tparam list; mthds : decl list }
   (* Package *)
-  | PackageTypeD of { id : id; tparams : tparam list; cparams : param list }
+  | PackageTypeD of { id : id; tparams : tparam list; cparams : cparam list }
 
 (* Parser state machine *)
 and parser_state = parser_state' phrase

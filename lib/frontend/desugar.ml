@@ -270,7 +270,10 @@ and desugar_stmt (stmt : Statement.t) : stmt =
   | DeclarationStatement { decl; tags = at } ->
       let decl = desugar_decl decl in
       DeclI decl $ at
-  | _ -> failwith "(TODO: desugar_stmt)"
+  | _ ->
+      Format.eprintf "(TODO: desugar_stmt) %s\n"
+        (Surface.Print.print_stmt 0 stmt);
+      assert false
 
 and desugar_stmts (stmts : Statement.t list) : stmt list =
   List.map desugar_stmt stmts
