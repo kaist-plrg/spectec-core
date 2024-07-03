@@ -1,28 +1,31 @@
-let () =
-  if Array.length Sys.argv < 5 then (
-    Format.printf "Usage: %s <target> <include_dir> <filename> <testname>\n"
-      Sys.argv.(0);
-    exit 1);
+open Core
 
-  let arch = Sys.argv.(1) in
-  let includes = Sys.argv.(2) in
-  let filename = Sys.argv.(3) in
-  let testname = Sys.argv.(4) in
+let version = "0.1"
 
-  Format.printf "Parsing %s with includes %s\n" filename includes;
-  let program =
-    match Frontend.Parse.parse_file includes filename with
-    | Some program -> program
-    | None -> failwith "Error while parsing p4."
-  in
+let parse includes filename =
+  Format.printf "Parsing %s with includes %s\n" filename
+    (List.map ~f:(Printf.sprintf "%s") includes |> String.concat ~sep:", ");
+  match Frontend.Parse.parse_file includes filename with
+  | Some program -> program
+  | None -> failwith "Error while parsing p4."
 
-  Format.printf "Desugaring %s\n" filename;
-  let program = Frontend.Desugar.desugar_program program in
+let desugar includes filename =
+  Format.printf "Desugaring %s with includes %s\n" filename
+    (List.map ~f:(Printf.sprintf "%s") includes |> String.concat ~sep:", ");
+  let program = parse includes filename in
+  Frontend.Desugar.desugar_program program
 
-  Format.printf "Instantiating %s\n" filename;
-  let ccenv, sto, ctx = Instance.Instantiate.instantiate_program program in
+let instantiate includes filename =
+  Format.printf "Instantiating %s with includes %s\n" filename
+    (List.map ~f:(Printf.sprintf "%s") includes |> String.concat ~sep:", ");
+  let program = desugar includes filename in
+  Instance.Instantiate.instantiate_program program
 
-  Format.printf "Interpreting %s\n" filename;
+let interp arch includes filename stf =
+  Format.printf "Instantiating %s with includes %s and stf %s\n" filename
+    (List.map ~f:(Printf.sprintf "%s") includes |> String.concat ~sep:", ")
+    stf;
+  let ccenv, sto, ctx = instantiate includes filename in
   let (module Driver) =
     let open Exec in
     match arch with
@@ -31,9 +34,60 @@ let () =
     | _ -> failwith "Unknown target: target = v1model | custom"
   in
   let stf =
-    match Stf.Parse.parse_file testname with
+    match Stf.Parse.parse_file stf with
     | Some stf -> stf
     | None -> failwith "Error while parsing stf."
   in
   Driver.run ccenv sto ctx stf |> ignore;
   ()
+
+let parse_command =
+  Command.basic ~summary:"parse a p4_16 program"
+    (let open Command.Let_syntax in
+     let open Command.Param in
+     let%map includes = flag "-i" (listed string) ~doc:"include paths"
+     and filename = anon ("file.p4" %: string) in
+     fun () ->
+       let program = parse includes filename in
+       Format.printf "%s\n" (Surface.Print.print_program program))
+
+let desugar_command =
+  Command.basic ~summary:"desugar a p4_16 program (AST transformation)"
+    (let open Command.Let_syntax in
+     let open Command.Param in
+     let%map includes = flag "-i" (listed string) ~doc:"include paths"
+     and filename = anon ("file.p4" %: string) in
+     fun () ->
+       let program = desugar includes filename in
+       Format.printf "%a\n" Syntax.Pp.pp_program program)
+
+let instantiate_command =
+  Command.basic ~summary:"instantiate a p4_16 program"
+    (let open Command.Let_syntax in
+     let open Command.Param in
+     let%map includes = flag "-i" (listed string) ~doc:"include paths"
+     and filename = anon ("file.p4" %: string) in
+     fun () ->
+       let _ccenv, sto, _ctx = instantiate includes filename in
+       Format.printf "%a\n" Runtime.Object.Sto.pp sto)
+
+let interp_command =
+  Command.basic ~summary:"interpret a p4_16 program"
+    (let open Command.Let_syntax in
+     let open Command.Param in
+     let%map arch = flag "-a" (required string) ~doc:"architecture"
+     and includes = flag "-i" (listed string) ~doc:"include paths"
+     and filename = anon ("file.p4" %: string)
+     and stf = anon ("file.stf" %: string) in
+     fun () -> interp arch includes filename stf)
+
+let command =
+  Command.group ~summary:"p4cherry: an interpreter of the p4_16 language"
+    [
+      ("parse", parse_command);
+      ("desugar", desugar_command);
+      ("instantiate", instantiate_command);
+      ("interp", interp_command);
+    ]
+
+let () = Command_unix.run ~version command

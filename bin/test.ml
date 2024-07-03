@@ -1,5 +1,5 @@
 let program_dir = "test/program"
-let arch_dir = "test/arch"
+let arch_dir = [ "test/arch" ]
 let ( let* ) = Option.bind
 let parse_file_fails = ref 0
 let parse_string_fails = ref 0

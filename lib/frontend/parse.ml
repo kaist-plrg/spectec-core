@@ -1,6 +1,6 @@
 open Util
 
-let preprocess (includes : string) (filename : string) =
+let preprocess (includes : string list) (filename : string) =
   try Some (Preprocessor.preprocess includes filename)
   with _ ->
     Format.eprintf "preprocessor error\n";
@@ -24,7 +24,7 @@ let parse (lexbuf : Lexing.lexbuf) =
 
 let ( let* ) = Option.bind
 
-let parse_file (includes : string) (filename : string) =
+let parse_file (includes : string list) (filename : string) =
   let* file = preprocess includes filename in
   let* tokens = lex filename file in
   parse tokens
