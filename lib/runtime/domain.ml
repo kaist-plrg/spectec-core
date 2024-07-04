@@ -2,11 +2,17 @@ module Var = struct
   type t = string
 
   let pp fmt t = Format.fprintf fmt "%s" t
-  let compare = String.compare
+  let compare = compare
 end
 
-module VM = Map.Make (Var)
-module VS = Set.Make (Var)
+module FVar = struct
+  type t = string * string list
+
+  let pp fmt (name, params) =
+    Format.fprintf fmt "%s(%s)" name (String.concat ", " params)
+
+  let compare = compare
+end
 
 module Path = struct
   type t = string list
@@ -60,6 +66,7 @@ struct
   type t = V.t KM.t
 
   let empty = KM.empty
+  let bindings = KM.bindings
   let find = KM.find_opt
   let add = KM.add
   let map = KM.map

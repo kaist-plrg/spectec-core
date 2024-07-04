@@ -99,8 +99,7 @@ module Make (Interp : INTERP) : ARCH = struct
     let targs = [] in
     let args = make_args [ "packet_in"; "hdr"; "meta"; "standard_metadata" ] in
     if !config.debug then
-      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var
-        ctx;
+      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_vr (ctx : Ctx.t) =
@@ -108,8 +107,7 @@ module Make (Interp : INTERP) : ARCH = struct
     let targs = [] in
     let args = make_args [ "hdr"; "meta" ] in
     if !config.debug then
-      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var
-        ctx;
+      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_ig (ctx : Ctx.t) =
@@ -117,8 +115,7 @@ module Make (Interp : INTERP) : ARCH = struct
     let targs = [] in
     let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
     if !config.debug then
-      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var
-        ctx;
+      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_eg (ctx : Ctx.t) =
@@ -126,8 +123,7 @@ module Make (Interp : INTERP) : ARCH = struct
     let targs = [] in
     let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
     if !config.debug then
-      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var
-        ctx;
+      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_ck (ctx : Ctx.t) =
@@ -135,8 +131,7 @@ module Make (Interp : INTERP) : ARCH = struct
     let targs = [] in
     let args = make_args [ "hdr"; "meta" ] in
     if !config.debug then
-      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var
-        ctx;
+      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_dep (ctx : Ctx.t) =
@@ -144,8 +139,7 @@ module Make (Interp : INTERP) : ARCH = struct
     let targs = [] in
     let args = make_args [ "packet_out"; "hdr" ] in
     if !config.debug then
-      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var
-        ctx;
+      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_pipe (ctx : Ctx.t) =
@@ -177,7 +171,7 @@ module Make (Interp : INTERP) : ARCH = struct
     Interp.init sto;
     let ctx = List.fold_left (fun ctx stf -> drive_stf ctx stf) ctx stf in
     if !config.debug then
-      Format.printf "\nFinal v1model driver context\n%a@." Ctx.pp_var ctx;
+      Format.printf "\nFinal v1model driver context\n%a@." Ctx.pp ctx;
     ()
 
   let interp_extern (ctx : Ctx.t) =

@@ -61,7 +61,7 @@ let bits_to_int bits =
   n
 
 let int_to_bits value size =
-  Array.init size (fun i -> value land (1 lsl i) > 0)
+  Array.init size (fun i -> Bigint.(value land (one lsl i) > zero))
   |> Array.to_list |> List.rev |> Array.of_list
 
 let rec sizeof (ctx : Ctx.t) (typ : Type.t) =
@@ -147,12 +147,10 @@ module PacketOut = struct
     | BoolV b -> { bits = Array.append pkt.bits (Array.make 1 b) }
     | IntV (width, value) ->
         let size = Bigint.to_int width |> Option.get in
-        let value = Bigint.to_int value |> Option.get in
         let bits = int_to_bits value size in
         { bits = Array.append pkt.bits bits }
     | BitV (width, value) ->
         let size = Bigint.to_int width |> Option.get in
-        let value = Bigint.to_int value |> Option.get in
         let bits = int_to_bits value size in
         { bits = Array.append pkt.bits bits }
     | StackV (values, _, _) -> List.fold_left deparse pkt values

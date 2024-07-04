@@ -640,6 +640,7 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
   | _ ->
       Format.asprintf "(TODO) Cast to type %a undefined" Type.pp typ |> failwith
 
+(* (TODO) this should be up to the target architecture *)
 let rec eval_default_value (typ : Type.t) : Value.t =
   match typ with
   | BoolT -> BoolV false

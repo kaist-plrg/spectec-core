@@ -39,6 +39,18 @@ let var_decl_to_stmt (decl : decl) =
       Some (AssignI (VarE (Bare id $ no_info) $ no_info, value) $ decl.at)
   | _ -> None
 
+(* Helper to build function identifiers *)
+
+let make_fid (id : id) (params : param list) =
+  let params =
+    List.map
+      (fun param ->
+        let id, _, _, _ = param.it in
+        id.it)
+      params
+  in
+  (id.it, params)
+
 (* Loading declarations to environments *)
 
 let load_obj_var (ictx : ICtx.t) (name : Var.t) (typ : typ) =
@@ -163,12 +175,14 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
   | ActionD { id; params; body } ->
       let vis_glob = env_to_vis ictx.env_glob in
       let func = Func.ActionF { vis = vis_glob; params; body } in
-      let ictx = ICtx.add_func_glob id.it func ictx in
+      let fid = make_fid id params in
+      let ictx = ICtx.add_func_glob fid func ictx in
       (ccenv, ictx)
   | ExternFuncD { id; tparams; params; _ } ->
       let vis_glob = env_to_vis ictx.env_glob in
       let func = Func.ExternF { vis_glob; tparams; params } in
-      let ictx = ICtx.add_func_glob id.it func ictx in
+      let fid = make_fid id params in
+      let ictx = ICtx.add_func_glob fid func ictx in
       (ccenv, ictx)
   | _ ->
       Format.eprintf "(TODO: load_glob_decl) Load declaration %a\n"
@@ -268,7 +282,8 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
           (fun (ictx_callee : ICtx.t) { it = label, body; _ } ->
             (* (TODO) Ignore direct application for now *)
             let func = Func.StateF { body } in
-            ICtx.add_func_obj label.it func ictx_callee)
+            let fid = (label.it, []) in
+            ICtx.add_func_obj fid func ictx_callee)
           ictx_callee states
       in
       (* Build "apply" method *)
@@ -438,7 +453,8 @@ and instantiate_control_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
       (sto, ictx)
   | ActionD { id; params; body } ->
       let func = Func.ActionF { vis = env_to_vis ictx.env_obj; params; body } in
-      let ictx = ICtx.add_func_obj id.it func ictx in
+      let fid = make_fid id params in
+      let ictx = ICtx.add_func_obj fid func ictx in
       (sto, ictx)
   (* Each table evaluates to a table instance (18.2) *)
   (* There is no syntax for specifying parameters that are tables
@@ -463,7 +479,8 @@ and instantiate_extern_obj_decl (ictx : ICtx.t) (decl : decl) =
         Func.ExternMethodF
           { vis_obj = env_to_vis ictx.env_obj; tparams; params }
       in
-      ICtx.add_func_obj id.it func ictx
+      let fid = make_fid id params in
+      ICtx.add_func_obj fid func ictx
   | AbstractD _ ->
       Format.eprintf "(TODO: instantiate_extern_obj_decl) Load extern object %a"
         Syntax.Pp.pp_decl (0, decl);

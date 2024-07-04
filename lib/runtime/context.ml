@@ -261,55 +261,66 @@ module Ctx = struct
 
   (* Finders *)
 
-  let find finder name ctx = function
+  let find finder var ctx = function
     | Some value -> Some value
-    | None -> finder name ctx
+    | None -> finder var ctx
 
-  let find_td_glob name ctx =
+  let find_td_glob tvar ctx =
     let gtdenv, _, _ = env_from_vis ctx.env_glob ctx.vis_glob in
-    TDEnv.find name gtdenv
+    TDEnv.find tvar gtdenv
 
-  let find_td_obj name ctx =
+  let find_td_obj tvar ctx =
     let otdenv, _, _ = env_from_vis ctx.env_obj ctx.vis_obj in
-    TDEnv.find name otdenv
+    TDEnv.find tvar otdenv
 
-  let find_td_loc name ctx =
+  let find_td_loc tvar ctx =
     let ltdenv, _ = ctx.env_loc in
-    TDEnv.find name ltdenv
+    TDEnv.find tvar ltdenv
 
-  let find_td name ctx =
-    find_td_loc name ctx |> find find_td_obj name ctx
-    |> find find_td_glob name ctx
+  let find_td tvar ctx =
+    find_td_loc tvar ctx |> find find_td_obj tvar ctx
+    |> find find_td_glob tvar ctx
 
-  let find_var_glob name ctx =
+  let find_var_glob var ctx =
     let _, genv, _ = env_from_vis ctx.env_glob ctx.vis_glob in
-    Env.find name genv
+    Env.find var genv
 
-  let find_var_obj name ctx =
+  let find_var_obj var ctx =
     let _, oenv, _ = env_from_vis ctx.env_obj ctx.vis_obj in
-    Env.find name oenv
+    Env.find var oenv
 
-  let find_var_loc name ctx =
+  let find_var_loc var ctx =
     let _, lenvs = ctx.env_loc in
     List.fold_left
       (fun value frame ->
-        match value with Some _ -> value | None -> Env.find name frame)
+        match value with Some _ -> value | None -> Env.find var frame)
       None lenvs
 
-  let find_var name ctx =
-    find_var_loc name ctx |> find find_var_obj name ctx
-    |> find find_var_glob name ctx
+  let find_var var ctx =
+    find_var_loc var ctx |> find find_var_obj var ctx
+    |> find find_var_glob var ctx
 
-  let find_func_glob name ctx =
+  (* (TODO) resolve overloaded functions with argument names *)
+  let find_func' (fid, args) fenv =
+    let arity = List.length args in
+    let funcs =
+      List.filter
+        (fun ((fid', params), _) -> fid = fid' && arity = List.length params)
+        (FEnv.bindings fenv)
+    in
+    assert (List.length funcs <= 1);
+    match funcs with [] -> None | _ -> Some (List.hd funcs |> snd)
+
+  let find_func_glob (fid, args) ctx =
     let _, _, gfenv = env_from_vis ctx.env_glob ctx.vis_glob in
-    FEnv.find name gfenv
+    find_func' (fid, args) gfenv
 
-  let find_func_obj name ctx =
+  let find_func_obj (fid, args) ctx =
     let _, _, ofenv = env_from_vis ctx.env_obj ctx.vis_obj in
-    FEnv.find name ofenv
+    find_func' (fid, args) ofenv
 
-  let find_func name ctx =
-    find_func_obj name ctx |> find find_func_glob name ctx
+  let find_func (fid, args) ctx =
+    find_func_obj (fid, args) ctx |> find find_func_glob (fid, args) ctx
 
   (* Frame management *)
 

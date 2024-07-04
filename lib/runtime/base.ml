@@ -5,7 +5,7 @@ open Domain
 
 module TDVis = MakeVis (Var)
 module Vis = MakeVis (Var)
-module FVis = MakeVis (Var)
+module FVis = MakeVis (FVar)
 
 type vis = TDVis.t * Vis.t * FVis.t
 
@@ -214,7 +214,7 @@ end
 
 module TDEnv = MakeEnv (Var) (Type)
 module Env = MakeEnv (Var) (TypeValue)
-module FEnv = MakeEnv (Var) (Func)
+module FEnv = MakeEnv (FVar) (Func)
 
 type env = TDEnv.t * Env.t * FEnv.t
 type env_stack = TDEnv.t * Env.t list
@@ -227,18 +227,16 @@ let env_stack_empty = (TDEnv.empty, [])
 let env_to_vis (env : env) =
   let tdenv, env, fenv = env in
   let tdvis =
-    TDEnv.fold (fun name _ vis -> TDVis.add name vis) tdenv TDVis.empty
+    TDEnv.fold (fun tvar _ vis -> TDVis.add tvar vis) tdenv TDVis.empty
   in
   let vis = Env.fold (fun var _ vis -> Vis.add var vis) env Vis.empty in
-  let fvis =
-    FEnv.fold (fun fname _ vis -> FVis.add fname vis) fenv FVis.empty
-  in
+  let fvis = FEnv.fold (fun fvar _ vis -> FVis.add fvar vis) fenv FVis.empty in
   (tdvis, vis, fvis)
 
 let env_from_vis (env : env) (vis : vis) =
   let tdenv, env, fenv = env in
   let tdvis, vis, fvis = vis in
-  let tdenv = TDEnv.filter (fun name _ -> TDVis.mem name tdvis) tdenv in
+  let tdenv = TDEnv.filter (fun tvar _ -> TDVis.mem tvar tdvis) tdenv in
   let env = Env.filter (fun var _ -> Vis.mem var vis) env in
-  let fenv = FEnv.filter (fun fname _ -> FVis.mem fname fvis) fenv in
+  let fenv = FEnv.filter (fun fvar _ -> FVis.mem fvar fvis) fenv in
   (tdenv, env, fenv)

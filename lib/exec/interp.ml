@@ -371,7 +371,7 @@ module Make (Arch : ARCH) : INTERP = struct
         (* (TODO) better handling of accept/reject *)
         if next.it = "accept" || next.it = "reject" then (sign, ctx)
         else
-          let state_next = Ctx.find_func next.it ctx |> Option.get in
+          let state_next = Ctx.find_func (next.it, []) ctx |> Option.get in
           let body =
             match state_next with StateF { body } -> body | _ -> assert false
           in
@@ -712,7 +712,7 @@ module Make (Arch : ARCH) : INTERP = struct
           Ctx.init (path, fid.it) ctx.env_glob env_obj (TDEnv.empty, [])
         in
         let ctx_callee = { ctx_callee with vis_glob } in
-        let func = Ctx.find_func_obj fid.it ctx_callee |> Option.get in
+        let func = Ctx.find_func_obj (fid.it, args) ctx_callee |> Option.get in
         interp_inter_app ctx ctx_callee func targs args
     | ParserO { vis_glob; env_obj; mthd } | ControlO { vis_glob; env_obj; mthd }
       ->
@@ -819,7 +819,7 @@ module Make (Arch : ARCH) : INTERP = struct
       let ctx_callee =
         Ctx.init ([], fid.it) ctx.env_glob env_empty env_stack_empty
       in
-      let func = Ctx.find_func_glob fid.it ctx |> Option.get in
+      let func = Ctx.find_func_glob (fid.it, args) ctx |> Option.get in
       interp_inter_app ctx ctx_callee func targs args
     in
     let interp_intra_func_call (fid : id) =
@@ -827,13 +827,13 @@ module Make (Arch : ARCH) : INTERP = struct
         Ctx.init ([], fid.it) ctx.env_glob ctx.env_obj env_stack_empty
       in
       let ctx_callee = { ctx_callee with vis_glob = ctx.vis_glob } in
-      let func = Ctx.find_func_obj fid.it ctx |> Option.get in
+      let func = Ctx.find_func_obj (fid.it, args) ctx |> Option.get in
       interp_intra_app ctx ctx_callee None func targs args
     in
     match fvar.it with
     | Top fid -> interp_inter_func_call fid
     | Bare fid ->
-        if Option.is_some (Ctx.find_func_obj fid.it ctx) then
+        if Option.is_some (Ctx.find_func_obj (fid.it, args) ctx) then
           interp_intra_func_call fid
         else interp_inter_func_call fid
 
