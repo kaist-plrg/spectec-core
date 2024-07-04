@@ -1,6 +1,8 @@
 # P4Cherry
 
-(WIP) A to-be interpreter for P4, cherry-picked from the Petr4 repository.
+(WIP) A to-be interpreter for P4, cherry-picked from the Petr4 project.
+
+A [todo-list](https://docs.google.com/document/d/1qWz9xwa-DNAfd_Y1pCb6zkRcxO5536zCc4aw5ExA0W8/edit?usp=sharing) of features to be implemented.
 
 ## Building
 
@@ -39,15 +41,19 @@ $ make
 
 This creates an executable `p4cherry` in the project root.
 
-## Run parser (full), instantiation (WIP), and interpreter (WIP) for an Example File
+## Run parser (full), desugarer (WIP), instantiation (WIP), and interpreter (WIP) for an Example File
 
 Instantiation and interpreter are work-in-progress.
 To name a few major missing features:
+- Does not handle direct application of objects (e.g., `apply`).
 - No type inference for generics (type params); all generics must be explicitly specified.
 - Tables evaluate to the default action regardless of the key.
-- Packets contents are hardcoded to match the format in test/petr4_sandbox_explicit-bmv2.p4.
-    - A temporary solution until STF is implemented.
+- Adding table entries with STF is not supported.
+- Incomplete support for builtin core, v1model builtin functions.
 
 ```shell
-$ ./p4cherry v1model test/arch test/petr4_sandbox_explicit-bmv2.p4
+$ ./p4cherry parse -i test/arch test/petr4_sandbox_explicit-bmv2.p4
+$ ./p4cherry desugar -i test/arch test/petr4_sandbox_explicit-bmv2.p4
+$ ./p4cherry instantiate -i test/arch test/petr4_sandbox_explicit-bmv2.p4
+$ ./p4cherry interp -a v1model -i test/arch test/petr4_sandbox_explicit-bmv2.p4 test/petr4_sandbox_explicit-bmv2.stf
 ```
