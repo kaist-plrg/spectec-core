@@ -3,28 +3,19 @@ open Core
 let version = "0.1"
 
 let parse includes filename =
-  Format.printf "Parsing %s with includes %s\n" filename
-    (List.map ~f:(Printf.sprintf "%s") includes |> String.concat ~sep:", ");
   match Frontend.Parse.parse_file includes filename with
   | Some program -> program
   | None -> failwith "Error while parsing p4."
 
 let desugar includes filename =
-  Format.printf "Desugaring %s with includes %s\n" filename
-    (List.map ~f:(Printf.sprintf "%s") includes |> String.concat ~sep:", ");
   let program = parse includes filename in
   Frontend.Desugar.desugar_program program
 
 let instantiate includes filename =
-  Format.printf "Instantiating %s with includes %s\n" filename
-    (List.map ~f:(Printf.sprintf "%s") includes |> String.concat ~sep:", ");
   let program = desugar includes filename in
   Instance.Instantiate.instantiate_program program
 
-let interp arch includes filename stf =
-  Format.printf "Instantiating %s with includes %s and stf %s\n" filename
-    (List.map ~f:(Printf.sprintf "%s") includes |> String.concat ~sep:", ")
-    stf;
+let interp arch includes filename stf debug =
   let ccenv, sto, ctx = instantiate includes filename in
   let (module Driver) =
     let open Exec in
@@ -38,6 +29,8 @@ let interp arch includes filename stf =
     | Some stf -> stf
     | None -> failwith "Error while parsing stf."
   in
+  let config = Exec.Config.{ debug } in
+  Driver.configure config;
   Driver.run ccenv sto ctx stf |> ignore;
   ()
 
@@ -78,8 +71,9 @@ let interp_command =
      let%map arch = flag "-a" (required string) ~doc:"architecture"
      and includes = flag "-i" (listed string) ~doc:"include paths"
      and filename = anon ("file.p4" %: string)
-     and stf = anon ("file.stf" %: string) in
-     fun () -> interp arch includes filename stf)
+     and stf = anon ("file.stf" %: string)
+     and debug = flag "-d" no_arg ~doc:"debug" in
+     fun () -> interp arch includes filename stf debug)
 
 let command =
   Command.group ~summary:"p4cherry: an interpreter of the p4_16 language"

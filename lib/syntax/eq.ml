@@ -1,6 +1,6 @@
+open Util.Source
 open Ast
 open Pp
-open Util.Source
 
 (* Utils *)
 

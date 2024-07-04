@@ -4,8 +4,8 @@ open Runtime.Base
 open Runtime.Object
 open Runtime.Context
 open Runtime.Signal
-open Driver
 open Util.Source
+open Driver
 
 module Make (Arch : ARCH) : INTERP = struct
   (* Global store *)

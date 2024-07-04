@@ -5,8 +5,8 @@ open Runtime.Object
 open Runtime.Cclos
 open Runtime.Context
 open Runtime.Signal
-open Driver
 open Util.Source
+open Driver
 
 let make_func (path : string list) (func : string) =
   let base, members =
@@ -27,15 +27,24 @@ let make_args (args : Var.t list) =
     args
 
 module Make (Interp : INTERP) : ARCH = struct
+  (* Configuration *)
+
+  let config = ref Config.default
+  let configure (_config : Config.t) = config := _config
+
+  (* Extern objects *)
+
   type extern = PacketIn of Core.PacketIn.t | PacketOut of Core.PacketOut.t
 
   let pp_extern fmt = function
     | PacketIn pkt_in -> Core.PacketIn.pp fmt pkt_in
     | PacketOut pkt_out -> Core.PacketOut.pp fmt pkt_out
 
-  module EM = Map.Make (String)
+  module Externs = Map.Make (String)
 
-  let externs = ref EM.empty
+  let externs = ref Externs.empty
+
+  (* Initialization and pipeline driver *)
 
   let init_instantiate_packet_in (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
     let cclos_packet_in = CCEnv.find "packet_in" ccenv |> Option.get in
@@ -89,42 +98,54 @@ module Make (Interp : INTERP) : ARCH = struct
     let func = make_func [ "main"; "p" ] "apply" in
     let targs = [] in
     let args = make_args [ "packet_in"; "hdr"; "meta"; "standard_metadata" ] in
-    Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var ctx;
+    if !config.debug then
+      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var
+        ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_vr (ctx : Ctx.t) =
     let func = make_func [ "main"; "vr" ] "apply" in
     let targs = [] in
     let args = make_args [ "hdr"; "meta" ] in
-    Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var ctx;
+    if !config.debug then
+      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var
+        ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_ig (ctx : Ctx.t) =
     let func = make_func [ "main"; "ig" ] "apply" in
     let targs = [] in
     let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
-    Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var ctx;
+    if !config.debug then
+      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var
+        ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_eg (ctx : Ctx.t) =
     let func = make_func [ "main"; "eg" ] "apply" in
     let targs = [] in
     let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
-    Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var ctx;
+    if !config.debug then
+      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var
+        ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_ck (ctx : Ctx.t) =
     let func = make_func [ "main"; "ck" ] "apply" in
     let targs = [] in
     let args = make_args [ "hdr"; "meta" ] in
-    Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var ctx;
+    if !config.debug then
+      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var
+        ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_dep (ctx : Ctx.t) =
     let func = make_func [ "main"; "dep" ] "apply" in
     let targs = [] in
     let args = make_args [ "packet_out"; "hdr" ] in
-    Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var ctx;
+    if !config.debug then
+      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp_var
+        ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_pipe (ctx : Ctx.t) =
@@ -136,15 +157,17 @@ module Make (Interp : INTERP) : ARCH = struct
         (* (TODO) Update input port *)
         (* Update packet_in and out *)
         let pkt_in = PacketIn (Core.PacketIn.init packet) in
-        externs := EM.add "packet_in" pkt_in !externs;
+        externs := Externs.add "packet_in" pkt_in !externs;
         let pkt_out = PacketOut Core.PacketOut.init in
-        externs := EM.add "packet_out" pkt_out !externs;
+        externs := Externs.add "packet_out" pkt_out !externs;
         drive_pipe ctx
     | Stf.Ast.Expect (_port, Some packet) ->
         (* Check packet_out *)
-        let pkt_out = EM.find "packet_out" !externs in
-        Format.printf "Expected %s\n" packet;
-        Format.printf "Actual %a@." pp_extern pkt_out;
+        let pkt_out = Externs.find "packet_out" !externs in
+        let expected = packet in
+        let actual = Format.asprintf "%a" pp_extern pkt_out in
+        let result = if expected = actual then "PASS" else "FAIL" in
+        Format.printf "[%s] Expected %s / Actual %s\n" result expected actual;
         ctx
     | _ -> ctx
 
@@ -153,23 +176,24 @@ module Make (Interp : INTERP) : ARCH = struct
     let sto, ctx = init ccenv sto ctx in
     Interp.init sto;
     let ctx = List.fold_left (fun ctx stf -> drive_stf ctx stf) ctx stf in
-    Format.printf "\nFinal v1model driver context\n%a@." Ctx.pp_var ctx;
+    if !config.debug then
+      Format.printf "\nFinal v1model driver context\n%a@." Ctx.pp_var ctx;
     ()
 
   let interp_extern (ctx : Ctx.t) =
     match ctx.id with
     | [ "packet_in" ], "extract" -> (
-        match EM.find "packet_in" !externs with
+        match Externs.find "packet_in" !externs with
         | PacketIn pkt_in ->
             let ctx, pkt_in = Core.PacketIn.extract ctx pkt_in in
-            externs := EM.add "packet_in" (PacketIn pkt_in) !externs;
+            externs := Externs.add "packet_in" (PacketIn pkt_in) !externs;
             (Sig.Ret None, ctx)
         | _ -> assert false)
     | [ "packet_out" ], "emit" -> (
-        match EM.find "packet_out" !externs with
+        match Externs.find "packet_out" !externs with
         | PacketOut pkt_out ->
             let ctx, pkt_out = Core.PacketOut.emit ctx pkt_out in
-            externs := EM.add "packet_out" (PacketOut pkt_out) !externs;
+            externs := Externs.add "packet_out" (PacketOut pkt_out) !externs;
             (Sig.Ret None, ctx)
         | _ -> assert false)
     | [], "verify_checksum" ->

@@ -1,5 +1,5 @@
-open Ast
 open Util.Source
+open Ast
 module F = Format
 
 let indent level = String.make (2 * level) ' '
