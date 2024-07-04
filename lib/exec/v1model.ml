@@ -194,6 +194,10 @@ module Make (Interp : INTERP) : ARCH = struct
         Hash.verify_checksum ctx |> fun ctx -> (Sig.Ret None, ctx)
     | [], "update_checksum" ->
         Hash.update_checksum ctx |> fun ctx -> (Sig.Ret None, ctx)
+    | [], "debug" ->
+        Format.printf "debug: %a\n" TypeValue.pp
+          (Ctx.find_var_loc "data" ctx |> Option.get);
+        (Sig.Ret None, ctx)
     | _ ->
         let path, func = ctx.id in
         Format.eprintf "Unknown builtin extern method %a.%a@." Path.pp path

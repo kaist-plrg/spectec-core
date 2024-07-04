@@ -393,6 +393,7 @@ module Make (Arch : ARCH) : INTERP = struct
         Format.eprintf "(interp_select) Exit unallowed within parser.\n";
         assert false
     | Cont ->
+        (* (TODO) how to properly cast the select-ed value against the case value(s)? *)
         let ctx, values =
           List.fold_left
             (fun (ctx, values) expr ->

@@ -1,5 +1,6 @@
 #include <core.p4>
 #include <v1model.p4>
+#include <debugger.p4>
 
 typedef bit<48>  EthernetAddress;
 typedef bit<32>  IPv4Address;
@@ -82,12 +83,14 @@ parser parserI(packet_in pkt,
 {
     state start {
         pkt.extract<ethernet_t>(hdr.ethernet);
-        transition select(hdr.ethernet.etherType) {
+        debug<bit<16>>(hdr.ethernet.etherType);
+        transition select((int) hdr.ethernet.etherType) {
             0x0800: parse_ipv4;
             default: accept;
         }
     }
     state parse_ipv4 {
+        debug<string>("parse_ipv4");
         // The 4-bit IHL field of the IPv4 base header is the number
         // of 32-bit words in the entire IPv4 header.  It is an error
         // for it to be less than 5.  There are only IPv4 options
