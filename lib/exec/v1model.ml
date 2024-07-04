@@ -197,6 +197,19 @@ module Make (Interp : INTERP) : ARCH = struct
             let ctx, value = Core.PacketIn.lookahead ctx pkt_in in
             (Sig.Ret (Some value), ctx)
         | _ -> assert false)
+    | [ "packet_in" ], ("advance", [ "sizeInBits" ]) -> (
+        match Externs.find "packet_in" !externs with
+        | PacketIn pkt_in ->
+            let ctx, pkt_in = Core.PacketIn.advance ctx pkt_in in
+            externs := Externs.add "packet_in" (PacketIn pkt_in) !externs;
+            (Sig.Ret None, ctx)
+        | _ -> assert false)
+    | [ "packet_in" ], ("length", []) -> (
+        match Externs.find "packet_in" !externs with
+        | PacketIn pkt_in ->
+            let ctx, value = Core.PacketIn.length ctx pkt_in in
+            (Sig.Ret (Some value), ctx)
+        | _ -> assert false)
     | [ "packet_out" ], ("emit", [ "hdr" ]) -> (
         match Externs.find "packet_out" !externs with
         | PacketOut pkt_out ->

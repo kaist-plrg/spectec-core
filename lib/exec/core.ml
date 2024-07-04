@@ -181,6 +181,27 @@ module PacketIn = struct
     let value = Runtime.Ops.eval_default_value typ in
     let _, value = write bits value in
     (ctx, value)
+
+  (* Advance the packet cursor by the specified number of bits.
+     void advance(in bit<32> sizeInBits); *)
+  let advance (ctx : Ctx.t) (pkt : t) =
+    let size =
+      Ctx.find_var "sizeInBits" ctx
+      |> Option.get |> snd |> Runtime.Ops.extract_bigint |> Bigint.to_int
+      |> Option.get
+    in
+    let pkt = { pkt with idx = pkt.idx + size } in
+    (ctx, pkt)
+
+  (* @return packet length in bytes. This method may be unavailable on
+     some target architectures.
+     bit<32> length(); *)
+  let length (ctx : Ctx.t) (pkt : t) =
+    let len =
+      (if pkt.len mod 8 = 0 then pkt.len / 8 else (pkt.len / 8) + 1)
+      |> Bigint.of_int
+    in
+    (ctx, Value.BitV (Bigint.of_int 32, len))
 end
 
 module PacketOut = struct
