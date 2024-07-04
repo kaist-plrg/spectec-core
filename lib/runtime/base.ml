@@ -97,7 +97,7 @@ module Value = struct
     | AIntV of Bigint.t
     | IntV of Bigint.t * Bigint.t
     | BitV of Bigint.t * Bigint.t
-    | VBitV of Bigint.t * Bigint.t
+    | VBitV of Bigint.t * Bigint.t * Bigint.t
     | StrV of string
     | ErrV of member'
     | MatchKindV of member'
@@ -118,7 +118,7 @@ module Value = struct
         Format.fprintf fmt "%ss%s" (Bigint.to_string w) (Bigint.to_string i)
     | BitV (w, i) ->
         Format.fprintf fmt "%sw%s" (Bigint.to_string w) (Bigint.to_string i)
-    | VBitV (w, i) ->
+    | VBitV (_mw, w, i) ->
         Format.fprintf fmt "%sv%s" (Bigint.to_string w) (Bigint.to_string i)
     | StrV s -> Format.fprintf fmt "\"%s\"" s
     | ErrV s -> Format.fprintf fmt "%s" s

@@ -10,7 +10,7 @@ let rec eval_simplify_type (ctx : Ctx.t) (typ : Type.t) : Type.t =
 let rec unpack_width (value : Value.t) =
   match value with
   | BoolV _ -> Bigint.one
-  | IntV (width, _) | BitV (width, _) | VBitV (width, _) -> width
+  | IntV (width, _) | BitV (width, _) | VBitV (_, width, _) -> width
   | TupleV values ->
       List.fold_left
         (fun acc value -> Bigint.(acc + unpack_width value))
@@ -25,5 +25,6 @@ let rec unpack_width (value : Value.t) =
 let unpack_value (value : Value.t) : Bigint.t =
   match value with
   | BoolV b -> if b then Bigint.one else Bigint.zero
-  | AIntV value | IntV (_, value) | BitV (_, value) | VBitV (_, value) -> value
+  | AIntV value | IntV (_, value) | BitV (_, value) | VBitV (_, _, value) ->
+      value
   | _ -> assert false

@@ -69,7 +69,9 @@ let compute_checksum (algo : string) (data : Value.t list) =
    @param data       Data whose checksum is verified.
    @param checksum   Expected checksum of the data; note that is must be a left-value.
    @param algo       Algorithm to use for checksum (not all algorithms may be supported).
-                     Must be a compile-time constant. *)
+                     Must be a compile-time constant.
+   extern void verify_checksum<T, O>
+    (in bool condition, in T data, in O checksum, HashAlgorithm algo); *)
 let verify_checksum (ctx : Ctx.t) =
   let cond =
     let cond = Ctx.find_var "condition" ctx |> Option.get |> snd in
@@ -100,7 +102,9 @@ let verify_checksum (ctx : Ctx.t) =
    @param data       Data whose checksum is computed.
    @param checksum   Checksum of the data.
    @param algo       Algorithm to use for checksum (not all algorithms may be supported).
-                     Must be a compile-time constant. *)
+                     Must be a compile-time constant.
+   extern void update_checksum<T, O>
+    (in bool condition, in T data, inout O checksum, HashAlgorithm algo); *)
 let update_checksum (ctx : Ctx.t) =
   let cond =
     let cond = Ctx.find_var "condition" ctx |> Option.get |> snd in
@@ -116,7 +120,10 @@ let update_checksum (ctx : Ctx.t) =
       let algo = Ctx.find_var "algo" ctx |> Option.get |> snd in
       match algo with EnumFieldV algo -> algo | _ -> assert false
     in
-    let checksum_verified = compute_checksum algo data in
-    Format.eprintf "(TODO: update_checksum) computed %a from %a\n" Bigint.pp
-      checksum_verified Value.pp (TupleV data);
+    let typ = Ctx.find_td "O" ctx |> Option.get in
+    (* (TODO) is this the right way to cast? *)
+    let value =
+      AIntV (compute_checksum algo data) |> Runtime.Ops.eval_cast typ
+    in
+    let ctx = Ctx.update_var "checksum" typ value ctx in
     ctx

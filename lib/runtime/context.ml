@@ -146,7 +146,7 @@ end
 
 module Ctx = struct
   type t = {
-    id : Path.t * Var.t;
+    id : Path.t * FVar.t;
     env_glob : env;
     vis_glob : vis;
     env_obj : env;
@@ -156,7 +156,7 @@ module Ctx = struct
 
   let empty =
     {
-      id = ([], "");
+      id = ([], ("", []));
       env_glob = env_empty;
       vis_glob = vis_empty;
       env_obj = env_empty;
@@ -170,6 +170,8 @@ module Ctx = struct
     { id; env_glob; vis_glob; env_obj; vis_obj; env_loc }
 
   (* Adders and updaters *)
+
+  let set_id id ctx = { ctx with id }
 
   let add_td_obj name typ ctx =
     let otdenv, oenv, ofenv = ctx.env_obj in

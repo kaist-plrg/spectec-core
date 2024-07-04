@@ -13,6 +13,22 @@ module Make (Arch : ARCH) : INTERP = struct
   let sto = ref Sto.empty
   let init _sto = sto := _sto
 
+  (* Helper to get parameters of a function *)
+
+  let get_params (func : Func.t) =
+    match func with
+    | FuncF { params; _ }
+    | ExternF { params; _ }
+    | MethodF { params; _ }
+    | ExternMethodF { params; _ }
+    | ActionF { params; _ } ->
+        List.map
+          (fun param ->
+            let id, _, _, _ = param.it in
+            id.it)
+          params
+    | _ -> []
+
   (* Helper to access aggregate value *)
 
   let fetch_struct_field (value : Value.t) (member : member') =
@@ -710,16 +726,18 @@ module Make (Arch : ARCH) : INTERP = struct
     match obj with
     | ExternO { vis_glob; env_obj } ->
         let ctx_callee =
-          Ctx.init (path, fid.it) ctx.env_glob env_obj (TDEnv.empty, [])
+          Ctx.init (path, (fid.it, [])) ctx.env_glob env_obj (TDEnv.empty, [])
         in
         let ctx_callee = { ctx_callee with vis_glob } in
         let func = Ctx.find_func_obj (fid.it, args) ctx_callee |> Option.get in
+        let cid = (path, (fid.it, get_params func)) in
+        let ctx_callee = Ctx.set_id cid ctx_callee in
         interp_inter_app ctx ctx_callee func targs args
     | ParserO { vis_glob; env_obj; mthd } | ControlO { vis_glob; env_obj; mthd }
       ->
         assert (fid.it = "apply");
         let ctx_callee =
-          Ctx.init (path, fid.it) ctx.env_glob env_obj (TDEnv.empty, [])
+          Ctx.init (path, (fid.it, [])) ctx.env_glob env_obj (TDEnv.empty, [])
         in
         let ctx_callee = { ctx_callee with vis_glob } in
         let func = mthd in
@@ -727,7 +745,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | TableO { table; mthd } ->
         assert (fid.it = "apply" && targs = [] && args = []);
         let ctx_callee =
-          Ctx.init (path, fid.it) ctx.env_glob ctx.env_obj env_stack_empty
+          Ctx.init (path, (fid.it, [])) ctx.env_glob ctx.env_obj env_stack_empty
         in
         let ctx_callee = { ctx_callee with vis_glob = ctx.vis_glob } in
         let ctx_table = Some table in
@@ -818,17 +836,21 @@ module Make (Arch : ARCH) : INTERP = struct
       (args : arg list) : Sig.t * Ctx.t =
     let interp_inter_func_call (fid : id) =
       let ctx_callee =
-        Ctx.init ([], fid.it) ctx.env_glob env_empty env_stack_empty
+        Ctx.init ([], (fid.it, [])) ctx.env_glob env_empty env_stack_empty
       in
       let func = Ctx.find_func_glob (fid.it, args) ctx |> Option.get in
+      let cid = ([], (fid.it, get_params func)) in
+      let ctx_callee = Ctx.set_id cid ctx_callee in
       interp_inter_app ctx ctx_callee func targs args
     in
     let interp_intra_func_call (fid : id) =
       let ctx_callee =
-        Ctx.init ([], fid.it) ctx.env_glob ctx.env_obj env_stack_empty
+        Ctx.init ([], (fid.it, [])) ctx.env_glob ctx.env_obj env_stack_empty
       in
       let ctx_callee = { ctx_callee with vis_glob = ctx.vis_glob } in
       let func = Ctx.find_func_obj (fid.it, args) ctx |> Option.get in
+      let cid = ([], (fid.it, get_params func)) in
+      let ctx_callee = Ctx.set_id cid ctx_callee in
       interp_intra_app ctx ctx_callee None func targs args
     in
     match fvar.it with

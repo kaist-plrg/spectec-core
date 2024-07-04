@@ -158,7 +158,7 @@ module Make (Interp : INTERP) : ARCH = struct
     | Stf.Ast.Expect (_port, Some packet) ->
         (* Check packet_out *)
         let pkt_out = Externs.find "packet_out" !externs in
-        let expected = packet in
+        let expected = String.uppercase_ascii packet in
         let actual = Format.asprintf "%a" pp_extern pkt_out in
         let result = if expected = actual then "PASS" else "FAIL" in
         Format.printf "[%s] Expected %s / Actual %s\n" result expected actual;
@@ -176,31 +176,45 @@ module Make (Interp : INTERP) : ARCH = struct
 
   let interp_extern (ctx : Ctx.t) =
     match ctx.id with
-    | [ "packet_in" ], "extract" -> (
+    | [ "packet_in" ], ("extract", [ "hdr" ]) -> (
         match Externs.find "packet_in" !externs with
         | PacketIn pkt_in ->
             let ctx, pkt_in = Core.PacketIn.extract ctx pkt_in in
             externs := Externs.add "packet_in" (PacketIn pkt_in) !externs;
             (Sig.Ret None, ctx)
         | _ -> assert false)
-    | [ "packet_out" ], "emit" -> (
+    | ( [ "packet_in" ],
+        ("extract", [ "variableSizeHeader"; "variableFieldSizeInBits" ]) ) -> (
+        match Externs.find "packet_in" !externs with
+        | PacketIn pkt_in ->
+            let ctx, pkt_in = Core.PacketIn.extract_var ctx pkt_in in
+            externs := Externs.add "packet_in" (PacketIn pkt_in) !externs;
+            (Sig.Ret None, ctx)
+        | _ -> assert false)
+    | [ "packet_in" ], ("lookahead", []) -> (
+        match Externs.find "packet_in" !externs with
+        | PacketIn pkt_in ->
+            let ctx, value = Core.PacketIn.lookahead ctx pkt_in in
+            (Sig.Ret (Some value), ctx)
+        | _ -> assert false)
+    | [ "packet_out" ], ("emit", [ "hdr" ]) -> (
         match Externs.find "packet_out" !externs with
         | PacketOut pkt_out ->
             let ctx, pkt_out = Core.PacketOut.emit ctx pkt_out in
             externs := Externs.add "packet_out" (PacketOut pkt_out) !externs;
             (Sig.Ret None, ctx)
         | _ -> assert false)
-    | [], "verify_checksum" ->
+    | [], ("verify_checksum", [ "condition"; "data"; "checksum"; "algo" ]) ->
         Hash.verify_checksum ctx |> fun ctx -> (Sig.Ret None, ctx)
-    | [], "update_checksum" ->
+    | [], ("update_checksum", [ "condition"; "data"; "checksum"; "algo" ]) ->
         Hash.update_checksum ctx |> fun ctx -> (Sig.Ret None, ctx)
-    | [], "debug" ->
-        Format.printf "debug: %a\n" TypeValue.pp
+    | [], ("debug", [ "data" ]) ->
+        Format.eprintf "debug: %a\n" TypeValue.pp
           (Ctx.find_var_loc "data" ctx |> Option.get);
         (Sig.Ret None, ctx)
     | _ ->
-        let path, func = ctx.id in
+        let path, fvar = ctx.id in
         Format.eprintf "Unknown builtin extern method %a.%a@." Path.pp path
-          Var.pp func;
+          FVar.pp fvar;
         assert false
 end

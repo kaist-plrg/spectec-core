@@ -103,7 +103,7 @@ parser parserI(packet_in pkt,
         //verify(hdr.ipv4.version == 4w4, error.IPv4IncorrectVersion);
         //verify(hdr.ipv4.ihl >= 4w5, error.IPv4HeaderTooShort);
         transition select (hdr.ipv4.protocol) {
-            6: parse_tcp;
+            8w6: parse_tcp;
             default: accept;
         }
     }
@@ -155,7 +155,6 @@ control vc(inout headers hdr,
         // The compiler does not give any error when one includes a
         // varbit<> as an element of a tuple in a typedef, as you can
         // see from the definition of myTuple1 above.
-        /*
         verify_checksum<ipv4_t, bit<16>>(true,
             { hdr.ipv4.version,
                 hdr.ipv4.ihl,
@@ -171,7 +170,6 @@ control vc(inout headers hdr,
                 hdr.ipv4.options
             },
             hdr.ipv4.hdrChecksum, HashAlgorithm.csum16);
-        */
     }
 }
 
@@ -179,7 +177,6 @@ control uc(inout headers hdr,
            inout metadata meta)
 {
     apply {
-        /*
         update_checksum<ipv4_t, bit<16>>(true,
             { hdr.ipv4.version,
                 hdr.ipv4.ihl,
@@ -195,7 +192,6 @@ control uc(inout headers hdr,
                 hdr.ipv4.options
             },
             hdr.ipv4.hdrChecksum, HashAlgorithm.csum16);
-        */
     }
 }
 
