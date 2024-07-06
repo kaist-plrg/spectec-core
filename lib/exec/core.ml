@@ -64,6 +64,9 @@ let int_to_bits value size =
   Array.init size (fun i -> Bigint.(value land (one lsl i) > zero))
   |> Array.to_list |> List.rev |> Array.of_list
 
+(* The declaration of a header type is given by the following syntax: ...
+   nested arbitrary, as long as all of the “leaf” types are bit<W>, int<W>,
+   a serializable enum, or a bool (7.2.2) *)
 let rec sizeof ?(size_var = 0) (ctx : Ctx.t) (typ : Type.t) =
   match typ with
   | BoolT -> 1
@@ -74,6 +77,7 @@ let rec sizeof ?(size_var = 0) (ctx : Ctx.t) (typ : Type.t) =
         (fun acc (_, typ) -> acc + sizeof ~size_var ctx typ)
         0 fields
   | NameT _ | NewT _ -> Eval.eval_simplify_type ctx typ |> sizeof ~size_var ctx
+  | SEnumT (_, typ, _) -> sizeof ~size_var ctx typ
   | _ -> assert false
 
 module PacketIn = struct
@@ -136,6 +140,9 @@ module PacketIn = struct
             (bits_in, []) fields
         in
         (bits_in, Value.HeaderV (true, fields))
+    | SEnumFieldV (id, member, value) ->
+        let bits_in, value = write ~size_var bits_in value in
+        (bits_in, Value.SEnumFieldV (id, member, value))
     | _ ->
         Format.asprintf "Cannot write value %a to packet" Value.pp value
         |> failwith
@@ -224,6 +231,7 @@ module PacketOut = struct
         if valid then
           List.fold_left (fun pkt (_, value) -> deparse pkt value) pkt fields
         else pkt
+    | SEnumFieldV (_, _, value) -> deparse pkt value
     | _ ->
         Format.asprintf "Cannot deparse value %a to packet" Value.pp value
         |> failwith

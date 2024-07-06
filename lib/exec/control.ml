@@ -5,9 +5,11 @@ open Util.Source
 
 (* Logic for match-action table *)
 
-let match_action (_ctx : Ctx.t) (_keys : (Value.t * mtch_kind) list)
+let match_action (ctx : Ctx.t) (_keys : (Value.t * mtch_kind) list)
     (actions : table_action list) (_entries : table_entry list)
     (default : table_default option) (_custom : table_custom list) =
+  let path, _ = ctx.id in
+  let id = List.rev path |> List.hd in
   (* Determine the action to be run *)
   (* Always give the default action for now *)
   let action =
@@ -29,7 +31,7 @@ let match_action (_ctx : Ctx.t) (_keys : (Value.t * mtch_kind) list)
         |> it |> fst
         |> Format.asprintf "%a" Syntax.Pp.pp_var
       in
-      Value.EnumFieldV action_run
+      Value.EnumFieldV ("action_list(" ^ id ^ ")", action_run)
     in
     Value.StructV [ ("hit", hit); ("miss", miss); ("action_run", action_run) ]
   in

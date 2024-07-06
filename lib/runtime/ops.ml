@@ -637,6 +637,13 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
   | StructT entries ->
       let entries = eval_cast_entries entries value in
       StructV entries
+  | SEnumT (id, typ, fields) ->
+      let value = eval_cast typ value in
+      let member =
+        List.map (fun (member, value) -> (value, member)) fields
+        |> List.assoc value
+      in
+      SEnumFieldV (id, member, value)
   | _ ->
       Format.asprintf "(TODO) Cast to type %a undefined" Type.pp typ |> failwith
 
@@ -675,7 +682,10 @@ let rec eval_default_value (typ : Type.t) : Value.t =
         List.map (fun (field, typ) -> (field, eval_default_value typ)) fields
       in
       HeaderV (false, fields)
-  | EnumT fields -> EnumFieldV (List.hd fields)
+  | EnumT (id, members) -> EnumFieldV (id, List.hd members)
+  | SEnumT (id, _typ, fields) ->
+      let member, value = List.hd fields in
+      SEnumFieldV (id, member, value)
   | RefT -> RefV []
   | _ ->
       Format.asprintf "(TODO) default_value: not implemented for %a" Type.pp typ

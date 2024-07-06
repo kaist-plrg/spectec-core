@@ -152,11 +152,20 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       (ccenv, ictx)
   | EnumD { id; members } ->
       let members = List.map it members in
-      let typ = Type.EnumT members in
+      let typ = Type.EnumT (id.it, members) in
       let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
-  | SEnumD _ ->
-      Format.eprintf "(TODO: load_glob_decl) Load serializable enum\n";
+  | SEnumD { id; typ; fields } ->
+      let typ = Eval.eval_type ictx typ in
+      let fields =
+        List.map
+          (fun (member, expr) ->
+            let value = Eval.eval_expr ictx expr |> Runtime.Ops.eval_cast typ in
+            (member.it, value))
+          fields
+      in
+      let typ = Type.SEnumT (id.it, typ, fields) in
+      let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
   | NewTypeD { id; typ } | TypeDefD { id; typ } -> (
       match typ with

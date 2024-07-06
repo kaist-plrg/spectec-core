@@ -1,4 +1,4 @@
-#include <core_without_overload.p4>
+#include <core.p4>
 #include <v1model.p4>
 
 const bit<8> MAX_HOPS = 8w10;

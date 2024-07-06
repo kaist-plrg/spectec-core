@@ -37,7 +37,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | _ -> assert false
 
   let fetch_enum_field (value : Value.t) =
-    match value with EnumFieldV field -> field | _ -> assert false
+    match value with EnumFieldV (_, field) -> field | _ -> assert false
 
   (* Interpreter for type simplification,
      Assume: evaluation of bit width should never change the context *)
@@ -205,8 +205,8 @@ module Make (Arch : ARCH) : INTERP = struct
       | Bare id -> Ctx.find_td id.it ctx |> Option.get
     in
     match typ with
-    | EnumT members ->
-        if List.mem member.it members then (ctx, EnumFieldV member.it)
+    | EnumT (id, members) ->
+        if List.mem member.it members then (ctx, EnumFieldV (id, member.it))
         else assert false
     | _ -> assert false
 

@@ -11,6 +11,76 @@ type vis = TDVis.t * Vis.t * FVis.t
 
 let vis_empty = (TDVis.empty, Vis.empty, FVis.empty)
 
+(* Runtime representation of values *)
+
+module Value = struct
+  type t =
+    | BoolV of bool
+    | AIntV of Bigint.t
+    | IntV of Bigint.t * Bigint.t
+    | BitV of Bigint.t * Bigint.t
+    | VBitV of Bigint.t * Bigint.t * Bigint.t
+    | StrV of string
+    | ErrV of member'
+    | MatchKindV of member'
+    | StackV of (t list * Bigint.t * Bigint.t)
+    | TupleV of t list
+    | StructV of (member' * t) list
+    | HeaderV of bool * (member' * t) list
+    | UnionV of (member' * t) list
+    | EnumFieldV of id' * member'
+    | SEnumFieldV of id' * member' * t
+    | RefV of path'
+
+  let rec pp fmt value =
+    match value with
+    | BoolV b -> Format.fprintf fmt "%b" b
+    | AIntV i -> Format.fprintf fmt "%s" (Bigint.to_string i)
+    | IntV (w, i) ->
+        Format.fprintf fmt "%ss%s" (Bigint.to_string w) (Bigint.to_string i)
+    | BitV (w, i) ->
+        Format.fprintf fmt "%sw%s" (Bigint.to_string w) (Bigint.to_string i)
+    | VBitV (_mw, w, i) ->
+        Format.fprintf fmt "%sv%s" (Bigint.to_string w) (Bigint.to_string i)
+    | StrV s -> Format.fprintf fmt "\"%s\"" s
+    | ErrV s -> Format.fprintf fmt "%s" s
+    | MatchKindV s -> Format.fprintf fmt "%s" s
+    | StackV (vs, _i, s) ->
+        Format.fprintf fmt "%a[%s]"
+          (Format.pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+             pp)
+          vs (Bigint.to_string s)
+    | TupleV vs ->
+        Format.fprintf fmt "(%a)"
+          (Format.pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+             pp)
+          vs
+    | StructV fs ->
+        Format.fprintf fmt "struct { @[<hv>%a@] }"
+          (Format.pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
+             (fun fmt (m, v) -> Format.fprintf fmt "%s: %a" m pp v))
+          fs
+    | HeaderV (v, fs) ->
+        Format.fprintf fmt "header { %s, @[<hv>%a@] }"
+          (if v then "valid" else "invalid")
+          (Format.pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
+             (fun fmt (m, v) -> Format.fprintf fmt "%s: %a" m pp v))
+          fs
+    | UnionV fs ->
+        Format.fprintf fmt "union { @[<hv>%a@] }"
+          (Format.pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
+             (fun fmt (m, v) -> Format.fprintf fmt "%s: %a" m pp v))
+          fs
+    | EnumFieldV (_, m) -> Format.fprintf fmt "%s" m
+    | SEnumFieldV (_, m, v) -> Format.fprintf fmt "%s(%a)" m pp v
+    | RefV p -> Format.fprintf fmt "ref %s" (String.concat "." p)
+end
+
 (* Runtime representation of types *)
 
 module Type = struct
@@ -30,7 +100,11 @@ module Type = struct
     | StructT of (member' * t) list
     | HeaderT of (member' * t) list
     | UnionT of (member' * t) list
-    | EnumT of member' list
+    (* (TODO) id' field of EnumT and SEnumT seems redundant,
+       but also it may serve some purpose when type checking,
+       e.g. enum foo { A, B } and enum bar { A, B } are different types *)
+    | EnumT of id' * member' list
+    | SEnumT of id' * t * (member' * Value.t) list
     | RefT
 
   let rec pp fmt typ =
@@ -80,83 +154,19 @@ module Type = struct
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (m, t) -> Format.fprintf fmt "%s: %a" m pp t))
           fs
-    | EnumT ms ->
+    | EnumT (_, ms) ->
         Format.fprintf fmt "enum { @[<hv>%a@] }"
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              Format.pp_print_string)
           ms
+    | SEnumT (_, t, fs) ->
+        Format.fprintf fmt "enum %a { @[<hv>%a@] }" pp t
+          (Format.pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
+             (fun fmt (m, t) -> Format.fprintf fmt "%s: %a" m Value.pp t))
+          fs
     | RefT -> Format.fprintf fmt "ref"
-end
-
-(* Runtime representation of values *)
-
-module Value = struct
-  type t =
-    | BoolV of bool
-    | AIntV of Bigint.t
-    | IntV of Bigint.t * Bigint.t
-    | BitV of Bigint.t * Bigint.t
-    | VBitV of Bigint.t * Bigint.t * Bigint.t
-    | StrV of string
-    | ErrV of member'
-    | MatchKindV of member'
-    | StackV of (t list * Bigint.t * Bigint.t)
-    | TupleV of t list
-    | StructV of (member' * t) list
-    | HeaderV of bool * (member' * t) list
-    | UnionV of (member' * t) list
-    | EnumFieldV of member'
-    | SEnumFieldV of member' * t
-    | RefV of path'
-
-  let rec pp fmt value =
-    match value with
-    | BoolV b -> Format.fprintf fmt "%b" b
-    | AIntV i -> Format.fprintf fmt "%s" (Bigint.to_string i)
-    | IntV (w, i) ->
-        Format.fprintf fmt "%ss%s" (Bigint.to_string w) (Bigint.to_string i)
-    | BitV (w, i) ->
-        Format.fprintf fmt "%sw%s" (Bigint.to_string w) (Bigint.to_string i)
-    | VBitV (_mw, w, i) ->
-        Format.fprintf fmt "%sv%s" (Bigint.to_string w) (Bigint.to_string i)
-    | StrV s -> Format.fprintf fmt "\"%s\"" s
-    | ErrV s -> Format.fprintf fmt "%s" s
-    | MatchKindV s -> Format.fprintf fmt "%s" s
-    | StackV (vs, _i, s) ->
-        Format.fprintf fmt "%a[%s]"
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
-             pp)
-          vs (Bigint.to_string s)
-    | TupleV vs ->
-        Format.fprintf fmt "(%a)"
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
-             pp)
-          vs
-    | StructV fs ->
-        Format.fprintf fmt "struct { @[<hv>%a@] }"
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
-             (fun fmt (m, v) -> Format.fprintf fmt "%s: %a" m pp v))
-          fs
-    | HeaderV (v, fs) ->
-        Format.fprintf fmt "header { %s, @[<hv>%a@] }"
-          (if v then "valid" else "invalid")
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
-             (fun fmt (m, v) -> Format.fprintf fmt "%s: %a" m pp v))
-          fs
-    | UnionV fs ->
-        Format.fprintf fmt "union { @[<hv>%a@] }"
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
-             (fun fmt (m, v) -> Format.fprintf fmt "%s: %a" m pp v))
-          fs
-    | EnumFieldV m -> Format.fprintf fmt "%s" m
-    | SEnumFieldV (m, v) -> Format.fprintf fmt "%s(%a)" m pp v
-    | RefV p -> Format.fprintf fmt "ref %s" (String.concat "." p)
 end
 
 (* Type and value pairs *)

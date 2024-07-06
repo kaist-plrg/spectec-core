@@ -86,7 +86,9 @@ let verify_checksum (ctx : Ctx.t) =
     let checksum = Ctx.find_var "checksum" ctx |> Option.get |> snd in
     let algo =
       let algo = Ctx.find_var "algo" ctx |> Option.get |> snd in
-      match algo with EnumFieldV algo -> algo | _ -> assert false
+      match algo with
+      | EnumFieldV ("HashAlgorithm", algo) -> algo
+      | _ -> assert false
     in
     let checksum_verified = compute_checksum algo data in
     Format.eprintf
@@ -118,7 +120,9 @@ let update_checksum (ctx : Ctx.t) =
     in
     let algo =
       let algo = Ctx.find_var "algo" ctx |> Option.get |> snd in
-      match algo with EnumFieldV algo -> algo | _ -> assert false
+      match algo with
+      | EnumFieldV ("HashAlgorithm", algo) -> algo
+      | _ -> assert false
     in
     let typ = Ctx.find_td "O" ctx |> Option.get in
     (* (TODO) is this the right way to cast? *)
