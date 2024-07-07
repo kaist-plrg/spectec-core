@@ -119,6 +119,16 @@ module ICtx = struct
 
   let find_var name ctx = find_var_obj name ctx |> find find_var_glob name ctx
 
+  (* Type simplification *)
+
+  let rec simplify_td (typ : Type.t) ctx =
+    match typ with
+    | NameT name ->
+        let typ = find_td name ctx |> Option.get in
+        simplify_td typ ctx
+    | NewT name -> find_td name ctx |> Option.get
+    | _ -> typ
+
   (* Pretty-printers *)
 
   let pp_vis fmt ctx =

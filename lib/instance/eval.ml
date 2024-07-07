@@ -3,13 +3,6 @@ open Runtime.Base
 open Runtime.Context
 open Util.Source
 
-let rec eval_simplify_type (ictx : ICtx.t) (typ : Type.t) : Type.t =
-  match typ with
-  | NameT name ->
-      ICtx.find_td name ictx |> Option.get |> eval_simplify_type ictx
-  | NewT name -> ICtx.find_td name ictx |> Option.get
-  | _ -> typ
-
 let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
   match typ.it with
   | BoolT -> BoolT
@@ -59,7 +52,10 @@ and eval_expr (ictx : ICtx.t) (expr : expr) : Value.t =
       let varg_snd = eval_expr ictx arg_snd in
       Runtime.Ops.eval_binop op varg_fst varg_snd
   | CastE (typ, arg) ->
-      let typ = eval_type ictx typ |> eval_simplify_type ictx in
+      let typ =
+        let typ = eval_type ictx typ in
+        ICtx.simplify_td typ ictx
+      in
       let varg = eval_expr ictx arg in
       Runtime.Ops.eval_cast typ varg
   | _ ->
