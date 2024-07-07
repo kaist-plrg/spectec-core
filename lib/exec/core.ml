@@ -76,7 +76,7 @@ let rec sizeof ?(size_var = 0) (ctx : Ctx.t) (typ : Type.t) =
       List.fold_left
         (fun acc (_, typ) -> acc + sizeof ~size_var ctx typ)
         0 fields
-  | NameT _ | NewT _ -> Eval.eval_simplify_type ctx typ |> sizeof ~size_var ctx
+  | NameT _ | NewT _ -> Ctx.simplify_td typ ctx |> sizeof ~size_var ctx
   | SEnumT (_, typ, _) -> sizeof ~size_var ctx typ
   | _ -> assert false
 

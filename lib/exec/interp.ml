@@ -166,7 +166,10 @@ module Make (Arch : ARCH) : INTERP = struct
     interp_expr ctx expr
 
   and interp_cast (ctx : Ctx.t) (typ : typ) (expr : expr) : Ctx.t * Value.t =
-    let typ = interp_type ctx typ |> Eval.eval_simplify_type ctx in
+    let typ =
+      let typ = interp_type ctx typ in
+      Ctx.simplify_td typ ctx
+    in
     let ctx, value = interp_expr ctx expr in
     let value = Runtime.Ops.eval_cast typ value in
     (ctx, value)
@@ -181,7 +184,9 @@ module Make (Arch : ARCH) : INTERP = struct
     match value_base with
     (* (TODO) Insert bounds checking *)
     | StackV (values, _, _) ->
-        let idx = Eval.unpack_value value_idx |> Bigint.to_int |> Option.get in
+        let idx =
+          Runtime.Ops.extract_bigint value_idx |> Bigint.to_int |> Option.get
+        in
         let value = List.nth values idx in
         (ctx, value)
     | _ -> assert false
@@ -793,7 +798,9 @@ module Make (Arch : ARCH) : INTERP = struct
           | _ -> assert false)
           |> interp_expr ctx
         in
-        let count = Eval.unpack_value count |> Bigint.to_int |> Option.get in
+        let count =
+          Runtime.Ops.extract_bigint count |> Bigint.to_int |> Option.get
+        in
         let values =
           let values = Array.of_list values in
           let size = Bigint.to_int size |> Option.get in

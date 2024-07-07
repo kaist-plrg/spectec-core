@@ -324,6 +324,16 @@ module Ctx = struct
   let find_func (fid, args) ctx =
     find_func_obj (fid, args) ctx |> find find_func_glob (fid, args) ctx
 
+  (* Type simplification *)
+
+  let rec simplify_td (typ : Type.t) ctx =
+    match typ with
+    | NameT name ->
+        let typ = find_td name ctx |> Option.get in
+        simplify_td typ ctx
+    | NewT name -> find_td name ctx |> Option.get
+    | _ -> typ
+
   (* Frame management *)
 
   let enter_frame ctx =

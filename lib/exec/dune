@@ -1,4 +1,4 @@
 (library
  (name exec)
  (libraries syntax runtime instance stf)
- (modules config driver interp eval control core hash v1model))
+ (modules config driver interp control core hash v1model))
