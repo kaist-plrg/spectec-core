@@ -35,4 +35,17 @@ end
 
 (* Environment for constructor closures *)
 
-module CCEnv = MakeEnv (Var) (CClos)
+module CCEnv = struct
+  include MakeEnv (FVar) (CClos)
+
+  (* (TODO) resolve overloaded functions with argument names *)
+  let find (cid, args) ccenv =
+    let arity = List.length args in
+    let ccloss =
+      List.filter
+        (fun ((cid', params), _) -> cid = cid' && arity = List.length params)
+        (bindings ccenv)
+    in
+    assert (List.length ccloss <= 1);
+    match ccloss with [] -> None | _ -> Some (List.hd ccloss |> snd)
+end

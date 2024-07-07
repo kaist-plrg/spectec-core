@@ -312,24 +312,13 @@ module Ctx = struct
     find_var_loc var ctx |> find find_var_obj var ctx
     |> find find_var_glob var ctx
 
-  (* (TODO) resolve overloaded functions with argument names *)
-  let find_func' (fid, args) fenv =
-    let arity = List.length args in
-    let funcs =
-      List.filter
-        (fun ((fid', params), _) -> fid = fid' && arity = List.length params)
-        (FEnv.bindings fenv)
-    in
-    assert (List.length funcs <= 1);
-    match funcs with [] -> None | _ -> Some (List.hd funcs |> snd)
-
   let find_func_glob (fid, args) ctx =
     let _, _, gfenv = env_from_vis ctx.env_glob ctx.vis_glob in
-    find_func' (fid, args) gfenv
+    FEnv.find (fid, args) gfenv
 
   let find_func_obj (fid, args) ctx =
     let _, _, ofenv = env_from_vis ctx.env_obj ctx.vis_obj in
-    find_func' (fid, args) ofenv
+    FEnv.find (fid, args) ofenv
 
   let find_func (fid, args) ctx =
     find_func_obj (fid, args) ctx |> find find_func_glob (fid, args) ctx

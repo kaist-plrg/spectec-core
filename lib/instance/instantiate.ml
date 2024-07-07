@@ -8,13 +8,13 @@ open Util.Source
 
 (* Helpers to handle generic types without type inference at the moment *)
 
-let cclos_from_type (ccenv : CCEnv.t) (typ : typ) =
+let cclos_from_type (ccenv : CCEnv.t) (typ : typ) (args : arg list) =
   match typ.it with
   | NameT { it = Top id; _ } | NameT { it = Bare id; _ } ->
-      let cclos = CCEnv.find id.it ccenv |> Option.get in
+      let cclos = CCEnv.find (id.it, args) ccenv |> Option.get in
       (cclos, [])
   | SpecT ({ it = Top id; _ }, targs) | SpecT ({ it = Bare id; _ }, targs) ->
-      let cclos = CCEnv.find id.it ccenv |> Option.get in
+      let cclos = CCEnv.find (id.it, args) ccenv |> Option.get in
       (cclos, targs)
   | _ -> assert false
 
@@ -79,16 +79,19 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
   (* Load constructor closures to ccenv *)
   | ParserD { id; tparams; params; cparams; locals; states } ->
       let cclos = CClos.ParserCC { tparams; params; cparams; locals; states } in
-      let ccenv = CCEnv.add id.it cclos ccenv in
+      let cid = make_fid id cparams in
+      let ccenv = CCEnv.add cid cclos ccenv in
       (ccenv, ictx)
   | ControlD { id; tparams; params; cparams; locals; body } ->
       let cclos = CClos.ControlCC { tparams; params; cparams; locals; body } in
-      let ccenv = CCEnv.add id.it cclos ccenv in
+      let cid = make_fid id cparams in
+      let ccenv = CCEnv.add cid cclos ccenv in
       (ccenv, ictx)
   (* For package type declaration, also load to tdenv *)
   | PackageTypeD { id; tparams; cparams } ->
       let cclos = CClos.PackageCC { tparams; cparams } in
-      let ccenv = CCEnv.add id.it cclos ccenv in
+      let cid = make_fid id cparams in
+      let ccenv = CCEnv.add cid cclos ccenv in
       let typ = Type.RefT in
       let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
@@ -100,15 +103,30 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
             match mthd.it with ConsD _ -> true | _ -> false)
           mthds
       in
-      (* (TODO) Handle overloaded constructors *)
-      assert (List.length cons <= 1);
-      let cparams =
-        match cons with
-        | { it = ConsD { cparams; _ }; _ } :: [] -> cparams
-        | _ -> []
+      (* (TODO) Is this the right way to handle extern object without a constructor? *)
+      let cons =
+        if List.length cons = 0 then
+          [
+            {
+              it = ConsD { id = { it = id.it; at = no_info }; cparams = [] };
+              at = no_info;
+            };
+          ]
+        else cons
       in
-      let cclos = CClos.ExternCC { tparams; cparams; mthds } in
-      let ccenv = CCEnv.add id.it cclos ccenv in
+      let ccenv =
+        List.fold_left
+          (fun ccenv con ->
+            let cparams =
+              match con.it with
+              | ConsD { cparams; _ } -> cparams
+              | _ -> assert false
+            in
+            let cclos = CClos.ExternCC { tparams; cparams; mthds } in
+            let cid = make_fid id cparams in
+            CCEnv.add cid cclos ccenv)
+          ccenv cons
+      in
       let typ = Type.RefT in
       let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
@@ -394,13 +412,13 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
 
 and instantiate_from_expr (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
     (path : Path.t) (typ : typ) (args : arg list) =
-  let cclos, targs = cclos_from_type ccenv typ in
+  let cclos, targs = cclos_from_type ccenv typ args in
   instantiate_from_cclos ccenv sto ictx path cclos targs args
 
 and instantiate_from_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
     (path : Path.t) (name : Var.t) (typ : typ) (args : arg list) =
   let path = path @ [ name ] in
-  let cclos, targs = cclos_from_type ccenv typ in
+  let cclos, targs = cclos_from_type ccenv typ args in
   let sto = instantiate_from_cclos ccenv sto ictx path cclos targs args in
   let value = Value.RefV path in
   let typ = Type.RefT in
@@ -410,7 +428,7 @@ and instantiate_from_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
 and instantiate_from_glob_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
     (name : Var.t) (typ : typ) (args : arg list) =
   let path = [ name ] in
-  let cclos, targs = cclos_from_type ccenv typ in
+  let cclos, targs = cclos_from_type ccenv typ args in
   let sto = instantiate_from_cclos ccenv sto ictx path cclos targs args in
   let value = Value.RefV path in
   let typ = Type.RefT in

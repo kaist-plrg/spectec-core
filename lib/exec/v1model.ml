@@ -47,7 +47,7 @@ module Make (Interp : INTERP) : ARCH = struct
   (* Initialization and pipeline driver *)
 
   let init_instantiate_packet_in (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
-    let cclos_packet_in = CCEnv.find "packet_in" ccenv |> Option.get in
+    let cclos_packet_in = CCEnv.find ("packet_in", []) ccenv |> Option.get in
     let ictx = ICtx.init ctx.env_glob ctx.env_obj in
     let path = [ "packet_in" ] in
     let sto =
@@ -58,7 +58,7 @@ module Make (Interp : INTERP) : ARCH = struct
 
   let init_instantiate_packet_out (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t)
       =
-    let cclos_packet_out = CCEnv.find "packet_out" ccenv |> Option.get in
+    let cclos_packet_out = CCEnv.find ("packet_out", []) ccenv |> Option.get in
     let ictx = ICtx.init ctx.env_glob ctx.env_obj in
     let path = [ "packet_out" ] in
     let sto =

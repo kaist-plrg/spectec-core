@@ -224,7 +224,21 @@ end
 
 module TDEnv = MakeEnv (Var) (Type)
 module Env = MakeEnv (Var) (TypeValue)
-module FEnv = MakeEnv (FVar) (Func)
+
+module FEnv = struct
+  include MakeEnv (FVar) (Func)
+
+  (* (TODO) resolve overloaded functions with argument names *)
+  let find (fid, args) fenv =
+    let arity = List.length args in
+    let funcs =
+      List.filter
+        (fun ((fid', params), _) -> fid = fid' && arity = List.length params)
+        (bindings fenv)
+    in
+    assert (List.length funcs <= 1);
+    match funcs with [] -> None | _ -> Some (List.hd funcs |> snd)
+end
 
 type env = TDEnv.t * Env.t * FEnv.t
 type env_stack = TDEnv.t * Env.t list
