@@ -13,32 +13,6 @@ module Make (Arch : ARCH) : INTERP = struct
   let sto = ref Sto.empty
   let init _sto = sto := _sto
 
-  (* Helper to get parameters of a function *)
-
-  let get_params (func : Func.t) =
-    match func with
-    | FuncF { params; _ }
-    | ExternF { params; _ }
-    | MethodF { params; _ }
-    | ExternMethodF { params; _ }
-    | ActionF { params; _ } ->
-        List.map
-          (fun param ->
-            let id, _, _, _ = param.it in
-            id.it)
-          params
-    | _ -> []
-
-  (* Helper to access aggregate value *)
-
-  let fetch_struct_field (value : Value.t) (member : member') =
-    match value with
-    | StructV fields -> List.assoc member fields
-    | _ -> assert false
-
-  let fetch_enum_field (value : Value.t) =
-    match value with EnumFieldV (_, field) -> field | _ -> assert false
-
   (* Interpreter for type simplification,
      Assume: evaluation of bit width should never change the context *)
 
@@ -47,19 +21,13 @@ module Make (Arch : ARCH) : INTERP = struct
     | BoolT -> BoolT
     | AIntT -> AIntT
     | IntT width ->
-        let width =
-          interp_expr ctx width |> snd |> Runtime.Ops.extract_bigint
-        in
+        let width = interp_expr ctx width |> snd |> Value.get_num in
         IntT width
     | BitT width ->
-        let width =
-          interp_expr ctx width |> snd |> Runtime.Ops.extract_bigint
-        in
+        let width = interp_expr ctx width |> snd |> Value.get_num in
         BitT width
     | VBitT width ->
-        let width =
-          interp_expr ctx width |> snd |> Runtime.Ops.extract_bigint
-        in
+        let width = interp_expr ctx width |> snd |> Value.get_num in
         VBitT width
     | StrT -> StrT
     | ErrT -> Ctx.find_td_glob "error" ctx
@@ -70,7 +38,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | SpecT (var, _) -> interp_type ctx (NameT var $ no_info)
     | StackT (typ, size) ->
         let typ = interp_type ctx typ in
-        let size = interp_expr ctx size |> snd |> Runtime.Ops.extract_bigint in
+        let size = interp_expr ctx size |> snd |> Value.get_num in
         StackT (typ, size)
     | TupleT typs ->
         let typs = List.map (interp_type ctx) typs in
@@ -161,14 +129,7 @@ module Make (Arch : ARCH) : INTERP = struct
   and interp_ternop (ctx : Ctx.t) (expr_cond : expr) (expr_tru : expr)
       (expr_fls : expr) : Ctx.t * Value.t =
     let ctx, value_cond = interp_expr ctx expr_cond in
-    let cond =
-      match value_cond with
-      | BoolV b -> b
-      | _ ->
-          Format.asprintf "(interp_ternop) %a is not a boolean." Value.pp
-            value_cond
-          |> failwith
-    in
+    let cond = Value.get_bool value_cond in
     let expr = if cond then expr_tru else expr_fls in
     interp_expr ctx expr
 
@@ -194,9 +155,7 @@ module Make (Arch : ARCH) : INTERP = struct
     match value_base with
     (* (TODO) Insert bounds checking *)
     | StackV (values, _, _) ->
-        let idx =
-          Runtime.Ops.extract_bigint value_idx |> Bigint.to_int |> Option.get
-        in
+        let idx = Value.get_num value_idx |> Bigint.to_int |> Option.get in
         let value = List.nth values idx in
         (ctx, value)
     | _ ->
@@ -223,15 +182,11 @@ module Make (Arch : ARCH) : INTERP = struct
       | Bare id -> Ctx.find_td id.it ctx
     in
     match typ with
-    | EnumT (id, members) ->
-        if List.mem member.it members then (ctx, EnumFieldV (id, member.it))
-        else
-          Format.asprintf "(interp_type_acc) %s is not a member of %a" member.it
-            Type.pp typ
-          |> failwith
+    | EnumT (id, members) when List.mem member.it members ->
+        (ctx, EnumFieldV (id, member.it))
     | _ ->
-        Format.asprintf "(TODO: interp_type_acc) %a cannot be accessed" Type.pp
-          typ
+        Format.asprintf "(TODO: interp_type_acc) Cannot access member %s of %a"
+          member.it Type.pp typ
         |> failwith
 
   and interp_error_acc (ctx : Ctx.t) (member : member) : Ctx.t * Value.t =
@@ -489,7 +444,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | Ret _ | Exit -> (sign, ctx)
     | Cont ->
         let ctx, value = interp_expr ctx expr in
-        let value = fetch_enum_field value in
+        let value = Value.get_enum value |> snd in
         let switch_cases (block_found : bool * block option)
             (case : switch_case) =
           let case, block = case.it in
@@ -684,11 +639,7 @@ module Make (Arch : ARCH) : INTERP = struct
     let action, value =
       Control.match_action ctx_callee keys actions entries default custom
     in
-    let hit =
-      match fetch_struct_field value "hit" with
-      | BoolV b -> b
-      | _ -> assert false
-    in
+    let hit = Value.access_field "hit" value |> Value.get_bool in
     if not hit then
       let sign = Sig.Ret (Some value) in
       (sign, ctx_caller, ctx_callee)
@@ -766,7 +717,7 @@ module Make (Arch : ARCH) : INTERP = struct
         in
         let ctx_callee = { ctx_callee with vis_glob } in
         let func = Ctx.find_func_obj (fid.it, args) ctx_callee in
-        let cid = (path, (fid.it, get_params func)) in
+        let cid = (path, (fid.it, Func.get_params func)) in
         let ctx_callee = Ctx.set_id cid ctx_callee in
         interp_inter_app ctx ctx_callee func targs args
     | ParserO { vis_glob; env_obj; mthd } | ControlO { vis_glob; env_obj; mthd }
@@ -832,9 +783,7 @@ module Make (Arch : ARCH) : INTERP = struct
           | _ -> assert false)
           |> interp_expr ctx
         in
-        let count =
-          Runtime.Ops.extract_bigint count |> Bigint.to_int |> Option.get
-        in
+        let count = Value.get_num count |> Bigint.to_int |> Option.get in
         let values =
           let values = Array.of_list values in
           let size = Bigint.to_int size |> Option.get in
@@ -880,7 +829,7 @@ module Make (Arch : ARCH) : INTERP = struct
         Ctx.init ([], (fid.it, [])) ctx.env_glob env_empty env_stack_empty
       in
       let func = Ctx.find_func_glob (fid.it, args) ctx in
-      let cid = ([], (fid.it, get_params func)) in
+      let cid = ([], (fid.it, Func.get_params func)) in
       let ctx_callee = Ctx.set_id cid ctx_callee in
       interp_inter_app ctx ctx_callee func targs args
     in
@@ -890,16 +839,15 @@ module Make (Arch : ARCH) : INTERP = struct
       in
       let ctx_callee = { ctx_callee with vis_glob = ctx.vis_glob } in
       let func = Ctx.find_func_obj (fid.it, args) ctx in
-      let cid = ([], (fid.it, get_params func)) in
+      let cid = ([], (fid.it, Func.get_params func)) in
       let ctx_callee = Ctx.set_id cid ctx_callee in
       interp_intra_app ctx ctx_callee None func targs args
     in
     match fvar.it with
     | Top fid -> interp_inter_func_call fid
-    | Bare fid ->
-        if Option.is_some (Ctx.find_func_obj_opt (fid.it, args) ctx) then
-          interp_intra_func_call fid
-        else interp_inter_func_call fid
+    | Bare fid when Option.is_some (Ctx.find_func_obj_opt (fid.it, args) ctx) ->
+        interp_intra_func_call fid
+    | Bare fid -> interp_inter_func_call fid
 
   and interp_call (ctx : Ctx.t) (func : expr) (targs : typ list)
       (args : arg list) =

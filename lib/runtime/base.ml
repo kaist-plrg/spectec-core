@@ -1,11 +1,12 @@
 open Syntax.Ast
+open Util.Source
 open Domain
 
 (* Visibility of type variables, variables, and function names *)
 
-module TDVis = MakeVis (Var)
-module Vis = MakeVis (Var)
-module FVis = MakeVis (FVar)
+module TDVis = MakeVis (Id)
+module Vis = MakeVis (Id)
+module FVis = MakeVis (FId)
 
 type vis = TDVis.t * Vis.t * FVis.t
 
@@ -32,8 +33,7 @@ module Value = struct
     | SEnumFieldV of id' * member' * t
     | RefV of path'
 
-  let rec pp fmt value =
-    match value with
+  let rec pp fmt = function
     | BoolV b -> Format.fprintf fmt "%b" b
     | AIntV i -> Format.fprintf fmt "%s" (Bigint.to_string i)
     | IntV (w, i) ->
@@ -79,6 +79,49 @@ module Value = struct
     | EnumFieldV (_, m) -> Format.fprintf fmt "%s" m
     | SEnumFieldV (_, m, v) -> Format.fprintf fmt "%s(%a)" m pp v
     | RefV p -> Format.fprintf fmt "ref %s" (String.concat "." p)
+
+  (* Getters *)
+
+  let get_bool t : bool =
+    match t with
+    | BoolV value -> value
+    | _ -> Format.asprintf "Not a bool value: %a" pp t |> failwith
+
+  let get_num t : Bigint.t =
+    match t with
+    | AIntV value -> value
+    | IntV (_, value) -> value
+    | BitV (_, value) -> value
+    | _ -> Format.asprintf "Not a int/bit value: %a" pp t |> failwith
+
+  let rec get_width t =
+    match t with
+    | BoolV _ -> Bigint.one
+    | IntV (width, _) | BitV (width, _) | VBitV (_, width, _) -> width
+    | TupleV values ->
+        List.fold_left
+          (fun acc value -> Bigint.(acc + get_width value))
+          Bigint.zero values
+    | StructV fields | HeaderV (_, fields) ->
+        let values = List.map snd fields in
+        List.fold_left
+          (fun acc value -> Bigint.(acc + get_width value))
+          Bigint.zero values
+    | _ -> Format.asprintf "Cannot get width of value: %a" pp t |> failwith
+
+  let get_enum t =
+    match t with
+    | EnumFieldV (id, member) -> (id, member)
+    | _ -> Format.asprintf "Not an enum value: %a" pp t |> failwith
+
+  (* Aggregate accessors *)
+
+  let access_field (member : member') t =
+    match t with
+    | StructV fields -> List.assoc member fields
+    | _ ->
+        Format.asprintf "Cannot access field %s of value: %a" member pp t
+        |> failwith
 end
 
 (* Runtime representation of types *)
@@ -107,8 +150,7 @@ module Type = struct
     | SEnumT of id' * t * (member' * Value.t) list
     | RefT
 
-  let rec pp fmt typ =
-    match typ with
+  let rec pp fmt = function
     | BoolT -> Format.fprintf fmt "bool"
     | AIntT -> Format.fprintf fmt "int"
     | IntT w -> Format.fprintf fmt "%ss" (Bigint.to_string w)
@@ -218,15 +260,26 @@ module Func = struct
     | StateF _ -> Format.fprintf fmt "state"
     | ActionF _ -> Format.fprintf fmt "action"
     | TableF _ -> Format.fprintf fmt "table"
+
+  (* Getters *)
+
+  let get_params = function
+    | FuncF { params; _ }
+    | ExternF { params; _ }
+    | MethodF { params; _ }
+    | ExternMethodF { params; _ }
+    | ActionF { params; _ } ->
+        List.map (fun { it = id, _, _, _; _ } -> id.it) params
+    | _ -> []
 end
 
 (* Environment of type variables, variables, and functions *)
 
-module TDEnv = MakeEnv (Var) (Type)
-module Env = MakeEnv (Var) (TypeValue)
+module TDEnv = MakeEnv (Id) (Type)
+module Env = MakeEnv (Id) (TypeValue)
 
 module FEnv = struct
-  include MakeEnv (FVar) (Func)
+  include MakeEnv (FId) (Func)
 
   (* (TODO) resolve overloaded functions with argument names *)
   let find_opt (fid, args) fenv =

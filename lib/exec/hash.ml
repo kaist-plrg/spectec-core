@@ -44,8 +44,7 @@ let hash (algo : string) =
 
 let package (data : Value.t list) : Bigint.t * Bigint.t =
   data
-  |> List.map (fun value ->
-         (Runtime.Ops.extract_width value, Runtime.Ops.extract_bigint value))
+  |> List.map (fun value -> (Value.get_width value, Value.get_num value))
   |> List.map (fun (width, value) ->
          (width, Runtime.Ops.of_two_complement value width))
   |> List.fold_left

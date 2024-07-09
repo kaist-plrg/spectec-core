@@ -166,7 +166,7 @@ end
 
 module Ctx = struct
   type t = {
-    id : Path.t * FVar.t;
+    id : Path.t * FId.t;
     env_glob : env;
     vis_glob : vis;
     env_obj : env;

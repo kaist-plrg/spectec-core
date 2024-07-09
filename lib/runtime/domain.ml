@@ -1,17 +1,24 @@
-module Var = struct
+open Syntax.Ast
+open Util.Source
+
+module Id = struct
   type t = string
 
   let pp fmt t = Format.fprintf fmt "%s" t
   let compare = compare
 end
 
-module FVar = struct
+module FId = struct
   type t = string * string list
 
   let pp fmt (name, params) =
     Format.fprintf fmt "%s(%s)" name (String.concat ", " params)
 
   let compare = compare
+
+  let to_fid (id : id) (params : param list) =
+    let params = List.map (fun { it = id, _, _, _; _ } -> id.it) params in
+    (id.it, params)
 end
 
 module Path = struct
@@ -21,8 +28,6 @@ module Path = struct
   let pp fmt path = Format.fprintf fmt "%s" (concat path)
   let compare = compare
 end
-
-module PM = Map.Make (Path)
 
 module MakeVis (K : sig
   type t

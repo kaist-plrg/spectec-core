@@ -39,33 +39,21 @@ let var_decl_to_stmt (decl : decl) =
       Some (AssignI (VarE (Bare id $ no_info) $ no_info, value) $ decl.at)
   | _ -> None
 
-(* Helper to build function identifiers *)
-
-let make_fid (id : id) (params : param list) =
-  let params =
-    List.map
-      (fun param ->
-        let id, _, _, _ = param.it in
-        id.it)
-      params
-  in
-  (id.it, params)
-
 (* Loading declarations to environments *)
 
-let load_obj_var (ictx : ICtx.t) (name : Var.t) (typ : typ) =
+let load_obj_var (ictx : ICtx.t) (name : Id.t) (typ : typ) =
   (* When using an expression for the size, the expression
      must be parenthesized and compile-time known. (7.1.6.2) *)
   let typ = Eval.eval_type ictx typ in
   let value = Runtime.Ops.eval_default_value typ in
   ICtx.add_var_obj name typ value ictx
 
-let load_obj_const (ictx : ICtx.t) (name : Var.t) (typ : typ) (value : expr) =
+let load_obj_const (ictx : ICtx.t) (name : Id.t) (typ : typ) (value : expr) =
   let typ = Eval.eval_type ictx typ in
   let value = Eval.eval_expr ictx value |> Runtime.Ops.eval_cast typ in
   ICtx.add_var_obj name typ value ictx
 
-let load_glob_const (ictx : ICtx.t) (name : Var.t) (typ : typ) (value : expr) =
+let load_glob_const (ictx : ICtx.t) (name : Id.t) (typ : typ) (value : expr) =
   let typ = Eval.eval_type ictx typ in
   let value = Eval.eval_expr ictx value |> Runtime.Ops.eval_cast typ in
   ICtx.add_var_glob name typ value ictx
@@ -79,18 +67,18 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
   (* Load constructor closures to ccenv *)
   | ParserD { id; tparams; params; cparams; locals; states } ->
       let cclos = CClos.ParserCC { tparams; params; cparams; locals; states } in
-      let cid = make_fid id cparams in
+      let cid = FId.to_fid id cparams in
       let ccenv = CCEnv.add cid cclos ccenv in
       (ccenv, ictx)
   | ControlD { id; tparams; params; cparams; locals; body } ->
       let cclos = CClos.ControlCC { tparams; params; cparams; locals; body } in
-      let cid = make_fid id cparams in
+      let cid = FId.to_fid id cparams in
       let ccenv = CCEnv.add cid cclos ccenv in
       (ccenv, ictx)
   (* For package type declaration, also load to tdenv *)
   | PackageTypeD { id; tparams; cparams } ->
       let cclos = CClos.PackageCC { tparams; cparams } in
-      let cid = make_fid id cparams in
+      let cid = FId.to_fid id cparams in
       let ccenv = CCEnv.add cid cclos ccenv in
       let typ = Type.RefT in
       let ictx = ICtx.add_td_glob id.it typ ictx in
@@ -123,7 +111,7 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
               | _ -> assert false
             in
             let cclos = CClos.ExternCC { tparams; cparams; mthds } in
-            let cid = make_fid id cparams in
+            let cid = FId.to_fid id cparams in
             CCEnv.add cid cclos ccenv)
           ccenv cons
       in
@@ -202,13 +190,13 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
   | ActionD { id; params; body } ->
       let vis_glob = env_to_vis ictx.env_glob in
       let func = Func.ActionF { vis = vis_glob; params; body } in
-      let fid = make_fid id params in
+      let fid = FId.to_fid id params in
       let ictx = ICtx.add_func_glob fid func ictx in
       (ccenv, ictx)
   | ExternFuncD { id; tparams; params; _ } ->
       let vis_glob = env_to_vis ictx.env_glob in
       let func = Func.ExternF { vis_glob; tparams; params } in
-      let fid = make_fid id params in
+      let fid = FId.to_fid id params in
       let ictx = ICtx.add_func_glob fid func ictx in
       (ccenv, ictx)
   | _ ->
@@ -416,7 +404,7 @@ and instantiate_from_expr (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
   instantiate_from_cclos ccenv sto ictx path cclos targs args
 
 and instantiate_from_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
-    (path : Path.t) (name : Var.t) (typ : typ) (args : arg list) =
+    (path : Path.t) (name : Id.t) (typ : typ) (args : arg list) =
   let path = path @ [ name ] in
   let cclos, targs = cclos_from_type ccenv typ args in
   let sto = instantiate_from_cclos ccenv sto ictx path cclos targs args in
@@ -426,7 +414,7 @@ and instantiate_from_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
   (sto, ictx)
 
 and instantiate_from_glob_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
-    (name : Var.t) (typ : typ) (args : arg list) =
+    (name : Id.t) (typ : typ) (args : arg list) =
   let path = [ name ] in
   let cclos, targs = cclos_from_type ccenv typ args in
   let sto = instantiate_from_cclos ccenv sto ictx path cclos targs args in
@@ -480,7 +468,7 @@ and instantiate_control_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
       (sto, ictx)
   | ActionD { id; params; body } ->
       let func = Func.ActionF { vis = env_to_vis ictx.env_obj; params; body } in
-      let fid = make_fid id params in
+      let fid = FId.to_fid id params in
       let ictx = ICtx.add_func_obj fid func ictx in
       (sto, ictx)
   (* Each table evaluates to a table instance (18.2) *)
@@ -506,7 +494,7 @@ and instantiate_extern_obj_decl (ictx : ICtx.t) (decl : decl) =
         Func.ExternMethodF
           { vis_obj = env_to_vis ictx.env_obj; tparams; params }
       in
-      let fid = make_fid id params in
+      let fid = FId.to_fid id params in
       ICtx.add_func_obj fid func ictx
   | AbstractD _ ->
       Format.eprintf "(TODO: instantiate_extern_obj_decl) Load extern object %a"

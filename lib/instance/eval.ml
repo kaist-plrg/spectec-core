@@ -11,13 +11,13 @@ let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
   | BoolT -> BoolT
   | AIntT -> AIntT
   | IntT width ->
-      let width = eval_expr ictx width |> Runtime.Ops.extract_bigint in
+      let width = eval_expr ictx width |> Value.get_num in
       IntT width
   | BitT width ->
-      let width = eval_expr ictx width |> Runtime.Ops.extract_bigint in
+      let width = eval_expr ictx width |> Value.get_num in
       BitT width
   | VBitT width ->
-      let width = eval_expr ictx width |> Runtime.Ops.extract_bigint in
+      let width = eval_expr ictx width |> Value.get_num in
       VBitT width
   | StrT -> StrT
   | ErrT -> ICtx.find_td_glob "error" ictx
@@ -28,7 +28,7 @@ let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
   | SpecT (var, _) -> eval_type ictx (NameT var $ no_info)
   | StackT (typ, size) ->
       let typ = eval_type ictx typ in
-      let size = eval_expr ictx size |> Runtime.Ops.extract_bigint in
+      let size = eval_expr ictx size |> Value.get_num in
       StackT (typ, size)
   | TupleT typs ->
       let typs = List.map (eval_type ictx) typs in
@@ -123,9 +123,7 @@ and eval_arr_acc (ictx : ICtx.t) (base : expr) (idx : expr) : Value.t =
   match value_base with
   (* (TODO) Insert bounds checking *)
   | StackV (values, _, _) ->
-      let idx =
-        Runtime.Ops.extract_bigint value_idx |> Bigint.to_int |> Option.get
-      in
+      let idx = Value.get_num value_idx |> Bigint.to_int |> Option.get in
       List.nth values idx
   | _ -> assert false
 

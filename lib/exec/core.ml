@@ -170,7 +170,7 @@ module PacketIn = struct
     let _, header = Ctx.find_var "variableSizeHeader" ctx in
     let size_var =
       Ctx.find_var "variableFieldSizeInBits" ctx
-      |> snd |> Runtime.Ops.extract_bigint |> Bigint.to_int |> Option.get
+      |> snd |> Value.get_num |> Bigint.to_int |> Option.get
     in
     let pkt, bits = sizeof ~size_var ctx typ |> parse pkt in
     let _, header = write ~size_var bits header in
@@ -193,7 +193,7 @@ module PacketIn = struct
   let advance (ctx : Ctx.t) (pkt : t) =
     let size =
       Ctx.find_var "sizeInBits" ctx
-      |> snd |> Runtime.Ops.extract_bigint |> Bigint.to_int |> Option.get
+      |> snd |> Value.get_num |> Bigint.to_int |> Option.get
     in
     let pkt = { pkt with idx = pkt.idx + size } in
     (ctx, pkt)

@@ -71,30 +71,6 @@ let int_of_raw_int (n : Bigint.t) (w : Bigint.t) : Value.t =
   let width = w in
   IntV (width, value)
 
-(* Value extraction *)
-
-let extract_bigint (value : Value.t) : Bigint.t =
-  match value with
-  | AIntV value -> value
-  | IntV (_, value) -> value
-  | BitV (_, value) -> value
-  | _ -> Format.asprintf "Not a int/bit value: %a" Value.pp value |> failwith
-
-let rec extract_width (value : Value.t) =
-  match value with
-  | BoolV _ -> Bigint.one
-  | IntV (width, _) | BitV (width, _) | VBitV (_, width, _) -> width
-  | TupleV values ->
-      List.fold_left
-        (fun acc value -> Bigint.(acc + extract_width value))
-        Bigint.zero values
-  | StructV fields | HeaderV (_, fields) ->
-      let values = List.map snd fields in
-      List.fold_left
-        (fun acc value -> Bigint.(acc + extract_width value))
-        Bigint.zero values
-  | _ -> assert false
-
 (* Unop evaluation *)
 
 let eval_unop_not (value : Value.t) : Value.t =
@@ -581,7 +557,7 @@ let eval_bitstring_access' (value : Bigint.t) (hvalue : Bigint.t)
 
 let eval_bitstring_access (value : Value.t) (hvalue : Value.t)
     (lvalue : Value.t) : Value.t =
-  let extract value = extract_bigint value in
+  let extract value = Value.get_num value in
   eval_bitstring_access' (extract value) (extract hvalue) (extract lvalue)
 
 (* Type cast evaluation *)
@@ -641,7 +617,7 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
   match typ with
   | BoolT -> eval_cast_to_bool value
   | AIntT ->
-      let value = extract_bigint value in
+      let value = Value.get_num value in
       AIntV value
   | BitT width -> eval_cast_to_bit width value
   | IntT width -> eval_cast_to_int width value

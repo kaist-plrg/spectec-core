@@ -20,7 +20,7 @@ let make_func (path : string list) (func : string) =
   in
   ExprAccE (expr, func $ no_info) $ no_info
 
-let make_args (args : Var.t list) =
+let make_args (args : Id.t list) =
   List.map
     (fun arg ->
       ExprA (VarE (Bare (arg $ no_info) $ no_info) $ no_info) $ no_info)
@@ -67,10 +67,10 @@ module Make (Interp : INTERP) : ARCH = struct
     in
     sto
 
-  let init_var (ctx : Ctx.t) (tname : string) (vname : string) =
-    let typ = Ctx.find_td tname ctx in
+  let init_var (ctx : Ctx.t) (tid : Id.t) (vid : Id.t) =
+    let typ = Ctx.find_td tid ctx in
     let value = Runtime.Ops.eval_default_value typ in
-    Ctx.add_var_obj vname typ value ctx
+    Ctx.add_var_obj vid typ value ctx
 
   let init (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
     (* Add "packet_in" and "packet_out" to the store and object environment *)
@@ -227,6 +227,6 @@ module Make (Interp : INTERP) : ARCH = struct
     | _ ->
         let path, fvar = ctx.id in
         Format.eprintf "Unknown builtin extern method %a.%a@." Path.pp path
-          FVar.pp fvar;
+          FId.pp fvar;
         assert false
 end

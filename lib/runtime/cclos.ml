@@ -36,7 +36,7 @@ end
 (* Environment for constructor closures *)
 
 module CCEnv = struct
-  include MakeEnv (FVar) (CClos)
+  include MakeEnv (FId) (CClos)
 
   (* (TODO) resolve overloaded functions with argument names *)
   let find_opt (cid, args) ccenv =
