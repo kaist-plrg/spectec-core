@@ -420,8 +420,8 @@ let rec eval_binop_eq_entries (lentries : (string * Value.t) list)
 and eval_binop_eq (lvalue : Value.t) (rvalue : Value.t) : bool =
   match (lvalue, rvalue) with
   | BoolV b1, BoolV b2 -> b1 = b2
-  | BitV (_, lvalue), BitV (_, rvalue)
   | AIntV lvalue, AIntV rvalue
+  | BitV (_, lvalue), BitV (_, rvalue)
   | IntV (_, lvalue), IntV (_, rvalue) ->
       Bigint.(lvalue = rvalue)
   | BitV (width, _), AIntV rvalue ->
@@ -432,16 +432,19 @@ and eval_binop_eq (lvalue : Value.t) (rvalue : Value.t) : bool =
       eval_binop_eq lvalue (int_of_raw_int rvalue width)
   | AIntV lvalue, IntV (width, _) ->
       eval_binop_eq (int_of_raw_int lvalue width) rvalue
-  | HeaderV (lvalid, lentries), HeaderV (rvalid, rentries) ->
-      lvalid = rvalid && eval_binop_eq_entries lentries rentries
-  | StructV lentries, StructV rentries ->
-      List.length lentries = List.length rentries
-      && eval_binop_eq_entries lentries rentries
+  | StackV (lvalues, _, _), StackV (rvalues, _, _)
   | TupleV lvalues, TupleV rvalues ->
       List.length lvalues = List.length rvalues
-      && List.for_all2
-           (fun lvalue rvalue -> eval_binop_eq lvalue rvalue)
-           lvalues rvalues
+      && List.for_all2 eval_binop_eq lvalues rvalues
+  | StructV lentries, StructV rentries | UnionV lentries, UnionV rentries ->
+      List.length lentries = List.length rentries
+      && eval_binop_eq_entries lentries rentries
+  | HeaderV (lvalid, lentries), HeaderV (rvalid, rentries) ->
+      lvalid = rvalid && eval_binop_eq_entries lentries rentries
+  | EnumFieldV (lid, lmember), EnumFieldV (rid, rmember) ->
+      lid = rid && lmember = rmember
+  | SEnumFieldV (lid, lmember, lvalue), SEnumFieldV (rid, rmember, rvalue) ->
+      lid = rid && lmember = rmember && eval_binop_eq lvalue rvalue
   | _ ->
       Format.asprintf "Invalid equality: %a == %a" Value.pp lvalue Value.pp
         rvalue
