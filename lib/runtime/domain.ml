@@ -67,11 +67,16 @@ struct
 
   let empty = KM.empty
   let bindings = KM.bindings
-  let find = KM.find_opt
   let add = KM.add
   let map = KM.map
   let fold = KM.fold
   let filter = KM.filter
+  let find_opt = KM.find_opt
+
+  let find k m =
+    match find_opt k m with
+    | Some v -> v
+    | None -> Format.asprintf "Key not found: %a@." K.pp k |> failwith
 
   let pp fmt env =
     let bindings = KM.bindings env in

@@ -39,7 +39,7 @@ module CCEnv = struct
   include MakeEnv (FVar) (CClos)
 
   (* (TODO) resolve overloaded functions with argument names *)
-  let find (cid, args) ccenv =
+  let find_opt (cid, args) ccenv =
     let arity = List.length args in
     let ccloss =
       List.filter
@@ -48,4 +48,9 @@ module CCEnv = struct
     in
     assert (List.length ccloss <= 1);
     match ccloss with [] -> None | _ -> Some (List.hd ccloss |> snd)
+
+  let find (cid, args) ccenv =
+    match find_opt (cid, args) ccenv with
+    | Some c -> c
+    | None -> Format.asprintf "Key not found: %s@." cid |> failwith
 end

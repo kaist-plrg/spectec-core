@@ -11,10 +11,10 @@ open Util.Source
 let cclos_from_type (ccenv : CCEnv.t) (typ : typ) (args : arg list) =
   match typ.it with
   | NameT { it = Top id; _ } | NameT { it = Bare id; _ } ->
-      let cclos = CCEnv.find (id.it, args) ccenv |> Option.get in
+      let cclos = CCEnv.find (id.it, args) ccenv in
       (cclos, [])
   | SpecT ({ it = Top id; _ }, targs) | SpecT ({ it = Bare id; _ }, targs) ->
-      let cclos = CCEnv.find (id.it, args) ccenv |> Option.get in
+      let cclos = CCEnv.find (id.it, args) ccenv in
       (cclos, targs)
   | _ -> assert false
 

@@ -75,18 +75,18 @@ let compute_checksum (algo : string) (data : Value.t list) =
     (in bool condition, in T data, in O checksum, HashAlgorithm algo); *)
 let verify_checksum (ctx : Ctx.t) =
   let cond =
-    let cond = Ctx.find_var "condition" ctx |> Option.get |> snd in
+    let cond = Ctx.find_var "condition" ctx |> snd in
     match cond with BoolV b -> b | _ -> assert false
   in
   if not cond then ctx
   else
     let data =
-      let data = Ctx.find_var "data" ctx |> Option.get |> snd in
+      let data = Ctx.find_var "data" ctx |> snd in
       match data with TupleV data -> data | _ -> assert false
     in
-    let checksum = Ctx.find_var "checksum" ctx |> Option.get |> snd in
+    let checksum = Ctx.find_var "checksum" ctx |> snd in
     let algo =
-      let algo = Ctx.find_var "algo" ctx |> Option.get |> snd in
+      let algo = Ctx.find_var "algo" ctx |> snd in
       match algo with
       | EnumFieldV ("HashAlgorithm", algo) -> algo
       | _ -> assert false
@@ -110,22 +110,22 @@ let verify_checksum (ctx : Ctx.t) =
     (in bool condition, in T data, inout O checksum, HashAlgorithm algo); *)
 let update_checksum (ctx : Ctx.t) =
   let cond =
-    let cond = Ctx.find_var "condition" ctx |> Option.get |> snd in
+    let cond = Ctx.find_var "condition" ctx |> snd in
     match cond with BoolV b -> b | _ -> assert false
   in
   if not cond then ctx
   else
     let data =
-      let data = Ctx.find_var "data" ctx |> Option.get |> snd in
+      let data = Ctx.find_var "data" ctx |> snd in
       match data with TupleV data -> data | _ -> assert false
     in
     let algo =
-      let algo = Ctx.find_var "algo" ctx |> Option.get |> snd in
+      let algo = Ctx.find_var "algo" ctx |> snd in
       match algo with
       | EnumFieldV ("HashAlgorithm", algo) -> algo
       | _ -> assert false
     in
-    let typ = Ctx.find_td "O" ctx |> Option.get in
+    let typ = Ctx.find_td "O" ctx in
     (* (TODO) is this the right way to cast? *)
     let value =
       AIntV (compute_checksum algo data) |> Runtime.Ops.eval_cast typ

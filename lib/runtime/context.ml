@@ -99,34 +99,44 @@ module ICtx = struct
     | Some value -> Some value
     | None -> finder name ctx
 
-  let find_td_glob name ctx =
+  let find_td_glob_opt name ctx =
     let gtdenv, _, _ = env_from_vis ctx.env_glob ctx.vis_glob in
-    TDEnv.find name gtdenv
+    TDEnv.find_opt name gtdenv
 
-  let find_td_obj name ctx =
+  let find_td_glob name ctx = find_td_glob_opt name ctx |> Option.get
+
+  let find_td_obj_opt name ctx =
     let otdenv, _, _ = env_from_vis ctx.env_obj ctx.vis_obj in
-    TDEnv.find name otdenv
+    TDEnv.find_opt name otdenv
 
-  let find_td name ctx = find_td_obj name ctx |> find find_td_glob name ctx
+  let find_td_obj name ctx = find_td_obj_opt name ctx |> Option.get
 
-  let find_var_glob name ctx =
+  let find_td name ctx =
+    find_td_obj_opt name ctx |> find find_td_glob_opt name ctx |> Option.get
+
+  let find_var_glob_opt name ctx =
     let _, genv, _ = env_from_vis ctx.env_glob ctx.vis_glob in
-    Env.find name genv
+    Env.find_opt name genv
 
-  let find_var_obj name ctx =
+  let find_var_glob name ctx = find_var_glob_opt name ctx |> Option.get
+
+  let find_var_obj_opt name ctx =
     let _, oenv, _ = env_from_vis ctx.env_obj ctx.vis_obj in
-    Env.find name oenv
+    Env.find_opt name oenv
 
-  let find_var name ctx = find_var_obj name ctx |> find find_var_glob name ctx
+  let find_var_obj name ctx = find_var_obj_opt name ctx |> Option.get
+
+  let find_var name ctx =
+    find_var_obj_opt name ctx |> find find_var_glob_opt name ctx |> Option.get
 
   (* Type simplification *)
 
   let rec simplify_td (typ : Type.t) ctx =
     match typ with
     | NameT name ->
-        let typ = find_td name ctx |> Option.get in
+        let typ = find_td name ctx in
         simplify_td typ ctx
-    | NewT name -> find_td name ctx |> Option.get
+    | NewT name -> find_td name ctx
     | _ -> typ
 
   (* Pretty-printers *)
@@ -277,60 +287,84 @@ module Ctx = struct
     | Some value -> Some value
     | None -> finder var ctx
 
-  let find_td_glob tvar ctx =
+  let find_td_glob_opt tvar ctx =
     let gtdenv, _, _ = env_from_vis ctx.env_glob ctx.vis_glob in
-    TDEnv.find tvar gtdenv
+    TDEnv.find_opt tvar gtdenv
 
-  let find_td_obj tvar ctx =
+  let find_td_glob tvar ctx = find_td_glob_opt tvar ctx |> Option.get
+
+  let find_td_obj_opt tvar ctx =
     let otdenv, _, _ = env_from_vis ctx.env_obj ctx.vis_obj in
-    TDEnv.find tvar otdenv
+    TDEnv.find_opt tvar otdenv
 
-  let find_td_loc tvar ctx =
+  let find_td_obj tvar ctx = find_td_obj_opt tvar ctx |> Option.get
+
+  let find_td_loc_opt tvar ctx =
     let ltdenv, _ = ctx.env_loc in
-    TDEnv.find tvar ltdenv
+    TDEnv.find_opt tvar ltdenv
+
+  let find_td_loc tvar ctx = find_td_loc_opt tvar ctx |> Option.get
 
   let find_td tvar ctx =
-    find_td_loc tvar ctx |> find find_td_obj tvar ctx
-    |> find find_td_glob tvar ctx
+    find_td_loc_opt tvar ctx
+    |> find find_td_obj_opt tvar ctx
+    |> find find_td_glob_opt tvar ctx
+    |> Option.get
 
-  let find_var_glob var ctx =
+  let find_var_glob_opt var ctx =
     let _, genv, _ = env_from_vis ctx.env_glob ctx.vis_glob in
-    Env.find var genv
+    Env.find_opt var genv
 
-  let find_var_obj var ctx =
+  let find_var_glob var ctx = find_var_glob_opt var ctx |> Option.get
+
+  let find_var_obj_opt var ctx =
     let _, oenv, _ = env_from_vis ctx.env_obj ctx.vis_obj in
-    Env.find var oenv
+    Env.find_opt var oenv
 
-  let find_var_loc var ctx =
+  let find_var_obj var ctx = find_var_obj_opt var ctx |> Option.get
+
+  let find_var_loc_opt var ctx =
     let _, lenvs = ctx.env_loc in
     List.fold_left
       (fun value frame ->
-        match value with Some _ -> value | None -> Env.find var frame)
+        match value with Some _ -> value | None -> Env.find_opt var frame)
       None lenvs
 
+  let find_var_loc var ctx = find_var_loc_opt var ctx |> Option.get
+
   let find_var var ctx =
-    find_var_loc var ctx |> find find_var_obj var ctx
-    |> find find_var_glob var ctx
+    find_var_loc_opt var ctx
+    |> find find_var_obj_opt var ctx
+    |> find find_var_glob_opt var ctx
+    |> Option.get
+
+  let find_func_glob_opt (fid, args) ctx =
+    let _, _, gfenv = env_from_vis ctx.env_glob ctx.vis_glob in
+    FEnv.find_opt (fid, args) gfenv
 
   let find_func_glob (fid, args) ctx =
-    let _, _, gfenv = env_from_vis ctx.env_glob ctx.vis_glob in
-    FEnv.find (fid, args) gfenv
+    find_func_glob_opt (fid, args) ctx |> Option.get
+
+  let find_func_obj_opt (fid, args) ctx =
+    let _, _, ofenv = env_from_vis ctx.env_obj ctx.vis_obj in
+    FEnv.find_opt (fid, args) ofenv
 
   let find_func_obj (fid, args) ctx =
-    let _, _, ofenv = env_from_vis ctx.env_obj ctx.vis_obj in
-    FEnv.find (fid, args) ofenv
+    find_func_obj_opt (fid, args) ctx |> Option.get
 
   let find_func (fid, args) ctx =
-    find_func_obj (fid, args) ctx |> find find_func_glob (fid, args) ctx
+    find_func_obj_opt (fid, args) ctx
+    |> find find_func_glob_opt (fid, args) ctx
+    |> Option.get
 
   (* Type simplification *)
 
   let rec simplify_td (typ : Type.t) ctx =
     match typ with
     | NameT name ->
-        let typ = find_td name ctx |> Option.get in
+        let typ = find_td name ctx in
         simplify_td typ ctx
-    | NewT name -> find_td name ctx |> Option.get
+    | NewT name -> find_td name ctx
     | _ -> typ
 
   (* Frame management *)

@@ -152,8 +152,8 @@ module PacketIn = struct
      @T must be a fixed-size header type
      void extract<T>(out T hdr); *)
   let extract (ctx : Ctx.t) (pkt : t) =
-    let typ = Ctx.find_td "T" ctx |> Option.get in
-    let _, header = Ctx.find_var "hdr" ctx |> Option.get in
+    let typ = Ctx.find_td "T" ctx in
+    let _, header = Ctx.find_var "hdr" ctx in
     let pkt, bits = sizeof ctx typ |> parse pkt in
     let _, header = write bits header in
     let ctx = Ctx.update_var "hdr" typ header ctx in
@@ -166,12 +166,11 @@ module PacketIn = struct
      void extract<T>(out T variableSizeHeader,
                     in bit<32> variableFieldSizeInBits); *)
   let extract_var (ctx : Ctx.t) (pkt : t) =
-    let typ = Ctx.find_td "T" ctx |> Option.get in
-    let _, header = Ctx.find_var "variableSizeHeader" ctx |> Option.get in
+    let typ = Ctx.find_td "T" ctx in
+    let _, header = Ctx.find_var "variableSizeHeader" ctx in
     let size_var =
       Ctx.find_var "variableFieldSizeInBits" ctx
-      |> Option.get |> snd |> Runtime.Ops.extract_bigint |> Bigint.to_int
-      |> Option.get
+      |> snd |> Runtime.Ops.extract_bigint |> Bigint.to_int |> Option.get
     in
     let pkt, bits = sizeof ~size_var ctx typ |> parse pkt in
     let _, header = write ~size_var bits header in
@@ -183,7 +182,7 @@ module PacketIn = struct
      T may be an arbitrary fixed-size type.
      T lookahead<T>(); *)
   let lookahead (ctx : Ctx.t) (pkt : t) =
-    let typ = Ctx.find_td "T" ctx |> Option.get in
+    let typ = Ctx.find_td "T" ctx in
     let _pkt, bits = sizeof ctx typ |> parse pkt in
     let value = Runtime.Ops.eval_default_value typ in
     let _, value = write bits value in
@@ -194,8 +193,7 @@ module PacketIn = struct
   let advance (ctx : Ctx.t) (pkt : t) =
     let size =
       Ctx.find_var "sizeInBits" ctx
-      |> Option.get |> snd |> Runtime.Ops.extract_bigint |> Bigint.to_int
-      |> Option.get
+      |> snd |> Runtime.Ops.extract_bigint |> Bigint.to_int |> Option.get
     in
     let pkt = { pkt with idx = pkt.idx + size } in
     (ctx, pkt)
@@ -241,7 +239,7 @@ module PacketOut = struct
      containing fields with such types.
      void emit<T>(in T hdr); *)
   let emit (ctx : Ctx.t) (pkt : t) =
-    let _, header = Ctx.find_var "hdr" ctx |> Option.get in
+    let _, header = Ctx.find_var "hdr" ctx in
     let pkt = deparse pkt header in
     (ctx, pkt)
 end

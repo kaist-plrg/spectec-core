@@ -1,7 +1,7 @@
 Running instantiation tests on 624 files
-Instantiation fail: test/program/issue1304.p4 due to Invalid_argument("option is None")
-Instantiation fail: test/program/named-arg1.p4 due to Invalid_argument("option is None")
-Instantiation fail: test/program/factory2.p4 due to File "lib/instance/eval.ml", line 212, characters 2-8: Assertion failed
+Instantiation fail: test/program/issue1304.p4 due to Failure("Key not found: Switch\n")
+Instantiation fail: test/program/named-arg1.p4 due to Failure("Key not found: top\n")
+Instantiation fail: test/program/factory2.p4 due to File "lib/instance/eval.ml", line 197, characters 2-8: Assertion failed
 Instantiation fail: test/program/issue1334.p4 due to File "lib/runtime/cclos.ml", line 49, characters 4-10: Assertion failed
 Desugar fail on file: test/program/direct-call1.p4
 Instantiation fail: test/program/issue1006.p4 due to Invalid_argument("option is None")
@@ -12,16 +12,16 @@ Desugar fail on file: test/program/direct-call.p4
 Desugar fail on file: test/program/issue561-bmv2.p4
 Desugar fail on file: test/program/issue1937-2-bmv2.p4
 Desugar fail on file: test/program/issue1937-3-bmv2.p4
-Instantiation fail: test/program/default-package-argument.p4 due to Invalid_argument("option is None")
+Instantiation fail: test/program/default-package-argument.p4 due to Failure("Key not found: P\n")
 Instantiation fail: test/program/issue1325-bmv2.p4 due to File "lib/runtime/ops.ml", line 674, characters 6-12: Assertion failed
 Desugar fail on file: test/program/issue1566.p4
 Desugar fail on file: test/program/issue1937.p4
 Desugar fail on file: test/program/issue1470-bmv2.p4
 Instantiation fail: test/program/enum-folding.p4 due to Failure("Invalid equality: a == b")
 Instantiation fail: test/program/vss-example.p4 due to File "lib/runtime/ops.ml", line 674, characters 6-12: Assertion failed
-Instantiation fail: test/program/issue1333.p4 due to Invalid_argument("option is None")
+Instantiation fail: test/program/issue1333.p4 due to Failure("Key not found: c\n")
 Instantiation fail: test/program/issue871.p4 due to Invalid_argument("option is None")
-Instantiation fail: test/program/factory1.p4 due to File "lib/instance/eval.ml", line 212, characters 2-8: Assertion failed
+Instantiation fail: test/program/factory1.p4 due to File "lib/instance/eval.ml", line 197, characters 2-8: Assertion failed
 Desugar fail on file: test/program/direct-call2.p4
 Parser fails on file: 0 / 624
 Desugar fails: 11 / 624

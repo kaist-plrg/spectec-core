@@ -62,10 +62,10 @@ module Make (Arch : ARCH) : INTERP = struct
         in
         VBitT width
     | StrT -> StrT
-    | ErrT -> Ctx.find_td_glob "error" ctx |> Option.get
-    | MatchKindT -> Ctx.find_td_glob "match_kind" ctx |> Option.get
-    | NameT { it = Top id; _ } -> Ctx.find_td_glob id.it ctx |> Option.get
-    | NameT { it = Bare id; _ } -> Ctx.find_td id.it ctx |> Option.get
+    | ErrT -> Ctx.find_td_glob "error" ctx
+    | MatchKindT -> Ctx.find_td_glob "match_kind" ctx
+    | NameT { it = Top id; _ } -> Ctx.find_td_glob id.it ctx
+    | NameT { it = Bare id; _ } -> Ctx.find_td id.it ctx
     (* (TODO) Handle specialized types *)
     | SpecT (var, _) -> interp_type ctx (NameT var $ no_info)
     | StackT (typ, size) ->
@@ -104,10 +104,10 @@ module Make (Arch : ARCH) : INTERP = struct
     | ExprAccE (base, member) -> interp_expr_acc ctx base member
     | CallE (func, targs, args) -> interp_call_as_expr ctx func targs args
     | InstE _ ->
-        Format.eprintf
+        Format.asprintf
           "(interp_expr) Instantiation expression should have been evaluated \
-           in instantiation.";
-        assert false
+           in instantiation."
+        |> failwith
 
   and interp_bool (ctx : Ctx.t) (b : bool) : Ctx.t * Value.t = (ctx, BoolV b)
   and interp_str (ctx : Ctx.t) (s : string) : Ctx.t * Value.t = (ctx, StrV s)
@@ -125,10 +125,10 @@ module Make (Arch : ARCH) : INTERP = struct
   and interp_var (ctx : Ctx.t) (var : var) : Ctx.t * Value.t =
     match var.it with
     | Top id ->
-        let value = Ctx.find_var_glob id.it ctx |> Option.get |> snd in
+        let value = Ctx.find_var_glob id.it ctx |> snd in
         (ctx, value)
     | Bare id ->
-        let value = Ctx.find_var id.it ctx |> Option.get |> snd in
+        let value = Ctx.find_var id.it ctx |> snd in
         (ctx, value)
 
   and interp_list (ctx : Ctx.t) (exprs : expr list) : Ctx.t * Value.t =
@@ -161,7 +161,14 @@ module Make (Arch : ARCH) : INTERP = struct
   and interp_ternop (ctx : Ctx.t) (expr_cond : expr) (expr_tru : expr)
       (expr_fls : expr) : Ctx.t * Value.t =
     let ctx, value_cond = interp_expr ctx expr_cond in
-    let cond = match value_cond with BoolV b -> b | _ -> assert false in
+    let cond =
+      match value_cond with
+      | BoolV b -> b
+      | _ ->
+          Format.asprintf "(interp_ternop) %a is not a boolean." Value.pp
+            value_cond
+          |> failwith
+    in
     let expr = if cond then expr_tru else expr_fls in
     interp_expr ctx expr
 
@@ -174,8 +181,11 @@ module Make (Arch : ARCH) : INTERP = struct
     let value = Runtime.Ops.eval_cast typ value in
     (ctx, value)
 
-  and interp_mask (_ctx : Ctx.t) : Ctx.t * Value.t = assert false
-  and interp_range (_ctx : Ctx.t) : Ctx.t * Value.t = assert false
+  and interp_mask (_ctx : Ctx.t) : Ctx.t * Value.t =
+    Format.sprintf "(TODO: interp_mask)" |> failwith
+
+  and interp_range (_ctx : Ctx.t) : Ctx.t * Value.t =
+    Format.sprintf "(TODO: interp_range)" |> failwith
 
   and interp_arr_acc (ctx : Ctx.t) (base : expr) (idx : expr) : Ctx.t * Value.t
       =
@@ -189,7 +199,10 @@ module Make (Arch : ARCH) : INTERP = struct
         in
         let value = List.nth values idx in
         (ctx, value)
-    | _ -> assert false
+    | _ ->
+        Format.asprintf "(interp_arr_acc) %a is not a header stack." Value.pp
+          value_base
+        |> failwith
 
   and interp_bitstring_acc (ctx : Ctx.t) (base : expr) (idx_hi : expr)
       (idx_lo : expr) : Ctx.t * Value.t =
@@ -206,22 +219,29 @@ module Make (Arch : ARCH) : INTERP = struct
       Ctx.t * Value.t =
     let typ =
       match var.it with
-      | Top id -> Ctx.find_td_glob id.it ctx |> Option.get
-      | Bare id -> Ctx.find_td id.it ctx |> Option.get
+      | Top id -> Ctx.find_td_glob id.it ctx
+      | Bare id -> Ctx.find_td id.it ctx
     in
     match typ with
     | EnumT (id, members) ->
         if List.mem member.it members then (ctx, EnumFieldV (id, member.it))
-        else assert false
-    | _ -> assert false
+        else
+          Format.asprintf "(interp_type_acc) %s is not a member of %a" member.it
+            Type.pp typ
+          |> failwith
+    | _ ->
+        Format.asprintf "(TODO: interp_type_acc) %a cannot be accessed" Type.pp
+          typ
+        |> failwith
 
   and interp_error_acc (ctx : Ctx.t) (member : member) : Ctx.t * Value.t =
-    let typ = Ctx.find_td_glob "error" ctx |> Option.get in
+    let typ = Ctx.find_td_glob "error" ctx in
     match typ with
-    | ErrT members ->
-        if List.mem member.it members then (ctx, ErrV member.it)
-        else assert false
-    | _ -> assert false
+    | ErrT members when List.mem member.it members -> (ctx, ErrV member.it)
+    | _ ->
+        Format.asprintf "(interp_error_acc) Cannot access member %s of error"
+          member.it
+        |> failwith
 
   and interp_builtin_stack_acc (ctx : Ctx.t) (values : Value.t list)
       (next : Bigint.t) (_size : Bigint.t) (member : member) =
@@ -243,11 +263,11 @@ module Make (Arch : ARCH) : INTERP = struct
         let value = List.nth values idx in
         (ctx, value)
     | _ ->
-        Format.eprintf
+        Format.asprintf
           "(interp_builtin_stack_acc) %s member access not supported for \
            header stack\n"
-          member.it;
-        assert false
+          member.it
+        |> failwith
 
   and interp_expr_acc (ctx : Ctx.t) (base : expr) (member : member) :
       Ctx.t * Value.t =
@@ -262,9 +282,9 @@ module Make (Arch : ARCH) : INTERP = struct
     | StackV (values, next, size) ->
         interp_builtin_stack_acc ctx values next size member
     | _ ->
-        Format.eprintf "(TODO: interp_expr_acc) %a.%s\n" Value.pp value_base
-          member.it;
-        assert false
+        Format.asprintf "(TODO: interp_expr_acc) %a.%s\n" Value.pp value_base
+          member.it
+        |> failwith
 
   and interp_call_as_expr (ctx : Ctx.t) (func : expr) (targs : typ list)
       (args : arg list) : Ctx.t * Value.t =
@@ -272,7 +292,10 @@ module Make (Arch : ARCH) : INTERP = struct
     let value =
       match (sign : Sig.t) with
       | Ret value -> Option.get value
-      | _ -> assert false
+      | _ ->
+          Format.asprintf
+            "(interp_call_as_expr) No return signal from function.\n"
+          |> failwith
     in
     (ctx, value)
 
@@ -291,7 +314,7 @@ module Make (Arch : ARCH) : INTERP = struct
   and interp_write (ctx : Ctx.t) (lvalue : expr) (value : Value.t) =
     match lvalue.it with
     | VarE { it = Bare id; _ } ->
-        let typ = Ctx.find_var id.it ctx |> Option.get |> fst in
+        let typ = Ctx.find_var id.it ctx |> fst in
         let value = Runtime.Ops.eval_cast typ value in
         Ctx.update_var id.it typ value ctx
     | ExprAccE (base, member) -> (
@@ -318,10 +341,12 @@ module Make (Arch : ARCH) : INTERP = struct
                Yet doesn't seem to be in the right place *)
             let next = Bigint.(next + one) in
             interp_write ctx base (StackV (values, next, size))
-        | _ -> assert false)
+        | _ ->
+            Format.asprintf "(TODO: interp_write) %a" Syntax.Pp.pp_expr lvalue
+            |> failwith)
     | _ ->
-        Format.eprintf "(TODO: interp_write) %a" Syntax.Pp.pp_expr lvalue;
-        assert false
+        Format.asprintf "(TODO: interp_write) %a" Syntax.Pp.pp_expr lvalue
+        |> failwith
 
   and interp_stmt (sign : Sig.t) (ctx : Ctx.t) (stmt : stmt) =
     match stmt.it with
@@ -386,13 +411,13 @@ module Make (Arch : ARCH) : INTERP = struct
   and interp_trans (sign : Sig.t) (ctx : Ctx.t) (next : label) =
     match sign with
     | Ret _ | Exit ->
-        Format.eprintf "(interp_trans) Exit unallowed within parser.\n";
-        assert false
+        Format.asprintf "(interp_trans) Exit unallowed within parser.\n"
+        |> failwith
     | Cont ->
         (* (TODO) better handling of accept/reject *)
         if next.it = "accept" || next.it = "reject" then (sign, ctx)
         else
-          let state_next = Ctx.find_func (next.it, []) ctx |> Option.get in
+          let state_next = Ctx.find_func (next.it, []) ctx in
           let body =
             match state_next with StateF { body } -> body | _ -> assert false
           in
@@ -411,8 +436,8 @@ module Make (Arch : ARCH) : INTERP = struct
       (cases : select_case list) =
     match sign with
     | Ret _ | Exit ->
-        Format.eprintf "(interp_select) Exit unallowed within parser.\n";
-        assert false
+        Format.asprintf "(interp_select) Exit unallowed within parser.\n"
+        |> failwith
     | Cont ->
         (* (TODO) how to properly cast the select-ed value against the case value(s)? *)
         let ctx, values =
@@ -453,8 +478,8 @@ module Make (Arch : ARCH) : INTERP = struct
             let ctx = Ctx.add_var_loc id.it typ value ctx in
             (sign, ctx)
         | _ ->
-            Format.eprintf "(TODO: interp_decl) %a" Syntax.Pp.pp_decl (0, decl);
-            assert false)
+            Format.asprintf "(TODO: interp_decl) %a" Syntax.Pp.pp_decl (0, decl)
+            |> failwith)
 
   (* (TODO) assume switch matches on table apply result only,
      since case with expression is not supported in Petr4 parser *)
@@ -530,9 +555,9 @@ module Make (Arch : ARCH) : INTERP = struct
             let param = PMap.find id.it params_map in
             (params @ [ param ], args @ [ arg ])
         | _ ->
-            Format.eprintf "(TODO: align_params_with_args) %a" Syntax.Pp.pp_arg
-              arg;
-            assert false)
+            Format.asprintf "(TODO: align_params_with_args) %a" Syntax.Pp.pp_arg
+              arg
+            |> failwith)
       ([], []) params args
 
   (* adder determines where to add the argument, either object or local scope *)
@@ -558,7 +583,7 @@ module Make (Arch : ARCH) : INTERP = struct
       let id, dir, _, _ = param.it in
       match dir.it with
       | InOut | Out ->
-          let value = Ctx.find_var id.it ctx_callee |> Option.get |> snd in
+          let value = Ctx.find_var id.it ctx_callee |> snd in
           interp_write ctx_caller expr value
       | _ -> ctx_caller
     in
@@ -675,8 +700,8 @@ module Make (Arch : ARCH) : INTERP = struct
         match (sign : Sig.t) with
         | Cont -> Sig.Ret (Some value)
         | Ret _ ->
-            Format.eprintf "(interp_table_app) Action should not return.\n";
-            assert false
+            Format.asprintf "(interp_table_app) Action should not return.\n"
+            |> failwith
         | Exit -> sign
       in
       (sign, ctx_caller, ctx_callee)
@@ -702,7 +727,10 @@ module Make (Arch : ARCH) : INTERP = struct
       | ActionF { vis; params; body } ->
           let ctx_callee = { ctx_callee with vis_glob = vis } in
           interp_action_app ctx_caller ctx_callee params args body
-      | _ -> assert false
+      | _ ->
+          Format.asprintf "(interp_inter_app) %a is not intra-callable\n"
+            Func.pp func
+          |> failwith
     in
     (* Account for global mutations, which shouldn't happen *)
     (sign, ctx_caller)
@@ -719,7 +747,10 @@ module Make (Arch : ARCH) : INTERP = struct
       | ActionF { vis; params; body } ->
           let ctx_callee = { ctx_callee with vis_obj = vis } in
           interp_action_app ctx_caller ctx_callee params args body
-      | _ -> assert false
+      | _ ->
+          Format.asprintf "(interp_intra_app) %a is not inter-callable\n"
+            Func.pp func
+          |> failwith
     in
     (* Account for object-local mutations *)
     let ctx_caller = { ctx_caller with env_obj = ctx_callee.env_obj } in
@@ -734,7 +765,7 @@ module Make (Arch : ARCH) : INTERP = struct
           Ctx.init (path, (fid.it, [])) ctx.env_glob env_obj (TDEnv.empty, [])
         in
         let ctx_callee = { ctx_callee with vis_glob } in
-        let func = Ctx.find_func_obj (fid.it, args) ctx_callee |> Option.get in
+        let func = Ctx.find_func_obj (fid.it, args) ctx_callee in
         let cid = (path, (fid.it, get_params func)) in
         let ctx_callee = Ctx.set_id cid ctx_callee in
         interp_inter_app ctx ctx_callee func targs args
@@ -756,7 +787,10 @@ module Make (Arch : ARCH) : INTERP = struct
         let ctx_table = Some table in
         let func = mthd in
         interp_intra_app ctx ctx_callee ctx_table func targs args
-    | _ -> assert false
+    | _ ->
+        Format.asprintf "(interp_object_call) %a is not a callable object\n"
+          Object.pp obj
+        |> failwith
 
   (* In addition, headers support the following methods: ... (8.17) *)
   and interp_builtin_header_call (ctx : Ctx.t) (base : expr) (_valid : bool)
@@ -778,10 +812,10 @@ module Make (Arch : ARCH) : INTERP = struct
         let sign = Sig.Ret None in
         (sign, ctx)
     | _ ->
-        Format.eprintf
+        Format.asprintf
           "(interp_builtin_header_call) %s call not supported for header\n"
-          fid.it;
-        assert false
+          fid.it
+        |> failwith
 
   (* Finally, P4 offers the following computations that
      can be used to manipulate the elements at the
@@ -816,10 +850,10 @@ module Make (Arch : ARCH) : INTERP = struct
         let sign = Sig.Ret None in
         (sign, ctx)
     | _ ->
-        Format.eprintf
+        Format.asprintf
           "(interp_builtin_stack_call) %s call not supported for header stack\n"
-          fid.it;
-        assert false
+          fid.it
+        |> failwith
 
   and interp_method_call (ctx : Ctx.t) (base : expr) (fid : id)
       (targs : typ list) (args : arg list) =
@@ -832,12 +866,12 @@ module Make (Arch : ARCH) : INTERP = struct
         interp_builtin_stack_call ctx base values idx size fid targs args
     (* Calling a method of an actual (user-defined) object *)
     | RefV path ->
-        let obj = Sto.find path !sto |> Option.get in
+        let obj = Sto.find path !sto in
         interp_object_call ctx path obj fid targs args
     | _ ->
-        Format.eprintf "(TODO: interp_method_call) %a with %s\n" Value.pp
-          value_base fid.it;
-        assert false
+        Format.asprintf "(TODO: interp_method_call) Call %s of %a\n" fid.it
+          Value.pp value_base
+        |> failwith
 
   and interp_func_call (ctx : Ctx.t) (fvar : var) (targs : typ list)
       (args : arg list) : Sig.t * Ctx.t =
@@ -845,7 +879,7 @@ module Make (Arch : ARCH) : INTERP = struct
       let ctx_callee =
         Ctx.init ([], (fid.it, [])) ctx.env_glob env_empty env_stack_empty
       in
-      let func = Ctx.find_func_glob (fid.it, args) ctx |> Option.get in
+      let func = Ctx.find_func_glob (fid.it, args) ctx in
       let cid = ([], (fid.it, get_params func)) in
       let ctx_callee = Ctx.set_id cid ctx_callee in
       interp_inter_app ctx ctx_callee func targs args
@@ -855,7 +889,7 @@ module Make (Arch : ARCH) : INTERP = struct
         Ctx.init ([], (fid.it, [])) ctx.env_glob ctx.env_obj env_stack_empty
       in
       let ctx_callee = { ctx_callee with vis_glob = ctx.vis_glob } in
-      let func = Ctx.find_func_obj (fid.it, args) ctx |> Option.get in
+      let func = Ctx.find_func_obj (fid.it, args) ctx in
       let cid = ([], (fid.it, get_params func)) in
       let ctx_callee = Ctx.set_id cid ctx_callee in
       interp_intra_app ctx ctx_callee None func targs args
@@ -863,7 +897,7 @@ module Make (Arch : ARCH) : INTERP = struct
     match fvar.it with
     | Top fid -> interp_inter_func_call fid
     | Bare fid ->
-        if Option.is_some (Ctx.find_func_obj (fid.it, args) ctx) then
+        if Option.is_some (Ctx.find_func_obj_opt (fid.it, args) ctx) then
           interp_intra_func_call fid
         else interp_inter_func_call fid
 
@@ -874,5 +908,8 @@ module Make (Arch : ARCH) : INTERP = struct
     | ExprAccE (expr, fid) -> interp_method_call ctx expr fid targs args
     (* function call *)
     | VarE fvar -> interp_func_call ctx fvar targs args
-    | _ -> assert false
+    | _ ->
+        Format.asprintf "(interp_call) %a is not a function" Syntax.Pp.pp_expr
+          func
+        |> failwith
 end

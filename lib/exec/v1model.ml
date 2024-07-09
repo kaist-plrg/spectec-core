@@ -47,7 +47,7 @@ module Make (Interp : INTERP) : ARCH = struct
   (* Initialization and pipeline driver *)
 
   let init_instantiate_packet_in (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t) =
-    let cclos_packet_in = CCEnv.find ("packet_in", []) ccenv |> Option.get in
+    let cclos_packet_in = CCEnv.find ("packet_in", []) ccenv in
     let ictx = ICtx.init ctx.env_glob ctx.env_obj in
     let path = [ "packet_in" ] in
     let sto =
@@ -58,7 +58,7 @@ module Make (Interp : INTERP) : ARCH = struct
 
   let init_instantiate_packet_out (ccenv : CCEnv.t) (sto : Sto.t) (ctx : Ctx.t)
       =
-    let cclos_packet_out = CCEnv.find ("packet_out", []) ccenv |> Option.get in
+    let cclos_packet_out = CCEnv.find ("packet_out", []) ccenv in
     let ictx = ICtx.init ctx.env_glob ctx.env_obj in
     let path = [ "packet_out" ] in
     let sto =
@@ -68,7 +68,7 @@ module Make (Interp : INTERP) : ARCH = struct
     sto
 
   let init_var (ctx : Ctx.t) (tname : string) (vname : string) =
-    let typ = Ctx.find_td tname ctx |> Option.get in
+    let typ = Ctx.find_td tname ctx in
     let value = Runtime.Ops.eval_default_value typ in
     Ctx.add_var_obj vname typ value ctx
 
@@ -222,8 +222,7 @@ module Make (Interp : INTERP) : ARCH = struct
     | [], ("update_checksum", [ "condition"; "data"; "checksum"; "algo" ]) ->
         Hash.update_checksum ctx |> fun ctx -> (Sig.Ret None, ctx)
     | [], ("debug", [ "data" ]) ->
-        Format.eprintf "debug: %a\n" TypeValue.pp
-          (Ctx.find_var_loc "data" ctx |> Option.get);
+        Format.eprintf "debug: %a\n" TypeValue.pp (Ctx.find_var_loc "data" ctx);
         (Sig.Ret None, ctx)
     | _ ->
         let path, fvar = ctx.id in

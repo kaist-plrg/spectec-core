@@ -229,7 +229,7 @@ module FEnv = struct
   include MakeEnv (FVar) (Func)
 
   (* (TODO) resolve overloaded functions with argument names *)
-  let find (fid, args) fenv =
+  let find_opt (fid, args) fenv =
     let arity = List.length args in
     let funcs =
       List.filter
@@ -238,6 +238,11 @@ module FEnv = struct
     in
     assert (List.length funcs <= 1);
     match funcs with [] -> None | _ -> Some (List.hd funcs |> snd)
+
+  let find (fid, args) fenv =
+    match find_opt (fid, args) fenv with
+    | Some f -> f
+    | None -> Format.asprintf "Key not found: %s@." fid |> failwith
 end
 
 type env = TDEnv.t * Env.t * FEnv.t

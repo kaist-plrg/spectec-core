@@ -20,10 +20,10 @@ let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
       let width = eval_expr ictx width |> Runtime.Ops.extract_bigint in
       VBitT width
   | StrT -> StrT
-  | ErrT -> ICtx.find_td_glob "error" ictx |> Option.get
-  | MatchKindT -> ICtx.find_td_glob "match_kind" ictx |> Option.get
-  | NameT { it = Top id; _ } -> ICtx.find_td_glob id.it ictx |> Option.get
-  | NameT { it = Bare id; _ } -> ICtx.find_td id.it ictx |> Option.get
+  | ErrT -> ICtx.find_td_glob "error" ictx
+  | MatchKindT -> ICtx.find_td_glob "match_kind" ictx
+  | NameT { it = Top id; _ } -> ICtx.find_td_glob id.it ictx
+  | NameT { it = Bare id; _ } -> ICtx.find_td id.it ictx
   (* (TODO) Handle specialized types *)
   | SpecT (var, _) -> eval_type ictx (NameT var $ no_info)
   | StackT (typ, size) ->
@@ -76,8 +76,8 @@ and eval_num (value : Bigint.t) (encoding : (Bigint.t * bool) option) : Value.t
 
 and eval_var (ictx : ICtx.t) (var : var) : Value.t =
   match var.it with
-  | Top id -> ICtx.find_var_glob id.it ictx |> Option.get |> snd
-  | Bare id -> ICtx.find_var id.it ictx |> Option.get |> snd
+  | Top id -> ICtx.find_var_glob id.it ictx |> snd
+  | Bare id -> ICtx.find_var id.it ictx |> snd
 
 and eval_list (ictx : ICtx.t) (exprs : expr list) : Value.t =
   let values = eval_exprs ictx exprs in
@@ -140,8 +140,8 @@ and eval_bitstring_acc (ictx : ICtx.t) (base : expr) (idx_hi : expr)
 and eval_type_acc (ictx : ICtx.t) (var : var) (member : member) : Value.t =
   let typ =
     match var.it with
-    | Top id -> ICtx.find_td_glob id.it ictx |> Option.get
-    | Bare id -> ICtx.find_td id.it ictx |> Option.get
+    | Top id -> ICtx.find_td_glob id.it ictx
+    | Bare id -> ICtx.find_td id.it ictx
   in
   match typ with
   | EnumT (id, members) ->
@@ -150,7 +150,7 @@ and eval_type_acc (ictx : ICtx.t) (var : var) (member : member) : Value.t =
   | _ -> assert false
 
 and eval_error_acc (ictx : ICtx.t) (member : member) : Value.t =
-  let typ = ICtx.find_td_glob "error" ictx |> Option.get in
+  let typ = ICtx.find_td_glob "error" ictx in
   match typ with
   | ErrT members ->
       if List.mem member.it members then ErrV member.it else assert false
