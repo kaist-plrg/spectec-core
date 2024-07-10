@@ -272,6 +272,22 @@ module Make (Arch : ARCH) : INTERP = struct
         let typ = Ctx.find_var id.it ctx |> fst in
         let value = Runtime.Ops.eval_cast typ value in
         Ctx.update_var id.it typ value ctx
+    | ArrAccE (base, idx) -> (
+        let ctx, value_base = interp_expr ctx base in
+        let ctx, value_idx = interp_expr ctx idx in
+        match value_base with
+        | StackV (values, next, size) ->
+            let idx = Value.get_num value_idx |> Bigint.to_int |> Option.get in
+            let values =
+              List.mapi
+                (fun idx' value' -> if idx' = idx then value else value')
+                values
+            in
+            interp_write ctx base (StackV (values, next, size))
+        | _ ->
+            Format.asprintf "(interp_write) %a is not a header stack."
+              Syntax.Pp.pp_expr base
+            |> failwith)
     | ExprAccE (base, member) -> (
         let ctx, value_base = interp_expr ctx base in
         let update_field fields member =

@@ -24,7 +24,36 @@ let rec shift_bitstring_left (v : Bigint.t) (o : Bigint.t) : Bigint.t =
     shift_bitstring_left Bigint.(v * (one + one)) Bigint.(o - one)
   else v
 
+let rec shift_bitstring_right (v : Bigint.t) (o : Bigint.t) (arith : bool)
+    (mx : Bigint.t) : Bigint.t =
+  if not arith then
+    if Bigint.(o > zero) then
+      shift_bitstring_right Bigint.(v / (one + one)) Bigint.(o - one) arith mx
+    else v
+  else if Bigint.(o > zero) then
+    shift_bitstring_right
+      Bigint.((v / (one + one)) + mx)
+      Bigint.(o - one)
+      arith mx
+  else v
+
 let power_of_two (w : Bigint.t) : Bigint.t = shift_bitstring_left Bigint.one w
+
+let slice_bitstring (n : Bigint.t) (m : Bigint.t) (l : Bigint.t) : Bigint.t =
+  let slice_width = Bigint.(m + one - l) in
+  if Bigint.(l < zero) then
+    raise (Invalid_argument "bitslice x[y:z] must have y > z > 0");
+  let shifted = Bigint.(n asr to_int_exn l) in
+  let mask = Bigint.(power_of_two slice_width - one) in
+  Bigint.bit_and shifted mask
+
+let rec bitwise_neg (n : Bigint.t) (w : Bigint.t) : Bigint.t =
+  if Bigint.(w > zero) then
+    let w' = power_of_two Bigint.(w - one) in
+    let g = slice_bitstring n Bigint.(w - one) Bigint.(w - one) in
+    if Bigint.(g = zero) then bitwise_neg Bigint.(n + w') Bigint.(w - one)
+    else bitwise_neg Bigint.(n - w') Bigint.(w - one)
+  else n
 
 let add_one_complement (v : Bigint.t) (w : Bigint.t) : Bigint.t =
   let tmp = Bigint.(v + w) in
@@ -45,31 +74,11 @@ let rec of_two_complement (n : Bigint.t) (w : Bigint.t) : Bigint.t =
   else if Bigint.(n < zero) then of_two_complement Bigint.(n + w') w
   else n
 
-let slice_bitstring (n : Bigint.t) (m : Bigint.t) (l : Bigint.t) : Bigint.t =
-  let slice_width = Bigint.(m + one - l) in
-  if Bigint.(l < zero) then
-    raise (Invalid_argument "bitslice x[y:z] must have y > z > 0");
-  let shifted = Bigint.(n asr to_int_exn l) in
-  let mask = Bigint.(power_of_two slice_width - one) in
-  Bigint.bit_and shifted mask
-
-let rec bitwise_neg (n : Bigint.t) (w : Bigint.t) : Bigint.t =
-  if Bigint.(w > zero) then
-    let w' = power_of_two Bigint.(w - one) in
-    let g = slice_bitstring n Bigint.(w - one) Bigint.(w - one) in
-    if Bigint.(g = zero) then bitwise_neg Bigint.(n + w') Bigint.(w - one)
-    else bitwise_neg Bigint.(n - w') Bigint.(w - one)
-  else n
-
 let bit_of_raw_int (n : Bigint.t) (w : Bigint.t) : Value.t =
-  let value = of_two_complement n w in
-  let width = w in
-  BitV (width, value)
+  BitV (w, of_two_complement n w)
 
 let int_of_raw_int (n : Bigint.t) (w : Bigint.t) : Value.t =
-  let value = of_two_complement n w in
-  let width = w in
-  IntV (width, value)
+  IntV (w, of_two_complement n w)
 
 (* Unop evaluation *)
 
@@ -107,44 +116,22 @@ let eval_unop (op : unop) (value : Value.t) : Value.t =
 let unsigned_op_sat (l : Bigint.t) (r : Bigint.t) (w : Bigint.t)
     (op : Bigint.t -> Bigint.t -> Bigint.t) : Value.t =
   let x = power_of_two w in
-  let n = op l r in
-  let n' =
+  let n =
+    let n = op l r in
     if Bigint.(n > zero) then Bigint.min n Bigint.(x - one)
     else Bigint.max n Bigint.zero
   in
-  let width = w in
-  let value = n' in
-  BitV (width, value)
+  BitV (w, n)
 
 let signed_op_sat (l : Bigint.t) (r : Bigint.t) (w : Bigint.t)
     (op : Bigint.t -> Bigint.t -> Bigint.t) : Value.t =
   let x = power_of_two Bigint.(w - one) in
-  let n = op l r in
-  let n' =
+  let n =
+    let n = op l r in
     if Bigint.(n > zero) then Bigint.min n Bigint.(x - one)
     else Bigint.max n Bigint.(-x)
   in
-  let width = w in
-  let value = n' in
-  IntV (width, value)
-
-let rec shift_bitstring_left (v : Bigint.t) (o : Bigint.t) : Bigint.t =
-  if Bigint.(o > zero) then
-    shift_bitstring_left Bigint.(v * (one + one)) Bigint.(o - one)
-  else v
-
-let rec shift_bitstring_right (v : Bigint.t) (o : Bigint.t) (arith : bool)
-    (mx : Bigint.t) : Bigint.t =
-  if not arith then
-    if Bigint.(o > zero) then
-      shift_bitstring_right Bigint.(v / (one + one)) Bigint.(o - one) arith mx
-    else v
-  else if Bigint.(o > zero) then
-    shift_bitstring_right
-      Bigint.((v / (one + one)) + mx)
-      Bigint.(o - one)
-      arith mx
-  else v
+  IntV (w, n)
 
 let rec eval_binop_plus (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
@@ -422,7 +409,8 @@ and eval_binop_eq (lvalue : Value.t) (rvalue : Value.t) : bool =
   | BoolV b1, BoolV b2 -> b1 = b2
   | AIntV lvalue, AIntV rvalue
   | BitV (_, lvalue), BitV (_, rvalue)
-  | IntV (_, lvalue), IntV (_, rvalue) ->
+  | IntV (_, lvalue), IntV (_, rvalue)
+  | VBitV (_, _, lvalue), VBitV (_, _, rvalue) ->
       Bigint.(lvalue = rvalue)
   | BitV (width, _), AIntV rvalue ->
       eval_binop_eq lvalue (bit_of_raw_int rvalue width)
@@ -639,7 +627,9 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
       in
       SEnumFieldV (id, member, value)
   | _ ->
-      Format.asprintf "(TODO) Cast to type %a undefined" Type.pp typ |> failwith
+      Format.asprintf "(TODO) Cast from %a to type %a undefined" Value.pp value
+        Type.pp typ
+      |> failwith
 
 (* (TODO) this should be up to the target architecture *)
 let rec eval_default_value (typ : Type.t) : Value.t =

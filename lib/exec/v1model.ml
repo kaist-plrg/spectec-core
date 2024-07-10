@@ -217,6 +217,8 @@ module Make (Interp : INTERP) : ARCH = struct
             externs := Externs.add "packet_out" (PacketOut pkt_out) !externs;
             (Sig.Ret None, ctx)
         | _ -> assert false)
+    | [], ("hash", [ "result"; "algo"; "base"; "data"; "max" ]) ->
+        Hash.hash ctx |> fun ctx -> (Sig.Ret None, ctx)
     | [], ("verify_checksum", [ "condition"; "data"; "checksum"; "algo" ]) ->
         Hash.verify_checksum ctx |> fun ctx -> (Sig.Ret None, ctx)
     | [], ("update_checksum", [ "condition"; "data"; "checksum"; "algo" ]) ->

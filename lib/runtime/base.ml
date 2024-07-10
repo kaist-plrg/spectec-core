@@ -109,6 +109,11 @@ module Value = struct
           Bigint.zero values
     | _ -> Format.asprintf "Cannot get width of value: %a" pp t |> failwith
 
+  let get_tuple t =
+    match t with
+    | TupleV values -> values
+    | _ -> Format.asprintf "Not a tuple value: %a" pp t |> failwith
+
   let get_enum t =
     match t with
     | EnumFieldV (id, member) -> (id, member)
