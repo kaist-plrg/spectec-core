@@ -1,6 +1,5 @@
 #include <core.p4>
 #include <v1model.p4>
-#include <debugger.p4>
 
 header H {
     bit<8>     s;
@@ -36,22 +35,18 @@ control ingress(inout headers hdr,
                  inout standard_metadata_t stdmeta) {
     apply {
         hdr.same.setValid();
-        hdr.same.same = 0;
-        stdmeta.egress_spec = 0;
+        hdr.same.same = 8w0;
+        stdmeta.egress_spec = 9w0;
 
-        debug<string>("1");
         if (hdr.h.s == hdr.a[0].s) {
             hdr.same.same = hdr.same.same | 1;
         }
-        debug<string>("2");
         if (hdr.h.v == hdr.a[0].v) {
             hdr.same.same = hdr.same.same | 2;
         }
-        debug<string>("3");
         if (hdr.h == hdr.a[0]) {
             hdr.same.same = hdr.same.same | 4;
         }
-        debug<string>("4");
 
         H[2] tmp;
         tmp[0] = hdr.h;

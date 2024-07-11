@@ -270,7 +270,8 @@ module Make (Arch : ARCH) : INTERP = struct
     match lvalue.it with
     | VarE { it = Bare id; _ } ->
         let typ = Ctx.find_var id.it ctx |> fst in
-        let value = Runtime.Ops.eval_cast typ value in
+        (* (TODO) casts must be explicitized after type checking *)
+        (* let value = Runtime.Ops.eval_cast typ value in *)
         Ctx.update_var id.it typ value ctx
     | ArrAccE (base, idx) -> (
         let ctx, value_base = interp_expr ctx base in
