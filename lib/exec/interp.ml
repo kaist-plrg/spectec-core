@@ -93,10 +93,10 @@ module Make (Arch : ARCH) : INTERP = struct
   and interp_var (ctx : Ctx.t) (var : var) : Ctx.t * Value.t =
     match var.it with
     | Top id ->
-        let value = Ctx.find_var_glob id.it ctx |> snd in
+        let value = Ctx.find_var_glob id.it ctx in
         (ctx, value)
     | Bare id ->
-        let value = Ctx.find_var id.it ctx |> snd in
+        let value = Ctx.find_var id.it ctx in
         (ctx, value)
 
   and interp_list (ctx : Ctx.t) (exprs : expr list) : Ctx.t * Value.t =
@@ -269,10 +269,10 @@ module Make (Arch : ARCH) : INTERP = struct
   and interp_write (ctx : Ctx.t) (lvalue : expr) (value : Value.t) =
     match lvalue.it with
     | VarE { it = Bare id; _ } ->
-        let typ = Ctx.find_var id.it ctx |> fst in
+        (* let typ = Ctx.find_var id.it ctx |> fst in *)
         (* (TODO) casts must be explicitized after type checking *)
         (* let value = Runtime.Ops.eval_cast typ value in *)
-        Ctx.update_var id.it typ value ctx
+        Ctx.update_var id.it value ctx
     | ArrAccE (base, idx) -> (
         let ctx, value_base = interp_expr ctx base in
         let ctx, value_idx = interp_expr ctx idx in
@@ -442,12 +442,13 @@ module Make (Arch : ARCH) : INTERP = struct
         | VarD { id; typ; init = None } ->
             let typ = interp_type ctx typ in
             let value = Runtime.Ops.eval_default_value typ in
-            let ctx = Ctx.add_var_loc id.it typ value ctx in
+            let ctx = Ctx.add_var_loc id.it value ctx in
             (sign, ctx)
         | VarD { id; typ; init = Some value } ->
             let typ = interp_type ctx typ in
             let ctx, value = interp_expr ctx value in
-            let ctx = Ctx.add_var_loc id.it typ value ctx in
+            let value = Runtime.Ops.eval_cast typ value in
+            let ctx = Ctx.add_var_loc id.it value ctx in
             (sign, ctx)
         | _ ->
             Format.asprintf "(TODO: interp_decl) %a" Syntax.Pp.pp_decl (0, decl)
@@ -540,12 +541,13 @@ module Make (Arch : ARCH) : INTERP = struct
       (* (TODO) Is it correct to evaluate the type at callee? *)
       match dir.it with
       | No | In | InOut ->
-          let typ = interp_type ctx_callee typ in
-          adder id.it typ value ctx_callee
+          (* let typ = interp_type ctx_callee typ in *)
+          (* let value = Runtime.Ops.eval_cast typ value in *)
+          adder id.it value ctx_callee
       | Out ->
           let typ = interp_type ctx_callee typ in
           let value = Runtime.Ops.eval_default_value typ in
-          adder id.it typ value ctx_callee
+          adder id.it value ctx_callee
     in
     List.fold_left2 copyin' ctx_callee params values
 
@@ -555,7 +557,7 @@ module Make (Arch : ARCH) : INTERP = struct
       let id, dir, _, _ = param.it in
       match dir.it with
       | InOut | Out ->
-          let value = Ctx.find_var id.it ctx_callee |> snd in
+          let value = Ctx.find_var id.it ctx_callee in
           interp_write ctx_caller expr value
       | _ -> ctx_caller
     in

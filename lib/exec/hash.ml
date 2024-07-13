@@ -137,11 +137,11 @@ let compute_checksum (algo : string) (data : Value.t list) =
    extern void hash<O, T, D, M>
     (out O result, in HashAlgorithm algo, in T base, in D data, in M max); *)
 let hash (ctx : Ctx.t) =
-  let eid, algo = Ctx.find_var "algo" ctx |> snd |> Value.get_enum in
+  let eid, algo = Ctx.find_var "algo" ctx |> Value.get_enum in
   assert (eid = "HashAlgorithm");
-  let base = Ctx.find_var "base" ctx |> snd |> Value.get_num in
-  let data = Ctx.find_var "data" ctx |> snd |> Value.get_tuple in
-  let max_ = Ctx.find_var "max" ctx |> snd |> Value.get_num in
+  let base = Ctx.find_var "base" ctx |> Value.get_num in
+  let data = Ctx.find_var "data" ctx |> Value.get_tuple in
+  let max_ = Ctx.find_var "max" ctx |> Value.get_num in
   let data = compute_checksum algo data in
   let data =
     if Bigint.(max_ = zero) then base
@@ -151,7 +151,7 @@ let hash (ctx : Ctx.t) =
   let typ = Ctx.find_td "O" ctx in
   (* (TODO) is this the right way to cast? *)
   let result = AIntV data |> Runtime.Ops.eval_cast typ in
-  let ctx = Ctx.update_var "result" typ result ctx in
+  let ctx = Ctx.update_var "result" result ctx in
   ctx
 
 (* Verifies the checksum of the supplied data.
@@ -169,18 +169,18 @@ let hash (ctx : Ctx.t) =
     (in bool condition, in T data, in O checksum, HashAlgorithm algo); *)
 let verify_checksum (ctx : Ctx.t) =
   let cond =
-    let cond = Ctx.find_var "condition" ctx |> snd in
+    let cond = Ctx.find_var "condition" ctx in
     match cond with BoolV b -> b | _ -> assert false
   in
   if not cond then ctx
   else
     let data =
-      let data = Ctx.find_var "data" ctx |> snd in
+      let data = Ctx.find_var "data" ctx in
       match data with TupleV data -> data | _ -> assert false
     in
-    let checksum = Ctx.find_var "checksum" ctx |> snd in
+    let checksum = Ctx.find_var "checksum" ctx in
     let algo =
-      let algo = Ctx.find_var "algo" ctx |> snd in
+      let algo = Ctx.find_var "algo" ctx in
       match algo with
       | EnumFieldV ("HashAlgorithm", algo) -> algo
       | _ -> assert false
@@ -204,17 +204,17 @@ let verify_checksum (ctx : Ctx.t) =
     (in bool condition, in T data, inout O checksum, HashAlgorithm algo); *)
 let update_checksum (ctx : Ctx.t) =
   let cond =
-    let cond = Ctx.find_var "condition" ctx |> snd in
+    let cond = Ctx.find_var "condition" ctx in
     match cond with BoolV b -> b | _ -> assert false
   in
   if not cond then ctx
   else
     let data =
-      let data = Ctx.find_var "data" ctx |> snd in
+      let data = Ctx.find_var "data" ctx in
       match data with TupleV data -> data | _ -> assert false
     in
     let algo =
-      let algo = Ctx.find_var "algo" ctx |> snd in
+      let algo = Ctx.find_var "algo" ctx in
       match algo with
       | EnumFieldV ("HashAlgorithm", algo) -> algo
       | _ -> assert false
@@ -224,5 +224,5 @@ let update_checksum (ctx : Ctx.t) =
     let result =
       AIntV (compute_checksum algo data) |> Runtime.Ops.eval_cast typ
     in
-    let ctx = Ctx.update_var "checksum" typ result ctx in
+    let ctx = Ctx.update_var "checksum" result ctx in
     ctx

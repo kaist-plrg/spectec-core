@@ -5,12 +5,13 @@ open Domain
 (* Visibility of type variables, variables, and function names *)
 
 module TDVis = MakeVis (Id)
-module Vis = MakeVis (Id)
+module TVis = MakeVis (Id)
+module VVis = MakeVis (Id)
 module FVis = MakeVis (FId)
 
-type vis = TDVis.t * Vis.t * FVis.t
+type vis = TDVis.t * FVis.t * VVis.t
 
-let vis_empty = (TDVis.empty, Vis.empty, FVis.empty)
+let vis_empty = (TDVis.empty, FVis.empty, VVis.empty)
 
 (* Runtime representation of values *)
 
@@ -216,14 +217,6 @@ module Type = struct
     | RefT -> Format.fprintf fmt "ref"
 end
 
-(* Type and value pairs *)
-
-module TypeValue = struct
-  type t = Type.t * Value.t
-
-  let pp fmt (_, v) = Format.fprintf fmt "(%a)" Value.pp v
-end
-
 (* Runtime representation of functions *)
 
 module Func = struct
@@ -281,7 +274,8 @@ end
 (* Environment of type variables, variables, and functions *)
 
 module TDEnv = MakeEnv (Id) (Type)
-module Env = MakeEnv (Id) (TypeValue)
+module TEnv = MakeEnv (Id) (Type)
+module VEnv = MakeEnv (Id) (Value)
 
 module FEnv = struct
   include MakeEnv (FId) (Func)
@@ -303,27 +297,29 @@ module FEnv = struct
     | None -> Format.asprintf "Key not found: %s@." fid |> failwith
 end
 
-type env = TDEnv.t * Env.t * FEnv.t
-type env_stack = TDEnv.t * Env.t list
+type env = TDEnv.t * FEnv.t * VEnv.t
 
-let env_empty = (TDEnv.empty, Env.empty, FEnv.empty)
+let env_empty = (TDEnv.empty, FEnv.empty, VEnv.empty)
+
+type env_stack = TDEnv.t * VEnv.t list
+
 let env_stack_empty = (TDEnv.empty, [])
 
 (* Transition between visibility and environment *)
 
 let env_to_vis (env : env) =
-  let tdenv, env, fenv = env in
+  let tdenv, fenv, env = env in
   let tdvis =
     TDEnv.fold (fun tvar _ vis -> TDVis.add tvar vis) tdenv TDVis.empty
   in
-  let vis = Env.fold (fun var _ vis -> Vis.add var vis) env Vis.empty in
   let fvis = FEnv.fold (fun fvar _ vis -> FVis.add fvar vis) fenv FVis.empty in
-  (tdvis, vis, fvis)
+  let vis = VEnv.fold (fun var _ vis -> VVis.add var vis) env VVis.empty in
+  (tdvis, fvis, vis)
 
 let env_from_vis (env : env) (vis : vis) =
-  let tdenv, env, fenv = env in
-  let tdvis, vis, fvis = vis in
+  let tdenv, fenv, env = env in
+  let tdvis, fvis, vis = vis in
   let tdenv = TDEnv.filter (fun tvar _ -> TDVis.mem tvar tdvis) tdenv in
-  let env = Env.filter (fun var _ -> Vis.mem var vis) env in
   let fenv = FEnv.filter (fun fvar _ -> FVis.mem fvar fvis) fenv in
-  (tdenv, env, fenv)
+  let env = VEnv.filter (fun var _ -> VVis.mem var vis) env in
+  (tdenv, fenv, env)
