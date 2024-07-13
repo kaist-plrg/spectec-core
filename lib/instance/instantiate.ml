@@ -46,17 +46,17 @@ let load_obj_var (ictx : ICtx.t) (name : Id.t) (typ : typ) =
      must be parenthesized and compile-time known. (7.1.6.2) *)
   let typ = Eval.eval_type ictx typ in
   let value = Runtime.Ops.eval_default_value typ in
-  ICtx.add_var_obj name typ value ictx
+  ICtx.add_var_obj name value ictx
 
 let load_obj_const (ictx : ICtx.t) (name : Id.t) (typ : typ) (value : expr) =
   let typ = Eval.eval_type ictx typ in
   let value = Eval.eval_expr ictx value |> Runtime.Ops.eval_cast typ in
-  ICtx.add_var_obj name typ value ictx
+  ICtx.add_var_obj name value ictx
 
 let load_glob_const (ictx : ICtx.t) (name : Id.t) (typ : typ) (value : expr) =
   let typ = Eval.eval_type ictx typ in
   let value = Eval.eval_expr ictx value |> Runtime.Ops.eval_cast typ in
-  ICtx.add_var_glob name typ value ictx
+  ICtx.add_var_glob name value ictx
 
 let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
   match decl.it with
@@ -234,22 +234,21 @@ and eval_args (ccenv : CCEnv.t) (sto : Sto.t) (ictx_caller : ICtx.t)
   check_args args;
   (* Align by parameter order *)
   let align_args (params, args) (param : param) (arg : arg) =
-    let name, _, typ, _ = param.it in
+    let name, _, _, _ = param.it in
     match arg.it with
-    | ExprA value -> (params @ [ (name, typ) ], args @ [ value ])
-    | NameA (name, value) -> (params @ [ (name, typ) ], args @ [ value ])
+    | ExprA value -> (params @ [ name ], args @ [ value ])
+    | NameA (name, value) -> (params @ [ name ], args @ [ value ])
     | _ -> failwith "(eval_args) Instantiation argument must not be missing."
   in
   let params, args = List.fold_left2 align_args ([], []) params args in
   (* Evaluate in order *)
   let sto, ictx_callee =
     List.fold_left2
-      (fun (sto, ictx_callee) (param, typ) arg ->
-        let typ = Eval.eval_type ictx_caller typ in
+      (fun (sto, ictx_callee) param arg ->
         let sto, value =
           eval_expr ccenv sto ictx_caller (path @ [ param.it ]) arg
         in
-        let ictx_callee = ICtx.add_var_obj param.it typ value ictx_callee in
+        let ictx_callee = ICtx.add_var_obj param.it value ictx_callee in
         (sto, ictx_callee))
       (sto, ictx_callee) params args
   in
@@ -273,7 +272,7 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
       (* Initialize the environment for the parser object *)
       let ictx_callee =
         let env_glob = ictx_caller.env_glob in
-        let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
+        let env_obj = env_empty in
         ICtx.init env_glob env_obj
       in
       (* Evaluate type arguments *)
@@ -324,7 +323,7 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
       (* Initialize the environment for the control object *)
       let ictx_callee =
         let env_glob = ictx_caller.env_glob in
-        let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
+        let env_obj = env_empty in
         ICtx.init env_glob env_obj
       in
       (* Evaluate type arguments *)
@@ -365,7 +364,7 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
       (* Initialize the environment and store for the parser object *)
       let ictx_callee =
         let env_glob = ictx_caller.env_glob in
-        let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
+        let env_obj = env_empty in
         ICtx.init env_glob env_obj
       in
       (* Evaluate constructor arguments *)
@@ -378,7 +377,7 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
       (* Initialize the environment for the extern object *)
       let ictx_callee =
         let env_glob = ictx_caller.env_glob in
-        let env_obj = (TDEnv.empty, Env.empty, FEnv.empty) in
+        let env_obj = env_empty in
         ICtx.init env_glob env_obj
       in
       (* Evaluate constructor arguments *)
@@ -409,8 +408,7 @@ and instantiate_from_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
   let cclos, targs = cclos_from_type ccenv typ args in
   let sto = instantiate_from_cclos ccenv sto ictx path cclos targs args in
   let value = Value.RefV path in
-  let typ = Type.RefT in
-  let ictx = ICtx.add_var_obj name typ value ictx in
+  let ictx = ICtx.add_var_obj name value ictx in
   (sto, ictx)
 
 and instantiate_from_glob_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
@@ -419,8 +417,7 @@ and instantiate_from_glob_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
   let cclos, targs = cclos_from_type ccenv typ args in
   let sto = instantiate_from_cclos ccenv sto ictx path cclos targs args in
   let value = Value.RefV path in
-  let typ = Type.RefT in
-  let ictx = ICtx.add_var_glob name typ value ictx in
+  let ictx = ICtx.add_var_glob name value ictx in
   (sto, ictx)
 
 (* Instantiation or load *)
@@ -445,8 +442,7 @@ and instantiate_parser_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
       (* (TODO) What should be the runtime representation of value set? *)
       let obj = Object.ValueSetO in
       let value = Value.RefV path in
-      let typ = Type.RefT in
-      let ictx = ICtx.add_var_obj id.it typ value ictx in
+      let ictx = ICtx.add_var_obj id.it value ictx in
       let sto = Sto.add path obj sto in
       (sto, ictx)
   | _ -> failwith "(instantiate_parser_obj_decl) Unexpected declaration."
@@ -481,8 +477,7 @@ and instantiate_control_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
       let apply = Func.TableF { vis_obj = ictx.vis_obj } in
       let obj = Object.TableO { table; mthd = apply } in
       let value = Value.RefV path in
-      let typ = Type.RefT in
-      let ictx = ICtx.add_var_obj id.it typ value ictx in
+      let ictx = ICtx.add_var_obj id.it value ictx in
       let sto = Sto.add path obj sto in
       (sto, ictx)
   | _ -> failwith "(instantiate_control_obj_decl) Unexpected declaration."

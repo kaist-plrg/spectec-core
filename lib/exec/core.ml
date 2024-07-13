@@ -153,10 +153,10 @@ module PacketIn = struct
      void extract<T>(out T hdr); *)
   let extract (ctx : Ctx.t) (pkt : t) =
     let typ = Ctx.find_td "T" ctx in
-    let _, header = Ctx.find_var "hdr" ctx in
+    let header = Ctx.find_var "hdr" ctx in
     let pkt, bits = sizeof ctx typ |> parse pkt in
     let _, header = write bits header in
-    let ctx = Ctx.update_var "hdr" typ header ctx in
+    let ctx = Ctx.update_var "hdr" header ctx in
     (ctx, pkt)
 
   (* Read bits from the packet into a variable-sized header @variableSizeHeader
@@ -167,14 +167,14 @@ module PacketIn = struct
                     in bit<32> variableFieldSizeInBits); *)
   let extract_var (ctx : Ctx.t) (pkt : t) =
     let typ = Ctx.find_td "T" ctx in
-    let _, header = Ctx.find_var "variableSizeHeader" ctx in
+    let header = Ctx.find_var "variableSizeHeader" ctx in
     let size_var =
       Ctx.find_var "variableFieldSizeInBits" ctx
-      |> snd |> Value.get_num |> Bigint.to_int |> Option.get
+      |> Value.get_num |> Bigint.to_int |> Option.get
     in
     let pkt, bits = sizeof ~size_var ctx typ |> parse pkt in
     let _, header = write ~size_var bits header in
-    let ctx = Ctx.update_var "variableSizeHeader" typ header ctx in
+    let ctx = Ctx.update_var "variableSizeHeader" header ctx in
     (ctx, pkt)
 
   (* Read bits from the packet without advancing the cursor.
@@ -193,7 +193,7 @@ module PacketIn = struct
   let advance (ctx : Ctx.t) (pkt : t) =
     let size =
       Ctx.find_var "sizeInBits" ctx
-      |> snd |> Value.get_num |> Bigint.to_int |> Option.get
+      |> Value.get_num |> Bigint.to_int |> Option.get
     in
     let pkt = { pkt with idx = pkt.idx + size } in
     (ctx, pkt)
@@ -239,7 +239,7 @@ module PacketOut = struct
      containing fields with such types.
      void emit<T>(in T hdr); *)
   let emit (ctx : Ctx.t) (pkt : t) =
-    let _, header = Ctx.find_var "hdr" ctx in
+    let header = Ctx.find_var "hdr" ctx in
     let pkt = deparse pkt header in
     (ctx, pkt)
 end

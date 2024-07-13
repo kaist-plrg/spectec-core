@@ -76,8 +76,8 @@ and eval_num (value : Bigint.t) (encoding : (Bigint.t * bool) option) : Value.t
 
 and eval_var (ictx : ICtx.t) (var : var) : Value.t =
   match var.it with
-  | Top id -> ICtx.find_var_glob id.it ictx |> snd
-  | Bare id -> ICtx.find_var id.it ictx |> snd
+  | Top id -> ICtx.find_var_glob id.it ictx
+  | Bare id -> ICtx.find_var id.it ictx
 
 and eval_list (ictx : ICtx.t) (exprs : expr list) : Value.t =
   let values = eval_exprs ictx exprs in
