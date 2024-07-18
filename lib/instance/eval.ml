@@ -21,7 +21,6 @@ let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
       VBitT width
   | StrT -> StrT
   | ErrT -> ICtx.find_td_glob "error" ictx
-  | MatchKindT -> ICtx.find_td_glob "match_kind" ictx
   | NameT { it = Top id; _ } -> ICtx.find_td_glob id.it ictx
   | NameT { it = Bare id; _ } -> ICtx.find_td id.it ictx
   (* (TODO) Handle specialized types *)

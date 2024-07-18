@@ -31,7 +31,6 @@ module Make (Arch : ARCH) : INTERP = struct
         VBitT width
     | StrT -> StrT
     | ErrT -> Ctx.find_td_glob "error" ctx
-    | MatchKindT -> Ctx.find_td_glob "match_kind" ctx
     | NameT { it = Top id; _ } -> Ctx.find_td_glob id.it ctx
     | NameT { it = Bare id; _ } -> Ctx.find_td id.it ctx
     (* (TODO) Handle specialized types *)

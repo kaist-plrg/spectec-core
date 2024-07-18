@@ -1,8 +1,122 @@
 open Domain
 open Base
 
+(* Context for typechecking *)
+
+module TCtx = struct
+  type t = {
+    env_glob : tenv;
+    vis_glob : tvis;
+    env_obj : tenv;
+    vis_obj : tvis;
+    env_loc : tenv_stack;
+  }
+
+  let empty =
+    {
+      env_glob = tenv_empty;
+      vis_glob = tvis_empty;
+      env_obj = tenv_empty;
+      vis_obj = tvis_empty;
+      env_loc = tenv_stack_empty;
+    }
+
+  (* Adders *)
+
+  let add_const_glob name value ctx =
+    let gtdenv, gfenv, gvenv, gtenv = ctx.env_glob in
+    let gvenv = VEnv.add name value gvenv in
+    let gtdvis, gfvis, gvvis, gtvis = ctx.vis_glob in
+    let gvvis = VVis.add name gvvis in
+    {
+      ctx with
+      env_glob = (gtdenv, gfenv, gvenv, gtenv);
+      vis_glob = (gtdvis, gfvis, gvvis, gtvis);
+    }
+
+  let add_type_glob name typ ctx =
+    let gtdenv, gfenv, gvenv, gtenv = ctx.env_glob in
+    let gtenv = TEnv.add name typ gtenv in
+    let gtdvis, gfvis, gvvis, gtvis = ctx.vis_glob in
+    let gtvis = TVis.add name gtvis in
+    {
+      ctx with
+      env_glob = (gtdenv, gfenv, gvenv, gtenv);
+      vis_glob = (gtdvis, gfvis, gvvis, gtvis);
+    }
+
+  (* Finders *)
+
+  let find finder name ctx = function
+    | Some value -> Some value
+    | None -> finder name ctx
+
+  let find_td_glob_opt tvar ctx =
+    let gtdenv, _, _, _ = tenv_from_tvis ctx.env_glob ctx.vis_glob in
+    TDEnv.find_opt tvar gtdenv
+
+  let find_td_glob tvar ctx = find_td_glob_opt tvar ctx |> Option.get
+
+  let find_td_obj_opt tvar ctx =
+    let otdenv, _, _, _ = tenv_from_tvis ctx.env_obj ctx.vis_obj in
+    TDEnv.find_opt tvar otdenv
+
+  let find_td_obj tvar ctx = find_td_obj_opt tvar ctx |> Option.get
+
+  let find_td_loc_opt tvar ctx =
+    let ltdenv, _ = ctx.env_loc in
+    TDEnv.find_opt tvar ltdenv
+
+  let find_td_loc tvar ctx = find_td_loc_opt tvar ctx |> Option.get
+
+  let find_td tvar ctx =
+    find_td_loc_opt tvar ctx
+    |> find find_td_obj_opt tvar ctx
+    |> find find_td_glob_opt tvar ctx
+    |> Option.get
+
+  let find_const_glob_opt const ctx =
+    let _, _, genv, _ = tenv_from_tvis ctx.env_glob ctx.vis_glob in
+    VEnv.find_opt const genv
+
+  let find_const_glob const ctx = find_const_glob_opt const ctx |> Option.get
+
+  let find_const_obj_opt const ctx =
+    let _, _, oenv, _ = tenv_from_tvis ctx.env_obj ctx.vis_obj in
+    VEnv.find_opt const oenv
+
+  let find_const_obj const ctx = find_const_obj_opt const ctx |> Option.get
+
+  let find_const_loc_opt const ctx =
+    let _, lenvs = ctx.env_loc in
+    let lenvs = List.map fst lenvs in
+    List.fold_left
+      (fun value frame ->
+        match value with Some _ -> value | None -> VEnv.find_opt const frame)
+      None lenvs
+
+  let find_const_loc const ctx = find_const_loc_opt const ctx |> Option.get
+
+  let find_const_opt const ctx =
+    find_const_loc_opt const ctx
+    |> find find_const_obj_opt const ctx
+    |> find find_const_glob_opt const ctx
+
+  let find_const const ctx = find_const_opt const ctx |> Option.get
+
+  (* Type simplification *)
+
+  let rec simplify_td (typ : Type.t) ctx =
+    match typ with
+    | NameT name ->
+        let typ = find_td name ctx in
+        simplify_td typ ctx
+    | NewT name -> find_td name ctx
+    | _ -> typ
+end
+
 (* Context for instantiation:
-   The instantiation does not look into method/function body *)
+   Instantiation does not look into method/function body *)
 
 module ICtx = struct
   (* vis_* always contains all names in env_*
