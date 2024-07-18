@@ -64,7 +64,6 @@ type typ = typ' phrase
 and typ' =
   | VoidT
   | BoolT
-  | MatchKindT
   | ErrT
   | StrT
   | AIntT
