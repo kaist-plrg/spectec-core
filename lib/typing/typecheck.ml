@@ -8,8 +8,8 @@ open Util.Source
    Warning: this will loop forever if there is a cycle in the type references. *)
 let rec saturate_type (ctx : Ctx.t) (typ : Type.t) : Type.t =
   match typ with
-  | VoidT | BoolT | AIntT | IntT _ | BitT _ | VBitT _ | StrT | ErrT _
-  | MatchKindT _ ->
+  | VoidT | BoolT | AIntT | IntT _ | BitT _ | VBitT _ | StrT | ErrT | MatchKindT
+    ->
       typ
   | NameT id -> Ctx.find_td id ctx |> saturate_type ctx
   | NewT _ -> typ
@@ -175,9 +175,9 @@ and static_eval_type_acc (ctx : Ctx.t) (var : var) (member : member) :
   | _ -> None
 
 and static_eval_error_acc (ctx : Ctx.t) (member : member) : Value.t option =
-  let typ = Ctx.find_td_glob "error" ctx in
-  match typ with
-  | ErrT members when List.mem member.it members -> Some (ErrV member.it)
+  let id = "error." ^ member.it in
+  match Ctx.find_const_glob_opt id ctx with
+  | Some (ErrV _ as value) -> Some value
   | _ -> None
 
 and static_eval_expr_acc (ctx : Ctx.t) (expr_base : expr) (member : member) :
@@ -247,8 +247,7 @@ let type_error_decl_glob (ctx : Ctx.t) (members : member list) : Ctx.t =
       match Ctx.find_const_glob_opt id ctx with
       | None ->
           let value = Value.ErrV member.it in
-          (* (TODO) ErrT should have no field *)
-          let typ = Type.ErrT [] in
+          let typ = Type.ErrT in
           let ctx = Ctx.add_const_glob id value ctx in
           let ctx = Ctx.add_type_glob id typ ctx in
           ctx
@@ -275,8 +274,7 @@ let type_match_kind_decl_glob (ctx : Ctx.t) (members : member list) : Ctx.t =
       match Ctx.find_const_glob_opt id ctx with
       | None ->
           let value = Value.MatchKindV member.it in
-          (* (TODO) MatchKindT should have no field *)
-          let typ = Type.MatchKindT [] in
+          let typ = Type.MatchKindT in
           let ctx = Ctx.add_const_glob id value ctx in
           let ctx = Ctx.add_type_glob id typ ctx in
           ctx

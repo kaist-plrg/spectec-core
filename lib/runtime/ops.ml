@@ -639,9 +639,7 @@ let rec eval_default_value (typ : Type.t) : Value.t =
   | IntT width -> IntV (width, Bigint.zero)
   | BitT width -> BitV (width, Bigint.zero)
   | VBitT width -> VBitV (width, Bigint.zero, Bigint.zero)
-  | ErrT ms ->
-      assert (List.mem "NoError" ms);
-      ErrV "NoError"
+  | ErrT -> ErrV "NoError"
   | StrT -> StrV ""
   | StackT (typ, size) ->
       let values =

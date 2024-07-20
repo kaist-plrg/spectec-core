@@ -145,8 +145,8 @@ module Type = struct
     | BitT of Bigint.t
     | VBitT of Bigint.t
     | StrT
-    | ErrT of member' list
-    | MatchKindT of member' list
+    | ErrT
+    | MatchKindT
     | NameT of id'
     | NewT of id'
     | StackT of (t * Bigint.t)
@@ -169,18 +169,8 @@ module Type = struct
     | BitT w -> Format.fprintf fmt "%sw" (Bigint.to_string w)
     | VBitT w -> Format.fprintf fmt "%sv" (Bigint.to_string w)
     | StrT -> Format.fprintf fmt "string"
-    | ErrT ms ->
-        Format.fprintf fmt "error { @[<hv>%a@] }"
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
-             Format.pp_print_string)
-          ms
-    | MatchKindT ms ->
-        Format.fprintf fmt "match_kind { @[<hv>%a@] }"
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
-             Format.pp_print_string)
-          ms
+    | ErrT -> Format.fprintf fmt "error"
+    | MatchKindT -> Format.fprintf fmt "match_kind"
     | NameT n -> Format.fprintf fmt "%s" n
     | NewT n -> Format.fprintf fmt "new %s" n
     | StackT (t, s) -> Format.fprintf fmt "%a[%s]" pp t (Bigint.to_string s)
