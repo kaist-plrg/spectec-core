@@ -1,40 +1,39 @@
 open Syntax.Ast
 open Runtime.Base
-open Runtime.Context
 open Util.Source
 
 (* Static type and expression evaluation *)
 
 (* Eliminate all type references and replace them with the type they refer to.
    Warning: this will loop forever if there is a cycle in the type references. *)
-let rec saturate_type (tctx : TCtx.t) (typ : Type.t) : Type.t =
+let rec saturate_type (ctx : Ctx.t) (typ : Type.t) : Type.t =
   match typ with
   | VoidT | BoolT | AIntT | IntT _ | BitT _ | VBitT _ | StrT | ErrT _
   | MatchKindT _ ->
       typ
-  | NameT id -> TCtx.find_td id tctx |> saturate_type tctx
+  | NameT id -> Ctx.find_td id ctx |> saturate_type ctx
   | NewT _ -> typ
-  | StackT (typ, size) -> StackT (saturate_type tctx typ, size)
-  | TupleT typs -> TupleT (List.map (saturate_type tctx) typs)
+  | StackT (typ, size) -> StackT (saturate_type ctx typ, size)
+  | TupleT typs -> TupleT (List.map (saturate_type ctx) typs)
   | StructT fields ->
       let members, typs = List.split fields in
-      let typs = List.map (saturate_type tctx) typs in
+      let typs = List.map (saturate_type ctx) typs in
       StructT (List.combine members typs)
   | HeaderT fields ->
       let members, typs = List.split fields in
-      let typs = List.map (saturate_type tctx) typs in
+      let typs = List.map (saturate_type ctx) typs in
       HeaderT (List.combine members typs)
   | UnionT fields ->
       let members, typs = List.split fields in
-      let typs = List.map (saturate_type tctx) typs in
+      let typs = List.map (saturate_type ctx) typs in
       UnionT (List.combine members typs)
   | EnumT _ -> typ
   | SEnumT (id, typ, fields) ->
-      let typ = saturate_type tctx typ in
+      let typ = saturate_type ctx typ in
       SEnumT (id, typ, fields)
   | RefT -> typ
 
-let rec static_eval_type (tctx : TCtx.t) (typ : typ) : Type.t =
+let rec static_eval_type (ctx : Ctx.t) (typ : typ) : Type.t =
   match typ.it with
   | VoidT -> Type.VoidT
   | BoolT -> Type.BoolT
@@ -49,11 +48,12 @@ let rec static_eval_type (tctx : TCtx.t) (typ : typ) : Type.t =
   | StackT (_typ, _expr) ->
       failwith "(TODO: static_eval_type) Handle stack type"
   | TupleT typs ->
-      let typs = List.map (static_eval_type tctx) typs in
+      let typs = List.map (static_eval_type ctx) typs in
       Type.TupleT typs
   | AnyT -> failwith "(TODO: static_eval_type) Handle any type"
 
-(* The following are compile-time known values:
+(* (18.1)
+   The following are compile-time known values:
 
    - Integer literals, Boolean literals, and string literals.
    - Identifiers declared in an error, enum, or match_kind declaration.
@@ -69,27 +69,27 @@ let rec static_eval_type (tctx : TCtx.t) (typ : typ) : Type.t =
    - A legal cast applied to a compile-time known value
    - The following expressions (+, -, *, / , %, !, &, |, &&, ||, << , >> , ~ ,  >, <, ==, !=, <=, >=, ++, [:], ?:) when their operands are all compile-time known values.
    - Identifiers declared as constants using the const keyword.
-   - Expressions of the form e.minSizeInBits(), e.minSizeInBytes(), e.maxSizeInBits() and e.maxSizeInBytes() (18.1) *)
-and static_eval_expr (tctx : TCtx.t) (expr : expr) : Value.t option =
+   - Expressions of the form e.minSizeInBits(), e.minSizeInBytes(), e.maxSizeInBits() and e.maxSizeInBytes() *)
+and static_eval_expr (ctx : Ctx.t) (expr : expr) : Value.t option =
   match expr.it with
   | BoolE b -> static_eval_bool b
   | StrE s -> static_eval_str s
   | NumE { it = value, encoding; _ } -> static_eval_num value encoding
-  | VarE var -> static_eval_var tctx var
-  | ListE exprs -> static_eval_list tctx exprs
-  | RecordE fields -> static_eval_record tctx fields
-  | UnE (unop, expr) -> static_eval_unop tctx unop expr
+  | VarE var -> static_eval_var ctx var
+  | ListE exprs -> static_eval_list ctx exprs
+  | RecordE fields -> static_eval_record ctx fields
+  | UnE (unop, expr) -> static_eval_unop ctx unop expr
   | BinE (binop, expr_fst, expr_snd) ->
-      static_eval_binop tctx binop expr_fst expr_snd
+      static_eval_binop ctx binop expr_fst expr_snd
   | TernE (expr_cond, expr_tru, expr_fls) ->
-      static_eval_ternop tctx expr_cond expr_tru expr_fls
-  | CastE (typ, expr) -> static_eval_cast tctx typ expr
+      static_eval_ternop ctx expr_cond expr_tru expr_fls
+  | CastE (typ, expr) -> static_eval_cast ctx typ expr
   | BitAccE (expr_base, expr_lo, expr_hi) ->
-      static_eval_bitstring_acc tctx expr_base expr_lo expr_hi
-  | TypeAccE (var, member) -> static_eval_type_acc tctx var member
-  | ErrAccE member -> static_eval_error_acc tctx member
-  | ExprAccE (expr_base, member) -> static_eval_expr_acc tctx expr_base member
-  | CallE (expr_func, targs, args) -> static_eval_call tctx expr_func targs args
+      static_eval_bitstring_acc ctx expr_base expr_lo expr_hi
+  | TypeAccE (var, member) -> static_eval_type_acc ctx var member
+  | ErrAccE member -> static_eval_error_acc ctx member
+  | ExprAccE (expr_base, member) -> static_eval_expr_acc ctx expr_base member
+  | CallE (expr_func, targs, args) -> static_eval_call ctx expr_func targs args
   | _ ->
       Format.eprintf "(static_eval_expr) %a is not compile-time known"
         Syntax.Pp.pp_expr expr;
@@ -105,54 +105,52 @@ and static_eval_num (value : Bigint.t) (encoding : (Bigint.t * bool) option) :
       if signed then Some (IntV (width, value)) else Some (BitV (width, value))
   | None -> Some (AIntV value)
 
-and static_eval_var (tctx : TCtx.t) (var : var) : Value.t option =
+and static_eval_var (ctx : Ctx.t) (var : var) : Value.t option =
   match var.it with
-  | Top id -> TCtx.find_const_glob_opt id.it tctx
-  | Bare id -> TCtx.find_const_opt id.it tctx
+  | Top id -> Ctx.find_const_glob_opt id.it ctx
+  | Bare id -> Ctx.find_const_opt id.it ctx
 
-and static_eval_list (tctx : TCtx.t) (exprs : expr list) : Value.t option =
-  let values = static_eval_exprs tctx exprs in
+and static_eval_list (ctx : Ctx.t) (exprs : expr list) : Value.t option =
+  let values = static_eval_exprs ctx exprs in
   Option.map (fun values -> Value.TupleV values) values
 
-and static_eval_record (tctx : TCtx.t) (fields : (member * expr) list) :
+and static_eval_record (ctx : Ctx.t) (fields : (member * expr) list) :
     Value.t option =
   let members, exprs = List.split fields in
   let members = List.map it members in
-  let values = static_eval_exprs tctx exprs in
+  let values = static_eval_exprs ctx exprs in
   Option.map (fun values -> Value.StructV (List.combine members values)) values
 
-and static_eval_unop (tctx : TCtx.t) (op : unop) (expr : expr) : Value.t option
-    =
-  let value = static_eval_expr tctx expr in
+and static_eval_unop (ctx : Ctx.t) (op : unop) (expr : expr) : Value.t option =
+  let value = static_eval_expr ctx expr in
   Option.map (Runtime.Ops.eval_unop op) value
 
-and static_eval_binop (tctx : TCtx.t) (op : binop) (expr_fst : expr)
+and static_eval_binop (ctx : Ctx.t) (op : binop) (expr_fst : expr)
     (expr_snd : expr) : Value.t option =
-  let values = static_eval_exprs tctx [ expr_fst; expr_snd ] in
+  let values = static_eval_exprs ctx [ expr_fst; expr_snd ] in
   Option.map
     (fun values ->
       let value_fst, value_snd = (List.nth values 0, List.nth values 1) in
       Runtime.Ops.eval_binop op value_fst value_snd)
     values
 
-and static_eval_ternop (tctx : TCtx.t) (expr_cond : expr) (expr_tru : expr)
+and static_eval_ternop (ctx : Ctx.t) (expr_cond : expr) (expr_tru : expr)
     (expr_fls : expr) : Value.t option =
-  let value_cond = static_eval_expr tctx expr_cond in
+  let value_cond = static_eval_expr ctx expr_cond in
   Option.bind value_cond (fun value_cond ->
       let cond = Value.get_bool value_cond in
       let expr = if cond then expr_tru else expr_fls in
-      static_eval_expr tctx expr)
+      static_eval_expr ctx expr)
 
-and static_eval_cast (tctx : TCtx.t) (typ : typ) (expr : expr) : Value.t option
-    =
-  let typ = static_eval_type tctx typ in
-  let typ = TCtx.simplify_td typ tctx in
-  let value = static_eval_expr tctx expr in
+and static_eval_cast (ctx : Ctx.t) (typ : typ) (expr : expr) : Value.t option =
+  let typ = static_eval_type ctx typ in
+  let typ = saturate_type ctx typ in
+  let value = static_eval_expr ctx expr in
   Option.map (Runtime.Ops.eval_cast typ) value
 
-and static_eval_bitstring_acc (tctx : TCtx.t) (expr_base : expr)
-    (expr_lo : expr) (expr_hi : expr) : Value.t option =
-  let values = static_eval_exprs tctx [ expr_base; expr_hi; expr_lo ] in
+and static_eval_bitstring_acc (ctx : Ctx.t) (expr_base : expr) (expr_lo : expr)
+    (expr_hi : expr) : Value.t option =
+  let values = static_eval_exprs ctx [ expr_base; expr_hi; expr_lo ] in
   Option.map
     (fun values ->
       let value_base, value_hi, value_lo =
@@ -161,12 +159,12 @@ and static_eval_bitstring_acc (tctx : TCtx.t) (expr_base : expr)
       Runtime.Ops.eval_bitstring_access value_base value_hi value_lo)
     values
 
-and static_eval_type_acc (tctx : TCtx.t) (var : var) (member : member) :
+and static_eval_type_acc (ctx : Ctx.t) (var : var) (member : member) :
     Value.t option =
   let typ =
     match var.it with
-    | Top id -> TCtx.find_td_glob id.it tctx
-    | Bare id -> TCtx.find_td id.it tctx
+    | Top id -> Ctx.find_td_glob id.it ctx
+    | Bare id -> Ctx.find_td id.it ctx
   in
   match typ with
   | EnumT (id, members) when List.mem member.it members ->
@@ -176,15 +174,15 @@ and static_eval_type_acc (tctx : TCtx.t) (var : var) (member : member) :
       Some (SEnumFieldV (id, member.it, value))
   | _ -> None
 
-and static_eval_error_acc (tctx : TCtx.t) (member : member) : Value.t option =
-  let typ = TCtx.find_td_glob "error" tctx in
+and static_eval_error_acc (ctx : Ctx.t) (member : member) : Value.t option =
+  let typ = Ctx.find_td_glob "error" ctx in
   match typ with
   | ErrT members when List.mem member.it members -> Some (ErrV member.it)
   | _ -> None
 
-and static_eval_expr_acc (tctx : TCtx.t) (expr_base : expr) (member : member) :
+and static_eval_expr_acc (ctx : Ctx.t) (expr_base : expr) (member : member) :
     Value.t option =
-  let value_base = static_eval_expr tctx expr_base in
+  let value_base = static_eval_expr ctx expr_base in
   match value_base with
   | Some value_base -> (
       match value_base with
@@ -194,13 +192,12 @@ and static_eval_expr_acc (tctx : TCtx.t) (expr_base : expr) (member : member) :
       | _ -> None)
   | _ -> None
 
-and static_eval_call (_tctx : TCtx.t) (_expr_func : expr) (_targs : typ list)
+and static_eval_call (_ctx : Ctx.t) (_expr_func : expr) (_targs : typ list)
     (_args : arg list) : Value.t option =
   failwith "(TODO: static_eval_expr) Handle static function call"
 
-and static_eval_exprs (tctx : TCtx.t) (exprs : expr list) : Value.t list option
-    =
-  let values = List.map (static_eval_expr tctx) exprs in
+and static_eval_exprs (ctx : Ctx.t) (exprs : expr list) : Value.t list option =
+  let values = List.map (static_eval_expr ctx) exprs in
   if
     List.for_all Option.is_some values && List.length exprs = List.length values
   then Some (List.map Option.get values)
@@ -219,21 +216,21 @@ let check_distinct_members (members : member list) =
 
 (* Type casting *)
 
-let cast_expr (_tctx : TCtx.t) (_typ : Type.t) (_expr : expr) : expr =
+let cast_expr (_ctx : Ctx.t) (_typ : Type.t) (_expr : expr) : expr =
   failwith "(TODO: cast_expr) Handle type cast insertion"
 
 (* Type checking *)
 
-let type_constant_decl_glob (tctx : TCtx.t) (id : id) (typ : typ) (value : expr)
-    : TCtx.t =
-  let typ = static_eval_type tctx typ in
-  let value = cast_expr tctx typ value in
-  match static_eval_expr tctx value with
+let type_constant_decl_glob (ctx : Ctx.t) (id : id) (typ : typ) (value : expr) :
+    Ctx.t =
+  let typ = static_eval_type ctx typ in
+  let value = cast_expr ctx typ value in
+  match static_eval_expr ctx value with
   | Some value ->
       (* (TODO) AST transformation: replace expression with the value *)
-      let tctx = TCtx.add_const_glob id.it value tctx in
-      let tctx = TCtx.add_type_glob id.it typ tctx in
-      tctx
+      let ctx = Ctx.add_const_glob id.it value ctx in
+      let ctx = Ctx.add_type_glob id.it typ ctx in
+      ctx
   | None ->
       Format.eprintf "(type_constant_decl) %a is not a compile-time known value"
         Syntax.Pp.pp_expr value;
@@ -243,23 +240,23 @@ let type_constant_decl_glob (tctx : TCtx.t) (id : id) (typ : typ) (value : expr)
    All error constants are inserted into the error namespace, irrespective of the place where an error is defined.
    error is similar to an enumeration (enum) type in other languages. A program can contain multiple error declarations,
    which the compiler will merge together. It is an error to declare the same identifier multiple times. *)
-let type_error_decl_glob (tctx : TCtx.t) (members : member list) : TCtx.t =
+let type_error_decl_glob (ctx : Ctx.t) (members : member list) : Ctx.t =
   List.fold_left
-    (fun tctx member ->
+    (fun ctx member ->
       let id = "error." ^ member.it in
-      match TCtx.find_const_glob_opt id tctx with
+      match Ctx.find_const_glob_opt id ctx with
       | None ->
           let value = Value.ErrV member.it in
           (* (TODO) ErrT should have no field *)
           let typ = Type.ErrT [] in
-          let tctx = TCtx.add_const_glob id value tctx in
-          let tctx = TCtx.add_type_glob id typ tctx in
-          tctx
+          let ctx = Ctx.add_const_glob id value ctx in
+          let ctx = Ctx.add_type_glob id typ ctx in
+          ctx
       | Some _ ->
-          Format.eprintf "(type_error_decl_glob) Error %a already exists\n"
+          Format.eprintf "(type_error_decl_glob) Error %a was already defined\n"
             Syntax.Pp.pp_member member;
           assert false)
-    tctx members
+    ctx members
 
 (* (7.1.3)
    The match_kind type is very similar to the error type and is used to declare a set of distinct names
@@ -271,53 +268,53 @@ let type_error_decl_glob (tctx : TCtx.t) (members : member list) : TCtx.t =
 
    The declaration of new match_kinds can only occur within model description files;
    P4 programmers cannot declare new match kinds. *)
-let type_match_kind_decl_glob (tctx : TCtx.t) (members : member list) : TCtx.t =
+let type_match_kind_decl_glob (ctx : Ctx.t) (members : member list) : Ctx.t =
   List.fold_left
-    (fun tctx member ->
+    (fun ctx member ->
       let id = member.it in
-      match TCtx.find_const_glob_opt id tctx with
+      match Ctx.find_const_glob_opt id ctx with
       | None ->
           let value = Value.MatchKindV member.it in
           (* (TODO) MatchKindT should have no field *)
           let typ = Type.MatchKindT [] in
-          let tctx = TCtx.add_const_glob id value tctx in
-          let tctx = TCtx.add_type_glob id typ tctx in
-          tctx
+          let ctx = Ctx.add_const_glob id value ctx in
+          let ctx = Ctx.add_type_glob id typ ctx in
+          ctx
       | Some _ ->
           Format.eprintf
-            "(type_match_kind_decl_glob) Match kind %a already exists\n"
+            "(type_match_kind_decl_glob) Match kind %a was already defined\n"
             Syntax.Pp.pp_member member;
           assert false)
-    tctx members
+    ctx members
 
 (* (7.2.5)
    This declaration introduces a new type with the specified name in the current scope.
    Field names have to be distinct. An empty struct (with no fields) is legal. *)
-let type_struct_decl_glob (_tctx : TCtx.t) (_id : id)
-    (_fields : (member * typ) list) : TCtx.t =
+let type_struct_decl_glob (_ctx : Ctx.t) (_id : id)
+    (_fields : (member * typ) list) : Ctx.t =
   failwith "(TODO: type_struct_decl_glob) Handle struct declaration"
 
 (* (7.2.2) *)
-let type_header_decl_glob (_tctx : TCtx.t) (_id : id)
-    (_fields : (member * typ) list) : TCtx.t =
+let type_header_decl_glob (_ctx : Ctx.t) (_id : id)
+    (_fields : (member * typ) list) : Ctx.t =
   failwith "(TODO: type_header_decl_glob) Handle header declaration"
 
 (* (7.2.4) *)
-let type_union_decl_glob (_tctx : TCtx.t) (_id : id)
-    (_fields : (member * typ) list) : TCtx.t =
+let type_union_decl_glob (_ctx : Ctx.t) (_id : id)
+    (_fields : (member * typ) list) : Ctx.t =
   failwith "(TODO: type_union_decl_glob) Handle header union declaration"
 
 (* (7.2.1)
    An enum declaration introduces a new identifier in the current scope for
    naming the created type along with its distinct constants. *)
-let type_enum_decl_glob (tctx : TCtx.t) (id : id) (members : member list) :
-    TCtx.t =
+let type_enum_decl_glob (ctx : Ctx.t) (id : id) (members : member list) : Ctx.t
+    =
   if not (check_distinct_members members) then
     failwith "(type_enum_decl_glob) Enum members are not distinct";
   let members = List.map it members in
   let typ = Type.EnumT (id.it, members) in
-  let tctx = TCtx.add_type_glob id.it typ tctx in
-  tctx
+  let ctx = Ctx.add_type_glob id.it typ ctx in
+  ctx
 
 (* (7.2.1)
    It is also possible to specify an enum with an underlying representation.
@@ -332,8 +329,8 @@ let type_enum_decl_glob (tctx : TCtx.t) (id : id) (members : member list) :
    Compiler implementations are expected to raise an error if the fixed-width integer representation for an enumeration entry
    falls outside the representation range of the underlying type.
 *)
-let type_senum_decl_glob (_tctx : TCtx.t) (_id : id) (_typ : typ)
-    (_fields : (member * expr) list) : TCtx.t =
+let type_senum_decl_glob (_ctx : Ctx.t) (_id : id) (_typ : typ)
+    (_fields : (member * expr) list) : Ctx.t =
   failwith "(TODO: type_senum_decl_glob) Handle struct enum declaration"
 
 (* (7.6)
@@ -342,7 +339,7 @@ let type_senum_decl_glob (_tctx : TCtx.t) (_id : id) (_typ : typ)
    values of the original type and the newly introduced type cannot be mixed in expressions.
    Currently the types that can be created by the type keyword are restricted to one of:
    bit<>, int<>, bool, or types defined using type from such types. *)
-let type_newtype_decl_glob (_tctx : TCtx.t) (_id : id) (_typ : typ) : TCtx.t =
+let type_newtype_decl_glob (_ctx : Ctx.t) (_id : id) (_typ : typ) : Ctx.t =
   failwith "(TODO: type_newtype_decl_glob) Handle newtype declaration"
 
 (* (7.5)
@@ -350,47 +347,69 @@ let type_newtype_decl_glob (_tctx : TCtx.t) (_id : id) (_typ : typ) : TCtx.t =
    The two types are treated as synonyms, and all operations that can be executed using
    the original type can be also executed using the newly created type.
    If typedef is used with a generic type the type must be specialized with the suitable number of type arguments: *)
-let type_typedef_decl_glob (_tctx : TCtx.t) (_id : id) (_typ : typ) : TCtx.t =
+let type_typedef_decl_glob (_ctx : Ctx.t) (_id : id) (_typ : typ) : Ctx.t =
   failwith "(TODO: type_typedef_decl_glob) Handle typedef declaration"
 
-(* declaration
-    : constantDeclaration
-    | externDeclaration
-    | actionDeclaration
-    | parserDeclaration
-    | typeDeclaration
-    | controlDeclaration
-    | instantiation
-    | errorDeclaration
-    | matchKindDeclaration
-    | functionDeclaration
-    ; *)
-let type_decl_glob (tctx : TCtx.t) (decl : decl) : TCtx.t =
+(* (7.2.12)
+   Parsers and control blocks types are similar to function types: they describe the signature of parsers and control blocks.
+   Such functions have no return values. Declarations of parsers and control block types in architectures may be generic
+   (i.e., have type parameters).
+
+   (7.2.12.1)
+   A parser should have at least one argument of type packet_in, representing the received packet that is processed. *)
+let type_parser_type_decl_glob (_ctx : Ctx.t) (_id : id)
+    (_tparams : tparam list) (_param : param list) : Ctx.t =
+  failwith "(TODO: type_parser_type_decl_glob) Handle parser type declaration"
+
+(* (7.2.12.2) *)
+let type_control_type_decl_glob (_ctx : Ctx.t) (_id : id)
+    (_tparams : tparam list) (_param : param list) : Ctx.t =
+  failwith "(TODO: type_control_type_decl_glob) Handle control type declaration"
+
+(* (7.2.13)
+   All parameters of a package are evaluated at compilation time, and in consequence they must all be directionless
+   (they cannot be in, out, or inout). Otherwise package types are very similar to parser type declarations. *)
+let type_package_type_decl_glob (_ctx : Ctx.t) (_id : id)
+    (_tparams : tparam list) (_cparams : cparam list) : Ctx.t =
+  failwith "(TODO: type_package_type_decl_glob) Handle package type declaration"
+
+let type_decl_glob (ctx : Ctx.t) (decl : decl) : Ctx.t =
   match decl.it with
-  | ConstD { id; typ; value } -> type_constant_decl_glob tctx id typ value
-  | ErrD { members } -> type_error_decl_glob tctx members
-  | MatchKindD { members } -> type_match_kind_decl_glob tctx members
-  | StructD { id; fields } -> type_struct_decl_glob tctx id fields
-  | HeaderD { id; fields } -> type_header_decl_glob tctx id fields
-  | UnionD { id; fields } -> type_union_decl_glob tctx id fields
-  | EnumD { id; members } -> type_enum_decl_glob tctx id members
-  | SEnumD { id; typ; fields } -> type_senum_decl_glob tctx id typ fields
+  (* constantDeclaration *)
+  | ConstD { id; typ; value } -> type_constant_decl_glob ctx id typ value
+  (* errorDeclaration *)
+  | ErrD { members } -> type_error_decl_glob ctx members
+  (* matchKindDeclaration *)
+  | MatchKindD { members } -> type_match_kind_decl_glob ctx members
+  (* typeDeclaration *)
+  | StructD { id; fields } -> type_struct_decl_glob ctx id fields
+  | HeaderD { id; fields } -> type_header_decl_glob ctx id fields
+  | UnionD { id; fields } -> type_union_decl_glob ctx id fields
+  | EnumD { id; members } -> type_enum_decl_glob ctx id members
+  | SEnumD { id; typ; fields } -> type_senum_decl_glob ctx id typ fields
   | NewTypeD { id; typ } -> (
       match typ with
-      | Left typ -> type_newtype_decl_glob tctx id typ
+      | Left typ -> type_newtype_decl_glob ctx id typ
       | Right _ -> failwith "(TODO: type_decl_glob) Handle newtype with decl")
   | TypeDefD { id; typ } -> (
       match typ with
-      | Left typ -> type_typedef_decl_glob tctx id typ
+      | Left typ -> type_typedef_decl_glob ctx id typ
       | Right _ -> failwith "(TODO: type_decl_glob) Handle typedef with decl")
-  | _ -> tctx
+  | ParserTypeD { id; tparams; params } ->
+      type_parser_type_decl_glob ctx id tparams params
+  | ControlTypeD { id; tparams; params } ->
+      type_control_type_decl_glob ctx id tparams params
+  | PackageTypeD { id; tparams; cparams } ->
+      type_package_type_decl_glob ctx id tparams cparams
+  (* functionDeclaration *)
+  (* actionDeclaration *)
+  (* externDeclaration *)
+  (* parserDeclaration *)
+  (* controlDeclaration *)
+  (* instantiation *)
+  | _ -> ctx
 
-(* p4program
-    : /* empty */
-    | p4program declaration
-    | p4program ";"
-    ; *)
 let type_program (program : program) =
-  let tctx = TCtx.empty in
-  let _ = List.fold_left type_decl_glob tctx program in
+  let ctx = Ctx.empty in
+  let _ = List.fold_left type_decl_glob ctx program in
   program
