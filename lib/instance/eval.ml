@@ -20,7 +20,7 @@ let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
       let width = eval_expr ictx width |> Value.get_num in
       VBitT width
   | StrT -> StrT
-  | ErrT -> ICtx.find_td_glob "error" ictx
+  | ErrT -> ErrT
   | NameT { it = Top id; _ } -> ICtx.find_td_glob id.it ictx
   | NameT { it = Bare id; _ } -> ICtx.find_td id.it ictx
   (* (TODO) Handle specialized types *)
@@ -147,10 +147,9 @@ and eval_type_acc (ictx : ICtx.t) (var : var) (member : member) : Value.t =
   | _ -> assert false
 
 and eval_error_acc (ictx : ICtx.t) (member : member) : Value.t =
-  let typ = ICtx.find_td_glob "error" ictx in
-  match typ with
-  | ErrT members ->
-      if List.mem member.it members then ErrV member.it else assert false
+  let id = "error." ^ member.it in
+  match ICtx.find_var_glob_opt id ictx with
+  | Some (ErrV _ as value) -> value
   | _ -> assert false
 
 and eval_builtin_stack_acc (_ictx : ICtx.t) (values : Value.t list)

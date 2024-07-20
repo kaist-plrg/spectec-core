@@ -189,9 +189,9 @@ module Make (Arch : ARCH) : INTERP = struct
         |> failwith
 
   and interp_error_acc (ctx : Ctx.t) (member : member) : Ctx.t * Value.t =
-    let typ = Ctx.find_td_glob "error" ctx in
-    match typ with
-    | ErrT members when List.mem member.it members -> (ctx, ErrV member.it)
+    let id = "error." ^ member.it in
+    match Ctx.find_var_glob_opt id ctx with
+    | Some (ErrV _ as value) -> (ctx, value)
     | _ ->
         Format.asprintf "(interp_error_acc) Cannot access member %s of error"
           member.it
