@@ -1,6 +1,6 @@
 open Syntax.Ast
-open Runtime.Object
-open Runtime.Cclos
+open Runtime.Env
+open Runtime.Sto
 open Runtime.Context
 open Runtime.Signal
 

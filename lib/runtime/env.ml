@@ -1,7 +1,8 @@
 open Domain
 open Vis
 
-(* Environment of type variables, variables, and functions *)
+(* Environment of type variables, variables, functions,
+   and constructor closures *)
 
 module TDEnv = MakeEnv (Id) (Type)
 module TEnv = MakeEnv (Id) (Type)
@@ -25,6 +26,26 @@ module FEnv = struct
     match find_opt (fid, args) fenv with
     | Some f -> f
     | None -> Format.asprintf "Key not found: %s@." fid |> failwith
+end
+
+module CCEnv = struct
+  include MakeEnv (FId) (Cclos)
+
+  (* (TODO) resolve overloaded functions with argument names *)
+  let find_opt (cid, args) ccenv =
+    let arity = List.length args in
+    let ccloss =
+      List.filter
+        (fun ((cid', params), _) -> cid = cid' && arity = List.length params)
+        (bindings ccenv)
+    in
+    assert (List.length ccloss <= 1);
+    match ccloss with [] -> None | _ -> Some (List.hd ccloss |> snd)
+
+  let find (cid, args) ccenv =
+    match find_opt (cid, args) ccenv with
+    | Some c -> c
+    | None -> Format.asprintf "Key not found: %s@." cid |> failwith
 end
 
 type tenv = TDEnv.t * FEnv.t * VEnv.t * TEnv.t

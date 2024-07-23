@@ -1,6 +1,5 @@
 open Runtime.Vis
 open Runtime.Env
-open Runtime.Cclos
 
 type env = {
   (* Typedefs, Functions, Constants, and Variable Types *)

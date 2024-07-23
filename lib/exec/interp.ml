@@ -1,6 +1,7 @@
 open Syntax.Ast
 open Runtime.Domain
-open Runtime.Object
+open Runtime.Env
+open Runtime.Sto
 open Runtime.Context
 open Runtime.Signal
 open Util.Source
@@ -396,7 +397,7 @@ module Make (Arch : ARCH) : INTERP = struct
             match state_next with StateF { body } -> body | _ -> assert false
           in
           let ctx_next =
-            let env_loc = (R.Env.TDEnv.empty, []) in
+            let env_loc = (TDEnv.empty, []) in
             { ctx with env_loc }
           in
           let sign, ctx_next = interp_block sign ctx_next body in
@@ -728,15 +729,13 @@ module Make (Arch : ARCH) : INTERP = struct
     let ctx_caller = { ctx_caller with env_obj = ctx_callee.env_obj } in
     (sign, ctx_caller)
 
-  and interp_object_call (ctx : Ctx.t) (path : Path.t) (obj : Object.t)
+  and interp_object_call (ctx : Ctx.t) (path : Path.t) (obj : R.Object.t)
       (fid : id) (targs : typ list) (args : arg list) =
     (* Resolve callee object's scope and find the callee method *)
     match obj with
     | ExternO { vis_glob; env_obj } ->
         let ctx_callee =
-          Ctx.init
-            (path, (fid.it, []))
-            ctx.env_glob env_obj (R.Env.TDEnv.empty, [])
+          Ctx.init (path, (fid.it, [])) ctx.env_glob env_obj (TDEnv.empty, [])
         in
         let ctx_callee = { ctx_callee with vis_glob } in
         let func = Ctx.find_func_obj (fid.it, args) ctx_callee in
@@ -747,9 +746,7 @@ module Make (Arch : ARCH) : INTERP = struct
       ->
         assert (fid.it = "apply");
         let ctx_callee =
-          Ctx.init
-            (path, (fid.it, []))
-            ctx.env_glob env_obj (R.Env.TDEnv.empty, [])
+          Ctx.init (path, (fid.it, [])) ctx.env_glob env_obj (TDEnv.empty, [])
         in
         let ctx_callee = { ctx_callee with vis_glob } in
         let func = mthd in
@@ -757,9 +754,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | TableO { table; mthd } ->
         assert (fid.it = "apply" && targs = [] && args = []);
         let ctx_callee =
-          Ctx.init
-            (path, (fid.it, []))
-            ctx.env_glob ctx.env_obj R.Env.env_stack_empty
+          Ctx.init (path, (fid.it, [])) ctx.env_glob ctx.env_obj env_stack_empty
         in
         let ctx_callee = { ctx_callee with vis_glob = ctx.vis_glob } in
         let ctx_table = Some table in
@@ -767,7 +762,7 @@ module Make (Arch : ARCH) : INTERP = struct
         interp_intra_app ctx ctx_callee ctx_table func targs args
     | _ ->
         Format.asprintf "(interp_object_call) %a is not a callable object\n"
-          Object.pp obj
+          R.Object.pp obj
         |> failwith
 
   (* In addition, headers support the following methods: ... (8.17) *)
@@ -853,9 +848,7 @@ module Make (Arch : ARCH) : INTERP = struct
       (args : arg list) : Sig.t * Ctx.t =
     let interp_inter_func_call (fid : id) =
       let ctx_callee =
-        Ctx.init
-          ([], (fid.it, []))
-          ctx.env_glob R.Env.env_empty R.Env.env_stack_empty
+        Ctx.init ([], (fid.it, [])) ctx.env_glob env_empty env_stack_empty
       in
       let func = Ctx.find_func_glob (fid.it, args) ctx in
       let cid = ([], (fid.it, R.Func.get_params func)) in
@@ -864,9 +857,7 @@ module Make (Arch : ARCH) : INTERP = struct
     in
     let interp_intra_func_call (fid : id) =
       let ctx_callee =
-        Ctx.init
-          ([], (fid.it, []))
-          ctx.env_glob ctx.env_obj R.Env.env_stack_empty
+        Ctx.init ([], (fid.it, [])) ctx.env_glob ctx.env_obj env_stack_empty
       in
       let ctx_callee = { ctx_callee with vis_glob = ctx.vis_glob } in
       let func = Ctx.find_func_obj (fid.it, args) ctx in

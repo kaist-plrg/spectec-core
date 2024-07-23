@@ -77,7 +77,7 @@ let instantiate_command =
      and filename = anon ("file.p4" %: string) in
      fun () ->
        let _ccenv, sto, _ctx = instantiate includes filename in
-       Format.printf "%a\n" Runtime.Object.Sto.pp sto)
+       Format.printf "%a\n" Runtime.Sto.Sto.pp sto)
 
 let interp_command =
   Command.basic ~summary:"interpret a p4_16 program"

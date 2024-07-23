@@ -1,7 +1,7 @@
 open Syntax.Ast
 open Runtime.Domain
-open Runtime.Object
-open Runtime.Cclos
+open Runtime.Env
+open Runtime.Sto
 open Runtime.Context
 open Runtime.Signal
 open Util.Source
