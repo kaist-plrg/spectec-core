@@ -41,6 +41,17 @@ let empty =
 
 (* Adders *)
 
+let add_td_glob name typ ctx =
+  let gtdenv, gfenv, gvenv, gtenv = ctx.env.glob in
+  let gtdenv = TDEnv.add name typ gtdenv in
+  let gtdvis, gfvis, gvvis, gtvis = ctx.vis.glob in
+  let gtdvis = TDVis.add name gtdvis in
+  {
+    ctx with
+    env = { ctx.env with glob = (gtdenv, gfenv, gvenv, gtenv) };
+    vis = { ctx.vis with glob = (gtdvis, gfvis, gvvis, gtvis) };
+  }
+
 let add_const_glob name value ctx =
   let gtdenv, gfenv, gvenv, gtenv = ctx.env.glob in
   let gvenv = VEnv.add name value gvenv in
@@ -87,11 +98,12 @@ let find_td_loc_opt tvar ctx =
 
 let find_td_loc tvar ctx = find_td_loc_opt tvar ctx |> Option.get
 
-let find_td tvar ctx =
+let find_td_opt tvar ctx =
   find_td_loc_opt tvar ctx
   |> find find_td_obj_opt tvar ctx
   |> find find_td_glob_opt tvar ctx
-  |> Option.get
+
+let find_td tvar ctx = find_td_opt tvar ctx |> Option.get
 
 let find_const_glob_opt const ctx =
   let _, _, genv, _ = env_from_vis ctx.env.glob ctx.vis.glob in
@@ -121,3 +133,26 @@ let find_const_opt const ctx =
   |> find find_const_glob_opt const ctx
 
 let find_const const ctx = find_const_opt const ctx |> Option.get
+
+(* Pretty-printer *)
+
+let pp_env fmt (env : env) =
+  let gtdenv, gfenv, gvenv, gtenv = env.glob in
+  let otdenv, ofenv, oenv, otenv = env.obj in
+  let ltdenv, lenvs = env.loc in
+  let lvenvs, ltenvs = List.split lenvs in
+  Format.fprintf fmt
+    "{@;\
+     <1 2>@[<v 0>global-td = %a;@ global-func = %a;@ global-const = %a;@ \
+     global-type = %a;@ object-td = %a;@ object-func = %a;@ object-const = \
+     %a;@ object-type = %a;@ loc-td = %a;@ loc-consts = %a;@ loc-types = %a@]@;\
+     <1 -2>}" TDEnv.pp gtdenv FEnv.pp gfenv VEnv.pp gvenv TEnv.pp gtenv TDEnv.pp
+    otdenv FEnv.pp ofenv VEnv.pp oenv TEnv.pp otenv TDEnv.pp ltdenv
+    (Format.pp_print_list VEnv.pp)
+    lvenvs
+    (Format.pp_print_list TEnv.pp)
+    ltenvs
+
+let pp fmt (ctx : t) =
+  Format.fprintf fmt "CCEnv: %a\n" CCEnv.pp ctx.cc;
+  Format.fprintf fmt "Env: %a\n" pp_env ctx.env
