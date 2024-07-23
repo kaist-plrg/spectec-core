@@ -13,8 +13,8 @@
  * under the License.
  *)
 
-open Runtime.Base
 open Runtime.Context
+module R = Runtime
 
 [@@@ocamlformat "disable"]
 let crc16_table = [|
@@ -106,9 +106,9 @@ let compute_hash (algo : string) =
   | "crc16" -> compute_hash_crc16
   | _ -> Format.asprintf "Hash algorithm %s not supported\n" algo |> failwith
 
-let package (data : Value.t list) : Bigint.t * Bigint.t =
+let package (data : R.Value.t list) : Bigint.t * Bigint.t =
   data
-  |> List.map (fun value -> (Value.get_width value, Value.get_num value))
+  |> List.map (fun value -> (R.Value.get_width value, R.Value.get_num value))
   |> List.map (fun (width, value) ->
          (width, Runtime.Ops.of_two_complement value width))
   |> List.fold_left
@@ -118,7 +118,7 @@ let package (data : Value.t list) : Bigint.t * Bigint.t =
              Runtime.Ops.shift_bitstring_left value_packed width + value ))
        Bigint.(zero, zero)
 
-let compute_checksum (algo : string) (data : Value.t list) =
+let compute_checksum (algo : string) (data : R.Value.t list) =
   package data |> compute_hash algo
 
 (* Calculate a hash function of the value specified by the data
@@ -137,11 +137,11 @@ let compute_checksum (algo : string) (data : Value.t list) =
    extern void hash<O, T, D, M>
     (out O result, in HashAlgorithm algo, in T base, in D data, in M max); *)
 let hash (ctx : Ctx.t) =
-  let eid, algo = Ctx.find_var "algo" ctx |> Value.get_enum in
+  let eid, algo = Ctx.find_var "algo" ctx |> R.Value.get_enum in
   assert (eid = "HashAlgorithm");
-  let base = Ctx.find_var "base" ctx |> Value.get_num in
-  let data = Ctx.find_var "data" ctx |> Value.get_tuple in
-  let max_ = Ctx.find_var "max" ctx |> Value.get_num in
+  let base = Ctx.find_var "base" ctx |> R.Value.get_num in
+  let data = Ctx.find_var "data" ctx |> R.Value.get_tuple in
+  let max_ = Ctx.find_var "max" ctx |> R.Value.get_num in
   let data = compute_checksum algo data in
   let data =
     if Bigint.(max_ = zero) then base
@@ -188,7 +188,7 @@ let verify_checksum (ctx : Ctx.t) =
     let checksum_verified = compute_checksum algo data in
     Format.eprintf
       "(TODO: verify_checksum) checksum given %a ; computed %a from %a\n"
-      Value.pp checksum Bigint.pp checksum_verified Value.pp (TupleV data);
+      R.Value.pp checksum Bigint.pp checksum_verified R.Value.pp (TupleV data);
     ctx
 
 (* Computes the checksum of the supplied data.

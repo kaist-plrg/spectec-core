@@ -1,12 +1,12 @@
 open Syntax.Ast
 open Runtime.Domain
-open Runtime.Base
 open Runtime.Object
 open Runtime.Cclos
 open Runtime.Context
 open Runtime.Signal
 open Util.Source
 open Driver
+module R = Runtime
 
 let make_func (path : string list) (func : string) =
   let base, members =
@@ -76,12 +76,12 @@ module Make (Interp : INTERP) : ARCH = struct
     (* Add "packet_in" and "packet_out" to the store and object environment *)
     let sto = init_instantiate_packet_in ccenv sto ctx in
     let ctx =
-      let value = Value.RefV [ "packet_in" ] in
+      let value = R.Value.RefV [ "packet_in" ] in
       Ctx.add_var_obj "packet_in" value ctx
     in
     let sto = init_instantiate_packet_out ccenv sto ctx in
     let ctx =
-      let value = Value.RefV [ "packet_out" ] in
+      let value = R.Value.RefV [ "packet_out" ] in
       Ctx.add_var_obj "packet_out" value ctx
     in
     (* Add "hdr" to the object environment *)
@@ -222,7 +222,7 @@ module Make (Interp : INTERP) : ARCH = struct
     | [], ("update_checksum", [ "condition"; "data"; "checksum"; "algo" ]) ->
         Hash.update_checksum ctx |> fun ctx -> (Sig.Ret None, ctx)
     | [], ("debug", [ "data" ]) ->
-        Format.eprintf "debug: %a\n" Value.pp (Ctx.find_var_loc "data" ctx);
+        Format.eprintf "debug: %a\n" R.Value.pp (Ctx.find_var_loc "data" ctx);
         (Sig.Ret None, ctx)
     | _ ->
         let path, fvar = ctx.id in

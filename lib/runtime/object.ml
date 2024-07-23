@@ -1,6 +1,5 @@
 open Syntax.Ast
 open Domain
-open Base
 
 (* Runtime representation of objects *)
 
@@ -9,16 +8,16 @@ module Object = struct
     (* Objects that are actually stateful *)
     | ValueSetO
     | TableO of { table : table; mthd : Func.t (* "apply" *) }
-    | ExternO of { vis_glob : vis; env_obj : env }
+    | ExternO of { vis_glob : Vis.vis; env_obj : Env.env }
     (* Objects serving as wrappers *)
     | ParserO of {
-        vis_glob : vis; (* global scope *)
-        env_obj : env; (* block environment for locals and states *)
+        vis_glob : Vis.vis; (* global scope *)
+        env_obj : Env.env; (* block environment for locals and states *)
         mthd : Func.t; (* "apply" is the only entry point *)
       }
     | ControlO of {
-        vis_glob : vis; (* global scope *)
-        env_obj : env; (* block environment for locals and actions *)
+        vis_glob : Vis.vis; (* global scope *)
+        env_obj : Env.env; (* block environment for locals and actions *)
         mthd : Func.t; (* "apply" is the only entry point *)
       }
     | PackageO

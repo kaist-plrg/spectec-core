@@ -1,13 +1,13 @@
 open Syntax.Ast
-open Runtime.Base
 open Util.Source
+module R = Runtime
 
 (* Utils *)
 
-let expect_value (value : Value.t option) : Value.t =
+let expect_value (value : R.Value.t option) : R.Value.t =
   match value with Some value -> value | None -> assert false
 
-let expect_values (values : Value.t list option) : Value.t list =
+let expect_values (values : R.Value.t list option) : R.Value.t list =
   match values with Some values -> values | None -> assert false
 
 (* Checkers for well-formedness *)
@@ -15,7 +15,7 @@ let expect_values (values : Value.t list option) : Value.t list =
 (* Eliminate all type references and replace them with the type they refer to.
    Warning: this will loop forever if there is a cycle in the type references. *)
 
-let rec saturate_type (ctx : Ctx.t) (typ : Type.t) : Type.t =
+let rec saturate_type (ctx : Ctx.t) (typ : R.Type.t) : R.Type.t =
   match typ with
   | VoidT | BoolT | AIntT | IntT _ | BitT _ | VBitT _ | StrT | ErrT | MatchKindT
     ->
@@ -115,8 +115,8 @@ let check_distinct_members (members : member' list) : unit =
     - a type name declared via typedef, where the base type of that type is either one of the types listed above,
       or another typedef name that meets these conditions. *)
 
-let check_valid_alias' (_ctx : Ctx.t) ~(is_newtype : bool) (typ : Type.t) : bool
-    =
+let check_valid_alias' (_ctx : Ctx.t) ~(is_newtype : bool) (typ : R.Type.t) :
+    bool =
   if is_newtype then
     match typ with BitT _ | IntT _ | BoolT -> true | _ -> false
   else
@@ -126,16 +126,17 @@ let check_valid_alias' (_ctx : Ctx.t) ~(is_newtype : bool) (typ : Type.t) : bool
         true
     | _ -> false
 
-let check_valid_alias (ctx : Ctx.t) ~(is_newtype : bool) (typ : Type.t) : unit =
+let check_valid_alias (ctx : Ctx.t) ~(is_newtype : bool) (typ : R.Type.t) : unit
+    =
   if not (check_valid_alias' ctx ~is_newtype typ) then (
     Format.eprintf "(check_valid_alias) Type %a is not a valid %s alias\n"
-      Type.pp typ
+      R.Type.pp typ
       (if is_newtype then "newtype" else "typedef");
     assert false)
   else ()
 
 let check_valid_nesting' ?(in_header = false) (_ctx : Ctx.t)
-    (typ_outer : Type.t) (typ_inner : Type.t) : bool =
+    (typ_outer : R.Type.t) (typ_inner : R.Type.t) : bool =
   match typ_outer with
   | HeaderT _ -> (
       match typ_inner with
@@ -161,14 +162,14 @@ let check_valid_nesting' ?(in_header = false) (_ctx : Ctx.t)
   | SEnumT _ -> ( match typ_inner with BitT _ | IntT _ -> true | _ -> false)
   | _ -> false
 
-let check_valid_nesting ?(in_header = false) (ctx : Ctx.t) (typ_outer : Type.t)
-    (typ_inner : Type.t) : unit =
+let check_valid_nesting ?(in_header = false) (ctx : Ctx.t)
+    (typ_outer : R.Type.t) (typ_inner : R.Type.t) : unit =
   if not (check_valid_nesting' ctx typ_outer typ_inner ~in_header) then (
     Format.eprintf "(check_valid_nesting) Nested types are not well-formed\n";
     assert false)
   else ()
 
-let rec check_well_formed ?(in_header = false) (ctx : Ctx.t) (typ : Type.t) :
+let rec check_well_formed ?(in_header = false) (ctx : Ctx.t) (typ : R.Type.t) :
     unit =
   match saturate_type ctx typ with
   | VoidT | BoolT | AIntT | IntT _ | BitT _ | VBitT _ | StrT | ErrT | MatchKindT
@@ -215,22 +216,28 @@ let rec check_well_formed ?(in_header = false) (ctx : Ctx.t) (typ : Type.t) :
 
 (* Static type and expression evaluation *)
 
-let rec static_eval_type (ctx : Ctx.t) (typ : typ) : Type.t =
+let rec static_eval_type (ctx : Ctx.t) (typ : typ) : R.Type.t =
   match typ.it with
-  | VoidT -> Type.VoidT
-  | BoolT -> Type.BoolT
-  | ErrT -> Type.ErrT
-  | StrT -> Type.StrT
-  | AIntT -> Type.AIntT
+  | VoidT -> R.Type.VoidT
+  | BoolT -> R.Type.BoolT
+  | ErrT -> R.Type.ErrT
+  | StrT -> R.Type.StrT
+  | AIntT -> R.Type.AIntT
   | IntT expr ->
-      let width = static_eval_expr ctx expr |> expect_value |> Value.get_num in
-      Type.IntT width
+      let width =
+        static_eval_expr ctx expr |> expect_value |> R.Value.get_num
+      in
+      R.Type.IntT width
   | BitT expr ->
-      let width = static_eval_expr ctx expr |> expect_value |> Value.get_num in
-      Type.BitT width
+      let width =
+        static_eval_expr ctx expr |> expect_value |> R.Value.get_num
+      in
+      R.Type.BitT width
   | VBitT expr ->
-      let width = static_eval_expr ctx expr |> expect_value |> Value.get_num in
-      Type.VBitT width
+      let width =
+        static_eval_expr ctx expr |> expect_value |> R.Value.get_num
+      in
+      R.Type.VBitT width
   | NameT var -> (
       match var.it with
       | Top id -> Ctx.find_td_glob id.it ctx
@@ -238,11 +245,11 @@ let rec static_eval_type (ctx : Ctx.t) (typ : typ) : Type.t =
   | SpecT (_var, _typs) -> failwith "(TODO: static_eval_type) Handle spec type"
   | StackT (typ, expr) ->
       let typ = static_eval_type ctx typ in
-      let size = static_eval_expr ctx expr |> expect_value |> Value.get_num in
-      Type.StackT (typ, size)
+      let size = static_eval_expr ctx expr |> expect_value |> R.Value.get_num in
+      R.Type.StackT (typ, size)
   | TupleT typs ->
       let typs = List.map (static_eval_type ctx) typs in
-      Type.TupleT typs
+      R.Type.TupleT typs
   | AnyT -> failwith "(TODO: static_eval_type) Handle any type"
 
 (* (18.1)
@@ -264,7 +271,7 @@ let rec static_eval_type (ctx : Ctx.t) (typ : typ) : Type.t =
    - Identifiers declared as constants using the const keyword.
    - Expressions of the form e.minSizeInBits(), e.minSizeInBytes(), e.maxSizeInBits() and e.maxSizeInBytes() *)
 
-and static_eval_expr (ctx : Ctx.t) (expr : expr) : Value.t option =
+and static_eval_expr (ctx : Ctx.t) (expr : expr) : R.Value.t option =
   match expr.it with
   | BoolE b -> static_eval_bool b
   | StrE s -> static_eval_str s
@@ -286,38 +293,41 @@ and static_eval_expr (ctx : Ctx.t) (expr : expr) : Value.t option =
   | CallE (expr_func, targs, args) -> static_eval_call ctx expr_func targs args
   | _ -> None
 
-and static_eval_bool (b : bool) : Value.t option = Some (BoolV b)
-and static_eval_str (s : string) : Value.t option = Some (StrV s)
+and static_eval_bool (b : bool) : R.Value.t option = Some (BoolV b)
+and static_eval_str (s : string) : R.Value.t option = Some (StrV s)
 
 and static_eval_num (value : Bigint.t) (encoding : (Bigint.t * bool) option) :
-    Value.t option =
+    R.Value.t option =
   match encoding with
   | Some (width, signed) ->
       if signed then Some (IntV (width, value)) else Some (BitV (width, value))
   | None -> Some (AIntV value)
 
-and static_eval_var (ctx : Ctx.t) (var : var) : Value.t option =
+and static_eval_var (ctx : Ctx.t) (var : var) : R.Value.t option =
   match var.it with
   | Top id -> Ctx.find_const_glob_opt id.it ctx
   | Bare id -> Ctx.find_const_opt id.it ctx
 
-and static_eval_list (ctx : Ctx.t) (exprs : expr list) : Value.t option =
+and static_eval_list (ctx : Ctx.t) (exprs : expr list) : R.Value.t option =
   let values = static_eval_exprs ctx exprs in
-  Option.map (fun values -> Value.TupleV values) values
+  Option.map (fun values -> R.Value.TupleV values) values
 
 and static_eval_record (ctx : Ctx.t) (fields : (member * expr) list) :
-    Value.t option =
+    R.Value.t option =
   let members, exprs = List.split fields in
   let members = List.map it members in
   let values = static_eval_exprs ctx exprs in
-  Option.map (fun values -> Value.StructV (List.combine members values)) values
+  Option.map
+    (fun values -> R.Value.StructV (List.combine members values))
+    values
 
-and static_eval_unop (ctx : Ctx.t) (op : unop) (expr : expr) : Value.t option =
+and static_eval_unop (ctx : Ctx.t) (op : unop) (expr : expr) : R.Value.t option
+    =
   let value = static_eval_expr ctx expr in
   Option.map (Runtime.Ops.eval_unop op) value
 
 and static_eval_binop (ctx : Ctx.t) (op : binop) (expr_fst : expr)
-    (expr_snd : expr) : Value.t option =
+    (expr_snd : expr) : R.Value.t option =
   let values = static_eval_exprs ctx [ expr_fst; expr_snd ] in
   Option.map
     (fun values ->
@@ -326,21 +336,22 @@ and static_eval_binop (ctx : Ctx.t) (op : binop) (expr_fst : expr)
     values
 
 and static_eval_ternop (ctx : Ctx.t) (expr_cond : expr) (expr_tru : expr)
-    (expr_fls : expr) : Value.t option =
+    (expr_fls : expr) : R.Value.t option =
   let value_cond = static_eval_expr ctx expr_cond in
   Option.bind value_cond (fun value_cond ->
-      let cond = Value.get_bool value_cond in
+      let cond = R.Value.get_bool value_cond in
       let expr = if cond then expr_tru else expr_fls in
       static_eval_expr ctx expr)
 
-and static_eval_cast (ctx : Ctx.t) (typ : typ) (expr : expr) : Value.t option =
+and static_eval_cast (ctx : Ctx.t) (typ : typ) (expr : expr) : R.Value.t option
+    =
   let typ = static_eval_type ctx typ in
   let typ = saturate_type ctx typ in
   let value = static_eval_expr ctx expr in
   Option.map (Runtime.Ops.eval_cast typ) value
 
 and static_eval_bitstring_acc (ctx : Ctx.t) (expr_base : expr) (expr_lo : expr)
-    (expr_hi : expr) : Value.t option =
+    (expr_hi : expr) : R.Value.t option =
   let values = static_eval_exprs ctx [ expr_base; expr_hi; expr_lo ] in
   Option.map
     (fun values ->
@@ -351,7 +362,7 @@ and static_eval_bitstring_acc (ctx : Ctx.t) (expr_base : expr) (expr_lo : expr)
     values
 
 and static_eval_type_acc (ctx : Ctx.t) (var : var) (member : member) :
-    Value.t option =
+    R.Value.t option =
   let typ =
     match var.it with
     | Top id -> Ctx.find_td_glob id.it ctx
@@ -365,14 +376,14 @@ and static_eval_type_acc (ctx : Ctx.t) (var : var) (member : member) :
       Some (SEnumFieldV (id, member.it, value))
   | _ -> None
 
-and static_eval_error_acc (ctx : Ctx.t) (member : member) : Value.t option =
+and static_eval_error_acc (ctx : Ctx.t) (member : member) : R.Value.t option =
   let id = "error." ^ member.it in
   match Ctx.find_const_glob_opt id ctx with
   | Some (ErrV _ as value) -> Some value
   | _ -> None
 
 and static_eval_expr_acc (ctx : Ctx.t) (expr_base : expr) (member : member) :
-    Value.t option =
+    R.Value.t option =
   let value_base = static_eval_expr ctx expr_base in
   match value_base with
   | Some value_base -> (
@@ -384,10 +395,11 @@ and static_eval_expr_acc (ctx : Ctx.t) (expr_base : expr) (member : member) :
   | _ -> None
 
 and static_eval_call (_ctx : Ctx.t) (_expr_func : expr) (_targs : typ list)
-    (_args : arg list) : Value.t option =
+    (_args : arg list) : R.Value.t option =
   failwith "(TODO: static_eval_call) Handle static function call"
 
-and static_eval_exprs (ctx : Ctx.t) (exprs : expr list) : Value.t list option =
+and static_eval_exprs (ctx : Ctx.t) (exprs : expr list) : R.Value.t list option
+    =
   let values = List.map (static_eval_expr ctx) exprs in
   if
     List.for_all Option.is_some values && List.length exprs = List.length values
@@ -396,7 +408,7 @@ and static_eval_exprs (ctx : Ctx.t) (exprs : expr list) : Value.t list option =
 
 (* Type casting *)
 
-let cast_expr (_ctx : Ctx.t) (_typ : Type.t) (expr : expr) : expr =
+let cast_expr (_ctx : Ctx.t) (_typ : R.Type.t) (expr : expr) : expr =
   Format.eprintf "(TODO: cast_expr) Handle type cast insertion\n";
   expr
 
@@ -423,8 +435,8 @@ let type_error_decl_glob (ctx : Ctx.t) (members : member list) : Ctx.t =
     if Ctx.find_const_glob_opt id ctx |> Option.is_some then (
       Format.eprintf "(type_error_decl_glob) Error %s was already defined\n" id;
       assert false);
-    let value = Value.ErrV member.it in
-    let typ = Type.ErrT in
+    let value = R.Value.ErrV member.it in
+    let typ = R.Type.ErrT in
     let ctx = Ctx.add_const_glob id value ctx in
     let ctx = Ctx.add_type_glob id typ ctx in
     ctx
@@ -449,8 +461,8 @@ let type_match_kind_decl_glob (ctx : Ctx.t) (members : member list) : Ctx.t =
       Format.eprintf
         "(type_match_kind_decl_glob) Match kind %s was already defined\n" id;
       assert false);
-    let value = Value.MatchKindV member.it in
-    let typ = Type.MatchKindT in
+    let value = R.Value.MatchKindV member.it in
+    let typ = R.Type.MatchKindT in
     let ctx = Ctx.add_const_glob id value ctx in
     let ctx = Ctx.add_type_glob id typ ctx in
     ctx
@@ -468,7 +480,7 @@ let type_struct_decl_glob (ctx : Ctx.t) (id : id) (fields : (member * typ) list)
   List.iter (fun typ -> Format.eprintf "%a\n" Syntax.Pp.pp_type typ) typs;
   let typs = List.map (static_eval_type ctx) typs in
   let fields = List.combine members typs in
-  let typ = Type.StructT fields in
+  let typ = R.Type.StructT fields in
   check_well_formed ctx typ;
   let ctx = Ctx.add_td_glob id.it typ ctx in
   ctx
@@ -481,7 +493,7 @@ let type_header_decl_glob (ctx : Ctx.t) (id : id) (fields : (member * typ) list)
   let members = List.map it members in
   let typs = List.map (static_eval_type ctx) typs in
   let fields = List.combine members typs in
-  let typ = Type.HeaderT fields in
+  let typ = R.Type.HeaderT fields in
   check_well_formed ctx typ;
   let ctx = Ctx.add_td_glob id.it typ ctx in
   ctx
@@ -494,7 +506,7 @@ let type_union_decl_glob (ctx : Ctx.t) (id : id) (fields : (member * typ) list)
   let members = List.map it members in
   let typs = List.map (static_eval_type ctx) typs in
   let fields = List.combine members typs in
-  let typ = Type.UnionT fields in
+  let typ = R.Type.UnionT fields in
   check_well_formed ctx typ;
   let ctx = Ctx.add_td_glob id.it typ ctx in
   ctx
@@ -506,7 +518,7 @@ let type_union_decl_glob (ctx : Ctx.t) (id : id) (fields : (member * typ) list)
 let type_enum_decl_glob (ctx : Ctx.t) (id : id) (members : member list) : Ctx.t
     =
   let members = List.map it members in
-  let typ = Type.EnumT (id.it, members) in
+  let typ = R.Type.EnumT (id.it, members) in
   check_well_formed ctx typ;
   let ctx = Ctx.add_td_glob id.it typ ctx in
   ctx
@@ -534,7 +546,7 @@ let type_senum_decl_glob (ctx : Ctx.t) (id : id) (typ : typ)
   (* (TODO) Check that values are of typ *)
   let values = static_eval_exprs ctx exprs |> expect_values in
   let fields = List.combine members values in
-  let typ = Type.SEnumT (id.it, typ, fields) in
+  let typ = R.Type.SEnumT (id.it, typ, fields) in
   check_well_formed ctx typ;
   let ctx = Ctx.add_td_glob id.it typ ctx in
   ctx

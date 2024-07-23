@@ -15,7 +15,6 @@
 
 open Syntax.Ast
 open Util.Source
-open Base
 
 (* Bit manipulation *)
 

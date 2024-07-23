@@ -1,5 +1,5 @@
-open Runtime.Base
 open Runtime.Context
+module R = Runtime
 
 let string_to_bits str =
   let char_to_bits c =
@@ -67,7 +67,7 @@ let int_to_bits value size =
 (* The declaration of a header type is given by the following syntax: ...
    nested arbitrary, as long as all of the “leaf” types are bit<W>, int<W>,
    a serializable enum, or a bool (7.2.2) *)
-let rec sizeof ?(size_var = 0) (ctx : Ctx.t) (typ : Type.t) =
+let rec sizeof ?(size_var = 0) (ctx : Ctx.t) (typ : R.Type.t) =
   match typ with
   | BoolT -> 1
   | IntT width | BitT width -> Bigint.to_int width |> Option.get
@@ -94,24 +94,24 @@ module PacketIn = struct
     ({ pkt with idx = pkt.idx + size }, bits)
 
   (* (TODO) enforce that the variable-sized field is used only once *)
-  let rec write ?(size_var = 0) (bits_in : bool Array.t) (value : Value.t) =
+  let rec write ?(size_var = 0) (bits_in : bool Array.t) (value : R.Value.t) =
     match value with
     | BoolV _ ->
         let bit = Array.get bits_in 0 in
         let bits_in = Array.sub bits_in 1 (Array.length bits_in - 1) in
-        let value = Value.BoolV bit in
+        let value = R.Value.BoolV bit in
         (bits_in, value)
     | IntV (width, _) ->
         let size = Bigint.to_int width |> Option.get in
         let bits = Array.sub bits_in 0 size in
         let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
-        let value = Value.IntV (width, bits_to_int bits) in
+        let value = R.Value.IntV (width, bits_to_int bits) in
         (bits_in, value)
     | BitV (width, _) ->
         let size = Bigint.to_int width |> Option.get in
         let bits = Array.sub bits_in 0 size in
         let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
-        let value = Value.BitV (width, bits_to_int bits) in
+        let value = R.Value.BitV (width, bits_to_int bits) in
         (bits_in, value)
     | VBitV (max_width, _, _) ->
         let bits = Array.sub bits_in 0 size_var in
@@ -119,7 +119,7 @@ module PacketIn = struct
           Array.sub bits_in size_var (Array.length bits_in - size_var)
         in
         let value =
-          Value.VBitV (max_width, Bigint.of_int size_var, bits_to_int bits)
+          R.Value.VBitV (max_width, Bigint.of_int size_var, bits_to_int bits)
         in
         (bits_in, value)
     | StructV fields ->
@@ -130,7 +130,7 @@ module PacketIn = struct
               (bits_in, fields @ [ (key, value) ]))
             (bits_in, []) fields
         in
-        (bits_in, Value.StructV fields)
+        (bits_in, R.Value.StructV fields)
     | HeaderV (_, fields) ->
         let bits_in, fields =
           List.fold_left
@@ -139,12 +139,12 @@ module PacketIn = struct
               (bits_in, fields @ [ (key, value) ]))
             (bits_in, []) fields
         in
-        (bits_in, Value.HeaderV (true, fields))
+        (bits_in, R.Value.HeaderV (true, fields))
     | SEnumFieldV (id, member, value) ->
         let bits_in, value = write ~size_var bits_in value in
-        (bits_in, Value.SEnumFieldV (id, member, value))
+        (bits_in, R.Value.SEnumFieldV (id, member, value))
     | _ ->
-        Format.asprintf "Cannot write value %a to packet" Value.pp value
+        Format.asprintf "Cannot write value %a to packet" R.Value.pp value
         |> failwith
 
   (* Read a header from the packet into a fixed-sized header @hdr and advance the cursor.
@@ -170,7 +170,7 @@ module PacketIn = struct
     let header = Ctx.find_var "variableSizeHeader" ctx in
     let size_var =
       Ctx.find_var "variableFieldSizeInBits" ctx
-      |> Value.get_num |> Bigint.to_int |> Option.get
+      |> R.Value.get_num |> Bigint.to_int |> Option.get
     in
     let pkt, bits = sizeof ~size_var ctx typ |> parse pkt in
     let _, header = write ~size_var bits header in
@@ -193,7 +193,7 @@ module PacketIn = struct
   let advance (ctx : Ctx.t) (pkt : t) =
     let size =
       Ctx.find_var "sizeInBits" ctx
-      |> Value.get_num |> Bigint.to_int |> Option.get
+      |> R.Value.get_num |> Bigint.to_int |> Option.get
     in
     let pkt = { pkt with idx = pkt.idx + size } in
     (ctx, pkt)
@@ -206,7 +206,7 @@ module PacketIn = struct
       (if pkt.len mod 8 = 0 then pkt.len / 8 else (pkt.len / 8) + 1)
       |> Bigint.of_int
     in
-    (ctx, Value.BitV (Bigint.of_int 32, len))
+    (ctx, R.Value.BitV (Bigint.of_int 32, len))
 end
 
 module PacketOut = struct
@@ -215,7 +215,7 @@ module PacketOut = struct
   let init = { bits = [||] }
   let pp fmt (pkt : t) = Format.fprintf fmt "%s" (bits_to_string pkt.bits)
 
-  let rec deparse (pkt : t) (value : Value.t) =
+  let rec deparse (pkt : t) (value : R.Value.t) =
     match value with
     | BoolV b -> { bits = Array.append pkt.bits (Array.make 1 b) }
     | IntV (width, value) | BitV (width, value) | VBitV (_, width, value) ->
@@ -231,7 +231,7 @@ module PacketOut = struct
         else pkt
     | SEnumFieldV (_, _, value) -> deparse pkt value
     | _ ->
-        Format.asprintf "Cannot deparse value %a to packet" Value.pp value
+        Format.asprintf "Cannot deparse value %a to packet" R.Value.pp value
         |> failwith
 
   (* Write @hdr into the output packet, advancing cursor.

@@ -1,5 +1,3 @@
-open Base
-
 (* Signal for control flow *)
 
 module Sig = struct

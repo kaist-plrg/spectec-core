@@ -1,5 +1,6 @@
 open Domain
-open Base
+open Vis
+open Env
 
 (* Context for instantiation:
    Instantiation does not look into method/function body *)
@@ -10,7 +11,7 @@ module ICtx = struct
      preferrably added only to vis_*, but to remember their types
      (since their values should not known at compile time)
      they are also added to env_* with default value *)
-  type t = { env_glob : env; vis_glob : vis; env_obj : env; vis_obj : vis }
+  type t = { env_glob : env; vis_glob : vis; env_obj : env; vis_obj : Vis.vis }
 
   let empty =
     {
