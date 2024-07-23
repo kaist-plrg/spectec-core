@@ -881,18 +881,56 @@ module Make (Arch : ARCH) : INTERP = struct
 
   (* Logic for match-action table *)
 
-  and match_action (ctx : Ctx.t) (_keys : (Value.t * mtch_kind) list)
-      (actions : table_action list) (_entries : table_entry list)
+  and match_action (ctx : Ctx.t) (keys : (Value.t * mtch_kind) list)
+      (actions : table_action list) (entries : table_entry list)
       (default : table_default option) (_custom : table_custom list) =
     let path, _ = ctx.id in
     let id = List.rev path |> List.hd in
     (* Determine the action to be run *)
     (* Always give the default action for now *)
-    let action =
-      match default with
-      | Some { it = action, _; _ } -> Some action
-      | None -> None
+    let rec make_key x =
+      match x with
+      | [] -> []
+      | h::t -> let (hs, _) = h in 
+                let kk = Value.get_num hs in
+                print_endline (Bigint.to_string kk);
+                hs::make_key t
     in
+    let key = make_key keys
+    in
+    let rec mtch_chk ent_list key_list = 
+      match (ent_list, key_list) with
+      | (_, []) -> true
+      | ([], _) -> true
+      | (he::te , h::t) -> 
+        match he.it with
+        | ExprM expr ->
+           let he2val = interp_expr ctx expr |> snd in
+           let kk2 = Value.get_num he2val in
+           let kk3 = Value.get_num h in
+           print_endline (Bigint.to_string kk2);
+           print_endline (Bigint.to_string kk3);
+           print_endline (if kk2 = kk3  then "TRUEE2" else "FFF2");
+           if kk2 = kk3 then mtch_chk te t else false
+        | DefaultM|AnyM  -> false
+    in
+    let to_option x = Some x in
+    let rec enen ent =
+      match ent with
+      | [] -> let is_def = 
+              match default with
+              | Some { it = action, _; _ } -> Some action
+              | None -> None
+              in
+              print_endline "30";
+              is_def
+      | h::t -> 
+          let (macth_list, ent_act) = h.it in 
+          let res = mtch_chk macth_list key in
+          print_endline (if res then "TRUEE" else "FFF");
+          if res then to_option ent_act else enen t
+    in
+    let action = enen entries in
     (* Calling an apply method on a table instance returns a value with
        a struct type with three fields. This structure is synthesized
        by the compiler automatically. (14.2.2) *)
