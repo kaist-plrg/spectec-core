@@ -4,6 +4,7 @@ open Runtime.Base
 open Runtime.Object
 open Runtime.Context
 open Runtime.Signal
+open Runtime.Ops
 open Util.Source
 open Driver
 
@@ -887,50 +888,44 @@ module Make (Arch : ARCH) : INTERP = struct
     let path, _ = ctx.id in
     let id = List.rev path |> List.hd in
     (* Determine the action to be run *)
-    (* Always give the default action for now *)
-    let rec make_key x =
-      match x with
-      | [] -> []
-      | h::t -> let (hs, _) = h in 
-                let kk = Value.get_num hs in
-                print_endline (Bigint.to_string kk);
-                hs::make_key t
+    (* Decl the default_action*)
+    let default_action = 
+      match default with
+      | Some { it = action, _; _ } -> Some action
+      | None -> None
     in
-    let key = make_key keys
+    (* To make correct type *)
+    let add_option x = Some x in
+    (* Match *)
+    let rec mtch_check ent_list key_list = 
+      match ent_list, key_list with
+      | [], [] -> true
+      | _, [] | [], _ -> failwith "key length and entry length should be same"
+      | he::te, h::t ->
+        let (key_value, key_mtch_kind) = h in
+        match he.it, key_mtch_kind.it with
+        | ExprM expr, "exact" ->
+          let entry_value = interp_expr ctx expr |> snd in
+          if eval_binop_eq entry_value key_value then mtch_check te t else false
+        (* compare two value using mask *)
+        | ExprM expr, "lpm" | ExprM expr, "ternary" ->
+          let entry_value = interp_expr ctx expr |> snd in
+          if eval_binop_eq entry_value key_value then mtch_check te t else false
+        | _, _  -> false
     in
-    let rec mtch_chk ent_list key_list = 
-      match (ent_list, key_list) with
-      | (_, []) -> true
-      | ([], _) -> true
-      | (he::te , h::t) -> 
-        match he.it with
-        | ExprM expr ->
-           let he2val = interp_expr ctx expr |> snd in
-           let kk2 = Value.get_num he2val in
-           let kk3 = Value.get_num h in
-           print_endline (Bigint.to_string kk2);
-           print_endline (Bigint.to_string kk3);
-           print_endline (if kk2 = kk3  then "TRUEE2" else "FFF2");
-           if kk2 = kk3 then mtch_chk te t else false
-        | DefaultM|AnyM  -> false
-    in
-    let to_option x = Some x in
-    let rec enen ent =
-      match ent with
-      | [] -> let is_def = 
-              match default with
-              | Some { it = action, _; _ } -> Some action
-              | None -> None
-              in
-              print_endline "30";
-              is_def
+    (* Choose action having biggest priority *)
+    let rec compare_keys entry_list priority matched_action =
+      match entry_list with
+      | [] -> matched_action
       | h::t -> 
-          let (macth_list, ent_act) = h.it in 
-          let res = mtch_chk macth_list key in
-          print_endline (if res then "TRUEE" else "FFF");
-          if res then to_option ent_act else enen t
+          let (match_list, entry_action) = h.it in
+          assert (List.length match_list = List.length keys);
+          let refresh = mtch_check match_list keys in
+          let new_matched_action = add_option entry_action in
+          let new_priority = 0 in
+          if refresh && new_priority >= priority then compare_keys t new_priority new_matched_action else compare_keys t priority matched_action
     in
-    let action = enen entries in
+    let action = compare_keys entries 0 default_action in
     (* Calling an apply method on a table instance returns a value with
        a struct type with three fields. This structure is synthesized
        by the compiler automatically. (14.2.2) *)
