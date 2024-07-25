@@ -187,8 +187,8 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       let typ = R.Type.SEnumT (id.it, typ, fields) in
       let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
-  | NewTypeD { id; typ } | TypeDefD { id; typ } -> (
-      match typ with
+  | NewTypeD { id; typdef } | TypeDefD { id; typdef } -> (
+      match typdef with
       | Left typ ->
           let typ = Eval.eval_type ictx typ in
           let ictx = ICtx.add_td_glob id.it typ ictx in

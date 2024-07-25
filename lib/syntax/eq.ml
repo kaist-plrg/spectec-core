@@ -297,9 +297,9 @@ and eq_decl' (_, decl) (_, decl') =
            (fun (member, expr) (member', expr') ->
              eq_member member member' && eq_expr expr expr')
            fields fields'
-  | NewTypeD { id; typ }, NewTypeD { id = id'; typ = typ' }
-  | TypeDefD { id; typ }, TypeDefD { id = id'; typ = typ' } ->
-      eq_id id id' && eq_alt eq_type eq_decl typ typ'
+  | NewTypeD { id; typdef }, NewTypeD { id = id'; typdef = typdef' }
+  | TypeDefD { id; typdef }, TypeDefD { id = id'; typdef = typdef' } ->
+      eq_id id id' && eq_alt eq_type eq_decl typdef typdef'
   | ( ValueSetD { id; typ; size },
       ValueSetD { id = id'; typ = typ'; size = size' } ) ->
       eq_id id id' && eq_type typ typ' && eq_expr size size'

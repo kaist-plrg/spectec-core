@@ -13,7 +13,8 @@ let desugar includes filename =
 
 let typecheck includes filename =
   let program = desugar includes filename in
-  Typing.Typecheck.type_program program
+  (* Typing.Typecheck.type_program program *)
+  Typingnew.Typecheck.type_program program
 
 let instantiate includes filename =
   (* let program = typecheck includes filename in *)

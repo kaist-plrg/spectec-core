@@ -458,20 +458,20 @@ and desugar_decl (decl : Declaration.t) : decl =
       SEnumD { id; typ; fields } $ at
   | NewType { name; typ_or_decl; tags = at; _ } ->
       let id = desugar_id name in
-      let typ =
+      let typdef =
         match typ_or_decl with
         | Left typ -> (Left (desugar_type typ) : (typ, decl) alt)
         | Right decl -> (Right (desugar_decl decl) : (typ, decl) alt)
       in
-      NewTypeD { id; typ } $ at
+      NewTypeD { id; typdef } $ at
   | TypeDef { name; typ_or_decl; tags = at; _ } ->
       let id = desugar_id name in
-      let typ =
+      let typdef =
         match typ_or_decl with
         | Left typ -> (Left (desugar_type typ) : (typ, decl) alt)
         | Right decl -> (Right (desugar_decl decl) : (typ, decl) alt)
       in
-      TypeDefD { id; typ } $ at
+      TypeDefD { id; typdef } $ at
   | ValueSet { name; typ; size; tags = at; _ } ->
       let id = desugar_id name in
       let typ = desugar_type typ in

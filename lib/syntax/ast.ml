@@ -151,20 +151,20 @@ and select_case' = mtch list * label
 and decl = decl' phrase
 
 and decl' =
-  (* Constant, variable, and instance declarations *)
+  (* Constant, variable, error, match_kind, and instance declarations *)
   | ConstD of { id : id; typ : typ; value : expr }
   | VarD of { id : id; typ : typ; init : expr option }
   | InstD of { id : id; typ : typ; args : arg list; init : block option }
-  (* Type declarations *)
   | ErrD of { members : member list }
   | MatchKindD of { members : member list }
+  (* Type declarations *)
   | StructD of { id : id; fields : (member * typ) list }
   | HeaderD of { id : id; fields : (member * typ) list }
   | UnionD of { id : id; fields : (member * typ) list }
   | EnumD of { id : id; members : member list }
   | SEnumD of { id : id; typ : typ; fields : (member * expr) list }
-  | NewTypeD of { id : id; typ : (typ, decl) alt }
-  | TypeDefD of { id : id; typ : (typ, decl) alt }
+  | NewTypeD of { id : id; typdef : (typ, decl) alt }
+  | TypeDefD of { id : id; typdef : (typ, decl) alt }
   (* Object declarations *)
   (* Value Set *)
   | ValueSetD of { id : id; typ : typ; size : expr }

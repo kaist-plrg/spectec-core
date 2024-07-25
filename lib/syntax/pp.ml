@@ -349,16 +349,16 @@ and pp_decl fmt (level, decl) =
         id pp_serial_fields
         (level + 1, fields)
         (indent level)
-  | NewTypeD { id; typ } -> (
-      match typ with
+  | NewTypeD { id; typdef } -> (
+      match typdef with
       | Left typ ->
           F.fprintf fmt "%stype %a %a;" (indent level) pp_type typ pp_id id
       | Right decl ->
           F.fprintf fmt "%stype %a %a;" (indent level) pp_decl
             (level + 1, decl)
             pp_id id)
-  | TypeDefD { id; typ } -> (
-      match typ with
+  | TypeDefD { id; typdef } -> (
+      match typdef with
       | Left typ ->
           F.fprintf fmt "%stypedef %a %a;" (indent level) pp_type typ pp_id id
       | Right decl ->

@@ -622,12 +622,12 @@ let type_decl_glob (ctx : Ctx.t) (decl : decl) : Ctx.t =
   | UnionD { id; fields } -> type_union_decl_glob ctx id fields
   | EnumD { id; members } -> type_enum_decl_glob ctx id members
   | SEnumD { id; typ; fields } -> type_senum_decl_glob ctx id typ fields
-  | NewTypeD { id; typ } -> (
-      match typ with
+  | NewTypeD { id; typdef } -> (
+      match typdef with
       | Left typ -> type_newtype_decl_glob ctx id typ
       | Right _ -> failwith "(TODO: type_decl_glob) Handle newtype with decl")
-  | TypeDefD { id; typ } -> (
-      match typ with
+  | TypeDefD { id; typdef } -> (
+      match typdef with
       | Left typ -> type_typedef_decl_glob ctx id typ
       | Right _ -> failwith "(TODO: type_decl_glob) Handle typedef with decl")
   | ParserTypeD { id; tparams; params } ->

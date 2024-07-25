@@ -8,6 +8,8 @@ module Id = struct
   let compare = compare
 end
 
+module TId = Id
+
 module FId = struct
   type t = string * string list
 
