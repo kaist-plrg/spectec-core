@@ -1,0 +1,14 @@
+packet 0 01 1111 00 00 b0
+expect 1 01 1111 00 01 b0
+
+packet 0 02 1181 00 00 b0
+expect 2 02 1181 00 02 b0
+
+packet 0 03 1000 00 00 b0
+expect 3 03 1000 00 03 b0
+
+packet 0 04 1111 00 00 b0
+expect 4 04 1111 00 04 b0
+
+packet 0 02 11F1 00 00 b0
+expect 4 02 11F1 00 00 b0
