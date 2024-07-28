@@ -21,9 +21,9 @@ You will need `ocaml` installed with `dune` and `menhir` library using `opam`.
   $ opam switch create 4.14.0
   ```
   
-* Install `dune` version 3.13.0 and `menhir` version 20231231 and `core` version 15.0.0 via `opam` .
+* Install `dune` version 3.13.0 and `menhir` version 20231231 and `core` version `v0.15.0` via `opam` .
   ```
-  $ opam install dune menhir core.15.0.0
+  $ opam install dune menhir core.v0.15.0
   ```
 
 * Install the project.
