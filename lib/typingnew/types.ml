@@ -4,29 +4,29 @@ open Util.Source
 module BaseType = struct
   type t =
     | VoidT
+    | ErrT
+    | MatchKindT
+    | StrT
     | BoolT
     | AIntT
     | IntT of Bigint.t
     | BitT of Bigint.t
     | VBitT of Bigint.t
-    | StrT
-    | ErrT
-    | MatchKindT
     | TupleT of t list
     | StackT of t * Bigint.t
     | VarT of var'
-    | SpecT of var' * t list
+    | SVarT of var' * t list
 
   let rec pp fmt = function
     | VoidT -> Format.fprintf fmt "void"
+    | ErrT -> Format.fprintf fmt "error"
+    | MatchKindT -> Format.fprintf fmt "match_kind"
+    | StrT -> Format.fprintf fmt "string"
     | BoolT -> Format.fprintf fmt "bool"
     | AIntT -> Format.fprintf fmt "int"
     | IntT n -> Format.fprintf fmt "int<%a>" Bigint.pp n
     | BitT n -> Format.fprintf fmt "bit<%a>" Bigint.pp n
     | VBitT n -> Format.fprintf fmt "vbit<%a>" Bigint.pp n
-    | StrT -> Format.fprintf fmt "string"
-    | ErrT -> Format.fprintf fmt "error"
-    | MatchKindT -> Format.fprintf fmt "match_kind"
     | TupleT ts ->
         Format.fprintf fmt "tuple<%a>"
           (Format.pp_print_list
@@ -35,7 +35,7 @@ module BaseType = struct
           ts
     | StackT (t, n) -> Format.fprintf fmt "stack %a[%a]" pp t Bigint.pp n
     | VarT var -> Format.fprintf fmt "%a" Syntax.Pp.pp_var (var $ no_info)
-    | SpecT (var, ts) ->
+    | SVarT (var, ts) ->
         Format.fprintf fmt "%a<%a>" Syntax.Pp.pp_var (var $ no_info)
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
@@ -67,13 +67,10 @@ module TypeDef = struct
     | EnumT of member' list
     | SEnumT of BaseType.t * (member' * Runtime.Value.t) list
     (* Object type definitions *)
-    | ExternT
-    | ParserT of param' list
-    | ParserProtoT of tparam' list * param' list
-    | ControlT of param' list
-    | ControlProtoT of tparam' list * param' list
-    | PackageT of param' list
-    | PackageProtoT of tparam' list * param' list
+    | ExternT of tparam' list
+    | ParserT of tparam' list * param' list
+    | ControlT of tparam' list * param' list
+    | PackageT of tparam' list * param' list
 
   let pp fmt = function
     | DefT t -> Format.fprintf fmt "typedef %a" BaseType.pp t
@@ -117,17 +114,8 @@ module TypeDef = struct
                Format.fprintf fmt "%a: %a" Syntax.Pp.pp_member (m $ no_info)
                  Runtime.Value.pp v))
           members
-    | ExternT -> Format.fprintf fmt "extern"
+    | ExternT _ -> Format.fprintf fmt "extern"
     | ParserT _ -> Format.fprintf fmt "parser"
-    | ParserProtoT _ -> Format.fprintf fmt "parser prototype"
     | ControlT _ -> Format.fprintf fmt "control"
-    | ControlProtoT _ -> Format.fprintf fmt "control prototype"
     | PackageT _ -> Format.fprintf fmt "package"
-    | PackageProtoT _ -> Format.fprintf fmt "package prototype"
-
-  let get_tparams = function
-    | ParserProtoT (tparams, _) -> tparams
-    | ControlProtoT (tparams, _) -> tparams
-    | PackageProtoT (tparams, _) -> tparams
-    | _ -> []
 end

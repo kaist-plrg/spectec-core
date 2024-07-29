@@ -13,11 +13,9 @@ let desugar includes filename =
 
 let typecheck includes filename =
   let program = desugar includes filename in
-  (* Typing.Typecheck.type_program program *)
   Typingnew.Typecheck.type_program program
 
 let instantiate includes filename =
-  (* let program = typecheck includes filename in *)
   let program = desugar includes filename in
   Instance.Instantiate.instantiate_program program
 
@@ -67,8 +65,8 @@ let typecheck_command =
      let%map includes = flag "-i" (listed string) ~doc:"include paths"
      and filename = anon ("file.p4" %: string) in
      fun () ->
-       let program = typecheck includes filename in
-       Format.printf "%a\n" Syntax.Pp.pp_program program)
+       let ctx = typecheck includes filename in
+       Format.printf "%a\n" Typingnew.Ctx.pp ctx)
 
 let instantiate_command =
   Command.basic ~summary:"instantiate a p4_16 program"
