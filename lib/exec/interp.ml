@@ -881,24 +881,26 @@ module Make (Arch : ARCH) : INTERP = struct
         |> failwith
 
   (* Logic for match-action table *)
-  and get_lpm_priority (mask : Value.t) (pre_bit : int) (priority : int) : int = 
+  and get_lpm_priority (mask : Value.t) (pre_bit : int) (priority : int) : int =
     match mask with
-    | BitV (width, value) -> 
-        if Bigint.(width = zero) then priority else 
-        let two = Bigint.(one + one) in
-        let width' = Bigint.(width - one) in
-        let value' = Bigint.(value % two) in
-        let value'' = Bigint.(value / two) in
-        let x = bit_of_raw_int width' value'' in
-        if Bigint.(value' = zero) then get_lpm_priority x 0 priority
+    | BitV (width, value) ->
+        if Bigint.(width = zero) then priority
         else
-          let y = priority + 1 in
-          if pre_bit = 0 && priority <> 0 then failwith "wrong format for lpm mask"
+          let two = Bigint.(one + one) in
+          let width' = Bigint.(width - one) in
+          let value' = Bigint.(value % two) in
+          let value'' = Bigint.(value / two) in
+          let x = bit_of_raw_int width' value'' in
+          if Bigint.(value' = zero) then get_lpm_priority x 0 priority
           else
-          get_lpm_priority x 1 y
+            let y = priority + 1 in
+            if pre_bit = 0 && priority <> 0 then
+              failwith "wrong format for lpm mask"
+            else get_lpm_priority x 1 y
     | _ -> failwith "wrong type for lpm mask"
 
-  and get_masked_value (ctx : Ctx.t) (key_value : Value.t) (expr : expr) (mask : expr) =
+  and get_masked_value (ctx : Ctx.t) (key_value : Value.t) (expr : expr)
+      (mask : expr) =
     (* Assume that key type is BitV *)
     let width = Value.get_width key_value in
     (* Evaluate expr and mask *)
@@ -912,48 +914,55 @@ module Make (Arch : ARCH) : INTERP = struct
     (masked_expr_value, masked_key_value, mask_value)
 
   (* Match *)
-  and mtch_check (ctx : Ctx.t) (ent_list : mtch list) (key_list : (Value.t * mtch_kind) list) (lpm_priority : int option) = 
-    match ent_list, key_list with
-    | [], [] -> true, lpm_priority
-    | _, [] | [], _ -> failwith "key length and entry length should be same"
-    | he::te, h::t ->
-      let (key_value, key_mtch_kind) = h in
-      match he.it, key_mtch_kind.it with
-      | AnyM, "exact" | AnyM, "ternary" | AnyM, "lpm" -> mtch_check ctx te t lpm_priority
-      | ExprM expr, "exact" ->
-        let entry_value = interp_expr ctx expr |> snd in
-        let chk = eval_binop_eq entry_value key_value in
-        if chk then mtch_check ctx te t lpm_priority else false, lpm_priority
-      | ExprM expr, "ternary" ->
-        let (entry_value, key_value) = 
-          match expr.it with
-          | MaskE (expr, mask) -> 
-            let (masked_expr_value, masked_key_value, _) = get_masked_value ctx key_value expr mask in
-            (masked_expr_value, masked_key_value)
-          | _ -> 
-            let expr_value = interp_expr ctx expr |> snd in
-            (expr_value, key_value)
-        in
-        let chk = eval_binop_eq entry_value key_value in
-        if chk then mtch_check ctx te t lpm_priority else false, lpm_priority
-      | ExprM expr, "lpm" ->
-        (* lpm must be once *)
-        assert (lpm_priority = None);
-        let (entry_value, key_value, lpm_priority) = 
-          match expr.it with
-          | MaskE (expr, mask) -> 
-            let (masked_expr_value, masked_key_value, mask_value) = get_masked_value ctx key_value expr mask in
-            (* Calculate lpm_priority *)
-            let lpm_priority = get_lpm_priority mask_value 0 0 in
-            let lpm_priority = Some lpm_priority in
-            (masked_expr_value, masked_key_value, lpm_priority)
-          | _ -> 
-            let expr_value = interp_expr ctx expr |> snd in
-            (expr_value, key_value, Some 0)
-        in
-        let chk = eval_binop_eq entry_value key_value in
-        if chk then mtch_check ctx te t lpm_priority else false, lpm_priority
-      | _, _  -> failwith "wrong format of match action table"
+  and mtch_check (ctx : Ctx.t) (ent_list : mtch list)
+      (key_list : (Value.t * mtch_kind) list) =
+    let mtch_check' (is_match, lpm_priority) ent key =
+      if not is_match then (is_match, lpm_priority)
+      else
+        let key_value, key_mtch_kind = key in
+        match (ent.it, key_mtch_kind.it) with
+        | AnyM, "exact" | AnyM, "ternary" | AnyM, "lpm" ->
+            (is_match, lpm_priority)
+        | ExprM expr, "exact" ->
+            let entry_value = interp_expr ctx expr |> snd in
+            let is_match = eval_binop_eq entry_value key_value in
+            (is_match, lpm_priority)
+        | ExprM expr, "ternary" ->
+            let entry_value, key_value =
+              match expr.it with
+              | MaskE (expr, mask) ->
+                  let masked_expr_value, masked_key_value, _ =
+                    get_masked_value ctx key_value expr mask
+                  in
+                  (masked_expr_value, masked_key_value)
+              | _ ->
+                  let expr_value = interp_expr ctx expr |> snd in
+                  (expr_value, key_value)
+            in
+            let is_match = eval_binop_eq entry_value key_value in
+            (is_match, lpm_priority)
+        | ExprM expr, "lpm" ->
+            (* lpm must be once *)
+            assert (lpm_priority = None);
+            let entry_value, key_value, lpm_priority =
+              match expr.it with
+              | MaskE (expr, mask) ->
+                  let masked_expr_value, masked_key_value, mask_value =
+                    get_masked_value ctx key_value expr mask
+                  in
+                  (* Calculate lpm_priority *)
+                  let lpm_priority = get_lpm_priority mask_value 0 0 in
+                  let lpm_priority = Some lpm_priority in
+                  (masked_expr_value, masked_key_value, lpm_priority)
+              | _ ->
+                  let expr_value = interp_expr ctx expr |> snd in
+                  (expr_value, key_value, Some 0)
+            in
+            let is_match = eval_binop_eq entry_value key_value in
+            (is_match, lpm_priority)
+        | _ -> failwith "wrong format of match action table"
+    in
+    List.fold_left2 mtch_check' (true, None) ent_list key_list
 
   and match_action (ctx : Ctx.t) (keys : (Value.t * mtch_kind) list)
       (actions : table_action list) (entries : table_entry list)
@@ -962,25 +971,26 @@ module Make (Arch : ARCH) : INTERP = struct
     let id = List.rev path |> List.hd in
     (* Determine the action to be run *)
     (* Decl the default_action*)
-    let default_action = 
+    let default_action =
       match default with
       | Some { it = action, _; _ } -> Some action
       | None -> None
     in
     (* Choose action having biggest priority *)
     (* priority is not implemented *)
-    let rec compare_keys entry_list priority lpm_priority matched_action =
-      match entry_list with
-      | [] -> matched_action
-      | h::t -> 
-          let (match_list, entry_action) = h.it in
-          let refresh, new_lpm_priority = mtch_check ctx match_list keys lpm_priority in
-          let new_matched_action = Some entry_action in
-          let new_priority = Some 0 in
-          (* Should implement correct comparsion of priority and lpm_priority *)
-          if refresh && priority = None then compare_keys t new_priority new_lpm_priority new_matched_action else compare_keys t priority lpm_priority matched_action
+    let compare_keys (priority, lpm_priority, matched_action) entry =
+      let match_list, entry_action = entry.it in
+      let refresh, new_lpm_priority = mtch_check ctx match_list keys in
+      let new_matched_action = Some entry_action in
+      let new_priority = Some 0 in
+      (* Should implement correct comparsion of priority and lpm_priority *)
+      if refresh && priority = None then
+        (new_priority, new_lpm_priority, new_matched_action)
+      else (priority, lpm_priority, matched_action)
     in
-    let action = compare_keys entries None None default_action in
+    let _, _, action =
+      List.fold_left compare_keys (None, None, default_action) entries
+    in
     (* Calling an apply method on a table instance returns a value with
        a struct type with three fields. This structure is synthesized
        by the compiler automatically. (14.2.2) *)
