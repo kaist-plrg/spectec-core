@@ -1,158 +1,151 @@
-open Runtime.Vis
-open Runtime.Env
+open Syntax.Ast
+open Runtime.Domain
+open Types
+module Value = Runtime.Value
 
-type env = {
-  (* Typedefs, Functions, Constants, and Variable Types *)
-  glob : TDEnv.t * FEnv.t * VEnv.t * TEnv.t;
-  obj : TDEnv.t * FEnv.t * VEnv.t * TEnv.t;
-  loc : TDEnv.t * (VEnv.t * TEnv.t) list;
-}
+(* Environments *)
 
-type vis = {
-  glob : TDVis.t * FVis.t * VVis.t * TVis.t;
-  obj : TDVis.t * FVis.t * VVis.t * TVis.t;
-}
+module CEnv = MakeEnv (FId) (ConsType)
+module TDEnv = MakeEnv (TId) (TypeDef)
+module FEnv = MakeEnv (FId) (FuncType)
+module VEnv = MakeEnv (Id) (Runtime.Value)
+module TEnv = MakeEnv (Id) (BaseType)
 
-type t = { cc : CCEnv.t; env : env; vis : vis }
+(* Context is consisted of layers of environments *)
 
-let env_from_vis (tdenv, fenv, venv, tenv) (tdvis, fvis, vvis, tvis) =
-  let tdenv = TDEnv.filter (fun tvar _ -> TDVis.mem tvar tdvis) tdenv in
-  let fenv = FEnv.filter (fun fvar _ -> FVis.mem fvar fvis) fenv in
-  let venv = VEnv.filter (fun var _ -> VVis.mem var vvis) venv in
-  let tenv = TEnv.filter (fun tvar _ -> TVis.mem tvar tvis) tenv in
-  (tdenv, fenv, venv, tenv)
+type layer = Global | Block | Local
+type frame = TDEnv.t * FEnv.t * VEnv.t * TEnv.t
+type t = { cons : CEnv.t; global : frame; block : frame; local : frame list }
+
+let empty_frame = (TDEnv.empty, FEnv.empty, VEnv.empty, TEnv.empty)
 
 let empty =
-  let cc = CCEnv.empty in
-  let env =
-    {
-      glob = (TDEnv.empty, FEnv.empty, VEnv.empty, TEnv.empty);
-      obj = (TDEnv.empty, FEnv.empty, VEnv.empty, TEnv.empty);
-      loc = (TDEnv.empty, []);
-    }
-  in
-  let vis =
-    {
-      glob = (TDVis.empty, FVis.empty, VVis.empty, TVis.empty);
-      obj = (TDVis.empty, FVis.empty, VVis.empty, TVis.empty);
-    }
-  in
-  { cc; env; vis }
+  { cons = CEnv.empty; global = empty_frame; block = empty_frame; local = [] }
 
 (* Adders *)
 
-let add_td_glob name typ ctx =
-  let gtdenv, gfenv, gvenv, gtenv = ctx.env.glob in
-  let gtdenv = TDEnv.add name typ gtdenv in
-  let gtdvis, gfvis, gvvis, gtvis = ctx.vis.glob in
-  let gtdvis = TDVis.add name gtdvis in
-  {
-    ctx with
-    env = { ctx.env with glob = (gtdenv, gfenv, gvenv, gtenv) };
-    vis = { ctx.vis with glob = (gtdvis, gfvis, gvvis, gtvis) };
-  }
+let add_td layer tid td ctx =
+  match layer with
+  | Global ->
+      let tdenv, fenv, venv, tenv = ctx.global in
+      { ctx with global = (TDEnv.add tid td tdenv, fenv, venv, tenv) }
+  | Block ->
+      let tdenv, fenv, venv, tenv = ctx.block in
+      { ctx with block = (TDEnv.add tid td tdenv, fenv, venv, tenv) }
+  | Local ->
+      let frame = List.hd ctx.local in
+      let tdenv, fenv, venv, tenv = frame in
+      let frame = (TDEnv.add tid td tdenv, fenv, venv, tenv) in
+      { ctx with local = frame :: List.tl ctx.local }
 
-let add_const_glob name value ctx =
-  let gtdenv, gfenv, gvenv, gtenv = ctx.env.glob in
-  let gvenv = VEnv.add name value gvenv in
-  let gtdvis, gfvis, gvvis, gtvis = ctx.vis.glob in
-  let gvvis = VVis.add name gvvis in
-  {
-    ctx with
-    env = { ctx.env with glob = (gtdenv, gfenv, gvenv, gtenv) };
-    vis = { ctx.vis with glob = (gtdvis, gfvis, gvvis, gtvis) };
-  }
+let add_value layer id value ctx =
+  match layer with
+  | Global ->
+      let tdenv, fenv, venv, tenv = ctx.global in
+      { ctx with global = (tdenv, fenv, VEnv.add id value venv, tenv) }
+  | Block ->
+      let tdenv, fenv, venv, tenv = ctx.block in
+      { ctx with block = (tdenv, fenv, VEnv.add id value venv, tenv) }
+  | Local ->
+      let frame = List.hd ctx.local in
+      let tdenv, fenv, venv, tenv = frame in
+      let frame = (tdenv, fenv, VEnv.add id value venv, tenv) in
+      { ctx with local = frame :: List.tl ctx.local }
 
-let add_type_glob name typ ctx =
-  let gtdenv, gfenv, gvenv, gtenv = ctx.env.glob in
-  let gtenv = TEnv.add name typ gtenv in
-  let gtdvis, gfvis, gvvis, gtvis = ctx.vis.glob in
-  let gtvis = TVis.add name gtvis in
-  {
-    ctx with
-    env = { ctx.env with glob = (gtdenv, gfenv, gvenv, gtenv) };
-    vis = { ctx.vis with glob = (gtdvis, gfvis, gvvis, gtvis) };
-  }
+let add_type layer id typ ctx =
+  match layer with
+  | Global ->
+      let tdenv, fenv, venv, tenv = ctx.global in
+      { ctx with global = (tdenv, fenv, venv, TEnv.add id typ tenv) }
+  | Block ->
+      let tdenv, fenv, venv, tenv = ctx.block in
+      { ctx with block = (tdenv, fenv, venv, TEnv.add id typ tenv) }
+  | Local ->
+      let frame = List.hd ctx.local in
+      let tdenv, fenv, venv, tenv = frame in
+      let frame = (tdenv, fenv, venv, TEnv.add id typ tenv) in
+      { ctx with local = frame :: List.tl ctx.local }
 
 (* Finders *)
 
-let find finder name ctx = function
+let find_cont finder layer id ctx = function
   | Some value -> Some value
-  | None -> finder name ctx
+  | None -> finder layer id ctx
 
-let find_td_glob_opt tvar ctx =
-  let gtdenv, _, _, _ = env_from_vis ctx.env.glob ctx.vis.glob in
-  TDEnv.find_opt tvar gtdenv
+let rec find_td_opt layer tid ctx =
+  match layer with
+  | Global ->
+      let tdenv, _, _, _ = ctx.global in
+      TDEnv.find_opt tid tdenv
+  | Block ->
+      let tdenv, _, _, _ = ctx.block in
+      TDEnv.find_opt tid tdenv |> find_cont find_td_opt Global tid ctx
+  | Local ->
+      List.fold_left
+        (fun td frame ->
+          match td with
+          | Some td -> Some td
+          | None ->
+              let tdenv, _, _, _ = frame in
+              TDEnv.find_opt tid tdenv)
+        None ctx.local
+      |> find_cont find_td_opt Block tid ctx
 
-let find_td_glob tvar ctx = find_td_glob_opt tvar ctx |> Option.get
+let find_td layer tid ctx = find_td_opt layer tid ctx |> Option.get
 
-let find_td_obj_opt tvar ctx =
-  let otdenv, _, _, _ = env_from_vis ctx.env.obj ctx.vis.obj in
-  TDEnv.find_opt tvar otdenv
+let rec find_value_opt layer id ctx =
+  match layer with
+  | Global ->
+      let _, _, venv, _ = ctx.global in
+      VEnv.find_opt id venv
+  | Block ->
+      let _, _, venv, _ = ctx.block in
+      VEnv.find_opt id venv |> find_cont find_value_opt Global id ctx
+  | Local ->
+      List.fold_left
+        (fun value frame ->
+          match value with
+          | Some value -> Some value
+          | None ->
+              let _, _, venv, _ = frame in
+              VEnv.find_opt id venv)
+        None ctx.local
+      |> find_cont find_value_opt Block id ctx
 
-let find_td_obj tvar ctx = find_td_obj_opt tvar ctx |> Option.get
+let find_value layer id ctx = find_value_opt layer id ctx |> Option.get
 
-let find_td_loc_opt tvar ctx =
-  let ltdenv, _ = ctx.env.loc in
-  TDEnv.find_opt tvar ltdenv
+let find finder var ctx =
+  match var with
+  | Top id -> finder Global id.it ctx
+  | Bare id -> finder Local id.it ctx
 
-let find_td_loc tvar ctx = find_td_loc_opt tvar ctx |> Option.get
+let find_opt finder_opt var ctx =
+  match var with
+  | Top id -> finder_opt Global id.it ctx
+  | Bare id -> finder_opt Local id.it ctx
 
-let find_td_opt tvar ctx =
-  find_td_loc_opt tvar ctx
-  |> find find_td_obj_opt tvar ctx
-  |> find find_td_glob_opt tvar ctx
-
-let find_td tvar ctx = find_td_opt tvar ctx |> Option.get
-
-let find_const_glob_opt const ctx =
-  let _, _, genv, _ = env_from_vis ctx.env.glob ctx.vis.glob in
-  VEnv.find_opt const genv
-
-let find_const_glob const ctx = find_const_glob_opt const ctx |> Option.get
-
-let find_const_obj_opt const ctx =
-  let _, _, oenv, _ = env_from_vis ctx.env.obj ctx.vis.obj in
-  VEnv.find_opt const oenv
-
-let find_const_obj const ctx = find_const_obj_opt const ctx |> Option.get
-
-let find_const_loc_opt const ctx =
-  let _, lenvs = ctx.env.loc in
-  let lenvs = List.map fst lenvs in
-  List.fold_left
-    (fun value frame ->
-      match value with Some _ -> value | None -> VEnv.find_opt const frame)
-    None lenvs
-
-let find_const_loc const ctx = find_const_loc_opt const ctx |> Option.get
-
-let find_const_opt const ctx =
-  find_const_loc_opt const ctx
-  |> find find_const_obj_opt const ctx
-  |> find find_const_glob_opt const ctx
-
-let find_const const ctx = find_const_opt const ctx |> Option.get
+(* let find_opt finder_opt var ctx = *)
+(*   match var with *)
+(*   | Top id -> finder_opt Global id ctx *)
+(*   | Bare id -> finder_opt Local id ctx *)
 
 (* Pretty-printer *)
 
-let pp_env fmt (env : env) =
-  let gtdenv, gfenv, gvenv, gtenv = env.glob in
-  let otdenv, ofenv, oenv, otenv = env.obj in
-  let ltdenv, lenvs = env.loc in
-  let lvenvs, ltenvs = List.split lenvs in
+let pp_frame fmt frame =
+  let tdenv, fenv, venv, tenv = frame in
   Format.fprintf fmt
-    "{@;\
-     <1 2>@[<v 0>global-td = %a;@ global-func = %a;@ global-const = %a;@ \
-     global-type = %a;@ object-td = %a;@ object-func = %a;@ object-const = \
-     %a;@ object-type = %a;@ loc-td = %a;@ loc-consts = %a;@ loc-types = %a@]@;\
-     <1 -2>}" TDEnv.pp gtdenv FEnv.pp gfenv VEnv.pp gvenv TEnv.pp gtenv TDEnv.pp
-    otdenv FEnv.pp ofenv VEnv.pp oenv TEnv.pp otenv TDEnv.pp ltdenv
-    (Format.pp_print_list VEnv.pp)
-    lvenvs
-    (Format.pp_print_list TEnv.pp)
-    ltenvs
+    "@[@[<v 0>Typedefs:@ %a@]@\n\
+     @[<v 0>Functions:@ %a@]@\n\
+     @[<v 0>Values:@ %a@]@\n\
+     @[<v 0>Types:@ %a@]@]" TDEnv.pp tdenv FEnv.pp fenv VEnv.pp venv TEnv.pp
+    tenv
 
-let pp fmt (ctx : t) =
-  Format.fprintf fmt "CCEnv: %a\n" CCEnv.pp ctx.cc;
-  Format.fprintf fmt "Env: %a\n" pp_env ctx.env
+let pp fmt ctx =
+  Format.fprintf fmt
+    "@[@[<v 0>Constructors:@ %a@]@\n\
+     @[<v 0>Global:@ %a@]@\n\
+     @[<v 0>Block:@ %a@]@\n\
+     @[<v 0>Local:@ %a@]@]" CEnv.pp ctx.cons pp_frame ctx.global pp_frame
+    ctx.block
+    (Format.pp_print_list pp_frame)
+    ctx.local

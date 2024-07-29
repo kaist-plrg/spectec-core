@@ -13,7 +13,7 @@ let desugar includes filename =
 
 let typecheck includes filename =
   let program = desugar includes filename in
-  Typingnew.Typecheck.type_program program
+  Typing.Typecheck.type_program program
 
 let instantiate includes filename =
   let program = desugar includes filename in
@@ -66,7 +66,7 @@ let typecheck_command =
      and filename = anon ("file.p4" %: string) in
      fun () ->
        let ctx = typecheck includes filename in
-       Format.printf "%a\n" Typingnew.Ctx.pp ctx)
+       Format.printf "%a\n" Typing.Ctx.pp ctx)
 
 let instantiate_command =
   Command.basic ~summary:"instantiate a p4_16 program"

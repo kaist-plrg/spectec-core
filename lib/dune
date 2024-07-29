@@ -7,7 +7,6 @@
   (re_export frontend)
   (re_export runtime)
   (re_export typing)
-  (re_export typingnew)
   (re_export instance)
   (re_export exec)
   (re_export stf)))
