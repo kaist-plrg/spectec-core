@@ -8,4 +8,4 @@
 (library
  (name stf)
  (libraries core)
- (modules ast lexer parser parse print))
+ (modules ast lexer parser parse print compare))

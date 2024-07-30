@@ -158,7 +158,7 @@ module Make (Interp : INTERP) : ARCH = struct
         let pkt_out = Externs.find "packet_out" !externs in
         let expected = String.uppercase_ascii packet in
         let actual = Format.asprintf "%a" pp_extern pkt_out in
-        let result = if expected = actual then "PASS" else "FAIL" in
+        let result = if Stf.Compare.equals actual expected then "PASS" else "FAIL" in
         Format.printf "[%s] Expected %s / Actual %s\n" result expected actual;
         ctx
     | _ -> ctx
