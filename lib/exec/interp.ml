@@ -881,6 +881,30 @@ module Make (Arch : ARCH) : INTERP = struct
         |> failwith
 
   (* Logic for match-action table *)
+  and eval_binop_eq_default (value : Value.t) : bool =
+    match value with
+    | BoolV b -> not b
+    | AIntV value
+    | BitV (_, value)
+    | IntV (_, value)
+    | VBitV (_, _, value) ->
+        Bigint.(value = zero)
+    | StrV value -> value = ""
+    | StackV (values, _, _)
+    | TupleV values ->
+        List.for_all eval_binop_eq_default values
+      (*TODO*)
+    | StructV _entries | UnionV _entries ->
+        true
+    | HeaderV (_valid, _entries) ->
+        true
+    | EnumFieldV (_id, _member) ->
+        (* TODO *)
+        true
+    | SEnumFieldV (_id, _member, _value) ->
+        true
+    | _ -> failwith "1"
+  
   and compare_priority (lpm_prior1 : int option) (prior1 : int option) 
     (lpm_prior2 : int option) (prior2 : int option) : bool =
     let cmp_lp = Option.compare Int.compare lpm_prior1 lpm_prior2 in
@@ -939,6 +963,7 @@ module Make (Arch : ARCH) : INTERP = struct
         (expr_value, key_value, width)
   
   (* Match *)
+  (* TODO : OPTIONAL and RANGE *)
   and check_match (ctx : Ctx.t) (ent_list : mtch list)
       (key_list : (Value.t * mtch_kind) list) =
     let check_match' (is_match, lpm_prior) ent key =
@@ -946,44 +971,24 @@ module Make (Arch : ARCH) : INTERP = struct
       if not is_match then (is_match, lpm_prior)
       else
         let key_value, key_mtch_kind = key in
-        match (ent.it, key_mtch_kind.it) with
-        | AnyM, "exact" | AnyM, "ternary" ->
-            (is_match, lpm_prior)
-        | AnyM, "lpm" ->
-            assert (lpm_prior = None);
-            (is_match, Some 0)
-        | ExprM expr, "exact" ->
-            let ent_value = interp_expr ctx expr |> snd in
+        let is_lpm = key_mtch_kind.it = "lpm" in
+        let _is_exact = key_mtch_kind.it = "exact" in
+        (* lpm must be once *)
+        assert (not is_lpm || lpm_prior = None);
+        match ent.it with
+        | AnyM ->
+            if is_lpm then (is_match, Some 0) else (is_match, lpm_prior)
+        | ExprM expr ->
+            let ent_value, key_value, new_lpm_prior = mask_values ctx key_value expr is_lpm in
             let is_match = eval_binop_eq ent_value key_value in
-            (is_match, lpm_prior)
-        | ExprM expr, "ternary" ->
-            let ent_value, key_value, _ = mask_values ctx key_value expr false in
-            let is_match = eval_binop_eq ent_value key_value in
-            (is_match, lpm_prior)
-        | ExprM expr, "lpm" ->
-            (* lpm must be once *)
-            assert (lpm_prior = None);
-            let ent_value, key_value, lpm_prior = mask_values ctx key_value expr true in
-            let is_match = eval_binop_eq ent_value key_value in
-            (is_match, lpm_prior)
+            if is_lpm then (is_match, new_lpm_prior) else (is_match, lpm_prior)
         (* TODO : Should consider about enum values without underlying type. The default
            value is the first value that appears in the enum type declaration. *)
-        | DefaultM, "exact" ->
+        | DefaultM ->
           (* TODO *)
-            let ent_value = Value.IntV(Bigint.one, Bigint.zero) in
-            let is_match = eval_binop_eq ent_value key_value in
-            (is_match, lpm_prior)
-        | DefaultM, "ternary" ->
-            let ent_value = Value.IntV(Bigint.one, Bigint.zero) in
-            let is_match = eval_binop_eq ent_value key_value in
-            (is_match, lpm_prior)
-        | DefaultM, "lpm" ->
-            assert (lpm_prior = None);
-            let ent_value = Value.IntV(Bigint.one, Bigint.zero) in
-            let lpm_prior = key_value |> Value.get_width |> Bigint.to_int in
-            let is_match = eval_binop_eq ent_value key_value in
-            (is_match, lpm_prior)
-        | _ -> failwith "wrong format of match action table"
+            let is_match = eval_binop_eq_default key_value in
+            let new_lpm_prior = key_value |> Value.get_width |> Bigint.to_int in
+            if is_lpm then (is_match, new_lpm_prior) else (is_match, lpm_prior)
     in
     List.fold_left2 check_match' (true, None) ent_list key_list
 
