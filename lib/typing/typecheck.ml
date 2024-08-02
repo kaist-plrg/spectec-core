@@ -755,7 +755,9 @@ let type_parser_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
   let tparams = List.map it tparams in
   let params = List.map it params in
   let td = TypeDef.ParserD (tparams, params) in
-  (* check_valid_typedef ctx td; *)
+  let typ_args' = List.init (List.length tparams) (fun _ -> Type.TopT) in
+  let typ' = specialize_typedef ctx td typ_args' in
+  check_valid_type typ';
   Ctx.add_td layer id.it td ctx
 
 (* (7.2.12.2) *)
@@ -769,7 +771,9 @@ let type_control_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
   let tparams = List.map it tparams in
   let params = List.map it params in
   let td = TypeDef.ControlD (tparams, params) in
-  (* check_valid_typedef ctx td; *)
+  let typ_args' = List.init (List.length tparams) (fun _ -> Type.TopT) in
+  let typ' = specialize_typedef ctx td typ_args' in
+  check_valid_type typ';
   Ctx.add_td layer id.it td ctx
 
 (* (7.2.13)
@@ -785,7 +789,9 @@ let type_package_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
   let tparams = List.map it tparams in
   (* let cparams = List.map it cparams in *)
   let td = TypeDef.PackageD tparams in
-  (* check_valid_typedef ctx td; *)
+  let typ_args' = List.init (List.length tparams) (fun _ -> Type.TopT) in
+  let typ' = specialize_typedef ctx td typ_args' in
+  check_valid_type typ';
   Ctx.add_td layer id.it td ctx
 
 let type_decl (layer : Ctx.layer) (ctx : Ctx.t) (decl : decl) =
