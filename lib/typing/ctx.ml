@@ -8,8 +8,8 @@ module Value = Runtime.Value
 module CEnv = MakeEnv (FId) (ConsType)
 module TDEnv = MakeEnv (TId) (TypeDef)
 module FEnv = MakeEnv (FId) (FuncType)
-module VEnv = MakeEnv (Id) (Runtime.Value)
-module TEnv = MakeEnv (Id) (BaseType)
+module VEnv = MakeEnv (Id) (Value)
+module TEnv = MakeEnv (Id) (Type)
 
 (* Context is consisted of layers of environments *)
 
