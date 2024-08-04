@@ -1,6 +1,8 @@
 open Syntax.Ast
 open Util.Source
 
+(* Domain of variables, type variables, and objects *)
+
 module Id = struct
   type t = string
 
@@ -31,15 +33,37 @@ module Path = struct
   let compare = compare
 end
 
-module MakeVis (K : sig
+(* (Monomorphic) Functors of sets and maps *)
+
+module type KEY = sig
   type t
 
   val compare : t -> t -> int
   val pp : Format.formatter -> t -> unit
-end) =
-struct
+end
+
+module type VALUE = sig
+  type t
+
+  val pp : Format.formatter -> t -> unit
+end
+
+module type VIS = sig
+  type t_key
+  type t
+
+  val empty : t
+  val find : t_key -> t -> t_key option
+  val add : t_key -> t -> t -> t
+  val mem : t_key -> t -> bool
+  val union : t -> t -> t
+  val pp : Format.formatter -> t -> unit
+end
+
+module MakeVis (K : KEY) = struct
   module KS = Set.Make (K)
 
+  type t_key = K.t
   type t = KS.t
 
   let empty = KS.empty
@@ -57,19 +81,27 @@ struct
       elements
 end
 
-module MakeEnv (K : sig
+module type ENV = sig
+  type t_key
+  type t_value
   type t
 
-  val compare : t -> t -> int
+  val empty : t
+  val bindings : t -> (t_key * t_value) list
+  val add : t_key -> t_value -> t -> t
+  val map : (t_value -> t_value) -> t -> t
+  val fold : (t_key -> t_value -> 'a -> 'a) -> t -> 'a -> 'a
+  val filter : (t_key -> t_value -> bool) -> t -> t
+  val find_opt : t_key -> t -> t_value option
+  val find : t_key -> t -> t_value
   val pp : Format.formatter -> t -> unit
-end) (V : sig
-  type t
+end
 
-  val pp : Format.formatter -> t -> unit
-end) =
-struct
+module MakeEnv (K : KEY) (V : VALUE) = struct
   module KM = Map.Make (K)
 
+  type t_key = K.t
+  type t_value = V.t
   type t = V.t KM.t
 
   let empty = KM.empty

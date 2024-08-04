@@ -1,7 +1,11 @@
 open Syntax.Ast
+open Runtime.Domain
+module Value = Runtime.Value
 open Util.Source
 
-module Type = struct
+(* Types of variables *)
+
+module rec Type : sig
   type t =
     (* Base types *)
     | VoidT
@@ -13,24 +17,61 @@ module Type = struct
     | IntT of Bigint.t
     | BitT of Bigint.t
     | VBitT of Bigint.t
-    | TupleT of t list
-    | StackT of t * Bigint.t
-    (* Parametrized types *)
+    (* Parameterized types *)
+    (* Invariant: variables should always be bound *)
     | VarT of id'
     (* Alias types *)
     | DefT of t
     | NewT of t
     (* Aggregate types *)
+    | TupleT of t list
+    | StackT of t * Bigint.t
     | StructT of (member' * t) list
     | HeaderT of (member' * t) list
     | UnionT of (member' * t) list
     (* (TODO) maybe just id suffices *)
     | EnumT of member' list
-    | SEnumT of t * (member' * Runtime.Value.t) list
+    | SEnumT of t * (member' * Value.t) list
     (* Object types *)
-    | ExternT
-    | ParserT of param' list
-    | ControlT of param' list
+    | ExternT of FDEnv.t
+    | ParserT of FDEnv.t
+    | ControlT of FDEnv.t
+    | PackageT
+    (* Top type *)
+    | TopT
+
+  val pp : Format.formatter -> t -> unit
+end = struct
+  type t =
+    (* Base types *)
+    | VoidT
+    | ErrT
+    | MatchKindT
+    | StrT
+    | BoolT
+    | AIntT
+    | IntT of Bigint.t
+    | BitT of Bigint.t
+    | VBitT of Bigint.t
+    (* Parameterized types *)
+    (* Variables should always be bound *)
+    | VarT of id'
+    (* Alias types *)
+    | DefT of t
+    | NewT of t
+    (* Aggregate types *)
+    | TupleT of t list
+    | StackT of t * Bigint.t
+    | StructT of (member' * t) list
+    | HeaderT of (member' * t) list
+    | UnionT of (member' * t) list
+    (* (TODO) maybe just id suffices *)
+    | EnumT of member' list
+    | SEnumT of t * (member' * Value.t) list
+    (* Object types *)
+    | ExternT of FDEnv.t
+    | ParserT of FDEnv.t
+    | ControlT of FDEnv.t
     | PackageT
     (* Top type *)
     | TopT
@@ -46,6 +87,12 @@ module Type = struct
     | IntT n -> Format.fprintf fmt "int<%a>" Bigint.pp n
     | BitT n -> Format.fprintf fmt "bit<%a>" Bigint.pp n
     | VBitT n -> Format.fprintf fmt "vbit<%a>" Bigint.pp n
+    (* Parametrized types *)
+    | VarT id -> Format.fprintf fmt "%s" id
+    (* Alias types *)
+    | DefT t -> Format.fprintf fmt "typedef %a" pp t
+    | NewT t -> Format.fprintf fmt "type %a" pp t
+    (* Aggregate types *)
     | TupleT ts ->
         Format.fprintf fmt "tuple<%a>"
           (Format.pp_print_list
@@ -53,12 +100,6 @@ module Type = struct
              pp)
           ts
     | StackT (t, n) -> Format.fprintf fmt "stack %a[%a]" pp t Bigint.pp n
-    (* Parametrized types *)
-    | VarT id -> Format.fprintf fmt "%s" id
-    (* Alias types *)
-    | DefT t -> Format.fprintf fmt "typedef %a" pp t
-    | NewT t -> Format.fprintf fmt "type %a" pp t
-    (* Aggregate types *)
     | StructT fields ->
         Format.fprintf fmt "struct { %a }"
           (Format.pp_print_list
@@ -99,7 +140,7 @@ module Type = struct
                  Runtime.Value.pp v))
           members
     (* Object types *)
-    | ExternT -> Format.fprintf fmt "extern"
+    | ExternT _ -> Format.fprintf fmt "extern"
     | ParserT _ -> Format.fprintf fmt "parser"
     | ControlT _ -> Format.fprintf fmt "control"
     | PackageT -> Format.fprintf fmt "package"
@@ -107,19 +148,26 @@ module Type = struct
     | TopT -> Format.fprintf fmt "top"
 end
 
-module FuncType = struct
-  type t = Type.t list * Type.t
+and TypeDef : sig
+  type t =
+    (* Aliased type definitions *)
+    | DefD of Type.t
+    | NewD of Type.t
+    (* Aggregate type definitions *)
+    (* These will become generic in the future *)
+    | StructD of (member' * Type.t) list
+    | HeaderD of (member' * Type.t) list
+    | UnionD of (member' * Type.t) list
+    | EnumD of member' list
+    | SEnumD of Type.t * (member' * Value.t) list
+    (* Object type definitions *)
+    | ExternD of tparam' list * FDEnv.t
+    | ParserD of tparam' list * FDEnv.t
+    | ControlD of tparam' list * FDEnv.t
+    | PackageD of tparam' list
 
-  let pp fmt _t = Format.fprintf fmt "functype"
-end
-
-module ConsType = struct
-  type t = Type.t list * Type.t
-
-  let pp fmt _t = Format.fprintf fmt "constype"
-end
-
-module TypeDef = struct
+  val pp : Format.formatter -> t -> unit
+end = struct
   type t =
     (* Aliased type definitions *)
     | DefD of Type.t
@@ -132,9 +180,9 @@ module TypeDef = struct
     | EnumD of member' list
     | SEnumD of Type.t * (member' * Runtime.Value.t) list
     (* Object type definitions *)
-    | ExternD of tparam' list
-    | ParserD of tparam' list * param' list
-    | ControlD of tparam' list * param' list
+    | ExternD of tparam' list * FDEnv.t
+    | ParserD of tparam' list * FDEnv.t
+    | ControlD of tparam' list * FDEnv.t
     | PackageD of tparam' list
 
   let pp fmt = function
@@ -184,3 +232,61 @@ module TypeDef = struct
     | ControlD _ -> Format.fprintf fmt "control"
     | PackageD _ -> Format.fprintf fmt "package"
 end
+
+(* Types of functions *)
+and FuncType : sig
+  type t = (id' * dir' * Type.t * Value.t option) list * Type.t
+
+  val pp : Format.formatter -> t -> unit
+end = struct
+  type t = (id' * dir' * Type.t * Value.t option) list * Type.t
+
+  let pp fmt _t = Format.fprintf fmt "functype"
+end
+
+and FuncDef : sig
+  type t = tparam' list * (id' * dir' * Type.t * Value.t option) list * Type.t
+
+  val pp : Format.formatter -> t -> unit
+end = struct
+  type t = tparam' list * (id' * dir' * Type.t * Value.t option) list * Type.t
+
+  let pp fmt _t = Format.fprintf fmt "funcdef"
+end
+
+(* Types of constructors *)
+and ConsType : sig
+  type t = (id' * dir' * Type.t * Value.t option) list * Type.t
+
+  val pp : Format.formatter -> t -> unit
+end = struct
+  type t = (id' * dir' * Type.t * Value.t option) list * Type.t
+
+  let pp fmt _t = Format.fprintf fmt "constype"
+end
+
+and ConsDef : sig
+  type t = tparam' list * (id' * dir' * Type.t * Value.t option) list * Type.t
+
+  val pp : Format.formatter -> t -> unit
+end = struct
+  type t = tparam' list * (id' * dir' * Type.t * Value.t option) list * Type.t
+
+  let pp fmt _t = Format.fprintf fmt "consdef"
+end
+
+(* Environments *)
+and VEnv : (ENV with type t_key = Id.t and type t_value = Value.t) =
+  MakeEnv (Id) (Value)
+
+and TEnv : (ENV with type t_key = Id.t and type t_value = Type.t) =
+  MakeEnv (Id) (Type)
+
+and TDEnv : (ENV with type t_key = TId.t and type t_value = TypeDef.t) =
+  MakeEnv (TId) (TypeDef)
+
+and FDEnv : (ENV with type t_key = FId.t and type t_value = FuncDef.t) =
+  MakeEnv (FId) (FuncDef)
+
+and CDEnv : (ENV with type t_key = FId.t and type t_value = ConsType.t) =
+  MakeEnv (FId) (ConsType)

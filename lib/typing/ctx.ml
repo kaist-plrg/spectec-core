@@ -1,69 +1,61 @@
 open Syntax.Ast
-open Runtime.Domain
+open Util.Source
 open Types
 module Value = Runtime.Value
-
-(* Environments *)
-
-module CEnv = MakeEnv (FId) (ConsType)
-module TDEnv = MakeEnv (TId) (TypeDef)
-module FEnv = MakeEnv (FId) (FuncType)
-module VEnv = MakeEnv (Id) (Value)
-module TEnv = MakeEnv (Id) (Type)
 
 (* Context is consisted of layers of environments *)
 
 type layer = Global | Block | Local
-type frame = TDEnv.t * FEnv.t * VEnv.t * TEnv.t
-type t = { cons : CEnv.t; global : frame; block : frame; local : frame list }
+type frame = TDEnv.t * FDEnv.t * VEnv.t * TEnv.t
+type t = { cons : CDEnv.t; global : frame; block : frame; local : frame list }
 
-let empty_frame = (TDEnv.empty, FEnv.empty, VEnv.empty, TEnv.empty)
+let empty_frame = (TDEnv.empty, FDEnv.empty, VEnv.empty, TEnv.empty)
 
 let empty =
-  { cons = CEnv.empty; global = empty_frame; block = empty_frame; local = [] }
+  { cons = CDEnv.empty; global = empty_frame; block = empty_frame; local = [] }
 
 (* Adders *)
 
 let add_td layer tid td ctx =
   match layer with
   | Global ->
-      let tdenv, fenv, venv, tenv = ctx.global in
-      { ctx with global = (TDEnv.add tid td tdenv, fenv, venv, tenv) }
+      let tdenv, fdenv, venv, tenv = ctx.global in
+      { ctx with global = (TDEnv.add tid td tdenv, fdenv, venv, tenv) }
   | Block ->
-      let tdenv, fenv, venv, tenv = ctx.block in
-      { ctx with block = (TDEnv.add tid td tdenv, fenv, venv, tenv) }
+      let tdenv, fdenv, venv, tenv = ctx.block in
+      { ctx with block = (TDEnv.add tid td tdenv, fdenv, venv, tenv) }
   | Local ->
       let frame = List.hd ctx.local in
-      let tdenv, fenv, venv, tenv = frame in
-      let frame = (TDEnv.add tid td tdenv, fenv, venv, tenv) in
+      let tdenv, fdenv, venv, tenv = frame in
+      let frame = (TDEnv.add tid td tdenv, fdenv, venv, tenv) in
       { ctx with local = frame :: List.tl ctx.local }
 
 let add_value layer id value ctx =
   match layer with
   | Global ->
-      let tdenv, fenv, venv, tenv = ctx.global in
-      { ctx with global = (tdenv, fenv, VEnv.add id value venv, tenv) }
+      let tdenv, fdenv, venv, tenv = ctx.global in
+      { ctx with global = (tdenv, fdenv, VEnv.add id value venv, tenv) }
   | Block ->
-      let tdenv, fenv, venv, tenv = ctx.block in
-      { ctx with block = (tdenv, fenv, VEnv.add id value venv, tenv) }
+      let tdenv, fdenv, venv, tenv = ctx.block in
+      { ctx with block = (tdenv, fdenv, VEnv.add id value venv, tenv) }
   | Local ->
       let frame = List.hd ctx.local in
-      let tdenv, fenv, venv, tenv = frame in
-      let frame = (tdenv, fenv, VEnv.add id value venv, tenv) in
+      let tdenv, fdenv, venv, tenv = frame in
+      let frame = (tdenv, fdenv, VEnv.add id value venv, tenv) in
       { ctx with local = frame :: List.tl ctx.local }
 
 let add_type layer id typ ctx =
   match layer with
   | Global ->
-      let tdenv, fenv, venv, tenv = ctx.global in
-      { ctx with global = (tdenv, fenv, venv, TEnv.add id typ tenv) }
+      let tdenv, fdenv, venv, tenv = ctx.global in
+      { ctx with global = (tdenv, fdenv, venv, TEnv.add id typ tenv) }
   | Block ->
-      let tdenv, fenv, venv, tenv = ctx.block in
-      { ctx with block = (tdenv, fenv, venv, TEnv.add id typ tenv) }
+      let tdenv, fdenv, venv, tenv = ctx.block in
+      { ctx with block = (tdenv, fdenv, venv, TEnv.add id typ tenv) }
   | Local ->
       let frame = List.hd ctx.local in
-      let tdenv, fenv, venv, tenv = frame in
-      let frame = (tdenv, fenv, venv, TEnv.add id typ tenv) in
+      let tdenv, fdenv, venv, tenv = frame in
+      let frame = (tdenv, fdenv, venv, TEnv.add id typ tenv) in
       { ctx with local = frame :: List.tl ctx.local }
 
 (* Finders *)
@@ -115,29 +107,24 @@ let rec find_value_opt layer id ctx =
 let find_value layer id ctx = find_value_opt layer id ctx |> Option.get
 
 let find finder var ctx =
-  match var with
+  match var.it with
   | Top id -> finder Global id.it ctx
   | Bare id -> finder Local id.it ctx
 
 let find_opt finder_opt var ctx =
-  match var with
+  match var.it with
   | Top id -> finder_opt Global id.it ctx
   | Bare id -> finder_opt Local id.it ctx
-
-(* let find_opt finder_opt var ctx = *)
-(*   match var with *)
-(*   | Top id -> finder_opt Global id ctx *)
-(*   | Bare id -> finder_opt Local id ctx *)
 
 (* Pretty-printer *)
 
 let pp_frame fmt frame =
-  let tdenv, fenv, venv, tenv = frame in
+  let tdenv, fdenv, venv, tenv = frame in
   Format.fprintf fmt
     "@[@[<v 0>Typedefs:@ %a@]@\n\
      @[<v 0>Functions:@ %a@]@\n\
      @[<v 0>Values:@ %a@]@\n\
-     @[<v 0>Types:@ %a@]@]" TDEnv.pp tdenv FEnv.pp fenv VEnv.pp venv TEnv.pp
+     @[<v 0>Types:@ %a@]@]" TDEnv.pp tdenv FDEnv.pp fdenv VEnv.pp venv TEnv.pp
     tenv
 
 let pp fmt ctx =
@@ -145,7 +132,7 @@ let pp fmt ctx =
     "@[@[<v 0>Constructors:@ %a@]@\n\
      @[<v 0>Global:@ %a@]@\n\
      @[<v 0>Block:@ %a@]@\n\
-     @[<v 0>Local:@ %a@]@]" CEnv.pp ctx.cons pp_frame ctx.global pp_frame
+     @[<v 0>Local:@ %a@]@]" CDEnv.pp ctx.cons pp_frame ctx.global pp_frame
     ctx.block
     (Format.pp_print_list pp_frame)
     ctx.local
