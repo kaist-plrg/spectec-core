@@ -69,20 +69,23 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       let cclos =
         R.Cclos.ParserCC { tparams; params; cparams; locals; states }
       in
-      let cid = FId.to_fid id cparams in
+      let cparams = List.map it cparams in
+      let cid = FId.to_fid id.it cparams in
       let ccenv = CCEnv.add cid cclos ccenv in
       (ccenv, ictx)
   | ControlD { id; tparams; params; cparams; locals; body } ->
       let cclos =
         R.Cclos.ControlCC { tparams; params; cparams; locals; body }
       in
-      let cid = FId.to_fid id cparams in
+      let cparams = List.map it cparams in
+      let cid = FId.to_fid id.it cparams in
       let ccenv = CCEnv.add cid cclos ccenv in
       (ccenv, ictx)
   (* For package type declaration, also load to tdenv *)
   | PackageTypeD { id; tparams; cparams } ->
       let cclos = R.Cclos.PackageCC { tparams; cparams } in
-      let cid = FId.to_fid id cparams in
+      let cparams = List.map it cparams in
+      let cid = FId.to_fid id.it cparams in
       let ccenv = CCEnv.add cid cclos ccenv in
       let typ = R.Type.RefT in
       let ictx = ICtx.add_td_glob id.it typ ictx in
@@ -115,7 +118,8 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
               | _ -> assert false
             in
             let cclos = R.Cclos.ExternCC { tparams; cparams; mthds } in
-            let cid = FId.to_fid id cparams in
+            let cparams = List.map it cparams in
+            let cid = FId.to_fid id.it cparams in
             CCEnv.add cid cclos ccenv)
           ccenv cons
       in
@@ -204,13 +208,15 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
   | ActionD { id; params; body } ->
       let vis_glob = env_to_vis ictx.env_glob in
       let func = R.Func.ActionF { vis = vis_glob; params; body } in
-      let fid = FId.to_fid id params in
+      let params = List.map it params in
+      let fid = FId.to_fid id.it params in
       let ictx = ICtx.add_func_glob fid func ictx in
       (ccenv, ictx)
   | ExternFuncD { id; tparams; params; _ } ->
       let vis_glob = env_to_vis ictx.env_glob in
       let func = R.Func.ExternF { vis_glob; tparams; params } in
-      let fid = FId.to_fid id params in
+      let params = List.map it params in
+      let fid = FId.to_fid id.it params in
       let ictx = ICtx.add_func_glob fid func ictx in
       (ccenv, ictx)
   | _ ->
@@ -480,7 +486,8 @@ and instantiate_control_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
       let func =
         R.Func.ActionF { vis = env_to_vis ictx.env_obj; params; body }
       in
-      let fid = FId.to_fid id params in
+      let params = List.map it params in
+      let fid = FId.to_fid id.it params in
       let ictx = ICtx.add_func_obj fid func ictx in
       (sto, ictx)
   (* Each table evaluates to a table instance (18.2) *)
@@ -505,7 +512,8 @@ and instantiate_extern_obj_decl (ictx : ICtx.t) (decl : decl) =
         R.Func.ExternMethodF
           { vis_obj = env_to_vis ictx.env_obj; tparams; params }
       in
-      let fid = FId.to_fid id params in
+      let params = List.map it params in
+      let fid = FId.to_fid id.it params in
       ICtx.add_func_obj fid func ictx
   | AbstractD _ ->
       Format.eprintf "(TODO: instantiate_extern_obj_decl) Load extern object %a"

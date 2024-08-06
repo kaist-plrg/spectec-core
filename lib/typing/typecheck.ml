@@ -888,28 +888,58 @@ and type_typedef_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
    A parser should have at least one argument of type packet_in, representing the received packet that is processed. *)
 
 and type_parser_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
-    (tparams : tparam list) (_params : param list) : Ctx.t =
+    (tparams : tparam list) (params : param list) : Ctx.t =
   if layer <> Ctx.Global then (
     Format.eprintf
       "(type_parser_type_decl) Parser type declarations must be global\n";
     assert false);
   let tparams = List.map it tparams in
-  (* let params = List.map it params in *)
-  let td = TypeDef.ParserD (tparams, FDEnv.empty) in
+  let params = List.map it params in
+  (* Typecheck implicit "apply" method *)
+  let type_parser_method_implicit (ctx : Ctx.t) =
+    let fid = Runtime.Domain.FId.to_fid "apply" params in
+    let params = List.map (static_eval_param Ctx.Local ctx) params in
+    let fd = ([], params, Type.VoidT) in
+    check_valid_funcdef Ctx.Local ctx fd;
+    Ctx.add_funcdef Ctx.Block fid fd ctx
+  in
+  let ctx' =
+    List.fold_left
+      (fun ctx' tparam -> Ctx.add_tparam Ctx.Block tparam ctx')
+      ctx tparams
+  in
+  let ctx' = type_parser_method_implicit ctx' in
+  let _, (_, fdenv, _, _) = ctx'.block in
+  let td = TypeDef.ParserD (tparams, fdenv) in
   check_valid_typedef layer ctx td;
   Ctx.add_typedef layer id.it td ctx
 
 (* (7.2.12.2) Control type declarations *)
 
 and type_control_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
-    (tparams : tparam list) (_params : param list) : Ctx.t =
+    (tparams : tparam list) (params : param list) : Ctx.t =
   if layer <> Ctx.Global then (
     Format.eprintf
       "(type_control_type_decl) Control type declarations must be global\n";
     assert false);
   let tparams = List.map it tparams in
-  (* let params = List.map it params in *)
-  let td = TypeDef.ControlD (tparams, FDEnv.empty) in
+  let params = List.map it params in
+  (* Typecheck implicit "apply" method *)
+  let type_control_method_implicit (ctx : Ctx.t) =
+    let fid = Runtime.Domain.FId.to_fid "apply" params in
+    let params = List.map (static_eval_param Ctx.Local ctx) params in
+    let fd = ([], params, Type.VoidT) in
+    check_valid_funcdef Ctx.Local ctx fd;
+    Ctx.add_funcdef Ctx.Block fid fd ctx
+  in
+  let ctx' =
+    List.fold_left
+      (fun ctx' tparam -> Ctx.add_tparam Ctx.Block tparam ctx')
+      ctx tparams
+  in
+  let ctx' = type_control_method_implicit ctx' in
+  let _, (_, fdenv, _, _) = ctx'.block in
+  let td = TypeDef.ControlD (tparams, fdenv) in
   check_valid_typedef layer ctx td;
   Ctx.add_typedef layer id.it td ctx
 
@@ -926,6 +956,7 @@ and type_package_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     assert false);
   let tparams = List.map it tparams in
   (* let cparams = List.map it cparams in *)
+  (* Create a package type definition *)
   let td = TypeDef.PackageD tparams in
   check_valid_typedef layer ctx td;
   Ctx.add_typedef layer id.it td ctx
@@ -945,8 +976,8 @@ and type_extern_method_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       "(type_extern_method_decl) Extern method declarations must be in a block\n";
     assert false);
   let tparams = List.map it tparams in
-  let fid = Runtime.Domain.FId.to_fid id params in
   let params = List.map it params in
+  let fid = Runtime.Domain.FId.to_fid id.it params in
   let ctx' =
     List.fold_left
       (fun ctx' tparam -> Ctx.add_tparam Ctx.Local tparam ctx')
