@@ -894,51 +894,54 @@ module Make (Arch : ARCH) : INTERP = struct
     | TupleV values ->
         List.for_all eval_binop_eq_default values
       (*TODO*)
-    | StructV _entries | UnionV _entries ->
-        true
-    | HeaderV (_valid, _entries) ->
-        true
-    | EnumFieldV (_id, _member) ->
-        (* TODO *)
-        true
-    | SEnumFieldV (_id, _member, _value) ->
-        true
+    | StructV _entries -> true
+    | UnionV _entries -> true
+    | HeaderV (_valid, _entries) -> true
+    | EnumFieldV (_id, _member) -> true
+    | SEnumFieldV (_, _, _value) -> true
     | _ -> failwith "1"
 
-  and get_prefix (mask : Value.t) (pre_bit : int) (prior : int) : int =
+  and get_prefix (mask : Value.t) (prefix : int) : int =
     match mask with
     | BitV (width, value) ->
-        if Bigint.(width = zero) then prior 
+        if Bigint.(width = zero) then prefix 
         else
           let two = Bigint.(one + one) in
           let width' = Bigint.(width - one) in
           let value' = Bigint.(value / two) in
-          let x = bit_of_raw_int value' width' in
-          if Bigint.(value % two = zero) then get_prefix x 0 prior
-          else
-            let y = prior + 1 in
-            if pre_bit = 0 && prior <> 0 then
-              failwith "wrong format for lpm mask"
-            else get_prefix x 1 y
+          let mask' = bit_of_raw_int value' width' in
+          if Bigint.(value % two = zero) then
+            if prefix <> 0 then failwith "invalid lpm mask"
+            else get_prefix mask' prefix
+          else get_prefix mask' (prefix+1)
     | _ -> failwith "wrong type for lpm mask"
 
   and mask_values (ctx : Ctx.t) (key_value : Value.t) (expr : expr) : Value.t * Value.t =
+    let width = Value.get_width key_value in
+    let limit = Value.AIntV (power_of_two width) in
     match expr.it with
     | MaskE (expr, mask) ->
-        let width = Value.get_width key_value in
         (* Get masked values *)
         let expr_value = interp_expr ctx expr |> snd in
-        let mask_value = interp_expr ctx mask |> snd |> Value.get_num in
-        (* Mask should convert to bit *)
-        let mask_value = bit_of_raw_int mask_value width in
-        (* Mask value *)
-        let masked_expr_value = eval_binop_bitand expr_value mask_value in
-        let masked_key_value = eval_binop_bitand key_value mask_value in
-        (* If ternary then do not check validity of lpm mask *)
-        (masked_expr_value, masked_key_value)
+        let mask_value = interp_expr ctx mask |> snd in
+        (* If expr | mask value has 1s outside of field bit width *)
+        let is_expr_limit = eval_binop_ge expr_value limit |> Value.get_bool in
+        let is_mask_limit = eval_binop_ge mask_value limit |> Value.get_bool in
+        if is_expr_limit || is_mask_limit then failwith "has 1s outside of field bit width"
+        else
+           (* Should convert to bit *)
+          let mask_value = Value.get_num mask_value in
+          let mask_value = bit_of_raw_int mask_value width in
+          (* Mask value *)
+          let masked_expr_value = eval_binop_bitand expr_value mask_value in
+          let masked_key_value = eval_binop_bitand key_value mask_value in
+          (masked_expr_value, masked_key_value)
     | _ ->
         let expr_value = interp_expr ctx expr |> snd in
-        (expr_value, key_value)
+        (* If expr value has 1s outside of field bit width *)
+        let is_expr_limit = eval_binop_ge expr_value limit |> Value.get_bool in
+        if is_expr_limit then failwith "has 1s outside of field bit width"
+        else (expr_value, key_value)
 
   and get_prior_lpm (ctx : Ctx.t) (expr : expr) (width : int) : int option =
     match expr.it with
@@ -948,7 +951,7 @@ module Make (Arch : ARCH) : INTERP = struct
         let mask_value = interp_expr ctx mask |> snd |> Value.get_num in
         (* Mask should convert to bit *)
         let mask_value = bit_of_raw_int mask_value width in
-        let prefix = get_prefix mask_value 0 0 in
+        let prefix = get_prefix mask_value 0 in
         Some prefix
     | _ -> Some width
 
@@ -966,7 +969,6 @@ module Make (Arch : ARCH) : INTERP = struct
         | AnyM -> is_match
         | ExprM expr ->
           (* Seperate between exact and other *)
-          (* (TODO) : Does exact accept maskE? *)
             if key_mtch_kind.it = "exact" then 
               let ent_value = interp_expr ctx expr |> snd in
               eval_binop_eq ent_value key_value
@@ -999,19 +1001,37 @@ module Make (Arch : ARCH) : INTERP = struct
     (* Collect only lpm  *)
     let lpms = List.filter (fun (ind, _) -> ind >= 0) lpms in
     let cnt_lpms = List.length lpms in
+    (* no_spec is bool value for whether developer specifies priority. If false 
+       and other entry has specified priority, it cause error. *)
+    let no_spec = true in
     (* Function that compute priority. Logic is described in (14.2.1.4) Entry priorities *)
-    let set_priors' prior _ent = 
-      (* (TODO) Should get is_specified, prior from ent *)
-      let is_specified = false in
-      let specified_prior = Some 0 in
-      let prior = Option.get prior in
-      if is_specified then specified_prior, specified_prior
-      else if largest_priority_wins then 
-        let prior = Some (prior - prior_delta) in
-        prior, prior
+    let set_basic_priors prior _ent = 
+      let is_spec = false in
+      if is_spec then failwith "spec priority error"
       else
+        let prior = Option.get prior in
         let prior = Some (prior + prior_delta) in
         prior, prior
+    in      
+    let set_priors' prior _ent = 
+      (* (TODO) Should get is_specified, prior from ent. It may be from optEntryPriority*)
+      let is_spec = false in
+      let prior = Option.get prior in
+      if is_spec then
+        let spec_prior = Some 0 in
+        let spec_prior' = Option.get spec_prior in
+        if (largest_priority_wins && spec_prior' > prior) ||
+           (not largest_priority_wins && spec_prior' < prior) then
+          let _ = Printf.printf "Warning entries_out_of_priority_order" in
+          spec_prior, spec_prior
+        else spec_prior, spec_prior
+      else 
+        if largest_priority_wins then 
+          let prior = Some (prior - prior_delta) in
+          prior, prior
+        else
+          let prior = Some (prior + prior_delta) in
+          prior, prior
     in
     (* Function that extract priority (prefix) at lpm *)
     let extract_lpms ent =
@@ -1024,8 +1044,14 @@ module Make (Arch : ARCH) : INTERP = struct
       | ExprM expr -> get_prior_lpm ctx expr width
     in
     if cnt_lpms > 1 then failwith "lpms should be most one"
+    else if need_prior && no_spec then 
+      let basic_priors = List.fold_left_map set_basic_priors (Some 1) entries |> snd in
+      if largest_priority_wins then List.rev basic_priors
+      else basic_priors
+    else if need_prior then 
+      let first_prior = Some 1 in
+      List.fold_left_map set_priors' first_prior entries |> snd
     else if cnt_lpms = 1 then List.map extract_lpms entries
-    else if need_prior then List.fold_left_map set_priors' (Some 0) entries |> snd
     else List.init length (fun _ -> None)
 
   and match_action (ctx : Ctx.t) (keys : (Value.t * mtch_kind) list)
@@ -1040,6 +1066,7 @@ module Make (Arch : ARCH) : INTERP = struct
       | None -> None
     in
     (* Compute priorities and save in list *)
+    (* If no_ternary, it means there are only exacts and lpm*)
     let priors = set_priors ctx keys entries 1 true in
 
     let find_action (prior, action) entry new_prior=
@@ -1052,7 +1079,6 @@ module Make (Arch : ARCH) : INTERP = struct
       (* Check match *)
       let is_match = check_match ctx matches keys in
       (* Compare priorities *)
-      (* (TODO) : if two priorities are same, does it cause error or warn? *)
       let cmp_prior = Option.compare Int.compare prior new_prior in
       (* If first matched *)
       if is_match && is_action_none then (new_prior, new_action)
@@ -1061,7 +1087,7 @@ module Make (Arch : ARCH) : INTERP = struct
       (* If new_priority is larger, then replace the action *)
       else if is_match && cmp_prior < 0 then (new_prior, new_action)
       (* Else not changed *)
-      else (prior, action)
+      else (prior, action) 
     in
 
     let _, action =
