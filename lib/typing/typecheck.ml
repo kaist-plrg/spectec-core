@@ -343,8 +343,13 @@ let rec substitute_type (tmap : TMap.t) (typ : Type.t) : Type.t =
   | VoidT | ErrT | MatchKindT | StrT | BoolT | AIntT | IntT _ | BitT _ | VBitT _
     ->
       typ
-  | VarT id -> (
-      match TMap.find_opt id tmap with Some typ -> typ | None -> typ)
+  | VarT id ->
+      let typ = TMap.find_opt id tmap in
+      if Option.is_none typ then (
+        Format.eprintf "(substitute_type) %s is a free type variable\n" id;
+        assert false);
+      let typ = Option.get typ in
+      typ
   | DefT typ_inner -> DefT (substitute_type tmap typ_inner)
   | NewT typ_inner -> NewT (substitute_type tmap typ_inner)
   | TupleT typs_inner -> TupleT (List.map (substitute_type tmap) typs_inner)
@@ -386,10 +391,9 @@ and substitute_param (tmap : TMap.t)
 and substitute_funcdef (tmap : TMap.t) (fd : FuncDef.t) : FuncDef.t =
   let tparams, params, typ_ret = fd in
   let tmap' =
-    TMap.fold
-      (fun tid typ tmap' ->
-        if List.mem tid tparams then tmap' else TMap.add tid typ tmap')
-      tmap TMap.empty
+    List.fold_left
+      (fun tmap' tparam -> TMap.add tparam (Type.VarT tparam) tmap')
+      tmap tparams
   in
   let params = List.map (substitute_param tmap') params in
   let typ_ret = substitute_type tmap' typ_ret in
@@ -507,7 +511,7 @@ and eval_type (layer : Ctx.layer) (ctx : Ctx.t) (typ : typ) : Type.t =
 
 (* Static parameter evaluation *)
 
-and eval_param (layer : Ctx.layer) (ctx : Ctx.t) (param : param') :
+and static_eval_param (layer : Ctx.layer) (ctx : Ctx.t) (param : param') :
     id' * dir' * Type.t * Value.t option =
   let id, dir, typ, expr_default = param in
   let typ = eval_type layer ctx typ in
@@ -948,11 +952,11 @@ and type_extern_method_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       (fun ctx' tparam -> Ctx.add_tparam Ctx.Local tparam ctx')
       ctx tparams
   in
-  let params = List.map (eval_param Ctx.Local ctx') params in
+  let params = List.map (static_eval_param Ctx.Local ctx') params in
   let typ_ret = eval_type Ctx.Local ctx' typ_ret in
   let fd = (tparams, params, typ_ret) in
   check_valid_funcdef layer ctx fd;
-  Ctx.add_funcdef layer fid fd ctx'
+  Ctx.add_funcdef layer fid fd ctx
 
 and type_extern_object_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (mthds : decl list) : Ctx.t =

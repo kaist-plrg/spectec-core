@@ -95,6 +95,7 @@ module type ENV = sig
   val map : (t_value -> t_value) -> t -> t
   val fold : (t_key -> t_value -> 'a -> 'a) -> t -> 'a -> 'a
   val filter : (t_key -> t_value -> bool) -> t -> t
+  val mem : t_key -> t -> bool
   val find_opt : t_key -> t -> t_value option
   val find : t_key -> t -> t_value
   val of_list : (t_key * t_value) list -> t
@@ -115,6 +116,7 @@ module MakeEnv (K : KEY) (V : VALUE) = struct
   let map = KM.map
   let fold = KM.fold
   let filter = KM.filter
+  let mem = KM.mem
   let find_opt = KM.find_opt
 
   let find k m =
