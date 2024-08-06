@@ -57,6 +57,7 @@ module type VIS = sig
   val add : t_key -> t -> t -> t
   val mem : t_key -> t -> bool
   val union : t -> t -> t
+  val of_list : t_key list -> t
   val pp : Format.formatter -> t -> unit
 end
 
@@ -71,6 +72,7 @@ module MakeVis (K : KEY) = struct
   let add = KS.add
   let mem = KS.mem
   let union = KS.union
+  let of_list = KS.of_list
 
   let pp fmt sp =
     let elements = KS.elements sp in
@@ -88,12 +90,14 @@ module type ENV = sig
 
   val empty : t
   val bindings : t -> (t_key * t_value) list
+  val iter : (t_key -> t_value -> unit) -> t -> unit
   val add : t_key -> t_value -> t -> t
   val map : (t_value -> t_value) -> t -> t
   val fold : (t_key -> t_value -> 'a -> 'a) -> t -> 'a -> 'a
   val filter : (t_key -> t_value -> bool) -> t -> t
   val find_opt : t_key -> t -> t_value option
   val find : t_key -> t -> t_value
+  val of_list : (t_key * t_value) list -> t
   val pp : Format.formatter -> t -> unit
 end
 
@@ -106,6 +110,7 @@ module MakeEnv (K : KEY) (V : VALUE) = struct
 
   let empty = KM.empty
   let bindings = KM.bindings
+  let iter = KM.iter
   let add = KM.add
   let map = KM.map
   let fold = KM.fold
@@ -116,6 +121,9 @@ module MakeEnv (K : KEY) (V : VALUE) = struct
     match find_opt k m with
     | Some v -> v
     | None -> Format.asprintf "Key not found: %a@." K.pp k |> failwith
+
+  let of_list (l : (t_key * t_value) list) =
+    List.fold_left (fun env (k, v) -> add k v env) empty l
 
   let pp fmt env =
     let bindings = KM.bindings env in

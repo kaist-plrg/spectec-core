@@ -1,4 +1,5 @@
 open Syntax.Ast
+open Runtime.Domain
 open Util.Source
 open Types
 module Value = Runtime.Value
@@ -71,6 +72,8 @@ let expect_values (values : Value.t list option) : Value.t list =
     - a type name declared via typedef, where the base type of that type is either one of the types listed above,
       or another typedef name that meets these conditions. *)
 
+module TSet = MakeVis (TId)
+
 let check_distinct_members (members : member' list) : unit =
   let distinct =
     List.fold_left
@@ -92,25 +95,16 @@ let rec check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       Type.pp typ;
     false
   in
-  let error_not_ground () : bool =
-    Format.eprintf
-      "(check_valid_type_nesting) Before well-formnedness check, %a should \
-       have been grounded\n"
-      Type.pp typ;
-    false
-  in
   match typ with
   | VoidT | ErrT | MatchKindT | StrT | BoolT | AIntT | IntT _ | BitT _ | VBitT _
-    ->
+  | VarT _ ->
       error_not_nest ()
-  | VarT _ -> error_not_ground ()
   | DefT _ -> (
       match typ_inner with
       | VoidT -> false
       | ErrT -> true
       | MatchKindT -> false
-      | StrT | BoolT | AIntT | IntT _ | BitT _ | VBitT _ -> true
-      | VarT _ -> error_not_ground ()
+      | StrT | BoolT | AIntT | IntT _ | BitT _ | VBitT _ | VarT _ -> true
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
       | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _
@@ -125,7 +119,7 @@ let rec check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | AIntT -> false
       | IntT _ | BitT _ -> true
       | VBitT _ -> false
-      | VarT _ -> error_not_ground ()
+      | VarT _ -> true
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
       | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _
@@ -140,8 +134,7 @@ let rec check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | MatchKindT | StrT -> false
       | BoolT -> true
       | AIntT -> false
-      | IntT _ | BitT _ | VBitT _ -> true
-      | VarT _ -> error_not_ground ()
+      | IntT _ | BitT _ | VBitT _ | VarT _ -> true
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
       | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _
@@ -154,7 +147,7 @@ let rec check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VoidT | ErrT | MatchKindT | StrT | BoolT | AIntT | IntT _ | BitT _
       | VBitT _ ->
           false
-      | VarT _ -> error_not_ground ()
+      | VarT _ -> true
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
       | TupleT _ | StackT _ | StructT _ -> false
@@ -169,8 +162,7 @@ let rec check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | MatchKindT | StrT -> false
       | BoolT -> true
       | AIntT -> false
-      | IntT _ | BitT _ | VBitT _ -> true
-      | VarT _ -> error_not_ground ()
+      | IntT _ | BitT _ | VBitT _ | VarT _ -> true
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
       | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _
@@ -183,8 +175,7 @@ let rec check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VoidT | ErrT | MatchKindT | StrT -> false
       | BoolT -> true
       | AIntT -> false
-      | IntT _ | BitT _ | VBitT _ -> true
-      | VarT _ -> error_not_ground ()
+      | IntT _ | BitT _ | VBitT _ | VarT _ -> true
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
       | TupleT _ | StackT _ -> false
@@ -204,7 +195,7 @@ let rec check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VoidT | ErrT | MatchKindT | StrT | BoolT | AIntT | IntT _ | BitT _
       | VBitT _ ->
           false
-      | VarT _ -> error_not_ground ()
+      | VarT _ -> true
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
       | TupleT _ | StackT _ -> false
@@ -220,7 +211,7 @@ let rec check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VoidT | ErrT | MatchKindT | StrT | BoolT | AIntT -> false
       | IntT _ | BitT _ -> true
       | VBitT _ -> false
-      | VarT _ -> error_not_ground ()
+      | VarT _ -> true
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
       | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _
@@ -237,37 +228,37 @@ let check_valid_type_nesting (typ : Type.t) (typ_inner : Type.t) : unit =
     assert false)
   else ()
 
-let rec check_valid_type (typ : Type.t) : unit =
+let rec check_valid_type' (tset : TSet.t) (typ : Type.t) : unit =
   match typ with
   | VoidT | ErrT | MatchKindT | StrT | BoolT | AIntT | IntT _ | BitT _ | VBitT _
     ->
       ()
-  | VarT _ ->
-      Format.eprintf
-        "(check_valid_type) Before well-formnedness check, types should be \
-         grounded\n";
-      assert false
+  | VarT id ->
+      if not (TSet.mem id tset) then (
+        Format.eprintf "(check_valid_type) %s is a free type variable\n" id;
+        assert false)
+      else ()
   | DefT typ_inner ->
-      check_valid_type typ_inner;
+      check_valid_type' tset typ_inner;
       check_valid_type_nesting typ typ_inner
   | NewT typ_inner ->
-      check_valid_type typ_inner;
+      check_valid_type' tset typ_inner;
       check_valid_type_nesting typ typ_inner
   | TupleT typs_inner ->
       List.iter
         (fun typ_inner ->
-          check_valid_type typ_inner;
+          check_valid_type' tset typ_inner;
           check_valid_type_nesting typ typ_inner)
         typs_inner
   | StackT (typ_inner, _) ->
-      check_valid_type typ_inner;
+      check_valid_type' tset typ_inner;
       check_valid_type_nesting typ typ_inner
   | StructT fields ->
       let members, typs_inner = List.split fields in
       check_distinct_members members;
       List.iter
         (fun typ_inner ->
-          check_valid_type typ_inner;
+          check_valid_type' tset typ_inner;
           check_valid_type_nesting typ typ_inner)
         typs_inner
   | HeaderT fields ->
@@ -275,7 +266,7 @@ let rec check_valid_type (typ : Type.t) : unit =
       check_distinct_members members;
       List.iter
         (fun typ_inner ->
-          check_valid_type typ_inner;
+          check_valid_type' tset typ_inner;
           check_valid_type_nesting typ typ_inner)
         typs_inner
   | UnionT fields ->
@@ -283,60 +274,188 @@ let rec check_valid_type (typ : Type.t) : unit =
       check_distinct_members members;
       List.iter
         (fun typ_inner ->
-          check_valid_type typ_inner;
+          check_valid_type' tset typ_inner;
           check_valid_type_nesting typ typ_inner)
         typs_inner
   | EnumT members -> check_distinct_members members
   | SEnumT (typ_inner, fields) ->
       let members, _ = List.split fields in
       check_distinct_members members;
-      check_valid_type typ_inner
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> ()
+      check_valid_type' tset typ_inner
+  | ExternT fdenv | ParserT fdenv | ControlT fdenv ->
+      FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
+  | PackageT | TopT -> ()
+
+and check_valid_type (layer : Ctx.layer) (ctx : Ctx.t) (typ : Type.t) : unit =
+  let tset = Ctx.get_tparams layer ctx |> TSet.of_list in
+  check_valid_type' tset typ
+
+and check_valid_param' (tset : TSet.t)
+    (param : id' * dir' * Type.t * Value.t option) : unit =
+  let _, _, typ, _ = param in
+  check_valid_type' tset typ
+
+and check_valid_param (layer : Ctx.layer) (ctx : Ctx.t)
+    (param : id' * dir' * Type.t * Value.t option) : unit =
+  let tset = Ctx.get_tparams layer ctx |> TSet.of_list in
+  check_valid_param' tset param
+
+and check_valid_funcdef' (tset : TSet.t) (fd : FuncDef.t) : unit =
+  let tparams, params, typ_ret = fd in
+  let tset = TSet.union tset (TSet.of_list tparams) in
+  List.iter (check_valid_param' tset) params;
+  check_valid_type' tset typ_ret
+
+let check_valid_funcdef (layer : Ctx.layer) (ctx : Ctx.t) (fd : FuncDef.t) :
+    unit =
+  let tset = Ctx.get_tparams layer ctx |> TSet.of_list in
+  check_valid_funcdef' tset fd
+
+let check_valid_typedef (layer : Ctx.layer) (ctx : Ctx.t) (td : TypeDef.t) :
+    unit =
+  if layer <> Ctx.Global then (
+    Format.eprintf "(check_valid_typedef) Type definitions must be global\n";
+    assert false);
+  match td with
+  | DefD typ | NewD typ -> check_valid_type layer ctx typ
+  | StructD fields -> check_valid_type layer ctx (StructT fields)
+  | HeaderD fields -> check_valid_type layer ctx (HeaderT fields)
+  | UnionD fields -> check_valid_type layer ctx (UnionT fields)
+  | EnumD members -> check_valid_type layer ctx (EnumT members)
+  | SEnumD (typ, fields) -> check_valid_type layer ctx (SEnumT (typ, fields))
+  | ExternD (tparams, fdenv) ->
+      let tset = TSet.of_list tparams in
+      FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
+  | ParserD (tparams, fdenv) ->
+      let tset = TSet.of_list tparams in
+      FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
+  | ControlD (tparams, fdenv) ->
+      let tset = TSet.of_list tparams in
+      FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
+  | PackageD _tparams -> ()
 
 (* Type evaluation *)
 
-let specialize_typedef (_ctx : Ctx.t) (td : TypeDef.t) (typ_args : Type.t list)
-    : Type.t =
+module TMap = MakeEnv (TId) (Type)
+
+let rec substitute_type (tmap : TMap.t) (typ : Type.t) : Type.t =
+  match typ with
+  | VoidT | ErrT | MatchKindT | StrT | BoolT | AIntT | IntT _ | BitT _ | VBitT _
+    ->
+      typ
+  | VarT id -> (
+      match TMap.find_opt id tmap with Some typ -> typ | None -> typ)
+  | DefT typ_inner -> DefT (substitute_type tmap typ_inner)
+  | NewT typ_inner -> NewT (substitute_type tmap typ_inner)
+  | TupleT typs_inner -> TupleT (List.map (substitute_type tmap) typs_inner)
+  | StackT (typ_inner, size) -> StackT (substitute_type tmap typ_inner, size)
+  | StructT fields ->
+      let members, typs_inner = List.split fields in
+      let typs_inner = List.map (substitute_type tmap) typs_inner in
+      StructT (List.combine members typs_inner)
+  | HeaderT fields ->
+      let members, typs_inner = List.split fields in
+      let typs_inner = List.map (substitute_type tmap) typs_inner in
+      HeaderT (List.combine members typs_inner)
+  | UnionT fields ->
+      let members, typs_inner = List.split fields in
+      let typs_inner = List.map (substitute_type tmap) typs_inner in
+      UnionT (List.combine members typs_inner)
+  | EnumT _ -> typ
+  | SEnumT (typ_inner, fields) ->
+      let typ_inner = substitute_type tmap typ_inner in
+      SEnumT (typ_inner, fields)
+  | ExternT fdenv ->
+      let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
+      ExternT fdenv
+  | ParserT fdenv ->
+      let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
+      ParserT fdenv
+  | ControlT fdenv ->
+      let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
+      ControlT fdenv
+  | PackageT | TopT -> typ
+
+and substitute_param (tmap : TMap.t)
+    (param : id' * dir' * Type.t * Value.t option) :
+    id' * dir' * Type.t * Value.t option =
+  let id, dir, typ, value_default = param in
+  let typ = substitute_type tmap typ in
+  (id, dir, typ, value_default)
+
+and substitute_funcdef (tmap : TMap.t) (fd : FuncDef.t) : FuncDef.t =
+  let tparams, params, typ_ret = fd in
+  let tmap' =
+    TMap.fold
+      (fun tid typ tmap' ->
+        if List.mem tid tparams then tmap' else TMap.add tid typ tmap')
+      tmap TMap.empty
+  in
+  let params = List.map (substitute_param tmap') params in
+  let typ_ret = substitute_type tmap' typ_ret in
+  (tparams, params, typ_ret)
+
+let specialize_funcdef (fd : FuncDef.t) (typ_args : Type.t list) : FuncType.t =
+  let tparams, params, typ_ret = fd in
+  assert (List.length typ_args = List.length tparams);
+  let tmap = List.combine tparams typ_args |> TMap.of_list in
+  let params = List.map (substitute_param tmap) params in
+  let typ_ret = substitute_type tmap typ_ret in
+  (params, typ_ret)
+
+let specialize_typedef (td : TypeDef.t) (typs_arg : Type.t list) : Type.t =
+  let check_arity tparams =
+    if List.length typs_arg <> List.length tparams then (
+      Format.eprintf
+        "(specialize_typedef) Type definition %a expects %d type arguments\n"
+        TypeDef.pp td (List.length tparams);
+      assert false)
+  in
   match td with
   (* Aliased types are not generic *)
   | DefD typ ->
-      assert (List.length typ_args = 0);
+      check_arity [];
       Type.DefT typ
   | NewD typ ->
-      assert (List.length typ_args = 0);
+      check_arity [];
       Type.NewT typ
   (* Aggregate types are not generic (yet, to be added in v1.2.2) *)
   | StructD fields ->
-      assert (List.length typ_args = 0);
+      check_arity [];
       Type.StructT fields
   | HeaderD fields ->
-      assert (List.length typ_args = 0);
+      check_arity [];
       Type.HeaderT fields
   | UnionD fields ->
-      assert (List.length typ_args = 0);
+      check_arity [];
       Type.UnionT fields
   | EnumD members ->
-      assert (List.length typ_args = 0);
+      check_arity [];
       Type.EnumT members
   | SEnumD (typ, fields) ->
-      assert (List.length typ_args = 0);
+      check_arity [];
       Type.SEnumT (typ, fields)
   (* Object types are generic *)
-  (* (TODO) Specialize the parameters *)
   | ExternD (tparams, fdenv) ->
-      assert (List.length typ_args = List.length tparams);
+      check_arity tparams;
+      let tmap = List.combine tparams typs_arg |> TMap.of_list in
+      let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
       Type.ExternT fdenv
   | ParserD (tparams, fdenv) ->
-      assert (List.length typ_args = List.length tparams);
+      check_arity tparams;
+      let tmap = List.combine tparams typs_arg |> TMap.of_list in
+      let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
       Type.ParserT fdenv
   | ControlD (tparams, fdenv) ->
-      assert (List.length typ_args = List.length tparams);
+      check_arity tparams;
+      let tmap = List.combine tparams typs_arg |> TMap.of_list in
+      let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
       Type.ControlT fdenv
   | PackageD tparams ->
-      assert (List.length typ_args = List.length tparams);
+      check_arity tparams;
       Type.PackageT
 
-let rec eval_type' (ctx : Ctx.t) (tparams : tparam' list) (typ : typ) : Type.t =
+let rec eval_type' (layer : Ctx.layer) (ctx : Ctx.t) (typ : typ) : Type.t =
   match typ.it with
   | VoidT -> Type.VoidT
   | ErrT -> Type.ErrT
@@ -353,36 +472,51 @@ let rec eval_type' (ctx : Ctx.t) (tparams : tparam' list) (typ : typ) : Type.t =
       let width = static_eval_expr ctx expr |> expect_value |> Value.get_num in
       Type.VBitT width
   | StackT (typ_inner, expr) ->
-      let typ_inner = eval_type' ctx tparams typ_inner in
+      let typ_inner = eval_type' layer ctx typ_inner in
       let size = static_eval_expr ctx expr |> expect_value |> Value.get_num in
       Type.StackT (typ_inner, size)
   | TupleT typs_inner ->
-      let typs_inner = List.map (eval_type' ctx tparams) typs_inner in
+      let typs_inner = List.map (eval_type' layer ctx) typs_inner in
       Type.TupleT typs_inner
-  | NameT { it = Bare id; _ } when List.mem id.it tparams -> Type.VarT id.it
+  | NameT { it = Bare id; _ }
+    when Ctx.find_tparam_opt layer id.it ctx |> Option.is_some ->
+      Type.VarT id.it
   | NameT var ->
-      let td = Ctx.find_opt Ctx.find_td_opt var ctx in
+      let td = Ctx.find_opt Ctx.find_typedef_opt var ctx in
       if Option.is_none td then (
         Format.eprintf "(eval_type') Type definition %a does not exist\n"
           Syntax.Pp.pp_var var;
         assert false);
       let td = Option.get td in
-      specialize_typedef ctx td []
+      specialize_typedef td []
   | SpecT (var, typs) ->
-      let td = Ctx.find_opt Ctx.find_td_opt var ctx in
+      let td = Ctx.find_opt Ctx.find_typedef_opt var ctx in
       if Option.is_none td then (
         Format.eprintf "(eval_type') Type definition %a does not exist\n"
           Syntax.Pp.pp_var var;
         assert false);
       let td = Option.get td in
-      let typs = List.map (eval_type' ctx []) typs in
-      specialize_typedef ctx td typs
+      let typs = List.map (eval_type' layer ctx) typs in
+      specialize_typedef td typs
   | AnyT -> Type.TopT
 
-and eval_type (ctx : Ctx.t) (tparams : tparam' list) (typ : typ) : Type.t =
-  let typ = eval_type' ctx tparams typ in
-  check_valid_type typ;
+and eval_type (layer : Ctx.layer) (ctx : Ctx.t) (typ : typ) : Type.t =
+  let typ = eval_type' layer ctx typ in
+  check_valid_type layer ctx typ;
   typ
+
+(* Static parameter evaluation *)
+
+and eval_param (layer : Ctx.layer) (ctx : Ctx.t) (param : param') :
+    id' * dir' * Type.t * Value.t option =
+  let id, dir, typ, expr_default = param in
+  let typ = eval_type layer ctx typ in
+  let value_default =
+    Option.map
+      (fun expr_default -> static_eval_expr ctx expr_default |> expect_value)
+      expr_default
+  in
+  (id.it, dir.it, typ, value_default)
 
 (* Static expression evaluation *)
 
@@ -500,8 +634,8 @@ and static_eval_bitstring_acc (ctx : Ctx.t) (expr_base : expr) (expr_lo : expr)
 (*     Value.t option = *)
 (*   let typ = *)
 (*     match var.it with *)
-(*     | Top id -> Ctx.find_td_glob id.it ctx *)
-(*     | Bare id -> Ctx.find_td id.it ctx *)
+(*     | Top id -> Ctx.find_typedef_glob id.it ctx *)
+(*     | Bare id -> Ctx.find_typedef id.it ctx *)
 (*   in *)
 (*   match typ with *)
 (*   | EnumT (id, members) when List.mem member.it members -> *)
@@ -542,7 +676,7 @@ and static_eval_exprs (ctx : Ctx.t) (exprs : expr list) : Value.t list option =
 
 let type_const_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id) (typ : typ)
     (value : expr) : Ctx.t =
-  let typ = eval_type ctx [] typ in
+  let typ = eval_type layer ctx typ in
   match static_eval_expr ctx value with
   | Some value ->
       Ctx.add_value layer id.it value ctx |> Ctx.add_type layer id.it typ
@@ -558,7 +692,8 @@ let type_const_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id) (typ : typ)
    error is similar to an enumeration (enum) type in other languages. A program can contain multiple error declarations,
    which the compiler will merge together. It is an error to declare the same identifier multiple times. *)
 
-let type_error_decl (layer : Ctx.layer) (ctx : Ctx.t) (members : member list) =
+let rec type_error_decl (layer : Ctx.layer) (ctx : Ctx.t)
+    (members : member list) =
   if layer <> Ctx.Global then (
     Format.eprintf "(type_error_decl) Error declarations must be global\n";
     assert false);
@@ -585,7 +720,7 @@ let type_error_decl (layer : Ctx.layer) (ctx : Ctx.t) (members : member list) =
    The declaration of new match_kinds can only occur within model description files;
    P4 programmers cannot declare new match kinds. *)
 
-let type_match_kind_decl (layer : Ctx.layer) (ctx : Ctx.t)
+and type_match_kind_decl (layer : Ctx.layer) (ctx : Ctx.t)
     (members : member list) : Ctx.t =
   if layer <> Ctx.Global then (
     Format.eprintf
@@ -608,67 +743,63 @@ let type_match_kind_decl (layer : Ctx.layer) (ctx : Ctx.t)
    This declaration introduces a new type with the specified name in the current scope.
    Field names have to be distinct. An empty struct (with no fields) is legal. *)
 
-let type_struct_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+and type_struct_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (fields : (member * typ) list) : Ctx.t =
   if layer <> Ctx.Global then (
     Format.eprintf "(type_struct_decl) Struct declarations must be global\n";
     assert false);
   let members, typs = List.split fields in
   let members = List.map it members in
-  let typs = List.map (eval_type ctx []) typs in
+  let typs = List.map (eval_type layer ctx) typs in
   let fields = List.combine members typs in
   let td = TypeDef.StructD fields in
-  let typ' = specialize_typedef ctx td [] in
-  check_valid_type typ';
-  Ctx.add_td layer id.it td ctx
+  check_valid_typedef layer ctx td;
+  Ctx.add_typedef layer id.it td ctx
 
 (* (7.2.2) Header types *)
 
-let type_header_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+and type_header_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (fields : (member * typ) list) : Ctx.t =
   if layer <> Ctx.Global then (
     Format.eprintf "(type_header_decl) Header declarations must be global\n";
     assert false);
   let members, typs = List.split fields in
   let members = List.map it members in
-  let typs = List.map (eval_type ctx []) typs in
+  let typs = List.map (eval_type layer ctx) typs in
   let fields = List.combine members typs in
   let td = TypeDef.HeaderD fields in
-  let typ' = specialize_typedef ctx td [] in
-  check_valid_type typ';
-  Ctx.add_td layer id.it td ctx
+  check_valid_typedef layer ctx td;
+  Ctx.add_typedef layer id.it td ctx
 
 (* (7.2.4) Header unions *)
 
-let type_union_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+and type_union_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (fields : (member * typ) list) : Ctx.t =
   if layer <> Ctx.Global then (
     Format.eprintf "(type_union_decl) Union declarations must be global\n";
     assert false);
   let members, typs = List.split fields in
   let members = List.map it members in
-  let typs = List.map (eval_type ctx []) typs in
+  let typs = List.map (eval_type layer ctx) typs in
   let fields = List.combine members typs in
   let td = TypeDef.UnionD fields in
-  let typ' = specialize_typedef ctx td [] in
-  check_valid_type typ';
-  Ctx.add_td layer id.it td ctx
+  check_valid_typedef layer ctx td;
+  Ctx.add_typedef layer id.it td ctx
 
 (* (7.2.1) Enumeration types
 
    An enum declaration introduces a new identifier in the current scope for
    naming the created type along with its distinct constants. *)
 
-let type_enum_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+and type_enum_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (members : member list) : Ctx.t =
   if layer <> Ctx.Global then (
     Format.eprintf "(type_enum_decl) Enum declarations must be global\n";
     assert false);
   let members = List.map it members in
   let td = TypeDef.EnumD members in
-  let typ' = specialize_typedef ctx td [] in
-  check_valid_type typ';
-  Ctx.add_td layer id.it td ctx
+  check_valid_typedef layer ctx td;
+  Ctx.add_typedef layer id.it td ctx
 
 (* (7.2.1) Enumeration types
 
@@ -685,22 +816,21 @@ let type_enum_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
    Compiler implementations are expected to raise an error if the fixed-width integer representation for an enumeration entry
    falls outside the representation range of the underlying type. *)
 
-let type_senum_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id) (typ : typ)
+and type_senum_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id) (typ : typ)
     (fields : (member * expr) list) : Ctx.t =
   if layer <> Ctx.Global then (
     Format.eprintf
       "(type_senum_decl) Serializable enum declarations must be global\n";
     assert false);
-  let typ = eval_type ctx [] typ in
+  let typ = eval_type layer ctx typ in
   let members, exprs = List.split fields in
   let members = List.map it members in
   (* (TODO) Check that values are of typ *)
   let values = static_eval_exprs ctx exprs |> expect_values in
   let fields = List.combine members values in
   let td = TypeDef.SEnumD (typ, fields) in
-  let typ' = specialize_typedef ctx td [] in
-  check_valid_type typ';
-  Ctx.add_td layer id.it td ctx
+  check_valid_typedef layer ctx td;
+  Ctx.add_typedef layer id.it td ctx
 
 (* (7.6) Introducing new types
 
@@ -710,18 +840,17 @@ let type_senum_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id) (typ : typ)
    Currently the types that can be created by the type keyword are restricted to one of:
    bit<>, int<>, bool, or types defined using type from such types. *)
 
-let type_newtype_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+and type_newtype_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (typdef : (typ, decl) alt) : Ctx.t =
   if layer <> Ctx.Global then (
     Format.eprintf "(type_newtype_decl) New type declarations must be global\n";
     assert false);
   match typdef with
   | Left typ ->
-      let typ = eval_type ctx [] typ in
+      let typ = eval_type layer ctx typ in
       let td = TypeDef.NewD typ in
-      let typ' = specialize_typedef ctx td [] in
-      check_valid_type typ';
-      Ctx.add_td layer id.it td ctx
+      check_valid_typedef layer ctx td;
+      Ctx.add_typedef layer id.it td ctx
   | Right _ -> failwith "(TODO: type_newtype_decl) Handle newtype with decl"
 
 (* (7.5) typedef
@@ -731,18 +860,17 @@ let type_newtype_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
    the original type can be also executed using the newly created type.
    If typedef is used with a generic type the type must be specialized with the suitable number of type arguments: *)
 
-let type_typedef_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+and type_typedef_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (typdef : (typ, decl) alt) : Ctx.t =
   if layer <> Ctx.Global then (
     Format.eprintf "(type_typedef_decl) Typedef declarations must be global\n";
     assert false);
   match typdef with
   | Left typ ->
-      let typ = eval_type ctx [] typ in
+      let typ = eval_type layer ctx typ in
       let td = TypeDef.DefD typ in
-      let typ' = specialize_typedef ctx td [] in
-      check_valid_type typ';
-      Ctx.add_td layer id.it td ctx
+      check_valid_typedef layer ctx td;
+      Ctx.add_typedef layer id.it td ctx
   | Right _ -> failwith "(TODO: type_typedef_decl) Handle typedef with decl"
 
 (* (7.2.12) Parser and control blocks types
@@ -755,7 +883,7 @@ let type_typedef_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
 
    A parser should have at least one argument of type packet_in, representing the received packet that is processed. *)
 
-let type_parser_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+and type_parser_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (_params : param list) : Ctx.t =
   if layer <> Ctx.Global then (
     Format.eprintf
@@ -764,14 +892,12 @@ let type_parser_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
   let tparams = List.map it tparams in
   (* let params = List.map it params in *)
   let td = TypeDef.ParserD (tparams, FDEnv.empty) in
-  let typ_args' = List.init (List.length tparams) (fun _ -> Type.TopT) in
-  let typ' = specialize_typedef ctx td typ_args' in
-  check_valid_type typ';
-  Ctx.add_td layer id.it td ctx
+  check_valid_typedef layer ctx td;
+  Ctx.add_typedef layer id.it td ctx
 
 (* (7.2.12.2) Control type declarations *)
 
-let type_control_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+and type_control_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (_params : param list) : Ctx.t =
   if layer <> Ctx.Global then (
     Format.eprintf
@@ -780,17 +906,15 @@ let type_control_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
   let tparams = List.map it tparams in
   (* let params = List.map it params in *)
   let td = TypeDef.ControlD (tparams, FDEnv.empty) in
-  let typ_args' = List.init (List.length tparams) (fun _ -> Type.TopT) in
-  let typ' = specialize_typedef ctx td typ_args' in
-  check_valid_type typ';
-  Ctx.add_td layer id.it td ctx
+  check_valid_typedef layer ctx td;
+  Ctx.add_typedef layer id.it td ctx
 
 (* (7.2.13) Package types
 
    All parameters of a package are evaluated at compilation time, and in consequence they must all be directionless
    (they cannot be in, out, or inout). Otherwise package types are very similar to parser type declarations. *)
 
-let type_package_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+and type_package_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (_cparams : cparam list) : Ctx.t =
   if layer <> Ctx.Global then (
     Format.eprintf
@@ -799,10 +923,8 @@ let type_package_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
   let tparams = List.map it tparams in
   (* let cparams = List.map it cparams in *)
   let td = TypeDef.PackageD tparams in
-  let typ_args' = List.init (List.length tparams) (fun _ -> Type.TopT) in
-  let typ' = specialize_typedef ctx td typ_args' in
-  check_valid_type typ';
-  Ctx.add_td layer id.it td ctx
+  check_valid_typedef layer ctx td;
+  Ctx.add_typedef layer id.it td ctx
 
 (* (7.2.10.2) Extern objects
 
@@ -812,20 +934,45 @@ let type_package_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
    these must have the same name as the enclosing extern type, no type parameters, and no return type.
    Extern declarations may only appear as allowed by the architecture model and may be specific to a target. *)
 
-let type_extern_object_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
-    (tparams : tparam list) (_mthds : decl list) : Ctx.t =
+and type_extern_method_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+    (tparams : tparam list) (params : param list) (typ_ret : typ) : Ctx.t =
+  if layer <> Ctx.Block then (
+    Format.eprintf
+      "(type_extern_method_decl) Extern method declarations must be in a block\n";
+    assert false);
+  let tparams = List.map it tparams in
+  let fid = Runtime.Domain.FId.to_fid id params in
+  let params = List.map it params in
+  let ctx' =
+    List.fold_left
+      (fun ctx' tparam -> Ctx.add_tparam Ctx.Local tparam ctx')
+      ctx tparams
+  in
+  let params = List.map (eval_param Ctx.Local ctx') params in
+  let typ_ret = eval_type Ctx.Local ctx' typ_ret in
+  let fd = (tparams, params, typ_ret) in
+  check_valid_funcdef layer ctx fd;
+  Ctx.add_funcdef layer fid fd ctx'
+
+and type_extern_object_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+    (tparams : tparam list) (mthds : decl list) : Ctx.t =
   if layer <> Ctx.Global then (
     Format.eprintf
       "(type_extern_object_decl) Extern object declarations must be global\n";
     assert false);
   let tparams = List.map it tparams in
-  let td = TypeDef.ExternD (tparams, FDEnv.empty) in
-  let typ_args' = List.init (List.length tparams) (fun _ -> Type.TopT) in
-  let typ' = specialize_typedef ctx td typ_args' in
-  check_valid_type typ';
-  Ctx.add_td layer id.it td ctx
+  let ctx' =
+    List.fold_left
+      (fun ctx' tparam -> Ctx.add_tparam Ctx.Block tparam ctx')
+      ctx tparams
+  in
+  let ctx' = List.fold_left (type_decl Ctx.Block) ctx' mthds in
+  let _, (_, fdenv, _, _) = ctx'.block in
+  let td = TypeDef.ExternD (tparams, fdenv) in
+  check_valid_typedef layer ctx td;
+  Ctx.add_typedef layer id.it td ctx
 
-let type_decl (layer : Ctx.layer) (ctx : Ctx.t) (decl : decl) =
+and type_decl (layer : Ctx.layer) (ctx : Ctx.t) (decl : decl) =
   match decl.it with
   (* constantDeclaration *)
   | ConstD { id; typ; value } -> type_const_decl layer ctx id typ value
@@ -850,6 +997,8 @@ let type_decl (layer : Ctx.layer) (ctx : Ctx.t) (decl : decl) =
   (* functionDeclaration *)
   (* actionDeclaration *)
   (* externDeclaration *)
+  | MethodD { id; rettyp; tparams; params } ->
+      type_extern_method_decl layer ctx id tparams params rettyp
   | ExternObjectD { id; tparams; mthds } ->
       type_extern_object_decl layer ctx id tparams mthds
   (* instantiation *)
