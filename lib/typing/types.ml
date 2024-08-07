@@ -101,40 +101,40 @@ end = struct
           ts
     | StackT (t, n) -> Format.fprintf fmt "stack %a[%a]" pp t Bigint.pp n
     | StructT fields ->
-        Format.fprintf fmt "struct { %a }"
+        Format.fprintf fmt "struct { @[<hv>%a@] }"
           (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (m, t) ->
                Format.fprintf fmt "%a: %a" Syntax.Pp.pp_member (m $ no_info) pp
                  t))
           fields
     | HeaderT fields ->
-        Format.fprintf fmt "header { %a }"
+        Format.fprintf fmt "header { @[<hv>%a@] }"
           (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (m, t) ->
                Format.fprintf fmt "%a: %a" Syntax.Pp.pp_member (m $ no_info) pp
                  t))
           fields
     | UnionT fields ->
-        Format.fprintf fmt "union { %a }"
+        Format.fprintf fmt "union { @[<hv>%a@] }"
           (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (m, t) ->
                Format.fprintf fmt "%a: %a" Syntax.Pp.pp_member (m $ no_info) pp
                  t))
           fields
     | EnumT members ->
-        Format.fprintf fmt "enum { %a }"
+        Format.fprintf fmt "enum { @[<hv>%a@] }"
           (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt m ->
                Format.fprintf fmt "%a" Syntax.Pp.pp_member (m $ no_info)))
           members
     | SEnumT (t, members) ->
-        Format.fprintf fmt "enum %a { %a }" pp t
+        Format.fprintf fmt "enum %a { @[<hv>%a@] }" pp t
           (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (m, v) ->
                Format.fprintf fmt "%a: %a" Syntax.Pp.pp_member (m $ no_info)
                  Runtime.Value.pp v))
@@ -198,36 +198,36 @@ end = struct
     | DefD typ -> Format.fprintf fmt "typedef %a" Type.pp typ
     | NewD typ -> Format.fprintf fmt "type %a" Type.pp typ
     | StructD fields ->
-        Format.fprintf fmt "struct { %a }"
+        Format.fprintf fmt "struct { @[<hv>%a@] }"
           (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (member, typ) ->
                Format.fprintf fmt "%s: %a" member Type.pp typ))
           fields
     | HeaderD fields ->
-        Format.fprintf fmt "header { %a }"
+        Format.fprintf fmt "header { @[<hv>%a@] }"
           (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (member, typ) ->
                Format.fprintf fmt "%s: %a" member Type.pp typ))
           fields
     | UnionD fields ->
-        Format.fprintf fmt "union { %a }"
+        Format.fprintf fmt "union { @[<hv>%a@] }"
           (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (member, typ) ->
                Format.fprintf fmt "%s: %a" member Type.pp typ))
           fields
     | EnumD members ->
-        Format.fprintf fmt "enum { %a }"
+        Format.fprintf fmt "enum { @[<hv>%a@] }"
           (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt member -> Format.fprintf fmt "%s" member))
           members
     | SEnumD (typ, members) ->
-        Format.fprintf fmt "enum %a { %a }" Type.pp typ
+        Format.fprintf fmt "enum %a { @[<hv>%a@] }" Type.pp typ
           (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ")
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (member, value) ->
                Format.fprintf fmt "%s: %a" member Runtime.Value.pp value))
           members
@@ -262,7 +262,7 @@ end = struct
 
   let pp fmt t =
     let params, typ_ret = t in
-    Format.fprintf fmt "func (%a) -> %a"
+    Format.fprintf fmt "@[<v>func (@[<hv>%a@]) -> %a@]"
       (Format.pp_print_list
          ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
          (fun fmt (id, _dir, typ, _value_default) ->
@@ -279,13 +279,13 @@ end = struct
 
   let pp fmt t =
     let tparams, params, typ_ret = t in
-    Format.fprintf fmt "func<%a> (%a) -> %a"
+    Format.fprintf fmt "@[<v>func<%a> (@[<hv>%a@]) -> %a@]"
       (Format.pp_print_list
          ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
          (fun fmt tparam -> Format.fprintf fmt "%s" tparam))
       tparams
       (Format.pp_print_list
-         ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+         ~pp_sep:(fun fmt () -> Format.fprintf fmt ",@ ")
          (fun fmt (id, _dir, typ, _value_default) ->
            Format.fprintf fmt "%a %s" Type.pp typ id))
       params Type.pp typ_ret
@@ -301,9 +301,9 @@ end = struct
 
   let pp fmt t =
     let params, typ_ret = t in
-    Format.fprintf fmt "cons (%a) -> %a"
+    Format.fprintf fmt "@[<v>cons (@[<hv>%a@]) -> %a@]"
       (Format.pp_print_list
-         ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+         ~pp_sep:(fun fmt () -> Format.fprintf fmt ",@ ")
          (fun fmt (id, _dir, typ, _value_default) ->
            Format.fprintf fmt "%a %s" Type.pp typ id))
       params Type.pp typ_ret
@@ -318,13 +318,13 @@ end = struct
 
   let pp fmt t =
     let tparams, params, typ_ret = t in
-    Format.fprintf fmt "cons<%a> (%a) -> %a"
+    Format.fprintf fmt "@[<v>cons<%a> (@[<hv>%a@]) -> %a@]"
       (Format.pp_print_list
          ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
          (fun fmt tparam -> Format.fprintf fmt "%s" tparam))
       tparams
       (Format.pp_print_list
-         ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+         ~pp_sep:(fun fmt () -> Format.fprintf fmt ",@ ")
          (fun fmt (id, _dir, typ, _value_default) ->
            Format.fprintf fmt "%a %s" Type.pp typ id))
       params Type.pp typ_ret
