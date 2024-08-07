@@ -881,7 +881,7 @@ module Make (Arch : ARCH) : INTERP = struct
         |> failwith
 
   (* Logic for match-action table *)
-  and eval_binop_eq_default (value : Value.t) : bool =
+  and eval_binop_eq_default (ctx : Ctx.t) (value : Value.t): bool =
     match value with
     | BoolV b -> not b
     | AIntV value
@@ -892,13 +892,25 @@ module Make (Arch : ARCH) : INTERP = struct
     | StrV value -> value = ""
     | StackV (values, _, _)
     | TupleV values ->
-        List.for_all eval_binop_eq_default values
-      (*TODO*)
-    | StructV _entries -> true
-    | UnionV _entries -> true
-    | HeaderV (_valid, _entries) -> true
-    | EnumFieldV (_id, _member) -> true
-    | SEnumFieldV (_, _, _value) -> true
+        List.for_all (fun value -> eval_binop_eq_default ctx value) values
+    | StructV entries
+    | UnionV entries ->
+        let values = List.map (fun (_,v) -> v) entries in
+        List.for_all (fun value -> eval_binop_eq_default ctx value) values
+    | HeaderV (valid, entries) ->
+        let values = List.map (fun (_,v) -> v) entries in
+        not valid && List.for_all (fun value -> eval_binop_eq_default ctx value) values
+    | EnumFieldV (id, member) ->
+      let typ = Ctx.find_td id ctx in
+      begin match typ with
+      | EnumT (_id, members) ->
+        let member' = List.hd members in
+        member = member'
+      | _ -> failwith "1"
+      end
+    | SEnumFieldV (_, _, value) -> 
+        let value = Value.get_num value in
+        Bigint.(value = zero)
     | _ -> failwith "1"
 
   and get_prefix (mask : Value.t) (prefix : int) : int =
@@ -957,6 +969,7 @@ module Make (Arch : ARCH) : INTERP = struct
 
   (* Match *)
   (* TODO : OPTIONAL and RANGE *)
+  (* TODO : What about un init enum? *)
   and check_match (ctx : Ctx.t) (ent_list : mtch list)
       (key_list : (Value.t * mtch_kind) list) : bool =
     let check_match' is_match ent key =
@@ -975,10 +988,7 @@ module Make (Arch : ARCH) : INTERP = struct
             else 
               let ent_value, key_value = mask_values ctx key_value expr in
               eval_binop_eq ent_value key_value
-        (* TODO : Should consider about enum values without underlying type. The default
-           value is the first value that appears in the enum type declaration. *)
-        (* TODO *)
-        | DefaultM -> eval_binop_eq_default key_value
+        | DefaultM -> eval_binop_eq_default ctx key_value
     in
     (* If entry list is just underline('_') return true *)
     match ent_list with 
