@@ -11,8 +11,8 @@ type frame = TDEnv.t * FDEnv.t * VEnv.t * TEnv.t
 type t = {
   cons : CDEnv.t;
   global : frame;
-  block : tparam' list * frame;
-  local : tparam' list * frame list;
+  block : id' * tparam' list * frame;
+  local : id' * tparam' list * frame list;
 }
 
 let empty_frame = (TDEnv.empty, FDEnv.empty, VEnv.empty, TEnv.empty)
@@ -21,35 +21,61 @@ let empty =
   {
     cons = CDEnv.empty;
     global = empty_frame;
-    block = ([], empty_frame);
-    local = ([], []);
+    block = ("", [], empty_frame);
+    local = ("", [], []);
   }
 
+(* Setters *)
+
+let set_id layer id ctx =
+  match layer with
+  | Global ->
+      Format.eprintf "(set_id) Global layer has no identifier\n";
+      assert false
+  | Block ->
+      let _, tparams, frame = ctx.block in
+      { ctx with block = (id, tparams, frame) }
+  | Local ->
+      let _, tparams, frames = ctx.local in
+      { ctx with local = (id, tparams, frames) }
+
 (* Getters *)
+
+let get_id layer ctx =
+  match layer with
+  | Global -> ""
+  | Block ->
+      let id, _, _ = ctx.block in
+      id
+  | Local ->
+      let id, _, _ = ctx.local in
+      id
 
 let rec get_tparams layer ctx =
   match layer with
   | Global -> []
   | Block ->
-      let tparams, _ = ctx.block in
+      let _, tparams, _ = ctx.block in
       tparams
   | Local ->
-      let tparams, _ = ctx.local in
+      let _, tparams, _ = ctx.local in
       tparams @ get_tparams Block ctx
 
 (* Adders *)
 
+let add_consdef cid cd ctx = { ctx with cons = CDEnv.add cid cd ctx.cons }
+
 let add_tparam layer tparam ctx =
   match layer with
   | Global ->
-      Format.eprintf "(add_tparam) Global layer cannot be type-parameterized.";
+      Format.eprintf "(add_tparam) Global layer cannot be type-parameterized\n";
       assert false
   | Block ->
-      let tparams, frame = ctx.block in
-      { ctx with block = (tparams @ [ tparam ], frame) }
+      let id, tparams, frame = ctx.block in
+      { ctx with block = (id, tparams @ [ tparam ], frame) }
   | Local ->
-      let tparams, frames = ctx.local in
-      { ctx with local = (tparams @ [ tparam ], frames) }
+      let id, tparams, frames = ctx.local in
+      { ctx with local = (id, tparams @ [ tparam ], frames) }
 
 let add_typedef layer tid td ctx =
   match layer with
@@ -57,17 +83,17 @@ let add_typedef layer tid td ctx =
       let tdenv, fdenv, venv, tenv = ctx.global in
       { ctx with global = (TDEnv.add tid td tdenv, fdenv, venv, tenv) }
   | Block ->
-      let tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
+      let id, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
       {
         ctx with
-        block = (tparams, (TDEnv.add tid td tdenv, fdenv, venv, tenv));
+        block = (id, tparams, (TDEnv.add tid td tdenv, fdenv, venv, tenv));
       }
   | Local ->
-      let tparams, frames = ctx.local in
+      let id, tparams, frames = ctx.local in
       let frame, frames = (List.hd frames, List.tl frames) in
       let tdenv, fdenv, venv, tenv = frame in
       let frame = (TDEnv.add tid td tdenv, fdenv, venv, tenv) in
-      { ctx with local = (tparams, frame :: frames) }
+      { ctx with local = (id, tparams, frame :: frames) }
 
 let add_funcdef layer fid fd ctx =
   match layer with
@@ -75,17 +101,17 @@ let add_funcdef layer fid fd ctx =
       let tdenv, fdenv, venv, tenv = ctx.global in
       { ctx with global = (tdenv, FDEnv.add fid fd fdenv, venv, tenv) }
   | Block ->
-      let tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
+      let id, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
       {
         ctx with
-        block = (tparams, (tdenv, FDEnv.add fid fd fdenv, venv, tenv));
+        block = (id, tparams, (tdenv, FDEnv.add fid fd fdenv, venv, tenv));
       }
   | Local ->
-      let tparams, frames = ctx.local in
+      let id, tparams, frames = ctx.local in
       let frame, frames = (List.hd frames, List.tl frames) in
       let tdenv, fdenv, venv, tenv = frame in
       let frame = (tdenv, FDEnv.add fid fd fdenv, venv, tenv) in
-      { ctx with local = (tparams, frame :: frames) }
+      { ctx with local = (id, tparams, frame :: frames) }
 
 let add_value layer id value ctx =
   match layer with
@@ -93,17 +119,17 @@ let add_value layer id value ctx =
       let tdenv, fdenv, venv, tenv = ctx.global in
       { ctx with global = (tdenv, fdenv, VEnv.add id value venv, tenv) }
   | Block ->
-      let tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
+      let id, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
       {
         ctx with
-        block = (tparams, (tdenv, fdenv, VEnv.add id value venv, tenv));
+        block = (id, tparams, (tdenv, fdenv, VEnv.add id value venv, tenv));
       }
   | Local ->
-      let tparams, frames = ctx.local in
+      let id, tparams, frames = ctx.local in
       let frame, frames = (List.hd frames, List.tl frames) in
       let tdenv, fdenv, venv, tenv = frame in
       let frame = (tdenv, fdenv, VEnv.add id value venv, tenv) in
-      { ctx with local = (tparams, frame :: frames) }
+      { ctx with local = (id, tparams, frame :: frames) }
 
 let add_type layer id typ ctx =
   match layer with
@@ -111,14 +137,17 @@ let add_type layer id typ ctx =
       let tdenv, fdenv, venv, tenv = ctx.global in
       { ctx with global = (tdenv, fdenv, venv, TEnv.add id typ tenv) }
   | Block ->
-      let tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
-      { ctx with block = (tparams, (tdenv, fdenv, venv, TEnv.add id typ tenv)) }
+      let id, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
+      {
+        ctx with
+        block = (id, tparams, (tdenv, fdenv, venv, TEnv.add id typ tenv));
+      }
   | Local ->
-      let tparams, frames = ctx.local in
+      let id, tparams, frames = ctx.local in
       let frame, frames = (List.hd frames, List.tl frames) in
       let tdenv, fdenv, venv, tenv = frame in
       let frame = (tdenv, fdenv, venv, TEnv.add id typ tenv) in
-      { ctx with local = (tparams, frame :: frames) }
+      { ctx with local = (id, tparams, frame :: frames) }
 
 (* Finders *)
 
@@ -130,10 +159,10 @@ let rec find_tparam_opt layer tparam ctx =
   match layer with
   | Global -> None
   | Block ->
-      let tparams, _ = ctx.block in
+      let _, tparams, _ = ctx.block in
       List.find_opt (fun tp -> tp = tparam) tparams
   | Local ->
-      let tparams, _ = ctx.local in
+      let _, tparams, _ = ctx.local in
       List.find_opt (fun tp -> tp = tparam) tparams
       |> find_cont find_tparam_opt Block tparam ctx
 
@@ -146,10 +175,10 @@ let rec find_typedef_opt layer tid ctx =
       let tdenv, _, _, _ = ctx.global in
       TDEnv.find_opt tid tdenv
   | Block ->
-      let _, (tdenv, _, _, _) = ctx.block in
+      let _, _, (tdenv, _, _, _) = ctx.block in
       TDEnv.find_opt tid tdenv |> find_cont find_typedef_opt Global tid ctx
   | Local ->
-      let _, frames = ctx.local in
+      let _, _, frames = ctx.local in
       List.fold_left
         (fun td frame ->
           match td with
@@ -168,10 +197,10 @@ let rec find_value_opt layer id ctx =
       let _, _, venv, _ = ctx.global in
       VEnv.find_opt id venv
   | Block ->
-      let _, (_, _, venv, _) = ctx.block in
+      let _, _, (_, _, venv, _) = ctx.block in
       VEnv.find_opt id venv |> find_cont find_value_opt Global id ctx
   | Local ->
-      let _, frames = ctx.local in
+      let _, _, frames = ctx.local in
       List.fold_left
         (fun value frame ->
           match value with
@@ -199,22 +228,23 @@ let find_opt finder_opt var ctx =
 let pp_frame fmt frame =
   let tdenv, fdenv, venv, tenv = frame in
   Format.fprintf fmt
-    "@[@[<v 0>Typedefs:@ %a@]@\n\
-     @[<v 0>Functions:@ %a@]@\n\
-     @[<v 0>Values:@ %a@]@\n\
-     @[<v 0>Types:@ %a@]@]" TDEnv.pp tdenv FDEnv.pp fdenv VEnv.pp venv TEnv.pp
+    "@[@[<v 0>[Typedefs]:@ %a@]@\n\
+     @[<v 0>[Functions]:@ %a@]@\n\
+     @[<v 0>[Values]:@ %a@]@\n\
+     @[<v 0>[Types]:@ %a@]@]" TDEnv.pp tdenv FDEnv.pp fdenv VEnv.pp venv TEnv.pp
     tenv
 
 let pp fmt ctx =
-  let tparams_block, frame_block = ctx.block in
-  let tparams_local, frames_local = ctx.local in
+  let id_block, tparams_block, frame_block = ctx.block in
+  let id_local, tparams_local, frames_local = ctx.local in
   Format.fprintf fmt
-    "@[@[<v 0>Constructors:@ %a@]@\n\
-     @[<v 0>Global:@ %a@]@\n\
-     @[<v 0>Block<%s>:@ %a@]@\n\
-     @[<v 0>Local<%s>:@ %a@]@]" CDEnv.pp ctx.cons pp_frame ctx.global
+    "@[@[<v 0>[[Constructors]]:@ %a@]@\n\
+     @[<v 0>[[Global]]:@ %a@]@\n\
+     @[<v 0>[[Block %s<%s>]]:@ %a@]@\n\
+     @[<v 0>[[Local %s<%s>]]:@ %a@]@]" CDEnv.pp ctx.cons pp_frame ctx.global
+    id_block
     (String.concat ", " tparams_block)
-    pp_frame frame_block
+    pp_frame frame_block id_local
     (String.concat ", " tparams_local)
     (Format.pp_print_list pp_frame)
     frames_local

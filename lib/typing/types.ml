@@ -299,7 +299,14 @@ and ConsType : sig
 end = struct
   type t = (id' * dir' * Type.t * Value.t option) list * Type.t
 
-  let pp fmt _t = Format.fprintf fmt "constype"
+  let pp fmt t =
+    let params, typ_ret = t in
+    Format.fprintf fmt "cons (%a) -> %a"
+      (Format.pp_print_list
+         ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+         (fun fmt (id, _dir, typ, _value_default) ->
+           Format.fprintf fmt "%a %s" Type.pp typ id))
+      params Type.pp typ_ret
 end
 
 and ConsDef : sig
@@ -309,7 +316,18 @@ and ConsDef : sig
 end = struct
   type t = tparam' list * (id' * dir' * Type.t * Value.t option) list * Type.t
 
-  let pp fmt _t = Format.fprintf fmt "consdef"
+  let pp fmt t =
+    let tparams, params, typ_ret = t in
+    Format.fprintf fmt "cons<%a> (%a) -> %a"
+      (Format.pp_print_list
+         ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+         (fun fmt tparam -> Format.fprintf fmt "%s" tparam))
+      tparams
+      (Format.pp_print_list
+         ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+         (fun fmt (id, _dir, typ, _value_default) ->
+           Format.fprintf fmt "%a %s" Type.pp typ id))
+      params Type.pp typ_ret
 end
 
 (* Environments *)
@@ -325,5 +343,5 @@ and TDEnv : (ENV with type t_key = TId.t and type t_value = TypeDef.t) =
 and FDEnv : (ENV with type t_key = FId.t and type t_value = FuncDef.t) =
   MakeEnv (FId) (FuncDef)
 
-and CDEnv : (ENV with type t_key = FId.t and type t_value = ConsType.t) =
-  MakeEnv (FId) (ConsType)
+and CDEnv : (ENV with type t_key = FId.t and type t_value = ConsDef.t) =
+  MakeEnv (FId) (ConsDef)

@@ -290,28 +290,7 @@ and check_valid_type (layer : Ctx.layer) (ctx : Ctx.t) (typ : Type.t) : unit =
   let tset = Ctx.get_tparams layer ctx |> TSet.of_list in
   check_valid_type' tset typ
 
-and check_valid_param' (tset : TSet.t)
-    (param : id' * dir' * Type.t * Value.t option) : unit =
-  let _, _, typ, _ = param in
-  check_valid_type' tset typ
-
-and check_valid_param (layer : Ctx.layer) (ctx : Ctx.t)
-    (param : id' * dir' * Type.t * Value.t option) : unit =
-  let tset = Ctx.get_tparams layer ctx |> TSet.of_list in
-  check_valid_param' tset param
-
-and check_valid_funcdef' (tset : TSet.t) (fd : FuncDef.t) : unit =
-  let tparams, params, typ_ret = fd in
-  let tset = TSet.union tset (TSet.of_list tparams) in
-  List.iter (check_valid_param' tset) params;
-  check_valid_type' tset typ_ret
-
-let check_valid_funcdef (layer : Ctx.layer) (ctx : Ctx.t) (fd : FuncDef.t) :
-    unit =
-  let tset = Ctx.get_tparams layer ctx |> TSet.of_list in
-  check_valid_funcdef' tset fd
-
-let check_valid_typedef (layer : Ctx.layer) (ctx : Ctx.t) (td : TypeDef.t) :
+and check_valid_typedef (layer : Ctx.layer) (ctx : Ctx.t) (td : TypeDef.t) :
     unit =
   if layer <> Ctx.Global then (
     Format.eprintf "(check_valid_typedef) Type definitions must be global\n";
@@ -333,6 +312,42 @@ let check_valid_typedef (layer : Ctx.layer) (ctx : Ctx.t) (td : TypeDef.t) :
       let tset = TSet.of_list tparams in
       FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
   | PackageD _tparams -> ()
+
+and check_valid_param' (tset : TSet.t)
+    (param : id' * dir' * Type.t * Value.t option) : unit =
+  let _, _, typ, _ = param in
+  check_valid_type' tset typ
+
+and check_valid_param (layer : Ctx.layer) (ctx : Ctx.t)
+    (param : id' * dir' * Type.t * Value.t option) : unit =
+  let tset = Ctx.get_tparams layer ctx |> TSet.of_list in
+  check_valid_param' tset param
+
+and check_valid_funcdef' (tset : TSet.t) (fd : FuncDef.t) : unit =
+  let tparams, params, typ_ret = fd in
+  let tset = TSet.union tset (TSet.of_list tparams) in
+  List.iter (check_valid_param' tset) params;
+  check_valid_type' tset typ_ret
+
+and check_valid_funcdef (layer : Ctx.layer) (ctx : Ctx.t) (fd : FuncDef.t) :
+    unit =
+  let tset = Ctx.get_tparams layer ctx |> TSet.of_list in
+  check_valid_funcdef' tset fd
+
+and check_valid_consdef' (tset : TSet.t) (cd : ConsDef.t) : unit =
+  let tparams, cparams, typ = cd in
+  let tset = TSet.union tset (TSet.of_list tparams) in
+  List.iter (check_valid_param' tset) cparams;
+  check_valid_type' tset typ
+
+and check_valid_consdef (layer : Ctx.layer) (ctx : Ctx.t) (cd : ConsDef.t) :
+    unit =
+  if layer <> Ctx.Block then (
+    Format.eprintf
+      "(check_valid_consdef) Constructor definitions must be in a block\n";
+    assert false);
+  let tset = Ctx.get_tparams layer ctx |> TSet.of_list in
+  check_valid_consdef' tset cd
 
 (* Type evaluation *)
 
@@ -909,7 +924,7 @@ and type_parser_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       ctx tparams
   in
   let ctx' = type_parser_method_implicit ctx' in
-  let _, (_, fdenv, _, _) = ctx'.block in
+  let _, _, (_, fdenv, _, _) = ctx'.block in
   let td = TypeDef.ParserD (tparams, fdenv) in
   check_valid_typedef layer ctx td;
   Ctx.add_typedef layer id.it td ctx
@@ -938,7 +953,7 @@ and type_control_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       ctx tparams
   in
   let ctx' = type_control_method_implicit ctx' in
-  let _, (_, fdenv, _, _) = ctx'.block in
+  let _, _, (_, fdenv, _, _) = ctx'.block in
   let td = TypeDef.ControlD (tparams, fdenv) in
   check_valid_typedef layer ctx td;
   Ctx.add_typedef layer id.it td ctx
@@ -969,6 +984,35 @@ and type_package_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
    these must have the same name as the enclosing extern type, no type parameters, and no return type.
    Extern declarations may only appear as allowed by the architecture model and may be specific to a target. *)
 
+and type_extern_constructor_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+    (cparams : cparam list) : Ctx.t =
+  if layer <> Ctx.Block then (
+    Format.eprintf
+      "(type_extern_constructor_decl) Extern constructor declarations must be \
+       in a block\n";
+    assert false);
+  if id.it <> Ctx.get_id Ctx.Block ctx then (
+    Format.eprintf
+      "(type_extern_constructor_decl) Extern constructor must have the same \
+       name as the object\n";
+    assert false);
+  let tparams = Ctx.get_tparams layer ctx in
+  let cparams = List.map it cparams in
+  let cid = Runtime.Domain.FId.to_fid id.it cparams in
+  let cparams = List.map (static_eval_param layer ctx) cparams in
+  let td = Ctx.find_typedef Ctx.Global id.it ctx in
+  let typs_arg = List.map (fun tparam -> Type.VarT tparam) tparams in
+  let typ = specialize_typedef td typs_arg in
+  let cd = (tparams, cparams, typ) in
+  check_valid_consdef layer ctx cd;
+  Ctx.add_consdef cid cd ctx
+
+(* (7.2.10.2) Extern objects - Abstract methods
+
+   However, some types of extern objects may provide methods that can be implemented by the P4 programmers.
+   Such methods are described with the abstract keyword prior to the method definition.
+   When such an object is instantiated the user has to supply an implementation of all the abstract methods. *)
+
 and type_extern_abstract_method_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (params : param list) (typ_ret : typ) : Ctx.t =
   if layer <> Ctx.Block then (
@@ -979,10 +1023,11 @@ and type_extern_abstract_method_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
   let tparams = List.map it tparams in
   let params = List.map it params in
   let fid = Runtime.Domain.FId.to_fid id.it params in
+  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' =
     List.fold_left
       (fun ctx' tparam -> Ctx.add_tparam Ctx.Local tparam ctx')
-      ctx tparams
+      ctx' tparams
   in
   let params = List.map (static_eval_param Ctx.Local ctx') params in
   let typ_ret = eval_type Ctx.Local ctx' typ_ret in
@@ -999,10 +1044,11 @@ and type_extern_method_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
   let tparams = List.map it tparams in
   let params = List.map it params in
   let fid = Runtime.Domain.FId.to_fid id.it params in
+  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' =
     List.fold_left
       (fun ctx' tparam -> Ctx.add_tparam Ctx.Local tparam ctx')
-      ctx tparams
+      ctx' tparams
   in
   let params = List.map (static_eval_param Ctx.Local ctx') params in
   let typ_ret = eval_type Ctx.Local ctx' typ_ret in
@@ -1016,17 +1062,39 @@ and type_extern_object_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     Format.eprintf
       "(type_extern_object_decl) Extern object declarations must be global\n";
     assert false);
+  let cons, mthds =
+    List.partition
+      (fun mthd -> match mthd.it with ExtConstructorD _ -> true | _ -> false)
+      mthds
+  in
   let tparams = List.map it tparams in
+  (* Typecheck methods and abstract methods
+     to construct function definition environment *)
+  let ctx' = Ctx.set_id Ctx.Block id.it ctx in
   let ctx' =
     List.fold_left
       (fun ctx' tparam -> Ctx.add_tparam Ctx.Block tparam ctx')
-      ctx tparams
+      ctx' tparams
   in
   let ctx' = List.fold_left (type_decl Ctx.Block) ctx' mthds in
-  let _, (_, fdenv, _, _) = ctx'.block in
+  let _, _, (_, fdenv, _, _) = ctx'.block in
+  (* Create an extern object type definition
+     and add it to the context *)
   let td = TypeDef.ExternD (tparams, fdenv) in
   check_valid_typedef layer ctx td;
-  Ctx.add_typedef layer id.it td ctx
+  let ctx = Ctx.add_typedef layer id.it td ctx in
+  (* Typecheck constructors
+     to update constructor definition environment *)
+  let ctx'' = Ctx.set_id Ctx.Block id.it ctx in
+  let ctx'' =
+    List.fold_left
+      (fun ctx'' tparam -> Ctx.add_tparam Ctx.Block tparam ctx'')
+      ctx'' tparams
+  in
+  let ctx'' = List.fold_left (type_decl Ctx.Block) ctx'' cons in
+  let cons = ctx''.cons in
+  (* Update the context with the constructor definition environment *)
+  { ctx with cons }
 
 and type_decl (layer : Ctx.layer) (ctx : Ctx.t) (decl : decl) =
   match decl.it with
@@ -1050,7 +1118,8 @@ and type_decl (layer : Ctx.layer) (ctx : Ctx.t) (decl : decl) =
   | ExtFuncD _ -> ctx
   (* Object declarations *)
   (* Extern *)
-  | ExtConstructorD _ -> ctx
+  | ExtConstructorD { id; cparams } ->
+      type_extern_constructor_decl layer ctx id cparams
   | ExtAbstractMethodD { id; typ_ret; tparams; params } ->
       type_extern_abstract_method_decl layer ctx id tparams params typ_ret
   | ExtMethodD { id; typ_ret; tparams; params } ->
