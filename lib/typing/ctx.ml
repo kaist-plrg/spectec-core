@@ -8,6 +8,9 @@ module Value = Runtime.Value
 type layer = Global | Block | Local
 type frame = TDEnv.t * FDEnv.t * VEnv.t * TEnv.t
 
+(* (TODO) Maybe refine the below type
+   e.g., a local layer should never have an fdenv *)
+
 type t = {
   cons : CDEnv.t;
   global : frame;

@@ -902,6 +902,19 @@ and type_typedef_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
 
    A parser should have at least one argument of type packet_in, representing the received packet that is processed. *)
 
+and type_parser_apply_method_decl (layer : Ctx.layer) (ctx : Ctx.t)
+    (params : param' list) : Ctx.t =
+  if layer <> Ctx.Block then (
+    Format.eprintf
+      "(type_parser_apply_method_decl) Parser apply method declarations must \
+       be in a block\n";
+    assert false);
+  let fid = Runtime.Domain.FId.to_fid "apply" params in
+  let params = List.map (static_eval_param Ctx.Local ctx) params in
+  let fd = ([], params, Type.VoidT) in
+  check_valid_funcdef Ctx.Local ctx fd;
+  Ctx.add_funcdef Ctx.Block fid fd ctx
+
 and type_parser_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (params : param list) : Ctx.t =
   if layer <> Ctx.Global then (
@@ -910,26 +923,35 @@ and type_parser_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     assert false);
   let tparams = List.map it tparams in
   let params = List.map it params in
-  (* Typecheck implicit "apply" method *)
-  let type_parser_method_implicit (ctx : Ctx.t) =
-    let fid = Runtime.Domain.FId.to_fid "apply" params in
-    let params = List.map (static_eval_param Ctx.Local ctx) params in
-    let fd = ([], params, Type.VoidT) in
-    check_valid_funcdef Ctx.Local ctx fd;
-    Ctx.add_funcdef Ctx.Block fid fd ctx
-  in
+  (* Typecheck implicit "apply" method
+     to construct function definition environment *)
   let ctx' =
     List.fold_left
       (fun ctx' tparam -> Ctx.add_tparam Ctx.Block tparam ctx')
       ctx tparams
   in
-  let ctx' = type_parser_method_implicit ctx' in
+  let ctx' = type_parser_apply_method_decl Ctx.Block ctx' params in
   let _, _, (_, fdenv, _, _) = ctx'.block in
+  (* Create a parser type definition
+     and add it to the context *)
   let td = TypeDef.ParserD (tparams, fdenv) in
   check_valid_typedef layer ctx td;
   Ctx.add_typedef layer id.it td ctx
 
 (* (7.2.12.2) Control type declarations *)
+
+and type_control_apply_method_decl (layer : Ctx.layer) (ctx : Ctx.t)
+    (params : param' list) : Ctx.t =
+  if layer <> Ctx.Block then (
+    Format.eprintf
+      "(type_control_apply_method_decl) Control apply method declarations must \
+       be in a block\n";
+    assert false);
+  let fid = Runtime.Domain.FId.to_fid "apply" params in
+  let params = List.map (static_eval_param Ctx.Local ctx) params in
+  let fd = ([], params, Type.VoidT) in
+  check_valid_funcdef Ctx.Local ctx fd;
+  Ctx.add_funcdef Ctx.Block fid fd ctx
 
 and type_control_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (params : param list) : Ctx.t =
@@ -939,21 +961,17 @@ and type_control_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     assert false);
   let tparams = List.map it tparams in
   let params = List.map it params in
-  (* Typecheck implicit "apply" method *)
-  let type_control_method_implicit (ctx : Ctx.t) =
-    let fid = Runtime.Domain.FId.to_fid "apply" params in
-    let params = List.map (static_eval_param Ctx.Local ctx) params in
-    let fd = ([], params, Type.VoidT) in
-    check_valid_funcdef Ctx.Local ctx fd;
-    Ctx.add_funcdef Ctx.Block fid fd ctx
-  in
+  (* Typecheck implicit "apply" method
+     to construct function definition environment *)
   let ctx' =
     List.fold_left
       (fun ctx' tparam -> Ctx.add_tparam Ctx.Block tparam ctx')
       ctx tparams
   in
-  let ctx' = type_control_method_implicit ctx' in
+  let ctx' = type_control_apply_method_decl Ctx.Block ctx' params in
   let _, _, (_, fdenv, _, _) = ctx'.block in
+  (* Create a control type definition
+     and add it to the context *)
   let td = TypeDef.ControlD (tparams, fdenv) in
   check_valid_typedef layer ctx td;
   Ctx.add_typedef layer id.it td ctx
@@ -963,18 +981,52 @@ and type_control_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
    All parameters of a package are evaluated at compilation time, and in consequence they must all be directionless
    (they cannot be in, out, or inout). Otherwise package types are very similar to parser type declarations. *)
 
+and type_package_constructor_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+    (cparams : cparam list) : Ctx.t =
+  if layer <> Ctx.Block then (
+    Format.eprintf
+      "(type_package_constructor_decl) Package constructor declarations must \
+       be in a block\n";
+    assert false);
+  if id.it <> Ctx.get_id Ctx.Block ctx then (
+    Format.eprintf
+      "(type_package_constructor_decl) Package constructor must have the same \
+       name as the object\n";
+    assert false);
+  let tparams = Ctx.get_tparams layer ctx in
+  let cparams = List.map it cparams in
+  let cid = Runtime.Domain.FId.to_fid id.it cparams in
+  let cparams = List.map (static_eval_param Ctx.Block ctx) cparams in
+  let td = Ctx.find_typedef Ctx.Global id.it ctx in
+  let typs_arg = List.map (fun tparam -> Type.VarT tparam) tparams in
+  let typ = specialize_typedef td typs_arg in
+  let cd = (tparams, cparams, typ) in
+  check_valid_consdef layer ctx cd;
+  Ctx.add_consdef cid cd ctx
+
 and type_package_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
-    (tparams : tparam list) (_cparams : cparam list) : Ctx.t =
+    (tparams : tparam list) (cparams : cparam list) : Ctx.t =
   if layer <> Ctx.Global then (
     Format.eprintf
       "(type_package_type_decl) Package type declarations must be global\n";
     assert false);
   let tparams = List.map it tparams in
-  (* let cparams = List.map it cparams in *)
-  (* Create a package type definition *)
+  (* Create a package type definition
+     and add it to the context *)
   let td = TypeDef.PackageD tparams in
   check_valid_typedef layer ctx td;
-  Ctx.add_typedef layer id.it td ctx
+  let ctx = Ctx.add_typedef layer id.it td ctx in
+  (* Package type declaration is implicitly a constructor declaration *)
+  let ctx' = Ctx.set_id Ctx.Block id.it ctx in
+  let ctx' =
+    List.fold_left
+      (fun ctx' tparam -> Ctx.add_tparam Ctx.Block tparam ctx')
+      ctx' tparams
+  in
+  let ctx' = type_package_constructor_decl Ctx.Block ctx' id cparams in
+  let cons = ctx'.cons in
+  (* Update the context with the constructor definition environment *)
+  { ctx with cons }
 
 (* (7.2.10.2) Extern objects
 
