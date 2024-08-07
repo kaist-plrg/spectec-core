@@ -969,6 +969,27 @@ and type_package_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
    these must have the same name as the enclosing extern type, no type parameters, and no return type.
    Extern declarations may only appear as allowed by the architecture model and may be specific to a target. *)
 
+and type_extern_abstract_method_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+    (tparams : tparam list) (params : param list) (typ_ret : typ) : Ctx.t =
+  if layer <> Ctx.Block then (
+    Format.eprintf
+      "(type_extern_abstract_method_decl) Extern method declarations must be \
+       in a block\n";
+    assert false);
+  let tparams = List.map it tparams in
+  let params = List.map it params in
+  let fid = Runtime.Domain.FId.to_fid id.it params in
+  let ctx' =
+    List.fold_left
+      (fun ctx' tparam -> Ctx.add_tparam Ctx.Local tparam ctx')
+      ctx tparams
+  in
+  let params = List.map (static_eval_param Ctx.Local ctx') params in
+  let typ_ret = eval_type Ctx.Local ctx' typ_ret in
+  let fd = (tparams, params, typ_ret) in
+  check_valid_funcdef layer ctx fd;
+  Ctx.add_funcdef layer fid fd ctx
+
 and type_extern_method_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (params : param list) (typ_ret : typ) : Ctx.t =
   if layer <> Ctx.Block then (
@@ -1009,13 +1030,13 @@ and type_extern_object_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
 
 and type_decl (layer : Ctx.layer) (ctx : Ctx.t) (decl : decl) =
   match decl.it with
-  (* constantDeclaration *)
+  (* Constant, variable, and object declarations *)
   | ConstD { id; typ; value } -> type_const_decl layer ctx id typ value
-  (* errorDeclaration *)
+  | VarD _ -> ctx
+  | InstD _ -> ctx
+  (* Derived type declarations *)
   | ErrD { members } -> type_error_decl layer ctx members
-  (* matchKindDeclaration *)
   | MatchKindD { members } -> type_match_kind_decl layer ctx members
-  (* typeDeclaration *)
   | StructD { id; fields } -> type_struct_decl layer ctx id fields
   | HeaderD { id; fields } -> type_header_decl layer ctx id fields
   | UnionD { id; fields } -> type_union_decl layer ctx id fields
@@ -1023,24 +1044,32 @@ and type_decl (layer : Ctx.layer) (ctx : Ctx.t) (decl : decl) =
   | SEnumD { id; typ; fields } -> type_senum_decl layer ctx id typ fields
   | NewTypeD { id; typdef } -> type_newtype_decl layer ctx id typdef
   | TypeDefD { id; typdef } -> type_typedef_decl layer ctx id typdef
+  (* Function declarations *)
+  | ActionD _ -> ctx
+  | FuncD _ -> ctx
+  | ExtFuncD _ -> ctx
+  (* Object declarations *)
+  (* Extern *)
+  | ExtConstructorD _ -> ctx
+  | ExtAbstractMethodD { id; typ_ret; tparams; params } ->
+      type_extern_abstract_method_decl layer ctx id tparams params typ_ret
+  | ExtMethodD { id; typ_ret; tparams; params } ->
+      type_extern_method_decl layer ctx id tparams params typ_ret
+  | ExtObjectD { id; tparams; mthds } ->
+      type_extern_object_decl layer ctx id tparams mthds
+  (* Parser *)
+  | ValueSetD _ -> ctx
   | ParserTypeD { id; tparams; params } ->
       type_parser_type_decl layer ctx id tparams params
+  | ParserD _ -> ctx
+  (* Control *)
+  | TableD _ -> ctx
   | ControlTypeD { id; tparams; params } ->
       type_control_type_decl layer ctx id tparams params
+  | ControlD _ -> ctx
+  (* Package *)
   | PackageTypeD { id; tparams; cparams } ->
       type_package_type_decl layer ctx id tparams cparams
-  (* functionDeclaration *)
-  (* actionDeclaration *)
-  (* externDeclaration *)
-  | MethodD { id; rettyp; tparams; params } ->
-      type_extern_method_decl layer ctx id tparams params rettyp
-  | ExternObjectD { id; tparams; mthds } ->
-      type_extern_object_decl layer ctx id tparams mthds
-  (* instantiation *)
-  (* parserDeclaration *)
-  (* controlDeclaration *)
-  (* instantiation *)
-  | _ -> ctx
 
 let type_program (program : program) =
   let ctx = Ctx.empty in

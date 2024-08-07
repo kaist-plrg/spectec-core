@@ -350,40 +350,41 @@ and eq_decl' (_, decl) (_, decl') =
   | ( ActionD { id; params; body },
       ActionD { id = id'; params = params'; body = body' } ) ->
       eq_id id id' && eq_list eq_param params params' && eq_block body body'
-  | ( FuncD { id; rettyp; tparams; params; body },
+  | ( FuncD { id; typ_ret; tparams; params; body },
       FuncD
         {
           id = id';
-          rettyp = rettyp';
+          typ_ret = typ_ret';
           tparams = tparams';
           params = params';
           body = body';
         } ) ->
-      eq_id id id' && eq_type rettyp rettyp'
+      eq_id id id' && eq_type typ_ret typ_ret'
       && eq_list eq_tparam tparams tparams'
       && eq_list eq_param params params'
       && eq_block body body'
-  | ( ExternFuncD { id; rettyp; tparams; params },
-      ExternFuncD
-        { id = id'; rettyp = rettyp'; tparams = tparams'; params = params' } )
+  | ( ExtFuncD { id; typ_ret; tparams; params },
+      ExtFuncD
+        { id = id'; typ_ret = typ_ret'; tparams = tparams'; params = params' } )
     ->
-      eq_id id id' && eq_type rettyp rettyp'
+      eq_id id id' && eq_type typ_ret typ_ret'
       && eq_list eq_tparam tparams tparams'
       && eq_list eq_param params params'
-  | ConsD { id; cparams }, ConsD { id = id'; cparams = cparams' } ->
+  | ( ExtConstructorD { id; cparams },
+      ExtConstructorD { id = id'; cparams = cparams' } ) ->
       eq_id id id' && eq_list eq_cparam cparams cparams'
-  | ( AbstractD { id; rettyp; tparams; params },
-      AbstractD
-        { id = id'; rettyp = rettyp'; tparams = tparams'; params = params' } )
-  | ( MethodD { id; rettyp; tparams; params },
-      MethodD
-        { id = id'; rettyp = rettyp'; tparams = tparams'; params = params' } )
+  | ( ExtAbstractMethodD { id; typ_ret; tparams; params },
+      ExtAbstractMethodD
+        { id = id'; typ_ret = typ_ret'; tparams = tparams'; params = params' } )
+  | ( ExtMethodD { id; typ_ret; tparams; params },
+      ExtMethodD
+        { id = id'; typ_ret = typ_ret'; tparams = tparams'; params = params' } )
     ->
-      eq_id id id' && eq_type rettyp rettyp'
+      eq_id id id' && eq_type typ_ret typ_ret'
       && eq_list eq_tparam tparams tparams'
       && eq_list eq_param params params'
-  | ( ExternObjectD { id; tparams; mthds },
-      ExternObjectD { id = id'; tparams = tparams'; mthds = mthds' } ) ->
+  | ( ExtObjectD { id; tparams; mthds },
+      ExtObjectD { id = id'; tparams = tparams'; mthds = mthds' } ) ->
       eq_id id id'
       && eq_list eq_tparam tparams tparams'
       && eq_list eq_decl mthds mthds'

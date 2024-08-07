@@ -395,21 +395,21 @@ and pp_decl fmt (level, decl) =
         pp_block
         (level + 1, body)
         (indent level)
-  | FuncD { id; rettyp; tparams; params; body } ->
-      F.fprintf fmt "%s%a %a%a%a\n%a" (indent level) pp_type rettyp pp_id id
+  | FuncD { id; typ_ret; tparams; params; body } ->
+      F.fprintf fmt "%s%a %a%a%a\n%a" (indent level) pp_type typ_ret pp_id id
         pp_tparams tparams pp_params params pp_block (level, body)
-  | ExternFuncD { id; rettyp; tparams; params } ->
-      F.fprintf fmt "%sextern %a %a%a%a;" (indent level) pp_type rettyp pp_id id
-        pp_tparams tparams pp_params params
-  | ConsD { id; cparams } ->
-      F.fprintf fmt "%s %a%a;" (indent level) pp_id id pp_params cparams
-  | AbstractD { id; rettyp; tparams; params } ->
-      F.fprintf fmt "%sabstract %a %a%a%a;" (indent level) pp_type rettyp pp_id
+  | ExtFuncD { id; typ_ret; tparams; params } ->
+      F.fprintf fmt "%sextern %a %a%a%a;" (indent level) pp_type typ_ret pp_id
         id pp_tparams tparams pp_params params
-  | MethodD { id; rettyp; tparams; params } ->
-      F.fprintf fmt "%s%a %a%a%a;" (indent level) pp_type rettyp pp_id id
+  | ExtConstructorD { id; cparams } ->
+      F.fprintf fmt "%s %a%a;" (indent level) pp_id id pp_params cparams
+  | ExtAbstractMethodD { id; typ_ret; tparams; params } ->
+      F.fprintf fmt "%sabstract %a %a%a%a;" (indent level) pp_type typ_ret pp_id
+        id pp_tparams tparams pp_params params
+  | ExtMethodD { id; typ_ret; tparams; params } ->
+      F.fprintf fmt "%s%a %a%a%a;" (indent level) pp_type typ_ret pp_id id
         pp_tparams tparams pp_params params
-  | ExternObjectD { id; tparams; mthds } ->
+  | ExtObjectD { id; tparams; mthds } ->
       F.fprintf fmt "%sextern %a%a {\n%a\n%s}" (indent level) pp_id id
         pp_tparams tparams pp_decls
         (level + 1, mthds)

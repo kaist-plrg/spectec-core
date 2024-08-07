@@ -155,9 +155,9 @@ and decl' =
   | ConstD of { id : id; typ : typ; value : expr }
   | VarD of { id : id; typ : typ; init : expr option }
   | InstD of { id : id; typ : typ; args : arg list; init : block option }
+  (* Type declarations *)
   | ErrD of { members : member list }
   | MatchKindD of { members : member list }
-  (* Type declarations *)
   | StructD of { id : id; fields : (member * typ) list }
   | HeaderD of { id : id; fields : (member * typ) list }
   | UnionD of { id : id; fields : (member * typ) list }
@@ -194,32 +194,32 @@ and decl' =
   | ActionD of { id : id; params : param list; body : block }
   | FuncD of {
       id : id;
-      rettyp : typ;
+      typ_ret : typ;
       tparams : tparam list;
       params : param list;
       body : block;
     }
-  | ExternFuncD of {
+  | ExtFuncD of {
       id : id;
-      rettyp : typ;
+      typ_ret : typ;
       tparams : tparam list;
       params : param list;
     }
   (* Extern objects *)
-  | ConsD of { id : id; cparams : cparam list }
-  | AbstractD of {
+  | ExtConstructorD of { id : id; cparams : cparam list }
+  | ExtAbstractMethodD of {
       id : id;
-      rettyp : typ;
+      typ_ret : typ;
       tparams : tparam list;
       params : param list;
     }
-  | MethodD of {
+  | ExtMethodD of {
       id : id;
-      rettyp : typ;
+      typ_ret : typ;
       tparams : tparam list;
       params : param list;
     }
-  | ExternObjectD of { id : id; tparams : tparam list; mthds : decl list }
+  | ExtObjectD of { id : id; tparams : tparam list; mthds : decl list }
   (* Package *)
   | PackageTypeD of { id : id; tparams : tparam list; cparams : cparam list }
 

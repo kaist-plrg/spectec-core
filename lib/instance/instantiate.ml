@@ -91,11 +91,11 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       let ictx = ICtx.add_td_glob id.it typ ictx in
       (ccenv, ictx)
   (* For extern object declaration, also load to tdenv *)
-  | ExternObjectD { id; tparams; mthds } ->
+  | ExtObjectD { id; tparams; mthds } ->
       let cons, mthds =
         List.partition
           (fun (mthd : decl) ->
-            match mthd.it with ConsD _ -> true | _ -> false)
+            match mthd.it with ExtConstructorD _ -> true | _ -> false)
           mthds
       in
       (* (TODO) Is this the right way to handle extern object without a constructor? *)
@@ -103,7 +103,9 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
         if List.length cons = 0 then
           [
             {
-              it = ConsD { id = { it = id.it; at = no_info }; cparams = [] };
+              it =
+                ExtConstructorD
+                  { id = { it = id.it; at = no_info }; cparams = [] };
               at = no_info;
             };
           ]
@@ -114,7 +116,7 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
           (fun ccenv con ->
             let cparams =
               match con.it with
-              | ConsD { cparams; _ } -> cparams
+              | ExtConstructorD { cparams; _ } -> cparams
               | _ -> assert false
             in
             let cclos = R.Cclos.ExternCC { tparams; cparams; mthds } in
@@ -212,7 +214,7 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       let fid = FId.to_fid id.it params in
       let ictx = ICtx.add_func_glob fid func ictx in
       (ccenv, ictx)
-  | ExternFuncD { id; tparams; params; _ } ->
+  | ExtFuncD { id; tparams; params; _ } ->
       let vis_glob = env_to_vis ictx.env_glob in
       let func = R.Func.ExternF { vis_glob; tparams; params } in
       let params = List.map it params in
@@ -507,7 +509,7 @@ and instantiate_control_obj_decl (ccenv : CCEnv.t) (sto : Sto.t) (ictx : ICtx.t)
 
 and instantiate_extern_obj_decl (ictx : ICtx.t) (decl : decl) =
   match decl.it with
-  | MethodD { id; tparams; params; _ } ->
+  | ExtMethodD { id; tparams; params; _ } ->
       let func =
         R.Func.ExternMethodF
           { vis_obj = env_to_vis ictx.env_obj; tparams; params }
@@ -515,7 +517,7 @@ and instantiate_extern_obj_decl (ictx : ICtx.t) (decl : decl) =
       let params = List.map it params in
       let fid = FId.to_fid id.it params in
       ICtx.add_func_obj fid func ictx
-  | AbstractD _ ->
+  | ExtAbstractMethodD _ ->
       Format.eprintf "(TODO: instantiate_extern_obj_decl) Load extern object %a"
         Syntax.Pp.pp_decl (0, decl);
       ictx

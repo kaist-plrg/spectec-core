@@ -394,19 +394,19 @@ and desugar_method (mthd : MethodPrototype.t) : decl =
   | Constructor { name; params; tags = at; _ } ->
       let id = desugar_id name in
       let cparams = desugar_params params in
-      ConsD { id; cparams } $ at
+      ExtConstructorD { id; cparams } $ at
   | AbstractMethod { name; return; type_params; params; tags = at; _ } ->
       let id = desugar_id name in
-      let rettyp = desugar_type return in
+      let typ_ret = desugar_type return in
       let tparams = desugar_tparams type_params in
       let params = desugar_params params in
-      AbstractD { id; rettyp; tparams; params } $ at
+      ExtAbstractMethodD { id; typ_ret; tparams; params } $ at
   | Method { name; return; type_params; params; tags = at; _ } ->
       let id = desugar_id name in
-      let rettyp = desugar_type return in
+      let typ_ret = desugar_type return in
       let tparams = desugar_tparams type_params in
       let params = desugar_params params in
-      MethodD { id; rettyp; tparams; params } $ at
+      ExtMethodD { id; typ_ret; tparams; params } $ at
 
 and desugar_methods (mthds : MethodPrototype.t list) : decl list =
   List.map desugar_method mthds
@@ -534,22 +534,22 @@ and desugar_decl (decl : Declaration.t) : decl =
       ControlD { id; tparams; params; cparams; locals; body } $ at
   | Function { name; return; type_params; params; body; tags = at; _ } ->
       let id = desugar_id name in
-      let rettyp = desugar_type return in
+      let typ_ret = desugar_type return in
       let tparams = desugar_tparams type_params in
       let params = desugar_params params in
       let body = desugar_block body in
-      FuncD { id; rettyp; tparams; params; body } $ at
+      FuncD { id; typ_ret; tparams; params; body } $ at
   | ExternFunction { name; return; type_params; params; tags = at; _ } ->
       let id = desugar_id name in
-      let rettyp = desugar_type return in
+      let typ_ret = desugar_type return in
       let tparams = desugar_tparams type_params in
       let params = desugar_params params in
-      ExternFuncD { id; rettyp; tparams; params } $ at
+      ExtFuncD { id; typ_ret; tparams; params } $ at
   | ExternObject { name; type_params; methods; tags = at; _ } ->
       let id = desugar_id name in
       let tparams = desugar_tparams type_params in
       let mthds = desugar_methods methods in
-      ExternObjectD { id; tparams; mthds } $ at
+      ExtObjectD { id; tparams; mthds } $ at
   | PackageType { name; type_params; params; tags = at; _ } ->
       let id = desugar_id name in
       let tparams = desugar_tparams type_params in
