@@ -145,21 +145,40 @@ module Make (Interp : INTERP) : ARCH = struct
 
   let drive_stf (ctx : Ctx.t) (stf : Stf.Ast.stmt) =
     match stf with
-    | Stf.Ast.Packet (_port, packet) ->
-        (* (TODO) Update input port *)
+    | Stf.Ast.Packet (port, packet) ->
+        (* TODO : Should we need to check range of port value? *)
+        let nine = Bigint.of_int 9 in
+        let port = int_of_string ("0x" ^ port) |> Bigint.of_int in
+        let port = Value.BitV (nine, port) in
+        let update_port field = match field with 
+          | "ingress_port", _ -> "ingress_port", port
+          | id, mem -> id, mem 
+        in
+        let std_meta = Ctx.find_var "standard_metadata" ctx in
+        let std_meta = match std_meta with
+          | StructV fields -> Value.StructV (List.map update_port fields)
+          | _ -> failwith "standard_metadata changed to other type"
+        in
+        let ctx = Ctx.update_var "standard_metadata" std_meta ctx in
         (* Update packet_in and out *)
         let pkt_in = PacketIn (Core.PacketIn.init packet) in
         externs := Externs.add "packet_in" pkt_in !externs;
         let pkt_out = PacketOut Core.PacketOut.init in
         externs := Externs.add "packet_out" pkt_out !externs;
         drive_pipe ctx
-    | Stf.Ast.Expect (_port, Some packet) ->
+    | Stf.Ast.Expect (port, Some packet) ->
         (* Check packet_out *)
+        let port = int_of_string ("0x" ^ port) in
+        let std_meta = Ctx.find_var "standard_metadata" ctx in
+        let port' = Value.access_field "egress_spec" std_meta 
+          |> Value.get_num |> Bigint.to_int |> Option.get in
         let pkt_out = Externs.find "packet_out" !externs in
         let expected = String.uppercase_ascii packet in
         let actual = Format.asprintf "%a" pp_extern pkt_out in
-        let result = if Stf.Compare.equals actual expected then "PASS" else "FAIL" in
-        Format.printf "[%s] Expected %s / Actual %s\n" result expected actual;
+        let result = if port = port' && Stf.Compare.equals actual expected 
+          then "PASS" else "FAIL" in
+        Format.printf "[%s] Expected %s, Port : %i / Actual %s, Port : %i\n" 
+          result expected port actual port';
         ctx
     | _ -> ctx
 
