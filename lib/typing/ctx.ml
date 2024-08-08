@@ -6,38 +6,84 @@ module Value = Runtime.Value
 (* Context is consisted of layers of environments *)
 
 type layer = Global | Block | Local
-type frame = TDEnv.t * FDEnv.t * VEnv.t * TEnv.t
 
-(* (TODO) Maybe refine the below type
-   e.g., a local layer should never have an fdenv *)
+(* Defining each layer *)
 
-type t = {
-  cons : CDEnv.t;
-  global : frame;
-  block : id' * tparam' list * frame;
-  local : id' * tparam' list * frame list;
+type blockkind = Empty | Extern | Parser | Control
+
+type localkind =
+  | Empty
+  | ExternFunction
+  | Function
+  | Action
+  | ExternMethod
+  | ApplyMethod
+  | Table
+
+type gt = {
+  cdenv : CDEnv.t;
+  tdenv : TDEnv.t;
+  fdenv : FDEnv.t;
+  frame : VEnv.t * TEnv.t;
 }
 
-let empty_frame = (TDEnv.empty, FDEnv.empty, VEnv.empty, TEnv.empty)
+type bt = {
+  id : id';
+  tparams : tparam' list;
+  kind : blockkind;
+  tdenv : TDEnv.t;
+  fdenv : FDEnv.t;
+  frame : VEnv.t * TEnv.t;
+}
 
-let empty =
+type lt = {
+  id : id';
+  tparams : tparam' list;
+  kind : localkind;
+  tdenv : TDEnv.t;
+  frames : (VEnv.t * TEnv.t) list;
+}
+
+type t = { global : gt; block : bt; local : lt }
+
+let empty_gt =
   {
-    cons = CDEnv.empty;
-    global = empty_frame;
-    block = ("", [], empty_frame);
-    local = ("", [], []);
+    cdenv = CDEnv.empty;
+    tdenv = TDEnv.empty;
+    fdenv = FDEnv.empty;
+    frame = (VEnv.empty, TEnv.empty);
   }
+
+let empty_bt =
+  {
+    id = "";
+    tparams = [];
+    kind = Empty;
+    tdenv = TDEnv.empty;
+    fdenv = FDEnv.empty;
+    frame = (VEnv.empty, TEnv.empty);
+  }
+
+let empty_lt =
+  { id = ""; tparams = []; kind = Empty; tdenv = TDEnv.empty; frames = [] }
+
+let empty = { global = empty_gt; block = empty_bt; local = empty_lt }
 
 (* Frame management *)
 
 let enter_frame ctx =
-  let id, tparams, frames = ctx.local in
-  { ctx with local = (id, tparams, empty_frame :: frames) }
+  {
+    ctx with
+    local =
+      { ctx.local with frames = (VEnv.empty, TEnv.empty) :: ctx.local.frames };
+  }
 
 let exit_frame ctx =
-  let id, tparams, frames = ctx.local in
-  if frames = [] then Format.eprintf "(exit_frame) No frame to exit from\n";
-  { ctx with local = (id, tparams, List.tl frames) }
+  match ctx.local.frames with
+  | [] ->
+      Format.eprintf "(exit_frame) No frame to exit\n";
+      assert false
+  | _ :: frames -> { ctx with local = { ctx.local with frames } }
 
 (* Setters *)
 
@@ -46,38 +92,27 @@ let set_id layer id ctx =
   | Global ->
       Format.eprintf "(set_id) Global layer has no identifier\n";
       assert false
-  | Block ->
-      let _, tparams, frame = ctx.block in
-      { ctx with block = (id, tparams, frame) }
-  | Local ->
-      let _, tparams, frames = ctx.local in
-      { ctx with local = (id, tparams, frames) }
+  | Block -> { ctx with block = { ctx.block with id } }
+  | Local -> { ctx with local = { ctx.local with id } }
+
+let set_blockkind kind ctx = { ctx with block = { ctx.block with kind } }
+let set_localkind kind ctx = { ctx with local = { ctx.local with kind } }
 
 (* Getters *)
-
-let get_id layer ctx =
-  match layer with
-  | Global -> ""
-  | Block ->
-      let id, _, _ = ctx.block in
-      id
-  | Local ->
-      let id, _, _ = ctx.local in
-      id
 
 let rec get_tparams layer ctx =
   match layer with
   | Global -> []
-  | Block ->
-      let _, tparams, _ = ctx.block in
-      tparams
-  | Local ->
-      let _, tparams, _ = ctx.local in
-      tparams @ get_tparams Block ctx
+  | Block -> ctx.block.tparams
+  | Local -> ctx.local.tparams @ get_tparams Block ctx
 
 (* Adders *)
 
-let add_consdef cid cd ctx = { ctx with cons = CDEnv.add cid cd ctx.cons }
+let add_consdef cid cd ctx =
+  {
+    ctx with
+    global = { ctx.global with cdenv = CDEnv.add cid cd ctx.global.cdenv };
+  }
 
 let add_tparam layer tparam ctx =
   match layer with
@@ -85,92 +120,96 @@ let add_tparam layer tparam ctx =
       Format.eprintf "(add_tparam) Global layer cannot be type-parameterized\n";
       assert false
   | Block ->
-      let id, tparams, frame = ctx.block in
-      { ctx with block = (id, tparams @ [ tparam ], frame) }
+      {
+        ctx with
+        block = { ctx.block with tparams = ctx.block.tparams @ [ tparam ] };
+      }
   | Local ->
-      let id, tparams, frames = ctx.local in
-      { ctx with local = (id, tparams @ [ tparam ], frames) }
+      {
+        ctx with
+        local = { ctx.local with tparams = ctx.local.tparams @ [ tparam ] };
+      }
 
 let add_typedef layer tid td ctx =
   match layer with
   | Global ->
-      let tdenv, fdenv, venv, tenv = ctx.global in
-      { ctx with global = (TDEnv.add tid td tdenv, fdenv, venv, tenv) }
-  | Block ->
-      let id_block, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
       {
         ctx with
-        block = (id_block, tparams, (TDEnv.add tid td tdenv, fdenv, venv, tenv));
+        global = { ctx.global with tdenv = TDEnv.add tid td ctx.global.tdenv };
+      }
+  | Block ->
+      {
+        ctx with
+        block = { ctx.block with tdenv = TDEnv.add tid td ctx.block.tdenv };
       }
   | Local ->
-      let id_local, tparams, frames = ctx.local in
-      let frame, frames =
-        if frames = [] then (empty_frame, [])
-        else (List.hd frames, List.tl frames)
-      in
-      let tdenv, fdenv, venv, tenv = frame in
-      let frame = (TDEnv.add tid td tdenv, fdenv, venv, tenv) in
-      { ctx with local = (id_local, tparams, frame :: frames) }
+      {
+        ctx with
+        local = { ctx.local with tdenv = TDEnv.add tid td ctx.local.tdenv };
+      }
 
 let add_funcdef layer fid fd ctx =
   match layer with
   | Global ->
-      let tdenv, fdenv, venv, tenv = ctx.global in
-      { ctx with global = (tdenv, FDEnv.add fid fd fdenv, venv, tenv) }
-  | Block ->
-      let id_block, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
       {
         ctx with
-        block = (id_block, tparams, (tdenv, FDEnv.add fid fd fdenv, venv, tenv));
+        global = { ctx.global with fdenv = FDEnv.add fid fd ctx.global.fdenv };
+      }
+  | Block ->
+      {
+        ctx with
+        block = { ctx.block with fdenv = FDEnv.add fid fd ctx.block.fdenv };
       }
   | Local ->
-      let id_local, tparams, frames = ctx.local in
-      let frame, frames = (List.hd frames, List.tl frames) in
-      let tdenv, fdenv, venv, tenv = frame in
-      let frame = (tdenv, FDEnv.add fid fd fdenv, venv, tenv) in
-      { ctx with local = (id_local, tparams, frame :: frames) }
+      Format.eprintf
+        "(add_funcdef) Local layer cannot have function definitions\n";
+      assert false
 
 let add_value layer id value ctx =
   match layer with
   | Global ->
-      let tdenv, fdenv, venv, tenv = ctx.global in
-      { ctx with global = (tdenv, fdenv, VEnv.add id value venv, tenv) }
-  | Block ->
-      let id_block, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
+      let venv, tenv = ctx.global.frame in
       {
         ctx with
-        block = (id_block, tparams, (tdenv, fdenv, VEnv.add id value venv, tenv));
+        global = { ctx.global with frame = (VEnv.add id value venv, tenv) };
+      }
+  | Block ->
+      let venv, tenv = ctx.block.frame in
+      {
+        ctx with
+        block = { ctx.block with frame = (VEnv.add id value venv, tenv) };
       }
   | Local ->
-      let id_local, tparams, frames = ctx.local in
-      let frame, frames =
-        if frames = [] then (empty_frame, [])
+      let frames = ctx.local.frames in
+      let (venv, tenv), frames =
+        if frames = [] then ((VEnv.empty, TEnv.empty), [])
         else (List.hd frames, List.tl frames)
       in
-      let tdenv, fdenv, venv, tenv = frame in
-      let frame = (tdenv, fdenv, VEnv.add id value venv, tenv) in
-      { ctx with local = (id_local, tparams, frame :: frames) }
+      let frame = (VEnv.add id value venv, tenv) in
+      { ctx with local = { ctx.local with frames = frame :: frames } }
 
 let add_type layer id typ ctx =
   match layer with
   | Global ->
-      let tdenv, fdenv, venv, tenv = ctx.global in
-      { ctx with global = (tdenv, fdenv, venv, TEnv.add id typ tenv) }
-  | Block ->
-      let id_block, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
+      let venv, tenv = ctx.global.frame in
       {
         ctx with
-        block = (id_block, tparams, (tdenv, fdenv, venv, TEnv.add id typ tenv));
+        global = { ctx.global with frame = (venv, TEnv.add id typ tenv) };
+      }
+  | Block ->
+      let venv, tenv = ctx.block.frame in
+      {
+        ctx with
+        block = { ctx.block with frame = (venv, TEnv.add id typ tenv) };
       }
   | Local ->
-      let id_local, tparams, frames = ctx.local in
-      let frame, frames =
-        if frames = [] then (empty_frame, [])
+      let frames = ctx.local.frames in
+      let (venv, tenv), frames =
+        if frames = [] then ((VEnv.empty, TEnv.empty), [])
         else (List.hd frames, List.tl frames)
       in
-      let tdenv, fdenv, venv, tenv = frame in
-      let frame = (tdenv, fdenv, venv, TEnv.add id typ tenv) in
-      { ctx with local = (id_local, tparams, frame :: frames) }
+      let frame = (venv, TEnv.add id typ tenv) in
+      { ctx with local = { ctx.local with frames = frame :: frames } }
 
 (* Finders *)
 
@@ -181,12 +220,9 @@ let find_cont finder layer id ctx = function
 let rec find_tparam_opt layer tparam ctx =
   match layer with
   | Global -> None
-  | Block ->
-      let _, tparams, _ = ctx.block in
-      List.find_opt (fun tp -> tp = tparam) tparams
+  | Block -> List.find_opt (fun tp -> tp = tparam) ctx.block.tparams
   | Local ->
-      let _, tparams, _ = ctx.local in
-      List.find_opt (fun tp -> tp = tparam) tparams
+      List.find_opt (fun tp -> tp = tparam) ctx.local.tparams
       |> find_cont find_tparam_opt Block tparam ctx
 
 let find_tparam layer tparam ctx =
@@ -194,46 +230,23 @@ let find_tparam layer tparam ctx =
 
 let rec find_typedef_opt layer tid ctx =
   match layer with
-  | Global ->
-      let tdenv, _, _, _ = ctx.global in
-      TDEnv.find_opt tid tdenv
+  | Global -> TDEnv.find_opt tid ctx.global.tdenv
   | Block ->
-      let _, _, (tdenv, _, _, _) = ctx.block in
-      TDEnv.find_opt tid tdenv |> find_cont find_typedef_opt Global tid ctx
+      TDEnv.find_opt tid ctx.block.tdenv
+      |> find_cont find_typedef_opt Global tid ctx
   | Local ->
-      let _, _, frames = ctx.local in
-      List.fold_left
-        (fun td frame ->
-          match td with
-          | Some td -> Some td
-          | None ->
-              let tdenv, _, _, _ = frame in
-              TDEnv.find_opt tid tdenv)
-        None frames
+      TDEnv.find_opt tid ctx.local.tdenv
       |> find_cont find_typedef_opt Block tid ctx
 
 let find_typedef layer tid ctx = find_typedef_opt layer tid ctx |> Option.get
 
 let rec find_funcdef_opt layer (fid, args) ctx =
   match layer with
-  | Global ->
-      let _, fdenv, _, _ = ctx.global in
-      FDEnv.find_overloaded_opt (fid, args) fdenv
+  | Global -> FDEnv.find_overloaded_opt (fid, args) ctx.global.fdenv
   | Block ->
-      let _, _, (_, fdenv, _, _) = ctx.block in
-      FDEnv.find_overloaded_opt (fid, args) fdenv
+      FDEnv.find_overloaded_opt (fid, args) ctx.block.fdenv
       |> find_cont find_funcdef_opt Global (fid, args) ctx
-  | Local ->
-      let _, _, frames = ctx.local in
-      List.fold_left
-        (fun fd frame ->
-          match fd with
-          | Some fd -> Some fd
-          | None ->
-              let _, fdenv, _, _ = frame in
-              FDEnv.find_overloaded_opt (fid, args) fdenv)
-        None frames
-      |> find_cont find_funcdef_opt Block (fid, args) ctx
+  | Local -> find_funcdef_opt Block (fid, args) ctx
 
 let find_funcdef layer (fid, args) ctx =
   find_funcdef_opt layer (fid, args) ctx |> Option.get
@@ -241,21 +254,19 @@ let find_funcdef layer (fid, args) ctx =
 let rec find_value_opt layer id ctx =
   match layer with
   | Global ->
-      let _, _, venv, _ = ctx.global in
+      let venv, _ = ctx.global.frame in
       VEnv.find_opt id venv
   | Block ->
-      let _, _, (_, _, venv, _) = ctx.block in
+      let venv, _ = ctx.block.frame in
       VEnv.find_opt id venv |> find_cont find_value_opt Global id ctx
   | Local ->
-      let _, _, frames = ctx.local in
+      let venvs = ctx.local.frames |> List.map fst in
       List.fold_left
-        (fun value frame ->
+        (fun value venv ->
           match value with
           | Some value -> Some value
-          | None ->
-              let _, _, venv, _ = frame in
-              VEnv.find_opt id venv)
-        None frames
+          | None -> VEnv.find_opt id venv)
+        None venvs
       |> find_cont find_value_opt Block id ctx
 
 let find_value layer id ctx = find_value_opt layer id ctx |> Option.get
@@ -263,21 +274,17 @@ let find_value layer id ctx = find_value_opt layer id ctx |> Option.get
 let rec find_type_opt layer id ctx =
   match layer with
   | Global ->
-      let _, _, _, tenv = ctx.global in
+      let _, tenv = ctx.global.frame in
       TEnv.find_opt id tenv
   | Block ->
-      let _, _, (_, _, _, tenv) = ctx.block in
+      let _, tenv = ctx.block.frame in
       TEnv.find_opt id tenv |> find_cont find_type_opt Global id ctx
   | Local ->
-      let _, _, frames = ctx.local in
+      let tenvs = ctx.local.frames |> List.map snd in
       List.fold_left
-        (fun typ frame ->
-          match typ with
-          | Some typ -> Some typ
-          | None ->
-              let _, _, _, tenv = frame in
-              TEnv.find_opt id tenv)
-        None frames
+        (fun typ tenv ->
+          match typ with Some typ -> Some typ | None -> TEnv.find_opt id tenv)
+        None tenvs
       |> find_cont find_type_opt Block id ctx
 
 let find_type layer id ctx = find_type_opt layer id ctx |> Option.get
@@ -300,25 +307,56 @@ let find_overloaded finder_overloaded var args ctx =
 (* Pretty-printer *)
 
 let pp_frame fmt frame =
-  let tdenv, fdenv, venv, tenv = frame in
+  let venv, tenv = frame in
+  Format.fprintf fmt "@[@[<v 0>[Values]:@ %a@]@\n@[<v 0>[Types]:@ %a@]@]"
+    VEnv.pp venv TEnv.pp tenv
+
+let pp_gt fmt (gt : gt) =
   Format.fprintf fmt
-    "@[@[<v 0>[Typedefs]:@ %a@]@\n\
+    "@[@[<v 0>[[Global]]@]@\n\
+     @[@[<v 0>[Constructors]:@ %a@]@\n\
+     @[<v 0>[Typedefs]:@ %a@]@\n\
      @[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Values]:@ %a@]@\n\
-     @[<v 0>[Types]:@ %a@]@]" TDEnv.pp tdenv FDEnv.pp fdenv VEnv.pp venv TEnv.pp
-    tenv
+     @[<v 0>[Frame]:@ %a@]@]" CDEnv.pp gt.cdenv TDEnv.pp gt.tdenv FDEnv.pp
+    gt.fdenv pp_frame gt.frame
+
+let pp_bt fmt (bt : bt) =
+  Format.fprintf fmt
+    "@[@[<v 0>[Block %s<%s>]:@ %a@]@\n\
+     @[<v 0>[Typedefs]:@ %a@]@\n\
+     @[<v 0>[Functions]:@ %a@]@\n\
+     @[<v 0>[Frame]:@ %a@]@]" bt.id
+    (String.concat ", " bt.tparams)
+    (fun fmt (kind : blockkind) ->
+      match kind with
+      | Empty -> Format.fprintf fmt "Empty"
+      | Extern -> Format.fprintf fmt "Extern"
+      | Parser -> Format.fprintf fmt "Parser"
+      | Control -> Format.fprintf fmt "Control")
+    bt.kind TDEnv.pp bt.tdenv FDEnv.pp bt.fdenv pp_frame bt.frame
+
+let pp_lt fmt (lt : lt) =
+  Format.fprintf fmt
+    "@[@[<v 0>[Local %s<%s>]:@ %a@]@\n\
+     @[<v 0>[Typedefs]:@ %a@]@\n\
+     @[<v 0>[Frames]:@ %a@]@]" lt.id
+    (String.concat ", " lt.tparams)
+    (fun fmt kind ->
+      match (kind : localkind) with
+      | Empty -> Format.fprintf fmt "Empty"
+      | ExternFunction -> Format.fprintf fmt "ExternFunction"
+      | Function -> Format.fprintf fmt "Function"
+      | Action -> Format.fprintf fmt "Action"
+      | ExternMethod -> Format.fprintf fmt "ExternMethod"
+      | ApplyMethod -> Format.fprintf fmt "ApplyMethod"
+      | Table -> Format.fprintf fmt "Table")
+    lt.kind TDEnv.pp lt.tdenv
+    (Format.pp_print_list pp_frame)
+    lt.frames
 
 let pp fmt ctx =
-  let id_block, tparams_block, frame_block = ctx.block in
-  let id_local, tparams_local, frames_local = ctx.local in
   Format.fprintf fmt
-    "@[@[<v 0>[[Constructors]]:@ %a@]@\n\
-     @[<v 0>[[Global]]:@ %a@]@\n\
-     @[<v 0>[[Block %s<%s>]]:@ %a@]@\n\
-     @[<v 0>[[Local %s<%s>]]:@ %a@]@]" CDEnv.pp ctx.cons pp_frame ctx.global
-    id_block
-    (String.concat ", " tparams_block)
-    pp_frame frame_block id_local
-    (String.concat ", " tparams_local)
-    (Format.pp_print_list pp_frame)
-    frames_local
+    "@[@[<v 0>[[Context]]@]@\n\
+     @[<v 0>[Global]:@ %a@]@\n\
+     @[<v 0>[Block]:@ %a@]@\n\
+     @[<v 0>[Local]:@ %a@]@]" pp_gt ctx.global pp_bt ctx.block pp_lt ctx.local

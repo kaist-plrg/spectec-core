@@ -843,15 +843,15 @@ and type_expr (layer : Ctx.layer) (ctx : Ctx.t) (expr : expr) : Type.t =
 
                 | can be called at run time from this place in a P4 program
    This type    | parser state | control apply	block | parser/control top level | action | extern | function
-   package	    | N/A          | N/A                 | N/A                      | N/A    | N/A    | N/A
-   parser       | yes          | no                  | no                       | no     | no     | no
-   control      | no           | yes                 | no                       | no     | no     | no
-   extern       | yes          | yes                 | yes                      | yes    | no     | no
-   table        | no           | yes                 | no                       | no     | no     | no
-   value-set    | yes          | no                  | no                       | no     | no     | no
-   action       | no           | yes                 | no                       | yes    | no     | no
-   function     | yes          | yes                 | no                       | yes    | no     | yes
-   value types	| N/A          | N/A                 | N/A                      | N/A    | N/A    | N/A
+   package	    | N/A          | N/A                  | N/A                      | N/A    | N/A    | N/A
+   parser       | yes          | no                   | no                       | no     | no     | no
+   control      | no           | yes                  | no                       | no     | no     | no
+   extern       | yes          | yes                  | yes                      | yes    | no     | no
+   table        | no           | yes                  | no                       | no     | no     | no
+   value-set    | yes          | no                   | no                       | no     | no     | no
+   action       | no           | yes                  | no                       | yes    | no     | no
+   function     | yes          | yes                  | no                       | yes    | no     | yes
+   value types	| N/A          | N/A                  | N/A                      | N/A    | N/A    | N/A
 
    There may not be any recursion in calls, neither by a thing calling itself directly, nor mutual recursion.
    An extern can never cause any other type of P4 program object to be called. See Section 6.8.1.
@@ -1255,10 +1255,9 @@ and type_parser_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       ctx tparams
   in
   let ctx' = type_parser_type_apply_method_decl Ctx.Block ctx' params in
-  let _, _, (_, fdenv, _, _) = ctx'.block in
   (* Create a parser type definition
      and add it to the context *)
-  let td = TypeDef.ParserD (tparams, fdenv) in
+  let td = TypeDef.ParserD (tparams, ctx'.block.fdenv) in
   check_valid_typedef layer ctx td;
   Ctx.add_typedef layer id.it td ctx
 
@@ -1439,10 +1438,9 @@ and type_control_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       ctx tparams
   in
   let ctx' = type_control_type_apply_method_decl Ctx.Block ctx' params in
-  let _, _, (_, fdenv, _, _) = ctx'.block in
   (* Create a control type definition
      and add it to the context *)
-  let td = TypeDef.ControlD (tparams, fdenv) in
+  let td = TypeDef.ControlD (tparams, ctx'.block.fdenv) in
   check_valid_typedef layer ctx td;
   Ctx.add_typedef layer id.it td ctx
 
@@ -1458,7 +1456,7 @@ and type_package_constructor_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       "(type_package_constructor_decl) Package constructor declarations must \
        be in a block\n";
     assert false);
-  if id.it <> Ctx.get_id Ctx.Block ctx then (
+  if id.it <> ctx.block.id then (
     Format.eprintf
       "(type_package_constructor_decl) Package constructor must have the same \
        name as the object\n";
@@ -1494,9 +1492,8 @@ and type_package_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       ctx' tparams
   in
   let ctx' = type_package_constructor_decl Ctx.Block ctx' id cparams in
-  let cons = ctx'.cons in
   (* Update the context with the constructor definition environment *)
-  { ctx with cons }
+  { ctx with global = { ctx.global with cdenv = ctx'.global.cdenv } }
 
 (* (7.2.10.2) Extern objects
 
@@ -1513,7 +1510,7 @@ and type_extern_constructor_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       "(type_extern_constructor_decl) Extern constructor declarations must be \
        in a block\n";
     assert false);
-  if id.it <> Ctx.get_id Ctx.Block ctx then (
+  if id.it <> ctx.block.id then (
     Format.eprintf
       "(type_extern_constructor_decl) Extern constructor must have the same \
        name as the object\n";
@@ -1559,7 +1556,7 @@ and type_extern_abstract_method_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
 
 and type_extern_method_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (params : param list) (typ_ret : typ) : Ctx.t =
-  if layer <> Ctx.Block then (
+  if layer <> Block then (
     Format.eprintf
       "(type_extern_method_decl) Extern method declarations must be in a block\n";
     assert false);
@@ -1580,7 +1577,7 @@ and type_extern_method_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
 
 and type_extern_object_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (mthds : decl list) : Ctx.t =
-  if layer <> Ctx.Global then (
+  if layer <> Global then (
     Format.eprintf
       "(type_extern_object_decl) Extern object declarations must be global\n";
     assert false);
@@ -1599,10 +1596,9 @@ and type_extern_object_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       ctx' tparams
   in
   let ctx' = type_decls Ctx.Block ctx' mthds in
-  let _, _, (_, fdenv, _, _) = ctx'.block in
   (* Create an extern object type definition
      and add it to the context *)
-  let td = TypeDef.ExternD (tparams, fdenv) in
+  let td = TypeDef.ExternD (tparams, ctx'.block.fdenv) in
   check_valid_typedef layer ctx td;
   let ctx = Ctx.add_typedef layer id.it td ctx in
   (* Typecheck constructors
@@ -1614,9 +1610,8 @@ and type_extern_object_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       ctx'' tparams
   in
   let ctx'' = type_decls Ctx.Block ctx'' cons in
-  let cons = ctx''.cons in
   (* Update the context with the constructor definition environment *)
-  { ctx with cons }
+  { ctx with global = { ctx.global with cdenv = ctx''.global.cdenv } }
 
 and type_decl (layer : Ctx.layer) (ctx : Ctx.t) (decl : decl) =
   match decl.it with
