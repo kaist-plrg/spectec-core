@@ -906,12 +906,12 @@ module Make (Arch : ARCH) : INTERP = struct
       | EnumT (_id, members) ->
         let member' = List.hd members in
         member = member'
-      | _ -> failwith "1"
+      | _ -> failwith "type is not enum"
       end
     | SEnumFieldV (_, _, value) -> 
         let value = Value.get_num value in
         Bigint.(value = zero)
-    | _ -> failwith "1"
+    | _ -> failwith "type doesn't have default value"
 
   and get_prefix (mask : Value.t) (prefix : int) : int =
     match mask with
@@ -939,21 +939,22 @@ module Make (Arch : ARCH) : INTERP = struct
         (* If expr | mask value has 1s outside of field bit width *)
         let is_expr_limit = eval_binop_ge expr_value limit |> Value.get_bool in
         let is_mask_limit = eval_binop_ge mask_value limit |> Value.get_bool in
-        if is_expr_limit || is_mask_limit then failwith "has 1s outside of field bit width"
-        else
-           (* Should convert to bit *)
-          let mask_value = Value.get_num mask_value in
-          let mask_value = bit_of_raw_int mask_value width in
-          (* Mask value *)
-          let masked_expr_value = eval_binop_bitand expr_value mask_value in
-          let masked_key_value = eval_binop_bitand key_value mask_value in
-          (masked_expr_value, masked_key_value)
+        let _ = if is_expr_limit || is_mask_limit then 
+          Printf.printf "Warning : has 1s outside of field bit width\n" else () in
+        (* Should convert to bit *)
+        let mask_value = Value.get_num mask_value in
+        let mask_value = bit_of_raw_int mask_value width in
+        (* Mask value *)
+        let masked_expr_value = eval_binop_bitand expr_value mask_value in
+        let masked_key_value = eval_binop_bitand key_value mask_value in
+        (masked_expr_value, masked_key_value)
     | _ ->
         let expr_value = interp_expr ctx expr |> snd in
         (* If expr value has 1s outside of field bit width *)
         let is_expr_limit = eval_binop_ge expr_value limit |> Value.get_bool in
-        if is_expr_limit then failwith "has 1s outside of field bit width"
-        else (expr_value, key_value)
+        let _ = if is_expr_limit then 
+          Printf.printf "Warning : has 1s outside of field bit width\n" else () in
+        (expr_value, key_value)
 
   and get_prior_lpm (ctx : Ctx.t) (expr : expr) (width : int) : int option =
     match expr.it with
@@ -1017,31 +1018,25 @@ module Make (Arch : ARCH) : INTERP = struct
     (* Function that compute priority. Logic is described in (14.2.1.4) Entry priorities *)
     let set_basic_priors prior _ent = 
       let is_spec = false in
-      if is_spec then failwith "spec priority error"
-      else
-        let prior = Option.get prior in
-        let prior = Some (prior + prior_delta) in
-        prior, prior
+      let prior_prev = Option.get prior in
+      let prior_curr = if is_spec then failwith "spec priority error" else Some (prior_prev + prior_delta) in
+      prior_curr, prior_curr
     in      
     let set_priors' prior _ent = 
       (* (TODO) Should get is_specified, prior from ent. It may be from optEntryPriority*)
       let is_spec = false in
-      let prior = Option.get prior in
-      if is_spec then
-        let spec_prior = Some 0 in
-        let spec_prior' = Option.get spec_prior in
-        if (largest_priority_wins && spec_prior' > prior) ||
-           (not largest_priority_wins && spec_prior' < prior) then
-          let _ = Printf.printf "Warning entries_out_of_priority_order" in
-          spec_prior, spec_prior
-        else spec_prior, spec_prior
-      else 
-        if largest_priority_wins then 
-          let prior = Some (prior - prior_delta) in
-          prior, prior
-        else
-          let prior = Some (prior + prior_delta) in
-          prior, prior
+      let spec_prior = 0 in
+      let prior_prev = Option.get prior in
+      let prior_curr = 
+        if is_spec then spec_prior
+        else if largest_priority_wins then prior_prev - prior_delta
+        else prior_prev + prior_delta in
+      (* Warning for priority order *)
+      let _ = if (largest_priority_wins && prior_curr > prior_prev) ||
+        (not largest_priority_wins && prior_curr < prior_prev) then
+        Printf.printf "Warning : entries_out_of_priority_order" else () in
+      let prior_curr = Some prior_curr in
+      prior_curr, prior_curr
     in
     (* Function that extract priority (prefix) at lpm *)
     let extract_lpms ent =
@@ -1099,7 +1094,6 @@ module Make (Arch : ARCH) : INTERP = struct
       (* Else not changed *)
       else (prior, action) 
     in
-
     let _, action =
       List.fold_left2 find_action (None, None) entries priors
     in

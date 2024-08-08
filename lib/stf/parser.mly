@@ -138,7 +138,6 @@ arg:
 
 port:
   | DATA_DEC
-  | DATA_HEX
     { $1 }
 
 priority:

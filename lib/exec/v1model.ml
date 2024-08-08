@@ -148,7 +148,7 @@ module Make (Interp : INTERP) : ARCH = struct
     | Stf.Ast.Packet (port, packet) ->
         (* TODO : Should we need to check range of port value? *)
         let nine = Bigint.of_int 9 in
-        let port = int_of_string ("0x" ^ port) |> Bigint.of_int in
+        let port = int_of_string port |> Bigint.of_int in
         let port = Value.BitV (nine, port) in
         let update_port field = match field with 
           | "ingress_port", _ -> "ingress_port", port
@@ -168,7 +168,7 @@ module Make (Interp : INTERP) : ARCH = struct
         drive_pipe ctx
     | Stf.Ast.Expect (port, Some packet) ->
         (* Check packet_out *)
-        let port = int_of_string ("0x" ^ port) in
+        let port = int_of_string port in
         let std_meta = Ctx.find_var "standard_metadata" ctx in
         let port' = Value.access_field "egress_spec" std_meta 
           |> Value.get_num |> Bigint.to_int |> Option.get in
