@@ -35,6 +35,8 @@ control ingress(inout headers h, inout metadata m, inout standard_metadata_t sm)
     { h.h.r = (bit<8>)(3); sm.egress_spec = 3; }
     action to_4()
     { h.h.r = (bit<8>)(4); sm.egress_spec = 4; }
+    action to_5()
+    { h.h.r = (bit<8>)(5); sm.egress_spec = 5; }
 
     table t {
         key = {
@@ -47,12 +49,14 @@ control ingress(inout headers h, inout metadata m, inout standard_metadata_t sm)
             to_2;
             to_3;
             to_4;
+            to_5;
         }
         const entries = {
             (0x01, 0x1111 &&& 0xF   ) : to_1;
             (0x02, 0x1181           ) : to_2;
             (0x03, 0x1111 &&& 0xF000) : to_3;
-            (0x04, _                ) : to_4;
+            (0x04, _) : to_4;
+            _ : to_5;
         }
         const default_action = to_0;
     }

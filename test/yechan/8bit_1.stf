@@ -1,11 +1,11 @@
 packet 0 000102000E
-expect 0 000101000E
+expect 1 000101000E
 
 packet 0 0707070031
-expect 0 0707000031
+expect 1 0707000031
 
 packet 0 0F0F0FFFFF
 expect 0 0F0F0F002D
 
 packet 0 010203FFFF
-expect 0 010201FFFF
+expect 1 010201FFFF
