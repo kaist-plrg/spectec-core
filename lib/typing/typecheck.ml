@@ -62,8 +62,7 @@ let expect_values (values : Value.t list option) : Value.t list =
    a typedef name | allowed          |  allowed^3
    a type name	  | allowed          |  allowed *)
 
-(* (7.2.1)
-   (Question) Shouldn't we consider serializable enum as nested type also?
+(* (7.2.1) Enumeration types
 
    for each symbolic entry in the enumeration. The symbol typeRef in the grammar above must be one of the following types:
 
@@ -74,18 +73,18 @@ let expect_values (values : Value.t list option) : Value.t list =
 
 module TSet = MakeVis (TId)
 
-let check_distinct_members (members : member' list) : unit =
+let check_distinct_names (names : string list) : unit =
   let distinct =
     List.fold_left
-      (fun (distinct, members) member ->
-        if not distinct then (distinct, members)
-        else if List.mem member members then (false, members)
-        else (distinct, member :: members))
-      (true, []) members
+      (fun (distinct, names) name ->
+        if not distinct then (distinct, names)
+        else if List.mem name names then (false, names)
+        else (distinct, name :: names))
+      (true, []) names
     |> fst
   in
   if not distinct then (
-    Format.eprintf "(check_distinct_members) Members are not distinct\n";
+    Format.eprintf "(check_distinct_names) Names are not distinct\n";
     assert false)
   else ()
 
@@ -255,7 +254,7 @@ let rec check_valid_type' (tset : TSet.t) (typ : Type.t) : unit =
       check_valid_type_nesting typ typ_inner
   | StructT fields ->
       let members, typs_inner = List.split fields in
-      check_distinct_members members;
+      check_distinct_names members;
       List.iter
         (fun typ_inner ->
           check_valid_type' tset typ_inner;
@@ -263,7 +262,7 @@ let rec check_valid_type' (tset : TSet.t) (typ : Type.t) : unit =
         typs_inner
   | HeaderT fields ->
       let members, typs_inner = List.split fields in
-      check_distinct_members members;
+      check_distinct_names members;
       List.iter
         (fun typ_inner ->
           check_valid_type' tset typ_inner;
@@ -271,16 +270,16 @@ let rec check_valid_type' (tset : TSet.t) (typ : Type.t) : unit =
         typs_inner
   | UnionT fields ->
       let members, typs_inner = List.split fields in
-      check_distinct_members members;
+      check_distinct_names members;
       List.iter
         (fun typ_inner ->
           check_valid_type' tset typ_inner;
           check_valid_type_nesting typ typ_inner)
         typs_inner
-  | EnumT members -> check_distinct_members members
+  | EnumT members -> check_distinct_names members
   | SEnumT (typ_inner, fields) ->
       let members, _ = List.split fields in
-      check_distinct_members members;
+      check_distinct_names members;
       check_valid_type' tset typ_inner
   | ExternT fdenv | ParserT fdenv | ControlT fdenv ->
       FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
@@ -300,8 +299,9 @@ and check_valid_typedef (layer : Ctx.layer) (ctx : Ctx.t) (td : TypeDef.t) :
   | StructD fields -> check_valid_type layer ctx (StructT fields)
   | HeaderD fields -> check_valid_type layer ctx (HeaderT fields)
   | UnionD fields -> check_valid_type layer ctx (UnionT fields)
-  | EnumD members -> check_valid_type layer ctx (EnumT members)
-  | SEnumD (typ, fields) -> check_valid_type layer ctx (SEnumT (typ, fields))
+  | EnumD (_id, members) -> check_valid_type layer ctx (EnumT members)
+  | SEnumD (_id, typ, fields) ->
+      check_valid_type layer ctx (SEnumT (typ, fields))
   | ExternD (tparams, fdenv) ->
       let tset = TSet.of_list tparams in
       FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
@@ -312,6 +312,8 @@ and check_valid_typedef (layer : Ctx.layer) (ctx : Ctx.t) (td : TypeDef.t) :
       let tset = TSet.of_list tparams in
       FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
   | PackageD _tparams -> ()
+
+(* (TODO) Appendix F. Restrictions on compile time and runtime calls *)
 
 and check_valid_param' (tset : TSet.t)
     (param : id' * dir' * Type.t * Value.t option) : unit =
@@ -334,11 +336,24 @@ and check_valid_funcdef (layer : Ctx.layer) (ctx : Ctx.t) (fd : FuncDef.t) :
   let tset = Ctx.get_tparams layer ctx |> TSet.of_list in
   check_valid_funcdef' tset fd
 
-and check_valid_consdef' (tset : TSet.t) (cd : ConsDef.t) : unit =
-  let tparams, cparams, typ = cd in
-  let tset = TSet.union tset (TSet.of_list tparams) in
-  List.iter (check_valid_param' tset) cparams;
+and check_valid_cparam' (tset : TSet.t)
+    (cparam : id' * dir' * Type.t * Value.t option) : unit =
+  let _, dir, typ, _ = cparam in
+  if dir <> No then (
+    Format.eprintf
+      "(check_valid_cparam') Control parameters must be directionless\n";
+    assert false);
   check_valid_type' tset typ
+
+and check_valid_cparam (layer : Ctx.layer) (ctx : Ctx.t)
+    (cparam : id' * dir' * Type.t * Value.t option) : unit =
+  let tset = Ctx.get_tparams layer ctx |> TSet.of_list in
+  check_valid_cparam' tset cparam
+
+and check_valid_consdef' (tset : TSet.t) (cd : ConsDef.t) : unit =
+  let tset = TSet.union tset (TSet.of_list cd.tparams) in
+  List.iter (check_valid_cparam' tset) cd.cparams;
+  check_valid_type' tset cd.typ
 
 and check_valid_consdef (layer : Ctx.layer) (ctx : Ctx.t) (cd : ConsDef.t) :
     unit =
@@ -422,9 +437,9 @@ let specialize_funcdef (fd : FuncDef.t) (typ_args : Type.t list) : FuncType.t =
   let typ_ret = substitute_type tmap typ_ret in
   (params, typ_ret)
 
-let specialize_typedef (td : TypeDef.t) (typs_arg : Type.t list) : Type.t =
+let specialize_typedef (td : TypeDef.t) (typ_args : Type.t list) : Type.t =
   let check_arity tparams =
-    if List.length typs_arg <> List.length tparams then (
+    if List.length typ_args <> List.length tparams then (
       Format.eprintf
         "(specialize_typedef) Type definition %a expects %d type arguments\n"
         TypeDef.pp td (List.length tparams);
@@ -448,26 +463,26 @@ let specialize_typedef (td : TypeDef.t) (typs_arg : Type.t list) : Type.t =
   | UnionD fields ->
       check_arity [];
       Type.UnionT fields
-  | EnumD members ->
+  | EnumD (_id, members) ->
       check_arity [];
       Type.EnumT members
-  | SEnumD (typ, fields) ->
+  | SEnumD (_id, typ, fields) ->
       check_arity [];
       Type.SEnumT (typ, fields)
   (* Object types are generic *)
   | ExternD (tparams, fdenv) ->
       check_arity tparams;
-      let tmap = List.combine tparams typs_arg |> TMap.of_list in
+      let tmap = List.combine tparams typ_args |> TMap.of_list in
       let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
       Type.ExternT fdenv
   | ParserD (tparams, fdenv) ->
       check_arity tparams;
-      let tmap = List.combine tparams typs_arg |> TMap.of_list in
+      let tmap = List.combine tparams typ_args |> TMap.of_list in
       let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
       Type.ParserT fdenv
   | ControlD (tparams, fdenv) ->
       check_arity tparams;
-      let tmap = List.combine tparams typs_arg |> TMap.of_list in
+      let tmap = List.combine tparams typ_args |> TMap.of_list in
       let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
       Type.ControlT fdenv
   | PackageD tparams ->
@@ -574,7 +589,7 @@ and static_eval_expr (ctx : Ctx.t) (expr : expr) : Value.t option =
   (* | CastE (typ, expr) -> static_eval_cast ctx typ expr *)
   | BitAccE (expr_base, expr_lo, expr_hi) ->
       static_eval_bitstring_acc ctx expr_base expr_lo expr_hi
-  (* | TypeAccE (var, member) -> eval_type_acc ctx var member *)
+  | TypeAccE (var, member) -> eval_type_acc ctx var member
   | ErrAccE member -> static_eval_error_acc ctx member
   (* | ExprAccE (expr_base, member) -> static_eval_expr_acc ctx expr_base member *)
   (* | CallE (expr_func, targs, args) -> static_eval_call ctx expr_func targs args *)
@@ -649,20 +664,19 @@ and static_eval_bitstring_acc (ctx : Ctx.t) (expr_base : expr) (expr_lo : expr)
       Runtime.Ops.eval_bitstring_access value_base value_hi value_lo)
     values
 
-(* and eval_type_acc (ctx : Ctx.t) (var : var) (member : member) : *)
-(*     Value.t option = *)
-(*   let typ = *)
-(*     match var.it with *)
-(*     | Top id -> Ctx.find_typedef_glob id.it ctx *)
-(*     | Bare id -> Ctx.find_typedef id.it ctx *)
-(*   in *)
-(*   match typ with *)
-(*   | EnumT (id, members) when List.mem member.it members -> *)
-(*       Some (EnumFieldV (id, member.it)) *)
-(*   | SEnumT (id, _typ, fields) when List.mem_assoc member.it fields -> *)
-(*       let value = List.assoc member.it fields in *)
-(*       Some (SEnumFieldV (id, member.it, value)) *)
-(*   | _ -> None *)
+and eval_type_acc (ctx : Ctx.t) (var : var) (member : member) : Value.t option =
+  let td = Ctx.find_opt Ctx.find_typedef_opt var ctx in
+  Option.map
+    (fun (td : TypeDef.t) ->
+      match td with
+      | EnumD (id, members) when List.mem member.it members ->
+          Some (Value.EnumFieldV (id, member.it))
+      | SEnumD (id, _typ, fields) when List.mem_assoc member.it fields ->
+          let value = List.assoc member.it fields in
+          Some (Value.SEnumFieldV (id, member.it, value))
+      | _ -> None)
+    td
+  |> Option.join
 
 and static_eval_error_acc (ctx : Ctx.t) (member : member) : Value.t option =
   let id = "error." ^ member.it in
@@ -693,11 +707,296 @@ and static_eval_exprs (ctx : Ctx.t) (exprs : expr list) : Value.t list option =
 
 (* Type checking *)
 
-let type_const_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id) (typ : typ)
+(* Expression typing *)
+
+let rec type_num_expr (encoding : (Bigint.t * bool) option) : Type.t =
+  match encoding with
+  | Some (width, signed) -> if signed then Type.IntT width else Type.BitT width
+  | None -> Type.AIntT
+
+and type_var_expr (ctx : Ctx.t) (var : var) : Type.t =
+  let typ = Ctx.find_opt Ctx.find_type_opt var ctx in
+  Format.printf "Ctx:\n%a\n" Ctx.pp ctx;
+  if Option.is_none typ then (
+    Format.eprintf "(type_var_expr) %a is a free identifier\n" Syntax.Pp.pp_var
+      var;
+    assert false);
+  Option.get typ
+
+(* (8.16) Operations on struct types
+
+   The only operation defined on expressions whose type is a struct is field access,
+   written using dot (“.”) notation—e.g., s.field.
+   If s is an l-value, then s.field is also an l-value.
+
+   (8.17) Operations on headers
+
+   Headers provide the same operations as structs.
+
+   (8.18) Operatins on header stacks
+
+   Given a header stack value hs of size n, the following expressions are legal:
+
+   - hs.size: produces a 32-bit unsigned integer that returns the size
+     of the header stack (a compile-time constant).
+   - hs.next: produces a reference to the element with index hs.nextIndex in the stack.
+     May only be used in a parser. If the stack's nextIndex counter is greater than or equal to size,
+     then evaluating this expression results in a transition to reject and sets the error to error.StackOutOfBounds.
+     If hs is an l-value, then hs.next is also an l-value.
+   - hs.last: produces a reference to the element with index hs.nextIndex - 1 in the stack, if such an element exists.
+     May only be used in a parser. If the nextIndex counter is less than 1, or greater than size,
+     then evaluating this expression results in a transition to reject and sets the error to error.StackOutOfBounds.
+     Unlike hs.next, the resulting reference is never an l-value.
+   - hs.lastIndex: produces a 32-bit unsigned integer that encodes the index hs.nextIndex - 1.
+     May only be used in a parser. If the nextIndex counter is 0, then evaluating this expression produces an undefined value.
+
+   (8.19) Operations on header unions *)
+
+and type_expr_acc_expr (layer : Ctx.layer) (ctx : Ctx.t) (expr_base : expr)
+    (member : member) : Type.t =
+  let typ_base = type_expr layer ctx expr_base in
+  match typ_base with
+  | StackT (typ_inner, _) -> (
+      match member.it with
+      | "size" | "lastIndex" -> Type.BitT (Bigint.of_int 32)
+      | "next" | "last" -> typ_inner
+      | _ ->
+          Format.eprintf
+            "(type_expr_acc_expr) Invalid member %s for header stack\n"
+            member.it;
+          assert false)
+  | StructT fields | HeaderT fields | UnionT fields ->
+      let typ_inner = List.assoc_opt member.it fields in
+      if Option.is_none typ_inner then (
+        Format.eprintf "(type_expr_acc_expr) Member %s does not exist in %a\n"
+          member.it Type.pp typ_base;
+        assert false);
+      Option.get typ_inner
+  | _ ->
+      Format.eprintf "(type_expr_acc_expr) %a cannot be accessed\n" Type.pp
+        typ_base;
+      assert false
+
+and type_expr (layer : Ctx.layer) (ctx : Ctx.t) (expr : expr) : Type.t =
+  match expr.it with
+  | BoolE _ -> Type.BoolT
+  | StrE _ -> Type.StrT
+  | NumE { it = _, encoding; _ } -> type_num_expr encoding
+  | VarE var -> type_var_expr ctx var
+  | ListE _ | RecordE _ | UnE _ | BinE _ | TernE _ | CastE _ | MaskE _
+  | RangeE _ | ArrAccE _ | BitAccE _ | TypeAccE _ | ErrAccE _ ->
+      Format.eprintf "(type_expr) %a\n" Syntax.Pp.pp_expr expr;
+      assert false
+  | ExprAccE (expr_base, member) ->
+      type_expr_acc_expr layer ctx expr_base member
+  | CallE _ | InstE _ ->
+      Format.eprintf "(type_expr) %a\n" Syntax.Pp.pp_expr expr;
+      assert false
+
+(* Statement typing *)
+
+(* (6.8) Calling convention: call by copy in/copy out
+
+   Invocations are executed using copy-in/copy-out semantics.
+
+   Each parameter may be labeled with a direction:
+
+   - in parameters are read-only. It is an error to use an in parameter on the left-hand side of an assignment
+     or to pass it to a callee as a non-in argument.
+   - out parameters are, with a few exceptions listed below, uninitialized and are treated as l-values (See Section 6.7)
+     within the body of the method or function. An argument passed as an out parameter must be an l-value;
+   - inout parameters behave like a combination of in and out parameters simultaneously:
+     In consequence, an argument passed as an inout parameter must be an l-value.
+   - The meaning of parameters with no direction depends upon the kind of entity the parameter is for:
+      - For anything other than an action, e.g. a control, parser, or function, a directionless parameter means that
+        the value supplied as an argument in a call must be a compile-time known value (see Section 18.1).
+      - For an action, a directionless parameter indicates that it is “action data”.
+        See Section 14.1 for the meaning of action data. *)
+
+(* (8.20) Method invocations and function calls
+
+   A function call or method invocation can optionally specify for each argument the corresponding parameter name.
+   It is illegal to use names only for some arguments: either all or no arguments must specify the parameter name.
+   Function arguments are evaluated in the order they appear, left to right, before the function invocation takes place.
+
+   The calling convention is copy-in/copy-out (Section 6.8).
+   For generic functions the type arguments can be explicitly specified in the function call.
+   The compiler only inserts implicit casts for direction in arguments to methods or functions as described in Section 8.11.
+   The types for all other arguments must match the parameter types exactly.
+
+   The result returned by a function call is discarded when the function call is used as a statement.
+
+   The “don't care” identifier (_) can only be used for an out function/method argument,
+   when the value of returned in that argument is ignored by subsequent computations.
+   When used in generic functions or methods, the compiler may reject the program if it is
+   unable to infer a type for the don't care argument. *)
+
+(* (Appendix F) Restrictions on compile time and run time calls
+
+   The next table lists restrictions on what kinds of calls can be made from which places in a P4 program.
+   Calling a parser, control, or table means invoking its apply() method.
+   Calling a value-set means using it in a select expression.
+   The row for extern describes where extern method calls can be made from.
+
+   One way that an extern can be called from the top level of a parser or control is in an initializer expression
+   for a declared variable, e.g. bit<32> x = rand.get();.
+
+                | can be called at run time from this place in a P4 program
+   This type    | parser state | control apply	block | parser/control top level | action | extern | function
+   package	    | N/A          | N/A                 | N/A                      | N/A    | N/A    | N/A
+   parser       | yes          | no                  | no                       | no     | no     | no
+   control      | no           | yes                 | no                       | no     | no     | no
+   extern       | yes          | yes                 | yes                      | yes    | no     | no
+   table        | no           | yes                 | no                       | no     | no     | no
+   value-set    | yes          | no                  | no                       | no     | no     | no
+   action       | no           | yes                 | no                       | yes    | no     | no
+   function     | yes          | yes                 | no                       | yes    | no     | yes
+   value types	| N/A          | N/A                 | N/A                      | N/A    | N/A    | N/A
+
+   There may not be any recursion in calls, neither by a thing calling itself directly, nor mutual recursion.
+   An extern can never cause any other type of P4 program object to be called. See Section 6.8.1.
+   Actions may be called directly from a control apply block.
+
+   Note that while the extern row shows that extern methods can be called from many places,
+   particular externs may have additional restrictions not listed in this table.
+   Any such restrictions should be documented in the description for each extern,
+   as part of the documentation for the architecture that defines the extern. *)
+
+let check_call_arity (expr_func : expr)
+    (params : (id' * dir' * Type.t * Value.t option) list) (args : arg' list) :
+    unit =
+  if List.length params <> List.length args then (
+    Format.eprintf
+      "(check_call_arity) Function %a expects %d arguments but %d were given\n"
+      Syntax.Pp.pp_expr expr_func (List.length params) (List.length args);
+    assert false)
+
+let check_named_args (args : arg' list) : unit =
+  let is_named arg = match (arg : arg') with NameA _ -> true | _ -> false in
+  if
+    not
+      (List.for_all is_named args
+      || List.for_all (fun arg -> not (is_named arg)) args)
+  then (
+    Format.eprintf
+      "(check_named_args) Either all or no arguments must specify the \
+       parameter name\n";
+    assert false)
+
+(* Invariant: parameters and arguments are checked of arity and all-or-nothing named *)
+let align_params_with_args
+    (params : (id' * dir' * Type.t * Value.t option) list) (args : arg' list) =
+  let module PMap = Map.Make (String) in
+  let params_map =
+    List.fold_left
+      (fun params_map param ->
+        let id, _, _, _ = param in
+        PMap.add id param params_map)
+      PMap.empty params
+  in
+  List.fold_left2
+    (fun (params, exprs_arg) param arg ->
+      match arg with
+      | ExprA expr_arg -> (params @ [ param ], exprs_arg @ [ Some expr_arg ])
+      | NameA (id, expr_arg) ->
+          let param = PMap.find id.it params_map in
+          (params @ [ param ], exprs_arg @ [ Some expr_arg ])
+      | AnyA -> (params @ [ param ], exprs_arg @ [ None ]))
+    ([], []) params args
+
+let rec type_call_stmt (ctx : Ctx.t) (expr_func : expr) (typ_args : typ list)
+    (args : arg list) : unit =
+  let args = List.map it args in
+  (* Find the function definition *)
+  let fd =
+    match expr_func.it with
+    | VarE var -> Ctx.find_overloaded_opt Ctx.find_funcdef_opt var args ctx
+    | ExprAccE (expr_base, fid) -> (
+        let typ_base = type_expr Ctx.Local ctx expr_base in
+        match typ_base with
+        | ExternT fdenv | ParserT fdenv | ControlT fdenv ->
+            FDEnv.find_overloaded_opt (fid.it, args) fdenv
+        | _ -> None)
+    | _ -> None
+  in
+  if Option.is_none fd then (
+    Format.eprintf "(type_call_stmt) %a is not a function expression\n"
+      Syntax.Pp.pp_expr expr_func;
+    assert false);
+  let fd = Option.get fd in
+  (* (TODO) Implement restrictions on compile-time and run-time calls (Appendix F) *)
+  (* Specialize the function definition to a function type, if necessary *)
+  (* (TODO) Implement type inference *)
+  let typ_args = List.map (eval_type Ctx.Local ctx) typ_args in
+  let ft = specialize_funcdef fd typ_args in
+  (* Check if the arguments match the parameters *)
+  (* (TODO) Consider default parameters/arguments, in such case arity can appear to mismatch *)
+  let params, _ = ft in
+  check_call_arity expr_func params args;
+  check_named_args args;
+  let params, exprs_arg = align_params_with_args params args in
+  List.iter2
+    (fun param expr_arg ->
+      let _id_param, dir_param, typ_param, _value_default = param in
+      match expr_arg with
+      | Some expr_arg ->
+          let typ_arg = type_expr Ctx.Local ctx expr_arg in
+          (* (TODO) Consider direction of parameters/arguments *)
+          (* (TODO) Check subtype instead of stric type equality,
+             and insert implicit cast to argument if possible *)
+          if typ_param <> typ_arg then (
+            Format.eprintf "(type_call_stmt) Argument %a is not of type %a\n"
+              Syntax.Pp.pp_expr expr_arg Type.pp typ_param;
+            assert false)
+      | None ->
+          if dir_param <> Out then (
+            Format.eprintf
+              "(type_call_stmt) Don't care argument can only be used for an \
+               out function/method argument\n";
+            assert false))
+    params exprs_arg
+
+and type_block_stmt (ctx : Ctx.t) (block : block) : Ctx.t =
+  let ctx = Ctx.enter_frame ctx in
+  let ctx = type_stmts Ctx.Local ctx block.it in
+  Ctx.exit_frame ctx
+
+and type_decl_stmt (ctx : Ctx.t) (decl : decl) : Ctx.t =
+  type_decl Ctx.Local ctx decl
+
+and type_stmt (layer : Ctx.layer) (ctx : Ctx.t) (stmt : stmt) : Ctx.t =
+  if layer <> Ctx.Local then (
+    Format.eprintf "(type_stmt) Statements must be local\n";
+    assert false);
+  match stmt.it with
+  | EmptyI -> ctx
+  | AssignI _ -> ctx
+  | SwitchI _ -> ctx
+  | IfI _ -> ctx
+  | BlockI block -> type_block_stmt ctx block
+  | ExitI -> ctx
+  | RetI _ -> ctx
+  | CallI (expr_func, typ_args, args) ->
+      type_call_stmt ctx expr_func typ_args args;
+      ctx
+  | TransI _ | SelectI _ ->
+      Format.eprintf
+        "(type_stmt) Transition and select statements should be handled by \
+         (type_parser_state)\n";
+      assert false
+  | DeclI decl -> type_decl_stmt ctx decl
+
+and type_stmts (layer : Ctx.layer) (ctx : Ctx.t) (stmts : stmt list) : Ctx.t =
+  List.fold_left (type_stmt layer) ctx stmts
+
+(* Declaration typing *)
+
+and type_const_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id) (typ : typ)
     (value : expr) : Ctx.t =
   let typ = eval_type layer ctx typ in
   match static_eval_expr ctx value with
   | Some value ->
+      (* (TODO) Check that value is of type typ, and cast if necessary *)
       Ctx.add_value layer id.it value ctx |> Ctx.add_type layer id.it typ
   | None ->
       Format.eprintf
@@ -711,8 +1010,7 @@ let type_const_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id) (typ : typ)
    error is similar to an enumeration (enum) type in other languages. A program can contain multiple error declarations,
    which the compiler will merge together. It is an error to declare the same identifier multiple times. *)
 
-let rec type_error_decl (layer : Ctx.layer) (ctx : Ctx.t)
-    (members : member list) =
+and type_error_decl (layer : Ctx.layer) (ctx : Ctx.t) (members : member list) =
   if layer <> Ctx.Global then (
     Format.eprintf "(type_error_decl) Error declarations must be global\n";
     assert false);
@@ -816,7 +1114,7 @@ and type_enum_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
     Format.eprintf "(type_enum_decl) Enum declarations must be global\n";
     assert false);
   let members = List.map it members in
-  let td = TypeDef.EnumD members in
+  let td = TypeDef.EnumD (id.it, members) in
   check_valid_typedef layer ctx td;
   Ctx.add_typedef layer id.it td ctx
 
@@ -847,7 +1145,7 @@ and type_senum_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id) (typ : typ)
   (* (TODO) Check that values are of typ *)
   let values = static_eval_exprs ctx exprs |> expect_values in
   let fields = List.combine members values in
-  let td = TypeDef.SEnumD (typ, fields) in
+  let td = TypeDef.SEnumD (id.it, typ, fields) in
   check_valid_typedef layer ctx td;
   Ctx.add_typedef layer id.it td ctx
 
@@ -892,6 +1190,32 @@ and type_typedef_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       Ctx.add_typedef layer id.it td ctx
   | Right _ -> failwith "(TODO: type_typedef_decl) Handle typedef with decl"
 
+(* (7.2.10.1) Extern functions
+
+   An extern function declaration describes the name and type signature
+   of the function, but not its implementation. *)
+
+and type_extern_function_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+    (tparams : tparam list) (params : param list) (typ_ret : typ) : Ctx.t =
+  if layer <> Ctx.Global then (
+    Format.eprintf
+      "(type_extern_function_decl) Extern function declarations must be global\n";
+    assert false);
+  let tparams = List.map it tparams in
+  let params = List.map it params in
+  let fid = Runtime.Domain.FId.to_fid id.it params in
+  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
+  let ctx' =
+    List.fold_left
+      (fun ctx' tparam -> Ctx.add_tparam Ctx.Local tparam ctx')
+      ctx' tparams
+  in
+  let params = List.map (static_eval_param Ctx.Local ctx') params in
+  let typ_ret = eval_type Ctx.Local ctx' typ_ret in
+  let fd = (tparams, params, typ_ret) in
+  check_valid_funcdef layer ctx fd;
+  Ctx.add_funcdef layer fid fd ctx
+
 (* (7.2.12) Parser and control blocks types
 
    Parsers and control blocks types are similar to function types: they describe the signature of parsers and control blocks.
@@ -902,7 +1226,7 @@ and type_typedef_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
 
    A parser should have at least one argument of type packet_in, representing the received packet that is processed. *)
 
-and type_parser_apply_method_decl (layer : Ctx.layer) (ctx : Ctx.t)
+and type_parser_type_apply_method_decl (layer : Ctx.layer) (ctx : Ctx.t)
     (params : param' list) : Ctx.t =
   if layer <> Ctx.Block then (
     Format.eprintf
@@ -930,7 +1254,7 @@ and type_parser_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       (fun ctx' tparam -> Ctx.add_tparam Ctx.Block tparam ctx')
       ctx tparams
   in
-  let ctx' = type_parser_apply_method_decl Ctx.Block ctx' params in
+  let ctx' = type_parser_type_apply_method_decl Ctx.Block ctx' params in
   let _, _, (_, fdenv, _, _) = ctx'.block in
   (* Create a parser type definition
      and add it to the context *)
@@ -938,9 +1262,155 @@ and type_parser_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
   check_valid_typedef layer ctx td;
   Ctx.add_typedef layer id.it td ctx
 
+(* (NOTE) A different view on parser declaration
+
+   parser id (params) (cparams) {
+     locals <-- can be initialized with params and cparams (e.g. bit<8> l = p; )
+     states
+   }
+
+   "apply" is an implicit method that is a single entry point for the parser.
+   Conceptually, the parser declaration above is equivalent to:
+
+   parser id (cparams) {
+     locals <-- not initialized yet, only declared (e.g. bit<8> l; )
+     "apply" (params) {
+       locals are initialized with params and cparams (e.g. l = p; )
+       transition start;
+       states
+      }
+   } *)
+
+and type_parser_local_decls (layer : Ctx.layer) (ctx : Ctx.t)
+    (locals : decl list) : Ctx.t * stmt list =
+  if layer <> Ctx.Block then (
+    Format.eprintf
+      "(type_parser_local_decls) Parser local declarations must be in a block\n";
+    assert false);
+  let decls_var, decls =
+    List.partition_map
+      (fun local ->
+        match local.it with
+        | VarD { id; typ; init } -> Either.Left (id, typ, init, local.at)
+        | _ -> Either.Right local)
+      locals
+  in
+  let decls_var, stmts_var_init =
+    List.map
+      (fun (id, typ, init, at) ->
+        let decl_var = VarD { id; typ; init = None } $ at in
+        let stmt_var_init =
+          Option.map
+            (fun expr -> AssignI (VarE (Bare id $ id.at) $ id.at, expr) $ at)
+            init
+        in
+        (decl_var, stmt_var_init))
+      decls_var
+    |> List.split
+  in
+  let stmts_var_init = List.filter_map (fun stmt -> stmt) stmts_var_init in
+  let decls = decls @ decls_var in
+  let ctx = type_decls Ctx.Block ctx decls in
+  (ctx, stmts_var_init)
+
+and type_parser_state (ctx : Ctx.t) (labels : string list) (block : block) :
+    Ctx.t =
+  let stmts = block.it in
+  let stmts, stmt_next =
+    List.rev stmts |> fun stmts -> (List.tl stmts |> List.rev, List.hd stmts)
+  in
+  let ctx = type_stmts Ctx.Local ctx stmts in
+  let labels_next =
+    match stmt_next.it with
+    | TransI label -> [ label.it ]
+    | SelectI (_, select_cases) ->
+        List.map
+          (fun select_case -> select_case |> it |> snd |> it)
+          select_cases
+    | _ ->
+        Format.eprintf
+          "(type_parser_state) A state must end with a transition\n";
+        assert false
+  in
+  if not (List.for_all (fun label -> List.mem label labels) labels_next) then (
+    Format.eprintf "(type_parser_state) Undefined transition label\n";
+    assert false);
+  ctx
+
+and type_parser_states (layer : Ctx.layer) (ctx : Ctx.t)
+    (states : parser_state list) : Ctx.t =
+  if layer <> Ctx.Local then (
+    Format.eprintf
+      "(type_parser_states) Parser states must be local (in the implicit apply \
+       method)\n";
+    assert false);
+  let labels, blocks =
+    List.map
+      (fun state ->
+        let label, block = state.it in
+        (label.it, block))
+      states
+    |> List.split
+  in
+  if not (List.mem "start" labels) then (
+    Format.eprintf "(type_parser_decl) A \"start\" state must exist";
+    assert false);
+  if List.mem "accept" labels || List.mem "reject" labels then (
+    Format.eprintf
+      "(type_parser_decl) \"accpet\" and \"reject\" states are reserved";
+    assert false);
+  let labels = "accept" :: "reject" :: labels in
+  check_distinct_names labels;
+  List.fold_left
+    (fun ctx block -> type_parser_state ctx labels block)
+    ctx blocks
+
+and type_parser_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
+    (tparams : tparam list) (params : param list) (cparams : cparam list)
+    (locals : decl list) (states : parser_state list) : Ctx.t =
+  if layer <> Ctx.Global then (
+    Format.eprintf "(type_parser_decl) Parser declarations must be global\n";
+    assert false);
+  if tparams <> [] then (
+    Format.eprintf "(type_parser_decl) Parser declarations cannot be generic\n";
+    assert false);
+  let params = List.map it params in
+  let cparams = List.map it cparams in
+  let cid = Runtime.Domain.FId.to_fid id.it cparams in
+  (* Typecheck and add constructor parameters to the block context *)
+  let ctx' = Ctx.set_id Ctx.Block id.it ctx in
+  let cparams = List.map (static_eval_param Ctx.Block ctx') cparams in
+  let ctx' =
+    List.fold_left
+      (fun ctx' cparam ->
+        let id, _, typ, _ = cparam in
+        Ctx.add_type Ctx.Block id typ ctx')
+      ctx' cparams
+  in
+  (* Typecheck and add local declarations to the block context *)
+  (* According to (NOTE) above, locals are declared but not initialized in the block layer *)
+  let ctx', _stmts_var_init = type_parser_local_decls Ctx.Block ctx' locals in
+  (* Typecheck implicit "apply" method *)
+  (* Typecheck and add apply parameters to the local context *)
+  let ctx' = Ctx.set_id Ctx.Local "apply" ctx' in
+  let params = List.map (static_eval_param Ctx.Local ctx') params in
+  let ctx' =
+    List.fold_left
+      (fun ctx' param ->
+        let id, _, typ, _ = param in
+        Ctx.add_type Ctx.Local id typ ctx')
+      ctx' params
+  in
+  (* Typecheck parser states *)
+  let _ctx' = type_parser_states Ctx.Local ctx' states in
+  (* According to (NOTE) above, locals are initialized in the apply method *)
+  let typ = Type.ParserT FDEnv.empty in
+  let cd = ConsDef.{ tparams = []; cparams; typ } in
+  Ctx.add_consdef cid cd ctx
+
 (* (7.2.12.2) Control type declarations *)
 
-and type_control_apply_method_decl (layer : Ctx.layer) (ctx : Ctx.t)
+and type_control_type_apply_method_decl (layer : Ctx.layer) (ctx : Ctx.t)
     (params : param' list) : Ctx.t =
   if layer <> Ctx.Block then (
     Format.eprintf
@@ -968,7 +1438,7 @@ and type_control_type_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       (fun ctx' tparam -> Ctx.add_tparam Ctx.Block tparam ctx')
       ctx tparams
   in
-  let ctx' = type_control_apply_method_decl Ctx.Block ctx' params in
+  let ctx' = type_control_type_apply_method_decl Ctx.Block ctx' params in
   let _, _, (_, fdenv, _, _) = ctx'.block in
   (* Create a control type definition
      and add it to the context *)
@@ -998,9 +1468,9 @@ and type_package_constructor_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
   let cid = Runtime.Domain.FId.to_fid id.it cparams in
   let cparams = List.map (static_eval_param Ctx.Block ctx) cparams in
   let td = Ctx.find_typedef Ctx.Global id.it ctx in
-  let typs_arg = List.map (fun tparam -> Type.VarT tparam) tparams in
-  let typ = specialize_typedef td typs_arg in
-  let cd = (tparams, cparams, typ) in
+  let typ_args = List.map (fun tparam -> Type.VarT tparam) tparams in
+  let typ = specialize_typedef td typ_args in
+  let cd = ConsDef.{ tparams; cparams; typ } in
   check_valid_consdef layer ctx cd;
   Ctx.add_consdef cid cd ctx
 
@@ -1053,9 +1523,9 @@ and type_extern_constructor_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
   let cid = Runtime.Domain.FId.to_fid id.it cparams in
   let cparams = List.map (static_eval_param layer ctx) cparams in
   let td = Ctx.find_typedef Ctx.Global id.it ctx in
-  let typs_arg = List.map (fun tparam -> Type.VarT tparam) tparams in
-  let typ = specialize_typedef td typs_arg in
-  let cd = (tparams, cparams, typ) in
+  let typ_args = List.map (fun tparam -> Type.VarT tparam) tparams in
+  let typ = specialize_typedef td typ_args in
+  let cd = ConsDef.{ tparams; cparams; typ } in
   check_valid_consdef layer ctx cd;
   Ctx.add_consdef cid cd ctx
 
@@ -1128,7 +1598,7 @@ and type_extern_object_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       (fun ctx' tparam -> Ctx.add_tparam Ctx.Block tparam ctx')
       ctx' tparams
   in
-  let ctx' = List.fold_left (type_decl Ctx.Block) ctx' mthds in
+  let ctx' = type_decls Ctx.Block ctx' mthds in
   let _, _, (_, fdenv, _, _) = ctx'.block in
   (* Create an extern object type definition
      and add it to the context *)
@@ -1143,7 +1613,7 @@ and type_extern_object_decl (layer : Ctx.layer) (ctx : Ctx.t) (id : id)
       (fun ctx'' tparam -> Ctx.add_tparam Ctx.Block tparam ctx'')
       ctx'' tparams
   in
-  let ctx'' = List.fold_left (type_decl Ctx.Block) ctx'' cons in
+  let ctx'' = type_decls Ctx.Block ctx'' cons in
   let cons = ctx''.cons in
   (* Update the context with the constructor definition environment *)
   { ctx with cons }
@@ -1152,8 +1622,12 @@ and type_decl (layer : Ctx.layer) (ctx : Ctx.t) (decl : decl) =
   match decl.it with
   (* Constant, variable, and object declarations *)
   | ConstD { id; typ; value } -> type_const_decl layer ctx id typ value
-  | VarD _ -> ctx
-  | InstD _ -> ctx
+  | VarD _ ->
+      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
+      ctx
+  | InstD _ ->
+      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
+      ctx
   (* Derived type declarations *)
   | ErrD { members } -> type_error_decl layer ctx members
   | MatchKindD { members } -> type_match_kind_decl layer ctx members
@@ -1165,9 +1639,14 @@ and type_decl (layer : Ctx.layer) (ctx : Ctx.t) (decl : decl) =
   | NewTypeD { id; typdef } -> type_newtype_decl layer ctx id typdef
   | TypeDefD { id; typdef } -> type_typedef_decl layer ctx id typdef
   (* Function declarations *)
-  | ActionD _ -> ctx
-  | FuncD _ -> ctx
-  | ExtFuncD _ -> ctx
+  | ActionD _ ->
+      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
+      ctx
+  | FuncD _ ->
+      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
+      ctx
+  | ExtFuncD { id; typ_ret; tparams; params } ->
+      type_extern_function_decl layer ctx id tparams params typ_ret
   (* Object declarations *)
   (* Extern *)
   | ExtConstructorD { id; cparams } ->
@@ -1179,21 +1658,31 @@ and type_decl (layer : Ctx.layer) (ctx : Ctx.t) (decl : decl) =
   | ExtObjectD { id; tparams; mthds } ->
       type_extern_object_decl layer ctx id tparams mthds
   (* Parser *)
-  | ValueSetD _ -> ctx
+  | ValueSetD _ ->
+      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
+      ctx
   | ParserTypeD { id; tparams; params } ->
       type_parser_type_decl layer ctx id tparams params
-  | ParserD _ -> ctx
+  | ParserD { id; tparams; params; cparams; locals; states } ->
+      type_parser_decl layer ctx id tparams params cparams locals states
   (* Control *)
-  | TableD _ -> ctx
+  | TableD _ ->
+      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
+      ctx
   | ControlTypeD { id; tparams; params } ->
       type_control_type_decl layer ctx id tparams params
-  | ControlD _ -> ctx
+  | ControlD _ ->
+      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
+      ctx
   (* Package *)
   | PackageTypeD { id; tparams; cparams } ->
       type_package_type_decl layer ctx id tparams cparams
 
+and type_decls (layer : Ctx.layer) (ctx : Ctx.t) (decls : decl list) : Ctx.t =
+  List.fold_left (type_decl layer) ctx decls
+
 let type_program (program : program) =
   let ctx = Ctx.empty in
   let layer = Ctx.Global in
-  let ctx = List.fold_left (type_decl layer) ctx program in
+  let ctx = type_decls layer ctx program in
   ctx

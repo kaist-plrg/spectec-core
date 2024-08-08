@@ -28,6 +28,17 @@ let empty =
     local = ("", [], []);
   }
 
+(* Frame management *)
+
+let enter_frame ctx =
+  let id, tparams, frames = ctx.local in
+  { ctx with local = (id, tparams, empty_frame :: frames) }
+
+let exit_frame ctx =
+  let id, tparams, frames = ctx.local in
+  if frames = [] then Format.eprintf "(exit_frame) No frame to exit from\n";
+  { ctx with local = (id, tparams, List.tl frames) }
+
 (* Setters *)
 
 let set_id layer id ctx =
@@ -86,17 +97,20 @@ let add_typedef layer tid td ctx =
       let tdenv, fdenv, venv, tenv = ctx.global in
       { ctx with global = (TDEnv.add tid td tdenv, fdenv, venv, tenv) }
   | Block ->
-      let id, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
+      let id_block, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
       {
         ctx with
-        block = (id, tparams, (TDEnv.add tid td tdenv, fdenv, venv, tenv));
+        block = (id_block, tparams, (TDEnv.add tid td tdenv, fdenv, venv, tenv));
       }
   | Local ->
-      let id, tparams, frames = ctx.local in
-      let frame, frames = (List.hd frames, List.tl frames) in
+      let id_local, tparams, frames = ctx.local in
+      let frame, frames =
+        if frames = [] then (empty_frame, [])
+        else (List.hd frames, List.tl frames)
+      in
       let tdenv, fdenv, venv, tenv = frame in
       let frame = (TDEnv.add tid td tdenv, fdenv, venv, tenv) in
-      { ctx with local = (id, tparams, frame :: frames) }
+      { ctx with local = (id_local, tparams, frame :: frames) }
 
 let add_funcdef layer fid fd ctx =
   match layer with
@@ -104,17 +118,17 @@ let add_funcdef layer fid fd ctx =
       let tdenv, fdenv, venv, tenv = ctx.global in
       { ctx with global = (tdenv, FDEnv.add fid fd fdenv, venv, tenv) }
   | Block ->
-      let id, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
+      let id_block, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
       {
         ctx with
-        block = (id, tparams, (tdenv, FDEnv.add fid fd fdenv, venv, tenv));
+        block = (id_block, tparams, (tdenv, FDEnv.add fid fd fdenv, venv, tenv));
       }
   | Local ->
-      let id, tparams, frames = ctx.local in
+      let id_local, tparams, frames = ctx.local in
       let frame, frames = (List.hd frames, List.tl frames) in
       let tdenv, fdenv, venv, tenv = frame in
       let frame = (tdenv, FDEnv.add fid fd fdenv, venv, tenv) in
-      { ctx with local = (id, tparams, frame :: frames) }
+      { ctx with local = (id_local, tparams, frame :: frames) }
 
 let add_value layer id value ctx =
   match layer with
@@ -122,17 +136,20 @@ let add_value layer id value ctx =
       let tdenv, fdenv, venv, tenv = ctx.global in
       { ctx with global = (tdenv, fdenv, VEnv.add id value venv, tenv) }
   | Block ->
-      let id, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
+      let id_block, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
       {
         ctx with
-        block = (id, tparams, (tdenv, fdenv, VEnv.add id value venv, tenv));
+        block = (id_block, tparams, (tdenv, fdenv, VEnv.add id value venv, tenv));
       }
   | Local ->
-      let id, tparams, frames = ctx.local in
-      let frame, frames = (List.hd frames, List.tl frames) in
+      let id_local, tparams, frames = ctx.local in
+      let frame, frames =
+        if frames = [] then (empty_frame, [])
+        else (List.hd frames, List.tl frames)
+      in
       let tdenv, fdenv, venv, tenv = frame in
       let frame = (tdenv, fdenv, VEnv.add id value venv, tenv) in
-      { ctx with local = (id, tparams, frame :: frames) }
+      { ctx with local = (id_local, tparams, frame :: frames) }
 
 let add_type layer id typ ctx =
   match layer with
@@ -140,17 +157,20 @@ let add_type layer id typ ctx =
       let tdenv, fdenv, venv, tenv = ctx.global in
       { ctx with global = (tdenv, fdenv, venv, TEnv.add id typ tenv) }
   | Block ->
-      let id, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
+      let id_block, tparams, (tdenv, fdenv, venv, tenv) = ctx.block in
       {
         ctx with
-        block = (id, tparams, (tdenv, fdenv, venv, TEnv.add id typ tenv));
+        block = (id_block, tparams, (tdenv, fdenv, venv, TEnv.add id typ tenv));
       }
   | Local ->
-      let id, tparams, frames = ctx.local in
-      let frame, frames = (List.hd frames, List.tl frames) in
+      let id_local, tparams, frames = ctx.local in
+      let frame, frames =
+        if frames = [] then (empty_frame, [])
+        else (List.hd frames, List.tl frames)
+      in
       let tdenv, fdenv, venv, tenv = frame in
       let frame = (tdenv, fdenv, venv, TEnv.add id typ tenv) in
-      { ctx with local = (id, tparams, frame :: frames) }
+      { ctx with local = (id_local, tparams, frame :: frames) }
 
 (* Finders *)
 
@@ -194,6 +214,30 @@ let rec find_typedef_opt layer tid ctx =
 
 let find_typedef layer tid ctx = find_typedef_opt layer tid ctx |> Option.get
 
+let rec find_funcdef_opt layer (fid, args) ctx =
+  match layer with
+  | Global ->
+      let _, fdenv, _, _ = ctx.global in
+      FDEnv.find_overloaded_opt (fid, args) fdenv
+  | Block ->
+      let _, _, (_, fdenv, _, _) = ctx.block in
+      FDEnv.find_overloaded_opt (fid, args) fdenv
+      |> find_cont find_funcdef_opt Global (fid, args) ctx
+  | Local ->
+      let _, _, frames = ctx.local in
+      List.fold_left
+        (fun fd frame ->
+          match fd with
+          | Some fd -> Some fd
+          | None ->
+              let _, fdenv, _, _ = frame in
+              FDEnv.find_overloaded_opt (fid, args) fdenv)
+        None frames
+      |> find_cont find_funcdef_opt Block (fid, args) ctx
+
+let find_funcdef layer (fid, args) ctx =
+  find_funcdef_opt layer (fid, args) ctx |> Option.get
+
 let rec find_value_opt layer id ctx =
   match layer with
   | Global ->
@@ -216,15 +260,42 @@ let rec find_value_opt layer id ctx =
 
 let find_value layer id ctx = find_value_opt layer id ctx |> Option.get
 
-let find finder var ctx =
-  match var.it with
-  | Top id -> finder Global id.it ctx
-  | Bare id -> finder Local id.it ctx
+let rec find_type_opt layer id ctx =
+  match layer with
+  | Global ->
+      let _, _, _, tenv = ctx.global in
+      TEnv.find_opt id tenv
+  | Block ->
+      let _, _, (_, _, _, tenv) = ctx.block in
+      TEnv.find_opt id tenv |> find_cont find_type_opt Global id ctx
+  | Local ->
+      let _, _, frames = ctx.local in
+      List.fold_left
+        (fun typ frame ->
+          match typ with
+          | Some typ -> Some typ
+          | None ->
+              let _, _, _, tenv = frame in
+              TEnv.find_opt id tenv)
+        None frames
+      |> find_cont find_type_opt Block id ctx
+
+let find_type layer id ctx = find_type_opt layer id ctx |> Option.get
 
 let find_opt finder_opt var ctx =
   match var.it with
   | Top id -> finder_opt Global id.it ctx
   | Bare id -> finder_opt Local id.it ctx
+
+let find finder var ctx = find_opt finder var ctx |> Option.get
+
+let find_overloaded_opt finder_overloaded_opt var args ctx =
+  match var.it with
+  | Top id -> finder_overloaded_opt Global (id.it, args) ctx
+  | Bare id -> finder_overloaded_opt Local (id.it, args) ctx
+
+let find_overloaded finder_overloaded var args ctx =
+  find_overloaded_opt finder_overloaded var args ctx |> Option.get
 
 (* Pretty-printer *)
 

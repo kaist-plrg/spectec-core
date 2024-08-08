@@ -158,8 +158,8 @@ and TypeDef : sig
     | StructD of (member' * Type.t) list
     | HeaderD of (member' * Type.t) list
     | UnionD of (member' * Type.t) list
-    | EnumD of member' list
-    | SEnumD of Type.t * (member' * Value.t) list
+    | EnumD of id' * member' list
+    | SEnumD of id' * Type.t * (member' * Value.t) list
     (* Object type definitions *)
     | ExternD of tparam' list * FDEnv.t
     | ParserD of tparam' list * FDEnv.t
@@ -178,8 +178,8 @@ end = struct
     | StructD of (member' * Type.t) list
     | HeaderD of (member' * Type.t) list
     | UnionD of (member' * Type.t) list
-    | EnumD of member' list
-    | SEnumD of Type.t * (member' * Runtime.Value.t) list
+    | EnumD of id' * member' list
+    | SEnumD of id' * Type.t * (member' * Runtime.Value.t) list
     (* Object type definitions *)
     | ExternD of tparam' list * FDEnv.t
     | ParserD of tparam' list * FDEnv.t
@@ -218,14 +218,14 @@ end = struct
              (fun fmt (member, typ) ->
                Format.fprintf fmt "%s: %a" member Type.pp typ))
           fields
-    | EnumD members ->
-        Format.fprintf fmt "enum { @[<hv>%a@] }"
+    | EnumD (id, members) ->
+        Format.fprintf fmt "enum %s { @[<hv>%a@] }" id
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt member -> Format.fprintf fmt "%s" member))
           members
-    | SEnumD (typ, members) ->
-        Format.fprintf fmt "enum %a { @[<hv>%a@] }" Type.pp typ
+    | SEnumD (id, typ, members) ->
+        Format.fprintf fmt "enum %a %s { @[<hv>%a@] }" Type.pp typ id
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (member, value) ->
@@ -310,24 +310,31 @@ end = struct
 end
 
 and ConsDef : sig
-  type t = tparam' list * (id' * dir' * Type.t * Value.t option) list * Type.t
+  type t = {
+    tparams : tparam' list;
+    cparams : (id' * dir' * Type.t * Value.t option) list;
+    typ : Type.t;
+  }
 
   val pp : Format.formatter -> t -> unit
 end = struct
-  type t = tparam' list * (id' * dir' * Type.t * Value.t option) list * Type.t
+  type t = {
+    tparams : tparam' list;
+    cparams : (id' * dir' * Type.t * Value.t option) list;
+    typ : Type.t;
+  }
 
   let pp fmt t =
-    let tparams, params, typ_ret = t in
     Format.fprintf fmt "@[<v>cons<%a> (@[<hv>%a@]) -> %a@]"
       (Format.pp_print_list
          ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
          (fun fmt tparam -> Format.fprintf fmt "%s" tparam))
-      tparams
+      t.tparams
       (Format.pp_print_list
          ~pp_sep:(fun fmt () -> Format.fprintf fmt ",@ ")
          (fun fmt (id, _dir, typ, _value_default) ->
            Format.fprintf fmt "%a %s" Type.pp typ id))
-      params Type.pp typ_ret
+      t.cparams Type.pp t.typ
 end
 
 (* Environments *)
@@ -340,8 +347,42 @@ and TEnv : (ENV with type t_key = Id.t and type t_value = Type.t) =
 and TDEnv : (ENV with type t_key = TId.t and type t_value = TypeDef.t) =
   MakeEnv (TId) (TypeDef)
 
-and FDEnv : (ENV with type t_key = FId.t and type t_value = FuncDef.t) =
-  MakeEnv (FId) (FuncDef)
+and FDEnv : (FENV with type t_value = FuncDef.t) = struct
+  include MakeEnv (FId) (FuncDef)
 
-and CDEnv : (ENV with type t_key = FId.t and type t_value = ConsDef.t) =
-  MakeEnv (FId) (ConsDef)
+  (* (TODO) resolve overloaded functions with argument names *)
+  let find_overloaded_opt (fid, args) fdenv =
+    let arity = List.length args in
+    let fds =
+      List.filter
+        (fun ((fid', params), _) -> fid = fid' && arity = List.length params)
+        (bindings fdenv)
+    in
+    assert (List.length fds <= 1);
+    match fds with [] -> None | _ -> Some (List.hd fds |> snd)
+
+  let find_overloaded (fid, args) fdenv =
+    match find_overloaded_opt (fid, args) fdenv with
+    | Some fd -> fd
+    | None -> Format.asprintf "Key not found: %s@." fid |> failwith
+end
+
+and CDEnv : (FENV with type t_value = ConsDef.t) = struct
+  include MakeEnv (FId) (ConsDef)
+
+  (* (TODO) resolve overloaded functions with argument names *)
+  let find_overloaded_opt (cid, args) cdenv =
+    let arity = List.length args in
+    let cds =
+      List.filter
+        (fun ((cid', params), _) -> cid = cid' && arity = List.length params)
+        (bindings cdenv)
+    in
+    assert (List.length cds <= 1);
+    match cds with [] -> None | _ -> Some (List.hd cds |> snd)
+
+  let find_overloaded (cid, args) cdenv =
+    match find_overloaded_opt (cid, args) cdenv with
+    | Some cd -> cd
+    | None -> Format.asprintf "Key not found: %s@." cid |> failwith
+end

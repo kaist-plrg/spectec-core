@@ -48,14 +48,6 @@ module CCEnv = struct
     | None -> Format.asprintf "Key not found: %s@." cid |> failwith
 end
 
-type tenv = TDEnv.t * FEnv.t * VEnv.t * TEnv.t
-
-let tenv_empty = (TDEnv.empty, FEnv.empty, VEnv.empty, TEnv.empty)
-
-type tenv_stack = TDEnv.t * (VEnv.t * TEnv.t) list
-
-let tenv_stack_empty = (TDEnv.empty, [])
-
 type env = TDEnv.t * FEnv.t * VEnv.t
 
 let env_empty = (TDEnv.empty, FEnv.empty, VEnv.empty)
@@ -65,29 +57,6 @@ type env_stack = TDEnv.t * VEnv.t list
 let env_stack_empty = (TDEnv.empty, [])
 
 (* Transition between visibility and environment *)
-
-let tenv_to_tvis (env : tenv) =
-  let tdenv, fenv, venv, tenv = env in
-  let tdvis =
-    TDEnv.fold (fun tvar _ tdvis -> TDVis.add tvar tdvis) tdenv TDVis.empty
-  in
-  let fvis =
-    FEnv.fold (fun fvar _ fvis -> FVis.add fvar fvis) fenv FVis.empty
-  in
-  let vvis = VEnv.fold (fun var _ vvis -> VVis.add var vvis) venv VVis.empty in
-  let tvis =
-    TEnv.fold (fun tvar _ tvis -> TVis.add tvar tvis) tenv TVis.empty
-  in
-  (tdvis, fvis, vvis, tvis)
-
-let tenv_from_tvis (env : tenv) (vis : tvis) =
-  let tdenv, fenv, venv, tenv = env in
-  let tdvis, fvis, vvis, tvis = vis in
-  let tdenv = TDEnv.filter (fun tvar _ -> TDVis.mem tvar tdvis) tdenv in
-  let fenv = FEnv.filter (fun fvar _ -> FVis.mem fvar fvis) fenv in
-  let venv = VEnv.filter (fun var _ -> VVis.mem var vvis) venv in
-  let tenv = TEnv.filter (fun tvar _ -> TVis.mem tvar tvis) tenv in
-  (tdenv, fenv, venv, tenv)
 
 let env_to_vis (env : env) =
   let tdenv, fenv, venv = env in
