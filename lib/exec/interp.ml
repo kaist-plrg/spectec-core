@@ -968,6 +968,30 @@ module Make (Arch : ARCH) : INTERP = struct
         Some prefix
     | _ -> Some width
 
+  and range_values (ctx : Ctx.t) (key_value : Value.t) (expr : expr) : Value.t * Value.t =
+    let width = Value.get_width key_value in
+    let limit = Value.AIntV (power_of_two width) in
+    match expr.it with
+    | RangeE (low, high) ->
+        (* Get masked values *)
+        let low_value = interp_expr ctx low |> snd in
+        let high_value = interp_expr ctx high |> snd in
+        (* If expr | mask value has 1s outside of field bit width *)
+        let is_low_limit = eval_binop_ge low_value limit |> Value.get_bool in
+        let is_high_limit = eval_binop_ge high_value limit |> Value.get_bool in
+        let is_not_order = eval_binop_gt low_value high_value |> Value.get_bool in
+        let _ = if is_low_limit || is_high_limit then 
+          Printf.printf "Warning : has 1s outside of field bit width\n" 
+                else if is_not_order then failwith "not correct order" else () in
+        (low_value, high_value)
+    | _ ->
+        let expr_value = interp_expr ctx expr |> snd in
+        (* If expr value has 1s outside of field bit width *)
+        let is_expr_limit = eval_binop_ge expr_value limit |> Value.get_bool in
+        let _ = if is_expr_limit then 
+          Printf.printf "Warning : has 1s outside of field bit width\n" else () in
+        (expr_value, expr_value)
+
   (* Match *)
   (* TODO : OPTIONAL and RANGE *)
   (* TODO : What about un init enum? *)
@@ -978,18 +1002,24 @@ module Make (Arch : ARCH) : INTERP = struct
       if not is_match then is_match
       else
         let key_value, key_mtch_kind = key in
+        let is_exact = key_mtch_kind.it = "exact" in
         match ent.it with
         (* Wildcard *)
-        | AnyM -> is_match
+        | AnyM -> if is_exact then failwith "unsupported in exact match" else is_match
         | ExprM expr ->
           (* Seperate between exact and other *)
-            if key_mtch_kind.it = "exact" then 
+            if is_exact || key_mtch_kind.it = "optional" then 
               let ent_value = interp_expr ctx expr |> snd in
               eval_binop_eq ent_value key_value
+            else if key_mtch_kind.it = "range" then 
+              let low_value, high_value = range_values ctx key_value expr in
+              let chk = eval_binop_le low_value key_value |> Value.get_bool in
+              let chk2 = eval_binop_le key_value high_value |> Value.get_bool in
+              chk && chk2
             else 
               let ent_value, key_value = mask_values ctx key_value expr in
               eval_binop_eq ent_value key_value
-        | DefaultM -> eval_binop_eq_default ctx key_value
+        | DefaultM -> if is_exact then failwith "unsupported in exact match" else eval_binop_eq_default ctx key_value
     in
     (* If entry list is just underline('_') return true *)
     match ent_list with 
@@ -999,27 +1029,28 @@ module Make (Arch : ARCH) : INTERP = struct
   and set_priors (ctx : Ctx.t) (keys : (Value.t * mtch_kind) list) (entries : table_entry list)
      (prior_delta : int) (largest_priority_wins : bool) : int option list =
     let length = List.length entries in
-    let is_ternary (_key_value, key_kind) = key_kind.it = "ternary" in
+    let find_tro (_key_value, key_kind) = key_kind.it = "ternary" || key_kind.it = "range" || key_kind.it = "optional" in
     let is_lpm ind (key_value, key_kind) = 
       let width = key_value |> Value.get_width |> Bigint.to_int |> Option.get in
       if key_kind.it = "lpm" then (ind, width) else (-1, 0) 
     in
     (* If there are least one ternary then need priority *)
-    let need_prior = List.exists is_ternary keys in
+    let need_prior = List.exists find_tro keys in
     (* If match kind is lpm, then save index and type's width.
        Index is for entry's lpm key, width is for maximum prefix length. *)
     let lpms = List.mapi is_lpm keys in
     (* Collect only lpm  *)
     let lpms = List.filter (fun (ind, _) -> ind >= 0) lpms in
     let cnt_lpms = List.length lpms in
-    (* no_spec is bool value for whether developer specifies priority. If false 
+    (* first_spec is bool value for whether developer specifies priority. If false 
        and other entry has specified priority, it cause error. *)
-    let no_spec = true in
+    let is_spec = false in
+    let first_spec = false in
+    let _ = if is_spec && (not first_spec || not need_prior) then failwith "priority spec error" else 0 in
     (* Function that compute priority. Logic is described in (14.2.1.4) Entry priorities *)
     let set_basic_priors prior _ent = 
-      let is_spec = false in
       let prior_prev = Option.get prior in
-      let prior_curr = if is_spec then failwith "spec priority error" else Some (prior_prev + prior_delta) in
+      let prior_curr = Some (prior_prev + prior_delta) in
       prior_curr, prior_curr
     in      
     let set_priors' prior _ent = 
@@ -1048,11 +1079,13 @@ module Make (Arch : ARCH) : INTERP = struct
       | DefaultM -> Some width
       | ExprM expr -> get_prior_lpm ctx expr width
     in
+    (* Error of two lpms *)
     if cnt_lpms > 1 then failwith "lpms should be most one"
-    else if need_prior && no_spec then 
+    (* If there are no spec of priority *)
+    else if need_prior && not is_spec then 
       let basic_priors = List.fold_left_map set_basic_priors (Some 1) entries |> snd in
-      if largest_priority_wins then List.rev basic_priors
-      else basic_priors
+      if largest_priority_wins then List.rev basic_priors else basic_priors
+    (* If there are spec of priority *)
     else if need_prior then 
       let first_prior = Some 1 in
       List.fold_left_map set_priors' first_prior entries |> snd
@@ -1073,7 +1106,6 @@ module Make (Arch : ARCH) : INTERP = struct
     (* Compute priorities and save in list *)
     (* If no_ternary, it means there are only exacts and lpm*)
     let priors = set_priors ctx keys entries 1 true in
-
     let find_action (prior, action) entry new_prior=
       let matches, entry_action = entry.it in
       let new_action = Some entry_action in
@@ -1085,7 +1117,7 @@ module Make (Arch : ARCH) : INTERP = struct
       let is_match = check_match ctx matches keys in
       (* Compare priorities *)
       let cmp_prior = Option.compare Int.compare prior new_prior in
-      (* If first matched *)
+      (* If first match *)
       if is_match && is_action_none then (new_prior, new_action)
       (* If match one more in only exact field, it may causes error *)
       else if is_match && is_prior_none then failwith "no dup in only exacts"
