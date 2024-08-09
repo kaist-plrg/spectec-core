@@ -5,11 +5,11 @@ module Value = Runtime.Value
 
 (* Context is consisted of layers of environments *)
 
-type layer = Global | Block | Local
+type cursor = Global | Block | Local
 
 (* Defining each layer *)
 
-type blockkind = Empty | Extern | Parser | Control
+type blockkind = Empty | Extern | Parser | Control | Package
 
 type localkind =
   | Empty
@@ -87,10 +87,10 @@ let exit_frame ctx =
 
 (* Setters *)
 
-let set_id layer id ctx =
-  match layer with
+let set_id cursor id ctx =
+  match cursor with
   | Global ->
-      Format.eprintf "(set_id) Global layer has no identifier\n";
+      Format.eprintf "(set_id) Global cursor has no identifier\n";
       assert false
   | Block -> { ctx with block = { ctx.block with id } }
   | Local -> { ctx with local = { ctx.local with id } }
@@ -100,8 +100,8 @@ let set_localkind kind ctx = { ctx with local = { ctx.local with kind } }
 
 (* Getters *)
 
-let rec get_tparams layer ctx =
-  match layer with
+let rec get_tparams cursor ctx =
+  match cursor with
   | Global -> []
   | Block -> ctx.block.tparams
   | Local -> ctx.local.tparams @ get_tparams Block ctx
@@ -114,10 +114,10 @@ let add_consdef cid cd ctx =
     global = { ctx.global with cdenv = CDEnv.add cid cd ctx.global.cdenv };
   }
 
-let add_tparam layer tparam ctx =
-  match layer with
+let add_tparam cursor tparam ctx =
+  match cursor with
   | Global ->
-      Format.eprintf "(add_tparam) Global layer cannot be type-parameterized\n";
+      Format.eprintf "(add_tparam) Global cursor cannot be type-parameterized\n";
       assert false
   | Block ->
       {
@@ -130,8 +130,11 @@ let add_tparam layer tparam ctx =
         local = { ctx.local with tparams = ctx.local.tparams @ [ tparam ] };
       }
 
-let add_typedef layer tid td ctx =
-  match layer with
+let add_tparams cursor tparams ctx =
+  List.fold_left (fun ctx tparam -> add_tparam cursor tparam ctx) ctx tparams
+
+let add_typedef cursor tid td ctx =
+  match cursor with
   | Global ->
       {
         ctx with
@@ -148,8 +151,8 @@ let add_typedef layer tid td ctx =
         local = { ctx.local with tdenv = TDEnv.add tid td ctx.local.tdenv };
       }
 
-let add_funcdef layer fid fd ctx =
-  match layer with
+let add_funcdef cursor fid fd ctx =
+  match cursor with
   | Global ->
       {
         ctx with
@@ -162,11 +165,11 @@ let add_funcdef layer fid fd ctx =
       }
   | Local ->
       Format.eprintf
-        "(add_funcdef) Local layer cannot have function definitions\n";
+        "(add_funcdef) Local cursor cannot have function definitions\n";
       assert false
 
-let add_value layer id value ctx =
-  match layer with
+let add_value cursor id value ctx =
+  match cursor with
   | Global ->
       let venv, tenv = ctx.global.frame in
       {
@@ -188,8 +191,8 @@ let add_value layer id value ctx =
       let frame = (VEnv.add id value venv, tenv) in
       { ctx with local = { ctx.local with frames = frame :: frames } }
 
-let add_type layer id typ ctx =
-  match layer with
+let add_type cursor id typ ctx =
+  match cursor with
   | Global ->
       let venv, tenv = ctx.global.frame in
       {
@@ -213,23 +216,23 @@ let add_type layer id typ ctx =
 
 (* Finders *)
 
-let find_cont finder layer id ctx = function
+let find_cont finder cursor id ctx = function
   | Some value -> Some value
-  | None -> finder layer id ctx
+  | None -> finder cursor id ctx
 
-let rec find_tparam_opt layer tparam ctx =
-  match layer with
+let rec find_tparam_opt cursor tparam ctx =
+  match cursor with
   | Global -> None
   | Block -> List.find_opt (fun tp -> tp = tparam) ctx.block.tparams
   | Local ->
       List.find_opt (fun tp -> tp = tparam) ctx.local.tparams
       |> find_cont find_tparam_opt Block tparam ctx
 
-let find_tparam layer tparam ctx =
-  find_tparam_opt layer tparam ctx |> Option.get
+let find_tparam cursor tparam ctx =
+  find_tparam_opt cursor tparam ctx |> Option.get
 
-let rec find_typedef_opt layer tid ctx =
-  match layer with
+let rec find_typedef_opt cursor tid ctx =
+  match cursor with
   | Global -> TDEnv.find_opt tid ctx.global.tdenv
   | Block ->
       TDEnv.find_opt tid ctx.block.tdenv
@@ -238,21 +241,21 @@ let rec find_typedef_opt layer tid ctx =
       TDEnv.find_opt tid ctx.local.tdenv
       |> find_cont find_typedef_opt Block tid ctx
 
-let find_typedef layer tid ctx = find_typedef_opt layer tid ctx |> Option.get
+let find_typedef cursor tid ctx = find_typedef_opt cursor tid ctx |> Option.get
 
-let rec find_funcdef_opt layer (fid, args) ctx =
-  match layer with
+let rec find_funcdef_opt cursor (fid, args) ctx =
+  match cursor with
   | Global -> FDEnv.find_overloaded_opt (fid, args) ctx.global.fdenv
   | Block ->
       FDEnv.find_overloaded_opt (fid, args) ctx.block.fdenv
       |> find_cont find_funcdef_opt Global (fid, args) ctx
   | Local -> find_funcdef_opt Block (fid, args) ctx
 
-let find_funcdef layer (fid, args) ctx =
-  find_funcdef_opt layer (fid, args) ctx |> Option.get
+let find_funcdef cursor (fid, args) ctx =
+  find_funcdef_opt cursor (fid, args) ctx |> Option.get
 
-let rec find_value_opt layer id ctx =
-  match layer with
+let rec find_value_opt cursor id ctx =
+  match cursor with
   | Global ->
       let venv, _ = ctx.global.frame in
       VEnv.find_opt id venv
@@ -269,10 +272,10 @@ let rec find_value_opt layer id ctx =
         None venvs
       |> find_cont find_value_opt Block id ctx
 
-let find_value layer id ctx = find_value_opt layer id ctx |> Option.get
+let find_value cursor id ctx = find_value_opt cursor id ctx |> Option.get
 
-let rec find_type_opt layer id ctx =
-  match layer with
+let rec find_type_opt cursor id ctx =
+  match cursor with
   | Global ->
       let _, tenv = ctx.global.frame in
       TEnv.find_opt id tenv
@@ -287,22 +290,23 @@ let rec find_type_opt layer id ctx =
         None tenvs
       |> find_cont find_type_opt Block id ctx
 
-let find_type layer id ctx = find_type_opt layer id ctx |> Option.get
+let find_type cursor id ctx = find_type_opt cursor id ctx |> Option.get
 
-let find_opt finder_opt var ctx =
+let find_opt finder_opt cursor var ctx =
   match var.it with
   | Top id -> finder_opt Global id.it ctx
-  | Bare id -> finder_opt Local id.it ctx
+  | Bare id -> finder_opt cursor id.it ctx
 
-let find finder var ctx = find_opt finder var ctx |> Option.get
+let find finder_opt cursor var ctx =
+  find_opt finder_opt cursor var ctx |> Option.get
 
-let find_overloaded_opt finder_overloaded_opt var args ctx =
+let find_overloaded_opt finder_overloaded_opt cursor var args ctx =
   match var.it with
   | Top id -> finder_overloaded_opt Global (id.it, args) ctx
-  | Bare id -> finder_overloaded_opt Local (id.it, args) ctx
+  | Bare id -> finder_overloaded_opt cursor (id.it, args) ctx
 
-let find_overloaded finder_overloaded var args ctx =
-  find_overloaded_opt finder_overloaded var args ctx |> Option.get
+let find_overloaded finder_overloaded_opt cursor var args ctx =
+  find_overloaded_opt finder_overloaded_opt cursor var args ctx |> Option.get
 
 (* Pretty-printer *)
 
@@ -332,7 +336,8 @@ let pp_bt fmt (bt : bt) =
       | Empty -> Format.fprintf fmt "Empty"
       | Extern -> Format.fprintf fmt "Extern"
       | Parser -> Format.fprintf fmt "Parser"
-      | Control -> Format.fprintf fmt "Control")
+      | Control -> Format.fprintf fmt "Control"
+      | Package -> Format.fprintf fmt "Package")
     bt.kind TDEnv.pp bt.tdenv FDEnv.pp bt.fdenv pp_frame bt.frame
 
 let pp_lt fmt (lt : lt) =
