@@ -105,8 +105,8 @@ end
 module type FENV = sig
   include ENV with type t_key = FId.t
 
-  val find_overloaded_opt : id' * arg' list -> t -> t_value option
-  val find_overloaded : id' * arg' list -> t -> t_value
+  val find_opt : id' * arg' list -> t -> t_value option
+  val find : id' * arg' list -> t -> t_value
 end
 
 module MakeEnv (K : KEY) (V : VALUE) = struct

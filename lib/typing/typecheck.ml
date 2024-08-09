@@ -135,6 +135,9 @@ and check_valid_type' (tset : TSet.t) (typ : Type.t) : unit =
   | ExternT fdenv | ParserT fdenv | ControlT fdenv ->
       FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
   | PackageT | TopT -> ()
+  | SetT typ_inner ->
+      check_valid_type' tset typ_inner;
+      check_valid_type_nesting typ typ_inner
 
 and check_distinct_names (names : string list) : unit =
   let distinct =
@@ -181,7 +184,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | SEnumT _ ->
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TopT -> true)
+      | TopT -> true
+      | SetT _ -> false)
   | NewT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT -> false
@@ -196,7 +200,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | SEnumT _ ->
           false
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TopT -> true)
+      | TopT -> true
+      | SetT _ -> false)
   | TupleT _ -> (
       match typ_inner with
       | VoidT -> false
@@ -211,7 +216,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | SEnumT _ ->
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TopT -> true)
+      | TopT -> true
+      | SetT _ -> false)
   | StackT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT | BoolT | AIntT | IntT _ | BitT _
@@ -224,7 +230,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | HeaderT _ | UnionT _ -> true
       | EnumT _ | SEnumT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
           false
-      | TopT -> true)
+      | TopT -> true
+      | SetT _ -> false)
   | StructT _ -> (
       match typ_inner with
       | VoidT -> false
@@ -239,7 +246,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | SEnumT _ ->
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TopT -> true)
+      | TopT -> true
+      | SetT _ -> false)
   | HeaderT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT -> false
@@ -253,13 +261,12 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
          because structs allow more nested types than a header, we need to check recursively *)
       | StructT fields ->
           let _, typs_inner = List.split fields in
-          List.for_all
-            (fun typ_inner -> check_valid_type_nesting' typ typ_inner)
-            typs_inner
+          List.for_all (check_valid_type_nesting' typ) typs_inner
       | HeaderT _ | UnionT _ | EnumT _ -> false
       | SEnumT _ -> true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TopT -> true)
+      | TopT -> true
+      | SetT _ -> false)
   | UnionT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT | BoolT | AIntT | IntT _ | BitT _
@@ -274,7 +281,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | UnionT _ | EnumT _ | SEnumT _ | ExternT _ | ParserT _ | ControlT _
       | PackageT ->
           false
-      | TopT -> true)
+      | TopT -> true
+      | SetT _ -> false)
   | EnumT _ -> error_not_nest ()
   | SEnumT _ -> (
       match typ_inner with
@@ -287,8 +295,28 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _
       | SEnumT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
           false
-      | TopT -> true)
+      | TopT -> true
+      | SetT _ -> false)
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> error_not_nest ()
+  | SetT _ -> (
+      match typ_inner with
+      | VoidT | ErrT | MatchKindT | StrT -> false
+      | BoolT -> true
+      | AIntT -> false
+      | IntT _ | BitT _ -> true
+      | VBitT _ -> false
+      | VarT _ -> false
+      | DefT typ_inner | NewT typ_inner ->
+          check_valid_type_nesting' typ typ_inner
+      (* A special case: when tuple is nested inside a set,
+         because tuples allow more nested types than a set, we need to check recursively *)
+      | TupleT typs_inner ->
+          List.for_all (check_valid_type_nesting' typ) typs_inner
+      | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
+      | EnumT _ | SEnumT _ -> true
+      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | TopT -> true
+      | SetT _ -> false)
 
 and check_valid_typedef (cursor : Ctx.cursor) (ctx : Ctx.t) (td : TypeDef.t) :
     unit =
@@ -411,6 +439,7 @@ let rec substitute_type (tmap : TMap.t) (typ : Type.t) : Type.t =
       let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
       ControlT fdenv
   | PackageT | TopT -> typ
+  | SetT typ_inner -> SetT (substitute_type tmap typ_inner)
 
 and substitute_param (tmap : TMap.t)
     (param : id' * dir' * Type.t * Value.t option) :
@@ -736,6 +765,63 @@ and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : var) : Type.t =
     assert false);
   Option.get typ
 
+(* (8.15.3) Masks
+
+   The infix operator &&& takes two arguments of the same numeric type (Section 7.4),
+   and creates a value of the same type. The right value is used as a “mask”,
+   where each bit set to 0 in the mask indicates a “don't care” bit.
+
+   Similar to other binary operations, the mask operator allows the compiler to
+   automatically insert casts to unify the argument types in certain situations (section 8.11.2).
+
+   P4 architectures may impose additional restrictions on the expressions on the left and
+   right-hand side of a mask operator: for example, they may require that
+   either or both sub-expressions be compile-time known values. *)
+
+and type_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
+    (expr_mask : expr) : Type.t =
+  let typ_base = type_expr cursor ctx expr_base in
+  let typ_mask = type_expr cursor ctx expr_mask in
+  (* (TODO) Insert cast if possible *)
+  (* (CHECK) Which types are allowed in mask expression? *)
+  match (typ_base, typ_mask) with
+  | BitT width_base, BitT width_mask when width_base = width_mask ->
+      SetT (BitT width_base)
+  | IntT width_base, IntT width_mask when width_base = width_mask ->
+      SetT (IntT width_base)
+  | _ ->
+      Format.eprintf
+        "(type_mask_expr) Incompatible types %a and %a for mask operation\n"
+        Type.pp typ_base Type.pp typ_mask;
+      assert false
+
+(* (8.15.4) Ranges
+
+   The infix operator .. takes two arguments of the same numeric type T (Section 7.4),
+   and creates a value of the type set<T>. The set contains all values numerically between
+   the first and the second, inclusively.
+
+   Similar to other binary operations, the range operator allows the compiler to
+   automatically insert casts to unify the argument types in certain situations (section 8.11.2). *)
+
+and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : expr)
+    (expr_ub : expr) : Type.t =
+  let typ_lb = type_expr cursor ctx expr_lb in
+  let typ_ub = type_expr cursor ctx expr_ub in
+  (* (TODO) Insert cast if possible *)
+  (* (CHECK) Which types are allowed in range expression? *)
+  match (typ_lb, typ_ub) with
+  | AIntT, AIntT -> SetT AIntT
+  | BitT width_lb, BitT width_ub when width_lb = width_ub ->
+      SetT (BitT width_lb)
+  | IntT width_lb, IntT width_ub when width_lb = width_ub ->
+      SetT (IntT width_lb)
+  | _ ->
+      Format.eprintf
+        "(type_range_expr) Incompatible types %a and %a for range operation\n"
+        Type.pp typ_lb Type.pp typ_ub;
+      assert false
+
 (* (8.16) Operations on struct types
 
    The only operation defined on expressions whose type is a struct is field access,
@@ -796,8 +882,13 @@ and type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : expr) : Type.t =
   | StrE _ -> Type.StrT
   | NumE { it = _, encoding; _ } -> type_num_expr encoding
   | VarE var -> type_var_expr cursor ctx var
-  | ListE _ | RecordE _ | UnE _ | BinE _ | TernE _ | CastE _ | MaskE _
-  | RangeE _ | ArrAccE _ | BitAccE _ | TypeAccE _ | ErrAccE _ ->
+  | ListE _ | RecordE _ | UnE _ | BinE _ | TernE _ | CastE _ ->
+      Format.eprintf "(type_expr) %a\n" Syntax.Pp.pp_expr expr;
+      assert false
+  | MaskE (expr_base, expr_mask) ->
+      type_mask_expr cursor ctx expr_base expr_mask
+  | RangeE (expr_lb, expr_ub) -> type_range_expr cursor ctx expr_lb expr_ub
+  | ArrAccE _ | BitAccE _ | TypeAccE _ | ErrAccE _ ->
       Format.eprintf "(type_expr) %a\n" Syntax.Pp.pp_expr expr;
       assert false
   | ExprAccE (expr_base, member) ->
@@ -842,24 +933,25 @@ let rec type_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (stmt : stmt) : Ctx.t =
   | CallI (expr_func, typ_args, args) ->
       type_call_stmt ctx expr_func typ_args args;
       ctx
-  | TransI _ | SelectI _ ->
-      Format.eprintf
-        "(type_stmt) Transition and select statements should be handled by \
-         (type_parser_state)\n";
-      assert false
+  | TransI label ->
+      type_transition_stmt ctx label;
+      ctx
+  | SelectI (exprs_key, cases) ->
+      type_select_stmt ctx exprs_key cases;
+      ctx
   | DeclI decl -> type_decl_stmt ctx decl
 
 and type_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (stmts : stmt list) : Ctx.t =
   List.fold_left (type_stmt cursor) ctx stmts
 
+(* (TODO) Consider direction also *)
+and check_lvalue_type' (ctx : Ctx.t) (typ : Type.t) : bool =
+  match typ with
+  | DefT typ_inner | NewT typ_inner -> check_lvalue_type' ctx typ_inner
+  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> false
+  | _ -> true
+
 and check_lvalue' (ctx : Ctx.t) (expr : expr) : bool =
-  (* (TODO) Consider direction also *)
-  let rec check_ltype' (typ : Type.t) : bool =
-    match typ with
-    | DefT typ_inner | NewT typ_inner -> check_ltype' typ_inner
-    | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> false
-    | _ -> true
-  in
   match expr.it with
   | VarE var ->
       let typ = Ctx.find_opt Ctx.find_type_opt Ctx.Local var ctx in
@@ -871,7 +963,7 @@ and check_lvalue' (ctx : Ctx.t) (expr : expr) : bool =
       let is_const =
         Ctx.find_opt Ctx.find_value_opt Ctx.Local var ctx |> Option.is_some
       in
-      (not is_const) && check_ltype' typ
+      (not is_const) && check_lvalue_type' ctx typ
   | ArrAccE (expr_base, _) | BitAccE (expr_base, _, _) | ExprAccE (expr_base, _)
     ->
       check_lvalue' ctx expr_base
@@ -1042,7 +1134,7 @@ and type_call_stmt (ctx : Ctx.t) (expr_func : expr) (typ_args : typ list)
         let typ_base = type_expr Ctx.Local ctx expr_base in
         match typ_base with
         | ExternT fdenv | ParserT fdenv | ControlT fdenv ->
-            FDEnv.find_overloaded_opt (fid.it, args) fdenv
+            FDEnv.find_opt (fid.it, args) fdenv
         | _ -> None)
     | _ -> None
   in
@@ -1082,6 +1174,111 @@ and type_call_stmt (ctx : Ctx.t) (expr_func : expr) (typ_args : typ list)
                out function/method argument\n";
             assert false))
     params exprs_arg
+
+(* (13.5) Transition statements
+
+   The last statement in a parser state is an optional transition statement,
+   which transfers control to another state, possibly accept or reject. *)
+
+and type_transition_stmt (ctx : Ctx.t) (label : label) : unit =
+  if not (match ctx.local.kind with Ctx.ParserState _ -> true | _ -> false)
+  then (
+    Format.eprintf
+      "(type_transition_stmt) Transition statement must be in a parser state\n";
+    assert false);
+  let labels =
+    match ctx.local.kind with
+    | Ctx.ParserState labels -> labels
+    | _ -> assert false
+  in
+  if not (List.mem label.it labels) then (
+    Format.eprintf "(type_transition_stmt) Label %s is not a valid label\n"
+      label.it;
+    assert false)
+
+(* (13.6) Select expressions
+
+   A select expression evaluates to a state.
+
+   Each expression in the expressionList must have a type of
+   bit<W>, int<W>, bool, enum, serializable enum, or a tuple type with fields of one of the above types.
+
+   In a select expression, if the expressionList has type tuple<T>,
+   then each keysetExpression must have type set<tuple<T>>.
+   In particular, if a set is specified as a range or mask expression, the endpoints of the range
+   and mask expression are implicitly cast to type T using the standard rules for casts. *)
+
+(* (8.15.1) Singleton sets
+
+   In a set context, expressions denote singleton sets. *)
+
+(* (8.15.2) The universal set
+
+   In a set context, the expressions default and _ denote the universal set,
+   which contains all possible values of a given type. *)
+
+(* (TODO) select is a statement in p4cherry, not an expression *)
+
+and type_select_match (ctx : Ctx.t) (typ_key : Type.t) (mtch : mtch) : unit =
+  match mtch.it with
+  | ExprM expr_mtch ->
+      let typ_mtch =
+        match expr_mtch.it with
+        | MaskE _ | RangeE _ -> type_expr Ctx.Local ctx expr_mtch
+        | _ ->
+            let typ_mtch = type_expr Ctx.Local ctx expr_mtch in
+            SetT typ_mtch
+      in
+      if typ_key <> typ_mtch then (
+        Format.eprintf
+          "(type_select_match) Key type %a must match the type of the mask or \
+           range expression %a\n"
+          Type.pp typ_key Type.pp typ_mtch;
+        assert false)
+  | DefaultM | AnyM -> ()
+
+and type_select_matches (ctx : Ctx.t) (typs_key : Type.t list)
+    (mtchs : mtch list) : unit =
+  match (typs_key, mtchs) with
+  | _, [ { it = DefaultM | AnyM; _ } ] -> ()
+  | typs_key, mtchs ->
+      if List.length typs_key <> List.length mtchs then (
+        Format.eprintf
+          "(type_select_matches) Number of select keys must match the number \
+           of cases\n";
+        assert false);
+      List.iter2 (type_select_match ctx) typs_key mtchs
+
+and type_select_case (ctx : Ctx.t) (labels : label' list)
+    (typs_key : Type.t list) (case : select_case) : unit =
+  let mtchs, label = case.it in
+  type_select_matches ctx typs_key mtchs;
+  if not (List.mem label.it labels) then (
+    Format.eprintf "(type_transition_stmt) Label %s is not a valid label\n"
+      label.it;
+    assert false)
+
+and type_select_stmt (ctx : Ctx.t) (exprs_key : expr list)
+    (cases : select_case list) : unit =
+  if not (match ctx.local.kind with Ctx.ParserState _ -> true | _ -> false)
+  then (
+    Format.eprintf
+      "(type_transition_stmt) Transition statement must be in a parser state\n";
+    assert false);
+  let labels =
+    match ctx.local.kind with
+    | Ctx.ParserState labels -> labels
+    | _ -> assert false
+  in
+  let typs_key =
+    List.map
+      (fun expr_key ->
+        let typ_key = type_expr Ctx.Local ctx expr_key in
+        Type.SetT typ_key)
+      exprs_key
+  in
+  List.iter (check_valid_type Ctx.Local ctx) typs_key;
+  List.iter (type_select_case ctx labels typs_key) cases
 
 and type_decl_stmt (ctx : Ctx.t) (decl : decl) : Ctx.t =
   type_decl Ctx.Local ctx decl
@@ -1478,37 +1675,18 @@ and type_parser_local_decls (cursor : Ctx.cursor) (ctx : Ctx.t)
   let ctx = type_decls Ctx.Block ctx decls in
   (ctx, stmts_var_init)
 
-and type_parser_state (cursor : Ctx.cursor) (ctx : Ctx.t) (labels : string list)
-    (block : block) : Ctx.t =
+and type_parser_state (cursor : Ctx.cursor) (ctx : Ctx.t) (block : block) :
+    Ctx.t =
   if
     not
       (cursor = Ctx.Local
       && ctx.block.kind = Ctx.Parser
-      && ctx.local.kind = Ctx.ParserState)
+      && match ctx.local.kind with Ctx.ParserState _ -> true | _ -> false)
   then (
     Format.eprintf "(type_parser_state) Parser state must be local\n";
     assert false);
   let stmts = block.it in
-  let stmts, stmt_next =
-    List.rev stmts |> fun stmts -> (List.tl stmts |> List.rev, List.hd stmts)
-  in
-  let ctx = type_stmts Ctx.Local ctx stmts in
-  let labels_next =
-    match stmt_next.it with
-    | TransI label -> [ label.it ]
-    | SelectI (_, select_cases) ->
-        List.map
-          (fun select_case -> select_case |> it |> snd |> it)
-          select_cases
-    | _ ->
-        Format.eprintf
-          "(type_parser_state) A state must end with a transition\n";
-        assert false
-  in
-  if not (List.for_all (fun label -> List.mem label labels) labels_next) then (
-    Format.eprintf "(type_parser_state) Undefined transition label\n";
-    assert false);
-  ctx
+  type_stmts Ctx.Local ctx stmts
 
 and type_parser_states (cursor : Ctx.cursor) (ctx : Ctx.t)
     (states : parser_state list) : Ctx.t =
@@ -1523,12 +1701,12 @@ and type_parser_states (cursor : Ctx.cursor) (ctx : Ctx.t)
     assert false);
   let labels = "accept" :: "reject" :: labels in
   check_distinct_names labels;
-  let ctx' = Ctx.set_localkind Ctx.ParserState ctx in
+  let ctx' = Ctx.set_localkind (Ctx.ParserState labels) ctx in
   let _ctx' =
     List.fold_left
       (fun ctx' (label, block) ->
         let ctx' = Ctx.set_id Ctx.Local label.it ctx' in
-        type_parser_state cursor ctx' labels block)
+        type_parser_state cursor ctx' block)
       ctx' states
   in
   ctx
@@ -1573,8 +1751,6 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   in
   let ctx' = type_stmts Ctx.Local ctx' stmts_var_init in
   (* Typecheck parser states *)
-  let ctx' = Ctx.set_id Ctx.Local "" ctx' in
-  let ctx' = Ctx.set_localkind Ctx.ParserState ctx' in
   let _ctx' = type_parser_states Ctx.Local ctx' states in
   (* According to (NOTE) above, locals are initialized in the apply method *)
   let typ = Type.ParserT FDEnv.empty in

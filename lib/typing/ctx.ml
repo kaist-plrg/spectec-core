@@ -17,7 +17,7 @@ type localkind =
   | Function
   | Action
   | ExternMethod
-  | ParserState
+  | ParserState of label' list
   | ApplyMethod
   | Table
 
@@ -246,9 +246,9 @@ let find_typedef cursor tid ctx = find_typedef_opt cursor tid ctx |> Option.get
 
 let rec find_funcdef_opt cursor (fid, args) ctx =
   match cursor with
-  | Global -> FDEnv.find_overloaded_opt (fid, args) ctx.global.fdenv
+  | Global -> FDEnv.find_opt (fid, args) ctx.global.fdenv
   | Block ->
-      FDEnv.find_overloaded_opt (fid, args) ctx.block.fdenv
+      FDEnv.find_opt (fid, args) ctx.block.fdenv
       |> find_cont find_funcdef_opt Global (fid, args) ctx
   | Local -> find_funcdef_opt Block (fid, args) ctx
 
@@ -354,7 +354,7 @@ let pp_lt fmt (lt : lt) =
       | Function -> Format.fprintf fmt "Function"
       | Action -> Format.fprintf fmt "Action"
       | ExternMethod -> Format.fprintf fmt "ExternMethod"
-      | ParserState -> Format.fprintf fmt "ParserState"
+      | ParserState _ -> Format.fprintf fmt "ParserState"
       | ApplyMethod -> Format.fprintf fmt "ApplyMethod"
       | Table -> Format.fprintf fmt "Table")
     lt.kind TDEnv.pp lt.tdenv

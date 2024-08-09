@@ -39,6 +39,8 @@ module rec Type : sig
     | PackageT
     (* Top type *)
     | TopT
+    (* Synthesized types : variables can never be of this type *)
+    | SetT of t
 
   val pp : Format.formatter -> t -> unit
 end = struct
@@ -75,6 +77,8 @@ end = struct
     | PackageT
     (* Top type *)
     | TopT
+    (* Synthesized types : variables can never be of this type *)
+    | SetT of t
 
   let rec pp fmt = function
     (* Base types *)
@@ -146,6 +150,8 @@ end = struct
     | PackageT -> Format.fprintf fmt "package"
     (* Top type *)
     | TopT -> Format.fprintf fmt "top"
+    (* Synthesized types *)
+    | SetT t -> Format.fprintf fmt "set<%a>" pp t
 end
 
 and TypeDef : sig
@@ -351,7 +357,7 @@ and FDEnv : (FENV with type t_value = FuncDef.t) = struct
   include MakeEnv (FId) (FuncDef)
 
   (* (TODO) resolve overloaded functions with argument names *)
-  let find_overloaded_opt (fid, args) fdenv =
+  let find_opt (fid, args) fdenv =
     let arity = List.length args in
     let fds =
       List.filter
@@ -361,8 +367,8 @@ and FDEnv : (FENV with type t_value = FuncDef.t) = struct
     assert (List.length fds <= 1);
     match fds with [] -> None | _ -> Some (List.hd fds |> snd)
 
-  let find_overloaded (fid, args) fdenv =
-    match find_overloaded_opt (fid, args) fdenv with
+  let find (fid, args) fdenv =
+    match find_opt (fid, args) fdenv with
     | Some fd -> fd
     | None -> Format.asprintf "Key not found: %s@." fid |> failwith
 end
@@ -371,7 +377,7 @@ and CDEnv : (FENV with type t_value = ConsDef.t) = struct
   include MakeEnv (FId) (ConsDef)
 
   (* (TODO) resolve overloaded functions with argument names *)
-  let find_overloaded_opt (cid, args) cdenv =
+  let find_opt (cid, args) cdenv =
     let arity = List.length args in
     let cds =
       List.filter
@@ -381,8 +387,8 @@ and CDEnv : (FENV with type t_value = ConsDef.t) = struct
     assert (List.length cds <= 1);
     match cds with [] -> None | _ -> Some (List.hd cds |> snd)
 
-  let find_overloaded (cid, args) cdenv =
-    match find_overloaded_opt (cid, args) cdenv with
+  let find (cid, args) cdenv =
+    match find_opt (cid, args) cdenv with
     | Some cd -> cd
     | None -> Format.asprintf "Key not found: %s@." cid |> failwith
 end
