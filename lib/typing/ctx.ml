@@ -17,6 +17,7 @@ type localkind =
   | Function
   | Action
   | ExternMethod
+  | ParserState
   | ApplyMethod
   | Table
 
@@ -353,6 +354,7 @@ let pp_lt fmt (lt : lt) =
       | Function -> Format.fprintf fmt "Function"
       | Action -> Format.fprintf fmt "Action"
       | ExternMethod -> Format.fprintf fmt "ExternMethod"
+      | ParserState -> Format.fprintf fmt "ParserState"
       | ApplyMethod -> Format.fprintf fmt "ApplyMethod"
       | Table -> Format.fprintf fmt "Table")
     lt.kind TDEnv.pp lt.tdenv

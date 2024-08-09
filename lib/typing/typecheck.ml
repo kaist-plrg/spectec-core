@@ -73,7 +73,70 @@ let expect_values (values : Value.t list option) : Value.t list =
 
 module TSet = MakeVis (TId)
 
-let check_distinct_names (names : string list) : unit =
+let rec check_valid_type (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : Type.t) :
+    unit =
+  let tset = Ctx.get_tparams cursor ctx |> TSet.of_list in
+  check_valid_type' tset typ
+
+and check_valid_type' (tset : TSet.t) (typ : Type.t) : unit =
+  match typ with
+  | VoidT | ErrT | MatchKindT | StrT | BoolT | AIntT | IntT _ | BitT _ | VBitT _
+    ->
+      ()
+  | VarT id ->
+      if not (TSet.mem id tset) then (
+        Format.eprintf "(check_valid_type) %s is a free type variable\n" id;
+        assert false)
+      else ()
+  | DefT typ_inner ->
+      check_valid_type' tset typ_inner;
+      check_valid_type_nesting typ typ_inner
+  | NewT typ_inner ->
+      check_valid_type' tset typ_inner;
+      check_valid_type_nesting typ typ_inner
+  | TupleT typs_inner ->
+      List.iter
+        (fun typ_inner ->
+          check_valid_type' tset typ_inner;
+          check_valid_type_nesting typ typ_inner)
+        typs_inner
+  | StackT (typ_inner, _) ->
+      check_valid_type' tset typ_inner;
+      check_valid_type_nesting typ typ_inner
+  | StructT fields ->
+      let members, typs_inner = List.split fields in
+      check_distinct_names members;
+      List.iter
+        (fun typ_inner ->
+          check_valid_type' tset typ_inner;
+          check_valid_type_nesting typ typ_inner)
+        typs_inner
+  | HeaderT fields ->
+      let members, typs_inner = List.split fields in
+      check_distinct_names members;
+      List.iter
+        (fun typ_inner ->
+          check_valid_type' tset typ_inner;
+          check_valid_type_nesting typ typ_inner)
+        typs_inner
+  | UnionT fields ->
+      let members, typs_inner = List.split fields in
+      check_distinct_names members;
+      List.iter
+        (fun typ_inner ->
+          check_valid_type' tset typ_inner;
+          check_valid_type_nesting typ typ_inner)
+        typs_inner
+  | EnumT members -> check_distinct_names members
+  | SEnumT (typ_inner, fields) ->
+      let members, _ = List.split fields in
+      check_distinct_names members;
+      check_valid_type' tset typ_inner
+  | ExternT fdenv | ParserT fdenv | ControlT fdenv ->
+      FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
+  | PackageT | TopT -> ()
+
+and check_distinct_names (names : string list) : unit =
   let distinct =
     List.fold_left
       (fun (distinct, names) name ->
@@ -88,7 +151,15 @@ let check_distinct_names (names : string list) : unit =
     assert false)
   else ()
 
-let rec check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
+and check_valid_type_nesting (typ : Type.t) (typ_inner : Type.t) : unit =
+  if not (check_valid_type_nesting' typ typ_inner) then (
+    Format.eprintf
+      "(check_valid_type_nesting) Invalid nesting of %a inside %a\n" Type.pp
+      typ_inner Type.pp typ;
+    assert false)
+  else ()
+
+and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
   let error_not_nest () : bool =
     Format.eprintf "(check_valid_type_nesting) %a is not a nested type\n"
       Type.pp typ;
@@ -219,76 +290,6 @@ let rec check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | TopT -> true)
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> error_not_nest ()
 
-let check_valid_type_nesting (typ : Type.t) (typ_inner : Type.t) : unit =
-  if not (check_valid_type_nesting' typ typ_inner) then (
-    Format.eprintf
-      "(check_valid_type_nesting) Invalid nesting of %a inside %a\n" Type.pp
-      typ_inner Type.pp typ;
-    assert false)
-  else ()
-
-let rec check_valid_type' (tset : TSet.t) (typ : Type.t) : unit =
-  match typ with
-  | VoidT | ErrT | MatchKindT | StrT | BoolT | AIntT | IntT _ | BitT _ | VBitT _
-    ->
-      ()
-  | VarT id ->
-      if not (TSet.mem id tset) then (
-        Format.eprintf "(check_valid_type) %s is a free type variable\n" id;
-        assert false)
-      else ()
-  | DefT typ_inner ->
-      check_valid_type' tset typ_inner;
-      check_valid_type_nesting typ typ_inner
-  | NewT typ_inner ->
-      check_valid_type' tset typ_inner;
-      check_valid_type_nesting typ typ_inner
-  | TupleT typs_inner ->
-      List.iter
-        (fun typ_inner ->
-          check_valid_type' tset typ_inner;
-          check_valid_type_nesting typ typ_inner)
-        typs_inner
-  | StackT (typ_inner, _) ->
-      check_valid_type' tset typ_inner;
-      check_valid_type_nesting typ typ_inner
-  | StructT fields ->
-      let members, typs_inner = List.split fields in
-      check_distinct_names members;
-      List.iter
-        (fun typ_inner ->
-          check_valid_type' tset typ_inner;
-          check_valid_type_nesting typ typ_inner)
-        typs_inner
-  | HeaderT fields ->
-      let members, typs_inner = List.split fields in
-      check_distinct_names members;
-      List.iter
-        (fun typ_inner ->
-          check_valid_type' tset typ_inner;
-          check_valid_type_nesting typ typ_inner)
-        typs_inner
-  | UnionT fields ->
-      let members, typs_inner = List.split fields in
-      check_distinct_names members;
-      List.iter
-        (fun typ_inner ->
-          check_valid_type' tset typ_inner;
-          check_valid_type_nesting typ typ_inner)
-        typs_inner
-  | EnumT members -> check_distinct_names members
-  | SEnumT (typ_inner, fields) ->
-      let members, _ = List.split fields in
-      check_distinct_names members;
-      check_valid_type' tset typ_inner
-  | ExternT fdenv | ParserT fdenv | ControlT fdenv ->
-      FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
-  | PackageT | TopT -> ()
-
-and check_valid_type (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : Type.t) : unit =
-  let tset = Ctx.get_tparams cursor ctx |> TSet.of_list in
-  check_valid_type' tset typ
-
 and check_valid_typedef (cursor : Ctx.cursor) (ctx : Ctx.t) (td : TypeDef.t) :
     unit =
   if cursor <> Ctx.Global then (
@@ -315,15 +316,20 @@ and check_valid_typedef (cursor : Ctx.cursor) (ctx : Ctx.t) (td : TypeDef.t) :
 
 (* (TODO) Appendix F. Restrictions on compile time and runtime calls *)
 
+and check_valid_param (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (param : id' * dir' * Type.t * Value.t option) : unit =
+  let tset = Ctx.get_tparams cursor ctx |> TSet.of_list in
+  check_valid_param' tset param
+
 and check_valid_param' (tset : TSet.t)
     (param : id' * dir' * Type.t * Value.t option) : unit =
   let _, _, typ, _ = param in
   check_valid_type' tset typ
 
-and check_valid_param (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (param : id' * dir' * Type.t * Value.t option) : unit =
+and check_valid_funcdef (cursor : Ctx.cursor) (ctx : Ctx.t) (fd : FuncDef.t) :
+    unit =
   let tset = Ctx.get_tparams cursor ctx |> TSet.of_list in
-  check_valid_param' tset param
+  check_valid_funcdef' tset fd
 
 and check_valid_funcdef' (tset : TSet.t) (fd : FuncDef.t) : unit =
   let tparams, params, typ_ret = fd in
@@ -331,10 +337,10 @@ and check_valid_funcdef' (tset : TSet.t) (fd : FuncDef.t) : unit =
   List.iter (check_valid_param' tset) params;
   check_valid_type' tset typ_ret
 
-and check_valid_funcdef (cursor : Ctx.cursor) (ctx : Ctx.t) (fd : FuncDef.t) :
-    unit =
+and check_valid_cparam (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (cparam : id' * dir' * Type.t * Value.t option) : unit =
   let tset = Ctx.get_tparams cursor ctx |> TSet.of_list in
-  check_valid_funcdef' tset fd
+  check_valid_cparam' tset cparam
 
 and check_valid_cparam' (tset : TSet.t)
     (cparam : id' * dir' * Type.t * Value.t option) : unit =
@@ -345,16 +351,6 @@ and check_valid_cparam' (tset : TSet.t)
     assert false);
   check_valid_type' tset typ
 
-and check_valid_cparam (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (cparam : id' * dir' * Type.t * Value.t option) : unit =
-  let tset = Ctx.get_tparams cursor ctx |> TSet.of_list in
-  check_valid_cparam' tset cparam
-
-and check_valid_consdef' (tset : TSet.t) (cd : ConsDef.t) : unit =
-  let tset = TSet.union tset (TSet.of_list cd.tparams) in
-  List.iter (check_valid_cparam' tset) cd.cparams;
-  check_valid_type' tset cd.typ
-
 and check_valid_consdef (cursor : Ctx.cursor) (ctx : Ctx.t) (cd : ConsDef.t) :
     unit =
   if cursor <> Ctx.Block then (
@@ -363,6 +359,11 @@ and check_valid_consdef (cursor : Ctx.cursor) (ctx : Ctx.t) (cd : ConsDef.t) :
     assert false);
   let tset = Ctx.get_tparams cursor ctx |> TSet.of_list in
   check_valid_consdef' tset cd
+
+and check_valid_consdef' (tset : TSet.t) (cd : ConsDef.t) : unit =
+  let tset = TSet.union tset (TSet.of_list cd.tparams) in
+  List.iter (check_valid_cparam' tset) cd.cparams;
+  check_valid_type' tset cd.typ
 
 (* Type evaluation *)
 
@@ -807,23 +808,118 @@ and type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : expr) : Type.t =
 
 (* Statement typing *)
 
-(* (6.8) Calling convention: call by copy in/copy out
+(* (12.1) Assignment statement
 
-   Invocations are executed using copy-in/copy-out semantics.
+   An assignment, written with the = sign, first evaluates its left sub-expression to an l-value,
+   then evaluates its right sub-expression to a value, and finally copies the value into the l-value.
+   Derived types (e.g. structs) are copied recursively, and all components of headers are copied,
+   including “validity” bits. Assignment is not defined for extern values. *)
 
-   Each parameter may be labeled with a direction:
+(* (6.7) L-values
 
-   - in parameters are read-only. It is an error to use an in parameter on the left-hand side of an assignment
-     or to pass it to a callee as a non-in argument.
-   - out parameters are, with a few exceptions listed below, uninitialized and are treated as l-values (See Section 6.7)
-     within the body of the method or function. An argument passed as an out parameter must be an l-value;
-   - inout parameters behave like a combination of in and out parameters simultaneously:
-     In consequence, an argument passed as an inout parameter must be an l-value.
-   - The meaning of parameters with no direction depends upon the kind of entity the parameter is for:
-      - For anything other than an action, e.g. a control, parser, or function, a directionless parameter means that
-        the value supplied as an argument in a call must be a compile-time known value (see Section 18.1).
-      - For an action, a directionless parameter indicates that it is “action data”.
-        See Section 14.1 for the meaning of action data. *)
+   L-values are expressions that may appear on the left side of an assignment operation
+   or as arguments corresponding to out and inout function parameters.
+   An l-value represents a storage reference. The following expressions are legal l-values:
+
+   - Identifiers of a base or derived type.
+   - Structure, header, and header union field member access operations (using the dot notation).
+   - References to elements within header stacks (see Section 8.18): indexing, and references to last and next.
+   - The result of a bit-slice operator [m:l]. *)
+
+let rec type_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (stmt : stmt) : Ctx.t =
+  if cursor <> Ctx.Local then (
+    Format.eprintf "(type_stmt) Statements must be local\n";
+    assert false);
+  match stmt.it with
+  | EmptyI -> ctx
+  | AssignI (expr_lhs, expr_rhs) -> type_assign_stmt ctx expr_lhs expr_rhs
+  | SwitchI _ -> ctx
+  | IfI (expr_cond, stmt_tru, stmt_fls) ->
+      type_if_stmt ctx expr_cond stmt_tru stmt_fls
+  | BlockI block -> type_block_stmt ctx block
+  | ExitI -> ctx
+  | RetI _ -> ctx
+  | CallI (expr_func, typ_args, args) ->
+      type_call_stmt ctx expr_func typ_args args;
+      ctx
+  | TransI _ | SelectI _ ->
+      Format.eprintf
+        "(type_stmt) Transition and select statements should be handled by \
+         (type_parser_state)\n";
+      assert false
+  | DeclI decl -> type_decl_stmt ctx decl
+
+and type_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (stmts : stmt list) : Ctx.t =
+  List.fold_left (type_stmt cursor) ctx stmts
+
+and check_lvalue' (ctx : Ctx.t) (expr : expr) : bool =
+  (* (TODO) Consider direction also *)
+  let rec check_ltype' (typ : Type.t) : bool =
+    match typ with
+    | DefT typ_inner | NewT typ_inner -> check_ltype' typ_inner
+    | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> false
+    | _ -> true
+  in
+  match expr.it with
+  | VarE var ->
+      let typ = Ctx.find_opt Ctx.find_type_opt Ctx.Local var ctx in
+      if Option.is_none typ then (
+        Format.eprintf "(check_lvalue) %a is a free identifier\n"
+          Syntax.Pp.pp_var var;
+        assert false);
+      let typ = Option.get typ in
+      let is_const =
+        Ctx.find_opt Ctx.find_value_opt Ctx.Local var ctx |> Option.is_some
+      in
+      (not is_const) && check_ltype' typ
+  | ArrAccE (expr_base, _) | BitAccE (expr_base, _, _) | ExprAccE (expr_base, _)
+    ->
+      check_lvalue' ctx expr_base
+  | _ -> false
+
+and check_lvalue (ctx : Ctx.t) (expr : expr) : unit =
+  if not (check_lvalue' ctx expr) then (
+    Format.eprintf "(check_lvalue) %a is not an l-value\n" Syntax.Pp.pp_expr
+      expr;
+    assert false)
+
+and type_assign_stmt (ctx : Ctx.t) (expr_lhs : expr) (expr_rhs : expr) : Ctx.t =
+  check_lvalue ctx expr_lhs;
+  let typ_lhs = type_expr Ctx.Local ctx expr_lhs in
+  let typ_rhs = type_expr Ctx.Local ctx expr_rhs in
+  (* (TODO) Insert cast if possible *)
+  if typ_lhs <> typ_rhs then (
+    Format.eprintf
+      "(type_assign_stmt) The type of left side type %a doesn't match the \
+       right side type %a\n"
+      Type.pp typ_lhs Type.pp typ_rhs;
+    assert false);
+  ctx
+
+(* (12.6) Conditional statement
+
+   However, the condition expression in P4 is required to be a Boolean
+   (and not an integer). *)
+
+and type_if_stmt (ctx : Ctx.t) (expr_cond : expr) (stmt_tru : stmt)
+    (stmt_fls : stmt) : Ctx.t =
+  let typ_cond = type_expr Ctx.Local ctx expr_cond in
+  if typ_cond <> Type.BoolT then (
+    Format.eprintf "(type_if_stmt) Condition must be a boolean\n";
+    assert false);
+  let _ctx' = type_stmt Ctx.Local ctx stmt_tru in
+  let _ctx' = type_stmt Ctx.Local ctx stmt_fls in
+  ctx
+
+(* (12.3) Block statement
+
+   It contains a sequence of statements and declarations, which are executed sequentially.
+   The variables and constants within a block statement are only visible within the block. *)
+
+and type_block_stmt (ctx : Ctx.t) (block : block) : Ctx.t =
+  let ctx = Ctx.enter_frame ctx in
+  let ctx = type_stmts Ctx.Local ctx block.it in
+  Ctx.exit_frame ctx
 
 (* (8.20) Method invocations and function calls
 
@@ -842,6 +938,24 @@ and type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : expr) : Type.t =
    when the value of returned in that argument is ignored by subsequent computations.
    When used in generic functions or methods, the compiler may reject the program if it is
    unable to infer a type for the don't care argument. *)
+
+(* (6.8) Calling convention: call by copy in/copy out
+
+   Invocations are executed using copy-in/copy-out semantics.
+
+   Each parameter may be labeled with a direction:
+
+   - in parameters are read-only. It is an error to use an in parameter on the left-hand side of an assignment
+     or to pass it to a callee as a non-in argument.
+   - out parameters are, with a few exceptions listed below, uninitialized and are treated as l-values (See Section 6.7)
+     within the body of the method or function. An argument passed as an out parameter must be an l-value;
+   - inout parameters behave like a combination of in and out parameters simultaneously:
+     In consequence, an argument passed as an inout parameter must be an l-value.
+   - The meaning of parameters with no direction depends upon the kind of entity the parameter is for:
+      - For anything other than an action, e.g. a control, parser, or function, a directionless parameter means that
+        the value supplied as an argument in a call must be a compile-time known value (see Section 18.1).
+      - For an action, a directionless parameter indicates that it is “action data”.
+        See Section 14.1 for the meaning of action data. *)
 
 (* (Appendix F) Restrictions on compile time and run time calls
 
@@ -874,7 +988,7 @@ and type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : expr) : Type.t =
    Any such restrictions should be documented in the description for each extern,
    as part of the documentation for the architecture that defines the extern. *)
 
-let check_call_arity (expr_func : expr)
+and check_call_arity (expr_func : expr)
     (params : (id' * dir' * Type.t * Value.t option) list) (args : arg' list) :
     unit =
   if List.length params <> List.length args then (
@@ -883,7 +997,7 @@ let check_call_arity (expr_func : expr)
       Syntax.Pp.pp_expr expr_func (List.length params) (List.length args);
     assert false)
 
-let check_named_args (args : arg' list) : unit =
+and check_named_args (args : arg' list) : unit =
   let is_named arg = match (arg : arg') with NameA _ -> true | _ -> false in
   if
     not
@@ -896,7 +1010,7 @@ let check_named_args (args : arg' list) : unit =
     assert false)
 
 (* Invariant: parameters and arguments are checked of arity and all-or-nothing named *)
-let align_params_with_args
+and align_params_with_args
     (params : (id' * dir' * Type.t * Value.t option) list) (args : arg' list) =
   let module PMap = Map.Make (String) in
   let params_map =
@@ -916,7 +1030,7 @@ let align_params_with_args
       | AnyA -> (params @ [ param ], exprs_arg @ [ None ]))
     ([], []) params args
 
-let rec type_call_stmt (ctx : Ctx.t) (expr_func : expr) (typ_args : typ list)
+and type_call_stmt (ctx : Ctx.t) (expr_func : expr) (typ_args : typ list)
     (args : arg list) : unit =
   let args = List.map it args in
   (* Find the function definition *)
@@ -969,53 +1083,93 @@ let rec type_call_stmt (ctx : Ctx.t) (expr_func : expr) (typ_args : typ list)
             assert false))
     params exprs_arg
 
-and type_block_stmt (ctx : Ctx.t) (block : block) : Ctx.t =
-  let ctx = Ctx.enter_frame ctx in
-  let ctx = type_stmts Ctx.Local ctx block.it in
-  Ctx.exit_frame ctx
-
 and type_decl_stmt (ctx : Ctx.t) (decl : decl) : Ctx.t =
   type_decl Ctx.Local ctx decl
 
-and type_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (stmt : stmt) : Ctx.t =
-  if cursor <> Ctx.Local then (
-    Format.eprintf "(type_stmt) Statements must be local\n";
-    assert false);
-  match stmt.it with
-  | EmptyI -> ctx
-  | AssignI _ -> ctx
-  | SwitchI _ -> ctx
-  | IfI _ -> ctx
-  | BlockI block -> type_block_stmt ctx block
-  | ExitI -> ctx
-  | RetI _ -> ctx
-  | CallI (expr_func, typ_args, args) ->
-      type_call_stmt ctx expr_func typ_args args;
-      ctx
-  | TransI _ | SelectI _ ->
-      Format.eprintf
-        "(type_stmt) Transition and select statements should be handled by \
-         (type_parser_state)\n";
-      assert false
-  | DeclI decl -> type_decl_stmt ctx decl
-
-and type_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (stmts : stmt list) : Ctx.t =
-  List.fold_left (type_stmt cursor) ctx stmts
-
 (* Declaration typing *)
 
+and type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : decl) =
+  match decl.it with
+  (* Constant, variable, and object declarations *)
+  | ConstD { id; typ; value } -> type_const_decl cursor ctx id typ value
+  | VarD _ ->
+      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
+      ctx
+  | InstD _ ->
+      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
+      ctx
+  (* Derived type declarations *)
+  | ErrD { members } -> type_error_decl cursor ctx members
+  | MatchKindD { members } -> type_match_kind_decl cursor ctx members
+  | StructD { id; fields } -> type_struct_decl cursor ctx id fields
+  | HeaderD { id; fields } -> type_header_decl cursor ctx id fields
+  | UnionD { id; fields } -> type_union_decl cursor ctx id fields
+  | EnumD { id; members } -> type_enum_decl cursor ctx id members
+  | SEnumD { id; typ; fields } -> type_senum_decl cursor ctx id typ fields
+  | NewTypeD { id; typdef } -> type_newtype_decl cursor ctx id typdef
+  | TypeDefD { id; typdef } -> type_typedef_decl cursor ctx id typdef
+  (* Function declarations *)
+  | ActionD _ ->
+      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
+      ctx
+  | FuncD _ ->
+      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
+      ctx
+  | ExtFuncD { id; typ_ret; tparams; params } ->
+      type_extern_function_decl cursor ctx id tparams params typ_ret
+  (* Object declarations *)
+  (* Extern *)
+  | ExtConstructorD { id; cparams } ->
+      type_extern_constructor_decl cursor ctx id cparams
+  | ExtAbstractMethodD { id; typ_ret; tparams; params } ->
+      type_extern_abstract_method_decl cursor ctx id tparams params typ_ret
+  | ExtMethodD { id; typ_ret; tparams; params } ->
+      type_extern_method_decl cursor ctx id tparams params typ_ret
+  | ExtObjectD { id; tparams; mthds } ->
+      type_extern_object_decl cursor ctx id tparams mthds
+  (* Parser *)
+  | ValueSetD _ ->
+      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
+      ctx
+  | ParserTypeD { id; tparams; params } ->
+      type_parser_type_decl cursor ctx id tparams params
+  | ParserD { id; tparams; params; cparams; locals; states } ->
+      type_parser_decl cursor ctx id tparams params cparams locals states
+  (* Control *)
+  | TableD _ ->
+      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
+      ctx
+  | ControlTypeD { id; tparams; params } ->
+      type_control_type_decl cursor ctx id tparams params
+  | ControlD _ ->
+      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
+      ctx
+  (* Package *)
+  | PackageTypeD { id; tparams; cparams } ->
+      type_package_type_decl cursor ctx id tparams cparams
+
+and type_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (decls : decl list) : Ctx.t =
+  List.fold_left (type_decl cursor) ctx decls
+
 and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id) (typ : typ)
-    (value : expr) : Ctx.t =
-  let typ = eval_type cursor ctx typ in
-  match static_eval_expr cursor ctx value with
-  | Some value ->
-      (* (TODO) Check that value is of type typ, and cast if necessary *)
-      Ctx.add_value cursor id.it value ctx |> Ctx.add_type cursor id.it typ
-  | None ->
-      Format.eprintf
-        "(type_const_decl) %a is not a compile-time known expression."
-        Syntax.Pp.pp_expr value;
-      assert false
+    (expr : expr) : Ctx.t =
+  let typ_lhs = eval_type cursor ctx typ in
+  let typ_rhs = type_expr cursor ctx expr in
+  (* (TODO) Insert cast if possible *)
+  if typ_lhs <> typ_rhs then (
+    Format.eprintf
+      "(type_const_decl) The type of left side type %a doesn't match the right \
+       side type %a\n"
+      Type.pp typ_lhs Type.pp typ_rhs;
+    assert false);
+  let value = static_eval_expr cursor ctx expr in
+  if Option.is_none value then (
+    Format.eprintf
+      "(type_const_decl) %a is not a compile-time known expression\n"
+      Syntax.Pp.pp_expr expr;
+    assert false);
+  let value = Option.get value in
+  Ctx.add_value cursor id.it value ctx |> Ctx.add_type cursor id.it typ_lhs
 
 (* (7.1.2) The error type
 
@@ -1324,8 +1478,16 @@ and type_parser_local_decls (cursor : Ctx.cursor) (ctx : Ctx.t)
   let ctx = type_decls Ctx.Block ctx decls in
   (ctx, stmts_var_init)
 
-and type_parser_state (ctx : Ctx.t) (labels : string list) (block : block) :
-    Ctx.t =
+and type_parser_state (cursor : Ctx.cursor) (ctx : Ctx.t) (labels : string list)
+    (block : block) : Ctx.t =
+  if
+    not
+      (cursor = Ctx.Local
+      && ctx.block.kind = Ctx.Parser
+      && ctx.local.kind = Ctx.ParserState)
+  then (
+    Format.eprintf "(type_parser_state) Parser state must be local\n";
+    assert false);
   let stmts = block.it in
   let stmts, stmt_next =
     List.rev stmts |> fun stmts -> (List.tl stmts |> List.rev, List.hd stmts)
@@ -1350,36 +1512,26 @@ and type_parser_state (ctx : Ctx.t) (labels : string list) (block : block) :
 
 and type_parser_states (cursor : Ctx.cursor) (ctx : Ctx.t)
     (states : parser_state list) : Ctx.t =
-  if
-    not
-      (cursor = Ctx.Local
-      && ctx.block.kind = Ctx.Parser
-      && ctx.local.kind = Ctx.ApplyMethod)
-  then (
-    Format.eprintf
-      "(type_parser_states) Parser states must be local (in the implicit apply \
-       method)\n";
-    assert false);
-  let labels, blocks =
-    List.map
-      (fun state ->
-        let label, block = state.it in
-        (label.it, block))
-      states
-    |> List.split
-  in
+  let states = List.map it states in
+  let labels = List.map (fun state -> fst state |> it) states in
   if not (List.mem "start" labels) then (
-    Format.eprintf "(type_parser_decl) A \"start\" state must exist";
+    Format.eprintf "(type_parser_states) A \"start\" state must exist";
     assert false);
   if List.mem "accept" labels || List.mem "reject" labels then (
     Format.eprintf
-      "(type_parser_decl) \"accpet\" and \"reject\" states are reserved";
+      "(type_parser_states) \"accpet\" and \"reject\" states are reserved";
     assert false);
   let labels = "accept" :: "reject" :: labels in
   check_distinct_names labels;
-  List.fold_left
-    (fun ctx block -> type_parser_state ctx labels block)
-    ctx blocks
+  let ctx' = Ctx.set_localkind Ctx.ParserState ctx in
+  let _ctx' =
+    List.fold_left
+      (fun ctx' (label, block) ->
+        let ctx' = Ctx.set_id Ctx.Local label.it ctx' in
+        type_parser_state cursor ctx' labels block)
+      ctx' states
+  in
+  ctx
 
 and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (params : param list) (cparams : cparam list)
@@ -1406,7 +1558,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   in
   (* Typecheck and add local declarations to the block context *)
   (* According to (NOTE) above, locals are declared but not initialized in the block cursor *)
-  let ctx', _stmts_var_init = type_parser_local_decls Ctx.Block ctx' locals in
+  let ctx', stmts_var_init = type_parser_local_decls Ctx.Block ctx' locals in
   (* Typecheck implicit "apply" method *)
   (* Typecheck and add apply parameters to the local context *)
   let ctx' = Ctx.set_id Ctx.Local "apply" ctx' in
@@ -1419,7 +1571,10 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
         Ctx.add_type Ctx.Local id typ ctx')
       ctx' params
   in
+  let ctx' = type_stmts Ctx.Local ctx' stmts_var_init in
   (* Typecheck parser states *)
+  let ctx' = Ctx.set_id Ctx.Local "" ctx' in
+  let ctx' = Ctx.set_localkind Ctx.ParserState ctx' in
   let _ctx' = type_parser_states Ctx.Local ctx' states in
   (* According to (NOTE) above, locals are initialized in the apply method *)
   let typ = Type.ParserT FDEnv.empty in
@@ -1618,68 +1773,7 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   (* Update the context with the constructor definition environment *)
   { ctx with global = { ctx.global with cdenv = ctx''.global.cdenv } }
 
-and type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : decl) =
-  match decl.it with
-  (* Constant, variable, and object declarations *)
-  | ConstD { id; typ; value } -> type_const_decl cursor ctx id typ value
-  | VarD _ ->
-      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
-      ctx
-  | InstD _ ->
-      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
-      ctx
-  (* Derived type declarations *)
-  | ErrD { members } -> type_error_decl cursor ctx members
-  | MatchKindD { members } -> type_match_kind_decl cursor ctx members
-  | StructD { id; fields } -> type_struct_decl cursor ctx id fields
-  | HeaderD { id; fields } -> type_header_decl cursor ctx id fields
-  | UnionD { id; fields } -> type_union_decl cursor ctx id fields
-  | EnumD { id; members } -> type_enum_decl cursor ctx id members
-  | SEnumD { id; typ; fields } -> type_senum_decl cursor ctx id typ fields
-  | NewTypeD { id; typdef } -> type_newtype_decl cursor ctx id typdef
-  | TypeDefD { id; typdef } -> type_typedef_decl cursor ctx id typdef
-  (* Function declarations *)
-  | ActionD _ ->
-      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
-      ctx
-  | FuncD _ ->
-      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
-      ctx
-  | ExtFuncD { id; typ_ret; tparams; params } ->
-      type_extern_function_decl cursor ctx id tparams params typ_ret
-  (* Object declarations *)
-  (* Extern *)
-  | ExtConstructorD { id; cparams } ->
-      type_extern_constructor_decl cursor ctx id cparams
-  | ExtAbstractMethodD { id; typ_ret; tparams; params } ->
-      type_extern_abstract_method_decl cursor ctx id tparams params typ_ret
-  | ExtMethodD { id; typ_ret; tparams; params } ->
-      type_extern_method_decl cursor ctx id tparams params typ_ret
-  | ExtObjectD { id; tparams; mthds } ->
-      type_extern_object_decl cursor ctx id tparams mthds
-  (* Parser *)
-  | ValueSetD _ ->
-      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
-      ctx
-  | ParserTypeD { id; tparams; params } ->
-      type_parser_type_decl cursor ctx id tparams params
-  | ParserD { id; tparams; params; cparams; locals; states } ->
-      type_parser_decl cursor ctx id tparams params cparams locals states
-  (* Control *)
-  | TableD _ ->
-      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
-      ctx
-  | ControlTypeD { id; tparams; params } ->
-      type_control_type_decl cursor ctx id tparams params
-  | ControlD _ ->
-      Format.eprintf "(type_decl) %a\n" Syntax.Pp.pp_decl (0, decl);
-      ctx
-  (* Package *)
-  | PackageTypeD { id; tparams; cparams } ->
-      type_package_type_decl cursor ctx id tparams cparams
-
-and type_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (decls : decl list) : Ctx.t =
-  List.fold_left (type_decl cursor) ctx decls
+(* Entry point : Program typing *)
 
 let type_program (program : program) =
   let ctx = Ctx.empty in
