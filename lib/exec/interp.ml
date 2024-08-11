@@ -1029,68 +1029,71 @@ module Make (Arch : ARCH) : INTERP = struct
   and set_priors (ctx : Ctx.t) (keys : (Value.t * mtch_kind) list) (entries : table_entry list)
      (prior_delta : int) (largest_priority_wins : bool) : int option list =
     let length = List.length entries in
-    let find_tro (_key_value, key_kind) = key_kind.it = "ternary" || key_kind.it = "range" || key_kind.it = "optional" in
-    let is_lpm ind (key_value, key_kind) = 
-      let width = key_value |> Value.get_width |> Bigint.to_int |> Option.get in
-      if key_kind.it = "lpm" then (ind, width) else (-1, 0) 
-    in
-    (* If there are least one ternary then need priority *)
-    let need_prior = List.exists find_tro keys in
-    (* If match kind is lpm, then save index and type's width.
-       Index is for entry's lpm key, width is for maximum prefix length. *)
-    let lpms = List.mapi is_lpm keys in
+    let prior_kind = "ternary"::"range"::"optional"::[] in
     (* Collect only lpm  *)
-    let lpms = List.filter (fun (ind, _) -> ind >= 0) lpms in
-    let cnt_lpms = List.length lpms in
-    (* first_spec is bool value for whether developer specifies priority. If false 
-       and other entry has specified priority, it cause error. *)
+    let lpm_map = List.mapi (fun i (value, kind) -> if kind.it = "lpm" then Some (i, value) else None) keys in
+    let lpm_map = List.filter_map (fun x -> x) lpm_map in
+    let cnt_lpm = lpm_map |> List.length in
+    (* If there are least one ternary then need priority *)
+    let need_prior = List.exists (fun (_, kind) -> List.mem kind.it prior_kind) keys in
     let is_spec = false in
-    let first_spec = false in
-    let _ = if is_spec && (not first_spec || not need_prior) then failwith "priority spec error" else 0 in
-    (* Function that compute priority. Logic is described in (14.2.1.4) Entry priorities *)
-    let set_basic_priors prior _ent = 
-      let prior_prev = Option.get prior in
-      let prior_curr = Some (prior_prev + prior_delta) in
-      prior_curr, prior_curr
-    in      
+    let first_prior = Some 1 in
+    let _ = if is_spec && (Option.is_none first_spec || not need_prior) then failwith "priority spec error" else 0 in
+
     let set_priors' prior _ent = 
       (* (TODO) Should get is_specified, prior from ent. It may be from optEntryPriority*)
       let is_spec = false in
       let spec_prior = 0 in
       let prior_prev = Option.get prior in
-      let prior_curr = 
-        if is_spec then spec_prior
-        else if largest_priority_wins then prior_prev - prior_delta
-        else prior_prev + prior_delta in
-      (* Warning for priority order *)
-      let _ = if (largest_priority_wins && prior_curr > prior_prev) ||
-        (not largest_priority_wins && prior_curr < prior_prev) then
-        Printf.printf "Warning : entries_out_of_priority_order" else () in
-      let prior_curr = Some prior_curr in
+      let prior_curr = if is_spec then Some spec_prior
+        else if largest_priority_wins then Some (prior_prev - prior_delta)
+        else Some (prior_prev + prior_delta) in
       prior_curr, prior_curr
     in
-    (* Function that extract priority (prefix) at lpm *)
-    let extract_lpms ent =
-      let lpm_ind, width = List.hd lpms in
-      let ent_lists, _ = ent.it in
-      let ent_list = List.nth ent_lists lpm_ind in
-      match ent_list.it with
-      | AnyM -> Some 0
-      | DefaultM -> Some width
-      | ExprM expr -> get_prior_lpm ctx expr width
-    in
+
     (* Error of two lpms *)
-    if cnt_lpms > 1 then failwith "lpms should be most one"
+    if cnt_lpm > 1 then failwith "lpms should be most one"
     (* If there are no spec of priority *)
     else if need_prior && not is_spec then 
-      let basic_priors = List.fold_left_map set_basic_priors (Some 1) entries |> snd in
+      let basic_priors = List.init length (fun i -> Some (1 + i*prior_delta)) in
       if largest_priority_wins then List.rev basic_priors else basic_priors
     (* If there are spec of priority *)
     else if need_prior then 
-      let first_prior = Some 1 in
       List.fold_left_map set_priors' first_prior entries |> snd
-    else if cnt_lpms = 1 then List.map extract_lpms entries
+    (* If there is an lpm *)
+    else if cnt_lpm = 1 then 
+      let lpm_ind, lpm_key = List.hd lpm_map in 
+      let max_prefix = lpm_key |> Value.get_width |> Bigint.to_int |> Option.get in
+      (* Function that extract priority (prefix) at lpm *)
+      let extract_lpms ent =
+        let ent_lists, _ = ent.it in
+        let ent_list = List.nth ent_lists lpm_ind in
+        match ent_list.it with
+        | AnyM -> Some 0
+        | DefaultM -> Some max_prefix
+        | ExprM expr -> get_prior_lpm ctx expr max_prefix
+      in
+      List.map extract_lpms entries
     else List.init length (fun _ -> None)
+  
+  and check_priors (priors : int option list) (largest_priority_wins : bool) =
+    let check_priors' sto prior = 
+      let prior_curr = Option.get prior in
+      let prior_prev = List.hd sto in 
+      let _ = if prior_curr < 0 then failwith "negative priority"
+              else if (largest_priority_wins && prior_curr > prior_prev) ||
+                  (not largest_priority_wins && prior_curr < prior_prev) then
+                  Printf.printf "Warning : entries_out_of_priority_order"
+              else if List.mem prior_curr sto then Printf.printf "Warning : duplicate priority %d" prior_curr
+              else () in
+      prior_curr::sto
+    in
+    match priors with
+    | None :: _ -> []
+    | prior::priors -> 
+      let prior = Option.get prior in
+      List.fold_left check_priors' [prior] priors
+    | _ -> []
 
   and match_action (ctx : Ctx.t) (keys : (Value.t * mtch_kind) list)
       (actions : table_action list) (entries : table_entry list)
@@ -1106,6 +1109,7 @@ module Make (Arch : ARCH) : INTERP = struct
     (* Compute priorities and save in list *)
     (* If no_ternary, it means there are only exacts and lpm*)
     let priors = set_priors ctx keys entries 1 true in
+    let _ = check_priors priors true in
     let find_action (prior, action) entry new_prior=
       let matches, entry_action = entry.it in
       let new_action = Some entry_action in
