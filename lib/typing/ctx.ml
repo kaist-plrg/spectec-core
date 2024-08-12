@@ -18,8 +18,9 @@ type localkind =
   | Action
   | ExternMethod
   | ParserState
-  | ApplyMethod
-  | Table
+  | ParserMethod
+  | ControlMethod
+  | TableMethod
 
 type gt = {
   cdenv : CDEnv.t;
@@ -355,8 +356,9 @@ let pp_lt fmt (lt : lt) =
       | Action -> Format.fprintf fmt "Action"
       | ExternMethod -> Format.fprintf fmt "ExternMethod"
       | ParserState -> Format.fprintf fmt "ParserState"
-      | ApplyMethod -> Format.fprintf fmt "ApplyMethod"
-      | Table -> Format.fprintf fmt "Table")
+      | ParserMethod -> Format.fprintf fmt "ParserMethod"
+      | ControlMethod -> Format.fprintf fmt "ControlMethod"
+      | TableMethod -> Format.fprintf fmt "TableMethod")
     lt.kind TDEnv.pp lt.tdenv
     (Format.pp_print_list pp_frame)
     lt.frames

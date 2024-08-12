@@ -454,8 +454,8 @@ and eq_decl' decl decl' =
       && eq_list eq_tparam tparams tparams'
       && eq_list eq_param params params'
       && eq_block body body'
-  | ( ExtFuncD { id; typ_ret; tparams; params; annos },
-      ExtFuncD
+  | ( ExternFuncD { id; typ_ret; tparams; params; annos },
+      ExternFuncD
         {
           id = id';
           typ_ret = typ_ret';
@@ -467,13 +467,13 @@ and eq_decl' decl decl' =
       && eq_list eq_tparam tparams tparams'
       && eq_list eq_param params params'
       && eq_list eq_anno annos annos'
-  | ( ExtConstructorD { id; cparams; annos },
-      ExtConstructorD { id = id'; cparams = cparams'; annos = annos' } ) ->
+  | ( ExternConstructorD { id; cparams; annos },
+      ExternConstructorD { id = id'; cparams = cparams'; annos = annos' } ) ->
       eq_id id id'
       && eq_list eq_cparam cparams cparams'
       && eq_list eq_anno annos annos'
-  | ( ExtAbstractMethodD { id; typ_ret; tparams; params; annos },
-      ExtAbstractMethodD
+  | ( ExternAbstractMethodD { id; typ_ret; tparams; params; annos },
+      ExternAbstractMethodD
         {
           id = id';
           typ_ret = typ_ret';
@@ -481,8 +481,8 @@ and eq_decl' decl decl' =
           params = params';
           annos = annos';
         } )
-  | ( ExtMethodD { id; typ_ret; tparams; params; annos },
-      ExtMethodD
+  | ( ExternMethodD { id; typ_ret; tparams; params; annos },
+      ExternMethodD
         {
           id = id';
           typ_ret = typ_ret';
@@ -494,8 +494,8 @@ and eq_decl' decl decl' =
       && eq_list eq_tparam tparams tparams'
       && eq_list eq_param params params'
       && eq_list eq_anno annos annos'
-  | ( ExtObjectD { id; tparams; mthds; annos },
-      ExtObjectD
+  | ( ExternObjectD { id; tparams; mthds; annos },
+      ExternObjectD
         { id = id'; tparams = tparams'; mthds = mthds'; annos = annos' } ) ->
       eq_id id id'
       && eq_list eq_tparam tparams tparams'

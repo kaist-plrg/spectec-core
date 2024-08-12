@@ -263,7 +263,7 @@ and decl' =
       params : param list;
       body : block;
     }
-  | ExtFuncD of {
+  | ExternFuncD of {
       id : id;
       typ_ret : typ;
       tparams : tparam list;
@@ -271,22 +271,22 @@ and decl' =
       annos : anno list;
     }
   (* Extern objects *)
-  | ExtConstructorD of { id : id; cparams : cparam list; annos : anno list }
-  | ExtAbstractMethodD of {
+  | ExternConstructorD of { id : id; cparams : cparam list; annos : anno list }
+  | ExternAbstractMethodD of {
       id : id;
       typ_ret : typ;
       tparams : tparam list;
       params : param list;
       annos : anno list;
     }
-  | ExtMethodD of {
+  | ExternMethodD of {
       id : id;
       typ_ret : typ;
       tparams : tparam list;
       params : param list;
       annos : anno list;
     }
-  | ExtObjectD of {
+  | ExternObjectD of {
       id : id;
       tparams : tparam list;
       mthds : decl list;

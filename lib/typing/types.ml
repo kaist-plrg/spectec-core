@@ -155,7 +155,7 @@ end = struct
     | PackageT -> Format.fprintf fmt "package"
     (* Top type *)
     | TopT -> Format.fprintf fmt "top"
-    (* Synthesized types *)
+    (* Synthesized types : variables can never be declared of this type *)
     | SetT t -> Format.fprintf fmt "set<%a>" pp t
     | StateT -> Format.fprintf fmt "state"
 end
@@ -178,7 +178,6 @@ and TypeDef : sig
     | ControlD of tparam' list * FDEnv.t
     | PackageD of tparam' list
 
-  val get_params : t -> tparam' list
   val pp : Format.formatter -> t -> unit
 end = struct
   type t =
@@ -197,14 +196,6 @@ end = struct
     | ParserD of tparam' list * FDEnv.t
     | ControlD of tparam' list * FDEnv.t
     | PackageD of tparam' list
-
-  let get_params = function
-    | DefD _ | NewD _ | StructD _ | HeaderD _ | UnionD _ | EnumD _ | SEnumD _ ->
-        []
-    | ExternD (params, _) -> params
-    | ParserD (params, _) -> params
-    | ControlD (params, _) -> params
-    | PackageD params -> params
 
   let pp fmt = function
     | DefD typ -> Format.fprintf fmt "typedef %a" Type.pp typ
@@ -266,41 +257,136 @@ end
 
 (* Types of functions *)
 and FuncType : sig
-  type t = (id' * dir' * Type.t * Value.t option) list * Type.t
+  type t_param = id' * dir' * Type.t * Value.t option
+
+  type t =
+    | ExternFunctionT of t_param list * Type.t
+    | FunctionT of t_param list * Type.t
+    | ActionT of t_param list
+    | ExternMethodT of t_param list * Type.t
+    | ExternAbstractMethodT of t_param list * Type.t
+    | ParserMethodT of t_param list
+    | ControlMethodT of t_param list
+    | TableMethodT
 
   val pp : Format.formatter -> t -> unit
+  val get_params : t -> t_param list
 end = struct
-  type t = (id' * dir' * Type.t * Value.t option) list * Type.t
+  type t_param = id' * dir' * Type.t * Value.t option
+
+  type t =
+    | ExternFunctionT of t_param list * Type.t
+    | FunctionT of t_param list * Type.t
+    | ActionT of t_param list
+    | ExternMethodT of t_param list * Type.t
+    | ExternAbstractMethodT of t_param list * Type.t
+    | ParserMethodT of t_param list
+    | ControlMethodT of t_param list
+    | TableMethodT
 
   let pp fmt t =
-    let params, typ_ret = t in
-    Format.fprintf fmt "@[<v>func (@[<hv>%a@]) -> %a@]"
-      (Format.pp_print_list
-         ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
-         (fun fmt (id, _dir, typ, _value_default) ->
-           Format.fprintf fmt "%a %s" Type.pp typ id))
-      params Type.pp typ_ret
+    let pp_params fmt params =
+      Format.fprintf fmt "@[<hv>%a@]"
+        (Format.pp_print_list
+           ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+           (fun fmt (id, _dir, typ, _value_default) ->
+             Format.fprintf fmt "%a %s" Type.pp typ id))
+        params
+    in
+    match t with
+    | ExternFunctionT (params, typ_ret) ->
+        Format.fprintf fmt "@[<v>extern func %a -> %a@]" pp_params params
+          Type.pp typ_ret
+    | FunctionT (params, typ_ret) ->
+        Format.fprintf fmt "@[<v>func %a -> %a@]" pp_params params Type.pp
+          typ_ret
+    | ActionT params -> Format.fprintf fmt "@[<v>action %a@]" pp_params params
+    | ExternMethodT (params, typ_ret) ->
+        Format.fprintf fmt "@[<v>extern method %a -> %a@]" pp_params params
+          Type.pp typ_ret
+    | ExternAbstractMethodT (params, typ_ret) ->
+        Format.fprintf fmt "@[<v>extern abstract method %a -> %a@]" pp_params
+          params Type.pp typ_ret
+    | ParserMethodT params ->
+        Format.fprintf fmt "@[<v>parser method %a@]" pp_params params
+    | ControlMethodT params ->
+        Format.fprintf fmt "@[<v>control method %a@]" pp_params params
+    | TableMethodT -> Format.fprintf fmt "@[<v>table method@]"
+
+  let get_params = function
+    | ExternFunctionT (params, _)
+    | FunctionT (params, _)
+    | ActionT params
+    | ExternMethodT (params, _)
+    | ExternAbstractMethodT (params, _)
+    | ParserMethodT params
+    | ControlMethodT params ->
+        params
+    | TableMethodT -> []
 end
 
 and FuncDef : sig
-  type t = tparam' list * (id' * dir' * Type.t * Value.t option) list * Type.t
+  type t_param = id' * dir' * Type.t * Value.t option
+
+  type t =
+    | ExternFunctionD of tparam' list * t_param list * Type.t
+    | FunctionD of tparam' list * t_param list * Type.t
+    | ActionD of t_param list
+    | ExternMethodD of tparam' list * t_param list * Type.t
+    | ExternAbstractMethodD of tparam' list * t_param list * Type.t
+    | ParserMethodD of t_param list
+    | ControlMethodD of t_param list
+    | TableMethodD
 
   val pp : Format.formatter -> t -> unit
 end = struct
-  type t = tparam' list * (id' * dir' * Type.t * Value.t option) list * Type.t
+  type t_param = id' * dir' * Type.t * Value.t option
+
+  type t =
+    | ExternFunctionD of tparam' list * t_param list * Type.t
+    | FunctionD of tparam' list * t_param list * Type.t
+    | ActionD of t_param list
+    | ExternMethodD of tparam' list * t_param list * Type.t
+    | ExternAbstractMethodD of tparam' list * t_param list * Type.t
+    | ParserMethodD of t_param list
+    | ControlMethodD of t_param list
+    | TableMethodD
 
   let pp fmt t =
-    let tparams, params, typ_ret = t in
-    Format.fprintf fmt "@[<v>func<%a> (@[<hv>%a@]) -> %a@]"
-      (Format.pp_print_list
-         ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
-         (fun fmt tparam -> Format.fprintf fmt "%s" tparam))
-      tparams
-      (Format.pp_print_list
-         ~pp_sep:(fun fmt () -> Format.fprintf fmt ",@ ")
-         (fun fmt (id, _dir, typ, _value_default) ->
-           Format.fprintf fmt "%a %s" Type.pp typ id))
-      params Type.pp typ_ret
+    let pp_tparams fmt tparams =
+      Format.fprintf fmt "<%a>"
+        (Format.pp_print_list
+           ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+           (fun fmt tparam -> Format.fprintf fmt "%s" tparam))
+        tparams
+    in
+    let pp_params fmt params =
+      Format.fprintf fmt "@[<hv>%a@]"
+        (Format.pp_print_list
+           ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+           (fun fmt (id, _dir, typ, _value_default) ->
+             Format.fprintf fmt "%a %s" Type.pp typ id))
+        params
+    in
+    match t with
+    | ExternFunctionD (tparams, params, typ_ret) ->
+        Format.fprintf fmt "@[<v>extern func%a %a -> %a@]" pp_tparams tparams
+          pp_params params Type.pp typ_ret
+    | FunctionD (tparams, params, typ_ret) ->
+        Format.fprintf fmt "@[<v>func%a %a -> %a@]" pp_tparams tparams pp_params
+          params Type.pp typ_ret
+    | ActionD params -> Format.fprintf fmt "@[<v>action %a@]" pp_params params
+    | ExternMethodD (tparams, params, typ_ret) ->
+        Format.fprintf fmt "@[<v>extern method%a %a -> %a@]" pp_tparams tparams
+          pp_params params Type.pp typ_ret
+    | ExternAbstractMethodD (tparams, params, typ_ret) ->
+        Format.fprintf fmt "@[<v>extern abstract method%a %a -> %a@]" pp_tparams
+          tparams pp_params params Type.pp typ_ret
+    | ParserMethodD params ->
+        Format.fprintf fmt "@[<v>parser method %a@]" pp_params params
+    | ControlMethodD params ->
+        Format.fprintf fmt "@[<v>control method %a@]" pp_params params
+    | TableMethodD -> Format.fprintf fmt "@[<v>table method@]"
 end
 
 (* Types of constructors *)

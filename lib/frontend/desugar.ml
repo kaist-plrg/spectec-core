@@ -506,13 +506,13 @@ and desugar_decl (decl : Declaration.t) : decl =
       let tparams = desugar_tparams type_params in
       let params = desugar_params params in
       let annos = desugar_annos annotations in
-      ExtFuncD { id; typ_ret; tparams; params; annos } $ at
+      ExternFuncD { id; typ_ret; tparams; params; annos } $ at
   | ExternObject { name; type_params; methods; tags = at; annotations } ->
       let id = desugar_id name in
       let tparams = desugar_tparams type_params in
       let mthds = desugar_methods methods in
       let annos = desugar_annos annotations in
-      ExtObjectD { id; tparams; mthds; annos } $ at
+      ExternObjectD { id; tparams; mthds; annos } $ at
   | PackageType { name; type_params; params; tags = at; annotations } ->
       let id = desugar_id name in
       let tparams = desugar_tparams type_params in
@@ -545,7 +545,7 @@ and desugar_method (mthd : MethodPrototype.t) : decl =
       let id = desugar_id name in
       let cparams = desugar_params params in
       let annos = desugar_annos annotations in
-      ExtConstructorD { id; cparams; annos } $ at
+      ExternConstructorD { id; cparams; annos } $ at
   | AbstractMethod { name; return; type_params; params; tags = at; annotations }
     ->
       let id = desugar_id name in
@@ -553,14 +553,14 @@ and desugar_method (mthd : MethodPrototype.t) : decl =
       let tparams = desugar_tparams type_params in
       let params = desugar_params params in
       let annos = desugar_annos annotations in
-      ExtAbstractMethodD { id; typ_ret; tparams; params; annos } $ at
+      ExternAbstractMethodD { id; typ_ret; tparams; params; annos } $ at
   | Method { name; return; type_params; params; tags = at; annotations } ->
       let id = desugar_id name in
       let typ_ret = desugar_type return in
       let tparams = desugar_tparams type_params in
       let params = desugar_params params in
       let annos = desugar_annos annotations in
-      ExtMethodD { id; typ_ret; tparams; params; annos } $ at
+      ExternMethodD { id; typ_ret; tparams; params; annos } $ at
 
 and desugar_methods (mthds : MethodPrototype.t list) : decl list =
   List.map desugar_method mthds

@@ -325,24 +325,26 @@ and check_valid_typedef (cursor : Ctx.cursor) (ctx : Ctx.t) (td : TypeDef.t) :
   if cursor <> Ctx.Global then (
     Format.eprintf "(check_valid_typedef) Type definitions must be global\n";
     assert false);
+  let tset = Ctx.get_tparams cursor ctx |> TSet.of_list in
   match td with
-  | DefD typ | NewD typ -> check_valid_type cursor ctx typ
-  | StructD fields -> check_valid_type cursor ctx (StructT fields)
-  | HeaderD fields -> check_valid_type cursor ctx (HeaderT fields)
-  | UnionD fields -> check_valid_type cursor ctx (UnionT fields)
-  | EnumD (_id, members) -> check_valid_type cursor ctx (EnumT members)
-  | SEnumD (_id, typ, fields) ->
-      check_valid_type cursor ctx (SEnumT (typ, fields))
+  | DefD typ | NewD typ -> check_valid_type' tset typ
+  | StructD fields -> check_valid_type' tset (StructT fields)
+  | HeaderD fields -> check_valid_type' tset (HeaderT fields)
+  | UnionD fields -> check_valid_type' tset (UnionT fields)
+  | EnumD (_id, members) -> check_valid_type' tset (EnumT members)
+  | SEnumD (_id, typ, fields) -> check_valid_type' tset (SEnumT (typ, fields))
   | ExternD (tparams, fdenv) ->
-      let tset = TSet.of_list tparams in
-      FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
+      let tset = TSet.union tset (TSet.of_list tparams) in
+      check_valid_type' tset (ExternT fdenv)
   | ParserD (tparams, fdenv) ->
-      let tset = TSet.of_list tparams in
-      FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
+      let tset = TSet.union tset (TSet.of_list tparams) in
+      check_valid_type' tset (ParserT fdenv)
   | ControlD (tparams, fdenv) ->
-      let tset = TSet.of_list tparams in
-      FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
-  | PackageD _tparams -> ()
+      let tset = TSet.union tset (TSet.of_list tparams) in
+      check_valid_type' tset (ControlT fdenv)
+  | PackageD tparams ->
+      let tset = TSet.union tset (TSet.of_list tparams) in
+      check_valid_type' tset PackageT
 
 (* (TODO) Appendix F. Restrictions on compile time and runtime calls *)
 
@@ -356,16 +358,51 @@ and check_valid_param' (tset : TSet.t)
   let _, _, typ, _ = param in
   check_valid_type' tset typ
 
+and check_valid_functype (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) :
+    unit =
+  let tset = Ctx.get_tparams cursor ctx |> TSet.of_list in
+  check_valid_functype' tset ft
+
+and check_valid_functype' (tset : TSet.t) (ft : FuncType.t) : unit =
+  match ft with
+  | ExternFunctionT (params, typ_ret) | FunctionT (params, typ_ret) ->
+      List.iter (check_valid_param' tset) params;
+      check_valid_type' tset typ_ret
+  | ActionT params -> List.iter (check_valid_param' tset) params
+  | ExternMethodT (params, typ_ret) | ExternAbstractMethodT (params, typ_ret) ->
+      List.iter (check_valid_param' tset) params;
+      check_valid_type' tset typ_ret
+  | ParserMethodT params | ControlMethodT params ->
+      List.iter (check_valid_param' tset) params
+  | TableMethodT -> ()
+
 and check_valid_funcdef (cursor : Ctx.cursor) (ctx : Ctx.t) (fd : FuncDef.t) :
     unit =
+  if cursor = Ctx.Local then (
+    Format.eprintf
+      "(check_valid_funcdef) Function definitions must not be local\n";
+    assert false);
   let tset = Ctx.get_tparams cursor ctx |> TSet.of_list in
   check_valid_funcdef' tset fd
 
 and check_valid_funcdef' (tset : TSet.t) (fd : FuncDef.t) : unit =
-  let tparams, params, typ_ret = fd in
-  let tset = TSet.union tset (TSet.of_list tparams) in
-  List.iter (check_valid_param' tset) params;
-  check_valid_type' tset typ_ret
+  match fd with
+  | ExternFunctionD (tparams, params, typ_ret) ->
+      let tset = TSet.union tset (TSet.of_list tparams) in
+      check_valid_functype' tset (ExternFunctionT (params, typ_ret))
+  | FunctionD (tparams, params, typ_ret) ->
+      let tset = TSet.union tset (TSet.of_list tparams) in
+      check_valid_functype' tset (FunctionT (params, typ_ret))
+  | ActionD params -> List.iter (check_valid_param' tset) params
+  | ExternMethodD (tparams, params, typ_ret) ->
+      let tset = TSet.union tset (TSet.of_list tparams) in
+      check_valid_functype' tset (ExternMethodT (params, typ_ret))
+  | ExternAbstractMethodD (tparams, params, typ_ret) ->
+      let tset = TSet.union tset (TSet.of_list tparams) in
+      check_valid_functype' tset (ExternAbstractMethodT (params, typ_ret))
+  | ParserMethodD params -> check_valid_functype' tset (ParserMethodT params)
+  | ControlMethodD params -> check_valid_functype' tset (ControlMethodT params)
+  | TableMethodD -> check_valid_functype' tset TableMethodT
 
 and check_valid_cparam (cursor : Ctx.cursor) (ctx : Ctx.t)
     (cparam : id' * dir' * Type.t * Value.t option) : unit =
@@ -452,30 +489,106 @@ and substitute_param (tmap : TMap.t)
   (id, dir, typ, value_default)
 
 and substitute_funcdef (tmap : TMap.t) (fd : FuncDef.t) : FuncDef.t =
-  let tparams, params, typ_ret = fd in
-  let tmap' =
-    List.fold_left
-      (fun tmap' tparam -> TMap.add tparam (Type.VarT tparam) tmap')
-      tmap tparams
-  in
-  let params = List.map (substitute_param tmap') params in
-  let typ_ret = substitute_type tmap' typ_ret in
-  (tparams, params, typ_ret)
+  match fd with
+  | ExternFunctionD (tparams, params, typ_ret) ->
+      let tmap' =
+        List.fold_left
+          (fun tmap' tparam -> TMap.add tparam (Type.VarT tparam) tmap')
+          tmap tparams
+      in
+      let params = List.map (substitute_param tmap') params in
+      let typ_ret = substitute_type tmap' typ_ret in
+      ExternFunctionD (tparams, params, typ_ret)
+  | FunctionD (tparams, params, typ_ret) ->
+      let tmap' =
+        List.fold_left
+          (fun tmap' tparam -> TMap.add tparam (Type.VarT tparam) tmap')
+          tmap tparams
+      in
+      let params = List.map (substitute_param tmap') params in
+      let typ_ret = substitute_type tmap' typ_ret in
+      FunctionD (tparams, params, typ_ret)
+  | ActionD params ->
+      let params = List.map (substitute_param tmap) params in
+      ActionD params
+  | ExternMethodD (tparams, params, typ_ret) ->
+      let tmap' =
+        List.fold_left
+          (fun tmap' tparam -> TMap.add tparam (Type.VarT tparam) tmap')
+          tmap tparams
+      in
+      let params = List.map (substitute_param tmap') params in
+      let typ_ret = substitute_type tmap' typ_ret in
+      ExternMethodD (tparams, params, typ_ret)
+  | ExternAbstractMethodD (tparams, params, typ_ret) ->
+      let tmap' =
+        List.fold_left
+          (fun tmap' tparam -> TMap.add tparam (Type.VarT tparam) tmap')
+          tmap tparams
+      in
+      let params = List.map (substitute_param tmap') params in
+      let typ_ret = substitute_type tmap' typ_ret in
+      ExternAbstractMethodD (tparams, params, typ_ret)
+  | ParserMethodD params ->
+      let params = List.map (substitute_param tmap) params in
+      ParserMethodD params
+  | ControlMethodD params ->
+      let params = List.map (substitute_param tmap) params in
+      ControlMethodD params
+  | TableMethodD -> TableMethodD
 
 let specialize_funcdef (fd : FuncDef.t) (typ_args : Type.t list) : FuncType.t =
-  let tparams, params, typ_ret = fd in
-  assert (List.length typ_args = List.length tparams);
-  let tmap = List.combine tparams typ_args |> TMap.of_list in
-  let params = List.map (substitute_param tmap) params in
-  let typ_ret = substitute_type tmap typ_ret in
-  (params, typ_ret)
+  let check_arity tparams =
+    if List.length typ_args <> List.length tparams then (
+      Format.eprintf
+        "(specialize_funcdef) Function %a expects %d type arguments but %d \
+         were given\n"
+        FuncDef.pp fd (List.length tparams) (List.length typ_args);
+      assert false)
+  in
+  match fd with
+  | ExternFunctionD (tparams, params, typ_ret) ->
+      check_arity tparams;
+      let tmap = List.combine tparams typ_args |> TMap.of_list in
+      let params = List.map (substitute_param tmap) params in
+      let typ_ret = substitute_type tmap typ_ret in
+      ExternFunctionT (params, typ_ret)
+  | FunctionD (tparams, params, typ_ret) ->
+      check_arity tparams;
+      let tmap = List.combine tparams typ_args |> TMap.of_list in
+      let params = List.map (substitute_param tmap) params in
+      let typ_ret = substitute_type tmap typ_ret in
+      FunctionT (params, typ_ret)
+  | ActionD params ->
+      let params = List.map (substitute_param TMap.empty) params in
+      ActionT params
+  | ExternMethodD (tparams, params, typ_ret) ->
+      check_arity tparams;
+      let tmap = List.combine tparams typ_args |> TMap.of_list in
+      let params = List.map (substitute_param tmap) params in
+      let typ_ret = substitute_type tmap typ_ret in
+      ExternMethodT (params, typ_ret)
+  | ExternAbstractMethodD (tparams, params, typ_ret) ->
+      check_arity tparams;
+      let tmap = List.combine tparams typ_args |> TMap.of_list in
+      let params = List.map (substitute_param tmap) params in
+      let typ_ret = substitute_type tmap typ_ret in
+      ExternAbstractMethodT (params, typ_ret)
+  | ParserMethodD params ->
+      let params = List.map (substitute_param TMap.empty) params in
+      ParserMethodT params
+  | ControlMethodD params ->
+      let params = List.map (substitute_param TMap.empty) params in
+      ControlMethodT params
+  | TableMethodD -> TableMethodT
 
 let specialize_typedef (td : TypeDef.t) (typ_args : Type.t list) : Type.t =
   let check_arity tparams =
     if List.length typ_args <> List.length tparams then (
       Format.eprintf
-        "(specialize_typedef) Type definition %a expects %d type arguments\n"
-        TypeDef.pp td (List.length tparams);
+        "(specialize_typedef) Type definition %a expects %d type arguments but \
+         %d were given\n"
+        TypeDef.pp td (List.length tparams) (List.length typ_args);
       assert false)
   in
   match td with
@@ -1242,7 +1355,7 @@ and type_call_stmt (ctx : Ctx.t) (expr_func : expr) (typ_args : typ list)
   let ft = specialize_funcdef fd typ_args in
   (* Check if the arguments match the parameters *)
   (* (TODO) Consider default parameters/arguments, in such case arity can appear to mismatch *)
-  let params, _ = ft in
+  let params = FuncType.get_params ft in
   check_call_arity expr_func params args;
   check_named_args args;
   let params, exprs_arg = align_params_with_args params args in
@@ -1325,17 +1438,17 @@ and type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : decl) =
   | FuncD _ ->
       Format.eprintf "(type_decl) %a\n" (Syntax.Pp.pp_decl ~level:0) decl;
       ctx
-  | ExtFuncD { id; typ_ret; tparams; params; annos = _annos } ->
+  | ExternFuncD { id; typ_ret; tparams; params; annos = _annos } ->
       type_extern_function_decl cursor ctx id tparams params typ_ret
   (* Object declarations *)
   (* Extern *)
-  | ExtConstructorD { id; cparams; annos = _annos } ->
+  | ExternConstructorD { id; cparams; annos = _annos } ->
       type_extern_constructor_decl cursor ctx id cparams
-  | ExtAbstractMethodD { id; typ_ret; tparams; params; annos = _annos } ->
+  | ExternAbstractMethodD { id; typ_ret; tparams; params; annos = _annos } ->
       type_extern_abstract_method_decl cursor ctx id tparams params typ_ret
-  | ExtMethodD { id; typ_ret; tparams; params; annos = _annos } ->
+  | ExternMethodD { id; typ_ret; tparams; params; annos = _annos } ->
       type_extern_method_decl cursor ctx id tparams params typ_ret
-  | ExtObjectD { id; tparams; mthds; annos = _annos } ->
+  | ExternObjectD { id; tparams; mthds; annos = _annos } ->
       type_extern_object_decl cursor ctx id tparams mthds
   (* Parser *)
   | ValueSetD _ ->
@@ -1594,7 +1707,7 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
   let params = List.map (static_eval_param Ctx.Local ctx') params in
   let typ_ret = eval_type Ctx.Local ctx' typ_ret in
-  let fd = (tparams, params, typ_ret) in
+  let fd = FuncDef.ExternFunctionD (tparams, params, typ_ret) in
   check_valid_funcdef cursor ctx fd;
   Ctx.add_funcdef cursor fid fd ctx
 
@@ -1617,9 +1730,9 @@ and type_parser_type_apply_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     assert false);
   let fid = Runtime.Domain.FId.to_fid "apply" params in
   let ctx' = Ctx.set_id Ctx.Local "apply" ctx in
-  let ctx' = Ctx.set_localkind Ctx.ApplyMethod ctx' in
+  let ctx' = Ctx.set_localkind Ctx.ParserMethod ctx' in
   let params = List.map (static_eval_param Ctx.Local ctx') params in
-  let fd = ([], params, Type.VoidT) in
+  let fd = FuncDef.ParserMethodD params in
   check_valid_funcdef Ctx.Local ctx fd;
   Ctx.add_funcdef Ctx.Block fid fd ctx
 
@@ -1766,7 +1879,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   (* Typecheck implicit "apply" method *)
   (* Typecheck and add apply parameters to the local context *)
   let ctx' = Ctx.set_id Ctx.Local "apply" ctx' in
-  let ctx' = Ctx.set_localkind Ctx.ApplyMethod ctx' in
+  let ctx' = Ctx.set_localkind Ctx.ParserMethod ctx' in
   let params = List.map (static_eval_param Ctx.Local ctx') params in
   let ctx' =
     List.fold_left
@@ -1794,9 +1907,9 @@ and type_control_type_apply_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     assert false);
   let fid = Runtime.Domain.FId.to_fid "apply" params in
   let ctx' = Ctx.set_id Ctx.Local "apply" ctx in
-  let ctx' = Ctx.set_localkind Ctx.ApplyMethod ctx' in
+  let ctx' = Ctx.set_localkind Ctx.ControlMethod ctx' in
   let params = List.map (static_eval_param Ctx.Local ctx') params in
-  let fd = ([], params, Type.VoidT) in
+  let fd = FuncDef.ControlMethodD params in
   check_valid_funcdef Ctx.Local ctx fd;
   Ctx.add_funcdef cursor fid fd ctx
 
@@ -1920,7 +2033,7 @@ and type_extern_abstract_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
   let params = List.map (static_eval_param Ctx.Local ctx') params in
   let typ_ret = eval_type Ctx.Local ctx' typ_ret in
-  let fd = (tparams, params, typ_ret) in
+  let fd = FuncDef.ExternAbstractMethodD (tparams, params, typ_ret) in
   check_valid_funcdef cursor ctx fd;
   Ctx.add_funcdef cursor fid fd ctx
 
@@ -1939,7 +2052,7 @@ and type_extern_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
   let params = List.map (static_eval_param Ctx.Local ctx') params in
   let typ_ret = eval_type Ctx.Local ctx' typ_ret in
-  let fd = (tparams, params, typ_ret) in
+  let fd = FuncDef.ExternMethodD (tparams, params, typ_ret) in
   check_valid_funcdef cursor ctx fd;
   Ctx.add_funcdef cursor fid fd ctx
 
@@ -1951,7 +2064,8 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
     assert false);
   let cons, mthds =
     List.partition
-      (fun mthd -> match mthd.it with ExtConstructorD _ -> true | _ -> false)
+      (fun mthd ->
+        match mthd.it with ExternConstructorD _ -> true | _ -> false)
       mthds
   in
   let tparams = List.map it tparams in
