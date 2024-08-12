@@ -9,13 +9,13 @@ open Util.Source
 let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
   match typ.it with
   | BoolT -> BoolT
-  | AIntT -> AIntT
-  | IntT width ->
+  | IntT -> IntT
+  | FIntT width ->
       let width = eval_expr ictx width |> Value.get_num in
-      IntT width
-  | BitT width ->
+      FIntT width
+  | FBitT width ->
       let width = eval_expr ictx width |> Value.get_num in
-      BitT width
+      FBitT width
   | VBitT width ->
       let width = eval_expr ictx width |> Value.get_num in
       VBitT width
@@ -23,7 +23,7 @@ let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
   | ErrT -> ICtx.find_td_glob "error" ictx
   | MatchKindT -> ICtx.find_td_glob "match_kind" ictx
   | NameT { it = Top id; _ } -> ICtx.find_td_glob id.it ictx
-  | NameT { it = Bare id; _ } -> ICtx.find_td id.it ictx
+  | NameT { it = Current id; _ } -> ICtx.find_td id.it ictx
   (* (TODO) Handle specialized types *)
   | SpecT (var, _) -> eval_type ictx (NameT var $ no_info)
   | StackT (typ, size) ->
@@ -65,19 +65,19 @@ and eval_expr (ictx : ICtx.t) (expr : expr) : Value.t =
       assert false
 
 and eval_bool (b : bool) : Value.t = BoolV b
-and eval_str (s : string) : Value.t = StrV s
+and eval_str (t : text) : Value.t = StrV t.it
 
 and eval_num (value : Bigint.t) (encoding : (Bigint.t * bool) option) : Value.t
     =
   match encoding with
   | Some (width, signed) ->
-      if signed then Value.IntV (width, value) else Value.BitV (width, value)
-  | None -> AIntV value
+      if signed then Value.FIntV (width, value) else Value.FBitV (width, value)
+  | None -> IntV value
 
 and eval_var (ictx : ICtx.t) (var : var) : Value.t =
   match var.it with
   | Top id -> ICtx.find_var_glob id.it ictx
-  | Bare id -> ICtx.find_var id.it ictx
+  | Current id -> ICtx.find_var id.it ictx
 
 and eval_list (ictx : ICtx.t) (exprs : expr list) : Value.t =
   let values = eval_exprs ictx exprs in
@@ -139,7 +139,7 @@ and eval_type_acc (ictx : ICtx.t) (var : var) (member : member) : Value.t =
   let typ =
     match var.it with
     | Top id -> ICtx.find_td_glob id.it ictx
-    | Bare id -> ICtx.find_td id.it ictx
+    | Current id -> ICtx.find_td id.it ictx
   in
   match typ with
   | EnumT (id, members) ->

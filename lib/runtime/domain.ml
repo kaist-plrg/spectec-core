@@ -17,7 +17,7 @@ module FId = struct
   let compare = compare
 
   let to_fid (id : id) (params : param list) =
-    let params = List.map (fun { it = id, _, _, _; _ } -> id.it) params in
+    let params = List.map (fun { it = id, _, _, _, _; _ } -> id.it) params in
     (id.it, params)
 end
 

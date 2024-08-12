@@ -18,9 +18,9 @@ let vis_empty = (TDVis.empty, FVis.empty, VVis.empty)
 module Value = struct
   type t =
     | BoolV of bool
-    | AIntV of Bigint.t
-    | IntV of Bigint.t * Bigint.t
-    | BitV of Bigint.t * Bigint.t
+    | IntV of Bigint.t
+    | FIntV of Bigint.t * Bigint.t
+    | FBitV of Bigint.t * Bigint.t
     | VBitV of Bigint.t * Bigint.t * Bigint.t
     | StrV of string
     | ErrV of member'
@@ -36,10 +36,10 @@ module Value = struct
 
   let rec pp fmt = function
     | BoolV b -> Format.fprintf fmt "%b" b
-    | AIntV i -> Format.fprintf fmt "%s" (Bigint.to_string i)
-    | IntV (w, i) ->
+    | IntV i -> Format.fprintf fmt "%s" (Bigint.to_string i)
+    | FIntV (w, i) ->
         Format.fprintf fmt "%ss%s" (Bigint.to_string w) (Bigint.to_string i)
-    | BitV (w, i) ->
+    | FBitV (w, i) ->
         Format.fprintf fmt "%sw%s" (Bigint.to_string w) (Bigint.to_string i)
     | VBitV (_mw, w, i) ->
         Format.fprintf fmt "%sv%s" (Bigint.to_string w) (Bigint.to_string i)
@@ -90,15 +90,15 @@ module Value = struct
 
   let get_num t : Bigint.t =
     match t with
-    | AIntV value -> value
-    | IntV (_, value) -> value
-    | BitV (_, value) -> value
+    | IntV value -> value
+    | FIntV (_, value) -> value
+    | FBitV (_, value) -> value
     | _ -> Format.asprintf "Not a int/bit value: %a" pp t |> failwith
 
   let rec get_width t =
     match t with
     | BoolV _ -> Bigint.one
-    | IntV (width, _) | BitV (width, _) | VBitV (_, width, _) -> width
+    | FIntV (width, _) | FBitV (width, _) | VBitV (_, width, _) -> width
     | TupleV values ->
         List.fold_left
           (fun acc value -> Bigint.(acc + get_width value))
@@ -135,9 +135,9 @@ end
 module Type = struct
   type t =
     | BoolT
-    | AIntT
-    | IntT of Bigint.t
-    | BitT of Bigint.t
+    | IntT
+    | FIntT of Bigint.t
+    | FBitT of Bigint.t
     | VBitT of Bigint.t
     | StrT
     | ErrT of member' list
@@ -158,9 +158,9 @@ module Type = struct
 
   let rec pp fmt = function
     | BoolT -> Format.fprintf fmt "bool"
-    | AIntT -> Format.fprintf fmt "int"
-    | IntT w -> Format.fprintf fmt "%ss" (Bigint.to_string w)
-    | BitT w -> Format.fprintf fmt "%sw" (Bigint.to_string w)
+    | IntT -> Format.fprintf fmt "int"
+    | FIntT w -> Format.fprintf fmt "%ss" (Bigint.to_string w)
+    | FBitT w -> Format.fprintf fmt "%sw" (Bigint.to_string w)
     | VBitT w -> Format.fprintf fmt "%sv" (Bigint.to_string w)
     | StrT -> Format.fprintf fmt "string"
     | ErrT ms ->
@@ -267,7 +267,7 @@ module Func = struct
     | MethodF { params; _ }
     | ExternMethodF { params; _ }
     | ActionF { params; _ } ->
-        List.map (fun { it = id, _, _, _; _ } -> id.it) params
+        List.map (fun { it = id, _, _, _, _; _ } -> id.it) params
     | _ -> []
 end
 

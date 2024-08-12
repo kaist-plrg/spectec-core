@@ -15,7 +15,7 @@ let make_func (path : string list) (func : string) =
   let expr =
     List.fold_left
       (fun acc member -> ExprAccE (acc, member $ no_info) $ no_info)
-      (VarE (Bare (base $ no_info) $ no_info) $ no_info)
+      (VarE (Current (base $ no_info) $ no_info) $ no_info)
       members
   in
   ExprAccE (expr, func $ no_info) $ no_info
@@ -23,7 +23,7 @@ let make_func (path : string list) (func : string) =
 let make_args (args : Id.t list) =
   List.map
     (fun arg ->
-      ExprA (VarE (Bare (arg $ no_info) $ no_info) $ no_info) $ no_info)
+      ExprA (VarE (Current (arg $ no_info) $ no_info) $ no_info) $ no_info)
     args
 
 module Make (Interp : INTERP) : ARCH = struct
