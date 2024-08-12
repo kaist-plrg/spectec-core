@@ -9,10 +9,6 @@ module TVis = MakeVis (Id)
 module VVis = MakeVis (Id)
 module FVis = MakeVis (FId)
 
-type tvis = TDVis.t * FVis.t * VVis.t * TVis.t
-
-let tvis_empty = (TDVis.empty, FVis.empty, VVis.empty, TVis.empty)
-
 type vis = TDVis.t * FVis.t * VVis.t
 
 let vis_empty = (TDVis.empty, FVis.empty, VVis.empty)
@@ -22,9 +18,9 @@ let vis_empty = (TDVis.empty, FVis.empty, VVis.empty)
 module Value = struct
   type t =
     | BoolV of bool
-    | AIntV of Bigint.t
-    | IntV of Bigint.t * Bigint.t
-    | BitV of Bigint.t * Bigint.t
+    | IntV of Bigint.t
+    | FIntV of Bigint.t * Bigint.t
+    | FBitV of Bigint.t * Bigint.t
     | VBitV of Bigint.t * Bigint.t * Bigint.t
     | StrV of string
     | ErrV of member'
@@ -36,14 +32,15 @@ module Value = struct
     | UnionV of (member' * t) list
     | EnumFieldV of id' * member'
     | SEnumFieldV of id' * member' * t
+    | StateV of id'
     | RefV of path'
 
   let rec pp fmt = function
     | BoolV b -> Format.fprintf fmt "%b" b
-    | AIntV i -> Format.fprintf fmt "%s" (Bigint.to_string i)
-    | IntV (w, i) ->
+    | IntV i -> Format.fprintf fmt "%s" (Bigint.to_string i)
+    | FIntV (w, i) ->
         Format.fprintf fmt "%ss%s" (Bigint.to_string w) (Bigint.to_string i)
-    | BitV (w, i) ->
+    | FBitV (w, i) ->
         Format.fprintf fmt "%sw%s" (Bigint.to_string w) (Bigint.to_string i)
     | VBitV (_mw, w, i) ->
         Format.fprintf fmt "%sv%s" (Bigint.to_string w) (Bigint.to_string i)
@@ -83,6 +80,7 @@ module Value = struct
           fs
     | EnumFieldV (_, m) -> Format.fprintf fmt "%s" m
     | SEnumFieldV (_, m, v) -> Format.fprintf fmt "%s(%a)" m pp v
+    | StateV s -> Format.fprintf fmt "state %s" s
     | RefV p -> Format.fprintf fmt "ref %s" (String.concat "." p)
 
   (* Getters *)
@@ -94,15 +92,15 @@ module Value = struct
 
   let get_num t : Bigint.t =
     match t with
-    | AIntV value -> value
-    | IntV (_, value) -> value
-    | BitV (_, value) -> value
+    | IntV value -> value
+    | FIntV (_, value) -> value
+    | FBitV (_, value) -> value
     | _ -> Format.asprintf "Not a int/bit value: %a" pp t |> failwith
 
   let rec get_width t =
     match t with
     | BoolV _ -> Bigint.one
-    | IntV (width, _) | BitV (width, _) | VBitV (_, width, _) -> width
+    | FIntV (width, _) | FBitV (width, _) | VBitV (_, width, _) -> width
     | TupleV values ->
         List.fold_left
           (fun acc value -> Bigint.(acc + get_width value))
@@ -124,6 +122,11 @@ module Value = struct
     | EnumFieldV (id, member) -> (id, member)
     | _ -> Format.asprintf "Not an enum value: %a" pp t |> failwith
 
+  let get_state t =
+    match t with
+    | StateV id -> id
+    | _ -> Format.asprintf "Not a state value: %a" pp t |> failwith
+
   (* Aggregate accessors *)
 
   let access_field (member : member') t =
@@ -140,9 +143,9 @@ module Type = struct
   type t =
     | VoidT
     | BoolT
-    | AIntT
-    | IntT of Bigint.t
-    | BitT of Bigint.t
+    | IntT
+    | FIntT of Bigint.t
+    | FBitT of Bigint.t
     | VBitT of Bigint.t
     | StrT
     | ErrT
@@ -164,9 +167,9 @@ module Type = struct
   let rec pp fmt = function
     | VoidT -> Format.fprintf fmt "void"
     | BoolT -> Format.fprintf fmt "bool"
-    | AIntT -> Format.fprintf fmt "int"
-    | IntT w -> Format.fprintf fmt "%ss" (Bigint.to_string w)
-    | BitT w -> Format.fprintf fmt "%sw" (Bigint.to_string w)
+    | IntT -> Format.fprintf fmt "int"
+    | FIntT w -> Format.fprintf fmt "%ss" (Bigint.to_string w)
+    | FBitT w -> Format.fprintf fmt "%sw" (Bigint.to_string w)
     | VBitT w -> Format.fprintf fmt "%sv" (Bigint.to_string w)
     | StrT -> Format.fprintf fmt "string"
     | ErrT -> Format.fprintf fmt "error"
@@ -263,7 +266,7 @@ module Func = struct
     | MethodF { params; _ }
     | ExternMethodF { params; _ }
     | ActionF { params; _ } ->
-        List.map (fun { it = id, _, _, _; _ } -> id.it) params
+        List.map (fun { it = id, _, _, _, _; _ } -> id.it) params
     | _ -> []
 end
 
@@ -293,14 +296,6 @@ module FEnv = struct
     | None -> Format.asprintf "Key not found: %s@." fid |> failwith
 end
 
-type tenv = TDEnv.t * FEnv.t * VEnv.t * TEnv.t
-
-let tenv_empty = (TDEnv.empty, FEnv.empty, VEnv.empty, TEnv.empty)
-
-type tenv_stack = TDEnv.t * (VEnv.t * TEnv.t) list
-
-let tenv_stack_empty = (TDEnv.empty, [])
-
 type env = TDEnv.t * FEnv.t * VEnv.t
 
 let env_empty = (TDEnv.empty, FEnv.empty, VEnv.empty)
@@ -310,45 +305,20 @@ type env_stack = TDEnv.t * VEnv.t list
 let env_stack_empty = (TDEnv.empty, [])
 
 (* Transition between visibility and environment *)
-
-let tenv_to_tvis (env : tenv) =
-  let tdenv, fenv, venv, tenv = env in
-  let tdvis =
-    TDEnv.fold (fun tvar _ tdvis -> TDVis.add tvar tdvis) tdenv TDVis.empty
-  in
-  let fvis =
-    FEnv.fold (fun fvar _ fvis -> FVis.add fvar fvis) fenv FVis.empty
-  in
-  let vvis = VEnv.fold (fun var _ vvis -> VVis.add var vvis) venv VVis.empty in
-  let tvis =
-    TEnv.fold (fun tvar _ tvis -> TVis.add tvar tvis) tenv TVis.empty
-  in
-  (tdvis, fvis, vvis, tvis)
-
-let tenv_from_tvis (env : tenv) (vis : tvis) =
-  let tdenv, fenv, venv, tenv = env in
-  let tdvis, fvis, vvis, tvis = vis in
-  let tdenv = TDEnv.filter (fun tvar _ -> TDVis.mem tvar tdvis) tdenv in
-  let fenv = FEnv.filter (fun fvar _ -> FVis.mem fvar fvis) fenv in
-  let venv = VEnv.filter (fun var _ -> VVis.mem var vvis) venv in
-  let tenv = TEnv.filter (fun tvar _ -> TVis.mem tvar tvis) tenv in
-  (tdenv, fenv, venv, tenv)
-
 let env_to_vis (env : env) =
-  let tdenv, fenv, venv = env in
+  let tdenv, fenv, env = env in
+
   let tdvis =
     TDEnv.fold (fun tvar _ tdvis -> TDVis.add tvar tdvis) tdenv TDVis.empty
   in
-  let fvis =
-    FEnv.fold (fun fvar _ fvis -> FVis.add fvar fvis) fenv FVis.empty
-  in
-  let vvis = VEnv.fold (fun var _ vvis -> VVis.add var vvis) venv VVis.empty in
-  (tdvis, fvis, vvis)
+  let fvis = FEnv.fold (fun fvar _ vis -> FVis.add fvar vis) fenv FVis.empty in
+  let vis = VEnv.fold (fun var _ vis -> VVis.add var vis) env VVis.empty in
+  (tdvis, fvis, vis)
 
 let env_from_vis (env : env) (vis : vis) =
-  let tdenv, fenv, venv = env in
-  let tdvis, fvis, vvis = vis in
+  let tdenv, fenv, env = env in
+  let tdvis, fvis, vis = vis in
   let tdenv = TDEnv.filter (fun tvar _ -> TDVis.mem tvar tdvis) tdenv in
   let fenv = FEnv.filter (fun fvar _ -> FVis.mem fvar fvis) fenv in
-  let venv = VEnv.filter (fun var _ -> VVis.mem var vvis) venv in
-  (tdenv, fenv, venv)
+  let env = VEnv.filter (fun var _ -> VVis.mem var vis) env in
+  (tdenv, fenv, env)

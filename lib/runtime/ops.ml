@@ -17,7 +17,7 @@ open Syntax.Ast
 open Util.Source
 open Base
 
-(* Bit manipulation *)
+(* FBit manipulation *)
 
 let rec shift_bitstring_left (v : Bigint.t) (o : Bigint.t) : Bigint.t =
   if Bigint.(o > zero) then
@@ -75,10 +75,10 @@ let rec of_two_complement (n : Bigint.t) (w : Bigint.t) : Bigint.t =
   else n
 
 let bit_of_raw_int (n : Bigint.t) (w : Bigint.t) : Value.t =
-  BitV (w, of_two_complement n w)
+  FBitV (w, of_two_complement n w)
 
 let int_of_raw_int (n : Bigint.t) (w : Bigint.t) : Value.t =
-  IntV (w, of_two_complement n w)
+  FIntV (w, of_two_complement n w)
 
 (* Unop evaluation *)
 
@@ -89,20 +89,20 @@ let eval_unop_not (value : Value.t) : Value.t =
 
 let eval_unop_bitnot (value : Value.t) : Value.t =
   match value with
-  | BitV (width, value) ->
+  | FBitV (width, value) ->
       let value = bitwise_neg value width in
-      BitV (width, value)
+      FBitV (width, value)
   | _ -> Format.asprintf "Not a bit value: %a" Value.pp value |> failwith
 
 let eval_unop_uminus (value : Value.t) : Value.t =
   match value with
-  | AIntV value -> AIntV (Bigint.neg value)
-  | IntV (width, value) ->
+  | IntV value -> IntV (Bigint.neg value)
+  | FIntV (width, value) ->
       let value = to_two_complement (Bigint.neg value) width in
-      IntV (width, value)
-  | BitV (width, value) ->
+      FIntV (width, value)
+  | FBitV (width, value) ->
       let value = Bigint.(power_of_two width - value) in
-      BitV (width, value)
+      FBitV (width, value)
   | _ -> Format.asprintf "Not an integer value: %a" Value.pp value |> failwith
 
 let eval_unop (op : unop) (value : Value.t) : Value.t =
@@ -121,7 +121,7 @@ let unsigned_op_sat (l : Bigint.t) (r : Bigint.t) (w : Bigint.t)
     if Bigint.(n > zero) then Bigint.min n Bigint.(x - one)
     else Bigint.max n Bigint.zero
   in
-  BitV (w, n)
+  FBitV (w, n)
 
 let signed_op_sat (l : Bigint.t) (r : Bigint.t) (w : Bigint.t)
     (op : Bigint.t -> Bigint.t -> Bigint.t) : Value.t =
@@ -131,25 +131,25 @@ let signed_op_sat (l : Bigint.t) (r : Bigint.t) (w : Bigint.t)
     if Bigint.(n > zero) then Bigint.min n Bigint.(x - one)
     else Bigint.max n Bigint.(-x)
   in
-  IntV (w, n)
+  FIntV (w, n)
 
 let rec eval_binop_plus (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (width, lvalue), BitV (_, rvalue) ->
+  | FBitV (width, lvalue), FBitV (_, rvalue) ->
       let value = of_two_complement Bigint.(lvalue + rvalue) width in
-      BitV (width, value)
-  | IntV (width, lvalue), IntV (_, rvalue) ->
+      FBitV (width, value)
+  | FIntV (width, lvalue), FIntV (_, rvalue) ->
       let value = of_two_complement Bigint.(lvalue + rvalue) width in
-      IntV (width, value)
-  | BitV (width, _), AIntV rvalue ->
+      FIntV (width, value)
+  | FBitV (width, _), IntV rvalue ->
       eval_binop_plus lvalue (bit_of_raw_int rvalue width)
-  | AIntV lvalue, BitV (width, _) ->
+  | IntV lvalue, FBitV (width, _) ->
       eval_binop_plus (bit_of_raw_int lvalue width) rvalue
-  | IntV (width, _), AIntV rvalue ->
+  | FIntV (width, _), IntV rvalue ->
       eval_binop_plus lvalue (int_of_raw_int rvalue width)
-  | AIntV lvalue, IntV (width, _) ->
+  | IntV lvalue, FIntV (width, _) ->
       eval_binop_plus (int_of_raw_int lvalue width) rvalue
-  | AIntV lvalue, AIntV rvalue -> AIntV Bigint.(lvalue + rvalue)
+  | IntV lvalue, IntV rvalue -> IntV Bigint.(lvalue + rvalue)
   | _ ->
       Format.asprintf "Invalid addition: %a + %a" Value.pp lvalue Value.pp
         rvalue
@@ -157,17 +157,17 @@ let rec eval_binop_plus (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_plussat (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (width, lvalue), BitV (_, rvalue) ->
+  | FBitV (width, lvalue), FBitV (_, rvalue) ->
       unsigned_op_sat lvalue rvalue width Bigint.( + )
-  | IntV (width, lvalue), IntV (_, rvalue) ->
+  | FIntV (width, lvalue), FIntV (_, rvalue) ->
       signed_op_sat lvalue rvalue width Bigint.( + )
-  | BitV (width, _), AIntV rvalue ->
+  | FBitV (width, _), IntV rvalue ->
       eval_binop_plussat lvalue (bit_of_raw_int rvalue width)
-  | AIntV lvalue, BitV (width, _) ->
+  | IntV lvalue, FBitV (width, _) ->
       eval_binop_plussat (bit_of_raw_int lvalue width) rvalue
-  | IntV (width, _), AIntV rvalue ->
+  | FIntV (width, _), IntV rvalue ->
       eval_binop_plussat lvalue (int_of_raw_int rvalue width)
-  | AIntV lvalue, IntV (width, _) ->
+  | IntV lvalue, FIntV (width, _) ->
       eval_binop_plussat (int_of_raw_int lvalue width) rvalue
   | _ ->
       Format.asprintf "Invalid addition with saturation: %a (+) %a" Value.pp
@@ -176,21 +176,21 @@ let rec eval_binop_plussat (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_minus (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (width, lvalue), BitV (_, rvalue) ->
+  | FBitV (width, lvalue), FBitV (_, rvalue) ->
       let value = of_two_complement Bigint.(lvalue - rvalue) width in
-      BitV (width, value)
-  | IntV (width, lvalue), IntV (_, rvalue) ->
+      FBitV (width, value)
+  | FIntV (width, lvalue), FIntV (_, rvalue) ->
       let value = of_two_complement Bigint.(lvalue - rvalue) width in
-      IntV (width, value)
-  | BitV (width, _), AIntV rvalue ->
+      FIntV (width, value)
+  | FBitV (width, _), IntV rvalue ->
       eval_binop_minus lvalue (bit_of_raw_int rvalue width)
-  | AIntV lvalue, BitV (width, _) ->
+  | IntV lvalue, FBitV (width, _) ->
       eval_binop_minus (bit_of_raw_int lvalue width) rvalue
-  | IntV (width, _), AIntV rvalue ->
+  | FIntV (width, _), IntV rvalue ->
       eval_binop_minus lvalue (int_of_raw_int rvalue width)
-  | AIntV lvalue, IntV (width, _) ->
+  | IntV lvalue, FIntV (width, _) ->
       eval_binop_minus (int_of_raw_int lvalue width) rvalue
-  | AIntV lvalue, AIntV rvalue -> AIntV Bigint.(lvalue - rvalue)
+  | IntV lvalue, IntV rvalue -> IntV Bigint.(lvalue - rvalue)
   | _ ->
       Format.asprintf "Invalid subtraction: %a - %a" Value.pp lvalue Value.pp
         rvalue
@@ -198,17 +198,17 @@ let rec eval_binop_minus (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_minussat (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (width, lvalue), BitV (_, rvalue) ->
+  | FBitV (width, lvalue), FBitV (_, rvalue) ->
       unsigned_op_sat lvalue rvalue width Bigint.( - )
-  | IntV (width, lvalue), IntV (_, rvalue) ->
+  | FIntV (width, lvalue), FIntV (_, rvalue) ->
       signed_op_sat lvalue rvalue width Bigint.( - )
-  | BitV (width, _), AIntV rvalue ->
+  | FBitV (width, _), IntV rvalue ->
       eval_binop_minussat lvalue (bit_of_raw_int rvalue width)
-  | AIntV lvalue, BitV (width, _) ->
+  | IntV lvalue, FBitV (width, _) ->
       eval_binop_minussat (bit_of_raw_int lvalue width) rvalue
-  | IntV (width, _), AIntV rvalue ->
+  | FIntV (width, _), IntV rvalue ->
       eval_binop_minussat lvalue (int_of_raw_int rvalue width)
-  | AIntV lvalue, IntV (width, _) ->
+  | IntV lvalue, FIntV (width, _) ->
       eval_binop_minussat (int_of_raw_int lvalue width) rvalue
   | _ ->
       Format.asprintf "Invalid subtraction with saturation: %a (-) %a" Value.pp
@@ -217,21 +217,21 @@ let rec eval_binop_minussat (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_mul (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (width, lvalue), BitV (_, rvalue) ->
+  | FBitV (width, lvalue), FBitV (_, rvalue) ->
       let value = of_two_complement Bigint.(lvalue * rvalue) width in
-      BitV (width, value)
-  | IntV (width, lvalue), IntV (_, rvalue) ->
+      FBitV (width, value)
+  | FIntV (width, lvalue), FIntV (_, rvalue) ->
       let value = to_two_complement Bigint.(lvalue * rvalue) width in
-      IntV (width, value)
-  | BitV (width, _), AIntV rvalue ->
+      FIntV (width, value)
+  | FBitV (width, _), IntV rvalue ->
       eval_binop_mul lvalue (bit_of_raw_int rvalue width)
-  | AIntV lvalue, BitV (width, _) ->
+  | IntV lvalue, FBitV (width, _) ->
       eval_binop_mul (bit_of_raw_int lvalue width) rvalue
-  | IntV (width, _), AIntV rvalue ->
+  | FIntV (width, _), IntV rvalue ->
       eval_binop_mul lvalue (int_of_raw_int rvalue width)
-  | AIntV lvalue, IntV (width, _) ->
+  | IntV lvalue, FIntV (width, _) ->
       eval_binop_mul (int_of_raw_int lvalue width) rvalue
-  | AIntV lvalue, AIntV rvalue -> AIntV Bigint.(lvalue * rvalue)
+  | IntV lvalue, IntV rvalue -> IntV Bigint.(lvalue * rvalue)
   | _ ->
       Format.asprintf "Invalid multiplication: %a * %a" Value.pp lvalue Value.pp
         rvalue
@@ -239,10 +239,10 @@ let rec eval_binop_mul (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let eval_binop_div (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | AIntV lvalue, AIntV rvalue -> AIntV Bigint.(lvalue / rvalue)
-  | BitV (width, lvalue), BitV (_, rvalue) ->
+  | IntV lvalue, IntV rvalue -> IntV Bigint.(lvalue / rvalue)
+  | FBitV (width, lvalue), FBitV (_, rvalue) ->
       let value = Bigint.(lvalue / rvalue) in
-      BitV (width, value)
+      FBitV (width, value)
   | _ ->
       Format.asprintf "Invalid division: %a / %a" Value.pp lvalue Value.pp
         rvalue
@@ -250,41 +250,41 @@ let eval_binop_div (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let eval_binop_mod (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | AIntV lvalue, AIntV rvalue -> AIntV Bigint.(lvalue % rvalue)
-  | BitV (width, lvalue), BitV (_, rvalue) ->
+  | IntV lvalue, IntV rvalue -> IntV Bigint.(lvalue % rvalue)
+  | FBitV (width, lvalue), FBitV (_, rvalue) ->
       let value = Bigint.(lvalue % rvalue) in
-      BitV (width, value)
+      FBitV (width, value)
   | _ ->
       Format.asprintf "Invalid modulo: %a %% %a" Value.pp lvalue Value.pp rvalue
       |> failwith
 
 let eval_binop_shl (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (width, lvalue), BitV (_, rvalue) | BitV (width, lvalue), AIntV rvalue
-    ->
+  | FBitV (width, lvalue), FBitV (_, rvalue)
+  | FBitV (width, lvalue), IntV rvalue ->
       let value =
         of_two_complement (shift_bitstring_left lvalue rvalue) width
       in
-      BitV (width, value)
-  | IntV (width, lvalue), BitV (_, rvalue) | IntV (width, lvalue), AIntV rvalue
-    ->
+      FBitV (width, value)
+  | FIntV (width, lvalue), FBitV (_, rvalue)
+  | FIntV (width, lvalue), IntV rvalue ->
       let value =
         to_two_complement (shift_bitstring_left lvalue rvalue) width
       in
-      IntV (width, value)
-  | AIntV lvalue, AIntV rvalue ->
+      FIntV (width, value)
+  | IntV lvalue, IntV rvalue ->
       let value = shift_bitstring_left lvalue rvalue in
-      AIntV value
-  | BitV (width, lvalue), IntV (_, rvalue) ->
+      IntV value
+  | FBitV (width, lvalue), FIntV (_, rvalue) ->
       let value =
         of_two_complement (shift_bitstring_left lvalue rvalue) width
       in
-      BitV (width, value)
-  | IntV (width, lvalue), IntV (_, rvalue) ->
+      FBitV (width, value)
+  | FIntV (width, lvalue), FIntV (_, rvalue) ->
       let value =
         to_two_complement (shift_bitstring_left lvalue rvalue) width
       in
-      IntV (width, value)
+      FIntV (width, value)
   | _ ->
       Format.asprintf "Invalid shift left: %a << %a" Value.pp lvalue Value.pp
         rvalue
@@ -292,33 +292,33 @@ let eval_binop_shl (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let eval_binop_shr (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (width, lvalue), BitV (_, rvalue) | BitV (width, lvalue), AIntV rvalue
-    ->
+  | FBitV (width, lvalue), FBitV (_, rvalue)
+  | FBitV (width, lvalue), IntV rvalue ->
       let value =
         of_two_complement
           (shift_bitstring_right lvalue rvalue false Bigint.zero)
           width
       in
-      BitV (width, value)
-  | IntV (width, lvalue), BitV (_, rvalue)
-  | IntV (width, lvalue), IntV (_, rvalue)
-  | IntV (width, lvalue), AIntV rvalue ->
+      FBitV (width, value)
+  | FIntV (width, lvalue), FBitV (_, rvalue)
+  | FIntV (width, lvalue), FIntV (_, rvalue)
+  | FIntV (width, lvalue), IntV rvalue ->
       let exp = power_of_two Bigint.(width - one) in
       let arith = Bigint.(of_two_complement lvalue width > exp) in
       let value =
         to_two_complement (shift_bitstring_right lvalue rvalue arith exp) width
       in
-      IntV (width, value)
-  | AIntV lvalue, AIntV rvalue ->
+      FIntV (width, value)
+  | IntV lvalue, IntV rvalue ->
       let value = shift_bitstring_right lvalue rvalue false Bigint.zero in
-      AIntV value
-  | BitV (width, lvalue), IntV (_, rvalue) ->
+      IntV value
+  | FBitV (width, lvalue), FIntV (_, rvalue) ->
       let value =
         of_two_complement
           (shift_bitstring_right lvalue rvalue false Bigint.zero)
           width
       in
-      BitV (width, value)
+      FBitV (width, value)
   | _ ->
       Format.asprintf "Invalid shift right: %a >> %a" Value.pp lvalue Value.pp
         rvalue
@@ -326,15 +326,15 @@ let eval_binop_shr (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_le (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (_, lvalue), BitV (_, rvalue) | AIntV lvalue, AIntV rvalue ->
+  | FBitV (_, lvalue), FBitV (_, rvalue) | IntV lvalue, IntV rvalue ->
       BoolV Bigint.(lvalue <= rvalue)
-  | AIntV lvalue, BitV (width, _) ->
+  | IntV lvalue, FBitV (width, _) ->
       eval_binop_le (bit_of_raw_int lvalue width) rvalue
-  | BitV (width, _), AIntV rvalue ->
+  | FBitV (width, _), IntV rvalue ->
       eval_binop_le lvalue (bit_of_raw_int rvalue width)
-  | AIntV lvalue, IntV (width, _) ->
+  | IntV lvalue, FIntV (width, _) ->
       eval_binop_le (int_of_raw_int lvalue width) rvalue
-  | IntV (width, _), AIntV rvalue ->
+  | FIntV (width, _), IntV rvalue ->
       eval_binop_le lvalue (int_of_raw_int rvalue width)
   | _ ->
       Format.asprintf "Invalid less than or equal: %a <= %a" Value.pp lvalue
@@ -343,15 +343,15 @@ let rec eval_binop_le (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_ge (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (_, lvalue), BitV (_, rvalue) | AIntV lvalue, AIntV rvalue ->
+  | FBitV (_, lvalue), FBitV (_, rvalue) | IntV lvalue, IntV rvalue ->
       BoolV Bigint.(lvalue >= rvalue)
-  | AIntV lvalue, BitV (width, _) ->
+  | IntV lvalue, FBitV (width, _) ->
       eval_binop_ge (bit_of_raw_int lvalue width) rvalue
-  | BitV (width, _), AIntV rvalue ->
+  | FBitV (width, _), IntV rvalue ->
       eval_binop_ge lvalue (bit_of_raw_int rvalue width)
-  | AIntV lvalue, IntV (width, _) ->
+  | IntV lvalue, FIntV (width, _) ->
       eval_binop_ge (int_of_raw_int lvalue width) rvalue
-  | IntV (width, _), AIntV rvalue ->
+  | FIntV (width, _), IntV rvalue ->
       eval_binop_ge lvalue (int_of_raw_int rvalue width)
   | _ ->
       Format.asprintf "Invalid greater than or equal: %a >= %a" Value.pp lvalue
@@ -360,15 +360,15 @@ let rec eval_binop_ge (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_lt (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (_, lvalue), BitV (_, rvalue) | AIntV lvalue, AIntV rvalue ->
+  | FBitV (_, lvalue), FBitV (_, rvalue) | IntV lvalue, IntV rvalue ->
       BoolV Bigint.(lvalue < rvalue)
-  | AIntV lvalue, BitV (width, _) ->
+  | IntV lvalue, FBitV (width, _) ->
       eval_binop_lt (bit_of_raw_int lvalue width) rvalue
-  | BitV (width, _), AIntV rvalue ->
+  | FBitV (width, _), IntV rvalue ->
       eval_binop_lt lvalue (bit_of_raw_int rvalue width)
-  | AIntV lvalue, IntV (width, _) ->
+  | IntV lvalue, FIntV (width, _) ->
       eval_binop_lt (int_of_raw_int lvalue width) rvalue
-  | IntV (width, _), AIntV rvalue ->
+  | FIntV (width, _), IntV rvalue ->
       eval_binop_lt lvalue (int_of_raw_int rvalue width)
   | _ ->
       Format.asprintf "Invalid less than: %a < %a" Value.pp lvalue Value.pp
@@ -377,15 +377,15 @@ let rec eval_binop_lt (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_gt (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (_, lvalue), BitV (_, rvalue) | AIntV lvalue, AIntV rvalue ->
+  | FBitV (_, lvalue), FBitV (_, rvalue) | IntV lvalue, IntV rvalue ->
       BoolV Bigint.(lvalue > rvalue)
-  | AIntV lvalue, BitV (width, _) ->
+  | IntV lvalue, FBitV (width, _) ->
       eval_binop_gt (bit_of_raw_int lvalue width) rvalue
-  | BitV (width, _), AIntV rvalue ->
+  | FBitV (width, _), IntV rvalue ->
       eval_binop_gt lvalue (bit_of_raw_int rvalue width)
-  | AIntV lvalue, IntV (width, _) ->
+  | IntV lvalue, FIntV (width, _) ->
       eval_binop_gt (int_of_raw_int lvalue width) rvalue
-  | IntV (width, _), AIntV rvalue ->
+  | FIntV (width, _), IntV rvalue ->
       eval_binop_gt lvalue (int_of_raw_int rvalue width)
   | _ ->
       Format.asprintf "Invalid greater than: %a > %a" Value.pp lvalue Value.pp
@@ -407,18 +407,18 @@ let rec eval_binop_eq_entries (lentries : (string * Value.t) list)
 and eval_binop_eq (lvalue : Value.t) (rvalue : Value.t) : bool =
   match (lvalue, rvalue) with
   | BoolV b1, BoolV b2 -> b1 = b2
-  | AIntV lvalue, AIntV rvalue
-  | BitV (_, lvalue), BitV (_, rvalue)
-  | IntV (_, lvalue), IntV (_, rvalue)
+  | IntV lvalue, IntV rvalue
+  | FBitV (_, lvalue), FBitV (_, rvalue)
+  | FIntV (_, lvalue), FIntV (_, rvalue)
   | VBitV (_, _, lvalue), VBitV (_, _, rvalue) ->
       Bigint.(lvalue = rvalue)
-  | BitV (width, _), AIntV rvalue ->
+  | FBitV (width, _), IntV rvalue ->
       eval_binop_eq lvalue (bit_of_raw_int rvalue width)
-  | AIntV lvalue, BitV (width, _) ->
+  | IntV lvalue, FBitV (width, _) ->
       eval_binop_eq (bit_of_raw_int lvalue width) rvalue
-  | IntV (width, _), AIntV rvalue ->
+  | FIntV (width, _), IntV rvalue ->
       eval_binop_eq lvalue (int_of_raw_int rvalue width)
-  | AIntV lvalue, IntV (width, _) ->
+  | IntV lvalue, FIntV (width, _) ->
       eval_binop_eq (int_of_raw_int lvalue width) rvalue
   | StackV (lvalues, _, _), StackV (rvalues, _, _)
   | TupleV lvalues, TupleV rvalues ->
@@ -443,12 +443,12 @@ let eval_binop_ne (lvalue : Value.t) (rvalue : Value.t) : bool =
 
 let rec eval_binop_bitand (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (width, lvalue), BitV (_, rvalue) ->
+  | FBitV (width, lvalue), FBitV (_, rvalue) ->
       let value = Bigint.bit_and lvalue rvalue in
-      BitV (width, value)
-  | BitV (width, _), AIntV rvalue ->
+      FBitV (width, value)
+  | FBitV (width, _), IntV rvalue ->
       eval_binop_bitand lvalue (bit_of_raw_int rvalue width)
-  | AIntV lvalue, BitV (width, _) ->
+  | IntV lvalue, FBitV (width, _) ->
       eval_binop_bitand (bit_of_raw_int lvalue width) rvalue
   | _ ->
       Format.asprintf "Invalid bitwise and: %a & %a" Value.pp lvalue Value.pp
@@ -457,12 +457,12 @@ let rec eval_binop_bitand (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_bitxor (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (width, lvalue), BitV (_, rvalue) ->
+  | FBitV (width, lvalue), FBitV (_, rvalue) ->
       let value = Bigint.bit_xor lvalue rvalue in
-      BitV (width, value)
-  | BitV (width, _), AIntV rvalue ->
+      FBitV (width, value)
+  | FBitV (width, _), IntV rvalue ->
       eval_binop_bitxor lvalue (bit_of_raw_int rvalue width)
-  | AIntV lvalue, BitV (width, _) ->
+  | IntV lvalue, FBitV (width, _) ->
       eval_binop_bitxor (bit_of_raw_int lvalue width) rvalue
   | _ ->
       Format.asprintf "Invalid bitwise xor: %a ^ %a" Value.pp lvalue Value.pp
@@ -471,12 +471,12 @@ let rec eval_binop_bitxor (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_bitor (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (width, lvalue), BitV (_, rvalue) ->
+  | FBitV (width, lvalue), FBitV (_, rvalue) ->
       let value = Bigint.bit_or lvalue rvalue in
-      BitV (width, value)
-  | BitV (width, _), AIntV rvalue ->
+      FBitV (width, value)
+  | FBitV (width, _), IntV rvalue ->
       eval_binop_bitor lvalue (bit_of_raw_int rvalue width)
-  | AIntV lvalue, BitV (width, _) ->
+  | IntV lvalue, FBitV (width, _) ->
       eval_binop_bitor (bit_of_raw_int lvalue width) rvalue
   | _ ->
       Format.asprintf "Invalid bitwise or: %a | %a" Value.pp lvalue Value.pp
@@ -485,13 +485,13 @@ let rec eval_binop_bitor (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_plusplus (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | BitV (lwidth, lvalue), BitV (rwidth, rvalue) ->
+  | FBitV (lwidth, lvalue), FBitV (rwidth, rvalue) ->
       let value = Bigint.(shift_bitstring_left lvalue rwidth + rvalue) in
       let width = Bigint.(lwidth + rwidth) in
-      BitV (width, value)
-  | BitV (width, _), AIntV rvalue ->
+      FBitV (width, value)
+  | FBitV (width, _), IntV rvalue ->
       eval_binop_plusplus lvalue (bit_of_raw_int rvalue width)
-  | AIntV lvalue, BitV (width, _) ->
+  | IntV lvalue, FBitV (width, _) ->
       eval_binop_plusplus (bit_of_raw_int lvalue width) rvalue
   | _ ->
       Format.asprintf "Invalid concatenation: %a ++ %a" Value.pp lvalue Value.pp
@@ -538,13 +538,13 @@ let eval_binop (op : binop) (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   | LAndOp -> eval_binop_and lvalue rvalue
   | LOrOp -> eval_binop_or lvalue rvalue
 
-(* Bitslice evaluation *)
+(* FBitslice evaluation *)
 
 let eval_bitstring_access' (value : Bigint.t) (hvalue : Bigint.t)
     (lvalue : Bigint.t) : Value.t =
   let width = Bigint.(hvalue - lvalue + one) in
   let value = slice_bitstring value hvalue lvalue in
-  BitV (width, value)
+  FBitV (width, value)
 
 let eval_bitstring_access (value : Value.t) (hvalue : Value.t)
     (lvalue : Value.t) : Value.t =
@@ -556,16 +556,16 @@ let eval_bitstring_access (value : Value.t) (hvalue : Value.t)
 let eval_cast_to_bool (value : Value.t) : Value.t =
   match value with
   | BoolV b -> BoolV b
-  | BitV (width, value) when width = Bigint.one -> BoolV Bigint.(value = one)
-  | AIntV value -> BoolV Bigint.(value = one)
+  | FBitV (width, value) when width = Bigint.one -> BoolV Bigint.(value = one)
+  | IntV value -> BoolV Bigint.(value = one)
   | _ -> failwith "cast to bool undefined"
 
 let eval_cast_to_bit (width : Bigint.t) (value : Value.t) : Value.t =
   match value with
   | BoolV b ->
       let value = if b then Bigint.one else Bigint.zero in
-      BitV (width, value)
-  | IntV (_, value) | BitV (_, value) | AIntV value ->
+      FBitV (width, value)
+  | FIntV (_, value) | FBitV (_, value) | IntV value ->
       bit_of_raw_int value width
   | _ ->
       Format.asprintf "(TODO) Cast to bitstring undefined: %a" Value.pp value
@@ -573,7 +573,7 @@ let eval_cast_to_bit (width : Bigint.t) (value : Value.t) : Value.t =
 
 let eval_cast_to_int (width : Bigint.t) (value : Value.t) : Value.t =
   match value with
-  | BitV (_, value) | IntV (_, value) | AIntV value ->
+  | FBitV (_, value) | FIntV (_, value) | IntV value ->
       int_of_raw_int value width
   | _ ->
       Format.asprintf "(TODO) Cast to integer undefined: %a" Value.pp value
@@ -607,11 +607,11 @@ and eval_cast_tuple (typs : Type.t list) (value : Value.t) : Value.t =
 and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
   match typ with
   | BoolT -> eval_cast_to_bool value
-  | AIntT ->
+  | IntT ->
       let value = Value.get_num value in
-      AIntV value
-  | BitT width -> eval_cast_to_bit width value
-  | IntT width -> eval_cast_to_int width value
+      IntV value
+  | FBitT width -> eval_cast_to_bit width value
+  | FIntT width -> eval_cast_to_int width value
   | TupleT typs -> eval_cast_tuple typs value
   | HeaderT entries ->
       let entries = eval_cast_entries entries value in
@@ -635,9 +635,9 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
 let rec eval_default_value (typ : Type.t) : Value.t =
   match typ with
   | BoolT -> BoolV false
-  | AIntT -> AIntV Bigint.zero
-  | IntT width -> IntV (width, Bigint.zero)
-  | BitT width -> BitV (width, Bigint.zero)
+  | IntT -> IntV Bigint.zero
+  | FIntT width -> FIntV (width, Bigint.zero)
+  | FBitT width -> FBitV (width, Bigint.zero)
   | VBitT width -> VBitV (width, Bigint.zero, Bigint.zero)
   | ErrT -> ErrV "NoError"
   | StrT -> StrV ""

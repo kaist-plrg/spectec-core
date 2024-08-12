@@ -2,7 +2,7 @@ open Domain
 open Base
 
 (* Context for instantiation:
-   Instantiation does not look into method/function body *)
+   The instantiation does not look into method/function body *)
 
 module ICtx = struct
   (* vis_* always contains all names in env_*

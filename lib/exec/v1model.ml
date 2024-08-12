@@ -15,7 +15,7 @@ let make_func (path : string list) (func : string) =
   let expr =
     List.fold_left
       (fun acc member -> ExprAccE (acc, member $ no_info) $ no_info)
-      (VarE (Bare (base $ no_info) $ no_info) $ no_info)
+      (VarE (Current (base $ no_info) $ no_info) $ no_info)
       members
   in
   ExprAccE (expr, func $ no_info) $ no_info
@@ -23,7 +23,7 @@ let make_func (path : string list) (func : string) =
 let make_args (args : Id.t list) =
   List.map
     (fun arg ->
-      ExprA (VarE (Bare (arg $ no_info) $ no_info) $ no_info) $ no_info)
+      ExprA (VarE (Current (arg $ no_info) $ no_info) $ no_info) $ no_info)
     args
 
 module Make (Interp : INTERP) : ARCH = struct
@@ -97,7 +97,9 @@ module Make (Interp : INTERP) : ARCH = struct
     let targs = [] in
     let args = make_args [ "packet_in"; "hdr"; "meta"; "standard_metadata" ] in
     if !config.debug then
-      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp ctx;
+      Format.printf "\nBefore %a call\n%a@."
+        (Syntax.Pp.pp_expr ~level:0)
+        func Ctx.pp ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_vr (ctx : Ctx.t) =
@@ -105,7 +107,9 @@ module Make (Interp : INTERP) : ARCH = struct
     let targs = [] in
     let args = make_args [ "hdr"; "meta" ] in
     if !config.debug then
-      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp ctx;
+      Format.printf "\nBefore %a call\n%a@."
+        (Syntax.Pp.pp_expr ~level:0)
+        func Ctx.pp ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_ig (ctx : Ctx.t) =
@@ -113,7 +117,9 @@ module Make (Interp : INTERP) : ARCH = struct
     let targs = [] in
     let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
     if !config.debug then
-      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp ctx;
+      Format.printf "\nBefore %a call\n%a@."
+        (Syntax.Pp.pp_expr ~level:0)
+        func Ctx.pp ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_eg (ctx : Ctx.t) =
@@ -121,7 +127,9 @@ module Make (Interp : INTERP) : ARCH = struct
     let targs = [] in
     let args = make_args [ "hdr"; "meta"; "standard_metadata" ] in
     if !config.debug then
-      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp ctx;
+      Format.printf "\nBefore %a call\n%a@."
+        (Syntax.Pp.pp_expr ~level:0)
+        func Ctx.pp ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_ck (ctx : Ctx.t) =
@@ -129,7 +137,9 @@ module Make (Interp : INTERP) : ARCH = struct
     let targs = [] in
     let args = make_args [ "hdr"; "meta" ] in
     if !config.debug then
-      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp ctx;
+      Format.printf "\nBefore %a call\n%a@."
+        (Syntax.Pp.pp_expr ~level:0)
+        func Ctx.pp ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_dep (ctx : Ctx.t) =
@@ -137,7 +147,9 @@ module Make (Interp : INTERP) : ARCH = struct
     let targs = [] in
     let args = make_args [ "packet_out"; "hdr" ] in
     if !config.debug then
-      Format.printf "\nBefore %a call\n%a@." Syntax.Pp.pp_expr func Ctx.pp ctx;
+      Format.printf "\nBefore %a call\n%a@."
+        (Syntax.Pp.pp_expr ~level:0)
+        func Ctx.pp ctx;
     Interp.interp_call ctx func targs args |> snd
 
   let drive_pipe (ctx : Ctx.t) =
@@ -149,7 +161,7 @@ module Make (Interp : INTERP) : ARCH = struct
         (* TODO : Should we need to check range of port value? *)
         let nine = Bigint.of_int 9 in
         let port = int_of_string port |> Bigint.of_int in
-        let port = Value.BitV (nine, port) in
+        let port = Value.FBitV (nine, port) in
         let update_port field = match field with 
           | "ingress_port", _ -> "ingress_port", port
           | id, mem -> id, mem 
