@@ -70,7 +70,7 @@ let int_to_bits value size =
 let rec sizeof ?(size_var = 0) (ctx : Ctx.t) (typ : R.Type.t) =
   match typ with
   | BoolT -> 1
-  | IntT width | BitT width -> Bigint.to_int width |> Option.get
+  | FIntT width | FBitT width -> Bigint.to_int width |> Option.get
   | VBitT _ -> size_var
   | HeaderT fields ->
       List.fold_left
@@ -101,17 +101,17 @@ module PacketIn = struct
         let bits_in = Array.sub bits_in 1 (Array.length bits_in - 1) in
         let value = R.Value.BoolV bit in
         (bits_in, value)
-    | IntV (width, _) ->
+    | FIntV (width, _) ->
         let size = Bigint.to_int width |> Option.get in
         let bits = Array.sub bits_in 0 size in
         let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
-        let value = R.Value.IntV (width, bits_to_int bits) in
+        let value = R.Value.FIntV (width, bits_to_int bits) in
         (bits_in, value)
-    | BitV (width, _) ->
+    | FBitV (width, _) ->
         let size = Bigint.to_int width |> Option.get in
         let bits = Array.sub bits_in 0 size in
         let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
-        let value = R.Value.BitV (width, bits_to_int bits) in
+        let value = R.Value.FBitV (width, bits_to_int bits) in
         (bits_in, value)
     | VBitV (max_width, _, _) ->
         let bits = Array.sub bits_in 0 size_var in
@@ -206,7 +206,7 @@ module PacketIn = struct
       (if pkt.len mod 8 = 0 then pkt.len / 8 else (pkt.len / 8) + 1)
       |> Bigint.of_int
     in
-    (ctx, R.Value.BitV (Bigint.of_int 32, len))
+    (ctx, R.Value.FBitV (Bigint.of_int 32, len))
 end
 
 module PacketOut = struct
@@ -218,7 +218,7 @@ module PacketOut = struct
   let rec deparse (pkt : t) (value : R.Value.t) =
     match value with
     | BoolV b -> { bits = Array.append pkt.bits (Array.make 1 b) }
-    | IntV (width, value) | BitV (width, value) | VBitV (_, width, value) ->
+    | FIntV (width, value) | FBitV (width, value) | VBitV (_, width, value) ->
         let size = Bigint.to_int width |> Option.get in
         let bits = int_to_bits value size in
         { bits = Array.append pkt.bits bits }

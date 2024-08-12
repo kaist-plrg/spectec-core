@@ -1,7 +1,6 @@
 open Syntax.Ast
 open Runtime.Domain
 module Value = Runtime.Value
-open Util.Source
 
 (* Types of variables *)
 
@@ -13,9 +12,9 @@ module rec Type : sig
     | MatchKindT
     | StrT
     | BoolT
-    | AIntT
-    | IntT of Bigint.t
-    | BitT of Bigint.t
+    | IntT
+    | FIntT of Bigint.t
+    | FBitT of Bigint.t
     | VBitT of Bigint.t
     (* Parameterized types *)
     (* Invariant: variables should always be bound *)
@@ -39,8 +38,9 @@ module rec Type : sig
     | PackageT
     (* Top type *)
     | TopT
-    (* Synthesized types : variables can never be of this type *)
+    (* Synthesized types : variables can never be declared of this type *)
     | SetT of t
+    | StateT
 
   val pp : Format.formatter -> t -> unit
 end = struct
@@ -51,9 +51,9 @@ end = struct
     | MatchKindT
     | StrT
     | BoolT
-    | AIntT
-    | IntT of Bigint.t
-    | BitT of Bigint.t
+    | IntT
+    | FIntT of Bigint.t
+    | FBitT of Bigint.t
     | VBitT of Bigint.t
     (* Parameterized types *)
     (* Variables should always be bound *)
@@ -77,8 +77,9 @@ end = struct
     | PackageT
     (* Top type *)
     | TopT
-    (* Synthesized types : variables can never be of this type *)
+    (* Synthesized types : variables can never be declared of this type *)
     | SetT of t
+    | StateT
 
   let rec pp fmt = function
     (* Base types *)
@@ -87,9 +88,9 @@ end = struct
     | MatchKindT -> Format.fprintf fmt "match_kind"
     | StrT -> Format.fprintf fmt "string"
     | BoolT -> Format.fprintf fmt "bool"
-    | AIntT -> Format.fprintf fmt "int"
-    | IntT n -> Format.fprintf fmt "int<%a>" Bigint.pp n
-    | BitT n -> Format.fprintf fmt "bit<%a>" Bigint.pp n
+    | IntT -> Format.fprintf fmt "int"
+    | FIntT n -> Format.fprintf fmt "int<%a>" Bigint.pp n
+    | FBitT n -> Format.fprintf fmt "bit<%a>" Bigint.pp n
     | VBitT n -> Format.fprintf fmt "vbit<%a>" Bigint.pp n
     (* Parametrized types *)
     | VarT id -> Format.fprintf fmt "%s" id
@@ -109,39 +110,43 @@ end = struct
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (m, t) ->
-               Format.fprintf fmt "%a: %a" Syntax.Pp.pp_member (m $ no_info) pp
-                 t))
+               Format.fprintf fmt "%a: %a"
+                 (Syntax.Pp.pp_member' ~level:0)
+                 m pp t))
           fields
     | HeaderT fields ->
         Format.fprintf fmt "header { @[<hv>%a@] }"
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (m, t) ->
-               Format.fprintf fmt "%a: %a" Syntax.Pp.pp_member (m $ no_info) pp
-                 t))
+               Format.fprintf fmt "%a: %a"
+                 (Syntax.Pp.pp_member' ~level:0)
+                 m pp t))
           fields
     | UnionT fields ->
         Format.fprintf fmt "union { @[<hv>%a@] }"
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (m, t) ->
-               Format.fprintf fmt "%a: %a" Syntax.Pp.pp_member (m $ no_info) pp
-                 t))
+               Format.fprintf fmt "%a: %a"
+                 (Syntax.Pp.pp_member' ~level:0)
+                 m pp t))
           fields
     | EnumT members ->
         Format.fprintf fmt "enum { @[<hv>%a@] }"
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt m ->
-               Format.fprintf fmt "%a" Syntax.Pp.pp_member (m $ no_info)))
+               Format.fprintf fmt "%a" (Syntax.Pp.pp_member' ~level:0) m))
           members
     | SEnumT (t, members) ->
         Format.fprintf fmt "enum %a { @[<hv>%a@] }" pp t
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (m, v) ->
-               Format.fprintf fmt "%a: %a" Syntax.Pp.pp_member (m $ no_info)
-                 Runtime.Value.pp v))
+               Format.fprintf fmt "%a: %a"
+                 (Syntax.Pp.pp_member' ~level:0)
+                 m Runtime.Value.pp v))
           members
     (* Object types *)
     | ExternT fdenv -> Format.fprintf fmt "extern %a" FDEnv.pp fdenv
@@ -152,6 +157,7 @@ end = struct
     | TopT -> Format.fprintf fmt "top"
     (* Synthesized types *)
     | SetT t -> Format.fprintf fmt "set<%a>" pp t
+    | StateT -> Format.fprintf fmt "state"
 end
 
 and TypeDef : sig

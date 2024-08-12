@@ -5,9 +5,9 @@ open Syntax.Ast
 type t =
   | VoidT
   | BoolT
-  | AIntT
-  | IntT of Bigint.t
-  | BitT of Bigint.t
+  | IntT
+  | FIntT of Bigint.t
+  | FBitT of Bigint.t
   | VBitT of Bigint.t
   | StrT
   | ErrT
@@ -29,9 +29,9 @@ type t =
 let rec pp fmt = function
   | VoidT -> Format.fprintf fmt "void"
   | BoolT -> Format.fprintf fmt "bool"
-  | AIntT -> Format.fprintf fmt "int"
-  | IntT w -> Format.fprintf fmt "%ss" (Bigint.to_string w)
-  | BitT w -> Format.fprintf fmt "%sw" (Bigint.to_string w)
+  | IntT -> Format.fprintf fmt "int"
+  | FIntT w -> Format.fprintf fmt "%ss" (Bigint.to_string w)
+  | FBitT w -> Format.fprintf fmt "%sw" (Bigint.to_string w)
   | VBitT w -> Format.fprintf fmt "%sv" (Bigint.to_string w)
   | StrT -> Format.fprintf fmt "string"
   | ErrT -> Format.fprintf fmt "error"

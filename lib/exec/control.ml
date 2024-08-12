@@ -5,7 +5,7 @@ module R = Runtime
 
 (* Logic for match-action table *)
 
-let match_action (ctx : Ctx.t) (_keys : (R.Value.t * mtch_kind) list)
+let match_action (ctx : Ctx.t) (_keys : (R.Value.t * match_kind) list)
     (actions : table_action list) (_entries : table_entry list)
     (default : table_default option) (_custom : table_custom list) =
   let path, _ = ctx.id in
@@ -28,7 +28,8 @@ let match_action (ctx : Ctx.t) (_keys : (R.Value.t * mtch_kind) list)
     let action_run =
       let action_run =
         Option.value ~default:(List.hd actions) action
-        |> it |> fst
+        |> it
+        |> (fun (id, _, _) -> id)
         |> Format.asprintf "%a" Syntax.Pp.pp_var
       in
       R.Value.EnumFieldV ("action_list(" ^ id ^ ")", action_run)

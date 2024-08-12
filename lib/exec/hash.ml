@@ -150,7 +150,7 @@ let hash (ctx : Ctx.t) =
   in
   let typ = Ctx.find_td "O" ctx in
   (* (TODO) is this the right way to cast? *)
-  let result = AIntV data |> Runtime.Ops.eval_cast typ in
+  let result = IntV data |> Runtime.Ops.eval_cast typ in
   let ctx = Ctx.update_var "result" result ctx in
   ctx
 
@@ -222,7 +222,7 @@ let update_checksum (ctx : Ctx.t) =
     let typ = Ctx.find_td "O" ctx in
     (* (TODO) is this the right way to cast? *)
     let result =
-      AIntV (compute_checksum algo data) |> Runtime.Ops.eval_cast typ
+      IntV (compute_checksum algo data) |> Runtime.Ops.eval_cast typ
     in
     let ctx = Ctx.update_var "checksum" result ctx in
     ctx

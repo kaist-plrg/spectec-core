@@ -9,20 +9,20 @@ module R = Runtime
 let rec eval_type (ictx : ICtx.t) (typ : typ) : R.Type.t =
   match typ.it with
   | BoolT -> BoolT
-  | AIntT -> AIntT
-  | IntT width ->
+  | IntT -> IntT
+  | FIntT width ->
       let width = eval_expr ictx width |> R.Value.get_num in
-      IntT width
-  | BitT width ->
+      FIntT width
+  | FBitT width ->
       let width = eval_expr ictx width |> R.Value.get_num in
-      BitT width
+      FBitT width
   | VBitT width ->
       let width = eval_expr ictx width |> R.Value.get_num in
       VBitT width
   | StrT -> StrT
   | ErrT -> ErrT
   | NameT { it = Top id; _ } -> ICtx.find_td_glob id.it ictx
-  | NameT { it = Bare id; _ } -> ICtx.find_td id.it ictx
+  | NameT { it = Current id; _ } -> ICtx.find_td id.it ictx
   (* (TODO) Handle specialized types *)
   | SpecT (var, _) -> eval_type ictx (NameT var $ no_info)
   | StackT (typ, size) ->
@@ -51,6 +51,7 @@ and eval_expr (ictx : ICtx.t) (expr : expr) : R.Value.t =
   | CastE (typ, expr) -> eval_cast ictx typ expr
   | MaskE _ -> eval_mask ictx
   | RangeE _ -> eval_range ictx
+  | SelectE _ -> eval_select ictx
   | ArrAccE (base, idx) -> eval_arr_acc ictx base idx
   | BitAccE (base, idx_lo, idx_hi) -> eval_bitstring_acc ictx base idx_lo idx_hi
   | TypeAccE (var, member) -> eval_type_acc ictx var member
@@ -64,19 +65,20 @@ and eval_expr (ictx : ICtx.t) (expr : expr) : R.Value.t =
       assert false
 
 and eval_bool (b : bool) : R.Value.t = BoolV b
-and eval_str (s : string) : R.Value.t = StrV s
+and eval_str (t : text) : R.Value.t = StrV t.it
 
 and eval_num (value : Bigint.t) (encoding : (Bigint.t * bool) option) :
     R.Value.t =
   match encoding with
   | Some (width, signed) ->
-      if signed then R.Value.IntV (width, value) else R.Value.BitV (width, value)
-  | None -> AIntV value
+      if signed then R.Value.FIntV (width, value)
+      else R.Value.FBitV (width, value)
+  | None -> R.Value.IntV value
 
 and eval_var (ictx : ICtx.t) (var : var) : R.Value.t =
   match var.it with
   | Top id -> ICtx.find_var_glob id.it ictx
-  | Bare id -> ICtx.find_var id.it ictx
+  | Current id -> ICtx.find_var id.it ictx
 
 and eval_list (ictx : ICtx.t) (exprs : expr list) : R.Value.t =
   let values = eval_exprs ictx exprs in
@@ -115,6 +117,7 @@ and eval_cast (ictx : ICtx.t) (typ : typ) (expr : expr) : R.Value.t =
 
 and eval_mask (_ictx : ICtx.t) : R.Value.t = assert false
 and eval_range (_ictx : ICtx.t) : R.Value.t = assert false
+and eval_select (_ictx : ICtx.t) : R.Value.t = assert false
 
 and eval_arr_acc (ictx : ICtx.t) (base : expr) (idx : expr) : R.Value.t =
   let values = eval_exprs ictx [ base; idx ] in
@@ -138,7 +141,7 @@ and eval_type_acc (ictx : ICtx.t) (var : var) (member : member) : R.Value.t =
   let typ =
     match var.it with
     | Top id -> ICtx.find_td_glob id.it ictx
-    | Bare id -> ICtx.find_td id.it ictx
+    | Current id -> ICtx.find_td id.it ictx
   in
   match typ with
   | EnumT (id, members) ->

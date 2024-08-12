@@ -7,30 +7,48 @@ open Util.Source
 let desugar_num (num : Number.t) : num =
   (num.value, num.width_signed) $ Number.tags num
 
-(* Names *)
+(* Texts *)
 
-let desugar_text (text : Text.t) : id = text.str $ Text.tags text
+let desugar_text (text : Text.t) : text = text.str $ Text.tags text
+
+(* Identifiers *)
+
 let desugar_id (text : Text.t) : id = desugar_text text
+
+(* Variables (scoped identifiers) *)
 
 let desugar_var (name : Name.t) : var =
   let at = Name.tags name in
   match name with
-  | BareName id -> Bare (desugar_text id) $ at
+  | BareName id -> Current (desugar_text id) $ at
   | QualifiedName (prefix, id) ->
       assert (prefix = []);
       Top (desugar_text id) $ at
 
-let desugar_member (text : Text.t) : member = desugar_text text
-let desugar_label (text : Text.t) : label = desugar_text text
-let desugar_mtch_kind (text : Text.t) : mtch_kind = desugar_text text
+(* Members *)
 
-(* Unary and binary operators *)
+let desugar_member (text : Text.t) : member = desugar_text text
+
+let desugar_members (members : Text.t list) : member list =
+  List.map desugar_member members
+
+(* State labels *)
+
+let desugar_state_label (text : Text.t) : state_label = desugar_text text
+
+(* Match kinds *)
+
+let desugar_match_kind (text : Text.t) : match_kind = desugar_text text
+
+(* Unary operators *)
 
 let desugar_unop (unop : Op.un) : unop =
   match unop with
   | BitNot { tags = at } -> BNotOp $ at
   | Not { tags = at } -> LNotOp $ at
   | UMinus { tags = at } -> UMinusOp $ at
+
+(* Binary operators *)
 
 let desugar_binop (binop : Op.bin) : binop =
   match binop with
@@ -56,17 +74,43 @@ let desugar_binop (binop : Op.bin) : binop =
   | And { tags = at } -> LAndOp $ at
   | Or { tags = at } -> LOrOp $ at
 
+(* Annotations *)
+
+let rec desugar_anno (anno : Annotation.t) : anno =
+  let text_name = desugar_text anno.name in
+  let at = anno.tags in
+  match anno.body with
+  | Empty _ -> EmptyN text_name $ at
+  | Unparsed { str = texts; _ } ->
+      let texts = List.map desugar_text texts in
+      TextN (text_name, texts) $ at
+  | Expression { exprs; _ } ->
+      let exprs = List.map desugar_expr exprs in
+      ExprN (text_name, exprs) $ at
+  | KeyValue { key_values = fields; _ } ->
+      let fields =
+        List.map
+          (fun (field : KeyValue.t) ->
+            let KeyValue.{ key; value; _ } = field in
+            (desugar_member key, desugar_expr value))
+          fields
+      in
+      RecordN (text_name, fields) $ at
+
+and desugar_annos (annos : Annotation.t list) : anno list =
+  List.map desugar_anno annos
+
 (* Types *)
 
-let rec desugar_type (typ : Type.t) : typ =
+and desugar_type (typ : Type.t) : typ =
   match typ with
   | Void { tags = at } -> VoidT $ at
   | Bool { tags = at } -> BoolT $ at
   | Error { tags = at } -> ErrT $ at
   | String { tags = at } -> StrT $ at
-  | Integer { tags = at } -> AIntT $ at
-  | IntType { expr; tags = at } -> IntT (desugar_expr expr) $ at
-  | BitType { expr; tags = at } -> BitT (desugar_expr expr) $ at
+  | Integer { tags = at } -> IntT $ at
+  | IntType { expr; tags = at } -> FIntT (desugar_expr expr) $ at
+  | BitType { expr; tags = at } -> FBitT (desugar_expr expr) $ at
   | VarBit { expr; tags = at } -> VBitT (desugar_expr expr) $ at
   | TypeName { name; tags = at } -> NameT (desugar_var name) $ at
   | SpecializedType { base; args; tags = at } ->
@@ -87,7 +131,7 @@ let rec desugar_type (typ : Type.t) : typ =
 
 and desugar_types (typs : Type.t list) : typ list = List.map desugar_type typs
 
-(* Parameters and Arguments *)
+(* Directions *)
 
 and desugar_dir (dir : Direction.t option) : dir =
   match dir with
@@ -96,24 +140,42 @@ and desugar_dir (dir : Direction.t option) : dir =
   | Some (Out { tags = at }) -> Out $ at
   | Some (InOut { tags = at }) -> InOut $ at
 
-and desugar_param (param : Parameter.t) : param =
-  let at = param.tags in
-  let id = desugar_id param.variable in
-  let dir = desugar_dir param.direction in
-  let typ = desugar_type param.typ in
-  let default = Option.map desugar_expr param.opt_value in
-  (id, dir, typ, default) $ at
-
-and desugar_params (params : Parameter.t list) : param list =
-  List.map desugar_param params
+(* Type parameters *)
 
 and desugar_tparam (tparam : Text.t) : tparam = desugar_text tparam
 
 and desugar_tparams (tparams : Text.t list) : tparam list =
   List.map desugar_tparam tparams
 
+(* Parameters *)
+
+and desugar_param (param : Parameter.t) : param =
+  let at = param.tags in
+  let id = desugar_id param.variable in
+  let dir = desugar_dir param.direction in
+  let typ = desugar_type param.typ in
+  let expr_default = Option.map desugar_expr param.opt_value in
+  let annos = desugar_annos param.annotations in
+  (id, dir, typ, expr_default, annos) $ at
+
+and desugar_params (params : Parameter.t list) : param list =
+  List.map desugar_param params
+
+(* Constructor parameters *)
+
+and desugar_cparam (cparam : Parameter.t) : cparam = desugar_param cparam
+
 and desugar_cparams (cparams : Parameter.t list) : cparam list =
-  List.map desugar_param cparams
+  List.map desugar_cparam cparams
+
+(* Type arguments *)
+
+and desugar_targ (targ : Type.t) : targ = desugar_type targ
+
+and desugar_targs (targs : Type.t list) : targ list =
+  List.map desugar_targ targs
+
+(* Arguments *)
 
 and desugar_arg (arg : Argument.t) : arg =
   match arg with
@@ -128,76 +190,75 @@ and desugar_args (args : Argument.t list) : arg list = List.map desugar_arg args
 
 (* Expressions *)
 
-and desugar_record (fields : KeyValue.t list) : (member * expr) list =
-  List.map
-    (fun (field : KeyValue.t) ->
-      let KeyValue.{ key; value; _ } = field in
-      (desugar_member key, desugar_expr value))
-    fields
-
 and desugar_expr (expr : Expression.t) : expr =
   match expr with
   | True { tags = at } -> BoolE true $ at
   | False { tags = at } -> BoolE false $ at
   | Int { i; tags = at } -> NumE (desugar_num i) $ at
-  | String { text; tags = at } -> StrE text.str $ at
+  | String { text; tags = at } -> StrE (desugar_text text) $ at
   | Name { name; tags = at } -> VarE (desugar_var name) $ at
   | List { values; tags = at } -> ListE (desugar_exprs values) $ at
   | Record { entries = fields; tags = at } ->
-      let record = desugar_record fields in
+      let record =
+        List.map
+          (fun (field : KeyValue.t) ->
+            let KeyValue.{ key; value; _ } = field in
+            (desugar_member key, desugar_expr value))
+          fields
+      in
       RecordE record $ at
   | UnaryOp { op; arg; tags = at } ->
-      let op = desugar_unop op in
-      let arg = desugar_expr arg in
-      UnE (op, arg) $ at
+      let unop = desugar_unop op in
+      let expr = desugar_expr arg in
+      UnE (unop, expr) $ at
   | BinaryOp { op; args; tags = at } ->
-      let op = desugar_binop op in
+      let binop = desugar_binop op in
       let larg, rarg = args in
-      let larg = desugar_expr larg in
-      let rarg = desugar_expr rarg in
-      BinE (op, larg, rarg) $ at
+      let expr_l = desugar_expr larg in
+      let expr_r = desugar_expr rarg in
+      BinE (binop, expr_l, expr_r) $ at
   | Ternary { cond; tru; fls; tags = at } ->
-      let cond = desugar_expr cond in
-      let tru = desugar_expr tru in
-      let fls = desugar_expr fls in
-      TernE (cond, tru, fls) $ at
+      let expr_cond = desugar_expr cond in
+      let expr_then = desugar_expr tru in
+      let expr_else = desugar_expr fls in
+      TernE (expr_cond, expr_then, expr_else) $ at
   | Cast { typ; expr; tags = at } ->
       let typ = desugar_type typ in
       let expr = desugar_expr expr in
       CastE (typ, expr) $ at
   | Mask { expr; mask; tags = at } ->
-      let expr = desugar_expr expr in
-      let mask = desugar_expr mask in
-      MaskE (expr, mask) $ at
+      let expr_base = desugar_expr expr in
+      let expr_mask = desugar_expr mask in
+      MaskE (expr_base, expr_mask) $ at
   | Range { lo; hi; tags = at } ->
-      let lo = desugar_expr lo in
-      let hi = desugar_expr hi in
-      RangeE (lo, hi) $ at
+      let expr_lb = desugar_expr lo in
+      let expr_ub = desugar_expr hi in
+      RangeE (expr_lb, expr_ub) $ at
   | ArrayAccess { array; index; tags = at } ->
-      let arr = desugar_expr array in
-      let idx = desugar_expr index in
-      ArrAccE (arr, idx) $ at
+      let expr_base = desugar_expr array in
+      let expr_idx = desugar_expr index in
+      ArrAccE (expr_base, expr_idx) $ at
   | BitStringAccess { bits; lo; hi; tags = at } ->
-      let bits = desugar_expr bits in
-      let lidx = desugar_expr lo in
-      let hidx = desugar_expr hi in
-      BitAccE (bits, lidx, hidx) $ at
-  | TypeMember { typ; name; tags = at } ->
-      let typ = desugar_var typ in
-      let member = desugar_member name in
-      TypeAccE (typ, member) $ at
+      let expr_base = desugar_expr bits in
+      let expr_lidx = desugar_expr lo in
+      let expr_hidx = desugar_expr hi in
+      BitAccE (expr_base, expr_lidx, expr_hidx) $ at
   | ErrorMember { err; tags = at } ->
       let err = desugar_member err in
       ErrAccE err $ at
-  | ExpressionMember { expr; name; tags = at } ->
-      let expr = desugar_expr expr in
+  | TypeMember { typ; name; tags = at } ->
+      let var = desugar_var typ in
       let member = desugar_member name in
-      ExprAccE (expr, member) $ at
+      TypeAccE (var, member) $ at
+  | ExpressionMember { expr; name; tags = at } ->
+      let expr_base = desugar_expr expr in
+      let member = desugar_member name in
+      ExprAccE (expr_base, member) $ at
   | FunctionCall { func; type_args; args; tags = at } ->
-      let func = desugar_expr func in
-      let targs = desugar_types type_args in
+      let expr_func = desugar_expr func in
+      let targs = desugar_targs type_args in
       let args = desugar_args args in
-      CallE (func, targs, args) $ at
+      CallE (expr_func, targs, args) $ at
   | NamelessInstantiation { typ; args; tags = at } ->
       let typ = desugar_type typ in
       let args = desugar_args args in
@@ -206,70 +267,52 @@ and desugar_expr (expr : Expression.t) : expr =
 and desugar_exprs (exprs : Expression.t list) : expr list =
   List.map desugar_expr exprs
 
-(* Match-cases *)
+(* Keyset expressions *)
 
-and desugar_match (mtch : Match.t) : mtch =
+and desugar_keyset (mtch : Match.t) : keyset =
   match mtch with
-  | Expression { expr; tags = at } -> ExprM (desugar_expr expr) $ at
-  | Default { tags = at } -> DefaultM $ at
-  | DontCare { tags = at } -> AnyM $ at
+  | Default { tags = at } -> DefaultK $ at
+  | DontCare { tags = at } -> AnyK $ at
+  | Expression { expr; tags = at } -> ExprK (desugar_expr expr) $ at
 
-and desugar_matches (mtchs : Match.t list) : mtch list =
-  List.map desugar_match mtchs
+and desugar_keysets (mtchs : Match.t list) : keyset list =
+  List.map desugar_keyset mtchs
 
 (* Statements *)
 
-(* (TODO) hack with info *)
-and desugar_switch_case (case : Statement.switch_case) : switch_case =
-  match case with
-  | Action { label; code; tags = at } -> (
-      let block = desugar_block code in
-      match label with
-      | Name { name; tags = at_case } -> (CaseC name.str $ at_case, block) $ at
-      | Default { tags = at_case } -> (DefaultC $ at_case, block) $ at)
-  | FallThrough { label; tags = at } -> (
-      let block = [] $ no_info in
-      match label with
-      | Name { name; tags = at_case } -> (FallC name.str $ at_case, block) $ at
-      | Default _ -> assert false)
-
-and desugar_switch_cases (cases : Statement.switch_case list) : switch_case list
-    =
-  List.map desugar_switch_case cases
-
 and desugar_stmt (stmt : Statement.t) : stmt =
   match stmt with
-  | EmptyStatement { tags = at } -> EmptyI $ at
+  | EmptyStatement { tags = at } -> EmptyS $ at
   | Assignment { lhs; rhs; tags = at } ->
-      let lhs = desugar_expr lhs in
-      let rhs = desugar_expr rhs in
-      AssignI (lhs, rhs) $ at
+      let expr_lhs = desugar_expr lhs in
+      let expr_rhs = desugar_expr rhs in
+      AssignS (expr_lhs, expr_rhs) $ at
   | Switch { expr; cases; tags = at } ->
       let expr = desugar_expr expr in
-      let cases = desugar_switch_cases cases in
-      SwitchI (expr, cases) $ at
+      let switch_cases = desugar_switch_cases cases in
+      SwitchS (expr, switch_cases) $ at
   | Conditional { cond; tru; fls; tags = at } ->
-      let cond = desugar_expr cond in
-      let tru = desugar_stmt tru in
-      let fls =
-        match fls with Some fls -> desugar_stmt fls | None -> EmptyI $ no_info
+      let expr_cond = desugar_expr cond in
+      let stmt_then = desugar_stmt tru in
+      let stmt_else =
+        match fls with Some fls -> desugar_stmt fls | None -> EmptyS $ no_info
       in
-      IfI (cond, tru, fls) $ at
+      IfS (expr_cond, stmt_then, stmt_else) $ at
   | BlockStatement { block; tags = at } ->
       let block = desugar_block block in
-      BlockI block $ at
-  | Exit { tags = at } -> ExitI $ at
+      BlockS block $ at
+  | Exit { tags = at } -> ExitS $ at
   | Return { expr; tags = at } ->
       let expr = Option.map desugar_expr expr in
-      RetI expr $ at
+      RetS expr $ at
   | MethodCall { func; type_args; args; tags = at } ->
-      let func = desugar_expr func in
-      let targs = desugar_types type_args in
+      let expr_func = desugar_expr func in
+      let targs = desugar_targs type_args in
       let args = desugar_args args in
-      CallI (func, targs, args) $ at
+      CallS (expr_func, targs, args) $ at
   | DeclarationStatement { decl; tags = at } ->
       let decl = desugar_decl decl in
-      DeclI decl $ at
+      DeclS decl $ at
   | _ ->
       Format.eprintf "(TODO: desugar_stmt) %s\n"
         (Surface.Print.print_stmt 0 stmt);
@@ -278,19 +321,214 @@ and desugar_stmt (stmt : Statement.t) : stmt =
 and desugar_stmts (stmts : Statement.t list) : stmt list =
   List.map desugar_stmt stmts
 
+(* Blocks (sequence of statements *)
+
 and desugar_block (block : Block.t) : block =
   let at = block.tags in
   let stmts = desugar_stmts block.statements in
-  stmts $ at
+  let annos = desugar_annos block.annotations in
+  (stmts, annos) $ at
+
+(* Match-cases for switch *)
+
+and desugar_switch_label (label : Statement.switch_label) : switch_label =
+  match label with
+  | Default { tags = at } -> DefaultL $ at
+  | Name { name; tags = at } -> NameL (desugar_text name) $ at
+
+and desugar_switch_case (case : Statement.switch_case) : switch_case =
+  match case with
+  | Action { label; code; tags = at } ->
+      let switch_label = desugar_switch_label label in
+      let block = desugar_block code in
+      MatchC (switch_label, block) $ at
+  | FallThrough { label; tags = at } ->
+      let switch_label = desugar_switch_label label in
+      FallC switch_label $ at
+
+and desugar_switch_cases (cases : Statement.switch_case list) : switch_case list
+    =
+  List.map desugar_switch_case cases
+
+(* Select-cases for select *)
 
 (* Declarations *)
 
-and desugar_struct_fields (fields : Declaration.field list) :
-    (member * typ) list =
+and desugar_decl (decl : Declaration.t) : decl =
+  match decl with
+  | Constant { name; typ; value; tags = at; annotations } ->
+      let id = desugar_id name in
+      let typ = desugar_type typ in
+      let value = desugar_expr value in
+      let annos = desugar_annos annotations in
+      ConstD { id; typ; value; annos } $ at
+  | Variable { name; typ; init; tags = at; annotations } ->
+      let id = desugar_id name in
+      let typ = desugar_type typ in
+      let init = Option.map desugar_expr init in
+      let annos = desugar_annos annotations in
+      VarD { id; typ; init; annos } $ at
+  | Instantiation { name; typ; args; init; tags = at; annotations } ->
+      let id = desugar_id name in
+      let typ = desugar_type typ in
+      let args = desugar_args args in
+      let init = Option.map desugar_block init in
+      let annos = desugar_annos annotations in
+      InstD { id; typ; args; init; annos } $ at
+  | Error { members; tags = at } ->
+      let members = desugar_members members in
+      ErrD { members } $ at
+  | MatchKind { members; tags = at } ->
+      let members = desugar_members members in
+      MatchKindD { members } $ at
+  | Struct { name; fields; tags = at; annotations } ->
+      let id = desugar_id name in
+      let fields = desugar_record_fields fields in
+      let annos = desugar_annos annotations in
+      StructD { id; fields; annos } $ at
+  | Header { name; fields; tags = at; annotations } ->
+      let id = desugar_id name in
+      let fields = desugar_record_fields fields in
+      let annos = desugar_annos annotations in
+      HeaderD { id; fields; annos } $ at
+  | HeaderUnion { name; fields; tags = at; annotations } ->
+      let id = desugar_id name in
+      let fields = desugar_record_fields fields in
+      let annos = desugar_annos annotations in
+      UnionD { id; fields; annos } $ at
+  | Enum { name; members; tags = at; annotations } ->
+      let id = desugar_id name in
+      let members = desugar_members members in
+      let annos = desugar_annos annotations in
+      EnumD { id; members; annos } $ at
+  | SerializableEnum { name; typ; members = fields; tags = at; annotations } ->
+      let id = desugar_id name in
+      let typ = desugar_type typ in
+      let fields = desugar_serial_fields fields in
+      let annos = desugar_annos annotations in
+      SEnumD { id; typ; fields; annos } $ at
+  | NewType { name; typ_or_decl; tags = at; annotations } ->
+      let id = desugar_id name in
+      let typdef =
+        match typ_or_decl with
+        | Left typ -> (Left (desugar_type typ) : (typ, decl) alt)
+        | Right decl -> (Right (desugar_decl decl) : (typ, decl) alt)
+      in
+      let annos = desugar_annos annotations in
+      NewTypeD { id; typdef; annos } $ at
+  | TypeDef { name; typ_or_decl; tags = at; annotations } ->
+      let id = desugar_id name in
+      let typdef =
+        match typ_or_decl with
+        | Left typ -> (Left (desugar_type typ) : (typ, decl) alt)
+        | Right decl -> (Right (desugar_decl decl) : (typ, decl) alt)
+      in
+      let annos = desugar_annos annotations in
+      TypeDefD { id; typdef; annos } $ at
+  | ValueSet { name; typ; size; tags = at; annotations } ->
+      let id = desugar_id name in
+      let typ = desugar_type typ in
+      let size = desugar_expr size in
+      let annos = desugar_annos annotations in
+      ValueSetD { id; typ; size; annos } $ at
+  | ParserType { name; type_params; params; tags = at; annotations } ->
+      let id = desugar_id name in
+      let tparams = desugar_tparams type_params in
+      let params = desugar_params params in
+      let annos = desugar_annos annotations in
+      ParserTypeD { id; tparams; params; annos } $ at
+  | Parser
+      {
+        name;
+        type_params;
+        params;
+        constructor_params;
+        locals;
+        states;
+        tags = at;
+        annotations;
+      } ->
+      let id = desugar_id name in
+      let tparams = desugar_tparams type_params in
+      let params = desugar_params params in
+      let cparams = desugar_cparams constructor_params in
+      let locals = desugar_decls locals in
+      let states = desugar_parser_states states in
+      let annos = desugar_annos annotations in
+      ParserD { id; tparams; params; cparams; locals; states; annos } $ at
+  | Action { name; params; body; tags = at; annotations } ->
+      let id = desugar_id name in
+      let params = desugar_params params in
+      let body = desugar_block body in
+      let annos = desugar_annos annotations in
+      ActionD { id; params; body; annos } $ at
+  | Table { name; properties; tags = at; annotations } ->
+      let id = desugar_id name in
+      let table = desugar_table_properties properties in
+      let annos = desugar_annos annotations in
+      TableD { id; table; annos } $ at
+  | ControlType { name; type_params; params; tags = at; annotations } ->
+      let id = desugar_id name in
+      let tparams = desugar_tparams type_params in
+      let params = desugar_params params in
+      let annos = desugar_annos annotations in
+      ControlTypeD { id; tparams; params; annos } $ at
+  | Control
+      {
+        name;
+        type_params;
+        params;
+        constructor_params;
+        locals;
+        apply;
+        tags = at;
+        annotations;
+      } ->
+      let id = desugar_id name in
+      let tparams = desugar_tparams type_params in
+      let params = desugar_params params in
+      let cparams = desugar_cparams constructor_params in
+      let locals = desugar_decls locals in
+      let body = desugar_block apply in
+      let annos = desugar_annos annotations in
+      ControlD { id; tparams; params; cparams; locals; body; annos } $ at
+  | Function { name; return; type_params; params; body; tags = at } ->
+      let id = desugar_id name in
+      let typ_ret = desugar_type return in
+      let tparams = desugar_tparams type_params in
+      let params = desugar_params params in
+      let body = desugar_block body in
+      FuncD { id; typ_ret; tparams; params; body } $ at
+  | ExternFunction { name; return; type_params; params; tags = at; annotations }
+    ->
+      let id = desugar_id name in
+      let typ_ret = desugar_type return in
+      let tparams = desugar_tparams type_params in
+      let params = desugar_params params in
+      let annos = desugar_annos annotations in
+      ExtFuncD { id; typ_ret; tparams; params; annos } $ at
+  | ExternObject { name; type_params; methods; tags = at; annotations } ->
+      let id = desugar_id name in
+      let tparams = desugar_tparams type_params in
+      let mthds = desugar_methods methods in
+      let annos = desugar_annos annotations in
+      ExtObjectD { id; tparams; mthds; annos } $ at
+  | PackageType { name; type_params; params; tags = at; annotations } ->
+      let id = desugar_id name in
+      let tparams = desugar_tparams type_params in
+      let cparams = desugar_params params in
+      let annos = desugar_annos annotations in
+      PackageTypeD { id; tparams; cparams; annos } $ at
+
+and desugar_decls (decls : Declaration.t list) : decl list =
+  List.map desugar_decl decls
+
+and desugar_record_fields (fields : Declaration.field list) :
+    (member * typ * anno list) list =
   List.map
     (fun (field : Declaration.field) ->
-      let Declaration.{ name; typ; _ } = field in
-      (desugar_member name, desugar_type typ))
+      let Declaration.{ name; typ; annotations; _ } = field in
+      (desugar_member name, desugar_type typ, desugar_annos annotations))
     fields
 
 and desugar_serial_fields (fields : (Text.t * Expression.t) list) :
@@ -301,63 +539,69 @@ and desugar_serial_fields (fields : (Text.t * Expression.t) list) :
       (desugar_member field, desugar_expr value))
     fields
 
-and desugar_members (members : Text.t list) : member list =
-  List.map desugar_member members
+and desugar_method (mthd : MethodPrototype.t) : decl =
+  match mthd with
+  | Constructor { name; params; tags = at; annotations } ->
+      let id = desugar_id name in
+      let cparams = desugar_params params in
+      let annos = desugar_annos annotations in
+      ExtConstructorD { id; cparams; annos } $ at
+  | AbstractMethod { name; return; type_params; params; tags = at; annotations }
+    ->
+      let id = desugar_id name in
+      let typ_ret = desugar_type return in
+      let tparams = desugar_tparams type_params in
+      let params = desugar_params params in
+      let annos = desugar_annos annotations in
+      ExtAbstractMethodD { id; typ_ret; tparams; params; annos } $ at
+  | Method { name; return; type_params; params; tags = at; annotations } ->
+      let id = desugar_id name in
+      let typ_ret = desugar_type return in
+      let tparams = desugar_tparams type_params in
+      let params = desugar_params params in
+      let annos = desugar_annos annotations in
+      ExtMethodD { id; typ_ret; tparams; params; annos } $ at
+
+and desugar_methods (mthds : MethodPrototype.t list) : decl list =
+  List.map desugar_method mthds
+
+(* Parser state machine *)
 
 and desugar_parser_case (case : Parser.case) : select_case =
   let Parser.{ matches; next; tags = at } = case in
-  let mtchs = desugar_matches matches in
-  let next = desugar_label next in
-  (mtchs, next) $ at
+  let keysets = desugar_keysets matches in
+  let state_label = desugar_state_label next in
+  (keysets, state_label) $ at
 
 and desugar_parser_cases (cases : Parser.case list) : select_case list =
   List.map desugar_parser_case cases
 
 and desugar_parser_transition (trans : Parser.transition) : stmt =
-  match trans with
-  | Direct { next; tags = at } -> TransI (desugar_label next) $ at
-  | Select { exprs; cases; tags = at } ->
-      let exprs = desugar_exprs exprs in
-      let cases = desugar_parser_cases cases in
-      SelectI (exprs, cases) $ at
+  let expr_trans =
+    match trans with
+    | Direct { next; tags = at } ->
+        VarE (Current (desugar_id next) $ no_info) $ at
+    | Select { exprs; cases; tags = at } ->
+        let exprs = desugar_exprs exprs in
+        let select_cases = desugar_parser_cases cases in
+        SelectE (exprs, select_cases) $ at
+  in
+  TransS expr_trans $ expr_trans.at
 
 and desugar_parser_state (state : Parser.state) : parser_state =
-  let Parser.{ name; statements; transition; tags = at; _ } = state in
-  let id = desugar_id name in
+  let Parser.{ name; statements; transition; tags = at; annotations } = state in
+  let state_label = desugar_state_label name in
   let stmts =
     desugar_stmts statements @ [ desugar_parser_transition transition ]
   in
-  let block = stmts $ no_info in
-  (id, block) $ at
+  let block = (stmts, []) $ no_info in
+  let annos = desugar_annos annotations in
+  (state_label, block, annos) $ at
 
 and desugar_parser_states (states : Parser.state list) : parser_state list =
   List.map desugar_parser_state states
 
-and desugar_table_keys (keys : Table.key list) : table_key list =
-  List.map
-    (fun (key : Table.key) ->
-      let Table.{ key; match_kind; tags = at; _ } = key in
-      (desugar_expr key, desugar_mtch_kind match_kind) $ at)
-    keys
-
-and desugar_table_action (action : Table.action_ref) : table_action =
-  let Table.{ name; args; tags = at; _ } = action in
-  let var = desugar_var name in
-  let args = desugar_args args in
-  (var, args) $ at
-
-and desugar_table_actions (actions : Table.action_ref list) : table_action list
-    =
-  List.map desugar_table_action actions
-
-and desugar_table_entry (entry : Table.entry) : table_entry =
-  let Table.{ matches; action; tags = at; _ } = entry in
-  let mtchs = desugar_matches matches in
-  let action = desugar_table_action action in
-  (mtchs, action) $ at
-
-and desugar_table_entries (entries : Table.entry list) : table_entry list =
-  List.map desugar_table_entry entries
+(* Tables *)
 
 and desugar_table_properties (properties : Table.property list) :
     table_key list
@@ -366,198 +610,89 @@ and desugar_table_properties (properties : Table.property list) :
     * table_default option
     * table_custom list =
   List.fold_left
-    (fun (keys, actions, entries, default, customs) (property : Table.property) ->
+    (fun (table_keys, table_actions, table_entries, table_default, table_customs)
+         (property : Table.property) ->
       match property with
       | Key { keys; _ } ->
-          let keys = desugar_table_keys keys in
-          (keys, actions, entries, default, customs)
+          let table_keys = desugar_table_keys keys in
+          ( table_keys,
+            table_actions,
+            table_entries,
+            table_default,
+            table_customs )
       | Actions { actions; _ } ->
-          let actions = desugar_table_actions actions in
-          (keys, actions, entries, default, customs)
+          let table_actions = desugar_table_actions actions in
+          ( table_keys,
+            table_actions,
+            table_entries,
+            table_default,
+            table_customs )
       | Entries { entries; _ } ->
-          let entries = desugar_table_entries entries in
-          (keys, actions, entries, default, customs)
+          let table_entries = desugar_table_entries entries in
+          ( table_keys,
+            table_actions,
+            table_entries,
+            table_default,
+            table_customs )
       | DefaultAction { action; const; tags = at; _ } ->
-          assert (default = None);
-          let action = desugar_table_action action in
-          let default = Some ((action, const) $ at) in
-          (keys, actions, entries, default, customs)
-      | Custom { name; value; const; tags = at; _ } ->
-          let id = desugar_text name in
-          let value = desugar_expr value in
-          let custom = (id, value, const) $ at in
-          (keys, actions, entries, default, customs @ [ custom ]))
+          assert (table_default = None);
+          let table_action = desugar_table_action action in
+          let table_default = Some ((table_action, const) $ at) in
+          ( table_keys,
+            table_actions,
+            table_entries,
+            table_default,
+            table_customs )
+      | Custom { name; value; const; tags = at; annotations } ->
+          let text_name = desugar_text name in
+          let expr = desugar_expr value in
+          let annos = desugar_annos annotations in
+          let table_custom = (text_name, expr, const, annos) $ at in
+          ( table_keys,
+            table_actions,
+            table_entries,
+            table_default,
+            table_customs @ [ table_custom ] ))
     ([], [], [], None, []) properties
 
-and desugar_method (mthd : MethodPrototype.t) : decl =
-  match mthd with
-  | Constructor { name; params; tags = at; _ } ->
-      let id = desugar_id name in
-      let cparams = desugar_params params in
-      ExtConstructorD { id; cparams } $ at
-  | AbstractMethod { name; return; type_params; params; tags = at; _ } ->
-      let id = desugar_id name in
-      let typ_ret = desugar_type return in
-      let tparams = desugar_tparams type_params in
-      let params = desugar_params params in
-      ExtAbstractMethodD { id; typ_ret; tparams; params } $ at
-  | Method { name; return; type_params; params; tags = at; _ } ->
-      let id = desugar_id name in
-      let typ_ret = desugar_type return in
-      let tparams = desugar_tparams type_params in
-      let params = desugar_params params in
-      ExtMethodD { id; typ_ret; tparams; params } $ at
+(* Table keys *)
 
-and desugar_methods (mthds : MethodPrototype.t list) : decl list =
-  List.map desugar_method mthds
+and desugar_table_keys (keys : Table.key list) : table_key list =
+  List.map
+    (fun (key : Table.key) ->
+      let Table.{ key; match_kind; tags = at; annotations } = key in
+      ( desugar_expr key,
+        desugar_match_kind match_kind,
+        desugar_annos annotations )
+      $ at)
+    keys
 
-and desugar_decl (decl : Declaration.t) : decl =
-  match decl with
-  | Constant { name; typ; value; tags = at; _ } ->
-      let id = desugar_id name in
-      let typ = desugar_type typ in
-      let value = desugar_expr value in
-      ConstD { id; typ; value } $ at
-  | Variable { name; typ; init; tags = at; _ } ->
-      let id = desugar_id name in
-      let typ = desugar_type typ in
-      let init = Option.map desugar_expr init in
-      VarD { id; typ; init } $ at
-  | Instantiation { name; typ; args; init; tags = at; _ } ->
-      let id = desugar_id name in
-      let typ = desugar_type typ in
-      let args = desugar_args args in
-      let init = Option.map desugar_block init in
-      InstD { id; typ; args; init } $ at
-  | Error { members; tags = at; _ } ->
-      let members = desugar_members members in
-      ErrD { members } $ at
-  | MatchKind { members; tags = at; _ } ->
-      let members = desugar_members members in
-      MatchKindD { members } $ at
-  | Struct { name; fields; tags = at; _ } ->
-      let id = desugar_id name in
-      let fields = desugar_struct_fields fields in
-      StructD { id; fields } $ at
-  | Header { name; fields; tags = at; _ } ->
-      let id = desugar_id name in
-      let fields = desugar_struct_fields fields in
-      HeaderD { id; fields } $ at
-  | HeaderUnion { name; fields; tags = at; _ } ->
-      let id = desugar_id name in
-      let fields = desugar_struct_fields fields in
-      UnionD { id; fields } $ at
-  | Enum { name; members; tags = at; _ } ->
-      let id = desugar_id name in
-      let members = desugar_members members in
-      EnumD { id; members } $ at
-  | SerializableEnum { name; typ; members = fields; tags = at; _ } ->
-      let id = desugar_id name in
-      let typ = desugar_type typ in
-      let fields = desugar_serial_fields fields in
-      SEnumD { id; typ; fields } $ at
-  | NewType { name; typ_or_decl; tags = at; _ } ->
-      let id = desugar_id name in
-      let typdef =
-        match typ_or_decl with
-        | Left typ -> (Left (desugar_type typ) : (typ, decl) alt)
-        | Right decl -> (Right (desugar_decl decl) : (typ, decl) alt)
-      in
-      NewTypeD { id; typdef } $ at
-  | TypeDef { name; typ_or_decl; tags = at; _ } ->
-      let id = desugar_id name in
-      let typdef =
-        match typ_or_decl with
-        | Left typ -> (Left (desugar_type typ) : (typ, decl) alt)
-        | Right decl -> (Right (desugar_decl decl) : (typ, decl) alt)
-      in
-      TypeDefD { id; typdef } $ at
-  | ValueSet { name; typ; size; tags = at; _ } ->
-      let id = desugar_id name in
-      let typ = desugar_type typ in
-      let size = desugar_expr size in
-      ValueSetD { id; typ; size } $ at
-  | ParserType { name; type_params; params; tags = at; _ } ->
-      let id = desugar_id name in
-      let tparams = desugar_tparams type_params in
-      let params = desugar_params params in
-      ParserTypeD { id; tparams; params } $ at
-  | Parser
-      {
-        name;
-        type_params;
-        params;
-        constructor_params;
-        locals;
-        states;
-        tags = at;
-        _;
-      } ->
-      let id = desugar_id name in
-      let tparams = desugar_tparams type_params in
-      let params = desugar_params params in
-      let cparams = desugar_cparams constructor_params in
-      let locals = desugar_decls locals in
-      let states = desugar_parser_states states in
-      ParserD { id; tparams; params; cparams; locals; states } $ at
-  | Action { name; params; body; tags = at; _ } ->
-      let id = desugar_id name in
-      let params = desugar_params params in
-      let body = desugar_block body in
-      ActionD { id; params; body } $ at
-  | Table { name; properties; tags = at; _ } ->
-      let id = desugar_id name in
-      let table = desugar_table_properties properties in
-      TableD { id; table } $ at
-  | ControlType { name; type_params; params; tags = at; _ } ->
-      let id = desugar_id name in
-      let tparams = desugar_tparams type_params in
-      let params = desugar_params params in
-      ControlTypeD { id; tparams; params } $ at
-  | Control
-      {
-        name;
-        type_params;
-        params;
-        constructor_params;
-        locals;
-        apply;
-        tags = at;
-        _;
-      } ->
-      let id = desugar_id name in
-      let tparams = desugar_tparams type_params in
-      let params = desugar_params params in
-      let cparams = desugar_cparams constructor_params in
-      let locals = desugar_decls locals in
-      let body = desugar_block apply in
-      ControlD { id; tparams; params; cparams; locals; body } $ at
-  | Function { name; return; type_params; params; body; tags = at; _ } ->
-      let id = desugar_id name in
-      let typ_ret = desugar_type return in
-      let tparams = desugar_tparams type_params in
-      let params = desugar_params params in
-      let body = desugar_block body in
-      FuncD { id; typ_ret; tparams; params; body } $ at
-  | ExternFunction { name; return; type_params; params; tags = at; _ } ->
-      let id = desugar_id name in
-      let typ_ret = desugar_type return in
-      let tparams = desugar_tparams type_params in
-      let params = desugar_params params in
-      ExtFuncD { id; typ_ret; tparams; params } $ at
-  | ExternObject { name; type_params; methods; tags = at; _ } ->
-      let id = desugar_id name in
-      let tparams = desugar_tparams type_params in
-      let mthds = desugar_methods methods in
-      ExtObjectD { id; tparams; mthds } $ at
-  | PackageType { name; type_params; params; tags = at; _ } ->
-      let id = desugar_id name in
-      let tparams = desugar_tparams type_params in
-      let cparams = desugar_params params in
-      PackageTypeD { id; tparams; cparams } $ at
+(* Table actions *)
 
-and desugar_decls (decls : Declaration.t list) : decl list =
-  List.map desugar_decl decls
+and desugar_table_action (action : Table.action_ref) : table_action =
+  let Table.{ name; args; tags = at; annotations } = action in
+  let var = desugar_var name in
+  let args = desugar_args args in
+  let annos = desugar_annos annotations in
+  (var, args, annos) $ at
+
+and desugar_table_actions (actions : Table.action_ref list) : table_action list
+    =
+  List.map desugar_table_action actions
+
+(* Table entries *)
+
+and desugar_table_entry (entry : Table.entry) : table_entry =
+  let Table.{ matches; action; tags = at; annotations } = entry in
+  let keysets = desugar_keysets matches in
+  let table_action = desugar_table_action action in
+  let annos = desugar_annos annotations in
+  (keysets, table_action, annos) $ at
+
+and desugar_table_entries (entries : Table.entry list) : table_entry list =
+  List.map desugar_table_entry entries
+
+(* Program *)
 
 let desugar_program (program : p4program) : program =
   let (Program decls) = program in

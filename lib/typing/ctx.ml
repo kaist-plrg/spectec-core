@@ -17,7 +17,7 @@ type localkind =
   | Function
   | Action
   | ExternMethod
-  | ParserState of label' list
+  | ParserState
   | ApplyMethod
   | Table
 
@@ -296,7 +296,7 @@ let find_type cursor id ctx = find_type_opt cursor id ctx |> Option.get
 let find_opt finder_opt cursor var ctx =
   match var.it with
   | Top id -> finder_opt Global id.it ctx
-  | Bare id -> finder_opt cursor id.it ctx
+  | Current id -> finder_opt cursor id.it ctx
 
 let find finder_opt cursor var ctx =
   find_opt finder_opt cursor var ctx |> Option.get
@@ -304,7 +304,7 @@ let find finder_opt cursor var ctx =
 let find_overloaded_opt finder_overloaded_opt cursor var args ctx =
   match var.it with
   | Top id -> finder_overloaded_opt Global (id.it, args) ctx
-  | Bare id -> finder_overloaded_opt cursor (id.it, args) ctx
+  | Current id -> finder_overloaded_opt cursor (id.it, args) ctx
 
 let find_overloaded finder_overloaded_opt cursor var args ctx =
   find_overloaded_opt finder_overloaded_opt cursor var args ctx |> Option.get
@@ -354,7 +354,7 @@ let pp_lt fmt (lt : lt) =
       | Function -> Format.fprintf fmt "Function"
       | Action -> Format.fprintf fmt "Action"
       | ExternMethod -> Format.fprintf fmt "ExternMethod"
-      | ParserState _ -> Format.fprintf fmt "ParserState"
+      | ParserState -> Format.fprintf fmt "ParserState"
       | ApplyMethod -> Format.fprintf fmt "ApplyMethod"
       | Table -> Format.fprintf fmt "Table")
     lt.kind TDEnv.pp lt.tdenv

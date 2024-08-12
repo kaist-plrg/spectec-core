@@ -50,5 +50,5 @@ let get_params = function
   | MethodF { params; _ }
   | ExternMethodF { params; _ }
   | ActionF { params; _ } ->
-      List.map (fun { it = id, _, _, _; _ } -> id.it) params
+      List.map (fun { it = id, _, _, _, _; _ } -> id.it) params
   | _ -> []

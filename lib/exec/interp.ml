@@ -20,20 +20,20 @@ module Make (Arch : ARCH) : INTERP = struct
   let rec interp_type (ctx : Ctx.t) (typ : typ) : R.Type.t =
     match typ.it with
     | BoolT -> BoolT
-    | AIntT -> AIntT
-    | IntT width ->
+    | IntT -> IntT
+    | FIntT width ->
         let width = interp_expr ctx width |> snd |> R.Value.get_num in
-        IntT width
-    | BitT width ->
+        FIntT width
+    | FBitT width ->
         let width = interp_expr ctx width |> snd |> R.Value.get_num in
-        BitT width
+        FBitT width
     | VBitT width ->
         let width = interp_expr ctx width |> snd |> R.Value.get_num in
         VBitT width
     | StrT -> StrT
     | ErrT -> Ctx.find_td_glob "error" ctx
     | NameT { it = Top id; _ } -> Ctx.find_td_glob id.it ctx
-    | NameT { it = Bare id; _ } -> Ctx.find_td id.it ctx
+    | NameT { it = Current id; _ } -> Ctx.find_td id.it ctx
     (* (TODO) Handle specialized types *)
     | SpecT (var, _) -> interp_type ctx (NameT var $ no_info)
     | StackT (typ, size) ->
@@ -64,6 +64,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | CastE (typ, expr) -> interp_cast ctx typ expr
     | MaskE _ -> interp_mask ctx
     | RangeE _ -> interp_range ctx
+    | SelectE (exprs, cases) -> interp_select ctx exprs cases
     | ArrAccE (base, idx) -> interp_arr_acc ctx base idx
     | BitAccE (base, idx_lo, idx_hi) ->
         interp_bitstring_acc ctx base idx_lo idx_hi
@@ -78,16 +79,16 @@ module Make (Arch : ARCH) : INTERP = struct
         |> failwith
 
   and interp_bool (ctx : Ctx.t) (b : bool) : Ctx.t * R.Value.t = (ctx, BoolV b)
-  and interp_str (ctx : Ctx.t) (s : string) : Ctx.t * R.Value.t = (ctx, StrV s)
+  and interp_str (ctx : Ctx.t) (t : text) : Ctx.t * R.Value.t = (ctx, StrV t.it)
 
   and interp_num (ctx : Ctx.t) (value : Bigint.t)
       (encoding : (Bigint.t * bool) option) : Ctx.t * R.Value.t =
     let value =
       match encoding with
       | Some (width, signed) ->
-          if signed then R.Value.IntV (width, value)
-          else R.Value.BitV (width, value)
-      | None -> AIntV value
+          if signed then R.Value.FIntV (width, value)
+          else R.Value.FBitV (width, value)
+      | None -> IntV value
     in
     (ctx, value)
 
@@ -96,7 +97,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | Top id ->
         let value = Ctx.find_var_glob id.it ctx in
         (ctx, value)
-    | Bare id ->
+    | Current id ->
         let value = Ctx.find_var id.it ctx in
         (ctx, value)
 
@@ -149,6 +150,34 @@ module Make (Arch : ARCH) : INTERP = struct
   and interp_range (_ctx : Ctx.t) : Ctx.t * R.Value.t =
     Format.sprintf "(TODO: interp_range)" |> failwith
 
+  (* exit statements are not allowed within parsers or functions. (12.5) *)
+  (* assume: evaluation of match case should never change the context *)
+  and interp_select (ctx : Ctx.t) (exprs : expr list) (cases : select_case list)
+      : Ctx.t * R.Value.t =
+    (* (TODO) how to properly cast the select-ed value against the case value(s)? *)
+    let ctx, values =
+      List.fold_left
+        (fun (ctx, values) expr ->
+          let ctx, value = interp_expr ctx expr in
+          (ctx, value :: values))
+        (ctx, []) exprs
+    in
+    let select_cases (next_found : state_label option) (case : select_case) =
+      match next_found with
+      | Some _ -> next_found
+      | None ->
+          let keysets, next = case.it in
+          let select_keyset (keyset : keyset) (value : R.Value.t) =
+            match keyset.it with
+            | DefaultK | AnyK -> true
+            | ExprK expr -> interp_expr ctx expr |> snd = value
+          in
+          if List.for_all2 select_keyset keysets values then Some next else None
+    in
+    let state_next = List.fold_left select_cases None cases |> Option.get in
+    let value = R.Value.StateV state_next.it in
+    (ctx, value)
+
   and interp_arr_acc (ctx : Ctx.t) (base : expr) (idx : expr) :
       Ctx.t * R.Value.t =
     let ctx, values = interp_exprs ctx [ base; idx ] in
@@ -180,7 +209,7 @@ module Make (Arch : ARCH) : INTERP = struct
     let typ =
       match var.it with
       | Top id -> Ctx.find_td_glob id.it ctx
-      | Bare id -> Ctx.find_td id.it ctx
+      | Current id -> Ctx.find_td id.it ctx
     in
     match typ with
     | EnumT (id, members) when List.mem member.it members ->
@@ -269,7 +298,7 @@ module Make (Arch : ARCH) : INTERP = struct
      | lvalue "[" expression "]" | lvalue "[" expression ":" expression "]" *)
   and interp_write (ctx : Ctx.t) (lvalue : expr) (value : R.Value.t) =
     match lvalue.it with
-    | VarE { it = Bare id; _ } ->
+    | VarE { it = Current id; _ } ->
         (* let typ = Ctx.find_var id.it ctx |> fst in *)
         (* (TODO) casts must be explicitized after type checking *)
         (* let value = Runtime.Ops.eval_cast typ value in *)
@@ -290,7 +319,8 @@ module Make (Arch : ARCH) : INTERP = struct
             interp_write ctx base (StackV (values, next, size))
         | _ ->
             Format.asprintf "(interp_write) %a is not a header stack."
-              Syntax.Pp.pp_expr base
+              (Syntax.Pp.pp_expr ~level:0)
+              base
             |> failwith)
     | ExprAccE (base, member) -> (
         let ctx, value_base = interp_expr ctx base in
@@ -317,25 +347,28 @@ module Make (Arch : ARCH) : INTERP = struct
             let next = Bigint.(next + one) in
             interp_write ctx base (StackV (values, next, size))
         | _ ->
-            Format.asprintf "(TODO: interp_write) %a" Syntax.Pp.pp_expr lvalue
+            Format.asprintf "(TODO: interp_write) %a"
+              (Syntax.Pp.pp_expr ~level:0)
+              lvalue
             |> failwith)
     | _ ->
-        Format.asprintf "(TODO: interp_write) %a" Syntax.Pp.pp_expr lvalue
+        Format.asprintf "(TODO: interp_write) %a"
+          (Syntax.Pp.pp_expr ~level:0)
+          lvalue
         |> failwith
 
   and interp_stmt (sign : Sig.t) (ctx : Ctx.t) (stmt : stmt) =
     match stmt.it with
-    | EmptyI -> interp_empty sign ctx
-    | AssignI (lhs, rhs) -> interp_assign sign ctx lhs rhs
-    | IfI (cond, tru, fls) -> interp_if sign ctx cond tru fls
-    | BlockI block -> interp_block sign ctx block
-    | CallI (func, targs, args) -> interp_call_as_stmt sign ctx func targs args
-    | TransI next -> interp_trans sign ctx next
-    | SelectI (exprs, cases) -> interp_select sign ctx exprs cases
-    | DeclI decl -> interp_decl sign ctx decl
-    | SwitchI (expr, cases) -> interp_switch sign ctx expr cases
-    | ExitI -> interp_exit sign ctx
-    | RetI expr -> interp_return sign ctx expr
+    | EmptyS -> interp_empty sign ctx
+    | AssignS (lhs, rhs) -> interp_assign sign ctx lhs rhs
+    | IfS (cond, tru, fls) -> interp_if sign ctx cond tru fls
+    | BlockS block -> interp_block sign ctx block
+    | CallS (func, targs, args) -> interp_call_as_stmt sign ctx func targs args
+    | TransS expr -> interp_trans sign ctx expr
+    | DeclS decl -> interp_decl sign ctx decl
+    | SwitchS (expr, cases) -> interp_switch sign ctx expr cases
+    | ExitS -> interp_exit sign ctx
+    | RetS expr -> interp_return sign ctx expr
 
   and interp_empty (sign : Sig.t) (ctx : Ctx.t) = (sign, ctx)
 
@@ -363,10 +396,11 @@ module Make (Arch : ARCH) : INTERP = struct
     | Ret _ | Exit -> (sign, ctx)
     | Cont ->
         let ctx = Ctx.enter_frame ctx in
+        let stmts, _ = block.it in
         let sign, ctx =
           List.fold_left
             (fun (sign, ctx) stmt -> interp_stmt sign ctx stmt)
-            (sign, ctx) block.it
+            (sign, ctx) stmts
         in
         let ctx = Ctx.exit_frame ctx in
         (sign, ctx)
@@ -383,16 +417,17 @@ module Make (Arch : ARCH) : INTERP = struct
   (* (TODO) For state transitions, do not change object visibility,
      treating them as real "transitions", because states can be mutually recursive *)
   (* exit statements are not allowed within parsers or functions. (12.5) *)
-  and interp_trans (sign : Sig.t) (ctx : Ctx.t) (next : label) =
+  and interp_trans (sign : Sig.t) (ctx : Ctx.t) (expr : expr) =
     match sign with
     | Ret _ | Exit ->
         Format.asprintf "(interp_trans) Exit unallowed within parser.\n"
         |> failwith
     | Cont ->
+        let next = interp_expr ctx expr |> snd |> R.Value.get_state in
         (* (TODO) better handling of accept/reject *)
-        if next.it = "accept" || next.it = "reject" then (sign, ctx)
+        if next = "accept" || next = "reject" then (sign, ctx)
         else
-          let state_next = Ctx.find_func (next.it, []) ctx in
+          let state_next = Ctx.find_func (next, []) ctx in
           let body =
             match state_next with StateF { body } -> body | _ -> assert false
           in
@@ -405,56 +440,26 @@ module Make (Arch : ARCH) : INTERP = struct
           let ctx = { ctx with env_obj = ctx_next.env_obj } in
           (sign, ctx)
 
-  (* exit statements are not allowed within parsers or functions. (12.5) *)
-  (* assume: evaluation of match case should never change the context *)
-  and interp_select (sign : Sig.t) (ctx : Ctx.t) (exprs : expr list)
-      (cases : select_case list) =
-    match sign with
-    | Ret _ | Exit ->
-        Format.asprintf "(interp_select) Exit unallowed within parser.\n"
-        |> failwith
-    | Cont ->
-        (* (TODO) how to properly cast the select-ed value against the case value(s)? *)
-        let ctx, values =
-          List.fold_left
-            (fun (ctx, values) expr ->
-              let ctx, value = interp_expr ctx expr in
-              (ctx, value :: values))
-            (ctx, []) exprs
-        in
-        let select_cases (next_found : label option) (case : select_case) =
-          match next_found with
-          | Some _ -> next_found
-          | None ->
-              let mtchs, next = case.it in
-              let select_mtch (mtch : mtch) (value : R.Value.t) =
-                match mtch.it with
-                | DefaultM | AnyM -> true
-                | ExprM expr -> interp_expr ctx expr |> snd = value
-              in
-              if List.for_all2 select_mtch mtchs values then Some next else None
-        in
-        let next = List.fold_left select_cases None cases |> Option.get in
-        interp_trans sign ctx next
-
   and interp_decl (sign : Sig.t) (ctx : Ctx.t) (decl : decl) =
     match sign with
     | Ret _ | Exit -> (sign, ctx)
     | Cont -> (
         match decl.it with
-        | VarD { id; typ; init = None } ->
+        | VarD { id; typ; init = None; _ } ->
             let typ = interp_type ctx typ in
             let value = Runtime.Ops.eval_default_value typ in
             let ctx = Ctx.add_var_loc id.it value ctx in
             (sign, ctx)
-        | VarD { id; typ; init = Some value } ->
+        | VarD { id; typ; init = Some value; _ } ->
             let typ = interp_type ctx typ in
             let ctx, value = interp_expr ctx value in
             let value = Runtime.Ops.eval_cast typ value in
             let ctx = Ctx.add_var_loc id.it value ctx in
             (sign, ctx)
         | _ ->
-            Format.asprintf "(TODO: interp_decl) %a" Syntax.Pp.pp_decl (0, decl)
+            Format.asprintf "(TODO: interp_decl) %a"
+              (Syntax.Pp.pp_decl ~level:0)
+              decl
             |> failwith)
 
   (* (TODO) assume switch matches on table apply result only,
@@ -468,27 +473,27 @@ module Make (Arch : ARCH) : INTERP = struct
         let value = R.Value.get_enum value |> snd in
         let switch_cases (block_found : bool * block option)
             (case : switch_case) =
-          let case, block = case.it in
           match block_found with
           (* match complete *)
           | true, Some _ -> block_found
           (* during fallthrough *)
           | true, None -> (
               match case.it with
-              | CaseC _ -> (true, Some block)
-              | FallC _ -> (true, None)
-              | DefaultC -> (true, Some block))
+              | MatchC (_, block) -> (true, Some block)
+              | FallC _ -> (true, None))
           (* match not found *)
           | false, _ -> (
               match case.it with
-              | CaseC case when case = value -> (true, Some block)
-              | FallC case when case = value -> (true, None)
-              | DefaultC -> (true, Some block)
+              | MatchC ({ it = NameL case; _ }, block) when case.it = value ->
+                  (true, Some block)
+              | MatchC ({ it = DefaultL; _ }, block) -> (true, Some block)
+              | FallC { it = NameL case; _ } when case.it = value -> (true, None)
+              | FallC { it = DefaultL; _ } -> (true, None)
               | _ -> block_found)
         in
         let _, block = List.fold_left switch_cases (false, None) cases in
         let block =
-          match block with None -> [] $ no_info | Some block -> block
+          match block with None -> ([], []) $ no_info | Some block -> block
         in
         interp_block sign ctx block
 
@@ -519,7 +524,7 @@ module Make (Arch : ARCH) : INTERP = struct
     let params_map =
       List.fold_left
         (fun params_map param ->
-          let id, _, _, _ = param.it in
+          let id, _, _, _, _ = param.it in
           PMap.add id.it param params_map)
         PMap.empty params
     in
@@ -540,7 +545,7 @@ module Make (Arch : ARCH) : INTERP = struct
   and copyin adder (ctx_callee : Ctx.t) (params : param list)
       (values : R.Value.t list) =
     let copyin' (ctx_callee : Ctx.t) (param : param) (value : R.Value.t) =
-      let id, dir, typ, _ = param.it in
+      let id, dir, typ, _, _ = param.it in
       (* (TODO) Is it correct to evaluate the type at callee? *)
       match dir.it with
       | No | In | InOut ->
@@ -557,7 +562,7 @@ module Make (Arch : ARCH) : INTERP = struct
   and copyout (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (params : param list)
       (exprs : expr list) =
     let copyout' (ctx_caller : Ctx.t) (param : param) (expr : expr) =
-      let id, dir, _, _ = param.it in
+      let id, dir, _, _, _ = param.it in
       match dir.it with
       | InOut | Out ->
           let value = Ctx.find_var id.it ctx_callee in
@@ -654,7 +659,11 @@ module Make (Arch : ARCH) : INTERP = struct
       =
     (* Evaluate the keys *)
     let keys, actions, entries, default, custom = table in
-    let exprs, mtchs = List.map it keys |> List.split in
+    let exprs, mtchs =
+      List.map it keys
+      |> List.map (fun (expr, match_kind, _) -> (expr, match_kind))
+      |> List.split
+    in
     let ctx_caller, values = interp_exprs ctx_caller exprs in
     let keys = List.combine values mtchs in
     (* Invoke the match-action table to get an action *)
@@ -666,7 +675,7 @@ module Make (Arch : ARCH) : INTERP = struct
       let sign = Sig.Ret (Some value) in
       (sign, ctx_caller, ctx_callee)
     else
-      let action, args = Option.get action |> it in
+      let action, args, _ = Option.get action |> it in
       (* Find and call the action *)
       let sign, ctx_callee = interp_func_call ctx_callee action [] args in
       let sign =
@@ -867,9 +876,10 @@ module Make (Arch : ARCH) : INTERP = struct
     in
     match fvar.it with
     | Top fid -> interp_inter_func_call fid
-    | Bare fid when Option.is_some (Ctx.find_func_obj_opt (fid.it, args) ctx) ->
+    | Current fid when Option.is_some (Ctx.find_func_obj_opt (fid.it, args) ctx)
+      ->
         interp_intra_func_call fid
-    | Bare fid -> interp_inter_func_call fid
+    | Current fid -> interp_inter_func_call fid
 
   and interp_call (ctx : Ctx.t) (func : expr) (targs : typ list)
       (args : arg list) =
@@ -879,7 +889,8 @@ module Make (Arch : ARCH) : INTERP = struct
     (* function call *)
     | VarE fvar -> interp_func_call ctx fvar targs args
     | _ ->
-        Format.asprintf "(interp_call) %a is not a function" Syntax.Pp.pp_expr
+        Format.asprintf "(interp_call) %a is not a function"
+          (Syntax.Pp.pp_expr ~level:0)
           func
         |> failwith
 end
