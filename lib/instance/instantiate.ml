@@ -298,22 +298,33 @@ and instantiate_from_cclos (ccenv : CCEnv.t) (sto : Sto.t)
             instantiate_parser_obj_decl ccenv sto ictx_callee path local)
           (sto, ictx_callee) locals
       in
-      (* Build methods out of states *)
+      (* Build methods out of states, and add states as variables *)
       let ictx_callee =
         List.fold_left
           (fun (ictx_callee : ICtx.t) { it = label, body, _; _ } ->
             (* (TODO) Ignore direct application for now *)
             let func = Func.StateF { body } in
             let fid = (label.it, []) in
-            ICtx.add_func_obj fid func ictx_callee)
+            ICtx.add_func_obj fid func ictx_callee
+            |> ICtx.add_var_obj label.it (Value.StateV label.it))
           ictx_callee states
+      in
+      let ictx_callee =
+        ICtx.add_var_obj "accept" (Value.StateV "accept") ictx_callee
+        |> ICtx.add_var_obj "reject" (Value.StateV "reject")
       in
       (* Build "apply" method *)
       let apply =
         (* Move object-local variable initializers into apply block *)
         let body_init = List.filter_map var_decl_to_stmt locals in
         (* Transition to the start state *)
-        let body = body_init @ [ TransS ("start" $ no_info) $ no_info ] in
+        let body =
+          body_init
+          @ [
+              TransS (VarE (Current ("start" $ no_info) $ no_info) $ no_info)
+              $ no_info;
+            ]
+        in
         let body = (body, []) $ no_info in
         Func.MethodF
           { vis_obj = ictx_callee.vis_obj; tparams = []; params; body }

@@ -52,6 +52,7 @@ and eval_expr (ictx : ICtx.t) (expr : expr) : Value.t =
   | CastE (typ, expr) -> eval_cast ictx typ expr
   | MaskE _ -> eval_mask ictx
   | RangeE _ -> eval_range ictx
+  | SelectE _ -> eval_select ictx
   | ArrAccE (base, idx) -> eval_arr_acc ictx base idx
   | BitAccE (base, idx_lo, idx_hi) -> eval_bitstring_acc ictx base idx_lo idx_hi
   | TypeAccE (var, member) -> eval_type_acc ictx var member
@@ -116,6 +117,7 @@ and eval_cast (ictx : ICtx.t) (typ : typ) (expr : expr) : Value.t =
 
 and eval_mask (_ictx : ICtx.t) : Value.t = assert false
 and eval_range (_ictx : ICtx.t) : Value.t = assert false
+and eval_select (_ictx : ICtx.t) : Value.t = assert false
 
 and eval_arr_acc (ictx : ICtx.t) (base : expr) (idx : expr) : Value.t =
   let values = eval_exprs ictx [ base; idx ] in

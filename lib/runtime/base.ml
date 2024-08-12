@@ -32,6 +32,7 @@ module Value = struct
     | UnionV of (member' * t) list
     | EnumFieldV of id' * member'
     | SEnumFieldV of id' * member' * t
+    | StateV of id'
     | RefV of path'
 
   let rec pp fmt = function
@@ -79,6 +80,7 @@ module Value = struct
           fs
     | EnumFieldV (_, m) -> Format.fprintf fmt "%s" m
     | SEnumFieldV (_, m, v) -> Format.fprintf fmt "%s(%a)" m pp v
+    | StateV s -> Format.fprintf fmt "state %s" s
     | RefV p -> Format.fprintf fmt "ref %s" (String.concat "." p)
 
   (* Getters *)
@@ -119,6 +121,11 @@ module Value = struct
     match t with
     | EnumFieldV (id, member) -> (id, member)
     | _ -> Format.asprintf "Not an enum value: %a" pp t |> failwith
+
+  let get_state t =
+    match t with
+    | StateV id -> id
+    | _ -> Format.asprintf "Not a state value: %a" pp t |> failwith
 
   (* Aggregate accessors *)
 

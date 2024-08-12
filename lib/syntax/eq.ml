@@ -219,6 +219,8 @@ and eq_expr' (expr : expr) (expr' : expr) =
       eq_expr expr_l expr_l' && eq_expr expr_r expr_r'
   | RangeE (expr_l, expr_r), RangeE (expr_l', expr_r') ->
       eq_expr expr_l expr_l' && eq_expr expr_r expr_r'
+  | SelectE (exprs, cases), SelectE (exprs', cases') ->
+      eq_list eq_expr exprs exprs' && eq_list eq_select_case cases cases'
   | ArrAccE (expr_b, expr_i), ArrAccE (expr_b', expr_i') ->
       eq_expr expr_b expr_b' && eq_expr expr_i expr_i'
   | BitAccE (expr_b, expr_l, expr_h), BitAccE (expr_b', expr_l', expr_h') ->
@@ -248,46 +250,6 @@ and eq_keyset' (keyset : keyset) (keyset' : keyset) =
   | AnyK, AnyK -> true
   | _ -> false
 
-(* Statements *)
-
-and eq_stmt (stmt : stmt) (stmt' : stmt) =
-  check "stmt" eq_stmt' pp_stmt stmt stmt'
-
-and eq_stmt' stmt stmt' =
-  match (stmt.it, stmt'.it) with
-  | EmptyS, EmptyS -> true
-  | AssignS (expr_l, expr_r), AssignS (expr_l', expr_r') ->
-      eq_expr expr_l expr_l' && eq_expr expr_r expr_r'
-  | SwitchS (expr, cases), SwitchS (expr', cases') ->
-      eq_expr expr expr' && eq_list eq_switch_case cases cases'
-  | IfS (expr, stmt_then, stmt_else), IfS (expr', stmt_then', stmt_else') ->
-      eq_expr expr expr'
-      && eq_stmt stmt_then stmt_then'
-      && eq_stmt stmt_else stmt_else'
-  | BlockS block, BlockS block' -> eq_block block block'
-  | ExitS, ExitS -> true
-  | RetS expr, RetS expr' -> eq_option eq_expr expr expr'
-  | CallS (expr, targs, args), CallS (expr', targs', args') ->
-      eq_expr expr expr'
-      && eq_list eq_targ targs targs'
-      && eq_list eq_arg args args'
-  | TransS state_label, TransS state_label' ->
-      eq_state_label state_label state_label'
-  | SelectS (exprs, cases), SelectS (exprs', cases') ->
-      eq_list eq_expr exprs exprs' && eq_list eq_select_case cases cases'
-  | DeclS decl, DeclS decl' -> eq_decl decl decl'
-  | _ -> false
-
-(* Blocks (sequence of statements) *)
-
-and eq_block (block : block) (block' : block) =
-  check "block" eq_block' pp_block block block'
-
-and eq_block' block block' =
-  let stmts, annos = block.it in
-  let stmts', annos' = block'.it in
-  eq_list eq_stmt stmts stmts' && eq_list eq_anno annos annos'
-
 (* Match-cases for switch *)
 
 and eq_switch_label (switch_label : switch_label) (switch_label' : switch_label)
@@ -311,6 +273,43 @@ and eq_switch_case' switch_case switch_case' =
   | FallC switch_label, FallC switch_label' ->
       eq_switch_label switch_label switch_label'
   | _ -> false
+
+(* Statements *)
+
+and eq_stmt (stmt : stmt) (stmt' : stmt) =
+  check "stmt" eq_stmt' pp_stmt stmt stmt'
+
+and eq_stmt' stmt stmt' =
+  match (stmt.it, stmt'.it) with
+  | EmptyS, EmptyS -> true
+  | AssignS (expr_l, expr_r), AssignS (expr_l', expr_r') ->
+      eq_expr expr_l expr_l' && eq_expr expr_r expr_r'
+  | SwitchS (expr, cases), SwitchS (expr', cases') ->
+      eq_expr expr expr' && eq_list eq_switch_case cases cases'
+  | IfS (expr, stmt_then, stmt_else), IfS (expr', stmt_then', stmt_else') ->
+      eq_expr expr expr'
+      && eq_stmt stmt_then stmt_then'
+      && eq_stmt stmt_else stmt_else'
+  | BlockS block, BlockS block' -> eq_block block block'
+  | ExitS, ExitS -> true
+  | RetS expr, RetS expr' -> eq_option eq_expr expr expr'
+  | CallS (expr, targs, args), CallS (expr', targs', args') ->
+      eq_expr expr expr'
+      && eq_list eq_targ targs targs'
+      && eq_list eq_arg args args'
+  | TransS expr, TransS expr' -> eq_expr expr expr'
+  | DeclS decl, DeclS decl' -> eq_decl decl decl'
+  | _ -> false
+
+(* Blocks (sequence of statements) *)
+
+and eq_block (block : block) (block' : block) =
+  check "block" eq_block' pp_block block block'
+
+and eq_block' block block' =
+  let stmts, annos = block.it in
+  let stmts', annos' = block'.it in
+  eq_list eq_stmt stmts stmts' && eq_list eq_anno annos annos'
 
 (* Select-case for select *)
 

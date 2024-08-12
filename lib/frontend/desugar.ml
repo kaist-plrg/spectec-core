@@ -577,12 +577,16 @@ and desugar_parser_cases (cases : Parser.case list) : select_case list =
   List.map desugar_parser_case cases
 
 and desugar_parser_transition (trans : Parser.transition) : stmt =
-  match trans with
-  | Direct { next; tags = at } -> TransS (desugar_state_label next) $ at
-  | Select { exprs; cases; tags = at } ->
-      let exprs = desugar_exprs exprs in
-      let select_cases = desugar_parser_cases cases in
-      SelectS (exprs, select_cases) $ at
+  let expr_trans =
+    match trans with
+    | Direct { next; tags = at } ->
+        VarE (Current (desugar_id next) $ no_info) $ at
+    | Select { exprs; cases; tags = at } ->
+        let exprs = desugar_exprs exprs in
+        let select_cases = desugar_parser_cases cases in
+        SelectE (exprs, select_cases) $ at
+  in
+  TransS expr_trans $ expr_trans.at
 
 and desugar_parser_state (state : Parser.state) : parser_state =
   let Parser.{ name; statements; transition; tags = at; annotations } = state in

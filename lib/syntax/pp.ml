@@ -119,9 +119,9 @@ let rec pp_type' fmt typ' =
   | ErrT -> F.fprintf fmt "error"
   | StrT -> F.fprintf fmt "string"
   | IntT -> F.fprintf fmt "int"
-  | FIntT expr -> F.fprintf fmt "int<%a>" pp_expr expr
-  | FBitT expr -> F.fprintf fmt "bit<%a>" pp_expr expr
-  | VBitT expr -> F.fprintf fmt "varbit<%a>" pp_expr expr
+  | FIntT expr -> F.fprintf fmt "int<%a>" (pp_expr ~level:0) expr
+  | FBitT expr -> F.fprintf fmt "bit<%a>" (pp_expr ~level:0) expr
+  | VBitT expr -> F.fprintf fmt "varbit<%a>" (pp_expr ~level:0) expr
   | NameT var -> pp_var fmt var
   | SpecT (var, typs) ->
       F.fprintf fmt "%a<%a>" pp_var var
@@ -129,7 +129,8 @@ let rec pp_type' fmt typ' =
            ~pp_sep:(fun fmt () -> F.fprintf fmt ", ")
            pp_type)
         typs
-  | StackT (typ, expr) -> F.fprintf fmt "%a[%a]" pp_type typ pp_expr expr
+  | StackT (typ, expr) ->
+      F.fprintf fmt "%a[%a]" pp_type typ (pp_expr ~level:0) expr
   | TupleT typs ->
       F.fprintf fmt "tuple<%a>"
         (Format.pp_print_list
@@ -170,9 +171,10 @@ and pp_param' fmt param' =
   let id, dir, typ, expr_default, _annos = param' in
   match expr_default with
   | Some expr when dir.it = No ->
-      F.fprintf fmt "%a %a = %a" pp_type typ pp_id id pp_expr expr
+      F.fprintf fmt "%a %a = %a" pp_type typ pp_id id (pp_expr ~level:0) expr
   | Some expr ->
-      F.fprintf fmt "%a %a %a = %a" pp_dir dir pp_type typ pp_id id pp_expr expr
+      F.fprintf fmt "%a %a %a = %a" pp_dir dir pp_type typ pp_id id
+        (pp_expr ~level:0) expr
   | None when dir.it = No -> F.fprintf fmt "%a %a" pp_type typ pp_id id
   | None -> F.fprintf fmt "%a %a %a" pp_dir dir pp_type typ pp_id id
 
@@ -209,7 +211,7 @@ and pp_targs fmt targs =
 and pp_arg' fmt arg' =
   match arg' with
   | ExprA expr -> pp_expr fmt expr
-  | NameA (id, expr) -> F.fprintf fmt "%a = %a" pp_id id pp_expr expr
+  | NameA (id, expr) -> F.fprintf fmt "%a = %a" pp_id id (pp_expr ~level:0) expr
   | AnyA -> F.fprintf fmt "_"
 
 and pp_arg fmt arg = pp_arg' fmt arg.it
@@ -221,7 +223,7 @@ and pp_args fmt args =
 
 (* Expressions *)
 
-and pp_expr' fmt expr' =
+and pp_expr' ?(level = 0) fmt expr' =
   match expr' with
   | BoolE b -> F.fprintf fmt "%b" b
   | StrE t -> F.fprintf fmt "\"%a\"" pp_text t
@@ -238,33 +240,46 @@ and pp_expr' fmt expr' =
         (Format.pp_print_list
            ~pp_sep:(fun fmt () -> F.fprintf fmt ", ")
            (fun fmt (name, expr) ->
-             F.fprintf fmt "%s = %a" name.it pp_expr expr))
+             F.fprintf fmt "%s = %a" name.it (pp_expr ~level:0) expr))
         fields
-  | UnE (unop, expr) -> F.fprintf fmt "%a%a" pp_unop unop pp_expr expr
+  | UnE (unop, expr) ->
+      F.fprintf fmt "%a%a" pp_unop unop (pp_expr ~level:0) expr
   | BinE (binop, expr_left, expr_right) ->
-      F.fprintf fmt "((%a) %a (%a))" pp_expr expr_left pp_binop binop pp_expr
-        expr_right
+      F.fprintf fmt "((%a) %a (%a))" (pp_expr ~level:0) expr_left pp_binop binop
+        (pp_expr ~level:0) expr_right
   | TernE (expr_cond, expr_then, expr_else) ->
-      F.fprintf fmt "((%a) ? (%a) : (%a))" pp_expr expr_cond pp_expr expr_then
-        pp_expr expr_else
-  | CastE (typ, expr) -> F.fprintf fmt "((%a) (%a))" pp_type typ pp_expr expr
-  | MaskE (expr, mask) -> F.fprintf fmt "%a &&& %a" pp_expr expr pp_expr mask
-  | RangeE (lo, hi) -> F.fprintf fmt "%a .. %a" pp_expr lo pp_expr hi
-  | ArrAccE (expr, index) -> F.fprintf fmt "%a[%a]" pp_expr expr pp_expr index
+      F.fprintf fmt "((%a) ? (%a) : (%a))" (pp_expr ~level:0) expr_cond
+        (pp_expr ~level:0) expr_then (pp_expr ~level:0) expr_else
+  | CastE (typ, expr) ->
+      F.fprintf fmt "((%a) (%a))" pp_type typ (pp_expr ~level:0) expr
+  | MaskE (expr, mask) ->
+      F.fprintf fmt "%a &&& %a" (pp_expr ~level:0) expr (pp_expr ~level:0) mask
+  | RangeE (lo, hi) ->
+      F.fprintf fmt "%a .. %a" (pp_expr ~level:0) lo (pp_expr ~level:0) hi
+  | SelectE (exprs_keyset, select_cases) ->
+      F.fprintf fmt "select (%a) {\n%a\n%s}" (pp_exprs ~level:0) exprs_keyset
+        (pp_select_cases ~level:(level + 1))
+        select_cases (indent level)
+  | ArrAccE (expr, index) ->
+      F.fprintf fmt "%a[%a]" (pp_expr ~level:0) expr (pp_expr ~level:0) index
   | BitAccE (expr, lo, hi) ->
-      F.fprintf fmt "%a[%a:%a]" pp_expr expr pp_expr hi pp_expr lo
+      F.fprintf fmt "%a[%a:%a]" (pp_expr ~level:0) expr (pp_expr ~level:0) hi
+        (pp_expr ~level:0) lo
   | TypeAccE (var, field) -> F.fprintf fmt "%a.%s" pp_var var field.it
   | ErrAccE field -> F.fprintf fmt "error.%s" field.it
-  | ExprAccE (expr, field) -> F.fprintf fmt "%a.%s" pp_expr expr field.it
+  | ExprAccE (expr, field) ->
+      F.fprintf fmt "%a.%s" (pp_expr ~level:0) expr field.it
   | CallE (expr, targs, args) ->
-      F.fprintf fmt "%a%a%a" pp_expr expr pp_targs targs pp_args args
+      F.fprintf fmt "%a%a%a" (pp_expr ~level:0) expr pp_targs targs pp_args args
   | InstE (typ, args) -> F.fprintf fmt "%a%a" pp_type typ pp_args args
 
-and pp_expr fmt expr = pp_expr' fmt expr.it
+and pp_expr ?(level = 0) fmt expr = pp_expr' ~level fmt expr.it
 
-and pp_exprs fmt exprs =
+and pp_exprs ?(level = 0) fmt exprs =
   F.fprintf fmt "%a"
-    (Format.pp_print_list ~pp_sep:(fun fmt () -> F.fprintf fmt ", ") pp_expr)
+    (Format.pp_print_list
+       ~pp_sep:(fun fmt () -> F.fprintf fmt ", ")
+       (fun fmt expr -> pp_expr ~level fmt expr))
     exprs
 
 (* Keyset expressions *)
@@ -282,45 +297,61 @@ and pp_keysets fmt keysets =
     (Format.pp_print_list ~pp_sep:(fun fmt () -> F.fprintf fmt ", ") pp_keyset)
     keysets
 
+(* Select-cases for select *)
+
+and pp_select_case' ?(level = 0) fmt select_case' =
+  let keysets, state_label = select_case' in
+  F.fprintf fmt "%s%a: %a;" (indent level) pp_keysets keysets pp_state_label
+    state_label
+
+and pp_select_case ?(level = 0) fmt select_case =
+  pp_select_case' ~level fmt select_case.it
+
+and pp_select_cases ?(level = 0) fmt select_cases =
+  F.fprintf fmt "%a"
+    (Format.pp_print_list
+       ~pp_sep:(fun fmt () -> F.fprintf fmt "\n")
+       (fun fmt select_case ->
+         pp_select_case ~level:(level + 1) fmt select_case))
+    select_cases
+
 (* Statements *)
 
 let rec pp_stmt' ?(level = 0) fmt stmt' =
   match stmt' with
   | EmptyS -> F.fprintf fmt "%s;" (indent level)
   | AssignS (expr_lhs, expr_rhs) ->
-      F.fprintf fmt "%s%a = %a;" (indent level) pp_expr expr_lhs pp_expr
-        expr_rhs
+      F.fprintf fmt "%s%a = %a;" (indent level) (pp_expr ~level:0) expr_lhs
+        (pp_expr ~level:0) expr_rhs
   | SwitchS (expr_switch, switch_cases) ->
-      F.fprintf fmt "%sswitch (%a) {\n%a\n%s}" (indent level) pp_expr
+      F.fprintf fmt "%sswitch (%a) {\n%a\n%s}" (indent level) (pp_expr ~level:0)
         expr_switch
         (pp_switch_cases ~level:(level + 1))
         switch_cases (indent level)
   | IfS (expr_cond, stmt_then, stmt_else) -> (
       match stmt_else.it with
       | EmptyS ->
-          F.fprintf fmt "%sif (%a)\n%a" (indent level) pp_expr expr_cond
-            (pp_stmt ~level) stmt_then
+          F.fprintf fmt "%sif (%a)\n%a" (indent level) (pp_expr ~level:0)
+            expr_cond (pp_stmt ~level) stmt_then
       | _ ->
-          F.fprintf fmt "%sif (%a)\n%a\n%selse\n%a" (indent level) pp_expr
-            expr_cond (pp_stmt ~level) stmt_then (indent level) (pp_stmt ~level)
-            stmt_else)
+          F.fprintf fmt "%sif (%a)\n%a\n%selse\n%a" (indent level)
+            (pp_expr ~level:0) expr_cond (pp_stmt ~level) stmt_then
+            (indent level) (pp_stmt ~level) stmt_else)
   | BlockS block -> pp_block ~level fmt block
   | ExitS -> F.fprintf fmt "%sexit;" (indent level)
   | RetS expr_ret -> (
       match expr_ret with
       | Some expr_ret ->
-          F.fprintf fmt "%sreturn %a;" (indent level) pp_expr expr_ret
+          F.fprintf fmt "%sreturn %a;" (indent level) (pp_expr ~level:0)
+            expr_ret
       | None -> F.fprintf fmt "%sreturn;" (indent level))
   | CallS (expr_func, targs, args) ->
-      F.fprintf fmt "%s%a%a%a;" (indent level) pp_expr expr_func pp_targs targs
-        pp_args args
-  | TransS state_label ->
-      F.fprintf fmt "%stransition %a;" (indent level) pp_state_label state_label
-  | SelectS (exprs_keyset, select_cases) ->
-      F.fprintf fmt "%stransition select (%a) {\n%a\n%s}" (indent level)
-        pp_exprs exprs_keyset
-        (pp_select_cases ~level:(level + 1))
-        select_cases (indent level)
+      F.fprintf fmt "%s%a%a%a;" (indent level) (pp_expr ~level:0) expr_func
+        pp_targs targs pp_args args
+  | TransS expr ->
+      F.fprintf fmt "%stransition %a;" (indent level)
+        (pp_expr ~level:(level + 1))
+        expr
   | DeclS decl -> pp_decl ~level fmt decl
 
 and pp_stmt ?(level = 0) fmt stmt = pp_stmt' ~level fmt stmt.it
@@ -366,36 +397,18 @@ and pp_switch_cases ?(level = 0) fmt switch_cases =
          pp_switch_case ~level:(level + 1) fmt switch_case))
     switch_cases
 
-(* Select-cases for select *)
-
-and pp_select_case' ?(level = 0) fmt select_case' =
-  let keysets, state_label = select_case' in
-  F.fprintf fmt "%s%a: %a;" (indent level) pp_keysets keysets pp_state_label
-    state_label
-
-and pp_select_case ?(level = 0) fmt select_case =
-  pp_select_case' ~level fmt select_case.it
-
-and pp_select_cases ?(level = 0) fmt select_cases =
-  F.fprintf fmt "%a"
-    (Format.pp_print_list
-       ~pp_sep:(fun fmt () -> F.fprintf fmt "\n")
-       (fun fmt select_case ->
-         pp_select_case ~level:(level + 1) fmt select_case))
-    select_cases
-
 (* Declarations *)
 
 and pp_decl' ?(level = 0) fmt decl' =
   match decl' with
   | ConstD { id; typ; value; annos = _annos } ->
       F.fprintf fmt "%sconst %a %a = %a;" (indent level) pp_type typ pp_id id
-        pp_expr value
+        (pp_expr ~level:0) value
   | VarD { id; typ; init; annos = _annos } -> (
       match init with
       | Some init ->
           F.fprintf fmt "%s%a %a = %a;" (indent level) pp_type typ pp_id id
-            pp_expr init
+            (pp_expr ~level:0) init
       | None -> F.fprintf fmt "%s%a %a;" (indent level) pp_type typ pp_id id)
   | InstD { id; typ; args; init; annos = _annos } -> (
       match init with
@@ -453,8 +466,8 @@ and pp_decl' ?(level = 0) fmt decl' =
             (pp_decl ~level:(level + 1))
             decl pp_id id)
   | ValueSetD { id; typ; size; annos = _annos } ->
-      F.fprintf fmt "%svalue_set<%a>(%a) %a;" (indent level) pp_type typ pp_expr
-        size pp_id id
+      F.fprintf fmt "%svalue_set<%a>(%a) %a;" (indent level) pp_type typ
+        (pp_expr ~level:0) size pp_id id
   | ParserTypeD { id; tparams; params; annos = _annos } ->
       F.fprintf fmt "%sparser %a%a%a;" (indent level) pp_id id pp_tparams
         tparams pp_params params
@@ -527,7 +540,7 @@ and pp_record_fields ?(level = 0) fmt fields =
 
 and pp_serial_field ?(level = 0) fmt field =
   let id, expr = field in
-  F.fprintf fmt "%s%a = %a" (indent level) pp_id id pp_expr expr
+  F.fprintf fmt "%s%a = %a" (indent level) pp_id id (pp_expr ~level:0) expr
 
 and pp_serial_fields ?(level = 0) fmt fields =
   F.fprintf fmt "%a"
@@ -589,8 +602,8 @@ and pp_table ?(level = 0) fmt table =
 
 and pp_table_key' ?(level = 0) fmt table_key' =
   let expr, match_kind, _annos = table_key' in
-  F.fprintf fmt "%s%a : %a;" (indent level) pp_expr expr pp_match_kind
-    match_kind
+  F.fprintf fmt "%s%a : %a;" (indent level) (pp_expr ~level:0) expr
+    pp_match_kind match_kind
 
 and pp_table_key ?(level = 0) fmt table_key =
   pp_table_key' ~level fmt table_key.it
@@ -666,7 +679,7 @@ and pp_table_custom' ?(level = 0) fmt table_custom' =
   let id, expr, table_custom_const, _annos = table_custom' in
   F.fprintf fmt "%s%s %a = %a;" (indent level)
     (if table_custom_const then " const" else "")
-    pp_id id pp_expr expr
+    pp_id id (pp_expr ~level:0) expr
 
 and pp_table_custom ?(level = 0) fmt table_custom =
   pp_table_custom' ~level fmt table_custom.it

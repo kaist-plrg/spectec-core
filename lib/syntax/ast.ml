@@ -135,6 +135,7 @@ and expr' =
   | CastE of typ * expr
   | MaskE of expr * expr
   | RangeE of expr * expr
+  | SelectE of expr list * select_case list
   | ArrAccE of expr * expr
   | BitAccE of expr * expr * expr
   | ErrAccE of member
@@ -146,6 +147,10 @@ and expr' =
 (* Keyset expressions *)
 and keyset = keyset' phrase
 and keyset' = ExprK of expr | DefaultK | AnyK
+
+(* Select-cases for select *)
+and select_case = select_case' phrase
+and select_case' = keyset list * state_label
 
 (* Statements *)
 and stmt = stmt' phrase
@@ -159,8 +164,7 @@ and stmt' =
   | ExitS
   | RetS of expr option
   | CallS of expr * targ list * arg list
-  | TransS of state_label
-  | SelectS of expr list * select_case list
+  | TransS of expr
   | DeclS of decl
 
 (* Blocks (sequence of statements) *)
@@ -172,10 +176,6 @@ and switch_label = switch_label' phrase
 and switch_label' = NameL of text | DefaultL
 and switch_case = switch_case' phrase
 and switch_case' = MatchC of switch_label * block | FallC of switch_label
-
-(* Select-cases for select *)
-and select_case = select_case' phrase
-and select_case' = keyset list * state_label
 
 (* Declarations *)
 and decl = decl' phrase

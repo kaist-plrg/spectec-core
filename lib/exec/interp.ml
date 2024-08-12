@@ -64,6 +64,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | CastE (typ, expr) -> interp_cast ctx typ expr
     | MaskE _ -> interp_mask ctx
     | RangeE _ -> interp_range ctx
+    | SelectE (exprs, cases) -> interp_select ctx exprs cases
     | ArrAccE (base, idx) -> interp_arr_acc ctx base idx
     | BitAccE (base, idx_lo, idx_hi) ->
         interp_bitstring_acc ctx base idx_lo idx_hi
@@ -148,6 +149,34 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and interp_range (_ctx : Ctx.t) : Ctx.t * Value.t =
     Format.sprintf "(TODO: interp_range)" |> failwith
+
+  (* exit statements are not allowed within parsers or functions. (12.5) *)
+  (* assume: evaluation of match case should never change the context *)
+  and interp_select (ctx : Ctx.t) (exprs : expr list) (cases : select_case list)
+      =
+    (* (TODO) how to properly cast the select-ed value against the case value(s)? *)
+    let ctx, values =
+      List.fold_left
+        (fun (ctx, values) expr ->
+          let ctx, value = interp_expr ctx expr in
+          (ctx, value :: values))
+        (ctx, []) exprs
+    in
+    let select_cases (next_found : state_label option) (case : select_case) =
+      match next_found with
+      | Some _ -> next_found
+      | None ->
+          let keysets, next = case.it in
+          let select_keyset (keyset : keyset) (value : Value.t) =
+            match keyset.it with
+            | DefaultK | AnyK -> true
+            | ExprK expr -> interp_expr ctx expr |> snd = value
+          in
+          if List.for_all2 select_keyset keysets values then Some next else None
+    in
+    let state_next = List.fold_left select_cases None cases |> Option.get in
+    let value = Value.StateV state_next.it in
+    (ctx, value)
 
   and interp_arr_acc (ctx : Ctx.t) (base : expr) (idx : expr) : Ctx.t * Value.t
       =
@@ -288,7 +317,8 @@ module Make (Arch : ARCH) : INTERP = struct
             interp_write ctx base (StackV (values, next, size))
         | _ ->
             Format.asprintf "(interp_write) %a is not a header stack."
-              Syntax.Pp.pp_expr base
+              (Syntax.Pp.pp_expr ~level:0)
+              base
             |> failwith)
     | ExprAccE (base, member) -> (
         let ctx, value_base = interp_expr ctx base in
@@ -315,10 +345,14 @@ module Make (Arch : ARCH) : INTERP = struct
             let next = Bigint.(next + one) in
             interp_write ctx base (StackV (values, next, size))
         | _ ->
-            Format.asprintf "(TODO: interp_write) %a" Syntax.Pp.pp_expr lvalue
+            Format.asprintf "(TODO: interp_write) %a"
+              (Syntax.Pp.pp_expr ~level:0)
+              lvalue
             |> failwith)
     | _ ->
-        Format.asprintf "(TODO: interp_write) %a" Syntax.Pp.pp_expr lvalue
+        Format.asprintf "(TODO: interp_write) %a"
+          (Syntax.Pp.pp_expr ~level:0)
+          lvalue
         |> failwith
 
   and interp_stmt (sign : Sig.t) (ctx : Ctx.t) (stmt : stmt) =
@@ -328,8 +362,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | IfS (cond, tru, fls) -> interp_if sign ctx cond tru fls
     | BlockS block -> interp_block sign ctx block
     | CallS (func, targs, args) -> interp_call_as_stmt sign ctx func targs args
-    | TransS next -> interp_trans sign ctx next
-    | SelectS (exprs, cases) -> interp_select sign ctx exprs cases
+    | TransS expr -> interp_trans sign ctx expr
     | DeclS decl -> interp_decl sign ctx decl
     | SwitchS (expr, cases) -> interp_switch sign ctx expr cases
     | ExitS -> interp_exit sign ctx
@@ -382,16 +415,17 @@ module Make (Arch : ARCH) : INTERP = struct
   (* (TODO) For state transitions, do not change object visibility,
      treating them as real "transitions", because states can be mutually recursive *)
   (* exit statements are not allowed within parsers or functions. (12.5) *)
-  and interp_trans (sign : Sig.t) (ctx : Ctx.t) (next : state_label) =
+  and interp_trans (sign : Sig.t) (ctx : Ctx.t) (expr : expr) =
     match sign with
     | Ret _ | Exit ->
         Format.asprintf "(interp_trans) Exit unallowed within parser.\n"
         |> failwith
     | Cont ->
+        let next = interp_expr ctx expr |> snd |> Value.get_state in
         (* (TODO) better handling of accept/reject *)
-        if next.it = "accept" || next.it = "reject" then (sign, ctx)
+        if next = "accept" || next = "reject" then (sign, ctx)
         else
-          let state_next = Ctx.find_func (next.it, []) ctx in
+          let state_next = Ctx.find_func (next, []) ctx in
           let body =
             match state_next with StateF { body } -> body | _ -> assert false
           in
@@ -403,40 +437,6 @@ module Make (Arch : ARCH) : INTERP = struct
           assert (sign = Cont);
           let ctx = { ctx with env_obj = ctx_next.env_obj } in
           (sign, ctx)
-
-  (* exit statements are not allowed within parsers or functions. (12.5) *)
-  (* assume: evaluation of match case should never change the context *)
-  and interp_select (sign : Sig.t) (ctx : Ctx.t) (exprs : expr list)
-      (cases : select_case list) =
-    match sign with
-    | Ret _ | Exit ->
-        Format.asprintf "(interp_select) Exit unallowed within parser.\n"
-        |> failwith
-    | Cont ->
-        (* (TODO) how to properly cast the select-ed value against the case value(s)? *)
-        let ctx, values =
-          List.fold_left
-            (fun (ctx, values) expr ->
-              let ctx, value = interp_expr ctx expr in
-              (ctx, value :: values))
-            (ctx, []) exprs
-        in
-        let select_cases (next_found : state_label option) (case : select_case)
-            =
-          match next_found with
-          | Some _ -> next_found
-          | None ->
-              let keysets, next = case.it in
-              let select_keyset (keyset : keyset) (value : Value.t) =
-                match keyset.it with
-                | DefaultK | AnyK -> true
-                | ExprK expr -> interp_expr ctx expr |> snd = value
-              in
-              if List.for_all2 select_keyset keysets values then Some next
-              else None
-        in
-        let next = List.fold_left select_cases None cases |> Option.get in
-        interp_trans sign ctx next
 
   and interp_decl (sign : Sig.t) (ctx : Ctx.t) (decl : decl) =
     match sign with
@@ -887,7 +887,8 @@ module Make (Arch : ARCH) : INTERP = struct
     (* function call *)
     | VarE fvar -> interp_func_call ctx fvar targs args
     | _ ->
-        Format.asprintf "(interp_call) %a is not a function" Syntax.Pp.pp_expr
+        Format.asprintf "(interp_call) %a is not a function"
+          (Syntax.Pp.pp_expr ~level:0)
           func
         |> failwith
 end
