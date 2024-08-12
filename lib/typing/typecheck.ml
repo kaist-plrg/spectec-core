@@ -12,9 +12,11 @@ let expect_value (value : Value.t option) : Value.t =
 let expect_values (values : Value.t list option) : Value.t list =
   match values with Some values -> values | None -> assert false
 
-(* Well-formedness checks *)
+(* Well-formedness checks for
+   types, typedefs, functypes, funcdefs, constypes, and consdefs *)
 
-(* (7.2.8)
+(* (7.2.8) Type nesting rules
+
    The table below lists all types that may appear as members of headers, header unions, structs,
    tuples, and lists. Note that int by itself (i.e. not as part of an int<N> type expression)
    means an arbitrary-precision integer, without a width specified.
@@ -874,15 +876,18 @@ let rec type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : expr) : Type.t =
   | StrE _ -> Type.StrT
   | NumE { it = _, encoding; _ } -> type_num_expr encoding
   | VarE var -> type_var_expr cursor ctx var
-  | ListE _ | RecordE _ | UnE _ | BinE _ | TernE _ | CastE _ ->
+  | ListE _ | RecordE _ | UnE _ | BinE _ | TernE _ ->
       Format.eprintf "(type_expr) %a\n" (Syntax.Pp.pp_expr ~level:0) expr;
       assert false
+  | CastE (typ, expr) -> type_cast_expr cursor ctx typ expr
   | MaskE (expr_base, expr_mask) ->
       type_mask_expr cursor ctx expr_base expr_mask
   | RangeE (expr_lb, expr_ub) -> type_range_expr cursor ctx expr_lb expr_ub
   | SelectE (exprs_key, select_cases) ->
       type_select_expr cursor ctx exprs_key select_cases
-  | ArrAccE _ | BitAccE _ | TypeAccE _ | ErrAccE _ ->
+  | ArrAccE (expr_base, expr_idx) ->
+      type_array_acc_expr cursor ctx expr_base expr_idx
+  | BitAccE _ | TypeAccE _ | ErrAccE _ ->
       Format.eprintf "(type_expr) %a\n" (Syntax.Pp.pp_expr ~level:0) expr;
       assert false
   | ExprAccE (expr_base, member) ->
@@ -905,6 +910,100 @@ and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : var) : Type.t =
       var;
     assert false);
   Option.get typ
+
+(* (8.11) Casts
+
+   P4 provides a limited set of casts between types. A cast is written (t) e,
+   where t is a type and e is an expression. Casts are only permitted on base types and derived types
+   introduced by typedef, type, and enum.
+
+   (8.11.1) Explicit casts
+
+   The following casts are legal in P4:
+
+    - bit<1> ↔ bool:
+        converts the value 0 to false, the value 1 to true, and vice versa.
+    - int → bool:
+        only if the int value is 0 (converted to false) or 1 (converted to true)
+    - int<W> → bit<W>:
+        preserves all bits unchanged and reinterprets negative values as positive values
+    - bit<W> → int<W>:
+        preserves all bits unchanged and reinterprets values whose most-significant bit is 1 as negative values
+    - bit<W> → bit<X>:
+        truncates the value if W > X, and otherwise (i.e., if W <= X) pads the value with zero bits.
+    - int<W> → int<X>:
+        truncates the value if W > X, and otherwise (i.e., if W < X) extends it with the sign bit.
+    - bit<W> → int:
+        preserves the value unchanged but converts it to an unlimited-precision integer;
+        the result is always non-negative
+    - int<W> → int:
+        preserves the value unchanged but converts it to an unlimited-precision integer;
+        the result may be negative
+    - int → bit<W>:
+        converts the integer value into a sufficiently large two's complement bit string to avoid information loss,
+        and then truncates the result to W bits. The compiler should emit a warning on
+        overflow or on conversion of negative value.
+    - int → int<W>:
+        converts the integer value into a sufficiently-large two's complement bit string to avoid information loss,
+        and then truncates the result to W bits. The compiler should emit a warning on overflow.
+    - casts between two types that are introduced by typedef and are equivalent to one of the above combinations.
+    - casts between a typedef and the original type.
+    - casts between a type introduced by type and the original type.
+    - casts between an enum with an explicit type and its underlying type
+    - casts of a key-value list to a struct type or a header type (see Section 8.13)
+    - casts of a tuple expression to a header stack type
+    - casts of an invalid expression {#} to a header or a header union type
+    - casts where the destination type is the same as the source type
+      if the destination type appears in this list (this excludes e.g., parsers or externs). *)
+
+and type_cast_equal (typ : Type.t) (typ_target : Type.t) : bool =
+  match (typ, typ_target) with
+  | BoolT, BoolT | IntT, IntT -> true
+  | FIntT width, FIntT width_target when width = width_target -> true
+  | FBitT width, FBitT width_target when width = width_target -> true
+  | DefT typ_inner, DefT typ_target_inner ->
+      type_cast_equal typ_inner typ_target_inner
+  | NewT typ_inner, NewT typ_target_inner ->
+      type_cast_equal typ_inner typ_target_inner
+  | SEnumT (typ_inner, _), typ_target -> type_cast_equal typ_inner typ_target
+  | _ -> false
+
+and type_cast_explicit (typ : Type.t) (typ_target : Type.t) : bool =
+  match (typ, typ_target) with
+  | FBitT width, BoolT when width = Bigint.one -> true
+  | BoolT, FBitT width when width = Bigint.one -> true
+  (* (TODO) int to bool can only be checked dynamically *)
+  | FIntT width_target, FBitT width when width_target = width -> true
+  | FBitT width_target, FIntT width when width_target = width -> true
+  | FBitT _, FBitT _
+  | FIntT _, FIntT _
+  | FBitT _, IntT
+  | FIntT _, IntT
+  | IntT, FBitT _
+  | IntT, FIntT _ ->
+      true
+  | DefT typ_inner, DefT typ_target_inner ->
+      type_cast_explicit typ_inner typ_target_inner
+  | DefT typ_inner, typ_target -> type_cast_explicit typ_inner typ_target
+  | typ, DefT typ_target_inner -> type_cast_explicit typ typ_target_inner
+  | NewT typ_inner, typ_target -> type_cast_explicit typ_inner typ_target
+  | typ, NewT typ_target_inner -> type_cast_explicit typ typ_target_inner
+  | SEnumT (typ_inner, _), typ_target -> type_cast_explicit typ_inner typ_target
+  | typ, SEnumT (typ_target_inner, _) -> type_cast_explicit typ typ_target_inner
+  (* (TODO) Add key-value list as runtime value, e.g., RecordV *)
+  (* (TODO) Cast from tuple expression to a header stack type *)
+  (* (TODO) Support invalid expression {#} *)
+  | _ -> type_cast_equal typ typ_target
+
+and type_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : typ) (expr : expr)
+    : Type.t =
+  let typ_target = eval_type cursor ctx typ in
+  let typ = type_expr cursor ctx expr in
+  if not (type_cast_explicit typ typ_target) then (
+    Format.eprintf "(type_cast_expr) Invalid cast from %a to %a\n" Type.pp typ
+      Type.pp typ_target;
+    assert false);
+  typ_target
 
 (* (8.15.3) Masks
 
@@ -977,9 +1076,9 @@ and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : expr)
 
 (* (8.15.1) Singleton sets
 
-   In a set context, expressions denote singleton sets. *)
+   In a set context, expressions denote singleton sets.
 
-(* (8.15.2) The universal set
+   (8.15.2) The universal set
 
    In a set context, the expressions default and _ denote the universal set,
    which contains all possible values of a given type. *)
@@ -1046,6 +1145,53 @@ and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs_key : expr list)
   List.iter (check_valid_type Ctx.Local ctx) typs_key;
   List.iter (type_select_case ctx typs_key) cases;
   Type.StateT
+
+(* (8.12) Operations on tuple expressions
+
+   The fields of a tuple can be accessed using array index syntax x[0], x[1].
+   The array indexes must be compile-time constants,
+   to enable the type-checker to identify the field types statically.
+
+   (8.18) Operations on header stacks
+
+   Given a header stack value hs of size n, the following expressions are legal:
+
+    - hs[index]: produces a reference to the header at the specified position within the stack;
+      if hs is an l-value, the result is also an l-value. The header may be invalid.
+      Some implementations may impose the constraint that the index expression evaluates to a value
+      that is known at compile time. A P4 compiler must give an error if an index value that
+      is a compile-time constant is out of range.
+      Accessing a header stack hs with an index less than 0 or greater than or equal to hs.size
+      results in an undefined value. See Section 8.25 for more details.
+      The index is an expression that must be of numeric types (Section 7.4). *)
+
+and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
+    (expr_idx : expr) : Type.t =
+  let typ_base = type_expr cursor ctx expr_base in
+  let typ_idx = type_expr cursor ctx expr_idx in
+  if not (match typ_idx with IntT | FIntT _ | FBitT _ -> true | _ -> false)
+  then (
+    Format.eprintf "(type_array_acc_expr) Index %a must be of numeric type\n"
+      (Syntax.Pp.pp_expr ~level:0)
+      expr_idx;
+    assert false);
+  match typ_base with
+  | TupleT typs_base_inner ->
+      let idx =
+        static_eval_expr cursor ctx expr_idx
+        |> expect_value |> Value.get_num |> Bigint.to_int |> Option.get
+      in
+      if idx < 0 || idx >= List.length typs_base_inner then (
+        Format.eprintf "(type_array_acc_expr) Index %d out of range for %a\n"
+          idx Type.pp typ_base;
+        assert false);
+      List.nth typs_base_inner idx
+  (* (TODO) Below doesn't treat index as a compile-time known value *)
+  | StackT (typ_base_inner, _) -> typ_base_inner
+  | _ ->
+      Format.eprintf "(type_array_acc_expr) %a cannot be indexed\n" Type.pp
+        typ_base;
+      assert false
 
 (* (8.16) Operations on struct types
 
@@ -1464,9 +1610,8 @@ and type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : decl) =
       ctx
   | ControlTypeD { id; tparams; params; annos = _annos } ->
       type_control_type_decl cursor ctx id tparams params
-  | ControlD _ ->
-      Format.eprintf "(type_decl) %a\n" (Syntax.Pp.pp_decl ~level:0) decl;
-      ctx
+  | ControlD { id; tparams; params; cparams; locals; body; annos = _annos } ->
+      type_control_decl cursor ctx id tparams params cparams locals body
   (* Package *)
   | PackageTypeD { id; tparams; cparams; annos = _annos } ->
       type_package_type_decl cursor ctx id tparams cparams
@@ -1733,7 +1878,7 @@ and type_parser_type_apply_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let ctx' = Ctx.set_localkind Ctx.ParserMethod ctx' in
   let params = List.map (static_eval_param Ctx.Local ctx') params in
   let fd = FuncDef.ParserMethodD params in
-  check_valid_funcdef Ctx.Local ctx fd;
+  check_valid_funcdef Ctx.Block ctx fd;
   Ctx.add_funcdef Ctx.Block fid fd ctx
 
 and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
@@ -1755,6 +1900,24 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let td = TypeDef.ParserD (tparams, ctx'.block.fdenv) in
   check_valid_typedef cursor ctx td;
   Ctx.add_typedef cursor id.it td ctx
+
+(* (13.2) Parser declarations
+
+   A parser declaration comprises a name, a list of parameters, an optional list of constructor parameters,
+   local elements, and parser states (as well as optional annotations).
+   Unlike parser type declarations, parser declarations may not be generic.
+
+
+   At least one state, named start, must be present in any parser. A parser may not define
+   two states with the same name. It is also illegal for a parser to give explicit definitions
+   for the accept and reject states—those states are logically distinct from the states defined by the programmer.
+
+   State declarations are described below. Preceding the parser states, a parser may also contain
+   a list of local elements. These can be constants, variables, or instantiations of objects that
+   may be used within the parser. Such objects may be instantiations of extern objects, or other parsers
+   that may be invoked as subroutines. However, it is illegal to instantiate a control block within a parser.
+
+   The states and local elements are all in the same namespace. *)
 
 (* (NOTE) A different view on parser declaration
 
@@ -1861,6 +2024,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
     assert false);
   let params = List.map it params in
   let cparams = List.map it cparams in
+  let fid = Runtime.Domain.FId.to_fid "apply" params in
   let cid = Runtime.Domain.FId.to_fid id.it cparams in
   (* Typecheck and add constructor parameters to the block context *)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
@@ -1891,8 +2055,10 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let ctx' = type_stmts Ctx.Local ctx' stmts_var_init in
   (* Typecheck parser states *)
   let _ctx' = type_parser_states Ctx.Local ctx' states in
-  (* According to (NOTE) above, locals are initialized in the apply method *)
-  let typ = Type.ParserT FDEnv.empty in
+  (* Create a parser constructor definition *)
+  let fd = FuncDef.ParserMethodD params in
+  let fdenv = FDEnv.add fid fd FDEnv.empty in
+  let typ = Type.ParserT fdenv in
   let cd = ConsDef.{ tparams = []; cparams; typ } in
   Ctx.add_consdef cid cd ctx
 
@@ -1910,7 +2076,7 @@ and type_control_type_apply_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let ctx' = Ctx.set_localkind Ctx.ControlMethod ctx' in
   let params = List.map (static_eval_param Ctx.Local ctx') params in
   let fd = FuncDef.ControlMethodD params in
-  check_valid_funcdef Ctx.Local ctx fd;
+  check_valid_funcdef Ctx.Block ctx fd;
   Ctx.add_funcdef cursor fid fd ctx
 
 and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
@@ -1932,6 +2098,119 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let td = TypeDef.ControlD (tparams, ctx'.block.fdenv) in
   check_valid_typedef cursor ctx td;
   Ctx.add_typedef cursor id.it td ctx
+
+(* (14) Control blocks
+
+   Syntactically, a control block is declared with a name, parameters, optional type parameters,
+   and a sequence of declarations of constants, variables, actions, tables, and other instantiations.
+   It is illegal to instantiate a parser within a control block.
+   Unlike control type declarations, control declarations may not be generic.
+
+   P4 does not support exceptional control-flow within a control block.
+   The only statement which has a non-local effect on control flow is exit, which causes execution of
+   the enclosing control block to immediately terminate. That is, there is no equivalent of the
+   verify statement or the reject state from parsers.
+   Hence, all error handling must be performed explicitly by the programmer. *)
+
+(* (NOTE) A different view on control declaration
+
+   control id (params) (cparams) {
+     locals <-- can be initialized with params and cparams (e.g. bit<8> l = p; )
+     block
+   }
+
+   "apply" is an implicit method that is a single entry point for the control.
+   Conceptually, the control declaration above is equivalent to:
+
+   control id (cparams) {
+     locals <-- not initialized yet, only declared (e.g. bit<8> l; )
+     "apply" (params) {
+       locals are initialized with params and cparams (e.g. l = p; )
+      }
+   } *)
+
+and type_control_local_decls (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (locals : decl list) : Ctx.t * stmt list =
+  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Control) then (
+    Format.eprintf
+      "(type_control_local_decls) Control local declarations must be in a \
+       control block\n";
+    assert false);
+  let decls_var, decls =
+    List.partition_map
+      (fun local ->
+        match local.it with
+        | VarD { id; typ; init; annos } ->
+            Either.Left (id, typ, init, annos, local.at)
+        | _ -> Either.Right local)
+      locals
+  in
+  let decls_var, stmts_var_init =
+    List.map
+      (fun (id, typ, init, annos, at) ->
+        let decl_var = VarD { id; typ; init = None; annos } $ at in
+        let stmt_var_init =
+          Option.map
+            (fun expr -> AssignS (VarE (Current id $ id.at) $ id.at, expr) $ at)
+            init
+        in
+        (decl_var, stmt_var_init))
+      decls_var
+    |> List.split
+  in
+  let stmts_var_init = List.filter_map (fun stmt -> stmt) stmts_var_init in
+  let decls = decls @ decls_var in
+  let ctx = type_decls Ctx.Block ctx decls in
+  (ctx, stmts_var_init)
+
+and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (tparams : tparam list) (params : param list) (cparams : cparam list)
+    (locals : decl list) (body : block) : Ctx.t =
+  if cursor <> Ctx.Global then (
+    Format.eprintf "(type_control_decl) Control declarations must be global\n";
+    assert false);
+  if tparams <> [] then (
+    Format.eprintf
+      "(type_control_decl) Control declarations cannot be generic\n";
+    assert false);
+  let params = List.map it params in
+  let cparams = List.map it cparams in
+  let fid = Runtime.Domain.FId.to_fid "apply" params in
+  let cid = Runtime.Domain.FId.to_fid id.it cparams in
+  (* Typecheck and add constructor parameters to the block context *)
+  let ctx' = Ctx.set_id Ctx.Block id.it ctx in
+  let ctx' = Ctx.set_blockkind Ctx.Control ctx' in
+  let cparams = List.map (static_eval_param Ctx.Block ctx') cparams in
+  let ctx' =
+    List.fold_left
+      (fun ctx' cparam ->
+        let id, _, typ, _ = cparam in
+        Ctx.add_type Ctx.Block id typ ctx')
+      ctx' cparams
+  in
+  (* Typecheck and add local declarations to the block context *)
+  (* According to (NOTE) above, locals are declared but not initialized in the block cursor *)
+  let ctx', stmts_var_init = type_control_local_decls Ctx.Block ctx' locals in
+  (* Typecheck implicit "apply" method *)
+  (* Typecheck and add apply parameters to the local context *)
+  let ctx' = Ctx.set_id Ctx.Local "apply" ctx' in
+  let ctx' = Ctx.set_localkind Ctx.ControlMethod ctx' in
+  let params = List.map (static_eval_param Ctx.Local ctx') params in
+  let ctx' =
+    List.fold_left
+      (fun ctx' param ->
+        let id, _, typ, _ = param in
+        Ctx.add_type Ctx.Local id typ ctx')
+      ctx' params
+  in
+  let stmts = stmts_var_init @ [ BlockS body $ no_info ] in
+  let _ctx' = type_stmts Ctx.Local ctx' stmts in
+  (* Create a control constructor definition *)
+  let fd = FuncDef.ControlMethodD params in
+  let fdenv = FDEnv.add fid fd FDEnv.empty in
+  let typ = Type.ControlT fdenv in
+  let cd = ConsDef.{ tparams = []; cparams; typ } in
+  Ctx.add_consdef cid cd ctx
 
 (* (7.2.13) Package types
 
