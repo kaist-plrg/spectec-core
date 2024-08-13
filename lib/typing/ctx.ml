@@ -14,9 +14,10 @@ type blockkind = Empty | Extern | Parser | Control | Package
 type localkind =
   | Empty
   | ExternFunction
-  | Function
+  | Function of Type.t
   | Action
   | ExternMethod
+  | ExternAbstractMethod of Type.t
   | ParserState
   | ParserMethod
   | ControlMethod
@@ -352,9 +353,10 @@ let pp_lt fmt (lt : lt) =
       match (kind : localkind) with
       | Empty -> Format.fprintf fmt "Empty"
       | ExternFunction -> Format.fprintf fmt "ExternFunction"
-      | Function -> Format.fprintf fmt "Function"
+      | Function _ -> Format.fprintf fmt "Function"
       | Action -> Format.fprintf fmt "Action"
       | ExternMethod -> Format.fprintf fmt "ExternMethod"
+      | ExternAbstractMethod _ -> Format.fprintf fmt "ExternAbstractMethod"
       | ParserState -> Format.fprintf fmt "ParserState"
       | ParserMethod -> Format.fprintf fmt "ParserMethod"
       | ControlMethod -> Format.fprintf fmt "ControlMethod"

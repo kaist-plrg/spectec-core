@@ -1624,29 +1624,32 @@ and type_call_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : expr)
 
 (* Statement typing *)
 
-let rec type_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (stmt : stmt) : Ctx.t =
+type flow = Cont | Ret
+
+let rec type_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (stmt : stmt) : Ctx.t * flow =
   if cursor <> Ctx.Local then (
     Format.eprintf "(type_stmt) Statements must be local\n";
     assert false);
   match stmt.it with
-  | EmptyS -> ctx
-  | AssignS (expr_lhs, expr_rhs) -> type_assign_stmt ctx expr_lhs expr_rhs
-  | SwitchS _ -> ctx
-  | IfS (expr_cond, stmt_tru, stmt_fls) ->
-      type_if_stmt ctx expr_cond stmt_tru stmt_fls
-  | BlockS block -> type_block_stmt ctx block
-  | ExitS -> ctx
-  | RetS _ -> ctx
+  | EmptyS -> (ctx, flow)
+  | AssignS (expr_lhs, expr_rhs) -> type_assign_stmt ctx flow expr_lhs expr_rhs
+  | SwitchS _ -> (ctx, flow)
+  | IfS (expr_cond, stmt_then, stmt_else) ->
+      type_if_stmt ctx flow expr_cond stmt_then stmt_else
+  | BlockS block -> type_block_stmt ctx flow block
+  | ExitS -> (ctx, flow)
+  | RetS expr_ret -> type_return_stmt ctx flow expr_ret
   | CallS (expr_func, targs, args) ->
-      type_call_stmt ctx expr_func targs args;
-      ctx
-  | TransS expr ->
-      type_transition_stmt ctx expr;
-      ctx
-  | DeclS decl -> type_decl_stmt ctx decl
+      type_call_stmt ctx flow expr_func targs args
+  | TransS expr -> type_transition_stmt ctx flow expr
+  | DeclS decl -> type_decl_stmt ctx flow decl
 
-and type_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (stmts : stmt list) : Ctx.t =
-  List.fold_left (type_stmt cursor) ctx stmts
+and type_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (stmts : stmt list) : Ctx.t * flow =
+  List.fold_left
+    (fun (ctx, flow) stmt -> type_stmt cursor ctx flow stmt)
+    (ctx, flow) stmts
 
 (* (12.1) Assignment statement
 
@@ -1698,7 +1701,8 @@ and check_lvalue (ctx : Ctx.t) (expr : expr) : unit =
       expr;
     assert false)
 
-and type_assign_stmt (ctx : Ctx.t) (expr_lhs : expr) (expr_rhs : expr) : Ctx.t =
+and type_assign_stmt (ctx : Ctx.t) (flow : flow) (expr_lhs : expr)
+    (expr_rhs : expr) : Ctx.t * flow =
   check_lvalue ctx expr_lhs;
   let typ_lhs = type_expr Ctx.Local ctx expr_lhs in
   let typ_rhs = type_expr Ctx.Local ctx expr_rhs in
@@ -1712,47 +1716,94 @@ and type_assign_stmt (ctx : Ctx.t) (expr_lhs : expr) (expr_rhs : expr) : Ctx.t =
       (Syntax.Pp.pp_expr ~level:0)
       expr_rhs Type.pp typ_rhs;
     assert false);
-  ctx
+  (ctx, flow)
 
 (* (12.6) Conditional statement
 
    However, the condition expression in P4 is required to be a Boolean
    (and not an integer). *)
 
-and type_if_stmt (ctx : Ctx.t) (expr_cond : expr) (stmt_tru : stmt)
-    (stmt_fls : stmt) : Ctx.t =
+and type_if_stmt (ctx : Ctx.t) (flow : flow) (expr_cond : expr)
+    (stmt_then : stmt) (stmt_else : stmt) : Ctx.t * flow =
   let typ_cond = type_expr Ctx.Local ctx expr_cond in
   if typ_cond <> Type.BoolT then (
-    Format.eprintf "(type_if_stmt) Condition must be a boolean\n";
+    Format.eprintf "(type_if_stmt) Condition %a must be a boolean\n"
+      (Syntax.Pp.pp_expr ~level:0)
+      expr_cond;
     assert false);
-  let _ctx' = type_stmt Ctx.Local ctx stmt_tru in
-  let _ctx' = type_stmt Ctx.Local ctx stmt_fls in
-  ctx
+  let _ctx', flow_then = type_stmt Ctx.Local ctx flow stmt_then in
+  let _ctx', flow_else = type_stmt Ctx.Local ctx flow stmt_else in
+  match (flow_then, flow_else) with Ret, Ret -> (ctx, Ret) | _ -> (ctx, Cont)
 
 (* (12.3) Block statement
 
    It contains a sequence of statements and declarations, which are executed sequentially.
    The variables and constants within a block statement are only visible within the block. *)
 
-and type_block_stmt (ctx : Ctx.t) (block : block) : Ctx.t =
+and type_block_stmt (ctx : Ctx.t) (flow : flow) (block : block) : Ctx.t * flow =
   let ctx = Ctx.enter_frame ctx in
   let stmts, _annos = block.it in
-  let ctx = type_stmts Ctx.Local ctx stmts in
-  Ctx.exit_frame ctx
+  let ctx, flow = type_stmts Ctx.Local ctx flow stmts in
+  let ctx = Ctx.exit_frame ctx in
+  (ctx, flow)
+
+(* (12.4) Return statement
+
+   The return statement immediately terminates the execution of the action, function or control containing it.
+   return statements are not allowed within parsers. return statements followed by an expression are only
+   allowed within functions that return values; in this case the type of the expression must match the return type
+   of the function. Any copy-out behavior due to direction out or inout parameters of the enclosing action, function,
+   or control are still performed after the execution of the return statement.
+   See Section 6.8 for details on copy-out behavior. *)
+
+and type_return_stmt (ctx : Ctx.t) (_flow : flow) (expr_ret : expr option) :
+    Ctx.t * flow =
+  if
+    not
+      (match ctx.local.kind with
+      | Function _ | Action | ExternAbstractMethod _ | ControlMethod -> true
+      | _ -> false)
+  then (
+    Format.eprintf
+      "(type_return_stmt) Return statement must be in a function, action, \
+       abstract extern method, and control method\n";
+    assert false);
+  let typ_ret =
+    match expr_ret with
+    | Some expr_ret -> type_expr Ctx.Local ctx expr_ret
+    | None -> Type.VoidT
+  in
+  let typ_ret_func =
+    match ctx.local.kind with
+    | Function typ_ret_func -> typ_ret_func
+    | Action -> Type.VoidT
+    | ExternAbstractMethod typ_ret_func -> typ_ret_func
+    | ControlMethod -> Type.VoidT
+    | _ -> assert false
+  in
+  (* (TODO) Insert implicit cast, if possible *)
+  if typ_ret <> typ_ret_func then (
+    Format.eprintf
+      "(type_return_stmt) Return type %a does not match the function return \
+       type %a\n"
+      Type.pp typ_ret Type.pp typ_ret_func;
+    assert false);
+  (ctx, Ret)
 
 (* (8.20) Method invocations and function calls *)
 
-and type_call_stmt (ctx : Ctx.t) (expr_func : expr) (targs : targ list)
-    (args : arg list) : unit =
+and type_call_stmt (ctx : Ctx.t) (flow : flow) (expr_func : expr)
+    (targs : targ list) (args : arg list) : Ctx.t * flow =
   let _typ = type_call Ctx.Local ctx expr_func targs args in
-  ()
+  (ctx, flow)
 
 (* (13.5) Transition statements
 
    The last statement in a parser state is an optional transition statement,
    which transfers control to another state, possibly accept or reject. *)
 
-and type_transition_stmt (ctx : Ctx.t) (expr : expr) : unit =
+and type_transition_stmt (ctx : Ctx.t) (flow : flow) (expr : expr) :
+    Ctx.t * flow =
   if not (match ctx.local.kind with Ctx.ParserState -> true | _ -> false) then (
     Format.eprintf
       "(type_transition_stmt) Transition statement must be in a parser state\n";
@@ -1762,10 +1813,12 @@ and type_transition_stmt (ctx : Ctx.t) (expr : expr) : unit =
     Format.eprintf "(type_transition_stmt) Label %a is not a valid label\n"
       (Syntax.Pp.pp_expr ~level:0)
       expr;
-    assert false)
+    assert false);
+  (ctx, flow)
 
-and type_decl_stmt (ctx : Ctx.t) (decl : decl) : Ctx.t =
-  type_decl Ctx.Local ctx decl
+and type_decl_stmt (ctx : Ctx.t) (flow : flow) (decl : decl) : Ctx.t * flow =
+  let ctx = type_decl Ctx.Local ctx decl in
+  (ctx, flow)
 
 (* Declaration typing *)
 
@@ -1798,9 +1851,8 @@ and type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : decl) =
   | TypeDefD { id; typdef; annos = _annos } ->
       type_typedef_decl cursor ctx id typdef
   (* Function declarations *)
-  | ActionD _ ->
-      Format.eprintf "(type_decl) %a\n" (Syntax.Pp.pp_decl ~level:0) decl;
-      ctx
+  | ActionD { id; params; body; annos = _annos } ->
+      type_action_decl cursor ctx id params body
   | FuncD _ ->
       Format.eprintf "(type_decl) %a\n" (Syntax.Pp.pp_decl ~level:0) decl;
       ctx
@@ -2051,6 +2103,55 @@ and type_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
       Ctx.add_typedef cursor id.it td ctx
   | Right _ -> failwith "(TODO: type_typedef_decl) Handle typedef with decl"
 
+(* (14.1) Actions
+
+   Actions are code fragments that can read and write the data being processed.
+   Actions may contain data values taht can be written by the control plane and read by the data plane.
+
+   Syntactically actions resemble functions with no return value.
+   Actions may be declared within a control block: in this case they can only be used within
+   instances of that control block.
+
+   Action parameters may not have extern types. Action parameters that have no direction
+   (e.g., port in the previous example) indicate "action data." All such parameters must appear
+   at the end of the parameter list. When used in a match-action table (see Section 14.2.1.2), these
+   parameters will be provided by the table entries (e.g., as specified by the control plane, the
+   default_action table property, or the entries table property).
+
+   The body of an action consists of a sequence of statements and declarations. No table, control, or parser
+   applications can appear within actions.
+
+   Some targets may impose additional restrictions on action bodies-e.g., only allowing straight-line
+   code, with no conditional statements or expressions. *)
+
+and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (params : param list) (body : block) : Ctx.t =
+  if
+    (not (cursor = Ctx.Global))
+    && not (cursor = Ctx.Block && ctx.block.kind = Ctx.Control)
+  then (
+    Format.eprintf
+      "(type_action_decl) Action declarations must be global or in a control \
+       block\n";
+    assert false);
+  let params = List.map it params in
+  let fid = Runtime.Domain.FId.to_fid id.it params in
+  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
+  let ctx' = Ctx.set_localkind Ctx.Action ctx' in
+  let params = List.map (static_eval_param Ctx.Local ctx') params in
+  let ctx' =
+    List.fold_left
+      (fun ctx' param ->
+        let id, _, typ, _ = param in
+        Ctx.add_type Ctx.Local id typ ctx')
+      ctx' params
+  in
+  let stmts, _annos = body.it in
+  let _ctx', _flow = type_stmts Ctx.Local ctx' Cont stmts in
+  let fd = FuncDef.ActionD params in
+  check_valid_funcdef cursor ctx fd;
+  Ctx.add_funcdef cursor fid fd ctx
+
 (* (7.2.10.1) Extern functions
 
    An extern function declaration describes the name and type signature
@@ -2066,8 +2167,8 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let params = List.map it params in
   let fid = Runtime.Domain.FId.to_fid id.it params in
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
-  let ctx' = Ctx.set_localkind Ctx.ExternFunction ctx' in
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
+  let ctx' = Ctx.set_localkind Ctx.ExternFunction ctx' in
   let params = List.map (static_eval_param Ctx.Local ctx') params in
   let typ_ret = eval_type Ctx.Local ctx' typ_ret in
   let fd = FuncDef.ExternFunctionD (tparams, params, typ_ret) in
@@ -2201,7 +2302,8 @@ and type_parser_state (cursor : Ctx.cursor) (ctx : Ctx.t) (block : block) :
     Format.eprintf "(type_parser_state) Parser state must be local\n";
     assert false);
   let stmts, _annos = block.it in
-  type_stmts Ctx.Local ctx stmts
+  let ctx, _flow = type_stmts Ctx.Local ctx Cont stmts in
+  ctx
 
 and type_parser_states (cursor : Ctx.cursor) (ctx : Ctx.t)
     (states : parser_state list) : Ctx.t =
@@ -2270,7 +2372,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
         Ctx.add_type Ctx.Local id typ ctx')
       ctx' params
   in
-  let ctx' = type_stmts Ctx.Local ctx' stmts_var_init in
+  let ctx', _flow = type_stmts Ctx.Local ctx' Cont stmts_var_init in
   (* Typecheck parser states *)
   let _ctx' = type_parser_states Ctx.Local ctx' states in
   (* Create a parser constructor definition *)
@@ -2511,7 +2613,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
       ctx' params
   in
   let stmts = stmts_var_init @ [ BlockS body $ no_info ] in
-  let _ctx' = type_stmts Ctx.Local ctx' stmts in
+  let _ctx', _flow = type_stmts Ctx.Local ctx' Cont stmts in
   (* Create a control constructor definition *)
   let fd = FuncDef.ControlMethodD params in
   let fdenv = FDEnv.add fid fd FDEnv.empty in
@@ -2617,8 +2719,9 @@ and type_extern_abstract_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let fid = Runtime.Domain.FId.to_fid id.it params in
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
-  let params = List.map (static_eval_param Ctx.Local ctx') params in
   let typ_ret = eval_type Ctx.Local ctx' typ_ret in
+  let ctx' = Ctx.set_localkind (Ctx.ExternAbstractMethod typ_ret) ctx' in
+  let params = List.map (static_eval_param Ctx.Local ctx') params in
   let fd = FuncDef.ExternAbstractMethodD (tparams, params, typ_ret) in
   check_valid_funcdef cursor ctx fd;
   Ctx.add_funcdef cursor fid fd ctx
@@ -2634,8 +2737,8 @@ and type_extern_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let params = List.map it params in
   let fid = Runtime.Domain.FId.to_fid id.it params in
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
-  let ctx' = Ctx.set_localkind Ctx.ExternMethod ctx' in
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
+  let ctx' = Ctx.set_localkind Ctx.ExternMethod ctx' in
   let params = List.map (static_eval_param Ctx.Local ctx') params in
   let typ_ret = eval_type Ctx.Local ctx' typ_ret in
   let fd = FuncDef.ExternMethodD (tparams, params, typ_ret) in
