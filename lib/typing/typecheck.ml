@@ -377,6 +377,9 @@ and check_valid_functype' (tset : TSet.t) (ft : FuncType.t) : unit =
   | ParserMethodT params | ControlMethodT params ->
       List.iter (check_valid_param' tset) params
   | TableMethodT -> ()
+  | BuiltinMethodT (params, typ_ret) ->
+      List.iter (check_valid_param' tset) params;
+      check_valid_type' tset typ_ret
 
 and check_valid_funcdef (cursor : Ctx.cursor) (ctx : Ctx.t) (fd : FuncDef.t) :
     unit =
@@ -405,6 +408,8 @@ and check_valid_funcdef' (tset : TSet.t) (fd : FuncDef.t) : unit =
   | ParserMethodD params -> check_valid_functype' tset (ParserMethodT params)
   | ControlMethodD params -> check_valid_functype' tset (ControlMethodT params)
   | TableMethodD -> check_valid_functype' tset TableMethodT
+  | BuiltinMethodD (params, typ_ret) ->
+      check_valid_functype' tset (BuiltinMethodT (params, typ_ret))
 
 and check_valid_cparam (cursor : Ctx.cursor) (ctx : Ctx.t)
     (cparam : id' * dir' * Type.t * Value.t option) : unit =
@@ -538,26 +543,30 @@ and substitute_funcdef (tmap : TMap.t) (fd : FuncDef.t) : FuncDef.t =
       let params = List.map (substitute_param tmap) params in
       ControlMethodD params
   | TableMethodD -> TableMethodD
+  | BuiltinMethodD (params, typ_ret) ->
+      let params = List.map (substitute_param tmap) params in
+      let typ_ret = substitute_type tmap typ_ret in
+      BuiltinMethodD (params, typ_ret)
 
-let specialize_funcdef (fd : FuncDef.t) (typ_args : Type.t list) : FuncType.t =
+let specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) : FuncType.t =
   let check_arity tparams =
-    if List.length typ_args <> List.length tparams then (
+    if List.length targs <> List.length tparams then (
       Format.eprintf
         "(specialize_funcdef) Function %a expects %d type arguments but %d \
          were given\n"
-        FuncDef.pp fd (List.length tparams) (List.length typ_args);
+        FuncDef.pp fd (List.length tparams) (List.length targs);
       assert false)
   in
   match fd with
   | ExternFunctionD (tparams, params, typ_ret) ->
       check_arity tparams;
-      let tmap = List.combine tparams typ_args |> TMap.of_list in
+      let tmap = List.combine tparams targs |> TMap.of_list in
       let params = List.map (substitute_param tmap) params in
       let typ_ret = substitute_type tmap typ_ret in
       ExternFunctionT (params, typ_ret)
   | FunctionD (tparams, params, typ_ret) ->
       check_arity tparams;
-      let tmap = List.combine tparams typ_args |> TMap.of_list in
+      let tmap = List.combine tparams targs |> TMap.of_list in
       let params = List.map (substitute_param tmap) params in
       let typ_ret = substitute_type tmap typ_ret in
       FunctionT (params, typ_ret)
@@ -566,13 +575,13 @@ let specialize_funcdef (fd : FuncDef.t) (typ_args : Type.t list) : FuncType.t =
       ActionT params
   | ExternMethodD (tparams, params, typ_ret) ->
       check_arity tparams;
-      let tmap = List.combine tparams typ_args |> TMap.of_list in
+      let tmap = List.combine tparams targs |> TMap.of_list in
       let params = List.map (substitute_param tmap) params in
       let typ_ret = substitute_type tmap typ_ret in
       ExternMethodT (params, typ_ret)
   | ExternAbstractMethodD (tparams, params, typ_ret) ->
       check_arity tparams;
-      let tmap = List.combine tparams typ_args |> TMap.of_list in
+      let tmap = List.combine tparams targs |> TMap.of_list in
       let params = List.map (substitute_param tmap) params in
       let typ_ret = substitute_type tmap typ_ret in
       ExternAbstractMethodT (params, typ_ret)
@@ -583,14 +592,18 @@ let specialize_funcdef (fd : FuncDef.t) (typ_args : Type.t list) : FuncType.t =
       let params = List.map (substitute_param TMap.empty) params in
       ControlMethodT params
   | TableMethodD -> TableMethodT
+  | BuiltinMethodD (params, typ_ret) ->
+      let params = List.map (substitute_param TMap.empty) params in
+      let typ_ret = substitute_type TMap.empty typ_ret in
+      BuiltinMethodT (params, typ_ret)
 
-let specialize_typedef (td : TypeDef.t) (typ_args : Type.t list) : Type.t =
+let specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
   let check_arity tparams =
-    if List.length typ_args <> List.length tparams then (
+    if List.length targs <> List.length tparams then (
       Format.eprintf
         "(specialize_typedef) Type definition %a expects %d type arguments but \
          %d were given\n"
-        TypeDef.pp td (List.length tparams) (List.length typ_args);
+        TypeDef.pp td (List.length tparams) (List.length targs);
       assert false)
   in
   match td with
@@ -620,17 +633,17 @@ let specialize_typedef (td : TypeDef.t) (typ_args : Type.t list) : Type.t =
   (* Object types are generic *)
   | ExternD (tparams, fdenv) ->
       check_arity tparams;
-      let tmap = List.combine tparams typ_args |> TMap.of_list in
+      let tmap = List.combine tparams targs |> TMap.of_list in
       let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
       Type.ExternT fdenv
   | ParserD (tparams, fdenv) ->
       check_arity tparams;
-      let tmap = List.combine tparams typ_args |> TMap.of_list in
+      let tmap = List.combine tparams targs |> TMap.of_list in
       let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
       Type.ParserT fdenv
   | ControlD (tparams, fdenv) ->
       check_arity tparams;
-      let tmap = List.combine tparams typ_args |> TMap.of_list in
+      let tmap = List.combine tparams targs |> TMap.of_list in
       let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
       Type.ControlT fdenv
   | PackageD tparams ->
@@ -876,7 +889,11 @@ let rec type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : expr) : Type.t =
   | StrE _ -> Type.StrT
   | NumE { it = _, encoding; _ } -> type_num_expr encoding
   | VarE var -> type_var_expr cursor ctx var
-  | ListE _ | RecordE _ | UnE _ | BinE _ | TernE _ ->
+  | ListE _ | RecordE _ ->
+      Format.eprintf "(type_expr) %a\n" (Syntax.Pp.pp_expr ~level:0) expr;
+      assert false
+  | UnE (unop, expr) -> type_unop_expr cursor ctx unop expr
+  | BinE _ | TernE _ ->
       Format.eprintf "(type_expr) %a\n" (Syntax.Pp.pp_expr ~level:0) expr;
       assert false
   | CastE (typ, expr) -> type_cast_expr cursor ctx typ expr
@@ -892,7 +909,9 @@ let rec type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : expr) : Type.t =
       assert false
   | ExprAccE (expr_base, member) ->
       type_expr_acc_expr cursor ctx expr_base member
-  | CallE _ | InstE _ ->
+  | CallE (expr_func, targs, args) ->
+      type_call_expr cursor ctx expr_func targs args
+  | InstE _ ->
       Format.eprintf "(type_expr) %a\n" (Syntax.Pp.pp_expr ~level:0) expr;
       assert false
 
@@ -910,6 +929,75 @@ and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : var) : Type.t =
       var;
     assert false);
   Option.get typ
+
+(* (8.6) Operations on fixed-width bit types (unsigned integers)
+
+   This section discusses all operations that can be performed on expressions of
+   type bit<W> for some width W, also known as bit-strings.
+
+   Each of the following operations produces a bit-string result
+   when applied to bit-strings of the same width:
+
+    - Negation, denoted by unary -.
+        The result is computed by subtracting the value from 2W.
+        The result is unsigned and has the same width as the input.
+        The semantics is the same as the C negation of unsigned numbers.
+    - Unary plus, denoted by +. This operation behaves like a no-op.
+    - Bitwise “complement” of a single bit-string, denoted by ~.
+
+   (8.7) Operations on fixed-width signed integers
+
+   This section discusses all operations that can be performed on expressions of type int<W> for some W.
+   Recall that the int<W> denotes signed W-bit integers, represented using two's complement.
+
+   The int<W> datatype supports the following operations;
+   all binary operations require both operands to have the exact same type.
+   The result always has the same width as the left operand.
+
+    - Negation, denoted by unary -.
+    - Unary plus, denoted by +. This operation behaves like a no-op.
+    - Bitwise “complement” of a single bit-string, denoted by ~.
+
+   (8.8) Operations on arbitrary-precision integers
+
+   The type int denotes arbitrary-precision integers.
+   In P4, all expressions of type int must be compile-time known values.
+   The type int supports the following operations:
+
+    - Negation, denoted by unary -
+    - Unary plus, denoted by +. This operation behaves like a no-op.
+
+   Note: bitwise-operations (|,&,^,~) are not defined on expressions of type int.
+   In addition, it is illegal to apply division and modulo to negative values. *)
+
+and type_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : unop)
+    (expr : expr) : Type.t =
+  let typ = type_expr cursor ctx expr in
+  match unop.it with
+  | BNotOp ->
+      if not (match typ with FIntT _ | FBitT _ -> true | _ -> false) then (
+        Format.eprintf
+          "(type_unop_expr) ~ expects a fixed-size integer but %a was given\n"
+          (Syntax.Pp.pp_expr ~level:0)
+          expr;
+        assert false);
+      typ
+  | LNotOp ->
+      if not (match typ with BoolT -> true | _ -> false) then (
+        Format.eprintf "(type_unop_expr) ! expects a boolean but %a was given\n"
+          (Syntax.Pp.pp_expr ~level:0)
+          expr;
+        assert false);
+      typ
+  | UMinusOp ->
+      if not (match typ with IntT | FIntT _ | FBitT _ -> true | _ -> false)
+      then (
+        Format.eprintf
+          "(type_unop_expr) - expects an integer but %a was given\n"
+          (Syntax.Pp.pp_expr ~level:0)
+          expr;
+        assert false);
+      typ
 
 (* (8.11) Casts
 
@@ -1247,121 +1335,6 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
         typ_base;
       assert false
 
-(* Statement typing *)
-
-(* (12.1) Assignment statement
-
-   An assignment, written with the = sign, first evaluates its left sub-expression to an l-value,
-   then evaluates its right sub-expression to a value, and finally copies the value into the l-value.
-   Derived types (e.g. structs) are copied recursively, and all components of headers are copied,
-   including “validity” bits. Assignment is not defined for extern values. *)
-
-(* (6.7) L-values
-
-   L-values are expressions that may appear on the left side of an assignment operation
-   or as arguments corresponding to out and inout function parameters.
-   An l-value represents a storage reference. The following expressions are legal l-values:
-
-   - Identifiers of a base or derived type.
-   - Structure, header, and header union field member access operations (using the dot notation).
-   - References to elements within header stacks (see Section 8.18): indexing, and references to last and next.
-   - The result of a bit-slice operator [m:l]. *)
-
-let rec type_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (stmt : stmt) : Ctx.t =
-  if cursor <> Ctx.Local then (
-    Format.eprintf "(type_stmt) Statements must be local\n";
-    assert false);
-  match stmt.it with
-  | EmptyS -> ctx
-  | AssignS (expr_lhs, expr_rhs) -> type_assign_stmt ctx expr_lhs expr_rhs
-  | SwitchS _ -> ctx
-  | IfS (expr_cond, stmt_tru, stmt_fls) ->
-      type_if_stmt ctx expr_cond stmt_tru stmt_fls
-  | BlockS block -> type_block_stmt ctx block
-  | ExitS -> ctx
-  | RetS _ -> ctx
-  | CallS (expr_func, typ_args, args) ->
-      type_call_stmt ctx expr_func typ_args args;
-      ctx
-  | TransS expr ->
-      type_transition_stmt ctx expr;
-      ctx
-  | DeclS decl -> type_decl_stmt ctx decl
-
-and type_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (stmts : stmt list) : Ctx.t =
-  List.fold_left (type_stmt cursor) ctx stmts
-
-(* (TODO) Consider direction also *)
-and check_lvalue_type' (ctx : Ctx.t) (typ : Type.t) : bool =
-  match typ with
-  | DefT typ_inner | NewT typ_inner -> check_lvalue_type' ctx typ_inner
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> false
-  | _ -> true
-
-and check_lvalue' (ctx : Ctx.t) (expr : expr) : bool =
-  match expr.it with
-  | VarE var ->
-      let typ = Ctx.find_opt Ctx.find_type_opt Ctx.Local var ctx in
-      if Option.is_none typ then (
-        Format.eprintf "(check_lvalue) %a is a free identifier\n"
-          Syntax.Pp.pp_var var;
-        assert false);
-      let typ = Option.get typ in
-      let is_const =
-        Ctx.find_opt Ctx.find_value_opt Ctx.Local var ctx |> Option.is_some
-      in
-      (not is_const) && check_lvalue_type' ctx typ
-  | ArrAccE (expr_base, _) | BitAccE (expr_base, _, _) | ExprAccE (expr_base, _)
-    ->
-      check_lvalue' ctx expr_base
-  | _ -> false
-
-and check_lvalue (ctx : Ctx.t) (expr : expr) : unit =
-  if not (check_lvalue' ctx expr) then (
-    Format.eprintf "(check_lvalue) %a is not an l-value\n"
-      (Syntax.Pp.pp_expr ~level:0)
-      expr;
-    assert false)
-
-and type_assign_stmt (ctx : Ctx.t) (expr_lhs : expr) (expr_rhs : expr) : Ctx.t =
-  check_lvalue ctx expr_lhs;
-  let typ_lhs = type_expr Ctx.Local ctx expr_lhs in
-  let typ_rhs = type_expr Ctx.Local ctx expr_rhs in
-  (* (TODO) Insert cast if possible *)
-  if typ_lhs <> typ_rhs then (
-    Format.eprintf
-      "(type_assign_stmt) The type of left side type %a doesn't match the \
-       right side type %a\n"
-      Type.pp typ_lhs Type.pp typ_rhs;
-    assert false);
-  ctx
-
-(* (12.6) Conditional statement
-
-   However, the condition expression in P4 is required to be a Boolean
-   (and not an integer). *)
-
-and type_if_stmt (ctx : Ctx.t) (expr_cond : expr) (stmt_tru : stmt)
-    (stmt_fls : stmt) : Ctx.t =
-  let typ_cond = type_expr Ctx.Local ctx expr_cond in
-  if typ_cond <> Type.BoolT then (
-    Format.eprintf "(type_if_stmt) Condition must be a boolean\n";
-    assert false);
-  let _ctx' = type_stmt Ctx.Local ctx stmt_tru in
-  let _ctx' = type_stmt Ctx.Local ctx stmt_fls in
-  ctx
-
-(* (12.3) Block statement
-
-   It contains a sequence of statements and declarations, which are executed sequentially.
-   The variables and constants within a block statement are only visible within the block. *)
-
-and type_block_stmt (ctx : Ctx.t) (block : block) : Ctx.t =
-  let ctx = Ctx.enter_frame ctx in
-  let stmts, _annos = block.it in
-  let ctx = type_stmts Ctx.Local ctx stmts in
-  Ctx.exit_frame ctx
-
 (* (8.20) Method invocations and function calls
 
    A function call or method invocation can optionally specify for each argument the corresponding parameter name.
@@ -1429,6 +1402,71 @@ and type_block_stmt (ctx : Ctx.t) (block : block) : Ctx.t =
    Any such restrictions should be documented in the description for each extern,
    as part of the documentation for the architecture that defines the extern. *)
 
+(* (8.17) Operations on headers
+
+   In addition, headers support the following methods:
+
+    - The method isValid() returns the value of the “validity” bit of the header.
+    - The method setValid() sets the header's validity bit to “true”. It can only be applied to an l-value.
+    - The method setInvalid() sets the header's validity bit to “false”. It can only be applied to an l-value.
+
+   (8.18) Operations on header stacks
+
+   Finally, P4 offers the following computations that can be used to manipulate
+   the elements at the front and back of the stack:
+
+    - hs.push_front(int count): shifts hs “right” by count. The first count elements become invalid.
+      The last count elements in the stack are discarded. The hs.nextIndex counter is incremented by count.
+      The count argument must be a positive integer that is a compile-time known value. The return type is void.
+
+    - hs.pop_front(int count): shifts hs “left” by count (i.e., element with index count is copied in stack at index 0).
+      The last count elements become invalid. The hs.nextIndex counter is decremented by count.
+      The count argument must be a positive integer that is a compile-time known value. The return type is void.
+
+   (8.19) Operations on header unions
+
+   u.isValid() returns true if any member of the header union u is valid, otherwise it returns false.
+   setValid() and setInvalid() methods are not defined for header unions.
+
+   (9) Compile-time size determination
+
+   The method calls minSizeInBits, minSizeInBytes, maxSizeInBits, and maxSizeInBytes can be applied to
+   certain expressions. These method calls return the minimum (or maximum) size in bits (or bytes)
+   required to store the expression. Thus, the result type of these methods has type int.
+   Except in certain situations involving type variables, discussed below, these method calls produce
+   local compile-time known values; otherwise they produce compile-time known values. None of these methods evaluate
+   the expression that is the receiver of the method call, so it may be invalid (e.g., an out-of-bounds header stack access).
+
+   The definition of e.minSizeInBits() and e.maxSizeInBits() is
+   given recursively on the type of e as described in the following table:
+
+   Type         |	minSizeInBits                                          | maxSizeInBits
+   bit<N>       |	N	                                                     | N
+   int<N>	      | N	                                                     | N
+   bool	        | 1	                                                     | 1
+   enum bit<N>  | N                                                      | N
+   enum int<N>  | N                                                      | N
+   tuple	      | foreach field(tuple) sum of	field.minSizeInBits()      | foreach field(tuple) sum of field.maxSizeInBits()
+   varbit<N>    |	0                                                      | N
+   struct       | foreach field(struct) sum of field.minSizeInBits()     | foreach field(struct) sum of field.maxSizeInBits()
+   header       | foreach field(header) sum of field.minSizeInBits()     | foreach field(header) sum of field.maxSizeInBits()
+   H[N]	        | N * H.minSizeInBits()                                  | N * H.maxSizeInBits()
+   header_union	| max(foreach field(header_union)	field.minSizeInBits()) | max(foreach field(header_union) field.maxSizeInBits())
+
+   The methods can also be applied to type name expressions e:
+
+    - if the type of e is a type introduced by type, the result is the application of the method to the underlying type
+    - if e is the name of a type (e.g., introduced by a typedef declaration), where the type given a name is one of the above,
+      then the result is obtained by applying the method to the underlying type.
+
+   These methods are defined for:
+
+    - all serializable types
+    - for a type that does not contain varbit fields, both methods return the same result
+    - for a type that does contain varbit fields, maxSizeInBits is the worst-case size
+        of the serialized representation of the data and minSizeInBits is the “best” case.
+    - Every other case is undefined and will produce a compile-time error. *)
+
 and check_call_arity (expr_func : expr)
     (params : (id' * dir' * Type.t * Value.t option) list) (args : arg' list) :
     unit =
@@ -1472,20 +1510,67 @@ and align_params_with_args
       | AnyA -> (params @ [ param ], exprs_arg @ [ None ]))
     ([], []) params args
 
-and type_call_stmt (ctx : Ctx.t) (expr_func : expr) (typ_args : typ list)
-    (args : arg list) : unit =
+and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
+    (fid : member) (args : arg' list) : FuncDef.t option =
+  let typ_base = type_expr cursor ctx expr_base in
+  match typ_base with
+  | StackT _ -> (
+      match fid.it with
+      | "push_front" | "pop_front" ->
+          let params = [ ("count", No, Type.IntT, None) ] in
+          let typ_ret = Type.VoidT in
+          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+      | "minSizeInBits" | "minSizeInBytes" ->
+          let params = [] in
+          let typ_ret = Type.IntT in
+          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+      | _ -> None)
+  | StructT _ -> (
+      match fid.it with
+      | "minSizeInBits" | "minSizeInBytes" ->
+          let params = [] in
+          let typ_ret = Type.IntT in
+          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+      | _ -> None)
+  | HeaderT _ -> (
+      match fid.it with
+      | "isValid" ->
+          let params = [] in
+          let typ_ret = Type.BoolT in
+          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+      | "setValid" | "setInvalid" ->
+          let params = [] in
+          let typ_ret = Type.VoidT in
+          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+      | "minSizeInBits" | "minSizeInBytes" ->
+          let params = [] in
+          let typ_ret = Type.IntT in
+          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+      | _ -> None)
+  | UnionT _ -> (
+      match fid.it with
+      | "isValid" ->
+          let params = [] in
+          let typ_ret = Type.BoolT in
+          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+      | "minSizeInBits" | "minSizeInBytes" ->
+          let params = [] in
+          let typ_ret = Type.IntT in
+          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+      | _ -> None)
+  | ExternT fdenv | ParserT fdenv | ControlT fdenv ->
+      FDEnv.find_opt (fid.it, args) fdenv
+  | _ -> None
+
+and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : expr)
+    (targs : targ list) (args : arg list) : Type.t =
   let args = List.map it args in
   (* Find the function definition *)
   let fd =
     match expr_func.it with
     | VarE var ->
-        Ctx.find_overloaded_opt Ctx.find_funcdef_opt Ctx.Local var args ctx
-    | ExprAccE (expr_base, fid) -> (
-        let typ_base = type_expr Ctx.Local ctx expr_base in
-        match typ_base with
-        | ExternT fdenv | ParserT fdenv | ControlT fdenv ->
-            FDEnv.find_opt (fid.it, args) fdenv
-        | _ -> None)
+        Ctx.find_overloaded_opt Ctx.find_funcdef_opt cursor var args ctx
+    | ExprAccE (expr_base, fid) -> type_method cursor ctx expr_base fid args
     | _ -> None
   in
   if Option.is_none fd then (
@@ -1497,8 +1582,8 @@ and type_call_stmt (ctx : Ctx.t) (expr_func : expr) (typ_args : typ list)
   (* (TODO) Implement restrictions on compile-time and run-time calls (Appendix F) *)
   (* Specialize the function definition to a function type, if necessary *)
   (* (TODO) Implement type inference *)
-  let typ_args = List.map (eval_type Ctx.Local ctx) typ_args in
-  let ft = specialize_funcdef fd typ_args in
+  let targs = List.map (eval_type cursor ctx) targs in
+  let ft = specialize_funcdef fd targs in
   (* Check if the arguments match the parameters *)
   (* (TODO) Consider default parameters/arguments, in such case arity can appear to mismatch *)
   let params = FuncType.get_params ft in
@@ -1510,22 +1595,157 @@ and type_call_stmt (ctx : Ctx.t) (expr_func : expr) (typ_args : typ list)
       let _id_param, dir_param, typ_param, _value_default = param in
       match expr_arg with
       | Some expr_arg ->
-          let typ_arg = type_expr Ctx.Local ctx expr_arg in
+          let typ_arg = type_expr cursor ctx expr_arg in
           (* (TODO) Consider direction of parameters/arguments *)
           (* (TODO) Check subtype instead of stric type equality,
              and insert implicit cast to argument if possible *)
           if typ_param <> typ_arg then (
-            Format.eprintf "(type_call_stmt) Argument %a is not of type %a\n"
+            Format.eprintf "(type_call) Argument %a is not of type %a\n"
               (Syntax.Pp.pp_expr ~level:0)
               expr_arg Type.pp typ_param;
             assert false)
       | None ->
           if dir_param <> Out then (
             Format.eprintf
-              "(type_call_stmt) Don't care argument can only be used for an \
-               out function/method argument\n";
+              "(type_call) Don't care argument can only be used for an out \
+               function/method argument\n";
             assert false))
-    params exprs_arg
+    params exprs_arg;
+  FuncType.get_typ_ret ft
+
+and type_call_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : expr)
+    (targs : targ list) (args : arg list) : Type.t =
+  let typ = type_call cursor ctx expr_func targs args in
+  if typ = Type.VoidT then (
+    Format.eprintf
+      "(type_call_expr) Function call as an expression must return a value\n";
+    assert false);
+  typ
+
+(* Statement typing *)
+
+let rec type_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (stmt : stmt) : Ctx.t =
+  if cursor <> Ctx.Local then (
+    Format.eprintf "(type_stmt) Statements must be local\n";
+    assert false);
+  match stmt.it with
+  | EmptyS -> ctx
+  | AssignS (expr_lhs, expr_rhs) -> type_assign_stmt ctx expr_lhs expr_rhs
+  | SwitchS _ -> ctx
+  | IfS (expr_cond, stmt_tru, stmt_fls) ->
+      type_if_stmt ctx expr_cond stmt_tru stmt_fls
+  | BlockS block -> type_block_stmt ctx block
+  | ExitS -> ctx
+  | RetS _ -> ctx
+  | CallS (expr_func, targs, args) ->
+      type_call_stmt ctx expr_func targs args;
+      ctx
+  | TransS expr ->
+      type_transition_stmt ctx expr;
+      ctx
+  | DeclS decl -> type_decl_stmt ctx decl
+
+and type_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (stmts : stmt list) : Ctx.t =
+  List.fold_left (type_stmt cursor) ctx stmts
+
+(* (12.1) Assignment statement
+
+   An assignment, written with the = sign, first evaluates its left sub-expression to an l-value,
+   then evaluates its right sub-expression to a value, and finally copies the value into the l-value.
+   Derived types (e.g. structs) are copied recursively, and all components of headers are copied,
+   including “validity” bits. Assignment is not defined for extern values. *)
+
+(* (6.7) L-values
+
+   L-values are expressions that may appear on the left side of an assignment operation
+   or as arguments corresponding to out and inout function parameters.
+   An l-value represents a storage reference. The following expressions are legal l-values:
+
+   - Identifiers of a base or derived type.
+   - Structure, header, and header union field member access operations (using the dot notation).
+   - References to elements within header stacks (see Section 8.18): indexing, and references to last and next.
+   - The result of a bit-slice operator [m:l]. *)
+
+(* (TODO) Consider direction also *)
+and check_lvalue_type' (ctx : Ctx.t) (typ : Type.t) : bool =
+  match typ with
+  | DefT typ_inner | NewT typ_inner -> check_lvalue_type' ctx typ_inner
+  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> false
+  | _ -> true
+
+and check_lvalue' (ctx : Ctx.t) (expr : expr) : bool =
+  match expr.it with
+  | VarE var ->
+      let typ = Ctx.find_opt Ctx.find_type_opt Ctx.Local var ctx in
+      if Option.is_none typ then (
+        Format.eprintf "(check_lvalue) %a is a free identifier\n"
+          Syntax.Pp.pp_var var;
+        assert false);
+      let typ = Option.get typ in
+      let is_const =
+        Ctx.find_opt Ctx.find_value_opt Ctx.Local var ctx |> Option.is_some
+      in
+      (not is_const) && check_lvalue_type' ctx typ
+  | ArrAccE (expr_base, _) | BitAccE (expr_base, _, _) | ExprAccE (expr_base, _)
+    ->
+      check_lvalue' ctx expr_base
+  | _ -> false
+
+and check_lvalue (ctx : Ctx.t) (expr : expr) : unit =
+  if not (check_lvalue' ctx expr) then (
+    Format.eprintf "(check_lvalue) %a is not an l-value\n"
+      (Syntax.Pp.pp_expr ~level:0)
+      expr;
+    assert false)
+
+and type_assign_stmt (ctx : Ctx.t) (expr_lhs : expr) (expr_rhs : expr) : Ctx.t =
+  check_lvalue ctx expr_lhs;
+  let typ_lhs = type_expr Ctx.Local ctx expr_lhs in
+  let typ_rhs = type_expr Ctx.Local ctx expr_rhs in
+  (* (TODO) Insert cast if possible *)
+  if typ_lhs <> typ_rhs then (
+    Format.eprintf
+      "(type_assign_stmt) %a on the left side has type %a but %a on the right \
+       side has type %a\n"
+      (Syntax.Pp.pp_expr ~level:0)
+      expr_lhs Type.pp typ_lhs
+      (Syntax.Pp.pp_expr ~level:0)
+      expr_rhs Type.pp typ_rhs;
+    assert false);
+  ctx
+
+(* (12.6) Conditional statement
+
+   However, the condition expression in P4 is required to be a Boolean
+   (and not an integer). *)
+
+and type_if_stmt (ctx : Ctx.t) (expr_cond : expr) (stmt_tru : stmt)
+    (stmt_fls : stmt) : Ctx.t =
+  let typ_cond = type_expr Ctx.Local ctx expr_cond in
+  if typ_cond <> Type.BoolT then (
+    Format.eprintf "(type_if_stmt) Condition must be a boolean\n";
+    assert false);
+  let _ctx' = type_stmt Ctx.Local ctx stmt_tru in
+  let _ctx' = type_stmt Ctx.Local ctx stmt_fls in
+  ctx
+
+(* (12.3) Block statement
+
+   It contains a sequence of statements and declarations, which are executed sequentially.
+   The variables and constants within a block statement are only visible within the block. *)
+
+and type_block_stmt (ctx : Ctx.t) (block : block) : Ctx.t =
+  let ctx = Ctx.enter_frame ctx in
+  let stmts, _annos = block.it in
+  let ctx = type_stmts Ctx.Local ctx stmts in
+  Ctx.exit_frame ctx
+
+(* (8.20) Method invocations and function calls *)
+
+and type_call_stmt (ctx : Ctx.t) (expr_func : expr) (targs : targ list)
+    (args : arg list) : unit =
+  let _typ = type_call Ctx.Local ctx expr_func targs args in
+  ()
 
 (* (13.5) Transition statements
 

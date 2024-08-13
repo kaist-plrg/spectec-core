@@ -72,7 +72,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     std_meta.egress_spec = (bit<9>) hdr.hops[0].port;
     hdr.hops.pop_front(1);
     if (!hdr.hops[0].isValid()) {
-        hdr.type.tag = 0x00;
+        hdr.type.tag = 8w0;
     }
     acl.apply();
   }

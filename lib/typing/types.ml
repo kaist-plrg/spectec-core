@@ -268,9 +268,11 @@ and FuncType : sig
     | ParserMethodT of t_param list
     | ControlMethodT of t_param list
     | TableMethodT
+    | BuiltinMethodT of t_param list * Type.t
 
   val pp : Format.formatter -> t -> unit
   val get_params : t -> t_param list
+  val get_typ_ret : t -> Type.t
 end = struct
   type t_param = id' * dir' * Type.t * Value.t option
 
@@ -283,6 +285,7 @@ end = struct
     | ParserMethodT of t_param list
     | ControlMethodT of t_param list
     | TableMethodT
+    | BuiltinMethodT of t_param list * Type.t
 
   let pp fmt t =
     let pp_params fmt params =
@@ -312,6 +315,9 @@ end = struct
     | ControlMethodT params ->
         Format.fprintf fmt "@[<v>control method %a@]" pp_params params
     | TableMethodT -> Format.fprintf fmt "@[<v>table method@]"
+    | BuiltinMethodT (params, typ_ret) ->
+        Format.fprintf fmt "@[<v>builtin method %a -> %a@]" pp_params params
+          Type.pp typ_ret
 
   let get_params = function
     | ExternFunctionT (params, _)
@@ -323,6 +329,14 @@ end = struct
     | ControlMethodT params ->
         params
     | TableMethodT -> []
+    | BuiltinMethodT (params, _) -> params
+
+  let get_typ_ret = function
+    | ExternFunctionT (_, typ_ret) | FunctionT (_, typ_ret) -> typ_ret
+    | ActionT _ -> Type.VoidT
+    | ExternMethodT (_, typ_ret) | ExternAbstractMethodT (_, typ_ret) -> typ_ret
+    | ParserMethodT _ | ControlMethodT _ | TableMethodT -> Type.VoidT
+    | BuiltinMethodT (_, typ_ret) -> typ_ret
 end
 
 and FuncDef : sig
@@ -337,6 +351,7 @@ and FuncDef : sig
     | ParserMethodD of t_param list
     | ControlMethodD of t_param list
     | TableMethodD
+    | BuiltinMethodD of t_param list * Type.t
 
   val pp : Format.formatter -> t -> unit
 end = struct
@@ -351,6 +366,7 @@ end = struct
     | ParserMethodD of t_param list
     | ControlMethodD of t_param list
     | TableMethodD
+    | BuiltinMethodD of t_param list * Type.t
 
   let pp fmt t =
     let pp_tparams fmt tparams =
@@ -387,6 +403,9 @@ end = struct
     | ControlMethodD params ->
         Format.fprintf fmt "@[<v>control method %a@]" pp_params params
     | TableMethodD -> Format.fprintf fmt "@[<v>table method@]"
+    | BuiltinMethodD (params, typ_ret) ->
+        Format.fprintf fmt "@[<v>builtin method %a -> %a@]" pp_params params
+          Type.pp typ_ret
 end
 
 (* Types of constructors *)
