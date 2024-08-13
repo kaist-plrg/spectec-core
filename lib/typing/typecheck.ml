@@ -1825,9 +1825,7 @@ and type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : decl) =
   | ParserD { id; tparams; params; cparams; locals; states; annos = _annos } ->
       type_parser_decl cursor ctx id tparams params cparams locals states
   (* Control *)
-  | TableD _ ->
-      Format.eprintf "(type_decl) %a\n" (Syntax.Pp.pp_decl ~level:0) decl;
-      ctx
+  | TableD { id; table; annos = _annos } -> type_table_decl cursor ctx id table
   | ControlTypeD { id; tparams; params; annos = _annos } ->
       type_control_type_decl cursor ctx id tparams params
   | ControlD { id; tparams; params; cparams; locals; body; annos = _annos } ->
@@ -2281,6 +2279,95 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let typ = Type.ParserT fdenv in
   let cd = ConsDef.{ tparams = []; cparams; typ } in
   Ctx.add_consdef cid cd ctx
+
+(* (14.2) Tables
+
+   A table declaration introduces a table instance.
+   To obtain multiple instances of a table, it must be declared within a control block
+   that is itself instantiated multiple times.
+
+   Syntactically a table is defined in terms of a set of key-value properties.
+   Some of these properties are “standard” properties, but the set of properties can
+   be extended by target-specific compilers as needed.
+   Note duplicated properties are invalid and the compiler should reject them.
+
+   In addition, the tables may optionally define the following properties,
+
+    - default_action: an action to execute when the lookup in the lookup table
+        fails to find a match for the key used.
+    - size: an integer specifying the desired size of the table.
+    - entries: entries that are initially added to a table when the P4 program is loaded,
+        some or all of which may be unchangeable by the control plane software.
+    - largest_priority_wins - Only useful for some tables with the entries property.
+        See section 14.2.1.4 for details.
+    - priority_delta - Only useful for some tables with the entries property.
+        See section 14.2.1.4 for details.
+
+   The compiler must set the default_action to NoAction (and also insert it into the list of actions)
+   for tables that do not define the default_action property.  Hence, all tables can be thought of
+   as having a default_action` property, either implicitly or explicitly.
+
+   A property marked as const cannot be changed dynamically by the control plane.
+   The key, actions, and size properties are always constant, so the const keyword is not needed for these.
+
+   (14.2.1.1) Keys
+
+   A key is a list of pairs of the form (e : m), where e is an expression that describes the data to be matched
+   in the table, and m is a match_kind constant that describes
+   the algorithm used to perform the lookup (see Section 7.1.3).
+
+   If a table has no key property, or if the value of its key property is the empty tuple, i.e. key = {},
+   then it contains no look-up table, just a default action—i.e., the associated lookup table is always the empty map.
+
+   (14.2.1.2) Actions
+
+   Each action in the list of actions for a table must have a distinct name.
+
+   Each action parameter that has a direction (in, inout, or out) must be bound in the actions list specification;
+   conversely, no directionless parameters may be bound in the list.
+   The expressions supplied as arguments to an action are not evaluated until the action is invoked.
+   Applying tables, whether directly via an expression like table1.apply().hit, or indirectly,
+   are forbidden in the expressions supplied as action arguments.
+
+   (14.2.1.3) Default action
+
+   If present, the default_action property must appear after the action property.
+   The default action must be one of the actions that appear in the actions list.
+   In particular, the expressions passed as in, out, or inout parameters must be
+   syntactically identical to the expressions used in one of the elements of the actions list.
+
+   (14.2.1.4) Entries
+
+   Entries cannot be specified for a table with no key (see Sec. 14.2.1.1).
+
+   The keysetExpression component of an entry is a tuple that must provide
+   a field for each key in the table keys (see Sec. 14.2.1). The table key type must match
+   the type of the element of the set. The actionRef component must be an action which appears
+   in the table actions list (and must not have the @defaultonly annotation), with all its arguments bound.
+
+   (14.2.2) Match-action unit invocation
+
+   A table can be invoked by calling its apply method. Calling an apply method on a table instance
+   returns a value with a struct type with three fields. This structure is synthesized by the compiler automatically.
+   For each table T, the compiler synthesizes an enum and a struct, shown in pseudo-P4:
+
+      enum action_list(T) {
+         // one field for each action in the actions list of table T
+      }
+      struct apply_result(T) {
+          bool hit;
+          bool miss;
+          action_list(T) action_run;
+      } *)
+
+and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (_id : id)
+    (_table : table) : Ctx.t =
+  if not (cursor <> Ctx.Block && ctx.block.kind = Ctx.Control) then (
+    Format.eprintf
+      "(type_table_decl) Table declarations must be in a control block\n";
+    assert false);
+  (* (TODO) Check that table properties are valid *)
+  assert false
 
 (* (7.2.12.2) Control type declarations *)
 
