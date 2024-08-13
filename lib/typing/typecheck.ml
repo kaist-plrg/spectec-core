@@ -134,8 +134,9 @@ and check_valid_type' (tset : TSet.t) (typ : Type.t) : unit =
       let members, _ = List.split fields in
       check_distinct_names members;
       check_valid_type' tset typ_inner
-  | ExternT fdenv | ParserT fdenv | ControlT fdenv ->
-      FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
+  | ExternT fdenv -> FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
+  | ParserT params | ControlT params ->
+      List.iter (fun fd -> check_valid_param' tset fd) params
   | PackageT | TopT -> ()
   | SetT typ_inner ->
       check_valid_type' tset typ_inner;
@@ -374,9 +375,8 @@ and check_valid_functype' (tset : TSet.t) (ft : FuncType.t) : unit =
   | ExternMethodT (params, typ_ret) | ExternAbstractMethodT (params, typ_ret) ->
       List.iter (check_valid_param' tset) params;
       check_valid_type' tset typ_ret
-  | ParserMethodT params | ControlMethodT params ->
+  | ParserApplyMethodT params | ControlApplyMethodT params ->
       List.iter (check_valid_param' tset) params
-  | TableMethodT -> ()
   | BuiltinMethodT (params, typ_ret) ->
       List.iter (check_valid_param' tset) params;
       check_valid_type' tset typ_ret
@@ -405,11 +405,6 @@ and check_valid_funcdef' (tset : TSet.t) (fd : FuncDef.t) : unit =
   | ExternAbstractMethodD (tparams, params, typ_ret) ->
       let tset = TSet.union tset (TSet.of_list tparams) in
       check_valid_functype' tset (ExternAbstractMethodT (params, typ_ret))
-  | ParserMethodD params -> check_valid_functype' tset (ParserMethodT params)
-  | ControlMethodD params -> check_valid_functype' tset (ControlMethodT params)
-  | TableMethodD -> check_valid_functype' tset TableMethodT
-  | BuiltinMethodD (params, typ_ret) ->
-      check_valid_functype' tset (BuiltinMethodT (params, typ_ret))
 
 and check_valid_cparam (cursor : Ctx.cursor) (ctx : Ctx.t)
     (cparam : id' * dir' * Type.t * Value.t option) : unit =
@@ -478,12 +473,12 @@ let rec substitute_type (tmap : TMap.t) (typ : Type.t) : Type.t =
   | ExternT fdenv ->
       let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
       ExternT fdenv
-  | ParserT fdenv ->
-      let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
-      ParserT fdenv
-  | ControlT fdenv ->
-      let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
-      ControlT fdenv
+  | ParserT params ->
+      let params = List.map (substitute_param tmap) params in
+      ParserT params
+  | ControlT params ->
+      let params = List.map (substitute_param tmap) params in
+      ControlT params
   | PackageT | TopT -> typ
   | SetT typ_inner -> SetT (substitute_type tmap typ_inner)
   | StateT -> typ
@@ -536,17 +531,6 @@ and substitute_funcdef (tmap : TMap.t) (fd : FuncDef.t) : FuncDef.t =
       let params = List.map (substitute_param tmap') params in
       let typ_ret = substitute_type tmap' typ_ret in
       ExternAbstractMethodD (tparams, params, typ_ret)
-  | ParserMethodD params ->
-      let params = List.map (substitute_param tmap) params in
-      ParserMethodD params
-  | ControlMethodD params ->
-      let params = List.map (substitute_param tmap) params in
-      ControlMethodD params
-  | TableMethodD -> TableMethodD
-  | BuiltinMethodD (params, typ_ret) ->
-      let params = List.map (substitute_param tmap) params in
-      let typ_ret = substitute_type tmap typ_ret in
-      BuiltinMethodD (params, typ_ret)
 
 let specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) : FuncType.t =
   let check_arity tparams =
@@ -585,17 +569,6 @@ let specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) : FuncType.t =
       let params = List.map (substitute_param tmap) params in
       let typ_ret = substitute_type tmap typ_ret in
       ExternAbstractMethodT (params, typ_ret)
-  | ParserMethodD params ->
-      let params = List.map (substitute_param TMap.empty) params in
-      ParserMethodT params
-  | ControlMethodD params ->
-      let params = List.map (substitute_param TMap.empty) params in
-      ControlMethodT params
-  | TableMethodD -> TableMethodT
-  | BuiltinMethodD (params, typ_ret) ->
-      let params = List.map (substitute_param TMap.empty) params in
-      let typ_ret = substitute_type TMap.empty typ_ret in
-      BuiltinMethodT (params, typ_ret)
 
 let specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
   let check_arity tparams =
@@ -636,16 +609,16 @@ let specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
       let tmap = List.combine tparams targs |> TMap.of_list in
       let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
       Type.ExternT fdenv
-  | ParserD (tparams, fdenv) ->
+  | ParserD (tparams, params) ->
       check_arity tparams;
       let tmap = List.combine tparams targs |> TMap.of_list in
-      let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
-      Type.ParserT fdenv
-  | ControlD (tparams, fdenv) ->
+      let params = List.map (substitute_param tmap) params in
+      Type.ParserT params
+  | ControlD (tparams, params) ->
       check_arity tparams;
       let tmap = List.combine tparams targs |> TMap.of_list in
-      let fdenv = FDEnv.map (substitute_funcdef tmap) fdenv in
-      Type.ControlT fdenv
+      let params = List.map (substitute_param tmap) params in
+      Type.ControlT params
   | PackageD tparams ->
       check_arity tparams;
       Type.PackageT
@@ -1511,7 +1484,8 @@ and align_params_with_args
     ([], []) params args
 
 and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
-    (fid : member) (args : arg' list) : FuncDef.t option =
+    (fid : member) (targs : Type.t list) (args : arg' list) : FuncType.t option
+    =
   let typ_base = type_expr cursor ctx expr_base in
   match typ_base with
   | StackT _ -> (
@@ -1519,71 +1493,82 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
       | "push_front" | "pop_front" ->
           let params = [ ("count", No, Type.IntT, None) ] in
           let typ_ret = Type.VoidT in
-          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+          Some (FuncType.BuiltinMethodT (params, typ_ret))
       | "minSizeInBits" | "minSizeInBytes" ->
           let params = [] in
           let typ_ret = Type.IntT in
-          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+          Some (FuncType.BuiltinMethodT (params, typ_ret))
       | _ -> None)
   | StructT _ -> (
       match fid.it with
       | "minSizeInBits" | "minSizeInBytes" ->
           let params = [] in
           let typ_ret = Type.IntT in
-          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+          Some (FuncType.BuiltinMethodT (params, typ_ret))
       | _ -> None)
   | HeaderT _ -> (
       match fid.it with
       | "isValid" ->
           let params = [] in
           let typ_ret = Type.BoolT in
-          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+          Some (FuncType.BuiltinMethodT (params, typ_ret))
       | "setValid" | "setInvalid" ->
           let params = [] in
           let typ_ret = Type.VoidT in
-          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+          Some (FuncType.BuiltinMethodT (params, typ_ret))
       | "minSizeInBits" | "minSizeInBytes" ->
           let params = [] in
           let typ_ret = Type.IntT in
-          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+          Some (FuncType.BuiltinMethodT (params, typ_ret))
       | _ -> None)
   | UnionT _ -> (
       match fid.it with
       | "isValid" ->
           let params = [] in
           let typ_ret = Type.BoolT in
-          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+          Some (FuncType.BuiltinMethodT (params, typ_ret))
       | "minSizeInBits" | "minSizeInBytes" ->
           let params = [] in
           let typ_ret = Type.IntT in
-          Some (FuncDef.BuiltinMethodD (params, typ_ret))
+          Some (FuncType.BuiltinMethodT (params, typ_ret))
       | _ -> None)
-  | ExternT fdenv | ParserT fdenv | ControlT fdenv ->
-      FDEnv.find_opt (fid.it, args) fdenv
+  | ExternT fdenv ->
+      let fd = FDEnv.find_opt (fid.it, args) fdenv in
+      Option.map (fun fd -> specialize_funcdef fd targs) fd
+  | ParserT params -> (
+      match fid.it with
+      | "apply" -> Some (FuncType.ParserApplyMethodT params)
+      | _ -> None)
+  | ControlT params -> (
+      match fid.it with
+      | "apply" -> Some (FuncType.ControlApplyMethodT params)
+      | _ -> None)
   | _ -> None
 
 and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : expr)
     (targs : targ list) (args : arg list) : Type.t =
   let args = List.map it args in
-  (* Find the function definition *)
-  let fd =
+  (* Find the function definition and specialize it if necessary *)
+  (* (TODO) Implement type inference for missing type arguments *)
+  let targs = List.map (eval_type cursor ctx) targs in
+  let ft =
     match expr_func.it with
     | VarE var ->
-        Ctx.find_overloaded_opt Ctx.find_funcdef_opt cursor var args ctx
-    | ExprAccE (expr_base, fid) -> type_method cursor ctx expr_base fid args
+        let fd =
+          Ctx.find_overloaded_opt Ctx.find_funcdef_opt cursor var args ctx
+        in
+        Option.map (fun fd -> specialize_funcdef fd targs) fd
+    | ExprAccE (expr_base, fid) ->
+        type_method cursor ctx expr_base fid targs args
     | _ -> None
   in
-  if Option.is_none fd then (
+  if Option.is_none ft then (
     Format.eprintf "(type_call_stmt) %a is not a function expression\n"
       (Syntax.Pp.pp_expr ~level:0)
       expr_func;
     assert false);
-  let fd = Option.get fd in
+  let ft = Option.get ft in
   (* (TODO) Implement restrictions on compile-time and run-time calls (Appendix F) *)
-  (* Specialize the function definition to a function type, if necessary *)
-  (* (TODO) Implement type inference *)
-  let targs = List.map (eval_type cursor ctx) targs in
-  let ft = specialize_funcdef fd targs in
   (* Check if the arguments match the parameters *)
   (* (TODO) Consider default parameters/arguments, in such case arity can appear to mismatch *)
   let params = FuncType.get_params ft in
@@ -1761,7 +1746,8 @@ and type_return_stmt (ctx : Ctx.t) (_flow : flow) (expr_ret : expr option) :
   if
     not
       (match ctx.local.kind with
-      | Function _ | Action | ExternAbstractMethod _ | ControlMethod -> true
+      | Function _ | Action | ExternAbstractMethod _ | ControlApplyMethod ->
+          true
       | _ -> false)
   then (
     Format.eprintf
@@ -1778,7 +1764,7 @@ and type_return_stmt (ctx : Ctx.t) (_flow : flow) (expr_ret : expr option) :
     | Function typ_ret_func -> typ_ret_func
     | Action -> Type.VoidT
     | ExternAbstractMethod typ_ret_func -> typ_ret_func
-    | ControlMethod -> Type.VoidT
+    | ControlApplyMethod -> Type.VoidT
     | _ -> assert false
   in
   (* (TODO) Insert implicit cast, if possible *)
@@ -2138,6 +2124,7 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let fid = Runtime.Domain.FId.to_fid id.it params in
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' = Ctx.set_localkind Ctx.Action ctx' in
+  (* Typecheck and add parameters to the local context *)
   let params = List.map (static_eval_param Ctx.Local ctx') params in
   let ctx' =
     List.fold_left
@@ -2185,21 +2172,6 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
 
    A parser should have at least one argument of type packet_in, representing the received packet that is processed. *)
 
-and type_parser_type_apply_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (params : param' list) : Ctx.t =
-  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Parser) then (
-    Format.eprintf
-      "(type_parser_apply_method_decl) Parser apply method declarations must \
-       be in a parser block\n";
-    assert false);
-  let fid = Runtime.Domain.FId.to_fid "apply" params in
-  let ctx' = Ctx.set_id Ctx.Local "apply" ctx in
-  let ctx' = Ctx.set_localkind Ctx.ParserMethod ctx' in
-  let params = List.map (static_eval_param Ctx.Local ctx') params in
-  let fd = FuncDef.ParserMethodD params in
-  check_valid_funcdef Ctx.Block ctx fd;
-  Ctx.add_funcdef Ctx.Block fid fd ctx
-
 and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (params : param list) : Ctx.t =
   if cursor <> Ctx.Global then (
@@ -2213,10 +2185,10 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Parser ctx' in
   let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
-  let ctx' = type_parser_type_apply_method_decl Ctx.Block ctx' params in
+  let params = List.map (static_eval_param Ctx.Block ctx') params in
   (* Create a parser type definition
      and add it to the context *)
-  let td = TypeDef.ParserD (tparams, ctx'.block.fdenv) in
+  let td = TypeDef.ParserD (tparams, params) in
   check_valid_typedef cursor ctx td;
   Ctx.add_typedef cursor id.it td ctx
 
@@ -2237,25 +2209,6 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
    that may be invoked as subroutines. However, it is illegal to instantiate a control block within a parser.
 
    The states and local elements are all in the same namespace. *)
-
-(* (NOTE) A different view on parser declaration
-
-   parser id (params) (cparams) {
-     locals <-- can be initialized with params and cparams (e.g. bit<8> l = p; )
-     states
-   }
-
-   "apply" is an implicit method that is a single entry point for the parser.
-   Conceptually, the parser declaration above is equivalent to:
-
-   parser id (cparams) {
-     locals <-- not initialized yet, only declared (e.g. bit<8> l; )
-     "apply" (params) {
-       locals are initialized with params and cparams (e.g. l = p; )
-       transition start;
-       states
-      }
-   } *)
 
 and type_parser_local_decls (cursor : Ctx.cursor) (ctx : Ctx.t)
     (locals : decl list) : Ctx.t * stmt list =
@@ -2305,7 +2258,7 @@ and type_parser_state (cursor : Ctx.cursor) (ctx : Ctx.t) (block : block) :
   let ctx, _flow = type_stmts Ctx.Local ctx Cont stmts in
   ctx
 
-and type_parser_states (cursor : Ctx.cursor) (ctx : Ctx.t)
+and type_parser_states (_cursor : Ctx.cursor) (ctx : Ctx.t)
     (states : parser_state list) : Ctx.t =
   let states = List.map it states in
   let labels = List.map (fun (label, _, _) -> label.it) states in
@@ -2328,7 +2281,7 @@ and type_parser_states (cursor : Ctx.cursor) (ctx : Ctx.t)
     List.fold_left
       (fun ctx' (label, block, _annos) ->
         let ctx' = Ctx.set_id Ctx.Local label.it ctx' in
-        type_parser_state cursor ctx' block)
+        type_parser_state Ctx.Local ctx' block)
       ctx' states
   in
   ctx
@@ -2344,7 +2297,6 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
     assert false);
   let params = List.map it params in
   let cparams = List.map it cparams in
-  let fid = Runtime.Domain.FId.to_fid "apply" params in
   let cid = Runtime.Domain.FId.to_fid id.it cparams in
   (* Typecheck and add constructor parameters to the block context *)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
@@ -2357,28 +2309,21 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
         Ctx.add_type Ctx.Block id typ ctx')
       ctx' cparams
   in
-  (* Typecheck and add local declarations to the block context *)
-  (* According to (NOTE) above, locals are declared but not initialized in the block cursor *)
-  let ctx', stmts_var_init = type_parser_local_decls Ctx.Block ctx' locals in
-  (* Typecheck implicit "apply" method *)
-  (* Typecheck and add apply parameters to the local context *)
-  let ctx' = Ctx.set_id Ctx.Local "apply" ctx' in
-  let ctx' = Ctx.set_localkind Ctx.ParserMethod ctx' in
-  let params = List.map (static_eval_param Ctx.Local ctx') params in
+  (* Typecheck and add apply parameters to the block context *)
+  let params = List.map (static_eval_param Ctx.Block ctx') params in
   let ctx' =
     List.fold_left
       (fun ctx' param ->
         let id, _, typ, _ = param in
-        Ctx.add_type Ctx.Local id typ ctx')
+        Ctx.add_type Ctx.Block id typ ctx')
       ctx' params
   in
-  let ctx', _flow = type_stmts Ctx.Local ctx' Cont stmts_var_init in
+  (* Typecheck and add local declarations to the block context *)
+  let ctx' = type_decls Ctx.Block ctx' locals in
   (* Typecheck parser states *)
-  let _ctx' = type_parser_states Ctx.Local ctx' states in
+  let _ctx' = type_parser_states Ctx.Block ctx' states in
   (* Create a parser constructor definition *)
-  let fd = FuncDef.ParserMethodD params in
-  let fdenv = FDEnv.add fid fd FDEnv.empty in
-  let typ = Type.ParserT fdenv in
+  let typ = Type.ParserT params in
   let cd = ConsDef.{ tparams = []; cparams; typ } in
   Ctx.add_consdef cid cd ctx
 
@@ -2473,21 +2418,6 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (_id : id)
 
 (* (7.2.12.2) Control type declarations *)
 
-and type_control_type_apply_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (params : param' list) : Ctx.t =
-  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Control) then (
-    Format.eprintf
-      "(type_control_apply_method_decl) Control apply method declarations must \
-       be in a block\n";
-    assert false);
-  let fid = Runtime.Domain.FId.to_fid "apply" params in
-  let ctx' = Ctx.set_id Ctx.Local "apply" ctx in
-  let ctx' = Ctx.set_localkind Ctx.ControlMethod ctx' in
-  let params = List.map (static_eval_param Ctx.Local ctx') params in
-  let fd = FuncDef.ControlMethodD params in
-  check_valid_funcdef Ctx.Block ctx fd;
-  Ctx.add_funcdef cursor fid fd ctx
-
 and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (params : param list) : Ctx.t =
   if cursor <> Ctx.Global then (
@@ -2501,10 +2431,10 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Control ctx' in
   let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
-  let ctx' = type_control_type_apply_method_decl Ctx.Block ctx' params in
+  let params = List.map (static_eval_param Ctx.Block ctx') params in
   (* Create a control type definition
      and add it to the context *)
-  let td = TypeDef.ControlD (tparams, ctx'.block.fdenv) in
+  let td = TypeDef.ControlD (tparams, params) in
   check_valid_typedef cursor ctx td;
   Ctx.add_typedef cursor id.it td ctx
 
@@ -2520,23 +2450,6 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
    the enclosing control block to immediately terminate. That is, there is no equivalent of the
    verify statement or the reject state from parsers.
    Hence, all error handling must be performed explicitly by the programmer. *)
-
-(* (NOTE) A different view on control declaration
-
-   control id (params) (cparams) {
-     locals <-- can be initialized with params and cparams (e.g. bit<8> l = p; )
-     block
-   }
-
-   "apply" is an implicit method that is a single entry point for the control.
-   Conceptually, the control declaration above is equivalent to:
-
-   control id (cparams) {
-     locals <-- not initialized yet, only declared (e.g. bit<8> l; )
-     "apply" (params) {
-       locals are initialized with params and cparams (e.g. l = p; )
-      }
-   } *)
 
 and type_control_local_decls (cursor : Ctx.cursor) (ctx : Ctx.t)
     (locals : decl list) : Ctx.t * stmt list =
@@ -2584,7 +2497,6 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
     assert false);
   let params = List.map it params in
   let cparams = List.map it cparams in
-  let fid = Runtime.Domain.FId.to_fid "apply" params in
   let cid = Runtime.Domain.FId.to_fid id.it cparams in
   (* Typecheck and add constructor parameters to the block context *)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
@@ -2597,27 +2509,24 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
         Ctx.add_type Ctx.Block id typ ctx')
       ctx' cparams
   in
-  (* Typecheck and add local declarations to the block context *)
-  (* According to (NOTE) above, locals are declared but not initialized in the block cursor *)
-  let ctx', stmts_var_init = type_control_local_decls Ctx.Block ctx' locals in
-  (* Typecheck implicit "apply" method *)
-  (* Typecheck and add apply parameters to the local context *)
-  let ctx' = Ctx.set_id Ctx.Local "apply" ctx' in
-  let ctx' = Ctx.set_localkind Ctx.ControlMethod ctx' in
-  let params = List.map (static_eval_param Ctx.Local ctx') params in
+  (* Typecheck and add apply parameters to the block context *)
+  let params = List.map (static_eval_param Ctx.Block ctx') params in
   let ctx' =
     List.fold_left
       (fun ctx' param ->
         let id, _, typ, _ = param in
-        Ctx.add_type Ctx.Local id typ ctx')
+        Ctx.add_type Ctx.Block id typ ctx')
       ctx' params
   in
-  let stmts = stmts_var_init @ [ BlockS body $ no_info ] in
+  (* Typecheck and add local declarations to the block context *)
+  let ctx' = type_decls Ctx.Block ctx' locals in
+  (* Typecheck implicit "apply" method *)
+  let ctx' = Ctx.set_id Ctx.Local "apply" ctx' in
+  let ctx' = Ctx.set_localkind Ctx.ControlApplyMethod ctx' in
+  let stmts, _annos = body.it in
   let _ctx', _flow = type_stmts Ctx.Local ctx' Cont stmts in
   (* Create a control constructor definition *)
-  let fd = FuncDef.ControlMethodD params in
-  let fdenv = FDEnv.add fid fd FDEnv.empty in
-  let typ = Type.ControlT fdenv in
+  let typ = Type.ControlT params in
   let cd = ConsDef.{ tparams = []; cparams; typ } in
   Ctx.add_consdef cid cd ctx
 

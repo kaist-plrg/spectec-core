@@ -5,7 +5,9 @@ module Value = Runtime.Value
 (* Types of variables *)
 
 module rec Type : sig
-  type t =
+  type t_param = id' * dir' * t * Value.t option
+
+  and t =
     (* Base types *)
     | VoidT
     | ErrT
@@ -33,8 +35,8 @@ module rec Type : sig
     | SEnumT of t * (member' * Value.t) list
     (* Object types *)
     | ExternT of FDEnv.t
-    | ParserT of FDEnv.t
-    | ControlT of FDEnv.t
+    | ParserT of t_param list
+    | ControlT of t_param list
     | PackageT
     (* Top type *)
     | TopT
@@ -44,7 +46,9 @@ module rec Type : sig
 
   val pp : Format.formatter -> t -> unit
 end = struct
-  type t =
+  type t_param = id' * dir' * t * Value.t option
+
+  and t =
     (* Base types *)
     | VoidT
     | ErrT
@@ -72,8 +76,8 @@ end = struct
     | SEnumT of t * (member' * Value.t) list
     (* Object types *)
     | ExternT of FDEnv.t
-    | ParserT of FDEnv.t
-    | ControlT of FDEnv.t
+    | ParserT of t_param list
+    | ControlT of t_param list
     | PackageT
     (* Top type *)
     | TopT
@@ -81,7 +85,16 @@ end = struct
     | SetT of t
     | StateT
 
-  let rec pp fmt = function
+  let rec pp fmt t =
+    let pp_params fmt params =
+      Format.fprintf fmt "@[<v>%a@]"
+        (Format.pp_print_list
+           ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+           (fun fmt (id, _dir, typ, _value_default) ->
+             Format.fprintf fmt "%a %s" pp typ id))
+        params
+    in
+    match t with
     (* Base types *)
     | VoidT -> Format.fprintf fmt "void"
     | ErrT -> Format.fprintf fmt "error"
@@ -106,7 +119,7 @@ end = struct
           ts
     | StackT (t, n) -> Format.fprintf fmt "stack %a[%a]" pp t Bigint.pp n
     | StructT fields ->
-        Format.fprintf fmt "struct { @[<hv>%a@] }"
+        Format.fprintf fmt "struct { @[<v>%a@] }"
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (m, t) ->
@@ -115,7 +128,7 @@ end = struct
                  m pp t))
           fields
     | HeaderT fields ->
-        Format.fprintf fmt "header { @[<hv>%a@] }"
+        Format.fprintf fmt "header { @[<v>%a@] }"
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (m, t) ->
@@ -124,7 +137,7 @@ end = struct
                  m pp t))
           fields
     | UnionT fields ->
-        Format.fprintf fmt "union { @[<hv>%a@] }"
+        Format.fprintf fmt "union { @[<v>%a@] }"
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (m, t) ->
@@ -133,14 +146,14 @@ end = struct
                  m pp t))
           fields
     | EnumT members ->
-        Format.fprintf fmt "enum { @[<hv>%a@] }"
+        Format.fprintf fmt "enum { @[<v>%a@] }"
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt m ->
                Format.fprintf fmt "%a" (Syntax.Pp.pp_member' ~level:0) m))
           members
     | SEnumT (t, members) ->
-        Format.fprintf fmt "enum %a { @[<hv>%a@] }" pp t
+        Format.fprintf fmt "enum %a { @[<v>%a@] }" pp t
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (m, v) ->
@@ -150,8 +163,8 @@ end = struct
           members
     (* Object types *)
     | ExternT fdenv -> Format.fprintf fmt "extern %a" FDEnv.pp fdenv
-    | ParserT fdenv -> Format.fprintf fmt "parser %a" FDEnv.pp fdenv
-    | ControlT fdenv -> Format.fprintf fmt "control %a" FDEnv.pp fdenv
+    | ParserT params -> Format.fprintf fmt "parser %a" pp_params params
+    | ControlT params -> Format.fprintf fmt "control %a" pp_params params
     | PackageT -> Format.fprintf fmt "package"
     (* Top type *)
     | TopT -> Format.fprintf fmt "top"
@@ -161,6 +174,8 @@ end = struct
 end
 
 and TypeDef : sig
+  type t_param = id' * dir' * Type.t * Value.t option
+
   type t =
     (* Aliased type definitions *)
     | DefD of Type.t
@@ -174,12 +189,14 @@ and TypeDef : sig
     | SEnumD of id' * Type.t * (member' * Value.t) list
     (* Object type definitions *)
     | ExternD of tparam' list * FDEnv.t
-    | ParserD of tparam' list * FDEnv.t
-    | ControlD of tparam' list * FDEnv.t
+    | ParserD of tparam' list * t_param list
+    | ControlD of tparam' list * t_param list
     | PackageD of tparam' list
 
   val pp : Format.formatter -> t -> unit
 end = struct
+  type t_param = id' * dir' * Type.t * Value.t option
+
   type t =
     (* Aliased type definitions *)
     | DefD of Type.t
@@ -193,65 +210,69 @@ end = struct
     | SEnumD of id' * Type.t * (member' * Runtime.Value.t) list
     (* Object type definitions *)
     | ExternD of tparam' list * FDEnv.t
-    | ParserD of tparam' list * FDEnv.t
-    | ControlD of tparam' list * FDEnv.t
+    | ParserD of tparam' list * t_param list
+    | ControlD of tparam' list * t_param list
     | PackageD of tparam' list
 
-  let pp fmt = function
+  let pp fmt t =
+    let pp_tparams fmt tparams =
+      Format.fprintf fmt "<%a>"
+        (Format.pp_print_list
+           ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+           (fun fmt tparam -> Format.fprintf fmt "%s" tparam))
+        tparams
+    in
+    let pp_params fmt params =
+      Format.fprintf fmt "@[<v>%a@]"
+        (Format.pp_print_list
+           ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+           (fun fmt (id, _dir, typ, _value_default) ->
+             Format.fprintf fmt "%a %s" Type.pp typ id))
+        params
+    in
+    match t with
     | DefD typ -> Format.fprintf fmt "typedef %a" Type.pp typ
     | NewD typ -> Format.fprintf fmt "type %a" Type.pp typ
     | StructD fields ->
-        Format.fprintf fmt "struct { @[<hv>%a@] }"
+        Format.fprintf fmt "struct { @[<v>%a@] }"
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (member, typ) ->
                Format.fprintf fmt "%s: %a" member Type.pp typ))
           fields
     | HeaderD fields ->
-        Format.fprintf fmt "header { @[<hv>%a@] }"
+        Format.fprintf fmt "header { @[<v>%a@] }"
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (member, typ) ->
                Format.fprintf fmt "%s: %a" member Type.pp typ))
           fields
     | UnionD fields ->
-        Format.fprintf fmt "union { @[<hv>%a@] }"
+        Format.fprintf fmt "union { @[<v>%a@] }"
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (member, typ) ->
                Format.fprintf fmt "%s: %a" member Type.pp typ))
           fields
     | EnumD (id, members) ->
-        Format.fprintf fmt "enum %s { @[<hv>%a@] }" id
+        Format.fprintf fmt "enum %s { @[<v>%a@] }" id
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt member -> Format.fprintf fmt "%s" member))
           members
     | SEnumD (id, typ, members) ->
-        Format.fprintf fmt "enum %a %s { @[<hv>%a@] }" Type.pp typ id
+        Format.fprintf fmt "enum %a %s { @[<v>%a@] }" Type.pp typ id
           (Format.pp_print_list
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (member, value) ->
                Format.fprintf fmt "%s: %a" member Runtime.Value.pp value))
           members
     | ExternD (tparams, fdenv) ->
-        Format.fprintf fmt "extern<%a> %a"
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
-             (fun fmt tparam -> Format.fprintf fmt "%s" tparam))
-          tparams FDEnv.pp fdenv
-    | ParserD (tparams, fdenv) ->
-        Format.fprintf fmt "parser<%a> %a"
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
-             (fun fmt tparam -> Format.fprintf fmt "%s" tparam))
-          tparams FDEnv.pp fdenv
-    | ControlD (tparams, fdenv) ->
-        Format.fprintf fmt "control<%a> %a"
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
-             (fun fmt tparam -> Format.fprintf fmt "%s" tparam))
-          tparams FDEnv.pp fdenv
+        Format.fprintf fmt "extern%a %a" pp_tparams tparams FDEnv.pp fdenv
+    | ParserD (tparams, params) ->
+        Format.fprintf fmt "parser%a %a" pp_tparams tparams pp_params params
+    | ControlD (tparams, params) ->
+        Format.fprintf fmt "control%a %a" pp_tparams tparams pp_params params
     | PackageD _tparams -> Format.fprintf fmt "package"
 end
 
@@ -265,9 +286,8 @@ and FuncType : sig
     | ActionT of t_param list
     | ExternMethodT of t_param list * Type.t
     | ExternAbstractMethodT of t_param list * Type.t
-    | ParserMethodT of t_param list
-    | ControlMethodT of t_param list
-    | TableMethodT
+    | ParserApplyMethodT of t_param list
+    | ControlApplyMethodT of t_param list
     | BuiltinMethodT of t_param list * Type.t
 
   val pp : Format.formatter -> t -> unit
@@ -282,14 +302,13 @@ end = struct
     | ActionT of t_param list
     | ExternMethodT of t_param list * Type.t
     | ExternAbstractMethodT of t_param list * Type.t
-    | ParserMethodT of t_param list
-    | ControlMethodT of t_param list
-    | TableMethodT
+    | ParserApplyMethodT of t_param list
+    | ControlApplyMethodT of t_param list
     | BuiltinMethodT of t_param list * Type.t
 
   let pp fmt t =
     let pp_params fmt params =
-      Format.fprintf fmt "@[<hv>%a@]"
+      Format.fprintf fmt "@[<v>%a@]"
         (Format.pp_print_list
            ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
            (fun fmt (id, _dir, typ, _value_default) ->
@@ -310,11 +329,10 @@ end = struct
     | ExternAbstractMethodT (params, typ_ret) ->
         Format.fprintf fmt "@[<v>extern abstract method %a -> %a@]" pp_params
           params Type.pp typ_ret
-    | ParserMethodT params ->
-        Format.fprintf fmt "@[<v>parser method %a@]" pp_params params
-    | ControlMethodT params ->
-        Format.fprintf fmt "@[<v>control method %a@]" pp_params params
-    | TableMethodT -> Format.fprintf fmt "@[<v>table method@]"
+    | ParserApplyMethodT params ->
+        Format.fprintf fmt "@[<v>parser apply %a@]" pp_params params
+    | ControlApplyMethodT params ->
+        Format.fprintf fmt "@[<v>control apply %a@]" pp_params params
     | BuiltinMethodT (params, typ_ret) ->
         Format.fprintf fmt "@[<v>builtin method %a -> %a@]" pp_params params
           Type.pp typ_ret
@@ -325,17 +343,16 @@ end = struct
     | ActionT params
     | ExternMethodT (params, _)
     | ExternAbstractMethodT (params, _)
-    | ParserMethodT params
-    | ControlMethodT params ->
+    | ParserApplyMethodT params
+    | ControlApplyMethodT params
+    | BuiltinMethodT (params, _) ->
         params
-    | TableMethodT -> []
-    | BuiltinMethodT (params, _) -> params
 
   let get_typ_ret = function
     | ExternFunctionT (_, typ_ret) | FunctionT (_, typ_ret) -> typ_ret
     | ActionT _ -> Type.VoidT
     | ExternMethodT (_, typ_ret) | ExternAbstractMethodT (_, typ_ret) -> typ_ret
-    | ParserMethodT _ | ControlMethodT _ | TableMethodT -> Type.VoidT
+    | ParserApplyMethodT _ | ControlApplyMethodT _ -> Type.VoidT
     | BuiltinMethodT (_, typ_ret) -> typ_ret
 end
 
@@ -348,10 +365,6 @@ and FuncDef : sig
     | ActionD of t_param list
     | ExternMethodD of tparam' list * t_param list * Type.t
     | ExternAbstractMethodD of tparam' list * t_param list * Type.t
-    | ParserMethodD of t_param list
-    | ControlMethodD of t_param list
-    | TableMethodD
-    | BuiltinMethodD of t_param list * Type.t
 
   val pp : Format.formatter -> t -> unit
 end = struct
@@ -363,10 +376,6 @@ end = struct
     | ActionD of t_param list
     | ExternMethodD of tparam' list * t_param list * Type.t
     | ExternAbstractMethodD of tparam' list * t_param list * Type.t
-    | ParserMethodD of t_param list
-    | ControlMethodD of t_param list
-    | TableMethodD
-    | BuiltinMethodD of t_param list * Type.t
 
   let pp fmt t =
     let pp_tparams fmt tparams =
@@ -377,7 +386,7 @@ end = struct
         tparams
     in
     let pp_params fmt params =
-      Format.fprintf fmt "@[<hv>%a@]"
+      Format.fprintf fmt "@[<v>%a@]"
         (Format.pp_print_list
            ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
            (fun fmt (id, _dir, typ, _value_default) ->
@@ -398,14 +407,6 @@ end = struct
     | ExternAbstractMethodD (tparams, params, typ_ret) ->
         Format.fprintf fmt "@[<v>extern abstract method%a %a -> %a@]" pp_tparams
           tparams pp_params params Type.pp typ_ret
-    | ParserMethodD params ->
-        Format.fprintf fmt "@[<v>parser method %a@]" pp_params params
-    | ControlMethodD params ->
-        Format.fprintf fmt "@[<v>control method %a@]" pp_params params
-    | TableMethodD -> Format.fprintf fmt "@[<v>table method@]"
-    | BuiltinMethodD (params, typ_ret) ->
-        Format.fprintf fmt "@[<v>builtin method %a -> %a@]" pp_params params
-          Type.pp typ_ret
 end
 
 (* Types of constructors *)
@@ -418,7 +419,7 @@ end = struct
 
   let pp fmt t =
     let params, typ_ret = t in
-    Format.fprintf fmt "@[<v>cons (@[<hv>%a@]) -> %a@]"
+    Format.fprintf fmt "@[<v>cons (@[<v>%a@]) -> %a@]"
       (Format.pp_print_list
          ~pp_sep:(fun fmt () -> Format.fprintf fmt ",@ ")
          (fun fmt (id, _dir, typ, _value_default) ->
@@ -442,7 +443,7 @@ end = struct
   }
 
   let pp fmt t =
-    Format.fprintf fmt "@[<v>cons<%a> (@[<hv>%a@]) -> %a@]"
+    Format.fprintf fmt "@[<v>cons<%a> (@[<v>%a@]) -> %a@]"
       (Format.pp_print_list
          ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
          (fun fmt tparam -> Format.fprintf fmt "%s" tparam))

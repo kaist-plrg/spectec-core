@@ -19,8 +19,7 @@ type localkind =
   | ExternMethod
   | ExternAbstractMethod of Type.t
   | ParserState
-  | ParserMethod
-  | ControlMethod
+  | ControlApplyMethod
   | TableMethod
 
 type gt = {
@@ -358,8 +357,7 @@ let pp_lt fmt (lt : lt) =
       | ExternMethod -> Format.fprintf fmt "ExternMethod"
       | ExternAbstractMethod _ -> Format.fprintf fmt "ExternAbstractMethod"
       | ParserState -> Format.fprintf fmt "ParserState"
-      | ParserMethod -> Format.fprintf fmt "ParserMethod"
-      | ControlMethod -> Format.fprintf fmt "ControlMethod"
+      | ControlApplyMethod -> Format.fprintf fmt "ControlApplyMethod"
       | TableMethod -> Format.fprintf fmt "TableMethod")
     lt.kind TDEnv.pp lt.tdenv
     (Format.pp_print_list pp_frame)
