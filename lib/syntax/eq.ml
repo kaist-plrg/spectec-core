@@ -197,7 +197,7 @@ and eq_expr' (expr : expr) (expr' : expr) =
   | StrE t, StrE t' -> eq_text t t'
   | NumE n, NumE n' -> eq_num n n'
   | VarE var, VarE var' -> eq_var var var'
-  | ListE exprs, ListE exprs' -> eq_list eq_expr exprs exprs'
+  | TupleE exprs, TupleE exprs' -> eq_list eq_expr exprs exprs'
   | RecordE fields, RecordE fields' ->
       eq_list
         (fun (member, expr) (member', expr') ->

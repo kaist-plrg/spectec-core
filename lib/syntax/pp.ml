@@ -228,7 +228,7 @@ and pp_expr' ?(level = 0) fmt expr' =
   | StrE t -> F.fprintf fmt "\"%a\"" pp_text t
   | NumE num -> pp_num fmt num
   | VarE var -> pp_var fmt var
-  | ListE exprs ->
+  | TupleE exprs ->
       F.fprintf fmt "{ %a }"
         (Format.pp_print_list
            ~pp_sep:(fun fmt () -> F.fprintf fmt ", ")

@@ -43,7 +43,7 @@ and eval_expr (ictx : ICtx.t) (expr : expr) : R.Value.t =
   | StrE s -> eval_str s
   | NumE { it = value, encoding; _ } -> eval_num value encoding
   | VarE var -> eval_var ictx var
-  | ListE exprs -> eval_list ictx exprs
+  | TupleE exprs -> eval_tuple ictx exprs
   | RecordE fields -> eval_record ictx fields
   | UnE (unop, expr) -> eval_unop ictx unop expr
   | BinE (binop, expr_fst, expr_snd) -> eval_binop ictx binop expr_fst expr_snd
@@ -80,7 +80,7 @@ and eval_var (ictx : ICtx.t) (var : var) : R.Value.t =
   | Top id -> ICtx.find_var_glob id.it ictx
   | Current id -> ICtx.find_var id.it ictx
 
-and eval_list (ictx : ICtx.t) (exprs : expr list) : R.Value.t =
+and eval_tuple (ictx : ICtx.t) (exprs : expr list) : R.Value.t =
   let values = eval_exprs ictx exprs in
   R.Value.TupleV values
 

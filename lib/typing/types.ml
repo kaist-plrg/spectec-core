@@ -41,6 +41,7 @@ module rec Type : sig
     (* Top type *)
     | TopT
     (* Synthesized types : variables can never be declared of this type *)
+    | RecordT of (member' * t) list
     | SetT of t
     | StateT
 
@@ -82,6 +83,7 @@ end = struct
     (* Top type *)
     | TopT
     (* Synthesized types : variables can never be declared of this type *)
+    | RecordT of (member' * t) list
     | SetT of t
     | StateT
 
@@ -169,6 +171,15 @@ end = struct
     (* Top type *)
     | TopT -> Format.fprintf fmt "top"
     (* Synthesized types : variables can never be declared of this type *)
+    | RecordT fields ->
+        Format.fprintf fmt "record { @[<v>%a@] }"
+          (Format.pp_print_list
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
+             (fun fmt (m, t) ->
+               Format.fprintf fmt "%a: %a"
+                 (Syntax.Pp.pp_member' ~level:0)
+                 m pp t))
+          fields
     | SetT t -> Format.fprintf fmt "set<%a>" pp t
     | StateT -> Format.fprintf fmt "state"
 end

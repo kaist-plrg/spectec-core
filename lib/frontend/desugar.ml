@@ -197,7 +197,7 @@ and desugar_expr (expr : Expression.t) : expr =
   | Int { i; tags = at } -> NumE (desugar_num i) $ at
   | String { text; tags = at } -> StrE (desugar_text text) $ at
   | Name { name; tags = at } -> VarE (desugar_var name) $ at
-  | List { values; tags = at } -> ListE (desugar_exprs values) $ at
+  | List { values; tags = at } -> TupleE (desugar_exprs values) $ at
   | Record { entries = fields; tags = at } ->
       let record =
         List.map

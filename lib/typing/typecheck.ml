@@ -138,6 +138,10 @@ and check_valid_type' (tset : TSet.t) (typ : Type.t) : unit =
   | ParserT params | ControlT params ->
       List.iter (fun fd -> check_valid_param' tset fd) params
   | PackageT | TopT -> ()
+  | RecordT fields ->
+      let members, typs_inner = List.split fields in
+      check_distinct_names members;
+      List.iter (check_valid_type' tset) typs_inner
   | SetT typ_inner ->
       check_valid_type' tset typ_inner;
       check_valid_type_nesting typ typ_inner
@@ -189,7 +193,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false)
   | NewT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT -> false
@@ -205,7 +209,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
           false
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false)
   | TupleT _ -> (
       match typ_inner with
       | VoidT -> false
@@ -221,7 +225,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false)
   | StackT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
@@ -235,7 +239,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | EnumT _ | SEnumT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
           false
       | TopT -> true
-      | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false)
   | StructT _ -> (
       match typ_inner with
       | VoidT -> false
@@ -251,7 +255,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false)
   | HeaderT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT -> false
@@ -270,7 +274,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | SEnumT _ -> true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false)
   | UnionT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
@@ -286,7 +290,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | PackageT ->
           false
       | TopT -> true
-      | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false)
   | EnumT _ -> error_not_nest ()
   | SEnumT _ -> (
       match typ_inner with
@@ -300,8 +304,9 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | SEnumT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
           false
       | TopT -> true
-      | SetT _ | StateT -> false)
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> error_not_nest ()
+      | RecordT _ | SetT _ | StateT -> false)
+  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _ ->
+      error_not_nest ()
   | SetT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT -> false
@@ -320,7 +325,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | EnumT _ | SEnumT _ -> true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false)
   | StateT -> error_not_nest ()
 
 and check_valid_typedef (cursor : Ctx.cursor) (ctx : Ctx.t) (td : TypeDef.t) :
@@ -481,6 +486,10 @@ let rec substitute_type (tmap : TMap.t) (typ : Type.t) : Type.t =
       ControlT params
   | PackageT | TopT -> typ
   | SetT typ_inner -> SetT (substitute_type tmap typ_inner)
+  | RecordT fields ->
+      let members, typs_inner = List.split fields in
+      let typs_inner = List.map (substitute_type tmap) typs_inner in
+      RecordT (List.combine members typs_inner)
   | StateT -> typ
 
 and substitute_param (tmap : TMap.t)
@@ -723,7 +732,7 @@ and static_eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : expr) :
   | StrE s -> static_eval_str s
   | NumE { it = value, encoding; _ } -> static_eval_num value encoding
   | VarE var -> static_eval_var cursor ctx var
-  | ListE exprs -> static_eval_list cursor ctx exprs
+  | TupleE exprs -> static_eval_tuple cursor ctx exprs
   | RecordE fields -> static_eval_record cursor ctx fields
   | UnE (unop, expr) -> static_eval_unop cursor ctx unop expr
   | BinE (binop, expr_fst, expr_snd) ->
@@ -754,7 +763,7 @@ and static_eval_var (cursor : Ctx.cursor) (ctx : Ctx.t) (var : var) :
     Value.t option =
   Ctx.find_opt Ctx.find_value_opt cursor var ctx
 
-and static_eval_list (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : expr list) :
+and static_eval_tuple (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : expr list) :
     Value.t option =
   let values = static_eval_exprs cursor ctx exprs in
   Option.map (fun values -> Value.TupleV values) values
@@ -862,13 +871,12 @@ let rec type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : expr) : Type.t =
   | StrE _ -> Type.StrT
   | NumE { it = _, encoding; _ } -> type_num_expr encoding
   | VarE var -> type_var_expr cursor ctx var
-  | ListE _ | RecordE _ ->
-      Format.eprintf "(type_expr) %a\n" (Syntax.Pp.pp_expr ~level:0) expr;
-      assert false
+  | TupleE exprs -> type_tuple_expr cursor ctx exprs
+  | RecordE fields -> type_record_expr cursor ctx fields
   | UnE (unop, expr) -> type_unop_expr cursor ctx unop expr
-  | BinE _ | TernE _ ->
-      Format.eprintf "(type_expr) %a\n" (Syntax.Pp.pp_expr ~level:0) expr;
-      assert false
+  | BinE (binp, expr_l, expr_r) -> type_binop_expr cursor ctx binp expr_l expr_r
+  | TernE (expr_cond, expr_then, expr_else) ->
+      type_ternop_expr cursor ctx expr_cond expr_then expr_else
   | CastE (typ, expr) -> type_cast_expr cursor ctx typ expr
   | MaskE (expr_base, expr_mask) ->
       type_mask_expr cursor ctx expr_base expr_mask
@@ -877,9 +885,10 @@ let rec type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : expr) : Type.t =
       type_select_expr cursor ctx exprs_key select_cases
   | ArrAccE (expr_base, expr_idx) ->
       type_array_acc_expr cursor ctx expr_base expr_idx
-  | BitAccE _ | TypeAccE _ | ErrAccE _ ->
-      Format.eprintf "(type_expr) %a\n" (Syntax.Pp.pp_expr ~level:0) expr;
-      assert false
+  | BitAccE (expr_base, expr_lo, expr_hi) ->
+      type_bitstring_acc_expr cursor ctx expr_base expr_lo expr_hi
+  | TypeAccE (var_base, member) -> type_type_acc_expr cursor ctx var_base member
+  | ErrAccE member -> type_error_acc_expr cursor ctx member
   | ExprAccE (expr_base, member) ->
       type_expr_acc_expr cursor ctx expr_base member
   | CallE (expr_func, targs, args) ->
@@ -896,12 +905,55 @@ and type_num_expr (encoding : (Bigint.t * bool) option) : Type.t =
 
 and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : var) : Type.t =
   let typ = Ctx.find_opt Ctx.find_type_opt cursor var ctx in
-  Format.printf "Ctx:\n%a\n" Ctx.pp ctx;
   if Option.is_none typ then (
     Format.eprintf "(type_var_expr) %a is a free identifier\n" Syntax.Pp.pp_var
       var;
     assert false);
   Option.get typ
+
+(* (8.12) Operations on tuple expressions
+
+   The empty tuple expression has type tuple<> - a tuple with no components. *)
+
+and type_tuple_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : expr list) :
+    Type.t =
+  let typs = List.map (type_expr cursor ctx) exprs in
+  let typ = Type.TupleT typs in
+  check_valid_type cursor ctx typ;
+  typ
+
+(* (8.13) Operations on structure-valued expressions
+
+   One can write expressions that evaluate to a structure or header.
+
+   For a structure-valued expression typeRef is the name of a struct or header type.
+   The typeRef can be omitted if it can be inferred from context, e.g., when initializing a variable with a struct type.
+   Structure-valued expressions that evaluate to a value of some header type are always valid.
+
+   Structure-valued expressions can be used in the right-hand side of assignments, in comparisons,
+   in field selection expressions, and as arguments to functions, method or actions.
+   Structure-valued expressions are not left values.
+
+   Structure-valued expressions that do not have ... as their last element must provide a value
+   for every member of the struct or header type to which it evaluates, by mentioning each field name exactly once.
+
+   Structure-valued expressions that have ... as their last element are allowed to give values to only
+   a subset of the fields of the struct or header type to which it evaluates.
+   Any field names not given a value explicitly will be given their default value (see Section 8.26).
+
+   The order of the fields of the struct or header type does not need to
+   match the order of the values of the structure-valued expression.
+
+   It is a compile-time error if a field name appears more than once in the same structure-valued expression. *)
+
+and type_record_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (fields : (member * expr) list) : Type.t =
+  let members, exprs = List.split fields in
+  let members = List.map it members in
+  let typs = List.map (type_expr cursor ctx) exprs in
+  let typ = Type.RecordT (List.combine members typs) in
+  check_valid_type cursor ctx typ;
+  typ
 
 (* (8.6) Operations on fixed-width bit types (unsigned integers)
 
@@ -971,6 +1023,398 @@ and type_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : unop)
           expr;
         assert false);
       typ
+
+(* (8.2) Operaions on error types
+
+    The error type only supports equality (==) and inequality (!=) comparisons.
+    The result of such a comparison is a Boolean value.
+
+    (8.3) Operations on enum types
+
+    Similar to errors, enum expressions without a specified underlying type only support
+    equality (==) and inequality (!=) comparisons.
+
+    (8.4) Operations on match_kind types
+
+    They support only assignment and comparisons for equality and inequality.
+
+    (8.5) Expressions on Booleans
+
+    The following operations are provided on Boolean expressions:
+
+     - “And”, denoted by &&
+     - “Or”, denoted by ||
+     - Negation, denoted by !
+     - Equality and inequality tests, denoted by == and != respectively.
+
+    (8.6) Operations on fixed-width bit types (unsigned integers)
+
+    All binary operations except shifts and concatenation require both operands to have the same exact type and width;
+    supplying operands with different widths produces an error at compile time.
+    No implicit casts are inserted by the compiler to equalize the widths.
+    There are no other binary operations that accept signed and unsigned values simultaneously besides shifts and concatenation.
+    The following operations are provided on bit-string expressions:
+
+     - Test for equality between bit-strings of the same width, designated by ==. The result is a Boolean value.
+     - Test for inequality between bit-strings of the same width, designated by !=. The result is a Boolean value.
+     - Unsigned comparisons <,>,<=,>=. Both operands must have the same width and the result is a Boolean value.
+
+   Each of the following operations produces a bit-string result when applied to bit-strings of the same width:
+
+     - Addition, denoted by +.
+     - Subtraction, denoted by -.
+         The result is unsigned, and has the same type as the operands.
+     - Multiplication, denoted by *.
+         The result has the same width as the operands and is computed by truncating the result to the output's width.
+         P4 architectures may impose additional restrictions
+         — e.g., they may only allow multiplication by a non-negative integer power of two.
+     - Bitwise “and” between two bit-strings of the same width, denoted by &.
+     - Bitwise “or” between two bit-strings of the same width, denoted by |.
+     - Bitwise “complement” of a single bit-string, denoted by ~.
+     - Bitwise “xor” of two bit-strings of the same width, denoted by ^.
+     - Saturating addition, denoted by |+|.
+     - Saturating subtraction, denoted by |-|.
+
+    Bit-strings also support the following operations:
+
+     - Logical shift left and right by a (not-necessarily-known-at-compile-time) non-negative integer value,
+       denoted by << and >> respectively. In a shift, the left operand is unsigned, and right operand must be either
+       an expression of type bit<S> or a non-negative integer value that is known at compile time.
+       The result has the same type as the left operand.
+     - Concatenation of bit-strings and/or fixed-width signed integers, denoted by ++.
+       The two operands must be either bit<W> or int<W>, and they can be of different signedness and width.
+       The result has the same signedness as the left operand and the width equal to the sum of the two operands' width.
+
+    (8.7) Operations on fixed-width signed integers
+
+    All binary operations except shifts and concatenation require both operands to have the same exact type (signedness)
+    and width and supplying operands with different widths or signedness produces a compile-time error.
+    No implicit casts are inserted by the compiler to equalize the types. Except for shifts and concatenation,
+    P4 does not have any binary operations that operate simultaneously on signed and unsigned values.
+
+    Note that bitwise operations on signed integers are well-defined, since the representation is mandated to be two's complement.
+
+    The int<W> datatype supports the following operations; all binary operations require both operands to have the exact same type.
+    The result always has the same width as the left operand.
+
+     - Addition, denoted by +.
+     - Subtraction, denoted by -.
+     - Comparison for equality and inequality, denoted == and != respectively.
+         These operations produce a Boolean result.
+     - Numeric comparisons, denoted by <,<=,>, and >=.
+         These operations produce a Boolean result.
+     - Multiplication, denoted by *.
+         Result has the same width as the operands.
+         P4 architectures may impose additional restrictions
+         —e.g., they may only allow multiplication by a power of two.
+     - Bitwise “and” between two bit-strings of the same width, denoted by &.
+     - Bitwise “or” between two bit-strings of the same width, denoted by |.
+     - Bitwise “complement” of a single bit-string, denoted by ~.
+     - Bitwise “xor” of two bit-strings of the same width, denoted by ^.
+     - Saturating addition, denoted by |+|.
+     - Saturating subtraction, denoted by |-|.
+
+    The int<W> datatype also support the following operations:
+
+     - Arithmetic shift left and right denoted by << and >>.
+       The left operand is signed and the right operand must be either an unsigned number of type bit<S>
+       or a non-negative integer compile-time known value. The result has the same type as the left operand.
+     - Concatenation of bit-strings and/or fixed-width signed integers, denoted by ++.
+       The two operands must be either bit<W> or int<W>, and they can be of different signedness and width.
+       The result has the same signedness as the left operand and the width equal to the sum of the two operands' width.
+
+    (8.8) Operations on arbitrary-precsion integers
+
+    The type int denotes arbitrary-precision integers. In P4, all expressions of type int must be compile-time known values. The type int supports the following operations:
+
+     - Addition, denoted by +.
+     - Subtraction, denoted by -.
+     - Comparison for equality and inequality, denoted by == and != respectively.
+         These operations produce a Boolean result.
+     - Numeric comparisons <,<=,>, and >=.
+         These operations produce a Boolean result.
+     - Multiplication, denoted by *.
+     - Truncating integer division between positive values, denoted by /.
+     - Modulo between positive values, denoted by %.
+     - Arithmetic shift left and right denoted by << and >>.
+         These operations produce an int result.
+         The right operand must be either an unsigned constant of type bit<S> or a non-negative integer compile-time known value.
+
+    Each operand that participates in any of these operation must have type int (except shifts).
+    Binary operations cannot be used to combine values of type int with values of a fixed-width type (except shifts).
+    However, the compiler automatically inserts casts from int to fixed-width types in certain situations—see Section 8.11.
+
+    Note: bitwise-operations (|,&,^,~) are not defined on expressions of type int.
+          In addition, it is illegal to apply division and modulo to negative values.
+    Note: saturating arithmetic is not supported for arbitrary-precision integers.
+
+    (8.9) Concatentation and shifts
+
+    (8.9.1) Concatenation
+
+    Concatenation is applied to two bit-strings (signed or unsigned). It is denoted by the infix operator ++.
+    The result is a bit-string whose length is the sum of the lengths of the inputs
+    where the most significant bits are taken from the left operand; the sign of the result is taken from the left operand.
+
+    (8.9.2) A note about shifts
+
+    The left operand of shifts can be any one out of unsigned bit-strings, signed bit-strings,
+    and arbitrary-precision integers, and the right operand of shifts must be either an expression of type bit<S>
+    or a non-negative integer compile-time known value. The result has the same type as the left operand.
+
+    (8.10) Operations on variable-size bit types
+
+    To support parsing headers with variable-length fields, P4 offers a type varbit.
+    Each occurrence of the type varbit has a statically-declared maximum width, as well as a dynamic width,
+    which must not exceed the static bound. Prior to initialization a variable-size bit-string has an unknown dynamic width.
+
+    Variable-length bit-strings support a limited set of operations:
+
+     - Assignment to another variable-sized bit-string.
+         The target of the assignment must have the same static width as the source.
+         When executed, the assignment sets the dynamic width of the target to the dynamic width of the source.
+     - Comparison for equality or inequality with another varbit field.
+         Two varbit fields can be compared only if they have the same type.
+         Two varbits are equal if they have the same dynamic width and all the bits up to the dynamic width are the same.
+
+    (8.12) Operations on tuple expressions
+
+    Tuples can be compared for equality using == and !=; two tuples are equal if and only if all their fields are respectively equal.
+
+    (8.16) Operations on struct types
+
+    Two structs can be compared for equality (==) or inequality (!=) only if they
+    have the same type and all of their fields can be recursively compared for equality.
+    Two structures are equal if and only if all their corresponding fields are equal.
+
+    (8.17) Operations on header types
+
+    Two headers can be compared for equality (==) or inequality (!=) only if they
+    have the same type. Two headers are equal if and only if they are both invalid,
+    or they are both valid and all their corresponding fields are equal.
+
+    (8.18) Operations on header stacks
+
+    Two header stacks can be compared for equality (==) or inequality (!=) only if they
+    have the same element type and the same length. Two stacks are equal if and only if
+    all their corresponding elements are equal. Note that the nextIndex value is
+    not used in the equality comparison.
+
+    (8.19) Operations on header unions
+
+    Two header unions can be compared for equality (==) or inequality (!=) if they
+    have the same type. The unions are equal if and only if all their corresponding fields are equal
+    (i.e., either all fields are invalid in both unions, or in both unions the same field is valid,
+    and the values of the valid fields are equal as headers).
+
+    (8.23) Operations on types introduced by type
+
+    Values with a type introduced by the type keyword provide only a few operations:
+
+     - comparisons for equality and inequality if the original type supported such comparisons *)
+
+and type_binop_plus_minus_mult (typ_l : Type.t) (typ_r : Type.t) : Type.t =
+  match (typ_l, typ_r) with
+  | IntT, IntT -> Type.IntT
+  | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) ->
+      Type.FIntT width_l
+  | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) ->
+      Type.FBitT width_l
+  | _ ->
+      Format.eprintf
+        "(type_binop_plus_minus_mult) Addition, subtraction, and \
+         multiplication operator expects either two arbitrary precision \
+         integers or \n\
+        \        two integers of the same signedness and width but %a and %a \
+         were given\n"
+        Type.pp typ_l Type.pp typ_r;
+      assert false
+
+and type_binop_saturating_plus_minus (typ_l : Type.t) (typ_r : Type.t) : Type.t
+    =
+  match (typ_l, typ_r) with
+  | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) ->
+      Type.FIntT width_l
+  | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) ->
+      Type.FBitT width_l
+  | _ ->
+      Format.eprintf
+        "(type_binop_saturating_plus_minus) Saturating addition and \
+         subtraction operator expects two integers of the same signedness and \
+         width but %a and %a were given\n"
+        Type.pp typ_l Type.pp typ_r;
+      assert false
+
+and type_binop_div_mod (typ_l : Type.t) (typ_r : Type.t) : Type.t =
+  match (typ_l, typ_r) with
+  (* (TODO) Non-negativity can only be checked dynamically *)
+  | IntT, IntT -> Type.IntT
+  | _ ->
+      Format.eprintf
+        "(type_binop_div) Division and modulo operator expects two arbitrary \
+         precision integers but %a and %a were given\n"
+        Type.pp typ_l Type.pp typ_r;
+      assert false
+
+and type_binop_shift (typ_l : Type.t) (typ_r : Type.t) : Type.t =
+  match (typ_l, typ_r) with
+  | FBitT _, FBitT _ -> typ_l
+  (* (TODO) FBitT _, Int is allowed when the int is a compile-time known value *)
+  | FIntT _, FBitT _ -> typ_l
+  (* (TODO) FIntT _, Int is allowed when the int is a compile-time known value *)
+  | IntT, FBitT _ -> typ_l
+  (* (TODO) Int _, Int is allowed when the int is a compile-time known value *)
+  | _ ->
+      Format.eprintf
+        "(type_binop_shift) Shift operator expects an unsigned bitstring, \
+         signed bitstring, or an integer as the left operand and an unsigned \
+         bitstring or a compile-time known integer as the right operand but %a \
+         and %a were given\n"
+        Type.pp typ_l Type.pp typ_r;
+      assert false
+
+and type_binop_compare (typ_l : Type.t) (typ_r : Type.t) : Type.t =
+  match (typ_l, typ_r) with
+  | IntT, IntT -> Type.BoolT
+  | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) -> Type.BoolT
+  | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) -> Type.BoolT
+  | _ ->
+      Format.eprintf
+        "(type_binop_compare) Comparison expects either two arbitrary \
+         precision integers or two integers of the same signedness and width \
+         but %a and %a were given\n"
+        Type.pp typ_l Type.pp typ_r;
+      assert false
+
+and check_type_equals' (typ_l : Type.t) (typ_r : Type.t) : bool =
+  match (typ_l, typ_r) with
+  | ErrT, ErrT | MatchKindT, MatchKindT | BoolT, BoolT | IntT, IntT -> true
+  | FIntT width_l, FIntT width_r -> Bigint.(width_l = width_r)
+  | FBitT width_l, FBitT width_r -> Bigint.(width_l = width_r)
+  | VBitT width_l, VBitT width_r -> Bigint.(width_l = width_r)
+  | DefT typ_inner_l, DefT typ_inner_r | NewT typ_inner_l, NewT typ_inner_r ->
+      check_type_equals' typ_inner_l typ_inner_r
+  | TupleT typs_inner_l, TupleT typs_inner_r ->
+      List.for_all2 check_type_equals' typs_inner_l typs_inner_r
+  | StackT (typ_inner_l, size_l), StackT (typ_inner_r, size_r) ->
+      check_type_equals' typ_inner_l typ_inner_r && Bigint.(size_l = size_r)
+  (* (TODO) Fields can come in different order *)
+  | StructT fields_l, StructT fields_r
+  | HeaderT fields_l, HeaderT fields_r
+  | UnionT fields_l, UnionT fields_r ->
+      List.for_all2
+        (fun (member_l, typ_l) (member_r, typ_r) ->
+          member_l = member_r && check_type_equals' typ_l typ_r)
+        fields_l fields_r
+  (* (TODO) Enums should be checked of ids, not members *)
+  | EnumT members_l, EnumT members_r ->
+      List.equal String.equal members_l members_r
+  | SEnumT (typ_inner_l, fields_l), SEnumT (typ_inner_r, fields_r) ->
+      check_type_equals' typ_inner_l typ_inner_r
+      && List.for_all2
+           (fun (member_l, _value_l) (member_r, _value_r) ->
+             member_l = member_r)
+           fields_l fields_r
+  | _ -> false
+
+and type_binop_compare_equal (typ_l : Type.t) (typ_r : Type.t) : Type.t =
+  if not (check_type_equals' typ_l typ_r) then (
+    Format.eprintf
+      "(type_binop_compare_equal) %a and %a cannot be compared of equality\n"
+      Type.pp typ_l Type.pp typ_r;
+    assert false);
+  Type.BoolT
+
+and type_binop_bitwise (typ_l : Type.t) (typ_r : Type.t) : Type.t =
+  match (typ_l, typ_r) with
+  | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) -> typ_l
+  | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) -> typ_l
+  | _ ->
+      Format.eprintf
+        "(type_binop_bitwise) Bitwise operator expects two bit-strings of the \
+         same width but %a and %a were given\n"
+        Type.pp typ_l Type.pp typ_r;
+      assert false
+
+and type_binop_concat (typ_l : Type.t) (typ_r : Type.t) : Type.t =
+  match (typ_l, typ_r) with
+  | FIntT width_l, FIntT width_r -> FIntT Bigint.(width_l + width_r)
+  | FIntT width_l, FBitT width_r -> FIntT Bigint.(width_l + width_r)
+  | FBitT width_l, FIntT width_r -> FBitT Bigint.(width_l + width_r)
+  | FBitT width_l, FBitT width_r -> FBitT Bigint.(width_l + width_r)
+  | _ ->
+      Format.eprintf
+        "(type_binop_concat) Concatenation expects two bit-strings but %a and \
+         %a were given\n"
+        Type.pp typ_l Type.pp typ_r;
+      assert false
+
+and type_binop_logical (typ_l : Type.t) (typ_r : Type.t) : Type.t =
+  match (typ_l, typ_r) with
+  | BoolT, BoolT -> BoolT
+  | _ ->
+      Format.eprintf
+        "(type_binop_logical_expr) Logical operator expects two boolean \
+         operands but %a and %a were given\n"
+        Type.pp typ_l Type.pp typ_r;
+      assert false
+
+and type_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : binop)
+    (expr_l : expr) (expr_r : expr) : Type.t =
+  let typ_l = type_expr cursor ctx expr_l in
+  let typ_r = type_expr cursor ctx expr_r in
+  (* (TODO) Insert implicit casts if possible *)
+  match binop.it with
+  | PlusOp | MinusOp | MulOp -> type_binop_plus_minus_mult typ_l typ_r
+  | SPlusOp | SMinusOp -> type_binop_saturating_plus_minus typ_l typ_r
+  | DivOp | ModOp -> type_binop_div_mod typ_l typ_r
+  | ShlOp | ShrOp -> type_binop_shift typ_l typ_r
+  | LeOp | GeOp | LtOp | GtOp -> type_binop_compare typ_l typ_r
+  | EqOp | NeOp -> type_binop_compare_equal typ_l typ_r
+  | BAndOp | BXorOp | BOrOp -> type_binop_bitwise typ_l typ_r
+  | ConcatOp -> type_binop_concat typ_l typ_r
+  | LAndOp | LOrOp -> type_binop_logical typ_l typ_r
+
+(* (8.5.1) Conditional operator
+
+   A conditional expression of the form e1 ? e2 : e3 behaves the same as in languages like C.
+   As described above, the expression e1 is evaluated first, and second either e2 or e3 is evaluated depending
+   on the result.
+
+   The first sub-expression e1 must have Boolean type and the second and third sub-expressions must have the same type,
+   which cannot both be arbitrary-precision integers unless the condition itself can be evaluated at compilation time.
+   This restriction is designed to ensure that the width of the result of the conditional expression can be inferred
+   statically at compile time. *)
+
+and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_cond : expr)
+    (expr_then : expr) (expr_else : expr) : Type.t =
+  let typ_cond = type_expr cursor ctx expr_cond in
+  if typ_cond <> Type.BoolT then (
+    Format.eprintf "(type_if_stmt) Condition %a must be a boolean\n"
+      (Syntax.Pp.pp_expr ~level:0)
+      expr_cond;
+    assert false);
+  let typ_then = type_expr cursor ctx expr_then in
+  let typ_else = type_expr cursor ctx expr_else in
+  if typ_then <> typ_else then (
+    Format.eprintf
+      "(type_ternop_expr) Branches %a and %a must have the same type\n"
+      (Syntax.Pp.pp_expr ~level:0)
+      expr_then
+      (Syntax.Pp.pp_expr ~level:0)
+      expr_else;
+    assert false);
+  (* (TODO) What if expr_cond is compile-time known? *)
+  if typ_then = Type.IntT && typ_else = Type.IntT then (
+    Format.eprintf
+      "(type_ternop_expr) Branches %a and %a cannot both be \
+       arbitrary-precision integers\n"
+      (Syntax.Pp.pp_expr ~level:0)
+      expr_then
+      (Syntax.Pp.pp_expr ~level:0)
+      expr_else;
+    assert false);
+  typ_then
 
 (* (8.11) Casts
 
@@ -1085,16 +1529,20 @@ and type_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
   let typ_mask = type_expr cursor ctx expr_mask in
   (* (TODO) Insert cast if possible *)
   (* (CHECK) Which types are allowed in mask expression? *)
-  match (typ_base, typ_mask) with
-  | FBitT width_base, FBitT width_mask when width_base = width_mask ->
-      SetT (FBitT width_base)
-  | FIntT width_base, FIntT width_mask when width_base = width_mask ->
-      SetT (FIntT width_base)
-  | _ ->
-      Format.eprintf
-        "(type_mask_expr) Incompatible types %a and %a for mask operation\n"
-        Type.pp typ_base Type.pp typ_mask;
-      assert false
+  let typ_set =
+    match (typ_base, typ_mask) with
+    | FBitT width_base, FBitT width_mask when width_base = width_mask ->
+        Type.SetT (FBitT width_base)
+    | FIntT width_base, FIntT width_mask when width_base = width_mask ->
+        Type.SetT (FIntT width_base)
+    | _ ->
+        Format.eprintf
+          "(type_mask_expr) Incompatible types %a and %a for mask operation\n"
+          Type.pp typ_base Type.pp typ_mask;
+        assert false
+  in
+  check_valid_type cursor ctx typ_set;
+  typ_set
 
 (* (8.15.4) Ranges
 
@@ -1111,17 +1559,21 @@ and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : expr)
   let typ_ub = type_expr cursor ctx expr_ub in
   (* (TODO) Insert cast if possible *)
   (* (CHECK) Which types are allowed in range expression? *)
-  match (typ_lb, typ_ub) with
-  | IntT, IntT -> SetT IntT
-  | FBitT width_lb, FBitT width_ub when width_lb = width_ub ->
-      SetT (FBitT width_lb)
-  | FIntT width_lb, FIntT width_ub when width_lb = width_ub ->
-      SetT (FIntT width_lb)
-  | _ ->
-      Format.eprintf
-        "(type_range_expr) Incompatible types %a and %a for range operation\n"
-        Type.pp typ_lb Type.pp typ_ub;
-      assert false
+  let typ_set =
+    match (typ_lb, typ_ub) with
+    | IntT, IntT -> Type.SetT IntT
+    | FBitT width_lb, FBitT width_ub when width_lb = width_ub ->
+        Type.SetT (FBitT width_lb)
+    | FIntT width_lb, FIntT width_ub when width_lb = width_ub ->
+        Type.SetT (FIntT width_lb)
+    | _ ->
+        Format.eprintf
+          "(type_range_expr) Incompatible types %a and %a for range operation\n"
+          Type.pp typ_lb Type.pp typ_ub;
+        assert false
+  in
+  check_valid_type cursor ctx typ_set;
+  typ_set
 
 (* (13.6) Select expressions
 
@@ -1153,7 +1605,9 @@ and type_select_match (ctx : Ctx.t) (typ_key : Type.t) (keyset : keyset) : unit
         | MaskE _ | RangeE _ -> type_expr Ctx.Local ctx expr
         | _ ->
             let typ = type_expr Ctx.Local ctx expr in
-            SetT typ
+            let typ = Type.SetT typ in
+            check_valid_type Ctx.Local ctx typ;
+            typ
       in
       if typ_key <> typ then (
         Format.eprintf
@@ -1200,7 +1654,9 @@ and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs_key : expr list)
     List.map
       (fun expr_key ->
         let typ_key = type_expr Ctx.Local ctx expr_key in
-        Type.SetT typ_key)
+        let typ_key = Type.SetT typ_key in
+        check_valid_type Ctx.Local ctx typ_key;
+        typ_key)
       exprs_key
   in
   List.iter (check_valid_type Ctx.Local ctx) typs_key;
@@ -1253,6 +1709,169 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
       Format.eprintf "(type_array_acc_expr) %a cannot be indexed\n" Type.pp
         typ_base;
       assert false
+
+(* (8.6) Operations on fixed-width bit types (unsigned integers)
+
+   Bit-strings also support the following operations:
+
+    - Extraction of a set of contiguous bits, also known as a slice, denoted by [H:L],
+      where H and L must be expressions that evaluate to non-negative compile-time known values, and H >= L.
+      The types of H and L (which do not need to be identical) must be numeric (Section 7.4).
+      The result is a bit-string of width H - L + 1, including the bits numbered from L
+      (which becomes the least significant bit of the result) to H (the most significant bit of the result)
+      from the source operand. The conditions 0 <= L <= H < W are checked statically
+      (where W is the length of the source bit-string). Note that both endpoints of the extraction are inclusive.
+      The bounds are required to be known-at-compile-time values so that the result width can be computed at
+      compile time. Slices are also l-values, which means that P4 supports assigning to a slice:  e[H:L] = x .
+      The effect of this statement is to set bits H through L (inclusive of both) of e to the
+      bit-pattern represented by x, and leaves all other bits of e unchanged.
+      A slice of an unsigned integer is an unsigned integer.
+
+   (8.7) Operations on fixed-width signed integers
+
+    - Extraction of a set of contiguous bits, also known as a slice, denoted by [H:L],
+      where H and L must be expressions that evaluate to non-negative compile-time known values,
+      and H >= L must be true.
+      The result is an unsigned bit-string of width H - L + 1, including the bits numbered from L
+      (which becomes the least significant bit of the result) to H (the most significant bit of the result)
+      from the source operand.
+
+   (8.8) Operations on arbitrary-precision integers
+
+   Bit slices, denoted by [H:L], where H and L must be expressions that evaluate to
+   non-negative compile-time known values, and H >= L must be true. The types of H and L
+   (which do not need to be identical) must be one of the following:
+
+    - int - an arbitrary-precision integer (section 7.1.6.5)
+    - bit<W> - a W-bit unsigned integer where W >= 0 (section 7.1.6.2)
+    - int<W> - a W-bit signed integer where W >= 1 (section 7.1.6.3)
+    - a serializable enum with an underlying type that is bit<W> or int<W> (section 7.2.1). *)
+
+and check_bitstring_base' (typ : Type.t) : bool =
+  match typ with
+  | VoidT | ErrT | MatchKindT | StrT | BoolT -> false
+  | IntT -> true
+  | FIntT width -> Bigint.(width > zero)
+  | FBitT width -> Bigint.(width >= zero)
+  | VBitT _ | VarT _ -> false
+  | DefT typ_inner -> check_bitstring_base' typ_inner
+  | NewT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _
+  | SEnumT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
+  | SetT _ | StateT ->
+      false
+
+and check_bitstring_base (typ : Type.t) : unit =
+  if not (check_bitstring_base' typ) then (
+    Format.eprintf "(check_bitstring_base) %a is not a valid base type\n"
+      Type.pp typ;
+    assert false)
+
+and check_bitstring_index' (typ : Type.t) : bool =
+  match typ with
+  | VoidT | ErrT | MatchKindT | StrT | BoolT -> false
+  | IntT | FIntT _ | FBitT _ -> true
+  | VBitT _ | VarT _ -> false
+  | DefT typ_inner -> check_bitstring_index' typ_inner
+  | NewT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _ ->
+      false
+  | SEnumT (typ_inner, _) -> check_bitstring_index' typ_inner
+  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _ | SetT _
+  | StateT ->
+      false
+
+and check_bitstring_index (typ : Type.t) : unit =
+  if not (check_bitstring_index' typ) then (
+    Format.eprintf "(check_bitstring_index) %a is not a valid index type\n"
+      Type.pp typ;
+    assert false)
+
+and check_bitstring_slice_range' (typ_base : Type.t) (width_slice : Bigint.t) :
+    bool =
+  match typ_base with
+  | VoidT | ErrT | MatchKindT | StrT | BoolT -> false
+  | IntT -> true
+  | FIntT width_base | FBitT width_base -> Bigint.(width_slice <= width_base)
+  | VBitT _ | VarT _ -> false
+  | DefT typ_inner -> check_bitstring_slice_range' typ_inner width_slice
+  | NewT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _
+  | SEnumT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
+  | SetT _ | StateT ->
+      false
+
+and check_bitstring_slice_range (typ_base : Type.t) (idx_lo : Bigint.t)
+    (idx_hi : Bigint.t) : unit =
+  let width_slice = Bigint.(idx_hi - idx_lo + one) in
+  if
+    Bigint.(idx_lo < zero)
+    || Bigint.(idx_hi < zero)
+    || Bigint.(idx_lo > idx_hi)
+    || not (check_bitstring_slice_range' typ_base width_slice)
+  then (
+    Format.eprintf "(type_bitstring_acc_expr) Invalid slice [%a:%a] for %a\n"
+      Bigint.pp idx_lo Bigint.pp idx_hi Type.pp typ_base;
+    assert false)
+
+and type_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (expr_base : expr) (expr_lo : expr) (expr_hi : expr) : Type.t =
+  let typ_base = type_expr cursor ctx expr_base in
+  check_bitstring_base typ_base;
+  let typ_lo = type_expr cursor ctx expr_lo in
+  check_bitstring_index typ_lo;
+  let idx_lo =
+    static_eval_expr cursor ctx expr_lo |> expect_value |> Value.get_num
+  in
+  let typ_hi = type_expr cursor ctx expr_hi in
+  check_bitstring_index typ_hi;
+  let idx_hi =
+    static_eval_expr cursor ctx expr_hi |> expect_value |> Value.get_num
+  in
+  check_bitstring_slice_range typ_base idx_lo idx_hi;
+  let width_slice = Bigint.(idx_hi - idx_lo + one) in
+  Type.FBitT width_slice
+
+(* (8.3) Operations on enum types
+
+   Symbolic names declared by an enum belong to the namespace introduced by the enum declaration
+   rather than the top-level namespace. *)
+
+and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var_base : var)
+    (member : member) : Type.t =
+  let td_base = Ctx.find_opt Ctx.find_typedef_opt cursor var_base ctx in
+  if Option.is_none td_base then (
+    Format.eprintf "(type_type_acc_expr) %a is a free identifier\n"
+      Syntax.Pp.pp_var var_base;
+    assert false);
+  let td_base = Option.get td_base in
+  match td_base with
+  | EnumD (_, members) ->
+      if not (List.mem member.it members) then (
+        Format.eprintf "(type_type_acc_expr) Member %s does not exist in %a\n"
+          member.it TypeDef.pp td_base;
+        assert false);
+      EnumT members
+  | SEnumD (_, typ_inner, fields) ->
+      if not (List.mem_assoc member.it fields) then (
+        Format.eprintf "(type_type_acc_expr) Member %s does not exist in %a\n"
+          member.it TypeDef.pp td_base;
+        assert false);
+      SEnumT (typ_inner, fields)
+  | _ ->
+      Format.eprintf "(type_type_acc_expr) %a cannot be accessed\n" TypeDef.pp
+        td_base;
+      assert false
+
+(* (8.2) Operations on error types
+
+   Symbolic names declared by an error declaration belong to the error namespace. *)
+
+and type_error_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (member : member) :
+    Type.t =
+  let value_error = Ctx.find_value_opt cursor ("error." ^ member.it) ctx in
+  if Option.is_none value_error then (
+    Format.eprintf "(type_error_acc_expr) Member %s does not exist in error\n"
+      member.it;
+    assert false);
+  Type.ErrT
 
 (* (8.16) Operations on struct types
 
@@ -1813,9 +2432,8 @@ and type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : decl) =
   (* Constant, variable, and object declarations *)
   | ConstD { id; typ; value; annos = _annos } ->
       type_const_decl cursor ctx id typ value
-  | VarD _ ->
-      Format.eprintf "(type_decl) %a\n" (Syntax.Pp.pp_decl ~level:0) decl;
-      ctx
+  | VarD { id; typ; init; annos = _annos } ->
+      type_var_decl cursor ctx id typ init
   | InstD _ ->
       Format.eprintf "(type_decl) %a\n" (Syntax.Pp.pp_decl ~level:0) decl;
       ctx
@@ -1839,9 +2457,8 @@ and type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : decl) =
   (* Function declarations *)
   | ActionD { id; params; body; annos = _annos } ->
       type_action_decl cursor ctx id params body
-  | FuncD _ ->
-      Format.eprintf "(type_decl) %a\n" (Syntax.Pp.pp_decl ~level:0) decl;
-      ctx
+  | FuncD { id; typ_ret; tparams; params; body } ->
+      type_function_decl cursor ctx id tparams params typ_ret body
   | ExternFuncD { id; typ_ret; tparams; params; annos = _annos } ->
       type_extern_function_decl cursor ctx id tparams params typ_ret
   (* Object declarations *)
@@ -1875,16 +2492,20 @@ and type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : decl) =
 and type_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (decls : decl list) : Ctx.t =
   List.fold_left (type_decl cursor) ctx decls
 
+(* (11.1) Constants
+
+   The initializer expression must be a compile-time known value. *)
+
 and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id) (typ : typ)
     (expr : expr) : Ctx.t =
-  let typ_lhs = eval_type cursor ctx typ in
-  let typ_rhs = type_expr cursor ctx expr in
+  let typ_target = eval_type cursor ctx typ in
+  let typ = type_expr cursor ctx expr in
   (* (TODO) Insert cast if possible *)
-  if typ_lhs <> typ_rhs then (
+  if typ_target <> typ then (
     Format.eprintf
-      "(type_const_decl) The type of left side type %a doesn't match the right \
-       side type %a\n"
-      Type.pp typ_lhs Type.pp typ_rhs;
+      "(type_const_decl) The type of constant %a doesn't match the \
+       initializer's type %a\n"
+      Type.pp typ_target Type.pp typ;
     assert false);
   let value = static_eval_expr cursor ctx expr in
   if Option.is_none value then (
@@ -1894,7 +2515,96 @@ and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id) (typ : typ)
       expr;
     assert false);
   let value = Option.get value in
-  Ctx.add_value cursor id.it value ctx |> Ctx.add_type cursor id.it typ_lhs
+  Ctx.add_value cursor id.it value ctx |> Ctx.add_type cursor id.it typ_target
+
+(* (11.2) Variables
+
+   Local variables are declared with a type, a name, and an optional initializer
+   (as well as an optional annotation).
+
+   Variable declarations without an initializer are uninitialized (except for headers and other header-related types,
+   which are initialized to invalid in the same way as described for direction out parameters in Section 6.8).
+   The language places few restrictions on the types of the variables: most P4 types that can be written explicitly can be used
+   (e.g., base types, struct, header, header stack, tuple). However, it is impossible to declare variables with type int,
+   or with types that are only synthesized by the compiler (e.g., set) In addition, variables of
+   type parser, control, package, or extern types must be declared using instantiations (see Section 11.3).
+
+   Reading the value of a variable that has not been initialized yields an undefined result.
+   The compiler should attempt to detect and emit a warning in such situations.
+
+   Variables declarations can appear in the following locations within a P4 program:
+
+    - In a block statement,
+    - In a parser state,
+    - In an action body,
+    - In a control block's apply sub-block,
+    - In the list of local declarations in a parser, and
+    - In the list of local declarations in a control.
+
+   Variables have local scope, and behave like stack-allocated variables in languages such as C.
+   The value of a variable is never preserved from one invocation of its enclosing block to the next.
+   In particular, variables cannot be used to maintain state between different network packets. *)
+
+(* (7.1.5) Strings
+
+   There are no operations on string values; one cannot declare variables with a string type. *)
+
+and check_valid_var_type' (typ : Type.t) : bool =
+  match typ with
+  | VoidT -> false
+  | ErrT | MatchKindT -> true
+  | StrT -> false
+  | BoolT -> true
+  | IntT -> false
+  | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
+  | DefT typ_inner | NewT typ_inner -> check_valid_var_type' typ_inner
+  | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _ | SEnumT _
+    ->
+      true
+  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _ | SetT _
+  | StateT ->
+      false
+
+and check_valid_var_type (typ : Type.t) : unit =
+  if not (check_valid_var_type' typ) then (
+    Format.eprintf
+      "(check_valid_var_type) Type %a is not a valid variable type\n" Type.pp
+      typ;
+    assert false)
+
+and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id) (typ : typ)
+    (expr_init : expr option) : Ctx.t =
+  if
+    (not
+       (cursor = Ctx.Block
+       && match ctx.block.kind with Parser | Control -> true | _ -> false))
+    && not
+         (cursor = Ctx.Local
+         &&
+         match ctx.local.kind with
+         | Function _ | Action | ExternAbstractMethod _ | ParserState
+         | ControlApplyMethod ->
+             true
+         | _ -> false)
+  then (
+    Format.eprintf
+      "(type_var_decl) Variables must be declared in a block statement, a \
+       parser state, an action body, a control block's apply sub-block, the \
+       list of local declarations in a parser or a control\n";
+    assert false);
+  let typ_target = eval_type cursor ctx typ in
+  check_valid_var_type typ_target;
+  let typ = Option.map (type_expr cursor ctx) expr_init in
+  (* (TODO) Insert cast if possible *)
+  (match typ with
+  | Some typ when typ_target <> typ ->
+      Format.eprintf
+        "(type_var_decl) The type of variable %a doesn't match the \
+         initializer's type %a\n"
+        Type.pp typ_target Type.pp typ;
+      assert false
+  | _ -> ());
+  Ctx.add_type cursor id.it typ_target ctx
 
 (* (7.1.2) The error type
 
@@ -2122,6 +2832,7 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
     assert false);
   let params = List.map it params in
   let fid = Runtime.Domain.FId.to_fid id.it params in
+  (* Construct action layer context *)
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' = Ctx.set_localkind Ctx.Action ctx' in
   (* Typecheck and add parameters to the local context *)
@@ -2133,9 +2844,58 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
         Ctx.add_type Ctx.Local id typ ctx')
       ctx' params
   in
+  (* Typecheck body *)
   let stmts, _annos = body.it in
   let _ctx', _flow = type_stmts Ctx.Local ctx' Cont stmts in
+  (* Create an action definition *)
   let fd = FuncDef.ActionD params in
+  check_valid_funcdef cursor ctx fd;
+  Ctx.add_funcdef cursor fid fd ctx
+
+(* (10) Function declarations
+
+   Functions can only be declared at the top level and all parameters must have a direction.
+   P4 functions are modeled after functions as found in most other programming languages,
+   but the language does not permit recursive functions.
+
+   A function returns a value using the return statement.
+   A function with a return type of void can simply use the return statement with no arguments.
+   A function with a non-void return type must return a value of the suitable type
+   on all possible execution paths. *)
+
+and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (tparams : tparam list) (params : param list) (typ_ret : typ) (body : block)
+    : Ctx.t =
+  if cursor <> Ctx.Global then (
+    Format.eprintf "(type_function_decl) Function declarations must be global\n";
+    assert false);
+  let tparams = List.map it tparams in
+  let params = List.map it params in
+  let fid = Runtime.Domain.FId.to_fid id.it params in
+  (* Construct function layer context *)
+  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
+  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
+  let typ_ret = eval_type Ctx.Local ctx' typ_ret in
+  let ctx' = Ctx.set_localkind (Ctx.Function typ_ret) ctx' in
+  (* Typecheck and add parameters to the local context *)
+  let params = List.map (static_eval_param Ctx.Local ctx') params in
+  let ctx' =
+    List.fold_left
+      (fun ctx' param ->
+        let id, _, typ, _ = param in
+        Ctx.add_type Ctx.Local id typ ctx')
+      ctx' params
+  in
+  (* Typecheck body *)
+  let stmts, _annos = body.it in
+  let _ctx', flow = type_stmts Ctx.Local ctx' Cont stmts in
+  if flow <> Ret then (
+    Format.eprintf
+      "(type_function_decl) A function must return a value on all possible \
+       execution paths\n";
+    assert false);
+  (* Create a function definition *)
+  let fd = FuncDef.FunctionD (tparams, params, typ_ret) in
   check_valid_funcdef cursor ctx fd;
   Ctx.add_funcdef cursor fid fd ctx
 
@@ -2409,12 +3169,12 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
 
 and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (_id : id)
     (_table : table) : Ctx.t =
-  if not (cursor <> Ctx.Block && ctx.block.kind = Ctx.Control) then (
+  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Control) then (
     Format.eprintf
       "(type_table_decl) Table declarations must be in a control block\n";
     assert false);
   (* (TODO) Check that table properties are valid *)
-  assert false
+  ctx
 
 (* (7.2.12.2) Control type declarations *)
 

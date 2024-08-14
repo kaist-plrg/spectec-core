@@ -54,7 +54,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | StrE s -> interp_str ctx s
     | NumE { it = value, encoding; _ } -> interp_num ctx value encoding
     | VarE var -> interp_var ctx var
-    | ListE exprs -> interp_list ctx exprs
+    | TupleE exprs -> interp_tuple ctx exprs
     | RecordE fields -> interp_record ctx fields
     | UnE (unop, expr) -> interp_unop ctx unop expr
     | BinE (binop, expr_fst, expr_snd) ->
@@ -101,7 +101,7 @@ module Make (Arch : ARCH) : INTERP = struct
         let value = Ctx.find_var id.it ctx in
         (ctx, value)
 
-  and interp_list (ctx : Ctx.t) (exprs : expr list) : Ctx.t * R.Value.t =
+  and interp_tuple (ctx : Ctx.t) (exprs : expr list) : Ctx.t * R.Value.t =
     let ctx, values = interp_exprs ctx exprs in
     let value = R.Value.TupleV values in
     (ctx, value)

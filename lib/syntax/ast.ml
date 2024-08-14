@@ -126,7 +126,7 @@ and expr' =
   | StrE of text
   | NumE of num
   | VarE of var
-  | ListE of expr list
+  | TupleE of expr list
   | RecordE of (member * expr) list
   | UnE of unop * expr
   | BinE of binop * expr * expr
