@@ -1,4 +1,4 @@
 (library
  (name runtime)
- (libraries syntax bignum util)
- (modules domain value type func vis env cclos object sto context signal ops))
+ (libraries bignum util common)
+ (modules domain dir value types envs))

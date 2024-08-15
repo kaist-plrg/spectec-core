@@ -1,18 +1,15 @@
 MAIN = p4cherry
-TEST = p4cherry-test
 
 # Compile
 
 .PHONY: build
 
 EXEMAIN = _build/default/bin/main.exe
-EXETEST = _build/default/bin/test.exe
 
 build:
-	rm -f ./$(MAIN) ./$(TEST)
+	rm -f ./$(MAIN)
 	dune build && echo
 	ln -f $(EXEMAIN) ./$(MAIN)
-	ln -f $(EXETEST) ./$(TEST)
 
 # Format
 
@@ -33,5 +30,5 @@ test-status:
 .PHONY: clean
 
 clean:
-	rm -f ./$(NAME) ./$(TEST)
+	rm -f ./$(NAME)
 	dune clean

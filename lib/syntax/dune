@@ -1,4 +1,0 @@
-(library
- (name syntax)
- (libraries bignum surface)
- (modules ast eq pp))
