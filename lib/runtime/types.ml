@@ -5,7 +5,10 @@ module F = Format
 
 (* Elaborated parameters *)
 
-type param' = (typ, Value.t, Dir.t) L.param'
+type tparam = L.tparam'
+
+type param = L.id' * Dir.t * typ * Value.t option
+and cparam = param
 
 (* Types *)
 and typ =
@@ -36,8 +39,8 @@ and typ =
   | SEnumT of typ * (L.member' * Value.t) list
   (* Object types *)
   | ExternT of funcdef FIdMap.t
-  | ParserT of param' list
-  | ControlT of param' list
+  | ParserT of param list
+  | ControlT of param list
   | PackageT
   (* Top type *)
   | TopT
@@ -59,43 +62,65 @@ and typdef =
   | EnumD of L.id' * L.member' list
   | SEnumD of L.id' * typ * (L.member' * Value.t) list
   (* Object type definitions *)
-  | ExternD of L.tparam' list * funcdef FIdMap.t
-  | ParserD of L.tparam' list * param' list
-  | ControlD of L.tparam' list * param' list
-  | PackageD of L.tparam' list
+  | ExternD of tparam list * funcdef FIdMap.t
+  | ParserD of tparam list * param list
+  | ControlD of tparam list * param list
+  | PackageD of tparam list
 
 (* Function types *)
 and functyp =
-  | ExternFunctionT of param' list * typ
-  | FunctionT of param' list * typ
-  | ActionT of param' list
-  | ExternMethodT of param' list * typ
-  | ExternAbstractMethodT of param' list * typ
-  | ParserApplyMethodT of param' list
-  | ControlApplyMethodT of param' list
-  | BuiltinMethodT of param' list * typ
+  | ExternFunctionT of param list * typ
+  | FunctionT of param list * typ
+  | ActionT of param list
+  | ExternMethodT of param list * typ
+  | ExternAbstractMethodT of param list * typ
+  | ParserApplyMethodT of param list
+  | ControlApplyMethodT of param list
+  | BuiltinMethodT of param list * typ
 
 (* Function definitions *)
 and funcdef =
-  | ExternFunctionD of L.tparam' list * param' list * typ
-  | FunctionD of L.tparam' list * param' list * typ
-  | ActionD of param' list
-  | ExternMethodD of L.tparam' list * param' list * typ
-  | ExternAbstractMethodD of L.tparam' list * param' list * typ
+  | ExternFunctionD of tparam list * param list * typ
+  | FunctionD of tparam list * param list * typ
+  | ActionD of param list
+  | ExternMethodD of tparam list * param list * typ
+  | ExternAbstractMethodD of tparam list * param list * typ
 
 (* Constructor types *)
 
-type constyp = param' list * typ
+type constyp = param list * typ
 
 (* Constructor definitions *)
 
-type consdef = L.tparam' list * param' list * typ
+type consdef = tparam list * param list * typ
 
 (* Pretty-printers *)
 
+(* Type parameters *)
+
+let rec pp_tparam fmt tparam = P.pp_tparam' fmt tparam
+and pp_tparams fmt tparams = P.pp_list pp_tparam ", " fmt tparams
+
+(* Parameters *)
+
+and pp_param' fmt param =
+  let id, dir, typ, value_default = param in
+  match value_default with
+  | Some value_default ->
+      F.fprintf fmt "%a %a %a = %a" Dir.pp dir P.pp_id' id pp_typ typ Value.pp
+        value_default
+  | None -> F.fprintf fmt "%a %a %a" Dir.pp dir P.pp_id' id pp_typ typ
+
+and pp_params fmt params = P.pp_list pp_param' ", " fmt params
+
+(* Constructor parameters *)
+
+and pp_cparam fmt cparam = pp_param' fmt cparam
+and pp_cparams fmt cparams = P.pp_list pp_cparam ", " fmt cparams
+
 (* Types *)
 
-let rec pp_typ fmt typ =
+and pp_typ fmt typ =
   match typ with
   | VoidT -> F.pp_print_string fmt "void"
   | ErrT -> F.pp_print_string fmt "error"
@@ -129,23 +154,13 @@ let rec pp_typ fmt typ =
   | ParserT params ->
       let param = List.hd params in
       F.fprintf fmt "parser(%a)" pp_param' param
-  | ControlT params -> F.fprintf fmt "control(%a)" pp_params' params
+  | ControlT params -> F.fprintf fmt "control(%a)" pp_params params
   | PackageT -> F.pp_print_string fmt "package"
   | TopT -> F.pp_print_string fmt "top"
   | RecordT fields ->
       F.fprintf fmt "record { %a }" (P.pp_pairs P.pp_member' pp_typ "; ") fields
   | SetT typ -> F.fprintf fmt "set<%a>" pp_typ typ
   | StateT -> F.pp_print_string fmt "state"
-
-(* Type parameters *)
-
-and pp_tparam' fmt tparam = P.pp_tparam' fmt tparam
-and pp_tparams' fmt tparams = P.pp_list pp_tparam' ", " fmt tparams
-
-(* Parameters *)
-
-and pp_param' fmt param = P.pp_param' pp_typ Value.pp Dir.pp fmt param
-and pp_params' fmt params = P.pp_list pp_param' ", " fmt params
 
 (* Type definitions *)
 
@@ -170,66 +185,65 @@ and pp_typdef fmt typdef =
         (P.pp_pairs P.pp_member' Value.pp ", ")
         fields
   | ExternD (tparams, fdenv) ->
-      F.fprintf fmt "extern<%a> %a"
-        (P.pp_list P.pp_tparam' ", ")
-        tparams (FIdMap.pp pp_funcdef) fdenv
+      F.fprintf fmt "extern<%a> %a" pp_tparams tparams (FIdMap.pp pp_funcdef)
+        fdenv
   | ParserD (tparams, params) ->
-      F.fprintf fmt "parser<%a>(%a)" pp_tparams' tparams pp_params' params
+      F.fprintf fmt "parser<%a>(%a)" pp_tparams tparams pp_params params
   | ControlD (tparams, params) ->
-      F.fprintf fmt "control<%a>(%a)" pp_tparams' tparams pp_params' params
-  | PackageD tparams -> F.fprintf fmt "package<%a>" pp_tparams' tparams
+      F.fprintf fmt "control<%a>(%a)" pp_tparams tparams pp_params params
+  | PackageD tparams -> F.fprintf fmt "package<%a>" pp_tparams tparams
 
 (* Function types *)
 
 and pp_functyp fmt functyp =
   match functyp with
   | ExternFunctionT (params, typ) ->
-      F.fprintf fmt "extern_func(%a) -> %a" pp_params' params pp_typ typ
+      F.fprintf fmt "extern_func(%a) -> %a" pp_params params pp_typ typ
   | FunctionT (params, typ) ->
-      F.fprintf fmt "func(%a) -> %a" pp_params' params pp_typ typ
-  | ActionT params -> F.fprintf fmt "action(%a)" pp_params' params
+      F.fprintf fmt "func(%a) -> %a" pp_params params pp_typ typ
+  | ActionT params -> F.fprintf fmt "action(%a)" pp_params params
   | ExternMethodT (params, typ) ->
-      F.fprintf fmt "extern_method(%a) -> %a" pp_params' params pp_typ typ
+      F.fprintf fmt "extern_method(%a) -> %a" pp_params params pp_typ typ
   | ExternAbstractMethodT (params, typ) ->
-      F.fprintf fmt "extern_abstract_method(%a) -> %a" pp_params' params pp_typ
+      F.fprintf fmt "extern_abstract_method(%a) -> %a" pp_params params pp_typ
         typ
   | ParserApplyMethodT params ->
-      F.fprintf fmt "parser_apply(%a)" pp_params' params
+      F.fprintf fmt "parser_apply(%a)" pp_params params
   | ControlApplyMethodT params ->
-      F.fprintf fmt "control_apply(%a)" pp_params' params
+      F.fprintf fmt "control_apply(%a)" pp_params params
   | BuiltinMethodT (params, typ) ->
-      F.fprintf fmt "builtin_method(%a) -> %a" pp_params' params pp_typ typ
+      F.fprintf fmt "builtin_method(%a) -> %a" pp_params params pp_typ typ
 
 (* Function definitions *)
 
 and pp_funcdef fmt funcdef =
   match funcdef with
   | ExternFunctionD (tparams, params, typ) ->
-      F.fprintf fmt "extern_func<%a>(%a) -> %a" pp_tparams' tparams pp_params'
+      F.fprintf fmt "extern_func<%a>(%a) -> %a" pp_tparams tparams pp_params
         params pp_typ typ
   | FunctionD (tparams, params, typ) ->
-      F.fprintf fmt "func<%a>(%a) -> %a" pp_tparams' tparams pp_params' params
+      F.fprintf fmt "func<%a>(%a) -> %a" pp_tparams tparams pp_params params
         pp_typ typ
-  | ActionD params -> F.fprintf fmt "action(%a)" pp_params' params
+  | ActionD params -> F.fprintf fmt "action(%a)" pp_params params
   | ExternMethodD (tparams, params, typ) ->
-      F.fprintf fmt "extern_method<%a>(%a) -> %a" pp_tparams' tparams pp_params'
+      F.fprintf fmt "extern_method<%a>(%a) -> %a" pp_tparams tparams pp_params
         params pp_typ typ
   | ExternAbstractMethodD (tparams, params, typ) ->
-      F.fprintf fmt "extern_abstract_method<%a>(%a) -> %a" pp_tparams' tparams
-        pp_params' params pp_typ typ
+      F.fprintf fmt "extern_abstract_method<%a>(%a) -> %a" pp_tparams tparams
+        pp_params params pp_typ typ
 
 (* Constructor types *)
 
 let pp_constyp fmt constyp =
-  let params, typ = constyp in
-  F.fprintf fmt "constructor (%a) -> %a" pp_params' params pp_typ typ
+  let cparams, typ = constyp in
+  F.fprintf fmt "constructor (%a) -> %a" pp_cparams cparams pp_typ typ
 
 (* Constructor definitions *)
 
 let pp_consdef fmt consdef =
-  let tparams, params, typ = consdef in
-  F.fprintf fmt "constructor<%a> (%a) -> %a" pp_tparams' tparams pp_params'
-    params pp_typ typ
+  let tparams, cparams, typ = consdef in
+  F.fprintf fmt "constructor<%a> (%a) -> %a" pp_tparams tparams pp_cparams
+    cparams pp_typ typ
 
 (* Modules *)
 

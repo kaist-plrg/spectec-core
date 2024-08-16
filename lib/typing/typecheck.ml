@@ -355,13 +355,13 @@ and check_valid_typedef (cursor : Ctx.cursor) (ctx : Ctx.t) (td : TypeDef.t) :
 
 (* (TODO) Appendix F. Restrictions on compile time and runtime calls *)
 
-and check_valid_param (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (param : Il.Ast.param') : unit =
+and check_valid_param (cursor : Ctx.cursor) (ctx : Ctx.t) (param : Types.param)
+    : unit =
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
   check_valid_param' tset param
 
-and check_valid_param' (tset : TIdSet.t) (param : Il.Ast.param') : unit =
-  let _, _, typ, _, _ = param in
+and check_valid_param' (tset : TIdSet.t) (param : Types.param) : unit =
+  let _, _, typ, _ = param in
   check_valid_type' tset typ
 
 and check_valid_functype (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) :
@@ -410,12 +410,12 @@ and check_valid_funcdef' (tset : TIdSet.t) (fd : FuncDef.t) : unit =
       check_valid_functype' tset (ExternAbstractMethodT (params, typ_ret))
 
 and check_valid_cparam (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (cparam : Il.Ast.param') : unit =
+    (cparam : Types.cparam) : unit =
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
   check_valid_cparam' tset cparam
 
-and check_valid_cparam' (tset : TIdSet.t) (cparam : Il.Ast.param') : unit =
-  let _, dir, typ, _, _ = cparam in
+and check_valid_cparam' (tset : TIdSet.t) (cparam : Types.cparam) : unit =
+  let _, dir, typ, _ = cparam in
   if not (match (dir : Dir.t) with No _ -> true | _ -> false) then (
     Format.eprintf
       "(check_valid_cparam') Control parameters must be directionless\n";
@@ -490,11 +490,10 @@ let rec substitute_type (tidmap : TIdMap.t) (typ : Il.Ast.typ) : Il.Ast.typ =
       RecordT (List.combine members typs_inner)
   | StateT -> typ
 
-and substitute_param (tidmap : TIdMap.t) (param : Il.Ast.param') : Il.Ast.param'
-    =
-  let id, dir, typ, value_default, annos = param in
+and substitute_param (tidmap : TIdMap.t) (param : Types.param) : Types.param =
+  let id, dir, typ, value_default = param in
   let typ = substitute_type tidmap typ in
-  (id, dir, typ, value_default, annos)
+  (id, dir, typ, value_default)
 
 and substitute_funcdef (tidmap : TIdMap.t) (fd : FuncDef.t) : FuncDef.t =
   match fd with
@@ -2085,7 +2084,7 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
         of the serialized representation of the data and minSizeInBits is the “best” case.
     - Every other case is undefined and will produce a compile-time error. *)
 
-and check_call_arity (expr_func : El.Ast.expr) (params : Il.Ast.param' list)
+and check_call_arity (expr_func : El.Ast.expr) (params : Types.param list)
     (args : El.Ast.arg' list) : unit =
   if List.length params <> List.length args then (
     Format.eprintf
@@ -2108,14 +2107,14 @@ and check_named_args (args : El.Ast.arg' list) : unit =
     assert false)
 
 (* Invariant: parameters and arguments are checked of arity and all-or-nothing named *)
-and align_params_with_args (params : Il.Ast.param' list)
-    (args : El.Ast.arg' list) =
+and align_params_with_args (params : Types.param list) (args : El.Ast.arg' list)
+    =
   let module PMap = Map.Make (String) in
   let params_map =
     List.fold_left
       (fun params_map param ->
-        let id, _, _, _, _ = param in
-        PMap.add id.it param params_map)
+        let id, _, _, _ = param in
+        PMap.add id param params_map)
       PMap.empty params
   in
   List.fold_left2
@@ -2136,9 +2135,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
   | StackT _ -> (
       match fid.it with
       | "push_front" | "pop_front" ->
-          let params =
-            [ ("count" $ no_info, Dir.No `DYN, Types.IntT, None, []) ]
-          in
+          let params = [ ("count", Dir.No `DYN, Types.IntT, None) ] in
           let typ_ret = Types.VoidT in
           Some (Types.BuiltinMethodT (params, typ_ret))
       | "minSizeInBits" | "minSizeInBytes" ->
@@ -2223,7 +2220,7 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : El.Ast.expr)
   let params, exprs_arg = align_params_with_args params args in
   List.iter2
     (fun param expr_arg ->
-      let _id_param, dir_param, typ_param, _value_default, _annos = param in
+      let _id_param, dir_param, typ_param, _value_default = param in
       match expr_arg with
       | Some expr_arg ->
           let typ_arg = type_expr cursor ctx expr_arg in
@@ -2875,6 +2872,11 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let stmts, _annos = body.it in
   let _ctx', _flow = type_stmts Ctx.Local ctx' Cont stmts in
   (* Create an action definition *)
+  let params =
+    List.map
+      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      params
+  in
   let fd = Types.ActionD params in
   check_valid_funcdef cursor ctx fd;
   Ctx.add_funcdef cursor fid fd ctx
@@ -2922,6 +2924,11 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
        execution paths\n";
     assert false);
   (* Create a function definition *)
+  let params =
+    List.map
+      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      params
+  in
   let fd = Types.FunctionD (tparams, params, typ_ret) in
   check_valid_funcdef cursor ctx fd;
   Ctx.add_funcdef cursor fid fd ctx
@@ -2946,6 +2953,11 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let ctx' = Ctx.set_localkind Ctx.ExternFunction ctx' in
   let params = List.map (static_eval_param Ctx.Local ctx') params in
   let typ_ret = eval_type Ctx.Local ctx' typ_ret in
+  let params =
+    List.map
+      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      params
+  in
   let fd = Types.ExternFunctionD (tparams, params, typ_ret) in
   check_valid_funcdef cursor ctx fd;
   Ctx.add_funcdef cursor fid fd ctx
@@ -2976,6 +2988,11 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let params = List.map (static_eval_param Ctx.Block ctx') params in
   (* Create a parser type definition
      and add it to the context *)
+  let params =
+    List.map
+      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      params
+  in
   let td = Types.ParserD (tparams, params) in
   check_valid_typedef cursor ctx td;
   Ctx.add_typedef cursor id.it td ctx
@@ -3077,7 +3094,17 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   (* Typecheck parser states *)
   let _ctx' = type_parser_states Ctx.Block ctx' states in
   (* Create a parser constructor definition *)
+  let params =
+    List.map
+      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      params
+  in
   let typ = Types.ParserT params in
+  let cparams =
+    List.map
+      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      cparams
+  in
   let cd = ([], cparams, typ) in
   Ctx.add_consdef cid cd ctx
 
@@ -3188,6 +3215,11 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let params = List.map (static_eval_param Ctx.Block ctx') params in
   (* Create a control type definition
      and add it to the context *)
+  let params =
+    List.map
+      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      params
+  in
   let td = Types.ControlD (tparams, params) in
   check_valid_typedef cursor ctx td;
   Ctx.add_typedef cursor id.it td ctx
@@ -3247,7 +3279,17 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let stmts, _annos = body.it in
   let _ctx', _flow = type_stmts Ctx.Local ctx' Cont stmts in
   (* Create a control constructor definition *)
+  let params =
+    List.map
+      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      params
+  in
   let typ = Types.ControlT params in
+  let cparams =
+    List.map
+      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      cparams
+  in
   let cd = ([], cparams, typ) in
   Ctx.add_consdef cid cd ctx
 
@@ -3275,6 +3317,11 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let td = Ctx.find_typedef Ctx.Global id.it ctx in
   let typ_args = List.map (fun tparam -> Types.VarT tparam) tparams in
   let typ = specialize_typedef td typ_args in
+  let cparams =
+    List.map
+      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      cparams
+  in
   let cd = (tparams, cparams, typ) in
   check_valid_consdef cursor ctx cd;
   Ctx.add_consdef cid cd ctx
@@ -3326,6 +3373,11 @@ and type_extern_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let td = Ctx.find_typedef Ctx.Global id.it ctx in
   let typ_args = List.map (fun tparam -> Types.VarT tparam) tparams in
   let typ = specialize_typedef td typ_args in
+  let cparams =
+    List.map
+      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      cparams
+  in
   let cd = (tparams, cparams, typ) in
   check_valid_consdef cursor ctx cd;
   Ctx.add_consdef cid cd ctx
@@ -3352,6 +3404,11 @@ and type_extern_abstract_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let typ_ret = eval_type Ctx.Local ctx' typ_ret in
   let ctx' = Ctx.set_localkind (Ctx.ExternAbstractMethod typ_ret) ctx' in
   let params = List.map (static_eval_param Ctx.Local ctx') params in
+  let params =
+    List.map
+      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      params
+  in
   let fd = Types.ExternAbstractMethodD (tparams, params, typ_ret) in
   check_valid_funcdef cursor ctx fd;
   Ctx.add_funcdef cursor fid fd ctx
@@ -3372,6 +3429,11 @@ and type_extern_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let ctx' = Ctx.set_localkind Ctx.ExternMethod ctx' in
   let params = List.map (static_eval_param Ctx.Local ctx') params in
   let typ_ret = eval_type Ctx.Local ctx' typ_ret in
+  let params =
+    List.map
+      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      params
+  in
   let fd = Types.ExternMethodD (tparams, params, typ_ret) in
   check_valid_funcdef cursor ctx fd;
   Ctx.add_funcdef cursor fid fd ctx
