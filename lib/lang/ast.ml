@@ -63,6 +63,18 @@ and binop' =
   | LAndOp
   | LOrOp
 
+(* Directions *)
+type 'd dir = 'd dir' phrase
+and 'd dir' = 'd
+
+(* Types *)
+type 't typ = 't typ' phrase
+and 't typ' = 't
+
+(* Compile-time known values *)
+type 'v value = 'v value' phrase
+and 'v value' = 'v
+
 (* Annotations *)
 type 't anno = 't anno' phrase
 
@@ -78,15 +90,15 @@ and tparam' = id'
 
 (* Parameters *)
 and ('t, 'v, 'd) param = ('t, 'v, 'd) param' phrase
-and ('t, 'v, 'd) param' = id * 'd * 't * 'v option * 't anno list
+and ('t, 'v, 'd) param' = id * 'd dir * 't typ * 'v value option * 't anno list
 
 (* Constructor parameters *)
 and ('t, 'v, 'd) cparam = ('t, 'v, 'd) param
 and ('t, 'v, 'd) cparam' = ('t, 'v, 'd) param'
 
 (* Type arguments *)
-and 't targ = 't targ' phrase
-and 't targ' = 't
+and 't targ = 't typ
+and 't targ' = 't typ'
 
 (* Arguments *)
 and 't arg = 't arg' phrase
@@ -105,7 +117,7 @@ and 't expr' =
   | UnE of unop * 't expr
   | BinE of binop * 't expr * 't expr
   | TernE of 't expr * 't expr * 't expr
-  | CastE of 't * 't expr
+  | CastE of 't typ * 't expr
   | MaskE of 't expr * 't expr
   | RangeE of 't expr * 't expr
   | SelectE of 't expr list * 't select_case list
@@ -115,7 +127,7 @@ and 't expr' =
   | TypeAccE of var * member
   | ExprAccE of 't expr * member
   | CallE of 't expr * 't targ list * 't arg list
-  | InstE of 't * 't arg list
+  | InstE of 't typ * 't arg list
 
 (* Keyset expressions *)
 and 't keyset = 't keyset' phrase
@@ -158,13 +170,18 @@ and ('t, 'v, 'd) decl = ('t, 'v, 'd) decl' phrase
 
 and ('t, 'v, 'd) decl' =
   (* Constant, variable, error, match_kind, and instance declarations *)
-  | ConstD of { id : id; typ : 't; value : 'v; annos : 't anno list }
-  | VarD of { id : id; typ : 't; init : 't expr option; annos : 't anno list }
+  | ConstD of { id : id; typ : 't typ; value : 'v value; annos : 't anno list }
+  | VarD of {
+      id : id;
+      typ : 't typ;
+      init : 't expr option;
+      annos : 't anno list;
+    }
   | ErrD of { members : member list }
   | MatchKindD of { members : member list }
   | InstD of {
       id : id;
-      typ : 't;
+      typ : 't typ;
       args : 't arg list;
       init : ('t, 'v, 'd) block option;
       annos : 't anno list;
@@ -172,39 +189,39 @@ and ('t, 'v, 'd) decl' =
   (* Type declarations *)
   | StructD of {
       id : id;
-      fields : (member * 't * 't anno list) list;
+      fields : (member * 't typ * 't anno list) list;
       annos : 't anno list;
     }
   | HeaderD of {
       id : id;
-      fields : (member * 't * 't anno list) list;
+      fields : (member * 't typ * 't anno list) list;
       annos : 't anno list;
     }
   | UnionD of {
       id : id;
-      fields : (member * 't * 't anno list) list;
+      fields : (member * 't typ * 't anno list) list;
       annos : 't anno list;
     }
   | EnumD of { id : id; members : member list; annos : 't anno list }
   | SEnumD of {
       id : id;
-      typ : 't;
+      typ : 't typ;
       fields : (member * 't expr) list;
       annos : 't anno list;
     }
   | NewTypeD of {
       id : id;
-      typdef : ('t, ('t, 'v, 'd) decl) alt;
+      typdef : ('t typ, ('t, 'v, 'd) decl) alt;
       annos : 't anno list;
     }
   | TypeDefD of {
       id : id;
-      typdef : ('t, ('t, 'v, 'd) decl) alt;
+      typdef : ('t typ, ('t, 'v, 'd) decl) alt;
       annos : 't anno list;
     }
   (* Object declarations *)
   (* Value Set *)
-  | ValueSetD of { id : id; typ : 't; size : 't expr; annos : 't anno list }
+  | ValueSetD of { id : id; typ : 't typ; size : 't expr; annos : 't anno list }
   (* Parser *)
   | ParserTypeD of {
       id : id;
@@ -248,14 +265,14 @@ and ('t, 'v, 'd) decl' =
     }
   | FuncD of {
       id : id;
-      typ_ret : 't;
+      typ_ret : 't typ;
       tparams : tparam list;
       params : ('t, 'v, 'd) param list;
       body : ('t, 'v, 'd) block;
     }
   | ExternFuncD of {
       id : id;
-      typ_ret : 't;
+      typ_ret : 't typ;
       tparams : tparam list;
       params : ('t, 'v, 'd) param list;
       annos : 't anno list;
@@ -268,14 +285,14 @@ and ('t, 'v, 'd) decl' =
     }
   | ExternAbstractMethodD of {
       id : id;
-      typ_ret : 't;
+      typ_ret : 't typ;
       tparams : tparam list;
       params : ('t, 'v, 'd) param list;
       annos : 't anno list;
     }
   | ExternMethodD of {
       id : id;
-      typ_ret : 't;
+      typ_ret : 't typ;
       tparams : tparam list;
       params : ('t, 'v, 'd) param list;
       annos : 't anno list;

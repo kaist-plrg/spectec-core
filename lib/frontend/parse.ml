@@ -16,7 +16,10 @@ let lex (filename : string) (file : string) =
     None
 
 let parse (lexbuf : Lexing.lexbuf) =
-  try Some (Parser.p4program Lexer.lexer lexbuf)
+  try
+    let program = Parser.p4program Lexer.lexer lexbuf in
+    let program = Transform.transform_program program in
+    Some program
   with Parser.Error ->
     let info = Lexer.info lexbuf in
     Format.eprintf "parser error: %a\n" Source.pp info;

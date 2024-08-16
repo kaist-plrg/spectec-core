@@ -7,5 +7,5 @@
 
 (library
  (name frontend)
- (libraries surface core core_kernel core_unix)
- (modules lexer parser preprocessor context parse))
+ (libraries core core_kernel core_unix surface lang el)
+ (modules lexer parser preprocessor context parse transform))

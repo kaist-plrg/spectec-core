@@ -1,4 +1,4 @@
 (library
- (name common)
+ (name lang)
  (libraries bignum util)
- (modules ast))
+ (modules ast pp))

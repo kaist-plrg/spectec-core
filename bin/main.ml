@@ -15,7 +15,7 @@ let parse_command =
      and filename = anon ("file.p4" %: string) in
      fun () ->
        let program = parse includes filename in
-       Format.printf "%s\n" (Surface.Print.print_program program))
+       Format.printf "%a\n" El.Pp.pp_program program)
 
 let command =
   Command.group ~summary:"p4cherry: an interpreter of the p4_16 language"

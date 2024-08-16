@@ -1,4 +1,4 @@
 (library
  (name il)
- (libraries util common runtime)
- (modules ast))
+ (libraries util lang runtime)
+ (modules ast pp))

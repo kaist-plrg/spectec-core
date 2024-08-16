@@ -1,4 +1,4 @@
 (library
  (name el)
- (libraries util common)
- (modules ast))
+ (libraries util lang)
+ (modules ast pp))
