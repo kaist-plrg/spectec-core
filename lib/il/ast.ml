@@ -1,4 +1,3 @@
-open Util.Source
 module L = Lang.Ast
 
 type ('a, 'b) alt = ('a, 'b) L.alt
@@ -43,16 +42,13 @@ type binop = L.binop
 type binop' = L.binop'
 
 (* Directions *)
-type dir = dir' phrase
-and dir' = Runtime.Dir.t
+type dir = Runtime.Dir.t
 
 (* Types *)
-type typ = typ' phrase
-and typ' = Runtime.Types.Type.t
+type typ = Runtime.Types.Type.t
 
 (* Values *)
-type value = value' phrase
-and value' = Runtime.Value.t
+type value = Runtime.Value.t
 
 (* Annotations *)
 and anno = typ L.anno
@@ -71,8 +67,8 @@ and cparam = (typ, value, dir) L.cparam
 and cparam' = (typ, value, dir) L.cparam'
 
 (* Type arguments *)
-and targ = typ L.targ
-and targ' = typ'
+and targ = typ
+and targ' = typ
 
 (* Arguments *)
 and arg = typ L.arg

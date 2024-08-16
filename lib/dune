@@ -8,5 +8,6 @@
   (re_export lang)
   (re_export el)
   (re_export runtime)
+  (re_export typing)
   (re_export il)
   (re_export stf)))

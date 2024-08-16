@@ -65,91 +65,91 @@ and typ' =
   | AnyT
 
 (* Values *)
-and value = expr' L.value
-and value' = expr' L.value'
+and cvalue = expr
+and cvalue' = expr'
 
 (* Annotations *)
-and anno = typ' L.anno
-and anno' = typ' L.anno'
+and anno = typ L.anno
+and anno' = typ L.anno'
 
 (* Type parameters *)
 and tparam = L.tparam
 and tparam' = L.tparam'
 
 (* Parameters *)
-and param = (typ', expr', dir') L.param
-and param' = (typ', expr', dir') L.param'
+and param = (typ, expr, dir) L.param
+and param' = (typ, expr, dir) L.param'
 
 (* Constructor parameters *)
-and cparam = (typ', expr', dir') L.cparam
-and cparam' = (typ', expr', dir') L.cparam'
+and cparam = (typ, expr, dir) L.cparam
+and cparam' = (typ, expr, dir) L.cparam'
 
 (* Type arguments *)
-and targ = typ' L.targ
-and targ' = typ' L.targ'
+and targ = typ
+and targ' = typ'
 
 (* Arguments *)
-and arg = typ' L.arg
-and arg' = typ' L.arg'
+and arg = typ L.arg
+and arg' = typ L.arg'
 
 (* Expressions *)
-and expr = typ' L.expr
-and expr' = typ' L.expr'
+and expr = typ L.expr
+and expr' = typ L.expr'
 
 (* Keyset expressions *)
-and keyset = typ' L.keyset
-and keyset' = typ' L.keyset'
+and keyset = typ L.keyset
+and keyset' = typ L.keyset'
 
 (* Select-cases for select *)
-and select_case = typ' L.select_case
-and select_case' = typ' L.select_case'
+and select_case = typ L.select_case
+and select_case' = typ L.select_case'
 
 (* Statements *)
-and stmt = (typ', expr', dir') L.stmt
-and stmt' = (typ', expr', dir') L.stmt'
+and stmt = (typ, expr, dir) L.stmt
+and stmt' = (typ, expr, dir) L.stmt'
 
 (* Blocks (sequence of statements) *)
-and block = (typ', expr', dir') L.block
-and block' = (typ', expr', dir') L.block'
+and block = (typ, expr, dir) L.block
+and block' = (typ, expr, dir) L.block'
 
 (* Match-cases for switch *)
 and switch_label = L.switch_label
 and switch_label' = L.switch_label'
-and switch_case = (typ', expr', dir') L.switch_case
-and switch_case' = (typ', expr', dir') L.switch_case'
+and switch_case = (typ, expr, dir) L.switch_case
+and switch_case' = (typ, expr, dir) L.switch_case'
 
 (* Declarations *)
-and decl = (typ', expr', dir') L.decl
-and decl' = (typ', expr', dir') L.decl'
+and decl = (typ, expr, dir) L.decl
+and decl' = (typ, expr, dir) L.decl'
 
 (* Parser state machine *)
-and parser_state = (typ', expr', dir') L.parser_state
-and parser_state' = (typ', expr', dir') L.parser_state'
+and parser_state = (typ, expr, dir) L.parser_state
+and parser_state' = (typ, expr, dir) L.parser_state'
 
 (* Table *)
-and table = typ' L.table
+and table = typ L.table
 
 (* Table keys *)
-and table_key = typ' L.table_key
-and table_key' = typ' L.table_key'
+and table_key = typ L.table_key
+and table_key' = typ L.table_key'
 
 (* Table action references *)
-and table_action = typ' L.table_action
-and table_action' = typ' L.table_action'
+and table_action = typ L.table_action
+and table_action' = typ L.table_action'
 
 (* Table entries *)
-and table_entry = typ' L.table_entry
-and table_entry' = typ' L.table_entry'
+and table_entry = typ L.table_entry
+and table_entry' = typ L.table_entry'
 
 (* Table default properties *)
-and table_default = typ' L.table_default
-and table_default' = typ' L.table_default'
+and table_default = typ L.table_default
+and table_default' = typ L.table_default'
 and table_default_const = L.table_default_const
 
 (* Table custom properties *)
-and table_custom = typ' L.table_custom
-and table_custom' = typ' L.table_custom'
+and table_custom = typ L.table_custom
+and table_custom' = typ L.table_custom'
 and table_custom_const = L.table_custom_const
 
 (* Program *)
-type program = (typ', expr', dir') L.program
+type program = (typ, expr, dir) L.program

@@ -145,7 +145,7 @@ and pp_tparams' fmt tparams = P.pp_list pp_tparam' ", " fmt tparams
 (* Parameters *)
 
 and pp_param' fmt param = P.pp_param' pp_typ Value.pp Dir.pp fmt param
-and pp_params' fmt _params = F.pp_print_string fmt "TODO"
+and pp_params' fmt params = P.pp_list pp_param' ", " fmt params
 
 (* Type definitions *)
 
@@ -249,6 +249,24 @@ module FuncType = struct
   type t = functyp
 
   let pp = pp_functyp
+
+  let get_params = function
+    | ExternFunctionT (params, _)
+    | FunctionT (params, _)
+    | ActionT params
+    | ExternMethodT (params, _)
+    | ExternAbstractMethodT (params, _)
+    | ParserApplyMethodT params
+    | ControlApplyMethodT params
+    | BuiltinMethodT (params, _) ->
+        params
+
+  let get_typ_ret = function
+    | ExternFunctionT (_, typ_ret) | FunctionT (_, typ_ret) -> typ_ret
+    | ActionT _ -> VoidT
+    | ExternMethodT (_, typ_ret) | ExternAbstractMethodT (_, typ_ret) -> typ_ret
+    | ParserApplyMethodT _ | ControlApplyMethodT _ -> VoidT
+    | BuiltinMethodT (_, typ_ret) -> typ_ret
 end
 
 module FuncDef = struct

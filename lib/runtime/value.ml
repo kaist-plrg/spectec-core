@@ -50,3 +50,42 @@ let rec pp fmt value =
   | SEnumFieldV (id, member, value) ->
       F.fprintf fmt "%a.%a(= %a)" P.pp_id' id (P.pp_member' ~level:0) member pp
         value
+
+(* Getters *)
+
+let get_bool t : bool =
+  match t with
+  | BoolV value -> value
+  | _ -> Format.asprintf "Not a bool value: %a" pp t |> failwith
+
+let get_num t : Bigint.t =
+  match t with
+  | IntV value -> value
+  | FIntV (_, value) -> value
+  | FBitV (_, value) -> value
+  | _ -> Format.asprintf "Not a int/bit value: %a" pp t |> failwith
+
+let rec get_width t =
+  match t with
+  | BoolV _ -> Bigint.one
+  | FIntV (width, _) | FBitV (width, _) | VBitV (_, width, _) -> width
+  | TupleV values ->
+      List.fold_left
+        (fun acc value -> Bigint.(acc + get_width value))
+        Bigint.zero values
+  | StructV fields | HeaderV (_, fields) ->
+      let values = List.map snd fields in
+      List.fold_left
+        (fun acc value -> Bigint.(acc + get_width value))
+        Bigint.zero values
+  | _ -> Format.asprintf "Cannot get width of value: %a" pp t |> failwith
+
+let get_tuple t =
+  match t with
+  | TupleV values -> values
+  | _ -> Format.asprintf "Not a tuple value: %a" pp t |> failwith
+
+let get_enum t =
+  match t with
+  | EnumFieldV (id, member) -> (id, member)
+  | _ -> Format.asprintf "Not an enum value: %a" pp t |> failwith
