@@ -42,9 +42,15 @@ module FId = struct
 
   let compare = compare
 
-  let to_fid (id : El.Ast.id') (params : El.Ast.param' list) =
-    let params = List.map (fun (id, _, _, _, _) -> id.it) params in
-    (id, params)
+  let to_fid (id : El.Ast.id) (params : El.Ast.param list) =
+    let params =
+      List.map
+        (fun param ->
+          let id, _, _, _, _ = param.it in
+          id.it)
+        params
+    in
+    (id.it, params)
 end
 
 module FIdSet = struct

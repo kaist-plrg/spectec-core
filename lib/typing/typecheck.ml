@@ -441,7 +441,7 @@ and check_valid_consdef' (tset : TIdSet.t) (cd : ConsDef.t) : unit =
 
 module TIdMap = MakeTIdEnv (Type)
 
-let rec substitute_type (tidmap : TIdMap.t) (typ : Il.Ast.typ) : Il.Ast.typ =
+let rec substitute_type (tidmap : TIdMap.t) (typ : Type.t) : Type.t =
   match typ with
   | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
   | VBitT _ ->
@@ -628,9 +628,9 @@ let specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
       check_arity tparams;
       Types.PackageT
 
-let rec eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ) :
-    Type.t =
-  match typ.it with
+let rec eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ') :
+    Il.Ast.typ' =
+  match typ with
   | VoidT -> Types.VoidT
   | ErrT -> Types.ErrT
   | StrT -> Types.StrT
@@ -640,33 +640,35 @@ let rec eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ) :
       let width =
         static_eval_expr cursor ctx expr_width
         |> expect_static_value expr_width
-        |> Value.get_num
+        |> it |> Value.get_num
       in
       Types.FIntT width
   | FBitT expr_width ->
       let width =
         static_eval_expr cursor ctx expr_width
         |> expect_static_value expr_width
-        |> Value.get_num
+        |> it |> Value.get_num
       in
       Types.FBitT width
   | VBitT expr_width ->
       let width =
         static_eval_expr cursor ctx expr_width
         |> expect_static_value expr_width
-        |> Value.get_num
+        |> it |> Value.get_num
       in
       Types.VBitT width
   | StackT (typ_inner, expr_size) ->
-      let typ_inner = eval_type' cursor ctx typ_inner in
+      let typ_inner = eval_type cursor ctx typ_inner in
       let size =
         static_eval_expr cursor ctx expr_size
         |> expect_static_value expr_size
-        |> Value.get_num
+        |> it |> Value.get_num
       in
-      Types.StackT (typ_inner, size)
+      Types.StackT (typ_inner.it, size)
   | TupleT typs_inner ->
-      let typs_inner = List.map (eval_type' cursor ctx) typs_inner in
+      let typs_inner =
+        List.map (eval_type cursor ctx) typs_inner |> List.map it
+      in
       Types.TupleT typs_inner
   (* When a type variable is bound by the type parameters (top-scoped variable should be unallowed) *)
   (* (TODO) Why not shove in the type parameters into the typedef environment? *)
@@ -688,19 +690,26 @@ let rec eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ) :
           El.Pp.pp_var var;
         assert false);
       let td = Option.get td in
-      let typs = List.map (eval_type' cursor ctx) typs in
+      let typs = List.map (eval_type cursor ctx) typs |> List.map it in
       specialize_typedef td typs
   | AnyT -> Types.TopT
 
-and eval_type (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ) : Type.t =
-  let typ = eval_type' cursor ctx typ in
-  check_valid_type cursor ctx typ;
+and eval_type (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ) :
+    Il.Ast.typ =
+  eval_type' cursor ctx typ.it $ typ.at
+
+and eval_type_with_check (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
+    : Il.Ast.typ =
+  let typ = eval_type cursor ctx typ in
+  check_valid_type cursor ctx typ.it;
   typ
 
 (* Direction evaluation *)
 
-and eval_dir (dir : El.Ast.dir) : Dir.t =
-  match dir.it with
+and eval_dir (dir : El.Ast.dir) : Il.Ast.dir = eval_dir' dir.it $ dir.at
+
+and eval_dir' (dir : El.Ast.dir') : Dir.t =
+  match dir with
   | No -> Dir.No `DYN
   | In -> Dir.In
   | Out -> Dir.Out
@@ -729,8 +738,13 @@ and eval_dir (dir : El.Ast.dir) : Dir.t =
    - Expressions of the form e.minSizeInBits(), e.minSizeInBytes(), e.maxSizeInBits() and e.maxSizeInBytes() *)
 
 and static_eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr) :
-    Value.t option =
-  match expr.it with
+    Il.Ast.value option =
+  let value = static_eval_expr' cursor ctx expr.it in
+  Option.map (fun value -> value $ expr.at) value
+
+and static_eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr')
+    : Il.Ast.value' option =
+  match expr with
   | BoolE b -> static_eval_bool b
   | StrE s -> static_eval_str s
   | NumE num -> static_eval_num num
@@ -752,15 +766,15 @@ and static_eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr) :
   | _ -> None
 
 and static_eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (exprs : El.Ast.expr list) : Value.t list option =
+    (exprs : El.Ast.expr list) : Il.Ast.value list option =
   let values = List.map (static_eval_expr cursor ctx) exprs in
   if
     List.for_all Option.is_some values && List.length exprs = List.length values
   then Some (List.map Option.get values)
   else None
 
-and expect_static_value (expr : El.Ast.expr) (value : Value.t option) : Value.t
-    =
+and expect_static_value (expr : El.Ast.expr) (value : Il.Ast.value option) :
+    Il.Ast.value =
   match value with
   | Some value -> value
   | None ->
@@ -784,25 +798,34 @@ and static_eval_var (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
 and static_eval_tuple (cursor : Ctx.cursor) (ctx : Ctx.t)
     (exprs : El.Ast.expr list) : Value.t option =
   let values = static_eval_exprs cursor ctx exprs in
-  Option.map (fun values -> Value.TupleV values) values
+  Option.map
+    (fun values ->
+      let values = List.map it values in
+      Value.TupleV values)
+    values
 
 and static_eval_record (cursor : Ctx.cursor) (ctx : Ctx.t)
     (fields : (El.Ast.member * El.Ast.expr) list) : Value.t option =
   let members, exprs = List.split fields in
   let members = List.map it members in
   let values = static_eval_exprs cursor ctx exprs in
-  Option.map (fun values -> Value.StructV (List.combine members values)) values
+  Option.map
+    (fun values ->
+      let values = List.map it values in
+      Value.StructV (List.combine members values))
+    values
 
 and static_eval_unop (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : El.Ast.unop)
     (expr : El.Ast.expr) : Value.t option =
   let value = static_eval_expr cursor ctx expr in
-  Option.map (Runtime.Numerics.eval_unop unop) value
+  Option.map (fun value -> Runtime.Numerics.eval_unop unop value.it) value
 
 and static_eval_binop (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
     (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) : Value.t option =
   let values = static_eval_exprs cursor ctx [ expr_l; expr_r ] in
   Option.map
     (fun values ->
+      let values = List.map it values in
       let value_l, value_r = (List.nth values 0, List.nth values 1) in
       Runtime.Numerics.eval_binop binop value_l value_r)
     values
@@ -813,11 +836,11 @@ and static_eval_ternop (cursor : Ctx.cursor) (ctx : Ctx.t)
   let value_cond = static_eval_expr cursor ctx expr_cond in
   Option.map
     (fun value_cond ->
-      let cond = Value.get_bool value_cond in
+      let cond = Value.get_bool value_cond.it in
       let expr = if cond then expr_then else expr_else in
       static_eval_expr cursor ctx expr)
     value_cond
-  |> Option.join
+  |> Option.join |> Option.map it
 
 (* and static_eval_cast (ctx : Ctx.t) (typ : typ) (expr : expr) : Value.t option *)
 (*     = *)
@@ -832,6 +855,7 @@ and static_eval_bitstring_acc (cursor : Ctx.cursor) (ctx : Ctx.t)
   let values = static_eval_exprs cursor ctx [ expr_base; expr_hi; expr_lo ] in
   Option.map
     (fun values ->
+      let values = List.map it values in
       let value_base, value_hi, value_lo =
         (List.nth values 0, List.nth values 1, List.nth values 2)
       in
@@ -876,10 +900,14 @@ and static_eval_error_acc (ctx : Ctx.t) (member : El.Ast.member) :
 
 (* Static parameter evaluation *)
 
-and static_eval_param (cursor : Ctx.cursor) (ctx : Ctx.t)
+and static_eval_param (cursor : Ctx.cursor) (ctx : Ctx.t) (param : El.Ast.param)
+    : Il.Ast.param =
+  static_eval_param' cursor ctx param.it $ param.at
+
+and static_eval_param' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (param : El.Ast.param') : Il.Ast.param' =
   let id, dir, typ, expr_default, _annos = param in
-  let typ = eval_type cursor ctx typ in
+  let typ = eval_type_with_check cursor ctx typ in
   let dir = eval_dir dir in
   let value_default =
     Option.map
@@ -890,6 +918,10 @@ and static_eval_param (cursor : Ctx.cursor) (ctx : Ctx.t)
   in
   (* (TODO) evaluate annotations *)
   (id, dir, typ, value_default, [])
+
+and static_eval_cparam (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (cparam : El.Ast.cparam) : Il.Ast.cparam =
+  static_eval_param cursor ctx cparam
 
 (* Expression typing *)
 
@@ -1522,7 +1554,7 @@ and type_cast_explicit (typ : Type.t) (typ_target : Type.t) : bool =
 
 and type_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
     (expr : El.Ast.expr) : Type.t =
-  let typ_target = eval_type cursor ctx typ in
+  let typ_target = eval_type_with_check cursor ctx typ |> it in
   let typ = type_expr cursor ctx expr in
   if not (type_cast_explicit typ typ_target) then (
     Format.eprintf "(type_cast_expr) Invalid cast from %a to %a\n" Type.pp typ
@@ -1716,7 +1748,7 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       let idx =
         static_eval_expr cursor ctx expr_idx
         |> expect_static_value expr_idx
-        |> Value.get_num |> Bigint.to_int |> Option.get
+        |> it |> Value.get_num |> Bigint.to_int |> Option.get
       in
       if idx < 0 || idx >= List.length typs_base_inner then (
         Format.eprintf "(type_array_acc_expr) Index %d out of range for %a\n"
@@ -1841,14 +1873,14 @@ and type_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let idx_lo =
     static_eval_expr cursor ctx expr_lo
     |> expect_static_value expr_lo
-    |> Value.get_num
+    |> it |> Value.get_num
   in
   let typ_hi = type_expr cursor ctx expr_hi in
   check_bitstring_index typ_hi;
   let idx_hi =
     static_eval_expr cursor ctx expr_hi
     |> expect_static_value expr_hi
-    |> Value.get_num
+    |> it |> Value.get_num
   in
   check_bitstring_slice_range typ_base idx_lo idx_hi;
   let width_slice = Bigint.(idx_hi - idx_lo + one) in
@@ -2194,7 +2226,7 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : El.Ast.expr)
   let args = List.map it args in
   (* Find the function definition and specialize it if necessary *)
   (* (TODO) Implement type inference for missing type arguments *)
-  let targs = List.map (eval_type cursor ctx) targs in
+  let targs = List.map (eval_type_with_check cursor ctx) targs |> List.map it in
   let ft =
     match expr_func.it with
     | VarE var ->
@@ -2519,7 +2551,7 @@ and type_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (decls : El.Ast.decl list) :
 
 and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (typ : El.Ast.typ) (expr : El.Ast.expr) : Ctx.t =
-  let typ_target = eval_type cursor ctx typ in
+  let typ_target = eval_type_with_check cursor ctx typ |> it in
   let typ = type_expr cursor ctx expr in
   (* (TODO) Insert cast if possible *)
   if typ_target <> typ then (
@@ -2528,7 +2560,7 @@ and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
        initializer's type %a\n"
       Type.pp typ_target Type.pp typ;
     assert false);
-  let value = static_eval_expr cursor ctx expr in
+  let value = static_eval_expr cursor ctx expr |> Option.map it in
   if Option.is_none value then (
     Format.eprintf
       "(type_const_decl) %a is not a compile-time known expression\n"
@@ -2612,7 +2644,7 @@ and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
        parser state, an action body, a control block's apply sub-block, the \
        list of local declarations in a parser or a control\n";
     assert false);
-  let typ_target = eval_type cursor ctx typ in
+  let typ_target = eval_type_with_check cursor ctx typ |> it in
   check_valid_var_type typ_target;
   let typ = Option.map (type_expr cursor ctx) expr_init in
   (* (TODO) Insert cast if possible *)
@@ -2692,7 +2724,7 @@ and type_struct_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     List.map (fun (member, typ, _annos) -> (member, typ)) fields |> List.split
   in
   let members = List.map it members in
-  let typs = List.map (eval_type cursor ctx) typs in
+  let typs = List.map (eval_type_with_check cursor ctx) typs |> List.map it in
   let fields = List.combine members typs in
   let td = Types.StructD fields in
   check_valid_typedef cursor ctx td;
@@ -2709,7 +2741,7 @@ and type_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     List.map (fun (member, typ, _annos) -> (member, typ)) fields |> List.split
   in
   let members = List.map it members in
-  let typs = List.map (eval_type cursor ctx) typs in
+  let typs = List.map (eval_type_with_check cursor ctx) typs |> List.map it in
   let fields = List.combine members typs in
   let td = Types.HeaderD fields in
   check_valid_typedef cursor ctx td;
@@ -2726,7 +2758,7 @@ and type_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     List.map (fun (member, typ, _annos) -> (member, typ)) fields |> List.split
   in
   let members = List.map it members in
-  let typs = List.map (eval_type cursor ctx) typs in
+  let typs = List.map (eval_type_with_check cursor ctx) typs |> List.map it in
   let fields = List.combine members typs in
   let td = Types.UnionD fields in
   check_valid_typedef cursor ctx td;
@@ -2768,13 +2800,14 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.eprintf
       "(type_senum_decl) Serializable enum declarations must be global\n";
     assert false);
-  let typ = eval_type cursor ctx typ in
+  let typ = eval_type_with_check cursor ctx typ |> it in
   let members, exprs = List.split fields in
   let members = List.map it members in
   (* (TODO) Check that values are of typ *)
   let values =
     List.map
-      (fun expr -> static_eval_expr cursor ctx expr |> expect_static_value expr)
+      (fun expr ->
+        static_eval_expr cursor ctx expr |> expect_static_value expr |> it)
       exprs
   in
   let fields = List.combine members values in
@@ -2797,7 +2830,7 @@ and type_newtype_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     assert false);
   match typdef with
   | Left typ ->
-      let typ = eval_type cursor ctx typ in
+      let typ = eval_type_with_check cursor ctx typ |> it in
       let td = Types.NewD typ in
       check_valid_typedef cursor ctx td;
       Ctx.add_typedef cursor id.it td ctx
@@ -2817,7 +2850,7 @@ and type_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     assert false);
   match typdef with
   | Left typ ->
-      let typ = eval_type cursor ctx typ in
+      let typ = eval_type_with_check cursor ctx typ |> it in
       let td = Types.DefD typ in
       check_valid_typedef cursor ctx td;
       Ctx.add_typedef cursor id.it td ctx
@@ -2854,18 +2887,19 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       "(type_action_decl) Action declarations must be global or in a control \
        block\n";
     assert false);
-  let params = List.map it params in
-  let fid = FId.to_fid id.it params in
+  let fid = FId.to_fid id params in
   (* Construct action layer context *)
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' = Ctx.set_localkind Ctx.Action ctx' in
   (* Typecheck and add parameters to the local context *)
-  let params = List.map (static_eval_param Ctx.Local ctx') params in
+  let params =
+    List.map (static_eval_param Ctx.Local ctx') params |> List.map it
+  in
   let ctx' =
     List.fold_left
       (fun ctx' param ->
         let id, _, typ, _, _ = param in
-        Ctx.add_type Ctx.Local id.it typ ctx')
+        Ctx.add_type Ctx.Local id.it typ.it ctx')
       ctx' params
   in
   (* Typecheck body *)
@@ -2874,7 +2908,8 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   (* Create an action definition *)
   let params =
     List.map
-      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      (fun (id, dir, typ, value_default, _) ->
+        (id.it, dir.it, typ.it, Option.map it value_default))
       params
   in
   let fd = Types.ActionD params in
@@ -2899,20 +2934,21 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.eprintf "(type_function_decl) Function declarations must be global\n";
     assert false);
   let tparams = List.map it tparams in
-  let params = List.map it params in
-  let fid = FId.to_fid id.it params in
+  let fid = FId.to_fid id params in
   (* Construct function layer context *)
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
-  let typ_ret = eval_type Ctx.Local ctx' typ_ret in
+  let typ_ret = eval_type_with_check Ctx.Local ctx' typ_ret |> it in
   let ctx' = Ctx.set_localkind (Ctx.Function typ_ret) ctx' in
   (* Typecheck and add parameters to the local context *)
-  let params = List.map (static_eval_param Ctx.Local ctx') params in
+  let params =
+    List.map (static_eval_param Ctx.Local ctx') params |> List.map it
+  in
   let ctx' =
     List.fold_left
       (fun ctx' param ->
         let id, _, typ, _, _ = param in
-        Ctx.add_type Ctx.Local id.it typ ctx')
+        Ctx.add_type Ctx.Local id.it typ.it ctx')
       ctx' params
   in
   (* Typecheck body *)
@@ -2926,7 +2962,8 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   (* Create a function definition *)
   let params =
     List.map
-      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      (fun (id, dir, typ, value_default, _) ->
+        (id.it, dir.it, typ.it, Option.map it value_default))
       params
   in
   let fd = Types.FunctionD (tparams, params, typ_ret) in
@@ -2946,16 +2983,18 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
       "(type_extern_function_decl) Extern function declarations must be global\n";
     assert false);
   let tparams = List.map it tparams in
-  let params = List.map it params in
-  let fid = FId.to_fid id.it params in
+  let fid = FId.to_fid id params in
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
   let ctx' = Ctx.set_localkind Ctx.ExternFunction ctx' in
-  let params = List.map (static_eval_param Ctx.Local ctx') params in
-  let typ_ret = eval_type Ctx.Local ctx' typ_ret in
+  let params =
+    List.map (static_eval_param Ctx.Local ctx') params |> List.map it
+  in
+  let typ_ret = eval_type_with_check Ctx.Local ctx' typ_ret |> it in
   let params =
     List.map
-      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      (fun (id, dir, typ, value_default, _) ->
+        (id.it, dir.it, typ.it, Option.map it value_default))
       params
   in
   let fd = Types.ExternFunctionD (tparams, params, typ_ret) in
@@ -2979,18 +3018,20 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       "(type_parser_type_decl) Parser type declarations must be global\n";
     assert false);
   let tparams = List.map it tparams in
-  let params = List.map it params in
   (* Typecheck implicit "apply" method
      to construct function definition environment *)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Parser ctx' in
   let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
-  let params = List.map (static_eval_param Ctx.Block ctx') params in
+  let params =
+    List.map (static_eval_param Ctx.Block ctx') params |> List.map it
+  in
   (* Create a parser type definition
      and add it to the context *)
   let params =
     List.map
-      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      (fun (id, dir, typ, value_default, _) ->
+        (id.it, dir.it, typ.it, Option.map it value_default))
       params
   in
   let td = Types.ParserD (tparams, params) in
@@ -3066,27 +3107,29 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   if tparams <> [] then (
     Format.eprintf "(type_parser_decl) Parser declarations cannot be generic\n";
     assert false);
-  let params = List.map it params in
-  let cparams = List.map it cparams in
-  let cid = FId.to_fid id.it cparams in
+  let cid = FId.to_fid id cparams in
   (* Typecheck and add constructor parameters to the block context *)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Parser ctx' in
-  let cparams = List.map (static_eval_param Ctx.Block ctx') cparams in
+  let cparams =
+    List.map (static_eval_cparam Ctx.Block ctx') cparams |> List.map it
+  in
   let ctx' =
     List.fold_left
       (fun ctx' cparam ->
         let id, _, typ, _, _ = cparam in
-        Ctx.add_type Ctx.Block id.it typ ctx')
+        Ctx.add_type Ctx.Block id.it typ.it ctx')
       ctx' cparams
   in
   (* Typecheck and add apply parameters to the block context *)
-  let params = List.map (static_eval_param Ctx.Block ctx') params in
+  let params =
+    List.map (static_eval_param Ctx.Block ctx') params |> List.map it
+  in
   let ctx' =
     List.fold_left
       (fun ctx' param ->
         let id, _, typ, _, _ = param in
-        Ctx.add_type Ctx.Block id.it typ ctx')
+        Ctx.add_type Ctx.Block id.it typ.it ctx')
       ctx' params
   in
   (* Typecheck and add local declarations to the block context *)
@@ -3096,13 +3139,15 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   (* Create a parser constructor definition *)
   let params =
     List.map
-      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      (fun (id, dir, typ, value_default, _) ->
+        (id.it, dir.it, typ.it, Option.map it value_default))
       params
   in
   let typ = Types.ParserT params in
   let cparams =
     List.map
-      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      (fun (id, dir, typ, value_default, _) ->
+        (id.it, dir.it, typ.it, Option.map it value_default))
       cparams
   in
   let cd = ([], cparams, typ) in
@@ -3206,18 +3251,20 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       "(type_control_type_decl) Control type declarations must be global\n";
     assert false);
   let tparams = List.map it tparams in
-  let params = List.map it params in
   (* Typecheck implicit "apply" method
      to construct function definition environment *)
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Control ctx' in
   let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
-  let params = List.map (static_eval_param Ctx.Block ctx') params in
+  let params =
+    List.map (static_eval_param Ctx.Block ctx') params |> List.map it
+  in
   (* Create a control type definition
      and add it to the context *)
   let params =
     List.map
-      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      (fun (id, dir, typ, value_default, _) ->
+        (id.it, dir.it, typ.it, Option.map it value_default))
       params
   in
   let td = Types.ControlD (tparams, params) in
@@ -3248,27 +3295,29 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.eprintf
       "(type_control_decl) Control declarations cannot be generic\n";
     assert false);
-  let params = List.map it params in
-  let cparams = List.map it cparams in
-  let cid = FId.to_fid id.it cparams in
+  let cid = FId.to_fid id cparams in
   (* Typecheck and add constructor parameters to the block context *)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Control ctx' in
-  let cparams = List.map (static_eval_param Ctx.Block ctx') cparams in
+  let cparams =
+    List.map (static_eval_cparam Ctx.Block ctx') cparams |> List.map it
+  in
   let ctx' =
     List.fold_left
       (fun ctx' cparam ->
         let id, _, typ, _, _ = cparam in
-        Ctx.add_type Ctx.Block id.it typ ctx')
+        Ctx.add_type Ctx.Block id.it typ.it ctx')
       ctx' cparams
   in
   (* Typecheck and add apply parameters to the block context *)
-  let params = List.map (static_eval_param Ctx.Block ctx') params in
+  let params =
+    List.map (static_eval_param Ctx.Block ctx') params |> List.map it
+  in
   let ctx' =
     List.fold_left
       (fun ctx' param ->
         let id, _, typ, _, _ = param in
-        Ctx.add_type Ctx.Block id.it typ ctx')
+        Ctx.add_type Ctx.Block id.it typ.it ctx')
       ctx' params
   in
   (* Typecheck and add local declarations to the block context *)
@@ -3281,13 +3330,15 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   (* Create a control constructor definition *)
   let params =
     List.map
-      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      (fun (id, dir, typ, value_default, _) ->
+        (id.it, dir.it, typ.it, Option.map it value_default))
       params
   in
   let typ = Types.ControlT params in
   let cparams =
     List.map
-      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      (fun (id, dir, typ, value_default, _) ->
+        (id.it, dir.it, typ.it, Option.map it value_default))
       cparams
   in
   let cd = ([], cparams, typ) in
@@ -3311,15 +3362,17 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
        name as the object\n";
     assert false);
   let tparams = Ctx.get_tparams cursor ctx in
-  let cparams = List.map it cparams in
-  let cid = FId.to_fid id.it cparams in
-  let cparams = List.map (static_eval_param Ctx.Block ctx) cparams in
+  let cid = FId.to_fid id cparams in
+  let cparams =
+    List.map (static_eval_cparam Ctx.Block ctx) cparams |> List.map it
+  in
   let td = Ctx.find_typedef Ctx.Global id.it ctx in
   let typ_args = List.map (fun tparam -> Types.VarT tparam) tparams in
   let typ = specialize_typedef td typ_args in
   let cparams =
     List.map
-      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      (fun (id, dir, typ, value_default, _) ->
+        (id.it, dir.it, typ.it, Option.map it value_default))
       cparams
   in
   let cd = (tparams, cparams, typ) in
@@ -3367,15 +3420,17 @@ and type_extern_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
        name as the object\n";
     assert false);
   let tparams = Ctx.get_tparams cursor ctx in
-  let cparams = List.map it cparams in
-  let cid = FId.to_fid id.it cparams in
-  let cparams = List.map (static_eval_param cursor ctx) cparams in
+  let cid = FId.to_fid id cparams in
+  let cparams =
+    List.map (static_eval_cparam cursor ctx) cparams |> List.map it
+  in
   let td = Ctx.find_typedef Ctx.Global id.it ctx in
   let typ_args = List.map (fun tparam -> Types.VarT tparam) tparams in
   let typ = specialize_typedef td typ_args in
   let cparams =
     List.map
-      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      (fun (id, dir, typ, value_default, _) ->
+        (id.it, dir.it, typ.it, Option.map it value_default))
       cparams
   in
   let cd = (tparams, cparams, typ) in
@@ -3397,16 +3452,18 @@ and type_extern_abstract_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
        in an extern block\n";
     assert false);
   let tparams = List.map it tparams in
-  let params = List.map it params in
-  let fid = FId.to_fid id.it params in
+  let fid = FId.to_fid id params in
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
-  let typ_ret = eval_type Ctx.Local ctx' typ_ret in
+  let typ_ret = eval_type_with_check Ctx.Local ctx' typ_ret |> it in
   let ctx' = Ctx.set_localkind (Ctx.ExternAbstractMethod typ_ret) ctx' in
-  let params = List.map (static_eval_param Ctx.Local ctx') params in
+  let params =
+    List.map (static_eval_param Ctx.Local ctx') params |> List.map it
+  in
   let params =
     List.map
-      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      (fun (id, dir, typ, value_default, _) ->
+        (id.it, dir.it, typ.it, Option.map it value_default))
       params
   in
   let fd = Types.ExternAbstractMethodD (tparams, params, typ_ret) in
@@ -3422,16 +3479,18 @@ and type_extern_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
        extern block\n";
     assert false);
   let tparams = List.map it tparams in
-  let params = List.map it params in
-  let fid = FId.to_fid id.it params in
+  let fid = FId.to_fid id params in
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
   let ctx' = Ctx.set_localkind Ctx.ExternMethod ctx' in
-  let params = List.map (static_eval_param Ctx.Local ctx') params in
-  let typ_ret = eval_type Ctx.Local ctx' typ_ret in
+  let params =
+    List.map (static_eval_param Ctx.Local ctx') params |> List.map it
+  in
+  let typ_ret = eval_type_with_check Ctx.Local ctx' typ_ret |> it in
   let params =
     List.map
-      (fun (id, dir, typ, value_default, _) -> (id.it, dir, typ, value_default))
+      (fun (id, dir, typ, value_default, _) ->
+        (id.it, dir.it, typ.it, Option.map it value_default))
       params
   in
   let fd = Types.ExternMethodD (tparams, params, typ_ret) in

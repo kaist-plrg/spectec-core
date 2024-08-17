@@ -1,4 +1,5 @@
 module L = Lang.Ast
+open Util.Source
 
 type ('a, 'b) alt = ('a, 'b) L.alt
 
@@ -42,13 +43,16 @@ type binop = L.binop
 type binop' = L.binop'
 
 (* Directions *)
-type dir = Runtime.Dir.t
+type dir = dir' phrase
+and dir' = Runtime.Dir.t
 
 (* Types *)
-type typ = Runtime.Types.Type.t
+type typ = typ' phrase
+and typ' = Runtime.Types.Type.t
 
 (* Values *)
-type value = Runtime.Value.t
+type value = value' phrase
+and value' = Runtime.Value.t
 
 (* Annotations *)
 and anno = typ L.anno
