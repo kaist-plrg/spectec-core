@@ -55,18 +55,18 @@ and typ' =
   | ErrT
   | StrT
   | IntT
-  | FIntT of expr
-  | FBitT of expr
-  | VBitT of expr
+  | FIntT of svalue
+  | FBitT of svalue
+  | VBitT of svalue
   | NameT of var
   | SpecT of var * targ list
-  | StackT of typ * expr
+  | StackT of typ * svalue
   | TupleT of typ list
   | AnyT
 
 (* Values *)
-and cvalue = expr
-and cvalue' = expr'
+and svalue = expr
+and svalue' = expr'
 
 (* Annotations *)
 and anno = typ L.anno

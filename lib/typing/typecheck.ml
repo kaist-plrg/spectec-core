@@ -495,6 +495,10 @@ and substitute_param (tidmap : TIdMap.t) (param : Types.param) : Types.param =
   let typ = substitute_type tidmap typ in
   (id, dir, typ, value_default)
 
+and substitute_cparam (tidmap : TIdMap.t) (cparam : Types.cparam) : Types.cparam
+    =
+  substitute_param tidmap cparam
+
 and substitute_funcdef (tidmap : TIdMap.t) (fd : FuncDef.t) : FuncDef.t =
   match fd with
   | ExternFunctionD (tparams, params, typ_ret) ->
@@ -536,44 +540,6 @@ and substitute_funcdef (tidmap : TIdMap.t) (fd : FuncDef.t) : FuncDef.t =
       let params = List.map (substitute_param tidmap') params in
       let typ_ret = substitute_type tidmap' typ_ret in
       ExternAbstractMethodD (tparams, params, typ_ret)
-
-let specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) : FuncType.t =
-  let check_arity tparams =
-    if List.length targs <> List.length tparams then (
-      Format.eprintf
-        "(specialize_funcdef) Function %a expects %d type arguments but %d \
-         were given\n"
-        FuncDef.pp fd (List.length tparams) (List.length targs);
-      assert false)
-  in
-  match fd with
-  | ExternFunctionD (tparams, params, typ_ret) ->
-      check_arity tparams;
-      let tidmap = List.combine tparams targs |> TIdMap.of_list in
-      let params = List.map (substitute_param tidmap) params in
-      let typ_ret = substitute_type tidmap typ_ret in
-      ExternFunctionT (params, typ_ret)
-  | FunctionD (tparams, params, typ_ret) ->
-      check_arity tparams;
-      let tidmap = List.combine tparams targs |> TIdMap.of_list in
-      let params = List.map (substitute_param tidmap) params in
-      let typ_ret = substitute_type tidmap typ_ret in
-      FunctionT (params, typ_ret)
-  | ActionD params ->
-      let params = List.map (substitute_param TIdMap.empty) params in
-      ActionT params
-  | ExternMethodD (tparams, params, typ_ret) ->
-      check_arity tparams;
-      let tidmap = List.combine tparams targs |> TIdMap.of_list in
-      let params = List.map (substitute_param tidmap) params in
-      let typ_ret = substitute_type tidmap typ_ret in
-      ExternMethodT (params, typ_ret)
-  | ExternAbstractMethodD (tparams, params, typ_ret) ->
-      check_arity tparams;
-      let tidmap = List.combine tparams targs |> TIdMap.of_list in
-      let params = List.map (substitute_param tidmap) params in
-      let typ_ret = substitute_type tidmap typ_ret in
-      ExternAbstractMethodT (params, typ_ret)
 
 let specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
   let check_arity tparams =
@@ -627,6 +593,60 @@ let specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
   | PackageD tparams ->
       check_arity tparams;
       Types.PackageT
+
+and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) : FuncType.t =
+  let check_arity tparams =
+    if List.length targs <> List.length tparams then (
+      Format.eprintf
+        "(specialize_funcdef) Function %a expects %d type arguments but %d \
+         were given\n"
+        FuncDef.pp fd (List.length tparams) (List.length targs);
+      assert false)
+  in
+  match fd with
+  | ExternFunctionD (tparams, params, typ_ret) ->
+      check_arity tparams;
+      let tidmap = List.combine tparams targs |> TIdMap.of_list in
+      let params = List.map (substitute_param tidmap) params in
+      let typ_ret = substitute_type tidmap typ_ret in
+      ExternFunctionT (params, typ_ret)
+  | FunctionD (tparams, params, typ_ret) ->
+      check_arity tparams;
+      let tidmap = List.combine tparams targs |> TIdMap.of_list in
+      let params = List.map (substitute_param tidmap) params in
+      let typ_ret = substitute_type tidmap typ_ret in
+      FunctionT (params, typ_ret)
+  | ActionD params ->
+      let params = List.map (substitute_param TIdMap.empty) params in
+      ActionT params
+  | ExternMethodD (tparams, params, typ_ret) ->
+      check_arity tparams;
+      let tidmap = List.combine tparams targs |> TIdMap.of_list in
+      let params = List.map (substitute_param tidmap) params in
+      let typ_ret = substitute_type tidmap typ_ret in
+      ExternMethodT (params, typ_ret)
+  | ExternAbstractMethodD (tparams, params, typ_ret) ->
+      check_arity tparams;
+      let tidmap = List.combine tparams targs |> TIdMap.of_list in
+      let params = List.map (substitute_param tidmap) params in
+      let typ_ret = substitute_type tidmap typ_ret in
+      ExternAbstractMethodT (params, typ_ret)
+
+and specialize_consdef (cd : ConsDef.t) (targs : Type.t list) : ConsType.t =
+  let check_arity tparams =
+    if List.length targs <> List.length tparams then (
+      Format.eprintf
+        "(specialize_funcdef) Constructor %a expects %d type arguments but %d \
+         were given\n"
+        ConsDef.pp cd (List.length tparams) (List.length targs);
+      assert false)
+  in
+  let tparams, cparams, typ = cd in
+  check_arity tparams;
+  let tidmap = List.combine tparams targs |> TIdMap.of_list in
+  let cparams = List.map (substitute_cparam tidmap) cparams in
+  let typ = substitute_type tidmap typ in
+  (cparams, typ)
 
 let rec eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ') :
     Il.Ast.typ' =
@@ -738,12 +758,12 @@ and eval_dir' (dir : El.Ast.dir') : Dir.t =
    - Expressions of the form e.minSizeInBits(), e.minSizeInBytes(), e.maxSizeInBits() and e.maxSizeInBytes() *)
 
 and static_eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr) :
-    Il.Ast.value option =
+    Il.Ast.svalue option =
   let value = static_eval_expr' cursor ctx expr.it in
   Option.map (fun value -> value $ expr.at) value
 
 and static_eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr')
-    : Il.Ast.value' option =
+    : Il.Ast.svalue' option =
   match expr with
   | BoolE b -> static_eval_bool b
   | StrE s -> static_eval_str s
@@ -766,15 +786,15 @@ and static_eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr')
   | _ -> None
 
 and static_eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (exprs : El.Ast.expr list) : Il.Ast.value list option =
+    (exprs : El.Ast.expr list) : Il.Ast.svalue list option =
   let values = List.map (static_eval_expr cursor ctx) exprs in
   if
     List.for_all Option.is_some values && List.length exprs = List.length values
   then Some (List.map Option.get values)
   else None
 
-and expect_static_value (expr : El.Ast.expr) (value : Il.Ast.value option) :
-    Il.Ast.value =
+and expect_static_value (expr : El.Ast.expr) (value : Il.Ast.svalue option) :
+    Il.Ast.svalue =
   match value with
   | Some value -> value
   | None ->
@@ -954,9 +974,7 @@ let rec type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr) :
       type_expr_acc_expr cursor ctx expr_base member
   | CallE (expr_func, targs, args) ->
       type_call_expr cursor ctx expr_func targs args
-  | InstE _ ->
-      Format.eprintf "(type_expr) %a\n" (El.Pp.pp_expr ~level:0) expr;
-      assert false
+  | InstE (typ_inst, args) -> type_instantiation_expr cursor ctx typ_inst args
 
 and type_num_expr (num : El.Ast.num) : Type.t =
   match num.it with
@@ -2243,7 +2261,7 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : El.Ast.expr)
       (El.Pp.pp_expr ~level:0) expr_func;
     assert false);
   let ft = Option.get ft in
-  (* (TODO) Implement restrictions on compile-time and run-time calls (Appendix F) *)
+  (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
   (* (TODO) Consider default parameters/arguments, in such case arity can appear to mismatch *)
   let params = FuncType.get_params ft in
@@ -2280,6 +2298,118 @@ and type_call_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : El.Ast.expr)
       "(type_call_expr) Function call as an expression must return a value\n";
     assert false);
   typ
+
+(* (8.21) Constructor invocations
+
+   The syntax for a constructor invocation is similar to a function call;
+   constructors can also be called using named arguments. Constructors are evaluated entirely
+   at compilation time (see Section 18). In consequence, all constructor arguments must also
+   be expressions that can be evaluated at compilation time. When performing type inference
+   and overload resolution, constructor invocations are treated similar to methods or functions. *)
+
+(* (11.3) Instantiations
+
+   Instantiations are similar to variable declarations, but are reserved for
+   the types with constructors (extern objects, control blocks, parsers, and packages).
+
+   An instantiation is written as a constructor invocation followed by a name.
+   Instantiations are always executed at compilation time (Section 18.1).
+   The effect is to allocate an object with the specified name, and to bind it to the
+   result of the constructor invocation. Note that instantiation arguments can be specified by name. *)
+
+(* (Appendix F) Restrictions on compile time and run time calls
+
+   The next table lists restrictions on where one may perform instantiations (see Section 11.3)
+   of different types. The answer for package is always “no” because there is no “inside a package”
+   where instantiations can be written in P4_16. One can definitely make constructor calls and
+   use instances of stateful types as parameters when instantiating a package,
+   and restrictions on those types are in the table above.
+
+   For externs, one can only specify their interface in P4_16, not their implementation.
+   Thus there is no place to instantiate objects within an extern.
+
+   You may declare variables and constants of any of the value types within a parser, control, or function
+   (see Section 11.2 for more details). Declaring a variable or constant is not the same as instantiation,
+   hence the answer “N/A” (for not applicable) in those table entries.
+   Variables may not be declared at the top level of your program, but constants may.
+
+               | can be instantiated in this place
+   This type   | top level | package | parser | control | extern | function
+   package     | yes       | no      | no     | no      | no     | no
+   parser      | no        | no      | yes    | no      | no     | no
+   control     | no        | no      | no     | yes     | no     | no
+   extern      | yes       | no      | yes    | yes     | no     | no
+   function    | yes       | no      | no     | no      | no     | no
+   table       | no        | no      | no     | yes     | no     | no
+   value-set   | yes       | no      | yes    | no      | no     | no
+   value types | N/A       | N/A     | N/A    | N/A     | N/A    | N/A *)
+
+and check_instantiation_arity (var_inst : El.Ast.var)
+    (cparams : Types.cparam list) (args : El.Ast.arg' list) : unit =
+  if List.length cparams <> List.length args then (
+    Format.eprintf
+      "(check_call_arity) Instance %a expects %d arguments but %d were given\n"
+      El.Pp.pp_var var_inst (List.length cparams) (List.length args);
+    assert false)
+
+and align_cparams_with_args (cparams : Types.cparam list)
+    (args : El.Ast.arg' list) =
+  align_params_with_args cparams args
+
+and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (typ_inst : El.Ast.typ) (args : El.Ast.arg list) : Type.t =
+  let args = List.map it args in
+  (* Find the constructor definition and specialize it if necessary *)
+  (* (TODO) Implement type inference for missing type arguments *)
+  let var_inst, targs =
+    match typ_inst.it with
+    | NameT var -> (var, [])
+    | SpecT (var, targs) -> (var, targs)
+    | _ ->
+        Format.eprintf "(type_instantiation) %a is not an instance type\n"
+          El.Pp.pp_typ typ_inst;
+        assert false
+  in
+  let targs = List.map (eval_type_with_check cursor ctx) targs |> List.map it in
+  let cd =
+    Ctx.find_overloaded_opt Ctx.find_consdef_opt cursor var_inst args ctx
+  in
+  let ct = Option.map (fun cd -> specialize_consdef cd targs) cd in
+  if Option.is_none ct then (
+    Format.eprintf "(type_instantiation) %a is not an instance type\n"
+      El.Pp.pp_typ typ_inst;
+    assert false);
+  let cparams, typ = Option.get ct in
+  (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
+  (* Check if the arguments match the parameters *)
+  check_instantiation_arity var_inst cparams args;
+  check_named_args args;
+  let cparams, exprs_arg = align_cparams_with_args cparams args in
+  List.iter2
+    (fun cparam expr_arg ->
+      let _id_cparam, _dir_cparam, typ_cparam, _value_default = cparam in
+      match expr_arg with
+      | Some expr_arg ->
+          let typ_arg = type_expr cursor ctx expr_arg in
+          (* (TODO) Consider direction of parameters/arguments *)
+          (* (TODO) Check subtype instead of stric type equality,
+             and insert implicit cast to argument if possible *)
+          if typ_cparam <> typ_arg then (
+            Format.eprintf
+              "(type_instantiation) Argument %a is not of type %a\n"
+              (El.Pp.pp_expr ~level:0) expr_arg Type.pp typ_cparam;
+            assert false)
+      | None ->
+          Format.eprintf
+            "(type_instantiation) Don't care argument is unallowed as a \
+             constructor argument\n";
+          assert false)
+    cparams exprs_arg;
+  typ
+
+and type_instantiation_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (typ_inst : El.Ast.typ) (args : El.Ast.arg list) : Type.t =
+  type_instantiation cursor ctx typ_inst args
 
 (* Statement typing *)
 
@@ -2486,9 +2616,8 @@ and type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : El.Ast.decl) =
       type_const_decl cursor ctx id typ value
   | VarD { id; typ; init; annos = _annos } ->
       type_var_decl cursor ctx id typ init
-  | InstD _ ->
-      Format.eprintf "(type_decl) %a\n" (El.Pp.pp_decl ~level:0) decl;
-      ctx
+  | InstD { id; typ; args; init; annos = _annos } ->
+      type_instantiation_decl cursor ctx id typ args init
   (* Derived type declarations *)
   | ErrD { members } -> type_error_decl cursor ctx members
   | MatchKindD { members } -> type_match_kind_decl cursor ctx members
@@ -2658,6 +2787,14 @@ and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   | _ -> ());
   Ctx.add_type cursor id.it typ_target ctx
 
+(* (8.21) Constructor invocations *)
+
+and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
+    (typ : El.Ast.typ) (args : El.Ast.arg list) (_init : El.Ast.block option) :
+    Ctx.t =
+  let typ = type_instantiation cursor ctx typ args in
+  Ctx.add_type cursor id.it typ ctx
+
 (* (7.1.2) The error type
 
    All error constants are inserted into the error namespace, irrespective of the place where an error is defined.
@@ -2665,7 +2802,7 @@ and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    which the compiler will merge together. It is an error to declare the same identifier multiple times. *)
 
 and type_error_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (members : El.Ast.member list) =
+    (members : El.Ast.member list) : Ctx.t =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_error_decl) Error declarations must be global\n";
     assert false);

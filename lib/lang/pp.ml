@@ -11,12 +11,12 @@ let pp_list pp_elem sep fmt l =
 
 let pp_option pp_elem fmt = function Some x -> pp_elem fmt x | None -> ()
 
-let pp_pairs ?(trailing = false) ?(level = 0) pp_k pp_cvalue sep fmt pairs =
+let pp_pairs ?(trailing = false) ?(level = 0) pp_k pp_svalue sep fmt pairs =
   F.fprintf fmt "%a"
     (Format.pp_print_list
        ~pp_sep:(fun fmt () -> F.fprintf fmt sep)
        (fun fmt (k, v) ->
-         F.fprintf fmt "%s%a = %a" (indent level) pp_k k pp_cvalue v))
+         F.fprintf fmt "%s%a = %a" (indent level) pp_k k pp_svalue v))
     pairs;
   if trailing then F.fprintf fmt sep
 
@@ -147,30 +147,30 @@ and pp_tparams fmt tparams =
 
 (* Parameters *)
 
-and pp_param' pp_typ pp_cvalue pp_dir fmt param' =
+and pp_param' pp_typ pp_svalue pp_dir fmt param' =
   let id, dir, typ, value_default, _annos = param' in
   match value_default with
   | Some value_default ->
-      F.fprintf fmt "%a %a %a = %a" pp_dir dir pp_typ typ pp_id id pp_cvalue
+      F.fprintf fmt "%a %a %a = %a" pp_dir dir pp_typ typ pp_id id pp_svalue
         value_default
   | None -> F.fprintf fmt "%a %a %a" pp_dir dir pp_typ typ pp_id id
 
-and pp_param pp_typ pp_cvalue pp_dir fmt param =
-  pp_param' pp_typ pp_cvalue pp_dir fmt param.it
+and pp_param pp_typ pp_svalue pp_dir fmt param =
+  pp_param' pp_typ pp_svalue pp_dir fmt param.it
 
-and pp_params pp_typ pp_cvalue pp_dir fmt params =
-  F.fprintf fmt "(%a)" (pp_list (pp_param pp_typ pp_cvalue pp_dir) ", ") params
+and pp_params pp_typ pp_svalue pp_dir fmt params =
+  F.fprintf fmt "(%a)" (pp_list (pp_param pp_typ pp_svalue pp_dir) ", ") params
 
 (* Constructor parameters *)
 
-and pp_cparam' pp_typ pp_cvalue pp_dir fmt cparam' =
-  pp_param' pp_typ pp_cvalue pp_dir fmt cparam'
+and pp_cparam' pp_typ pp_svalue pp_dir fmt cparam' =
+  pp_param' pp_typ pp_svalue pp_dir fmt cparam'
 
-and pp_cparam pp_typ pp_cvalue pp_dir fmt cparam =
-  pp_param pp_typ pp_cvalue pp_dir fmt cparam
+and pp_cparam pp_typ pp_svalue pp_dir fmt cparam =
+  pp_param pp_typ pp_svalue pp_dir fmt cparam
 
-and pp_cparams pp_typ pp_cvalue pp_dir fmt cparams =
-  pp_params pp_typ pp_cvalue pp_dir fmt cparams
+and pp_cparams pp_typ pp_svalue pp_dir fmt cparams =
+  pp_params pp_typ pp_svalue pp_dir fmt cparams
 
 (* Type arguments *)
 
@@ -280,7 +280,7 @@ and pp_select_cases ?(level = 0) pp_typ fmt select_cases =
 
 (* Statements *)
 
-let rec pp_stmt' ?(level = 0) pp_typ pp_cvalue pp_dir fmt stmt' =
+let rec pp_stmt' ?(level = 0) pp_typ pp_svalue pp_dir fmt stmt' =
   match stmt' with
   | EmptyS -> F.fprintf fmt "%s;" (indent level)
   | AssignS (expr_lhs, expr_rhs) ->
@@ -289,23 +289,23 @@ let rec pp_stmt' ?(level = 0) pp_typ pp_cvalue pp_dir fmt stmt' =
   | SwitchS (expr_switch, switch_cases) ->
       F.fprintf fmt "%sswitch (%a) {\n%a\n%s}" (indent level)
         (pp_expr ~level:0 pp_typ) expr_switch
-        (pp_switch_cases ~level:(level + 1) pp_typ pp_cvalue pp_dir)
+        (pp_switch_cases ~level:(level + 1) pp_typ pp_svalue pp_dir)
         switch_cases (indent level)
   | IfS (expr_cond, stmt_then, stmt_else) -> (
       match stmt_else.it with
       | EmptyS ->
           F.fprintf fmt "%sif (%a)\n%a" (indent level) (pp_expr ~level:0 pp_typ)
             expr_cond
-            (pp_stmt ~level pp_typ pp_cvalue pp_dir)
+            (pp_stmt ~level pp_typ pp_svalue pp_dir)
             stmt_then
       | _ ->
           F.fprintf fmt "%sif (%a)\n%a\n%selse\n%a" (indent level)
             (pp_expr ~level:0 pp_typ) expr_cond
-            (pp_stmt ~level pp_typ pp_cvalue pp_dir)
+            (pp_stmt ~level pp_typ pp_svalue pp_dir)
             stmt_then (indent level)
-            (pp_stmt ~level pp_typ pp_cvalue pp_dir)
+            (pp_stmt ~level pp_typ pp_svalue pp_dir)
             stmt_else)
-  | BlockS block -> pp_block ~level pp_typ pp_cvalue pp_dir fmt block
+  | BlockS block -> pp_block ~level pp_typ pp_svalue pp_dir fmt block
   | ExitS -> F.fprintf fmt "%sexit;" (indent level)
   | RetS expr_ret -> (
       match expr_ret with
@@ -320,24 +320,24 @@ let rec pp_stmt' ?(level = 0) pp_typ pp_cvalue pp_dir fmt stmt' =
       F.fprintf fmt "%stransition %a;" (indent level)
         (pp_expr ~level:(level + 1) pp_typ)
         expr
-  | DeclS decl -> pp_decl ~level pp_typ pp_cvalue pp_dir fmt decl
+  | DeclS decl -> pp_decl ~level pp_typ pp_svalue pp_dir fmt decl
 
-and pp_stmt ?(level = 0) pp_typ pp_cvalue pp_dir fmt stmt =
-  pp_stmt' ~level pp_typ pp_cvalue pp_dir fmt stmt.it
+and pp_stmt ?(level = 0) pp_typ pp_svalue pp_dir fmt stmt =
+  pp_stmt' ~level pp_typ pp_svalue pp_dir fmt stmt.it
 
-and pp_stmts ?(level = 0) pp_typ pp_cvalue pp_dir fmt stmts =
-  pp_list (pp_stmt ~level:(level + 1) pp_typ pp_cvalue pp_dir) "\n" fmt stmts
+and pp_stmts ?(level = 0) pp_typ pp_svalue pp_dir fmt stmts =
+  pp_list (pp_stmt ~level:(level + 1) pp_typ pp_svalue pp_dir) "\n" fmt stmts
 
 (* Blocks (sequence of statements) *)
 
-and pp_block' ?(level = 0) pp_typ pp_cvalue pp_dir fmt block' =
+and pp_block' ?(level = 0) pp_typ pp_svalue pp_dir fmt block' =
   let stmts, _anno = block' in
   F.fprintf fmt "%s{\n%a\n%s}" (indent level)
-    (pp_list (pp_stmt ~level:(level + 1) pp_typ pp_cvalue pp_dir) "\n")
+    (pp_list (pp_stmt ~level:(level + 1) pp_typ pp_svalue pp_dir) "\n")
     stmts (indent level)
 
-and pp_block ?(level = 0) pp_typ pp_cvalue pp_dir fmt block =
-  pp_block' ~level pp_typ pp_cvalue pp_dir fmt block.it
+and pp_block ?(level = 0) pp_typ pp_svalue pp_dir fmt block =
+  pp_block' ~level pp_typ pp_svalue pp_dir fmt block.it
 
 (* Match-cases for switch *)
 
@@ -348,30 +348,30 @@ and pp_switch_label' fmt switch_label' =
 
 and pp_switch_label fmt switch_label = pp_switch_label' fmt switch_label.it
 
-and pp_switch_case' ?(level = 0) pp_typ pp_cvalue pp_dir fmt switch_case' =
+and pp_switch_case' ?(level = 0) pp_typ pp_svalue pp_dir fmt switch_case' =
   match switch_case' with
   | MatchC (switch_label, block) ->
       F.fprintf fmt "%s%a:\n%a" (indent level) pp_switch_label switch_label
-        (pp_block ~level:(level + 1) pp_typ pp_cvalue pp_dir)
+        (pp_block ~level:(level + 1) pp_typ pp_svalue pp_dir)
         block
   | FallC switch_label ->
       F.fprintf fmt "%s%a;" (indent level) pp_switch_label switch_label
 
-and pp_switch_case ?(level = 0) pp_typ pp_cvalue pp_dir fmt switch_case =
-  pp_switch_case' ~level pp_typ pp_cvalue pp_dir fmt switch_case.it
+and pp_switch_case ?(level = 0) pp_typ pp_svalue pp_dir fmt switch_case =
+  pp_switch_case' ~level pp_typ pp_svalue pp_dir fmt switch_case.it
 
-and pp_switch_cases ?(level = 0) pp_typ pp_cvalue pp_dir fmt switch_cases =
+and pp_switch_cases ?(level = 0) pp_typ pp_svalue pp_dir fmt switch_cases =
   pp_list
-    (pp_switch_case ~level:(level + 1) pp_typ pp_cvalue pp_dir)
+    (pp_switch_case ~level:(level + 1) pp_typ pp_svalue pp_dir)
     "\n" fmt switch_cases
 
 (* Declarations *)
 
-and pp_decl' ?(level = 0) pp_typ pp_cvalue pp_dir fmt decl' =
+and pp_decl' ?(level = 0) pp_typ pp_svalue pp_dir fmt decl' =
   match decl' with
   | ConstD { id; typ; value; annos = _annos } ->
       F.fprintf fmt "%sconst %a %a = %a;" (indent level) pp_typ typ pp_id id
-        pp_cvalue value
+        pp_svalue value
   | VarD { id; typ; init; annos = _annos } -> (
       match init with
       | Some expr_init ->
@@ -383,7 +383,7 @@ and pp_decl' ?(level = 0) pp_typ pp_cvalue pp_dir fmt decl' =
       | Some block_init ->
           F.fprintf fmt "%s%a%a %a = %a;" (indent level) pp_typ typ
             (pp_args pp_typ) args pp_id id
-            (pp_block ~level:(level + 1) pp_typ pp_cvalue pp_dir)
+            (pp_block ~level:(level + 1) pp_typ pp_svalue pp_dir)
             block_init
       | None ->
           F.fprintf fmt "%s%a%a %a;" (indent level) pp_typ typ (pp_args pp_typ)
@@ -417,7 +417,7 @@ and pp_decl' ?(level = 0) pp_typ pp_cvalue pp_dir fmt decl' =
         members (indent level)
   | SEnumD { id; typ; fields; annos = _annos } ->
       F.fprintf fmt "%senum %a %a {\n%a\n%s}" (indent level) pp_typ typ pp_id id
-        (pp_pairs pp_id (pp_expr ~level:0 pp_typ) ";\n")
+        (pp_pairs pp_id pp_svalue ";\n")
         fields (indent level)
   | NewTypeD { id; typdef; annos = _annos } -> (
       match typdef with
@@ -425,7 +425,7 @@ and pp_decl' ?(level = 0) pp_typ pp_cvalue pp_dir fmt decl' =
           F.fprintf fmt "%stype %a %a;" (indent level) pp_typ typ pp_id id
       | Right decl ->
           F.fprintf fmt "%stype %a %a;" (indent level)
-            (pp_decl ~level:(level + 1) pp_typ pp_cvalue pp_dir)
+            (pp_decl ~level:(level + 1) pp_typ pp_svalue pp_dir)
             decl pp_id id)
   | TypeDefD { id; typdef; annos = _annos } -> (
       match typdef with
@@ -433,7 +433,7 @@ and pp_decl' ?(level = 0) pp_typ pp_cvalue pp_dir fmt decl' =
           F.fprintf fmt "%stypedef %a %a;" (indent level) pp_typ typ pp_id id
       | Right decl ->
           F.fprintf fmt "%stypedef %a %a;" (indent level)
-            (pp_decl ~level:(level + 1) pp_typ pp_cvalue pp_dir)
+            (pp_decl ~level:(level + 1) pp_typ pp_svalue pp_dir)
             decl pp_id id)
   | ValueSetD { id; typ; size; annos = _annos } ->
       F.fprintf fmt "%svalue_set<%a>(%a) %a;" (indent level) pp_typ typ
@@ -441,24 +441,24 @@ and pp_decl' ?(level = 0) pp_typ pp_cvalue pp_dir fmt decl' =
   | ParserTypeD { id; tparams; params; annos = _annos } ->
       F.fprintf fmt "%sparser %a%a%a;" (indent level) pp_id id pp_tparams
         tparams
-        (pp_params pp_typ pp_cvalue pp_dir)
+        (pp_params pp_typ pp_svalue pp_dir)
         params
   | ParserD { id; tparams; params; cparams; locals; states; annos = _annos } ->
       F.fprintf fmt "%sparser %a%a%a%a {\n%a\n%a\n%s}" (indent level) pp_id id
         pp_tparams tparams
-        (pp_params pp_typ pp_cvalue pp_dir)
+        (pp_params pp_typ pp_svalue pp_dir)
         params
-        (pp_cparams pp_typ pp_cvalue pp_dir)
+        (pp_cparams pp_typ pp_svalue pp_dir)
         cparams
-        (pp_decls ~level:(level + 1) pp_typ pp_cvalue pp_dir)
+        (pp_decls ~level:(level + 1) pp_typ pp_svalue pp_dir)
         locals
-        (pp_parser_states ~level:(level + 1) pp_typ pp_cvalue pp_dir)
+        (pp_parser_states ~level:(level + 1) pp_typ pp_svalue pp_dir)
         states (indent level)
   | ActionD { id; params; body; annos = _annos } ->
       F.fprintf fmt "%saction %a%a\n%a" (indent level) pp_id id
-        (pp_params pp_typ pp_cvalue pp_dir)
+        (pp_params pp_typ pp_svalue pp_dir)
         params
-        (pp_block ~level pp_typ pp_cvalue pp_dir)
+        (pp_block ~level pp_typ pp_svalue pp_dir)
         body
   | TableD { id; table; annos = _annos } ->
       F.fprintf fmt "%stable %a %a" (indent level) pp_id id
@@ -466,77 +466,77 @@ and pp_decl' ?(level = 0) pp_typ pp_cvalue pp_dir fmt decl' =
   | ControlTypeD { id; tparams; params; annos = _annos } ->
       F.fprintf fmt "%scontrol %a%a%a;" (indent level) pp_id id pp_tparams
         tparams
-        (pp_params pp_typ pp_cvalue pp_dir)
+        (pp_params pp_typ pp_svalue pp_dir)
         params
   | ControlD { id; tparams; params; cparams; locals; body; annos = _annos } ->
       F.fprintf fmt "%scontrol %a%a%a%a {\n%a\n%sapply\n%a\n%s}" (indent level)
         pp_id id pp_tparams tparams
-        (pp_params pp_typ pp_cvalue pp_dir)
+        (pp_params pp_typ pp_svalue pp_dir)
         params
-        (pp_cparams pp_typ pp_cvalue pp_dir)
+        (pp_cparams pp_typ pp_svalue pp_dir)
         cparams
-        (pp_decls ~level:(level + 1) pp_typ pp_cvalue pp_dir)
+        (pp_decls ~level:(level + 1) pp_typ pp_svalue pp_dir)
         locals
         (indent (level + 1))
-        (pp_block ~level:(level + 1) pp_typ pp_cvalue pp_dir)
+        (pp_block ~level:(level + 1) pp_typ pp_svalue pp_dir)
         body (indent level)
   | FuncD { id; typ_ret; tparams; params; body } ->
       F.fprintf fmt "%s%a %a%a%a\n%a" (indent level) pp_typ typ_ret pp_id id
         pp_tparams tparams
-        (pp_params pp_typ pp_cvalue pp_dir)
+        (pp_params pp_typ pp_svalue pp_dir)
         params
-        (pp_block ~level pp_typ pp_cvalue pp_dir)
+        (pp_block ~level pp_typ pp_svalue pp_dir)
         body
   | ExternFuncD { id; typ_ret; tparams; params; annos = _annos } ->
       F.fprintf fmt "%sextern %a %a%a%a;" (indent level) pp_typ typ_ret pp_id id
         pp_tparams tparams
-        (pp_params pp_typ pp_cvalue pp_dir)
+        (pp_params pp_typ pp_svalue pp_dir)
         params
   | ExternConstructorD { id; cparams; annos = _annos } ->
       F.fprintf fmt "%s%a%a;" (indent level) pp_id id
-        (pp_params pp_typ pp_cvalue pp_dir)
+        (pp_params pp_typ pp_svalue pp_dir)
         cparams
   | ExternAbstractMethodD { id; typ_ret; tparams; params; annos = _annos } ->
       F.fprintf fmt "%sabstract %a %a%a%a;" (indent level) pp_typ typ_ret pp_id
         id pp_tparams tparams
-        (pp_params pp_typ pp_cvalue pp_dir)
+        (pp_params pp_typ pp_svalue pp_dir)
         params
   | ExternMethodD { id; typ_ret; tparams; params; annos = _annos } ->
       F.fprintf fmt "%s%a %a%a%a;" (indent level) pp_typ typ_ret pp_id id
         pp_tparams tparams
-        (pp_params pp_typ pp_cvalue pp_dir)
+        (pp_params pp_typ pp_svalue pp_dir)
         params
   | ExternObjectD { id; tparams; mthds; annos = _annos } ->
       F.fprintf fmt "%sextern %a%a {\n%a\n%s}" (indent level) pp_id id
         pp_tparams tparams
-        (pp_decls ~level:(level + 1) pp_typ pp_cvalue pp_dir)
+        (pp_decls ~level:(level + 1) pp_typ pp_svalue pp_dir)
         mthds (indent level)
   | PackageTypeD { id; tparams; cparams; annos = _annos } ->
       F.fprintf fmt "%spackage %a%a%a;" (indent level) pp_id id pp_tparams
         tparams
-        (pp_cparams pp_typ pp_cvalue pp_dir)
+        (pp_cparams pp_typ pp_svalue pp_dir)
         cparams
 
-and pp_decl ?(level = 0) pp_typ pp_cvalue pp_dir fmt decl =
-  pp_decl' ~level pp_typ pp_cvalue pp_dir fmt decl.it
+and pp_decl ?(level = 0) pp_typ pp_svalue pp_dir fmt decl =
+  pp_decl' ~level pp_typ pp_svalue pp_dir fmt decl.it
 
-and pp_decls ?(level = 0) pp_typ pp_cvalue pp_dir fmt decls =
-  pp_list (pp_decl ~level:(level + 1) pp_typ pp_cvalue pp_dir) "\n" fmt decls
+and pp_decls ?(level = 0) pp_typ pp_svalue pp_dir fmt decls =
+  pp_list (pp_decl ~level:(level + 1) pp_typ pp_svalue pp_dir) "\n" fmt decls
 
 (* Parser states *)
 
-and pp_parser_state' ?(level = 0) pp_typ pp_cvalue pp_dir fmt parser_state' =
+and pp_parser_state' ?(level = 0) pp_typ pp_svalue pp_dir fmt parser_state' =
   let label, block, _annos = parser_state' in
   F.fprintf fmt "%sstate %s\n%a" (indent level) label.it
-    (pp_block ~level:(level + 1) pp_typ pp_cvalue pp_dir)
+    (pp_block ~level:(level + 1) pp_typ pp_svalue pp_dir)
     block
 
-and pp_parser_state ?(level = 0) pp_typ pp_cvalue pp_dir fmt parser_state =
-  pp_parser_state' ~level pp_typ pp_cvalue pp_dir fmt parser_state.it
+and pp_parser_state ?(level = 0) pp_typ pp_svalue pp_dir fmt parser_state =
+  pp_parser_state' ~level pp_typ pp_svalue pp_dir fmt parser_state.it
 
-and pp_parser_states ?(level = 0) pp_typ pp_cvalue pp_dir fmt parser_states =
+and pp_parser_states ?(level = 0) pp_typ pp_svalue pp_dir fmt parser_states =
   pp_list
-    (pp_parser_state ~level:(level + 1) pp_typ pp_cvalue pp_dir)
+    (pp_parser_state ~level:(level + 1) pp_typ pp_svalue pp_dir)
     "\n" fmt parser_states
 
 (* Tables *)
@@ -653,5 +653,5 @@ and pp_table_customs ?(level = 0) pp_typ fmt table_customs =
 
 (* Program *)
 
-let pp_program pp_typ pp_cvalue pp_dir fmt program =
-  pp_decls pp_typ pp_cvalue pp_dir fmt program
+let pp_program pp_typ pp_svalue pp_dir fmt program =
+  pp_decls pp_typ pp_svalue pp_dir fmt program

@@ -84,8 +84,8 @@ and pp_typs fmt typs = P.pp_typs pp_typ fmt typs
 
 (* Compile-time known values *)
 
-and pp_cvalue' fmt cvalue' = pp_expr' ~level:0 fmt cvalue'
-and pp_cvalue fmt cvalue = pp_cvalue' fmt cvalue.it
+and pp_svalue' fmt svalue' = pp_expr' ~level:0 fmt svalue'
+and pp_svalue fmt svalue = pp_svalue' fmt svalue.it
 
 (* Annotations *)
 
@@ -100,15 +100,15 @@ and pp_tparams fmt tparams = P.pp_tparams fmt tparams
 
 (* Parameters *)
 
-and pp_param' fmt param' = P.pp_param' pp_typ pp_cvalue pp_dir fmt param'
-and pp_param fmt param = P.pp_param pp_typ pp_cvalue pp_dir fmt param
-and pp_params fmt params = P.pp_params pp_typ pp_cvalue pp_dir fmt params
+and pp_param' fmt param' = P.pp_param' pp_typ pp_svalue pp_dir fmt param'
+and pp_param fmt param = P.pp_param pp_typ pp_svalue pp_dir fmt param
+and pp_params fmt params = P.pp_params pp_typ pp_svalue pp_dir fmt params
 
 (* Constructor parameters *)
 
-and pp_cparam' fmt cparam' = P.pp_cparam' pp_typ pp_cvalue pp_dir fmt cparam'
-and pp_cparam fmt cparam = P.pp_cparam pp_typ pp_cvalue pp_dir fmt cparam
-and pp_cparams fmt cparams = P.pp_cparams pp_typ pp_cvalue pp_dir fmt cparams
+and pp_cparam' fmt cparam' = P.pp_cparam' pp_typ pp_svalue pp_dir fmt cparam'
+and pp_cparam fmt cparam = P.pp_cparam pp_typ pp_svalue pp_dir fmt cparam
+and pp_cparams fmt cparams = P.pp_cparams pp_typ pp_svalue pp_dir fmt cparams
 
 (* Type arguments *)
 
@@ -148,21 +148,21 @@ and pp_select_cases ?(level = 0) fmt select_cases =
 (* Statements *)
 
 and pp_stmt' ?(level = 0) fmt stmt' =
-  P.pp_stmt' ~level pp_typ pp_cvalue pp_dir fmt stmt'
+  P.pp_stmt' ~level pp_typ pp_svalue pp_dir fmt stmt'
 
 and pp_stmt ?(level = 0) fmt stmt =
-  P.pp_stmt ~level pp_typ pp_cvalue pp_dir fmt stmt
+  P.pp_stmt ~level pp_typ pp_svalue pp_dir fmt stmt
 
 and pp_stmts ?(level = 0) fmt stmts =
-  P.pp_stmts ~level pp_typ pp_cvalue pp_dir fmt stmts
+  P.pp_stmts ~level pp_typ pp_svalue pp_dir fmt stmts
 
 (* Blocks (sequence of statements) *)
 
 and pp_block' ?(level = 0) fmt block' =
-  P.pp_block' ~level pp_typ pp_cvalue pp_dir fmt block'
+  P.pp_block' ~level pp_typ pp_svalue pp_dir fmt block'
 
 and pp_block ?(level = 0) fmt block =
-  P.pp_block ~level pp_typ pp_cvalue pp_dir fmt block
+  P.pp_block ~level pp_typ pp_svalue pp_dir fmt block
 
 (* Match-cases for switch *)
 
@@ -170,35 +170,35 @@ and pp_switch_label' fmt switch_label' = P.pp_switch_label' fmt switch_label'
 and pp_switch_label fmt switch_label = P.pp_switch_label fmt switch_label
 
 and pp_switch_case' ?(level = 0) fmt switch_case' =
-  P.pp_switch_case' ~level pp_typ pp_cvalue pp_dir fmt switch_case'
+  P.pp_switch_case' ~level pp_typ pp_svalue pp_dir fmt switch_case'
 
 and pp_switch_case ?(level = 0) fmt switch_case =
-  P.pp_switch_case ~level pp_typ pp_cvalue pp_dir fmt switch_case
+  P.pp_switch_case ~level pp_typ pp_svalue pp_dir fmt switch_case
 
 and pp_switch_cases ?(level = 0) fmt switch_cases =
-  P.pp_switch_cases ~level pp_typ pp_cvalue pp_dir fmt switch_cases
+  P.pp_switch_cases ~level pp_typ pp_svalue pp_dir fmt switch_cases
 
 (* Declarations *)
 
 and pp_decl' ?(level = 0) fmt decl' =
-  P.pp_decl' ~level pp_typ pp_cvalue pp_dir fmt decl'
+  P.pp_decl' ~level pp_typ pp_svalue pp_dir fmt decl'
 
 and pp_decl ?(level = 0) fmt decl =
-  P.pp_decl ~level pp_typ pp_cvalue pp_dir fmt decl
+  P.pp_decl ~level pp_typ pp_svalue pp_dir fmt decl
 
 and pp_decls ?(level = 0) fmt decls =
-  P.pp_decls ~level pp_typ pp_cvalue pp_dir fmt decls
+  P.pp_decls ~level pp_typ pp_svalue pp_dir fmt decls
 
 (* Parser states *)
 
 and pp_parser_state' ?(level = 0) fmt parser_state' =
-  P.pp_parser_state' ~level pp_typ pp_cvalue pp_dir fmt parser_state'
+  P.pp_parser_state' ~level pp_typ pp_svalue pp_dir fmt parser_state'
 
 and pp_parser_state ?(level = 0) fmt parser_state =
-  P.pp_parser_state ~level pp_typ pp_cvalue pp_dir fmt parser_state
+  P.pp_parser_state ~level pp_typ pp_svalue pp_dir fmt parser_state
 
 and pp_parser_states ?(level = 0) fmt parser_states =
-  P.pp_parser_states ~level pp_typ pp_cvalue pp_dir fmt parser_states
+  P.pp_parser_states ~level pp_typ pp_svalue pp_dir fmt parser_states
 
 (* Tables *)
 
@@ -258,4 +258,4 @@ and pp_table_customs ?(level = 0) fmt table_customs =
 
 (* Program *)
 
-let pp_program fmt program = P.pp_program pp_typ pp_cvalue pp_dir fmt program
+let pp_program fmt program = P.pp_program pp_typ pp_svalue pp_dir fmt program

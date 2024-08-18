@@ -51,8 +51,8 @@ type typ = typ' phrase
 and typ' = Runtime.Types.Type.t
 
 (* Values *)
-type value = value' phrase
-and value' = Runtime.Value.t
+type svalue = svalue' phrase
+and svalue' = Runtime.Value.t
 
 (* Annotations *)
 and anno = typ L.anno
@@ -63,12 +63,12 @@ and tparam = L.tparam
 and tparam' = L.tparam'
 
 (* Parameters *)
-and param = (typ, value, dir) L.param
-and param' = (typ, value, dir) L.param'
+and param = (typ, svalue, dir) L.param
+and param' = (typ, svalue, dir) L.param'
 
 (* Constructor parameters *)
-and cparam = (typ, value, dir) L.cparam
-and cparam' = (typ, value, dir) L.cparam'
+and cparam = (typ, svalue, dir) L.cparam
+and cparam' = (typ, svalue, dir) L.cparam'
 
 (* Type arguments *)
 and targ = typ
@@ -91,26 +91,26 @@ and select_case = typ L.select_case
 and select_case' = typ L.select_case'
 
 (* Statements *)
-and stmt = (typ, value, dir) L.stmt
-and stmt' = (typ, value, dir) L.stmt'
+and stmt = (typ, svalue, dir) L.stmt
+and stmt' = (typ, svalue, dir) L.stmt'
 
 (* Blocks (sequence of statements) *)
-and block = (typ, value, dir) L.block
-and block' = (typ, value, dir) L.block'
+and block = (typ, svalue, dir) L.block
+and block' = (typ, svalue, dir) L.block'
 
 (* Match-cases for switch *)
 and switch_label = L.switch_label
 and switch_label' = L.switch_label'
-and switch_case = (typ, value, dir) L.switch_case
-and switch_case' = (typ, value, dir) L.switch_case'
+and switch_case = (typ, svalue, dir) L.switch_case
+and switch_case' = (typ, svalue, dir) L.switch_case'
 
 (* Declarations *)
-and decl = (typ, value, dir) L.decl
-and decl' = (typ, value, dir) L.decl'
+and decl = (typ, svalue, dir) L.decl
+and decl' = (typ, svalue, dir) L.decl'
 
 (* Parser state machine *)
-and parser_state = (typ, value, dir) L.parser_state
-and parser_state' = (typ, value, dir) L.parser_state'
+and parser_state = (typ, svalue, dir) L.parser_state
+and parser_state' = (typ, svalue, dir) L.parser_state'
 
 (* Table *)
 and table = typ L.table
@@ -138,4 +138,4 @@ and table_custom' = typ L.table_custom'
 and table_custom_const = L.table_custom_const
 
 (* Program *)
-type program = (typ, value, dir) L.program
+type program = (typ, svalue, dir) L.program

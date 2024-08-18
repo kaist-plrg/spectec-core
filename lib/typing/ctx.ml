@@ -262,6 +262,12 @@ let rec find_funcdef_opt cursor (fid, args) ctx =
 let find_funcdef cursor (fid, args) ctx =
   find_funcdef_opt cursor (fid, args) ctx |> Option.get
 
+let find_consdef_opt _cursor (cid, args) ctx =
+  Envs.CDEnv.find_opt (cid, args) ctx.global.cdenv
+
+let find_consdef cursor (cid, args) ctx =
+  find_consdef_opt cursor (cid, args) ctx |> Option.get
+
 let rec find_value_opt cursor id ctx =
   match cursor with
   | Global ->
