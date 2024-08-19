@@ -8,7 +8,7 @@ open Util.Source
    Warning: this will loop forever if there is a cycle in the type references. *)
 let rec saturate_type (ctx : Ctx.t) (typ : Type.t) : Type.t =
   match typ with
-  | VoidT | BoolT | AIntT | IntT _ | BitT _ | VBitT _ | StrT | ErrT | MatchKindT
+  | VoidT | BoolT | FIntT _ | IntT | FBitT _ | VBitT _ | StrT | ErrT | MatchKindT
     ->
       typ
   | NameT id -> Ctx.find_td id ctx |> saturate_type ctx
@@ -19,6 +19,7 @@ let rec saturate_type (ctx : Ctx.t) (typ : Type.t) : Type.t =
       let members, typs = List.split fields in
       let typs = List.map (saturate_type ctx) typs in
       StructT (List.combine members typs)
+  | GenericT _f -> typ
   | HeaderT fields ->
       let members, typs = List.split fields in
       let typs = List.map (saturate_type ctx) typs in
@@ -39,9 +40,9 @@ let rec static_eval_type (ctx : Ctx.t) (typ : typ) : Type.t =
   | BoolT -> Type.BoolT
   | ErrT -> failwith "(TODO: static_eval_type) Handle error type"
   | StrT -> Type.StrT
-  | AIntT -> Type.AIntT
-  | IntT _expr -> failwith "(TODO: static_eval_type) Handle int type"
-  | BitT _expr -> failwith "(TODO: static_eval_type) Handle bit type"
+  | IntT -> Type.IntT
+  | FIntT _expr -> failwith "(TODO: static_eval_type) Handle int type"
+  | FBitT _expr -> failwith "(TODO: static_eval_type) Handle bit type"
   | VBitT _expr -> failwith "(TODO: static_eval_type) Handle vbit type"
   | NameT _var -> failwith "(TODO: static_eval_type) Handle named type"
   | SpecT (_var, _typs) -> failwith "(TODO: static_eval_type) Handle spec type"
@@ -92,23 +93,23 @@ and static_eval_expr (ctx : Ctx.t) (expr : expr) : Value.t option =
   | CallE (expr_func, targs, args) -> static_eval_call ctx expr_func targs args
   | _ ->
       Format.eprintf "(static_eval_expr) %a is not compile-time known"
-        Syntax.Pp.pp_expr expr;
+        (Syntax.Pp.pp_expr ~level:0) expr;
       assert false
 
 and static_eval_bool (b : bool) : Value.t option = Some (BoolV b)
-and static_eval_str (s : string) : Value.t option = Some (StrV s)
+and static_eval_str (t : text) : Value.t option = Some (StrV t.it)
 
 and static_eval_num (value : Bigint.t) (encoding : (Bigint.t * bool) option) :
     Value.t option =
   match encoding with
   | Some (width, signed) ->
-      if signed then Some (IntV (width, value)) else Some (BitV (width, value))
-  | None -> Some (AIntV value)
+      if signed then Some (FIntV (width, value)) else Some (FBitV (width, value))
+  | None -> Some (IntV value)
 
 and static_eval_var (ctx : Ctx.t) (var : var) : Value.t option =
   match var.it with
   | Top id -> Ctx.find_const_glob_opt id.it ctx
-  | Bare id -> Ctx.find_const_opt id.it ctx
+  | Current id -> Ctx.find_const_opt id.it ctx
 
 and static_eval_list (ctx : Ctx.t) (exprs : expr list) : Value.t option =
   let values = static_eval_exprs ctx exprs in
@@ -164,7 +165,7 @@ and static_eval_type_acc (ctx : Ctx.t) (var : var) (member : member) :
   let typ =
     match var.it with
     | Top id -> Ctx.find_td_glob id.it ctx
-    | Bare id -> Ctx.find_td id.it ctx
+    | Current id -> Ctx.find_td id.it ctx
   in
   match typ with
   | EnumT (id, members) when List.mem member.it members ->
@@ -188,7 +189,7 @@ and static_eval_expr_acc (ctx : Ctx.t) (expr_base : expr) (member : member) :
       match value_base with
       | StructV fields when List.mem_assoc member.it fields ->
           Some (List.assoc member.it fields)
-      | StackV (_, _, size) when member.it = "size" -> Some (AIntV size)
+      | StackV (_, _, size) when member.it = "size" -> Some (IntV size)
       | _ -> None)
   | _ -> None
 
@@ -233,7 +234,7 @@ let type_constant_decl_glob (ctx : Ctx.t) (id : id) (typ : typ) (value : expr) :
       ctx
   | None ->
       Format.eprintf "(type_constant_decl) %a is not a compile-time known value"
-        Syntax.Pp.pp_expr value;
+        (Syntax.Pp.pp_expr ~level:0) value;
       assert false
 
 (* (7.1.2)
@@ -253,7 +254,7 @@ let type_error_decl_glob (ctx : Ctx.t) (members : member list) : Ctx.t =
           ctx
       | Some _ ->
           Format.eprintf "(type_error_decl_glob) Error %a was already defined\n"
-            Syntax.Pp.pp_member member;
+            (Syntax.Pp.pp_member ~level:0) member;
           assert false)
     ctx members
 
@@ -281,25 +282,25 @@ let type_match_kind_decl_glob (ctx : Ctx.t) (members : member list) : Ctx.t =
       | Some _ ->
           Format.eprintf
             "(type_match_kind_decl_glob) Match kind %a was already defined\n"
-            Syntax.Pp.pp_member member;
+            (Syntax.Pp.pp_member ~level:0) member;
           assert false)
     ctx members
 
 (* (7.2.5)
    This declaration introduces a new type with the specified name in the current scope.
    Field names have to be distinct. An empty struct (with no fields) is legal. *)
-let type_struct_decl_glob (_ctx : Ctx.t) (_id : id)
-    (_fields : (member * typ) list) : Ctx.t =
+let type_struct_decl_glob (_ctx : Ctx.t) (_id : id) (_tparams : tparam list)
+    (_fields : (member * typ * anno list) list) : Ctx.t =
   failwith "(TODO: type_struct_decl_glob) Handle struct declaration"
 
 (* (7.2.2) *)
-let type_header_decl_glob (_ctx : Ctx.t) (_id : id)
-    (_fields : (member * typ) list) : Ctx.t =
+let type_header_decl_glob (_ctx : Ctx.t) (_id : id) (_tparams : tparam list)
+    (_fields : (member * typ * anno list) list) : Ctx.t =
   failwith "(TODO: type_header_decl_glob) Handle header declaration"
 
 (* (7.2.4) *)
-let type_union_decl_glob (_ctx : Ctx.t) (_id : id)
-    (_fields : (member * typ) list) : Ctx.t =
+let type_union_decl_glob (_ctx : Ctx.t) (_id : id) (_tparams : tparam list)
+    (_fields : (member * typ * anno list) list) : Ctx.t =
   failwith "(TODO: type_union_decl_glob) Handle header union declaration"
 
 (* (7.2.1)
@@ -374,30 +375,35 @@ let type_package_type_decl_glob (_ctx : Ctx.t) (_id : id)
 let type_decl_glob (ctx : Ctx.t) (decl : decl) : Ctx.t =
   match decl.it with
   (* constantDeclaration *)
-  | ConstD { id; typ; value } -> type_constant_decl_glob ctx id typ value
+  | ConstD { id; typ; value; annos } -> let _ = annos in  type_constant_decl_glob ctx id typ value
   (* errorDeclaration *)
-  | ErrD { members } -> type_error_decl_glob ctx members
+  | ErrD { members; } -> type_error_decl_glob ctx members
   (* matchKindDeclaration *)
   | MatchKindD { members } -> type_match_kind_decl_glob ctx members
   (* typeDeclaration *)
-  | StructD { id; fields } -> type_struct_decl_glob ctx id fields
-  | HeaderD { id; fields } -> type_header_decl_glob ctx id fields
-  | UnionD { id; fields } -> type_union_decl_glob ctx id fields
-  | EnumD { id; members } -> type_enum_decl_glob ctx id members
-  | SEnumD { id; typ; fields } -> type_senum_decl_glob ctx id typ fields
-  | NewTypeD { id; typ } -> (
+  | StructD { id; tparams; fields; annos } -> let _ = annos in type_struct_decl_glob ctx id tparams fields
+  | HeaderD { id; tparams; fields; annos } -> let _ = annos in type_header_decl_glob ctx id tparams fields
+  | UnionD { id; tparams; fields; annos} -> let _ = annos in type_union_decl_glob ctx id tparams fields
+  | EnumD { id; members; annos } -> let _ = annos in type_enum_decl_glob ctx id members
+  | SEnumD { id; typ; fields; annos } -> let _ = annos in type_senum_decl_glob ctx id typ fields
+  | NewTypeD { id; typ; annos } -> (
+      let _ = annos in 
       match typ with
       | Left typ -> type_newtype_decl_glob ctx id typ
       | Right _ -> failwith "(TODO: type_decl_glob) Handle newtype with decl")
-  | TypeDefD { id; typ } -> (
+  | TypeDefD { id; typ; annos } -> (
+      let _ = annos in 
       match typ with
       | Left typ -> type_typedef_decl_glob ctx id typ
       | Right _ -> failwith "(TODO: type_decl_glob) Handle typedef with decl")
-  | ParserTypeD { id; tparams; params } ->
+  | ParserTypeD { id; tparams; params; annos } ->
+    let _ = annos in 
       type_parser_type_decl_glob ctx id tparams params
-  | ControlTypeD { id; tparams; params } ->
+  | ControlTypeD { id; tparams; params; annos } ->
+    let _ = annos in 
       type_control_type_decl_glob ctx id tparams params
-  | PackageTypeD { id; tparams; cparams } ->
+  | PackageTypeD { id; tparams; cparams; annos } ->
+    let _ = annos in 
       type_package_type_decl_glob ctx id tparams cparams
   (* functionDeclaration *)
   (* actionDeclaration *)

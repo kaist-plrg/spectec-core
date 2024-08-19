@@ -427,15 +427,15 @@ and pp_decl' ?(level = 0) fmt decl' =
       F.fprintf fmt "%smatch_kind {\n%a\n%s}" (indent level)
         (pp_members ~level:(level + 1))
         members (indent level)
-  | StructD { id; fields; annos = _annos } ->
+  | StructD { id; tparams = _tparams; fields; annos = _annos } ->
       F.fprintf fmt "%sstruct %a {\n%a\n%s}" (indent level) pp_id id
         (pp_record_fields ~level:(level + 1))
         fields (indent level)
-  | HeaderD { id; fields; annos = _annos } ->
+  | HeaderD { id; tparams = _tparams; fields; annos = _annos } ->
       F.fprintf fmt "%sheader %a {\n%a\n%s}" (indent level) pp_id id
         (pp_record_fields ~level:(level + 1))
         fields (indent level)
-  | UnionD { id; fields; annos = _annos } ->
+  | UnionD { id; tparams = _tparams; fields; annos = _annos } ->
       F.fprintf fmt "%sheader_union %a {\n%a\n%s}" (indent level) pp_id id
         (pp_record_fields ~level:(level + 1))
         fields (indent level)
