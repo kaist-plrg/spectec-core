@@ -145,87 +145,33 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
           ictx members
       in
       (ccenv, ictx)
-  | StructD { id; tparams; fields; _ } ->
-      if (List.length tparams) = 0 then
-        let fields =
-          List.map
-            (fun (member, typ, _) -> (member.it, Eval.eval_type ictx typ))
-            fields
-        in
-        let typ = Type.StructT fields in
-        let ictx = ICtx.add_td_glob id.it typ ictx in
-        (ccenv, ictx)
-      else
-        let f ictx tparams targs = 
-          let ictx = 
-            List.fold_left2
-              (fun ictx tparam targ -> ICtx.add_td_glob tparam.it targ ictx)
-              ictx tparams targs
-          in
-          let fields =
-            List.map
-              (fun (member, typ, _) -> (member.it, Eval.eval_type ictx typ))
-              fields
-          in
-          Type.StructT fields
-        in
-        let typ = Type.GenericT (f ictx tparams) in
-        let ictx = ICtx.add_td_glob id.it typ ictx in
-        (ccenv, ictx)
-  | HeaderD { id; tparams ; fields; _ } ->
-      if (List.length tparams) = 0 then
-        let fields =
-          List.map
-            (fun (member, typ, _) -> (member.it, Eval.eval_type ictx typ))
-            fields
-        in
-        let typ = Type.HeaderT fields in
-        let ictx = ICtx.add_td_glob id.it typ ictx in
-        (ccenv, ictx)
-      else
-        let f ictx tparams targs = 
-          let ictx = 
-            List.fold_left2
-              (fun ictx tparam targ -> ICtx.add_td_glob tparam.it targ ictx)
-              ictx tparams targs
-          in
-          let fields =
-            List.map
-              (fun (member, typ, _) -> (member.it, Eval.eval_type ictx typ))
-              fields
-          in
-          Type.HeaderT fields
-        in
-        let typ = Type.GenericT (f ictx tparams) in
-        let ictx = ICtx.add_td_glob id.it typ ictx in
-        (ccenv, ictx)
-  | UnionD { id; tparams ; fields; _ } ->
-      if (List.length tparams) = 0 then
-        let fields =
-          List.map
-            (fun (member, typ, _) -> (member.it, Eval.eval_type ictx typ))
-            fields
-        in
-        let typ = Type.UnionT fields in
-        let ictx = ICtx.add_td_glob id.it typ ictx in
-        (ccenv, ictx)
-      else
-        let f ictx tparams targs = 
-          let ictx = 
-            List.fold_left2
-              (fun ictx tparam targ -> ICtx.add_td_glob tparam.it targ ictx)
-              ictx tparams targs
-          in
-          let fields =
-            List.map
-              (fun (member, typ, _) -> (member.it, Eval.eval_type ictx typ))
-              fields
-          in
-          Type.UnionT fields
-        in
-        let typ = Type.GenericT (f ictx tparams) in
-        let ictx = ICtx.add_td_glob id.it typ ictx in
-        (ccenv, ictx)
+  | StructD { id; fields; _ } ->
+      let fields =
+        List.map
+          (fun (member, typ, _) -> (member.it, Eval.eval_type ictx typ))
+          fields
+      in
+      let typ = Type.StructT fields in
+      let ictx = ICtx.add_td_glob id.it typ ictx in
+      (ccenv, ictx)
+  | HeaderD { id; fields; _ } ->
+      let fields =
+        List.map
+          (fun (member, typ, _) -> (member.it, Eval.eval_type ictx typ))
+          fields
+      in
+      let typ = Type.HeaderT fields in
+      let ictx = ICtx.add_td_glob id.it typ ictx in
+      (ccenv, ictx)
+  | UnionD { id; fields; _ } ->
+      let fields =
+        List.map
+          (fun (member, typ, _) -> (member.it, Eval.eval_type ictx typ))
+          fields
+      in
+      let typ = Type.UnionT fields in
+      let ictx = ICtx.add_td_glob id.it typ ictx in
+      (ccenv, ictx)
   | EnumD { id; members; _ } ->
       let members = List.map it members in
       let typ = Type.EnumT (id.it, members) in

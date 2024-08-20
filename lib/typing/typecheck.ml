@@ -19,7 +19,6 @@ let rec saturate_type (ctx : Ctx.t) (typ : Type.t) : Type.t =
       let members, typs = List.split fields in
       let typs = List.map (saturate_type ctx) typs in
       StructT (List.combine members typs)
-  | GenericT _f -> typ
   | HeaderT fields ->
       let members, typs = List.split fields in
       let typs = List.map (saturate_type ctx) typs in

@@ -24,11 +24,7 @@ let rec eval_type (ictx : ICtx.t) (typ : typ) : Type.t =
   | NameT { it = Top id; _ } -> ICtx.find_td_glob id.it ictx
   | NameT { it = Current id; _ } -> ICtx.find_td id.it ictx
   (* (TODO) Handle specialized types *)
-  | SpecT (var, targs) ->
-      let typ = eval_type ictx (NameT var $ no_info) in
-      let targs = List.map (fun targ -> eval_type ictx targ) targs in
-      let f = match typ with | GenericT f -> f | _ -> assert false in
-      f targs
+  | SpecT (var, _) -> eval_type ictx (NameT var $ no_info)
   | StackT (typ, size) ->
       let typ = eval_type ictx typ in
       let size = eval_expr ictx size |> Value.get_num in

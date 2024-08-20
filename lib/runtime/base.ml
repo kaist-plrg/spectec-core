@@ -155,7 +155,6 @@ module Type = struct
     | StackT of (t * Bigint.t)
     | TupleT of t list
     | StructT of (member' * t) list
-    | GenericT of (t list -> t)
     | HeaderT of (member' * t) list
     | UnionT of (member' * t) list
     (* (TODO) id' field of EnumT and SEnumT seems redundant,
@@ -190,7 +189,6 @@ module Type = struct
              ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
              (fun fmt (m, t) -> Format.fprintf fmt "%s: %a" m pp t))
           fs
-    | GenericT _ -> Format.fprintf fmt "generic "
     | HeaderT fs ->
         Format.fprintf fmt "header { @[<hv>%a@] }"
           (Format.pp_print_list

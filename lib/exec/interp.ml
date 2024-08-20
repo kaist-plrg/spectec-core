@@ -35,11 +35,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | NameT { it = Top id; _ } -> Ctx.find_td_glob id.it ctx
     | NameT { it = Current id; _ } -> Ctx.find_td id.it ctx
     (* (TODO) Handle specialized types *)
-    | SpecT (var, targs) -> 
-      let typ = interp_type ctx (NameT var $ no_info) in
-      let targs = List.map (fun targ -> interp_type ctx targ) targs in
-      let f = match typ with | GenericT f -> f | _ -> assert false in
-      f targs
+    | SpecT (var, _) -> interp_type ctx (NameT var $ no_info)
     | StackT (typ, size) ->
         let typ = interp_type ctx typ in
         let size = interp_expr ctx size |> snd |> Value.get_num in
