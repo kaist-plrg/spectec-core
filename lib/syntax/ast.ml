@@ -195,19 +195,16 @@ and decl' =
   | MatchKindD of { members : member list }
   | StructD of {
       id : id;
-      tparams : tparam list;
       fields : (member * typ * anno list) list;
       annos : anno list;
     }
   | HeaderD of {
       id : id;
-      tparams : tparam list;
       fields : (member * typ * anno list) list;
       annos : anno list;
     }
   | UnionD of {
       id : id;
-      tparams : tparam list;
       fields : (member * typ * anno list) list;
       annos : anno list;
     }

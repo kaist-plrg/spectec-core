@@ -514,13 +514,13 @@ and eq_decl' (decl : Declaration.t) (decl' : Declaration.t) =
   | ( Table { name; properties; _ },
       Table { name = name'; properties = properties'; _ } ) ->
       eq_text name name' && eq_list eq_table_property properties properties'
-  | Header { name; type_params; fields; _ }, Header { name = name'; type_params = type_params'; fields = fields'; _ } ->
-      eq_text name name' && eq_list eq_decl_field fields fields' && eq_list eq_text type_params type_params'
-  | ( HeaderUnion { name; type_params; fields; _ },
-      HeaderUnion { name = name'; type_params = type_params'; fields = fields'; _ } ) ->
-      eq_text name name' && eq_list eq_decl_field fields fields' && eq_list eq_text type_params type_params'
-  | Struct { name; type_params; fields; _ }, Struct { name = name'; type_params = type_params'; fields = fields'; _ } ->
-      eq_text name name' && eq_list eq_decl_field fields fields' && eq_list eq_text type_params type_params'
+  | Header { name; fields; _ }, Header { name = name'; fields = fields'; _ } ->
+      eq_text name name' && eq_list eq_decl_field fields fields'
+  | ( HeaderUnion { name; fields; _ },
+      HeaderUnion { name = name'; fields = fields'; _ } ) ->
+      eq_text name name' && eq_list eq_decl_field fields fields'
+  | Struct { name; fields; _ }, Struct { name = name'; fields = fields'; _ } ->
+      eq_text name name' && eq_list eq_decl_field fields fields'
   | Error { members; _ }, Error { members = members'; _ } ->
       eq_list eq_text members members'
   | MatchKind { members; _ }, MatchKind { members = members'; _ } ->

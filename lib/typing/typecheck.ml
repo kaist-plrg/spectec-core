@@ -288,17 +288,17 @@ let type_match_kind_decl_glob (ctx : Ctx.t) (members : member list) : Ctx.t =
 (* (7.2.5)
    This declaration introduces a new type with the specified name in the current scope.
    Field names have to be distinct. An empty struct (with no fields) is legal. *)
-let type_struct_decl_glob (_ctx : Ctx.t) (_id : id) (_tparams : tparam list)
+let type_struct_decl_glob (_ctx : Ctx.t) (_id : id)
     (_fields : (member * typ * anno list) list) : Ctx.t =
   failwith "(TODO: type_struct_decl_glob) Handle struct declaration"
 
 (* (7.2.2) *)
-let type_header_decl_glob (_ctx : Ctx.t) (_id : id) (_tparams : tparam list)
+let type_header_decl_glob (_ctx : Ctx.t) (_id : id)
     (_fields : (member * typ * anno list) list) : Ctx.t =
   failwith "(TODO: type_header_decl_glob) Handle header declaration"
 
 (* (7.2.4) *)
-let type_union_decl_glob (_ctx : Ctx.t) (_id : id) (_tparams : tparam list)
+let type_union_decl_glob (_ctx : Ctx.t) (_id : id)
     (_fields : (member * typ * anno list) list) : Ctx.t =
   failwith "(TODO: type_union_decl_glob) Handle header union declaration"
 
@@ -380,9 +380,9 @@ let type_decl_glob (ctx : Ctx.t) (decl : decl) : Ctx.t =
   (* matchKindDeclaration *)
   | MatchKindD { members } -> type_match_kind_decl_glob ctx members
   (* typeDeclaration *)
-  | StructD { id; tparams; fields; annos } -> let _ = annos in type_struct_decl_glob ctx id tparams fields
-  | HeaderD { id; tparams; fields; annos } -> let _ = annos in type_header_decl_glob ctx id tparams fields
-  | UnionD { id; tparams; fields; annos} -> let _ = annos in type_union_decl_glob ctx id tparams fields
+  | StructD { id; fields; annos } -> let _ = annos in type_struct_decl_glob ctx id fields
+  | HeaderD { id; fields; annos } -> let _ = annos in type_header_decl_glob ctx id fields
+  | UnionD { id; fields; annos} -> let _ = annos in type_union_decl_glob ctx id fields
   | EnumD { id; members; annos } -> let _ = annos in type_enum_decl_glob ctx id members
   | SEnumD { id; typ; fields; annos } -> let _ = annos in type_senum_decl_glob ctx id typ fields
   | NewTypeD { id; typ; annos } -> (

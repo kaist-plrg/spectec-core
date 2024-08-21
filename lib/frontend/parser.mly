@@ -1008,33 +1008,21 @@ headerTypeDeclaration:
 | annotations = optAnnotations info1 = HEADER name = name
   L_BRACE fields = list(structField) info2 = R_BRACE
      { let tags = Source.merge info1 info2 in 
-       Declaration.Header { tags; annotations; name; type_params = []; fields } }
-| annotations = optAnnotations info1 = HEADER name = name type_params = optTypeParameters
-  L_BRACE fields = list(structField) info2 = R_BRACE
-     { let tags = Source.merge info1 info2 in 
-       Declaration.Header { tags; annotations; name; type_params; fields } }
+       Declaration.Header { tags; annotations; name; fields } }
 ;
 
 headerUnionDeclaration:
 | annotations = optAnnotations info1 = HEADER_UNION name = name
   L_BRACE fields = list(structField) info2 = R_BRACE
      { let tags = Source.merge info1 info2 in
-       Declaration.HeaderUnion { tags; annotations; name; type_params = []; fields } }
-| annotations = optAnnotations info1 = HEADER_UNION name = name type_params = optTypeParameters
-  L_BRACE fields = list(structField) info2 = R_BRACE
-     { let tags = Source.merge info1 info2 in 
-       Declaration.HeaderUnion { tags; annotations; name; type_params; fields } }
+       Declaration.HeaderUnion { tags; annotations; name; fields } }
 ;
 
 structTypeDeclaration:
 | annotations = optAnnotations info1 = STRUCT name = name
   L_BRACE fields = list(structField) info2 = R_BRACE
      { let tags = Source.merge info1 info2 in 
-       Declaration.Struct { tags; annotations; name; type_params = []; fields } }
-| annotations = optAnnotations info1 = STRUCT name = name type_params = optTypeParameters
-  L_BRACE fields = list(structField) info2 = R_BRACE
-     { let tags = Source.merge info1 info2 in 
-       Declaration.Struct { tags; annotations; name; type_params; fields } }
+       Declaration.Struct { tags; annotations; name; fields } }
 ;
 
 structField:

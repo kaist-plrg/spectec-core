@@ -381,24 +381,21 @@ and desugar_decl (decl : Declaration.t) : decl =
   | MatchKind { members; tags = at } ->
       let members = desugar_members members in
       MatchKindD { members } $ at
-  | Struct { name; fields; tags = at; type_params; annotations } ->
+  | Struct { name; fields; tags = at; annotations } ->
       let id = desugar_id name in
       let fields = desugar_record_fields fields in
-      let tparams = desugar_tparams type_params in
       let annos = desugar_annos annotations in
-      StructD { id; tparams; fields; annos } $ at
-  | Header { name; fields; tags = at; type_params; annotations } ->
+      StructD { id; fields; annos } $ at
+  | Header { name; fields; tags = at; annotations } ->
       let id = desugar_id name in
       let fields = desugar_record_fields fields in
-      let tparams = desugar_tparams type_params in
       let annos = desugar_annos annotations in
-      HeaderD { id; tparams; fields; annos } $ at
-  | HeaderUnion { name; fields; tags = at; type_params; annotations } ->
+      HeaderD { id; fields; annos } $ at
+  | HeaderUnion { name; fields; tags = at; annotations } ->
       let id = desugar_id name in
       let fields = desugar_record_fields fields in
-      let tparams = desugar_tparams type_params in
       let annos = desugar_annos annotations in
-      UnionD { id; tparams; fields; annos } $ at
+      UnionD { id; fields; annos } $ at
   | Enum { name; members; tags = at; annotations } ->
       let id = desugar_id name in
       let members = desugar_members members in

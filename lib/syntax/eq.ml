@@ -345,19 +345,18 @@ and eq_decl' decl decl' =
   | ErrD { members }, ErrD { members = members' }
   | MatchKindD { members }, MatchKindD { members = members' } ->
       eq_list eq_member members members'
-  | ( StructD { id; tparams; fields; annos },
-      StructD { id = id'; tparams = tparams'; fields = fields'; annos = annos' } )
-  | ( HeaderD { id; tparams;  fields; annos },
-      HeaderD { id = id'; tparams = tparams'; fields = fields'; annos = annos' } )
-  | ( UnionD { id; tparams; fields; annos },
-      UnionD { id = id'; tparams = tparams'; fields = fields'; annos = annos' } ) ->
+  | ( StructD { id; fields; annos },
+      StructD { id = id'; fields = fields'; annos = annos' } )
+  | ( HeaderD { id; fields; annos },
+      HeaderD { id = id'; fields = fields'; annos = annos' } )
+  | ( UnionD { id; fields; annos },
+      UnionD { id = id'; fields = fields'; annos = annos' } ) ->
       eq_id id id'
       && eq_list
            (fun (member, typ, annos) (member', typ', annos') ->
              eq_member member member' && eq_type typ typ'
              && eq_list eq_anno annos annos')
            fields fields'
-      && eq_list eq_tparam tparams tparams'
       && eq_list eq_anno annos annos'
   | ( EnumD { id; members; annos },
       EnumD { id = id'; members = members'; annos = annos' } ) ->
