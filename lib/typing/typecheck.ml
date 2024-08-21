@@ -918,14 +918,33 @@ and static_eval_error_acc (ctx : Ctx.t) (member : El.Ast.member) :
 (*     (_args : arg list) : Value.t option = *)
 (*   failwith "(TODO: static_eval_call) Handle static function call" *)
 
-(* Static parameter evaluation *)
+(* Annotation typing *)
 
-and static_eval_param (cursor : Ctx.cursor) (ctx : Ctx.t) (param : El.Ast.param)
-    : Il.Ast.param =
-  static_eval_param' cursor ctx param.it $ param.at
+and type_anno (cursor : Ctx.cursor) (ctx : Ctx.t) (anno : El.Ast.anno) :
+    Il.Ast.anno =
+  type_anno' cursor ctx anno.it $ anno.at
 
-and static_eval_param' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (param : El.Ast.param') : Il.Ast.param' =
+and type_anno' (cursor : Ctx.cursor) (ctx : Ctx.t) (anno : El.Ast.anno') :
+    Il.Ast.anno' =
+  match anno with
+  | EmptyN text -> Lang.Ast.EmptyN text
+  | TextN (text, texts) -> Lang.Ast.TextN (text, texts)
+  | ExprN (text, exprs) ->
+      let _typs, exprs = List.map (type_expr cursor ctx) exprs |> List.split in
+      Lang.Ast.ExprN (text, exprs)
+  | RecordN (text, fields) ->
+      let members, exprs = List.split fields in
+      let _typs, exprs = List.map (type_expr cursor ctx) exprs |> List.split in
+      Lang.Ast.RecordN (text, List.combine members exprs)
+
+(* Parameter typing *)
+
+and type_param (cursor : Ctx.cursor) (ctx : Ctx.t) (param : El.Ast.param) :
+    Il.Ast.param =
+  type_param' cursor ctx param.it $ param.at
+
+and type_param' (cursor : Ctx.cursor) (ctx : Ctx.t) (param : El.Ast.param') :
+    Il.Ast.param' =
   let id, dir, typ, expr_default, _annos = param in
   let typ = eval_type_with_check cursor ctx typ in
   let dir = eval_dir dir in
@@ -941,15 +960,20 @@ and static_eval_param' (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and static_eval_cparam (cursor : Ctx.cursor) (ctx : Ctx.t)
     (cparam : El.Ast.cparam) : Il.Ast.cparam =
-  static_eval_param cursor ctx cparam
+  type_param cursor ctx cparam
 
 (* Expression typing *)
 
-let rec type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr) :
-    Type.t =
-  match expr.it with
-  | BoolE _ -> Types.BoolT
-  | StrE _ -> Types.StrT
+and type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr) :
+    Type.t * Il.Ast.expr =
+  let typ, expr_il = type_expr' cursor ctx expr.it in
+  (typ, expr_il $ expr.at)
+
+and type_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr') :
+    Type.t * Il.Ast.expr' =
+  match expr with
+  | BoolE b -> (Types.BoolT, Lang.Ast.BoolE b)
+  | StrE t -> (Types.StrT, Lang.Ast.StrE t)
   | NumE num -> type_num_expr num
   | VarE var -> type_var_expr cursor ctx var
   | TupleE exprs -> type_tuple_expr cursor ctx exprs
@@ -976,30 +1000,37 @@ let rec type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr) :
       type_call_expr cursor ctx expr_func targs args
   | InstE (typ_inst, args) -> type_instantiation_expr cursor ctx typ_inst args
 
-and type_num_expr (num : El.Ast.num) : Type.t =
-  match num.it with
-  | _, Some (width, signed) ->
-      if signed then Types.FIntT width else Types.FBitT width
-  | _, None -> Types.IntT
+and type_num_expr (num : El.Ast.num) : Type.t * Il.Ast.expr' =
+  let typ =
+    match num.it with
+    | _, Some (width, signed) ->
+        if signed then Types.FIntT width else Types.FBitT width
+    | _, None -> Types.IntT
+  in
+  let expr_il = Lang.Ast.NumE num in
+  (typ, expr_il)
 
 and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
-    Type.t =
+    Type.t * Il.Ast.expr' =
   let typ = Ctx.find_opt Ctx.find_type_opt cursor var ctx in
   if Option.is_none typ then (
     Format.eprintf "(type_var_expr) %a is a free identifier\n" El.Pp.pp_var var;
     assert false);
-  Option.get typ
+  let typ = Option.get typ in
+  let expr_il = Lang.Ast.VarE var in
+  (typ, expr_il)
 
 (* (8.12) Operations on tuple expressions
 
    The empty tuple expression has type tuple<> - a tuple with no components. *)
 
 and type_tuple_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (exprs : El.Ast.expr list) : Type.t =
-  let typs = List.map (type_expr cursor ctx) exprs in
+    (exprs : El.Ast.expr list) : Type.t * Il.Ast.expr' =
+  let typs, exprs_il = List.map (type_expr cursor ctx) exprs |> List.split in
   let typ = Types.TupleT typs in
   check_valid_type cursor ctx typ;
-  typ
+  let expr_il = Lang.Ast.TupleE exprs_il in
+  (typ, expr_il)
 
 (* (8.13) Operations on structure-valued expressions
 
@@ -1026,13 +1057,16 @@ and type_tuple_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
    It is a compile-time error if a field name appears more than once in the same structure-valued expression. *)
 
 and type_record_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (fields : (El.Ast.member * El.Ast.expr) list) : Type.t =
+    (fields : (El.Ast.member * El.Ast.expr) list) : Type.t * Il.Ast.expr' =
   let members, exprs = List.split fields in
-  let members = List.map it members in
-  let typs = List.map (type_expr cursor ctx) exprs in
-  let typ = Types.RecordT (List.combine members typs) in
+  let typs, exprs_il = List.map (type_expr cursor ctx) exprs |> List.split in
+  let typ =
+    let members = List.map it members in
+    Types.RecordT (List.combine members typs)
+  in
   check_valid_type cursor ctx typ;
-  typ
+  let expr_il = Lang.Ast.RecordE (List.combine members exprs_il) in
+  (typ, expr_il)
 
 (* (8.6) Operations on fixed-width bit types (unsigned integers)
 
@@ -1075,30 +1109,35 @@ and type_record_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
    In addition, it is illegal to apply division and modulo to negative values. *)
 
 and type_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : El.Ast.unop)
-    (expr : El.Ast.expr) : Type.t =
-  let typ = type_expr cursor ctx expr in
-  match unop.it with
-  | BNotOp ->
-      if not (match typ with FIntT _ | FBitT _ -> true | _ -> false) then (
-        Format.eprintf
-          "(type_unop_expr) ~ expects a fixed-size integer but %a was given\n"
-          (El.Pp.pp_expr ~level:0) expr;
-        assert false);
-      typ
-  | LNotOp ->
-      if not (match typ with BoolT -> true | _ -> false) then (
-        Format.eprintf "(type_unop_expr) ! expects a boolean but %a was given\n"
-          (El.Pp.pp_expr ~level:0) expr;
-        assert false);
-      typ
-  | UMinusOp ->
-      if not (match typ with IntT | FIntT _ | FBitT _ -> true | _ -> false)
-      then (
-        Format.eprintf
-          "(type_unop_expr) - expects an integer but %a was given\n"
-          (El.Pp.pp_expr ~level:0) expr;
-        assert false);
-      typ
+    (expr : El.Ast.expr) : Type.t * Il.Ast.expr' =
+  let typ, expr_il = type_expr cursor ctx expr in
+  let typ =
+    match unop.it with
+    | BNotOp ->
+        if not (match typ with FIntT _ | FBitT _ -> true | _ -> false) then (
+          Format.eprintf
+            "(type_unop_expr) ~ expects a fixed-size integer but %a was given\n"
+            (El.Pp.pp_expr ~level:0) expr;
+          assert false);
+        typ
+    | LNotOp ->
+        if not (match typ with BoolT -> true | _ -> false) then (
+          Format.eprintf
+            "(type_unop_expr) ! expects a boolean but %a was given\n"
+            (El.Pp.pp_expr ~level:0) expr;
+          assert false);
+        typ
+    | UMinusOp ->
+        if not (match typ with IntT | FIntT _ | FBitT _ -> true | _ -> false)
+        then (
+          Format.eprintf
+            "(type_unop_expr) - expects an integer but %a was given\n"
+            (El.Pp.pp_expr ~level:0) expr;
+          assert false);
+        typ
+  in
+  let expr_il = Lang.Ast.UnE (unop, expr_il) in
+  (typ, expr_il)
 
 (* (8.2) Operaions on error types
 
@@ -1436,20 +1475,24 @@ and type_binop_logical (typ_l : Type.t) (typ_r : Type.t) : Type.t =
       assert false
 
 and type_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
-    (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) : Type.t =
-  let typ_l = type_expr cursor ctx expr_l in
-  let typ_r = type_expr cursor ctx expr_r in
+    (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) : Type.t * Il.Ast.expr' =
+  let typ_l, expr_l_il = type_expr cursor ctx expr_l in
+  let typ_r, expr_r_il = type_expr cursor ctx expr_r in
   (* (TODO) Insert implicit casts if possible *)
-  match binop.it with
-  | PlusOp | MinusOp | MulOp -> type_binop_plus_minus_mult typ_l typ_r
-  | SPlusOp | SMinusOp -> type_binop_saturating_plus_minus typ_l typ_r
-  | DivOp | ModOp -> type_binop_div_mod typ_l typ_r
-  | ShlOp | ShrOp -> type_binop_shift typ_l typ_r
-  | LeOp | GeOp | LtOp | GtOp -> type_binop_compare typ_l typ_r
-  | EqOp | NeOp -> type_binop_compare_equal typ_l typ_r
-  | BAndOp | BXorOp | BOrOp -> type_binop_bitwise typ_l typ_r
-  | ConcatOp -> type_binop_concat typ_l typ_r
-  | LAndOp | LOrOp -> type_binop_logical typ_l typ_r
+  let typ =
+    match binop.it with
+    | PlusOp | MinusOp | MulOp -> type_binop_plus_minus_mult typ_l typ_r
+    | SPlusOp | SMinusOp -> type_binop_saturating_plus_minus typ_l typ_r
+    | DivOp | ModOp -> type_binop_div_mod typ_l typ_r
+    | ShlOp | ShrOp -> type_binop_shift typ_l typ_r
+    | LeOp | GeOp | LtOp | GtOp -> type_binop_compare typ_l typ_r
+    | EqOp | NeOp -> type_binop_compare_equal typ_l typ_r
+    | BAndOp | BXorOp | BOrOp -> type_binop_bitwise typ_l typ_r
+    | ConcatOp -> type_binop_concat typ_l typ_r
+    | LAndOp | LOrOp -> type_binop_logical typ_l typ_r
+  in
+  let expr_il = Lang.Ast.BinE (binop, expr_l_il, expr_r_il) in
+  (typ, expr_il)
 
 (* (8.5.1) Conditional operator
 
@@ -1464,14 +1507,14 @@ and type_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
 
 and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_cond : El.Ast.expr) (expr_then : El.Ast.expr)
-    (expr_else : El.Ast.expr) : Type.t =
-  let typ_cond = type_expr cursor ctx expr_cond in
+    (expr_else : El.Ast.expr) : Type.t * Il.Ast.expr' =
+  let typ_cond, expr_cond_il = type_expr cursor ctx expr_cond in
   if typ_cond <> Types.BoolT then (
     Format.eprintf "(type_if_stmt) Condition %a must be a boolean\n"
       (El.Pp.pp_expr ~level:0) expr_cond;
     assert false);
-  let typ_then = type_expr cursor ctx expr_then in
-  let typ_else = type_expr cursor ctx expr_else in
+  let typ_then, expr_then_il = type_expr cursor ctx expr_then in
+  let typ_else, expr_else_il = type_expr cursor ctx expr_else in
   if typ_then <> typ_else then (
     Format.eprintf
       "(type_ternop_expr) Branches %a and %a must have the same type\n"
@@ -1484,7 +1527,8 @@ and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
        arbitrary-precision integers\n"
       (El.Pp.pp_expr ~level:0) expr_then (El.Pp.pp_expr ~level:0) expr_else;
     assert false);
-  typ_then
+  let expr_il = Lang.Ast.TernE (expr_cond_il, expr_then_il, expr_else_il) in
+  (typ_then, expr_il)
 
 (* (8.11) Casts
 
@@ -1571,14 +1615,15 @@ and type_cast_explicit (typ : Type.t) (typ_target : Type.t) : bool =
   | _ -> type_cast_equal typ typ_target
 
 and type_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
-    (expr : El.Ast.expr) : Type.t =
-  let typ_target = eval_type_with_check cursor ctx typ |> it in
-  let typ = type_expr cursor ctx expr in
-  if not (type_cast_explicit typ typ_target) then (
+    (expr : El.Ast.expr) : Type.t * Il.Ast.expr' =
+  let typ_target = eval_type_with_check cursor ctx typ in
+  let typ, expr_il = type_expr cursor ctx expr in
+  if not (type_cast_explicit typ typ_target.it) then (
     Format.eprintf "(type_cast_expr) Invalid cast from %a to %a\n" Type.pp typ
-      Type.pp typ_target;
+      Type.pp typ_target.it;
     assert false);
-  typ_target
+  let expr_il = Lang.Ast.CastE (typ_target, expr_il) in
+  (typ_target.it, expr_il)
 
 (* (8.15.3) Masks
 
@@ -1594,9 +1639,9 @@ and type_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
    either or both sub-expressions be compile-time known values. *)
 
 and type_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
-    (expr_mask : El.Ast.expr) : Type.t =
-  let typ_base = type_expr cursor ctx expr_base in
-  let typ_mask = type_expr cursor ctx expr_mask in
+    (expr_mask : El.Ast.expr) : Type.t * Il.Ast.expr' =
+  let typ_base, expr_base_il = type_expr cursor ctx expr_base in
+  let typ_mask, expr_mask_il = type_expr cursor ctx expr_mask in
   (* (TODO) Insert cast if possible *)
   (* (CHECK) Which types are allowed in mask expression? *)
   let typ_set =
@@ -1612,7 +1657,8 @@ and type_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
         assert false
   in
   check_valid_type cursor ctx typ_set;
-  typ_set
+  let expr_il = Lang.Ast.MaskE (expr_base_il, expr_mask_il) in
+  (typ_set, expr_il)
 
 (* (8.15.4) Ranges
 
@@ -1624,9 +1670,9 @@ and type_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
    automatically insert casts to unify the argument types in certain situations (section 8.11.2). *)
 
 and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : El.Ast.expr)
-    (expr_ub : El.Ast.expr) : Type.t =
-  let typ_lb = type_expr cursor ctx expr_lb in
-  let typ_ub = type_expr cursor ctx expr_ub in
+    (expr_ub : El.Ast.expr) : Type.t * Il.Ast.expr' =
+  let typ_lb, expr_lb_il = type_expr cursor ctx expr_lb in
+  let typ_ub, expr_ub_il = type_expr cursor ctx expr_ub in
   (* (TODO) Insert cast if possible *)
   (* (CHECK) Which types are allowed in range expression? *)
   let typ_set =
@@ -1643,7 +1689,8 @@ and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : El.Ast.expr)
         assert false
   in
   check_valid_type cursor ctx typ_set;
-  typ_set
+  let expr_il = Lang.Ast.RangeE (expr_lb_il, expr_ub_il) in
+  (typ_set, expr_il)
 
 (* (13.6) Select expressions
 
@@ -1666,51 +1713,63 @@ and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : El.Ast.expr)
    In a set context, the expressions default and _ denote the universal set,
    which contains all possible values of a given type. *)
 
-and type_select_match (ctx : Ctx.t) (typ_key : Type.t) (keyset : El.Ast.keyset)
-    : unit =
-  match keyset.it with
+and type_keyset (ctx : Ctx.t) (typ_key : Type.t) (keyset : El.Ast.keyset) :
+    Il.Ast.keyset =
+  type_keyset' ctx typ_key keyset.it $ keyset.at
+
+and type_keyset' (ctx : Ctx.t) (typ_key : Type.t) (keyset : El.Ast.keyset') :
+    Il.Ast.keyset' =
+  match keyset with
   | ExprK expr ->
-      let typ =
+      let typ, expr_il =
         match expr.it with
         | MaskE _ | RangeE _ -> type_expr Ctx.Local ctx expr
         | _ ->
-            let typ = type_expr Ctx.Local ctx expr in
+            let typ, expr_il = type_expr Ctx.Local ctx expr in
             let typ = Types.SetT typ in
             check_valid_type Ctx.Local ctx typ;
-            typ
+            (typ, expr_il)
       in
       if typ_key <> typ then (
         Format.eprintf
-          "(type_select_match) Key type %a must match the type of the keyset \
+          "(type_keyset) Key type %a must match the type of the keyset \
            expression %a\n"
           Type.pp typ_key Type.pp typ;
-        assert false)
-  | DefaultK | AnyK -> ()
+        assert false);
+      Lang.Ast.ExprK expr_il
+  | DefaultK -> Lang.Ast.DefaultK
+  | AnyK -> Lang.Ast.AnyK
 
-and type_select_matches (ctx : Ctx.t) (typs_key : Type.t list)
-    (keysets : El.Ast.keyset list) : unit =
+and type_keysets (ctx : Ctx.t) (typs_key : Type.t list)
+    (keysets : El.Ast.keyset list) : Il.Ast.keyset list =
   match (typs_key, keysets) with
-  | _, [ { it = DefaultK | AnyK; _ } ] -> ()
+  | _, [ { it = DefaultK; at } ] -> [ Lang.Ast.DefaultK $ at ]
+  | _, [ { it = AnyK; at } ] -> [ Lang.Ast.AnyK $ at ]
   | typs_key, keysets ->
       if List.length typs_key <> List.length keysets then (
         Format.eprintf
-          "(type_select_matches) Number of select keys must match the number \
-           of cases\n";
+          "(type_keysets) Number of select keys must match the number of cases\n";
         assert false);
-      List.iter2 (type_select_match ctx) typs_key keysets
+      List.map2 (type_keyset ctx) typs_key keysets
 
 and type_select_case (ctx : Ctx.t) (typs_key : Type.t list)
-    (case : El.Ast.select_case) : unit =
-  let keysets, state_label = case.it in
-  type_select_matches ctx typs_key keysets;
+    (case : El.Ast.select_case) : Il.Ast.select_case =
+  type_select_case' ctx typs_key case.it $ case.at
+
+and type_select_case' (ctx : Ctx.t) (typs_key : Type.t list)
+    (case : El.Ast.select_case') : Il.Ast.select_case' =
+  let keysets, state_label = case in
+  let keysets_il = type_keysets ctx typs_key keysets in
   let typ_label = Ctx.find_type_opt Ctx.Local state_label.it ctx in
   if not (match typ_label with Some Types.StateT -> true | _ -> false) then (
     Format.eprintf "(type_transition_stmt) Label %s is not a valid label\n"
       state_label.it;
-    assert false)
+    assert false);
+  (keysets_il, state_label)
 
 and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (exprs_key : El.Ast.expr list) (cases : El.Ast.select_case list) : Type.t =
+    (exprs_key : El.Ast.expr list) (cases : El.Ast.select_case list) :
+    Type.t * Il.Ast.expr' =
   if
     not
       (cursor = Ctx.Local
@@ -1720,18 +1779,21 @@ and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       "(type_select_expr) Select expression must be in a parser state (more \
        strictly, only nested inside a transition statement)\n";
     assert false);
-  let typs_key =
+  let typs_key, exprs_key_il =
     List.map
       (fun expr_key ->
-        let typ_key = type_expr Ctx.Local ctx expr_key in
+        let typ_key, expr_key_il = type_expr Ctx.Local ctx expr_key in
         let typ_key = Types.SetT typ_key in
         check_valid_type Ctx.Local ctx typ_key;
-        typ_key)
+        (typ_key, expr_key_il))
       exprs_key
+    |> List.split
   in
   List.iter (check_valid_type Ctx.Local ctx) typs_key;
-  List.iter (type_select_case ctx typs_key) cases;
-  Types.StateT
+  let typ = Types.StateT in
+  let cases_il = List.map (type_select_case ctx typs_key) cases in
+  let expr_il = Lang.Ast.SelectE (exprs_key_il, cases_il) in
+  (typ, expr_il)
 
 (* (8.12) Operations on tuple expressions
 
@@ -1753,32 +1815,36 @@ and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       The index is an expression that must be of numeric types (Section 7.4). *)
 
 and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (expr_base : El.Ast.expr) (expr_idx : El.Ast.expr) : Type.t =
-  let typ_base = type_expr cursor ctx expr_base in
-  let typ_idx = type_expr cursor ctx expr_idx in
+    (expr_base : El.Ast.expr) (expr_idx : El.Ast.expr) : Type.t * Il.Ast.expr' =
+  let typ_base, expr_base_il = type_expr cursor ctx expr_base in
+  let typ_idx, expr_idx_il = type_expr cursor ctx expr_idx in
   if not (match typ_idx with IntT | FIntT _ | FBitT _ -> true | _ -> false)
   then (
     Format.eprintf "(type_array_acc_expr) Index %a must be of numeric type\n"
       (El.Pp.pp_expr ~level:0) expr_idx;
     assert false);
-  match typ_base with
-  | TupleT typs_base_inner ->
-      let idx =
-        static_eval_expr cursor ctx expr_idx
-        |> expect_static_value expr_idx
-        |> it |> Value.get_num |> Bigint.to_int |> Option.get
-      in
-      if idx < 0 || idx >= List.length typs_base_inner then (
-        Format.eprintf "(type_array_acc_expr) Index %d out of range for %a\n"
-          idx Type.pp typ_base;
-        assert false);
-      List.nth typs_base_inner idx
-  (* (TODO) Below doesn't treat index as a compile-time known value *)
-  | StackT (typ_base_inner, _) -> typ_base_inner
-  | _ ->
-      Format.eprintf "(type_array_acc_expr) %a cannot be indexed\n" Type.pp
-        typ_base;
-      assert false
+  let typ =
+    match typ_base with
+    | TupleT typs_base_inner ->
+        let idx =
+          static_eval_expr cursor ctx expr_idx
+          |> expect_static_value expr_idx
+          |> it |> Value.get_num |> Bigint.to_int |> Option.get
+        in
+        if idx < 0 || idx >= List.length typs_base_inner then (
+          Format.eprintf "(type_array_acc_expr) Index %d out of range for %a\n"
+            idx Type.pp typ_base;
+          assert false);
+        List.nth typs_base_inner idx
+    (* (TODO) Below doesn't treat index as a compile-time known value *)
+    | StackT (typ_base_inner, _) -> typ_base_inner
+    | _ ->
+        Format.eprintf "(type_array_acc_expr) %a cannot be indexed\n" Type.pp
+          typ_base;
+        assert false
+  in
+  let expr_il = Lang.Ast.ArrAccE (expr_base_il, expr_idx_il) in
+  (typ, expr_il)
 
 (* (8.6) Operations on fixed-width bit types (unsigned integers)
 
@@ -1883,17 +1949,17 @@ and check_bitstring_slice_range (typ_base : Type.t) (idx_lo : Bigint.t)
 
 and type_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (expr_lo : El.Ast.expr) (expr_hi : El.Ast.expr) :
-    Type.t =
-  let typ_base = type_expr cursor ctx expr_base in
+    Type.t * Il.Ast.expr' =
+  let typ_base, expr_base_il = type_expr cursor ctx expr_base in
   check_bitstring_base typ_base;
-  let typ_lo = type_expr cursor ctx expr_lo in
+  let typ_lo, expr_lo_il = type_expr cursor ctx expr_lo in
   check_bitstring_index typ_lo;
   let idx_lo =
     static_eval_expr cursor ctx expr_lo
     |> expect_static_value expr_lo
     |> it |> Value.get_num
   in
-  let typ_hi = type_expr cursor ctx expr_hi in
+  let typ_hi, expr_hi_il = type_expr cursor ctx expr_hi in
   check_bitstring_index typ_hi;
   let idx_hi =
     static_eval_expr cursor ctx expr_hi
@@ -1902,7 +1968,24 @@ and type_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   in
   check_bitstring_slice_range typ_base idx_lo idx_hi;
   let width_slice = Bigint.(idx_hi - idx_lo + one) in
-  Types.FBitT width_slice
+  let typ = Types.FBitT width_slice in
+  let expr_il = Lang.Ast.BitAccE (expr_base_il, expr_lo_il, expr_hi_il) in
+  (typ, expr_il)
+
+(* (8.2) Operations on error types
+
+   Symbolic names declared by an error declaration belong to the error namespace. *)
+
+and type_error_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (member : El.Ast.member) : Type.t * Il.Ast.expr' =
+  let value_error = Ctx.find_value_opt cursor ("error." ^ member.it) ctx in
+  if Option.is_none value_error then (
+    Format.eprintf "(type_error_acc_expr) Member %s does not exist in error\n"
+      member.it;
+    assert false);
+  let typ = Types.ErrT in
+  let expr_il = Lang.Ast.ErrAccE member in
+  (typ, expr_il)
 
 (* (8.3) Operations on enum types
 
@@ -1910,43 +1993,34 @@ and type_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
    rather than the top-level namespace. *)
 
 and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (var_base : El.Ast.var) (member : El.Ast.member) : Type.t =
+    (var_base : El.Ast.var) (member : El.Ast.member) : Type.t * Il.Ast.expr' =
   let td_base = Ctx.find_opt Ctx.find_typedef_opt cursor var_base ctx in
   if Option.is_none td_base then (
     Format.eprintf "(type_type_acc_expr) %a is a free identifier\n" El.Pp.pp_var
       var_base;
     assert false);
   let td_base = Option.get td_base in
-  match td_base with
-  | EnumD (_, members) ->
-      if not (List.mem member.it members) then (
-        Format.eprintf "(type_type_acc_expr) Member %s does not exist in %a\n"
-          member.it TypeDef.pp td_base;
-        assert false);
-      EnumT members
-  | SEnumD (_, typ_inner, fields) ->
-      if not (List.mem_assoc member.it fields) then (
-        Format.eprintf "(type_type_acc_expr) Member %s does not exist in %a\n"
-          member.it TypeDef.pp td_base;
-        assert false);
-      SEnumT (typ_inner, fields)
-  | _ ->
-      Format.eprintf "(type_type_acc_expr) %a cannot be accessed\n" TypeDef.pp
-        td_base;
-      assert false
-
-(* (8.2) Operations on error types
-
-   Symbolic names declared by an error declaration belong to the error namespace. *)
-
-and type_error_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (member : El.Ast.member) : Type.t =
-  let value_error = Ctx.find_value_opt cursor ("error." ^ member.it) ctx in
-  if Option.is_none value_error then (
-    Format.eprintf "(type_error_acc_expr) Member %s does not exist in error\n"
-      member.it;
-    assert false);
-  Types.ErrT
+  let typ =
+    match td_base with
+    | EnumD (_, members) ->
+        if not (List.mem member.it members) then (
+          Format.eprintf "(type_type_acc_expr) Member %s does not exist in %a\n"
+            member.it TypeDef.pp td_base;
+          assert false);
+        Types.EnumT members
+    | SEnumD (_, typ_inner, fields) ->
+        if not (List.mem_assoc member.it fields) then (
+          Format.eprintf "(type_type_acc_expr) Member %s does not exist in %a\n"
+            member.it TypeDef.pp td_base;
+          assert false);
+        Types.SEnumT (typ_inner, fields)
+    | _ ->
+        Format.eprintf "(type_type_acc_expr) %a cannot be accessed\n" TypeDef.pp
+          td_base;
+        assert false
+  in
+  let expr_il = Lang.Ast.TypeAccE (var_base, member) in
+  (typ, expr_il)
 
 (* (8.16) Operations on struct types
 
@@ -1978,29 +2052,33 @@ and type_error_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
    (8.19) Operations on header unions *)
 
 and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (expr_base : El.Ast.expr) (member : El.Ast.member) : Type.t =
-  let typ_base = type_expr cursor ctx expr_base in
-  match typ_base with
-  | StackT (typ_inner, _) -> (
-      match member.it with
-      | "size" | "lastIndex" -> Types.FBitT (Bigint.of_int 32)
-      | "next" | "last" -> typ_inner
-      | _ ->
-          Format.eprintf
-            "(type_expr_acc_expr) Invalid member %s for header stack\n"
-            member.it;
-          assert false)
-  | StructT fields | HeaderT fields | UnionT fields ->
-      let typ_inner = List.assoc_opt member.it fields in
-      if Option.is_none typ_inner then (
-        Format.eprintf "(type_expr_acc_expr) Member %s does not exist in %a\n"
-          member.it Type.pp typ_base;
-        assert false);
-      Option.get typ_inner
-  | _ ->
-      Format.eprintf "(type_expr_acc_expr) %a cannot be accessed\n" Type.pp
-        typ_base;
-      assert false
+    (expr_base : El.Ast.expr) (member : El.Ast.member) : Type.t * Il.Ast.expr' =
+  let typ_base, expr_base_il = type_expr cursor ctx expr_base in
+  let typ =
+    match typ_base with
+    | StackT (typ_inner, _) -> (
+        match member.it with
+        | "size" | "lastIndex" -> Types.FBitT (Bigint.of_int 32)
+        | "next" | "last" -> typ_inner
+        | _ ->
+            Format.eprintf
+              "(type_expr_acc_expr) Invalid member %s for header stack\n"
+              member.it;
+            assert false)
+    | StructT fields | HeaderT fields | UnionT fields ->
+        let typ_inner = List.assoc_opt member.it fields in
+        if Option.is_none typ_inner then (
+          Format.eprintf "(type_expr_acc_expr) Member %s does not exist in %a\n"
+            member.it Type.pp typ_base;
+          assert false);
+        Option.get typ_inner
+    | _ ->
+        Format.eprintf "(type_expr_acc_expr) %a cannot be accessed\n" Type.pp
+          typ_base;
+        assert false
+  in
+  let expr_il = Lang.Ast.ExprAccE (expr_base_il, member) in
+  (typ, expr_il)
 
 (* (8.20) Method invocations and function calls
 
@@ -2135,16 +2213,17 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     - Every other case is undefined and will produce a compile-time error. *)
 
 and check_call_arity (expr_func : El.Ast.expr) (params : Types.param list)
-    (args : El.Ast.arg' list) : unit =
+    (args : Il.Ast.arg list) : unit =
   if List.length params <> List.length args then (
     Format.eprintf
       "(check_call_arity) Function %a expects %d arguments but %d were given\n"
       (El.Pp.pp_expr ~level:0) expr_func (List.length params) (List.length args);
     assert false)
 
-and check_named_args (args : El.Ast.arg' list) : unit =
+and check_named_args (args : Il.Ast.arg list) : unit =
+  let args = List.map it args in
   let is_named arg =
-    match (arg : El.Ast.arg') with NameA _ -> true | _ -> false
+    match (arg : Il.Ast.arg') with NameA _ -> true | _ -> false
   in
   if
     not
@@ -2157,8 +2236,8 @@ and check_named_args (args : El.Ast.arg' list) : unit =
     assert false)
 
 (* Invariant: parameters and arguments are checked of arity and all-or-nothing named *)
-and align_params_with_args (params : Types.param list) (args : El.Ast.arg' list)
-    =
+and align_params_with_args (params : Types.param list) (args : El.Ast.arg list)
+    (typ_args : Type.t list) (args_il : Il.Ast.arg list) =
   let module PMap = Map.Make (String) in
   let params_map =
     List.fold_left
@@ -2167,137 +2246,153 @@ and align_params_with_args (params : Types.param list) (args : El.Ast.arg' list)
         PMap.add id param params_map)
       PMap.empty params
   in
+  let args = List.combine args_il typ_args |> List.combine args in
   List.fold_left2
-    (fun (params, exprs_arg) param arg ->
-      match (arg : El.Ast.arg') with
-      | ExprA expr_arg -> (params @ [ param ], exprs_arg @ [ Some expr_arg ])
-      | NameA (id, expr_arg) ->
+    (fun (params, args, typ_args, args_il) param (arg, (arg_il, typ_arg)) ->
+      match (arg_il.it : Il.Ast.arg') with
+      | ExprA _ | AnyA ->
+          ( params @ [ param ],
+            args @ [ arg ],
+            typ_args @ [ typ_arg ],
+            args_il @ [ arg_il ] )
+      | NameA (id, _) ->
           let param = PMap.find id.it params_map in
-          (params @ [ param ], exprs_arg @ [ Some expr_arg ])
-      | AnyA -> (params @ [ param ], exprs_arg @ [ None ]))
-    ([], []) params args
+          ( params @ [ param ],
+            args @ [ arg ],
+            typ_args @ [ typ_arg ],
+            args_il @ [ arg_il ] ))
+    ([], [], [], []) params args
+
+and type_func (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var)
+    (targs_il : Il.Ast.targ list) (args : El.Ast.arg list) :
+    FuncType.t * Il.Ast.expr' =
+  let targs = List.map it targs_il in
+  let fd = Ctx.find_overloaded_opt Ctx.find_funcdef_opt cursor var args ctx in
+  if Option.is_none fd then (
+    Format.eprintf "(type_func) Function %a not found\n" El.Pp.pp_var var;
+    assert false);
+  let fd = Option.get fd in
+  let ft = specialize_funcdef fd targs in
+  let expr_il = Lang.Ast.VarE var in
+  (ft, expr_il)
 
 and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
-    (fid : El.Ast.member) (targs : Type.t list) (args : El.Ast.arg' list) :
-    FuncType.t option =
-  let typ_base = type_expr cursor ctx expr_base in
-  match typ_base with
-  | StackT _ -> (
-      match fid.it with
-      | "push_front" | "pop_front" ->
-          let params = [ ("count", Dir.No `DYN, Types.IntT, None) ] in
-          let typ_ret = Types.VoidT in
-          Some (Types.BuiltinMethodT (params, typ_ret))
-      | "minSizeInBits" | "minSizeInBytes" ->
-          let params = [] in
-          let typ_ret = Types.IntT in
-          Some (Types.BuiltinMethodT (params, typ_ret))
-      | _ -> None)
-  | StructT _ -> (
-      match fid.it with
-      | "minSizeInBits" | "minSizeInBytes" ->
-          let params = [] in
-          let typ_ret = Types.IntT in
-          Some (Types.BuiltinMethodT (params, typ_ret))
-      | _ -> None)
-  | HeaderT _ -> (
-      match fid.it with
-      | "isValid" ->
-          let params = [] in
-          let typ_ret = Types.BoolT in
-          Some (Types.BuiltinMethodT (params, typ_ret))
-      | "setValid" | "setInvalid" ->
-          let params = [] in
-          let typ_ret = Types.VoidT in
-          Some (Types.BuiltinMethodT (params, typ_ret))
-      | "minSizeInBits" | "minSizeInBytes" ->
-          let params = [] in
-          let typ_ret = Types.IntT in
-          Some (Types.BuiltinMethodT (params, typ_ret))
-      | _ -> None)
-  | UnionT _ -> (
-      match fid.it with
-      | "isValid" ->
-          let params = [] in
-          let typ_ret = Types.BoolT in
-          Some (Types.BuiltinMethodT (params, typ_ret))
-      | "minSizeInBits" | "minSizeInBytes" ->
-          let params = [] in
-          let typ_ret = Types.IntT in
-          Some (Types.BuiltinMethodT (params, typ_ret))
-      | _ -> None)
-  | ExternT fdenv ->
-      let fd = Envs.FDEnv.find_opt (fid.it, args) fdenv in
-      Option.map (fun fd -> specialize_funcdef fd targs) fd
-  | ParserT params -> (
-      match fid.it with
-      | "apply" -> Some (Types.ParserApplyMethodT params)
-      | _ -> None)
-  | ControlT params -> (
-      match fid.it with
-      | "apply" -> Some (Types.ControlApplyMethodT params)
-      | _ -> None)
-  | _ -> None
+    (fid : El.Ast.member) (targs_il : Il.Ast.targ list) (args : El.Ast.arg list)
+    : FuncType.t * Il.Ast.expr' =
+  let error_not_found () =
+    Format.eprintf "(type_method) Method %s not found for %a\n" fid.it
+      (El.Pp.pp_expr ~level:0) expr_base;
+    assert false
+  in
+  let targs = List.map it targs_il in
+  let typ_base, expr_base_il = type_expr cursor ctx expr_base in
+  let ft =
+    match typ_base with
+    | StackT _ -> (
+        match fid.it with
+        | "push_front" | "pop_front" ->
+            let params = [ ("count", Dir.No `DYN, Types.IntT, None) ] in
+            let typ_ret = Types.VoidT in
+            Types.BuiltinMethodT (params, typ_ret)
+        | "minSizeInBits" | "minSizeInBytes" ->
+            Types.BuiltinMethodT ([], Types.IntT)
+        | _ -> error_not_found ())
+    | StructT _ -> (
+        match fid.it with
+        | "minSizeInBits" | "minSizeInBytes" ->
+            Types.BuiltinMethodT ([], Types.IntT)
+        | _ -> error_not_found ())
+    | HeaderT _ -> (
+        match fid.it with
+        | "isValid" -> Types.BuiltinMethodT ([], Types.BoolT)
+        | "setValid" | "setInvalid" -> Types.BuiltinMethodT ([], Types.VoidT)
+        | "minSizeInBits" | "minSizeInBytes" ->
+            Types.BuiltinMethodT ([], Types.IntT)
+        | _ -> error_not_found ())
+    | UnionT _ -> (
+        match fid.it with
+        | "isValid" -> Types.BuiltinMethodT ([], Types.BoolT)
+        | "minSizeInBits" | "minSizeInBytes" ->
+            Types.BuiltinMethodT ([], Types.IntT)
+        | _ -> error_not_found ())
+    | ExternT fdenv -> (
+        let fd = Envs.FDEnv.find_opt (fid.it, args) fdenv in
+        match fd with
+        | Some fd -> specialize_funcdef fd targs
+        | None -> error_not_found ())
+    | ParserT params -> (
+        match fid.it with
+        | "apply" -> Types.ParserApplyMethodT params
+        | _ -> error_not_found ())
+    | ControlT params -> (
+        match fid.it with
+        | "apply" -> Types.ControlApplyMethodT params
+        | _ -> error_not_found ())
+    | _ -> error_not_found ()
+  in
+  let expr_il = Lang.Ast.ExprAccE (expr_base_il, fid) in
+  (ft, expr_il)
 
 and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : El.Ast.expr)
-    (targs : El.Ast.targ list) (args : El.Ast.arg list) : Type.t =
-  let args = List.map it args in
+    (targs : El.Ast.targ list) (args : El.Ast.arg list) : Type.t * Il.Ast.expr'
+    =
   (* Find the function definition and specialize it if necessary *)
   (* (TODO) Implement type inference for missing type arguments *)
-  let targs = List.map (eval_type_with_check cursor ctx) targs |> List.map it in
-  let ft =
+  let targs_il = List.map (eval_type_with_check cursor ctx) targs in
+  let ft, expr_func_il =
     match expr_func.it with
-    | VarE var ->
-        let fd =
-          Ctx.find_overloaded_opt Ctx.find_funcdef_opt cursor var args ctx
-        in
-        Option.map (fun fd -> specialize_funcdef fd targs) fd
+    | VarE var -> type_func cursor ctx var targs_il args
     | ExprAccE (expr_base, fid) ->
-        type_method cursor ctx expr_base fid targs args
-    | _ -> None
+        type_method cursor ctx expr_base fid targs_il args
+    | _ ->
+        Format.eprintf "(type_call) %a is not a function or a method\n"
+          (El.Pp.pp_expr ~level:0) expr_func;
+        assert false
   in
-  if Option.is_none ft then (
-    Format.eprintf "(type_call_stmt) %a is not a function expression\n"
-      (El.Pp.pp_expr ~level:0) expr_func;
-    assert false);
-  let ft = Option.get ft in
+  let expr_func_il = expr_func_il $ expr_func.at in
   (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
   (* (TODO) Consider default parameters/arguments, in such case arity can appear to mismatch *)
   let params = FuncType.get_params ft in
-  check_call_arity expr_func params args;
-  check_named_args args;
-  let params, exprs_arg = align_params_with_args params args in
+  let typ_args, args_il = List.map (type_arg cursor ctx) args |> List.split in
+  check_call_arity expr_func params args_il;
+  check_named_args args_il;
+  let params, args, typ_args, args_il =
+    align_params_with_args params args typ_args args_il
+  in
+  let args = List.combine args_il typ_args |> List.combine args in
   List.iter2
-    (fun param expr_arg ->
+    (fun param (arg, (arg_il, typ_arg)) ->
       let _id_param, dir_param, typ_param, _value_default = param in
-      match expr_arg with
-      | Some expr_arg ->
-          let typ_arg = type_expr cursor ctx expr_arg in
+      match (arg_il.it : Il.Ast.arg') with
+      | ExprA _ | NameA _ ->
           (* (TODO) Consider direction of parameters/arguments *)
           (* (TODO) Check subtype instead of stric type equality,
              and insert implicit cast to argument if possible *)
           if typ_param <> typ_arg then (
             Format.eprintf "(type_call) Argument %a is not of type %a\n"
-              (El.Pp.pp_expr ~level:0) expr_arg Type.pp typ_param;
+              El.Pp.pp_arg arg Type.pp typ_param;
             assert false)
-      | None ->
+      | AnyA ->
           if dir_param <> Dir.Out then (
             Format.eprintf
               "(type_call) Don't care argument can only be used for an out \
                function/method argument\n";
             assert false))
-    params exprs_arg;
-  FuncType.get_typ_ret ft
+    params args;
+  let typ = FuncType.get_typ_ret ft in
+  let expr_il = Lang.Ast.CallE (expr_func_il, targs_il, args_il) in
+  (typ, expr_il)
 
 and type_call_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : El.Ast.expr)
-    (targs : El.Ast.targ list) (args : El.Ast.arg list) : Type.t =
-  let typ = type_call cursor ctx expr_func targs args in
+    (targs : El.Ast.targ list) (args : El.Ast.arg list) : Type.t * Il.Ast.expr'
+    =
+  let typ, expr = type_call cursor ctx expr_func targs args in
   if typ = Types.VoidT then (
     Format.eprintf
       "(type_call_expr) Function call as an expression must return a value\n";
     assert false);
-  typ
+  (typ, expr)
 
 (* (8.21) Constructor invocations
 
@@ -2345,7 +2440,7 @@ and type_call_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : El.Ast.expr)
    value types | N/A       | N/A     | N/A    | N/A     | N/A    | N/A *)
 
 and check_instantiation_arity (var_inst : El.Ast.var)
-    (cparams : Types.cparam list) (args : El.Ast.arg' list) : unit =
+    (cparams : Types.cparam list) (args : Il.Ast.arg list) : unit =
   if List.length cparams <> List.length args then (
     Format.eprintf
       "(check_call_arity) Instance %a expects %d arguments but %d were given\n"
@@ -2353,12 +2448,12 @@ and check_instantiation_arity (var_inst : El.Ast.var)
     assert false)
 
 and align_cparams_with_args (cparams : Types.cparam list)
-    (args : El.Ast.arg' list) =
-  align_params_with_args cparams args
+    (args : El.Ast.arg list) (typ_args : Type.t list)
+    (args_il : Il.Ast.arg list) =
+  align_params_with_args cparams args typ_args args_il
 
 and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (typ_inst : El.Ast.typ) (args : El.Ast.arg list) : Type.t =
-  let args = List.map it args in
+    (typ_inst : El.Ast.typ) (args : El.Ast.arg list) : Type.t * Il.Ast.expr' =
   (* Find the constructor definition and specialize it if necessary *)
   (* (TODO) Implement type inference for missing type arguments *)
   let var_inst, targs =
@@ -2370,75 +2465,114 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
           El.Pp.pp_typ typ_inst;
         assert false
   in
-  let targs = List.map (eval_type_with_check cursor ctx) targs |> List.map it in
+  let targs_il = List.map (eval_type_with_check cursor ctx) targs in
   let cd =
     Ctx.find_overloaded_opt Ctx.find_consdef_opt cursor var_inst args ctx
   in
-  let ct = Option.map (fun cd -> specialize_consdef cd targs) cd in
-  if Option.is_none ct then (
+  if Option.is_none cd then (
     Format.eprintf "(type_instantiation) %a is not an instance type\n"
       El.Pp.pp_typ typ_inst;
     assert false);
-  let cparams, typ = Option.get ct in
+  let cd = Option.get cd in
+  let ct =
+    let targs = List.map it targs_il in
+    specialize_consdef cd targs
+  in
   (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
-  check_instantiation_arity var_inst cparams args;
-  check_named_args args;
-  let cparams, exprs_arg = align_cparams_with_args cparams args in
+  let cparams, typ = ct in
+  let typ_args, args_il = List.map (type_arg cursor ctx) args |> List.split in
+  check_instantiation_arity var_inst cparams args_il;
+  check_named_args args_il;
+  let cparams, args, typ_args, args_il =
+    align_cparams_with_args cparams args typ_args args_il
+  in
+  let args = List.combine args_il typ_args |> List.combine args in
   List.iter2
-    (fun cparam expr_arg ->
+    (fun cparam (arg, (arg_il, typ_arg)) ->
       let _id_cparam, _dir_cparam, typ_cparam, _value_default = cparam in
-      match expr_arg with
-      | Some expr_arg ->
-          let typ_arg = type_expr cursor ctx expr_arg in
+      match (arg_il.it : Il.Ast.arg') with
+      | ExprA _ | NameA _ ->
           (* (TODO) Consider direction of parameters/arguments *)
           (* (TODO) Check subtype instead of stric type equality,
              and insert implicit cast to argument if possible *)
           if typ_cparam <> typ_arg then (
             Format.eprintf
-              "(type_instantiation) Argument %a is not of type %a\n"
-              (El.Pp.pp_expr ~level:0) expr_arg Type.pp typ_cparam;
+              "(type_instantiation) Argument %a of type %a is not of type %a\n"
+              El.Pp.pp_arg arg Type.pp typ_arg Type.pp typ_cparam;
             assert false)
-      | None ->
+      | AnyA ->
           Format.eprintf
             "(type_instantiation) Don't care argument is unallowed as a \
              constructor argument\n";
           assert false)
-    cparams exprs_arg;
-  typ
+    cparams args;
+  (* (TODO) Maybe we want to define InstE for IL, with type arguments *)
+  let expr_il = Lang.Ast.InstE (typ $ typ_inst.at, args_il) in
+  (typ, expr_il)
 
 and type_instantiation_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (typ_inst : El.Ast.typ) (args : El.Ast.arg list) : Type.t =
+    (typ_inst : El.Ast.typ) (args : El.Ast.arg list) : Type.t * Il.Ast.expr' =
   type_instantiation cursor ctx typ_inst args
+
+(* Argument typing *)
+
+and type_arg (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : El.Ast.arg) :
+    Type.t * Il.Ast.arg =
+  let typ, arg_il = type_arg' cursor ctx arg.it in
+  (typ, arg_il $ arg.at)
+
+and type_arg' (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : El.Ast.arg') :
+    Type.t * Il.Ast.arg' =
+  match arg with
+  | ExprA expr ->
+      let typ, expr_il = type_expr cursor ctx expr in
+      let arg_il = Lang.Ast.ExprA expr_il in
+      (typ, arg_il)
+  | NameA (id, expr) ->
+      let typ, expr_il = type_expr cursor ctx expr in
+      let arg_il = Lang.Ast.NameA (id, expr_il) in
+      (typ, arg_il)
+  | AnyA -> (TopT, Lang.Ast.AnyA)
 
 (* Statement typing *)
 
 type flow = Cont | Ret
 
 let rec type_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
-    (stmt : El.Ast.stmt) : Ctx.t * flow =
+    (stmt : El.Ast.stmt) : Ctx.t * flow * Il.Ast.stmt =
+  let ctx, flow, stmt_il = type_stmt' cursor ctx flow stmt.it in
+  (ctx, flow, stmt_il $ stmt.at)
+
+and type_stmt' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (stmt : El.Ast.stmt') : Ctx.t * flow * Il.Ast.stmt' =
   if cursor <> Ctx.Local then (
     Format.eprintf "(type_stmt) Statements must be local\n";
     assert false);
-  match stmt.it with
-  | EmptyS -> (ctx, flow)
-  | AssignS (expr_lhs, expr_rhs) -> type_assign_stmt ctx flow expr_lhs expr_rhs
-  | SwitchS _ -> (ctx, flow)
+  match stmt with
+  | EmptyS -> (ctx, flow, Lang.Ast.EmptyS)
+  | AssignS (expr_lhs, expr_rhs) ->
+      type_assign_stmt cursor ctx flow expr_lhs expr_rhs
+  | SwitchS _ ->
+      Format.eprintf "(type_stmt) Switch statement is not supported\n";
+      assert false
   | IfS (expr_cond, stmt_then, stmt_else) ->
-      type_if_stmt ctx flow expr_cond stmt_then stmt_else
-  | BlockS block -> type_block_stmt ctx flow block
-  | ExitS -> (ctx, flow)
-  | RetS expr_ret -> type_return_stmt ctx flow expr_ret
+      type_if_stmt cursor ctx flow expr_cond stmt_then stmt_else
+  | BlockS block -> type_block_stmt cursor ctx flow block
+  | ExitS -> (ctx, flow, Lang.Ast.ExitS)
+  | RetS expr_ret -> type_return_stmt cursor ctx flow expr_ret
   | CallS (expr_func, targs, args) ->
-      type_call_stmt ctx flow expr_func targs args
-  | TransS expr -> type_transition_stmt ctx flow expr
-  | DeclS decl -> type_decl_stmt ctx flow decl
+      type_call_stmt cursor ctx flow expr_func targs args
+  | TransS expr -> type_transition_stmt cursor ctx flow expr
+  | DeclS decl -> type_decl_stmt cursor ctx flow decl
 
 and type_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
-    (stmts : El.Ast.stmt list) : Ctx.t * flow =
+    (stmts : El.Ast.stmt list) : Ctx.t * flow * Il.Ast.stmt list =
   List.fold_left
-    (fun (ctx, flow) stmt -> type_stmt cursor ctx flow stmt)
-    (ctx, flow) stmts
+    (fun (ctx, flow, stmts_il) stmt ->
+      let ctx, flow, stmt_il = type_stmt cursor ctx flow stmt in
+      (ctx, flow, stmts_il @ [ stmt_il ]))
+    (ctx, flow, []) stmts
 
 (* (12.1) Assignment statement
 
@@ -2489,11 +2623,12 @@ and check_lvalue (ctx : Ctx.t) (expr : El.Ast.expr) : unit =
       (El.Pp.pp_expr ~level:0) expr;
     assert false)
 
-and type_assign_stmt (ctx : Ctx.t) (flow : flow) (expr_lhs : El.Ast.expr)
-    (expr_rhs : El.Ast.expr) : Ctx.t * flow =
+and type_assign_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (expr_lhs : El.Ast.expr) (expr_rhs : El.Ast.expr) :
+    Ctx.t * flow * Il.Ast.stmt' =
   check_lvalue ctx expr_lhs;
-  let typ_lhs = type_expr Ctx.Local ctx expr_lhs in
-  let typ_rhs = type_expr Ctx.Local ctx expr_rhs in
+  let typ_lhs, expr_lhs_il = type_expr cursor ctx expr_lhs in
+  let typ_rhs, expr_rhs_il = type_expr cursor ctx expr_rhs in
   (* (TODO) Insert cast if possible *)
   if typ_lhs <> typ_rhs then (
     Format.eprintf
@@ -2502,36 +2637,55 @@ and type_assign_stmt (ctx : Ctx.t) (flow : flow) (expr_lhs : El.Ast.expr)
       (El.Pp.pp_expr ~level:0) expr_lhs Type.pp typ_lhs (El.Pp.pp_expr ~level:0)
       expr_rhs Type.pp typ_rhs;
     assert false);
-  (ctx, flow)
+  let stmt_il = Lang.Ast.AssignS (expr_lhs_il, expr_rhs_il) in
+  (ctx, flow, stmt_il)
 
 (* (12.6) Conditional statement
 
    However, the condition expression in P4 is required to be a Boolean
    (and not an integer). *)
 
-and type_if_stmt (ctx : Ctx.t) (flow : flow) (expr_cond : El.Ast.expr)
-    (stmt_then : El.Ast.stmt) (stmt_else : El.Ast.stmt) : Ctx.t * flow =
-  let typ_cond = type_expr Ctx.Local ctx expr_cond in
+and type_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (expr_cond : El.Ast.expr) (stmt_then : El.Ast.stmt)
+    (stmt_else : El.Ast.stmt) : Ctx.t * flow * Il.Ast.stmt' =
+  let typ_cond, expr_cond_il = type_expr cursor ctx expr_cond in
   if typ_cond <> Types.BoolT then (
     Format.eprintf "(type_if_stmt) Condition %a must be a boolean\n"
       (El.Pp.pp_expr ~level:0) expr_cond;
     assert false);
-  let _ctx', flow_then = type_stmt Ctx.Local ctx flow stmt_then in
-  let _ctx', flow_else = type_stmt Ctx.Local ctx flow stmt_else in
-  match (flow_then, flow_else) with Ret, Ret -> (ctx, Ret) | _ -> (ctx, Cont)
+  let _ctx', flow_then, stmt_then_il = type_stmt cursor ctx flow stmt_then in
+  let _ctx', flow_else, stmt_else_il = type_stmt cursor ctx flow stmt_else in
+  let stmt_il = Lang.Ast.IfS (expr_cond_il, stmt_then_il, stmt_else_il) in
+  match (flow_then, flow_else) with
+  | Ret, Ret -> (ctx, Ret, stmt_il)
+  | _ -> (ctx, Cont, stmt_il)
 
 (* (12.3) Block statement
 
    It contains a sequence of statements and declarations, which are executed sequentially.
    The variables and constants within a block statement are only visible within the block. *)
 
-and type_block_stmt (ctx : Ctx.t) (flow : flow) (block : El.Ast.block) :
-    Ctx.t * flow =
+and type_block (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (block : El.Ast.block) : Ctx.t * flow * Il.Ast.block =
+  let stmts, annos = block.it in
+  let ctx, flow, block_il = type_block' cursor ctx flow stmts annos in
+  (ctx, flow, block_il $ block.at)
+
+and type_block' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (stmts : El.Ast.stmt list) (annos : El.Ast.anno list) :
+    Ctx.t * flow * Il.Ast.block' =
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let ctx, flow, stmts_il = type_stmts cursor ctx flow stmts in
+  let block_il = (stmts_il, annos_il) in
+  (ctx, flow, block_il)
+
+and type_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (block : El.Ast.block) : Ctx.t * flow * Il.Ast.stmt' =
   let ctx = Ctx.enter_frame ctx in
-  let stmts, _annos = block.it in
-  let ctx, flow = type_stmts Ctx.Local ctx flow stmts in
+  let ctx, flow, block_il = type_block cursor ctx flow block in
   let ctx = Ctx.exit_frame ctx in
-  (ctx, flow)
+  let stmt_il = Lang.Ast.BlockS block_il in
+  (ctx, flow, stmt_il)
 
 (* (12.4) Return statement
 
@@ -2542,8 +2696,8 @@ and type_block_stmt (ctx : Ctx.t) (flow : flow) (block : El.Ast.block) :
    or control are still performed after the execution of the return statement.
    See Section 6.8 for details on copy-out behavior. *)
 
-and type_return_stmt (ctx : Ctx.t) (_flow : flow)
-    (expr_ret : El.Ast.expr option) : Ctx.t * flow =
+and type_return_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (_flow : flow)
+    (expr_ret : El.Ast.expr option) : Ctx.t * flow * Il.Ast.stmt' =
   if
     not
       (match ctx.local.kind with
@@ -2555,10 +2709,12 @@ and type_return_stmt (ctx : Ctx.t) (_flow : flow)
       "(type_return_stmt) Return statement must be in a function, action, \
        abstract extern method, and control method\n";
     assert false);
-  let typ_ret =
+  let typ_ret, expr_ret_il =
     match expr_ret with
-    | Some expr_ret -> type_expr Ctx.Local ctx expr_ret
-    | None -> Types.VoidT
+    | Some expr_ret ->
+        let typ_ret, expr_ret_il = type_expr cursor ctx expr_ret in
+        (typ_ret, Some expr_ret_il)
+    | None -> (Types.VoidT, None)
   in
   let typ_ret_func =
     match ctx.local.kind with
@@ -2575,128 +2731,155 @@ and type_return_stmt (ctx : Ctx.t) (_flow : flow)
        type %a\n"
       Type.pp typ_ret Type.pp typ_ret_func;
     assert false);
-  (ctx, Ret)
+  let stmt_il = Lang.Ast.RetS expr_ret_il in
+  (ctx, Ret, stmt_il)
 
 (* (8.20) Method invocations and function calls *)
 
-and type_call_stmt (ctx : Ctx.t) (flow : flow) (expr_func : El.Ast.expr)
-    (targs : El.Ast.targ list) (args : El.Ast.arg list) : Ctx.t * flow =
-  let _typ = type_call Ctx.Local ctx expr_func targs args in
-  (ctx, flow)
+and type_call_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (expr_func : El.Ast.expr) (targs : El.Ast.targ list)
+    (args : El.Ast.arg list) : Ctx.t * flow * Il.Ast.stmt' =
+  let _typ, expr_call_il = type_call cursor ctx expr_func targs args in
+  let expr_func_il, targs_il, args_il =
+    match expr_call_il with
+    | CallE (expr_func_il, targs_il, args_il) ->
+        (expr_func_il, targs_il, args_il)
+    | _ -> assert false
+  in
+  let stmt_il = Lang.Ast.CallS (expr_func_il, targs_il, args_il) in
+  (ctx, flow, stmt_il)
 
 (* (13.5) Transition statements
 
    The last statement in a parser state is an optional transition statement,
    which transfers control to another state, possibly accept or reject. *)
 
-and type_transition_stmt (ctx : Ctx.t) (flow : flow) (expr : El.Ast.expr) :
-    Ctx.t * flow =
+and type_transition_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (expr : El.Ast.expr) : Ctx.t * flow * Il.Ast.stmt' =
   if not (match ctx.local.kind with Ctx.ParserState -> true | _ -> false) then (
     Format.eprintf
       "(type_transition_stmt) Transition statement must be in a parser state\n";
     assert false);
-  let typ = type_expr Ctx.Local ctx expr in
+  let typ, expr_il = type_expr cursor ctx expr in
   if not (match typ with StateT -> true | _ -> false) then (
     Format.eprintf "(type_transition_stmt) Label %a is not a valid label\n"
       (El.Pp.pp_expr ~level:0) expr;
     assert false);
-  (ctx, flow)
+  let stmt_il = Lang.Ast.TransS expr_il in
+  (ctx, flow, stmt_il)
 
-and type_decl_stmt (ctx : Ctx.t) (flow : flow) (decl : El.Ast.decl) :
-    Ctx.t * flow =
-  let ctx = type_decl Ctx.Local ctx decl in
-  (ctx, flow)
+and type_decl_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (decl : El.Ast.decl) : Ctx.t * flow * Il.Ast.stmt' =
+  let ctx, decl_il = type_decl cursor ctx decl in
+  let stmt_il = Lang.Ast.DeclS decl_il in
+  (ctx, flow, stmt_il)
 
 (* Declaration typing *)
 
-and type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : El.Ast.decl) =
-  match decl.it with
+and type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : El.Ast.decl) :
+    Ctx.t * Il.Ast.decl =
+  let at = decl.at in
+  let ctx, decl = type_decl' cursor ctx decl.it in
+  (ctx, decl $ at)
+
+and type_decl' (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : El.Ast.decl') :
+    Ctx.t * Il.Ast.decl' =
+  match decl with
   (* Constant, variable, and object declarations *)
-  | ConstD { id; typ; value; annos = _annos } ->
-      type_const_decl cursor ctx id typ value
-  | VarD { id; typ; init; annos = _annos } ->
-      type_var_decl cursor ctx id typ init
-  | InstD { id; typ; args; init; annos = _annos } ->
-      type_instantiation_decl cursor ctx id typ args init
+  | ConstD { id; typ; value; annos } ->
+      type_const_decl cursor ctx id typ value annos
+  | VarD { id; typ; init; annos } -> type_var_decl cursor ctx id typ init annos
+  | InstD { id; typ; args; init; annos } ->
+      type_instantiation_decl cursor ctx id typ args init annos
   (* Derived type declarations *)
   | ErrD { members } -> type_error_decl cursor ctx members
   | MatchKindD { members } -> type_match_kind_decl cursor ctx members
-  | StructD { id; fields; annos = _annos } ->
-      type_struct_decl cursor ctx id fields
-  | HeaderD { id; fields; annos = _annos } ->
-      type_header_decl cursor ctx id fields
-  | UnionD { id; fields; annos = _annos } ->
-      type_union_decl cursor ctx id fields
-  | EnumD { id; members; annos = _annos } ->
-      type_enum_decl cursor ctx id members
-  | SEnumD { id; typ; fields; annos = _annos } ->
-      type_senum_decl cursor ctx id typ fields
-  | NewTypeD { id; typdef; annos = _annos } ->
-      type_newtype_decl cursor ctx id typdef
-  | TypeDefD { id; typdef; annos = _annos } ->
-      type_typedef_decl cursor ctx id typdef
+  | StructD { id; fields; annos } -> type_struct_decl cursor ctx id fields annos
+  | HeaderD { id; fields; annos } -> type_header_decl cursor ctx id fields annos
+  | UnionD { id; fields; annos } -> type_union_decl cursor ctx id fields annos
+  | EnumD { id; members; annos } -> type_enum_decl cursor ctx id members annos
+  | SEnumD { id; typ; fields; annos } ->
+      type_senum_decl cursor ctx id typ fields annos
+  | NewTypeD { id; typdef; annos } ->
+      type_newtype_decl cursor ctx id typdef annos
+  | TypeDefD { id; typdef; annos } ->
+      type_typedef_decl cursor ctx id typdef annos
   (* Function declarations *)
-  | ActionD { id; params; body; annos = _annos } ->
-      type_action_decl cursor ctx id params body
+  | ActionD { id; params; body; annos } ->
+      type_action_decl cursor ctx id params body annos
   | FuncD { id; typ_ret; tparams; params; body } ->
       type_function_decl cursor ctx id tparams params typ_ret body
-  | ExternFuncD { id; typ_ret; tparams; params; annos = _annos } ->
-      type_extern_function_decl cursor ctx id tparams params typ_ret
+  | ExternFuncD { id; typ_ret; tparams; params; annos } ->
+      type_extern_function_decl cursor ctx id tparams params typ_ret annos
   (* Object declarations *)
   (* Extern *)
-  | ExternConstructorD { id; cparams; annos = _annos } ->
-      type_extern_constructor_decl cursor ctx id cparams
-  | ExternAbstractMethodD { id; typ_ret; tparams; params; annos = _annos } ->
+  | ExternConstructorD { id; cparams; annos } ->
+      type_extern_constructor_decl cursor ctx id cparams annos
+  | ExternAbstractMethodD { id; typ_ret; tparams; params; annos } ->
       type_extern_abstract_method_decl cursor ctx id tparams params typ_ret
-  | ExternMethodD { id; typ_ret; tparams; params; annos = _annos } ->
-      type_extern_method_decl cursor ctx id tparams params typ_ret
-  | ExternObjectD { id; tparams; mthds; annos = _annos } ->
-      type_extern_object_decl cursor ctx id tparams mthds
+        annos
+  | ExternMethodD { id; typ_ret; tparams; params; annos } ->
+      type_extern_method_decl cursor ctx id tparams params typ_ret annos
+  | ExternObjectD { id; tparams; mthds; annos } ->
+      type_extern_object_decl cursor ctx id tparams mthds annos
   (* Parser *)
   | ValueSetD _ ->
-      Format.eprintf "(type_decl) %a\n" (El.Pp.pp_decl ~level:0) decl;
-      ctx
-  | ParserTypeD { id; tparams; params; annos = _annos } ->
-      type_parser_type_decl cursor ctx id tparams params
-  | ParserD { id; tparams; params; cparams; locals; states; annos = _annos } ->
-      type_parser_decl cursor ctx id tparams params cparams locals states
+      Format.eprintf "(type_decl) %a\n" (El.Pp.pp_decl' ~level:0) decl;
+      assert false
+  | ParserTypeD { id; tparams; params; annos } ->
+      type_parser_type_decl cursor ctx id tparams params annos
+  | ParserD { id; tparams; params; cparams; locals; states; annos } ->
+      type_parser_decl cursor ctx id tparams params cparams locals states annos
   (* Control *)
-  | TableD { id; table; annos = _annos } -> type_table_decl cursor ctx id table
-  | ControlTypeD { id; tparams; params; annos = _annos } ->
-      type_control_type_decl cursor ctx id tparams params
-  | ControlD { id; tparams; params; cparams; locals; body; annos = _annos } ->
-      type_control_decl cursor ctx id tparams params cparams locals body
+  | TableD { id; table; annos } -> type_table_decl cursor ctx id table annos
+  | ControlTypeD { id; tparams; params; annos } ->
+      type_control_type_decl cursor ctx id tparams params annos
+  | ControlD { id; tparams; params; cparams; locals; body; annos } ->
+      type_control_decl cursor ctx id tparams params cparams locals body annos
   (* Package *)
-  | PackageTypeD { id; tparams; cparams; annos = _annos } ->
-      type_package_type_decl cursor ctx id tparams cparams
+  | PackageTypeD { id; tparams; cparams; annos } ->
+      type_package_type_decl cursor ctx id tparams cparams annos
 
 and type_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (decls : El.Ast.decl list) :
-    Ctx.t =
-  List.fold_left (type_decl cursor) ctx decls
+    Ctx.t * Il.Ast.decl list =
+  List.fold_left
+    (fun (ctx, decls_il) decl ->
+      let ctx, decl_il = type_decl cursor ctx decl in
+      (ctx, decls_il @ [ decl_il ]))
+    (ctx, []) decls
 
 (* (11.1) Constants
 
    The initializer expression must be a compile-time known value. *)
 
 and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (typ : El.Ast.typ) (expr : El.Ast.expr) : Ctx.t =
-  let typ_target = eval_type_with_check cursor ctx typ |> it in
-  let typ = type_expr cursor ctx expr in
+    (typ : El.Ast.typ) (expr : El.Ast.expr) (annos : El.Ast.anno list) :
+    Ctx.t * Il.Ast.decl' =
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let typ_target = eval_type_with_check cursor ctx typ in
+  let typ, _expr_il = type_expr cursor ctx expr in
   (* (TODO) Insert cast if possible *)
-  if typ_target <> typ then (
+  if typ_target.it <> typ then (
     Format.eprintf
       "(type_const_decl) The type of constant %a doesn't match the \
        initializer's type %a\n"
-      Type.pp typ_target Type.pp typ;
+      Type.pp typ_target.it Type.pp typ;
     assert false);
-  let value = static_eval_expr cursor ctx expr |> Option.map it in
+  let value = static_eval_expr cursor ctx expr in
   if Option.is_none value then (
     Format.eprintf
       "(type_const_decl) %a is not a compile-time known expression\n"
       (El.Pp.pp_expr ~level:0) expr;
     assert false);
   let value = Option.get value in
-  Ctx.add_value cursor id.it value ctx |> Ctx.add_type cursor id.it typ_target
+  let ctx =
+    Ctx.add_value cursor id.it value.it ctx
+    |> Ctx.add_type cursor id.it typ_target.it
+  in
+  let decl_il =
+    Lang.Ast.ConstD { id; typ = typ_target; value; annos = annos_il }
+  in
+  (ctx, decl_il)
 
 (* (11.2) Variables
 
@@ -2730,6 +2913,13 @@ and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 
    There are no operations on string values; one cannot declare variables with a string type. *)
 
+and check_valid_var_type (typ : Type.t) : unit =
+  if not (check_valid_var_type' typ) then (
+    Format.eprintf
+      "(check_valid_var_type) Type %a is not a valid variable type\n" Type.pp
+      typ;
+    assert false)
+
 and check_valid_var_type' (typ : Type.t) : bool =
   match typ with
   | VoidT -> false
@@ -2746,15 +2936,9 @@ and check_valid_var_type' (typ : Type.t) : bool =
   | StateT ->
       false
 
-and check_valid_var_type (typ : Type.t) : unit =
-  if not (check_valid_var_type' typ) then (
-    Format.eprintf
-      "(check_valid_var_type) Type %a is not a valid variable type\n" Type.pp
-      typ;
-    assert false)
-
 and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (typ : El.Ast.typ) (expr_init : El.Ast.expr option) : Ctx.t =
+    (typ : El.Ast.typ) (expr_init : El.Ast.expr option)
+    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
   if
     (not
        (cursor = Ctx.Block
@@ -2773,27 +2957,56 @@ and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
        parser state, an action body, a control block's apply sub-block, the \
        list of local declarations in a parser or a control\n";
     assert false);
-  let typ_target = eval_type_with_check cursor ctx typ |> it in
-  check_valid_var_type typ_target;
-  let typ = Option.map (type_expr cursor ctx) expr_init in
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let typ_target = eval_type_with_check cursor ctx typ in
+  check_valid_var_type typ_target.it;
   (* (TODO) Insert cast if possible *)
-  (match typ with
-  | Some typ when typ_target <> typ ->
-      Format.eprintf
-        "(type_var_decl) The type of variable %a doesn't match the \
-         initializer's type %a\n"
-        Type.pp typ_target Type.pp typ;
-      assert false
-  | _ -> ());
-  Ctx.add_type cursor id.it typ_target ctx
+  let expr_init_il =
+    Option.map
+      (fun expr_init ->
+        let typ_init, expr_init_il = type_expr cursor ctx expr_init in
+        if typ_target.it <> typ_init then (
+          Format.eprintf
+            "(type_var_decl) The type of variable %a doesn't match the \
+             initializer's type %a\n"
+            Type.pp typ_target.it Type.pp typ_init;
+          assert false);
+        expr_init_il)
+      expr_init
+  in
+  let ctx = Ctx.add_type cursor id.it typ_target.it ctx in
+  let decl_il =
+    Lang.Ast.VarD
+      { id; typ = typ_target; init = expr_init_il; annos = annos_il }
+  in
+  (ctx, decl_il)
 
 (* (8.21) Constructor invocations *)
 
 and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (typ : El.Ast.typ) (args : El.Ast.arg list) (_init : El.Ast.block option) :
-    Ctx.t =
-  let typ = type_instantiation cursor ctx typ args in
-  Ctx.add_type cursor id.it typ ctx
+    (typ : El.Ast.typ) (args : El.Ast.arg list) (init : El.Ast.block option)
+    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let typ, expr_il = type_instantiation cursor ctx typ args in
+  let typ_il, args_il =
+    match expr_il with
+    | Lang.Ast.InstE (typ_il, args_il) -> (typ_il, args_il)
+    | _ -> assert false
+  in
+  (* (TODO) Check that init blocks are for abstract methods *)
+  let init_il =
+    Option.map
+      (fun init ->
+        let _ctx, _flow, init_il = type_block cursor ctx Cont init in
+        init_il)
+      init
+  in
+  let ctx = Ctx.add_type cursor id.it typ ctx in
+  let decl_il =
+    Lang.Ast.InstD
+      { id; typ = typ_il; args = args_il; init = init_il; annos = annos_il }
+  in
+  (ctx, decl_il)
 
 (* (7.1.2) The error type
 
@@ -2802,7 +3015,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    which the compiler will merge together. It is an error to declare the same identifier multiple times. *)
 
 and type_error_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (members : El.Ast.member list) : Ctx.t =
+    (members : El.Ast.member list) : Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_error_decl) Error declarations must be global\n";
     assert false);
@@ -2815,7 +3028,9 @@ and type_error_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     let typ = Types.ErrT in
     Ctx.add_value cursor id value ctx |> Ctx.add_type cursor id typ
   in
-  List.fold_left type_error_decl' ctx members
+  let ctx = List.fold_left type_error_decl' ctx members in
+  let decl_il = Lang.Ast.ErrD { members } in
+  (ctx, decl_il)
 
 (* (7.1.3) The match kind type
 
@@ -2830,7 +3045,7 @@ and type_error_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
    P4 programmers cannot declare new match kinds. *)
 
 and type_match_kind_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (members : El.Ast.member list) : Ctx.t =
+    (members : El.Ast.member list) : Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf
       "(type_match_kind_decl) Match kind declarations must be global\n";
@@ -2845,7 +3060,9 @@ and type_match_kind_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     let typ = Types.MatchKindT in
     Ctx.add_value cursor id value ctx |> Ctx.add_type cursor id typ
   in
-  List.fold_left type_match_kind_decl' ctx members
+  let ctx = List.fold_left type_match_kind_decl' ctx members in
+  let decl_il = Lang.Ast.MatchKindD { members } in
+  (ctx, decl_il)
 
 (* (7.2.5) Struct types
 
@@ -2853,53 +3070,110 @@ and type_match_kind_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
    Field names have to be distinct. An empty struct (with no fields) is legal. *)
 
 and type_struct_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (fields : (El.Ast.member * El.Ast.typ * El.Ast.anno list) list) : Ctx.t =
+    (fields : (El.Ast.member * El.Ast.typ * El.Ast.anno list) list)
+    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_struct_decl) Struct declarations must be global\n";
     assert false);
-  let members, typs =
-    List.map (fun (member, typ, _annos) -> (member, typ)) fields |> List.split
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let members, typs, annoss =
+    List.fold_left
+      (fun (members, typs, annoss) (member, typ, annos) ->
+        (members @ [ member ], typs @ [ typ ], annoss @ [ annos ]))
+      ([], [], []) fields
   in
-  let members = List.map it members in
-  let typs = List.map (eval_type_with_check cursor ctx) typs |> List.map it in
-  let fields = List.combine members typs in
-  let td = Types.StructD fields in
+  let annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
+  let typs = List.map (eval_type_with_check cursor ctx) typs in
+  let td =
+    let members = List.map it members in
+    let typs = List.map it typs in
+    Types.StructD (List.combine members typs)
+  in
   check_valid_typedef cursor ctx td;
-  Ctx.add_typedef cursor id.it td ctx
+  let ctx = Ctx.add_typedef cursor id.it td ctx in
+  let decl_il =
+    let fields_il = List.combine typs annoss_il |> List.combine members in
+    let fields_il =
+      List.fold_left
+        (fun fields (member, (typ, annos_il)) ->
+          fields @ [ (member, typ, annos_il) ])
+        [] fields_il
+    in
+    Lang.Ast.StructD { id; fields = fields_il; annos = annos_il }
+  in
+  (ctx, decl_il)
 
 (* (7.2.2) Header types *)
 
 and type_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (fields : (El.Ast.member * El.Ast.typ * El.Ast.anno list) list) : Ctx.t =
+    (fields : (El.Ast.member * El.Ast.typ * El.Ast.anno list) list)
+    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_header_decl) Header declarations must be global\n";
     assert false);
-  let members, typs =
-    List.map (fun (member, typ, _annos) -> (member, typ)) fields |> List.split
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let members, typs, annoss =
+    List.fold_left
+      (fun (members, typs, annoss) (member, typ, annos) ->
+        (members @ [ member ], typs @ [ typ ], annoss @ [ annos ]))
+      ([], [], []) fields
   in
-  let members = List.map it members in
-  let typs = List.map (eval_type_with_check cursor ctx) typs |> List.map it in
-  let fields = List.combine members typs in
-  let td = Types.HeaderD fields in
+  let annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
+  let typs = List.map (eval_type_with_check cursor ctx) typs in
+  let td =
+    let members = List.map it members in
+    let typs = List.map it typs in
+    Types.HeaderD (List.combine members typs)
+  in
   check_valid_typedef cursor ctx td;
-  Ctx.add_typedef cursor id.it td ctx
+  let ctx = Ctx.add_typedef cursor id.it td ctx in
+  let decl_il =
+    let fields_il = List.combine typs annoss_il |> List.combine members in
+    let fields_il =
+      List.fold_left
+        (fun fields (member, (typ, annos_il)) ->
+          fields @ [ (member, typ, annos_il) ])
+        [] fields_il
+    in
+    Lang.Ast.HeaderD { id; fields = fields_il; annos = annos_il }
+  in
+  (ctx, decl_il)
 
 (* (7.2.4) Header unions *)
 
 and type_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (fields : (El.Ast.member * El.Ast.typ * El.Ast.anno list) list) : Ctx.t =
+    (fields : (El.Ast.member * El.Ast.typ * El.Ast.anno list) list)
+    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_union_decl) Union declarations must be global\n";
     assert false);
-  let members, typs =
-    List.map (fun (member, typ, _annos) -> (member, typ)) fields |> List.split
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let members, typs, annoss =
+    List.fold_left
+      (fun (members, typs, annoss) (member, typ, annos) ->
+        (members @ [ member ], typs @ [ typ ], annoss @ [ annos ]))
+      ([], [], []) fields
   in
-  let members = List.map it members in
-  let typs = List.map (eval_type_with_check cursor ctx) typs |> List.map it in
-  let fields = List.combine members typs in
-  let td = Types.UnionD fields in
+  let annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
+  let typs = List.map (eval_type_with_check cursor ctx) typs in
+  let td =
+    let members = List.map it members in
+    let typs = List.map it typs in
+    Types.UnionD (List.combine members typs)
+  in
   check_valid_typedef cursor ctx td;
-  Ctx.add_typedef cursor id.it td ctx
+  let ctx = Ctx.add_typedef cursor id.it td ctx in
+  let decl_il =
+    let fields_il = List.combine typs annoss_il |> List.combine members in
+    let fields_il =
+      List.fold_left
+        (fun fields (member, (typ, annos_il)) ->
+          fields @ [ (member, typ, annos_il) ])
+        [] fields_il
+    in
+    Lang.Ast.UnionD { id; fields = fields_il; annos = annos_il }
+  in
+  (ctx, decl_il)
 
 (* (7.2.1) Enumeration types
 
@@ -2907,14 +3181,20 @@ and type_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    naming the created type along with its distinct constants. *)
 
 and type_enum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (members : El.Ast.member list) : Ctx.t =
+    (members : El.Ast.member list) (annos : El.Ast.anno list) :
+    Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_enum_decl) Enum declarations must be global\n";
     assert false);
-  let members = List.map it members in
-  let td = Types.EnumD (id.it, members) in
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let td =
+    let members = List.map it members in
+    Types.EnumD (id.it, members)
+  in
   check_valid_typedef cursor ctx td;
-  Ctx.add_typedef cursor id.it td ctx
+  let ctx = Ctx.add_typedef cursor id.it td ctx in
+  let decl_il = Lang.Ast.EnumD { id; members; annos = annos_il } in
+  (ctx, decl_il)
 
 (* (7.2.1) Enumeration types
 
@@ -2932,25 +3212,40 @@ and type_enum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    falls outside the representation range of the underlying type. *)
 
 and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (typ : El.Ast.typ) (fields : (El.Ast.member * El.Ast.expr) list) : Ctx.t =
+    (typ : El.Ast.typ) (fields : (El.Ast.member * El.Ast.expr) list)
+    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf
       "(type_senum_decl) Serializable enum declarations must be global\n";
     assert false);
-  let typ = eval_type_with_check cursor ctx typ |> it in
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let typ = eval_type_with_check cursor ctx typ in
   let members, exprs = List.split fields in
-  let members = List.map it members in
-  (* (TODO) Check that values are of typ *)
   let values =
     List.map
       (fun expr ->
-        static_eval_expr cursor ctx expr |> expect_static_value expr |> it)
+        let typ_field, _expr = type_expr cursor ctx expr in
+        if typ_field <> typ.it then (
+          Format.eprintf
+            "(type_senum_decl) The type of the expression %a doesn't match the \
+             type of the serializable enum %a\n"
+            (El.Pp.pp_expr ~level:0) expr Type.pp typ.it;
+          assert false);
+        static_eval_expr cursor ctx expr |> expect_static_value expr)
       exprs
   in
-  let fields = List.combine members values in
-  let td = Types.SEnumD (id.it, typ, fields) in
+  let td =
+    let members = List.map it members in
+    let values = List.map it values in
+    Types.SEnumD (id.it, typ.it, List.combine members values)
+  in
   check_valid_typedef cursor ctx td;
-  Ctx.add_typedef cursor id.it td ctx
+  let ctx = Ctx.add_typedef cursor id.it td ctx in
+  let decl_il =
+    Lang.Ast.SEnumD
+      { id; typ; fields = List.combine members values; annos = annos_il }
+  in
+  (ctx, decl_il)
 
 (* (7.6) Introducing new types
 
@@ -2961,16 +3256,22 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    bit<>, int<>, bool, or types defined using type from such types. *)
 
 and type_newtype_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (typdef : (El.Ast.typ, El.Ast.decl) El.Ast.alt) : Ctx.t =
+    (typdef : (El.Ast.typ, El.Ast.decl) El.Ast.alt) (annos : El.Ast.anno list) :
+    Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_newtype_decl) New type declarations must be global\n";
     assert false);
+  let annos_il = List.map (type_anno cursor ctx) annos in
   match typdef with
   | Left typ ->
-      let typ = eval_type_with_check cursor ctx typ |> it in
-      let td = Types.NewD typ in
+      let typ = eval_type_with_check cursor ctx typ in
+      let td = Types.NewD typ.it in
       check_valid_typedef cursor ctx td;
-      Ctx.add_typedef cursor id.it td ctx
+      let ctx = Ctx.add_typedef cursor id.it td ctx in
+      let decl_il =
+        Lang.Ast.NewTypeD { id; typdef = Lang.Ast.Left typ; annos = annos_il }
+      in
+      (ctx, decl_il)
   | Right _ -> failwith "(TODO: type_newtype_decl) Handle newtype with decl"
 
 (* (7.5) typedef
@@ -2981,16 +3282,22 @@ and type_newtype_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    If typedef is used with a generic type the type must be specialized with the suitable number of type arguments: *)
 
 and type_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (typdef : (El.Ast.typ, El.Ast.decl) El.Ast.alt) : Ctx.t =
+    (typdef : (El.Ast.typ, El.Ast.decl) El.Ast.alt) (annos : El.Ast.anno list) :
+    Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_typedef_decl) Typedef declarations must be global\n";
     assert false);
+  let annos_il = List.map (type_anno cursor ctx) annos in
   match typdef with
   | Left typ ->
-      let typ = eval_type_with_check cursor ctx typ |> it in
-      let td = Types.DefD typ in
+      let typ = eval_type_with_check cursor ctx typ in
+      let td = Types.DefD typ.it in
       check_valid_typedef cursor ctx td;
-      Ctx.add_typedef cursor id.it td ctx
+      let ctx = Ctx.add_typedef cursor id.it td ctx in
+      let decl_il =
+        Lang.Ast.TypeDefD { id; typdef = Lang.Ast.Left typ; annos = annos_il }
+      in
+      (ctx, decl_il)
   | Right _ -> failwith "(TODO: type_typedef_decl) Handle typedef with decl"
 
 (* (14.1) Actions
@@ -3015,7 +3322,8 @@ and type_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    code, with no conditional statements or expressions. *)
 
 and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (params : El.Ast.param list) (body : El.Ast.block) : Ctx.t =
+    (params : El.Ast.param list) (body : El.Ast.block)
+    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
   if
     (not (cursor = Ctx.Global))
     && not (cursor = Ctx.Block && ctx.block.kind = Ctx.Control)
@@ -3024,34 +3332,38 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       "(type_action_decl) Action declarations must be global or in a control \
        block\n";
     assert false);
+  let annos_il = List.map (type_anno cursor ctx) annos in
   let fid = FId.to_fid id params in
   (* Construct action layer context *)
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' = Ctx.set_localkind Ctx.Action ctx' in
   (* Typecheck and add parameters to the local context *)
-  let params =
-    List.map (static_eval_param Ctx.Local ctx') params |> List.map it
-  in
+  let params_il = List.map (type_param Ctx.Local ctx') params in
   let ctx' =
     List.fold_left
       (fun ctx' param ->
-        let id, _, typ, _, _ = param in
+        let id, _, typ, _, _ = param.it in
         Ctx.add_type Ctx.Local id.it typ.it ctx')
-      ctx' params
+      ctx' params_il
   in
   (* Typecheck body *)
-  let stmts, _annos = body.it in
-  let _ctx', _flow = type_stmts Ctx.Local ctx' Cont stmts in
+  let _ctx', _flow, block_il = type_block Ctx.Local ctx' Cont body in
   (* Create an action definition *)
-  let params =
-    List.map
-      (fun (id, dir, typ, value_default, _) ->
-        (id.it, dir.it, typ.it, Option.map it value_default))
-      params
+  let fd =
+    let params =
+      List.map it params_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    Types.ActionD params
   in
-  let fd = Types.ActionD params in
   check_valid_funcdef cursor ctx fd;
-  Ctx.add_funcdef cursor fid fd ctx
+  let ctx = Ctx.add_funcdef cursor fid fd ctx in
+  let decl_il =
+    Lang.Ast.ActionD
+      { id; params = params_il; body = block_il; annos = annos_il }
+  in
+  (ctx, decl_il)
 
 (* (10) Function declarations
 
@@ -3066,46 +3378,48 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 
 and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (tparams : El.Ast.tparam list) (params : El.Ast.param list)
-    (typ_ret : El.Ast.typ) (body : El.Ast.block) : Ctx.t =
+    (typ_ret : El.Ast.typ) (body : El.Ast.block) : Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_function_decl) Function declarations must be global\n";
     assert false);
-  let tparams = List.map it tparams in
   let fid = FId.to_fid id params in
   (* Construct function layer context *)
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
-  let typ_ret = eval_type_with_check Ctx.Local ctx' typ_ret |> it in
-  let ctx' = Ctx.set_localkind (Ctx.Function typ_ret) ctx' in
+  let typ_ret = eval_type_with_check Ctx.Local ctx' typ_ret in
+  let ctx' = Ctx.set_localkind (Ctx.Function typ_ret.it) ctx' in
   (* Typecheck and add parameters to the local context *)
-  let params =
-    List.map (static_eval_param Ctx.Local ctx') params |> List.map it
-  in
+  let params_il = List.map (type_param Ctx.Local ctx') params in
   let ctx' =
     List.fold_left
       (fun ctx' param ->
-        let id, _, typ, _, _ = param in
+        let id, _, typ, _, _ = param.it in
         Ctx.add_type Ctx.Local id.it typ.it ctx')
-      ctx' params
+      ctx' params_il
   in
   (* Typecheck body *)
-  let stmts, _annos = body.it in
-  let _ctx', flow = type_stmts Ctx.Local ctx' Cont stmts in
+  let _ctx', flow, block_il = type_block Ctx.Local ctx' Cont body in
   if flow <> Ret then (
     Format.eprintf
       "(type_function_decl) A function must return a value on all possible \
        execution paths\n";
     assert false);
   (* Create a function definition *)
-  let params =
-    List.map
-      (fun (id, dir, typ, value_default, _) ->
-        (id.it, dir.it, typ.it, Option.map it value_default))
-      params
+  let fd =
+    let tparams = List.map it tparams in
+    let params =
+      List.map it params_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    Types.FunctionD (tparams, params, typ_ret.it)
   in
-  let fd = Types.FunctionD (tparams, params, typ_ret) in
   check_valid_funcdef cursor ctx fd;
-  Ctx.add_funcdef cursor fid fd ctx
+  let ctx = Ctx.add_funcdef cursor fid fd ctx in
+  let decl_il =
+    Lang.Ast.FuncD { id; typ_ret; tparams; params = params_il; body = block_il }
+  in
+  (ctx, decl_il)
 
 (* (7.2.10.1) Extern functions
 
@@ -3114,29 +3428,193 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 
 and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     (id : El.Ast.id) (tparams : El.Ast.tparam list) (params : El.Ast.param list)
-    (typ_ret : El.Ast.typ) : Ctx.t =
+    (typ_ret : El.Ast.typ) (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf
       "(type_extern_function_decl) Extern function declarations must be global\n";
     assert false);
-  let tparams = List.map it tparams in
+  let annos_il = List.map (type_anno cursor ctx) annos in
   let fid = FId.to_fid id params in
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
   let ctx' = Ctx.set_localkind Ctx.ExternFunction ctx' in
-  let params =
-    List.map (static_eval_param Ctx.Local ctx') params |> List.map it
+  let params_il = List.map (type_param Ctx.Local ctx') params in
+  let typ_ret = eval_type_with_check Ctx.Local ctx' typ_ret in
+  let fd =
+    let tparams = List.map it tparams in
+    let params =
+      List.map it params_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    Types.ExternFunctionD (tparams, params, typ_ret.it)
   in
-  let typ_ret = eval_type_with_check Ctx.Local ctx' typ_ret |> it in
-  let params =
-    List.map
-      (fun (id, dir, typ, value_default, _) ->
-        (id.it, dir.it, typ.it, Option.map it value_default))
-      params
-  in
-  let fd = Types.ExternFunctionD (tparams, params, typ_ret) in
   check_valid_funcdef cursor ctx fd;
-  Ctx.add_funcdef cursor fid fd ctx
+  let ctx = Ctx.add_funcdef cursor fid fd ctx in
+  let decl_il =
+    Lang.Ast.ExternFuncD
+      { id; typ_ret; tparams; params = params_il; annos = annos_il }
+  in
+  (ctx, decl_il)
+
+(* (7.2.10.2) Extern objects
+
+   An extern object declaration declares an object and all methods that can be invoked to
+   perform computations and to alter the state of the object.
+   Extern object declarations can also optionally declare constructor methods;
+   these must have the same name as the enclosing extern type, no type parameters, and no return type.
+   Extern declarations may only appear as allowed by the architecture model and may be specific to a target. *)
+
+and type_extern_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (id : El.Ast.id) (cparams : El.Ast.cparam list) (annos : El.Ast.anno list) :
+    Ctx.t * Il.Ast.decl' =
+  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern) then (
+    Format.eprintf
+      "(type_extern_constructor_decl) Extern constructor declarations must be \
+       in an extern block\n";
+    assert false);
+  if id.it <> ctx.block.id then (
+    Format.eprintf
+      "(type_extern_constructor_decl) Extern constructor must have the same \
+       name as the object\n";
+    assert false);
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let tparams = Ctx.get_tparams cursor ctx in
+  let cid = FId.to_fid id cparams in
+  let cparams_il = List.map (static_eval_cparam cursor ctx) cparams in
+  let td = Ctx.find_typedef Ctx.Global id.it ctx in
+  let typ_args = List.map (fun tparam -> Types.VarT tparam) tparams in
+  let typ = specialize_typedef td typ_args in
+  let cd =
+    let cparams =
+      List.map it cparams_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    (tparams, cparams, typ)
+  in
+  check_valid_consdef cursor ctx cd;
+  let ctx = Ctx.add_consdef cid cd ctx in
+  let decl_il =
+    Lang.Ast.ExternConstructorD { id; cparams = cparams_il; annos = annos_il }
+  in
+  (ctx, decl_il)
+
+(* (7.2.10.2) Extern objects - Abstract methods
+
+   However, some types of extern objects may provide methods that can be implemented by the P4 programmers.
+   Such methods are described with the abstract keyword prior to the method definition.
+   When such an object is instantiated the user has to supply an implementation of all the abstract methods. *)
+
+and type_extern_abstract_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (id : El.Ast.id) (tparams : El.Ast.tparam list) (params : El.Ast.param list)
+    (typ_ret : El.Ast.typ) (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
+  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern) then (
+    Format.eprintf
+      "(type_extern_abstract_method_decl) Extern method declarations must be \
+       in an extern block\n";
+    assert false);
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let fid = FId.to_fid id params in
+  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
+  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
+  let typ_ret = eval_type_with_check Ctx.Local ctx' typ_ret in
+  let ctx' = Ctx.set_localkind (Ctx.ExternAbstractMethod typ_ret.it) ctx' in
+  let params_il = List.map (type_param Ctx.Local ctx') params in
+  let fd =
+    let tparams = List.map it tparams in
+    let params =
+      List.map it params_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    Types.ExternAbstractMethodD (tparams, params, typ_ret.it)
+  in
+  check_valid_funcdef cursor ctx fd;
+  let ctx = Ctx.add_funcdef cursor fid fd ctx in
+  let decl_il =
+    Lang.Ast.ExternAbstractMethodD
+      { id; tparams; params = params_il; typ_ret; annos = annos_il }
+  in
+  (ctx, decl_il)
+
+and type_extern_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
+    (tparams : El.Ast.tparam list) (params : El.Ast.param list)
+    (typ_ret : El.Ast.typ) (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
+  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern) then (
+    Format.eprintf
+      "(type_extern_method_decl) Extern method declarations must be in an \
+       extern block\n";
+    assert false);
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let fid = FId.to_fid id params in
+  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
+  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
+  let ctx' = Ctx.set_localkind Ctx.ExternMethod ctx' in
+  let params_il = List.map (type_param Ctx.Local ctx') params in
+  let typ_ret = eval_type_with_check Ctx.Local ctx' typ_ret in
+  let fd =
+    let tparams = List.map it tparams in
+    let params =
+      List.map it params_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    Types.ExternMethodD (tparams, params, typ_ret.it)
+  in
+  check_valid_funcdef cursor ctx fd;
+  let ctx = Ctx.add_funcdef cursor fid fd ctx in
+  let decl_il =
+    Lang.Ast.ExternMethodD
+      { id; tparams; params = params_il; typ_ret; annos = annos_il }
+  in
+  (ctx, decl_il)
+
+and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
+    (tparams : El.Ast.tparam list) (mthds : El.Ast.decl list)
+    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
+  if cursor <> Ctx.Global then (
+    Format.eprintf
+      "(type_extern_object_decl) Extern object declarations must be global\n";
+    assert false);
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  (* Separate constructors and methods *)
+  let cons, mthds =
+    List.partition
+      (fun (mthd : El.Ast.decl) ->
+        match mthd.it with ExternConstructorD _ -> true | _ -> false)
+      mthds
+  in
+  (* Typecheck methods and abstract methods
+     to construct function definition environment *)
+  let ctx' = Ctx.set_id Ctx.Block id.it ctx in
+  let ctx' = Ctx.set_blockkind Ctx.Extern ctx' in
+  let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
+  let ctx', mthds_il = type_decls Ctx.Block ctx' mthds in
+  (* Create an extern object type definition
+     and add it to the context *)
+  let td =
+    let tparams = List.map it tparams in
+    Types.ExternD (tparams, ctx'.block.fdenv)
+  in
+  check_valid_typedef cursor ctx td;
+  let ctx = Ctx.add_typedef cursor id.it td ctx in
+  (* Typecheck constructors
+     to update constructor definition environment
+     This comes after method typing to prevent recursive instantiation *)
+  let ctx'' = Ctx.set_id Ctx.Block id.it ctx in
+  let ctx'' = Ctx.set_blockkind Ctx.Extern ctx'' in
+  let ctx'' = Ctx.add_tparams Ctx.Block tparams ctx'' in
+  let ctx'', cons_il = type_decls Ctx.Block ctx'' cons in
+  (* Update the context with the constructor definition environment *)
+  let ctx =
+    { ctx with global = { ctx.global with cdenv = ctx''.global.cdenv } }
+  in
+  let decl_il =
+    Lang.Ast.ExternObjectD
+      { id; tparams; mthds = mthds_il @ cons_il; annos = annos_il }
+  in
+  (ctx, decl_il)
 
 (* (7.2.12) Parser and control blocks types
 
@@ -3149,31 +3627,36 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
    A parser should have at least one argument of type packet_in, representing the received packet that is processed. *)
 
 and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (tparams : El.Ast.tparam list) (params : El.Ast.param list) : Ctx.t =
+    (tparams : El.Ast.tparam list) (params : El.Ast.param list)
+    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf
       "(type_parser_type_decl) Parser type declarations must be global\n";
     assert false);
-  let tparams = List.map it tparams in
+  let annos_il = List.map (type_anno cursor ctx) annos in
   (* Typecheck implicit "apply" method
      to construct function definition environment *)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Parser ctx' in
   let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
-  let params =
-    List.map (static_eval_param Ctx.Block ctx') params |> List.map it
-  in
+  let params_il = List.map (type_param Ctx.Block ctx') params in
   (* Create a parser type definition
      and add it to the context *)
-  let params =
-    List.map
-      (fun (id, dir, typ, value_default, _) ->
-        (id.it, dir.it, typ.it, Option.map it value_default))
-      params
+  let td =
+    let tparams = List.map it tparams in
+    let params =
+      List.map it params_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    Types.ParserD (tparams, params)
   in
-  let td = Types.ParserD (tparams, params) in
   check_valid_typedef cursor ctx td;
-  Ctx.add_typedef cursor id.it td ctx
+  let ctx = Ctx.add_typedef cursor id.it td ctx in
+  let decl_il =
+    Lang.Ast.ParserTypeD { id; tparams; params = params_il; annos = annos_il }
+  in
+  (ctx, decl_il)
 
 (* (13.2) Parser declarations
 
@@ -3192,8 +3675,15 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 
    The states and local elements are all in the same namespace. *)
 
-and type_parser_state (cursor : Ctx.cursor) (ctx : Ctx.t) (block : El.Ast.block)
-    : Ctx.t =
+and type_parser_state (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (state : El.Ast.parser_state) : Ctx.t * Il.Ast.parser_state =
+  let label, block, annos = state.it in
+  let ctx, state_il = type_parser_state' cursor ctx label block annos in
+  (ctx, state_il $ state.at)
+
+and type_parser_state' (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (label : El.Ast.state_label) (block : El.Ast.block)
+    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.parser_state' =
   if
     not
       (cursor = Ctx.Local
@@ -3202,14 +3692,14 @@ and type_parser_state (cursor : Ctx.cursor) (ctx : Ctx.t) (block : El.Ast.block)
   then (
     Format.eprintf "(type_parser_state) Parser state must be local\n";
     assert false);
-  let stmts, _annos = block.it in
-  let ctx, _flow = type_stmts Ctx.Local ctx Cont stmts in
-  ctx
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let ctx, _flow, block_il = type_block Ctx.Local ctx Cont block in
+  let state_il = (label, block_il, annos_il) in
+  (ctx, state_il)
 
 and type_parser_states (_cursor : Ctx.cursor) (ctx : Ctx.t)
-    (states : El.Ast.parser_state list) : Ctx.t =
-  let states = List.map it states in
-  let labels = List.map (fun (label, _, _) -> label.it) states in
+    (states : El.Ast.parser_state list) : Ctx.t * Il.Ast.parser_state list =
+  let labels = List.map it states |> List.map (fun (label, _, _) -> label.it) in
   if not (List.mem "start" labels) then (
     Format.eprintf "(type_parser_states) A \"start\" state must exist";
     assert false);
@@ -3225,70 +3715,88 @@ and type_parser_states (_cursor : Ctx.cursor) (ctx : Ctx.t)
       (fun ctx' label -> Ctx.add_type Ctx.Local label Types.StateT ctx')
       ctx' labels
   in
-  let _ctx' =
+  let _ctx', states_il =
     List.fold_left
-      (fun ctx' (label, block, _annos) ->
-        let ctx' = Ctx.set_id Ctx.Local label.it ctx' in
-        type_parser_state Ctx.Local ctx' block)
-      ctx' states
+      (fun (ctx', states) state ->
+        let ctx' =
+          let label, _, _ = state.it in
+          Ctx.set_id Ctx.Local label.it ctx'
+        in
+        let ctx', state_il = type_parser_state Ctx.Local ctx' state in
+        (ctx', states @ [ state_il ]))
+      (ctx', []) states
   in
-  ctx
+  let decl_il = states_il in
+  (ctx, decl_il)
 
 and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (tparams : El.Ast.tparam list) (params : El.Ast.param list)
     (cparams : El.Ast.cparam list) (locals : El.Ast.decl list)
-    (states : El.Ast.parser_state list) : Ctx.t =
+    (states : El.Ast.parser_state list) (annos : El.Ast.anno list) :
+    Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_parser_decl) Parser declarations must be global\n";
     assert false);
   if tparams <> [] then (
     Format.eprintf "(type_parser_decl) Parser declarations cannot be generic\n";
     assert false);
+  let annos_il = List.map (type_anno cursor ctx) annos in
   let cid = FId.to_fid id cparams in
   (* Typecheck and add constructor parameters to the block context *)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Parser ctx' in
-  let cparams =
-    List.map (static_eval_cparam Ctx.Block ctx') cparams |> List.map it
-  in
+  let cparams_il = List.map (static_eval_cparam Ctx.Block ctx') cparams in
   let ctx' =
     List.fold_left
       (fun ctx' cparam ->
-        let id, _, typ, _, _ = cparam in
+        let id, _, typ, _, _ = cparam.it in
         Ctx.add_type Ctx.Block id.it typ.it ctx')
-      ctx' cparams
+      ctx' cparams_il
   in
   (* Typecheck and add apply parameters to the block context *)
-  let params =
-    List.map (static_eval_param Ctx.Block ctx') params |> List.map it
-  in
+  let params_il = List.map (type_param Ctx.Block ctx') params in
   let ctx' =
     List.fold_left
       (fun ctx' param ->
-        let id, _, typ, _, _ = param in
+        let id, _, typ, _, _ = param.it in
         Ctx.add_type Ctx.Block id.it typ.it ctx')
-      ctx' params
+      ctx' params_il
   in
   (* Typecheck and add local declarations to the block context *)
-  let ctx' = type_decls Ctx.Block ctx' locals in
+  let ctx', locals_il = type_decls Ctx.Block ctx' locals in
   (* Typecheck parser states *)
-  let _ctx' = type_parser_states Ctx.Block ctx' states in
+  let _ctx', states_il = type_parser_states Ctx.Block ctx' states in
   (* Create a parser constructor definition *)
-  let params =
-    List.map
-      (fun (id, dir, typ, value_default, _) ->
-        (id.it, dir.it, typ.it, Option.map it value_default))
-      params
+  let typ =
+    let params =
+      List.map it params_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    Types.ParserT params
   in
-  let typ = Types.ParserT params in
-  let cparams =
-    List.map
-      (fun (id, dir, typ, value_default, _) ->
-        (id.it, dir.it, typ.it, Option.map it value_default))
-      cparams
+  let cd =
+    let cparams =
+      List.map it cparams_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    ([], cparams, typ)
   in
-  let cd = ([], cparams, typ) in
-  Ctx.add_consdef cid cd ctx
+  let ctx = Ctx.add_consdef cid cd ctx in
+  let decl_il =
+    Lang.Ast.ParserD
+      {
+        id;
+        tparams;
+        cparams = cparams_il;
+        params = params_il;
+        locals = locals_il;
+        states = states_il;
+        annos = annos_il;
+      }
+  in
+  (ctx, decl_il)
 
 (* (14.2) Tables
 
@@ -3371,42 +3879,47 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       } *)
 
 and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (_id : El.Ast.id)
-    (_table : El.Ast.table) : Ctx.t =
+    (_table : El.Ast.table) (_annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
   if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Control) then (
     Format.eprintf
       "(type_table_decl) Table declarations must be in a control block\n";
     assert false);
   (* (TODO) Check that table properties are valid *)
-  ctx
+  assert false
 
 (* (7.2.12.2) Control type declarations *)
 
 and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (tparams : El.Ast.tparam list) (params : El.Ast.param list) : Ctx.t =
+    (tparams : El.Ast.tparam list) (params : El.Ast.param list)
+    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf
       "(type_control_type_decl) Control type declarations must be global\n";
     assert false);
-  let tparams = List.map it tparams in
+  let annos_il = List.map (type_anno cursor ctx) annos in
   (* Typecheck implicit "apply" method
      to construct function definition environment *)
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Control ctx' in
   let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
-  let params =
-    List.map (static_eval_param Ctx.Block ctx') params |> List.map it
-  in
+  let params_il = List.map (type_param Ctx.Block ctx') params in
   (* Create a control type definition
      and add it to the context *)
-  let params =
-    List.map
-      (fun (id, dir, typ, value_default, _) ->
-        (id.it, dir.it, typ.it, Option.map it value_default))
-      params
+  let td =
+    let tparams = List.map it tparams in
+    let params =
+      List.map it params_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    Types.ControlD (tparams, params)
   in
-  let td = Types.ControlD (tparams, params) in
   check_valid_typedef cursor ctx td;
-  Ctx.add_typedef cursor id.it td ctx
+  let ctx = Ctx.add_typedef cursor id.it td ctx in
+  let decl_il =
+    Lang.Ast.ControlTypeD { id; tparams; params = params_il; annos = annos_il }
+  in
+  (ctx, decl_il)
 
 (* (14) Control blocks
 
@@ -3424,7 +3937,7 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (tparams : El.Ast.tparam list) (params : El.Ast.param list)
     (cparams : El.Ast.cparam list) (locals : El.Ast.decl list)
-    (body : El.Ast.block) : Ctx.t =
+    (body : El.Ast.block) (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_control_decl) Control declarations must be global\n";
     assert false);
@@ -3432,54 +3945,65 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.eprintf
       "(type_control_decl) Control declarations cannot be generic\n";
     assert false);
+  let annos_il = List.map (type_anno cursor ctx) annos in
   let cid = FId.to_fid id cparams in
   (* Typecheck and add constructor parameters to the block context *)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Control ctx' in
-  let cparams =
-    List.map (static_eval_cparam Ctx.Block ctx') cparams |> List.map it
-  in
+  let cparams_il = List.map (static_eval_cparam Ctx.Block ctx') cparams in
   let ctx' =
     List.fold_left
       (fun ctx' cparam ->
-        let id, _, typ, _, _ = cparam in
+        let id, _, typ, _, _ = cparam.it in
         Ctx.add_type Ctx.Block id.it typ.it ctx')
-      ctx' cparams
+      ctx' cparams_il
   in
   (* Typecheck and add apply parameters to the block context *)
-  let params =
-    List.map (static_eval_param Ctx.Block ctx') params |> List.map it
-  in
+  let params_il = List.map (type_param Ctx.Block ctx') params in
   let ctx' =
     List.fold_left
       (fun ctx' param ->
-        let id, _, typ, _, _ = param in
+        let id, _, typ, _, _ = param.it in
         Ctx.add_type Ctx.Block id.it typ.it ctx')
-      ctx' params
+      ctx' params_il
   in
   (* Typecheck and add local declarations to the block context *)
-  let ctx' = type_decls Ctx.Block ctx' locals in
+  let ctx', locals_il = type_decls Ctx.Block ctx' locals in
   (* Typecheck implicit "apply" method *)
   let ctx' = Ctx.set_id Ctx.Local "apply" ctx' in
   let ctx' = Ctx.set_localkind Ctx.ControlApplyMethod ctx' in
-  let stmts, _annos = body.it in
-  let _ctx', _flow = type_stmts Ctx.Local ctx' Cont stmts in
+  let _ctx', _flow, body_il = type_block Ctx.Local ctx' Cont body in
   (* Create a control constructor definition *)
-  let params =
-    List.map
-      (fun (id, dir, typ, value_default, _) ->
-        (id.it, dir.it, typ.it, Option.map it value_default))
-      params
+  let typ =
+    let params =
+      List.map it params_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    Types.ControlT params
   in
-  let typ = Types.ControlT params in
-  let cparams =
-    List.map
-      (fun (id, dir, typ, value_default, _) ->
-        (id.it, dir.it, typ.it, Option.map it value_default))
-      cparams
+  let cd =
+    let cparams =
+      List.map it cparams_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    ([], cparams, typ)
   in
-  let cd = ([], cparams, typ) in
-  Ctx.add_consdef cid cd ctx
+  let ctx = Ctx.add_consdef cid cd ctx in
+  let decl_il =
+    Lang.Ast.ControlD
+      {
+        id;
+        tparams;
+        cparams = cparams_il;
+        params = params_il;
+        locals = locals_il;
+        body = body_il;
+        annos = annos_il;
+      }
+  in
+  (ctx, decl_il)
 
 (* (7.2.13) Package types
 
@@ -3487,7 +4011,8 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    (they cannot be in, out, or inout). Otherwise package types are very similar to parser type declarations. *)
 
 and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (id : El.Ast.id) (cparams : El.Ast.cparam list) : Ctx.t =
+    (id : El.Ast.id) (cparams : El.Ast.cparam list) : Ctx.t * Il.Ast.cparam list
+    =
   if not (cursor = Ctx.Block && ctx.block.kind = Package) then (
     Format.eprintf
       "(type_package_constructor_decl) Package constructor declarations must \
@@ -3500,174 +4025,57 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     assert false);
   let tparams = Ctx.get_tparams cursor ctx in
   let cid = FId.to_fid id cparams in
-  let cparams =
-    List.map (static_eval_cparam Ctx.Block ctx) cparams |> List.map it
-  in
+  let cparams_il = List.map (static_eval_cparam Ctx.Block ctx) cparams in
   let td = Ctx.find_typedef Ctx.Global id.it ctx in
   let typ_args = List.map (fun tparam -> Types.VarT tparam) tparams in
   let typ = specialize_typedef td typ_args in
-  let cparams =
-    List.map
-      (fun (id, dir, typ, value_default, _) ->
-        (id.it, dir.it, typ.it, Option.map it value_default))
-      cparams
+  let cd =
+    let cparams =
+      List.map it cparams_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    (tparams, cparams, typ)
   in
-  let cd = (tparams, cparams, typ) in
   check_valid_consdef cursor ctx cd;
-  Ctx.add_consdef cid cd ctx
+  let ctx = Ctx.add_consdef cid cd ctx in
+  (ctx, cparams_il)
 
 and type_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (tparams : El.Ast.tparam list) (cparams : El.Ast.cparam list) : Ctx.t =
+    (tparams : El.Ast.tparam list) (cparams : El.Ast.cparam list)
+    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.eprintf
       "(type_package_type_decl) Package type declarations must be global\n";
     assert false);
-  let tparams = List.map it tparams in
+  let annos_il = List.map (type_anno cursor ctx) annos in
   (* Create a package type definition
      and add it to the context *)
-  let td = Types.PackageD tparams in
+  let td =
+    let tparams = List.map it tparams in
+    Types.PackageD tparams
+  in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   (* Package type declaration is implicitly a constructor declaration *)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Package ctx' in
   let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
-  let ctx' = type_package_constructor_decl Ctx.Block ctx' id cparams in
+  let ctx', cparams_il =
+    type_package_constructor_decl Ctx.Block ctx' id cparams
+  in
   (* Update the context with the constructor definition environment *)
-  { ctx with global = { ctx.global with cdenv = ctx'.global.cdenv } }
-
-(* (7.2.10.2) Extern objects
-
-   An extern object declaration declares an object and all methods that can be invoked to
-   perform computations and to alter the state of the object.
-   Extern object declarations can also optionally declare constructor methods;
-   these must have the same name as the enclosing extern type, no type parameters, and no return type.
-   Extern declarations may only appear as allowed by the architecture model and may be specific to a target. *)
-
-and type_extern_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (id : El.Ast.id) (cparams : El.Ast.cparam list) : Ctx.t =
-  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern) then (
-    Format.eprintf
-      "(type_extern_constructor_decl) Extern constructor declarations must be \
-       in an extern block\n";
-    assert false);
-  if id.it <> ctx.block.id then (
-    Format.eprintf
-      "(type_extern_constructor_decl) Extern constructor must have the same \
-       name as the object\n";
-    assert false);
-  let tparams = Ctx.get_tparams cursor ctx in
-  let cid = FId.to_fid id cparams in
-  let cparams =
-    List.map (static_eval_cparam cursor ctx) cparams |> List.map it
+  let ctx =
+    { ctx with global = { ctx.global with cdenv = ctx'.global.cdenv } }
   in
-  let td = Ctx.find_typedef Ctx.Global id.it ctx in
-  let typ_args = List.map (fun tparam -> Types.VarT tparam) tparams in
-  let typ = specialize_typedef td typ_args in
-  let cparams =
-    List.map
-      (fun (id, dir, typ, value_default, _) ->
-        (id.it, dir.it, typ.it, Option.map it value_default))
-      cparams
+  let decl_il =
+    Lang.Ast.PackageTypeD
+      { id; tparams; cparams = cparams_il; annos = annos_il }
   in
-  let cd = (tparams, cparams, typ) in
-  check_valid_consdef cursor ctx cd;
-  Ctx.add_consdef cid cd ctx
-
-(* (7.2.10.2) Extern objects - Abstract methods
-
-   However, some types of extern objects may provide methods that can be implemented by the P4 programmers.
-   Such methods are described with the abstract keyword prior to the method definition.
-   When such an object is instantiated the user has to supply an implementation of all the abstract methods. *)
-
-and type_extern_abstract_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (id : El.Ast.id) (tparams : El.Ast.tparam list) (params : El.Ast.param list)
-    (typ_ret : El.Ast.typ) : Ctx.t =
-  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern) then (
-    Format.eprintf
-      "(type_extern_abstract_method_decl) Extern method declarations must be \
-       in an extern block\n";
-    assert false);
-  let tparams = List.map it tparams in
-  let fid = FId.to_fid id params in
-  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
-  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
-  let typ_ret = eval_type_with_check Ctx.Local ctx' typ_ret |> it in
-  let ctx' = Ctx.set_localkind (Ctx.ExternAbstractMethod typ_ret) ctx' in
-  let params =
-    List.map (static_eval_param Ctx.Local ctx') params |> List.map it
-  in
-  let params =
-    List.map
-      (fun (id, dir, typ, value_default, _) ->
-        (id.it, dir.it, typ.it, Option.map it value_default))
-      params
-  in
-  let fd = Types.ExternAbstractMethodD (tparams, params, typ_ret) in
-  check_valid_funcdef cursor ctx fd;
-  Ctx.add_funcdef cursor fid fd ctx
-
-and type_extern_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (tparams : El.Ast.tparam list) (params : El.Ast.param list)
-    (typ_ret : El.Ast.typ) : Ctx.t =
-  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern) then (
-    Format.eprintf
-      "(type_extern_method_decl) Extern method declarations must be in an \
-       extern block\n";
-    assert false);
-  let tparams = List.map it tparams in
-  let fid = FId.to_fid id params in
-  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
-  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
-  let ctx' = Ctx.set_localkind Ctx.ExternMethod ctx' in
-  let params =
-    List.map (static_eval_param Ctx.Local ctx') params |> List.map it
-  in
-  let typ_ret = eval_type_with_check Ctx.Local ctx' typ_ret |> it in
-  let params =
-    List.map
-      (fun (id, dir, typ, value_default, _) ->
-        (id.it, dir.it, typ.it, Option.map it value_default))
-      params
-  in
-  let fd = Types.ExternMethodD (tparams, params, typ_ret) in
-  check_valid_funcdef cursor ctx fd;
-  Ctx.add_funcdef cursor fid fd ctx
-
-and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (tparams : El.Ast.tparam list) (mthds : El.Ast.decl list) : Ctx.t =
-  if cursor <> Ctx.Global then (
-    Format.eprintf
-      "(type_extern_object_decl) Extern object declarations must be global\n";
-    assert false);
-  let cons, mthds =
-    List.partition
-      (fun (mthd : El.Ast.decl) ->
-        match mthd.it with ExternConstructorD _ -> true | _ -> false)
-      mthds
-  in
-  let tparams = List.map it tparams in
-  (* Typecheck methods and abstract methods
-     to construct function definition environment *)
-  let ctx' = Ctx.set_id Ctx.Block id.it ctx in
-  let ctx' = Ctx.set_blockkind Ctx.Extern ctx' in
-  let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
-  let ctx' = type_decls Ctx.Block ctx' mthds in
-  (* Create an extern object type definition
-     and add it to the context *)
-  let td = Types.ExternD (tparams, ctx'.block.fdenv) in
-  check_valid_typedef cursor ctx td;
-  let ctx = Ctx.add_typedef cursor id.it td ctx in
-  (* Typecheck constructors
-     to update constructor definition environment *)
-  let ctx'' = Ctx.set_id Ctx.Block id.it ctx in
-  let ctx'' = Ctx.set_blockkind Ctx.Extern ctx'' in
-  let ctx'' = Ctx.add_tparams Ctx.Block tparams ctx'' in
-  let ctx'' = type_decls Ctx.Block ctx'' cons in
-  (* Update the context with the constructor definition environment *)
-  { ctx with global = { ctx.global with cdenv = ctx''.global.cdenv } }
+  (ctx, decl_il)
 
 (* Entry point : Program typing *)
 
-let type_program (program : El.Ast.program) =
-  type_decls Ctx.Global Ctx.empty program
+let type_program (program : El.Ast.program) : Il.Ast.program =
+  let _ctx, program = type_decls Ctx.Global Ctx.empty program in
+  program

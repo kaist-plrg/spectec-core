@@ -129,12 +129,12 @@ let add_tparam cursor tparam ctx =
   | Block ->
       {
         ctx with
-        block = { ctx.block with tparams = ctx.block.tparams @ [ tparam ] };
+        block = { ctx.block with tparams = ctx.block.tparams @ [ tparam.it ] };
       }
   | Local ->
       {
         ctx with
-        local = { ctx.local with tparams = ctx.local.tparams @ [ tparam ] };
+        local = { ctx.local with tparams = ctx.local.tparams @ [ tparam.it ] };
       }
 
 let add_tparams cursor tparams ctx =
@@ -317,6 +317,7 @@ let find finder_opt cursor var ctx =
   find_opt finder_opt cursor var ctx |> Option.get
 
 let find_overloaded_opt finder_overloaded_opt cursor var args ctx =
+  let args = List.map it args in
   match var.it with
   | L.Top id -> finder_overloaded_opt Global (id.it, args) ctx
   | L.Current id -> finder_overloaded_opt cursor (id.it, args) ctx

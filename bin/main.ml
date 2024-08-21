@@ -28,8 +28,8 @@ let typecheck_command =
      let%map includes = flag "-i" (listed string) ~doc:"include paths"
      and filename = anon ("file.p4" %: string) in
      fun () ->
-       let ctx = typecheck includes filename in
-       Format.printf "%a\n" Typing.Ctx.pp ctx)
+       let program = typecheck includes filename in
+       Format.printf "%a\n" Il.Pp.pp_program program)
 
 let command =
   Command.group ~summary:"p4cherry: an interpreter of the p4_16 language"

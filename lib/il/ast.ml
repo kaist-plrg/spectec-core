@@ -72,7 +72,7 @@ and cparam' = (typ, svalue, dir) L.cparam'
 
 (* Type arguments *)
 and targ = typ
-and targ' = typ
+and targ' = typ'
 
 (* Arguments *)
 and arg = typ L.arg
