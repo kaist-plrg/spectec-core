@@ -73,6 +73,26 @@ open Util.Source
     - a type name declared via typedef, where the base type of that type is either one of the types listed above,
       or another typedef name that meets these conditions. *)
 
+let check_distinct_names (names : string list) : unit =
+  let distinct =
+    List.fold_left
+      (fun (distinct, names) name ->
+        if not distinct then (distinct, names)
+        else if List.mem name names then (false, names)
+        else (distinct, name :: names))
+      (true, []) names
+    |> fst
+  in
+  if not distinct then (
+    Format.eprintf "(check_distinct_names) Names are not distinct\n";
+    assert false)
+  else ()
+
+(* (TODO) check_valid_type and check_valid_typedef quite redundant for
+   typedefs that are not generic
+   maybe consider only check_valid_type after evaluating surface types of
+   StackT, TupleT and SpecT *)
+
 let rec check_valid_type (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : Type.t) :
     unit =
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
@@ -94,6 +114,8 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
   | NewT typ_inner ->
       check_valid_type' tset typ_inner;
       check_valid_type_nesting typ typ_inner
+  | EnumT _ -> ()
+  | SEnumT (_, typ_inner) -> check_valid_type_nesting typ typ_inner
   | TupleT typs_inner ->
       List.iter
         (fun typ_inner ->
@@ -127,11 +149,6 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
           check_valid_type' tset typ_inner;
           check_valid_type_nesting typ typ_inner)
         typs_inner
-  | EnumT members -> check_distinct_names members
-  | SEnumT (typ_inner, fields) ->
-      let members, _ = List.split fields in
-      check_distinct_names members;
-      check_valid_type' tset typ_inner
   | ExternT fdenv ->
       Envs.FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
   | ParserT params | ControlT params ->
@@ -145,21 +162,6 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
       check_valid_type' tset typ_inner;
       check_valid_type_nesting typ typ_inner
   | StateT -> ()
-
-and check_distinct_names (names : string list) : unit =
-  let distinct =
-    List.fold_left
-      (fun (distinct, names) name ->
-        if not distinct then (distinct, names)
-        else if List.mem name names then (false, names)
-        else (distinct, name :: names))
-      (true, []) names
-    |> fst
-  in
-  if not distinct then (
-    Format.eprintf "(check_distinct_names) Names are not distinct\n";
-    assert false)
-  else ()
 
 and check_valid_type_nesting (typ : Type.t) (typ_inner : Type.t) : unit =
   if not (check_valid_type_nesting' typ typ_inner) then (
@@ -187,8 +189,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
-      | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _
-      | SEnumT _ ->
+      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
+      | UnionT _ ->
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
@@ -203,10 +205,24 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VarT _ -> true
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
-      | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _
-      | SEnumT _ ->
+      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
+      | UnionT _ ->
           false
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | TopT -> true
+      | RecordT _ | SetT _ | StateT -> false)
+  | EnumT _ -> error_not_nest ()
+  | SEnumT _ -> (
+      match typ_inner with
+      | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT -> false
+      | FIntT _ | FBitT _ -> true
+      | VBitT _ -> false
+      | VarT _ -> true
+      | DefT typ_inner | NewT typ_inner ->
+          check_valid_type_nesting' typ typ_inner
+      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
+      | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
+          false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | TupleT _ -> (
@@ -219,8 +235,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
-      | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _
-      | SEnumT _ ->
+      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
+      | UnionT _ ->
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
@@ -233,10 +249,9 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VarT _ -> true
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
-      | TupleT _ | StackT _ | StructT _ -> false
+      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ -> false
       | HeaderT _ | UnionT _ -> true
-      | EnumT _ | SEnumT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
-          false
+      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | StructT _ -> (
@@ -249,8 +264,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
-      | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _
-      | SEnumT _ ->
+      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
+      | UnionT _ ->
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
@@ -263,14 +278,15 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
+      | EnumT _ -> false
+      | SEnumT _ -> true
       | TupleT _ | StackT _ -> false
       (* A special case: when struct is nested inside a header,
          because structs allow more nested types than a header, we need to check recursively *)
       | StructT fields ->
           let _, typs_inner = List.split fields in
           List.for_all (check_valid_type_nesting' typ) typs_inner
-      | HeaderT _ | UnionT _ | EnumT _ -> false
-      | SEnumT _ -> true
+      | HeaderT _ | UnionT _ -> false
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
@@ -282,26 +298,10 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VarT _ -> true
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
-      | TupleT _ | StackT _ -> false
+      | EnumT _ | SEnumT _ | TupleT _ | StackT _ -> false
       | StructT _ -> false
       | HeaderT _ -> true
-      | UnionT _ | EnumT _ | SEnumT _ | ExternT _ | ParserT _ | ControlT _
-      | PackageT ->
-          false
-      | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
-  | EnumT _ -> error_not_nest ()
-  | SEnumT _ -> (
-      match typ_inner with
-      | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT -> false
-      | FIntT _ | FBitT _ -> true
-      | VBitT _ -> false
-      | VarT _ -> true
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_type_nesting' typ typ_inner
-      | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _
-      | SEnumT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
-          false
+      | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _ ->
@@ -316,12 +316,14 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VarT _ -> false
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
+      | EnumT _ | SEnumT _ -> true
       (* A special case: when tuple is nested inside a set,
          because tuples allow more nested types than a set, we need to check recursively *)
+      (* This recursion holds because the inner types that a tuple allows is a
+         superset of the inner types that a set allows *)
       | TupleT typs_inner ->
           List.for_all (check_valid_type_nesting' typ) typs_inner
       | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
-      | EnumT _ | SEnumT _ -> true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
@@ -333,25 +335,168 @@ and check_valid_typedef (cursor : Ctx.cursor) (ctx : Ctx.t) (td : TypeDef.t) :
     Format.eprintf "(check_valid_typedef) Type definitions must be global\n";
     assert false);
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
+  check_valid_typedef' tset td
+
+and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
   match td with
-  | DefD typ | NewD typ -> check_valid_type' tset typ
-  | StructD fields -> check_valid_type' tset (StructT fields)
-  | HeaderD fields -> check_valid_type' tset (HeaderT fields)
-  | UnionD fields -> check_valid_type' tset (UnionT fields)
-  | EnumD (_id, members) -> check_valid_type' tset (EnumT members)
-  | SEnumD (_id, typ, fields) -> check_valid_type' tset (SEnumT (typ, fields))
+  | DefD typ_inner ->
+      check_valid_type' tset typ_inner;
+      check_valid_typedef_nesting td typ_inner
+  | NewD typ_inner ->
+      check_valid_type' tset typ_inner;
+      check_valid_typedef_nesting td typ_inner
+  | StructD fields ->
+      let members, typs_inner = List.split fields in
+      check_distinct_names members;
+      List.iter
+        (fun typ_inner ->
+          check_valid_type' tset typ_inner;
+          check_valid_typedef_nesting td typ_inner)
+        typs_inner
+  | HeaderD fields ->
+      let members, typs_inner = List.split fields in
+      check_distinct_names members;
+      List.iter
+        (fun typ_inner ->
+          check_valid_type' tset typ_inner;
+          check_valid_typedef_nesting td typ_inner)
+        typs_inner
+  | UnionD fields ->
+      let members, typs_inner = List.split fields in
+      check_distinct_names members;
+      List.iter
+        (fun typ_inner ->
+          check_valid_type' tset typ_inner;
+          check_valid_typedef_nesting td typ_inner)
+        typs_inner
+  | EnumD (_id, members) -> check_distinct_names members
+  | SEnumD (_id, typ_inner, fields) ->
+      let members, _ = List.split fields in
+      check_distinct_names members;
+      check_valid_type' tset typ_inner;
+      check_valid_typedef_nesting td typ_inner
   | ExternD (tparams, fdenv) ->
       let tset = TIdSet.union tset (TIdSet.of_list tparams) in
-      check_valid_type' tset (ExternT fdenv)
-  | ParserD (tparams, fdenv) ->
+      Envs.FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
+  | ParserD (tparams, params) | ControlD (tparams, params) ->
       let tset = TIdSet.union tset (TIdSet.of_list tparams) in
-      check_valid_type' tset (ParserT fdenv)
-  | ControlD (tparams, fdenv) ->
-      let tset = TIdSet.union tset (TIdSet.of_list tparams) in
-      check_valid_type' tset (ControlT fdenv)
-  | PackageD tparams ->
-      let tset = TIdSet.union tset (TIdSet.of_list tparams) in
-      check_valid_type' tset PackageT
+      List.iter (fun fd -> check_valid_param' tset fd) params
+  | PackageD _tparams -> ()
+
+and check_valid_typedef_nesting (td : TypeDef.t) (typ_inner : Type.t) : unit =
+  if not (check_valid_typedef_nesting' td typ_inner) then (
+    Format.eprintf
+      "(check_valid_typedef_nesting) Invalid nesting of %a inside %a\n" Type.pp
+      typ_inner TypeDef.pp td;
+    assert false)
+  else ()
+
+and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
+  let error_not_nest () : bool =
+    Format.eprintf
+      "(check_valid_typedef_nesting) %a is not a nested type definition\n"
+      TypeDef.pp td;
+    false
+  in
+  match td with
+  | DefD _ -> (
+      match typ_inner with
+      | VoidT -> false
+      | ErrT -> true
+      | MatchKindT -> false
+      | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
+      | DefT typ_inner | NewT typ_inner ->
+          check_valid_typedef_nesting' td typ_inner
+      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
+      | UnionT _ ->
+          true
+      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | TopT -> true
+      | RecordT _ | SetT _ | StateT -> false)
+  | NewD _ -> (
+      match typ_inner with
+      | VoidT | ErrT | MatchKindT | StrT -> false
+      | BoolT -> true
+      | IntT -> false
+      | FIntT _ | FBitT _ -> true
+      | VBitT _ -> false
+      | VarT _ -> true
+      | DefT typ_inner | NewT typ_inner ->
+          check_valid_typedef_nesting' td typ_inner
+      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
+      | UnionT _ ->
+          false
+      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | TopT -> true
+      | RecordT _ | SetT _ | StateT -> false)
+  | EnumD _ -> error_not_nest ()
+  | SEnumD _ -> (
+      match typ_inner with
+      | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT -> false
+      | FIntT _ | FBitT _ -> true
+      | VBitT _ -> false
+      | VarT _ -> true
+      | DefT typ_inner | NewT typ_inner ->
+          check_valid_typedef_nesting' td typ_inner
+      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
+      | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
+          false
+      | TopT -> true
+      | RecordT _ | SetT _ | StateT -> false)
+  | StructD _ -> (
+      match typ_inner with
+      | VoidT -> false
+      | ErrT -> true
+      | MatchKindT | StrT -> false
+      | BoolT -> true
+      | IntT -> false
+      | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
+      | DefT typ_inner | NewT typ_inner ->
+          check_valid_typedef_nesting' td typ_inner
+      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
+      | UnionT _ ->
+          true
+      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | TopT -> true
+      | RecordT _ | SetT _ | StateT -> false)
+  | HeaderD _ -> (
+      match typ_inner with
+      | VoidT | ErrT | MatchKindT | StrT -> false
+      | BoolT -> true
+      | IntT -> false
+      | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
+      | DefT typ_inner | NewT typ_inner ->
+          check_valid_typedef_nesting' td typ_inner
+      | EnumT _ -> false
+      | SEnumT _ -> true
+      | TupleT _ | StackT _ -> false
+      (* A special case: when struct is nested inside a header,
+         because structs allow more nested types than a header, we need to check recursively *)
+      (* This recursion holds because the inner types that a struct allows is a
+         superset of the inner types that a header allows *)
+      | StructT fields ->
+          let _, typs_inner = List.split fields in
+          List.for_all (check_valid_typedef_nesting' td) typs_inner
+      | HeaderT _ | UnionT _ -> false
+      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | TopT -> true
+      | RecordT _ | SetT _ | StateT -> false)
+  | UnionD _ -> (
+      match typ_inner with
+      | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
+      | VBitT _ ->
+          false
+      | VarT _ -> true
+      | DefT typ_inner | NewT typ_inner ->
+          check_valid_typedef_nesting' td typ_inner
+      | EnumT _ | SEnumT _ -> false
+      | TupleT _ | StackT _ -> false
+      | StructT _ -> false
+      | HeaderT _ -> true
+      | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | TopT -> true
+      | RecordT _ | SetT _ | StateT -> false)
+  | ExternD _ | ParserD _ | ControlD _ | PackageD _ -> error_not_nest ()
 
 (* (TODO) Appendix F. Restrictions on compile time and runtime calls *)
 
@@ -455,6 +600,10 @@ let rec substitute_type (tidmap : TIdMap.t) (typ : Type.t) : Type.t =
       typ
   | DefT typ_inner -> DefT (substitute_type tidmap typ_inner)
   | NewT typ_inner -> NewT (substitute_type tidmap typ_inner)
+  | EnumT _ -> typ
+  | SEnumT (id, typ_inner) ->
+      let typ_inner = substitute_type tidmap typ_inner in
+      SEnumT (id, typ_inner)
   | TupleT typs_inner -> TupleT (List.map (substitute_type tidmap) typs_inner)
   | StackT (typ_inner, size) -> StackT (substitute_type tidmap typ_inner, size)
   | StructT fields ->
@@ -469,10 +618,6 @@ let rec substitute_type (tidmap : TIdMap.t) (typ : Type.t) : Type.t =
       let members, typs_inner = List.split fields in
       let typs_inner = List.map (substitute_type tidmap) typs_inner in
       UnionT (List.combine members typs_inner)
-  | EnumT _ -> typ
-  | SEnumT (typ_inner, fields) ->
-      let typ_inner = substitute_type tidmap typ_inner in
-      SEnumT (typ_inner, fields)
   | ExternT fdenv ->
       let fdenv = Envs.FDEnv.map (substitute_funcdef tidmap) fdenv in
       ExternT fdenv
@@ -552,12 +697,19 @@ let specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
   in
   match td with
   (* Aliased types are not generic *)
-  | DefD typ ->
+  | DefD typ_inner ->
       check_arity [];
-      Types.DefT typ
-  | NewD typ ->
+      Types.DefT typ_inner
+  | NewD typ_inner ->
       check_arity [];
-      Types.NewT typ
+      Types.NewT typ_inner
+  (* Constant types are not generic *)
+  | EnumD (id, _members) ->
+      check_arity [];
+      Types.EnumT id
+  | SEnumD (id, typ_inner, _fields) ->
+      check_arity [];
+      Types.SEnumT (id, typ_inner)
   (* Aggregate types are not generic (yet, to be added in v1.2.2) *)
   | StructD fields ->
       check_arity [];
@@ -568,12 +720,6 @@ let specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
   | UnionD fields ->
       check_arity [];
       Types.UnionT fields
-  | EnumD (_id, members) ->
-      check_arity [];
-      Types.EnumT members
-  | SEnumD (_id, typ, fields) ->
-      check_arity [];
-      Types.SEnumT (typ, fields)
   (* Object types are generic *)
   | ExternD (tparams, fdenv) ->
       check_arity tparams;
@@ -1409,6 +1555,8 @@ and check_type_equals' (typ_l : Type.t) (typ_r : Type.t) : bool =
   | VBitT width_l, VBitT width_r -> Bigint.(width_l = width_r)
   | DefT typ_inner_l, DefT typ_inner_r | NewT typ_inner_l, NewT typ_inner_r ->
       check_type_equals' typ_inner_l typ_inner_r
+  | EnumT id_l, EnumT id_r -> id_l = id_r
+  | SEnumT (id_l, _typ_inner_l), SEnumT (id_r, _typ_inner_r) -> id_l = id_r
   | TupleT typs_inner_l, TupleT typs_inner_r ->
       List.for_all2 check_type_equals' typs_inner_l typs_inner_r
   | StackT (typ_inner_l, size_l), StackT (typ_inner_r, size_r) ->
@@ -1421,15 +1569,6 @@ and check_type_equals' (typ_l : Type.t) (typ_r : Type.t) : bool =
         (fun (member_l, typ_l) (member_r, typ_r) ->
           member_l = member_r && check_type_equals' typ_l typ_r)
         fields_l fields_r
-  (* (TODO) Enums should be checked of ids, not members *)
-  | EnumT members_l, EnumT members_r ->
-      List.equal String.equal members_l members_r
-  | SEnumT (typ_inner_l, fields_l), SEnumT (typ_inner_r, fields_r) ->
-      check_type_equals' typ_inner_l typ_inner_r
-      && List.for_all2
-           (fun (member_l, _value_l) (member_r, _value_r) ->
-             member_l = member_r)
-           fields_l fields_r
   | _ -> false
 
 and type_binop_compare_equal (typ_l : Type.t) (typ_r : Type.t) : Type.t =
@@ -1584,7 +1723,7 @@ and type_cast_equal (typ : Type.t) (typ_target : Type.t) : bool =
       type_cast_equal typ_inner typ_target_inner
   | NewT typ_inner, NewT typ_target_inner ->
       type_cast_equal typ_inner typ_target_inner
-  | SEnumT (typ_inner, _), typ_target -> type_cast_equal typ_inner typ_target
+  | SEnumT (_, typ_inner), typ_target -> type_cast_equal typ_inner typ_target
   | _ -> false
 
 and type_cast_explicit (typ : Type.t) (typ_target : Type.t) : bool =
@@ -1607,8 +1746,8 @@ and type_cast_explicit (typ : Type.t) (typ_target : Type.t) : bool =
   | typ, DefT typ_target_inner -> type_cast_explicit typ typ_target_inner
   | NewT typ_inner, typ_target -> type_cast_explicit typ_inner typ_target
   | typ, NewT typ_target_inner -> type_cast_explicit typ typ_target_inner
-  | SEnumT (typ_inner, _), typ_target -> type_cast_explicit typ_inner typ_target
-  | typ, SEnumT (typ_target_inner, _) -> type_cast_explicit typ typ_target_inner
+  | SEnumT (_, typ_inner), typ_target -> type_cast_explicit typ_inner typ_target
+  | typ, SEnumT (_, typ_target_inner) -> type_cast_explicit typ typ_target_inner
   (* (TODO) Add key-value list as runtime value, e.g., RecordV *)
   (* (TODO) Cast from tuple expression to a header stack type *)
   (* (TODO) Support invalid expression {#} *)
@@ -1891,8 +2030,8 @@ and check_bitstring_base' (typ : Type.t) : bool =
   | FBitT width -> Bigint.(width >= zero)
   | VBitT _ | VarT _ -> false
   | DefT typ_inner -> check_bitstring_base' typ_inner
-  | NewT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _
-  | SEnumT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
+  | NewT _ | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
+  | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
   | SetT _ | StateT ->
       false
 
@@ -1908,9 +2047,9 @@ and check_bitstring_index' (typ : Type.t) : bool =
   | IntT | FIntT _ | FBitT _ -> true
   | VBitT _ | VarT _ -> false
   | DefT typ_inner -> check_bitstring_index' typ_inner
-  | NewT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _ ->
-      false
-  | SEnumT (typ_inner, _) -> check_bitstring_index' typ_inner
+  | NewT _ | EnumT _ -> false
+  | SEnumT (_, typ_inner) -> check_bitstring_index' typ_inner
+  | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _ | SetT _
   | StateT ->
       false
@@ -1929,8 +2068,8 @@ and check_bitstring_slice_range' (typ_base : Type.t) (width_slice : Bigint.t) :
   | FIntT width_base | FBitT width_base -> Bigint.(width_slice <= width_base)
   | VBitT _ | VarT _ -> false
   | DefT typ_inner -> check_bitstring_slice_range' typ_inner width_slice
-  | NewT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _
-  | SEnumT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
+  | NewT _ | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
+  | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
   | SetT _ | StateT ->
       false
 
@@ -2002,18 +2141,18 @@ and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let td_base = Option.get td_base in
   let typ =
     match td_base with
-    | EnumD (_, members) ->
+    | EnumD (id, members) ->
         if not (List.mem member.it members) then (
           Format.eprintf "(type_type_acc_expr) Member %s does not exist in %a\n"
             member.it TypeDef.pp td_base;
           assert false);
-        Types.EnumT members
-    | SEnumD (_, typ_inner, fields) ->
+        Types.EnumT id
+    | SEnumD (id, typ_inner, fields) ->
         if not (List.mem_assoc member.it fields) then (
           Format.eprintf "(type_type_acc_expr) Member %s does not exist in %a\n"
             member.it TypeDef.pp td_base;
           assert false);
-        Types.SEnumT (typ_inner, fields)
+        Types.SEnumT (id, typ_inner)
     | _ ->
         Format.eprintf "(type_type_acc_expr) %a cannot be accessed\n" TypeDef.pp
           td_base;
@@ -2929,7 +3068,7 @@ and check_valid_var_type' (typ : Type.t) : bool =
   | IntT -> false
   | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
   | DefT typ_inner | NewT typ_inner -> check_valid_var_type' typ_inner
-  | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ | EnumT _ | SEnumT _
+  | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _
     ->
       true
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _ | SetT _
@@ -3187,6 +3326,17 @@ and type_enum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.eprintf "(type_enum_decl) Enum declarations must be global\n";
     assert false);
   let annos_il = List.map (type_anno cursor ctx) annos in
+  let type_enum_decl' (ctx : Ctx.t) (member : El.Ast.member) : Ctx.t =
+    let id_field = id.it ^ "." ^ member.it in
+    if Ctx.find_value_opt cursor id_field ctx |> Option.is_some then (
+      Format.eprintf "(type_enum_decl_glob) Enum %s was already defined\n"
+        id_field;
+      assert false);
+    let value = Value.EnumFieldV (id.it, member.it) in
+    let typ = Types.EnumT id.it in
+    Ctx.add_value cursor id_field value ctx |> Ctx.add_type cursor id_field typ
+  in
+  let ctx = List.fold_left type_enum_decl' ctx members in
   let td =
     let members = List.map it members in
     Types.EnumD (id.it, members)
@@ -3220,20 +3370,24 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     assert false);
   let annos_il = List.map (type_anno cursor ctx) annos in
   let typ = eval_type_with_check cursor ctx typ in
+  let type_senum_decl' (ctx : Ctx.t) (member, value) : Ctx.t =
+    let id_field = id.it ^ "." ^ member.it in
+    if Ctx.find_value_opt cursor id_field ctx |> Option.is_some then (
+      Format.eprintf
+        "(type_senum_decl_glob) Serializable enum %s was already defined\n"
+        id_field;
+      assert false);
+    let value = Value.SEnumFieldV (id.it, member.it, value.it) in
+    let typ = Types.SEnumT (id.it, typ.it) in
+    Ctx.add_value cursor id_field value ctx |> Ctx.add_type cursor id_field typ
+  in
   let members, exprs = List.split fields in
   let values =
     List.map
-      (fun expr ->
-        let typ_field, _expr = type_expr cursor ctx expr in
-        if typ_field <> typ.it then (
-          Format.eprintf
-            "(type_senum_decl) The type of the expression %a doesn't match the \
-             type of the serializable enum %a\n"
-            (El.Pp.pp_expr ~level:0) expr Type.pp typ.it;
-          assert false);
-        static_eval_expr cursor ctx expr |> expect_static_value expr)
+      (fun expr -> static_eval_expr cursor ctx expr |> expect_static_value expr)
       exprs
   in
+  let ctx = List.fold_left type_senum_decl' ctx (List.combine members values) in
   let td =
     let members = List.map it members in
     let values = List.map it values in
