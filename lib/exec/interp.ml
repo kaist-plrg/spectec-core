@@ -951,8 +951,7 @@ module Make (Arch : ARCH) : INTERP = struct
         (* If expr | mask value has 1s outside of field bit width *)
         let is_expr_limit = eval_binop_ge expr_value limit |> Value.get_bool in
         let is_mask_limit = eval_binop_ge mask_value limit |> Value.get_bool in
-        let _ = if is_expr_limit || is_mask_limit then 
-          Printf.printf "Warning : has 1s outside of field bit width\n" else () in
+        if is_expr_limit || is_mask_limit then Printf.printf "Warning : has 1s outside of field bit width\n";
         (* Should convert to bit *)
         let mask_value = Value.get_num mask_value in
         let mask_value = bit_of_raw_int mask_value width in
@@ -964,8 +963,7 @@ module Make (Arch : ARCH) : INTERP = struct
         let expr_value = interp_expr ctx expr |> snd in
         (* If expr value has 1s outside of field bit width *)
         let is_expr_limit = eval_binop_ge expr_value limit |> Value.get_bool in
-        let _ = if is_expr_limit then 
-          Printf.printf "Warning : has 1s outside of field bit width\n" else () in
+        if is_expr_limit then Printf.printf "Warning : has 1s outside of field bit width\n";
         (expr_value, key_value)
 
   and get_prior_lpm (ctx : Ctx.t) (expr : expr) (width : int) : int option =
@@ -992,20 +990,17 @@ module Make (Arch : ARCH) : INTERP = struct
         let is_low_limit = eval_binop_ge low_value limit |> Value.get_bool in
         let is_high_limit = eval_binop_ge high_value limit |> Value.get_bool in
         let is_not_order = eval_binop_gt low_value high_value |> Value.get_bool in
-        let _ = if is_low_limit || is_high_limit then 
-          Printf.printf "Warning : has 1s outside of field bit width\n" 
-                else if is_not_order then failwith "not correct order" else () in
+        if is_low_limit || is_high_limit then Printf.printf "Warning : has 1s outside of field bit width\n" 
+        else if is_not_order then failwith "not correct order";
         (low_value, high_value)
     | _ ->
         let expr_value = interp_expr ctx expr |> snd in
         (* If expr value has 1s outside of field bit width *)
         let is_expr_limit = eval_binop_ge expr_value limit |> Value.get_bool in
-        let _ = if is_expr_limit then 
-          Printf.printf "Warning : has 1s outside of field bit width\n" else () in
+        if is_expr_limit then Printf.printf "Warning : has 1s outside of field bit width\n";
         (expr_value, expr_value)
 
   (* Match *)
-  (* TODO : OPTIONAL and RANGE *)
   (* TODO : What about un init enum? *)
   and check_match (ctx : Ctx.t) (ent_list : keyset list)
       (key_list : (Value.t * match_kind) list) : bool =
@@ -1050,7 +1045,7 @@ module Make (Arch : ARCH) : INTERP = struct
     let need_prior = List.exists (fun (_, kind) -> List.mem kind.it prior_kind) keys in
     let is_spec = false in
     let first_prior = Some 1 in
-    let _ = if is_spec && (Option.is_none first_prior || not need_prior) then failwith "priority spec error" else 0 in
+    if is_spec && (Option.is_none first_prior || not need_prior) then failwith "priority spec error" else ();
 
     let set_priors' prior _ent = 
       (* (TODO) Should get is_specified, prior from ent. It may be from optEntryPriority*)
@@ -1089,23 +1084,25 @@ module Make (Arch : ARCH) : INTERP = struct
     else List.init length (fun _ -> None)
   
   and check_priors (priors : int option list) (largest_priority_wins : bool) =
-    let check_priors' sto prior = 
-      let prior_curr = Option.get prior in
-      let prior_prev = List.hd sto in 
-      let _ = if prior_curr < 0 then failwith "negative priority"
-              else if (largest_priority_wins && prior_curr > prior_prev) ||
-                  (not largest_priority_wins && prior_curr < prior_prev) then
-                  Printf.printf "Warning : entries_out_of_priority_order"
-              else if List.mem prior_curr sto then Printf.printf "Warning : duplicate priority %d" prior_curr
-              else () in
-      prior_curr::sto
+    let check_priors' acc prior_curr =
+      let prior_prev = List.hd acc in
+      if prior_curr < 0 then failwith "Error : Negative priority";
+      if (largest_priority_wins && prior_curr > prior_prev) || 
+        (not largest_priority_wins && prior_curr < prior_prev) then
+        Printf.printf "Warning: entries_out_of_priority_order\n";
+      if List.mem prior_curr acc then
+        Printf.printf "Warning: duplicate priority %d\n" prior_curr;
+      prior_curr::acc
     in
-    match priors with
-    | None :: _ -> []
-    | prior::priors -> 
-      let prior = Option.get prior in
-      List.fold_left check_priors' [prior] priors
-    | _ -> []
+    if List.for_all Option.is_none priors then ()
+    else if List.for_all Option.is_some priors then
+      let priors = List.map Option.get priors in
+      let prior = List.hd priors in
+      let priors = List.tl priors in
+      let _ = List.fold_left check_priors' [prior] priors in
+      ()
+    else failwith "Error : None and Some value are both in priors list";
+
 
   and match_action (ctx : Ctx.t) (keys : (Value.t * match_kind) list)
       (actions : table_action list) (entries : table_entry list)
@@ -1142,9 +1139,7 @@ module Make (Arch : ARCH) : INTERP = struct
       (* Else not changed *)
       else (prior, action) 
     in
-    let _, action =
-      List.fold_left2 find_action (None, None) entries priors
-    in
+    let action = List.fold_left2 find_action (None, None) entries priors |> snd in
     let action = if Option.is_none action then default_action else action in
     (* Calling an apply method on a table instance returns a value with
        a struct type with three fields. This structure is synthesized
