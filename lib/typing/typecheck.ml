@@ -125,7 +125,7 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
   | StackT (typ_inner, _) ->
       check_valid_type' tset typ_inner;
       check_valid_type_nesting typ typ_inner
-  | StructT fields ->
+  | StructT (_id, fields) ->
       let members, typs_inner = List.split fields in
       check_distinct_names members;
       List.iter
@@ -133,7 +133,7 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
           check_valid_type' tset typ_inner;
           check_valid_type_nesting typ typ_inner)
         typs_inner
-  | HeaderT fields ->
+  | HeaderT (_id, fields) ->
       let members, typs_inner = List.split fields in
       check_distinct_names members;
       List.iter
@@ -141,7 +141,7 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
           check_valid_type' tset typ_inner;
           check_valid_type_nesting typ typ_inner)
         typs_inner
-  | UnionT fields ->
+  | UnionT (_id, fields) ->
       let members, typs_inner = List.split fields in
       check_distinct_names members;
       List.iter
@@ -149,11 +149,11 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
           check_valid_type' tset typ_inner;
           check_valid_type_nesting typ typ_inner)
         typs_inner
-  | ExternT fdenv ->
+  | ExternT (_id, fdenv) ->
       Envs.FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
-  | ParserT params | ControlT params ->
+  | ParserT (_id, params) | ControlT (_id, params) ->
       List.iter (fun fd -> check_valid_param' tset fd) params
-  | PackageT | TopT -> ()
+  | PackageT _ | TopT -> ()
   | RecordT fields ->
       let members, typs_inner = List.split fields in
       check_distinct_names members;
@@ -192,7 +192,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ ->
           true
-      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | NewT _ -> (
@@ -208,7 +208,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ ->
           false
-      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | EnumT _ -> error_not_nest ()
@@ -221,7 +221,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | DefT typ_inner | NewT typ_inner ->
           check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-      | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
+      | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT _ ->
           false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
@@ -238,7 +238,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ ->
           true
-      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | StackT _ -> (
@@ -251,7 +251,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
           check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ -> false
       | HeaderT _ | UnionT _ -> true
-      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | StructT _ -> (
@@ -267,7 +267,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ ->
           true
-      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | HeaderT _ -> (
@@ -283,11 +283,11 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | TupleT _ | StackT _ -> false
       (* A special case: when struct is nested inside a header,
          because structs allow more nested types than a header, we need to check recursively *)
-      | StructT fields ->
+      | StructT (_, fields) ->
           let _, typs_inner = List.split fields in
           List.for_all (check_valid_type_nesting' typ) typs_inner
       | HeaderT _ | UnionT _ -> false
-      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | UnionT _ -> (
@@ -301,10 +301,10 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ -> false
       | StructT _ -> false
       | HeaderT _ -> true
-      | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _ ->
+  | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TopT | RecordT _ ->
       error_not_nest ()
   | SetT _ -> (
       match typ_inner with
@@ -324,7 +324,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | TupleT typs_inner ->
           List.for_all (check_valid_type_nesting' typ) typs_inner
       | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
-      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | StateT -> error_not_nest ()
@@ -345,7 +345,7 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
   | NewD typ_inner ->
       check_valid_type' tset typ_inner;
       check_valid_typedef_nesting td typ_inner
-  | StructD fields ->
+  | StructD (_id, fields) ->
       let members, typs_inner = List.split fields in
       check_distinct_names members;
       List.iter
@@ -353,7 +353,7 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
           check_valid_type' tset typ_inner;
           check_valid_typedef_nesting td typ_inner)
         typs_inner
-  | HeaderD fields ->
+  | HeaderD (_id, fields) ->
       let members, typs_inner = List.split fields in
       check_distinct_names members;
       List.iter
@@ -361,7 +361,7 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
           check_valid_type' tset typ_inner;
           check_valid_typedef_nesting td typ_inner)
         typs_inner
-  | UnionD fields ->
+  | UnionD (_id, fields) ->
       let members, typs_inner = List.split fields in
       check_distinct_names members;
       List.iter
@@ -375,13 +375,13 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
       check_distinct_names members;
       check_valid_type' tset typ_inner;
       check_valid_typedef_nesting td typ_inner
-  | ExternD (tparams, fdenv) ->
+  | ExternD (_id, tparams, fdenv) ->
       let tset = TIdSet.union tset (TIdSet.of_list tparams) in
       Envs.FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
-  | ParserD (tparams, params) | ControlD (tparams, params) ->
+  | ParserD (_id, tparams, params) | ControlD (_id, tparams, params) ->
       let tset = TIdSet.union tset (TIdSet.of_list tparams) in
       List.iter (fun fd -> check_valid_param' tset fd) params
-  | PackageD _tparams -> ()
+  | PackageD (_id, _tparams) -> ()
 
 and check_valid_typedef_nesting (td : TypeDef.t) (typ_inner : Type.t) : unit =
   if not (check_valid_typedef_nesting' td typ_inner) then (
@@ -410,7 +410,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ ->
           true
-      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | NewD _ -> (
@@ -426,7 +426,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ ->
           false
-      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | EnumD _ -> error_not_nest ()
@@ -439,7 +439,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | DefT typ_inner | NewT typ_inner ->
           check_valid_typedef_nesting' td typ_inner
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-      | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
+      | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT _ ->
           false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
@@ -456,7 +456,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ ->
           true
-      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | HeaderD _ -> (
@@ -474,11 +474,11 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
          because structs allow more nested types than a header, we need to check recursively *)
       (* This recursion holds because the inner types that a struct allows is a
          superset of the inner types that a header allows *)
-      | StructT fields ->
+      | StructT (_, fields) ->
           let _, typs_inner = List.split fields in
           List.for_all (check_valid_typedef_nesting' td) typs_inner
       | HeaderT _ | UnionT _ -> false
-      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | UnionD _ -> (
@@ -493,7 +493,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | TupleT _ | StackT _ -> false
       | StructT _ -> false
       | HeaderT _ -> true
-      | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
+      | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | ExternD _ | ParserD _ | ControlD _ | PackageD _ -> error_not_nest ()
@@ -606,28 +606,28 @@ let rec substitute_type (tidmap : TIdMap.t) (typ : Type.t) : Type.t =
       SEnumT (id, typ_inner)
   | TupleT typs_inner -> TupleT (List.map (substitute_type tidmap) typs_inner)
   | StackT (typ_inner, size) -> StackT (substitute_type tidmap typ_inner, size)
-  | StructT fields ->
+  | StructT (id, fields) ->
       let members, typs_inner = List.split fields in
       let typs_inner = List.map (substitute_type tidmap) typs_inner in
-      StructT (List.combine members typs_inner)
-  | HeaderT fields ->
+      StructT (id, List.combine members typs_inner)
+  | HeaderT (id, fields) ->
       let members, typs_inner = List.split fields in
       let typs_inner = List.map (substitute_type tidmap) typs_inner in
-      HeaderT (List.combine members typs_inner)
-  | UnionT fields ->
+      HeaderT (id, List.combine members typs_inner)
+  | UnionT (id, fields) ->
       let members, typs_inner = List.split fields in
       let typs_inner = List.map (substitute_type tidmap) typs_inner in
-      UnionT (List.combine members typs_inner)
-  | ExternT fdenv ->
+      UnionT (id, List.combine members typs_inner)
+  | ExternT (id, fdenv) ->
       let fdenv = Envs.FDEnv.map (substitute_funcdef tidmap) fdenv in
-      ExternT fdenv
-  | ParserT params ->
+      ExternT (id, fdenv)
+  | ParserT (id, params) ->
       let params = List.map (substitute_param tidmap) params in
-      ParserT params
-  | ControlT params ->
+      ParserT (id, params)
+  | ControlT (id, params) ->
       let params = List.map (substitute_param tidmap) params in
-      ControlT params
-  | PackageT | TopT -> typ
+      ControlT (id, params)
+  | PackageT _ | TopT -> typ
   | SetT typ_inner -> SetT (substitute_type tidmap typ_inner)
   | RecordT fields ->
       let members, typs_inner = List.split fields in
@@ -711,34 +711,34 @@ let specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
       check_arity [];
       Types.SEnumT (id, typ_inner)
   (* Aggregate types are not generic (yet, to be added in v1.2.2) *)
-  | StructD fields ->
+  | StructD (id, fields) ->
       check_arity [];
-      Types.StructT fields
-  | HeaderD fields ->
+      Types.StructT (id, fields)
+  | HeaderD (id, fields) ->
       check_arity [];
-      Types.HeaderT fields
-  | UnionD fields ->
+      Types.HeaderT (id, fields)
+  | UnionD (id, fields) ->
       check_arity [];
-      Types.UnionT fields
+      Types.UnionT (id, fields)
   (* Object types are generic *)
-  | ExternD (tparams, fdenv) ->
+  | ExternD (id, tparams, fdenv) ->
       check_arity tparams;
       let tidmap = List.combine tparams targs |> TIdMap.of_list in
       let fdenv = Envs.FDEnv.map (substitute_funcdef tidmap) fdenv in
-      Types.ExternT fdenv
-  | ParserD (tparams, params) ->
+      Types.ExternT (id, fdenv)
+  | ParserD (id, tparams, params) ->
       check_arity tparams;
       let tidmap = List.combine tparams targs |> TIdMap.of_list in
       let params = List.map (substitute_param tidmap) params in
-      Types.ParserT params
-  | ControlD (tparams, params) ->
+      Types.ParserT (id, params)
+  | ControlD (id, tparams, params) ->
       check_arity tparams;
       let tidmap = List.combine tparams targs |> TIdMap.of_list in
       let params = List.map (substitute_param tidmap) params in
-      Types.ControlT params
-  | PackageD tparams ->
+      Types.ControlT (id, params)
+  | PackageD (id, tparams) ->
       check_arity tparams;
-      Types.PackageT
+      Types.PackageT id
 
 and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) : FuncType.t =
   let check_arity tparams =
@@ -1566,13 +1566,10 @@ and check_type_equals' (typ_l : Type.t) (typ_r : Type.t) : bool =
   | StackT (typ_inner_l, size_l), StackT (typ_inner_r, size_r) ->
       check_type_equals' typ_inner_l typ_inner_r && Bigint.(size_l = size_r)
   (* (TODO) Fields can come in different order *)
-  | StructT fields_l, StructT fields_r
-  | HeaderT fields_l, HeaderT fields_r
-  | UnionT fields_l, UnionT fields_r ->
-      List.for_all2
-        (fun (member_l, typ_l) (member_r, typ_r) ->
-          member_l = member_r && check_type_equals' typ_l typ_r)
-        fields_l fields_r
+  | StructT (id_l, _fields_l), StructT (id_r, _fields_r)
+  | HeaderT (id_l, _fields_l), HeaderT (id_r, _fields_r)
+  | UnionT (id_l, _fields_l), UnionT (id_r, _fields_r) ->
+      id_l = id_r
   | _ -> false
 
 and type_binop_compare_equal (typ_l : Type.t) (typ_r : Type.t) : Type.t =
@@ -2052,8 +2049,8 @@ and check_bitstring_base' (typ : Type.t) : bool =
   | VBitT _ | VarT _ -> false
   | DefT typ_inner -> check_bitstring_base' typ_inner
   | NewT _ | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-  | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
-  | SetT _ | StateT ->
+  | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TopT
+  | RecordT _ | SetT _ | StateT ->
       false
 
 and check_bitstring_base (typ : Type.t) : unit =
@@ -2071,7 +2068,7 @@ and check_bitstring_index' (typ : Type.t) : bool =
   | NewT _ | EnumT _ -> false
   | SEnumT (_, typ_inner) -> check_bitstring_index' typ_inner
   | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _ | SetT _
+  | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TopT | RecordT _ | SetT _
   | StateT ->
       false
 
@@ -2090,8 +2087,8 @@ and check_bitstring_slice_range' (typ_base : Type.t) (width_slice : Bigint.t) :
   | VBitT _ | VarT _ -> false
   | DefT typ_inner -> check_bitstring_slice_range' typ_inner width_slice
   | NewT _ | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-  | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
-  | SetT _ | StateT ->
+  | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TopT
+  | RecordT _ | SetT _ | StateT ->
       false
 
 and check_bitstring_slice_range (typ_base : Type.t) (idx_lo : Bigint.t)
@@ -2228,7 +2225,7 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
               "(type_expr_acc_expr) Invalid member %s for header stack\n"
               member.it;
             assert false)
-    | StructT fields | HeaderT fields | UnionT fields ->
+    | StructT (_id, fields) | HeaderT (_id, fields) | UnionT (_id, fields) ->
         let typ_inner = List.assoc_opt member.it fields in
         if Option.is_none typ_inner then (
           Format.eprintf "(type_expr_acc_expr) Member %s does not exist in %a\n"
@@ -2478,16 +2475,16 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
         | "minSizeInBits" | "minSizeInBytes" ->
             Types.BuiltinMethodT ([], Types.IntT)
         | _ -> error_not_found ())
-    | ExternT fdenv -> (
+    | ExternT (_id, fdenv) -> (
         let fd = Envs.FDEnv.find_opt (member.it, args) fdenv in
         match fd with
         | Some fd -> specialize_funcdef fd targs
         | None -> error_not_found ())
-    | ParserT params -> (
+    | ParserT (_id, params) -> (
         match member.it with
         | "apply" -> Types.ParserApplyMethodT params
         | _ -> error_not_found ())
-    | ControlT params -> (
+    | ControlT (_id, params) -> (
         match member.it with
         | "apply" -> Types.ControlApplyMethodT params
         | _ -> error_not_found ())
@@ -2754,7 +2751,7 @@ and type_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
 and check_lvalue_type' (ctx : Ctx.t) (typ : Type.t) : bool =
   match typ with
   | DefT typ_inner | NewT typ_inner -> check_lvalue_type' ctx typ_inner
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> false
+  | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TopT -> false
   | _ -> true
 
 and check_lvalue' (ctx : Ctx.t) (expr : El.Ast.expr) : bool =
@@ -3101,7 +3098,7 @@ and check_valid_var_type' (typ : Type.t) : bool =
   | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _
     ->
       true
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _ | SetT _
+  | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TopT | RecordT _ | SetT _
   | StateT ->
       false
 
@@ -3265,7 +3262,7 @@ and type_struct_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let td =
     let members = List.map it members in
     let typs = List.map it typs in
-    Types.StructD (List.combine members typs)
+    Types.StructD (id.it, List.combine members typs)
   in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -3301,7 +3298,7 @@ and type_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let td =
     let members = List.map it members in
     let typs = List.map it typs in
-    Types.HeaderD (List.combine members typs)
+    Types.HeaderD (id.it, List.combine members typs)
   in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -3337,7 +3334,7 @@ and type_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let td =
     let members = List.map it members in
     let typs = List.map it typs in
-    Types.UnionD (List.combine members typs)
+    Types.UnionD (id.it, List.combine members typs)
   in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -3788,7 +3785,7 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
      and add it to the context *)
   let td =
     let tparams = List.map it tparams in
-    Types.ExternD (tparams, ctx'.block.fdenv)
+    Types.ExternD (id.it, tparams, ctx'.block.fdenv)
   in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -3842,7 +3839,7 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ParserD (tparams, params)
+    Types.ParserD (id.it, tparams, params)
   in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -3966,7 +3963,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ParserT params
+    Types.ParserT (id.it, params)
   in
   let cd =
     let cparams =
@@ -4105,7 +4102,7 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ControlD (tparams, params)
+    Types.ControlD (id.it, tparams, params)
   in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -4173,7 +4170,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ControlT params
+    Types.ControlT (id.it, params)
   in
   let cd =
     let cparams =
@@ -4246,7 +4243,7 @@ and type_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
      and add it to the context *)
   let td =
     let tparams = List.map it tparams in
-    Types.PackageD tparams
+    Types.PackageD (id.it, tparams)
   in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
