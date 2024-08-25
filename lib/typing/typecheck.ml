@@ -911,22 +911,23 @@ and static_eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr) :
 and static_eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr')
     : Il.Ast.svalue' option =
   match expr with
-  | BoolE b -> static_eval_bool b
-  | StrE s -> static_eval_str s
-  | NumE num -> static_eval_num num
-  | VarE var -> static_eval_var cursor ctx var
-  | TupleE exprs -> static_eval_tuple cursor ctx exprs
-  | RecordE fields -> static_eval_record cursor ctx fields
-  | UnE (unop, expr) -> static_eval_unop cursor ctx unop expr
-  | BinE (binop, expr_l, expr_r) ->
+  | BoolE { boolean } -> static_eval_bool boolean
+  | StrE { text } -> static_eval_str text
+  | NumE { num } -> static_eval_num num
+  | VarE { var } -> static_eval_var cursor ctx var
+  | TupleE { exprs } -> static_eval_tuple cursor ctx exprs
+  | RecordE { fields } -> static_eval_record cursor ctx fields
+  | UnE { unop; expr } -> static_eval_unop cursor ctx unop expr
+  | BinE { binop; expr_l; expr_r } ->
       static_eval_binop cursor ctx binop expr_l expr_r
-  | TernE (expr_cond, expr_then, expr_else) ->
+  | TernE { expr_cond; expr_then; expr_else } ->
       static_eval_ternop cursor ctx expr_cond expr_then expr_else
   (* | CastE (typ, expr) -> static_eval_cast ctx typ expr *)
-  | BitAccE (expr_base, expr_lo, expr_hi) ->
+  | BitAccE { expr_base; expr_lo; expr_hi } ->
       static_eval_bitstring_acc cursor ctx expr_base expr_lo expr_hi
-  | TypeAccE (var, member) -> static_eval_type_acc cursor ctx var member
-  | ErrAccE member -> static_eval_error_acc ctx member
+  | TypeAccE { var_base; member } ->
+      static_eval_type_acc cursor ctx var_base member
+  | ErrAccE { member } -> static_eval_error_acc ctx member
   (* | ExprAccE (expr_base, member) -> static_eval_expr_acc ctx expr_base member *)
   (* | CallE (expr_func, targs, args) -> static_eval_call ctx expr_func targs args *)
   | _ -> None
@@ -948,8 +949,8 @@ and expect_static_value (expr : El.Ast.expr) (value : Il.Ast.svalue option) :
         (El.Pp.pp_expr ~level:0) expr;
       assert false
 
-and static_eval_bool (b : bool) : Value.t option = Some (BoolV b)
-and static_eval_str (t : El.Ast.text) : Value.t option = Some (StrV t.it)
+and static_eval_bool (boolean : bool) : Value.t option = Some (BoolV boolean)
+and static_eval_str (text : El.Ast.text) : Value.t option = Some (StrV text.it)
 
 and static_eval_num (num : El.Ast.num) : Value.t option =
   match num.it with
@@ -1028,9 +1029,9 @@ and static_eval_bitstring_acc (cursor : Ctx.cursor) (ctx : Ctx.t)
       Runtime.Numerics.eval_bitstring_access value_base value_hi value_lo)
     values
 
-and static_eval_type_acc (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var)
-    (member : El.Ast.member) : Value.t option =
-  let td = Ctx.find_opt Ctx.find_typedef_opt cursor var ctx in
+and static_eval_type_acc (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (var_base : El.Ast.var) (member : El.Ast.member) : Value.t option =
+  let td = Ctx.find_opt Ctx.find_typedef_opt cursor var_base ctx in
   Option.map
     (fun (td : TypeDef.t) ->
       match td with
@@ -1118,33 +1119,35 @@ and type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr) :
 and type_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr') :
     Type.t * Il.Ast.expr' =
   match expr with
-  | BoolE b -> (Types.BoolT, Lang.Ast.BoolE b)
-  | StrE t -> (Types.StrT, Lang.Ast.StrE t)
-  | NumE num -> type_num_expr num
-  | VarE var -> type_var_expr cursor ctx var
-  | TupleE exprs -> type_tuple_expr cursor ctx exprs
-  | RecordE fields -> type_record_expr cursor ctx fields
-  | UnE (unop, expr) -> type_unop_expr cursor ctx unop expr
-  | BinE (binp, expr_l, expr_r) -> type_binop_expr cursor ctx binp expr_l expr_r
-  | TernE (expr_cond, expr_then, expr_else) ->
+  | BoolE { boolean } -> (Types.BoolT, Lang.Ast.BoolE { boolean })
+  | StrE { text } -> (Types.StrT, Lang.Ast.StrE { text })
+  | NumE { num } -> type_num_expr num
+  | VarE { var } -> type_var_expr cursor ctx var
+  | TupleE { exprs } -> type_tuple_expr cursor ctx exprs
+  | RecordE { fields } -> type_record_expr cursor ctx fields
+  | UnE { unop; expr } -> type_unop_expr cursor ctx unop expr
+  | BinE { binop; expr_l; expr_r } ->
+      type_binop_expr cursor ctx binop expr_l expr_r
+  | TernE { expr_cond; expr_then; expr_else } ->
       type_ternop_expr cursor ctx expr_cond expr_then expr_else
-  | CastE (typ, expr) -> type_cast_expr cursor ctx typ expr
-  | MaskE (expr_base, expr_mask) ->
+  | CastE { typ; expr } -> type_cast_expr cursor ctx typ expr
+  | MaskE { expr_base; expr_mask } ->
       type_mask_expr cursor ctx expr_base expr_mask
-  | RangeE (expr_lb, expr_ub) -> type_range_expr cursor ctx expr_lb expr_ub
-  | SelectE (exprs_key, select_cases) ->
-      type_select_expr cursor ctx exprs_key select_cases
-  | ArrAccE (expr_base, expr_idx) ->
+  | RangeE { expr_lb; expr_ub } -> type_range_expr cursor ctx expr_lb expr_ub
+  | SelectE { exprs_select; cases } ->
+      type_select_expr cursor ctx exprs_select cases
+  | ArrAccE { expr_base; expr_idx } ->
       type_array_acc_expr cursor ctx expr_base expr_idx
-  | BitAccE (expr_base, expr_lo, expr_hi) ->
+  | BitAccE { expr_base; expr_lo; expr_hi } ->
       type_bitstring_acc_expr cursor ctx expr_base expr_lo expr_hi
-  | TypeAccE (var_base, member) -> type_type_acc_expr cursor ctx var_base member
-  | ErrAccE member -> type_error_acc_expr cursor ctx member
-  | ExprAccE (expr_base, member) ->
+  | TypeAccE { var_base; member } ->
+      type_type_acc_expr cursor ctx var_base member
+  | ErrAccE { member } -> type_error_acc_expr cursor ctx member
+  | ExprAccE { expr_base; member } ->
       type_expr_acc_expr cursor ctx expr_base member
-  | CallE (expr_func, targs, args) ->
+  | CallE { expr_func; targs; args } ->
       type_call_expr cursor ctx expr_func targs args
-  | InstE (typ_inst, args) -> type_instantiation_expr cursor ctx typ_inst args
+  | InstE { typ; args } -> type_instantiation_expr cursor ctx typ args
 
 and type_num_expr (num : El.Ast.num) : Type.t * Il.Ast.expr' =
   let typ =
@@ -1153,7 +1156,7 @@ and type_num_expr (num : El.Ast.num) : Type.t * Il.Ast.expr' =
         if signed then Types.FIntT width else Types.FBitT width
     | _, None -> Types.IntT
   in
-  let expr_il = Lang.Ast.NumE num in
+  let expr_il = Lang.Ast.NumE { num } in
   (typ, expr_il)
 
 and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
@@ -1163,7 +1166,7 @@ and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
     Format.eprintf "(type_var_expr) %a is a free identifier\n" El.Pp.pp_var var;
     assert false);
   let typ = Option.get typ in
-  let expr_il = Lang.Ast.VarE var in
+  let expr_il = Lang.Ast.VarE { var } in
   (typ, expr_il)
 
 (* (8.12) Operations on tuple expressions
@@ -1175,7 +1178,7 @@ and type_tuple_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let typs, exprs_il = List.map (type_expr cursor ctx) exprs |> List.split in
   let typ = Types.TupleT typs in
   check_valid_type cursor ctx typ;
-  let expr_il = Lang.Ast.TupleE exprs_il in
+  let expr_il = Lang.Ast.TupleE { exprs = exprs_il } in
   (typ, expr_il)
 
 (* (8.13) Operations on structure-valued expressions
@@ -1211,7 +1214,7 @@ and type_record_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     Types.RecordT (List.combine members typs)
   in
   check_valid_type cursor ctx typ;
-  let expr_il = Lang.Ast.RecordE (List.combine members exprs_il) in
+  let expr_il = Lang.Ast.RecordE { fields = List.combine members exprs_il } in
   (typ, expr_il)
 
 (* (8.6) Operations on fixed-width bit types (unsigned integers)
@@ -1282,7 +1285,7 @@ and type_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : El.Ast.unop)
           assert false);
         typ
   in
-  let expr_il = Lang.Ast.UnE (unop, expr_il) in
+  let expr_il = Lang.Ast.UnE { unop; expr = expr_il } in
   (typ, expr_il)
 
 (* (8.2) Operaions on error types
@@ -1630,7 +1633,9 @@ and type_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
     | ConcatOp -> type_binop_concat typ_l typ_r
     | LAndOp | LOrOp -> type_binop_logical typ_l typ_r
   in
-  let expr_il = Lang.Ast.BinE (binop, expr_l_il, expr_r_il) in
+  let expr_il =
+    Lang.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il }
+  in
   (typ, expr_il)
 
 (* (8.5.1) Conditional operator
@@ -1666,7 +1671,14 @@ and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
        arbitrary-precision integers\n"
       (El.Pp.pp_expr ~level:0) expr_then (El.Pp.pp_expr ~level:0) expr_else;
     assert false);
-  let expr_il = Lang.Ast.TernE (expr_cond_il, expr_then_il, expr_else_il) in
+  let expr_il =
+    Lang.Ast.TernE
+      {
+        expr_cond = expr_cond_il;
+        expr_then = expr_then_il;
+        expr_else = expr_else_il;
+      }
+  in
   (typ_then, expr_il)
 
 (* (8.11) Casts
@@ -1761,7 +1773,7 @@ and type_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
     Format.eprintf "(type_cast_expr) Invalid cast from %a to %a\n" Type.pp typ
       Type.pp typ_target.it;
     assert false);
-  let expr_il = Lang.Ast.CastE (typ_target, expr_il) in
+  let expr_il = Lang.Ast.CastE { typ = typ_target; expr = expr_il } in
   (typ_target.it, expr_il)
 
 (* (8.15.3) Masks
@@ -1796,7 +1808,9 @@ and type_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
         assert false
   in
   check_valid_type cursor ctx typ_set;
-  let expr_il = Lang.Ast.MaskE (expr_base_il, expr_mask_il) in
+  let expr_il =
+    Lang.Ast.MaskE { expr_base = expr_base_il; expr_mask = expr_mask_il }
+  in
   (typ_set, expr_il)
 
 (* (8.15.4) Ranges
@@ -1828,7 +1842,9 @@ and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : El.Ast.expr)
         assert false
   in
   check_valid_type cursor ctx typ_set;
-  let expr_il = Lang.Ast.RangeE (expr_lb_il, expr_ub_il) in
+  let expr_il =
+    Lang.Ast.RangeE { expr_lb = expr_lb_il; expr_ub = expr_ub_il }
+  in
   (typ_set, expr_il)
 
 (* (13.6) Select expressions
@@ -1907,7 +1923,7 @@ and type_select_case' (ctx : Ctx.t) (typs_key : Type.t list)
   (keysets_il, state_label)
 
 and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (exprs_key : El.Ast.expr list) (cases : El.Ast.select_case list) :
+    (exprs_select : El.Ast.expr list) (cases : El.Ast.select_case list) :
     Type.t * Il.Ast.expr' =
   if
     not
@@ -1918,20 +1934,22 @@ and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       "(type_select_expr) Select expression must be in a parser state (more \
        strictly, only nested inside a transition statement)\n";
     assert false);
-  let typs_key, exprs_key_il =
+  let typs_select, exprs_select_il =
     List.map
-      (fun expr_key ->
-        let typ_key, expr_key_il = type_expr Ctx.Local ctx expr_key in
-        let typ_key = Types.SetT typ_key in
-        check_valid_type Ctx.Local ctx typ_key;
-        (typ_key, expr_key_il))
-      exprs_key
+      (fun expr_select ->
+        let typ_select, expr_select_il = type_expr Ctx.Local ctx expr_select in
+        let typ_select = Types.SetT typ_select in
+        check_valid_type Ctx.Local ctx typ_select;
+        (typ_select, expr_select_il))
+      exprs_select
     |> List.split
   in
-  List.iter (check_valid_type Ctx.Local ctx) typs_key;
+  List.iter (check_valid_type Ctx.Local ctx) typs_select;
   let typ = Types.StateT in
-  let cases_il = List.map (type_select_case ctx typs_key) cases in
-  let expr_il = Lang.Ast.SelectE (exprs_key_il, cases_il) in
+  let cases_il = List.map (type_select_case ctx typs_select) cases in
+  let expr_il =
+    Lang.Ast.SelectE { exprs_select = exprs_select_il; cases = cases_il }
+  in
   (typ, expr_il)
 
 (* (8.12) Operations on tuple expressions
@@ -1982,7 +2000,9 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
           typ_base;
         assert false
   in
-  let expr_il = Lang.Ast.ArrAccE (expr_base_il, expr_idx_il) in
+  let expr_il =
+    Lang.Ast.ArrAccE { expr_base = expr_base_il; expr_idx = expr_idx_il }
+  in
   (typ, expr_il)
 
 (* (8.6) Operations on fixed-width bit types (unsigned integers)
@@ -2108,7 +2128,10 @@ and type_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   check_bitstring_slice_range typ_base idx_lo idx_hi;
   let width_slice = Bigint.(idx_hi - idx_lo + one) in
   let typ = Types.FBitT width_slice in
-  let expr_il = Lang.Ast.BitAccE (expr_base_il, expr_lo_il, expr_hi_il) in
+  let expr_il =
+    Lang.Ast.BitAccE
+      { expr_base = expr_base_il; expr_lo = expr_lo_il; expr_hi = expr_hi_il }
+  in
   (typ, expr_il)
 
 (* (8.2) Operations on error types
@@ -2123,7 +2146,7 @@ and type_error_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       member.it;
     assert false);
   let typ = Types.ErrT in
-  let expr_il = Lang.Ast.ErrAccE member in
+  let expr_il = Lang.Ast.ErrAccE { member } in
   (typ, expr_il)
 
 (* (8.3) Operations on enum types
@@ -2158,7 +2181,7 @@ and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
           td_base;
         assert false
   in
-  let expr_il = Lang.Ast.TypeAccE (var_base, member) in
+  let expr_il = Lang.Ast.TypeAccE { var_base; member } in
   (typ, expr_il)
 
 (* (8.16) Operations on struct types
@@ -2216,7 +2239,7 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
           typ_base;
         assert false
   in
-  let expr_il = Lang.Ast.ExprAccE (expr_base_il, member) in
+  let expr_il = Lang.Ast.ExprAccE { expr_base = expr_base_il; member } in
   (typ, expr_il)
 
 (* (8.20) Method invocations and function calls
@@ -2412,14 +2435,14 @@ and type_func (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var)
     assert false);
   let fd = Option.get fd in
   let ft = specialize_funcdef fd targs in
-  let expr_il = Lang.Ast.VarE var in
+  let expr_il = Lang.Ast.VarE { var } in
   (ft, expr_il)
 
 and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
-    (fid : El.Ast.member) (targs_il : Il.Ast.targ list) (args : El.Ast.arg list)
-    : FuncType.t * Il.Ast.expr' =
+    (member : El.Ast.member) (targs_il : Il.Ast.targ list)
+    (args : El.Ast.arg list) : FuncType.t * Il.Ast.expr' =
   let error_not_found () =
-    Format.eprintf "(type_method) Method %s not found for %a\n" fid.it
+    Format.eprintf "(type_method) Method %s not found for %a\n" member.it
       (El.Pp.pp_expr ~level:0) expr_base;
     assert false
   in
@@ -2428,7 +2451,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
   let ft =
     match typ_base with
     | StackT _ -> (
-        match fid.it with
+        match member.it with
         | "push_front" | "pop_front" ->
             let params = [ ("count", Dir.No `DYN, Types.IntT, None) ] in
             let typ_ret = Types.VoidT in
@@ -2437,39 +2460,39 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
             Types.BuiltinMethodT ([], Types.IntT)
         | _ -> error_not_found ())
     | StructT _ -> (
-        match fid.it with
+        match member.it with
         | "minSizeInBits" | "minSizeInBytes" ->
             Types.BuiltinMethodT ([], Types.IntT)
         | _ -> error_not_found ())
     | HeaderT _ -> (
-        match fid.it with
+        match member.it with
         | "isValid" -> Types.BuiltinMethodT ([], Types.BoolT)
         | "setValid" | "setInvalid" -> Types.BuiltinMethodT ([], Types.VoidT)
         | "minSizeInBits" | "minSizeInBytes" ->
             Types.BuiltinMethodT ([], Types.IntT)
         | _ -> error_not_found ())
     | UnionT _ -> (
-        match fid.it with
+        match member.it with
         | "isValid" -> Types.BuiltinMethodT ([], Types.BoolT)
         | "minSizeInBits" | "minSizeInBytes" ->
             Types.BuiltinMethodT ([], Types.IntT)
         | _ -> error_not_found ())
     | ExternT fdenv -> (
-        let fd = Envs.FDEnv.find_opt (fid.it, args) fdenv in
+        let fd = Envs.FDEnv.find_opt (member.it, args) fdenv in
         match fd with
         | Some fd -> specialize_funcdef fd targs
         | None -> error_not_found ())
     | ParserT params -> (
-        match fid.it with
+        match member.it with
         | "apply" -> Types.ParserApplyMethodT params
         | _ -> error_not_found ())
     | ControlT params -> (
-        match fid.it with
+        match member.it with
         | "apply" -> Types.ControlApplyMethodT params
         | _ -> error_not_found ())
     | _ -> error_not_found ()
   in
-  let expr_il = Lang.Ast.ExprAccE (expr_base_il, fid) in
+  let expr_il = Lang.Ast.ExprAccE { expr_base = expr_base_il; member } in
   (ft, expr_il)
 
 and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : El.Ast.expr)
@@ -2480,9 +2503,9 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : El.Ast.expr)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
   let ft, expr_func_il =
     match expr_func.it with
-    | VarE var -> type_func cursor ctx var targs_il args
-    | ExprAccE (expr_base, fid) ->
-        type_method cursor ctx expr_base fid targs_il args
+    | VarE { var } -> type_func cursor ctx var targs_il args
+    | ExprAccE { expr_base; member } ->
+        type_method cursor ctx expr_base member targs_il args
     | _ ->
         Format.eprintf "(type_call) %a is not a function or a method\n"
           (El.Pp.pp_expr ~level:0) expr_func;
@@ -2520,7 +2543,10 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : El.Ast.expr)
             assert false))
     params args;
   let typ = FuncType.get_typ_ret ft in
-  let expr_il = Lang.Ast.CallE (expr_func_il, targs_il, args_il) in
+  let expr_il =
+    Lang.Ast.CallE
+      { expr_func = expr_func_il; targs = targs_il; args = args_il }
+  in
   (typ, expr_il)
 
 and type_call_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : El.Ast.expr)
@@ -2591,17 +2617,17 @@ and align_cparams_with_args (cparams : Types.cparam list)
     (args_il : Il.Ast.arg list) =
   align_params_with_args cparams args typ_args args_il
 
-and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (typ_inst : El.Ast.typ) (args : El.Ast.arg list) : Type.t * Il.Ast.expr' =
+and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
+    (args : El.Ast.arg list) : Type.t * Il.Ast.expr' =
   (* Find the constructor definition and specialize it if necessary *)
   (* (TODO) Implement type inference for missing type arguments *)
   let var_inst, targs =
-    match typ_inst.it with
+    match typ.it with
     | NameT var -> (var, [])
     | SpecT (var, targs) -> (var, targs)
     | _ ->
         Format.eprintf "(type_instantiation) %a is not an instance type\n"
-          El.Pp.pp_typ typ_inst;
+          El.Pp.pp_typ typ;
         assert false
   in
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
@@ -2610,7 +2636,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
   in
   if Option.is_none cd then (
     Format.eprintf "(type_instantiation) %a is not an instance type\n"
-      El.Pp.pp_typ typ_inst;
+      El.Pp.pp_typ typ;
     assert false);
   let cd = Option.get cd in
   let ct =
@@ -2619,7 +2645,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
   in
   (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
-  let cparams, typ = ct in
+  let cparams, typ_inst = ct in
   let typ_args, args_il = List.map (type_arg cursor ctx) args |> List.split in
   check_instantiation_arity var_inst cparams args_il;
   check_named_args args_il;
@@ -2647,12 +2673,12 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
           assert false)
     cparams args;
   (* (TODO) Maybe we want to define InstE for IL, with type arguments *)
-  let expr_il = Lang.Ast.InstE (typ $ typ_inst.at, args_il) in
-  (typ, expr_il)
+  let expr_il = Lang.Ast.InstE { typ = typ_inst $ typ.at; args = args_il } in
+  (typ_inst, expr_il)
 
 and type_instantiation_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (typ_inst : El.Ast.typ) (args : El.Ast.arg list) : Type.t * Il.Ast.expr' =
-  type_instantiation cursor ctx typ_inst args
+    (typ : El.Ast.typ) (args : El.Ast.arg list) : Type.t * Il.Ast.expr' =
+  type_instantiation cursor ctx typ args
 
 (* Argument typing *)
 
@@ -2690,20 +2716,19 @@ and type_stmt' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
     assert false);
   match stmt with
   | EmptyS -> (ctx, flow, Lang.Ast.EmptyS)
-  | AssignS (expr_lhs, expr_rhs) ->
-      type_assign_stmt cursor ctx flow expr_lhs expr_rhs
+  | AssignS { expr_l; expr_r } -> type_assign_stmt cursor ctx flow expr_l expr_r
   | SwitchS _ ->
       Format.eprintf "(type_stmt) Switch statement is not supported\n";
       assert false
-  | IfS (expr_cond, stmt_then, stmt_else) ->
+  | IfS { expr_cond; stmt_then; stmt_else } ->
       type_if_stmt cursor ctx flow expr_cond stmt_then stmt_else
-  | BlockS block -> type_block_stmt cursor ctx flow block
+  | BlockS { block } -> type_block_stmt cursor ctx flow block
   | ExitS -> (ctx, flow, Lang.Ast.ExitS)
-  | RetS expr_ret -> type_return_stmt cursor ctx flow expr_ret
-  | CallS (expr_func, targs, args) ->
+  | RetS { expr_ret } -> type_return_stmt cursor ctx flow expr_ret
+  | CallS { expr_func; targs; args } ->
       type_call_stmt cursor ctx flow expr_func targs args
-  | TransS expr -> type_transition_stmt cursor ctx flow expr
-  | DeclS decl -> type_decl_stmt cursor ctx flow decl
+  | TransS { expr_label } -> type_transition_stmt cursor ctx flow expr_label
+  | DeclS { decl } -> type_decl_stmt cursor ctx flow decl
 
 and type_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
     (stmts : El.Ast.stmt list) : Ctx.t * flow * Il.Ast.stmt list =
@@ -2740,7 +2765,7 @@ and check_lvalue_type' (ctx : Ctx.t) (typ : Type.t) : bool =
 
 and check_lvalue' (ctx : Ctx.t) (expr : El.Ast.expr) : bool =
   match expr.it with
-  | VarE var ->
+  | VarE { var } ->
       let typ = Ctx.find_opt Ctx.find_type_opt Ctx.Local var ctx in
       if Option.is_none typ then (
         Format.eprintf "(check_lvalue) %a is a free identifier\n" El.Pp.pp_var
@@ -2751,8 +2776,9 @@ and check_lvalue' (ctx : Ctx.t) (expr : El.Ast.expr) : bool =
         Ctx.find_opt Ctx.find_value_opt Ctx.Local var ctx |> Option.is_some
       in
       (not is_const) && check_lvalue_type' ctx typ
-  | ArrAccE (expr_base, _) | BitAccE (expr_base, _, _) | ExprAccE (expr_base, _)
-    ->
+  | ArrAccE { expr_base; _ }
+  | BitAccE { expr_base; _ }
+  | ExprAccE { expr_base; _ } ->
       check_lvalue' ctx expr_base
   | _ -> false
 
@@ -2763,20 +2789,20 @@ and check_lvalue (ctx : Ctx.t) (expr : El.Ast.expr) : unit =
     assert false)
 
 and type_assign_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
-    (expr_lhs : El.Ast.expr) (expr_rhs : El.Ast.expr) :
-    Ctx.t * flow * Il.Ast.stmt' =
-  check_lvalue ctx expr_lhs;
-  let typ_lhs, expr_lhs_il = type_expr cursor ctx expr_lhs in
-  let typ_rhs, expr_rhs_il = type_expr cursor ctx expr_rhs in
+    (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) : Ctx.t * flow * Il.Ast.stmt'
+    =
+  check_lvalue ctx expr_l;
+  let typ_l, expr_l_il = type_expr cursor ctx expr_l in
+  let typ_r, expr_r_il = type_expr cursor ctx expr_r in
   (* (TODO) Insert cast if possible *)
-  if typ_lhs <> typ_rhs then (
+  if typ_l <> typ_r then (
     Format.eprintf
       "(type_assign_stmt) %a on the left side has type %a but %a on the right \
        side has type %a\n"
-      (El.Pp.pp_expr ~level:0) expr_lhs Type.pp typ_lhs (El.Pp.pp_expr ~level:0)
-      expr_rhs Type.pp typ_rhs;
+      (El.Pp.pp_expr ~level:0) expr_l Type.pp typ_l (El.Pp.pp_expr ~level:0)
+      expr_r Type.pp typ_r;
     assert false);
-  let stmt_il = Lang.Ast.AssignS (expr_lhs_il, expr_rhs_il) in
+  let stmt_il = Lang.Ast.AssignS { expr_l = expr_l_il; expr_r = expr_r_il } in
   (ctx, flow, stmt_il)
 
 (* (12.6) Conditional statement
@@ -2794,7 +2820,14 @@ and type_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
     assert false);
   let _ctx', flow_then, stmt_then_il = type_stmt cursor ctx flow stmt_then in
   let _ctx', flow_else, stmt_else_il = type_stmt cursor ctx flow stmt_else in
-  let stmt_il = Lang.Ast.IfS (expr_cond_il, stmt_then_il, stmt_else_il) in
+  let stmt_il =
+    Lang.Ast.IfS
+      {
+        expr_cond = expr_cond_il;
+        stmt_then = stmt_then_il;
+        stmt_else = stmt_else_il;
+      }
+  in
   match (flow_then, flow_else) with
   | Ret, Ret -> (ctx, Ret, stmt_il)
   | _ -> (ctx, Cont, stmt_il)
@@ -2823,7 +2856,7 @@ and type_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
   let ctx = Ctx.enter_frame ctx in
   let ctx, flow, block_il = type_block cursor ctx flow block in
   let ctx = Ctx.exit_frame ctx in
-  let stmt_il = Lang.Ast.BlockS block_il in
+  let stmt_il = Lang.Ast.BlockS { block = block_il } in
   (ctx, flow, stmt_il)
 
 (* (12.4) Return statement
@@ -2870,7 +2903,7 @@ and type_return_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (_flow : flow)
        type %a\n"
       Type.pp typ_ret Type.pp typ_ret_func;
     assert false);
-  let stmt_il = Lang.Ast.RetS expr_ret_il in
+  let stmt_il = Lang.Ast.RetS { expr_ret = expr_ret_il } in
   (ctx, Ret, stmt_il)
 
 (* (8.20) Method invocations and function calls *)
@@ -2881,11 +2914,14 @@ and type_call_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
   let _typ, expr_call_il = type_call cursor ctx expr_func targs args in
   let expr_func_il, targs_il, args_il =
     match expr_call_il with
-    | CallE (expr_func_il, targs_il, args_il) ->
+    | CallE { expr_func = expr_func_il; targs = targs_il; args = args_il } ->
         (expr_func_il, targs_il, args_il)
     | _ -> assert false
   in
-  let stmt_il = Lang.Ast.CallS (expr_func_il, targs_il, args_il) in
+  let stmt_il =
+    Lang.Ast.CallS
+      { expr_func = expr_func_il; targs = targs_il; args = args_il }
+  in
   (ctx, flow, stmt_il)
 
 (* (13.5) Transition statements
@@ -2894,23 +2930,23 @@ and type_call_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
    which transfers control to another state, possibly accept or reject. *)
 
 and type_transition_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
-    (expr : El.Ast.expr) : Ctx.t * flow * Il.Ast.stmt' =
+    (expr_label : El.Ast.expr) : Ctx.t * flow * Il.Ast.stmt' =
   if not (match ctx.local.kind with Ctx.ParserState -> true | _ -> false) then (
     Format.eprintf
       "(type_transition_stmt) Transition statement must be in a parser state\n";
     assert false);
-  let typ, expr_il = type_expr cursor ctx expr in
-  if not (match typ with StateT -> true | _ -> false) then (
+  let typ_label, expr_label_il = type_expr cursor ctx expr_label in
+  if not (match typ_label with StateT -> true | _ -> false) then (
     Format.eprintf "(type_transition_stmt) Label %a is not a valid label\n"
-      (El.Pp.pp_expr ~level:0) expr;
+      (El.Pp.pp_expr ~level:0) expr_label;
     assert false);
-  let stmt_il = Lang.Ast.TransS expr_il in
+  let stmt_il = Lang.Ast.TransS { expr_label = expr_label_il } in
   (ctx, flow, stmt_il)
 
 and type_decl_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
     (decl : El.Ast.decl) : Ctx.t * flow * Il.Ast.stmt' =
   let ctx, decl_il = type_decl cursor ctx decl in
-  let stmt_il = Lang.Ast.DeclS decl_il in
+  let stmt_il = Lang.Ast.DeclS { decl = decl_il } in
   (ctx, flow, stmt_il)
 
 (* Declaration typing *)
@@ -3129,7 +3165,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let typ, expr_il = type_instantiation cursor ctx typ args in
   let typ_il, args_il =
     match expr_il with
-    | Lang.Ast.InstE (typ_il, args_il) -> (typ_il, args_il)
+    | Lang.Ast.InstE { typ = typ_il; args = args_il } -> (typ_il, args_il)
     | _ -> assert false
   in
   (* (TODO) Check that init blocks are for abstract methods *)

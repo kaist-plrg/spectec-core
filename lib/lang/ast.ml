@@ -100,26 +100,34 @@ and 'typ arg' = ExprA of 'typ expr | NameA of id * 'typ expr | AnyA
 and 'typ expr = 'typ expr' phrase
 
 and 'typ expr' =
-  | BoolE of bool
-  | StrE of text
-  | NumE of num
-  | VarE of var
-  | TupleE of 'typ expr list
-  | RecordE of (member * 'typ expr) list
-  | UnE of unop * 'typ expr
-  | BinE of binop * 'typ expr * 'typ expr
-  | TernE of 'typ expr * 'typ expr * 'typ expr
-  | CastE of 'typ * 'typ expr
-  | MaskE of 'typ expr * 'typ expr
-  | RangeE of 'typ expr * 'typ expr
-  | SelectE of 'typ expr list * 'typ select_case list
-  | ArrAccE of 'typ expr * 'typ expr
-  | BitAccE of 'typ expr * 'typ expr * 'typ expr
-  | ErrAccE of member
-  | TypeAccE of var * member
-  | ExprAccE of 'typ expr * member
-  | CallE of 'typ expr * 'typ list * 'typ arg list
-  | InstE of 'typ * 'typ arg list
+  | BoolE of { boolean : bool }
+  | StrE of { text : text }
+  | NumE of { num : num }
+  | VarE of { var : var }
+  | TupleE of { exprs : 'typ expr list }
+  | RecordE of { fields : (member * 'typ expr) list }
+  | UnE of { unop : unop; expr : 'typ expr }
+  | BinE of { binop : binop; expr_l : 'typ expr; expr_r : 'typ expr }
+  | TernE of {
+      expr_cond : 'typ expr;
+      expr_then : 'typ expr;
+      expr_else : 'typ expr;
+    }
+  | CastE of { typ : 'typ; expr : 'typ expr }
+  | MaskE of { expr_base : 'typ expr; expr_mask : 'typ expr }
+  | RangeE of { expr_lb : 'typ expr; expr_ub : 'typ expr }
+  | SelectE of { exprs_select : 'typ expr list; cases : 'typ select_case list }
+  | ArrAccE of { expr_base : 'typ expr; expr_idx : 'typ expr }
+  | BitAccE of {
+      expr_base : 'typ expr;
+      expr_lo : 'typ expr;
+      expr_hi : 'typ expr;
+    }
+  | ErrAccE of { member : member }
+  | TypeAccE of { var_base : var; member : member }
+  | ExprAccE of { expr_base : 'typ expr; member : member }
+  | CallE of { expr_func : 'typ expr; targs : 'typ list; args : 'typ arg list }
+  | InstE of { typ : 'typ; args : 'typ arg list }
 
 (* Keyset expressions *)
 and 'typ keyset = 'typ keyset' phrase
@@ -134,15 +142,22 @@ and ('typ, 'svalue, 'dir) stmt = ('typ, 'svalue, 'dir) stmt' phrase
 
 and ('typ, 'svalue, 'dir) stmt' =
   | EmptyS
-  | AssignS of 'typ expr * 'typ expr
-  | SwitchS of 'typ expr * ('typ, 'svalue, 'dir) switch_case list
-  | IfS of 'typ expr * ('typ, 'svalue, 'dir) stmt * ('typ, 'svalue, 'dir) stmt
-  | BlockS of ('typ, 'svalue, 'dir) block
+  | AssignS of { expr_l : 'typ expr; expr_r : 'typ expr }
+  | SwitchS of {
+      expr_switch : 'typ expr;
+      cases : ('typ, 'svalue, 'dir) switch_case list;
+    }
+  | IfS of {
+      expr_cond : 'typ expr;
+      stmt_then : ('typ, 'svalue, 'dir) stmt;
+      stmt_else : ('typ, 'svalue, 'dir) stmt;
+    }
+  | BlockS of { block : ('typ, 'svalue, 'dir) block }
   | ExitS
-  | RetS of 'typ expr option
-  | CallS of 'typ expr * 'typ list * 'typ arg list
-  | TransS of 'typ expr
-  | DeclS of ('typ, 'svalue, 'dir) decl
+  | RetS of { expr_ret : 'typ expr option }
+  | CallS of { expr_func : 'typ expr; targs : 'typ list; args : 'typ arg list }
+  | TransS of { expr_label : 'typ expr }
+  | DeclS of { decl : ('typ, 'svalue, 'dir) decl }
 
 (* Blocks (sequence of statements) *)
 and ('typ, 'svalue, 'dir) block = ('typ, 'svalue, 'dir) block' phrase

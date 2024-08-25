@@ -195,77 +195,78 @@ and transform_args (args : Argument.t list) : El.arg list =
 
 and transform_expr (expr : Expression.t) : El.expr =
   match expr with
-  | True { tags = at } -> L.BoolE true $ at
-  | False { tags = at } -> L.BoolE false $ at
-  | Int { i; tags = at } -> L.NumE (transform_num i) $ at
-  | String { text; tags = at } -> L.StrE (transform_text text) $ at
-  | Name { name; tags = at } -> L.VarE (transform_var name) $ at
-  | List { values; tags = at } -> L.TupleE (transform_exprs values) $ at
+  | True { tags = at } -> L.BoolE { boolean = true } $ at
+  | False { tags = at } -> L.BoolE { boolean = false } $ at
+  | Int { i; tags = at } -> L.NumE { num = transform_num i } $ at
+  | String { text; tags = at } -> L.StrE { text = transform_text text } $ at
+  | Name { name; tags = at } -> L.VarE { var = transform_var name } $ at
+  | List { values; tags = at } ->
+      L.TupleE { exprs = transform_exprs values } $ at
   | Record { entries = fields; tags = at } ->
-      let record =
+      let fields =
         List.map
           (fun (field : KeyValue.t) ->
             let KeyValue.{ key; value; _ } = field in
             (transform_member key, transform_expr value))
           fields
       in
-      L.RecordE record $ at
+      L.RecordE { fields } $ at
   | UnaryOp { op; arg; tags = at } ->
       let unop = transform_unop op in
       let expr = transform_expr arg in
-      L.UnE (unop, expr) $ at
+      L.UnE { unop; expr } $ at
   | BinaryOp { op; args; tags = at } ->
       let binop = transform_binop op in
       let larg, rarg = args in
       let expr_l = transform_expr larg in
       let expr_r = transform_expr rarg in
-      L.BinE (binop, expr_l, expr_r) $ at
+      L.BinE { binop; expr_l; expr_r } $ at
   | Ternary { cond; tru; fls; tags = at } ->
       let expr_cond = transform_expr cond in
       let expr_then = transform_expr tru in
       let expr_else = transform_expr fls in
-      L.TernE (expr_cond, expr_then, expr_else) $ at
+      L.TernE { expr_cond; expr_then; expr_else } $ at
   | Cast { typ; expr; tags = at } ->
       let typ = transform_type typ in
       let expr = transform_expr expr in
-      L.CastE (typ, expr) $ at
+      L.CastE { typ; expr } $ at
   | Mask { expr; mask; tags = at } ->
       let expr_base = transform_expr expr in
       let expr_mask = transform_expr mask in
-      L.MaskE (expr_base, expr_mask) $ at
+      L.MaskE { expr_base; expr_mask } $ at
   | Range { lo; hi; tags = at } ->
       let expr_lb = transform_expr lo in
       let expr_ub = transform_expr hi in
-      L.RangeE (expr_lb, expr_ub) $ at
+      L.RangeE { expr_lb; expr_ub } $ at
   | ArrayAccess { array; index; tags = at } ->
       let expr_base = transform_expr array in
       let expr_idx = transform_expr index in
-      L.ArrAccE (expr_base, expr_idx) $ at
+      L.ArrAccE { expr_base; expr_idx } $ at
   | BitStringAccess { bits; lo; hi; tags = at } ->
       let expr_base = transform_expr bits in
-      let expr_lidx = transform_expr lo in
-      let expr_hidx = transform_expr hi in
-      L.BitAccE (expr_base, expr_lidx, expr_hidx) $ at
+      let expr_lo = transform_expr lo in
+      let expr_hi = transform_expr hi in
+      L.BitAccE { expr_base; expr_lo; expr_hi } $ at
   | ErrorMember { err; tags = at } ->
-      let err = transform_member err in
-      L.ErrAccE err $ at
+      let member = transform_member err in
+      L.ErrAccE { member } $ at
   | TypeMember { typ; name; tags = at } ->
-      let var = transform_var typ in
+      let var_base = transform_var typ in
       let member = transform_member name in
-      L.TypeAccE (var, member) $ at
+      L.TypeAccE { var_base; member } $ at
   | ExpressionMember { expr; name; tags = at } ->
       let expr_base = transform_expr expr in
       let member = transform_member name in
-      L.ExprAccE (expr_base, member) $ at
+      L.ExprAccE { expr_base; member } $ at
   | FunctionCall { func; type_args; args; tags = at } ->
       let expr_func = transform_expr func in
       let targs = transform_targs type_args in
       let args = transform_args args in
-      L.CallE (expr_func, targs, args) $ at
+      L.CallE { expr_func; targs; args } $ at
   | NamelessInstantiation { typ; args; tags = at } ->
       let typ = transform_type typ in
       let args = transform_args args in
-      L.InstE (typ, args) $ at
+      L.InstE { typ; args } $ at
 
 and transform_exprs (exprs : Expression.t list) : El.expr list =
   List.map transform_expr exprs
@@ -287,13 +288,13 @@ and transform_stmt (stmt : Statement.t) : El.stmt =
   match stmt with
   | EmptyStatement { tags = at } -> L.EmptyS $ at
   | Assignment { lhs; rhs; tags = at } ->
-      let expr_lhs = transform_expr lhs in
-      let expr_rhs = transform_expr rhs in
-      L.AssignS (expr_lhs, expr_rhs) $ at
+      let expr_l = transform_expr lhs in
+      let expr_r = transform_expr rhs in
+      L.AssignS { expr_l; expr_r } $ at
   | Switch { expr; cases; tags = at } ->
-      let expr = transform_expr expr in
-      let switch_cases = transform_switch_cases cases in
-      L.SwitchS (expr, switch_cases) $ at
+      let expr_switch = transform_expr expr in
+      let cases = transform_switch_cases cases in
+      L.SwitchS { expr_switch; cases } $ at
   | Conditional { cond; tru; fls; tags = at } ->
       let expr_cond = transform_expr cond in
       let stmt_then = transform_stmt tru in
@@ -302,22 +303,22 @@ and transform_stmt (stmt : Statement.t) : El.stmt =
         | Some fls -> transform_stmt fls
         | None -> L.EmptyS $ no_info
       in
-      L.IfS (expr_cond, stmt_then, stmt_else) $ at
+      L.IfS { expr_cond; stmt_then; stmt_else } $ at
   | BlockStatement { block; tags = at } ->
       let block = transform_block block in
-      L.BlockS block $ at
+      L.BlockS { block } $ at
   | Exit { tags = at } -> L.ExitS $ at
   | Return { expr; tags = at } ->
-      let expr = Option.map transform_expr expr in
-      L.RetS expr $ at
+      let expr_ret = Option.map transform_expr expr in
+      L.RetS { expr_ret } $ at
   | MethodCall { func; type_args; args; tags = at } ->
       let expr_func = transform_expr func in
       let targs = transform_targs type_args in
       let args = transform_args args in
-      L.CallS (expr_func, targs, args) $ at
+      L.CallS { expr_func; targs; args } $ at
   | DeclarationStatement { decl; tags = at } ->
       let decl = transform_decl decl in
-      L.DeclS decl $ at
+      L.DeclS { decl } $ at
   | _ ->
       Format.eprintf "(TODO: transform_stmt) %s\n"
         (Surface.Print.print_stmt 0 stmt);
@@ -582,16 +583,16 @@ and transform_parser_cases (cases : Parser.case list) : El.select_case list =
   List.map transform_parser_case cases
 
 and transform_parser_transition (trans : Parser.transition) : El.stmt =
-  let expr_trans =
+  let expr_label =
     match trans with
     | Direct { next; tags = at } ->
-        L.VarE (L.Current (transform_id next) $ no_info) $ at
+        L.VarE { var = L.Current (transform_id next) $ no_info } $ at
     | Select { exprs; cases; tags = at } ->
-        let exprs = transform_exprs exprs in
-        let select_cases = transform_parser_cases cases in
-        L.SelectE (exprs, select_cases) $ at
+        let exprs_select = transform_exprs exprs in
+        let cases = transform_parser_cases cases in
+        L.SelectE { exprs_select; cases } $ at
   in
-  L.TransS expr_trans $ expr_trans.at
+  L.TransS { expr_label } $ expr_label.at
 
 and transform_parser_state (state : Parser.state) : El.parser_state =
   let Parser.{ name; statements; transition; tags = at; annotations } = state in
