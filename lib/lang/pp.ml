@@ -245,7 +245,9 @@ and pp_expr' ?(level = 0) pp_typ fmt expr' =
   | CallE { expr_func; targs; args } ->
       F.fprintf fmt "%a%a%a" (pp_expr ~level:0 pp_typ) expr_func
         (pp_targs pp_typ) targs (pp_args pp_typ) args
-  | InstE { typ; args } -> F.fprintf fmt "%a%a" pp_typ typ (pp_args pp_typ) args
+  | InstE { var_inst; targs; args } ->
+      F.fprintf fmt "%a%a%a" pp_var var_inst (pp_targs pp_typ) targs
+        (pp_args pp_typ) args
 
 and pp_expr ?(level = 0) pp_typ fmt expr = pp_expr' ~level pp_typ fmt expr.it
 
@@ -378,16 +380,16 @@ and pp_decl' ?(level = 0) pp_typ pp_svalue pp_dir fmt decl' =
           F.fprintf fmt "%s%a %a = %a;" (indent level) pp_typ typ pp_id id
             (pp_expr ~level:0 pp_typ) expr_init
       | None -> F.fprintf fmt "%s%a %a;" (indent level) pp_typ typ pp_id id)
-  | InstD { id; typ; args; init; annos = _annos } -> (
+  | InstD { id; var_inst; targs; args; init; annos = _annos } -> (
       match init with
       | Some block_init ->
-          F.fprintf fmt "%s%a%a %a = %a;" (indent level) pp_typ typ
-            (pp_args pp_typ) args pp_id id
+          F.fprintf fmt "%s%a%a%a %a = %a;" (indent level) pp_var var_inst
+            (pp_targs pp_typ) targs (pp_args pp_typ) args pp_id id
             (pp_block ~level:(level + 1) pp_typ pp_svalue pp_dir)
             block_init
       | None ->
-          F.fprintf fmt "%s%a%a %a;" (indent level) pp_typ typ (pp_args pp_typ)
-            args pp_id id)
+          F.fprintf fmt "%s%a%a%a %a;" (indent level) pp_var var_inst
+            (pp_targs pp_typ) targs (pp_args pp_typ) args pp_id id)
   | ErrD { members } ->
       F.fprintf fmt "%serror {\n%a\n%s}" (indent level)
         (pp_members ~level:(level + 1))

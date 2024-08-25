@@ -265,8 +265,14 @@ and transform_expr (expr : Expression.t) : El.expr =
       L.CallE { expr_func; targs; args } $ at
   | NamelessInstantiation { typ; args; tags = at } ->
       let typ = transform_type typ in
+      let var_inst, targs =
+        match (typ.it : El.typ') with
+        | NameT var_inst -> (var_inst, [])
+        | SpecT (var_inst, targs) -> (var_inst, targs)
+        | _ -> assert false
+      in
       let args = transform_args args in
-      L.InstE { typ; args } $ at
+      L.InstE { var_inst; targs; args } $ at
 
 and transform_exprs (exprs : Expression.t list) : El.expr list =
   List.map transform_expr exprs
@@ -377,10 +383,16 @@ and transform_decl (decl : Declaration.t) : El.decl =
   | Instantiation { name; typ; args; init; tags = at; annotations } ->
       let id = transform_id name in
       let typ = transform_type typ in
+      let var_inst, targs =
+        match (typ.it : El.typ') with
+        | NameT var_inst -> (var_inst, [])
+        | SpecT (var_inst, targs) -> (var_inst, targs)
+        | _ -> assert false
+      in
       let args = transform_args args in
       let init = Option.map transform_block init in
       let annos = transform_annos annotations in
-      L.InstD { id; typ; args; init; annos } $ at
+      L.InstD { id; var_inst; targs; args; init; annos } $ at
   | Error { members; tags = at } ->
       let members = transform_members members in
       L.ErrD { members } $ at

@@ -1147,7 +1147,8 @@ and type_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr') :
       type_expr_acc_expr cursor ctx expr_base member
   | CallE { expr_func; targs; args } ->
       type_call_expr cursor ctx expr_func targs args
-  | InstE { typ; args } -> type_instantiation_expr cursor ctx typ args
+  | InstE { var_inst; targs; args } ->
+      type_instantiation_expr cursor ctx var_inst targs args
 
 and type_num_expr (num : El.Ast.num) : Type.t * Il.Ast.expr' =
   let typ =
@@ -2617,26 +2618,18 @@ and align_cparams_with_args (cparams : Types.cparam list)
     (args_il : Il.Ast.arg list) =
   align_params_with_args cparams args typ_args args_il
 
-and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
-    (args : El.Ast.arg list) : Type.t * Il.Ast.expr' =
+and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
+    : Type.t * Il.Ast.expr' =
   (* Find the constructor definition and specialize it if necessary *)
   (* (TODO) Implement type inference for missing type arguments *)
-  let var_inst, targs =
-    match typ.it with
-    | NameT var -> (var, [])
-    | SpecT (var, targs) -> (var, targs)
-    | _ ->
-        Format.eprintf "(type_instantiation) %a is not an instance type\n"
-          El.Pp.pp_typ typ;
-        assert false
-  in
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
   let cd =
     Ctx.find_overloaded_opt Ctx.find_consdef_opt cursor var_inst args ctx
   in
   if Option.is_none cd then (
     Format.eprintf "(type_instantiation) %a is not an instance type\n"
-      El.Pp.pp_typ typ;
+      El.Pp.pp_var var_inst;
     assert false);
   let cd = Option.get cd in
   let ct =
@@ -2673,12 +2666,13 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
           assert false)
     cparams args;
   (* (TODO) Maybe we want to define InstE for IL, with type arguments *)
-  let expr_il = Lang.Ast.InstE { typ = typ_inst $ typ.at; args = args_il } in
+  let expr_il = Lang.Ast.InstE { var_inst; targs = targs_il; args = args_il } in
   (typ_inst, expr_il)
 
 and type_instantiation_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (typ : El.Ast.typ) (args : El.Ast.arg list) : Type.t * Il.Ast.expr' =
-  type_instantiation cursor ctx typ args
+    (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
+    : Type.t * Il.Ast.expr' =
+  type_instantiation cursor ctx var_inst targs args
 
 (* Argument typing *)
 
@@ -2964,8 +2958,8 @@ and type_decl' (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : El.Ast.decl') :
   | ConstD { id; typ; value; annos } ->
       type_const_decl cursor ctx id typ value annos
   | VarD { id; typ; init; annos } -> type_var_decl cursor ctx id typ init annos
-  | InstD { id; typ; args; init; annos } ->
-      type_instantiation_decl cursor ctx id typ args init annos
+  | InstD { id; var_inst; targs; args; init; annos } ->
+      type_instantiation_decl cursor ctx id var_inst targs args init annos
   (* Derived type declarations *)
   | ErrD { members } -> type_error_decl cursor ctx members
   | MatchKindD { members } -> type_match_kind_decl cursor ctx members
@@ -3159,13 +3153,15 @@ and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 (* (8.21) Constructor invocations *)
 
 and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (typ : El.Ast.typ) (args : El.Ast.arg list) (init : El.Ast.block option)
-    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
+    (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
+    (init : El.Ast.block option) (annos : El.Ast.anno list) :
+    Ctx.t * Il.Ast.decl' =
   let annos_il = List.map (type_anno cursor ctx) annos in
-  let typ, expr_il = type_instantiation cursor ctx typ args in
-  let typ_il, args_il =
+  let typ, expr_il = type_instantiation cursor ctx var_inst targs args in
+  let targs_il, args_il =
     match expr_il with
-    | Lang.Ast.InstE { typ = typ_il; args = args_il } -> (typ_il, args_il)
+    | Lang.Ast.InstE { targs = targs_il; args = args_il; _ } ->
+        (targs_il, args_il)
     | _ -> assert false
   in
   (* (TODO) Check that init blocks are for abstract methods *)
@@ -3179,7 +3175,14 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let ctx = Ctx.add_type cursor id.it typ ctx in
   let decl_il =
     Lang.Ast.InstD
-      { id; typ = typ_il; args = args_il; init = init_il; annos = annos_il }
+      {
+        id;
+        var_inst;
+        targs = targs_il;
+        args = args_il;
+        init = init_il;
+        annos = annos_il;
+      }
   in
   (ctx, decl_il)
 

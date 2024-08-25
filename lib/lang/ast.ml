@@ -127,7 +127,7 @@ and 'typ expr' =
   | TypeAccE of { var_base : var; member : member }
   | ExprAccE of { expr_base : 'typ expr; member : member }
   | CallE of { expr_func : 'typ expr; targs : 'typ list; args : 'typ arg list }
-  | InstE of { typ : 'typ; args : 'typ arg list }
+  | InstE of { var_inst : var; targs : 'typ list; args : 'typ arg list }
 
 (* Keyset expressions *)
 and 'typ keyset = 'typ keyset' phrase
@@ -192,7 +192,8 @@ and ('typ, 'svalue, 'dir) decl' =
   | MatchKindD of { members : member list }
   | InstD of {
       id : id;
-      typ : 'typ;
+      var_inst : var;
+      targs : 'typ list;
       args : 'typ arg list;
       init : ('typ, 'svalue, 'dir) block option;
       annos : 'typ anno list;
