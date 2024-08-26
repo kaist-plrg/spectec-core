@@ -39,9 +39,9 @@ and typ =
   | UnionT of L.id' * (L.member' * typ) list
   (* Object types *)
   | ExternT of L.id' * funcdef FIdMap.t
-  | ParserT of L.id' * param list
-  | ControlT of L.id' * param list
-  | PackageT of L.id'
+  | ParserT of param list
+  | ControlT of param list
+  | PackageT
   (* Top type *)
   | TopT
   (* Synthesized types : variables can never be declared of this type *)
@@ -64,9 +64,9 @@ and typdef =
   | UnionD of L.id' * (L.member' * typ) list
   (* Object type definitions *)
   | ExternD of L.id' * tparam list * funcdef FIdMap.t
-  | ParserD of L.id' * tparam list * param list
-  | ControlD of L.id' * tparam list * param list
-  | PackageD of L.id' * tparam list
+  | ParserD of tparam list * param list
+  | ControlD of tparam list * param list
+  | PackageD of tparam list
 
 (* Function types *)
 and functyp =
@@ -153,12 +153,9 @@ and pp_typ fmt typ =
         fields
   | ExternT (id, fdenv) ->
       F.fprintf fmt "extern %a %a" P.pp_id' id (FIdMap.pp pp_funcdef) fdenv
-  | ParserT (id, params) ->
-      let param = List.hd params in
-      F.fprintf fmt "parser %a(%a)" P.pp_id' id pp_param' param
-  | ControlT (id, params) ->
-      F.fprintf fmt "control %a(%a)" P.pp_id' id pp_params params
-  | PackageT id -> F.fprintf fmt "package %a" P.pp_id' id
+  | ParserT params -> F.fprintf fmt "parser (%a)" pp_params params
+  | ControlT params -> F.fprintf fmt "control (%a)" pp_params params
+  | PackageT -> F.fprintf fmt "package"
   | TopT -> F.pp_print_string fmt "top"
   | RecordT fields ->
       F.fprintf fmt "record { %a }" (P.pp_pairs P.pp_member' pp_typ "; ") fields
@@ -194,14 +191,11 @@ and pp_typdef fmt typdef =
   | ExternD (id, tparams, fdenv) ->
       F.fprintf fmt "extern %a<%a> %a" pp_tparams tparams P.pp_id' id
         (FIdMap.pp pp_funcdef) fdenv
-  | ParserD (id, tparams, params) ->
-      F.fprintf fmt "parser %a<%a>(%a)" P.pp_id' id pp_tparams tparams pp_params
-        params
-  | ControlD (id, tparams, params) ->
-      F.fprintf fmt "control %a<%a>(%a)" P.pp_id' id pp_tparams tparams
-        pp_params params
-  | PackageD (id, tparams) ->
-      F.fprintf fmt "package %a<%a>" P.pp_id' id pp_tparams tparams
+  | ParserD (tparams, params) ->
+      F.fprintf fmt "parser <%a>(%a)" pp_tparams tparams pp_params params
+  | ControlD (tparams, params) ->
+      F.fprintf fmt "control <%a>(%a)" pp_tparams tparams pp_params params
+  | PackageD tparams -> F.fprintf fmt "package <%a>" pp_tparams tparams
 
 (* Function types *)
 
