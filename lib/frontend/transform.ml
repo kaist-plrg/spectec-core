@@ -390,7 +390,7 @@ and transform_decl (decl : Declaration.t) : El.decl =
         | _ -> assert false
       in
       let args = transform_args args in
-      let init = Option.map transform_block init in
+      let init = transform_decls init in
       let annos = transform_annos annotations in
       L.InstD { id; var_inst; targs; args; init; annos } $ at
   | Error { members; tags = at } ->

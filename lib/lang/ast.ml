@@ -195,7 +195,7 @@ and ('typ, 'svalue, 'dir) decl' =
       var_inst : var;
       targs : 'typ list;
       args : 'typ arg list;
-      init : ('typ, 'svalue, 'dir) block option;
+      init : ('typ, 'svalue, 'dir) decl list;
       annos : 'typ anno list;
     }
   (* Type declarations *)

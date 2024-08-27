@@ -798,7 +798,7 @@ and Declaration : sig
         typ : Type.t;
         args : Argument.t list;
         name : Text.t;
-        init : Block.t option;
+        init : t list;
       }
     | Parser of {
         tags : 'a;
@@ -966,7 +966,7 @@ end = struct
         typ : Type.t;
         args : Argument.t list;
         name : Text.t;
-        init : Block.t option;
+        init : t list;
       }
     | Parser of {
         tags : 'a;

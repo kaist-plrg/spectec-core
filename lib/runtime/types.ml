@@ -291,6 +291,12 @@ module FuncDef = struct
   type t = funcdef
 
   let pp = pp_funcdef
+
+  let get_typ_ret = function
+    | ExternFunctionD (_, _, typ_ret) | FunctionD (_, _, typ_ret) -> typ_ret
+    | ActionD _ -> VoidT
+    | ExternMethodD (_, _, typ_ret) | ExternAbstractMethodD (_, _, typ_ret) ->
+        typ_ret
 end
 
 module ConsType = struct

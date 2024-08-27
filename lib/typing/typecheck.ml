@@ -3149,10 +3149,57 @@ and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 
 (* (8.21) Constructor invocations *)
 
+(* (10.3.1) Instantiating objects with abstract methods
+
+   When instantiating an extern type that has abstract methods users have to supply
+   implementations for all such methods. This is done using object initializers.
+
+   The abstract methods can only use the supplied arguments or refer to values that are
+   in the top-level scope. When calling another method of the same instance the this
+   keyword is used to indicate the current object instance. *)
+
+(* (TODO) Consider the "this" keyword *)
+
+and type_instantiation_init_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (fdenv_abstract : Envs.FDEnv.t) (init : El.Ast.decl) :
+    Envs.FDEnv.t * Il.Ast.decl =
+  let fdenv, init_il =
+    type_instantiation_init_decl' cursor ctx fdenv_abstract init.it
+  in
+  (fdenv, init_il $ init.at)
+
+and type_instantiation_init_decl' (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (fdenv_abstract : Envs.FDEnv.t) (init : El.Ast.decl') :
+    Envs.FDEnv.t * Il.Ast.decl' =
+  match init with
+  | FuncD { id; typ_ret; tparams; params; body } ->
+      let fid = FId.to_fid id params in
+      let ctx, decl_il =
+        type_function_decl cursor ctx id tparams params typ_ret body
+      in
+      let fd = Ctx.find_funcdef cursor fid ctx in
+      let fdenv_abstract = Envs.FDEnv.add fid fd fdenv_abstract in
+      (fdenv_abstract, decl_il)
+  | _ ->
+      Format.eprintf
+        "(type_instantiation_init_decl) Instantiation initializer should be a \
+         function declaration\n";
+      assert false
+
+and type_instantiation_init_decls (ctx : Ctx.t) (inits : El.Ast.decl list) :
+    Envs.FDEnv.t * Il.Ast.decl list =
+  List.fold_left
+    (fun (fdenv_abstract, inits_il) init ->
+      let fdenv_abstract, init_il =
+        type_instantiation_init_decl Ctx.Global ctx fdenv_abstract init
+      in
+      (fdenv_abstract, inits_il @ [ init_il ]))
+    (Envs.FDEnv.empty, []) inits
+
 and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
-    (init : El.Ast.block option) (annos : El.Ast.anno list) :
-    Ctx.t * Il.Ast.decl' =
+    (init : El.Ast.decl list) (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl'
+    =
   let annos_il = List.map (type_anno cursor ctx) annos in
   let typ, expr_il = type_instantiation cursor ctx var_inst targs args in
   let targs_il, args_il =
@@ -3161,13 +3208,49 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         (targs_il, args_il)
     | _ -> assert false
   in
-  (* (TODO) Check that init blocks are for abstract methods *)
-  let init_il =
-    Option.map
-      (fun init ->
-        let _ctx, _flow, init_il = type_block cursor ctx Cont init in
-        init_il)
-      init
+  (* Typecheck abstract methods defined by object initializers (for externs only) *)
+  let typ, init_il =
+    match typ with
+    | ExternT (id, fdenv_extern) ->
+        let fdenv_abstract, init_il = type_instantiation_init_decls ctx init in
+        let fdenv_extern =
+          Envs.FDEnv.fold
+            (fun fid fd fdenv_extern ->
+              let typ_ret = FuncDef.get_typ_ret fd in
+              let fd_extern = Envs.FDEnv.find_opt fid fdenv_extern in
+              (* (TODO) What if extern abstract method decl has type parameters? *)
+              if
+                match (fd_extern : FuncDef.t option) with
+                | Some
+                    (ExternAbstractMethodD
+                      (_tparams_extern, _params_extern, typ_ret_extern)) ->
+                    typ_ret = typ_ret_extern
+                | _ -> false
+              then (
+                Format.eprintf
+                  "(type_instantiation_decl) Abstract method %a is not declared\n"
+                  FId.pp fid;
+                assert false);
+              Envs.FDEnv.add fid fd fdenv_extern)
+            fdenv_abstract fdenv_extern
+        in
+        Envs.FDEnv.iter
+          (fun fid fd_extern ->
+            match (fd_extern : FuncDef.t) with
+            | ExternAbstractMethodD _ ->
+                Format.eprintf
+                  "(type_instantiation_decl) Abstract method %a is not defined\n"
+                  FId.pp fid;
+                assert false
+            | _ -> ())
+          fdenv_extern;
+        (Types.ExternT (id, fdenv_extern), init_il)
+    | _ when init <> [] ->
+        Format.eprintf
+          "(type_instantiation_decl) Initializers are only allowed for extern \
+           objects\n";
+        assert false
+    | _ -> (typ, [])
   in
   let ctx = Ctx.add_type cursor id.it typ ctx in
   let decl_il =
@@ -3565,6 +3648,8 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    A function with a return type of void can simply use the return statement with no arguments.
    A function with a non-void return type must return a value of the suitable type
    on all possible execution paths. *)
+
+(* (TODO) Aren't functions also allowed in object initializers? *)
 
 and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (tparams : El.Ast.tparam list) (params : El.Ast.param list)

@@ -382,14 +382,14 @@ and pp_decl' ?(level = 0) pp_typ pp_svalue pp_dir fmt decl' =
       | None -> F.fprintf fmt "%s%a %a;" (indent level) pp_typ typ pp_id id)
   | InstD { id; var_inst; targs; args; init; annos = _annos } -> (
       match init with
-      | Some block_init ->
-          F.fprintf fmt "%s%a%a%a %a = %a;" (indent level) pp_var var_inst
-            (pp_targs pp_typ) targs (pp_args pp_typ) args pp_id id
-            (pp_block ~level:(level + 1) pp_typ pp_svalue pp_dir)
-            block_init
-      | None ->
+      | [] ->
           F.fprintf fmt "%s%a%a%a %a;" (indent level) pp_var var_inst
-            (pp_targs pp_typ) targs (pp_args pp_typ) args pp_id id)
+            (pp_targs pp_typ) targs (pp_args pp_typ) args pp_id id
+      | init ->
+          F.fprintf fmt "%s%a%a%a %a = {\n%a\n%s};" (indent level) pp_var
+            var_inst (pp_targs pp_typ) targs (pp_args pp_typ) args pp_id id
+            (pp_decls ~level:(level + 1) pp_typ pp_svalue pp_dir)
+            init (indent level))
   | ErrD { members } ->
       F.fprintf fmt "%serror {\n%a\n%s}" (indent level)
         (pp_members ~level:(level + 1))

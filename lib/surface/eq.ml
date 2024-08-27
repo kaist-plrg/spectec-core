@@ -421,7 +421,7 @@ and eq_decl' (decl : Declaration.t) (decl' : Declaration.t) =
       Instantiation { typ = typ'; args = args'; name = name'; init = init'; _ }
     ) ->
       eq_type typ typ' && eq_list eq_arg args args' && eq_text name name'
-      && eq_option eq_block init init'
+      && eq_list eq_decl init init'
   | ( Parser
         {
           name;
