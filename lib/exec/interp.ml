@@ -893,42 +893,38 @@ module Make (Arch : ARCH) : INTERP = struct
         |> failwith
 
   (* Logic for match-action table *)
-  and eval_binop_eq_default (ctx : Ctx.t) (value : Value.t): bool =
-    match value with
-    | BoolV b -> not b
-    | IntV value
-    | FBitV (_, value)
-    | FIntV (_, value)
-    | VBitV (_, _, value) ->
-        Bigint.(value = zero)
-    | StrV value -> value = ""
-    | StackV (values, _, _)
-    | TupleV values ->
-        List.for_all (fun value -> eval_binop_eq_default ctx value) values
-    | StructV entries
-    | UnionV entries ->
-        let values = List.map (fun (_,v) -> v) entries in
-        List.for_all (fun value -> eval_binop_eq_default ctx value) values
-    | HeaderV (valid, entries) ->
-        let values = List.map (fun (_,v) -> v) entries in
-        not valid && List.for_all (fun value -> eval_binop_eq_default ctx value) values
-    | EnumFieldV (id, member) ->
-      let typ = Ctx.find_td id ctx in
-      begin match typ with
-      | EnumT (_id, members) ->
-        let member' = List.hd members in
-        member = member'
-      | _ -> failwith "type is not enum"
-      end
-    | SEnumFieldV (_, _, value) -> 
-        let value = Value.get_num value in
-        Bigint.(value = zero)
-    | _ -> failwith "type doesn't have default value"
 
+  and check_priors ?(largest_priority_wins = true) (priors : int option list) =
+    if List.for_all Option.is_none priors then ()
+    else if List.for_all Option.is_some priors then
+      let priors = List.map Option.get priors in
+      let prior, priors = (List.hd priors, List.tl priors) in
+      let check_prior priors_prev prior_curr =
+        let prior_prev = List.hd priors_prev in
+        if prior_curr < 0 then
+          failwith "(check_priors) Priority must not be negative";
+        if
+          (largest_priority_wins && prior_curr > prior_prev)
+          || ((not largest_priority_wins) && prior_curr < prior_prev)
+        then
+          Printf.printf
+            "(check_priors) Warning: entries_out_of_priority_order\n";
+        if List.mem prior_curr priors_prev then
+          Printf.printf "(check_priors) Warning: Duplicate priority %d\n"
+            prior_curr;
+        prior_curr :: priors_prev
+      in
+      List.fold_left check_prior [ prior ] priors |> ignore
+    else
+      failwith
+        "(check_priors) Priorities must be either not specified at all, or \
+         specified\n"
+
+  (* (TODO) Maybe we don't need this in the future if keysets are of static values *)
   and get_prefix (mask : Value.t) (prefix : int) : int =
     match mask with
     | FBitV (width, value) ->
-        if Bigint.(width = zero) then prefix 
+        if Bigint.(width = zero) then prefix
         else
           let two = Bigint.(one + one) in
           let width' = Bigint.(width - one) in
@@ -937,209 +933,202 @@ module Make (Arch : ARCH) : INTERP = struct
           if Bigint.(value % two = zero) then
             if prefix <> 0 then failwith "invalid lpm mask"
             else get_prefix mask' prefix
-          else get_prefix mask' (prefix+1)
-    | _ -> failwith "wrong type for lpm mask"
+          else get_prefix mask' (prefix + 1)
+    | _ -> failwith "(get_prefix) wrong type for lpm mask"
 
-  and mask_values (ctx : Ctx.t) (key_value : Value.t) (expr : expr) : Value.t * Value.t =
-    let width = Value.get_width key_value in
-    let limit = Value.IntV (power_of_two width) in
-    match expr.it with
-    | MaskE (expr, mask) ->
-        (* Get masked values *)
-        let expr_value = interp_expr ctx expr |> snd in
-        let mask_value = interp_expr ctx mask |> snd in
-        (* If expr | mask value has 1s outside of field bit width *)
-        let is_expr_limit = eval_binop_ge expr_value limit |> Value.get_bool in
-        let is_mask_limit = eval_binop_ge mask_value limit |> Value.get_bool in
-        if is_expr_limit || is_mask_limit then Printf.printf "Warning : has 1s outside of field bit width\n";
-        (* Should convert to bit *)
-        let mask_value = Value.get_num mask_value in
-        let mask_value = bit_of_raw_int mask_value width in
-        (* Mask value *)
-        let masked_expr_value = eval_binop_bitand expr_value mask_value in
-        let masked_key_value = eval_binop_bitand key_value mask_value in
-        (masked_expr_value, masked_key_value)
-    | _ ->
-        let expr_value = interp_expr ctx expr |> snd in
-        (* If expr value has 1s outside of field bit width *)
-        let is_expr_limit = eval_binop_ge expr_value limit |> Value.get_bool in
-        if is_expr_limit then Printf.printf "Warning : has 1s outside of field bit width\n";
-        (expr_value, key_value)
-
-  and get_prior_lpm (ctx : Ctx.t) (expr : expr) (width : int) : int option =
-    match expr.it with
-    | MaskE (_, mask) ->
-        let width = Bigint.of_int width in
-        (* Get masked values *)
-        let mask_value = interp_expr ctx mask |> snd |> Value.get_num in
-        (* Mask should convert to bit *)
-        let mask_value = bit_of_raw_int mask_value width in
-        let prefix = get_prefix mask_value 0 in
-        Some prefix
-    | _ -> Some width
-
-  and range_values (ctx : Ctx.t) (key_value : Value.t) (expr : expr) : Value.t * Value.t =
-    let width = Value.get_width key_value in
-    let limit = Value.IntV (power_of_two width) in
-    match expr.it with
-    | RangeE (low, high) ->
-        (* Get masked values *)
-        let low_value = interp_expr ctx low |> snd in
-        let high_value = interp_expr ctx high |> snd in
-        (* If expr | mask value has 1s outside of field bit width *)
-        let is_low_limit = eval_binop_ge low_value limit |> Value.get_bool in
-        let is_high_limit = eval_binop_ge high_value limit |> Value.get_bool in
-        let is_not_order = eval_binop_gt low_value high_value |> Value.get_bool in
-        if is_low_limit || is_high_limit then Printf.printf "Warning : has 1s outside of field bit width\n" 
-        else if is_not_order then failwith "not correct order";
-        (low_value, high_value)
-    | _ ->
-        let expr_value = interp_expr ctx expr |> snd in
-        (* If expr value has 1s outside of field bit width *)
-        let is_expr_limit = eval_binop_ge expr_value limit |> Value.get_bool in
-        if is_expr_limit then Printf.printf "Warning : has 1s outside of field bit width\n";
-        (expr_value, expr_value)
-
-  (* Match *)
-  (* TODO : What about un init enum? *)
-  and check_match (ctx : Ctx.t) (ent_list : keyset list)
-      (key_list : (Value.t * match_kind) list) : bool =
-    let check_match' is_match ent key =
-      (* If it doesn't match then skip rest *)
-      if not is_match then is_match
-      else
-        let key_value, key_match_kind = key in
-        let is_exact = key_match_kind.it = "exact" in
-        match ent.it with
-        (* Wildcard *)
-        | AnyK -> if is_exact then failwith "unsupported in exact match" else is_match
-        | ExprK expr ->
-          (* Seperate between exact and other *)
-            if is_exact || key_match_kind.it = "optional" then 
-              let ent_value = interp_expr ctx expr |> snd in
-              eval_binop_eq ent_value key_value
-            else if key_match_kind.it = "range" then 
-              let low_value, high_value = range_values ctx key_value expr in
-              let chk = eval_binop_le low_value key_value |> Value.get_bool in
-              let chk2 = eval_binop_le key_value high_value |> Value.get_bool in
-              chk && chk2
-            else 
-              let ent_value, key_value = mask_values ctx key_value expr in
-              eval_binop_eq ent_value key_value
-        | DefaultK -> if is_exact then failwith "unsupported in exact match" else eval_binop_eq_default ctx key_value
-    in
-    (* If entry list is just underline('_') return true *)
-    match ent_list with 
-      | [{ it = AnyK; _ }] -> true
-      | _ -> List.fold_left2 check_match' true ent_list key_list
-
-  and set_priors (ctx : Ctx.t) (keys : (Value.t * match_kind) list) (entries : table_entry list)
-     (prior_delta : int) (largest_priority_wins : bool) : int option list =
+  and set_priors ?(prior_delta = 1) ?(largest_priority_wins = true)
+      (ctx : Ctx.t) (keys : (Value.t * match_kind) list)
+      (entries : table_entry list) : int option list =
     let length = List.length entries in
-    let prior_kind = "ternary"::"range"::"optional"::[] in
-    (* Collect only lpm  *)
-    let lpm_map = List.mapi (fun i (value, kind) -> if kind.it = "lpm" then Some (i, value) else None) keys in
-    let lpm_map = List.filter_map (fun x -> x) lpm_map in
-    let cnt_lpm = lpm_map |> List.length in
-    (* If there are least one ternary then need priority *)
-    let need_prior = List.exists (fun (_, kind) -> List.mem kind.it prior_kind) keys in
-    let is_spec = false in
-    let first_prior = Some 1 in
-    if is_spec && (Option.is_none first_prior || not need_prior) then failwith "priority spec error" else ();
-
-    let set_priors' prior _ent = 
-      (* (TODO) Should get is_specified, prior from ent. It may be from optEntryPriority*)
-      let is_spec = false in
-      let spec_prior = 0 in
-      let prior_prev = Option.get prior in
-      let prior_curr = if is_spec then Some spec_prior
-        else if largest_priority_wins then Some (prior_prev - prior_delta)
-        else Some (prior_prev + prior_delta) in
-      prior_curr, prior_curr
+    (* Check lpm match kinds *)
+    let lpms =
+      List.mapi
+        (fun i (value, kind) ->
+          if kind.it = "lpm" then Some (i, value) else None)
+        keys
+      |> List.filter_map Fun.id
     in
-
-    (* Error of two lpms *)
-    if cnt_lpm > 1 then failwith "lpms should be most one"
-    (* If there are no spec of priority *)
-    else if need_prior && not is_spec then 
-      let basic_priors = List.init length (fun i -> Some (1 + i*prior_delta)) in
-      if largest_priority_wins then List.rev basic_priors else basic_priors
-    (* If there are spec of priority *)
-    else if need_prior then 
-      List.fold_left_map set_priors' first_prior entries |> snd
-    (* If there is an lpm *)
-    else if cnt_lpm = 1 then 
-      let lpm_ind, lpm_key = List.hd lpm_map in 
-      let max_prefix = lpm_key |> Value.get_width |> Bigint.to_int |> Option.get in
-      (* Function that extract priority (prefix) at lpm *)
-      let extract_lpms ent =
-        let ent_lists, _, _ = ent.it in
-        let ent_list = List.nth ent_lists lpm_ind in
-        match ent_list.it with
-        | AnyK -> Some 0
-        | DefaultK -> Some max_prefix
-        | ExprK expr -> get_prior_lpm ctx expr max_prefix
+    if List.length lpms > 1 then failwith "lpms should be most one";
+    let lpm = if List.length lpms = 1 then Some (List.hd lpms) else None in
+    (* Check match kinds that require specified priority *)
+    let required_kinds = [ "ternary"; "range"; "optional" ] in
+    let required =
+      List.exists (fun (_, kind) -> List.mem kind.it required_kinds) keys
+    in
+    (* (TODO) These should be parsed off the syntax *)
+    let specified, prior_first = (false, Some 1) in
+    if specified && (Option.is_none prior_first || not required) then
+      failwith "priority spec error";
+    (* Give priority to each entry *)
+    if required && not specified then
+      (* If priority is required but not specified *)
+      let priors = List.init length (fun i -> Some (1 + (i * prior_delta))) in
+      if largest_priority_wins then List.rev priors else priors
+    else if required then
+      (* If priority is required and specified *)
+      let set_prior_as_specified prior_prev _entry =
+        (* (TODO) These should be parsed off the entry syntax *)
+        let specified, prior_specified = (false, 0) in
+        let prior_curr =
+          if specified then prior_specified
+          else if largest_priority_wins then prior_prev - prior_delta
+          else prior_prev + prior_delta
+        in
+        (prior_curr, Some prior_curr)
       in
-      List.map extract_lpms entries
+      let prior_first = Option.get prior_first in
+      List.fold_left_map set_prior_as_specified prior_first entries |> snd
+    else if Option.is_some lpm then
+      (* If there is an lpm *)
+      let lpm_idx, lpm_key = Option.get lpm in
+      let prefix_max =
+        lpm_key |> Value.get_width |> Bigint.to_int |> Option.get
+      in
+      let set_prior_as_lpm entry =
+        let keyset, _, _ = entry.it in
+        let key = List.nth keyset lpm_idx in
+        match key.it with
+        | AnyK -> Some 0
+        | DefaultK -> Some prefix_max
+        | ExprK { it = MaskE (_, expr_mask); _ } ->
+            let width = Bigint.of_int prefix_max in
+            let value_mask =
+              interp_expr ctx expr_mask |> snd |> Value.get_num
+            in
+            let value_mask = bit_of_raw_int value_mask width in
+            let prefix = get_prefix value_mask 0 in
+            Some prefix
+        | ExprK _ -> Some prefix_max
+      in
+      List.map set_prior_as_lpm entries
     else List.init length (fun _ -> None)
-  
-  and check_priors (priors : int option list) (largest_priority_wins : bool) =
-    let check_priors' acc prior_curr =
-      let prior_prev = List.hd acc in
-      if prior_curr < 0 then failwith "Error : Negative priority";
-      if (largest_priority_wins && prior_curr > prior_prev) || 
-        (not largest_priority_wins && prior_curr < prior_prev) then
-        Printf.printf "Warning: entries_out_of_priority_order\n";
-      if List.mem prior_curr acc then
-        Printf.printf "Warning: duplicate priority %d\n" prior_curr;
-      prior_curr::acc
-    in
-    if List.for_all Option.is_none priors then ()
-    else if List.for_all Option.is_some priors then
-      let priors = List.map Option.get priors in
-      let prior = List.hd priors in
-      let priors = List.tl priors in
-      let _ = List.fold_left check_priors' [prior] priors in
-      ()
-    else failwith "Error : None and Some value are both in priors list";
 
+  (* (TODO) Seems redundant but need a way to find default from value
+     Current runtime infrastructure uses type to find the default value *)
+  and eval_binop_eq_default (ctx : Ctx.t) (value : Value.t) : bool =
+    match value with
+    | BoolV b -> not b
+    | IntV value | FBitV (_, value) | FIntV (_, value) | VBitV (_, _, value) ->
+        Bigint.(value = zero)
+    | StrV value -> value = ""
+    | StackV (values, _, _) | TupleV values ->
+        List.for_all (fun value -> eval_binop_eq_default ctx value) values
+    | StructV entries | UnionV entries ->
+        let values = List.map (fun (_, v) -> v) entries in
+        List.for_all (fun value -> eval_binop_eq_default ctx value) values
+    | HeaderV (valid, entries) ->
+        let values = List.map (fun (_, v) -> v) entries in
+        (not valid)
+        && List.for_all (fun value -> eval_binop_eq_default ctx value) values
+    | EnumFieldV (id, member) -> (
+        let typ = Ctx.find_td id ctx in
+        match typ with
+        | EnumT (_id, members) ->
+            let member' = List.hd members in
+            member = member'
+        | _ -> failwith "type is not enum")
+    | SEnumFieldV (_, _, value) ->
+        let value = Value.get_num value in
+        Bigint.(value = zero)
+    | _ -> failwith "type doesn't have default value"
+
+  (* TODO : What about uninitialized enum? *)
+  and match_keysets (ctx : Ctx.t) (keysets : keyset list)
+      (keys : (Value.t * match_kind) list) : bool =
+    let match_keyset matched keyset key =
+      if not matched then matched
+      else
+        let value_key, match_kind_key = key in
+        let exact = match_kind_key.it = "exact" in
+        let optional = match_kind_key.it = "optional" in
+        let range = match_kind_key.it = "range" in
+        match keyset.it with
+        | AnyK ->
+            if exact then
+              failwith "(match_keysets) Any match unsupported in exact match"
+            else matched
+        | ExprK expr when exact || optional ->
+            let value_keyset = interp_expr ctx expr |> snd in
+            eval_binop_eq value_keyset value_key
+        | ExprK { it = RangeE (expr_lb, expr_ub); _ } when range ->
+            let width = Value.get_width value_key in
+            let limit = Value.IntV (power_of_two width) in
+            let value_lb = interp_expr ctx expr_lb |> snd in
+            let value_ub = interp_expr ctx expr_ub |> snd in
+            if
+              eval_binop_ge value_lb limit |> Value.get_bool
+              || eval_binop_ge value_ub limit |> Value.get_bool
+            then
+              Printf.printf
+                "(match_keysets) Warning : has 1s outside of field bit width\n";
+            if eval_binop_gt value_lb value_ub |> Value.get_bool then
+              failwith "(match_keysets) Invalid range";
+            eval_binop_le value_lb value_key |> Value.get_bool
+            && eval_binop_le value_key value_ub |> Value.get_bool
+        | ExprK { it = MaskE (expr_base, expr_mask); _ } ->
+            let width = Value.get_width value_key in
+            let limit = Value.IntV (power_of_two width) in
+            let value_base = interp_expr ctx expr_base |> snd in
+            let value_mask = interp_expr ctx expr_mask |> snd in
+            if
+              eval_binop_ge value_base limit |> Value.get_bool
+              || eval_binop_ge value_mask limit |> Value.get_bool
+            then
+              Printf.printf
+                "(match_keysets) Warning : has 1s outside of field bit width\n";
+            let value_mask = Value.get_num value_mask in
+            let value_mask = bit_of_raw_int value_mask width in
+            let value_keyset = eval_binop_bitand value_base value_mask in
+            let value_key = eval_binop_bitand value_key value_mask in
+            eval_binop_eq value_keyset value_key
+        | ExprK expr ->
+            let width = Value.get_width value_key in
+            let limit = Value.IntV (power_of_two width) in
+            let value_keyset = interp_expr ctx expr |> snd in
+            if eval_binop_ge value_keyset limit |> Value.get_bool then
+              Printf.printf
+                "(match_keysets) Warning : has 1s outside of field bit width\n";
+            eval_binop_eq value_keyset value_key
+        | DefaultK ->
+            if exact then
+              failwith
+                "(match_keysets) Default match unsupported in exact match"
+            else eval_binop_eq_default ctx value_key
+    in
+    match keysets with
+    | [ { it = AnyK; _ } ] -> true
+    | _ -> List.fold_left2 match_keyset true keysets keys
 
   and match_action (ctx : Ctx.t) (keys : (Value.t * match_kind) list)
       (actions : table_action list) (entries : table_entry list)
       (default : table_default option) (_custom : table_custom list) =
     let path, _ = ctx.id in
     let id = List.rev path |> List.hd in
-    (* Determine the action to be run *)
-    (* Decl the default_action*)
-    let default_action = match default with
+    let default_action =
+      match default with
       | Some { it = action, _; _ } -> Some action
       | None -> None
     in
     (* Compute priorities and save in list *)
-    (* If no_ternary, it means there are only exacts and lpm*)
-    let priors = set_priors ctx keys entries 1 true in
-    let _ = check_priors priors true in
-    let find_action (prior, action) entry new_prior=
-      let matches, entry_action, _anno = entry.it in
-      let new_action = Some entry_action in
-      (* If current action is None, it means no matched action yet *)
-      let is_action_none = Option.is_none action in
-      (* If prior is None, it means there are only exacts *)
-      let is_prior_none = Option.is_none prior in
-      (* Check match *)
-      let is_match = check_match ctx matches keys in
-      (* Compare priorities *)
-      let cmp_prior = Option.compare Int.compare prior new_prior in
-      (* If first match *)
-      if is_match && is_action_none then (new_prior, new_action)
-      (* If match one more in only exact field, it may causes error *)
-      else if is_match && is_prior_none then failwith "no dup in only exacts"
-      (* If new_priority is larger, then replace the action *)
-      else if is_match && cmp_prior < 0 then (new_prior, new_action)
-      (* Else not changed *)
-      else (prior, action) 
+    let priors = set_priors ctx keys entries in
+    check_priors priors;
+    let entries = List.combine entries priors in
+    (* Find the action to be run *)
+    let find_action (prior_matched, action_matched) (entry, prior_curr) =
+      let keysets, action_curr, _anno = entry.it in
+      (* Check for match *)
+      let matched = match_keysets ctx keysets keys in
+      (* Replace the current match if possible *)
+      if matched && Option.is_none action_matched then
+        (prior_curr, Some action_curr)
+      else if matched && Option.is_none prior_curr then
+        failwith
+          "(match_action) There cannot be duplicate matches with only exacts"
+      else if matched && Option.compare Int.compare prior_matched prior_curr < 0
+      then (prior_curr, Some action_curr)
+      else (prior_matched, action_matched)
     in
-    let action = List.fold_left2 find_action (None, None) entries priors |> snd in
+    let action = List.fold_left find_action (None, None) entries |> snd in
     let action = if Option.is_none action then default_action else action in
     (* Calling an apply method on a table instance returns a value with
        a struct type with three fields. This structure is synthesized
@@ -1152,7 +1141,8 @@ module Make (Arch : ARCH) : INTERP = struct
       let action_run =
         let action_run =
           Option.value ~default:(List.hd actions) action
-          |> it |> (fun (f,_,_) -> f)
+          |> it
+          |> (fun (f, _, _) -> f)
           |> Format.asprintf "%a" Syntax.Pp.pp_var
         in
         Value.EnumFieldV ("action_list(" ^ id ^ ")", action_run)

@@ -8,8 +8,8 @@ open Util.Source
    Warning: this will loop forever if there is a cycle in the type references. *)
 let rec saturate_type (ctx : Ctx.t) (typ : Type.t) : Type.t =
   match typ with
-  | VoidT | BoolT | FIntT _ | IntT | FBitT _ | VBitT _ | StrT | ErrT | MatchKindT
-    ->
+  | VoidT | BoolT | FIntT _ | IntT | FBitT _ | VBitT _ | StrT | ErrT
+  | MatchKindT ->
       typ
   | NameT id -> Ctx.find_td id ctx |> saturate_type ctx
   | NewT _ -> typ
@@ -92,7 +92,8 @@ and static_eval_expr (ctx : Ctx.t) (expr : expr) : Value.t option =
   | CallE (expr_func, targs, args) -> static_eval_call ctx expr_func targs args
   | _ ->
       Format.eprintf "(static_eval_expr) %a is not compile-time known"
-        (Syntax.Pp.pp_expr ~level:0) expr;
+        (Syntax.Pp.pp_expr ~level:0)
+        expr;
       assert false
 
 and static_eval_bool (b : bool) : Value.t option = Some (BoolV b)
@@ -102,7 +103,8 @@ and static_eval_num (value : Bigint.t) (encoding : (Bigint.t * bool) option) :
     Value.t option =
   match encoding with
   | Some (width, signed) ->
-      if signed then Some (FIntV (width, value)) else Some (FBitV (width, value))
+      if signed then Some (FIntV (width, value))
+      else Some (FBitV (width, value))
   | None -> Some (IntV value)
 
 and static_eval_var (ctx : Ctx.t) (var : var) : Value.t option =
@@ -233,7 +235,8 @@ let type_constant_decl_glob (ctx : Ctx.t) (id : id) (typ : typ) (value : expr) :
       ctx
   | None ->
       Format.eprintf "(type_constant_decl) %a is not a compile-time known value"
-        (Syntax.Pp.pp_expr ~level:0) value;
+        (Syntax.Pp.pp_expr ~level:0)
+        value;
       assert false
 
 (* (7.1.2)
@@ -253,7 +256,8 @@ let type_error_decl_glob (ctx : Ctx.t) (members : member list) : Ctx.t =
           ctx
       | Some _ ->
           Format.eprintf "(type_error_decl_glob) Error %a was already defined\n"
-            (Syntax.Pp.pp_member ~level:0) member;
+            (Syntax.Pp.pp_member ~level:0)
+            member;
           assert false)
     ctx members
 
@@ -281,7 +285,8 @@ let type_match_kind_decl_glob (ctx : Ctx.t) (members : member list) : Ctx.t =
       | Some _ ->
           Format.eprintf
             "(type_match_kind_decl_glob) Match kind %a was already defined\n"
-            (Syntax.Pp.pp_member ~level:0) member;
+            (Syntax.Pp.pp_member ~level:0)
+            member;
           assert false)
     ctx members
 
@@ -374,35 +379,47 @@ let type_package_type_decl_glob (_ctx : Ctx.t) (_id : id)
 let type_decl_glob (ctx : Ctx.t) (decl : decl) : Ctx.t =
   match decl.it with
   (* constantDeclaration *)
-  | ConstD { id; typ; value; annos } -> let _ = annos in  type_constant_decl_glob ctx id typ value
+  | ConstD { id; typ; value; annos } ->
+      let _ = annos in
+      type_constant_decl_glob ctx id typ value
   (* errorDeclaration *)
-  | ErrD { members; } -> type_error_decl_glob ctx members
+  | ErrD { members } -> type_error_decl_glob ctx members
   (* matchKindDeclaration *)
   | MatchKindD { members } -> type_match_kind_decl_glob ctx members
   (* typeDeclaration *)
-  | StructD { id; fields; annos } -> let _ = annos in type_struct_decl_glob ctx id fields
-  | HeaderD { id; fields; annos } -> let _ = annos in type_header_decl_glob ctx id fields
-  | UnionD { id; fields; annos} -> let _ = annos in type_union_decl_glob ctx id fields
-  | EnumD { id; members; annos } -> let _ = annos in type_enum_decl_glob ctx id members
-  | SEnumD { id; typ; fields; annos } -> let _ = annos in type_senum_decl_glob ctx id typ fields
+  | StructD { id; fields; annos } ->
+      let _ = annos in
+      type_struct_decl_glob ctx id fields
+  | HeaderD { id; fields; annos } ->
+      let _ = annos in
+      type_header_decl_glob ctx id fields
+  | UnionD { id; fields; annos } ->
+      let _ = annos in
+      type_union_decl_glob ctx id fields
+  | EnumD { id; members; annos } ->
+      let _ = annos in
+      type_enum_decl_glob ctx id members
+  | SEnumD { id; typ; fields; annos } ->
+      let _ = annos in
+      type_senum_decl_glob ctx id typ fields
   | NewTypeD { id; typ; annos } -> (
-      let _ = annos in 
+      let _ = annos in
       match typ with
       | Left typ -> type_newtype_decl_glob ctx id typ
       | Right _ -> failwith "(TODO: type_decl_glob) Handle newtype with decl")
   | TypeDefD { id; typ; annos } -> (
-      let _ = annos in 
+      let _ = annos in
       match typ with
       | Left typ -> type_typedef_decl_glob ctx id typ
       | Right _ -> failwith "(TODO: type_decl_glob) Handle typedef with decl")
   | ParserTypeD { id; tparams; params; annos } ->
-    let _ = annos in 
+      let _ = annos in
       type_parser_type_decl_glob ctx id tparams params
   | ControlTypeD { id; tparams; params; annos } ->
-    let _ = annos in 
+      let _ = annos in
       type_control_type_decl_glob ctx id tparams params
   | PackageTypeD { id; tparams; cparams; annos } ->
-    let _ = annos in 
+      let _ = annos in
       type_package_type_decl_glob ctx id tparams cparams
   (* functionDeclaration *)
   (* actionDeclaration *)
