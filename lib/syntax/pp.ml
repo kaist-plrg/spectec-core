@@ -115,7 +115,6 @@ let rec pp_type' fmt typ' =
   match typ' with
   | VoidT -> F.fprintf fmt "void"
   | BoolT -> F.fprintf fmt "bool"
-  | MatchKindT -> F.fprintf fmt "match_kind"
   | ErrT -> F.fprintf fmt "error"
   | StrT -> F.fprintf fmt "string"
   | IntT -> F.fprintf fmt "int"

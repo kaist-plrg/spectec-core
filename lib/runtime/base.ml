@@ -141,14 +141,15 @@ end
 
 module Type = struct
   type t =
+    | VoidT
     | BoolT
     | IntT
     | FIntT of Bigint.t
     | FBitT of Bigint.t
     | VBitT of Bigint.t
     | StrT
-    | ErrT of member' list
-    | MatchKindT of member' list
+    | ErrT
+    | MatchKindT
     | NameT of id'
     | NewT of id'
     | StackT of (t * Bigint.t)
@@ -157,31 +158,22 @@ module Type = struct
     | HeaderT of (member' * t) list
     | UnionT of (member' * t) list
     (* (TODO) id' field of EnumT and SEnumT seems redundant,
-       but also it may serve some purpose when type checking,
+       but also it may serve StructTsome purpose when type checking,
        e.g. enum foo { A, B } and enum bar { A, B } are different types *)
     | EnumT of id' * member' list
     | SEnumT of id' * t * (member' * Value.t) list
     | RefT
 
   let rec pp fmt = function
+    | VoidT -> Format.fprintf fmt "void"
     | BoolT -> Format.fprintf fmt "bool"
     | IntT -> Format.fprintf fmt "int"
     | FIntT w -> Format.fprintf fmt "%ss" (Bigint.to_string w)
     | FBitT w -> Format.fprintf fmt "%sw" (Bigint.to_string w)
     | VBitT w -> Format.fprintf fmt "%sv" (Bigint.to_string w)
     | StrT -> Format.fprintf fmt "string"
-    | ErrT ms ->
-        Format.fprintf fmt "error { @[<hv>%a@] }"
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
-             Format.pp_print_string)
-          ms
-    | MatchKindT ms ->
-        Format.fprintf fmt "match_kind { @[<hv>%a@] }"
-          (Format.pp_print_list
-             ~pp_sep:(fun fmt () -> Format.fprintf fmt ";@ ")
-             Format.pp_print_string)
-          ms
+    | ErrT -> Format.fprintf fmt "error"
+    | MatchKindT -> Format.fprintf fmt "match_kind"
     | NameT n -> Format.fprintf fmt "%s" n
     | NewT n -> Format.fprintf fmt "new %s" n
     | StackT (t, s) -> Format.fprintf fmt "%a[%s]" pp t (Bigint.to_string s)
@@ -313,11 +305,11 @@ type env_stack = TDEnv.t * VEnv.t list
 let env_stack_empty = (TDEnv.empty, [])
 
 (* Transition between visibility and environment *)
-
 let env_to_vis (env : env) =
   let tdenv, fenv, env = env in
+
   let tdvis =
-    TDEnv.fold (fun tvar _ vis -> TDVis.add tvar vis) tdenv TDVis.empty
+    TDEnv.fold (fun tvar _ tdvis -> TDVis.add tvar tdvis) tdenv TDVis.empty
   in
   let fvis = FEnv.fold (fun fvar _ vis -> FVis.add fvar vis) fenv FVis.empty in
   let vis = VEnv.fold (fun var _ vis -> VVis.add var vis) env VVis.empty in

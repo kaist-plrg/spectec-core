@@ -126,14 +126,24 @@ let load_glob_decl (ccenv : CCEnv.t) (ictx : ICtx.t) (decl : decl) =
       (ccenv, ictx)
   (* Load types to tdenv *)
   | ErrD { members } ->
-      let members = List.map it members in
-      let typ = Type.ErrT members in
-      let ictx = ICtx.add_td_glob "error" typ ictx in
+      let ictx =
+        List.fold_left
+          (fun ictx member ->
+            let id = "error." ^ member.it in
+            let value = Value.ErrV member.it in
+            ICtx.add_var_glob id value ictx)
+          ictx members
+      in
       (ccenv, ictx)
   | MatchKindD { members } ->
-      let members = List.map it members in
-      let typ = Type.MatchKindT members in
-      let ictx = ICtx.add_td_glob "match_kind" typ ictx in
+      let ictx =
+        List.fold_left
+          (fun ictx member ->
+            let id = member.it in
+            let value = Value.MatchKindV member.it in
+            ICtx.add_var_glob id value ictx)
+          ictx members
+      in
       (ccenv, ictx)
   | StructD { id; fields; _ } ->
       let fields =

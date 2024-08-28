@@ -11,8 +11,13 @@ let desugar includes filename =
   let program = parse includes filename in
   Frontend.Desugar.desugar_program program
 
-let instantiate includes filename =
+let typecheck includes filename =
   let program = desugar includes filename in
+  (* Typing.Typecheck.type_program program *)
+  program
+
+let instantiate includes filename =
+  let program = typecheck includes filename in
   Instance.Instantiate.instantiate_program program
 
 let interp arch includes filename stf debug =

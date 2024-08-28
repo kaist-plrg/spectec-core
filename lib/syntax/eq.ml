@@ -126,7 +126,6 @@ and eq_type' (typ : typ) (typ' : typ) =
   match (typ.it, typ'.it) with
   | VoidT, VoidT -> true
   | BoolT, BoolT -> true
-  | MatchKindT, MatchKindT -> true
   | ErrT, ErrT -> true
   | StrT, StrT -> true
   | IntT, IntT -> true
