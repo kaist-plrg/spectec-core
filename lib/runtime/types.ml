@@ -42,7 +42,7 @@ and typ =
   | ParserT of param list
   | ControlT of param list
   | PackageT
-  | TableT
+  | TableT of typ
   (* Top type *)
   | TopT
   (* Synthesized types : variables can never be declared of this type *)
@@ -79,7 +79,7 @@ and functyp =
   | ParserApplyMethodT of param list
   | ControlApplyMethodT of param list
   | BuiltinMethodT of param list * typ
-  | TableApplyMethodT
+  | TableApplyMethodT of typ
 
 (* Function definitions *)
 and funcdef =
@@ -155,7 +155,7 @@ and pp_typ fmt typ =
       F.fprintf fmt "parser(%a)" pp_param' param
   | ControlT params -> F.fprintf fmt "control(%a)" pp_params params
   | PackageT -> F.pp_print_string fmt "package"
-  | TableT -> F.pp_print_string fmt "table"
+  | TableT _ -> F.pp_print_string fmt "table"
   | TopT -> F.pp_print_string fmt "top"
   | RecordT fields ->
       F.fprintf fmt "record { %a }" (P.pp_pairs P.pp_member' pp_typ "; ") fields
@@ -213,7 +213,7 @@ and pp_functyp fmt functyp =
       F.fprintf fmt "control_apply(%a)" pp_params params
   | BuiltinMethodT (params, typ) ->
       F.fprintf fmt "builtin_method(%a) -> %a" pp_params params pp_typ typ
-  | TableApplyMethodT -> 
+  | TableApplyMethodT _ -> 
       F.fprintf fmt "table_apply"
 
 (* Function definitions *)
@@ -276,14 +276,14 @@ module FuncType = struct
     | ControlApplyMethodT params
     | BuiltinMethodT (params, _) ->
         params
-    | TableApplyMethodT -> []
+    | TableApplyMethodT _ -> []
 
   let get_typ_ret = function
     | ExternFunctionT (_, typ_ret) | FunctionT (_, typ_ret) -> typ_ret
     | ActionT _ -> VoidT
     | ExternMethodT (_, typ_ret) | ExternAbstractMethodT (_, typ_ret) -> typ_ret
     | ParserApplyMethodT _ | ControlApplyMethodT _ -> VoidT
-    | TableApplyMethodT -> VoidT
+    | TableApplyMethodT typ_ret -> typ_ret
     | BuiltinMethodT (_, typ_ret) -> typ_ret
 end
 

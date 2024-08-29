@@ -154,7 +154,7 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
   | ParserT params | ControlT params ->
       List.iter (fun fd -> check_valid_param' tset fd) params
   | PackageT | TopT -> ()
-  | TableT -> ()
+  | TableT _ -> ()
   | RecordT fields ->
       let members, typs_inner = List.split fields in
       check_distinct_names members;
@@ -194,7 +194,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | UnionT _ ->
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TableT -> false
+      | TableT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | NewT _ -> (
@@ -211,7 +211,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | UnionT _ ->
           false
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TableT -> false
+      | TableT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | EnumT _ -> error_not_nest ()
@@ -226,7 +226,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
           false
-      | TableT -> true
+      | TableT _ -> true
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | TupleT _ -> (
@@ -243,7 +243,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | UnionT _ ->
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TableT -> false
+      | TableT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | StackT _ -> (
@@ -257,7 +257,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ -> false
       | HeaderT _ | UnionT _ -> true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TableT -> false
+      | TableT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | StructT _ -> (
@@ -274,7 +274,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | UnionT _ ->
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TableT -> false
+      | TableT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | HeaderT _ -> (
@@ -295,7 +295,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
           List.for_all (check_valid_type_nesting' typ) typs_inner
       | HeaderT _ | UnionT _ -> false
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TableT -> false
+      | TableT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | UnionT _ -> (
@@ -310,12 +310,12 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | StructT _ -> false
       | HeaderT _ -> true
       | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TableT -> false
+      | TableT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _ ->
       error_not_nest ()
-  | TableT -> error_not_nest ()
+  | TableT _ -> error_not_nest ()
   | SetT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT -> false
@@ -335,7 +335,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
           List.for_all (check_valid_type_nesting' typ) typs_inner
       | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TableT -> false
+      | TableT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | StateT -> error_not_nest ()
@@ -422,7 +422,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | UnionT _ ->
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TableT -> false
+      | TableT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | NewD _ -> (
@@ -439,7 +439,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | UnionT _ ->
           false
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TableT -> false
+      | TableT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | EnumD _ -> error_not_nest ()
@@ -454,7 +454,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
           false
-      | TableT -> false
+      | TableT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | StructD _ -> (
@@ -471,7 +471,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | UnionT _ ->
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TableT -> false
+      | TableT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | HeaderD _ -> (
@@ -494,7 +494,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
           List.for_all (check_valid_typedef_nesting' td) typs_inner
       | HeaderT _ | UnionT _ -> false
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TableT -> false
+      | TableT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | UnionD _ -> (
@@ -510,7 +510,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | StructT _ -> false
       | HeaderT _ -> true
       | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TableT -> false
+      | TableT _ -> false
       | TopT -> true
       | RecordT _ | SetT _ | StateT -> false)
   | ExternD _ | ParserD _ | ControlD _ | PackageD _ -> error_not_nest ()
@@ -545,7 +545,8 @@ and check_valid_functype' (tset : TIdSet.t) (ft : FuncType.t) : unit =
   | BuiltinMethodT (params, typ_ret) ->
       List.iter (check_valid_param' tset) params;
       check_valid_type' tset typ_ret
-  | TableApplyMethodT -> ()
+  | TableApplyMethodT typ_ret ->
+      check_valid_type' tset typ_ret
 
 and check_valid_funcdef (cursor : Ctx.cursor) (ctx : Ctx.t) (fd : FuncDef.t) :
     unit =
@@ -646,7 +647,7 @@ let rec substitute_type (tidmap : TIdMap.t) (typ : Type.t) : Type.t =
       let params = List.map (substitute_param tidmap) params in
       ControlT params
   | PackageT | TopT -> typ
-  | TableT -> typ
+  | TableT _ -> typ
   | SetT typ_inner -> SetT (substitute_type tidmap typ_inner)
   | RecordT fields ->
       let members, typs_inner = List.split fields in
@@ -2051,7 +2052,7 @@ and check_bitstring_base' (typ : Type.t) : bool =
   | DefT typ_inner -> check_bitstring_base' typ_inner
   | NewT _ | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
   | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
-  | SetT _ | StateT | TableT ->
+  | SetT _ | StateT | TableT _ ->
       false
 
 and check_bitstring_base (typ : Type.t) : unit =
@@ -2070,7 +2071,7 @@ and check_bitstring_index' (typ : Type.t) : bool =
   | SEnumT (_, typ_inner) -> check_bitstring_index' typ_inner
   | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _ | SetT _
-  | StateT | TableT ->
+  | StateT | TableT _ ->
       false
 
 and check_bitstring_index (typ : Type.t) : unit =
@@ -2089,7 +2090,7 @@ and check_bitstring_slice_range' (typ_base : Type.t) (width_slice : Bigint.t) :
   | DefT typ_inner -> check_bitstring_slice_range' typ_inner width_slice
   | NewT _ | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
   | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
-  | SetT _ | StateT | TableT ->
+  | SetT _ | StateT | TableT _ ->
       false
 
 and check_bitstring_slice_range (typ_base : Type.t) (idx_lo : Bigint.t)
@@ -2486,9 +2487,9 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
         match fid.it with
         | "apply" -> Types.ControlApplyMethodT params
         | _ -> error_not_found ())
-    | TableT -> (
+    | TableT typ -> (
         match fid.it with
-        | "apply" -> Types.TableApplyMethodT
+        | "apply" -> Types.TableApplyMethodT typ
         | _ -> error_not_found ())
     | _ -> error_not_found ()
   in
@@ -3095,7 +3096,7 @@ and check_valid_var_type' (typ : Type.t) : bool =
     ->
       true
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _ | SetT _
-  | StateT | TableT ->
+  | StateT | TableT _ ->
       false
 
 and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
@@ -4056,6 +4057,11 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
           action_list(T) action_run;
       } *)
 
+and get_action_name (action : El.Ast.table_action) : string =
+  let var',_,_ = action.it in
+  match var'.it with
+  | Lang.Ast.Top id | Lang.Ast.Current id -> id.it
+
 and check_table_key' (match_kind : string) (typ : Type.t) : bool =
   match match_kind with
   | "exact" | "optional" ->
@@ -4069,7 +4075,7 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
     | ErrT | MatchKindT | NewT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
     (* No equality op *)
     | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
-    | SetT _ | StateT | TableT -> false
+    | SetT _ | StateT | TableT _ -> false
     end
   | "lpm" | "ternary" | "range" ->
     begin match typ with
@@ -4080,7 +4086,7 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
     | ErrT | MatchKindT | NewT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
     (* No equality op *)
     | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
-    | SetT _ | StateT | TableT -> false
+    | SetT _ | StateT | TableT _ -> false
     end
   | _ -> Printf.printf "(check_table_key) %s is not a valid match_kind\n" match_kind;
     assert false
@@ -4091,20 +4097,15 @@ and check_table_key (match_kind : string) (typ : Type.t) : unit =
       Type.pp typ;
     assert false)
 
-and check_valid_action (cursor : Ctx.cursor) (ctx : Ctx.t) (actions : El.Ast.table_action list)
+and check_valid_action (cursor : Ctx.cursor) (ctx : Ctx.t) (action_names : string list)
   (table_action : El.Ast.table_action) : unit =
   let var, args, _annos = table_action.it in 
+  let action_name = get_action_name table_action in
   let action = Ctx.find_overloaded_opt Ctx.find_funcdef_opt cursor var args ctx in
-  let check_same_name action =
-    let var',_,_ = action.it in
-    match var'.it, var.it with
-    | Lang.Ast.Top id, Lang.Ast.Top id' | Lang.Ast.Current id, Lang.Ast.Current id' -> id.it = id'.it
-    | _ -> false
-  in
   if Option.is_none action then (
     Format.eprintf "(type_table_entry) There is no action named %a or invalid argument\n" El.Pp.pp_var var;
     assert false);
-  if not (List.exists check_same_name actions) then (
+  if not (List.mem action_name action_names) then (
     Format.eprintf "(type_table_entry) There is no action %a in action list\n" El.Pp.pp_var var;
     assert false);
 
@@ -4139,30 +4140,30 @@ and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action : El.As
   (var, args_il, annos_il)
 
 and type_table_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (keys : Type.t list) 
-    (table_actions : El.Ast.table_action list) (table_entry : El.Ast.table_entry) : Il.Ast.table_entry =
-  type_table_entry' cursor ctx keys table_actions table_entry.it $ table_entry.at
+    (action_names : string list) (table_entry : El.Ast.table_entry) : Il.Ast.table_entry =
+  type_table_entry' cursor ctx keys action_names table_entry.it $ table_entry.at
 
 and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (keys : Type.t list) 
-    (table_actions : El.Ast.table_action list) (table_entry : El.Ast.table_entry') : Il.Ast.table_entry' =
+    (action_names : string list) (table_entry : El.Ast.table_entry') : Il.Ast.table_entry' =
   let key_sets, action, annos = table_entry in
   let key_sets_il = type_keysets ctx keys key_sets in
   let action_il = type_table_action cursor ctx action in
   let annos_il = List.map (type_anno cursor ctx) annos in
-  check_valid_action cursor ctx table_actions action;
+  check_valid_action cursor ctx action_names action;
   (key_sets_il, action_il, annos_il)
 
-and type_table_default (cursor : Ctx.cursor) (ctx : Ctx.t) (table_actions : El.Ast.table_action list)
+and type_table_default (cursor : Ctx.cursor) (ctx : Ctx.t) (action_names : string list)
     (table_default : El.Ast.table_default option) : Il.Ast.table_default option =
     match table_default with 
-    | Some table_default -> type_table_default' cursor ctx table_actions table_default.it $ table_default.at 
+    | Some table_default -> type_table_default' cursor ctx action_names table_default.it $ table_default.at 
       |> Option.some
     | None -> None
 
-and type_table_default' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_actions : El.Ast.table_action list)
+and type_table_default' (cursor : Ctx.cursor) (ctx : Ctx.t) (action_names : string list)
     (table_default : El.Ast.table_default') : Il.Ast.table_default' =
   let action, default_const = table_default in 
   let action_il = type_table_action cursor ctx action in
-  check_valid_action cursor ctx table_actions action;
+  check_valid_action cursor ctx action_names action;
   (action_il, default_const)
 
 and type_table_custom (cursor : Ctx.cursor) (ctx : Ctx.t) (table_custom : El.Ast.table_custom) :
@@ -4186,12 +4187,20 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 
   let table_keys, table_actions, table_entries, table_default, table_customs = table in
   let key_types, table_keys_il = List.map (type_table_key cursor ctx) table_keys |> List.split in
+  let action_names = List.map get_action_name table_actions in
   let table_action_il = List.map (type_table_action cursor ctx) table_actions in
-  let table_entries_il = List.map (type_table_entry cursor ctx key_types table_actions) table_entries in 
-  let table_default_il = type_table_default cursor ctx table_actions table_default in 
+  let table_entries_il = List.map (type_table_entry cursor ctx key_types action_names) table_entries in 
+  let table_default_il = type_table_default cursor ctx action_names table_default in 
   let table_customs_il = List.map (type_table_custom cursor ctx) table_customs in
-  (* Is it ok to add TableT directly in ctx? *)
-  let typ = Types.TableT in
+  (* Should we add action_list(T), apply_result(T) type in env? And Should we add decl to? *)
+  let action_enum = Types.EnumT ("action_list_" ^ id.it) in
+  let apply_result = Types.StructT [
+    ("hit", Types.BoolT);
+    ("miss", Types.BoolT);
+    ("action_run", action_enum)
+    ]
+  in
+  let typ = Types.TableT apply_result in
   let ctx = Ctx.add_type cursor id.it typ ctx in
   let decl_il = Lang.Ast.TableD 
     { 
