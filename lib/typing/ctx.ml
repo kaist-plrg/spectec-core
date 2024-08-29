@@ -262,6 +262,16 @@ let rec find_funcdef_opt cursor (fid, args) ctx =
 let find_funcdef cursor (fid, args) ctx =
   find_funcdef_opt cursor (fid, args) ctx |> Option.get
 
+(* (TODO) This is function for search actions without considering arity. It added because of table action.
+  If we got better solution for searching actions with no arity, this function would be removed. *)
+let rec find_funcdef_opt_action cursor (fid, args) ctx =
+  match cursor with
+  | Global -> Envs.FDEnv.find_opt_action (fid, args) ctx.global.fdenv
+  | Block ->
+      Envs.FDEnv.find_opt_action (fid, args) ctx.block.fdenv
+      |> find_cont find_funcdef_opt_action Global (fid, args) ctx
+  | Local -> find_funcdef_opt_action Block (fid, args) ctx
+
 let find_consdef_opt _cursor (cid, args) ctx =
   Envs.CDEnv.find_opt (cid, args) ctx.global.cdenv
 

@@ -27,7 +27,7 @@ header hdr {
 
 control ingress(inout headers h, inout metadata m, inout standard_metadata_t sm) {
     action add()
-    { h.h.c = (bit<64>)(h.h.a + h.h.b); sm.egress_spec = 0; }
+    { h.h.c = (bit<64>)(h.h.a + h.h.b); sm.egress_spec = (bit<9>)0; }
     table t {
         actions = { add; }
         const default_action = add;
@@ -35,4 +35,3 @@ control ingress(inout headers h, inout metadata m, inout standard_metadata_t sm)
     apply { t.apply(); }
 }
 
-V1Switch(p(), vrfy(), ingress(), egress(), update(), deparser()) main;

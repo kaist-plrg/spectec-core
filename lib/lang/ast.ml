@@ -240,7 +240,7 @@ and ('typ, 'svalue, 'dir) decl' =
       annos : 'typ anno list;
     }
   (* Table *)
-  | TableD of { id : id; table : 'typ table; annos : 'typ anno list }
+  | TableD of { id : id; table : 'typ table; annos : 'typ anno list; }
   (* Control *)
   | ControlTypeD of {
       id : id;
