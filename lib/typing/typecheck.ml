@@ -2937,81 +2937,106 @@ and type_transition_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
 and type_decl_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
     (decl : El.Ast.decl) : Ctx.t * flow * Il.Ast.stmt' =
   let ctx, decl_il = type_decl cursor ctx decl in
-  let stmt_il = Lang.Ast.DeclS { decl = decl_il } in
+  let stmt_il =
+    match decl_il with
+    | Some decl_il -> Lang.Ast.DeclS { decl = decl_il }
+    | None -> Lang.Ast.EmptyS
+  in
   (ctx, flow, stmt_il)
 
 (* Declaration typing *)
 
 and type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : El.Ast.decl) :
-    Ctx.t * Il.Ast.decl =
+    Ctx.t * Il.Ast.decl option =
   let at = decl.at in
   let ctx, decl = type_decl' cursor ctx decl.it in
-  (ctx, decl $ at)
+  let decl = Option.map (fun decl -> decl $ at) decl in
+  (ctx, decl)
 
 and type_decl' (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : El.Ast.decl') :
-    Ctx.t * Il.Ast.decl' =
+    Ctx.t * Il.Ast.decl' option =
+  let wrap_none ctx = (ctx, None) in
+  let wrap_some (ctx, decl_il) = (ctx, Some decl_il) in
   match decl with
   (* Constant, variable, and object declarations *)
   | ConstD { id; typ; value; annos } ->
-      type_const_decl cursor ctx id typ value annos
-  | VarD { id; typ; init; annos } -> type_var_decl cursor ctx id typ init annos
+      type_const_decl cursor ctx id typ value annos |> wrap_none
+  | VarD { id; typ; init; annos } ->
+      type_var_decl cursor ctx id typ init annos |> wrap_some
   | InstD { id; var_inst; targs; args; init; annos } ->
       type_instantiation_decl cursor ctx id var_inst targs args init annos
+      |> wrap_some
   (* Derived type declarations *)
-  | ErrD { members } -> type_error_decl cursor ctx members
-  | MatchKindD { members } -> type_match_kind_decl cursor ctx members
-  | StructD { id; fields; annos } -> type_struct_decl cursor ctx id fields annos
-  | HeaderD { id; fields; annos } -> type_header_decl cursor ctx id fields annos
-  | UnionD { id; fields; annos } -> type_union_decl cursor ctx id fields annos
-  | EnumD { id; members; annos } -> type_enum_decl cursor ctx id members annos
+  | ErrD { members } -> type_error_decl cursor ctx members |> wrap_none
+  | MatchKindD { members } ->
+      type_match_kind_decl cursor ctx members |> wrap_none
+  | StructD { id; fields; annos } ->
+      type_struct_decl cursor ctx id fields annos |> wrap_none
+  | HeaderD { id; fields; annos } ->
+      type_header_decl cursor ctx id fields annos |> wrap_none
+  | UnionD { id; fields; annos } ->
+      type_union_decl cursor ctx id fields annos |> wrap_none
+  | EnumD { id; members; annos } ->
+      type_enum_decl cursor ctx id members annos |> wrap_none
   | SEnumD { id; typ; fields; annos } ->
-      type_senum_decl cursor ctx id typ fields annos
+      type_senum_decl cursor ctx id typ fields annos |> wrap_none
   | NewTypeD { id; typdef; annos } ->
-      type_newtype_decl cursor ctx id typdef annos
+      type_newtype_decl cursor ctx id typdef annos |> wrap_none
   | TypeDefD { id; typdef; annos } ->
-      type_typedef_decl cursor ctx id typdef annos
+      type_typedef_decl cursor ctx id typdef annos |> wrap_none
   (* Function declarations *)
   | ActionD { id; params; body; annos } ->
-      type_action_decl cursor ctx id params body annos
+      type_action_decl cursor ctx id params body annos |> wrap_some
   | FuncD { id; typ_ret; tparams; params; body } ->
-      type_function_decl cursor ctx id tparams params typ_ret body
+      type_function_decl cursor ctx id tparams params typ_ret body |> wrap_some
   | ExternFuncD { id; typ_ret; tparams; params; annos } ->
       type_extern_function_decl cursor ctx id tparams params typ_ret annos
+      |> wrap_some
   (* Object declarations *)
   (* Extern *)
   | ExternConstructorD { id; cparams; annos } ->
-      type_extern_constructor_decl cursor ctx id cparams annos
+      type_extern_constructor_decl cursor ctx id cparams annos |> wrap_some
   | ExternAbstractMethodD { id; typ_ret; tparams; params; annos } ->
       type_extern_abstract_method_decl cursor ctx id tparams params typ_ret
         annos
+      |> wrap_some
   | ExternMethodD { id; typ_ret; tparams; params; annos } ->
       type_extern_method_decl cursor ctx id tparams params typ_ret annos
+      |> wrap_some
   | ExternObjectD { id; tparams; mthds; annos } ->
-      type_extern_object_decl cursor ctx id tparams mthds annos
+      type_extern_object_decl cursor ctx id tparams mthds annos |> wrap_some
   (* Parser *)
   | ValueSetD _ ->
       Format.eprintf "(type_decl) %a\n" (El.Pp.pp_decl' ~level:0) decl;
       assert false
   | ParserTypeD { id; tparams; params; annos } ->
-      type_parser_type_decl cursor ctx id tparams params annos
+      type_parser_type_decl cursor ctx id tparams params annos |> wrap_none
   | ParserD { id; tparams; params; cparams; locals; states; annos } ->
       type_parser_decl cursor ctx id tparams params cparams locals states annos
+      |> wrap_some
   (* Control *)
-  | TableD { id; table; annos } -> type_table_decl cursor ctx id table annos
+  | TableD { id; table; annos } ->
+      type_table_decl cursor ctx id table annos |> wrap_some
   | ControlTypeD { id; tparams; params; annos } ->
-      type_control_type_decl cursor ctx id tparams params annos
+      type_control_type_decl cursor ctx id tparams params annos |> wrap_none
   | ControlD { id; tparams; params; cparams; locals; body; annos } ->
       type_control_decl cursor ctx id tparams params cparams locals body annos
+      |> wrap_some
   (* Package *)
   | PackageTypeD { id; tparams; cparams; annos } ->
-      type_package_type_decl cursor ctx id tparams cparams annos
+      type_package_type_decl cursor ctx id tparams cparams annos |> wrap_some
 
 and type_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (decls : El.Ast.decl list) :
     Ctx.t * Il.Ast.decl list =
   List.fold_left
     (fun (ctx, decls_il) decl ->
       let ctx, decl_il = type_decl cursor ctx decl in
-      (ctx, decls_il @ [ decl_il ]))
+      let decls_il =
+        match decl_il with
+        | Some decl_il -> decls_il @ [ decl_il ]
+        | None -> decls_il
+      in
+      (ctx, decls_il))
     (ctx, []) decls
 
 (* (11.1) Constants
@@ -3019,9 +3044,8 @@ and type_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (decls : El.Ast.decl list) :
    The initializer expression must be a compile-time known value. *)
 
 and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (typ : El.Ast.typ) (expr : El.Ast.expr) (annos : El.Ast.anno list) :
-    Ctx.t * Il.Ast.decl' =
-  let annos_il = List.map (type_anno cursor ctx) annos in
+    (typ : El.Ast.typ) (expr : El.Ast.expr) (annos : El.Ast.anno list) : Ctx.t =
+  let _annos_il = List.map (type_anno cursor ctx) annos in
   let typ_target = eval_type_with_check cursor ctx typ in
   let typ, _expr_il = type_expr cursor ctx expr in
   (* (TODO) Insert cast if possible *)
@@ -3042,10 +3066,7 @@ and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Ctx.add_value cursor id.it value.it ctx
     |> Ctx.add_type cursor id.it typ_target.it
   in
-  let decl_il =
-    Lang.Ast.ConstD { id; typ = typ_target; value; annos = annos_il }
-  in
-  (ctx, decl_il)
+  ctx
 
 (* (11.2) Variables
 
@@ -3273,7 +3294,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    which the compiler will merge together. It is an error to declare the same identifier multiple times. *)
 
 and type_error_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (members : El.Ast.member list) : Ctx.t * Il.Ast.decl' =
+    (members : El.Ast.member list) : Ctx.t =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_error_decl) Error declarations must be global\n";
     assert false);
@@ -3287,8 +3308,7 @@ and type_error_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     Ctx.add_value cursor id value ctx |> Ctx.add_type cursor id typ
   in
   let ctx = List.fold_left type_error_decl' ctx members in
-  let decl_il = Lang.Ast.ErrD { members } in
-  (ctx, decl_il)
+  ctx
 
 (* (7.1.3) The match kind type
 
@@ -3303,7 +3323,7 @@ and type_error_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
    P4 programmers cannot declare new match kinds. *)
 
 and type_match_kind_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (members : El.Ast.member list) : Ctx.t * Il.Ast.decl' =
+    (members : El.Ast.member list) : Ctx.t =
   if cursor <> Ctx.Global then (
     Format.eprintf
       "(type_match_kind_decl) Match kind declarations must be global\n";
@@ -3319,8 +3339,7 @@ and type_match_kind_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     Ctx.add_value cursor id value ctx |> Ctx.add_type cursor id typ
   in
   let ctx = List.fold_left type_match_kind_decl' ctx members in
-  let decl_il = Lang.Ast.MatchKindD { members } in
-  (ctx, decl_il)
+  ctx
 
 (* (7.2.5) Struct types
 
@@ -3329,18 +3348,18 @@ and type_match_kind_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and type_struct_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (fields : (El.Ast.member * El.Ast.typ * El.Ast.anno list) list)
-    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
+    (annos : El.Ast.anno list) : Ctx.t =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_struct_decl) Struct declarations must be global\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let _annos_il = List.map (type_anno cursor ctx) annos in
   let members, typs, annoss =
     List.fold_left
       (fun (members, typs, annoss) (member, typ, annos) ->
         (members @ [ member ], typs @ [ typ ], annoss @ [ annos ]))
       ([], [], []) fields
   in
-  let annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
+  let _annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
   let typs = List.map (eval_type_with_check cursor ctx) typs in
   let td =
     let members = List.map it members in
@@ -3349,34 +3368,24 @@ and type_struct_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
-  let decl_il =
-    let fields_il = List.combine typs annoss_il |> List.combine members in
-    let fields_il =
-      List.fold_left
-        (fun fields (member, (typ, annos_il)) ->
-          fields @ [ (member, typ, annos_il) ])
-        [] fields_il
-    in
-    Lang.Ast.StructD { id; fields = fields_il; annos = annos_il }
-  in
-  (ctx, decl_il)
+  ctx
 
 (* (7.2.2) Header types *)
 
 and type_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (fields : (El.Ast.member * El.Ast.typ * El.Ast.anno list) list)
-    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
+    (annos : El.Ast.anno list) : Ctx.t =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_header_decl) Header declarations must be global\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let _annos_il = List.map (type_anno cursor ctx) annos in
   let members, typs, annoss =
     List.fold_left
       (fun (members, typs, annoss) (member, typ, annos) ->
         (members @ [ member ], typs @ [ typ ], annoss @ [ annos ]))
       ([], [], []) fields
   in
-  let annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
+  let _annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
   let typs = List.map (eval_type_with_check cursor ctx) typs in
   let td =
     let members = List.map it members in
@@ -3385,34 +3394,24 @@ and type_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
-  let decl_il =
-    let fields_il = List.combine typs annoss_il |> List.combine members in
-    let fields_il =
-      List.fold_left
-        (fun fields (member, (typ, annos_il)) ->
-          fields @ [ (member, typ, annos_il) ])
-        [] fields_il
-    in
-    Lang.Ast.HeaderD { id; fields = fields_il; annos = annos_il }
-  in
-  (ctx, decl_il)
+  ctx
 
 (* (7.2.4) Header unions *)
 
 and type_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (fields : (El.Ast.member * El.Ast.typ * El.Ast.anno list) list)
-    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
+    (annos : El.Ast.anno list) : Ctx.t =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_union_decl) Union declarations must be global\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let _annos_il = List.map (type_anno cursor ctx) annos in
   let members, typs, annoss =
     List.fold_left
       (fun (members, typs, annoss) (member, typ, annos) ->
         (members @ [ member ], typs @ [ typ ], annoss @ [ annos ]))
       ([], [], []) fields
   in
-  let annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
+  let _annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
   let typs = List.map (eval_type_with_check cursor ctx) typs in
   let td =
     let members = List.map it members in
@@ -3421,17 +3420,7 @@ and type_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
-  let decl_il =
-    let fields_il = List.combine typs annoss_il |> List.combine members in
-    let fields_il =
-      List.fold_left
-        (fun fields (member, (typ, annos_il)) ->
-          fields @ [ (member, typ, annos_il) ])
-        [] fields_il
-    in
-    Lang.Ast.UnionD { id; fields = fields_il; annos = annos_il }
-  in
-  (ctx, decl_il)
+  ctx
 
 (* (7.2.1) Enumeration types
 
@@ -3439,12 +3428,11 @@ and type_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    naming the created type along with its distinct constants. *)
 
 and type_enum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (members : El.Ast.member list) (annos : El.Ast.anno list) :
-    Ctx.t * Il.Ast.decl' =
+    (members : El.Ast.member list) (annos : El.Ast.anno list) : Ctx.t =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_enum_decl) Enum declarations must be global\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let _annos_il = List.map (type_anno cursor ctx) annos in
   let type_enum_decl' (ctx : Ctx.t) (member : El.Ast.member) : Ctx.t =
     let id_field = id.it ^ "." ^ member.it in
     if Ctx.find_value_opt cursor id_field ctx |> Option.is_some then (
@@ -3462,8 +3450,7 @@ and type_enum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
-  let decl_il = Lang.Ast.EnumD { id; members; annos = annos_il } in
-  (ctx, decl_il)
+  ctx
 
 (* (7.2.1) Enumeration types
 
@@ -3482,12 +3469,12 @@ and type_enum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 
 and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (typ : El.Ast.typ) (fields : (El.Ast.member * El.Ast.expr) list)
-    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
+    (annos : El.Ast.anno list) : Ctx.t =
   if cursor <> Ctx.Global then (
     Format.eprintf
       "(type_senum_decl) Serializable enum declarations must be global\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let _annos_il = List.map (type_anno cursor ctx) annos in
   let typ = eval_type_with_check cursor ctx typ in
   let type_senum_decl' (ctx : Ctx.t) (member, value) : Ctx.t =
     let id_field = id.it ^ "." ^ member.it in
@@ -3514,11 +3501,7 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
-  let decl_il =
-    Lang.Ast.SEnumD
-      { id; typ; fields = List.combine members values; annos = annos_il }
-  in
-  (ctx, decl_il)
+  ctx
 
 (* (7.6) Introducing new types
 
@@ -3530,21 +3513,18 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 
 and type_newtype_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (typdef : (El.Ast.typ, El.Ast.decl) El.Ast.alt) (annos : El.Ast.anno list) :
-    Ctx.t * Il.Ast.decl' =
+    Ctx.t =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_newtype_decl) New type declarations must be global\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let _annos_il = List.map (type_anno cursor ctx) annos in
   match typdef with
   | Left typ ->
       let typ = eval_type_with_check cursor ctx typ in
       let td = Types.NewD typ.it in
       check_valid_typedef cursor ctx td;
       let ctx = Ctx.add_typedef cursor id.it td ctx in
-      let decl_il =
-        Lang.Ast.NewTypeD { id; typdef = Lang.Ast.Left typ; annos = annos_il }
-      in
-      (ctx, decl_il)
+      ctx
   | Right _ -> failwith "(TODO: type_newtype_decl) Handle newtype with decl"
 
 (* (7.5) typedef
@@ -3556,21 +3536,18 @@ and type_newtype_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 
 and type_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (typdef : (El.Ast.typ, El.Ast.decl) El.Ast.alt) (annos : El.Ast.anno list) :
-    Ctx.t * Il.Ast.decl' =
+    Ctx.t =
   if cursor <> Ctx.Global then (
     Format.eprintf "(type_typedef_decl) Typedef declarations must be global\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let _annos_il = List.map (type_anno cursor ctx) annos in
   match typdef with
   | Left typ ->
       let typ = eval_type_with_check cursor ctx typ in
       let td = Types.DefD typ.it in
       check_valid_typedef cursor ctx td;
       let ctx = Ctx.add_typedef cursor id.it td ctx in
-      let decl_il =
-        Lang.Ast.TypeDefD { id; typdef = Lang.Ast.Left typ; annos = annos_il }
-      in
-      (ctx, decl_il)
+      ctx
   | Right _ -> failwith "(TODO: type_typedef_decl) Handle typedef with decl"
 
 (* (14.1) Actions
@@ -3903,12 +3880,12 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 
 and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (tparams : El.Ast.tparam list) (params : El.Ast.param list)
-    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
+    (annos : El.Ast.anno list) : Ctx.t =
   if cursor <> Ctx.Global then (
     Format.eprintf
       "(type_parser_type_decl) Parser type declarations must be global\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let _annos_il = List.map (type_anno cursor ctx) annos in
   (* Typecheck implicit "apply" method
      to construct function definition environment *)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
@@ -3928,10 +3905,7 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
-  let decl_il =
-    Lang.Ast.ParserTypeD { id; tparams; params = params_il; annos = annos_il }
-  in
-  (ctx, decl_il)
+  ctx
 
 (* (13.2) Parser declarations
 
@@ -4166,12 +4140,12 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (_id : El.Ast.id)
 
 and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (tparams : El.Ast.tparam list) (params : El.Ast.param list)
-    (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
+    (annos : El.Ast.anno list) : Ctx.t =
   if cursor <> Ctx.Global then (
     Format.eprintf
       "(type_control_type_decl) Control type declarations must be global\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let _annos_il = List.map (type_anno cursor ctx) annos in
   (* Typecheck implicit "apply" method
      to construct function definition environment *)
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
@@ -4191,10 +4165,7 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
-  let decl_il =
-    Lang.Ast.ControlTypeD { id; tparams; params = params_il; annos = annos_il }
-  in
-  (ctx, decl_il)
+  ctx
 
 (* (14) Control blocks
 
