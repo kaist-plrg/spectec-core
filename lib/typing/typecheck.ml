@@ -4062,6 +4062,14 @@ and get_action_name (action : El.Ast.table_action) : string =
   match var'.it with
   | Lang.Ast.Top id | Lang.Ast.Current id -> id.it
 
+and remove_set (typ : Type.t * Il.Ast.expr) : Type.t * Il.Ast.expr =
+  let typ, expr_il = typ in
+  match typ with 
+  | Types.SetT typ -> typ, expr_il
+  | _ -> 
+    Format.eprintf "(remove_set) Type %a is not set type\n" Types.pp_typ typ;
+    assert false;
+
 and check_table_key' (match_kind : string) (typ : Type.t) : bool =
   match match_kind with
   | "exact" | "optional" ->
@@ -4069,21 +4077,24 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
     | BoolT | IntT | FIntT _ | FBitT _ | VBitT _
     | EnumT _ -> true
     | SEnumT (_id, typ_inner) -> check_table_key' match_kind typ_inner
-    | TupleT typs_inner -> List.for_all (check_table_key' match_kind) typs_inner
     | DefT typs_inner -> check_table_key' match_kind typs_inner
+    | NewT typs_inner -> check_table_key' match_kind typs_inner 
     (* Has eq op but not appropriate for table key *)
-    | ErrT | MatchKindT | NewT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
+    | TupleT _
+    | ErrT | MatchKindT | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
     (* No equality op *)
     | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
     | SetT _ | StateT | TableT _ -> false
     end
+  (* TODO : Not checked yet *)
   | "lpm" | "ternary" | "range" ->
     begin match typ with
     | IntT | FIntT _ | FBitT _ -> true
     | DefT typs_inner -> check_table_key' match_kind typs_inner
+    | NewT typs_inner -> check_table_key' match_kind typs_inner 
     (* Has eq op but not appropriate for table key *)
     | BoolT | TupleT _ | EnumT _ | SEnumT _ | VBitT _
-    | ErrT | MatchKindT | NewT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
+    | ErrT | MatchKindT | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
     (* No equality op *)
     | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
     | SetT _ | StateT | TableT _ -> false
@@ -4109,19 +4120,82 @@ and check_valid_action (cursor : Ctx.cursor) (ctx : Ctx.t) (action_names : strin
     Format.eprintf "(type_table_entry) There is no action %a in action list\n" El.Pp.pp_var var;
     assert false);
 
+and type_action_keyset (ctx : Ctx.t) (key_prop : Type.t * string) (keyset : El.Ast.keyset) :
+    Il.Ast.keyset =
+  type_action_keyset' ctx key_prop keyset.it $ keyset.at
+
+and type_action_keyset' (ctx : Ctx.t) (key_prop : Type.t * string) (keyset : El.Ast.keyset') :
+    Il.Ast.keyset' =
+  let typ_key, match_kind = key_prop in
+  match keyset with
+  | ExprK expr ->
+      let typ, expr_il =
+        match expr.it with
+        | MaskE _ -> 
+            if match_kind = "lpm" || match_kind = "ternary" then
+                type_expr Ctx.Local ctx expr |> remove_set
+            else
+                (Printf.printf
+                "(type_action_keyset) match_kind %s can not use mask expression \n" match_kind;
+                assert false);
+        | RangeE _ -> 
+            if match_kind = "range" then
+                type_expr Ctx.Local ctx expr |> remove_set
+            else
+                (Printf.printf
+                "(type_action_keyset) match_kind %s can not use range expression \n" match_kind;
+                assert false);
+        | _ ->
+            let typ, expr_il = type_expr Ctx.Local ctx expr in
+            check_valid_type Ctx.Local ctx typ;
+            (typ, expr_il)
+      in
+      if typ_key <> typ then (
+        Format.eprintf
+          "(type_action_keyset) Key type %a must match the type of the keyset 
+           expression %a\n"
+          Type.pp typ_key Type.pp typ;
+        assert false);
+      Lang.Ast.ExprK expr_il
+  | DefaultK -> 
+    if match_kind = "exact" then (
+        Format.eprintf
+          "(type_action_keyset) exact match does not allow default expression \n";
+        assert false);
+    Lang.Ast.DefaultK
+  | AnyK -> 
+    if match_kind = "exact" then (
+      Printf.printf
+        "(type_action_keyset) exact match does not allow wildcard expression \n";
+      assert false);
+    Lang.Ast.AnyK
+
+and type_action_keysets (ctx : Ctx.t) (key_props : (Type.t * string) list) 
+    (keysets : El.Ast.keyset list) : Il.Ast.keyset list =
+  match (key_props, keysets) with
+  | _, [ { it = DefaultK; at } ] -> [ Lang.Ast.DefaultK $ at ]
+  | _, [ { it = AnyK; at } ] -> [ Lang.Ast.AnyK $ at ]
+  | key_prop, keysets ->
+      if List.length key_prop <> List.length keysets then (
+        Format.eprintf
+          "(type_action_keysets) Number of select keys must match the number of cases\n";
+        assert false);
+      List.map2 (type_action_keyset ctx) key_prop keysets
+
 and type_table_key (cursor : Ctx.cursor) (ctx : Ctx.t) (table_key : El.Ast.table_key) :
-    Type.t * Il.Ast.table_key =
-  let typ, key_il = type_table_key' cursor ctx table_key.it in
-  (Types.SetT typ, key_il $ table_key.at)
+    (Type.t * string) * Il.Ast.table_key =
+  let key_prop, key_il = type_table_key' cursor ctx table_key.it in
+  (key_prop, key_il $ table_key.at)
 
 and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_key : El.Ast.table_key') :
-    Type.t * Il.Ast.table_key' =
+    (Type.t * string) * Il.Ast.table_key' =
   let expr, match_kind, annos = table_key in
   let typ, expr_il = type_expr cursor ctx expr in
   check_table_key match_kind.it typ;
   let annos_il = List.map (type_anno cursor ctx) annos in
   let key_il = (expr_il, match_kind, annos_il) in
-  (typ, key_il)
+  let key_prop = (typ, match_kind.it) in
+  (key_prop, key_il)
 
 and type_table_action (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action : El.Ast.table_action) :
     Il.Ast.table_action =
@@ -4139,14 +4213,14 @@ and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action : El.As
   let annos_il = List.map (type_anno cursor ctx) annos in
   (var, args_il, annos_il)
 
-and type_table_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (keys : Type.t list) 
+and type_table_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (key_props : (Type.t * string) list) 
     (action_names : string list) (table_entry : El.Ast.table_entry) : Il.Ast.table_entry =
-  type_table_entry' cursor ctx keys action_names table_entry.it $ table_entry.at
+  type_table_entry' cursor ctx key_props action_names table_entry.it $ table_entry.at
 
-and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (keys : Type.t list) 
+and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (key_props : (Type.t * string) list) 
     (action_names : string list) (table_entry : El.Ast.table_entry') : Il.Ast.table_entry' =
   let key_sets, action, annos = table_entry in
-  let key_sets_il = type_keysets ctx keys key_sets in
+  let key_sets_il = type_action_keysets ctx key_props key_sets in
   let action_il = type_table_action cursor ctx action in
   let annos_il = List.map (type_anno cursor ctx) annos in
   check_valid_action cursor ctx action_names action;
@@ -4186,13 +4260,16 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let annos_il = List.map (type_anno cursor ctx) annos in
 
   let table_keys, table_actions, table_entries, table_default, table_customs = table in
-  let key_types, table_keys_il = List.map (type_table_key cursor ctx) table_keys |> List.split in
+  let key_props, table_keys_il = List.map (type_table_key cursor ctx) table_keys |> List.split in
   let action_names = List.map get_action_name table_actions in
+  check_distinct_names action_names;
+
   let table_action_il = List.map (type_table_action cursor ctx) table_actions in
-  let table_entries_il = List.map (type_table_entry cursor ctx key_types action_names) table_entries in 
+  let table_entries_il = List.map (type_table_entry cursor ctx key_props action_names) table_entries in 
   let table_default_il = type_table_default cursor ctx action_names table_default in 
   let table_customs_il = List.map (type_table_custom cursor ctx) table_customs in
   (* Should we add action_list(T), apply_result(T) type in env? And Should we add decl to? *)
+  (* Petr4 did, and also it puts id in TableT instead of typ*)
   let action_enum = Types.EnumT ("action_list_" ^ id.it) in
   let apply_result = Types.StructT [
     ("hit", Types.BoolT);

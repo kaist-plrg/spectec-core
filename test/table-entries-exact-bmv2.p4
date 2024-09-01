@@ -27,7 +27,7 @@ control egress(inout Header_t h, inout Meta_t m, inout standard_metadata_t sm) {
 control deparser(packet_out b, in Header_t h) { apply { b.emit<hdr>(h.h); } }
 
 control ingress(inout Header_t h, inout Meta_t m, inout standard_metadata_t standard_meta) {
-
+    bit<9> z;
     action a() { standard_meta.egress_spec = 9w0; }
     action a_with_control_params(bit<9> x) { standard_meta.egress_spec = (bit<9>)x; }
 
@@ -42,10 +42,10 @@ control ingress(inout Header_t h, inout Meta_t m, inout standard_metadata_t stan
             a_with_control_params;
         }
 
-	default_action = a;
+	default_action = a_with_control_params(z);
 
         const entries = {
-            8w1 : a_with_control_params(1);
+            _ : a_with_control_params(z);
             8w2 : a_with_control_params(2);
         }
     }
