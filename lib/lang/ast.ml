@@ -65,308 +65,123 @@ and binop' =
 
 (* Directions : parameterized by 'dir *)
 (* Types : parameterized by 'typ *)
-(* Compile-time known values : parameterized by 'svalue *)
 
 (* Annotations *)
-type 'typ anno = 'typ anno' phrase
+type 'expr anno = 'expr anno' phrase
 
-and 'typ anno' =
+and 'expr anno' =
   | EmptyN of text
   | TextN of text * text list
-  | ExprN of text * 'typ expr list
-  | RecordN of text * (member * 'typ expr) list
+  | ExprN of text * 'expr list
+  | RecordN of text * (member * 'expr) list
 
 (* Type parameters *)
 and tparam = id
 and tparam' = id'
 
 (* Parameters *)
-and ('typ, 'svalue, 'dir) param = ('typ, 'svalue, 'dir) param' phrase
+and ('dir, 'typ, 'expr) param = ('dir, 'typ, 'expr) param' phrase
 
-and ('typ, 'svalue, 'dir) param' =
-  id * 'dir * 'typ * 'svalue option * 'typ anno list
+and ('dir, 'typ, 'expr) param' =
+  id * 'dir * 'typ * 'expr option * 'expr anno list
 
 (* Constructor parameters *)
-and ('typ, 'svalue, 'dir) cparam = ('typ, 'svalue, 'dir) param
-and ('typ, 'svalue, 'dir) cparam' = ('typ, 'svalue, 'dir) param'
+and ('dir, 'typ, 'expr) cparam = ('dir, 'typ, 'expr) param
+and ('dir, 'typ, 'expr) cparam' = ('dir, 'typ, 'expr) param'
 
 (* Type arguments : parameterized by 'typ *)
 
 (* Arguments *)
-and 'typ arg = 'typ arg' phrase
-and 'typ arg' = ExprA of 'typ expr | NameA of id * 'typ expr | AnyA
+and 'expr arg = 'expr arg' phrase
+and 'expr arg' = ExprA of 'expr | NameA of id * 'expr | AnyA
 
-(* Expressions *)
-and 'typ expr = 'typ expr' phrase
-
-and 'typ expr' =
-  | BoolE of { boolean : bool }
-  | StrE of { text : text }
-  | NumE of { num : num }
-  | VarE of { var : var }
-  | TupleE of { exprs : 'typ expr list }
-  | RecordE of { fields : (member * 'typ expr) list }
-  | UnE of { unop : unop; expr : 'typ expr }
-  | BinE of { binop : binop; expr_l : 'typ expr; expr_r : 'typ expr }
-  | TernE of {
-      expr_cond : 'typ expr;
-      expr_then : 'typ expr;
-      expr_else : 'typ expr;
-    }
-  | CastE of { typ : 'typ; expr : 'typ expr }
-  | MaskE of { expr_base : 'typ expr; expr_mask : 'typ expr }
-  | RangeE of { expr_lb : 'typ expr; expr_ub : 'typ expr }
-  | SelectE of { exprs_select : 'typ expr list; cases : 'typ select_case list }
-  | ArrAccE of { expr_base : 'typ expr; expr_idx : 'typ expr }
-  | BitAccE of {
-      expr_base : 'typ expr;
-      expr_lo : 'typ expr;
-      expr_hi : 'typ expr;
-    }
-  | ErrAccE of { member : member }
-  | TypeAccE of { var_base : var; member : member }
-  | ExprAccE of { expr_base : 'typ expr; member : member }
-  | CallE of { expr_func : 'typ expr; targs : 'typ list; args : 'typ arg list }
-  | InstE of { var_inst : var; targs : 'typ list; args : 'typ arg list }
+(* Expressions : parameterized by 'expr *)
 
 (* Keyset expressions *)
-and 'typ keyset = 'typ keyset' phrase
-and 'typ keyset' = ExprK of 'typ expr | DefaultK | AnyK
+and 'expr keyset = 'expr keyset' phrase
+and 'expr keyset' = ExprK of 'expr | DefaultK | AnyK
 
 (* Select-cases for select *)
-and 'typ select_case = 'typ select_case' phrase
-and 'typ select_case' = 'typ keyset list * state_label
+and 'expr select_case = 'expr select_case' phrase
+and 'expr select_case' = 'expr keyset list * state_label
 
 (* Statements *)
-and ('typ, 'svalue, 'dir) stmt = ('typ, 'svalue, 'dir) stmt' phrase
+and ('typ, 'expr, 'decl) stmt = ('typ, 'expr, 'decl) stmt' phrase
 
-and ('typ, 'svalue, 'dir) stmt' =
+and ('typ, 'expr, 'decl) stmt' =
   | EmptyS
-  | AssignS of { expr_l : 'typ expr; expr_r : 'typ expr }
+  | AssignS of { expr_l : 'expr; expr_r : 'expr }
   | SwitchS of {
-      expr_switch : 'typ expr;
-      cases : ('typ, 'svalue, 'dir) switch_case list;
+      expr_switch : 'expr;
+      cases : ('typ, 'expr, 'decl) switch_case list;
     }
   | IfS of {
-      expr_cond : 'typ expr;
-      stmt_then : ('typ, 'svalue, 'dir) stmt;
-      stmt_else : ('typ, 'svalue, 'dir) stmt;
+      expr_cond : 'expr;
+      stmt_then : ('typ, 'expr, 'decl) stmt;
+      stmt_else : ('typ, 'expr, 'decl) stmt;
     }
-  | BlockS of { block : ('typ, 'svalue, 'dir) block }
+  | BlockS of { block : ('typ, 'expr, 'decl) block }
   | ExitS
-  | RetS of { expr_ret : 'typ expr option }
-  | CallS of { expr_func : 'typ expr; targs : 'typ list; args : 'typ arg list }
-  | TransS of { expr_label : 'typ expr }
-  | DeclS of { decl : ('typ, 'svalue, 'dir) decl }
+  | RetS of { expr_ret : 'expr option }
+  | CallS of { expr_func : 'expr; targs : 'typ list; args : 'expr arg list }
+  | TransS of { expr_label : 'expr }
+  | DeclS of { decl : 'decl }
 
 (* Blocks (sequence of statements) *)
-and ('typ, 'svalue, 'dir) block = ('typ, 'svalue, 'dir) block' phrase
+and ('typ, 'expr, 'decl) block = ('typ, 'expr, 'decl) block' phrase
 
-and ('typ, 'svalue, 'dir) block' =
-  ('typ, 'svalue, 'dir) stmt list * 'typ anno list
+and ('typ, 'expr, 'decl) block' =
+  ('typ, 'expr, 'decl) stmt list * 'expr anno list
 
 (* Match-cases for switch *)
 and switch_label = switch_label' phrase
 and switch_label' = NameL of text | DefaultL
+and ('typ, 'expr, 'decl) switch_case = ('typ, 'expr, 'decl) switch_case' phrase
 
-and ('typ, 'svalue, 'dir) switch_case =
-  ('typ, 'svalue, 'dir) switch_case' phrase
-
-and ('typ, 'svalue, 'dir) switch_case' =
-  | MatchC of switch_label * ('typ, 'svalue, 'dir) block
+and ('typ, 'expr, 'decl) switch_case' =
+  | MatchC of switch_label * ('typ, 'expr, 'decl) block
   | FallC of switch_label
 
-(* Declarations *)
-and ('typ, 'svalue, 'dir) decl = ('typ, 'svalue, 'dir) decl' phrase
-
-and ('typ, 'svalue, 'dir) decl' =
-  (* Constant, variable, error, match_kind, and instance declarations *)
-  | ConstD of { id : id; typ : 'typ; value : 'svalue; annos : 'typ anno list }
-  | VarD of {
-      id : id;
-      typ : 'typ;
-      init : 'typ expr option;
-      annos : 'typ anno list;
-    }
-  | ErrD of { members : member list }
-  | MatchKindD of { members : member list }
-  | InstD of {
-      id : id;
-      var_inst : var;
-      targs : 'typ list;
-      args : 'typ arg list;
-      init : ('typ, 'svalue, 'dir) decl list;
-      annos : 'typ anno list;
-    }
-  (* Type declarations *)
-  | StructD of {
-      id : id;
-      fields : (member * 'typ * 'typ anno list) list;
-      annos : 'typ anno list;
-    }
-  | HeaderD of {
-      id : id;
-      fields : (member * 'typ * 'typ anno list) list;
-      annos : 'typ anno list;
-    }
-  | UnionD of {
-      id : id;
-      fields : (member * 'typ * 'typ anno list) list;
-      annos : 'typ anno list;
-    }
-  | EnumD of { id : id; members : member list; annos : 'typ anno list }
-  | SEnumD of {
-      id : id;
-      typ : 'typ;
-      fields : (member * 'svalue) list;
-      annos : 'typ anno list;
-    }
-  | NewTypeD of {
-      id : id;
-      typdef : ('typ, ('typ, 'svalue, 'dir) decl) alt;
-      annos : 'typ anno list;
-    }
-  | TypeDefD of {
-      id : id;
-      typdef : ('typ, ('typ, 'svalue, 'dir) decl) alt;
-      annos : 'typ anno list;
-    }
-  (* Object declarations *)
-  (* Value Set *)
-  | ValueSetD of {
-      id : id;
-      typ : 'typ;
-      size : 'typ expr;
-      annos : 'typ anno list;
-    }
-  (* Parser *)
-  | ParserTypeD of {
-      id : id;
-      tparams : tparam list;
-      params : ('typ, 'svalue, 'dir) param list;
-      annos : 'typ anno list;
-    }
-  | ParserD of {
-      id : id;
-      tparams : tparam list;
-      params : ('typ, 'svalue, 'dir) param list;
-      cparams : ('typ, 'svalue, 'dir) cparam list;
-      locals : ('typ, 'svalue, 'dir) decl list;
-      states : ('typ, 'svalue, 'dir) parser_state list;
-      annos : 'typ anno list;
-    }
-  (* Table *)
-  | TableD of { id : id; table : 'typ table; annos : 'typ anno list }
-  (* Control *)
-  | ControlTypeD of {
-      id : id;
-      tparams : tparam list;
-      params : ('typ, 'svalue, 'dir) param list;
-      annos : 'typ anno list;
-    }
-  | ControlD of {
-      id : id;
-      tparams : tparam list;
-      params : ('typ, 'svalue, 'dir) param list;
-      cparams : ('typ, 'svalue, 'dir) cparam list;
-      locals : ('typ, 'svalue, 'dir) decl list;
-      body : ('typ, 'svalue, 'dir) block;
-      annos : 'typ anno list;
-    }
-  (* Functions *)
-  | ActionD of {
-      id : id;
-      params : ('typ, 'svalue, 'dir) param list;
-      body : ('typ, 'svalue, 'dir) block;
-      annos : 'typ anno list;
-    }
-  | FuncD of {
-      id : id;
-      typ_ret : 'typ;
-      tparams : tparam list;
-      params : ('typ, 'svalue, 'dir) param list;
-      body : ('typ, 'svalue, 'dir) block;
-    }
-  | ExternFuncD of {
-      id : id;
-      typ_ret : 'typ;
-      tparams : tparam list;
-      params : ('typ, 'svalue, 'dir) param list;
-      annos : 'typ anno list;
-    }
-  (* Extern objects *)
-  | ExternConstructorD of {
-      id : id;
-      cparams : ('typ, 'svalue, 'dir) cparam list;
-      annos : 'typ anno list;
-    }
-  | ExternAbstractMethodD of {
-      id : id;
-      typ_ret : 'typ;
-      tparams : tparam list;
-      params : ('typ, 'svalue, 'dir) param list;
-      annos : 'typ anno list;
-    }
-  | ExternMethodD of {
-      id : id;
-      typ_ret : 'typ;
-      tparams : tparam list;
-      params : ('typ, 'svalue, 'dir) param list;
-      annos : 'typ anno list;
-    }
-  | ExternObjectD of {
-      id : id;
-      tparams : tparam list;
-      mthds : ('typ, 'svalue, 'dir) decl list;
-      annos : 'typ anno list;
-    }
-  (* Package *)
-  | PackageTypeD of {
-      id : id;
-      tparams : tparam list;
-      cparams : ('typ, 'svalue, 'dir) cparam list;
-      annos : 'typ anno list;
-    }
+(* Declarations : parameterized by 'decl *)
 
 (* Parser state machine *)
-and ('typ, 'svalue, 'dir) parser_state =
-  ('typ, 'svalue, 'dir) parser_state' phrase
+and ('typ, 'expr, 'decl) parser_state =
+  ('typ, 'expr, 'decl) parser_state' phrase
 
-and ('typ, 'svalue, 'dir) parser_state' =
-  state_label * ('typ, 'svalue, 'dir) block * 'typ anno list
+and ('typ, 'expr, 'decl) parser_state' =
+  state_label * ('typ, 'expr, 'decl) block * 'expr anno list
 
 (* Table *)
-and 'typ table =
-  'typ table_key list
-  * 'typ table_action list
-  * 'typ table_entry list
-  * 'typ table_default option
-  * 'typ table_custom list
+and 'expr table =
+  'expr table_key list
+  * 'expr table_action list
+  * 'expr table_entry list
+  * 'expr table_default option
+  * 'expr table_custom list
 
 (* Table keys *)
-and 'typ table_key = 'typ table_key' phrase
-and 'typ table_key' = 'typ expr * match_kind * 'typ anno list
+and 'expr table_key = 'expr table_key' phrase
+and 'expr table_key' = 'expr * match_kind * 'expr anno list
 
 (* Table action references *)
-and 'typ table_action = 'typ table_action' phrase
-and 'typ table_action' = var * 'typ arg list * 'typ anno list
+and 'expr table_action = 'expr table_action' phrase
+and 'expr table_action' = var * 'expr arg list * 'expr anno list
 
 (* Table entries *)
-and 'typ table_entry = 'typ table_entry' phrase
-and 'typ table_entry' = 'typ keyset list * 'typ table_action * 'typ anno list
+and 'expr table_entry = 'expr table_entry' phrase
+
+and 'expr table_entry' =
+  'expr keyset list * 'expr table_action * 'expr anno list
 
 (* Table default properties *)
-and 'typ table_default = 'typ table_default' phrase
-and 'typ table_default' = 'typ table_action * table_default_const
+and 'expr table_default = 'expr table_default' phrase
+and 'expr table_default' = 'expr table_action * table_default_const
 and table_default_const = bool
 
 (* Table custom properties *)
-and 'typ table_custom = 'typ table_custom' phrase
-
-and 'typ table_custom' =
-  member * 'typ expr * table_custom_const * 'typ anno list
-
+and 'expr table_custom = 'expr table_custom' phrase
+and 'expr table_custom' = member * 'expr * table_custom_const * 'expr anno list
 and table_custom_const = bool
 
 (* Program *)
-type ('typ, 'svalue, 'dir) program = ('typ, 'svalue, 'dir) decl list
+type 'decl program = 'decl list

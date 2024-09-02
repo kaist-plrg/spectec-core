@@ -904,12 +904,12 @@ and eval_dir' (dir : El.Ast.dir') : Dir.t =
    - Expressions of the form e.minSizeInBits(), e.minSizeInBytes(), e.maxSizeInBits() and e.maxSizeInBytes() *)
 
 and static_eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr) :
-    Il.Ast.svalue option =
+    Il.Ast.value option =
   let value = static_eval_expr' cursor ctx expr.it in
   Option.map (fun value -> value $ expr.at) value
 
 and static_eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr')
-    : Il.Ast.svalue' option =
+    : Il.Ast.value' option =
   match expr with
   | BoolE { boolean } -> static_eval_bool boolean
   | StrE { text } -> static_eval_str text
@@ -933,15 +933,15 @@ and static_eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr')
   | _ -> None
 
 and static_eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (exprs : El.Ast.expr list) : Il.Ast.svalue list option =
+    (exprs : El.Ast.expr list) : Il.Ast.value list option =
   let values = List.map (static_eval_expr cursor ctx) exprs in
   if
     List.for_all Option.is_some values && List.length exprs = List.length values
   then Some (List.map Option.get values)
   else None
 
-and expect_static_value (expr : El.Ast.expr) (value : Il.Ast.svalue option) :
-    Il.Ast.svalue =
+and expect_static_value (expr : El.Ast.expr) (value : Il.Ast.value option) :
+    Il.Ast.value =
   match value with
   | Some value -> value
   | None ->
@@ -1098,8 +1098,11 @@ and type_param' (cursor : Ctx.cursor) (ctx : Ctx.t) (param : El.Ast.param') :
   let value_default =
     Option.map
       (fun expr_default ->
-        static_eval_expr cursor ctx expr_default
-        |> expect_static_value expr_default)
+        let value =
+          static_eval_expr cursor ctx expr_default
+          |> expect_static_value expr_default
+        in
+        Il.Ast.ValueE { value } $ value.at)
       expr_default
   in
   (* (TODO) evaluate annotations *)
@@ -1119,8 +1122,8 @@ and type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr) :
 and type_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr') :
     Type.t * Il.Ast.expr' =
   match expr with
-  | BoolE { boolean } -> (Types.BoolT, Lang.Ast.BoolE { boolean })
-  | StrE { text } -> (Types.StrT, Lang.Ast.StrE { text })
+  | BoolE { boolean } -> (Types.BoolT, Il.Ast.BoolE { boolean })
+  | StrE { text } -> (Types.StrT, Il.Ast.StrE { text })
   | NumE { num } -> type_num_expr num
   | VarE { var } -> type_var_expr cursor ctx var
   | TupleE { exprs } -> type_tuple_expr cursor ctx exprs
@@ -1157,7 +1160,7 @@ and type_num_expr (num : El.Ast.num) : Type.t * Il.Ast.expr' =
         if signed then Types.FIntT width else Types.FBitT width
     | _, None -> Types.IntT
   in
-  let expr_il = Lang.Ast.NumE { num } in
+  let expr_il = Il.Ast.NumE { num } in
   (typ, expr_il)
 
 and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
@@ -1167,7 +1170,7 @@ and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
     Format.eprintf "(type_var_expr) %a is a free identifier\n" El.Pp.pp_var var;
     assert false);
   let typ = Option.get typ in
-  let expr_il = Lang.Ast.VarE { var } in
+  let expr_il = Il.Ast.VarE { var } in
   (typ, expr_il)
 
 (* (8.12) Operations on tuple expressions
@@ -1179,7 +1182,7 @@ and type_tuple_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let typs, exprs_il = List.map (type_expr cursor ctx) exprs |> List.split in
   let typ = Types.TupleT typs in
   check_valid_type cursor ctx typ;
-  let expr_il = Lang.Ast.TupleE { exprs = exprs_il } in
+  let expr_il = Il.Ast.TupleE { exprs = exprs_il } in
   (typ, expr_il)
 
 (* (8.13) Operations on structure-valued expressions
@@ -1215,7 +1218,7 @@ and type_record_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     Types.RecordT (List.combine members typs)
   in
   check_valid_type cursor ctx typ;
-  let expr_il = Lang.Ast.RecordE { fields = List.combine members exprs_il } in
+  let expr_il = Il.Ast.RecordE { fields = List.combine members exprs_il } in
   (typ, expr_il)
 
 (* (8.6) Operations on fixed-width bit types (unsigned integers)
@@ -1286,7 +1289,7 @@ and type_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : El.Ast.unop)
           assert false);
         typ
   in
-  let expr_il = Lang.Ast.UnE { unop; expr = expr_il } in
+  let expr_il = Il.Ast.UnE { unop; expr = expr_il } in
   (typ, expr_il)
 
 (* (8.2) Operaions on error types
@@ -1631,9 +1634,7 @@ and type_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
     | ConcatOp -> type_binop_concat typ_l typ_r
     | LAndOp | LOrOp -> type_binop_logical typ_l typ_r
   in
-  let expr_il =
-    Lang.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il }
-  in
+  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
   (typ, expr_il)
 
 (* (8.5.1) Conditional operator
@@ -1670,7 +1671,7 @@ and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       (El.Pp.pp_expr ~level:0) expr_then (El.Pp.pp_expr ~level:0) expr_else;
     assert false);
   let expr_il =
-    Lang.Ast.TernE
+    Il.Ast.TernE
       {
         expr_cond = expr_cond_il;
         expr_then = expr_then_il;
@@ -1771,7 +1772,7 @@ and type_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
     Format.eprintf "(type_cast_expr) Invalid cast from %a to %a\n" Type.pp typ
       Type.pp typ_target.it;
     assert false);
-  let expr_il = Lang.Ast.CastE { typ = typ_target; expr = expr_il } in
+  let expr_il = Il.Ast.CastE { typ = typ_target; expr = expr_il } in
   (typ_target.it, expr_il)
 
 (* (8.15.3) Masks
@@ -1807,7 +1808,7 @@ and type_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
   in
   check_valid_type cursor ctx typ_set;
   let expr_il =
-    Lang.Ast.MaskE { expr_base = expr_base_il; expr_mask = expr_mask_il }
+    Il.Ast.MaskE { expr_base = expr_base_il; expr_mask = expr_mask_il }
   in
   (typ_set, expr_il)
 
@@ -1840,9 +1841,7 @@ and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : El.Ast.expr)
         assert false
   in
   check_valid_type cursor ctx typ_set;
-  let expr_il =
-    Lang.Ast.RangeE { expr_lb = expr_lb_il; expr_ub = expr_ub_il }
-  in
+  let expr_il = Il.Ast.RangeE { expr_lb = expr_lb_il; expr_ub = expr_ub_il } in
   (typ_set, expr_il)
 
 (* (13.6) Select expressions
@@ -1946,7 +1945,7 @@ and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let typ = Types.StateT in
   let cases_il = List.map (type_select_case ctx typs_select) cases in
   let expr_il =
-    Lang.Ast.SelectE { exprs_select = exprs_select_il; cases = cases_il }
+    Il.Ast.SelectE { exprs_select = exprs_select_il; cases = cases_il }
   in
   (typ, expr_il)
 
@@ -1999,7 +1998,7 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
         assert false
   in
   let expr_il =
-    Lang.Ast.ArrAccE { expr_base = expr_base_il; expr_idx = expr_idx_il }
+    Il.Ast.ArrAccE { expr_base = expr_base_il; expr_idx = expr_idx_il }
   in
   (typ, expr_il)
 
@@ -2127,7 +2126,7 @@ and type_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let width_slice = Bigint.(idx_hi - idx_lo + one) in
   let typ = Types.FBitT width_slice in
   let expr_il =
-    Lang.Ast.BitAccE
+    Il.Ast.BitAccE
       { expr_base = expr_base_il; expr_lo = expr_lo_il; expr_hi = expr_hi_il }
   in
   (typ, expr_il)
@@ -2144,7 +2143,7 @@ and type_error_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       member.it;
     assert false);
   let typ = Types.ErrT in
-  let expr_il = Lang.Ast.ErrAccE { member } in
+  let expr_il = Il.Ast.ErrAccE { member } in
   (typ, expr_il)
 
 (* (8.3) Operations on enum types
@@ -2179,7 +2178,7 @@ and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
           td_base;
         assert false
   in
-  let expr_il = Lang.Ast.TypeAccE { var_base; member } in
+  let expr_il = Il.Ast.TypeAccE { var_base; member } in
   (typ, expr_il)
 
 (* (8.16) Operations on struct types
@@ -2237,7 +2236,7 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
           typ_base;
         assert false
   in
-  let expr_il = Lang.Ast.ExprAccE { expr_base = expr_base_il; member } in
+  let expr_il = Il.Ast.ExprAccE { expr_base = expr_base_il; member } in
   (typ, expr_il)
 
 (* (8.20) Method invocations and function calls
@@ -2433,7 +2432,7 @@ and type_func (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var)
     assert false);
   let fd = Option.get fd in
   let ft = specialize_funcdef fd targs in
-  let expr_il = Lang.Ast.VarE { var } in
+  let expr_il = Il.Ast.VarE { var } in
   (ft, expr_il)
 
 and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
@@ -2490,7 +2489,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
         | _ -> error_not_found ())
     | _ -> error_not_found ()
   in
-  let expr_il = Lang.Ast.ExprAccE { expr_base = expr_base_il; member } in
+  let expr_il = Il.Ast.ExprAccE { expr_base = expr_base_il; member } in
   (ft, expr_il)
 
 and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : El.Ast.expr)
@@ -2542,8 +2541,7 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : El.Ast.expr)
     params args;
   let typ = FuncType.get_typ_ret ft in
   let expr_il =
-    Lang.Ast.CallE
-      { expr_func = expr_func_il; targs = targs_il; args = args_il }
+    Il.Ast.CallE { expr_func = expr_func_il; targs = targs_il; args = args_il }
   in
   (typ, expr_il)
 
@@ -2663,7 +2661,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
           assert false)
     cparams args;
   (* (TODO) Maybe we want to define InstE for IL, with type arguments *)
-  let expr_il = Lang.Ast.InstE { var_inst; targs = targs_il; args = args_il } in
+  let expr_il = Il.Ast.InstE { var_inst; targs = targs_il; args = args_il } in
   (typ_inst, expr_il)
 
 and type_instantiation_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
@@ -3163,8 +3161,7 @@ and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   let ctx = Ctx.add_type cursor id.it typ_target.it ctx in
   let decl_il =
-    Lang.Ast.VarD
-      { id; typ = typ_target; init = expr_init_il; annos = annos_il }
+    Il.Ast.VarD { id; typ = typ_target; init = expr_init_il; annos = annos_il }
   in
   (ctx, decl_il)
 
@@ -3225,8 +3222,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let typ, expr_il = type_instantiation cursor ctx var_inst targs args in
   let targs_il, args_il =
     match expr_il with
-    | Lang.Ast.InstE { targs = targs_il; args = args_il; _ } ->
-        (targs_il, args_il)
+    | Il.Ast.InstE { targs = targs_il; args = args_il; _ } -> (targs_il, args_il)
     | _ -> assert false
   in
   (* Typecheck abstract methods defined by object initializers (for externs only) *)
@@ -3275,7 +3271,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   let ctx = Ctx.add_type cursor id.it typ ctx in
   let decl_il =
-    Lang.Ast.InstD
+    Il.Ast.InstD
       {
         id;
         var_inst;
@@ -3603,15 +3599,22 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
+             ( id.it,
+               dir.it,
+               typ.it,
+               Option.map
+                 (fun value_default ->
+                   match (value_default.it : Il.Ast.expr') with
+                   | ValueE { value } -> value.it
+                   | _ -> assert false)
+                 value_default ))
     in
     Types.ActionD params
   in
   check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef cursor fid fd ctx in
   let decl_il =
-    Lang.Ast.ActionD
-      { id; params = params_il; body = block_il; annos = annos_il }
+    Il.Ast.ActionD { id; params = params_il; body = block_il; annos = annos_il }
   in
   (ctx, decl_il)
 
@@ -3662,14 +3665,22 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
+             ( id.it,
+               dir.it,
+               typ.it,
+               Option.map
+                 (fun value_default ->
+                   match (value_default.it : Il.Ast.expr') with
+                   | ValueE { value } -> value.it
+                   | _ -> assert false)
+                 value_default ))
     in
     Types.FunctionD (tparams, params, typ_ret.it)
   in
   check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef cursor fid fd ctx in
   let decl_il =
-    Lang.Ast.FuncD { id; typ_ret; tparams; params = params_il; body = block_il }
+    Il.Ast.FuncD { id; typ_ret; tparams; params = params_il; body = block_il }
   in
   (ctx, decl_il)
 
@@ -3697,14 +3708,22 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
+             ( id.it,
+               dir.it,
+               typ.it,
+               Option.map
+                 (fun value_default ->
+                   match (value_default.it : Il.Ast.expr') with
+                   | ValueE { value } -> value.it
+                   | _ -> assert false)
+                 value_default ))
     in
     Types.ExternFunctionD (tparams, params, typ_ret.it)
   in
   check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef cursor fid fd ctx in
   let decl_il =
-    Lang.Ast.ExternFuncD
+    Il.Ast.ExternFuncD
       { id; typ_ret; tparams; params = params_il; annos = annos_il }
   in
   (ctx, decl_il)
@@ -3741,14 +3760,22 @@ and type_extern_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     let cparams =
       List.map it cparams_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
+             ( id.it,
+               dir.it,
+               typ.it,
+               Option.map
+                 (fun value_default ->
+                   match (value_default.it : Il.Ast.expr') with
+                   | ValueE { value } -> value.it
+                   | _ -> assert false)
+                 value_default ))
     in
     (tparams, cparams, typ)
   in
   check_valid_consdef cursor ctx cd;
   let ctx = Ctx.add_consdef cid cd ctx in
   let decl_il =
-    Lang.Ast.ExternConstructorD { id; cparams = cparams_il; annos = annos_il }
+    Il.Ast.ExternConstructorD { id; cparams = cparams_il; annos = annos_il }
   in
   (ctx, decl_il)
 
@@ -3778,14 +3805,22 @@ and type_extern_abstract_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
+             ( id.it,
+               dir.it,
+               typ.it,
+               Option.map
+                 (fun value_default ->
+                   match (value_default.it : Il.Ast.expr') with
+                   | ValueE { value } -> value.it
+                   | _ -> assert false)
+                 value_default ))
     in
     Types.ExternAbstractMethodD (tparams, params, typ_ret.it)
   in
   check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef cursor fid fd ctx in
   let decl_il =
-    Lang.Ast.ExternAbstractMethodD
+    Il.Ast.ExternAbstractMethodD
       { id; tparams; params = params_il; typ_ret; annos = annos_il }
   in
   (ctx, decl_il)
@@ -3810,14 +3845,22 @@ and type_extern_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
+             ( id.it,
+               dir.it,
+               typ.it,
+               Option.map
+                 (fun value_default ->
+                   match (value_default.it : Il.Ast.expr') with
+                   | ValueE { value } -> value.it
+                   | _ -> assert false)
+                 value_default ))
     in
     Types.ExternMethodD (tparams, params, typ_ret.it)
   in
   check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef cursor fid fd ctx in
   let decl_il =
-    Lang.Ast.ExternMethodD
+    Il.Ast.ExternMethodD
       { id; tparams; params = params_il; typ_ret; annos = annos_il }
   in
   (ctx, decl_il)
@@ -3863,7 +3906,7 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     { ctx with global = { ctx.global with cdenv = ctx''.global.cdenv } }
   in
   let decl_il =
-    Lang.Ast.ExternObjectD
+    Il.Ast.ExternObjectD
       { id; tparams; mthds = mthds_il @ cons_il; annos = annos_il }
   in
   (ctx, decl_il)
@@ -3899,7 +3942,15 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
+             ( id.it,
+               dir.it,
+               typ.it,
+               Option.map
+                 (fun value_default ->
+                   match (value_default.it : Il.Ast.expr') with
+                   | ValueE { value } -> value.it
+                   | _ -> assert false)
+                 value_default ))
     in
     Types.ParserD (tparams, params)
   in
@@ -4020,7 +4071,15 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
+             ( id.it,
+               dir.it,
+               typ.it,
+               Option.map
+                 (fun value_default ->
+                   match (value_default.it : Il.Ast.expr') with
+                   | ValueE { value } -> value.it
+                   | _ -> assert false)
+                 value_default ))
     in
     Types.ParserT params
   in
@@ -4028,13 +4087,21 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let cparams =
       List.map it cparams_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
+             ( id.it,
+               dir.it,
+               typ.it,
+               Option.map
+                 (fun value_default ->
+                   match (value_default.it : Il.Ast.expr') with
+                   | ValueE { value } -> value.it
+                   | _ -> assert false)
+                 value_default ))
     in
     ([], cparams, typ)
   in
   let ctx = Ctx.add_consdef cid cd ctx in
   let decl_il =
-    Lang.Ast.ParserD
+    Il.Ast.ParserD
       {
         id;
         tparams;
@@ -4159,7 +4226,15 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
+             ( id.it,
+               dir.it,
+               typ.it,
+               Option.map
+                 (fun value_default ->
+                   match (value_default.it : Il.Ast.expr') with
+                   | ValueE { value } -> value.it
+                   | _ -> assert false)
+                 value_default ))
     in
     Types.ControlD (tparams, params)
   in
@@ -4224,7 +4299,15 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
+             ( id.it,
+               dir.it,
+               typ.it,
+               Option.map
+                 (fun value_default ->
+                   match (value_default.it : Il.Ast.expr') with
+                   | ValueE { value } -> value.it
+                   | _ -> assert false)
+                 value_default ))
     in
     Types.ControlT params
   in
@@ -4232,13 +4315,21 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let cparams =
       List.map it cparams_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
+             ( id.it,
+               dir.it,
+               typ.it,
+               Option.map
+                 (fun value_default ->
+                   match (value_default.it : Il.Ast.expr') with
+                   | ValueE { value } -> value.it
+                   | _ -> assert false)
+                 value_default ))
     in
     ([], cparams, typ)
   in
   let ctx = Ctx.add_consdef cid cd ctx in
   let decl_il =
-    Lang.Ast.ControlD
+    Il.Ast.ControlD
       {
         id;
         tparams;
@@ -4279,7 +4370,15 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     let cparams =
       List.map it cparams_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
+             ( id.it,
+               dir.it,
+               typ.it,
+               Option.map
+                 (fun value_default ->
+                   match (value_default.it : Il.Ast.expr') with
+                   | ValueE { value } -> value.it
+                   | _ -> assert false)
+                 value_default ))
     in
     (tparams, cparams, typ)
   in
@@ -4315,8 +4414,7 @@ and type_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     { ctx with global = { ctx.global with cdenv = ctx'.global.cdenv } }
   in
   let decl_il =
-    Lang.Ast.PackageTypeD
-      { id; tparams; cparams = cparams_il; annos = annos_il }
+    Il.Ast.PackageTypeD { id; tparams; cparams = cparams_il; annos = annos_il }
   in
   (ctx, decl_il)
 
