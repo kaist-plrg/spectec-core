@@ -96,15 +96,22 @@ and pp_tparams fmt tparams = P.pp_tparams fmt tparams
 
 (* Parameters *)
 
-and pp_param' fmt param' = P.pp_param' pp_dir pp_typ pp_expr fmt param'
-and pp_param fmt param = P.pp_param pp_dir pp_typ pp_expr fmt param
-and pp_params fmt params = P.pp_params pp_dir pp_typ pp_expr fmt params
+and pp_param' fmt param' =
+  let id, dir, typ, value_default, _annos = param' in
+  match value_default with
+  | Some value_default ->
+      F.fprintf fmt "%a %a %a = %a" pp_dir dir pp_typ typ pp_id id
+        (pp_expr ~level:0) value_default
+  | None -> F.fprintf fmt "%a %a %a" pp_dir dir pp_typ typ pp_id id
+
+and pp_param fmt param = pp_param' fmt param.it
+and pp_params fmt params = F.fprintf fmt "(%a)" (P.pp_list pp_param ", ") params
 
 (* Constructor parameters *)
 
-and pp_cparam' fmt cparam' = P.pp_cparam' pp_dir pp_typ pp_expr fmt cparam'
-and pp_cparam fmt cparam = P.pp_cparam pp_dir pp_typ pp_expr fmt cparam
-and pp_cparams fmt cparams = P.pp_cparams pp_dir pp_typ pp_expr fmt cparams
+and pp_cparam' fmt cparam' = pp_param' fmt cparam'
+and pp_cparam fmt cparam = pp_param fmt cparam
+and pp_cparams fmt cparams = pp_params fmt cparams
 
 (* Type arguments *)
 

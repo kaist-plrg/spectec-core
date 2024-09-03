@@ -64,7 +64,16 @@ and binop' =
   | LOrOp
 
 (* Directions : parameterized by 'dir *)
+and 'dir dir = 'dir dir' phrase
+and 'dir dir' = 'dir
+
 (* Types : parameterized by 'typ *)
+and 'typ typ = 'typ typ' phrase
+and 'typ typ' = 'typ
+
+(* Values : parameterized by 'value *)
+and 'value value = 'value value' phrase
+and 'value value' = 'value
 
 (* Annotations *)
 type 'expr anno = 'expr anno' phrase
@@ -72,34 +81,36 @@ type 'expr anno = 'expr anno' phrase
 and 'expr anno' =
   | EmptyN of text
   | TextN of text * text list
-  | ExprN of text * 'expr list
-  | RecordN of text * (member * 'expr) list
+  | ExprN of text * 'expr expr list
+  | RecordN of text * (member * 'expr expr) list
 
 (* Type parameters *)
 and tparam = id
 and tparam' = id'
 
-(* Parameters *)
-and ('dir, 'typ, 'expr) param = ('dir, 'typ, 'expr) param' phrase
+(* Parameters : parameterized by 'param *)
+and 'param param = 'param param' phrase
+and 'param param' = 'param
 
-and ('dir, 'typ, 'expr) param' =
-  id * 'dir * 'typ * 'expr option * 'expr anno list
-
-(* Constructor parameters *)
-and ('dir, 'typ, 'expr) cparam = ('dir, 'typ, 'expr) param
-and ('dir, 'typ, 'expr) cparam' = ('dir, 'typ, 'expr) param'
+(* Constructor parameters : parameterized by 'param *)
+and 'param cparam = 'param cparam' phrase
+and 'param cparam' = 'param
 
 (* Type arguments : parameterized by 'typ *)
+and 'typ targ = 'typ targ' phrase
+and 'typ targ' = 'typ
 
 (* Arguments *)
 and 'expr arg = 'expr arg' phrase
-and 'expr arg' = ExprA of 'expr | NameA of id * 'expr | AnyA
+and 'expr arg' = ExprA of 'expr expr | NameA of id * 'expr expr | AnyA
 
 (* Expressions : parameterized by 'expr *)
+and 'expr expr = 'expr expr' phrase
+and 'expr expr' = 'expr
 
 (* Keyset expressions *)
 and 'expr keyset = 'expr keyset' phrase
-and 'expr keyset' = ExprK of 'expr | DefaultK | AnyK
+and 'expr keyset' = ExprK of 'expr expr | DefaultK | AnyK
 
 (* Select-cases for select *)
 and 'expr select_case = 'expr select_case' phrase
@@ -110,22 +121,26 @@ and ('typ, 'expr, 'decl) stmt = ('typ, 'expr, 'decl) stmt' phrase
 
 and ('typ, 'expr, 'decl) stmt' =
   | EmptyS
-  | AssignS of { expr_l : 'expr; expr_r : 'expr }
+  | AssignS of { expr_l : 'expr expr; expr_r : 'expr expr }
   | SwitchS of {
-      expr_switch : 'expr;
+      expr_switch : 'expr expr;
       cases : ('typ, 'expr, 'decl) switch_case list;
     }
   | IfS of {
-      expr_cond : 'expr;
+      expr_cond : 'expr expr;
       stmt_then : ('typ, 'expr, 'decl) stmt;
       stmt_else : ('typ, 'expr, 'decl) stmt;
     }
   | BlockS of { block : ('typ, 'expr, 'decl) block }
   | ExitS
-  | RetS of { expr_ret : 'expr option }
-  | CallS of { expr_func : 'expr; targs : 'typ list; args : 'expr arg list }
-  | TransS of { expr_label : 'expr }
-  | DeclS of { decl : 'decl }
+  | RetS of { expr_ret : 'expr expr option }
+  | CallS of {
+      expr_func : 'expr expr;
+      targs : 'typ targ list;
+      args : 'expr arg list;
+    }
+  | TransS of { expr_label : 'expr expr }
+  | DeclS of { decl : 'decl decl }
 
 (* Blocks (sequence of statements) *)
 and ('typ, 'expr, 'decl) block = ('typ, 'expr, 'decl) block' phrase
@@ -143,6 +158,8 @@ and ('typ, 'expr, 'decl) switch_case' =
   | FallC of switch_label
 
 (* Declarations : parameterized by 'decl *)
+and 'decl decl = 'decl decl' phrase
+and 'decl decl' = 'decl
 
 (* Parser state machine *)
 and ('typ, 'expr, 'decl) parser_state =
@@ -161,7 +178,7 @@ and 'expr table =
 
 (* Table keys *)
 and 'expr table_key = 'expr table_key' phrase
-and 'expr table_key' = 'expr * match_kind * 'expr anno list
+and 'expr table_key' = 'expr expr * match_kind * 'expr anno list
 
 (* Table action references *)
 and 'expr table_action = 'expr table_action' phrase
@@ -180,8 +197,11 @@ and table_default_const = bool
 
 (* Table custom properties *)
 and 'expr table_custom = 'expr table_custom' phrase
-and 'expr table_custom' = member * 'expr * table_custom_const * 'expr anno list
+
+and 'expr table_custom' =
+  member * 'expr expr * table_custom_const * 'expr anno list
+
 and table_custom_const = bool
 
 (* Program *)
-type 'decl program = 'decl list
+type 'decl program = 'decl decl list

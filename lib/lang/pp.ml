@@ -22,10 +22,9 @@ let pp_pairs ?(trailing = false) ?(level = 0) pp_k pp_svalue sep fmt pairs =
 
 (* Parameterized printer types *)
 
-type 'dir pp_dir = F.formatter -> 'dir -> unit
-type 'typ pp_typ = F.formatter -> 'typ -> unit
-type 'expr pp_expr = ?level:int -> F.formatter -> 'expr -> unit
-type 'decl pp_decl = ?level:int -> F.formatter -> 'decl -> unit
+type 'typ pp_typ = F.formatter -> 'typ typ -> unit
+type 'expr pp_expr = ?level:int -> F.formatter -> 'expr expr -> unit
+type 'decl pp_decl = ?level:int -> F.formatter -> 'decl decl -> unit
 
 (* Numbers *)
 
@@ -150,36 +149,7 @@ and pp_tparams fmt tparams =
 
 (* Parameters *)
 
-and pp_param' (pp_dir : 'dir pp_dir) (pp_typ : 'typ pp_typ)
-    (pp_expr : 'expr pp_expr) fmt param' =
-  let id, dir, typ, value_default, _annos = param' in
-  match value_default with
-  | Some value_default ->
-      F.fprintf fmt "%a %a %a = %a" pp_dir dir pp_typ typ pp_id id
-        (pp_expr ~level:0) value_default
-  | None -> F.fprintf fmt "%a %a %a" pp_dir dir pp_typ typ pp_id id
-
-and pp_param (pp_dir : 'dir pp_dir) (pp_typ : 'typ pp_typ)
-    (pp_expr : 'expr pp_expr) fmt param =
-  pp_param' pp_dir pp_typ pp_expr fmt param.it
-
-and pp_params (pp_dir : 'dir pp_dir) (pp_typ : 'typ pp_typ)
-    (pp_expr : 'expr pp_expr) fmt params =
-  F.fprintf fmt "(%a)" (pp_list (pp_param pp_dir pp_typ pp_expr) ", ") params
-
 (* Constructor parameters *)
-
-and pp_cparam' (pp_dir : 'dir pp_dir) (pp_typ : 'typ pp_typ)
-    (pp_expr : 'expr pp_expr) fmt cparam' =
-  pp_param' pp_dir pp_typ pp_expr fmt cparam'
-
-and pp_cparam (pp_dir : 'dir pp_dir) (pp_typ : 'typ pp_typ)
-    (pp_expr : 'expr pp_expr) fmt cparam =
-  pp_param pp_dir pp_typ pp_expr fmt cparam
-
-and pp_cparams (pp_dir : 'dir pp_dir) (pp_typ : 'typ pp_typ)
-    (pp_expr : 'expr pp_expr) fmt cparams =
-  pp_params pp_dir pp_typ pp_expr fmt cparams
 
 (* Type arguments *)
 

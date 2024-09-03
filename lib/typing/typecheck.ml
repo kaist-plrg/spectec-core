@@ -1098,11 +1098,8 @@ and type_param' (cursor : Ctx.cursor) (ctx : Ctx.t) (param : El.Ast.param') :
   let value_default =
     Option.map
       (fun expr_default ->
-        let value =
-          static_eval_expr cursor ctx expr_default
-          |> expect_static_value expr_default
-        in
-        Il.Ast.ValueE { value } $ value.at)
+        static_eval_expr cursor ctx expr_default
+        |> expect_static_value expr_default)
       expr_default
   in
   (* (TODO) evaluate annotations *)
@@ -3599,15 +3596,7 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             ( id.it,
-               dir.it,
-               typ.it,
-               Option.map
-                 (fun value_default ->
-                   match (value_default.it : Il.Ast.expr') with
-                   | ValueE { value } -> value.it
-                   | _ -> assert false)
-                 value_default ))
+             (id.it, dir.it, typ.it, Option.map it value_default))
     in
     Types.ActionD params
   in
@@ -3665,15 +3654,7 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             ( id.it,
-               dir.it,
-               typ.it,
-               Option.map
-                 (fun value_default ->
-                   match (value_default.it : Il.Ast.expr') with
-                   | ValueE { value } -> value.it
-                   | _ -> assert false)
-                 value_default ))
+             (id.it, dir.it, typ.it, Option.map it value_default))
     in
     Types.FunctionD (tparams, params, typ_ret.it)
   in
@@ -3708,15 +3689,7 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             ( id.it,
-               dir.it,
-               typ.it,
-               Option.map
-                 (fun value_default ->
-                   match (value_default.it : Il.Ast.expr') with
-                   | ValueE { value } -> value.it
-                   | _ -> assert false)
-                 value_default ))
+             (id.it, dir.it, typ.it, Option.map it value_default))
     in
     Types.ExternFunctionD (tparams, params, typ_ret.it)
   in
@@ -3760,15 +3733,7 @@ and type_extern_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     let cparams =
       List.map it cparams_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             ( id.it,
-               dir.it,
-               typ.it,
-               Option.map
-                 (fun value_default ->
-                   match (value_default.it : Il.Ast.expr') with
-                   | ValueE { value } -> value.it
-                   | _ -> assert false)
-                 value_default ))
+             (id.it, dir.it, typ.it, Option.map it value_default))
     in
     (tparams, cparams, typ)
   in
@@ -3805,15 +3770,7 @@ and type_extern_abstract_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             ( id.it,
-               dir.it,
-               typ.it,
-               Option.map
-                 (fun value_default ->
-                   match (value_default.it : Il.Ast.expr') with
-                   | ValueE { value } -> value.it
-                   | _ -> assert false)
-                 value_default ))
+             (id.it, dir.it, typ.it, Option.map it value_default))
     in
     Types.ExternAbstractMethodD (tparams, params, typ_ret.it)
   in
@@ -3845,15 +3802,7 @@ and type_extern_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             ( id.it,
-               dir.it,
-               typ.it,
-               Option.map
-                 (fun value_default ->
-                   match (value_default.it : Il.Ast.expr') with
-                   | ValueE { value } -> value.it
-                   | _ -> assert false)
-                 value_default ))
+             (id.it, dir.it, typ.it, Option.map it value_default))
     in
     Types.ExternMethodD (tparams, params, typ_ret.it)
   in
@@ -3942,15 +3891,7 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             ( id.it,
-               dir.it,
-               typ.it,
-               Option.map
-                 (fun value_default ->
-                   match (value_default.it : Il.Ast.expr') with
-                   | ValueE { value } -> value.it
-                   | _ -> assert false)
-                 value_default ))
+             (id.it, dir.it, typ.it, Option.map it value_default))
     in
     Types.ParserD (tparams, params)
   in
@@ -4071,15 +4012,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             ( id.it,
-               dir.it,
-               typ.it,
-               Option.map
-                 (fun value_default ->
-                   match (value_default.it : Il.Ast.expr') with
-                   | ValueE { value } -> value.it
-                   | _ -> assert false)
-                 value_default ))
+             (id.it, dir.it, typ.it, Option.map it value_default))
     in
     Types.ParserT params
   in
@@ -4087,15 +4020,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let cparams =
       List.map it cparams_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             ( id.it,
-               dir.it,
-               typ.it,
-               Option.map
-                 (fun value_default ->
-                   match (value_default.it : Il.Ast.expr') with
-                   | ValueE { value } -> value.it
-                   | _ -> assert false)
-                 value_default ))
+             (id.it, dir.it, typ.it, Option.map it value_default))
     in
     ([], cparams, typ)
   in
@@ -4226,15 +4151,7 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             ( id.it,
-               dir.it,
-               typ.it,
-               Option.map
-                 (fun value_default ->
-                   match (value_default.it : Il.Ast.expr') with
-                   | ValueE { value } -> value.it
-                   | _ -> assert false)
-                 value_default ))
+             (id.it, dir.it, typ.it, Option.map it value_default))
     in
     Types.ControlD (tparams, params)
   in
@@ -4299,15 +4216,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             ( id.it,
-               dir.it,
-               typ.it,
-               Option.map
-                 (fun value_default ->
-                   match (value_default.it : Il.Ast.expr') with
-                   | ValueE { value } -> value.it
-                   | _ -> assert false)
-                 value_default ))
+             (id.it, dir.it, typ.it, Option.map it value_default))
     in
     Types.ControlT params
   in
@@ -4315,15 +4224,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let cparams =
       List.map it cparams_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             ( id.it,
-               dir.it,
-               typ.it,
-               Option.map
-                 (fun value_default ->
-                   match (value_default.it : Il.Ast.expr') with
-                   | ValueE { value } -> value.it
-                   | _ -> assert false)
-                 value_default ))
+             (id.it, dir.it, typ.it, Option.map it value_default))
     in
     ([], cparams, typ)
   in
@@ -4370,15 +4271,7 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     let cparams =
       List.map it cparams_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
-             ( id.it,
-               dir.it,
-               typ.it,
-               Option.map
-                 (fun value_default ->
-                   match (value_default.it : Il.Ast.expr') with
-                   | ValueE { value } -> value.it
-                   | _ -> assert false)
-                 value_default ))
+             (id.it, dir.it, typ.it, Option.map it value_default))
     in
     (tparams, cparams, typ)
   in
