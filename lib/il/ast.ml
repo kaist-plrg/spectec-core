@@ -85,9 +85,6 @@ and expr = expr' L.expr
 
 and expr' =
   | ValueE of { value : value }
-  | BoolE of { boolean : bool }
-  | StrE of { text : text }
-  | NumE of { num : num }
   | VarE of { var : var }
   | TupleE of { exprs : expr list }
   | RecordE of { fields : (member * expr) list }
@@ -99,9 +96,7 @@ and expr' =
   | RangeE of { expr_lb : expr; expr_ub : expr }
   | SelectE of { exprs_select : expr list; cases : select_case list }
   | ArrAccE of { expr_base : expr; expr_idx : expr }
-  | BitAccE of { expr_base : expr; expr_lo : expr; expr_hi : expr }
-  | ErrAccE of { member : member }
-  | TypeAccE of { var_base : var; member : member }
+  | BitAccE of { expr_base : expr; value_lo : value; value_hi : value }
   | ExprAccE of { expr_base : expr; member : member }
   | CallE of { expr_func : expr; targs : typ list; args : arg list }
   | InstE of { var_inst : var; targs : typ list; args : arg list }

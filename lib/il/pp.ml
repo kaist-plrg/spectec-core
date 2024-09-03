@@ -113,9 +113,6 @@ and pp_args fmt args = P.pp_args pp_expr fmt args
 and pp_expr' ?(level = 0) fmt expr' =
   match expr' with
   | ValueE { value } -> pp_value fmt value
-  | BoolE { boolean } -> F.fprintf fmt "%b" boolean
-  | StrE { text } -> F.fprintf fmt "\"%a\"" pp_text text
-  | NumE { num } -> pp_num fmt num
   | VarE { var } -> pp_var fmt var
   | TupleE { exprs } ->
       F.fprintf fmt "{ %a }" (P.pp_list (pp_expr ~level:0) ", ") exprs
@@ -146,12 +143,9 @@ and pp_expr' ?(level = 0) fmt expr' =
   | ArrAccE { expr_base; expr_idx } ->
       F.fprintf fmt "%a[%a]" (pp_expr ~level:0) expr_base (pp_expr ~level:0)
         expr_idx
-  | BitAccE { expr_base; expr_lo; expr_hi } ->
-      F.fprintf fmt "%a[%a:%a]" (pp_expr ~level:0) expr_base (pp_expr ~level:0)
-        expr_hi (pp_expr ~level:0) expr_lo
-  | TypeAccE { var_base; member } ->
-      F.fprintf fmt "%a.%a" pp_var var_base (pp_member ~level:0) member
-  | ErrAccE { member } -> F.fprintf fmt "error.%a" (pp_member ~level:0) member
+  | BitAccE { expr_base; value_lo; value_hi } ->
+      F.fprintf fmt "%a[%a:%a]" (pp_expr ~level:0) expr_base pp_value value_hi
+        pp_value value_lo
   | ExprAccE { expr_base; member } ->
       F.fprintf fmt "%a.%a" (pp_expr ~level:0) expr_base (pp_member ~level:0)
         member

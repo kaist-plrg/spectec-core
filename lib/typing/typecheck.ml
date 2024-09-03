@@ -1109,6 +1109,21 @@ and static_eval_cparam (cursor : Ctx.cursor) (ctx : Ctx.t)
     (cparam : El.Ast.cparam) : Il.Ast.cparam =
   type_param cursor ctx cparam
 
+(* Coercion *)
+
+and implicit_cast (typ_from : Type.t) (expr_from_il : Il.Ast.expr)
+    (typ_to : Type.t) : Il.Ast.expr =
+  match (typ_from, typ_to) with
+  | IntT, FIntT _ ->
+      Il.Ast.CastE { typ = typ_to $ no_info; expr = expr_from_il } $ no_info
+  | IntT, FBitT _ ->
+      Il.Ast.CastE { typ = typ_to $ no_info; expr = expr_from_il } $ no_info
+  | _ ->
+      Format.eprintf
+        "(implicit_cast) Cannot implicitly cast %a of type %a to %a\n"
+        (Il.Pp.pp_expr ~level:0) expr_from_il Type.pp typ_from Type.pp typ_to;
+      assert false
+
 (* Expression typing *)
 
 and type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr) :
@@ -1119,8 +1134,8 @@ and type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr) :
 and type_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr') :
     Type.t * Il.Ast.expr' =
   match expr with
-  | BoolE { boolean } -> (Types.BoolT, Il.Ast.BoolE { boolean })
-  | StrE { text } -> (Types.StrT, Il.Ast.StrE { text })
+  | BoolE { boolean } -> type_bool_expr boolean
+  | StrE { text } -> type_str_expr text
   | NumE { num } -> type_num_expr num
   | VarE { var } -> type_var_expr cursor ctx var
   | TupleE { exprs } -> type_tuple_expr cursor ctx exprs
@@ -1150,14 +1165,23 @@ and type_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr') :
   | InstE { var_inst; targs; args } ->
       type_instantiation_expr cursor ctx var_inst targs args
 
+and type_bool_expr (boolean : bool) : Type.t * Il.Ast.expr' =
+  let value = Value.BoolV boolean in
+  (Types.BoolT, Il.Ast.ValueE { value = value $ no_info })
+
+and type_str_expr (text : El.Ast.text) : Type.t * Il.Ast.expr' =
+  let value = Value.StrV text.it in
+  (Types.StrT, Il.Ast.ValueE { value = value $ text.at })
+
 and type_num_expr (num : El.Ast.num) : Type.t * Il.Ast.expr' =
-  let typ =
+  let value, typ =
     match num.it with
-    | _, Some (width, signed) ->
-        if signed then Types.FIntT width else Types.FBitT width
-    | _, None -> Types.IntT
+    | value, Some (width, signed) ->
+        if signed then (Value.FIntV (width, value), Types.FIntT width)
+        else (Value.FBitV (width, value), Types.FBitT width)
+    | value, None -> (Value.IntV value, Types.IntT)
   in
-  let expr_il = Il.Ast.NumE { num } in
+  let expr_il = Il.Ast.ValueE { value = value $ num.at } in
   (typ, expr_il)
 
 and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
@@ -1167,7 +1191,11 @@ and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
     Format.eprintf "(type_var_expr) %a is a free identifier\n" El.Pp.pp_var var;
     assert false);
   let typ = Option.get typ in
-  let expr_il = Il.Ast.VarE { var } in
+  let expr_il =
+    match Ctx.find_opt Ctx.find_value_opt cursor var ctx with
+    | Some value -> Il.Ast.ValueE { value = value $ var.at }
+    | None -> Il.Ast.VarE { var }
+  in
   (typ, expr_il)
 
 (* (8.12) Operations on tuple expressions
@@ -1478,78 +1506,175 @@ and type_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : El.Ast.unop)
 
      - comparisons for equality and inequality if the original type supported such comparisons *)
 
-and type_binop_plus_minus_mult (typ_l : Type.t) (typ_r : Type.t) : Type.t =
-  match (typ_l, typ_r) with
-  | IntT, IntT -> Types.IntT
-  | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) ->
-      Types.FIntT width_l
-  | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) ->
-      Types.FBitT width_l
-  | _ ->
-      Format.eprintf
-        "(type_binop_plus_minus_mult) Addition, subtraction, and \
-         multiplication operator expects either two arbitrary precision \
-         integers or \n\
-        \        two integers of the same signedness and width but %a and %a \
-         were given\n"
-        Type.pp typ_l Type.pp typ_r;
-      assert false
+and type_binop_plus_minus_mult (binop : Lang.Ast.binop) (typ_l : Type.t)
+    (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
+    Type.t * Il.Ast.expr' =
+  let typ, expr_l_il, expr_r_il =
+    match (typ_l, typ_r) with
+    | IntT, IntT ->
+        let typ = typ_l in
+        (typ, expr_l_il, expr_r_il)
+    | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) ->
+        let typ = typ_l in
+        (typ, expr_l_il, expr_r_il)
+    | FIntT _, IntT ->
+        let typ = typ_l in
+        let expr_r_il = implicit_cast typ_r expr_r_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | IntT, FIntT _ ->
+        let typ = typ_r in
+        let expr_l_il = implicit_cast typ_l expr_l_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) ->
+        let typ = typ_l in
+        (typ, expr_l_il, expr_r_il)
+    | FBitT _, IntT ->
+        let typ = typ_l in
+        let expr_r_il = implicit_cast typ_r expr_r_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | IntT, FBitT _ ->
+        let typ = typ_r in
+        let expr_l_il = implicit_cast typ_l expr_l_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | _ ->
+        Format.eprintf
+          "(type_binop_plus_minus_mult) Addition, subtraction, and \
+           multiplication operator expects either two arbitrary precision \
+           integers or \n\
+          \        two integers of the same signedness and width but %a and %a \
+           were given\n"
+          Type.pp typ_l Type.pp typ_r;
+        assert false
+  in
+  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
+  (typ, expr_il)
 
-and type_binop_saturating_plus_minus (typ_l : Type.t) (typ_r : Type.t) : Type.t
-    =
-  match (typ_l, typ_r) with
-  | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) ->
-      Types.FIntT width_l
-  | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) ->
-      Types.FBitT width_l
-  | _ ->
-      Format.eprintf
-        "(type_binop_saturating_plus_minus) Saturating addition and \
-         subtraction operator expects two integers of the same signedness and \
-         width but %a and %a were given\n"
-        Type.pp typ_l Type.pp typ_r;
-      assert false
+and type_binop_saturating_plus_minus (binop : Lang.Ast.binop) (typ_l : Type.t)
+    (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
+    Type.t * Il.Ast.expr' =
+  let typ, expr_l_il, expr_r_il =
+    match (typ_l, typ_r) with
+    | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) ->
+        let typ = typ_l in
+        (typ, expr_l_il, expr_r_il)
+    | FIntT _, IntT ->
+        let typ = typ_l in
+        let expr_r_il = implicit_cast typ_r expr_r_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | IntT, FIntT _ ->
+        let typ = typ_r in
+        let expr_l_il = implicit_cast typ_l expr_l_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) ->
+        let typ = typ_l in
+        (typ, expr_l_il, expr_r_il)
+    | FBitT _, IntT ->
+        let typ = typ_l in
+        let expr_r_il = implicit_cast typ_r expr_r_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | IntT, FBitT _ ->
+        let typ = typ_r in
+        let expr_l_il = implicit_cast typ_l expr_l_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | _ ->
+        Format.eprintf
+          "(type_binop_saturating_plus_minus) Saturating addition and \
+           subtraction operator expects two integers of the same signedness \
+           and width but %a and %a were given\n"
+          Type.pp typ_l Type.pp typ_r;
+        assert false
+  in
+  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
+  (typ, expr_il)
 
-and type_binop_div_mod (typ_l : Type.t) (typ_r : Type.t) : Type.t =
-  match (typ_l, typ_r) with
-  (* (TODO) Non-negativity can only be checked dynamically *)
-  | IntT, IntT -> Types.IntT
-  | _ ->
-      Format.eprintf
-        "(type_binop_div) Division and modulo operator expects two arbitrary \
-         precision integers but %a and %a were given\n"
-        Type.pp typ_l Type.pp typ_r;
-      assert false
+and type_binop_div_mod (binop : Lang.Ast.binop) (typ_l : Type.t)
+    (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
+    Type.t * Il.Ast.expr' =
+  let typ, expr_l_il, expr_r_il =
+    match (typ_l, typ_r) with
+    (* (TODO) Non-negativity can only be checked dynamically *)
+    | IntT, IntT ->
+        let typ = typ_l in
+        (typ, expr_l_il, expr_r_il)
+    | _ ->
+        Format.eprintf
+          "(type_binop_div) Division and modulo operator expects two arbitrary \
+           precision integers but %a and %a were given\n"
+          Type.pp typ_l Type.pp typ_r;
+        assert false
+  in
+  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
+  (typ, expr_il)
 
-and type_binop_shift (typ_l : Type.t) (typ_r : Type.t) : Type.t =
-  match (typ_l, typ_r) with
-  | FBitT _, FBitT _ -> typ_l
-  (* (TODO) FBitT _, Int is allowed when the int is a compile-time known value *)
-  | FIntT _, FBitT _ -> typ_l
-  (* (TODO) FIntT _, Int is allowed when the int is a compile-time known value *)
-  | IntT, FBitT _ -> typ_l
-  (* (TODO) Int _, Int is allowed when the int is a compile-time known value *)
-  | _ ->
-      Format.eprintf
-        "(type_binop_shift) Shift operator expects an unsigned bitstring, \
-         signed bitstring, or an integer as the left operand and an unsigned \
-         bitstring or a compile-time known integer as the right operand but %a \
-         and %a were given\n"
-        Type.pp typ_l Type.pp typ_r;
-      assert false
+and type_binop_shift (binop : Lang.Ast.binop) (typ_l : Type.t)
+    (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
+    Type.t * Il.Ast.expr' =
+  let typ, expr_l_il, expr_r_il =
+    match (typ_l, typ_r) with
+    | FBitT _, FBitT _ ->
+        let typ = typ_l in
+        (typ, expr_l_il, expr_r_il)
+    (* (TODO) FBitT _, Int is allowed when the int is a compile-time known value *)
+    | FIntT _, FBitT _ ->
+        let typ = typ_l in
+        (typ, expr_l_il, expr_r_il)
+    (* (TODO) FIntT _, Int is allowed when the int is a compile-time known value *)
+    | IntT, FBitT _ ->
+        let typ = typ_l in
+        (typ, expr_l_il, expr_r_il)
+    (* (TODO) Int _, Int is allowed when the int is a compile-time known value *)
+    | _ ->
+        Format.eprintf
+          "(type_binop_shift) Shift operator expects an unsigned bitstring, \
+           signed bitstring, or an integer as the left operand and an unsigned \
+           bitstring or a compile-time known integer as the right operand but \
+           %a and %a were given\n"
+          Type.pp typ_l Type.pp typ_r;
+        assert false
+  in
+  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
+  (typ, expr_il)
 
-and type_binop_compare (typ_l : Type.t) (typ_r : Type.t) : Type.t =
-  match (typ_l, typ_r) with
-  | IntT, IntT -> Types.BoolT
-  | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) -> Types.BoolT
-  | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) -> Types.BoolT
-  | _ ->
-      Format.eprintf
-        "(type_binop_compare) Comparison expects either two arbitrary \
-         precision integers or two integers of the same signedness and width \
-         but %a and %a were given\n"
-        Type.pp typ_l Type.pp typ_r;
-      assert false
+and type_binop_compare (binop : Lang.Ast.binop) (typ_l : Type.t)
+    (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
+    Type.t * Il.Ast.expr' =
+  let typ, expr_l_il, expr_r_il =
+    match (typ_l, typ_r) with
+    | IntT, IntT ->
+        let typ = Types.BoolT in
+        (typ, expr_l_il, expr_r_il)
+    | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) ->
+        let typ = Types.BoolT in
+        (typ, expr_l_il, expr_r_il)
+    | FIntT _, IntT ->
+        let typ = Types.BoolT in
+        let expr_r_il = implicit_cast typ_r expr_r_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | IntT, FIntT _ ->
+        let typ = Types.BoolT in
+        let expr_l_il = implicit_cast typ_l expr_l_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) ->
+        let typ = Types.BoolT in
+        (typ, expr_l_il, expr_r_il)
+    | FBitT _, IntT ->
+        let typ = Types.BoolT in
+        let expr_r_il = implicit_cast typ_r expr_r_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | IntT, FBitT _ ->
+        let typ = Types.BoolT in
+        let expr_l_il = implicit_cast typ_l expr_l_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | _ ->
+        Format.eprintf
+          "(type_binop_compare) Comparison expects either two arbitrary \
+           precision integers or two integers of the same signedness and width \
+           but %a and %a were given\n"
+          Type.pp typ_l Type.pp typ_r;
+        assert false
+  in
+  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
+  (typ, expr_il)
 
 and check_type_equals' (typ_l : Type.t) (typ_r : Type.t) : bool =
   match (typ_l, typ_r) with
@@ -1565,74 +1690,119 @@ and check_type_equals' (typ_l : Type.t) (typ_r : Type.t) : bool =
       List.for_all2 check_type_equals' typs_inner_l typs_inner_r
   | StackT (typ_inner_l, size_l), StackT (typ_inner_r, size_r) ->
       check_type_equals' typ_inner_l typ_inner_r && Bigint.(size_l = size_r)
-  (* (TODO) Fields can come in different order *)
+  (* (TODO) Does p4 use nominal or structural typing for aggregate types? *)
   | StructT (id_l, _fields_l), StructT (id_r, _fields_r)
   | HeaderT (id_l, _fields_l), HeaderT (id_r, _fields_r)
   | UnionT (id_l, _fields_l), UnionT (id_r, _fields_r) ->
       id_l = id_r
   | _ -> false
 
-and type_binop_compare_equal (typ_l : Type.t) (typ_r : Type.t) : Type.t =
+(* (TODO) Insert implicit casts here *)
+and type_binop_compare_equal (binop : Lang.Ast.binop) (typ_l : Type.t)
+    (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
+    Type.t * Il.Ast.expr' =
   if not (check_type_equals' typ_l typ_r) then (
     Format.eprintf
       "(type_binop_compare_equal) %a and %a cannot be compared of equality\n"
       Type.pp typ_l Type.pp typ_r;
     assert false);
-  Types.BoolT
+  let typ = Types.BoolT in
+  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
+  (typ, expr_il)
 
-and type_binop_bitwise (typ_l : Type.t) (typ_r : Type.t) : Type.t =
-  match (typ_l, typ_r) with
-  | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) -> typ_l
-  | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) -> typ_l
-  | _ ->
-      Format.eprintf
-        "(type_binop_bitwise) Bitwise operator expects two bit-strings of the \
-         same width but %a and %a were given\n"
-        Type.pp typ_l Type.pp typ_r;
-      assert false
+and type_binop_bitwise (binop : Lang.Ast.binop) (typ_l : Type.t)
+    (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
+    Type.t * Il.Ast.expr' =
+  let typ, expr_l_il, expr_r_il =
+    match (typ_l, typ_r) with
+    | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) ->
+        let typ = typ_l in
+        (typ, expr_l_il, expr_r_il)
+    | FIntT _, IntT ->
+        let typ = typ_l in
+        let expr_r_il = implicit_cast typ_r expr_r_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | IntT, FIntT _ ->
+        let typ = typ_r in
+        let expr_l_il = implicit_cast typ_l expr_l_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) ->
+        let typ = typ_l in
+        (typ, expr_l_il, expr_r_il)
+    | FBitT _, IntT ->
+        let typ = typ_l in
+        let expr_r_il = implicit_cast typ_r expr_r_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | IntT, FBitT _ ->
+        let typ = typ_r in
+        let expr_l_il = implicit_cast typ_l expr_l_il typ in
+        (typ, expr_l_il, expr_r_il)
+    | _ ->
+        Format.eprintf
+          "(type_binop_bitwise) Bitwise operator expects two bit-strings of \
+           the same width but %a and %a were given\n"
+          Type.pp typ_l Type.pp typ_r;
+        assert false
+  in
+  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
+  (typ, expr_il)
 
-and type_binop_concat (typ_l : Type.t) (typ_r : Type.t) : Type.t =
-  match (typ_l, typ_r) with
-  | FIntT width_l, FIntT width_r -> FIntT Bigint.(width_l + width_r)
-  | FIntT width_l, FBitT width_r -> FIntT Bigint.(width_l + width_r)
-  | FBitT width_l, FIntT width_r -> FBitT Bigint.(width_l + width_r)
-  | FBitT width_l, FBitT width_r -> FBitT Bigint.(width_l + width_r)
-  | _ ->
-      Format.eprintf
-        "(type_binop_concat) Concatenation expects two bit-strings but %a and \
-         %a were given\n"
-        Type.pp typ_l Type.pp typ_r;
-      assert false
+(* (TODO) What is the rationale for disallowing implicit cast here? *)
+and type_binop_concat (binop : Lang.Ast.binop) (typ_l : Type.t)
+    (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
+    Type.t * Il.Ast.expr' =
+  let typ =
+    match (typ_l, typ_r) with
+    | FIntT width_l, FIntT width_r -> Types.FIntT Bigint.(width_l + width_r)
+    | FIntT width_l, FBitT width_r -> Types.FIntT Bigint.(width_l + width_r)
+    | FBitT width_l, FIntT width_r -> Types.FBitT Bigint.(width_l + width_r)
+    | FBitT width_l, FBitT width_r -> Types.FBitT Bigint.(width_l + width_r)
+    | _ ->
+        Format.eprintf
+          "(type_binop_concat) Concatenation expects two bit-strings but %a \
+           and %a were given\n"
+          Type.pp typ_l Type.pp typ_r;
+        assert false
+  in
+  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
+  (typ, expr_il)
 
-and type_binop_logical (typ_l : Type.t) (typ_r : Type.t) : Type.t =
-  match (typ_l, typ_r) with
-  | BoolT, BoolT -> BoolT
-  | _ ->
-      Format.eprintf
-        "(type_binop_logical_expr) Logical operator expects two boolean \
-         operands but %a and %a were given\n"
-        Type.pp typ_l Type.pp typ_r;
-      assert false
+and type_binop_logical (binop : Lang.Ast.binop) (typ_l : Type.t)
+    (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
+    Type.t * Il.Ast.expr' =
+  let typ =
+    match (typ_l, typ_r) with
+    | BoolT, BoolT -> Types.BoolT
+    | _ ->
+        Format.eprintf
+          "(type_binop_logical_expr) Logical operator expects two boolean \
+           operands but %a and %a were given\n"
+          Type.pp typ_l Type.pp typ_r;
+        assert false
+  in
+  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
+  (typ, expr_il)
 
 and type_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
     (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) : Type.t * Il.Ast.expr' =
   let typ_l, expr_l_il = type_expr cursor ctx expr_l in
   let typ_r, expr_r_il = type_expr cursor ctx expr_r in
   (* (TODO) Insert implicit casts if possible *)
-  let typ =
-    match binop.it with
-    | PlusOp | MinusOp | MulOp -> type_binop_plus_minus_mult typ_l typ_r
-    | SPlusOp | SMinusOp -> type_binop_saturating_plus_minus typ_l typ_r
-    | DivOp | ModOp -> type_binop_div_mod typ_l typ_r
-    | ShlOp | ShrOp -> type_binop_shift typ_l typ_r
-    | LeOp | GeOp | LtOp | GtOp -> type_binop_compare typ_l typ_r
-    | EqOp | NeOp -> type_binop_compare_equal typ_l typ_r
-    | BAndOp | BXorOp | BOrOp -> type_binop_bitwise typ_l typ_r
-    | ConcatOp -> type_binop_concat typ_l typ_r
-    | LAndOp | LOrOp -> type_binop_logical typ_l typ_r
-  in
-  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
-  (typ, expr_il)
+  match binop.it with
+  | PlusOp | MinusOp | MulOp ->
+      type_binop_plus_minus_mult binop typ_l expr_l_il typ_r expr_r_il
+  | SPlusOp | SMinusOp ->
+      type_binop_saturating_plus_minus binop typ_l expr_l_il typ_r expr_r_il
+  | DivOp | ModOp -> type_binop_div_mod binop typ_l expr_l_il typ_r expr_r_il
+  | ShlOp | ShrOp -> type_binop_shift binop typ_l expr_l_il typ_r expr_r_il
+  | LeOp | GeOp | LtOp | GtOp ->
+      type_binop_compare binop typ_l expr_l_il typ_r expr_r_il
+  | EqOp | NeOp ->
+      type_binop_compare_equal binop typ_l expr_l_il typ_r expr_r_il
+  | BAndOp | BXorOp | BOrOp ->
+      type_binop_bitwise binop typ_l expr_l_il typ_r expr_r_il
+  | ConcatOp -> type_binop_concat binop typ_l expr_l_il typ_r expr_r_il
+  | LAndOp | LOrOp -> type_binop_logical binop typ_l expr_l_il typ_r expr_r_il
 
 (* (8.5.1) Conditional operator
 
@@ -1974,30 +2144,33 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     Format.eprintf "(type_array_acc_expr) Index %a must be of numeric type\n"
       (El.Pp.pp_expr ~level:0) expr_idx;
     assert false);
-  let typ =
-    match typ_base with
-    | TupleT typs_base_inner ->
-        let idx =
-          static_eval_expr cursor ctx expr_idx
-          |> expect_static_value expr_idx
-          |> it |> Value.get_num |> Bigint.to_int |> Option.get
-        in
-        if idx < 0 || idx >= List.length typs_base_inner then (
-          Format.eprintf "(type_array_acc_expr) Index %d out of range for %a\n"
-            idx Type.pp typ_base;
-          assert false);
-        List.nth typs_base_inner idx
-    (* (TODO) Below doesn't treat index as a compile-time known value *)
-    | StackT (typ_base_inner, _) -> typ_base_inner
-    | _ ->
-        Format.eprintf "(type_array_acc_expr) %a cannot be indexed\n" Type.pp
-          typ_base;
-        assert false
-  in
-  let expr_il =
-    Il.Ast.ArrAccE { expr_base = expr_base_il; expr_idx = expr_idx_il }
-  in
-  (typ, expr_il)
+  match typ_base with
+  | TupleT typs_base_inner ->
+      let value_idx =
+        static_eval_expr cursor ctx expr_idx |> expect_static_value expr_idx
+      in
+      let idx = value_idx.it |> Value.get_num |> Bigint.to_int |> Option.get in
+      if idx < 0 || idx >= List.length typs_base_inner then (
+        Format.eprintf "(type_array_acc_expr) Index %d out of range for %a\n"
+          idx Type.pp typ_base;
+        assert false);
+      let typ = List.nth typs_base_inner idx in
+      let expr_idx_il = Il.Ast.ValueE { value = value_idx } $ expr_idx.at in
+      let expr_il =
+        Il.Ast.ArrAccE { expr_base = expr_base_il; expr_idx = expr_idx_il }
+      in
+      (typ, expr_il)
+  (* (TODO) Below doesn't treat index as a compile-time known value *)
+  | StackT (typ_base_inner, _) ->
+      let typ = typ_base_inner in
+      let expr_il =
+        Il.Ast.ArrAccE { expr_base = expr_base_il; expr_idx = expr_idx_il }
+      in
+      (typ, expr_il)
+  | _ ->
+      Format.eprintf "(type_array_acc_expr) %a cannot be indexed\n" Type.pp
+        typ_base;
+      assert false
 
 (* (8.6) Operations on fixed-width bit types (unsigned integers)
 
@@ -2105,26 +2278,23 @@ and type_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     Type.t * Il.Ast.expr' =
   let typ_base, expr_base_il = type_expr cursor ctx expr_base in
   check_bitstring_base typ_base;
-  let typ_lo, expr_lo_il = type_expr cursor ctx expr_lo in
+  let typ_lo, _expr_lo_il = type_expr cursor ctx expr_lo in
   check_bitstring_index typ_lo;
-  let idx_lo =
-    static_eval_expr cursor ctx expr_lo
-    |> expect_static_value expr_lo
-    |> it |> Value.get_num
+  let value_lo =
+    static_eval_expr cursor ctx expr_lo |> expect_static_value expr_lo
   in
-  let typ_hi, expr_hi_il = type_expr cursor ctx expr_hi in
+  let idx_lo = value_lo.it |> Value.get_num in
+  let typ_hi, _expr_hi_il = type_expr cursor ctx expr_hi in
   check_bitstring_index typ_hi;
-  let idx_hi =
-    static_eval_expr cursor ctx expr_hi
-    |> expect_static_value expr_hi
-    |> it |> Value.get_num
+  let value_hi =
+    static_eval_expr cursor ctx expr_hi |> expect_static_value expr_hi
   in
+  let idx_hi = value_hi.it |> Value.get_num in
   check_bitstring_slice_range typ_base idx_lo idx_hi;
   let width_slice = Bigint.(idx_hi - idx_lo + one) in
   let typ = Types.FBitT width_slice in
   let expr_il =
-    Il.Ast.BitAccE
-      { expr_base = expr_base_il; expr_lo = expr_lo_il; expr_hi = expr_hi_il }
+    Il.Ast.BitAccE { expr_base = expr_base_il; value_lo; value_hi }
   in
   (typ, expr_il)
 
@@ -2139,8 +2309,9 @@ and type_error_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     Format.eprintf "(type_error_acc_expr) Member %s does not exist in error\n"
       member.it;
     assert false);
+  let value_error = Option.get value_error in
   let typ = Types.ErrT in
-  let expr_il = Il.Ast.ErrAccE { member } in
+  let expr_il = Il.Ast.ValueE { value = value_error $ member.at } in
   (typ, expr_il)
 
 (* (8.3) Operations on enum types
@@ -2156,26 +2327,31 @@ and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       var_base;
     assert false);
   let td_base = Option.get td_base in
-  let typ =
+  let typ, value =
     match td_base with
     | EnumD (id, members) ->
         if not (List.mem member.it members) then (
           Format.eprintf "(type_type_acc_expr) Member %s does not exist in %a\n"
             member.it TypeDef.pp td_base;
           assert false);
-        Types.EnumT id
+        let typ = Types.EnumT id in
+        let value = Value.EnumFieldV (id, member.it) in
+        (typ, value)
     | SEnumD (id, typ_inner, fields) ->
         if not (List.mem_assoc member.it fields) then (
           Format.eprintf "(type_type_acc_expr) Member %s does not exist in %a\n"
             member.it TypeDef.pp td_base;
           assert false);
-        Types.SEnumT (id, typ_inner)
+        let typ = Types.SEnumT (id, typ_inner) in
+        let value_inner = List.assoc member.it fields in
+        let value = Value.SEnumFieldV (id, member.it, value_inner) in
+        (typ, value)
     | _ ->
         Format.eprintf "(type_type_acc_expr) %a cannot be accessed\n" TypeDef.pp
           td_base;
         assert false
   in
-  let expr_il = Il.Ast.TypeAccE { var_base; member } in
+  let expr_il = Il.Ast.ValueE { value = value $ member.at } in
   (typ, expr_il)
 
 (* (8.16) Operations on struct types
