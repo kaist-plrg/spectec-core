@@ -12,6 +12,192 @@ module Envs = Runtime.Envs
 module F = Format
 open Util.Source
 
+let ( let* ) = Option.bind
+
+(* Static expression evaluation *)
+
+(* (18.1) Compile-time known values
+
+   The following are compile-time known values:
+
+   - Integer literals, Boolean literals, and string literals.
+   - Identifiers declared in an error, enum, or match_kind declaration.
+   - The default identifier.
+   - The size field of a value with type header stack.
+   - The _ identifier when used as a select expression label
+   - The expression {#} representing an invalid header or header union value.
+   - Identifiers that represent declared types, actions, tables, parsers, controls, or packages.
+   - Tuple expression where all components are compile-time known values.
+   - Structure-valued expressions, where all fields are compile-time known values.
+   - Expressions evaluating to a list type, where all elements are compile-time known values.
+   - Instances constructed by instance declarations (Section 11.3) and constructor invocations.
+   - A legal cast applied to a compile-time known value
+   - The following expressions (+, -, *, / , %, !, &, |, &&, ||, << , >> , ~ ,  >, <, ==, !=, <=, >=, ++, [:], ?:) when their operands are all compile-time known values.
+   - Identifiers declared as constants using the const keyword.
+   - Expressions of the form e.minSizeInBits(), e.minSizeInBytes(), e.maxSizeInBits() and e.maxSizeInBytes() *)
+
+let rec static_eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (expr : El.Ast.expr) : Il.Ast.value option =
+  let value = static_eval_expr' cursor ctx expr.it in
+  Option.map (fun value -> value $ expr.at) value
+
+and static_eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr')
+    : Il.Ast.value' option =
+  match expr with
+  | BoolE { boolean } -> static_eval_bool boolean
+  | StrE { text } -> static_eval_str text
+  | NumE { num } -> static_eval_num num
+  | VarE { var } -> static_eval_var cursor ctx var
+  | TupleE { exprs } -> static_eval_tuple cursor ctx exprs
+  | RecordE { fields } -> static_eval_record cursor ctx fields
+  | UnE { unop; expr } -> static_eval_unop cursor ctx unop expr
+  | BinE { binop; expr_l; expr_r } ->
+      static_eval_binop cursor ctx binop expr_l expr_r
+  | TernE { expr_cond; expr_then; expr_else } ->
+      static_eval_ternop cursor ctx expr_cond expr_then expr_else
+  (* | CastE (typ, expr) -> static_eval_cast ctx typ expr *)
+  | BitAccE { expr_base; expr_lo; expr_hi } ->
+      static_eval_bitstring_acc cursor ctx expr_base expr_lo expr_hi
+  | TypeAccE { var_base; member } ->
+      static_eval_type_acc cursor ctx var_base member
+  | ErrAccE { member } -> static_eval_error_acc ctx member
+  (* | ExprAccE (expr_base, member) -> static_eval_expr_acc ctx expr_base member *)
+  (* | CallE (expr_func, targs, args) -> static_eval_call ctx expr_func targs args *)
+  | _ -> None
+
+and static_eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (exprs : El.Ast.expr list) : Il.Ast.value list option =
+  let values = List.map (static_eval_expr cursor ctx) exprs in
+  if
+    List.for_all Option.is_some values && List.length exprs = List.length values
+  then Some (List.map Option.get values)
+  else None
+
+and expect_static_value (expr : El.Ast.expr) (value : Il.Ast.value option) :
+    Il.Ast.value =
+  match value with
+  | Some value -> value
+  | None ->
+      F.eprintf "(expect_static_value) %a is not a compile-time known value\n"
+        (El.Pp.pp_expr ~level:0) expr;
+      assert false
+
+and static_eval_bool (boolean : bool) : Value.t option = Some (BoolV boolean)
+and static_eval_str (text : El.Ast.text) : Value.t option = Some (StrV text.it)
+
+and static_eval_num (num : El.Ast.num) : Value.t option =
+  match num.it with
+  | i, Some (width, signed) ->
+      if signed then Some (FIntV (width, i)) else Some (FBitV (width, i))
+  | i, None -> Some (IntV i)
+
+and static_eval_var (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
+    Value.t option =
+  Ctx.find_opt Ctx.find_value_opt cursor var ctx
+
+and static_eval_tuple (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (exprs : El.Ast.expr list) : Value.t option =
+  let values = static_eval_exprs cursor ctx exprs in
+  Option.map
+    (fun values ->
+      let values = List.map it values in
+      Value.TupleV values)
+    values
+
+and static_eval_record (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (fields : (El.Ast.member * El.Ast.expr) list) : Value.t option =
+  let members, exprs = List.split fields in
+  let members = List.map it members in
+  let values = static_eval_exprs cursor ctx exprs in
+  Option.map
+    (fun values ->
+      let values = List.map it values in
+      Value.StructV (List.combine members values))
+    values
+
+and static_eval_unop (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : El.Ast.unop)
+    (expr : El.Ast.expr) : Value.t option =
+  let value = static_eval_expr cursor ctx expr in
+  Option.map (fun value -> Runtime.Numerics.eval_unop unop value.it) value
+
+and static_eval_binop (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
+    (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) : Value.t option =
+  let values = static_eval_exprs cursor ctx [ expr_l; expr_r ] in
+  Option.map
+    (fun values ->
+      let values = List.map it values in
+      let value_l, value_r = (List.nth values 0, List.nth values 1) in
+      Runtime.Numerics.eval_binop binop value_l value_r)
+    values
+
+and static_eval_ternop (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (expr_cond : El.Ast.expr) (expr_then : El.Ast.expr)
+    (expr_else : El.Ast.expr) : Value.t option =
+  let value_cond = static_eval_expr cursor ctx expr_cond in
+  Option.map
+    (fun value_cond ->
+      let cond = Value.get_bool value_cond.it in
+      let expr = if cond then expr_then else expr_else in
+      static_eval_expr cursor ctx expr)
+    value_cond
+  |> Option.join |> Option.map it
+
+(* and static_eval_cast (ctx : Ctx.t) (typ : typ) (expr : expr) : Value.t option *)
+(*     = *)
+(*   let typ = eval_type ctx typ in *)
+(*   let typ = saturate_type ctx typ in *)
+(*   let value = static_eval_expr ctx expr in *)
+(*   Option.map (Runtime.Ops.eval_cast typ) value *)
+
+and static_eval_bitstring_acc (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (expr_base : El.Ast.expr) (expr_lo : El.Ast.expr) (expr_hi : El.Ast.expr) :
+    Value.t option =
+  let values = static_eval_exprs cursor ctx [ expr_base; expr_hi; expr_lo ] in
+  Option.map
+    (fun values ->
+      let values = List.map it values in
+      let value_base, value_hi, value_lo =
+        (List.nth values 0, List.nth values 1, List.nth values 2)
+      in
+      Runtime.Numerics.eval_bitstring_access value_base value_hi value_lo)
+    values
+
+and static_eval_type_acc (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (var_base : El.Ast.var) (member : El.Ast.member) : Value.t option =
+  let td = Ctx.find_opt Ctx.find_typedef_opt cursor var_base ctx in
+  Option.map
+    (fun (td : TypeDef.t) ->
+      match td with
+      | EnumD (id, members) when List.mem member.it members ->
+          Some (Value.EnumFieldV (id, member.it))
+      | SEnumD (id, _typ, fields) when List.mem_assoc member.it fields ->
+          let value = List.assoc member.it fields in
+          Some (Value.SEnumFieldV (id, member.it, value))
+      | _ -> None)
+    td
+  |> Option.join
+
+and static_eval_error_acc (ctx : Ctx.t) (member : El.Ast.member) :
+    Value.t option =
+  let id = "error." ^ member.it in
+  Ctx.find_value_opt Ctx.Global id ctx
+
+(* and static_eval_expr_acc (ctx : Ctx.t) (expr_base : expr) (member : member) : *)
+(*     Value.t option = *)
+(*   let value_base = static_eval_expr ctx expr_base in *)
+(*   match value_base with *)
+(*   | Some value_base -> ( *)
+(*       match value_base with *)
+(*       | StructV fields when List.mem_assoc member.it fields -> *)
+(*           Some (List.assoc member.it fields) *)
+(*       | StackV (_, _, size) when member.it = "size" -> Some (AIntV size) *)
+(*       | _ -> None) *)
+(*   | _ -> None *)
+
+(* and static_eval_call (_ctx : Ctx.t) (_expr_func : expr) (_targs : typ list) *)
+(*     (_args : arg list) : Value.t option = *)
+(*   failwith "(TODO: static_eval_call) Handle static function call" *)
+
 (* Well-formedness checks for
    types, typedefs, functypes, funcdefs, constypes, and consdefs *)
 
@@ -73,7 +259,7 @@ open Util.Source
     - a type name declared via typedef, where the base type of that type is either one of the types listed above,
       or another typedef name that meets these conditions. *)
 
-let check_distinct_names (names : string list) : unit =
+and check_distinct_names (names : string list) : unit =
   let distinct =
     List.fold_left
       (fun (distinct, names) name ->
@@ -89,9 +275,8 @@ let check_distinct_names (names : string list) : unit =
   else ()
 
 (* (TODO) check_valid_type and check_valid_typedef quite redundant for
-   typedefs that are not generic
-   maybe consider only check_valid_type after evaluating surface types of
-   StackT, TupleT and SpecT *)
+   typedefs that are not generic. maybe consider only check_valid_type
+   after evaluating surface types of StackT, TupleT and SpecT *)
 
 let rec check_valid_type (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : Type.t) :
     unit =
@@ -582,111 +767,260 @@ and check_valid_consdef' (tset : TIdSet.t) (cd : ConsDef.t) : unit =
   List.iter (check_valid_cparam' tset) cparams;
   check_valid_type' tset typ
 
+(* Type equality *)
+
+(* (TODO) How to check alpha-equivalence of types? *)
+and type_equals (typ_l : Type.t) (typ_r : Type.t) : bool =
+  match (typ_l, typ_r) with
+  (* typedefs are aliases *)
+  | DefT typ_l_inner, _ -> type_equals typ_l_inner typ_r
+  | _, DefT typ_r_inner -> type_equals typ_l typ_r_inner
+  (* check for equality *)
+  | ErrT, ErrT | MatchKindT, MatchKindT | BoolT, BoolT | IntT, IntT -> true
+  | FIntT width_l, FIntT width_r -> Bigint.(width_l = width_r)
+  | FBitT width_l, FBitT width_r -> Bigint.(width_l = width_r)
+  | VBitT width_l, VBitT width_r -> Bigint.(width_l = width_r)
+  | NewT typ_inner_l, NewT typ_inner_r -> type_equals typ_inner_l typ_inner_r
+  | EnumT id_l, EnumT id_r -> id_l = id_r
+  | SEnumT (id_l, _typ_inner_l), SEnumT (id_r, _typ_inner_r) -> id_l = id_r
+  | TupleT typs_inner_l, TupleT typs_inner_r ->
+      List.for_all2 type_equals typs_inner_l typs_inner_r
+  | StackT (typ_inner_l, size_l), StackT (typ_inner_r, size_r) ->
+      type_equals typ_inner_l typ_inner_r && Bigint.(size_l = size_r)
+  (* (TODO) Does p4 use nominal or structural typing for aggregate types? *)
+  | StructT (id_l, _fields_l), StructT (id_r, _fields_r)
+  | HeaderT (id_l, _fields_l), HeaderT (id_r, _fields_r)
+  | UnionT (id_l, _fields_l), UnionT (id_r, _fields_r) ->
+      id_l = id_r
+  (* (TODO) Handle rest *)
+  | _ -> false
+
+(* Coercion rules *)
+
+(* (8.11.2) Implicit casts
+
+   To keep the language simple and avoid introducing hidden costs, P4 only implicitly casts from int to fixed-width types
+   and from enums with an underlying type to the underlying type. In particular, applying a binary operation (except shifts
+   and concatenation) to an expression of type int and an expression with a fixed-width type will implicitly cast the int
+   expression to the type of the other expression. For enums with an underlying type, it can be implicitly cast to its underlying
+   type whenever appropriate, including but not limited to in shifts, concatenation, bit slicing indexes,
+   header stack indexes as well as other unary and binary operations.
+
+   The compiler also adds implicit casts when types of different expressions need to match;
+   for example, as described in Section 13.6, since select labels are compared against the selected expression,
+   the compiler will insert implicit casts for the select labels when they have int types.
+   Similarly, when assigning a structure-valued expression to a structure or header, the compiler will add implicit casts for int fields. *)
+
+and insert_cast (expr_il : Il.Ast.expr) (typ : Type.t) : Il.Ast.expr =
+  Il.Ast.CastE { typ = typ $ no_info; expr = expr_il } $ no_info
+
+and coerce_type_assign (typ_from : Type.t) (expr_from_il : Il.Ast.expr)
+    (typ_to : Type.t) : Il.Ast.expr =
+  match coerce_type_assign' typ_from expr_from_il typ_to with
+  | Some expr_from_il -> expr_from_il
+  | None ->
+      Format.eprintf "(coerce_type) Cannot coerce type %a to %a\n" Type.pp
+        typ_from Type.pp typ_to;
+      assert false
+
+and coerce_type_assign' (typ_from : Type.t) (expr_from_il : Il.Ast.expr)
+    (typ_to : Type.t) : Il.Ast.expr option =
+  let coerce_unequal_type_assign' () : Il.Ast.expr option =
+    match (typ_from, typ_to) with
+    (* typedefs are aliases *)
+    | DefT typ_from_inner, _ ->
+        coerce_type_assign' typ_from_inner expr_from_il typ_to
+    | _, DefT typ_to_inner ->
+        coerce_type_assign' typ_from expr_from_il typ_to_inner
+    (* coerce arbitrary precision int to fixed width *)
+    | IntT, FIntT _ | IntT, FBitT _ ->
+        let expr_from_il = insert_cast expr_from_il typ_to in
+        Some expr_from_il
+    (* coerce serializable enum to its underlying type *)
+    | SEnumT (_, typ_from_inner), _ ->
+        let expr_from_il = insert_cast expr_from_il typ_from_inner in
+        coerce_type_assign' typ_from_inner expr_from_il typ_to
+    (* coerce record to struct *)
+    | RecordT _, StructT _ when coerce_type_assign'' typ_from typ_to ->
+        let expr_from_il = insert_cast expr_from_il typ_to in
+        Some expr_from_il
+    (* coerce record to header *)
+    | RecordT _, HeaderT _ when coerce_type_assign'' typ_from typ_to ->
+        let expr_from_il = insert_cast expr_from_il typ_to in
+        Some expr_from_il
+    | _ -> None
+  in
+  if type_equals typ_from typ_to then Some expr_from_il
+  else coerce_unequal_type_assign' ()
+
+and coerce_type_assign'' (typ_from : Type.t) (typ_to : Type.t) : bool =
+  let coerce_unequal_type_assign'' () : bool =
+    match (typ_from, typ_to) with
+    (* typedefs are aliases *)
+    | DefT typ_from_inner, _ -> coerce_type_assign'' typ_from_inner typ_to
+    | _, DefT typ_to_inner -> coerce_type_assign'' typ_from typ_to_inner
+    (* coerce arbitrary precision int to fixed width *)
+    | IntT, FIntT _ | IntT, FBitT _ -> true
+    (* coerce serializable enum to its underlying type *)
+    | SEnumT (_, typ_from_inner), _ ->
+        coerce_type_assign'' typ_from_inner typ_to
+    (* coerce record to struct *)
+    | RecordT fields_from, StructT (_, fields_to) ->
+        let members_from, typs_inner_from = List.split fields_from in
+        let members_to, typs_inner_to = List.split fields_to in
+        List.for_all2 ( = ) members_from members_to
+        && List.for_all2 coerce_type_assign'' typs_inner_from typs_inner_to
+    (* coerce record to header *)
+    | RecordT fields_from, HeaderT (_, fields_to) ->
+        let members_from, typs_inner_from = List.split fields_from in
+        let members_to, typs_inner_to = List.split fields_to in
+        List.for_all2 ( = ) members_from members_to
+        && List.for_all2 coerce_type_assign'' typs_inner_from typs_inner_to
+    (* (TODO) What about header union? *)
+    | _ -> false
+  in
+  if type_equals typ_from typ_to then true else coerce_unequal_type_assign'' ()
+
+(* (TODO) Coercion for unary when serializable enum is involved *)
+
+and coerce_types_binary (typ_l : Type.t) (expr_l_il : Il.Ast.expr)
+    (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
+    Type.t * Il.Ast.expr * Il.Ast.expr =
+  match coerce_types_binary' typ_l expr_l_il typ_r expr_r_il with
+  | Some (typ, expr_l_il, expr_r_il) -> (typ, expr_l_il, expr_r_il)
+  | None ->
+      Format.eprintf "(coerce_types_binary) Cannot coerce types %a and %a\n"
+        Type.pp typ_l Type.pp typ_r;
+      assert false
+
+and coerce_types_binary_numeric (typ_l : Type.t) (expr_l_il : Il.Ast.expr)
+    (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
+    Type.t * Il.Ast.expr * Il.Ast.expr =
+  let rec reduce_senum (typ : Type.t) (expr_l_il : Il.Ast.expr)
+      (expr_r_il : Il.Ast.expr) =
+    match typ with
+    | SEnumT (_, typ_inner) ->
+        let expr_l_il = insert_cast expr_l_il typ_inner in
+        let expr_r_il = insert_cast expr_r_il typ_inner in
+        reduce_senum typ_inner expr_l_il expr_r_il
+    | _ -> (typ, expr_l_il, expr_r_il)
+  in
+  let typ, expr_l_il, expr_r_il =
+    coerce_types_binary typ_l expr_l_il typ_r expr_r_il
+  in
+  reduce_senum typ expr_l_il expr_r_il
+
+and coerce_types_binary' (typ_l : Type.t) (expr_l_il : Il.Ast.expr)
+    (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
+    (Type.t * Il.Ast.expr * Il.Ast.expr) option =
+  let coerce_unequal_types_binary' () :
+      (Type.t * Il.Ast.expr * Il.Ast.expr) option =
+    match (typ_l, typ_r) with
+    (* typedefs are aliases *)
+    | DefT typ_l_inner, _ ->
+        coerce_types_binary' typ_l_inner expr_l_il typ_r expr_r_il
+    | _, DefT typ_r_inner ->
+        coerce_types_binary' typ_l expr_l_il typ_r_inner expr_r_il
+    (* coerce arbitrary precision int to fixed width *)
+    | IntT, FIntT _ | IntT, FBitT _ ->
+        let expr_l_il = insert_cast expr_l_il typ_r in
+        Some (typ_r, expr_l_il, expr_r_il)
+    | FIntT _, IntT | FBitT _, IntT ->
+        let expr_r_il = insert_cast expr_r_il typ_l in
+        Some (typ_l, expr_l_il, expr_r_il)
+    (* coerce serializable enum to its underlying type *)
+    | SEnumT (_, typ_l_inner), _ ->
+        let expr_l_il = insert_cast expr_l_il typ_l_inner in
+        coerce_types_binary' typ_l_inner expr_l_il typ_r expr_r_il
+    | _, SEnumT (_, typ_r_inner) ->
+        let expr_r_il = insert_cast expr_r_il typ_r_inner in
+        coerce_types_binary' typ_l expr_l_il typ_r_inner expr_r_il
+    | _ -> None
+  in
+  if type_equals typ_l typ_r then Some (typ_l, expr_l_il, expr_r_il)
+  else coerce_unequal_types_binary' ()
+
 (* Type evaluation *)
 
 module TIdMap = MakeTIdEnv (Type)
 
-let rec substitute_type (tidmap : TIdMap.t) (typ : Type.t) : Type.t =
+let rec eval_type (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ) :
+    Il.Ast.typ =
+  eval_type' cursor ctx typ.it $ typ.at
+
+and eval_type_with_check (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
+    : Il.Ast.typ =
+  let typ = eval_type cursor ctx typ in
+  check_valid_type cursor ctx typ.it;
+  typ
+
+and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ') :
+    Il.Ast.typ' =
   match typ with
-  | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
-  | VBitT _ ->
-      typ
-  | VarT id ->
-      let typ = TIdMap.find_opt id tidmap in
-      if Option.is_none typ then (
-        Format.eprintf "(substitute_type) %s is a free type variable\n" id;
+  | VoidT -> Types.VoidT
+  | ErrT -> Types.ErrT
+  | StrT -> Types.StrT
+  | BoolT -> Types.BoolT
+  | IntT -> Types.IntT
+  | FIntT expr_width ->
+      let width =
+        static_eval_expr cursor ctx expr_width
+        |> expect_static_value expr_width
+        |> it |> Value.get_num
+      in
+      Types.FIntT width
+  | FBitT expr_width ->
+      let width =
+        static_eval_expr cursor ctx expr_width
+        |> expect_static_value expr_width
+        |> it |> Value.get_num
+      in
+      Types.FBitT width
+  | VBitT expr_width ->
+      let width =
+        static_eval_expr cursor ctx expr_width
+        |> expect_static_value expr_width
+        |> it |> Value.get_num
+      in
+      Types.VBitT width
+  | StackT (typ_inner, expr_size) ->
+      let typ_inner = eval_type cursor ctx typ_inner in
+      let size =
+        static_eval_expr cursor ctx expr_size
+        |> expect_static_value expr_size
+        |> it |> Value.get_num
+      in
+      Types.StackT (typ_inner.it, size)
+  | TupleT typs_inner ->
+      let typs_inner =
+        List.map (eval_type cursor ctx) typs_inner |> List.map it
+      in
+      Types.TupleT typs_inner
+  (* When a type variable is bound by the type parameters (top-scoped variable should be unallowed) *)
+  (* (TODO) Why not shove in the type parameters into the typedef environment? *)
+  | NameT { it = Current id; _ }
+    when Ctx.find_tparam_opt cursor id.it ctx |> Option.is_some ->
+      Types.VarT id.it
+  | NameT var ->
+      let td = Ctx.find_opt Ctx.find_typedef_opt cursor var ctx in
+      if Option.is_none td then (
+        Format.eprintf "(eval_type') Type definition %a does not exist\n"
+          El.Pp.pp_var var;
         assert false);
-      let typ = Option.get typ in
-      typ
-  | DefT typ_inner -> DefT (substitute_type tidmap typ_inner)
-  | NewT typ_inner -> NewT (substitute_type tidmap typ_inner)
-  | EnumT _ -> typ
-  | SEnumT (id, typ_inner) ->
-      let typ_inner = substitute_type tidmap typ_inner in
-      SEnumT (id, typ_inner)
-  | TupleT typs_inner -> TupleT (List.map (substitute_type tidmap) typs_inner)
-  | StackT (typ_inner, size) -> StackT (substitute_type tidmap typ_inner, size)
-  | StructT (id, fields) ->
-      let members, typs_inner = List.split fields in
-      let typs_inner = List.map (substitute_type tidmap) typs_inner in
-      StructT (id, List.combine members typs_inner)
-  | HeaderT (id, fields) ->
-      let members, typs_inner = List.split fields in
-      let typs_inner = List.map (substitute_type tidmap) typs_inner in
-      HeaderT (id, List.combine members typs_inner)
-  | UnionT (id, fields) ->
-      let members, typs_inner = List.split fields in
-      let typs_inner = List.map (substitute_type tidmap) typs_inner in
-      UnionT (id, List.combine members typs_inner)
-  | ExternT (id, fdenv) ->
-      let fdenv = Envs.FDEnv.map (substitute_funcdef tidmap) fdenv in
-      ExternT (id, fdenv)
-  | ParserT params ->
-      let params = List.map (substitute_param tidmap) params in
-      ParserT params
-  | ControlT params ->
-      let params = List.map (substitute_param tidmap) params in
-      ControlT params
-  | PackageT | TopT -> typ
-  | SetT typ_inner -> SetT (substitute_type tidmap typ_inner)
-  | RecordT fields ->
-      let members, typs_inner = List.split fields in
-      let typs_inner = List.map (substitute_type tidmap) typs_inner in
-      RecordT (List.combine members typs_inner)
-  | StateT -> typ
+      let td = Option.get td in
+      specialize_typedef td []
+  | SpecT (var, typs) ->
+      let td = Ctx.find_opt Ctx.find_typedef_opt cursor var ctx in
+      if Option.is_none td then (
+        Format.eprintf "(eval_type') Type definition %a does not exist\n"
+          El.Pp.pp_var var;
+        assert false);
+      let td = Option.get td in
+      let typs = List.map (eval_type cursor ctx) typs |> List.map it in
+      specialize_typedef td typs
+  | AnyT -> Types.TopT
 
-and substitute_param (tidmap : TIdMap.t) (param : Types.param) : Types.param =
-  let id, dir, typ, value_default = param in
-  let typ = substitute_type tidmap typ in
-  (id, dir, typ, value_default)
-
-and substitute_cparam (tidmap : TIdMap.t) (cparam : Types.cparam) : Types.cparam
-    =
-  substitute_param tidmap cparam
-
-and substitute_funcdef (tidmap : TIdMap.t) (fd : FuncDef.t) : FuncDef.t =
-  match fd with
-  | ExternFunctionD (tparams, params, typ_ret) ->
-      let tidmap' =
-        List.fold_left
-          (fun tidmap' tparam -> TIdMap.add tparam (Types.VarT tparam) tidmap')
-          tidmap tparams
-      in
-      let params = List.map (substitute_param tidmap') params in
-      let typ_ret = substitute_type tidmap' typ_ret in
-      ExternFunctionD (tparams, params, typ_ret)
-  | FunctionD (tparams, params, typ_ret) ->
-      let tidmap' =
-        List.fold_left
-          (fun tidmap' tparam -> TIdMap.add tparam (Types.VarT tparam) tidmap')
-          tidmap tparams
-      in
-      let params = List.map (substitute_param tidmap') params in
-      let typ_ret = substitute_type tidmap' typ_ret in
-      FunctionD (tparams, params, typ_ret)
-  | ActionD params ->
-      let params = List.map (substitute_param tidmap) params in
-      ActionD params
-  | ExternMethodD (tparams, params, typ_ret) ->
-      let tidmap' =
-        List.fold_left
-          (fun tidmap' tparam -> TIdMap.add tparam (Types.VarT tparam) tidmap')
-          tidmap tparams
-      in
-      let params = List.map (substitute_param tidmap') params in
-      let typ_ret = substitute_type tidmap' typ_ret in
-      ExternMethodD (tparams, params, typ_ret)
-  | ExternAbstractMethodD (tparams, params, typ_ret) ->
-      let tidmap' =
-        List.fold_left
-          (fun tidmap' tparam -> TIdMap.add tparam (Types.VarT tparam) tidmap')
-          tidmap tparams
-      in
-      let params = List.map (substitute_param tidmap') params in
-      let typ_ret = substitute_type tidmap' typ_ret in
-      ExternAbstractMethodD (tparams, params, typ_ret)
-
-let specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
+and specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
   let check_arity tparams =
     if List.length targs <> List.length tparams then (
       Format.eprintf
@@ -794,81 +1128,105 @@ and specialize_consdef (cd : ConsDef.t) (targs : Type.t list) : ConsType.t =
   let typ = substitute_type tidmap typ in
   (cparams, typ)
 
-let rec eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ') :
-    Il.Ast.typ' =
+and substitute_type (tidmap : TIdMap.t) (typ : Type.t) : Type.t =
   match typ with
-  | VoidT -> Types.VoidT
-  | ErrT -> Types.ErrT
-  | StrT -> Types.StrT
-  | BoolT -> Types.BoolT
-  | IntT -> Types.IntT
-  | FIntT expr_width ->
-      let width =
-        static_eval_expr cursor ctx expr_width
-        |> expect_static_value expr_width
-        |> it |> Value.get_num
-      in
-      Types.FIntT width
-  | FBitT expr_width ->
-      let width =
-        static_eval_expr cursor ctx expr_width
-        |> expect_static_value expr_width
-        |> it |> Value.get_num
-      in
-      Types.FBitT width
-  | VBitT expr_width ->
-      let width =
-        static_eval_expr cursor ctx expr_width
-        |> expect_static_value expr_width
-        |> it |> Value.get_num
-      in
-      Types.VBitT width
-  | StackT (typ_inner, expr_size) ->
-      let typ_inner = eval_type cursor ctx typ_inner in
-      let size =
-        static_eval_expr cursor ctx expr_size
-        |> expect_static_value expr_size
-        |> it |> Value.get_num
-      in
-      Types.StackT (typ_inner.it, size)
-  | TupleT typs_inner ->
-      let typs_inner =
-        List.map (eval_type cursor ctx) typs_inner |> List.map it
-      in
-      Types.TupleT typs_inner
-  (* When a type variable is bound by the type parameters (top-scoped variable should be unallowed) *)
-  (* (TODO) Why not shove in the type parameters into the typedef environment? *)
-  | NameT { it = Current id; _ }
-    when Ctx.find_tparam_opt cursor id.it ctx |> Option.is_some ->
-      Types.VarT id.it
-  | NameT var ->
-      let td = Ctx.find_opt Ctx.find_typedef_opt cursor var ctx in
-      if Option.is_none td then (
-        Format.eprintf "(eval_type') Type definition %a does not exist\n"
-          El.Pp.pp_var var;
+  | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
+  | VBitT _ ->
+      typ
+  | VarT id ->
+      let typ = TIdMap.find_opt id tidmap in
+      if Option.is_none typ then (
+        Format.eprintf "(substitute_type) %s is a free type variable\n" id;
         assert false);
-      let td = Option.get td in
-      specialize_typedef td []
-  | SpecT (var, typs) ->
-      let td = Ctx.find_opt Ctx.find_typedef_opt cursor var ctx in
-      if Option.is_none td then (
-        Format.eprintf "(eval_type') Type definition %a does not exist\n"
-          El.Pp.pp_var var;
-        assert false);
-      let td = Option.get td in
-      let typs = List.map (eval_type cursor ctx) typs |> List.map it in
-      specialize_typedef td typs
-  | AnyT -> Types.TopT
+      let typ = Option.get typ in
+      typ
+  | DefT typ_inner -> DefT (substitute_type tidmap typ_inner)
+  | NewT typ_inner -> NewT (substitute_type tidmap typ_inner)
+  | EnumT _ -> typ
+  | SEnumT (id, typ_inner) ->
+      let typ_inner = substitute_type tidmap typ_inner in
+      SEnumT (id, typ_inner)
+  | TupleT typs_inner -> TupleT (List.map (substitute_type tidmap) typs_inner)
+  | StackT (typ_inner, size) -> StackT (substitute_type tidmap typ_inner, size)
+  | StructT (id, fields) ->
+      let members, typs_inner = List.split fields in
+      let typs_inner = List.map (substitute_type tidmap) typs_inner in
+      StructT (id, List.combine members typs_inner)
+  | HeaderT (id, fields) ->
+      let members, typs_inner = List.split fields in
+      let typs_inner = List.map (substitute_type tidmap) typs_inner in
+      HeaderT (id, List.combine members typs_inner)
+  | UnionT (id, fields) ->
+      let members, typs_inner = List.split fields in
+      let typs_inner = List.map (substitute_type tidmap) typs_inner in
+      UnionT (id, List.combine members typs_inner)
+  | ExternT (id, fdenv) ->
+      let fdenv = Envs.FDEnv.map (substitute_funcdef tidmap) fdenv in
+      ExternT (id, fdenv)
+  | ParserT params ->
+      let params = List.map (substitute_param tidmap) params in
+      ParserT params
+  | ControlT params ->
+      let params = List.map (substitute_param tidmap) params in
+      ControlT params
+  | PackageT | TopT -> typ
+  | SetT typ_inner -> SetT (substitute_type tidmap typ_inner)
+  | RecordT fields ->
+      let members, typs_inner = List.split fields in
+      let typs_inner = List.map (substitute_type tidmap) typs_inner in
+      RecordT (List.combine members typs_inner)
+  | StateT -> typ
 
-and eval_type (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ) :
-    Il.Ast.typ =
-  eval_type' cursor ctx typ.it $ typ.at
+and substitute_param (tidmap : TIdMap.t) (param : Types.param) : Types.param =
+  let id, dir, typ, value_default = param in
+  let typ = substitute_type tidmap typ in
+  (id, dir, typ, value_default)
 
-and eval_type_with_check (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
-    : Il.Ast.typ =
-  let typ = eval_type cursor ctx typ in
-  check_valid_type cursor ctx typ.it;
-  typ
+and substitute_cparam (tidmap : TIdMap.t) (cparam : Types.cparam) : Types.cparam
+    =
+  substitute_param tidmap cparam
+
+and substitute_funcdef (tidmap : TIdMap.t) (fd : FuncDef.t) : FuncDef.t =
+  match fd with
+  | ExternFunctionD (tparams, params, typ_ret) ->
+      let tidmap' =
+        List.fold_left
+          (fun tidmap' tparam -> TIdMap.add tparam (Types.VarT tparam) tidmap')
+          tidmap tparams
+      in
+      let params = List.map (substitute_param tidmap') params in
+      let typ_ret = substitute_type tidmap' typ_ret in
+      ExternFunctionD (tparams, params, typ_ret)
+  | FunctionD (tparams, params, typ_ret) ->
+      let tidmap' =
+        List.fold_left
+          (fun tidmap' tparam -> TIdMap.add tparam (Types.VarT tparam) tidmap')
+          tidmap tparams
+      in
+      let params = List.map (substitute_param tidmap') params in
+      let typ_ret = substitute_type tidmap' typ_ret in
+      FunctionD (tparams, params, typ_ret)
+  | ActionD params ->
+      let params = List.map (substitute_param tidmap) params in
+      ActionD params
+  | ExternMethodD (tparams, params, typ_ret) ->
+      let tidmap' =
+        List.fold_left
+          (fun tidmap' tparam -> TIdMap.add tparam (Types.VarT tparam) tidmap')
+          tidmap tparams
+      in
+      let params = List.map (substitute_param tidmap') params in
+      let typ_ret = substitute_type tidmap' typ_ret in
+      ExternMethodD (tparams, params, typ_ret)
+  | ExternAbstractMethodD (tparams, params, typ_ret) ->
+      let tidmap' =
+        List.fold_left
+          (fun tidmap' tparam -> TIdMap.add tparam (Types.VarT tparam) tidmap')
+          tidmap tparams
+      in
+      let params = List.map (substitute_param tidmap') params in
+      let typ_ret = substitute_type tidmap' typ_ret in
+      ExternAbstractMethodD (tparams, params, typ_ret)
 
 (* Direction evaluation *)
 
@@ -880,190 +1238,6 @@ and eval_dir' (dir : El.Ast.dir') : Dir.t =
   | In -> Dir.In
   | Out -> Dir.Out
   | InOut -> Dir.InOut
-
-(* Static expression evaluation *)
-
-(* (18.1) Compile-time known values
-
-   The following are compile-time known values:
-
-   - Integer literals, Boolean literals, and string literals.
-   - Identifiers declared in an error, enum, or match_kind declaration.
-   - The default identifier.
-   - The size field of a value with type header stack.
-   - The _ identifier when used as a select expression label
-   - The expression {#} representing an invalid header or header union value.
-   - Identifiers that represent declared types, actions, tables, parsers, controls, or packages.
-   - Tuple expression where all components are compile-time known values.
-   - Structure-valued expressions, where all fields are compile-time known values.
-   - Expressions evaluating to a list type, where all elements are compile-time known values.
-   - Instances constructed by instance declarations (Section 11.3) and constructor invocations.
-   - A legal cast applied to a compile-time known value
-   - The following expressions (+, -, *, / , %, !, &, |, &&, ||, << , >> , ~ ,  >, <, ==, !=, <=, >=, ++, [:], ?:) when their operands are all compile-time known values.
-   - Identifiers declared as constants using the const keyword.
-   - Expressions of the form e.minSizeInBits(), e.minSizeInBytes(), e.maxSizeInBits() and e.maxSizeInBytes() *)
-
-and static_eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr) :
-    Il.Ast.value option =
-  let value = static_eval_expr' cursor ctx expr.it in
-  Option.map (fun value -> value $ expr.at) value
-
-and static_eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr')
-    : Il.Ast.value' option =
-  match expr with
-  | BoolE { boolean } -> static_eval_bool boolean
-  | StrE { text } -> static_eval_str text
-  | NumE { num } -> static_eval_num num
-  | VarE { var } -> static_eval_var cursor ctx var
-  | TupleE { exprs } -> static_eval_tuple cursor ctx exprs
-  | RecordE { fields } -> static_eval_record cursor ctx fields
-  | UnE { unop; expr } -> static_eval_unop cursor ctx unop expr
-  | BinE { binop; expr_l; expr_r } ->
-      static_eval_binop cursor ctx binop expr_l expr_r
-  | TernE { expr_cond; expr_then; expr_else } ->
-      static_eval_ternop cursor ctx expr_cond expr_then expr_else
-  (* | CastE (typ, expr) -> static_eval_cast ctx typ expr *)
-  | BitAccE { expr_base; expr_lo; expr_hi } ->
-      static_eval_bitstring_acc cursor ctx expr_base expr_lo expr_hi
-  | TypeAccE { var_base; member } ->
-      static_eval_type_acc cursor ctx var_base member
-  | ErrAccE { member } -> static_eval_error_acc ctx member
-  (* | ExprAccE (expr_base, member) -> static_eval_expr_acc ctx expr_base member *)
-  (* | CallE (expr_func, targs, args) -> static_eval_call ctx expr_func targs args *)
-  | _ -> None
-
-and static_eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (exprs : El.Ast.expr list) : Il.Ast.value list option =
-  let values = List.map (static_eval_expr cursor ctx) exprs in
-  if
-    List.for_all Option.is_some values && List.length exprs = List.length values
-  then Some (List.map Option.get values)
-  else None
-
-and expect_static_value (expr : El.Ast.expr) (value : Il.Ast.value option) :
-    Il.Ast.value =
-  match value with
-  | Some value -> value
-  | None ->
-      F.eprintf "(expect_static_value) %a is not a compile-time known value\n"
-        (El.Pp.pp_expr ~level:0) expr;
-      assert false
-
-and static_eval_bool (boolean : bool) : Value.t option = Some (BoolV boolean)
-and static_eval_str (text : El.Ast.text) : Value.t option = Some (StrV text.it)
-
-and static_eval_num (num : El.Ast.num) : Value.t option =
-  match num.it with
-  | i, Some (width, signed) ->
-      if signed then Some (FIntV (width, i)) else Some (FBitV (width, i))
-  | i, None -> Some (IntV i)
-
-and static_eval_var (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
-    Value.t option =
-  Ctx.find_opt Ctx.find_value_opt cursor var ctx
-
-and static_eval_tuple (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (exprs : El.Ast.expr list) : Value.t option =
-  let values = static_eval_exprs cursor ctx exprs in
-  Option.map
-    (fun values ->
-      let values = List.map it values in
-      Value.TupleV values)
-    values
-
-and static_eval_record (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (fields : (El.Ast.member * El.Ast.expr) list) : Value.t option =
-  let members, exprs = List.split fields in
-  let members = List.map it members in
-  let values = static_eval_exprs cursor ctx exprs in
-  Option.map
-    (fun values ->
-      let values = List.map it values in
-      Value.StructV (List.combine members values))
-    values
-
-and static_eval_unop (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : El.Ast.unop)
-    (expr : El.Ast.expr) : Value.t option =
-  let value = static_eval_expr cursor ctx expr in
-  Option.map (fun value -> Runtime.Numerics.eval_unop unop value.it) value
-
-and static_eval_binop (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
-    (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) : Value.t option =
-  let values = static_eval_exprs cursor ctx [ expr_l; expr_r ] in
-  Option.map
-    (fun values ->
-      let values = List.map it values in
-      let value_l, value_r = (List.nth values 0, List.nth values 1) in
-      Runtime.Numerics.eval_binop binop value_l value_r)
-    values
-
-and static_eval_ternop (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (expr_cond : El.Ast.expr) (expr_then : El.Ast.expr)
-    (expr_else : El.Ast.expr) : Value.t option =
-  let value_cond = static_eval_expr cursor ctx expr_cond in
-  Option.map
-    (fun value_cond ->
-      let cond = Value.get_bool value_cond.it in
-      let expr = if cond then expr_then else expr_else in
-      static_eval_expr cursor ctx expr)
-    value_cond
-  |> Option.join |> Option.map it
-
-(* and static_eval_cast (ctx : Ctx.t) (typ : typ) (expr : expr) : Value.t option *)
-(*     = *)
-(*   let typ = eval_type ctx typ in *)
-(*   let typ = saturate_type ctx typ in *)
-(*   let value = static_eval_expr ctx expr in *)
-(*   Option.map (Runtime.Ops.eval_cast typ) value *)
-
-and static_eval_bitstring_acc (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (expr_base : El.Ast.expr) (expr_lo : El.Ast.expr) (expr_hi : El.Ast.expr) :
-    Value.t option =
-  let values = static_eval_exprs cursor ctx [ expr_base; expr_hi; expr_lo ] in
-  Option.map
-    (fun values ->
-      let values = List.map it values in
-      let value_base, value_hi, value_lo =
-        (List.nth values 0, List.nth values 1, List.nth values 2)
-      in
-      Runtime.Numerics.eval_bitstring_access value_base value_hi value_lo)
-    values
-
-and static_eval_type_acc (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (var_base : El.Ast.var) (member : El.Ast.member) : Value.t option =
-  let td = Ctx.find_opt Ctx.find_typedef_opt cursor var_base ctx in
-  Option.map
-    (fun (td : TypeDef.t) ->
-      match td with
-      | EnumD (id, members) when List.mem member.it members ->
-          Some (Value.EnumFieldV (id, member.it))
-      | SEnumD (id, _typ, fields) when List.mem_assoc member.it fields ->
-          let value = List.assoc member.it fields in
-          Some (Value.SEnumFieldV (id, member.it, value))
-      | _ -> None)
-    td
-  |> Option.join
-
-and static_eval_error_acc (ctx : Ctx.t) (member : El.Ast.member) :
-    Value.t option =
-  let id = "error." ^ member.it in
-  Ctx.find_value_opt Ctx.Global id ctx
-
-(* and static_eval_expr_acc (ctx : Ctx.t) (expr_base : expr) (member : member) : *)
-(*     Value.t option = *)
-(*   let value_base = static_eval_expr ctx expr_base in *)
-(*   match value_base with *)
-(*   | Some value_base -> ( *)
-(*       match value_base with *)
-(*       | StructV fields when List.mem_assoc member.it fields -> *)
-(*           Some (List.assoc member.it fields) *)
-(*       | StackV (_, _, size) when member.it = "size" -> Some (AIntV size) *)
-(*       | _ -> None) *)
-(*   | _ -> None *)
-
-(* and static_eval_call (_ctx : Ctx.t) (_expr_func : expr) (_targs : typ list) *)
-(*     (_args : arg list) : Value.t option = *)
-(*   failwith "(TODO: static_eval_call) Handle static function call" *)
 
 (* Annotation typing *)
 
@@ -1092,37 +1266,23 @@ and type_param (cursor : Ctx.cursor) (ctx : Ctx.t) (param : El.Ast.param) :
 
 and type_param' (cursor : Ctx.cursor) (ctx : Ctx.t) (param : El.Ast.param') :
     Il.Ast.param' =
-  let id, dir, typ, expr_default, _annos = param in
+  let id, dir, typ, expr_default, annos = param in
   let typ = eval_type_with_check cursor ctx typ in
-  let dir = eval_dir dir in
-  let value_default =
+  let dir_il = eval_dir dir in
+  let value_default_il =
     Option.map
       (fun expr_default ->
         static_eval_expr cursor ctx expr_default
         |> expect_static_value expr_default)
       expr_default
   in
+  let annos_il = List.map (type_anno cursor ctx) annos in
   (* (TODO) evaluate annotations *)
-  (id, dir, typ, value_default, [])
+  (id, dir_il, typ, value_default_il, annos_il)
 
-and static_eval_cparam (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (cparam : El.Ast.cparam) : Il.Ast.cparam =
+and type_cparam (cursor : Ctx.cursor) (ctx : Ctx.t) (cparam : El.Ast.cparam) :
+    Il.Ast.cparam =
   type_param cursor ctx cparam
-
-(* Coercion *)
-
-and implicit_cast (typ_from : Type.t) (expr_from_il : Il.Ast.expr)
-    (typ_to : Type.t) : Il.Ast.expr =
-  match (typ_from, typ_to) with
-  | IntT, FIntT _ ->
-      Il.Ast.CastE { typ = typ_to $ no_info; expr = expr_from_il } $ no_info
-  | IntT, FBitT _ ->
-      Il.Ast.CastE { typ = typ_to $ no_info; expr = expr_from_il } $ no_info
-  | _ ->
-      Format.eprintf
-        "(implicit_cast) Cannot implicitly cast %a of type %a to %a\n"
-        (Il.Pp.pp_expr ~level:0) expr_from_il Type.pp typ_from Type.pp typ_to;
-      assert false
 
 (* Expression typing *)
 
@@ -1510,101 +1670,61 @@ and type_binop_plus_minus_mult (binop : Lang.Ast.binop) (typ_l : Type.t)
     (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
     Type.t * Il.Ast.expr' =
   let typ, expr_l_il, expr_r_il =
-    match (typ_l, typ_r) with
-    | IntT, IntT ->
-        let typ = typ_l in
-        (typ, expr_l_il, expr_r_il)
-    | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) ->
-        let typ = typ_l in
-        (typ, expr_l_il, expr_r_il)
-    | FIntT _, IntT ->
-        let typ = typ_l in
-        let expr_r_il = implicit_cast typ_r expr_r_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | IntT, FIntT _ ->
-        let typ = typ_r in
-        let expr_l_il = implicit_cast typ_l expr_l_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) ->
-        let typ = typ_l in
-        (typ, expr_l_il, expr_r_il)
-    | FBitT _, IntT ->
-        let typ = typ_l in
-        let expr_r_il = implicit_cast typ_r expr_r_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | IntT, FBitT _ ->
-        let typ = typ_r in
-        let expr_l_il = implicit_cast typ_l expr_l_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | _ ->
-        Format.eprintf
-          "(type_binop_plus_minus_mult) Addition, subtraction, and \
-           multiplication operator expects either two arbitrary precision \
-           integers or \n\
-          \        two integers of the same signedness and width but %a and %a \
-           were given\n"
-          Type.pp typ_l Type.pp typ_r;
-        assert false
+    coerce_types_binary_numeric typ_l expr_l_il typ_r expr_r_il
   in
-  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
-  (typ, expr_il)
+  match typ with
+  | IntT | FIntT _ | FBitT _ ->
+      let expr_il =
+        Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il }
+      in
+      (typ, expr_il)
+  | _ ->
+      Format.eprintf
+        "(type_binop_plus_minus_mult) Addition, subtraction, and \
+         multiplication operator expects either two arbitrary precision \
+         integers or \n\
+        \        two integers of the same signedness and width but %a and %a \
+         were given\n"
+        Type.pp typ_l Type.pp typ_r;
+      assert false
 
 and type_binop_saturating_plus_minus (binop : Lang.Ast.binop) (typ_l : Type.t)
     (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
     Type.t * Il.Ast.expr' =
   let typ, expr_l_il, expr_r_il =
-    match (typ_l, typ_r) with
-    | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) ->
-        let typ = typ_l in
-        (typ, expr_l_il, expr_r_il)
-    | FIntT _, IntT ->
-        let typ = typ_l in
-        let expr_r_il = implicit_cast typ_r expr_r_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | IntT, FIntT _ ->
-        let typ = typ_r in
-        let expr_l_il = implicit_cast typ_l expr_l_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) ->
-        let typ = typ_l in
-        (typ, expr_l_il, expr_r_il)
-    | FBitT _, IntT ->
-        let typ = typ_l in
-        let expr_r_il = implicit_cast typ_r expr_r_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | IntT, FBitT _ ->
-        let typ = typ_r in
-        let expr_l_il = implicit_cast typ_l expr_l_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | _ ->
-        Format.eprintf
-          "(type_binop_saturating_plus_minus) Saturating addition and \
-           subtraction operator expects two integers of the same signedness \
-           and width but %a and %a were given\n"
-          Type.pp typ_l Type.pp typ_r;
-        assert false
+    coerce_types_binary_numeric typ_l expr_l_il typ_r expr_r_il
   in
-  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
-  (typ, expr_il)
+  match typ with
+  | FIntT _ | FBitT _ ->
+      let expr_il =
+        Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il }
+      in
+      (typ, expr_il)
+  | _ ->
+      Format.eprintf
+        "(type_binop_saturating_plus_minus) Saturating addition and \
+         subtraction operator expects two integers of the same signedness and \
+         width but %a and %a were given\n"
+        Type.pp typ_l Type.pp typ_r;
+      assert false
 
 and type_binop_div_mod (binop : Lang.Ast.binop) (typ_l : Type.t)
     (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
     Type.t * Il.Ast.expr' =
-  let typ, expr_l_il, expr_r_il =
-    match (typ_l, typ_r) with
-    (* (TODO) Non-negativity can only be checked dynamically *)
-    | IntT, IntT ->
-        let typ = typ_l in
-        (typ, expr_l_il, expr_r_il)
-    | _ ->
-        Format.eprintf
-          "(type_binop_div) Division and modulo operator expects two arbitrary \
-           precision integers but %a and %a were given\n"
-          Type.pp typ_l Type.pp typ_r;
-        assert false
-  in
-  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
-  (typ, expr_il)
+  match (typ_l, typ_r) with
+  (* (TODO) Non-negativity can only be checked dynamically *)
+  | IntT, IntT ->
+      let typ = typ_l in
+      let expr_il =
+        Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il }
+      in
+      (typ, expr_il)
+  | _ ->
+      Format.eprintf
+        "(type_binop_div) Division and modulo operator expects two arbitrary \
+         precision integers but %a and %a were given\n"
+        Type.pp typ_l Type.pp typ_r;
+      assert false
 
 and type_binop_shift (binop : Lang.Ast.binop) (typ_l : Type.t)
     (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
@@ -1639,73 +1759,29 @@ and type_binop_compare (binop : Lang.Ast.binop) (typ_l : Type.t)
     (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
     Type.t * Il.Ast.expr' =
   let typ, expr_l_il, expr_r_il =
-    match (typ_l, typ_r) with
-    | IntT, IntT ->
-        let typ = Types.BoolT in
-        (typ, expr_l_il, expr_r_il)
-    | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) ->
-        let typ = Types.BoolT in
-        (typ, expr_l_il, expr_r_il)
-    | FIntT _, IntT ->
-        let typ = Types.BoolT in
-        let expr_r_il = implicit_cast typ_r expr_r_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | IntT, FIntT _ ->
-        let typ = Types.BoolT in
-        let expr_l_il = implicit_cast typ_l expr_l_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) ->
-        let typ = Types.BoolT in
-        (typ, expr_l_il, expr_r_il)
-    | FBitT _, IntT ->
-        let typ = Types.BoolT in
-        let expr_r_il = implicit_cast typ_r expr_r_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | IntT, FBitT _ ->
-        let typ = Types.BoolT in
-        let expr_l_il = implicit_cast typ_l expr_l_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | _ ->
-        Format.eprintf
-          "(type_binop_compare) Comparison expects either two arbitrary \
-           precision integers or two integers of the same signedness and width \
-           but %a and %a were given\n"
-          Type.pp typ_l Type.pp typ_r;
-        assert false
+    coerce_types_binary_numeric typ_l expr_l_il typ_r expr_r_il
   in
-  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
-  (typ, expr_il)
+  match typ with
+  | IntT | FIntT _ | FBitT _ ->
+      let typ = Types.BoolT in
+      let expr_il =
+        Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il }
+      in
+      (typ, expr_il)
+  | _ ->
+      Format.eprintf
+        "(type_binop_compare) Comparison expects either two arbitrary \
+         precision integers or two integers of the same signedness and width \
+         but %a and %a were given\n"
+        Type.pp typ_l Type.pp typ_r;
+      assert false
 
-and check_type_equals' (typ_l : Type.t) (typ_r : Type.t) : bool =
-  match (typ_l, typ_r) with
-  | ErrT, ErrT | MatchKindT, MatchKindT | BoolT, BoolT | IntT, IntT -> true
-  | FIntT width_l, FIntT width_r -> Bigint.(width_l = width_r)
-  | FBitT width_l, FBitT width_r -> Bigint.(width_l = width_r)
-  | VBitT width_l, VBitT width_r -> Bigint.(width_l = width_r)
-  | DefT typ_inner_l, DefT typ_inner_r | NewT typ_inner_l, NewT typ_inner_r ->
-      check_type_equals' typ_inner_l typ_inner_r
-  | EnumT id_l, EnumT id_r -> id_l = id_r
-  | SEnumT (id_l, _typ_inner_l), SEnumT (id_r, _typ_inner_r) -> id_l = id_r
-  | TupleT typs_inner_l, TupleT typs_inner_r ->
-      List.for_all2 check_type_equals' typs_inner_l typs_inner_r
-  | StackT (typ_inner_l, size_l), StackT (typ_inner_r, size_r) ->
-      check_type_equals' typ_inner_l typ_inner_r && Bigint.(size_l = size_r)
-  (* (TODO) Does p4 use nominal or structural typing for aggregate types? *)
-  | StructT (id_l, _fields_l), StructT (id_r, _fields_r)
-  | HeaderT (id_l, _fields_l), HeaderT (id_r, _fields_r)
-  | UnionT (id_l, _fields_l), UnionT (id_r, _fields_r) ->
-      id_l = id_r
-  | _ -> false
-
-(* (TODO) Insert implicit casts here *)
 and type_binop_compare_equal (binop : Lang.Ast.binop) (typ_l : Type.t)
     (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
     Type.t * Il.Ast.expr' =
-  if not (check_type_equals' typ_l typ_r) then (
-    Format.eprintf
-      "(type_binop_compare_equal) %a and %a cannot be compared of equality\n"
-      Type.pp typ_l Type.pp typ_r;
-    assert false);
+  let _typ, expr_l_il, expr_r_il =
+    coerce_types_binary typ_l expr_l_il typ_r expr_r_il
+  in
   let typ = Types.BoolT in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
   (typ, expr_il)
@@ -1714,38 +1790,20 @@ and type_binop_bitwise (binop : Lang.Ast.binop) (typ_l : Type.t)
     (expr_l_il : Il.Ast.expr) (typ_r : Type.t) (expr_r_il : Il.Ast.expr) :
     Type.t * Il.Ast.expr' =
   let typ, expr_l_il, expr_r_il =
-    match (typ_l, typ_r) with
-    | FIntT width_l, FIntT width_r when Bigint.(width_l = width_r) ->
-        let typ = typ_l in
-        (typ, expr_l_il, expr_r_il)
-    | FIntT _, IntT ->
-        let typ = typ_l in
-        let expr_r_il = implicit_cast typ_r expr_r_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | IntT, FIntT _ ->
-        let typ = typ_r in
-        let expr_l_il = implicit_cast typ_l expr_l_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | FBitT width_l, FBitT width_r when Bigint.(width_l = width_r) ->
-        let typ = typ_l in
-        (typ, expr_l_il, expr_r_il)
-    | FBitT _, IntT ->
-        let typ = typ_l in
-        let expr_r_il = implicit_cast typ_r expr_r_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | IntT, FBitT _ ->
-        let typ = typ_r in
-        let expr_l_il = implicit_cast typ_l expr_l_il typ in
-        (typ, expr_l_il, expr_r_il)
-    | _ ->
-        Format.eprintf
-          "(type_binop_bitwise) Bitwise operator expects two bit-strings of \
-           the same width but %a and %a were given\n"
-          Type.pp typ_l Type.pp typ_r;
-        assert false
+    coerce_types_binary_numeric typ_l expr_l_il typ_r expr_r_il
   in
-  let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
-  (typ, expr_il)
+  match typ with
+  | FIntT _ | FBitT _ ->
+      let expr_il =
+        Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il }
+      in
+      (typ, expr_il)
+  | _ ->
+      Format.eprintf
+        "(type_binop_bitwise) Bitwise operator expects two bit-strings of the \
+         same width but %a and %a were given\n"
+        Type.pp typ_l Type.pp typ_r;
+      assert false
 
 (* (TODO) What is the rationale for disallowing implicit cast here? *)
 and type_binop_concat (binop : Lang.Ast.binop) (typ_l : Type.t)
@@ -1787,7 +1845,6 @@ and type_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
     (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) : Type.t * Il.Ast.expr' =
   let typ_l, expr_l_il = type_expr cursor ctx expr_l in
   let typ_r, expr_r_il = type_expr cursor ctx expr_r in
-  (* (TODO) Insert implicit casts if possible *)
   match binop.it with
   | PlusOp | MinusOp | MulOp ->
       type_binop_plus_minus_mult binop typ_l expr_l_il typ_r expr_r_il
@@ -2918,12 +2975,11 @@ and type_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
    - References to elements within header stacks (see Section 8.18): indexing, and references to last and next.
    - The result of a bit-slice operator [m:l]. *)
 
-(* (TODO) Consider direction also *)
-and check_lvalue_type' (ctx : Ctx.t) (typ : Type.t) : bool =
-  match typ with
-  | DefT typ_inner | NewT typ_inner -> check_lvalue_type' ctx typ_inner
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> false
-  | _ -> true
+and check_lvalue (ctx : Ctx.t) (expr : El.Ast.expr) : unit =
+  if not (check_lvalue' ctx expr) then (
+    Format.eprintf "(check_lvalue) %a is not an l-value\n"
+      (El.Pp.pp_expr ~level:0) expr;
+    assert false)
 
 and check_lvalue' (ctx : Ctx.t) (expr : El.Ast.expr) : bool =
   match expr.it with
@@ -2944,11 +3000,12 @@ and check_lvalue' (ctx : Ctx.t) (expr : El.Ast.expr) : bool =
       check_lvalue' ctx expr_base
   | _ -> false
 
-and check_lvalue (ctx : Ctx.t) (expr : El.Ast.expr) : unit =
-  if not (check_lvalue' ctx expr) then (
-    Format.eprintf "(check_lvalue) %a is not an l-value\n"
-      (El.Pp.pp_expr ~level:0) expr;
-    assert false)
+(* (TODO) Consider direction also *)
+and check_lvalue_type' (ctx : Ctx.t) (typ : Type.t) : bool =
+  match typ with
+  | DefT typ_inner | NewT typ_inner -> check_lvalue_type' ctx typ_inner
+  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> false
+  | _ -> true
 
 and type_assign_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
     (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) : Ctx.t * flow * Il.Ast.stmt'
@@ -2956,14 +3013,7 @@ and type_assign_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
   check_lvalue ctx expr_l;
   let typ_l, expr_l_il = type_expr cursor ctx expr_l in
   let typ_r, expr_r_il = type_expr cursor ctx expr_r in
-  (* (TODO) Insert cast if possible *)
-  if typ_l <> typ_r then (
-    Format.eprintf
-      "(type_assign_stmt) %a on the left side has type %a but %a on the right \
-       side has type %a\n"
-      (El.Pp.pp_expr ~level:0) expr_l Type.pp typ_l (El.Pp.pp_expr ~level:0)
-      expr_r Type.pp typ_r;
-    assert false);
+  let expr_r_il = coerce_type_assign typ_r expr_r_il typ_l in
   let stmt_il = Lang.Ast.AssignS { expr_l = expr_l_il; expr_r = expr_r_il } in
   (ctx, flow, stmt_il)
 
@@ -3218,14 +3268,9 @@ and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (typ : El.Ast.typ) (expr : El.Ast.expr) (annos : El.Ast.anno list) : Ctx.t =
   let _annos_il = List.map (type_anno cursor ctx) annos in
   let typ_target = eval_type_with_check cursor ctx typ in
-  let typ, _expr_il = type_expr cursor ctx expr in
-  (* (TODO) Insert cast if possible *)
-  if typ_target.it <> typ then (
-    Format.eprintf
-      "(type_const_decl) The type of constant %a doesn't match the \
-       initializer's type %a\n"
-      Type.pp typ_target.it Type.pp typ;
-    assert false);
+  let typ, expr_il = type_expr cursor ctx expr in
+  let _expr_il = coerce_type_assign typ expr_il typ_target.it in
+  (* (TODO) Static evaluation should evaluate Il exprs *)
   let value = static_eval_expr cursor ctx expr in
   if Option.is_none value then (
     Format.eprintf
@@ -3323,12 +3368,9 @@ and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Option.map
       (fun expr_init ->
         let typ_init, expr_init_il = type_expr cursor ctx expr_init in
-        if typ_target.it <> typ_init then (
-          Format.eprintf
-            "(type_var_decl) The type of variable %a doesn't match the \
-             initializer's type %a\n"
-            Type.pp typ_target.it Type.pp typ_init;
-          assert false);
+        let expr_init_il =
+          coerce_type_assign typ_init expr_init_il typ_target.it
+        in
         expr_init_il)
       expr_init
   in
@@ -3656,17 +3698,25 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ = Types.SEnumT (id.it, typ.it) in
     Ctx.add_value cursor id_field value ctx |> Ctx.add_type cursor id_field typ
   in
-  let members, exprs = List.split fields in
-  let values =
+  let members, exprs_field = List.split fields in
+  let values_field =
     List.map
-      (fun expr -> static_eval_expr cursor ctx expr |> expect_static_value expr)
-      exprs
+      (fun expr_field ->
+        let typ_field, expr_field_il = type_expr cursor ctx expr_field in
+        let _expr_field_il =
+          coerce_type_assign typ_field expr_field_il typ.it
+        in
+        (* (TODO) Static evaluation should evaluate Il exprs *)
+        static_eval_expr cursor ctx expr_field |> expect_static_value expr_field)
+      exprs_field
   in
-  let ctx = List.fold_left type_senum_decl' ctx (List.combine members values) in
+  let ctx =
+    List.fold_left type_senum_decl' ctx (List.combine members values_field)
+  in
   let td =
     let members = List.map it members in
-    let values = List.map it values in
-    Types.SEnumD (id.it, typ.it, List.combine members values)
+    let values_field = List.map it values_field in
+    Types.SEnumD (id.it, typ.it, List.combine members values_field)
   in
   check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -3901,7 +3951,7 @@ and type_extern_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let annos_il = List.map (type_anno cursor ctx) annos in
   let tparams = Ctx.get_tparams cursor ctx in
   let cid = FId.to_fid id cparams in
-  let cparams_il = List.map (static_eval_cparam cursor ctx) cparams in
+  let cparams_il = List.map (type_cparam cursor ctx) cparams in
   let td = Ctx.find_typedef Ctx.Global id.it ctx in
   let typ_args = List.map (fun tparam -> Types.VarT tparam) tparams in
   let typ = specialize_typedef td typ_args in
@@ -4162,7 +4212,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   (* Typecheck and add constructor parameters to the block context *)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Parser ctx' in
-  let cparams_il = List.map (static_eval_cparam Ctx.Block ctx') cparams in
+  let cparams_il = List.map (type_cparam Ctx.Block ctx') cparams in
   let ctx' =
     List.fold_left
       (fun ctx' cparam ->
@@ -4364,7 +4414,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   (* Typecheck and add constructor parameters to the block context *)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Control ctx' in
-  let cparams_il = List.map (static_eval_cparam Ctx.Block ctx') cparams in
+  let cparams_il = List.map (type_cparam Ctx.Block ctx') cparams in
   let ctx' =
     List.fold_left
       (fun ctx' cparam ->
@@ -4439,7 +4489,7 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     assert false);
   let tparams = Ctx.get_tparams cursor ctx in
   let cid = FId.to_fid id cparams in
-  let cparams_il = List.map (static_eval_cparam Ctx.Block ctx) cparams in
+  let cparams_il = List.map (type_cparam Ctx.Block ctx) cparams in
   let td = Ctx.find_typedef Ctx.Global id.it ctx in
   let typ_args = List.map (fun tparam -> Types.VarT tparam) tparams in
   let typ = specialize_typedef td typ_args in

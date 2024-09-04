@@ -1034,7 +1034,7 @@ enumDeclaration:
   L_BRACE members = identifierList info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
       Declaration.Enum { tags; annotations; name; members } }
-| annotations = optAnnotations info1 = ENUM typ = baseType
+| annotations = optAnnotations info1 = ENUM typ = typeRef
   name = name L_BRACE members = specifiedIdentifierList R_BRACE
     { let tags = Source.merge info1 (Type.tags typ) in
       Declaration.SerializableEnum { tags; annotations; typ; name; members } }
