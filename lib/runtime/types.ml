@@ -26,7 +26,6 @@ and typ =
   (* Invariant: variables should always be bound *)
   | VarT of L.id'
   (* Alias types *)
-  | DefT of typ
   | NewT of typ
   (* Constant types *)
   | EnumT of L.id'
@@ -133,8 +132,7 @@ and pp_typ fmt typ =
   | FBitT width -> F.fprintf fmt "bit<%a>" Bigint.pp width
   | VBitT width -> F.fprintf fmt "varbit<%a>" Bigint.pp width
   | VarT id -> P.pp_id' fmt id
-  | DefT typ -> F.fprintf fmt "typedef<%a>" pp_typ typ
-  | NewT typ -> F.fprintf fmt "type<%a>" pp_typ typ
+  | NewT typ -> F.fprintf fmt "type %a" pp_typ typ
   | EnumT id -> F.fprintf fmt "enum %a" P.pp_id' id
   | SEnumT (id, typ) -> F.fprintf fmt "enum<%a> %a" pp_typ typ P.pp_id' id
   | TupleT typs -> F.fprintf fmt "tuple<%a>" (P.pp_list pp_typ ",@ ") typs
@@ -166,8 +164,8 @@ and pp_typ fmt typ =
 
 and pp_typdef fmt typdef =
   match typdef with
-  | DefD typ -> F.fprintf fmt "typedef<%a>" pp_typ typ
-  | NewD typ -> F.fprintf fmt "type<%a>" pp_typ typ
+  | DefD typ -> F.fprintf fmt "typedef %a" pp_typ typ
+  | NewD typ -> F.fprintf fmt "type %a" pp_typ typ
   | EnumD (id, members) ->
       F.fprintf fmt "enum %a { %a }" P.pp_id' id
         (P.pp_list P.pp_member' ", ")

@@ -293,9 +293,6 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
         Format.eprintf "(check_valid_type) %s is a free type variable\n" id;
         assert false)
       else ()
-  | DefT typ_inner ->
-      check_valid_type' tset typ_inner;
-      check_valid_type_nesting typ typ_inner
   | NewT typ_inner ->
       check_valid_type' tset typ_inner;
       check_valid_type_nesting typ typ_inner
@@ -366,20 +363,6 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
   | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
   | VBitT _ | VarT _ ->
       error_not_nest ()
-  | DefT _ -> (
-      match typ_inner with
-      | VoidT -> false
-      | ErrT -> true
-      | MatchKindT -> false
-      | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_type_nesting' typ typ_inner
-      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-      | UnionT _ ->
-          true
-      | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
-      | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
   | NewT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT -> false
@@ -388,8 +371,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | FIntT _ | FBitT _ -> true
       | VBitT _ -> false
       | VarT _ -> true
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_type_nesting' typ typ_inner
+      | NewT typ_inner -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ ->
           false
@@ -403,8 +385,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | FIntT _ | FBitT _ -> true
       | VBitT _ -> false
       | VarT _ -> true
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_type_nesting' typ typ_inner
+      | NewT typ_inner -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
           false
@@ -418,8 +399,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | BoolT -> true
       | IntT -> false
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_type_nesting' typ typ_inner
+      | NewT typ_inner -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ ->
           true
@@ -432,8 +412,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VBitT _ ->
           false
       | VarT _ -> true
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_type_nesting' typ typ_inner
+      | NewT typ_inner -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ -> false
       | HeaderT _ | UnionT _ -> true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
@@ -447,8 +426,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | BoolT -> true
       | IntT -> false
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_type_nesting' typ typ_inner
+      | NewT typ_inner -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ ->
           true
@@ -461,8 +439,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | BoolT -> true
       | IntT -> false
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_type_nesting' typ typ_inner
+      | NewT typ_inner -> check_valid_type_nesting' typ typ_inner
       | EnumT _ -> false
       | SEnumT _ -> true
       | TupleT _ | StackT _ -> false
@@ -481,8 +458,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VBitT _ ->
           false
       | VarT _ -> true
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_type_nesting' typ typ_inner
+      | NewT typ_inner -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ -> false
       | StructT _ -> false
       | HeaderT _ -> true
@@ -499,8 +475,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | FIntT _ | FBitT _ -> true
       | VBitT _ -> false
       | VarT _ -> false
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_type_nesting' typ typ_inner
+      | NewT typ_inner -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ -> true
       (* A special case: when tuple is nested inside a set,
          because tuples allow more nested types than a set, we need to check recursively *)
@@ -590,8 +565,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | ErrT -> true
       | MatchKindT -> false
       | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_typedef_nesting' td typ_inner
+      | NewT typ_inner -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ ->
           true
@@ -606,8 +580,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | FIntT _ | FBitT _ -> true
       | VBitT _ -> false
       | VarT _ -> true
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_typedef_nesting' td typ_inner
+      | NewT typ_inner -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ ->
           false
@@ -621,8 +594,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | FIntT _ | FBitT _ -> true
       | VBitT _ -> false
       | VarT _ -> true
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_typedef_nesting' td typ_inner
+      | NewT typ_inner -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
           false
@@ -636,8 +608,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | BoolT -> true
       | IntT -> false
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_typedef_nesting' td typ_inner
+      | NewT typ_inner -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
       | UnionT _ ->
           true
@@ -650,8 +621,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | BoolT -> true
       | IntT -> false
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_typedef_nesting' td typ_inner
+      | NewT typ_inner -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ -> false
       | SEnumT _ -> true
       | TupleT _ | StackT _ -> false
@@ -672,8 +642,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | VBitT _ ->
           false
       | VarT _ -> true
-      | DefT typ_inner | NewT typ_inner ->
-          check_valid_typedef_nesting' td typ_inner
+      | NewT typ_inner -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ | SEnumT _ -> false
       | TupleT _ | StackT _ -> false
       | StructT _ -> false
@@ -772,9 +741,6 @@ and check_valid_consdef' (tset : TIdSet.t) (cd : ConsDef.t) : unit =
 (* (TODO) How to check alpha-equivalence of types? *)
 and type_equals (typ_l : Type.t) (typ_r : Type.t) : bool =
   match (typ_l, typ_r) with
-  (* typedefs are aliases *)
-  | DefT typ_l_inner, _ -> type_equals typ_l_inner typ_r
-  | _, DefT typ_r_inner -> type_equals typ_l typ_r_inner
   (* check for equality *)
   | ErrT, ErrT | MatchKindT, MatchKindT | BoolT, BoolT | IntT, IntT -> true
   | FIntT width_l, FIntT width_r -> Bigint.(width_l = width_r)
@@ -827,11 +793,6 @@ and coerce_type_assign' (typ_from : Type.t) (expr_from_il : Il.Ast.expr)
     (typ_to : Type.t) : Il.Ast.expr option =
   let coerce_unequal_type_assign' () : Il.Ast.expr option =
     match (typ_from, typ_to) with
-    (* typedefs are aliases *)
-    | DefT typ_from_inner, _ ->
-        coerce_type_assign' typ_from_inner expr_from_il typ_to
-    | _, DefT typ_to_inner ->
-        coerce_type_assign' typ_from expr_from_il typ_to_inner
     (* coerce arbitrary precision int to fixed width *)
     | IntT, FIntT _ | IntT, FBitT _ ->
         let expr_from_il = insert_cast expr_from_il typ_to in
@@ -856,9 +817,6 @@ and coerce_type_assign' (typ_from : Type.t) (expr_from_il : Il.Ast.expr)
 and coerce_type_assign'' (typ_from : Type.t) (typ_to : Type.t) : bool =
   let coerce_unequal_type_assign'' () : bool =
     match (typ_from, typ_to) with
-    (* typedefs are aliases *)
-    | DefT typ_from_inner, _ -> coerce_type_assign'' typ_from_inner typ_to
-    | _, DefT typ_to_inner -> coerce_type_assign'' typ_from typ_to_inner
     (* coerce arbitrary precision int to fixed width *)
     | IntT, FIntT _ | IntT, FBitT _ -> true
     (* coerce serializable enum to its underlying type *)
@@ -916,11 +874,6 @@ and coerce_types_binary' (typ_l : Type.t) (expr_l_il : Il.Ast.expr)
   let coerce_unequal_types_binary' () :
       (Type.t * Il.Ast.expr * Il.Ast.expr) option =
     match (typ_l, typ_r) with
-    (* typedefs are aliases *)
-    | DefT typ_l_inner, _ ->
-        coerce_types_binary' typ_l_inner expr_l_il typ_r expr_r_il
-    | _, DefT typ_r_inner ->
-        coerce_types_binary' typ_l expr_l_il typ_r_inner expr_r_il
     (* coerce arbitrary precision int to fixed width *)
     | IntT, FIntT _ | IntT, FBitT _ ->
         let expr_l_il = insert_cast expr_l_il typ_r in
@@ -1033,7 +986,7 @@ and specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
   (* Aliased types are not generic *)
   | DefD typ_inner ->
       check_arity [];
-      Types.DefT typ_inner
+      typ_inner
   | NewD typ_inner ->
       check_arity [];
       Types.NewT typ_inner
@@ -1140,7 +1093,6 @@ and substitute_type (tidmap : TIdMap.t) (typ : Type.t) : Type.t =
         assert false);
       let typ = Option.get typ in
       typ
-  | DefT typ_inner -> DefT (substitute_type tidmap typ_inner)
   | NewT typ_inner -> NewT (substitute_type tidmap typ_inner)
   | EnumT _ -> typ
   | SEnumT (id, typ_inner) ->
@@ -1954,8 +1906,6 @@ and type_cast_equal (typ : Type.t) (typ_target : Type.t) : bool =
   | BoolT, BoolT | IntT, IntT -> true
   | FIntT width, FIntT width_target when width = width_target -> true
   | FBitT width, FBitT width_target when width = width_target -> true
-  | DefT typ_inner, DefT typ_target_inner ->
-      type_cast_equal typ_inner typ_target_inner
   | NewT typ_inner, NewT typ_target_inner ->
       type_cast_equal typ_inner typ_target_inner
   | SEnumT (_, typ_inner), typ_target -> type_cast_equal typ_inner typ_target
@@ -1975,10 +1925,6 @@ and type_cast_explicit (typ : Type.t) (typ_target : Type.t) : bool =
   | IntT, FBitT _
   | IntT, FIntT _ ->
       true
-  | DefT typ_inner, DefT typ_target_inner ->
-      type_cast_explicit typ_inner typ_target_inner
-  | DefT typ_inner, typ_target -> type_cast_explicit typ_inner typ_target
-  | typ, DefT typ_target_inner -> type_cast_explicit typ typ_target_inner
   | NewT typ_inner, typ_target -> type_cast_explicit typ_inner typ_target
   | typ, NewT typ_target_inner -> type_cast_explicit typ typ_target_inner
   | SEnumT (_, typ_inner), typ_target -> type_cast_explicit typ_inner typ_target
@@ -2273,7 +2219,6 @@ and check_bitstring_base' (typ : Type.t) : bool =
   | FIntT width -> Bigint.(width > zero)
   | FBitT width -> Bigint.(width >= zero)
   | VBitT _ | VarT _ -> false
-  | DefT typ_inner -> check_bitstring_base' typ_inner
   | NewT _ | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
   | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
   | SetT _ | StateT ->
@@ -2290,7 +2235,6 @@ and check_bitstring_index' (typ : Type.t) : bool =
   | VoidT | ErrT | MatchKindT | StrT | BoolT -> false
   | IntT | FIntT _ | FBitT _ -> true
   | VBitT _ | VarT _ -> false
-  | DefT typ_inner -> check_bitstring_index' typ_inner
   | NewT _ | EnumT _ -> false
   | SEnumT (_, typ_inner) -> check_bitstring_index' typ_inner
   | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
@@ -2311,7 +2255,6 @@ and check_bitstring_slice_range' (typ_base : Type.t) (width_slice : Bigint.t) :
   | IntT -> true
   | FIntT width_base | FBitT width_base -> Bigint.(width_slice <= width_base)
   | VBitT _ | VarT _ -> false
-  | DefT typ_inner -> check_bitstring_slice_range' typ_inner width_slice
   | NewT _ | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
   | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
   | SetT _ | StateT ->
@@ -3003,7 +2946,7 @@ and check_lvalue' (ctx : Ctx.t) (expr : El.Ast.expr) : bool =
 (* (TODO) Consider direction also *)
 and check_lvalue_type' (ctx : Ctx.t) (typ : Type.t) : bool =
   match typ with
-  | DefT typ_inner | NewT typ_inner -> check_lvalue_type' ctx typ_inner
+  | NewT typ_inner -> check_lvalue_type' ctx typ_inner
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> false
   | _ -> true
 
@@ -3331,7 +3274,7 @@ and check_valid_var_type' (typ : Type.t) : bool =
   | BoolT -> true
   | IntT -> false
   | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-  | DefT typ_inner | NewT typ_inner -> check_valid_var_type' typ_inner
+  | NewT typ_inner -> check_valid_var_type' typ_inner
   | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _
     ->
       true
