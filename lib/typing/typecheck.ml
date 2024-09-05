@@ -36,163 +36,105 @@ let ( let* ) = Option.bind
    - Identifiers declared as constants using the const keyword.
    - Expressions of the form e.minSizeInBits(), e.minSizeInBytes(), e.maxSizeInBits() and e.maxSizeInBytes() *)
 
-let rec static_eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (expr : El.Ast.expr) : Il.Ast.value option =
-  let value = static_eval_expr' cursor ctx expr.it in
-  Option.map (fun value -> value $ expr.at) value
+let rec static_eval_expr (expr : Il.Ast.expr) : Il.Ast.value option =
+  let* value = static_eval_expr' expr.it in
+  Some (value $ expr.at)
 
-and static_eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr')
-    : Il.Ast.value' option =
-  match expr with
-  | BoolE { boolean } -> static_eval_bool boolean
-  | StrE { text } -> static_eval_str text
-  | NumE { num } -> static_eval_num num
-  | VarE { var } -> static_eval_var cursor ctx var
-  | TupleE { exprs } -> static_eval_tuple cursor ctx exprs
-  | RecordE { fields } -> static_eval_record cursor ctx fields
-  | UnE { unop; expr } -> static_eval_unop cursor ctx unop expr
-  | BinE { binop; expr_l; expr_r } ->
-      static_eval_binop cursor ctx binop expr_l expr_r
-  | TernE { expr_cond; expr_then; expr_else } ->
-      static_eval_ternop cursor ctx expr_cond expr_then expr_else
-  (* | CastE (typ, expr) -> static_eval_cast ctx typ expr *)
-  | BitAccE { expr_base; expr_lo; expr_hi } ->
-      static_eval_bitstring_acc cursor ctx expr_base expr_lo expr_hi
-  | TypeAccE { var_base; member } ->
-      static_eval_type_acc cursor ctx var_base member
-  | ErrAccE { member } -> static_eval_error_acc ctx member
-  (* | ExprAccE (expr_base, member) -> static_eval_expr_acc ctx expr_base member *)
-  (* | CallE (expr_func, targs, args) -> static_eval_call ctx expr_func targs args *)
-  | _ -> None
-
-and static_eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (exprs : El.Ast.expr list) : Il.Ast.value list option =
-  let values = List.map (static_eval_expr cursor ctx) exprs in
+and static_eval_exprs (exprs : Il.Ast.expr list) : Il.Ast.value list option =
+  let values = List.map static_eval_expr exprs in
   if
     List.for_all Option.is_some values && List.length exprs = List.length values
   then Some (List.map Option.get values)
   else None
 
-and expect_static_value (expr : El.Ast.expr) (value : Il.Ast.value option) :
+and expect_static_value (expr : Il.Ast.expr) (value : Il.Ast.value option) :
     Il.Ast.value =
   match value with
   | Some value -> value
   | None ->
-      F.eprintf "(expect_static_value) %a is not a compile-time known value\n"
-        (El.Pp.pp_expr ~level:0) expr;
+      F.eprintf
+        "(expect_static_value) %a is not a compile-time known expression\n"
+        (Il.Pp.pp_expr ~level:0) expr;
       assert false
 
-and static_eval_bool (boolean : bool) : Value.t option = Some (BoolV boolean)
-and static_eval_str (text : El.Ast.text) : Value.t option = Some (StrV text.it)
+and static_eval_expr' (expr : Il.Ast.expr') : Il.Ast.value' option =
+  match expr with
+  | ValueE { value } -> Some value.it
+  | TupleE { exprs } -> static_eval_tuple exprs
+  | RecordE { fields } -> static_eval_record fields
+  | UnE { unop; expr } -> static_eval_unop unop expr
+  | BinE { binop; expr_l; expr_r } -> static_eval_binop binop expr_l expr_r
+  | TernE { expr_cond; expr_then; expr_else } ->
+      static_eval_ternop expr_cond expr_then expr_else
+  | CastE { typ; expr } -> static_eval_cast typ expr
+  | BitAccE { expr_base; value_lo; value_hi } ->
+      static_eval_bitstring_acc expr_base value_lo value_hi
+  | ExprAccE { expr_base; member } -> static_eval_expr_acc expr_base member
+  (* | CallE (expr_func, targs, args) -> static_eval_call ctx expr_func targs args *)
+  | _ -> None
 
-and static_eval_num (num : El.Ast.num) : Value.t option =
-  match num.it with
-  | i, Some (width, signed) ->
-      if signed then Some (FIntV (width, i)) else Some (FBitV (width, i))
-  | i, None -> Some (IntV i)
+and static_eval_tuple (exprs : Il.Ast.expr list) : Value.t option =
+  let* values = static_eval_exprs exprs in
+  let values = List.map it values in
+  Some (Value.TupleV values)
 
-and static_eval_var (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
+and static_eval_record (fields : (Il.Ast.member * Il.Ast.expr) list) :
     Value.t option =
-  Ctx.find_opt Ctx.find_value_opt cursor var ctx
-
-and static_eval_tuple (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (exprs : El.Ast.expr list) : Value.t option =
-  let values = static_eval_exprs cursor ctx exprs in
-  Option.map
-    (fun values ->
-      let values = List.map it values in
-      Value.TupleV values)
-    values
-
-and static_eval_record (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (fields : (El.Ast.member * El.Ast.expr) list) : Value.t option =
   let members, exprs = List.split fields in
   let members = List.map it members in
-  let values = static_eval_exprs cursor ctx exprs in
-  Option.map
-    (fun values ->
-      let values = List.map it values in
-      Value.StructV (List.combine members values))
-    values
+  let* values = static_eval_exprs exprs in
+  let values = List.map it values in
+  let fields = List.combine members values in
+  Some (Value.RecordV fields)
 
-and static_eval_unop (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : El.Ast.unop)
-    (expr : El.Ast.expr) : Value.t option =
-  let value = static_eval_expr cursor ctx expr in
-  Option.map (fun value -> Runtime.Numerics.eval_unop unop value.it) value
+and static_eval_unop (unop : Il.Ast.unop) (expr : Il.Ast.expr) : Value.t option
+    =
+  let* value = static_eval_expr expr in
+  let value = Runtime.Numerics.eval_unop unop value.it in
+  Some value
 
-and static_eval_binop (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
-    (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) : Value.t option =
-  let values = static_eval_exprs cursor ctx [ expr_l; expr_r ] in
-  Option.map
-    (fun values ->
-      let values = List.map it values in
-      let value_l, value_r = (List.nth values 0, List.nth values 1) in
-      Runtime.Numerics.eval_binop binop value_l value_r)
-    values
+and static_eval_binop (binop : Il.Ast.binop) (expr_l : Il.Ast.expr)
+    (expr_r : Il.Ast.expr) : Value.t option =
+  let* values = static_eval_exprs [ expr_l; expr_r ] in
+  let values = List.map it values in
+  let value_l, value_r = (List.nth values 0, List.nth values 1) in
+  let value = Runtime.Numerics.eval_binop binop value_l value_r in
+  Some value
 
-and static_eval_ternop (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (expr_cond : El.Ast.expr) (expr_then : El.Ast.expr)
-    (expr_else : El.Ast.expr) : Value.t option =
-  let value_cond = static_eval_expr cursor ctx expr_cond in
-  Option.map
-    (fun value_cond ->
-      let cond = Value.get_bool value_cond.it in
-      let expr = if cond then expr_then else expr_else in
-      static_eval_expr cursor ctx expr)
-    value_cond
-  |> Option.join |> Option.map it
+and static_eval_ternop (expr_cond : Il.Ast.expr) (expr_then : Il.Ast.expr)
+    (expr_else : Il.Ast.expr) : Value.t option =
+  let* value_cond = static_eval_expr expr_cond in
+  let cond = Value.get_bool value_cond.it in
+  let expr = if cond then expr_then else expr_else in
+  let* value = static_eval_expr expr in
+  Some value.it
 
-(* and static_eval_cast (ctx : Ctx.t) (typ : typ) (expr : expr) : Value.t option *)
-(*     = *)
-(*   let typ = eval_type ctx typ in *)
-(*   let typ = saturate_type ctx typ in *)
-(*   let value = static_eval_expr ctx expr in *)
-(*   Option.map (Runtime.Ops.eval_cast typ) value *)
+and static_eval_cast (typ : Il.Ast.typ) (expr : Il.Ast.expr) : Value.t option =
+  let* value = static_eval_expr expr in
+  let value = Runtime.Numerics.eval_cast typ.it value.it in
+  Some value
 
-and static_eval_bitstring_acc (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (expr_base : El.Ast.expr) (expr_lo : El.Ast.expr) (expr_hi : El.Ast.expr) :
+and static_eval_bitstring_acc (expr_base : Il.Ast.expr)
+    (value_lo : Il.Ast.value) (value_hi : Il.Ast.value) : Value.t option =
+  let* value_base = static_eval_expr expr_base in
+  let value_base = value_base.it in
+  let value_lo, value_hi = (value_lo.it, value_hi.it) in
+  let value =
+    Runtime.Numerics.eval_bitstring_access value_base value_hi value_lo
+  in
+  Some value
+
+and static_eval_expr_acc (expr_base : Il.Ast.expr) (member : Il.Ast.member) :
     Value.t option =
-  let values = static_eval_exprs cursor ctx [ expr_base; expr_hi; expr_lo ] in
-  Option.map
-    (fun values ->
-      let values = List.map it values in
-      let value_base, value_hi, value_lo =
-        (List.nth values 0, List.nth values 1, List.nth values 2)
-      in
-      Runtime.Numerics.eval_bitstring_access value_base value_hi value_lo)
-    values
-
-and static_eval_type_acc (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (var_base : El.Ast.var) (member : El.Ast.member) : Value.t option =
-  let td = Ctx.find_opt Ctx.find_typedef_opt cursor var_base ctx in
-  Option.map
-    (fun (td : TypeDef.t) ->
-      match td with
-      | EnumD (id, members) when List.mem member.it members ->
-          Some (Value.EnumFieldV (id, member.it))
-      | SEnumD (id, _typ, fields) when List.mem_assoc member.it fields ->
-          let value = List.assoc member.it fields in
-          Some (Value.SEnumFieldV (id, member.it, value))
-      | _ -> None)
-    td
-  |> Option.join
-
-and static_eval_error_acc (ctx : Ctx.t) (member : El.Ast.member) :
-    Value.t option =
-  let id = "error." ^ member.it in
-  Ctx.find_value_opt Ctx.Global id ctx
-
-(* and static_eval_expr_acc (ctx : Ctx.t) (expr_base : expr) (member : member) : *)
-(*     Value.t option = *)
-(*   let value_base = static_eval_expr ctx expr_base in *)
-(*   match value_base with *)
-(*   | Some value_base -> ( *)
-(*       match value_base with *)
-(*       | StructV fields when List.mem_assoc member.it fields -> *)
-(*           Some (List.assoc member.it fields) *)
-(*       | StackV (_, _, size) when member.it = "size" -> Some (AIntV size) *)
-(*       | _ -> None) *)
-(*   | _ -> None *)
+  let* value_base = static_eval_expr expr_base in
+  match value_base.it with
+  | StackV (_, _, size) -> (
+      match member.it with "size" -> Some (Value.IntV size) | _ -> None)
+  | StructV fields | HeaderV (_, fields) | UnionV fields -> (
+      match List.assoc_opt member.it fields with
+      | Some value -> Some value
+      | None -> None)
+  | _ -> None
 
 (* and static_eval_call (_ctx : Ctx.t) (_expr_func : expr) (_targs : typ list) *)
 (*     (_args : arg list) : Value.t option = *)
@@ -916,31 +858,35 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ') :
   | BoolT -> Types.BoolT
   | IntT -> Types.IntT
   | FIntT expr_width ->
+      let _typ_width, expr_width_il = type_expr cursor ctx expr_width in
       let width =
-        static_eval_expr cursor ctx expr_width
-        |> expect_static_value expr_width
+        static_eval_expr expr_width_il
+        |> expect_static_value expr_width_il
         |> it |> Value.get_num
       in
       Types.FIntT width
   | FBitT expr_width ->
+      let _typ_width, expr_width_il = type_expr cursor ctx expr_width in
       let width =
-        static_eval_expr cursor ctx expr_width
-        |> expect_static_value expr_width
+        static_eval_expr expr_width_il
+        |> expect_static_value expr_width_il
         |> it |> Value.get_num
       in
       Types.FBitT width
   | VBitT expr_width ->
+      let _typ_width, expr_width_il = type_expr cursor ctx expr_width in
       let width =
-        static_eval_expr cursor ctx expr_width
-        |> expect_static_value expr_width
+        static_eval_expr expr_width_il
+        |> expect_static_value expr_width_il
         |> it |> Value.get_num
       in
       Types.VBitT width
   | StackT (typ_inner, expr_size) ->
       let typ_inner = eval_type cursor ctx typ_inner in
+      let _typ_size, expr_size_il = type_expr cursor ctx expr_size in
       let size =
-        static_eval_expr cursor ctx expr_size
-        |> expect_static_value expr_size
+        static_eval_expr expr_size_il
+        |> expect_static_value expr_size_il
         |> it |> Value.get_num
       in
       Types.StackT (typ_inner.it, size)
@@ -1224,8 +1170,8 @@ and type_param' (cursor : Ctx.cursor) (ctx : Ctx.t) (param : El.Ast.param') :
   let value_default_il =
     Option.map
       (fun expr_default ->
-        static_eval_expr cursor ctx expr_default
-        |> expect_static_value expr_default)
+        let _typ_default, expr_default_il = type_expr cursor ctx expr_default in
+        static_eval_expr expr_default_il |> expect_static_value expr_default_il)
       expr_default
   in
   let annos_il = List.map (type_anno cursor ctx) annos in
@@ -2149,8 +2095,9 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     assert false);
   match typ_base with
   | TupleT typs_base_inner ->
+      let _typ_idx, expr_idx_il = type_expr cursor ctx expr_idx in
       let value_idx =
-        static_eval_expr cursor ctx expr_idx |> expect_static_value expr_idx
+        static_eval_expr expr_idx_il |> expect_static_value expr_idx_il
       in
       let idx = value_idx.it |> Value.get_num |> Bigint.to_int |> Option.get in
       if idx < 0 || idx >= List.length typs_base_inner then (
@@ -2278,16 +2225,16 @@ and type_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     Type.t * Il.Ast.expr' =
   let typ_base, expr_base_il = type_expr cursor ctx expr_base in
   check_bitstring_base typ_base;
-  let typ_lo, _expr_lo_il = type_expr cursor ctx expr_lo in
+  let typ_lo, expr_lo_il = type_expr cursor ctx expr_lo in
   check_bitstring_index typ_lo;
   let value_lo =
-    static_eval_expr cursor ctx expr_lo |> expect_static_value expr_lo
+    static_eval_expr expr_lo_il |> expect_static_value expr_lo_il
   in
   let idx_lo = value_lo.it |> Value.get_num in
-  let typ_hi, _expr_hi_il = type_expr cursor ctx expr_hi in
+  let typ_hi, expr_hi_il = type_expr cursor ctx expr_hi in
   check_bitstring_index typ_hi;
   let value_hi =
-    static_eval_expr cursor ctx expr_hi |> expect_static_value expr_hi
+    static_eval_expr expr_hi_il |> expect_static_value expr_hi_il
   in
   let idx_hi = value_hi.it |> Value.get_num in
   check_bitstring_slice_range typ_base idx_lo idx_hi;
@@ -2671,6 +2618,7 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : El.Ast.expr)
   (* Find the function definition and specialize it if necessary *)
   (* (TODO) Implement type inference for missing type arguments *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
+  (* (TODO) Need to check its well-formedness after specialization *)
   let ft, expr_func_il =
     match expr_func.it with
     | VarE { var } -> type_func cursor ctx var targs_il args
@@ -2800,6 +2748,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
       El.Pp.pp_var var_inst;
     assert false);
   let cd = Option.get cd in
+  (* (TODO) Need to check its well-formedness after specialization *)
   let ct =
     let targs = List.map it targs_il in
     specialize_consdef cd targs
@@ -3212,9 +3161,8 @@ and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let _annos_il = List.map (type_anno cursor ctx) annos in
   let typ_target = eval_type_with_check cursor ctx typ in
   let typ, expr_il = type_expr cursor ctx expr in
-  let _expr_il = coerce_type_assign typ expr_il typ_target.it in
-  (* (TODO) Static evaluation should evaluate Il exprs *)
-  let value = static_eval_expr cursor ctx expr in
+  let expr_il = coerce_type_assign typ expr_il typ_target.it in
+  let value = static_eval_expr expr_il in
   if Option.is_none value then (
     Format.eprintf
       "(type_const_decl) %a is not a compile-time known expression\n"
@@ -3646,11 +3594,8 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     List.map
       (fun expr_field ->
         let typ_field, expr_field_il = type_expr cursor ctx expr_field in
-        let _expr_field_il =
-          coerce_type_assign typ_field expr_field_il typ.it
-        in
-        (* (TODO) Static evaluation should evaluate Il exprs *)
-        static_eval_expr cursor ctx expr_field |> expect_static_value expr_field)
+        let expr_field_il = coerce_type_assign typ_field expr_field_il typ.it in
+        static_eval_expr expr_field_il |> expect_static_value expr_field_il)
       exprs_field
   in
   let ctx =
