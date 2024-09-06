@@ -2650,29 +2650,35 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_func : El.Ast.expr)
   let typ_args, args_il = List.map (type_arg cursor ctx) args |> List.split in
   check_call_arity expr_func params args_il;
   check_named_args args_il;
-  let params, args, typ_args, args_il =
+  let params, _args, typ_args, args_il =
     align_params_with_args params args typ_args args_il
   in
-  let args = List.combine args_il typ_args |> List.combine args in
-  List.iter2
-    (fun param (arg, (arg_il, typ_arg)) ->
-      let _id_param, dir_param, typ_param, _value_default = param in
-      match (arg_il.it : Il.Ast.arg') with
-      | ExprA _ | NameA _ ->
-          (* (TODO) Consider direction of parameters/arguments *)
-          (* (TODO) Check subtype instead of stric type equality,
-             and insert implicit cast to argument if possible *)
-          if typ_param <> typ_arg then (
-            Format.eprintf "(type_call) Argument %a is not of type %a\n"
-              El.Pp.pp_arg arg Type.pp typ_param;
-            assert false)
-      | AnyA ->
-          if dir_param <> Dir.Out then (
-            Format.eprintf
-              "(type_call) Don't care argument can only be used for an out \
-               function/method argument\n";
-            assert false))
-    params args;
+  let args = List.combine args_il typ_args in
+  let args_il =
+    List.fold_left2
+      (fun args_il param (arg_il, typ_arg) ->
+        let _id_param, dir_param, typ_param, _value_default = param in
+        let arg_il =
+          match (arg_il.it : Il.Ast.arg') with
+          | ExprA expr_il ->
+              (* (TODO) Consider direction of parameters/arguments *)
+              let expr_il = coerce_type_assign typ_arg expr_il typ_param in
+              Lang.Ast.ExprA expr_il $ arg_il.at
+          | NameA (id, expr_il) ->
+              (* (TODO) Consider direction of parameters/arguments *)
+              let expr_il = coerce_type_assign typ_arg expr_il typ_param in
+              Lang.Ast.NameA (id, expr_il) $ arg_il.at
+          | AnyA ->
+              if dir_param <> Dir.Out then (
+                Format.eprintf
+                  "(type_call) Don't care argument can only be used for an out \
+                   function/method argument\n";
+                assert false);
+              Lang.Ast.AnyA $ arg_il.at
+        in
+        args_il @ [ arg_il ])
+      [] params args
+  in
   let typ = FuncType.get_typ_ret ft in
   let expr_il =
     Il.Ast.CallE { expr_func = expr_func_il; targs = targs_il; args = args_il }
@@ -2772,30 +2778,35 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
   let typ_args, args_il = List.map (type_arg cursor ctx) args |> List.split in
   check_instantiation_arity var_inst cparams args_il;
   check_named_args args_il;
-  let cparams, args, typ_args, args_il =
+  let cparams, _args, typ_args, args_il =
     align_cparams_with_args cparams args typ_args args_il
   in
-  let args = List.combine args_il typ_args |> List.combine args in
-  List.iter2
-    (fun cparam (arg, (arg_il, typ_arg)) ->
-      let _id_cparam, _dir_cparam, typ_cparam, _value_default = cparam in
-      match (arg_il.it : Il.Ast.arg') with
-      | ExprA _ | NameA _ ->
-          (* (TODO) Consider direction of parameters/arguments *)
-          (* (TODO) Check subtype instead of stric type equality,
-             and insert implicit cast to argument if possible *)
-          if typ_cparam <> typ_arg then (
-            Format.eprintf
-              "(type_instantiation) Argument %a of type %a is not of type %a\n"
-              El.Pp.pp_arg arg Type.pp typ_arg Type.pp typ_cparam;
-            assert false)
-      | AnyA ->
-          Format.eprintf
-            "(type_instantiation) Don't care argument is unallowed as a \
-             constructor argument\n";
-          assert false)
-    cparams args;
-  (* (TODO) Maybe we want to define InstE for IL, with type arguments *)
+  let args = List.combine args_il typ_args in
+  let args_il =
+    List.fold_left2
+      (fun args_il cparam (arg_il, typ_arg) ->
+        let _id_cparam, dir_cparam, typ_cparam, _value_default = cparam in
+        let arg_il =
+          match (arg_il.it : Il.Ast.arg') with
+          | ExprA expr_il ->
+              (* (TODO) Consider direction of parameters/arguments *)
+              let expr_il = coerce_type_assign typ_arg expr_il typ_cparam in
+              Lang.Ast.ExprA expr_il $ arg_il.at
+          | NameA (id, expr_il) ->
+              (* (TODO) Consider direction of parameters/arguments *)
+              let expr_il = coerce_type_assign typ_arg expr_il typ_cparam in
+              Lang.Ast.NameA (id, expr_il) $ arg_il.at
+          | AnyA ->
+              if dir_cparam <> Dir.Out then (
+                Format.eprintf
+                  "(type_call) Don't care argument can only be used for an out \
+                   function/method argument\n";
+                assert false);
+              Lang.Ast.AnyA $ arg_il.at
+        in
+        args_il @ [ arg_il ])
+      [] cparams args
+  in
   let expr_il = Il.Ast.InstE { var_inst; targs = targs_il; args = args_il } in
   (typ_inst, expr_il)
 
