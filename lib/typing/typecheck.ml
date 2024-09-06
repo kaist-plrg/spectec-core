@@ -4057,6 +4057,14 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
           action_list(T) action_run;
       } *)
 
+and get_action_param (fd : FuncDef.t option) : Types.param list =
+  let fd = Option.get fd in
+  match fd with
+  | Types.ActionD params -> params
+  | _ ->
+    Format.eprintf "(get_action_param) FuncDef %a is not Action definition\n" Types.pp_funcdef fd;
+    assert false;
+
 and get_action_name (action : El.Ast.table_action) : string =
   let var',_,_ = action.it in
   match var'.it with
@@ -4119,6 +4127,11 @@ and check_valid_action (cursor : Ctx.cursor) (ctx : Ctx.t) (action_names : strin
   if not (List.mem action_name action_names) then (
     Format.eprintf "(type_table_entry) There is no action %a in action list\n" El.Pp.pp_var var;
     assert false);
+
+and check_valid_arg (_cursor : Ctx.cursor) (_ctx : Ctx.t) (_params : Types.param list)
+    (_typ_args : Type.t list) : unit =
+  (* TODO *)
+  ()
 
 and type_action_keyset (ctx : Ctx.t) (key_prop : Type.t * string) (keyset : El.Ast.keyset) :
     Il.Ast.keyset =
@@ -4209,7 +4222,9 @@ and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action : El.As
   if Option.is_none fd then (
     Format.eprintf "(type_table_action) There is no action named %a or invalid argument\n" El.Pp.pp_var var;
     assert false);
-  let _typ_args, args_il = List.map (type_arg cursor ctx) args |> List.split in
+  let params = get_action_param fd in
+  let typ_args, args_il = List.map (type_arg cursor ctx) args |> List.split in
+  check_valid_arg cursor ctx params typ_args;
   let annos_il = List.map (type_anno cursor ctx) annos in
   (var, args_il, annos_il)
 
