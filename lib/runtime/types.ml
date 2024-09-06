@@ -26,7 +26,6 @@ and typ =
   (* Invariant: variables should always be bound *)
   | VarT of L.id'
   (* Alias types *)
-  | DefT of typ
   | NewT of typ
   (* Constant types *)
   | EnumT of L.id'
@@ -34,11 +33,11 @@ and typ =
   (* Aggregate types *)
   | TupleT of typ list
   | StackT of typ * Bigint.t
-  | StructT of (L.member' * typ) list
-  | HeaderT of (L.member' * typ) list
-  | UnionT of (L.member' * typ) list
+  | StructT of L.id' * (L.member' * typ) list
+  | HeaderT of L.id' * (L.member' * typ) list
+  | UnionT of L.id' * (L.member' * typ) list
   (* Object types *)
-  | ExternT of funcdef FIdMap.t
+  | ExternT of L.id' * funcdef FIdMap.t
   | ParserT of param list
   | ControlT of param list
   | PackageT
@@ -60,11 +59,11 @@ and typdef =
   | SEnumD of L.id' * typ * (L.member' * Value.t) list
   (* Aggregate type definitions *)
   (* These will become generic in the future *)
-  | StructD of (L.member' * typ) list
-  | HeaderD of (L.member' * typ) list
-  | UnionD of (L.member' * typ) list
+  | StructD of L.id' * (L.member' * typ) list
+  | HeaderD of L.id' * (L.member' * typ) list
+  | UnionD of L.id' * (L.member' * typ) list
   (* Object type definitions *)
-  | ExternD of tparam list * funcdef FIdMap.t
+  | ExternD of L.id' * tparam list * funcdef FIdMap.t
   | ParserD of tparam list * param list
   | ControlD of tparam list * param list
   | PackageD of tparam list
@@ -135,26 +134,28 @@ and pp_typ fmt typ =
   | FBitT width -> F.fprintf fmt "bit<%a>" Bigint.pp width
   | VBitT width -> F.fprintf fmt "varbit<%a>" Bigint.pp width
   | VarT id -> P.pp_id' fmt id
-  | DefT typ -> F.fprintf fmt "typedef<%a>" pp_typ typ
-  | NewT typ -> F.fprintf fmt "type<%a>" pp_typ typ
+  | NewT typ -> F.fprintf fmt "type %a" pp_typ typ
   | EnumT id -> F.fprintf fmt "enum %a" P.pp_id' id
   | SEnumT (id, typ) -> F.fprintf fmt "enum<%a> %a" pp_typ typ P.pp_id' id
   | TupleT typs -> F.fprintf fmt "tuple<%a>" (P.pp_list pp_typ ",@ ") typs
   | StackT (typ, size) -> F.fprintf fmt "%a[%a]" pp_typ typ Bigint.pp size
-  | StructT fields ->
-      F.fprintf fmt "struct { %a }" (P.pp_pairs P.pp_member' pp_typ "; ") fields
-  | HeaderT fields ->
-      F.fprintf fmt "header { %a }" (P.pp_pairs P.pp_member' pp_typ "; ") fields
-  | UnionT fields ->
-      F.fprintf fmt "header_union { %a }"
+  | StructT (id, fields) ->
+      F.fprintf fmt "struct %a { %a }" P.pp_id' id
         (P.pp_pairs P.pp_member' pp_typ "; ")
         fields
-  | ExternT fdenv -> F.fprintf fmt "extern %a" (FIdMap.pp pp_funcdef) fdenv
-  | ParserT params ->
-      let param = List.hd params in
-      F.fprintf fmt "parser(%a)" pp_param' param
-  | ControlT params -> F.fprintf fmt "control(%a)" pp_params params
-  | PackageT -> F.pp_print_string fmt "package"
+  | HeaderT (id, fields) ->
+      F.fprintf fmt "header %a { %a }" P.pp_id' id
+        (P.pp_pairs P.pp_member' pp_typ "; ")
+        fields
+  | UnionT (id, fields) ->
+      F.fprintf fmt "header_union %a { %a }" P.pp_id' id
+        (P.pp_pairs P.pp_member' pp_typ "; ")
+        fields
+  | ExternT (id, fdenv) ->
+      F.fprintf fmt "extern %a %a" P.pp_id' id (FIdMap.pp pp_funcdef) fdenv
+  | ParserT params -> F.fprintf fmt "parser (%a)" pp_params params
+  | ControlT params -> F.fprintf fmt "control (%a)" pp_params params
+  | PackageT -> F.fprintf fmt "package"
   | TableT _ -> F.pp_print_string fmt "table"
   | TopT -> F.pp_print_string fmt "top"
   | RecordT fields ->
@@ -166,8 +167,8 @@ and pp_typ fmt typ =
 
 and pp_typdef fmt typdef =
   match typdef with
-  | DefD typ -> F.fprintf fmt "typedef<%a>" pp_typ typ
-  | NewD typ -> F.fprintf fmt "type<%a>" pp_typ typ
+  | DefD typ -> F.fprintf fmt "typedef %a" pp_typ typ
+  | NewD typ -> F.fprintf fmt "type %a" pp_typ typ
   | EnumD (id, members) ->
       F.fprintf fmt "enum %a { %a }" P.pp_id' id
         (P.pp_list P.pp_member' ", ")
@@ -176,22 +177,26 @@ and pp_typdef fmt typdef =
       F.fprintf fmt "enum<%a> %a { %a }" pp_typ typ P.pp_id' id
         (P.pp_pairs P.pp_member' Value.pp ", ")
         fields
-  | StructD fields ->
-      F.fprintf fmt "struct { %a }" (P.pp_pairs P.pp_member' pp_typ "; ") fields
-  | HeaderD fields ->
-      F.fprintf fmt "header { %a }" (P.pp_pairs P.pp_member' pp_typ "; ") fields
-  | UnionD fields ->
-      F.fprintf fmt "header_union { %a }"
+  | StructD (id, fields) ->
+      F.fprintf fmt "struct %a { %a }" P.pp_id' id
         (P.pp_pairs P.pp_member' pp_typ "; ")
         fields
-  | ExternD (tparams, fdenv) ->
-      F.fprintf fmt "extern<%a> %a" pp_tparams tparams (FIdMap.pp pp_funcdef)
-        fdenv
+  | HeaderD (id, fields) ->
+      F.fprintf fmt "header %a { %a }" P.pp_id' id
+        (P.pp_pairs P.pp_member' pp_typ "; ")
+        fields
+  | UnionD (id, fields) ->
+      F.fprintf fmt "header_union %a { %a }" P.pp_id' id
+        (P.pp_pairs P.pp_member' pp_typ "; ")
+        fields
+  | ExternD (id, tparams, fdenv) ->
+      F.fprintf fmt "extern %a<%a> %a" pp_tparams tparams P.pp_id' id
+        (FIdMap.pp pp_funcdef) fdenv
   | ParserD (tparams, params) ->
-      F.fprintf fmt "parser<%a>(%a)" pp_tparams tparams pp_params params
+      F.fprintf fmt "parser <%a>(%a)" pp_tparams tparams pp_params params
   | ControlD (tparams, params) ->
-      F.fprintf fmt "control<%a>(%a)" pp_tparams tparams pp_params params
-  | PackageD tparams -> F.fprintf fmt "package<%a>" pp_tparams tparams
+      F.fprintf fmt "control <%a>(%a)" pp_tparams tparams pp_params params
+  | PackageD tparams -> F.fprintf fmt "package <%a>" pp_tparams tparams
 
 (* Function types *)
 
@@ -291,6 +296,12 @@ module FuncDef = struct
   type t = funcdef
 
   let pp = pp_funcdef
+
+  let get_typ_ret = function
+    | ExternFunctionD (_, _, typ_ret) | FunctionD (_, _, typ_ret) -> typ_ret
+    | ActionD _ -> VoidT
+    | ExternMethodD (_, _, typ_ret) | ExternAbstractMethodD (_, _, typ_ret) ->
+        typ_ret
 end
 
 module ConsType = struct

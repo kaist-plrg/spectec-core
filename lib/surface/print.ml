@@ -436,10 +436,12 @@ and print_decl (indent : int) (decl : Declaration.t) =
       let sname = print_text name in
       let sinit =
         match init with
-        | None -> ""
-        | Some init ->
-            let sinit = print_block (indent + 1) init in
-            Printf.sprintf " = %s" sinit
+        | [] -> ""
+        | inits ->
+            let sinit =
+              List.map (print_decl (indent + 1)) inits |> String.concat "\n"
+            in
+            Printf.sprintf " = {\n%s\n%s\n}" sinit (print_indent indent)
       in
       Printf.sprintf "%s%s(%s) %s%s;\n" (print_indent indent) styp sargs sname
         sinit

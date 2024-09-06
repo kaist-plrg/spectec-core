@@ -554,26 +554,23 @@ instantiation:
 | annotations = optAnnotations typ = typeRef
     L_PAREN args = argumentList R_PAREN name = name info2 = SEMICOLON
     { let info' = Source.merge (Type.tags typ) info2 in
-       Declaration.Instantiation { annotations; typ; args; name; init=None; tags = info' } }
+    Declaration.Instantiation { annotations; typ; args; name; init = []; tags = info' } }
 | annotations = optAnnotations typ = typeRef
     L_PAREN args = argumentList R_PAREN name = name ASSIGN init = objInitializer info2 = SEMICOLON
     { let info' = Source.merge (Type.tags typ) info2 in
-       Declaration.Instantiation { annotations; typ; args; name; init=Some init; tags = info' } }
+       Declaration.Instantiation { annotations; typ; args; name; init; tags = info' } }
 ;
 
 objInitializer:
-| L_BRACE statements = list(objDeclaration) R_BRACE
-    { let info' = Source.merge $1 $3 in
-      Block.{ annotations = []; statements; tags = info' } }
+| L_BRACE decls = list(objDeclaration) R_BRACE
+    { decls }
 ;
 
 objDeclaration:
 | decl = functionDeclaration
-    { let tags = Declaration.tags decl in
-      Statement.DeclarationStatement { tags; decl } }
+    { decl }
 | decl = instantiation
-    { let tags = Declaration.tags decl in
-      Statement.DeclarationStatement { tags; decl } }
+    { decl }
 ;
 
 optConstructorParameters:
@@ -1037,7 +1034,7 @@ enumDeclaration:
   L_BRACE members = identifierList info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
       Declaration.Enum { tags; annotations; name; members } }
-| annotations = optAnnotations info1 = ENUM typ = baseType
+| annotations = optAnnotations info1 = ENUM typ = typeRef
   name = name L_BRACE members = specifiedIdentifierList R_BRACE
     { let tags = Source.merge info1 (Type.tags typ) in
       Declaration.SerializableEnum { tags; annotations; typ; name; members } }

@@ -613,10 +613,10 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
   | FBitT width -> eval_cast_to_bit width value
   | FIntT width -> eval_cast_to_int width value
   | TupleT typs -> eval_cast_tuple typs value
-  | HeaderT entries ->
+  | HeaderT (_id, entries) ->
       let entries = eval_cast_entries entries value in
       HeaderV (true, entries)
-  | StructT entries ->
+  | StructT (_id, entries) ->
       let entries = eval_cast_entries entries value in
       StructV entries
   | _ ->
