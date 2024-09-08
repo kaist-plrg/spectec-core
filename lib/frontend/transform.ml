@@ -137,10 +137,10 @@ and transform_types (typs : Type.t list) : El.typ list =
 
 and transform_dir (dir : Direction.t option) : El.dir =
   match dir with
-  | None -> El.No $ no_info
-  | Some (In { tags = at }) -> El.In $ at
-  | Some (Out { tags = at }) -> El.Out $ at
-  | Some (InOut { tags = at }) -> El.InOut $ at
+  | None -> L.No $ no_info
+  | Some (In { tags = at }) -> L.In $ at
+  | Some (Out { tags = at }) -> L.Out $ at
+  | Some (InOut { tags = at }) -> L.InOut $ at
 
 (* Type parameters *)
 

@@ -128,3 +128,20 @@ struct
 end
 
 module MakeCIdEnv = MakeFIdEnv
+
+(* Pair functor *)
+
+module MakePair (A : sig
+  type t
+
+  val pp : Format.formatter -> t -> unit
+end) (B : sig
+  type t
+
+  val pp : Format.formatter -> t -> unit
+end) =
+struct
+  type t = A.t * B.t
+
+  let pp fmt (a, b) = Format.fprintf fmt "(%a, %a)" A.pp a B.pp b
+end

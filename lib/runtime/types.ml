@@ -7,7 +7,7 @@ module F = Format
 
 type tparam = L.tparam'
 
-type param = L.id' * Dir.t * typ * Value.t option
+type param = L.id' * L.dir' * typ * Value.t option
 and cparam = param
 
 (* Types *)
@@ -107,9 +107,9 @@ and pp_param' fmt param =
   let id, dir, typ, value_default = param in
   match value_default with
   | Some value_default ->
-      F.fprintf fmt "%a %a %a = %a" Dir.pp dir P.pp_id' id pp_typ typ Value.pp
-        value_default
-  | None -> F.fprintf fmt "%a %a %a" Dir.pp dir P.pp_id' id pp_typ typ
+      F.fprintf fmt "%a %a %a = %a" P.pp_dir' dir P.pp_id' id pp_typ typ
+        Value.pp value_default
+  | None -> F.fprintf fmt "%a %a %a" P.pp_dir' dir P.pp_id' id pp_typ typ
 
 and pp_params fmt params = P.pp_list pp_param' ", " fmt params
 

@@ -199,19 +199,21 @@ let add_value cursor id value ctx =
       let frame = (Envs.VEnv.add id value venv, tenv) in
       { ctx with local = { ctx.local with frames = frame :: frames } }
 
-let add_type cursor id typ ctx =
+let add_typedir cursor id typ dir ctx =
   match cursor with
   | Global ->
       let venv, tenv = ctx.global.frame in
       {
         ctx with
-        global = { ctx.global with frame = (venv, Envs.TEnv.add id typ tenv) };
+        global =
+          { ctx.global with frame = (venv, Envs.TEnv.add id (typ, dir) tenv) };
       }
   | Block ->
       let venv, tenv = ctx.block.frame in
       {
         ctx with
-        block = { ctx.block with frame = (venv, Envs.TEnv.add id typ tenv) };
+        block =
+          { ctx.block with frame = (venv, Envs.TEnv.add id (typ, dir) tenv) };
       }
   | Local ->
       let frames = ctx.local.frames in
@@ -219,7 +221,7 @@ let add_type cursor id typ ctx =
         if frames = [] then ((Envs.VEnv.empty, Envs.TEnv.empty), [])
         else (List.hd frames, List.tl frames)
       in
-      let frame = (venv, Envs.TEnv.add id typ tenv) in
+      let frame = (venv, Envs.TEnv.add id (typ, dir) tenv) in
       { ctx with local = { ctx.local with frames = frame :: frames } }
 
 (* Finders *)
@@ -288,14 +290,14 @@ let rec find_value_opt cursor id ctx =
 
 let find_value cursor id ctx = find_value_opt cursor id ctx |> Option.get
 
-let rec find_type_opt cursor id ctx =
+let rec find_typedir_opt cursor id ctx =
   match cursor with
   | Global ->
       let _, tenv = ctx.global.frame in
       Envs.TEnv.find_opt id tenv
   | Block ->
       let _, tenv = ctx.block.frame in
-      Envs.TEnv.find_opt id tenv |> find_cont find_type_opt Global id ctx
+      Envs.TEnv.find_opt id tenv |> find_cont find_typedir_opt Global id ctx
   | Local ->
       let tenvs = ctx.local.frames |> List.map snd in
       List.fold_left
@@ -304,9 +306,9 @@ let rec find_type_opt cursor id ctx =
           | Some typ -> Some typ
           | None -> Envs.TEnv.find_opt id tenv)
         None tenvs
-      |> find_cont find_type_opt Block id ctx
+      |> find_cont find_typedir_opt Block id ctx
 
-let find_type cursor id ctx = find_type_opt cursor id ctx |> Option.get
+let find_typedir cursor id ctx = find_typedir_opt cursor id ctx |> Option.get
 
 let find_opt finder_opt cursor var ctx =
   match var.it with

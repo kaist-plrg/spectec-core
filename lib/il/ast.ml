@@ -44,8 +44,8 @@ type binop = L.binop
 type binop' = L.binop'
 
 (* Directions *)
-type dir = dir' L.dir
-and dir' = Runtime.Dir.t
+type dir = L.dir
+and dir' = L.dir'
 
 (* Types *)
 type typ = typ' L.typ

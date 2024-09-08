@@ -118,6 +118,15 @@ let pp_binop fmt binop = pp_binop' fmt binop.it
 
 (* Directions *)
 
+let pp_dir' fmt dir' =
+  match dir' with
+  | No -> ()
+  | In -> F.pp_print_string fmt "in"
+  | Out -> F.pp_print_string fmt "out"
+  | InOut -> F.pp_print_string fmt "inout"
+
+let pp_dir fmt dir = pp_dir' fmt dir.it
+
 (* Types *)
 
 (* Annotations *)

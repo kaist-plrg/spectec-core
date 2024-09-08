@@ -42,8 +42,8 @@ type binop = L.binop
 type binop' = L.binop'
 
 (* Directions *)
-type dir = dir' L.dir
-and dir' = No | In | Out | InOut
+type dir = L.dir
+type dir' = L.dir'
 
 (* Types *)
 type typ = typ' L.typ

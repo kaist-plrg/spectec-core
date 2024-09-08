@@ -63,9 +63,9 @@ and binop' =
   | LAndOp
   | LOrOp
 
-(* Directions : parameterized by 'dir *)
-and 'dir dir = 'dir dir' phrase
-and 'dir dir' = 'dir
+(* Directions *)
+and dir = dir' phrase
+and dir' = No | In | Out | InOut
 
 (* Types : parameterized by 'typ *)
 and 'typ typ = 'typ typ' phrase

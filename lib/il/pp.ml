@@ -52,8 +52,8 @@ let pp_binop fmt binop = P.pp_binop fmt binop
 
 (* Directions *)
 
-let rec pp_dir fmt dir = pp_dir' fmt dir.it
-and pp_dir' fmt dir = Runtime.Dir.pp fmt dir
+let pp_dir' fmt dir' = P.pp_dir' fmt dir'
+let pp_dir fmt dir = P.pp_dir fmt dir
 
 (* Types *)
 
@@ -245,9 +245,8 @@ and pp_decl' ?(level = 0) fmt decl' =
       F.fprintf fmt "%stable %a %a" (P.indent level) pp_id id (pp_table ~level)
         table
   | ControlD { id; tparams; params; cparams; locals; body; annos = _annos } ->
-      F.fprintf fmt "%scontrol %a%a%a%a {\n%a%sapply\n%a\n%s}"
-        (P.indent level) pp_id id pp_tparams tparams pp_params params pp_cparams
-        cparams
+      F.fprintf fmt "%scontrol %a%a%a%a {\n%a%sapply\n%a\n%s}" (P.indent level)
+        pp_id id pp_tparams tparams pp_params params pp_cparams cparams
         (pp_decls ~level:(level + 1))
         locals
         (P.indent (level + 1))

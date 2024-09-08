@@ -52,14 +52,8 @@ let pp_binop fmt binop = P.pp_binop fmt binop
 
 (* Directions *)
 
-let pp_dir' fmt dir' =
-  match (dir' : Ast.dir') with
-  | No -> ()
-  | In -> F.pp_print_string fmt "in"
-  | Out -> F.pp_print_string fmt "out"
-  | InOut -> F.pp_print_string fmt "inout"
-
-let pp_dir fmt dir = pp_dir' fmt dir.it
+let pp_dir' fmt dir' = P.pp_dir' fmt dir'
+let pp_dir fmt dir = P.pp_dir fmt dir
 
 (* Types *)
 
