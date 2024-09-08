@@ -232,7 +232,7 @@ and pp_decl' ?(level = 0) fmt decl' =
       F.fprintf fmt "%svalue_set<%a>(%a) %a;" (P.indent level) pp_typ typ
         (pp_expr ~level:0) size pp_id id
   | ParserD { id; tparams; params; cparams; locals; states; annos = _annos } ->
-      F.fprintf fmt "%sparser %a%a%a%a {\n%a\n%a\n%s}" (P.indent level) pp_id id
+      F.fprintf fmt "%sparser %a%a%a%a {\n%a%a\n%s}" (P.indent level) pp_id id
         pp_tparams tparams pp_params params pp_cparams cparams
         (pp_decls ~level:(level + 1))
         locals
@@ -245,7 +245,7 @@ and pp_decl' ?(level = 0) fmt decl' =
       F.fprintf fmt "%stable %a %a" (P.indent level) pp_id id (pp_table ~level)
         table
   | ControlD { id; tparams; params; cparams; locals; body; annos = _annos } ->
-      F.fprintf fmt "%scontrol %a%a%a%a {\n%a\n%sapply\n%a\n%s}"
+      F.fprintf fmt "%scontrol %a%a%a%a {\n%a%sapply\n%a\n%s}"
         (P.indent level) pp_id id pp_tparams tparams pp_params params pp_cparams
         cparams
         (pp_decls ~level:(level + 1))

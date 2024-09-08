@@ -696,11 +696,14 @@ and type_equals (typ_l : Type.t) (typ_r : Type.t) : bool =
       List.for_all2 type_equals typs_inner_l typs_inner_r
   | StackT (typ_inner_l, size_l), StackT (typ_inner_r, size_r) ->
       type_equals typ_inner_l typ_inner_r && Bigint.(size_l = size_r)
-  (* (TODO) Does p4 use nominal or structural typing for aggregate types? *)
-  | StructT (id_l, _fields_l), StructT (id_r, _fields_r)
-  | HeaderT (id_l, _fields_l), HeaderT (id_r, _fields_r)
-  | UnionT (id_l, _fields_l), UnionT (id_r, _fields_r) ->
+  | StructT (id_l, fields_l), StructT (id_r, fields_r)
+  | HeaderT (id_l, fields_l), HeaderT (id_r, fields_r)
+  | UnionT (id_l, fields_l), UnionT (id_r, fields_r) ->
+      let members_l, typs_inner_l = List.split fields_l in
+      let members_r, typs_inner_r = List.split fields_r in
       id_l = id_r
+      && List.for_all2 ( = ) members_l members_r
+      && List.for_all2 type_equals typs_inner_l typs_inner_r
   (* (TODO) Handle rest *)
   | _ -> false
 
