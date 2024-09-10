@@ -4,8 +4,8 @@ open Types
 (* Environment for variable identifiers *)
 
 module VEnv = MakeIdEnv (Value)
-module TypeDir = MakePair (Type) (Dir)
-module TEnv = MakeIdEnv (TypeDir)
+module RType = MakeTriple (Type) (Dir) (Ctk)
+module TEnv = MakeIdEnv (RType)
 
 (* Environment for type identifiers *)
 

@@ -258,11 +258,18 @@ and transform_expr (expr : Expression.t) : El.expr =
       let expr_base = transform_expr expr in
       let member = transform_member name in
       El.ExprAccE { expr_base; member } $ at
-  | FunctionCall { func; type_args; args; tags = at } ->
-      let expr_func = transform_expr func in
+  | FunctionCall { func; type_args; args; tags = at } -> (
       let targs = transform_targs type_args in
       let args = transform_args args in
-      El.CallE { expr_func; targs; args } $ at
+      match func with
+      | Name { name; _ } ->
+          let var_func = transform_var name in
+          El.CallFuncE { var_func; targs; args } $ at
+      | ExpressionMember { expr; name; _ } ->
+          let expr_base = transform_expr expr in
+          let member = transform_member name in
+          El.CallMethodE { expr_base; member; targs; args } $ at
+      | _ -> assert false)
   | NamelessInstantiation { typ; args; tags = at } ->
       let typ = transform_type typ in
       let var_inst, targs =
@@ -317,11 +324,18 @@ and transform_stmt (stmt : Statement.t) : El.stmt =
   | Return { expr; tags = at } ->
       let expr_ret = Option.map transform_expr expr in
       L.RetS { expr_ret } $ at
-  | MethodCall { func; type_args; args; tags = at } ->
-      let expr_func = transform_expr func in
+  | MethodCall { func; type_args; args; tags = at } -> (
       let targs = transform_targs type_args in
       let args = transform_args args in
-      L.CallS { expr_func; targs; args } $ at
+      match func with
+      | Name { name; _ } ->
+          let var_func = transform_var name in
+          L.CallFuncS { var_func; targs; args } $ at
+      | ExpressionMember { expr; name; _ } ->
+          let expr_base = transform_expr expr in
+          let member = transform_member name in
+          L.CallMethodS { expr_base; member; targs; args } $ at
+      | _ -> assert false)
   | DeclarationStatement { decl; tags = at } ->
       let decl = transform_decl decl in
       L.DeclS { decl } $ at

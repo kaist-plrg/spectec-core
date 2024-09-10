@@ -149,9 +149,11 @@ and pp_expr' ?(level = 0) fmt expr' =
   | ExprAccE { expr_base; member } ->
       F.fprintf fmt "%a.%a" (pp_expr ~level:0) expr_base (pp_member ~level:0)
         member
-  | CallE { expr_func; targs; args } ->
-      F.fprintf fmt "%a%a%a" (pp_expr ~level:0) expr_func pp_targs targs pp_args
-        args
+  | CallFuncE { var_func; targs; args } ->
+      F.fprintf fmt "%a%a%a" pp_var var_func pp_targs targs pp_args args
+  | CallMethodE { expr_base; member; targs; args } ->
+      F.fprintf fmt "%a.%a%a%a" (pp_expr ~level:0) expr_base
+        (pp_member ~level:0) member pp_targs targs pp_args args
   | InstE { var_inst; targs; args } ->
       F.fprintf fmt "%a%a%a" pp_var var_inst pp_targs targs pp_args args
 

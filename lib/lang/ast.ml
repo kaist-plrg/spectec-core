@@ -76,13 +76,13 @@ and 'value value = 'value value' phrase
 and 'value value' = 'value
 
 (* Annotations *)
-type 'expr anno = 'expr anno' phrase
+type ('note, 'expr) anno = ('note, 'expr) anno' phrase
 
-and 'expr anno' =
+and ('note, 'expr) anno' =
   | EmptyN of text
   | TextN of text * text list
-  | ExprN of text * 'expr expr list
-  | RecordN of text * (member * 'expr expr) list
+  | ExprN of text * ('note, 'expr) expr list
+  | RecordN of text * (member * ('note, 'expr) expr) list
 
 (* Type parameters *)
 and tparam = id
@@ -101,60 +101,73 @@ and 'typ targ = 'typ targ' phrase
 and 'typ targ' = 'typ
 
 (* Arguments *)
-and 'expr arg = 'expr arg' phrase
-and 'expr arg' = ExprA of 'expr expr | NameA of id * 'expr expr | AnyA
+and ('note, 'expr) arg = ('note, 'expr) arg' phrase
+
+and ('note, 'expr) arg' =
+  | ExprA of ('note, 'expr) expr
+  | NameA of id * ('note, 'expr) expr
+  | AnyA
 
 (* Expressions : parameterized by 'expr *)
-and 'expr expr = 'expr expr' phrase
+and ('note, 'expr) expr = ('expr expr', 'note) note_phrase
 and 'expr expr' = 'expr
 
 (* Keyset expressions *)
-and 'expr keyset = 'expr keyset' phrase
-and 'expr keyset' = ExprK of 'expr expr | DefaultK | AnyK
+and ('note, 'expr) keyset = ('note, 'expr) keyset' phrase
+and ('note, 'expr) keyset' = ExprK of ('note, 'expr) expr | DefaultK | AnyK
 
 (* Select-cases for select *)
-and 'expr select_case = 'expr select_case' phrase
-and 'expr select_case' = 'expr keyset list * state_label
+and ('note, 'expr) select_case = ('note, 'expr) select_case' phrase
+and ('note, 'expr) select_case' = ('note, 'expr) keyset list * state_label
 
 (* Statements *)
-and ('typ, 'expr, 'decl) stmt = ('typ, 'expr, 'decl) stmt' phrase
+and ('typ, 'note, 'expr, 'decl) stmt = ('typ, 'note, 'expr, 'decl) stmt' phrase
 
-and ('typ, 'expr, 'decl) stmt' =
+and ('typ, 'note, 'expr, 'decl) stmt' =
   | EmptyS
-  | AssignS of { expr_l : 'expr expr; expr_r : 'expr expr }
+  | AssignS of { expr_l : ('note, 'expr) expr; expr_r : ('note, 'expr) expr }
   | SwitchS of {
-      expr_switch : 'expr expr;
-      cases : ('typ, 'expr, 'decl) switch_case list;
+      expr_switch : ('note, 'expr) expr;
+      cases : ('typ, 'note, 'expr, 'decl) switch_case list;
     }
   | IfS of {
-      expr_cond : 'expr expr;
-      stmt_then : ('typ, 'expr, 'decl) stmt;
-      stmt_else : ('typ, 'expr, 'decl) stmt;
+      expr_cond : ('note, 'expr) expr;
+      stmt_then : ('typ, 'note, 'expr, 'decl) stmt;
+      stmt_else : ('typ, 'note, 'expr, 'decl) stmt;
     }
-  | BlockS of { block : ('typ, 'expr, 'decl) block }
+  | BlockS of { block : ('typ, 'note, 'expr, 'decl) block }
   | ExitS
-  | RetS of { expr_ret : 'expr expr option }
-  | CallS of {
-      expr_func : 'expr expr;
+  | RetS of { expr_ret : ('note, 'expr) expr option }
+  | CallFuncS of {
+      var_func : var;
       targs : 'typ targ list;
-      args : 'expr arg list;
+      args : ('note, 'expr) arg list;
     }
-  | TransS of { expr_label : 'expr expr }
+  | CallMethodS of {
+      expr_base : ('note, 'expr) expr;
+      member : member;
+      targs : 'typ targ list;
+      args : ('note, 'expr) arg list;
+    }
+  | TransS of { expr_label : ('note, 'expr) expr }
   | DeclS of { decl : 'decl decl }
 
 (* Blocks (sequence of statements) *)
-and ('typ, 'expr, 'decl) block = ('typ, 'expr, 'decl) block' phrase
+and ('typ, 'note, 'expr, 'decl) block =
+  ('typ, 'note, 'expr, 'decl) block' phrase
 
-and ('typ, 'expr, 'decl) block' =
-  ('typ, 'expr, 'decl) stmt list * 'expr anno list
+and ('typ, 'note, 'expr, 'decl) block' =
+  ('typ, 'note, 'expr, 'decl) stmt list * ('note, 'expr) anno list
 
 (* Match-cases for switch *)
 and switch_label = switch_label' phrase
 and switch_label' = NameL of text | DefaultL
-and ('typ, 'expr, 'decl) switch_case = ('typ, 'expr, 'decl) switch_case' phrase
 
-and ('typ, 'expr, 'decl) switch_case' =
-  | MatchC of switch_label * ('typ, 'expr, 'decl) block
+and ('typ, 'note, 'expr, 'decl) switch_case =
+  ('typ, 'note, 'expr, 'decl) switch_case' phrase
+
+and ('typ, 'note, 'expr, 'decl) switch_case' =
+  | MatchC of switch_label * ('typ, 'note, 'expr, 'decl) block
   | FallC of switch_label
 
 (* Declarations : parameterized by 'decl *)
@@ -162,44 +175,53 @@ and 'decl decl = 'decl decl' phrase
 and 'decl decl' = 'decl
 
 (* Parser state machine *)
-and ('typ, 'expr, 'decl) parser_state =
-  ('typ, 'expr, 'decl) parser_state' phrase
+and ('typ, 'note, 'expr, 'decl) parser_state =
+  ('typ, 'note, 'expr, 'decl) parser_state' phrase
 
-and ('typ, 'expr, 'decl) parser_state' =
-  state_label * ('typ, 'expr, 'decl) block * 'expr anno list
+and ('typ, 'note, 'expr, 'decl) parser_state' =
+  state_label * ('typ, 'note, 'expr, 'decl) block * ('note, 'expr) anno list
 
 (* Table *)
-and 'expr table =
-  'expr table_key list
-  * 'expr table_action list
-  * 'expr table_entry list
-  * 'expr table_default option
-  * 'expr table_custom list
+and ('note, 'expr) table =
+  ('note, 'expr) table_key list
+  * ('note, 'expr) table_action list
+  * ('note, 'expr) table_entry list
+  * ('note, 'expr) table_default option
+  * ('note, 'expr) table_custom list
 
 (* Table keys *)
-and 'expr table_key = 'expr table_key' phrase
-and 'expr table_key' = 'expr expr * match_kind * 'expr anno list
+and ('note, 'expr) table_key = ('note, 'expr) table_key' phrase
+
+and ('note, 'expr) table_key' =
+  ('note, 'expr) expr * match_kind * ('note, 'expr) anno list
 
 (* Table action references *)
-and 'expr table_action = 'expr table_action' phrase
-and 'expr table_action' = var * 'expr arg list * 'expr anno list
+and ('note, 'expr) table_action = ('note, 'expr) table_action' phrase
+
+and ('note, 'expr) table_action' =
+  var * ('note, 'expr) arg list * ('note, 'expr) anno list
 
 (* Table entries *)
-and 'expr table_entry = 'expr table_entry' phrase
+and ('note, 'expr) table_entry = ('note, 'expr) table_entry' phrase
 
-and 'expr table_entry' =
-  'expr keyset list * 'expr table_action * 'expr anno list
+and ('note, 'expr) table_entry' =
+  ('note, 'expr) keyset list
+  * ('note, 'expr) table_action
+  * ('note, 'expr) anno list
 
 (* Table default properties *)
-and 'expr table_default = 'expr table_default' phrase
-and 'expr table_default' = 'expr table_action * table_default_const
+and ('note, 'expr) table_default = ('note, 'expr) table_default' phrase
+
+and ('note, 'expr) table_default' =
+  ('note, 'expr) table_action * table_default_const
+
 and table_default_const = bool
 
 (* Table custom properties *)
-and 'expr table_custom = 'expr table_custom' phrase
+and ('note, 'expr) table_custom = ('note, 'expr) table_custom' phrase
 
-and 'expr table_custom' =
-  member * 'expr expr * table_custom_const * 'expr anno list
+and ('note, 'expr) table_custom' =
+  member * ('note, 'expr) expr * table_custom_const * ('note, 'expr) anno list
 
 and table_custom_const = bool
 

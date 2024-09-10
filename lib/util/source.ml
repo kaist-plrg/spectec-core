@@ -87,8 +87,12 @@ let merge i1 i2 =
 
 (* Phrase *)
 
-type 'a phrase = { it : 'a; at : info }
+type ('a, 'b) note_phrase = { it : 'a; at : info; note : 'b }
+type 'a phrase = ('a, unit) note_phrase
 
-let ( $ ) it at = { it; at }
+let ( $ ) it at = { it; at; note = () }
+let ( $$ ) it (at, note) = { it; at; note }
+let ( % ) at note = (at, note)
 let it { it; _ } = it
 let at { at; _ } = at
+let note { note; _ } = note
