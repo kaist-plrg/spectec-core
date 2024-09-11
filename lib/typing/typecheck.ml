@@ -70,14 +70,27 @@ let ( let* ) = Option.bind
 
 type ctk = LCTK of Value.t | CTK | DYN
 
+let check_lctk (expr : Il.Ast.expr) : unit =
+  if not (Ctk.is_lctk expr.note.ctk) then (
+    Format.eprintf
+      "(check_ctk) %a is not a local compile-time known expression\n"
+      (Il.Pp.pp_expr ~level:0) expr;
+    assert false)
+  else ()
+
+let check_ctk (expr : Il.Ast.expr) : unit =
+  if not (Ctk.is_ctk expr.note.ctk) then (
+    Format.eprintf "(check_ctk) %a is not a compile-time known expression\n"
+      (Il.Pp.pp_expr ~level:0) expr;
+    assert false)
+  else ()
+
 let extract_lctk (expr : Il.Ast.expr) : Il.Ast.value =
+  check_lctk expr;
   match expr.it with
-  | Il.Ast.ValueE { value } ->
-      assert (expr.note.ctk = LCTK);
-      value
+  | Il.Ast.ValueE { value } -> value
   | _ ->
-      Format.eprintf
-        "(extract_lctk) %a is not a compile-time known expression\n"
+      Format.eprintf "(extract_lctk) %a is not a value expression\n"
         (Il.Pp.pp_expr ~level:0) expr;
       assert false
 
@@ -816,9 +829,20 @@ and check_type_equals (typ_l : Type.t) (typ_r : Type.t) : unit =
    Similarly, when assigning a structure-valued expression to a structure or header, the compiler will add implicit casts for int fields. *)
 
 and insert_cast (expr_il : Il.Ast.expr) (typ : Type.t) : Il.Ast.expr =
-  Il.Ast.(
-    CastE { typ = typ $ no_info; expr = expr_il }
-    $$ no_info % { typ; ctk = expr_il.note.ctk })
+  let at = expr_il.at in
+  let ctk = reduce_cast_expr (typ $ no_info) expr_il in
+  match ctk with
+  | LCTK value ->
+      Il.Ast.(
+        ValueE { value = value $ no_info } $$ at % { typ; ctk = Ctk.LCTK })
+  | CTK ->
+      Il.Ast.(
+        CastE { typ = typ $ no_info; expr = expr_il }
+        $$ at % { typ; ctk = Ctk.CTK })
+  | DYN ->
+      Il.Ast.(
+        CastE { typ = typ $ no_info; expr = expr_il }
+        $$ at % { typ; ctk = Ctk.DYN })
 
 (* (TODO) Coercion for unary when serializable enum is involved *)
 
@@ -1315,6 +1339,7 @@ and type_call_convention' (cursor : Ctx.cursor) (ctx : Ctx.t)
         expr_il
     | Lang.Ast.No ->
         check_type_equals typ_arg typ_param;
+        check_ctk expr_il;
         expr_il
   in
   match (arg_il.it : Il.Ast.arg') with
@@ -3049,10 +3074,10 @@ and type_assign_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
     (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) : Ctx.t * flow * Il.Ast.stmt'
     =
   let expr_l_il = type_expr cursor ctx expr_l in
+  let typ_l = expr_l_il.note.typ in
   check_lvalue cursor ctx expr_l_il;
   let expr_r_il = type_expr cursor ctx expr_r in
-  let typ_r = expr_r_il.note.typ in
-  let expr_r_il = coerce_type_assign expr_r_il typ_r in
+  let expr_r_il = coerce_type_assign expr_r_il typ_l in
   let stmt_il = Lang.Ast.AssignS { expr_l = expr_l_il; expr_r = expr_r_il } in
   (ctx, flow, stmt_il)
 

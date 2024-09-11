@@ -558,38 +558,45 @@ let eval_cast_to_bool (value : Value.t) : Value.t =
   | BoolV b -> BoolV b
   | FBitV (width, value) when width = Bigint.one -> BoolV Bigint.(value = one)
   | IntV value -> BoolV Bigint.(value = one)
-  | _ -> failwith "cast to bool undefined"
+  | _ -> Format.asprintf "Cast to bool undefined" |> failwith
 
-let eval_cast_to_bit (width : Bigint.t) (value : Value.t) : Value.t =
+let rec eval_cast_to_bit (width : Bigint.t) (value : Value.t) : Value.t =
   match value with
   | BoolV b ->
       let value = if b then Bigint.one else Bigint.zero in
       FBitV (width, value)
   | FIntV (_, value) | FBitV (_, value) | IntV value ->
       bit_of_raw_int value width
+  | SEnumFieldV (_, _, value) -> eval_cast_to_bit width value
   | _ ->
       Format.asprintf "(TODO) Cast to bitstring undefined: %a" Value.pp value
       |> failwith
 
-let eval_cast_to_int (width : Bigint.t) (value : Value.t) : Value.t =
+let rec eval_cast_to_int (width : Bigint.t) (value : Value.t) : Value.t =
   match value with
   | FBitV (_, value) | FIntV (_, value) | IntV value ->
       int_of_raw_int value width
+  | SEnumFieldV (_, _, value) -> eval_cast_to_int width value
   | _ ->
       Format.asprintf "(TODO) Cast to integer undefined: %a" Value.pp value
       |> failwith
 
-let rec eval_cast_entries (entries : (string * Type.t) list) (value : Value.t) :
-    (string * Value.t) list =
+let rec eval_cast_fields (fields_typ : (string * Type.t) list) (value : Value.t)
+    : (string * Value.t) list =
   match value with
   | TupleV values ->
-      assert (List.length entries = List.length values);
+      assert (List.length fields_typ = List.length values);
       List.map2
-        (fun (field, typ) value ->
+        (fun (member, typ) value ->
           let value = eval_cast typ value in
-          (field, value))
-        entries values
-  | HeaderV (_, entries) | StructV entries -> entries
+          (member, value))
+        fields_typ values
+  | RecordV fields_value ->
+      let members_typ, typs = List.split fields_typ in
+      let members_value, values = List.split fields_value in
+      assert (List.for_all2 ( = ) members_typ members_value);
+      let values = List.map2 eval_cast typs values in
+      List.combine members_typ values
   | _ ->
       Format.asprintf "(TODO) Cast to entries undefined: %a" Value.pp value
       |> failwith
@@ -612,13 +619,14 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
       IntV value
   | FBitT width -> eval_cast_to_bit width value
   | FIntT width -> eval_cast_to_int width value
+  | NewT (_id, typ_inner) -> eval_cast typ_inner value
   | TupleT typs -> eval_cast_tuple typs value
-  | HeaderT (_id, entries) ->
-      let entries = eval_cast_entries entries value in
-      HeaderV (true, entries)
-  | StructT (_id, entries) ->
-      let entries = eval_cast_entries entries value in
-      StructV entries
+  | StructT (_id, fields_typ) ->
+      let fields = eval_cast_fields fields_typ value in
+      StructV fields
+  | HeaderT (_id, fields_typ) ->
+      let fields = eval_cast_fields fields_typ value in
+      HeaderV (true, fields)
   | _ ->
       Format.asprintf "(TODO) Cast from %a to type %a undefined" Value.pp value
         Type.pp typ
