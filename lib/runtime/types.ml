@@ -253,6 +253,24 @@ module Type = struct
   type t = typ
 
   let pp = pp_typ
+
+  let rec is_ground typ =
+    match typ with
+    | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
+    | VBitT _ ->
+        true
+    | VarT _ -> false
+    | NewT (_, typ) -> is_ground typ
+    | EnumT _ -> true
+    | SEnumT (_, typ) -> is_ground typ
+    | TupleT typs -> List.for_all is_ground typs
+    | StackT (typ, _) -> is_ground typ
+    | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
+        List.for_all (fun (_, typ) -> is_ground typ) fields
+    | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> true
+    | RecordT fields -> List.for_all (fun (_, typ) -> is_ground typ) fields
+    | SetT typ -> is_ground typ
+    | StateT -> true
 end
 
 module TypeDef = struct

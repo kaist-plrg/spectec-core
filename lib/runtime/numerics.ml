@@ -538,7 +538,7 @@ let eval_binop (op : Lang.Ast.binop) (lvalue : Value.t) (rvalue : Value.t) :
   | LAndOp -> eval_binop_and lvalue rvalue
   | LOrOp -> eval_binop_or lvalue rvalue
 
-(* FBitslice evaluation *)
+(* Bitslice evaluation *)
 
 let eval_bitstring_access' (value : Bigint.t) (hvalue : Bigint.t)
     (lvalue : Bigint.t) : Value.t =
@@ -631,3 +631,78 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
       Format.asprintf "(TODO) Cast from %a to type %a undefined" Value.pp value
         Type.pp typ
       |> failwith
+
+(* Size evaluation *)
+
+let rec eval_min_size_in_bits' (typ : Type.t) : Bigint.t =
+  match typ with
+  | BoolT -> Bigint.one
+  | FBitT width | FIntT width -> width
+  | VBitT _ -> Bigint.zero
+  | SEnumT (_, typ_inner) -> eval_min_size_in_bits' typ_inner
+  | TupleT typs_inner ->
+      List.fold_left
+        (fun size typ_inner -> Bigint.(size + eval_min_size_in_bits' typ_inner))
+        Bigint.zero typs_inner
+  | StackT (typ_inner, size) -> Bigint.(size * eval_min_size_in_bits' typ_inner)
+  | StructT (_id, fields) | HeaderT (_id, fields) ->
+      List.fold_left
+        (fun size (_, typ_inner) ->
+          Bigint.(size + eval_min_size_in_bits' typ_inner))
+        Bigint.zero fields
+  | UnionT (_id, fields) ->
+      let sizes =
+        List.map (fun (_, typ_inner) -> eval_min_size_in_bits' typ_inner) fields
+      in
+      List.fold_left Bigint.min Bigint.zero sizes
+  | _ ->
+      Format.asprintf "(TODO) Size of type %a undefined" Type.pp typ |> failwith
+
+let eval_min_size_in_bits (typ : Type.t) : Value.t =
+  let size = eval_min_size_in_bits' typ in
+  IntV size
+
+let eval_min_size_in_bytes (typ : Type.t) : Value.t =
+  let size = eval_min_size_in_bits' typ in
+  let size = Bigint.((size + of_int 7) asr 3) in
+  IntV size
+
+let rec eval_max_size_in_bits' (typ : Type.t) : Bigint.t =
+  match typ with
+  | BoolT -> Bigint.one
+  | FBitT width | FIntT width | VBitT width -> width
+  | SEnumT (_, typ_inner) -> eval_max_size_in_bits' typ_inner
+  | TupleT typs_inner ->
+      List.fold_left
+        (fun size typ_inner -> Bigint.(size + eval_max_size_in_bits' typ_inner))
+        Bigint.zero typs_inner
+  | StackT (typ_inner, size) -> Bigint.(size * eval_max_size_in_bits' typ_inner)
+  | StructT (_id, fields) | HeaderT (_id, fields) ->
+      List.fold_left
+        (fun size (_, typ_inner) ->
+          Bigint.(size + eval_max_size_in_bits' typ_inner))
+        Bigint.zero fields
+  | UnionT (_id, fields) ->
+      let sizes =
+        List.map (fun (_, typ_inner) -> eval_max_size_in_bits' typ_inner) fields
+      in
+      List.fold_left Bigint.max Bigint.zero sizes
+  | _ ->
+      Format.asprintf "(TODO) Size of type %a undefined" Type.pp typ |> failwith
+
+let eval_max_size_in_bits (typ : Type.t) : Value.t =
+  let size = eval_max_size_in_bits' typ in
+  IntV size
+
+let eval_max_size_in_bytes (typ : Type.t) : Value.t =
+  let size = eval_max_size_in_bits' typ in
+  let size = Bigint.((size + of_int 7) asr 3) in
+  IntV size
+
+let eval_size (typ : Type.t) (member : string) : Value.t =
+  match member with
+  | "minSizeInBits" -> eval_min_size_in_bits typ
+  | "minSizeInBytes" -> eval_min_size_in_bytes typ
+  | "maxSizeInBits" -> eval_max_size_in_bits typ
+  | "maxSizeInBytes" -> eval_max_size_in_bytes typ
+  | _ -> assert false

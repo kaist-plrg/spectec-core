@@ -121,7 +121,8 @@ and reduce_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') : ctk
       reduce_bitstring_acc_expr expr_base value_lo value_hi
   | ExprAccE { expr_base; member } -> reduce_expr_acc_expr expr_base member
   | CallFuncE _ -> DYN
-  | CallMethodE _ -> DYN (* (TODO) *)
+  | CallMethodE { expr_base; member; targs; args } ->
+      reduce_call_method_expr expr_base member targs args
   | InstE _ -> CTK
 
 and reduce_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : Il.Ast.var) : ctk
@@ -237,6 +238,23 @@ and reduce_expr_acc_expr (expr_base : Il.Ast.expr) (member : Il.Ast.member) :
           match member.it with "size" -> LCTK (Value.IntV size) | _ -> DYN)
       | _ -> DYN)
   | CTK | DYN -> DYN
+
+and reduce_call_method_expr (expr_base : Il.Ast.expr) (member : Il.Ast.member)
+    (targs : Il.Ast.targ list) (args : Il.Ast.arg list) : ctk =
+  match member.it with
+  | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits" | "maxSizeInBytes" ->
+      if not (targs = [] && args = []) then (
+        Format.eprintf
+          "(reduce_call_method_expr) %s does not take type arguments or \
+           arguments\n"
+          member.it;
+        assert false);
+      let typ_base = expr_base.note.typ in
+      if Type.is_ground typ_base then
+        let value = Runtime.Numerics.eval_size typ_base member.it in
+        LCTK value
+      else CTK
+  | _ -> DYN
 
 (* Well-formedness checks for
    types, typedefs, functypes, funcdefs, constypes, and consdefs *)
