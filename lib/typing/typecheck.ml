@@ -4313,22 +4313,59 @@ and check_table_key (match_kind : string) (typ : Type.t) : unit =
       Type.pp typ;
     assert false)
 
-and check_valid_action (cursor : Ctx.cursor) (ctx : Ctx.t) (action_names : string list)
+and check_valid_action (cursor : Ctx.cursor) (ctx : Ctx.t) (_action_names : string list)
   (table_action : El.Ast.table_action) : unit =
   let var, args, _annos = table_action.it in 
-  let action_name = get_action_name table_action in
+  let _action_name = get_action_name table_action in
   let action = Ctx.find_overloaded_opt Ctx.find_funcdef_opt cursor var args ctx in
   if Option.is_none action then (
     Format.eprintf "(type_table_entry) There is no action named %a or invalid argument\n" El.Pp.pp_var var;
     assert false);
+  (*
   if not (List.mem action_name action_names) then (
     Format.eprintf "(type_table_entry) There is no action %a in action list\n" El.Pp.pp_var var;
     assert false);
+  *)
 
-and check_valid_arg (_cursor : Ctx.cursor) (_ctx : Ctx.t) (_params : Types.param list)
-    (_typ_args : Type.t list) : unit =
+and check_arg_action_entry (_cursor : Ctx.cursor) (_ctx : Ctx.t) (params : Types.param list)
+  (typ_args : Type.t list) : unit =
+(* TODO *)
+let typs_param = List.map (
+  fun param ->
+    let _id, _dir_param, typ_param, _val_param = param in
+    typ_param
+  ) 
+  params 
+in
+Printf.printf "Length params : %d, args : %d\n" (List.length typs_param) (List.length typ_args);
+List.iter2 (
+  fun typ_param typ_arg ->
+  if typ_param <> typ_arg then (
+    Format.eprintf "(check_args_action_entry) %a is not a valid argument type\n"
+      Type.pp typ_arg;
+    assert false)
+) typs_param typ_args;
+
+and check_arg_action (_cursor : Ctx.cursor) (_ctx : Ctx.t) (params : Types.param list)
+    (typ_args : Type.t list) : unit =
   (* TODO *)
-  ()
+  let typs_param = List.filter_map (
+    fun param ->
+      let _id, dir_param, typ_param, _val_param = param in
+      match dir_param with
+      | Dir.No _ -> None
+      | _ -> Some typ_param
+    ) 
+    params 
+  in
+  Printf.printf "Length params : %d, args : %d\n" (List.length typs_param) (List.length typ_args);
+  List.iter2 (
+    fun typ_param typ_arg ->
+    if typ_param <> typ_arg then (
+      Format.eprintf "(check_args_action) %a is not a valid argument type\n"
+        Type.pp typ_arg;
+      assert false)
+  ) typs_param typ_args;
 
 and type_action_keyset (ctx : Ctx.t) (key_prop : Type.t * string) (keyset : El.Ast.keyset) :
     Il.Ast.keyset =
@@ -4359,7 +4396,7 @@ and type_action_keyset' (ctx : Ctx.t) (key_prop : Type.t * string) (keyset : El.
             let typ, expr_il = type_expr Ctx.Local ctx expr in
             check_valid_type Ctx.Local ctx typ;
             (typ, expr_il)
-      in
+      in         
       if typ_key <> typ then (
         Format.eprintf
           "(type_action_keyset) Key type %a must match the type of the keyset 
@@ -4413,7 +4450,6 @@ and type_table_action (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action : El.Ast
 
 and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action : El.Ast.table_action') :
     Il.Ast.table_action' =
-  (* How to check whether it is valid action in control block without args? *)
   let var, args, annos = table_action in
   let fd = Ctx.find_overloaded_opt Ctx.find_funcdef_opt_action cursor var args ctx in
   if Option.is_none fd then (
@@ -4421,7 +4457,24 @@ and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action : El.As
     assert false);
   let params = get_action_param fd in
   let typ_args, args_il = List.map (type_arg cursor ctx) args |> List.split in
-  check_valid_arg cursor ctx params typ_args;
+  check_arg_action cursor ctx params typ_args;
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  (var, args_il, annos_il)
+
+and type_table_action_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action : El.Ast.table_action) :
+    Il.Ast.table_action =
+    type_table_action_entry' cursor ctx table_action.it $ table_action.at
+
+and type_table_action_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action : El.Ast.table_action') :
+    Il.Ast.table_action' =
+  let var, args, annos = table_action in
+  let fd = Ctx.find_overloaded_opt Ctx.find_funcdef_opt_action cursor var args ctx in
+  if Option.is_none fd then (
+    Format.eprintf "(type_table_action_entry) There is no action named %a or invalid argument\n" El.Pp.pp_var var;
+    assert false);
+  let params = get_action_param fd in
+  let typ_args, args_il = List.map (type_arg cursor ctx) args |> List.split in
+  check_arg_action_entry cursor ctx params typ_args;
   let annos_il = List.map (type_anno cursor ctx) annos in
   (var, args_il, annos_il)
 
@@ -4433,7 +4486,7 @@ and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (key_props : (Type.t *
     (action_names : string list) (table_entry : El.Ast.table_entry') : Il.Ast.table_entry' =
   let key_sets, action, annos = table_entry in
   let key_sets_il = type_action_keysets ctx key_props key_sets in
-  let action_il = type_table_action cursor ctx action in
+  let action_il = type_table_action_entry cursor ctx action in
   let annos_il = List.map (type_anno cursor ctx) annos in
   check_valid_action cursor ctx action_names action;
   (key_sets_il, action_il, annos_il)
