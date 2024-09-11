@@ -1832,20 +1832,27 @@ and type_binop_div_mod (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
 and type_binop_shift (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr' =
   let typ_l, typ_r = (expr_l_il.note.typ, expr_r_il.note.typ) in
+  let ctk_r = expr_r_il.note.ctk in
   let typ, expr_l_il, expr_r_il =
     match (typ_l, typ_r) with
     | FBitT _, FBitT _ ->
         let typ = typ_l in
         (typ, expr_l_il, expr_r_il)
-    (* (TODO) FBitT _, Int is allowed when the int is a compile-time known value *)
+    | FBitT _, IntT when Ctk.is_ctk ctk_r ->
+        let typ = typ_l in
+        (typ, expr_l_il, expr_r_il)
     | FIntT _, FBitT _ ->
         let typ = typ_l in
         (typ, expr_l_il, expr_r_il)
-    (* (TODO) FIntT _, Int is allowed when the int is a compile-time known value *)
+    | FIntT _, IntT when Ctk.is_ctk ctk_r ->
+        let typ = typ_l in
+        (typ, expr_l_il, expr_r_il)
     | IntT, FBitT _ ->
         let typ = typ_l in
         (typ, expr_l_il, expr_r_il)
-    (* (TODO) Int _, Int is allowed when the int is a compile-time known value *)
+    | IntT, IntT when Ctk.is_ctk ctk_r ->
+        let typ = typ_l in
+        (typ, expr_l_il, expr_r_il)
     | _ ->
         Format.eprintf
           "(type_binop_shift) Shift operator expects an unsigned bitstring, \
@@ -1942,7 +1949,6 @@ and type_binop_logical (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
         Type.pp typ_l Type.pp typ_r;
       assert false
 
-(* (TODO) Refactor redundancy with note *)
 and type_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
     (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) :
     Type.t * Ctk.t * Il.Ast.expr' =
@@ -1981,6 +1987,7 @@ and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_else : El.Ast.expr) : Type.t * Ctk.t * Il.Ast.expr' =
   let expr_cond_il = type_expr cursor ctx expr_cond in
   let typ_cond = expr_cond_il.note.typ in
+  let ctk_cond = expr_cond_il.note.ctk in
   if typ_cond <> Types.BoolT then (
     Format.eprintf "(type_if_stmt) Condition %a must be a boolean\n"
       (El.Pp.pp_expr ~level:0) expr_cond;
@@ -1993,12 +2000,16 @@ and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       "(type_ternop_expr) Branches %a and %a must have the same type\n"
       (El.Pp.pp_expr ~level:0) expr_then (El.Pp.pp_expr ~level:0) expr_else;
     assert false);
-  (* (TODO) What if expr_cond is compile-time known? *)
-  if typ_then = Types.IntT && typ_else = Types.IntT then (
+  if
+    (not (Ctk.is_ctk ctk_cond))
+    && typ_then = Types.IntT && typ_else = Types.IntT
+  then (
     Format.eprintf
       "(type_ternop_expr) Branches %a and %a cannot both be \
-       arbitrary-precision integers\n"
-      (El.Pp.pp_expr ~level:0) expr_then (El.Pp.pp_expr ~level:0) expr_else;
+       arbitrary-precision integers when the condition %a is not compile-time \
+       known\n"
+      (El.Pp.pp_expr ~level:0) expr_then (El.Pp.pp_expr ~level:0) expr_else
+      (El.Pp.pp_expr ~level:0) expr_cond;
     assert false);
   let typ = typ_then in
   let expr_il =
@@ -2133,19 +2144,17 @@ and type_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
     (expr_mask : El.Ast.expr) : Type.t * Ctk.t * Il.Ast.expr' =
   let expr_base_il = type_expr cursor ctx expr_base in
   let expr_mask_il = type_expr cursor ctx expr_mask in
-  let typ_base, typ_mask = (expr_base_il.note.typ, expr_mask_il.note.typ) in
-  (* (TODO) Insert cast if possible *)
+  let typ, expr_base_il, expr_mask_il =
+    coerce_types_binary_numeric expr_base_il expr_mask_il
+  in
   (* (CHECK) Which types are allowed in mask expression? *)
   let typ =
-    match (typ_base, typ_mask) with
-    | FBitT width_base, FBitT width_mask when width_base = width_mask ->
-        Types.SetT (FBitT width_base)
-    | FIntT width_base, FIntT width_mask when width_base = width_mask ->
-        Types.SetT (FIntT width_base)
+    match typ with
+    | FBitT _ | FIntT _ -> Types.SetT typ
     | _ ->
         Format.eprintf
-          "(type_mask_expr) Incompatible types %a and %a for mask operation\n"
-          Type.pp typ_base Type.pp typ_mask;
+          "(type_mask_expr) Incompatible type %a for mask operation\n" Type.pp
+          typ;
         assert false
   in
   check_valid_type cursor ctx typ;
@@ -2168,20 +2177,17 @@ and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : El.Ast.expr)
     (expr_ub : El.Ast.expr) : Type.t * Ctk.t * Il.Ast.expr' =
   let expr_lb_il = type_expr cursor ctx expr_lb in
   let expr_ub_il = type_expr cursor ctx expr_ub in
-  let typ_lb, typ_ub = (expr_lb_il.note.typ, expr_ub_il.note.typ) in
-  (* (TODO) Insert cast if possible *)
+  let typ, expr_lb_il, expr_ub_il =
+    coerce_types_binary_numeric expr_lb_il expr_ub_il
+  in
   (* (CHECK) Which types are allowed in range expression? *)
   let typ =
-    match (typ_lb, typ_ub) with
-    | IntT, IntT -> Types.SetT IntT
-    | FBitT width_lb, FBitT width_ub when width_lb = width_ub ->
-        Types.SetT (FBitT width_lb)
-    | FIntT width_lb, FIntT width_ub when width_lb = width_ub ->
-        Types.SetT (FIntT width_lb)
+    match typ with
+    | IntT | FBitT _ | FIntT _ -> Types.SetT typ
     | _ ->
         Format.eprintf
-          "(type_range_expr) Incompatible types %a and %a for range operation\n"
-          Type.pp typ_lb Type.pp typ_ub;
+          "(type_range_expr) Incompatible type %a for range operation\n" Type.pp
+          typ;
         assert false
   in
   check_valid_type cursor ctx typ;
@@ -2326,6 +2332,11 @@ and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       results in an undefined value. See Section 8.25 for more details.
       The index is an expression that must be of numeric types (Section 7.4). *)
 
+(* (DESIGN CHOICE)
+
+   p4cherry type checker does not restrict that index expr for a header stack access
+   should be a compile-time known value *)
+
 and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (expr_idx : El.Ast.expr) :
     Type.t * Ctk.t * Il.Ast.expr' =
@@ -2357,7 +2368,6 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
           Il.Ast.ArrAccE { expr_base = expr_base_il; expr_idx = expr_idx_il }
         in
         (typ, expr_il)
-    (* (TODO) Below doesn't treat index as a compile-time known value *)
     | StackT (typ_base_inner, _) ->
         let typ = typ_base_inner in
         let expr_il =
