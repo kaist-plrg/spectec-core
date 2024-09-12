@@ -2513,7 +2513,7 @@ and type_decl' (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : El.Ast.decl') :
   match decl with
   (* Constant, variable, and object declarations *)
   | ConstD { id; typ; value; annos } ->
-      type_const_decl cursor ctx id typ value annos |> wrap_none
+      type_const_decl cursor ctx id typ value annos |> wrap_some
   | VarD { id; typ; init; annos } ->
       type_var_decl cursor ctx id typ init annos |> wrap_some
   | InstD { id; var_inst; targs; args; init; annos } ->
@@ -2597,8 +2597,9 @@ and type_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (decls : El.Ast.decl list) :
    The initializer expression must be a compile-time known value. *)
 
 and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (typ : El.Ast.typ) (expr : El.Ast.expr) (annos : El.Ast.anno list) : Ctx.t =
-  let _annos_il = List.map (type_anno cursor ctx) annos in
+    (typ : El.Ast.typ) (expr : El.Ast.expr) (annos : El.Ast.anno list) :
+    Ctx.t * Il.Ast.decl' =
+  let annos_il = List.map (type_anno cursor ctx) annos in
   let typ_target = eval_type_with_check cursor ctx typ in
   let expr_il = type_expr cursor ctx expr in
   let expr_il = coerce_type_assign expr_il typ_target.it in
@@ -2607,7 +2608,10 @@ and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Ctx.add_value cursor id.it value.it ctx
     |> Ctx.add_rtype cursor id.it typ_target.it Lang.Ast.No Ctk.LCTK
   in
-  ctx
+  let decl_il =
+    Il.Ast.ConstD { id; typ = typ_target; value; annos = annos_il }
+  in
+  (ctx, decl_il)
 
 (* (11.2) Variables
 

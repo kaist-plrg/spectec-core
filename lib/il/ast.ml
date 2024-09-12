@@ -136,7 +136,8 @@ and switch_case' = (typ', note, expr', decl') L.switch_case'
 and decl = decl' phrase
 
 and decl' =
-  (* Variable and instance declarations *)
+  (* Constant, variable and instance declarations *)
+  | ConstD of { id : id; typ : typ; value : value; annos : anno list }
   | VarD of { id : id; typ : typ; init : expr option; annos : anno list }
   | InstD of {
       id : id;

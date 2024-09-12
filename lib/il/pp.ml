@@ -214,6 +214,9 @@ and pp_switch_cases ?(level = 0) fmt switch_cases =
 
 and pp_decl' ?(level = 0) fmt decl' =
   match decl' with
+  | ConstD { id; typ; value; annos = _annos } ->
+      F.fprintf fmt "%sconst %a %a = %a;" (P.indent level) pp_typ typ pp_id id
+        pp_value value
   | VarD { id; typ; init; annos = _annos } -> (
       match init with
       | Some expr_init ->
