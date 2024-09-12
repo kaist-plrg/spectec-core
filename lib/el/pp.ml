@@ -58,7 +58,7 @@ let pp_dir fmt dir = P.pp_dir fmt dir
 (* Types *)
 
 let rec pp_typ' fmt typ' =
-  match (typ' : Ast.typ') with
+  match typ' with
   | VoidT -> F.pp_print_string fmt "void"
   | BoolT -> F.pp_print_string fmt "bool"
   | ErrT -> F.pp_print_string fmt "err"

@@ -11,12 +11,12 @@ let pp_list pp_elem sep fmt l =
 
 let pp_option pp_elem fmt = function Some x -> pp_elem fmt x | None -> ()
 
-let pp_pairs ?(trailing = false) ?(level = 0) pp_k pp_svalue sep fmt pairs =
+let pp_pairs ?(trailing = false) ?(level = 0) pp_k pp_v sep fmt pairs =
   F.fprintf fmt "%a"
     (Format.pp_print_list
        ~pp_sep:(fun fmt () -> F.fprintf fmt sep)
        (fun fmt (k, v) ->
-         F.fprintf fmt "%s%a = %a" (indent level) pp_k k pp_svalue v))
+         F.fprintf fmt "%s%a = %a" (indent level) pp_k k pp_v v))
     pairs;
   if trailing then F.fprintf fmt sep
 
@@ -186,6 +186,8 @@ and pp_arg (pp_expr : ('note, 'expr) pp_expr) fmt arg =
 
 and pp_args (pp_expr : ('note, 'expr) pp_expr) fmt args =
   F.fprintf fmt "(%a)" (pp_list (pp_arg pp_expr) ", ") args
+
+(* Expressions *)
 
 (* Keyset expressions *)
 
