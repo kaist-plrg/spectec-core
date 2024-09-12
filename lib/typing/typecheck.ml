@@ -4269,6 +4269,19 @@ and get_action_name (action : El.Ast.table_action) : string =
   match var'.it with
   | Lang.Ast.Top id | Lang.Ast.Current id -> id.it
 
+and expect_static_value_set (typ : Type.t * Il.Ast.expr) : Type.t * Il.Ast.expr =
+  let typ, expr_il = typ in
+  match expr_il.it with
+  | MaskE { expr_base; expr_mask } -> 
+      let _ = static_eval_expr expr_base |> expect_static_value expr_base in
+      let _ = static_eval_expr expr_mask |> expect_static_value expr_mask in
+      (typ, expr_il)
+  | RangeE { expr_lb; expr_ub } -> 
+      let _ = static_eval_expr expr_lb |> expect_static_value expr_lb in
+      let _ = static_eval_expr expr_ub |> expect_static_value expr_ub in
+      (typ, expr_il)
+  | _ -> failwith "Wrong expression"
+
 and remove_set (typ : Type.t * Il.Ast.expr) : Type.t * Il.Ast.expr =
   let typ, expr_il = typ in
   match typ with 
@@ -4329,7 +4342,7 @@ and check_valid_action (cursor : Ctx.cursor) (ctx : Ctx.t) (_action_names : stri
 
 and check_arg_action_entry (_cursor : Ctx.cursor) (_ctx : Ctx.t) (params : Types.param list)
   (typ_args : Type.t list) : unit =
-(* TODO *)
+(* (TODO) : should check for compile time known value *)
 let typs_param = List.map (
   fun param ->
     let _id, _dir_param, typ_param, _val_param = param in
@@ -4337,7 +4350,7 @@ let typs_param = List.map (
   ) 
   params 
 in
-Printf.printf "Length params : %d, args : %d\n" (List.length typs_param) (List.length typ_args);
+Printf.printf "Length params in entry acion : %d, args : %d\n" (List.length typs_param) (List.length typ_args);
 List.iter2 (
   fun typ_param typ_arg ->
   if typ_param <> typ_arg then (
@@ -4348,7 +4361,7 @@ List.iter2 (
 
 and check_arg_action (_cursor : Ctx.cursor) (_ctx : Ctx.t) (params : Types.param list)
     (typ_args : Type.t list) : unit =
-  (* TODO *)
+  (* (TODO) : check including table funcitons *)
   let typs_param = List.filter_map (
     fun param ->
       let _id, dir_param, typ_param, _val_param = param in
@@ -4376,18 +4389,19 @@ and type_action_keyset' (ctx : Ctx.t) (key_prop : Type.t * string) (keyset : El.
   let typ_key, match_kind = key_prop in
   match keyset with
   | ExprK expr ->
+      (* (TODO) : should check for compile time known value *)
       let typ, expr_il =
         match expr.it with
         | MaskE _ -> 
             if match_kind = "lpm" || match_kind = "ternary" then
-                type_expr Ctx.Local ctx expr |> remove_set
+                type_expr Ctx.Local ctx expr |> expect_static_value_set |> remove_set
             else
                 (Printf.printf
                 "(type_action_keyset) match_kind %s can not use mask expression \n" match_kind;
                 assert false);
         | RangeE _ -> 
             if match_kind = "range" then
-                type_expr Ctx.Local ctx expr |> remove_set
+                type_expr Ctx.Local ctx expr |> expect_static_value_set |> remove_set
             else
                 (Printf.printf
                 "(type_action_keyset) match_kind %s can not use range expression \n" match_kind;
@@ -4395,8 +4409,10 @@ and type_action_keyset' (ctx : Ctx.t) (key_prop : Type.t * string) (keyset : El.
         | _ ->
             let typ, expr_il = type_expr Ctx.Local ctx expr in
             check_valid_type Ctx.Local ctx typ;
+            let _ = static_eval_expr expr_il
+                    |> expect_static_value expr_il in
             (typ, expr_il)
-      in         
+      in        
       if typ_key <> typ then (
         Format.eprintf
           "(type_action_keyset) Key type %a must match the type of the keyset 

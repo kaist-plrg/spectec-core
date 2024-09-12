@@ -35,7 +35,7 @@ parser p(packet_in b, out headers h, inout metadata m, inout standard_metadata_t
 control vrfy(inout headers h, inout metadata m) { apply {} }
 
 control ingress(inout headers h, inout metadata m, inout standard_metadata_t sm) {
-    new_T z = (new_T)9w0;
+    bit<8> z;
     action add()
     { h.h.d = (bit<16>)(h.h.a + h.h.b + h.h.c); sm.egress_spec = (bit<9>)0; }
     action sub()
@@ -43,10 +43,10 @@ control ingress(inout headers h, inout metadata m, inout standard_metadata_t sm)
     action a_with_control_params(in bit<9> x) { sm.egress_spec = (bit<9>)x; }
 
     table t {
-        key = { z : exact; h.h.b : exact; h.h.c : exact; h.h.d : lpm;}
+        key = { h.h.a : exact; h.h.b : exact; h.h.c : exact; h.h.d : lpm;}
         actions = { add; sub; a_with_control_params(9w1);}
         const entries = {
-          ((new_T)9w0, 8w1, 8w2, 16w14) : a_with_control_params(9w2);
+          (8w0, 8w1, 8w2, 16w14) : a_with_control_params(9w2);
           
         }
         const default_action = add;
@@ -59,7 +59,7 @@ control ingress(inout headers h, inout metadata m, inout standard_metadata_t sm)
           (8w0, 8w1, 8w2, 16w14) : add;
           (8w9, 8w7, 8w7, 16w49) : sub;
           // It should call error
-          (8w1, 8w2, 8w3, 16w0 &&& 16w2) : a_with_control_params(9w2);
+          (8w1, 8w2, 8w2, 16w0 &&& 16w2) : a_with_control_params(9w2);
           
         }
         const default_action = add;
