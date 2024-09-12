@@ -1,4 +1,4 @@
 (library
  (name typing)
  (libraries lang el il runtime)
- (modules ctx typecheck))
+ (modules ctx static typecheck))
