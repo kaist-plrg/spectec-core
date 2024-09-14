@@ -52,8 +52,8 @@ let pp_binop fmt binop = P.pp_binop fmt binop
 
 (* Directions *)
 
-let rec pp_dir fmt dir = pp_dir' fmt dir.it
-and pp_dir' fmt dir = Runtime.Dir.pp fmt dir
+let pp_dir' fmt dir' = P.pp_dir' fmt dir'
+let pp_dir fmt dir = P.pp_dir fmt dir
 
 (* Types *)
 
@@ -149,9 +149,11 @@ and pp_expr' ?(level = 0) fmt expr' =
   | ExprAccE { expr_base; member } ->
       F.fprintf fmt "%a.%a" (pp_expr ~level:0) expr_base (pp_member ~level:0)
         member
-  | CallE { expr_func; targs; args } ->
-      F.fprintf fmt "%a%a%a" (pp_expr ~level:0) expr_func pp_targs targs pp_args
-        args
+  | CallFuncE { var_func; targs; args } ->
+      F.fprintf fmt "%a%a%a" pp_var var_func pp_targs targs pp_args args
+  | CallMethodE { expr_base; member; targs; args } ->
+      F.fprintf fmt "%a.%a%a%a" (pp_expr ~level:0) expr_base
+        (pp_member ~level:0) member pp_targs targs pp_args args
   | InstE { var_inst; targs; args } ->
       F.fprintf fmt "%a%a%a" pp_var var_inst pp_targs targs pp_args args
 
@@ -212,6 +214,9 @@ and pp_switch_cases ?(level = 0) fmt switch_cases =
 
 and pp_decl' ?(level = 0) fmt decl' =
   match decl' with
+  | ConstD { id; typ; value; annos = _annos } ->
+      F.fprintf fmt "%sconst %a %a = %a;" (P.indent level) pp_typ typ pp_id id
+        pp_value value
   | VarD { id; typ; init; annos = _annos } -> (
       match init with
       | Some expr_init ->
@@ -232,7 +237,7 @@ and pp_decl' ?(level = 0) fmt decl' =
       F.fprintf fmt "%svalue_set<%a>(%a) %a;" (P.indent level) pp_typ typ
         (pp_expr ~level:0) size pp_id id
   | ParserD { id; tparams; params; cparams; locals; states; annos = _annos } ->
-      F.fprintf fmt "%sparser %a%a%a%a {\n%a\n%a\n%s}" (P.indent level) pp_id id
+      F.fprintf fmt "%sparser %a%a%a%a {\n%a%a\n%s}" (P.indent level) pp_id id
         pp_tparams tparams pp_params params pp_cparams cparams
         (pp_decls ~level:(level + 1))
         locals
@@ -245,9 +250,8 @@ and pp_decl' ?(level = 0) fmt decl' =
       F.fprintf fmt "%stable %a %a" (P.indent level) pp_id id (pp_table ~level)
         table
   | ControlD { id; tparams; params; cparams; locals; body; annos = _annos } ->
-      F.fprintf fmt "%scontrol %a%a%a%a {\n%a\n%sapply\n%a\n%s}"
-        (P.indent level) pp_id id pp_tparams tparams pp_params params pp_cparams
-        cparams
+      F.fprintf fmt "%scontrol %a%a%a%a {\n%a%sapply\n%a\n%s}" (P.indent level)
+        pp_id id pp_tparams tparams pp_params params pp_cparams cparams
         (pp_decls ~level:(level + 1))
         locals
         (P.indent (level + 1))

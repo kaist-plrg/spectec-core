@@ -138,3 +138,41 @@ struct
 end
 
 module MakeCIdEnv = MakeFIdEnv
+
+(* Pair functor *)
+
+module MakePair (A : sig
+  type t
+
+  val pp : Format.formatter -> t -> unit
+end) (B : sig
+  type t
+
+  val pp : Format.formatter -> t -> unit
+end) =
+struct
+  type t = A.t * B.t
+
+  let pp fmt (a, b) = Format.fprintf fmt "(%a, %a)" A.pp a B.pp b
+end
+
+(* Triple functor *)
+
+module MakeTriple (A : sig
+  type t
+
+  val pp : Format.formatter -> t -> unit
+end) (B : sig
+  type t
+
+  val pp : Format.formatter -> t -> unit
+end) (C : sig
+  type t
+
+  val pp : Format.formatter -> t -> unit
+end) =
+struct
+  type t = A.t * B.t * C.t
+
+  let pp fmt (a, b, c) = Format.fprintf fmt "(%a, %a, %a)" A.pp a B.pp b C.pp c
+end

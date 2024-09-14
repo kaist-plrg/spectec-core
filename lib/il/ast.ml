@@ -1,5 +1,7 @@
 module L = Lang.Ast
+module Ctk = Runtime.Ctk
 module Value = Runtime.Value
+module Type = Runtime.Types.Type
 open Util.Source
 
 type ('a, 'b) alt = ('a, 'b) L.alt
@@ -44,12 +46,12 @@ type binop = L.binop
 type binop' = L.binop'
 
 (* Directions *)
-type dir = dir' L.dir
-and dir' = Runtime.Dir.t
+type dir = L.dir
+and dir' = L.dir'
 
 (* Types *)
 type typ = typ' L.typ
-and typ' = Runtime.Types.Type.t
+and typ' = Type.t
 
 (* Values *)
 
@@ -57,8 +59,8 @@ type value = value' L.value
 and value' = Value.t
 
 (* Annotations *)
-and anno = expr' L.anno
-and anno' = expr' L.anno'
+and anno = (note, expr') L.anno
+and anno' = (note, expr') L.anno'
 
 (* Type parameters *)
 and tparam = L.tparam
@@ -77,11 +79,12 @@ and targ = typ' L.targ
 and targ' = typ'
 
 (* Arguments *)
-and arg = expr' L.arg
-and arg' = expr' L.arg'
+and arg = (note, expr') L.arg
+and arg' = (note, expr') L.arg'
 
 (* Expressions *)
-and expr = expr' L.expr
+and note = { typ : Type.t; ctk : Ctk.t }
+and expr = (note, expr') L.expr
 
 and expr' =
   | ValueE of { value : value }
@@ -98,36 +101,43 @@ and expr' =
   | ArrAccE of { expr_base : expr; expr_idx : expr }
   | BitAccE of { expr_base : expr; value_lo : value; value_hi : value }
   | ExprAccE of { expr_base : expr; member : member }
-  | CallE of { expr_func : expr; targs : typ list; args : arg list }
+  | CallFuncE of { var_func : var; targs : typ list; args : arg list }
+  | CallMethodE of {
+      expr_base : expr;
+      member : member;
+      targs : typ list;
+      args : arg list;
+    }
   | InstE of { var_inst : var; targs : typ list; args : arg list }
 
 (* Keyset expressions *)
-and keyset = expr' L.keyset
-and keyset' = expr' L.keyset'
+and keyset = (note, expr') L.keyset
+and keyset' = (note, expr') L.keyset'
 
 (* Select-cases for select *)
-and select_case = expr' L.select_case
-and select_case' = expr' L.select_case'
+and select_case = (note, expr') L.select_case
+and select_case' = (note, expr') L.select_case'
 
 (* Statements *)
-and stmt = (typ', expr', decl') L.stmt
-and stmt' = (typ', expr', decl') L.stmt'
+and stmt = (typ', note, expr', decl') L.stmt
+and stmt' = (typ', note, expr', decl') L.stmt'
 
 (* Blocks (sequence of statements) *)
-and block = (typ', expr', decl') L.block
-and block' = (typ', expr', decl') L.block'
+and block = (typ', note, expr', decl') L.block
+and block' = (typ', note, expr', decl') L.block'
 
 (* Match-cases for switch *)
 and switch_label = L.switch_label
 and switch_label' = L.switch_label'
-and switch_case = (typ', expr', decl') L.switch_case
-and switch_case' = (typ', expr', decl') L.switch_case'
+and switch_case = (typ', note, expr', decl') L.switch_case
+and switch_case' = (typ', note, expr', decl') L.switch_case'
 
 (* Declarations *)
 and decl = decl' phrase
 
 and decl' =
-  (* Variable and instance declarations *)
+  (* Constant, variable and instance declarations *)
+  | ConstD of { id : id; typ : typ; value : value; annos : anno list }
   | VarD of { id : id; typ : typ; init : expr option; annos : anno list }
   | InstD of {
       id : id;
@@ -209,32 +219,32 @@ and decl' =
     }
 
 (* Parser state machine *)
-and parser_state = (typ', expr', decl') L.parser_state
-and parser_state' = (typ', expr', decl') L.parser_state'
+and parser_state = (typ', note, expr', decl') L.parser_state
+and parser_state' = (typ', note, expr', decl') L.parser_state'
 
 (* Table *)
-and table = expr' L.table
+and table = (note, expr') L.table
 
 (* Table keys *)
-and table_key = expr' L.table_key
-and table_key' = expr' L.table_key'
+and table_key = (note, expr') L.table_key
+and table_key' = (note, expr') L.table_key'
 
 (* Table action references *)
-and table_action = expr' L.table_action
-and table_action' = expr' L.table_action'
+and table_action = (note, expr') L.table_action
+and table_action' = (note, expr') L.table_action'
 
 (* Table entries *)
-and table_entry = expr' L.table_entry
-and table_entry' = expr' L.table_entry'
+and table_entry = (note, expr') L.table_entry
+and table_entry' = (note, expr') L.table_entry'
 
 (* Table default properties *)
-and table_default = expr' L.table_default
-and table_default' = expr' L.table_default'
+and table_default = (note, expr') L.table_default
+and table_default' = (note, expr') L.table_default'
 and table_default_const = L.table_default_const
 
 (* Table custom properties *)
-and table_custom = expr' L.table_custom
-and table_custom' = expr' L.table_custom'
+and table_custom = (note, expr') L.table_custom
+and table_custom' = (note, expr') L.table_custom'
 and table_custom_const = L.table_custom_const
 
 (* Program *)

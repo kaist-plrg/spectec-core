@@ -1,12 +1,9 @@
+module L = Lang.Ast
+module P = Lang.Pp
 module F = Format
 
-type t = No of [ `CTK | `LCTK | `DYN ] | In | Out | InOut
+type t = L.dir'
 
-let pp fmt dir =
-  match dir with
-  | No `CTK -> F.pp_print_string fmt "static"
-  | No `LCTK -> F.pp_print_string fmt "local-static"
-  | No `DYN -> F.pp_print_string fmt "dynamic"
-  | In -> F.pp_print_string fmt "in"
-  | Out -> F.pp_print_string fmt "out"
-  | InOut -> F.pp_print_string fmt "inout"
+let pp fmt t = F.fprintf fmt "%a" P.pp_dir' t
+
+(*type tt = In | Out | InOut | No [ `LCTK | `CTK of Value.t ]*)
