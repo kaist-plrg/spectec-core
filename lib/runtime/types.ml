@@ -276,6 +276,7 @@ module Type = struct
     | RecordT fields -> List.for_all (fun (_, typ) -> is_ground typ) fields
     | SetT typ -> is_ground typ
     | StateT -> true
+    | TableT _ -> true
 end
 
 module TypeDef = struct

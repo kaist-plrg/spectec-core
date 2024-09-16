@@ -155,6 +155,8 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
       check_valid_type' tset typ_inner;
       check_valid_type_nesting typ typ_inner
   | StateT -> ()
+  (* (TODO) Table type must be decl to valid type. But sholud we add check validity of typ_inner? *)
+  | TableT _ -> ()
 
 and check_valid_type_nesting (typ : Type.t) (typ_inner : Type.t) : unit =
   if not (check_valid_type_nesting' typ typ_inner) then (
@@ -188,7 +190,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
           false
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false
+      | TableT _ -> false)
   | EnumT _ -> error_not_nest ()
   | SEnumT _ -> (
       match typ_inner with
@@ -201,7 +204,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
           false
       | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false
+      | TableT _ -> false)
   | TupleT _ -> (
       match typ_inner with
       | VoidT -> false
@@ -216,7 +220,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false
+      | TableT _ -> false)
   | StackT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
@@ -228,7 +233,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | HeaderT _ | UnionT _ -> true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false
+      | TableT _ -> false)
   | StructT _ -> (
       match typ_inner with
       | VoidT -> false
@@ -243,7 +249,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false
+      | TableT _ -> false)
   | HeaderT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT -> false
@@ -262,7 +269,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | HeaderT _ | UnionT _ -> false
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false
+      | TableT _ -> false)
   | UnionT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
@@ -275,7 +283,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | HeaderT _ -> true
       | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false
+      | TableT _ -> false)
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _ ->
       error_not_nest ()
   | SetT _ -> (
@@ -297,8 +306,10 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false
+      | TableT _ -> false)
   | StateT -> error_not_nest ()
+  | TableT _ -> error_not_nest ()
 
 and check_valid_typedef (cursor : Ctx.cursor) (ctx : Ctx.t) (td : TypeDef.t) :
     unit =
@@ -382,7 +393,8 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false
+      | TableT _ -> false)
   | NewD _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT -> false
@@ -397,7 +409,8 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
           false
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false
+      | TableT _ -> false)
   | EnumD _ -> error_not_nest ()
   | SEnumD _ -> (
       match typ_inner with
@@ -410,7 +423,8 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT ->
           false
       | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false
+      | TableT _ -> false)
   | StructD _ -> (
       match typ_inner with
       | VoidT -> false
@@ -425,7 +439,8 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false
+      | TableT _ -> false)
   | HeaderD _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT -> false
@@ -446,7 +461,8 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | HeaderT _ | UnionT _ -> false
       | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false
+      | TableT _ -> false)
   | UnionD _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
@@ -460,7 +476,8 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | HeaderT _ -> true
       | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT -> false
       | TopT -> true
-      | RecordT _ | SetT _ | StateT -> false)
+      | RecordT _ | SetT _ | StateT -> false
+      | TableT _ -> false)
   | ExternD _ | ParserD _ | ControlD _ | PackageD _ -> error_not_nest ()
 
 (* (TODO) Appendix F. Restrictions on compile time and runtime calls *)
@@ -492,6 +509,8 @@ and check_valid_functype' (tset : TIdSet.t) (ft : FuncType.t) : unit =
       List.iter (check_valid_param' tset) params
   | BuiltinMethodT (params, typ_ret) ->
       List.iter (check_valid_param' tset) params;
+      check_valid_type' tset typ_ret
+  | TableApplyMethodT typ_ret ->
       check_valid_type' tset typ_ret
 
 and check_valid_funcdef (cursor : Ctx.cursor) (ctx : Ctx.t) (fd : FuncDef.t) :
