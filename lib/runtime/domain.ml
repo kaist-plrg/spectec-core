@@ -23,6 +23,13 @@ module IdMap = struct
     let bindings = bindings m in
     Format.fprintf fmt "{ %a }" (Format.pp_print_list pp_binding) bindings
 
+  let subset eq_v m1 m2 =
+    List.for_all
+      (fun (k, v1) ->
+        match find_opt k m2 with Some v2 -> eq_v v1 v2 | None -> false)
+      (bindings m1)
+
+  let eq eq_v m1 m2 = subset eq_v m1 m2 && subset eq_v m2 m1
   let of_list l = List.fold_left (fun acc (k, v) -> add k v acc) empty l
 end
 
@@ -67,6 +74,13 @@ module FIdMap = struct
     let bindings = bindings m in
     Format.fprintf fmt "{ %a }" (Format.pp_print_list pp_binding) bindings
 
+  let subset eq_v m1 m2 =
+    List.for_all
+      (fun (k, v1) ->
+        match find_opt k m2 with Some v2 -> eq_v v1 v2 | None -> false)
+      (bindings m1)
+
+  let eq eq_v m1 m2 = subset eq_v m1 m2 && subset eq_v m2 m1
   let of_list l = List.fold_left (fun acc (k, v) -> add k v acc) empty l
 end
 
