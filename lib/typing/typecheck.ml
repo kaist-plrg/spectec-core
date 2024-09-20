@@ -339,18 +339,18 @@ and specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
   (* Object types are generic *)
   | ExternD (id, tparams, fdenv) ->
       check_arity tparams;
-      let tidmap = List.combine tparams targs |> TIdMap.of_list in
-      let fdenv = Envs.FDEnv.map (substitute_funcdef tidmap) fdenv in
+      let theta = List.combine tparams targs |> Subst.TIdMap.of_list in
+      let fdenv = Envs.FDEnv.map (Subst.subst_funcdef theta) fdenv in
       Types.ExternT (id, fdenv)
   | ParserD (tparams, params) ->
       check_arity tparams;
-      let tidmap = List.combine tparams targs |> TIdMap.of_list in
-      let params = List.map (substitute_param tidmap) params in
+      let theta = List.combine tparams targs |> Subst.TIdMap.of_list in
+      let params = List.map (Subst.subst_param theta) params in
       Types.ParserT params
   | ControlD (tparams, params) ->
       check_arity tparams;
-      let tidmap = List.combine tparams targs |> TIdMap.of_list in
-      let params = List.map (substitute_param tidmap) params in
+      let theta = List.combine tparams targs |> Subst.TIdMap.of_list in
+      let params = List.map (Subst.subst_param theta) params in
       Types.ControlT params
   | PackageD tparams ->
       check_arity tparams;
@@ -365,33 +365,34 @@ and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) : FuncType.t =
         FuncDef.pp fd (List.length tparams) (List.length targs);
       assert false)
   in
+  let subst_funcdef' tparams params typ_ret =
+    let theta = List.combine tparams targs |> Subst.TIdMap.of_list in
+    let params = List.map (Subst.subst_param theta) params in
+    let typ_ret = Subst.subst_typ theta typ_ret in
+    (params, typ_ret)
+  in
   match fd with
+  (* extern function and function are generic *)
   | ExternFunctionD (tparams, params, typ_ret) ->
       check_arity tparams;
-      let tidmap = List.combine tparams targs |> TIdMap.of_list in
-      let params = List.map (substitute_param tidmap) params in
-      let typ_ret = substitute_type tidmap typ_ret in
+      let params, typ_ret = subst_funcdef' tparams params typ_ret in
       ExternFunctionT (params, typ_ret)
   | FunctionD (tparams, params, typ_ret) ->
       check_arity tparams;
-      let tidmap = List.combine tparams targs |> TIdMap.of_list in
-      let params = List.map (substitute_param tidmap) params in
-      let typ_ret = substitute_type tidmap typ_ret in
+      let params, typ_ret = subst_funcdef' tparams params typ_ret in
       FunctionT (params, typ_ret)
+  (* action is not generic *)
   | ActionD params ->
-      let params = List.map (substitute_param TIdMap.empty) params in
+      check_arity [];
       ActionT params
+  (* extern method and extern abstract method are generic *)
   | ExternMethodD (tparams, params, typ_ret) ->
       check_arity tparams;
-      let tidmap = List.combine tparams targs |> TIdMap.of_list in
-      let params = List.map (substitute_param tidmap) params in
-      let typ_ret = substitute_type tidmap typ_ret in
+      let params, typ_ret = subst_funcdef' tparams params typ_ret in
       ExternMethodT (params, typ_ret)
   | ExternAbstractMethodD (tparams, params, typ_ret) ->
       check_arity tparams;
-      let tidmap = List.combine tparams targs |> TIdMap.of_list in
-      let params = List.map (substitute_param tidmap) params in
-      let typ_ret = substitute_type tidmap typ_ret in
+      let params, typ_ret = subst_funcdef' tparams params typ_ret in
       ExternAbstractMethodT (params, typ_ret)
 
 and specialize_consdef (cd : ConsDef.t) (targs : Type.t list) : ConsType.t =
@@ -405,110 +406,10 @@ and specialize_consdef (cd : ConsDef.t) (targs : Type.t list) : ConsType.t =
   in
   let tparams, cparams, typ = cd in
   check_arity tparams;
-  let tidmap = List.combine tparams targs |> TIdMap.of_list in
-  let cparams = List.map (substitute_cparam tidmap) cparams in
-  let typ = substitute_type tidmap typ in
+  let theta = List.combine tparams targs |> Subst.TIdMap.of_list in
+  let cparams = List.map (Subst.subst_cparam theta) cparams in
+  let typ = Subst.subst_typ theta typ in
   (cparams, typ)
-
-and substitute_type (tidmap : TIdMap.t) (typ : Type.t) : Type.t =
-  match typ with
-  | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
-  | VBitT _ ->
-      typ
-  | VarT id ->
-      let typ = TIdMap.find_opt id tidmap in
-      if Option.is_none typ then (
-        Format.eprintf "(substitute_type) %s is a free type variable\n" id;
-        assert false);
-      let typ = Option.get typ in
-      typ
-  | NewT (id, typ_inner) -> NewT (id, substitute_type tidmap typ_inner)
-  | EnumT _ -> typ
-  | SEnumT (id, typ_inner) ->
-      let typ_inner = substitute_type tidmap typ_inner in
-      SEnumT (id, typ_inner)
-  | TupleT typs_inner -> TupleT (List.map (substitute_type tidmap) typs_inner)
-  | StackT (typ_inner, size) -> StackT (substitute_type tidmap typ_inner, size)
-  | StructT (id, fields) ->
-      let members, typs_inner = List.split fields in
-      let typs_inner = List.map (substitute_type tidmap) typs_inner in
-      StructT (id, List.combine members typs_inner)
-  | HeaderT (id, fields) ->
-      let members, typs_inner = List.split fields in
-      let typs_inner = List.map (substitute_type tidmap) typs_inner in
-      HeaderT (id, List.combine members typs_inner)
-  | UnionT (id, fields) ->
-      let members, typs_inner = List.split fields in
-      let typs_inner = List.map (substitute_type tidmap) typs_inner in
-      UnionT (id, List.combine members typs_inner)
-  | ExternT (id, fdenv) ->
-      let fdenv = Envs.FDEnv.map (substitute_funcdef tidmap) fdenv in
-      ExternT (id, fdenv)
-  | ParserT params ->
-      let params = List.map (substitute_param tidmap) params in
-      ParserT params
-  | ControlT params ->
-      let params = List.map (substitute_param tidmap) params in
-      ControlT params
-  | PackageT | TopT -> typ
-  | TableT typ_inner -> TableT (substitute_type tidmap typ_inner)
-  | SetT typ_inner -> SetT (substitute_type tidmap typ_inner)
-  | RecordT fields ->
-      let members, typs_inner = List.split fields in
-      let typs_inner = List.map (substitute_type tidmap) typs_inner in
-      RecordT (List.combine members typs_inner)
-  | StateT -> typ
-
-and substitute_param (tidmap : TIdMap.t) (param : Types.param) : Types.param =
-  let id, dir, typ, value_default = param in
-  let typ = substitute_type tidmap typ in
-  (id, dir, typ, value_default)
-
-and substitute_cparam (tidmap : TIdMap.t) (cparam : Types.cparam) : Types.cparam
-    =
-  substitute_param tidmap cparam
-
-and substitute_funcdef (tidmap : TIdMap.t) (fd : FuncDef.t) : FuncDef.t =
-  match fd with
-  | ExternFunctionD (tparams, params, typ_ret) ->
-      let tidmap' =
-        List.fold_left
-          (fun tidmap' tparam -> TIdMap.add tparam (Types.VarT tparam) tidmap')
-          tidmap tparams
-      in
-      let params = List.map (substitute_param tidmap') params in
-      let typ_ret = substitute_type tidmap' typ_ret in
-      ExternFunctionD (tparams, params, typ_ret)
-  | FunctionD (tparams, params, typ_ret) ->
-      let tidmap' =
-        List.fold_left
-          (fun tidmap' tparam -> TIdMap.add tparam (Types.VarT tparam) tidmap')
-          tidmap tparams
-      in
-      let params = List.map (substitute_param tidmap') params in
-      let typ_ret = substitute_type tidmap' typ_ret in
-      FunctionD (tparams, params, typ_ret)
-  | ActionD params ->
-      let params = List.map (substitute_param tidmap) params in
-      ActionD params
-  | ExternMethodD (tparams, params, typ_ret) ->
-      let tidmap' =
-        List.fold_left
-          (fun tidmap' tparam -> TIdMap.add tparam (Types.VarT tparam) tidmap')
-          tidmap tparams
-      in
-      let params = List.map (substitute_param tidmap') params in
-      let typ_ret = substitute_type tidmap' typ_ret in
-      ExternMethodD (tparams, params, typ_ret)
-  | ExternAbstractMethodD (tparams, params, typ_ret) ->
-      let tidmap' =
-        List.fold_left
-          (fun tidmap' tparam -> TIdMap.add tparam (Types.VarT tparam) tidmap')
-          tidmap tparams
-      in
-      let params = List.map (substitute_param tidmap') params in
-      let typ_ret = substitute_type tidmap' typ_ret in
-      ExternAbstractMethodD (tparams, params, typ_ret)
 
 (* Annotation typing *)
 
@@ -853,9 +754,6 @@ and type_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : El.Ast.unop)
        denoted by << and >> respectively. In a shift, the left operand is unsigned, and right operand must be either
        an expression of type bit<S> or a non-negative integer value that is known at compile time.
        The result has the same type as the left operand.
-     - Concatenation of bit-strings and/or fixed-width signed integers, denoted by ++.
-       The two operands must be either bit<W> or int<W>, and they can be of different signedness and width.
-       The result has the same signedness as the left operand and the width equal to the sum of the two operands' width.
 
     (8.7) Operations on fixed-width signed integers
 
@@ -3840,7 +3738,7 @@ and expr_arg (arg : Il.Ast.arg) : Il.Ast.expr =
 
 and check_arg_action_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (params : Types.param list)
   (args_il : (Il.Ast.arg * Type.t) list) (args_base : Il.Ast.arg list): Il.Ast.arg list =
-  let args_il = List.map2 (
+  let args_entry = List.map2 (
     fun param arg_il ->
       let arg_il, _typ_arg = arg_il in
       let _id, dir_param, _typ_param, _val_param = param in
@@ -3853,7 +3751,7 @@ and check_arg_action_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (params : Types.p
     ) 
     params args_il |> List.filter_map (fun x -> x)
   in 
-  let is_eq = temp_eq_args cursor ctx args_base args_il in
+  let is_eq = temp_eq_args cursor ctx args_base args_entry in
   if not is_eq then 
     (Printf.printf "(check_arg_action_entry) : arguments are different\n";
     assert false);
@@ -3861,7 +3759,7 @@ and check_arg_action_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (params : Types.p
 
 and check_arg_action_default (cursor : Ctx.cursor) (ctx : Ctx.t) (params : Types.param list)
   (args_il : (Il.Ast.arg * Type.t) list) (args_base : Il.Ast.arg list): Il.Ast.arg list =
-  let args_il = List.map2 (
+  let args_default = List.map2 (
     fun param arg_il ->
       let arg_il, _typ_arg = arg_il in
       let _id, dir_param, _typ_param, _val_param = param in
@@ -3875,7 +3773,7 @@ and check_arg_action_default (cursor : Ctx.cursor) (ctx : Ctx.t) (params : Types
     params args_il |> List.filter_map (fun x -> x)
   in 
   (* (TODO) this should be Il.eq *)
-  let is_eq = temp_eq_args cursor ctx args_base args_il in
+  let is_eq = temp_eq_args cursor ctx args_base args_default in
   if not is_eq then 
     (Printf.printf "(check_arg_action_default) : arguments are different\n";
     assert false);

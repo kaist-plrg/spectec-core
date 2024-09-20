@@ -1,6 +1,7 @@
 open Domain
 module L = Lang.Ast
 module P = Lang.Pp
+module E = Lang.Eq
 module F = Format
 
 (* Elaborated parameters *)
@@ -105,7 +106,7 @@ and pp_tparams fmt tparams = P.pp_list pp_tparam ", " fmt tparams
 
 (* Parameters *)
 
-and pp_param' fmt param =
+and pp_param fmt param =
   let id, dir, typ, value_default = param in
   match value_default with
   | Some value_default ->
@@ -113,11 +114,11 @@ and pp_param' fmt param =
         Value.pp value_default
   | None -> F.fprintf fmt "%a %a %a" P.pp_dir' dir P.pp_id' id pp_typ typ
 
-and pp_params fmt params = P.pp_list pp_param' ", " fmt params
+and pp_params fmt params = P.pp_list pp_param ", " fmt params
 
 (* Constructor parameters *)
 
-and pp_cparam fmt cparam = pp_param' fmt cparam
+and pp_cparam fmt cparam = pp_param fmt cparam
 and pp_cparams fmt cparams = P.pp_list pp_cparam ", " fmt cparams
 
 (* Types *)
@@ -252,12 +253,95 @@ let pp_consdef fmt consdef =
   F.fprintf fmt "constructor<%a> (%a) -> %a" pp_tparams tparams pp_cparams
     cparams pp_typ typ
 
+(* Equality *)
+
+(* Type parameters *)
+
+let rec eq_tparam tparam_a tparam_b = E.eq_tparam' tparam_a tparam_b
+and eq_tparams tparams_a tparams_b = E.eq_list eq_tparam tparams_a tparams_b
+
+(* Parameters *)
+
+and eq_param param_a param_b =
+  let id_a, dir_a, typ_a, value_default_a = param_a in
+  let id_b, dir_b, typ_b, value_default_b = param_b in
+  E.eq_id' id_a id_b && E.eq_dir' dir_a dir_b && eq_typ typ_a typ_b
+  && E.eq_option Value.eq value_default_a value_default_b
+
+and eq_params params_a params_b = E.eq_list eq_param params_a params_b
+
+(* Constructor parameters *)
+
+and eq_cparam cparam_a cparam_b = eq_param cparam_a cparam_b
+and eq_cparams cparams_a cparams_b = E.eq_list eq_cparam cparams_a cparams_b
+
+(* Types *)
+
+and eq_typ typ_a typ_b =
+  match (typ_a, typ_b) with
+  | VoidT, VoidT
+  | ErrT, ErrT
+  | MatchKindT, MatchKindT
+  | StrT, StrT
+  | BoolT, BoolT
+  | IntT, IntT ->
+      true
+  | FIntT width_a, FIntT width_b
+  | FBitT width_a, FBitT width_b
+  | VBitT width_a, VBitT width_b ->
+      Bigint.(width_a = width_b)
+  | VarT id_a, VarT id_b -> E.eq_id' id_a id_b
+  | NewT (id_a, typ_a), NewT (id_b, typ_b) ->
+      E.eq_id' id_a id_b && eq_typ typ_a typ_b
+  | EnumT id_a, EnumT id_b -> E.eq_id' id_a id_b
+  | SEnumT (id_a, typ_a), SEnumT (id_b, typ_b) ->
+      E.eq_id' id_a id_b && eq_typ typ_a typ_b
+  | TupleT typs_a, TupleT typs_b -> List.for_all2 eq_typ typs_a typs_b
+  | StackT (typ_a, size_a), StackT (typ_b, size_b) ->
+      eq_typ typ_a typ_b && Bigint.(size_a = size_b)
+  | StructT (id_a, fields_a), StructT (id_b, fields_b)
+  | HeaderT (id_a, fields_a), HeaderT (id_b, fields_b)
+  | UnionT (id_a, fields_a), UnionT (id_b, fields_b) ->
+      E.eq_id' id_a id_b && E.eq_pairs E.eq_member' eq_typ fields_a fields_b
+  | ExternT (id_a, fdenv_a), ExternT (id_b, fdenv_b) ->
+      E.eq_id' id_a id_b && FIdMap.eq eq_funcdef fdenv_a fdenv_b
+  | ParserT params_a, ParserT params_b | ControlT params_a, ControlT params_b ->
+      List.for_all2 eq_param params_a params_b
+  | PackageT, PackageT | TopT, TopT -> true
+  | RecordT fields_a, RecordT fields_b ->
+      E.eq_pairs E.eq_member' eq_typ fields_a fields_b
+  | SetT typ_a, SetT typ_b -> eq_typ typ_a typ_b
+  | StateT, StateT -> true
+  | _ -> false
+
+(* Functin definitions *)
+
+and eq_funcdef funcdef_a funcdef_b =
+  match (funcdef_a, funcdef_b) with
+  | ( ExternFunctionD (tparams_a, params_a, typ_a),
+      ExternFunctionD (tparams_b, params_b, typ_b) )
+  | ( FunctionD (tparams_a, params_a, typ_a),
+      FunctionD (tparams_b, params_b, typ_b) ) ->
+      eq_tparams tparams_a tparams_b
+      && eq_params params_a params_b
+      && eq_typ typ_a typ_b
+  | ActionD params_a, ActionD params_b -> eq_params params_a params_b
+  | ( ExternMethodD (tparams_a, params_a, typ_a),
+      ExternMethodD (tparams_b, params_b, typ_b) )
+  | ( ExternAbstractMethodD (tparams_a, params_a, typ_a),
+      ExternAbstractMethodD (tparams_b, params_b, typ_b) ) ->
+      eq_tparams tparams_a tparams_b
+      && eq_params params_a params_b
+      && eq_typ typ_a typ_b
+  | _ -> false
+
 (* Modules *)
 
 module Type = struct
   type t = typ
 
   let pp = pp_typ
+  let eq = eq_typ
 
   let rec is_ground typ =
     match typ with
@@ -315,6 +399,7 @@ module FuncDef = struct
   type t = funcdef
 
   let pp = pp_funcdef
+  let eq = eq_funcdef
 
   let get_typ_ret = function
     | ExternFunctionD (_, _, typ_ret) | FunctionD (_, _, typ_ret) -> typ_ret

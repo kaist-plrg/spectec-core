@@ -62,24 +62,14 @@ let eq_dir dir_a dir_b = E.eq_dir dir_a dir_b
 
 (* Types *)
 
-let rec eq_typ' typ_a typ_b =
-  match (typ_a, typ_b) with
-  | VoidT, VoidT | BoolT, BoolT | ErrT, ErrT | StrT, StrT | IntT, IntT -> true
-  | FIntT expr_width_a, FIntT expr_width_b
-  | FBitT expr_width_a, FBitT expr_width_b
-  | VBitT expr_width_a, VBitT expr_width_b ->
-      eq_expr expr_width_a expr_width_b
-  | NameT var_a, NameT var_b -> eq_var var_a var_b
-  | SpecT (var_a, targs_a), SpecT (var_b, targs_b) ->
-      eq_var var_a var_b && eq_targs targs_a targs_b
-  | StackT (typ_a, expr_size_a), StackT (typ_b, expr_size_b) ->
-      eq_typ typ_a typ_b && eq_expr expr_size_a expr_size_b
-  | TupleT typs_a, TupleT typs_b -> eq_typs typs_a typs_b
-  | AnyT, AnyT -> true
-  | _ -> false
-
+let rec eq_typ' typ_a typ_b = Type.eq typ_a typ_b
 and eq_typ typ_a typ_b = eq_typ' typ_a.it typ_b.it
 and eq_typs typs_a typs_b = E.eq_list eq_typ typs_a typs_b
+
+(* Values *)
+
+and eq_value' value_a value_b = Value.eq value_a value_b
+and eq_value value_a value_b = eq_value' value_a.it value_b.it
 
 (* Annotations *)
 
@@ -99,7 +89,7 @@ and eq_param' param_a param_b =
   let id_a, dir_a, typ_a, value_default_a, annos_a = param_a in
   let id_b, dir_b, typ_b, value_default_b, annos_b = param_b in
   eq_id id_a id_b && eq_dir dir_a dir_b && eq_typ typ_a typ_b
-  && E.eq_option eq_expr value_default_a value_default_b
+  && E.eq_option eq_value value_default_a value_default_b
   && eq_annos annos_a annos_b
 
 and eq_param param_a param_b = eq_param' param_a.it param_b.it
@@ -127,10 +117,8 @@ and eq_args args_a args_b = E.eq_args eq_expr args_a args_b
 
 and eq_expr' expr_a expr_b =
   match (expr_a, expr_b) with
-  | BoolE { boolean = boolean_a }, BoolE { boolean = boolean_b } ->
-      boolean_a = boolean_b
-  | StrE { text = text_a }, StrE { text = text_b } -> eq_text text_a text_b
-  | NumE { num = num_a }, NumE { num = num_b } -> eq_num num_a num_b
+  | ValueE { value = value_a }, ValueE { value = value_b } ->
+      eq_value value_a value_b
   | VarE { var = var_a }, VarE { var = var_b } -> eq_var var_a var_b
   | TupleE { exprs = exprs_a }, TupleE { exprs = exprs_b } ->
       eq_exprs exprs_a exprs_b
@@ -174,18 +162,20 @@ and eq_expr' expr_a expr_b =
       ArrAccE { expr_base = expr_base_b; expr_idx = expr_idx_b } ) ->
       eq_expr expr_base_a expr_base_b && eq_expr expr_idx_a expr_idx_b
   | ( BitAccE
-        { expr_base = expr_base_a; expr_lo = expr_lo_a; expr_hi = expr_hi_a },
+        {
+          expr_base = expr_base_a;
+          value_lo = value_lo_a;
+          value_hi = value_hi_a;
+        },
       BitAccE
-        { expr_base = expr_base_b; expr_lo = expr_lo_b; expr_hi = expr_hi_b } )
-    ->
+        {
+          expr_base = expr_base_b;
+          value_lo = value_lo_b;
+          value_hi = value_hi_b;
+        } ) ->
       eq_expr expr_base_a expr_base_b
-      && eq_expr expr_lo_a expr_lo_b
-      && eq_expr expr_hi_a expr_hi_b
-  | ( TypeAccE { var_base = var_base_a; member = member_a },
-      TypeAccE { var_base = var_base_b; member = member_b } ) ->
-      eq_var var_base_a var_base_b && eq_member member_a member_b
-  | ErrAccE { member = member_a }, ErrAccE { member = member_b } ->
-      eq_member member_a member_b
+      && eq_value value_lo_a value_lo_b
+      && eq_value value_hi_a value_hi_b
   | ( ExprAccE { expr_base = expr_base_a; member = member_a },
       ExprAccE { expr_base = expr_base_b; member = member_b } ) ->
       eq_expr expr_base_a expr_base_b && eq_member member_a member_b
@@ -272,7 +262,7 @@ and eq_decl' decl_a decl_b =
   match (decl_a, decl_b) with
   | ( ConstD { id = id_a; typ = typ_a; value = value_a; annos = annos_a },
       ConstD { id = id_b; typ = typ_b; value = value_b; annos = annos_b } ) ->
-      eq_id id_a id_b && eq_typ typ_a typ_b && eq_expr value_a value_b
+      eq_id id_a id_b && eq_typ typ_a typ_b && eq_value value_a value_b
       && eq_annos annos_a annos_b
   | ( VarD { id = id_a; typ = typ_a; init = init_a; annos = annos_a },
       VarD { id = id_b; typ = typ_b; init = init_b; annos = annos_b } ) ->
@@ -301,47 +291,9 @@ and eq_decl' decl_a decl_b =
       && eq_var var_inst_a var_inst_b
       && eq_targs targs_a targs_b && eq_args args_a args_b
       && eq_decls init_a init_b && eq_annos annos_a annos_b
-  | ErrD { members = members_a }, ErrD { members = members_b }
-  | MatchKindD { members = members_a }, MatchKindD { members = members_b } ->
-      eq_members members_a members_b
-  | ( StructD { id = id_a; fields = fields_a; annos = annos_a },
-      StructD { id = id_b; fields = fields_b; annos = annos_b } )
-  | ( HeaderD { id = id_a; fields = fields_a; annos = annos_a },
-      HeaderD { id = id_b; fields = fields_b; annos = annos_b } )
-  | ( UnionD { id = id_a; fields = fields_a; annos = annos_a },
-      UnionD { id = id_b; fields = fields_b; annos = annos_b } ) ->
-      eq_id id_a id_b
-      && E.eq_triples eq_id eq_typ eq_annos fields_a fields_b
-      && eq_annos annos_a annos_b
-  | ( EnumD { id = id_a; members = members_a; annos = annos_a },
-      EnumD { id = id_b; members = members_b; annos = annos_b } ) ->
-      eq_id id_a id_b
-      && eq_members members_a members_b
-      && eq_annos annos_a annos_b
-  | ( SEnumD { id = id_a; typ = typ_a; fields = fields_a; annos = annos_a },
-      SEnumD { id = id_b; typ = typ_b; fields = fields_b; annos = annos_b } ) ->
-      eq_id id_a id_b && eq_typ typ_a typ_b
-      && E.eq_pairs eq_id eq_expr fields_a fields_b
-      && eq_annos annos_a annos_b
-  | ( NewTypeD { id = id_a; typdef = typdef_a; annos = annos_a },
-      NewTypeD { id = id_b; typdef = typdef_b; annos = annos_b } )
-  | ( TypeDefD { id = id_a; typdef = typdef_a; annos = annos_a },
-      TypeDefD { id = id_b; typdef = typdef_b; annos = annos_b } ) ->
-      eq_id id_a id_b
-      && E.eq_alt eq_typ eq_decl typdef_a typdef_b
-      && eq_annos annos_a annos_b
   | ( ValueSetD { id = id_a; typ = typ_a; size = size_a; annos = annos_a },
       ValueSetD { id = id_b; typ = typ_b; size = size_b; annos = annos_b } ) ->
       eq_id id_a id_b && eq_typ typ_a typ_b && eq_expr size_a size_b
-      && eq_annos annos_a annos_b
-  | ( ParserTypeD
-        { id = id_a; tparams = tparams_a; params = params_a; annos = annos_a },
-      ParserTypeD
-        { id = id_b; tparams = tparams_b; params = params_b; annos = annos_b } )
-    ->
-      eq_id id_a id_b
-      && eq_tparams tparams_a tparams_b
-      && eq_params params_a params_b
       && eq_annos annos_a annos_b
   | ( ParserD
         {
@@ -379,15 +331,6 @@ and eq_decl' decl_a decl_b =
   | ( TableD { id = id_a; table = table_a; annos = annos_a },
       TableD { id = id_b; table = table_b; annos = annos_b } ) ->
       eq_id id_a id_b && eq_table table_a table_b && eq_annos annos_a annos_b
-  | ( ControlTypeD
-        { id = id_a; tparams = tparams_a; params = params_a; annos = annos_a },
-      ControlTypeD
-        { id = id_b; tparams = tparams_b; params = params_b; annos = annos_b } )
-    ->
-      eq_id id_a id_b
-      && eq_tparams tparams_a tparams_b
-      && eq_params params_a params_b
-      && eq_annos annos_a annos_b
   | ( ControlD
         {
           id = id_a;
