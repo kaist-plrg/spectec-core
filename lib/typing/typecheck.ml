@@ -3558,53 +3558,95 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 (* This function is for partially static evaluation of expression. 
     ex) l+(1+2) -> l+3 ,  9w2 - 9w1 -> 9w1 
   If there is a same function in other place, it would be removed *)
+
+and static_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : Il.Ast.expr list) : Il.Ast.expr list =
+  List.map (static_expr cursor ctx) exprs
+
 and static_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr) : Il.Ast.expr =
   if Ctk.is_ctk expr.note.ctk then 
     let value = Static.eval_expr cursor ctx expr in
     let expr' = Il.Ast.ValueE { value } in
     expr' $$ (expr.at % expr.note)
   else
-    let expr' =
-      match expr.it with
-      | ValueE { value = _value } -> failwith "value expression should have CTK"
-      | VarE { var = _var } -> expr.it
-      | TupleE { exprs } -> 
-        let exprs = List.map (static_expr cursor ctx) exprs in
-        TupleE { exprs }
-      | RecordE { fields } -> 
-        let members, exprs = List.split fields in
-        let exprs = List.map (static_expr cursor ctx) exprs in
-        let fields = List.combine members exprs in  
-        RecordE { fields }
-      | UnE { unop; expr } -> 
-        let expr = static_expr cursor ctx expr in
-        UnE { unop; expr }
-      | BinE { binop; expr_l; expr_r } ->
-        let expr_l = static_expr cursor ctx expr_l in
-        let expr_r = static_expr cursor ctx expr_r in
-        BinE { binop; expr_l; expr_r }
-      | TernE { expr_cond; expr_then; expr_else } ->
-        let expr_cond = static_expr cursor ctx expr_cond in
-        let expr_then = static_expr cursor ctx expr_then in
-        let expr_else = static_expr cursor ctx expr_else in
-        TernE { expr_cond; expr_then; expr_else }
-      | CastE { typ; expr } -> 
-        let expr = static_expr cursor ctx expr in
-        CastE {typ; expr}
-      | BitAccE { expr_base; value_lo; value_hi } ->
-        let expr_base = static_expr cursor ctx expr_base in
-        BitAccE { expr_base; value_lo; value_hi }
-      | ExprAccE { expr_base; member } ->
-        let expr_base = static_expr cursor ctx expr_base in
-        ExprAccE { expr_base; member }
-      | CallMethodE { expr_base ; member ; targs ; args } ->
-        (* (TODO)  expression in arguments should be considered *)
-        let expr_base = static_expr cursor ctx expr_base in
-        CallMethodE { expr_base; member; targs; args }
-      | _ -> assert false
-    in
-    expr' $$ (expr.at % expr.note)
-  
+    static_expr' cursor ctx expr.it $$ (expr.at % expr.note)
+
+and static_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') : Il.Ast.expr' =
+  match expr with
+  | ValueE { value = _value } -> failwith "value expression should have CTK"
+  | VarE { var = _var } -> expr
+  | TupleE { exprs } -> 
+    let exprs = List.map (static_expr cursor ctx) exprs in
+    TupleE { exprs }
+  | RecordE { fields } -> 
+    let members, exprs = List.split fields in
+    let exprs = static_exprs cursor ctx exprs in
+    let fields = List.combine members exprs in  
+    RecordE { fields }
+  | UnE { unop; expr } -> 
+    let expr = static_expr cursor ctx expr in
+    UnE { unop; expr }
+  | BinE { binop; expr_l; expr_r } ->
+    let expr_l = static_expr cursor ctx expr_l in
+    let expr_r = static_expr cursor ctx expr_r in
+    BinE { binop; expr_l; expr_r }
+  | TernE { expr_cond; expr_then; expr_else } ->
+    let expr_cond = static_expr cursor ctx expr_cond in
+    let expr_then = static_expr cursor ctx expr_then in
+    let expr_else = static_expr cursor ctx expr_else in
+    TernE { expr_cond; expr_then; expr_else }
+  | CastE { typ; expr } -> 
+    let expr = static_expr cursor ctx expr in
+    CastE {typ; expr}
+  | MaskE { expr_base; expr_mask } ->
+    let expr_base = static_expr cursor ctx expr_base in
+    let expr_mask = static_expr cursor ctx expr_mask in
+    MaskE { expr_base; expr_mask }
+  | RangeE { expr_lb; expr_ub } ->
+    let expr_lb = static_expr cursor ctx expr_lb in
+    let expr_ub = static_expr cursor ctx expr_ub in
+    RangeE { expr_lb; expr_ub }
+  | SelectE { exprs_select; cases } ->
+    let exprs_select = static_exprs cursor ctx exprs_select in
+    SelectE { exprs_select; cases }
+  | ArrAccE { expr_base; expr_idx } ->
+    let expr_base = static_expr cursor ctx expr_base in
+    let expr_idx = static_expr cursor ctx expr_idx in
+    ArrAccE { expr_base; expr_idx }
+  | BitAccE { expr_base; value_lo; value_hi } ->
+    let expr_base = static_expr cursor ctx expr_base in
+    BitAccE { expr_base; value_lo; value_hi }
+  | ExprAccE { expr_base; member } ->
+    let expr_base = static_expr cursor ctx expr_base in
+    ExprAccE { expr_base; member }
+  | CallFuncE { var_func; targs; args } ->
+    let args = static_args cursor ctx args in
+    CallFuncE { var_func; targs; args }
+  | CallMethodE { expr_base ; member ; targs ; args } ->
+    let args = static_args cursor ctx args in
+    let expr_base = static_expr cursor ctx expr_base in
+    CallMethodE { expr_base; member; targs; args }
+  | InstE { var_inst; targs; args } ->
+    let args = static_args cursor ctx args in
+    InstE { var_inst; targs; args }
+
+and static_args (cursor : Ctx.cursor) (ctx : Ctx.t) (args : Il.Ast.arg list) : Il.Ast.arg list =
+  List.map (static_arg cursor ctx) args
+
+and static_arg (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : Il.Ast.arg) : Il.Ast.arg =
+  static_arg' cursor ctx arg.it $ arg.at
+
+and static_arg' (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : Il.Ast.arg') : Il.Ast.arg' =
+  match arg with
+  | ExprA expr -> 
+      let expr = static_expr cursor ctx expr in
+      ExprA expr
+  | NameA (id, expr) ->
+      let expr = static_expr cursor ctx expr in
+      NameA (id, expr)
+  | AnyA -> AnyA
+
+(* Utils for table type checking*)
+
 and get_action_param (fd : FuncDef.t option) : Types.param list =
   let fd = Option.get fd in
   match fd with
@@ -3627,8 +3669,13 @@ and remove_set (expr_il : Il.Ast.expr) : Il.Ast.expr =
     Format.eprintf "(remove_set) Type %a is not set type\n" Types.pp_typ typ;
     assert false;
 
+and expr_arg (arg : Il.Ast.arg) : Il.Ast.expr = 
+  match arg.it with
+  | ExprA expr -> expr
+  | NameA (_id, expr) -> expr
+  | AnyA -> failwith "AnyA is don't have expr"
+
 and expect_static_value_set (expr_il : Il.Ast.expr) : Il.Ast.expr =
-  (* (TODO) Should we return the value too? for comparing with action direction args *)
   match expr_il.it with
   | MaskE { expr_base; expr_mask } -> 
       Static.check_ctk expr_base;
@@ -3676,63 +3723,6 @@ and check_table_key (match_kind : string) (typ : Type.t) : unit =
       Type.pp typ;
     assert false)
 
-(* (TODO) temporary implementaion of il eq funciton with static evaluation after add eq.ml in il, this functions will be removed*)
-and eq_value (v_a : Value.t) (v_b : Value.t) : bool = 
-  match v_a , v_b with
-  | ErrV a, ErrV b -> a = b
-  | MatchKindV a, MatchKindV b -> a = b
-  | StrV a, StrV b -> a = b
-  | BoolV a, BoolV b -> a = b
-  | IntV a, IntV b -> a = b 
-  | FIntV (a_1, a_2), FIntV (b_1, b_2) -> a_1 = b_1 && a_2 = b_2
-  | FBitV (a_1, a_2), FBitV (b_1, b_2) -> a_1 = b_1 && a_2 = b_2
-  | VBitV (a_1, a_2, a_3), VBitV (b_1, b_2, b_3) -> a_1 = b_1 && a_2 = b_2 && a_3 = b_3
-  | _, _ -> true
-
-and check_value_expr (expr : Il.Ast.expr) : unit = 
-  if Ctk.is_ctk expr.note.ctk then 
-    Printf.printf "It is compile time know and it should be value expr\n";
-  match expr.it with
-  | ValueE _ -> 
-    Printf.printf "It is value!\n";
-  | _ -> 
-    Printf.printf "It is not!\n";
-
-and temp_eq_args (cursor : Ctx.cursor) (ctx : Ctx.t) (args_a : Il.Ast.arg list) (args_b : Il.Ast.arg list)
-    : bool =
-  List.for_all2 (temp_eq_args' cursor ctx) args_a args_b
-
-and temp_eq_args' (cursor : Ctx.cursor) (ctx : Ctx.t) (arg_a : Il.Ast.arg) (arg_b : Il.Ast.arg)
-    : bool =
-  match arg_a.it, arg_b.it with
-  | ExprA expr_a, ExprA expr_b ->
-      let expr_a = static_expr cursor ctx expr_a in
-      let expr_b = static_expr cursor ctx expr_b in
-      (* (TODO) : This part should be changed to Il.eq funcitons *)
-      check_value_expr expr_a;
-      check_value_expr expr_b;
-      let v_a = Static.eval_expr cursor ctx expr_a in
-      let v_b = Static.eval_expr cursor ctx expr_b in
-      eq_value v_a.it v_b.it
-  | NameA (id_a, expr_a), NameA (id_b, expr_b) ->
-      let expr_a = static_expr cursor ctx expr_a in
-      let expr_b = static_expr cursor ctx expr_b in
-      (* (TODO) : This part should be changed to Il.eq funcitons *)
-      check_value_expr expr_a;
-      check_value_expr expr_b;
-      let v_a = Static.eval_expr cursor ctx expr_a in
-      let v_b = Static.eval_expr cursor ctx expr_b in
-      id_a = id_b 
-      && eq_value v_a.it v_b.it
-  | AnyA, AnyA -> true
-  | _, _ -> false
-
-and expr_arg (arg : Il.Ast.arg) : Il.Ast.expr = 
-  match arg.it with
-  | ExprA expr -> expr
-  | NameA (_id, expr) -> expr
-  | AnyA -> failwith "AnyA is don't have expr"
-
 (* args_base : action arguments in actions
    args_il : action arguments in entry | default *)
 
@@ -3751,8 +3741,9 @@ and check_arg_action_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (params : Types.p
     ) 
     params args_il |> List.filter_map (fun x -> x)
   in 
-  let is_eq = temp_eq_args cursor ctx args_base args_entry in
-  if not is_eq then 
+  let args_base = static_args cursor ctx args_base in
+  let args_entry = static_args cursor ctx args_entry in
+  if not (Il.Eq.eq_args args_base args_entry) then 
     (Printf.printf "(check_arg_action_entry) : arguments are different\n";
     assert false);
   type_call_convention cursor ctx params args_il
@@ -3772,9 +3763,7 @@ and check_arg_action_default (cursor : Ctx.cursor) (ctx : Ctx.t) (params : Types
     ) 
     params args_il |> List.filter_map (fun x -> x)
   in 
-  (* (TODO) this should be Il.eq *)
-  let is_eq = temp_eq_args cursor ctx args_base args_default in
-  if not is_eq then 
+  if not (Il.Eq.eq_args args_base args_default) then 
     (Printf.printf "(check_arg_action_default) : arguments are different\n";
     assert false);
   type_call_convention cursor ctx params args_il
@@ -3803,7 +3792,6 @@ and type_action_keyset' (ctx : Ctx.t) (key_prop : Type.t * string) (keyset : El.
   match keyset with
   | ExprK expr ->
       (* Cursor is must be Ctx.local because this function is only called in Local *)
-      (* (TODO) : expression format has been changed so should be rewrite the code *)
       let expr_il =
         match expr.it with
         | MaskE _ -> 
@@ -3921,30 +3909,6 @@ and type_table_action_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action_n
   let annos_il = List.map (type_anno cursor ctx) annos in
   (var, args_il, annos_il)
 
-and type_table_action_default (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action_notes : (string * Il.Ast.arg list) list)
-     (table_action : El.Ast.table_action) : Il.Ast.table_action =
-     type_table_action_default' cursor ctx table_action_notes table_action.it $ table_action.at
-
-and type_table_action_default' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action_notes : (string * Il.Ast.arg list) list)
-     (table_action : El.Ast.table_action') : Il.Ast.table_action' =
-    let var, args, annos = table_action in
-    let action_name = get_action_name table_action in
-    let fd = Ctx.find_overloaded_opt Ctx.find_funcdef_opt cursor var args ctx in
-    if Option.is_none fd then (
-      Format.eprintf "(type_table_action_default) There is no action named %a or invalid argument\n" El.Pp.pp_var var;
-      assert false);
-    let params = get_action_param fd in
-    let args_base = List.assoc_opt action_name table_action_notes in
-    if Option.is_none args_base then (
-      Format.eprintf "(type_table_action_default) There is no action named %a in actions list\n" El.Pp.pp_var var;
-      assert false);
-    let args_base = Option.get args_base in
-    let typs_arg, args_il = List.map (type_arg cursor ctx) args |> List.split in
-    let args_il = List.combine args_il typs_arg in
-    let args_il = check_arg_action_default cursor ctx params args_il args_base in
-    let annos_il = List.map (type_anno cursor ctx) annos in
-    (var, args_il, annos_il)
-
 and type_table_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (key_props : (Type.t * string) list) 
     (table_action_notes : (string * Il.Ast.arg list) list) (table_entry : El.Ast.table_entry) : Il.Ast.table_entry =
   type_table_entry' cursor ctx key_props table_action_notes table_entry.it $ table_entry.at
@@ -3957,23 +3921,46 @@ and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (key_props : (Type.t *
   let annos_il = List.map (type_anno cursor ctx) annos in
   (key_sets_il, action_il, annos_il)
 
+and type_table_action_default (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action_notes : (string * Il.Ast.arg list) list)
+  (table_action : El.Ast.table_action) : Il.Ast.table_action =
+  type_table_action_default' cursor ctx table_action_notes table_action.it $ table_action.at
+
+and type_table_action_default' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action_notes : (string * Il.Ast.arg list) list)
+  (table_action : El.Ast.table_action') : Il.Ast.table_action' =
+ let var, args, annos = table_action in
+ let action_name = get_action_name table_action in
+ let fd = Ctx.find_overloaded_opt Ctx.find_funcdef_opt cursor var args ctx in
+ if Option.is_none fd then (
+   Format.eprintf "(type_table_action_default) There is no action named %a or invalid argument\n" El.Pp.pp_var var;
+   assert false);
+ let params = get_action_param fd in
+ let args_base = List.assoc_opt action_name table_action_notes in
+ if Option.is_none args_base then (
+   Format.eprintf "(type_table_action_default) There is no action named %a in actions list\n" El.Pp.pp_var var;
+   assert false);
+ let args_base = Option.get args_base in
+ let typs_arg, args_il = List.map (type_arg cursor ctx) args |> List.split in
+ let args_il = List.combine args_il typs_arg in
+ let args_il = check_arg_action_default cursor ctx params args_il args_base in
+ let annos_il = List.map (type_anno cursor ctx) annos in
+ (var, args_il, annos_il)
+
 and type_table_default (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action_notes : (string * Il.Ast.arg list) list)
     (table_default : El.Ast.table_default option) : Il.Ast.table_default option =
-    match table_default with 
-    | Some table_default -> type_table_default' cursor ctx table_action_notes table_default.it $ table_default.at 
-      |> Option.some
-    | None -> None
+  match table_default with 
+  | Some table_default -> type_table_default' cursor ctx table_action_notes table_default.it $ table_default.at 
+    |> Option.some
+  | None -> None
 
 and type_table_default' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action_notes : (string * Il.Ast.arg list) list)
     (table_default : El.Ast.table_default') : Il.Ast.table_default' =
-  (* (TODO) : Using type_table_action_entry, should change to type_table_action_default which compare expr syntatically *)
   let action, default_const = table_default in 
   let action_il = type_table_action_default cursor ctx table_action_notes action in
   (action_il, default_const)
 
 and type_table_custom (cursor : Ctx.cursor) (ctx : Ctx.t) (table_custom : El.Ast.table_custom) :
     Il.Ast.table_custom =
-    type_table_custom' cursor ctx table_custom.it $ table_custom.at
+  type_table_custom' cursor ctx table_custom.it $ table_custom.at
 
 and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_custom : El.Ast.table_custom') :
     Il.Ast.table_custom' =
@@ -4012,10 +3999,12 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let table_entries_il = List.map (type_table_entry cursor ctx key_props table_action_notes) table_entries in 
   let table_default_il = type_table_default cursor ctx table_action_notes table_default in 
   let table_customs_il = List.map (type_table_custom cursor ctx) table_customs in
-  (* Should we add action_list(T), apply_result(T) type in env? And Should we add decl to? *)
+  (* (TODO) : Should we add action_list(T), apply_result(T) type in env? And Should we add decl to? *)
   (* Petr4 did, and also it puts id in TableT instead of typ*)
   let action_enum = Types.EnumT ("action_list_" ^ id.it) in
-  let apply_result = Types.StructT (("apply_result_" ^ id.it) ,[
+  let apply_result = Types.StructT (
+    ("apply_result_" ^ id.it) ,
+    [
     ("hit", Types.BoolT);
     ("miss", Types.BoolT);
     ("action_run", action_enum)
