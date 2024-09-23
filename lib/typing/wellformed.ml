@@ -481,10 +481,10 @@ and check_valid_functype (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) :
 
 and check_valid_functype' (tset : TIdSet.t) (ft : FuncType.t) : unit =
   match ft with
+  | ActionT params -> List.iter (check_valid_param' tset) params
   | ExternFunctionT (params, typ_ret) | FunctionT (params, typ_ret) ->
       List.iter (check_valid_param' tset) params;
       check_valid_type' tset typ_ret
-  | ActionT params -> List.iter (check_valid_param' tset) params
   | ExternMethodT (params, typ_ret) | ExternAbstractMethodT (params, typ_ret) ->
       List.iter (check_valid_param' tset) params;
       check_valid_type' tset typ_ret
@@ -505,13 +505,13 @@ and check_valid_funcdef (cursor : Ctx.cursor) (ctx : Ctx.t) (fd : FuncDef.t) :
 
 and check_valid_funcdef' (tset : TIdSet.t) (fd : FuncDef.t) : unit =
   match fd with
+  | ActionD params -> List.iter (check_valid_param' tset) params
   | ExternFunctionD (tparams, params, typ_ret) ->
       let tset = TIdSet.union tset (TIdSet.of_list tparams) in
       check_valid_functype' tset (ExternFunctionT (params, typ_ret))
   | FunctionD (tparams, params, typ_ret) ->
       let tset = TIdSet.union tset (TIdSet.of_list tparams) in
       check_valid_functype' tset (FunctionT (params, typ_ret))
-  | ActionD params -> List.iter (check_valid_param' tset) params
   | ExternMethodD (tparams, params, typ_ret) ->
       let tset = TIdSet.union tset (TIdSet.of_list tparams) in
       check_valid_functype' tset (ExternMethodT (params, typ_ret))
