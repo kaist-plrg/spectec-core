@@ -1,0 +1,549 @@
+test/program/pragma-string.p4:25:14: warning: missing terminating '"' character [-Winvalid-pp-token]
+@pragma name "string with
+             ^
+test/program/pragma-string.p4:26:8: warning: missing terminating '"' character [-Winvalid-pp-token]
+newline"
+       ^
+2 warnings generated.
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
+bool>
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<O, T, D, M>(out result O, in algo enum HashAlgorithm, in base T, in data D, in max M) -> void expects 4 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<T>(in type enum CloneType, in session bit<32>, in data T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>( h bit<16>,  t T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(specialize_funcdef) Constructor constructor<H> ( p parser ( pkt extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out hdr H),  c control ()) -> package expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<T, O>(in condition bool, in data T, in checksum O,  algo enum HashAlgorithm) -> void expects 2 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<S, H> ( ctrl control (inout data S, out output H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_func) Function foo not found
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_function_decl) A function must return a value on all possible execution paths
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<T, U>( a U,  b T) -> extern widget {  } expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<T>( msg string, in data T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function func<T>(in x T) -> T expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(TODO: transform_stmt) p.apply();
+
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<4> and int were given
+(coerce_type) Cannot coerce type tuple<tuple<tuple<bit<1>>,
+tuple<bit<1>>>, tuple<bit<1>>,
+bit<1>> to struct S { f1 = tuple<struct T { f = bit<1> },
+struct T { f = bit<1> }>; f2 = struct T { f = bit<1> }; z = bit<1> }
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_function_decl) A function must return a value on all possible execution paths
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(coerce_type) Cannot coerce type tuple<header ipv4_option_timestamp_t { len = bit<8>; data = varbit<304> }> to struct headers { ipv4_option_timestamp = header ipv4_option_timestamp_t { len = bit<8>; data = varbit<304> } }
+(coerce_type) Cannot coerce type tuple<bit<32>> to struct S { f = bit<32> }
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(coerce_type) Cannot coerce type tuple<bit<9>> to struct PortId_t { _v = bit<9> }
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
+int>
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<IH> ( ingress package) -> package expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<T>(in x T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(TODO: transform_stmt) myc.apply(hdr, meta, smeta);
+
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<T, O>(in condition bool, in data T, in checksum O,  algo enum HashAlgorithm) -> void expects 2 type arguments but 0 were given
+(TODO: transform_stmt) E.apply(hdr.ethernet.etherType);
+
+(specialize_funcdef) Function extern_func<T>(in receiver bit<32>, in data T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
+int,
+int>
+(specialize_funcdef) Constructor constructor<M> ( c control (inout m M)) -> package expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in h bit<16>, in t T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_eq_typ_alpha) Types int and bit<3> are not equal
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in data T) -> bit<16> expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(coerce_type) Cannot coerce type tuple<> to struct headers {  }
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_decl) value_set<valueset1_t>(4) valueset1;
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(coerce_type) Cannot coerce type tuple<bit<8>,
+bit<8>> to struct Version { major = bit<8>; minor = bit<8> }
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<T> ( prs parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out result T),  map control (in d T)) -> package expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<T> ( e control (inout t T)) -> package expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(type_decl) value_set<bit<16>>(8) ipv4_ethertypes;
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(TODO: transform_stmt) c.apply();
+
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<T>(out result T, in lo T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(specialize_funcdef) Constructor constructor<T> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out result T),  map control (out data T)) -> package expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(specialize_funcdef) Function extern_func<T>(in type enum CloneType, in session bit<32>, in data T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<8> and bit<8> were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(TODO: transform_stmt) Tcp_option_parser.apply(packet, hdr.tcp.dataOffset, hdr.tcp_options_vec, hdr.tcp_options_padding);
+
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(TODO: transform_stmt) foo.apply(hdr.h1.f1, hdr.h1.f1);
+
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(TODO: transform_stmt) foo.apply(hdr.h1.f1, hdr.h1.f1);
+
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<T, O>(in condition bool, in data T, in checksum O,  algo enum HashAlgorithm) -> void expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<O, T, D, M>(out result O, in algo enum HashAlgorithm, in base T, in data D, in max M) -> void expects 4 type arguments but 0 were given
+(type_function_decl) A function must return a value on all possible execution paths
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
+int,
+int>
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
+int>
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_decl) value_set<bit<32>>(4) pvs;
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( g control (inout h H, inout m M),  _c control ( pkt extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, inout h H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(type_function_decl) A function must return a value on all possible execution paths
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_binop_shift) Shift operator expects an unsigned bitstring, signed bitstring, or an integer as the left operand and an unsigned bitstring or a compile-time known integer as the right operand but enum<bit<8>> E1 and int were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<D>(in data D) -> bit<16> expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
+bool>
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function func<T>( x T) -> T expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_decl) value_set<value_set_t>(4) pvs;
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_function_decl) A function must return a value on all possible execution paths
+(coerce_type) Cannot coerce type tuple<bit<9>> to struct PortId_t { _v = bit<9> }
+(coerce_type) Cannot coerce type tuple<bit<32>,
+bit<32>> to struct Version { major = bit<32>; minor = bit<32> }
+(type_decl) value_set<bit<16>>(4) pvs;
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<IH, IM, EH, EM, NM, CI2EM, CE2EM, RESUBM, RECIRCM> ( ingress package,  pre extern PacketReplicationEngine {  },  egress package,  bqe extern BufferingQueueingEngine {  }) -> package expects 9 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<S> ( p parser (inout input S)) -> package expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(coerce_type) Cannot coerce type tuple<bit<1>> to struct S { d = bit<1> }
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<T>(in type enum CloneType, in session bit<32>, in data T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_instantiation) E is not an instance type
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(type_function_decl) A function must return a value on all possible execution paths
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<T>(in data T) -> bit<32> expects 1 type arguments but 0 were given
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+test/program/string_anno.p4:21:7: warning: missing terminating '"' character [-Winvalid-pp-token]
+@name("string with
+      ^
+test/program/string_anno.p4:22:8: warning: missing terminating '"' character [-Winvalid-pp-token]
+newline") const bit d = 1;
+       ^
+2 warnings generated.
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+(TODO: transform_stmt) E.apply(hdr.ethernet.etherType);
+
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<T>(in type enum CloneType, in session bit<32>, in data T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
+int>
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(specialize_funcdef) Constructor constructor<T> ( e control ()) -> package expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
+bool>
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(eval_type') Type definition queue_t does not exist
+(TODO: transform_stmt) foo.apply(hdr.f1, hdr.f1);
+
+(specialize_funcdef) Constructor constructor<H> ( prs parser (out headers H)) -> package expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_decl) value_set<value_set_t>(4) pvs;
+(specialize_funcdef) Constructor constructor<H> ( prs parser ( packet extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out headers H),  filt control (inout headers H, out accept bool)) -> package expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+(specialize_funcdef) Function extern_func<D>(out result bit<32>, in algo enum HashAlgorithm, in data D) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<T>(in receiver bit<32>, in data T) -> void expects 1 type arguments but 0 were given
+(TODO: transform_stmt) InnerParser.apply(pkt, hdr);
+
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<O, T, D, M>(out result O, in algo enum HashAlgorithm, in base T, in data D, in max M) -> void expects 4 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(specialize_funcdef) Constructor constructor<S> ( e parser (out dt S)) -> package expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
+int>
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<S, H> ( c control (inout i S, out o1 bit<8>, out o2 H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<T, O>(in condition bool, in data T, inout checksum O,  algo enum HashAlgorithm) -> void expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(coerce_type) Cannot coerce type tuple<int<32>,
+int<32>> to struct T { t1 = int<32>; t2 = int<32> }
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(coerce_type) Cannot coerce type tuple<bit<32>,
+bit<32>> to struct S { a = bit<32>; b = bit<32> }
+(type_instantiation) E is not an instance type
+(check_ctk) x is not a compile-time known expression
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+(specialize_funcdef) Function extern_method<T>(in b T) -> bit<32> expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<1> and bit<1> were given
+(specialize_funcdef) Constructor constructor<S, H> ( ctrl control (inout data S, out output H)) -> package expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_function_decl) A function must return a value on all possible execution paths
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_ternop_expr) Branches 32w2 and 3 must have the same type
+(type_function_decl) A function must return a value on all possible execution paths
+(type_decl) value_set<(bit<32>, bit<2>)>(4) vs;
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
+int>
+(check_ctk) x is not a compile-time known expression
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<T, U>( a U,  b T) -> extern widget {  } expects 2 type arguments but 0 were given
+(specialize_funcdef) Function extern_func<O, T, D, M>(out result O, in algo enum HashAlgorithm, in base T, in data D, in max M) -> void expects 4 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(TODO: transform_stmt) p.apply();
+
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_return_stmt) Return type int does not match the function return type bit<32>
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given

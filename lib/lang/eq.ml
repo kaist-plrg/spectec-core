@@ -303,7 +303,7 @@ and eq_block (eq_typ : 'typ eq_typ) (eq_expr : ('note, 'expr) eq_expr)
 
 and eq_switch_label' switch_label_a switch_label_b =
   match (switch_label_a, switch_label_b) with
-  | NameL text_a, NameL text_b -> eq_text text_a = eq_text text_b
+  | NameL text_a, NameL text_b -> eq_text text_a text_b
   | DefaultL, DefaultL -> true
   | _ -> false
 

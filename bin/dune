@@ -5,3 +5,10 @@
   (pps ppx_let))
  (modules main)
  (libraries p4cherry core core_kernel core_unix core_unix.command_unix))
+
+(executable
+ (name test)
+ (preprocess
+  (pps ppx_let))
+ (modules test)
+ (libraries p4cherry core core_kernel core_unix core_unix.command_unix))
