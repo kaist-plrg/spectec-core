@@ -1,0 +1,627 @@
+Running parser roundtrip tests on 623 files
+Error while parsing p4 string: test/program/tuple.p4
+Error while parsing p4 string: test/program/issue1062-bmv2.p4
+Error while parsing p4 string: test/program/constant-in-calculation-bmv2.p4
+Error while parsing p4 string: test/program/issue562-bmv2.p4
+Error while parsing p4 string: test/program/psa-action-profile4.p4
+Parser roundtrip success: test/program/extern2.p4
+Parser roundtrip success: test/program/cast.p4
+Error while parsing p4 string: test/program/table-entries-optional-bmv2.p4
+Error while parsing p4 string: test/program/psa-counter3.p4
+Error while parsing p4 string: test/program/issue1304.p4
+Error while parsing p4 string: test/program/issue512.p4
+Error while parsing p4 string: test/program/issue-2123-3-bmv2.p4
+Error while parsing p4 string: test/program/issue510-bmv2.p4
+Error while parsing p4 string: test/program/issue355-bmv2.p4
+Error while parsing p4 string: test/program/issue1000-bmv2.p4
+Parser roundtrip success: test/program/apply-cf.p4
+Error while parsing p4 string: test/program/issue1989-bmv2.p4
+Error while parsing p4 string: test/program/simple-firewall_ubpf.p4
+Error while parsing p4 string: test/program/issue2289.p4
+Error while parsing p4 string: test/program/issue823.p4
+Error while parsing p4 string: test/program/issue692-bmv2.p4
+Parser roundtrip success: test/program/shift-int-by-bit.p4
+Error while parsing p4 string: test/program/strength4.p4
+Error while parsing p4 string: test/program/issue270-bmv2.p4
+Error while parsing p4 string: test/program/issue313_1.p4
+Error while parsing p4 string: test/program/issue995-bmv2.p4
+Error while parsing p4 string: test/program/psa-meter3.p4
+Parser roundtrip fail: test/program/kvanno.p4
+Error while parsing p4 string: test/program/pred.p4
+Error while parsing p4 string: test/program/issue447-bmv2.p4
+Error while parsing p4 string: test/program/named-arg1.p4
+Error while parsing p4 string: test/program/issue561-1-bmv2.p4
+Error while parsing p4 string: test/program/issue1937-1-bmv2.p4
+Error while parsing p4 string: test/program/v1model-const-entries-bmv2.p4
+Parser roundtrip success: test/program/functions.p4
+Parser roundtrip success: test/program/action_param1.p4
+Error while parsing p4 string: test/program/issue461-bmv2.p4
+Parser roundtrip success: test/program/type_decls.p4
+Parser roundtrip success: test/program/shift-int.p4
+Error while parsing p4 string: test/program/factory2.p4
+Error while parsing p4 string: test/program/basic_routing-bmv2.p4
+Error while parsing p4 string: test/program/match-on-exprs-bmv2.p4
+Parser roundtrip success: test/program/issue1334.p4
+Error while parsing p4 string: test/program/standard_headers.p4
+Error while parsing p4 string: test/program/fold_match.p4
+Error while parsing p4 string: test/program/spec-ex18.p4
+Error while parsing p4 string: test/program/complex8.p4
+Error while parsing p4 string: test/program/issue803.p4
+Parser roundtrip success: test/program/package.p4
+Error while parsing p4 string: test/program/psa-action-selector3.p4
+Error while parsing p4 string: test/program/logging.p4
+Error while parsing p4 string: test/program/spec-ex08.p4
+Error while parsing p4 string: test/program/issue803-2.p4
+Parser roundtrip success: test/program/fcallNoInfer.p4
+Error while parsing p4 string: test/program/ipv6-actions_ubpf.p4
+Error while parsing p4 string: test/program/issue1386.p4
+Error while parsing p4 string: test/program/issue1291-bmv2.p4
+Error while parsing p4 string: test/program/simplify.p4
+Error while parsing p4 file: test/program/direct-call1.p4
+Parser roundtrip fail: test/program/pragmas.p4
+Error while parsing p4 string: test/program/twoPipe.p4
+Error while parsing p4 string: test/program/issue447-5-bmv2.p4
+Error while parsing p4 string: test/program/mask.p4
+Parser roundtrip success: test/program/strength.p4
+Error while parsing p4 string: test/program/nested-tuple1.p4
+Error while parsing p4 string: test/program/test-parserinvalidargument-error-bmv2.p4
+Parser roundtrip success: test/program/nested_call_no_wildcards.p4
+Error while parsing p4 string: test/program/issue1097-2-bmv2.p4
+Error while parsing p4 string: test/program/header.p4
+Error while parsing p4 string: test/program/psa-action-profile1.p4
+Parser roundtrip success: test/program/toplevel.p4
+Error while parsing p4 string: test/program/action_profile_max_group_size_annotation.p4
+Error while parsing p4 string: test/program/inline-switch.p4
+Error while parsing p4 string: test/program/intrinsic-bmv2.p4
+Parser roundtrip success: test/program/inline-action.p4
+Error while parsing p4 string: test/program/issue1006.p4
+Error while parsing p4 string: test/program/annotation-bug.p4
+Error while parsing p4 string: test/program/specialization.p4
+Error while parsing p4 string: test/program/v1model-digest-custom-type.p4
+Error while parsing p4 string: test/program/index.p4
+Error while parsing p4 string: test/program/junk-prop-bmv2.p4
+Error while parsing p4 string: test/program/psa-counter6.p4
+Parser roundtrip success: test/program/issue1172.p4
+Error while parsing p4 string: test/program/spec-ex19.p4
+Parser roundtrip success: test/program/constsigned.p4
+Parser roundtrip success: test/program/issue1301.p4
+Parser roundtrip success: test/program/complex9.p4
+Error while parsing p4 string: test/program/issue1210.p4
+Parser roundtrip success: test/program/concat.p4
+Error while parsing p4 string: test/program/struct1.p4
+Error while parsing p4 string: test/program/psa-action-selector2.p4
+Error while parsing p4 string: test/program/spec-ex09.p4
+Error while parsing p4 string: test/program/issue422.p4
+Error while parsing p4 string: test/program/ebpf_headers.p4
+Error while parsing p4 string: test/program/issue803-3.p4
+Error while parsing p4 string: test/program/issue774.p4
+Parser roundtrip success: test/program/untypedInt.p4
+Parser roundtrip success: test/program/shadow1.p4
+Error while parsing p4 string: test/program/p4rt_digest_complex.p4
+Error while parsing p4 string: test/program/issue2153-bmv2.p4
+Parser roundtrip success: test/program/global-action.p4
+Error while parsing p4 string: test/program/issue2225-bmv2.p4
+Error while parsing p4 string: test/program/issue933-1.p4
+Error while parsing p4 file: test/program/issue1107.p4
+Parser roundtrip success: test/program/two-functions.p4
+Error while parsing p4 string: test/program/table-entries-range-bmv2.p4
+Error while parsing p4 string: test/program/issue1768-bmv2.p4
+Parser roundtrip success: test/program/inline-function.p4
+Error while parsing p4 string: test/program/issue249.p4
+Error while parsing p4 file: test/program/issue1566-bmv2.p4
+Error while parsing p4 string: test/program/bitwise-and.p4
+Error while parsing p4 string: test/program/psa-meter6.p4
+Error while parsing p4 string: test/program/issue447-4-bmv2.p4
+Error while parsing p4 string: test/program/psa-random.p4
+Error while parsing p4 string: test/program/issue1814-1-bmv2.p4
+Error while parsing p4 string: test/program/unreachable.p4
+Parser roundtrip fail: test/program/pragma-pkginfo.p4
+Error while parsing p4 string: test/program/issue1638.p4
+Error while parsing p4 string: test/program/key1-bmv2.p4
+Error while parsing p4 string: test/program/struct_init-1.p4
+Error while parsing p4 string: test/program/issue1882-bmv2.p4
+Parser roundtrip success: test/program/extern3.p4
+Error while parsing p4 string: test/program/issue1001-bmv2.p4
+Error while parsing p4 string: test/program/serenum.p4
+Error while parsing p4 string: test/program/issue2213-bmv2.p4
+Error while parsing p4 string: test/program/issue-2123-2-bmv2.p4
+Error while parsing p4 string: test/program/psa-counter2.p4
+Error while parsing p4 string: test/program/issue677-bmv2.p4
+Parser roundtrip success: test/program/bool_cast.p4
+Error while parsing p4 string: test/program/issue1829-4-bmv2.p4
+Parser roundtrip success: test/program/issue754.p4
+Error while parsing p4 string: test/program/pred1.p4
+Error while parsing p4 string: test/program/issue793.p4
+Error while parsing p4 string: test/program/concat-signed.p4
+Error while parsing p4 string: test/program/spec-ex29.p4
+Error while parsing p4 string: test/program/p416-type-use3.p4
+Error while parsing p4 string: test/program/alias.p4
+Error while parsing p4 string: test/program/bitwise-cast.p4
+Error while parsing p4 string: test/program/hashext2.p4
+Error while parsing p4 string: test/program/issue822.p4
+Error while parsing p4 string: test/program/issue2148.p4
+Parser roundtrip success: test/program/strength5.p4
+Error while parsing p4 string: test/program/issue933.p4
+Error while parsing p4 string: test/program/arith-bmv2.p4
+Error while parsing p4 string: test/program/union1-bmv2.p4
+Error while parsing p4 string: test/program/inline-bmv2.p4
+Error while parsing p4 string: test/program/v1model-p4runtime-most-types1.p4
+Error while parsing p4 string: test/program/issue655.p4
+Parser roundtrip fail: test/program/pragma-action.p4
+Error while parsing p4 string: test/program/issue1814-bmv2.p4
+Error while parsing p4 string: test/program/issue1097-bmv2.p4
+Parser roundtrip success: test/program/real_type_argument.p4
+Parser roundtrip success: test/program/issue2335-1.p4
+Error while parsing p4 string: test/program/def-use.p4
+Error while parsing p4 string: test/program/union-valid-bmv2.p4
+Parser roundtrip fail: test/program/structured-annotation.p4
+Error while parsing p4 string: test/program/version.p4
+Error while parsing p4 string: test/program/valid_ebpf.p4
+Error while parsing p4 string: test/program/valid.p4
+Error while parsing p4 string: test/program/issue1713-bmv2.p4
+Parser roundtrip success: test/program/complex6.p4
+Error while parsing p4 string: test/program/flowlet_switching-bmv2.p4
+Error while parsing p4 string: test/program/header-bool-bmv2.p4
+Error while parsing p4 string: test/program/spec-ex16.p4
+Error while parsing p4 string: test/program/verify-bmv2.p4
+Error while parsing p4 string: test/program/issue2314.p4
+Error while parsing p4 string: test/program/action_call_table_ebpf.p4
+Parser roundtrip success: test/program/exit1.p4
+Error while parsing p4 string: test/program/issue1755-bmv2.p4
+Error while parsing p4 string: test/program/issue2102.p4
+Parser roundtrip success: test/program/line.p4
+Error while parsing p4 string: test/program/select-type.p4
+Parser roundtrip success: test/program/spec-ex22.p4
+Error while parsing p4 string: test/program/issue1955.p4
+Error while parsing p4 string: test/program/structArg.p4
+Error while parsing p4 string: test/program/rcp1.p4
+Error while parsing p4 string: test/program/arith4-bmv2.p4
+Error while parsing p4 file: test/program/direct-call.p4
+Parser roundtrip success: test/program/methodArgCast.p4
+Error while parsing p4 string: test/program/issue281.p4
+Error while parsing p4 string: test/program/functors.p4
+Error while parsing p4 string: test/program/stack-bmv2.p4
+Error while parsing p4 string: test/program/subparser-with-header-stack-bmv2.p4
+Error while parsing p4 string: test/program/interface.p4
+Error while parsing p4 string: test/program/issue870_ebpf.p4
+Error while parsing p4 string: test/program/issue1524.p4
+Error while parsing p4 string: test/program/issue486-bmv2.p4
+Parser roundtrip success: test/program/intType.p4
+Error while parsing p4 string: test/program/custom-type-restricted-fields.p4
+Parser roundtrip success: test/program/empty.p4
+Parser roundtrip success: test/program/issue1586.p4
+Error while parsing p4 string: test/program/unreachable-accept.p4
+Error while parsing p4 string: test/program/nested-tuple.p4
+Error while parsing p4 string: test/program/interface2.p4
+Parser roundtrip success: test/program/constants.p4
+Error while parsing p4 string: test/program/16.2Example.p4
+Error while parsing p4 string: test/program/issue1670-bmv2.p4
+Error while parsing p4 string: test/program/issue1660-bmv2.p4
+Error while parsing p4 string: test/program/parser_error-bmv2.p4
+Error while parsing p4 string: test/program/issue1025-bmv2.p4
+Parser roundtrip success: test/program/spec-ex06.p4
+Parser roundtrip success: test/program/issue2037.p4
+Parser roundtrip success: test/program/issue2126.p4
+Parser roundtrip success: test/program/exit5.p4
+Error while parsing p4 string: test/program/issue1520-bmv2.p4
+Error while parsing p4 string: test/program/issue356-bmv2.p4
+Error while parsing p4 string: test/program/mux-bmv2.p4
+Error while parsing p4 string: test/program/issue1765-1-bmv2.p4
+Error while parsing p4 string: test/program/complex2.p4
+Error while parsing p4 string: test/program/issue297-bmv2.p4
+Error while parsing p4 string: test/program/issue949.p4
+Error while parsing p4 string: test/program/issue2190.p4
+Error while parsing p4 string: test/program/spec-ex12.p4
+Error while parsing p4 string: test/program/array_field1.p4
+Error while parsing p4 string: test/program/chain.p4
+Parser roundtrip success: test/program/type-shadow.p4
+Error while parsing p4 string: test/program/simplify_slice.p4
+Error while parsing p4 file: test/program/issue561-bmv2.p4
+Error while parsing p4 string: test/program/issue561-2-bmv2.p4
+Error while parsing p4 file: test/program/issue1937-2-bmv2.p4
+Parser roundtrip success: test/program/newtype1.p4
+Error while parsing p4 string: test/program/issue47.p4
+Error while parsing p4 string: test/program/issue242.p4
+Error while parsing p4 string: test/program/issue2287-bmv2.p4
+Error while parsing p4 string: test/program/parser-arg.p4
+Error while parsing p4 string: test/program/issue986-bmv2.p4
+Error while parsing p4 string: test/program/x-bmv2.p4
+Error while parsing p4 string: test/program/union3-bmv2.p4
+Parser roundtrip success: test/program/exit4.p4
+Error while parsing p4 string: test/program/spec-ex27.p4
+Error while parsing p4 string: test/program/issue1653-complex-bmv2.p4
+Error while parsing p4 string: test/program/tuple2.p4
+Parser roundtrip success: test/program/complex3.p4
+Error while parsing p4 string: test/program/issue2176-bmv2.p4
+Error while parsing p4 string: test/program/count_ebpf.p4
+Error while parsing p4 string: test/program/issue529.p4
+Error while parsing p4 string: test/program/spec-ex13.p4
+Error while parsing p4 string: test/program/psa-hash.p4
+Error while parsing p4 string: test/program/enum-bmv2.p4
+Parser roundtrip success: test/program/serenum-signed.p4
+Error while parsing p4 string: test/program/issue1997.p4
+Error while parsing p4 string: test/program/nested_if_else.p4
+Error while parsing p4 string: test/program/nested_select.p4
+Error while parsing p4 string: test/program/union-key.p4
+Error while parsing p4 file: test/program/issue1937-3-bmv2.p4
+Parser roundtrip success: test/program/action_param.p4
+Error while parsing p4 string: test/program/issue561-3-bmv2.p4
+Error while parsing p4 string: test/program/arch1.p4
+Parser roundtrip success: test/program/spec-ex03.p4
+Error while parsing p4 string: test/program/issue2090.p4
+Error while parsing p4 string: test/program/cast-senum.p4
+Error while parsing p4 string: test/program/psa-register1.p4
+Error while parsing p4 string: test/program/psa-example-counters-bmv2.p4
+Error while parsing p4 string: test/program/union2-bmv2.p4
+Error while parsing p4 string: test/program/unused-counter-bmv2.p4
+Error while parsing p4 string: test/program/issue1127-bmv2.p4
+Error while parsing p4 string: test/program/uninit.p4
+Error while parsing p4 string: test/program/issue1079-bmv2.p4
+Error while parsing p4 string: test/program/spec-ex17.p4
+Error while parsing p4 string: test/program/hash-bmv2.p4
+Error while parsing p4 string: test/program/generic_fun.p4
+Error while parsing p4 string: test/program/issue774-4-bmv2.p4
+Error while parsing p4 string: test/program/issue2261.p4
+Error while parsing p4 string: test/program/issue1717.p4
+Error while parsing p4 string: test/program/arith5-bmv2.p4
+Error while parsing p4 string: test/program/saturated-bmv2.p4
+Error while parsing p4 string: test/program/nested_if_statement.p4
+Error while parsing p4 string: test/program/table-entries-priority-bmv2.p4
+Error while parsing p4 string: test/program/array-copy-bmv2.p4
+Error while parsing p4 string: test/program/issue1535.p4
+Error while parsing p4 string: test/program/select-struct.p4
+Error while parsing p4 string: test/program/issue323.p4
+Error while parsing p4 string: test/program/issue1205-bmv2.p4
+Error while parsing p4 string: test/program/pvs-bitstring-bmv2.p4
+Error while parsing p4 string: test/program/stack_ebpf.p4
+Error while parsing p4 string: test/program/issue1540.p4
+Error while parsing p4 string: test/program/inline-stack-bmv2.p4
+Parser roundtrip success: test/program/issue1830.p4
+Error while parsing p4 string: test/program/default-package-argument.p4
+Error while parsing p4 string: test/program/cases.p4
+Error while parsing p4 string: test/program/table-entries-exact-bmv2.p4
+Error while parsing p4 string: test/program/serenum-casts.p4
+Error while parsing p4 string: test/program/copy.p4
+Parser roundtrip fail: test/program/actionAnnotations.p4
+Parser roundtrip success: test/program/inline-control1.p4
+Error while parsing p4 string: test/program/issue361-bmv2.p4
+Error while parsing p4 string: test/program/match-on-exprs2-bmv2.p4
+Parser roundtrip success: test/program/bitExtract.p4
+Error while parsing p4 string: test/program/issue1517-bmv2.p4
+Error while parsing p4 string: test/program/issue1352-bmv2.p4
+Parser roundtrip success: test/program/action-uses.p4
+Error while parsing p4 string: test/program/crash-typechecker.p4
+Error while parsing p4 string: test/program/issue2104-1.p4
+Error while parsing p4 string: test/program/issue2127.p4
+Error while parsing p4 string: test/program/std_meta_inlining.p4
+Error while parsing p4 string: test/program/initializers.p4
+Error while parsing p4 string: test/program/issue2155.p4
+Error while parsing p4 string: test/program/issue2104.p4
+Error while parsing p4 string: test/program/issue447-2-bmv2.p4
+Error while parsing p4 string: test/program/spec-ex10.p4
+Error while parsing p4 string: test/program/issue1043-bmv2.p4
+Error while parsing p4 string: test/program/issue891-bmv2.p4
+Error while parsing p4 string: test/program/tuple1.p4
+Error while parsing p4 string: test/program/issue1325-bmv2.p4
+Error while parsing p4 string: test/program/issue407-2.p4
+Error while parsing p4 string: test/program/issue648.p4
+Error while parsing p4 string: test/program/issue635-bmv2.p4
+Error while parsing p4 string: test/program/issue1560-bmv2.p4
+Parser roundtrip fail: test/program/pragma-deprecated.p4
+Error while parsing p4 string: test/program/action_selector_unused-bmv2.p4
+Error while parsing p4 string: test/program/issue1876.p4
+Error while parsing p4 string: test/program/issue364-bmv2.p4
+Parser roundtrip success: test/program/issue1724.p4
+Error while parsing p4 string: test/program/cast-senum-senum.p4
+Error while parsing p4 string: test/program/issue1879-bmv2.p4
+Error while parsing p4 string: test/program/checksum3-bmv2.p4
+Error while parsing p4 string: test/program/equality-varbit-bmv2.p4
+Error while parsing p4 string: test/program/issue414-bmv2.p4
+Parser roundtrip fail: test/program/pragma-string.p4
+Error while parsing p4 string: test/program/crc32-bmv2.p4
+Error while parsing p4 string: test/program/init_ebpf.p4
+Error while parsing p4 string: test/program/arch2.p4
+Parser roundtrip success: test/program/named-arg.p4
+Error while parsing p4 string: test/program/issue1824-bmv2.p4
+Error while parsing p4 string: test/program/scalarmeta-bmv2.p4
+Parser roundtrip success: test/program/issue2260-2.p4
+Error while parsing p4 string: test/program/issue1834-bmv2.p4
+Error while parsing p4 string: test/program/key_ebpf.p4
+Error while parsing p4 string: test/program/pvs-struct-2-bmv2.p4
+Error while parsing p4 string: test/program/issue396.p4
+Error while parsing p4 string: test/program/empty-bmv2.p4
+Error while parsing p4 string: test/program/control-as-param.p4
+Error while parsing p4 string: test/program/table-entries-exact-ternary-bmv2.p4
+Error while parsing p4 string: test/program/psa-register2.p4
+Error while parsing p4 string: test/program/issue2213.p4
+Parser roundtrip success: test/program/spec-ex34.p4
+Parser roundtrip success: test/program/var_for_var.p4
+Error while parsing p4 string: test/program/struct_init.p4
+Error while parsing p4 string: test/program/equality.p4
+Error while parsing p4 string: test/program/spec-ex14.p4
+Parser roundtrip success: test/program/complex4.p4
+Error while parsing p4 string: test/program/psa-test.p4
+Error while parsing p4 string: test/program/spec-ex20.p4
+Error while parsing p4 string: test/program/stack_complex-bmv2.p4
+Error while parsing p4 string: test/program/decl-soundness.p4
+Parser roundtrip success: test/program/exit3.p4
+Parser roundtrip success: test/program/issue2151.p4
+Error while parsing p4 string: test/program/issue561-6-bmv2.p4
+Error while parsing p4 string: test/program/issue1208-1.p4
+Error while parsing p4 string: test/program/issue314.p4
+Parser roundtrip success: test/program/global-action1.p4
+Error while parsing p4 string: test/program/arith2-inline-bmv2.p4
+Error while parsing p4 string: test/program/names.p4
+Error while parsing p4 string: test/program/issue272-1-bmv2.p4
+Error while parsing p4 string: test/program/issue914-bmv2.p4
+Parser roundtrip success: test/program/issue1452.p4
+Error while parsing p4 string: test/program/hashext.p4
+Error while parsing p4 string: test/program/default.p4
+Parser roundtrip success: test/program/issue304.p4
+Error while parsing p4 string: test/program/issue1642-bmv2.p4
+Error while parsing p4 string: test/program/named_meter_1-bmv2.p4
+Error while parsing p4 string: test/program/issue1466.p4
+Parser roundtrip success: test/program/initializer.p4
+Parser roundtrip fail: test/program/type-params.p4
+Error while parsing p4 string: test/program/issue1544-1-bmv2.p4
+Error while parsing p4 string: test/program/issue1882-1-bmv2.p4
+Error while parsing p4 string: test/program/issue1630-bmv2.p4
+Error while parsing p4 string: test/program/action-synth.p4
+Error while parsing p4 string: test/program/v1model-special-ops-bmv2.p4
+Error while parsing p4 string: test/program/spec-ex30.p4
+Error while parsing p4 string: test/program/parser-locals2.p4
+Error while parsing p4 string: test/program/psa-portid-using-newtype2.p4
+Parser roundtrip success: test/program/issue2175.p4
+Error while parsing p4 string: test/program/pr1363.p4
+Parser roundtrip success: test/program/issue1544-2.p4
+Error while parsing p4 string: test/program/table-key-serenum.p4
+Parser roundtrip success: test/program/spec-ex04.p4
+Error while parsing p4 string: test/program/slice-def-use.p4
+Error while parsing p4 string: test/program/spec-ex15.p4
+Parser roundtrip success: test/program/template.p4
+Error while parsing p4 string: test/program/value-sets.p4
+Error while parsing p4 string: test/program/issue561-7-bmv2.p4
+Parser roundtrip success: test/program/complex5.p4
+Error while parsing p4 string: test/program/ex1.p4
+Error while parsing p4 string: test/program/initialize_generic.p4
+Error while parsing p4 string: test/program/issue983-bmv2.p4
+Error while parsing p4 string: test/program/issue737-bmv2.p4
+Parser roundtrip success: test/program/inline-control.p4
+Error while parsing p4 string: test/program/issue2343-bmv2.p4
+Parser roundtrip success: test/program/exit2.p4
+Parser roundtrip success: test/program/constructor_cast.p4
+Error while parsing p4 file: test/program/issue1566.p4
+Error while parsing p4 string: test/program/issue1595.p4
+Parser roundtrip success: test/program/cast_noop.p4
+Parser roundtrip success: test/program/issue1822.p4
+Error while parsing p4 string: test/program/hit-expr-bmv2.p4
+Error while parsing p4 string: test/program/nested_if_lvalue_dependencies.p4
+Error while parsing p4 string: test/program/side_effects.p4
+Error while parsing p4 string: test/program/runtime-index-2-bmv2.p4
+Error while parsing p4 string: test/program/issue-2123.p4
+Error while parsing p4 string: test/program/issue1653-bmv2.p4
+Parser roundtrip success: test/program/filter.p4
+Error while parsing p4 string: test/program/issue1863.p4
+Parser roundtrip success: test/program/large.p4
+Error while parsing p4 string: test/program/issue1806.p4
+Error while parsing p4 string: test/program/default_action-bmv2.p4
+Error while parsing p4 string: test/program/interface1.p4
+Error while parsing p4 string: test/program/spec-ex31.p4
+Error while parsing p4 string: test/program/issue2356.p4
+Error while parsing p4 string: test/program/calc-ebpf.p4
+Error while parsing p4 string: test/program/issue1607-bmv2.p4
+Error while parsing p4 string: test/program/psa-example-parser-checksum.p4
+Parser roundtrip success: test/program/spec-ex25.p4
+Error while parsing p4 string: test/program/drop-bmv2.p4
+Error while parsing p4 string: test/program/bvec_union-bmv2.p4
+Error while parsing p4 string: test/program/issue1409-bmv2.p4
+Error while parsing p4 string: test/program/issue2036-3.p4
+Error while parsing p4 string: test/program/issue2105.p4
+Error while parsing p4 string: test/program/stack.p4
+Parser roundtrip success: test/program/issue2342.p4
+Error while parsing p4 string: test/program/stack2.p4
+Error while parsing p4 string: test/program/count_add_ebpf.p4
+Parser roundtrip success: test/program/complex1.p4
+Error while parsing p4 string: test/program/tuple0.p4
+Error while parsing p4 string: test/program/issue447-3-bmv2.p4
+Error while parsing p4 string: test/program/issue1193-bmv2.p4
+Error while parsing p4 string: test/program/issue407-3.p4
+Error while parsing p4 string: test/program/psa-example-digest-bmv2.p4
+Error while parsing p4 string: test/program/tlv.p4
+Parser roundtrip success: test/program/after-return.p4
+Error while parsing p4 string: test/program/checksum2-bmv2.p4
+Error while parsing p4 string: test/program/assign.p4
+Error while parsing p4 string: test/program/key-bmv2.p4
+Parser roundtrip success: test/program/pipeline.p4
+Parser roundtrip success: test/program/recursive_extern.p4
+Error while parsing p4 file: test/program/issue1937.p4
+Error while parsing p4 string: test/program/inline1-bmv2.p4
+Error while parsing p4 string: test/program/highorder.p4
+Error while parsing p4 string: test/program/stack-bvec-bmv2.p4
+Error while parsing p4 string: test/program/header-bmv2.p4
+Error while parsing p4 string: test/program/test_ebpf.p4
+Error while parsing p4 string: test/program/newtype2.p4
+Error while parsing p4 string: test/program/psa-fwd-bmv2.p4
+Error while parsing p4 string: test/program/issue210.p4
+Error while parsing p4 string: test/program/pvs-struct-3-bmv2.p4
+Error while parsing p4 string: test/program/arch3.p4
+Parser roundtrip success: test/program/cast-call.p4
+Error while parsing p4 string: test/program/bool_ebpf.p4
+Error while parsing p4 string: test/program/array_field.p4
+Error while parsing p4 string: test/program/issue1406.p4
+Parser roundtrip success: test/program/decl2.p4
+Parser roundtrip success: test/program/issue1208.p4
+Error while parsing p4 string: test/program/psa-register3.p4
+Error while parsing p4 string: test/program/issue232-bmv2.p4
+Error while parsing p4 string: test/program/issue2303.p4
+Error while parsing p4 string: test/program/issue1755-1-bmv2.p4
+Parser roundtrip success: test/program/spec-ex01.p4
+Error while parsing p4 string: test/program/chain1.p4
+Error while parsing p4 string: test/program/issue986-1-bmv2.p4
+Error while parsing p4 string: test/program/arith1-bmv2.p4
+Error while parsing p4 string: test/program/union4-bmv2.p4
+Error while parsing p4 string: test/program/psa-action-profile2.p4
+Parser roundtrip success: test/program/call.p4
+Error while parsing p4 string: test/program/issue1412-bmv2.p4
+Error while parsing p4 string: test/program/issue272-2-bmv2.p4
+Error while parsing p4 string: test/program/rcp.p4
+Error while parsing p4 string: test/program/hash_ubpf.p4
+Error while parsing p4 string: test/program/table-entries-ser-enum-bmv2.p4
+Error while parsing p4 string: test/program/slice-def-use1.p4
+Parser roundtrip success: test/program/shadow.p4
+Error while parsing p4 string: test/program/psa-example-register2-bmv2.p4
+Parser roundtrip success: test/program/issue2175-6.p4
+Error while parsing p4 string: test/program/issue1538.p4
+Error while parsing p4 string: test/program/issue696-bmv2.p4
+Error while parsing p4 string: test/program/concat-bmv2.p4
+Error while parsing p4 string: test/program/issue561-5-bmv2.p4
+Error while parsing p4 string: test/program/arith-inline-bmv2.p4
+Error while parsing p4 string: test/program/action_selector_shared-bmv2.p4
+Error while parsing p4 string: test/program/issue430-1-bmv2.p4
+Error while parsing p4 string: test/program/issue794.p4
+Parser roundtrip success: test/program/extern.p4
+Error while parsing p4 file: test/program/issue1470-bmv2.p4
+Error while parsing p4 string: test/program/shadow-after-use.p4
+Error while parsing p4 string: test/program/issue2248.p4
+Error while parsing p4 string: test/program/issue561.p4
+Error while parsing p4 string: test/program/issue951.p4
+Error while parsing p4 string: test/program/noMatch.p4
+Error while parsing p4 string: test/program/psa-action-selector1.p4
+Error while parsing p4 string: test/program/issue887.p4
+Parser roundtrip fail: test/program/annotations.p4
+Error while parsing p4 string: test/program/action_profile-bmv2.p4
+Error while parsing p4 string: test/program/issue1897-bmv2.p4
+Error while parsing p4 string: test/program/register-serenum.p4
+Error while parsing p4 string: test/program/issue2265-1.p4
+Parser roundtrip success: test/program/strength2.p4
+Error while parsing p4 string: test/program/states.p4
+Error while parsing p4 string: test/program/issue2170-bmv2.p4
+Error while parsing p4 string: test/program/issue1544-2-bmv2.p4
+Error while parsing p4 string: test/program/key-issue-1020_ebpf.p4
+Parser roundtrip success: test/program/octal.p4
+Error while parsing p4 string: test/program/issue1739-bmv2.p4
+Error while parsing p4 string: test/program/issue1062-1-bmv2.p4
+Error while parsing p4 string: test/program/issue584-1.p4
+Parser roundtrip success: test/program/bitwise-signed.p4
+Parser roundtrip success: test/program/decl.p4
+Error while parsing p4 string: test/program/reject.p4
+Error while parsing p4 string: test/program/psa-meter5.p4
+Error while parsing p4 string: test/program/issue907-bmv2.p4
+Error while parsing p4 string: test/program/cast-list-expr.p4
+Parser roundtrip success: test/program/module.p4
+Parser roundtrip success: test/program/direct-action.p4
+Parser roundtrip success: test/program/enum-folding.p4
+Error while parsing p4 string: test/program/switch_ebpf.p4
+Error while parsing p4 string: test/program/v1model-digest-containing-ser-enum.p4
+Error while parsing p4 string: test/program/psa-counter1.p4
+Parser roundtrip success: test/program/useless-cast.p4
+Error while parsing p4 string: test/program/ipv6-switch-ml-bmv2.p4
+Error while parsing p4 string: test/program/issue447-1-bmv2.p4
+Error while parsing p4 string: test/program/pred2.p4
+Error while parsing p4 string: test/program/functors1.p4
+Error while parsing p4 string: test/program/issue982.p4
+Error while parsing p4 string: test/program/multicast-bmv2.p4
+Error while parsing p4 string: test/program/same_name_for_table_and_action.p4
+Parser roundtrip success: test/program/enum.p4
+Error while parsing p4 string: test/program/list-compare.p4
+Parser roundtrip success: test/program/action-bind.p4
+Error while parsing p4 string: test/program/runtime-index-bmv2.p4
+Error while parsing p4 string: test/program/strength6.p4
+Error while parsing p4 string: test/program/parse.p4
+Parser roundtrip success: test/program/overwrite.p4
+Error while parsing p4 string: test/program/inline-parser.p4
+Error while parsing p4 string: test/program/ml-headers.p4
+Error while parsing p4 string: test/program/issue313_3.p4
+Error while parsing p4 string: test/program/emptyTuple.p4
+Error while parsing p4 string: test/program/arith3-bmv2.p4
+Error while parsing p4 string: test/program/issue955.p4
+Parser roundtrip success: test/program/complex10.p4
+Error while parsing p4 string: test/program/psa-meter1.p4
+Error while parsing p4 string: test/program/issue383-bmv2.p4
+Error while parsing p4 string: test/program/free-form-annotation.p4
+Error while parsing p4 string: test/program/issue134-bmv2.p4
+Error while parsing p4 string: test/program/table-entries-valid-bmv2.p4
+Parser roundtrip success: test/program/string.p4
+Error while parsing p4 string: test/program/issue2221-bmv2.p4
+Error while parsing p4 string: test/program/two_ebpf.p4
+Error while parsing p4 string: test/program/lj_example.p4
+Error while parsing p4 string: test/program/issue1478-bmv2.p4
+Error while parsing p4 string: test/program/issue655-bmv2.p4
+Error while parsing p4 string: test/program/checksum1-bmv2.p4
+Parser roundtrip success: test/program/apply.p4
+Parser roundtrip success: test/program/issue1452-1.p4
+Parser roundtrip success: test/program/inline.p4
+Error while parsing p4 string: test/program/struct.p4
+Error while parsing p4 string: test/program/bvec-hdr-bmv2.p4
+Error while parsing p4 string: test/program/issue496.p4
+Error while parsing p4 string: test/program/union-bmv2.p4
+Error while parsing p4 string: test/program/header-stack-ops-bmv2.p4
+Error while parsing p4 string: test/program/equality-bmv2.p4
+Error while parsing p4 string: test/program/vss-example.p4
+Parser roundtrip success: test/program/function.p4
+Error while parsing p4 string: test/program/const.p4
+Error while parsing p4 string: test/program/issue1333.p4
+Error while parsing p4 string: test/program/action_call_ebpf.p4
+Parser roundtrip success: test/program/synth-action.p4
+Error while parsing p4 string: test/program/arith2-bmv2.p4
+Error while parsing p4 string: test/program/issue298-bmv2.p4
+Parser roundtrip success: test/program/issue871.p4
+Error while parsing p4 string: test/program/unused.p4
+Error while parsing p4 string: test/program/duplicateMethod.p4
+Error while parsing p4 string: test/program/ternary2-bmv2.p4
+Error while parsing p4 string: test/program/precedence.p4
+Error while parsing p4 string: test/program/issue313_2.p4
+Parser roundtrip success: test/program/issue1595-1.p4
+Error while parsing p4 string: test/program/issue2213-1.p4
+Error while parsing p4 string: test/program/match.p4
+Error while parsing p4 string: test/program/hit_ebpf.p4
+Error while parsing p4 string: test/program/declarations.p4
+Error while parsing p4 string: test/program/table-entries-ternary-bmv2.p4
+Parser roundtrip fail: test/program/nested_call.p4
+Parser roundtrip fail: test/program/string_anno.p4
+Parser roundtrip success: test/program/zero-width.p4
+Error while parsing p4 string: test/program/hit-expr.p4
+Error while parsing p4 string: test/program/named_meter_bmv2.p4
+Error while parsing p4 string: test/program/extern-funcs-bmv2.p4
+Error while parsing p4 string: test/program/psa-action-profile3.p4
+Error while parsing p4 string: test/program/parser-conditional.p4
+Parser roundtrip success: test/program/var_for_same_var.p4
+Error while parsing p4 string: test/program/structured_annotations.p4
+Error while parsing p4 string: test/program/pvs.p4
+Error while parsing p4 string: test/program/default-control-argument.p4
+Parser roundtrip success: test/program/direct-action1.p4
+Error while parsing p4 string: test/program/issue2044-bmv2.p4
+Error while parsing p4 string: test/program/factory1.p4
+Error while parsing p4 string: test/program/issue430-bmv2.p4
+Error while parsing p4 string: test/program/issue1765-bmv2.p4
+Parser roundtrip success: test/program/expression.p4
+Error while parsing p4 string: test/program/newtype.p4
+Error while parsing p4 string: test/program/functors4.p4
+Error while parsing p4 string: test/program/issue561-4-bmv2.p4
+Parser roundtrip success: test/program/concat-fold.p4
+Parser roundtrip fail: test/program/issue940.p4
+Error while parsing p4 string: test/program/issue2208.p4
+Error while parsing p4 string: test/program/issue2291-bmv2.p4
+Error while parsing p4 string: test/program/psa-counter4.p4
+Parser roundtrip success: test/program/issue1160.p4
+Error while parsing p4 string: test/program/table-entries-lpm-bmv2.p4
+Error while parsing p4 string: test/program/issue420.p4
+Error while parsing p4 string: test/program/default2.p4
+Error while parsing p4 string: test/program/issue1544-bmv2.p4
+Error while parsing p4 string: test/program/issue841.p4
+Error while parsing p4 string: test/program/parser-locals.p4
+Parser roundtrip success: test/program/issue1342.p4
+Error while parsing p4 file: test/program/direct-call2.p4
+Error while parsing p4 string: test/program/psa-custom-type-counter-index.p4
+Error while parsing p4 string: test/program/shadow3.p4
+Error while parsing p4 string: test/program/flag_lost-bmv2.p4
+Error while parsing p4 string: test/program/strength3.p4
+Error while parsing p4 string: test/program/issue1781-bmv2.p4
+Error while parsing p4 string: test/program/lpm_ebpf.p4
+Error while parsing p4 string: test/program/issue638-1.p4
+Error while parsing p4 string: test/program/recursive-casts.p4
+Parser roundtrip success: test/program/complex.p4
+Error while parsing p4 string: test/program/psa-meter4.p4
+Parser fails on file: 11 / 623
+Parser fails on string: 478 / 612
+Roundtrip fails: 13 / 134

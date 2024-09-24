@@ -13,42 +13,6 @@ module WF = Wellformed
 module F = Format
 open Util.Source
 
-(* Type equality *)
-
-(* (TODO) How to check alpha-equivalence of types? *)
-let rec type_equals (typ_l : Type.t) (typ_r : Type.t) : bool =
-  match (typ_l, typ_r) with
-  (* check for equality *)
-  | ErrT, ErrT | MatchKindT, MatchKindT | BoolT, BoolT | IntT, IntT -> true
-  | FIntT width_l, FIntT width_r -> Bigint.(width_l = width_r)
-  | FBitT width_l, FBitT width_r -> Bigint.(width_l = width_r)
-  | VBitT width_l, VBitT width_r -> Bigint.(width_l = width_r)
-  (* (TODO) Nominal typing for new type? *)
-  | NewT (id_l, _typ_inner_l), NewT (id_r, _typ_inner_r) -> id_l = id_r
-  | EnumT id_l, EnumT id_r -> id_l = id_r
-  | SEnumT (id_l, _typ_inner_l), SEnumT (id_r, _typ_inner_r) -> id_l = id_r
-  | TupleT typs_inner_l, TupleT typs_inner_r ->
-      List.for_all2 type_equals typs_inner_l typs_inner_r
-  | StackT (typ_inner_l, size_l), StackT (typ_inner_r, size_r) ->
-      type_equals typ_inner_l typ_inner_r && Bigint.(size_l = size_r)
-  | StructT (id_l, fields_l), StructT (id_r, fields_r)
-  | HeaderT (id_l, fields_l), HeaderT (id_r, fields_r)
-  | UnionT (id_l, fields_l), UnionT (id_r, fields_r) ->
-      let members_l, typs_inner_l = List.split fields_l in
-      let members_r, typs_inner_r = List.split fields_r in
-      id_l = id_r
-      && List.for_all2 ( = ) members_l members_r
-      && List.for_all2 type_equals typs_inner_l typs_inner_r
-  (* (TODO) Handle rest *)
-  | _ -> false
-
-and check_type_equals (typ_l : Type.t) (typ_r : Type.t) : unit =
-  if not (type_equals typ_l typ_r) then (
-    Format.eprintf "(check_type_equals) Types %a and %a are not equal\n" Type.pp
-      typ_l Type.pp typ_r;
-    assert false)
-  else ()
-
 (* Coercion rules *)
 
 (* (8.11.2) Implicit casts
@@ -65,7 +29,7 @@ and check_type_equals (typ_l : Type.t) (typ_r : Type.t) : unit =
    the compiler will insert implicit casts for the select labels when they have int types.
    Similarly, when assigning a structure-valued expression to a structure or header, the compiler will add implicit casts for int fields. *)
 
-and insert_cast (expr_il : Il.Ast.expr) (typ : Type.t) : Il.Ast.expr =
+let rec insert_cast (expr_il : Il.Ast.expr) (typ : Type.t) : Il.Ast.expr =
   let ctk = Static.ctk_cast_expr (typ $ no_info) expr_il in
   Il.Ast.(
     CastE { typ = typ $ no_info; expr = expr_il } $$ expr_il.at % { typ; ctk })
@@ -119,7 +83,7 @@ and coerce_types_binary' (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) :
     | _ -> None
   in
   let typ_l, typ_r = (expr_l_il.note.typ, expr_r_il.note.typ) in
-  if type_equals typ_l typ_r then Some (typ_l, expr_l_il, expr_r_il)
+  if Eq.eq_typ_alpha typ_l typ_r then Some (typ_l, expr_l_il, expr_r_il)
   else coerce_unequal_types_binary' typ_l typ_r
 
 (* Coercion for assignment (including assignment by call) *)
@@ -157,7 +121,7 @@ and coerce_type_assign' (expr_from_il : Il.Ast.expr) (typ_to : Type.t) :
     | _ -> None
   in
   let typ_from = expr_from_il.note.typ in
-  if type_equals typ_from typ_to then Some expr_from_il
+  if Eq.eq_typ_alpha typ_from typ_to then Some expr_from_il
   else coerce_unequal_type_assign' typ_from typ_to
 
 and coerce_type_assign'' (typ_from : Type.t) (typ_to : Type.t) : bool =
@@ -183,7 +147,8 @@ and coerce_type_assign'' (typ_from : Type.t) (typ_to : Type.t) : bool =
     (* (TODO) What about header union? *)
     | _ -> false
   in
-  if type_equals typ_from typ_to then true else coerce_unequal_type_assign'' ()
+  if Eq.eq_typ_alpha typ_from typ_to then true
+  else coerce_unequal_type_assign'' ()
 
 (* (6.7) L-values
 
@@ -339,17 +304,17 @@ and specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
   (* Object types are generic *)
   | ExternD (id, tparams, fdenv) ->
       check_arity tparams;
-      let theta = List.combine tparams targs |> Subst.TIdMap.of_list in
+      let theta = List.combine tparams targs |> Subst.Theta.of_list in
       let fdenv = Envs.FDEnv.map (Subst.subst_funcdef theta) fdenv in
       Types.ExternT (id, fdenv)
   | ParserD (tparams, params) ->
       check_arity tparams;
-      let theta = List.combine tparams targs |> Subst.TIdMap.of_list in
+      let theta = List.combine tparams targs |> Subst.Theta.of_list in
       let params = List.map (Subst.subst_param theta) params in
       Types.ParserT params
   | ControlD (tparams, params) ->
       check_arity tparams;
-      let theta = List.combine tparams targs |> Subst.TIdMap.of_list in
+      let theta = List.combine tparams targs |> Subst.Theta.of_list in
       let params = List.map (Subst.subst_param theta) params in
       Types.ControlT params
   | PackageD tparams ->
@@ -366,7 +331,7 @@ and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) : FuncType.t =
       assert false)
   in
   let subst_funcdef' tparams params typ_ret =
-    let theta = List.combine tparams targs |> Subst.TIdMap.of_list in
+    let theta = List.combine tparams targs |> Subst.Theta.of_list in
     let params = List.map (Subst.subst_param theta) params in
     let typ_ret = Subst.subst_typ theta typ_ret in
     (params, typ_ret)
@@ -406,7 +371,7 @@ and specialize_consdef (cd : ConsDef.t) (targs : Type.t list) : ConsType.t =
   in
   let tparams, cparams, typ = cd in
   check_arity tparams;
-  let theta = List.combine tparams targs |> Subst.TIdMap.of_list in
+  let theta = List.combine tparams targs |> Subst.Theta.of_list in
   let cparams = List.map (Subst.subst_cparam theta) cparams in
   let typ = Subst.subst_typ theta typ in
   (cparams, typ)
@@ -470,11 +435,11 @@ and type_call_convention' (cursor : Ctx.cursor) (ctx : Ctx.t)
     match dir_param with
     | Lang.Ast.In -> coerce_type_assign expr_il typ_param
     | Lang.Ast.Out | Lang.Ast.InOut ->
-        check_type_equals typ_arg typ_param;
+        Eq.check_eq_typ_alpha typ_arg typ_param;
         check_lvalue cursor ctx expr_il;
         expr_il
     | Lang.Ast.No ->
-        check_type_equals typ_arg typ_param;
+        Eq.check_eq_typ_alpha typ_arg typ_param;
         Static.check_ctk expr_il;
         expr_il
   in
@@ -1227,7 +1192,7 @@ and type_cast_explicit (typ : Type.t) (typ_target : Type.t) : bool =
   (* (TODO) casts of an invalid expression {#} to a header or a header union type *)
   (* (TODO) casts where the destination type is the same as the source type
      if the destination type appears in this list (this excludes e.g., parsers or externs). *)
-  | _ -> type_equals typ typ_target
+  | _ -> Eq.eq_typ_alpha typ typ_target
 
 and type_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
     (expr : El.Ast.expr) : Type.t * Ctk.t * Il.Ast.expr' =

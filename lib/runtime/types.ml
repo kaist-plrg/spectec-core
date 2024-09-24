@@ -71,9 +71,9 @@ and typdef =
 
 (* Function types *)
 and functyp =
+  | ActionT of param list
   | ExternFunctionT of param list * typ
   | FunctionT of param list * typ
-  | ActionT of param list
   | ExternMethodT of param list * typ
   | ExternAbstractMethodT of param list * typ
   | ParserApplyMethodT of param list
@@ -83,9 +83,9 @@ and functyp =
 
 (* Function definitions *)
 and funcdef =
+  | ActionD of param list
   | ExternFunctionD of tparam list * param list * typ
   | FunctionD of tparam list * param list * typ
-  | ActionD of param list
   | ExternMethodD of tparam list * param list * typ
   | ExternAbstractMethodD of tparam list * param list * typ
 
@@ -203,11 +203,11 @@ and pp_typdef fmt typdef =
 
 and pp_functyp fmt functyp =
   match functyp with
+  | ActionT params -> F.fprintf fmt "action(%a)" pp_params params
   | ExternFunctionT (params, typ) ->
       F.fprintf fmt "extern_func(%a) -> %a" pp_params params pp_typ typ
   | FunctionT (params, typ) ->
       F.fprintf fmt "func(%a) -> %a" pp_params params pp_typ typ
-  | ActionT params -> F.fprintf fmt "action(%a)" pp_params params
   | ExternMethodT (params, typ) ->
       F.fprintf fmt "extern_method(%a) -> %a" pp_params params pp_typ typ
   | ExternAbstractMethodT (params, typ) ->
@@ -226,13 +226,13 @@ and pp_functyp fmt functyp =
 
 and pp_funcdef fmt funcdef =
   match funcdef with
+  | ActionD params -> F.fprintf fmt "action(%a)" pp_params params
   | ExternFunctionD (tparams, params, typ) ->
       F.fprintf fmt "extern_func<%a>(%a) -> %a" pp_tparams tparams pp_params
         params pp_typ typ
   | FunctionD (tparams, params, typ) ->
       F.fprintf fmt "func<%a>(%a) -> %a" pp_tparams tparams pp_params params
         pp_typ typ
-  | ActionD params -> F.fprintf fmt "action(%a)" pp_params params
   | ExternMethodD (tparams, params, typ) ->
       F.fprintf fmt "extern_method<%a>(%a) -> %a" pp_tparams tparams pp_params
         params pp_typ typ
@@ -314,18 +314,15 @@ and eq_typ typ_a typ_b =
   | StateT, StateT -> true
   | _ -> false
 
-(* Functin definitions *)
+(* Function definitions *)
 
 and eq_funcdef funcdef_a funcdef_b =
   match (funcdef_a, funcdef_b) with
+  | ActionD params_a, ActionD params_b -> eq_params params_a params_b
   | ( ExternFunctionD (tparams_a, params_a, typ_a),
       ExternFunctionD (tparams_b, params_b, typ_b) )
   | ( FunctionD (tparams_a, params_a, typ_a),
-      FunctionD (tparams_b, params_b, typ_b) ) ->
-      eq_tparams tparams_a tparams_b
-      && eq_params params_a params_b
-      && eq_typ typ_a typ_b
-  | ActionD params_a, ActionD params_b -> eq_params params_a params_b
+      FunctionD (tparams_b, params_b, typ_b) )
   | ( ExternMethodD (tparams_a, params_a, typ_a),
       ExternMethodD (tparams_b, params_b, typ_b) )
   | ( ExternAbstractMethodD (tparams_a, params_a, typ_a),
@@ -375,9 +372,9 @@ module FuncType = struct
   let pp = pp_functyp
 
   let get_params = function
+    | ActionT params
     | ExternFunctionT (params, _)
     | FunctionT (params, _)
-    | ActionT params
     | ExternMethodT (params, _)
     | ExternAbstractMethodT (params, _)
     | ParserApplyMethodT params
@@ -387,9 +384,12 @@ module FuncType = struct
     | TableApplyMethodT _ -> []
 
   let get_typ_ret = function
-    | ExternFunctionT (_, typ_ret) | FunctionT (_, typ_ret) -> typ_ret
     | ActionT _ -> VoidT
-    | ExternMethodT (_, typ_ret) | ExternAbstractMethodT (_, typ_ret) -> typ_ret
+    | ExternFunctionT (_, typ_ret)
+    | FunctionT (_, typ_ret)
+    | ExternMethodT (_, typ_ret)
+    | ExternAbstractMethodT (_, typ_ret) ->
+        typ_ret
     | ParserApplyMethodT _ | ControlApplyMethodT _ -> VoidT
     | TableApplyMethodT typ_ret -> typ_ret
     | BuiltinMethodT (_, typ_ret) -> typ_ret
@@ -402,8 +402,8 @@ module FuncDef = struct
   let eq = eq_funcdef
 
   let get_typ_ret = function
-    | ExternFunctionD (_, _, typ_ret) | FunctionD (_, _, typ_ret) -> typ_ret
     | ActionD _ -> VoidT
+    | ExternFunctionD (_, _, typ_ret) | FunctionD (_, _, typ_ret) -> typ_ret
     | ExternMethodD (_, _, typ_ret) | ExternAbstractMethodD (_, _, typ_ret) ->
         typ_ret
 end
