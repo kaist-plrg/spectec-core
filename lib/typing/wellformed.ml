@@ -510,8 +510,7 @@ and check_valid_functype' (tset : TIdSet.t) (ft : FuncType.t) : unit =
   | BuiltinMethodT (params, typ_ret) ->
       List.iter (check_valid_param' tset) params;
       check_valid_type' tset typ_ret
-  | TableApplyMethodT typ_ret ->
-      check_valid_type' tset typ_ret
+  | TableApplyMethodT typ_ret -> check_valid_type' tset typ_ret
 
 and check_valid_funcdef (cursor : Ctx.cursor) (ctx : Ctx.t) (fd : FuncDef.t) :
     unit =

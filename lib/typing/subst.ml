@@ -95,7 +95,7 @@ let rec subst_typ (theta : Theta.t) (typ : Type.t) : Type.t =
       let typ_inner = subst_typ theta typ_inner in
       SetT typ_inner
   | StateT -> typ
-  | TableT typ_inner -> 
+  | TableT typ_inner ->
       let typ_inner = subst_typ theta typ_inner in
       TableT typ_inner
 

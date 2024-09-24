@@ -139,9 +139,7 @@ struct
      If we got better solution for searching actions with no arity, this function would be removed. *)
   let find_opt_action (fid, _args) fenv =
     let funcs =
-      List.filter
-        (fun ((fid', _), _) -> fid = fid')
-        (bindings fenv)
+      List.filter (fun ((fid', _), _) -> fid = fid') (bindings fenv)
     in
     match funcs with [] -> None | _ -> Some (List.hd funcs |> snd)
 

@@ -219,8 +219,7 @@ and pp_functyp fmt functyp =
       F.fprintf fmt "control_apply(%a)" pp_params params
   | BuiltinMethodT (params, typ) ->
       F.fprintf fmt "builtin_method(%a) -> %a" pp_params params pp_typ typ
-  | TableApplyMethodT _ -> 
-      F.fprintf fmt "table_apply"
+  | TableApplyMethodT _ -> F.fprintf fmt "table_apply"
 
 (* Function definitions *)
 
