@@ -42,10 +42,10 @@ control ingress(inout Header_t h, inout Meta_t m, inout standard_metadata_t stan
             a_with_control_params;
         }
 
-	default_action = a_with_control_params(z);
+	default_action = a_with_control_params(9w1);
 
         const entries = {
-            _ : a_with_control_params(z);
+            _ : a_with_control_params(3);
             8w2 : a_with_control_params(2);
         }
     }

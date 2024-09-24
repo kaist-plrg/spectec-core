@@ -3556,8 +3556,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       } *)
 
 (* This function is for partially static evaluation of expression. 
-    ex) l+(1+2) -> l+3 ,  9w2 - 9w1 -> 9w1 
-  If there is a same function in other place, it would be removed *)
+    ex) l+(1+2) -> l+3 ,  9w2 - 9w1 -> 9w1 *)
 
 and static_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : Il.Ast.expr list) : Il.Ast.expr list =
   List.map (static_expr cursor ctx) exprs
@@ -3646,6 +3645,22 @@ and static_arg' (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : Il.Ast.arg') : Il.Ast
   | AnyA -> AnyA
 
 (* Utils for table type checking*)
+and is_numeric_type (typ : Type.t) : bool =
+  match typ with
+  | IntT | FBitT _ | FIntT _ -> true
+  (* (TODO) : Should it be true? *)
+  | VBitT _ -> false
+  | _ -> false
+
+and cast_arg (arg_from : Il.Ast.arg) (typ_to : Type.t) : Il.Ast.arg =
+  match (arg_from.it : Il.Ast.arg') with
+  | ExprA expr_il ->
+      let expr_il = coerce_type_assign expr_il typ_to in
+      Lang.Ast.ExprA expr_il $ arg_from.at
+  | NameA (id, expr_il) ->
+      let expr_il = coerce_type_assign expr_il typ_to in
+      Lang.Ast.NameA (id, expr_il) $ arg_from.at
+  | AnyA -> Lang.Ast.AnyA $ arg_from.at
 
 and get_action_param (fd : FuncDef.t option) : Types.param list =
   let fd = Option.get fd in
@@ -3702,52 +3717,71 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
     | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
     | SetT _ | StateT | TableT _ -> false
     end
-  (* TODO : Not checked yet *)
   | "lpm" | "ternary" | "range" ->
     begin match typ with
     | IntT | FIntT _ | FBitT _ -> true
+    | SEnumT (_id, typ_inner) -> check_table_key' match_kind typ_inner
     | NewT (_id, typs_inner) -> check_table_key' match_kind typs_inner 
     (* Has eq op but not appropriate for table key *)
-    | BoolT | TupleT _ | EnumT _ | SEnumT _ | VBitT _
+    | BoolT | TupleT _ | EnumT _ | VBitT _
     | ErrT | MatchKindT | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
     (* No equality op *)
     | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
     | SetT _ | StateT | TableT _ -> false
     end
-  | _ -> Printf.printf "(check_table_key) %s is not a valid match_kind\n" match_kind;
+  | _ -> Format.eprintf "(check_table_key) %s is not a valid match_kind\n" match_kind;
     assert false
 
 and check_table_key (match_kind : string) (typ : Type.t) : unit =
   if not (check_table_key' match_kind typ) then (
-    Format.eprintf "(check_table_key) %a is not a valid table key type\n"
-      Type.pp typ;
+    Format.eprintf "(check_table_key) %a is not a valid table key type for match kind %s.\n"
+      Type.pp typ match_kind;
     assert false)
 
 (* args_base : action arguments in actions
    args_il : action arguments in entry | default *)
+(* TODO : type_call_convention shouldn't be in action arguments *)
 
+(* action in entry
+  - typecheck with action params
+  - check ctk for no direction args 
+    : No mention is spec but in p4c
+  - compare direction args with args_base
+    : assume that args_base is verified in check_arg_action,
+      so implicit cast from args_base to typs_param is same as 
+      return value of check_arg_action
+*)
 and check_arg_action_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (params : Types.param list)
   (args_il : (Il.Ast.arg * Type.t) list) (args_base : Il.Ast.arg list): Il.Ast.arg list =
-  let args_entry = List.map2 (
+  let args_il = type_call_convention cursor ctx params args_il in
+  let args_entry, typs_param = List.map2 (
     fun param arg_il ->
-      let arg_il, _typ_arg = arg_il in
-      let _id, dir_param, _typ_param, _val_param = param in
+      let _id, dir_param, typ_param, _val_param = param in
       match dir_param with
       | Lang.Ast.No -> 
         (* Check compile time known *)
         arg_il |> expr_arg |> Static.check_ctk;
         None
-      | _ -> Some arg_il
+      | _ -> Some (arg_il, typ_param)
     ) 
-    params args_il |> List.filter_map (fun x -> x)
+    params args_il |> List.filter_map (fun x -> x) |> List.split
   in 
+  let args_base = List.map2 cast_arg args_base typs_param in
   let args_base = static_args cursor ctx args_base in
   let args_entry = static_args cursor ctx args_entry in
   if not (Il.Eq.eq_args args_base args_entry) then 
-    (Printf.printf "(check_arg_action_entry) : arguments are different\n";
+    (Format.eprintf "(check_arg_action_entry) : argument %a, %a are different\n" 
+    Il.Pp.pp_args args_base Il.Pp.pp_args args_entry;
     assert false);
-  type_call_convention cursor ctx params args_il
+  args_il
 
+(* action in default_action
+  - typecheck with action params
+  - check ctk for no direction args 
+    : No mention is spec but in p4c
+  - compare direction args with args_base
+    : syntatically eq
+*)
 and check_arg_action_default (cursor : Ctx.cursor) (ctx : Ctx.t) (params : Types.param list)
   (args_il : (Il.Ast.arg * Type.t) list) (args_base : Il.Ast.arg list): Il.Ast.arg list =
   let args_default = List.map2 (
@@ -3764,7 +3798,8 @@ and check_arg_action_default (cursor : Ctx.cursor) (ctx : Ctx.t) (params : Types
     params args_il |> List.filter_map (fun x -> x)
   in 
   if not (Il.Eq.eq_args args_base args_default) then 
-    (Printf.printf "(check_arg_action_default) : arguments are different\n";
+    (Format.eprintf "(check_arg_action_default) : argument %a, %a are different\n" 
+      Il.Pp.pp_args args_base Il.Pp.pp_args args_default;
     assert false);
   type_call_convention cursor ctx params args_il
 
@@ -3798,14 +3833,14 @@ and type_action_keyset' (ctx : Ctx.t) (key_prop : Type.t * string) (keyset : El.
             if match_kind = "lpm" || match_kind = "ternary" then
                 type_expr Ctx.Local ctx expr |> expect_static_value_set |> remove_set
             else
-                (Printf.printf
+                (Format.eprintf
                 "(type_action_keyset) match_kind %s can not use mask expression \n" match_kind;
                 assert false);
         | RangeE _ -> 
             if match_kind = "range" then
                 type_expr Ctx.Local ctx expr |> expect_static_value_set |> remove_set
             else
-                (Printf.printf
+                (Format.eprintf
                 "(type_action_keyset) match_kind %s can not use range expression \n" match_kind;
                 assert false);
         | _ ->
@@ -3814,14 +3849,10 @@ and type_action_keyset' (ctx : Ctx.t) (key_prop : Type.t * string) (keyset : El.
             Static.check_ctk expr_il;
             WF.check_valid_type Ctx.Local ctx typ;
             expr_il
-      in        
-      let typ = expr_il.note.typ in 
-      if typ_key <> typ then (
-        Format.eprintf
-          "(type_action_keyset) Key type %a must match the type of the keyset 
-           expression %a\n"
-          Type.pp typ_key Type.pp typ;
-        assert false);
+      in
+      (* expr_key is dummy expression to use coerce_types_binary *)
+      let expr_key = insert_cast expr_il typ_key in
+      let _, expr_il, _ = coerce_types_binary expr_il expr_key in
       Lang.Ast.ExprK expr_il
   | DefaultK -> 
     if match_kind = "exact" then (
@@ -3831,7 +3862,7 @@ and type_action_keyset' (ctx : Ctx.t) (key_prop : Type.t * string) (keyset : El.
     Lang.Ast.DefaultK
   | AnyK -> 
     if match_kind = "exact" then (
-      Printf.printf
+      Format.eprintf
         "(type_action_keyset) exact match does not allow wildcard expression \n";
       assert false);
     Lang.Ast.AnyK
@@ -3864,7 +3895,9 @@ and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_key : El.Ast.tabl
   let key_prop = (typ, match_kind.it) in
   (key_prop, key_il)
 
-(* (TODO) : type_table_action, type_table_action_entry, type_table_action_default are very sim *)
+(* (TODO) : check action in entry | default, do we need to use find_overloaded_opt?
+  What about just search name from table_action_notes and get info *)
+  
 and type_table_action (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action : El.Ast.table_action) :
     Il.Ast.table_action * (string * Il.Ast.arg list) =
   let table_action_il, table_action_note = type_table_action' cursor ctx table_action.it in 
@@ -3880,10 +3913,10 @@ and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action : El.As
     assert false);
   let params = get_action_param fd in
   let typs_arg, args_il = List.map (type_arg cursor ctx) args |> List.split in
-  let args_il = List.combine args_il typs_arg in
-  let args_il = check_arg_action cursor ctx params args_il in
+  let args_il' = List.combine args_il typs_arg in
+  let args_il' = check_arg_action cursor ctx params args_il' in
   let annos_il = List.map (type_anno cursor ctx) annos in
-  (var, args_il, annos_il), (action_name, args_il)
+  (var, args_il', annos_il), (action_name, args_il)
 
 and type_table_action_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action_notes : (string * Il.Ast.arg list) list)
      (table_action : El.Ast.table_action) : Il.Ast.table_action =
@@ -3893,7 +3926,7 @@ and type_table_action_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_action_n
     (table_action : El.Ast.table_action') : Il.Ast.table_action' =
   let var, args, annos = table_action in
   let action_name = get_action_name table_action in
-  let fd = Ctx.find_overloaded_opt Ctx.find_funcdef_opt_action cursor var args ctx in
+  let fd = Ctx.find_overloaded_opt Ctx.find_funcdef_opt cursor var args ctx in
   if Option.is_none fd then (
     Format.eprintf "(type_table_action_entry) There is no action named %a or invalid argument\n" El.Pp.pp_var var;
     assert false);
@@ -3967,19 +4000,22 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_custom : El.As
   let mem, expr, custom_const, annos = table_custom in
   let expr_il = type_expr cursor ctx expr in
   let annos_il = List.map (type_anno cursor ctx) annos in
-  (* (TODO) : Not only for IntT but also numeric type too *)
+  let typ = expr_il.note.typ in
   (match mem.it with
-  | "size" -> if expr_il.note.typ <> IntT then (
-    Printf.printf "(type_table_custom) priority_delta should be integer type\n";
+  | "size" -> if is_numeric_type typ then (
+    Format.eprintf "(type_table_custom) size should be numeric type, not %a\n"
+      Types.pp_typ typ;
     assert false);
-  | "largest_priority_wins" -> if expr_il.note.typ <> BoolT then (
-    Printf.printf "(type_table_custom) priority_delta should be bool type\n\n";
+  | "largest_priority_wins" -> if typ <> BoolT then (
+    Format.eprintf "(type_table_custom) largest_priority_wins should be bool type, not %a\n"
+      Types.pp_typ typ;
     assert false);
-  | "priority_delta" -> if expr_il.note.typ <> IntT then (
-    Printf.printf "(type_table_custom) priority_delta should be integer type\n";
+  | "priority_delta" -> if is_numeric_type typ then (
+    Format.eprintf "(type_table_custom) priority_delta should be numeric type, not %a\n"
+      Types.pp_typ typ;
     assert false);
   | _ -> (
-    Printf.printf "(type_table_custom) There is no custum element %s\n" mem.it;
+    Format.eprintf "(type_table_custom) There is no custom element %s\n" mem.it;
     assert false););
   (mem, expr_il, custom_const, annos_il)
 
