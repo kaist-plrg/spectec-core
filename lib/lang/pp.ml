@@ -347,33 +347,31 @@ and pp_parser_states ?(level = 0) (pp_typ : 'typ pp_typ)
 
 (* Tables *)
 
-and pp_table ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt table =
-  let table_keys, table_actions, table_entries, table_default, table_custom =
-    table
-  in
-  match table_default with
+and pp_table ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
+    (table : ('note, 'expr) table) =
+  match table.default with
   | Some table_default ->
       F.fprintf fmt "{\n%a\n%a\n%a\n%a\n%a\n%s}"
         (pp_table_keys ~level:(level + 1) pp_expr)
-        table_keys
+        table.keys
         (pp_table_actions ~level:(level + 1) pp_expr)
-        table_actions
+        table.actions
         (pp_table_entries ~level:(level + 1) pp_expr)
-        table_entries
+        table.entries
         (pp_table_default ~level:(level + 1) pp_expr)
         table_default
         (pp_table_customs ~level:(level + 1) pp_expr)
-        table_custom (indent level)
+        table.customs (indent level)
   | None ->
       F.fprintf fmt "{\n%a\n%a\n%a\n%a\n%s}"
         (pp_table_keys ~level:(level + 1) pp_expr)
-        table_keys
+        table.keys
         (pp_table_actions ~level:(level + 1) pp_expr)
-        table_actions
+        table.actions
         (pp_table_entries ~level:(level + 1) pp_expr)
-        table_entries
+        table.entries
         (pp_table_customs ~level:(level + 1) pp_expr)
-        table_custom (indent level)
+        table.customs (indent level)
 
 (* Table keys *)
 

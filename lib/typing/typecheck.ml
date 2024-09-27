@@ -3479,6 +3479,19 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    If a table has no key property, or if the value of its key property is the empty tuple, i.e. key = {},
    then it contains no look-up table, just a default action—i.e., the associated lookup table is always the empty map.
 
+   The expected meaning of these values is as follows:
+
+    - an exact match kind on a key field means that the value of the field in the table specifies exactly the value
+      the lookup key field must have in order to match.
+      This is applicable for all legal key fields whose types support equality comparisons.
+    - a ternary match kind on a key field means that the field in the table specifies a set of values
+      for the key field using a value and a mask.
+      The meaning of the (value, mask) pair is similar to the P4 mask expressions, as described in Section 8.15.3:
+      a key field k matches the table entry when k & mask == value & mask.
+    - a lpm (longest prefix match) match kind on a key field is a specific type of ternary match where
+      the mask is required to have a form in binary that is a contiguous set of 1 bits followed by a contiguous set of 0 bits.
+      Masks with more 1 bits have automatically higher priorities. A mask with all bits 0 is legal.
+
    (14.2.1.2) Actions
 
    Each action in the list of actions for a table must have a distinct name.
@@ -4054,56 +4067,52 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       "(type_table_decl) Table declarations must be in a control block\n";
     assert false);
   let annos_il = List.map (type_anno cursor ctx) annos in
-
-  let table_keys, table_actions, table_entries, table_default, table_customs =
-    table
-  in
   let key_props, table_keys_il =
-    List.map (type_table_key cursor ctx) table_keys |> List.split
+    List.map (type_table_key cursor ctx) table.keys |> List.split
   in
   let table_action_il, table_action_notes =
-    List.map (type_table_action cursor ctx) table_actions |> List.split
+    List.map (type_table_action cursor ctx) table.actions |> List.split
   in
   let action_names, _ = table_action_notes |> List.split in
   WF.check_distinct_names action_names;
   let table_entries_il =
     List.map
       (type_table_entry cursor ctx key_props table_action_notes)
-      table_entries
+      table.entries
   in
   let table_default_il =
-    type_table_default cursor ctx table_action_notes table_default
+    type_table_default cursor ctx table_action_notes table.default
   in
   let table_customs_il =
-    List.map (type_table_custom cursor ctx) table_customs
+    List.map (type_table_custom cursor ctx) table.customs
   in
   (* (TODO) : Should we add action_list(T), apply_result(T) type in env? And Should we add decl to? *)
   (* Petr4 did, and also it puts id in TableT instead of typ*)
-  let action_enum = Types.EnumT ("action_list_" ^ id.it) in
-  let apply_result =
-    Types.StructT
-      ( "apply_result_" ^ id.it,
-        [
-          ("hit", Types.BoolT);
-          ("miss", Types.BoolT);
-          ("action_run", action_enum);
-        ] )
+  let typ =
+    let action_enum = Types.EnumT ("action_list_" ^ id.it) in
+    let apply_result =
+      Types.StructT
+        ( "apply_result_" ^ id.it,
+          [
+            ("hit", Types.BoolT);
+            ("miss", Types.BoolT);
+            ("action_run", action_enum);
+          ] )
+    in
+    Types.TableT apply_result
   in
-  let typ = Types.TableT apply_result in
   let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.DYN ctx in
-  let decl_il =
-    Il.Ast.TableD
+  let table_il =
+    Lang.Ast.
       {
-        id;
-        table =
-          ( table_keys_il,
-            table_action_il,
-            table_entries_il,
-            table_default_il,
-            table_customs_il );
-        annos = annos_il;
+        keys = table_keys_il;
+        actions = table_action_il;
+        entries = table_entries_il;
+        default = table_default_il;
+        customs = table_customs_il;
       }
   in
+  let decl_il = Il.Ast.TableD { id; table = table_il; annos = annos_il } in
   (ctx, decl_il)
 
 (* (7.2.12.2) Control type declarations *)

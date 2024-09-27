@@ -636,57 +636,64 @@ and transform_parser_states (states : Parser.state list) : El.parser_state list
 
 (* Tables *)
 
-and transform_table_properties (properties : Table.property list) :
-    El.table_key list
-    * El.table_action list
-    * El.table_entry list
-    * El.table_default option
-    * El.table_custom list =
-  List.fold_left
-    (fun (table_keys, table_actions, table_entries, table_default, table_customs)
-         (property : Table.property) ->
-      match property with
-      | Key { keys; _ } ->
-          let table_keys = transform_table_keys keys in
-          ( table_keys,
-            table_actions,
-            table_entries,
-            table_default,
-            table_customs )
-      | Actions { actions; _ } ->
-          let table_actions = transform_table_actions actions in
-          ( table_keys,
-            table_actions,
-            table_entries,
-            table_default,
-            table_customs )
-      | Entries { entries; _ } ->
-          let table_entries = transform_table_entries entries in
-          ( table_keys,
-            table_actions,
-            table_entries,
-            table_default,
-            table_customs )
-      | DefaultAction { action; const; tags = at; _ } ->
-          assert (table_default = None);
-          let table_action = transform_table_action action in
-          let table_default = Some ((table_action, const) $ at) in
-          ( table_keys,
-            table_actions,
-            table_entries,
-            table_default,
-            table_customs )
-      | Custom { name; value; const; tags = at; annotations } ->
-          let text_name = transform_text name in
-          let expr = transform_expr value in
-          let annos = transform_annos annotations in
-          let table_custom = (text_name, expr, const, annos) $ at in
-          ( table_keys,
-            table_actions,
-            table_entries,
-            table_default,
-            table_customs @ [ table_custom ] ))
-    ([], [], [], None, []) properties
+and transform_table_properties (properties : Table.property list) : El.table =
+  let table_keys, table_actions, table_entries, table_default, table_customs =
+    List.fold_left
+      (fun ( table_keys,
+             table_actions,
+             table_entries,
+             table_default,
+             table_customs ) (property : Table.property) ->
+        match property with
+        | Key { keys; _ } ->
+            let table_keys = transform_table_keys keys in
+            ( table_keys,
+              table_actions,
+              table_entries,
+              table_default,
+              table_customs )
+        | Actions { actions; _ } ->
+            let table_actions = transform_table_actions actions in
+            ( table_keys,
+              table_actions,
+              table_entries,
+              table_default,
+              table_customs )
+        | Entries { entries; _ } ->
+            let table_entries = transform_table_entries entries in
+            ( table_keys,
+              table_actions,
+              table_entries,
+              table_default,
+              table_customs )
+        | DefaultAction { action; const; tags = at; _ } ->
+            assert (table_default = None);
+            let table_action = transform_table_action action in
+            let table_default = Some ((table_action, const) $ at) in
+            ( table_keys,
+              table_actions,
+              table_entries,
+              table_default,
+              table_customs )
+        | Custom { name; value; const; tags = at; annotations } ->
+            let text_name = transform_text name in
+            let expr = transform_expr value in
+            let annos = transform_annos annotations in
+            let table_custom = (text_name, expr, const, annos) $ at in
+            ( table_keys,
+              table_actions,
+              table_entries,
+              table_default,
+              table_customs @ [ table_custom ] ))
+      ([], [], [], None, []) properties
+  in
+  {
+    keys = table_keys;
+    actions = table_actions;
+    entries = table_entries;
+    default = table_default;
+    customs = table_customs;
+  }
 
 (* Table keys *)
 
