@@ -393,6 +393,14 @@ module FuncDef = struct
   let pp = pp_funcdef
   let eq = eq_funcdef
 
+  let get_params = function
+    | ActionD params
+    | ExternFunctionD (_, params, _)
+    | FunctionD (_, params, _)
+    | ExternMethodD (_, params, _)
+    | ExternAbstractMethodD (_, params, _) ->
+        params
+
   let get_typ_ret = function
     | ActionD _ -> VoidT
     | ExternFunctionD (_, _, typ_ret) | FunctionD (_, _, typ_ret) -> typ_ret

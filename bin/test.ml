@@ -7,6 +7,16 @@ type stat = {
   mutable fail_typecheck : int;
 }
 
+let log_stat name fails total : unit =
+  Printf.sprintf "%s: [PASS] %d [FAIL] %d [TOTAL] %d" name (total - fails) fails
+    total
+  |> print_endline
+
+let collect_files testdir =
+  let files = Sys_unix.readdir testdir in
+  Array.sort String.compare files;
+  Array.to_list files
+
 (* Parser roundtrip test *)
 
 let parse_file stat includes filename =
@@ -46,12 +56,12 @@ let parse_roundtrip stat includes filename =
           stat)
 
 let parse_test includes testdir =
-  let files = Sys_unix.readdir testdir |> Array.to_list in
+  let files = collect_files testdir in
   let total = List.length files in
   let stat =
     { fail_file = 0; fail_string = 0; fail_roundtrip = 0; fail_typecheck = 0 }
   in
-  Printf.sprintf "Running parser roundtrip tests on %d files" total
+  Printf.sprintf "Running parser roundtrip tests on %d files\n" total
   |> print_endline;
   let stat =
     List.fold_left
@@ -60,14 +70,11 @@ let parse_test includes testdir =
         parse_roundtrip stat includes filename)
       stat files
   in
-  Printf.sprintf "Parser fails on file: %d / %d" stat.fail_file total
-  |> print_endline;
+  log_stat "\nParser on file" stat.fail_file total;
   let total = total - stat.fail_file in
-  Printf.sprintf "Parser fails on string: %d / %d" stat.fail_string total
-  |> print_endline;
+  log_stat "Parser on string" stat.fail_string total;
   let total = total - stat.fail_string in
-  Printf.sprintf "Roundtrip fails: %d / %d" stat.fail_roundtrip total
-  |> print_endline
+  log_stat "Parser roundtrip" stat.fail_roundtrip total
 
 let parse_command =
   Core.Command.basic ~summary:"parser roundtrip test"
@@ -95,12 +102,12 @@ let typecheck stat includes filename =
         stat)
 
 let typecheck_test includes testdir =
-  let files = Sys_unix.readdir testdir |> Array.to_list in
+  let files = collect_files testdir in
   let total = List.length files in
   let stat =
     { fail_file = 0; fail_string = 0; fail_roundtrip = 0; fail_typecheck = 0 }
   in
-  Printf.sprintf "Running typecheck tests on %d files" total |> print_endline;
+  Printf.sprintf "Running typecheck tests on %d files\n" total |> print_endline;
   let stat =
     List.fold_left
       (fun stat file ->
@@ -108,12 +115,9 @@ let typecheck_test includes testdir =
         typecheck stat includes filename)
       stat files
   in
-  Printf.sprintf "Typecheck fails on parse: %d / %d" stat.fail_file total
-  |> print_endline;
+  log_stat "\nParser on file" stat.fail_file total;
   let total = total - stat.fail_file in
-  Printf.sprintf "Typecheck fails on typecheck: %d / %d" stat.fail_typecheck
-    total
-  |> print_endline
+  log_stat "Typecheck" stat.fail_typecheck total
 
 let typecheck_command =
   Core.Command.basic ~summary:"typecheck test"

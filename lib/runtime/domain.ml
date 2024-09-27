@@ -12,11 +12,19 @@ end
 module IdSet = struct
   include Set.Make (Id)
 
+  let pp fmt s =
+    let pp_id fmt id = Format.fprintf fmt "%a" Id.pp id in
+    Format.fprintf fmt "{ %a }" (Format.pp_print_list pp_id) (elements s)
+
+  let eq = equal
   let of_list l = List.fold_left (fun acc x -> add x acc) empty l
 end
 
 module IdMap = struct
   include Map.Make (Id)
+
+  let keys m = List.map fst (bindings m)
+  let values m = List.map snd (bindings m)
 
   let pp pp_v fmt m =
     let pp_binding fmt (k, v) = Format.fprintf fmt "%a : %a" Id.pp k pp_v v in
@@ -63,11 +71,20 @@ end
 module FIdSet = struct
   include Set.Make (FId)
 
+  let eq = equal
+
+  let pp fmt s =
+    let pp_fid fmt fid = Format.fprintf fmt "%a" FId.pp fid in
+    Format.fprintf fmt "{ %a }" (Format.pp_print_list pp_fid) (elements s)
+
   let of_list l = List.fold_left (fun acc x -> add x acc) empty l
 end
 
 module FIdMap = struct
   include Map.Make (FId)
+
+  let keys m = List.map fst (bindings m)
+  let values m = List.map snd (bindings m)
 
   let pp pp_v fmt m =
     let pp_binding fmt (k, v) = Format.fprintf fmt "%a : %a" FId.pp k pp_v v in
