@@ -9,6 +9,33 @@ module ConsDef = Types.ConsDef
 module Envs = Runtime.Envs
 module F = Format
 
+let check_distinct_names (names : string list) : unit =
+  let distinct =
+    List.fold_left
+      (fun (distinct, names) name ->
+        if not distinct then (distinct, names)
+        else if List.mem name names then (false, names)
+        else (distinct, name :: names))
+      (true, []) names
+    |> fst
+  in
+  if not distinct then (
+    Format.eprintf "(check_distinct_names) Names are not distinct\n";
+    assert false)
+  else ()
+
+let check_distinct_vars (vars : Lang.Ast.var list) : unit =
+  let ids_top, ids_current =
+    List.partition_map
+      (fun (var : Lang.Ast.var) ->
+        match var.it with
+        | Top id -> Either.Left id.it
+        | Current id -> Either.Right id.it)
+      vars
+  in
+  check_distinct_names ids_top;
+  check_distinct_names ids_current
+
 (* Well-formedness checks for
    types, typedefs, functypes, funcdefs, constypes, and consdefs *)
 
@@ -69,21 +96,6 @@ module F = Format
     - a signed integer, i.e. int<W> for some compile-time known W.
     - a type name declared via typedef, where the base type of that type is either one of the types listed above,
       or another typedef name that meets these conditions. *)
-
-let check_distinct_names (names : string list) : unit =
-  let distinct =
-    List.fold_left
-      (fun (distinct, names) name ->
-        if not distinct then (distinct, names)
-        else if List.mem name names then (false, names)
-        else (distinct, name :: names))
-      (true, []) names
-    |> fst
-  in
-  if not distinct then (
-    Format.eprintf "(check_distinct_names) Names are not distinct\n";
-    assert false)
-  else ()
 
 (* (TODO) check_valid_type and check_valid_typedef quite redundant for
    typedefs that are not generic. maybe consider only check_valid_type

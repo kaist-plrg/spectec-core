@@ -339,6 +339,12 @@ module Type = struct
   let pp = pp_typ
   let eq = eq_typ
 
+  let rec is_numeric typ =
+    match typ with
+    | IntT | FIntT _ | FBitT _ -> true
+    | SEnumT (_, typ_inner) -> is_numeric typ_inner
+    | _ -> false
+
   let rec is_ground typ =
     match typ with
     | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
@@ -399,6 +405,14 @@ module FuncDef = struct
 
   let pp = pp_funcdef
   let eq = eq_funcdef
+
+  let get_params = function
+    | ActionD params
+    | ExternFunctionD (_, params, _)
+    | FunctionD (_, params, _)
+    | ExternMethodD (_, params, _)
+    | ExternAbstractMethodD (_, params, _) ->
+        params
 
   let get_typ_ret = function
     | ActionD _ -> VoidT

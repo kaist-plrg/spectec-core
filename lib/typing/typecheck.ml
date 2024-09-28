@@ -423,13 +423,13 @@ and type_cparam (cursor : Ctx.cursor) (ctx : Ctx.t) (cparam : El.Ast.cparam) :
 (* Calling convention *)
 
 and type_call_convention (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (params : Types.param list) (args : (Il.Ast.arg * Type.t) list) :
+    (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list) :
     Il.Ast.arg list =
-  List.map2 (type_call_convention' cursor ctx) params args
+  List.map2 (type_call_convention' cursor ctx) params args_il_typed
 
 and type_call_convention' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (param : Types.param) (arg : Il.Ast.arg * Type.t) : Il.Ast.arg =
-  let arg_il, typ_arg = arg in
+    (param : Types.param) (arg_il_typed : Il.Ast.arg * Type.t) : Il.Ast.arg =
+  let arg_il, typ_arg = arg_il_typed in
   let _, dir_param, typ_param, _ = param in
   let type_expr_arg (expr_il : Il.Ast.expr) =
     match dir_param with
@@ -1424,8 +1424,7 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let expr_base_il = type_expr cursor ctx expr_base in
   let expr_idx_il = type_expr cursor ctx expr_idx in
   let typ_base, typ_idx = (expr_base_il.note.typ, expr_idx_il.note.typ) in
-  if not (match typ_idx with IntT | FIntT _ | FBitT _ -> true | _ -> false)
-  then (
+  if not (Type.is_numeric typ_idx) then (
     Format.eprintf "(type_array_acc_expr) Index %a must be of numeric type\n"
       (El.Pp.pp_expr ~level:0) expr_idx;
     assert false);
@@ -1887,7 +1886,8 @@ and type_func (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : El.Ast.var)
     (targs_il : Il.Ast.targ list) (args : El.Ast.arg list) : FuncType.t =
   let targs = List.map it targs_il in
   let fd =
-    Ctx.find_overloaded_opt Ctx.find_funcdef_opt cursor var_func args ctx
+    Ctx.find_overloaded_opt Ctx.find_funcdef_overloaded_opt cursor var_func args
+      ctx
   in
   if Option.is_none fd then (
     Format.eprintf "(type_func) Function %a not found\n" El.Pp.pp_var var_func;
@@ -1936,7 +1936,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
             Types.BuiltinMethodT ([], Types.IntT)
         | _ -> error_not_found ())
     | ExternT (_id, fdenv) -> (
-        let fd = Envs.FDEnv.find_opt (member.it, args) fdenv in
+        let fd = Envs.FDEnv.find_overloaded_opt (member.it, args) fdenv in
         match fd with
         | Some fd -> specialize_funcdef fd targs
         | None -> error_not_found ())
@@ -1960,7 +1960,7 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t)
     (args : El.Ast.arg list) : Il.Ast.arg list * Type.t =
   (* (TODO) Consider default parameters/arguments, in such case arity can appear to mismatch *)
   let params = FuncType.get_params ft in
-  let typ_args, args_il = List.map (type_arg cursor ctx) args |> List.split in
+  let args_il, typ_args = List.map (type_arg cursor ctx) args |> List.split in
   check_call_arity ft params args_il;
   check_named_args args_il;
   let params, typ_args, args_il =
@@ -2096,7 +2096,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
   (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
   let cparams, typ_inst = ct in
-  let typ_args, args_il = List.map (type_arg cursor ctx) args |> List.split in
+  let args_il, typ_args = List.map (type_arg cursor ctx) args |> List.split in
   check_instantiation_arity var_inst cparams args_il;
   check_named_args args_il;
   let cparams, typ_args, args_il =
@@ -2117,24 +2117,24 @@ and type_instantiation_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
 (* Argument typing *)
 
 and type_arg (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : El.Ast.arg) :
-    Type.t * Il.Ast.arg =
-  let typ, arg_il = type_arg' cursor ctx arg.it in
-  (typ, arg_il $ arg.at)
+    Il.Ast.arg * Type.t =
+  let arg_il, typ = type_arg' cursor ctx arg.it in
+  (arg_il $ arg.at, typ)
 
 and type_arg' (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : El.Ast.arg') :
-    Type.t * Il.Ast.arg' =
+    Il.Ast.arg' * Type.t =
   match arg with
   | ExprA expr ->
       let expr_il = type_expr cursor ctx expr in
       let typ = expr_il.note.typ in
       let arg_il = Lang.Ast.ExprA expr_il in
-      (typ, arg_il)
+      (arg_il, typ)
   | NameA (id, expr) ->
       let expr_il = type_expr cursor ctx expr in
       let typ = expr_il.note.typ in
       let arg_il = Lang.Ast.NameA (id, expr_il) in
-      (typ, arg_il)
-  | AnyA -> (TopT, Lang.Ast.AnyA)
+      (arg_il, typ)
+  | AnyA -> (Lang.Ast.AnyA, TopT)
 
 (* Statement typing *)
 
@@ -2607,7 +2607,7 @@ and type_instantiation_init_decl' (cursor : Ctx.cursor) (ctx : Ctx.t)
       let ctx, decl_il =
         type_function_decl cursor ctx id tparams params typ_ret body
       in
-      let fd = Ctx.find_funcdef cursor fid ctx in
+      let fd = Ctx.find_funcdef_overloaded cursor fid ctx in
       let fdenv_abstract = Envs.FDEnv.add fid fd fdenv_abstract in
       (fdenv_abstract, decl_il)
   | _ ->
@@ -2646,7 +2646,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
           Envs.FDEnv.fold
             (fun fid fd fdenv_extern ->
               let typ_ret = FuncDef.get_typ_ret fd in
-              let fd_extern = Envs.FDEnv.find_opt fid fdenv_extern in
+              let fd_extern = Envs.FDEnv.find_overloaded_opt fid fdenv_extern in
               (* (TODO) What if extern abstract method decl has type parameters? *)
               if
                 match (fd_extern : FuncDef.t option) with
@@ -3470,7 +3470,78 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    A property marked as const cannot be changed dynamically by the control plane.
    The key, actions, and size properties are always constant, so the const keyword is not needed for these.
 
-   (14.2.1.1) Keys
+   (14.2.2) Match-action unit invocation
+
+   A table can be invoked by calling its apply method. Calling an apply method on a table instance
+   returns a value with a struct type with three fields. This structure is synthesized by the compiler automatically.
+   For each table T, the compiler synthesizes an enum and a struct, shown in pseudo-P4:
+
+      enum action_list(T) {
+         // one field for each action in the actions list of table T
+      }
+      struct apply_result(T) {
+          bool hit;
+          bool miss;
+          action_list(T) action_run;
+      } *)
+
+and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
+    (table : El.Ast.table) (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
+  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Control) then (
+    Format.eprintf
+      "(type_table_decl) Table declarations must be in a control block\n";
+    assert false);
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let table_ctx = Tblctx.empty in
+  let table_ctx, table_keys_il =
+    type_table_keys cursor ctx table_ctx table.keys
+  in
+  let table_ctx, table_actions_il =
+    type_table_actions cursor ctx table_ctx table.actions
+  in
+  let table_action_vars =
+    List.map it table_actions_il |> List.map (fun (var, _, _) -> var)
+  in
+  WF.check_distinct_vars table_action_vars;
+  let table_entries_il =
+    List.map (type_table_entry cursor ctx table_ctx) table.entries
+  in
+  let table_default_il =
+    type_table_default cursor ctx table_ctx table.default
+  in
+  let table_customs_il =
+    List.map (type_table_custom cursor ctx) table.customs
+  in
+  (* (TODO) : Should we add action_list(T), apply_result(T) type in env? And Should we add decl to? *)
+  (* Petr4 did, and also it puts id in TableT instead of typ*)
+  let typ =
+    let action_enum = Types.EnumT ("action_list_" ^ id.it) in
+    let apply_result =
+      Types.StructT
+        ( "apply_result_" ^ id.it,
+          [
+            ("hit", Types.BoolT);
+            ("miss", Types.BoolT);
+            ("action_run", action_enum);
+          ] )
+    in
+    Types.TableT apply_result
+  in
+  let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.DYN ctx in
+  let table_il =
+    Lang.Ast.
+      {
+        keys = table_keys_il;
+        actions = table_actions_il;
+        entries = table_entries_il;
+        default = table_default_il;
+        customs = table_customs_il;
+      }
+  in
+  let decl_il = Il.Ast.TableD { id; table = table_il; annos = annos_il } in
+  (ctx, decl_il)
+
+(* (14.2.1.1) Keys
 
    A key is a list of pairs of the form (e : m), where e is an expression that describes the data to be matched
    in the table, and m is a match_kind constant that describes
@@ -3490,200 +3561,14 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       a key field k matches the table entry when k & mask == value & mask.
     - a lpm (longest prefix match) match kind on a key field is a specific type of ternary match where
       the mask is required to have a form in binary that is a contiguous set of 1 bits followed by a contiguous set of 0 bits.
-      Masks with more 1 bits have automatically higher priorities. A mask with all bits 0 is legal.
+      Masks with more 1 bits have automatically higher priorities. A mask with all bits 0 is legal. *)
 
-   (14.2.1.2) Actions
-
-   Each action in the list of actions for a table must have a distinct name.
-
-   Each action parameter that has a direction (in, inout, or out) must be bound in the actions list specification;
-   conversely, no directionless parameters may be bound in the list.
-   The expressions supplied as arguments to an action are not evaluated until the action is invoked.
-   Applying tables, whether directly via an expression like table1.apply().hit, or indirectly,
-   are forbidden in the expressions supplied as action arguments.
-
-   (14.2.1.3) Default action
-
-   If present, the default_action property must appear after the action property.
-   The default action must be one of the actions that appear in the actions list.
-   In particular, the expressions passed as in, out, or inout parameters must be
-   syntactically identical to the expressions used in one of the elements of the actions list.
-
-   (14.2.1.4) Entries
-
-   Entries cannot be specified for a table with no key (see Sec. 14.2.1.1).
-
-   The keysetExpression component of an entry is a tuple that must provide
-   a field for each key in the table keys (see Sec. 14.2.1). The table key type must match
-   the type of the element of the set. The actionRef component must be an action which appears
-   in the table actions list (and must not have the @defaultonly annotation), with all its arguments bound.
-
-   (14.2.2) Match-action unit invocation
-
-   A table can be invoked by calling its apply method. Calling an apply method on a table instance
-   returns a value with a struct type with three fields. This structure is synthesized by the compiler automatically.
-   For each table T, the compiler synthesizes an enum and a struct, shown in pseudo-P4:
-
-      enum action_list(T) {
-         // one field for each action in the actions list of table T
-      }
-      struct apply_result(T) {
-          bool hit;
-          bool miss;
-          action_list(T) action_run;
-      } *)
-
-(* This function is for partially static evaluation of expression.
-    ex) l+(1+2) -> l+3 ,  9w2 - 9w1 -> 9w1 *)
-
-and static_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : Il.Ast.expr list)
-    : Il.Ast.expr list =
-  List.map (static_expr cursor ctx) exprs
-
-and static_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr) :
-    Il.Ast.expr =
-  if Ctk.is_ctk expr.note.ctk then
-    let value = Static.eval_expr cursor ctx expr in
-    let expr' = Il.Ast.ValueE { value } in
-    expr' $$ expr.at % expr.note
-  else static_expr' cursor ctx expr.it $$ expr.at % expr.note
-
-and static_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
-    Il.Ast.expr' =
-  match expr with
-  | ValueE { value = _value } -> failwith "value expression should have CTK"
-  | VarE { var = _var } -> expr
-  | TupleE { exprs } ->
-      let exprs = List.map (static_expr cursor ctx) exprs in
-      TupleE { exprs }
-  | RecordE { fields } ->
-      let members, exprs = List.split fields in
-      let exprs = static_exprs cursor ctx exprs in
-      let fields = List.combine members exprs in
-      RecordE { fields }
-  | UnE { unop; expr } ->
-      let expr = static_expr cursor ctx expr in
-      UnE { unop; expr }
-  | BinE { binop; expr_l; expr_r } ->
-      let expr_l = static_expr cursor ctx expr_l in
-      let expr_r = static_expr cursor ctx expr_r in
-      BinE { binop; expr_l; expr_r }
-  | TernE { expr_cond; expr_then; expr_else } ->
-      let expr_cond = static_expr cursor ctx expr_cond in
-      let expr_then = static_expr cursor ctx expr_then in
-      let expr_else = static_expr cursor ctx expr_else in
-      TernE { expr_cond; expr_then; expr_else }
-  | CastE { typ; expr } ->
-      let expr = static_expr cursor ctx expr in
-      CastE { typ; expr }
-  | MaskE { expr_base; expr_mask } ->
-      let expr_base = static_expr cursor ctx expr_base in
-      let expr_mask = static_expr cursor ctx expr_mask in
-      MaskE { expr_base; expr_mask }
-  | RangeE { expr_lb; expr_ub } ->
-      let expr_lb = static_expr cursor ctx expr_lb in
-      let expr_ub = static_expr cursor ctx expr_ub in
-      RangeE { expr_lb; expr_ub }
-  | SelectE { exprs_select; cases } ->
-      let exprs_select = static_exprs cursor ctx exprs_select in
-      SelectE { exprs_select; cases }
-  | ArrAccE { expr_base; expr_idx } ->
-      let expr_base = static_expr cursor ctx expr_base in
-      let expr_idx = static_expr cursor ctx expr_idx in
-      ArrAccE { expr_base; expr_idx }
-  | BitAccE { expr_base; value_lo; value_hi } ->
-      let expr_base = static_expr cursor ctx expr_base in
-      BitAccE { expr_base; value_lo; value_hi }
-  | ExprAccE { expr_base; member } ->
-      let expr_base = static_expr cursor ctx expr_base in
-      ExprAccE { expr_base; member }
-  | CallFuncE { var_func; targs; args } ->
-      let args = static_args cursor ctx args in
-      CallFuncE { var_func; targs; args }
-  | CallMethodE { expr_base; member; targs; args } ->
-      let args = static_args cursor ctx args in
-      let expr_base = static_expr cursor ctx expr_base in
-      CallMethodE { expr_base; member; targs; args }
-  | InstE { var_inst; targs; args } ->
-      let args = static_args cursor ctx args in
-      InstE { var_inst; targs; args }
-
-and static_args (cursor : Ctx.cursor) (ctx : Ctx.t) (args : Il.Ast.arg list) :
-    Il.Ast.arg list =
-  List.map (static_arg cursor ctx) args
-
-and static_arg (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : Il.Ast.arg) :
-    Il.Ast.arg =
-  static_arg' cursor ctx arg.it $ arg.at
-
-and static_arg' (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : Il.Ast.arg') :
-    Il.Ast.arg' =
-  match arg with
-  | ExprA expr ->
-      let expr = static_expr cursor ctx expr in
-      ExprA expr
-  | NameA (id, expr) ->
-      let expr = static_expr cursor ctx expr in
-      NameA (id, expr)
-  | AnyA -> AnyA
-
-(* Utils for table type checking*)
-and is_numeric_type (typ : Type.t) : bool =
-  match typ with
-  | IntT | FBitT _ | FIntT _ -> true
-  (* (TODO) : Should it be true? *)
-  | VBitT _ -> false
-  | _ -> false
-
-and cast_arg (arg_from : Il.Ast.arg) (typ_to : Type.t) : Il.Ast.arg =
-  match (arg_from.it : Il.Ast.arg') with
-  | ExprA expr_il ->
-      let expr_il = coerce_type_assign expr_il typ_to in
-      Lang.Ast.ExprA expr_il $ arg_from.at
-  | NameA (id, expr_il) ->
-      let expr_il = coerce_type_assign expr_il typ_to in
-      Lang.Ast.NameA (id, expr_il) $ arg_from.at
-  | AnyA -> Lang.Ast.AnyA $ arg_from.at
-
-and get_action_param (fd : FuncDef.t option) : Types.param list =
-  let fd = Option.get fd in
-  match fd with
-  | Types.ActionD params -> params
-  | _ ->
-      Format.eprintf "(get_action_param) FuncDef %a is not Action definition\n"
-        Types.pp_funcdef fd;
-      assert false
-
-and get_action_name (action : El.Ast.table_action') : string =
-  let var', _, _ = action in
-  match var'.it with Lang.Ast.Top id | Lang.Ast.Current id -> id.it
-
-and remove_set (expr_il : Il.Ast.expr) : Il.Ast.expr =
-  let typ = expr_il.note.typ in
-  let ctk = expr_il.note.ctk in
-  match typ with
-  | Types.SetT typ -> Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk })
-  | _ ->
-      Format.eprintf "(remove_set) Type %a is not set type\n" Types.pp_typ typ;
-      assert false
-
-and expr_arg (arg : Il.Ast.arg) : Il.Ast.expr =
-  match arg.it with
-  | ExprA expr -> expr
-  | NameA (_id, expr) -> expr
-  | AnyA -> failwith "AnyA is don't have expr"
-
-and expect_static_value_set (expr_il : Il.Ast.expr) : Il.Ast.expr =
-  match expr_il.it with
-  | MaskE { expr_base; expr_mask } ->
-      Static.check_ctk expr_base;
-      Static.check_ctk expr_mask;
-      expr_il
-  | RangeE { expr_lb; expr_ub } ->
-      Static.check_ctk expr_lb;
-      Static.check_ctk expr_ub;
-      expr_il
-  | _ -> failwith "Wrong expression"
+and check_table_key (match_kind : string) (typ : Type.t) : unit =
+  if not (check_table_key' match_kind typ) then (
+    Format.eprintf
+      "(check_table_key) %a is not a valid table key type for match kind %s.\n"
+      Type.pp typ match_kind;
+    assert false)
 
 and check_table_key' (match_kind : string) (typ : Type.t) : bool =
   match match_kind with
@@ -3718,138 +3603,231 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
         match_kind;
       assert false
 
-and check_table_key (match_kind : string) (typ : Type.t) : unit =
-  if not (check_table_key' match_kind typ) then (
-    Format.eprintf
-      "(check_table_key) %a is not a valid table key type for match kind %s.\n"
-      Type.pp typ match_kind;
-    assert false)
-
-(* args_base : action arguments in actions
-   args_il : action arguments in entry | default *)
-(* TODO : type_call_convention shouldn't be in action arguments *)
-
-(* action in entry
-   - typecheck with action params
-   - check ctk for no direction args
-     : No mention is spec but in p4c
-   - compare direction args with args_base
-     : assume that args_base is verified in check_arg_action,
-       so implicit cast from args_base to typs_param is same as
-       return value of check_arg_action
-*)
-and check_arg_action_entry (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (params : Types.param list) (args_il : (Il.Ast.arg * Type.t) list)
-    (args_base : Il.Ast.arg list) : Il.Ast.arg list =
-  let args_il = type_call_convention cursor ctx params args_il in
-  let args_entry, typs_param =
-    List.map2
-      (fun param arg_il ->
-        let _id, dir_param, typ_param, _val_param = param in
-        match dir_param with
-        | Lang.Ast.No ->
-            (* Check compile time known *)
-            arg_il |> expr_arg |> Static.check_ctk;
-            None
-        | _ -> Some (arg_il, typ_param))
-      params args_il
-    |> List.filter_map (fun x -> x)
-    |> List.split
+and type_table_key (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
+    (table_key : El.Ast.table_key) : Tblctx.t * Il.Ast.table_key =
+  let table_ctx, table_key_il =
+    type_table_key' cursor ctx table_ctx table_key.it
   in
-  let args_base = List.map2 cast_arg args_base typs_param in
-  let args_base = static_args cursor ctx args_base in
-  let args_entry = static_args cursor ctx args_entry in
-  if not (Il.Eq.eq_args args_base args_entry) then (
-    Format.eprintf "(check_arg_action_entry) : argument %a, %a are different\n"
-      Il.Pp.pp_args args_base Il.Pp.pp_args args_entry;
-    assert false);
-  args_il
+  (table_ctx, table_key_il $ table_key.at)
 
-(* action in default_action
-   - typecheck with action params
-   - check ctk for no direction args
-     : No mention is spec but in p4c
-   - compare direction args with args_base
-     : syntatically eq
-*)
-and check_arg_action_default (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (params : Types.param list) (args_il : (Il.Ast.arg * Type.t) list)
-    (args_base : Il.Ast.arg list) : Il.Ast.arg list =
-  let args_default =
-    List.map2
-      (fun param arg_il ->
-        let arg_il, _typ_arg = arg_il in
-        let _id, dir_param, _typ_param, _val_param = param in
-        match dir_param with
-        | Lang.Ast.No ->
-            (* Check compile time known *)
-            arg_il |> expr_arg |> Static.check_ctk;
-            None
-        | _ -> Some arg_il)
-      params args_il
-    |> List.filter_map (fun x -> x)
-  in
-  if not (Il.Eq.eq_args args_base args_default) then (
-    Format.eprintf
-      "(check_arg_action_default) : argument %a, %a are different\n"
-      Il.Pp.pp_args args_base Il.Pp.pp_args args_default;
-    assert false);
-  type_call_convention cursor ctx params args_il
+and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
+    (table_key : El.Ast.table_key') : Tblctx.t * Il.Ast.table_key' =
+  let expr, match_kind, annos = table_key in
+  let expr_il = type_expr cursor ctx expr in
+  let typ = expr_il.note.typ in
+  check_table_key match_kind.it typ;
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let table_key_il = (expr_il, match_kind, annos_il) in
+  let table_ctx = Tblctx.add_key (Types.SetT typ, match_kind.it) table_ctx in
+  (table_ctx, table_key_il)
 
-and check_arg_action (cursor : Ctx.cursor) (ctx : Ctx.t)
+and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
+    (table_keys : El.Ast.table_key list) : Tblctx.t * Il.Ast.table_key list =
+  List.fold_left
+    (fun (table_ctx, table_keys_il) table_key ->
+      let table_ctx, table_key_il =
+        type_table_key cursor ctx table_ctx table_key
+      in
+      (table_ctx, table_keys_il @ [ table_key_il ]))
+    (table_ctx, []) table_keys
+
+(* (14.2.1.2) Actions
+
+   Each action in the list of actions for a table must have a distinct name.
+
+   Each action parameter that has a direction (in, inout, or out) must be bound in the actions list specification;
+   conversely, no directionless parameters may be bound in the list.
+   The expressions supplied as arguments to an action are not evaluated until the action is invoked.
+   Applying tables, whether directly via an expression like table1.apply().hit, or indirectly,
+   are forbidden in the expressions supplied as action arguments. *)
+
+(* (TODO) : check action in entry | default, do we need to use find_overloaded_opt?
+   What about just search name from table_action_notes and get info *)
+
+and type_call_action_partial (cursor : Ctx.cursor) (ctx : Ctx.t)
     (params : Types.param list) (args_il : (Il.Ast.arg * Type.t) list) :
     Il.Ast.arg list =
   (* (TODO) : check including table funcitons *)
   let params =
     List.filter_map
       (fun param ->
-        let _id, dir_param, _typ_param, _val_param = param in
-        match dir_param with Lang.Ast.No -> None | _ -> Some param)
+        let _, dir, _, _ = param in
+        match dir with Lang.Ast.No -> None | _ -> Some param)
       params
   in
   type_call_convention cursor ctx params args_il
 
-and type_action_keyset (ctx : Ctx.t) (key_prop : Type.t * string)
-    (keyset : El.Ast.keyset) : Il.Ast.keyset =
-  type_action_keyset' ctx key_prop keyset.it $ keyset.at
+and type_table_action (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
+    (table_action : El.Ast.table_action) : Tblctx.t * Il.Ast.table_action =
+  let table_ctx, table_action_il =
+    type_table_action' cursor ctx table_ctx table_action.it
+  in
+  (table_ctx, table_action_il $ table_action.at)
 
-and type_action_keyset' (ctx : Ctx.t) (key_prop : Type.t * string)
-    (keyset : El.Ast.keyset') : Il.Ast.keyset' =
-  let typ_key, match_kind = key_prop in
+and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (table_action : El.Ast.table_action') :
+    Tblctx.t * Il.Ast.table_action' =
+  let var, args, annos = table_action in
+  let fd = Ctx.find_opt Ctx.find_funcdef_opt cursor var ctx in
+  if Option.is_none fd then (
+    Format.eprintf "(type_table_action) There is no action named %a\n"
+      El.Pp.pp_var var;
+    assert false);
+  let fd = Option.get fd in
+  if match fd with Types.ActionD _ -> true | _ -> false then (
+    Format.eprintf "(type_table_action) %a is not an action\n" El.Pp.pp_var var;
+    assert false);
+  let params = FuncDef.get_params fd in
+  let args_il_typed = List.map (type_arg cursor ctx) args in
+  let args_il = type_call_action_partial cursor ctx params args_il_typed in
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let table_action_il = (var, args_il, annos_il) in
+  let table_ctx = Tblctx.add_action (var.it, params, args_il) table_ctx in
+  (table_ctx, table_action_il)
+
+and type_table_actions (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (table_actions : El.Ast.table_action list) :
+    Tblctx.t * Il.Ast.table_action list =
+  List.fold_left
+    (fun (table_ctx, table_actions_il) table_action ->
+      let table_ctx, table_action_il =
+        type_table_action cursor ctx table_ctx table_action
+      in
+      (table_ctx, table_actions_il @ [ table_action_il ]))
+    (table_ctx, []) table_actions
+
+(* (14.2.1.3) Default action
+
+   If present, the default_action property must appear after the action property.
+   The default action must be one of the actions that appear in the actions list.
+   In particular, the expressions passed as in, out, or inout parameters must be
+   syntactically identical to the expressions used in one of the elements of the actions list.
+
+   Note that the specified default action must supply arguments for the control-plane-bound parameters
+   (i.e., the directionless parameters), since the action is synthesized at compilation time.
+   The expressions supplied as arguments for parameters with a direction (in, inout, or out)
+   are evaluated when the action is invoked while the expressions supplied as
+   arguments for directionless parameters are evaluated at compile time. *)
+
+and type_call_default_action (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list)
+    (args_action : Il.Ast.arg list) : Il.Ast.arg list =
+  let args_il_dyn =
+    List.map2
+      (fun param arg_il_typed ->
+        let arg_il, _ = arg_il_typed in
+        let _, dir, _, _ = param in
+        match dir with Lang.Ast.No -> None | _ -> Some arg_il)
+      params args_il_typed
+    |> List.filter_map (fun x -> x)
+  in
+  if not (Il.Eq.eq_args args_action args_il_dyn) then (
+    Format.eprintf
+      "(type_call_default_action_partial) Arguments %a and %a are \
+       syntactically different\n"
+      Il.Pp.pp_args args_action Il.Pp.pp_args args_il_dyn;
+    assert false);
+  type_call_convention cursor ctx params args_il_typed
+
+and type_table_default_action (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (tblctx : Tblctx.t) (table_action : El.Ast.table_action) :
+    Il.Ast.table_action =
+  type_table_default_action' cursor ctx tblctx table_action.it $ table_action.at
+
+and type_table_default_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (tblctx : Tblctx.t) (table_action : El.Ast.table_action') :
+    Il.Ast.table_action' =
+  let var, args, annos = table_action in
+  let table_action = Tblctx.find_action tblctx var in
+  if Option.is_none table_action then (
+    Format.eprintf
+      "(type_table_action_default) There is no action named %a in actions list\n"
+      El.Pp.pp_var var;
+    assert false);
+  let params, args_action = Option.get table_action in
+  let args_il_typed = List.map (type_arg cursor ctx) args in
+  let args_il =
+    type_call_default_action cursor ctx params args_il_typed args_action
+  in
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  (var, args_il, annos_il)
+
+and type_table_default (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (table_default : El.Ast.table_default option) :
+    Il.Ast.table_default option =
+  match table_default with
+  | Some table_default ->
+      type_table_default' cursor ctx table_ctx table_default.it
+      $ table_default.at |> Option.some
+  | None -> None
+
+and type_table_default' (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (table_default : El.Ast.table_default') :
+    Il.Ast.table_default' =
+  let action, default_const = table_default in
+  let action_il = type_table_default_action cursor ctx table_ctx action in
+  (action_il, default_const)
+
+(* (14.2.1.4) Entries
+
+   Entries cannot be specified for a table with no key (see Sec. 14.2.1.1).
+
+   The keysetExpression component of an entry is a tuple that must provide
+   a field for each key in the table keys (see Sec. 14.2.1). The table key type must match
+   the type of the element of the set. The actionRef component must be an action which appears
+   in the table actions list (and must not have the @defaultonly annotation), with all its arguments bound. *)
+
+and type_table_entry_keyset (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx_key : Type.t * Il.Ast.match_kind') (keyset : El.Ast.keyset) :
+    Il.Ast.keyset =
+  type_table_entry_keyset' cursor ctx table_ctx_key keyset.it $ keyset.at
+
+and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx_key : Type.t * Il.Ast.match_kind') (keyset : El.Ast.keyset') :
+    Il.Ast.keyset' =
+  let typ_key, match_kind = table_ctx_key in
   match keyset with
   | ExprK expr ->
-      (* Cursor is must be Ctx.local because this function is only called in Local *)
       let expr_il =
         match expr.it with
         | MaskE _ ->
             if match_kind = "lpm" || match_kind = "ternary" then
-              type_expr Ctx.Local ctx expr
-              |> expect_static_value_set |> remove_set
+              type_expr cursor ctx expr
             else (
               Format.eprintf
-                "(type_action_keyset) match_kind %s can not use mask expression \n"
+                "(type_action_keyset) match_kind %s cannot use mask expression \n"
                 match_kind;
               assert false)
         | RangeE _ ->
-            if match_kind = "range" then
-              type_expr Ctx.Local ctx expr
-              |> expect_static_value_set |> remove_set
+            if match_kind = "range" then type_expr cursor ctx expr
             else (
               Format.eprintf
-                "(type_action_keyset) match_kind %s can not use range \
-                 expression \n"
+                "(type_action_keyset) match_kind %s cannot use range expression \n"
                 match_kind;
               assert false)
         | _ ->
             let expr_il = type_expr Ctx.Local ctx expr in
-            let typ = expr_il.note.typ in
-            Static.check_ctk expr_il;
+            let typ = Types.SetT expr_il.note.typ in
             WF.check_valid_type Ctx.Local ctx typ;
-            expr_il
+            Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
       in
-      (* expr_key is dummy expression to use coerce_types_binary *)
-      let expr_key = insert_cast expr_il typ_key in
-      let _, expr_il, _ = coerce_types_binary expr_il expr_key in
+      let expr_il =
+        let typ =
+          match expr_il.note.typ with
+          | Types.SetT typ -> typ
+          | _ -> assert false
+        in
+        let typ_key =
+          match typ_key with Types.SetT typ -> typ | _ -> assert false
+        in
+        let expr_il =
+          Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
+        in
+        let expr_il = coerce_type_assign expr_il typ_key in
+        Il.Ast.(
+          expr_il.it
+          $$ expr_il.at % { typ = Types.SetT typ; ctk = expr_il.note.ctk })
+      in
       Lang.Ast.ExprK expr_il
   | DefaultK ->
       if match_kind = "exact" then (
@@ -3864,166 +3842,76 @@ and type_action_keyset' (ctx : Ctx.t) (key_prop : Type.t * string)
         assert false);
       Lang.Ast.AnyK
 
-and type_action_keysets (ctx : Ctx.t) (key_props : (Type.t * string) list)
-    (keysets : El.Ast.keyset list) : Il.Ast.keyset list =
-  match (key_props, keysets) with
+and type_table_entry_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (keysets : El.Ast.keyset list) : Il.Ast.keyset list =
+  match (table_ctx.keys, keysets) with
   | _, [ { it = DefaultK; at; note } ] -> [ Lang.Ast.DefaultK $$ at % note ]
   | _, [ { it = AnyK; at; note } ] -> [ Lang.Ast.AnyK $$ at % note ]
-  | key_prop, keysets ->
-      if List.length key_prop <> List.length keysets then (
+  | table_ctx_keys, keysets ->
+      if List.length table_ctx_keys <> List.length keysets then (
         Format.eprintf
           "(type_action_keysets) Number of select keys must match the number \
            of cases\n";
         assert false);
-      List.map2 (type_action_keyset ctx) key_prop keysets
+      List.map2 (type_table_entry_keyset cursor ctx) table_ctx_keys keysets
 
-and type_table_key (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_key : El.Ast.table_key) : (Type.t * string) * Il.Ast.table_key =
-  let key_prop, key_il = type_table_key' cursor ctx table_key.it in
-  (key_prop, key_il $ table_key.at)
+and type_call_entry_action (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list)
+    (args_action : Il.Ast.arg list) : Il.Ast.arg list =
+  type_call_default_action cursor ctx params args_il_typed args_action
 
-and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_key : El.Ast.table_key') : (Type.t * string) * Il.Ast.table_key' =
-  let expr, match_kind, annos = table_key in
-  let expr_il = type_expr cursor ctx expr in
-  let typ = expr_il.note.typ in
-  check_table_key match_kind.it typ;
-  let annos_il = List.map (type_anno cursor ctx) annos in
-  let key_il = (expr_il, match_kind, annos_il) in
-  let key_prop = (typ, match_kind.it) in
-  (key_prop, key_il)
-
-(* (TODO) : check action in entry | default, do we need to use find_overloaded_opt?
-   What about just search name from table_action_notes and get info *)
-
-and type_table_action (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_action : El.Ast.table_action) :
-    Il.Ast.table_action * (string * Il.Ast.arg list) =
-  let table_action_il, table_action_note =
-    type_table_action' cursor ctx table_action.it
-  in
-  (table_action_il $ table_action.at, table_action_note)
-
-and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_action : El.Ast.table_action') :
-    Il.Ast.table_action' * (string * Il.Ast.arg list) =
-  let var, args, annos = table_action in
-  let action_name = get_action_name table_action in
-  let fd =
-    Ctx.find_overloaded_opt Ctx.find_funcdef_opt_action cursor var args ctx
-  in
-  if Option.is_none fd then (
-    Format.eprintf
-      "(type_table_action) There is no action named %a or invalid argument\n"
-      El.Pp.pp_var var;
-    assert false);
-  let params = get_action_param fd in
-  let typs_arg, args_il = List.map (type_arg cursor ctx) args |> List.split in
-  let args_il' = List.combine args_il typs_arg in
-  let args_il' = check_arg_action cursor ctx params args_il' in
-  let annos_il = List.map (type_anno cursor ctx) annos in
-  ((var, args_il', annos_il), (action_name, args_il))
-
-and type_table_action_entry (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_action_notes : (string * Il.Ast.arg list) list)
-    (table_action : El.Ast.table_action) : Il.Ast.table_action =
-  type_table_action_entry' cursor ctx table_action_notes table_action.it
+and type_table_entry_action (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (table_action : El.Ast.table_action) :
+    Il.Ast.table_action =
+  type_table_entry_action' cursor ctx table_ctx table_action.it
   $ table_action.at
 
-and type_table_action_entry' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_action_notes : (string * Il.Ast.arg list) list)
-    (table_action : El.Ast.table_action') : Il.Ast.table_action' =
+and type_table_entry_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (table_action : El.Ast.table_action') :
+    Il.Ast.table_action' =
   let var, args, annos = table_action in
-  let action_name = get_action_name table_action in
-  let fd = Ctx.find_overloaded_opt Ctx.find_funcdef_opt cursor var args ctx in
-  if Option.is_none fd then (
-    Format.eprintf
-      "(type_table_action_entry) There is no action named %a or invalid argument\n"
-      El.Pp.pp_var var;
-    assert false);
-  let params = get_action_param fd in
-  let args_base = List.assoc_opt action_name table_action_notes in
-  if Option.is_none args_base then (
+  let table_action = Tblctx.find_action table_ctx var in
+  if Option.is_none table_action then (
     Format.eprintf
       "(type_table_action_entry) There is no action named %a in actions list\n"
       El.Pp.pp_var var;
     assert false);
-  let args_base = Option.get args_base in
-  let typs_arg, args_il = List.map (type_arg cursor ctx) args |> List.split in
-  let args_il = List.combine args_il typs_arg in
-  let args_il = check_arg_action_entry cursor ctx params args_il args_base in
+  let params, args_action = Option.get table_action in
+  let args_il_typed = List.map (type_arg cursor ctx) args in
+  let args_il =
+    type_call_entry_action cursor ctx params args_il_typed args_action
+  in
   let annos_il = List.map (type_anno cursor ctx) annos in
   (var, args_il, annos_il)
 
-and type_table_entry (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (key_props : (Type.t * string) list)
-    (table_action_notes : (string * Il.Ast.arg list) list)
+and type_table_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
     (table_entry : El.Ast.table_entry) : Il.Ast.table_entry =
-  type_table_entry' cursor ctx key_props table_action_notes table_entry.it
-  $ table_entry.at
+  type_table_entry' cursor ctx table_ctx table_entry.it $ table_entry.at
 
-and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (key_props : (Type.t * string) list)
-    (table_action_notes : (string * Il.Ast.arg list) list)
+and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
     (table_entry : El.Ast.table_entry') : Il.Ast.table_entry' =
-  let key_sets, action, annos = table_entry in
-  let key_sets_il = type_action_keysets ctx key_props key_sets in
-  let action_il =
-    type_table_action_entry cursor ctx table_action_notes action
-  in
+  let keysets, action, annos = table_entry in
+  let keysets_il = type_table_entry_keysets cursor ctx table_ctx keysets in
+  let action_il = type_table_entry_action cursor ctx table_ctx action in
   let annos_il = List.map (type_anno cursor ctx) annos in
-  (key_sets_il, action_il, annos_il)
+  (keysets_il, action_il, annos_il)
 
-and type_table_action_default (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_action_notes : (string * Il.Ast.arg list) list)
-    (table_action : El.Ast.table_action) : Il.Ast.table_action =
-  type_table_action_default' cursor ctx table_action_notes table_action.it
-  $ table_action.at
+(* (14.2.1.5) Size
 
-and type_table_action_default' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_action_notes : (string * Il.Ast.arg list) list)
-    (table_action : El.Ast.table_action') : Il.Ast.table_action' =
-  let var, args, annos = table_action in
-  let action_name = get_action_name table_action in
-  let fd = Ctx.find_overloaded_opt Ctx.find_funcdef_opt cursor var args ctx in
-  if Option.is_none fd then (
-    Format.eprintf
-      "(type_table_action_default) There is no action named %a or invalid \
-       argument\n"
-      El.Pp.pp_var var;
-    assert false);
-  let params = get_action_param fd in
-  let args_base = List.assoc_opt action_name table_action_notes in
-  if Option.is_none args_base then (
-    Format.eprintf
-      "(type_table_action_default) There is no action named %a in actions list\n"
-      El.Pp.pp_var var;
-    assert false);
-  let args_base = Option.get args_base in
-  let typs_arg, args_il = List.map (type_arg cursor ctx) args |> List.split in
-  let args_il = List.combine args_il typs_arg in
-  let args_il = check_arg_action_default cursor ctx params args_il args_base in
-  let annos_il = List.map (type_anno cursor ctx) annos in
-  (var, args_il, annos_il)
+   The size is an optional property of a table. When present, its value must always be
+   an integer compile-time known value. It is specified in units of number of table entries.
 
-and type_table_default (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_action_notes : (string * Il.Ast.arg list) list)
-    (table_default : El.Ast.table_default option) : Il.Ast.table_default option
-    =
-  match table_default with
-  | Some table_default ->
-      type_table_default' cursor ctx table_action_notes table_default.it
-      $ table_default.at |> Option.some
-  | None -> None
+   (14.2.1.6) Additional properties
 
-and type_table_default' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_action_notes : (string * Il.Ast.arg list) list)
-    (table_default : El.Ast.table_default') : Il.Ast.table_default' =
-  let action, default_const = table_default in
-  let action_il =
-    type_table_action_default cursor ctx table_action_notes action
-  in
-  (action_il, default_const)
+   A table declaration defines its essential control and data plane interfaces—i.e., keys and actions.
+   However, the best way to implement a table may actually depend on the nature of the entries
+   that will be installed at runtime (for example, tables could be dense or sparse, could be implemented as
+   hash-tables, associative memories, tries, etc.)
+
+   However, these architecture-specific properties may not change the semantics of table lookups,
+   which always produce either a hit and an action or a miss—they can only change how those results are
+   interpreted on the state of the data plane. This restriction is needed to ensure that it is possible to
+   reason about the behavior of tables during compilation. *)
 
 and type_table_custom (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_custom : El.Ast.table_custom) : Il.Ast.table_custom =
@@ -4031,13 +3919,13 @@ and type_table_custom (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_custom : El.Ast.table_custom') : Il.Ast.table_custom' =
-  let mem, expr, custom_const, annos = table_custom in
+  let member, expr, custom_const, annos = table_custom in
   let expr_il = type_expr cursor ctx expr in
-  let annos_il = List.map (type_anno cursor ctx) annos in
   let typ = expr_il.note.typ in
-  (match mem.it with
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  (match member.it with
   | "size" ->
-      if is_numeric_type typ then (
+      if not (Type.is_numeric typ) then (
         Format.eprintf
           "(type_table_custom) size should be numeric type, not %a\n"
           Types.pp_typ typ;
@@ -4045,75 +3933,21 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
   | "largest_priority_wins" ->
       if typ <> BoolT then (
         Format.eprintf
-          "(type_table_custom) largest_priority_wins should be bool type, not %a\n"
+          "(type_table_custom) largest_priority_wins should be boolean type, \
+           not %a\n"
           Types.pp_typ typ;
         assert false)
   | "priority_delta" ->
-      if is_numeric_type typ then (
+      if not (Type.is_numeric typ) then (
         Format.eprintf
           "(type_table_custom) priority_delta should be numeric type, not %a\n"
           Types.pp_typ typ;
         assert false)
   | _ ->
-      Format.eprintf "(type_table_custom) There is no custom element %s\n"
-        mem.it;
+      Format.eprintf "(type_table_custom) Custom element %s is undefined\n"
+        member.it;
       assert false);
-  (mem, expr_il, custom_const, annos_il)
-
-and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (table : El.Ast.table) (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
-  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Control) then (
-    Format.eprintf
-      "(type_table_decl) Table declarations must be in a control block\n";
-    assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
-  let key_props, table_keys_il =
-    List.map (type_table_key cursor ctx) table.keys |> List.split
-  in
-  let table_action_il, table_action_notes =
-    List.map (type_table_action cursor ctx) table.actions |> List.split
-  in
-  let action_names, _ = table_action_notes |> List.split in
-  WF.check_distinct_names action_names;
-  let table_entries_il =
-    List.map
-      (type_table_entry cursor ctx key_props table_action_notes)
-      table.entries
-  in
-  let table_default_il =
-    type_table_default cursor ctx table_action_notes table.default
-  in
-  let table_customs_il =
-    List.map (type_table_custom cursor ctx) table.customs
-  in
-  (* (TODO) : Should we add action_list(T), apply_result(T) type in env? And Should we add decl to? *)
-  (* Petr4 did, and also it puts id in TableT instead of typ*)
-  let typ =
-    let action_enum = Types.EnumT ("action_list_" ^ id.it) in
-    let apply_result =
-      Types.StructT
-        ( "apply_result_" ^ id.it,
-          [
-            ("hit", Types.BoolT);
-            ("miss", Types.BoolT);
-            ("action_run", action_enum);
-          ] )
-    in
-    Types.TableT apply_result
-  in
-  let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.DYN ctx in
-  let table_il =
-    Lang.Ast.
-      {
-        keys = table_keys_il;
-        actions = table_action_il;
-        entries = table_entries_il;
-        default = table_default_il;
-        customs = table_customs_il;
-      }
-  in
-  let decl_il = Il.Ast.TableD { id; table = table_il; annos = annos_il } in
-  (ctx, decl_il)
+  (member, expr_il, custom_const, annos_il)
 
 (* (7.2.12.2) Control type declarations *)
 

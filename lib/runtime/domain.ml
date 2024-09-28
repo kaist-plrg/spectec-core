@@ -43,10 +43,12 @@ module TIdMap = IdMap
 
 module FId = struct
   type t = string * string list
+  type t' = string
 
   let pp fmt (name, params) =
     Format.fprintf fmt "%s(%s)" name (String.concat ", " params)
 
+  let pp' fmt name = Format.fprintf fmt "%s" name
   let compare = compare
 
   let to_fid (id : El.Ast.id) (params : El.Ast.param list) =
@@ -125,7 +127,7 @@ struct
   let pp fmt env = FIdMap.pp V.pp fmt env
 
   (* (TODO) resolve overloaded functions with argument names *)
-  let find_opt (fid, args) fenv =
+  let find_overloaded_opt (fid, args) fenv =
     let arity = List.length args in
     let funcs =
       List.filter
@@ -135,18 +137,22 @@ struct
     assert (List.length funcs <= 1);
     match funcs with [] -> None | _ -> Some (List.hd funcs |> snd)
 
-  (* (TODO) This is function for search actions without considering arity. It added because of table action.
-     If we got better solution for searching actions with no arity, this function would be removed. *)
-  let find_opt_action (fid, _args) fenv =
+  let find_overloaded (fid, args) fenv =
+    match find_overloaded_opt (fid, args) fenv with
+    | Some value -> value
+    | None -> Format.asprintf "Key not found: %s\n" fid |> failwith
+
+  let find_opt (fid : FId.t') fenv =
     let funcs =
       List.filter (fun ((fid', _), _) -> fid = fid') (bindings fenv)
     in
+    assert (List.length funcs <= 1);
     match funcs with [] -> None | _ -> Some (List.hd funcs |> snd)
 
-  let find (fid, args) env =
-    match find_opt (fid, args) env with
+  let find (fid : FId.t') fenv =
+    match find_opt fid fenv with
     | Some value -> value
-    | None -> Format.asprintf "Key not found: %s\n" fid |> failwith
+    | None -> Format.asprintf "Key not found: %a\n" FId.pp' fid |> failwith
 end
 
 module MakeCIdEnv = MakeFIdEnv
