@@ -58,8 +58,8 @@ control ingress(inout headers h, inout metadata m, inout standard_metadata_t sm)
         const entries = {
           (0, 1, 2, 14) : sub;
           (8w0, 8w1, 8w2, 16w14) : add;
-          (8w9, 8w7, 8w7, 16w49) : a_with_control_params(l,9w2,9w1,10w2);
-          (8w1, 8w2, 8w3, 16w0 &&& 0xFFFF) : a_with_control_params(l,1+1,9w1,10w2);
+          (8w9, 8w7, 8w7, 16w49) : a_with_control_params(l,2,9w1,10w2);
+          (8w1, 8w2, 8w3, 16w0 &&& 0xFFFF) : a_with_control_params(l,2,9w1,10w2);
           
         }
         const default_action = a_with_control_params(l,2, 9w2 , (bit<10>) 1);
