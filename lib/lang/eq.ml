@@ -352,26 +352,13 @@ and eq_parser_states (eq_typ : 'typ eq_typ) (eq_expr : ('note, 'expr) eq_expr)
 
 (* Tables *)
 
-and eq_table (eq_expr : ('note, 'expr) eq_expr) table_a table_b =
-  let ( table_keys_a,
-        table_actions_a,
-        table_entries_a,
-        table_default_a,
-        table_custom_a ) =
-    table_a
-  in
-  let ( table_keys_b,
-        table_actions_b,
-        table_entries_b,
-        table_default_b,
-        table_custom_b ) =
-    table_b
-  in
-  eq_table_keys eq_expr table_keys_a table_keys_b
-  && eq_table_actions eq_expr table_actions_a table_actions_b
-  && eq_table_entries eq_expr table_entries_a table_entries_b
-  && eq_option (eq_table_default eq_expr) table_default_a table_default_b
-  && eq_table_customs eq_expr table_custom_a table_custom_b
+and eq_table (eq_expr : ('note, 'expr) eq_expr) (table_a : ('note, 'expr) table)
+    (table_b : ('note, 'expr) table) =
+  eq_table_keys eq_expr table_a.keys table_b.keys
+  && eq_table_actions eq_expr table_a.actions table_b.actions
+  && eq_table_entries eq_expr table_a.entries table_b.entries
+  && eq_option (eq_table_default eq_expr) table_a.default table_b.default
+  && eq_table_customs eq_expr table_a.customs table_b.customs
 
 (* Table keys *)
 

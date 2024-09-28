@@ -35,4 +35,3 @@ control ingress(inout headers h, inout metadata m, inout standard_metadata_t sm)
     apply { t.apply(); }
 }
 
-V1Switch(p(), vrfy(), ingress(), egress(), update(), deparser()) main;

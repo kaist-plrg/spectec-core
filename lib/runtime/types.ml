@@ -42,6 +42,7 @@ and typ =
   | ParserT of param list
   | ControlT of param list
   | PackageT
+  | TableT of typ
   (* Top type *)
   | TopT
   (* Synthesized types : variables can never be declared of this type *)
@@ -78,6 +79,7 @@ and functyp =
   | ParserApplyMethodT of param list
   | ControlApplyMethodT of param list
   | BuiltinMethodT of param list * typ
+  | TableApplyMethodT of typ
 
 (* Function definitions *)
 and funcdef =
@@ -155,6 +157,7 @@ and pp_typ fmt typ =
   | ParserT params -> F.fprintf fmt "parser (%a)" pp_params params
   | ControlT params -> F.fprintf fmt "control (%a)" pp_params params
   | PackageT -> F.fprintf fmt "package"
+  | TableT _ -> F.pp_print_string fmt "table"
   | TopT -> F.pp_print_string fmt "top"
   | RecordT fields ->
       F.fprintf fmt "record { %a }" (P.pp_pairs P.pp_member' pp_typ "; ") fields
@@ -216,6 +219,7 @@ and pp_functyp fmt functyp =
       F.fprintf fmt "control_apply(%a)" pp_params params
   | BuiltinMethodT (params, typ) ->
       F.fprintf fmt "builtin_method(%a) -> %a" pp_params params pp_typ typ
+  | TableApplyMethodT _ -> F.fprintf fmt "table_apply"
 
 (* Function definitions *)
 
@@ -335,6 +339,12 @@ module Type = struct
   let pp = pp_typ
   let eq = eq_typ
 
+  let rec is_numeric typ =
+    match typ with
+    | IntT | FIntT _ | FBitT _ -> true
+    | SEnumT (_, typ_inner) -> is_numeric typ_inner
+    | _ -> false
+
   let rec is_ground typ =
     match typ with
     | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
@@ -352,6 +362,7 @@ module Type = struct
     | RecordT fields -> List.for_all (fun (_, typ) -> is_ground typ) fields
     | SetT typ -> is_ground typ
     | StateT -> true
+    | TableT _ -> true
 end
 
 module TypeDef = struct
@@ -375,6 +386,7 @@ module FuncType = struct
     | ControlApplyMethodT params
     | BuiltinMethodT (params, _) ->
         params
+    | TableApplyMethodT _ -> []
 
   let get_typ_ret = function
     | ActionT _ -> VoidT
@@ -384,6 +396,7 @@ module FuncType = struct
     | ExternAbstractMethodT (_, typ_ret) ->
         typ_ret
     | ParserApplyMethodT _ | ControlApplyMethodT _ -> VoidT
+    | TableApplyMethodT typ_ret -> typ_ret
     | BuiltinMethodT (_, typ_ret) -> typ_ret
 end
 
@@ -392,6 +405,14 @@ module FuncDef = struct
 
   let pp = pp_funcdef
   let eq = eq_funcdef
+
+  let get_params = function
+    | ActionD params
+    | ExternFunctionD (_, params, _)
+    | FunctionD (_, params, _)
+    | ExternMethodD (_, params, _)
+    | ExternAbstractMethodD (_, params, _) ->
+        params
 
   let get_typ_ret = function
     | ActionD _ -> VoidT

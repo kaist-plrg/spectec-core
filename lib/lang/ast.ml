@@ -182,12 +182,13 @@ and ('typ, 'note, 'expr, 'decl) parser_state' =
   state_label * ('typ, 'note, 'expr, 'decl) block * ('note, 'expr) anno list
 
 (* Table *)
-and ('note, 'expr) table =
-  ('note, 'expr) table_key list
-  * ('note, 'expr) table_action list
-  * ('note, 'expr) table_entry list
-  * ('note, 'expr) table_default option
-  * ('note, 'expr) table_custom list
+and ('note, 'expr) table = {
+  keys : ('note, 'expr) table_key list;
+  actions : ('note, 'expr) table_action list;
+  entries : ('note, 'expr) table_entry list;
+  default : ('note, 'expr) table_default option;
+  customs : ('note, 'expr) table_custom list;
+}
 
 (* Table keys *)
 and ('note, 'expr) table_key = ('note, 'expr) table_key' phrase

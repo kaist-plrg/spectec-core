@@ -1,4 +1,4 @@
 (library
  (name typing)
  (libraries lang el il runtime)
- (modules ctx free subst eq static wellformed typecheck))
+ (modules ctx tblctx free subst eq static wellformed typecheck))

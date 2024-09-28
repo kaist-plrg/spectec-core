@@ -270,19 +270,29 @@ let rec find_typedef_opt cursor tid ctx =
 
 let find_typedef cursor tid ctx = find_typedef_opt cursor tid ctx |> Option.get
 
-let rec find_funcdef_opt cursor (fid, args) ctx =
+let rec find_funcdef_overloaded_opt cursor (fid, args) ctx =
   match cursor with
-  | Global -> Envs.FDEnv.find_opt (fid, args) ctx.global.fdenv
+  | Global -> Envs.FDEnv.find_overloaded_opt (fid, args) ctx.global.fdenv
   | Block ->
-      Envs.FDEnv.find_opt (fid, args) ctx.block.fdenv
-      |> find_cont find_funcdef_opt Global (fid, args) ctx
-  | Local -> find_funcdef_opt Block (fid, args) ctx
+      Envs.FDEnv.find_overloaded_opt (fid, args) ctx.block.fdenv
+      |> find_cont find_funcdef_overloaded_opt Global (fid, args) ctx
+  | Local -> find_funcdef_overloaded_opt Block (fid, args) ctx
 
-let find_funcdef cursor (fid, args) ctx =
-  find_funcdef_opt cursor (fid, args) ctx |> Option.get
+let find_funcdef_overloaded cursor (fid, args) ctx =
+  find_funcdef_overloaded_opt cursor (fid, args) ctx |> Option.get
+
+let rec find_funcdef_opt cursor fid ctx =
+  match cursor with
+  | Global -> Envs.FDEnv.find_opt fid ctx.global.fdenv
+  | Block ->
+      Envs.FDEnv.find_opt fid ctx.block.fdenv
+      |> find_cont find_funcdef_opt Global fid ctx
+  | Local -> find_funcdef_opt Block fid ctx
+
+let find_funcdef cursor fid ctx = find_funcdef_overloaded cursor fid ctx
 
 let find_consdef_opt _cursor (cid, args) ctx =
-  Envs.CDEnv.find_opt (cid, args) ctx.global.cdenv
+  Envs.CDEnv.find_overloaded_opt (cid, args) ctx.global.cdenv
 
 let find_consdef cursor (cid, args) ctx =
   find_consdef_opt cursor (cid, args) ctx |> Option.get
