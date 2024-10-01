@@ -3615,10 +3615,19 @@ and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
   let expr, match_kind, annos = table_key in
   let expr_il = type_expr cursor ctx expr in
   let typ = expr_il.note.typ in
-  check_table_key match_kind.it typ;
+  let value_match_kind = Ctx.find_value_opt cursor match_kind.it ctx in
+  let value_match_kind =
+    match value_match_kind with
+    | Some (Value.MatchKindV match_kind) -> match_kind
+    | _ ->
+        Format.eprintf "(type_table_key) %a is not a valid match_kind\n"
+          El.Pp.pp_match_kind match_kind;
+        assert false
+  in
+  check_table_key value_match_kind typ;
   let annos_il = List.map (type_anno cursor ctx) annos in
   let table_key_il = (expr_il, match_kind, annos_il) in
-  let table_ctx = Tblctx.add_key (Types.SetT typ, match_kind.it) table_ctx in
+  let table_ctx = Tblctx.add_key (Types.SetT typ, value_match_kind) table_ctx in
   (table_ctx, table_key_il)
 
 and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
