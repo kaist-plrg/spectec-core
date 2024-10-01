@@ -200,7 +200,7 @@ Error while typechecking p4 file: test/program/issue1660-bmv2.p4
 Error while typechecking p4 file: test/program/parser_error-bmv2.p4
 Error while typechecking p4 file: test/program/issue1025-bmv2.p4
 Typecheck success: test/program/spec-ex06.p4
-Typecheck success: test/program/issue2037.p4
+Error while typechecking p4 file: test/program/issue2037.p4
 Typecheck success: test/program/issue2126.p4
 Error while typechecking p4 file: test/program/exit5.p4
 Error while typechecking p4 file: test/program/issue1520-bmv2.p4
@@ -623,4 +623,4 @@ Error while typechecking p4 file: test/program/recursive-casts.p4
 Typecheck success: test/program/complex.p4
 Error while typechecking p4 file: test/program/psa-meter4.p4
 Typecheck fails on parse: 11 / 623
-Typecheck fails on typecheck: 428 / 612
+Typecheck fails on typecheck: 429 / 612

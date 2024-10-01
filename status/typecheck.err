@@ -78,7 +78,7 @@ struct T { f = bit<1> }>; f2 = struct T { f = bit<1> }; z = bit<1> }
 (type_function_decl) A function must return a value on all possible execution paths
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
-(type_table_custom) There is no custom element implementation
+(type_table_custom) Custom element implementation is undefined
 (type_stmt) Switch statement is not supported
 (specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
 extract(hdr) : extern_method<T>(out hdr T) -> void
@@ -91,7 +91,7 @@ lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout st
 (coerce_type) Cannot coerce type tuple<bit<32>> to struct S { f = bit<32> }
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
-(type_table_custom) There is no custom element junk
+(type_table_custom) Custom element junk is undefined
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
 (coerce_type) Cannot coerce type tuple<bit<9>> to struct PortId_t { _v = bit<9> }
@@ -218,6 +218,7 @@ lookahead() : extern_method<T>() -> T }, out result T),  map control (out data T
 (specialize_funcdef) Function extern_func<T>(in type enum CloneType, in session bit<32>, in data T) -> void expects 1 type arguments but 0 were given
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
+(type_table_action_default) There is no action named a in actions list
 (type_stmt) Switch statement is not supported
 (specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
 extract(hdr) : extern_method<T>(out hdr T) -> void
@@ -230,7 +231,7 @@ extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out vari
 length() : extern_method<>() -> bit<32>
 lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
-(type_table_custom) There is no custom element implementation
+(type_table_custom) Custom element implementation is undefined
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
 (type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<8> and bit<8> were given
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
@@ -347,14 +348,14 @@ lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout st
 extract(hdr) : extern_method<T>(out hdr T) -> void
 extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
 length() : extern_method<>() -> bit<32>
-lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout mtest/program/string_anno.p4:21:7: warning: missing terminating '"' character [-Winvalid-pp-token]
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; partest/program/string_anno.p4:21:7: warning: missing terminating '"' character [-Winvalid-pp-token]
 @name("string with
       ^
 test/program/string_anno.p4:22:8: warning: missing terminating '"' character [-Winvalid-pp-token]
 newline") const bit d = 1;
        ^
 2 warnings generated.
-eta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
+ser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
 (specialize_funcdef) Function func<T>( x T) -> T expects 1 type arguments but 0 were given
 (check_eq_typ_alpha) Types int and bit<8> are not equal
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
@@ -441,7 +442,7 @@ lookahead() : extern_method<T>() -> T }, out h H),  _c control (inout h H, inout
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
-(type_table_custom) There is no custom element implementation
+(type_table_custom) Custom element implementation is undefined
 (specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
 extract(hdr) : extern_method<T>(out hdr T) -> void
 extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
@@ -525,7 +526,7 @@ lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout st
 (check_valid_type_nesting) Invalid nesting of int inside set<int>
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
 (specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
-(type_table_custom) There is no custom element implementation
+(type_table_custom) Custom element implementation is undefined
 (check_valid_type_nesting) Invalid nesting of int inside set<int>
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
@@ -576,7 +577,11 @@ lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout st
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
-(type_table_custom) size should be numeric type, not int
+(specialize_funcdef) Constructor constructor<H, M> ( p parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, out parsedHdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  vr control (inout hdr H, inout meta M),  ig control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  eg control (inout hdr H, inout meta M, inout standard_metadata struct standard_metadata_t { ingress_port = bit<9>; egress_spec = bit<9>; egress_port = bit<9>; instance_type = bit<32>; packet_length = bit<32>; enq_timestamp = bit<32>; enq_qdepth = bit<19>; deq_timedelta = bit<32>; deq_qdepth = bit<19>; ingress_global_timestamp = bit<48>; egress_global_timestamp = bit<48>; mcast_grp = bit<16>; egress_rid = bit<16>; checksum_error = bit<1>; parser_error = error; priority = bit<3> }),  ck control (inout hdr H, inout meta M),  dep control ( b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }, in hdr H)) -> package expects 2 type arguments but 0 were given
 (specialize_funcdef) Function extern_method<T>(in hdr T) -> void expects 1 type arguments but 0 were given
 (specialize_funcdef) Function extern_method<T>(out hdr T) -> void expects 1 type arguments but 0 were given
 (coerce_type) Cannot coerce type tuple<int<32>,

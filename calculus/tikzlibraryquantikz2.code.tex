@@ -1,0 +1,1825 @@
+%This is the quantikz library for typesetting quantum circuits using LaTeX/Tikz. version 1.0.1
+% Written by Alastair Kay, 2018. Published under a CC-BY-4.0 licence
+% Please email me (alastair.kay@rhul.ac.uk) with any bug reports or feature requests.
+% If you find this library useful, please cite its usage in your work, using arXiv:1809.03842, and possibly the DOI: 10.17637/rh.7000520.
+% Usage is at your own risk.
+
+%version 1.0.1
+% the lstick/midstick/rstick commands now correctly resize braces if you're using classical wires based on wire types at the *end* of each wire (so rstick more likely to look good than lstick/midstick!.
+% fixed incompatibility if physics2 package (turned out we both used the same variable name somewhere)
+%version 1.0.0
+%major new revision with massive under-the-hood changes in how wires work.
+%aiming to reduce technical debt in the code as well.
+%use the \wire commands for all your wire needs
+%fix wire types using wire types={} key, and function setwiretype{}
+%check your circuits for places where you assumed there would be no wire.
+%some minor changes in optional parameters (e.g. \meter). In practice, these are rarely used, and unlikely to be an issue.
+%should always use quantikz and not tikzcd environment
+
+%\ProvidesPackage{quantikz}[2023/05/24 typeset quantum circuit diagrams]
+
+% Package(s) to include
+\RequirePackage{xargs,ifthen,xstring,xparse,etoolbox,mathtools,pgfmath}
+\RequirePackage{environ} %in an attempt to help with compatibility with the external library of tikz.
+%\RequirePackage{tikz}
+\usetikzlibrary{cd,decorations.pathreplacing,calc,positioning,fit,shapes.symbols,decorations.pathmorphing,shapes.misc,decorations.markings,math}
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{quantback}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%create the new quantikz environment
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%I need this to facilitate the external library
+%solution taken from https://tex.stackexchange.com/questions/171931/are-the-tikz-libraries-cd-and-external-incompatible-with-one-another
+%this does a global redefinition of the &. This is not good as it will lead to incompatibilities with other packages.
+%there seems to be a solution https://tex.stackexchange.com/a/633066/148934
+%another option, more similar to the original: https://tex.stackexchange.com/a/619983/148934
+% \newcommand{\mytikzcdcontext}[2]{
+%       \begin{tikzcd}[#1]
+%         #2
+%       \end{tikzcd}%
+% }
+%could I do this to align instead?
+% \NewDocumentEnvironment{quantikz}{O{}+b}{%
+%   \begingroup \catcode`&=\active
+%   \def\@temp{\tikzcd@[#1]\scantokens{#2}}%
+%   \expandafter\@temp\endtikzcd\endgroup
+% }{}
+%full solution suggested here https://tex.stackexchange.com/a/682872/148934
+\ExplSyntaxOn
+\NewDocumentEnvironment{quantikz}{O{}+b}{
+\gdef\toslice@qtkz{0}\def\vert@qtkz{0}%
+  \begin{tikzpicture}[/tikz/commutative~diagrams/.cd, every~diagram,baseline={([yshift=-axis_height]\tikzcdmatrixname)}, #1]
+  \pgfsetlayers{background,quantback,main}
+    \tl_set:Nn \l_tmpa_tl { #2 }
+    \tl_replace_all:Nnn \l_tmpa_tl { & } { \pgfmatrixnextcell }
+    \begingroup%doing it like this, we don't need to patch tikzcd, so it will continue to work independently.
+      \def\tikzpicture[##1]{}
+      \let\endtikzpicture\relax
+      \tikzcd[#1]
+        \l_tmpa_tl
+      \endtikzcd
+    \endgroup
+  \end{tikzpicture}
+}{}
+\ExplSyntaxOff
+
+% \ExplSyntaxOn
+% \NewDocumentEnvironment{quantikz}{O{}+b}{%
+%   \tl_rescan:nn { \char_set_catcode_active:N \& } { \begin{tikzcd}[#1] #2 \end{tikzcd} }
+% }{}
+% \ExplSyntaxOff
+
+% \newcommand{\mytikzcdcontext}[2]{
+%   \begin{tikzpicture}[baseline=(maintikzcdnode.base)]
+%     \node (maintikzcdnode) [inner sep=0, outer sep=0] {%
+%       \begin{tikzcd}[#1]
+%         #2
+%       \end{tikzcd}%
+%     };
+%   \end{tikzpicture}%
+% }
+
+% \ExplSyntaxOn
+
+% \NewDocumentEnvironment{quantikz}{O{}+b}
+%  {
+%   \tl_set:Nn \l_tmpa_tl { #2 }
+%   \regex_replace_all:nnN { \& } { \cA\& } \l_tmpa_tl
+%   \weird_wonderful_mytikzcd:nV { #1 } \l_tmpa_tl
+%  }
+%  {}
+
+% \cs_set_eq:NN \weird_wonderful_mytikzcd:nn \mytikzcdcontext
+% \cs_generate_variant:Nn \weird_wonderful_mytikzcd:nn { nV }
+
+% \ExplSyntaxOff
+
+
+%patch tikzcd to allow for multiple layers of commands that get deferred until later
+% \patchcmd\tikzcd@{\tikzpicture}{%
+%   \def\toslice{0}\def\vert@qtkz{0}%
+%  \begin{tikzpicture}}{}{}
+%\patchcmd\tikzcd@{\tikzpicture[/tikz/commutative diagrams/.cd,every diagram,#1]}{%
+%}{}{}
+\patchcmd\tikzcd@
+    {\global\let\tikzcd@savedpaths\pgfutil@empty}
+    {\global\let\tikzcd@savedpaths\pgfutil@empty
+    \pgfutil@g@addto@macro\tikzcd@savedpaths{\begin{scope}[/tikz/commutative diagrams/.cd,#1]}
+    \pgfsetlayers{background,quantback,main}
+    \global\let\tikzcd@atendsavedpaths\pgfutil@empty
+    \global\let\tikzcd@atendlabels\pgfutil@empty
+    \global\let\tikzcd@atendslices\pgfutil@empty
+    \pgfutil@g@addto@macro\tikzcd@savedpaths\DivideRowsCols
+    \def\tikz@lib@matrix@empty@cell{
+      \iftikz@lib@matrix@empty\node[name=\tikzmatrixname-\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn,
+      minimum width=\ifcsundef{cell@width@\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}{0}{\csname cell@width@\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn\endcsname},
+      minimum height=\ifcsundef{cell@height@\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}{0}{\csname cell@height@\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn\endcsname}
+      ]{};\wire{a}\fi
+      \csgundef{cell@width@\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+      \csgundef{cell@height@\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}}
+    %\pgfmathsetmacro{\mname}{random(100000)}
+    \ifcsstring{toslice@qtkz}{1}{\ifcsstring{vert@qtkz}{0}{\pgfutil@g@addto@macro\tikzcd@atendslices\sliceallr}{\pgfutil@g@addto@macro\tikzcd@atendslices\sliceallvr}}{}
+    %\ifthenelse{\toslice=1}{\ifthenelse{\vert@qtkz=0}{\PackageWarning{quantikz}{We are slicing}\pgfutil@g@addto@macro\tikzcd@atendslices\sliceallr}{\pgfutil@g@addto@macro\tikzcd@atendslices\sliceallvr}}{}
+    }{}{}
+
+%this patching works on modern systems, but I believe is incompatible with the old version that arXiv is running
+%\patchcmd\endtikzcd{\tikzcd@savedpaths}{\tikzcd@savedpaths\tikzcd@atendsavedpaths\tikzcd@atendlabels\tikzcd@atendslices}{}{}
+
+%instead, completely redefine the function
+\def\endtikzcd{%
+  \pgfmatrixendrow\egroup%
+  \pgfextra{\global\let\tikzcdmatrixname\tikzlastnode};%
+  \tikzcdset{\the\pgfmatrixcurrentrow-row diagram/.try}%
+  \begingroup%
+    \pgfkeys{% `quotes' library support
+      /handlers/first char syntax/the character "/.initial=\tikzcd@forward@quotes,%
+      /tikz/edge quotes mean={%
+        edge node={node [execute at begin node=\iftikzcd@mathmode$\fi,%$
+                         execute at end node=\iftikzcd@mathmode$\fi,%$
+                         /tikz/commutative diagrams/.cd,every label,##2]{##1}}}}%
+    \let\tikzcd@errmessage\errmessage% improve error messages
+    \def\errmessage##1{\tikzcd@errmessage{##1^^J...^^Jl.\tikzcd@lineno\space%
+        I think the culprit is a tikzcd arrow in cell \tikzcd@currentrow-\tikzcd@currentcolumn}}%
+    \tikzcd@before@paths@hook%
+    \begin{pgfonlayer}{quantback}
+    \begingroup
+    \tikzcdset{wire types/.code={}}%prevent setting of wire types, which wipes all the work we've done!
+    %\begin{scope} already included in tikzcd@savedpaths so that it has right options
+      \tikzcd@savedpaths
+    \end{scope}
+    \endgroup
+    \end{pgfonlayer}
+    \tikzcd@atendsavedpaths\tikzcd@atendlabels\tikzcd@atendslices%I just added stuff here instead
+    \resetwiretypes%reset wire types
+    \def\tikz@lib@matrix@empty@cell{\iftikz@lib@matrix@empty\node[name=\tikzmatrixname-\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn]{};\fi}%
+  \endgroup%
+  \endtikzpicture%
+  \ifnum0=`{}\fi}
+
+
+%end patching
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% the basic wire command
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\ExplSyntaxOn
+% take a direction, such as d and repeat it the required number of times
+\NewExpandableDocumentCommand{\myrepeat}{O{}mm}
+ {
+  \int_compare:nT { #2 > 0 }
+   {
+    #3 \prg_replicate:nn { #2 - 1 } { #1#3 }
+   }
+ }
+\ExplSyntaxOff
+
+%this is the main entry point for people
+%converts a wire command with distance into one using repeated letters (main directions only)
+\NewDocumentCommand{\wire}{O{l}O{1}O{}m}{%direction (l/r/u/d), distance, decoration, quantum/classical/bundle/none
+\ifstrequal{#2}{0}{%
+\PackageWarning{quantikz}{You seem to have a wire of zero length. I believe the problem is in cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}.
+}{%
+  \edef\length{\myrepeat{#2}{#1}}
+\ifthenelse{\the\pgfmatrixcurrentcolumn>1}{%
+\expandafter\fullwire\expandafter{\length}{#1}{#4}{#3}%
+}{}
+}}
+%does the actual business of creating the different wire types with the correct anchors
+%uses custom anchors on shapes for classical wires. We'll come to this in a minute.
+\newcommand{\fullwire}[4]{%direction with repetition. direction. type. decoration
+\edef\wiretype{#3}
+\ifstrequal{#3}{a}{%automatic determination
+  \ifcsundef{wire@type@\the\pgfmatrixcurrentrow}{%type not defined globally. assume quantum.
+  \edef\wiretype{q}
+  }{%
+  \edef\wiretype{\csname wire@type@\the\pgfmatrixcurrentrow\endcsname}
+  \ifdefstring{\wiretype}{u}{%
+    \edef\wiretype{q}
+  }{}
+  }
+  \ifcsdef{wire@type@override@\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}{%
+    \edef\wiretype{\csname wire@type@override@\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn\endcsname}
+  }{}
+}{}
+\ifdefstring{\wiretype}{q}{%quantum wire
+    \arrow[#1,arrows,#4] {}
+  }{%
+  \ifdefstring{\wiretype}{c}{%classical wire
+    \arrow[arrows,start anchor=#2startone,end anchor=#2endone] {#1}\arrow[arrows,start anchor=#2starttwo,end anchor=#2endtwo,#4] {#1}
+  }{%
+  \ifdefstring{\wiretype}{b}{%wire bundle
+    \arrow[arrows,start anchor=#2startone,end anchor=#2endone,#4] {#1}\arrow[arrows,start anchor=#2starttwo,end anchor=#2endtwo,#4] {#1}\arrow[#1,arrows,#4] {}
+  }{%
+  \ifdefstring{\wiretype}{n}{%no wire
+  }{\ifdefstring{\wiretype}{u}{%unset
+  }{\PackageWarning{quantikz}{unknown wire type in cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}}}}}}
+}
+
+\newcommand{\setwiretype}[2][\the\pgfmatrixcurrentrow]{%
+%this command will record what the current wire type is supposed to be
+\ifstrequal{#2}{u}{
+  \csgundef{wire@type@#1}
+}{
+\expandafter\gdef\csname wire@type@#1\endcsname{#2}%will need to reset all these variables at the beginning/end of a circuit.
+}
+}
+
+\NewDocumentCommand{\wireoverride}{O{\the\pgfmatrixcurrentrow}O{\the\pgfmatrixcurrentcolumn}m}{%
+%change the wire type of this specific cell without unsetting the global wire type of this cell.
+\expandafter\gdef\csname wire@type@override@#1-#2\endcsname{#3}
+}
+
+\newcounter{dummy}
+\newcommand{\importwiretypes}[1]{%
+%receive a list of wire types. Process them into individual variables
+\setcounter{dummy}{1}% 
+  \foreach \thiswire [count=\rownum] in {#1} {%
+    \expandafter\expandafter\expandafter\setwiretype\expandafter\expandafter\expandafter[\expandafter\rownum\expandafter]\expandafter{\thiswire}
+    \stepcounter{dummy}
+     }
+     \pgfmathparse{\arabic{dummy}/2}
+     %\pgfmathresult
+     \expandafter\setmiddle\expandafter{\pgfmathresult}
+  }%
+
+\newcommand{\resetwiretypes}{%try to reset all definitions of per-row wire types
+  \foreach \rownum in {1,...,\the\pgfmatrixcurrentrow} {%
+\expandafter\setwiretype\expandafter[\rownum]{u} 
+  }
+}
+
+\tikzset{%
+  strike arrow/.style n args={3}{
+    decoration={markings, mark=at position 0.5 with {
+        \draw [internal,-] 
+            ++ (#1, #2 )
+            -- ( -#1, -#2) node [anchor=south west, inner sep=0pt] {$\scriptstyle #3$};} %can I use pgfkeys and do some maths here?
+    },
+    postaction={decorate},
+}}
+%this used to be a more complex command, but is now only used for adding the strikethrough + number
+\newcommand{\qwbundle}[2][]{%
+		%\ifthenelse{\the\pgfmatrixcurrentcolumn=2}{%do the strikethrough
+  \pgfkeys{/quantikz/gates/.cd,style=,Strike Width=0.08cm,Strike Height=0.12cm,#1} 
+  \pgfkeysgetvalue{/quantikz/gates/style}{\style}
+  \pgfkeysgetvalue{/quantikz/gates/Strike Width}{\sw}
+  \pgfkeysgetvalue{/quantikz/gates/Strike Height}{\sh}
+  \edef\arg{strike arrow={\sw}{\sh}{#2},\style}
+			\expandafter\arrow\expandafter[\arg,phantom]{l}%
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% deprecated wire commands provided for backwards compatibility
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%now add some of the basic wire commands for backwards compatibility. These should be largely superfluous once I'm done.
+\newcommand{\vcw}[1]{%vertical classical wire. goes down by the amount specified in arg
+\ifnumcomp{#1}{>}{0}{%
+  \wire[d][#1]{c}
+}{\ifnumcomp{#1}{<}{0}{%
+  \wire[u][-#1]{c}
+}{\PackageWarning{quantikz}{You seem to have a vertical classical wire with no height in cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn!}}}
+}
+%vertical quantum wire, relative positioning
+\newcommand{\vqw}[1]{
+\ifnumcomp{#1}{>}{0}{%
+  \wire[d][#1]{q}
+}{\ifnumcomp{#1}{<}{0}{%
+  \wire[u][-#1]{q}
+}{\PackageWarning{quantikz}{You seem to have a vertical quantum wire with no height in cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn!}}}
+}
+
+%basic horzontal quantum wire, length 1. Goes backwards 1 cell. Won't do anything in the first cell.
+\newcommand{\qw}{\wire{q}}
+%basic horzontal classical wire, length 1. Goes backwards 1 cell. Won't do anything in the first cell.
+\newcommand{\cw}{\wire{c}}
+%use for fudging classical wires that have horizontal and vertical sections
+%shouldn't really be necessary any more?
+\NewExpandableDocumentCommand{\cwbend}{m}{
+  \phase{}\vcw{#1}\cw
+  % \edef\cell{\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+  % \expandafter\pgfutil@g@addto@macro\expandafter\tikzcd@atendlabels\expandafter{%
+  %   \expandafter\latephase@end\expandafter{\cell}
+  % }
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% shape definitions
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%we will mainly be using rectangle and circle as base shapes. Also signal, rounded rectangle for some measurement objects. cross out for swap.
+%First we need to add custom anchors to them for attaching the wires.
+
+%helper functions
+\newcommand*\pgfdeclareanchoralias[3]{%
+    \expandafter\def\csname pgf@anchor@#1@#3\expandafter\endcsname
+            \expandafter{\csname pgf@anchor@#1@#2\endcsname}}
+\def\pgfaddtoshape#1#2{%
+  \begingroup
+  \def\pgf@sm@shape@name{#1}%
+  \let\anchor\pgf@sh@anchor
+  #2%
+  \endgroup
+}
+
+%add anchors to the rectangle
+\pgfaddtoshape{rectangle}{%
+    \anchor{dendtwo}{%
+    \pgf@process{\southwest}%
+    \pgf@xa=.5\pgf@x%
+    \pgf@process{\northeast}%
+    \pgf@x=.5\pgf@x%
+    \advance\pgf@x by \pgf@xa%
+    \advance\pgf@x by \pgfkeysvalueof{/tikz/commutative diagrams/classical gap}%
+  }%
+  \anchor{dstarttwo}{%
+    \pgf@process{\northeast}%
+    \pgf@xa=.5\pgf@x%
+    \pgf@process{\southwest}%
+    \pgf@x=.5\pgf@x%
+    \advance\pgf@x by \pgf@xa%
+    \advance\pgf@x by \pgfkeysvalueof{/tikz/commutative diagrams/classical gap}%
+  }%
+  \anchor{dendone}{%
+    \pgf@process{\southwest}%
+    \pgf@xa=.5\pgf@x%
+    \pgf@process{\northeast}%
+    \pgf@x=.5\pgf@x%
+    \advance\pgf@x by \pgf@xa%
+    \advance\pgf@x by -\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}%
+  }%
+  \anchor{dstartone}{%
+    \pgf@process{\northeast}%
+    \pgf@xa=.5\pgf@x%
+    \pgf@process{\southwest}%
+    \pgf@x=.5\pgf@x%
+    \advance\pgf@x by \pgf@xa%
+    \advance\pgf@x by -\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}%
+  }%
+    \anchor{lstarttwo}{%
+    \pgf@process{\northeast}%
+    \pgf@ya=.5\pgf@y%
+    \pgf@process{\southwest}%
+    \pgf@y=.5\pgf@y%
+    \advance\pgf@y by \pgf@ya%
+    \advance\pgf@y by \pgfkeysvalueof{/tikz/commutative diagrams/classical gap}%
+  }%
+  \anchor{lendtwo}{%
+    \pgf@process{\southwest}%
+    \pgf@ya=.5\pgf@y%
+    \pgf@process{\northeast}%
+    \pgf@y=.5\pgf@y%
+    \advance\pgf@y by \pgf@ya%
+    \advance\pgf@y by \pgfkeysvalueof{/tikz/commutative diagrams/classical gap}%
+  }%
+  \anchor{lstartone}{%
+    \pgf@process{\northeast}%
+    \pgf@ya=.5\pgf@y%
+    \pgf@process{\southwest}%
+    \pgf@y=.5\pgf@y%
+    \advance\pgf@y by \pgf@ya%
+    \advance\pgf@y by -\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}%
+  }%
+  \anchor{lendone}{%
+    \pgf@process{\southwest}%
+    \pgf@ya=.5\pgf@y%
+    \pgf@process{\northeast}%
+    \pgf@y=.5\pgf@y%
+    \advance\pgf@y by \pgf@ya%
+    \advance\pgf@y by -\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}%
+  }%
+  }
+\pgfdeclareanchoralias{rectangle}{dendtwo}{ustarttwo}
+\pgfdeclareanchoralias{rectangle}{dendone}{ustartone}
+\pgfdeclareanchoralias{rectangle}{dstarttwo}{uendtwo}
+\pgfdeclareanchoralias{rectangle}{dstartone}{uendone}
+\pgfdeclareanchoralias{rectangle}{lendtwo}{rstarttwo}
+\pgfdeclareanchoralias{rectangle}{lendone}{rstartone}
+\pgfdeclareanchoralias{rectangle}{lstarttwo}{rendtwo}
+\pgfdeclareanchoralias{rectangle}{lstartone}{rendone}
+
+%add anchors to the circle
+\pgfaddtoshape{circle}{%
+  \anchor{dstartone}{
+    \centerpoint
+    \pgf@xa=\radius
+    \advance\pgf@x by-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}
+    \ifdimgreater{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}{\radius}{%
+\PackageError{quantikz}{You have tried to create a control object with classical control wire, but "classical gap" is set too large.}{Change the environment parameter for the quantikz environment using the "classical gap=" key to a value smaller than 0.06cm.}
+    }{}
+    \pgfmathparse{-sqrt(\radius*\radius-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap})}
+    \advance\pgf@y by\pgfmathresult pt
+  }%
+  \anchor{dstarttwo}{
+    \centerpoint
+    \pgf@xa=\radius
+    \ifdimgreater{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}{\radius}{%
+\PackageError{quantikz}{You have tried to create a control object with classical control wire, but "classical gap" is set too large.}{Change the environment parameter for the quantikz environment using the "classical gap=" key to a value smaller than 0.06cm.}
+    }{}
+    \advance\pgf@x by\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}
+    \pgfmathparse{-sqrt(\radius*\radius-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap})}
+    \advance\pgf@y by\pgfmathresult pt
+  }%
+  \anchor{dendone}{
+    \centerpoint
+    \pgf@xa=\radius
+    \ifdimgreater{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}{\radius}{%
+\PackageError{quantikz}{You have tried to create a control object with classical control wire, but "classical gap" is set too large.}{Change the environment parameter for the quantikz environment using the "classical gap=" key to a value smaller than 0.06cm.}
+    }{}
+    \advance\pgf@x by-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}
+    \pgfmathparse{sqrt(\radius*\radius-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap})}
+    \advance\pgf@y by\pgfmathresult pt
+  }%
+  \anchor{dendtwo}{
+    \centerpoint
+    \pgf@xa=\radius
+    \ifdimgreater{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}{\radius}{%
+\PackageError{quantikz}{You have tried to create a control object with classical control wire, but "classical gap" is set too large.}{Change the environment parameter for the quantikz environment using the "classical gap=" key to a value smaller than 0.06cm.}
+    }{}
+    \advance\pgf@x by\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}
+    \pgfmathparse{sqrt(\radius*\radius-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap})}
+    \advance\pgf@y by\pgfmathresult pt
+  }%
+  \anchor{lstartone}{
+    \centerpoint
+    \pgf@xa=\radius
+    \ifdimgreater{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}{\radius}{%
+\PackageError{quantikz}{You have tried to create a control object with classical control wire, but "classical gap" is set too large.}{Change the environment parameter for the quantikz environment using the "classical gap=" key to a value smaller than 0.06cm.}
+    }{}
+    \advance\pgf@y by-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}
+    \pgfmathparse{-sqrt(\radius*\radius-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap})}
+    \advance\pgf@x by\pgfmathresult pt
+  }%
+  \anchor{lstarttwo}{
+    \centerpoint
+    \pgf@xa=\radius
+    \ifdimgreater{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}{\radius}{%
+\PackageError{quantikz}{You have tried to create a control object with classical control wire, but "classical gap" is set too large.}{Change the environment parameter for the quantikz environment using the "classical gap=" key to a value smaller than 0.06cm.}
+    }{}
+    \advance\pgf@y by\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}
+    \pgfmathparse{-sqrt(\radius*\radius-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap})}
+    \advance\pgf@x by\pgfmathresult pt
+  }%
+  \anchor{lendone}{
+    \centerpoint
+    \pgf@xa=\radius
+    \ifdimgreater{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}{\radius}{%
+\PackageError{quantikz}{You have tried to create a control object with classical control wire, but "classical gap" is set too large.}{Change the environment parameter for the quantikz environment using the "classical gap=" key to a value smaller than 0.06cm.}
+    }{}
+    \advance\pgf@y by-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}
+    \pgfmathparse{sqrt(\radius*\radius-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap})}
+    \advance\pgf@x by\pgfmathresult pt
+  }%
+  \anchor{lendtwo}{
+    \centerpoint
+    \pgf@xa=\radius
+    \ifdimgreater{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}{\radius}{%
+\PackageError{quantikz}{You have tried to create a control object with classical control wire, but "classical gap" is set too large.}{Change the environment parameter for the quantikz environment using the "classical gap=" key to a value smaller than 0.06cm.}
+    }{}
+    \advance\pgf@y by\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}
+    \pgfmathparse{sqrt(\radius*\radius-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap})}
+    \advance\pgf@x by\pgfmathresult pt
+  }%
+}
+\pgfdeclareanchoralias{circle}{dendtwo}{ustarttwo}
+\pgfdeclareanchoralias{circle}{dendone}{ustartone}
+\pgfdeclareanchoralias{circle}{dstarttwo}{uendtwo}
+\pgfdeclareanchoralias{circle}{dstartone}{uendone}
+\pgfdeclareanchoralias{circle}{lendtwo}{rstarttwo}
+\pgfdeclareanchoralias{circle}{lendone}{rstartone}
+\pgfdeclareanchoralias{circle}{lstarttwo}{rendtwo}
+\pgfdeclareanchoralias{circle}{lstartone}{rendone}
+
+\pgfaddtoshape{rounded rectangle}{%
+%I'm going to cheat and assume it's always wide enough to have a flat bottom/top.
+	\anchor{dstartone}{%
+ 		\roundedrectanglepoints%
+ 		\pgfpointadd{\centerpoint}{\pgfpoint{-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}{-\halfheight-\outerysep}}%
+	}
+	\anchor{dstarttwo}{%
+ 		\roundedrectanglepoints%
+ 		\pgfpointadd{\centerpoint}{\pgfpoint{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}{-\halfheight-\outerysep}}%
+	}
+	\anchor{dendone}{%
+ 		\roundedrectanglepoints%
+ 		\pgfpointadd{\centerpoint}{\pgfpoint{-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}{\halfheight+\outerysep}}%
+	}
+	\anchor{dendtwo}{%
+ 		\roundedrectanglepoints%
+ 		\pgfpointadd{\centerpoint}{\pgfpoint{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}{\halfheight+\outerysep}}%
+	}
+	\anchor{lstarttwo}{%
+	\roundedrectanglepoints%
+    \ifx\westarc\pgf@lib@sh@misc@rr@text@concave%
+    %not sure! Just leave it. I don't think even the simple quantum wire works as I want it out the box!
+    \pgfpointadd{\centerpoint}{\pgfpoint{-\halfwidth-\outerxsep}{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}%
+        % \pgfpathlineto{\pgfpoint{-\halfwidth-\arcwidth}{+-\halfheight}}%
+        % \pgfpatharc{+-\halfarcangle}{+\halfarcangle}{+\radius}%
+    \else%
+        \ifx\westarc\pgf@lib@sh@misc@rr@text@convex%
+        		\pgfextract@process\arccenter{%
+               	\pgfpointadd{\centerpoint}{\pgfpoint{-\halfwidth-\chordwidth+\radius}{+0pt}}%
+            }%
+            \pgfmathparse{sqrt((\radius+\outerxsep)^2-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}^2)}
+            \pgfpointadd{\arccenter}{\pgfpoint{-\pgfmathresult pt}{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}
+        \else%
+            \pgfpointadd{\centerpoint}{\pgfpoint{-\halfwidth-\outerxsep}{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}%
+        \fi%
+    \fi%
+	}
+	\anchor{lstartone}{%
+	\roundedrectanglepoints%
+   \ifx\westarc\pgf@lib@sh@misc@rr@text@concave%
+    %not sure!
+    \pgfpointadd{\centerpoint}{\pgfpoint{-\halfwidth-\outerxsep}{-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}%
+    %     % \pgfpathlineto{\pgfpoint{-\halfwidth-\arcwidth}{+-\halfheight}}%
+    %     % \pgfpatharc{+-\halfarcangle}{+\halfarcangle}{+\radius}%
+    \else%
+        \ifx\westarc\pgf@lib@sh@misc@rr@text@convex%
+        		\pgfextract@process\arccenter{%
+               	\pgfpointadd{\centerpoint}{\pgfpoint{-\halfwidth-\chordwidth+\radius}{+0pt}}%
+            }%
+            \pgfmathparse{sqrt((\radius+\outerxsep)^2-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}^2)}
+            \pgfpointadd{\arccenter}{\pgfpoint{-\pgfmathresult pt}{-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}
+        \else%
+            \pgfpointadd{\centerpoint}{\pgfpoint{-\halfwidth-\outerxsep}{-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}%
+        \fi%
+    \fi%
+	}	
+	\anchor{lendtwo}{%
+	\roundedrectanglepoints%
+    \ifx\eastarc\pgf@lib@sh@misc@rr@text@concave%
+    %not sure!
+        % \pgfpathlineto{\pgfpoint{-\halfwidth-\arcwidth}{+-\halfheight}}%
+        % \pgfpatharc{+-\halfarcangle}{+\halfarcangle}{+\radius}%
+    \else%
+        \ifx\eastarc\pgf@lib@sh@misc@rr@text@convex%
+        		\pgfextract@process\arccenter{%
+               	\pgfpointadd{\centerpoint}{\pgfpoint{\halfwidth+\chordwidth-\radius}{+0pt}}%
+            }%
+            \pgfmathparse{sqrt((\radius+\outerxsep)^2-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}^2)}
+            \pgfpointadd{\arccenter}{\pgfpoint{\pgfmathresult pt}{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}
+            %\pgfpathlineto{\pgfpoint{-\halfwidth-\chordwidth+\arcwidth}{+-\halfheight}}%
+            %\pgfpatharc{180+\halfarcangle}{180-\halfarcangle}{+\radius}%
+        \else%
+            \pgfpointadd{\centerpoint}{\pgfpoint{\halfwidth}{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}%
+        \fi%
+    \fi%
+	}
+	\anchor{lendone}{%
+	\roundedrectanglepoints%
+    \ifx\eastarc\pgf@lib@sh@misc@rr@text@concave%
+    %not sure!
+        % \pgfpathlineto{\pgfpoint{-\halfwidth-\arcwidth}{+-\halfheight}}%
+        % \pgfpatharc{+-\halfarcangle}{+\halfarcangle}{+\radius}%
+    \else%
+        \ifx\eastarc\pgf@lib@sh@misc@rr@text@convex%
+        		\pgfextract@process\arccenter{%
+               	\pgfpointadd{\centerpoint}{\pgfpoint{\halfwidth+\chordwidth-\radius}{+0pt}}%
+            }%
+            \pgfmathparse{sqrt((\radius+\outerxsep)^2-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}^2)}
+            \pgfpointadd{\arccenter}{\pgfpoint{\pgfmathresult pt}{-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}
+            %\pgfpathlineto{\pgfpoint{-\halfwidth-\chordwidth+\arcwidth}{+-\halfheight}}%
+            %\pgfpatharc{180+\halfarcangle}{180-\halfarcangle}{+\radius}%
+        \else%
+            \pgfpointadd{\centerpoint}{\pgfpoint{\halfwidth}{-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}%
+        \fi%
+    \fi%
+	}
+	}
+\pgfdeclareanchoralias{rounded rectangle}{dendtwo}{ustarttwo}
+\pgfdeclareanchoralias{rounded rectangle}{dendone}{ustartone}
+\pgfdeclareanchoralias{rounded rectangle}{dstarttwo}{uendtwo}
+\pgfdeclareanchoralias{rounded rectangle}{dstartone}{uendone}
+\pgfdeclareanchoralias{rounded rectangle}{lendtwo}{rstarttwo}
+\pgfdeclareanchoralias{rounded rectangle}{lendone}{rstartone}
+\pgfdeclareanchoralias{rounded rectangle}{lstarttwo}{rendtwo}
+\pgfdeclareanchoralias{rounded rectangle}{lstartone}{rendone}
+
+
+\pgfaddtoshape{signal}{%
+	\anchor{lstarttwo}{%
+		\installsignalparameters
+		\let\firstpoint\anchornorthwest
+		\let\secondpoint\anchorwest
+    \pgfpointintersectionoflines%
+      {\firstpoint}%
+      {\secondpoint}%
+      {\pgfpointadd{\secondpoint}{\pgfpoint{0cm}{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}}%
+      {\pgfpointadd{\secondpoint}{\pgfpoint{0.5cm}{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}}%
+	}
+	\anchor{lstartone}{%
+		\installsignalparameters
+		\let\firstpoint\anchorsouthwest
+		\let\secondpoint\anchorwest
+		\pgfpointintersectionoflines%
+      {\firstpoint}%
+      {\secondpoint}%
+      {\pgfpointadd{\secondpoint}{\pgfpoint{0cm}{-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}}%
+      {\pgfpointadd{\secondpoint}{\pgfpoint{0.5cm}{-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}}%
+	}
+	\anchor{lendtwo}{%
+		\installsignalparameters
+		\let\firstpoint\anchornortheast
+		\let\secondpoint\anchoreast
+    \pgfpointintersectionoflines%
+      {\firstpoint}%
+      {\secondpoint}%
+      {\pgfpointadd{\secondpoint}{\pgfpoint{0cm}{-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}}%
+      {\pgfpointadd{\secondpoint}{\pgfpoint{0.5cm}{-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}}%
+	}
+	\anchor{lendone}{%
+		\installsignalparameters
+		\let\firstpoint\anchorsoutheast
+		\let\secondpoint\anchoreast
+    \pgfpointintersectionoflines%
+      {\firstpoint}%
+      {\secondpoint}%
+      {\pgfpointadd{\secondpoint}{\pgfpoint{0cm}{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}}%
+      {\pgfpointadd{\secondpoint}{\pgfpoint{0.5cm}{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}}}%
+	}
+  \anchor{dstarttwo}{%
+  	\installsignalparameters
+    \pgf@process{\southanchor}%
+    \advance\pgf@x by \pgfkeysvalueof{/tikz/commutative diagrams/classical gap}%
+  }%
+  \anchor{dstartone}{%
+  	\installsignalparameters
+    \pgf@process{\southanchor}%
+    \advance\pgf@x by -\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}%
+  }%
+  \anchor{dendtwo}{%
+  	\installsignalparameters
+    \pgf@process{\northanchor}%
+    \advance\pgf@x by \pgfkeysvalueof{/tikz/commutative diagrams/classical gap}%
+  }%
+  \anchor{dendone}{%
+  	\installsignalparameters
+    \pgf@process{\northanchor}%
+    \advance\pgf@x by -\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}%
+  }%}
+ }
+\pgfdeclareanchoralias{signal}{dendtwo}{ustarttwo}
+\pgfdeclareanchoralias{signal}{dendone}{ustartone}
+\pgfdeclareanchoralias{signal}{dstarttwo}{uendtwo}
+\pgfdeclareanchoralias{signal}{dstartone}{uendone}
+\pgfdeclareanchoralias{signal}{lendtwo}{rstarttwo}
+\pgfdeclareanchoralias{signal}{lendone}{rstartone}
+\pgfdeclareanchoralias{signal}{lstarttwo}{rendtwo}
+\pgfdeclareanchoralias{signal}{lstartone}{rendone}
+
+% if these base shapes won't do, you'll have to create your own definition, either of a whole shape or take an existing one and add extra anchors, as above.
+% you need to make sure that the anchor border works correctly for lines approaching from the 4 compass points, as these are where the quantum wires attach.
+% classical wires instead attach to points that are displaced by a horizontal/vertical amount \pgfkeysvalueof{/tikz/commutative diagrams/classical gap} relative to these positions. These are called:
+% dstartone,dstarttwo,dendone,dendtwo
+% ustartone,ustarttwo,uendone,uendtwo
+% lstartone,lstarttwo,lendone,lendtwo
+% rstartone,rstarttwo,rendone,rendtwo
+%The idea, for example, is if you have an "l" type classical wire, there will be two wires, one going from lstartone (the left-hand edge on your shape, \pgfkeysvalueof{/tikz/commutative diagrams/classical gap} vertically above the west anchor) and going to lendone (l end one) on the cell one to the left. Typically, you expect lendone and rstartone to be the same points. There is also a line from lstarttwo to lendtwo.
+
+% often the shape you want can just be a modification of an existing shape. Critically, the border should be the same. Then we don't need to define a whole new shape, we can just do it with styles. Much easier!
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% gate definitions
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%single qubit operations
+%\tikzset{linecont/.style={line}}
+\newcommand{\phantomgate}[1]{|[line,thickness, inner ysep=3pt]| \phantom{#1}}
+\newcommand{\hphantomgate}[1]{|[line,minimum size=1.5em,thickness]| \hphantom{#1}}
+\newcommand{\linethrough}{|[line,thickness, inner ysep=3pt]| }
+\newcommand{\push}[1]{#1}
+%\newcommand{\alias}[1]{|[alias=#1]|}
+
+\tikzset{
+circle phase/.style={fill,shape=circle,minimum size=0.12cm,draw},
+rrectangle phase/.style={fill,shape=rectangle,rounded corners=1.5pt,minimum width=3pt,minimum height=2.5*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}+3pt,draw},
+phase/.code={%
+  \pgfkeys{/quantikz/gates/.cd,style=,label style=,#1}%
+  \pgfkeysgetvalue{/quantikz/gates/style}{\style}
+  \ifcsundef{wire@type@\the\pgfmatrixcurrentrow}{%type not defined globally. assume quantum.
+    \edef\wiretype{q}
+  }{%
+    \edef\wiretype{\csname wire@type@\the\pgfmatrixcurrentrow\endcsname}
+  }
+  \ifcsstring{wiretype}{b}{\ifdimless{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}{0.04cm}{\tikzset{circle phase}}{\tikzset{rrectangle phase}}}{%
+    \ifcsstring{wiretype}{c}{\ifdimless{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}{0.04cm}{\tikzset{circle phase}}{\tikzset{rrectangle phase}}}{\tikzset{circle phase}}
+  }
+  \expandafter\tikzset\expandafter{\style}
+  \pgfkeys{/quantikz/gates/.cd,style=,label style=,#1}%run again so that "open" can take priority
+  },
+%ophase/.style={fill=\pgfkeysvalueof{/tikz/commutative diagrams/background color},draw,shape=circle,minimum size=3*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}
+phase label/.code={\tikzset{label distance=2mm,anchor=mid,label position=45}
+  \pgfkeys{/quantikz/gates/.cd,style=,label style=,#1}%
+  \pgfkeysgetvalue{/quantikz/gates/style}{\tstyle}
+  \pgfkeysgetvalue{/quantikz/gates/label style}{\lstyle}
+  \edef\style{\tstyle,\lstyle}
+  \expandafter\tikzset\expandafter{\style}
+},
+}
+
+\DeclareExpandableDocumentCommand{\phase}{O{}m}{|[phase={#1},label={[phase label={#1}]#2}]| {}}
+\DeclareExpandableDocumentCommand{\control}{O{}m}{|[phase={#1}]| {}}
+\DeclareExpandableDocumentCommand{\ocontrol}{O{}m}{|[phase={#1,open}]| {}}
+\DeclareExpandableDocumentCommand{\targ}{O{}m}{|[circlewc={#1}]| {}}
+\DeclareExpandableDocumentCommand{\targX}{O{}m}{|[crossx2={#1}]| {}}
+
+
+\tikzset{
+	cross/.style={path picture={ 
+		\draw[internal](path picture bounding box.north) -- (path picture bounding box.south) (path picture bounding box.west) -- (path picture bounding box.east);
+	}},
+  circlewc/.code={
+  \tikzset{draw,circle,cross,minimum width=4pt,inner sep=3pt}
+    \pgfkeys{/quantikz/gates/.cd,style=,#1}%
+    \pgfkeysgetvalue{/quantikz/gates/style}{\style}
+    \expandafter\tikzset\expandafter{\style}
+  },
+  crossx/.style={path picture={ 
+		\draw[internal,inner sep=0pt]
+		(path picture bounding box.south east) -- (path picture bounding box.north west) (path picture bounding box.south west) -- (path picture bounding box.north east); %(path picture bounding box.west) -- (path picture bounding box.east);
+	}},
+  crossdraw/.pic = {
+    \begin{pgfinterruptboundingbox}
+      \node[cross out,draw,minimum size=0.7em,#1] {};
+    \end{pgfinterruptboundingbox}
+  },
+  crossx2/.code={
+    \pgfkeys{/quantikz/gates/.cd,style=,#1}%
+    \pgfkeysgetvalue{/quantikz/gates/style}{\style}
+    \edef\styling{crossx3=\style}
+    \expandafter\tikzset\expandafter{\styling}
+  },
+  crossx3/.style={
+    append after command={
+      (\tikzlastnode.center) pic{crossdraw={#1}}
+    }
+  }
+}
+
+%%%
+%
+%measuring
+%
+%%%
+
+%standard meter device
+%first, define the styles
+\tikzset{
+  meter/.style={draw,
+    %fill=\pgfkeysvalueof{/tikz/commutative diagrams/background color},
+    filling,
+    minimum width=2em,
+    minimum height=1.5em,
+    rectangle, 
+    font=\vphantom{A}, 
+    thickness,
+    path picture={
+        \draw ([shift={(.1,-.06)}]path picture bounding box.west) to[bend left=50] ([shift={(-.1,-.06)}]path picture bounding box.east);
+        \draw[-{Latex[scale=0.6]}] ([shift={(0,-.1)}]path picture bounding box.center) -- ([shift={(-.1,.2)}]path picture bounding box.east);
+    },
+    },
+    my label/.style={yshift=0.1cm,above,align=center},
+}
+%\DeclareExpandableDocumentCommand{\meter}{O{}{m}}{|[meter,label={[my label]#2},#1]| {}}
+% \DeclareExpandableDocumentCommand{\meter}{O{}O{1.5pt}O{1.5pt}m}{%
+% \gate[priority label={above},priority style={meter},#1][#2][#3]{#4}
+% }
+\DeclareExpandableDocumentCommand{\meter}{O{}O{2em}O{1.5em}m}{%
+\gate[#1,priority label=above,ps=meter,disable auto height][#2][#3]{#4}
+}
+%code not working here :( Either I can get my predefined label style to apply, or the user's custom style. Not both.
+
+%gate variant with classical result wire
+\tikzset{
+    metercw/.style={draw=none,
+    yshift=0.375em,
+        fill=none,
+        minimum width=2em,
+        minimum height=2.25em,
+        font=\vphantom{A}, 
+        thickness,
+        path picture={
+        %if you draw the rectangle to be the full width of the box, you cut off half the line, so have to bring it in a little.
+        \node[draw,thickness,filling,#1,inner sep=0pt, minimum height=0pt,minimum width=0pt,fit={([shift={(.5\pgflinewidth,.5\pgflinewidth)}]path picture bounding box.south west) ([shift={(-.5\pgflinewidth,-0.75em)}]path picture bounding box.north east)}] (rect) {};
+        %  \draw [#1]([xshift={0.5\pgflinewidth}]path picture bounding box.south west) rectangle ([yshift=-0.75em,xshift={-0.5\pgflinewidth}]path picture bounding box.north east);
+          %draw the two classical wires
+          \draw ([xshift=\pgfkeysvalueof{/tikz/commutative diagrams/classical gap},yshift=-0.75em]path picture bounding box.north) -- ([xshift=\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}]path picture bounding box.north);
+          \draw ([xshift=-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap},yshift=-0.75em]path picture bounding box.north) -- ([xshift=-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}]path picture bounding box.north);
+          %draw the image in the middle of the box
+            \draw ([shift={(.1,-.06)}]rect.west) to[bend left=50] ([shift={(-.1,-.06)}]rect.east);
+        \draw[-{Latex[scale=0.6]}] ([shift={(0,-.1)}]rect.center) -- ([shift={(-.1,.2)}]rect.east);
+        }
+    }
+}
+%\DeclareExpandableDocumentCommand{\metercw}{O{}{m}}{|[metercw={#1},label={[my labelcw]#2}]| {}}
+\DeclareExpandableDocumentCommand{\metercw}{O{}O{2em}O{2.25em}m}{%
+\gate[#1,priority label=above,ps=metercw,disable auto height][#2][#3]{#4}
+}
+
+\tikzset{measuretab/.style={draw,signal,signal to=west,filling,minimum width=2em, minimum height=1em,inner sep=4pt}}
+\DeclareExpandableDocumentCommand{\measuretab}{O{}{m}}{|[measuretab,#1]| {#2}}
+%considered making this a multiqubit gate, but any non-straight edge works badly with incoming wires and transparency.
+%it might be that your use case is tolerable.
+% \DeclareExpandableDocumentCommand{\measuretab}{O{}O{2em}O{1.5pt}m}{%
+% \gate[#1,ps=measuretab][#2][#3]{#4}
+% }
+
+\tikzset{
+  meterD/.style={
+        draw,
+        shape=rounded rectangle,
+        rounded rectangle west arc=none,
+        inner sep=4pt,
+        filling
+    },
+  inputD/.style={
+        draw,
+        shape=rounded rectangle,
+        rounded rectangle east arc=none,
+        inner sep=4pt,
+        filling
+    }
+}
+%should these have a multi-qubit option?
+\DeclareExpandableDocumentCommand{\meterD}{O{}{m}}{|[meterD,#1]| {#2}}
+\DeclareExpandableDocumentCommand{\inputD}{O{}{m}}{|[inputD,#1]| {#2}\wireoverride{n}}
+% \DeclareExpandableDocumentCommand{\meterD}{O{}O{1.5pt}O{1.5pt}m}{%
+% \gate[#1,ps=meterD][#2][#3]{#4}
+% }
+\tikzset{measure/.style={draw=black,rounded rectangle,filling, minimum width=2em, minimum height=1em, inner sep=4pt}}
+
+% \DeclareExpandableDocumentCommand{\measure}{O{}O{2em}O{1.5pt}m}{%
+% \gate[#1,ps=measure][#2][#3]{#4}
+% }
+
+\DeclareExpandableDocumentCommand{\measure}{O{}{m}}{|[measure,#1]| {#2}}
+
+
+\tikzset{trash/.style={path picture={
+    \edef\yshift{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}
+    \ifcsstring{wire@type@\the\pgfmatrixcurrentrow}{c}{%
+      \draw[internal,inner sep=0pt,-stealth] ([yshift={\yshift}]path picture bounding box.west) -- ([yshift={\yshift}]path picture bounding box.center) -- (path picture bounding box.south);
+      \draw[internal,inner sep=0pt] ([yshift={-\yshift}]path picture bounding box.west) -- ([yshift={-\yshift}]path picture bounding box.center);
+    }{%
+      \draw[internal,inner sep=0pt,-stealth] (path picture bounding box.west) -- (path picture bounding box.center) -- (path picture bounding box.south);
+      \ifcsstring{wire@type@\the\pgfmatrixcurrentrow}{b}{%
+        \draw[internal,inner sep=0pt] ([yshift={\yshift}]path picture bounding box.west) -- ([yshift={\yshift}]path picture bounding box.center) -- (path picture bounding box.center);
+        \draw[internal,inner sep=0pt] ([yshift={-\yshift}]path picture bounding box.west) -- ([yshift={-\yshift}]path picture bounding box.center);
+      }{}
+    }
+    %\edef\yshift{\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}
+    },
+    minimum height=2.5em,
+    minimum width=2em}}
+
+\DeclareExpandableDocumentCommand{\trash}{O{}{m}}{|[trash,label={below:#2},#1]| {}}
+
+\tikzset{ground/.style={path picture={
+    \draw[internal,inner sep=0pt]([xshift={0.5\pgflinewidth}]path picture bounding box.south west) -- ([xshift={0.5\pgflinewidth}]path picture bounding box.north west);
+    \draw[internal,inner sep=0pt]([xshift={0.5\pgflinewidth+2*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}},yshift={\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}]path picture bounding box.south west) -- ([xshift={0.5\pgflinewidth+2*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}},yshift={-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}]path picture bounding box.north west);
+    \draw[internal,inner sep=0pt]([xshift={0.5\pgflinewidth+4*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}},yshift={2*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}]path picture bounding box.south west) -- ([xshift={0.5\pgflinewidth+4*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}},yshift={-2*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}}]path picture bounding box.north west);
+  },
+  minimum height=8*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap},
+  minimum width=5*\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}
+  }}
+\DeclareExpandableDocumentCommand{\ground}{O{}{m}}{|[ground,label={below:#2},#1]| {}}
+%\DeclareExpandableDocumentCommand{\bin}{O{}{m}}{|[bin,label={below:#2},#1]| {}}
+
+% \def\bin{\begin{tikzpicture}[thickness,scale=0.2]
+%\draw (0,0) -- (1,0) -- (1,-0.2) -- (2,-0.8) -- (1.4,-3) -- (-0.4,-3) -- (-1,-0.8) -- (0,-0.2) -- cycle;
+% \draw (2,-0.8) arc (360:180:1.5 and 0.2);
+% \draw (-0.2,-1.1) -- (0.3,-2.8);
+% \draw (1.2,-1.1) -- (0.7,-2.8);
+% \end{tikzpicture}}
+
+
+%%%
+%
+%controlled gates
+%
+%%%
+
+\NewExpandableDocumentCommand{\ctrl}{O{}m}{\control[#1]{}%
+  \pgfkeys{/quantikz/gates/.cd,style=,label style=,wire style=,vertical wire=q,#1}%
+  \pgfkeysgetvalue{/quantikz/gates/style}{\tstyle}
+  \pgfkeysgetvalue{/quantikz/gates/wire style}{\wstyle}
+  \edef\style{\tstyle,\wstyle}
+  \pgfkeysgetvalue{/quantikz/gates/vertical wire}{\wtype}
+\ifnumcomp{#2}{>}{0}{%
+   \expandafter\expandafter\expandafter\expandedwire\expandafter\expandafter\expandafter{\expandafter\style\expandafter}\expandafter{\wtype}{d}{#2}
+% %  \wire[d][#2][\style]{\wtype}
+}{}
+\ifnumcomp{#2}{<}{0}{%
+  \expandafter\expandafter\expandafter\expandedwire\expandafter\expandafter\expandafter{\expandafter\style\expandafter}\expandafter{\wtype}{u}{-#2}
+%  \wire[u][-#3][#2]{#1}
+}{}
+}
+\NewExpandableDocumentCommand{\octrl}{O{}m}{\ctrl[#1,open]{#2}}
+
+\NewDocumentCommand\expandedwire{mmmm}{\wire[#3][#4][#1]{#2}}
+
+\DeclareExpandableDocumentCommand{\swap}{O{}m}{%styling,label of partial swap, displacement of partial swap, distance
+|[crossx2={#1}]| {}
+\pgfkeys{/quantikz/gates/.cd,partial swap=,style=,partial position=0.5,label style=,vertical wire=q,#1}%
+\pgfkeysgetvalue{/quantikz/gates/partial swap}{\partial}
+\pgfkeysgetvalue{/quantikz/gates/vertical wire}{\wtype}
+\pgfkeysgetvalue{/quantikz/gates/style}{\tstyle}
+\ifdefempty{\partial}{%
+  \edef\tempstyle{\tstyle}
+%   \expandafter\vqw\expandafter[\opts]{#2}
+  }{%
+%   %\pgfkeysgetvalue{/quantikz/gates/label style}{\labstyle}
+  \pgfkeysgetvalue{/quantikz/gates/partial position}{\pos}
+  \pgfkeysgetvalue{/quantikz/gates/label style}{\lstyle}
+  \ifdefstring{\wtype}{c}{%
+\edef\tempstyle{"{\partial}"{grade,pos=\pos,\lstyle,xshift=-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap}},\tstyle}
+  }{%
+  \edef\tempstyle{"{\partial}"{grade,pos=\pos,\lstyle},\tstyle}
+  }
+%   \expandafter\expandedwire\expandafter{\tempstyle}{q}{d}{#2}
+%   %\wire[d][#3][\tempstyle]{q}
+  }
+ \expandafter\expandafter\expandafter\expandedwire\expandafter\expandafter\expandafter{\expandafter\tempstyle\expandafter}\expandafter{\wtype}{d}{#2}
+}
+
+
+
+%misc
+\DeclareDocumentCommand{\makeebit}{O{}m}{
+  \pgfkeys{/quantikz/gates/.cd,style=,label style=,angle=-45,#1}%
+  \pgfkeysgetvalue{/quantikz/gates/angle}{\angle}
+  \pgfkeysgetvalue{/quantikz/gates/style}{\style}
+  \pgfkeysgetvalue{/quantikz/gates/label style}{\lstyle}
+  \expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\make@ebit\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{\expandafter\expandafter\expandafter\style\expandafter\expandafter\expandafter}\expandafter\expandafter\expandafter{\expandafter\lstyle\expandafter}\expandafter{\angle}{#2}
+	%\arrow[arrows,line cap=round,\style,to path={(\tikztostart) -- ($(\tikztostart)!{0.5/cos(\angle)}!\angle:(\tikztotarget)$) node [anchor=east,style={\lstyle}]{#2} -- (\tikztotarget) }]{d}
+}
+\DeclareDocumentCommand{\make@ebit}{mmmm}{%
+  \arrow[arrows,line cap=round,#1,to path={(\tikztostart) --  ($(\tikztostart)!{0.5/cos(#3)}!#3:(\tikztotarget)$) node [anchor=east,style={#2}]{#4} --(\tikztotarget) }]{d}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% helpers
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\newlength{\myl}
+\newlength{\myh}
+\newlength{\myd}
+
+%\makeatletter
+\newcounter{aaa}
+\tikzset{
+  apply/.style args={#1 except on segments #2}{postaction={
+      /utils/exec={
+        \@for\mattempa:=#2\do{\csdef{aaa@\mattempa}{}}
+        \setcounter{aaa}{0}
+      },
+      decorate,decoration={show path construction,
+        moveto code={},
+        lineto code={
+          \stepcounter{aaa}
+          \ifcsdef{aaa@\theaaa}{}{
+            \path[#1] (\tikzinputsegmentfirst) -- (\tikzinputsegmentlast);
+          }
+        },
+        curveto code={
+          \stepcounter{aaa}
+          \ifcsdef{aaa@\theaaa}{}{
+            \path [#1] (\tikzinputsegmentfirst) .. controls
+            (\tikzinputsegmentsupporta) and (\tikzinputsegmentsupportb)
+            ..(\tikzinputsegmentlast);
+          }
+        },
+        closepath code={
+          \stepcounter{aaa}
+          \ifcsdef{aaa@\theaaa}{}{
+            \path [#1] (\tikzinputsegmentfirst) -- (\tikzinputsegmentlast);
+          }
+        },
+      },
+    },
+  },
+}
+
+
+%
+%commands for putting in text vertically (e.g. for slices)
+\protected\def\verticaltext#1{\leavevmode\bgroup\vbox\bgroup\xvvv#1\relax}
+%
+\def\xvvv{\afterassignment\xxvvv\let\tmp= }
+%
+\def\xxvvv{%
+% \ifx\tmp\@sptoken\egroup\ \vbox\bgroup\let\next\xvvv
+% \else
+\ifx\tmp\relax\egroup\egroup\let\next\relax
+ \else
+\hbox to 1.1em{\hfill\tmp\hfill}% centred
+\let\next\xvvv\fi%\fi
+\next}
+%end of commands for putting text vertically
+%
+\long\def\ifnodedefined#1#2#3{%
+    \@ifundefined{pgf@sh@ns@#1}{#3}{#2}%
+}
+
+%find the vertical position of the middle of an equals sign
+%https://tex.stackexchange.com/questions/355680/how-can-i-vertically-align-an-equals-sign-in-a-tikz-node/355686
+\pgfmathsetmacro\MathAxis{height("$\vcenter{}$")}
+
+
+
+\newcounter{wirenumberpermute}
+
+\newcommand{\permute}[1]{%
+\hphantom{Wide}%
+\def\firstlist{#1}
+ 	\edef\n{\the\pgfmatrixcurrentrow} %the row
+ 	\edef\m{\the\pgfmatrixcurrentcolumn} %the column
+ 	\edef\mn{\the\numexpr\m-1\relax}
+ 	\edef\mp{\the\numexpr\m+1\relax}
+ 	\settowidth{\myl}{$Wide$}
+ 	\setcounter{wirenumberpermute}{0}
+ 	\foreach \x [count=\c] in \firstlist {%
+ 		\edef\start{\the\numexpr\c+\n-1\relax}%
+ 		\edef\endy{\the\numexpr\x+\n-1\relax}%
+ 		%apply auto width to the cell, and make sure we unset the setting so that it doesn't apply to later circuits.
+    \csxdef{cell@width@\start-\m}{\the\myl} %save the cell width for every row in a global variable
+ 		\stepcounter{wirenumberpermute}
+ 	 	}
+ 	 	\expandafter\expandafter\expandafter\pgfutil@g@addto@macro\expandafter\expandafter\expandafter\tikzcd@atendsavedpaths\expandafter\expandafter\expandafter{%
+ 	 	\expandafter\expandafter\expandafter\wirepair@end\expandafter\expandafter\expandafter{\expandafter\n\expandafter}\expandafter{\m}{#1}%
+ 		}
+ 	\edef\lim{\the\numexpr\arabic{wirenumberpermute}+\n-1\relax}
+ 	 	\foreach \i in {\n,...,\lim} {%
+ 	     \edef\newcom{\noexpand\vqwexplicit{\i-\m}{\i-\mn}}
+ 	 		 \newcom%
+ 	 	}
+}
+
+\newcommand{\wirepair@end}[3]{%#row,col of left-most site. #row of right-most site.
+	\xdef\LoopGG{}
+	\edef\i{#1}
+	\def\firstlist{#3}
+	%\show\i
+	%\show\j
+	%create a list of cell names to be included in this grouped gate
+	\foreach \n in \firstlist {%
+	\ifnodedefined{\tikzcdmatrixname-\the\numexpr\n+\i-1\relax-#2}{%
+		\xdef\LoopGG{\LoopGG(\tikzcdmatrixname-\the\numexpr\n+\i-1\relax-#2)}
+		}{}
+	}
+	\ifnodedefined{\tikzcdmatrixname-\i-#2}{%
+		\xdef\LoopGG{\LoopGG(\tikzcdmatrixname-\i-#2)}
+		}{}
+	\node (group\tikzcdmatrixname-#1-#2) [fit=\LoopGG,transparent,inner sep=0pt] {\phantom{Wide}};
+		\foreach \n [count=\c] in \firstlist{%
+			\draw [line width=3pt,\pgfkeysvalueof{/tikz/commutative diagrams/background color},shorten >=0.9pt,shorten <=0.9pt] (group\tikzcdmatrixname-#1-#2.west|-\tikzcdmatrixname-\the\numexpr\i+\c-1\relax-#2.center) to[out=0,in=180] (group\tikzcdmatrixname-#1-#2.east|-\tikzcdmatrixname-\the\numexpr\i+\n-1\relax-#2.center);
+			\draw [thickness] (group\tikzcdmatrixname-#1-#2.west|-\tikzcdmatrixname-\the\numexpr\i+\c-1\relax-#2.center) to[out=0,in=180] (group\tikzcdmatrixname-#1-#2.east|-\tikzcdmatrixname-\the\numexpr\i+\n-1\relax-#2.center);
+		}
+}
+
+
+%%%
+%
+%the main gate command
+%
+%%%
+
+\DeclareExpandableDocumentCommand{\gate}{O{}O{1.5pt}O{1.5pt}m}{%optional parameter contains styling info. compulsory is gate text.
+	|[inner sep=4pt,minimum width=#2,minimum height=#3]|%
+ 	\edef\n{\the\pgfmatrixcurrentrow} %the row
+ 	\edef\m{\the\pgfmatrixcurrentcolumn} %the column
+ 	%reset macros that are going to be set by the options
+ 	\edef\options{row=\n,col=\m,#1}
+ 	\def\toswap{0}%
+ 	\def\DisableMinSize{0}%
+ 	%\pgfkeys{/quantikz,wires=1,style=,label style=,braces=}%
+ 	%import options passed as parameters
+  	\pgfkeys{/quantikz/gates/.cd,wires=1,style=,label style=,braces=,ps=,#1}%
+ 	\pgfkeysgetvalue{/quantikz/gates/wires}{\quantwires}%
+  \ifnumless{\quantwires}{0}{%
+    \PackageError{quantikz}{You cannot have a gate command with a negative number of wires. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+    }{%
+      \ifnumequal{\quantwires}{0}{%
+        \PackageError{quantikz}{You cannot have a gate command with 0 wires. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+      }{}
+      }
+  \pgfkeyssetevalue{/quantikz/gates/style}{\pgfkeysvalueof{/quantikz/gates/ps},\pgfkeysvalueof{/quantikz/gates/style}}
+ 	\pgfkeysgetvalue{/quantikz/gates/style}{\a}%
+ 	\pgfkeysgetvalue{/quantikz/gates/label style}{\b}%
+ 	\ifthenelse{\toswap=1}{%if it's a swap gate...
+  \ifnumequal{\quantwires}{2}{%good!
+  }{%
+  \PackageWarning{quantikz}{You have asked for a swap gate in cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn. This required the number of wires that the gate acts on to be overridden. Check this is your intended behaviour}
+ 		\pgfkeys{/quantikz/gates/wires=2}
+ 		\def\quantwires{2}
+    }
+ 		\phantom{wide}
+ 		\settowidth{\myl}{$wide$}
+ 		\settoheight{\myh}{$wide$}
+ 		\settodepth{\myd}{$wide$}
+ 	}{%not a swap gate
+  %figure out how large the per-cell box should be
+ 		\settowidth{\myl}{$#4$}
+ 		\ifthenelse{\DisableMinSize=1}{%disable automatic size detection. Use $U$ instead.
+ 			\phantom{U}
+ 			\settoheight{\myh}{$U$}
+ 			\settodepth{\myd}{$U$}
+ 		}{%automatically get width and height of label
+ 			\phantom{#4}
+ 			\settoheight{\myh}{$#4$}
+ 			\settodepth{\myd}{$#4$}
+ 		}
+ 	}
+%	communicate per-cell sizes to the other cells
+ 	\edef\k{\the\numexpr\n+\quantwires-1\relax}
+% 	\edef\mn{\the\numexpr\m-1\relax}
+  \ifnumgreater{\quantwires}{1}{%
+ 	\foreach \i in {\the\numexpr\n+1\relax,...,\k} {
+    \csxdef{cell@width@\i-\m}{max(\the\myl+8pt,#2)} %save the cell width for every row in a global variable
+ 	}
+  \csxdef{cell@height@\k-\m}{max(\the\myh+\the\myd+8pt,#3)} %apply auto height to last row only.
+%		
+ 	}{}
+ 	%call deferred gate command. to be executed after the tikzcd matrix stuff is completed
+	\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\pgfutil@g@addto@macro\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\tikzcd@atendsavedpaths\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{%
+		\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\gate@end\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{\expandafter\expandafter\expandafter\a\expandafter\expandafter\expandafter}\expandafter\expandafter\expandafter{\expandafter\b\expandafter}\expandafter{\options}{#4}
+	}
+}
+
+%deferred gate command. draws a box around all included cells. this is not part of the matrix, but comes afterwards.
+\newcommand{\gate@end}[4]{
+	\pgfkeys{/quantikz/gates/.cd,wires=1,priority label={center}}
+	\def\toswap{0}
+	\def\DisableMinSize{0}
+ 	\pgfkeys{/quantikz/gates/.cd,#3}%import options
+	\pgfkeysgetvalue{/quantikz/gates/wires}{\quantwires}
+	\pgfkeysgetvalue{/quantikz/gates/row}{\row}
+	\pgfkeysgetvalue{/quantikz/gates/col}{\col}
+  \pgfkeysgetvalue{/quantikz/gates/priority label}{\priority}
+	\ifthenelse{\toswap=1}{\def\quantwires{2}}{}
+	\xdef\LoopGG{}
+	%create a list of cell names to be included in this grouped gate
+	\foreach \n in  {\row,...,\the\numexpr\row+\quantwires-1\relax} {
+	\ifnodedefined{\tikzcdmatrixname-\n-\col}{
+		\xdef\LoopGG{\LoopGG(\tikzcdmatrixname-\n-\col)}
+		}{}
+	}
+	\ifthenelse{\toswap=1}{%
+		\node (group\tikzcdmatrixname-\row-\col) [fit=\LoopGG,operator,inner sep=0pt,#1] {\hphantom{Wide}};
+		\draw [thickness] (group\tikzcdmatrixname-\row-\col.west|-\tikzcdmatrixname-\row-\col.center) to[out=0,in=180] (group\tikzcdmatrixname-\row-\col.east|-\tikzcdmatrixname-\the\numexpr\row+1\relax-\col.center);
+		\draw [line width=3pt,\pgfkeysvalueof{/tikz/commutative diagrams/background color},shorten >=0.9pt,shorten <=0.9pt] (group\tikzcdmatrixname-\row-\col.east|-\tikzcdmatrixname-\row-\col.center) to[out=180,in=0] (group\tikzcdmatrixname-\row-\col.west|-\tikzcdmatrixname-\the\numexpr\row+1\relax-\col.center);
+		\draw [thickness] (group\tikzcdmatrixname-\row-\col.east|-\tikzcdmatrixname-\row-\col.center) to[out=180,in=0] (group\tikzcdmatrixname-\row-\col.west|-\tikzcdmatrixname-\the\numexpr\row+1\relax-\col.center);
+	}{%
+	%the actual gate drawing command
+	  \node (group\tikzcdmatrixname-\row-\col) [fit=\LoopGG,operator,inner sep=0pt,label={[gg label,#2]\priority:$#4$},#1] {\hphantom{$#4$}};
+	}
+}
+
+%ghost will get height correct if can't be automatically assigned.
+\DeclareExpandableDocumentCommand{\ghost}{O{0pt}O{1.5pt}m}{%optional parameter contains styling info. compulsory is gate text.
+	|[inner ysep=4pt,minimum width=#1,minimum height=#2]| \vphantom{#3}
+}
+
+%%%
+%
+%slicing
+%
+%%%
+
+%single slice
+\newcommand\slice[2][]{%
+	%\edef\currcol{\the\pgfmatrixcurrentcolumn}
+	\pgfkeys{/quantikz/gates/.cd,wires=1,style=,label style=,braces=}
+	\pgfkeys{/quantikz/gates/.cd,#1}%
+ 	\edef\options{\pgfkeysvalueof{/quantikz/gates/style}}
+ 	\edef\opts{\pgfkeysvalueof{/quantikz/gates/label style}}
+	\edef\n{\the\pgfmatrixcurrentcolumn}
+	%\expandafter\show\n
+	\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\pgfutil@g@addto@macro\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\tikzcd@atendslices\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{%
+		\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\slice@end\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{\expandafter\expandafter\expandafter\n\expandafter\expandafter\expandafter}\expandafter\expandafter\expandafter{\expandafter\options\expandafter}\expandafter{\opts}{#2}%
+	}}
+%deferred slice command
+\newcommand{\slice@end}[4]{
+	\edef\top{($1/2*(\tikzcdmatrixname-col#1.east |- \tikzcdmatrixname-row1.north)+1/2*(\tikzcdmatrixname-col\the\numexpr#1+1\relax.west |- \tikzcdmatrixname-row1.north)$)}
+	\edef\bottom{($1/2*(\tikzcdmatrixname-col#1.east |- \tikzcdmatrixname-row\the\pgfmatrixcurrentrow.south)+1/2*(\tikzcdmatrixname-col\the\numexpr#1+1\relax.west |- \tikzcdmatrixname-row\the\pgfmatrixcurrentrow.south)+(0,-3pt)$)}
+	\expandafter\expandafter\expandafter\make@slice\expandafter\expandafter\expandafter{\expandafter\top\expandafter}\expandafter{\bottom}{#4}{#2}{#3}
+}
+\newcommand{\make@slice}[5]{
+	\draw[slice,#4] #1 to node[pos=0,inner sep=4pt,anchor=south,color=black,#5] {#3} #2;
+}
+%deferred command which will slice everything
+\newcommand{\sliceallr}{
+	\edef\sstyle{\pgfkeysvalueof{/tikz/commutative diagrams/slice style}}
+	\edef\slstyle{\pgfkeysvalueof{/tikz/commutative diagrams/slice label style}}
+	\foreach \n in  {2,...,\the\numexpr\pgfmatrixcurrentcolumn-1-\pgfkeysvalueof{/tikz/commutative diagrams/remove end slices}\relax} {
+		\edef\col{\the\numexpr\n-1\relax}
+		\edef\title{\pgfkeysvalueof{/tikz/commutative diagrams/slice titles}}
+		\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\slice@end\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{\expandafter\expandafter\expandafter\n\expandafter\expandafter\expandafter}\expandafter\expandafter\expandafter{\expandafter\sstyle\expandafter}\expandafter{\slstyle}{\title}
+	}
+}
+%deferred slice command with vertical text
+\newcommand{\sliceallvr}{
+	\edef\sstyle{\pgfkeysvalueof{/tikz/commutative diagrams/slice style}}
+	\edef\slstyle{\pgfkeysvalueof{/tikz/commutative diagrams/slice label style}}
+	\foreach \n in  {2,...,\the\numexpr\pgfmatrixcurrentcolumn-1-\pgfkeysvalueof{/tikz/commutative diagrams/remove end slices}\relax} {
+		\edef\col{\the\numexpr\n-1\relax}
+		\edef\title{\verticaltext{\pgfkeysvalueof{/tikz/commutative diagrams/slice titles}}}
+		\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\slice@end\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{\expandafter\expandafter\expandafter\n\expandafter\expandafter\expandafter}\expandafter\expandafter\expandafter{\expandafter\sstyle\expandafter}\expandafter{\slstyle}{\title}
+	}
+}
+
+%labelling of inputs
+\newcommand\lstick[2][]{%
+	\pgfkeys{/quantikz/gates/.cd,wires=1,style=,label style=,braces=}
+	\pgfkeys{/quantikz/gates/.cd,#1}%
+	\edef\newoptions{row=\the\pgfmatrixcurrentrow,col=\the\pgfmatrixcurrentcolumn,#1}
+	\pgfkeysgetvalue{/quantikz/gates/label style}{\options}
+	\pgfkeysgetvalue{/quantikz/gates/braces}{\opts}
+  \pgfkeysgetvalue{/quantikz/gates/wires}{\quantwires}
+   \ifnumless{\quantwires}{0}{%
+    \PackageError{quantikz}{You cannot have an lstick command with a negative number of wires. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+    }{%
+      \ifnumequal{\quantwires}{0}{%
+        \PackageError{quantikz}{You cannot have an lstick command with 0 wires. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+      }{}
+      }
+	%\edef\n{\the\pgfmatrixcurrentrow}
+	%\edef\m{\the\pgfmatrixcurrentcolumn}
+	\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\pgfutil@g@addto@macro\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\tikzcd@atendsavedpaths\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{%
+		\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\groupinput@end\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{\expandafter\expandafter\expandafter\newoptions\expandafter\expandafter\expandafter}\expandafter\expandafter\expandafter{\expandafter\options\expandafter}\expandafter{\opts}{#2}%
+	}
+}
+%labelling of outputs
+\newcommand\rstick[2][]{%
+	\pgfkeys{/quantikz/gates/.cd,wires=1,style=,label style=,braces=}
+	\pgfkeys{/quantikz/gates/.cd,#1}%
+	\edef\newoptions{row=\the\pgfmatrixcurrentrow,col=\the\pgfmatrixcurrentcolumn,#1}
+	\pgfkeysgetvalue{/quantikz/gates/label style}{\options}
+	\pgfkeysgetvalue{/quantikz/gates/braces}{\opts}
+    \pgfkeysgetvalue{/quantikz/gates/wires}{\quantwires}
+   \ifnumless{\quantwires}{0}{%
+    \PackageError{quantikz}{You cannot have an rstick command with a negative number of wires. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+    }{%
+      \ifnumequal{\quantwires}{0}{%
+        \PackageError{quantikz}{You cannot have an rstick command with 0 wires. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+      }{}
+      }
+	%\edef\n{\the\pgfmatrixcurrentrow}
+	%\edef\m{\the\pgfmatrixcurrentcolumn}
+	\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\pgfutil@g@addto@macro\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\tikzcd@atendsavedpaths\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{%
+		\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\groupoutput@end\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{\expandafter\expandafter\expandafter\newoptions\expandafter\expandafter\expandafter}\expandafter\expandafter\expandafter{\expandafter\options\expandafter}\expandafter{\opts}{#2}%
+	}
+}
+
+\newcommand\midstick[2][]{%
+	\hphantom{\text{g#2g}}\ %leave enough space for whatever text we've inserted
+	\pgfkeys{/quantikz/gates/.cd,wires=1,style=,label style=,braces=}
+	\pgfkeys{/quantikz/gates/.cd,#1}%
+	\edef\newoptions{row=\the\pgfmatrixcurrentrow,col=\the\pgfmatrixcurrentcolumn,#1}
+	\pgfkeysgetvalue{/quantikz/gates/wires}{\quantwires}
+	\pgfkeysgetvalue{/quantikz/gates/label style}{\options}
+	\pgfkeysgetvalue{/quantikz/gates/braces}{\opts}
+   \ifnumless{\quantwires}{0}{%
+    \PackageError{quantikz}{You cannot have a midstick command with a negative number of wires. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+    }{%
+      \ifnumequal{\quantwires}{0}{%
+        \PackageError{quantikz}{You cannot have a midstick command with 0 wires. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+      }{}
+      }
+	 \edef\n{\the\pgfmatrixcurrentrow} %the row
+ 	\edef\m{\the\pgfmatrixcurrentcolumn} %the column
+	\edef\k{\the\numexpr\n+\quantwires-1\relax}
+	\settowidth{\myl}{g#2g}
+	%if more than 1 wire, need to reserve space for each wire
+	\ifthenelse{\quantwires=1}{}{
+	 	\foreach \i in {\the\numexpr\n+1\relax,...,\k} {
+ 		%apply auto width to the cell, and make sure we unset the setting so that it doesn't apply to later circuits.
+    \csxdef{cell@width@\i-\m}{\the\myl} %save the cell width for every row in a global variable
+ 	}
+%		
+ 	}
+	%\edef\n{\the\pgfmatrixcurrentrow}
+	%\edef\m{\the\pgfmatrixcurrentcolumn}
+	\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\pgfutil@g@addto@macro\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\tikzcd@atendsavedpaths\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{%
+		\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\groupoutput@mid\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{\expandafter\expandafter\expandafter\newoptions\expandafter\expandafter\expandafter}\expandafter\expandafter\expandafter{\expandafter\options\expandafter}\expandafter{\opts}{#2}%
+	}
+}
+\newcommand{\ifcsstringeitheror}[4]{%
+\ifcsstring{#1}{#2}{#4}{\ifcsstring{#1}{#3}{#4}{}}
+}
+%deferred labelling of inputs
+\newcommand{\groupinput@end}[4]{%basic data as keys, label options, brace options, text
+	\pgfkeys{/quantikz/gates/.cd,wires=1}
+	\def\rightbrace{1}
+ 	\pgfkeys{/quantikz/gates/.cd,#1}%
+	\pgfkeysgetvalue{/quantikz/gates/wires}{\quantwires}
+	\pgfkeysgetvalue{/quantikz/gates/row}{\row}
+	\pgfkeysgetvalue{/quantikz/gates/col}{\col}
+	\xdef\LoopGI{}
+  \ifcsstringeitheror{wire@type@\row}{c}{b}{%is the first wire classical? (should include bundle as well)
+\xdef\LoopGI{\LoopGI($(\tikzcdmatrixname-\row-\col.center)+(0,\pgfkeysvalueof{/tikz/commutative diagrams/classical gap})$)}
+  }
+   \ifcsstringeitheror{wire@type@\the\numexpr\row+\quantwires-1\relax}{c}{b}{%is the last wire classical? (should include bundle as well)
+\xdef\LoopGI{\LoopGI($(\tikzcdmatrixname-\the\numexpr\row+\quantwires-1\relax-\col.center)+(0,-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap})$)}
+  }
+	\foreach \n in  {\row,...,\the\numexpr\row+\quantwires-1\relax} {
+	\ifnodedefined{\tikzcdmatrixname-\n-\col}{
+		\xdef\LoopGI{\LoopGI(\tikzcdmatrixname-\n-\col)} 
+		}{}
+		}
+	\ifthenelse{\quantwires=1} {
+		\node (ingr-\row) [fit=\LoopGI, inner sep=0pt,label={[align=center,#2]left:#4}] {};
+	}{
+	\node (ingr-\row) [fit=\LoopGI, inner sep=0pt,label={[align=center,anchor=east,xshift=-0.2cm,#2]left:#4}] {};
+	\ifthenelse{\rightbrace=1}{
+	\draw[dm,#3] ($(ingr-\row.north west)+(-0.1cm,0.1cm)$) to ($(ingr-\row.south west)+(-0.1cm,-0.1cm)$);
+	}{}
+	}
+} %
+%deferred labelling of outputs
+\newcommand{\groupoutput@end}[4]{%basic data as keys, label options, brace options, text
+	\pgfkeys{/quantikz/gates/.cd,wires=1}
+	\def\leftbrace{1}
+ 	\pgfkeys{/quantikz/gates/.cd,#1}%
+	\pgfkeysgetvalue{/quantikz/gates/wires}{\quantwires}
+	\pgfkeysgetvalue{/quantikz/gates/row}{\row}
+	\pgfkeysgetvalue{/quantikz/gates/col}{\col}
+	\xdef\LoopGO{}
+    \ifcsstringeitheror{wire@type@\row}{c}{b}{%is the first wire classical? (should include bundle as well)
+\xdef\LoopGO{\LoopGO($(\tikzcdmatrixname-\row-\col.center)+(0,\pgfkeysvalueof{/tikz/commutative diagrams/classical gap})$)}
+  }
+   \ifcsstringeitheror{wire@type@\the\numexpr\row+\quantwires-1\relax}{c}{b}{%is the last wire classical? (should include bundle as well)
+\xdef\LoopGO{\LoopGO($(\tikzcdmatrixname-\the\numexpr\row+\quantwires-1\relax-\col.center)+(0,-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap})$)}
+  }
+	\foreach \n in  {\row,...,\the\numexpr\row+\quantwires-1\relax} {
+		\ifnodedefined{\tikzcdmatrixname-\n-\col}{
+			\xdef\LoopGO{\LoopGO(\tikzcdmatrixname-\n-\col)} 
+		}}
+		\ifthenelse{\quantwires=1} {
+		\node (outgr-\row) [fit=\LoopGO, inner sep=0pt,label={[align=center,#2]right:#4}] {};
+	}{
+	\node (outgr-\row) [fit=\LoopGO, inner sep=0pt,label={[align=center,anchor=west,xshift=0.2cm,#2]left:#4}] {};
+	\ifthenelse{\leftbrace=1}{
+	\draw[dd,#3] ($(outgr-\row.north east)+(0.1cm,0.1cm)$) to ($(outgr-\row.south east)+(0.1cm,-0.1cm)$);
+	}{}
+	}
+} %
+%deferred labelling in the middle of circuits
+\newcommand{\groupoutput@mid}[4]{%basic data as keys, label options, brace options, text
+	\pgfkeys{/quantikz/gates/.cd,wires=1}
+	\def\leftbrace{1}\def\rightbrace{1}
+ 	\pgfkeys{/quantikz/gates/.cd,#1}%
+	\pgfkeysgetvalue{/quantikz/gates/wires}{\quantwires}
+	\pgfkeysgetvalue{/quantikz/gates/row}{\row}
+	\pgfkeysgetvalue{/quantikz/gates/col}{\col}
+	\xdef\LoopGO{}
+    \ifcsstringeitheror{wire@type@\row}{c}{b}{%is the first wire classical? (should include bundle as well)
+\xdef\LoopGO{\LoopGO($(\tikzcdmatrixname-\row-\col.center)+(0,\pgfkeysvalueof{/tikz/commutative diagrams/classical gap})$)}
+  }
+   \ifcsstringeitheror{wire@type@\the\numexpr\row+\quantwires-1\relax}{c}{b}{%is the first wire classical? (should include bundle as well)
+\xdef\LoopGO{\LoopGO($(\tikzcdmatrixname-\the\numexpr\row+\quantwires-1\relax-\col.center)+(0,-\pgfkeysvalueof{/tikz/commutative diagrams/classical gap})$)}
+  }
+	\foreach \n in  {\row,...,\the\numexpr\row+\quantwires-1\relax} {
+		\ifnodedefined{\tikzcdmatrixname-\n-\col}{
+			\xdef\LoopGO{\LoopGO(\tikzcdmatrixname-\n-\col)} 
+		}}
+		\ifthenelse{\quantwires=1} {
+		%\node (midgr-\row-\col) [fit=\LoopGO, inner sep=0pt,label={[align=center,#2]#4}] {};
+		\node (midgr-\row-\col) [fit=\LoopGO, inner sep=0pt,label={[align=center,anchor=mid,#2]center:#4}] {};
+	}{
+	\node (midgr-\row-\col) [fit=\LoopGO, inner sep=0pt,label={[align=center,anchor=mid,#2]center:#4}] {};
+	\ifthenelse{\rightbrace=1}{
+	\draw[dm,#3] ($(midgr-\row-\col.north east)+(-0.1cm,0.05cm)$) to ($(midgr-\row-\col.south east)+(-0.1cm,-0.05cm)$);
+	}{}
+	\ifthenelse{\leftbrace=1}{
+	\draw[dd,#3] ($(midgr-\row-\col.north west)+(0.1cm,0.05cm)$) to ($(midgr-\row-\col.south west)+(0.1cm,-0.05cm)$);
+	}{}
+	}
+} %
+%inputs and outputs within a multi-wire gate
+\newcommand\gateinput[2][]{%
+	\pgfkeys{/quantikz/gates/.cd,wires=1,style=,label style=,braces=}%
+	\pgfkeys{/quantikz/gates/.cd,#1}%
+	\edef\newoptions{row=\the\pgfmatrixcurrentrow,col=\the\pgfmatrixcurrentcolumn,#1}
+ 	\pgfkeysgetvalue{/quantikz/gates/label style}{\options}
+ 	\pgfkeysgetvalue{/quantikz/gates/braces}{\opts}%
+    \pgfkeysgetvalue{/quantikz/gates/wires}{\quantwires}
+   \ifnumless{\quantwires}{0}{%
+    \PackageError{quantikz}{You cannot have a gate input command with a negative number of wires. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+    }{%
+      \ifnumequal{\quantwires}{0}{%
+        \PackageError{quantikz}{You cannot have a gate input command with 0 wires. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+      }{}
+      }
+	\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\pgfutil@g@addto@macro\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\tikzcd@atendlabels\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{%
+		\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\mginput@end\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{\expandafter\expandafter\expandafter\newoptions\expandafter\expandafter\expandafter}\expandafter\expandafter\expandafter{\expandafter\options\expandafter}\expandafter{\opts}{#2}%
+	}
+}
+\newcommand\gateoutput[2][]{%
+	\pgfkeys{/quantikz/gates/.cd,wires=1,style=,label style=,braces=}
+	\pgfkeys{/quantikz/gates/.cd,#1}%
+	\edef\newoptions{row=\the\pgfmatrixcurrentrow,col=\the\pgfmatrixcurrentcolumn,#1}
+ 	\pgfkeysgetvalue{/quantikz/gates/label style}{\options}
+ 	\pgfkeysgetvalue{/quantikz/gates/braces}{\opts}
+    \pgfkeysgetvalue{/quantikz/gates/wires}{\quantwires}
+   \ifnumless{\quantwires}{0}{%
+    \PackageError{quantikz}{You cannot have a gate output command with a negative number of wires. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+    }{%
+      \ifnumequal{\quantwires}{0}{%
+        \PackageError{quantikz}{You cannot have a gate output command with 0 wires. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+      }{}
+      }
+	\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\pgfutil@g@addto@macro\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\tikzcd@atendlabels\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{%
+		\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\mgoutput@end\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{\expandafter\expandafter\expandafter\newoptions\expandafter\expandafter\expandafter}\expandafter\expandafter\expandafter{\expandafter\options\expandafter}\expandafter{\opts}{#2}%
+	}
+}
+%deferred functions for the above
+\newcommand{\mginput@end}[4]{%collected options,label style, brace style,text
+	\pgfkeys{/quantikz/gates/.cd,wires=1}
+ 	\pgfkeys{/quantikz/gates/.cd,#1}%
+ 	\edef\quantwires{\pgfkeysvalueof{/quantikz/gates/wires}}
+	%\pgfkeysgetvalue{/quantikz/wires}{\quantwires}
+	\pgfkeysgetvalue{/quantikz/gates/row}{\row}
+	\pgfkeysgetvalue{/quantikz/gates/col}{\col}
+%can we find the gategroup node?
+\xdef\cell{group\tikzcdmatrixname-1-\col}
+\foreach \n in {\row,...,1} {%
+	%test if node group-\n-#2 exists
+	\ifnodedefined{group\tikzcdmatrixname-\n-\col}{%
+    	\xdef\cell{group\tikzcdmatrixname-\n-\col}
+    	\breakforeach
+	}{}
+}
+\ifthenelse{\quantwires=1}{%
+	\node at ($(\cell.west |- \tikzcdmatrixname-\row-\col.west)+(0,0cm)$)[leftinternal,#2]{#4};
+}{%
+%\show\quantwires
+\draw[dd,#3] ($(\cell.west |- \tikzcdmatrixname-\row-\col.west)+(0.1cm,0.1cm)$) to node[leftinternal,midway,#2] {#4} ($(\cell.west |- \tikzcdmatrixname-\the\numexpr\row+\quantwires-1\relax-\col.west)+(0.1cm,-0.1cm)$);
+}
+} %
+\newcommand{\mgoutput@end}[4]{%
+	\pgfkeys{/quantikz/gates/.cd,wires=1}
+ 	\pgfkeys{/quantikz/gates/.cd,#1}%
+ 	\edef\quantwires{\pgfkeysvalueof{/quantikz/gates/wires}}
+	%\pgfkeysgetvalue{/quantikz/wires}{\quantwires}
+	\pgfkeysgetvalue{/quantikz/gates/row}{\row}
+	\pgfkeysgetvalue{/quantikz/gates/col}{\col}
+%can we find the gategroup node?
+\xdef\cell{group\tikzcdmatrixname-1-\col}
+\foreach \n in {\row,...,1} {%
+	%test if node group-\n-#2 exists
+	\ifnodedefined{group\tikzcdmatrixname-\n-\col}{%
+    	\xdef\cell{group\tikzcdmatrixname-\n-\col}
+    	\breakforeach
+	}{}
+}
+\ifthenelse{\quantwires=1}{%
+	\node at ($(\cell.east |- \tikzcdmatrixname-\row-\col.east)+(0,0cm)$)[rightinternal,#2]{#4};
+}{%
+\draw[dm,#3] ($(\cell.east |- \tikzcdmatrixname-\row-\col.east)+(-0.1cm,0.1cm)$) to node[rightinternal,midway,#2] {#4} ($(\cell.east |- \tikzcdmatrixname-\the\numexpr\row+\quantwires-1\relax-\col.east)+(-0.1cm,-0.1cm)$);
+}
+} %
+
+%wave command
+\newcommand\wave[1][]{%
+\setwiretype{n}
+	\edef\n{\the\pgfmatrixcurrentrow}
+	\expandafter\pgfutil@g@addto@macro\expandafter\tikzcd@atendslices\expandafter{%
+		\expandafter\wave@end\expandafter{\n}{#1}%
+	}
+}
+%deferred wave
+\newcommand{\wave@end}[2]{
+	\node (wave-#1) [fit=(\tikzcdmatrixname-row#1),wave,#2] {};
+}
+
+
+%put a border around a group of gates
+\newcommand\gategroup[2][]{%
+	\pgfkeys{/quantikz/gates/.cd,wires=1,style=,label style=,braces=,steps=1}
+	\pgfkeys{/quantikz/gates/.cd,#1}%
+	\edef\newoptions{row=\the\pgfmatrixcurrentrow,col=\the\pgfmatrixcurrentcolumn,#1}
+ 	\pgfkeysgetvalue{/quantikz/gates/style}{\options}
+ 	\pgfkeysgetvalue{/quantikz/gates/label style}{\opts}
+    \pgfkeysgetvalue{/quantikz/gates/wires}{\quantwires}
+   \ifnumless{\quantwires}{0}{%
+    \PackageError{quantikz}{You cannot have a gate group command with a negative number of wires. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+    }{%
+      \ifnumequal{\quantwires}{0}{%
+        \PackageError{quantikz}{You cannot have a gate group command with 0 wires. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+      }{}
+      }
+    \pgfkeysgetvalue{/quantikz/gates/steps}{\steps}
+   \ifnumless{\steps}{0}{%
+    \PackageError{quantikz}{You cannot have a gate group command with a negative number of steps. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+    }{%
+      \ifnumequal{\steps}{0}{%
+        \PackageError{quantikz}{You cannot have a gate group command with 0 steps. The culprit appears to be cell \the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+      }{}
+      }
+	\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\pgfutil@g@addto@macro\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\tikzcd@atendlabels\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{%
+		\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\gategroup@end\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter\expandafter{\expandafter\expandafter\expandafter\newoptions\expandafter\expandafter\expandafter}\expandafter\expandafter\expandafter{\expandafter\options\expandafter}\expandafter{\opts}{#2}%
+	}
+}
+%deferred gate group command
+\newcommand{\gategroup@end}[4]{%options, gate style, text style, text
+	\pgfkeys{/quantikz/gates/.cd,wires=1,style=,label style=,braces=,steps=1}%
+	\edef\background{0}%
+	\pgfkeys{/quantikz/gates/.cd,#1}%
+	\pgfkeysgetvalue{/quantikz/gates/wires}{\quantwires}%
+	\pgfkeysgetvalue{/quantikz/gates/row}{\row}%
+	\pgfkeysgetvalue{/quantikz/gates/col}{\col}%
+	\pgfkeysgetvalue{/quantikz/gates/steps}{\steps}%
+	\edef\fit{(\tikzcdmatrixname-col\col.west |- \tikzcdmatrixname-row\row.north)(\tikzcdmatrixname-col\the\numexpr\col+\steps-1\relax.east |- \tikzcdmatrixname-row\the\numexpr\row+\quantwires-1\relax.south)}%
+	\ifthenelse{\background=1}{%
+		\begin{pgfonlayer}{background}\node (ggroup-\row-\col) [fit=\fit,ggroup,label={[group label,#3]:#4},#2] {};\end{pgfonlayer}
+	}{%
+		\node (ggroup-\row-\col) [fit=\fit,ggroup,label={[group label,#3]:#4},#2] {};
+	}
+}
+
+
+
+% \newcommand{\latephase@end}[1]{
+% 	\node [phase,inner sep=2pt] at (\tikzcdmatrixname-#1) {};
+% }
+
+
+%\makeatother
+
+%this command runs after we've finished the matrix, and makes unified cells for each row and each column. This allows much nicer alignment of large boxes.
+\newcommand{\DivideRowsCols}{
+	\foreach \n in {1,...,\the\pgfmatrixcurrentrow} {%for each row, construct a master cell that contains all entries
+	\xdef\LoopRow{}
+		\foreach \m in {1,...,\the\pgfmatrixcurrentcolumn}{
+			\ifnodedefined{\tikzcdmatrixname-\n-\m}{
+				\xdef\LoopRow{\LoopRow(\tikzcdmatrixname-\n-\m)}
+			}{}
+			\ifnodedefined{group\tikzcdmatrixname-\n-\m}{
+				\xdef\LoopRow{\LoopRow(group\tikzcdmatrixname-\n-\m)}
+			}{}
+	}
+	\node (\tikzcdmatrixname-row\n) [fit=\LoopRow] {};
+	}
+	\foreach \n in {1,...,\the\pgfmatrixcurrentcolumn} {%for each column, construct a master cell that contains all entries
+	\xdef\LoopCol{}
+		\foreach \m in {1,...,\the\pgfmatrixcurrentrow}{
+			\ifnodedefined{\tikzcdmatrixname-\m-\n}{
+				\xdef\LoopCol{\LoopCol(\tikzcdmatrixname-\m-\n)}
+			}{}
+			\ifnodedefined{group\tikzcdmatrixname-\m-\n}{
+				\xdef\LoopCol{\LoopCol(group\tikzcdmatrixname-\m-\n)}
+			}{}
+	}
+	\node (\tikzcdmatrixname-col\n) [fit=\LoopCol] {};
+	}
+}
+
+%this is the command that implements the align equals at key.
+%take a parameter, row number, where we want to set the baseline. if not integer, use the two rows spanned
+\providecommand{\setmiddle}[1]{%
+\IfInteger{#1}{
+\pgfmathtruncatemacro\wholepart{floor(#1)}
+\edef\temp{\noexpand\tikzset{%
+/tikz/baseline={([yshift=-\MathAxis]\noexpand\tikzcdmatrixname-\wholepart-1.center)}
+}}
+%\show\temp
+\temp
+}{%
+\pgfmathtruncatemacro\wholepart{floor(#1)}
+\pgfmathtruncatemacro\neighbour{floor(#1)+1}
+\pgfmathsetmacro\fractionalpart{#1-floor(#1)}
+\edef\temp{
+%\noexpand\tikzset{every matrix/.append style={baseline=([yshift=-\MathAxis]$(\noexpand\tikzcdmatrixname-\wholepart-1.base)!\fractionalpart!(\noexpand\tikzcdmatrixname-\neighbour-1.base)$)}%
+\noexpand\tikzset{%
+/tikz/baseline={([yshift=-\MathAxis]$(\noexpand\tikzcdmatrixname-\wholepart-1.center)!\fractionalpart!(\noexpand\tikzcdmatrixname-\neighbour-1.center)$)}
+}}
+%\show\temp
+\temp
+}
+}
+
+% \providecommand{\setmiddle}[1]{%
+% \IfInteger{#1}{
+% \pgfmathtruncatemacro\wholepart{floor(#1)}
+% \edef\temp{\noexpand\tikzset{%
+% /tikz/baseline={(\noexpand\tikzcdmatrixname-\wholepart-1.base)}
+% }}
+% %\show\temp
+% \temp
+% }{%
+% \pgfmathtruncatemacro\wholepart{floor(#1)}
+% \pgfmathtruncatemacro\neighbour{floor(#1)+1}
+% \pgfmathsetmacro\fractionalpart{#1-floor(#1)}
+% \edef\temp{
+% %\noexpand\tikzset{every matrix/.append style={baseline=([yshift=-\MathAxis]$(\noexpand\tikzcdmatrixname-\wholepart-1.base)!\fractionalpart!(\noexpand\tikzcdmatrixname-\neighbour-1.base)$)}%
+% \noexpand\tikzset{%
+% /tikz/baseline={($(\noexpand\tikzcdmatrixname-\wholepart-1.base)!\fractionalpart!(\noexpand\tikzcdmatrixname-\neighbour-1.base)$)}
+% }}
+% %\show\temp
+% \temp
+% }
+% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Option parameter processing via key/value pairs
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%initialise all the pgfkeys for key=value parameter passing in macro options
+\tikzcdset{%
+	slice all/.code={\gdef\toslice@qtkz{1}},
+	remove end slices/.initial=0,
+	slice titles/.initial={\col},
+	slice style/.initial={},
+	slice label style/.initial={},
+	thin lines/.code={\resetstyles},
+	transparent/.code={\maketransparent},
+	vertical slice labels/.code={\def\vert@qtkz{1}},
+	align equals at/.code={\setmiddle{#1}},
+  wire types/.code={\importwiretypes{#1}},
+  classical gap/.initial=0.03cm, % define separation of classical wires (can override)
+ % wire style/.code={\gdef\quantikzopts{#1}},
+}
+\pgfkeys{/quantikz/gates/.cd,%
+	.unknown/.style={%
+		/quantikz/gates/wires=\pgfkeyscurrentname
+	},%
+	%wires/.store in=\quantwires,%
+	wires/.initial=1,%
+	style/.initial={},
+	label style/.initial={},
+	braces/.initial={},
+	background/.code={\def\background{1}},
+	%alternate/.default=1,
+	%alternate/.code={\def\helper{#1}},
+  alternate/.code={\PackageWarning{quantikz}{Use of alternate is deprecated.}},
+	row/.initial=1,
+	col/.initial=1,
+	steps/.initial=1,
+	Strike Width/.initial=0.08cm,
+	Strike Height/.initial=0.12cm,
+	swap/.code={\def\toswap{1}},
+	disable auto height/.code={\def\DisableMinSize{1}},
+  nwires/.code={\PackageWarning{quantikz}{Use of nwires is deprecated. Set wire types globally instead.}},
+  cwires/.code={\PackageWarning{quantikz}{Use of cwires is deprecated. Set wire types globally instead.}},
+	brackets/.is choice,
+	brackets/.initial=both,
+  priority label/.initial={},
+  ps/.initial={},
+  angle/.initial=-45,
+  vertical wire/.initial=q,
+  wire style/.initial={},
+  open/.code={\tikzset{filling}},
+  partial swap/.initial={},
+  partial position/.initial={0.5},
+}
+\pgfkeys{/quantikz/gates/brackets/.cd,%define brackets options
+	none/.code={\def\leftbrace{0}\def\rightbrace{0}},
+	left/.code={\def\leftbrace{1}\def\rightbrace{0}},
+	right/.code={\def\leftbrace{0}\def\rightbrace{1}},
+	both/.code={\def\leftbrace{1}\def\rightbrace{1}}
+}
+% \pgfkeys{/quantikz/swap/.cd,%define options for swap gate
+%   partial/.initial={},
+%   position/.initial={0.5},
+%   label style/.initial={}
+% }
+
+
+%my standard Dirac notation commands. can be overridden by user.
+\providecommand{\ket}[1]{\ensuremath{\left|#1\right\rangle}}
+\providecommand{\bra}[1]{\ensuremath{\left\langle#1\right |}}
+\providecommand{\proj}[1]{\ensuremath{\ket{#1}\!\bra{#1}}}
+\providecommand{\braket}[2]{\ensuremath{\left\langle#1\middle|#2\right\rangle}}
+\newcommand{\forceredefine}{%
+\renewcommand{\ket}[1]{\ensuremath{\left|##1\right\rangle}}
+\renewcommand{\bra}[1]{\ensuremath{\left\langle##1\right |}}
+\renewcommand{\proj}[1]{\ensuremath{\ket{##1}\!\bra{##1}}}
+\renewcommand{\braket}[2]{\ensuremath{\left\langle##1\middle|##2\right\rangle}}
+}
+
+
+%\DeclareExpandableDocumentCommand{\ctrlbundle}{O{1}O{}m}{|[phase bundle,#2]| {} \vqw{#3}\qwbundle[alternate=#1]{}}
+
+%wire commands with absolute positioning. Need updating.
+\newcommand{\vqwexplicit}[2]{
+	\arrow[from=#1,to=#2,arrows] {}
+}
+% \newcommand{\vqbundleexplicit}[2]{
+% 	\arrow[from=#1,to=#2,arrows] {} \arrow[from=#1,to=#2,arrows,yshift=0.1cm] {}\arrow[from=#1,to=#2,arrows,yshift=-0.1cm] {}
+% }
+% %classical vertical wire, absolute positioning
+% \newcommand{\vcwexplicit}[2]{
+% 	\arrow[from=#1,to=#2,arrows,xshift=0.05cm] {}\arrow[from=#1,to=#2,arrows,xshift=-0.05cm] {}
+% }
+% %classical horizontal wire, absolute positioning
+% \newcommand{\vcwhexplicit}[2]{
+% 	\arrow[from=#1,to=#2,arrows,yshift=0.05cm] {}\arrow[from=#1,to=#2,arrows,yshift=-0.05cm] {}
+% }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Style properties
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%configure some of the style properties.
+%annoyingly, this first one will affect all tikzcd instances, not just quantum circuits. I should have only provided the quantikz environment as a modified version of tikzcd, and not allowed direct use of tikzcd. Probably too late now.
+\tikzcdset{%
+	row sep/normal=0.5cm,
+	column sep/normal=0.5cm,
+	thick,
+	nodes in empty cells,
+	every cell/.style={
+        anchor=center,minimum size=0pt,inner sep=0pt,outer sep=0pt,thick,
+        minimum height=\ifcsundef{cell@height@\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}{0}{\csname cell@height@\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn\endcsname},
+        minimum width=\ifcsundef{cell@width@\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}{0}{\csname cell@width@\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn\endcsname},
+        %append after command={\wire{a}}
+        execute at end cell={\wire{a}%looks promising. does not work on empty cells.
+        %be careful to unset "global" variables that really only apply to current diagram
+        \csgundef{cell@width@\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+      \csgundef{cell@height@\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}
+      \csgundef{wire@type@override@\the\pgfmatrixcurrentrow-\the\pgfmatrixcurrentcolumn}}
+    },
+  arrows/.style={dash,thick,line cap=round},
+  %1-row diagram/.style={},
+  1-row diagram/.style={/tikz/baseline={([yshift=-\MathAxis]\tikzcdmatrixname-1-1.center)}},%doesn't seem to be doing anything. Possibly activates too late?
+  grade/.style={description,circle,draw,fill=white,inner sep=0pt, outer sep=0pt,font=\tiny}
+}
+\tikzset{
+	thickness/.style={thick},
+  filling/.style={fill=\pgfkeysvalueof{/tikz/commutative diagrams/background color}},
+  operator/.style={draw,filling, inner sep=2pt,thickness,align=center},
+  ggroup/.style={draw,minimum size=1.5em,thickness,align=center,inner sep=4pt},
+  leftinternal/.style={anchor=mid west,font=\scriptsize,inner sep=4pt,align=center},
+  rightinternal/.style={anchor=mid east,font=\scriptsize,inner sep=4pt,align=center},
+  wave/.style={inner sep=-3pt,tape,filling,apply={draw=black} except on segments {5,6,1,2,9}},
+  phase bundle/.style={fill,shape=rectangle,rounded corners=1.5pt,minimum width=4pt,minimum height=10pt},
+  internal/.style={thickness},
+ %  rectangle with rounded corners north west/.initial=0pt,
+	% rectangle with rounded corners south west/.initial=0pt,
+	% rectangle with rounded corners north east/.initial=8pt,
+	% rectangle with rounded corners south east/.initial=8pt,
+  line/.style={path picture={ 
+		\draw[internal](path picture bounding box.west) -- (path picture bounding box.east);
+	}},
+	%hidden bend/.style={path picture={
+%		\draw[internal,inner sep=0pt] (path picture bounding box.west) -- (path picture bounding box.center) -- (path picture bounding box.south);},
+%		minimum height=1.5em,minimum width=1em},
+  dd/.style={decoration={brace},decorate,thickness},
+  dm/.style={decoration={brace,mirror},decorate,thickness},
+  slice/.style={thickness,red,dash pattern=on 5pt off 3pt,align=center},
+ 	my labelcw/.style={yshift=0.04cm,above,align=center},
+ 	gg label/.style={label position=center,align=center},
+ 	group label/.style={label position=above,yshift=0.2cm,anchor=mid}
+}
+
+\def\resetstyles{
+\tikzcdset{thin,every cell/.append style={thin},arrows/.append style={thin}
+    }
+\tikzset{
+	thickness/.style={thin},
+	%operator/.append style={thin},
+	%internal/.append style={thin},
+	%dd/.append style={thin},
+	%dm/.append style={thin},
+	%slice/.append style={thin},
+	meter/.append style={thin},
+	phase/.append style={minimum size=3pt},
+%	ophase/.append style={minimum size=3pt},
+	%circlewc/.append style={minimum size=3pt,inner sep=2pt}
+}
+}
+
+\def\maketransparent{
+\tikzset{
+  filling/.append style={fill opacity=0,text opacity=1},
+%	operator/.append style={fill opacity=0},
+	% meter/.append style={fill opacity=0},
+	% measuretab/.append style={fill opacity=0},
+	% meterD/.append style={fill opacity=0},
+	% measure/.append style={fill opacity=0},
+	% wave/.append style={fill opacity=0},
+%	ophase/.append style={fill opacity=0}
+}
+}
