@@ -3683,7 +3683,9 @@ and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let args_il = type_call_action_partial cursor ctx params args_il_typed in
   let annos_il = List.map (type_anno cursor ctx) annos in
   let table_action_il = (var, args_il, annos_il) in
-  let table_ctx = Tblctx.add_action (var.it, params, args_il_before) table_ctx in
+  let table_ctx =
+    Tblctx.add_action (var.it, params, args_il_before) table_ctx
+  in
   (table_ctx, table_action_il)
 
 and type_table_actions (cursor : Ctx.cursor) (ctx : Ctx.t)
