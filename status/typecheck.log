@@ -14,7 +14,7 @@ Error while typechecking p4 file: test/program/issue-2123-3-bmv2.p4
 Error while typechecking p4 file: test/program/issue510-bmv2.p4
 Typecheck success: test/program/issue355-bmv2.p4
 Error while typechecking p4 file: test/program/issue1000-bmv2.p4
-Error while typechecking p4 file: test/program/apply-cf.p4
+Typecheck success: test/program/apply-cf.p4
 Error while typechecking p4 file: test/program/issue1989-bmv2.p4
 Error while typechecking p4 file: test/program/simple-firewall_ubpf.p4
 Error while typechecking p4 file: test/program/issue2289.p4
@@ -71,7 +71,7 @@ Typecheck success: test/program/header.p4
 Error while typechecking p4 file: test/program/psa-action-profile1.p4
 Typecheck success: test/program/toplevel.p4
 Error while typechecking p4 file: test/program/action_profile_max_group_size_annotation.p4
-Error while typechecking p4 file: test/program/inline-switch.p4
+Typecheck success: test/program/inline-switch.p4
 Error while typechecking p4 file: test/program/intrinsic-bmv2.p4
 Error while typechecking p4 file: test/program/inline-action.p4
 Error while typechecking p4 file: test/program/issue1006.p4
@@ -202,7 +202,7 @@ Error while typechecking p4 file: test/program/issue1025-bmv2.p4
 Typecheck success: test/program/spec-ex06.p4
 Error while typechecking p4 file: test/program/issue2037.p4
 Typecheck success: test/program/issue2126.p4
-Error while typechecking p4 file: test/program/exit5.p4
+Typecheck success: test/program/exit5.p4
 Error while typechecking p4 file: test/program/issue1520-bmv2.p4
 Typecheck success: test/program/issue356-bmv2.p4
 Error while typechecking p4 file: test/program/mux-bmv2.p4
@@ -255,7 +255,7 @@ Error while typechecking p4 file: test/program/psa-example-counters-bmv2.p4
 Error while typechecking p4 file: test/program/union2-bmv2.p4
 Error while typechecking p4 file: test/program/unused-counter-bmv2.p4
 Error while typechecking p4 file: test/program/issue1127-bmv2.p4
-Error while typechecking p4 file: test/program/uninit.p4
+Typecheck success: test/program/uninit.p4
 Error while typechecking p4 file: test/program/issue1079-bmv2.p4
 Typecheck success: test/program/spec-ex17.p4
 Error while typechecking p4 file: test/program/hash-bmv2.p4
@@ -278,7 +278,7 @@ Error while typechecking p4 file: test/program/issue1540.p4
 Error while typechecking p4 file: test/program/inline-stack-bmv2.p4
 Error while typechecking p4 file: test/program/issue1830.p4
 Error while typechecking p4 file: test/program/default-package-argument.p4
-Error while typechecking p4 file: test/program/cases.p4
+Typecheck success: test/program/cases.p4
 Error while typechecking p4 file: test/program/table-entries-exact-bmv2.p4
 Error while typechecking p4 file: test/program/serenum-casts.p4
 Error while typechecking p4 file: test/program/copy.p4
@@ -571,7 +571,7 @@ Typecheck success: test/program/duplicateMethod.p4
 Error while typechecking p4 file: test/program/ternary2-bmv2.p4
 Error while typechecking p4 file: test/program/precedence.p4
 Error while typechecking p4 file: test/program/issue313_2.p4
-Error while typechecking p4 file: test/program/issue1595-1.p4
+Typecheck success: test/program/issue1595-1.p4
 Typecheck success: test/program/issue2213-1.p4
 Error while typechecking p4 file: test/program/match.p4
 Error while typechecking p4 file: test/program/hit_ebpf.p4
@@ -623,4 +623,4 @@ Error while typechecking p4 file: test/program/recursive-casts.p4
 Typecheck success: test/program/complex.p4
 Error while typechecking p4 file: test/program/psa-meter4.p4
 Typecheck fails on parse: 11 / 623
-Typecheck fails on typecheck: 429 / 612
+Typecheck fails on typecheck: 423 / 612

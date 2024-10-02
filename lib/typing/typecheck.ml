@@ -1070,7 +1070,7 @@ and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let typ_cond = expr_cond_il.note.typ in
   let ctk_cond = expr_cond_il.note.ctk in
   if typ_cond <> Types.BoolT then (
-    Format.eprintf "(type_if_stmt) Condition %a must be a boolean\n"
+    Format.eprintf "(type_ternop_expr) Condition %a must be a boolean\n"
       (El.Pp.pp_expr ~level:0) expr_cond;
     assert false);
   let expr_then_il = type_expr cursor ctx expr_then in
@@ -2153,9 +2153,8 @@ and type_stmt' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
   match stmt with
   | EmptyS -> (ctx, flow, Lang.Ast.EmptyS)
   | AssignS { expr_l; expr_r } -> type_assign_stmt cursor ctx flow expr_l expr_r
-  | SwitchS _ ->
-      Format.eprintf "(type_stmt) Switch statement is not supported\n";
-      assert false
+  | SwitchS { expr_switch; cases } ->
+      type_switch_stmt cursor ctx flow expr_switch cases
   | IfS { expr_cond; stmt_then; stmt_else } ->
       type_if_stmt cursor ctx flow expr_cond stmt_then stmt_else
   | BlockS { block } -> type_block_stmt cursor ctx flow block
@@ -2194,6 +2193,172 @@ and type_assign_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
   let stmt_il = Lang.Ast.AssignS { expr_l = expr_l_il; expr_r = expr_r_il } in
   (ctx, flow, stmt_il)
 
+(* (12.7) Switch statement
+
+   The switch statement can only be used within control blocks.
+
+   There are two kinds of switch expressions allowed,
+   described separately in the following two subsections.
+
+   (12.7.1) Switch statement with action_run expression
+
+   For this variant of switch statement, the expression must be of the form
+   t.apply().action_run, where t is the name of a table (see Section 14.2.2).
+   All switch labels must be names of actions of the table t, or default.
+
+   Note that the default label of the switch statement is used to match
+   on the kind of action executed, no matter whether there was a table hit or miss.
+   The default label does not indicate that the table missed and
+   the default_action was executed.
+
+   (12.7.2) Switch statement with integer or enumerated type expression
+
+   For this variant of switch statement, the expression must evaluate
+   to a result with one of these types:
+
+    - bit<W>
+    - int<W>
+    - enum, either with or without an underlying representation specified
+    - error
+
+   All switch labels must be expressions with compile-time known values,
+   and must have a type that can be implicitly cast to the type of the
+   switch expression (see Section 8.11.2). Switch labels must not begin with
+   a left brace character {, to avoid ambiguity with a block statement.
+
+   (12.7.3) Notes common to all switch statements
+
+   It is a compile-time error if two labels of a switch statement equal each other.
+   The switch label values need not include all possible values of the switch expression.
+   It is optional to have a switch case with the default label, but if one is present,
+   it must be the last one in the switch statement.
+
+   If a switch label is not followed by a block statement, it falls through to the next label.
+   However, if a block statement is present, it does not fall through. Note that this is different
+   from C-style switch statements, where a break is needed to prevent fall-through.
+   If the last switch label is not followed by a block statement, the behavior is the same
+   as if the last switch label were followed by an empty block statement { }.
+
+   When a switch statement is executed, first the switch expression is evaluated,
+   and any side effects from evaluating this expression are visible to any switch case that is executed.
+   Among switch labels that are not default, at most one of them can equal
+   the value of the switch expression. If one is equal, that switch case is executed.
+
+   If no labels are equal to the switch expression, then:
+
+    - if there is a default label,
+        the case with the default label is executed.
+    - if there is no default label,
+        then no switch case is executed, and execution continues after the end of the switch statement,
+        with no side effects (except any that were caused by evaluating the switch expression). *)
+
+and type_switch_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (expr_switch : El.Ast.expr) (cases : El.Ast.switch_case list) :
+    Ctx.t * flow * Il.Ast.stmt' =
+  let expr_switch_il = type_expr cursor ctx expr_switch in
+  match expr_switch_il.it with
+  | ExprAccE
+      {
+        expr_base =
+          {
+            it =
+              CallMethodE
+                {
+                  expr_base =
+                    { it = VarE { var = { it = Current id_table; _ } }; _ };
+                  member = member_method;
+                  _;
+                };
+            _;
+          };
+        member = member_acc;
+      }
+    when member_method.it = "apply" && member_acc.it = "action_run" ->
+      type_switch_table_stmt cursor ctx flow expr_switch_il id_table cases
+  | _ -> failwith "TODO"
+
+and type_switch_table_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (expr_switch_il : Il.Ast.expr) (id_table : Il.Ast.id)
+    (cases : El.Ast.switch_case list) : Ctx.t * flow * Il.Ast.stmt' =
+  let flow, cases_il = type_switch_table_cases cursor ctx flow id_table cases in
+  let stmt_il =
+    Lang.Ast.SwitchS { expr_switch = expr_switch_il; cases = cases_il }
+  in
+  (ctx, flow, stmt_il)
+
+and type_switch_table_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (id_table : Il.Ast.id) (labels_seen : Il.Ast.switch_label' list)
+    (case : El.Ast.switch_case) :
+    flow * Il.Ast.switch_label * Il.Ast.switch_case =
+  match case.it with
+  | MatchC (label, block) ->
+      type_switch_table_label cursor ctx id_table labels_seen label;
+      let _ctx, flow, block_il = type_block cursor ctx flow block in
+      let case_il = Lang.Ast.MatchC (label, block_il) $ case.at in
+      (flow, label, case_il)
+  | FallC label ->
+      type_switch_table_label cursor ctx id_table labels_seen label;
+      let case_il = Lang.Ast.FallC label $ case.at in
+      (flow, label, case_il)
+
+and type_switch_table_cases' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (id_table : Il.Ast.id) (flows_case : flow list)
+    (labels_seen : Il.Ast.switch_label' list)
+    (cases_il : Il.Ast.switch_case list) (cases : El.Ast.switch_case list) :
+    flow list * Il.Ast.switch_label' list * Il.Ast.switch_case list =
+  match cases with
+  | [] -> (flows_case, labels_seen, cases_il)
+  | case :: cases ->
+      let flow_case, label, case_il =
+        type_switch_table_case cursor ctx flow id_table labels_seen case
+      in
+      if
+        (match (label.it : Il.Ast.switch_label') with
+        | DefaultL -> true
+        | _ -> false)
+        && List.length cases > 0
+      then (
+        Format.eprintf
+          "(type_switch_table_cases') Default label must be the last switch \
+           label\n";
+        assert false);
+      let flows_case = flows_case @ [ flow_case ] in
+      let labels_seen = labels_seen @ [ label.it ] in
+      let cases_il = cases_il @ [ case_il ] in
+      type_switch_table_cases' cursor ctx flow id_table flows_case labels_seen
+        cases_il cases
+
+and type_switch_table_cases (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+    (id_table : Il.Ast.id) (cases : El.Ast.switch_case list) :
+    flow * Il.Ast.switch_case list =
+  let flows_case, _, cases_il =
+    type_switch_table_cases' cursor ctx flow id_table [] [] [] cases
+  in
+  let flow =
+    if List.for_all (fun flow_case -> flow_case = Ret) flows_case then Ret
+    else Cont
+  in
+  (flow, cases_il)
+
+and type_switch_table_label (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (id_table : Il.Ast.id) (labels_seen : Il.Ast.switch_label' list)
+    (label : El.Ast.switch_label) : unit =
+  if List.mem label.it labels_seen then (
+    Format.eprintf
+      "(type_switch_table_label) Label %a was used multiple times\n"
+      Il.Pp.pp_switch_label label;
+    assert false);
+  match label.it with
+  | NameL id_action ->
+      let id_enum = "action_list(" ^ id_table.it ^ ")." ^ id_action.it in
+      let value_enum = Ctx.find_value_opt cursor id_enum ctx in
+      if Option.is_none value_enum then (
+        Format.eprintf
+          "(type_switch_table_label) Action %a does not exist in table %a\n"
+          Il.Pp.pp_id id_action Il.Pp.pp_id id_table;
+        assert false)
+  | DefaultL -> ()
+
 (* (12.6) Conditional statement
 
    However, the condition expression in P4 is required to be a Boolean
@@ -2230,7 +2395,9 @@ and type_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
 and type_block (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
     (block : El.Ast.block) : Ctx.t * flow * Il.Ast.block =
   let stmts, annos = block.it in
+  let ctx = Ctx.enter_frame ctx in
   let ctx, flow, block_il = type_block' cursor ctx flow stmts annos in
+  let ctx = Ctx.exit_frame ctx in
   (ctx, flow, block_il $ block.at)
 
 and type_block' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
@@ -2243,9 +2410,7 @@ and type_block' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
 
 and type_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
     (block : El.Ast.block) : Ctx.t * flow * Il.Ast.stmt' =
-  let ctx = Ctx.enter_frame ctx in
   let ctx, flow, block_il = type_block cursor ctx flow block in
-  let ctx = Ctx.exit_frame ctx in
   let stmt_il = Lang.Ast.BlockS { block = block_il } in
   (ctx, flow, stmt_il)
 
@@ -3485,6 +3650,40 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
           action_list(T) action_run;
       } *)
 
+and type_table_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (id : El.Ast.id) : Ctx.t =
+  let id_enum = "action_list(" ^ id.it ^ ")" in
+  let type_table_enum_decl' (ctx : Ctx.t) (member : Il.Ast.member') : Ctx.t =
+    let id_field = id_enum ^ "." ^ member in
+    if Ctx.find_value_opt cursor id_field ctx |> Option.is_some then (
+      Format.eprintf "(type_enum_decl_glob) Enum %s was already defined\n"
+        id_field;
+      assert false);
+    let value = Value.EnumFieldV (id_enum, member) in
+    let typ = Types.EnumT id_enum in
+    Ctx.add_value cursor id_field value ctx
+    |> Ctx.add_rtype cursor id_field typ Lang.Ast.No Ctk.LCTK
+  in
+  let members =
+    List.map
+      (fun (var, _, _) -> Format.asprintf "%a" Il.Pp.pp_var' var)
+      table_ctx.actions
+  in
+  let ctx = List.fold_left type_table_enum_decl' ctx members in
+  let td_enum = Types.EnumD (id_enum, members) in
+  let ctx = Ctx.add_typedef cursor id_enum td_enum ctx in
+  let id_struct = "apply_result(" ^ id.it ^ ")" in
+  let td_struct =
+    let typ_enum = specialize_typedef td_enum [] in
+    Types.StructD
+      ( id_struct,
+        [
+          ("hit", Types.BoolT); ("miss", Types.BoolT); ("action_run", typ_enum);
+        ] )
+  in
+  let ctx = Ctx.add_typedef cursor id_struct td_struct ctx in
+  ctx
+
 and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (table : El.Ast.table) (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
   if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Control) then (
@@ -3512,20 +3711,14 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let table_customs_il =
     List.map (type_table_custom cursor ctx) table.customs
   in
-  (* (TODO) : Should we add action_list(T), apply_result(T) type in env? And Should we add decl to? *)
-  (* Petr4 did, and also it puts id in TableT instead of typ*)
+  (* (TODO) Should we add action_list(T), apply_result(T) type in env? And should we add decl to?
+     Petr4 did, and also it puts id in TableT instead of typ *)
+  let ctx = type_table_type_decl cursor ctx table_ctx id in
   let typ =
-    let action_enum = Types.EnumT ("action_list_" ^ id.it) in
-    let apply_result =
-      Types.StructT
-        ( "apply_result_" ^ id.it,
-          [
-            ("hit", Types.BoolT);
-            ("miss", Types.BoolT);
-            ("action_run", action_enum);
-          ] )
-    in
-    Types.TableT apply_result
+    let id_struct = "apply_result(" ^ id.it ^ ")" in
+    let td_struct = Ctx.find_typedef cursor id_struct ctx in
+    let typ_struct = specialize_typedef td_struct [] in
+    Types.TableT typ_struct
   in
   let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.DYN ctx in
   let table_il =
