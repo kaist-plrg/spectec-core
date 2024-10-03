@@ -150,6 +150,138 @@ and coerce_type_assign'' (typ_from : Type.t) (typ_to : Type.t) : bool =
   if Eq.eq_typ_alpha typ_from typ_to then true
   else coerce_unequal_type_assign'' ()
 
+(* Type inference *)
+
+(* (7.2.11) Type Specialization
+
+   A generic type may be specialized by specifying arguments for its type variables.
+   In cases where the compiler can infer type arguments
+   type specialization is not necessary.
+
+   (17.2) Example architecture program
+
+   The type substitution can be expressed directly, using type specialization,
+   or can be inferred by a compiler, using a unification algorithm like Hindley-Milner. *)
+
+type cstr_t = Type.t option TIdMap.t
+
+let empty_cstr (tids_fresh : TId.t list) : cstr_t =
+  List.map (fun tid_fresh -> (tid_fresh, None)) tids_fresh |> TIdMap.of_list
+
+let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
+    cstr_t =
+  match (typ_param, typ_arg) with
+  | VarT tid, typ_arg when TIdMap.mem tid cstr ->
+      TIdMap.add tid (Some typ_arg) cstr
+  | NewT (id_param, typ_inner_param), NewT (id_arg, typ_inner_arg)
+    when id_param = id_arg ->
+      gen_cstr cstr typ_inner_param typ_inner_arg
+  | TupleT typs_param, TupleT typs_arg -> gen_cstrs cstr typs_param typs_arg
+  | StackT (typ_inner_param, size_param), StackT (typ_inner_arg, size_arg)
+    when Bigint.(size_param = size_arg) ->
+      gen_cstr cstr typ_inner_param typ_inner_arg
+  | StructT (id_param, fields_param), StructT (id_arg, fields_arg)
+    when id_param = id_arg ->
+      let typs_inner_param = List.map snd fields_param in
+      let typs_inner_arg = List.map snd fields_arg in
+      gen_cstrs cstr typs_inner_param typs_inner_arg
+  | HeaderT (id_param, fields_param), HeaderT (id_arg, fields_arg)
+    when id_param = id_arg ->
+      let typs_inner_param = List.map snd fields_param in
+      let typs_inner_arg = List.map snd fields_arg in
+      gen_cstrs cstr typs_inner_param typs_inner_arg
+  | UnionT (id_param, fields_param), UnionT (id_arg, fields_arg)
+    when id_param = id_arg ->
+      let typs_inner_param = List.map snd fields_param in
+      let typs_inner_arg = List.map snd fields_arg in
+      gen_cstrs cstr typs_inner_param typs_inner_arg
+  | ExternT (id_param, fdenv_param), ExternT (id_arg, fdenv_arg)
+    when id_param = id_arg ->
+      let keys_param = FIdMap.keys fdenv_param |> FIdSet.of_list in
+      let keys_arg = FIdMap.keys fdenv_arg |> FIdSet.of_list in
+      assert (FIdSet.eq keys_param keys_arg);
+      let keys = keys_param in
+      FIdSet.fold
+        (fun key cstr ->
+          let fd_param = FIdMap.find key fdenv_param in
+          let fd_arg = FIdMap.find key fdenv_arg in
+          gen_cstr_fd cstr fd_param fd_arg)
+        keys cstr
+  | ParserT params_param, ParserT params_arg
+  | ControlT params_param, ControlT params_arg ->
+      let typs_inner_param =
+        List.map (fun (_, _, typ, _) -> typ) params_param
+      in
+      let typs_inner_arg = List.map (fun (_, _, typ, _) -> typ) params_arg in
+      gen_cstrs cstr typs_inner_param typs_inner_arg
+  | _ -> cstr
+
+and gen_cstr_fd (cstr : cstr_t) (fd_param : FuncDef.t) (fd_arg : FuncDef.t) :
+    cstr_t =
+  let params_param = FuncDef.get_params fd_param in
+  let params_arg = FuncDef.get_params fd_arg in
+  let typs_param = List.map (fun (_, _, typ, _) -> typ) params_param in
+  let typs_arg = List.map (fun (_, _, typ, _) -> typ) params_arg in
+  let cstr_params = gen_cstrs cstr typs_param typs_arg in
+  gen_cstr cstr_params
+    (FuncDef.get_typ_ret fd_param)
+    (FuncDef.get_typ_ret fd_arg)
+
+and merge_cstr (cstr_old : cstr_t) (cstr_new : cstr_t) : cstr_t =
+  let keys_old = TIdMap.keys cstr_old |> TIdSet.of_list in
+  let keys_new = TIdMap.keys cstr_new |> TIdSet.of_list in
+  if TIdSet.cardinal keys_old <> TIdSet.cardinal keys_new then (
+    Format.eprintf
+      "(merge_cstr) Number of type variables do not match %d vs %d\n"
+      (TIdSet.cardinal keys_old) (TIdSet.cardinal keys_new);
+    Format.eprintf "Old: %a\n" TIdSet.pp keys_old;
+    Format.eprintf "New: %a\n" TIdSet.pp keys_new;
+    assert false);
+  assert (TIdSet.cardinal keys_old = TIdSet.cardinal keys_new);
+  assert (TIdSet.eq keys_old keys_new);
+
+  assert (
+    TIdSet.cardinal keys_old = TIdSet.cardinal keys_new
+    && TIdSet.eq keys_old keys_new);
+  let keys = keys_old in
+  TIdSet.fold
+    (fun key cstr ->
+      let typ_old = TIdMap.find key cstr_old in
+      let typ_new = TIdMap.find key cstr_new in
+      match (typ_old, typ_new) with
+      | None, _ -> TIdMap.add key typ_new cstr
+      | _, None -> TIdMap.add key typ_old cstr
+      | Some typ_old, Some typ_new ->
+          if Eq.eq_typ_alpha typ_old typ_new then
+            TIdMap.add key (Some typ_old) cstr
+          else (
+            Format.eprintf "(merge_cstr) Type %a and %a do not match\n" Type.pp
+              typ_old Type.pp typ_new;
+            assert false))
+    keys TIdMap.empty
+
+and gen_cstrs (cstr : cstr_t) (typ_params : Type.t list)
+    (typ_args : Type.t list) : cstr_t =
+  let cstrs =
+    List.map2
+      (fun typ_param typ_arg -> gen_cstr cstr typ_param typ_arg)
+      typ_params typ_args
+  in
+  List.fold_left merge_cstr cstr cstrs
+
+let infer_targs (tids_fresh : TId.t list) (params : Types.param list)
+    (args_il_typed : (Il.Ast.arg * Type.t) list) : Subst.Theta.t =
+  let cstr = empty_cstr tids_fresh in
+  let typ_params = List.map (fun (_, _, typ, _) -> typ) params in
+  let typ_args = List.map snd args_il_typed in
+  let cstr = gen_cstrs cstr typ_params typ_args in
+  TIdMap.fold
+    (fun tid typ_opt theta ->
+      match typ_opt with
+      | Some typ -> Subst.Theta.add tid typ theta
+      | None -> Subst.Theta.add tid Types.TopT theta)
+    cstr Subst.Theta.empty
+
 (* (6.7) L-values
 
    L-values are expressions that may appear on the left side of an assignment operation
@@ -161,8 +293,8 @@ and coerce_type_assign'' (typ_from : Type.t) (typ_to : Type.t) : bool =
    - References to elements within header stacks (see Section 8.18): indexing, and references to last and next.
    - The result of a bit-slice operator [m:l]. *)
 
-and check_lvalue (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_il : Il.Ast.expr) :
-    unit =
+let rec check_lvalue (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_il : Il.Ast.expr)
+    : unit =
   if not (check_lvalue' cursor ctx expr_il) then (
     Format.eprintf "(check_lvalue) %a is not an l-value\n"
       (Il.Pp.pp_expr ~level:0) expr_il;
@@ -321,8 +453,17 @@ and specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
       check_arity tparams;
       Types.PackageT
 
-and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) : FuncType.t =
-  let check_arity tparams =
+and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) :
+    FuncType.t * TId.t list option =
+  let insert_fresh_tids tparams targs =
+    if List.length tparams > 0 && List.length targs = 0 then
+      let tids_fresh =
+        List.init (List.length tparams) (fun i -> "Fresh" ^ string_of_int i)
+      in
+      Some tids_fresh
+    else None
+  in
+  let check_arity tparams targs =
     if List.length targs <> List.length tparams then (
       Format.eprintf
         "(specialize_funcdef) Function %a expects %d type arguments but %d \
@@ -330,51 +471,75 @@ and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) : FuncType.t =
         FuncDef.pp fd (List.length tparams) (List.length targs);
       assert false)
   in
-  let subst_funcdef' tparams params typ_ret =
+  let specialize_funcdef' funcDef tparams targs params typ_ret =
+    let tids_fresh = insert_fresh_tids tparams targs in
+    let targs_fresh =
+      Option.map
+        (fun tids_fresh ->
+          List.map (fun tid_fresh -> Types.VarT tid_fresh) tids_fresh)
+        tids_fresh
+    in
+    let targs = Option.value targs_fresh ~default:targs in
+    check_arity tparams targs;
     let theta = List.combine tparams targs |> Subst.Theta.of_list in
     let params = List.map (Subst.subst_param theta) params in
     let typ_ret = Subst.subst_typ theta typ_ret in
-    (params, typ_ret)
+    (funcDef params typ_ret, tids_fresh)
   in
   match fd with
-  (* extern function and function are generic *)
-  | ExternFunctionD (tparams, params, typ_ret) ->
-      check_arity tparams;
-      let params, typ_ret = subst_funcdef' tparams params typ_ret in
-      ExternFunctionT (params, typ_ret)
-  | FunctionD (tparams, params, typ_ret) ->
-      check_arity tparams;
-      let params, typ_ret = subst_funcdef' tparams params typ_ret in
-      FunctionT (params, typ_ret)
   (* action is not generic *)
   | ActionD params ->
-      check_arity [];
-      ActionT params
-  (* extern method and extern abstract method are generic *)
+      check_arity [] targs;
+      (ActionT params, None)
+  (* extern function, function, and extern (abstract) method are generic *)
+  | ExternFunctionD (tparams, params, typ_ret) ->
+      let funcDef params typ_ret = Types.ExternFunctionT (params, typ_ret) in
+      specialize_funcdef' funcDef tparams targs params typ_ret
+  | FunctionD (tparams, params, typ_ret) ->
+      let funcDef params typ_ret = Types.FunctionT (params, typ_ret) in
+      specialize_funcdef' funcDef tparams targs params typ_ret
   | ExternMethodD (tparams, params, typ_ret) ->
-      check_arity tparams;
-      let params, typ_ret = subst_funcdef' tparams params typ_ret in
-      ExternMethodT (params, typ_ret)
+      let funcDef params typ_ret = Types.ExternMethodT (params, typ_ret) in
+      specialize_funcdef' funcDef tparams targs params typ_ret
   | ExternAbstractMethodD (tparams, params, typ_ret) ->
-      check_arity tparams;
-      let params, typ_ret = subst_funcdef' tparams params typ_ret in
-      ExternAbstractMethodT (params, typ_ret)
+      let funcDef params typ_ret =
+        Types.ExternAbstractMethodT (params, typ_ret)
+      in
+      specialize_funcdef' funcDef tparams targs params typ_ret
 
-and specialize_consdef (cd : ConsDef.t) (targs : Type.t list) : ConsType.t =
-  let check_arity tparams =
+and specialize_consdef (cd : ConsDef.t) (targs : Type.t list) :
+    ConsType.t * TId.t list option =
+  let insert_fresh_tids tparams targs =
+    if List.length tparams > 0 && List.length targs = 0 then
+      let tids_fresh =
+        List.init (List.length tparams) (fun i -> "Fresh" ^ string_of_int i)
+      in
+      Some tids_fresh
+    else None
+  in
+  let check_arity tparams targs =
     if List.length targs <> List.length tparams then (
       Format.eprintf
-        "(specialize_funcdef) Constructor %a expects %d type arguments but %d \
+        "(specialize_consdef) Constructor %a expects %d type arguments but %d \
          were given\n"
         ConsDef.pp cd (List.length tparams) (List.length targs);
       assert false)
   in
   let tparams, cparams, typ = cd in
-  check_arity tparams;
+  let tids_fresh = insert_fresh_tids tparams targs in
+  let targs_fresh =
+    Option.map
+      (fun tids_fresh ->
+        List.map (fun tid_fresh -> Types.VarT tid_fresh) tids_fresh)
+      tids_fresh
+  in
+  let targs = Option.value targs_fresh ~default:targs in
+  check_arity tparams targs;
   let theta = List.combine tparams targs |> Subst.Theta.of_list in
   let cparams = List.map (Subst.subst_cparam theta) cparams in
   let typ = Subst.subst_typ theta typ in
-  (cparams, typ)
+  let ct = (cparams, typ) in
+  (ct, tids_fresh)
 
 (* Annotation typing *)
 
@@ -1883,7 +2048,8 @@ and align_params_with_args (params : Types.param list) (typ_args : Type.t list)
     ([], [], []) params args
 
 and type_func (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : El.Ast.var)
-    (targs_il : Il.Ast.targ list) (args : El.Ast.arg list) : FuncType.t =
+    (targs_il : Il.Ast.targ list) (args : El.Ast.arg list) :
+    FuncType.t * TId.t list option =
   let targs = List.map it targs_il in
   let fd =
     Ctx.find_overloaded_opt Ctx.find_funcdef_overloaded_opt cursor var_func args
@@ -1897,7 +2063,7 @@ and type_func (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : El.Ast.var)
 
 and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
     (member : El.Ast.member) (targs_il : Il.Ast.targ list)
-    (args : El.Ast.arg list) : FuncType.t * Il.Ast.expr =
+    (args : El.Ast.arg list) : FuncType.t * Il.Ast.expr * TId.t list option =
   let error_not_found () =
     Format.eprintf "(type_method) Method %s not found for %a\n" member.it
       (El.Pp.pp_expr ~level:0) expr_base;
@@ -1906,34 +2072,35 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
   let targs = List.map it targs_il in
   let expr_base_il = type_expr cursor ctx expr_base in
   let typ_base = expr_base_il.note.typ in
-  let ft =
+  let ft, tids_fresh =
     match typ_base with
     | StackT _ -> (
         match member.it with
         | "push_front" | "pop_front" ->
             let params = [ ("count", Lang.Ast.No, Types.IntT, None) ] in
             let typ_ret = Types.VoidT in
-            Types.BuiltinMethodT (params, typ_ret)
+            (Types.BuiltinMethodT (params, typ_ret), None)
         | "minSizeInBits" | "minSizeInBytes" ->
-            Types.BuiltinMethodT ([], Types.IntT)
+            (Types.BuiltinMethodT ([], Types.IntT), None)
         | _ -> error_not_found ())
     | StructT _ -> (
         match member.it with
         | "minSizeInBits" | "minSizeInBytes" ->
-            Types.BuiltinMethodT ([], Types.IntT)
+            (Types.BuiltinMethodT ([], Types.IntT), None)
         | _ -> error_not_found ())
     | HeaderT _ -> (
         match member.it with
-        | "isValid" -> Types.BuiltinMethodT ([], Types.BoolT)
-        | "setValid" | "setInvalid" -> Types.BuiltinMethodT ([], Types.VoidT)
+        | "isValid" -> (Types.BuiltinMethodT ([], Types.BoolT), None)
+        | "setValid" | "setInvalid" ->
+            (Types.BuiltinMethodT ([], Types.VoidT), None)
         | "minSizeInBits" | "minSizeInBytes" ->
-            Types.BuiltinMethodT ([], Types.IntT)
+            (Types.BuiltinMethodT ([], Types.IntT), None)
         | _ -> error_not_found ())
     | UnionT _ -> (
         match member.it with
-        | "isValid" -> Types.BuiltinMethodT ([], Types.BoolT)
+        | "isValid" -> (Types.BuiltinMethodT ([], Types.BoolT), None)
         | "minSizeInBits" | "minSizeInBytes" ->
-            Types.BuiltinMethodT ([], Types.IntT)
+            (Types.BuiltinMethodT ([], Types.IntT), None)
         | _ -> error_not_found ())
     | ExternT (_id, fdenv) -> (
         let fd = Envs.FDEnv.find_overloaded_opt (member.it, args) fdenv in
@@ -1942,23 +2109,25 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
         | None -> error_not_found ())
     | ParserT params -> (
         match member.it with
-        | "apply" -> Types.ParserApplyMethodT params
+        | "apply" -> (Types.ParserApplyMethodT params, None)
         | _ -> error_not_found ())
     | ControlT params -> (
         match member.it with
-        | "apply" -> Types.ControlApplyMethodT params
+        | "apply" -> (Types.ControlApplyMethodT params, None)
         | _ -> error_not_found ())
     | TableT typ -> (
         match member.it with
-        | "apply" -> Types.TableApplyMethodT typ
+        | "apply" -> (Types.TableApplyMethodT typ, None)
         | _ -> error_not_found ())
     | _ -> error_not_found ()
   in
-  (ft, expr_base_il)
+  (ft, expr_base_il, tids_fresh)
 
-and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t)
-    (args : El.Ast.arg list) : Il.Ast.arg list * Type.t =
-  (* (TODO) Consider default parameters/arguments, in such case arity can appear to mismatch *)
+and type_call (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (tids_fresh : TId.t list option) (ft : FuncType.t)
+    (targs_il : Il.Ast.targ list) (args : El.Ast.arg list) :
+    Il.Ast.targ list * Il.Ast.arg list * Type.t =
+  (* (TODO) Consider default parameters, in such case arity can appear to mismatch *)
   let params = FuncType.get_params ft in
   let args_il, typ_args = List.map (type_arg cursor ctx) args |> List.split in
   check_call_arity ft params args_il;
@@ -1966,22 +2135,38 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t)
   let params, typ_args, args_il =
     align_params_with_args params typ_args args_il
   in
-  let args = List.combine args_il typ_args in
-  let args_il = type_call_convention cursor ctx params args in
-  let typ = FuncType.get_typ_ret ft in
-  (args_il, typ)
+  let args_il_typed = List.combine args_il typ_args in
+  let typ_ret = FuncType.get_typ_ret ft in
+  let targs_il, params, typ_ret =
+    match tids_fresh with
+    | Some tids_fresh ->
+        let theta = infer_targs tids_fresh params args_il_typed in
+        let targs_il =
+          List.map
+            (fun tid_fresh -> Subst.Theta.find tid_fresh theta)
+            tids_fresh
+          |> List.map (fun typ -> typ $ no_info)
+        in
+        let params = List.map (Subst.subst_param theta) params in
+        let typ_ret = Subst.subst_typ theta typ_ret in
+        (targs_il, params, typ_ret)
+    | None -> (targs_il, params, typ_ret)
+  in
+  let args_il = type_call_convention cursor ctx params args_il_typed in
+  (targs_il, args_il, typ_ret)
 
 and type_call_func_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (var_func : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
     : Type.t * Ctk.t * Il.Ast.expr' =
-  (* Find the function definition and specialize it if necessary *)
-  (* (TODO) Implement type inference for missing type arguments *)
+  (* Find the function definition and specialize it if generic *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
   (* (TODO) Need to check its well-formedness after specialization *)
-  let ft = type_func cursor ctx var_func targs_il args in
+  let ft, tids_fresh = type_func cursor ctx var_func targs_il args in
   (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
-  let args_il, typ = type_call cursor ctx ft args in
+  let targs_il, args_il, typ =
+    type_call cursor ctx tids_fresh ft targs_il args
+  in
   if typ = Types.VoidT then (
     Format.eprintf
       "(type_call_expr) Function call as an expression must return a value\n";
@@ -1996,16 +2181,17 @@ and type_call_method_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (member : El.Ast.member)
     (targs : El.Ast.targ list) (args : El.Ast.arg list) :
     Type.t * Ctk.t * Il.Ast.expr' =
-  (* Find the function definition and specialize it if necessary *)
-  (* (TODO) Implement type inference for missing type arguments *)
+  (* Find the function definition and specialize it if generic *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
   (* (TODO) Need to check its well-formedness after specialization *)
-  let ft, expr_base_il =
+  let ft, expr_base_il, tids_fresh =
     type_method cursor ctx expr_base member targs_il args
   in
   (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
-  let args_il, typ = type_call cursor ctx ft args in
+  let targs_il, args_il, typ =
+    type_call cursor ctx tids_fresh ft targs_il args
+  in
   if typ = Types.VoidT then (
     Format.eprintf
       "(type_call_expr) Function call as an expression must return a value\n";
@@ -2089,7 +2275,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     assert false);
   let cd = Option.get cd in
   (* (TODO) Need to check its well-formedness after specialization *)
-  let ct =
+  let ct, tids_fresh =
     let targs = List.map it targs_il in
     specialize_consdef cd targs
   in
@@ -2102,8 +2288,23 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
   let cparams, typ_args, args_il =
     align_cparams_with_args cparams typ_args args_il
   in
-  let args = List.combine args_il typ_args in
-  let args_il = type_call_convention cursor ctx cparams args in
+  let args_il_typed = List.combine args_il typ_args in
+  let targs_il, cparams, typ_inst =
+    match tids_fresh with
+    | Some tids_fresh ->
+        let theta = infer_targs tids_fresh cparams args_il_typed in
+        let targs_il =
+          List.map
+            (fun tid_fresh -> Subst.Theta.find tid_fresh theta)
+            tids_fresh
+          |> List.map (fun typ -> typ $ no_info)
+        in
+        let cparams = List.map (Subst.subst_cparam theta) cparams in
+        let typ_inst = Subst.subst_typ theta typ_inst in
+        (targs_il, cparams, typ_inst)
+    | None -> (targs_il, cparams, typ_inst)
+  in
+  let args_il = type_call_convention cursor ctx cparams args_il_typed in
   let typ = typ_inst in
   let expr_il = Il.Ast.InstE { var_inst; targs = targs_il; args = args_il } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
@@ -2467,14 +2668,16 @@ and type_return_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (_flow : flow)
 and type_call_func_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
     (var_func : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
     : Ctx.t * flow * Il.Ast.stmt' =
-  (* Find the function definition and specialize it if necessary *)
+  (* Find the function definition and specialize it is generic *)
   (* (TODO) Implement type inference for missing type arguments *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
   (* (TODO) Need to check its well-formedness after specialization *)
-  let ft = type_func cursor ctx var_func targs_il args in
+  let ft, tids_fresh = type_func cursor ctx var_func targs_il args in
   (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
-  let args_il, _typ = type_call cursor ctx ft args in
+  let targs_il, args_il, _typ =
+    type_call cursor ctx tids_fresh ft targs_il args
+  in
   let stmt_il =
     Lang.Ast.CallFuncS { var_func; targs = targs_il; args = args_il }
   in
@@ -2484,16 +2687,18 @@ and type_call_method_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
     (expr_base : El.Ast.expr) (member : El.Ast.member)
     (targs : El.Ast.targ list) (args : El.Ast.arg list) :
     Ctx.t * flow * Il.Ast.stmt' =
-  (* Find the function definition and specialize it if necessary *)
+  (* Find the function definition and specialize it is generic *)
   (* (TODO) Implement type inference for missing type arguments *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
   (* (TODO) Need to check its well-formedness after specialization *)
-  let ft, expr_base_il =
+  let ft, expr_base_il, tids_fresh =
     type_method cursor ctx expr_base member targs_il args
   in
   (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
-  let args_il, _typ = type_call cursor ctx ft args in
+  let targs_il, args_il, _typ =
+    type_call cursor ctx tids_fresh ft targs_il args
+  in
   let stmt_il =
     Lang.Ast.CallMethodS
       { expr_base = expr_base_il; member; targs = targs_il; args = args_il }
