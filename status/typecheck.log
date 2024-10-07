@@ -244,7 +244,7 @@ Typecheck success: test/program/issue1755-bmv2.p4
 Typecheck success: test/program/issue1765-1-bmv2.p4
 Error while typechecking p4 file: test/program/issue1765-bmv2.p4
 Typecheck success: test/program/issue1768-bmv2.p4
-Error while typechecking p4 file: test/program/issue1781-bmv2.p4
+Typecheck success: test/program/issue1781-bmv2.p4
 Typecheck success: test/program/issue1806.p4
 Error while typechecking p4 file: test/program/issue1814-1-bmv2.p4
 Error while typechecking p4 file: test/program/issue1814-bmv2.p4
@@ -625,4 +625,4 @@ Typecheck success: test/program/x-bmv2.p4
 Typecheck success: test/program/zero-width.p4
 
 Parser on file: [PASS] 612 [FAIL] 11 [TOTAL] 623
-Typecheck: [PASS] 405 [FAIL] 207 [TOTAL] 612
+Typecheck: [PASS] 406 [FAIL] 206 [TOTAL] 612

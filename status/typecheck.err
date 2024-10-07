@@ -84,7 +84,6 @@ int,
 int>
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int>
 (check_valid_type_nesting) Invalid nesting of int inside set<int>
-(type_return_stmt) Return type int does not match the function return type bit<32>
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_eq_typ_alpha) Types int and bit<8> are not equal

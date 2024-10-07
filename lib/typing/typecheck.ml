@@ -2650,14 +2650,6 @@ and type_return_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (_flow : Flow.t)
       "(type_return_stmt) Return statement must be in a function, action, \
        abstract extern method, and control method\n";
     assert false);
-  let typ_ret, expr_ret_il =
-    match expr_ret with
-    | Some expr_ret ->
-        let expr_ret_il = type_expr cursor ctx expr_ret in
-        let typ_ret = expr_ret_il.note.typ in
-        (typ_ret, Some expr_ret_il)
-    | None -> (Types.VoidT, None)
-  in
   let typ_ret_func =
     match ctx.local.kind with
     | Function typ_ret_func -> typ_ret_func
@@ -2666,13 +2658,20 @@ and type_return_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (_flow : Flow.t)
     | ControlApplyMethod -> Types.VoidT
     | _ -> assert false
   in
-  (* (TODO) Insert implicit cast, if possible *)
-  if typ_ret <> typ_ret_func then (
-    Format.eprintf
-      "(type_return_stmt) Return type %a does not match the function return \
-       type %a\n"
-      Type.pp typ_ret Type.pp typ_ret_func;
-    assert false);
+  let expr_ret_il =
+    match expr_ret with
+    | Some expr_ret ->
+        let expr_ret_il = type_expr cursor ctx expr_ret in
+        let expr_ret_il = coerce_type_assign expr_ret_il typ_ret_func in
+        Some expr_ret_il
+    | None ->
+        if typ_ret_func <> Types.VoidT then (
+          Format.eprintf
+            "(type_return_stmt) Function must return a value of type %a\n"
+            Type.pp typ_ret_func;
+          assert false);
+        None
+  in
   let stmt_il = Lang.Ast.RetS { expr_ret = expr_ret_il } in
   (ctx, Flow.Ret, stmt_il)
 
