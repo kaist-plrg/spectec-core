@@ -2399,32 +2399,6 @@ and type_assign_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
    There are two kinds of switch expressions allowed,
    described separately in the following two subsections.
 
-   (12.7.1) Switch statement with action_run expression
-
-   For this variant of switch statement, the expression must be of the form
-   t.apply().action_run, where t is the name of a table (see Section 14.2.2).
-   All switch labels must be names of actions of the table t, or default.
-
-   Note that the default label of the switch statement is used to match
-   on the kind of action executed, no matter whether there was a table hit or miss.
-   The default label does not indicate that the table missed and
-   the default_action was executed.
-
-   (12.7.2) Switch statement with integer or enumerated type expression
-
-   For this variant of switch statement, the expression must evaluate
-   to a result with one of these types:
-
-    - bit<W>
-    - int<W>
-    - enum, either with or without an underlying representation specified
-    - error
-
-   All switch labels must be expressions with compile-time known values,
-   and must have a type that can be implicitly cast to the type of the
-   switch expression (see Section 8.11.2). Switch labels must not begin with
-   a left brace character {, to avoid ambiguity with a block statement.
-
    (12.7.3) Notes common to all switch statements
 
    It is a compile-time error if two labels of a switch statement equal each other.
@@ -2480,14 +2454,44 @@ and type_switch_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
          expression not supported\n";
       assert false
 
-and type_switch_table_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
-    (expr_switch_il : Il.Ast.expr) (id_table : Il.Ast.id)
-    (cases : El.Ast.switch_case list) : Ctx.t * Flow.t * Il.Ast.stmt' =
-  let flow, cases_il = type_switch_table_cases cursor ctx flow id_table cases in
-  let stmt_il =
-    Lang.Ast.SwitchS { expr_switch = expr_switch_il; cases = cases_il }
-  in
-  (ctx, flow, stmt_il)
+(* (12.7.1) Switch statement with action_run expression
+
+   For this variant of switch statement, the expression must be of the form
+   t.apply().action_run, where t is the name of a table (see Section 14.2.2).
+   All switch labels must be names of actions of the table t, or default.
+
+   Note that the default label of the switch statement is used to match
+   on the kind of action executed, no matter whether there was a table hit or miss.
+   The default label does not indicate that the table missed and
+   the default_action was executed. *)
+
+and type_switch_table_label (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (id_table : Il.Ast.id) (labels_seen : Il.Ast.switch_label' list)
+    (label : El.Ast.switch_label) : unit =
+  if List.mem label.it labels_seen then (
+    Format.eprintf
+      "(type_switch_table_label) Label %a was used multiple times\n"
+      Il.Pp.pp_switch_label label;
+    assert false);
+  match label.it with
+  | NameL id_action ->
+      let id_enum = "action_list(" ^ id_table.it ^ ")" in
+      let member = id_action.it in
+      let id_field = id_enum ^ "." ^ member in
+      let value_enum = Ctx.find_value_opt cursor id_field ctx in
+      if
+        not
+          (match value_enum with
+          | Some (Value.EnumFieldV (id_enum', member'))
+            when id_enum = id_enum' && member = member' ->
+              true
+          | _ -> false)
+      then (
+        Format.eprintf
+          "(type_switch_table_label) Action %a was not declared in table %a\n"
+          Il.Pp.pp_id id_action Il.Pp.pp_id id_table;
+        assert false)
+  | DefaultL -> ()
 
 and type_switch_table_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (id_table : Il.Ast.id) (labels_seen : Il.Ast.switch_label' list)
@@ -2544,33 +2548,29 @@ and type_switch_table_cases (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   in
   (flow, cases_il)
 
-and type_switch_table_label (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (id_table : Il.Ast.id) (labels_seen : Il.Ast.switch_label' list)
-    (label : El.Ast.switch_label) : unit =
-  if List.mem label.it labels_seen then (
-    Format.eprintf
-      "(type_switch_table_label) Label %a was used multiple times\n"
-      Il.Pp.pp_switch_label label;
-    assert false);
-  match label.it with
-  | NameL id_action ->
-      let id_enum = "action_list(" ^ id_table.it ^ ")" in
-      let member = id_action.it in
-      let id_field = id_enum ^ "." ^ member in
-      let value_enum = Ctx.find_value_opt cursor id_field ctx in
-      if
-        not
-          (match value_enum with
-          | Some (Value.EnumFieldV (id_enum', member'))
-            when id_enum = id_enum' && member = member' ->
-              true
-          | _ -> false)
-      then (
-        Format.eprintf
-          "(type_switch_table_label) Action %a was not declared in table %a\n"
-          Il.Pp.pp_id id_action Il.Pp.pp_id id_table;
-        assert false)
-  | DefaultL -> ()
+and type_switch_table_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
+    (expr_switch_il : Il.Ast.expr) (id_table : Il.Ast.id)
+    (cases : El.Ast.switch_case list) : Ctx.t * Flow.t * Il.Ast.stmt' =
+  let flow, cases_il = type_switch_table_cases cursor ctx flow id_table cases in
+  let stmt_il =
+    Lang.Ast.SwitchS { expr_switch = expr_switch_il; cases = cases_il }
+  in
+  (ctx, flow, stmt_il)
+
+(* (12.7.2) Switch statement with integer or enumerated type expression
+
+   For this variant of switch statement, the expression must evaluate
+   to a result with one of these types:
+
+    - bit<W>
+    - int<W>
+    - enum, either with or without an underlying representation specified
+    - error
+
+   All switch labels must be expressions with compile-time known values,
+   and must have a type that can be implicitly cast to the type of the
+   switch expression (see Section 8.11.2). Switch labels must not begin with
+   a left brace character {, to avoid ambiguity with a block statement. *)
 
 (* (12.6) Conditional statement
 
