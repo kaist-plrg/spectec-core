@@ -48,10 +48,7 @@ int>
 (check_eq_typ_alpha) Types int and bit<16> are not equal
 (check_ctk) createWidget<bit<8>, bit<16>>(16w0, 8w0) is not a compile-time known expression
 (check_ctk) createWidget<bit<8>, bit<16>>(16w0, 8w0) is not a compile-time known expression
-(type_function_decl) A function must return a value on all possible execution paths
 (check_valid_type_nesting) Invalid nesting of int inside set<int>
-(type_function_decl) A function must return a value on all possible execution paths
-(type_function_decl) A function must return a value on all possible execution paths
 (check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_eq_typ_alpha) Types int and bit<32> are not equal
@@ -90,7 +87,6 @@ int>
 (type_return_stmt) Return type int does not match the function return type bit<32>
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_eq_typ_alpha) Types int and bit<32> are not equal
-(type_function_decl) A function must return a value on all possible execution paths
 (check_eq_typ_alpha) Types int and bit<8> are not equal
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int,
 int>
@@ -107,7 +103,6 @@ int>
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int>
 (type_table_action_default) There is no action named a in actions list
 (check_valid_type_nesting) Invalid nesting of int inside set<int>
-(type_function_decl) A function must return a value on all possible execution paths
 (type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<8> and bit<8> were given
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int,
 int,
@@ -167,8 +162,7 @@ int>
 tuple<bit<1>>>, tuple<bit<1>>,
 bit<1>> to struct S { f1 = tuple<struct T { f = bit<1> },
 struct T { f = bit<1> }>; f2 = struct T { f = bit<1> }; z = bit<1> }
-(type_function_decl) A function must return a value on all possible execution paths
-(type_function_decl) A function must return a value on all possible execution paths
+(coerce_type) Cannot coerce type A to top
 (check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_valid_type_nesting) Invalid nesting of int inside set<int>
 (coerce_type) Cannot coerce type tuple<header h_t { s = struct s_t { f8 = bit<8>; f16 = bit<16> }; f32 = bit<32> },
@@ -263,8 +257,6 @@ bool>
 (type_decl) value_set<valueset1_t>(4) valueset1;
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_eq_typ_alpha) Types int and bit<32> are not equal
-(type_function_decl) A function must return a value on all possible execution paths
-(type_function_decl) A function must return a value on all possible execution paths
 (coerce_type) Cannot coerce type tuple<bit<8>,
 bit<8>> to struct Version { major = bit<8>; minor = bit<8> }
 (check_valid_type_nesting) Invalid nesting of int inside set<int>

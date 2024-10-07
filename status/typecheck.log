@@ -123,18 +123,18 @@ Error while typechecking p4 file: test/program/extern2.p4
 Typecheck success: test/program/extern3.p4
 Error while typechecking p4 file: test/program/factory1.p4
 Error while typechecking p4 file: test/program/factory2.p4
-Error while typechecking p4 file: test/program/fcallNoInfer.p4
+Typecheck success: test/program/fcallNoInfer.p4
 Typecheck success: test/program/filter.p4
 Error while typechecking p4 file: test/program/flag_lost-bmv2.p4
 Typecheck success: test/program/flowlet_switching-bmv2.p4
 Typecheck success: test/program/fold_match.p4
 Typecheck success: test/program/free-form-annotation.p4
 Typecheck success: test/program/function.p4
-Error while typechecking p4 file: test/program/functions.p4
+Typecheck success: test/program/functions.p4
 Typecheck success: test/program/functors.p4
 Typecheck success: test/program/functors1.p4
 Typecheck success: test/program/functors4.p4
-Error while typechecking p4 file: test/program/generic_fun.p4
+Typecheck success: test/program/generic_fun.p4
 Typecheck success: test/program/global-action.p4
 Typecheck success: test/program/global-action1.p4
 Typecheck success: test/program/hash-bmv2.p4
@@ -251,7 +251,7 @@ Error while typechecking p4 file: test/program/issue1814-bmv2.p4
 Typecheck success: test/program/issue1822.p4
 Typecheck success: test/program/issue1824-bmv2.p4
 Typecheck success: test/program/issue1829-4-bmv2.p4
-Error while typechecking p4 file: test/program/issue1830.p4
+Typecheck success: test/program/issue1830.p4
 Error while typechecking p4 file: test/program/issue1834-bmv2.p4
 Error while typechecking p4 file: test/program/issue1863.p4
 Typecheck success: test/program/issue1876.p4
@@ -283,7 +283,7 @@ Typecheck success: test/program/issue2153-bmv2.p4
 Error while typechecking p4 file: test/program/issue2155.p4
 Typecheck success: test/program/issue2170-bmv2.p4
 Typecheck success: test/program/issue2175-6.p4
-Error while typechecking p4 file: test/program/issue2175.p4
+Typecheck success: test/program/issue2175.p4
 Typecheck success: test/program/issue2176-bmv2.p4
 Error while typechecking p4 file: test/program/issue2190.p4
 Typecheck success: test/program/issue2208.p4
@@ -423,7 +423,7 @@ Error while typechecking p4 file: test/program/names.p4
 Error while typechecking p4 file: test/program/nested-tuple.p4
 Error while typechecking p4 file: test/program/nested-tuple1.p4
 Error while typechecking p4 file: test/program/nested_call.p4
-Error while typechecking p4 file: test/program/nested_call_no_wildcards.p4
+Typecheck success: test/program/nested_call_no_wildcards.p4
 Typecheck success: test/program/nested_if_else.p4
 Typecheck success: test/program/nested_if_lvalue_dependencies.p4
 Typecheck success: test/program/nested_if_statement.p4
@@ -616,8 +616,8 @@ Typecheck success: test/program/v1model-special-ops-bmv2.p4
 Typecheck success: test/program/valid.p4
 Error while typechecking p4 file: test/program/valid_ebpf.p4
 Error while typechecking p4 file: test/program/value-sets.p4
-Error while typechecking p4 file: test/program/var_for_same_var.p4
-Error while typechecking p4 file: test/program/var_for_var.p4
+Typecheck success: test/program/var_for_same_var.p4
+Typecheck success: test/program/var_for_var.p4
 Typecheck success: test/program/verify-bmv2.p4
 Error while typechecking p4 file: test/program/version.p4
 Error while typechecking p4 file: test/program/vss-example.p4
@@ -625,4 +625,4 @@ Typecheck success: test/program/x-bmv2.p4
 Typecheck success: test/program/zero-width.p4
 
 Parser on file: [PASS] 612 [FAIL] 11 [TOTAL] 623
-Typecheck: [PASS] 397 [FAIL] 215 [TOTAL] 612
+Typecheck: [PASS] 405 [FAIL] 207 [TOTAL] 612

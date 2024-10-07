@@ -2339,15 +2339,13 @@ and type_arg' (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : El.Ast.arg') :
 
 (* Statement typing *)
 
-type flow = Cont | Ret
-
-let rec type_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
-    (stmt : El.Ast.stmt) : Ctx.t * flow * Il.Ast.stmt =
+let rec type_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
+    (stmt : El.Ast.stmt) : Ctx.t * Flow.t * Il.Ast.stmt =
   let ctx, flow, stmt_il = type_stmt' cursor ctx flow stmt.it in
   (ctx, flow, stmt_il $ stmt.at)
 
-and type_stmt' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
-    (stmt : El.Ast.stmt') : Ctx.t * flow * Il.Ast.stmt' =
+and type_stmt' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
+    (stmt : El.Ast.stmt') : Ctx.t * Flow.t * Il.Ast.stmt' =
   if cursor <> Ctx.Local then (
     Format.eprintf "(type_stmt) Statements must be local\n";
     assert false);
@@ -2368,8 +2366,8 @@ and type_stmt' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
   | TransS { expr_label } -> type_transition_stmt cursor ctx flow expr_label
   | DeclS { decl } -> type_decl_stmt cursor ctx flow decl
 
-and type_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
-    (stmts : El.Ast.stmt list) : Ctx.t * flow * Il.Ast.stmt list =
+and type_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
+    (stmts : El.Ast.stmt list) : Ctx.t * Flow.t * Il.Ast.stmt list =
   List.fold_left
     (fun (ctx, flow, stmts_il) stmt ->
       let ctx, flow, stmt_il = type_stmt cursor ctx flow stmt in
@@ -2383,9 +2381,9 @@ and type_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
    Derived types (e.g. structs) are copied recursively, and all components of headers are copied,
    including “validity” bits. Assignment is not defined for extern values. *)
 
-and type_assign_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
-    (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) : Ctx.t * flow * Il.Ast.stmt'
-    =
+and type_assign_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
+    (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) :
+    Ctx.t * Flow.t * Il.Ast.stmt' =
   let expr_l_il = type_expr cursor ctx expr_l in
   let typ_l = expr_l_il.note.typ in
   check_lvalue cursor ctx expr_l_il;
@@ -2453,9 +2451,9 @@ and type_assign_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
         then no switch case is executed, and execution continues after the end of the switch statement,
         with no side effects (except any that were caused by evaluating the switch expression). *)
 
-and type_switch_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+and type_switch_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (expr_switch : El.Ast.expr) (cases : El.Ast.switch_case list) :
-    Ctx.t * flow * Il.Ast.stmt' =
+    Ctx.t * Flow.t * Il.Ast.stmt' =
   let expr_switch_il = type_expr cursor ctx expr_switch in
   match expr_switch_il.it with
   | ExprAccE
@@ -2476,21 +2474,25 @@ and type_switch_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
       }
     when member_method.it = "apply" && member_acc.it = "action_run" ->
       type_switch_table_stmt cursor ctx flow expr_switch_il id_table cases
-  | _ -> failwith "TODO"
+  | _ ->
+      Format.eprintf
+        "(type_switch_stmt) Switch statement with integer or enumerated type \
+         expression not supported\n";
+      assert false
 
-and type_switch_table_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+and type_switch_table_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (expr_switch_il : Il.Ast.expr) (id_table : Il.Ast.id)
-    (cases : El.Ast.switch_case list) : Ctx.t * flow * Il.Ast.stmt' =
+    (cases : El.Ast.switch_case list) : Ctx.t * Flow.t * Il.Ast.stmt' =
   let flow, cases_il = type_switch_table_cases cursor ctx flow id_table cases in
   let stmt_il =
     Lang.Ast.SwitchS { expr_switch = expr_switch_il; cases = cases_il }
   in
   (ctx, flow, stmt_il)
 
-and type_switch_table_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+and type_switch_table_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (id_table : Il.Ast.id) (labels_seen : Il.Ast.switch_label' list)
     (case : El.Ast.switch_case) :
-    flow * Il.Ast.switch_label * Il.Ast.switch_case =
+    Flow.t * Il.Ast.switch_label * Il.Ast.switch_case =
   match case.it with
   | MatchC (label, block) ->
       type_switch_table_label cursor ctx id_table labels_seen label;
@@ -2502,11 +2504,11 @@ and type_switch_table_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
       let case_il = Lang.Ast.FallC label $ case.at in
       (flow, label, case_il)
 
-and type_switch_table_cases' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
-    (id_table : Il.Ast.id) (flows_case : flow list)
+and type_switch_table_cases' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
+    (id_table : Il.Ast.id) (flows_case : Flow.t list)
     (labels_seen : Il.Ast.switch_label' list)
     (cases_il : Il.Ast.switch_case list) (cases : El.Ast.switch_case list) :
-    flow list * Il.Ast.switch_label' list * Il.Ast.switch_case list =
+    Flow.t list * Il.Ast.switch_label' list * Il.Ast.switch_case list =
   match cases with
   | [] -> (flows_case, labels_seen, cases_il)
   | case :: cases ->
@@ -2529,15 +2531,16 @@ and type_switch_table_cases' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
       type_switch_table_cases' cursor ctx flow id_table flows_case labels_seen
         cases_il cases
 
-and type_switch_table_cases (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+and type_switch_table_cases (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (id_table : Il.Ast.id) (cases : El.Ast.switch_case list) :
-    flow * Il.Ast.switch_case list =
+    Flow.t * Il.Ast.switch_case list =
   let flows_case, _, cases_il =
     type_switch_table_cases' cursor ctx flow id_table [] [] [] cases
   in
   let flow =
-    if List.for_all (fun flow_case -> flow_case = Ret) flows_case then Ret
-    else Cont
+    if List.for_all (fun flow_case -> flow_case = Flow.Ret) flows_case then
+      Flow.Ret
+    else Flow.Cont
   in
   (flow, cases_il)
 
@@ -2551,11 +2554,20 @@ and type_switch_table_label (cursor : Ctx.cursor) (ctx : Ctx.t)
     assert false);
   match label.it with
   | NameL id_action ->
-      let id_enum = "action_list(" ^ id_table.it ^ ")." ^ id_action.it in
-      let value_enum = Ctx.find_value_opt cursor id_enum ctx in
-      if Option.is_none value_enum then (
+      let id_enum = "action_list(" ^ id_table.it ^ ")" in
+      let member = id_action.it in
+      let id_field = id_enum ^ "." ^ member in
+      let value_enum = Ctx.find_value_opt cursor id_field ctx in
+      if
+        not
+          (match value_enum with
+          | Some (Value.EnumFieldV (id_enum', member'))
+            when id_enum = id_enum' && member = member' ->
+              true
+          | _ -> false)
+      then (
         Format.eprintf
-          "(type_switch_table_label) Action %a does not exist in table %a\n"
+          "(type_switch_table_label) Action %a was not declared in table %a\n"
           Il.Pp.pp_id id_action Il.Pp.pp_id id_table;
         assert false)
   | DefaultL -> ()
@@ -2565,9 +2577,9 @@ and type_switch_table_label (cursor : Ctx.cursor) (ctx : Ctx.t)
    However, the condition expression in P4 is required to be a Boolean
    (and not an integer). *)
 
-and type_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+and type_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (expr_cond : El.Ast.expr) (stmt_then : El.Ast.stmt)
-    (stmt_else : El.Ast.stmt) : Ctx.t * flow * Il.Ast.stmt' =
+    (stmt_else : El.Ast.stmt) : Ctx.t * Flow.t * Il.Ast.stmt' =
   let expr_cond_il = type_expr cursor ctx expr_cond in
   let typ_cond = expr_cond_il.note.typ in
   if typ_cond <> Types.BoolT then (
@@ -2584,33 +2596,34 @@ and type_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
         stmt_else = stmt_else_il;
       }
   in
-  match (flow_then, flow_else) with
-  | Ret, Ret -> (ctx, Ret, stmt_il)
-  | _ -> (ctx, Cont, stmt_il)
+  let flow = Flow.merge flow_then flow_else in
+  (ctx, flow, stmt_il)
 
 (* (12.3) Block statement
 
    It contains a sequence of statements and declarations, which are executed sequentially.
    The variables and constants within a block statement are only visible within the block. *)
 
-and type_block (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
-    (block : El.Ast.block) : Ctx.t * flow * Il.Ast.block =
+(* (CHECK) Can context ever change after type checking a block? *)
+
+and type_block (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
+    (block : El.Ast.block) : Ctx.t * Flow.t * Il.Ast.block =
   let stmts, annos = block.it in
   let ctx = Ctx.enter_frame ctx in
   let ctx, flow, block_il = type_block' cursor ctx flow stmts annos in
   let ctx = Ctx.exit_frame ctx in
   (ctx, flow, block_il $ block.at)
 
-and type_block' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+and type_block' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (stmts : El.Ast.stmt list) (annos : El.Ast.anno list) :
-    Ctx.t * flow * Il.Ast.block' =
+    Ctx.t * Flow.t * Il.Ast.block' =
   let annos_il = List.map (type_anno cursor ctx) annos in
   let ctx, flow, stmts_il = type_stmts cursor ctx flow stmts in
   let block_il = (stmts_il, annos_il) in
   (ctx, flow, block_il)
 
-and type_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
-    (block : El.Ast.block) : Ctx.t * flow * Il.Ast.stmt' =
+and type_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
+    (block : El.Ast.block) : Ctx.t * Flow.t * Il.Ast.stmt' =
   let ctx, flow, block_il = type_block cursor ctx flow block in
   let stmt_il = Lang.Ast.BlockS { block = block_il } in
   (ctx, flow, stmt_il)
@@ -2624,8 +2637,8 @@ and type_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
    or control are still performed after the execution of the return statement.
    See Section 6.8 for details on copy-out behavior. *)
 
-and type_return_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (_flow : flow)
-    (expr_ret : El.Ast.expr option) : Ctx.t * flow * Il.Ast.stmt' =
+and type_return_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (_flow : Flow.t)
+    (expr_ret : El.Ast.expr option) : Ctx.t * Flow.t * Il.Ast.stmt' =
   if
     not
       (match ctx.local.kind with
@@ -2661,13 +2674,13 @@ and type_return_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (_flow : flow)
       Type.pp typ_ret Type.pp typ_ret_func;
     assert false);
   let stmt_il = Lang.Ast.RetS { expr_ret = expr_ret_il } in
-  (ctx, Ret, stmt_il)
+  (ctx, Flow.Ret, stmt_il)
 
 (* (8.20) Method invocations and function calls *)
 
-and type_call_func_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+and type_call_func_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (var_func : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
-    : Ctx.t * flow * Il.Ast.stmt' =
+    : Ctx.t * Flow.t * Il.Ast.stmt' =
   (* Find the function definition and specialize it is generic *)
   (* (TODO) Implement type inference for missing type arguments *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
@@ -2683,10 +2696,10 @@ and type_call_func_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
   in
   (ctx, flow, stmt_il)
 
-and type_call_method_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
+and type_call_method_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (expr_base : El.Ast.expr) (member : El.Ast.member)
     (targs : El.Ast.targ list) (args : El.Ast.arg list) :
-    Ctx.t * flow * Il.Ast.stmt' =
+    Ctx.t * Flow.t * Il.Ast.stmt' =
   (* Find the function definition and specialize it is generic *)
   (* (TODO) Implement type inference for missing type arguments *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
@@ -2710,8 +2723,8 @@ and type_call_method_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
    The last statement in a parser state is an optional transition statement,
    which transfers control to another state, possibly accept or reject. *)
 
-and type_transition_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
-    (expr_label : El.Ast.expr) : Ctx.t * flow * Il.Ast.stmt' =
+and type_transition_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
+    (expr_label : El.Ast.expr) : Ctx.t * Flow.t * Il.Ast.stmt' =
   if not (match ctx.local.kind with Ctx.ParserState -> true | _ -> false) then (
     Format.eprintf
       "(type_transition_stmt) Transition statement must be in a parser state\n";
@@ -2725,8 +2738,8 @@ and type_transition_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
   let stmt_il = Lang.Ast.TransS { expr_label = expr_label_il } in
   (ctx, flow, stmt_il)
 
-and type_decl_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : flow)
-    (decl : El.Ast.decl) : Ctx.t * flow * Il.Ast.stmt' =
+and type_decl_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
+    (decl : El.Ast.decl) : Ctx.t * Flow.t * Il.Ast.stmt' =
   let ctx, decl_il = type_decl cursor ctx decl in
   let stmt_il =
     match decl_il with
@@ -3425,7 +3438,7 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let ctx' = Ctx.add_params Ctx.Local params_il ctx' in
   (* Typecheck body *)
   let _ctx', flow, block_il = type_block Ctx.Local ctx' Cont body in
-  if flow <> Ret then (
+  if flow <> Flow.Ret && typ_ret.it <> Types.VoidT then (
     Format.eprintf
       "(type_function_decl) A function must return a value on all possible \
        execution paths\n";
