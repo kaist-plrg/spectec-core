@@ -29,6 +29,15 @@ open Util.Source
    the compiler will insert implicit casts for the select labels when they have int types.
    Similarly, when assigning a structure-valued expression to a structure or header, the compiler will add implicit casts for int fields. *)
 
+(* (8.12) Operations on tuple expressions
+
+   A tuple may be used to initialize a structure if the tuple has the same number of elements
+   as fields in the structure. The effect of such an initializer is to assign the nth element
+   of the tuple to the nth field in the structure.
+
+   A tuple expression can have an explicit structure or header type specified, and then it is
+   converted automatically to a structure-valued expression (see 8.13). *)
+
 let rec insert_cast (expr_il : Il.Ast.expr) (typ : Type.t) : Il.Ast.expr =
   let ctk = Static.ctk_cast_expr (typ $ no_info) expr_il in
   Il.Ast.(
@@ -86,7 +95,7 @@ and coerce_types_binary' (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) :
   if Eq.eq_typ_alpha typ_l typ_r then Some (typ_l, expr_l_il, expr_r_il)
   else coerce_unequal_types_binary' typ_l typ_r
 
-(* Coercion for assignment (including assignment by call) *)
+(* Coercion for assignment (including assignment by call and return) *)
 
 and coerce_type_assign (expr_from_il : Il.Ast.expr) (typ_to : Type.t) :
     Il.Ast.expr =
@@ -1393,16 +1402,11 @@ and type_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
   let typ, expr_base_il, expr_mask_il =
     coerce_types_binary_numeric expr_base_il expr_mask_il
   in
-  (* (CHECK) Which types are allowed in mask expression? *)
-  let typ =
-    match typ with
-    | FBitT _ | FIntT _ -> Types.SetT typ
-    | _ ->
-        Format.eprintf
-          "(type_mask_expr) Incompatible type %a for mask operation\n" Type.pp
-          typ;
-        assert false
-  in
+  if not (Type.is_numeric typ) then (
+    Format.eprintf "(type_mask_expr) Incompatible type %a for range operation\n"
+      Type.pp typ;
+    assert false);
+  let typ = Types.SetT typ in
   WF.check_valid_type cursor ctx typ;
   let expr_il =
     Il.Ast.MaskE { expr_base = expr_base_il; expr_mask = expr_mask_il }
@@ -1426,16 +1430,11 @@ and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : El.Ast.expr)
   let typ, expr_lb_il, expr_ub_il =
     coerce_types_binary_numeric expr_lb_il expr_ub_il
   in
-  (* (CHECK) Which types are allowed in range expression? *)
-  let typ =
-    match typ with
-    | IntT | FBitT _ | FIntT _ -> Types.SetT typ
-    | _ ->
-        Format.eprintf
-          "(type_range_expr) Incompatible type %a for range operation\n" Type.pp
-          typ;
-        assert false
-  in
+  if not (Type.is_numeric typ) then (
+    Format.eprintf
+      "(type_range_expr) Incompatible type %a for range operation\n" Type.pp typ;
+    assert false);
+  let typ = Types.SetT typ in
   WF.check_valid_type cursor ctx typ;
   let expr_il = Il.Ast.RangeE { expr_lb = expr_lb_il; expr_ub = expr_ub_il } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
@@ -1481,12 +1480,20 @@ and type_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ_key : Type.t)
             Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
       in
       let typ = expr_il.note.typ in
-      if typ_key <> typ then (
-        Format.eprintf
-          "(type_keyset) Key type %a must match the type of the keyset \
-           expression %a\n"
-          Type.pp typ_key Type.pp typ;
-        assert false);
+      let expr_il =
+        match (typ_key, typ) with
+        | SetT typ_key_inner, SetT typ_inner ->
+            let expr_il =
+              { expr_il with note = { expr_il.note with typ = typ_inner } }
+            in
+            coerce_type_assign expr_il typ_key_inner
+        | _ ->
+            Format.eprintf
+              "(type_keyset) Key type %a and the type %a of the keyset \
+               expression %a must be set types\n"
+              Type.pp typ_key Type.pp typ (Il.Pp.pp_expr ~level:0) expr_il;
+            assert false
+      in
       Lang.Ast.ExprK expr_il
   | DefaultK -> Lang.Ast.DefaultK
   | AnyK -> Lang.Ast.AnyK
@@ -2942,7 +2949,6 @@ and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let annos_il = List.map (type_anno cursor ctx) annos in
   let typ_target = eval_type_with_check cursor ctx typ in
   check_valid_var_type typ_target.it;
-  (* (TODO) Insert cast if possible *)
   let expr_init_il =
     Option.map
       (fun expr_init ->

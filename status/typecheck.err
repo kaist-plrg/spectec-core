@@ -21,14 +21,8 @@ newline") const bit d = 1;
 (coerce_type) Cannot coerce type tuple<header ipv4_option_timestamp_t { len = bit<8>; data = varbit<304> }> to struct headers { ipv4_option_timestamp = header ipv4_option_timestamp_t { len = bit<8>; data = varbit<304> } }
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int>
 (check_eq_typ_alpha) Types int and bit<9> are not equal
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_ctk) ((hdr.p4calc.operand_a) + (hdr.p4calc.operand_b)) is not a compile-time known expression
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (coerce_type) Cannot coerce type tuple<bit<32>,
 bit<32>> to struct S { a = bit<32>; b = bit<32> }
 (check_eq_typ_alpha) Types int and bit<32> are not equal
@@ -48,19 +42,11 @@ int>
 (check_eq_typ_alpha) Types int and bit<16> are not equal
 (check_ctk) createWidget<bit<8>, bit<16>>(16w0, 8w0) is not a compile-time known expression
 (check_ctk) createWidget<bit<8>, bit<16>>(16w0, 8w0) is not a compile-time known expression
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_eq_typ_alpha) Types int and bit<32> are not equal
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_eq_typ_alpha) Types int and bit<32> are not equal
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(type_ternop_expr) Branches 1w1 and 0 must have the same type
+(type_ternop_expr) Branches 1w1 and 0 must have the same type
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_table_key) error is not a valid table key type for match kind exact.
 (check_table_key) error is not a valid table key type for match kind exact.
 (check_eq_typ_alpha) Types int and bit<32> are not equal
@@ -70,10 +56,9 @@ int>
 (coerce_type) Cannot coerce type tuple<bit<9>> to struct PortId_t { _v = bit<9> }
 (check_table_key) error is not a valid table key type for match kind exact.
 (type_instantiation) E is not an instance type
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (TODO: transform_stmt) InnerParser.apply(pkt, hdr);
 
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(check_table_key) selector is not a valid match_kind
 (TODO: transform_stmt) E.apply(hdr.ethernet.etherType);
 
 (TODO: transform_stmt) E.apply(hdr.ethernet.etherType);
@@ -83,14 +68,12 @@ int>
 int,
 int>
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_eq_typ_alpha) Types int and bit<8> are not equal
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int,
 int>
 (type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<9> and int were given
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (type_func) Function foo not found
 (TODO: transform_stmt) foo.apply(hdr.h1.f1, hdr.h1.f1);
 
@@ -101,7 +84,6 @@ int>
 (type_decl) value_set<bit<16>>(8) ipv4_ethertypes;
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int>
 (type_table_action_default) There is no action named a in actions list
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<8> and bit<8> were given
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int,
 int,
@@ -111,10 +93,8 @@ int>
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int,
 int,
 int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
 (type_table_custom) Custom element implementation is undefined
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_eq_typ_alpha) Types int and bit<32> are not equal
@@ -122,17 +102,9 @@ int>
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int>
 (type_table_custom) Custom element counters is undefined
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (TODO: transform_stmt) Tcp_option_parser.apply(packet, hdr.tcp.dataOffset, hdr.tcp_options_vec, hdr.tcp_options_padding);
 
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
 (check_eq_typ_alpha) Types int and bit<3> are not equal
 (coerce_type) Cannot coerce type tuple<bit<32>,
 bit<32>,
@@ -140,18 +112,15 @@ bit<16>> to header h_t { src = bit<32>; dst = bit<32>; csum = bit<16> }
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int>
 (coerce_type) Cannot coerce type tuple<> to struct headers {  }
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(coerce_type) Cannot coerce type tuple<bit<32>> to header clone_1_t { data = bit<32> }
 (type_table_custom) Custom element junk is undefined
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int,
 int>
 (check_eq_typ_alpha) Types int and bit<32> are not equal
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (type_table_custom) Custom element meters is undefined
 (type_table_custom) Custom element meters is undefined
@@ -162,8 +131,8 @@ tuple<bit<1>>>, tuple<bit<1>>,
 bit<1>> to struct S { f1 = tuple<struct T { f = bit<1> },
 struct T { f = bit<1> }>; f2 = struct T { f = bit<1> }; z = bit<1> }
 (coerce_type) Cannot coerce type A to top
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
+int>
 (coerce_type) Cannot coerce type tuple<header h_t { s = struct s_t { f8 = bit<8>; f16 = bit<16> }; f32 = bit<32> },
 type PortId_t (= bit<32>)> to struct digest_t { h = header h_t { s = struct s_t { f8 = bit<8>; f16 = bit<16> }; f32 = bit<32> }; port = type PortId_t (= bit<32>) }
 (type_ternop_expr) Branches 32w2 and 3 must have the same type
@@ -182,10 +151,8 @@ type PortId_t (= bit<32>)> to struct digest_t { h = header h_t { s = struct s_t 
 (type_table_custom) Custom element psa_direct_counter is undefined
 (type_table_custom) Custom element psa_direct_counter is undefined
 (check_eq_typ_alpha) Types int and bit<32> are not equal
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(type_table_custom) Custom element psa_direct_counter is undefined
+(check_table_key) error is not a valid table key type for match kind exact.
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (type_table_custom) Custom element psa_direct_meter is undefined
@@ -207,14 +174,12 @@ type PortId_t (= bit<32>)> to struct digest_t { h = header h_t { s = struct s_t 
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int,
 int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (type_binop_shift) Shift operator expects an unsigned bitstring, signed bitstring, or an integer as the left operand and an unsigned bitstring or a compile-time known integer as the right operand but enum<bit<8>> E1 and int were given
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(check_eq_typ_alpha) Types int and bit<32> are not equal
 (coerce_type) Cannot coerce type tuple<bit<32>,
 bit<32>> to struct Version { major = bit<32>; minor = bit<32> }
 (type_table_custom) Custom element implementation is undefined
 (coerce_type) Cannot coerce type tuple<bit<32>> to struct S { f = bit<32> }
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<4> and int were given
 (coerce_type) Cannot coerce type tuple<int<32>,
@@ -222,20 +187,18 @@ int<32>> to struct T { t1 = int<32>; t2 = int<32> }
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int,
 int>
 (coerce_type) Cannot coerce type tuple<bit<9>> to struct PortId_t { _v = bit<9> }
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_eq_typ_alpha) Types int and bit<9> are not equal
-(type_mask_expr) Incompatible type int for mask operation
-(type_mask_expr) Incompatible type int for mask operation
 (check_eq_typ_alpha) Types int and bit<9> are not equal
-(type_mask_expr) Incompatible type int for mask operation
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_eq_typ_alpha) Types int and bit<9> are not equal
-(type_mask_expr) Incompatible type int for mask operation
+(check_eq_typ_alpha) Types int and bit<9> are not equal
+(check_eq_typ_alpha) Types int and bit<9> are not equal
+(check_eq_typ_alpha) Types int and bit<9> are not equal
+(check_eq_typ_alpha) Types int and bit<9> are not equal
+(check_eq_typ_alpha) Types int and bit<9> are not equal
 (check_eq_typ_alpha) Types int and bit<9> are not equal
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_eq_typ_alpha) Types int and bit<32> are not equal
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int,
 bool>
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int,
@@ -244,18 +207,11 @@ bool>
 bool>
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (type_instantiation) E is not an instance type
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
 (check_eq_typ_alpha) Types int and bit<9> are not equal
 (check_eq_typ_alpha) Types control (inout s struct S { h = header Header { data1 = bit<32>; data2 = bit<32>; data3 = bit<32> } }) and control (inout v top) are not equal
-(type_mask_expr) Incompatible type int for mask operation
+(check_eq_typ_alpha) Types int and bit<48> are not equal
 (type_decl) value_set<valueset1_t>(4) valueset1;
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 (coerce_type) Cannot coerce type tuple<bit<8>,
 bit<8>> to struct Version { major = bit<8>; minor = bit<8> }
-(check_valid_type_nesting) Invalid nesting of int inside set<int>

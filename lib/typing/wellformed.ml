@@ -302,9 +302,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
   | SetT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT -> false
-      | BoolT -> true
-      | IntT -> false
-      | FIntT _ | FBitT _ -> true
+      | BoolT | IntT | FIntT _ | FBitT _ -> true
       | VBitT _ -> false
       | VarT _ -> false
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
