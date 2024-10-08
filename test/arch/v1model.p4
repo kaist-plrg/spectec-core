@@ -19,16 +19,7 @@ limitations under the License.
 /* Note 1: More details about the definition of v1model architecture
  * can be found at the location below.
  *
- * https://github.com/p4lang/behavioral-model/blob/master/docs/simple_switch.md
- *
- * Note 2: There were several discussions among P4 working group
- * members in early 2019 regarding exactly how resubmit, recirculate,
- * and clone3 operations can be called anywhere in their respective
- * controls, but the values of the fields to be preserved is the value
- * they have when that control is finished executing.  That is how
- * these operations are defined in P4_14.  See
- * https://github.com/p4lang/behavioral-model/blob/master/docs/simple_switch.md#restrictions-on-recirculate-resubmit-and-clone-operations
- * for more details on the current state of affairs.
+ * https://github.com/p4lang/behavioral-model/blob/main/docs/simple_switch.md
  *
  * Note 3: There are at least some P4_14 implementations where
  * invoking a generate_digest operation on a field_list will create a
@@ -51,6 +42,10 @@ limitations under the License.
 
 #include "core.p4"
 
+#ifndef V1MODEL_VERSION
+#define V1MODEL_VERSION 20180101
+#endif
+
 match_kind {
     range,
     // Either an exact match, or a wildcard (matching any value).
@@ -59,13 +54,25 @@ match_kind {
     selector
 }
 
+const bit<32> __v1model_version = V1MODEL_VERSION;
+
+#if V1MODEL_VERSION >= 20200408
+typedef bit<9>  PortId_t;       // should not be a constant size?
+#endif
+
 @metadata @name("standard_metadata")
 struct standard_metadata_t {
-    bit<9>  ingress_port;
-    bit<9>  egress_spec;
-    bit<9>  egress_port;
-    bit<32> instance_type;
-    bit<32> packet_length;
+#if V1MODEL_VERSION >= 20200408
+    PortId_t    ingress_port;
+    PortId_t    egress_spec;
+    PortId_t    egress_port;
+#else
+    bit<9>      ingress_port;
+    bit<9>      egress_spec;
+    bit<9>      egress_port;
+#endif
+    bit<32>     instance_type;
+    bit<32>     packet_length;
     //
     // @alias is used to generate the field_alias section of the BMV2 JSON.
     // Field alias creates a mapping from the metadata name in P4 program to
@@ -117,7 +124,11 @@ enum MeterType {
     bytes
 }
 
-extern counter {
+extern counter
+#if V1MODEL_VERSION >= 20200408
+<I>
+#endif
+{
     /***
      * A counter object is created by calling its constructor.  This
      * creates an array of counter states, with the number of counter
@@ -134,6 +145,8 @@ extern counter {
      * register.
      */
     counter(bit<32> size, CounterType type);
+    // FIXME -- size arg should be `int` but that breaks typechecking
+
     /***
      * count() causes the counter state with the specified index to be
      * read, modified, and written back, atomically relative to the
@@ -146,7 +159,11 @@ extern counter {
      *              size-1].  If index >= size, no counter state will be
      *              updated.
      */
+#if V1MODEL_VERSION >= 20200408
+    void count(in I index);
+#else
     void count(in bit<32> index);
+#endif
 }
 
 extern direct_counter {
@@ -185,7 +202,11 @@ extern direct_counter {
 #define V1MODEL_METER_COLOR_YELLOW 1
 #define V1MODEL_METER_COLOR_RED    2
 
-extern meter {
+extern meter
+#if V1MODEL_VERSION >= 20200408
+<I>
+#endif
+{
     /***
      * A meter object is created by calling its constructor.  This
      * creates an array of meter states, with the number of meter
@@ -201,6 +222,8 @@ extern meter {
      * packets contain (MeterType.bytes).
      */
     meter(bit<32> size, MeterType type);
+    // FIXME -- size arg should be `int` but that breaks typechecking
+
     /***
      * execute_meter() causes the meter state with the specified index
      * to be read, modified, and written back, atomically relative to
@@ -220,7 +243,11 @@ extern meter {
      *              range, the final value of result is not specified,
      *              and should be ignored by the caller.
      */
+#if V1MODEL_VERSION >= 20200408
+    void execute_meter<T>(in I index, out T result);
+#else
     void execute_meter<T>(in bit<32> index, out T result);
+#endif
 }
 
 extern direct_meter<T> {
@@ -259,7 +286,12 @@ extern direct_meter<T> {
     void read(out T result);
 }
 
-extern register<T> {
+#if V1MODEL_VERSION >= 20200408
+extern register<T, I>
+#else
+extern register<T>
+#endif
+{
     /***
      * A register object is created by calling its constructor.  This
      * creates an array of 'size' identical elements, each with type
@@ -270,7 +302,7 @@ extern register<T> {
      *
      * allocates storage for 512 values, each with type bit<32>.
      */
-    register(bit<32> size);
+    register(bit<32> size);  // FIXME -- arg should be `int` but that breaks typechecking
     /***
      * read() reads the state of the register array stored at the
      * specified index, and returns it as the value written to the
@@ -285,7 +317,12 @@ extern register<T> {
      *              value of result is not specified, and should be
      *              ignored by the caller.
      */
+    @noSideEffects
+#if V1MODEL_VERSION >= 20200408
+    void read(out T result, in I index);
+#else
     void read(out T result, in bit<32> index);
+#endif
     /***
      * write() writes the state of the register array at the specified
      * index, with the value provided by the value parameter.
@@ -308,7 +345,11 @@ extern register<T> {
      *              parameter's value is written into the register
      *              array element specified by index.
      */
+#if V1MODEL_VERSION >= 20200408
+    void write(in I index, in T value);
+#else
     void write(in bit<32> index, in T value);
+#endif
 }
 
 // used as table implementation attribute
@@ -375,12 +416,13 @@ extern void mark_to_drop();
  * packet to do something other than drop.
  *
  * See
- * https://github.com/p4lang/behavioral-model/blob/master/docs/simple_switch.md
+ * https://github.com/p4lang/behavioral-model/blob/main/docs/simple_switch.md
  * -- in particular the section "Pseudocode for what happens at the
  * end of ingress and egress processing" -- for the relative priority
  * of the different possible things that can happen to a packet when
  * ingress and egress processing are complete.
  */
+@pure
 extern void mark_to_drop(inout standard_metadata_t standard_metadata);
 
 /***
@@ -398,6 +440,7 @@ extern void mark_to_drop(inout standard_metadata_t standard_metadata);
  * @param T          Must be a type bit<W>
  * @param M          Must be a type bit<W>
  */
+@pure
 extern void hash<O, T, D, M>(out O result, in HashAlgorithm algo, in T base, in D data, in M max);
 
 extern action_selector {
@@ -458,6 +501,7 @@ extern void verify_checksum<T, O>(in bool condition, in T data, in O checksum, H
  *                   may be supported).  Must be a compile-time
  *                   constant.
  */
+@pure
 extern void update_checksum<T, O>(in bool condition, in T data, inout O checksum, HashAlgorithm algo);
 
 /***
@@ -480,72 +524,92 @@ extern void verify_checksum_with_payload<T, O>(in bool condition, in T data, in 
  * Calling update_checksum_with_payload is only supported in the
  * ComputeChecksum control.
  */
+@noSideEffects
 extern void update_checksum_with_payload<T, O>(in bool condition, in T data, inout O checksum, HashAlgorithm algo);
 
 /***
- * Calling resubmit during execution of the ingress control will,
- * under certain documented conditions, cause the packet to be
- * resubmitted, i.e. it will begin processing again with the parser,
- * with the contents of the packet exactly as they were when it last
- * began parsing.  The only difference is in the value of the
- * standard_metadata instance_type field, and any user-defined
- * metadata fields that the resubmit operation causes to be
- * preserved.
- *
- * The value of the user-defined metadata fields that are preserved in
- * resubmitted packets is the value they have at the end of ingress
- * processing, not their values at the time the resubmit call is made.
- * See Note 2 for issues with this.
- *
- * Calling resubmit is only supported in the ingress control.  There
- * is no way to undo its effects once it has been called.  If resubmit
- * is called multiple times during a single execution of the ingress
- * control, only one packet is resubmitted, and only the data from the
- * last such call is preserved.  See the v1model architecture
- * documentation (Note 1) for more details.
- */
-extern void resubmit<T>(in T data);
-
-/***
- * Calling recirculate during execution of the egress control will,
- * under certain documented conditions, cause the packet to be
- * recirculated, i.e. it will begin processing again with the parser,
- * with the contents of the packet as they are created by the
- * deparser.  Recirculated packets can be distinguished from new
- * packets in ingress processing by the value of the standard_metadata
- * instance_type field.  The caller may request that some user-defined
- * metadata fields be preserved with the recirculated packet.
- *
- * The value of the user-defined metadata fields that are preserved in
- * recirculated packets is the value they have at the end of egress
- * processing, not their values at the time the recirculate call is
- * made.  See Note 2 for issues with this.
- *
- * Calling recirculate is only supported in the egress control.  There
- * is no way to undo its effects once it has been called.  If
- * recirculate is called multiple times during a single execution of
- * the egress control, only one packet is recirculated, and only the
- * data from the last such call is preserved.  See the v1model
- * architecture documentation (Note 1) for more details.
- */
-extern void recirculate<T>(in T data);
-
-/***
- * clone is in most ways identical to the clone3 operation, with the
- * only difference being that it never preserves any user-defined
- * metadata fields with the cloned packet.  It is equivalent to
- * calling clone3 with the same type and session parameter values,
- * with empty data.
+ * clone is in most ways identical to the clone_preserving_field_list
+ * operation, with the only difference being that it never preserves
+ * any user-defined metadata fields with the cloned packet.  It is
+ * equivalent to calling clone_preserving_field_list with the same
+ * type and session parameter values, with empty data.
  */
 extern void clone(in CloneType type, in bit<32> session);
 
+@deprecated("Please use 'resubmit_preserving_field_list' instead")
+extern void resubmit<T>(in T data);
 /***
- * Calling clone3 during execution of the ingress or egress control
- * will cause the packet to be cloned, sometimes also called
- * mirroring, i.e. zero or more copies of the packet are made, and
- * each will later begin egress processing as an independent packet
- * from the original packet.  The original packet continues with its
- * normal next steps independent of the clone(s).
+ * Calling resubmit_preserving_field_list during execution of the
+ * ingress control will cause the packet to be resubmitted, i.e. it
+ * will begin processing again with the parser, with the contents of
+ * the packet exactly as they were when it last began parsing.  The
+ * only difference is in the value of the standard_metadata
+ * instance_type field, and any user-defined metadata fields that the
+ * resubmit_preserving_field_list operation causes to be preserved.
+ *
+ * The user metadata fields that are tagged with @field_list(index) will
+ * be sent to the parser together with the packet.
+ *
+ * Calling resubmit_preserving_field_list is only supported in the
+ * ingress control.  There is no way to undo its effects once it has
+ * been called.  If resubmit_preserving_field_list is called multiple
+ * times during a single execution of the ingress control, only one
+ * packet is resubmitted, and only the user-defined metadata fields
+ * specified by the field list index from the last such call are
+ * preserved.  See the v1model architecture documentation (Note 1) for
+ * more details.
+ *
+ * For example, the user metadata fields can be annotated as follows:
+ * struct UM {
+ *    @field_list(1)
+ *    bit<32> x;
+ *    @field_list(1, 2)
+ *    bit<32> y;
+ *    bit<32> z;
+ * }
+ *
+ * Calling resubmit_preserving_field_list(1) will resubmit the packet
+ * and preserve fields x and y of the user metadata.  Calling
+ * resubmit_preserving_field_list(2) will only preserve field y.
+ */
+extern void resubmit_preserving_field_list(bit<8> index);
+
+@deprecated("Please use 'recirculate_preserving_field_list' instead")
+extern void recirculate<T>(in T data);
+/***
+ * Calling recirculate_preserving_field_list during execution of the
+ * egress control will cause the packet to be recirculated, i.e. it
+ * will begin processing again with the parser, with the contents of
+ * the packet as they are created by the deparser.  Recirculated
+ * packets can be distinguished from new packets in ingress processing
+ * by the value of the standard_metadata instance_type field.  The
+ * caller may request that some user-defined metadata fields be
+ * preserved with the recirculated packet.
+ *
+ * The user metadata fields that are tagged with @field_list(index) will be
+ * sent to the parser together with the packet.
+ *
+ * Calling recirculate_preserving_field_list is only supported in the
+ * egress control.  There is no way to undo its effects once it has
+ * been called.  If recirculate_preserving_field_list is called
+ * multiple times during a single execution of the egress control,
+ * only one packet is recirculated, and only the user-defined metadata
+ * fields specified by the field list index from the last such call
+ * are preserved.  See the v1model architecture documentation (Note 1)
+ * for more details.
+ */
+extern void recirculate_preserving_field_list(bit<8> index);
+
+@deprecated("Please use 'clone_preserving_field_list' instead")
+extern void clone3<T>(in CloneType type, in bit<32> session, in T data);
+
+/***
+ * Calling clone_preserving_field_list during execution of the ingress
+ * or egress control will cause the packet to be cloned, sometimes
+ * also called mirroring, i.e. zero or more copies of the packet are
+ * made, and each will later begin egress processing as an independent
+ * packet from the original packet.  The original packet continues
+ * with its normal next steps independent of the clone(s).
  *
  * The session parameter is an integer identifying a clone session id
  * (sometimes called a mirror session id).  The control plane software
@@ -559,24 +623,21 @@ extern void clone(in CloneType type, in bit<32> session);
  * Cloned packets can be distinguished from others by the value of the
  * standard_metadata instance_type field.
  *
- * The caller may request that some user-defined metadata field values
- * from the original packet should be preserved with the cloned
- * packet(s).  The value of the user-defined metadata fields that are
- * preserved with cloned packets is the value they have at the end of
- * ingress or egress processing, not their values at the time the
- * clone3 call is made.  See Note 2 for issues with this.
+ * The user metadata fields that are tagged with @field_list(index) will be
+ * sent to the parser together with a clone of the packet.
  *
- * If clone3 is called during ingress processing, the first parameter
- * must be CloneType.I2E.  If clone3 is called during egress
- * processing, the first parameter must be CloneType.E2E.
+ * If clone_preserving_field_list is called during ingress processing,
+ * the first parameter must be CloneType.I2E.  If
+ * clone_preserving_field_list is called during egress processing, the
+ * first parameter must be CloneType.E2E.
  *
  * There is no way to undo its effects once it has been called.  If
- * there are multiple calls to clone3 and/or clone during a single
- * execution of the same ingress (or egress) control, only the last
- * clone session and data are used.  See the v1model architecture
- * documentation (Note 1) for more details.
+ * there are multiple calls to clone_preserving_field_list and/or
+ * clone during a single execution of the same ingress (or egress)
+ * control, only the last clone session and index are used.  See the
+ * v1model architecture documentation (Note 1) for more details.
  */
-extern void clone3<T>(in CloneType type, in bit<32> session, in T data);
+extern void clone_preserving_field_list(in CloneType type, in bit<32> session, bit<8> index);
 
 extern void truncate(in bit<32> length);
 

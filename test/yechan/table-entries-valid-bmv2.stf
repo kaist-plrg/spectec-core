@@ -1,9 +1,0 @@
-packet 0 01 1111 00 00 b0
-expect 1 01 1111 00 00 b0
-
-packet 0 02 FFFF FF FF FF
-expect 0 02 FFFF FF FF FF
-
-packet 0 03 1000 00 00 b0
-expect 0 03 1000 00 00 b0
-

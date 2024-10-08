@@ -7,6 +7,8 @@ type stat = {
   mutable fail_typecheck : int;
 }
 
+type mode = Pos | Neg
+
 let log_stat name fails total : unit =
   Printf.sprintf "%s: [PASS] %d [FAIL] %d [TOTAL] %d" name (total - fails) fails
     total
@@ -15,7 +17,8 @@ let log_stat name fails total : unit =
 let collect_files testdir =
   let files = Sys_unix.readdir testdir in
   Array.sort String.compare files;
-  Array.to_list files
+  let files = Array.to_list files in
+  List.filter (String.ends_with ~suffix:".p4") files
 
 (* Parser roundtrip test *)
 
@@ -86,22 +89,23 @@ let parse_command =
 
 (* Typecheck test *)
 
-let typecheck stat includes filename =
+let typecheck stat includes mode filename =
   let stat, program = parse_file stat includes filename in
   match program with
   | None -> stat
   | Some program -> (
       try
         Typing.Typecheck.type_program program |> ignore;
+        if mode = Neg then stat.fail_typecheck <- stat.fail_typecheck + 1;
         Printf.sprintf "Typecheck success: %s" filename |> print_endline;
         stat
       with _ ->
-        stat.fail_typecheck <- stat.fail_typecheck + 1;
+        if mode = Pos then stat.fail_typecheck <- stat.fail_typecheck + 1;
         Printf.sprintf "Error while typechecking p4 file: %s" filename
         |> print_endline;
         stat)
 
-let typecheck_test includes testdir =
+let typecheck_test includes mode testdir =
   let files = collect_files testdir in
   let total = List.length files in
   let stat =
@@ -112,7 +116,7 @@ let typecheck_test includes testdir =
     List.fold_left
       (fun stat file ->
         let filename = Printf.sprintf "%s/%s" testdir file in
-        typecheck stat includes filename)
+        typecheck stat includes mode filename)
       stat files
   in
   log_stat "\nParser on file" stat.fail_file total;
@@ -124,8 +128,16 @@ let typecheck_command =
     (let open Core.Command.Let_syntax in
      let open Core.Command.Param in
      let%map includes = flag "-i" (listed string) ~doc:"include paths"
+     and pos = flag "-p" no_arg ~doc:"positive test"
+     and neg = flag "-n" no_arg ~doc:"negative test"
      and testdir = anon ("testdir" %: string) in
-     fun () -> typecheck_test includes testdir)
+     let mode =
+       match (pos, neg) with
+       | false, false | true, false -> Pos
+       | false, true -> Neg
+       | _ -> failwith "Cannot specify both positive and negative tests"
+     in
+     fun () -> typecheck_test includes mode testdir)
 
 let command =
   Core.Command.group ~summary:"p4cherry-test"
