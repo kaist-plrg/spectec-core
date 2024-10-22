@@ -20,7 +20,7 @@ let check_distinct_names (names : string list) : unit =
     |> fst
   in
   if not distinct then (
-    Format.eprintf "(check_distinct_names) Names are not distinct\n";
+    Format.printf "(check_distinct_names) Names are not distinct\n";
     assert false)
   else ()
 
@@ -113,7 +113,7 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
       ()
   | VarT id ->
       if not (TIdSet.mem id tset) then (
-        Format.eprintf "(check_valid_type) %s is a free type variable\n" id;
+        Format.printf "(check_valid_type) %s is a free type variable\n" id;
         assert false)
       else ()
   | NewT (_id, typ_inner) ->
@@ -172,16 +172,15 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
 
 and check_valid_type_nesting (typ : Type.t) (typ_inner : Type.t) : unit =
   if not (check_valid_type_nesting' typ typ_inner) then (
-    Format.eprintf
-      "(check_valid_type_nesting) Invalid nesting of %a inside %a\n" Type.pp
-      typ_inner Type.pp typ;
+    Format.printf "(check_valid_type_nesting) Invalid nesting of %a inside %a\n"
+      Type.pp typ_inner Type.pp typ;
     assert false)
   else ()
 
 and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
   let error_not_nest () : bool =
-    Format.eprintf "(check_valid_type_nesting) %a is not a nested type\n"
-      Type.pp typ;
+    Format.printf "(check_valid_type_nesting) %a is not a nested type\n" Type.pp
+      typ;
     false
   in
   match typ with
@@ -324,7 +323,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
 and check_valid_typedef (cursor : Ctx.cursor) (ctx : Ctx.t) (td : TypeDef.t) :
     unit =
   if cursor <> Ctx.Global then (
-    Format.eprintf "(check_valid_typedef) Type definitions must be global\n";
+    Format.printf "(check_valid_typedef) Type definitions must be global\n";
     assert false);
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
   check_valid_typedef' tset td
@@ -377,7 +376,7 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
 
 and check_valid_typedef_nesting (td : TypeDef.t) (typ_inner : Type.t) : unit =
   if not (check_valid_typedef_nesting' td typ_inner) then (
-    Format.eprintf
+    Format.printf
       "(check_valid_typedef_nesting) Invalid nesting of %a inside %a\n" Type.pp
       typ_inner TypeDef.pp td;
     assert false)
@@ -385,7 +384,7 @@ and check_valid_typedef_nesting (td : TypeDef.t) (typ_inner : Type.t) : unit =
 
 and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
   let error_not_nest () : bool =
-    Format.eprintf
+    Format.printf
       "(check_valid_typedef_nesting) %a is not a nested type definition\n"
       TypeDef.pp td;
     false
@@ -525,7 +524,7 @@ and check_valid_functype' (tset : TIdSet.t) (ft : FuncType.t) : unit =
 and check_valid_funcdef (cursor : Ctx.cursor) (ctx : Ctx.t) (fd : FuncDef.t) :
     unit =
   if cursor = Ctx.Local then (
-    Format.eprintf
+    Format.printf
       "(check_valid_funcdef) Function definitions must not be local\n";
     assert false);
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
@@ -555,7 +554,7 @@ and check_valid_cparam (cursor : Ctx.cursor) (ctx : Ctx.t)
 and check_valid_cparam' (tset : TIdSet.t) (cparam : Types.cparam) : unit =
   let _, dir, typ, _ = cparam in
   if not (match (dir : Il.Ast.dir') with No -> true | _ -> false) then (
-    Format.eprintf
+    Format.printf
       "(check_valid_cparam') Constructor parameters must be directionless\n";
     assert false);
   check_valid_type' tset typ
@@ -563,7 +562,7 @@ and check_valid_cparam' (tset : TIdSet.t) (cparam : Types.cparam) : unit =
 and check_valid_consdef (cursor : Ctx.cursor) (ctx : Ctx.t) (cd : ConsDef.t) :
     unit =
   if cursor <> Ctx.Block then (
-    Format.eprintf
+    Format.printf
       "(check_valid_consdef) Constructor definitions must be in a block\n";
     assert false);
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in

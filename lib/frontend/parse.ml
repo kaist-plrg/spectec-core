@@ -3,7 +3,7 @@ open Util
 let preprocess (includes : string list) (filename : string) =
   try Some (Preprocessor.preprocess includes filename)
   with _ ->
-    Format.eprintf "preprocessor error\n";
+    Format.printf "preprocessor error\n";
     None
 
 let lex (filename : string) (file : string) =
@@ -12,7 +12,7 @@ let lex (filename : string) (file : string) =
     let () = Lexer.set_filename filename in
     Some (Lexing.from_string file)
   with Lexer.Error s ->
-    Format.eprintf "lexer error: %s\n" s;
+    Format.printf "lexer error: %s\n" s;
     None
 
 let parse (lexbuf : Lexing.lexbuf) =
@@ -22,7 +22,7 @@ let parse (lexbuf : Lexing.lexbuf) =
     Some program
   with Parser.Error ->
     let info = Lexer.info lexbuf in
-    Format.eprintf "parser error: %a\n" Source.pp info;
+    Format.printf "parser error: %a\n" Source.pp info;
     None
 
 let ( let* ) = Option.bind

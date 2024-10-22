@@ -110,7 +110,7 @@ and eq_funcdef_alpha (funcdef_a : FuncDef.t) (funcdef_b : FuncDef.t) : bool =
 
 let check_eq_typ_alpha (typ_l : Type.t) (typ_r : Type.t) : unit =
   if not (eq_typ_alpha typ_l typ_r) then (
-    Format.eprintf "(check_eq_typ_alpha) Types %a and %a are not equal\n"
-      Type.pp typ_l Type.pp typ_r;
+    Format.printf "(check_eq_typ_alpha) Types %a and %a are not equal\n" Type.pp
+      typ_l Type.pp typ_r;
     assert false)
   else ()

@@ -70,6 +70,8 @@ let parse_test includes testdir =
     List.fold_left
       (fun stat file ->
         let filename = Printf.sprintf "%s/%s" testdir file in
+        Printf.sprintf "\n>>> Running parser roundtrip test on %s" filename
+        |> print_endline;
         parse_roundtrip stat includes filename)
       stat files
   in
@@ -116,6 +118,8 @@ let typecheck_test includes mode testdir =
     List.fold_left
       (fun stat file ->
         let filename = Printf.sprintf "%s/%s" testdir file in
+        Printf.sprintf "\n>>> Running typecheck test on %s" filename
+        |> print_endline;
         typecheck stat includes mode filename)
       stat files
   in

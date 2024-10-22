@@ -53,7 +53,7 @@ open Util.Source
 
 let check_lctk (expr : Il.Ast.expr) : unit =
   if not (Ctk.is_lctk expr.note.ctk) then (
-    Format.eprintf
+    Format.printf
       "(check_ctk) %a is not a local compile-time known expression\n"
       (Il.Pp.pp_expr ~level:0) expr;
     assert false)
@@ -61,7 +61,7 @@ let check_lctk (expr : Il.Ast.expr) : unit =
 
 let check_ctk (expr : Il.Ast.expr) : unit =
   if not (Ctk.is_ctk expr.note.ctk) then (
-    Format.eprintf "(check_ctk) %a is not a compile-time known expression\n"
+    Format.printf "(check_ctk) %a is not a compile-time known expression\n"
       (Il.Pp.pp_expr ~level:0) expr;
     assert false)
   else ()
@@ -91,7 +91,7 @@ and ctk_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : Il.Ast.var) : Ctk.t
     =
   let rtype = Ctx.find_opt Ctx.find_rtype_opt cursor var ctx in
   if Option.is_none rtype then (
-    Format.eprintf "(ctk_var_expr) %a a free variable\n" Il.Pp.pp_var var;
+    Format.printf "(ctk_var_expr) %a a free variable\n" Il.Pp.pp_var var;
     assert false);
   let _, _, ctk = Option.get rtype in
   ctk
@@ -143,7 +143,7 @@ and ctk_call_method_expr (expr_base : Il.Ast.expr) (member : Il.Ast.member)
   match member.it with
   | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits" | "maxSizeInBytes" ->
       if not (targs = [] && args = []) then (
-        Format.eprintf
+        Format.printf
           "(ctk_call_method_expr) %s does not take type arguments or arguments\n"
           member.it;
         assert false);

@@ -340,7 +340,7 @@ and transform_stmt (stmt : Statement.t) : El.stmt =
       let decl = transform_decl decl in
       L.DeclS { decl } $ at
   | _ ->
-      Format.eprintf "(TODO: transform_stmt) %s\n"
+      Format.printf "(TODO: transform_stmt) %s\n"
         (Surface.Print.print_stmt 0 stmt);
       assert false
 
