@@ -3731,11 +3731,11 @@ and type_parser_states (_cursor : Ctx.cursor) (ctx : Ctx.t)
     (states : El.Ast.parser_state list) : Ctx.t * Il.Ast.parser_state list =
   let labels = List.map it states |> List.map (fun (label, _, _) -> label.it) in
   if not (List.mem "start" labels) then (
-    Format.printf "(type_parser_states) A \"start\" state must exist";
+    Format.printf "(type_parser_states) A \"start\" state must exist\n";
     assert false);
   if List.mem "accept" labels || List.mem "reject" labels then (
     Format.printf
-      "(type_parser_states) \"accpet\" and \"reject\" states are reserved";
+      "(type_parser_states) \"accpet\" and \"reject\" states are reserved\n";
     assert false);
   let labels = "accept" :: "reject" :: labels in
   WF.check_distinct_names labels;

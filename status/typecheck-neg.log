@@ -5,7 +5,8 @@ Running typecheck tests on 299 files
 Error while typechecking p4 file: test/program/ill-typed/accept_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/action-bind.p4
-(type_parser_states) A "start" state must exist(type_call_default_action_partial) Arguments (x) and (y) are syntactically different
+(type_parser_states) A "start" state must exist
+(type_call_default_action_partial) Arguments (x) and (y) are syntactically different
 Error while typechecking p4 file: test/program/ill-typed/action-bind.p4
 
 >>> Running typecheck test on test/program/ill-typed/action-bind1.p4
@@ -531,7 +532,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue3316.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3335.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3338.p4
-(type_parser_states) A "start" state must existError while typechecking p4 file: test/program/ill-typed/issue3338.p4
+(type_parser_states) A "start" state must exist
+Error while typechecking p4 file: test/program/ill-typed/issue3338.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3345.p4
 (coerce_type) Cannot coerce type bit<1> to bool
@@ -816,7 +818,8 @@ Error while typechecking p4 file: test/program/ill-typed/newtype-err.p4
 Error while typechecking p4 file: test/program/ill-typed/next.p4
 
 >>> Running typecheck test on test/program/ill-typed/nostart.p4
-(type_parser_states) A "start" state must existError while typechecking p4 file: test/program/ill-typed/nostart.p4
+(type_parser_states) A "start" state must exist
+Error while typechecking p4 file: test/program/ill-typed/nostart.p4
 
 >>> Running typecheck test on test/program/ill-typed/not_bound.p4
 (type_func) Function set_nhop not found
