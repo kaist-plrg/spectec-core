@@ -1,39 +1,17 @@
 # Fix Logic
 
-## Support trailing comma (parser)
+## Parser Errors
 
-* trailing-comma.p4
-
-    ```p4
-    enum A {
-        X,
-        Y,
-    }
-    ```
-
-## Support `maxSizeInBytes` and `maxSizeInBits` (type checker)
-
-* pna-dpdk-header-stack-assignment.p4
-
-    ```p4
-    hdrs.ipv4[0].length = (hdrs.ipv4[0].maxSizeInBytes() + umeta.L2_packet_len_bytes);
-    ```
-
-## Operator precedence (parser)
-
-The spec mentions "This grammar does not indicate the precedence of the various operators. The precedence mostly follows the C precedence rules, with one change and some additions." (8).
-
-* precedence-lt.p4
-
-    ```p4
-    if (4 + d.f < 10) { ... }
-    ```
-
-## Parsing `if` (parser)
+### Parsing `if`
 
 The parser seems to expect an artificial `THEN` token, while it should not in concrete grammar.
 
-* gauntlet_bounded_loop.p4
+```ocaml
+| info1 = IF L_PAREN cond = expression R_PAREN tru = statement   %prec THEN
+```
+
+<details>
+<summary>Tests</summary>
 * guantlet_parser_test_1.p4
 * guantlet_parser_test_3.p4
 * guantlet_parser_test_4.p4
@@ -43,48 +21,81 @@ The parser seems to expect an artificial `THEN` token, while it should not in co
 * pna-direction-main-parser-err.p4
 * pna-example-pass-parser.p4
 * psa-dpdk-header-union-typedef.p4
+</details>
 
-    ```ocaml
-    | info1 = IF L_PAREN cond = expression R_PAREN tru = statement   %prec THEN
-    ```
+### Parsing `_` (don't care)
 
-## Allow serializable enum member initializers refer to other serializable enum members (type checker)
+```p4
+f(x = 1, y = _);
+```
 
-But I think it is a terrible idea to allow it.
-
-* issue3616.p4
-
-    ```p4
-    enum bit<4> e {
-        a = 0,
-        b = 0,
-        c = (bit<4>) a,
-        d = a
-    }
-    ```
-
-## Well-formedness of nested externs (type checker)
-
-* issue2735-bmv2.p4
-* issue2735.p4
-* typedef-constructor.p4
-
-    ```p4
-    typedef bit<(48 + 12 + 9)> Mac_entry;
-    typedef register<Mac_entry> Mac_table;
-    ```
-
-## Parsing `_` (don't care) (parser)
-
+<details>
+<summary>Tests</summary>
 * issue3274-2.p4
 * issue3274.p4
+</details>
 
-    ```p4
-    f(x = 1, y = _);
-    ```
+### Operator precedence
 
-## Type coercion between serializable enum and its underlying type (type checker)
+The spec mentions "This grammar does not indicate the precedence of the various operators. The precedence mostly follows the C precedence rules, with one change and some additions." (8).
 
+```p4
+if (4 + d.f < 10) { ... }
+```
+
+<details>
+<summary>Tests</summary>
+* precedence-lt.p4
+</details>
+
+## Overlooked Features (requires structural change)
+
+### Type Coercion
+
+#### Type coercion for conditional expression
+
+```p4
+h.eth_hdr.eth_type = (bit<16>) (-(h.eth_hdr.src_addr == 1) ? 2 : 3w1);
+```
+
+<details>
+<summary>Tests</summary>
+* gauntlet_mux_typecasting-bmv2.p4
+* issue-2123-2-bmv2.p4
+* issue-2123-3-bmv2.p4
+* parser-conditional.p4
+</details>
+
+### Type Inference
+
+#### Type inference when `_` was explicitly used
+
+```p4
+control c (inout S s) { ... }
+control cproto<T> (inout T v);
+package top(cproto<_> _c);
+top(c()) main;
+```
+
+<details>
+<summary>Tests</summary>
+* unused.p4
+</details>
+
+#### Type coercion between serializable enum and its underlying type
+
+But it is difficult to determine 'when' it should occur.
+
+```p4
+enum bit<32> X { ... }
+transition select (o.b.x) {
+    X.Zero &&& 0x01: accept;
+    ...
+}
+```
+
+<details>
+<summary>Tests</summary>
 * enumCast.p4
 * issue1001-1-bmv2.p4
 * issue3056.p4
@@ -95,145 +106,110 @@ But I think it is a terrible idea to allow it.
 * psa-dpdk-binary-operations.p4
 * psa-variable-index.p4
 * serEnumImplCast.p4
+</details>
 
-    ```p4
-    enum bit<32> X { ... }
-    transition select (o.b.x) {
-        X.Zero &&& 0x01: accept;
-        ...
-    }
-    ```
-
-## Type coercion for conditional expression (type checker)
-
-* gauntlet_mux_typecasting-bmv2.p4
-* issue-2123-2-bmv2.p4
-* issue-2123-3-bmv2.p4
-* parser-conditional.p4
-
-    ```p4
-    h.eth_hdr.eth_type = (bit<16>) (-(h.eth_hdr.src_addr == 1) ? 2 : 3w1);
-    ```
-
-## Instances must be compile-time known (type checker)
-
-But are they local compile-time known or compile-time known? Also, does a directionless parameter expect a local compile-time known value or a compile-time known value?
-
-* factory1.p4
-* factory2.p4
-* pna-example-SelectByDirection2.p4
-
-    ```p4
-    extern widget createWidget<T, U>(U a, T b);
-    parser P();
-    parser p1()(widget w) { ... }
-    package sw0(P p);
-    sw0(p1(createWidget(16w0, 8w0))) main;
-    ```
-
-## `error` types can be `exact` matched (type checker)
-
-"The `error` type only supports equality (`==`) and inequality (`!=`) comparisons." (8.2).
-
-"an `exact` match kind on a key field ... This is applicable for all legal key fields whose types support equality comparisons." (14.2.1.1).
-
-* issue1062-1-bmv2.p4
-* issue1062-bmv2.p4
-* issue1304.p4
-* psa-example-parser-checksum.p4
-
-    ```p4
-    table t_exact {
-        key = { m.my_err : exact; }
-        ...
-    }
-    ```
-
-## Overload resolution by name (type checker)
-
-The current implementation only uses arity to disambiguate overloaded functions.
-
-    ```ocaml
-    (* (TODO) resolve overloaded functions with argument names *)
-    let find_overloaded_opt (fid, args) fenv =
-        let arity = List.length args in
-        let funcs =
-        List.filter
-            (fun ((fid', params), _) -> fid = fid' && arity = List.length params)
-            (bindings fenv)
-        in
-        assert (List.length funcs <= 1);
-        match funcs with [] -> None | _ -> Some (List.hd funcs |> snd)
-    ```
-
-* issue1334.p4
-* issue4775-2.p4
-
-    ```p4
-    bit<8> add_1(in bit<8> a, in bit<8> b) { return 1; }
-    bit<8> add_1(in bit<8> c, in bit<8> d) { return 2; }
-    ```
-
-## Type inference when `_` was explicitly used (type checker)
-
-* unused.p4
-
-    ```p4
-    control c (inout S s) { ... }
-    control cproto<T> (inout T v);
-    package top(cproto<_> _c);
-    top(c()) main;
-    ```
-
-## Mixture of type inference and coercion (type checker)
+#### Mixture of type inference and coercion
 
 The current naive type inference algorithm assumes type equality, and is not flexible enough to handle coercion.
 
+```p4
+extern void random<T>(out T result), in T lo);
+...
+bit<8> rand_val;
+random(rand_val, 0);
+```
+
+<details>
+<summary>Tests</summary>
 * issue1586.p4
+</details>
 
-    ```p4
-    extern void random<T>(out T result), in T lo);
-    ...
-    bit<8> rand_val;
-    random(rand_val, 0);
-    ```
+### Overload resolution by name
 
-## When globally-scoped name and locally-scoped names are the same (type checker)
+The current implementation only uses arity to disambiguate overloaded functions.
 
-* issue2037.p4
+```ocaml
+(* (TODO) resolve overloaded functions with argument names *)
+let find_overloaded_opt (fid, args) fenv =
+    let arity = List.length args in
+    let funcs =
+    List.filter
+        (fun ((fid', params), _) -> fid = fid' && arity = List.length params)
+        (bindings fenv)
+    in
+    assert (List.length funcs <= 1);
+    match funcs with [] -> None | _ -> Some (List.hd funcs |> snd)
+```
 
-    ```p4
-    action a() {}
-    control c() {
-        table t {
-            actions = { .a; }
-            default_action = a;
-        }
-        apply {}
+```p4
+bit<8> add_1(in bit<8> a, in bit<8> b) { return 1; }
+bit<8> add_1(in bit<8> c, in bit<8> d) { return 2; }
+```
+
+<details>
+<summary>Tests</summary>
+* issue1334.p4
+* issue4775-2.p4
+</details>
+
+### Instantiation block
+
+#### Instantiation declaration within an instantiation block
+
+When an instantiation block has an instantiation declaration, which the current transformer assumes as invalid.
+
+```p4
+extern Virtual {
+    Virtual();
+    void run(in bit<16> ix);
+    @synchronous(run) abstract bit<16> f(in bit<16> ix);
+}
+...
+Virtual() cntr = {
+    State(1024) state;
+    bit<16> f(in bit<16> ix) {
+        return state.get(ix);
     }
-    ```
+};
+```
 
-## Instantiation with nested (abstract) instantiation (transformer & type checker)
-
+<details>
+<summary>Tests</summary>
 * virtual2.p4
+</details>
 
-    ```p4
-    extern Virtual {
-        Virtual();
-        void run(in bit<16> ix);
-        @synchronous(run) abstract bit<16> f(in bit<16> ix);
-    }
-    ...
-    Virtual() cntr = {
-        State(1024) state;
-        bit<16> f(in bit<16> ix) {
-            return state.get(ix);
-        }
-    };
-    ```
+#### Instantiation block with an abstract method
 
-## Instantiation with abstract methods (type checker)
+The abstract method instantiation logic does not seem to work.
+And we have to take `this` into account.
 
+```p4
+extern Virtual {
+    Virtual();
+    abstract bit<16> f();
+    abstract void g(inout data ix);
+}
+...
+Virtual() cntr = {
+    bit<16> f() { return 1; }
+    void g(inout data x) {}
+};
+```
+
+```p4
+extern X {
+    X();
+    bit<32> b();
+    abstract void a(inout bit<32> arg);
+}
+...
+X() x = {
+    void a(inout bit<32> arg) { arg = arg + this.b(); }
+};
+```
+
+<details>
+<summary>Tests</summary>
 * issue2175-1.p4
 * issue2175-2.p4
 * issue2175-3.p4
@@ -241,59 +217,273 @@ The current naive type inference algorithm assumes type equality, and is not fle
 * issue2175-5.p4
 * issue2273-1.p4
 * issue2273.p4
+* issue304-1.p4
 * issue3307.p4
 * issue3417.p4
 * virtual.p4
 * virtual3.p4
+</details>
 
-    ```p4
-    extern Virtual {
-        Virtual();
-        abstract bit<16> f();
-        abstract void g(inout data ix);
-    }
-    ...
-    Virtual() cntr = {
-        bit<16> f() { return 1; }
-        void g(inout data x) {}
-    };
-    ```
+### Keyset and tuple type (Need investigation)
 
-Also we have to take `this` into account.
+<details>
+<summary>Tests</summary>
+* action-two-params.p4
+* op_bin.p4
+</details>
 
-* issue304-1.p4
+### Default parameter
 
-    ```
-    extern X {
-        X();
-        bit<32> b();
-        abstract void a(inout bit<32> arg);
-    }
-    ...
-    X() x = {
-        void a(inout bit<32> arg) { arg = arg + this.b(); }
-    };
-    ```
+```p4
+package P<H, M>(C<H, M> c = nothing());
+P<_, _>() main;
+```
 
-## Built-in methods (transformer & type checker)
+<details>
+<summary>Tests</summary>
+* default-package-argument.p4
+* issue1333.p4
+* issue1937-1-bmv2.p4
+* issue2599.p4
+</details>
+
+### Built-in methods
 
 The transformer logic assumes that `func` in a call expression `func(args)` is either a name or a field access.
 
+```p4
+header H {}
+...
+H[0] h;
+h[0].minSizeInBits();
+```
+
+<details>
+<summary>Tests</summary>
 * minsize.p4
+</details>
 
-    ```p4
-    header H {}
+### Support direct application
+
+Transform direct application.
+
+```p4
+control c() { ... }
+control d() {
+    apply { c.apply(); }
+}
+```
+
+<details>
+<summary>Tests</summary>
+* direct-call.p4
+* direct-call1.p4
+* direct-call2.p4
+* extern-inst-as-param.p4
+* gauntlet_infinite_loop.p4
+* issue1107.p4
+* issue1470-bmv2.p4
+* issue1566-bmv2.p4
+* issue1937-2-bmv2.p4
+* issue1937-3-bmv2.p4
+* issue2844-enum.p4
+* issue3394.p4
+* issue4883_dup_has_returned_decl.p4
+* issue4883_dup_has_returned_decl2.p4
+* issue561-bmv2.p4
+* nonstandard_table_names-bmv2.p4
+* pna-dpdk-add_on_miss1.p4
+* pna-example-tunnel.p4
+* psa-end-of-ingress-test-bmv2.p4
+* psa-multicast-basic-2-bmv2.p4
+* psa-parser-error-test-bmv2.p4
+* psa-resubmit-bmv2.p4
+* psa-unicast-or-drop-bmv2.p4
+* redundant_parsers_dangling_unused_parser_decl.p4
+* use-priority-as-name.p4
+</details>
+
+### `value_set` declaration
+
+```p4
+value_set<bit<16>>(8) ipv4_ethertypes;
+```
+
+<details>
+<summary>Tests</summary>
+* issue1955.p4
+* issue3343.p4
+* psa-test.p4
+* pvs-bitstring-bmv2.p4
+* pvs-nested-struct.p4
+* pvs-struct-1-bmv2.p4
+* pvs-struct-2-bmv2.p4
+* pvs-struct-3-bmv2.p4
+* pvs.p4
+* v1model-p4runtime-enumint-types1.p4
+* v1model-p4runtime-most-tupes1.p4
+* value_set_ebpf.p4
+</details>
+
+### Instances must be compile-time known
+
+But are they local compile-time known or compile-time known?
+Also, does a directionless parameter expect a local compile-time known value or a compile-time known value?
+
+```p4
+extern widget createWidget<T, U>(U a, T b);
+parser P();
+parser p1()(widget w) { ... }
+package sw0(P p);
+sw0(p1(createWidget(16w0, 8w0))) main;
+```
+
+<details>
+<summary>Tests</summary>
+* factory1.p4
+* factory2.p4
+* pna-example-SelectByDirection2.p4
+</details>
+
+## Devils are in the Details
+
+### Support `maxSizeInBytes` and `maxSizeInBits`
+
+Logic only exists for `minSizeInBytes` and `minSizeInBits`.
+
+```p4
+hdrs.ipv4[0].length = (hdrs.ipv4[0].maxSizeInBytes() + umeta.L2_packet_len_bytes);
+```
+
+<details>
+<summary>Tests</summary>
+* pna-dpdk-header-stack-assignment.p4
+</details>
+
+### Allow serializable enum member initializers refer to other serializable enum members
+
+But I think it is a terrible idea to allow it.
+
+```p4
+enum bit<4> e {
+    a = 0,
+    b = 0,
+    c = (bit<4>) a,
+    d = a
+}
+```
+
+<details>
+<summary>Tests</summary>
+* issue3616.p4
+</details>
+
+### Well-formedness of nested externs
+
+```p4
+typedef bit<(48 + 12 + 9)> Mac_entry;
+typedef register<Mac_entry> Mac_table;
+```
+
+<details>
+<summary>Tests</summary>
+* issue2735-bmv2.p4
+* issue2735.p4
+* typedef-constructor.p4
+</details>
+
+### `error` types can be `exact` matched
+
+"The `error` type only supports equality (`==`) and inequality (`!=`) comparisons." (8.2).
+
+"an `exact` match kind on a key field ... This is applicable for all legal key fields whose types support equality comparisons." (14.2.1.1).
+
+```p4
+table t_exact {
+    key = { m.my_err : exact; }
     ...
-    H[0] h;
-    h[0].minSizeInBits();
-    ```
+}
+```
 
-# More Features
+<details>
+<summary>Tests</summary>
+* issue1062-1-bmv2.p4
+* issue1062-bmv2.p4
+* issue1304.p4
+* psa-example-parser-checksum.p4
+</details>
 
-## Support list type (parser & type checker)
+## `selector` match kind
+
+```p4
+table indirect_ws {
+    key = { meta.hash1 : selector; }
+    ...
+}
+```
+
+<details>
+<summary>Tests</summary>
+* action_selector_shared-bmv2.p4
+* issue1560-bmv2.p4
+* pna-action-selector-1.p4
+* pna-action-selector.p4
+* psa-action-selector1.p4
+* psa-action-selector2.p4
+* psa-action-selector3.p4
+* psa-action-selector4.p4
+* psa-action-selector5.p4
+* psa-action-selector6.p4
+</details>
+
+# Feature Extension since Petr4
+
+## Flexible syntax
+
+### Support trailing comma
+
+```p4
+enum A {
+    X,
+    Y,
+}
+```
+
+<details>
+<summary>Tests</summary>
+* trailing-comma.p4
+</details>
+
+### Allow parentheses in lvalues
+
+Since [issue#1273](https://github.com/p4lang/p4-spec/issues/1273).
+
+```p4
+(x) = 1;
+```
+
+<details>
+<summary>Tests</summary>
+* lvalue-parens.p4
+</details>
+
+## Feature Extension
+
+### Support list type
+
+#### List as a primitive type
 
 List should be a primitive type.
 
+```p4
+extern E {
+    E(list<bit<32>> data);
+    ...
+}
+```
+
+<details>
+<summary>Tests</summary>
 * list.p4
 * list1.p4
 * list2.p4
@@ -304,19 +494,25 @@ List should be a primitive type.
 * list7.p4
 * list8.p4
 * list9.p4
+</details>
 
-    ```p4
-    extern E {
-        E(list<bit<32>> data);
-        ...
-    }
-    ```
+#### List coercion
 
 Currently, { expr } are treated as tuple types.
 So, { expr } *cannot* be coerced to struct/header types.
 But they are generally list types, where coercion to struct/header types are allowed.
 Also the syntax has to be extended to support list types.
 
+```p4
+struct headers {
+    ipv4_option_timestamp_t ipv4_option_timestamp;
+}
+extern bit<16> get<T>(in T data);
+get<headers>({ hdr.ipv4_option_timestamp });
+```
+
+<details>
+<summary>Tests</summary>
 * annotation-bug.p4
 * assign.p4
 * const.p4
@@ -353,17 +549,24 @@ Also the syntax has to be extended to support list types.
 * structure-valued-expr-ok-1-bmv2.p4
 * version.p4
 * wrong-warning.p4
+</details>
 
-    ```p4
-    struct headers {
-        ipv4_option_timestamp_t ipv4_option_timestamp;
-    }
-    extern bit<16> get<T>(in T data);
-    get<headers>({ hdr.ipv4_option_timestamp });
-    ```
+#### List well-formedness
 
 Also, list types accept more nested types than a tuple type does.
+Current implementation treats `{ expr }` as tuples, resulting in bogus well-formedness errors.
 
+```p4
+struct S {
+    bit<32> x;
+}
+...
+S s2;
+s2 = { 0 };
+```
+
+<details>
+<summary>Tests</summary>
 * copy.p4
 * default-control-argument.p4
 * gauntlet_complex_initialization-bmv2.p4
@@ -420,85 +623,18 @@ Also, list types accept more nested types than a tuple type does.
 * tuple1.p4
 * tuple3.p4
 * tuple4.p4
+</details>
 
-    ```p4
-    struct S {
-        bit<32> x;
-    }
-    ...
-    S s2;
-    s2 = { 0 };
-    ```
+### Support generic structs and headers
 
-## Support default argument
+```p4
+struct S<T> {
+    tuple<T, T> t;
+}
+```
 
-* default-package-argument.p4
-* issue1333.p4
-* issue1937-1-bmv2.p4
-* issue2599.p4
-
-    ```p4
-    package P<H, M>(C<H, M> c = nothing());
-    P<_, _>() main;
-    ```
-
-## Support `selector` match kind (type checker)
-
-* action_selector_shared-bmv2.p4
-* issue1560-bmv2.p4
-* pna-action-selector-1.p4
-* pna-action-selector.p4
-* psa-action-selector1.p4
-* psa-action-selector2.p4
-* psa-action-selector3.p4
-* psa-action-selector4.p4
-* psa-action-selector5.p4
-* psa-action-selector6.p4
-
-    ```p4
-    table indirect_ws {
-        key = { meta.hash1 : selector; }
-        ...
-    }
-    ```
-
-## Support direct application (transformer & type checker)
-
-* direct-call.p4
-* direct-call1.p4
-* direct-call2.p4
-* extern-inst-as-param.p4
-* gauntlet_infinite_loop.p4
-* issue1107.p4
-* issue1470-bmv2.p4
-* issue1566-bmv2.p4
-* issue1937-2-bmv2.p4
-* issue1937-3-bmv2.p4
-* issue2844-enum.p4
-* issue3394.p4
-* issue4883_dup_has_returned_decl.p4
-* issue4883_dup_has_returned_decl2.p4
-* issue561-bmv2.p4
-* nonstandard_table_names-bmv2.p4
-* pna-dpdk-add_on_miss1.p4
-* pna-example-tunnel.p4
-* psa-end-of-ingress-test-bmv2.p4
-* psa-multicast-basic-2-bmv2.p4
-* psa-parser-error-test-bmv2.p4
-* psa-resubmit-bmv2.p4
-* psa-unicast-or-drop-bmv2.p4
-* redundant_parsers_dangling_unused_parser_decl.p4
-* use-priority-as-name.p4
-
-    ```p4
-    control c() { ... }
-    control d() {
-        apply { c.apply(); }
-    }
-    ```
-
-## Support generic structs and headers (parser & type checker)
-
+<details>
+<summary>Tests</summary>
 * generic-struct-tuple.p4
 * generic-struct.p4
 * issue2627.p4
@@ -510,43 +646,53 @@ Also, list types accept more nested types than a tuple type does.
 * issue3292.p4
 * p4rt_digest_complex.p4
 * stack-init.p4
+</details>
 
-    ```p4
-    struct S<T> {
-        tuple<T, T> t;
-    }
-    ```
-
-## Support `match_kind` as a primitive type (parser)
+### Support `match_kind` as a primitive type
 
 Spec v1.2.3 adds `match_kind` as a base type that can be parsed.
 
+```p4
+const tuple<match_kind> exact_once = ...;
+```
+
+<details>
+<summary>Tests</summary>
 * issue3091-1.p4
+</details>
 
-    ```p4
-    const tuple<match_kind> exact_once = ...;
-    ```
-
-## Support `...` default grammar (parser & type checker)
+### Support `...` default grammar
 
 The spec says, "A left-value can be initialized automatically with default value of the suitable type using the syntax `...` (see Section 7.3)." (8.26).
 
-## Support `priority` of table entry (parser & type checker)
+### Support `priority` of table entry
 
+```p4
+entries = {
+    const priority=10: ...;
+    ...
+}
+```
+
+<details>
+<summary>Tests</summary>
 * entries-prio.p4
 * init-entries-bmv2.p4
+</details>
 
-    ```p4
-    entries = {
-        const priority=10: ...;
-        ...
-    }
-    ```
-
-## Support general switch statement (parser & type checker)
+### Support general switch statement
 
 The old version of P4 assumes that switch only matches against table apply results, but the current version allows general switch statements.
 
+```p4
+switch (hdr.h1.data) {
+    0: ...
+    ...
+}
+```
+
+<details>
+<summary>Tests</summary>
 * invalid-hdr-warnings3-bmv2.p4
 * issue2617.p4
 * issue3374.p4
@@ -562,63 +708,40 @@ The old version of P4 assumes that switch only matches against table apply resul
 * psa-example-switch-with-constant-expr.p4
 * psa-switch-expression-without-default.p4
 * switch-expression.p4
+</details>
 
-    ```p4
-    switch (hdr.h1.data) {
-        0: ...
-        ...
-    }
-    ```
-
-## Support `{#}` syntax (parser & type checker)
+### Support `{#}` syntax
 
 "The expression `{#}` represents an invalid header of some type, but it can be any header or header union type. A P4 compiler may require an explicit cast on this expression in case where it cannot determine the particular header of header union type from the context." (8.26).
 
+```p4
+h = (H) {#};
+```
+
+<details>
+<summary>Tests</summary>
 * invalid-header.p4
 * invalid-union.p4
 * issue3779.p4
 * issue4625_remove_compile_time_bool_methodcall_of_mcs.p4
+</details>
 
-    ```p4
-    h = (H) {#};
-    ```
-
-## Support `value_set` (parser & type checker)
-
-* issue1955.p4
-* issue3343.p4
-* psa-test.p4
-* pvs-bitstring-bmv2.p4
-* pvs-nested-struct.p4
-* pvs-struct-1-bmv2.p4
-* pvs-struct-2-bmv2.p4
-* pvs-struct-3-bmv2.p4
-* pvs.p4
-* v1model-p4runtime-enumint-types1.p4
-* v1model-p4runtime-most-tupes1.p4
-* value_set_ebpf.p4
-
-    ```p4
-    value_set<bit<16>>(8) ipv4_ethertypes;
-    ```
-
-## Allow parentheses in lvalues (parser)
-
-Spec [issue#1273](https://github.com/p4lang/p4-spec/issues/1273).
-
-* lvalue-parens.p4
-
-    ```p4
-    (x) = 1;
-    ```
-
-# Need P4 Spec Clarification
+# Need Spec Clarification
 
 ## Should we add implicit cast for directionless parameter?
 
 I think we should, especially for constructor invocations.
+Waiting for the spec clarification, [issue#1312](https://github.com/p4lang/p4-spec/issues/1312).
+
 Below apply for actions, methods, and functions.
 
+```p4
+action a(inout bit<32> b, bit<32> d) { ... }
+a(x, 0);
+```
+
+<details>
+<summary>Tests</summary>
 * action-bind.p4
 * action_call_table_ebpf.p4
 * bvec-hdr-bmv2.p4
@@ -663,14 +786,20 @@ Below apply for actions, methods, and functions.
 * v1model-const-entries-bmv2.p4
 * v1model-special-ops-bmv2.p4
 * xor_test.p4
-
-    ```p4
-    action a(inout bit<32> b, bit<32> d) { ... }
-    a(x, 0);
-    ```
+</details>
 
 Below apply for constructors.
 
+```p4
+extern BFD_Offload {
+    BFD_Offload(bit<16> size);
+    ...
+}
+BFD_Offload(32768) bfd_session_liveness_tracker = ...;
+```
+
+<details>
+<summary>Tests</summary>
 * bfd_offload.p4
 * constructor_cast.p4
 * issue1097-2-bmv2.p4
@@ -719,111 +848,129 @@ Below apply for constructors.
 * simple-firewall_ubpf.p4
 * unused-counter-bmv2.p4
 * value-sets.p4
+</details>
 
-    ```p4
-    extern BFD_Offload {
-        BFD_Offload(bit<16> size);
-        ...
-    }
-    BFD_Offload(32768) bfd_session_liveness_tracker = ...;
-    ```
-
-## Should argument to directionless action parameter be compile-time known?
+## Should an argument to directionless action parameter be compile-time known?
 
 I think it should be, but the test cases below seem to violate this.
 
+```p4
+action Reject(bool rej) { ... }
+bool x = true;
+Reject(x);
+```
+
+<details>
+<summary>Tests</summary>
 * action_call_ebpf.p4
 * calc-ebpf.p4
 * crc32-bmv2.p4
 * direct-action1.p4
-
-    ```p4
-    action Reject(bool rej) { ... }
-    bool x = true;
-    Reject(x);
-    ```
+</details>
 
 ## Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this
 
+```p4
+@pure extern HashAlgorithm_t random_hash(bool msb, bool extend);
+...
+hdr.hash = Hash<big<16>>(random_hash(false, false)).get(hdr.h1);
+```
+```p4
+const bool test = static_assert(V1MODEL_VERSION >= 20160101, "V1 model version is not >= 20160101");
+```
+
+<details>
+<summary>Tests</summary>
 * hashext3.p4
-
-    ```p4
-    @pure extern HashAlgorithm_t random_hash(bool msb, bool extend);
-    ...
-    hdr.hash = Hash<big<16>>(random_hash(false, false)).get(hdr.h1);
-    ```
-
 * issue3531.p4
-
-    ```p4
-    const bool test = static_assert(V1MODEL_VERSION >= 20160101, "V1 model version is not >= 20160101");
-    ```
+</details>
 
 ## Is it legal to divide a fixed-width integer? 
 
+```p4
+bit<4> tmp = 4w0 - 4w1;
+h.rshift.a = tmp / 4w2;
+```
+
+<details>
+<summary>Tests</summary>
 * gauntlet_various_ops-bmv2.p4
 * issue2190.p4
 * issue2287-bmv2.p4
 * precedence.p4
 * strength.p4
-
-    ```p4
-    bit<4> tmp = 4w0 - 4w1;
-    h.rshift.a = tmp / 4w2;
-    ```
+</details>
 
 Note that implicit cast is allowed for arbitrary precision integer to fixed-width integer, and not the other way around.
 
+```p4
+x = 32w5 / 3;
+```
+
+<details>
+<summary>Tests</summary>
 * constant_folding.p4
 * issue1879-bmv2.p4
 * issue2279_4.p4
+</details>
 
-    ```p4
-    x = 32w5 / 3;
-    ```
-
-# Is it legal to coerce a fixed width integer to an arbitrary precision integer?
+## Is it legal to coerce a fixed width integer to an arbitrary precision integer?
 
 I think it is illegal, but the test case below seem to violate this.
 
+```p4
+const int z1 = 2w1;
+```
+
+<details>
+<summary>Tests</summary>
 * issue2444.p4
 * issue3283.p4
-
-    ```p4
-    const int z1 = 2w1;
-    ```
+</details>
 
 ## Is it legal to coerce a structure-valued expression to a struct type?
 
 I think it is allowed, but the spec does not explicitly mention this.
 
-* issue3057-2.p4
+```p4
+struct S {
+    bit<32> a;
+    bit<32> b;
+}
+bool b5 = (S) { a = 1, b = 2 } == { a = 1, b = 2 };
+```
 
-    ```p4
-    struct S {
-        bit<32> a;
-        bit<32> b;
-    }
-    bool b5 = (S) { a = 1, b = 2 } == { a = 1, b = 2 };
-    ```
+<details>
+<summary>Tests</summary>
+* issue3057-2.p4
+</details>
 
 ## Equivalence of table actions
 
 For default action, the spec mentions "In particular, the expressions passed as `in`, `out`, or `inout` parameters must be syntactically identical to the expressions used in one of the elements of the `actions` list. (14.2.1.3)".
 
-But the test case below seem to violate this.
+But the test cases below seem to violate this.
 
+```p4
+actions = { a1({ f0 = ext(), f1 = ext() } ); }
+default_action = a1({ f1 = ext(), f0 = ext() });
+```
+```p4
+action a() {}
+control c() {
+    table t {
+        actions = { .a; }
+        default_action = a;
+    }
+    apply {}
+}
+```
+
+<details>
+<summary>Tests</summary>
+* issue2037.p4
 * issue3671.p4
-
-    ```p4
-    actions = { a1({ f0 = ext(), f1 = ext() } ); }
-    default_action = a1({ f1 = ext(), f0 = ext() });
-    ```
-
-# Keyset and tuple type (?)
-
-* action-two-params.p4
-* op_bin.p4
+</details>
 
 # Unsupported features
 
@@ -831,6 +978,15 @@ But the test case below seem to violate this.
 
 ### `implementation`
 
+```p4
+table indirect_ws {
+  ...
+  implementation = ...;
+}
+```
+
+<details>
+<summary>Tests</summary>
 * action_profile-bmv2.p4
 * action_profile_max_group_size_annotation.p4
 * action_profile_sum_of_members_annotation.p4
@@ -851,50 +1007,62 @@ But the test case below seem to violate this.
 * test_ebpf.p4
 * two_ebpf.p4
 * valid_ebpf.p4
-  
-    ```p4
-    table indirect_ws {
-      ...
-      implementation = ...;
-    }
-    ```
+</details>
 
 ### `counters`
 
-* issue461-bmv2.p4
+```p4
+table ipv4_da_lpm {
+    ...
+    counters = ...;
+}
+```
 
-    ```p4
-    table ipv4_da_lpm {
-        ...
-        counters = ...;
-    }
-    ```
+<details>
+<summary>Tests</summary>
+* issue461-bmv2.p4
+</details>
 
 ### `junk`
 
-* junk-prop-bmv2.p4
+```p4
+table t {
+    ...
+    junk = ...;
+}
+```
 
-    ```p4
-    table t {
-        ...
-        junk = ...;
-    }
-    ```
+<details>
+<summary>Tests</summary>
+* junk-prop-bmv2.p4
+</details>
 
 ### `meters`
 
+```p4
+table m_table {
+    ...
+    meters = ...;
+}
+```
+
+<details>
+<summary>Tests</summary>
 * named_meter_1-bmv2.p4
 * named_meter_bmv2.p4
-
-    ```p4
-    table m_table {
-        ...
-        meters = ...;
-    }
-    ```
+</details>
 
 ### `add_on_miss`
 
+```p4
+table ipv4_da {
+    ...
+    add_on_miss = ...;
+}
+```
+
+<details>
+<summary>Tests</summary>
 * pna-add-on-miss.p4
 * pna-add_on_miss_action_name.p4
 * pna-dpdk-direct-counter-learner.p4
@@ -908,54 +1076,68 @@ But the test case below seem to violate this.
 * pna-dpdk-table-key-consolidation-learner-7.p4
 * pna-dpdk-table-key-use-annon.p4
 * pna-mux-dismantle.p4
-
-    ```p4
-    table ipv4_da {
-        ...
-        add_on_miss = ...;
-    }
-    ```
+</details>
 
 ### `psa_direct_counter`
 
+```p4
+table tbl {
+    ...
+    psa_direct_counter = ...;
+}
+```
+
+<details>
+<summary>Tests</summary>
 * psa-counter4.p4
 * psa-example-counters-bmv2.p4
-
-    ```p4
-    table tbl {
-        ...
-        psa_direct_counter = ...;
-    }
-    ```
+</details>
 
 ### `psa_direct_meter`
 
+```p4
+table tbl {
+    ...
+    psa_direct_meter = ...;
+}
+```
+
+<details>
+<summary>Tests</summary>
 * psa-example-dpdk-directmeter.p4
 * psa-meter4.p4
 * psa-meter5.p4
-
-    ```p4
-    table tbl {
-        ...
-        psa_direct_meter = ...;
-    }
-    ```
+</details>
 
 ### `psa_idle_timeout`
 
-* psa-idle-timeout.p4
+```p4
+table tbl_idle_timeout {
+    ...
+    psa_idle_timeout = ...;
+}
+```
 
-    ```p4
-    table tbl_idle_timeout {
-        ...
-        psa_idle_timeout = ...;
-    }
-    ```
+<details>
+<summary>Tests</summary>
+* psa-idle-timeout.p4
+</details>
 
 ## Annotations in general
 
 ### Optional argument
 
+```p4
+extern Checksum {
+    ...
+    bit<16> update<T>(in T data, @optional in bool zeros_as_ones);
+}
+... 
+h.h.result = ipv4_checksum.update({ h.eth_hdr.dst_addr, h.eth_hdr.src_addr, h.eth_hdr.eth_type });
+```
+
+<details>
+<summary>Tests</summary>
 * gauntlet_optional-bmv2.p4
 * issue2492.p4
 * issue2630.p4
@@ -963,20 +1145,14 @@ But the test case below seem to violate this.
 * issue2810.p4
 * issue3051.p4
 * pna-dpdk-direct-counter.p4
-
-    ```p4
-    extern Checksum {
-        ...
-        bit<16> update<T>(in T data, @optional in bool zeros_as_ones);
-    }
-    ... 
-    h.h.result = ipv4_checksum.update({ h.eth_hdr.dst_addr, h.eth_hdr.src_addr, h.eth_hdr.eth_type });
-    ```
+</details>
 
 # Future extension
 
 ## For loops
 
+<details>
+<summary>Tests</summary>
 * forloop1.p4
 * forloop2.p4
 * forloop3.p4
@@ -986,9 +1162,16 @@ But the test case below seem to violate this.
 * forloop6.p4
 * forloop7.p4
 * issue4739.p4
+</details>
 
 ## Generic parser/control declaration
 
+```p4
+parser p1<T>(in T a) { ... }
+```
+
+<details>
+<summary>Tests</summary>
 * functors6.p4
 * functors7.p4
 * functors8.p4
@@ -1002,67 +1185,74 @@ But the test case below seem to violate this.
 * issue2265.p4
 * issue344.p4
 * spec-issue1068.p4
-
-    ```p4
-    parser p1<T>(in T a) { ... }
-    ```
+</details>
 
 ## Concatenation of string literals
 
+```p4
+log("Log message" ++ " text");
+```
+
+<details>
+<summary>Tests</summary>
 * issue4932.p4
 * spec-issue1297-string-cat.p4
-
-    ```p4
-    log("Log message" ++ " text");
-    ```
+</details>
 
 # Should be a negative test instead?
 
-* issue2514.p4 (OK)
+## issue2514.p4
 
-    ```p4
-    transition select (hdr.h.f1) {
-        0x8100  : p1; /* Works */
-        (0x9100) : p1; /* Also Works */
-        0xA100 &&& 0xEFFF  : p1; /* Works */
-        (0xC100 &&& 0xEFFF) : p1; /* Syntax error: ',' expected */
-        _ : p1; /* Works */
-        (_): reject; /* Syntax error: ',' expected */
-    }
-    ```
+This should be a negative test.
 
-* issue3287.p4 (OK)
+```p4
+transition select (hdr.h.f1) {
+    0x8100  : p1; /* Works */
+    (0x9100) : p1; /* Also Works */
+    0xA100 &&& 0xEFFF  : p1; /* Works */
+    (0xC100 &&& 0xEFFF) : p1; /* Syntax error: ',' expected */
+    _ : p1; /* Works */
+    (_): reject; /* Syntax error: ',' expected */
+}
+```
 
-    ```p4
-    bit<4> func(in bit<4> l) {
-      const int<6> tt = 1;
-      return l << tt;
-    }
-    ```
+## issue3287.p4
 
-* pipe.p4
+This shifts by a signed integer, which is illegal.
+This should be a negative test.
+
+```p4
+bit<4> func(in bit<4> l) {
+  const int<6> tt = 1;
+  return l << tt;
+}
+```
+
+## pipe.p4
 
 `ternary` is defined twice.
+This should be a negative test.
 
-    ```p4
-    #include <core.p4>
-    match_kind {
-        ternary,
-        exact
-    }
-    ```
+```p4
+#include <core.p4>
+match_kind {
+    ternary,
+    exact
+}
+```
 
-* spec-ex25.p4
+## spec-ex25.p4
 
 We cannot use mask expressions for `exact` key.
+This should be a negative test.
 
-    ```p4
-    table unit {
-        key = { x: exact; }
-        const entries = {
-            ...
-            32w0x0B_00_00_00 &&& 32w0xFF_00_00_00: drop();
-        }
+```p4
+table unit {
+    key = { x: exact; }
+    const entries = {
         ...
+        32w0x0B_00_00_00 &&& 32w0xFF_00_00_00: drop();
     }
-    ```
+    ...
+}
+```
