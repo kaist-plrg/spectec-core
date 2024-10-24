@@ -1128,7 +1128,7 @@ table tbl_idle_timeout {
 * psa-idle-timeout.p4
 </details>
 
-### Optional argument (7)
+## Optional argument (7)
 
 ```p4
 extern Checksum {
