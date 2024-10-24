@@ -2,7 +2,7 @@
 
 ## Parser Errors
 
-### Parsing `if`
+### Parsing `if` (9)
 
 The parser seems to expect an artificial `THEN` token, while it should not in concrete grammar.
 
@@ -23,7 +23,7 @@ The parser seems to expect an artificial `THEN` token, while it should not in co
 * psa-dpdk-header-union-typedef.p4
 </details>
 
-### Parsing `_` (don't care)
+### Parsing `_` (don't care) (2)
 
 ```p4
 f(x = 1, y = _);
@@ -35,7 +35,7 @@ f(x = 1, y = _);
 * issue3274.p4
 </details>
 
-### Operator precedence
+### Operator precedence (1)
 
 The spec mentions "This grammar does not indicate the precedence of the various operators. The precedence mostly follows the C precedence rules, with one change and some additions." (8).
 
@@ -52,7 +52,7 @@ if (4 + d.f < 10) { ... }
 
 ### Type Coercion
 
-#### Type coercion for conditional expression
+#### Type coercion for conditional expression (4)
 
 ```p4
 h.eth_hdr.eth_type = (bit<16>) (-(h.eth_hdr.src_addr == 1) ? 2 : 3w1);
@@ -68,7 +68,7 @@ h.eth_hdr.eth_type = (bit<16>) (-(h.eth_hdr.src_addr == 1) ? 2 : 3w1);
 
 ### Type Inference
 
-#### Type inference when `_` was explicitly used
+#### Type inference when `_` was explicitly used (1)
 
 ```p4
 control c (inout S s) { ... }
@@ -82,7 +82,7 @@ top(c()) main;
 * unused.p4
 </details>
 
-#### Type coercion between serializable enum and its underlying type
+#### Type coercion between serializable enum and its underlying type (9)
 
 But it is difficult to determine 'when' it should occur.
 
@@ -108,7 +108,7 @@ transition select (o.b.x) {
 * serEnumImplCast.p4
 </details>
 
-#### Mixture of type inference and coercion
+#### Mixture of type inference and coercion (1)
 
 The current naive type inference algorithm assumes type equality, and is not flexible enough to handle coercion.
 
@@ -124,7 +124,7 @@ random(rand_val, 0);
 * issue1586.p4
 </details>
 
-### Overload resolution by name
+### Overload resolution by name (2)
 
 The current implementation only uses arity to disambiguate overloaded functions.
 
@@ -154,7 +154,7 @@ bit<8> add_1(in bit<8> c, in bit<8> d) { return 2; }
 
 ### Instantiation block
 
-#### Instantiation declaration within an instantiation block
+#### Instantiation declaration within an instantiation block (1)
 
 When an instantiation block has an instantiation declaration, which the current transformer assumes as invalid.
 
@@ -178,7 +178,7 @@ Virtual() cntr = {
 * virtual2.p4
 </details>
 
-#### Instantiation block with an abstract method
+#### Instantiation block with an abstract method (11)
 
 The abstract method instantiation logic does not seem to work.
 And we have to take `this` into account.
@@ -224,7 +224,7 @@ X() x = {
 * virtual3.p4
 </details>
 
-### Keyset and tuple type (Need investigation)
+### Keyset and tuple type (Need investigation) (2)
 
 <details>
 <summary>Tests</summary>
@@ -232,7 +232,7 @@ X() x = {
 * op_bin.p4
 </details>
 
-### Default parameter
+### Default parameter (4)
 
 ```p4
 package P<H, M>(C<H, M> c = nothing());
@@ -247,7 +247,7 @@ P<_, _>() main;
 * issue2599.p4
 </details>
 
-### Built-in methods
+### Built-in methods (1)
 
 The transformer logic assumes that `func` in a call expression `func(args)` is either a name or a field access.
 
@@ -263,7 +263,7 @@ h[0].minSizeInBits();
 * minsize.p4
 </details>
 
-### Support direct application
+### Support direct application (25)
 
 Transform direct application.
 
@@ -303,7 +303,7 @@ control d() {
 * use-priority-as-name.p4
 </details>
 
-### `value_set` declaration
+### `value_set` declaration (12)
 
 ```p4
 value_set<bit<16>>(8) ipv4_ethertypes;
@@ -325,7 +325,7 @@ value_set<bit<16>>(8) ipv4_ethertypes;
 * value_set_ebpf.p4
 </details>
 
-### Instances must be compile-time known
+### Instances must be compile-time known (3)
 
 But are they local compile-time known or compile-time known?
 Also, does a directionless parameter expect a local compile-time known value or a compile-time known value?
@@ -347,7 +347,7 @@ sw0(p1(createWidget(16w0, 8w0))) main;
 
 ## Devils are in the Details
 
-### Support `maxSizeInBytes` and `maxSizeInBits`
+### Support `maxSizeInBytes` and `maxSizeInBits` (1)
 
 Logic only exists for `minSizeInBytes` and `minSizeInBits`.
 
@@ -360,7 +360,7 @@ hdrs.ipv4[0].length = (hdrs.ipv4[0].maxSizeInBytes() + umeta.L2_packet_len_bytes
 * pna-dpdk-header-stack-assignment.p4
 </details>
 
-### Allow serializable enum member initializers refer to other serializable enum members
+### Allow serializable enum member initializers refer to other serializable enum members (1)
 
 But I think it is a terrible idea to allow it.
 
@@ -378,7 +378,7 @@ enum bit<4> e {
 * issue3616.p4
 </details>
 
-### Well-formedness of nested externs
+### Well-formedness of nested externs (3)
 
 ```p4
 typedef bit<(48 + 12 + 9)> Mac_entry;
@@ -392,7 +392,7 @@ typedef register<Mac_entry> Mac_table;
 * typedef-constructor.p4
 </details>
 
-### `error` types can be `exact` matched
+### `error` types can be `exact` matched (4)
 
 "The `error` type only supports equality (`==`) and inequality (`!=`) comparisons." (8.2).
 
@@ -413,7 +413,7 @@ table t_exact {
 * psa-example-parser-checksum.p4
 </details>
 
-## `selector` match kind
+## `selector` match kind (10)
 
 ```p4
 table indirect_ws {
@@ -440,7 +440,7 @@ table indirect_ws {
 
 ## Flexible syntax
 
-### Support trailing comma
+### Support trailing comma (1)
 
 ```p4
 enum A {
@@ -454,7 +454,7 @@ enum A {
 * trailing-comma.p4
 </details>
 
-### Allow parentheses in lvalues
+### Allow parentheses in lvalues (1)
 
 Since [issue#1273](https://github.com/p4lang/p4-spec/issues/1273).
 
@@ -471,7 +471,7 @@ Since [issue#1273](https://github.com/p4lang/p4-spec/issues/1273).
 
 ### Support list type
 
-#### List as a primitive type
+#### List as a primitive type (10)
 
 List should be a primitive type.
 
@@ -496,7 +496,7 @@ extern E {
 * list9.p4
 </details>
 
-#### List coercion
+#### List coercion (36)
 
 Currently, { expr } are treated as tuple types.
 So, { expr } *cannot* be coerced to struct/header types.
@@ -551,7 +551,7 @@ get<headers>({ hdr.ipv4_option_timestamp });
 * wrong-warning.p4
 </details>
 
-#### List well-formedness
+#### List well-formedness (56)
 
 Also, list types accept more nested types than a tuple type does.
 Current implementation treats `{ expr }` as tuples, resulting in bogus well-formedness errors.
@@ -625,7 +625,7 @@ s2 = { 0 };
 * tuple4.p4
 </details>
 
-### Support generic structs and headers
+### Support generic structs and headers (11)
 
 ```p4
 struct S<T> {
@@ -648,7 +648,7 @@ struct S<T> {
 * stack-init.p4
 </details>
 
-### Support `match_kind` as a primitive type
+### Support `match_kind` as a primitive type (1)
 
 Spec v1.2.3 adds `match_kind` as a base type that can be parsed.
 
@@ -661,11 +661,16 @@ const tuple<match_kind> exact_once = ...;
 * issue3091-1.p4
 </details>
 
-### Support `...` default grammar
+### Support `...` default grammar (1)
 
 The spec says, "A left-value can be initialized automatically with default value of the suitable type using the syntax `...` (see Section 7.3)." (8.26).
 
-### Support `priority` of table entry
+<details>
+<summary>Tests</summary>
+* default-initializer.p4
+</details>
+
+### Support `priority` of table entry (2)
 
 ```p4
 entries = {
@@ -680,7 +685,7 @@ entries = {
 * init-entries-bmv2.p4
 </details>
 
-### Support general switch statement
+### Support general switch statement (15)
 
 The old version of P4 assumes that switch only matches against table apply results, but the current version allows general switch statements.
 
@@ -710,7 +715,7 @@ switch (hdr.h1.data) {
 * switch-expression.p4
 </details>
 
-### Support `{#}` syntax
+### Support `{#}` syntax (4)
 
 "The expression `{#}` represents an invalid header of some type, but it can be any header or header union type. A P4 compiler may require an explicit cast on this expression in case where it cannot determine the particular header of header union type from the context." (8.26).
 
@@ -728,7 +733,7 @@ h = (H) {#};
 
 # Need Spec Clarification
 
-## Should we add implicit cast for directionless parameter?
+## Should we add implicit cast for directionless parameter? (92)
 
 I think we should, especially for constructor invocations.
 Waiting for the spec clarification, [issue#1312](https://github.com/p4lang/p4-spec/issues/1312).
@@ -850,7 +855,7 @@ BFD_Offload(32768) bfd_session_liveness_tracker = ...;
 * value-sets.p4
 </details>
 
-## Should an argument to directionless action parameter be compile-time known?
+## Should an argument to directionless action parameter be compile-time known? (4)
 
 I think it should be, but the test cases below seem to violate this.
 
@@ -868,7 +873,7 @@ Reject(x);
 * direct-action1.p4
 </details>
 
-## Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this
+## Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this (2)
 
 ```p4
 @pure extern HashAlgorithm_t random_hash(bool msb, bool extend);
@@ -885,7 +890,7 @@ const bool test = static_assert(V1MODEL_VERSION >= 20160101, "V1 model version i
 * issue3531.p4
 </details>
 
-## Is it legal to divide a fixed-width integer? 
+## Is it legal to divide a fixed-width integer?  (8)
 
 ```p4
 bit<4> tmp = 4w0 - 4w1;
@@ -914,7 +919,7 @@ x = 32w5 / 3;
 * issue2279_4.p4
 </details>
 
-## Is it legal to coerce a fixed width integer to an arbitrary precision integer?
+## Is it legal to coerce a fixed width integer to an arbitrary precision integer? (2)
 
 I think it is illegal, but the test case below seem to violate this.
 
@@ -928,7 +933,7 @@ const int z1 = 2w1;
 * issue3283.p4
 </details>
 
-## Is it legal to coerce a structure-valued expression to a struct type?
+## Is it legal to coerce a structure-valued expression to a struct type? (1)
 
 I think it is allowed, but the spec does not explicitly mention this.
 
@@ -945,7 +950,7 @@ bool b5 = (S) { a = 1, b = 2 } == { a = 1, b = 2 };
 * issue3057-2.p4
 </details>
 
-## Equivalence of table actions
+## Equivalence of table actions (2)
 
 For default action, the spec mentions "In particular, the expressions passed as `in`, `out`, or `inout` parameters must be syntactically identical to the expressions used in one of the elements of the `actions` list. (14.2.1.3)".
 
@@ -974,7 +979,7 @@ control c() {
 
 # Unsupported features
 
-## Custom table element
+## Custom table element (43)
 
 ### `implementation`
 
@@ -1123,9 +1128,7 @@ table tbl_idle_timeout {
 * psa-idle-timeout.p4
 </details>
 
-## Annotations in general
-
-### Optional argument
+### Optional argument (7)
 
 ```p4
 extern Checksum {
@@ -1149,7 +1152,7 @@ h.h.result = ipv4_checksum.update({ h.eth_hdr.dst_addr, h.eth_hdr.src_addr, h.et
 
 # Future extension
 
-## For loops
+## For loops (9)
 
 <details>
 <summary>Tests</summary>
@@ -1164,7 +1167,7 @@ h.h.result = ipv4_checksum.update({ h.eth_hdr.dst_addr, h.eth_hdr.src_addr, h.et
 * issue4739.p4
 </details>
 
-## Generic parser/control declaration
+## Generic parser/control declaration (13)
 
 ```p4
 parser p1<T>(in T a) { ... }
@@ -1187,7 +1190,7 @@ parser p1<T>(in T a) { ... }
 * spec-issue1068.p4
 </details>
 
-## Concatenation of string literals
+## Concatenation of string literals (2)
 
 ```p4
 log("Log message" ++ " text");
