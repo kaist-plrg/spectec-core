@@ -633,6 +633,7 @@ parserStatement:
 | s = directApplication
 | s = emptyStatement
 | s = parserBlockStatement
+| s = conditionalStatement
     { s }
 | decl = constantDeclaration
 | decl = variableDeclaration

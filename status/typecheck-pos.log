@@ -598,7 +598,8 @@ Typecheck success: test/program/well-typed/gauntlet_action_return-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_arithref_cast-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_bounded_loop.p4
-parser error: File test/program/well-typed/gauntlet_bounded_loop.p4, line 25, characters 8-10
+(TODO: transform_stmt) sub_parser.apply(packet, hdr);
+
 Error while parsing p4 file: test/program/well-typed/gauntlet_bounded_loop.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_complex_initialization-bmv2.p4
@@ -842,19 +843,16 @@ Typecheck success: test/program/well-typed/gauntlet_nested_table_calls-bmv2.p4
 Error while typechecking p4 file: test/program/well-typed/gauntlet_optional-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_parser_test_1.p4
-parser error: File test/program/well-typed/gauntlet_parser_test_1.p4, line 17, characters 8-10
-Error while parsing p4 file: test/program/well-typed/gauntlet_parser_test_1.p4
+Typecheck success: test/program/well-typed/gauntlet_parser_test_1.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_parser_test_2.p4
 Typecheck success: test/program/well-typed/gauntlet_parser_test_2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_parser_test_3.p4
-parser error: File test/program/well-typed/gauntlet_parser_test_3.p4, line 16, characters 8-10
-Error while parsing p4 file: test/program/well-typed/gauntlet_parser_test_3.p4
+Typecheck success: test/program/well-typed/gauntlet_parser_test_3.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_parser_test_4.p4
-parser error: File test/program/well-typed/gauntlet_parser_test_4.p4, line 15, characters 8-10
-Error while parsing p4 file: test/program/well-typed/gauntlet_parser_test_4.p4
+Typecheck success: test/program/well-typed/gauntlet_parser_test_4.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_return_truncate-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_return_truncate-bmv2.p4
@@ -1054,8 +1052,7 @@ Typecheck success: test/program/well-typed/internet_checksum1-bmv2.p4
 Typecheck success: test/program/well-typed/intrinsic-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/invalid-hdr-warnings1.p4
-parser error: File test/program/well-typed/invalid-hdr-warnings1.p4, line 23, characters 8-10
-Error while parsing p4 file: test/program/well-typed/invalid-hdr-warnings1.p4
+Typecheck success: test/program/well-typed/invalid-hdr-warnings1.p4
 
 >>> Running typecheck test on test/program/well-typed/invalid-hdr-warnings2.p4
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int>
@@ -1738,12 +1735,11 @@ Typecheck success: test/program/well-typed/issue2392-bmv2.p4
 Typecheck success: test/program/well-typed/issue2393.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2409.p4
-
-int>
-parser error: File test/program/well-typed/issue2409.p4, line 6, characters 8-10
-Error while parsing p4 file: test/program/well-typed/issue2409.p4
+Typecheck success: test/program/well-typed/issue2409.p4
 
 >>> Running typecheck test on test/program/well-typed/issue242.p4
+
+int>
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int>
 Error while typechecking p4 file: test/program/well-typed/issue242.p4
 
@@ -2786,8 +2782,7 @@ Typecheck success: test/program/well-typed/parser-arg.p4
 Error while typechecking p4 file: test/program/well-typed/parser-conditional.p4
 
 >>> Running typecheck test on test/program/well-typed/parser-if.p4
-parser error: File test/program/well-typed/parser-if.p4, line 25, characters 4-6
-Error while parsing p4 file: test/program/well-typed/parser-if.p4
+Typecheck success: test/program/well-typed/parser-if.p4
 
 >>> Running typecheck test on test/program/well-typed/parser-locals.p4
 Typecheck success: test/program/well-typed/parser-locals.p4
@@ -2871,8 +2866,7 @@ Error while typechecking p4 file: test/program/well-typed/pna-add-on-miss.p4
 Error while parsing p4 file: test/program/well-typed/pna-add_on_miss_action_name.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-direction-main-parser-err.p4
-parser error: File test/program/well-typed/pna-direction-main-parser-err.p4, line 103, characters 8-10
-Error while parsing p4 file: test/program/well-typed/pna-direction-main-parser-err.p4
+Typecheck success: test/program/well-typed/pna-direction-main-parser-err.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-direction.p4
 Typecheck success: test/program/well-typed/pna-direction.p4
@@ -3031,8 +3025,7 @@ Typecheck success: test/program/well-typed/pna-example-pass-2.p4
 Typecheck success: test/program/well-typed/pna-example-pass-3.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-pass-parser.p4
-parser error: File test/program/well-typed/pna-example-pass-parser.p4, line 96, characters 7-9
-Error while parsing p4 file: test/program/well-typed/pna-example-pass-parser.p4
+Typecheck success: test/program/well-typed/pna-example-pass-parser.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-pass.p4
 Typecheck success: test/program/well-typed/pna-example-pass.p4
@@ -3234,8 +3227,8 @@ Typecheck success: test/program/well-typed/psa-dpdk-flatten-local-struct.p4
 Typecheck success: test/program/well-typed/psa-dpdk-hdr-field-non-align.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-header-union-typedef.p4
-parser error: File test/program/well-typed/psa-dpdk-header-union-typedef.p4, line 74, characters 8-10
-Error while parsing p4 file: test/program/well-typed/psa-dpdk-header-union-typedef.p4
+(coerce_type) Cannot coerce type tuple<bit<32>> to header clone_1_t { data = bit<32> }
+Error while typechecking p4 file: test/program/well-typed/psa-dpdk-header-union-typedef.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-large-header-fields.p4
 Typecheck success: test/program/well-typed/psa-dpdk-large-header-fields.p4
@@ -4228,5 +4221,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 (check_eq_typ_alpha) Types int and bit<9> are not equal
 Error while typechecking p4 file: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1137 [FAIL] 96 [TOTAL] 1233
-Typecheck: [PASS] 788 [FAIL] 349 [TOTAL] 1137
+Parser on file: [PASS] 1146 [FAIL] 87 [TOTAL] 1233
+Typecheck: [PASS] 796 [FAIL] 350 [TOTAL] 1146

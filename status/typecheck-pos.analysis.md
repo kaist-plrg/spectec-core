@@ -2,27 +2,6 @@
 
 ## Parser Errors
 
-### Parsing `if` (9)
-
-The parser seems to expect an artificial `THEN` token, while it should not in concrete grammar.
-
-```ocaml
-| info1 = IF L_PAREN cond = expression R_PAREN tru = statement   %prec THEN
-```
-
-<details>
-<summary>Tests</summary>
-* guantlet_parser_test_1.p4
-* guantlet_parser_test_3.p4
-* guantlet_parser_test_4.p4
-* invalid-hdr-warnings1.p4
-* issue2409.p4
-* parser-if.p4
-* pna-direction-main-parser-err.p4
-* pna-example-pass-parser.p4
-* psa-dpdk-header-union-typedef.p4
-</details>
-
 ### Parsing `_` (don't care) (2)
 
 ```p4
@@ -263,7 +242,7 @@ h[0].minSizeInBits();
 * minsize.p4
 </details>
 
-### Support direct application (25)
+### Support direct application (26)
 
 Transform direct application.
 
@@ -280,6 +259,7 @@ control d() {
 * direct-call1.p4
 * direct-call2.p4
 * extern-inst-as-param.p4
+* gauntlet_bounded_loop.p4
 * gauntlet_infinite_loop.p4
 * issue1107.p4
 * issue1470-bmv2.p4
@@ -440,6 +420,27 @@ table indirect_ws {
 
 ## Flexible syntax
 
+### ~~Parsing `if`~~
+
+Conditional statement can be used in a parser block.
+
+The spec mentions, "Added support for conditional statements and empty statements in parsers (Section 13.4)." (A.3).
+
+```ocaml
+parserStatement:
+| s = assignmentOrMethodCallStatement
+| s = directApplication
+| s = emptyStatement
+| s = parserBlockStatement // Added
+| s = conditionalStatement
+    { s }
+| decl = constantDeclaration
+| decl = variableDeclaration
+    { let tags = Declaration.tags decl in
+      Statement.DeclarationStatement { tags; decl } }
+;
+```
+
 ### Support trailing comma (1)
 
 ```p4
@@ -549,6 +550,7 @@ get<headers>({ hdr.ipv4_option_timestamp });
 * structure-valued-expr-ok-1-bmv2.p4
 * version.p4
 * wrong-warning.p4
+* psa-dpdk-header-union-typedef.p4
 </details>
 
 #### List well-formedness (56)
@@ -573,8 +575,8 @@ s2 = { 0 };
 * gauntlet_extern_arguments_2.p4
 * gauntlet_function_if_hdr_return-bmv2.p4
 * gauntlet_hdr_int_initializer-bmv2.p4
-* guantlet_instance_overwrite-bmv2.p4
-* guantlet_int_slice-bmv2.p4
+* gauntlet_instance_overwrite-bmv2.p4
+* gauntlet_int_slice-bmv2.p4
 * gauntlet_list_as_in_argument-bmv2.p4
 * gauntlet_variable_shadowing-bmv2.p4
 * invalid-hdr-warnings2.p4
