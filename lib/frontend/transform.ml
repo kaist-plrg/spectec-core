@@ -106,6 +106,7 @@ and transform_annos (annos : Annotation.t list) : El.anno list =
 and transform_type (typ : Type.t) : El.typ =
   match typ with
   | Void { tags = at } -> El.VoidT $ at
+  | MatchKind { tags = at } -> El.MatchKindT $ at
   | Bool { tags = at } -> El.BoolT $ at
   | Error { tags = at } -> El.ErrT $ at
   | String { tags = at } -> El.StrT $ at

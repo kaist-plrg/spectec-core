@@ -198,6 +198,7 @@ module rec Type : sig
 
   and 'a t' =
     | Bool of { tags : 'a }
+    | MatchKind of { tags : 'a }
     | Error of { tags : 'a }
     | Integer of { tags : 'a }
     | IntType of { tags : 'a; expr : Expression.t }
@@ -217,6 +218,7 @@ end = struct
 
   and 'a t' =
     | Bool of { tags : 'a }
+    | MatchKind of { tags : 'a }
     | Error of { tags : 'a }
     | Integer of { tags : 'a }
     | IntType of { tags : 'a; expr : Expression.t }
@@ -233,6 +235,7 @@ end = struct
   let tags (t : 'a t') : 'a =
     match t with
     | Bool { tags }
+    | MatchKind { tags }
     | Error { tags }
     | Integer { tags }
     | IntType { tags; _ }

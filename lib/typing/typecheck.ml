@@ -341,6 +341,7 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ') :
   match typ with
   | VoidT -> Types.VoidT
   | ErrT -> Types.ErrT
+  | MatchKindT -> Types.MatchKindT
   | StrT -> Types.StrT
   | BoolT -> Types.BoolT
   | IntT -> Types.IntT

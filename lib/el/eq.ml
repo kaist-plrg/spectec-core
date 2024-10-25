@@ -64,7 +64,13 @@ let eq_dir dir_a dir_b = E.eq_dir dir_a dir_b
 
 let rec eq_typ' typ_a typ_b =
   match (typ_a, typ_b) with
-  | VoidT, VoidT | BoolT, BoolT | ErrT, ErrT | StrT, StrT | IntT, IntT -> true
+  | VoidT, VoidT
+  | MatchKindT, MatchKindT
+  | ErrT, ErrT
+  | StrT, StrT
+  | BoolT, BoolT
+  | IntT, IntT ->
+      true
   | FIntT expr_width_a, FIntT expr_width_b
   | FBitT expr_width_a, FBitT expr_width_b
   | VBitT expr_width_a, VBitT expr_width_b ->

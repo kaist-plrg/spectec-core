@@ -883,6 +883,8 @@ specializedType:
 baseType:
 | info = BOOL
     { Type.Bool { tags = info } }
+| info = MATCH_KIND
+    { Type.MatchKind { tags = info } }
 | info = ERROR
     { Type.Error { tags = info } }
 | info = BIT

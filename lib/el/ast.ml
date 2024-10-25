@@ -50,9 +50,10 @@ type typ = typ' L.typ
 
 and typ' =
   | VoidT
-  | BoolT
   | ErrT
+  | MatchKindT
   | StrT
+  | BoolT
   | IntT
   | FIntT of expr
   | FBitT of expr

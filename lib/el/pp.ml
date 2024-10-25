@@ -60,9 +60,10 @@ let pp_dir fmt dir = P.pp_dir fmt dir
 let rec pp_typ' fmt typ' =
   match typ' with
   | VoidT -> F.pp_print_string fmt "void"
-  | BoolT -> F.pp_print_string fmt "bool"
   | ErrT -> F.pp_print_string fmt "err"
+  | MatchKindT -> F.pp_print_string fmt "match_kind"
   | StrT -> F.pp_print_string fmt "string"
+  | BoolT -> F.pp_print_string fmt "bool"
   | IntT -> F.pp_print_string fmt "int"
   | FIntT expr_width -> F.fprintf fmt "int<%a>" (pp_expr ~level:0) expr_width
   | FBitT expr_width -> F.fprintf fmt "bit<%a>" (pp_expr ~level:0) expr_width

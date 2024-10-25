@@ -59,6 +59,7 @@ let print_binop (binop : Op.bin) =
 let rec print_type (typ : Type.t) =
   match typ with
   | Bool _ -> "bool"
+  | MatchKind _ -> "match_kind"
   | Error _ -> "error"
   | Integer _ -> "int"
   | IntType { expr; _ } ->

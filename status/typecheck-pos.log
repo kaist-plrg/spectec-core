@@ -1996,8 +1996,8 @@ Error while typechecking p4 file: test/program/well-typed/issue3056.p4
 Error while typechecking p4 file: test/program/well-typed/issue3057-2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3091-1.p4
-parser error: File test/program/well-typed/issue3091-1.p4, line 3, characters 12-22
-Error while parsing p4 file: test/program/well-typed/issue3091-1.p4
+(check_valid_type_nesting) Invalid nesting of match_kind inside tuple<match_kind>
+Error while typechecking p4 file: test/program/well-typed/issue3091-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3091.p4
 parser error: File test/program/well-typed/issue3091.p4, line 144, characters 18-19
@@ -4221,5 +4221,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 (check_eq_typ_alpha) Types int and bit<9> are not equal
 Error while typechecking p4 file: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1146 [FAIL] 87 [TOTAL] 1233
-Typecheck: [PASS] 796 [FAIL] 350 [TOTAL] 1146
+Parser on file: [PASS] 1147 [FAIL] 86 [TOTAL] 1233
+Typecheck: [PASS] 796 [FAIL] 351 [TOTAL] 1147

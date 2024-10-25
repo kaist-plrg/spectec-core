@@ -424,7 +424,7 @@ table indirect_ws {
 
 Conditional statement can be used in a parser block.
 
-The spec mentions, "Added support for conditional statements and empty statements in parsers (Section 13.4)." (A.3).
+The spec mentions, "Added support for conditional statements and empty statements in parsers (Section 13.4). (A.3)", i.e., it was added in v1.2.2.
 
 ```ocaml
 parserStatement:
@@ -599,6 +599,7 @@ s2 = { 0 };
 * issue2543-2.p4
 * issue2795.p4
 * issue2958.p4
+* issue3091-1.p4
 * issue3238.p4
 * issue3806.p4
 * issue396.p4
@@ -650,18 +651,13 @@ struct S<T> {
 * stack-init.p4
 </details>
 
-### Support `match_kind` as a primitive type (1)
+### ~~Support `match_kind` as a primitive type~~
 
 Spec v1.2.3 adds `match_kind` as a base type that can be parsed.
 
 ```p4
 const tuple<match_kind> exact_once = ...;
 ```
-
-<details>
-<summary>Tests</summary>
-* issue3091-1.p4
-</details>
 
 ### Support `...` default grammar (1)
 
