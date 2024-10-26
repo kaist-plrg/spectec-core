@@ -314,7 +314,7 @@ Typecheck success: test/program/ill-typed/issue1932.p4
 Error while typechecking p4 file: test/program/ill-typed/issue1986-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1986.p4
-(coerce_type) Cannot coerce type tuple<bit<0>> to bit<1>
+(coerce_type) Cannot coerce type seq<bit<0>> to bit<1>
 Error while typechecking p4 file: test/program/ill-typed/issue1986.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2021.p4
@@ -325,15 +325,15 @@ Error while typechecking p4 file: test/program/ill-typed/issue2021.p4
 Typecheck success: test/program/ill-typed/issue2033.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2036-1.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(coerce_type) Cannot coerce type tuple<bit<8>> to struct s { x = bit<8> }
 Error while typechecking p4 file: test/program/ill-typed/issue2036-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2036-2.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(check_eq_typ_alpha) Types tuple<bit<8>> and struct s { x = bit<8> } are not equal
 Error while typechecking p4 file: test/program/ill-typed/issue2036-2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2036.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(coerce_type) Cannot coerce type tuple<bit<8>> to struct s { x = bit<8> }
 Error while typechecking p4 file: test/program/ill-typed/issue2036.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2206.p4
@@ -344,8 +344,7 @@ Typecheck success: test/program/ill-typed/issue2206.p4
 Error while typechecking p4 file: test/program/ill-typed/issue2220.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2230-1-bmv2.p4
-(coerce_type) Cannot coerce type tuple<bit<8>,
-bit<8>> to header h1_t { f1 = bit<8>; f2 = bit<8> }
+(check_eq_typ_alpha) Types header h1_t { f1 = bit<8>; f2 = bit<8> } and header h2_t { f1 = bit<8>; f2 = bit<8> } are not equal
 Error while typechecking p4 file: test/program/ill-typed/issue2230-1-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2230.p4
@@ -441,9 +440,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3045-2.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3045.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3057-1.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int>
-Error while typechecking p4 file: test/program/ill-typed/issue3057-1.p4
+Typecheck success: test/program/ill-typed/issue3057-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue306.p4
 (type_expr_acc_expr) Member stack does not exist in p
@@ -475,9 +472,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3210.p4
 Typecheck success: test/program/ill-typed/issue3221.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3233.p4
-(type_cast_expr) Invalid cast from tuple<bit<1>,
-bit<1>> to struct s { t = bit<1>; t1 = bit<1> }
-Error while typechecking p4 file: test/program/ill-typed/issue3233.p4
+Typecheck success: test/program/ill-typed/issue3233.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3246.p4
 (type_method) Method minSizeInBits not found for 1w1
@@ -662,7 +657,7 @@ Typecheck success: test/program/ill-typed/issue388.p4
 Error while typechecking p4 file: test/program/ill-typed/issue394.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue401.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(type_cast_expr) Invalid cast from seq<int> to bit<1>
 Error while typechecking p4 file: test/program/ill-typed/issue401.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue407-1.p4
@@ -707,7 +702,8 @@ Typecheck success: test/program/ill-typed/issue478.p4
 Typecheck success: test/program/ill-typed/issue532.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue561-1.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(coerce_type) Cannot coerce type seq<seq<int>,
+seq<int>> to header_union U { h1 = header H1 { f = bit<32> }; h2 = header H2 { g = bit<32> } }
 Error while typechecking p4 file: test/program/ill-typed/issue561-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue584.p4
@@ -814,8 +810,7 @@ Error while typechecking p4 file: test/program/ill-typed/neg.p4
 Error while typechecking p4 file: test/program/ill-typed/newtype-err.p4
 
 >>> Running typecheck test on test/program/ill-typed/next.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/ill-typed/next.p4
+Typecheck success: test/program/ill-typed/next.p4
 
 >>> Running typecheck test on test/program/ill-typed/nostart.p4
 (type_parser_states) A "start" state must exist
@@ -868,7 +863,7 @@ Error while typechecking p4 file: test/program/ill-typed/range_e.p4
 Error while typechecking p4 file: test/program/ill-typed/scope.p4
 
 >>> Running typecheck test on test/program/ill-typed/select-struct.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(check_valid_type_nesting) Invalid nesting of struct H { b = bit<12> } inside set<struct H { b = bit<12> }>
 Error while typechecking p4 file: test/program/ill-typed/select-struct.p4
 
 >>> Running typecheck test on test/program/ill-typed/select-varbits.p4
@@ -965,7 +960,6 @@ Typecheck success: test/program/ill-typed/string-e2.p4
 Error while typechecking p4 file: test/program/ill-typed/struct_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/structure-valued-expr-errs-1.p4
-(coerce_type) Cannot coerce type tuple<> to header h1_t { f1 = bit<8> }
 Error while typechecking p4 file: test/program/ill-typed/structure-valued-expr-errs-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/structure-valued-expr-errs-2.p4
@@ -980,9 +974,7 @@ Error while parsing p4 file: test/program/ill-typed/structured-annotation-e.p4
 Typecheck success: test/program/ill-typed/structured-annotation-e1.p4
 
 >>> Running typecheck test on test/program/ill-typed/structured-annotation-e2.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int>
-Error while typechecking p4 file: test/program/ill-typed/structured-annotation-e2.p4
+Typecheck success: test/program/ill-typed/structured-annotation-e2.p4
 
 >>> Running typecheck test on test/program/ill-typed/structured-annotation-e3.p4
 Typecheck success: test/program/ill-typed/structured-annotation-e3.p4
@@ -1035,7 +1027,7 @@ Error while parsing p4 file: test/program/ill-typed/tuple-left.p4
 Error while typechecking p4 file: test/program/ill-typed/tuple-newtype.p4
 
 >>> Running typecheck test on test/program/ill-typed/tuple-to-header.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(coerce_type) Cannot coerce type tuple<bit<32>> to header H { x = bit<32> }
 Error while typechecking p4 file: test/program/ill-typed/tuple-to-header.p4
 
 >>> Running typecheck test on test/program/ill-typed/twovarbit.p4
@@ -1116,5 +1108,5 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 (type_cast_expr) Invalid cast from int<2> to bool
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
-Parser on file: [PASS] 251 [FAIL] 48 [TOTAL] 299
-Typecheck: [PASS] 172 [FAIL] 79 [TOTAL] 251
+Parser on file: [PASS] 251/299 (83.95%) [FAIL] 48/299 (16.05%)
+Typecheck: [PASS] 168/251 (66.93%) [FAIL] 83/251 (33.07%)

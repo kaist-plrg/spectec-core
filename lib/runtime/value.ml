@@ -18,6 +18,7 @@ type t =
   | StructV of (L.member' * t) list
   | HeaderV of bool * (L.member' * t) list
   | UnionV of (L.member' * t) list
+  | SeqV of t list
   | RecordV of (L.member' * t) list
 
 let rec pp fmt value =
@@ -51,6 +52,7 @@ let rec pp fmt value =
       F.fprintf fmt "header_union { %a }"
         (P.pp_pairs (P.pp_member' ~level:0) pp "; ")
         fields
+  | SeqV values -> F.fprintf fmt "seq { %a }" (P.pp_list pp ", ") values
   | RecordV fields ->
       F.fprintf fmt "record { %a }"
         (P.pp_pairs (P.pp_member' ~level:0) pp "; ")
@@ -94,6 +96,7 @@ let rec eq t_a t_b =
         (fun (member_a, value_a) (member_b, value_b) ->
           member_a = member_b && eq value_a value_b)
         fields_a fields_b
+  | SeqV values_a, SeqV values_b -> List.for_all2 eq values_a values_b
   | RecordV fields_a, RecordV fields_b ->
       List.for_all2
         (fun (member_a, value_a) (member_b, value_b) ->

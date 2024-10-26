@@ -10,8 +10,11 @@ type stat = {
 type mode = Pos | Neg
 
 let log_stat name fails total : unit =
-  Printf.sprintf "%s: [PASS] %d [FAIL] %d [TOTAL] %d" name (total - fails) fails
-    total
+  let passes = total - fails in
+  let pass_rate = float_of_int passes /. float_of_int total *. 100.0 in
+  let fail_rate = float_of_int fails /. float_of_int total *. 100.0 in
+  Printf.sprintf "%s: [PASS] %d/%d (%.2f%%) [FAIL] %d/%d (%.2f%%)" name passes
+    total pass_rate fails total fail_rate
   |> print_endline
 
 let collect_files testdir =

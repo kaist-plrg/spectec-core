@@ -71,7 +71,7 @@ let rec ctk_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
   match expr with
   | ValueE _ -> LCTK
   | VarE { var } -> ctk_var_expr cursor ctx var
-  | TupleE { exprs } -> ctk_tuple_expr exprs
+  | SeqE { exprs } -> ctk_seq_expr exprs
   | RecordE { fields } -> ctk_record_expr fields
   | UnE { unop; expr } -> ctk_unop_expr unop expr
   | BinE { binop; expr_l; expr_r } -> ctk_binop_expr binop expr_l expr_r
@@ -96,7 +96,7 @@ and ctk_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : Il.Ast.var) : Ctk.t
   let _, _, ctk = Option.get rtype in
   ctk
 
-and ctk_tuple_expr (exprs : Il.Ast.expr list) : Ctk.t =
+and ctk_seq_expr (exprs : Il.Ast.expr list) : Ctk.t =
   let ctks = List.map (fun expr -> Il.Ast.(expr.note.ctk)) exprs in
   Ctk.joins ctks
 
@@ -167,7 +167,7 @@ and eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
   match expr with
   | ValueE { value } -> value.it
   | VarE { var } -> eval_var_expr cursor ctx var
-  | TupleE { exprs } -> eval_tuple_expr cursor ctx exprs
+  | SeqE { exprs } -> eval_seq_expr cursor ctx exprs
   | RecordE { fields } -> eval_record_expr cursor ctx fields
   | UnE { unop; expr } -> eval_unop_expr cursor ctx unop expr
   | BinE { binop; expr_l; expr_r } ->
@@ -187,11 +187,11 @@ and eval_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : Il.Ast.var) :
     Value.t =
   Ctx.find Ctx.find_value_opt cursor var ctx
 
-and eval_tuple_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (exprs : Il.Ast.expr list) : Value.t =
+and eval_seq_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : Il.Ast.expr list)
+    : Value.t =
   let values = eval_exprs cursor ctx exprs in
   let values = List.map it values in
-  Value.TupleV values
+  Value.SeqV values
 
 and eval_record_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (fields : (Il.Ast.member * Il.Ast.expr) list) : Value.t =

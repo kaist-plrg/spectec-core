@@ -138,7 +138,7 @@ and eq_expr' expr_a expr_b =
   | StrE { text = text_a }, StrE { text = text_b } -> eq_text text_a text_b
   | NumE { num = num_a }, NumE { num = num_b } -> eq_num num_a num_b
   | VarE { var = var_a }, VarE { var = var_b } -> eq_var var_a var_b
-  | TupleE { exprs = exprs_a }, TupleE { exprs = exprs_b } ->
+  | SeqE { exprs = exprs_a }, SeqE { exprs = exprs_b } ->
       eq_exprs exprs_a exprs_b
   | RecordE { fields = fields_a }, RecordE { fields = fields_b } ->
       E.eq_pairs eq_id eq_expr fields_a fields_b

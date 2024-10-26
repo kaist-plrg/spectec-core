@@ -96,7 +96,7 @@ and expr' =
   | StrE of { text : text }
   | NumE of { num : num }
   | VarE of { var : var }
-  | TupleE of { exprs : expr list }
+  | SeqE of { exprs : expr list }
   | RecordE of { fields : (member * expr) list }
   | UnE of { unop : unop; expr : expr }
   | BinE of { binop : binop; expr_l : expr; expr_r : expr }

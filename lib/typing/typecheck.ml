@@ -119,6 +119,22 @@ and coerce_type_assign' (expr_from_il : Il.Ast.expr) (typ_to : Type.t) :
     | SEnumT (_, typ_from_inner), _ ->
         let expr_from_il = insert_cast expr_from_il typ_from_inner in
         coerce_type_assign' expr_from_il typ_to
+    (* coerce sequence to sequence *)
+    | SeqT _, SeqT _ when coerce_type_assign'' typ_from typ_to ->
+        let expr_from_il = insert_cast expr_from_il typ_to in
+        Some expr_from_il
+    (* coerce sequence to tuple *)
+    | SeqT _, TupleT _ when coerce_type_assign'' typ_from typ_to ->
+        let expr_from_il = insert_cast expr_from_il typ_to in
+        Some expr_from_il
+    (* coerce sequence to struct *)
+    | SeqT _, StructT _ when coerce_type_assign'' typ_from typ_to ->
+        let expr_from_il = insert_cast expr_from_il typ_to in
+        Some expr_from_il
+    (* coerce sequence to header *)
+    | SeqT _, HeaderT _ when coerce_type_assign'' typ_from typ_to ->
+        let expr_from_il = insert_cast expr_from_il typ_to in
+        Some expr_from_il
     (* coerce record to struct *)
     | RecordT _, StructT _ when coerce_type_assign'' typ_from typ_to ->
         let expr_from_il = insert_cast expr_from_il typ_to in
@@ -141,6 +157,20 @@ and coerce_type_assign'' (typ_from : Type.t) (typ_to : Type.t) : bool =
     (* coerce serializable enum to its underlying type *)
     | SEnumT (_, typ_from_inner), _ ->
         coerce_type_assign'' typ_from_inner typ_to
+    (* coerce sequence to sequence *)
+    | SeqT typs_inner_from, SeqT typs_inner_to ->
+        List.for_all2 coerce_type_assign'' typs_inner_from typs_inner_to
+    (* coerce sequence to tuple *)
+    | SeqT typs_inner_from, TupleT typs_inner_to ->
+        List.for_all2 coerce_type_assign'' typs_inner_from typs_inner_to
+    (* coerce sequence to struct *)
+    | SeqT typs_inner_from, StructT (_, fields_to) ->
+        let typs_inner_to = List.map snd fields_to in
+        List.for_all2 coerce_type_assign'' typs_inner_from typs_inner_to
+    (* coerce sequence to header *)
+    | SeqT typs_inner_from, HeaderT (_, fields_to) ->
+        let typs_inner_to = List.map snd fields_to in
+        List.for_all2 coerce_type_assign'' typs_inner_from typs_inner_to
     (* coerce record to struct *)
     | RecordT fields_from, StructT (_, fields_to) ->
         let members_from, typs_inner_from = List.split fields_from in
@@ -637,7 +667,7 @@ and type_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr') :
   | StrE { text } -> type_str_expr text
   | NumE { num } -> type_num_expr num
   | VarE { var } -> type_var_expr cursor ctx var
-  | TupleE { exprs } -> type_tuple_expr cursor ctx exprs
+  | SeqE { exprs } -> type_seq_expr cursor ctx exprs
   | RecordE { fields } -> type_record_expr cursor ctx fields
   | UnE { unop; expr } -> type_unop_expr cursor ctx unop expr
   | BinE { binop; expr_l; expr_r } ->
@@ -701,15 +731,15 @@ and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
 
    The empty tuple expression has type tuple<> - a tuple with no components. *)
 
-and type_tuple_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (exprs : El.Ast.expr list) : Type.t * Ctk.t * Il.Ast.expr' =
+and type_seq_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : El.Ast.expr list)
+    : Type.t * Ctk.t * Il.Ast.expr' =
   let exprs_il = List.map (type_expr cursor ctx) exprs in
   let typs =
     List.map note exprs_il |> List.map (fun Il.Ast.{ typ; _ } -> typ)
   in
-  let typ = Types.TupleT typs in
+  let typ = Types.SeqT typs in
   WF.check_valid_type cursor ctx typ;
-  let expr_il = Il.Ast.TupleE { exprs = exprs_il } in
+  let expr_il = Il.Ast.SeqE { exprs = exprs_il } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
 
@@ -1346,6 +1376,10 @@ and type_cast_explicit (typ : Type.t) (typ_target : Type.t) : bool =
   (* casts between an enum with an explicit type and its underlying type *)
   | SEnumT (_, typ_inner), typ_target -> type_cast_explicit typ_inner typ_target
   | typ, SEnumT (_, typ_target_inner) -> type_cast_explicit typ typ_target_inner
+  (* casts of a tuple expression to a struct type or a header type *)
+  | SeqT typs, StructT (_, fields_target) | SeqT typs, HeaderT (_, fields_target)
+    ->
+      List.for_all2 type_cast_explicit typs (List.map snd fields_target)
   (* casts of a key-value list to a struct type or a header type (see Section 8.13) *)
   | RecordT fields, StructT (_, fields_target)
   | RecordT fields, HeaderT (_, fields_target) ->
@@ -1353,7 +1387,6 @@ and type_cast_explicit (typ : Type.t) (typ_target : Type.t) : bool =
       let members_target, typs_target = List.split fields_target in
       List.for_all2 ( = ) members members_target
       && List.for_all2 type_cast_explicit typs typs_target
-  (* (TODO) casts of a tuple expression to a header stack type *)
   (* (TODO) casts of an invalid expression {#} to a header or a header union type *)
   (* (TODO) casts where the destination type is the same as the source type
      if the destination type appears in this list (this excludes e.g., parsers or externs). *)
@@ -1670,8 +1703,8 @@ and check_bitstring_base' (typ : Type.t) : bool =
   | FBitT width -> Bigint.(width >= zero)
   | VBitT _ | VarT _ -> false
   | NewT _ | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-  | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
-  | SetT _ | StateT | TableT _ ->
+  | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | TopT
+  | SeqT _ | RecordT _ | SetT _ | StateT ->
       false
 
 and check_bitstring_base (typ : Type.t) : unit =
@@ -1688,8 +1721,8 @@ and check_bitstring_index' (typ : Type.t) : bool =
   | NewT _ | EnumT _ -> false
   | SEnumT (_, typ_inner) -> check_bitstring_index' typ_inner
   | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _ | SetT _
-  | StateT | TableT _ ->
+  | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | TopT | SeqT _
+  | RecordT _ | SetT _ | StateT ->
       false
 
 and check_bitstring_index (typ : Type.t) : unit =
@@ -1706,8 +1739,8 @@ and check_bitstring_slice_range' (typ_base : Type.t) (width_slice : Bigint.t) :
   | FIntT width_base | FBitT width_base -> Bigint.(width_slice <= width_base)
   | VBitT _ | VarT _ -> false
   | NewT _ | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-  | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _
-  | SetT _ | StateT | TableT _ ->
+  | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | TopT
+  | SeqT _ | RecordT _ | SetT _ | StateT ->
       false
 
 and check_bitstring_slice_range (typ_base : Type.t) (idx_lo : Bigint.t)
@@ -2911,8 +2944,8 @@ and check_valid_var_type' (typ : Type.t) : bool =
   | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _
     ->
       true
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | RecordT _ | SetT _
-  | StateT | TableT _ ->
+  | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | TopT | SeqT _
+  | RecordT _ | SetT _ | StateT ->
       false
 
 and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
@@ -3989,7 +4022,7 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
           false
       (* No equality op *)
       | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
-      | TopT | RecordT _ | SetT _ | StateT | TableT _ ->
+      | TableT _ | TopT | SeqT _ | RecordT _ | SetT _ | StateT ->
           false)
   | "lpm" | "ternary" | "range" -> (
       match typ with
@@ -4002,7 +4035,7 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
           false
       (* No equality op *)
       | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
-      | TopT | RecordT _ | SetT _ | StateT | TableT _ ->
+      | TableT _ | TopT | SeqT _ | RecordT _ | SetT _ | StateT ->
           false)
   | _ ->
       Format.printf "(check_table_key) %s is not a valid match_kind\n"

@@ -41,6 +41,8 @@ let rec eq_typ_alpha (typ_a : Type.t) (typ_b : Type.t) : bool =
   | ParserT params_a, ParserT params_b | ControlT params_a, ControlT params_b ->
       List.for_all2 eq_param_alpha params_a params_b
   | PackageT, PackageT | TopT, TopT -> true
+  | SeqT typs_inner_a, SeqT typs_inner_b ->
+      List.for_all2 eq_typ_alpha typs_inner_a typs_inner_b
   | RecordT fields_a, RecordT fields_b ->
       List.for_all2
         (fun (member_a, typ_inner_a) (member_b, typ_inner_b) ->

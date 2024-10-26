@@ -120,7 +120,7 @@ and eq_expr' expr_a expr_b =
   | ValueE { value = value_a }, ValueE { value = value_b } ->
       eq_value value_a value_b
   | VarE { var = var_a }, VarE { var = var_b } -> eq_var var_a var_b
-  | TupleE { exprs = exprs_a }, TupleE { exprs = exprs_b } ->
+  | SeqE { exprs = exprs_a }, SeqE { exprs = exprs_b } ->
       eq_exprs exprs_a exprs_b
   | RecordE { fields = fields_a }, RecordE { fields = fields_b } ->
       E.eq_pairs eq_id eq_expr fields_a fields_b

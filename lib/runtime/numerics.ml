@@ -584,26 +584,26 @@ let rec eval_cast_to_int (width : Bigint.t) (value : Value.t) : Value.t =
 let rec eval_cast_fields (fields_typ : (string * Type.t) list) (value : Value.t)
     : (string * Value.t) list =
   match value with
-  | TupleV values ->
+  | StructV fields_value | RecordV fields_value ->
+      let members_typ, typs = List.split fields_typ in
+      let members_value, values = List.split fields_value in
+      assert (List.for_all2 ( = ) members_typ members_value);
+      let values = List.map2 eval_cast typs values in
+      List.combine members_typ values
+  | SeqV values ->
       assert (List.length fields_typ = List.length values);
       List.map2
         (fun (member, typ) value ->
           let value = eval_cast typ value in
           (member, value))
         fields_typ values
-  | RecordV fields_value ->
-      let members_typ, typs = List.split fields_typ in
-      let members_value, values = List.split fields_value in
-      assert (List.for_all2 ( = ) members_typ members_value);
-      let values = List.map2 eval_cast typs values in
-      List.combine members_typ values
   | _ ->
       Format.asprintf "(TODO) Cast to entries undefined: %a" Value.pp value
       |> failwith
 
 and eval_cast_tuple (typs : Type.t list) (value : Value.t) : Value.t =
   match value with
-  | TupleV values ->
+  | SeqV values ->
       assert (List.length typs = List.length values);
       let values = List.map2 eval_cast typs values in
       TupleV values

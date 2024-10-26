@@ -9,7 +9,7 @@ Typecheck success: test/program/well-typed/action-synth.p4
 
 >>> Running typecheck test on test/program/well-typed/action-two-params.p4
 (check_eq_typ_alpha) Types int and bit<32> are not equal
-(coerce_type) Cannot coerce type tuple<bit<32>> to bit<32>
+(coerce_type) Cannot coerce type seq<bit<32>> to bit<32>
 Error while typechecking p4 file: test/program/well-typed/action-two-params.p4
 
 >>> Running typecheck test on test/program/well-typed/action-uses.p4
@@ -71,8 +71,7 @@ Typecheck success: test/program/well-typed/after-return.p4
 Typecheck success: test/program/well-typed/alias.p4
 
 >>> Running typecheck test on test/program/well-typed/annotation-bug.p4
-(coerce_type) Cannot coerce type tuple<header ipv4_option_timestamp_t { len = bit<8>; data = varbit<304> }> to struct headers { ipv4_option_timestamp = header ipv4_option_timestamp_t { len = bit<8>; data = varbit<304> } }
-Error while typechecking p4 file: test/program/well-typed/annotation-bug.p4
+Typecheck success: test/program/well-typed/annotation-bug.p4
 
 >>> Running typecheck test on test/program/well-typed/annotation-inline-propagate.p4
 Typecheck success: test/program/well-typed/annotation-inline-propagate.p4
@@ -135,8 +134,7 @@ Typecheck success: test/program/well-typed/array_field.p4
 Typecheck success: test/program/well-typed/array_field1.p4
 
 >>> Running typecheck test on test/program/well-typed/assign.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/assign.p4
+Typecheck success: test/program/well-typed/assign.p4
 
 >>> Running typecheck test on test/program/well-typed/basic2-bmv2.p4
 Typecheck success: test/program/well-typed/basic2-bmv2.p4
@@ -256,9 +254,7 @@ Typecheck success: test/program/well-typed/concat-fold.p4
 Typecheck success: test/program/well-typed/concat.p4
 
 >>> Running typecheck test on test/program/well-typed/const.p4
-(coerce_type) Cannot coerce type tuple<bit<32>,
-bit<32>> to struct S { a = bit<32>; b = bit<32> }
-Error while typechecking p4 file: test/program/well-typed/const.p4
+Typecheck success: test/program/well-typed/const.p4
 
 >>> Running typecheck test on test/program/well-typed/constStruct.p4
 Error while typechecking p4 file: test/program/well-typed/constStruct.p4
@@ -305,8 +301,7 @@ Typecheck success: test/program/well-typed/control-hs-index-test5.p4
 Typecheck success: test/program/well-typed/control-hs-index-test6.p4
 
 >>> Running typecheck test on test/program/well-typed/copy.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/copy.p4
+Typecheck success: test/program/well-typed/copy.p4
 
 >>> Running typecheck test on test/program/well-typed/copyprop1.p4
 Typecheck success: test/program/well-typed/copyprop1.p4
@@ -347,8 +342,6 @@ Typecheck success: test/program/well-typed/def-use.p4
 Error while typechecking p4 file: test/program/well-typed/default-action-arg-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/default-control-argument.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int>
 Error while typechecking p4 file: test/program/well-typed/default-control-argument.p4
 
 >>> Running typecheck test on test/program/well-typed/default-initializer.p4
@@ -422,7 +415,8 @@ Typecheck success: test/program/well-typed/empty-bmv2.p4
 Typecheck success: test/program/well-typed/empty.p4
 
 >>> Running typecheck test on test/program/well-typed/emptyTuple.p4
-Typecheck success: test/program/well-typed/emptyTuple.p4
+(coerce_types_binary) Cannot coerce types tuple<> and seq<>
+Error while typechecking p4 file: test/program/well-typed/emptyTuple.p4
 
 >>> Running typecheck test on test/program/well-typed/entries-prio.p4
 parser error: File test/program/well-typed/entries-prio.p4, line 33, characters 8-15
@@ -603,8 +597,7 @@ Typecheck success: test/program/well-typed/gauntlet_arithref_cast-bmv2.p4
 Error while parsing p4 file: test/program/well-typed/gauntlet_bounded_loop.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_complex_initialization-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int,Error while typechecking p4 file: test/program/well-typed/gauntlet_complex_initialization-bmv2.p4
+Typecheck success: test/program/well-typed/gauntlet_complex_initialization-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_copy_out-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_copy_out-bmv2.p4
@@ -691,18 +684,16 @@ Typecheck success: test/program/well-typed/gauntlet_exit_combination_9-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_extern_arguments_1.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_extern_arguments_2.p4
- int>
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int,Error while typechecking p4 file: test/program/well-typed/gauntlet_extern_arguments_2.p4
+(check_eq_typ_alpha) Types seq<int,
+int,
+bit<16>> and header ethernet_t { dst_addr = bit<48>; src_addr = bit<48>; eth_type = bit<16> } are not equal
+Error while typechecking p4 file: test/program/well-typed/gauntlet_extern_arguments_2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_extern_arguments_3.p4
 Typecheck success: test/program/well-typed/gauntlet_extern_arguments_3.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_function_if_hdr_return-bmv2.p4
-
-bit<16>>
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int,Error while typechecking p4 file: test/program/well-typed/gauntlet_function_if_hdr_return-bmv2.p4
+Typecheck success: test/program/well-typed/gauntlet_function_if_hdr_return-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_function_return-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_function_return-bmv2.p4
@@ -717,35 +708,25 @@ Typecheck success: test/program/well-typed/gauntlet_hdr_assign_1-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_hdr_assign_2-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_hdr_function_cast-bmv2.p4
- int>
-(coerce_type) Cannot coerce type tuple<bit<48>, bit<48>,
-bit<16>> to header ethernet_t { dst_addr = bit<48>; src_addr = bit<48>; eth_type = bit<16> }
-Error while typechecking p4 file: test/program/well-typed/gauntlet_hdr_function_cast-bmv2.p4
+Typecheck success: test/program/well-typed/gauntlet_hdr_function_cast-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_hdr_in_value-bmv2.p4
-(check_eq_typ_alpha) Types tuple<tuple<bit<48>,
+(check_eq_typ_alpha) Types seq<seq<bit<48>,
 bit<48>,
 bit<16>>> and struct Headers { eth_hdr = header ethernet_t { dst_addr = bit<48>; src_addr = bit<48>; eth_type = bit<16> } } are not equal
 Error while typechecking p4 file: test/program/well-typed/gauntlet_hdr_in_value-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_hdr_init-bmv2.p4
-(coerce_type) Cannot coerce type tuple<bit<48>,
-bit<48>,
-bit<16>> to header ethernet_t { dst_addr = bit<48>; src_addr = bit<48>; eth_type = bit<16> }
-Error while typechecking p4 file: test/program/well-typed/gauntlet_hdr_init-bmv2.p4
+Typecheck success: test/program/well-typed/gauntlet_hdr_init-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_hdr_int_initializer-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int,Error while typechecking p4 file: test/program/well-typed/gauntlet_hdr_int_initializer-bmv2.p4
+Typecheck success: test/program/well-typed/gauntlet_hdr_int_initializer-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_hdr_out_in_action-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_hdr_out_in_action-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_hdr_set_valid-bmv2.p4
- int>
-(coerce_type) Cannot coerce type tuple<bit<16>, bit<64>,
-bit<16>> to header H { a = bit<16>; b = bit<64>; c = bit<16> }
-Error while typechecking p4 file: test/program/well-typed/gauntlet_hdr_set_valid-bmv2.p4
+Typecheck success: test/program/well-typed/gauntlet_hdr_set_valid-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_index_1-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_index_1-bmv2.p4
@@ -786,18 +767,13 @@ Error while parsing p4 file: test/program/well-typed/gauntlet_infinite_loop.p4
 Typecheck success: test/program/well-typed/gauntlet_inout_slice_table_key-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_instance_overwrite-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-bit<8>,Error while typechecking p4 file: test/program/well-typed/gauntlet_instance_overwrite-bmv2.p4
+Typecheck success: test/program/well-typed/gauntlet_instance_overwrite-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_int_casting-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_int_casting-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_int_slice-bmv2.p4
-
-int>
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int, int,
-int>
-Error while typechecking p4 file: test/program/well-typed/gauntlet_int_slice-bmv2.p4
+Typecheck success: test/program/well-typed/gauntlet_int_slice-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_invalid_hdr_assign-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_invalid_hdr_assign-bmv2.p4
@@ -806,9 +782,7 @@ Typecheck success: test/program/well-typed/gauntlet_invalid_hdr_assign-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_invalid_hdr_short_circuit-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_list_as_in_argument-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int, int,
-int>
-Error while typechecking p4 file: test/program/well-typed/gauntlet_list_as_in_argument-bmv2.p4
+Typecheck success: test/program/well-typed/gauntlet_list_as_in_argument-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_lookahead_expansion-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_lookahead_expansion-bmv2.p4
@@ -861,8 +835,7 @@ Typecheck success: test/program/well-typed/gauntlet_return_truncate-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_set_invalid-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_set_valid_in_function-bmv2.p4
-(coerce_type) Cannot coerce type tuple<bit<8>,
-bit<64>,Error while typechecking p4 file: test/program/well-typed/gauntlet_set_valid_in_function-bmv2.p4
+Typecheck success: test/program/well-typed/gauntlet_set_valid_in_function-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_short_circuit-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_short_circuit-bmv2.p4
@@ -901,14 +874,10 @@ Typecheck success: test/program/well-typed/gauntlet_table_call_in_expression-bmv
 Typecheck success: test/program/well-typed/gauntlet_typedef_cast-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_uninitialized_bool_struct-bmv2.p4
-
-bit<16>> to header H { a = bit<8>; b = bit<64>; c = bit<16> }
-(coerce_type) Cannot coerce type tuple<bool> to struct bool_struct { is_bool = bool }
-Error while typechecking p4 file: test/program/well-typed/gauntlet_uninitialized_bool_struct-bmv2.p4
+Typecheck success: test/program/well-typed/gauntlet_uninitialized_bool_struct-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_variable_shadowing-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/gauntlet_variable_shadowing-bmv2.p4
+Typecheck success: test/program/well-typed/gauntlet_variable_shadowing-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_various_ops-bmv2.p4
 (type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<4> and bit<4> were given
@@ -1055,25 +1024,20 @@ Typecheck success: test/program/well-typed/intrinsic-bmv2.p4
 Typecheck success: test/program/well-typed/invalid-hdr-warnings1.p4
 
 >>> Running typecheck test on test/program/well-typed/invalid-hdr-warnings2.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/invalid-hdr-warnings2.p4
+Typecheck success: test/program/well-typed/invalid-hdr-warnings2.p4
 
 >>> Running typecheck test on test/program/well-typed/invalid-hdr-warnings3-bmv2.p4
 parser error: File test/program/well-typed/invalid-hdr-warnings3-bmv2.p4, line 35, characters 12-13
 Error while parsing p4 file: test/program/well-typed/invalid-hdr-warnings3-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/invalid-hdr-warnings4.p4
-(coerce_type) Cannot coerce type tuple<header Header { data = bit<32> }[2],
-header Header { data = bit<32> }[2]> to struct H { h1 = header Header { data = bit<32> }[2]; h2 = header Header { data = bit<32> }[2] }
-Error while typechecking p4 file: test/program/well-typed/invalid-hdr-warnings4.p4
+Typecheck success: test/program/well-typed/invalid-hdr-warnings4.p4
 
 >>> Running typecheck test on test/program/well-typed/invalid-hdr-warnings5.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/invalid-hdr-warnings5.p4
+Typecheck success: test/program/well-typed/invalid-hdr-warnings5.p4
 
 >>> Running typecheck test on test/program/well-typed/invalid-hdr-warnings6.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/invalid-hdr-warnings6.p4
+Typecheck success: test/program/well-typed/invalid-hdr-warnings6.p4
 
 >>> Running typecheck test on test/program/well-typed/invalid-hdr-warnings7.p4
 Typecheck success: test/program/well-typed/invalid-hdr-warnings7.p4
@@ -1127,7 +1091,7 @@ Error while typechecking p4 file: test/program/well-typed/issue1001-1-bmv2.p4
 Error while typechecking p4 file: test/program/well-typed/issue1001-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1006.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(check_eq_typ_alpha) Types seq<int> and tuple<bit<8>> are not equal
 Error while typechecking p4 file: test/program/well-typed/issue1006.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1025-bmv2.p4
@@ -1186,8 +1150,7 @@ Typecheck success: test/program/well-typed/issue1208-1.p4
 Typecheck success: test/program/well-typed/issue1208.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1210.p4
-(coerce_type) Cannot coerce type tuple<bit<9>> to struct PortId_t { _v = bit<9> }
-Error while typechecking p4 file: test/program/well-typed/issue1210.p4
+Typecheck success: test/program/well-typed/issue1210.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1291-bmv2.p4
 Typecheck success: test/program/well-typed/issue1291-bmv2.p4
@@ -1306,16 +1269,14 @@ Typecheck success: test/program/well-typed/issue1607-bmv2.p4
 Typecheck success: test/program/well-typed/issue1630-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1638.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int,Error while typechecking p4 file: test/program/well-typed/issue1638.p4
+(check_call_arity) Function control_apply(in meta struct meta_t { f0 = bit<8>; f1 = bit<8>; f2 = bit<8> } = seq { 0, 0, 0 }) expects 1 arguments but 0 were given
+Error while typechecking p4 file: test/program/well-typed/issue1638.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1642-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<8> are not equal
 Error while typechecking p4 file: test/program/well-typed/issue1642-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1653-bmv2.p4
-
-int>
-(check_eq_typ_alpha) Types int and bit<8> are not equal
 (check_eq_typ_alpha) Types int and bit<8> are not equal
 Error while typechecking p4 file: test/program/well-typed/issue1653-bmv2.p4
 
@@ -1328,8 +1289,7 @@ Error while typechecking p4 file: test/program/well-typed/issue1653-complex-bmv2
 Error while typechecking p4 file: test/program/well-typed/issue1660-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1670-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/issue1670-bmv2.p4
+Typecheck success: test/program/well-typed/issue1670-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1713-bmv2.p4
 Typecheck success: test/program/well-typed/issue1713-bmv2.p4
@@ -1390,9 +1350,7 @@ Typecheck success: test/program/well-typed/issue1830.p4
 Error while typechecking p4 file: test/program/well-typed/issue1834-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1863.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int>
-Error while typechecking p4 file: test/program/well-typed/issue1863.p4
+Typecheck success: test/program/well-typed/issue1863.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1876.p4
 Typecheck success: test/program/well-typed/issue1876.p4
@@ -1463,8 +1421,7 @@ Error while typechecking p4 file: test/program/well-typed/issue2019-1.p4
 Error while typechecking p4 file: test/program/well-typed/issue2019.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2036-3.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/issue2036-3.p4
+Typecheck success: test/program/well-typed/issue2036-3.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2037.p4
 (type_table_action_default) There is no action named a in actions list
@@ -1591,22 +1548,19 @@ Typecheck success: test/program/well-typed/issue2258-bmv2.p4
 Typecheck success: test/program/well-typed/issue2260-2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2261.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int,Error while typechecking p4 file: test/program/well-typed/issue2261.p4
+Typecheck success: test/program/well-typed/issue2261.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2265-1.p4
 Typecheck success: test/program/well-typed/issue2265-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2265.p4
+(type_control_decl) Control declarations cannot be generic
 Error while typechecking p4 file: test/program/well-typed/issue2265.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2266.p4
 Typecheck success: test/program/well-typed/issue2266.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2273-1.p4
-
-int>
-(type_control_decl) Control declarations cannot be generic
 (type_instantiation_decl) Abstract method overflow(value, rv) is not declared
 Error while typechecking p4 file: test/program/well-typed/issue2273-1.p4
 
@@ -1647,24 +1601,20 @@ Typecheck success: test/program/well-typed/issue2288-2.p4
 Typecheck success: test/program/well-typed/issue2288.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2289.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/issue2289.p4
+Typecheck success: test/program/well-typed/issue2289.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2291-bmv2.p4
 Typecheck success: test/program/well-typed/issue2291-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2303.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int,Error while typechecking p4 file: test/program/well-typed/issue2303.p4
+(check_call_arity) Function control_apply(inout h header H { a = bit<8> }, in meta struct Meta { f0 = bit<8>; f1 = bit<8>; f2 = bit<8> } = seq { 0, 0, 0 }) expects 2 arguments but 1 were given
+Error while typechecking p4 file: test/program/well-typed/issue2303.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2314.p4
 Typecheck success: test/program/well-typed/issue2314.p4
 
 >>> Running typecheck test on test/program/well-typed/issue232-bmv2.p4
-
-int>
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/issue232-bmv2.p4
+Typecheck success: test/program/well-typed/issue232-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2321.p4
 Typecheck success: test/program/well-typed/issue2321.p4
@@ -1703,8 +1653,7 @@ Typecheck success: test/program/well-typed/issue2345-with_nested_if.p4
 Typecheck success: test/program/well-typed/issue2345.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2355.p4
-(coerce_type) Cannot coerce type tuple<> to struct Meta {  }
-Error while typechecking p4 file: test/program/well-typed/issue2355.p4
+Typecheck success: test/program/well-typed/issue2355.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2356.p4
 Typecheck success: test/program/well-typed/issue2356.p4
@@ -1722,8 +1671,7 @@ Typecheck success: test/program/well-typed/issue2375-1-bmv2.p4
 Typecheck success: test/program/well-typed/issue2375-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2383-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int,Error while typechecking p4 file: test/program/well-typed/issue2383-bmv2.p4
+Typecheck success: test/program/well-typed/issue2383-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2391.p4
 Typecheck success: test/program/well-typed/issue2391.p4
@@ -1738,9 +1686,7 @@ Typecheck success: test/program/well-typed/issue2393.p4
 Typecheck success: test/program/well-typed/issue2409.p4
 
 >>> Running typecheck test on test/program/well-typed/issue242.p4
-
-int>
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(type_ternop_expr) Branches 32w1 and 0 must have the same type
 Error while typechecking p4 file: test/program/well-typed/issue242.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2444.p4
@@ -1760,19 +1706,16 @@ Typecheck success: test/program/well-typed/issue2480.p4
 Typecheck success: test/program/well-typed/issue2485.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2487.p4
-(coerce_type) Cannot coerce type tuple<bit<48>,
-bit<48>,
-bit<16>> to header ethernet_t { dst_addr = bit<48>; src_addr = bit<48>; eth_type = bit<16> }
-Error while typechecking p4 file: test/program/well-typed/issue2487.p4
+Typecheck success: test/program/well-typed/issue2487.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2488-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<bit<48>,
-bit<48>,Error while typechecking p4 file: test/program/well-typed/issue2488-bmv2.p4
+Typecheck success: test/program/well-typed/issue2488-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue249.p4
 Typecheck success: test/program/well-typed/issue249.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2492.p4
+(type_instantiation) top is not an instance type
 Error while typechecking p4 file: test/program/well-typed/issue2492.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2495-bmv2.p4
@@ -1782,9 +1725,6 @@ Typecheck success: test/program/well-typed/issue2495-bmv2.p4
 Typecheck success: test/program/well-typed/issue2498-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2514.p4
-
-int>
-(type_instantiation) top is not an instance type
 parser error: File test/program/well-typed/issue2514.p4, line 29, characters 30-31
 Error while parsing p4 file: test/program/well-typed/issue2514.p4
 
@@ -1792,13 +1732,10 @@ Error while parsing p4 file: test/program/well-typed/issue2514.p4
 Typecheck success: test/program/well-typed/issue2542.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2543-1.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int,Error while typechecking p4 file: test/program/well-typed/issue2543-1.p4
+Typecheck success: test/program/well-typed/issue2543-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2543-2.p4
- int>
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int,Error while typechecking p4 file: test/program/well-typed/issue2543-2.p4
+Typecheck success: test/program/well-typed/issue2543-2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2544_shadowing2.p4
 Typecheck success: test/program/well-typed/issue2544_shadowing2.p4
@@ -1822,15 +1759,13 @@ Typecheck success: test/program/well-typed/issue2583_simplify_slice2.p4
 Typecheck success: test/program/well-typed/issue2585.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2599.p4
+(type_func) Function __semaphore_write not found
 Error while typechecking p4 file: test/program/well-typed/issue2599.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2614-bmv2.p4
 Typecheck success: test/program/well-typed/issue2614-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2617.p4
-
-bit<16>>
-(type_func) Function __semaphore_write not found
 parser error: File test/program/well-typed/issue2617.p4, line 65, characters 12-13
 Error while parsing p4 file: test/program/well-typed/issue2617.p4
 
@@ -1847,12 +1782,11 @@ parser error: File test/program/well-typed/issue2635.p4, line 1, characters 8-9
 Error while parsing p4 file: test/program/well-typed/issue2635.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2648.p4
-(check_eq_typ_alpha) Types tuple<bit<8>> and header H { a = bit<8> } are not equal
+(check_eq_typ_alpha) Types seq<bit<8>> and header H { a = bit<8> } are not equal
 Error while typechecking p4 file: test/program/well-typed/issue2648.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2657-bmv2.p4
-(coerce_type) Cannot coerce type tuple<bit<16>> to struct tuple_0 { tmp1 = bit<16> }
-Error while typechecking p4 file: test/program/well-typed/issue2657-bmv2.p4
+Typecheck success: test/program/well-typed/issue2657-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2664-bmv2.p4
 (type_method) Method update not found for ipv4_checksum
@@ -1894,9 +1828,7 @@ Error while typechecking p4 file: test/program/well-typed/issue2791_ebpf.p4
 Error while typechecking p4 file: test/program/well-typed/issue2793_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2795.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int>
-Error while typechecking p4 file: test/program/well-typed/issue2795.p4
+Typecheck success: test/program/well-typed/issue2795.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2797_ebpf.p4
 Typecheck success: test/program/well-typed/issue2797_ebpf.p4
@@ -1952,12 +1884,10 @@ Typecheck success: test/program/well-typed/issue2905.p4
 Typecheck success: test/program/well-typed/issue2956.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2957.p4
-(coerce_type) Cannot coerce type tuple<bit<8>> to header H { a = bit<8> }
-Error while typechecking p4 file: test/program/well-typed/issue2957.p4
+Typecheck success: test/program/well-typed/issue2957.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2958.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/issue2958.p4
+Typecheck success: test/program/well-typed/issue2958.p4
 
 >>> Running typecheck test on test/program/well-typed/issue297-bmv2.p4
 (type_table_custom) Custom element implementation is undefined
@@ -2062,7 +1992,7 @@ parser error: File test/program/well-typed/issue3274.p4, line 4, characters 24-2
 Error while parsing p4 file: test/program/well-typed/issue3274.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3283.p4
-(coerce_type) Cannot coerce type bit<1> to int
+(type_array_acc_expr) { 1w1, 1w1 } cannot be indexed
 Error while typechecking p4 file: test/program/well-typed/issue3283.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3287.p4
@@ -2189,18 +2119,14 @@ parser error: File test/program/well-typed/issue3650.p4, line 25, characters 12-
 Error while parsing p4 file: test/program/well-typed/issue3650.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3671-1.p4
-(type_cast_expr) Invalid cast from tuple<bit<1>,
-bit<1>> to struct s { f0 = bit<1>; f1 = bit<1> }
-Error while typechecking p4 file: test/program/well-typed/issue3671-1.p4
+Typecheck success: test/program/well-typed/issue3671-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3671.p4
 (type_call_default_action_partial) Arguments ({ f0 = ext(), f1 = ext() }) and ({ f1 = ext(), f0 = ext() }) are syntactically different
 Error while typechecking p4 file: test/program/well-typed/issue3671.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3672.p4
-(type_cast_expr) Invalid cast from tuple<bit<1>,
-bit<1>> to struct s { f0 = bit<1>; f1 = bit<1> }
-Error while typechecking p4 file: test/program/well-typed/issue3672.p4
+Typecheck success: test/program/well-typed/issue3672.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3699.p4
 Typecheck success: test/program/well-typed/issue3699.p4
@@ -2213,25 +2139,21 @@ parser error: File test/program/well-typed/issue3779.p4, line 7, characters 0-7
 Error while parsing p4 file: test/program/well-typed/issue3779.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3806.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int,Error while typechecking p4 file: test/program/well-typed/issue3806.p4
+Typecheck success: test/program/well-typed/issue3806.p4
 
 >>> Running typecheck test on test/program/well-typed/issue383-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<8> are not equal
 Error while typechecking p4 file: test/program/well-typed/issue383-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3884-1.p4
 Typecheck success: test/program/well-typed/issue3884-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3884.p4
-
-int>
-(check_eq_typ_alpha) Types int and bit<8> are not equal
 (check_eq_typ_alpha) Types int and bit<4> are not equal
 Error while typechecking p4 file: test/program/well-typed/issue3884.p4
 
 >>> Running typecheck test on test/program/well-typed/issue396.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/issue396.p4
+Typecheck success: test/program/well-typed/issue396.p4
 
 >>> Running typecheck test on test/program/well-typed/issue4057.p4
 Typecheck success: test/program/well-typed/issue4057.p4
@@ -2259,7 +2181,7 @@ Typecheck success: test/program/well-typed/issue420.p4
 Typecheck success: test/program/well-typed/issue422.p4
 
 >>> Running typecheck test on test/program/well-typed/issue4288.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(check_eq_typ_alpha) Types seq<int> and header hdr_t { f0 = bit<8> } are not equal
 Error while typechecking p4 file: test/program/well-typed/issue4288.p4
 
 >>> Running typecheck test on test/program/well-typed/issue430-1-bmv2.p4
@@ -2379,8 +2301,7 @@ Typecheck success: test/program/well-typed/issue510-bmv2.p4
 Typecheck success: test/program/well-typed/issue512.p4
 
 >>> Running typecheck test on test/program/well-typed/issue529.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/issue529.p4
+Typecheck success: test/program/well-typed/issue529.p4
 
 >>> Running typecheck test on test/program/well-typed/issue561-1-bmv2.p4
 Typecheck success: test/program/well-typed/issue561-1-bmv2.p4
@@ -2437,7 +2358,7 @@ Typecheck success: test/program/well-typed/issue677-bmv2.p4
 Typecheck success: test/program/well-typed/issue692-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue696-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(type_ternop_expr) Branches 32w1 and 0 must have the same type
 Error while typechecking p4 file: test/program/well-typed/issue696-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue737-bmv2.p4
@@ -2475,10 +2396,7 @@ Typecheck success: test/program/well-typed/issue822.p4
 Typecheck success: test/program/well-typed/issue823.p4
 
 >>> Running typecheck test on test/program/well-typed/issue841.p4
-(coerce_type) Cannot coerce type tuple<bit<32>,
-bit<32>,
-bit<16>> to header h_t { src = bit<32>; dst = bit<32>; csum = bit<16> }
-Error while typechecking p4 file: test/program/well-typed/issue841.p4
+Typecheck success: test/program/well-typed/issue841.p4
 
 >>> Running typecheck test on test/program/well-typed/issue870_ebpf.p4
 (check_eq_typ_alpha) Types int and bit<32> are not equal
@@ -2495,19 +2413,17 @@ Typecheck success: test/program/well-typed/issue887.p4
 Typecheck success: test/program/well-typed/issue891-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue907-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/issue907-bmv2.p4
+Typecheck success: test/program/well-typed/issue907-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue914-bmv2.p4
 Typecheck success: test/program/well-typed/issue914-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue933-1.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(check_eq_typ_alpha) Types seq<int> and struct headers { x = bit<32> } are not equal
 Error while typechecking p4 file: test/program/well-typed/issue933-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue933.p4
-(coerce_type) Cannot coerce type tuple<> to struct headers {  }
-Error while typechecking p4 file: test/program/well-typed/issue933.p4
+Typecheck success: test/program/well-typed/issue933.p4
 
 >>> Running typecheck test on test/program/well-typed/issue940.p4
 Typecheck success: test/program/well-typed/issue940.p4
@@ -2522,8 +2438,7 @@ Typecheck success: test/program/well-typed/issue951.p4
 Typecheck success: test/program/well-typed/issue955.p4
 
 >>> Running typecheck test on test/program/well-typed/issue982.p4
-(coerce_type) Cannot coerce type tuple<bit<32>> to header clone_1_t { data = bit<32> }
-Error while typechecking p4 file: test/program/well-typed/issue982.p4
+Typecheck success: test/program/well-typed/issue982.p4
 
 >>> Running typecheck test on test/program/well-typed/issue983-bmv2.p4
 Typecheck success: test/program/well-typed/issue983-bmv2.p4
@@ -2571,11 +2486,12 @@ Typecheck success: test/program/well-typed/length_ebpf.p4
 Typecheck success: test/program/well-typed/line.p4
 
 >>> Running typecheck test on test/program/well-typed/list-compare.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int>
-Error while typechecking p4 file: test/program/well-typed/list-compare.p4
+(coerce_types_binary) Cannot coerce types tuple<bit<32>,
+bit<32>> and seq<int,Error while typechecking p4 file: test/program/well-typed/list-compare.p4
 
 >>> Running typecheck test on test/program/well-typed/list.p4
+
+int>
 parser error: File test/program/well-typed/list.p4, line 4, characters 6-10
 Error while parsing p4 file: test/program/well-typed/list.p4
 
@@ -2695,23 +2611,16 @@ Error while typechecking p4 file: test/program/well-typed/named_meter_1-bmv2.p4
 Error while typechecking p4 file: test/program/well-typed/named_meter_bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/names.p4
-(coerce_type) Cannot coerce type tuple<bit<1>> to struct S { d = bit<1> }
-Error while typechecking p4 file: test/program/well-typed/names.p4
+Typecheck success: test/program/well-typed/names.p4
 
 >>> Running typecheck test on test/program/well-typed/nested-struct.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/nested-struct.p4
+Typecheck success: test/program/well-typed/nested-struct.p4
 
 >>> Running typecheck test on test/program/well-typed/nested-tuple.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/nested-tuple.p4
+Typecheck success: test/program/well-typed/nested-tuple.p4
 
 >>> Running typecheck test on test/program/well-typed/nested-tuple1.p4
-(coerce_type) Cannot coerce type tuple<tuple<tuple<bit<1>>,
-tuple<bit<1>>>, tuple<bit<1>>,
-bit<1>> to struct S { f1 = tuple<struct T { f = bit<1> },
-struct T { f = bit<1> }>; f2 = struct T { f = bit<1> }; z = bit<1> }
-Error while typechecking p4 file: test/program/well-typed/nested-tuple1.p4
+Typecheck success: test/program/well-typed/nested-tuple1.p4
 
 >>> Running typecheck test on test/program/well-typed/nested_if_else.p4
 Typecheck success: test/program/well-typed/nested_if_else.p4
@@ -2723,9 +2632,7 @@ Typecheck success: test/program/well-typed/nested_if_lvalue_dependencies.p4
 Typecheck success: test/program/well-typed/nested_if_statement.p4
 
 >>> Running typecheck test on test/program/well-typed/nested_select.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int>
-Error while typechecking p4 file: test/program/well-typed/nested_select.p4
+Typecheck success: test/program/well-typed/nested_select.p4
 
 >>> Running typecheck test on test/program/well-typed/newtype.p4
 Typecheck success: test/program/well-typed/newtype.p4
@@ -2737,8 +2644,7 @@ Typecheck success: test/program/well-typed/newtype1.p4
 Typecheck success: test/program/well-typed/newtype2.p4
 
 >>> Running typecheck test on test/program/well-typed/next-def-use.p4
-(coerce_type) Cannot coerce type tuple<bit<8>> to header data_t { f = bit<8> }
-Error while typechecking p4 file: test/program/well-typed/next-def-use.p4
+Typecheck success: test/program/well-typed/next-def-use.p4
 
 >>> Running typecheck test on test/program/well-typed/noMatch.p4
 Typecheck success: test/program/well-typed/noMatch.p4
@@ -2752,7 +2658,7 @@ Error while parsing p4 file: test/program/well-typed/nonstandard_table_names-bmv
 Typecheck success: test/program/well-typed/octal.p4
 
 >>> Running typecheck test on test/program/well-typed/op_bin.p4
-(coerce_type) Cannot coerce type tuple<bit<128>> to bit<128>
+(coerce_type) Cannot coerce type seq<bit<128>> to bit<128>
 Error while typechecking p4 file: test/program/well-typed/op_bin.p4
 
 >>> Running typecheck test on test/program/well-typed/overwrite.p4
@@ -2872,7 +2778,7 @@ Typecheck success: test/program/well-typed/pna-direction-main-parser-err.p4
 Typecheck success: test/program/well-typed/pna-direction.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-dpdk-add_on_miss0.p4
-(type_cast_expr) Invalid cast from tuple<> to struct ct_tcp_table_hit_params_t {  }
+(type_table_custom) Custom element add_on_miss is undefined
 Error while typechecking p4 file: test/program/well-typed/pna-dpdk-add_on_miss0.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-dpdk-add_on_miss1.p4
@@ -2903,24 +2809,19 @@ Typecheck success: test/program/well-typed/pna-dpdk-flatten-local-struct-decl.p4
 Error while typechecking p4 file: test/program/well-typed/pna-dpdk-header-stack-assignment.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-dpdk-header-union-stack.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/pna-dpdk-header-union-stack.p4
+Typecheck success: test/program/well-typed/pna-dpdk-header-union-stack.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-dpdk-header-union-stack1.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/pna-dpdk-header-union-stack1.p4
+Typecheck success: test/program/well-typed/pna-dpdk-header-union-stack1.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-dpdk-header-union-stack2.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/pna-dpdk-header-union-stack2.p4
+Typecheck success: test/program/well-typed/pna-dpdk-header-union-stack2.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-dpdk-invalid-hdr-warnings5.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/pna-dpdk-invalid-hdr-warnings5.p4
+Typecheck success: test/program/well-typed/pna-dpdk-invalid-hdr-warnings5.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-dpdk-invalid-hdr-warnings6.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/pna-dpdk-invalid-hdr-warnings6.p4
+Typecheck success: test/program/well-typed/pna-dpdk-invalid-hdr-warnings6.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-dpdk-parser-state-err.p4
 (type_table_custom) Custom element add_on_miss is undefined
@@ -2970,9 +2871,7 @@ Typecheck success: test/program/well-typed/pna-dpdk-toeplitz-hash.p4
 Typecheck success: test/program/well-typed/pna-dpdk-union-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-dpdk-wrong-warning.p4
-(coerce_type) Cannot coerce type tuple<bit<8>,
-bit<8>> to header h1_t { f1 = bit<8>; f2 = bit<8> }
-Error while typechecking p4 file: test/program/well-typed/pna-dpdk-wrong-warning.p4
+Typecheck success: test/program/well-typed/pna-dpdk-wrong-warning.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-elim-hdr-copy-dpdk.p4
 Typecheck success: test/program/well-typed/pna-elim-hdr-copy-dpdk.p4
@@ -3034,7 +2933,7 @@ Typecheck success: test/program/well-typed/pna-example-pass.p4
 Typecheck success: test/program/well-typed/pna-example-recirculate.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-tcp-connection-tracking.p4
-(type_cast_expr) Invalid cast from tuple<> to struct ct_tcp_table_hit_params_t {  }
+(type_table_custom) Custom element add_on_miss is undefined
 Error while typechecking p4 file: test/program/well-typed/pna-example-tcp-connection-tracking.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-template.p4
@@ -3227,7 +3126,7 @@ Typecheck success: test/program/well-typed/psa-dpdk-flatten-local-struct.p4
 Typecheck success: test/program/well-typed/psa-dpdk-hdr-field-non-align.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-header-union-typedef.p4
-(coerce_type) Cannot coerce type tuple<bit<32>> to header clone_1_t { data = bit<32> }
+(type_binop_shift) Shift operator expects an unsigned bitstring, signed bitstring, or an integer as the left operand and an unsigned bitstring or a compile-time known integer as the right operand but bit<32> and type PortId_t (= bit<32>) were given
 Error while typechecking p4 file: test/program/well-typed/psa-dpdk-header-union-typedef.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-large-header-fields.p4
@@ -3701,9 +3600,7 @@ Typecheck success: test/program/well-typed/saturated-bmv2.p4
 Typecheck success: test/program/well-typed/scalarmeta-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/select-struct.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int>
-Error while typechecking p4 file: test/program/well-typed/select-struct.p4
+Typecheck success: test/program/well-typed/select-struct.p4
 
 >>> Running typecheck test on test/program/well-typed/select-type.p4
 Typecheck success: test/program/well-typed/select-type.p4
@@ -3753,8 +3650,7 @@ Error while typechecking p4 file: test/program/well-typed/simple-firewall_ubpf.p
 Typecheck success: test/program/well-typed/simplify.p4
 
 >>> Running typecheck test on test/program/well-typed/simplify_method_calls.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
-Error while typechecking p4 file: test/program/well-typed/simplify_method_calls.p4
+Typecheck success: test/program/well-typed/simplify_method_calls.p4
 
 >>> Running typecheck test on test/program/well-typed/simplify_slice.p4
 Typecheck success: test/program/well-typed/simplify_slice.p4
@@ -3793,9 +3689,7 @@ Error while typechecking p4 file: test/program/well-typed/spec-ex12.p4
 Typecheck success: test/program/well-typed/spec-ex13.p4
 
 >>> Running typecheck test on test/program/well-typed/spec-ex14.p4
-(coerce_type) Cannot coerce type tuple<bit<32>,
-bit<32>> to struct Version { major = bit<32>; minor = bit<32> }
-Error while typechecking p4 file: test/program/well-typed/spec-ex14.p4
+Typecheck success: test/program/well-typed/spec-ex14.p4
 
 >>> Running typecheck test on test/program/well-typed/spec-ex15.p4
 Typecheck success: test/program/well-typed/spec-ex15.p4
@@ -3852,8 +3746,7 @@ Error while parsing p4 file: test/program/well-typed/spec-issue1297-string-cat.p
 Error while typechecking p4 file: test/program/well-typed/specIssue884.p4
 
 >>> Running typecheck test on test/program/well-typed/specialization.p4
-(coerce_type) Cannot coerce type tuple<bit<32>> to struct S { f = bit<32> }
-Error while typechecking p4 file: test/program/well-typed/specialization.p4
+Typecheck success: test/program/well-typed/specialization.p4
 
 >>> Running typecheck test on test/program/well-typed/stack-bmv2.p4
 Typecheck success: test/program/well-typed/stack-bmv2.p4
@@ -3913,31 +3806,25 @@ Typecheck success: test/program/well-typed/string.p4
 Typecheck success: test/program/well-typed/string_anno.p4
 
 >>> Running typecheck test on test/program/well-typed/struct.p4
-(coerce_type) Cannot coerce type tuple<int<32>,
-int<32>> to struct T { t1 = int<32>; t2 = int<32> }
 Error while typechecking p4 file: test/program/well-typed/struct.p4
 
 >>> Running typecheck test on test/program/well-typed/struct1.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int>
 Error while typechecking p4 file: test/program/well-typed/struct1.p4
 
 >>> Running typecheck test on test/program/well-typed/structArg.p4
 Typecheck success: test/program/well-typed/structArg.p4
 
 >>> Running typecheck test on test/program/well-typed/struct_assignment_optimization.p4
-(coerce_type) Cannot coerce type tuple<bit<128>> to struct simple_struct { a = bit<128> }
-Error while typechecking p4 file: test/program/well-typed/struct_assignment_optimization.p4
+Typecheck success: test/program/well-typed/struct_assignment_optimization.p4
 
 >>> Running typecheck test on test/program/well-typed/struct_init-1.p4
 Typecheck success: test/program/well-typed/struct_init-1.p4
 
 >>> Running typecheck test on test/program/well-typed/struct_init.p4
-(coerce_type) Cannot coerce type tuple<bit<9>> to struct PortId_t { _v = bit<9> }
-Error while typechecking p4 file: test/program/well-typed/struct_init.p4
+Typecheck success: test/program/well-typed/struct_init.p4
 
 >>> Running typecheck test on test/program/well-typed/structure-valued-expr-ok-1-bmv2.p4
-(coerce_type) Cannot coerce type tuple<> to header h0_t {  }
+(coerce_type) Cannot coerce type record { f2 = int; f1 = int } to header h2_t { f1 = bit<8>; f2 = bit<8> }
 Error while typechecking p4 file: test/program/well-typed/structure-valued-expr-ok-1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/structured-annotation.p4
@@ -3973,7 +3860,7 @@ Error while typechecking p4 file: test/program/well-typed/table-entries-exact-te
 Error while typechecking p4 file: test/program/well-typed/table-entries-lpm-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-no-arg-actions.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+(coerce_type) Cannot coerce type seq<int> to bit<2>
 Error while typechecking p4 file: test/program/well-typed/table-entries-no-arg-actions.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-optional-bmv2.p4
@@ -4032,32 +3919,23 @@ Typecheck success: test/program/well-typed/truncate_ubpf.p4
 Typecheck success: test/program/well-typed/tunneling_ubpf.p4
 
 >>> Running typecheck test on test/program/well-typed/tuple.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-bool>
-Error while typechecking p4 file: test/program/well-typed/tuple.p4
+Typecheck success: test/program/well-typed/tuple.p4
 
 >>> Running typecheck test on test/program/well-typed/tuple0.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-bool>
-Error while typechecking p4 file: test/program/well-typed/tuple0.p4
+Typecheck success: test/program/well-typed/tuple0.p4
 
 >>> Running typecheck test on test/program/well-typed/tuple1.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-bool>
-Error while typechecking p4 file: test/program/well-typed/tuple1.p4
+Typecheck success: test/program/well-typed/tuple1.p4
 
 >>> Running typecheck test on test/program/well-typed/tuple2.p4
 Typecheck success: test/program/well-typed/tuple2.p4
 
 >>> Running typecheck test on test/program/well-typed/tuple3.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int>
 Error while typechecking p4 file: test/program/well-typed/tuple3.p4
 
 >>> Running typecheck test on test/program/well-typed/tuple4.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-int>
-Error while typechecking p4 file: test/program/well-typed/tuple4.p4
+(coerce_types_binary) Cannot coerce types tuple<bit<32>,
+bit<16>> and seq<int,Error while typechecking p4 file: test/program/well-typed/tuple4.p4
 
 >>> Running typecheck test on test/program/well-typed/two-functions.p4
 Typecheck success: test/program/well-typed/two-functions.p4
@@ -4066,6 +3944,8 @@ Typecheck success: test/program/well-typed/two-functions.p4
 Typecheck success: test/program/well-typed/twoPipe.p4
 
 >>> Running typecheck test on test/program/well-typed/two_ebpf.p4
+
+int>
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed/two_ebpf.p4
 
@@ -4181,9 +4061,7 @@ Typecheck success: test/program/well-typed/verify_disjunction.p4
 Typecheck success: test/program/well-typed/verify_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed/version.p4
-(coerce_type) Cannot coerce type tuple<bit<8>,
-bit<8>> to struct Version { major = bit<8>; minor = bit<8> }
-Error while typechecking p4 file: test/program/well-typed/version.p4
+Typecheck success: test/program/well-typed/version.p4
 
 >>> Running typecheck test on test/program/well-typed/very_simple_model.p4
 Typecheck success: test/program/well-typed/very_simple_model.p4
@@ -4204,9 +4082,7 @@ Error while typechecking p4 file: test/program/well-typed/virtual3.p4
 Typecheck success: test/program/well-typed/vss-example.p4
 
 >>> Running typecheck test on test/program/well-typed/wrong-warning.p4
-(coerce_type) Cannot coerce type tuple<bit<8>,
-bit<8>> to header h1_t { f1 = bit<8>; f2 = bit<8> }
-Error while typechecking p4 file: test/program/well-typed/wrong-warning.p4
+Typecheck success: test/program/well-typed/wrong-warning.p4
 
 >>> Running typecheck test on test/program/well-typed/x-bmv2.p4
 Typecheck success: test/program/well-typed/x-bmv2.p4
@@ -4221,5 +4097,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 (check_eq_typ_alpha) Types int and bit<9> are not equal
 Error while typechecking p4 file: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1147 [FAIL] 86 [TOTAL] 1233
-Typecheck: [PASS] 796 [FAIL] 351 [TOTAL] 1147
+Parser on file: [PASS] 1147/1233 (93.03%) [FAIL] 86/1233 (6.97%)
+Typecheck: [PASS] 864/1147 (75.33%) [FAIL] 283/1147 (24.67%)

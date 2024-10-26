@@ -128,7 +128,7 @@ and pp_expr' ?(level = 0) fmt expr' =
   | StrE { text } -> F.fprintf fmt "\"%a\"" pp_text text
   | NumE { num } -> pp_num fmt num
   | VarE { var } -> pp_var fmt var
-  | TupleE { exprs } ->
+  | SeqE { exprs } ->
       F.fprintf fmt "{ %a }" (P.pp_list (pp_expr ~level:0) ", ") exprs
   | RecordE { fields } ->
       F.fprintf fmt "{ %a }"

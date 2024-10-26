@@ -29,9 +29,81 @@ if (4 + d.f < 10) { ... }
 
 ## Overlooked Features (requires structural change)
 
+### ~~Sequence type~~
+
+Currently, p4cherry treats `{ expr }` as tuple types.
+So, `{ expr }` *cannot* be coerced to struct/header types.
+But they are generally sequence types, where coercion to struct/header types are allowed.
+
+Also, tuple types are restrictive, especially for its restriction on type nesting.
+Strictly speaking, `{ 1 }` is an illegal expression because a tuple does not allow nesting an arbitrary precision integer.
+
+To solve this issue, we need to introduce a new type, `SeqT`, which is a sequence type.
+`SeqT` is an internal type like `RecordT`, i.e., user *cannot* declare a sequence type.
+
+#### ~~Sequence coercion~~
+
+```p4
+struct headers {
+    ipv4_option_timestamp_t ipv4_option_timestamp;
+}
+extern bit<16> get<T>(in T data);
+get<headers>({ hdr.ipv4_option_timestamp });
+```
+
+#### ~~Sequence well-formedness~~
+
+```p4
+struct S {
+    bit<32> x;
+}
+...
+S s2;
+s2 = { 0 };
+```
+
 ### Type Coercion
 
-#### Type coercion for conditional expression (4)
+#### More type coercion for equality check (2)
+
+Current coercion rule for equality check only assumes numeric types.
+But it should be extended to other types, such as record and sequence types.
+
+```p4
+typedef tuple<bit<32>, bit<32>> pair;
+struct S {
+    bit<32> l;
+    bit<32> r;
+}
+...
+pair p = { 4, 5 };
+S q = { 2, 3 };
+zout = p == { 4, 5 };
+```
+
+<details>
+<summary>Tests</summary>
+* list-compare.p4
+* tuple4.p4
+</details>
+
+#### Type coercion for record types, with reordered fields (1)
+
+```p4
+header h2_t {
+    bit<8> f1;
+    bit<8> f2;
+}
+...
+hdr.h2 = { f2 = 53, f1 = 54 };
+```
+
+<details>
+<summary>Tests</summary>
+* structure-valued-expr-ok-1-bmv2.p4
+</details>
+
+#### Type coercion for conditional expression (6)
 
 ```p4
 h.eth_hdr.eth_type = (bit<16>) (-(h.eth_hdr.src_addr == 1) ? 2 : 3w1);
@@ -40,8 +112,10 @@ h.eth_hdr.eth_type = (bit<16>) (-(h.eth_hdr.src_addr == 1) ? 2 : 3w1);
 <details>
 <summary>Tests</summary>
 * gauntlet_mux_typecasting-bmv2.p4
+* issue242.p4
 * issue-2123-2-bmv2.p4
 * issue-2123-3-bmv2.p4
+* issue696-bmv2.p4
 * parser-conditional.p4
 </details>
 
@@ -61,7 +135,7 @@ top(c()) main;
 * unused.p4
 </details>
 
-#### Type coercion between serializable enum and its underlying type (9)
+#### Type coercion between serializable enum and its underlying type (11)
 
 But it is difficult to determine 'when' it should occur.
 
@@ -83,6 +157,7 @@ transition select (o.b.x) {
 * issue3635.p4
 * psa-dpdk-binary-operations-1.p4
 * psa-dpdk-binary-operations.p4
+* psa-dpdk-header-union-typedef.p4
 * psa-variable-index.p4
 * serEnumImplCast.p4
 </details>
@@ -203,15 +278,16 @@ X() x = {
 * virtual3.p4
 </details>
 
-### Keyset and tuple type (Need investigation) (2)
+### Keyset and sequence type (Need investigation) (3)
 
 <details>
 <summary>Tests</summary>
 * action-two-params.p4
 * op_bin.p4
+* table-entries-no-arg-actions.p4
 </details>
 
-### Default parameter (4)
+### Default parameter (6)
 
 ```p4
 package P<H, M>(C<H, M> c = nothing());
@@ -222,7 +298,9 @@ P<_, _>() main;
 <summary>Tests</summary>
 * default-package-argument.p4
 * issue1333.p4
+* issue1638.p4
 * issue1937-1-bmv2.p4
+* issue2303.p4
 * issue2599.p4
 </details>
 
@@ -470,9 +548,7 @@ Since [issue#1273](https://github.com/p4lang/p4-spec/issues/1273).
 
 ## Feature Extension
 
-### Support list type
-
-#### List as a primitive type (10)
+### Support list type (10)
 
 List should be a primitive type.
 
@@ -495,137 +571,6 @@ extern E {
 * list7.p4
 * list8.p4
 * list9.p4
-</details>
-
-#### List coercion (36)
-
-Currently, { expr } are treated as tuple types.
-So, { expr } *cannot* be coerced to struct/header types.
-But they are generally list types, where coercion to struct/header types are allowed.
-Also the syntax has to be extended to support list types.
-
-```p4
-struct headers {
-    ipv4_option_timestamp_t ipv4_option_timestamp;
-}
-extern bit<16> get<T>(in T data);
-get<headers>({ hdr.ipv4_option_timestamp });
-```
-
-<details>
-<summary>Tests</summary>
-* annotation-bug.p4
-* assign.p4
-* const.p4
-* gauntlet_hdr_function_cast-bmv2.p4
-* gauntlet_hdr_in_value-bmv2.p4
-* gauntlet_hdr_init-bmv2.p4
-* gauntlet_hdr_set_valid-bmv2.p4
-* gauntlet_set_valid_in_function-bmv2.p4
-* gauntlet_uninitialized_bool_struct-bmv2.p4
-* invalid-hdr-warnings4.p4
-* issue1210.p4
-* issue2355.p4
-* issue2487.p4
-* issue2648.p4
-* issue2657-bmv2.p4
-* issue2957.p4
-* issue3671-1.p4
-* issue3672.p4
-* issue4133.p4
-* issue841.p4
-* issue933.p4
-* issue982.p4
-* names.p4
-* nested-tuple1.p4
-* next-def-use.p4
-* pna-dpdk-add_on_miss0.p4
-* pna-dpdk-wrong-warning.p4
-* pna-example-tcp-connection-tracking.p4
-* spec-ex14.p4
-* specialization.p4
-* struct.p4
-* struct_assignment_optimization.p4
-* struct_init.p4
-* structure-valued-expr-ok-1-bmv2.p4
-* version.p4
-* wrong-warning.p4
-* psa-dpdk-header-union-typedef.p4
-</details>
-
-#### List well-formedness (56)
-
-Also, list types accept more nested types than a tuple type does.
-Current implementation treats `{ expr }` as tuples, resulting in bogus well-formedness errors.
-
-```p4
-struct S {
-    bit<32> x;
-}
-...
-S s2;
-s2 = { 0 };
-```
-
-<details>
-<summary>Tests</summary>
-* copy.p4
-* default-control-argument.p4
-* gauntlet_complex_initialization-bmv2.p4
-* gauntlet_extern_arguments_2.p4
-* gauntlet_function_if_hdr_return-bmv2.p4
-* gauntlet_hdr_int_initializer-bmv2.p4
-* gauntlet_instance_overwrite-bmv2.p4
-* gauntlet_int_slice-bmv2.p4
-* gauntlet_list_as_in_argument-bmv2.p4
-* gauntlet_variable_shadowing-bmv2.p4
-* invalid-hdr-warnings2.p4
-* invalid-hdr-warnings5.p4
-* invalid-hdr-warnings6.p4
-* issue1006.p4
-* issue1638.p4
-* issue1670-bmv2.p4
-* issue1863.p4
-* issue2036-3.p4
-* issue2261.p4
-* issue2289.p4
-* issue2303.p4
-* issue232-bmv2.p4
-* issue2383-bmv2.p4
-* issue2383-bmv2.p4
-* issue242.p4
-* issue2488-bmv2.p4
-* issue2543-1.p4
-* issue2543-2.p4
-* issue2795.p4
-* issue2958.p4
-* issue3091-1.p4
-* issue3238.p4
-* issue3806.p4
-* issue396.p4
-* issue4288.p4
-* issue529.p4
-* issue696-bmv2.p4
-* issue907-bmv2.p4
-* issue933-1.p4
-* list-compare.p4
-* nested-struct.p4
-* nested-tuple.p4
-* nested_select.p4
-* pna-dpdk-header-union-stack.p4
-* pna-dpdk-header-union-stack1.p4
-* pna-dpdk-header-union-stack2.p4
-* pna-dpdk-invalid-hdr-warnings5.p4
-* pna-dpdk-invalid-hdr-warnings6.p4
-* select-struct.p4
-* simplify_method_calls.p4
-* struct1.p4
-* table-entriees-no-arg-actions.p4
-* tuple.p4
-* tuple0.p4
-* tuple1.p4
-* tuple3.p4
-* tuple4.p4
 </details>
 
 ### Support generic structs and headers (11)
@@ -731,7 +676,7 @@ h = (H) {#};
 
 # Need Spec Clarification
 
-## Should we add implicit cast for directionless parameter? (92)
+## Should we add implicit cast for directionless parameter? (99)
 
 I think we should, especially for constructor invocations.
 Waiting for the spec clarification, [issue#1312](https://github.com/p4lang/p4-spec/issues/1312).
@@ -753,7 +698,10 @@ a(x, 0);
 * default_action-ubpf.p4
 * extern-funcs-bmv2.p4
 * extern2.p4
+* gauntlet_extern_arguments_2.p4
+* gauntlet_hdr_in_value-bmv2.p4
 * issue1001-bmv2.p4
+* issue1006.p4
 * issue1043-bmv2.p4
 * issue1642-bmv2.p4
 * issue1653-bmv2.p4
@@ -761,13 +709,16 @@ a(x, 0);
 * issue1660-bmv2.p4
 * issue1765-1-bmv2.p4
 * issue1834-bmv2.p4
+* issue2648.p4
 * issue323.p4
 * issue3246-1.p4
 * issue3488-1-bmv2.p4
 * issue364-bmv2.p4
 * issue383-bmv2.p4
 * issue3884.p4
+* issue4133.p4
 * issue562-bmv2.p4
+* issue933-1.p4
 * lpm_ubpf.p4
 * m_psa-dpdk-non-zero-arg-default-action-08.p4
 * named-arg1.p4
@@ -811,6 +762,7 @@ BFD_Offload(32768) bfd_session_liveness_tracker = ...;
 * issue1814-bmv2.p4
 * issue1958.p4
 * issue298-bmv2.p4
+* issue4288.p4
 * issue754.p4
 * pr1363.p4
 * psa-action-profile1.p4
@@ -975,9 +927,34 @@ control c() {
 * issue3671.p4
 </details>
 
+## Accessing a tuple element with a local compile-time known index is also a local compile-time known value? (1)
+
+```p4
+const tuple<bit<32>, bit<32>> t = { 0, 1 };
+const bit<32> f = t[0];
+```
+
+<details>
+<summary>Tests</summary>
+* tuple3.p4
+</details>
+
+## Accessing a field of a local compile-time known struct is also a local compile-time known value? (2)
+
+```p4
+const T t = { 32s10, 32s20 };
+const int<32> x = t.t1;
+```
+
+<details>
+<summary>Tests</summary>
+* struct.p4
+* struct1.p4
+</details>
+
 # Unsupported features
 
-## Custom table element (43)
+## Custom table element (45)
 
 ### `implementation`
 
@@ -1068,8 +1045,10 @@ table ipv4_da {
 <summary>Tests</summary>
 * pna-add-on-miss.p4
 * pna-add_on_miss_action_name.p4
+* pna-dpdk-add_on_miss0.p4
 * pna-dpdk-direct-counter-learner.p4
 * pna-dpdk-direct-meter-learner.p4
+* pna-example-tcp-connection-tracking.p4
 * pna-dpdk-parser-state-err.p4
 * pna-dpdk-table-key-consolidation-learner-1.p4
 * pna-dpdk-table-key-consolidation-learner-3.p4
@@ -1256,4 +1235,22 @@ table unit {
     }
     ...
 }
+```
+
+## issue3091-1.p4
+
+`match_kind` *cannot* be nested inside a tuple type.
+This should be a negative test.
+
+```p4
+const tuple<match_kind> exact_once = { exact };
+```
+
+## issue3238.p4
+
+`int` *cannot* be nested inside a tuple type.
+This should be a negative test.
+
+```p4
+tuple<int> t = { t1 };
 ```

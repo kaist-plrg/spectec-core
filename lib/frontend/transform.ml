@@ -202,7 +202,7 @@ and transform_expr (expr : Expression.t) : El.expr =
   | String { text; tags = at } -> El.StrE { text = transform_text text } $ at
   | Name { name; tags = at } -> El.VarE { var = transform_var name } $ at
   | List { values; tags = at } ->
-      El.TupleE { exprs = transform_exprs values } $ at
+      El.SeqE { exprs = transform_exprs values } $ at
   | Record { entries = fields; tags = at } ->
       let fields =
         List.map

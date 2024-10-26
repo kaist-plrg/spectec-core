@@ -4806,6 +4806,6 @@ Error while parsing p4 string: test/program/well-typed/xdp_vlan_push_pop_ebpf-ke
 parser error: File test/program/well-typed/xor_test.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1147 [FAIL] 86 [TOTAL] 1233
-Parser on string: [PASS] 155 [FAIL] 992 [TOTAL] 1147
-Parser roundtrip: [PASS] 140 [FAIL] 15 [TOTAL] 155
+Parser on file: [PASS] 1147/1233 (93.03%) [FAIL] 86/1233 (6.97%)
+Parser on string: [PASS] 155/1147 (13.51%) [FAIL] 992/1147 (86.49%)
+Parser roundtrip: [PASS] 140/155 (90.32%) [FAIL] 15/155 (9.68%)
