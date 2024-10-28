@@ -15,29 +15,6 @@ open Util.Source
 
 (* Coercion rules *)
 
-(* (8.11.2) Implicit casts
-
-   To keep the language simple and avoid introducing hidden costs, P4 only implicitly casts from int to fixed-width types
-   and from enums with an underlying type to the underlying type. In particular, applying a binary operation (except shifts
-   and concatenation) to an expression of type int and an expression with a fixed-width type will implicitly cast the int
-   expression to the type of the other expression. For enums with an underlying type, it can be implicitly cast to its underlying
-   type whenever appropriate, including but not limited to in shifts, concatenation, bit slicing indexes,
-   header stack indexes as well as other unary and binary operations.
-
-   The compiler also adds implicit casts when types of different expressions need to match;
-   for example, as described in Section 13.6, since select labels are compared against the selected expression,
-   the compiler will insert implicit casts for the select labels when they have int types.
-   Similarly, when assigning a structure-valued expression to a structure or header, the compiler will add implicit casts for int fields. *)
-
-(* (8.12) Operations on tuple expressions
-
-   A tuple may be used to initialize a structure if the tuple has the same number of elements
-   as fields in the structure. The effect of such an initializer is to assign the nth element
-   of the tuple to the nth field in the structure.
-
-   A tuple expression can have an explicit structure or header type specified, and then it is
-   converted automatically to a structure-valued expression (see 8.13). *)
-
 let rec insert_cast (expr_il : Il.Ast.expr) (typ : Type.t) : Il.Ast.expr =
   let ctk = Static.ctk_cast_expr (typ $ no_info) expr_il in
   Il.Ast.(
@@ -52,9 +29,9 @@ and coerce_types_binary (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) :
   let typ_l = expr_l_il.note.typ in
   let typ_r = expr_r_il.note.typ in
   if Eq.eq_typ_alpha typ_l typ_r then (typ_l, expr_l_il, expr_r_il)
-  else if Subtyp.sub typ_l typ_r then
+  else if Subtyp.implicit typ_l typ_r then
     (typ_r, insert_cast expr_l_il typ_r, expr_r_il)
-  else if Subtyp.sub typ_r typ_l then
+  else if Subtyp.implicit typ_r typ_l then
     (typ_l, expr_l_il, insert_cast expr_r_il typ_l)
   else (
     Format.printf "(coerce_types_binary) Cannot coerce types %a and %a\n"
@@ -81,7 +58,7 @@ and coerce_type_assign (expr_from_il : Il.Ast.expr) (typ_to : Type.t) :
     Il.Ast.expr =
   let typ_from = expr_from_il.note.typ in
   if Eq.eq_typ_alpha typ_from typ_to then expr_from_il
-  else if Subtyp.sub typ_from typ_to then insert_cast expr_from_il typ_to
+  else if Subtyp.implicit typ_from typ_to then insert_cast expr_from_il typ_to
   else (
     Format.printf "(coerce_type) Cannot coerce type %a to %a\n" Type.pp
       expr_from_il.note.typ Type.pp typ_to;
@@ -1194,101 +1171,14 @@ and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
 
    P4 provides a limited set of casts between types. A cast is written (t) e,
    where t is a type and e is an expression. Casts are only permitted on base types and derived types
-   introduced by typedef, type, and enum.
-
-   (8.11.1) Explicit casts
-
-   The following casts are legal in P4:
-
-    - bit<1> ↔ bool:
-        converts the value 0 to false, the value 1 to true, and vice versa.
-    - int → bool:
-        only if the int value is 0 (converted to false) or 1 (converted to true)
-    - int<W> → bit<W>:
-        preserves all bits unchanged and reinterprets negative values as positive values
-    - bit<W> → int<W>:
-        preserves all bits unchanged and reinterprets values whose most-significant bit is 1 as negative values
-    - bit<W> → bit<X>:
-        truncates the value if W > X, and otherwise (i.e., if W <= X) pads the value with zero bits.
-    - int<W> → int<X>:
-        truncates the value if W > X, and otherwise (i.e., if W < X) extends it with the sign bit.
-    - bit<W> → int:
-        preserves the value unchanged but converts it to an unlimited-precision integer;
-        the result is always non-negative
-    - int<W> → int:
-        preserves the value unchanged but converts it to an unlimited-precision integer;
-        the result may be negative
-    - int → bit<W>:
-        converts the integer value into a sufficiently large two's complement bit string to avoid information loss,
-        and then truncates the result to W bits. The compiler should emit a warning on
-        overflow or on conversion of negative value.
-    - int → int<W>:
-        converts the integer value into a sufficiently-large two's complement bit string to avoid information loss,
-        and then truncates the result to W bits. The compiler should emit a warning on overflow.
-    - casts between two types that are introduced by typedef and are equivalent to one of the above combinations.
-    - casts between a typedef and the original type.
-    - casts between a type introduced by type and the original type.
-    - casts between an enum with an explicit type and its underlying type
-    - casts of a key-value list to a struct type or a header type (see Section 8.13)
-    - casts of a tuple expression to a header stack type
-    - casts of an invalid expression {#} to a header or a header union type
-    - casts where the destination type is the same as the source type
-      if the destination type appears in this list (this excludes e.g., parsers or externs). *)
-
-and type_cast_explicit (typ : Type.t) (typ_target : Type.t) : bool =
-  match (typ, typ_target) with
-  (* bit<1> ↔ bool *)
-  | FBitT width, BoolT when width = Bigint.one -> true
-  | BoolT, FBitT width when width = Bigint.one -> true
-  (* int → bool *)
-  | IntT, BoolT -> true
-  (* int<W> → bit<W> *)
-  | FIntT width, FBitT width_target when width = width_target -> true
-  (* bit<W> → int<W> *)
-  | FBitT width, FIntT width_target when width = width_target -> true
-  (* bit<W> → bit<X> *)
-  | FBitT _, FBitT _ -> true
-  (* int<W> → int<X> *)
-  | FIntT _, FIntT _ -> true
-  (* bit<W> → int *)
-  | FBitT _, IntT -> true
-  (* int<W> → int *)
-  | FIntT _, IntT -> true
-  (* int<W> → int *)
-  | IntT, FBitT _ -> true
-  (* int → bit<W> *)
-  | IntT, FIntT _ -> true
-  (* casts between two types that are introduced by typedef and
-     are equivalent to one of the above combinations *)
-  (* casts between a typedef and the original type *)
-  (* casts between a type introduced by type and the original type *)
-  | NewT (_, typ_inner), typ_target -> type_cast_explicit typ_inner typ_target
-  | typ, NewT (_, typ_target_inner) -> type_cast_explicit typ typ_target_inner
-  (* casts between an enum with an explicit type and its underlying type *)
-  | SEnumT (_, typ_inner), typ_target -> type_cast_explicit typ_inner typ_target
-  | typ, SEnumT (_, typ_target_inner) -> type_cast_explicit typ typ_target_inner
-  (* casts of a tuple expression to a struct type or a header type *)
-  | SeqT typs, StructT (_, fields_target) | SeqT typs, HeaderT (_, fields_target)
-    ->
-      List.for_all2 type_cast_explicit typs (List.map snd fields_target)
-  (* casts of a key-value list to a struct type or a header type (see Section 8.13) *)
-  | RecordT fields, StructT (_, fields_target)
-  | RecordT fields, HeaderT (_, fields_target) ->
-      let members, typs = List.split fields in
-      let members_target, typs_target = List.split fields_target in
-      List.for_all2 ( = ) members members_target
-      && List.for_all2 type_cast_explicit typs typs_target
-  (* (TODO) casts of an invalid expression {#} to a header or a header union type *)
-  (* (TODO) casts where the destination type is the same as the source type
-     if the destination type appears in this list (this excludes e.g., parsers or externs). *)
-  | _ -> Eq.eq_typ_alpha typ typ_target
+   introduced by typedef, type, and enum. *)
 
 and type_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
     (expr : El.Ast.expr) : Type.t * Ctk.t * Il.Ast.expr' =
   let typ_target = eval_type_with_check cursor ctx typ in
   let expr_il = type_expr cursor ctx expr in
   let typ = expr_il.note.typ in
-  if not (type_cast_explicit typ typ_target.it) then (
+  if not (Subtyp.explicit typ typ_target.it) then (
     Format.printf "(type_cast_expr) Invalid cast from %a to %a\n" Type.pp typ
       Type.pp typ_target.it;
     assert false);
