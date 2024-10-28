@@ -272,6 +272,11 @@ and eq_stmt' (eq_typ : 'typ eq_typ) (eq_expr : ('note, 'expr) eq_expr)
       && eq_member member_a member_b
       && eq_targs eq_typ targs_a targs_b
       && eq_args eq_expr args_a args_b
+  | ( CallInstS { var_inst = var_inst_a; targs = targs_a; args = args_a },
+      CallInstS { var_inst = var_inst_b; targs = targs_b; args = args_b } ) ->
+      eq_var var_inst_a var_inst_b
+      && eq_targs eq_typ targs_a targs_b
+      && eq_args eq_expr args_a args_b
   | TransS { expr_label = expr_label_a }, TransS { expr_label = expr_label_b }
     ->
       eq_expr expr_label_a expr_label_b

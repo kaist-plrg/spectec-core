@@ -265,6 +265,9 @@ let rec pp_stmt' ?(level = 0) (pp_typ : 'typ pp_typ)
       F.fprintf fmt "%s%a.%a%a%a;" (indent level) (pp_expr ~level:0) expr_base
         (pp_member ~level:0) member (pp_targs pp_typ) targs (pp_args pp_expr)
         args
+  | CallInstS { var_inst; targs; args } ->
+      F.fprintf fmt "%s%a%a.apply%a;" (indent level) pp_var var_inst
+        (pp_targs pp_typ) targs (pp_args pp_expr) args
   | TransS { expr_label } ->
       F.fprintf fmt "%stransition %a;" (indent level)
         (pp_expr ~level:(level + 1))

@@ -180,9 +180,8 @@ Error while typechecking p4 file: test/program/ill-typed/function_e1.p4
 Typecheck success: test/program/ill-typed/function_e2.p4
 
 >>> Running typecheck test on test/program/ill-typed/functors2_e.p4
-(TODO: transform_stmt) p.apply();
-
-Error while parsing p4 file: test/program/ill-typed/functors2_e.p4
+(type_instantiation) p is not an instance type
+Error while typechecking p4 file: test/program/ill-typed/functors2_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/functors3_e.p4
 (type_instantiation) s is not an instance type
@@ -1106,5 +1105,5 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 (type_cast_expr) Invalid cast from int<2> to bool
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
-Parser on file: [PASS] 251/299 (83.95%) [FAIL] 48/299 (16.05%)
-Typecheck: [PASS] 165/251 (65.74%) [FAIL] 86/251 (34.26%)
+Parser on file: [PASS] 252/299 (84.28%) [FAIL] 47/299 (15.72%)
+Typecheck: [PASS] 166/252 (65.87%) [FAIL] 86/252 (34.13%)

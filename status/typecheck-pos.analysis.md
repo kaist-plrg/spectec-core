@@ -303,6 +303,8 @@ P<_, _>() main;
 * issue1333.p4
 * issue1638.p4
 * issue1937-1-bmv2.p4
+* issue1937-2-bmv2.p4
+* issue1937-3-bmv2.p4
 * issue2303.p4
 * issue2599.p4
 </details>
@@ -323,7 +325,7 @@ T.minSizeInBits();
 * minsize.p4
 </details>
 
-### Support direct application (26)
+### ~~Support direct application~~
 
 Transform direct application.
 
@@ -333,37 +335,6 @@ control d() {
     apply { c.apply(); }
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* direct-call.p4
-* direct-call1.p4
-* direct-call2.p4
-* extern-inst-as-param.p4
-* gauntlet_bounded_loop.p4
-* gauntlet_infinite_loop.p4
-* issue1107.p4
-* issue1470-bmv2.p4
-* issue1566-bmv2.p4
-* issue1937-2-bmv2.p4
-* issue1937-3-bmv2.p4
-* issue2844-enum.p4
-* issue3394.p4
-* issue4883_dup_has_returned_decl.p4
-* issue4883_dup_has_returned_decl2.p4
-* issue561-bmv2.p4
-* nonstandard_table_names-bmv2.p4
-* pna-dpdk-add_on_miss1.p4
-* pna-example-tunnel.p4
-* psa-end-of-ingress-test-bmv2.p4
-* psa-multicast-basic-2-bmv2.p4
-* psa-parser-error-test-bmv2.p4
-* psa-resubmit-bmv2.p4
-* psa-unicast-or-drop-bmv2.p4
-* redundant_parsers_dangling_unused_parser_decl.p4
-* use-priority-as-name.p4
-</details>
 
 ### `value_set` declaration (12)
 
@@ -448,6 +419,7 @@ typedef register<Mac_entry> Mac_table;
 <details>
 <summary>Tests</summary>
 
+* extern-inst-as-param.p4
 * issue2735-bmv2.p4
 * issue2735.p4
 * typedef-constructor.p4
@@ -689,7 +661,7 @@ h = (H) {#};
 
 # Need Spec Clarification
 
-## Should we add implicit cast for directionless parameter? (99)
+## Should we add implicit cast for directionless parameter? (101)
 
 I think we should, especially for constructor invocations.
 Waiting for the spec clarification, [issue#1312](https://github.com/p4lang/p4-spec/issues/1312).
@@ -776,6 +748,7 @@ BFD_Offload(32768) bfd_session_liveness_tracker = ...;
 * issue1814-1-bmv2.p4
 * issue1814-bmv2.p4
 * issue1958.p4
+* issue2844-enum.p4
 * issue298-bmv2.p4
 * issue4288.p4
 * issue754.p4
@@ -788,6 +761,7 @@ BFD_Offload(32768) bfd_session_liveness_tracker = ...;
 * psa-counter2.p4
 * psa-counter3.p4
 * psa-custom-type-counter-index.p4
+* psa-end-of-ingress-test-bmv2.p4
 * psa-example-dpdk-byte-alignment_1.p4
 * psa-example-dpdk-byte-alignment_2.p4
 * psa-example-dpdk-byte-alignment_3.p4
@@ -1057,6 +1031,7 @@ table ipv4_da {
 * pna-add-on-miss.p4
 * pna-add_on_miss_action_name.p4
 * pna-dpdk-add_on_miss0.p4
+* pna-dpdk-add_on_miss1.p4
 * pna-dpdk-direct-counter-learner.p4
 * pna-dpdk-direct-meter-learner.p4
 * pna-example-tcp-connection-tracking.p4

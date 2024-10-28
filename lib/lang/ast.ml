@@ -149,6 +149,11 @@ and ('typ, 'note, 'expr, 'decl) stmt' =
       targs : 'typ targ list;
       args : ('note, 'expr) arg list;
     }
+  | CallInstS of {
+      var_inst : var;
+      targs : 'typ targ list;
+      args : ('note, 'expr) arg list;
+    }
   | TransS of { expr_label : ('note, 'expr) expr }
   | DeclS of { decl : 'decl decl }
 

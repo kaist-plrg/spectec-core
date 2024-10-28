@@ -337,13 +337,20 @@ and transform_stmt (stmt : Statement.t) : El.stmt =
           let member = transform_member name in
           L.CallMethodS { expr_base; member; targs; args } $ at
       | _ -> assert false)
+  | DirectApplication { typ; args; tags = at } ->
+      let var_inst, targs =
+        match typ with
+        | TypeName { name; _ } -> (transform_var name, [])
+        | SpecializedType { base = TypeName { name; _ }; args; _ } ->
+            let var_base = transform_var name in
+            (var_base, transform_targs args)
+        | _ -> assert false
+      in
+      let args = transform_args args in
+      L.CallInstS { var_inst; targs; args } $ at
   | DeclarationStatement { decl; tags = at } ->
       let decl = transform_decl decl in
       L.DeclS { decl } $ at
-  | _ ->
-      Format.printf "(TODO: transform_stmt) %s\n"
-        (Surface.Print.print_stmt 0 stmt);
-      assert false
 
 and transform_stmts (stmts : Statement.t list) : El.stmt list =
   List.map transform_stmt stmts

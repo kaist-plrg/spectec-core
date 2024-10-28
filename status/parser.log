@@ -440,19 +440,13 @@ Parser roundtrip success: test/program/well-typed/direct-action.p4
 Parser roundtrip success: test/program/well-typed/direct-action1.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/direct-call.p4
-(TODO: transform_stmt) c.apply();
-
-Error while parsing p4 file: test/program/well-typed/direct-call.p4
+Parser roundtrip success: test/program/well-typed/direct-call.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/direct-call1.p4
-(TODO: transform_stmt) p.apply();
-
-Error while parsing p4 file: test/program/well-typed/direct-call1.p4
+Parser roundtrip success: test/program/well-typed/direct-call1.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/direct-call2.p4
-(TODO: transform_stmt) p.apply();
-
-Error while parsing p4 file: test/program/well-typed/direct-call2.p4
+Parser roundtrip success: test/program/well-typed/direct-call2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/drop-bmv2.p4
 parser error: File test/program/well-typed/drop-bmv2.p4, line 20, characters 37-40
@@ -542,9 +536,8 @@ parser error: File test/program/well-typed/extern-funcs-bmv2.p4, line 20, charac
 Error while parsing p4 string: test/program/well-typed/extern-funcs-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/extern-inst-as-param.p4
-(TODO: transform_stmt) Inner.apply(counter_set);
-
-Error while parsing p4 file: test/program/well-typed/extern-inst-as-param.p4
+parser error: File test/program/well-typed/extern-inst-as-param.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/extern-inst-as-param.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/extern.p4
 Parser roundtrip success: test/program/well-typed/extern.p4
@@ -678,9 +671,8 @@ parser error: File test/program/well-typed/gauntlet_arithref_cast-bmv2.p4, line 
 Error while parsing p4 string: test/program/well-typed/gauntlet_arithref_cast-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/gauntlet_bounded_loop.p4
-(TODO: transform_stmt) sub_parser.apply(packet, hdr);
-
-Error while parsing p4 file: test/program/well-typed/gauntlet_bounded_loop.p4
+parser error: File test/program/well-typed/gauntlet_bounded_loop.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/gauntlet_bounded_loop.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/gauntlet_complex_initialization-bmv2.p4
 parser error: File test/program/well-typed/gauntlet_complex_initialization-bmv2.p4, line 20, characters 37-40
@@ -891,9 +883,8 @@ parser error: File test/program/well-typed/gauntlet_indirect_hdr_assign_2-bmv2.p
 Error while parsing p4 string: test/program/well-typed/gauntlet_indirect_hdr_assign_2-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/gauntlet_infinite_loop.p4
-(TODO: transform_stmt) sub_parser.apply(packet, hdr, hdr.p);
-
-Error while parsing p4 file: test/program/well-typed/gauntlet_infinite_loop.p4
+parser error: File test/program/well-typed/gauntlet_infinite_loop.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/gauntlet_infinite_loop.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/gauntlet_inout_slice_table_key-bmv2.p4
 parser error: File test/program/well-typed/gauntlet_inout_slice_table_key-bmv2.p4, line 20, characters 37-40
@@ -1333,9 +1324,8 @@ parser error: File test/program/well-typed/issue1097-bmv2.p4, line 20, character
 Error while parsing p4 string: test/program/well-typed/issue1097-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue1107.p4
-(TODO: transform_stmt) myc.apply(hdr, meta, smeta);
-
-Error while parsing p4 file: test/program/well-typed/issue1107.p4
+parser error: File test/program/well-typed/issue1107.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/issue1107.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue1127-bmv2.p4
 parser error: File test/program/well-typed/issue1127-bmv2.p4, line 20, characters 37-40
@@ -1426,9 +1416,8 @@ parser error: File test/program/well-typed/issue1466.p4, line 2, characters 2-3
 Error while parsing p4 string: test/program/well-typed/issue1466.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue1470-bmv2.p4
-(TODO: transform_stmt) InnerParser.apply(pkt, hdr);
-
-Error while parsing p4 file: test/program/well-typed/issue1470-bmv2.p4
+parser error: File test/program/well-typed/issue1470-bmv2.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/issue1470-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue1478-bmv2.p4
 parser error: File test/program/well-typed/issue1478-bmv2.p4, line 20, characters 37-40
@@ -1482,9 +1471,8 @@ parser error: File test/program/well-typed/issue1560-bmv2.p4, line 20, character
 Error while parsing p4 string: test/program/well-typed/issue1560-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue1566-bmv2.p4
-(TODO: transform_stmt) E.apply(hdr.ethernet.etherType);
-
-Error while parsing p4 file: test/program/well-typed/issue1566-bmv2.p4
+parser error: File test/program/well-typed/issue1566-bmv2.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/issue1566-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue1586.p4
 Parser roundtrip success: test/program/well-typed/issue1586.p4
@@ -1634,19 +1622,16 @@ parser error: File test/program/well-typed/issue1937-1-bmv2.p4, line 20, charact
 Error while parsing p4 string: test/program/well-typed/issue1937-1-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue1937-2-bmv2.p4
-(TODO: transform_stmt) foo.apply(hdr.h1.f1, hdr.h1.f1);
-
-Error while parsing p4 file: test/program/well-typed/issue1937-2-bmv2.p4
+parser error: File test/program/well-typed/issue1937-2-bmv2.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/issue1937-2-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue1937-3-bmv2.p4
-(TODO: transform_stmt) foo.apply(hdr.h1.f1, hdr.h1.f1);
-
-Error while parsing p4 file: test/program/well-typed/issue1937-3-bmv2.p4
+parser error: File test/program/well-typed/issue1937-3-bmv2.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/issue1937-3-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue1937.p4
-(TODO: transform_stmt) foo.apply(hdr.f1, hdr.f1);
-
-Error while parsing p4 file: test/program/well-typed/issue1937.p4
+parser error: File test/program/well-typed/issue1937.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/issue1937.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue1955.p4
 parser error: File test/program/well-typed/issue1955.p4, line 20, characters 37-40
@@ -2200,9 +2185,8 @@ parser error: File test/program/well-typed/issue2816_ebpf.p4, line 20, character
 Error while parsing p4 string: test/program/well-typed/issue2816_ebpf.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue2844-enum.p4
-(TODO: transform_stmt) E.apply(hdr.ethernet.etherType);
-
-Error while parsing p4 file: test/program/well-typed/issue2844-enum.p4
+parser error: File test/program/well-typed/issue2844-enum.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/issue2844-enum.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue2890.p4
 parser error: File test/program/well-typed/issue2890.p4, line 20, characters 37-40
@@ -2399,9 +2383,8 @@ parser error: File test/program/well-typed/issue3379.p4, line 8, characters 16-1
 Error while parsing p4 string: test/program/well-typed/issue3379.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue3394.p4
-(TODO: transform_stmt) C1.apply(3, r);
-
-Error while parsing p4 file: test/program/well-typed/issue3394.p4
+parser error: File test/program/well-typed/issue3394.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/issue3394.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue3417.p4
 parser error: File test/program/well-typed/issue3417.p4, line 20, characters 37-40
@@ -2658,14 +2641,12 @@ parser error: File test/program/well-typed/issue486-bmv2.p4, line 20, characters
 Error while parsing p4 string: test/program/well-typed/issue486-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue4883_dup_has_returned_decl.p4
-(TODO: transform_stmt) C.apply(s);
-
-Error while parsing p4 file: test/program/well-typed/issue4883_dup_has_returned_decl.p4
+parser error: File test/program/well-typed/issue4883_dup_has_returned_decl.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/issue4883_dup_has_returned_decl.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue4883_dup_has_returned_decl2.p4
-(TODO: transform_stmt) C.apply(s);
-
-Error while parsing p4 file: test/program/well-typed/issue4883_dup_has_returned_decl2.p4
+parser error: File test/program/well-typed/issue4883_dup_has_returned_decl2.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/issue4883_dup_has_returned_decl2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue4901_new_start_with_no_start_loopback.p4
 parser error: File test/program/well-typed/issue4901_new_start_with_no_start_loopback.p4, line 10, characters 22-23
@@ -2727,9 +2708,8 @@ parser error: File test/program/well-typed/issue561-7-bmv2.p4, line 20, characte
 Error while parsing p4 string: test/program/well-typed/issue561-7-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue561-bmv2.p4
-(TODO: transform_stmt) Tcp_option_parser.apply(packet, hdr.tcp.dataOffset, hdr.tcp_options_vec, hdr.tcp_options_padding);
-
-Error while parsing p4 file: test/program/well-typed/issue561-bmv2.p4
+parser error: File test/program/well-typed/issue561-bmv2.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/issue561-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue561.p4
 parser error: File test/program/well-typed/issue561.p4, line 2, characters 2-3
@@ -3109,9 +3089,8 @@ parser error: File test/program/well-typed/noMatch.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/noMatch.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/nonstandard_table_names-bmv2.p4
-(TODO: transform_stmt) tables.apply(h, m, sm);
-
-Error while parsing p4 file: test/program/well-typed/nonstandard_table_names-bmv2.p4
+parser error: File test/program/well-typed/nonstandard_table_names-bmv2.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/nonstandard_table_names-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/octal.p4
 Parser roundtrip success: test/program/well-typed/octal.p4
@@ -3250,9 +3229,8 @@ parser error: File test/program/well-typed/pna-add-on-miss.p4, line 20, characte
 Error while parsing p4 string: test/program/well-typed/pna-add-on-miss.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/pna-add_on_miss_action_name.p4
-(TODO: transform_stmt) ct.apply(hdr, user_meta, istd);
-
-Error while parsing p4 file: test/program/well-typed/pna-add_on_miss_action_name.p4
+parser error: File test/program/well-typed/pna-add_on_miss_action_name.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/pna-add_on_miss_action_name.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/pna-direction-main-parser-err.p4
 parser error: File test/program/well-typed/pna-direction-main-parser-err.p4, line 20, characters 37-40
@@ -3267,9 +3245,8 @@ parser error: File test/program/well-typed/pna-dpdk-add_on_miss0.p4, line 20, ch
 Error while parsing p4 string: test/program/well-typed/pna-dpdk-add_on_miss0.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/pna-dpdk-add_on_miss1.p4
-(TODO: transform_stmt) conntrack.apply(hdr, meta);
-
-Error while parsing p4 file: test/program/well-typed/pna-dpdk-add_on_miss1.p4
+parser error: File test/program/well-typed/pna-dpdk-add_on_miss1.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/pna-dpdk-add_on_miss1.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/pna-dpdk-bvec_union.p4
 parser error: File test/program/well-typed/pna-dpdk-bvec_union.p4, line 20, characters 37-40
@@ -3456,9 +3433,8 @@ parser error: File test/program/well-typed/pna-example-template.p4, line 20, cha
 Error while parsing p4 string: test/program/well-typed/pna-example-template.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/pna-example-tunnel.p4
-(TODO: transform_stmt) tunnel_decap.apply(hdr, local_metadata);
-
-Error while parsing p4 file: test/program/well-typed/pna-example-tunnel.p4
+parser error: File test/program/well-typed/pna-example-tunnel.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/pna-example-tunnel.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/pna-example-varIndex-1.p4
 parser error: File test/program/well-typed/pna-example-varIndex-1.p4, line 20, characters 37-40
@@ -3852,9 +3828,8 @@ parser error: File test/program/well-typed/psa-e2e-cloning-basic-bmv2.p4, line 2
 Error while parsing p4 string: test/program/well-typed/psa-e2e-cloning-basic-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/psa-end-of-ingress-test-bmv2.p4
-(TODO: transform_stmt) packet_path_to_int.apply(istd.packet_path, hdr.output_data.word0);
-
-Error while parsing p4 file: test/program/well-typed/psa-end-of-ingress-test-bmv2.p4
+parser error: File test/program/well-typed/psa-end-of-ingress-test-bmv2.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/psa-end-of-ingress-test-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/psa-example-counters-bmv2.p4
 parser error: File test/program/well-typed/psa-example-counters-bmv2.p4, line 20, characters 37-40
@@ -4065,9 +4040,8 @@ parser error: File test/program/well-typed/psa-meter7-bmv2.p4, line 20, characte
 Error while parsing p4 string: test/program/well-typed/psa-meter7-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/psa-multicast-basic-2-bmv2.p4
-(TODO: transform_stmt) packet_path_to_int.apply(istd.packet_path, hdr.output_data.word2);
-
-Error while parsing p4 file: test/program/well-typed/psa-multicast-basic-2-bmv2.p4
+parser error: File test/program/well-typed/psa-multicast-basic-2-bmv2.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/psa-multicast-basic-2-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/psa-multicast-basic-bmv2.p4
 parser error: File test/program/well-typed/psa-multicast-basic-bmv2.p4, line 20, characters 37-40
@@ -4078,18 +4052,16 @@ parser error: File test/program/well-typed/psa-multicast-basic-corrected-bmv2.p4
 Error while parsing p4 string: test/program/well-typed/psa-multicast-basic-corrected-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/psa-parser-error-test-bmv2.p4
-(TODO: transform_stmt) parser_error_to_int.apply(istd.parser_error, hdr.ethernet.dstAddr[47:32]);
-
-Error while parsing p4 file: test/program/well-typed/psa-parser-error-test-bmv2.p4
+parser error: File test/program/well-typed/psa-parser-error-test-bmv2.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/psa-parser-error-test-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/psa-random.p4
 parser error: File test/program/well-typed/psa-random.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/psa-random.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/psa-recirculate-no-meta-bmv2.p4
-(TODO: transform_stmt) packet_path_to_int.apply(istd.packet_path, int_packet_path);
-
-Error while parsing p4 file: test/program/well-typed/psa-recirculate-no-meta-bmv2.p4
+parser error: File test/program/well-typed/psa-recirculate-no-meta-bmv2.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/psa-recirculate-no-meta-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/psa-register-complex-bmv2.p4
 parser error: File test/program/well-typed/psa-register-complex-bmv2.p4, line 20, characters 37-40
@@ -4120,9 +4092,8 @@ parser error: File test/program/well-typed/psa-remove-header.p4, line 20, charac
 Error while parsing p4 string: test/program/well-typed/psa-remove-header.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/psa-resubmit-bmv2.p4
-(TODO: transform_stmt) packet_path_to_int.apply(istd.packet_path, hdr.output_data.word0);
-
-Error while parsing p4 file: test/program/well-typed/psa-resubmit-bmv2.p4
+parser error: File test/program/well-typed/psa-resubmit-bmv2.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/psa-resubmit-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/psa-subtract-inst1.p4
 parser error: File test/program/well-typed/psa-subtract-inst1.p4, line 20, characters 37-40
@@ -4145,9 +4116,8 @@ parser error: File test/program/well-typed/psa-top-level-assignments-bmv2.p4, li
 Error while parsing p4 string: test/program/well-typed/psa-top-level-assignments-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/psa-unicast-or-drop-bmv2.p4
-(TODO: transform_stmt) packet_path_to_int.apply(istd.packet_path, hdr.output_data.word2);
-
-Error while parsing p4 file: test/program/well-typed/psa-unicast-or-drop-bmv2.p4
+parser error: File test/program/well-typed/psa-unicast-or-drop-bmv2.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/psa-unicast-or-drop-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/psa-unicast-or-drop-corrected-bmv2.p4
 parser error: File test/program/well-typed/psa-unicast-or-drop-corrected-bmv2.p4, line 20, characters 37-40
@@ -4190,9 +4160,8 @@ parser error: File test/program/well-typed/rcp1.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/rcp1.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/redundant_parsers_dangling_unused_parser_decl.p4
-(TODO: transform_stmt) IParser2.apply(packet, hdr);
-
-Error while parsing p4 file: test/program/well-typed/redundant_parsers_dangling_unused_parser_decl.p4
+parser error: File test/program/well-typed/redundant_parsers_dangling_unused_parser_decl.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/redundant_parsers_dangling_unused_parser_decl.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/register-serenum-bmv2.p4
 parser error: File test/program/well-typed/register-serenum-bmv2.p4, line 20, characters 37-40
@@ -4702,9 +4671,8 @@ parser error: File test/program/well-typed/unused.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/unused.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/use-priority-as-name.p4
-(TODO: transform_stmt) set_priority.apply(hdr, prio);
-
-Error while parsing p4 file: test/program/well-typed/use-priority-as-name.p4
+parser error: File test/program/well-typed/use-priority-as-name.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/use-priority-as-name.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/useless-cast.p4
 Parser roundtrip success: test/program/well-typed/useless-cast.p4
@@ -4804,6 +4772,6 @@ Error while parsing p4 string: test/program/well-typed/xdp_vlan_push_pop_ebpf-ke
 parser error: File test/program/well-typed/xor_test.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1149/1233 (93.19%) [FAIL] 84/1233 (6.81%)
-Parser on string: [PASS] 157/1149 (13.66%) [FAIL] 992/1149 (86.34%)
-Parser roundtrip: [PASS] 142/157 (90.45%) [FAIL] 15/157 (9.55%)
+Parser on file: [PASS] 1178/1233 (95.54%) [FAIL] 55/1233 (4.46%)
+Parser on string: [PASS] 160/1178 (13.58%) [FAIL] 1018/1178 (86.42%)
+Parser roundtrip: [PASS] 145/160 (90.62%) [FAIL] 15/160 (9.38%)

@@ -2289,6 +2289,8 @@ and type_stmt' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
       type_call_func_stmt cursor ctx flow var_func targs args
   | CallMethodS { expr_base; member; targs; args } ->
       type_call_method_stmt cursor ctx flow expr_base member targs args
+  | CallInstS { var_inst; targs; args } ->
+      type_call_inst_stmt cursor ctx flow var_inst targs args
   | TransS { expr_label } -> type_transition_stmt cursor ctx flow expr_label
   | DeclS { decl } -> type_decl_stmt cursor ctx flow decl
 
@@ -2639,6 +2641,62 @@ and type_call_method_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   let stmt_il =
     Lang.Ast.CallMethodS
       { expr_base = expr_base_il; member; targs = targs_il; args = args_il }
+  in
+  (ctx, flow, stmt_il)
+
+(* (15.1) Direct type invocation
+
+   Controls and parsers are often instantiated exactly once.
+   As a light syntactic sugar, control and parser declarations with no
+   constructor parameters may be applied directly, as if they were an instance.
+   This has the effect of creating and applying a local instance of that type.
+
+   For completeness, the behavior of directly invoking the same type
+   more than once is defined as follows.
+
+    - Direct type invocation in different scopes will result in different local
+      instances with different fully-qualified control names.
+    - In the same scope, direct type invocation will result in a different local
+      instance per invocation—however, instances of the same type will share the
+      same global name, via the @name annotation. If the type contains controllable
+      entities, then invoking it directly more than once in the same scope is illegal,
+      because it will produce multiple controllable entities with the
+      same fully-qualified control name.
+
+   No direct invocation is possible for controls or parsers that require
+   constructor arguments. These need to be instantiated before they are invoked. *)
+
+and type_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
+    (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
+    : Ctx.t * Flow.t * Il.Ast.stmt' =
+  let typ, _, expr_il = type_instantiation cursor ctx var_inst targs [] in
+  if not (match typ with ParserT _ | ControlT _ -> true | _ -> false) then (
+    Format.printf
+      "(type_call_inst_stmt) Direct type invocation is only defined for a \
+       control or parser\n";
+    assert false);
+  let var_inst, targs_il =
+    match expr_il with
+    | Il.Ast.InstE { var_inst; targs = targs_il; _ } -> (var_inst, targs_il)
+    | _ -> assert false
+  in
+  (* (TODO) Should handle the case where the same name is used in the same scope *)
+  let id = Format.asprintf "%a" Il.Pp.pp_var var_inst $ no_info in
+  let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
+  let expr_base =
+    El.Ast.VarE { var = Lang.Ast.Current id $ no_info } $ no_info
+  in
+  let member = "apply" $ no_info in
+  let ctx, flow, stmt_il =
+    type_call_method_stmt cursor ctx flow expr_base member [] args
+  in
+  let args_il =
+    match stmt_il with
+    | Lang.Ast.CallMethodS { args = args_il; _ } -> args_il
+    | _ -> assert false
+  in
+  let stmt_il =
+    Lang.Ast.CallInstS { var_inst; targs = targs_il; args = args_il }
   in
   (ctx, flow, stmt_il)
 
