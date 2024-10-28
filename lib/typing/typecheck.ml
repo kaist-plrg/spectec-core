@@ -49,12 +49,17 @@ let rec insert_cast (expr_il : Il.Ast.expr) (typ : Type.t) : Il.Ast.expr =
 
 and coerce_types_binary (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) :
     Type.t * Il.Ast.expr * Il.Ast.expr =
-  match coerce_types_binary' expr_l_il expr_r_il with
-  | Some (typ, expr_l_il, expr_r_il) -> (typ, expr_l_il, expr_r_il)
-  | None ->
-      Format.printf "(coerce_types_binary) Cannot coerce types %a and %a\n"
-        Type.pp expr_l_il.note.typ Type.pp expr_r_il.note.typ;
-      assert false
+  let typ_l = expr_l_il.note.typ in
+  let typ_r = expr_r_il.note.typ in
+  if Eq.eq_typ_alpha typ_l typ_r then (typ_l, expr_l_il, expr_r_il)
+  else if Subtyp.sub typ_l typ_r then
+    (typ_r, insert_cast expr_l_il typ_r, expr_r_il)
+  else if Subtyp.sub typ_r typ_l then
+    (typ_l, expr_l_il, insert_cast expr_r_il typ_l)
+  else (
+    Format.printf "(coerce_types_binary) Cannot coerce types %a and %a\n"
+      Type.pp expr_l_il.note.typ Type.pp expr_r_il.note.typ;
+    assert false)
 
 and coerce_types_binary_numeric (expr_l_il : Il.Ast.expr)
     (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr * Il.Ast.expr =
@@ -70,159 +75,17 @@ and coerce_types_binary_numeric (expr_l_il : Il.Ast.expr)
   let typ, expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   reduce_senum typ expr_l_il expr_r_il
 
-and coerce_types_binary' (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) :
-    (Type.t * Il.Ast.expr * Il.Ast.expr) option =
-  let coerce_unequal_types_binary' (typ_l : Type.t) (typ_r : Type.t) :
-      (Type.t * Il.Ast.expr * Il.Ast.expr) option =
-    match (typ_l, typ_r) with
-    (* coerce arbitrary precision int to fixed width *)
-    | IntT, FIntT _ | IntT, FBitT _ ->
-        let expr_l_il = insert_cast expr_l_il typ_r in
-        Some (typ_r, expr_l_il, expr_r_il)
-    | FIntT _, IntT | FBitT _, IntT ->
-        let expr_r_il = insert_cast expr_r_il typ_l in
-        Some (typ_l, expr_l_il, expr_r_il)
-    (* coerce serializable enum to its underlying type *)
-    | SEnumT (_, typ_l_inner), _ ->
-        let expr_l_il = insert_cast expr_l_il typ_l_inner in
-        coerce_types_binary' expr_l_il expr_r_il
-    | _, SEnumT (_, typ_r_inner) ->
-        let expr_r_il = insert_cast expr_r_il typ_r_inner in
-        coerce_types_binary' expr_l_il expr_r_il
-    (* coerce sequence to tuple *)
-    | SeqT _, TupleT _ when coerce_type_assign'' typ_l typ_r ->
-        let expr_l_il = insert_cast expr_l_il typ_r in
-        Some (typ_r, expr_l_il, expr_r_il)
-    | TupleT _, SeqT _ when coerce_type_assign'' typ_r typ_l ->
-        let expr_r_il = insert_cast expr_r_il typ_l in
-        Some (typ_l, expr_l_il, expr_r_il)
-    (* coerce sequence to struct *)
-    | SeqT _, StructT _ when coerce_type_assign'' typ_l typ_r ->
-        let expr_l_il = insert_cast expr_l_il typ_r in
-        Some (typ_r, expr_l_il, expr_r_il)
-    | StructT _, SeqT _ when coerce_type_assign'' typ_r typ_l ->
-        let expr_r_il = insert_cast expr_r_il typ_l in
-        Some (typ_l, expr_l_il, expr_r_il)
-    (* coerce sequence to header *)
-    | SeqT _, HeaderT _ when coerce_type_assign'' typ_l typ_r ->
-        let expr_l_il = insert_cast expr_l_il typ_r in
-        Some (typ_r, expr_l_il, expr_r_il)
-    | HeaderT _, SeqT _ when coerce_type_assign'' typ_r typ_l ->
-        let expr_r_il = insert_cast expr_r_il typ_l in
-        Some (typ_l, expr_l_il, expr_r_il)
-    (* coerce record to struct *)
-    | RecordT _, StructT _ when coerce_type_assign'' typ_l typ_r ->
-        let expr_l_il = insert_cast expr_l_il typ_r in
-        Some (typ_r, expr_l_il, expr_r_il)
-    | StructT _, RecordT _ when coerce_type_assign'' typ_r typ_l ->
-        let expr_r_il = insert_cast expr_r_il typ_l in
-        Some (typ_l, expr_l_il, expr_r_il)
-    (* coerce record to header *)
-    | RecordT _, HeaderT _ when coerce_type_assign'' typ_l typ_r ->
-        let expr_l_il = insert_cast expr_l_il typ_r in
-        Some (typ_r, expr_l_il, expr_r_il)
-    | HeaderT _, RecordT _ when coerce_type_assign'' typ_r typ_l ->
-        let expr_r_il = insert_cast expr_r_il typ_l in
-        Some (typ_l, expr_l_il, expr_r_il)
-    | _ -> None
-  in
-  let typ_l, typ_r = (expr_l_il.note.typ, expr_r_il.note.typ) in
-  if Eq.eq_typ_alpha typ_l typ_r then Some (typ_l, expr_l_il, expr_r_il)
-  else coerce_unequal_types_binary' typ_l typ_r
-
 (* Coercion for assignment (including assignment by call and return) *)
 
 and coerce_type_assign (expr_from_il : Il.Ast.expr) (typ_to : Type.t) :
     Il.Ast.expr =
-  match coerce_type_assign' expr_from_il typ_to with
-  | Some expr_from_il -> expr_from_il
-  | None ->
-      Format.printf "(coerce_type) Cannot coerce type %a to %a\n" Type.pp
-        expr_from_il.note.typ Type.pp typ_to;
-      assert false
-
-and coerce_type_assign' (expr_from_il : Il.Ast.expr) (typ_to : Type.t) :
-    Il.Ast.expr option =
-  let coerce_unequal_type_assign' (typ_from : Type.t) (typ_to : Type.t) :
-      Il.Ast.expr option =
-    match (typ_from, typ_to) with
-    (* coerce arbitrary precision int to fixed width *)
-    | IntT, FIntT _ | IntT, FBitT _ ->
-        let expr_from_il = insert_cast expr_from_il typ_to in
-        Some expr_from_il
-    (* coerce serializable enum to its underlying type *)
-    | SEnumT (_, typ_from_inner), _ ->
-        let expr_from_il = insert_cast expr_from_il typ_from_inner in
-        coerce_type_assign' expr_from_il typ_to
-    (* coerce sequence to sequence *)
-    | SeqT _, SeqT _ when coerce_type_assign'' typ_from typ_to ->
-        let expr_from_il = insert_cast expr_from_il typ_to in
-        Some expr_from_il
-    (* coerce sequence to tuple *)
-    | SeqT _, TupleT _ when coerce_type_assign'' typ_from typ_to ->
-        let expr_from_il = insert_cast expr_from_il typ_to in
-        Some expr_from_il
-    (* coerce sequence to struct *)
-    | SeqT _, StructT _ when coerce_type_assign'' typ_from typ_to ->
-        let expr_from_il = insert_cast expr_from_il typ_to in
-        Some expr_from_il
-    (* coerce sequence to header *)
-    | SeqT _, HeaderT _ when coerce_type_assign'' typ_from typ_to ->
-        let expr_from_il = insert_cast expr_from_il typ_to in
-        Some expr_from_il
-    (* coerce record to struct *)
-    | RecordT _, StructT _ when coerce_type_assign'' typ_from typ_to ->
-        let expr_from_il = insert_cast expr_from_il typ_to in
-        Some expr_from_il
-    (* coerce record to header *)
-    | RecordT _, HeaderT _ when coerce_type_assign'' typ_from typ_to ->
-        let expr_from_il = insert_cast expr_from_il typ_to in
-        Some expr_from_il
-    | _ -> None
-  in
   let typ_from = expr_from_il.note.typ in
-  if Eq.eq_typ_alpha typ_from typ_to then Some expr_from_il
-  else coerce_unequal_type_assign' typ_from typ_to
-
-and coerce_type_assign'' (typ_from : Type.t) (typ_to : Type.t) : bool =
-  let coerce_unequal_type_assign'' () : bool =
-    match (typ_from, typ_to) with
-    (* coerce arbitrary precision int to fixed width *)
-    | IntT, FIntT _ | IntT, FBitT _ -> true
-    (* coerce serializable enum to its underlying type *)
-    | SEnumT (_, typ_from_inner), _ ->
-        coerce_type_assign'' typ_from_inner typ_to
-    (* coerce sequence to sequence *)
-    | SeqT typs_inner_from, SeqT typs_inner_to ->
-        List.for_all2 coerce_type_assign'' typs_inner_from typs_inner_to
-    (* coerce sequence to tuple *)
-    | SeqT typs_inner_from, TupleT typs_inner_to ->
-        List.for_all2 coerce_type_assign'' typs_inner_from typs_inner_to
-    (* coerce sequence to struct *)
-    | SeqT typs_inner_from, StructT (_, fields_to) ->
-        let typs_inner_to = List.map snd fields_to in
-        List.for_all2 coerce_type_assign'' typs_inner_from typs_inner_to
-    (* coerce sequence to header *)
-    | SeqT typs_inner_from, HeaderT (_, fields_to) ->
-        let typs_inner_to = List.map snd fields_to in
-        List.for_all2 coerce_type_assign'' typs_inner_from typs_inner_to
-    (* coerce record to struct *)
-    | RecordT fields_from, StructT (_, fields_to) ->
-        let members_from, typs_inner_from = List.split fields_from in
-        let members_to, typs_inner_to = List.split fields_to in
-        List.for_all2 ( = ) members_from members_to
-        && List.for_all2 coerce_type_assign'' typs_inner_from typs_inner_to
-    (* coerce record to header *)
-    | RecordT fields_from, HeaderT (_, fields_to) ->
-        let members_from, typs_inner_from = List.split fields_from in
-        let members_to, typs_inner_to = List.split fields_to in
-        List.for_all2 ( = ) members_from members_to
-        && List.for_all2 coerce_type_assign'' typs_inner_from typs_inner_to
-    (* (TODO) What about header union? *)
-    | _ -> false
-  in
-  if Eq.eq_typ_alpha typ_from typ_to then true
-  else coerce_unequal_type_assign'' ()
+  if Eq.eq_typ_alpha typ_from typ_to then expr_from_il
+  else if Subtyp.sub typ_from typ_to then insert_cast expr_from_il typ_to
+  else (
+    Format.printf "(coerce_type) Cannot coerce type %a to %a\n" Type.pp
+      expr_from_il.note.typ Type.pp typ_to;
+    assert false)
 
 (* Type inference *)
 

@@ -431,8 +431,7 @@ Typecheck success: test/program/well-typed/enum-folding.p4
 Typecheck success: test/program/well-typed/enum.p4
 
 >>> Running typecheck test on test/program/well-typed/enumCast.p4
-(coerce_type) Cannot coerce type bit<32> to enum<bit<32>> X
-Error while typechecking p4 file: test/program/well-typed/enumCast.p4
+Typecheck success: test/program/well-typed/enumCast.p4
 
 >>> Running typecheck test on test/program/well-typed/equality-bmv2.p4
 Typecheck success: test/program/well-typed/equality-bmv2.p4
@@ -2017,8 +2016,7 @@ Typecheck success: test/program/well-typed/issue3324.p4
 Typecheck success: test/program/well-typed/issue3329-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3333.p4
-(coerce_type) Cannot coerce type int to enum<bit<8>> myenum
-Error while typechecking p4 file: test/program/well-typed/issue3333.p4
+Typecheck success: test/program/well-typed/issue3333.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3343.p4
 (type_decl) value_set<bit<6>>(4) myvs;
@@ -4081,4 +4079,4 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Error while typechecking p4 file: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1149/1233 (93.19%) [FAIL] 84/1233 (6.81%)
-Typecheck: [PASS] 877/1149 (76.33%) [FAIL] 272/1149 (23.67%)
+Typecheck: [PASS] 879/1149 (76.50%) [FAIL] 270/1149 (23.50%)

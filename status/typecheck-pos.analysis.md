@@ -133,7 +133,7 @@ top(c()) main;
 * unused.p4
 </details>
 
-#### Type coercion between serializable enum and its underlying type (11)
+#### Type coercion between serializable enum and its underlying type (9)
 
 But it is difficult to determine 'when' it should occur.
 
@@ -148,11 +148,9 @@ transition select (o.b.x) {
 <details>
 <summary>Tests</summary>
 
-* enumCast.p4
 * issue1001-1-bmv2.p4
 * issue3056.p4
 * issue3288.p4
-* issue3333.p4
 * issue3635.p4
 * psa-dpdk-binary-operations-1.p4
 * psa-dpdk-binary-operations.p4

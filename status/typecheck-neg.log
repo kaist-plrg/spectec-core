@@ -141,8 +141,7 @@ Typecheck success: test/program/ill-typed/dupConst.p4
 Typecheck success: test/program/ill-typed/duplicate-label.p4
 
 >>> Running typecheck test on test/program/ill-typed/enumCast.p4
-(coerce_type) Cannot coerce type int to enum<bit<32>> X
-Error while typechecking p4 file: test/program/ill-typed/enumCast.p4
+Typecheck success: test/program/ill-typed/enumCast.p4
 
 >>> Running typecheck test on test/program/ill-typed/equality-fail.p4
 (coerce_types_binary) Cannot coerce types varbit<32> and header H { a = bit<32>; b = varbit<32> }
@@ -340,8 +339,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue2036.p4
 Typecheck success: test/program/ill-typed/issue2206.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2220.p4
-(coerce_type) Cannot coerce type record { val = bit<8> } to struct S { val = enum<bit<8>> myEnum }
-Error while typechecking p4 file: test/program/ill-typed/issue2220.p4
+Typecheck success: test/program/ill-typed/issue2220.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2230-1-bmv2.p4
 (check_eq_typ_alpha) Types header h1_t { f1 = bit<8>; f2 = bit<8> } and header h2_t { f1 = bit<8>; f2 = bit<8> } are not equal
@@ -564,8 +562,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue345.p4
 Typecheck success: test/program/ill-typed/issue3522.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3534.p4
-(coerce_type) Cannot coerce type bit<2> to enum<bit<2>> e
-Error while typechecking p4 file: test/program/ill-typed/issue3534.p4
+Typecheck success: test/program/ill-typed/issue3534.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3589.p4
 (coerce_types_binary) Cannot coerce types table and table
@@ -960,6 +957,7 @@ Typecheck success: test/program/ill-typed/string-e2.p4
 Error while typechecking p4 file: test/program/ill-typed/struct_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/structure-valued-expr-errs-1.p4
+(coerce_type) Cannot coerce type seq<> to header h1_t { f1 = bit<8> }
 Error while typechecking p4 file: test/program/ill-typed/structure-valued-expr-errs-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/structure-valued-expr-errs-2.p4
@@ -1109,4 +1107,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 251/299 (83.95%) [FAIL] 48/299 (16.05%)
-Typecheck: [PASS] 168/251 (66.93%) [FAIL] 83/251 (33.07%)
+Typecheck: [PASS] 165/251 (65.74%) [FAIL] 86/251 (34.26%)
