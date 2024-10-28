@@ -74,7 +74,7 @@ s2 = { 0 };
 
 ### Type Coercion
 
-#### More type coercion for equality check (2)
+#### ~~More type coercion for equality check~~
 
 Current coercion rule for equality check only assumes numeric types.
 But it should be extended to other types, such as record and sequence types.
@@ -90,13 +90,6 @@ pair p = { 4, 5 };
 S q = { 2, 3 };
 zout = p == { 4, 5 };
 ```
-
-<details>
-<summary>Tests</summary>
-
-* list-compare.p4
-* tuple4.p4
-</details>
 
 #### Type coercion for record types, with reordered fields (1)
 
@@ -910,24 +903,6 @@ const int z1 = 2w1;
 
 * issue2444.p4
 * issue3283.p4
-</details>
-
-## Is it legal to coerce a structure-valued expression to a struct type? (1)
-
-I think it is allowed, but the spec does not explicitly mention this.
-
-```p4
-struct S {
-    bit<32> a;
-    bit<32> b;
-}
-bool b5 = (S) { a = 1, b = 2 } == { a = 1, b = 2 };
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue3057-2.p4
 </details>
 
 ## Equivalence of table actions (2)

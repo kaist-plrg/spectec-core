@@ -415,8 +415,7 @@ Typecheck success: test/program/well-typed/empty-bmv2.p4
 Typecheck success: test/program/well-typed/empty.p4
 
 >>> Running typecheck test on test/program/well-typed/emptyTuple.p4
-(coerce_types_binary) Cannot coerce types tuple<> and seq<>
-Error while typechecking p4 file: test/program/well-typed/emptyTuple.p4
+Typecheck success: test/program/well-typed/emptyTuple.p4
 
 >>> Running typecheck test on test/program/well-typed/entries-prio.p4
 parser error: File test/program/well-typed/entries-prio.p4, line 33, characters 8-15
@@ -1918,8 +1917,7 @@ Error while typechecking p4 file: test/program/well-typed/issue3051.p4
 Error while typechecking p4 file: test/program/well-typed/issue3056.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3057-2.p4
-(coerce_types_binary) Cannot coerce types struct S { a = bit<32>; b = bit<32> } and record { a = int; b = int }
-Error while typechecking p4 file: test/program/well-typed/issue3057-2.p4
+Typecheck success: test/program/well-typed/issue3057-2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3091-1.p4
 (check_valid_type_nesting) Invalid nesting of match_kind inside tuple<match_kind>
@@ -2479,12 +2477,9 @@ Typecheck success: test/program/well-typed/length_ebpf.p4
 Typecheck success: test/program/well-typed/line.p4
 
 >>> Running typecheck test on test/program/well-typed/list-compare.p4
-(coerce_types_binary) Cannot coerce types tuple<bit<32>,
-bit<32>> and seq<int,Error while typechecking p4 file: test/program/well-typed/list-compare.p4
+Typecheck success: test/program/well-typed/list-compare.p4
 
 >>> Running typecheck test on test/program/well-typed/list.p4
-
-int>
 parser error: File test/program/well-typed/list.p4, line 4, characters 6-10
 Error while parsing p4 file: test/program/well-typed/list.p4
 
@@ -3925,8 +3920,7 @@ Typecheck success: test/program/well-typed/tuple2.p4
 Error while typechecking p4 file: test/program/well-typed/tuple3.p4
 
 >>> Running typecheck test on test/program/well-typed/tuple4.p4
-(coerce_types_binary) Cannot coerce types tuple<bit<32>,
-bit<16>> and seq<int,Error while typechecking p4 file: test/program/well-typed/tuple4.p4
+Typecheck success: test/program/well-typed/tuple4.p4
 
 >>> Running typecheck test on test/program/well-typed/two-functions.p4
 Typecheck success: test/program/well-typed/two-functions.p4
@@ -3935,8 +3929,6 @@ Typecheck success: test/program/well-typed/two-functions.p4
 Typecheck success: test/program/well-typed/twoPipe.p4
 
 >>> Running typecheck test on test/program/well-typed/two_ebpf.p4
-
-int>
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed/two_ebpf.p4
 
@@ -4089,4 +4081,4 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Error while typechecking p4 file: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1149/1233 (93.19%) [FAIL] 84/1233 (6.81%)
-Typecheck: [PASS] 873/1149 (75.98%) [FAIL] 276/1149 (24.02%)
+Typecheck: [PASS] 877/1149 (76.33%) [FAIL] 272/1149 (23.67%)

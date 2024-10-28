@@ -93,35 +93,35 @@ and coerce_types_binary' (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) :
     | SeqT _, TupleT _ when coerce_type_assign'' typ_l typ_r ->
         let expr_l_il = insert_cast expr_l_il typ_r in
         Some (typ_r, expr_l_il, expr_r_il)
-    | TupleT _, SeqT _ when coerce_type_assign'' typ_l typ_r ->
+    | TupleT _, SeqT _ when coerce_type_assign'' typ_r typ_l ->
         let expr_r_il = insert_cast expr_r_il typ_l in
         Some (typ_l, expr_l_il, expr_r_il)
     (* coerce sequence to struct *)
     | SeqT _, StructT _ when coerce_type_assign'' typ_l typ_r ->
         let expr_l_il = insert_cast expr_l_il typ_r in
         Some (typ_r, expr_l_il, expr_r_il)
-    | StructT _, SeqT _ when coerce_type_assign'' typ_l typ_r ->
+    | StructT _, SeqT _ when coerce_type_assign'' typ_r typ_l ->
         let expr_r_il = insert_cast expr_r_il typ_l in
         Some (typ_l, expr_l_il, expr_r_il)
     (* coerce sequence to header *)
     | SeqT _, HeaderT _ when coerce_type_assign'' typ_l typ_r ->
         let expr_l_il = insert_cast expr_l_il typ_r in
         Some (typ_r, expr_l_il, expr_r_il)
-    | HeaderT _, SeqT _ when coerce_type_assign'' typ_l typ_r ->
+    | HeaderT _, SeqT _ when coerce_type_assign'' typ_r typ_l ->
         let expr_r_il = insert_cast expr_r_il typ_l in
         Some (typ_l, expr_l_il, expr_r_il)
     (* coerce record to struct *)
     | RecordT _, StructT _ when coerce_type_assign'' typ_l typ_r ->
         let expr_l_il = insert_cast expr_l_il typ_r in
         Some (typ_r, expr_l_il, expr_r_il)
-    | StructT _, RecordT _ when coerce_type_assign'' typ_l typ_r ->
+    | StructT _, RecordT _ when coerce_type_assign'' typ_r typ_l ->
         let expr_r_il = insert_cast expr_r_il typ_l in
         Some (typ_l, expr_l_il, expr_r_il)
     (* coerce record to header *)
     | RecordT _, HeaderT _ when coerce_type_assign'' typ_l typ_r ->
         let expr_l_il = insert_cast expr_l_il typ_r in
         Some (typ_r, expr_l_il, expr_r_il)
-    | HeaderT _, RecordT _ when coerce_type_assign'' typ_l typ_r ->
+    | HeaderT _, RecordT _ when coerce_type_assign'' typ_r typ_l ->
         let expr_r_il = insert_cast expr_r_il typ_l in
         Some (typ_l, expr_l_il, expr_r_il)
     | _ -> None
