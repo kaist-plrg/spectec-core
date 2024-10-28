@@ -1454,24 +1454,22 @@ Typecheck success: test/program/well-typed/issue2155.p4
 Typecheck success: test/program/well-typed/issue2170-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2175-1.p4
-(type_instantiation_decl) Abstract method f() is not declared
+(type_instantiation_decl) Abstract method g(ix) is not defined
 Error while typechecking p4 file: test/program/well-typed/issue2175-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2175-2.p4
-(type_instantiation_decl) Abstract method a(arg) is not declared
-Error while typechecking p4 file: test/program/well-typed/issue2175-2.p4
+Typecheck success: test/program/well-typed/issue2175-2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2175-3.p4
-(type_instantiation_decl) Abstract method a(arg1) is not declared
+(type_instantiation_decl) Abstract method a(arg) is not defined
 Error while typechecking p4 file: test/program/well-typed/issue2175-3.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2175-4.p4
-(type_instantiation_decl) Abstract method f(ix) is not declared
+(type_instantiation_decl) Abstract method g(ix) is not defined
 Error while typechecking p4 file: test/program/well-typed/issue2175-4.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2175-5.p4
-(type_instantiation_decl) Abstract method a(arg) is not declared
-Error while typechecking p4 file: test/program/well-typed/issue2175-5.p4
+Typecheck success: test/program/well-typed/issue2175-5.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2175-6.p4
 Typecheck success: test/program/well-typed/issue2175-6.p4
@@ -1536,12 +1534,11 @@ Error while typechecking p4 file: test/program/well-typed/issue2265.p4
 Typecheck success: test/program/well-typed/issue2266.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2273-1.p4
-(type_instantiation_decl) Abstract method overflow(value, rv) is not declared
+(type_var_expr) hdr is a free identifier
 Error while typechecking p4 file: test/program/well-typed/issue2273-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2273.p4
-(type_instantiation_decl) Abstract method underflow(value, rv) is not declared
-Error while typechecking p4 file: test/program/well-typed/issue2273.p4
+Typecheck success: test/program/well-typed/issue2273.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2279.p4
 Typecheck success: test/program/well-typed/issue2279.p4
@@ -1880,8 +1877,7 @@ Typecheck success: test/program/well-typed/issue3001-1.p4
 Typecheck success: test/program/well-typed/issue3001.p4
 
 >>> Running typecheck test on test/program/well-typed/issue304-1.p4
-(type_var_expr) this is a free identifier
-Error while typechecking p4 file: test/program/well-typed/issue304-1.p4
+Typecheck success: test/program/well-typed/issue304-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue304.p4
 Typecheck success: test/program/well-typed/issue304.p4
@@ -1985,8 +1981,7 @@ parser error: File test/program/well-typed/issue3292.p4, line 1, characters 8-9
 Error while parsing p4 file: test/program/well-typed/issue3292.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3307.p4
-(type_instantiation_decl) Abstract method f(a) is not declared
-Error while typechecking p4 file: test/program/well-typed/issue3307.p4
+Typecheck success: test/program/well-typed/issue3307.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3324.p4
 Typecheck success: test/program/well-typed/issue3324.p4
@@ -2018,7 +2013,7 @@ Typecheck success: test/program/well-typed/issue3379.p4
 Typecheck success: test/program/well-typed/issue3394.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3417.p4
-(type_instantiation_decl) Abstract method apply(val, rv) is not declared
+(type_instantiation_decl) Abstract method apply(value, rv) is not defined
 Error while typechecking p4 file: test/program/well-typed/issue3417.p4
 
 >>> Running typecheck test on test/program/well-typed/issue344.p4
@@ -3998,7 +3993,7 @@ Typecheck success: test/program/well-typed/version.p4
 Typecheck success: test/program/well-typed/very_simple_model.p4
 
 >>> Running typecheck test on test/program/well-typed/virtual.p4
-(type_instantiation_decl) Abstract method f(ix) is not declared
+(type_instantiation_decl) Abstract method g(ix) is not defined
 Error while typechecking p4 file: test/program/well-typed/virtual.p4
 
 >>> Running typecheck test on test/program/well-typed/virtual2.p4
@@ -4006,7 +4001,7 @@ Error while typechecking p4 file: test/program/well-typed/virtual.p4
 Error while typechecking p4 file: test/program/well-typed/virtual2.p4
 
 >>> Running typecheck test on test/program/well-typed/virtual3.p4
-(type_instantiation_decl) Abstract method f(ix) is not declared
+(type_var_expr) local is a free identifier
 Error while typechecking p4 file: test/program/well-typed/virtual3.p4
 
 >>> Running typecheck test on test/program/well-typed/vss-example.p4
@@ -4029,4 +4024,4 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Error while typechecking p4 file: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1178/1233 (95.54%) [FAIL] 55/1233 (4.46%)
-Typecheck: [PASS] 900/1178 (76.40%) [FAIL] 278/1178 (23.60%)
+Typecheck: [PASS] 905/1178 (76.83%) [FAIL] 273/1178 (23.17%)

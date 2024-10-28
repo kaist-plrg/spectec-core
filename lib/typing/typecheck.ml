@@ -2895,12 +2895,18 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let typ, init_il =
     match typ with
     | ExternT (id, fdenv_extern) ->
+        let ctx =
+          { Ctx.empty with global = ctx.global }
+          |> Ctx.add_rtype Ctx.Local "this" typ Lang.Ast.No Ctk.CTK
+        in
         let fdenv_abstract, init_il = type_instantiation_init_decls ctx init in
         let fdenv_extern =
           Envs.FDEnv.fold
             (fun fid fd fdenv_extern ->
               let typ_ret = FuncDef.get_typ_ret fd in
-              let fd_extern = Envs.FDEnv.find_overloaded_opt fid fdenv_extern in
+              let fd_extern =
+                Envs.FDEnv.find_overloaded_opt fid fdenv_abstract
+              in
               (* (TODO) What if extern abstract method decl has type parameters? *)
               if
                 match (fd_extern : FuncDef.t option) with

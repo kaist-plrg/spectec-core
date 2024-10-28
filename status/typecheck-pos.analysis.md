@@ -232,7 +232,7 @@ Virtual() cntr = {
 * virtual2.p4
 </details>
 
-#### Instantiation block with an abstract method (11)
+#### ~~Instantiation block with an abstract method~~
 
 The abstract method instantiation logic does not seem to work.
 And we have to take `this` into account.
@@ -261,23 +261,6 @@ X() x = {
     void a(inout bit<32> arg) { arg = arg + this.b(); }
 };
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue2175-1.p4
-* issue2175-2.p4
-* issue2175-3.p4
-* issue2175-4.p4
-* issue2175-5.p4
-* issue2273-1.p4
-* issue2273.p4
-* issue304-1.p4
-* issue3307.p4
-* issue3417.p4
-* virtual.p4
-* virtual3.p4
-</details>
 
 ### Keyset and sequence type (Need investigation) (3)
 
@@ -813,6 +796,54 @@ Reject(x);
 * direct-action1.p4
 </details>
 
+## How to match abstract methods when initializing an instance? (4)
+
+When initializing an instance with an abstract method, to determine if the method was declared as abstract, I believe we should match the method using both the method name and argument names.
+Mainly because P4 allows overloading of methods through argument names.
+But the test cases below seem to use only method names for matching.
+
+```p4
+extern Virtual {
+    Virtual();
+    abstract bit<16> f();
+    abstract void g(inout data ix);
+}
+...
+Virtual() cntr = {
+    bit<16> f() {
+        return 1;
+    }
+    void g(inout data x) {}
+};
+```
+
+This can get confusing with the presence of overloading.
+
+```p4
+extern Virtual {
+    Virtual();
+    abstract bit<16> f();
+    abstract void g(inout data ix);
+    abstract void g(inout data x);
+}
+...
+Virtual() cntr = {
+    bit<16> f() {
+        return 1;
+    }
+    void g(inout data x) {}
+};
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue2175-1.p4
+* issue2175-3.p4
+* issue2175-4.p4
+* virtual.p4
+</details>
+
 ## Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this (2)
 
 ```p4
@@ -1094,7 +1125,7 @@ table tbl_idle_timeout {
 * psa-idle-timeout.p4
 </details>
 
-## Optional argument (7)
+## Optional argument (9)
 
 ```p4
 extern Checksum {
@@ -1109,11 +1140,13 @@ h.h.result = ipv4_checksum.update({ h.eth_hdr.dst_addr, h.eth_hdr.src_addr, h.et
 <summary>Tests</summary>
 
 * gauntlet_optional-bmv2.p4
+* issue2273-1.p4
 * issue2492.p4
 * issue2630.p4
 * issue2664-bmv2.p4
 * issue2810.p4
 * issue3051.p4
+* issue3417.p4
 * pna-dpdk-direct-counter.p4
 </details>
 
@@ -1174,7 +1207,33 @@ log("Log message" ++ " text");
 
 # Should be a negative test instead?
 
-## issue2514.p4
+## Scope of abstract method when initializing an instance (2)
+
+When initializing an instance with an abstract method, it can only refer to its arguments or identifiers in the top-level scope.
+The spec mentions: "The abstract methods can only use the supplied arguments or refer to values that are in the top-level scope. When calling another method of the same instance the this keyword is used to indicate the current object instance. (11.3.1)".
+But the test cases below seem to violate this.
+
+```p4
+control ingress(inout headers hdr) {
+    Stack<bit<16>>(2048) stack;
+    StackAction<bit<16>, bit<16>>(stack) write = {
+        void apply(inout bit<16> value) {
+            value = hdr.data.h1; // illegal to refer to hdr
+        }
+        void overflow(inout bit<16> value, out bit<16> rv) {
+            rv = 0x0f0f;
+        }
+    };
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue2273-1.p4
+* virtual3.p4
+</details>
+
+## Syntax for select keyset (1)
 
 This should be a negative test.
 
@@ -1189,7 +1248,13 @@ transition select (hdr.h.f1) {
 }
 ```
 
-## issue3287.p4
+<details>
+<summary>Tests</summary>
+
+* issue2514.p4
+</details>
+
+## Shift by signed integer (1)
 
 This shifts by a signed integer, which is illegal.
 This should be a negative test.
@@ -1201,7 +1266,13 @@ bit<4> func(in bit<4> l) {
 }
 ```
 
-## pipe.p4
+<details>
+<summary>Tests</summary>
+
+* issue3287.p4
+</details>
+
+## Duplicate definition of `match_kind` (1)
 
 `ternary` is defined twice.
 This should be a negative test.
@@ -1214,7 +1285,13 @@ match_kind {
 }
 ```
 
-## spec-ex25.p4
+<details>
+<summary>Tests</summary>
+
+* pipe.p4
+</details>
+
+## Mask expressions for `exact` key (1)
 
 We cannot use mask expressions for `exact` key.
 This should be a negative test.
@@ -1230,20 +1307,28 @@ table unit {
 }
 ```
 
-## issue3091-1.p4
+<details>
+<summary>Tests</summary>
 
-`match_kind` *cannot* be nested inside a tuple type.
+* spec-ex25.p4
+</details>
+
+## Nesting `match_kind` or `int` inside a tuple type (2)
+
+`match_kind` and `int` *cannot* be nested inside a tuple type.
 This should be a negative test.
 
 ```p4
 const tuple<match_kind> exact_once = { exact };
 ```
 
-## issue3238.p4
-
-`int` *cannot* be nested inside a tuple type.
-This should be a negative test.
-
 ```p4
 tuple<int> t = { t1 };
 ```
+
+<details>
+<summary>Tests</summary>
+
+* issue3091-1.p4
+* issue3238.p4
+</details>

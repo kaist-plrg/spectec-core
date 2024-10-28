@@ -487,8 +487,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3271-1.p4
 Typecheck success: test/program/ill-typed/issue3271.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3273.p4
-(type_instantiation_decl) Abstract method f() is not declared
-Error while typechecking p4 file: test/program/ill-typed/issue3273.p4
+Typecheck success: test/program/ill-typed/issue3273.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3282.p4
 Typecheck success: test/program/ill-typed/issue3282.p4
@@ -1094,11 +1093,10 @@ Error while typechecking p4 file: test/program/ill-typed/virtual3.p4
 Error while typechecking p4 file: test/program/ill-typed/virtual4.p4
 
 >>> Running typecheck test on test/program/ill-typed/virtual5.p4
-(type_instantiation_decl) Abstract method f(ix) is not declared
-Error while typechecking p4 file: test/program/ill-typed/virtual5.p4
+Typecheck success: test/program/ill-typed/virtual5.p4
 
 >>> Running typecheck test on test/program/ill-typed/virtual6.p4
-(type_instantiation_decl) Abstract method f(ix) is not declared
+(type_instantiation_decl) Abstract method g() is not defined
 Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 
 >>> Running typecheck test on test/program/ill-typed/wrong-cast.p4
@@ -1106,4 +1104,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 252/299 (84.28%) [FAIL] 47/299 (15.72%)
-Typecheck: [PASS] 166/252 (65.87%) [FAIL] 86/252 (34.13%)
+Typecheck: [PASS] 164/252 (65.08%) [FAIL] 88/252 (34.92%)
