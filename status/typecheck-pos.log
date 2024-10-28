@@ -2803,8 +2803,7 @@ Error while typechecking p4 file: test/program/well-typed/pna-dpdk-direct-meter-
 Typecheck success: test/program/well-typed/pna-dpdk-flatten-local-struct-decl.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-dpdk-header-stack-assignment.p4
-(type_method) Method maxSizeInBytes not found for hdrs.ipv4[0]
-Error while typechecking p4 file: test/program/well-typed/pna-dpdk-header-stack-assignment.p4
+Typecheck success: test/program/well-typed/pna-dpdk-header-stack-assignment.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-dpdk-header-union-stack.p4
 Typecheck success: test/program/well-typed/pna-dpdk-header-union-stack.p4
@@ -4096,4 +4095,4 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Error while typechecking p4 file: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1149/1233 (93.19%) [FAIL] 84/1233 (6.81%)
-Typecheck: [PASS] 866/1149 (75.37%) [FAIL] 283/1149 (24.63%)
+Typecheck: [PASS] 867/1149 (75.46%) [FAIL] 282/1149 (24.54%)

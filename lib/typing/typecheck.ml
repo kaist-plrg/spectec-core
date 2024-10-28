@@ -2111,7 +2111,8 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
             let params = [ ("count", Lang.Ast.No, Types.IntT, None) ] in
             let typ_ret = Types.VoidT in
             (Types.BuiltinMethodT (params, typ_ret), None)
-        | "minSizeInBits" | "minSizeInBytes" ->
+        | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits"
+        | "maxSizeInBytes" ->
             (Types.BuiltinMethodT ([], Types.IntT), None)
         | _ -> error_not_found ())
     | StructT _ -> (
@@ -2124,13 +2125,15 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
         | "isValid" -> (Types.BuiltinMethodT ([], Types.BoolT), None)
         | "setValid" | "setInvalid" ->
             (Types.BuiltinMethodT ([], Types.VoidT), None)
-        | "minSizeInBits" | "minSizeInBytes" ->
+        | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits"
+        | "maxSizeInBytes" ->
             (Types.BuiltinMethodT ([], Types.IntT), None)
         | _ -> error_not_found ())
     | UnionT _ -> (
         match member.it with
         | "isValid" -> (Types.BuiltinMethodT ([], Types.BoolT), None)
-        | "minSizeInBits" | "minSizeInBytes" ->
+        | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits"
+        | "maxSizeInBytes" ->
             (Types.BuiltinMethodT ([], Types.IntT), None)
         | _ -> error_not_found ())
     | ExternT (_id, fdenv) -> (
