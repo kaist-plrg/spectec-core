@@ -391,23 +391,7 @@ enum bit<4> e {
 * issue3616.p4
 </details>
 
-### (3) Well-formedness of nested externs (3)
-
-```p4
-typedef bit<(48 + 12 + 9)> Mac_entry;
-typedef register<Mac_entry> Mac_table;
-```
-
-<details>
-<summary>Tests</summary>
-
-* extern-inst-as-param.p4
-* issue2735-bmv2.p4
-* issue2735.p4
-* typedef-constructor.p4
-</details>
-
-### (4) `error` types can be `exact` matched (4)
+### (3) `error` types can be `exact` matched (4)
 
 "The `error` type only supports equality (`==`) and inequality (`!=`) comparisons." (8.2).
 
@@ -429,7 +413,7 @@ table t_exact {
 * psa-example-parser-checksum.p4
 </details>
 
-### (5) `selector` match kind (10)
+### (4) `selector` match kind (10)
 
 ```p4
 table indirect_ws {
@@ -961,6 +945,28 @@ const int<32> x = t.t1;
 
 * struct.p4
 * struct1.p4
+</details>
+
+## 10. Type aliasing allowed for externs? (4)
+
+Spec section 7.2.8 lists type nesting rules, but it does not mention whether it is legal to make a type alias of an extern object type via `typedef`.
+
+```p4
+extern MyCounter<I> {
+    MyCounter(bit<32> size);
+    void count(in I index);
+}
+typedef bit<10> my_counter_index_t;
+typedef MyCounter<my_counter_index_t> my_counter_t;
+```
+
+<details>
+<summary>Tests</summary>
+
+* extern-inst-as-param.p4
+* issue2735-bmv2.p4
+* issue2735.p4
+* typedef-constructor.p4
 </details>
 
 # E. Unsupported features
