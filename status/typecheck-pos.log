@@ -794,8 +794,7 @@ Typecheck success: test/program/well-typed/gauntlet_mux_eval-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_mux_hdr-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_mux_typecasting-bmv2.p4
-(type_ternop_expr) Branches 2 and 3w1 must have the same type
-Error while typechecking p4 file: test/program/well-typed/gauntlet_mux_typecasting-bmv2.p4
+Typecheck success: test/program/well-typed/gauntlet_mux_typecasting-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_mux_validity-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_mux_validity-bmv2.p4
@@ -1066,12 +1065,10 @@ Typecheck success: test/program/well-typed/ipv6-actions_ubpf.p4
 Typecheck success: test/program/well-typed/ipv6-switch-ml-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue-2123-2-bmv2.p4
-(type_ternop_expr) Branches 1w1 and 0 must have the same type
-Error while typechecking p4 file: test/program/well-typed/issue-2123-2-bmv2.p4
+Typecheck success: test/program/well-typed/issue-2123-2-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue-2123-3-bmv2.p4
-(type_ternop_expr) Branches 1w1 and 0 must have the same type
-Error while typechecking p4 file: test/program/well-typed/issue-2123-3-bmv2.p4
+Typecheck success: test/program/well-typed/issue-2123-3-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue-2123.p4
 Typecheck success: test/program/well-typed/issue-2123.p4
@@ -1686,8 +1683,7 @@ Typecheck success: test/program/well-typed/issue2393.p4
 Typecheck success: test/program/well-typed/issue2409.p4
 
 >>> Running typecheck test on test/program/well-typed/issue242.p4
-(type_ternop_expr) Branches 32w1 and 0 must have the same type
-Error while typechecking p4 file: test/program/well-typed/issue242.p4
+Typecheck success: test/program/well-typed/issue242.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2444.p4
 (coerce_type) Cannot coerce type bit<2> to int
@@ -2356,8 +2352,7 @@ Typecheck success: test/program/well-typed/issue677-bmv2.p4
 Typecheck success: test/program/well-typed/issue692-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue696-bmv2.p4
-(type_ternop_expr) Branches 32w1 and 0 must have the same type
-Error while typechecking p4 file: test/program/well-typed/issue696-bmv2.p4
+Typecheck success: test/program/well-typed/issue696-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue737-bmv2.p4
 Typecheck success: test/program/well-typed/issue737-bmv2.p4
@@ -2682,8 +2677,7 @@ Typecheck success: test/program/well-typed/parse.p4
 Typecheck success: test/program/well-typed/parser-arg.p4
 
 >>> Running typecheck test on test/program/well-typed/parser-conditional.p4
-(type_ternop_expr) Branches 32w2 and 3 must have the same type
-Error while typechecking p4 file: test/program/well-typed/parser-conditional.p4
+Typecheck success: test/program/well-typed/parser-conditional.p4
 
 >>> Running typecheck test on test/program/well-typed/parser-if.p4
 Typecheck success: test/program/well-typed/parser-if.p4
@@ -4095,4 +4089,4 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Error while typechecking p4 file: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1149/1233 (93.19%) [FAIL] 84/1233 (6.81%)
-Typecheck: [PASS] 867/1149 (75.46%) [FAIL] 282/1149 (24.54%)
+Typecheck: [PASS] 873/1149 (75.98%) [FAIL] 276/1149 (24.02%)

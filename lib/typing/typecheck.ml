@@ -89,6 +89,41 @@ and coerce_types_binary' (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) :
     | _, SEnumT (_, typ_r_inner) ->
         let expr_r_il = insert_cast expr_r_il typ_r_inner in
         coerce_types_binary' expr_l_il expr_r_il
+    (* coerce sequence to tuple *)
+    | SeqT _, TupleT _ when coerce_type_assign'' typ_l typ_r ->
+        let expr_l_il = insert_cast expr_l_il typ_r in
+        Some (typ_r, expr_l_il, expr_r_il)
+    | TupleT _, SeqT _ when coerce_type_assign'' typ_l typ_r ->
+        let expr_r_il = insert_cast expr_r_il typ_l in
+        Some (typ_l, expr_l_il, expr_r_il)
+    (* coerce sequence to struct *)
+    | SeqT _, StructT _ when coerce_type_assign'' typ_l typ_r ->
+        let expr_l_il = insert_cast expr_l_il typ_r in
+        Some (typ_r, expr_l_il, expr_r_il)
+    | StructT _, SeqT _ when coerce_type_assign'' typ_l typ_r ->
+        let expr_r_il = insert_cast expr_r_il typ_l in
+        Some (typ_l, expr_l_il, expr_r_il)
+    (* coerce sequence to header *)
+    | SeqT _, HeaderT _ when coerce_type_assign'' typ_l typ_r ->
+        let expr_l_il = insert_cast expr_l_il typ_r in
+        Some (typ_r, expr_l_il, expr_r_il)
+    | HeaderT _, SeqT _ when coerce_type_assign'' typ_l typ_r ->
+        let expr_r_il = insert_cast expr_r_il typ_l in
+        Some (typ_l, expr_l_il, expr_r_il)
+    (* coerce record to struct *)
+    | RecordT _, StructT _ when coerce_type_assign'' typ_l typ_r ->
+        let expr_l_il = insert_cast expr_l_il typ_r in
+        Some (typ_r, expr_l_il, expr_r_il)
+    | StructT _, RecordT _ when coerce_type_assign'' typ_l typ_r ->
+        let expr_r_il = insert_cast expr_r_il typ_l in
+        Some (typ_l, expr_l_il, expr_r_il)
+    (* coerce record to header *)
+    | RecordT _, HeaderT _ when coerce_type_assign'' typ_l typ_r ->
+        let expr_l_il = insert_cast expr_l_il typ_r in
+        Some (typ_r, expr_l_il, expr_r_il)
+    | HeaderT _, RecordT _ when coerce_type_assign'' typ_l typ_r ->
+        let expr_r_il = insert_cast expr_r_il typ_l in
+        Some (typ_l, expr_l_il, expr_r_il)
     | _ -> None
   in
   let typ_l, typ_r = (expr_l_il.note.typ, expr_r_il.note.typ) in
@@ -1270,16 +1305,10 @@ and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     assert false);
   let expr_then_il = type_expr cursor ctx expr_then in
   let expr_else_il = type_expr cursor ctx expr_else in
-  let typ_then, typ_else = (expr_then_il.note.typ, expr_else_il.note.typ) in
-  if typ_then <> typ_else then (
-    Format.printf
-      "(type_ternop_expr) Branches %a and %a must have the same type\n"
-      (El.Pp.pp_expr ~level:0) expr_then (El.Pp.pp_expr ~level:0) expr_else;
-    assert false);
-  if
-    (not (Ctk.is_ctk ctk_cond))
-    && typ_then = Types.IntT && typ_else = Types.IntT
-  then (
+  let typ, expr_then_il, expr_else_il =
+    coerce_types_binary expr_then_il expr_else_il
+  in
+  if (not (Ctk.is_ctk ctk_cond)) && typ = Types.IntT then (
     Format.printf
       "(type_ternop_expr) Branches %a and %a cannot both be \
        arbitrary-precision integers when the condition %a is not compile-time \
@@ -1287,7 +1316,6 @@ and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       (El.Pp.pp_expr ~level:0) expr_then (El.Pp.pp_expr ~level:0) expr_else
       (El.Pp.pp_expr ~level:0) expr_cond;
     assert false);
-  let typ = typ_then in
   let expr_il =
     Il.Ast.TernE
       {

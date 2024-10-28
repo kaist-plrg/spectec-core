@@ -115,22 +115,13 @@ hdr.h2 = { f2 = 53, f1 = 54 };
 * structure-valued-expr-ok-1-bmv2.p4
 </details>
 
-#### Type coercion for conditional expression (6)
+#### ~~Type coercion for conditional expression~~
+
+Coerce then and else branches of a conditional expression to a same type.
 
 ```p4
 h.eth_hdr.eth_type = (bit<16>) (-(h.eth_hdr.src_addr == 1) ? 2 : 3w1);
 ```
-
-<details>
-<summary>Tests</summary>
-
-* gauntlet_mux_typecasting-bmv2.p4
-* issue242.p4
-* issue-2123-2-bmv2.p4
-* issue-2123-3-bmv2.p4
-* issue696-bmv2.p4
-* parser-conditional.p4
-</details>
 
 ### Type Inference
 
@@ -325,15 +316,14 @@ P<_, _>() main;
 * issue2599.p4
 </details>
 
-### Built-in methods (1)
+### Built-in methods applied directly on type variables (1)
 
-The transformer logic assumes that `func` in a call expression `func(args)` is either a name or a field access.
+The transformer logic assumes that `func` in a call expression `func<targs>(args)` is either a name or a field access, but not a type access.
 
 ```p4
-header H {}
+typedef bit<32> T;
 ...
-H[0] h;
-h[0].minSizeInBits();
+T.minSizeInBits();
 ```
 
 <details>
@@ -430,19 +420,13 @@ sw0(p1(createWidget(16w0, 8w0))) main;
 
 ## Devils are in the Details
 
-### Support `maxSizeInBytes` and `maxSizeInBits` (1)
+### ~~Support `maxSizeInBytes` and `maxSizeInBits`~~
 
 Logic only exists for `minSizeInBytes` and `minSizeInBits`.
 
 ```p4
 hdrs.ipv4[0].length = (hdrs.ipv4[0].maxSizeInBytes() + umeta.L2_packet_len_bytes);
 ```
-
-<details>
-<summary>Tests</summary>
-
-* pna-dpdk-header-stack-assignment.p4
-</details>
 
 ### Allow serializable enum member initializers refer to other serializable enum members (1)
 
