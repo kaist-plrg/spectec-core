@@ -105,7 +105,7 @@ and ('note, 'expr) arg = ('note, 'expr) arg' phrase
 
 and ('note, 'expr) arg' =
   | ExprA of ('note, 'expr) expr
-  | NameA of id * ('note, 'expr) expr
+  | NameA of id * ('note, 'expr) expr option
   | AnyA
 
 (* Expressions : parameterized by 'expr *)

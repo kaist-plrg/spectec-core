@@ -139,7 +139,7 @@ and eq_arg' (arg : Argument.t) (arg' : Argument.t) =
   | Expression { value; _ }, Expression { value = value'; _ } ->
       eq_expr value value'
   | KeyValue { key; value; _ }, KeyValue { key = key'; value = value'; _ } ->
-      eq_text key key' && eq_expr value value'
+      eq_text key key' && eq_option eq_expr value value'
   | Missing _, Missing _ -> true
   | _ -> false
 

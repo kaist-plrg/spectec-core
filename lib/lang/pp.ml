@@ -178,7 +178,10 @@ and pp_targs (pp_typ : 'typ pp_typ) fmt targs =
 and pp_arg' (pp_expr : ('note, 'expr) pp_expr) fmt arg' =
   match arg' with
   | ExprA expr -> pp_expr ~level:0 fmt expr
-  | NameA (id, expr) -> F.fprintf fmt "%a = %a" pp_id id (pp_expr ~level:0) expr
+  | NameA (id, expr) -> (
+      match expr with
+      | Some expr -> F.fprintf fmt "%a = %a" pp_id id (pp_expr ~level:0) expr
+      | None -> F.fprintf fmt "%a = _" pp_id id)
   | AnyA -> F.fprintf fmt "_"
 
 and pp_arg (pp_expr : ('note, 'expr) pp_expr) fmt arg =

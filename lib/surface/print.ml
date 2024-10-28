@@ -98,7 +98,9 @@ and print_arg (arg : Argument.t) =
   | Expression { value; _ } -> print_expr value
   | KeyValue { key; value; _ } ->
       let skey = print_text key in
-      let svalue = print_expr value in
+      let svalue =
+        match value with Some value -> print_expr value | None -> "_"
+      in
       Printf.sprintf "%s = %s" skey svalue
   | Missing _ -> "_"
 

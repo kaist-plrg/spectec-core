@@ -642,10 +642,10 @@ and type_call_convention' (cursor : Ctx.cursor) (ctx : Ctx.t)
   | ExprA expr_il ->
       let expr_il = type_expr_arg expr_il in
       Lang.Ast.ExprA expr_il $ arg_il.at
-  | NameA (id, expr_il) ->
+  | NameA (id, Some expr_il) ->
       let expr_il = type_expr_arg expr_il in
-      Lang.Ast.NameA (id, expr_il) $ arg_il.at
-  | AnyA ->
+      Lang.Ast.NameA (id, Some expr_il) $ arg_il.at
+  | NameA (_, None) | AnyA ->
       if dir_param <> Lang.Ast.Out then (
         Format.printf
           "(type_call) Don't care argument can only be used for an out \
@@ -2361,11 +2361,12 @@ and type_arg' (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : El.Ast.arg') :
       let typ = expr_il.note.typ in
       let arg_il = Lang.Ast.ExprA expr_il in
       (arg_il, typ)
-  | NameA (id, expr) ->
+  | NameA (id, Some expr) ->
       let expr_il = type_expr cursor ctx expr in
       let typ = expr_il.note.typ in
-      let arg_il = Lang.Ast.NameA (id, expr_il) in
+      let arg_il = Lang.Ast.NameA (id, Some expr_il) in
       (arg_il, typ)
+  | NameA (id, None) -> (Lang.Ast.NameA (id, None), TopT)
   | AnyA -> (Lang.Ast.AnyA, TopT)
 
 (* Statement typing *)

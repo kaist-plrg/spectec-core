@@ -257,14 +257,14 @@ and Argument : sig
 
   and 'a t' =
     | Expression of { tags : 'a; value : Expression.t }
-    | KeyValue of { tags : 'a; key : Text.t; value : Expression.t }
+    | KeyValue of { tags : 'a; key : Text.t; value : Expression.t option }
     | Missing of { tags : 'a }
 end = struct
   type t = Source.info t'
 
   and 'a t' =
     | Expression of { tags : 'a; value : Expression.t }
-    | KeyValue of { tags : 'a; key : Text.t; value : Expression.t }
+    | KeyValue of { tags : 'a; key : Text.t; value : Expression.t option }
     | Missing of { tags : 'a }
 end
 

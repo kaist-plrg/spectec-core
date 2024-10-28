@@ -1984,12 +1984,10 @@ Error while typechecking p4 file: test/program/well-typed/issue3246-1.p4
 Typecheck success: test/program/well-typed/issue3274-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3274-2.p4
-parser error: File test/program/well-typed/issue3274-2.p4, line 4, characters 17-18
-Error while parsing p4 file: test/program/well-typed/issue3274-2.p4
+Typecheck success: test/program/well-typed/issue3274-2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3274.p4
-parser error: File test/program/well-typed/issue3274.p4, line 4, characters 24-25
-Error while parsing p4 file: test/program/well-typed/issue3274.p4
+Typecheck success: test/program/well-typed/issue3274.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3283.p4
 (type_array_acc_expr) { 1w1, 1w1 } cannot be indexed
@@ -4097,5 +4095,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 (check_eq_typ_alpha) Types int and bit<9> are not equal
 Error while typechecking p4 file: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1147/1233 (93.03%) [FAIL] 86/1233 (6.97%)
-Typecheck: [PASS] 864/1147 (75.33%) [FAIL] 283/1147 (24.67%)
+Parser on file: [PASS] 1149/1233 (93.19%) [FAIL] 84/1233 (6.81%)
+Typecheck: [PASS] 866/1149 (75.37%) [FAIL] 283/1149 (24.63%)

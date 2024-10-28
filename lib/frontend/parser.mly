@@ -1347,9 +1347,12 @@ argument:
       Argument.Expression { tags; value } }
 | key = name ASSIGN value = expression
     { let tags = Source.merge (Text.tags key) (Expression.tags value) in
-      Argument.KeyValue { tags; key; value } }
+      Argument.KeyValue { tags; key; value = Some value } }
 | info = DONTCARE
     { Argument.Missing { tags = info } }
+| key = name ASSIGN info = DONTCARE
+    { let tags = Source.merge (Text.tags key) info in
+      Argument.KeyValue { tags; key; value = None } }
 ;
 
 %inline kvPair:

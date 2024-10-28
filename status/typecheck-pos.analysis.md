@@ -2,17 +2,26 @@
 
 ## Parser Errors
 
-### Parsing `_` (don't care) (2)
+### ~~Parsing `_` (don't care)~~
 
 ```p4
 f(x = 1, y = _);
 ```
 
-<details>
-<summary>Tests</summary>
-* issue3274-2.p4
-* issue3274.p4
-</details>
+Don't care for named argument was added [pr#1074](https://github.com/p4lang/p4-spec/pull/1074).
+
+```ocaml
+argument:
+| value = expression
+    { let tags = Expression.tags value in
+      Argument.Expression { tags; value } }
+| key = name ASSIGN value = expression
+    { let tags = Source.merge (Text.tags key) (Expression.tags value) in
+      Argument.KeyValue { tags; key; value } }
+| info = DONTCARE
+    { Argument.Missing { tags = info } }
+;
+```
 
 ### Operator precedence (1)
 
@@ -24,6 +33,7 @@ if (4 + d.f < 10) { ... }
 
 <details>
 <summary>Tests</summary>
+
 * precedence-lt.p4
 </details>
 
@@ -83,6 +93,7 @@ zout = p == { 4, 5 };
 
 <details>
 <summary>Tests</summary>
+
 * list-compare.p4
 * tuple4.p4
 </details>
@@ -100,6 +111,7 @@ hdr.h2 = { f2 = 53, f1 = 54 };
 
 <details>
 <summary>Tests</summary>
+
 * structure-valued-expr-ok-1-bmv2.p4
 </details>
 
@@ -111,6 +123,7 @@ h.eth_hdr.eth_type = (bit<16>) (-(h.eth_hdr.src_addr == 1) ? 2 : 3w1);
 
 <details>
 <summary>Tests</summary>
+
 * gauntlet_mux_typecasting-bmv2.p4
 * issue242.p4
 * issue-2123-2-bmv2.p4
@@ -132,6 +145,7 @@ top(c()) main;
 
 <details>
 <summary>Tests</summary>
+
 * unused.p4
 </details>
 
@@ -149,6 +163,7 @@ transition select (o.b.x) {
 
 <details>
 <summary>Tests</summary>
+
 * enumCast.p4
 * issue1001-1-bmv2.p4
 * issue3056.p4
@@ -175,6 +190,7 @@ random(rand_val, 0);
 
 <details>
 <summary>Tests</summary>
+
 * issue1586.p4
 </details>
 
@@ -202,6 +218,7 @@ bit<8> add_1(in bit<8> c, in bit<8> d) { return 2; }
 
 <details>
 <summary>Tests</summary>
+
 * issue1334.p4
 * issue4775-2.p4
 </details>
@@ -229,6 +246,7 @@ Virtual() cntr = {
 
 <details>
 <summary>Tests</summary>
+
 * virtual2.p4
 </details>
 
@@ -264,6 +282,7 @@ X() x = {
 
 <details>
 <summary>Tests</summary>
+
 * issue2175-1.p4
 * issue2175-2.p4
 * issue2175-3.p4
@@ -282,6 +301,7 @@ X() x = {
 
 <details>
 <summary>Tests</summary>
+
 * action-two-params.p4
 * op_bin.p4
 * table-entries-no-arg-actions.p4
@@ -296,6 +316,7 @@ P<_, _>() main;
 
 <details>
 <summary>Tests</summary>
+
 * default-package-argument.p4
 * issue1333.p4
 * issue1638.p4
@@ -317,6 +338,7 @@ h[0].minSizeInBits();
 
 <details>
 <summary>Tests</summary>
+
 * minsize.p4
 </details>
 
@@ -333,6 +355,7 @@ control d() {
 
 <details>
 <summary>Tests</summary>
+
 * direct-call.p4
 * direct-call1.p4
 * direct-call2.p4
@@ -369,6 +392,7 @@ value_set<bit<16>>(8) ipv4_ethertypes;
 
 <details>
 <summary>Tests</summary>
+
 * issue1955.p4
 * issue3343.p4
 * psa-test.p4
@@ -398,6 +422,7 @@ sw0(p1(createWidget(16w0, 8w0))) main;
 
 <details>
 <summary>Tests</summary>
+
 * factory1.p4
 * factory2.p4
 * pna-example-SelectByDirection2.p4
@@ -415,6 +440,7 @@ hdrs.ipv4[0].length = (hdrs.ipv4[0].maxSizeInBytes() + umeta.L2_packet_len_bytes
 
 <details>
 <summary>Tests</summary>
+
 * pna-dpdk-header-stack-assignment.p4
 </details>
 
@@ -433,6 +459,7 @@ enum bit<4> e {
 
 <details>
 <summary>Tests</summary>
+
 * issue3616.p4
 </details>
 
@@ -445,6 +472,7 @@ typedef register<Mac_entry> Mac_table;
 
 <details>
 <summary>Tests</summary>
+
 * issue2735-bmv2.p4
 * issue2735.p4
 * typedef-constructor.p4
@@ -465,6 +493,7 @@ table t_exact {
 
 <details>
 <summary>Tests</summary>
+
 * issue1062-1-bmv2.p4
 * issue1062-bmv2.p4
 * issue1304.p4
@@ -482,6 +511,7 @@ table indirect_ws {
 
 <details>
 <summary>Tests</summary>
+
 * action_selector_shared-bmv2.p4
 * issue1560-bmv2.p4
 * pna-action-selector-1.p4
@@ -530,6 +560,7 @@ enum A {
 
 <details>
 <summary>Tests</summary>
+
 * trailing-comma.p4
 </details>
 
@@ -543,6 +574,7 @@ Since [issue#1273](https://github.com/p4lang/p4-spec/issues/1273).
 
 <details>
 <summary>Tests</summary>
+
 * lvalue-parens.p4
 </details>
 
@@ -561,6 +593,7 @@ extern E {
 
 <details>
 <summary>Tests</summary>
+
 * list.p4
 * list1.p4
 * list2.p4
@@ -583,6 +616,7 @@ struct S<T> {
 
 <details>
 <summary>Tests</summary>
+
 * generic-struct-tuple.p4
 * generic-struct.p4
 * issue2627.p4
@@ -610,6 +644,7 @@ The spec says, "A left-value can be initialized automatically with default value
 
 <details>
 <summary>Tests</summary>
+
 * default-initializer.p4
 </details>
 
@@ -624,6 +659,7 @@ entries = {
 
 <details>
 <summary>Tests</summary>
+
 * entries-prio.p4
 * init-entries-bmv2.p4
 </details>
@@ -641,6 +677,7 @@ switch (hdr.h1.data) {
 
 <details>
 <summary>Tests</summary>
+
 * invalid-hdr-warnings3-bmv2.p4
 * issue2617.p4
 * issue3374.p4
@@ -668,6 +705,7 @@ h = (H) {#};
 
 <details>
 <summary>Tests</summary>
+
 * invalid-header.p4
 * invalid-union.p4
 * issue3779.p4
@@ -690,6 +728,7 @@ a(x, 0);
 
 <details>
 <summary>Tests</summary>
+
 * action-bind.p4
 * action_call_table_ebpf.p4
 * bvec-hdr-bmv2.p4
@@ -754,6 +793,7 @@ BFD_Offload(32768) bfd_session_liveness_tracker = ...;
 
 <details>
 <summary>Tests</summary>
+
 * bfd_offload.p4
 * constructor_cast.p4
 * issue1097-2-bmv2.p4
@@ -817,6 +857,7 @@ Reject(x);
 
 <details>
 <summary>Tests</summary>
+
 * action_call_ebpf.p4
 * calc-ebpf.p4
 * crc32-bmv2.p4
@@ -836,6 +877,7 @@ const bool test = static_assert(V1MODEL_VERSION >= 20160101, "V1 model version i
 
 <details>
 <summary>Tests</summary>
+
 * hashext3.p4
 * issue3531.p4
 </details>
@@ -849,6 +891,7 @@ h.rshift.a = tmp / 4w2;
 
 <details>
 <summary>Tests</summary>
+
 * gauntlet_various_ops-bmv2.p4
 * issue2190.p4
 * issue2287-bmv2.p4
@@ -864,6 +907,7 @@ x = 32w5 / 3;
 
 <details>
 <summary>Tests</summary>
+
 * constant_folding.p4
 * issue1879-bmv2.p4
 * issue2279_4.p4
@@ -879,6 +923,7 @@ const int z1 = 2w1;
 
 <details>
 <summary>Tests</summary>
+
 * issue2444.p4
 * issue3283.p4
 </details>
@@ -897,6 +942,7 @@ bool b5 = (S) { a = 1, b = 2 } == { a = 1, b = 2 };
 
 <details>
 <summary>Tests</summary>
+
 * issue3057-2.p4
 </details>
 
@@ -923,6 +969,7 @@ control c() {
 
 <details>
 <summary>Tests</summary>
+
 * issue2037.p4
 * issue3671.p4
 </details>
@@ -936,6 +983,7 @@ const bit<32> f = t[0];
 
 <details>
 <summary>Tests</summary>
+
 * tuple3.p4
 </details>
 
@@ -948,6 +996,7 @@ const int<32> x = t.t1;
 
 <details>
 <summary>Tests</summary>
+
 * struct.p4
 * struct1.p4
 </details>
@@ -967,6 +1016,7 @@ table indirect_ws {
 
 <details>
 <summary>Tests</summary>
+
 * action_profile-bmv2.p4
 * action_profile_max_group_size_annotation.p4
 * action_profile_sum_of_members_annotation.p4
@@ -1000,6 +1050,7 @@ table ipv4_da_lpm {
 
 <details>
 <summary>Tests</summary>
+
 * issue461-bmv2.p4
 </details>
 
@@ -1014,6 +1065,7 @@ table t {
 
 <details>
 <summary>Tests</summary>
+
 * junk-prop-bmv2.p4
 </details>
 
@@ -1028,6 +1080,7 @@ table m_table {
 
 <details>
 <summary>Tests</summary>
+
 * named_meter_1-bmv2.p4
 * named_meter_bmv2.p4
 </details>
@@ -1043,6 +1096,7 @@ table ipv4_da {
 
 <details>
 <summary>Tests</summary>
+
 * pna-add-on-miss.p4
 * pna-add_on_miss_action_name.p4
 * pna-dpdk-add_on_miss0.p4
@@ -1071,6 +1125,7 @@ table tbl {
 
 <details>
 <summary>Tests</summary>
+
 * psa-counter4.p4
 * psa-example-counters-bmv2.p4
 </details>
@@ -1086,6 +1141,7 @@ table tbl {
 
 <details>
 <summary>Tests</summary>
+
 * psa-example-dpdk-directmeter.p4
 * psa-meter4.p4
 * psa-meter5.p4
@@ -1102,6 +1158,7 @@ table tbl_idle_timeout {
 
 <details>
 <summary>Tests</summary>
+
 * psa-idle-timeout.p4
 </details>
 
@@ -1118,6 +1175,7 @@ h.h.result = ipv4_checksum.update({ h.eth_hdr.dst_addr, h.eth_hdr.src_addr, h.et
 
 <details>
 <summary>Tests</summary>
+
 * gauntlet_optional-bmv2.p4
 * issue2492.p4
 * issue2630.p4
@@ -1133,6 +1191,7 @@ h.h.result = ipv4_checksum.update({ h.eth_hdr.dst_addr, h.eth_hdr.src_addr, h.et
 
 <details>
 <summary>Tests</summary>
+
 * forloop1.p4
 * forloop2.p4
 * forloop3.p4
@@ -1152,6 +1211,7 @@ parser p1<T>(in T a) { ... }
 
 <details>
 <summary>Tests</summary>
+
 * functors6.p4
 * functors7.p4
 * functors8.p4
@@ -1175,6 +1235,7 @@ log("Log message" ++ " text");
 
 <details>
 <summary>Tests</summary>
+
 * issue4932.p4
 * spec-issue1297-string-cat.p4
 </details>

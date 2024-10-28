@@ -175,7 +175,7 @@ and eq_arg' (eq_expr : ('note, 'expr) eq_expr) arg_a arg_b =
   match (arg_a, arg_b) with
   | ExprA expr_a, ExprA expr_b -> eq_expr expr_a expr_b
   | NameA (id_a, expr_a), NameA (id_b, expr_b) ->
-      eq_id id_a id_b && eq_expr expr_a expr_b
+      eq_id id_a id_b && eq_option eq_expr expr_a expr_b
   | AnyA, AnyA -> true
   | _ -> false
 

@@ -185,7 +185,7 @@ and transform_arg (arg : Argument.t) : El.arg =
   | Expression { value; tags = at } -> L.ExprA (transform_expr value) $ at
   | KeyValue { key; value; tags = at } ->
       let key = transform_id key in
-      let value = transform_expr value in
+      let value = Option.map transform_expr value in
       L.NameA (key, value) $ at
   | Missing { tags = at } -> L.AnyA $ at
 
