@@ -2,7 +2,7 @@
 
 ## 1. Parser Errors
 
-### (1) ~~Parsing `_` (don't care)~~
+### DONE (1) ~~Parsing `_` (don't care)~~
 
 ```p4
 f(x = 1, y = _);
@@ -39,7 +39,7 @@ if (4 + d.f < 10) { ... }
 
 ## 2. Overlooked Features (requires structural change)
 
-### (1) ~~Sequence type~~
+### DONE (1) ~~Sequence type~~
 
 Currently, p4cherry treats `{ expr }` as tuple types.
 So, `{ expr }` *cannot* be coerced to struct/header types.
@@ -51,7 +51,7 @@ Strictly speaking, `{ 1 }` is an illegal expression because a tuple does not all
 To solve this issue, we need to introduce a new type, `SeqT`, which is a sequence type.
 `SeqT` is an internal type like `RecordT`, i.e., user *cannot* declare a sequence type.
 
-#### (a) ~~Sequence coercion~~
+#### DONE (a) ~~Sequence coercion~~
 
 ```p4
 struct headers {
@@ -61,7 +61,7 @@ extern bit<16> get<T>(in T data);
 get<headers>({ hdr.ipv4_option_timestamp });
 ```
 
-#### (b) ~~Sequence well-formedness~~
+#### DONE (b) ~~Sequence well-formedness~~
 
 ```p4
 struct S {
@@ -74,7 +74,7 @@ s2 = { 0 };
 
 ### (2) Type Coercion
 
-#### (a) ~~More type coercion for equality check~~
+#### DONE (a) ~~More type coercion for equality check~~
 
 Current coercion rule for equality check only assumes numeric types.
 But it should be extended to other types, such as record and sequence types.
@@ -108,7 +108,7 @@ hdr.h2 = { f2 = 53, f1 = 54 };
 * structure-valued-expr-ok-1-bmv2.p4
 </details>
 
-#### (c) ~~Type coercion for conditional expression~~
+#### DONE (c) ~~Type coercion for conditional expression~~
 
 Coerce then and else branches of a conditional expression to a same type.
 
@@ -231,7 +231,7 @@ Virtual() cntr = {
 * virtual2.p4
 </details>
 
-#### (b) ~~Instantiation block with an abstract method~~
+#### DONE (b) ~~Instantiation block with an abstract method~~
 
 The abstract method instantiation logic does not seem to work.
 And we have to take `this` into account.
@@ -307,7 +307,7 @@ T.minSizeInBits();
 * minsize.p4
 </details>
 
-### (9) ~~Support direct application~~
+### DONE (9) ~~Support direct application~~
 
 Transform direct application.
 
@@ -364,7 +364,7 @@ sw0(p1(createWidget(16w0, 8w0))) main;
 
 ## 3. Devils are in the Details
 
-### (1) ~~Support `maxSizeInBytes` and `maxSizeInBits`~~
+### DONE (1) ~~Support `maxSizeInBytes` and `maxSizeInBits`~~
 
 Logic only exists for `minSizeInBytes` and `minSizeInBits`.
 
@@ -457,7 +457,7 @@ table indirect_ws {
 
 ## 1. Flexible syntax
 
-### (1) ~~Parsing `if`~~
+### DONE (1) ~~Parsing `if`~~
 
 Conditional statement can be used in a parser block.
 
@@ -559,7 +559,7 @@ struct S<T> {
 * stack-init.p4
 </details>
 
-### (3) ~~Support `match_kind` as a primitive type~~
+### DONE (3) ~~Support `match_kind` as a primitive type~~
 
 Spec v1.2.3 adds `match_kind` as a base type that can be parsed.
 
@@ -643,7 +643,7 @@ h = (H) {#};
 
 # D. Need Spec Clarification
 
-## 1. Should we add implicit cast for directionless parameter? (102)
+## REPORTED 1. Should we add implicit cast for directionless parameter? (102)
 
 I think we should, especially for constructor invocations.
 Waiting for the spec clarification, [issue#1312](https://github.com/p4lang/p4-spec/issues/1312).
