@@ -6,6 +6,16 @@ module Envs = Runtime.Envs
 module F = Format
 open Util.Source
 
+(* Global counter for unique identifiers *)
+
+let tick = ref 0
+let refresh () = tick := 0
+
+let fresh () =
+  let id = !tick in
+  tick := !tick + 1;
+  id
+
 (* Context is consisted of layers of environments *)
 
 type cursor = Global | Block | Local

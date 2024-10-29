@@ -360,14 +360,6 @@ and specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
 
 and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) :
     FuncType.t * TId.t list option =
-  let insert_fresh_tids tparams targs =
-    if List.length tparams > 0 && List.length targs = 0 then
-      let tids_fresh =
-        List.init (List.length tparams) (fun i -> "Fresh" ^ string_of_int i)
-      in
-      Some tids_fresh
-    else None
-  in
   let check_arity tparams targs =
     if List.length targs <> List.length tparams then (
       Format.printf
@@ -376,16 +368,34 @@ and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) :
         FuncDef.pp fd (List.length tparams) (List.length targs);
       assert false)
   in
+  let fresh_tid () = "__WILD_" ^ string_of_int (Ctx.fresh ()) in
+  let fresh_targ tid = Types.VarT tid in
   let specialize_funcdef' funcDef tparams targs params typ_ret =
-    let tids_fresh = insert_fresh_tids tparams targs in
-    let targs_fresh =
-      Option.map
-        (fun tids_fresh ->
-          List.map (fun tid_fresh -> Types.VarT tid_fresh) tids_fresh)
-        tids_fresh
+    let targs, tids_fresh =
+      (* Insert fresh type variables if omitted *)
+      if List.length tparams > 0 && List.length targs = 0 then
+        let tids_fresh =
+          List.init (List.length tparams) (fun _ -> fresh_tid ())
+        in
+        let targs = List.map fresh_targ tids_fresh in
+        (targs, Some tids_fresh)
+        (* Otherwise, check the arity and insert fresh type variables for top types *)
+      else (
+        check_arity tparams targs;
+        let targs, tids_fresh =
+          List.fold_left
+            (fun (targs, tids_fresh) targ ->
+              match (targ : Type.t) with
+              | TopT ->
+                  let tid_fresh = fresh_tid () in
+                  let targ_fresh = fresh_targ tid_fresh in
+                  (targs @ [ targ_fresh ], tids_fresh @ [ tid_fresh ])
+              | _ -> (targs @ [ targ ], tids_fresh))
+            ([], []) targs
+        in
+        let tids_fresh = if tids_fresh = [] then None else Some tids_fresh in
+        (targs, tids_fresh))
     in
-    let targs = Option.value targs_fresh ~default:targs in
-    check_arity tparams targs;
     let theta = List.combine tparams targs |> Subst.Theta.of_list in
     let params = List.map (Subst.subst_param theta) params in
     let typ_ret = Subst.subst_typ theta typ_ret in
@@ -414,14 +424,6 @@ and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) :
 
 and specialize_consdef (cd : ConsDef.t) (targs : Type.t list) :
     ConsType.t * TId.t list option =
-  let insert_fresh_tids tparams targs =
-    if List.length tparams > 0 && List.length targs = 0 then
-      let tids_fresh =
-        List.init (List.length tparams) (fun i -> "Fresh" ^ string_of_int i)
-      in
-      Some tids_fresh
-    else None
-  in
   let check_arity tparams targs =
     if List.length targs <> List.length tparams then (
       Format.printf
@@ -430,16 +432,34 @@ and specialize_consdef (cd : ConsDef.t) (targs : Type.t list) :
         ConsDef.pp cd (List.length tparams) (List.length targs);
       assert false)
   in
+  let fresh_tid () = "__WILD_" ^ string_of_int (Ctx.fresh ()) in
+  let fresh_targ tid = Types.VarT tid in
   let tparams, cparams, typ = cd in
-  let tids_fresh = insert_fresh_tids tparams targs in
-  let targs_fresh =
-    Option.map
-      (fun tids_fresh ->
-        List.map (fun tid_fresh -> Types.VarT tid_fresh) tids_fresh)
-      tids_fresh
+  (* Insert fresh type variables if omitted
+     Otherwise, check the arity and insert fresh type variables for top types *)
+  let targs, tids_fresh =
+    if List.length tparams > 0 && List.length targs = 0 then
+      let tids_fresh =
+        List.init (List.length tparams) (fun _ -> fresh_tid ())
+      in
+      let targs = List.map fresh_targ tids_fresh in
+      (targs, Some tids_fresh)
+    else (
+      check_arity tparams targs;
+      let targs, tids_fresh =
+        List.fold_left
+          (fun (targs, tids_fresh) targ ->
+            match (targ : Type.t) with
+            | TopT ->
+                let tid_fresh = fresh_tid () in
+                let targ_fresh = fresh_targ tid_fresh in
+                (targs @ [ targ_fresh ], tids_fresh @ [ tid_fresh ])
+            | _ -> (targs @ [ targ ], tids_fresh))
+          ([], []) targs
+      in
+      let tids_fresh = if tids_fresh = [] then None else Some tids_fresh in
+      (targs, tids_fresh))
   in
-  let targs = Option.value targs_fresh ~default:targs in
-  check_arity tparams targs;
   let theta = List.combine tparams targs |> Subst.Theta.of_list in
   let cparams = List.map (Subst.subst_cparam theta) cparams in
   let typ = Subst.subst_typ theta typ in
@@ -3685,6 +3705,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     in
     ([], cparams, typ)
   in
+  WF.check_valid_consdef Ctx.Block ctx cd;
   let ctx = Ctx.add_consdef cid cd ctx in
   let decl_il =
     Il.Ast.ParserD
@@ -4335,6 +4356,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     in
     ([], cparams, typ)
   in
+  WF.check_valid_consdef Ctx.Block ctx cd;
   let ctx = Ctx.add_consdef cid cd ctx in
   let decl_il =
     Il.Ast.ControlD
@@ -4382,7 +4404,7 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     in
     (tparams, cparams, typ)
   in
-  WF.check_valid_consdef cursor ctx cd;
+  WF.check_valid_consdef Ctx.Block ctx cd;
   let ctx = Ctx.add_consdef cid cd ctx in
   (ctx, cparams_il)
 
@@ -4421,5 +4443,6 @@ and type_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 (* Entry point : Program typing *)
 
 let type_program (program : El.Ast.program) : Il.Ast.program =
+  Ctx.refresh ();
   let _ctx, program = type_decls Ctx.Global Ctx.empty program in
   program

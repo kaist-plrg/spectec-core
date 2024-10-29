@@ -137,7 +137,7 @@ transition select (o.b.x) {
 
 ### (3) Type Inference
 
-#### (a) Type inference when `_` was explicitly used (1)
+#### (a) Type inference when `_` was used on the parameter side (1)
 
 ```p4
 control c (inout S s) { ... }

@@ -627,7 +627,7 @@ Typecheck success: test/program/ill-typed/issue3787.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3808-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3808.p4
-(coerce_type) Cannot coerce type table to top
+(coerce_type) Cannot coerce type table to table
 Error while typechecking p4 file: test/program/ill-typed/issue3808.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3813.p4
