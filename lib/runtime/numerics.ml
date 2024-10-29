@@ -585,11 +585,12 @@ let rec eval_cast_fields (fields_typ : (string * Type.t) list) (value : Value.t)
     : (string * Value.t) list =
   match value with
   | StructV fields_value | RecordV fields_value ->
-      let members_typ, typs = List.split fields_typ in
-      let members_value, values = List.split fields_value in
-      assert (List.for_all2 ( = ) members_typ members_value);
-      let values = List.map2 eval_cast typs values in
-      List.combine members_typ values
+      List.fold_left
+        (fun fields (member_typ, typ) ->
+          let value = List.assoc member_typ fields_value in
+          let value = eval_cast typ value in
+          fields @ [ (member_typ, value) ])
+        [] fields_typ
   | SeqV values ->
       assert (List.length fields_typ = List.length values);
       List.map2

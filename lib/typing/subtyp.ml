@@ -83,12 +83,17 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
         List.length typs_from_inner = List.length typs_to_inner
         && List.for_all2 explicit typs_from_inner typs_to_inner
     (* casts of a key-value list to a struct type or a header type (see Section 8.13) *)
-    | RecordT fields, StructT (_, fields_target)
-    | RecordT fields, HeaderT (_, fields_target) ->
-        let members, typs = List.split fields in
-        let members_target, typs_target = List.split fields_target in
-        List.for_all2 ( = ) members members_target
-        && List.for_all2 explicit typs typs_target
+    | RecordT fields_from, StructT (_, fields_to)
+    | RecordT fields_from, HeaderT (_, fields_to) ->
+        let compare (member_a, _) (member_b, _) = compare member_a member_b in
+        let members_from, typs_from_inner =
+          List.sort compare fields_from |> List.split
+        in
+        let members_to, typs_to_inner =
+          List.sort compare fields_to |> List.split
+        in
+        List.for_all2 ( = ) members_from members_to
+        && List.for_all2 explicit typs_from_inner typs_to_inner
     (* (TODO) casts of an invalid expression {#} to a header or a header union type *)
     (* (TODO) casts where the destination type is the same as the source type
        if the destination type appears in this list (this excludes e.g., parsers or externs). *)
@@ -146,8 +151,13 @@ let rec implicit (typ_a : Type.t) (typ_b : Type.t) : bool =
        record (id', tau)* <: header id (id', tau')* if (tau <: tau')* *)
     | RecordT fields_a, StructT (_, fields_b)
     | RecordT fields_a, HeaderT (_, fields_b) ->
-        let members_a, typs_a_inner = List.split fields_a in
-        let members_b, typs_b_inner = List.split fields_b in
+        let compare (member_a, _) (member_b, _) = compare member_a member_b in
+        let members_a, typs_a_inner =
+          List.sort compare fields_a |> List.split
+        in
+        let members_b, typs_b_inner =
+          List.sort compare fields_b |> List.split
+        in
         List.length typs_a_inner = List.length typs_b_inner
         && List.for_all2 ( = ) members_a members_b
         && List.for_all2 implicit typs_a_inner typs_b_inner

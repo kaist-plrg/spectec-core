@@ -3755,8 +3755,7 @@ Typecheck success: test/program/well-typed/struct_init-1.p4
 Typecheck success: test/program/well-typed/struct_init.p4
 
 >>> Running typecheck test on test/program/well-typed/structure-valued-expr-ok-1-bmv2.p4
-(coerce_type) Cannot coerce type record { f2 = int; f1 = int } to header h2_t { f1 = bit<8>; f2 = bit<8> }
-Error while typechecking p4 file: test/program/well-typed/structure-valued-expr-ok-1-bmv2.p4
+Typecheck success: test/program/well-typed/structure-valued-expr-ok-1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/structured-annotation.p4
 Typecheck success: test/program/well-typed/structured-annotation.p4
@@ -4024,4 +4023,4 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Error while typechecking p4 file: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1178/1233 (95.54%) [FAIL] 55/1233 (4.46%)
-Typecheck: [PASS] 905/1178 (76.83%) [FAIL] 273/1178 (23.17%)
+Typecheck: [PASS] 906/1178 (76.91%) [FAIL] 272/1178 (23.09%)
