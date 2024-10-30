@@ -80,6 +80,7 @@ let rec eq_typ' typ_a typ_b =
       eq_var var_a var_b && eq_targs targs_a targs_b
   | StackT (typ_a, expr_size_a), StackT (typ_b, expr_size_b) ->
       eq_typ typ_a typ_b && eq_expr expr_size_a expr_size_b
+  | ListT typ_a, ListT typ_b -> eq_typ typ_a typ_b
   | TupleT typs_a, TupleT typs_b -> eq_typs typs_a typs_b
   | AnyT, AnyT -> true
   | _ -> false

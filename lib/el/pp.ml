@@ -72,7 +72,8 @@ let rec pp_typ' fmt typ' =
   | SpecT (var, targs) -> F.fprintf fmt "%a%a" pp_var var pp_targs targs
   | StackT (typ, expr_size) ->
       F.fprintf fmt "%a[%a]" pp_typ typ (pp_expr ~level:0) expr_size
-  | TupleT typs -> F.fprintf fmt "(%a)" pp_typs typs
+  | ListT typ -> F.fprintf fmt "list<%a>" pp_typ typ
+  | TupleT typs -> F.fprintf fmt "tuple<%a>" pp_typs typs
   | AnyT -> F.pp_print_string fmt "any"
 
 and pp_typ fmt typ = pp_typ' fmt typ.it

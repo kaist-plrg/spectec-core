@@ -752,8 +752,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue819.p4
 Typecheck success: test/program/ill-typed/key-name.p4
 
 >>> Running typecheck test on test/program/ill-typed/list-error.p4
-parser error: File test/program/ill-typed/list-error.p4, line 4, characters 6-10
-Error while parsing p4 file: test/program/ill-typed/list-error.p4
+(check_eq_typ_alpha) Types list<bit<16>> and list<bit<32>> are not equal
+Error while typechecking p4 file: test/program/ill-typed/list-error.p4
 
 >>> Running typecheck test on test/program/ill-typed/loop1-err.p4
 parser error: File test/program/ill-typed/loop1-err.p4, line 3, characters 9-10
@@ -1104,5 +1104,5 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 (type_cast_expr) Invalid cast from int<2> to bool
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
-Parser on file: [PASS] 252/299 (84.28%) [FAIL] 47/299 (15.72%)
-Typecheck: [PASS] 164/252 (65.08%) [FAIL] 88/252 (34.92%)
+Parser on file: [PASS] 253/299 (84.62%) [FAIL] 46/299 (15.38%)
+Typecheck: [PASS] 165/253 (65.22%) [FAIL] 88/253 (34.78%)

@@ -126,6 +126,9 @@ and transform_type (typ : Type.t) : El.typ =
       let typ = transform_type header in
       let size = transform_expr size in
       El.StackT (typ, size) $ at
+  | List { typ; tags = at } ->
+      let typ = transform_type typ in
+      El.ListT typ $ at
   | Tuple { args; tags = at } ->
       let targs = List.map transform_type args in
       El.TupleT targs $ at

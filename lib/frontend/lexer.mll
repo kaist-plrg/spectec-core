@@ -205,6 +205,8 @@ rule tokenize = parse
       { INT (info lexbuf) }
   | "key"
       { KEY (info lexbuf) }
+  | "list"
+      { LIST (info lexbuf) }
   | "match_kind"
       { MATCH_KIND (info lexbuf) }
   | "out"

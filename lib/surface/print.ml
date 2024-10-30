@@ -84,6 +84,9 @@ let rec print_type (typ : Type.t) =
       let sheader = print_type header in
       let ssize = print_expr size in
       Printf.sprintf "%s[%s]" sheader ssize
+  | List { typ; _ } ->
+      let styp = print_type typ in
+      Printf.sprintf "list<%s>" styp
   | Tuple { args; _ } ->
       let sargs = List.map print_type args |> String.concat ", " in
       Printf.sprintf "tuple<%s>" sargs

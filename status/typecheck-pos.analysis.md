@@ -169,7 +169,7 @@ random(rand_val, 0);
 * issue1586.p4
 </details>
 
-### DONE (4) ~~Overload resolution by name~~
+### \[DONE\] (4) ~~Overload resolution by name~~
 
 The current implementation only uses arity to disambiguate overloaded functions.
 
@@ -482,9 +482,9 @@ Since [issue#1273](https://github.com/p4lang/p4-spec/issues/1273).
 
 ## 2. Feature Extension
 
-### (1) Support list type (10)
+### \[DONE\] (1) ~~Support `list` type~~
 
-List should be a primitive type.
+`list` should be a primitive type.
 
 ```p4
 extern E {
@@ -493,22 +493,7 @@ extern E {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* list.p4
-* list1.p4
-* list2.p4
-* list3.p4
-* list4.p4
-* list5.p4
-* list6.p4
-* list7.p4
-* list8.p4
-* list9.p4
-</details>
-
-### (2) Support generic structs and headers (11)
+### (2) Support generic structs and headers (12)
 
 ```p4
 struct S<T> {
@@ -528,6 +513,7 @@ struct S<T> {
 * issue3204.p4
 * issue3291-1.p4
 * issue3292.p4
+* list9.p4
 * p4rt_digest_complex.p4
 * stack-init.p4
 </details>
@@ -709,6 +695,7 @@ BFD_Offload(32768) bfd_session_liveness_tracker = ...;
 * issue298-bmv2.p4
 * issue4288.p4
 * issue754.p4
+* list7.p4
 * pr1363.p4
 * psa-action-profile1.p4
 * psa-action-profile3.p4
@@ -1327,4 +1314,6 @@ tuple<int> t = { t1 };
 
 * issue3091-1.p4
 * issue3238.p4
+* list3.p4
+* list4.p4
 </details>

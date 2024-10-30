@@ -73,7 +73,11 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
     (* casts between an enum with an explicit type and its underlying type *)
     | SEnumT (_, typ_from_inner), _ when explicit typ_from_inner typ_to -> true
     | _, SEnumT (_, typ_to_inner) when explicit typ_from typ_to_inner -> true
-    (* casts of a tuple expression to a struct type or a header type *)
+    (* casts of a tuple expression to a list, tuple, struct, or header type *)
+    | SeqT typs_from_inner, ListT typ_to_inner ->
+        List.for_all
+          (fun typ_from_inner -> explicit typ_from_inner typ_to_inner)
+          typs_from_inner
     | SeqT typs_from_inner, TupleT typs_to_inner ->
         List.length typs_from_inner = List.length typs_to_inner
         && List.for_all2 explicit typs_from_inner typs_to_inner
@@ -133,9 +137,11 @@ let rec implicit (typ_a : Type.t) (typ_b : Type.t) : bool =
        senum tau <: senum tau' if tau <: tau' *)
     | SEnumT (_, typ_a_inner), _ when implicit typ_a_inner typ_b -> true
     | _, SEnumT (_, typ_b_inner) when implicit typ_a typ_b_inner -> true
-    (* tuple tau* <: tuple tau'* if (tau <: tau')* *)
-    (* seq tau* <: seq tau'* if (tau <: tau')* *)
-    | SeqT typs_a_inner, SeqT typs_b_inner
+    (* seq tau* <: list tau' if (tau <: tau')* *)
+    | SeqT typs_a_inner, ListT typ_b_inner ->
+        List.for_all
+          (fun typ_a_inner -> implicit typ_a_inner typ_b_inner)
+          typs_a_inner
     (* seq tau* <: tuple tau'* if (tau <: tau')* *)
     | SeqT typs_a_inner, TupleT typs_b_inner ->
         List.length typs_a_inner = List.length typs_b_inner
@@ -145,6 +151,10 @@ let rec implicit (typ_a : Type.t) (typ_b : Type.t) : bool =
     | SeqT typs_a_inner, StructT (_, fields_b)
     | SeqT typs_a_inner, HeaderT (_, fields_b) ->
         let typs_b_inner = List.map snd fields_b in
+        List.length typs_a_inner = List.length typs_b_inner
+        && List.for_all2 implicit typs_a_inner typs_b_inner
+    (* seq tau* <: seq tau'* if (tau <: tau')* *)
+    | SeqT typs_a_inner, SeqT typs_b_inner ->
         List.length typs_a_inner = List.length typs_b_inner
         && List.for_all2 implicit typs_a_inner typs_b_inner
     (* record (id', tau)* <: struct id (id', tau')* if (tau <: tau')* and

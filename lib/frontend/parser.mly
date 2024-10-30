@@ -52,7 +52,7 @@ let rec smash_annotations (l: Text.t list) (tok2: Text.t): Text.t list =
 %token<Util.Source.info> TRUE FALSE
 %token<Util.Source.info> ABSTRACT ACTION ACTIONS APPLY BOOL BIT CONST CONTROL DEFAULT DEFAULT_ACTION
 %token<Util.Source.info> ELSE ENTRIES ENUM ERROR EXIT EXTERN HEADER HEADER_UNION IF IN INOUT
-%token<Util.Source.info> INT KEY SELECT MATCH_KIND OUT PACKAGE PARSER RETURN STATE STRING STRUCT
+%token<Util.Source.info> INT KEY LIST SELECT MATCH_KIND OUT PACKAGE PARSER RETURN STATE STRING STRUCT
 %token<Util.Source.info> SWITCH TABLE THEN TRANSITION TUPLE TYPE TYPEDEF VARBIT VALUESET VOID
 %token<Util.Source.info> PRAGMA PRAGMA_END
 %token<Surface.Ast.Text.t> UNEXPECTED_TOKEN
@@ -277,6 +277,9 @@ nonTypeName:
 
 name:
 | n = nonTypeName
+    { n }
+| info = LIST
+    { Text.{ tags = info; str = "list" } }
 | n = NAME TYPENAME
     { n }
 ;
@@ -417,6 +420,8 @@ annotationToken:
     { Text.{ tags = $1; str = "varbit" } }
 | VALUESET
     { Text.{ tags = $1; str = "valueset" } }
+| LIST
+    { Text.{ tags = $1; str = "list" } }
 | VOID
     { Text.{ tags = $1; str = "void" } }
 | DONTCARE
@@ -485,11 +490,11 @@ annotationToken:
 | L_ANGLE
     { Text.{ tags = $1; str = "<" } }
 | R_ANGLE
-    { Text.{ tags = $1; str =">" } }
+    { Text.{ tags = $1; str = ">" } }
 | NOT
-    { Text.{ tags =$1; str ="!" } }
+    { Text.{ tags =$1; str = "!" } }
 | COLON
-    { Text.{ tags = $1; str =":" } }
+    { Text.{ tags = $1; str = ":" } }
 | COMMA
     { Text.{ tags = $1; str = "," } }
 | QUESTION
@@ -499,7 +504,7 @@ annotationToken:
 | ASSIGN
     { Text.{ tags = $1; str = "=" } }
 | SEMICOLON
-    { Text.{ tags = $1; str =";" } }
+    { Text.{ tags = $1; str = ";" } }
 | AT
     { Text.{ tags = $1; str = "@" } }
 ;
@@ -835,6 +840,7 @@ typeRef:
 | t = typeName
 | t = specializedType
 | t = headerStackType
+| t = p4listType
 | t = tupleType
     { t }
 ;
@@ -860,6 +866,12 @@ prefixedType:
 typeName:
 | typ = prefixedType
     { typ }
+;
+
+p4listType:
+| info1 = LIST l_angle typ = typeArg info_r = r_angle
+    { let tags = Source.merge info1 info_r in
+      Type.List { tags; typ } }
 ;
 
 tupleType:

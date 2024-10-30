@@ -23,6 +23,7 @@ let rec eq_typ_alpha (typ_a : Type.t) (typ_b : Type.t) : bool =
   | EnumT id_a, EnumT id_b -> Lang.Eq.eq_id' id_a id_b
   | SEnumT (id_a, typ_inner_a), SEnumT (id_b, typ_inner_b) ->
       Lang.Eq.eq_id' id_a id_b && eq_typ_alpha typ_inner_a typ_inner_b
+  | ListT typ_inner_a, ListT typ_inner_b -> eq_typ_alpha typ_inner_a typ_inner_b
   | TupleT typs_inner_a, TupleT typs_inner_b ->
       List.for_all2 eq_typ_alpha typs_inner_a typs_inner_b
   | StackT (typ_inner_a, size_a), StackT (typ_inner_b, size_b) ->

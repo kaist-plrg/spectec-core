@@ -207,6 +207,7 @@ module rec Type : sig
     | TypeName of { tags : 'a; name : Name.t }
     | SpecializedType of { tags : 'a; base : t; args : t list }
     | HeaderStack of { tags : 'a; header : t; size : Expression.t }
+    | List of { tags : 'a; typ : t }
     | Tuple of { tags : 'a; args : t list }
     | String of { tags : 'a }
     | Void of { tags : 'a }
@@ -227,6 +228,7 @@ end = struct
     | TypeName of { tags : 'a; name : Name.t }
     | SpecializedType of { tags : 'a; base : t; args : t list }
     | HeaderStack of { tags : 'a; header : t; size : Expression.t }
+    | List of { tags : 'a; typ : t }
     | Tuple of { tags : 'a; args : t list }
     | String of { tags : 'a }
     | Void of { tags : 'a }
@@ -244,6 +246,7 @@ end = struct
     | TypeName { tags; _ }
     | SpecializedType { tags; _ }
     | HeaderStack { tags; _ }
+    | List { tags; _ }
     | Tuple { tags; _ }
     | String { tags }
     | Void { tags }

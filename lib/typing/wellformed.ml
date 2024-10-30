@@ -45,23 +45,23 @@ let check_distinct_vars (vars : Lang.Ast.var list) : unit =
    tuples, and lists. Note that int by itself (i.e. not as part of an int<N> type expression)
    means an arbitrary-precision integer, without a width specified.
 
-   Element type |	header    | header_union | struct or tuple | list    | header stack
-   bit<W>	      | allowed   |	error        | allowed         | allowed | error
-   int<W>       |	allowed   |	error        | allowed         | allowed | error
-   varbit<W>    |	allowed   |	error        | allowed         | allowed | error
-   int          |	error     |	error        | error           | allowed | error
-   void         |	error     |	error        | error           | error   | error
-   string       |	error     |	error        | error           | allowed | error
-   error        | error     |	error        | allowed         | allowed | error
-   match_kind   |	error     |	error        | error           | allowed | error
-   bool         | allowed   |	error        | allowed         | allowed | error
-   enum         |	allowed^1	| error        | allowed         | allowed | error
-   header       | error	    | allowed      | allowed         | allowed | allowed
-   header stack |	error     |	error        | allowed         | allowed | error
-   header_union |	error     | error	       | allowed         | allowed | allowed
-   struct       | allowed^2	| error	       | allowed         | allowed | error
-   tuple        |	error     |	error        | allowed         | allowed | error
-   list         |	error     |	error        | error           | allowed | error
+   Element type       |	header    | header_union | struct or tuple | list    | header stack
+   bit<W>	            | allowed   |	error        | allowed         | allowed | error
+   int<W>             |	allowed   |	error        | allowed         | allowed | error
+   varbit<W>          |	allowed   |	error        | allowed         | allowed | error
+   int                |	error     |	error        | error           | allowed | error
+   void               |	error     |	error        | error           | error   | error
+   string             |	error     |	error        | error           | allowed | error
+   error              | error     |	error        | allowed         | allowed | error
+   match_kind         |	error     |	error        | error           | allowed | error
+   bool               | allowed   |	error        | allowed         | allowed | error
+   enumeration types  |	allowed^1	| error        | allowed         | allowed | error
+   header types       | error	    | allowed      | allowed         | allowed | allowed
+   header stacks      |	error     |	error        | allowed         | allowed | error
+   header unions      |	error     | error	       | allowed         | allowed | allowed
+   struct types       | allowed^2	| error	       | allowed         | allowed | error
+   tuple types        |	error     |	error        | allowed         | allowed | error
+   list types         |	error     |	error        | error           | allowed | error
 
    ^1 an enum type used as a field in a header must specify a underlying type
     and representation for enum elements
@@ -70,23 +70,24 @@ let check_distinct_vars (vars : Lang.Ast.var list) : unit =
 
    The table below lists all types that may appear as base types in a typedef or type declaration.
 
-   Base type B    | typedef B <name> |	type B <name>
-   bit<W>         | allowed          |	allowed
-   int<W>         | allowed          |	allowed
-   varbit<W>      | allowed          |	error
-   int            | allowed          |  error
-   void           | error            |  error
-   error          | allowed          |  error
-   match_kind     | error            |  error
-   bool           | allowed          |  allowed
-   enum           | allowed          |  error
-   header         | allowed          |  error
-   header stack   | allowed          |  error
-   header_union   | allowed          |  error
-   struct         | allowed          |  error
-   tuple          | allowed          |  error
-   a typedef name | allowed          |  allowed^3
-   a type name	  | allowed          |  allowed *)
+   Base type B          | typedef B <name> |	type B <name>
+   bit<W>               | allowed          |	allowed
+   int<W>               | allowed          |	allowed
+   varbit<W>            | allowed          |	error
+   int                  | allowed          |  error
+   void                 | error            |  error
+   error                | allowed          |  error
+   match_kind           | error            |  error
+   bool                 | allowed          |  allowed
+   enumeration types    | allowed          |  error
+   header types         | allowed          |  error
+   header stacks        | allowed          |  error
+   header unions        | allowed          |  error
+   struct types         | allowed          |  error
+   tuple types          | allowed          |  error
+   list types           | allowed          |  error
+   a typedef name       | allowed          |  allowed^3
+   a type name	        | allowed          |  allowed *)
 
 (* (7.2.1) Enumeration types
 
@@ -121,6 +122,9 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
       check_valid_type_nesting typ typ_inner
   | EnumT _ -> ()
   | SEnumT (_, typ_inner) -> check_valid_type_nesting typ typ_inner
+  | ListT typ_inner ->
+      check_valid_type' tset typ_inner;
+      check_valid_type_nesting typ typ_inner
   | TupleT typs_inner ->
       List.iter
         (fun typ_inner ->
@@ -197,8 +201,8 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VBitT _ -> false
       | VarT _ -> true
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
-      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-      | UnionT _ ->
+      | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
+      | HeaderT _ | UnionT _ ->
           false
       | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ -> false
       | TopT -> true
@@ -211,9 +215,23 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VBitT _ -> false
       | VarT _ -> true
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
-      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-      | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ ->
+      | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
+      | HeaderT _ | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
+      | TableT _ ->
           false
+      | TopT -> true
+      | SeqT _ | RecordT _ | SetT _ | StateT -> false)
+  | ListT _ -> (
+      match typ_inner with
+      | VoidT -> false
+      | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _
+      | VarT _ ->
+          true
+      | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
+      | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
+      | HeaderT _ | UnionT _ ->
+          true
+      | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ -> false
       | TopT -> true
       | SeqT _ | RecordT _ | SetT _ | StateT -> false)
   | TupleT _ -> (
@@ -225,9 +243,9 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | IntT -> false
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
-      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-      | UnionT _ ->
-          true
+      | EnumT _ | SEnumT _ -> true
+      | ListT _ -> false
+      | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> true
       | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ -> false
       | TopT -> true
       | SeqT _ | RecordT _ | SetT _ | StateT -> false)
@@ -238,7 +256,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
           false
       | VarT _ -> true
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
-      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ -> false
+      | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _ -> false
       | HeaderT _ | UnionT _ -> true
       | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ -> false
       | TopT -> true
@@ -252,9 +270,9 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | IntT -> false
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
-      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-      | UnionT _ ->
-          true
+      | EnumT _ | SEnumT _ -> true
+      | ListT _ -> false
+      | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> true
       | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ -> false
       | TopT -> true
       | SeqT _ | RecordT _ | SetT _ | StateT -> false)
@@ -267,7 +285,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
       | EnumT _ -> false
       | SEnumT _ -> true
-      | TupleT _ | StackT _ -> false
+      | ListT _ | TupleT _ | StackT _ -> false
       (* A special case: when struct is nested inside a header,
          because structs allow more nested types than a header, we need to check recursively *)
       | StructT (_, fields) ->
@@ -284,7 +302,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
           false
       | VarT _ -> true
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
-      | EnumT _ | SEnumT _ | TupleT _ | StackT _ -> false
+      | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ -> false
       | StructT _ -> false
       | HeaderT _ -> true
       | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ ->
@@ -301,6 +319,11 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VarT _ -> false
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ -> true
+      (* A special case: when list is nested inside a set,
+         because lists allow more nested types than a set, we need to check recursively *)
+      (* This recursion holds because the inner types that a list allows is a
+         superset of the inner types that a set allows *)
+      | ListT typ_inner -> check_valid_type_nesting' typ typ_inner
       (* A special case: when tuple is nested inside a set,
          because tuples allow more nested types than a set, we need to check recursively *)
       (* This recursion holds because the inner types that a tuple allows is a
@@ -397,8 +420,8 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | MatchKindT -> false
       | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
       | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
-      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-      | UnionT _ ->
+      | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
+      | HeaderT _ | UnionT _ ->
           true
       | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ -> false
       | TopT -> true
@@ -412,8 +435,8 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | VBitT _ -> false
       | VarT _ -> true
       | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
-      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-      | UnionT _ ->
+      | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
+      | HeaderT _ | UnionT _ ->
           false
       | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ -> false
       | TopT -> true
@@ -426,8 +449,9 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | VBitT _ -> false
       | VarT _ -> true
       | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
-      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-      | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ ->
+      | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
+      | HeaderT _ | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
+      | TableT _ ->
           false
       | TopT -> true
       | SeqT _ | RecordT _ | SetT _ | StateT -> false)
@@ -440,9 +464,9 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | IntT -> false
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
       | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
-      | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-      | UnionT _ ->
-          true
+      | EnumT _ | SEnumT _ -> true
+      | ListT _ -> false
+      | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> true
       | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ -> false
       | TopT -> true
       | SeqT _ | RecordT _ | SetT _ | StateT -> false)
@@ -455,7 +479,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ -> false
       | SEnumT _ -> true
-      | TupleT _ | StackT _ -> false
+      | ListT _ | TupleT _ | StackT _ -> false
       (* A special case: when struct is nested inside a header,
          because structs allow more nested types than a header, we need to check recursively *)
       (* This recursion holds because the inner types that a struct allows is a
@@ -475,7 +499,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | VarT _ -> true
       | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ | SEnumT _ -> false
-      | TupleT _ | StackT _ -> false
+      | ListT _ | TupleT _ | StackT _ -> false
       | StructT _ -> false
       | HeaderT _ -> true
       | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ ->

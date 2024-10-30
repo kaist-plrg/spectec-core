@@ -621,7 +621,7 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
   | FBitT width -> eval_cast_to_bit width value
   | FIntT width -> eval_cast_to_int width value
   | NewT (_id, typ_inner) -> eval_cast typ_inner value
-  | TupleT typs -> eval_cast_tuple typs value
+  | TupleT typs_inner -> eval_cast_tuple typs_inner value
   | StructT (_id, fields_typ) ->
       let fields = eval_cast_fields fields_typ value in
       StructV fields

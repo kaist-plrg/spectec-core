@@ -55,6 +55,9 @@ let rec subst_typ (theta : Theta.t) (typ : Type.t) : Type.t =
   | SEnumT (id, typ_inner) ->
       let typ_inner = subst_typ theta typ_inner in
       SEnumT (id, typ_inner)
+  | ListT typ_inner ->
+      let typ_inner = subst_typ theta typ_inner in
+      ListT typ_inner
   | TupleT typs_inner ->
       let typs_inner = List.map (subst_typ theta) typs_inner in
       TupleT typs_inner

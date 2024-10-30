@@ -32,6 +32,7 @@ and typ =
   | EnumT of L.id'
   | SEnumT of L.id' * typ
   (* Aggregate types *)
+  | ListT of typ
   | TupleT of typ list
   | StackT of typ * Bigint.t
   | StructT of L.id' * (L.member' * typ) list
@@ -139,6 +140,7 @@ and pp_typ fmt typ =
   | NewT (id, typ) -> F.fprintf fmt "type %a (= %a)" P.pp_id' id pp_typ typ
   | EnumT id -> F.fprintf fmt "enum %a" P.pp_id' id
   | SEnumT (id, typ) -> F.fprintf fmt "enum<%a> %a" pp_typ typ P.pp_id' id
+  | ListT typ -> F.fprintf fmt "list<%a>" pp_typ typ
   | TupleT typs -> F.fprintf fmt "tuple<%a>" (P.pp_list pp_typ ",@ ") typs
   | StackT (typ, size) -> F.fprintf fmt "%a[%a]" pp_typ typ Bigint.pp size
   | StructT (id, fields) ->
@@ -297,6 +299,7 @@ and eq_typ typ_a typ_b =
   | EnumT id_a, EnumT id_b -> E.eq_id' id_a id_b
   | SEnumT (id_a, typ_a), SEnumT (id_b, typ_b) ->
       E.eq_id' id_a id_b && eq_typ typ_a typ_b
+  | ListT typ_a, ListT typ_b -> eq_typ typ_a typ_b
   | TupleT typs_a, TupleT typs_b -> List.for_all2 eq_typ typs_a typs_b
   | StackT (typ_a, size_a), StackT (typ_b, size_b) ->
       eq_typ typ_a typ_b && Bigint.(size_a = size_b)
@@ -357,6 +360,7 @@ module Type = struct
     | NewT (_, typ) -> is_ground typ
     | EnumT _ -> true
     | SEnumT (_, typ) -> is_ground typ
+    | ListT typ -> is_ground typ
     | TupleT typs -> List.for_all is_ground typs
     | StackT (typ, _) -> is_ground typ
     | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->

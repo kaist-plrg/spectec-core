@@ -61,6 +61,7 @@ and typ' =
   | NameT of var
   | SpecT of var * targ list
   | StackT of typ * expr
+  | ListT of typ
   | TupleT of typ list
   | AnyT
 

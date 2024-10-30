@@ -123,6 +123,7 @@ and eq_type' (typ : Type.t) (typ' : Type.t) =
   | ( HeaderStack { header; size; _ },
       HeaderStack { header = header'; size = size'; _ } ) ->
       eq_type header header' && eq_expr size size'
+  | List { typ; _ }, List { typ = typ'; _ } -> eq_type typ typ'
   | Tuple { args; _ }, Tuple { args = args'; _ } -> eq_list eq_type args args'
   | String _, String _ -> true
   | Void _, Void _ -> true

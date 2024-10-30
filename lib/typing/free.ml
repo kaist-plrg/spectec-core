@@ -13,7 +13,7 @@ let rec free_typ (typ : Type.t) : TIdSet.t =
   | VarT id -> TIdSet.singleton id
   | NewT (_, typ_inner) -> free_typ typ_inner
   | EnumT _ -> TIdSet.empty
-  | SEnumT (_, typ_inner) -> free_typ typ_inner
+  | SEnumT (_, typ_inner) | ListT typ_inner -> free_typ typ_inner
   | TupleT typs_inner ->
       List.map free_typ typs_inner |> List.fold_left TIdSet.union TIdSet.empty
   | StackT (typ_inner, _) -> free_typ typ_inner

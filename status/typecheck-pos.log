@@ -2445,40 +2445,38 @@ Typecheck success: test/program/well-typed/line.p4
 Typecheck success: test/program/well-typed/list-compare.p4
 
 >>> Running typecheck test on test/program/well-typed/list.p4
-parser error: File test/program/well-typed/list.p4, line 4, characters 6-10
-Error while parsing p4 file: test/program/well-typed/list.p4
+Typecheck success: test/program/well-typed/list.p4
 
 >>> Running typecheck test on test/program/well-typed/list1.p4
-parser error: File test/program/well-typed/list1.p4, line 9, characters 6-10
-Error while parsing p4 file: test/program/well-typed/list1.p4
+Typecheck success: test/program/well-typed/list1.p4
 
 >>> Running typecheck test on test/program/well-typed/list2.p4
-parser error: File test/program/well-typed/list2.p4, line 4, characters 6-10
-Error while parsing p4 file: test/program/well-typed/list2.p4
+Typecheck success: test/program/well-typed/list2.p4
 
 >>> Running typecheck test on test/program/well-typed/list3.p4
-parser error: File test/program/well-typed/list3.p4, line 6, characters 6-10
-Error while parsing p4 file: test/program/well-typed/list3.p4
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
+tuple<K, K>,Error while typechecking p4 file: test/program/well-typed/list3.p4
 
 >>> Running typecheck test on test/program/well-typed/list4.p4
-parser error: File test/program/well-typed/list4.p4, line 6, characters 6-10
-Error while parsing p4 file: test/program/well-typed/list4.p4
+
+V>
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
+tuple<K, K>,Error while typechecking p4 file: test/program/well-typed/list4.p4
 
 >>> Running typecheck test on test/program/well-typed/list5.p4
-parser error: File test/program/well-typed/list5.p4, line 6, characters 6-10
-Error while parsing p4 file: test/program/well-typed/list5.p4
+Typecheck success: test/program/well-typed/list5.p4
 
 >>> Running typecheck test on test/program/well-typed/list6.p4
-parser error: File test/program/well-typed/list6.p4, line 6, characters 6-10
-Error while parsing p4 file: test/program/well-typed/list6.p4
+Typecheck success: test/program/well-typed/list6.p4
 
 >>> Running typecheck test on test/program/well-typed/list7.p4
+
+V>
 (check_eq_typ_alpha) Types record { f = int } and struct S { f = bit<32> } are not equal
 Error while typechecking p4 file: test/program/well-typed/list7.p4
 
 >>> Running typecheck test on test/program/well-typed/list8.p4
-parser error: File test/program/well-typed/list8.p4, line 4, characters 6-10
-Error while parsing p4 file: test/program/well-typed/list8.p4
+Typecheck success: test/program/well-typed/list8.p4
 
 >>> Running typecheck test on test/program/well-typed/list9.p4
 parser error: File test/program/well-typed/list9.p4, line 3, characters 8-9
@@ -3495,7 +3493,7 @@ Error while typechecking p4 file: test/program/well-typed/pvs-struct-2-bmv2.p4
 Error while typechecking p4 file: test/program/well-typed/pvs-struct-3-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/pvs.p4
-(type_decl) value_set<(bit<32>, bit<2>)>(4) vs;
+(type_decl) value_set<tuple<bit<32>, bit<2>>>(4) vs;
 Error while typechecking p4 file: test/program/well-typed/pvs.p4
 
 >>> Running typecheck test on test/program/well-typed/rcp.p4
@@ -4023,5 +4021,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 (check_eq_typ_alpha) Types int and bit<9> are not equal
 Error while typechecking p4 file: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1178/1233 (95.54%) [FAIL] 55/1233 (4.46%)
-Typecheck: [PASS] 908/1178 (77.08%) [FAIL] 270/1178 (22.92%)
+Parser on file: [PASS] 1186/1233 (96.19%) [FAIL] 47/1233 (3.81%)
+Typecheck: [PASS] 914/1186 (77.07%) [FAIL] 272/1186 (22.93%)

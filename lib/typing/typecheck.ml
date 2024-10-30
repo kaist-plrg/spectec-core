@@ -90,6 +90,7 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
   | NewT (id_param, typ_inner_param), NewT (id_arg, typ_inner_arg)
     when id_param = id_arg ->
       gen_cstr cstr typ_inner_param typ_inner_arg
+  | ListT typ_param, ListT typ_arg -> gen_cstr cstr typ_param typ_arg
   | TupleT typs_param, TupleT typs_arg -> gen_cstrs cstr typs_param typs_arg
   | StackT (typ_inner_param, size_param), StackT (typ_inner_arg, size_arg)
     when Bigint.(size_param = size_arg) ->
@@ -275,6 +276,9 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ') :
         expr_size_il |> Static.eval_expr cursor ctx |> it |> Value.get_num
       in
       Types.StackT (typ_inner.it, size)
+  | ListT typ_inner ->
+      let typ_inner = eval_type cursor ctx typ_inner in
+      Types.ListT typ_inner.it
   | TupleT typs_inner ->
       let typs_inner =
         List.map (eval_type cursor ctx) typs_inner |> List.map it
@@ -1503,9 +1507,9 @@ and check_bitstring_base' (typ : Type.t) : bool =
   | FIntT width -> Bigint.(width > zero)
   | FBitT width -> Bigint.(width >= zero)
   | VBitT _ | VarT _ -> false
-  | NewT _ | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-  | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | TopT
-  | SeqT _ | RecordT _ | SetT _ | StateT ->
+  | NewT _ | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
+  | HeaderT _ | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
+  | TableT _ | TopT | SeqT _ | RecordT _ | SetT _ | StateT ->
       false
 
 and check_bitstring_base (typ : Type.t) : unit =
@@ -1521,7 +1525,7 @@ and check_bitstring_index' (typ : Type.t) : bool =
   | VBitT _ | VarT _ -> false
   | NewT _ | EnumT _ -> false
   | SEnumT (_, typ_inner) -> check_bitstring_index' typ_inner
-  | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
+  | ListT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | TopT | SeqT _
   | RecordT _ | SetT _ | StateT ->
       false
@@ -1539,9 +1543,9 @@ and check_bitstring_slice_range' (typ_base : Type.t) (width_slice : Bigint.t) :
   | IntT -> true
   | FIntT width_base | FBitT width_base -> Bigint.(width_slice <= width_base)
   | VBitT _ | VarT _ -> false
-  | NewT _ | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-  | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | TopT
-  | SeqT _ | RecordT _ | SetT _ | StateT ->
+  | NewT _ | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
+  | HeaderT _ | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
+  | TableT _ | TopT | SeqT _ | RecordT _ | SetT _ | StateT ->
       false
 
 and check_bitstring_slice_range (typ_base : Type.t) (idx_lo : Bigint.t)
@@ -2809,8 +2813,8 @@ and check_valid_var_type' (typ : Type.t) : bool =
   | IntT -> false
   | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
   | NewT (_, typ_inner) -> check_valid_var_type' typ_inner
-  | EnumT _ | SEnumT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _
-    ->
+  | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
+  | UnionT _ ->
       true
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | TopT | SeqT _
   | RecordT _ | SetT _ | StateT ->
@@ -3890,8 +3894,8 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
       | SEnumT (_id, typ_inner) -> check_table_key' match_kind typ_inner
       | NewT (_id, typs_inner) -> check_table_key' match_kind typs_inner
       (* Has eq op but not appropriate for table key *)
-      | TupleT _ | ErrT | MatchKindT | StackT _ | StructT _ | HeaderT _
-      | UnionT _ ->
+      | ListT _ | TupleT _ | ErrT | MatchKindT | StackT _ | StructT _
+      | HeaderT _ | UnionT _ ->
           false
       (* No equality op *)
       | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
@@ -3903,8 +3907,8 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
       | SEnumT (_id, typ_inner) -> check_table_key' match_kind typ_inner
       | NewT (_id, typs_inner) -> check_table_key' match_kind typs_inner
       (* Has eq op but not appropriate for table key *)
-      | BoolT | TupleT _ | EnumT _ | VBitT _ | ErrT | MatchKindT | StackT _
-      | StructT _ | HeaderT _ | UnionT _ ->
+      | BoolT | ListT _ | TupleT _ | EnumT _ | VBitT _ | ErrT | MatchKindT
+      | StackT _ | StructT _ | HeaderT _ | UnionT _ ->
           false
       (* No equality op *)
       | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
