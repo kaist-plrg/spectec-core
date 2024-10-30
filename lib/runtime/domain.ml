@@ -50,14 +50,14 @@ module TIdMap = IdMap
 (* Function identifiers *)
 
 module FId = struct
-  type t = string * string list
   type t' = string
-
-  let pp fmt (name, params) =
-    Format.fprintf fmt "%s(%s)" name (String.concat ", " params)
+  type t = t' * string list
 
   let pp' fmt name = Format.fprintf fmt "%s" name
   let compare = compare
+
+  let pp fmt (name, params) =
+    Format.fprintf fmt "%s(%s)" name (String.concat ", " params)
 
   let to_fid (id : El.Ast.id) (params : El.Ast.param list) =
     let params =
@@ -68,6 +68,12 @@ module FId = struct
         params
     in
     (id.it, params)
+
+  let to_names (args : El.Ast.arg list) =
+    List.map
+      (fun arg ->
+        match arg.it with Lang.Ast.NameA (id, _) -> Some id.it | _ -> None)
+      args
 end
 
 module FIdSet = struct
@@ -142,32 +148,46 @@ struct
   type t = V.t FIdMap.t
 
   let pp fmt env = FIdMap.pp V.pp fmt env
+  let find_opt (fid : FId.t) fenv = List.assoc_opt fid (bindings fenv)
 
-  (* (TODO) resolve overloaded functions with argument names *)
+  let find (fid : FId.t) fenv =
+    match find_opt fid fenv with
+    | Some value -> value
+    | None -> Format.asprintf "Key not found: %a\n" FId.pp fid |> failwith
+
+  (* Precondition: args must be either all named or all unnamed *)
   let find_overloaded_opt (fid, args) fenv =
     let arity = List.length args in
-    let funcs =
-      List.filter
-        (fun ((fid', params), _) -> fid = fid' && arity = List.length params)
+    let args =
+      if List.for_all Option.is_some args then
+        List.map Option.get args |> List.sort String.compare
+      else []
+    in
+    let func =
+      List.find_opt
+        (fun ((fid', params), _) ->
+          let params = List.sort String.compare params in
+          fid = fid'
+          && arity = List.length params
+          && (args = [] || List.for_all2 ( = ) args params))
         (bindings fenv)
     in
-    assert (List.length funcs <= 1);
-    match funcs with [] -> None | _ -> Some (List.hd funcs |> snd)
+    Option.map snd func
 
   let find_overloaded (fid, args) fenv =
     match find_overloaded_opt (fid, args) fenv with
     | Some value -> value
     | None -> Format.asprintf "Key not found: %s\n" fid |> failwith
 
-  let find_opt (fid : FId.t') fenv =
+  let find_non_overloaded_opt (fid : FId.t') fenv =
     let funcs =
       List.filter (fun ((fid', _), _) -> fid = fid') (bindings fenv)
     in
     assert (List.length funcs <= 1);
     match funcs with [] -> None | _ -> Some (List.hd funcs |> snd)
 
-  let find (fid : FId.t') fenv =
-    match find_opt fid fenv with
+  let find_non_overloaded (fid : FId.t') fenv =
+    match find_non_overloaded_opt fid fenv with
     | Some value -> value
     | None -> Format.asprintf "Key not found: %a\n" FId.pp' fid |> failwith
 end

@@ -1152,6 +1152,7 @@ Typecheck success: test/program/well-typed/issue1325-bmv2.p4
 Error while typechecking p4 file: test/program/well-typed/issue1333.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1334.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed/issue1334.p4
 
 >>> Running typecheck test on test/program/well-typed/issue134-bmv2.p4
@@ -2219,7 +2220,7 @@ Error while parsing p4 file: test/program/well-typed/issue4739.p4
 Typecheck success: test/program/well-typed/issue4760_dontcare_action_out_arg.p4
 
 >>> Running typecheck test on test/program/well-typed/issue4775-2.p4
-Error while typechecking p4 file: test/program/well-typed/issue4775-2.p4
+Typecheck success: test/program/well-typed/issue4775-2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue4775.p4
 Typecheck success: test/program/well-typed/issue4775.p4
@@ -3674,7 +3675,7 @@ parser error: File test/program/well-typed/spec-issue1297-string-cat.p4, line 11
 Error while parsing p4 file: test/program/well-typed/spec-issue1297-string-cat.p4
 
 >>> Running typecheck test on test/program/well-typed/specIssue884.p4
-Error while typechecking p4 file: test/program/well-typed/specIssue884.p4
+Typecheck success: test/program/well-typed/specIssue884.p4
 
 >>> Running typecheck test on test/program/well-typed/specialization.p4
 Typecheck success: test/program/well-typed/specialization.p4
@@ -4023,4 +4024,4 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Error while typechecking p4 file: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1178/1233 (95.54%) [FAIL] 55/1233 (4.46%)
-Typecheck: [PASS] 906/1178 (76.91%) [FAIL] 272/1178 (23.09%)
+Typecheck: [PASS] 908/1178 (77.08%) [FAIL] 270/1178 (22.92%)

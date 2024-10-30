@@ -794,6 +794,7 @@ Error while typechecking p4 file: test/program/ill-typed/mux_e.p4
 Error while typechecking p4 file: test/program/ill-typed/named-fail.p4
 
 >>> Running typecheck test on test/program/ill-typed/named-fail1.p4
+(type_func) Function f not found
 Error while typechecking p4 file: test/program/ill-typed/named-fail1.p4
 
 >>> Running typecheck test on test/program/ill-typed/neg.p4

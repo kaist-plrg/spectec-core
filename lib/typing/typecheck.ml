@@ -1884,6 +1884,7 @@ and type_func (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : El.Ast.var)
     FuncType.t * TId.t list option =
   let targs = List.map it targs_il in
   let fd =
+    let args = FId.to_names args in
     Ctx.find_overloaded_opt Ctx.find_funcdef_overloaded_opt cursor var_func args
       ctx
   in
@@ -1938,7 +1939,10 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
             (Types.BuiltinMethodT ([], Types.IntT), None)
         | _ -> error_not_found ())
     | ExternT (_id, fdenv) -> (
-        let fd = Envs.FDEnv.find_overloaded_opt (member.it, args) fdenv in
+        let fd =
+          let args = FId.to_names args in
+          Envs.FDEnv.find_overloaded_opt (member.it, args) fdenv
+        in
         match fd with
         | Some fd -> specialize_funcdef fd targs
         | None -> error_not_found ())
@@ -2102,6 +2106,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
   (* (TODO) Implement type inference for missing type arguments *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
   let cd =
+    let args = FId.to_names args in
     Ctx.find_overloaded_opt Ctx.find_consdef_opt cursor var_inst args ctx
   in
   if Option.is_none cd then (
@@ -2881,7 +2886,7 @@ and type_instantiation_init_decl' (cursor : Ctx.cursor) (ctx : Ctx.t)
       let ctx, decl_il =
         type_function_decl cursor ctx id tparams params typ_ret body
       in
-      let fd = Ctx.find_funcdef_overloaded cursor fid ctx in
+      let fd = Ctx.find_funcdef cursor fid ctx in
       let fdenv_abstract = Envs.FDEnv.add fid fd fdenv_abstract in
       (fdenv_abstract, decl_il)
   | _ ->
@@ -2924,9 +2929,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
           Envs.FDEnv.fold
             (fun fid fd fdenv_extern ->
               let typ_ret = FuncDef.get_typ_ret fd in
-              let fd_extern =
-                Envs.FDEnv.find_overloaded_opt fid fdenv_abstract
-              in
+              let fd_extern = Envs.FDEnv.find_opt fid fdenv_abstract in
               (* (TODO) What if extern abstract method decl has type parameters? *)
               if
                 match (fd_extern : FuncDef.t option) with
@@ -3959,9 +3962,6 @@ and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
    Applying tables, whether directly via an expression like table1.apply().hit, or indirectly,
    are forbidden in the expressions supplied as action arguments. *)
 
-(* (TODO) : check action in entry | default, do we need to use find_overloaded_opt?
-   What about just search name from table_action_notes and get info *)
-
 and type_call_action_partial (cursor : Ctx.cursor) (ctx : Ctx.t)
     (params : Types.param list) (args_il : (Il.Ast.arg * Type.t) list) :
     Il.Ast.arg list =
@@ -3986,7 +3986,7 @@ and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_action : El.Ast.table_action') :
     Tblctx.t * Il.Ast.table_action' =
   let var, args, annos = table_action in
-  let fd = Ctx.find_opt Ctx.find_funcdef_opt cursor var ctx in
+  let fd = Ctx.find_opt Ctx.find_funcdef_non_overloaded_opt cursor var ctx in
   if Option.is_none fd then (
     Format.printf "(type_table_action) There is no action named %a\n"
       El.Pp.pp_var var;

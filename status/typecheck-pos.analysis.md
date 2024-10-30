@@ -169,7 +169,7 @@ random(rand_val, 0);
 * issue1586.p4
 </details>
 
-### (4) Overload resolution by name (2)
+### DONE (4) ~~Overload resolution by name~~
 
 The current implementation only uses arity to disambiguate overloaded functions.
 
@@ -191,11 +191,6 @@ bit<8> add_1(in bit<8> a, in bit<8> b) { return 1; }
 bit<8> add_1(in bit<8> c, in bit<8> d) { return 2; }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue1334.p4
-* issue4775-2.p4
 </details>
 
 ### (5) Instantiation block
@@ -650,6 +645,7 @@ a(x, 0);
 * issue1001-bmv2.p4
 * issue1006.p4
 * issue1043-bmv2.p4
+* issue1334.p4
 * issue1642-bmv2.p4
 * issue1653-bmv2.p4
 * issue1653-complex-bmv2.p4

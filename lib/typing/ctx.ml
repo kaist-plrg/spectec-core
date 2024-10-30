@@ -280,6 +280,17 @@ let rec find_typedef_opt cursor tid ctx =
 
 let find_typedef cursor tid ctx = find_typedef_opt cursor tid ctx |> Option.get
 
+let rec find_funcdef_opt cursor (fid, args) ctx =
+  match cursor with
+  | Global -> Envs.FDEnv.find_opt (fid, args) ctx.global.fdenv
+  | Block ->
+      Envs.FDEnv.find_opt (fid, args) ctx.block.fdenv
+      |> find_cont find_funcdef_opt Global (fid, args) ctx
+  | Local -> find_funcdef_opt Block (fid, args) ctx
+
+let find_funcdef cursor (fid, args) ctx =
+  find_funcdef_opt cursor (fid, args) ctx |> Option.get
+
 let rec find_funcdef_overloaded_opt cursor (fid, args) ctx =
   match cursor with
   | Global -> Envs.FDEnv.find_overloaded_opt (fid, args) ctx.global.fdenv
@@ -291,15 +302,16 @@ let rec find_funcdef_overloaded_opt cursor (fid, args) ctx =
 let find_funcdef_overloaded cursor (fid, args) ctx =
   find_funcdef_overloaded_opt cursor (fid, args) ctx |> Option.get
 
-let rec find_funcdef_opt cursor fid ctx =
+let rec find_funcdef_non_overloaded_opt cursor fid ctx =
   match cursor with
-  | Global -> Envs.FDEnv.find_opt fid ctx.global.fdenv
+  | Global -> Envs.FDEnv.find_non_overloaded_opt fid ctx.global.fdenv
   | Block ->
-      Envs.FDEnv.find_opt fid ctx.block.fdenv
-      |> find_cont find_funcdef_opt Global fid ctx
-  | Local -> find_funcdef_opt Block fid ctx
+      Envs.FDEnv.find_non_overloaded_opt fid ctx.block.fdenv
+      |> find_cont find_funcdef_non_overloaded_opt Global fid ctx
+  | Local -> find_funcdef_non_overloaded_opt Block fid ctx
 
-let find_funcdef cursor fid ctx = find_funcdef_overloaded cursor fid ctx
+let find_funcdef_non_overloaded cursor fid ctx =
+  find_funcdef_non_overloaded_opt cursor fid ctx |> Option.get
 
 let find_consdef_opt _cursor (cid, args) ctx =
   Envs.CDEnv.find_overloaded_opt (cid, args) ctx.global.cdenv
@@ -356,7 +368,6 @@ let find finder_opt cursor var ctx =
   find_opt finder_opt cursor var ctx |> Option.get
 
 let find_overloaded_opt finder_overloaded_opt cursor var args ctx =
-  let args = List.map it args in
   match var.it with
   | L.Top id -> finder_overloaded_opt Global (id.it, args) ctx
   | L.Current id -> finder_overloaded_opt cursor (id.it, args) ctx
