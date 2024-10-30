@@ -40,6 +40,12 @@ module Type = Types.Type
     - casts where the destination type is the same as the source type
       if the destination type appears in this list (this excludes e.g., parsers or externs). *)
 
+let check_explicit_castable (typ : Type.t) : bool =
+  match typ with
+  | BoolT | IntT | FBitT _ | FIntT _ | NewT _ | SEnumT _ | ListT _ | TupleT _
+  | StructT _ | HeaderT _ | UnionT _ -> true
+  | _ -> false
+
 let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
   let explicit_unequal () =
     match (typ_from, typ_to) with
@@ -100,11 +106,11 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
         && List.for_all2 explicit typs_from_inner typs_to_inner
     (* casts of an invalid expression {#} to a header or a header union type *)
     | InvalidT, HeaderT _ | InvalidT, UnionT _ -> true
-    (* (TODO) casts where the destination type is the same as the source type
-       if the destination type appears in this list (this excludes e.g., parsers or externs). *)
     | _ -> false
   in
-  if Eq.eq_typ_alpha typ_from typ_to then true else explicit_unequal ()
+  (* casts where the destination type is the same as the source type
+     if the destination type appears in this list (this excludes e.g., parsers or externs). *)
+  if Eq.eq_typ_alpha typ_from typ_to then check_explicit_castable typ_to else explicit_unequal ()
 
 (* (8.11.2) Implicit casts
 
@@ -172,7 +178,7 @@ let rec implicit (typ_a : Type.t) (typ_b : Type.t) : bool =
         List.length typs_a_inner = List.length typs_b_inner
         && List.for_all2 ( = ) members_a members_b
         && List.for_all2 implicit typs_a_inner typs_b_inner
-    (* invalid <: header _ and invalid <: union *)
+    (* invalid <: header _ and invalid <: union _ *)
     | InvalidT, HeaderT _ | InvalidT, UnionT _ -> true
     | _ -> false
   in
