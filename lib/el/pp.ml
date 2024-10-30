@@ -135,6 +135,7 @@ and pp_expr' ?(level = 0) fmt expr' =
       F.fprintf fmt "{ %a }"
         (P.pp_pairs pp_member (pp_expr ~level:0) ", ")
         fields
+  | InvalidE -> F.pp_print_string fmt "{#}"
   | UnE { unop; expr } ->
       F.fprintf fmt "%a%a" pp_unop unop (pp_expr ~level:0) expr
   | BinE { binop; expr_l; expr_r } ->

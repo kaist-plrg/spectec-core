@@ -273,6 +273,8 @@ rule tokenize = parse
       { MINUS_SAT (info lexbuf) }
   | "*"
       { MUL (info lexbuf) }
+  | "{#}"
+      { INVALID (info lexbuf) }
   | "/"
       { DIV (info lexbuf) }
   | "%"

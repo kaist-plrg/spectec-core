@@ -97,6 +97,7 @@ let rec subst_typ (theta : Theta.t) (typ : Type.t) : Type.t =
         List.map (fun (id, typ) -> (id, subst_typ theta typ)) fields
       in
       RecordT fields
+  | InvalidT -> typ
   | SetT typ_inner ->
       let typ_inner = subst_typ theta typ_inner in
       SetT typ_inner

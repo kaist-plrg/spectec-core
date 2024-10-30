@@ -98,7 +98,8 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
         in
         List.for_all2 ( = ) members_from members_to
         && List.for_all2 explicit typs_from_inner typs_to_inner
-    (* (TODO) casts of an invalid expression {#} to a header or a header union type *)
+    (* casts of an invalid expression {#} to a header or a header union type *)
+    | InvalidT, HeaderT _ | InvalidT, UnionT _ -> true
     (* (TODO) casts where the destination type is the same as the source type
        if the destination type appears in this list (this excludes e.g., parsers or externs). *)
     | _ -> false
@@ -171,6 +172,8 @@ let rec implicit (typ_a : Type.t) (typ_b : Type.t) : bool =
         List.length typs_a_inner = List.length typs_b_inner
         && List.for_all2 ( = ) members_a members_b
         && List.for_all2 implicit typs_a_inner typs_b_inner
+    (* invalid <: header _ and invalid <: union *)
+    | InvalidT, HeaderT _ | InvalidT, UnionT _ -> true
     | _ -> false
   in
   if Eq.eq_typ_alpha typ_a typ_b then true else implicit_unequal ()

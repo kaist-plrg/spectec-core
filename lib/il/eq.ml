@@ -124,6 +124,7 @@ and eq_expr' expr_a expr_b =
       eq_exprs exprs_a exprs_b
   | RecordE { fields = fields_a }, RecordE { fields = fields_b } ->
       E.eq_pairs eq_id eq_expr fields_a fields_b
+  | InvalidE, InvalidE -> true
   | UnE { unop = unop_a; expr = expr_a }, UnE { unop = unop_b; expr = expr_b }
     ->
       eq_unop unop_a unop_b && eq_expr expr_a expr_b

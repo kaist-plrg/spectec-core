@@ -42,7 +42,7 @@ let rec smash_annotations (l: Text.t list) (tok2: Text.t): Text.t list =
 %token<Surface.Ast.Text.t> NAME STRING_LITERAL
 %token<Surface.Ast.Number.t * string> NUMBER
 %token<Util.Source.info> LE GE SHL AND OR NE EQ
-%token<Util.Source.info> PLUS MINUS PLUS_SAT MINUS_SAT MUL DIV MOD
+%token<Util.Source.info> PLUS MINUS PLUS_SAT MINUS_SAT MUL INVALID DIV MOD
 %token<Util.Source.info> BIT_OR BIT_AND BIT_XOR COMPLEMENT
 %token<Util.Source.info> L_BRACKET R_BRACKET L_BRACE R_BRACE L_ANGLE L_ANGLE_ARGS R_ANGLE R_ANGLE_SHIFT L_PAREN R_PAREN
 %token<Util.Source.info> ASSIGN COLON COMMA QUESTION DOT NOT SEMICOLON
@@ -1437,6 +1437,8 @@ expression:
 | info1 = L_BRACE values = expressionList info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
       Expression.List { tags; values } }
+| info = INVALID
+    { Expression.Invalid { tags = info } }
 | info1 = L_BRACE entries = kvList info2 = R_BRACE 
     { let tags = Source.merge info1 info2 in 
       Expression.Record { tags; entries } }

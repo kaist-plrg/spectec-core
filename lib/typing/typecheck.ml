@@ -568,6 +568,7 @@ and type_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr') :
   | VarE { var } -> type_var_expr cursor ctx var
   | SeqE { exprs } -> type_seq_expr cursor ctx exprs
   | RecordE { fields } -> type_record_expr cursor ctx fields
+  | InvalidE -> type_invalid_expr ()
   | UnE { unop; expr } -> type_unop_expr cursor ctx unop expr
   | BinE { binop; expr_l; expr_r } ->
       type_binop_expr cursor ctx binop expr_l expr_r
@@ -682,6 +683,17 @@ and type_record_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let expr_il = Il.Ast.RecordE { fields = List.combine members exprs_il } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
+
+(* (8.17) Operations on headers
+   (8.19) Operations on header unions
+
+   The expression {#} represents an invalid header of some type,
+   but it can be any header or header union type. A P4 compiler may require an
+   explicit cast on this expression in cases where it cannot determine the
+   particular header or header union type from the context. *)
+
+and type_invalid_expr () : Type.t * Ctk.t * Il.Ast.expr' =
+  (Types.InvalidT, Ctk.LCTK, Il.Ast.InvalidE)
 
 (* (8.6) Operations on fixed-width bit types (unsigned integers)
 
@@ -1509,7 +1521,7 @@ and check_bitstring_base' (typ : Type.t) : bool =
   | VBitT _ | VarT _ -> false
   | NewT _ | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
   | HeaderT _ | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
-  | TableT _ | TopT | SeqT _ | RecordT _ | SetT _ | StateT ->
+  | TableT _ | TopT | SeqT _ | RecordT _ | InvalidT | SetT _ | StateT ->
       false
 
 and check_bitstring_base (typ : Type.t) : unit =
@@ -1527,7 +1539,7 @@ and check_bitstring_index' (typ : Type.t) : bool =
   | SEnumT (_, typ_inner) -> check_bitstring_index' typ_inner
   | ListT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | TopT | SeqT _
-  | RecordT _ | SetT _ | StateT ->
+  | RecordT _ | InvalidT | SetT _ | StateT ->
       false
 
 and check_bitstring_index (typ : Type.t) : unit =
@@ -1545,7 +1557,7 @@ and check_bitstring_slice_range' (typ_base : Type.t) (width_slice : Bigint.t) :
   | VBitT _ | VarT _ -> false
   | NewT _ | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
   | HeaderT _ | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
-  | TableT _ | TopT | SeqT _ | RecordT _ | SetT _ | StateT ->
+  | TableT _ | TopT | SeqT _ | RecordT _ | InvalidT | SetT _ | StateT ->
       false
 
 and check_bitstring_slice_range (typ_base : Type.t) (idx_lo : Bigint.t)
@@ -2817,7 +2829,7 @@ and check_valid_var_type' (typ : Type.t) : bool =
   | UnionT _ ->
       true
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | TopT | SeqT _
-  | RecordT _ | SetT _ | StateT ->
+  | InvalidT | RecordT _ | SetT _ | StateT ->
       false
 
 and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
@@ -3899,7 +3911,7 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
           false
       (* No equality op *)
       | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
-      | TableT _ | TopT | SeqT _ | RecordT _ | SetT _ | StateT ->
+      | TableT _ | TopT | SeqT _ | RecordT _ | InvalidT | SetT _ | StateT ->
           false)
   | "lpm" | "ternary" | "range" -> (
       match typ with
@@ -3912,7 +3924,7 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
           false
       (* No equality op *)
       | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
-      | TableT _ | TopT | SeqT _ | RecordT _ | SetT _ | StateT ->
+      | TableT _ | TopT | SeqT _ | RecordT _ | InvalidT | SetT _ | StateT ->
           false)
   | _ ->
       Format.printf "(check_table_key) %s is not a valid match_kind\n"

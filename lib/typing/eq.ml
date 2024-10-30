@@ -50,6 +50,7 @@ let rec eq_typ_alpha (typ_a : Type.t) (typ_b : Type.t) : bool =
           Lang.Eq.eq_member' member_a member_b
           && eq_typ_alpha typ_inner_a typ_inner_b)
         fields_a fields_b
+  | InvalidT, InvalidT -> true
   | SetT typ_inner_a, SetT typ_inner_b -> eq_typ_alpha typ_inner_a typ_inner_b
   | StateT, StateT -> true
   | _ -> false

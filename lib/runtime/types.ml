@@ -49,6 +49,7 @@ and typ =
   (* Synthesized types : variables can never be declared of this type *)
   | SeqT of typ list
   | RecordT of (L.member' * typ) list
+  | InvalidT
   | SetT of typ
   | StateT
 
@@ -165,6 +166,7 @@ and pp_typ fmt typ =
   | SeqT typs -> F.fprintf fmt "seq<%a>" (P.pp_list pp_typ ",@ ") typs
   | RecordT fields ->
       F.fprintf fmt "record { %a }" (P.pp_pairs P.pp_member' pp_typ "; ") fields
+  | InvalidT -> F.pp_print_string fmt "{#}"
   | SetT typ -> F.fprintf fmt "set<%a>" pp_typ typ
   | StateT -> F.pp_print_string fmt "state"
 
@@ -315,6 +317,7 @@ and eq_typ typ_a typ_b =
   | SeqT typs_a, SeqT typs_b -> List.for_all2 eq_typ typs_a typs_b
   | RecordT fields_a, RecordT fields_b ->
       E.eq_pairs E.eq_member' eq_typ fields_a fields_b
+  | InvalidT, InvalidT -> true
   | SetT typ_a, SetT typ_b -> eq_typ typ_a typ_b
   | StateT, StateT -> true
   | _ -> false
@@ -368,6 +371,7 @@ module Type = struct
     | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> true
     | SeqT typs -> List.for_all is_ground typs
     | RecordT fields -> List.for_all (fun (_, typ) -> is_ground typ) fields
+    | InvalidT -> true
     | SetT typ -> is_ground typ
     | StateT -> true
     | TableT _ -> true

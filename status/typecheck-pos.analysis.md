@@ -583,22 +583,13 @@ switch (hdr.h1.data) {
 * switch-expression.p4
 </details>
 
-### (7) Support `{#}` syntax (4)
+### \[DONE\] (7) ~~Support `{#}` syntax~~
 
 "The expression `{#}` represents an invalid header of some type, but it can be any header or header union type. A P4 compiler may require an explicit cast on this expression in case where it cannot determine the particular header of header union type from the context." (8.26).
 
 ```p4
 h = (H) {#};
 ```
-
-<details>
-<summary>Tests</summary>
-
-* invalid-header.p4
-* invalid-union.p4
-* issue3779.p4
-* issue4625_remove_compile_time_bool_methodcall_of_mcs.p4
-</details>
 
 # D. Need Spec Clarification
 

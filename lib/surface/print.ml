@@ -153,6 +153,7 @@ and print_expr (expr : Expression.t) =
   | Record { entries; _ } ->
       let sentries = List.map print_key_value entries |> String.concat ", " in
       Printf.sprintf "{ %s }" sentries
+  | Invalid _ -> "{#}"
   | UnaryOp { op; arg; _ } ->
       let sop = print_unop op in
       let sarg = print_expr arg in

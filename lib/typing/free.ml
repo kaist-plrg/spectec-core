@@ -31,6 +31,7 @@ let rec free_typ (typ : Type.t) : TIdSet.t =
   | RecordT fields ->
       List.map snd fields |> List.map free_typ
       |> List.fold_left TIdSet.union TIdSet.empty
+  | InvalidT -> TIdSet.empty
   | SetT typ_inner -> free_typ typ_inner
   | StateT -> TIdSet.empty
   | TableT typ_inner -> free_typ typ_inner

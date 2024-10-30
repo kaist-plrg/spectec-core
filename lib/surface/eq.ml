@@ -182,6 +182,7 @@ and eq_expr' (expr : Expression.t) (expr' : Expression.t) =
       eq_list eq_expr values values'
   | Record { entries; _ }, Record { entries = entries'; _ } ->
       eq_list eq_key_value entries entries'
+  | Invalid _, Invalid _ -> true
   | UnaryOp { op; arg; _ }, UnaryOp { op = op'; arg = arg'; _ } ->
       eq_unop op op' && eq_expr arg arg'
   | ( BinaryOp { op; args = arg0, arg1; _ },

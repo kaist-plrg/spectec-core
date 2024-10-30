@@ -215,6 +215,7 @@ and transform_expr (expr : Expression.t) : El.expr =
           fields
       in
       El.RecordE { fields } $ at
+  | Invalid { tags = at } -> El.InvalidE $ at
   | UnaryOp { op; arg; tags = at } ->
       let unop = transform_unop op in
       let expr = transform_expr arg in

@@ -1235,12 +1235,12 @@ parser error: File test/program/well-typed/invalid-hdr-warnings8.p4, line 2, cha
 Error while parsing p4 string: test/program/well-typed/invalid-hdr-warnings8.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/invalid-header.p4
-parser error: File test/program/well-typed/invalid-header.p4, line 8, characters 8-18
-Error while parsing p4 file: test/program/well-typed/invalid-header.p4
+parser error: File test/program/well-typed/invalid-header.p4, line 2, characters 0-1
+Error while parsing p4 string: test/program/well-typed/invalid-header.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/invalid-union.p4
-parser error: File test/program/well-typed/invalid-union.p4, line 14, characters 8-18
-Error while parsing p4 file: test/program/well-typed/invalid-union.p4
+parser error: File test/program/well-typed/invalid-union.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/invalid-union.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/inverted-range.p4
 parser error: File test/program/well-typed/inverted-range.p4, line 20, characters 37-40
@@ -2476,8 +2476,8 @@ parser error: File test/program/well-typed/issue3702-bmv2.p4, line 20, character
 Error while parsing p4 string: test/program/well-typed/issue3702-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue3779.p4
-parser error: File test/program/well-typed/issue3779.p4, line 7, characters 0-7
-Error while parsing p4 file: test/program/well-typed/issue3779.p4
+parser error: File test/program/well-typed/issue3779.p4, line 2, characters 0-1
+Error while parsing p4 string: test/program/well-typed/issue3779.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue3806.p4
 parser error: File test/program/well-typed/issue3806.p4, line 2, characters 2-10
@@ -2584,8 +2584,8 @@ parser error: File test/program/well-typed/issue461-bmv2.p4, line 20, characters
 Error while parsing p4 string: test/program/well-typed/issue461-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue4625_remove_compile_time_bool_methodcall_of_mcs.p4
-parser error: File test/program/well-typed/issue4625_remove_compile_time_bool_methodcall_of_mcs.p4, line 7, characters 19-20
-Error while parsing p4 file: test/program/well-typed/issue4625_remove_compile_time_bool_methodcall_of_mcs.p4
+parser error: File test/program/well-typed/issue4625_remove_compile_time_bool_methodcall_of_mcs.p4, line 2, characters 2-3
+Error while parsing p4 string: test/program/well-typed/issue4625_remove_compile_time_bool_methodcall_of_mcs.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue4625_remove_compile_time_const_methodcall_of_mcs.p4
 parser error: File test/program/well-typed/issue4625_remove_compile_time_const_methodcall_of_mcs.p4, line 2, characters 2-3
@@ -4762,6 +4762,6 @@ Error while parsing p4 string: test/program/well-typed/xdp_vlan_push_pop_ebpf-ke
 parser error: File test/program/well-typed/xor_test.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1186/1233 (96.19%) [FAIL] 47/1233 (3.81%)
-Parser on string: [PASS] 170/1186 (14.33%) [FAIL] 1016/1186 (85.67%)
+Parser on file: [PASS] 1190/1233 (96.51%) [FAIL] 43/1233 (3.49%)
+Parser on string: [PASS] 170/1190 (14.29%) [FAIL] 1020/1190 (85.71%)
 Parser roundtrip: [PASS] 155/170 (91.18%) [FAIL] 15/170 (8.82%)

@@ -1032,12 +1032,10 @@ Typecheck success: test/program/well-typed/invalid-hdr-warnings7.p4
 Typecheck success: test/program/well-typed/invalid-hdr-warnings8.p4
 
 >>> Running typecheck test on test/program/well-typed/invalid-header.p4
-parser error: File test/program/well-typed/invalid-header.p4, line 8, characters 8-18
-Error while parsing p4 file: test/program/well-typed/invalid-header.p4
+Typecheck success: test/program/well-typed/invalid-header.p4
 
 >>> Running typecheck test on test/program/well-typed/invalid-union.p4
-parser error: File test/program/well-typed/invalid-union.p4, line 14, characters 8-18
-Error while parsing p4 file: test/program/well-typed/invalid-union.p4
+Typecheck success: test/program/well-typed/invalid-union.p4
 
 >>> Running typecheck test on test/program/well-typed/inverted-range.p4
 Typecheck success: test/program/well-typed/inverted-range.p4
@@ -2098,8 +2096,7 @@ Typecheck success: test/program/well-typed/issue3699.p4
 Typecheck success: test/program/well-typed/issue3702-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3779.p4
-parser error: File test/program/well-typed/issue3779.p4, line 7, characters 0-7
-Error while parsing p4 file: test/program/well-typed/issue3779.p4
+Typecheck success: test/program/well-typed/issue3779.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3806.p4
 Typecheck success: test/program/well-typed/issue3806.p4
@@ -2188,8 +2185,7 @@ Typecheck success: test/program/well-typed/issue4548.p4
 Error while typechecking p4 file: test/program/well-typed/issue461-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue4625_remove_compile_time_bool_methodcall_of_mcs.p4
-parser error: File test/program/well-typed/issue4625_remove_compile_time_bool_methodcall_of_mcs.p4, line 7, characters 19-20
-Error while parsing p4 file: test/program/well-typed/issue4625_remove_compile_time_bool_methodcall_of_mcs.p4
+Typecheck success: test/program/well-typed/issue4625_remove_compile_time_bool_methodcall_of_mcs.p4
 
 >>> Running typecheck test on test/program/well-typed/issue4625_remove_compile_time_const_methodcall_of_mcs.p4
 Typecheck success: test/program/well-typed/issue4625_remove_compile_time_const_methodcall_of_mcs.p4
@@ -4021,5 +4017,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 (check_eq_typ_alpha) Types int and bit<9> are not equal
 Error while typechecking p4 file: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1186/1233 (96.19%) [FAIL] 47/1233 (3.81%)
-Typecheck: [PASS] 914/1186 (77.07%) [FAIL] 272/1186 (22.93%)
+Parser on file: [PASS] 1190/1233 (96.51%) [FAIL] 43/1233 (3.49%)
+Typecheck: [PASS] 918/1190 (77.14%) [FAIL] 272/1190 (22.86%)

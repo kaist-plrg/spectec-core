@@ -342,6 +342,7 @@ and Expression : sig
     | BitStringAccess of { tags : 'a; bits : t; lo : t; hi : t }
     | List of { tags : 'a; values : t list }
     | Record of { tags : 'a; entries : KeyValue.t list }
+    | Invalid of { tags : 'a }
     | UnaryOp of { tags : 'a; op : Op.un; arg : t }
     | BinaryOp of { tags : 'a; op : Op.bin; args : t * t }
     | Cast of { tags : 'a; typ : Type.t; expr : t }
@@ -378,6 +379,7 @@ end = struct
     | BitStringAccess of { tags : 'a; bits : t; lo : t; hi : t }
     | List of { tags : 'a; values : t list }
     | Record of { tags : 'a; entries : KeyValue.t list }
+    | Invalid of { tags : 'a }
     | UnaryOp of { tags : 'a; op : Op.un; arg : t }
     | BinaryOp of { tags : 'a; op : Op.bin; args : t * t }
     | Cast of { tags : 'a; typ : Type.t; expr : t }
@@ -410,6 +412,7 @@ end = struct
     | BitStringAccess { tags; _ }
     | List { tags; _ }
     | Record { tags; _ }
+    | Invalid { tags }
     | UnaryOp { tags; _ }
     | BinaryOp { tags; _ }
     | Cast { tags; _ }
@@ -435,6 +438,7 @@ end = struct
         BitStringAccess { tags; bits; lo; hi }
     | List { values; _ } -> List { tags; values }
     | Record { entries; _ } -> Record { tags; entries }
+    | Invalid _ -> Invalid { tags }
     | UnaryOp { op; arg; _ } -> UnaryOp { tags; op; arg }
     | BinaryOp { op; args; _ } -> BinaryOp { tags; op; args }
     | Cast { typ; expr; _ } -> Cast { tags; typ; expr }
