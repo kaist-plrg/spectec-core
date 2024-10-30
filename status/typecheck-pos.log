@@ -1370,8 +1370,7 @@ Error while typechecking p4 file: test/program/well-typed/issue1937-3-bmv2.p4
 Error while typechecking p4 file: test/program/well-typed/issue1937.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1955.p4
-(type_decl) value_set<bit<16>>(8) ipv4_ethertypes;
-Error while typechecking p4 file: test/program/well-typed/issue1955.p4
+Typecheck success: test/program/well-typed/issue1955.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1958.p4
 (check_eq_typ_alpha) Types int and bit<32> are not equal
@@ -1992,8 +1991,7 @@ Typecheck success: test/program/well-typed/issue3329-bmv2.p4
 Typecheck success: test/program/well-typed/issue3333.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3343.p4
-(type_decl) value_set<bit<6>>(4) myvs;
-Error while typechecking p4 file: test/program/well-typed/issue3343.p4
+Typecheck success: test/program/well-typed/issue3343.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3364.p4
 Typecheck success: test/program/well-typed/issue3364.p4
@@ -3452,8 +3450,7 @@ Error while parsing p4 file: test/program/well-typed/psa-switch-expression-witho
 Typecheck success: test/program/well-typed/psa-table-hit-miss.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-test.p4
-(type_decl) value_set<bit<16>>(4) pvs;
-Error while typechecking p4 file: test/program/well-typed/psa-test.p4
+Typecheck success: test/program/well-typed/psa-test.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-top-level-assignments-bmv2.p4
 Typecheck success: test/program/well-typed/psa-top-level-assignments-bmv2.p4
@@ -3469,30 +3466,34 @@ Typecheck success: test/program/well-typed/psa-unicast-or-drop-corrected-bmv2.p4
 Error while typechecking p4 file: test/program/well-typed/psa-variable-index.p4
 
 >>> Running typecheck test on test/program/well-typed/pvs-bitstring-bmv2.p4
-(type_decl) value_set<bit<32>>(4) pvs;
-Error while typechecking p4 file: test/program/well-typed/pvs-bitstring-bmv2.p4
+Typecheck success: test/program/well-typed/pvs-bitstring-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/pvs-nested-struct.p4
-(type_decl) value_set<value_set_t>(4) pvs;
+(coerce_type) Cannot coerce type struct value_set_t { field = bit<32>; inner = struct inner_value_set_t { field = bit<32> } } to seq<bit<32>,
+bit<32>>
 Error while typechecking p4 file: test/program/well-typed/pvs-nested-struct.p4
 
 >>> Running typecheck test on test/program/well-typed/pvs-struct-1-bmv2.p4
-(type_decl) value_set<value_set_t>(4) pvs;
+(coerce_type) Cannot coerce type struct value_set_t { field = bit<32> } to bit<32>
 Error while typechecking p4 file: test/program/well-typed/pvs-struct-1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/pvs-struct-2-bmv2.p4
-(type_decl) value_set<value_set_t>(4) pvs;
+(coerce_type) Cannot coerce type struct value_set_t { field = bit<16>; field2 = bit<3> } to seq<bit<16>,
+bit<3>>
 Error while typechecking p4 file: test/program/well-typed/pvs-struct-2-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/pvs-struct-3-bmv2.p4
-(type_decl) value_set<value_set_t>(4) pvs;
-Error while typechecking p4 file: test/program/well-typed/pvs-struct-3-bmv2.p4
+(coerce_type) Cannot coerce type struct value_set_t { field1 = bit<16>; field2 = bit<3>; field3 = bit<6>; field4 = bit<5> } to seq<bit<16>,
+bit<3>, bit<6>,Error while typechecking p4 file: test/program/well-typed/pvs-struct-3-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/pvs.p4
-(type_decl) value_set<tuple<bit<32>, bit<2>>>(4) vs;
-Error while typechecking p4 file: test/program/well-typed/pvs.p4
+ bit<5>>
+(coerce_type) Cannot coerce type tuple<bit<32>,
+bit<2>> to seq<bit<32>,Error while typechecking p4 file: test/program/well-typed/pvs.p4
 
 >>> Running typecheck test on test/program/well-typed/rcp.p4
+
+bit<2>>
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed/rcp.p4
 
@@ -3945,14 +3946,18 @@ Typecheck success: test/program/well-typed/v1model-digest-containing-ser-enum.p4
 Typecheck success: test/program/well-typed/v1model-digest-custom-type.p4
 
 >>> Running typecheck test on test/program/well-typed/v1model-p4runtime-enumint-types1.p4
-(type_decl) value_set<valueset1_t>(4) valueset1;
-Error while typechecking p4 file: test/program/well-typed/v1model-p4runtime-enumint-types1.p4
+(coerce_type) Cannot coerce type struct valueset1_t { addr0 = bit<48>; e = bit<8>; e0 = bit<8>; e00 = bit<8> } to seq<bit<48>,
+bit<8>, bit<8>,Error while typechecking p4 file: test/program/well-typed/v1model-p4runtime-enumint-types1.p4
 
 >>> Running typecheck test on test/program/well-typed/v1model-p4runtime-most-types1.p4
-(type_decl) value_set<valueset1_t>(4) valueset1;
-Error while typechecking p4 file: test/program/well-typed/v1model-p4runtime-most-types1.p4
+
+bit<8>>
+(coerce_type) Cannot coerce type struct valueset1_t { addr0 = bit<48>; e = bit<8>; e0 = bit<8>; e00 = bit<8> } to seq<bit<48>,
+bit<8>, bit<8>,Error while typechecking p4 file: test/program/well-typed/v1model-p4runtime-most-types1.p4
 
 >>> Running typecheck test on test/program/well-typed/v1model-special-ops-bmv2.p4
+
+bit<8>>
 (check_eq_typ_alpha) Types int and bit<8> are not equal
 Error while typechecking p4 file: test/program/well-typed/v1model-special-ops-bmv2.p4
 
@@ -3968,8 +3973,7 @@ Error while typechecking p4 file: test/program/well-typed/valid_ebpf.p4
 Error while typechecking p4 file: test/program/well-typed/value-sets.p4
 
 >>> Running typecheck test on test/program/well-typed/value_set_ebpf.p4
-(type_decl) value_set<bit<8>>(4) pvs;
-Error while typechecking p4 file: test/program/well-typed/value_set_ebpf.p4
+Typecheck success: test/program/well-typed/value_set_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed/verify-bmv2.p4
 Typecheck success: test/program/well-typed/verify-bmv2.p4
@@ -4018,4 +4022,4 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Error while typechecking p4 file: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1190/1233 (96.51%) [FAIL] 43/1233 (3.49%)
-Typecheck: [PASS] 918/1190 (77.14%) [FAIL] 272/1190 (22.86%)
+Typecheck: [PASS] 923/1190 (77.56%) [FAIL] 267/1190 (22.44%)

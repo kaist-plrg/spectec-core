@@ -98,6 +98,10 @@ let check_distinct_vars (vars : Lang.Ast.var list) : unit =
     - a type name declared via typedef, where the base type of that type is either one of the types listed above,
       or another typedef name that meets these conditions. *)
 
+(* (13.6) Select expressions
+
+   The type of the values in the set must be either bit<>, int<>, tuple, struct, or serializable enum. *)
+
 (* (TODO) check_valid_type and check_valid_typedef quite redundant for
    typedefs that are not generic. maybe consider only check_valid_type
    after evaluating surface types of StackT, TupleT and SpecT *)

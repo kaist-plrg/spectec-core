@@ -531,15 +531,14 @@ Error while typechecking p4 file: test/program/ill-typed/issue3338.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3345.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3346.p4
-(type_decl) value_set<int>(4) myvs;
-Error while typechecking p4 file: test/program/ill-typed/issue3346.p4
+Typecheck success: test/program/ill-typed/issue3346.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3359.p4
 (check_valid_var_type) Type parser (in tt bit<1>) is not a valid variable type
 Error while typechecking p4 file: test/program/ill-typed/issue3359.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3363.p4
-(type_binop_compare_equal) Type extern e {  } cannot be compared
+(type_binop_compare_equal) Type extern e {  } cannot be compared of equality
 Error while typechecking p4 file: test/program/ill-typed/issue3363.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3378.p4
@@ -617,7 +616,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3750-1.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3750.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3751.p4
-(type_decl) value_set<bit<1>>(t) vs;
+(check_ctk) t is not a compile-time known expression
 Error while typechecking p4 file: test/program/ill-typed/issue3751.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3787.p4
@@ -1106,4 +1105,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 253/299 (84.62%) [FAIL] 46/299 (15.38%)
-Typecheck: [PASS] 166/253 (65.61%) [FAIL] 87/253 (34.39%)
+Typecheck: [PASS] 165/253 (65.22%) [FAIL] 88/253 (34.78%)

@@ -307,28 +307,11 @@ control d() {
 }
 ```
 
-### (10) `value_set` declaration (12)
+### \[DONE\] (10) ~~`value_set` declaration~~
 
 ```p4
 value_set<bit<16>>(8) ipv4_ethertypes;
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue1955.p4
-* issue3343.p4
-* psa-test.p4
-* pvs-bitstring-bmv2.p4
-* pvs-nested-struct.p4
-* pvs-struct-1-bmv2.p4
-* pvs-struct-2-bmv2.p4
-* pvs-struct-3-bmv2.p4
-* pvs.p4
-* v1model-p4runtime-enumint-types1.p4
-* v1model-p4runtime-most-tupes1.p4
-* value_set_ebpf.p4
-</details>
 
 ### (11) Instances must be compile-time known (3)
 
@@ -941,6 +924,11 @@ typedef MyCounter<my_counter_index_t> my_counter_t;
 * typedef-constructor.p4
 </details>
 
+## 11. Constraints on size of a value set?
+
+The spec does not mention if the size given to a value set declaration should be local compile-time known, compile-time known, or neither.
+I suspect it should be at least compile-time known, and it is reflected in the current implementation.
+
 # E. Unsupported features
 
 ## 1. Custom table element (45)
@@ -1312,4 +1300,48 @@ tuple<int> t = { t1 };
 * issue3238.p4
 * list3.p4
 * list4.p4
+</details>
+
+## 7. Implicit cast of `value_set` in `select` expression (7)
+
+When a value set, of type `set<T>` is used as a select label, it can be implicitly cast to the select key type `set<T'>`.
+However, below programs expect loose type casting rules.
+
+```p4
+header data_h {
+  bit<32> da;
+  bit<32> db;
+}
+struct my_packet {
+  data_h data;
+}
+struct my_metadata {
+  data_h[2] data;
+}
+struct value_set_t {
+  bit<32> field;
+}
+...
+value_set<value_set_t>(4) pvs;
+state start {
+    b.extract(p.data);
+    transition select(p.data.da) {
+        pvs: accept;
+        0x810 : foo;
+    }
+}
+```
+
+Here, we *cannot* implicitly cast `value_set_t` (which a struct type) to `bit<32>`.
+
+<details>
+<summary>Tests</summary>
+
+* pvs-nested-struct.p4
+* pvs-struct-1-bmv2.p4
+* pvs-struct-2-bmv2.p4
+* pvs-struct-3-bmv2.p4
+* pvs.p4
+* v1model-p4runtime-enumint-types1.p4
+* v1model-p4runtime-most-types1.p4
 </details>

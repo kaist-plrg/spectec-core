@@ -1317,14 +1317,20 @@ and type_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ_key : Type.t)
   match keyset with
   | ExprK expr ->
       let expr_il =
-        match expr.it with
-        | MaskE _ | RangeE _ -> type_expr cursor ctx expr
+        let expr_il = type_expr cursor ctx expr in
+        match expr_il.it with
+        (* When the keyset expression is a mask or range, it is already a set *)
+        | MaskE _ | RangeE _ -> expr_il
+        (* When the keyset expression is already a set (as a value set) *)
+        | VarE _ when match expr_il.note.typ with SetT _ -> true | _ -> false ->
+            expr_il
+        (* Otherwise, wrap the expression in a set *)
         | _ ->
-            let expr_il = type_expr cursor ctx expr in
             let typ = Types.SetT expr_il.note.typ in
             WF.check_valid_type cursor ctx typ;
             Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
       in
+      let typ_key = Types.SetT typ_key in
       let typ = expr_il.note.typ in
       let expr_il =
         match (typ_key, typ) with
@@ -1347,8 +1353,10 @@ and type_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ_key : Type.t)
 and type_keysets (cursor : Ctx.cursor) (ctx : Ctx.t) (typs_key : Type.t list)
     (keysets : El.Ast.keyset list) : Il.Ast.keyset list =
   match (typs_key, keysets) with
-  | _, [ { it = DefaultK; at; _ } ] -> [ Lang.Ast.DefaultK $ at ]
-  | _, [ { it = AnyK; at; _ } ] -> [ Lang.Ast.AnyK $ at ]
+  | [ typ_key ], [ keyset ] -> [ type_keyset cursor ctx typ_key keyset ]
+  | _, [ keyset ] ->
+      let typ_key = Types.SeqT typs_key in
+      [ type_keyset cursor ctx typ_key keyset ]
   | typs_key, keysets ->
       if List.length typs_key <> List.length keysets then (
         Format.printf
@@ -1366,10 +1374,10 @@ and type_select_case' (cursor : Ctx.cursor) (ctx : Ctx.t)
   assert (cursor = Ctx.Local);
   let keysets, state_label = case in
   let keysets_il = type_keysets cursor ctx typs_key keysets in
-  let typdir_label = Ctx.find_rtype_opt cursor state_label.it ctx in
+  let rtype_label = Ctx.find_rtype_opt cursor state_label.it ctx in
   if
     not
-      (match typdir_label with Some (Types.StateT, _, _) -> true | _ -> false)
+      (match rtype_label with Some (Types.StateT, _, _) -> true | _ -> false)
   then (
     Format.printf "(type_transition_stmt) Label %s is not a valid label\n"
       state_label.it;
@@ -1388,22 +1396,15 @@ and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       "(type_select_expr) Select expression must be in a parser state (more \
        strictly, only nested inside a transition statement)\n";
     assert false);
-  let exprs_select_il =
-    List.map
-      (fun expr_select ->
-        let expr_select_il = type_expr cursor ctx expr_select in
-        let typ_select = Types.SetT expr_select_il.note.typ in
-        WF.check_valid_type cursor ctx typ_select;
-        Il.Ast.(
-          expr_select_il.it
-          $$ expr_select_il.at
-             % { typ = typ_select; ctk = expr_select_il.note.ctk }))
-      exprs_select
-  in
+  let exprs_select_il = List.map (type_expr cursor ctx) exprs_select in
   let typs_select =
     List.map (fun expr -> Il.Ast.(expr.note.typ)) exprs_select_il
   in
-  List.iter (WF.check_valid_type cursor ctx) typs_select;
+  List.iter
+    (fun typ_select ->
+      let typ_select_set = Types.SetT typ_select in
+      WF.check_valid_type cursor ctx typ_select_set)
+    typs_select;
   let cases_il = List.map (type_select_case cursor ctx typs_select) cases in
   let typ = Types.StateT in
   let expr_il =
@@ -2712,9 +2713,8 @@ and type_decl' (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : El.Ast.decl') :
   | ExternObjectD { id; tparams; mthds; annos } ->
       type_extern_object_decl cursor ctx id tparams mthds annos |> wrap_some
   (* Parser *)
-  | ValueSetD _ ->
-      Format.printf "(type_decl) %a\n" (El.Pp.pp_decl' ~level:0) decl;
-      assert false
+  | ValueSetD { id; typ; size; annos } ->
+      type_value_set_decl cursor ctx id typ size annos |> wrap_some
   | ParserTypeD { id; tparams; params; annos } ->
       type_parser_type_decl cursor ctx id tparams params annos |> wrap_none
   | ParserD { id; tparams; params; cparams; locals; states; annos } ->
@@ -3535,8 +3535,7 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
-  (* Typecheck constructors
-     to update constructor definition environment
+  (* Typecheck constructors to update constructor definition environment
      This comes after method typing to prevent recursive instantiation *)
   let ctx'' = Ctx.set_id Ctx.Block id.it ctx in
   let ctx'' = Ctx.set_blockkind Ctx.Extern ctx'' in
@@ -3549,6 +3548,44 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let decl_il =
     Il.Ast.ExternObjectD
       { id; tparams; mthds = mthds_il @ cons_il; annos = annos_il }
+  in
+  (ctx, decl_il)
+
+(* (13.11) Parser Value Sets
+
+   Value sets are declared locally within a parser. They should be declared before
+   being referenced in parser keysetExpression and can be
+   used as a label in a select expression.
+
+   Parser Value Sets support a size argument to provide hints to the compiler
+   to reserve hardware resources to implement the value set.
+
+   The semantics of the size argument is similar to the size property of a table.
+   If a value set has a size argument with value N, it is recommended that a compiler
+   should choose a data plane implementation that is capable of storing N value set entries.
+   See “Size property of P4 tables and parser value sets” P4SizeProperty for
+   further discussion on the implementation of parser value set size.
+
+   The value set is populated by the control plane by methods
+   specified in the P4Runtime specification. *)
+
+(* (13.6) Select expressions
+
+   Some targets may support parser value sets; see Section 13.11.
+   Given a type T for the type parameter of the value set, the type of the value set is set<T>. *)
+
+and type_value_set_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
+    (typ : El.Ast.typ) (expr_size : El.Ast.expr) (annos : El.Ast.anno list) :
+    Ctx.t * Il.Ast.decl' =
+  let annos_il = List.map (type_anno cursor ctx) annos in
+  let typ_inner = eval_type_with_check cursor ctx typ in
+  let expr_size_il = type_expr cursor ctx expr_size in
+  Static.check_ctk expr_size_il;
+  let typ = Types.SetT typ_inner.it in
+  let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
+  let decl_il =
+    Il.Ast.ValueSetD
+      { id; typ = typ_inner; size = expr_size_il; annos = annos_il }
   in
   (ctx, decl_il)
 
@@ -4166,8 +4203,8 @@ and type_table_entry_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
   | table_ctx_keys, keysets ->
       if List.length table_ctx_keys <> List.length keysets then (
         Format.printf
-          "(type_action_keysets) Number of select keys must match the number \
-           of cases\n";
+          "(type_table_entry_keysets) Number of select keys must match the \
+           number of cases\n";
         assert false);
       List.map2 (type_table_entry_keyset cursor ctx) table_ctx_keys keysets
 
