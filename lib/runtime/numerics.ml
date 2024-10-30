@@ -614,10 +614,10 @@ and eval_cast_to_struct (fields_typ : (string * Type.t) list) (value : Value.t)
   | RecordV fields_value ->
       let fields_value =
         List.fold_left
-          (fun fields (member_typ, typ) ->
-            let value = List.assoc member_typ fields_value in
+          (fun fields (member, typ) ->
+            let value = List.assoc member fields_value in
             let value = eval_cast typ value in
-            fields @ [ (member_typ, value) ])
+            fields @ [ (member, value) ])
           [] fields_typ
       in
       StructV fields_value
@@ -640,13 +640,30 @@ and eval_cast_to_header (fields_typ : (string * Type.t) list) (value : Value.t)
   | RecordV fields_value ->
       let fields_value =
         List.fold_left
-          (fun fields (member_typ, typ) ->
-            let value = List.assoc member_typ fields_value in
+          (fun fields (member, typ) ->
+            let value = List.assoc member fields_value in
             let value = eval_cast typ value in
-            fields @ [ (member_typ, value) ])
+            fields @ [ (member, value) ])
           [] fields_typ
       in
       HeaderV (true, fields_value)
+  | InvalidV ->
+      let members, typs = List.split fields_typ in
+      let values = List.map eval_default typs in
+      let fields_value = List.combine members values in
+      HeaderV (false, fields_value)
+  | _ ->
+      Format.asprintf "(TODO) Cast to header undefined: %a" Value.pp value
+      |> failwith
+
+and eval_cast_to_union (fields_typ : (string * Type.t) list) (value : Value.t) :
+    Value.t =
+  match value with
+  | InvalidV ->
+      let members, typs = List.split fields_typ in
+      let values = List.map eval_default typs in
+      let fields_value = List.combine members values in
+      UnionV fields_value
   | _ ->
       Format.asprintf "(TODO) Cast to header undefined: %a" Value.pp value
       |> failwith
@@ -664,83 +681,85 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
   | TupleT typs_inner -> eval_cast_to_tuple typs_inner value
   | StructT (_id, fields_typ) -> eval_cast_to_struct fields_typ value
   | HeaderT (_id, fields_typ) -> eval_cast_to_header fields_typ value
+  | UnionT (_id, fields_typ) -> eval_cast_to_union fields_typ value
   | _ ->
       Format.asprintf "(TODO) Cast from %a to type %a undefined" Value.pp value
         Type.pp typ
       |> failwith
 
-(* Builtins *)
-(* Size evaluation *)
+(* Default evaluation *)
 
-let rec eval_min_size_in_bits' (typ : Type.t) : Bigint.t =
+(* (7.3) Default values
+
+   Some P4 types define a “default value,” which can be used to automatically initialize values of that type.
+   The default values are as follows:
+
+    - For int, bit<N> and int<N> types the default value is 0.
+    - For bool the default value is false.
+    - For error the default value is error.NoError (defined in core.p4)
+    - For string the default value is the empty string ""
+    - For varbit<N> the default value is a string of zero bits
+        (there is currently no P4 literal to represent such a value).
+    - For enum values with an underlying type the default value is 0,
+        even if 0 is actually not one of the named values in the enum.
+    - For enum values without an underlying type the default value is
+        the first value that appears in the enum type declaration.
+    - For header types the default value is invalid.
+    - For header stacks the default value is that all elements are invalid and the nextIndex is 0.
+    - For header_union values the default value is that all union elements are invalid.
+    - For struct types the default value is a struct where each field has
+        the default value of the suitable field type – if all such default values are defined.
+    - For a tuple type the default value is a tuple where each field has
+        the default value of the suitable type – if all such default values are defined.
+
+   Note that some types do not have default values, e.g., match_kind, set types, function types,
+   extern types, parser types, control types, package types. *)
+
+and eval_default (typ : Type.t) : Value.t =
   match typ with
-  | BoolT -> Bigint.one
-  | FBitT width | FIntT width -> width
-  | VBitT _ -> Bigint.zero
-  | SEnumT (_, typ_inner, _) -> eval_min_size_in_bits' typ_inner
-  | TupleT typs_inner ->
-      List.fold_left
-        (fun size typ_inner -> Bigint.(size + eval_min_size_in_bits' typ_inner))
-        Bigint.zero typs_inner
-  | StackT (typ_inner, size) -> Bigint.(size * eval_min_size_in_bits' typ_inner)
-  | StructT (_id, fields) | HeaderT (_id, fields) ->
-      List.fold_left
-        (fun size (_, typ_inner) ->
-          Bigint.(size + eval_min_size_in_bits' typ_inner))
-        Bigint.zero fields
-  | UnionT (_id, fields) ->
-      let sizes =
-        List.map (fun (_, typ_inner) -> eval_min_size_in_bits' typ_inner) fields
+  | ErrT -> ErrV "NoError"
+  | StrT -> StrV ""
+  | BoolT -> BoolV false
+  | IntT -> IntV Bigint.zero
+  | FIntT width -> FIntV (width, Bigint.zero)
+  | FBitT width -> FBitV (width, Bigint.zero)
+  | VBitT width -> VBitV (width, Bigint.zero, Bigint.zero)
+  | EnumT (id, members) -> EnumFieldV (id, List.hd members)
+  | SEnumT (id, typ_inner, fields) ->
+      let zero = eval_cast typ_inner (IntV Bigint.zero) in
+      let fields_swapped =
+        List.map (fun (member, value) -> (value, member)) fields
       in
-      List.fold_left Bigint.min Bigint.zero sizes
-  | _ ->
-      Format.asprintf "(TODO) Size of type %a undefined" Type.pp typ |> failwith
-
-let eval_min_size_in_bits (typ : Type.t) : Value.t =
-  let size = eval_min_size_in_bits' typ in
-  IntV size
-
-let eval_min_size_in_bytes (typ : Type.t) : Value.t =
-  let size = eval_min_size_in_bits' typ in
-  let size = Bigint.((size + of_int 7) asr 3) in
-  IntV size
-
-let rec eval_max_size_in_bits' (typ : Type.t) : Bigint.t =
-  match typ with
-  | BoolT -> Bigint.one
-  | FBitT width | FIntT width | VBitT width -> width
-  | SEnumT (_, typ_inner, _) -> eval_max_size_in_bits' typ_inner
-  | TupleT typs_inner ->
-      List.fold_left
-        (fun size typ_inner -> Bigint.(size + eval_max_size_in_bits' typ_inner))
-        Bigint.zero typs_inner
-  | StackT (typ_inner, size) -> Bigint.(size * eval_max_size_in_bits' typ_inner)
-  | StructT (_id, fields) | HeaderT (_id, fields) ->
-      List.fold_left
-        (fun size (_, typ_inner) ->
-          Bigint.(size + eval_max_size_in_bits' typ_inner))
-        Bigint.zero fields
-  | UnionT (_id, fields) ->
-      let sizes =
-        List.map (fun (_, typ_inner) -> eval_max_size_in_bits' typ_inner) fields
+      let member =
+        match List.assoc_opt zero fields_swapped with
+        | Some member -> member
+        | None -> "__UNSPECIFIED"
       in
-      List.fold_left Bigint.max Bigint.zero sizes
+      SEnumFieldV (id, member, zero)
+  | TupleT typs_inner ->
+      let values = List.map eval_default typs_inner in
+      TupleV values
+  | StackT (typ_inner, size) ->
+      let values =
+        List.init (Bigint.to_int_exn size) (fun _ -> eval_default typ_inner)
+      in
+      StackV (values, Bigint.zero, size)
+  | StructT (_, fields) ->
+      let members, typs_inner = List.split fields in
+      let values = List.map eval_default typs_inner in
+      let fields = List.combine members values in
+      StructV fields
+  | HeaderT (_, fields) ->
+      let members, typs_inner = List.split fields in
+      let values = List.map eval_default typs_inner in
+      let fields = List.combine members values in
+      HeaderV (false, fields)
+  | UnionT (_, fields) ->
+      let members, typs_inner = List.split fields in
+      let values = List.map eval_default typs_inner in
+      let fields = List.combine members values in
+      UnionV fields
   | _ ->
-      Format.asprintf "(TODO) Size of type %a undefined" Type.pp typ |> failwith
-
-let eval_max_size_in_bits (typ : Type.t) : Value.t =
-  let size = eval_max_size_in_bits' typ in
-  IntV size
-
-let eval_max_size_in_bytes (typ : Type.t) : Value.t =
-  let size = eval_max_size_in_bits' typ in
-  let size = Bigint.((size + of_int 7) asr 3) in
-  IntV size
-
-let eval_size (typ : Type.t) (member : string) : Value.t =
-  match member with
-  | "minSizeInBits" -> eval_min_size_in_bits typ
-  | "minSizeInBytes" -> eval_min_size_in_bytes typ
-  | "maxSizeInBits" -> eval_max_size_in_bits typ
-  | "maxSizeInBytes" -> eval_max_size_in_bytes typ
-  | _ -> assert false
+      Format.asprintf "(default) Default value not defined for type %a" Type.pp
+        typ
+      |> failwith

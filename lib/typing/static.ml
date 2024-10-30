@@ -249,5 +249,5 @@ and eval_call_method_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t)
   | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits" | "maxSizeInBytes" ->
       assert (targs = [] && args = []);
       let typ_base = expr_base.note.typ in
-      Runtime.Numerics.eval_size typ_base member.it
+      Runtime.Builtins.size typ_base member.it
   | _ -> assert false
