@@ -13,6 +13,7 @@ type t =
   | VBitV of Bigint.t * Bigint.t * Bigint.t
   | EnumFieldV of L.id' * L.member'
   | SEnumFieldV of L.id' * L.member' * t
+  | ListV of t list
   | TupleV of t list
   | StackV of (t list * Bigint.t * Bigint.t)
   | StructV of (L.member' * t) list
@@ -37,6 +38,7 @@ let rec pp fmt value =
   | SEnumFieldV (id, member, value) ->
       F.fprintf fmt "%a.%a(= %a)" P.pp_id' id (P.pp_member' ~level:0) member pp
         value
+  | ListV values -> F.fprintf fmt "list { %a }" (P.pp_list pp ", ") values
   | TupleV values -> F.fprintf fmt "tuple { %a }" (P.pp_list pp ", ") values
   | StackV (values, _idx, _size) ->
       F.fprintf fmt "stack { %a }" (P.pp_list pp "; ") values
@@ -77,6 +79,7 @@ let rec eq t_a t_b =
   | SEnumFieldV (id_a, member_a, value_a), SEnumFieldV (id_b, member_b, value_b)
     ->
       id_a = id_b && member_a = member_b && eq value_a value_b
+  | ListV values_a, ListV values_b -> List.for_all2 eq values_a values_b
   | TupleV values_a, TupleV values_b -> List.for_all2 eq values_a values_b
   | StackV (values_a, _, size_a), StackV (values_b, _, size_b) ->
       List.for_all2 eq values_a values_b && Bigint.(size_a = size_b)
