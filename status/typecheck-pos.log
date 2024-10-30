@@ -1087,11 +1087,11 @@ Error while typechecking p4 file: test/program/well-typed/issue1043-bmv2.p4
 Typecheck success: test/program/well-typed/issue1049-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1062-1-bmv2.p4
-(check_table_key) error is not a valid table key type for match kind exact.
+(check_eq_typ_alpha) Types int and bit<8> are not equal
 Error while typechecking p4 file: test/program/well-typed/issue1062-1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1062-bmv2.p4
-(check_table_key) error is not a valid table key type for match kind exact.
+(check_eq_typ_alpha) Types int and bit<8> are not equal
 Error while typechecking p4 file: test/program/well-typed/issue1062-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1079-bmv2.p4
@@ -1139,7 +1139,7 @@ Typecheck success: test/program/well-typed/issue1291-bmv2.p4
 Typecheck success: test/program/well-typed/issue1301.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1304.p4
-(check_table_key) error is not a valid table key type for match kind exact.
+(type_instantiation) Switch is not an instance type
 Error while typechecking p4 file: test/program/well-typed/issue1304.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1325-bmv2.p4
@@ -3301,7 +3301,7 @@ Typecheck success: test/program/well-typed/psa-example-mask-range1.p4
 Typecheck success: test/program/well-typed/psa-example-optional-match.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-example-parser-checksum.p4
-(check_table_key) error is not a valid table key type for match kind exact.
+(check_eq_typ_alpha) Types int and bit<8> are not equal
 Error while typechecking p4 file: test/program/well-typed/psa-example-parser-checksum.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-example-range-match.p4

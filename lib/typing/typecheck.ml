@@ -1075,7 +1075,12 @@ and type_binop_compare (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
 
 and type_binop_compare_equal (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr' =
-  let _, expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
+  let typ, expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
+  if not (Type.can_equals typ) then (
+    Format.printf
+      "(type_binop_compare_equal) Type %a cannot be compared of equality\n"
+      Type.pp typ;
+    assert false);
   let typ = Types.BoolT in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
   (typ, expr_il)
@@ -1819,22 +1824,6 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
    Except in certain situations involving type variables, discussed below, these method calls produce
    local compile-time known values; otherwise they produce compile-time known values. None of these methods evaluate
    the expression that is the receiver of the method call, so it may be invalid (e.g., an out-of-bounds header stack access).
-
-   The definition of e.minSizeInBits() and e.maxSizeInBits() is
-   given recursively on the type of e as described in the following table:
-
-   Type         |	minSizeInBits                                          | maxSizeInBits
-   bit<N>       |	N	                                                     | N
-   int<N>	      | N	                                                     | N
-   bool	        | 1	                                                     | 1
-   enum bit<N>  | N                                                      | N
-   enum int<N>  | N                                                      | N
-   tuple	      | foreach field(tuple) sum of	field.minSizeInBits()      | foreach field(tuple) sum of field.maxSizeInBits()
-   varbit<N>    |	0                                                      | N
-   struct       | foreach field(struct) sum of field.minSizeInBits()     | foreach field(struct) sum of field.maxSizeInBits()
-   header       | foreach field(header) sum of field.minSizeInBits()     | foreach field(header) sum of field.maxSizeInBits()
-   H[N]	        | N * H.minSizeInBits()                                  | N * H.maxSizeInBits()
-   header_union	| max(foreach field(header_union)	field.minSizeInBits()) | max(foreach field(header_union) field.maxSizeInBits())
 
    The methods can also be applied to type name expressions e:
 
@@ -3893,12 +3882,12 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
   match match_kind with
   | "exact" | "optional" -> (
       match typ with
-      | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ | EnumT _ -> true
+      | ErrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ | EnumT _ -> true
       | SEnumT (_, typ_inner, _) -> check_table_key' match_kind typ_inner
       | NewT (_, typs_inner) -> check_table_key' match_kind typs_inner
       (* Has eq op but not appropriate for table key *)
-      | ListT _ | TupleT _ | ErrT | MatchKindT | StackT _ | StructT _
-      | HeaderT _ | UnionT _ ->
+      | ListT _ | TupleT _ | MatchKindT | StackT _ | StructT _ | HeaderT _
+      | UnionT _ ->
           false
       (* No equality op *)
       | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT

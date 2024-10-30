@@ -380,11 +380,16 @@ enum bit<4> e {
 * issue3616.p4
 </details>
 
-### (3) `error` types can be `exact` matched (4)
+### \[DONE\] ~~(3) `error` types can be `exact` matched~~
 
-"The `error` type only supports equality (`==`) and inequality (`!=`) comparisons." (8.2).
+`error` types can be `exact` matched, but the current type checker rejects it.
 
-"an `exact` match kind on a key field ... This is applicable for all legal key fields whose types support equality comparisons." (14.2.1.1).
+The spec mentions:
+* "The `error` type only supports equality (`==`) and inequality (`!=`) comparisons." (8.2).
+* "an `exact` match kind on a key field ... This is applicable for all legal key fields whose types support equality comparisons." (14.2.1.1).
+
+Quickly patched by adding `error` to the list of types that support equality comparisons.
+But later it would be desirable to have a clear list of types that are allowed for each match kind.
 
 ```p4
 table t_exact {
@@ -396,10 +401,6 @@ table t_exact {
 <details>
 <summary>Tests</summary>
 
-* issue1062-1-bmv2.p4
-* issue1062-bmv2.p4
-* issue1304.p4
-* psa-example-parser-checksum.p4
 </details>
 
 ### (4) `selector` match kind (10)
@@ -593,7 +594,7 @@ h = (H) {#};
 
 # D. Need Spec Clarification
 
-## \[REPORTED\] 1. Should we add implicit cast for directionless parameter? (102)
+## \[REPORTED\] 1. Should we add implicit cast for directionless parameter? (107)
 
 I think we should, especially for constructor invocations.
 Waiting for the spec clarification, [issue#1312](https://github.com/p4lang/p4-spec/issues/1312).
@@ -622,6 +623,8 @@ a(x, 0);
 * issue1001-bmv2.p4
 * issue1006.p4
 * issue1043-bmv2.p4
+* issue1062-1-bmv2.p4
+* issue1062-bmv2.p4
 * issue1334.p4
 * issue1642-bmv2.p4
 * issue1653-bmv2.p4
@@ -643,6 +646,7 @@ a(x, 0);
 * m_psa-dpdk-non-zero-arg-default-action-08.p4
 * named-arg1.p4
 * pna-example-ipsec.p4
+* psa-example-parser-checksum.p4
 * psa-dpdk-non-zero-arg-default-action-01.p4
 * psa-dpdk-non-zero-arg-default-action-02.p4
 * psa-dpdk-non-zero-arg-default-action-08.p4
@@ -1099,7 +1103,7 @@ table tbl_idle_timeout {
 * psa-idle-timeout.p4
 </details>
 
-## 2. Optional argument (9)
+## 2. Optional argument (10)
 
 ```p4
 extern Checksum {
@@ -1114,6 +1118,7 @@ h.h.result = ipv4_checksum.update({ h.eth_hdr.dst_addr, h.eth_hdr.src_addr, h.et
 <summary>Tests</summary>
 
 * gauntlet_optional-bmv2.p4
+* issue1304.p4
 * issue2273-1.p4
 * issue2492.p4
 * issue2630.p4

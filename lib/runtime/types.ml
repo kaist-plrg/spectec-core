@@ -365,21 +365,40 @@ module Type = struct
     | VBitT _ ->
         true
     | VarT _ -> false
-    | NewT (_, typ) -> is_ground typ
+    | NewT (_, typ_inner) -> is_ground typ_inner
     | EnumT _ -> true
-    | SEnumT (_, typ, _) -> is_ground typ
-    | ListT typ -> is_ground typ
-    | TupleT typs -> List.for_all is_ground typs
-    | StackT (typ, _) -> is_ground typ
+    | SEnumT (_, typ_inner, _) -> is_ground typ_inner
+    | ListT typ_inner -> is_ground typ_inner
+    | TupleT typs_inner -> List.for_all is_ground typs_inner
+    | StackT (typ_inner, _) -> is_ground typ_inner
     | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
-        List.for_all (fun (_, typ) -> is_ground typ) fields
+        List.map snd fields |> List.for_all is_ground
     | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> true
-    | SeqT typs -> List.for_all is_ground typs
-    | RecordT fields -> List.for_all (fun (_, typ) -> is_ground typ) fields
+    | SeqT typs_inner -> List.for_all is_ground typs_inner
+    | RecordT fields -> List.map snd fields |> List.for_all is_ground
     | InvalidT -> true
-    | SetT typ -> is_ground typ
+    | SetT typ_inner -> is_ground typ_inner
     | StateT -> true
     | TableT _ -> true
+
+  let rec can_equals typ =
+    match typ with
+    | VoidT -> false
+    | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ ->
+        true
+    | VarT _ -> false
+    | NewT (_, typ_inner) -> can_equals typ_inner
+    | EnumT _ -> true
+    | SEnumT (_, typ_inner, _) | ListT typ_inner -> can_equals typ_inner
+    | TupleT typs_inner -> List.for_all can_equals typs_inner
+    | StackT (typ_inner, _) -> can_equals typ_inner
+    | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
+        List.map snd fields |> List.for_all can_equals
+    | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> false
+    | SeqT typs_inner -> List.for_all can_equals typs_inner
+    | RecordT fields -> List.map snd fields |> List.for_all can_equals
+    | InvalidT -> true
+    | SetT _ | StateT | TableT _ -> false
 end
 
 module TypeDef = struct
