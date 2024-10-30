@@ -1,4 +1,5 @@
 open Runtime.Domain
+module Value = Runtime.Value
 module Types = Runtime.Types
 module Type = Types.Type
 module FuncDef = Types.FuncDef
@@ -20,9 +21,17 @@ let rec eq_typ_alpha (typ_a : Type.t) (typ_b : Type.t) : bool =
   | VarT id_a, VarT id_b -> id_a = id_b
   | NewT (id_a, typ_inner_a), NewT (id_b, typ_inner_b) ->
       Lang.Eq.eq_id' id_a id_b && eq_typ_alpha typ_inner_a typ_inner_b
-  | EnumT id_a, EnumT id_b -> Lang.Eq.eq_id' id_a id_b
-  | SEnumT (id_a, typ_inner_a), SEnumT (id_b, typ_inner_b) ->
-      Lang.Eq.eq_id' id_a id_b && eq_typ_alpha typ_inner_a typ_inner_b
+  | EnumT (id_a, members_a), EnumT (id_b, members_b) ->
+      Lang.Eq.eq_id' id_a id_b
+      && List.for_all2 Lang.Eq.eq_member' members_a members_b
+  | SEnumT (id_a, typ_inner_a, fields_a), SEnumT (id_b, typ_inner_b, fields_b)
+    ->
+      Lang.Eq.eq_id' id_a id_b
+      && eq_typ_alpha typ_inner_a typ_inner_b
+      && List.for_all2
+           (fun (member_a, value_a) (member_b, value_b) ->
+             Lang.Eq.eq_member' member_a member_b && Value.eq value_a value_b)
+           fields_a fields_b
   | ListT typ_inner_a, ListT typ_inner_b -> eq_typ_alpha typ_inner_a typ_inner_b
   | TupleT typs_inner_a, TupleT typs_inner_b ->
       List.for_all2 eq_typ_alpha typs_inner_a typs_inner_b

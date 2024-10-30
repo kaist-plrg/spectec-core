@@ -52,9 +52,9 @@ let rec subst_typ (theta : Theta.t) (typ : Type.t) : Type.t =
       let typ_inner = subst_typ theta typ_inner in
       NewT (id, typ_inner)
   | EnumT _ -> typ
-  | SEnumT (id, typ_inner) ->
+  | SEnumT (id, typ_inner, fields) ->
       let typ_inner = subst_typ theta typ_inner in
-      SEnumT (id, typ_inner)
+      SEnumT (id, typ_inner, fields)
   | ListT typ_inner ->
       let typ_inner = subst_typ theta typ_inner in
       ListT typ_inner

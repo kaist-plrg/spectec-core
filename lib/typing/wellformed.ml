@@ -121,7 +121,7 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
       check_valid_type' tset typ_inner;
       check_valid_type_nesting typ typ_inner
   | EnumT _ -> ()
-  | SEnumT (_, typ_inner) -> check_valid_type_nesting typ typ_inner
+  | SEnumT (_, typ_inner, _) -> check_valid_type_nesting typ typ_inner
   | ListT typ_inner ->
       check_valid_type' tset typ_inner;
       check_valid_type_nesting typ typ_inner
@@ -347,9 +347,6 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
 
 and check_valid_typedef (cursor : Ctx.cursor) (ctx : Ctx.t) (td : TypeDef.t) :
     unit =
-  if cursor <> Ctx.Global then (
-    Format.printf "(check_valid_typedef) Type definitions must be global\n";
-    assert false);
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
   check_valid_typedef' tset td
 

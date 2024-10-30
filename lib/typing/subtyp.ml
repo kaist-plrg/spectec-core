@@ -43,7 +43,8 @@ module Type = Types.Type
 let check_explicit_castable (typ : Type.t) : bool =
   match typ with
   | BoolT | IntT | FBitT _ | FIntT _ | NewT _ | SEnumT _ | ListT _ | TupleT _
-  | StructT _ | HeaderT _ | UnionT _ -> true
+  | StructT _ | HeaderT _ | UnionT _ ->
+      true
   | _ -> false
 
 let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
@@ -77,8 +78,9 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
     | NewT (_, typ_from_inner), _ when explicit typ_from_inner typ_to -> true
     | _, NewT (_, typ_to_inner) when explicit typ_from typ_to_inner -> true
     (* casts between an enum with an explicit type and its underlying type *)
-    | SEnumT (_, typ_from_inner), _ when explicit typ_from_inner typ_to -> true
-    | _, SEnumT (_, typ_to_inner) when explicit typ_from typ_to_inner -> true
+    | SEnumT (_, typ_from_inner, _), _ when explicit typ_from_inner typ_to ->
+        true
+    | _, SEnumT (_, typ_to_inner, _) when explicit typ_from typ_to_inner -> true
     (* casts of a tuple expression to a list, tuple, struct, or header type *)
     | SeqT typs_from_inner, ListT typ_to_inner ->
         List.for_all
@@ -110,7 +112,8 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
   in
   (* casts where the destination type is the same as the source type
      if the destination type appears in this list (this excludes e.g., parsers or externs). *)
-  if Eq.eq_typ_alpha typ_from typ_to then check_explicit_castable typ_to else explicit_unequal ()
+  if Eq.eq_typ_alpha typ_from typ_to then check_explicit_castable typ_to
+  else explicit_unequal ()
 
 (* (8.11.2) Implicit casts
 
@@ -142,8 +145,8 @@ let rec implicit (typ_a : Type.t) (typ_b : Type.t) : bool =
     | IntT, FIntT _ | IntT, FBitT _ -> true
     (* tau <: senum tau, senum tau <: tau, and
        senum tau <: senum tau' if tau <: tau' *)
-    | SEnumT (_, typ_a_inner), _ when implicit typ_a_inner typ_b -> true
-    | _, SEnumT (_, typ_b_inner) when implicit typ_a typ_b_inner -> true
+    | SEnumT (_, typ_a_inner, _), _ when implicit typ_a_inner typ_b -> true
+    | _, SEnumT (_, typ_b_inner, _) when implicit typ_a typ_b_inner -> true
     (* seq tau* <: list tau' if (tau <: tau')* *)
     | SeqT typs_a_inner, ListT typ_b_inner ->
         List.for_all

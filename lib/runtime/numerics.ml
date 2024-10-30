@@ -677,7 +677,7 @@ let rec eval_min_size_in_bits' (typ : Type.t) : Bigint.t =
   | BoolT -> Bigint.one
   | FBitT width | FIntT width -> width
   | VBitT _ -> Bigint.zero
-  | SEnumT (_, typ_inner) -> eval_min_size_in_bits' typ_inner
+  | SEnumT (_, typ_inner, _) -> eval_min_size_in_bits' typ_inner
   | TupleT typs_inner ->
       List.fold_left
         (fun size typ_inner -> Bigint.(size + eval_min_size_in_bits' typ_inner))
@@ -709,7 +709,7 @@ let rec eval_max_size_in_bits' (typ : Type.t) : Bigint.t =
   match typ with
   | BoolT -> Bigint.one
   | FBitT width | FIntT width | VBitT width -> width
-  | SEnumT (_, typ_inner) -> eval_max_size_in_bits' typ_inner
+  | SEnumT (_, typ_inner, _) -> eval_max_size_in_bits' typ_inner
   | TupleT typs_inner ->
       List.fold_left
         (fun size typ_inner -> Bigint.(size + eval_max_size_in_bits' typ_inner))

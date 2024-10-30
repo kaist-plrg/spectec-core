@@ -29,8 +29,8 @@ and typ =
   (* Alias types *)
   | NewT of L.id' * typ
   (* Constant types *)
-  | EnumT of L.id'
-  | SEnumT of L.id' * typ
+  | EnumT of L.id' * L.member' list
+  | SEnumT of L.id' * typ * (L.member' * Value.t) list
   (* Aggregate types *)
   | ListT of typ
   | TupleT of typ list
@@ -139,8 +139,8 @@ and pp_typ fmt typ =
   | VBitT width -> F.fprintf fmt "varbit<%a>" Bigint.pp width
   | VarT id -> P.pp_id' fmt id
   | NewT (id, typ) -> F.fprintf fmt "type %a (= %a)" P.pp_id' id pp_typ typ
-  | EnumT id -> F.fprintf fmt "enum %a" P.pp_id' id
-  | SEnumT (id, typ) -> F.fprintf fmt "enum<%a> %a" pp_typ typ P.pp_id' id
+  | EnumT (id, _) -> F.fprintf fmt "enum %a" P.pp_id' id
+  | SEnumT (id, typ, _) -> F.fprintf fmt "enum<%a> %a" pp_typ typ P.pp_id' id
   | ListT typ -> F.fprintf fmt "list<%a>" pp_typ typ
   | TupleT typs -> F.fprintf fmt "tuple<%a>" (P.pp_list pp_typ ",@ ") typs
   | StackT (typ, size) -> F.fprintf fmt "%a[%a]" pp_typ typ Bigint.pp size
@@ -298,9 +298,14 @@ and eq_typ typ_a typ_b =
   | VarT id_a, VarT id_b -> E.eq_id' id_a id_b
   | NewT (id_a, typ_a), NewT (id_b, typ_b) ->
       E.eq_id' id_a id_b && eq_typ typ_a typ_b
-  | EnumT id_a, EnumT id_b -> E.eq_id' id_a id_b
-  | SEnumT (id_a, typ_a), SEnumT (id_b, typ_b) ->
+  | EnumT (id_a, members_a), EnumT (id_b, members_b) ->
+      E.eq_id' id_a id_b && List.for_all2 E.eq_member' members_a members_b
+  | SEnumT (id_a, typ_a, fields_a), SEnumT (id_b, typ_b, fields_b) ->
       E.eq_id' id_a id_b && eq_typ typ_a typ_b
+      && List.for_all2
+           (fun (member_a, value_a) (member_b, value_b) ->
+             E.eq_member' member_a member_b && Value.eq value_a value_b)
+           fields_a fields_b
   | ListT typ_a, ListT typ_b -> eq_typ typ_a typ_b
   | TupleT typs_a, TupleT typs_b -> List.for_all2 eq_typ typs_a typs_b
   | StackT (typ_a, size_a), StackT (typ_b, size_b) ->
@@ -351,7 +356,7 @@ module Type = struct
   let rec is_numeric typ =
     match typ with
     | IntT | FIntT _ | FBitT _ -> true
-    | SEnumT (_, typ_inner) -> is_numeric typ_inner
+    | SEnumT (_, typ_inner, _) -> is_numeric typ_inner
     | _ -> false
 
   let rec is_ground typ =
@@ -362,7 +367,7 @@ module Type = struct
     | VarT _ -> false
     | NewT (_, typ) -> is_ground typ
     | EnumT _ -> true
-    | SEnumT (_, typ) -> is_ground typ
+    | SEnumT (_, typ, _) -> is_ground typ
     | ListT typ -> is_ground typ
     | TupleT typs -> List.for_all is_ground typs
     | StackT (typ, _) -> is_ground typ

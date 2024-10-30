@@ -43,7 +43,7 @@ and coerce_types_binary_numeric (expr_l_il : Il.Ast.expr)
   let rec reduce_senum (typ : Type.t) (expr_l_il : Il.Ast.expr)
       (expr_r_il : Il.Ast.expr) =
     match typ with
-    | SEnumT (_, typ_inner) ->
+    | SEnumT (_, typ_inner, _) ->
         let expr_l_il = insert_cast expr_l_il typ_inner in
         let expr_r_il = insert_cast expr_r_il typ_inner in
         reduce_senum typ_inner expr_l_il expr_r_il
@@ -326,12 +326,12 @@ and specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
       check_arity [];
       Types.NewT (id, typ_inner)
   (* Constant types are not generic *)
-  | EnumD (id, _members) ->
+  | EnumD (id, members) ->
       check_arity [];
-      Types.EnumT id
-  | SEnumD (id, typ_inner, _fields) ->
+      Types.EnumT (id, members)
+  | SEnumD (id, typ_inner, fields) ->
       check_arity [];
-      Types.SEnumT (id, typ_inner)
+      Types.SEnumT (id, typ_inner, fields)
   (* Aggregate types are not generic (yet, to be added in v1.2.2) *)
   | StructD (id, fields) ->
       check_arity [];
@@ -1536,7 +1536,7 @@ and check_bitstring_index' (typ : Type.t) : bool =
   | IntT | FIntT _ | FBitT _ -> true
   | VBitT _ | VarT _ -> false
   | NewT _ | EnumT _ -> false
-  | SEnumT (_, typ_inner) -> check_bitstring_index' typ_inner
+  | SEnumT (_, typ_inner, _) -> check_bitstring_index' typ_inner
   | ListT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> false
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | TopT | SeqT _
   | RecordT _ | InvalidT | SetT _ | StateT ->
@@ -1636,7 +1636,7 @@ and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
           Format.printf "(type_type_acc_expr) Member %s does not exist in %a\n"
             member.it TypeDef.pp td_base;
           assert false);
-        let typ = Types.EnumT id in
+        let typ = Types.EnumT (id, members) in
         let value = Value.EnumFieldV (id, member.it) in
         (typ, value)
     | SEnumD (id, typ_inner, fields) ->
@@ -1644,7 +1644,7 @@ and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
           Format.printf "(type_type_acc_expr) Member %s does not exist in %a\n"
             member.it TypeDef.pp td_base;
           assert false);
-        let typ = Types.SEnumT (id, typ_inner) in
+        let typ = Types.SEnumT (id, typ_inner, fields) in
         let value_inner = List.assoc member.it fields in
         let value = Value.SEnumFieldV (id, member.it, value_inner) in
         (typ, value)
@@ -3142,22 +3142,18 @@ and type_enum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.printf "(type_enum_decl) Enum declarations must be global\n";
     assert false);
   let _annos_il = List.map (type_anno cursor ctx) annos in
-  let type_enum_decl' (ctx : Ctx.t) (member : El.Ast.member) : Ctx.t =
-    let id_field = id.it ^ "." ^ member.it in
-    if Ctx.find_value_opt cursor id_field ctx |> Option.is_some then (
-      Format.printf "(type_enum_decl_glob) Enum %s was already defined\n"
-        id_field;
-      assert false);
-    let value = Value.EnumFieldV (id.it, member.it) in
-    let typ = Types.EnumT id.it in
-    Ctx.add_value cursor id_field value ctx
-    |> Ctx.add_rtype cursor id_field typ Lang.Ast.No Ctk.LCTK
+  let members = List.map it members in
+  let ctx =
+    List.fold_left
+      (fun ctx member ->
+        let value = Value.EnumFieldV (id.it, member) in
+        let typ = Types.EnumT (id.it, members) in
+        let id_field = id.it ^ "." ^ member in
+        Ctx.add_value cursor id_field value ctx
+        |> Ctx.add_rtype cursor id_field typ Lang.Ast.No Ctk.LCTK)
+      ctx members
   in
-  let ctx = List.fold_left type_enum_decl' ctx members in
-  let td =
-    let members = List.map it members in
-    Types.EnumD (id.it, members)
-  in
+  let td = Types.EnumD (id.it, members) in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
@@ -3186,18 +3182,6 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     assert false);
   let _annos_il = List.map (type_anno cursor ctx) annos in
   let typ = eval_type_with_check cursor ctx typ in
-  let type_senum_decl' (ctx : Ctx.t) (member, value) : Ctx.t =
-    let id_field = id.it ^ "." ^ member.it in
-    if Ctx.find_value_opt cursor id_field ctx |> Option.is_some then (
-      Format.printf
-        "(type_senum_decl_glob) Serializable enum %s was already defined\n"
-        id_field;
-      assert false);
-    let value = Value.SEnumFieldV (id.it, member.it, value.it) in
-    let typ = Types.SEnumT (id.it, typ.it) in
-    Ctx.add_value cursor id_field value ctx
-    |> Ctx.add_rtype cursor id_field typ Lang.Ast.No Ctk.LCTK
-  in
   let members, exprs_field = List.split fields in
   let values_field =
     List.map
@@ -3207,14 +3191,22 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         Static.eval_expr cursor ctx expr_field_il)
       exprs_field
   in
-  let ctx =
-    List.fold_left type_senum_decl' ctx (List.combine members values_field)
-  in
-  let td =
+  let fields =
     let members = List.map it members in
     let values_field = List.map it values_field in
-    Types.SEnumD (id.it, typ.it, List.combine members values_field)
+    List.combine members values_field
   in
+  let ctx =
+    List.fold_left
+      (fun ctx (member, value) ->
+        let value = Value.SEnumFieldV (id.it, member, value) in
+        let typ = Types.SEnumT (id.it, typ.it, fields) in
+        let id_field = id.it ^ "." ^ member in
+        Ctx.add_value cursor id_field value ctx
+        |> Ctx.add_rtype cursor id_field typ Lang.Ast.No Ctk.LCTK)
+      ctx fields
+  in
+  let td = Types.SEnumD (id.it, typ.it, fields) in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
@@ -3788,24 +3780,23 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 and type_table_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (id : El.Ast.id) : Ctx.t =
   let id_enum = "action_list(" ^ id.it ^ ")" in
-  let type_table_enum_decl' (ctx : Ctx.t) (member : Il.Ast.member') : Ctx.t =
-    let id_field = id_enum ^ "." ^ member in
-    if Ctx.find_value_opt cursor id_field ctx |> Option.is_some then (
-      Format.printf "(type_enum_decl_glob) Enum %s was already defined\n"
-        id_field;
-      assert false);
-    let value = Value.EnumFieldV (id_enum, member) in
-    let typ = Types.EnumT id_enum in
-    Ctx.add_value cursor id_field value ctx
-    |> Ctx.add_rtype cursor id_field typ Lang.Ast.No Ctk.LCTK
-  in
   let members =
     List.map
       (fun (var, _, _) -> Format.asprintf "%a" Il.Pp.pp_var' var)
       table_ctx.actions
   in
-  let ctx = List.fold_left type_table_enum_decl' ctx members in
+  let ctx =
+    List.fold_left
+      (fun ctx member ->
+        let value = Value.EnumFieldV (id_enum, member) in
+        let typ = Types.EnumT (id_enum, members) in
+        let id_field = id_enum ^ "." ^ member in
+        Ctx.add_value cursor id_field value ctx
+        |> Ctx.add_rtype cursor id_field typ Lang.Ast.No Ctk.LCTK)
+      ctx members
+  in
   let td_enum = Types.EnumD (id_enum, members) in
+  WF.check_valid_typedef cursor ctx td_enum;
   let ctx = Ctx.add_typedef cursor id_enum td_enum ctx in
   let id_struct = "apply_result(" ^ id.it ^ ")" in
   let td_struct =
@@ -3903,8 +3894,8 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
   | "exact" | "optional" -> (
       match typ with
       | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ | EnumT _ -> true
-      | SEnumT (_id, typ_inner) -> check_table_key' match_kind typ_inner
-      | NewT (_id, typs_inner) -> check_table_key' match_kind typs_inner
+      | SEnumT (_, typ_inner, _) -> check_table_key' match_kind typ_inner
+      | NewT (_, typs_inner) -> check_table_key' match_kind typs_inner
       (* Has eq op but not appropriate for table key *)
       | ListT _ | TupleT _ | ErrT | MatchKindT | StackT _ | StructT _
       | HeaderT _ | UnionT _ ->
@@ -3916,8 +3907,8 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
   | "lpm" | "ternary" | "range" -> (
       match typ with
       | IntT | FIntT _ | FBitT _ -> true
-      | SEnumT (_id, typ_inner) -> check_table_key' match_kind typ_inner
-      | NewT (_id, typs_inner) -> check_table_key' match_kind typs_inner
+      | SEnumT (_, typ_inner, _) -> check_table_key' match_kind typ_inner
+      | NewT (_, typs_inner) -> check_table_key' match_kind typs_inner
       (* Has eq op but not appropriate for table key *)
       | BoolT | ListT _ | TupleT _ | EnumT _ | VBitT _ | ErrT | MatchKindT
       | StackT _ | StructT _ | HeaderT _ | UnionT _ ->
