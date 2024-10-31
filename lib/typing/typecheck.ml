@@ -502,12 +502,6 @@ and type_param' (cursor : Ctx.cursor) (ctx : Ctx.t) (param : El.Ast.param') :
   let value_default_il =
     Option.map
       (fun expr_default ->
-        if not (match dir.it with In | No -> true | _ -> false) then (
-          Format.printf
-            "(type_param) Default parameter values are only allowed for in or \
-             directionless parameters but %a was given\n"
-            Il.Pp.pp_dir dir;
-          assert false);
         let expr_default_il = type_expr cursor ctx expr_default in
         let expr_default_il = coerce_type_assign expr_default_il typ.it in
         Static.eval_expr cursor ctx expr_default_il)
@@ -544,21 +538,14 @@ and type_cparam (cursor : Ctx.cursor) (ctx : Ctx.t) (cparam : El.Ast.cparam) :
 
    Following is a summary of the constraints imposed by the parameter directions:
 
-    - When used as arguments, extern objects can only be passed as directionless parameters.
     - All constructor parameters are evaluated at compilation-time,
         and in consequence they must all be directionless (they cannot be in, out, or inout);
         this applies to package, control, parser, and extern objects.
         Values for these parameters must be specified at compile-time, and must evaluate to compile-time known values.
         See Section 15 for further details.
-    - For actions all directionless parameters must be at the end of the parameter list.
-        When an action appears in a table's actions list, only the parameters with a direction must be bound.
-        See Section 14.1 for further details.
     - Actions can also be explicitly invoked using function call syntax, either from a control block or from another action.
         In this case, values for all action parameters must be supplied explicitly, including values for the directionless parameters.
-        The directionless parameters in this case behave like in parameters. See Section 14.1.1 for further details.
-    - Default parameter values are only allowed for ‘in’ or direction-less parameters; these values must evaluate to compile-time constants.
-        If parameters with default values do not appear at the end of the list of parameters,
-        invocations that use the default values must use named arguments. *)
+        The directionless parameters in this case behave like in parameters. See Section 14.1.1 for further details. *)
 
 and type_call_convention ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
     (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list) :

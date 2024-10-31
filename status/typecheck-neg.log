@@ -90,7 +90,7 @@ Error while parsing p4 file: test/program/ill-typed/default-initializer-err.p4
 Error while typechecking p4 file: test/program/ill-typed/default-last-switch.p4
 
 >>> Running typecheck test on test/program/ill-typed/default-param.p4
-(type_param) Default parameter values are only allowed for in or directionless parameters but out was given
+(check_valid_param') Default values are only allowed for in or directionless parameters but out was given
 Error while typechecking p4 file: test/program/ill-typed/default-param.p4
 
 >>> Running typecheck test on test/program/ill-typed/default_action.p4
@@ -153,7 +153,8 @@ parser error: File test/program/ill-typed/expression_e.p4, line 21, characters 1
 Error while parsing p4 file: test/program/ill-typed/expression_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/extern.p4
-Typecheck success: test/program/ill-typed/extern.p4
+(check_valid_param') Extern objects can only be passed as directionless parameters but in was given
+Error while typechecking p4 file: test/program/ill-typed/extern.p4
 
 >>> Running typecheck test on test/program/ill-typed/extract.p4
 Typecheck success: test/program/ill-typed/extract.p4
@@ -269,7 +270,8 @@ Typecheck success: test/program/ill-typed/issue122.p4
 Error while typechecking p4 file: test/program/ill-typed/issue1230.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1296.p4
-Typecheck success: test/program/ill-typed/issue1296.p4
+(check_valid_param') Extern objects can only be passed as directionless parameters but in was given
+Error while typechecking p4 file: test/program/ill-typed/issue1296.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1331.p4
 Typecheck success: test/program/ill-typed/issue1331.p4
@@ -621,7 +623,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue3750.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3751.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3787.p4
-Typecheck success: test/program/ill-typed/issue3787.p4
+(check_valid_param') Extern objects can only be passed as directionless parameters but in was given
+Error while typechecking p4 file: test/program/ill-typed/issue3787.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3808-1.p4
 (coerce_type) Cannot coerce type table to top
@@ -1103,4 +1106,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 253/299 (84.62%) [FAIL] 46/299 (15.38%)
-Typecheck: [PASS] 163/253 (64.43%) [FAIL] 90/253 (35.57%)
+Typecheck: [PASS] 166/253 (65.61%) [FAIL] 87/253 (34.39%)
