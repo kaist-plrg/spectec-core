@@ -60,3 +60,5 @@ and free_fd (fd : Types.funcdef) : TIdSet.t =
         |> List.fold_left TIdSet.union TIdSet.empty
       in
       TIdSet.diff frees bounds
+  | ParserApplyMethodD params | ControlApplyMethodD params ->
+      List.map free_param params |> List.fold_left TIdSet.union TIdSet.empty

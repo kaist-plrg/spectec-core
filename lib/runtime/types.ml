@@ -91,6 +91,8 @@ and funcdef =
   | FunctionD of tparam list * param list * typ
   | ExternMethodD of tparam list * param list * typ
   | ExternAbstractMethodD of tparam list * param list * typ
+  | ParserApplyMethodD of param list
+  | ControlApplyMethodD of param list
 
 (* Constructor types *)
 
@@ -244,6 +246,10 @@ and pp_funcdef fmt funcdef =
   | ExternAbstractMethodD (tparams, params, typ) ->
       F.fprintf fmt "extern_abstract_method<%a>(%a) -> %a" pp_tparams tparams
         pp_params params pp_typ typ
+  | ParserApplyMethodD params ->
+      F.fprintf fmt "parser_apply(%a)" pp_params params
+  | ControlApplyMethodD params ->
+      F.fprintf fmt "control_apply(%a)" pp_params params
 
 (* Constructor types *)
 
@@ -343,6 +349,9 @@ and eq_funcdef funcdef_a funcdef_b =
       eq_tparams tparams_a tparams_b
       && eq_params params_a params_b
       && eq_typ typ_a typ_b
+  | ParserApplyMethodD params_a, ParserApplyMethodD params_b
+  | ControlApplyMethodD params_a, ControlApplyMethodD params_b ->
+      eq_params params_a params_b
   | _ -> false
 
 (* Modules *)
@@ -448,7 +457,9 @@ module FuncDef = struct
     | ExternFunctionD (_, params, _)
     | FunctionD (_, params, _)
     | ExternMethodD (_, params, _)
-    | ExternAbstractMethodD (_, params, _) ->
+    | ExternAbstractMethodD (_, params, _)
+    | ParserApplyMethodD params
+    | ControlApplyMethodD params ->
         params
 
   let get_typ_ret = function
@@ -456,6 +467,7 @@ module FuncDef = struct
     | ExternFunctionD (_, _, typ_ret) | FunctionD (_, _, typ_ret) -> typ_ret
     | ExternMethodD (_, _, typ_ret) | ExternAbstractMethodD (_, _, typ_ret) ->
         typ_ret
+    | ParserApplyMethodD _ | ControlApplyMethodD _ -> VoidT
 end
 
 module ConsType = struct

@@ -554,6 +554,11 @@ and check_valid_param' (tset : TIdSet.t) (param : Types.param) : unit =
       assert false
   | _ -> ()
 
+and check_valid_params' (tset : TIdSet.t) (params : Types.param list) : unit =
+  let ids = List.map (fun (id, _, _, _) -> id) params in
+  check_distinct_names ids;
+  List.iter (check_valid_param' tset) params
+
 and check_valid_functype (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) :
     unit =
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
@@ -561,17 +566,17 @@ and check_valid_functype (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) :
 
 and check_valid_functype' (tset : TIdSet.t) (ft : FuncType.t) : unit =
   match ft with
-  | ActionT params -> List.iter (check_valid_param' tset) params
+  | ActionT params -> check_valid_params' tset params
   | ExternFunctionT (params, typ_ret) | FunctionT (params, typ_ret) ->
-      List.iter (check_valid_param' tset) params;
+      check_valid_params' tset params;
       check_valid_type' tset typ_ret
   | ExternMethodT (params, typ_ret) | ExternAbstractMethodT (params, typ_ret) ->
-      List.iter (check_valid_param' tset) params;
+      check_valid_params' tset params;
       check_valid_type' tset typ_ret
   | ParserApplyMethodT params | ControlApplyMethodT params ->
-      List.iter (check_valid_param' tset) params
+      check_valid_params' tset params
   | BuiltinMethodT (params, typ_ret) ->
-      List.iter (check_valid_param' tset) params;
+      check_valid_params' tset params;
       check_valid_type' tset typ_ret
   | TableApplyMethodT typ_ret -> check_valid_type' tset typ_ret
 
@@ -599,6 +604,10 @@ and check_valid_funcdef' (tset : TIdSet.t) (fd : FuncDef.t) : unit =
   | ExternAbstractMethodD (tparams, params, typ_ret) ->
       let tset = TIdSet.union tset (TIdSet.of_list tparams) in
       check_valid_functype' tset (ExternAbstractMethodT (params, typ_ret))
+  | ParserApplyMethodD params ->
+      check_valid_functype' tset (ParserApplyMethodT params)
+  | ControlApplyMethodD params ->
+      check_valid_functype' tset (ControlApplyMethodT params)
 
 and check_valid_cparam (cursor : Ctx.cursor) (ctx : Ctx.t)
     (cparam : Types.cparam) : unit =
@@ -613,6 +622,12 @@ and check_valid_cparam' (tset : TIdSet.t) (cparam : Types.cparam) : unit =
     assert false);
   check_valid_type' tset typ
 
+and check_valid_cparams' (tset : TIdSet.t) (cparams : Types.cparam list) : unit
+    =
+  let ids = List.map (fun (id, _, _, _) -> id) cparams in
+  check_distinct_names ids;
+  List.iter (check_valid_cparam' tset) cparams
+
 and check_valid_consdef (cursor : Ctx.cursor) (ctx : Ctx.t) (cd : ConsDef.t) :
     unit =
   if cursor <> Ctx.Block then (
@@ -625,5 +640,5 @@ and check_valid_consdef (cursor : Ctx.cursor) (ctx : Ctx.t) (cd : ConsDef.t) :
 and check_valid_consdef' (tset : TIdSet.t) (cd : ConsDef.t) : unit =
   let tparams, cparams, typ = cd in
   let tset = TIdSet.union tset (TIdSet.of_list tparams) in
-  List.iter (check_valid_cparam' tset) cparams;
+  check_valid_cparams' tset cparams;
   check_valid_type' tset typ

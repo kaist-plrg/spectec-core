@@ -149,6 +149,12 @@ and subst_funcdef (theta : Theta.t) (fd : Types.funcdef) : Types.funcdef =
         subst_funcdef' theta tparams params typ_ret
       in
       ExternAbstractMethodD (tparams, params, typ_ret)
+  | ParserApplyMethodD params ->
+      let params = List.map (subst_param theta) params in
+      ParserApplyMethodD params
+  | ControlApplyMethodD params ->
+      let params = List.map (subst_param theta) params in
+      ControlApplyMethodD params
 
 and subst_cparam (theta : Theta.t) (cparam : Types.cparam) : Types.cparam =
   subst_param theta cparam

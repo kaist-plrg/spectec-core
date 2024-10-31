@@ -257,6 +257,8 @@ let find_cont finder cursor id ctx = function
   | Some value -> Some value
   | None -> finder cursor id ctx
 
+(* Finder for type parameter *)
+
 let rec find_tparam_opt cursor tparam ctx =
   match cursor with
   | Global -> None
@@ -267,6 +269,8 @@ let rec find_tparam_opt cursor tparam ctx =
 
 let find_tparam cursor tparam ctx =
   find_tparam_opt cursor tparam ctx |> Option.get
+
+(* Finder for type definition *)
 
 let rec find_typedef_opt cursor tid ctx =
   match cursor with
@@ -280,44 +284,50 @@ let rec find_typedef_opt cursor tid ctx =
 
 let find_typedef cursor tid ctx = find_typedef_opt cursor tid ctx |> Option.get
 
-let rec find_funcdef_opt cursor (fid, args) ctx =
+(* Finder for function definition *)
+
+let rec find_funcdef_opt cursor (fname, args) ctx =
   match cursor with
-  | Global -> Envs.FDEnv.find_opt (fid, args) ctx.global.fdenv
+  | Global -> Envs.FDEnv.find_opt (fname, args) ctx.global.fdenv
   | Block ->
-      Envs.FDEnv.find_opt (fid, args) ctx.block.fdenv
-      |> find_cont find_funcdef_opt Global (fid, args) ctx
-  | Local -> find_funcdef_opt Block (fid, args) ctx
+      Envs.FDEnv.find_opt (fname, args) ctx.block.fdenv
+      |> find_cont find_funcdef_opt Global (fname, args) ctx
+  | Local -> find_funcdef_opt Block (fname, args) ctx
 
-let find_funcdef cursor (fid, args) ctx =
-  find_funcdef_opt cursor (fid, args) ctx |> Option.get
+let find_funcdef cursor (fname, args) ctx =
+  find_funcdef_opt cursor (fname, args) ctx |> Option.get
 
-let rec find_funcdef_overloaded_opt cursor (fid, args) ctx =
+let rec find_funcdef_overloaded_opt cursor (fname, args) ctx =
   match cursor with
-  | Global -> Envs.FDEnv.find_overloaded_opt (fid, args) ctx.global.fdenv
+  | Global -> Envs.FDEnv.find_overloaded_opt (fname, args) ctx.global.fdenv
   | Block ->
-      Envs.FDEnv.find_overloaded_opt (fid, args) ctx.block.fdenv
-      |> find_cont find_funcdef_overloaded_opt Global (fid, args) ctx
-  | Local -> find_funcdef_overloaded_opt Block (fid, args) ctx
+      Envs.FDEnv.find_overloaded_opt (fname, args) ctx.block.fdenv
+      |> find_cont find_funcdef_overloaded_opt Global (fname, args) ctx
+  | Local -> find_funcdef_overloaded_opt Block (fname, args) ctx
 
-let find_funcdef_overloaded cursor (fid, args) ctx =
-  find_funcdef_overloaded_opt cursor (fid, args) ctx |> Option.get
+let find_funcdef_overloaded cursor (fname, args) ctx =
+  find_funcdef_overloaded_opt cursor (fname, args) ctx |> Option.get
 
-let rec find_funcdef_non_overloaded_opt cursor fid ctx =
+let rec find_funcdef_non_overloaded_opt cursor (fname, args) ctx =
   match cursor with
-  | Global -> Envs.FDEnv.find_non_overloaded_opt fid ctx.global.fdenv
+  | Global -> Envs.FDEnv.find_non_overloaded_opt (fname, args) ctx.global.fdenv
   | Block ->
-      Envs.FDEnv.find_non_overloaded_opt fid ctx.block.fdenv
-      |> find_cont find_funcdef_non_overloaded_opt Global fid ctx
-  | Local -> find_funcdef_non_overloaded_opt Block fid ctx
+      Envs.FDEnv.find_non_overloaded_opt (fname, args) ctx.block.fdenv
+      |> find_cont find_funcdef_non_overloaded_opt Global (fname, args) ctx
+  | Local -> find_funcdef_non_overloaded_opt Block (fname, args) ctx
 
-let find_funcdef_non_overloaded cursor fid ctx =
-  find_funcdef_non_overloaded_opt cursor fid ctx |> Option.get
+let find_funcdef_non_overloaded cursor (fname, args) ctx =
+  find_funcdef_non_overloaded_opt cursor (fname, args) ctx |> Option.get
 
-let find_consdef_opt _cursor (cid, args) ctx =
-  Envs.CDEnv.find_overloaded_opt (cid, args) ctx.global.cdenv
+(* Finder for constructor definition *)
 
-let find_consdef cursor (cid, args) ctx =
-  find_consdef_opt cursor (cid, args) ctx |> Option.get
+let find_consdef_opt _cursor (cname, args) ctx =
+  Envs.CDEnv.find_overloaded_opt (cname, args) ctx.global.cdenv
+
+let find_consdef cursor (cname, args) ctx =
+  find_consdef_opt cursor (cname, args) ctx |> Option.get
+
+(* Finder for value *)
 
 let rec find_value_opt cursor id ctx =
   match cursor with
@@ -339,6 +349,8 @@ let rec find_value_opt cursor id ctx =
 
 let find_value cursor id ctx = find_value_opt cursor id ctx |> Option.get
 
+(* Finder for runtime type *)
+
 let rec find_rtype_opt cursor id ctx =
   match cursor with
   | Global ->
@@ -359,6 +371,8 @@ let rec find_rtype_opt cursor id ctx =
 
 let find_rtype cursor id ctx = find_rtype_opt cursor id ctx |> Option.get
 
+(* Finder combinator *)
+
 let find_opt finder_opt cursor var ctx =
   match var.it with
   | L.Top id -> finder_opt Global id.it ctx
@@ -366,6 +380,15 @@ let find_opt finder_opt cursor var ctx =
 
 let find finder_opt cursor var ctx =
   find_opt finder_opt cursor var ctx |> Option.get
+
+let find_non_overloaded_opt finder_non_overloaded_opt cursor var args ctx =
+  match var.it with
+  | L.Top id -> finder_non_overloaded_opt Global (id.it, args) ctx
+  | L.Current id -> finder_non_overloaded_opt cursor (id.it, args) ctx
+
+let find_non_overloaded finder_non_overloaded_opt cursor var args ctx =
+  find_non_overloaded_opt finder_non_overloaded_opt cursor var args ctx
+  |> Option.get
 
 let find_overloaded_opt finder_overloaded_opt cursor var args ctx =
   match var.it with

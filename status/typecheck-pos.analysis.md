@@ -260,25 +260,13 @@ X() x = {
 * table-entries-no-arg-actions.p4
 </details>
 
-### (7) Default parameter (6)
+### \[DONE\] (7) ~~Default parameter~~
 
 ```p4
-package P<H, M>(C<H, M> c = nothing());
-P<_, _>() main;
+extern void f(bit<32> a = 0, bit<32> b);
+...
+f(b = binit);
 ```
-
-<details>
-<summary>Tests</summary>
-
-* default-package-argument.p4
-* issue1333.p4
-* issue1638.p4
-* issue1937-1-bmv2.p4
-* issue1937-2-bmv2.p4
-* issue1937-3-bmv2.p4
-* issue2303.p4
-* issue2599.p4
-</details>
 
 ### (8) Built-in methods applied directly on type variables (1)
 
@@ -896,6 +884,31 @@ typedef MyCounter<my_counter_index_t> my_counter_t;
 
 The spec does not mention if the size given to a value set declaration should be local compile-time known, compile-time known, or neither.
 I suspect it should be at least compile-time known, and it is reflected in the current implementation.
+
+## 12. A generic type that imposes (or implies) a type constraint (1)
+
+```p4
+control nothing(
+    inout empty_t hdr,
+    inout empty_t meta,
+    in intrinsic_metadata_t imeta) { apply {} }
+
+control C<H, M>(
+    inout H hdr,
+    inout M meta,
+    in intrinsic_metadata_t intr_md);
+
+package P<H, M>(C<H, M> c = nothing());
+```
+
+Here, the package type is declared as a generic type that takes two type parameters, `H` and `M`.
+But, the default argument to `c` is `nothing()`, which imposes a type constraint that `H` should be `empty_t` and `M` should be `empty_t`.
+
+<details>
+<summary>Tests</summary>
+
+* default-package-argument.p4
+</details>
 
 # E. Unsupported features
 

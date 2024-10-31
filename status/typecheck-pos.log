@@ -1135,8 +1135,7 @@ Error while typechecking p4 file: test/program/well-typed/issue1304.p4
 Typecheck success: test/program/well-typed/issue1325-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1333.p4
-(type_instantiation) E is not an instance type
-Error while typechecking p4 file: test/program/well-typed/issue1333.p4
+Typecheck success: test/program/well-typed/issue1333.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1334.p4
 (check_eq_typ_alpha) Types int and bit<32> are not equal
@@ -1235,8 +1234,7 @@ Typecheck success: test/program/well-typed/issue1607-bmv2.p4
 Typecheck success: test/program/well-typed/issue1630-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1638.p4
-(check_call_arity) Function control_apply(in meta struct meta_t { f0 = bit<8>; f1 = bit<8>; f2 = bit<8> } = struct { f0 = 8w0; f1 = 8w0; f2 = 8w0 }) expects 1 arguments but 0 were given
-Error while typechecking p4 file: test/program/well-typed/issue1638.p4
+Typecheck success: test/program/well-typed/issue1638.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1642-bmv2.p4
 (check_eq_typ_alpha) Types int and bit<8> are not equal
@@ -1342,20 +1340,16 @@ Error while typechecking p4 file: test/program/well-typed/issue1914-1.p4
 Error while typechecking p4 file: test/program/well-typed/issue1914.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1937-1-bmv2.p4
-(type_func) Function foo not found
-Error while typechecking p4 file: test/program/well-typed/issue1937-1-bmv2.p4
+Typecheck success: test/program/well-typed/issue1937-1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1937-2-bmv2.p4
-(check_call_arity) Function parser_apply(out x bit<8>, in y bit<8> = 8w5) expects 2 arguments but 1 were given
-Error while typechecking p4 file: test/program/well-typed/issue1937-2-bmv2.p4
+Typecheck success: test/program/well-typed/issue1937-2-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1937-3-bmv2.p4
-(check_call_arity) Function control_apply(out x bit<8>, in y bit<8> = 8w5) expects 2 arguments but 1 were given
-Error while typechecking p4 file: test/program/well-typed/issue1937-3-bmv2.p4
+Typecheck success: test/program/well-typed/issue1937-3-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1937.p4
-(check_call_arity) Function parser_apply(out x bit<8>, in y bit<8> = 8w5) expects 2 arguments but 1 were given
-Error while typechecking p4 file: test/program/well-typed/issue1937.p4
+Typecheck success: test/program/well-typed/issue1937.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1955.p4
 Typecheck success: test/program/well-typed/issue1955.p4
@@ -1565,8 +1559,7 @@ Typecheck success: test/program/well-typed/issue2289.p4
 Typecheck success: test/program/well-typed/issue2291-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2303.p4
-(check_call_arity) Function control_apply(inout h header H { a = bit<8> }, in meta struct Meta { f0 = bit<8>; f1 = bit<8>; f2 = bit<8> } = struct { f0 = 8w0; f1 = 8w0; f2 = 8w0 }) expects 2 arguments but 1 were given
-Error while typechecking p4 file: test/program/well-typed/issue2303.p4
+Typecheck success: test/program/well-typed/issue2303.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2314.p4
 Typecheck success: test/program/well-typed/issue2314.p4
@@ -1716,8 +1709,7 @@ Typecheck success: test/program/well-typed/issue2583_simplify_slice2.p4
 Typecheck success: test/program/well-typed/issue2585.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2599.p4
-(type_func) Function __semaphore_write not found
-Error while typechecking p4 file: test/program/well-typed/issue2599.p4
+Typecheck success: test/program/well-typed/issue2599.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2614-bmv2.p4
 Typecheck success: test/program/well-typed/issue2614-bmv2.p4
@@ -1869,7 +1861,7 @@ Typecheck success: test/program/well-typed/issue304-1.p4
 Typecheck success: test/program/well-typed/issue304.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3051.p4
-(check_call_arity) Function control_apply(inout b bool) expects 1 arguments but 0 were given
+(type_method) Method apply not found for c
 Error while typechecking p4 file: test/program/well-typed/issue3051.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3056.p4
@@ -3984,4 +3976,4 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1190/1233 (96.51%) [FAIL] 43/1233 (3.49%)
-Typecheck: [PASS] 962/1190 (80.84%) [FAIL] 228/1190 (19.16%)
+Typecheck: [PASS] 970/1190 (81.51%) [FAIL] 220/1190 (18.49%)

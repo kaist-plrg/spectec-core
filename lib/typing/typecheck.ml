@@ -425,6 +425,13 @@ and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) :
         Types.ExternAbstractMethodT (params, typ_ret)
       in
       specialize_funcdef' funcDef tparams targs params typ_ret
+  (* parser and control apply methods are not generic *)
+  | ParserApplyMethodD params ->
+      check_arity [] targs;
+      (ParserApplyMethodT params, None)
+  | ControlApplyMethodD params ->
+      check_arity [] targs;
+      (ControlApplyMethodT params, None)
 
 and specialize_consdef (cd : ConsDef.t) (targs : Type.t list) :
     ConsType.t * TId.t list option =
@@ -550,7 +557,8 @@ and type_cparam (cursor : Ctx.cursor) (ctx : Ctx.t) (cparam : El.Ast.cparam) :
       See Section 15 for further details.
     - Actions can also be explicitly invoked using function call syntax, either from a control block or from another action.
       In this case, values for all action parameters must be supplied explicitly, including values for the directionless parameters.
-      The directionless parameters in this case behave like in parameters. See Section 14.1.1 for further details. *)
+      The directionless parameters in this case behave like in parameters. See Section 14.1.1 for further details.
+    - Default parameter values are only allowed for ‘in’ or direction-less parameters; these values must evaluate to compile-time constants. *)
 
 and type_call_convention ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
     (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list) :
@@ -1763,8 +1771,6 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 (* (8.20) Method invocations and function calls
 
-   A function call or method invocation can optionally specify for each argument the corresponding parameter name.
-   It is illegal to use names only for some arguments: either all or no arguments must specify the parameter name.
    Function arguments are evaluated in the order they appear, left to right, before the function invocation takes place.
 
    The calling convention is copy-in/copy-out (Section 6.8).
@@ -1861,25 +1867,12 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and check_call_arity (ft : FuncType.t) (params : Types.param list)
     (args : Il.Ast.arg list) : unit =
-  if List.length params <> List.length args then (
+  let arity_params = List.length params in
+  let arity_args = List.length args in
+  if arity_params <> arity_args then (
     Format.printf
       "(check_call_arity) Function %a expects %d arguments but %d were given\n"
-      FuncType.pp ft (List.length params) (List.length args);
-    assert false)
-
-and check_named_args (args : Il.Ast.arg list) : unit =
-  let args = List.map it args in
-  let is_named arg =
-    match (arg : Il.Ast.arg') with NameA _ -> true | _ -> false
-  in
-  if
-    not
-      (List.for_all is_named args
-      || List.for_all (fun arg -> not (is_named arg)) args)
-  then (
-    Format.printf
-      "(check_named_args) Either all or no arguments must specify the \
-       parameter name\n";
+      FuncType.pp ft arity_params arity_args;
     assert false)
 
 (* Invariant: parameters and arguments are checked of arity and all-or-nothing named *)
@@ -1906,22 +1899,24 @@ and align_params_with_args (params : Types.param list) (typ_args : Type.t list)
 
 and type_func (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : El.Ast.var)
     (targs_il : Il.Ast.targ list) (args : El.Ast.arg list) :
-    FuncType.t * TId.t list option =
+    FuncType.t * TId.t list option * Il.Ast.id' list =
   let targs = List.map it targs_il in
-  let fd =
+  let fd_matched =
     let args = FId.to_names args in
     Ctx.find_overloaded_opt Ctx.find_funcdef_overloaded_opt cursor var_func args
       ctx
   in
-  if Option.is_none fd then (
+  if Option.is_none fd_matched then (
     Format.printf "(type_func) Function %a not found\n" El.Pp.pp_var var_func;
     assert false);
-  let fd = Option.get fd in
-  specialize_funcdef fd targs
+  let fd, args_default = Option.get fd_matched in
+  let ft, tids_fresh = specialize_funcdef fd targs in
+  (ft, tids_fresh, args_default)
 
 and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
     (member : El.Ast.member) (targs_il : Il.Ast.targ list)
-    (args : El.Ast.arg list) : FuncType.t * Il.Ast.expr * TId.t list option =
+    (args : El.Ast.arg list) :
+    FuncType.t * Il.Ast.expr * TId.t list option * Il.Ast.id' list =
   let error_not_found () =
     Format.printf "(type_method) Method %s not found for %a\n" member.it
       (El.Pp.pp_expr ~level:0) expr_base;
@@ -1930,72 +1925,97 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
   let targs = List.map it targs_il in
   let expr_base_il = type_expr cursor ctx expr_base in
   let typ_base = expr_base_il.note.typ in
-  let ft, tids_fresh =
+  let ft, tids_fresh, args_default =
+    let wrap_builtin ft = (ft, None, []) in
+    let find_method fdenv =
+      let fd_matched =
+        let args = FId.to_names args in
+        Envs.FDEnv.find_overloaded_opt (member.it, args) fdenv
+      in
+      match fd_matched with
+      | Some (fd, args_default) ->
+          let ft, tids_fresh = specialize_funcdef fd targs in
+          (ft, tids_fresh, args_default)
+      | None -> error_not_found ()
+    in
     match typ_base with
     | StackT _ -> (
         match member.it with
         | "push_front" | "pop_front" ->
             let params = [ ("count", Lang.Ast.No, Types.IntT, None) ] in
             let typ_ret = Types.VoidT in
-            (Types.BuiltinMethodT (params, typ_ret), None)
+            Types.BuiltinMethodT (params, typ_ret) |> wrap_builtin
         | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits"
         | "maxSizeInBytes" ->
-            (Types.BuiltinMethodT ([], Types.IntT), None)
+            Types.BuiltinMethodT ([], Types.IntT) |> wrap_builtin
         | _ -> error_not_found ())
     | StructT _ -> (
         match member.it with
         | "minSizeInBits" | "minSizeInBytes" ->
-            (Types.BuiltinMethodT ([], Types.IntT), None)
+            Types.BuiltinMethodT ([], Types.IntT) |> wrap_builtin
         | _ -> error_not_found ())
     | HeaderT _ -> (
         match member.it with
-        | "isValid" -> (Types.BuiltinMethodT ([], Types.BoolT), None)
+        | "isValid" -> Types.BuiltinMethodT ([], Types.BoolT) |> wrap_builtin
         | "setValid" | "setInvalid" ->
-            (Types.BuiltinMethodT ([], Types.VoidT), None)
+            Types.BuiltinMethodT ([], Types.VoidT) |> wrap_builtin
         | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits"
         | "maxSizeInBytes" ->
-            (Types.BuiltinMethodT ([], Types.IntT), None)
+            Types.BuiltinMethodT ([], Types.IntT) |> wrap_builtin
         | _ -> error_not_found ())
     | UnionT _ -> (
         match member.it with
-        | "isValid" -> (Types.BuiltinMethodT ([], Types.BoolT), None)
+        | "isValid" -> Types.BuiltinMethodT ([], Types.BoolT) |> wrap_builtin
         | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits"
         | "maxSizeInBytes" ->
-            (Types.BuiltinMethodT ([], Types.IntT), None)
+            Types.BuiltinMethodT ([], Types.IntT) |> wrap_builtin
         | _ -> error_not_found ())
-    | ExternT (_id, fdenv) -> (
-        let fd =
-          let args = FId.to_names args in
-          Envs.FDEnv.find_overloaded_opt (member.it, args) fdenv
+    | ExternT (_, fdenv) -> find_method fdenv
+    | ParserT params ->
+        let fd = Types.ParserApplyMethodD params in
+        let fdenv =
+          let params =
+            List.map
+              (fun (id, _, _, value_default) ->
+                (id, Option.is_some value_default))
+              params
+          in
+          let fid = ("apply", params) in
+          Envs.FDEnv.add fid fd Envs.FDEnv.empty
         in
-        match fd with
-        | Some fd -> specialize_funcdef fd targs
-        | None -> error_not_found ())
-    | ParserT params -> (
-        match member.it with
-        | "apply" -> (Types.ParserApplyMethodT params, None)
-        | _ -> error_not_found ())
-    | ControlT params -> (
-        match member.it with
-        | "apply" -> (Types.ControlApplyMethodT params, None)
-        | _ -> error_not_found ())
+        find_method fdenv
+    | ControlT params ->
+        let fd = Types.ControlApplyMethodD params in
+        let fdenv =
+          let params =
+            List.map
+              (fun (id, _, _, value_default) ->
+                (id, Option.is_some value_default))
+              params
+          in
+          let fid = ("apply", params) in
+          Envs.FDEnv.add fid fd Envs.FDEnv.empty
+        in
+        find_method fdenv
     | TableT typ -> (
         match member.it with
-        | "apply" -> (Types.TableApplyMethodT typ, None)
+        | "apply" -> Types.TableApplyMethodT typ |> wrap_builtin
         | _ -> error_not_found ())
     | _ -> error_not_found ()
   in
-  (ft, expr_base_il, tids_fresh)
+  (ft, expr_base_il, tids_fresh, args_default)
 
 and type_call (cursor : Ctx.cursor) (ctx : Ctx.t)
     (tids_fresh : TId.t list option) (ft : FuncType.t)
-    (targs_il : Il.Ast.targ list) (args : El.Ast.arg list) :
+    (targs_il : Il.Ast.targ list) (args : El.Ast.arg list)
+    (args_default : Il.Ast.id' list) :
     Il.Ast.targ list * Il.Ast.arg list * Type.t =
-  (* (TODO) Consider default parameters, in such case arity can appear to mismatch *)
   let params = FuncType.get_params ft in
+  let params =
+    List.filter (fun (id, _, _, _) -> not (List.mem id args_default)) params
+  in
   let args_il, typ_args = List.map (type_arg cursor ctx) args |> List.split in
   check_call_arity ft params args_il;
-  check_named_args args_il;
   let params, typ_args, args_il =
     align_params_with_args params typ_args args_il
   in
@@ -2026,11 +2046,13 @@ and type_call_func_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   (* Find the function definition and specialize it if generic *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
   (* (TODO) Need to check its well-formedness after specialization *)
-  let ft, tids_fresh = type_func cursor ctx var_func targs_il args in
+  let ft, tids_fresh, args_default =
+    type_func cursor ctx var_func targs_il args
+  in
   (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
   let targs_il, args_il, typ =
-    type_call cursor ctx tids_fresh ft targs_il args
+    type_call cursor ctx tids_fresh ft targs_il args args_default
   in
   if typ = Types.VoidT then (
     Format.printf
@@ -2049,13 +2071,13 @@ and type_call_method_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   (* Find the function definition and specialize it if generic *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
   (* (TODO) Need to check its well-formedness after specialization *)
-  let ft, expr_base_il, tids_fresh =
+  let ft, expr_base_il, tids_fresh, args_default =
     type_method cursor ctx expr_base member targs_il args
   in
   (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
   let targs_il, args_il, typ =
-    type_call cursor ctx tids_fresh ft targs_il args
+    type_call cursor ctx tids_fresh ft targs_il args args_default
   in
   if typ = Types.VoidT then (
     Format.printf
@@ -2115,10 +2137,13 @@ and type_call_method_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and check_instantiation_arity (var_inst : El.Ast.var)
     (cparams : Types.cparam list) (args : Il.Ast.arg list) : unit =
-  if List.length cparams <> List.length args then (
+  let arity_cparams = List.length cparams in
+  let arity_args = List.length args in
+  if arity_cparams <> arity_args then (
     Format.printf
-      "(check_call_arity) Instance %a expects %d arguments but %d were given\n"
-      El.Pp.pp_var var_inst (List.length cparams) (List.length args);
+      "(check_instantiation_arity) Instance %a expects %d arguments but %d \
+       were given\n"
+      El.Pp.pp_var var_inst arity_cparams arity_args;
     assert false)
 
 and align_cparams_with_args (cparams : Types.cparam list)
@@ -2131,15 +2156,15 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
   (* Find the constructor definition and specialize it if necessary *)
   (* (TODO) Implement type inference for missing type arguments *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
-  let cd =
+  let cd_matched =
     let args = FId.to_names args in
     Ctx.find_overloaded_opt Ctx.find_consdef_opt cursor var_inst args ctx
   in
-  if Option.is_none cd then (
+  if Option.is_none cd_matched then (
     Format.printf "(type_instantiation) %a is not an instance type\n"
       El.Pp.pp_var var_inst;
     assert false);
-  let cd = Option.get cd in
+  let cd, args_default = Option.get cd_matched in
   (* (TODO) Need to check its well-formedness after specialization *)
   let ct, tids_fresh =
     let targs = List.map it targs_il in
@@ -2148,9 +2173,11 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
   (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
   let cparams, typ_inst = ct in
+  let cparams =
+    List.filter (fun (id, _, _, _) -> not (List.mem id args_default)) cparams
+  in
   let args_il, typ_args = List.map (type_arg cursor ctx) args |> List.split in
   check_instantiation_arity var_inst cparams args_il;
-  check_named_args args_il;
   let cparams, typ_args, args_il =
     align_cparams_with_args cparams typ_args args_il
   in
@@ -2551,14 +2578,15 @@ and type_call_func_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (var_func : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
     : Ctx.t * Flow.t * Il.Ast.stmt' =
   (* Find the function definition and specialize it is generic *)
-  (* (TODO) Implement type inference for missing type arguments *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
   (* (TODO) Need to check its well-formedness after specialization *)
-  let ft, tids_fresh = type_func cursor ctx var_func targs_il args in
+  let ft, tids_fresh, args_default =
+    type_func cursor ctx var_func targs_il args
+  in
   (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
   let targs_il, args_il, _typ =
-    type_call cursor ctx tids_fresh ft targs_il args
+    type_call cursor ctx tids_fresh ft targs_il args args_default
   in
   let stmt_il =
     Lang.Ast.CallFuncS { var_func; targs = targs_il; args = args_il }
@@ -2573,13 +2601,13 @@ and type_call_method_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   (* (TODO) Implement type inference for missing type arguments *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
   (* (TODO) Need to check its well-formedness after specialization *)
-  let ft, expr_base_il, tids_fresh =
+  let ft, expr_base_il, tids_fresh, args_default =
     type_method cursor ctx expr_base member targs_il args
   in
   (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
   let targs_il, args_il, _typ =
-    type_call cursor ctx tids_fresh ft targs_il args
+    type_call cursor ctx tids_fresh ft targs_il args args_default
   in
   let stmt_il =
     Lang.Ast.CallMethodS
@@ -4045,7 +4073,11 @@ and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_action : El.Ast.table_action') :
     Tblctx.t * Il.Ast.table_action' =
   let var, args, annos = table_action in
-  let fd = Ctx.find_opt Ctx.find_funcdef_non_overloaded_opt cursor var ctx in
+  let fd =
+    let args = FId.to_names args in
+    Ctx.find_non_overloaded_opt Ctx.find_funcdef_non_overloaded_opt cursor var
+      args ctx
+  in
   if Option.is_none fd then (
     Format.printf "(type_table_action) There is no action named %a\n"
       El.Pp.pp_var var;

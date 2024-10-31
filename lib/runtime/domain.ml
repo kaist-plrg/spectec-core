@@ -50,21 +50,27 @@ module TIdMap = IdMap
 (* Function identifiers *)
 
 module FId = struct
-  type t' = string
-  type t = t' * string list
+  type t = name * param list
+  and name = string
+  and param = string * bool
 
-  let pp' fmt name = Format.fprintf fmt "%s" name
+  let pp_name fmt name = Format.fprintf fmt "%s" name
   let compare = compare
+  let pp_param fmt (id, _) = Format.fprintf fmt "%s" id
 
   let pp fmt (name, params) =
-    Format.fprintf fmt "%s(%s)" name (String.concat ", " params)
+    Format.fprintf fmt "%a(%a)" pp_name name
+      (Format.pp_print_list
+         ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ", ")
+         pp_param)
+      params
 
   let to_fid (id : El.Ast.id) (params : El.Ast.param list) =
     let params =
       List.map
         (fun param ->
-          let id, _, _, _, _ = param.it in
-          id.it)
+          let id, _, _, value_default, _ = param.it in
+          (id.it, Option.is_some value_default))
         params
     in
     (id.it, params)
@@ -148,48 +154,131 @@ struct
   type t = V.t FIdMap.t
 
   let pp fmt env = FIdMap.pp V.pp fmt env
+
+  (* Lookup for matching def site to def site *)
+  (* (TODO) This must also impose the restriction that default values must be coherent, if specified *)
+
   let find_opt (fid : FId.t) fenv = List.assoc_opt fid (bindings fenv)
 
   let find (fid : FId.t) fenv =
     match find_opt fid fenv with
-    | Some value -> value
+    | Some func -> func
     | None -> Format.asprintf "Key not found: %a\n" FId.pp fid |> failwith
 
-  (* Precondition: args must be either all named or all unnamed *)
-  let find_overloaded_opt (fid, args) fenv =
-    let arity = List.length args in
-    let args =
+  (* Lookups for matching call site to def site *)
+
+  (* Overloaded lookup, allowing defaults *)
+
+  let check_named_args args =
+    if not (List.for_all Option.is_some args || List.for_all Option.is_none args)
+    then (
+      Format.printf
+        "(check_named_args) Either all or no arguments must specify the \
+         parameter name\n";
+      assert false)
+
+  (* (6.8.1) Justification
+
+     Following is a summary of the constraints imposed by the parameter directions:
+
+      - If parameters with default values do not appear at the end of the list of parameters,
+        invocations that use the default values must use named arguments. *)
+
+  (* (8.20) Method invocations and function calls
+
+     A function call or method invocation can optionally specify for each argument
+     the corresponding parameter name.
+     It is illegal to use names only for some arguments:
+     either all or no arguments must specify the parameter name. *)
+
+  let check_func_name fname fname' = fname = fname'
+  let check_arity_more args params = List.length args > List.length params
+  let check_arity args params = List.length args = List.length params
+  let check_args_named arg_names = arg_names <> []
+
+  let find_match_named func arg_names params =
+    let param_names = List.map fst params in
+    let param_names = List.sort String.compare param_names in
+    if List.for_all2 ( = ) arg_names param_names then Some (func, []) else None
+
+  let find_match_named_default func arg_names params =
+    let param_names = List.map fst params in
+    let param_names = List.sort String.compare param_names in
+    let param_missing_names =
+      List.filter
+        (fun param_name -> not (List.mem param_name arg_names))
+        param_names
+    in
+    let arg_names =
+      arg_names @ param_missing_names |> List.sort String.compare
+    in
+    find_match_named func arg_names params
+    |> Option.map (fun (func, _) -> (func, param_missing_names))
+
+  let find_match_unnamed_default func args params =
+    let params_default =
+      List.filteri (fun i _ -> i >= List.length args) params
+    in
+    let params_names, params_default = List.split params_default in
+    if List.for_all Fun.id params_default then Some (func, params_names)
+    else None
+
+  let find_overloaded_opt (fname, args) fenv =
+    check_named_args args;
+    let arg_names =
       if List.for_all Option.is_some args then
         List.map Option.get args |> List.sort String.compare
       else []
     in
-    let func =
-      List.find_opt
-        (fun ((fid', params), _) ->
-          let params = List.sort String.compare params in
-          fid = fid'
-          && arity = List.length params
-          && (args = [] || List.for_all2 ( = ) args params))
+    let funcs =
+      List.filter_map
+        (fun ((fname', params), func) ->
+          (* Falls into roughly five cases:
+             (1) Name mismatch or more args than params
+             (2) Arity match
+                (a) Named args (b) Unnamed args
+             (3) Arity mismatch (maybe due to default param)
+                (a) Named args (b) Unnamed args *)
+          if not (check_func_name fname fname') then None
+          else if check_arity_more args params then None
+          else if check_arity args params then
+            if check_args_named arg_names then
+              find_match_named func arg_names params
+            else Some (func, [])
+          else if check_args_named arg_names then
+            find_match_named_default func arg_names params
+          else find_match_unnamed_default func args params)
         (bindings fenv)
     in
-    Option.map snd func
+    if List.length funcs > 2 then (
+      Format.printf
+        "(find_overloaded_opt) Cannot resolve overloaded function given %a\n"
+        FId.pp_name fname;
+      assert false);
+    assert (List.length funcs <= 1);
+    match funcs with [] -> None | _ -> Some (List.hd funcs)
 
-  let find_overloaded (fid, args) fenv =
-    match find_overloaded_opt (fid, args) fenv with
+  let find_overloaded (fname, args) fenv =
+    match find_overloaded_opt (fname, args) fenv with
     | Some value -> value
-    | None -> Format.asprintf "Key not found: %s\n" fid |> failwith
+    | None ->
+        Format.asprintf "Key not found: %a\n" FId.pp_name fname |> failwith
 
-  let find_non_overloaded_opt (fid : FId.t') fenv =
+  (* Non-overloaded lookup, allowing defaults *)
+
+  let find_non_overloaded_opt (fname, args) fenv =
+    check_named_args args;
     let funcs =
-      List.filter (fun ((fid', _), _) -> fid = fid') (bindings fenv)
+      List.filter (fun ((fname', _), _) -> fname = fname') (bindings fenv)
     in
     assert (List.length funcs <= 1);
     match funcs with [] -> None | _ -> Some (List.hd funcs |> snd)
 
-  let find_non_overloaded (fid : FId.t') fenv =
-    match find_non_overloaded_opt fid fenv with
+  let find_non_overloaded (fname, args) fenv =
+    match find_non_overloaded_opt (fname, args) fenv with
     | Some value -> value
-    | None -> Format.asprintf "Key not found: %a\n" FId.pp' fid |> failwith
+    | None ->
+        Format.asprintf "Key not found: %a\n" FId.pp_name fname |> failwith
 end
 
 module MakeCIdEnv = MakeFIdEnv
