@@ -313,7 +313,7 @@ control d() {
 value_set<bit<16>>(8) ipv4_ethertypes;
 ```
 
-### (11) Instances must be compile-time known (3)
+### (11) Instances must be compile-time known (2)
 
 But are they local compile-time known or compile-time known?
 Also, does a directionless parameter expect a local compile-time known value or a compile-time known value?
@@ -331,7 +331,6 @@ sw0(p1(createWidget(16w0, 8w0))) main;
 
 * factory1.p4
 * factory2.p4
-* pna-example-SelectByDirection2.p4
 </details>
 
 ## 3. Devils are in the Details
@@ -577,7 +576,7 @@ h = (H) {#};
 
 # D. Need Spec Clarification
 
-## \[REPORTED\] 1. Should we add implicit cast for directionless parameter? (73)
+## \[REPORTED\] 1. Should we add implicit cast for directionless parameter? (74)
 
 I think we should, especially for constructor invocations.
 Waiting for the spec clarification, [issue#1312](https://github.com/p4lang/p4-spec/issues/1312).
@@ -631,6 +630,7 @@ BFD_Offload(32768) bfd_session_liveness_tracker = ...;
 <summary>Tests</summary>
 
 * bfd_offload.p4
+* calc-ebpf.p4
 * constructor_cast.p4
 * issue1006.p4
 * issue1097-2-bmv2.p4
@@ -685,9 +685,11 @@ BFD_Offload(32768) bfd_session_liveness_tracker = ...;
 * value-sets.p4
 </details>
 
-## 2. Should an argument to directionless action parameter be compile-time known? (4)
+## \[DONE\] 2. ~~Should an argument to directionless action parameter be compile-time known?~~
 
-I think it should be, but the test cases below seem to violate this.
+~~I think it should be, but the test cases below seem to violate this.~~
+
+Actually, the spec mentions that if a program supplies the directionless parameter, it need not be compile-time known.
 
 ```p4
 action Reject(bool rej) { ... }
@@ -698,10 +700,7 @@ Reject(x);
 <details>
 <summary>Tests</summary>
 
-* action_call_ebpf.p4
-* calc-ebpf.p4
-* crc32-bmv2.p4
-* direct-action1.p4
+
 </details>
 
 ## 3. How to match abstract methods when initializing an instance? (4)

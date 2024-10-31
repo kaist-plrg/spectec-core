@@ -532,20 +532,25 @@ and type_cparam (cursor : Ctx.cursor) (ctx : Ctx.t) (cparam : El.Ast.cparam) :
       - For anything other than an action, e.g. a control, parser, or function, a directionless parameter means that
         the value supplied as an argument in a call must be a compile-time known value (see Section 18.1).
       - For an action, a directionless parameter indicates that it is “action data”.
-        See Section 14.1 for the meaning of action data. *)
+        See Section 14.1 for the meaning of action data, but its meaning includes the following possibilities:
+        - The parameter's value is provided in the P4 program.
+          In this case, the parameter behaves as if the direction were in.
+          Such an argument expression need not be a compile-time known value.
+        - The parameter's value is provided by the control plane software when an entry is added to
+          a table that uses that action. See Section 14.1. *)
 
 (* (6.8.1) Justification
 
    Following is a summary of the constraints imposed by the parameter directions:
 
     - All constructor parameters are evaluated at compilation-time,
-        and in consequence they must all be directionless (they cannot be in, out, or inout);
-        this applies to package, control, parser, and extern objects.
-        Values for these parameters must be specified at compile-time, and must evaluate to compile-time known values.
-        See Section 15 for further details.
+      and in consequence they must all be directionless (they cannot be in, out, or inout);
+      this applies to package, control, parser, and extern objects.
+      Values for these parameters must be specified at compile-time, and must evaluate to compile-time known values.
+      See Section 15 for further details.
     - Actions can also be explicitly invoked using function call syntax, either from a control block or from another action.
-        In this case, values for all action parameters must be supplied explicitly, including values for the directionless parameters.
-        The directionless parameters in this case behave like in parameters. See Section 14.1.1 for further details. *)
+      In this case, values for all action parameters must be supplied explicitly, including values for the directionless parameters.
+      The directionless parameters in this case behave like in parameters. See Section 14.1.1 for further details. *)
 
 and type_call_convention ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
     (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list) :
@@ -563,13 +568,9 @@ and type_call_convention' ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
         Eq.check_eq_typ_alpha typ_arg typ_param;
         check_lvalue cursor ctx expr_il;
         expr_il
+    | Lang.Ast.No when action -> coerce_type_assign expr_il typ_param
     | Lang.Ast.No ->
-        let expr_il =
-          if action then coerce_type_assign expr_il typ_param
-          else (
-            Eq.check_eq_typ_alpha typ_arg typ_param;
-            expr_il)
-        in
+        Eq.check_eq_typ_alpha typ_arg typ_param;
         Static.check_ctk expr_il;
         expr_il
   in
@@ -1855,7 +1856,7 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     - all serializable types
     - for a type that does not contain varbit fields, both methods return the same result
     - for a type that does contain varbit fields, maxSizeInBits is the worst-case size
-        of the serialized representation of the data and minSizeInBits is the “best” case.
+      of the serialized representation of the data and minSizeInBits is the “best” case.
     - Every other case is undefined and will produce a compile-time error. *)
 
 and check_call_arity (ft : FuncType.t) (params : Types.param list)
@@ -3792,14 +3793,18 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 
    In addition, the tables may optionally define the following properties,
 
-    - default_action: an action to execute when the lookup in the lookup table
+    - default_action:
+        an action to execute when the lookup in the lookup table
         fails to find a match for the key used.
     - size: an integer specifying the desired size of the table.
-    - entries: entries that are initially added to a table when the P4 program is loaded,
+    - entries:
+        entries that are initially added to a table when the P4 program is loaded,
         some or all of which may be unchangeable by the control plane software.
-    - largest_priority_wins - Only useful for some tables with the entries property.
+    - largest_priority_wins:
+        Only useful for some tables with the entries property.
         See section 14.2.1.4 for details.
-    - priority_delta - Only useful for some tables with the entries property.
+    - priority_delta:
+        Only useful for some tables with the entries property.
         See section 14.2.1.4 for details.
 
    The compiler must set the default_action to NoAction (and also insert it into the list of actions)

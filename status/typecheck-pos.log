@@ -17,9 +17,7 @@ Typecheck success: test/program/well-typed/action-uses.p4
 Typecheck success: test/program/well-typed/actionAnnotations.p4
 
 >>> Running typecheck test on test/program/well-typed/action_call_ebpf.p4
-(coerce_type) Cannot coerce type seq<bit<32>> to bit<32>
-(check_ctk) x is not a compile-time known expression
-Error while typechecking p4 file: test/program/well-typed/action_call_ebpf.p4
+Typecheck success: test/program/well-typed/action_call_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed/action_call_table_ebpf.p4
 Typecheck success: test/program/well-typed/action_call_table_ebpf.p4
@@ -37,6 +35,7 @@ Typecheck success: test/program/well-typed/action_param.p4
 Typecheck success: test/program/well-typed/action_param1.p4
 
 >>> Running typecheck test on test/program/well-typed/action_profile-bmv2.p4
+(coerce_type) Cannot coerce type seq<bit<32>> to bit<32>
 (type_table_custom) Custom element implementation is undefined
 Error while typechecking p4 file: test/program/well-typed/action_profile-bmv2.p4
 
@@ -174,7 +173,7 @@ Typecheck success: test/program/well-typed/bvec-hdr-bmv2.p4
 Typecheck success: test/program/well-typed/bvec_union-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/calc-ebpf.p4
-(check_ctk) ((hdr.p4calc.operand_a) + (hdr.p4calc.operand_b)) is not a compile-time known expression
+(check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed/calc-ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed/call.p4
@@ -315,8 +314,7 @@ Typecheck success: test/program/well-typed/count_ebpf.p4
 Typecheck success: test/program/well-typed/crash-typechecker.p4
 
 >>> Running typecheck test on test/program/well-typed/crc32-bmv2.p4
-(check_ctk) ((hdr.p4calc.operand_a) + (hdr.p4calc.operand_b)) is not a compile-time known expression
-Error while typechecking p4 file: test/program/well-typed/crc32-bmv2.p4
+Typecheck success: test/program/well-typed/crc32-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/csum_ubpf.p4
 Typecheck success: test/program/well-typed/csum_ubpf.p4
@@ -369,8 +367,7 @@ Typecheck success: test/program/well-typed/deletekey.p4
 Typecheck success: test/program/well-typed/direct-action.p4
 
 >>> Running typecheck test on test/program/well-typed/direct-action1.p4
-(check_ctk) x is not a compile-time known expression
-Error while typechecking p4 file: test/program/well-typed/direct-action1.p4
+Typecheck success: test/program/well-typed/direct-action1.p4
 
 >>> Running typecheck test on test/program/well-typed/direct-call.p4
 Typecheck success: test/program/well-typed/direct-call.p4
@@ -2807,8 +2804,7 @@ Typecheck success: test/program/well-typed/pna-example-SelectByDirection.p4
 Typecheck success: test/program/well-typed/pna-example-SelectByDirection1.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-SelectByDirection2.p4
-(check_ctk) SelectByDirection<bit<32>>(istd.direction, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr) is not a compile-time known expression
-Error while typechecking p4 file: test/program/well-typed/pna-example-SelectByDirection2.p4
+Typecheck success: test/program/well-typed/pna-example-SelectByDirection2.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-bAnd-in-tableKey.p4
 Typecheck success: test/program/well-typed/pna-example-bAnd-in-tableKey.p4
@@ -3988,4 +3984,4 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1190/1233 (96.51%) [FAIL] 43/1233 (3.49%)
-Typecheck: [PASS] 958/1190 (80.50%) [FAIL] 232/1190 (19.50%)
+Typecheck: [PASS] 962/1190 (80.84%) [FAIL] 228/1190 (19.16%)

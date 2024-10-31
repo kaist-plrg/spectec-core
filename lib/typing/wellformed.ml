@@ -518,16 +518,16 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
 
     - When used as arguments, extern objects can only be passed as directionless parameters.
     - All constructor parameters are evaluated at compilation-time,
-        and in consequence they must all be directionless (they cannot be in, out, or inout);
-        this applies to package, control, parser, and extern objects.
-        Values for these parameters must be specified at compile-time, and must evaluate to compile-time known values.
-        See Section 15 for further details.
+      and in consequence they must all be directionless (they cannot be in, out, or inout);
+      this applies to package, control, parser, and extern objects.
+      Values for these parameters must be specified at compile-time, and must evaluate to compile-time known values.
+      See Section 15 for further details.
     - For actions all directionless parameters must be at the end of the parameter list.
-        When an action appears in a table's actions list, only the parameters with a direction must be bound.
-        See Section 14.1 for further details.
+      When an action appears in a table's actions list, only the parameters with a direction must be bound.
+      See Section 14.1 for further details.
     - Default parameter values are only allowed for ‘in’ or direction-less parameters; these values must evaluate to compile-time constants.
-        If parameters with default values do not appear at the end of the list of parameters,
-        invocations that use the default values must use named arguments. *)
+      If parameters with default values do not appear at the end of the list of parameters,
+      invocations that use the default values must use named arguments. *)
 
 (* (TODO) Appendix F. Restrictions on compile time and runtime calls *)
 

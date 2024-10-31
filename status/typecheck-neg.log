@@ -102,8 +102,7 @@ Error while typechecking p4 file: test/program/ill-typed/default_action.p4
 Error while typechecking p4 file: test/program/ill-typed/default_action1.p4
 
 >>> Running typecheck test on test/program/ill-typed/directionless.p4
-(check_ctk) ((z) & (z)) is not a compile-time known expression
-Error while typechecking p4 file: test/program/ill-typed/directionless.p4
+Typecheck success: test/program/ill-typed/directionless.p4
 
 >>> Running typecheck test on test/program/ill-typed/div.p4
 Typecheck success: test/program/ill-typed/div.p4
@@ -688,8 +687,7 @@ Typecheck success: test/program/ill-typed/issue4146.p4
 Error while typechecking p4 file: test/program/ill-typed/issue435.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue473.p4
-(check_ctk) ((bit<8>) (meta.d)) is not a compile-time known expression
-Error while typechecking p4 file: test/program/ill-typed/issue473.p4
+Typecheck success: test/program/ill-typed/issue473.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue477.p4
 Typecheck success: test/program/ill-typed/issue477.p4
@@ -1106,4 +1104,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 253/299 (84.62%) [FAIL] 46/299 (15.38%)
-Typecheck: [PASS] 166/253 (65.61%) [FAIL] 87/253 (34.39%)
+Typecheck: [PASS] 164/253 (64.82%) [FAIL] 89/253 (35.18%)
