@@ -90,7 +90,8 @@ Error while parsing p4 file: test/program/ill-typed/default-initializer-err.p4
 Error while typechecking p4 file: test/program/ill-typed/default-last-switch.p4
 
 >>> Running typecheck test on test/program/ill-typed/default-param.p4
-Typecheck success: test/program/ill-typed/default-param.p4
+(type_param) Default parameter values are only allowed for in or directionless parameters but out was given
+Error while typechecking p4 file: test/program/ill-typed/default-param.p4
 
 >>> Running typecheck test on test/program/ill-typed/default_action.p4
 (type_table_action_default) There is no action named b in actions list
@@ -871,8 +872,7 @@ Error while typechecking p4 file: test/program/ill-typed/select-varbits.p4
 Error while typechecking p4 file: test/program/ill-typed/self-call.p4
 
 >>> Running typecheck test on test/program/ill-typed/serEnumImplCast.p4
-(check_eq_typ_alpha) Types bit<2> and enum<bit<2>> foo_t are not equal
-Error while typechecking p4 file: test/program/ill-typed/serEnumImplCast.p4
+Typecheck success: test/program/ill-typed/serEnumImplCast.p4
 
 >>> Running typecheck test on test/program/ill-typed/serenum-type.p4
 (coerce_type) Cannot coerce type int to type EthT (= type Base2_t (= type Base1_t (= bit<16>)))
@@ -977,23 +977,21 @@ Typecheck success: test/program/ill-typed/structured-annotation-e2.p4
 Typecheck success: test/program/ill-typed/structured-annotation-e3.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-decl-order.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
-Error while typechecking p4 file: test/program/ill-typed/table-entries-decl-order.p4
+Typecheck success: test/program/ill-typed/table-entries-decl-order.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-exact-ternary.p4
 parser error: File test/program/ill-typed/table-entries-exact-ternary.p4, line 74, characters 28-29
 Error while parsing p4 file: test/program/ill-typed/table-entries-exact-ternary.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-exact.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
+(type_table_entry_keysets) Number of select keys must match the number of cases
 Error while typechecking p4 file: test/program/ill-typed/table-entries-exact.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-lpm-2.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
-Error while typechecking p4 file: test/program/ill-typed/table-entries-lpm-2.p4
+Typecheck success: test/program/ill-typed/table-entries-lpm-2.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-lpm.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
+(type_table_entry_keysets) Number of select keys must match the number of cases
 Error while typechecking p4 file: test/program/ill-typed/table-entries-lpm.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-optional-2-bmv2.p4
@@ -1005,11 +1003,11 @@ parser error: File test/program/ill-typed/table-entries-outside-table.p4, line 6
 Error while parsing p4 file: test/program/ill-typed/table-entries-outside-table.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-range.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
+(type_table_entry_keysets) Number of select keys must match the number of cases
 Error while typechecking p4 file: test/program/ill-typed/table-entries-range.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-ternary.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
+(type_action_keyset) match_kind ternary cannot use range expression 
 Error while typechecking p4 file: test/program/ill-typed/table-entries-ternary.p4
 
 >>> Running typecheck test on test/program/ill-typed/template_e.p4
@@ -1105,4 +1103,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 253/299 (84.62%) [FAIL] 46/299 (15.38%)
-Typecheck: [PASS] 165/253 (65.22%) [FAIL] 88/253 (34.78%)
+Typecheck: [PASS] 163/253 (64.43%) [FAIL] 90/253 (35.57%)

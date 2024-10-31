@@ -577,12 +577,15 @@ h = (H) {#};
 
 # D. Need Spec Clarification
 
-## \[REPORTED\] 1. Should we add implicit cast for directionless parameter? (107)
+## \[REPORTED\] 1. Should we add implicit cast for directionless parameter? (73)
 
 I think we should, especially for constructor invocations.
 Waiting for the spec clarification, [issue#1312](https://github.com/p4lang/p4-spec/issues/1312).
 
-Below apply for actions, methods, and functions.
+Below apply for methods and functions.
+
+Note that directionless argument for action can be implicitly cast, as per the spec.
+The spec mentions, "Actions can also be explicitly invoked using function call syntax, either from a control block or from another action. In this case, values for all action parameters must be supplied explicitly, including values for the directionless parameters. The directionless parameters in this case behave like in parameters. See Section 14.1.1 for further details. (6.8.1)".
 
 ```p4
 action a(inout bit<32> b, bit<32> d) { ... }
@@ -592,61 +595,26 @@ a(x, 0);
 <details>
 <summary>Tests</summary>
 
-* action-bind.p4
-* action_call_table_ebpf.p4
-* bvec-hdr-bmv2.p4
-* default-action-arg-bmv2.p4
-* default_action-bmv2.p4
-* default_action-ubpf.p4
 * extern-funcs-bmv2.p4
 * extern2.p4
 * gauntlet_extern_arguments_2.p4
 * gauntlet_hdr_in_value-bmv2.p4
 * issue1001-1-bmv2.p4
 * issue1001-bmv2.p4
-* issue1006.p4
 * issue1043-bmv2.p4
-* issue1062-1-bmv2.p4
-* issue1062-bmv2.p4
 * issue1334.p4
 * issue1642-bmv2.p4
 * issue1653-bmv2.p4
 * issue1653-complex-bmv2.p4
 * issue1660-bmv2.p4
 * issue1765-1-bmv2.p4
-* issue1834-bmv2.p4
 * issue2648.p4
-* issue323.p4
 * issue3246-1.p4
-* issue3488-1-bmv2.p4
-* issue364-bmv2.p4
 * issue383-bmv2.p4
-* issue3884.p4
-* issue4133.p4
 * issue562-bmv2.p4
 * issue933-1.p4
-* lpm_ubpf.p4
-* m_psa-dpdk-non-zero-arg-default-action-08.p4
 * named-arg1.p4
-* pna-example-ipsec.p4
-* psa-example-parser-checksum.p4
-* psa-dpdk-non-zero-arg-default-action-01.p4
-* psa-dpdk-non-zero-arg-default-action-02.p4
-* psa-dpdk-non-zero-arg-default-action-08.p4
-* psa-dpdk-non-zero-arg-default-action-09.p4
-* psa-dpdk-table-entries-exact-ternary.p4
-* table-entries-exact-bmv2.p4
-* table-entries-lpm-bmv2.p4
-* table-entries-optional-bmv2.p4
-* table-entries-priority-bmv2.p4
-* table-entries-range-bmv2.p4
-* table-entries-ser-enum-bmv2.p4
-* table-entries-ternary-bmv2.p4
-* table-entries-valid-bmv2.p4
-* table-key-serenum-bmv2.p4
-* v1model-const-entries-bmv2.p4
 * v1model-special-ops-bmv2.p4
-* xor_test.p4
 </details>
 
 Below apply for constructors.
@@ -664,6 +632,7 @@ BFD_Offload(32768) bfd_session_liveness_tracker = ...;
 
 * bfd_offload.p4
 * constructor_cast.p4
+* issue1006.p4
 * issue1097-2-bmv2.p4
 * issue1097-bmv2.p4
 * issue1814-1-bmv2.p4
@@ -931,7 +900,7 @@ I suspect it should be at least compile-time known, and it is reflected in the c
 
 # E. Unsupported features
 
-## 1. Custom table element (45)
+## 1. Custom table element (47)
 
 ### (1) `implementation`
 
@@ -979,6 +948,7 @@ table ipv4_da_lpm {
 <details>
 <summary>Tests</summary>
 
+* issue364-bmv2.p4
 * issue461-bmv2.p4
 </details>
 
@@ -1057,6 +1027,7 @@ table tbl {
 
 * psa-counter4.p4
 * psa-example-counters-bmv2.p4
+* psa-example-parser-checksum.p4
 </details>
 
 ### (7) `psa_direct_meter`

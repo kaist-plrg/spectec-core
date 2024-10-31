@@ -502,12 +502,18 @@ and type_param' (cursor : Ctx.cursor) (ctx : Ctx.t) (param : El.Ast.param') :
   let value_default_il =
     Option.map
       (fun expr_default ->
+        if not (match dir.it with In | No -> true | _ -> false) then (
+          Format.printf
+            "(type_param) Default parameter values are only allowed for in or \
+             directionless parameters but %a was given\n"
+            Il.Pp.pp_dir dir;
+          assert false);
         let expr_default_il = type_expr cursor ctx expr_default in
+        let expr_default_il = coerce_type_assign expr_default_il typ.it in
         Static.eval_expr cursor ctx expr_default_il)
       expr_default
   in
   let annos_il = List.map (type_anno cursor ctx) annos in
-  (* (TODO) evaluate annotations *)
   (id, dir, typ, value_default_il, annos_il)
 
 and type_cparam (cursor : Ctx.cursor) (ctx : Ctx.t) (cparam : El.Ast.cparam) :
@@ -516,12 +522,50 @@ and type_cparam (cursor : Ctx.cursor) (ctx : Ctx.t) (cparam : El.Ast.cparam) :
 
 (* Calling convention *)
 
-and type_call_convention (cursor : Ctx.cursor) (ctx : Ctx.t)
+(* (6.8) Calling convention: call by copy in/copy out
+
+   Invocations are executed using copy-in/copy-out semantics.
+
+   Each parameter may be labeled with a direction:
+
+   - in parameters are read-only. It is an error to use an in parameter on the left-hand side of an assignment
+     or to pass it to a callee as a non-in argument.
+   - out parameters are, with a few exceptions listed below, uninitialized and are treated as l-values (See Section 6.7)
+     within the body of the method or function. An argument passed as an out parameter must be an l-value;
+   - inout parameters behave like a combination of in and out parameters simultaneously:
+     In consequence, an argument passed as an inout parameter must be an l-value.
+   - The meaning of parameters with no direction depends upon the kind of entity the parameter is for:
+      - For anything other than an action, e.g. a control, parser, or function, a directionless parameter means that
+        the value supplied as an argument in a call must be a compile-time known value (see Section 18.1).
+      - For an action, a directionless parameter indicates that it is “action data”.
+        See Section 14.1 for the meaning of action data. *)
+
+(* (6.8.1) Justification
+
+   Following is a summary of the constraints imposed by the parameter directions:
+
+    - When used as arguments, extern objects can only be passed as directionless parameters.
+    - All constructor parameters are evaluated at compilation-time,
+        and in consequence they must all be directionless (they cannot be in, out, or inout);
+        this applies to package, control, parser, and extern objects.
+        Values for these parameters must be specified at compile-time, and must evaluate to compile-time known values.
+        See Section 15 for further details.
+    - For actions all directionless parameters must be at the end of the parameter list.
+        When an action appears in a table's actions list, only the parameters with a direction must be bound.
+        See Section 14.1 for further details.
+    - Actions can also be explicitly invoked using function call syntax, either from a control block or from another action.
+        In this case, values for all action parameters must be supplied explicitly, including values for the directionless parameters.
+        The directionless parameters in this case behave like in parameters. See Section 14.1.1 for further details.
+    - Default parameter values are only allowed for ‘in’ or direction-less parameters; these values must evaluate to compile-time constants.
+        If parameters with default values do not appear at the end of the list of parameters,
+        invocations that use the default values must use named arguments. *)
+
+and type_call_convention ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
     (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list) :
     Il.Ast.arg list =
-  List.map2 (type_call_convention' cursor ctx) params args_il_typed
+  List.map2 (type_call_convention' ~action cursor ctx) params args_il_typed
 
-and type_call_convention' (cursor : Ctx.cursor) (ctx : Ctx.t)
+and type_call_convention' ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
     (param : Types.param) (arg_il_typed : Il.Ast.arg * Type.t) : Il.Ast.arg =
   let arg_il, typ_arg = arg_il_typed in
   let _, dir_param, typ_param, _ = param in
@@ -533,7 +577,12 @@ and type_call_convention' (cursor : Ctx.cursor) (ctx : Ctx.t)
         check_lvalue cursor ctx expr_il;
         expr_il
     | Lang.Ast.No ->
-        Eq.check_eq_typ_alpha typ_arg typ_param;
+        let expr_il =
+          if action then coerce_type_assign expr_il typ_param
+          else (
+            Eq.check_eq_typ_alpha typ_arg typ_param;
+            expr_il)
+        in
         Static.check_ctk expr_il;
         expr_il
   in
@@ -550,7 +599,7 @@ and type_call_convention' (cursor : Ctx.cursor) (ctx : Ctx.t)
           "(type_call) Don't care argument can only be used for an out \
            function/method argument\n";
         assert false);
-      Lang.Ast.AnyA $ arg_il.at
+      arg_il
 
 (* Expression typing *)
 
@@ -1742,24 +1791,6 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
    When used in generic functions or methods, the compiler may reject the program if it is
    unable to infer a type for the don't care argument. *)
 
-(* (6.8) Calling convention: call by copy in/copy out
-
-   Invocations are executed using copy-in/copy-out semantics.
-
-   Each parameter may be labeled with a direction:
-
-   - in parameters are read-only. It is an error to use an in parameter on the left-hand side of an assignment
-     or to pass it to a callee as a non-in argument.
-   - out parameters are, with a few exceptions listed below, uninitialized and are treated as l-values (See Section 6.7)
-     within the body of the method or function. An argument passed as an out parameter must be an l-value;
-   - inout parameters behave like a combination of in and out parameters simultaneously:
-     In consequence, an argument passed as an inout parameter must be an l-value.
-   - The meaning of parameters with no direction depends upon the kind of entity the parameter is for:
-      - For anything other than an action, e.g. a control, parser, or function, a directionless parameter means that
-        the value supplied as an argument in a call must be a compile-time known value (see Section 18.1).
-      - For an action, a directionless parameter indicates that it is “action data”.
-        See Section 14.1 for the meaning of action data. *)
-
 (* (Appendix F) Restrictions on compile time and run time calls
 
    The next table lists restrictions on what kinds of calls can be made from which places in a P4 program.
@@ -1997,7 +2028,8 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t)
         (targs_il, params, typ_ret)
     | None -> (targs_il, params, typ_ret)
   in
-  let args_il = type_call_convention cursor ctx params args_il_typed in
+  let action = FuncType.is_action ft in
+  let args_il = type_call_convention ~action cursor ctx params args_il_typed in
   (targs_il, args_il, typ_ret)
 
 and type_call_func_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
@@ -2150,7 +2182,9 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
         (targs_il, cparams, typ_inst)
     | None -> (targs_il, cparams, typ_inst)
   in
-  let args_il = type_call_convention cursor ctx cparams args_il_typed in
+  let args_il =
+    type_call_convention ~action:false cursor ctx cparams args_il_typed
+  in
   let typ = typ_inst in
   let expr_il = Il.Ast.InstE { var_inst; targs = targs_il; args = args_il } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
@@ -4006,7 +4040,7 @@ and type_call_action_partial (cursor : Ctx.cursor) (ctx : Ctx.t)
         match dir with Lang.Ast.No -> None | _ -> Some param)
       params
   in
-  type_call_convention cursor ctx params args_il
+  type_call_convention ~action:true cursor ctx params args_il
 
 and type_table_action (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
     (table_action : El.Ast.table_action) : Tblctx.t * Il.Ast.table_action =
@@ -4081,7 +4115,7 @@ and type_call_default_action (cursor : Ctx.cursor) (ctx : Ctx.t)
        syntactically different\n"
       Il.Pp.pp_args args_action Il.Pp.pp_args args_il_dyn;
     assert false);
-  type_call_convention cursor ctx params args_il_typed
+  type_call_convention ~action:true cursor ctx params args_il_typed
 
 and type_table_default_action (cursor : Ctx.cursor) (ctx : Ctx.t)
     (tblctx : Tblctx.t) (table_action : El.Ast.table_action) :

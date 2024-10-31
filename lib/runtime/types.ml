@@ -411,6 +411,7 @@ module FuncType = struct
   type t = functyp
 
   let pp = pp_functyp
+  let is_action = function ActionT _ -> true | _ -> false
 
   let get_params = function
     | ActionT params

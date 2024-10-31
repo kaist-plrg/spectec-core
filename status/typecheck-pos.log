@@ -2,14 +2,12 @@ Running typecheck tests on 1233 files
 
 
 >>> Running typecheck test on test/program/well-typed/action-bind.p4
-Error while typechecking p4 file: test/program/well-typed/action-bind.p4
+Typecheck success: test/program/well-typed/action-bind.p4
 
 >>> Running typecheck test on test/program/well-typed/action-synth.p4
 Typecheck success: test/program/well-typed/action-synth.p4
 
 >>> Running typecheck test on test/program/well-typed/action-two-params.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
-(coerce_type) Cannot coerce type seq<bit<32>> to bit<32>
 Error while typechecking p4 file: test/program/well-typed/action-two-params.p4
 
 >>> Running typecheck test on test/program/well-typed/action-uses.p4
@@ -19,16 +17,15 @@ Typecheck success: test/program/well-typed/action-uses.p4
 Typecheck success: test/program/well-typed/actionAnnotations.p4
 
 >>> Running typecheck test on test/program/well-typed/action_call_ebpf.p4
+(coerce_type) Cannot coerce type seq<bit<32>> to bit<32>
 (check_ctk) x is not a compile-time known expression
 Error while typechecking p4 file: test/program/well-typed/action_call_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed/action_call_table_ebpf.p4
-(check_eq_typ_alpha) Types int and bit<8> are not equal
-Error while typechecking p4 file: test/program/well-typed/action_call_table_ebpf.p4
+Typecheck success: test/program/well-typed/action_call_table_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed/action_call_ubpf.p4
-(check_eq_typ_alpha) Types int and bit<1> are not equal
-Error while typechecking p4 file: test/program/well-typed/action_call_ubpf.p4
+Typecheck success: test/program/well-typed/action_call_ubpf.p4
 
 >>> Running typecheck test on test/program/well-typed/action_fwd_ubpf.p4
 Typecheck success: test/program/well-typed/action_fwd_ubpf.p4
@@ -171,8 +168,7 @@ Typecheck success: test/program/well-typed/bool_ebpf.p4
 Typecheck success: test/program/well-typed/bool_to_bit_cast.p4
 
 >>> Running typecheck test on test/program/well-typed/bvec-hdr-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
-Error while typechecking p4 file: test/program/well-typed/bvec-hdr-bmv2.p4
+Typecheck success: test/program/well-typed/bvec-hdr-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/bvec_union-bmv2.p4
 Typecheck success: test/program/well-typed/bvec_union-bmv2.p4
@@ -338,8 +334,7 @@ Typecheck success: test/program/well-typed/decl2.p4
 Typecheck success: test/program/well-typed/def-use.p4
 
 >>> Running typecheck test on test/program/well-typed/default-action-arg-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
-Error while typechecking p4 file: test/program/well-typed/default-action-arg-bmv2.p4
+Typecheck success: test/program/well-typed/default-action-arg-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/default-control-argument.p4
 Error while typechecking p4 file: test/program/well-typed/default-control-argument.p4
@@ -349,6 +344,7 @@ parser error: File test/program/well-typed/default-initializer.p4, line 3, chara
 Error while parsing p4 file: test/program/well-typed/default-initializer.p4
 
 >>> Running typecheck test on test/program/well-typed/default-package-argument.p4
+(coerce_type) Cannot coerce type control (inout hdr struct empty_t {  }, inout meta struct empty_t {  }, in imeta struct intrinsic_metadata_t { f0 = bit<8>; f1 = bit<8> }) to control (inout hdr H, inout meta M, in intr_md struct intrinsic_metadata_t { f0 = bit<8>; f1 = bit<8> })
 Error while typechecking p4 file: test/program/well-typed/default-package-argument.p4
 
 >>> Running typecheck test on test/program/well-typed/default-switch.p4
@@ -361,12 +357,10 @@ Typecheck success: test/program/well-typed/default.p4
 Typecheck success: test/program/well-typed/default2.p4
 
 >>> Running typecheck test on test/program/well-typed/default_action-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
-Error while typechecking p4 file: test/program/well-typed/default_action-bmv2.p4
+Typecheck success: test/program/well-typed/default_action-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/default_action_ubpf.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
-Error while typechecking p4 file: test/program/well-typed/default_action_ubpf.p4
+Typecheck success: test/program/well-typed/default_action_ubpf.p4
 
 >>> Running typecheck test on test/program/well-typed/deletekey.p4
 Typecheck success: test/program/well-typed/deletekey.p4
@@ -1087,12 +1081,10 @@ Error while typechecking p4 file: test/program/well-typed/issue1043-bmv2.p4
 Typecheck success: test/program/well-typed/issue1049-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1062-1-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<8> are not equal
-Error while typechecking p4 file: test/program/well-typed/issue1062-1-bmv2.p4
+Typecheck success: test/program/well-typed/issue1062-1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1062-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<8> are not equal
-Error while typechecking p4 file: test/program/well-typed/issue1062-bmv2.p4
+Typecheck success: test/program/well-typed/issue1062-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1079-bmv2.p4
 Typecheck success: test/program/well-typed/issue1079-bmv2.p4
@@ -1246,7 +1238,7 @@ Typecheck success: test/program/well-typed/issue1607-bmv2.p4
 Typecheck success: test/program/well-typed/issue1630-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1638.p4
-(check_call_arity) Function control_apply(in meta struct meta_t { f0 = bit<8>; f1 = bit<8>; f2 = bit<8> } = seq { 0, 0, 0 }) expects 1 arguments but 0 were given
+(check_call_arity) Function control_apply(in meta struct meta_t { f0 = bit<8>; f1 = bit<8>; f2 = bit<8> } = struct { f0 = 8w0; f1 = 8w0; f2 = 8w0 }) expects 1 arguments but 0 were given
 Error while typechecking p4 file: test/program/well-typed/issue1638.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1642-bmv2.p4
@@ -1323,8 +1315,7 @@ Typecheck success: test/program/well-typed/issue1829-4-bmv2.p4
 Typecheck success: test/program/well-typed/issue1830.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1834-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<8> are not equal
-Error while typechecking p4 file: test/program/well-typed/issue1834-bmv2.p4
+Typecheck success: test/program/well-typed/issue1834-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1863.p4
 Typecheck success: test/program/well-typed/issue1863.p4
@@ -1358,15 +1349,15 @@ Error while typechecking p4 file: test/program/well-typed/issue1914.p4
 Error while typechecking p4 file: test/program/well-typed/issue1937-1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1937-2-bmv2.p4
-(check_call_arity) Function parser_apply(out x bit<8>, in y bit<8> = 5) expects 2 arguments but 1 were given
+(check_call_arity) Function parser_apply(out x bit<8>, in y bit<8> = 8w5) expects 2 arguments but 1 were given
 Error while typechecking p4 file: test/program/well-typed/issue1937-2-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1937-3-bmv2.p4
-(check_call_arity) Function control_apply(out x bit<8>, in y bit<8> = 5) expects 2 arguments but 1 were given
+(check_call_arity) Function control_apply(out x bit<8>, in y bit<8> = 8w5) expects 2 arguments but 1 were given
 Error while typechecking p4 file: test/program/well-typed/issue1937-3-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1937.p4
-(check_call_arity) Function parser_apply(out x bit<8>, in y bit<8> = 5) expects 2 arguments but 1 were given
+(check_call_arity) Function parser_apply(out x bit<8>, in y bit<8> = 8w5) expects 2 arguments but 1 were given
 Error while typechecking p4 file: test/program/well-typed/issue1937.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1955.p4
@@ -1577,7 +1568,7 @@ Typecheck success: test/program/well-typed/issue2289.p4
 Typecheck success: test/program/well-typed/issue2291-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2303.p4
-(check_call_arity) Function control_apply(inout h header H { a = bit<8> }, in meta struct Meta { f0 = bit<8>; f1 = bit<8>; f2 = bit<8> } = seq { 0, 0, 0 }) expects 2 arguments but 1 were given
+(check_call_arity) Function control_apply(inout h header H { a = bit<8> }, in meta struct Meta { f0 = bit<8>; f1 = bit<8>; f2 = bit<8> } = struct { f0 = 8w0; f1 = 8w0; f2 = 8w0 }) expects 2 arguments but 1 were given
 Error while typechecking p4 file: test/program/well-typed/issue2303.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2314.p4
@@ -1935,8 +1926,7 @@ Typecheck success: test/program/well-typed/issue3219.p4
 Typecheck success: test/program/well-typed/issue3225.p4
 
 >>> Running typecheck test on test/program/well-typed/issue323.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
-Error while typechecking p4 file: test/program/well-typed/issue323.p4
+Typecheck success: test/program/well-typed/issue323.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3238.p4
 (check_valid_type_nesting) Invalid nesting of int inside tuple<int>
@@ -2024,8 +2014,7 @@ Typecheck success: test/program/well-typed/issue3483_ubpf.p4
 Typecheck success: test/program/well-typed/issue3486.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3488-1-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
-Error while typechecking p4 file: test/program/well-typed/issue3488-1-bmv2.p4
+Typecheck success: test/program/well-typed/issue3488-1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3488-bmv2.p4
 Typecheck success: test/program/well-typed/issue3488-bmv2.p4
@@ -2070,7 +2059,7 @@ Error while parsing p4 file: test/program/well-typed/issue3623.p4
 Error while typechecking p4 file: test/program/well-typed/issue3635.p4
 
 >>> Running typecheck test on test/program/well-typed/issue364-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
+(type_table_custom) Custom element counters is undefined
 Error while typechecking p4 file: test/program/well-typed/issue364-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3650.p4
@@ -2107,8 +2096,7 @@ Error while typechecking p4 file: test/program/well-typed/issue383-bmv2.p4
 Typecheck success: test/program/well-typed/issue3884-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3884.p4
-(check_eq_typ_alpha) Types int and bit<4> are not equal
-Error while typechecking p4 file: test/program/well-typed/issue3884.p4
+Typecheck success: test/program/well-typed/issue3884.p4
 
 >>> Running typecheck test on test/program/well-typed/issue396.p4
 Typecheck success: test/program/well-typed/issue396.p4
@@ -2123,8 +2111,7 @@ Typecheck success: test/program/well-typed/issue407-2.p4
 Typecheck success: test/program/well-typed/issue407-3.p4
 
 >>> Running typecheck test on test/program/well-typed/issue4133.p4
-(check_eq_typ_alpha) Types int and bit<3> are not equal
-Error while typechecking p4 file: test/program/well-typed/issue4133.p4
+Typecheck success: test/program/well-typed/issue4133.p4
 
 >>> Running typecheck test on test/program/well-typed/issue414-bmv2.p4
 Typecheck success: test/program/well-typed/issue414-bmv2.p4
@@ -2493,16 +2480,14 @@ Typecheck success: test/program/well-typed/lookahead_ubpf.p4
 Error while typechecking p4 file: test/program/well-typed/lpm_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed/lpm_ubpf.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
-Error while typechecking p4 file: test/program/well-typed/lpm_ubpf.p4
+Typecheck success: test/program/well-typed/lpm_ubpf.p4
 
 >>> Running typecheck test on test/program/well-typed/lvalue-parens.p4
 parser error: File test/program/well-typed/lvalue-parens.p4, line 7, characters 4-5
 Error while parsing p4 file: test/program/well-typed/lvalue-parens.p4
 
 >>> Running typecheck test on test/program/well-typed/m_psa-dpdk-non-zero-arg-default-action-08.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
-Error while typechecking p4 file: test/program/well-typed/m_psa-dpdk-non-zero-arg-default-action-08.p4
+Typecheck success: test/program/well-typed/m_psa-dpdk-non-zero-arg-default-action-08.p4
 
 >>> Running typecheck test on test/program/well-typed/mask.p4
 Typecheck success: test/program/well-typed/mask.p4
@@ -2844,8 +2829,7 @@ Typecheck success: test/program/well-typed/pna-example-header-union.p4
 Typecheck success: test/program/well-typed/pna-example-header-union1.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-ipsec.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
-Error while typechecking p4 file: test/program/well-typed/pna-example-ipsec.p4
+Typecheck success: test/program/well-typed/pna-example-ipsec.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-mirror-packet-1.p4
 Typecheck success: test/program/well-typed/pna-example-mirror-packet-1.p4
@@ -3085,12 +3069,10 @@ Typecheck success: test/program/well-typed/psa-dpdk-lpm-match-err5.p4
 Typecheck success: test/program/well-typed/psa-dpdk-lpm-match-valid.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-non-zero-arg-default-action-01.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
-Error while typechecking p4 file: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-01.p4
+Typecheck success: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-01.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-non-zero-arg-default-action-02.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
-Error while typechecking p4 file: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-02.p4
+Typecheck success: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-02.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-non-zero-arg-default-action-03.p4
 Typecheck success: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-03.p4
@@ -3108,19 +3090,16 @@ Typecheck success: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-
 Typecheck success: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-07.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-non-zero-arg-default-action-08.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
-Error while typechecking p4 file: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-08.p4
+Typecheck success: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-08.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-non-zero-arg-default-action-09.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
-Error while typechecking p4 file: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-09.p4
+Typecheck success: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-09.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-struct-field.p4
 Typecheck success: test/program/well-typed/psa-dpdk-struct-field.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-table-entries-exact-ternary.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
-Error while typechecking p4 file: test/program/well-typed/psa-dpdk-table-entries-exact-ternary.p4
+Typecheck success: test/program/well-typed/psa-dpdk-table-entries-exact-ternary.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-table-key-consolidation-if-1.p4
 Typecheck success: test/program/well-typed/psa-dpdk-table-key-consolidation-if-1.p4
@@ -3299,7 +3278,7 @@ Typecheck success: test/program/well-typed/psa-example-mask-range1.p4
 Typecheck success: test/program/well-typed/psa-example-optional-match.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-example-parser-checksum.p4
-(check_eq_typ_alpha) Types int and bit<8> are not equal
+(type_table_custom) Custom element psa_direct_counter is undefined
 Error while typechecking p4 file: test/program/well-typed/psa-example-parser-checksum.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-example-range-match.p4
@@ -3533,8 +3512,7 @@ Typecheck success: test/program/well-typed/select-struct.p4
 Typecheck success: test/program/well-typed/select-type.p4
 
 >>> Running typecheck test on test/program/well-typed/serEnumImplCast.p4
-(check_eq_typ_alpha) Types enum<bit<2>> foo_t and bit<2> are not equal
-Error while typechecking p4 file: test/program/well-typed/serEnumImplCast.p4
+Typecheck success: test/program/well-typed/serEnumImplCast.p4
 
 >>> Running typecheck test on test/program/well-typed/serenum-expr.p4
 Typecheck success: test/program/well-typed/serenum-expr.p4
@@ -3774,48 +3752,38 @@ Error while typechecking p4 file: test/program/well-typed/switch_ebpf.p4
 Typecheck success: test/program/well-typed/synth-action.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-exact-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
-Error while typechecking p4 file: test/program/well-typed/table-entries-exact-bmv2.p4
+Typecheck success: test/program/well-typed/table-entries-exact-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-exact-ternary-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
-Error while typechecking p4 file: test/program/well-typed/table-entries-exact-ternary-bmv2.p4
+Typecheck success: test/program/well-typed/table-entries-exact-ternary-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-lpm-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
-Error while typechecking p4 file: test/program/well-typed/table-entries-lpm-bmv2.p4
+Typecheck success: test/program/well-typed/table-entries-lpm-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-no-arg-actions.p4
 (coerce_type) Cannot coerce type seq<int> to bit<2>
 Error while typechecking p4 file: test/program/well-typed/table-entries-no-arg-actions.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-optional-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
-Error while typechecking p4 file: test/program/well-typed/table-entries-optional-bmv2.p4
+Typecheck success: test/program/well-typed/table-entries-optional-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-priority-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
-Error while typechecking p4 file: test/program/well-typed/table-entries-priority-bmv2.p4
+Typecheck success: test/program/well-typed/table-entries-priority-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-range-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
-Error while typechecking p4 file: test/program/well-typed/table-entries-range-bmv2.p4
+Typecheck success: test/program/well-typed/table-entries-range-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-ser-enum-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
-Error while typechecking p4 file: test/program/well-typed/table-entries-ser-enum-bmv2.p4
+Typecheck success: test/program/well-typed/table-entries-ser-enum-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-ternary-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
-Error while typechecking p4 file: test/program/well-typed/table-entries-ternary-bmv2.p4
+Typecheck success: test/program/well-typed/table-entries-ternary-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-valid-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
-Error while typechecking p4 file: test/program/well-typed/table-entries-valid-bmv2.p4
+Typecheck success: test/program/well-typed/table-entries-valid-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-key-serenum-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
-Error while typechecking p4 file: test/program/well-typed/table-key-serenum-bmv2.p4
+Typecheck success: test/program/well-typed/table-key-serenum-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/template.p4
 Typecheck success: test/program/well-typed/template.p4
@@ -3922,7 +3890,7 @@ Typecheck success: test/program/well-typed/unreachable-accept.p4
 Typecheck success: test/program/well-typed/unreachable.p4
 
 >>> Running typecheck test on test/program/well-typed/unused-counter-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
+(type_table_custom) Custom element counters is undefined
 Error while typechecking p4 file: test/program/well-typed/unused-counter-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/unused.p4
@@ -3936,8 +3904,7 @@ Typecheck success: test/program/well-typed/use-priority-as-name.p4
 Typecheck success: test/program/well-typed/useless-cast.p4
 
 >>> Running typecheck test on test/program/well-typed/v1model-const-entries-bmv2.p4
-(check_eq_typ_alpha) Types int and bit<48> are not equal
-Error while typechecking p4 file: test/program/well-typed/v1model-const-entries-bmv2.p4
+Typecheck success: test/program/well-typed/v1model-const-entries-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/v1model-digest-containing-ser-enum.p4
 Typecheck success: test/program/well-typed/v1model-digest-containing-ser-enum.p4
@@ -4018,8 +3985,7 @@ Typecheck success: test/program/well-typed/xdp_dec_ttl_ebpf-kernel.p4
 Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 
 >>> Running typecheck test on test/program/well-typed/xor_test.p4
-(check_eq_typ_alpha) Types int and bit<9> are not equal
-Error while typechecking p4 file: test/program/well-typed/xor_test.p4
+Typecheck success: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1190/1233 (96.51%) [FAIL] 43/1233 (3.49%)
-Typecheck: [PASS] 923/1190 (77.56%) [FAIL] 267/1190 (22.44%)
+Typecheck: [PASS] 958/1190 (80.50%) [FAIL] 232/1190 (19.50%)
