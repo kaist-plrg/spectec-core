@@ -17,11 +17,17 @@ let log_stat name fails total : unit =
     total pass_rate fails total fail_rate
   |> print_endline
 
-let collect_files testdir =
+let rec collect_files testdir =
   let files = Sys_unix.readdir testdir in
   Array.sort String.compare files;
-  let files = Array.to_list files in
-  List.filter (String.ends_with ~suffix:".p4") files
+  Array.fold_left
+    (fun files file ->
+      let filename = testdir ^ "/" ^ file in
+      if Sys_unix.is_directory_exn filename && file <> "include" then
+        files @ collect_files filename
+      else if String.ends_with ~suffix:".p4" filename then files @ [ filename ]
+      else files)
+    [] files
 
 (* Parser roundtrip test *)
 
@@ -71,8 +77,7 @@ let parse_test includes testdir =
   |> print_endline;
   let stat =
     List.fold_left
-      (fun stat file ->
-        let filename = Printf.sprintf "%s/%s" testdir file in
+      (fun stat filename ->
         Printf.sprintf "\n>>> Running parser roundtrip test on %s" filename
         |> print_endline;
         parse_roundtrip stat includes filename)
@@ -119,8 +124,7 @@ let typecheck_test includes mode testdir =
   Printf.sprintf "Running typecheck tests on %d files\n" total |> print_endline;
   let stat =
     List.fold_left
-      (fun stat file ->
-        let filename = Printf.sprintf "%s/%s" testdir file in
+      (fun stat filename ->
         Printf.sprintf "\n>>> Running typecheck test on %s" filename
         |> print_endline;
         typecheck stat includes mode filename)

@@ -1,4 +1,4 @@
-Running parser roundtrip tests on 1233 files
+Running parser roundtrip tests on 1253 files
 
 
 >>> Running parser roundtrip test on test/program/well-typed/action-bind.p4
@@ -383,6 +383,14 @@ Error while parsing p4 string: test/program/well-typed/csum_ubpf.p4
 parser error: File test/program/well-typed/custom-type-restricted-fields.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/custom-type-restricted-fields.p4
 
+>>> Running parser roundtrip test on test/program/well-typed/dash/dash-pipeline-pna-dpdk.p4
+parser error: File test/program/well-typed/dash/dash-pipeline-pna-dpdk.p4, line 25, characters 37-40
+Error while parsing p4 string: test/program/well-typed/dash/dash-pipeline-pna-dpdk.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/dash/dash-pipeline-v1model-bmv2.p4
+parser error: File test/program/well-typed/dash/dash-pipeline-v1model-bmv2.p4, line 25, characters 37-40
+Error while parsing p4 string: test/program/well-typed/dash/dash-pipeline-v1model-bmv2.p4
+
 >>> Running parser roundtrip test on test/program/well-typed/decl.p4
 Parser roundtrip success: test/program/well-typed/decl.p4
 
@@ -550,6 +558,10 @@ Parser roundtrip success: test/program/well-typed/extern3.p4
 >>> Running parser roundtrip test on test/program/well-typed/extract_for_header_union.p4
 parser error: File test/program/well-typed/extract_for_header_union.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/extract_for_header_union.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/fabric_20190420/fabric.p4
+parser error: File test/program/well-typed/fabric_20190420/fabric.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/fabric_20190420/fabric.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/factory1.p4
 parser error: File test/program/well-typed/factory1.p4, line 20, characters 37-40
@@ -3090,6 +3102,10 @@ Error while parsing p4 string: test/program/well-typed/nonstandard_table_names-b
 >>> Running parser roundtrip test on test/program/well-typed/octal.p4
 Parser roundtrip success: test/program/well-typed/octal.p4
 
+>>> Running parser roundtrip test on test/program/well-typed/omec/up4.p4
+parser error: File test/program/well-typed/omec/up4.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/omec/up4.p4
+
 >>> Running parser roundtrip test on test/program/well-typed/op_bin.p4
 parser error: File test/program/well-typed/op_bin.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/op_bin.p4
@@ -3127,6 +3143,58 @@ Error while parsing p4 string: test/program/well-typed/parser-conditional.p4
 >>> Running parser roundtrip test on test/program/well-typed/parser-if.p4
 parser error: File test/program/well-typed/parser-if.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/parser-if.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/parser-inline/parser-inline-test1.p4
+parser error: File test/program/well-typed/parser-inline/parser-inline-test1.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/parser-inline/parser-inline-test1.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/parser-inline/parser-inline-test10.p4
+parser error: File test/program/well-typed/parser-inline/parser-inline-test10.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/parser-inline/parser-inline-test10.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/parser-inline/parser-inline-test11.p4
+parser error: File test/program/well-typed/parser-inline/parser-inline-test11.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/parser-inline/parser-inline-test11.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/parser-inline/parser-inline-test12.p4
+parser error: File test/program/well-typed/parser-inline/parser-inline-test12.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/parser-inline/parser-inline-test12.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/parser-inline/parser-inline-test13.p4
+parser error: File test/program/well-typed/parser-inline/parser-inline-test13.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/parser-inline/parser-inline-test13.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/parser-inline/parser-inline-test2.p4
+parser error: File test/program/well-typed/parser-inline/parser-inline-test2.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/parser-inline/parser-inline-test2.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/parser-inline/parser-inline-test3.p4
+parser error: File test/program/well-typed/parser-inline/parser-inline-test3.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/parser-inline/parser-inline-test3.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/parser-inline/parser-inline-test4.p4
+parser error: File test/program/well-typed/parser-inline/parser-inline-test4.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/parser-inline/parser-inline-test4.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/parser-inline/parser-inline-test5.p4
+parser error: File test/program/well-typed/parser-inline/parser-inline-test5.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/parser-inline/parser-inline-test5.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/parser-inline/parser-inline-test6.p4
+parser error: File test/program/well-typed/parser-inline/parser-inline-test6.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/parser-inline/parser-inline-test6.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/parser-inline/parser-inline-test7.p4
+parser error: File test/program/well-typed/parser-inline/parser-inline-test7.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/parser-inline/parser-inline-test7.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/parser-inline/parser-inline-test8.p4
+parser error: File test/program/well-typed/parser-inline/parser-inline-test8.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/parser-inline/parser-inline-test8.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/parser-inline/parser-inline-test9.p4
+parser error: File test/program/well-typed/parser-inline/parser-inline-test9.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/parser-inline/parser-inline-test9.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/parser-locals.p4
 parser error: File test/program/well-typed/parser-locals.p4, line 20, characters 37-40
@@ -3199,6 +3267,18 @@ Error while parsing p4 string: test/program/well-typed/parser-unroll-test9.p4
 >>> Running parser roundtrip test on test/program/well-typed/parser_error-bmv2.p4
 parser error: File test/program/well-typed/parser_error-bmv2.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/parser_error-bmv2.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/pins/pins_fabric.p4
+parser error: File test/program/well-typed/pins/pins_fabric.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/pins/pins_fabric.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/pins/pins_middleblock.p4
+parser error: File test/program/well-typed/pins/pins_middleblock.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/pins/pins_middleblock.p4
+
+>>> Running parser roundtrip test on test/program/well-typed/pins/pins_wbb.p4
+parser error: File test/program/well-typed/pins/pins_wbb.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/pins/pins_wbb.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/pipe.p4
 parser error: File test/program/well-typed/pipe.p4, line 20, characters 37-40
@@ -4762,6 +4842,6 @@ Error while parsing p4 string: test/program/well-typed/xdp_vlan_push_pop_ebpf-ke
 parser error: File test/program/well-typed/xor_test.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1190/1233 (96.51%) [FAIL] 43/1233 (3.49%)
-Parser on string: [PASS] 170/1190 (14.29%) [FAIL] 1020/1190 (85.71%)
+Parser on file: [PASS] 1210/1253 (96.57%) [FAIL] 43/1253 (3.43%)
+Parser on string: [PASS] 170/1210 (14.05%) [FAIL] 1040/1210 (85.95%)
 Parser roundtrip: [PASS] 155/170 (91.18%) [FAIL] 15/170 (8.82%)
