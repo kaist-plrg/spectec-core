@@ -260,19 +260,22 @@ and pp_decl' ?(level = 0) fmt decl' =
       F.fprintf fmt "%smatch_kind {\n%a\n%s}" (P.indent level)
         (pp_members ~level:(level + 1))
         members (P.indent level)
-  | StructD { id; fields; annos = _annos } ->
+  | StructD { id; tparams; fields; annos = _annos } ->
       let fields = List.map (fun (member, typ, _) -> (member, typ)) fields in
-      F.fprintf fmt "%sstruct %a {\n%a\n%s}" (P.indent level) pp_id id
+      F.fprintf fmt "%sstruct %a%a {\n%a\n%s}" (P.indent level) pp_id id
+        pp_tparams tparams
         (P.pp_pairs ~trailing:true ~level:(level + 1) pp_member pp_typ ";\n")
         fields (P.indent level)
-  | HeaderD { id; fields; annos = _annos } ->
+  | HeaderD { id; tparams; fields; annos = _annos } ->
       let fields = List.map (fun (member, typ, _) -> (member, typ)) fields in
-      F.fprintf fmt "%sheader %a {\n%a\n%s}" (P.indent level) pp_id id
+      F.fprintf fmt "%sheader %a%a {\n%a\n%s}" (P.indent level) pp_id id
+        pp_tparams tparams
         (P.pp_pairs ~trailing:true ~level:(level + 1) pp_member pp_typ ";\n")
         fields (P.indent level)
-  | UnionD { id; fields; annos = _annos } ->
+  | UnionD { id; tparams; fields; annos = _annos } ->
       let fields = List.map (fun (member, typ, _) -> (member, typ)) fields in
-      F.fprintf fmt "%sheader_union %a {\n%a\n%s}" (P.indent level) pp_id id
+      F.fprintf fmt "%sheader_union %a%a {\n%a\n%s}" (P.indent level) pp_id id
+        pp_tparams tparams
         (P.pp_pairs ~trailing:true ~level:(level + 1) pp_member pp_typ ";\n")
         fields (P.indent level)
   | EnumD { id; members; annos = _annos } ->

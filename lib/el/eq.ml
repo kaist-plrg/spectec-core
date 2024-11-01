@@ -312,13 +312,21 @@ and eq_decl' decl_a decl_b =
   | ErrD { members = members_a }, ErrD { members = members_b }
   | MatchKindD { members = members_a }, MatchKindD { members = members_b } ->
       eq_members members_a members_b
-  | ( StructD { id = id_a; fields = fields_a; annos = annos_a },
-      StructD { id = id_b; fields = fields_b; annos = annos_b } )
-  | ( HeaderD { id = id_a; fields = fields_a; annos = annos_a },
-      HeaderD { id = id_b; fields = fields_b; annos = annos_b } )
-  | ( UnionD { id = id_a; fields = fields_a; annos = annos_a },
-      UnionD { id = id_b; fields = fields_b; annos = annos_b } ) ->
+  | ( StructD
+        { id = id_a; tparams = tparams_a; fields = fields_a; annos = annos_a },
+      StructD
+        { id = id_b; tparams = tparams_b; fields = fields_b; annos = annos_b } )
+  | ( HeaderD
+        { id = id_a; tparams = tparams_a; fields = fields_a; annos = annos_a },
+      HeaderD
+        { id = id_b; tparams = tparams_b; fields = fields_b; annos = annos_b } )
+  | ( UnionD
+        { id = id_a; tparams = tparams_a; fields = fields_a; annos = annos_a },
+      UnionD
+        { id = id_b; tparams = tparams_b; fields = fields_b; annos = annos_b } )
+    ->
       eq_id id_a id_b
+      && eq_tparams tparams_a tparams_b
       && E.eq_triples eq_id eq_typ eq_annos fields_a fields_b
       && eq_annos annos_a annos_b
   | ( EnumD { id = id_a; members = members_a; annos = annos_a },

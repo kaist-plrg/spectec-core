@@ -62,10 +62,9 @@ and typdef =
   | EnumD of L.id' * L.member' list
   | SEnumD of L.id' * typ * (L.member' * Value.t) list
   (* Aggregate type definitions *)
-  (* These will become generic in the future *)
-  | StructD of L.id' * (L.member' * typ) list
-  | HeaderD of L.id' * (L.member' * typ) list
-  | UnionD of L.id' * (L.member' * typ) list
+  | StructD of L.id' * tparam list * (L.member' * typ) list
+  | HeaderD of L.id' * tparam list * (L.member' * typ) list
+  | UnionD of L.id' * tparam list * (L.member' * typ) list
   (* Object type definitions *)
   | ExternD of L.id' * tparam list * funcdef FIdMap.t
   | ParserD of tparam list * param list
@@ -186,20 +185,20 @@ and pp_typdef fmt typdef =
       F.fprintf fmt "enum<%a> %a { %a }" pp_typ typ P.pp_id' id
         (P.pp_pairs P.pp_member' Value.pp ", ")
         fields
-  | StructD (id, fields) ->
-      F.fprintf fmt "struct %a { %a }" P.pp_id' id
+  | StructD (id, tparams, fields) ->
+      F.fprintf fmt "struct %a<%a> { %a }" P.pp_id' id pp_tparams tparams
         (P.pp_pairs P.pp_member' pp_typ "; ")
         fields
-  | HeaderD (id, fields) ->
-      F.fprintf fmt "header %a { %a }" P.pp_id' id
+  | HeaderD (id, tparams, fields) ->
+      F.fprintf fmt "header %a<%a> { %a }" P.pp_id' id pp_tparams tparams
         (P.pp_pairs P.pp_member' pp_typ "; ")
         fields
-  | UnionD (id, fields) ->
-      F.fprintf fmt "header_union %a { %a }" P.pp_id' id
+  | UnionD (id, tparams, fields) ->
+      F.fprintf fmt "header_union %a<%a> { %a }" P.pp_id' id pp_tparams tparams
         (P.pp_pairs P.pp_member' pp_typ "; ")
         fields
   | ExternD (id, tparams, fdenv) ->
-      F.fprintf fmt "extern %a<%a> %a" pp_tparams tparams P.pp_id' id
+      F.fprintf fmt "extern %a<%a> %a" P.pp_id' id pp_tparams tparams
         (FIdMap.pp pp_funcdef) fdenv
   | ParserD (tparams, params) ->
       F.fprintf fmt "parser <%a>(%a)" pp_tparams tparams pp_params params

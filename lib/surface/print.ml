@@ -561,27 +561,45 @@ and print_decl (indent : int) (decl : Declaration.t) =
       in
       Printf.sprintf "%stable %s {\n%s%s}\n" (print_indent indent) sname
         sproperties (print_indent indent)
-  | Header { name; fields; _ } ->
+  | Header { name; type_params; fields; _ } ->
       let sname = print_text name in
+      let stype_params =
+        List.map print_text type_params |> String.concat ", "
+      in
+      let stype_params =
+        if List.length type_params > 0 then "<" ^ stype_params ^ ">" else ""
+      in
       let sfields =
         List.map (print_decl_field (indent + 1)) fields |> String.concat ""
       in
-      Printf.sprintf "%sheader %s {\n%s%s}\n" (print_indent indent) sname
-        sfields (print_indent indent)
-  | HeaderUnion { name; fields; _ } ->
+      Printf.sprintf "%sheader %s%s {\n%s%s}\n" (print_indent indent) sname
+        stype_params sfields (print_indent indent)
+  | HeaderUnion { name; type_params; fields; _ } ->
       let sname = print_text name in
+      let stype_params =
+        List.map print_text type_params |> String.concat ", "
+      in
+      let stype_params =
+        if List.length type_params > 0 then "<" ^ stype_params ^ ">" else ""
+      in
       let sfields =
         List.map (print_decl_field (indent + 1)) fields |> String.concat ""
       in
-      Printf.sprintf "%sheader_union %s {\n%s%s}\n" (print_indent indent) sname
-        sfields (print_indent indent)
-  | Struct { name; fields; _ } ->
+      Printf.sprintf "%sheader_union %s%s {\n%s%s}\n" (print_indent indent)
+        sname stype_params sfields (print_indent indent)
+  | Struct { name; type_params; fields; _ } ->
       let sname = print_text name in
+      let stype_params =
+        List.map print_text type_params |> String.concat ", "
+      in
+      let stype_params =
+        if List.length type_params > 0 then "<" ^ stype_params ^ ">" else ""
+      in
       let sfields =
         List.map (print_decl_field (indent + 1)) fields |> String.concat ""
       in
-      Printf.sprintf "%sstruct %s {\n%s%s}\n" (print_indent indent) sname
-        sfields (print_indent indent)
+      Printf.sprintf "%sstruct %s%s {\n%s%s}\n" (print_indent indent) sname
+        stype_params sfields (print_indent indent)
   | Error { members; _ } ->
       let smembers =
         List.map print_text members

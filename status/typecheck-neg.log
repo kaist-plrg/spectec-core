@@ -189,7 +189,7 @@ Error while typechecking p4 file: test/program/ill-typed/functors2_e.p4
 Error while typechecking p4 file: test/program/ill-typed/functors3_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/generic1_e.p4
-(specialize_typedef) Type definition extern T<If> { id(d) : extern_method<>(in d T) -> T } expects 1 type arguments but 0 were given
+(specialize_typedef) Type definition extern If<T> { id(d) : extern_method<>(in d T) -> T } expects 1 type arguments but 0 were given
 Error while typechecking p4 file: test/program/ill-typed/generic1_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/globalVar_e.p4
@@ -201,12 +201,12 @@ parser error: File test/program/ill-typed/header1_e.p4, line 18, characters 4-5
 Error while parsing p4 file: test/program/ill-typed/header1_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/header2_e.p4
-(check_valid_typedef_nesting) Invalid nesting of parser () inside struct s1 { field = parser () }
+(check_valid_typedef_nesting) Invalid nesting of parser () inside struct s1<> { field = parser () }
 Error while typechecking p4 file: test/program/ill-typed/header2_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/header3.p4
 (check_valid_typedef_nesting) Invalid nesting of tuple<bit<1>,
-bit<1>> inside header H { field1 = tuple<bit<1>,Error while typechecking p4 file: test/program/ill-typed/header3.p4
+bit<1>> inside header H<> { field1 = tuple<bit<1>,Error while typechecking p4 file: test/program/ill-typed/header3.p4
 
 >>> Running typecheck test on test/program/ill-typed/implicit.p4
 
@@ -360,7 +360,7 @@ Typecheck success: test/program/ill-typed/issue2267.p4
 Typecheck success: test/program/ill-typed/issue2283_2-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2290.p4
-(check_valid_typedef_nesting) Invalid nesting of header simple_header { a = bit<8> } inside header nested_header { s = header simple_header { a = bit<8> } }
+(check_valid_typedef_nesting) Invalid nesting of header simple_header { a = bit<8> } inside header nested_header<> { s = header simple_header { a = bit<8> } }
 Error while typechecking p4 file: test/program/ill-typed/issue2290.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2317.p4
@@ -449,12 +449,12 @@ Error while typechecking p4 file: test/program/ill-typed/issue306.p4
 Typecheck success: test/program/ill-typed/issue3153.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3170-1.p4
-parser error: File test/program/ill-typed/issue3170-1.p4, line 7, characters 8-9
-Error while parsing p4 file: test/program/ill-typed/issue3170-1.p4
+(check_valid_type_nesting) Invalid nesting of struct y { tt = header yy { tt = bit<1> }[2] } inside header t { y = struct y { tt = header yy { tt = bit<1> }[2] } }
+Error while typechecking p4 file: test/program/ill-typed/issue3170-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3170.p4
-parser error: File test/program/ill-typed/issue3170.p4, line 1, characters 8-9
-Error while parsing p4 file: test/program/ill-typed/issue3170.p4
+(specialize_typedef) Type definition header t<tt> { y = tt } expects 1 type arguments but 0 were given
+Error while typechecking p4 file: test/program/ill-typed/issue3170.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3188.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3188.p4
@@ -498,24 +498,23 @@ Typecheck success: test/program/ill-typed/issue3282.p4
 Error while parsing p4 file: test/program/ill-typed/issue3285.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3291.p4
-parser error: File test/program/ill-typed/issue3291.p4, line 1, characters 8-9
-Error while parsing p4 file: test/program/ill-typed/issue3291.p4
+Typecheck success: test/program/ill-typed/issue3291.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3293.p4
-parser error: File test/program/ill-typed/issue3293.p4, line 1, characters 9-10
-Error while parsing p4 file: test/program/ill-typed/issue3293.p4
+(specialize_typedef) Type definition struct t1<t> {  } expects 1 type arguments but 0 were given
+Error while typechecking p4 file: test/program/ill-typed/issue3293.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3299.p4
 parser error: File test/program/ill-typed/issue3299.p4, line 18, characters 5-10
 Error while parsing p4 file: test/program/ill-typed/issue3299.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3304.p4
-parser error: File test/program/ill-typed/issue3304.p4, line 3, characters 8-9
-Error while parsing p4 file: test/program/ill-typed/issue3304.p4
+(check_valid_type_nesting) Invalid nesting of parser (in a bit<1>) inside struct s { field = parser (in a bit<1>) }
+Error while typechecking p4 file: test/program/ill-typed/issue3304.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3305.p4
-parser error: File test/program/ill-typed/issue3305.p4, line 1, characters 8-9
-Error while parsing p4 file: test/program/ill-typed/issue3305.p4
+(specialize_typedef) Type definition struct s1<t> { field = t } expects 1 type arguments but 0 were given
+Error while typechecking p4 file: test/program/ill-typed/issue3305.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3316.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3316.p4
@@ -659,7 +658,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue394.p4
 Error while typechecking p4 file: test/program/ill-typed/issue401.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue407-1.p4
-(check_valid_typedef_nesting) Invalid nesting of error inside header H { x7 = error; x8 = bool; x9 = enum myenum1; x10 = header Ethernet_h { dstAddr = bit<48>; srcAddr = bit<48>; etherType = bit<16> }; x11 = header Ethernet_h { dstAddr = bit<48>; srcAddr = bit<48>; etherType = bit<16> }[4]; x12 = struct mystruct1 { a = bit<4>; b = bit<4> }; x13 = struct mystruct2 { foo = struct mystruct1 { a = bit<4>; b = bit<4> }; a = bit<4>; b = bit<4> }; x14 = tuple<bit<8>,
+(check_valid_typedef_nesting) Invalid nesting of error inside header H<> { x7 = error; x8 = bool; x9 = enum myenum1; x10 = header Ethernet_h { dstAddr = bit<48>; srcAddr = bit<48>; etherType = bit<16> }; x11 = header Ethernet_h { dstAddr = bit<48>; srcAddr = bit<48>; etherType = bit<16> }[4]; x12 = struct mystruct1 { a = bit<4>; b = bit<4> }; x13 = struct mystruct2 { foo = struct mystruct1 { a = bit<4>; b = bit<4> }; a = bit<4>; b = bit<4> }; x14 = tuple<bit<8>,
 bit<16>> }
 Error while typechecking p4 file: test/program/ill-typed/issue407-1.p4
 
@@ -742,7 +741,7 @@ Typecheck success: test/program/ill-typed/issue816.p4
 Typecheck success: test/program/ill-typed/issue818.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue819-1.p4
-(specialize_typedef) Type definition extern T1, T2<WrapControls> { execute1() : extern_method<>() -> void
+(specialize_typedef) Type definition extern WrapControls<T1, T2> { execute1() : extern_method<>() -> void
 execute2() : extern_method<>() -> void } expects 2 type arguments but 0 were given
 Error while typechecking p4 file: test/program/ill-typed/issue819-1.p4
 
@@ -946,7 +945,7 @@ Error while typechecking p4 file: test/program/ill-typed/stack_e.p4
 Typecheck success: test/program/ill-typed/string-e.p4
 
 >>> Running typecheck test on test/program/ill-typed/string-e1.p4
-(check_valid_typedef_nesting) Invalid nesting of string inside struct S { s = string }
+(check_valid_typedef_nesting) Invalid nesting of string inside struct S<> { s = string }
 Error while typechecking p4 file: test/program/ill-typed/string-e1.p4
 
 >>> Running typecheck test on test/program/ill-typed/string-e2.p4
@@ -1012,7 +1011,8 @@ Error while typechecking p4 file: test/program/ill-typed/table-entries-range.p4
 Error while typechecking p4 file: test/program/ill-typed/table-entries-ternary.p4
 
 >>> Running typecheck test on test/program/ill-typed/template_e.p4
-Typecheck success: test/program/ill-typed/template_e.p4
+(check_distinct_names) Names are not distinct
+Error while typechecking p4 file: test/program/ill-typed/template_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/tuple-left.p4
 parser error: File test/program/ill-typed/tuple-left.p4, line 21, characters 11-12
@@ -1030,7 +1030,7 @@ Error while typechecking p4 file: test/program/ill-typed/tuple-to-header.p4
 Typecheck success: test/program/ill-typed/twovarbit.p4
 
 >>> Running typecheck test on test/program/ill-typed/type-field.p4
-(type_type_acc_expr) struct h { d = header d_t { f = bit<32> } } cannot be accessed
+(type_type_acc_expr) struct h<> { d = header d_t { f = bit<32> } } cannot be accessed
 Error while typechecking p4 file: test/program/ill-typed/type-field.p4
 
 >>> Running typecheck test on test/program/ill-typed/type-in-expr-lex0.p4
@@ -1103,5 +1103,5 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 (type_cast_expr) Invalid cast from int<2> to bool
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
-Parser on file: [PASS] 253/299 (84.62%) [FAIL] 46/299 (15.38%)
-Typecheck: [PASS] 164/253 (64.82%) [FAIL] 89/253 (35.18%)
+Parser on file: [PASS] 259/299 (86.62%) [FAIL] 40/299 (13.38%)
+Typecheck: [PASS] 170/259 (65.64%) [FAIL] 89/259 (34.36%)

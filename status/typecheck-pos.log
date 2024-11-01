@@ -872,12 +872,10 @@ Typecheck success: test/program/well-typed/gauntlet_variable_shadowing-bmv2.p4
 Error while typechecking p4 file: test/program/well-typed/gauntlet_various_ops-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/generic-struct-tuple.p4
-parser error: File test/program/well-typed/generic-struct-tuple.p4, line 1, characters 8-9
-Error while parsing p4 file: test/program/well-typed/generic-struct-tuple.p4
+Typecheck success: test/program/well-typed/generic-struct-tuple.p4
 
 >>> Running typecheck test on test/program/well-typed/generic-struct.p4
-parser error: File test/program/well-typed/generic-struct.p4, line 1, characters 13-14
-Error while parsing p4 file: test/program/well-typed/generic-struct.p4
+Typecheck success: test/program/well-typed/generic-struct.p4
 
 >>> Running typecheck test on test/program/well-typed/generic.p4
 (type_control_decl) Control declarations cannot be generic
@@ -1730,16 +1728,14 @@ parser error: File test/program/well-typed/issue2617.p4, line 65, characters 12-
 Error while parsing p4 file: test/program/well-typed/issue2617.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2627.p4
-parser error: File test/program/well-typed/issue2627.p4, line 1, characters 9-10
-Error while parsing p4 file: test/program/well-typed/issue2627.p4
+Typecheck success: test/program/well-typed/issue2627.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2630.p4
 (type_instantiation) Switch is not an instance type
 Error while typechecking p4 file: test/program/well-typed/issue2630.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2635.p4
-parser error: File test/program/well-typed/issue2635.p4, line 1, characters 8-9
-Error while parsing p4 file: test/program/well-typed/issue2635.p4
+Typecheck success: test/program/well-typed/issue2635.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2648.p4
 (check_eq_typ_alpha) Types seq<bit<8>> and header H { a = bit<8> } are not equal
@@ -1887,8 +1883,8 @@ Typecheck success: test/program/well-typed/issue3057-2.p4
 Error while typechecking p4 file: test/program/well-typed/issue3091-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3091.p4
-parser error: File test/program/well-typed/issue3091.p4, line 144, characters 18-19
-Error while parsing p4 file: test/program/well-typed/issue3091.p4
+(check_valid_type_nesting) Invalid nesting of match_kind inside tuple<match_kind>
+Error while typechecking p4 file: test/program/well-typed/issue3091.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3118-bmv2.p4
 Typecheck success: test/program/well-typed/issue3118-bmv2.p4
@@ -1912,12 +1908,10 @@ Typecheck success: test/program/well-typed/issue3178.p4
 Typecheck success: test/program/well-typed/issue3197.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3203.p4
-parser error: File test/program/well-typed/issue3203.p4, line 1, characters 8-9
-Error while parsing p4 file: test/program/well-typed/issue3203.p4
+Typecheck success: test/program/well-typed/issue3203.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3204.p4
-parser error: File test/program/well-typed/issue3204.p4, line 1, characters 8-9
-Error while parsing p4 file: test/program/well-typed/issue3204.p4
+Typecheck success: test/program/well-typed/issue3204.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3219.p4
 Typecheck success: test/program/well-typed/issue3219.p4
@@ -1961,12 +1955,11 @@ Error while typechecking p4 file: test/program/well-typed/issue3288.p4
 Typecheck success: test/program/well-typed/issue3289.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3291-1.p4
-parser error: File test/program/well-typed/issue3291-1.p4, line 1, characters 8-9
-Error while parsing p4 file: test/program/well-typed/issue3291-1.p4
+(type_binop_compare_equal) Type t cannot be compared of equality
+Error while typechecking p4 file: test/program/well-typed/issue3291-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3292.p4
-parser error: File test/program/well-typed/issue3292.p4, line 1, characters 8-9
-Error while parsing p4 file: test/program/well-typed/issue3292.p4
+Typecheck success: test/program/well-typed/issue3292.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3307.p4
 Typecheck success: test/program/well-typed/issue3307.p4
@@ -2460,8 +2453,7 @@ Error while typechecking p4 file: test/program/well-typed/list7.p4
 Typecheck success: test/program/well-typed/list8.p4
 
 >>> Running typecheck test on test/program/well-typed/list9.p4
-parser error: File test/program/well-typed/list9.p4, line 3, characters 8-9
-Error while parsing p4 file: test/program/well-typed/list9.p4
+Typecheck success: test/program/well-typed/list9.p4
 
 >>> Running typecheck test on test/program/well-typed/lj_example.p4
 Typecheck success: test/program/well-typed/lj_example.p4
@@ -2600,8 +2592,7 @@ Typecheck success: test/program/well-typed/overwrite.p4
 Typecheck success: test/program/well-typed/p416-type-use3.p4
 
 >>> Running typecheck test on test/program/well-typed/p4rt_digest_complex.p4
-parser error: File test/program/well-typed/p4rt_digest_complex.p4, line 12, characters 11-12
-Error while parsing p4 file: test/program/well-typed/p4rt_digest_complex.p4
+Typecheck success: test/program/well-typed/p4rt_digest_complex.p4
 
 >>> Running typecheck test on test/program/well-typed/package.p4
 Typecheck success: test/program/well-typed/package.p4
@@ -3714,8 +3705,7 @@ Typecheck success: test/program/well-typed/stack-bmv2.p4
 Typecheck success: test/program/well-typed/stack-bvec-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/stack-init.p4
-parser error: File test/program/well-typed/stack-init.p4, line 1, characters 8-9
-Error while parsing p4 file: test/program/well-typed/stack-init.p4
+Typecheck success: test/program/well-typed/stack-init.p4
 
 >>> Running typecheck test on test/program/well-typed/stack.p4
 Typecheck success: test/program/well-typed/stack.p4
@@ -4041,5 +4031,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 >>> Running typecheck test on test/program/well-typed/xor_test.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1210/1253 (96.57%) [FAIL] 43/1253 (3.43%)
-Typecheck: [PASS] 984/1210 (81.32%) [FAIL] 226/1210 (18.68%)
+Parser on file: [PASS] 1222/1253 (97.53%) [FAIL] 31/1253 (2.47%)
+Typecheck: [PASS] 994/1222 (81.34%) [FAIL] 228/1222 (18.66%)

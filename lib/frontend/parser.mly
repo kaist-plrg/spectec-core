@@ -884,6 +884,9 @@ headerStackType:
 | header = typeName L_BRACKET size = expression info2 = R_BRACKET
     { let tags = Source.merge (Type.tags header) info2 in
        Type.HeaderStack { tags; header; size } }
+| header = specializedType L_BRACKET size = expression info2 = R_BRACKET
+    { let tags = Source.merge (Type.tags header) info2 in
+       Type.HeaderStack { tags; header; size } }
 ;
 
 specializedType:
@@ -1018,23 +1021,26 @@ derivedTypeDeclaration:
 
 headerTypeDeclaration:
 | annotations = optAnnotations info1 = HEADER name = name
+  type_params = optTypeParameters
   L_BRACE fields = list(structField) info2 = R_BRACE
      { let tags = Source.merge info1 info2 in 
-       Declaration.Header { tags; annotations; name; fields } }
+       Declaration.Header { tags; annotations; name; type_params; fields } }
 ;
 
 headerUnionDeclaration:
 | annotations = optAnnotations info1 = HEADER_UNION name = name
+  type_params = optTypeParameters
   L_BRACE fields = list(structField) info2 = R_BRACE
      { let tags = Source.merge info1 info2 in
-       Declaration.HeaderUnion { tags; annotations; name; fields } }
+       Declaration.HeaderUnion { tags; annotations; name; type_params; fields } }
 ;
 
 structTypeDeclaration:
 | annotations = optAnnotations info1 = STRUCT name = name
+  type_params = optTypeParameters
   L_BRACE fields = list(structField) info2 = R_BRACE
      { let tags = Source.merge info1 info2 in 
-       Declaration.Struct { tags; annotations; name; fields } }
+       Declaration.Struct { tags; annotations; name; type_params; fields } }
 ;
 
 structField:

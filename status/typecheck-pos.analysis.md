@@ -464,7 +464,7 @@ extern E {
 }
 ```
 
-### (2) Support generic structs and headers (12)
+### \[DONE\] (2) ~~Support generic structs and headers~~
 
 ```p4
 struct S<T> {
@@ -472,22 +472,8 @@ struct S<T> {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* generic-struct-tuple.p4
-* generic-struct.p4
-* issue2627.p4
-* issue2635.p4
-* issue3091.p4
-* issue3203.p4
-* issue3204.p4
-* issue3291-1.p4
-* issue3292.p4
-* list9.p4
-* p4rt_digest_complex.p4
-* stack-init.p4
-</details>
+But need to resolve: do we expect type inference when specializing generic types?
+Also, how to deal with no-op casts? (when the target type already equals the source type)
 
 ### \[DONE\] (3) ~~Support `match_kind` as a primitive type~~
 
@@ -910,6 +896,26 @@ But, the default argument to `c` is `nothing()`, which imposes a type constraint
 * default-package-argument.p4
 </details>
 
+## 13. Do we allow equality checks (`==`) on type variables? (1)
+
+The spec only allows assignment (`=`) for types that are type variables.
+But the test case below seems to violate this.
+This also implies some type constraint that the type variable should be a type that supports equality checks.
+
+```p4
+bool g<t>(in t a) {
+    h<t> v;
+    v.f = a;
+    return v.f == a;
+}
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue3291-1.p4
+</details>
+
 # E. Unsupported features
 
 ## 1. Custom table element (47)
@@ -1263,7 +1269,7 @@ table unit {
 * spec-ex25.p4
 </details>
 
-## 6. Nesting `match_kind` or `int` inside a tuple type (2)
+## 6. Nesting `match_kind` or `int` inside a tuple type (5)
 
 `match_kind` and `int` *cannot* be nested inside a tuple type.
 This should be a negative test.
@@ -1280,6 +1286,7 @@ tuple<int> t = { t1 };
 <summary>Tests</summary>
 
 * issue3091-1.p4
+* issue3091.p4
 * issue3238.p4
 * list3.p4
 * list4.p4

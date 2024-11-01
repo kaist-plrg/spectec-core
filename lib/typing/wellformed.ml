@@ -363,7 +363,9 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
   | NewD (_id, typ_inner) ->
       check_valid_type' tset typ_inner;
       check_valid_typedef_nesting td typ_inner
-  | StructD (_id, fields) ->
+  | StructD (_id, tparams, fields) ->
+      check_distinct_names tparams;
+      let tset = TIdSet.union tset (TIdSet.of_list tparams) in
       let members, typs_inner = List.split fields in
       check_distinct_names members;
       List.iter
@@ -371,7 +373,9 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
           check_valid_type' tset typ_inner;
           check_valid_typedef_nesting td typ_inner)
         typs_inner
-  | HeaderD (_id, fields) ->
+  | HeaderD (_id, tparams, fields) ->
+      check_distinct_names tparams;
+      let tset = TIdSet.union tset (TIdSet.of_list tparams) in
       let members, typs_inner = List.split fields in
       check_distinct_names members;
       List.iter
@@ -379,7 +383,9 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
           check_valid_type' tset typ_inner;
           check_valid_typedef_nesting td typ_inner)
         typs_inner
-  | UnionD (_id, fields) ->
+  | UnionD (_id, tparams, fields) ->
+      check_distinct_names tparams;
+      let tset = TIdSet.union tset (TIdSet.of_list tparams) in
       let members, typs_inner = List.split fields in
       check_distinct_names members;
       List.iter
@@ -394,12 +400,14 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
       check_valid_type' tset typ_inner;
       check_valid_typedef_nesting td typ_inner
   | ExternD (_id, tparams, fdenv) ->
+      check_distinct_names tparams;
       let tset = TIdSet.union tset (TIdSet.of_list tparams) in
       Envs.FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
   | ParserD (tparams, params) | ControlD (tparams, params) ->
+      check_distinct_names tparams;
       let tset = TIdSet.union tset (TIdSet.of_list tparams) in
       List.iter (fun fd -> check_valid_param' tset fd) params
-  | PackageD _tparams -> ()
+  | PackageD tparams -> check_distinct_names tparams
 
 and check_valid_typedef_nesting (td : TypeDef.t) (typ_inner : Type.t) : unit =
   if not (check_valid_typedef_nesting' td typ_inner) then (

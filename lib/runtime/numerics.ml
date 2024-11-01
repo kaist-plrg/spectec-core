@@ -611,7 +611,7 @@ and eval_cast_to_struct (fields_typ : (string * Type.t) list) (value : Value.t)
           fields_typ values
       in
       StructV fields_value
-  | RecordV fields_value ->
+  | StructV fields_value | RecordV fields_value ->
       let fields_value =
         List.fold_left
           (fun fields (member, typ) ->

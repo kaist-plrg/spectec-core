@@ -425,21 +425,24 @@ and transform_decl (decl : Declaration.t) : El.decl =
   | MatchKind { members; tags = at } ->
       let members = transform_members members in
       El.MatchKindD { members } $ at
-  | Struct { name; fields; tags = at; annotations } ->
+  | Struct { name; type_params; fields; tags = at; annotations } ->
       let id = transform_id name in
+      let tparams = transform_tparams type_params in
       let fields = transform_record_fields fields in
       let annos = transform_annos annotations in
-      El.StructD { id; fields; annos } $ at
-  | Header { name; fields; tags = at; annotations } ->
+      El.StructD { id; tparams; fields; annos } $ at
+  | Header { name; type_params; fields; tags = at; annotations } ->
       let id = transform_id name in
+      let tparams = transform_tparams type_params in
       let fields = transform_record_fields fields in
       let annos = transform_annos annotations in
-      El.HeaderD { id; fields; annos } $ at
-  | HeaderUnion { name; fields; tags = at; annotations } ->
+      El.HeaderD { id; tparams; fields; annos } $ at
+  | HeaderUnion { name; type_params; fields; tags = at; annotations } ->
       let id = transform_id name in
+      let tparams = transform_tparams type_params in
       let fields = transform_record_fields fields in
       let annos = transform_annos annotations in
-      El.UnionD { id; fields; annos } $ at
+      El.UnionD { id; tparams; fields; annos } $ at
   | Enum { name; members; tags = at; annotations } ->
       let id = transform_id name in
       let members = transform_members members in

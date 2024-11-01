@@ -877,18 +877,21 @@ and Declaration : sig
         tags : 'a;
         annotations : Annotation.t list;
         name : Text.t;
+        type_params : Text.t list;
         fields : field list;
       }
     | HeaderUnion of {
         tags : 'a;
         annotations : Annotation.t list;
         name : Text.t;
+        type_params : Text.t list;
         fields : field list;
       }
     | Struct of {
         tags : 'a;
         annotations : Annotation.t list;
         name : Text.t;
+        type_params : Text.t list;
         fields : field list;
       }
     | Error of { tags : 'a; members : Text.t list }
@@ -1045,18 +1048,21 @@ end = struct
         tags : 'a;
         annotations : Annotation.t list;
         name : Text.t;
+        type_params : Text.t list;
         fields : field list;
       }
     | HeaderUnion of {
         tags : 'a;
         annotations : Annotation.t list;
         name : Text.t;
+        type_params : Text.t list;
         fields : field list;
       }
     | Struct of {
         tags : 'a;
         annotations : Annotation.t list;
         name : Text.t;
+        type_params : Text.t list;
         fields : field list;
       }
     | Error of { tags : 'a; members : Text.t list }
@@ -1171,10 +1177,12 @@ end = struct
   let has_type_params t =
     match t with
     | Constant _ | Instantiation _ | Parser _ | Control _ | Variable _
-    | ValueSet _ | Action _ | Table _ | Header _ | HeaderUnion _ | Struct _
-    | Enum _ | SerializableEnum _ | MatchKind _ | Error _ | TypeDef _
-    | NewType _ ->
+    | ValueSet _ | Action _ | Table _ | Enum _ | SerializableEnum _
+    | MatchKind _ | Error _ | TypeDef _ | NewType _ ->
         false
+    | Header { type_params; _ }
+    | HeaderUnion { type_params; _ }
+    | Struct { type_params; _ }
     | Function { type_params; _ }
     | ExternFunction { type_params; _ }
     | ExternObject { type_params; _ }

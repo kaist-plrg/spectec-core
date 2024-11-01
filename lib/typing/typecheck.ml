@@ -332,15 +332,26 @@ and specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
   | SEnumD (id, typ_inner, fields) ->
       check_arity [];
       Types.SEnumT (id, typ_inner, fields)
-  (* Aggregate types are not generic (yet, to be added in v1.2.2) *)
-  | StructD (id, fields) ->
-      check_arity [];
+  | StructD (id, tparams, fields) ->
+      check_arity tparams;
+      let theta = List.combine tparams targs |> Subst.Theta.of_list in
+      let members, typs_inner = List.split fields in
+      let typs_inner = List.map (Subst.subst_typ theta) typs_inner in
+      let fields = List.combine members typs_inner in
       Types.StructT (id, fields)
-  | HeaderD (id, fields) ->
-      check_arity [];
+  | HeaderD (id, tparams, fields) ->
+      check_arity tparams;
+      let theta = List.combine tparams targs |> Subst.Theta.of_list in
+      let members, typs_inner = List.split fields in
+      let typs_inner = List.map (Subst.subst_typ theta) typs_inner in
+      let fields = List.combine members typs_inner in
       Types.HeaderT (id, fields)
-  | UnionD (id, fields) ->
-      check_arity [];
+  | UnionD (id, tparams, fields) ->
+      check_arity tparams;
+      let theta = List.combine tparams targs |> Subst.Theta.of_list in
+      let members, typs_inner = List.split fields in
+      let typs_inner = List.map (Subst.subst_typ theta) typs_inner in
+      let fields = List.combine members typs_inner in
       Types.UnionT (id, fields)
   (* Object types are generic *)
   | ExternD (id, tparams, fdenv) ->
@@ -2727,12 +2738,12 @@ and type_decl' (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : El.Ast.decl') :
   | ErrD { members } -> type_error_decl cursor ctx members |> wrap_none
   | MatchKindD { members } ->
       type_match_kind_decl cursor ctx members |> wrap_none
-  | StructD { id; fields; annos } ->
-      type_struct_decl cursor ctx id fields annos |> wrap_none
-  | HeaderD { id; fields; annos } ->
-      type_header_decl cursor ctx id fields annos |> wrap_none
-  | UnionD { id; fields; annos } ->
-      type_union_decl cursor ctx id fields annos |> wrap_none
+  | StructD { id; tparams; fields; annos } ->
+      type_struct_decl cursor ctx id tparams fields annos |> wrap_none
+  | HeaderD { id; tparams; fields; annos } ->
+      type_header_decl cursor ctx id tparams fields annos |> wrap_none
+  | UnionD { id; tparams; fields; annos } ->
+      type_union_decl cursor ctx id tparams fields annos |> wrap_none
   | EnumD { id; members; annos } ->
       type_enum_decl cursor ctx id members annos |> wrap_none
   | SEnumD { id; typ; fields; annos } ->
@@ -3095,6 +3106,7 @@ and type_match_kind_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
    Field names have to be distinct. An empty struct (with no fields) is legal. *)
 
 and type_struct_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
+    (tparams : El.Ast.tparam list)
     (fields : (El.Ast.member * El.Ast.typ * El.Ast.anno list) list)
     (annos : El.Ast.anno list) : Ctx.t =
   if cursor <> Ctx.Global then (
@@ -3108,11 +3120,16 @@ and type_struct_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       ([], [], []) fields
   in
   let _annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
-  let typs = List.map (eval_type_with_check cursor ctx) typs in
+  let typs =
+    let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
+    List.map (eval_type_with_check Ctx.Block ctx) typs
+  in
   let td =
+    let tparams = List.map it tparams in
     let members = List.map it members in
     let typs = List.map it typs in
-    Types.StructD (id.it, List.combine members typs)
+    let fields = List.combine members typs in
+    Types.StructD (id.it, tparams, fields)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -3121,6 +3138,7 @@ and type_struct_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 (* (7.2.2) Header types *)
 
 and type_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
+    (tparams : El.Ast.tparam list)
     (fields : (El.Ast.member * El.Ast.typ * El.Ast.anno list) list)
     (annos : El.Ast.anno list) : Ctx.t =
   if cursor <> Ctx.Global then (
@@ -3134,11 +3152,16 @@ and type_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       ([], [], []) fields
   in
   let _annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
-  let typs = List.map (eval_type_with_check cursor ctx) typs in
+  let typs =
+    let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
+    List.map (eval_type_with_check Ctx.Block ctx) typs
+  in
   let td =
+    let tparams = List.map it tparams in
     let members = List.map it members in
     let typs = List.map it typs in
-    Types.HeaderD (id.it, List.combine members typs)
+    let fields = List.combine members typs in
+    Types.HeaderD (id.it, tparams, fields)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -3147,6 +3170,7 @@ and type_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 (* (7.2.4) Header unions *)
 
 and type_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
+    (tparams : El.Ast.tparam list)
     (fields : (El.Ast.member * El.Ast.typ * El.Ast.anno list) list)
     (annos : El.Ast.anno list) : Ctx.t =
   if cursor <> Ctx.Global then (
@@ -3160,11 +3184,16 @@ and type_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       ([], [], []) fields
   in
   let _annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
-  let typs = List.map (eval_type_with_check cursor ctx) typs in
+  let typs =
+    let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
+    List.map (eval_type_with_check Ctx.Block ctx) typs
+  in
   let td =
+    let tparams = List.map it tparams in
     let members = List.map it members in
     let typs = List.map it typs in
-    Types.UnionD (id.it, List.combine members typs)
+    let fields = List.combine members typs in
+    Types.UnionD (id.it, tparams, fields)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -3883,6 +3912,7 @@ and type_table_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     let typ_enum = specialize_typedef td_enum [] in
     Types.StructD
       ( id_struct,
+        [],
         [
           ("hit", Types.BoolT); ("miss", Types.BoolT); ("action_run", typ_enum);
         ] )

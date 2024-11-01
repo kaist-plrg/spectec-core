@@ -81,7 +81,7 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
     | SEnumT (_, typ_from_inner, _), _ when explicit typ_from_inner typ_to ->
         true
     | _, SEnumT (_, typ_to_inner, _) when explicit typ_from typ_to_inner -> true
-    (* casts of a tuple expression to a list, tuple, struct, or header type *)
+    (* casts of a tuple expression to a list, tuple, stack, struct, or header type *)
     | SeqT typs_from_inner, ListT typ_to_inner ->
         List.for_all
           (fun typ_from_inner -> explicit typ_from_inner typ_to_inner)
@@ -89,6 +89,12 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
     | SeqT typs_from_inner, TupleT typs_to_inner ->
         List.length typs_from_inner = List.length typs_to_inner
         && List.for_all2 explicit typs_from_inner typs_to_inner
+    | SeqT typs_from_inner, StackT (typ_to_inner, size_to) ->
+        let size_from = List.length typs_from_inner |> Bigint.of_int in
+        Bigint.(size_from <= size_to)
+        && List.for_all
+             (fun typ_from_inner -> explicit typ_from_inner typ_to_inner)
+             typs_from_inner
     | SeqT typs_from_inner, StructT (_, fields_to)
     | SeqT typs_from_inner, HeaderT (_, fields_to) ->
         let typs_to_inner = List.map snd fields_to in
