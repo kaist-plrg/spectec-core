@@ -8,7 +8,7 @@
 f(x = 1, y = _);
 ```
 
-Don't care for named argument was added [pr#1074](https://github.com/p4lang/p4-spec/pull/1074).
+Don't care for named argument was added [PR#1074](https://github.com/p4lang/p4-spec/pull/1074).
 
 ```ocaml
 argument:
@@ -552,8 +552,9 @@ h = (H) {#};
 
 ## \[REPORTED\] 1. Should we add implicit cast for directionless parameter? (74)
 
+Waiting for spec clarification, [Issue#1312](https://github.com/p4lang/p4-spec/issues/1312).
+
 I think we should, especially for constructor invocations.
-Waiting for the spec clarification, [issue#1312](https://github.com/p4lang/p4-spec/issues/1312).
 
 Below apply for methods and functions.
 
@@ -817,7 +818,11 @@ control c() {
 * issue3671.p4
 </details>
 
-## 8. Accessing a tuple element with a local compile-time known index is also a local compile-time known value? (1)
+## [\REPORTED\] 8. Are accesses compile-time known? (3)
+
+Waiting for spec clarification, [Issue#1323](https://github.com/p4lang/p4-spec/issues/1323).
+
+### \[REPORTED\] (1) Accessing a tuple element with a local compile-time known index is also a local compile-time known value? (1)
 
 ```p4
 const tuple<bit<32>, bit<32>> t = { 0, 1 };
@@ -830,7 +835,7 @@ const bit<32> f = t[0];
 * tuple3.p4
 </details>
 
-## 9. Accessing a field of a local compile-time known struct is also a local compile-time known value? (2)
+### \[REPORTED\] (2) Accessing a field of a local compile-time known struct is also a local compile-time known value? (2)
 
 ```p4
 const T t = { 32s10, 32s20 };
@@ -844,7 +849,9 @@ const int<32> x = t.t1;
 * struct1.p4
 </details>
 
-## 10. Type aliasing allowed for externs? (4)
+## \[REPORTED\] 9. Type aliasing allowed for externs? (4)
+
+Waiting for spec clarification, [Issue#1314](https://github.com/p4lang/p4-spec/issues/1314).
 
 Spec section 7.2.8 lists type nesting rules, but it does not mention whether it is legal to make a type alias of an extern object type via `typedef`.
 
@@ -866,12 +873,12 @@ typedef MyCounter<my_counter_index_t> my_counter_t;
 * typedef-constructor.p4
 </details>
 
-## 11. Constraints on size of a value set?
+## 10. Constraints on size of a value set?
 
 The spec does not mention if the size given to a value set declaration should be local compile-time known, compile-time known, or neither.
 I suspect it should be at least compile-time known, and it is reflected in the current implementation.
 
-## 12. A generic type that imposes (or implies) a type constraint (1)
+## 11. A generic type that imposes (or implies) a type constraint (1)
 
 ```p4
 control nothing(
@@ -896,7 +903,7 @@ But, the default argument to `c` is `nothing()`, which imposes a type constraint
 * default-package-argument.p4
 </details>
 
-## 13. Do we allow equality checks (`==`) on type variables? (1)
+## 12. Do we allow equality checks (`==`) on type variables? (1)
 
 The spec only allows assignment (`=`) for types that are type variables.
 But the test case below seems to violate this.
