@@ -1013,8 +1013,7 @@ Typecheck success: test/program/well-typed/invalid-hdr-warnings1.p4
 Typecheck success: test/program/well-typed/invalid-hdr-warnings2.p4
 
 >>> Running typecheck test on test/program/well-typed/invalid-hdr-warnings3-bmv2.p4
-parser error: File test/program/well-typed/invalid-hdr-warnings3-bmv2.p4, line 35, characters 12-13
-Error while parsing p4 file: test/program/well-typed/invalid-hdr-warnings3-bmv2.p4
+Typecheck success: test/program/well-typed/invalid-hdr-warnings3-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/invalid-hdr-warnings4.p4
 Typecheck success: test/program/well-typed/invalid-hdr-warnings4.p4
@@ -1724,8 +1723,7 @@ Typecheck success: test/program/well-typed/issue2599.p4
 Typecheck success: test/program/well-typed/issue2614-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2617.p4
-parser error: File test/program/well-typed/issue2617.p4, line 65, characters 12-13
-Error while parsing p4 file: test/program/well-typed/issue2617.p4
+Typecheck success: test/program/well-typed/issue2617.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2627.p4
 Typecheck success: test/program/well-typed/issue2627.p4
@@ -1980,8 +1978,7 @@ Typecheck success: test/program/well-typed/issue3343.p4
 Typecheck success: test/program/well-typed/issue3364.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3374.p4
-parser error: File test/program/well-typed/issue3374.p4, line 128, characters 12-16
-Error while parsing p4 file: test/program/well-typed/issue3374.p4
+Typecheck success: test/program/well-typed/issue3374.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3379-1.p4
 Typecheck success: test/program/well-typed/issue3379-1.p4
@@ -2032,20 +2029,16 @@ Typecheck success: test/program/well-typed/issue361-bmv2.p4
 Error while typechecking p4 file: test/program/well-typed/issue3616.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3619-1.p4
-(type_switch_stmt) Switch statement with integer or enumerated type expression not supported
-Error while typechecking p4 file: test/program/well-typed/issue3619-1.p4
+Typecheck success: test/program/well-typed/issue3619-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3619.p4
-(type_switch_stmt) Switch statement with integer or enumerated type expression not supported
-Error while typechecking p4 file: test/program/well-typed/issue3619.p4
+Typecheck success: test/program/well-typed/issue3619.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3623-1.p4
-parser error: File test/program/well-typed/issue3623-1.p4, line 9, characters 7-8
-Error while parsing p4 file: test/program/well-typed/issue3623-1.p4
+Typecheck success: test/program/well-typed/issue3623-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3623.p4
-parser error: File test/program/well-typed/issue3623.p4, line 9, characters 13-14
-Error while parsing p4 file: test/program/well-typed/issue3623.p4
+Typecheck success: test/program/well-typed/issue3623.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3635.p4
 (type_binop_concat) Concatenation expects two bit-strings but enum<bit<4>> e and enum<bit<4>> e were given
@@ -2056,8 +2049,7 @@ Error while typechecking p4 file: test/program/well-typed/issue3635.p4
 Error while typechecking p4 file: test/program/well-typed/issue364-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3650.p4
-parser error: File test/program/well-typed/issue3650.p4, line 25, characters 12-13
-Error while parsing p4 file: test/program/well-typed/issue3650.p4
+Typecheck success: test/program/well-typed/issue3650.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3671-1.p4
 Typecheck success: test/program/well-typed/issue3671-1.p4
@@ -2169,19 +2161,16 @@ Typecheck success: test/program/well-typed/issue4625_remove_compile_time_bool_me
 Typecheck success: test/program/well-typed/issue4625_remove_compile_time_const_methodcall_of_mcs.p4
 
 >>> Running typecheck test on test/program/well-typed/issue4656_const_fold_generic_switch_label_expr.p4
-parser error: File test/program/well-typed/issue4656_const_fold_generic_switch_label_expr.p4, line 14, characters 12-13
-Error while parsing p4 file: test/program/well-typed/issue4656_const_fold_generic_switch_label_expr.p4
+Typecheck success: test/program/well-typed/issue4656_const_fold_generic_switch_label_expr.p4
 
 >>> Running typecheck test on test/program/well-typed/issue4656_fold_bit_width_const_mux_expr.p4
 Typecheck success: test/program/well-typed/issue4656_fold_bit_width_const_mux_expr.p4
 
 >>> Running typecheck test on test/program/well-typed/issue4661_non_pure_extern_function_const_args.p4
-parser error: File test/program/well-typed/issue4661_non_pure_extern_function_const_args.p4, line 14, characters 12-13
-Error while parsing p4 file: test/program/well-typed/issue4661_non_pure_extern_function_const_args.p4
+Typecheck success: test/program/well-typed/issue4661_non_pure_extern_function_const_args.p4
 
 >>> Running typecheck test on test/program/well-typed/issue4661_pure_extern_function_const_args.p4
-parser error: File test/program/well-typed/issue4661_pure_extern_function_const_args.p4, line 14, characters 12-13
-Error while parsing p4 file: test/program/well-typed/issue4661_pure_extern_function_const_args.p4
+Typecheck success: test/program/well-typed/issue4661_pure_extern_function_const_args.p4
 
 >>> Running typecheck test on test/program/well-typed/issue47.p4
 Typecheck success: test/program/well-typed/issue47.p4
@@ -2914,8 +2903,7 @@ Typecheck success: test/program/well-typed/pna-example-tunnel.p4
 Typecheck success: test/program/well-typed/pna-example-varIndex-1.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-varIndex-2.p4
-parser error: File test/program/well-typed/pna-example-varIndex-2.p4, line 126, characters 12-16
-Error while parsing p4 file: test/program/well-typed/pna-example-varIndex-2.p4
+Typecheck success: test/program/well-typed/pna-example-varIndex-2.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-varIndex.p4
 Typecheck success: test/program/well-typed/pna-example-varIndex.p4
@@ -3345,8 +3333,7 @@ Typecheck success: test/program/well-typed/psa-example-select_tuple-wc.p4
 Typecheck success: test/program/well-typed/psa-example-select_tuple.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-example-switch-with-constant-expr.p4
-parser error: File test/program/well-typed/psa-example-switch-with-constant-expr.p4, line 66, characters 12-13
-Error while parsing p4 file: test/program/well-typed/psa-example-switch-with-constant-expr.p4
+Typecheck success: test/program/well-typed/psa-example-switch-with-constant-expr.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-fwd-bmv2.p4
 Typecheck success: test/program/well-typed/psa-fwd-bmv2.p4
@@ -3467,8 +3454,7 @@ Typecheck success: test/program/well-typed/psa-resubmit-bmv2.p4
 Typecheck success: test/program/well-typed/psa-subtract-inst1.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-switch-expression-without-default.p4
-parser error: File test/program/well-typed/psa-switch-expression-without-default.p4, line 123, characters 12-14
-Error while parsing p4 file: test/program/well-typed/psa-switch-expression-without-default.p4
+Typecheck success: test/program/well-typed/psa-switch-expression-without-default.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-table-hit-miss.p4
 Typecheck success: test/program/well-typed/psa-table-hit-miss.p4
@@ -3785,8 +3771,7 @@ Typecheck success: test/program/well-typed/structured_annotations.p4
 Typecheck success: test/program/well-typed/subparser-with-header-stack-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/switch-expression.p4
-parser error: File test/program/well-typed/switch-expression.p4, line 6, characters 12-14
-Error while parsing p4 file: test/program/well-typed/switch-expression.p4
+Typecheck success: test/program/well-typed/switch-expression.p4
 
 >>> Running typecheck test on test/program/well-typed/switch_ebpf.p4
 (check_eq_typ_alpha) Types int and bit<32> are not equal
@@ -4031,5 +4016,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 >>> Running typecheck test on test/program/well-typed/xor_test.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1222/1253 (97.53%) [FAIL] 31/1253 (2.47%)
-Typecheck: [PASS] 994/1222 (81.34%) [FAIL] 228/1222 (18.66%)
+Parser on file: [PASS] 1235/1253 (98.56%) [FAIL] 18/1253 (1.44%)
+Typecheck: [PASS] 1009/1235 (81.70%) [FAIL] 226/1235 (18.30%)

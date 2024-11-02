@@ -509,7 +509,7 @@ entries = {
 * init-entries-bmv2.p4
 </details>
 
-### (6) Support general switch statement (15)
+### \[DONE\] (6) ~~Support general switch statement~~
 
 The old version of P4 assumes that switch only matches against table apply results, but the current version allows general switch statements.
 
@@ -519,26 +519,6 @@ switch (hdr.h1.data) {
     ...
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* invalid-hdr-warnings3-bmv2.p4
-* issue2617.p4
-* issue3374.p4
-* issue3619-1.p4
-* issue3619.p4
-* issue3623-1.p4
-* issue3623.p4
-* issue3650.p4
-* issue4656_const_fold_generic_switch_label_expr.p4
-* issue4661_non_pure_extern_function_const_args.p4
-* issue4661_pure_extern_function_const_args.p4
-* pna-example-varIndex-2.p4
-* psa-example-switch-with-constant-expr.p4
-* psa-switch-expression-without-default.p4
-* switch-expression.p4
-</details>
 
 ### \[DONE\] (7) ~~Support `{#}` syntax~~
 

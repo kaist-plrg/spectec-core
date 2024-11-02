@@ -1204,9 +1204,9 @@ switchCase:
 ;
 
 switchLabel:
-| name = name
-    { let tags = Text.tags name in
-      Statement.Name { tags; name } }
+| expr = nonBraceExpression
+    { let tags = Expression.tags expr in
+      Statement.Expression { tags; expr } }
 | info = DEFAULT
     { Statement.Default { tags = info } }
 ;
@@ -1493,6 +1493,75 @@ expression:
     { let tags = Source.merge (Type.tags typ) info2 in
       Expression.NamelessInstantiation { tags; typ; args } }
 ;
+
+nonBraceExpression:
+| value = NUMBER
+    { let value_int = fst value in 
+      let tags = Number.tags value_int in 
+      Expression.Int { tags; i = value_int } }
+| info1 = TRUE
+    { Expression.True { tags = info1 } }
+| info1 = FALSE
+    { Expression.False { tags = info1 } }
+| value = STRING_LITERAL
+    { let tags = Text.tags value in
+      Expression.String { tags; text = value } }
+| name = nonTypeName
+    { let tags = Text.tags name in
+      Expression.Name { tags; name = BareName name } }
+| info1 = dotPrefix go_toplevel name = nonTypeName go_local
+    { let tags = Source.merge info1 (Text.tags name) in
+      Expression.Name { tags; name = QualifiedName ([], name) } }
+| array = nonBraceExpression L_BRACKET index = expression info2 = R_BRACKET
+    { let tags = Source.merge (Expression.tags array) info2 in
+      Expression.ArrayAccess { tags; array; index } }
+| bits = nonBraceExpression L_BRACKET hi = expression COLON lo = expression info2 = R_BRACKET
+    { let tags = Source.merge (Expression.tags bits) info2 in
+      Expression.BitStringAccess { tags; bits; lo; hi } }
+| L_PAREN exp = expression R_PAREN
+    { exp }
+| info1 = NOT arg = expression %prec PREFIX
+    { let tags = Source.merge info1 (Expression.tags arg) in
+      Expression.UnaryOp { tags; op = Op.Not {tags = info1}; arg } }
+| info1 = COMPLEMENT arg = expression %prec PREFIX
+    { let tags = Source.merge info1 (Expression.tags arg) in
+    Expression.UnaryOp{ tags; op = Op.BitNot {tags = info1}; arg } }
+| info1 = MINUS arg = expression %prec PREFIX
+    { let tags = Source.merge info1 (Expression.tags arg) in
+    Expression.UnaryOp{ tags; op = UMinus {tags = info1}; arg } }
+| info1 = PLUS exp = expression %prec PREFIX
+    { (*let info2,exp = exp in*)
+      let tags = Source.merge info1 (Expression.tags exp) in
+      Expression.update_tags exp tags }
+| info1 = L_PAREN typ = typeRef R_PAREN expr = expression %prec PREFIX
+    { let tags = Source.merge info1 (Expression.tags expr) in
+      Expression.Cast { tags; typ; expr } }
+| typ = prefixedTypeName DOT name = member
+    { let tags = Text.tags name in
+      Expression.TypeMember { tags; typ; name } }
+| info1 = ERROR DOT name = member
+    { let tags = Source.merge info1 (Text.tags name) in
+      Expression.ErrorMember { tags; err = name } }
+| expr = nonBraceExpression DOT name = member
+    { let tags = Source.merge (Expression.tags expr) (Text.tags name) in
+      Expression.ExpressionMember { tags; expr; name } }
+| arg1 = nonBraceExpression op = binop arg2 = expression
+    { let tags = Source.merge (Expression.tags arg1) (Expression.tags arg2) in
+      Expression.BinaryOp { tags; op; args = (arg1, arg2) } }
+| cond = nonBraceExpression QUESTION tru = expression COLON fls = expression
+    { let tags = Source.merge (Expression.tags cond) (Expression.tags fls) in
+      Expression.Ternary { tags; cond; tru; fls } }
+| func = nonBraceExpression l_angle type_args = realTypeArgumentList r_angle
+  L_PAREN args = argumentList info2 = R_PAREN
+    { let tags = Source.merge (Expression.tags func) info2 in
+      Expression.FunctionCall { tags; func; type_args; args } }
+| func = nonBraceExpression L_PAREN args = argumentList info2 = R_PAREN
+    { let type_args = [] in
+      let tags = Source.merge (Expression.tags func) info2 in
+      Expression.FunctionCall { tags; func; type_args; args } }
+| typ = namedType L_PAREN args = argumentList info2 = R_PAREN
+    { let tags = Source.merge (Type.tags typ) info2 in
+      Expression.NamelessInstantiation { tags; typ; args } }
 
 %inline binop:
 | info = MUL

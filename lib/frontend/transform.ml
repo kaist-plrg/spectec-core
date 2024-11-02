@@ -371,8 +371,8 @@ and transform_block (block : Block.t) : El.block =
 
 and transform_switch_label (label : Statement.switch_label) : El.switch_label =
   match label with
+  | Expression { expr; tags = at } -> L.ExprL (transform_expr expr) $ at
   | Default { tags = at } -> L.DefaultL $ at
-  | Name { name; tags = at } -> L.NameL (transform_text name) $ at
 
 and transform_switch_case (case : Statement.switch_case) : El.switch_case =
   match case with

@@ -2357,11 +2357,7 @@ and type_switch_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
       }
     when member_method.it = "apply" && member_acc.it = "action_run" ->
       type_switch_table_stmt cursor ctx flow expr_switch_il id_table cases
-  | _ ->
-      Format.printf
-        "(type_switch_stmt) Switch statement with integer or enumerated type \
-         expression not supported\n";
-      assert false
+  | _ -> type_switch_general_stmt cursor ctx flow expr_switch_il cases
 
 (* (12.7.1) Switch statement with action_run expression
 
@@ -2376,30 +2372,53 @@ and type_switch_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
 
 and type_switch_table_label (cursor : Ctx.cursor) (ctx : Ctx.t)
     (id_table : Il.Ast.id) (labels_seen : Il.Ast.switch_label' list)
-    (label : El.Ast.switch_label) : unit =
-  if List.mem label.it labels_seen then (
-    Format.printf "(type_switch_table_label) Label %a was used multiple times\n"
-      Il.Pp.pp_switch_label label;
-    assert false);
-  match label.it with
-  | NameL id_action ->
-      let id_enum = "action_list(" ^ id_table.it ^ ")" in
-      let member = id_action.it in
-      let id_field = id_enum ^ "." ^ member in
-      let value_enum = Ctx.find_value_opt cursor id_field ctx in
-      if
-        not
-          (match value_enum with
-          | Some (Value.EnumFieldV (id_enum', member'))
-            when id_enum = id_enum' && member = member' ->
-              true
-          | _ -> false)
-      then (
+    (label : El.Ast.switch_label) : Il.Ast.switch_label =
+  let label_il =
+    match label.it with
+    | ExprL
+        {
+          it = VarE { var = { it = Current id_action; at = at_var; _ } };
+          at = at_expr;
+          _;
+        } ->
+        let id_enum = "action_list(" ^ id_table.it ^ ")" in
+        let member = id_action.it in
+        let id_field = id_enum ^ "." ^ member in
+        let value_enum = Ctx.find_value_opt cursor id_field ctx in
+        if
+          not
+            (match value_enum with
+            | Some (Value.EnumFieldV (id_enum', member'))
+              when id_enum = id_enum' && member = member' ->
+                true
+            | _ -> false)
+        then (
+          Format.printf
+            "(type_switch_table_label) Action %a was not declared in table %a\n"
+            Il.Pp.pp_id id_action Il.Pp.pp_id id_table;
+          assert false);
+        let typ_enum, _, ctk_enum = Ctx.find_rtype cursor id_field ctx in
+        let expr_il =
+          Il.Ast.(
+            VarE
+              {
+                var =
+                  { it = Lang.Ast.Current id_action; at = at_var; note = () };
+              }
+            $$ (at_expr, { typ = typ_enum; ctk = ctk_enum }))
+        in
+        Lang.Ast.ExprL expr_il
+    | ExprL _ ->
         Format.printf
-          "(type_switch_table_label) Action %a was not declared in table %a\n"
-          Il.Pp.pp_id id_action Il.Pp.pp_id id_table;
-        assert false)
-  | DefaultL -> ()
+          "(type_switch_table_label) Switch label must be an action name\n";
+        assert false
+    | DefaultL -> Lang.Ast.DefaultL
+  in
+  if List.mem label_il labels_seen then (
+    Format.printf "(type_switch_table_label) Label %a was used multiple times\n"
+      El.Pp.pp_switch_label label;
+    assert false);
+  label_il $ label.at
 
 and type_switch_table_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (id_table : Il.Ast.id) (labels_seen : Il.Ast.switch_label' list)
@@ -2407,41 +2426,18 @@ and type_switch_table_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     Flow.t * Il.Ast.switch_label * Il.Ast.switch_case =
   match case.it with
   | MatchC (label, block) ->
-      type_switch_table_label cursor ctx id_table labels_seen label;
-      let _ctx, flow, block_il = type_block cursor ctx flow block in
-      let case_il = Lang.Ast.MatchC (label, block_il) $ case.at in
-      (flow, label, case_il)
-  | FallC label ->
-      type_switch_table_label cursor ctx id_table labels_seen label;
-      let case_il = Lang.Ast.FallC label $ case.at in
-      (flow, label, case_il)
-
-and type_switch_table_cases' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
-    (id_table : Il.Ast.id) (flows_case : Flow.t list)
-    (labels_seen : Il.Ast.switch_label' list)
-    (cases_il : Il.Ast.switch_case list) (cases : El.Ast.switch_case list) :
-    Flow.t list * Il.Ast.switch_label' list * Il.Ast.switch_case list =
-  match cases with
-  | [] -> (flows_case, labels_seen, cases_il)
-  | case :: cases ->
-      let flow_case, label, case_il =
-        type_switch_table_case cursor ctx flow id_table labels_seen case
+      let label_il =
+        type_switch_table_label cursor ctx id_table labels_seen label
       in
-      if
-        (match (label.it : Il.Ast.switch_label') with
-        | DefaultL -> true
-        | _ -> false)
-        && List.length cases > 0
-      then (
-        Format.printf
-          "(type_switch_table_cases') Default label must be the last switch \
-           label\n";
-        assert false);
-      let flows_case = flows_case @ [ flow_case ] in
-      let labels_seen = labels_seen @ [ label.it ] in
-      let cases_il = cases_il @ [ case_il ] in
-      type_switch_table_cases' cursor ctx flow id_table flows_case labels_seen
-        cases_il cases
+      let _ctx, flow, block_il = type_block cursor ctx flow block in
+      let case_il = Lang.Ast.MatchC (label_il, block_il) $ case.at in
+      (flow, label_il, case_il)
+  | FallC label ->
+      let label_il =
+        type_switch_table_label cursor ctx id_table labels_seen label
+      in
+      let case_il = Lang.Ast.FallC label_il $ case.at in
+      (flow, label_il, case_il)
 
 and type_switch_table_cases (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (id_table : Il.Ast.id) (cases : El.Ast.switch_case list) :
@@ -2455,6 +2451,33 @@ and type_switch_table_cases (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     else Flow.Cont
   in
   (flow, cases_il)
+
+and type_switch_table_cases' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
+    (id_table : Il.Ast.id) (flows_case : Flow.t list)
+    (labels_seen : Il.Ast.switch_label' list)
+    (cases_il : Il.Ast.switch_case list) (cases : El.Ast.switch_case list) :
+    Flow.t list * Il.Ast.switch_label' list * Il.Ast.switch_case list =
+  match cases with
+  | [] -> (flows_case, labels_seen, cases_il)
+  | case :: cases ->
+      let flow_case, label_il, case_il =
+        type_switch_table_case cursor ctx flow id_table labels_seen case
+      in
+      if
+        (match (label_il.it : Il.Ast.switch_label') with
+        | DefaultL -> true
+        | _ -> false)
+        && List.length cases > 0
+      then (
+        Format.printf
+          "(type_switch_table_cases') Default label must be the last switch \
+           label\n";
+        assert false);
+      let flows_case = flows_case @ [ flow_case ] in
+      let labels_seen = labels_seen @ [ label_il.it ] in
+      let cases_il = cases_il @ [ case_il ] in
+      type_switch_table_cases' cursor ctx flow id_table flows_case labels_seen
+        cases_il cases
 
 and type_switch_table_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (expr_switch_il : Il.Ast.expr) (id_table : Il.Ast.id)
@@ -2479,6 +2502,103 @@ and type_switch_table_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
    and must have a type that can be implicitly cast to the type of the
    switch expression (see Section 8.11.2). Switch labels must not begin with
    a left brace character {, to avoid ambiguity with a block statement. *)
+
+and type_switch_general_label (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (typ_switch : Type.t) (labels_seen : Il.Ast.switch_label' list)
+    (label : El.Ast.switch_label) : Il.Ast.switch_label =
+  let label_il =
+    match label.it with
+    | ExprL expr ->
+        let expr_il = type_expr cursor ctx expr in
+        let expr_il = coerce_type_assign expr_il typ_switch in
+        Static.check_lctk expr_il;
+        Lang.Ast.ExprL expr_il
+    | DefaultL -> Lang.Ast.DefaultL
+  in
+  if List.mem label_il labels_seen then (
+    Format.printf
+      "(type_switch_general_label) Label %a was used multiple times\n"
+      El.Pp.pp_switch_label label;
+    assert false);
+  label_il $ label.at
+
+and type_switch_general_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
+    (typ_switch : Type.t) (labels_seen : Il.Ast.switch_label' list)
+    (case : El.Ast.switch_case) :
+    Flow.t * Il.Ast.switch_label * Il.Ast.switch_case =
+  match case.it with
+  | MatchC (label, block) ->
+      let label_il =
+        type_switch_general_label cursor ctx typ_switch labels_seen label
+      in
+      let _ctx, flow, block_il = type_block cursor ctx flow block in
+      let case_il = Lang.Ast.MatchC (label_il, block_il) $ case.at in
+      (flow, label_il, case_il)
+  | FallC label ->
+      let label_il =
+        type_switch_general_label cursor ctx typ_switch labels_seen label
+      in
+      let case_il = Lang.Ast.FallC label_il $ case.at in
+      (flow, label_il, case_il)
+
+and type_switch_general_cases (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (flow : Flow.t) (typ_switch : Type.t) (cases : El.Ast.switch_case list) :
+    Flow.t * Il.Ast.switch_case list =
+  let flows_case, _, cases_il =
+    type_switch_general_cases' cursor ctx flow typ_switch [] [] [] cases
+  in
+  let flow =
+    if List.for_all (fun flow_case -> flow_case = Flow.Ret) flows_case then
+      Flow.Ret
+    else Flow.Cont
+  in
+  (flow, cases_il)
+
+and type_switch_general_cases' (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (flow : Flow.t) (typ_switch : Type.t) (flows_case : Flow.t list)
+    (labels_seen : Il.Ast.switch_label' list)
+    (cases_il : Il.Ast.switch_case list) (cases : El.Ast.switch_case list) :
+    Flow.t list * Il.Ast.switch_label' list * Il.Ast.switch_case list =
+  match cases with
+  | [] -> (flows_case, labels_seen, cases_il)
+  | case :: cases ->
+      let flow_case, label_il, case_il =
+        type_switch_general_case cursor ctx flow typ_switch labels_seen case
+      in
+      if
+        (match (label_il.it : Il.Ast.switch_label') with
+        | DefaultL -> true
+        | _ -> false)
+        && List.length cases > 0
+      then (
+        Format.printf
+          "(type_switch_general_cases') Default label must be the last switch \
+           label\n";
+        assert false);
+      let flows_case = flows_case @ [ flow_case ] in
+      let labels_seen = labels_seen @ [ label_il.it ] in
+      let cases_il = cases_il @ [ case_il ] in
+      type_switch_general_cases' cursor ctx flow typ_switch flows_case
+        labels_seen cases_il cases
+
+and type_switch_general_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
+    (expr_switch_il : Il.Ast.expr) (cases : El.Ast.switch_case list) :
+    Ctx.t * Flow.t * Il.Ast.stmt' =
+  let typ_switch = expr_switch_il.note.typ in
+  (match (typ_switch : Type.t) with
+  | ErrT | FIntT _ | FBitT _ | EnumT _ | SEnumT _ -> ()
+  | _ ->
+      Format.printf
+        "(type_switch_general_stmt) Switch expression is unsupported for type %a\n"
+        Type.pp typ_switch;
+      assert false);
+  let flow, cases_il =
+    type_switch_general_cases cursor ctx flow typ_switch cases
+  in
+  let stmt_il =
+    Lang.Ast.SwitchS { expr_switch = expr_switch_il; cases = cases_il }
+  in
+  (ctx, flow, stmt_il)
 
 (* (12.6) Conditional statement
 

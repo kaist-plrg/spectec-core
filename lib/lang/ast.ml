@@ -165,15 +165,15 @@ and ('typ, 'note, 'expr, 'decl) block' =
   ('typ, 'note, 'expr, 'decl) stmt list * ('note, 'expr) anno list
 
 (* Match-cases for switch *)
-and switch_label = switch_label' phrase
-and switch_label' = NameL of text | DefaultL
+and ('note, 'expr) switch_label = ('note, 'expr) switch_label' phrase
+and ('note, 'expr) switch_label' = ExprL of ('note, 'expr) expr | DefaultL
 
 and ('typ, 'note, 'expr, 'decl) switch_case =
   ('typ, 'note, 'expr, 'decl) switch_case' phrase
 
 and ('typ, 'note, 'expr, 'decl) switch_case' =
-  | MatchC of switch_label * ('typ, 'note, 'expr, 'decl) block
-  | FallC of switch_label
+  | MatchC of ('note, 'expr) switch_label * ('typ, 'note, 'expr, 'decl) block
+  | FallC of ('note, 'expr) switch_label
 
 (* Declarations : parameterized by 'decl *)
 and 'decl decl = 'decl decl' phrase

@@ -216,7 +216,7 @@ and print_block ?(prefix = "") (indent : int) (block : Block.t) =
 and print_switch_label (label : Statement.switch_label) =
   match label with
   | Default _ -> "default"
-  | Name { name; _ } -> print_text name
+  | Expression { expr; _ } -> print_expr expr
 
 and print_switch_case (indent : int) (case : Statement.switch_case) =
   match case with

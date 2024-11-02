@@ -128,8 +128,8 @@ and block = (typ', note, expr', decl') L.block
 and block' = (typ', note, expr', decl') L.block'
 
 (* Match-cases for switch *)
-and switch_label = L.switch_label
-and switch_label' = L.switch_label'
+and switch_label = (note, expr') L.switch_label
+and switch_label' = (note, expr') L.switch_label'
 and switch_case = (typ', note, expr', decl') L.switch_case
 and switch_case' = (typ', note, expr', decl') L.switch_case'
 

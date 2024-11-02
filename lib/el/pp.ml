@@ -217,8 +217,11 @@ and pp_block ?(level = 0) fmt block =
 
 (* Match-cases for switch *)
 
-and pp_switch_label' fmt switch_label' = P.pp_switch_label' fmt switch_label'
-and pp_switch_label fmt switch_label = P.pp_switch_label fmt switch_label
+and pp_switch_label' fmt switch_label' =
+  P.pp_switch_label' pp_expr fmt switch_label'
+
+and pp_switch_label fmt switch_label =
+  P.pp_switch_label pp_expr fmt switch_label
 
 and pp_switch_case' ?(level = 0) fmt switch_case' =
   P.pp_switch_case' ~level pp_typ pp_expr pp_decl fmt switch_case'

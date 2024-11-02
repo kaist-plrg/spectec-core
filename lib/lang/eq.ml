@@ -306,23 +306,25 @@ and eq_block (eq_typ : 'typ eq_typ) (eq_expr : ('note, 'expr) eq_expr)
 
 (* Match-cases for switch *)
 
-and eq_switch_label' switch_label_a switch_label_b =
+and eq_switch_label' (eq_expr : ('note, 'expr) eq_expr) switch_label_a
+    switch_label_b =
   match (switch_label_a, switch_label_b) with
-  | NameL text_a, NameL text_b -> eq_text text_a text_b
+  | ExprL expr_a, ExprL expr_b -> eq_expr expr_a expr_b
   | DefaultL, DefaultL -> true
   | _ -> false
 
-and eq_switch_label switch_label_a switch_label_b =
-  eq_switch_label' switch_label_a.it switch_label_b.it
+and eq_switch_label (eq_expr : ('note, 'expr) eq_expr) switch_label_a
+    switch_label_b =
+  eq_switch_label' eq_expr switch_label_a.it switch_label_b.it
 
 and eq_switch_case' (eq_typ : 'typ eq_typ) (eq_expr : ('note, 'expr) eq_expr)
     (eq_decl : 'decl eq_decl) switch_case_a switch_case_b =
   match (switch_case_a, switch_case_b) with
   | MatchC (switch_label_a, block_a), MatchC (switch_label_b, block_b) ->
-      eq_switch_label switch_label_a switch_label_b
+      eq_switch_label eq_expr switch_label_a switch_label_b
       && eq_block eq_typ eq_expr eq_decl block_a block_b
   | FallC switch_label_a, FallC switch_label_b ->
-      eq_switch_label switch_label_a switch_label_b
+      eq_switch_label eq_expr switch_label_a switch_label_b
   | _ -> false
 
 and eq_switch_case (eq_typ : 'typ eq_typ) (eq_expr : ('note, 'expr) eq_expr)

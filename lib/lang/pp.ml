@@ -297,23 +297,26 @@ and pp_block ?(level = 0) (pp_typ : 'typ pp_typ)
 
 (* Match-cases for switch *)
 
-and pp_switch_label' fmt switch_label' =
+and pp_switch_label' (pp_expr : ('note, 'expr) pp_expr) fmt switch_label' =
   match switch_label' with
-  | NameL text -> pp_text fmt text
+  | ExprL expr -> F.fprintf fmt "%a" (pp_expr ~level:0) expr
   | DefaultL -> F.fprintf fmt "default"
 
-and pp_switch_label fmt switch_label = pp_switch_label' fmt switch_label.it
+and pp_switch_label (pp_expr : ('note, 'expr) pp_expr) fmt switch_label =
+  pp_switch_label' pp_expr fmt switch_label.it
 
 and pp_switch_case' ?(level = 0) (pp_typ : 'typ pp_typ)
     (pp_expr : ('note, 'expr) pp_expr) (pp_decl : 'decl pp_decl) fmt
     switch_case' =
   match switch_case' with
   | MatchC (switch_label, block) ->
-      F.fprintf fmt "%s%a:\n%a" (indent level) pp_switch_label switch_label
+      F.fprintf fmt "%s%a:\n%a" (indent level) (pp_switch_label pp_expr)
+        switch_label
         (pp_block ~level:(level + 1) pp_typ pp_expr pp_decl)
         block
   | FallC switch_label ->
-      F.fprintf fmt "%s%a;" (indent level) pp_switch_label switch_label
+      F.fprintf fmt "%s%a;" (indent level) (pp_switch_label pp_expr)
+        switch_label
 
 and pp_switch_case ?(level = 0) (pp_typ : 'typ pp_typ)
     (pp_expr : ('note, 'expr) pp_expr) (pp_decl : 'decl pp_decl) fmt switch_case

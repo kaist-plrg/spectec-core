@@ -230,7 +230,7 @@ and eq_switch_label' (label : Statement.switch_label)
     (label' : Statement.switch_label) =
   match (label, label') with
   | Default _, Default _ -> true
-  | Name { name; _ }, Name { name = name'; _ } -> eq_text name name'
+  | Expression { expr; _ }, Expression { expr = expr'; _ } -> eq_expr expr expr'
   | _ -> false
 
 and eq_switch_case (case : Statement.switch_case)

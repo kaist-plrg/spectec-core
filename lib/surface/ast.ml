@@ -461,7 +461,7 @@ and Statement : sig
 
   and 'a switch_label' =
     | Default of { tags : 'a }
-    | Name of { tags : 'a; name : Text.t }
+    | Expression of { tags : 'a; expr : Expression.t }
 
   val tags_label : 'a switch_label' -> 'a
 
@@ -498,10 +498,10 @@ end = struct
 
   and 'a switch_label' =
     | Default of { tags : 'a }
-    | Name of { tags : 'a; name : Text.t }
+    | Expression of { tags : 'a; expr : Expression.t }
 
   let tags_label (t : 'a switch_label') : 'a =
-    match t with Default { tags } | Name { tags; _ } -> tags
+    match t with Default { tags } | Expression { tags; _ } -> tags
 
   type switch_case = Source.info switch_case'
 

@@ -505,8 +505,7 @@ Typecheck success: test/program/ill-typed/issue3291.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3293.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3299.p4
-parser error: File test/program/ill-typed/issue3299.p4, line 18, characters 5-10
-Error while parsing p4 file: test/program/ill-typed/issue3299.p4
+Typecheck success: test/program/ill-typed/issue3299.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3304.p4
 (check_valid_type_nesting) Invalid nesting of parser (in a bit<1>) inside struct s { field = parser (in a bit<1>) }
@@ -568,24 +567,21 @@ Typecheck success: test/program/ill-typed/issue3534.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3589.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3611.p4
-parser error: File test/program/ill-typed/issue3611.p4, line 12, characters 6-7
-Error while parsing p4 file: test/program/ill-typed/issue3611.p4
+(type_switch_table_label) Switch label must be an action name
+Error while typechecking p4 file: test/program/ill-typed/issue3611.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3613.p4
-parser error: File test/program/ill-typed/issue3613.p4, line 5, characters 6-9
-Error while parsing p4 file: test/program/ill-typed/issue3613.p4
+Typecheck success: test/program/ill-typed/issue3613.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3622.p4
-parser error: File test/program/ill-typed/issue3622.p4, line 10, characters 12-16
-Error while parsing p4 file: test/program/ill-typed/issue3622.p4
+(type_switch_table_label) Switch label must be an action name
+Error while typechecking p4 file: test/program/ill-typed/issue3622.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3623-2.p4
-parser error: File test/program/ill-typed/issue3623-2.p4, line 9, characters 6-9
-Error while parsing p4 file: test/program/ill-typed/issue3623-2.p4
+Typecheck success: test/program/ill-typed/issue3623-2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3623-3.p4
-parser error: File test/program/ill-typed/issue3623-3.p4, line 9, characters 6-7
-Error while parsing p4 file: test/program/ill-typed/issue3623-3.p4
+Typecheck success: test/program/ill-typed/issue3623-3.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3644-1.p4
 Typecheck success: test/program/ill-typed/issue3644-1.p4
@@ -1103,5 +1099,5 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 (type_cast_expr) Invalid cast from int<2> to bool
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
-Parser on file: [PASS] 259/299 (86.62%) [FAIL] 40/299 (13.38%)
-Typecheck: [PASS] 170/259 (65.64%) [FAIL] 89/259 (34.36%)
+Parser on file: [PASS] 265/299 (88.63%) [FAIL] 34/299 (11.37%)
+Typecheck: [PASS] 172/265 (64.91%) [FAIL] 93/265 (35.09%)
