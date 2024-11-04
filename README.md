@@ -2,8 +2,6 @@
 
 (WIP) A to-be interpreter for P4, cherry-picked from the Petr4 project.
 
-A [todo-list](https://docs.google.com/document/d/1qWz9xwa-DNAfd_Y1pCb6zkRcxO5536zCc4aw5ExA0W8/edit?usp=sharing) of features to be implemented.
-
 ## Building
 
 ### Prerequisites
@@ -41,19 +39,19 @@ $ make
 
 This creates an executable `p4cherry` in the project root.
 
-## Run parser (full), desugarer (WIP), instantiation (WIP), and interpreter (WIP) for an Example File
-
-Instantiation and interpreter are work-in-progress.
-To name a few major missing features:
-- Does not handle direct application of objects (e.g., `apply`).
-- No type inference for generics (type params); all generics must be explicitly specified.
-- Tables evaluate to the default action regardless of the key.
-- Adding table entries with STF is not supported.
-- Incomplete support for builtin core, v1model builtin functions.
+## Run parser and type checker for an Example File
 
 ```shell
-$ ./p4cherry parse -i test/arch test/petr4_sandbox_explicit-bmv2.p4
-$ ./p4cherry desugar -i test/arch test/petr4_sandbox_explicit-bmv2.p4
-$ ./p4cherry instantiate -i test/arch test/petr4_sandbox_explicit-bmv2.p4
-$ ./p4cherry interp -a v1model -i test/arch test/petr4_sandbox_explicit-bmv2.p4 test/petr4_sandbox_explicit-bmv2.stf
+$ ./p4cherry parse -i test/arch [FILENAME].p4
+$ ./p4cherry typecheck -i test/arch [FILENAME].p4
 ```
+
+## Current Test Status
+
+### Parser
+
+**[Parsing, pretty-printing, and roundtripping](status/parser.log)**
+
+### Type checker
+* **[Positive type checker tests](status/typecheck-pos.log)** (well-typed programs should be accepted)
+* **[Negavie type checker tests](status/typecheck-neg.log)** (ill-typed programs should be rejected)
