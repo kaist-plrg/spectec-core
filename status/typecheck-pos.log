@@ -261,7 +261,7 @@ Typecheck success: test/program/well-typed/constant-fold-infint.p4
 Typecheck success: test/program/well-typed/constant-in-calculation-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/constant_folding.p4
-(type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<32> and int were given
+(coerce_types_binary_numeric) Cannot coerce types bit<32> and bit<32>
 Error while typechecking p4 file: test/program/well-typed/constant_folding.p4
 
 >>> Running typecheck test on test/program/well-typed/constants.p4
@@ -868,7 +868,7 @@ Typecheck success: test/program/well-typed/gauntlet_uninitialized_bool_struct-bm
 Typecheck success: test/program/well-typed/gauntlet_variable_shadowing-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_various_ops-bmv2.p4
-(type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<4> and bit<4> were given
+(coerce_types_binary_numeric) Cannot coerce types bit<4> and bit<4>
 Error while typechecking p4 file: test/program/well-typed/gauntlet_various_ops-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/generic-struct-tuple.p4
@@ -1327,7 +1327,7 @@ Typecheck success: test/program/well-typed/issue1863.p4
 Typecheck success: test/program/well-typed/issue1876.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1879-bmv2.p4
-(type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<9> and int were given
+(coerce_types_binary_numeric) Cannot coerce types bit<9> and bit<9>
 Error while typechecking p4 file: test/program/well-typed/issue1879-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1882-1-bmv2.p4
@@ -1469,7 +1469,7 @@ Typecheck success: test/program/well-typed/issue2175.p4
 Typecheck success: test/program/well-typed/issue2176-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2190.p4
-(type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<8> and bit<8> were given
+(coerce_types_binary_numeric) Cannot coerce types bit<8> and bit<8>
 Error while typechecking p4 file: test/program/well-typed/issue2190.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2201-bmv2.p4
@@ -1541,14 +1541,14 @@ Typecheck success: test/program/well-typed/issue2279_2.p4
 Typecheck success: test/program/well-typed/issue2279_3.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2279_4.p4
-(type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<16> and int were given
+(coerce_types_binary_numeric) Cannot coerce types bit<16> and bit<16>
 Error while typechecking p4 file: test/program/well-typed/issue2279_4.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2283_1-bmv2.p4
 Typecheck success: test/program/well-typed/issue2283_1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2287-bmv2.p4
-(type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<8> and bit<8> were given
+(coerce_types_binary_numeric) Cannot coerce types bit<8> and bit<8>
 Error while typechecking p4 file: test/program/well-typed/issue2287-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2288-1.p4
@@ -1870,8 +1870,7 @@ Typecheck success: test/program/well-typed/issue304.p4
 Error while typechecking p4 file: test/program/well-typed/issue3051.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3056.p4
-(type_binop_shift) Shift operator expects an unsigned bitstring, signed bitstring, or an integer as the left operand and an unsigned bitstring or a compile-time known integer as the right operand but bit<8> and enum<bit<8>> E were given
-Error while typechecking p4 file: test/program/well-typed/issue3056.p4
+Typecheck success: test/program/well-typed/issue3056.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3057-2.p4
 Typecheck success: test/program/well-typed/issue3057-2.p4
@@ -1942,12 +1941,11 @@ Typecheck success: test/program/well-typed/issue3274.p4
 Error while typechecking p4 file: test/program/well-typed/issue3283.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3287.p4
-(type_binop_shift) Shift operator expects an unsigned bitstring, signed bitstring, or an integer as the left operand and an unsigned bitstring or a compile-time known integer as the right operand but bit<4> and int<6> were given
+(coerce_types_binary_numeric) Cannot coerce types bit<4> and int<6>
 Error while typechecking p4 file: test/program/well-typed/issue3287.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3288.p4
-(type_binop_shift) Shift operator expects an unsigned bitstring, signed bitstring, or an integer as the left operand and an unsigned bitstring or a compile-time known integer as the right operand but bit<16> and enum<bit<8>> E were given
-Error while typechecking p4 file: test/program/well-typed/issue3288.p4
+Typecheck success: test/program/well-typed/issue3288.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3289.p4
 Typecheck success: test/program/well-typed/issue3289.p4
@@ -2040,8 +2038,7 @@ Typecheck success: test/program/well-typed/issue3623-1.p4
 Typecheck success: test/program/well-typed/issue3623.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3635.p4
-(type_binop_concat) Concatenation expects two bit-strings but enum<bit<4>> e and enum<bit<4>> e were given
-Error while typechecking p4 file: test/program/well-typed/issue3635.p4
+Typecheck success: test/program/well-typed/issue3635.p4
 
 >>> Running typecheck test on test/program/well-typed/issue364-bmv2.p4
 (type_table_custom) Custom element counters is undefined
@@ -2209,7 +2206,7 @@ Typecheck success: test/program/well-typed/issue4901_new_start_with_start_state_
 Typecheck success: test/program/well-typed/issue4901_new_start_with_start_state_loopback2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue4932.p4
-(type_binop_concat) Concatenation expects two bit-strings but string and string were given
+(coerce_types_binary_numeric) Cannot coerce types string and string
 Error while typechecking p4 file: test/program/well-typed/issue4932.p4
 
 >>> Running typecheck test on test/program/well-typed/issue496.p4
@@ -2955,7 +2952,7 @@ Typecheck success: test/program/well-typed/pragmas.p4
 Error while typechecking p4 file: test/program/well-typed/precedence-lt.p4
 
 >>> Running typecheck test on test/program/well-typed/precedence.p4
-(type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<1> and bit<1> were given
+(coerce_types_binary_numeric) Cannot coerce types bit<1> and bit<1>
 Error while typechecking p4 file: test/program/well-typed/precedence.p4
 
 >>> Running typecheck test on test/program/well-typed/pred.p4
@@ -3052,11 +3049,11 @@ Error while typechecking p4 file: test/program/well-typed/psa-custom-type-counte
 Typecheck success: test/program/well-typed/psa-dpdk-128bitCast.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-binary-operations-1.p4
-(type_binop_shift) Shift operator expects an unsigned bitstring, signed bitstring, or an integer as the left operand and an unsigned bitstring or a compile-time known integer as the right operand but bit<32> and type PortId_t (= bit<32>) were given
+(coerce_types_binary_numeric) Cannot coerce types bit<32> and type PortId_t (= bit<32>)
 Error while typechecking p4 file: test/program/well-typed/psa-dpdk-binary-operations-1.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-binary-operations.p4
-(type_binop_shift) Shift operator expects an unsigned bitstring, signed bitstring, or an integer as the left operand and an unsigned bitstring or a compile-time known integer as the right operand but bit<32> and type PortId_t (= bit<32>) were given
+(coerce_types_binary_numeric) Cannot coerce types bit<32> and type PortId_t (= bit<32>)
 Error while typechecking p4 file: test/program/well-typed/psa-dpdk-binary-operations.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-checksum-arg-header.p4
@@ -3078,7 +3075,7 @@ Typecheck success: test/program/well-typed/psa-dpdk-flatten-local-struct.p4
 Typecheck success: test/program/well-typed/psa-dpdk-hdr-field-non-align.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-header-union-typedef.p4
-(type_binop_shift) Shift operator expects an unsigned bitstring, signed bitstring, or an integer as the left operand and an unsigned bitstring or a compile-time known integer as the right operand but bit<32> and type PortId_t (= bit<32>) were given
+(coerce_types_binary_numeric) Cannot coerce types bit<32> and type PortId_t (= bit<32>)
 Error while typechecking p4 file: test/program/well-typed/psa-dpdk-header-union-typedef.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-large-header-fields.p4
@@ -3470,8 +3467,7 @@ Typecheck success: test/program/well-typed/psa-unicast-or-drop-bmv2.p4
 Typecheck success: test/program/well-typed/psa-unicast-or-drop-corrected-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-variable-index.p4
-(check_bitstring_base) enum<bit<16>> ether_type_t is not a valid base type
-Error while typechecking p4 file: test/program/well-typed/psa-variable-index.p4
+Typecheck success: test/program/well-typed/psa-variable-index.p4
 
 >>> Running typecheck test on test/program/well-typed/pvs-bitstring-bmv2.p4
 Typecheck success: test/program/well-typed/pvs-bitstring-bmv2.p4
@@ -3714,7 +3710,7 @@ Typecheck success: test/program/well-typed/states.p4
 Typecheck success: test/program/well-typed/std_meta_inlining.p4
 
 >>> Running typecheck test on test/program/well-typed/strength.p4
-(type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<4> and int were given
+(coerce_types_binary_numeric) Cannot coerce types bit<4> and bit<4>
 Error while typechecking p4 file: test/program/well-typed/strength.p4
 
 >>> Running typecheck test on test/program/well-typed/strength2.p4
@@ -4015,4 +4011,4 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1236/1253 (98.64%) [FAIL] 17/1253 (1.36%)
-Typecheck: [PASS] 1011/1236 (81.80%) [FAIL] 225/1236 (18.20%)
+Typecheck: [PASS] 1015/1236 (82.12%) [FAIL] 221/1236 (17.88%)

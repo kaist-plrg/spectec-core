@@ -110,9 +110,9 @@ Coerce then and else branches of a conditional expression to a same type.
 h.eth_hdr.eth_type = (bit<16>) (-(h.eth_hdr.src_addr == 1) ? 2 : 3w1);
 ```
 
-#### (d) Type coercion between serializable enum and its underlying type (9)
+#### \[DONE\] (d) ~~Type coercion between serializable enum and its underlying type~~
 
-But it is difficult to determine 'when' it should occur.
+May need to revisit sometime later, but at least the tests pass now.
 
 ```p4
 enum bit<32> X { ... }
@@ -121,19 +121,6 @@ transition select (o.b.x) {
     ...
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue3056.p4
-* issue3288.p4
-* issue3635.p4
-* psa-dpdk-binary-operations-1.p4
-* psa-dpdk-binary-operations.p4
-* psa-dpdk-header-union-typedef.p4
-* psa-variable-index.p4
-* serEnumImplCast.p4
-</details>
 
 ### (3) Type Inference
 
@@ -429,7 +416,7 @@ enum A {
 * trailing-comma.p4
 </details>
 
-### (3) ~~Allow parentheses in lvalues~~
+### \[DONE\] (3) ~~Allow parentheses in lvalues~~
 
 Since [issue#1273](https://github.com/p4lang/p4-spec/issues/1273).
 
@@ -1307,4 +1294,19 @@ Here, we *cannot* implicitly cast `value_set_t` (which a struct type) to `bit<32
 * pvs.p4
 * v1model-p4runtime-enumint-types1.p4
 * v1model-p4runtime-most-types1.p4
+</details>
+
+## 8. Implicit cast of newtype (3)
+
+New types introduced by keyword `type` *cannot* be implicitly cast to its underlying type.
+However, below programs seem to violate this restriction.
+
+p4c accepts these as valid.
+
+<details>
+<summary>Tests</summary>
+
+* psa-dpdk-binary-operations-1.p4
+* psa-dpdk-binary-operations.p4
+* psa-dpdk-header-union-typedef.p4
 </details>

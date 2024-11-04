@@ -361,11 +361,8 @@ module Type = struct
   let pp = pp_typ
   let eq = eq_typ
 
-  let rec is_numeric typ =
-    match typ with
-    | IntT | FIntT _ | FBitT _ -> true
-    | SEnumT (_, typ_inner, _) -> is_numeric typ_inner
-    | _ -> false
+  let is_numeric typ =
+    match typ with IntT | FIntT _ | FBitT _ -> true | _ -> false
 
   let rec is_ground typ =
     match typ with
