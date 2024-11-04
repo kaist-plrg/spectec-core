@@ -1416,6 +1416,8 @@ lvalue:
 | bits = lvalue L_BRACKET hi = expression COLON lo = expression info2 = R_BRACKET
     { let tags = Source.merge (Expression.tags bits) info2 in
       Expression.BitStringAccess { tags; bits; lo; hi } }
+| L_PAREN expr = lvalue R_PAREN
+    { expr }
 ;
 
 expression:

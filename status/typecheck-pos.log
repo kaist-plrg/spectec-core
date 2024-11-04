@@ -2463,8 +2463,7 @@ Error while typechecking p4 file: test/program/well-typed/lpm_ebpf.p4
 Typecheck success: test/program/well-typed/lpm_ubpf.p4
 
 >>> Running typecheck test on test/program/well-typed/lvalue-parens.p4
-parser error: File test/program/well-typed/lvalue-parens.p4, line 7, characters 4-5
-Error while parsing p4 file: test/program/well-typed/lvalue-parens.p4
+Typecheck success: test/program/well-typed/lvalue-parens.p4
 
 >>> Running typecheck test on test/program/well-typed/m_psa-dpdk-non-zero-arg-default-action-08.p4
 Typecheck success: test/program/well-typed/m_psa-dpdk-non-zero-arg-default-action-08.p4
@@ -4015,5 +4014,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 >>> Running typecheck test on test/program/well-typed/xor_test.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1235/1253 (98.56%) [FAIL] 18/1253 (1.44%)
-Typecheck: [PASS] 1010/1235 (81.78%) [FAIL] 225/1235 (18.22%)
+Parser on file: [PASS] 1236/1253 (98.64%) [FAIL] 17/1253 (1.36%)
+Typecheck: [PASS] 1011/1236 (81.80%) [FAIL] 225/1236 (18.20%)
