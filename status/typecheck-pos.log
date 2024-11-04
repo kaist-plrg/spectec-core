@@ -3826,8 +3826,7 @@ Typecheck success: test/program/well-typed/test-parserinvalidargument-error-bmv2
 Error while typechecking p4 file: test/program/well-typed/test_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed/trailing-comma.p4
-parser error: File test/program/well-typed/trailing-comma.p4, line 4, characters 0-1
-Error while parsing p4 file: test/program/well-typed/trailing-comma.p4
+Typecheck success: test/program/well-typed/trailing-comma.p4
 
 >>> Running typecheck test on test/program/well-typed/truncate_ubpf.p4
 Typecheck success: test/program/well-typed/truncate_ubpf.p4
@@ -4010,5 +4009,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 >>> Running typecheck test on test/program/well-typed/xor_test.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1236/1253 (98.64%) [FAIL] 17/1253 (1.36%)
-Typecheck: [PASS] 1015/1236 (82.12%) [FAIL] 221/1236 (17.88%)
+Parser on file: [PASS] 1237/1253 (98.72%) [FAIL] 16/1253 (1.28%)
+Typecheck: [PASS] 1016/1237 (82.13%) [FAIL] 221/1237 (17.87%)

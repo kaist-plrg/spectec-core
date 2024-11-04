@@ -4629,8 +4629,8 @@ parser error: File test/program/well-typed/test_ebpf.p4, line 20, characters 37-
 Error while parsing p4 string: test/program/well-typed/test_ebpf.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/trailing-comma.p4
-parser error: File test/program/well-typed/trailing-comma.p4, line 4, characters 0-1
-Error while parsing p4 file: test/program/well-typed/trailing-comma.p4
+parser error: File test/program/well-typed/trailing-comma.p4, line 6, characters 5-6
+Error while parsing p4 string: test/program/well-typed/trailing-comma.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/truncate_ubpf.p4
 parser error: File test/program/well-typed/truncate_ubpf.p4, line 20, characters 37-40
@@ -4841,6 +4841,6 @@ Error while parsing p4 string: test/program/well-typed/xdp_vlan_push_pop_ebpf-ke
 parser error: File test/program/well-typed/xor_test.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1236/1253 (98.64%) [FAIL] 17/1253 (1.36%)
-Parser on string: [PASS] 171/1236 (13.83%) [FAIL] 1065/1236 (86.17%)
+Parser on file: [PASS] 1237/1253 (98.72%) [FAIL] 16/1253 (1.28%)
+Parser on string: [PASS] 171/1237 (13.82%) [FAIL] 1066/1237 (86.18%)
 Parser roundtrip: [PASS] 156/171 (91.23%) [FAIL] 15/171 (8.77%)
