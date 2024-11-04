@@ -34,7 +34,7 @@ Error while typechecking p4 file: test/program/ill-typed/assign.p4
 Error while typechecking p4 file: test/program/ill-typed/binary_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/bitExtract_e.p4
-(check_bitstring_base) struct S {  } is not a valid base type
+(coerce_type_unary) Cannot coerce type struct S {  }
 Error while typechecking p4 file: test/program/ill-typed/bitExtract_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/call-table.p4
@@ -108,15 +108,15 @@ Typecheck success: test/program/ill-typed/directionless.p4
 Typecheck success: test/program/ill-typed/div.p4
 
 >>> Running typecheck test on test/program/ill-typed/div0.p4
-(type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<8> and int were given
+(coerce_types_binary_numeric) Cannot coerce types bit<8> and bit<8>
 Error while typechecking p4 file: test/program/ill-typed/div0.p4
 
 >>> Running typecheck test on test/program/ill-typed/div1.p4
-(type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<8> and int were given
+(coerce_types_binary_numeric) Cannot coerce types bit<8> and bit<8>
 Error while typechecking p4 file: test/program/ill-typed/div1.p4
 
 >>> Running typecheck test on test/program/ill-typed/div3.p4
-(type_binop_div) Division and modulo operator expects two arbitrary precision integers but bit<8> and bit<8> were given
+(coerce_types_binary_numeric) Cannot coerce types bit<8> and bit<8>
 Error while typechecking p4 file: test/program/ill-typed/div3.p4
 
 >>> Running typecheck test on test/program/ill-typed/dup-param.p4
@@ -795,7 +795,7 @@ Error while typechecking p4 file: test/program/ill-typed/named-fail.p4
 Error while typechecking p4 file: test/program/ill-typed/named-fail1.p4
 
 >>> Running typecheck test on test/program/ill-typed/neg.p4
-(type_binop_div) Division and modulo operator expects two arbitrary precision integers but int<8> and int<8> were given
+(coerce_types_binary_numeric) Cannot coerce types int<8> and int<8>
 Error while typechecking p4 file: test/program/ill-typed/neg.p4
 
 >>> Running typecheck test on test/program/ill-typed/newtype-err.p4
@@ -900,12 +900,11 @@ Typecheck success: test/program/ill-typed/slice_out_of_bound.p4
 Typecheck success: test/program/ill-typed/spec-ex32_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/spec-issue1297-string-cat-err-0.p4
-(type_binop_plus_minus_mult) Addition, subtraction, and multiplication operator expects either two arbitrary precision integers or 
-        two integers of the same signedness and width but string and string were given
+(coerce_types_binary_numeric) Cannot coerce types string and string
 Error while typechecking p4 file: test/program/ill-typed/spec-issue1297-string-cat-err-0.p4
 
 >>> Running typecheck test on test/program/ill-typed/spec-issue1297-string-cat-err-1.p4
-(type_binop_concat) Concatenation expects two bit-strings but string and int were given
+(coerce_types_binary_numeric) Cannot coerce types string and int
 Error while typechecking p4 file: test/program/ill-typed/spec-issue1297-string-cat-err-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/spec-issue1297-string-cat-err-2-anno.p4
@@ -1046,7 +1045,7 @@ Error while typechecking p4 file: test/program/ill-typed/type-in-expr.p4
 Error while typechecking p4 file: test/program/ill-typed/type-params_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/typecheck1_e.p4
-(type_unop_expr) ~ expects a fixed-size integer but d was given
+(coerce_type_unary) Cannot coerce type bool
 Error while typechecking p4 file: test/program/ill-typed/typecheck1_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/typecheck_e.p4
