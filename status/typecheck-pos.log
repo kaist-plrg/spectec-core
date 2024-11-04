@@ -2025,8 +2025,7 @@ Typecheck success: test/program/well-typed/issue356-bmv2.p4
 Typecheck success: test/program/well-typed/issue361-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3616.p4
-(type_var_expr) a is a free identifier
-Error while typechecking p4 file: test/program/well-typed/issue3616.p4
+Typecheck success: test/program/well-typed/issue3616.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3619-1.p4
 Typecheck success: test/program/well-typed/issue3619-1.p4
@@ -4017,4 +4016,4 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1235/1253 (98.56%) [FAIL] 18/1253 (1.44%)
-Typecheck: [PASS] 1009/1235 (81.70%) [FAIL] 226/1235 (18.30%)
+Typecheck: [PASS] 1010/1235 (81.78%) [FAIL] 225/1235 (18.22%)

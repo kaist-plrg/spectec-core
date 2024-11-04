@@ -3370,29 +3370,40 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     assert false);
   let _annos_il = List.map (type_anno cursor ctx) annos in
   let typ = eval_type_with_check cursor ctx typ in
-  let members, exprs_field = List.split fields in
-  let values_field =
-    List.map
-      (fun expr_field ->
-        let expr_field_il = type_expr cursor ctx expr_field in
-        let expr_field_il = coerce_type_assign expr_field_il typ.it in
-        Static.eval_expr cursor ctx expr_field_il)
-      exprs_field
-  in
-  let fields =
-    let members = List.map it members in
-    let values_field = List.map it values_field in
-    List.combine members values_field
-  in
-  let ctx =
+  (* Temporarily add members to the senum block context,
+     to allow initializers to refer to earlier members *)
+  let ctx, fields =
     List.fold_left
-      (fun ctx (member, value) ->
-        let value = Value.SEnumFieldV (id.it, member, value) in
-        let typ = Types.SEnumT (id.it, typ.it, fields) in
-        let id_field = id.it ^ "." ^ member in
-        Ctx.add_value cursor id_field value ctx
-        |> Ctx.add_rtype cursor id_field typ Lang.Ast.No Ctk.LCTK)
-      ctx fields
+      (fun (ctx, fields) (member, expr_field) ->
+        let expr_field_il = type_expr Ctx.Block ctx expr_field in
+        let expr_field_il = coerce_type_assign expr_field_il typ.it in
+        let value_field = Static.eval_expr Ctx.Block ctx expr_field_il in
+        let value_field =
+          Value.SEnumFieldV (id.it, member.it, value_field.it)
+        in
+        let typ_field = Types.SEnumT (id.it, typ.it, fields) in
+        let ctx =
+          Ctx.add_value Ctx.Block member.it value_field ctx
+          |> Ctx.add_rtype Ctx.Block member.it typ_field Lang.Ast.No Ctk.LCTK
+        in
+        let fields = fields @ [ (member.it, value_field) ] in
+        (ctx, fields))
+      (ctx, []) fields
+  in
+  (* Clear out the block context *)
+  let ctx =
+    let members = List.map fst fields in
+    let ctx =
+      List.fold_left
+        (fun ctx member ->
+          let value_field = Ctx.find_value Ctx.Block member ctx in
+          let typ_field = Types.SEnumT (id.it, typ.it, fields) in
+          let id_field = id.it ^ "." ^ member in
+          Ctx.add_value cursor id_field value_field ctx
+          |> Ctx.add_rtype cursor id_field typ_field Lang.Ast.No Ctk.LCTK)
+        ctx members
+    in
+    { Ctx.empty with global = ctx.global }
   in
   let td = Types.SEnumD (id.it, typ.it, fields) in
   WF.check_valid_typedef cursor ctx td;
