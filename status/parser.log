@@ -2977,8 +2977,7 @@ parser error: File test/program/well-typed/lpm_ubpf.p4, line 20, characters 37-4
 Error while parsing p4 string: test/program/well-typed/lpm_ubpf.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/lvalue-parens.p4
-parser error: File test/program/well-typed/lvalue-parens.p4, line 7, characters 4-5
-Error while parsing p4 file: test/program/well-typed/lvalue-parens.p4
+Parser roundtrip success: test/program/well-typed/lvalue-parens.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/m_psa-dpdk-non-zero-arg-default-action-08.p4
 parser error: File test/program/well-typed/m_psa-dpdk-non-zero-arg-default-action-08.p4, line 20, characters 37-40
@@ -4842,6 +4841,6 @@ Error while parsing p4 string: test/program/well-typed/xdp_vlan_push_pop_ebpf-ke
 parser error: File test/program/well-typed/xor_test.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1235/1253 (98.56%) [FAIL] 18/1253 (1.44%)
-Parser on string: [PASS] 170/1235 (13.77%) [FAIL] 1065/1235 (86.23%)
-Parser roundtrip: [PASS] 155/170 (91.18%) [FAIL] 15/170 (8.82%)
+Parser on file: [PASS] 1236/1253 (98.64%) [FAIL] 17/1253 (1.36%)
+Parser on string: [PASS] 171/1236 (13.83%) [FAIL] 1065/1236 (86.17%)
+Parser roundtrip: [PASS] 156/171 (91.23%) [FAIL] 15/171 (8.77%)

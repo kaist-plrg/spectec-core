@@ -429,19 +429,13 @@ enum A {
 * trailing-comma.p4
 </details>
 
-### (3) Allow parentheses in lvalues (1)
+### (3) ~~Allow parentheses in lvalues~~
 
 Since [issue#1273](https://github.com/p4lang/p4-spec/issues/1273).
 
 ```p4
 (x) = 1;
 ```
-
-<details>
-<summary>Tests</summary>
-
-* lvalue-parens.p4
-</details>
 
 ## 2. Feature Extension
 
