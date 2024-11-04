@@ -137,6 +137,11 @@ separated_nonempty_list(sep, X):
     { List.rev rev_list }
 ;
 
+separated_nonempty_opt_trailing_list(sep, X):
+| rev_list = separated_nonempty_list_aux(sep, X) option(sep)
+    { List.rev rev_list }
+;
+
 separated_atLeastTwo_list_aux(sep, X):
 | xs = separated_nonempty_list_aux(sep, X) sep x = X
     { x :: xs }
@@ -158,6 +163,11 @@ separated_list_aux(sep, X):
 
 separated_list(sep, X):
 | rev_list = separated_list_aux(sep, X)
+    { List.rev rev_list }
+;
+
+separated_opt_trailing_list(sep, X):
+| rev_list = separated_list_aux(sep, X) option(sep)
     { List.rev rev_list }
 ;
 
@@ -309,12 +319,12 @@ annotation:
       let body = Annotation.Unparsed { tags; str = body } in
       let tags = Source.merge info1 info3 in
       Annotation.{ tags; name; body } }
-| info1 = AT name = name info2 = L_BRACKET body = expressionList info3 = R_BRACKET
+| info1 = AT name = name info2 = L_BRACKET body = expressionOptTrailingList info3 = R_BRACKET
     { let tags = Source.merge info2 info3 in
       let body = Annotation.Expression { tags; exprs = body } in
       let tags = Source.merge info1 info3 in
       Annotation.{ tags; name; body } }
-| info1 = AT name = name info2 = L_BRACKET body = kvList info3 = R_BRACKET
+| info1 = AT name = name info2 = L_BRACKET body = kvOptTrailingList info3 = R_BRACKET
     { let tags = Source.merge info2 info3 in
       let body = Annotation.KeyValue { tags; key_values = body } in
       let tags = Source.merge info1 info3 in
@@ -1051,14 +1061,13 @@ structField:
       { tags; annotations; typ; name }: Declaration.field }
 ;
 
-(* TODO : add support for serializable enums *)
 enumDeclaration:
 | annotations = optAnnotations info1 = ENUM name = name
-  L_BRACE members = identifierList info2 = R_BRACE
+  L_BRACE members = identifierOptTrailingList info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
       Declaration.Enum { tags; annotations; name; members } }
 | annotations = optAnnotations info1 = ENUM typ = typeRef
-  name = name L_BRACE members = specifiedIdentifierList R_BRACE
+  name = name L_BRACE members = specifiedIdentifierOptTrailingList R_BRACE
     { let tags = Source.merge info1 (Type.tags typ) in
       Declaration.SerializableEnum { tags; annotations; typ; name; members } }
 ;
@@ -1071,7 +1080,7 @@ errorDeclaration:
 ;
 
 matchKindDeclaration:
-| info1 = MATCH_KIND L_BRACE members = identifierList info2 = R_BRACE
+| info1 = MATCH_KIND L_BRACE members = identifierOptTrailingList info2 = R_BRACE
     { declare_vars members;
       let tags = Source.merge info1 info2 in
       Declaration.MatchKind { tags; members } }
@@ -1081,12 +1090,16 @@ identifierList:
 | ids = separated_nonempty_list(COMMA, id = name {id})
     { ids };
 
+identifierOptTrailingList:
+| ids = separated_nonempty_opt_trailing_list(COMMA, id = name {id})
+    { ids };
+
 specifiedIdentifier:
 | name = name ASSIGN init = expression
     { (name, init) }
 
-specifiedIdentifierList:
-| specIds = separated_nonempty_list(COMMA, specId = specifiedIdentifier { specId })
+specifiedIdentifierOptTrailingList:
+| specIds = separated_nonempty_opt_trailing_list(COMMA, specId = specifiedIdentifier { specId })
     { specIds };
 
 typedefDeclaration:
@@ -1380,13 +1393,17 @@ argument:
     { let tags = Source.merge (Text.tags key) (Expression.tags value) in
       KeyValue.{ tags; key; value } }
 
-kvList:
-| kvs = separated_nonempty_list(COMMA, kvPair)
+kvOptTrailingList:
+| kvs = separated_nonempty_opt_trailing_list(COMMA, kvPair)
     { kvs }
-;
 
 expressionList:
 | exprs = separated_list(COMMA, expression) 
+    { exprs }
+;
+
+expressionOptTrailingList:
+| exprs = separated_opt_trailing_list(COMMA, expression) 
     { exprs }
 ;
 
@@ -1444,12 +1461,12 @@ expression:
 | bits = expression L_BRACKET hi = expression COLON lo = expression info2 = R_BRACKET
     { let tags = Source.merge (Expression.tags bits) info2 in
       Expression.BitStringAccess { tags; bits; lo; hi } }
-| info1 = L_BRACE values = expressionList info2 = R_BRACE
+| info1 = L_BRACE values = expressionOptTrailingList info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
       Expression.List { tags; values } }
 | info = INVALID
     { Expression.Invalid { tags = info } }
-| info1 = L_BRACE entries = kvList info2 = R_BRACE 
+| info1 = L_BRACE entries = kvOptTrailingList info2 = R_BRACE 
     { let tags = Source.merge info1 info2 in 
       Expression.Record { tags; entries } }
 | L_PAREN exp = expression R_PAREN
