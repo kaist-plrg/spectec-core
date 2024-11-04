@@ -273,6 +273,8 @@ nonTypeName:
     { Text.{ tags = info; str = "state" } }
 | info = TYPE
     { Text.{ tags = info; str = "type" } }
+| info = PRIORITY
+    { Text.{ tags = info; str = "priority" } }
 ;
 
 name:
