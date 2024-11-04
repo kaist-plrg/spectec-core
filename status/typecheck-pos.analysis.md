@@ -331,9 +331,7 @@ Logic only exists for `minSizeInBytes` and `minSizeInBits`.
 hdrs.ipv4[0].length = (hdrs.ipv4[0].maxSizeInBytes() + umeta.L2_packet_len_bytes);
 ```
 
-### (2) Allow serializable enum member initializers refer to other serializable enum members (1)
-
-But I think it is a terrible idea to allow it.
+### \[DONE\] (2) ~~Allow serializable enum member initializers refer to other serializable enum members~~
 
 ```p4
 enum bit<4> e {
@@ -343,12 +341,6 @@ enum bit<4> e {
     d = a
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue3616.p4
-</details>
 
 ### \[DONE\] ~~(3) `error` types can be `exact` matched~~
 
