@@ -72,7 +72,7 @@ S s2;
 s2 = { 0 };
 ```
 
-### (2) Type Coercion
+### \[DONE\] (2) ~~Type Coercion~~
 
 #### \[DONE\] (a) ~~More type coercion for equality check~~
 
@@ -288,26 +288,6 @@ control d() {
 value_set<bit<16>>(8) ipv4_ethertypes;
 ```
 
-### (11) Instances must be compile-time known (2)
-
-But are they local compile-time known or compile-time known?
-Also, does a directionless parameter expect a local compile-time known value or a compile-time known value?
-
-```p4
-extern widget createWidget<T, U>(U a, T b);
-parser P();
-parser p1()(widget w) { ... }
-package sw0(P p);
-sw0(p1(createWidget(16w0, 8w0))) main;
-```
-
-<details>
-<summary>Tests</summary>
-
-* factory1.p4
-* factory2.p4
-</details>
-
 ## 3. Devils are in the Details
 
 ### \[DONE\] (1) ~~Support `maxSizeInBytes` and `maxSizeInBits`~~
@@ -347,33 +327,6 @@ table t_exact {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-</details>
-
-### (4) `selector` match kind (10)
-
-```p4
-table indirect_ws {
-    key = { meta.hash1 : selector; }
-    ...
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* action_selector_shared-bmv2.p4
-* issue1560-bmv2.p4
-* pna-action-selector-1.p4
-* pna-action-selector.p4
-* psa-action-selector1.p4
-* psa-action-selector2.p4
-* psa-action-selector3.p4
-* psa-action-selector4.p4
-* psa-action-selector5.p4
-* psa-action-selector6.p4
 </details>
 
 # C. Feature Extension since Petr4
@@ -679,7 +632,7 @@ Virtual() cntr = {
 * virtual.p4
 </details>
 
-## 4. Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this (2)
+## 4. Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this (4)
 
 ```p4
 @pure extern HashAlgorithm_t random_hash(bool msb, bool extend);
@@ -689,10 +642,19 @@ hdr.hash = Hash<big<16>>(random_hash(false, false)).get(hdr.h1);
 ```p4
 const bool test = static_assert(V1MODEL_VERSION >= 20160101, "V1 model version is not >= 20160101");
 ```
+```p4
+extern widget createWidget<T, U>(U a, T b);
+parser P();
+parser p1()(widget w) { ... }
+package sw0(P p);
+sw0(p1(createWidget(16w0, 8w0))) main;
+```
 
 <details>
 <summary>Tests</summary>
 
+* factory1.p4
+* factory2.p4
 * hashext3.p4
 * issue3531.p4
 </details>
@@ -728,22 +690,7 @@ x = 32w5 / 3;
 * issue2279_4.p4
 </details>
 
-## 6. Is it legal to coerce a fixed width integer to an arbitrary precision integer? (2)
-
-I think it is illegal, but the test case below seem to violate this.
-
-```p4
-const int z1 = 2w1;
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue2444.p4
-* issue3283.p4
-</details>
-
-## 7. Equivalence of table actions (2)
+## 6. Equivalence of table actions (2)
 
 For default action, the spec mentions "In particular, the expressions passed as `in`, `out`, or `inout` parameters must be syntactically identical to the expressions used in one of the elements of the `actions` list. (14.2.1.3)".
 
@@ -771,7 +718,7 @@ control c() {
 * issue3671.p4
 </details>
 
-## [\REPORTED\] 8. Are accesses compile-time known? (3)
+## [\REPORTED\] 7. Are accesses compile-time known? (3)
 
 Waiting for spec clarification, [Issue#1323](https://github.com/p4lang/p4-spec/issues/1323).
 
@@ -802,7 +749,7 @@ const int<32> x = t.t1;
 * struct1.p4
 </details>
 
-## \[REPORTED\] 9. Type aliasing allowed for externs? (4)
+## \[REPORTED\] 8. Type aliasing allowed for externs? (4)
 
 Waiting for spec clarification, [Issue#1314](https://github.com/p4lang/p4-spec/issues/1314).
 
@@ -826,12 +773,12 @@ typedef MyCounter<my_counter_index_t> my_counter_t;
 * typedef-constructor.p4
 </details>
 
-## 10. Constraints on size of a value set?
+## 9. Constraints on size of a value set?
 
 The spec does not mention if the size given to a value set declaration should be local compile-time known, compile-time known, or neither.
 I suspect it should be at least compile-time known, and it is reflected in the current implementation.
 
-## 11. A generic type that imposes (or implies) a type constraint (1)
+## 10. A generic type that imposes (or implies) a type constraint (1)
 
 ```p4
 control nothing(
@@ -854,26 +801,6 @@ But, the default argument to `c` is `nothing()`, which imposes a type constraint
 <summary>Tests</summary>
 
 * default-package-argument.p4
-</details>
-
-## 12. Do we allow equality checks (`==`) on type variables? (1)
-
-The spec only allows assignment (`=`) for types that are type variables.
-But the test case below seems to violate this.
-This also implies some type constraint that the type variable should be a type that supports equality checks.
-
-```p4
-bool g<t>(in t a) {
-    h<t> v;
-    v.f = a;
-    return v.f == a;
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue3291-1.p4
 </details>
 
 # E. Unsupported features
@@ -1040,7 +967,33 @@ table tbl_idle_timeout {
 * psa-idle-timeout.p4
 </details>
 
-## 2. Optional argument (10)
+## 2. `selector` match kind (10)
+
+This is specific to V1Model architecture.
+
+```p4
+table indirect_ws {
+    key = { meta.hash1 : selector; }
+    ...
+}
+```
+
+<details>
+<summary>Tests</summary>
+
+* action_selector_shared-bmv2.p4
+* issue1560-bmv2.p4
+* pna-action-selector-1.p4
+* pna-action-selector.p4
+* psa-action-selector1.p4
+* psa-action-selector2.p4
+* psa-action-selector3.p4
+* psa-action-selector4.p4
+* psa-action-selector5.p4
+* psa-action-selector6.p4
+</details>
+
+## 3. Optional argument (10)
 
 ```p4
 extern Checksum {
@@ -1310,3 +1263,32 @@ p4c accepts these as valid.
 * psa-dpdk-binary-operations.p4
 * psa-dpdk-header-union-typedef.p4
 </details>
+
+## 9. Coercion from a fixed width integer to an arbitrary precision integer (2)
+
+This is illegal, but the test case below seem to violate this.
+
+```p4
+const int z1 = 2w1;
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue2444.p4
+* issue3283.p4
+</details>
+
+## 10. Equality check (`==`) on a variable type (1)
+
+The spec only allows assignment (`=`) for types that are type variables.
+But the test case below seems to violate this.
+This also implies some type constraint that the type variable should be a type that supports equality checks.
+
+```p4
+bool g<t>(in t a) {
+    h<t> v;
+    v.f = a;
+    return v.f == a;
+}
+```
