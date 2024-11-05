@@ -270,6 +270,8 @@ nonTableKwName:
     { Text.{ tags = info; str = "state" } }
 | info = TYPE
     { Text.{ tags = info; str = "type" } }
+| info = PRIORITY
+    { Text.{ tags = info; str = "priority" } }
 ;
 
 nonTypeName:
@@ -283,6 +285,8 @@ nonTypeName:
     { Text.{ tags = info; str = "state" } }
 | info = TYPE
     { Text.{ tags = info; str = "type" } }
+| info = PRIORITY
+    { Text.{ tags = info; str = "priority" } }
 ;
 
 name:
@@ -418,6 +422,8 @@ annotationToken:
     { Text.{ tags = $1; str = "switch" } }
 | TABLE
     { Text.{ tags = $1; str = "table" } }
+| THIS
+    { Text.{ tags = $1; str = "this" } }
 | TRANSITION
     { Text.{ tags = $1; str = "transition" } }
 | TRUE
@@ -711,7 +717,21 @@ keysetExpression:
 tupleKeysetExpression:
 | L_PAREN exprs = separated_atLeastTwo_list(COMMA, simpleKeysetExpression) R_PAREN
     { exprs }
+| L_PAREN expr = reducedSimpleKeysetExpression R_PAREN
+    { [ expr ] }
 ;
+
+reducedSimpleKeysetExpression:
+| info = DONTCARE
+    { Match.DontCare { tags = info } }
+| info = DEFAULT
+    { Match.Default { tags = info } }
+| expr = expression MASK mask = expression
+    { let tags = Source.merge (Expression.tags expr) (Expression.tags mask) in
+      Match.Expression { tags; expr = Expression.Mask { tags; expr; mask } } }
+| lo = expression RANGE hi = expression
+    { let tags = Source.merge (Expression.tags lo) (Expression.tags hi) in
+      Match.Expression { tags; expr = Expression.Range { tags; lo; hi } } }
 
 simpleKeysetExpression:
 | expr = expression
@@ -825,23 +845,27 @@ functionPrototype:
 ;
 
 methodPrototype:
-| annotations = optAnnotations func = functionPrototype
-  pop_scope
-  info2 = SEMICOLON
-    { let (info1, return, name, type_params, params) = func in
-      let tags = Source.merge info1 info2 in
-      MethodPrototype.Method { tags; annotations; return; name; type_params; params } }
 | annotations = optAnnotations ABSTRACT func = functionPrototype
   pop_scope
   info2 = SEMICOLON
     { let (info1, return, name, type_params, params) = func in
       let tags = Source.merge info1 info2 in
       MethodPrototype.AbstractMethod { tags; annotations; return; name; type_params; params } }
+| annotations = optAnnotations func = functionPrototype
+  pop_scope
+  info2 = SEMICOLON
+    { let (info1, return, name, type_params, params) = func in
+      let tags = Source.merge info1 info2 in
+      MethodPrototype.Method { tags; annotations; return; name; type_params; params } }
 | annotations = optAnnotations name = name
   L_PAREN params = parameterList R_PAREN info2 = SEMICOLON
     { let tags = Source.merge (Text.tags name) info2 in
       MethodPrototype.Constructor { tags; annotations; name; params } }
 ;
+
+methodName:
+| n = NAME TYPENAME
+    { n }
 
 (**************************** TYPES ******************************)
 
@@ -900,7 +924,7 @@ headerStackType:
 ;
 
 specializedType:
-| base = prefixedType l_angle args = typeArgumentList info_r = r_angle
+| base = typeName l_angle args = typeArgumentList info_r = r_angle
     { let tags = Source.merge (Type.tags base) info_r in
       Type.SpecializedType { tags; base; args } }
 ;
@@ -967,7 +991,7 @@ typeOrVoid:
 optTypeParameters:
 | (* empty *)
     { [] }
-| l_angle types = separated_list(COMMA, typeParameter) r_angle
+| l_angle types = separated_nonempty_list(COMMA, typeParameter) r_angle
     { declare_types types;
       types }
 ;
@@ -982,6 +1006,8 @@ realTypeArg:
     { Type.DontCare { tags = info } }
 | t = typeRef
     { t }
+| info = VOID
+    { Type.Void { tags = info } }
 ;
 
 typeArg:
@@ -1172,6 +1198,10 @@ directApplication:
   L_PAREN args = argumentList R_PAREN info2 = SEMICOLON
     { let tags = Source.merge (Type.tags typ) info2 in
       Statement.DirectApplication { tags; typ; args } }
+| typ = specializedType DOT APPLY
+  L_PAREN args = argumentList R_PAREN info2 = SEMICOLON
+    { let tags = Source.merge (Type.tags typ) info2 in
+      Statement.DirectApplication { tags; typ; args } }
 ;
 
 statement:
@@ -1227,9 +1257,6 @@ switchLabel:
 statementOrDeclaration:
 | decl = variableDeclaration
 | decl = constantDeclaration
-| decl = instantiation
-    { let tags = Declaration.tags decl in
-      Statement.DeclarationStatement { tags; decl } }
 | s = statement
     { s }
 ;
@@ -1258,7 +1285,10 @@ tableProperty:
       Table.Actions { tags; actions = acts } }
 | info1 = CONST ENTRIES ASSIGN L_BRACE entries = entriesList info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
-      Table.Entries { tags; entries = entries } }
+      Table.Entries { tags; entries = entries; const = true } }
+| info1 = ENTRIES ASSIGN L_BRACE entries = entriesList info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      Table.Entries { tags; entries = entries; const = false } }
 | info1 = CONST DEFAULT_ACTION ASSIGN act = actionRef info2 = SEMICOLON
     { let tags = Source.merge info1 info2 in
       Table.DefaultAction { tags; action = act; const = true } }
@@ -1299,8 +1329,25 @@ entry:
 | matches = keysetExpression
   info1 = COLON act = actionRef annos = optAnnotations info2 = SEMICOLON
     { let tags = Source.merge info1 info2 in
-      Table.{ tags; annotations = annos; matches = matches; action = act } }
+        Table.{ tags; annotations = annos; matches = matches; action = act; priority = None } }
+| CONST matches = keysetExpression
+  info1 = COLON act = actionRef annos = optAnnotations info2 = SEMICOLON
+    { let tags = Source.merge info1 info2 in
+      Table.{ tags; annotations = annos; matches = matches; action = act; priority = None } }
+| priority = entryPriority matches = keysetExpression
+  info1 = COLON act = actionRef annos = optAnnotations info2 = SEMICOLON
+    { let tags = Source.merge info1 info2 in
+      Table.{ tags; annotations = annos; matches = matches; action = act; priority = Some(priority) } }
+| CONST priority = entryPriority matches = keysetExpression
+  info1 = COLON act = actionRef annos = optAnnotations info2 = SEMICOLON
+    { let tags = Source.merge info1 info2 in
+      Table.{ tags; annotations = annos; matches = matches; action = act; priority = Some(priority) } }
 ;
+
+entryPriority:
+| PRIORITY ASSIGN expr = NUMBER COLON
+| PRIORITY ASSIGN L_PAREN expr = expression R_PAREN COLON
+    { expr }
 
 actionRef:
 | annotations = optAnnotations name = name
@@ -1364,10 +1411,10 @@ initialValue:
 (**************************** EXPRESSIONS ******************************)
 
 functionDeclaration:
-| func = functionPrototype body = blockStatement pop_scope
+| annotations = optAnnotations func = functionPrototype body = blockStatement pop_scope
     { let (info1, return, name, type_params, params) = func in
       let tags = Source.merge info1 body.Block.tags in
-      Declaration.Function { tags; return; name; type_params; params; body } }
+      Declaration.Function { tags; annotations; return; name; type_params; params; body } }
 ;
 
 argumentList: args = separated_list(COMMA, argument) { args };
@@ -1420,6 +1467,9 @@ prefixedNonTypeName:
 ;
 
 lvalue:
+| name = THIS
+    { let tags = Text.tags name in
+      Expression.Name { tags; name = BareName name } }
 | expr = prefixedNonTypeName
     { expr }
 | expr = lvalue DOT name = member
@@ -1525,12 +1575,10 @@ nonBraceExpression:
 | value = STRING_LITERAL
     { let tags = Text.tags value in
       Expression.String { tags; text = value } }
-| name = nonTypeName
-    { let tags = Text.tags name in
-      Expression.Name { tags; name = BareName name } }
-| info1 = dotPrefix go_toplevel name = nonTypeName go_local
-    { let tags = Source.merge info1 (Text.tags name) in
-      Expression.Name { tags; name = QualifiedName ([], name) } }
+| info1 = THIS
+    {}
+| expr = prefixedNonTypeName
+    { expr }
 | array = nonBraceExpression L_BRACKET index = expression info2 = R_BRACKET
     { let tags = Source.merge (Expression.tags array) info2 in
       Expression.ArrayAccess { tags; array; index } }
