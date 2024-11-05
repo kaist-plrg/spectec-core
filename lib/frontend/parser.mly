@@ -52,8 +52,8 @@ let rec smash_annotations (l: Text.t list) (tok2: Text.t): Text.t list =
 %token<Util.Source.info> TRUE FALSE
 %token<Util.Source.info> ABSTRACT ACTION ACTIONS APPLY BOOL BIT CONST CONTROL DEFAULT DEFAULT_ACTION
 %token<Util.Source.info> ELSE ENTRIES ENUM ERROR EXIT EXTERN HEADER HEADER_UNION IF IN INOUT
-%token<Util.Source.info> INT KEY LIST SELECT MATCH_KIND OUT PACKAGE PARSER RETURN STATE STRING STRUCT
-%token<Util.Source.info> SWITCH TABLE THEN TRANSITION TUPLE TYPE TYPEDEF VARBIT VALUESET VOID
+%token<Util.Source.info> INT KEY LIST SELECT MATCH_KIND OUT PACKAGE PARSER PRIORITY RETURN STATE STRING STRUCT
+%token<Util.Source.info> SWITCH TABLE THEN THIS TRANSITION TUPLE TYPE TYPEDEF VARBIT VALUESET VOID
 %token<Util.Source.info> PRAGMA PRAGMA_END
 %token<Surface.Ast.Text.t> UNEXPECTED_TOKEN
 
@@ -857,7 +857,7 @@ methodPrototype:
     { let (info1, return, name, type_params, params) = func in
       let tags = Source.merge info1 info2 in
       MethodPrototype.Method { tags; annotations; return; name; type_params; params } }
-| annotations = optAnnotations name = name
+| annotations = optAnnotations name = methodName
   L_PAREN params = parameterList R_PAREN info2 = SEMICOLON
     { let tags = Source.merge (Text.tags name) info2 in
       MethodPrototype.Constructor { tags; annotations; name; params } }
@@ -1257,6 +1257,8 @@ switchLabel:
 statementOrDeclaration:
 | decl = variableDeclaration
 | decl = constantDeclaration
+    { let tags = Declaration.tags decl in
+      Statement.DeclarationStatement { tags; decl } }
 | s = statement
     { s }
 ;
@@ -1345,7 +1347,10 @@ entry:
 ;
 
 entryPriority:
-| PRIORITY ASSIGN expr = NUMBER COLON
+| PRIORITY ASSIGN value = NUMBER COLON
+    { let value_int = fst value in 
+      let tags = Number.tags value_int in 
+      Expression.Int { tags; i = value_int } }
 | PRIORITY ASSIGN L_PAREN expr = expression R_PAREN COLON
     { expr }
 
@@ -1467,8 +1472,9 @@ prefixedNonTypeName:
 ;
 
 lvalue:
-| name = THIS
-    { let tags = Text.tags name in
+| info1 = THIS
+    { let name = Text.{ tags = info1; str = "this" } in
+      let tags = Text.tags name in
       Expression.Name { tags; name = BareName name } }
 | expr = prefixedNonTypeName
     { expr }
@@ -1576,7 +1582,9 @@ nonBraceExpression:
     { let tags = Text.tags value in
       Expression.String { tags; text = value } }
 | info1 = THIS
-    {}
+    { let name = Text.{ tags = info1; str = "this" } in
+      let tags = Text.tags name in
+      Expression.Name { tags; name = BareName name } }
 | expr = prefixedNonTypeName
     { expr }
 | array = nonBraceExpression L_BRACKET index = expression info2 = R_BRACKET

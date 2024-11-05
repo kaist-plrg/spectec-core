@@ -539,7 +539,7 @@ and transform_decl (decl : Declaration.t) : El.decl =
       let body = transform_block apply in
       let annos = transform_annos annotations in
       El.ControlD { id; tparams; params; cparams; locals; body; annos } $ at
-  | Function { name; return; type_params; params; body; tags = at } ->
+  | Function { name; annotations = _annotations ; return; type_params; params; body; tags = at } ->
       let id = transform_id name in
       let typ_ret = transform_type return in
       let tparams = transform_tparams type_params in
@@ -738,7 +738,7 @@ and transform_table_actions (actions : Table.action_ref list) :
 (* Table entries *)
 
 and transform_table_entry (entry : Table.entry) : El.table_entry =
-  let Table.{ matches; action; tags = at; annotations } = entry in
+  let Table.{ matches; action; tags = at; annotations; _ } = entry in
   let keysets = transform_keysets matches in
   let table_action = transform_table_action action in
   let annos = transform_annos annotations in
