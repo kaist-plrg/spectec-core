@@ -429,8 +429,14 @@ and pp_table_actions ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
 
 and pp_table_entry' ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
     table_entry' =
-  let keysets, table_action, _annos = table_entry' in
-  F.fprintf fmt "%s%a : %a" (indent level) (pp_keysets pp_expr) keysets
+  (* TODO : pp : priority *)
+  let keysets, table_action, priority, const, _annos = table_entry' in
+  F.fprintf fmt "%s%s%s%a%s%a : %a" (indent level)
+    (if const then "const " else "      ")
+    (if priority |> Option.is_some then "priority = " else "                ")
+    (pp_option pp_expr) priority
+    (if priority |> Option.is_some then " : " else "")
+    (pp_keysets pp_expr) keysets
     (pp_table_action ~level:(level + 1) pp_expr)
     table_action
 
@@ -440,10 +446,12 @@ and pp_table_entry ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
 
 and pp_table_entries ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
     table_entries =
+  let table_entries, table_entries_const = table_entries in
   match table_entries with
   | [] -> ()
   | _ ->
-      F.fprintf fmt "%sconst entries = {\n%a\n%s}" (indent level)
+      F.fprintf fmt "%s%s entries = {\n%a\n%s}" (indent level)
+        (if table_entries_const then "const " else "")
         (pp_list (pp_table_entry ~level:(level + 1) pp_expr) "\n")
         table_entries (indent level)
 

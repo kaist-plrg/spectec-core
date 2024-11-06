@@ -1331,19 +1331,19 @@ entry:
 | matches = keysetExpression
   info1 = COLON act = actionRef annos = optAnnotations info2 = SEMICOLON
     { let tags = Source.merge info1 info2 in
-        Table.{ tags; annotations = annos; matches = matches; action = act; priority = None } }
+        Table.{ tags; annotations = annos; matches = matches; action = act; priority = None; const = false } }
 | CONST matches = keysetExpression
   info1 = COLON act = actionRef annos = optAnnotations info2 = SEMICOLON
     { let tags = Source.merge info1 info2 in
-      Table.{ tags; annotations = annos; matches = matches; action = act; priority = None } }
+      Table.{ tags; annotations = annos; matches = matches; action = act; priority = None; const = true } }
 | priority = entryPriority matches = keysetExpression
   info1 = COLON act = actionRef annos = optAnnotations info2 = SEMICOLON
     { let tags = Source.merge info1 info2 in
-      Table.{ tags; annotations = annos; matches = matches; action = act; priority = Some(priority) } }
+      Table.{ tags; annotations = annos; matches = matches; action = act; priority = Some(priority); const = false } }
 | CONST priority = entryPriority matches = keysetExpression
   info1 = COLON act = actionRef annos = optAnnotations info2 = SEMICOLON
     { let tags = Source.merge info1 info2 in
-      Table.{ tags; annotations = annos; matches = matches; action = act; priority = Some(priority) } }
+      Table.{ tags; annotations = annos; matches = matches; action = act; priority = Some(priority); const = true } }
 ;
 
 entryPriority:

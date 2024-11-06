@@ -667,6 +667,7 @@ and Table : sig
     matches : Match.t list;
     action : action_ref;
     priority : Expression.t option;
+    const : bool;
   }
 
   type property = Source.info property'
@@ -710,6 +711,7 @@ end = struct
     matches : Match.t list;
     action : action_ref;
     priority : Expression.t option;
+    const : bool;
   }
 
   type property = Source.info property'

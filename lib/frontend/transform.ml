@@ -539,7 +539,16 @@ and transform_decl (decl : Declaration.t) : El.decl =
       let body = transform_block apply in
       let annos = transform_annos annotations in
       El.ControlD { id; tparams; params; cparams; locals; body; annos } $ at
-  | Function { name; annotations = _annotations ; return; type_params; params; body; tags = at } ->
+  | Function
+      {
+        name;
+        annotations = _annotations;
+        return;
+        type_params;
+        params;
+        body;
+        tags = at;
+      } ->
       let id = transform_id name in
       let typ_ret = transform_type return in
       let tparams = transform_tparams type_params in
@@ -674,8 +683,8 @@ and transform_table_properties (properties : Table.property list) : El.table =
               table_entries,
               table_default,
               table_customs )
-        | Entries { entries; _ } ->
-            let table_entries = transform_table_entries entries in
+        | Entries { entries; const; _ } ->
+            let table_entries = transform_table_entries entries const in
             ( table_keys,
               table_actions,
               table_entries,
@@ -700,7 +709,8 @@ and transform_table_properties (properties : Table.property list) : El.table =
               table_entries,
               table_default,
               table_customs @ [ table_custom ] ))
-      ([], [], [], None, []) properties
+      ([], [], ([], false), None, [])
+      properties
   in
   {
     keys = table_keys;
@@ -736,16 +746,20 @@ and transform_table_actions (actions : Table.action_ref list) :
   List.map transform_table_action actions
 
 (* Table entries *)
-
 and transform_table_entry (entry : Table.entry) : El.table_entry =
-  let Table.{ matches; action; tags = at; annotations; _ } = entry in
+  let Table.{ matches; action; tags = at; annotations; priority; const } =
+    entry
+  in
   let keysets = transform_keysets matches in
   let table_action = transform_table_action action in
+  let priority = Option.map transform_expr priority in
   let annos = transform_annos annotations in
-  (keysets, table_action, annos) $ at
+  (keysets, table_action, priority, const, annos) $ at
 
-and transform_table_entries (entries : Table.entry list) : El.table_entry list =
-  List.map transform_table_entry entries
+and transform_table_entries (entries : Table.entry list) (const : bool) :
+    El.table_entry list * El.table_entries_const =
+  let entries = List.map transform_table_entry entries in
+  (entries, const)
 
 (* Program *)
 

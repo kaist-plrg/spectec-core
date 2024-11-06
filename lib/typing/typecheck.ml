@@ -4043,7 +4043,7 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   WF.check_distinct_vars table_action_vars;
   let table_entries_il =
-    List.map (type_table_entry cursor ctx table_ctx) table.entries
+    type_table_entries cursor ctx table_ctx table.entries
   in
   let table_default_il =
     type_table_default cursor ctx table_ctx table.default
@@ -4429,17 +4429,39 @@ and type_table_entry_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let annos_il = List.map (type_anno cursor ctx) annos in
   (var, args_il, annos_il)
 
+(* TODO : check validity of priority *)
+and type_priority (cursor : Ctx.cursor) (ctx : Ctx.t) (priority : El.Ast.expr) :
+    Il.Ast.expr =
+  let priority_il = type_expr cursor ctx priority in
+  let typ = priority_il.note.typ in
+  if not (Type.is_numeric typ) then (
+    Format.printf "(type_priority) priority should be numeric type, not %a\n"
+      Types.pp_typ typ;
+    assert false);
+  priority_il
+
 and type_table_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
     (table_entry : El.Ast.table_entry) : Il.Ast.table_entry =
   type_table_entry' cursor ctx table_ctx table_entry.it $ table_entry.at
 
 and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
     (table_entry : El.Ast.table_entry') : Il.Ast.table_entry' =
-  let keysets, action, annos = table_entry in
+  let keysets, action, priority, table_entry_const, annos = table_entry in
   let keysets_il = type_table_entry_keysets cursor ctx table_ctx keysets in
   let action_il = type_table_entry_action cursor ctx table_ctx action in
+  let priority_il = Option.map (type_expr cursor ctx) priority in
   let annos_il = List.map (type_anno cursor ctx) annos in
-  (keysets_il, action_il, annos_il)
+  (keysets_il, action_il, priority_il, table_entry_const, annos_il)
+
+and type_table_entries (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t)
+    (table_entries : El.Ast.table_entry list * El.Ast.table_entries_const) :
+    Il.Ast.table_entry list * Il.Ast.table_entries_const =
+  let table_entries, table_entries_const = table_entries in
+  let table_entries_il =
+    List.map (type_table_entry cursor ctx table_ctx) table_entries
+  in
+  (table_entries_il, table_entries_const)
 
 (* (14.2.1.5) Size
 

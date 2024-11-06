@@ -401,13 +401,21 @@ and eq_table_actions (eq_expr : ('note, 'expr) eq_expr) table_actions_a
   eq_list (eq_table_action eq_expr) table_actions_a table_actions_b
 
 (* Table entries *)
+and eq_priority (eq_expr : ('note, 'expr) eq_expr) priority_a priority_b =
+  eq_expr priority_a priority_b
 
 and eq_table_entry' (eq_expr : ('note, 'expr) eq_expr) table_entry_a
     table_entry_b =
-  let keysets_a, table_action_a, annos_a = table_entry_a in
-  let keysets_b, table_action_b, annos_b = table_entry_b in
+  let keysets_a, table_action_a, priority_a, table_entry_const_a, annos_a =
+    table_entry_a
+  in
+  let keysets_b, table_action_b, priority_b, table_entry_const_b, annos_b =
+    table_entry_b
+  in
   eq_keysets eq_expr keysets_a keysets_b
   && eq_table_action eq_expr table_action_a table_action_b
+  && eq_option (eq_priority eq_expr) priority_a priority_b
+  && table_entry_const_a = table_entry_const_b
   && eq_annos eq_expr annos_a annos_b
 
 and eq_table_entry (eq_expr : ('note, 'expr) eq_expr) table_entry_a
@@ -416,7 +424,10 @@ and eq_table_entry (eq_expr : ('note, 'expr) eq_expr) table_entry_a
 
 and eq_table_entries (eq_expr : ('note, 'expr) eq_expr) table_entries_a
     table_entries_b =
+  let table_entries_a, table_entries_const_a = table_entries_a in
+  let table_entries_b, table_entries_const_b = table_entries_b in
   eq_list (eq_table_entry eq_expr) table_entries_a table_entries_b
+  && table_entries_const_a = table_entries_const_b
 
 (* Table default properties *)
 
