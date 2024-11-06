@@ -1065,7 +1065,7 @@ table indirect_ws {
 * psa-action-selector6.p4
 </details>
 
-## 3. Optional argument (10)
+## 3. Optional argument (9)
 
 ```p4
 extern Checksum {
@@ -1081,7 +1081,6 @@ h.h.result = ipv4_checksum.update({ h.eth_hdr.dst_addr, h.eth_hdr.src_addr, h.et
 
 * gauntlet_optional-bmv2.p4
 * issue1304.p4
-* issue2273-1.p4
 * issue2492.p4
 * issue2630.p4
 * issue2664-bmv2.p4
@@ -1364,3 +1363,9 @@ bool g<t>(in t a) {
     return v.f == a;
 }
 ```
+
+<details>
+<summary>Tests</summary>
+
+* issue3291-1.p4
+</details>

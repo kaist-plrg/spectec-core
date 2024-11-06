@@ -1,0 +1,64 @@
+test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/extern-funcs-bmv2.p4:33:10: fatal error: 'arith-inline-skeleton.p4' file not found
+#include "arith-inline-skeleton.p4"
+         ^~~~~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+test/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4:20:10: fatal error: 'ebpf_headers.p4' file not found
+#include "ebpf_headers.p4"
+         ^~~~~~~~~~~~~~~~~
+1 error generated.
+test/program/well-typed-excluded/unsupported/custom-table-element/issue2791_ebpf.p4:4:10: fatal error: 'ebpf_headers.p4' file not found
+#include "ebpf_headers.p4"
+         ^~~~~~~~~~~~~~~~~
+1 error generated.
+test/program/well-typed-excluded/unsupported/custom-table-element/issue2793_ebpf.p4:20:10: fatal error: 'ebpf_headers.p4' file not found
+#include "ebpf_headers.p4"
+         ^~~~~~~~~~~~~~~~~
+1 error generated.
+test/program/well-typed-excluded/unsupported/custom-table-element/issue2816-1_ebpf.p4:20:10: fatal error: 'ebpf_headers.p4' file not found
+#include "ebpf_headers.p4"
+         ^~~~~~~~~~~~~~~~~
+1 error generated.
+test/program/well-typed-excluded/unsupported/custom-table-element/issue2816_ebpf.p4:4:10: fatal error: 'ebpf_headers.p4' file not found
+#include "ebpf_headers.p4"
+         ^~~~~~~~~~~~~~~~~
+1 error generated.
+test/program/well-typed-excluded/unsupported/custom-table-element/issue870_ebpf.p4:20:10: fatal error: 'ebpf_headers.p4' file not found
+#include "ebpf_headers.p4"
+         ^~~~~~~~~~~~~~~~~
+1 error generated.
+test/program/well-typed-excluded/unsupported/custom-table-element/key-issue-1020_ebpf.p4:4:10: fatal error: 'ebpf_headers.p4' file not found
+#include "ebpf_headers.p4"
+         ^~~~~~~~~~~~~~~~~
+1 error generated.
+test/program/well-typed-excluded/unsupported/custom-table-element/key_ebpf.p4:4:10: fatal error: 'ebpf_headers.p4' file not found
+#include "ebpf_headers.p4"
+         ^~~~~~~~~~~~~~~~~
+1 error generated.
+test/program/well-typed-excluded/unsupported/custom-table-element/lpm_ebpf.p4:20:10: fatal error: 'ebpf_headers.p4' file not found
+#include "ebpf_headers.p4"
+         ^~~~~~~~~~~~~~~~~
+1 error generated.
+test/program/well-typed-excluded/unsupported/custom-table-element/stack_ebpf.p4:20:10: fatal error: 'ebpf_headers.p4' file not found
+#include "ebpf_headers.p4"
+         ^~~~~~~~~~~~~~~~~
+1 error generated.
+test/program/well-typed-excluded/unsupported/custom-table-element/switch_ebpf.p4:20:10: fatal error: 'ebpf_headers.p4' file not found
+#include "ebpf_headers.p4"
+         ^~~~~~~~~~~~~~~~~
+1 error generated.
+test/program/well-typed-excluded/unsupported/custom-table-element/ternary_ebpf.p4:18:10: fatal error: 'ebpf_headers.p4' file not found
+#include "ebpf_headers.p4"
+         ^~~~~~~~~~~~~~~~~
+1 error generated.
+test/program/well-typed-excluded/unsupported/custom-table-element/test_ebpf.p4:20:10: fatal error: 'ebpf_headers.p4' file not found
+#include "ebpf_headers.p4"
+         ^~~~~~~~~~~~~~~~~
+1 error generated.
+test/program/well-typed-excluded/unsupported/custom-table-element/two_ebpf.p4:20:10: fatal error: 'ebpf_headers.p4' file not found
+#include "ebpf_headers.p4"
+         ^~~~~~~~~~~~~~~~~
+1 error generated.
+test/program/well-typed-excluded/unsupported/custom-table-element/valid_ebpf.p4:4:10: fatal error: 'ebpf_headers.p4' file not found
+#include "ebpf_headers.p4"
+         ^~~~~~~~~~~~~~~~~
+1 error generated.

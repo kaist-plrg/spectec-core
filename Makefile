@@ -30,6 +30,7 @@ test-parser: build
 
 test-typecheck-pos: build
 	./$(TEST) typecheck -i test/arch -p test/program/well-typed > status/typecheck-pos.log 2> status/typecheck-pos.err
+	./$(TEST) typecheck -i test/arch -p test/program/well-typed-excluded > status/typecheck-pos-excluded.log 2> status/typecheck-pos-excluded.err
 
 test-typecheck-neg: build
 	./$(TEST) typecheck -i test/arch -n test/program/ill-typed > status/typecheck-neg.log 2> status/typecheck-neg.err
