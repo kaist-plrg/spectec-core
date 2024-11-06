@@ -23,13 +23,59 @@ argument:
 ;
 ```
 
-### (2) Operator precedence (1)
+### \[REVISIT\] (2) Operator precedence (1)
 
 The spec mentions "This grammar does not indicate the precedence of the various operators. The precedence mostly follows the C precedence rules, with one change and some additions." (8).
 
 ```p4
+extern T f<T>(T x);
+extern Object {
+    T foo<T>();
+}
+...
 if (4 + d.f < 10) { ... }
 ```
+
+But this is parsed as, `4 + (d.f < 10)`, due to how the lexer and parser cooperates.
+Here, `f` is a generic extern function.
+And while lexing `d.f`, the token `f` erroneously suggests the lexer that the following `<` is a type specialization symbol (`L_ANGLE_ARGS`), rather than a comparison operator (`L_ANGLE`).
+i.e., the lexer falsely falls into the `STemplate` state, not the `SRegular` state.
+
+```ocaml
+{ let rec lexer (lexbuf:lexbuf): token = 
+   match !lexer_state with
+    | SIdent(id, next) ->
+      begin match get_kind id with
+      | TypeName true ->
+        lexer_state := STemplate;
+        TYPENAME
+      (* the 'f' token hits here, leading the lexer state to STemplate *)
+      | Ident true ->
+        print_context ();
+        lexer_state := STemplate;
+        IDENTIFIER
+      | TypeName false ->
+        lexer_state := next;
+        TYPENAME
+      | Ident false ->
+        lexer_state := next;
+        IDENTIFIER
+      end
+```
+
+This in turn somehow causes the overall result to be parsed as `4 + (d.f < 10)`, but not sure exactly why.
+Using `%prec L_ANGLE` does not help here.
+
+```ocaml
+(* we have to actually inline this into expression rule to add the %prec directive *)
+| info = l_angle %prec L_ANGLE
+    { Op.Lt { tags = info } }
+```
+
+There can be basically two ways to fix this issue.
+
+(1) Use lookahead parsing
+(2) Parse the program twice: First match the angle brackets `<` and `>`, to first correctly identify whether it is a type specialization or not. Then, parse the whole program with the correct `L_ANGLE` and `L_ANGLE_ARGS`.
 
 <details>
 <summary>Tests</summary>
