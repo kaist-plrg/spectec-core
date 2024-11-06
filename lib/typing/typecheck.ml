@@ -641,8 +641,12 @@ and type_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr') :
   | StrE { text } -> type_str_expr text
   | NumE { num } -> type_num_expr num
   | VarE { var } -> type_var_expr cursor ctx var
-  | SeqE { exprs } -> type_seq_expr cursor ctx exprs
-  | RecordE { fields } -> type_record_expr cursor ctx fields
+  | SeqE { exprs } -> type_seq_expr ~default:false cursor ctx exprs
+  | SeqDefaultE { exprs } -> type_seq_expr ~default:true cursor ctx exprs
+  | RecordE { fields } -> type_record_expr ~default:false cursor ctx fields
+  | RecordDefaultE { fields } ->
+      type_record_expr ~default:true cursor ctx fields
+  | DefaultE -> type_default_expr ()
   | InvalidE -> type_invalid_expr ()
   | UnE { unop; expr } -> type_unop_expr cursor ctx unop expr
   | BinE { binop; expr_l; expr_r } ->
@@ -706,15 +710,26 @@ and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
 
    The empty tuple expression has type tuple<> - a tuple with no components. *)
 
-and type_seq_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : El.Ast.expr list)
-    : Type.t * Ctk.t * Il.Ast.expr' =
+(* (8.26) Initializing with default values
+
+   A value of type struct, header, or tuple can also be initialized using a mix of
+   explicit values and default values by using the notation ... in a tuple expression initializer;
+   in this case all fields not explicitly initialized are initialized with default values.
+   When initializing a struct, header, and tuple with a value containing partially default values
+   using the ... notation the three dots must appear last in the initializer. *)
+
+and type_seq_expr ~(default : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (exprs : El.Ast.expr list) : Type.t * Ctk.t * Il.Ast.expr' =
   let exprs_il = List.map (type_expr cursor ctx) exprs in
   let typs =
     List.map note exprs_il |> List.map (fun Il.Ast.{ typ; _ } -> typ)
   in
-  let typ = Types.SeqT typs in
+  let typ, expr_il =
+    if default then
+      (Types.SeqDefaultT typs, Il.Ast.SeqDefaultE { exprs = exprs_il })
+    else (Types.SeqT typs, Il.Ast.SeqE { exprs = exprs_il })
+  in
   WF.check_valid_type cursor ctx typ;
-  let expr_il = Il.Ast.SeqE { exprs = exprs_il } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
 
@@ -742,7 +757,15 @@ and type_seq_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : El.Ast.expr list)
 
    It is a compile-time error if a field name appears more than once in the same structure-valued expression. *)
 
-and type_record_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
+(* (8.26) Initializing with default values
+
+   A value of type struct, header, or tuple can also be initialized using a mix of
+   explicit values and default values by using the notation ... in a tuple expression initializer;
+   in this case all fields not explicitly initialized are initialized with default values.
+   When initializing a struct, header, and tuple with a value containing partially default values
+   using the ... notation the three dots must appear last in the initializer. *)
+
+and type_record_expr ~(default : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
     (fields : (El.Ast.member * El.Ast.expr) list) :
     Type.t * Ctk.t * Il.Ast.expr' =
   let members, exprs = List.split fields in
@@ -750,14 +773,25 @@ and type_record_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let typs =
     List.map note exprs_il |> List.map (fun Il.Ast.{ typ; _ } -> typ)
   in
-  let typ =
-    let members = List.map it members in
-    Types.RecordT (List.combine members typs)
+  let typ, expr_il =
+    let fields_typ = List.combine (List.map it members) typs in
+    let fields = List.combine members exprs_il in
+    if default then
+      (Types.RecordDefaultT fields_typ, Il.Ast.RecordDefaultE { fields })
+    else (Types.RecordT fields_typ, Il.Ast.RecordE { fields })
   in
   WF.check_valid_type cursor ctx typ;
-  let expr_il = Il.Ast.RecordE { fields = List.combine members exprs_il } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
+
+(* (8.26) Initializing with default values
+
+   A left-value can be initialized automatically with a default value of the
+   suitable type using the syntax ... (see Section 7.3). *)
+
+and type_default_expr () : Type.t * Ctk.t * Il.Ast.expr' =
+  let value = Value.DefaultV in
+  (Types.DefaultT, Ctk.LCTK, Il.Ast.ValueE { value = value $ no_info })
 
 (* (8.17) Operations on headers
    (8.19) Operations on header unions
@@ -768,7 +802,8 @@ and type_record_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
    particular header or header union type from the context. *)
 
 and type_invalid_expr () : Type.t * Ctk.t * Il.Ast.expr' =
-  (Types.InvalidT, Ctk.LCTK, Il.Ast.InvalidE)
+  let value = Value.InvalidV in
+  (Types.InvalidT, Ctk.LCTK, Il.Ast.ValueE { value = value $ no_info })
 
 (* (8.6) Operations on fixed-width bit types (unsigned integers)
 
@@ -2972,7 +3007,8 @@ and check_valid_var_type' (typ : Type.t) : bool =
   | UnionT _ ->
       true
   | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | TopT | SeqT _
-  | InvalidT | RecordT _ | SetT _ | StateT ->
+  | SeqDefaultT _ | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT | SetT _
+  | StateT ->
       false
 
 and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
@@ -4122,7 +4158,8 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
           false
       (* No equality op *)
       | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
-      | TableT _ | TopT | SeqT _ | RecordT _ | InvalidT | SetT _ | StateT ->
+      | TableT _ | TopT | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _
+      | DefaultT | InvalidT | SetT _ | StateT ->
           false)
   | "lpm" | "ternary" | "range" -> (
       match typ with
@@ -4135,7 +4172,8 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
           false
       (* No equality op *)
       | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
-      | TableT _ | TopT | SeqT _ | RecordT _ | InvalidT | SetT _ | StateT ->
+      | TableT _ | TopT | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _
+      | DefaultT | InvalidT | SetT _ | StateT ->
           false)
   | _ ->
       Format.printf "(check_table_key) %s is not a valid match_kind\n"

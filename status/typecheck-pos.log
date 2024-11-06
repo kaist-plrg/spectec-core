@@ -345,8 +345,7 @@ Typecheck success: test/program/well-typed/default-action-arg-bmv2.p4
 Error while typechecking p4 file: test/program/well-typed/default-control-argument.p4
 
 >>> Running typecheck test on test/program/well-typed/default-initializer.p4
-parser error: File test/program/well-typed/default-initializer.p4, line 3, characters 16-18
-Error while parsing p4 file: test/program/well-typed/default-initializer.p4
+Typecheck success: test/program/well-typed/default-initializer.p4
 
 >>> Running typecheck test on test/program/well-typed/default-package-argument.p4
 (coerce_type) Cannot coerce type control (inout hdr struct empty_t {  }, inout meta struct empty_t {  }, in imeta struct intrinsic_metadata_t { f0 = bit<8>; f1 = bit<8> }) to control (inout hdr H, inout meta M, in intr_md struct intrinsic_metadata_t { f0 = bit<8>; f1 = bit<8> })
@@ -4009,5 +4008,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 >>> Running typecheck test on test/program/well-typed/xor_test.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1237/1253 (98.72%) [FAIL] 16/1253 (1.28%)
-Typecheck: [PASS] 1016/1237 (82.13%) [FAIL] 221/1237 (17.87%)
+Parser on file: [PASS] 1238/1253 (98.80%) [FAIL] 15/1253 (1.20%)
+Typecheck: [PASS] 1017/1238 (82.15%) [FAIL] 221/1238 (17.85%)

@@ -201,11 +201,13 @@ and transform_expr (expr : Expression.t) : El.expr =
   match expr with
   | True { tags = at } -> El.BoolE { boolean = true } $ at
   | False { tags = at } -> El.BoolE { boolean = false } $ at
-  | Int { i; tags = at } -> El.NumE { num = transform_num i } $ at
   | String { text; tags = at } -> El.StrE { text = transform_text text } $ at
+  | Int { i; tags = at } -> El.NumE { num = transform_num i } $ at
   | Name { name; tags = at } -> El.VarE { var = transform_var name } $ at
   | List { values; tags = at } ->
       El.SeqE { exprs = transform_exprs values } $ at
+  | ListDots { values; tags = at } ->
+      El.SeqDefaultE { exprs = transform_exprs values } $ at
   | Record { entries = fields; tags = at } ->
       let fields =
         List.map
@@ -215,6 +217,16 @@ and transform_expr (expr : Expression.t) : El.expr =
           fields
       in
       El.RecordE { fields } $ at
+  | RecordDots { entries = fields; tags = at } ->
+      let fields =
+        List.map
+          (fun (field : KeyValue.t) ->
+            let KeyValue.{ key; value; _ } = field in
+            (transform_member key, transform_expr value))
+          fields
+      in
+      El.RecordDefaultE { fields } $ at
+  | Dots { tags = at } -> El.DefaultE $ at
   | Invalid { tags = at } -> El.InvalidE $ at
   | UnaryOp { op; arg; tags = at } ->
       let unop = transform_unop op in

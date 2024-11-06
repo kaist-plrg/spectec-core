@@ -98,7 +98,10 @@ and expr' =
   | NumE of { num : num }
   | VarE of { var : var }
   | SeqE of { exprs : expr list }
+  | SeqDefaultE of { exprs : expr list }
   | RecordE of { fields : (member * expr) list }
+  | RecordDefaultE of { fields : (member * expr) list }
+  | DefaultE
   | InvalidE
   | UnE of { unop : unop; expr : expr }
   | BinE of { binop : binop; expr_l : expr; expr_r : expr }

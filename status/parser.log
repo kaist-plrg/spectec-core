@@ -410,8 +410,8 @@ parser error: File test/program/well-typed/default-control-argument.p4, line 2, 
 Error while parsing p4 string: test/program/well-typed/default-control-argument.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/default-initializer.p4
-parser error: File test/program/well-typed/default-initializer.p4, line 3, characters 16-18
-Error while parsing p4 file: test/program/well-typed/default-initializer.p4
+parser error: File test/program/well-typed/default-initializer.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/default-initializer.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/default-package-argument.p4
 parser error: File test/program/well-typed/default-package-argument.p4, line 2, characters 2-4
@@ -4841,6 +4841,6 @@ Error while parsing p4 string: test/program/well-typed/xdp_vlan_push_pop_ebpf-ke
 parser error: File test/program/well-typed/xor_test.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1237/1253 (98.72%) [FAIL] 16/1253 (1.28%)
-Parser on string: [PASS] 171/1237 (13.82%) [FAIL] 1066/1237 (86.18%)
+Parser on file: [PASS] 1238/1253 (98.80%) [FAIL] 15/1253 (1.20%)
+Parser on string: [PASS] 171/1238 (13.81%) [FAIL] 1067/1238 (86.19%)
 Parser roundtrip: [PASS] 156/171 (91.23%) [FAIL] 15/171 (8.77%)

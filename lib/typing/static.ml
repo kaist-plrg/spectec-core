@@ -71,9 +71,9 @@ let rec ctk_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
   match expr with
   | ValueE _ -> LCTK
   | VarE { var } -> ctk_var_expr cursor ctx var
-  | SeqE { exprs } -> ctk_seq_expr exprs
-  | RecordE { fields } -> ctk_record_expr fields
-  | InvalidE -> LCTK
+  | SeqE { exprs } | SeqDefaultE { exprs } -> ctk_seq_expr exprs
+  | RecordE { fields } | RecordDefaultE { fields } -> ctk_record_expr fields
+  | DefaultE -> LCTK
   | UnE { unop; expr } -> ctk_unop_expr unop expr
   | BinE { binop; expr_l; expr_r } -> ctk_binop_expr binop expr_l expr_r
   | TernE { expr_cond; expr_then; expr_else } ->

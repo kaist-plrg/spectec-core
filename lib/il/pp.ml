@@ -116,11 +116,17 @@ and pp_expr' ?(level = 0) fmt expr' =
   | VarE { var } -> pp_var fmt var
   | SeqE { exprs } ->
       F.fprintf fmt "{ %a }" (P.pp_list (pp_expr ~level:0) ", ") exprs
+  | SeqDefaultE { exprs } ->
+      F.fprintf fmt "{ %a, ... }" (P.pp_list (pp_expr ~level:0) ", ") exprs
   | RecordE { fields } ->
       F.fprintf fmt "{ %a }"
         (P.pp_pairs pp_member (pp_expr ~level:0) ", ")
         fields
-  | InvalidE -> F.pp_print_string fmt "{#}"
+  | RecordDefaultE { fields } ->
+      F.fprintf fmt "{ %a, ... }"
+        (P.pp_pairs pp_member (pp_expr ~level:0) ", ")
+        fields
+  | DefaultE -> F.pp_print_string fmt "..."
   | UnE { unop; expr } ->
       F.fprintf fmt "%a%a" pp_unop unop (pp_expr ~level:0) expr
   | BinE { binop; expr_l; expr_r } ->

@@ -138,6 +138,7 @@ and print_expr (expr : Expression.t) =
   | Int { i; _ } -> print_number i
   | String { text; _ } -> "\"" ^ print_text text ^ "\""
   | Name { name; _ } -> print_name name
+  | Dots _ -> "..."
   | ArrayAccess { array; index; _ } ->
       let sarray = print_expr array in
       let sindex = print_expr index in
@@ -150,9 +151,15 @@ and print_expr (expr : Expression.t) =
   | List { values; _ } ->
       let svalues = List.map print_expr values |> String.concat ", " in
       Printf.sprintf "{ %s }" svalues
+  | ListDots { values; _ } ->
+      let svalues = List.map print_expr values |> String.concat ", " in
+      Printf.sprintf "{ %s, ... }" svalues
   | Record { entries; _ } ->
       let sentries = List.map print_key_value entries |> String.concat ", " in
       Printf.sprintf "{ %s }" sentries
+  | RecordDots { entries; _ } ->
+      let sentries = List.map print_key_value entries |> String.concat ", " in
+      Printf.sprintf "{ %s, ... }" sentries
   | Invalid _ -> "{#}"
   | UnaryOp { op; arg; _ } ->
       let sop = print_unop op in

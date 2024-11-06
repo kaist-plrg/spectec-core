@@ -338,10 +338,13 @@ and Expression : sig
     | Int of { tags : 'a; i : Number.t }
     | String of { tags : 'a; text : Text.t }
     | Name of { tags : 'a; name : Name.t }
+    | Dots of { tags : 'a }
     | ArrayAccess of { tags : 'a; array : t; index : t }
     | BitStringAccess of { tags : 'a; bits : t; lo : t; hi : t }
     | List of { tags : 'a; values : t list }
+    | ListDots of { tags : 'a; values : t list }
     | Record of { tags : 'a; entries : KeyValue.t list }
+    | RecordDots of { tags : 'a; entries : KeyValue.t list }
     | Invalid of { tags : 'a }
     | UnaryOp of { tags : 'a; op : Op.un; arg : t }
     | BinaryOp of { tags : 'a; op : Op.bin; args : t * t }
@@ -375,10 +378,13 @@ end = struct
     | Int of { tags : 'a; i : Number.t }
     | String of { tags : 'a; text : Text.t }
     | Name of { tags : 'a; name : Name.t }
+    | Dots of { tags : 'a }
     | ArrayAccess of { tags : 'a; array : t; index : t }
     | BitStringAccess of { tags : 'a; bits : t; lo : t; hi : t }
     | List of { tags : 'a; values : t list }
+    | ListDots of { tags : 'a; values : t list }
     | Record of { tags : 'a; entries : KeyValue.t list }
+    | RecordDots of { tags : 'a; entries : KeyValue.t list }
     | Invalid of { tags : 'a }
     | UnaryOp of { tags : 'a; op : Op.un; arg : t }
     | BinaryOp of { tags : 'a; op : Op.bin; args : t * t }
@@ -408,10 +414,13 @@ end = struct
     | Int { tags; _ }
     | String { tags; _ }
     | Name { tags; _ }
+    | Dots { tags }
     | ArrayAccess { tags; _ }
     | BitStringAccess { tags; _ }
     | List { tags; _ }
+    | ListDots { tags; _ }
     | Record { tags; _ }
+    | RecordDots { tags; _ }
     | Invalid { tags }
     | UnaryOp { tags; _ }
     | BinaryOp { tags; _ }
@@ -433,11 +442,14 @@ end = struct
     | Int { i; _ } -> Int { tags; i }
     | String { text; _ } -> String { tags; text }
     | Name { name; _ } -> Name { tags; name }
+    | Dots { tags = _ } -> Dots { tags }
     | ArrayAccess { array; index; _ } -> ArrayAccess { tags; array; index }
     | BitStringAccess { bits; lo; hi; _ } ->
         BitStringAccess { tags; bits; lo; hi }
     | List { values; _ } -> List { tags; values }
+    | ListDots { values; _ } -> ListDots { tags; values }
     | Record { entries; _ } -> Record { tags; entries }
+    | RecordDots { entries; _ } -> RecordDots { tags; entries }
     | Invalid _ -> Invalid { tags }
     | UnaryOp { op; arg; _ } -> UnaryOp { tags; op; arg }
     | BinaryOp { op; args; _ } -> BinaryOp { tags; op; args }
