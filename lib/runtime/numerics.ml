@@ -553,176 +553,237 @@ let eval_bitstring_access (value : Value.t) (hvalue : Value.t)
 
 (* Type cast evaluation *)
 
-let eval_cast_to_bool (value : Value.t) : Value.t =
-  match value with
-  | BoolV b -> BoolV b
-  | FBitV (width, value) when width = Bigint.one -> BoolV Bigint.(value = one)
-  | IntV value -> BoolV Bigint.(value = one)
-  | _ -> Format.asprintf "Cast to bool undefined" |> failwith
-
-let rec eval_cast_to_bit (width : Bigint.t) (value : Value.t) : Value.t =
-  match value with
-  | BoolV b ->
-      let value = if b then Bigint.one else Bigint.zero in
-      FBitV (width, value)
-  | FIntV (_, value) | FBitV (_, value) | IntV value ->
-      bit_of_raw_int value width
-  | SEnumFieldV (_, _, value) -> eval_cast_to_bit width value
+let rec eval_cast_bool (typ : Type.t) (b : bool) : Value.t =
+  match typ with
+  | BoolT -> BoolV b
+  | FBitT width_to -> FBitV (width_to, if b then Bigint.one else Bigint.zero)
+  | NewT (_, typ_inner) -> eval_cast_bool typ_inner b
   | _ ->
-      Format.asprintf "(TODO) Cast to bitstring undefined: %a" Value.pp value
+      Format.asprintf "(TODO) Cast from bool to type %a undefined" Type.pp typ
       |> failwith
 
-let rec eval_cast_to_int (width : Bigint.t) (value : Value.t) : Value.t =
-  match value with
-  | FBitV (_, value) | FIntV (_, value) | IntV value ->
-      int_of_raw_int value width
-  | SEnumFieldV (_, _, value) -> eval_cast_to_int width value
+and eval_cast_int (typ : Type.t) (i : Bigint.t) : Value.t =
+  match typ with
+  | BoolT -> BoolV Bigint.(i = one)
+  | IntT -> IntV i
+  | FIntT width -> int_of_raw_int i width
+  | FBitT width -> bit_of_raw_int i width
+  | NewT (_, typ_inner) -> eval_cast_int typ_inner i
   | _ ->
-      Format.asprintf "(TODO) Cast to integer undefined: %a" Value.pp value
+      Format.asprintf
+        "(TODO) Cast from arbitrary-precision int to type %a undefined" Type.pp
+        typ
       |> failwith
 
-let rec eval_cast_to_list (typ_inner : Type.t) (value : Value.t) : Value.t =
-  match value with
-  | SeqV values ->
-      let values = List.map (eval_cast typ_inner) values in
-      ListV values
+and eval_cast_fint (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
+  match typ with
+  | IntT -> IntV i
+  | FIntT width_to -> int_of_raw_int i width_to
+  | FBitT width_to -> bit_of_raw_int i width_to
+  | NewT (_, typ_inner) -> eval_cast_fint typ_inner width i
   | _ ->
-      Format.asprintf "(TODO) Cast to list undefined: %a" Value.pp value
+      Format.asprintf
+        "(TODO) Cast from fixed-precision int to type %a undefined" Type.pp typ
       |> failwith
 
-and eval_cast_to_tuple (typs : Type.t list) (value : Value.t) : Value.t =
-  match value with
-  | SeqV values ->
-      let values = List.map2 eval_cast typs values in
-      TupleV values
-  | SeqDefaultV values ->
-      let typs, typs_default =
-        ( List.filteri (fun i _ -> i < List.length values) typs,
-          List.filteri (fun i _ -> i >= List.length values) typs )
-      in
-      let values =
-        List.map2 eval_cast typs values @ List.map eval_default typs_default
-      in
-      TupleV values
+and eval_cast_fbit (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
+  match typ with
+  | BoolT -> BoolV Bigint.(i = one)
+  | IntT -> IntV i
+  | FIntT width_to -> int_of_raw_int i width_to
+  | FBitT width_to -> bit_of_raw_int i width_to
+  | NewT (_, typ_inner) -> eval_cast_fbit typ_inner width i
   | _ ->
-      Format.asprintf "(TODO) Cast to tuple undefined: %a" Value.pp value
+      Format.asprintf
+        "(TODO) Cast from fixed-precision bit to type %a undefined" Type.pp typ
       |> failwith
 
-and eval_cast_to_struct (fields_typ : (string * Type.t) list) (value : Value.t)
-    : Value.t =
-  match value with
-  | StructV fields_value ->
-      let fields_value =
-        List.fold_left
-          (fun fields (member, typ) ->
-            let value = List.assoc member fields_value in
-            let value = eval_cast typ value in
-            fields @ [ (member, value) ])
-          [] fields_typ
-      in
-      StructV fields_value
-  | SeqV values ->
-      let fields_value =
-        List.map2
-          (fun (member, typ) value ->
-            let value = eval_cast typ value in
-            (member, value))
-          fields_typ values
-      in
-      StructV fields_value
-  | SeqDefaultV values ->
-      let fields_typ, fields_typ_default =
-        ( List.filteri (fun i _ -> i < List.length values) fields_typ,
-          List.filteri (fun i _ -> i >= List.length values) fields_typ )
-      in
-      let fields_value =
-        List.map2
-          (fun (member, typ) value ->
-            let value = eval_cast typ value in
-            (member, value))
-          fields_typ values
-        @ List.map
-            (fun (member, typ) -> (member, eval_default typ))
-            fields_typ_default
-      in
-      StructV fields_value
-  | RecordV fields_value ->
-      let fields_value =
-        List.fold_left
-          (fun fields (member, typ) ->
-            let value = List.assoc member fields_value in
-            let value = eval_cast typ value in
-            fields @ [ (member, value) ])
-          [] fields_typ
-      in
-      StructV fields_value
-  | _ ->
-      Format.asprintf "(TODO) Cast to struct undefined: %a" Value.pp value
-      |> failwith
+and eval_cast_senum_field (typ : Type.t) (_id : string) (_member : string)
+    (value : Value.t) : Value.t =
+  eval_cast typ value
 
-and eval_cast_to_header (fields_typ : (string * Type.t) list) (value : Value.t)
-    : Value.t =
-  match value with
-  | SeqV values ->
-      let fields_value =
-        List.map2
-          (fun (member, typ) value ->
-            let value = eval_cast typ value in
-            (member, value))
-          fields_typ values
-      in
-      HeaderV (true, fields_value)
-  | RecordV fields_value ->
-      let fields_value =
-        List.fold_left
-          (fun fields (member, typ) ->
-            let value = List.assoc member fields_value in
-            let value = eval_cast typ value in
-            fields @ [ (member, value) ])
-          [] fields_typ
-      in
-      HeaderV (true, fields_value)
-  | InvalidV ->
-      let members, typs = List.split fields_typ in
-      let values = List.map eval_default typs in
-      let fields_value = List.combine members values in
-      HeaderV (false, fields_value)
-  | _ ->
-      Format.asprintf "(TODO) Cast to header undefined: %a" Value.pp value
-      |> failwith
-
-and eval_cast_to_union (fields_typ : (string * Type.t) list) (value : Value.t) :
+and eval_cast_struct (typ : Type.t) (fields_value : (string * Value.t) list) :
     Value.t =
-  match value with
-  | InvalidV ->
-      let members, typs = List.split fields_typ in
-      let values = List.map eval_default typs in
-      let fields_value = List.combine members values in
-      UnionV fields_value
+  match typ with
+  | StructT _ -> StructV fields_value
   | _ ->
-      Format.asprintf "(TODO) Cast to header undefined: %a" Value.pp value
+      Format.asprintf "(TODO) Cast from struct to type %a undefined" Type.pp typ
+      |> failwith
+
+and eval_cast_header (typ : Type.t) (valid : bool)
+    (fields_value : (string * Value.t) list) : Value.t =
+  match typ with
+  | HeaderT _ -> HeaderV (valid, fields_value)
+  | _ ->
+      Format.asprintf "(TODO) Cast from struct to type %a undefined" Type.pp typ
+      |> failwith
+
+and eval_cast_seq (typ : Type.t) (values : Value.t list) : Value.t =
+  match typ with
+  | ListT typ_inner ->
+      let values = List.map (eval_cast typ_inner) values in
+      SeqV values
+  | TupleT typs_inner ->
+      let values = List.map2 eval_cast typs_inner values in
+      TupleV values
+  | StructT (_, fields) ->
+      let members, typs_inner = List.split fields in
+      let values = List.map2 eval_cast typs_inner values in
+      let fields = List.combine members values in
+      StructV fields
+  | HeaderT (_, fields) ->
+      let members, typs_inner = List.split fields in
+      let values = List.map2 eval_cast typs_inner values in
+      let fields = List.combine members values in
+      HeaderV (true, fields)
+  | _ ->
+      Format.asprintf "(TODO) Cast from sequence to type %a undefined" Type.pp
+        typ
+      |> failwith
+
+and eval_cast_seq_default (typ : Type.t) (values : Value.t list) : Value.t =
+  match typ with
+  | TupleT typs_inner ->
+      let before i = i < List.length values in
+      let typs_inner_default =
+        List.filteri (fun i _ -> not (before i)) typs_inner
+      in
+      let typs_inner = List.filteri (fun i _ -> before i) typs_inner in
+      let values =
+        List.map2 eval_cast typs_inner values
+        @ List.map eval_default typs_inner_default
+      in
+      TupleV values
+  | StructT (_, fields_typ) ->
+      let before i = i < List.length values in
+      let members, typs_inner = List.split fields_typ in
+      let typs_inner_default =
+        List.filteri (fun i _ -> not (before i)) typs_inner
+      in
+      let typs_inner = List.filteri (fun i _ -> before i) typs_inner in
+      let values =
+        List.map2 eval_cast typs_inner values
+        @ List.map eval_default typs_inner_default
+      in
+      let fields = List.combine members values in
+      StructV fields
+  | HeaderT (_, fields_typ) ->
+      let before i = i < List.length values in
+      let members, typs_inner = List.split fields_typ in
+      let typs_inner_default =
+        List.filteri (fun i _ -> not (before i)) typs_inner
+      in
+      let typs_inner = List.filteri (fun i _ -> before i) typs_inner in
+      let values =
+        List.map2 eval_cast typs_inner values
+        @ List.map eval_default typs_inner_default
+      in
+      let fields = List.combine members values in
+      HeaderV (true, fields)
+  | _ ->
+      Format.asprintf "(TODO) Cast from default sequence to type %a undefined"
+        Type.pp typ
+      |> failwith
+
+and eval_cast_record (typ : Type.t) (fields_value : (string * Value.t) list) :
+    Value.t =
+  match typ with
+  | StructT (_, fields_typ) ->
+      let fields =
+        List.fold_left
+          (fun fields (member, typ) ->
+            let value = List.assoc member fields_value in
+            let value = eval_cast typ value in
+            fields @ [ (member, value) ])
+          [] fields_typ
+      in
+      StructV fields
+  | HeaderT (_, fields_typ) ->
+      let fields =
+        List.fold_left
+          (fun fields (member, typ) ->
+            let value = List.assoc member fields_value in
+            let value = eval_cast typ value in
+            fields @ [ (member, value) ])
+          [] fields_typ
+      in
+      HeaderV (true, fields)
+  | _ ->
+      Format.asprintf "(TODO) Cast from record to type %a undefined" Type.pp typ
+      |> failwith
+
+and eval_cast_record_default (typ : Type.t)
+    (fields_value : (string * Value.t) list) : Value.t =
+  match typ with
+  | StructT (_, fields_typ) ->
+      let fields =
+        List.fold_left
+          (fun fields (member, typ) ->
+            let value =
+              match List.assoc_opt member fields_value with
+              | Some value -> eval_cast typ value
+              | None -> eval_default typ
+            in
+            fields @ [ (member, value) ])
+          [] fields_typ
+      in
+      StructV fields
+  | HeaderT (_, fields_typ) ->
+      let fields =
+        List.fold_left
+          (fun fields (member, typ) ->
+            let value =
+              match List.assoc_opt member fields_value with
+              | Some value -> eval_cast typ value
+              | None -> eval_default typ
+            in
+            fields @ [ (member, value) ])
+          [] fields_typ
+      in
+      HeaderV (true, fields)
+  | _ ->
+      Format.asprintf "(TODO) Cast from default record to type %a undefined"
+        Type.pp typ
+      |> failwith
+
+and eval_cast_default (typ : Type.t) : Value.t = eval_default typ
+
+and eval_cast_invalid (typ : Type.t) : Value.t =
+  match typ with
+  | HeaderT (_, fields) ->
+      let members, typs = List.split fields in
+      let values = List.map eval_default typs in
+      let fields = List.combine members values in
+      HeaderV (false, fields)
+  | UnionT (_, fields) ->
+      let members, typs = List.split fields in
+      let values = List.map eval_default typs in
+      let fields = List.combine members values in
+      UnionV fields
+  | _ ->
+      Format.asprintf "(TODO) Cast from invalid to type %a undefined" Type.pp
+        typ
       |> failwith
 
 and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
-  if value = Value.DefaultV then eval_default typ
-  else
-    match typ with
-    | BoolT -> eval_cast_to_bool value
-    | IntT ->
-        let value = Value.get_num value in
-        IntV value
-    | FBitT width -> eval_cast_to_bit width value
-    | FIntT width -> eval_cast_to_int width value
-    | NewT (_id, typ_inner) -> eval_cast typ_inner value
-    | ListT typ_inner -> eval_cast_to_list typ_inner value
-    | TupleT typs_inner -> eval_cast_to_tuple typs_inner value
-    | StructT (_id, fields_typ) -> eval_cast_to_struct fields_typ value
-    | HeaderT (_id, fields_typ) -> eval_cast_to_header fields_typ value
-    | UnionT (_id, fields_typ) -> eval_cast_to_union fields_typ value
-    | _ ->
-        Format.asprintf "(TODO) Cast from %a to type %a undefined" Value.pp
-          value Type.pp typ
-        |> failwith
+  match value with
+  | BoolV b -> eval_cast_bool typ b
+  | IntV i -> eval_cast_int typ i
+  | FIntV (width, i) -> eval_cast_fint typ width i
+  | FBitV (width, i) -> eval_cast_fbit typ width i
+  | SEnumFieldV (id, member, value) -> eval_cast_senum_field typ id member value
+  | StructV fields -> eval_cast_struct typ fields
+  | HeaderV (valid, fields) -> eval_cast_header typ valid fields
+  | SeqV values -> eval_cast_seq typ values
+  | SeqDefaultV values -> eval_cast_seq_default typ values
+  | RecordV fields -> eval_cast_record typ fields
+  | RecordDefaultV fields -> eval_cast_record_default typ fields
+  | DefaultV -> eval_cast_default typ
+  | InvalidV -> eval_cast_invalid typ
+  | _ ->
+      Format.asprintf "(TODO) Cast from %a to type %a undefined" Value.pp value
+        Type.pp typ
+      |> failwith
 
 (* Default evaluation *)
 
