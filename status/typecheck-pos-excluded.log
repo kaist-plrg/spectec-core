@@ -1,0 +1,882 @@
+Running typecheck tests on 215 files
+
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/concat-string/issue4932.p4
+Error while typechecking p4 file: test/program/well-typed-excluded/future/concat-string/issue4932.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/concat-string/spec-issue1297-string-cat.p4
+(coerce_types_binary_numeric) Cannot coerce types string and string
+parser error: File test/program/well-typed-excluded/future/concat-string/spec-issue1297-string-cat.p4, line 11, characters 0-4
+Error while parsing p4 file: test/program/well-typed-excluded/future/concat-string/spec-issue1297-string-cat.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/forloop/forloop1.p4
+parser error: File test/program/well-typed-excluded/future/forloop/forloop1.p4, line 23, characters 16-17
+Error while parsing p4 file: test/program/well-typed-excluded/future/forloop/forloop1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/forloop/forloop2.p4
+parser error: File test/program/well-typed-excluded/future/forloop/forloop2.p4, line 16, characters 9-12
+Error while parsing p4 file: test/program/well-typed-excluded/future/forloop/forloop2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/forloop/forloop3.p4
+parser error: File test/program/well-typed-excluded/future/forloop/forloop3.p4, line 18, characters 13-16
+Error while parsing p4 file: test/program/well-typed-excluded/future/forloop/forloop3.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/forloop/forloop4.p4
+parser error: File test/program/well-typed-excluded/future/forloop/forloop4.p4, line 22, characters 13-16
+Error while parsing p4 file: test/program/well-typed-excluded/future/forloop/forloop4.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/forloop/forloop5.p4
+parser error: File test/program/well-typed-excluded/future/forloop/forloop5.p4, line 18, characters 13-16
+Error while parsing p4 file: test/program/well-typed-excluded/future/forloop/forloop5.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/forloop/forloop5a.p4
+parser error: File test/program/well-typed-excluded/future/forloop/forloop5a.p4, line 18, characters 13-16
+Error while parsing p4 file: test/program/well-typed-excluded/future/forloop/forloop5a.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/forloop/forloop6.p4
+parser error: File test/program/well-typed-excluded/future/forloop/forloop6.p4, line 19, characters 13-16
+Error while parsing p4 file: test/program/well-typed-excluded/future/forloop/forloop6.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/forloop/forloop7.p4
+parser error: File test/program/well-typed-excluded/future/forloop/forloop7.p4, line 18, characters 13-16
+Error while parsing p4 file: test/program/well-typed-excluded/future/forloop/forloop7.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/forloop/issue4739.p4
+parser error: File test/program/well-typed-excluded/future/forloop/issue4739.p4, line 51, characters 13-16
+Error while parsing p4 file: test/program/well-typed-excluded/future/forloop/issue4739.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/generic-parser-control/functors6.p4
+(type_parser_decl) Parser declarations cannot be generic
+Error while typechecking p4 file: test/program/well-typed-excluded/future/generic-parser-control/functors6.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/generic-parser-control/functors7.p4
+(type_parser_decl) Parser declarations cannot be generic
+Error while typechecking p4 file: test/program/well-typed-excluded/future/generic-parser-control/functors7.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/generic-parser-control/functors8.p4
+(type_parser_decl) Parser declarations cannot be generic
+Error while typechecking p4 file: test/program/well-typed-excluded/future/generic-parser-control/functors8.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/generic-parser-control/functors9.p4
+(type_parser_decl) Parser declarations cannot be generic
+Error while typechecking p4 file: test/program/well-typed-excluded/future/generic-parser-control/functors9.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/generic-parser-control/generic.p4
+(type_control_decl) Control declarations cannot be generic
+Error while typechecking p4 file: test/program/well-typed-excluded/future/generic-parser-control/generic.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/generic-parser-control/generic1.p4
+(type_control_decl) Control declarations cannot be generic
+Error while typechecking p4 file: test/program/well-typed-excluded/future/generic-parser-control/generic1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/generic-parser-control/issue1914-1.p4
+(type_control_decl) Control declarations cannot be generic
+Error while typechecking p4 file: test/program/well-typed-excluded/future/generic-parser-control/issue1914-1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/generic-parser-control/issue1914.p4
+(type_control_decl) Control declarations cannot be generic
+Error while typechecking p4 file: test/program/well-typed-excluded/future/generic-parser-control/issue1914.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/generic-parser-control/issue2019-1.p4
+(type_control_decl) Control declarations cannot be generic
+Error while typechecking p4 file: test/program/well-typed-excluded/future/generic-parser-control/issue2019-1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/generic-parser-control/issue2019.p4
+(type_control_decl) Control declarations cannot be generic
+Error while typechecking p4 file: test/program/well-typed-excluded/future/generic-parser-control/issue2019.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/generic-parser-control/issue2265.p4
+(type_control_decl) Control declarations cannot be generic
+Error while typechecking p4 file: test/program/well-typed-excluded/future/generic-parser-control/issue2265.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/generic-parser-control/issue344.p4
+(type_control_decl) Control declarations cannot be generic
+Error while typechecking p4 file: test/program/well-typed-excluded/future/generic-parser-control/issue344.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/future/generic-parser-control/spec-issue1068.p4
+parser error: File test/program/well-typed-excluded/future/generic-parser-control/spec-issue1068.p4, line 9, characters 21-22
+Error while parsing p4 file: test/program/well-typed-excluded/future/generic-parser-control/spec-issue1068.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/abstract-method-overload/issue2175-1.p4
+(type_instantiation_decl) Abstract method g(ix) is not defined
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/abstract-method-overload/issue2175-1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/abstract-method-overload/issue2175-3.p4
+(type_instantiation_decl) Abstract method a(arg) is not defined
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/abstract-method-overload/issue2175-3.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/abstract-method-overload/issue2175-4.p4
+(type_instantiation_decl) Abstract method g(ix) is not defined
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/abstract-method-overload/issue2175-4.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/abstract-method-overload/virtual.p4
+(type_instantiation_decl) Abstract method g(ix) is not defined
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/abstract-method-overload/virtual.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/access-compile-time-known/struct.p4
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/access-compile-time-known/struct.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/access-compile-time-known/struct1.p4
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/access-compile-time-known/struct1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/access-compile-time-known/tuple3.p4
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/access-compile-time-known/tuple3.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory1.p4
+(check_ctk) createWidget<bit<8>, bit<16>>(16w0, 8w0) is not a compile-time known expression
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory2.p4
+(check_ctk) createWidget<bit<8>, bit<16>>(16w0, 8w0) is not a compile-time known expression
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/hashext3.p4
+(check_ctk) random_hash(false, false) is not a compile-time known expression
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/hashext3.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/issue3531.p4
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/issue3531.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/bfd_offload.p4
+(check_eq_typ_alpha) Types int and bit<16> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/bfd_offload.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/calc-ebpf.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/calc-ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/constructor_cast.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/constructor_cast.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/extern-funcs-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/extern-funcs-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/extern2.p4
+(check_eq_typ_alpha) Types int and bit<16> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/extern2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_extern_arguments_2.p4
+(check_eq_typ_alpha) Types seq<int,
+int,
+bit<16>> and header ethernet_t { dst_addr = bit<48>; src_addr = bit<48>; eth_type = bit<16> } are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_extern_arguments_2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_hdr_in_value-bmv2.p4
+(check_eq_typ_alpha) Types seq<seq<bit<48>,
+bit<48>,
+bit<16>>> and struct Headers { eth_hdr = header ethernet_t { dst_addr = bit<48>; src_addr = bit<48>; eth_type = bit<16> } } are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_hdr_in_value-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1001-1-bmv2.p4
+(check_eq_typ_alpha) Types enum<bit<8>> PreservedFieldList and bit<8> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1001-1-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1001-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<8> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1001-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1006.p4
+(check_eq_typ_alpha) Types seq<int> and tuple<bit<8>> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1006.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1043-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<8> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1043-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1097-2-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1097-2-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1097-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1097-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1334.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1334.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1642-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<8> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1642-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1653-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<8> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1653-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1653-complex-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<8> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1653-complex-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1660-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<8> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1660-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1765-1-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<8> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1765-1-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1814-1-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1814-1-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1814-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1814-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1958.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1958.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2648.p4
+(check_eq_typ_alpha) Types seq<bit<8>> and header H { a = bit<8> } are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2648.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2844-enum.p4
+(check_eq_typ_alpha) Types enum<bit<32>> sizes and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2844-enum.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue298-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue298-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue3246-1.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue3246-1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue383-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<8> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue383-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue4288.p4
+(check_eq_typ_alpha) Types seq<int> and header hdr_t { f0 = bit<8> } are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue4288.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue562-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<8> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue562-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue754.p4
+(check_eq_typ_alpha) Types int and bit<3> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue754.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue933-1.p4
+(check_eq_typ_alpha) Types seq<int> and struct headers { x = bit<32> } are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue933-1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/list7.p4
+(check_eq_typ_alpha) Types record { f = int } and struct S { f = bit<32> } are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/list7.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/named-arg1.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/named-arg1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/pr1363.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/pr1363.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-action-profile1.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-action-profile1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-action-profile3.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-action-profile3.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-action-profile4.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-action-profile4.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-basic-counter-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-basic-counter-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-counter1.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-counter1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-counter2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-counter2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-counter3.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-counter3.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-custom-type-counter-index.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-custom-type-counter-index.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-end-of-ingress-test-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-end-of-ingress-test-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_1.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_3.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_3.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_5.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_5.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_6.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_6.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_7.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_7.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_8.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_8.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_9.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-byte-alignment_9.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-counter.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-counter.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-externs.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-externs.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-meter-execute-err.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-meter-execute-err.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-meter.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-meter.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-meter1.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-meter1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-varbit-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-example-dpdk-varbit-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-meter1.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-meter1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-meter3.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-meter3.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-meter7-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-meter7-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-random.p4
+(check_eq_typ_alpha) Types int and bit<16> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-random.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-register-complex-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-register-complex-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-register-read-write-2-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-register-read-write-2-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-register-read-write-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-register-read-write-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-register1.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-register1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-register2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-register2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-register3.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-register3.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/rcp.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/rcp.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/rcp1.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/rcp1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/register-serenum-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/register-serenum-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/simple-firewall_ubpf.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/simple-firewall_ubpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/unused-counter-bmv2.p4
+(type_table_custom) Custom element counters is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/unused-counter-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/v1model-special-ops-bmv2.p4
+(check_eq_typ_alpha) Types int and bit<8> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/v1model-special-ops-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/value-sets.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/value-sets.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/constant_folding.p4
+(coerce_types_binary_numeric) Cannot coerce types bit<32> and bit<32>
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/constant_folding.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/gauntlet_various_ops-bmv2.p4
+(coerce_types_binary_numeric) Cannot coerce types bit<4> and bit<4>
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/gauntlet_various_ops-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue1879-bmv2.p4
+(coerce_types_binary_numeric) Cannot coerce types bit<9> and bit<9>
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue1879-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue2190.p4
+(coerce_types_binary_numeric) Cannot coerce types bit<8> and bit<8>
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue2190.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue2279_4.p4
+(coerce_types_binary_numeric) Cannot coerce types bit<16> and bit<16>
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue2279_4.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue2287-bmv2.p4
+(coerce_types_binary_numeric) Cannot coerce types bit<8> and bit<8>
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue2287-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/precedence.p4
+(coerce_types_binary_numeric) Cannot coerce types bit<1> and bit<1>
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/precedence.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/strength.p4
+(coerce_types_binary_numeric) Cannot coerce types bit<4> and bit<4>
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/strength.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/generic-constrained/default-package-argument.p4
+(coerce_type) Cannot coerce type control (inout hdr struct empty_t {  }, inout meta struct empty_t {  }, in imeta struct intrinsic_metadata_t { f0 = bit<8>; f1 = bit<8> }) to control (inout hdr H, inout meta M, in intr_md struct intrinsic_metadata_t { f0 = bit<8>; f1 = bit<8> })
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/generic-constrained/default-package-argument.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue2037.p4
+(type_table_action_default) There is no action named a in actions list
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue2037.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue3671.p4
+(type_call_default_action_partial) Arguments ({ f0 = ext(), f1 = ext() }) and ({ f1 = ext(), f0 = ext() }) are syntactically different
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue3671.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/typedef-objects/extern-inst-as-param.p4
+(check_valid_typedef_nesting) Invalid nesting of extern MyCounter { count(index) : extern_method<>(in index bit<10>) -> void } inside typedef extern MyCounter { count(index) : extern_method<>(in index bit<10>) -> void }
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/typedef-objects/extern-inst-as-param.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/typedef-objects/issue2735-bmv2.p4
+(check_valid_typedef_nesting) Invalid nesting of extern register { read(result, index) : extern_method<>(out result bit<69>, in index bit<32>) -> void
+write(index, value) : extern_method<>(in index bit<32>, in value bit<69>) -> void } inside typedef extern register { read(result, index) : extern_method<>(out result bit<69>, in index bit<32>) -> void
+write(index, value) : extern_method<>(in index bit<32>, in value bit<69>) -> void }
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/typedef-objects/issue2735-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/typedef-objects/issue2735.p4
+(check_valid_typedef_nesting) Invalid nesting of extern register { read(result, index) : extern_method<>(out result bit<69>, in index bit<32>) -> void
+write(index, value) : extern_method<>(in index bit<32>, in value bit<69>) -> void } inside typedef extern register { read(result, index) : extern_method<>(out result bit<69>, in index bit<32>) -> void
+write(index, value) : extern_method<>(in index bit<32>, in value bit<69>) -> void }
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/typedef-objects/issue2735.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/typedef-objects/typedef-constructor.p4
+(check_valid_typedef_nesting) Invalid nesting of extern MyCounter { count(index) : extern_method<>(in index bit<10>) -> void } inside typedef extern MyCounter { count(index) : extern_method<>(in index bit<10>) -> void }
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/typedef-objects/typedef-constructor.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/abstract-method-scoping/issue2273-1.p4
+(type_var_expr) hdr is a free identifier
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/abstract-method-scoping/issue2273-1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/abstract-method-scoping/virtual3.p4
+(type_var_expr) local is a free identifier
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/abstract-method-scoping/virtual3.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/duplicate-match-kind/pipe.p4
+(type_match_kind_decl) Match kind ternary was already defined
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/duplicate-match-kind/pipe.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast/issue2444.p4
+(coerce_type) Cannot coerce type bit<2> to int
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast/issue2444.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast/issue3283.p4
+(type_array_acc_expr) { 1w1, 1w1 } cannot be indexed
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast/issue3283.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/mask-on-exact-match/spec-ex25.p4
+(type_action_keyset) match_kind exact cannot use mask expression 
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/mask-on-exact-match/spec-ex25.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/psa-dpdk-binary-operations-1.p4
+(coerce_types_binary_numeric) Cannot coerce types bit<32> and type PortId_t (= bit<32>)
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/psa-dpdk-binary-operations-1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/psa-dpdk-binary-operations.p4
+(coerce_types_binary_numeric) Cannot coerce types bit<32> and type PortId_t (= bit<32>)
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/psa-dpdk-binary-operations.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/psa-dpdk-header-union-typedef.p4
+(coerce_types_binary_numeric) Cannot coerce types bit<32> and type PortId_t (= bit<32>)
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/psa-dpdk-header-union-typedef.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/select-keyset-syntax/issue2514.p4
+parser error: File test/program/well-typed-excluded/test-clarify/select-keyset-syntax/issue2514.p4, line 29, characters 30-31
+Error while parsing p4 file: test/program/well-typed-excluded/test-clarify/select-keyset-syntax/issue2514.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/shift-by-signed-int/issue3287.p4
+(coerce_types_binary_numeric) Cannot coerce types bit<4> and int<6>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/shift-by-signed-int/issue3287.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3091-1.p4
+(check_valid_type_nesting) Invalid nesting of match_kind inside tuple<match_kind>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3091-1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3091.p4
+(check_valid_type_nesting) Invalid nesting of match_kind inside tuple<match_kind>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3091.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3238.p4
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3238.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/tuple-nesting/list3.p4
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
+tuple<K, K>,Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/tuple-nesting/list3.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/tuple-nesting/list4.p4
+
+V>
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
+tuple<K, K>,Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/tuple-nesting/list4.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/type-variable-equality-op/issue3291-1.p4
+
+V>
+(type_binop_compare_equal) Type t cannot be compared of equality
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/type-variable-equality-op/issue3291-1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-nested-struct.p4
+(coerce_type) Cannot coerce type struct value_set_t { field = bit<32>; inner = struct inner_value_set_t { field = bit<32> } } to seq<bit<32>,
+bit<32>>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-nested-struct.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-1-bmv2.p4
+(coerce_type) Cannot coerce type struct value_set_t { field = bit<32> } to bit<32>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-1-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-2-bmv2.p4
+(coerce_type) Cannot coerce type struct value_set_t { field = bit<16>; field2 = bit<3> } to seq<bit<16>,
+bit<3>>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-2-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-3-bmv2.p4
+(coerce_type) Cannot coerce type struct value_set_t { field1 = bit<16>; field2 = bit<3>; field3 = bit<6>; field4 = bit<5> } to seq<bit<16>,
+bit<3>, bit<6>,Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-3-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs.p4
+ bit<5>>
+(coerce_type) Cannot coerce type tuple<bit<32>,
+bit<2>> to seq<bit<32>,Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-enumint-types1.p4
+
+bit<2>>
+(coerce_type) Cannot coerce type struct valueset1_t { addr0 = bit<48>; e = bit<8>; e0 = bit<8>; e00 = bit<8> } to seq<bit<48>,
+bit<8>, bit<8>,Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-enumint-types1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-most-types1.p4
+
+bit<8>>
+(coerce_type) Cannot coerce type struct valueset1_t { addr0 = bit<48>; e = bit<8>; e0 = bit<8>; e00 = bit<8> } to seq<bit<48>,
+bit<8>, bit<8>,Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-most-types1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile-bmv2.p4
+
+bit<8>>
+(type_table_custom) Custom element implementation is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/action_profile-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_max_group_size_annotation.p4
+(type_table_custom) Custom element implementation is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_max_group_size_annotation.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_sum_of_members_annotation.p4
+(type_table_custom) Custom element implementation is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_sum_of_members_annotation.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4
+parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4, line 23, characters 4-14
+Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/init_ebpf.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/init_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/issue2791_ebpf.p4
+parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/issue2791_ebpf.p4, line 7, characters 4-14
+Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue2791_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/issue2793_ebpf.p4
+parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/issue2793_ebpf.p4, line 24, characters 4-14
+Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue2793_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/issue2816-1_ebpf.p4
+parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/issue2816-1_ebpf.p4, line 24, characters 4-14
+Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue2816-1_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/issue2816_ebpf.p4
+parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/issue2816_ebpf.p4, line 7, characters 4-14
+Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue2816_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/issue297-bmv2.p4
+(type_table_custom) Custom element implementation is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue297-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/issue364-bmv2.p4
+(type_table_custom) Custom element counters is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue364-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/issue461-bmv2.p4
+(type_table_custom) Custom element counters is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue461-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/issue870_ebpf.p4
+parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/issue870_ebpf.p4, line 24, characters 4-14
+Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue870_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/junk-prop-bmv2.p4
+(type_table_custom) Custom element junk is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/junk-prop-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/key-issue-1020_ebpf.p4
+parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/key-issue-1020_ebpf.p4, line 7, characters 4-14
+Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/key-issue-1020_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/key_ebpf.p4
+parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/key_ebpf.p4, line 7, characters 4-14
+Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/key_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/lpm_ebpf.p4
+parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/lpm_ebpf.p4, line 24, characters 4-14
+Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/lpm_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/named_meter_1-bmv2.p4
+(type_table_custom) Custom element meters is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/named_meter_1-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/named_meter_bmv2.p4
+(type_table_custom) Custom element meters is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/named_meter_bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-add-on-miss.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-add-on-miss.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-add_on_miss_action_name.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-add_on_miss_action_name.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-add_on_miss0.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-add_on_miss0.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-add_on_miss1.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-add_on_miss1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-direct-counter-learner.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-direct-counter-learner.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-direct-meter-learner.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-direct-meter-learner.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-parser-state-err.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-parser-state-err.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-1.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-3.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-3.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-4.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-4.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-5.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-5.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-6.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-6.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-7.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-7.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-use-annon.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-use-annon.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-example-tcp-connection-tracking.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-example-tcp-connection-tracking.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-mux-dismantle.p4
+(type_table_custom) Custom element add_on_miss is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-mux-dismantle.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/psa-counter4.p4
+(type_table_custom) Custom element psa_direct_counter is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/psa-counter4.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/psa-example-counters-bmv2.p4
+(type_table_custom) Custom element psa_direct_counter is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/psa-example-counters-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/psa-example-dpdk-directmeter.p4
+(type_table_custom) Custom element psa_direct_meter is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/psa-example-dpdk-directmeter.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/psa-example-parser-checksum.p4
+(type_table_custom) Custom element psa_direct_counter is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/psa-example-parser-checksum.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/psa-idle-timeout.p4
+(type_table_custom) Custom element psa_idle_timeout is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/psa-idle-timeout.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/psa-meter4.p4
+(type_table_custom) Custom element psa_direct_meter is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/psa-meter4.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/psa-meter5.p4
+(type_table_custom) Custom element psa_direct_meter is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/psa-meter5.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/stack_ebpf.p4
+parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/stack_ebpf.p4, line 24, characters 4-14
+Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/stack_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/switch_ebpf.p4
+parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/switch_ebpf.p4, line 24, characters 4-14
+Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/switch_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/ternary_ebpf.p4
+parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/ternary_ebpf.p4, line 22, characters 4-14
+Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/ternary_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/test_ebpf.p4
+parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/test_ebpf.p4, line 24, characters 4-14
+Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/test_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/two_ebpf.p4
+parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/two_ebpf.p4, line 23, characters 4-14
+Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/two_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/valid_ebpf.p4
+parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/valid_ebpf.p4, line 8, characters 4-14
+Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/valid_ebpf.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/optional-param/gauntlet_optional-bmv2.p4
+(type_method) Method update not found for ipv4_checksum
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/optional-param/gauntlet_optional-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/optional-param/issue1304.p4
+(type_instantiation) Switch is not an instance type
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/optional-param/issue1304.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/optional-param/issue2492.p4
+(type_instantiation) top is not an instance type
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/optional-param/issue2492.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/optional-param/issue2630.p4
+(type_instantiation) Switch is not an instance type
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/optional-param/issue2630.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/optional-param/issue2664-bmv2.p4
+(type_method) Method update not found for ipv4_checksum
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/optional-param/issue2664-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/optional-param/issue2810.p4
+(type_func) Function HwSplFunc not found
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/optional-param/issue2810.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/optional-param/issue3051.p4
+(type_method) Method apply not found for c
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/optional-param/issue3051.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/optional-param/issue3417.p4
+(type_instantiation_decl) Abstract method apply(value, rv) is not defined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/optional-param/issue3417.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/optional-param/pna-dpdk-direct-counter.p4
+(type_method) Method count not found for per_prefix_pkt_count
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/optional-param/pna-dpdk-direct-counter.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/action_selector_shared-bmv2.p4
+(check_table_key) selector is not a valid match_kind
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/action_selector_shared-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/issue1560-bmv2.p4
+(check_table_key) selector is not a valid match_kind
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/issue1560-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/pna-action-selector-1.p4
+(check_table_key) selector is not a valid match_kind
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/pna-action-selector-1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/pna-action-selector.p4
+(check_table_key) selector is not a valid match_kind
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/pna-action-selector.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector1.p4
+(check_table_key) selector is not a valid match_kind
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector2.p4
+(check_table_key) selector is not a valid match_kind
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector3.p4
+(check_table_key) selector is not a valid match_kind
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector3.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector4.p4
+(check_table_key) selector is not a valid match_kind
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector4.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector5.p4
+(check_table_key) selector is not a valid match_kind
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector5.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector6.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector6.p4
+
+Parser on file: [PASS] 188/215 (87.44%) [FAIL] 27/215 (12.56%)
+Typecheck: [PASS] 0/188 (0.00%) [FAIL] 188/188 (100.00%)
