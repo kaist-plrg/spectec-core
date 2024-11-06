@@ -1,3 +1,4 @@
+open Runtime.Domain
 module Types = Runtime.Types
 module Type = Types.Type
 
@@ -112,6 +113,61 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
         in
         List.for_all2 ( = ) members_from members_to
         && List.for_all2 explicit typs_from_inner typs_to_inner
+    (* casts of default types *)
+    | DefaultT, _ when Type.is_defaultable typ_to -> true
+    | SeqDefaultT typs_from_inner, TupleT typs_to_inner ->
+        if List.length typs_from_inner >= List.length typs_to_inner then false
+        else
+          let before i = i < List.length typs_from_inner in
+          let typs_to_inner_default =
+            List.filteri (fun i _ -> not (before i)) typs_to_inner
+          in
+          let typs_to_inner =
+            List.filteri (fun i _ -> before i) typs_to_inner
+          in
+          List.for_all2 explicit typs_from_inner typs_to_inner
+          && List.for_all Type.is_defaultable typs_to_inner_default
+    | SeqDefaultT typs_from_inner, StackT (typ_to_inner, size_to) ->
+        let size_from = List.length typs_from_inner |> Bigint.of_int in
+        Bigint.(size_from < size_to)
+        && List.for_all
+             (fun typ_from_inner -> explicit typ_from_inner typ_to_inner)
+             typs_from_inner
+        && Type.is_defaultable typ_to_inner
+    | SeqDefaultT typs_from_inner, StructT (_, fields_to)
+    | SeqDefaultT typs_from_inner, HeaderT (_, fields_to) ->
+        if List.length typs_from_inner >= List.length fields_to then false
+        else
+          let before i = i < List.length typs_from_inner in
+          let typs_to_default_inner =
+            List.filteri (fun i _ -> not (before i)) fields_to |> List.map snd
+          in
+          let typs_to_inner =
+            List.filteri (fun i _ -> before i) fields_to |> List.map snd
+          in
+          List.for_all2 explicit typs_from_inner typs_to_inner
+          && List.for_all Type.is_defaultable typs_to_default_inner
+    | RecordDefaultT fields_from, StructT (_, fields_to)
+    | RecordDefaultT fields_from, HeaderT (_, fields_to) ->
+        let members_from = List.map fst fields_from |> IdSet.of_list in
+        let members_to = List.map fst fields_to |> IdSet.of_list in
+        if not (IdSet.subset members_from members_to) then false
+        else
+          let members_to_default = IdSet.diff members_to members_from in
+          let members_to = members_from in
+          IdSet.for_all
+            (fun member_to ->
+              let typ_from_inner = List.assoc member_to fields_from in
+              let typ_to_inner = List.assoc member_to fields_to in
+              explicit typ_from_inner typ_to_inner)
+            members_to
+          && IdSet.for_all
+               (fun member_to_default ->
+                 let typ_to_default_inner =
+                   List.assoc member_to_default fields_to
+                 in
+                 Type.is_defaultable typ_to_default_inner)
+               members_to_default
     (* casts of an invalid expression {#} to a header or a header union type *)
     | InvalidT, HeaderT _ | InvalidT, UnionT _ -> true
     | _ -> false
@@ -144,24 +200,32 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
    A tuple expression can have an explicit structure or header type specified, and then it is
    converted automatically to a structure-valued expression (see 8.13). *)
 
-let rec implicit (typ_a : Type.t) (typ_b : Type.t) : bool =
+let rec implicit (typ_from : Type.t) (typ_to : Type.t) : bool =
   let implicit_unequal () =
-    match (typ_a, typ_b) with
+    match (typ_from, typ_to) with
     (* int <: fint and int <: fbit *)
     | IntT, FIntT _ | IntT, FBitT _ -> true
     (* tau <: senum tau, senum tau <: tau, and
        senum tau <: senum tau' if tau <: tau' *)
-    | SEnumT (_, typ_a_inner, _), _ when implicit typ_a_inner typ_b -> true
-    | _, SEnumT (_, typ_b_inner, _) when implicit typ_a typ_b_inner -> true
+    | SEnumT (_, typ_from_inner, _), _ when implicit typ_from_inner typ_to ->
+        true
+    | _, SEnumT (_, typ_to_inner, _) when implicit typ_from typ_to_inner -> true
     (* seq tau* <: list tau' if (tau <: tau')* *)
-    | SeqT typs_a_inner, ListT typ_b_inner ->
+    | SeqT typs_a_inner, ListT typ_to_inner ->
         List.for_all
-          (fun typ_a_inner -> implicit typ_a_inner typ_b_inner)
+          (fun typ_from_inner -> implicit typ_from_inner typ_to_inner)
           typs_a_inner
     (* seq tau* <: tuple tau'* if (tau <: tau')* *)
     | SeqT typs_a_inner, TupleT typs_b_inner ->
         List.length typs_a_inner = List.length typs_b_inner
         && List.for_all2 implicit typs_a_inner typs_b_inner
+    (* seq tau* <: stack tau' if (tau <: tau')* *)
+    | SeqT typs_a_inner, StackT (typ_to_inner, size_to) ->
+        let size_from = List.length typs_a_inner |> Bigint.of_int in
+        Bigint.(size_from = size_to)
+        && List.for_all
+             (fun typ_from_inner -> implicit typ_from_inner typ_to_inner)
+             typs_a_inner
     (* seq tau* <: struct id (id', tau')* if (tau <: tau')* and
        seq tau* <: header id (id', tau')* if (tau <: tau')* *)
     | SeqT typs_a_inner, StructT (_, fields_b)
@@ -187,8 +251,69 @@ let rec implicit (typ_a : Type.t) (typ_b : Type.t) : bool =
         List.length typs_a_inner = List.length typs_b_inner
         && List.for_all2 ( = ) members_a members_b
         && List.for_all2 implicit typs_a_inner typs_b_inner
+    (* default <: tau if tau is defaultable,
+       seqdefault tau* <: tuple tau'* if (tau <: tau')*,
+       seqdefault tau* <: stack tau' if (tau <: tau')*,
+       seqdefault tau* <: struct id (id', tau')* if (tau <: tau')*,
+       seqdefault tau* <: header id (id', tau')* if (tau <: tau')*,
+       recorddefault (id', tau)* <: struct id (id', tau')* if (tau <: tau')*,
+       recorddefault (id', tau)* <: header id (id', tau')* if (tau <: tau')* *)
+    | DefaultT, _ when Type.is_defaultable typ_to -> true
+    | SeqDefaultT typs_from_inner, TupleT typs_to_inner ->
+        if List.length typs_from_inner >= List.length typs_to_inner then false
+        else
+          let before i = i < List.length typs_from_inner in
+          let typs_to_inner_default =
+            List.filteri (fun i _ -> not (before i)) typs_to_inner
+          in
+          let typs_to_inner =
+            List.filteri (fun i _ -> before i) typs_to_inner
+          in
+          List.for_all2 implicit typs_from_inner typs_to_inner
+          && List.for_all Type.is_defaultable typs_to_inner_default
+    | SeqDefaultT typs_from_inner, StackT (typ_to_inner, size_to) ->
+        let size_from = List.length typs_from_inner |> Bigint.of_int in
+        Bigint.(size_from < size_to)
+        && List.for_all
+             (fun typ_from_inner -> implicit typ_from_inner typ_to_inner)
+             typs_from_inner
+        && Type.is_defaultable typ_to_inner
+    | SeqDefaultT typs_from_inner, StructT (_, fields_to)
+    | SeqDefaultT typs_from_inner, HeaderT (_, fields_to) ->
+        if List.length typs_from_inner >= List.length fields_to then false
+        else
+          let before i = i < List.length typs_from_inner in
+          let typs_to_default_inner =
+            List.filteri (fun i _ -> not (before i)) fields_to |> List.map snd
+          in
+          let typs_to_inner =
+            List.filteri (fun i _ -> before i) fields_to |> List.map snd
+          in
+          List.for_all2 implicit typs_from_inner typs_to_inner
+          && List.for_all Type.is_defaultable typs_to_default_inner
+    | RecordDefaultT fields_from, StructT (_, fields_to)
+    | RecordDefaultT fields_from, HeaderT (_, fields_to) ->
+        let members_from = List.map fst fields_from |> IdSet.of_list in
+        let members_to = List.map fst fields_to |> IdSet.of_list in
+        if not (IdSet.subset members_from members_to) then false
+        else
+          let members_to_default = IdSet.diff members_to members_from in
+          let members_to = members_from in
+          IdSet.for_all
+            (fun member_to ->
+              let typ_from_inner = List.assoc member_to fields_from in
+              let typ_to_inner = List.assoc member_to fields_to in
+              implicit typ_from_inner typ_to_inner)
+            members_to
+          && IdSet.for_all
+               (fun member_to_default ->
+                 let typ_to_default_inner =
+                   List.assoc member_to_default fields_to
+                 in
+                 Type.is_defaultable typ_to_default_inner)
+               members_to_default
     (* invalid <: header _ and invalid <: union _ *)
     | InvalidT, HeaderT _ | InvalidT, UnionT _ -> true
     | _ -> false
   in
-  if Eq.eq_typ_alpha typ_a typ_b then true else implicit_unequal ()
+  if Eq.eq_typ_alpha typ_from typ_to then true else implicit_unequal ()

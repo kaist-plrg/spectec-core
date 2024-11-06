@@ -172,6 +172,7 @@ and eq_expr' (expr : Expression.t) (expr' : Expression.t) =
   | Int { i; _ }, Int { i = i'; _ } -> eq_number i i'
   | String { text; _ }, String { text = text'; _ } -> eq_text text text'
   | Name { name; _ }, Name { name = name'; _ } -> eq_name name name'
+  | Dots _, Dots _ -> true
   | ( ArrayAccess { array; index; _ },
       ArrayAccess { array = array'; index = index'; _ } ) ->
       eq_expr array array' && eq_expr index index'
@@ -180,7 +181,11 @@ and eq_expr' (expr : Expression.t) (expr' : Expression.t) =
       eq_expr bits bits' && eq_expr lo lo' && eq_expr hi hi'
   | List { values; _ }, List { values = values'; _ } ->
       eq_list eq_expr values values'
+  | ListDots { values; _ }, ListDots { values = values'; _ } ->
+      eq_list eq_expr values values'
   | Record { entries; _ }, Record { entries = entries'; _ } ->
+      eq_list eq_key_value entries entries'
+  | RecordDots { entries; _ }, RecordDots { entries = entries'; _ } ->
       eq_list eq_key_value entries entries'
   | Invalid _, Invalid _ -> true
   | UnaryOp { op; arg; _ }, UnaryOp { op = op'; arg = arg'; _ } ->

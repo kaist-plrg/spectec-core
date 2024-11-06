@@ -48,7 +48,7 @@ let rec smash_annotations (l: Text.t list) (tok2: Text.t): Text.t list =
 %token<Util.Source.info> ASSIGN COLON COMMA QUESTION DOT NOT SEMICOLON
 %token<Util.Source.info> AT PLUSPLUS
 %token<Util.Source.info> DONTCARE
-%token<Util.Source.info> MASK RANGE
+%token<Util.Source.info> MASK DOTS RANGE
 %token<Util.Source.info> TRUE FALSE
 %token<Util.Source.info> ABSTRACT ACTION ACTIONS APPLY BOOL BIT CONST CONTROL DEFAULT DEFAULT_ACTION
 %token<Util.Source.info> ELSE ENTRIES ENUM ERROR EXIT EXTERN HEADER HEADER_UNION IF IN INOUT
@@ -136,6 +136,10 @@ separated_nonempty_list(sep, X):
 | rev_list = separated_nonempty_list_aux(sep, X)
     { List.rev rev_list }
 ;
+
+separated_nonempty_trailing_list(sep, X):
+| rev_list = separated_nonempty_list_aux(sep, X) sep
+    { List.rev rev_list }
 
 separated_nonempty_opt_trailing_list(sep, X):
 | rev_list = separated_nonempty_list_aux(sep, X) option(sep)
@@ -449,6 +453,8 @@ annotationToken:
       Text.{ tags = num.tags; str } }
 | MASK
     { Text.{ tags = $1; str = "&&&" } }
+| DOTS
+    { Text.{ tags = $1; str = "..." } }
 | RANGE
     { Text.{ tags = $1; str = ".." } }
 | SHL
@@ -1391,9 +1397,15 @@ argument:
     { let tags = Source.merge (Text.tags key) (Expression.tags value) in
       KeyValue.{ tags; key; value } }
 
+kvTrailingList:
+| kvs = separated_nonempty_trailing_list(COMMA, kvPair)
+    { kvs }
+;
+
 kvOptTrailingList:
 | kvs = separated_nonempty_opt_trailing_list(COMMA, kvPair)
     { kvs }
+;
 
 expressionList:
 | exprs = separated_list(COMMA, expression) 
@@ -1401,7 +1413,9 @@ expressionList:
 ;
 
 expressionOptTrailingList:
-| exprs = separated_opt_trailing_list(COMMA, expression) 
+| (* empty *)
+    { [] }
+| exprs = separated_nonempty_opt_trailing_list(COMMA, expression) 
     { exprs }
 ;
 
@@ -1440,6 +1454,8 @@ expression:
     { let value_int = fst value in 
       let tags = Number.tags value_int in 
       Expression.Int { tags; i = value_int } }
+| info1 = DOTS
+    { Expression.Dots { tags = info1 } }
 | info1 = TRUE
     { Expression.True { tags = info1 } }
 | info1 = FALSE
@@ -1459,14 +1475,27 @@ expression:
 | bits = expression L_BRACKET hi = expression COLON lo = expression info2 = R_BRACKET
     { let tags = Source.merge (Expression.tags bits) info2 in
       Expression.BitStringAccess { tags; bits; lo; hi } }
+(* (HACK) To syntactically disallow dots in the middle of a tuple expression *)
 | info1 = L_BRACE values = expressionOptTrailingList info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
-      Expression.List { tags; values } }
+      let is_dots expr = match expr with Expression.Dots _ -> true | _ -> false in
+      if List.length values = 0 then Expression.List { tags; values }
+      else
+        let values, value_last =
+          List.rev values |> List.tl |> List.rev, List.rev values |> List.hd
+        in
+        if List.exists is_dots values then
+          raise Parsing.Parse_error;
+        if is_dots value_last then Expression.ListDots { tags; values }
+        else Expression.List { tags; values = values @ [value_last] } }
 | info = INVALID
     { Expression.Invalid { tags = info } }
 | info1 = L_BRACE entries = kvOptTrailingList info2 = R_BRACE 
     { let tags = Source.merge info1 info2 in 
       Expression.Record { tags; entries } }
+| info1 = L_BRACE entries = kvTrailingList DOTS option(COMMA) info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in 
+      Expression.RecordDots { tags; entries } }
 | L_PAREN exp = expression R_PAREN
     { exp }
 | info1 = NOT arg = expression %prec PREFIX

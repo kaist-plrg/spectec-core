@@ -26,12 +26,12 @@ let rec free_typ (typ : Type.t) : TIdSet.t =
   | ParserT params | ControlT params ->
       List.map free_param params |> List.fold_left TIdSet.union TIdSet.empty
   | PackageT | TopT -> TIdSet.empty
-  | SeqT typs_inner ->
+  | SeqT typs_inner | SeqDefaultT typs_inner ->
       List.map free_typ typs_inner |> List.fold_left TIdSet.union TIdSet.empty
-  | RecordT fields ->
+  | RecordT fields | RecordDefaultT fields ->
       List.map snd fields |> List.map free_typ
       |> List.fold_left TIdSet.union TIdSet.empty
-  | InvalidT -> TIdSet.empty
+  | DefaultT | InvalidT -> TIdSet.empty
   | SetT typ_inner -> free_typ typ_inner
   | StateT -> TIdSet.empty
   | TableT typ_inner -> free_typ typ_inner

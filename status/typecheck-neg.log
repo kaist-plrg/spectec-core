@@ -82,7 +82,6 @@ Error while typechecking p4 file: test/program/ill-typed/control-inline.p4
 Typecheck success: test/program/ill-typed/control-verify.p4
 
 >>> Running typecheck test on test/program/ill-typed/default-initializer-err.p4
-parser error: File test/program/ill-typed/default-initializer-err.p4, line 34, characters 40-42
 Error while parsing p4 file: test/program/ill-typed/default-initializer-err.p4
 
 >>> Running typecheck test on test/program/ill-typed/default-last-switch.p4

@@ -458,7 +458,7 @@ h = (H) {#};
 
 ## \[REPORTED\] 1. Should we add implicit cast for directionless parameter? (74)
 
-Waiting for spec clarification, [Issue#1312](https://github.com/p4lang/p4-spec/issues/1312).
+Waiting for spec clarification, [Issue#1312](https://github.com/p4lang/p4-spec/issues/1312) and [PR#1330](https://github.com/p4lang/p4-spec/pull/1330).
 
 I think we should, especially for constructor invocations.
 
@@ -718,9 +718,9 @@ control c() {
 * issue3671.p4
 </details>
 
-## [\REPORTED\] 7. Are accesses compile-time known? (3)
+## \[REPORTED\] 7. Are accesses compile-time known? (3)
 
-Waiting for spec clarification, [Issue#1323](https://github.com/p4lang/p4-spec/issues/1323).
+Waiting for spec clarification, [Issue#1323](https://github.com/p4lang/p4-spec/issues/1323) and [PR#1329](https://github.com/p4lang/p4-spec/pull/1329).
 
 ### \[REPORTED\] (1) Accessing a tuple element with a local compile-time known index is also a local compile-time known value? (1)
 
@@ -751,7 +751,7 @@ const int<32> x = t.t1;
 
 ## \[REPORTED\] 8. Type aliasing allowed for externs? (4)
 
-Waiting for spec clarification, [Issue#1314](https://github.com/p4lang/p4-spec/issues/1314).
+Waiting for spec clarification, [Issue#1314](https://github.com/p4lang/p4-spec/issues/1314) and [PR#1328](https://github.com/p4lang/p4-spec/pull/1328)
 
 Spec section 7.2.8 lists type nesting rules, but it does not mention whether it is legal to make a type alias of an extern object type via `typedef`.
 

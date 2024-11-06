@@ -323,6 +323,8 @@ rule tokenize = parse
       { PLUSPLUS (info lexbuf) }
   | "&&&"
       { MASK (info lexbuf) }
+  | "..."
+      { DOTS (info lexbuf) }
   | ".."
       { RANGE (info lexbuf) }
   | eof

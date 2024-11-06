@@ -90,8 +90,10 @@ and expr' =
   | ValueE of { value : value }
   | VarE of { var : var }
   | SeqE of { exprs : expr list }
+  | SeqDefaultE of { exprs : expr list }
   | RecordE of { fields : (member * expr) list }
-  | InvalidE
+  | RecordDefaultE of { fields : (member * expr) list }
+  | DefaultE
   | UnE of { unop : unop; expr : expr }
   | BinE of { binop : binop; expr_l : expr; expr_r : expr }
   | TernE of { expr_cond : expr; expr_then : expr; expr_else : expr }

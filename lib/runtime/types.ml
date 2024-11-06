@@ -48,7 +48,10 @@ and typ =
   | TopT
   (* Synthesized types : variables can never be declared of this type *)
   | SeqT of typ list
+  | SeqDefaultT of typ list
   | RecordT of (L.member' * typ) list
+  | RecordDefaultT of (L.member' * typ) list
+  | DefaultT
   | InvalidT
   | SetT of typ
   | StateT
@@ -165,8 +168,15 @@ and pp_typ fmt typ =
   | TableT _ -> F.pp_print_string fmt "table"
   | TopT -> F.pp_print_string fmt "top"
   | SeqT typs -> F.fprintf fmt "seq<%a>" (P.pp_list pp_typ ",@ ") typs
+  | SeqDefaultT typs ->
+      F.fprintf fmt "seq<%a, ...>" (P.pp_list pp_typ ",@ ") typs
   | RecordT fields ->
       F.fprintf fmt "record { %a }" (P.pp_pairs P.pp_member' pp_typ "; ") fields
+  | RecordDefaultT fields ->
+      F.fprintf fmt "record { %a, ... }"
+        (P.pp_pairs P.pp_member' pp_typ "; ")
+        fields
+  | DefaultT -> F.pp_print_string fmt "default"
   | InvalidT -> F.pp_print_string fmt "{#}"
   | SetT typ -> F.fprintf fmt "set<%a>" pp_typ typ
   | StateT -> F.pp_print_string fmt "state"
@@ -324,10 +334,12 @@ and eq_typ typ_a typ_b =
   | ParserT params_a, ParserT params_b | ControlT params_a, ControlT params_b ->
       List.for_all2 eq_param params_a params_b
   | PackageT, PackageT | TopT, TopT -> true
-  | SeqT typs_a, SeqT typs_b -> List.for_all2 eq_typ typs_a typs_b
-  | RecordT fields_a, RecordT fields_b ->
+  | SeqT typs_a, SeqT typs_b | SeqDefaultT typs_a, SeqDefaultT typs_b ->
+      List.for_all2 eq_typ typs_a typs_b
+  | RecordT fields_a, RecordT fields_b
+  | RecordDefaultT fields_a, RecordDefaultT fields_b ->
       E.eq_pairs E.eq_member' eq_typ fields_a fields_b
-  | InvalidT, InvalidT -> true
+  | DefaultT, DefaultT | InvalidT, InvalidT -> true
   | SetT typ_a, SetT typ_b -> eq_typ typ_a typ_b
   | StateT, StateT -> true
   | _ -> false
@@ -379,12 +391,34 @@ module Type = struct
     | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
         List.map snd fields |> List.for_all is_ground
     | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> true
-    | SeqT typs_inner -> List.for_all is_ground typs_inner
-    | RecordT fields -> List.map snd fields |> List.for_all is_ground
-    | InvalidT -> true
+    | SeqT typs_inner | SeqDefaultT typs_inner ->
+        List.for_all is_ground typs_inner
+    | RecordT fields | RecordDefaultT fields ->
+        List.map snd fields |> List.for_all is_ground
+    | DefaultT | InvalidT -> true
     | SetT typ_inner -> is_ground typ_inner
     | StateT -> true
     | TableT _ -> true
+
+  let rec is_defaultable typ =
+    match typ with
+    | VoidT -> false
+    | ErrT -> true
+    | MatchKindT -> false
+    | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ -> true
+    | VarT _ -> false
+    | NewT (_, typ_inner) -> is_defaultable typ_inner
+    | EnumT _ -> true
+    | SEnumT (_, typ_inner, _) -> is_defaultable typ_inner
+    | ListT _ -> false
+    | TupleT typs_inner -> List.for_all is_defaultable typs_inner
+    | StackT (typ_inner, _) -> is_defaultable typ_inner
+    | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
+        List.map snd fields |> List.for_all is_defaultable
+    | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | SeqT _
+    | SeqDefaultT _ | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT
+    | SetT _ | StateT | TableT _ ->
+        false
 
   let rec can_equals typ =
     match typ with
@@ -401,7 +435,10 @@ module Type = struct
         List.map snd fields |> List.for_all can_equals
     | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> false
     | SeqT typs_inner -> List.for_all can_equals typs_inner
+    | SeqDefaultT _ -> false
     | RecordT fields -> List.map snd fields |> List.for_all can_equals
+    | RecordDefaultT _ -> false
+    | DefaultT -> false
     | InvalidT -> true
     | SetT _ | StateT | TableT _ -> false
 end
