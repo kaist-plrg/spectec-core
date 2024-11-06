@@ -409,15 +409,39 @@ Spec v1.2.3 adds `match_kind` as a base type that can be parsed.
 const tuple<match_kind> exact_once = ...;
 ```
 
-### (4) Support `...` default grammar (1)
+### \[DONE\] (4) ~~Support `...` default grammar~~
 
 The spec says, "A left-value can be initialized automatically with default value of the suitable type using the syntax `...` (see Section 7.3)." (8.26).
 
-<details>
-<summary>Tests</summary>
+Implemented it with introducing new types and values, namely: `DefaultT`, `SeqDefaultT`, `RecordDefaultT`, `DefaultV`, `SeqDefaultV`, and `RecordDefaultV`.
 
-* default-initializer.p4
-</details>
+`DefaultT` and `DefaultV` represents `...` used outside the context of a sequence or a record.
+`SeqDefaultT` and `SeqDefaultV` represents `...` used in the context of a sequence, `{ (* expressions *) }'.
+I made a parser hack to *syntactically disallow* `...` happening in the middle of a sequence.
+`RecordDefaultT` and `RecDefaultV` represents `...` used in the context of a record, `{ (* key-value pairs *) }`.
+
+Introduction of these default types and values interplay with the subtyping rules and cast evaluation.
+`DefaultT` is a subtype of any type that has a default value.
+`SeqDefaultT` is a subtype of `SeqT` when the former is a proper subset of the latter, and similar for `RecordDefaultT` and `RecordT`.
+
+Yet, p4cherry's implementation may be more permissive than what was intended in the spec.
+For example, `...`, `{ (* expressions *) ... }`, and `{ (* key-value pairs *) ... }` can be used as a function argument, like `f(...)` (assuming it is an in-direction argument; using `...` for out/inout-direction arguments would not make sense already at the type level, for it is not a lvalue).
+
+```ocaml
+(* (HACK) To syntactically disallow dots in the middle of a tuple expression *)
+| info1 = L_BRACE values = expressionOptTrailingList info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      let is_dots expr = match expr with Expression.Dots _ -> true | _ -> false in
+      if List.length values = 0 then Expression.List { tags; values }
+      else
+        let values, value_last =
+          List.rev values |> List.tl |> List.rev, List.rev values |> List.hd
+        in
+        if List.exists is_dots values then
+          raise Parsing.Parse_error;
+        if is_dots value_last then Expression.ListDots { tags; values }
+        else Expression.List { tags; values = values @ [value_last] } }
+```
 
 ### (5) Support `priority` of table entry (2)
 
@@ -659,7 +683,9 @@ sw0(p1(createWidget(16w0, 8w0))) main;
 * issue3531.p4
 </details>
 
-## 5. Is it legal to divide a fixed-width integer?  (8)
+## \[REPORTED (not by me)\] 5. Is it legal to divide a fixed-width integer?  (8)
+
+[Issue#1327](https://github.com/p4lang/p4-spec/issues/1327), seems like a PR will be made soon.
 
 ```p4
 bit<4> tmp = 4w0 - 4w1;
