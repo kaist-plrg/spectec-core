@@ -1,4 +1,4 @@
-Running typecheck tests on 229 files
+Running typecheck tests on 228 files
 
 
 >>> Running typecheck test on test/program/well-typed-excluded/future/concat-string/issue4932.p4
@@ -245,7 +245,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue298-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue3246-1.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
+(check_call_arity) Function builtin_method() -> int expects 0 arguments but 1 were given
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue3246-1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue383-bmv2.p4
@@ -486,9 +486,6 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default/default-control-argument.p4
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default/default-control-argument.p4
-
->>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/newtype-size/issue1717.p4
-Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/newtype-size/issue1717.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue2037.p4
 (type_table_action_default) There is no action named a in actions list
@@ -931,5 +928,5 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/s
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector6.p4
 
-Parser on file: [PASS] 202/229 (88.21%) [FAIL] 27/229 (11.79%)
-Typecheck: [PASS] 0/202 (0.00%) [FAIL] 202/202 (100.00%)
+Parser on file: [PASS] 201/228 (88.16%) [FAIL] 27/228 (11.84%)
+Typecheck: [PASS] 0/201 (0.00%) [FAIL] 201/201 (100.00%)

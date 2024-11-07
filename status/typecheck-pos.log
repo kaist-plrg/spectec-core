@@ -1,4 +1,4 @@
-Running typecheck tests on 1025 files
+Running typecheck tests on 1026 files
 
 
 >>> Running typecheck test on test/program/well-typed/action-bind.p4
@@ -1051,6 +1051,9 @@ Typecheck success: test/program/well-typed/issue1670-bmv2.p4
 >>> Running typecheck test on test/program/well-typed/issue1713-bmv2.p4
 Typecheck success: test/program/well-typed/issue1713-bmv2.p4
 
+>>> Running typecheck test on test/program/well-typed/issue1717.p4
+Typecheck success: test/program/well-typed/issue1717.p4
+
 >>> Running typecheck test on test/program/well-typed/issue1724.p4
 Typecheck success: test/program/well-typed/issue1724.p4
 
@@ -2006,7 +2009,7 @@ Typecheck success: test/program/well-typed/methodArgCast.p4
 Typecheck success: test/program/well-typed/methodArgs.p4
 
 >>> Running typecheck test on test/program/well-typed/minsize.p4
-Error while parsing p4 file: test/program/well-typed/minsize.p4
+Typecheck success: test/program/well-typed/minsize.p4
 
 >>> Running typecheck test on test/program/well-typed/ml-headers.p4
 Typecheck success: test/program/well-typed/ml-headers.p4
@@ -3081,5 +3084,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 >>> Running typecheck test on test/program/well-typed/xor_test.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1022/1025 (99.71%) [FAIL] 3/1025 (0.29%)
-Typecheck: [PASS] 1019/1022 (99.71%) [FAIL] 3/1022 (0.29%)
+Parser on file: [PASS] 1024/1026 (99.81%) [FAIL] 2/1026 (0.19%)
+Typecheck: [PASS] 1021/1024 (99.71%) [FAIL] 3/1024 (0.29%)

@@ -161,6 +161,8 @@ and pp_expr' ?(level = 0) fmt expr' =
   | CallMethodE { expr_base; member; targs; args } ->
       F.fprintf fmt "%a.%a%a%a" (pp_expr ~level:0) expr_base
         (pp_member ~level:0) member pp_targs targs pp_args args
+  | CallTypeE { typ; member } ->
+      F.fprintf fmt "%a.%a()" pp_typ typ (pp_member ~level:0) member
   | InstE { var_inst; targs; args } ->
       F.fprintf fmt "%a%a%a" pp_var var_inst pp_targs targs pp_args args
 

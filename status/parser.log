@@ -1,4 +1,4 @@
-Running parser roundtrip tests on 1025 files
+Running parser roundtrip tests on 1026 files
 
 
 >>> Running parser roundtrip test on test/program/well-typed/action-bind.p4
@@ -1326,6 +1326,10 @@ Error while parsing p4 string: test/program/well-typed/issue1670-bmv2.p4
 parser error: File test/program/well-typed/issue1713-bmv2.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue1713-bmv2.p4
 
+>>> Running parser roundtrip test on test/program/well-typed/issue1717.p4
+parser error: File test/program/well-typed/issue1717.p4, line 2, characters 2-9
+Error while parsing p4 string: test/program/well-typed/issue1717.p4
+
 >>> Running parser roundtrip test on test/program/well-typed/issue1724.p4
 Parser roundtrip success: test/program/well-typed/issue1724.p4
 
@@ -2559,7 +2563,8 @@ parser error: File test/program/well-typed/methodArgs.p4, line 6, characters 2-3
 Error while parsing p4 string: test/program/well-typed/methodArgs.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/minsize.p4
-Error while parsing p4 file: test/program/well-typed/minsize.p4
+parser error: File test/program/well-typed/minsize.p4, line 3, characters 0-1
+Error while parsing p4 string: test/program/well-typed/minsize.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/ml-headers.p4
 parser error: File test/program/well-typed/ml-headers.p4, line 13, characters 2-9
@@ -3952,6 +3957,6 @@ Error while parsing p4 string: test/program/well-typed/xdp_vlan_push_pop_ebpf-ke
 parser error: File test/program/well-typed/xor_test.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1022/1025 (99.71%) [FAIL] 3/1025 (0.29%)
-Parser on string: [PASS] 148/1022 (14.48%) [FAIL] 874/1022 (85.52%)
+Parser on file: [PASS] 1024/1026 (99.81%) [FAIL] 2/1026 (0.19%)
+Parser on string: [PASS] 148/1024 (14.45%) [FAIL] 876/1024 (85.55%)
 Parser roundtrip: [PASS] 135/148 (91.22%) [FAIL] 13/148 (8.78%)

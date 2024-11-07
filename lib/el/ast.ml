@@ -122,6 +122,12 @@ and expr' =
       targs : typ list;
       args : arg list;
     }
+  | CallTypeE of {
+      var_typ : var;
+      member : member;
+      targs : typ list;
+      args : arg list;
+    }
   | InstE of { var_inst : var; targs : typ list; args : arg list }
 
 (* Keyset expressions *)
