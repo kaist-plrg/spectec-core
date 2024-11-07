@@ -1,4 +1,4 @@
-Running typecheck tests on 215 files
+Running typecheck tests on 229 files
 
 
 >>> Running typecheck test on test/program/well-typed-excluded/future/concat-string/issue4932.p4
@@ -112,6 +112,9 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/abstract-method-overload/virtual.p4
 (type_instantiation_decl) Abstract method g(ix) is not defined
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/abstract-method-overload/virtual.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/access-compile-time-known/constStruct.p4
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/access-compile-time-known/constStruct.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/access-compile-time-known/struct.p4
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/access-compile-time-known/struct.p4
@@ -261,6 +264,10 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 (check_eq_typ_alpha) Types int and bit<3> are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue754.p4
 
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue871.p4
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue871.p4
+
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue933-1.p4
 (check_eq_typ_alpha) Types seq<int> and struct headers { x = bit<32> } are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue933-1.p4
@@ -272,6 +279,10 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/named-arg1.p4
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/named-arg1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/omec/up4.p4
+(check_eq_typ_alpha) Types int and bit<8> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/omec/up4.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/pr1363.p4
 (check_eq_typ_alpha) Types int and bit<32> are not equal
@@ -473,6 +484,12 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 (coerce_type) Cannot coerce type control (inout hdr struct empty_t {  }, inout meta struct empty_t {  }, in imeta struct intrinsic_metadata_t { f0 = bit<8>; f1 = bit<8> }) to control (inout hdr H, inout meta M, in intr_md struct intrinsic_metadata_t { f0 = bit<8>; f1 = bit<8> })
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/generic-constrained/default-package-argument.p4
 
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default/default-control-argument.p4
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default/default-control-argument.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/newtype-size/issue1717.p4
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/newtype-size/issue1717.p4
+
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue2037.p4
 (type_table_action_default) There is no action named a in actions list
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue2037.p4
@@ -509,6 +526,18 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 (type_var_expr) local is a free identifier
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/abstract-method-scoping/virtual3.p4
 
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/action-two-params.p4
+(coerce_type) Cannot coerce type seq<bit<32>> to bit<32>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/action-two-params.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/op_bin.p4
+(coerce_type) Cannot coerce type seq<bit<128>> to bit<128>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/op_bin.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/table-entries-no-arg-actions.p4
+(coerce_type) Cannot coerce type seq<int> to bit<2>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/table-entries-no-arg-actions.p4
+
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/duplicate-match-kind/pipe.p4
 (type_match_kind_decl) Match kind ternary was already defined
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/duplicate-match-kind/pipe.p4
@@ -524,6 +553,18 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/mask-on-exact-match/spec-ex25.p4
 (type_action_keyset) match_kind exact cannot use mask expression 
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/mask-on-exact-match/spec-ex25.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/pins/pins_fabric.p4
+(coerce_type) Cannot coerce type int to type vrf_id_t (= bit<10>)
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/pins/pins_fabric.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/pins/pins_middleblock.p4
+(coerce_type) Cannot coerce type int to type vrf_id_t (= bit<10>)
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/pins/pins_middleblock.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/pins/pins_wbb.p4
+(coerce_type) Cannot coerce type int to type vrf_id_t (= bit<10>)
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/pins/pins_wbb.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/psa-dpdk-binary-operations-1.p4
 (coerce_types_binary_numeric) Cannot coerce types bit<32> and type PortId_t (= bit<32>)
@@ -621,6 +662,18 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/c
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_sum_of_members_annotation.p4
 (type_table_custom) Custom element implementation is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_sum_of_members_annotation.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/dash/dash-pipeline-v1model-bmv2.p4
+(type_table_custom) Custom element counters is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/dash/dash-pipeline-v1model-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/dash-pipeline-v1model-bmv2.p4
+(type_table_custom) Custom element counters is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/dash-pipeline-v1model-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/fabric_20190420/fabric.p4
+(type_table_custom) Custom element counters is undefined
+Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/fabric_20190420/fabric.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4
 parser error: File test/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4, line 23, characters 4-14
@@ -878,5 +931,5 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/s
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector6.p4
 
-Parser on file: [PASS] 188/215 (87.44%) [FAIL] 27/215 (12.56%)
-Typecheck: [PASS] 0/188 (0.00%) [FAIL] 188/188 (100.00%)
+Parser on file: [PASS] 202/229 (88.21%) [FAIL] 27/229 (11.79%)
+Typecheck: [PASS] 0/202 (0.00%) [FAIL] 202/202 (100.00%)

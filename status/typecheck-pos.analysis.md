@@ -283,17 +283,7 @@ X() x = {
 };
 ```
 
-### (6) Keyset and sequence type (Need investigation) (3)
-
-<details>
-<summary>Tests</summary>
-
-* action-two-params.p4
-* op_bin.p4
-* table-entries-no-arg-actions.p4
-</details>
-
-### \[DONE\] (7) ~~Default parameter~~
+### \[DONE\] (6) ~~Default parameter~~
 
 ```p4
 extern void f(bit<32> a = 0, bit<32> b);
@@ -301,7 +291,7 @@ extern void f(bit<32> a = 0, bit<32> b);
 f(b = binit);
 ```
 
-### (8) Built-in methods applied directly on type variables (1)
+### (7) Built-in methods applied directly on type variables (1)
 
 The transformer logic assumes that `func` in a call expression `func<targs>(args)` is either a name or a field access, but not a type access.
 
@@ -317,7 +307,7 @@ T.minSizeInBits();
 * minsize.p4
 </details>
 
-### \[DONE\] (9) ~~Support direct application~~
+### \[DONE\] (8) ~~Support direct application~~
 
 Transform direct application.
 
@@ -328,7 +318,7 @@ control d() {
 }
 ```
 
-### \[DONE\] (10) ~~`value_set` declaration~~
+### \[DONE\] (9) ~~`value_set` declaration~~
 
 ```p4
 value_set<bit<16>>(8) ipv4_ethertypes;
@@ -400,7 +390,7 @@ parserStatement:
 ;
 ```
 
-### (2) Support trailing comma (1)
+### \[DONE\] (2) ~~Support trailing comma~~
 
 ```p4
 enum A {
@@ -526,7 +516,7 @@ h = (H) {#};
 
 # D. Need Spec Clarification
 
-## \[REPORTED\] 1. Should we add implicit cast for directionless parameter? (74)
+## \[REPORTED\] 1. Should we add implicit cast for directionless parameter?: [directionless-implicit-cast](test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast)
 
 Waiting for spec clarification, [Issue#1312](https://github.com/p4lang/p4-spec/issues/1312) and [PR#1330](https://github.com/p4lang/p4-spec/pull/1330).
 
@@ -542,31 +532,6 @@ action a(inout bit<32> b, bit<32> d) { ... }
 a(x, 0);
 ```
 
-<details>
-<summary>Tests</summary>
-
-* extern-funcs-bmv2.p4
-* extern2.p4
-* gauntlet_extern_arguments_2.p4
-* gauntlet_hdr_in_value-bmv2.p4
-* issue1001-1-bmv2.p4
-* issue1001-bmv2.p4
-* issue1043-bmv2.p4
-* issue1334.p4
-* issue1642-bmv2.p4
-* issue1653-bmv2.p4
-* issue1653-complex-bmv2.p4
-* issue1660-bmv2.p4
-* issue1765-1-bmv2.p4
-* issue2648.p4
-* issue3246-1.p4
-* issue383-bmv2.p4
-* issue562-bmv2.p4
-* issue933-1.p4
-* named-arg1.p4
-* v1model-special-ops-bmv2.p4
-</details>
-
 Below apply for constructors.
 
 ```p4
@@ -577,84 +542,7 @@ extern BFD_Offload {
 BFD_Offload(32768) bfd_session_liveness_tracker = ...;
 ```
 
-<details>
-<summary>Tests</summary>
-
-* bfd_offload.p4
-* calc-ebpf.p4
-* constructor_cast.p4
-* issue1006.p4
-* issue1097-2-bmv2.p4
-* issue1097-bmv2.p4
-* issue1814-1-bmv2.p4
-* issue1814-bmv2.p4
-* issue1958.p4
-* issue2844-enum.p4
-* issue298-bmv2.p4
-* issue4288.p4
-* issue754.p4
-* list7.p4
-* pr1363.p4
-* psa-action-profile1.p4
-* psa-action-profile3.p4
-* psa-action-profile4.p4
-* psa-basic-counter-bmv2.p4
-* psa-counter1.p4
-* psa-counter2.p4
-* psa-counter3.p4
-* psa-custom-type-counter-index.p4
-* psa-end-of-ingress-test-bmv2.p4
-* psa-example-dpdk-byte-alignment_1.p4
-* psa-example-dpdk-byte-alignment_2.p4
-* psa-example-dpdk-byte-alignment_3.p4
-* psa-example-dpdk-byte-alignment_5.p4
-* psa-example-dpdk-byte-alignment_6.p4
-* psa-example-dpdk-byte-alignment_7.p4
-* psa-example-dpdk-byte-alignment_8.p4
-* psa-example-dpdk-byte-alignment_9.p4
-* pse-example-dpdk-counter.p4
-* psa-example-dpdk-externs.p4
-* psa-example-dpdk-meter-execute-err.p4
-* psa-example-dpdk-meter.p4
-* psa-example-dpdk-meter1.p4
-* psa-example-dpdk-varbit-bmv2.p4
-* psa-meter1.p4
-* psa-meter3.p4
-* psa-meter7-bmv2.p4
-* psa-random.p4
-* psa-register-complex-bmv2.p4
-* psa-register-read-write-2-bmv2.p4
-* psa-register-read-write-bmv2.p4
-* psa-register1.p4
-* psa-register2.p4
-* psa-register3.p4
-* rcp.p4
-* rcp1.p4
-* register-serenum-bmv2.p4
-* simple-firewall_ubpf.p4
-* unused-counter-bmv2.p4
-* value-sets.p4
-</details>
-
-## \[DONE\] 2. ~~Should an argument to directionless action parameter be compile-time known?~~
-
-~~I think it should be, but the test cases below seem to violate this.~~
-
-Actually, the spec mentions that if a program supplies the directionless parameter, it need not be compile-time known.
-
-```p4
-action Reject(bool rej) { ... }
-bool x = true;
-Reject(x);
-```
-
-<details>
-<summary>Tests</summary>
-
-
-</details>
-
-## 3. How to match abstract methods when initializing an instance? (4)
+## 2. How to match abstract methods when initializing an instance?: [abstract-method-overload](test/program/well-typed-excluded/spec-clarify/abstract-method-overload)
 
 When initializing an instance with an abstract method, to determine if the method was declared as abstract, I believe we should match the method using both the method name and argument names.
 Mainly because P4 allows overloading of methods through argument names.
@@ -693,16 +581,7 @@ Virtual() cntr = {
 };
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue2175-1.p4
-* issue2175-3.p4
-* issue2175-4.p4
-* virtual.p4
-</details>
-
-## 4. Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this (4)
+## 3. Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this: [buitin-local-compile-time-known](test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known)
 
 ```p4
 @pure extern HashAlgorithm_t random_hash(bool msb, bool extend);
@@ -720,16 +599,7 @@ package sw0(P p);
 sw0(p1(createWidget(16w0, 8w0))) main;
 ```
 
-<details>
-<summary>Tests</summary>
-
-* factory1.p4
-* factory2.p4
-* hashext3.p4
-* issue3531.p4
-</details>
-
-## \[REPORTED (not by me)\] 5. Is it legal to divide a fixed-width integer?  (8)
+## \[REPORTED (not by me)\] 4. Is it legal to divide a fixed-width integer?: [fixed-width-div-and-mod](test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod)
 
 [Issue#1327](https://github.com/p4lang/p4-spec/issues/1327), seems like a PR will be made soon.
 
@@ -754,15 +624,7 @@ Note that implicit cast is allowed for arbitrary precision integer to fixed-widt
 x = 32w5 / 3;
 ```
 
-<details>
-<summary>Tests</summary>
-
-* constant_folding.p4
-* issue1879-bmv2.p4
-* issue2279_4.p4
-</details>
-
-## 6. Equivalence of table actions (2)
+## 5. Equivalence of table actions: [table-action-syntactic-eq](test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq)
 
 For default action, the spec mentions "In particular, the expressions passed as `in`, `out`, or `inout` parameters must be syntactically identical to the expressions used in one of the elements of the `actions` list. (14.2.1.3)".
 
@@ -783,45 +645,25 @@ control c() {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue2037.p4
-* issue3671.p4
-</details>
-
-## \[REPORTED\] 7. Are accesses compile-time known? (3)
+## \[REPORTED\] 6. Are accesses compile-time known?: [access-compile-time-known](test/program/well-typed-excluded/spec-clarify/access-compile-time-known)
 
 Waiting for spec clarification, [Issue#1323](https://github.com/p4lang/p4-spec/issues/1323) and [PR#1329](https://github.com/p4lang/p4-spec/pull/1329).
 
-### \[REPORTED\] (1) Accessing a tuple element with a local compile-time known index is also a local compile-time known value? (1)
+### \[REPORTED\] (1) Accessing a tuple element with a local compile-time known index is also a local compile-time known value?
 
 ```p4
 const tuple<bit<32>, bit<32>> t = { 0, 1 };
 const bit<32> f = t[0];
 ```
 
-<details>
-<summary>Tests</summary>
-
-* tuple3.p4
-</details>
-
-### \[REPORTED\] (2) Accessing a field of a local compile-time known struct is also a local compile-time known value? (2)
+### \[REPORTED\] (2) Accessing a field of a local compile-time known struct is also a local compile-time known value?
 
 ```p4
 const T t = { 32s10, 32s20 };
 const int<32> x = t.t1;
 ```
 
-<details>
-<summary>Tests</summary>
-
-* struct.p4
-* struct1.p4
-</details>
-
-## \[REPORTED\] 8. Type aliasing allowed for externs? (4)
+## \[REPORTED\] 7. Type aliasing allowed for externs?: [typedef-objects](test/program/well-typed-excluded/spec-clarify/typedef-objects)
 
 Waiting for spec clarification, [Issue#1314](https://github.com/p4lang/p4-spec/issues/1314) and [PR#1328](https://github.com/p4lang/p4-spec/pull/1328)
 
@@ -836,21 +678,12 @@ typedef bit<10> my_counter_index_t;
 typedef MyCounter<my_counter_index_t> my_counter_t;
 ```
 
-<details>
-<summary>Tests</summary>
-
-* extern-inst-as-param.p4
-* issue2735-bmv2.p4
-* issue2735.p4
-* typedef-constructor.p4
-</details>
-
-## 9. Constraints on size of a value set?
+## 8. Constraints on size of a value set?
 
 The spec does not mention if the size given to a value set declaration should be local compile-time known, compile-time known, or neither.
-I suspect it should be at least compile-time known, and it is reflected in the current implementation.
+I suspect it should be at least compile-time known, and it is already reflected in the current p4cherry implementation.
 
-## 10. A generic type that imposes (or implies) a type constraint (1)
+## 9. A generic type that imposes (or implies) a type constraint: [generic-constrained](test/program/well-typed-excluded/spec-clarify/generic-constrained)
 
 ```p4
 control nothing(
@@ -869,285 +702,48 @@ package P<H, M>(C<H, M> c = nothing());
 Here, the package type is declared as a generic type that takes two type parameters, `H` and `M`.
 But, the default argument to `c` is `nothing()`, which imposes a type constraint that `H` should be `empty_t` and `M` should be `empty_t`.
 
-<details>
-<summary>Tests</summary>
+## 10. `min/maxSizeInBits/Bytes` for new types: [newtype-size](test/program/well-typed-excluded/spec-clarify/newtype-size)
 
-* default-package-argument.p4
-</details>
-
-# E. Unsupported features
-
-## 1. Custom table element (47)
-
-### (1) `implementation`
+How do we define `min/maxSizeInBits/Bytes` for new types, say `NewT (FBitT ...)`?
+I believe it is reasonable to take the size of the underlying type but the spec does not explicitly mention this.
 
 ```p4
-table indirect_ws {
-  ...
-  implementation = ...;
+type bit<32> T;
+header H1 { T f1; }
+...
+bit<32> v(in H h1, in H1 h2) {
+    return h1.minSizeInBits();
 }
 ```
 
-<details>
-<summary>Tests</summary>
+## 11. Matching control type in the presence of default parameter: [matching-control-type-decl-with-default](test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default)
 
-* action_profile-bmv2.p4
-* action_profile_max_group_size_annotation.p4
-* action_profile_sum_of_members_annotation.p4
-* hit_ebpf.p4
-* init_ebpf.p4
-* issue2791_ebpf.p4
-* issue2793_ebpf.p4
-* issue2816-1_ebpf.p4
-* issue2816_ebpf.p4
-* issue297-bmv2.p4
-* issue870_ebpf.p4
-* key-issue-1020_ebpf.p4
-* key_ebpf.p4
-* lpm_ebpf.p4
-* stack_ebpf.p4
-* switch_ebpf.p4
-* ternary_ebpf.p4
-* test_ebpf.p4
-* two_ebpf.p4
-* valid_ebpf.p4
-</details>
-
-### (2) `counters`
+A control and package type declaration declares the template of a control or package.
+The test below expects that a control that omits the default parameter should match the control type declaration that includes the default parameter.
+I am not sure if this should be allowed.
+Because, a user may just look at the type declarations and try to supply `intr_md` to the `MyC()` instance explicitly. But this would result in an error since `MyC()` does not expect `intr_md`.
 
 ```p4
-table ipv4_da_lpm {
-    ...
-    counters = ...;
+control C<H, M>(
+    inout H hdr,
+    inout M meta,
+    in intrinsic_metadata_t intr_md = {0, 0});
+
+package P<H, M>(C<H, M> c);
+
+struct hdr_t { }
+struct meta_t { }
+
+control MyC(inout hdr_t hdr, inout meta_t meta) {
+   apply {}
 }
+
+P(MyC()) main;
 ```
 
-<details>
-<summary>Tests</summary>
+# E. Need Test Clarification
 
-* issue364-bmv2.p4
-* issue461-bmv2.p4
-</details>
-
-### (3) `junk`
-
-```p4
-table t {
-    ...
-    junk = ...;
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* junk-prop-bmv2.p4
-</details>
-
-### (4) `meters`
-
-```p4
-table m_table {
-    ...
-    meters = ...;
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* named_meter_1-bmv2.p4
-* named_meter_bmv2.p4
-</details>
-
-### (5) `add_on_miss`
-
-```p4
-table ipv4_da {
-    ...
-    add_on_miss = ...;
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* pna-add-on-miss.p4
-* pna-add_on_miss_action_name.p4
-* pna-dpdk-add_on_miss0.p4
-* pna-dpdk-add_on_miss1.p4
-* pna-dpdk-direct-counter-learner.p4
-* pna-dpdk-direct-meter-learner.p4
-* pna-example-tcp-connection-tracking.p4
-* pna-dpdk-parser-state-err.p4
-* pna-dpdk-table-key-consolidation-learner-1.p4
-* pna-dpdk-table-key-consolidation-learner-3.p4
-* pna-dpdk-table-key-consolidation-learner-4.p4
-* pna-dpdk-table-key-consolidation-learner-5.p4
-* pna-dpdk-table-key-consolidation-learner-6.p4
-* pna-dpdk-table-key-consolidation-learner-7.p4
-* pna-dpdk-table-key-use-annon.p4
-* pna-mux-dismantle.p4
-</details>
-
-### (6) `psa_direct_counter`
-
-```p4
-table tbl {
-    ...
-    psa_direct_counter = ...;
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* psa-counter4.p4
-* psa-example-counters-bmv2.p4
-* psa-example-parser-checksum.p4
-</details>
-
-### (7) `psa_direct_meter`
-
-```p4
-table tbl {
-    ...
-    psa_direct_meter = ...;
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* psa-example-dpdk-directmeter.p4
-* psa-meter4.p4
-* psa-meter5.p4
-</details>
-
-### (8) `psa_idle_timeout`
-
-```p4
-table tbl_idle_timeout {
-    ...
-    psa_idle_timeout = ...;
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* psa-idle-timeout.p4
-</details>
-
-## 2. `selector` match kind (10)
-
-This is specific to V1Model architecture.
-
-```p4
-table indirect_ws {
-    key = { meta.hash1 : selector; }
-    ...
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* action_selector_shared-bmv2.p4
-* issue1560-bmv2.p4
-* pna-action-selector-1.p4
-* pna-action-selector.p4
-* psa-action-selector1.p4
-* psa-action-selector2.p4
-* psa-action-selector3.p4
-* psa-action-selector4.p4
-* psa-action-selector5.p4
-* psa-action-selector6.p4
-</details>
-
-## 3. Optional argument (9)
-
-```p4
-extern Checksum {
-    ...
-    bit<16> update<T>(in T data, @optional in bool zeros_as_ones);
-}
-... 
-h.h.result = ipv4_checksum.update({ h.eth_hdr.dst_addr, h.eth_hdr.src_addr, h.eth_hdr.eth_type });
-```
-
-<details>
-<summary>Tests</summary>
-
-* gauntlet_optional-bmv2.p4
-* issue1304.p4
-* issue2492.p4
-* issue2630.p4
-* issue2664-bmv2.p4
-* issue2810.p4
-* issue3051.p4
-* issue3417.p4
-* pna-dpdk-direct-counter.p4
-</details>
-
-# F. Future extension
-
-## 1. For loops (9)
-
-<details>
-<summary>Tests</summary>
-
-* forloop1.p4
-* forloop2.p4
-* forloop3.p4
-* forloop4.p4
-* forloop5.p4
-* forloop5a.p4
-* forloop6.p4
-* forloop7.p4
-* issue4739.p4
-</details>
-
-## 2. Generic parser/control declaration (13)
-
-```p4
-parser p1<T>(in T a) { ... }
-```
-
-<details>
-<summary>Tests</summary>
-
-* functors6.p4
-* functors7.p4
-* functors8.p4
-* functors9.p4
-* generic.p4
-* generic1.p4
-* issue1914-1.p4
-* issue1914.p4
-* issue2019-1.p4
-* issue2019.p4
-* issue2265.p4
-* issue344.p4
-* spec-issue1068.p4
-</details>
-
-## 3. Concatenation of string literals (2)
-
-```p4
-log("Log message" ++ " text");
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue4932.p4
-* spec-issue1297-string-cat.p4
-</details>
-
-# G. Should be a negative test instead?
-
-## 1. Scope of abstract method when initializing an instance (2)
+## 1. Scope of abstract method when initializing an instance: [abstract-method-scoping](test/program/well-typed-excluded/test-clarify/abstract-method-scoping)
 
 When initializing an instance with an abstract method, it can only refer to its arguments or identifiers in the top-level scope.
 The spec mentions: "The abstract methods can only use the supplied arguments or refer to values that are in the top-level scope. When calling another method of the same instance the this keyword is used to indicate the current object instance. (11.3.1)".
@@ -1166,14 +762,7 @@ control ingress(inout headers hdr) {
     };
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue2273-1.p4
-* virtual3.p4
-</details>
-
-## 2. Syntax for select keyset (1)
+## 2. Syntax for select keyset: [select-keyset-syntax](test/program/well-typed-excluded/test-clarify/select-keyset-syntax)
 
 This should be a negative test.
 
@@ -1188,13 +777,7 @@ transition select (hdr.h.f1) {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue2514.p4
-</details>
-
-## 3. Shift by signed integer (1)
+## 3. Shift by signed integer: [shift-by-signed-int](test/program/well-typed-excluded/test-clarify/shift-by-signed-int)
 
 This shifts by a signed integer, which is illegal.
 This should be a negative test.
@@ -1206,13 +789,7 @@ bit<4> func(in bit<4> l) {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue3287.p4
-</details>
-
-## 4. Duplicate definition of `match_kind` (1)
+## 4. Duplicate definition of `match_kind`: [duplicate-match-kind](test/program/well-typed-excluded/test-clarify/duplicate-match-kind)
 
 `ternary` is defined twice.
 This should be a negative test.
@@ -1225,13 +802,7 @@ match_kind {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* pipe.p4
-</details>
-
-## 5. Mask expressions for `exact` key (1)
+## 5. Mask expressions for `exact` key: [mask-exact-key](test/program/well-typed-excluded/test-clarify/mask-exact-key)
 
 We cannot use mask expressions for `exact` key.
 This should be a negative test.
@@ -1247,13 +818,7 @@ table unit {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* spec-ex25.p4
-</details>
-
-## 6. Nesting `match_kind` or `int` inside a tuple type (5)
+## 6. Nesting `match_kind` or `int` inside a tuple type: [tuple-nesting](test/program/well-typed-excluded/test-clarify/tuple-nesting)
 
 `match_kind` and `int` *cannot* be nested inside a tuple type.
 This should be a negative test.
@@ -1266,17 +831,7 @@ const tuple<match_kind> exact_once = { exact };
 tuple<int> t = { t1 };
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue3091-1.p4
-* issue3091.p4
-* issue3238.p4
-* list3.p4
-* list4.p4
-</details>
-
-## 7. Implicit cast of `value_set` in `select` expression (7)
+## 7. Implicit cast of `value_set` in `select` expression: [value-set-implicit-cast](test/program/well-typed-excluded/test-clarify/value-set-implicit-cast)
 
 When a value set, of type `set<T>` is used as a select label, it can be implicitly cast to the select key type `set<T'>`.
 However, below programs expect loose type casting rules.
@@ -1308,34 +863,38 @@ state start {
 
 Here, we *cannot* implicitly cast `value_set_t` (which a struct type) to `bit<32>`.
 
-<details>
-<summary>Tests</summary>
+## 8. Implicit cast of a singleton sequence to a scalar in table entry: [aggregate-to-scalar-implicit-cast](test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast)
 
-* pvs-nested-struct.p4
-* pvs-struct-1-bmv2.p4
-* pvs-struct-2-bmv2.p4
-* pvs-struct-3-bmv2.p4
-* pvs.p4
-* v1model-p4runtime-enumint-types1.p4
-* v1model-p4runtime-most-types1.p4
-</details>
+Some programs expect implicit cast of a singleton sequence to a scalar in table entry, which is illegal, in a strict sense.
 
-## 8. Implicit cast of newtype (3)
+```p4
+typedef bit<32> IPv4Address;
+header ipv4_t {
+    ...
+    IPv4Address  dstAddr;
+}
+
+table ingress_tbl {
+    key = { hdr.ipv4.dstAddr : exact; }
+    actions = {actTbl; drop;}
+    const default_action = drop;
+    const entries = {
+        {(8w0x20++8w0x02++8w0x04++8w0x20)} :
+            actTbl(24w42, (8w0x20++8w0x02++8w0x42++8w0x00));
+    }
+}
+```
+
+Here, `{(8w0x20++8w0x02++8w0x04++8w0x20)}` is a singleton sequence, and it should not be implicitly cast to a scalar type `IPv4Address`, or `bit<32>`.
+
+## 9. Implicit cast of newtype: [newtype-implicit-cast](test/program/well-typed-excluded/test-clarify/newtype-implicit-cast)
 
 New types introduced by keyword `type` *cannot* be implicitly cast to its underlying type.
 However, below programs seem to violate this restriction.
 
 p4c accepts these as valid.
 
-<details>
-<summary>Tests</summary>
-
-* psa-dpdk-binary-operations-1.p4
-* psa-dpdk-binary-operations.p4
-* psa-dpdk-header-union-typedef.p4
-</details>
-
-## 9. Coercion from a fixed width integer to an arbitrary precision integer (2)
+## 10. Coercion from a fixed width integer to an arbitrary precision integer: [fixed-to-arbitrary-implicit-cast](test/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast)
 
 This is illegal, but the test case below seem to violate this.
 
@@ -1343,14 +902,7 @@ This is illegal, but the test case below seem to violate this.
 const int z1 = 2w1;
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue2444.p4
-* issue3283.p4
-</details>
-
-## 10. Equality check (`==`) on a variable type (1)
+## 11. Equality check (`==`) on a variable type: [type-variable-equality-op](test/program/well-typed-excluded/test-clarify/type-variable-equality-op)
 
 The spec only allows assignment (`=`) for types that are type variables.
 But the test case below seems to violate this.
@@ -1364,8 +916,116 @@ bool g<t>(in t a) {
 }
 ```
 
-<details>
-<summary>Tests</summary>
+# F. Future extension
 
-* issue3291-1.p4
-</details>
+## 1. For loops: [forloop](test/program/well-typed-excluded/future/forloop)
+
+## 2. Generic parser/control declaration: [generic-parser-control](test/program/well-typed-excluded/future/generic-parser-control)
+
+```p4
+parser p1<T>(in T a) { ... }
+```
+
+## 3. Concatenation of string literals: [concat-string](test/program/well-typed-excluded/future/concat-string)
+
+```p4
+log("Log message" ++ " text");
+```
+
+# G. Unsupported features
+
+## 1. Custom table element: [custom-table-element](test/program/well-typed-excluded/unsupported/custom-table-element)
+
+### (1) `implementation`
+
+```p4
+table indirect_ws {
+  ...
+  implementation = ...;
+}
+```
+
+### (2) `counters`
+
+```p4
+table ipv4_da_lpm {
+    ...
+    counters = ...;
+}
+```
+
+### (3) `junk`
+
+```p4
+table t {
+    ...
+    junk = ...;
+}
+```
+
+### (4) `meters`
+
+```p4
+table m_table {
+    ...
+    meters = ...;
+}
+```
+
+### (5) `add_on_miss`
+
+```p4
+table ipv4_da {
+    ...
+    add_on_miss = ...;
+}
+```
+
+### (6) `psa_direct_counter`
+
+```p4
+table tbl {
+    ...
+    psa_direct_counter = ...;
+}
+```
+
+### (7) `psa_direct_meter`
+
+```p4
+table tbl {
+    ...
+    psa_direct_meter = ...;
+}
+```
+
+### (8) `psa_idle_timeout`
+
+```p4
+table tbl_idle_timeout {
+    ...
+    psa_idle_timeout = ...;
+}
+```
+
+## 2. `selector` match kind: [selector-match-kind](test/program/well-typed-excluded/unsupported/selector-match-kind)
+
+This is specific to V1Model architecture.
+
+```p4
+table indirect_ws {
+    key = { meta.hash1 : selector; }
+    ...
+}
+```
+
+## 3. Optional argument: [optional-param](test/program/well-typed-excluded/unsupported/optional-param)
+
+```p4
+extern Checksum {
+    ...
+    bit<16> update<T>(in T data, @optional in bool zeros_as_ones);
+}
+... 
+h.h.result = ipv4_checksum.update({ h.eth_hdr.dst_addr, h.eth_hdr.src_addr, h.eth_hdr.eth_type });
+```
