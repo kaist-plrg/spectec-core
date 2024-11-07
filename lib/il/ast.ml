@@ -111,6 +111,7 @@ and expr' =
       targs : typ list;
       args : arg list;
     }
+  | CallTypeE of { typ : typ; member : member }
   | InstE of { var_inst : var; targs : typ list; args : arg list }
 
 (* Keyset expressions *)

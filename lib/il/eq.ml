@@ -204,6 +204,9 @@ and eq_expr' expr_a expr_b =
       eq_expr expr_base_a expr_base_b
       && eq_member member_a member_b
       && eq_targs targs_a targs_b && eq_args args_a args_b
+  | ( CallTypeE { typ = typ_a; member = member_a },
+      CallTypeE { typ = typ_b; member = member_b } ) ->
+      eq_typ typ_a typ_b && eq_member member_a member_b
   | ( InstE { var_inst = var_inst_a; targs = targs_a; args = args_a },
       InstE { var_inst = var_inst_b; targs = targs_b; args = args_b } ) ->
       eq_var var_inst_a var_inst_b

@@ -1,4 +1,5 @@
 module L = Lang.Ast
+module Elpp = El.Pp
 module El = El.Ast
 open Surface.Ast
 open Util.Source
@@ -282,6 +283,10 @@ and transform_expr (expr : Expression.t) : El.expr =
       | Name { name; _ } ->
           let var_func = transform_var name in
           El.CallFuncE { var_func; targs; args } $ at
+      | TypeMember { typ; name; _ } ->
+          let var_typ = transform_var typ in
+          let member = transform_member name in
+          El.CallTypeE { var_typ; member; targs; args } $ at
       | ExpressionMember { expr; name; _ } ->
           let expr_base = transform_expr expr in
           let member = transform_member name in

@@ -86,6 +86,7 @@ let rec ctk_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
   | CallFuncE _ -> DYN
   | CallMethodE { expr_base; member; targs; args } ->
       ctk_call_method_expr expr_base member targs args
+  | CallTypeE { typ; member } -> ctk_call_type_expr typ member
   | InstE _ -> CTK
 
 and ctk_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : Il.Ast.var) : Ctk.t
@@ -151,6 +152,12 @@ and ctk_call_method_expr (expr_base : Il.Ast.expr) (member : Il.Ast.member)
       if Type.is_ground typ_base then LCTK else CTK
   | _ -> DYN
 
+and ctk_call_type_expr (typ : Il.Ast.typ) (member : Il.Ast.member) : Ctk.t =
+  match member.it with
+  | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits" | "maxSizeInBytes" ->
+      if Type.is_ground typ.it then LCTK else CTK
+  | _ -> DYN
+
 (* Static evaluation of local compile-time known expressions *)
 
 let rec eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr) :
@@ -182,6 +189,7 @@ and eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
       eval_expr_acc_expr cursor ctx expr_base member
   | CallMethodE { expr_base; member; targs; args } ->
       eval_call_method_expr cursor ctx expr_base member targs args
+  | CallTypeE { typ; member } -> eval_call_type_expr cursor ctx typ member
   | _ -> assert false
 
 and eval_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : Il.Ast.var) :
@@ -250,4 +258,11 @@ and eval_call_method_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t)
       assert (targs = [] && args = []);
       let typ_base = expr_base.note.typ in
       Runtime.Builtins.size typ_base member.it
+  | _ -> assert false
+
+and eval_call_type_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t) (typ : Il.Ast.typ)
+    (member : Il.Ast.member) : Value.t =
+  match member.it with
+  | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits" | "maxSizeInBytes" ->
+      Runtime.Builtins.size typ.it member.it
   | _ -> assert false

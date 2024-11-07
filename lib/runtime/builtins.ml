@@ -18,13 +18,19 @@ module Type = Types.Type
    struct       | foreach field(struct) sum of field.minSizeInBits()     | foreach field(struct) sum of field.maxSizeInBits()
    header       | foreach field(header) sum of field.minSizeInBits()     | foreach field(header) sum of field.maxSizeInBits()
    H[N]	        | N * H.minSizeInBits()                                  | N * H.maxSizeInBits()
-   header_union	| max(foreach field(header_union)	field.minSizeInBits()) | max(foreach field(header_union) field.maxSizeInBits()) *)
+   header_union	| max(foreach field(header_union)	field.minSizeInBits()) | max(foreach field(header_union) field.maxSizeInBits())
+
+   The methods can also be applied to type name expressions e:
+
+    * if the type of e is a type introduced by type, the result is
+      the application of the method to the underlying type *)
 
 let rec min_size_in_bits' (typ : Type.t) : Bigint.t =
   match typ with
   | BoolT -> Bigint.one
   | FBitT width | FIntT width -> width
   | VBitT _ -> Bigint.zero
+  | NewT (_, typ_inner) -> min_size_in_bits' typ_inner
   | SEnumT (_, typ_inner, _) -> min_size_in_bits' typ_inner
   | TupleT typs_inner ->
       List.fold_left
@@ -56,6 +62,7 @@ let rec max_size_in_bits' (typ : Type.t) : Bigint.t =
   match typ with
   | BoolT -> Bigint.one
   | FBitT width | FIntT width | VBitT width -> width
+  | NewT (_, typ_inner) -> max_size_in_bits' typ_inner
   | SEnumT (_, typ_inner, _) -> max_size_in_bits' typ_inner
   | TupleT typs_inner ->
       List.fold_left

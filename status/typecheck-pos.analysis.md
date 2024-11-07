@@ -293,21 +293,17 @@ extern void f(bit<32> a = 0, bit<32> b);
 f(b = binit);
 ```
 
-### (7) Built-in methods applied directly on type variables (1)
+### \[DONE\] (7) ~~Built-in methods applied directly on type variables~~
 
 The transformer logic assumes that `func` in a call expression `func<targs>(args)` is either a name or a field access, but not a type access.
+
+Resolved by introducing a new type of call expression, `CallTypeE`.
 
 ```p4
 typedef bit<32> T;
 ...
 T.minSizeInBits();
 ```
-
-<details>
-<summary>Tests</summary>
-
-* minsize.p4
-</details>
 
 ### \[DONE\] (8) ~~Support direct application~~
 
@@ -715,21 +711,7 @@ package P<H, M>(C<H, M> c = nothing());
 Here, the package type is declared as a generic type that takes two type parameters, `H` and `M`.
 But, the default argument to `c` is `nothing()`, which imposes a type constraint that `H` should be `empty_t` and `M` should be `empty_t`.
 
-## 10. `min/maxSizeInBits/Bytes` for new types: [newtype-size](../test/program/well-typed-excluded/spec-clarify/newtype-size)
-
-How do we define `min/maxSizeInBits/Bytes` for new types, say `NewT (FBitT ...)`?
-I believe it is reasonable to take the size of the underlying type but the spec does not explicitly mention this.
-
-```p4
-type bit<32> T;
-header H1 { T f1; }
-...
-bit<32> v(in H h1, in H1 h2) {
-    return h1.minSizeInBits();
-}
-```
-
-## 11. Matching control type in the presence of default parameter: [matching-control-type-decl-with-default](../test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default)
+## 10. Matching control type in the presence of default parameter: [matching-control-type-decl-with-default](../test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default)
 
 A control and package type declaration declares the template of a control or package.
 The test below expects that a control that omits the default parameter should match the control type declaration that includes the default parameter.
@@ -754,7 +736,7 @@ control MyC(inout hdr_t hdr, inout meta_t meta) {
 P(MyC()) main;
 ```
 
-## 12. Scope when instantiating with an initialization block
+## 11. Scope when instantiating with an initialization block
 
 In P4, initialization block is used to initialize abstract methods when instantiating an extern object.
 The spec mentions that:

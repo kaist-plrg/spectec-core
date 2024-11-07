@@ -672,6 +672,8 @@ and type_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr') :
       type_call_func_expr cursor ctx var_func targs args
   | CallMethodE { expr_base; member; targs; args } ->
       type_call_method_expr cursor ctx expr_base member targs args
+  | CallTypeE { var_typ; member; targs; args } ->
+      type_call_type_expr cursor ctx var_typ member targs args
   | InstE { var_inst; targs; args } ->
       type_instantiation_expr cursor ctx var_inst targs args
 
@@ -1957,40 +1959,24 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
           (ft, tids_fresh, args_default)
       | None -> error_not_found ()
     in
-    match typ_base with
-    | StackT _ -> (
-        match member.it with
-        | "push_front" | "pop_front" ->
-            let params = [ ("count", Lang.Ast.No, Types.IntT, None) ] in
-            let typ_ret = Types.VoidT in
-            Types.BuiltinMethodT (params, typ_ret) |> wrap_builtin
-        | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits"
-        | "maxSizeInBytes" ->
-            Types.BuiltinMethodT ([], Types.IntT) |> wrap_builtin
-        | _ -> error_not_found ())
-    | StructT _ -> (
-        match member.it with
-        | "minSizeInBits" | "minSizeInBytes" ->
-            Types.BuiltinMethodT ([], Types.IntT) |> wrap_builtin
-        | _ -> error_not_found ())
-    | HeaderT _ -> (
-        match member.it with
-        | "isValid" -> Types.BuiltinMethodT ([], Types.BoolT) |> wrap_builtin
-        | "setValid" | "setInvalid" ->
-            Types.BuiltinMethodT ([], Types.VoidT) |> wrap_builtin
-        | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits"
-        | "maxSizeInBytes" ->
-            Types.BuiltinMethodT ([], Types.IntT) |> wrap_builtin
-        | _ -> error_not_found ())
-    | UnionT _ -> (
-        match member.it with
-        | "isValid" -> Types.BuiltinMethodT ([], Types.BoolT) |> wrap_builtin
-        | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits"
-        | "maxSizeInBytes" ->
-            Types.BuiltinMethodT ([], Types.IntT) |> wrap_builtin
-        | _ -> error_not_found ())
-    | ExternT (_, fdenv) -> find_method fdenv
-    | ParserT params ->
+    match (typ_base, member.it) with
+    | _, "minSizeInBits"
+    | _, "minSizeInBytes"
+    | _, "maxSizeInBits"
+    | _, "maxSizeInBytes" ->
+        Types.BuiltinMethodT ([], Types.IntT) |> wrap_builtin
+    | StackT _, "push_front" | StackT _, "pop_front" ->
+        let params = [ ("count", Lang.Ast.No, Types.IntT, None) ] in
+        let typ_ret = Types.VoidT in
+        Types.BuiltinMethodT (params, typ_ret) |> wrap_builtin
+    | HeaderT _, "isValid" ->
+        Types.BuiltinMethodT ([], Types.BoolT) |> wrap_builtin
+    | HeaderT _, "setValid" | HeaderT _, "setInvalid" ->
+        Types.BuiltinMethodT ([], Types.VoidT) |> wrap_builtin
+    | UnionT _, "isValid" ->
+        Types.BuiltinMethodT ([], Types.BoolT) |> wrap_builtin
+    | ExternT (_, fdenv), _ -> find_method fdenv
+    | ParserT params, _ ->
         let fd = Types.ParserApplyMethodD params in
         let fdenv =
           let params =
@@ -2003,7 +1989,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
           Envs.FDEnv.add fid fd Envs.FDEnv.empty
         in
         find_method fdenv
-    | ControlT params ->
+    | ControlT params, _ ->
         let fd = Types.ControlApplyMethodD params in
         let fdenv =
           let params =
@@ -2016,7 +2002,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
           Envs.FDEnv.add fid fd Envs.FDEnv.empty
         in
         find_method fdenv
-    | TableT typ -> (
+    | TableT typ, _ -> (
         match member.it with
         | "apply" -> Types.TableApplyMethodT typ |> wrap_builtin
         | _ -> error_not_found ())
@@ -2106,6 +2092,38 @@ and type_call_method_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     Il.Ast.CallMethodE
       { expr_base = expr_base_il; member; targs = targs_il; args = args_il }
   in
+  let ctk = Static.ctk_expr cursor ctx expr_il in
+  (typ, ctk, expr_il)
+
+(* (9) Compile-time size determination
+
+   If e is the name of a type (e.g., introduced by a typedef declaration),
+   where the type given a name is one of the above,
+   then the result is obtained by applying the method to the underlying type. *)
+
+and type_call_type_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (var_typ : El.Ast.var) (member : El.Ast.member) (targs : El.Ast.targ list)
+    (args : El.Ast.arg list) : Type.t * Ctk.t * Il.Ast.expr' =
+  if
+    member.it <> "minSizeInBits"
+    && member.it <> "minSizeInBytes"
+    && member.it <> "maxSizeInBits"
+    && member.it <> "maxSizeInBytes"
+    || List.length targs > 0
+    || List.length args > 0
+  then (
+    Format.printf "(type_call_type_expr) Invalid method %s for type %a\n"
+      member.it El.Pp.pp_var var_typ;
+    assert false);
+  let td = Ctx.find_opt Ctx.find_typedef_opt cursor var_typ ctx in
+  if Option.is_none td then (
+    Format.printf "(type_call_type_expr) %a is a free identifier\n" El.Pp.pp_var
+      var_typ;
+    assert false);
+  let td = Option.get td in
+  let typ = specialize_typedef td [] in
+  let expr_il = Il.Ast.CallTypeE { typ = typ $ var_typ.at; member } in
+  let typ = Types.IntT in
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
 

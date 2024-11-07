@@ -473,7 +473,7 @@ Typecheck success: test/program/ill-typed/issue3221.p4
 Typecheck success: test/program/ill-typed/issue3233.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3246.p4
-(type_method) Method minSizeInBits not found for 1w1
+(ctk_call_method_expr) minSizeInBits does not take type arguments or arguments
 Error while typechecking p4 file: test/program/ill-typed/issue3246.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3264.p4

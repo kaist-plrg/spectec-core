@@ -223,6 +223,23 @@ and eq_expr' expr_a expr_b =
       eq_expr expr_base_a expr_base_b
       && eq_member member_a member_b
       && eq_targs targs_a targs_b && eq_args args_a args_b
+  | ( CallTypeE
+        {
+          var_typ = var_typ_a;
+          member = member_a;
+          targs = targs_a;
+          args = args_a;
+        },
+      CallTypeE
+        {
+          var_typ = var_typ_b;
+          member = member_b;
+          targs = targs_b;
+          args = args_b;
+        } ) ->
+      eq_var var_typ_a var_typ_b
+      && eq_member member_a member_b
+      && eq_targs targs_a targs_b && eq_args args_a args_b
   | ( InstE { var_inst = var_inst_a; targs = targs_a; args = args_a },
       InstE { var_inst = var_inst_b; targs = targs_b; args = args_b } ) ->
       eq_var var_inst_a var_inst_b
