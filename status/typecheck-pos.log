@@ -3061,8 +3061,7 @@ Typecheck success: test/program/well-typed/version.p4
 Typecheck success: test/program/well-typed/very_simple_model.p4
 
 >>> Running typecheck test on test/program/well-typed/virtual2.p4
-(type_instantiation_init_decl) Instantiation initializer should be a function declaration
-Error while typechecking p4 file: test/program/well-typed/virtual2.p4
+Typecheck success: test/program/well-typed/virtual2.p4
 
 >>> Running typecheck test on test/program/well-typed/vss-example.p4
 Typecheck success: test/program/well-typed/vss-example.p4
@@ -3083,4 +3082,4 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1022/1025 (99.71%) [FAIL] 3/1025 (0.29%)
-Typecheck: [PASS] 1018/1022 (99.61%) [FAIL] 4/1022 (0.39%)
+Typecheck: [PASS] 1019/1022 (99.71%) [FAIL] 3/1022 (0.29%)

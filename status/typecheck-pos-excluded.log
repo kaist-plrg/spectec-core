@@ -98,19 +98,19 @@ parser error: File test/program/well-typed-excluded/future/generic-parser-contro
 Error while parsing p4 file: test/program/well-typed-excluded/future/generic-parser-control/spec-issue1068.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/abstract-method-overload/issue2175-1.p4
-(type_instantiation_decl) Abstract method g(ix) is not defined
+(type_instantiation_decl) Abstract method g(x) was not declared
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/abstract-method-overload/issue2175-1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/abstract-method-overload/issue2175-3.p4
-(type_instantiation_decl) Abstract method a(arg) is not defined
+(type_instantiation_decl) Abstract method a(arg1) was not declared
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/abstract-method-overload/issue2175-3.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/abstract-method-overload/issue2175-4.p4
-(type_instantiation_decl) Abstract method g(ix) is not defined
+(type_instantiation_decl) Abstract method g(x) was not declared
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/abstract-method-overload/issue2175-4.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/abstract-method-overload/virtual.p4
-(type_instantiation_decl) Abstract method g(ix) is not defined
+(type_instantiation_decl) Abstract method g(x) was not declared
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/abstract-method-overload/virtual.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/access-compile-time-known/constStruct.p4
@@ -884,7 +884,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/o
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/optional-param/issue3051.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/optional-param/issue3417.p4
-(type_instantiation_decl) Abstract method apply(value, rv) is not defined
+(type_instantiation_decl) Abstract method apply(val, rv) was not declared
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/optional-param/issue3417.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/optional-param/pna-dpdk-direct-counter.p4
