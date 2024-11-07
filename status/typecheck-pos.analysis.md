@@ -516,7 +516,7 @@ h = (H) {#};
 
 # D. Need Spec Clarification
 
-## \[REPORTED\] 1. Should we add implicit cast for directionless parameter?: [directionless-implicit-cast](test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast)
+## \[REPORTED\] 1. Should we add implicit cast for directionless parameter?: [directionless-implicit-cast](../test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast)
 
 Waiting for spec clarification, [Issue#1312](https://github.com/p4lang/p4-spec/issues/1312) and [PR#1330](https://github.com/p4lang/p4-spec/pull/1330).
 
@@ -542,7 +542,7 @@ extern BFD_Offload {
 BFD_Offload(32768) bfd_session_liveness_tracker = ...;
 ```
 
-## 2. How to match abstract methods when initializing an instance?: [abstract-method-overload](test/program/well-typed-excluded/spec-clarify/abstract-method-overload)
+## 2. How to match abstract methods when initializing an instance?: [abstract-method-overload](../test/program/well-typed-excluded/spec-clarify/abstract-method-overload)
 
 When initializing an instance with an abstract method, to determine if the method was declared as abstract, I believe we should match the method using both the method name and argument names.
 Mainly because P4 allows overloading of methods through argument names.
@@ -581,7 +581,7 @@ Virtual() cntr = {
 };
 ```
 
-## 3. Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this: [buitin-local-compile-time-known](test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known)
+## 3. Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this: [buitin-local-compile-time-known](../test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known)
 
 ```p4
 @pure extern HashAlgorithm_t random_hash(bool msb, bool extend);
@@ -599,7 +599,7 @@ package sw0(P p);
 sw0(p1(createWidget(16w0, 8w0))) main;
 ```
 
-## \[REPORTED (not by me)\] 4. Is it legal to divide a fixed-width integer?: [fixed-width-div-and-mod](test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod)
+## \[REPORTED (not by me)\] 4. Is it legal to divide a fixed-width integer?: [fixed-width-div-and-mod](../test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod)
 
 [Issue#1327](https://github.com/p4lang/p4-spec/issues/1327), seems like a PR will be made soon.
 
@@ -624,7 +624,7 @@ Note that implicit cast is allowed for arbitrary precision integer to fixed-widt
 x = 32w5 / 3;
 ```
 
-## 5. Equivalence of table actions: [table-action-syntactic-eq](test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq)
+## 5. Equivalence of table actions: [table-action-syntactic-eq](../test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq)
 
 For default action, the spec mentions "In particular, the expressions passed as `in`, `out`, or `inout` parameters must be syntactically identical to the expressions used in one of the elements of the `actions` list. (14.2.1.3)".
 
@@ -645,7 +645,7 @@ control c() {
 }
 ```
 
-## \[REPORTED\] 6. Are accesses compile-time known?: [access-compile-time-known](test/program/well-typed-excluded/spec-clarify/access-compile-time-known)
+## \[REPORTED\] 6. Are accesses compile-time known?: [access-compile-time-known](../test/program/well-typed-excluded/spec-clarify/access-compile-time-known)
 
 Waiting for spec clarification, [Issue#1323](https://github.com/p4lang/p4-spec/issues/1323) and [PR#1329](https://github.com/p4lang/p4-spec/pull/1329).
 
@@ -663,7 +663,7 @@ const T t = { 32s10, 32s20 };
 const int<32> x = t.t1;
 ```
 
-## \[REPORTED\] 7. Type aliasing allowed for externs?: [typedef-objects](test/program/well-typed-excluded/spec-clarify/typedef-objects)
+## \[REPORTED\] 7. Type aliasing allowed for externs?: [typedef-objects](../test/program/well-typed-excluded/spec-clarify/typedef-objects)
 
 Waiting for spec clarification, [Issue#1314](https://github.com/p4lang/p4-spec/issues/1314) and [PR#1328](https://github.com/p4lang/p4-spec/pull/1328)
 
@@ -683,7 +683,7 @@ typedef MyCounter<my_counter_index_t> my_counter_t;
 The spec does not mention if the size given to a value set declaration should be local compile-time known, compile-time known, or neither.
 I suspect it should be at least compile-time known, and it is already reflected in the current p4cherry implementation.
 
-## 9. A generic type that imposes (or implies) a type constraint: [generic-constrained](test/program/well-typed-excluded/spec-clarify/generic-constrained)
+## 9. A generic type that imposes (or implies) a type constraint: [generic-constrained](../test/program/well-typed-excluded/spec-clarify/generic-constrained)
 
 ```p4
 control nothing(
@@ -702,7 +702,7 @@ package P<H, M>(C<H, M> c = nothing());
 Here, the package type is declared as a generic type that takes two type parameters, `H` and `M`.
 But, the default argument to `c` is `nothing()`, which imposes a type constraint that `H` should be `empty_t` and `M` should be `empty_t`.
 
-## 10. `min/maxSizeInBits/Bytes` for new types: [newtype-size](test/program/well-typed-excluded/spec-clarify/newtype-size)
+## 10. `min/maxSizeInBits/Bytes` for new types: [newtype-size](../test/program/well-typed-excluded/spec-clarify/newtype-size)
 
 How do we define `min/maxSizeInBits/Bytes` for new types, say `NewT (FBitT ...)`?
 I believe it is reasonable to take the size of the underlying type but the spec does not explicitly mention this.
@@ -716,7 +716,7 @@ bit<32> v(in H h1, in H1 h2) {
 }
 ```
 
-## 11. Matching control type in the presence of default parameter: [matching-control-type-decl-with-default](test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default)
+## 11. Matching control type in the presence of default parameter: [matching-control-type-decl-with-default](../test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default)
 
 A control and package type declaration declares the template of a control or package.
 The test below expects that a control that omits the default parameter should match the control type declaration that includes the default parameter.
@@ -743,7 +743,7 @@ P(MyC()) main;
 
 # E. Need Test Clarification
 
-## 1. Scope of abstract method when initializing an instance: [abstract-method-scoping](test/program/well-typed-excluded/test-clarify/abstract-method-scoping)
+## 1. Scope of abstract method when initializing an instance: [abstract-method-scoping](../test/program/well-typed-excluded/test-clarify/abstract-method-scoping)
 
 When initializing an instance with an abstract method, it can only refer to its arguments or identifiers in the top-level scope.
 The spec mentions: "The abstract methods can only use the supplied arguments or refer to values that are in the top-level scope. When calling another method of the same instance the this keyword is used to indicate the current object instance. (11.3.1)".
@@ -762,7 +762,7 @@ control ingress(inout headers hdr) {
     };
 ```
 
-## 2. Syntax for select keyset: [select-keyset-syntax](test/program/well-typed-excluded/test-clarify/select-keyset-syntax)
+## 2. Syntax for select keyset: [select-keyset-syntax](../test/program/well-typed-excluded/test-clarify/select-keyset-syntax)
 
 This should be a negative test.
 
@@ -777,7 +777,7 @@ transition select (hdr.h.f1) {
 }
 ```
 
-## 3. Shift by signed integer: [shift-by-signed-int](test/program/well-typed-excluded/test-clarify/shift-by-signed-int)
+## 3. Shift by signed integer: [shift-by-signed-int](../test/program/well-typed-excluded/test-clarify/shift-by-signed-int)
 
 This shifts by a signed integer, which is illegal.
 This should be a negative test.
@@ -789,7 +789,7 @@ bit<4> func(in bit<4> l) {
 }
 ```
 
-## 4. Duplicate definition of `match_kind`: [duplicate-match-kind](test/program/well-typed-excluded/test-clarify/duplicate-match-kind)
+## 4. Duplicate definition of `match_kind`: [duplicate-match-kind](../test/program/well-typed-excluded/test-clarify/duplicate-match-kind)
 
 `ternary` is defined twice.
 This should be a negative test.
@@ -802,7 +802,7 @@ match_kind {
 }
 ```
 
-## 5. Mask expressions for `exact` key: [mask-exact-key](test/program/well-typed-excluded/test-clarify/mask-exact-key)
+## 5. Mask expressions for `exact` key: [mask-exact-key](../test/program/well-typed-excluded/test-clarify/mask-exact-key)
 
 We cannot use mask expressions for `exact` key.
 This should be a negative test.
@@ -818,7 +818,7 @@ table unit {
 }
 ```
 
-## 6. Nesting `match_kind` or `int` inside a tuple type: [tuple-nesting](test/program/well-typed-excluded/test-clarify/tuple-nesting)
+## 6. Nesting `match_kind` or `int` inside a tuple type: [tuple-nesting](../test/program/well-typed-excluded/test-clarify/tuple-nesting)
 
 `match_kind` and `int` *cannot* be nested inside a tuple type.
 This should be a negative test.
@@ -831,7 +831,7 @@ const tuple<match_kind> exact_once = { exact };
 tuple<int> t = { t1 };
 ```
 
-## 7. Implicit cast of `value_set` in `select` expression: [value-set-implicit-cast](test/program/well-typed-excluded/test-clarify/value-set-implicit-cast)
+## 7. Implicit cast of `value_set` in `select` expression: [value-set-implicit-cast](../test/program/well-typed-excluded/test-clarify/value-set-implicit-cast)
 
 When a value set, of type `set<T>` is used as a select label, it can be implicitly cast to the select key type `set<T'>`.
 However, below programs expect loose type casting rules.
@@ -863,7 +863,7 @@ state start {
 
 Here, we *cannot* implicitly cast `value_set_t` (which a struct type) to `bit<32>`.
 
-## 8. Implicit cast of a singleton sequence to a scalar in table entry: [aggregate-to-scalar-implicit-cast](test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast)
+## 8. Implicit cast of a singleton sequence to a scalar in table entry: [aggregate-to-scalar-implicit-cast](../test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast)
 
 Some programs expect implicit cast of a singleton sequence to a scalar in table entry, which is illegal, in a strict sense.
 
@@ -887,14 +887,14 @@ table ingress_tbl {
 
 Here, `{(8w0x20++8w0x02++8w0x04++8w0x20)}` is a singleton sequence, and it should not be implicitly cast to a scalar type `IPv4Address`, or `bit<32>`.
 
-## 9. Implicit cast of newtype: [newtype-implicit-cast](test/program/well-typed-excluded/test-clarify/newtype-implicit-cast)
+## 9. Implicit cast of newtype: [newtype-implicit-cast](../test/program/well-typed-excluded/test-clarify/newtype-implicit-cast)
 
 New types introduced by keyword `type` *cannot* be implicitly cast to its underlying type.
 However, below programs seem to violate this restriction.
 
 p4c accepts these as valid.
 
-## 10. Coercion from a fixed width integer to an arbitrary precision integer: [fixed-to-arbitrary-implicit-cast](test/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast)
+## 10. Coercion from a fixed width integer to an arbitrary precision integer: [fixed-to-arbitrary-implicit-cast](../test/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast)
 
 This is illegal, but the test case below seem to violate this.
 
@@ -902,7 +902,7 @@ This is illegal, but the test case below seem to violate this.
 const int z1 = 2w1;
 ```
 
-## 11. Equality check (`==`) on a variable type: [type-variable-equality-op](test/program/well-typed-excluded/test-clarify/type-variable-equality-op)
+## 11. Equality check (`==`) on a variable type: [type-variable-equality-op](../test/program/well-typed-excluded/test-clarify/type-variable-equality-op)
 
 The spec only allows assignment (`=`) for types that are type variables.
 But the test case below seems to violate this.
@@ -918,15 +918,15 @@ bool g<t>(in t a) {
 
 # F. Future extension
 
-## 1. For loops: [forloop](test/program/well-typed-excluded/future/forloop)
+## 1. For loops: [forloop](../test/program/well-typed-excluded/future/forloop)
 
-## 2. Generic parser/control declaration: [generic-parser-control](test/program/well-typed-excluded/future/generic-parser-control)
+## 2. Generic parser/control declaration: [generic-parser-control](../test/program/well-typed-excluded/future/generic-parser-control)
 
 ```p4
 parser p1<T>(in T a) { ... }
 ```
 
-## 3. Concatenation of string literals: [concat-string](test/program/well-typed-excluded/future/concat-string)
+## 3. Concatenation of string literals: [concat-string](../test/program/well-typed-excluded/future/concat-string)
 
 ```p4
 log("Log message" ++ " text");
@@ -934,7 +934,7 @@ log("Log message" ++ " text");
 
 # G. Unsupported features
 
-## 1. Custom table element: [custom-table-element](test/program/well-typed-excluded/unsupported/custom-table-element)
+## 1. Custom table element: [custom-table-element](../test/program/well-typed-excluded/unsupported/custom-table-element)
 
 ### (1) `implementation`
 
@@ -1008,7 +1008,7 @@ table tbl_idle_timeout {
 }
 ```
 
-## 2. `selector` match kind: [selector-match-kind](test/program/well-typed-excluded/unsupported/selector-match-kind)
+## 2. `selector` match kind: [selector-match-kind](../test/program/well-typed-excluded/unsupported/selector-match-kind)
 
 This is specific to V1Model architecture.
 
@@ -1019,7 +1019,7 @@ table indirect_ws {
 }
 ```
 
-## 3. Optional argument: [optional-param](test/program/well-typed-excluded/unsupported/optional-param)
+## 3. Optional argument: [optional-param](../test/program/well-typed-excluded/unsupported/optional-param)
 
 ```p4
 extern Checksum {
