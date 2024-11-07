@@ -25,7 +25,9 @@ argument:
 
 ### \[REVISIT\] (2) Operator precedence (1)
 
-The spec mentions "This grammar does not indicate the precedence of the various operators. The precedence mostly follows the C precedence rules, with one change and some additions." (8).
+The spec mentions:
+
+> This grammar does not indicate the precedence of the various operators. The precedence mostly follows the C precedence rules, with one change and some additions. (8)
 
 ```p4
 extern T f<T>(T x);
@@ -350,8 +352,9 @@ enum bit<4> e {
 `error` types can be `exact` matched, but the current type checker rejects it.
 
 The spec mentions:
-* "The `error` type only supports equality (`==`) and inequality (`!=`) comparisons." (8.2).
-* "an `exact` match kind on a key field ... This is applicable for all legal key fields whose types support equality comparisons." (14.2.1.1).
+
+> * "The `error` type only supports equality (`==`) and inequality (`!=`) comparisons."(8.2)
+> * an `exact` match kind on a key field ... This is applicable for all legal key fields whose types support equality comparisons. (14.2.1.1)
 
 Quickly patched by adding `error` to the list of types that support equality comparisons.
 But later it would be desirable to have a clear list of types that are allowed for each match kind.
@@ -373,7 +376,11 @@ table t_exact {
 
 Conditional statement can be used in a parser block.
 
-The spec mentions, "Added support for conditional statements and empty statements in parsers (Section 13.4). (A.3)", i.e., it was added in v1.2.2.
+The spec mentions:
+
+> Added support for conditional statements and empty statements in parsers (Section 13.4). (A.3)
+
+i.e., it was added in v1.2.2.
 
 ```ocaml
 parserStatement:
@@ -447,7 +454,9 @@ const tuple<match_kind> exact_once = ...;
 
 ### \[DONE\] (4) ~~Support `...` default grammar~~
 
-The spec says, "A left-value can be initialized automatically with default value of the suitable type using the syntax `...` (see Section 7.3)." (8.26).
+The spec says:
+
+> A left-value can be initialized automatically with default value of the suitable type using the syntax `...` (see Section 7.3). (8.26)
 
 Implemented it with introducing new types and values, namely: `DefaultT`, `SeqDefaultT`, `RecordDefaultT`, `DefaultV`, `SeqDefaultV`, and `RecordDefaultV`.
 
@@ -525,7 +534,9 @@ I think we should, especially for constructor invocations.
 Below apply for methods and functions.
 
 Note that directionless argument for action can be implicitly cast, as per the spec.
-The spec mentions, "Actions can also be explicitly invoked using function call syntax, either from a control block or from another action. In this case, values for all action parameters must be supplied explicitly, including values for the directionless parameters. The directionless parameters in this case behave like in parameters. See Section 14.1.1 for further details. (6.8.1)".
+The spec mentions,
+
+> Actions can also be explicitly invoked using function call syntax, either from a control block or from another action. In this case, values for all action parameters must be supplied explicitly, including values for the directionless parameters. The directionless parameters in this case behave like in parameters. See Section 14.1.1 for further details. (6.8.1)
 
 ```p4
 action a(inout bit<32> b, bit<32> d) { ... }
@@ -626,7 +637,9 @@ x = 32w5 / 3;
 
 ## 5. Equivalence of table actions: [table-action-syntactic-eq](../test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq)
 
-For default action, the spec mentions "In particular, the expressions passed as `in`, `out`, or `inout` parameters must be syntactically identical to the expressions used in one of the elements of the `actions` list. (14.2.1.3)".
+For default action, the spec mentions:
+
+> In particular, the expressions passed as `in`, `out`, or `inout` parameters must be syntactically identical to the expressions used in one of the elements of the `actions` list. (14.2.1.3)
 
 But the test cases below seem to violate this.
 
@@ -741,12 +754,69 @@ control MyC(inout hdr_t hdr, inout meta_t meta) {
 P(MyC()) main;
 ```
 
+## 12. Scope when instantiating with an initialization block
+
+In P4, initialization block is used to initialize abstract methods when instantiating an extern object.
+The spec mentions that:
+
+> The abstract methods can only use the supplied arguments or refer to values that are in the top-level scope. When calling another method of the same instance the this keyword is used to indicate the current object instance. (11.3.1)
+
+But also the grammar allows a local instantiation in the initialization block.
+
+```
+instantiation:
+      ...
+      | annotations typeRef "(" argumentList ")" name "=" objInitializer ";"
+      | typeRef "(" argumentList ")" name "=" objInitializer ";"
+
+objInitializer
+    : "{" objDeclarations "}"
+    ;
+
+objDeclarations
+    : /* empty */
+    | objDeclarations objDeclaration
+    ;
+
+objDeclaration
+    : functionDeclaration
+    | instantiation
+    ;
+```
+
+Thus, it also suggests that the local instance can be referred by the initialized abstract methods.
+(Otherwise, there is no way to refer to those extern-local instances.)
+
+```p4
+extern Virtual {
+    Virtual();
+    void run(in bit<16> ix);
+    @synchronous(run) abstract bit<16> f(in bit<16> ix);
+}
+extern State {
+    State(int<16> size);
+    bit<16> get(in bit<16> index);
+}
+...
+Virtual() cntr = {
+    State(1024) state;
+    bit<16> f(in bit<16> ix) {
+        return state.get(ix);
+    }
+};
+```
+
+This is implemented in current p4cherry, but it would be nice to have a clear spec on this.
+
 # E. Need Test Clarification
 
 ## 1. Scope of abstract method when initializing an instance: [abstract-method-scoping](../test/program/well-typed-excluded/test-clarify/abstract-method-scoping)
 
 When initializing an instance with an abstract method, it can only refer to its arguments or identifiers in the top-level scope.
-The spec mentions: "The abstract methods can only use the supplied arguments or refer to values that are in the top-level scope. When calling another method of the same instance the this keyword is used to indicate the current object instance. (11.3.1)".
+The spec mentions:
+
+> The abstract methods can only use the supplied arguments or refer to values that are in the top-level scope. When calling another method of the same instance the this keyword is used to indicate the current object instance. (11.3.1)
+
 But the test cases below seem to violate this.
 
 ```p4

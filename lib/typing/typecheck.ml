@@ -3062,43 +3062,63 @@ and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    in the top-level scope. When calling another method of the same instance the this
    keyword is used to indicate the current object instance. *)
 
-(* (TODO) Consider the "this" keyword *)
-
 and type_instantiation_init_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (fdenv_abstract : Envs.FDEnv.t) (init : El.Ast.decl) :
-    Envs.FDEnv.t * Il.Ast.decl =
-  let fdenv, init_il =
-    type_instantiation_init_decl' cursor ctx fdenv_abstract init.it
+    (tenv_abstract : Envs.TEnv.t) (fdenv_abstract : Envs.FDEnv.t)
+    (init : El.Ast.decl) : Envs.TEnv.t * Envs.FDEnv.t * Il.Ast.decl =
+  let tenv_abstract, fdenv_abstract, init_il =
+    type_instantiation_init_decl' cursor ctx tenv_abstract fdenv_abstract
+      init.it
   in
-  (fdenv, init_il $ init.at)
+  (tenv_abstract, fdenv_abstract, init_il $ init.at)
 
 and type_instantiation_init_decl' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (fdenv_abstract : Envs.FDEnv.t) (init : El.Ast.decl') :
-    Envs.FDEnv.t * Il.Ast.decl' =
+    (tenv_abstract : Envs.TEnv.t) (fdenv_abstract : Envs.FDEnv.t)
+    (init : El.Ast.decl') : Envs.TEnv.t * Envs.FDEnv.t * Il.Ast.decl' =
   match init with
+  | InstD { id; var_inst; targs; args; init; annos } ->
+      let ctx, decl_il =
+        type_instantiation_decl cursor ctx id var_inst targs args init annos
+      in
+      let rtype = Ctx.find_rtype cursor id.it ctx in
+      let tenv_abstract = Envs.TEnv.add id.it rtype tenv_abstract in
+      (tenv_abstract, fdenv_abstract, decl_il)
   | FuncD { id; typ_ret; tparams; params; body } ->
       let fid = FId.to_fid id params in
+      let ctx =
+        {
+          ctx with
+          block = { ctx.block with frame = (Envs.VEnv.empty, tenv_abstract) };
+        }
+      in
       let ctx, decl_il =
         type_function_decl cursor ctx id tparams params typ_ret body
       in
       let fd = Ctx.find_funcdef cursor fid ctx in
+      let fd =
+        match fd with
+        | FunctionD (tparams, params, typ_ret) ->
+            Types.ExternMethodD (tparams, params, typ_ret)
+        | _ -> assert false
+      in
       let fdenv_abstract = Envs.FDEnv.add fid fd fdenv_abstract in
-      (fdenv_abstract, decl_il)
+      (tenv_abstract, fdenv_abstract, decl_il)
   | _ ->
       Format.printf
-        "(type_instantiation_init_decl) Instantiation initializer should be a \
-         function declaration\n";
+        "(type_instantiation_init_decl) Instantiation initializer should be an \
+         instantiation or function declaration\n";
       assert false
 
 and type_instantiation_init_decls (ctx : Ctx.t) (inits : El.Ast.decl list) :
-    Envs.FDEnv.t * Il.Ast.decl list =
+    Envs.TEnv.t * Envs.FDEnv.t * Il.Ast.decl list =
   List.fold_left
-    (fun (fdenv_abstract, inits_il) init ->
-      let fdenv_abstract, init_il =
-        type_instantiation_init_decl Ctx.Global ctx fdenv_abstract init
+    (fun (tenv_abstract, fdenv_abstract, inits_il) init ->
+      let tenv_abstract, fdenv_abstract, init_il =
+        type_instantiation_init_decl Ctx.Global ctx tenv_abstract fdenv_abstract
+          init
       in
-      (fdenv_abstract, inits_il @ [ init_il ]))
-    (Envs.FDEnv.empty, []) inits
+      (tenv_abstract, fdenv_abstract, inits_il @ [ init_il ]))
+    (Envs.TEnv.empty, Envs.FDEnv.empty, [])
+    inits
 
 and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
@@ -3119,26 +3139,32 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
           { Ctx.empty with global = ctx.global }
           |> Ctx.add_rtype Ctx.Local "this" typ Lang.Ast.No Ctk.CTK
         in
-        let fdenv_abstract, init_il = type_instantiation_init_decls ctx init in
+        let _, fdenv_abstract, init_il =
+          type_instantiation_init_decls ctx init
+        in
         let fdenv_extern =
           Envs.FDEnv.fold
-            (fun fid fd fdenv_extern ->
-              let typ_ret = FuncDef.get_typ_ret fd in
-              let fd_extern = Envs.FDEnv.find_opt fid fdenv_abstract in
+            (fun fid fd_abstract fdenv_extern ->
+              let fd_extern = Envs.FDEnv.find_opt fid fdenv_extern in
               (* (TODO) What if extern abstract method decl has type parameters? *)
               if
-                match (fd_extern : FuncDef.t option) with
-                | Some
-                    (ExternAbstractMethodD
-                      (_tparams_extern, _params_extern, typ_ret_extern)) ->
-                    typ_ret = typ_ret_extern
-                | _ -> false
+                not
+                  (match (fd_extern : FuncDef.t option) with
+                  | Some
+                      (ExternAbstractMethodD
+                        (tparams_extern, params_extern, typ_ret_extern)) ->
+                      let fd_extern =
+                        Types.ExternMethodD
+                          (tparams_extern, params_extern, typ_ret_extern)
+                      in
+                      Eq.eq_funcdef_alpha fd_extern fd_abstract
+                  | _ -> false)
               then (
                 Format.printf
-                  "(type_instantiation_decl) Abstract method %a is not declared\n"
+                  "(type_instantiation_decl) Abstract method %a was not declared\n"
                   FId.pp fid;
                 assert false);
-              Envs.FDEnv.add fid fd fdenv_extern)
+              Envs.FDEnv.add fid fd_abstract fdenv_extern)
             fdenv_abstract fdenv_extern
         in
         Envs.FDEnv.iter
@@ -3146,7 +3172,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
             match (fd_extern : FuncDef.t) with
             | ExternAbstractMethodD _ ->
                 Format.printf
-                  "(type_instantiation_decl) Abstract method %a is not defined\n"
+                  "(type_instantiation_decl) Abstract method %a was not defined\n"
                   FId.pp fid;
                 assert false
             | _ -> ())

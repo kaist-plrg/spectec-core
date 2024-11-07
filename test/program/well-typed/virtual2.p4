@@ -27,7 +27,7 @@ extern State {
 
 control c(inout bit<16> p) {
     Virtual() cntr = {
-        State(1024) state;
+        State(16s1024) state;
 
         bit<16> f(in bit<16> ix) {  // abstract method implementation
             return state.get(ix);
