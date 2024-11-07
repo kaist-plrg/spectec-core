@@ -3441,7 +3441,20 @@ and type_newtype_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       WF.check_valid_typedef cursor ctx td;
       let ctx = Ctx.add_typedef cursor id.it td ctx in
       ctx
-  | Right _ -> failwith "(TODO: type_newtype_decl) Handle newtype with decl"
+  | Right decl ->
+      let ctx', _ = type_decl cursor ctx decl in
+      let tid_newtype =
+        TIdSet.diff
+          (Envs.TDEnv.keys ctx'.global.tdenv |> TIdSet.of_list)
+          (Envs.TDEnv.keys ctx.global.tdenv |> TIdSet.of_list)
+      in
+      assert (TIdSet.cardinal tid_newtype = 1);
+      let tid_newtype = TIdSet.choose tid_newtype in
+      let td_newtype = Ctx.find_typedef cursor tid_newtype ctx' in
+      let typ = specialize_typedef td_newtype [] in
+      let td = Types.NewD (id.it, typ) in
+      let ctx = Ctx.add_typedef cursor id.it td ctx' in
+      ctx
 
 (* (7.5) typedef
 
@@ -3464,7 +3477,20 @@ and type_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       WF.check_valid_typedef cursor ctx td;
       let ctx = Ctx.add_typedef cursor id.it td ctx in
       ctx
-  | Right _ -> failwith "(TODO: type_typedef_decl) Handle typedef with decl"
+  | Right decl ->
+      let ctx', _ = type_decl cursor ctx decl in
+      let tid_typedef =
+        TIdSet.diff
+          (Envs.TDEnv.keys ctx'.global.tdenv |> TIdSet.of_list)
+          (Envs.TDEnv.keys ctx.global.tdenv |> TIdSet.of_list)
+      in
+      assert (TIdSet.cardinal tid_typedef = 1);
+      let tid_typedef = TIdSet.choose tid_typedef in
+      let td_typedef = Ctx.find_typedef cursor tid_typedef ctx' in
+      let typ = specialize_typedef td_typedef [] in
+      let td = Types.DefD typ in
+      let ctx = Ctx.add_typedef cursor id.it td ctx' in
+      ctx
 
 (* (14.1) Actions
 

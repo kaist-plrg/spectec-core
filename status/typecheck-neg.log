@@ -1052,6 +1052,7 @@ Error while typechecking p4 file: test/program/ill-typed/typecheck1_e.p4
 Error while typechecking p4 file: test/program/ill-typed/typecheck_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/typedef-and-type-definitions.p4
+(check_valid_typedef_nesting) Invalid nesting of int inside type intT_t (= int)
 Error while typechecking p4 file: test/program/ill-typed/typedef-and-type-definitions.p4
 
 >>> Running typecheck test on test/program/ill-typed/underscore1_e.p4
