@@ -28,7 +28,11 @@ let print_direction (dir : Direction.t) =
 (* Operators *)
 
 let print_unop (unop : Op.un) =
-  match unop with Not _ -> "!" | BitNot _ -> "~" | UMinus _ -> "-"
+  match unop with
+  | Not _ -> "!"
+  | BitNot _ -> "~"
+  | UPlus _ -> "+"
+  | UMinus _ -> "-"
 
 let print_binop (binop : Op.bin) =
   match binop with

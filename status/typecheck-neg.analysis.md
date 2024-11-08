@@ -579,7 +579,7 @@ Here, we are trying to cast `bit<2>` to `t1`, which is a new type for `bit<1>`. 
 * issue3221.p4
 </details>
 
-### (5) Parser swallows the unary `+`
+### \[DONE\] (5) ~~Parser swallows the unary `+`~~
 
 ```ocaml
 | info1 = PLUS exp = expression %prec PREFIX
@@ -593,12 +593,6 @@ So the below program is checked as correct.
 ```p4
 const bool b = +false;
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue3153.p4
-</details>
 
 ### (6) Parser not ending in `accept` nor `reject`
 

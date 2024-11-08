@@ -87,6 +87,7 @@ let pp_unop' fmt unop' =
   match unop' with
   | BNotOp -> F.fprintf fmt "~"
   | LNotOp -> F.fprintf fmt "!"
+  | UPlusOp -> F.fprintf fmt "+"
   | UMinusOp -> F.fprintf fmt "-"
 
 let pp_unop fmt unop = pp_unop' fmt unop.it

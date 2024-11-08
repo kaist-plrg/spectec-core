@@ -99,6 +99,7 @@ module Op : sig
   and 'a un' =
     | Not of { tags : 'a }
     | BitNot of { tags : 'a }
+    | UPlus of { tags : 'a }
     | UMinus of { tags : 'a }
 
   val tags_un : 'a un' -> 'a
@@ -135,10 +136,12 @@ end = struct
   and 'a un' =
     | Not of { tags : 'a }
     | BitNot of { tags : 'a }
+    | UPlus of { tags : 'a }
     | UMinus of { tags : 'a }
 
   let tags_un (un : 'a un') : 'a =
-    match un with Not { tags } | BitNot { tags } | UMinus { tags } -> tags
+    match un with
+    | Not { tags } | BitNot { tags } | UPlus { tags } | UMinus { tags } -> tags
 
   type bin = Source.info bin'
 

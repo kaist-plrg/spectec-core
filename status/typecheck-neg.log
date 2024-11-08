@@ -445,7 +445,8 @@ Typecheck success: test/program/ill-typed/issue3057-1.p4
 Error while typechecking p4 file: test/program/ill-typed/issue306.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3153.p4
-Typecheck success: test/program/ill-typed/issue3153.p4
+(coerce_type_unary) Cannot coerce type bool
+Error while typechecking p4 file: test/program/ill-typed/issue3153.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3170-1.p4
 (check_valid_type_nesting) Invalid nesting of struct y { tt = header yy { tt = bit<1> }[2] } inside header t { y = struct y { tt = header yy { tt = bit<1> }[2] } }
@@ -1100,4 +1101,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 265/299 (88.63%) [FAIL] 34/299 (11.37%)
-Typecheck: [PASS] 173/265 (65.28%) [FAIL] 92/265 (34.72%)
+Typecheck: [PASS] 174/265 (65.66%) [FAIL] 91/265 (34.34%)

@@ -108,6 +108,7 @@ let eval_unop (op : Lang.Ast.unop) (value : Value.t) : Value.t =
   match op.it with
   | BNotOp -> eval_unop_bitnot value
   | LNotOp -> eval_unop_not value
+  | UPlusOp -> value
   | UMinusOp -> eval_unop_uminus value
 
 (* Binop evaluation *)

@@ -35,7 +35,7 @@ and state_label' = string
 
 (* Unary operators *)
 type unop = unop' phrase
-and unop' = BNotOp | LNotOp | UMinusOp
+and unop' = BNotOp | LNotOp | UPlusOp | UMinusOp
 
 (* Binary operators *)
 type binop = binop' phrase
