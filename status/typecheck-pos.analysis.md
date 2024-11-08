@@ -364,7 +364,7 @@ table t_exact {
 
 </details>
 
-# C. Feature Extension since Petr4
+# B. Feature Extension since Petr4
 
 ## 1. Flexible syntax
 
@@ -519,7 +519,7 @@ switch (hdr.h1.data) {
 h = (H) {#};
 ```
 
-# D. Need Spec Clarification
+# C. Need Spec Clarification
 
 ## \[REPORTED\] 1. Should we add implicit cast for directionless parameter?: [directionless-implicit-cast](../test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast)
 
@@ -790,7 +790,7 @@ Virtual() cntr = {
 
 This is implemented in current p4cherry, but it would be nice to have a clear spec on this.
 
-# E. Need Test Clarification
+# D. Need Test Clarification
 
 ## 1. Scope of abstract method when initializing an instance: [abstract-method-scoping](../test/program/well-typed-excluded/test-clarify/abstract-method-scoping)
 
@@ -968,7 +968,7 @@ bool g<t>(in t a) {
 }
 ```
 
-# F. Future extension
+# E. Future extension
 
 ## 1. For loops: [forloop](../test/program/well-typed-excluded/future/forloop)
 
@@ -984,7 +984,7 @@ parser p1<T>(in T a) { ... }
 log("Log message" ++ " text");
 ```
 
-# G. Unsupported features
+# F. Unsupported features
 
 ## 1. Custom table element: [custom-table-element](../test/program/well-typed-excluded/unsupported/custom-table-element)
 
