@@ -48,6 +48,7 @@ let transform_unop (unop : Op.un) : El.unop =
   match unop with
   | BitNot { tags = at } -> L.BNotOp $ at
   | Not { tags = at } -> L.LNotOp $ at
+  | UPlus { tags = at } -> L.UPlusOp $ at
   | UMinus { tags = at } -> L.UMinusOp $ at
 
 (* Binary operators *)

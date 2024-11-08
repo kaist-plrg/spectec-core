@@ -852,6 +852,9 @@ and check_unop_bnot (typ : Type.t) =
 
 and check_unop_lnot (typ : Type.t) = match typ with BoolT -> true | _ -> false
 
+and check_unop_uplus (typ : Type.t) =
+  match typ with IntT | FIntT _ | FBitT _ -> true | _ -> false
+
 and check_unop_uminus (typ : Type.t) =
   match typ with IntT | FIntT _ | FBitT _ -> true | _ -> false
 
@@ -862,6 +865,7 @@ and type_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : El.Ast.unop)
     match unop.it with
     | BNotOp -> coerce_type_unary_numeric check_unop_bnot expr_il
     | LNotOp -> coerce_type_unary_numeric check_unop_lnot expr_il
+    | UPlusOp -> coerce_type_unary_numeric check_unop_uplus expr_il
     | UMinusOp -> coerce_type_unary_numeric check_unop_uminus expr_il
   in
   let typ = expr_il.note.typ in

@@ -72,6 +72,7 @@ and eq_unop' (unop : Op.un) (unop' : Op.un) =
   match (unop, unop') with
   | Not _, Not _ -> true
   | BitNot _, BitNot _ -> true
+  | UPlus _, UPlus _ -> true
   | UMinus _, UMinus _ -> true
   | _ -> false
 

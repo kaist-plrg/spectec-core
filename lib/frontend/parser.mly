@@ -1559,14 +1559,13 @@ expression:
       Expression.UnaryOp { tags; op = Op.Not {tags = info1}; arg } }
 | info1 = COMPLEMENT arg = expression %prec PREFIX
     { let tags = Source.merge info1 (Expression.tags arg) in
-    Expression.UnaryOp{ tags; op = Op.BitNot {tags = info1}; arg } }
+    Expression.UnaryOp { tags; op = Op.BitNot {tags = info1}; arg } }
 | info1 = MINUS arg = expression %prec PREFIX
     { let tags = Source.merge info1 (Expression.tags arg) in
-      Expression.UnaryOp{ tags; op = UMinus {tags = info1}; arg } }
-| info1 = PLUS exp = expression %prec PREFIX
-    { (*let info2,exp = exp in*)
-      let tags = Source.merge info1 (Expression.tags exp) in
-      Expression.update_tags exp tags }
+      Expression.UnaryOp { tags; op = UMinus {tags = info1}; arg } }
+| info1 = PLUS arg = expression %prec PREFIX
+    { let tags = Source.merge info1 (Expression.tags arg) in
+      Expression.UnaryOp { tags; op = UPlus {tags = info1}; arg } }
 | info1 = L_PAREN typ = typeRef R_PAREN expr = expression %prec PREFIX
     { let tags = Source.merge info1 (Expression.tags expr) in
       Expression.Cast { tags; typ; expr } }
@@ -1629,14 +1628,13 @@ nonBraceExpression:
       Expression.UnaryOp { tags; op = Op.Not {tags = info1}; arg } }
 | info1 = COMPLEMENT arg = expression %prec PREFIX
     { let tags = Source.merge info1 (Expression.tags arg) in
-    Expression.UnaryOp{ tags; op = Op.BitNot {tags = info1}; arg } }
+      Expression.UnaryOp { tags; op = Op.BitNot {tags = info1}; arg } }
 | info1 = MINUS arg = expression %prec PREFIX
     { let tags = Source.merge info1 (Expression.tags arg) in
-    Expression.UnaryOp{ tags; op = UMinus {tags = info1}; arg } }
-| info1 = PLUS exp = expression %prec PREFIX
-    { (*let info2,exp = exp in*)
-      let tags = Source.merge info1 (Expression.tags exp) in
-      Expression.update_tags exp tags }
+      Expression.UnaryOp { tags; op = UMinus {tags = info1}; arg } }
+| info1 = PLUS arg = expression %prec PREFIX
+    { let tags = Source.merge info1 (Expression.tags arg) in
+       Expression.UnaryOp { tags; op = UPlus {tags = info1}; arg } }     
 | info1 = L_PAREN typ = typeRef R_PAREN expr = expression %prec PREFIX
     { let tags = Source.merge info1 (Expression.tags expr) in
       Expression.Cast { tags; typ; expr } }

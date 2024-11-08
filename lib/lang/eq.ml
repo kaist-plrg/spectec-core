@@ -87,7 +87,8 @@ let eq_match_kind match_kind_a match_kind_b =
 
 let eq_unop' unop_a unop_b =
   match (unop_a, unop_b) with
-  | BNotOp, BNotOp | LNotOp, LNotOp | UMinusOp, UMinusOp -> true
+  | BNotOp, BNotOp | LNotOp, LNotOp | UPlusOp, UPlusOp | UMinusOp, UMinusOp ->
+      true
   | _ -> false
 
 let eq_unop unop_a unop_b = eq_unop' unop_a.it unop_b.it
