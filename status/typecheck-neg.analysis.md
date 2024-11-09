@@ -106,7 +106,7 @@ a_two(
 
 ## 2. Duplicate declarations in the same namespace
 
-### (1) Duplicate id
+### \[DONE\] (1) ~~Duplicate id~~
 
 ```p4
 control c(bit<32> p)(bool p) {
@@ -114,67 +114,21 @@ control c(bit<32> p)(bool p) {
 }
 ```
 
-```p4
-control ingress(inout Headers h) {
-    apply {
-        Headers h = h;
-    }
-}
-```
-
-```p4
-control MyC(bit<8> t) {
-  table t {
-    key = { t : exact; }
-    actions = {}
-  }
-  apply {}
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* dup-param.p4
-* issue2267.p4
-* issue2544_shadowing1.p4
-* issue2545.p4
-</details>
-
-### (2) Duplicate constants
+### \[DONE\] (2) ~~Duplicate constants~~
 
 ```p4
 const bit<4> a = 1;
 const bit<4> a = 2;
 ```
 
-<details>
-<summary>Tests</summary>
-
-* dupConst.p4
-</details>
-
-### (3) Duplicate action/functions
+### \[DONE\] (3) ~~Duplicate action/functions~~
 
 ```p4
 action foo (in bit<8> x, out bit<8> y) { y = (x >> 2); }
 action foo (inout bit<8> x) { x = (x >> 3); }
 ```
 
-```p4
-control foo (in bit<8> x, out bit<8> y) { apply { y = x + 7; } }
-bool foo() { return true; }
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue1932-1.p4
-* issue1932-2.p4
-* issue1932.p4
-</details>
-
-### (4) Duplicate switch label
+### \[DONE\] (4) ~~Duplicate switch label~~
 
 ```p4
 apply {
@@ -184,12 +138,6 @@ apply {
     }
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* duplicate-label.p4
-</details>
 
 ### (5) `main` should be a package
 
@@ -837,6 +785,151 @@ action select_entry(choices_t choices) { ... }
 <summary>Tests</summary>
 
 * issue532.p4
+</details>
+
+## 5. Constructors and functions live in the same namespace?
+
+```p4
+control foo (in bit<8> x, out bit<8> y) { apply { y = x + 7; } }
+bool foo() { return true; }
+```
+
+p4c rejects this program because:
+
+```
+p4c/testdata/p4_16_errors/issue1932.p4(2): [--Werror=duplicate] error: Re-declaration of foo with different type:
+bool foo(
+     ^^^
+p4c/testdata/p4_16_errors/issue1932.p4(1)
+control foo (in bit<8> x, out bit<8> y) { apply { y = x + 7; } }
+        ^^^
+[--Werror=overlimit] error: 1 errors encountered, aborting compilation
+```
+
+But we can distinguish the use of an identifier as a function or a constructor from the syntax. So we may consider them as living in different namespaces, so the above program should (or can) be accepted.
+
+<details>
+<summary>Tests</summary>
+* issue1932.p4
+</details>
+
+## 6. Scope of a control parameter
+
+What is the scope of a control parameter?
+Does it live in the same level as the local declarations, or does it live in the same level as the `apply` block?
+
+```p4
+control ingress(inout Headers h) {
+    apply {
+        Headers h = h;
+    }
+}
+```
+
+The above case is categorized as ill-typed, by the p4c compiler.
+But the below case passes the type check.
+
+```p4
+control ingress(inout Headers h) {
+    Headers h = h;
+    apply {}
+}
+```
+
+They imply that the control parameter is in the same level as the `apply` block, but not in the same level as the control local declarations.
+
+So it suggests two cases:
+
+(i) Local declarations are above the level of control parameters and `apply` block. (`local` > `control parameter` = `apply`)
+
+This way, we are viewing
+
+```p4
+control ingress(inout Headers h) {
+    Headers local = h;
+    apply {
+        Headers app = local;
+    }
+}
+```
+
+as,
+
+```p4
+control ingress {
+    Headers local;
+    apply (inout Headers h) {
+        local = h;
+        Headers app = local;
+    }
+}
+```
+
+This gives one explanation for the above case.
+However, this will no longer justify the below case.
+
+```p4
+control ingress(inout Headers h) { // 1. if we move this to apply,
+    Headers local = h;
+    action a() {
+        Headers act = h; // 2. error: h is not defined
+    }
+    apply {
+        Headers app = local;
+    }
+}
+```
+
+Adding more to its strangeness,
+
+```p4
+control C(inout bit<32> x) {
+   action a() { bit<32> x = x; }
+   apply {}
+}
+```
+
+```
+dup.p4(7): [--Werror=shadow] error: declaration of 'x' shadows a parameter 'x'
+   action a() { bit<32> x = x; }
+                ^^^^^^^^^^^^^
+dup.p4(6)
+control C(bit<32> x) {
+```
+
+```p4
+control C(inout bit<32> x) {
+   bit<32> x = 3;
+   action a() { bit<32> x = x; }
+   apply {}
+}
+```
+
+```
+dup.p4(7): [--Wwarn=shadow] warning: 'x' shadows 'x'
+   bit<32> x = 3;
+   ^^^^^^^^^^^^^
+dup.p4(6)
+control C(bit<32> x) {
+                  ^
+dup.p4(8): [--Wwarn=shadow] warning: 'x' shadows 'x'
+   action a() { bit<32> x = x; }
+                ^^^^^^^^^^^^^
+dup.p4(7)
+   bit<32> x = 3;
+   ^^^^^^^^^^^^^
+```
+
+above is rejected and below is accepted. (above implies that `param` = `apply` and below implies that `param` > `local` > `apply`)
+
+(ii) Local declarations are below the level of control parameters and `apply` block. (`local` < `control parameter` = `apply`)
+
+This is not true because the `apply` block can access the local declarations.
+
+<details>
+<summary>Tests</summary>
+* issue2544_shadowing1.p4
+* issue2545.p4
 </details>
 
 # D. More than a type check? (Requiring domain-specific knowledge)

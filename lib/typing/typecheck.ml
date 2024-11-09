@@ -1990,7 +1990,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
               params
           in
           let fid = ("apply", params) in
-          Envs.FDEnv.add fid fd Envs.FDEnv.empty
+          Envs.FDEnv.add_nodup_non_overloaded fid fd Envs.FDEnv.empty
         in
         find_method fdenv
     | ControlT params, _ ->
@@ -2003,7 +2003,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
               params
           in
           let fid = ("apply", params) in
-          Envs.FDEnv.add fid fd Envs.FDEnv.empty
+          Envs.FDEnv.add_nodup_non_overloaded fid fd Envs.FDEnv.empty
         in
         find_method fdenv
     | TableT typ, _ -> (
@@ -2401,8 +2401,7 @@ and type_switch_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
    the default_action was executed. *)
 
 and type_switch_table_label (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (id_table : Il.Ast.id) (labels_seen : Il.Ast.switch_label' list)
-    (label : El.Ast.switch_label) : Il.Ast.switch_label =
+    (id_table : Il.Ast.id) (label : El.Ast.switch_label) : Il.Ast.switch_label =
   let label_il =
     match label.it with
     | ExprL
@@ -2444,28 +2443,19 @@ and type_switch_table_label (cursor : Ctx.cursor) (ctx : Ctx.t)
         assert false
     | DefaultL -> Lang.Ast.DefaultL
   in
-  if List.mem label_il labels_seen then (
-    Format.printf "(type_switch_table_label) Label %a was used multiple times\n"
-      El.Pp.pp_switch_label label;
-    assert false);
   label_il $ label.at
 
 and type_switch_table_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
-    (id_table : Il.Ast.id) (labels_seen : Il.Ast.switch_label' list)
-    (case : El.Ast.switch_case) :
+    (id_table : Il.Ast.id) (case : El.Ast.switch_case) :
     Flow.t * Il.Ast.switch_label * Il.Ast.switch_case =
   match case.it with
   | MatchC (label, block) ->
-      let label_il =
-        type_switch_table_label cursor ctx id_table labels_seen label
-      in
+      let label_il = type_switch_table_label cursor ctx id_table label in
       let _ctx, flow, block_il = type_block cursor ctx flow block in
       let case_il = Lang.Ast.MatchC (label_il, block_il) $ case.at in
       (flow, label_il, case_il)
   | FallC label ->
-      let label_il =
-        type_switch_table_label cursor ctx id_table labels_seen label
-      in
+      let label_il = type_switch_table_label cursor ctx id_table label in
       let case_il = Lang.Ast.FallC label_il $ case.at in
       (flow, label_il, case_il)
 
@@ -2484,15 +2474,21 @@ and type_switch_table_cases (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
 
 and type_switch_table_cases' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (id_table : Il.Ast.id) (flows_case : Flow.t list)
-    (labels_seen : Il.Ast.switch_label' list)
-    (cases_il : Il.Ast.switch_case list) (cases : El.Ast.switch_case list) :
-    Flow.t list * Il.Ast.switch_label' list * Il.Ast.switch_case list =
+    (labels_seen : string list) (cases_il : Il.Ast.switch_case list)
+    (cases : El.Ast.switch_case list) :
+    Flow.t list * string list * Il.Ast.switch_case list =
   match cases with
   | [] -> (flows_case, labels_seen, cases_il)
   | case :: cases ->
       let flow_case, label_il, case_il =
-        type_switch_table_case cursor ctx flow id_table labels_seen case
+        type_switch_table_case cursor ctx flow id_table case
       in
+      let label_il_str = Format.asprintf "%a" Il.Pp.pp_switch_label label_il in
+      if List.mem label_il_str labels_seen then (
+        Format.printf
+          "(type_switch_table_cases') Label %s was used multiple times\n"
+          label_il_str;
+        assert false);
       if
         (match (label_il.it : Il.Ast.switch_label') with
         | DefaultL -> true
@@ -2504,7 +2500,7 @@ and type_switch_table_cases' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
            label\n";
         assert false);
       let flows_case = flows_case @ [ flow_case ] in
-      let labels_seen = labels_seen @ [ label_il.it ] in
+      let labels_seen = labels_seen @ [ label_il_str ] in
       let cases_il = cases_il @ [ case_il ] in
       type_switch_table_cases' cursor ctx flow id_table flows_case labels_seen
         cases_il cases
@@ -2534,8 +2530,7 @@ and type_switch_table_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
    a left brace character {, to avoid ambiguity with a block statement. *)
 
 and type_switch_general_label (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (typ_switch : Type.t) (labels_seen : Il.Ast.switch_label' list)
-    (label : El.Ast.switch_label) : Il.Ast.switch_label =
+    (typ_switch : Type.t) (label : El.Ast.switch_label) : Il.Ast.switch_label =
   let label_il =
     match label.it with
     | ExprL expr ->
@@ -2545,29 +2540,19 @@ and type_switch_general_label (cursor : Ctx.cursor) (ctx : Ctx.t)
         Lang.Ast.ExprL expr_il
     | DefaultL -> Lang.Ast.DefaultL
   in
-  if List.mem label_il labels_seen then (
-    Format.printf
-      "(type_switch_general_label) Label %a was used multiple times\n"
-      El.Pp.pp_switch_label label;
-    assert false);
   label_il $ label.at
 
 and type_switch_general_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
-    (typ_switch : Type.t) (labels_seen : Il.Ast.switch_label' list)
-    (case : El.Ast.switch_case) :
+    (typ_switch : Type.t) (case : El.Ast.switch_case) :
     Flow.t * Il.Ast.switch_label * Il.Ast.switch_case =
   match case.it with
   | MatchC (label, block) ->
-      let label_il =
-        type_switch_general_label cursor ctx typ_switch labels_seen label
-      in
+      let label_il = type_switch_general_label cursor ctx typ_switch label in
       let _ctx, flow, block_il = type_block cursor ctx flow block in
       let case_il = Lang.Ast.MatchC (label_il, block_il) $ case.at in
       (flow, label_il, case_il)
   | FallC label ->
-      let label_il =
-        type_switch_general_label cursor ctx typ_switch labels_seen label
-      in
+      let label_il = type_switch_general_label cursor ctx typ_switch label in
       let case_il = Lang.Ast.FallC label_il $ case.at in
       (flow, label_il, case_il)
 
@@ -2586,15 +2571,21 @@ and type_switch_general_cases (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and type_switch_general_cases' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (flow : Flow.t) (typ_switch : Type.t) (flows_case : Flow.t list)
-    (labels_seen : Il.Ast.switch_label' list)
-    (cases_il : Il.Ast.switch_case list) (cases : El.Ast.switch_case list) :
-    Flow.t list * Il.Ast.switch_label' list * Il.Ast.switch_case list =
+    (labels_seen : string list) (cases_il : Il.Ast.switch_case list)
+    (cases : El.Ast.switch_case list) :
+    Flow.t list * string list * Il.Ast.switch_case list =
   match cases with
   | [] -> (flows_case, labels_seen, cases_il)
   | case :: cases ->
       let flow_case, label_il, case_il =
-        type_switch_general_case cursor ctx flow typ_switch labels_seen case
+        type_switch_general_case cursor ctx flow typ_switch case
       in
+      let label_il_str = Format.asprintf "%a" Il.Pp.pp_switch_label label_il in
+      if List.mem label_il_str labels_seen then (
+        Format.printf
+          "(type_switch_general_cases') Label %s was used multiple times\n"
+          label_il_str;
+        assert false);
       if
         (match (label_il.it : Il.Ast.switch_label') with
         | DefaultL -> true
@@ -2606,7 +2597,7 @@ and type_switch_general_cases' (cursor : Ctx.cursor) (ctx : Ctx.t)
            label\n";
         assert false);
       let flows_case = flows_case @ [ flow_case ] in
-      let labels_seen = labels_seen @ [ label_il.it ] in
+      let labels_seen = labels_seen @ [ label_il_str ] in
       let cases_il = cases_il @ [ case_il ] in
       type_switch_general_cases' cursor ctx flow typ_switch flows_case
         labels_seen cases_il cases
@@ -2830,6 +2821,7 @@ and type_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   let stmt_il =
     Lang.Ast.CallInstS { var_inst; targs = targs_il; args = args_il }
   in
+  let ctx = Ctx.remove_rtype cursor id.it ctx in
   (ctx, flow, stmt_il)
 
 (* (13.5) Transition statements
@@ -3102,7 +3094,7 @@ and type_instantiation_init_decl' (cursor : Ctx.cursor) (ctx : Ctx.t)
         type_instantiation_decl cursor ctx id var_inst targs args init annos
       in
       let rtype = Ctx.find_rtype cursor id.it ctx in
-      let tenv_abstract = Envs.TEnv.add id.it rtype tenv_abstract in
+      let tenv_abstract = Envs.TEnv.add_nodup id.it rtype tenv_abstract in
       (tenv_abstract, fdenv_abstract, decl_il)
   | FuncD { id; typ_ret; tparams; params; body } ->
       let fid = FId.to_fid id params in
@@ -3122,7 +3114,9 @@ and type_instantiation_init_decl' (cursor : Ctx.cursor) (ctx : Ctx.t)
             Types.ExternMethodD (tparams, params, typ_ret)
         | _ -> assert false
       in
-      let fdenv_abstract = Envs.FDEnv.add fid fd fdenv_abstract in
+      let fdenv_abstract =
+        Envs.FDEnv.add_nodup_overloaded fid fd fdenv_abstract
+      in
       (tenv_abstract, fdenv_abstract, decl_il)
   | _ ->
       Format.printf
@@ -3592,7 +3586,7 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Types.ActionD params
   in
   WF.check_valid_funcdef cursor ctx fd;
-  let ctx = Ctx.add_funcdef cursor fid fd ctx in
+  let ctx = Ctx.add_funcdef_non_overload cursor fid fd ctx in
   let decl_il =
     Il.Ast.ActionD { id; params = params_il; body = block_il; annos = annos_il }
   in
@@ -3644,7 +3638,7 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Types.FunctionD (tparams, params, typ_ret.it)
   in
   WF.check_valid_funcdef cursor ctx fd;
-  let ctx = Ctx.add_funcdef cursor fid fd ctx in
+  let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
   let decl_il =
     Il.Ast.FuncD { id; typ_ret; tparams; params = params_il; body = block_il }
   in
@@ -3679,7 +3673,7 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     Types.ExternFunctionD (tparams, params, typ_ret.it)
   in
   WF.check_valid_funcdef cursor ctx fd;
-  let ctx = Ctx.add_funcdef cursor fid fd ctx in
+  let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
   let decl_il =
     Il.Ast.ExternFuncD
       { id; typ_ret; tparams; params = params_il; annos = annos_il }
@@ -3760,7 +3754,7 @@ and type_extern_abstract_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     Types.ExternAbstractMethodD (tparams, params, typ_ret.it)
   in
   WF.check_valid_funcdef cursor ctx fd;
-  let ctx = Ctx.add_funcdef cursor fid fd ctx in
+  let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
   let decl_il =
     Il.Ast.ExternAbstractMethodD
       { id; tparams; params = params_il; typ_ret; annos = annos_il }
@@ -3792,7 +3786,7 @@ and type_extern_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Types.ExternMethodD (tparams, params, typ_ret.it)
   in
   WF.check_valid_funcdef cursor ctx fd;
-  let ctx = Ctx.add_funcdef cursor fid fd ctx in
+  let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
   let decl_il =
     Il.Ast.ExternMethodD
       { id; tparams; params = params_il; typ_ret; annos = annos_il }

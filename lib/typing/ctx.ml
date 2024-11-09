@@ -129,7 +129,11 @@ let rec get_tparams cursor ctx =
 let add_consdef cid cd ctx =
   {
     ctx with
-    global = { ctx.global with cdenv = Envs.CDEnv.add cid cd ctx.global.cdenv };
+    global =
+      {
+        ctx.global with
+        cdenv = Envs.CDEnv.add_nodup_overloaded cid cd ctx.global.cdenv;
+      };
   }
 
 let add_tparam cursor tparam ctx =
@@ -157,34 +161,73 @@ let add_typedef cursor tid td ctx =
       {
         ctx with
         global =
-          { ctx.global with tdenv = Envs.TDEnv.add tid td ctx.global.tdenv };
+          {
+            ctx.global with
+            tdenv = Envs.TDEnv.add_nodup tid td ctx.global.tdenv;
+          };
       }
   | Block ->
       {
         ctx with
-        block = { ctx.block with tdenv = Envs.TDEnv.add tid td ctx.block.tdenv };
+        block =
+          { ctx.block with tdenv = Envs.TDEnv.add_nodup tid td ctx.block.tdenv };
       }
   | Local ->
       {
         ctx with
-        local = { ctx.local with tdenv = Envs.TDEnv.add tid td ctx.local.tdenv };
+        local =
+          { ctx.local with tdenv = Envs.TDEnv.add_nodup tid td ctx.local.tdenv };
       }
 
-let add_funcdef cursor fid fd ctx =
+let add_funcdef_non_overload cursor fid fd ctx =
   match cursor with
   | Global ->
       {
         ctx with
         global =
-          { ctx.global with fdenv = Envs.FDEnv.add fid fd ctx.global.fdenv };
+          {
+            ctx.global with
+            fdenv = Envs.FDEnv.add_nodup_non_overloaded fid fd ctx.global.fdenv;
+          };
       }
   | Block ->
       {
         ctx with
-        block = { ctx.block with fdenv = Envs.FDEnv.add fid fd ctx.block.fdenv };
+        block =
+          {
+            ctx.block with
+            fdenv = Envs.FDEnv.add_nodup_non_overloaded fid fd ctx.block.fdenv;
+          };
       }
   | Local ->
-      F.eprintf "(add_funcdef) Local cursor cannot have function definitions\n";
+      F.eprintf
+        "(add_funcdef_non_overload) Local cursor cannot have function \
+         definitions\n";
+      assert false
+
+let add_funcdef_overload cursor fid fd ctx =
+  match cursor with
+  | Global ->
+      {
+        ctx with
+        global =
+          {
+            ctx.global with
+            fdenv = Envs.FDEnv.add_nodup_overloaded fid fd ctx.global.fdenv;
+          };
+      }
+  | Block ->
+      {
+        ctx with
+        block =
+          {
+            ctx.block with
+            fdenv = Envs.FDEnv.add_nodup_overloaded fid fd ctx.block.fdenv;
+          };
+      }
+  | Local ->
+      F.eprintf
+        "(add_funcdef_overload) Local cursor cannot have function definitions\n";
       assert false
 
 let add_value cursor id value ctx =
@@ -193,13 +236,15 @@ let add_value cursor id value ctx =
       let venv, tenv = ctx.global.frame in
       {
         ctx with
-        global = { ctx.global with frame = (Envs.VEnv.add id value venv, tenv) };
+        global =
+          { ctx.global with frame = (Envs.VEnv.add_nodup id value venv, tenv) };
       }
   | Block ->
       let venv, tenv = ctx.block.frame in
       {
         ctx with
-        block = { ctx.block with frame = (Envs.VEnv.add id value venv, tenv) };
+        block =
+          { ctx.block with frame = (Envs.VEnv.add_nodup id value venv, tenv) };
       }
   | Local ->
       let frames = ctx.local.frames in
@@ -219,7 +264,7 @@ let add_rtype cursor id typ dir ctk ctx =
         global =
           {
             ctx.global with
-            frame = (venv, Envs.TEnv.add id (typ, dir, ctk) tenv);
+            frame = (venv, Envs.TEnv.add_nodup id (typ, dir, ctk) tenv);
           };
       }
   | Block ->
@@ -229,7 +274,7 @@ let add_rtype cursor id typ dir ctk ctx =
         block =
           {
             ctx.block with
-            frame = (venv, Envs.TEnv.add id (typ, dir, ctk) tenv);
+            frame = (venv, Envs.TEnv.add_nodup id (typ, dir, ctk) tenv);
           };
       }
   | Local ->
@@ -238,7 +283,7 @@ let add_rtype cursor id typ dir ctk ctx =
         if frames = [] then ((Envs.VEnv.empty, Envs.TEnv.empty), [])
         else (List.hd frames, List.tl frames)
       in
-      let frame = (venv, Envs.TEnv.add id (typ, dir, ctk) tenv) in
+      let frame = (venv, Envs.TEnv.add_nodup id (typ, dir, ctk) tenv) in
       { ctx with local = { ctx.local with frames = frame :: frames } }
 
 let add_param cursor param ctx =
@@ -250,6 +295,31 @@ let add_params cursor params ctx =
   List.fold_left (fun ctx param -> add_param cursor param ctx) ctx params
 
 let add_cparams = add_params
+
+(* Removers *)
+
+let remove_rtype cursor id ctx =
+  match cursor with
+  | Global ->
+      let venv, tenv = ctx.global.frame in
+      {
+        ctx with
+        global = { ctx.global with frame = (venv, Envs.TEnv.remove id tenv) };
+      }
+  | Block ->
+      let venv, tenv = ctx.block.frame in
+      {
+        ctx with
+        block = { ctx.block with frame = (venv, Envs.TEnv.remove id tenv) };
+      }
+  | Local ->
+      let frames = ctx.local.frames in
+      let (venv, tenv), frames =
+        if frames = [] then ((Envs.VEnv.empty, Envs.TEnv.empty), [])
+        else (List.hd frames, List.tl frames)
+      in
+      let frame = (venv, Envs.TEnv.remove id tenv) in
+      { ctx with local = { ctx.local with frames = frame :: frames } }
 
 (* Finders *)
 

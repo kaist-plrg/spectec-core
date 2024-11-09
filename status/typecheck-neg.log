@@ -119,7 +119,7 @@ Error while typechecking p4 file: test/program/ill-typed/div1.p4
 Error while typechecking p4 file: test/program/ill-typed/div3.p4
 
 >>> Running typecheck test on test/program/ill-typed/dup-param.p4
-Typecheck success: test/program/ill-typed/dup-param.p4
+Error while typechecking p4 file: test/program/ill-typed/dup-param.p4
 
 >>> Running typecheck test on test/program/ill-typed/dup-param1.p4
 (type_control_decl) Control declarations cannot be generic
@@ -134,10 +134,11 @@ Error while typechecking p4 file: test/program/ill-typed/dup-param2.p4
 Error while typechecking p4 file: test/program/ill-typed/dup-param3.p4
 
 >>> Running typecheck test on test/program/ill-typed/dupConst.p4
-Typecheck success: test/program/ill-typed/dupConst.p4
+Error while typechecking p4 file: test/program/ill-typed/dupConst.p4
 
 >>> Running typecheck test on test/program/ill-typed/duplicate-label.p4
-Typecheck success: test/program/ill-typed/duplicate-label.p4
+(type_switch_table_cases') Label a was used multiple times
+Error while typechecking p4 file: test/program/ill-typed/duplicate-label.p4
 
 >>> Running typecheck test on test/program/ill-typed/enumCast.p4
 Typecheck success: test/program/ill-typed/enumCast.p4
@@ -300,10 +301,10 @@ Error while typechecking p4 file: test/program/ill-typed/issue1777-bmv2.p4
 Typecheck success: test/program/ill-typed/issue1803_same_table_name.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1932-1.p4
-Typecheck success: test/program/ill-typed/issue1932-1.p4
+Error while typechecking p4 file: test/program/ill-typed/issue1932-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1932-2.p4
-Typecheck success: test/program/ill-typed/issue1932-2.p4
+Error while typechecking p4 file: test/program/ill-typed/issue1932-2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1932.p4
 Typecheck success: test/program/ill-typed/issue1932.p4
@@ -353,7 +354,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue2230.p4
 Typecheck success: test/program/ill-typed/issue2260-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2267.p4
-Typecheck success: test/program/ill-typed/issue2267.p4
+Error while typechecking p4 file: test/program/ill-typed/issue2267.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2283_2-bmv2.p4
 Typecheck success: test/program/ill-typed/issue2283_2-bmv2.p4
@@ -1101,4 +1102,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 265/299 (88.63%) [FAIL] 34/299 (11.37%)
-Typecheck: [PASS] 174/265 (65.66%) [FAIL] 91/265 (34.34%)
+Typecheck: [PASS] 180/265 (67.92%) [FAIL] 85/265 (32.08%)
