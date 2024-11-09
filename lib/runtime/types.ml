@@ -485,6 +485,20 @@ module FuncDef = struct
   let pp = pp_funcdef
   let eq = eq_funcdef
 
+  let eq_kind fd_a fd_b =
+    match (fd_a, fd_b) with
+    | ActionD _, ActionD _
+    | ExternFunctionD _, ExternFunctionD _
+    | FunctionD _, FunctionD _
+    | ExternMethodD _, ExternMethodD _
+    | ExternMethodD _, ExternAbstractMethodD _
+    | ExternAbstractMethodD _, ExternMethodD _
+    | ExternAbstractMethodD _, ExternAbstractMethodD _
+    | ParserApplyMethodD _, ParserApplyMethodD _
+    | ControlApplyMethodD _, ControlApplyMethodD _ ->
+        true
+    | _ -> false
+
   let get_params = function
     | ActionD params
     | ExternFunctionD (_, params, _)
@@ -513,4 +527,5 @@ module ConsDef = struct
   type t = consdef
 
   let pp = pp_consdef
+  let eq_kind _ _ = true
 end

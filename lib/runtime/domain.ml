@@ -139,6 +139,11 @@ struct
     match find_opt id env with
     | Some value -> value
     | None -> Format.asprintf "Key not found: %a\n" Id.pp id |> failwith
+
+  let add_nodup id value env =
+    if mem id env then
+      Format.asprintf "Key already exists: %a\n" Id.pp id |> failwith
+    else add id value env
 end
 
 module MakeTIdEnv = MakeIdEnv
@@ -147,6 +152,7 @@ module MakeFIdEnv (V : sig
   type t
 
   val pp : Format.formatter -> t -> unit
+  val eq_kind : t -> t -> bool
 end) =
 struct
   include FIdMap
@@ -266,19 +272,41 @@ struct
 
   (* Non-overloaded lookup, allowing defaults *)
 
+  let find_non_overloaded_opt' fname fenv =
+    List.filter (fun ((fname', _), _) -> fname = fname') (bindings fenv)
+    |> List.map snd
+
   let find_non_overloaded_opt (fname, args) fenv =
     check_named_args args;
-    let funcs =
-      List.filter (fun ((fname', _), _) -> fname = fname') (bindings fenv)
-    in
+    let funcs = find_non_overloaded_opt' fname fenv in
     assert (List.length funcs <= 1);
-    match funcs with [] -> None | _ -> Some (List.hd funcs |> snd)
+    match funcs with [] -> None | _ -> Some (List.hd funcs)
 
   let find_non_overloaded (fname, args) fenv =
     match find_non_overloaded_opt (fname, args) fenv with
     | Some value -> value
     | None ->
         Format.asprintf "Key not found: %a\n" FId.pp_name fname |> failwith
+
+  (* Adders *)
+
+  let add_nodup_overloaded fid value fenv =
+    if mem fid fenv then
+      Format.asprintf "Key already exists: %a\n" FId.pp fid |> failwith
+    else
+      let fname, _ = fid in
+      match find_non_overloaded_opt' fname fenv with
+      | [] -> add fid value fenv
+      | values ->
+          if not (List.for_all (V.eq_kind value) values) then
+            Format.asprintf "Key already exists: %a\n" FId.pp fid |> failwith
+          else add fid value fenv
+
+  let add_nodup_non_overloaded fid value fenv =
+    let fname, _ = fid in
+    match find_non_overloaded_opt' fname fenv with
+    | [] -> add fid value fenv
+    | _ -> Format.asprintf "Key already exists: %a\n" FId.pp fid |> failwith
 end
 
 module MakeCIdEnv = MakeFIdEnv

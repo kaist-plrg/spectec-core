@@ -968,6 +968,72 @@ bool g<t>(in t a) {
 }
 ```
 
+## 12. Package constructors cannot be overloaded [package-overload](../test/program/well-typed-excluded/test-clarify/package-overload)
+
+A package declaration implies two things: a type declaration and a constructor declaration.
+Since they are bundled together, the synatx does not allow overloading of package constructors. (Unlike extern object constructors.)
+
+```p4
+package mypackaget<t>(mypt<t> t2);
+package mypackaget<t>(mypt<t> t1, mypt<t> t2);
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue3379-1.p4
+* issue3379.p4
+</details>
+
+## 13. Function declarations should not shadow [shadow-func](../test/program/well-typed-excluded/test-clarify/shadow-func)
+
+(Although the spec does not explicitly disallow duplicate names in general,) p4c compiler rejects such programs.
+
+But p4c accepts the following program, where function `f1` is declaraed multiple times (while considering overloading).
+
+```p4
+void f1(in h[(max |+| max) == max ? 1 : -1] a){}
+void f1(in h[(max |+| 0) == max ? 1 : -1] a){}
+void f1(in h[value1 == max ? 1 : -1] a){}
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue3699.p4
+</details>
+
+## 14. Scope of a control parameter [control-param-scope](../test/program/well-typed-excluded/test-clarify/control-param-scope)
+
+Similar [issue](typecheck-neg.analysis.md#6.%20Scope%20of%20a%20control%20parameter) in the negative type checker test.
+
+```p4
+control c(inout bit<16> x) {
+    action incx() { x = x + 1; }
+    action nop() { }
+    table x {
+        actions = { incx; nop; }
+    }
+    apply {
+        x.apply();
+    }
+}
+```
+
+```p4
+control MyIngress(inout H p) {
+  bit<8> p = 0;
+  apply {}
+}
+```
+
+<details>
+<summary>Tests</summary>
+
+* shadow-after-use.p4
+* shadow3.p4
+</details>
+
 # E. Future extension
 
 ## 1. For loops: [forloop](../test/program/well-typed-excluded/future/forloop)

@@ -1,4 +1,4 @@
-Running typecheck tests on 228 files
+Running typecheck tests on 233 files
 
 
 >>> Running typecheck test on test/program/well-typed-excluded/future/concat-string/issue4932.p4
@@ -535,6 +535,12 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 (coerce_type) Cannot coerce type seq<int> to bit<2>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/table-entries-no-arg-actions.p4
 
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/control-param-scope/shadow-after-use.p4
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/control-param-scope/shadow-after-use.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/control-param-scope/shadow3.p4
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/control-param-scope/shadow3.p4
+
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/duplicate-match-kind/pipe.p4
 (type_match_kind_decl) Match kind ternary was already defined
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/duplicate-match-kind/pipe.p4
@@ -575,9 +581,18 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 (coerce_types_binary_numeric) Cannot coerce types bit<32> and type PortId_t (= bit<32>)
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/psa-dpdk-header-union-typedef.p4
 
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/package-overload/issue3379-1.p4
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/package-overload/issue3379-1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/package-overload/issue3379.p4
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/package-overload/issue3379.p4
+
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/select-keyset-syntax/issue2514.p4
 parser error: File test/program/well-typed-excluded/test-clarify/select-keyset-syntax/issue2514.p4, line 29, characters 30-31
 Error while parsing p4 file: test/program/well-typed-excluded/test-clarify/select-keyset-syntax/issue2514.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/shadow-func/issue3699.p4
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/shadow-func/issue3699.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/shift-by-signed-int/issue3287.p4
 (coerce_types_binary_numeric) Cannot coerce types bit<4> and int<6>
@@ -928,5 +943,5 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/s
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector6.p4
 
-Parser on file: [PASS] 201/228 (88.16%) [FAIL] 27/228 (11.84%)
-Typecheck: [PASS] 0/201 (0.00%) [FAIL] 201/201 (100.00%)
+Parser on file: [PASS] 206/233 (88.41%) [FAIL] 27/233 (11.59%)
+Typecheck: [PASS] 0/206 (0.00%) [FAIL] 206/206 (100.00%)

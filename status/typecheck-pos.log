@@ -1,4 +1,4 @@
-Running typecheck tests on 1026 files
+Running typecheck tests on 1021 files
 
 
 >>> Running typecheck test on test/program/well-typed/action-bind.p4
@@ -1591,12 +1591,6 @@ Typecheck success: test/program/well-typed/issue3364.p4
 >>> Running typecheck test on test/program/well-typed/issue3374.p4
 Typecheck success: test/program/well-typed/issue3374.p4
 
->>> Running typecheck test on test/program/well-typed/issue3379-1.p4
-Typecheck success: test/program/well-typed/issue3379-1.p4
-
->>> Running typecheck test on test/program/well-typed/issue3379.p4
-Typecheck success: test/program/well-typed/issue3379.p4
-
 >>> Running typecheck test on test/program/well-typed/issue3394.p4
 Typecheck success: test/program/well-typed/issue3394.p4
 
@@ -1650,9 +1644,6 @@ Typecheck success: test/program/well-typed/issue3671-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3672.p4
 Typecheck success: test/program/well-typed/issue3672.p4
-
->>> Running typecheck test on test/program/well-typed/issue3699.p4
-Typecheck success: test/program/well-typed/issue3699.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3702-bmv2.p4
 Typecheck success: test/program/well-typed/issue3702-bmv2.p4
@@ -2717,17 +2708,11 @@ Typecheck success: test/program/well-typed/serenum-int.p4
 >>> Running typecheck test on test/program/well-typed/serenum.p4
 Typecheck success: test/program/well-typed/serenum.p4
 
->>> Running typecheck test on test/program/well-typed/shadow-after-use.p4
-Typecheck success: test/program/well-typed/shadow-after-use.p4
-
 >>> Running typecheck test on test/program/well-typed/shadow.p4
 Typecheck success: test/program/well-typed/shadow.p4
 
 >>> Running typecheck test on test/program/well-typed/shadow1.p4
 Typecheck success: test/program/well-typed/shadow1.p4
-
->>> Running typecheck test on test/program/well-typed/shadow3.p4
-Typecheck success: test/program/well-typed/shadow3.p4
 
 >>> Running typecheck test on test/program/well-typed/shift-int-const.p4
 Typecheck success: test/program/well-typed/shift-int-const.p4
@@ -3084,5 +3069,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 >>> Running typecheck test on test/program/well-typed/xor_test.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1024/1026 (99.81%) [FAIL] 2/1026 (0.19%)
-Typecheck: [PASS] 1021/1024 (99.71%) [FAIL] 3/1024 (0.29%)
+Parser on file: [PASS] 1019/1021 (99.80%) [FAIL] 2/1021 (0.20%)
+Typecheck: [PASS] 1016/1019 (99.71%) [FAIL] 3/1019 (0.29%)
