@@ -4032,7 +4032,7 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     assert false);
   let annos_il = List.map (type_anno cursor ctx) annos in
   let table_ctx = Tblctx.empty in
-  let table_ctx, table_keys_il =
+  let table_ctx, table_keys_il, state =
     type_table_keys cursor ctx table_ctx table.keys
   in
   let table_ctx, table_actions_il =
@@ -4042,7 +4042,7 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     List.map it table_actions_il |> List.map (fun (var, _, _) -> var)
   in
   WF.check_distinct_vars table_action_vars;
-  let table_entries_il =
+  let table_entries_il, priors =
     type_table_entries cursor ctx table_ctx table.entries
   in
   let table_default_il =
@@ -4051,6 +4051,12 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let table_customs_il =
     List.map (type_table_custom cursor ctx) table.customs
   in
+  let largest_priority_wins, prior_delta =
+    get_prior_rule cursor ctx table_customs_il
+  in
+  let priors = set_priors prior_delta largest_priority_wins state priors in
+  check_priors largest_priority_wins priors;
+  let table_entries_il = update_priorities state priors table_entries_il in
   (* (TODO) Should we add action_list(T), apply_result(T) type in env? And should we add decl to?
      Petr4 did, and also it puts id in TableT instead of typ *)
   let ctx = type_table_type_decl cursor ctx table_ctx id in
@@ -4137,14 +4143,14 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
       assert false
 
 and type_table_key (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_key : El.Ast.table_key) : Tblctx.t * Il.Ast.table_key =
-  let table_ctx, table_key_il =
+    (table_key : El.Ast.table_key) : Tblctx.t * Il.Ast.table_key * string =
+  let table_ctx, table_key_il, value_match_kind =
     type_table_key' cursor ctx table_ctx table_key.it
   in
-  (table_ctx, table_key_il $ table_key.at)
+  (table_ctx, table_key_il $ table_key.at, value_match_kind)
 
 and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_key : El.Ast.table_key') : Tblctx.t * Il.Ast.table_key' =
+    (table_key : El.Ast.table_key') : Tblctx.t * Il.Ast.table_key' * string =
   let expr, match_kind, annos = table_key in
   let expr_il = type_expr cursor ctx expr in
   let typ = expr_il.note.typ in
@@ -4161,17 +4167,37 @@ and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
   let annos_il = List.map (type_anno cursor ctx) annos in
   let table_key_il = (expr_il, match_kind, annos_il) in
   let table_ctx = Tblctx.add_key (Types.SetT typ, value_match_kind) table_ctx in
-  (table_ctx, table_key_il)
+  (table_ctx, table_key_il, value_match_kind)
 
 and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_keys : El.Ast.table_key list) : Tblctx.t * Il.Ast.table_key list =
+    (table_keys : El.Ast.table_key list) :
+    Tblctx.t * Il.Ast.table_key list * int =
+  (* We define state for check
+     0 : not require_prior and no lpm
+     1 : not require_prior and lpm
+     2 : require_prior and no lpm
+     3 : require_prior and lpm // TODO at below
+  *)
   List.fold_left
-    (fun (table_ctx, table_keys_il) table_key ->
-      let table_ctx, table_key_il =
+    (fun (table_ctx, table_keys_il, state) table_key ->
+      let table_ctx, table_key_il, value_match_kind =
         type_table_key cursor ctx table_ctx table_key
       in
-      (table_ctx, table_keys_il @ [ table_key_il ]))
-    (table_ctx, []) table_keys
+      (* Check matchkind *)
+      (* TODO : if there is lpm, then require_prior should be false even there are ternary?*)
+      let new_state =
+        match value_match_kind with
+        | "lpm" ->
+            if state mod 2 = 1 then (
+              Format.printf "(type_table_keys) too many lpms\n";
+              assert false)
+            else state + 1
+        | "range" | "ternary" | "optional" ->
+            if state < 2 then state + 2 else state
+        | _ -> state
+      in
+      (table_ctx, table_keys_il @ [ table_key_il ], new_state))
+    (table_ctx, [], 0) table_keys
 
 (* (14.2.1.2) Actions
 
@@ -4430,38 +4456,157 @@ and type_table_entry_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   (var, args_il, annos_il)
 
 (* TODO : check validity of priority *)
-and type_priority (cursor : Ctx.cursor) (ctx : Ctx.t) (priority : El.Ast.expr) :
-    Il.Ast.expr =
-  let priority_il = type_expr cursor ctx priority in
-  let typ = priority_il.note.typ in
-  if not (Type.is_numeric typ) then (
-    Format.printf "(type_priority) priority should be numeric type, not %a\n"
-      Types.pp_typ typ;
-    assert false);
-  priority_il
+and type_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (priority : El.Ast.expr option) : Il.Ast.expr option * Bigint.t option =
+  (* make empty priority then fill it after check_priors *)
+  let empty_priority = None in
+  let priority_value =
+    if priority |> Option.is_none then None
+    else
+      let priority = Option.get priority in
+      let priority_il = type_expr cursor ctx priority in
+      let priority_value = Static.eval_expr cursor ctx priority_il |> it in
+      Value.get_num priority_value |> Option.some
+  in
+  (empty_priority, priority_value)
 
 and type_table_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_entry : El.Ast.table_entry) : Il.Ast.table_entry =
-  type_table_entry' cursor ctx table_ctx table_entry.it $ table_entry.at
+    (table_entry : El.Ast.table_entry) : Il.Ast.table_entry * Bigint.t option =
+  let table_entry_il, priority_value =
+    type_table_entry' cursor ctx table_ctx table_entry.it
+  in
+  (table_entry_il $ table_entry.at, priority_value)
 
 and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_entry : El.Ast.table_entry') : Il.Ast.table_entry' =
+    (table_entry : El.Ast.table_entry') : Il.Ast.table_entry' * Bigint.t option
+    =
   let keysets, action, priority, table_entry_const, annos = table_entry in
   let keysets_il = type_table_entry_keysets cursor ctx table_ctx keysets in
   let action_il = type_table_entry_action cursor ctx table_ctx action in
-  let priority_il = Option.map (type_expr cursor ctx) priority in
+  let priority_il, priority_value = type_priority cursor ctx priority in
   let annos_il = List.map (type_anno cursor ctx) annos in
-  (keysets_il, action_il, priority_il, table_entry_const, annos_il)
+  ( (keysets_il, action_il, priority_il, table_entry_const, annos_il),
+    priority_value )
 
 and type_table_entries (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t)
     (table_entries : El.Ast.table_entry list * El.Ast.table_entries_const) :
-    Il.Ast.table_entry list * Il.Ast.table_entries_const =
+    (Il.Ast.table_entry list * Il.Ast.table_entries_const)
+    * Bigint.t option list =
   let table_entries, table_entries_const = table_entries in
-  let table_entries_il =
-    List.map (type_table_entry cursor ctx table_ctx) table_entries
+  let table_entries_il, priors =
+    List.map (type_table_entry cursor ctx table_ctx) table_entries |> List.split
   in
-  (table_entries_il, table_entries_const)
+  ((table_entries_il, table_entries_const), priors)
+
+(* (14.2.1.4) Entry Priority *)
+
+and get_prior_rule (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_customs : Il.Ast.table_custom list) : bool * int =
+  let members =
+    List.map
+      (fun table_custom ->
+        let member, expr, _, _ = table_custom.it in
+        let value = Static.eval_expr cursor ctx expr in
+        (member.it, value.it))
+      table_customs
+  in
+  let largest_priority_wins =
+    match List.assoc_opt "largest_priority_wins" members with
+    | Some v -> v |> Value.get_bool
+    | None -> true
+  in
+  let prior_delta =
+    match List.assoc_opt "priority_delta" members with
+    | Some v -> v |> Value.get_num |> Bigint.to_int |> Option.get
+    | None -> 1
+  in
+  (largest_priority_wins, prior_delta)
+
+and check_priors (largest_priority_wins : bool) (priors : Bigint.t option list)
+    =
+  if List.for_all Option.is_none priors then ()
+  else if List.for_all Option.is_some priors then
+    let priors = List.map Option.get priors in
+    let priors = List.map Bigint.to_int priors in
+    let priors = List.map Option.get priors in
+    let prior, priors = (List.hd priors, List.tl priors) in
+    let check_prior priors_prev prior_curr =
+      let prior_prev = List.hd priors_prev in
+      if prior_curr < 0 then
+        failwith "(check_priors) Priority must not be negative";
+      if
+        (largest_priority_wins && prior_curr > prior_prev)
+        || ((not largest_priority_wins) && prior_curr < prior_prev)
+      then
+        Printf.printf "(check_priors) Warning: entries_out_of_priority_order\n";
+      if List.mem prior_curr priors_prev then
+        Printf.printf "(check_priors) Warning: Duplicate priority %d\n"
+          prior_curr;
+      prior_curr :: priors_prev
+    in
+    List.fold_left check_prior [ prior ] priors |> ignore
+  else
+    failwith
+      "(check_priors) Priorities must be either not specified at all, or \
+       specified\n"
+
+and set_priors (prior_delta : int) (largest_priority_wins : bool) (state : int)
+    (priors : Bigint.t option list) : Bigint.t option list =
+  let require = state >= 2 in
+  let length = List.length priors in
+  let prior_init = List.hd priors in
+  let specified = List.exists Option.is_some priors in
+  if specified && (Option.is_none prior_init || not require) then
+    failwith "priority spec error";
+
+  if (not specified) && require then
+    (* If priority is required but not specified *)
+    let priors =
+      List.init length (fun i ->
+          let elem = 1 + (i * prior_delta) |> Bigint.of_int in
+          Some elem)
+    in
+    if largest_priority_wins then List.rev priors else priors
+  else if require then
+    let set_prior_as_specified prior_prev prior =
+      let specified = Option.is_some prior in
+      let prior_curr =
+        if specified then prior |> Option.get |> Bigint.to_int |> Option.get
+        else if largest_priority_wins then prior_prev - prior_delta
+        else prior_prev + prior_delta
+      in
+      (prior_curr, prior_curr |> Bigint.of_int |> Option.some)
+    in
+    let prior_init = prior_init |> Option.get |> Bigint.to_int |> Option.get in
+    List.fold_left_map set_prior_as_specified prior_init priors |> snd
+  else List.init length (fun _ -> None)
+
+and update_priorities (state : int) (priors : Bigint.t option list)
+    (table_entries_il : Il.Ast.table_entry list * Il.Ast.table_entries_const) :
+    Il.Ast.table_entry list * Il.Ast.table_entries_const =
+  if state < 2 then table_entries_il
+  else
+    let table_entries, table_entries_const = table_entries_il in
+    let table_entries =
+      List.map2
+        (fun table_entry new_priority ->
+          let keysets, action, _, table_entry_const, annos = table_entry.it in
+          let priority =
+            let value = new_priority |> Option.get in
+            let new_priority =
+              Il.Ast.ValueE { value = Value.IntV value $ no_info }
+            in
+            let typ = Types.IntT in
+            let ctk = Ctk.LCTK in
+            (* TODO : these tags and note are valid? *)
+            Il.Ast.(new_priority $$ no_info % { typ; ctk }) |> Option.some
+          in
+          (keysets, action, priority, table_entry_const, annos)
+          $$ table_entry.at % table_entry.note)
+        table_entries priors
+    in
+    (table_entries, table_entries_const)
 
 (* (14.2.1.5) Size
 
@@ -4488,6 +4633,8 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_custom : El.Ast.table_custom') : Il.Ast.table_custom' =
   let member, expr, custom_const, annos = table_custom in
   let expr_il = type_expr cursor ctx expr in
+  let value = Static.eval_expr cursor ctx expr_il in
+  let expr_il = Il.Ast.ValueE { value } $$ expr_il.at % expr_il.note in
   let typ = expr_il.note.typ in
   let annos_il = List.map (type_anno cursor ctx) annos in
   (match member.it with
