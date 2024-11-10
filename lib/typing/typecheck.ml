@@ -1,6 +1,7 @@
 open Runtime.Domain
 module Ctk = Runtime.Ctk
 module Value = Runtime.Value
+module Numerics = Runtime.Numerics
 module Types = Runtime.Types
 module Type = Types.Type
 module TypeDef = Types.TypeDef
@@ -4201,25 +4202,23 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       Masks with more 1 bits have automatically higher priorities. A mask with all bits 0 is legal. *)
 and update_state (match_kind : string) (table_ctx : Tblctx.t) : Tblctx.t =
   (* We define state for check
-     0 : not require_prior and no lpm
-     1 : not require_prior and lpm
-     2 : require_prior and no lpm
-     3 : require_prior and lpm // TODO at below
+     NoPri: not require_prior and no lpm
+     NoPriLpm : not require_prior and lpm
+     Pri : require_prior and no lpm
+     PriLpm : require_prior and lpm // TODO at below
   *)
-  (* Check matchkind *)
   (* TODO : if there is lpm, then require_prior should be false even there are ternary?*)
   let state = table_ctx.state in
-  let state =
-    match match_kind with
-    | "lpm" ->
-        if state mod 2 = 1 then (
-          Format.printf "(type_table_keys) too many lpms\n";
-          assert false)
-        else state + 1
-    | "range" | "ternary" | "optional" -> if state < 2 then state + 2 else state
-    | _ -> state
-  in
-  Tblctx.add_state state table_ctx
+  match (match_kind, state) with
+  | "lpm", NoPri -> Tblctx.add_state NoPriLpm table_ctx
+  | "lpm", Pri -> Tblctx.add_state PriLpm table_ctx
+  | "lpm", _ ->
+      Format.printf "(type_table_keys) too many lpms\n";
+      assert false
+  | ("range" | "ternary" | "optional"), NoPri -> Tblctx.add_state Pri table_ctx
+  | ("range" | "ternary" | "optional"), NoPriLpm ->
+      Tblctx.add_state PriLpm table_ctx
+  | _ -> table_ctx
 
 and check_table_key (match_kind : string) (typ : Type.t) : unit =
   if not (check_table_key' match_kind typ) then (
@@ -4450,16 +4449,41 @@ and type_table_default' (cursor : Ctx.cursor) (ctx : Ctx.t)
    a field for each key in the table keys (see Sec. 14.2.1). The table key type must match
    the type of the element of the set. The actionRef component must be an action which appears
    in the table actions list (and must not have the @defaultonly annotation), with all its arguments bound. *)
+and get_prefix (mask : Value.t) (prefix : int) : int =
+  match mask with
+  | FBitV (width, value) ->
+      if Bigint.(width = zero) then prefix
+      else
+        let two = Bigint.(one + one) in
+        let width' = Bigint.(width - one) in
+        let value' = Bigint.(value / two) in
+        let mask' = Numerics.bit_of_raw_int value' width' in
+        if Bigint.(value % two = zero) then
+          if prefix <> 0 then failwith "invalid lpm mask"
+          else get_prefix mask' prefix
+        else get_prefix mask' (prefix + 1)
+  | _ -> failwith "(get_prefix) wrong type for lpm mask"
+
+and get_prefix_max (typ : Type.t) : Bigint.t =
+  match typ with
+  | Types.FIntT prefix | Types.FBitT prefix | Types.VBitT prefix -> prefix
+  | _ -> assert false
 
 and type_table_entry_keyset (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_ctx_key : Type.t * Il.Ast.match_kind') (keyset : El.Ast.keyset) :
-    Il.Ast.keyset =
-  type_table_entry_keyset' cursor ctx table_ctx_key keyset.it $ keyset.at
+    (table_ctx : Tblctx.t) (table_ctx_key : Type.t * Il.Ast.match_kind')
+    (keyset : El.Ast.keyset) : Tblctx.t * Il.Ast.keyset =
+  let table_ctx, table_entry_keyset_il =
+    type_table_entry_keyset' cursor ctx table_ctx table_ctx_key keyset.it
+  in
+  (table_ctx, table_entry_keyset_il $ keyset.at)
 
 and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_ctx_key : Type.t * Il.Ast.match_kind') (keyset : El.Ast.keyset') :
-    Il.Ast.keyset' =
+    (table_ctx : Tblctx.t) (table_ctx_key : Type.t * Il.Ast.match_kind')
+    (keyset : El.Ast.keyset') : Tblctx.t * Il.Ast.keyset' =
   let typ_key, match_kind = table_ctx_key in
+  let typ_key =
+    match typ_key with Types.SetT typ -> typ | _ -> assert false
+  in
   match keyset with
   | ExprK expr ->
       let expr_il =
@@ -4484,14 +4508,27 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
             let typ = Types.SetT expr_il.note.typ in
             Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
       in
+      let table_ctx =
+        if match_kind = "lpm" then
+          let prefix_max = get_prefix_max typ_key in
+          match expr_il.it with
+          | MaskE { expr_base = _expr_base; expr_mask } ->
+              let value_mask =
+                Static.eval_expr cursor ctx expr_mask |> it |> Value.get_num
+              in
+              let value_mask = Numerics.bit_of_raw_int value_mask prefix_max in
+              let prefix = get_prefix value_mask 0 in
+              Tblctx.add_prefix prefix table_ctx
+          | _ ->
+              let prefix_max = prefix_max |> Bigint.to_int |> Option.get in
+              Tblctx.add_prefix prefix_max table_ctx
+        else table_ctx
+      in
       let expr_il =
         let typ =
           match expr_il.note.typ with
           | Types.SetT typ -> typ
           | _ -> assert false
-        in
-        let typ_key =
-          match typ_key with Types.SetT typ -> typ | _ -> assert false
         in
         let expr_il =
           Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
@@ -4501,32 +4538,41 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
           expr_il.it
           $$ expr_il.at % { typ = Types.SetT typ; ctk = expr_il.note.ctk })
       in
-      Lang.Ast.ExprK expr_il
+      (table_ctx, Lang.Ast.ExprK expr_il)
   | DefaultK ->
       if match_kind = "exact" then (
         Format.printf
           "(type_action_keyset) exact match does not allow default expression \n";
         assert false);
-      Lang.Ast.DefaultK
+      (table_ctx, Lang.Ast.DefaultK)
   | AnyK ->
       if match_kind = "exact" then (
         Format.printf
           "(type_action_keyset) exact match does not allow wildcard expression \n";
         assert false);
-      Lang.Ast.AnyK
+      (table_ctx, Lang.Ast.AnyK)
 
 and type_table_entry_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_ctx : Tblctx.t) (keysets : El.Ast.keyset list) : Il.Ast.keyset list =
+    (table_ctx : Tblctx.t) (keysets : El.Ast.keyset list) :
+    Tblctx.t * Il.Ast.keyset list =
   match (table_ctx.keys, keysets) with
-  | _, [ { it = DefaultK; at; note } ] -> [ Lang.Ast.DefaultK $$ at % note ]
-  | _, [ { it = AnyK; at; note } ] -> [ Lang.Ast.AnyK $$ at % note ]
+  | _, [ { it = DefaultK; at; note } ] ->
+      (table_ctx, [ Lang.Ast.DefaultK $$ at % note ])
+  | _, [ { it = AnyK; at; note } ] -> (table_ctx, [ Lang.Ast.AnyK $$ at % note ])
   | table_ctx_keys, keysets ->
       if List.length table_ctx_keys <> List.length keysets then (
         Format.printf
           "(type_table_entry_keysets) Number of select keys must match the \
            number of cases\n";
         assert false);
-      List.map2 (type_table_entry_keyset cursor ctx) table_ctx_keys keysets
+      List.fold_left2
+        (fun (table_ctx, entry_keysets) table_ctx_key table_entry_keyset ->
+          let table_ctx, table_entry_keyset_il =
+            type_table_entry_keyset cursor ctx table_ctx table_ctx_key
+              table_entry_keyset
+          in
+          (table_ctx, entry_keysets @ [ table_entry_keyset_il ]))
+        (table_ctx, []) table_ctx_keys keysets
 
 and type_call_entry_action (cursor : Ctx.cursor) (ctx : Ctx.t)
     (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list)
@@ -4612,7 +4658,10 @@ and type_priority (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
   if table_ctx.entries_info.const && Option.is_some priority then (
     Format.printf "(type_priority) Can't define priorities in const entries.\n";
     assert false);
-  if table_ctx.state < 2 && Option.is_some priority then (
+  if
+    (table_ctx.state = NoPri || table_ctx.state = NoPriLpm)
+    && Option.is_some priority
+  then (
     Format.printf
       "(type_priority) Can't define priorities when there are only exact or \
        lpm fields.\n";
@@ -4626,28 +4675,43 @@ and type_priority (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
       "(type_priority) First entry's priority must be defined if we specify \
        the priorities.\n";
     assert false);
-  if table_ctx.state < 2 then (table_ctx, None)
-  else
-    let specified = Option.is_some priority in
-    let value =
-      if Tblctx.is_priorities_empty table_ctx then
-        init_priority_value cursor ctx table_ctx priority
-      else get_priority_value cursor ctx table_ctx priority
-    in
-    (* TODO : these tags and note are valid? *)
-    let priority_il =
-      Il.Ast.(
-        Il.Ast.ValueE { value }
-        $$ no_info % { typ = Types.IntT; ctk = Ctk.LCTK })
-      |> Option.some
-    in
-    let priority_value =
-      value.it |> Value.get_num |> Bigint.to_int |> Option.get
-    in
-    check_priority table_ctx priority_value;
-    let table_ctx = Tblctx.add_priority_init specified table_ctx in
-    let table_ctx = Tblctx.add_priority priority_value table_ctx in
-    (table_ctx, priority_il)
+  match table_ctx.state with
+  | NoPri -> (table_ctx, None) (* Only exact fields *)
+  | NoPriLpm ->
+      (* LPM *)
+      let prefix = table_ctx.entries_info.prefix |> Bigint.of_int in
+      let value = Value.IntV prefix $ no_info in
+      (* TODO : these tags and note are valid? *)
+      let priority_il =
+        Il.Ast.(
+          Il.Ast.ValueE { value }
+          $$ no_info % { typ = Types.IntT; ctk = Ctk.LCTK })
+        |> Option.some
+      in
+      (* reset the prefix for after keyset (default, any)*)
+      let table_ctx = Tblctx.add_prefix 0 table_ctx in
+      (table_ctx, priority_il)
+  | _ ->
+      let specified = Option.is_some priority in
+      let value =
+        if Tblctx.is_priorities_empty table_ctx then
+          init_priority_value cursor ctx table_ctx priority
+        else get_priority_value cursor ctx table_ctx priority
+      in
+      (* TODO : these tags and note are valid? *)
+      let priority_il =
+        Il.Ast.(
+          Il.Ast.ValueE { value }
+          $$ no_info % { typ = Types.IntT; ctk = Ctk.LCTK })
+        |> Option.some
+      in
+      let priority_value =
+        value.it |> Value.get_num |> Bigint.to_int |> Option.get
+      in
+      check_priority table_ctx priority_value;
+      let table_ctx = Tblctx.add_priority_init specified table_ctx in
+      let table_ctx = Tblctx.add_priority priority_value table_ctx in
+      (table_ctx, priority_il)
 
 and type_table_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
     (table_entry : El.Ast.table_entry) : Tblctx.t * Il.Ast.table_entry =
@@ -4659,7 +4723,9 @@ and type_table_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
 and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
     (table_entry : El.Ast.table_entry') : Tblctx.t * Il.Ast.table_entry' =
   let keysets, action, priority, table_entry_const, annos = table_entry in
-  let keysets_il = type_table_entry_keysets cursor ctx table_ctx keysets in
+  let table_ctx, keysets_il =
+    type_table_entry_keysets cursor ctx table_ctx keysets
+  in
   let action_il = type_table_entry_action cursor ctx table_ctx action in
   let table_ctx, priority_il = type_priority cursor ctx table_ctx priority in
   let annos_il = List.map (type_anno cursor ctx) annos in
@@ -4727,9 +4793,7 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
         let size = value.it |> Value.get_num |> Bigint.to_int |> Option.get in
         if size <= 0 then (
           Format.printf
-            "(type_table_custom) size should be positive intager, \
-             not %d\n"
-             size;
+            "(type_table_custom) size should be positive intager, not %d\n" size;
           assert false);
         Tblctx.add_size size table_ctx
     | "largest_priority_wins" ->

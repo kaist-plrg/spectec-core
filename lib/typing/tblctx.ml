@@ -14,15 +14,18 @@ type ei = {
      "entries_size" is real entries size *)
   size : int;
   entries_size : int;
+  prefix : int;
   const : bool;
 }
+
+type state = NoPri | NoPriLpm | Pri | PriLpm
 
 type t = {
   keys : (Type.t * Il.Ast.match_kind') list;
   actions : (Il.Ast.var' * Types.param list * Il.Ast.arg list) list;
   priorities_info : pi;
   entries_info : ei;
-  state : int;
+  state : state;
 }
 
 let empty_pi =
@@ -33,7 +36,7 @@ let empty_pi =
     largest_priority_wins = true;
   }
 
-let empty_ei = { size = 0; entries_size = 0; const = true }
+let empty_ei = { size = 0; entries_size = 0; prefix = 0; const = true }
 
 let empty =
   {
@@ -41,7 +44,7 @@ let empty =
     actions = [];
     priorities_info = empty_pi;
     entries_info = empty_ei;
-    state = 0;
+    state = NoPri;
   }
 
 let add_key table_key table_ctx =
@@ -90,6 +93,9 @@ let add_priority priority table_ctx =
 
 let add_entries_size entries_size table_ctx =
   { table_ctx with entries_info = { table_ctx.entries_info with entries_size } }
+
+let add_prefix prefix table_ctx =
+  { table_ctx with entries_info = { table_ctx.entries_info with prefix } }
 
 let get_last_priority table_ctx =
   let len = List.length table_ctx.priorities_info.priorities - 1 in
