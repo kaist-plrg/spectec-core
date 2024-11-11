@@ -177,7 +177,9 @@ and merge_cstr (cstr_old : cstr_t) (cstr_new : cstr_t) : cstr_t =
       | None, _ -> TIdMap.add key typ_new cstr
       | _, None -> TIdMap.add key typ_old cstr
       | Some typ_old, Some typ_new ->
-          if Eq.eq_typ_alpha typ_old typ_new then
+          if Subtyp.implicit typ_old typ_new then
+            TIdMap.add key (Some typ_new) cstr
+          else if Subtyp.implicit typ_new typ_old then
             TIdMap.add key (Some typ_old) cstr
           else (
             Format.printf "(merge_cstr) Type %a and %a do not match\n" Type.pp
@@ -1098,18 +1100,26 @@ and type_binop_saturating_plus_minus (binop : Lang.Ast.binop)
   (typ, expr_il)
 
 and check_binop_div (typ_l : Type.t) (typ_r : Type.t) : bool =
-  match (typ_l, typ_r) with
-  (* (TODO) Non-negativity can only be checked dynamically *)
-  | IntT, IntT -> true
-  | _ -> false
+  match (typ_l, typ_r) with IntT, IntT -> true | _ -> false
 
-and type_binop_div_mod (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
-    (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr' =
+and type_binop_div_mod (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr)
+    : Type.t * Il.Ast.expr' =
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   let expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_div expr_l_il expr_r_il
   in
   assert (Eq.eq_typ_alpha expr_l_il.note.typ expr_r_il.note.typ);
+  (* Non-positivity check if the right hand side is local compile-time known *)
+  (if Ctk.is_lctk expr_r_il.note.ctk then
+     let value_divisor = Static.eval_expr cursor ctx expr_r_il in
+     let divisor = value_divisor.it |> Value.get_num in
+     if Bigint.(divisor <= zero) then (
+       Format.printf
+         "(type_binop_div_mod) Division or modulo by a non-positive integer %a \
+          is not allowed\n"
+         Value.pp value_divisor.it;
+       assert false));
   let typ = expr_l_il.note.typ in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
   (typ, expr_il)
@@ -1241,7 +1251,7 @@ and type_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
         type_binop_plus_minus_mult binop expr_l_il expr_r_il
     | SPlusOp | SMinusOp ->
         type_binop_saturating_plus_minus binop expr_l_il expr_r_il
-    | DivOp | ModOp -> type_binop_div_mod binop expr_l_il expr_r_il
+    | DivOp | ModOp -> type_binop_div_mod cursor ctx binop expr_l_il expr_r_il
     | ShlOp | ShrOp -> type_binop_shift binop expr_l_il expr_r_il
     | LeOp | GeOp | LtOp | GtOp -> type_binop_compare binop expr_l_il expr_r_il
     | EqOp | NeOp -> type_binop_compare_equal binop expr_l_il expr_r_il
@@ -1352,7 +1362,8 @@ and type_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
   assert (Eq.eq_typ_alpha expr_base_il.note.typ expr_mask_il.note.typ);
   let typ = expr_base_il.note.typ in
   let typ = Types.SetT typ in
-  WF.check_valid_type cursor ctx typ;
+  (* Well-formedness check is deferred until keyset check,
+     where the underlying type will be implicitly cast *)
   let expr_il =
     Il.Ast.MaskE { expr_base = expr_base_il; expr_mask = expr_mask_il }
   in
@@ -1386,7 +1397,8 @@ and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : El.Ast.expr)
   assert (Eq.eq_typ_alpha expr_lb_il.note.typ expr_ub_il.note.typ);
   let typ = expr_lb_il.note.typ in
   let typ = Types.SetT typ in
-  WF.check_valid_type cursor ctx typ;
+  (* Well-formedness check is deferred until keyset check,
+     where the underlying type will be implicitly cast *)
   let expr_il = Il.Ast.RangeE { expr_lb = expr_lb_il; expr_ub = expr_ub_il } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
@@ -1432,10 +1444,10 @@ and type_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ_key : Type.t)
         (* Otherwise, wrap the expression in a set *)
         | _ ->
             let typ = Types.SetT expr_il.note.typ in
-            WF.check_valid_type cursor ctx typ;
             Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
       in
       let typ_key = Types.SetT typ_key in
+      WF.check_valid_type cursor ctx typ_key;
       let typ = expr_il.note.typ in
       let expr_il =
         match (typ_key, typ) with
@@ -1443,7 +1455,11 @@ and type_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ_key : Type.t)
             let expr_il =
               { expr_il with note = { expr_il.note with typ = typ_inner } }
             in
-            coerce_type_assign expr_il typ_key_inner
+            let expr_il = coerce_type_assign expr_il typ_key_inner in
+            Il.Ast.(
+              expr_il.it
+              $$ expr_il.at
+                 % { typ = Types.SetT expr_il.note.typ; ctk = expr_il.note.ctk })
         | _ ->
             Format.printf
               "(type_keyset) Key type %a and the type %a of the keyset \
@@ -1505,11 +1521,6 @@ and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let typs_select =
     List.map (fun expr -> Il.Ast.(expr.note.typ)) exprs_select_il
   in
-  List.iter
-    (fun typ_select ->
-      let typ_select_set = Types.SetT typ_select in
-      WF.check_valid_type cursor ctx typ_select_set)
-    typs_select;
   let cases_il = List.map (type_select_case cursor ctx typs_select) cases in
   let typ = Types.StateT in
   let expr_il =
@@ -1536,11 +1547,6 @@ and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       Accessing a header stack hs with an index less than 0 or greater than or equal to hs.size
       results in an undefined value. See Section 8.25 for more details.
       The index is an expression that must be of numeric types (Section 7.4). *)
-
-(* (DESIGN CHOICE)
-
-   p4cherry type checker does not restrict that index expr for a header stack access
-   should be a compile-time known value *)
 
 and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (expr_idx : El.Ast.expr) :
@@ -1569,11 +1575,20 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
           Il.Ast.ArrAccE { expr_base = expr_base_il; expr_idx = expr_idx_il }
         in
         (typ, expr_il)
-    | StackT (typ_base_inner, _) ->
+    | StackT (typ_base_inner, size) ->
         let typ = typ_base_inner in
         let expr_il =
           Il.Ast.ArrAccE { expr_base = expr_base_il; expr_idx = expr_idx_il }
         in
+        (* Bounds check if the index is local compile-time known *)
+        (if Ctk.is_lctk expr_idx_il.note.ctk then
+           let value_idx = Static.eval_expr cursor ctx expr_idx_il in
+           let idx = value_idx.it |> Value.get_num in
+           if Bigint.(idx < zero) || Bigint.(idx >= size) then (
+             Format.printf
+               "(type_array_acc_expr) Index %a out of range for %a\n" Value.pp
+               value_idx.it (El.Pp.pp_expr ~level:0) expr_base;
+             assert false));
         (typ, expr_il)
     | _ ->
         Format.printf "(type_array_acc_expr) %a cannot be indexed\n"
@@ -1630,21 +1645,22 @@ and check_bitstring_base (typ : Type.t) : bool =
 and check_bitstring_index (typ : Type.t) : bool =
   match typ with IntT | FIntT _ | FBitT _ -> true | _ -> false
 
-and check_bitstring_slice_range' (typ_base : Type.t) (width_slice : Bigint.t) :
-    bool =
+and check_bitstring_slice_range' (typ_base : Type.t) (idx_lo : Bigint.t)
+    (idx_hi : Bigint.t) : bool =
   match typ_base with
   | IntT -> true
-  | FIntT width_base | FBitT width_base -> Bigint.(width_slice <= width_base)
+  | FIntT width_base | FBitT width_base ->
+      let width_slice = Bigint.(idx_hi - idx_lo + one) in
+      Bigint.(idx_hi <= width_base) && Bigint.(width_slice <= width_base)
   | _ -> false
 
 and check_bitstring_slice_range (typ_base : Type.t) (idx_lo : Bigint.t)
     (idx_hi : Bigint.t) : unit =
-  let width_slice = Bigint.(idx_hi - idx_lo + one) in
   if
     Bigint.(idx_lo < zero)
     || Bigint.(idx_hi < zero)
     || Bigint.(idx_lo > idx_hi)
-    || not (check_bitstring_slice_range' typ_base width_slice)
+    || not (check_bitstring_slice_range' typ_base idx_lo idx_hi)
   then (
     Format.printf "(type_bitstring_acc_expr) Invalid slice [%a:%a] for %a\n"
       Bigint.pp idx_lo Bigint.pp idx_hi Type.pp typ_base;
@@ -2196,7 +2212,6 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
     : Type.t * Ctk.t * Il.Ast.expr' =
   (* Find the constructor definition and specialize it if necessary *)
-  (* (TODO) Implement type inference for missing type arguments *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
   let cd_matched =
     let args = FId.to_names args in
@@ -2250,7 +2265,21 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
 and type_instantiation_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
     : Type.t * Ctk.t * Il.Ast.expr' =
-  type_instantiation cursor ctx var_inst targs args
+  let typ, ctk, expr_il = type_instantiation cursor ctx var_inst targs args in
+  (match typ with
+  | ExternT (_, fdenv_extern) ->
+      if
+        Envs.FDEnv.exists
+          (fun _ (fd : FuncDef.t) ->
+            match fd with ExternAbstractMethodD _ -> true | _ -> false)
+          fdenv_extern
+      then (
+        Format.printf
+          "(type_instantiation_expr) Cannot instantiate an abstract extern \
+           object at expression level\n";
+        assert false)
+  | _ -> ());
+  (typ, ctk, expr_il)
 
 (* Argument typing *)
 
@@ -3809,6 +3838,20 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         match mthd.it with ExternConstructorD _ -> true | _ -> false)
       mthds
   in
+  (* Check that method names do not overlap with the object name *)
+  let mthds_names =
+    List.map
+      (fun (mthd : El.Ast.decl) ->
+        match mthd.it with
+        | ExternAbstractMethodD { id; _ } | ExternMethodD { id; _ } -> id.it
+        | _ -> assert false)
+      mthds
+  in
+  if List.exists (fun mthd_name -> mthd_name = id.it) mthds_names then (
+    Format.printf
+      "(type_extern_object_decl) Method names must not overlap with the object \
+       name\n";
+    assert false);
   (* Typecheck methods and abstract methods
      to construct function definition environment *)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
@@ -3860,7 +3903,8 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 (* (13.6) Select expressions
 
    Some targets may support parser value sets; see Section 13.11.
-   Given a type T for the type parameter of the value set, the type of the value set is set<T>. *)
+   Given a type T for the type parameter of the value set, the type of the value set is set<T>.
+   The type of the values in the set must be either bit<>, int<>, tuple, struct, or serializable enum. *)
 
 and type_value_set_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (typ : El.Ast.typ) (expr_size : El.Ast.expr) (annos : El.Ast.anno list) :
@@ -3870,6 +3914,7 @@ and type_value_set_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let expr_size_il = type_expr cursor ctx expr_size in
   Static.check_ctk expr_size_il;
   let typ = Types.SetT typ_inner.it in
+  WF.check_valid_type cursor ctx typ;
   let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
   let decl_il =
     Il.Ast.ValueSetD
@@ -4308,7 +4353,8 @@ and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
   let table_ctx = update_state value_match_kind table_ctx in
   let annos_il = List.map (type_anno cursor ctx) annos in
   let table_key_il = (expr_il, match_kind, annos_il) in
-  let table_ctx = Tblctx.add_key (Types.SetT typ, value_match_kind) table_ctx in
+  let typ_key = Types.SetT typ in
+  let table_ctx = Tblctx.add_key (typ_key, value_match_kind) table_ctx in
   (table_ctx, table_key_il)
 
 and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
@@ -4511,9 +4557,6 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_ctx_key : Type.t * Il.Ast.match_kind')
     (keyset : El.Ast.keyset') : Tblctx.t * Il.Ast.keyset' =
   let typ_key, match_kind = table_ctx_key in
-  let typ_key =
-    match typ_key with Types.SetT typ -> typ | _ -> assert false
-  in
   match keyset with
   | ExprK expr ->
       let expr_il =
@@ -4539,19 +4582,24 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
             Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
       in
       let table_ctx = update_prefix cursor ctx match_kind expr_il table_ctx in
+      let typ = expr_il.note.typ in
       let expr_il =
-        let typ =
-          match expr_il.note.typ with
-          | Types.SetT typ -> typ
-          | _ -> assert false
-        in
-        let expr_il =
-          Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
-        in
-        let expr_il = coerce_type_assign expr_il typ_key in
-        Il.Ast.(
-          expr_il.it
-          $$ expr_il.at % { typ = Types.SetT typ; ctk = expr_il.note.ctk })
+        match (typ_key, typ) with
+        | SetT typ_key_inner, SetT typ_inner ->
+            let expr_il =
+              { expr_il with note = { expr_il.note with typ = typ_inner } }
+            in
+            let expr_il = coerce_type_assign expr_il typ_key_inner in
+            Il.Ast.(
+              expr_il.it
+              $$ expr_il.at
+                 % { typ = Types.SetT expr_il.note.typ; ctk = expr_il.note.ctk })
+        | _ ->
+            Format.printf
+              "(type_table_entry_keyset') Key type %a and the type %a of the \
+               keyset expression %a must be set types\n"
+              Type.pp typ_key Type.pp typ (Il.Pp.pp_expr ~level:0) expr_il;
+            assert false
       in
       (table_ctx, Lang.Ast.ExprK expr_il)
   | DefaultK ->

@@ -187,7 +187,7 @@ top(c()) main;
 * unused.p4
 </details>
 
-#### (b) Mixture of type inference and coercion (1)
+#### \[DONE\] (b) ~~Mixture of type inference and coercion~~
 
 The current naive type inference algorithm assumes type equality, and is not flexible enough to handle coercion.
 
@@ -197,12 +197,6 @@ extern void random<T>(out T result), in T lo);
 bit<8> rand_val;
 random(rand_val, 0);
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue1586.p4
-</details>
 
 ### \[DONE\] (4) ~~Overload resolution by name~~
 
@@ -1032,6 +1026,34 @@ control MyIngress(inout H p) {
 
 * shadow-after-use.p4
 * shadow3.p4
+</details>
+
+## 15. Accessing a header stack of size zero [access-header-stack-zero](../test/program/well-typed-excluded/test-clarify/access-header-stack-zero)
+
+```p4
+bit<32> b;
+H[0] h;
+
+v = b.minSizeInBits() + T.minSizeInBits() +
+    b.maxSizeInBits() + T.maxSizeInBits() +
+    h[0].minSizeInBits();
+```
+
+This tries to access index `0` of a header stack `h`, of size zero.
+While we can argue that the type checker is not responsible for the array access bounds check, it is contradictory to the ill-typed test case where the below program is expected to be rejected.
+
+```
+// Compiler should give error for out of bounds index,
+// if due to compile-time known value index.
+h.hs[-1].setValid();
+h.hs[-1].f1 = 5;
+h.hs[-1].f2 = 8;
+```
+
+<details>
+<summary>Tests</summary>
+
+* minsize.p4
 </details>
 
 # E. Future extension

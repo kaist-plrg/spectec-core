@@ -72,7 +72,8 @@ Error while parsing p4 file: test/program/ill-typed/constructor2_e.p4
 Error while typechecking p4 file: test/program/ill-typed/constructor3_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/constructor_e.p4
-Typecheck success: test/program/ill-typed/constructor_e.p4
+(type_extern_object_decl) Method names must not overlap with the object name
+Error while typechecking p4 file: test/program/ill-typed/constructor_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/control-inline.p4
 parser error: File test/program/ill-typed/control-inline.p4, line 34, characters 10-11
@@ -104,7 +105,8 @@ Error while typechecking p4 file: test/program/ill-typed/default_action1.p4
 Typecheck success: test/program/ill-typed/directionless.p4
 
 >>> Running typecheck test on test/program/ill-typed/div.p4
-Typecheck success: test/program/ill-typed/div.p4
+(type_binop_div_mod) Division or modulo by a non-positive integer -2 is not allowed
+Error while typechecking p4 file: test/program/ill-typed/div.p4
 
 >>> Running typecheck test on test/program/ill-typed/div0.p4
 (coerce_types_binary_numeric) Cannot coerce types bit<8> and bit<8>
@@ -493,7 +495,8 @@ Error while parsing p4 file: test/program/ill-typed/issue3271.p4
 Typecheck success: test/program/ill-typed/issue3273.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3282.p4
-Typecheck success: test/program/ill-typed/issue3282.p4
+(type_instantiation_expr) Cannot instantiate an abstract extern object at expression level
+Error while typechecking p4 file: test/program/ill-typed/issue3282.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3285.p4
 Error while parsing p4 file: test/program/ill-typed/issue3285.p4
@@ -520,7 +523,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3305.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3316.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3335.p4
-(coerce_type) Cannot coerce type bool to int
+(check_valid_type_nesting) Invalid nesting of int inside set<int>
 Error while typechecking p4 file: test/program/ill-typed/issue3335.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3338.p4
@@ -532,7 +535,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue3338.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3345.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3346.p4
-Typecheck success: test/program/ill-typed/issue3346.p4
+(check_valid_type_nesting) Invalid nesting of int inside set<int>
+Error while typechecking p4 file: test/program/ill-typed/issue3346.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3359.p4
 (check_valid_var_type) Type parser (in tt bit<1>) is not a valid variable type
@@ -895,7 +899,8 @@ Error while typechecking p4 file: test/program/ill-typed/signed.p4
 Error while typechecking p4 file: test/program/ill-typed/signs.p4
 
 >>> Running typecheck test on test/program/ill-typed/slice_out_of_bound.p4
-Typecheck success: test/program/ill-typed/slice_out_of_bound.p4
+(type_bitstring_acc_expr) Invalid slice [2:5] for bit<4>
+Error while typechecking p4 file: test/program/ill-typed/slice_out_of_bound.p4
 
 >>> Running typecheck test on test/program/ill-typed/spec-ex32_e.p4
 Typecheck success: test/program/ill-typed/spec-ex32_e.p4
@@ -919,7 +924,8 @@ Typecheck success: test/program/ill-typed/spec-issue1297-string-cat-err-3-anno.p
 Error while typechecking p4 file: test/program/ill-typed/spec-issue563.p4
 
 >>> Running typecheck test on test/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4
-Typecheck success: test/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4
+(type_array_acc_expr) Index -1 out of range for h.hs
+Error while typechecking p4 file: test/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/stack1_e.p4
 Error while typechecking p4 file: test/program/ill-typed/stack1_e.p4
@@ -1099,4 +1105,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 266/299 (88.96%) [FAIL] 33/299 (11.04%)
-Typecheck: [PASS] 181/266 (68.05%) [FAIL] 85/266 (31.95%)
+Typecheck: [PASS] 187/266 (70.30%) [FAIL] 79/266 (29.70%)

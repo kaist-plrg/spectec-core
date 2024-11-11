@@ -104,7 +104,7 @@ a_two(
 * issue2835-bmv2.p4
 </details>
 
-## 2. Duplicate declarations in the same namespace
+## \[DONE\] 2. ~~Duplicate declarations in the same namespace~~
 
 ### \[DONE\] (1) ~~Duplicate id~~
 
@@ -138,22 +138,6 @@ apply {
     }
 }
 ```
-
-### (5) `main` should be a package
-
-```p4
-extern MyExtern {
-   MyExtern();
-}
-MyExtern() main;
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue4140.p4
-* issue4144.p4
-</details>
 
 ## 3. Table property
 
@@ -238,7 +222,7 @@ apply {
 
 ## 4. Compile-time evaluation
 
-### (1) Stack bounds check if compile-time known
+### \[DONE\] (1) ~~Stack bounds check if compile-time known~~
 
 ```p4
 // Compiler should give error for out of bounds index,
@@ -262,26 +246,14 @@ h.hs[3].f1 = 5;
 h.hs[3].f2 = 8;
 ```
 
-<details>
-<summary>Tests</summary>
-
-* stack-const-index-out-of-bounds-bmv2.p4
-</details>
-
-### (2) Bitslice width check
+### \[DONE\] (2) ~~Bitslice width check~~
 
 ```p4
 bit<8> n = 8w0b11111111;
 n[7:4][5:2] = 4w0;
 ```
 
-<details>
-<summary>Tests</summary>
-
-* slice_out_of_bound.p4
-</details>
-
-### (3) Division or modulo with negative value
+### \[DONE\] (3) ~~Division or modulo with negative value~~
 
 P4 forbids division or modulo with negative values.
 But the question is, can we guarantee this at compile time?
@@ -294,49 +266,6 @@ action act() {
     a = 10 % -2;
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* div.p4
-</details>
-
-## (4) Select cases should be compile-time known?
-
-```p4
-transition select(hdr.ethernet.etherType) {
-    0x0806 .. 0x0800 : parse_ipv4;
-    2054 .. 2048 : parse_ipv4;
-    hdr.ipv4.totalLen .. 0x0800 : parse_ipv4;
-    0x0800 .. hdr.ipv4.totalLen : parse_ipv4;
-    default: accept;
-}
-```
-
-```p4
-transition select(hdr.eth_hdr.eth_type) {
-    simple_action(): reject;
-    default: accept;
-}
-```
-
-```p4
-bit<8> x;
-state start {
-    transition select(8w0) {
-        x &&& x: accept;
-        default: reject;
-    }
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue-2123_e.p4
-* issue122.p4
-* issue3430.p4
-</details>
 
 ## 5. Context-sensitivity (some impose implicit domain-specific P4 knowledge)
 
@@ -453,6 +382,22 @@ control c() {
 * issue3644.p4
 </details>
 
+### (6) `main` should be a package
+
+```p4
+extern MyExtern {
+   MyExtern();
+}
+MyExtern() main;
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue4140.p4
+* issue4144.p4
+</details>
+
 ## 6. Devils are in the details
 
 ### (1) Type inference should fail
@@ -494,7 +439,7 @@ The spec mentions:
 * issue3847.p4
 </details>
 
-### (3) Nesting `int` inside a value set
+### \[DONE\] (3) ~~Nesting `int` inside a value set~~
 
 ```p4
 value_set<int>(4) myvs;
@@ -565,7 +510,7 @@ state state_3 {
 * issue2373.p4
 </details>
 
-### (7) Instantiation without abstract method
+### \[DONE\] (7) ~~Instantiation without abstract method~~
 
 ```p4
 extern g {
@@ -575,12 +520,6 @@ extern g {
 package p(g a);
 p(g()) main;
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue3282.p4
-</details>
 
 ### (8) Shift and arbitrary precision integer
 
@@ -612,20 +551,13 @@ hdr.v = (bit<8>)(a >> b);
 * shift-int-non-const.p4
 </details>
 
-### (9) Method with same name as object
+### \[DONE\] (9) ~~Method with same name as object~~
 
 ```p4
 extern X {
     void X();
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* constructor_e.p4
-* function_e2.p4
-</details>
 
 # B. Need spec clarification
 
@@ -1131,4 +1063,47 @@ header Hdr {
 * structured-annotation-e1.p4
 * structured-annotation-e2.p4
 * structured-annotation-e3.p4
+</details>
+
+## 4. Target-specific: select cases should be compile-time known?
+
+The spec mentions:
+
+> Some targets may require that all keyset expressions in a select expression be compile-time known values. (13.6)
+
+Current p4cherry does not (and probably will not) enforce this.
+
+```p4
+transition select(hdr.ethernet.etherType) {
+    0x0806 .. 0x0800 : parse_ipv4;
+    2054 .. 2048 : parse_ipv4;
+    hdr.ipv4.totalLen .. 0x0800 : parse_ipv4;
+    0x0800 .. hdr.ipv4.totalLen : parse_ipv4;
+    default: accept;
+}
+```
+
+```p4
+transition select(hdr.eth_hdr.eth_type) {
+    simple_action(): reject;
+    default: accept;
+}
+```
+
+```p4
+bit<8> x;
+state start {
+    transition select(8w0) {
+        x &&& x: accept;
+        default: reject;
+    }
+}
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue-2123_e.p4
+* issue122.p4
+* issue3430.p4
 </details>
