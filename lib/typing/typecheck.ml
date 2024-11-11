@@ -1353,7 +1353,8 @@ and type_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
   assert (Eq.eq_typ_alpha expr_base_il.note.typ expr_mask_il.note.typ);
   let typ = expr_base_il.note.typ in
   let typ = Types.SetT typ in
-  WF.check_valid_type cursor ctx typ;
+  (* Well-formedness check is deferred until keyset check,
+     where the underlying type will be implicitly cast *)
   let expr_il =
     Il.Ast.MaskE { expr_base = expr_base_il; expr_mask = expr_mask_il }
   in
@@ -1387,7 +1388,8 @@ and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : El.Ast.expr)
   assert (Eq.eq_typ_alpha expr_lb_il.note.typ expr_ub_il.note.typ);
   let typ = expr_lb_il.note.typ in
   let typ = Types.SetT typ in
-  WF.check_valid_type cursor ctx typ;
+  (* Well-formedness check is deferred until keyset check,
+     where the underlying type will be implicitly cast *)
   let expr_il = Il.Ast.RangeE { expr_lb = expr_lb_il; expr_ub = expr_ub_il } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
@@ -1433,10 +1435,10 @@ and type_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ_key : Type.t)
         (* Otherwise, wrap the expression in a set *)
         | _ ->
             let typ = Types.SetT expr_il.note.typ in
-            WF.check_valid_type cursor ctx typ;
             Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
       in
       let typ_key = Types.SetT typ_key in
+      WF.check_valid_type cursor ctx typ_key;
       let typ = expr_il.note.typ in
       let expr_il =
         match (typ_key, typ) with
@@ -1444,7 +1446,11 @@ and type_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ_key : Type.t)
             let expr_il =
               { expr_il with note = { expr_il.note with typ = typ_inner } }
             in
-            coerce_type_assign expr_il typ_key_inner
+            let expr_il = coerce_type_assign expr_il typ_key_inner in
+            Il.Ast.(
+              expr_il.it
+              $$ expr_il.at
+                 % { typ = Types.SetT expr_il.note.typ; ctk = expr_il.note.ctk })
         | _ ->
             Format.printf
               "(type_keyset) Key type %a and the type %a of the keyset \
@@ -1506,11 +1512,6 @@ and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let typs_select =
     List.map (fun expr -> Il.Ast.(expr.note.typ)) exprs_select_il
   in
-  List.iter
-    (fun typ_select ->
-      let typ_select_set = Types.SetT typ_select in
-      WF.check_valid_type cursor ctx typ_select_set)
-    typs_select;
   let cases_il = List.map (type_select_case cursor ctx typs_select) cases in
   let typ = Types.StateT in
   let expr_il =
@@ -3888,7 +3889,8 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 (* (13.6) Select expressions
 
    Some targets may support parser value sets; see Section 13.11.
-   Given a type T for the type parameter of the value set, the type of the value set is set<T>. *)
+   Given a type T for the type parameter of the value set, the type of the value set is set<T>.
+   The type of the values in the set must be either bit<>, int<>, tuple, struct, or serializable enum. *)
 
 and type_value_set_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (typ : El.Ast.typ) (expr_size : El.Ast.expr) (annos : El.Ast.anno list) :
@@ -3898,6 +3900,7 @@ and type_value_set_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let expr_size_il = type_expr cursor ctx expr_size in
   Static.check_ctk expr_size_il;
   let typ = Types.SetT typ_inner.it in
+  WF.check_valid_type cursor ctx typ;
   let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
   let decl_il =
     Il.Ast.ValueSetD
@@ -4295,7 +4298,8 @@ and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
   check_table_key value_match_kind typ;
   let annos_il = List.map (type_anno cursor ctx) annos in
   let table_key_il = (expr_il, match_kind, annos_il) in
-  let table_ctx = Tblctx.add_key (Types.SetT typ, value_match_kind) table_ctx in
+  let typ_key = Types.SetT typ in
+  let table_ctx = Tblctx.add_key (typ_key, value_match_kind) table_ctx in
   (table_ctx, table_key_il)
 
 and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
@@ -4491,22 +4495,24 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
             let typ = Types.SetT expr_il.note.typ in
             Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
       in
+      let typ = expr_il.note.typ in
       let expr_il =
-        let typ =
-          match expr_il.note.typ with
-          | Types.SetT typ -> typ
-          | _ -> assert false
-        in
-        let typ_key =
-          match typ_key with Types.SetT typ -> typ | _ -> assert false
-        in
-        let expr_il =
-          Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
-        in
-        let expr_il = coerce_type_assign expr_il typ_key in
-        Il.Ast.(
-          expr_il.it
-          $$ expr_il.at % { typ = Types.SetT typ; ctk = expr_il.note.ctk })
+        match (typ_key, typ) with
+        | SetT typ_key_inner, SetT typ_inner ->
+            let expr_il =
+              { expr_il with note = { expr_il.note with typ = typ_inner } }
+            in
+            let expr_il = coerce_type_assign expr_il typ_key_inner in
+            Il.Ast.(
+              expr_il.it
+              $$ expr_il.at
+                 % { typ = Types.SetT expr_il.note.typ; ctk = expr_il.note.ctk })
+        | _ ->
+            Format.printf
+              "(type_table_entry_keyset') Key type %a and the type %a of the \
+               keyset expression %a must be set types\n"
+              Type.pp typ_key Type.pp typ (Il.Pp.pp_expr ~level:0) expr_il;
+            assert false
       in
       Lang.Ast.ExprK expr_il
   | DefaultK ->

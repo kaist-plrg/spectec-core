@@ -627,43 +627,36 @@ V>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/type-variable-equality-op/issue3291-1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-nested-struct.p4
-(coerce_type) Cannot coerce type struct value_set_t { field = bit<32>; inner = struct inner_value_set_t { field = bit<32> } } to seq<bit<32>,
-bit<32>>
+(check_valid_type_nesting) Invalid nesting of struct value_set_t { field = bit<32>; inner = struct inner_value_set_t { field = bit<32> } } inside set<struct value_set_t { field = bit<32>; inner = struct inner_value_set_t { field = bit<32> } }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-nested-struct.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-1-bmv2.p4
-(coerce_type) Cannot coerce type struct value_set_t { field = bit<32> } to bit<32>
+(check_valid_type_nesting) Invalid nesting of struct value_set_t { field = bit<32> } inside set<struct value_set_t { field = bit<32> }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-2-bmv2.p4
-(coerce_type) Cannot coerce type struct value_set_t { field = bit<16>; field2 = bit<3> } to seq<bit<16>,
-bit<3>>
+(check_valid_type_nesting) Invalid nesting of struct value_set_t { field = bit<16>; field2 = bit<3> } inside set<struct value_set_t { field = bit<16>; field2 = bit<3> }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-2-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-3-bmv2.p4
-(coerce_type) Cannot coerce type struct value_set_t { field1 = bit<16>; field2 = bit<3>; field3 = bit<6>; field4 = bit<5> } to seq<bit<16>,
-bit<3>, bit<6>,Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-3-bmv2.p4
+(check_valid_type_nesting) Invalid nesting of struct value_set_t { field1 = bit<16>; field2 = bit<3>; field3 = bit<6>; field4 = bit<5> } inside set<struct value_set_t { field1 = bit<16>; field2 = bit<3>; field3 = bit<6>; field4 = bit<5> }>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-3-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs.p4
- bit<5>>
 (coerce_type) Cannot coerce type tuple<bit<32>,
 bit<2>> to seq<bit<32>,Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-enumint-types1.p4
 
 bit<2>>
-(coerce_type) Cannot coerce type struct valueset1_t { addr0 = bit<48>; e = bit<8>; e0 = bit<8>; e00 = bit<8> } to seq<bit<48>,
-bit<8>, bit<8>,Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-enumint-types1.p4
+(check_valid_type_nesting) Invalid nesting of struct valueset1_t { addr0 = bit<48>; e = bit<8>; e0 = bit<8>; e00 = bit<8> } inside set<struct valueset1_t { addr0 = bit<48>; e = bit<8>; e0 = bit<8>; e00 = bit<8> }>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-enumint-types1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-most-types1.p4
-
-bit<8>>
-(coerce_type) Cannot coerce type struct valueset1_t { addr0 = bit<48>; e = bit<8>; e0 = bit<8>; e00 = bit<8> } to seq<bit<48>,
-bit<8>, bit<8>,Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-most-types1.p4
+(check_valid_type_nesting) Invalid nesting of struct valueset1_t { addr0 = bit<48>; e = bit<8>; e0 = bit<8>; e00 = bit<8> } inside set<struct valueset1_t { addr0 = bit<48>; e = bit<8>; e0 = bit<8>; e00 = bit<8> }>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-most-types1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile-bmv2.p4
-
-bit<8>>
 (type_table_custom) Custom element implementation is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/action_profile-bmv2.p4
 

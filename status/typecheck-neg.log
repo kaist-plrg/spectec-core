@@ -522,7 +522,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3305.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3316.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3335.p4
-(coerce_type) Cannot coerce type bool to int
+(check_valid_type_nesting) Invalid nesting of int inside set<int>
 Error while typechecking p4 file: test/program/ill-typed/issue3335.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3338.p4
@@ -534,7 +534,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue3338.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3345.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3346.p4
-Typecheck success: test/program/ill-typed/issue3346.p4
+(check_valid_type_nesting) Invalid nesting of int inside set<int>
+Error while typechecking p4 file: test/program/ill-typed/issue3346.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3359.p4
 (check_valid_var_type) Type parser (in tt bit<1>) is not a valid variable type
@@ -1104,4 +1105,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 265/299 (88.63%) [FAIL] 34/299 (11.37%)
-Typecheck: [PASS] 182/265 (68.68%) [FAIL] 83/265 (31.32%)
+Typecheck: [PASS] 183/265 (69.06%) [FAIL] 82/265 (30.94%)

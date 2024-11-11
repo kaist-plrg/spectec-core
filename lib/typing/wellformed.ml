@@ -332,13 +332,15 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _ | DefaultT
       | InvalidT | SetT _ | StateT ->
           false)
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | SeqT _
+  | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | TopT | SeqT _
   | SeqDefaultT _ | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT ->
       error_not_nest ()
   | SetT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT -> false
-      | BoolT | IntT | FIntT _ | FBitT _ -> true
+      | BoolT -> true
+      | IntT -> false
+      | FIntT _ | FBitT _ -> true
       | VBitT _ -> false
       | VarT _ -> false
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
@@ -367,7 +369,6 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | SetT _ | StateT ->
           false)
   | StateT -> error_not_nest ()
-  | TableT _ -> error_not_nest ()
 
 and check_valid_typedef (cursor : Ctx.cursor) (ctx : Ctx.t) (td : TypeDef.t) :
     unit =

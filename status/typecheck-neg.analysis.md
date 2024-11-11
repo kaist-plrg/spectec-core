@@ -494,7 +494,7 @@ The spec mentions:
 * issue3847.p4
 </details>
 
-### (3) Nesting `int` inside a value set
+### \[DONE\] (3) ~~Nesting `int` inside a value set~~
 
 ```p4
 value_set<int>(4) myvs;
