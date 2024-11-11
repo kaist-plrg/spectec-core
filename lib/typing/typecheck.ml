@@ -1099,18 +1099,26 @@ and type_binop_saturating_plus_minus (binop : Lang.Ast.binop)
   (typ, expr_il)
 
 and check_binop_div (typ_l : Type.t) (typ_r : Type.t) : bool =
-  match (typ_l, typ_r) with
-  (* (TODO) Non-negativity can only be checked dynamically *)
-  | IntT, IntT -> true
-  | _ -> false
+  match (typ_l, typ_r) with IntT, IntT -> true | _ -> false
 
-and type_binop_div_mod (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
-    (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr' =
+and type_binop_div_mod (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr)
+    : Type.t * Il.Ast.expr' =
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   let expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_div expr_l_il expr_r_il
   in
   assert (Eq.eq_typ_alpha expr_l_il.note.typ expr_r_il.note.typ);
+  (* Non-positivity check if the right hand side is local compile-time known *)
+  (if Ctk.is_lctk expr_r_il.note.ctk then
+     let value_divisor = Static.eval_expr cursor ctx expr_r_il in
+     let divisor = value_divisor.it |> Value.get_num in
+     if Bigint.(divisor <= zero) then (
+       Format.printf
+         "(type_binop_div_mod) Division or modulo by a non-positive integer %a \
+          is not allowed\n"
+         Value.pp value_divisor.it;
+       assert false));
   let typ = expr_l_il.note.typ in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
   (typ, expr_il)
@@ -1242,7 +1250,7 @@ and type_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
         type_binop_plus_minus_mult binop expr_l_il expr_r_il
     | SPlusOp | SMinusOp ->
         type_binop_saturating_plus_minus binop expr_l_il expr_r_il
-    | DivOp | ModOp -> type_binop_div_mod binop expr_l_il expr_r_il
+    | DivOp | ModOp -> type_binop_div_mod cursor ctx binop expr_l_il expr_r_il
     | ShlOp | ShrOp -> type_binop_shift binop expr_l_il expr_r_il
     | LeOp | GeOp | LtOp | GtOp -> type_binop_compare binop expr_l_il expr_r_il
     | EqOp | NeOp -> type_binop_compare_equal binop expr_l_il expr_r_il
@@ -1539,11 +1547,6 @@ and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       results in an undefined value. See Section 8.25 for more details.
       The index is an expression that must be of numeric types (Section 7.4). *)
 
-(* (DESIGN CHOICE)
-
-   p4cherry type checker does not restrict that index expr for a header stack access
-   should be a compile-time known value *)
-
 and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (expr_idx : El.Ast.expr) :
     Type.t * Ctk.t * Il.Ast.expr' =
@@ -1571,11 +1574,20 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
           Il.Ast.ArrAccE { expr_base = expr_base_il; expr_idx = expr_idx_il }
         in
         (typ, expr_il)
-    | StackT (typ_base_inner, _) ->
+    | StackT (typ_base_inner, size) ->
         let typ = typ_base_inner in
         let expr_il =
           Il.Ast.ArrAccE { expr_base = expr_base_il; expr_idx = expr_idx_il }
         in
+        (* Bounds check if the index is local compile-time known *)
+        (if Ctk.is_lctk expr_idx_il.note.ctk then
+           let value_idx = Static.eval_expr cursor ctx expr_idx_il in
+           let idx = value_idx.it |> Value.get_num in
+           if Bigint.(idx < zero) || Bigint.(idx >= size) then (
+             Format.printf
+               "(type_array_acc_expr) Index %a out of range for %a\n" Value.pp
+               value_idx.it (El.Pp.pp_expr ~level:0) expr_base;
+             assert false));
         (typ, expr_il)
     | _ ->
         Format.printf "(type_array_acc_expr) %a cannot be indexed\n"

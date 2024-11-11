@@ -1,4 +1,4 @@
-Running typecheck tests on 233 files
+Running typecheck tests on 234 files
 
 
 >>> Running typecheck test on test/program/well-typed-excluded/future/concat-string/issue4932.p4
@@ -523,6 +523,10 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 (type_var_expr) local is a free identifier
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/abstract-method-scoping/virtual3.p4
 
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/access-header-stack-zero/minsize.p4
+(type_array_acc_expr) Index 0 out of range for h
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/access-header-stack-zero/minsize.p4
+
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/action-two-params.p4
 (coerce_type) Cannot coerce type seq<bit<32>> to bit<32>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/action-two-params.p4
@@ -936,5 +940,5 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/s
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector6.p4
 
-Parser on file: [PASS] 206/233 (88.41%) [FAIL] 27/233 (11.59%)
-Typecheck: [PASS] 0/206 (0.00%) [FAIL] 206/206 (100.00%)
+Parser on file: [PASS] 207/234 (88.46%) [FAIL] 27/234 (11.54%)
+Typecheck: [PASS] 0/207 (0.00%) [FAIL] 207/207 (100.00%)

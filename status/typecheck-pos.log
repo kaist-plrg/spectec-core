@@ -1,4 +1,4 @@
-Running typecheck tests on 1021 files
+Running typecheck tests on 1020 files
 
 
 >>> Running typecheck test on test/program/well-typed/action-bind.p4
@@ -1998,9 +1998,6 @@ Typecheck success: test/program/well-typed/methodArgCast.p4
 >>> Running typecheck test on test/program/well-typed/methodArgs.p4
 Typecheck success: test/program/well-typed/methodArgs.p4
 
->>> Running typecheck test on test/program/well-typed/minsize.p4
-Typecheck success: test/program/well-typed/minsize.p4
-
 >>> Running typecheck test on test/program/well-typed/ml-headers.p4
 Typecheck success: test/program/well-typed/ml-headers.p4
 
@@ -3068,5 +3065,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 >>> Running typecheck test on test/program/well-typed/xor_test.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1019/1021 (99.80%) [FAIL] 2/1021 (0.20%)
-Typecheck: [PASS] 1017/1019 (99.80%) [FAIL] 2/1019 (0.20%)
+Parser on file: [PASS] 1018/1020 (99.80%) [FAIL] 2/1020 (0.20%)
+Typecheck: [PASS] 1016/1018 (99.80%) [FAIL] 2/1018 (0.20%)

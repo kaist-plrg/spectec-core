@@ -222,7 +222,7 @@ apply {
 
 ## 4. Compile-time evaluation
 
-### (1) Stack bounds check if compile-time known
+### \[DONE\] (1) ~~Stack bounds check if compile-time known~~
 
 ```p4
 // Compiler should give error for out of bounds index,
@@ -246,12 +246,6 @@ h.hs[3].f1 = 5;
 h.hs[3].f2 = 8;
 ```
 
-<details>
-<summary>Tests</summary>
-
-* stack-const-index-out-of-bounds-bmv2.p4
-</details>
-
 ### \[DONE\] (2) ~~Bitslice width check~~
 
 ```p4
@@ -259,7 +253,7 @@ bit<8> n = 8w0b11111111;
 n[7:4][5:2] = 4w0;
 ```
 
-### (3) Division or modulo with negative value
+### \[DONE\] (3) ~~Division or modulo with negative value~~
 
 P4 forbids division or modulo with negative values.
 But the question is, can we guarantee this at compile time?
@@ -272,12 +266,6 @@ action act() {
     a = 10 % -2;
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* div.p4
-</details>
 
 ## (4) Select cases should be compile-time known?
 

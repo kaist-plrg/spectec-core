@@ -105,7 +105,8 @@ Error while typechecking p4 file: test/program/ill-typed/default_action1.p4
 Typecheck success: test/program/ill-typed/directionless.p4
 
 >>> Running typecheck test on test/program/ill-typed/div.p4
-Typecheck success: test/program/ill-typed/div.p4
+(type_binop_div_mod) Division or modulo by a non-positive integer -2 is not allowed
+Error while typechecking p4 file: test/program/ill-typed/div.p4
 
 >>> Running typecheck test on test/program/ill-typed/div0.p4
 (coerce_types_binary_numeric) Cannot coerce types bit<8> and bit<8>
@@ -925,7 +926,8 @@ Error while parsing p4 file: test/program/ill-typed/spec-issue1297-string-cat-er
 Error while typechecking p4 file: test/program/ill-typed/spec-issue563.p4
 
 >>> Running typecheck test on test/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4
-Typecheck success: test/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4
+(type_array_acc_expr) Index -1 out of range for h.hs
+Error while typechecking p4 file: test/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/stack1_e.p4
 Error while typechecking p4 file: test/program/ill-typed/stack1_e.p4
@@ -1106,4 +1108,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 265/299 (88.63%) [FAIL] 34/299 (11.37%)
-Typecheck: [PASS] 184/265 (69.43%) [FAIL] 81/265 (30.57%)
+Typecheck: [PASS] 186/265 (70.19%) [FAIL] 79/265 (29.81%)

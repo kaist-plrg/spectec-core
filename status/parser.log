@@ -1,4 +1,4 @@
-Running parser roundtrip tests on 1021 files
+Running parser roundtrip tests on 1020 files
 
 
 >>> Running parser roundtrip test on test/program/well-typed/action-bind.p4
@@ -2550,10 +2550,6 @@ Parser roundtrip success: test/program/well-typed/methodArgCast.p4
 parser error: File test/program/well-typed/methodArgs.p4, line 6, characters 2-3
 Error while parsing p4 string: test/program/well-typed/methodArgs.p4
 
->>> Running parser roundtrip test on test/program/well-typed/minsize.p4
-parser error: File test/program/well-typed/minsize.p4, line 3, characters 0-1
-Error while parsing p4 string: test/program/well-typed/minsize.p4
-
 >>> Running parser roundtrip test on test/program/well-typed/ml-headers.p4
 parser error: File test/program/well-typed/ml-headers.p4, line 13, characters 2-9
 Error while parsing p4 string: test/program/well-typed/ml-headers.p4
@@ -3937,6 +3933,6 @@ Error while parsing p4 string: test/program/well-typed/xdp_vlan_push_pop_ebpf-ke
 parser error: File test/program/well-typed/xor_test.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1019/1021 (99.80%) [FAIL] 2/1021 (0.20%)
-Parser on string: [PASS] 148/1019 (14.52%) [FAIL] 871/1019 (85.48%)
+Parser on file: [PASS] 1018/1020 (99.80%) [FAIL] 2/1020 (0.20%)
+Parser on string: [PASS] 148/1018 (14.54%) [FAIL] 870/1018 (85.46%)
 Parser roundtrip: [PASS] 135/148 (91.22%) [FAIL] 13/148 (8.78%)
