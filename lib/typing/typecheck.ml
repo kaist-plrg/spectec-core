@@ -176,7 +176,9 @@ and merge_cstr (cstr_old : cstr_t) (cstr_new : cstr_t) : cstr_t =
       | None, _ -> TIdMap.add key typ_new cstr
       | _, None -> TIdMap.add key typ_old cstr
       | Some typ_old, Some typ_new ->
-          if Eq.eq_typ_alpha typ_old typ_new then
+          if Subtyp.implicit typ_old typ_new then
+            TIdMap.add key (Some typ_new) cstr
+          else if Subtyp.implicit typ_new typ_old then
             TIdMap.add key (Some typ_old) cstr
           else (
             Format.printf "(merge_cstr) Type %a and %a do not match\n" Type.pp

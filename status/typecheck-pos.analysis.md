@@ -187,7 +187,7 @@ top(c()) main;
 * unused.p4
 </details>
 
-#### (b) Mixture of type inference and coercion (1)
+#### \[DONE\] (b) ~~Mixture of type inference and coercion~~
 
 The current naive type inference algorithm assumes type equality, and is not flexible enough to handle coercion.
 
@@ -197,12 +197,6 @@ extern void random<T>(out T result), in T lo);
 bit<8> rand_val;
 random(rand_val, 0);
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue1586.p4
-</details>
 
 ### \[DONE\] (4) ~~Overload resolution by name~~
 

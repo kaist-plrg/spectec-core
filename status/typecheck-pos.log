@@ -1027,8 +1027,7 @@ Typecheck success: test/program/well-typed/issue1544-bmv2.p4
 Typecheck success: test/program/well-typed/issue1566-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1586.p4
-(merge_cstr) Type bit<8> and int do not match
-Error while typechecking p4 file: test/program/well-typed/issue1586.p4
+Typecheck success: test/program/well-typed/issue1586.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1595-1.p4
 Typecheck success: test/program/well-typed/issue1595-1.p4
@@ -3070,4 +3069,4 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1019/1021 (99.80%) [FAIL] 2/1021 (0.20%)
-Typecheck: [PASS] 1016/1019 (99.71%) [FAIL] 3/1019 (0.29%)
+Typecheck: [PASS] 1017/1019 (99.80%) [FAIL] 2/1019 (0.20%)
