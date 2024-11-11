@@ -1914,8 +1914,7 @@ parser error: File test/program/well-typed/issue3001.p4, line 2, characters 2-3
 Error while parsing p4 string: test/program/well-typed/issue3001.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue304-1.p4
-parser error: File test/program/well-typed/issue304-1.p4, line 25, characters 48-52
-Error while parsing p4 file: test/program/well-typed/issue304-1.p4
+Parser roundtrip success: test/program/well-typed/issue304-1.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue304.p4
 Parser roundtrip success: test/program/well-typed/issue304.p4
@@ -3938,6 +3937,6 @@ Error while parsing p4 string: test/program/well-typed/xdp_vlan_push_pop_ebpf-ke
 parser error: File test/program/well-typed/xor_test.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1020/1021 (99.90%) [FAIL] 1/1021 (0.10%)
-Parser on string: [PASS] 147/1020 (14.41%) [FAIL] 873/1020 (85.59%)
-Parser roundtrip: [PASS] 134/147 (91.16%) [FAIL] 13/147 (8.84%)
+Parser on file: [PASS] 1021/1021 (100.00%) [FAIL] 0/1021 (0.00%)
+Parser on string: [PASS] 148/1021 (14.50%) [FAIL] 873/1021 (85.50%)
+Parser roundtrip: [PASS] 135/148 (91.22%) [FAIL] 13/148 (8.78%)

@@ -1519,6 +1519,10 @@ expression:
 | value = STRING_LITERAL
     { let tags = Text.tags value in
       Expression.String { tags; text = value } }
+| info1 = THIS
+    { let name = Text.{ tags = info1; str = "this" } in
+      let tags = Text.tags name in
+      Expression.Name { tags; name = BareName name } }
 | name = nonTypeName
     { let tags = Text.tags name in
       Expression.Name { tags; name = BareName name } }

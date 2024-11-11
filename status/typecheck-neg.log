@@ -478,8 +478,8 @@ Typecheck success: test/program/ill-typed/issue3233.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3246.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3264.p4
-parser error: File test/program/ill-typed/issue3264.p4, line 4, characters 6-10
-Error while parsing p4 file: test/program/ill-typed/issue3264.p4
+(type_var_expr) this is a free identifier
+Error while typechecking p4 file: test/program/ill-typed/issue3264.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3271-1.p4
 parser error: File test/program/ill-typed/issue3271-1.p4, line 23, characters 7-8
@@ -1098,5 +1098,5 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 (type_cast_expr) Invalid cast from int<2> to bool
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
-Parser on file: [PASS] 265/299 (88.63%) [FAIL] 34/299 (11.37%)
-Typecheck: [PASS] 180/265 (67.92%) [FAIL] 85/265 (32.08%)
+Parser on file: [PASS] 266/299 (88.96%) [FAIL] 33/299 (11.04%)
+Typecheck: [PASS] 181/266 (68.05%) [FAIL] 85/266 (31.95%)

@@ -141,8 +141,8 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/issue3531.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/bfd_offload.p4
-parser error: File test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/bfd_offload.p4, line 34, characters 19-23
-Error while parsing p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/bfd_offload.p4
+(check_eq_typ_alpha) Types int and bit<16> are not equal
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/bfd_offload.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/calc-ebpf.p4
 (check_eq_typ_alpha) Types int and bit<32> are not equal
@@ -927,5 +927,5 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/s
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector6.p4
 
-Parser on file: [PASS] 223/233 (95.71%) [FAIL] 10/233 (4.29%)
-Typecheck: [PASS] 16/223 (7.17%) [FAIL] 207/223 (92.83%)
+Parser on file: [PASS] 224/233 (96.14%) [FAIL] 9/233 (3.86%)
+Typecheck: [PASS] 16/224 (7.14%) [FAIL] 208/224 (92.86%)
