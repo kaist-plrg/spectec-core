@@ -359,8 +359,7 @@ Typecheck success: test/program/well-typed/empty.p4
 Typecheck success: test/program/well-typed/emptyTuple.p4
 
 >>> Running typecheck test on test/program/well-typed/entries-prio.p4
-parser error: File test/program/well-typed/entries-prio.p4, line 33, characters 8-15
-Error while parsing p4 file: test/program/well-typed/entries-prio.p4
+Typecheck success: test/program/well-typed/entries-prio.p4
 
 >>> Running typecheck test on test/program/well-typed/enum-bmv2.p4
 Typecheck success: test/program/well-typed/enum-bmv2.p4
@@ -789,8 +788,7 @@ Typecheck success: test/program/well-typed/hit-expr-bmv2.p4
 Typecheck success: test/program/well-typed/index.p4
 
 >>> Running typecheck test on test/program/well-typed/init-entries-bmv2.p4
-parser error: File test/program/well-typed/init-entries-bmv2.p4, line 77, characters 8-15
-Error while parsing p4 file: test/program/well-typed/init-entries-bmv2.p4
+Typecheck success: test/program/well-typed/init-entries-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/initializer.p4
 Typecheck success: test/program/well-typed/initializer.p4
@@ -1027,7 +1025,6 @@ Typecheck success: test/program/well-typed/issue1544-bmv2.p4
 Typecheck success: test/program/well-typed/issue1566-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1586.p4
-(merge_cstr) Type bit<8> and int do not match
 Error while typechecking p4 file: test/program/well-typed/issue1586.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1595-1.p4
@@ -1505,7 +1502,9 @@ Typecheck success: test/program/well-typed/issue3001-1.p4
 Typecheck success: test/program/well-typed/issue3001.p4
 
 >>> Running typecheck test on test/program/well-typed/issue304-1.p4
-Typecheck success: test/program/well-typed/issue304-1.p4
+(merge_cstr) Type bit<8> and int do not match
+parser error: File test/program/well-typed/issue304-1.p4, line 25, characters 48-52
+Error while parsing p4 file: test/program/well-typed/issue304-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue304.p4
 Typecheck success: test/program/well-typed/issue304.p4
@@ -3069,5 +3068,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 >>> Running typecheck test on test/program/well-typed/xor_test.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1019/1021 (99.80%) [FAIL] 2/1021 (0.20%)
-Typecheck: [PASS] 1016/1019 (99.71%) [FAIL] 3/1019 (0.29%)
+Parser on file: [PASS] 1020/1021 (99.90%) [FAIL] 1/1021 (0.10%)
+Typecheck: [PASS] 1017/1020 (99.71%) [FAIL] 3/1020 (0.29%)

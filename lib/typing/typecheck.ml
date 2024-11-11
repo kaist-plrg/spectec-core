@@ -4778,11 +4778,9 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
     Tblctx.t * Il.Ast.table_custom' =
   let member, expr, custom_const, annos = table_custom in
   let expr_il = type_expr cursor ctx expr in
-  let value = Static.eval_expr cursor ctx expr_il in
-  let expr_il = Il.Ast.ValueE { value } $$ expr_il.at % expr_il.note in
   let typ = expr_il.note.typ in
   let annos_il = List.map (type_anno cursor ctx) annos in
-  let table_ctx =
+  let table_ctx, expr_il =
     match member.it with
     | "size" ->
         if not (Type.is_numeric typ) then (
@@ -4790,12 +4788,7 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
             "(type_table_custom) size should be numeric type, not %a\n"
             Types.pp_typ typ;
           assert false);
-        let size = value.it |> Value.get_num |> Bigint.to_int |> Option.get in
-        if size <= 0 then (
-          Format.printf
-            "(type_table_custom) size should be positive intager, not %d\n" size;
-          assert false);
-        Tblctx.set_size size table_ctx
+        (table_ctx, expr_il)
     | "largest_priority_wins" ->
         if typ <> BoolT then (
           Format.printf
@@ -4803,14 +4796,21 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
              not %a\n"
             Types.pp_typ typ;
           assert false);
+        let value = Static.eval_expr cursor ctx expr_il in
+        let expr_il = Il.Ast.ValueE { value } $$ expr_il.at % expr_il.note in
         let largest_priority_wins = value.it |> Value.get_bool in
-        Tblctx.set_largest_priority_wins largest_priority_wins table_ctx
+        let table_ctx =
+          Tblctx.set_largest_priority_wins largest_priority_wins table_ctx
+        in
+        (table_ctx, expr_il)
     | "priority_delta" ->
         if not (Type.is_numeric typ) then (
           Format.printf
             "(type_table_custom) priority_delta should be numeric type, not %a\n"
             Types.pp_typ typ;
           assert false);
+        let value = Static.eval_expr cursor ctx expr_il in
+        let expr_il = Il.Ast.ValueE { value } $$ expr_il.at % expr_il.note in
         let priority_delta =
           value.it |> Value.get_num |> Bigint.to_int |> Option.get
         in
@@ -4820,7 +4820,8 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
              not %d\n"
             priority_delta;
           assert false);
-        Tblctx.set_priority_delta priority_delta table_ctx
+        let table_ctx = Tblctx.set_priority_delta priority_delta table_ctx in
+        (table_ctx, expr_il)
     | _ ->
         Format.printf "(type_table_custom) Custom element %s is undefined\n"
           member.it;

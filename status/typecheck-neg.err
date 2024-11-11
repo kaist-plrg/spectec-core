@@ -1,4 +1,5 @@
-test/program/ill-typed/key-name.p4:37:10: fatal error: '../p4_16_samples/arith-inline-skeleton.p4' file not found
-#include "../p4_16_samples/arith-inline-skeleton.p4"
-         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-1 error generated.
+test/program/ill-typed/key-name.p4:37:10: fatal error: ../p4_16_samples/arith-inline-skeleton.p4: 그런 파일이나 디렉터리가 없습니다
+   37 | #include "../p4_16_samples/arith-inline-skeleton.p4"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+(check_priority) Priority must not be negative

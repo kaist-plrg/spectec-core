@@ -64,8 +64,8 @@ parser error: File test/program/ill-typed/constructor1_e.p4, line 18, characters
 Error while parsing p4 file: test/program/ill-typed/constructor1_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/constructor2_e.p4
-(type_extern_constructor_decl) Extern constructor must have the same name as the object
-Error while typechecking p4 file: test/program/ill-typed/constructor2_e.p4
+parser error: File test/program/ill-typed/constructor2_e.p4, line 18, characters 5-6
+Error while parsing p4 file: test/program/ill-typed/constructor2_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/constructor3_e.p4
 (check_eq_typ_alpha) Types bool and bit<1> are not equal
@@ -75,8 +75,8 @@ Error while typechecking p4 file: test/program/ill-typed/constructor3_e.p4
 Typecheck success: test/program/ill-typed/constructor_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/control-inline.p4
-(check_eq_typ_alpha) Types control (in hdr struct H {  }, inout meta struct M {  }) and control (inout hdr struct H {  }, inout meta struct M {  }) are not equal
-Error while typechecking p4 file: test/program/ill-typed/control-inline.p4
+parser error: File test/program/ill-typed/control-inline.p4, line 34, characters 10-11
+Error while parsing p4 file: test/program/ill-typed/control-inline.p4
 
 >>> Running typecheck test on test/program/ill-typed/control-verify.p4
 Typecheck success: test/program/ill-typed/control-verify.p4
@@ -219,16 +219,15 @@ Error while typechecking p4 file: test/program/ill-typed/implicit.p4
 Error while typechecking p4 file: test/program/ill-typed/incorrect-label.p4
 
 >>> Running typecheck test on test/program/ill-typed/init-entries-error1-bmv2.p4
-parser error: File test/program/ill-typed/init-entries-error1-bmv2.p4, line 75, characters 8-15
-Error while parsing p4 file: test/program/ill-typed/init-entries-error1-bmv2.p4
+(type_priority) Can't define priorities when there are only exact or lpm fields.
+Error while typechecking p4 file: test/program/ill-typed/init-entries-error1-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/init-entries-error2-bmv2.p4
-parser error: File test/program/ill-typed/init-entries-error2-bmv2.p4, line 76, characters 8-15
-Error while parsing p4 file: test/program/ill-typed/init-entries-error2-bmv2.p4
+(type_priority) First entry's priority must be defined if we specify the priorities.
+Error while typechecking p4 file: test/program/ill-typed/init-entries-error2-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/init-entries-error3-bmv2.p4
-parser error: File test/program/ill-typed/init-entries-error3-bmv2.p4, line 78, characters 8-15
-Error while parsing p4 file: test/program/ill-typed/init-entries-error3-bmv2.p4
+Error while typechecking p4 file: test/program/ill-typed/init-entries-error3-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/inro.p4
 (check_lvalue) x is not an l-value
@@ -465,8 +464,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue3188.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3197-e.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3210.p4
-(type_func) Function t not found
-Error while typechecking p4 file: test/program/ill-typed/issue3210.p4
+parser error: File test/program/ill-typed/issue3210.p4, line 9, characters 5-6
+Error while parsing p4 file: test/program/ill-typed/issue3210.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3221.p4
 Typecheck success: test/program/ill-typed/issue3221.p4
@@ -479,15 +478,16 @@ Typecheck success: test/program/ill-typed/issue3233.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3246.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3264.p4
-(type_var_expr) this is a free identifier
-Error while typechecking p4 file: test/program/ill-typed/issue3264.p4
+parser error: File test/program/ill-typed/issue3264.p4, line 4, characters 6-10
+Error while parsing p4 file: test/program/ill-typed/issue3264.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3271-1.p4
-(type_func) Function h not found
-Error while typechecking p4 file: test/program/ill-typed/issue3271-1.p4
+parser error: File test/program/ill-typed/issue3271-1.p4, line 23, characters 7-8
+Error while parsing p4 file: test/program/ill-typed/issue3271-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3271.p4
-Typecheck success: test/program/ill-typed/issue3271.p4
+parser error: File test/program/ill-typed/issue3271.p4, line 3, characters 7-8
+Error while parsing p4 file: test/program/ill-typed/issue3271.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3273.p4
 Typecheck success: test/program/ill-typed/issue3273.p4
@@ -909,12 +909,10 @@ Error while typechecking p4 file: test/program/ill-typed/spec-issue1297-string-c
 Error while typechecking p4 file: test/program/ill-typed/spec-issue1297-string-cat-err-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/spec-issue1297-string-cat-err-2-anno.p4
-parser error: File test/program/ill-typed/spec-issue1297-string-cat-err-2-anno.p4, line 3, characters 0-4
-Error while parsing p4 file: test/program/ill-typed/spec-issue1297-string-cat-err-2-anno.p4
+Typecheck success: test/program/ill-typed/spec-issue1297-string-cat-err-2-anno.p4
 
 >>> Running typecheck test on test/program/ill-typed/spec-issue1297-string-cat-err-3-anno.p4
-parser error: File test/program/ill-typed/spec-issue1297-string-cat-err-3-anno.p4, line 3, characters 0-4
-Error while parsing p4 file: test/program/ill-typed/spec-issue1297-string-cat-err-3-anno.p4
+Typecheck success: test/program/ill-typed/spec-issue1297-string-cat-err-3-anno.p4
 
 >>> Running typecheck test on test/program/ill-typed/spec-issue563.p4
 (eval_type') Type definition A does not exist
@@ -976,18 +974,17 @@ Typecheck success: test/program/ill-typed/structured-annotation-e3.p4
 Typecheck success: test/program/ill-typed/table-entries-decl-order.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-exact-ternary.p4
-parser error: File test/program/ill-typed/table-entries-exact-ternary.p4, line 74, characters 28-29
-Error while parsing p4 file: test/program/ill-typed/table-entries-exact-ternary.p4
+(type_table_entry_keysets) Number of select keys must match the number of cases
+Error while typechecking p4 file: test/program/ill-typed/table-entries-exact-ternary.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-exact.p4
 (type_table_entry_keysets) Number of select keys must match the number of cases
 Error while typechecking p4 file: test/program/ill-typed/table-entries-exact.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-lpm-2.p4
-Typecheck success: test/program/ill-typed/table-entries-lpm-2.p4
+Error while typechecking p4 file: test/program/ill-typed/table-entries-lpm-2.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-lpm.p4
-(type_table_entry_keysets) Number of select keys must match the number of cases
 Error while typechecking p4 file: test/program/ill-typed/table-entries-lpm.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-optional-2-bmv2.p4

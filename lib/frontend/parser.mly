@@ -1291,12 +1291,12 @@ tableProperty:
 | info1 = ACTIONS ASSIGN L_BRACE acts = actionList info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
       Table.Actions { tags; actions = acts } }
-| info1 = CONST ENTRIES ASSIGN L_BRACE entries = entriesList info2 = R_BRACE
+| annos = optAnnotations info1 = CONST ENTRIES ASSIGN L_BRACE entries = entriesList info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
-      Table.Entries { tags; entries = entries; const = true } }
-| info1 = ENTRIES ASSIGN L_BRACE entries = entriesList info2 = R_BRACE
+      Table.Entries { tags; entries = entries; const = true; annotations = annos } }
+| annos = optAnnotations info1 = ENTRIES ASSIGN L_BRACE entries = entriesList info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
-      Table.Entries { tags; entries = entries; const = false } }
+      Table.Entries { tags; entries = entries; const = false; annotations = annos } }
 | info1 = CONST DEFAULT_ACTION ASSIGN act = actionRef info2 = SEMICOLON
     { let tags = Source.merge info1 info2 in
       Table.DefaultAction { tags; action = act; const = true } }

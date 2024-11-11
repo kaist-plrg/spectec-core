@@ -1,21 +1,40 @@
-test/program/well-typed/pragma-string.p4:25:14: warning: missing terminating '"' character [-Winvalid-pp-token]
-@pragma name "string with
-             ^
-test/program/well-typed/pragma-string.p4:26:8: warning: missing terminating '"' character [-Winvalid-pp-token]
-newline"
-       ^
-2 warnings generated.
-test/program/well-typed/specIssue884.p4:38:9: warning: missing terminating '"' character [-Winvalid-pp-token]
-        "1000100
-        ^
-test/program/well-typed/specIssue884.p4:41:17: warning: missing terminating '"' character [-Winvalid-pp-token]
-         0001001") hamming;
-                ^
-2 warnings generated.
-test/program/well-typed/string_anno.p4:21:7: warning: missing terminating '"' character [-Winvalid-pp-token]
-@name("string with
-      ^
-test/program/well-typed/string_anno.p4:22:8: warning: missing terminating '"' character [-Winvalid-pp-token]
-newline") const bit d = 1;
-       ^
-2 warnings generated.
+test/program/well-typed/pragma-string.p4:25:14: warning: missing terminating " character
+   25 | @pragma name "string with
+      |              ^
+test/program/well-typed/pragma-string.p4:26:8: warning: missing terminating " character
+   26 | newline"
+      |        ^
+test/program/well-typed/specIssue884.p4:38:9: warning: missing terminating " character
+   38 |         "1000100
+      |         ^
+test/program/well-typed/specIssue884.p4:41:17: warning: missing terminating " character
+   41 |          0001001") hamming;
+      |                 ^
+test/program/well-typed/string_anno.p4:21:7: warning: missing terminating " character
+   21 | @name("string with
+      |       ^
+test/program/well-typed/string_anno.p4:22:8: warning: missing terminating " character
+   22 | newline") const bit d = 1;
+      |        ^
+(check_priority) Warning: Duplicate priority 40
+(check_priority) Warning: Duplicate priority 40
+(check_priority) Warning: Duplicate priority 40
+(check_priority) Warning: entries_out_of_priority_order
+(check_priority) Warning: entries_out_of_priority_order
+(check_priority) Warning: entries_out_of_priority_order
+(check_priority) Warning: Duplicate priority 13
+(check_priority) Warning: Duplicate priority 14
+(check_priority) Warning: entries_out_of_priority_order
+(check_priority) Warning: Duplicate priority 13
+(check_priority) Warning: Duplicate priority 14
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: entries_out_of_priority_order
