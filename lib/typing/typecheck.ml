@@ -4200,6 +4200,18 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     - a lpm (longest prefix match) match kind on a key field is a specific type of ternary match where
       the mask is required to have a form in binary that is a contiguous set of 1 bits followed by a contiguous set of 0 bits.
       Masks with more 1 bits have automatically higher priorities. A mask with all bits 0 is legal. *)
+and get_max_prefix (typ : Type.t) : int =
+  (* (TODO) : How to handle IntT? *)
+  match typ with
+  | FIntT prefix | FBitT prefix | VBitT prefix -> prefix |> Bigint.to_int |> Option.get
+  | SEnumT (_, typ_inner, _) -> get_max_prefix typ_inner
+  | NewT (_, typ_inner) -> get_max_prefix typ_inner
+  | _ -> 
+    Format.printf
+            "(get_max_prefix) %a must be numeric type\n"
+            Types.pp_typ typ;
+    assert false
+
 and update_state (match_kind : string) (table_ctx : Tblctx.t) : Tblctx.t =
   (* We define state for check
      NoPri: not require_prior and no lpm
@@ -4219,6 +4231,13 @@ and update_state (match_kind : string) (table_ctx : Tblctx.t) : Tblctx.t =
   | ("range" | "ternary" | "optional"), NoPriLpm ->
       Tblctx.set_state PriLpm table_ctx
   | _ -> table_ctx
+
+and update_max_prefix (match_kind : string) (key_typ : Type.t) (table_ctx : Tblctx.t) : Tblctx.t =
+  if match_kind = "lpm" then 
+    let max_prefix = get_max_prefix key_typ in
+    Tblctx.set_max_prefix max_prefix table_ctx
+  else
+    table_ctx 
 
 and check_table_key (match_kind : string) (typ : Type.t) : unit =
   if not (check_table_key' match_kind typ) then (
@@ -4272,6 +4291,7 @@ and type_table_key (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
 and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
     (table_key : El.Ast.table_key') : Tblctx.t * Il.Ast.table_key' =
   let expr, match_kind, annos = table_key in
+  (* (TODO) : Check whether it is complex expr *)
   let expr_il = type_expr cursor ctx expr in
   let typ = expr_il.note.typ in
   let value_match_kind = Ctx.find_value_opt cursor match_kind.it ctx in
@@ -4284,6 +4304,7 @@ and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
         assert false
   in
   check_table_key value_match_kind typ;
+  let table_ctx = update_max_prefix value_match_kind typ table_ctx in
   let table_ctx = update_state value_match_kind table_ctx in
   let annos_il = List.map (type_anno cursor ctx) annos in
   let table_key_il = (expr_il, match_kind, annos_il) in
@@ -4464,10 +4485,19 @@ and get_prefix (mask : Value.t) (prefix : int) : int =
         else get_prefix mask' (prefix + 1)
   | _ -> failwith "(get_prefix) wrong type for lpm mask"
 
-and get_prefix_max (typ : Type.t) : Bigint.t =
-  match typ with
-  | Types.FIntT prefix | Types.FBitT prefix | Types.VBitT prefix -> prefix
-  | _ -> assert false
+and update_prefix (cursor : Ctx.cursor) (ctx : Ctx.t) (match_kind : string) (expr : Il.Ast.expr) (table_ctx : Tblctx.t) : Tblctx.t  =
+  if match_kind = "lpm" then
+    match expr.it with
+    | MaskE { expr_base = _expr_base; expr_mask } ->
+        let max_prefix = table_ctx.entries_info.max_prefix |> Bigint.of_int in
+        let value_mask =
+          Static.eval_expr cursor ctx expr_mask |> it |> Value.get_num
+        in
+        let value_mask = Numerics.bit_of_raw_int value_mask max_prefix in
+        let prefix = get_prefix value_mask 0 in
+        Tblctx.set_prefix prefix table_ctx
+    | _ -> Tblctx.set_prefix_to_max table_ctx
+  else table_ctx
 
 and type_table_entry_keyset (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_ctx_key : Type.t * Il.Ast.match_kind')
@@ -4508,22 +4538,7 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
             let typ = Types.SetT expr_il.note.typ in
             Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
       in
-      let table_ctx =
-        if match_kind = "lpm" then
-          let prefix_max = get_prefix_max typ_key in
-          match expr_il.it with
-          | MaskE { expr_base = _expr_base; expr_mask } ->
-              let value_mask =
-                Static.eval_expr cursor ctx expr_mask |> it |> Value.get_num
-              in
-              let value_mask = Numerics.bit_of_raw_int value_mask prefix_max in
-              let prefix = get_prefix value_mask 0 in
-              Tblctx.set_prefix prefix table_ctx
-          | _ ->
-              let prefix_max = prefix_max |> Bigint.to_int |> Option.get in
-              Tblctx.set_prefix prefix_max table_ctx
-        else table_ctx
-      in
+      let table_ctx = update_prefix cursor ctx match_kind expr_il table_ctx in
       let expr_il =
         let typ =
           match expr_il.note.typ with
@@ -4544,12 +4559,14 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
         Format.printf
           "(type_action_keyset) exact match does not allow default expression \n";
         assert false);
+      let table_ctx = Tblctx.set_prefix_to_max table_ctx in
       (table_ctx, Lang.Ast.DefaultK)
   | AnyK ->
       if match_kind = "exact" then (
         Format.printf
           "(type_action_keyset) exact match does not allow wildcard expression \n";
         assert false);
+      let table_ctx = Tblctx.set_prefix 0 table_ctx in
       (table_ctx, Lang.Ast.AnyK)
 
 and type_table_entry_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
@@ -4557,8 +4574,11 @@ and type_table_entry_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
     Tblctx.t * Il.Ast.keyset list =
   match (table_ctx.keys, keysets) with
   | _, [ { it = DefaultK; at; note } ] ->
+      let table_ctx = Tblctx.set_prefix_to_max table_ctx in
       (table_ctx, [ Lang.Ast.DefaultK $$ at % note ])
-  | _, [ { it = AnyK; at; note } ] -> (table_ctx, [ Lang.Ast.AnyK $$ at % note ])
+  | _, [ { it = AnyK; at; note } ] -> 
+    let table_ctx = Tblctx.set_prefix 0 table_ctx in
+    (table_ctx, [ Lang.Ast.AnyK $$ at % note ])
   | table_ctx_keys, keysets ->
       if List.length table_ctx_keys <> List.length keysets then (
         Format.printf
@@ -4625,7 +4645,7 @@ and init_priority_value (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (priority : El.Ast.expr option) =
   let large_win = table_ctx.priorities_info.largest_priority_wins in
   let delta = table_ctx.priorities_info.priority_delta in
-  let size = table_ctx.entries_info.entries_size in
+  let size = table_ctx.entries_info.size in
   if Option.is_some priority then
     let priority = Option.get priority in
     let priority_il = type_expr cursor ctx priority in
@@ -4688,8 +4708,6 @@ and type_priority (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
           $$ no_info % { typ = Types.IntT; ctk = Ctk.LCTK })
         |> Option.some
       in
-      (* reset the prefix for after keyset (default, any)*)
-      let table_ctx = Tblctx.set_prefix 0 table_ctx in
       (table_ctx, priority_il)
   | _ ->
       let specified = Option.is_some priority in
@@ -4780,7 +4798,7 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let expr_il = type_expr cursor ctx expr in
   let typ = expr_il.note.typ in
   let annos_il = List.map (type_anno cursor ctx) annos in
-  let table_ctx, expr_il =
+  let table_ctx =
     match member.it with
     | "size" ->
         if not (Type.is_numeric typ) then (
@@ -4788,7 +4806,7 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
             "(type_table_custom) size should be numeric type, not %a\n"
             Types.pp_typ typ;
           assert false);
-        (table_ctx, expr_il)
+        table_ctx
     | "largest_priority_wins" ->
         if typ <> BoolT then (
           Format.printf
@@ -4797,12 +4815,8 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
             Types.pp_typ typ;
           assert false);
         let value = Static.eval_expr cursor ctx expr_il in
-        let expr_il = Il.Ast.ValueE { value } $$ expr_il.at % expr_il.note in
         let largest_priority_wins = value.it |> Value.get_bool in
-        let table_ctx =
-          Tblctx.set_largest_priority_wins largest_priority_wins table_ctx
-        in
-        (table_ctx, expr_il)
+        Tblctx.set_largest_priority_wins largest_priority_wins table_ctx
     | "priority_delta" ->
         if not (Type.is_numeric typ) then (
           Format.printf
@@ -4810,7 +4824,6 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
             Types.pp_typ typ;
           assert false);
         let value = Static.eval_expr cursor ctx expr_il in
-        let expr_il = Il.Ast.ValueE { value } $$ expr_il.at % expr_il.note in
         let priority_delta =
           value.it |> Value.get_num |> Bigint.to_int |> Option.get
         in
@@ -4820,8 +4833,7 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
              not %d\n"
             priority_delta;
           assert false);
-        let table_ctx = Tblctx.set_priority_delta priority_delta table_ctx in
-        (table_ctx, expr_il)
+        Tblctx.set_priority_delta priority_delta table_ctx
     | _ ->
         Format.printf "(type_table_custom) Custom element %s is undefined\n"
           member.it;

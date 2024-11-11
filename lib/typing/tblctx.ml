@@ -10,11 +10,9 @@ type pi = {
 }
 
 type ei = {
-  (* "size" is custom priority element.
-     "entries_size" is real entries size *)
   size : int;
-  entries_size : int;
   prefix : int;
+  max_prefix : int;
   const : bool;
 }
 
@@ -36,7 +34,7 @@ let empty_pi =
     largest_priority_wins = true;
   }
 
-let empty_ei = { size = 0; entries_size = 0; prefix = 0; const = true }
+let empty_ei = { size = 0; prefix = 0; max_prefix = 0; const = true }
 
 let empty =
   {
@@ -52,9 +50,6 @@ let add_key table_key table_ctx =
 
 let add_action table_action table_ctx =
   { table_ctx with actions = table_ctx.actions @ [ table_action ] }
-
-let set_size size table_ctx =
-  { table_ctx with entries_info = { table_ctx.entries_info with size } }
 
 let set_largest_priority_wins largest_priority_wins table_ctx =
   {
@@ -91,11 +86,17 @@ let add_priority priority table_ctx =
       };
   }
 
-let set_entries_size entries_size table_ctx =
-  { table_ctx with entries_info = { table_ctx.entries_info with entries_size } }
+let set_entries_size size table_ctx =
+  { table_ctx with entries_info = { table_ctx.entries_info with size } }
 
 let set_prefix prefix table_ctx =
   { table_ctx with entries_info = { table_ctx.entries_info with prefix } }
+
+let set_max_prefix max_prefix table_ctx =
+  { table_ctx with entries_info = { table_ctx.entries_info with max_prefix } }
+
+let set_prefix_to_max table_ctx =
+  { table_ctx with entries_info = { table_ctx.entries_info with prefix = table_ctx.entries_info.max_prefix} }
 
 let get_last_priority table_ctx =
   let len = List.length table_ctx.priorities_info.priorities - 1 in
