@@ -898,7 +898,8 @@ Error while typechecking p4 file: test/program/ill-typed/signed.p4
 Error while typechecking p4 file: test/program/ill-typed/signs.p4
 
 >>> Running typecheck test on test/program/ill-typed/slice_out_of_bound.p4
-Typecheck success: test/program/ill-typed/slice_out_of_bound.p4
+(type_bitstring_acc_expr) Invalid slice [2:5] for bit<4>
+Error while typechecking p4 file: test/program/ill-typed/slice_out_of_bound.p4
 
 >>> Running typecheck test on test/program/ill-typed/spec-ex32_e.p4
 Typecheck success: test/program/ill-typed/spec-ex32_e.p4
@@ -1105,4 +1106,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 265/299 (88.63%) [FAIL] 34/299 (11.37%)
-Typecheck: [PASS] 183/265 (69.06%) [FAIL] 82/265 (30.94%)
+Typecheck: [PASS] 184/265 (69.43%) [FAIL] 81/265 (30.57%)

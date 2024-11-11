@@ -1632,21 +1632,22 @@ and check_bitstring_base (typ : Type.t) : bool =
 and check_bitstring_index (typ : Type.t) : bool =
   match typ with IntT | FIntT _ | FBitT _ -> true | _ -> false
 
-and check_bitstring_slice_range' (typ_base : Type.t) (width_slice : Bigint.t) :
-    bool =
+and check_bitstring_slice_range' (typ_base : Type.t) (idx_lo : Bigint.t)
+    (idx_hi : Bigint.t) : bool =
   match typ_base with
   | IntT -> true
-  | FIntT width_base | FBitT width_base -> Bigint.(width_slice <= width_base)
+  | FIntT width_base | FBitT width_base ->
+      let width_slice = Bigint.(idx_hi - idx_lo + one) in
+      Bigint.(idx_hi <= width_base) && Bigint.(width_slice <= width_base)
   | _ -> false
 
 and check_bitstring_slice_range (typ_base : Type.t) (idx_lo : Bigint.t)
     (idx_hi : Bigint.t) : unit =
-  let width_slice = Bigint.(idx_hi - idx_lo + one) in
   if
     Bigint.(idx_lo < zero)
     || Bigint.(idx_hi < zero)
     || Bigint.(idx_lo > idx_hi)
-    || not (check_bitstring_slice_range' typ_base width_slice)
+    || not (check_bitstring_slice_range' typ_base idx_lo idx_hi)
   then (
     Format.printf "(type_bitstring_acc_expr) Invalid slice [%a:%a] for %a\n"
       Bigint.pp idx_lo Bigint.pp idx_hi Type.pp typ_base;

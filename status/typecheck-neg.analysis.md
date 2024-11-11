@@ -252,18 +252,12 @@ h.hs[3].f2 = 8;
 * stack-const-index-out-of-bounds-bmv2.p4
 </details>
 
-### (2) Bitslice width check
+### \[DONE\] (2) ~~Bitslice width check~~
 
 ```p4
 bit<8> n = 8w0b11111111;
 n[7:4][5:2] = 4w0;
 ```
-
-<details>
-<summary>Tests</summary>
-
-* slice_out_of_bound.p4
-</details>
 
 ### (3) Division or modulo with negative value
 
