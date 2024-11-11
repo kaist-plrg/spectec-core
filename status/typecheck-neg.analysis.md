@@ -267,43 +267,6 @@ action act() {
 }
 ```
 
-## (4) Select cases should be compile-time known?
-
-```p4
-transition select(hdr.ethernet.etherType) {
-    0x0806 .. 0x0800 : parse_ipv4;
-    2054 .. 2048 : parse_ipv4;
-    hdr.ipv4.totalLen .. 0x0800 : parse_ipv4;
-    0x0800 .. hdr.ipv4.totalLen : parse_ipv4;
-    default: accept;
-}
-```
-
-```p4
-transition select(hdr.eth_hdr.eth_type) {
-    simple_action(): reject;
-    default: accept;
-}
-```
-
-```p4
-bit<8> x;
-state start {
-    transition select(8w0) {
-        x &&& x: accept;
-        default: reject;
-    }
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue-2123_e.p4
-* issue122.p4
-* issue3430.p4
-</details>
-
 ## 5. Context-sensitivity (some impose implicit domain-specific P4 knowledge)
 
 ### (1) `.last`, `.lastIndex` only allowed within parser
@@ -1100,4 +1063,47 @@ header Hdr {
 * structured-annotation-e1.p4
 * structured-annotation-e2.p4
 * structured-annotation-e3.p4
+</details>
+
+## 4. Target-specific: select cases should be compile-time known?
+
+The spec mentions:
+
+> Some targets may require that all keyset expressions in a select expression be compile-time known values. (13.6)
+
+Current p4cherry does not (and probably will not) enforce this.
+
+```p4
+transition select(hdr.ethernet.etherType) {
+    0x0806 .. 0x0800 : parse_ipv4;
+    2054 .. 2048 : parse_ipv4;
+    hdr.ipv4.totalLen .. 0x0800 : parse_ipv4;
+    0x0800 .. hdr.ipv4.totalLen : parse_ipv4;
+    default: accept;
+}
+```
+
+```p4
+transition select(hdr.eth_hdr.eth_type) {
+    simple_action(): reject;
+    default: accept;
+}
+```
+
+```p4
+bit<8> x;
+state start {
+    transition select(8w0) {
+        x &&& x: accept;
+        default: reject;
+    }
+}
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue-2123_e.p4
+* issue122.p4
+* issue3430.p4
 </details>

@@ -1051,7 +1051,7 @@ h.hs[-1].f2 = 8;
 ```
 
 <details>
-<summary>Tests</summary>o
+<summary>Tests</summary>
 
 * minsize.p4
 </details>
