@@ -2195,7 +2195,6 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
     : Type.t * Ctk.t * Il.Ast.expr' =
   (* Find the constructor definition and specialize it if necessary *)
-  (* (TODO) Implement type inference for missing type arguments *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
   let cd_matched =
     let args = FId.to_names args in
@@ -2249,7 +2248,21 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
 and type_instantiation_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
     : Type.t * Ctk.t * Il.Ast.expr' =
-  type_instantiation cursor ctx var_inst targs args
+  let typ, ctk, expr_il = type_instantiation cursor ctx var_inst targs args in
+  (match typ with
+  | ExternT (_, fdenv_extern) ->
+      if
+        Envs.FDEnv.exists
+          (fun _ (fd : FuncDef.t) ->
+            match fd with ExternAbstractMethodD _ -> true | _ -> false)
+          fdenv_extern
+      then (
+        Format.printf
+          "(type_instantiation_expr) Cannot instantiate an abstract extern \
+           object at expression level\n";
+        assert false)
+  | _ -> ());
+  (typ, ctk, expr_il)
 
 (* Argument typing *)
 
@@ -3808,6 +3821,20 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         match mthd.it with ExternConstructorD _ -> true | _ -> false)
       mthds
   in
+  (* Check that method names do not overlap with the object name *)
+  let mthds_names =
+    List.map
+      (fun (mthd : El.Ast.decl) ->
+        match mthd.it with
+        | ExternAbstractMethodD { id; _ } | ExternMethodD { id; _ } -> id.it
+        | _ -> assert false)
+      mthds
+  in
+  if List.exists (fun mthd_name -> mthd_name = id.it) mthds_names then (
+    Format.printf
+      "(type_extern_object_decl) Method names must not overlap with the object \
+       name\n";
+    assert false);
   (* Typecheck methods and abstract methods
      to construct function definition environment *)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in

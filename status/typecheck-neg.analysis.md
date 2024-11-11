@@ -104,7 +104,7 @@ a_two(
 * issue2835-bmv2.p4
 </details>
 
-## 2. Duplicate declarations in the same namespace
+## \[DONE\] 2. ~~Duplicate declarations in the same namespace~~
 
 ### \[DONE\] (1) ~~Duplicate id~~
 
@@ -138,22 +138,6 @@ apply {
     }
 }
 ```
-
-### (5) `main` should be a package
-
-```p4
-extern MyExtern {
-   MyExtern();
-}
-MyExtern() main;
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue4140.p4
-* issue4144.p4
-</details>
 
 ## 3. Table property
 
@@ -453,6 +437,22 @@ control c() {
 * issue3644.p4
 </details>
 
+### (6) `main` should be a package
+
+```p4
+extern MyExtern {
+   MyExtern();
+}
+MyExtern() main;
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue4140.p4
+* issue4144.p4
+</details>
+
 ## 6. Devils are in the details
 
 ### (1) Type inference should fail
@@ -565,7 +565,7 @@ state state_3 {
 * issue2373.p4
 </details>
 
-### (7) Instantiation without abstract method
+### \[DONE\] (7) ~~Instantiation without abstract method~~
 
 ```p4
 extern g {
@@ -575,12 +575,6 @@ extern g {
 package p(g a);
 p(g()) main;
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue3282.p4
-</details>
 
 ### (8) Shift and arbitrary precision integer
 
@@ -612,20 +606,13 @@ hdr.v = (bit<8>)(a >> b);
 * shift-int-non-const.p4
 </details>
 
-### (9) Method with same name as object
+### \[DONE\] (9) ~~Method with same name as object~~
 
 ```p4
 extern X {
     void X();
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* constructor_e.p4
-* function_e2.p4
-</details>
 
 # B. Need spec clarification
 

@@ -72,7 +72,8 @@ Error while typechecking p4 file: test/program/ill-typed/constructor2_e.p4
 Error while typechecking p4 file: test/program/ill-typed/constructor3_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/constructor_e.p4
-Typecheck success: test/program/ill-typed/constructor_e.p4
+(type_extern_object_decl) Method names must not overlap with the object name
+Error while typechecking p4 file: test/program/ill-typed/constructor_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/control-inline.p4
 (check_eq_typ_alpha) Types control (in hdr struct H {  }, inout meta struct M {  }) and control (inout hdr struct H {  }, inout meta struct M {  }) are not equal
@@ -493,7 +494,8 @@ Typecheck success: test/program/ill-typed/issue3271.p4
 Typecheck success: test/program/ill-typed/issue3273.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3282.p4
-Typecheck success: test/program/ill-typed/issue3282.p4
+(type_instantiation_expr) Cannot instantiate an abstract extern object at expression level
+Error while typechecking p4 file: test/program/ill-typed/issue3282.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3285.p4
 Error while parsing p4 file: test/program/ill-typed/issue3285.p4
@@ -1102,4 +1104,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 265/299 (88.63%) [FAIL] 34/299 (11.37%)
-Typecheck: [PASS] 180/265 (67.92%) [FAIL] 85/265 (32.08%)
+Typecheck: [PASS] 182/265 (68.68%) [FAIL] 83/265 (31.32%)
