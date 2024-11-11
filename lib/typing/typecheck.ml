@@ -4210,14 +4210,14 @@ and update_state (match_kind : string) (table_ctx : Tblctx.t) : Tblctx.t =
   (* TODO : if there is lpm, then require_prior should be false even there are ternary?*)
   let state = table_ctx.state in
   match (match_kind, state) with
-  | "lpm", NoPri -> Tblctx.add_state NoPriLpm table_ctx
-  | "lpm", Pri -> Tblctx.add_state PriLpm table_ctx
+  | "lpm", NoPri -> Tblctx.set_state NoPriLpm table_ctx
+  | "lpm", Pri -> Tblctx.set_state PriLpm table_ctx
   | "lpm", _ ->
       Format.printf "(type_table_keys) too many lpms\n";
       assert false
-  | ("range" | "ternary" | "optional"), NoPri -> Tblctx.add_state Pri table_ctx
+  | ("range" | "ternary" | "optional"), NoPri -> Tblctx.set_state Pri table_ctx
   | ("range" | "ternary" | "optional"), NoPriLpm ->
-      Tblctx.add_state PriLpm table_ctx
+      Tblctx.set_state PriLpm table_ctx
   | _ -> table_ctx
 
 and check_table_key (match_kind : string) (typ : Type.t) : unit =
@@ -4518,10 +4518,10 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
               in
               let value_mask = Numerics.bit_of_raw_int value_mask prefix_max in
               let prefix = get_prefix value_mask 0 in
-              Tblctx.add_prefix prefix table_ctx
+              Tblctx.set_prefix prefix table_ctx
           | _ ->
               let prefix_max = prefix_max |> Bigint.to_int |> Option.get in
-              Tblctx.add_prefix prefix_max table_ctx
+              Tblctx.set_prefix prefix_max table_ctx
         else table_ctx
       in
       let expr_il =
@@ -4689,7 +4689,7 @@ and type_priority (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
         |> Option.some
       in
       (* reset the prefix for after keyset (default, any)*)
-      let table_ctx = Tblctx.add_prefix 0 table_ctx in
+      let table_ctx = Tblctx.set_prefix 0 table_ctx in
       (table_ctx, priority_il)
   | _ ->
       let specified = Option.is_some priority in
@@ -4709,7 +4709,7 @@ and type_priority (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
         value.it |> Value.get_num |> Bigint.to_int |> Option.get
       in
       check_priority table_ctx priority_value;
-      let table_ctx = Tblctx.add_priority_init specified table_ctx in
+      let table_ctx = Tblctx.set_priority_init specified table_ctx in
       let table_ctx = Tblctx.add_priority priority_value table_ctx in
       (table_ctx, priority_il)
 
@@ -4737,8 +4737,8 @@ and type_table_entries (cursor : Ctx.cursor) (ctx : Ctx.t)
     Tblctx.t * (Il.Ast.table_entry list * Il.Ast.table_entries_const) =
   let table_entries, table_entries_const = table_entries in
   let entries_size = List.length table_entries in
-  let table_ctx = Tblctx.add_entries_size entries_size table_ctx in
-  let table_ctx = Tblctx.add_const_entries table_entries_const table_ctx in
+  let table_ctx = Tblctx.set_entries_size entries_size table_ctx in
+  let table_ctx = Tblctx.set_const_entries table_entries_const table_ctx in
   let table_ctx, table_entries_il =
     List.fold_left
       (fun (table_ctx, entries) table_entry ->
@@ -4795,7 +4795,7 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
           Format.printf
             "(type_table_custom) size should be positive intager, not %d\n" size;
           assert false);
-        Tblctx.add_size size table_ctx
+        Tblctx.set_size size table_ctx
     | "largest_priority_wins" ->
         if typ <> BoolT then (
           Format.printf
@@ -4804,7 +4804,7 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
             Types.pp_typ typ;
           assert false);
         let largest_priority_wins = value.it |> Value.get_bool in
-        Tblctx.add_largest_priority_wins largest_priority_wins table_ctx
+        Tblctx.set_largest_priority_wins largest_priority_wins table_ctx
     | "priority_delta" ->
         if not (Type.is_numeric typ) then (
           Format.printf
@@ -4820,7 +4820,7 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
              not %d\n"
             priority_delta;
           assert false);
-        Tblctx.add_priority_delta priority_delta table_ctx
+        Tblctx.set_priority_delta priority_delta table_ctx
     | _ ->
         Format.printf "(type_table_custom) Custom element %s is undefined\n"
           member.it;

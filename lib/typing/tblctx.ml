@@ -53,27 +53,27 @@ let add_key table_key table_ctx =
 let add_action table_action table_ctx =
   { table_ctx with actions = table_ctx.actions @ [ table_action ] }
 
-let add_size size table_ctx =
+let set_size size table_ctx =
   { table_ctx with entries_info = { table_ctx.entries_info with size } }
 
-let add_largest_priority_wins largest_priority_wins table_ctx =
+let set_largest_priority_wins largest_priority_wins table_ctx =
   {
     table_ctx with
     priorities_info = { table_ctx.priorities_info with largest_priority_wins };
   }
 
-let add_priority_delta priority_delta table_ctx =
+let set_priority_delta priority_delta table_ctx =
   {
     table_ctx with
     priorities_info = { table_ctx.priorities_info with priority_delta };
   }
 
-let add_state state table_ctx = { table_ctx with state }
+let set_state state table_ctx = { table_ctx with state }
 
-let add_const_entries const table_ctx =
+let set_const_entries const table_ctx =
   { table_ctx with entries_info = { table_ctx.entries_info with const } }
 
-let add_priority_init priority_init table_ctx =
+let set_priority_init priority_init table_ctx =
   if List.length table_ctx.priorities_info.priorities == 0 then
     {
       table_ctx with
@@ -91,10 +91,10 @@ let add_priority priority table_ctx =
       };
   }
 
-let add_entries_size entries_size table_ctx =
+let set_entries_size entries_size table_ctx =
   { table_ctx with entries_info = { table_ctx.entries_info with entries_size } }
 
-let add_prefix prefix table_ctx =
+let set_prefix prefix table_ctx =
   { table_ctx with entries_info = { table_ctx.entries_info with prefix } }
 
 let get_last_priority table_ctx =
