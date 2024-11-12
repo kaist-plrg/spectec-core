@@ -6,7 +6,7 @@ Error while typechecking p4 file: test/program/ill-typed/accept_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/action-bind.p4
 (type_parser_states) A "start" state must exist
-(type_call_default_action_partial) Arguments (x) and (y) are syntactically different
+(type_call_default_action) Arguments (x) and (y) are syntactically different
 Error while typechecking p4 file: test/program/ill-typed/action-bind.p4
 
 >>> Running typecheck test on test/program/ill-typed/action-bind1.p4
@@ -221,14 +221,15 @@ Error while typechecking p4 file: test/program/ill-typed/implicit.p4
 Error while typechecking p4 file: test/program/ill-typed/incorrect-label.p4
 
 >>> Running typecheck test on test/program/ill-typed/init-entries-error1-bmv2.p4
-(type_priority) Can't define priorities when there are only exact or lpm fields.
+(type_table_entry_priority) Cannot define priority when there are only exact fields
 Error while typechecking p4 file: test/program/ill-typed/init-entries-error1-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/init-entries-error2-bmv2.p4
-(type_priority) First entry's priority must be defined if we specify the priorities.
+(type_table_entry_priority) The priority of the first entry must be defined if priorities are explicitly specified
 Error while typechecking p4 file: test/program/ill-typed/init-entries-error2-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/init-entries-error3-bmv2.p4
+(check_priority) Priority must not be negative
 Error while typechecking p4 file: test/program/ill-typed/init-entries-error3-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/inro.p4
@@ -266,7 +267,7 @@ Error while parsing p4 file: test/program/ill-typed/issue1202.p4
 Typecheck success: test/program/ill-typed/issue122.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1230.p4
-(type_table_custom) size should be numeric type, not bool
+(type_table_custom) size should be a numeric type, not bool
 Error while typechecking p4 file: test/program/ill-typed/issue1230.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1296.p4
@@ -281,7 +282,7 @@ parser error: File test/program/ill-typed/issue1336.p4, line 3, characters 14-15
 Error while parsing p4 file: test/program/ill-typed/issue1336.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1542.p4
-(type_call_default_action_partial) Arguments (1) and (2) are syntactically different
+(type_call_default_action) Arguments (1) and (2) are syntactically different
 Error while typechecking p4 file: test/program/ill-typed/issue1542.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1557-bmv2.p4
@@ -602,7 +603,7 @@ Typecheck success: test/program/ill-typed/issue3644.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3656.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3671-2.p4
-(type_call_default_action_partial) Arguments ({ f0 = ext1(), f1 = ext2() }) and ({ f1 = ext1(), f0 = ext2() }) are syntactically different
+(type_call_default_action) Arguments ({ f0 = ext1(), f1 = ext2() }) and ({ f1 = ext1(), f0 = ext2() }) are syntactically different
 Error while typechecking p4 file: test/program/ill-typed/issue3671-2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3727.p4

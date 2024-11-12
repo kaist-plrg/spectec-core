@@ -690,7 +690,12 @@ and Table : sig
   and 'a property' =
     | Key of { tags : 'a; keys : key list }
     | Actions of { tags : 'a; actions : action_ref list }
-    | Entries of { tags : 'a; annotations : Annotation.t list; entries : entry list; const : bool; }
+    | Entries of {
+        tags : 'a;
+        annotations : Annotation.t list;
+        entries : entry list;
+        const : bool;
+      }
     | DefaultAction of { tags : 'a; action : action_ref; const : bool }
     | Custom of {
         tags : 'a;
@@ -734,7 +739,12 @@ end = struct
   and 'a property' =
     | Key of { tags : 'a; keys : key list }
     | Actions of { tags : 'a; actions : action_ref list }
-    | Entries of { tags : 'a; annotations : Annotation.t list; entries : entry list; const : bool }
+    | Entries of {
+        tags : 'a;
+        annotations : Annotation.t list;
+        entries : entry list;
+        const : bool;
+      }
     | DefaultAction of { tags : 'a; action : action_ref; const : bool }
     | Custom of {
         tags : 'a;

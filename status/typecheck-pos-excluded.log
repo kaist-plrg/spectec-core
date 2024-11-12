@@ -492,7 +492,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue2037.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue3671.p4
-(type_call_default_action_partial) Arguments ({ f0 = ext(), f1 = ext() }) and ({ f1 = ext(), f0 = ext() }) are syntactically different
+(type_call_default_action) Arguments ({ f0 = ext(), f1 = ext() }) and ({ f1 = ext(), f0 = ext() }) are syntactically different
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue3671.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/typedef-objects/extern-inst-as-param.p4
