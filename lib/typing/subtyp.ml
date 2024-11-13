@@ -76,12 +76,12 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
        are equivalent to one of the above combinations *)
     (* casts between a typedef and the original type *)
     (* casts between a type introduced by type and the original type *)
-    | NewT (_, typ_from_inner), _ when explicit typ_from_inner typ_to -> true
-    | _, NewT (_, typ_to_inner) when explicit typ_from typ_to_inner -> true
+    | NewT (_, typ_from_inner), _ when implicit typ_from_inner typ_to -> true
+    | _, NewT (_, typ_to_inner) when implicit typ_from typ_to_inner -> true
     (* casts between an enum with an explicit type and its underlying type *)
-    | SEnumT (_, typ_from_inner, _), _ when explicit typ_from_inner typ_to ->
+    | SEnumT (_, typ_from_inner, _), _ when implicit typ_from_inner typ_to ->
         true
-    | _, SEnumT (_, typ_to_inner, _) when explicit typ_from typ_to_inner -> true
+    | _, SEnumT (_, typ_to_inner, _) when implicit typ_from typ_to_inner -> true
     (* casts of a tuple expression to a list, tuple, stack, struct, or header type *)
     | SeqT typs_from_inner, ListT typ_to_inner ->
         List.for_all
@@ -200,7 +200,7 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
    A tuple expression can have an explicit structure or header type specified, and then it is
    converted automatically to a structure-valued expression (see 8.13). *)
 
-let rec implicit (typ_from : Type.t) (typ_to : Type.t) : bool =
+and implicit (typ_from : Type.t) (typ_to : Type.t) : bool =
   let implicit_unequal () =
     match (typ_from, typ_to) with
     (* int <: fint and int <: fbit *)

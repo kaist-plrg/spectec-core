@@ -426,7 +426,7 @@ value_set<int>(4) myvs;
 * issue3346.p4
 </details>
 
-### (4) Implicit cast omitting an intermediate step
+### \[DONE\] (4) ~~Implicit cast omitting an intermediate step~~
 
 ```p4
 typedef bit<1> b1;
@@ -440,12 +440,6 @@ t1 func(b2 a) {
 ```
 
 Here, we are trying to cast `bit<2>` to `t1`, which is a new type for `bit<1>`. But we *cannot* implicitly cast `bit<2>` to `bit<1>`.
-
-<details>
-<summary>Tests</summary>
-
-* issue3221.p4
-</details>
 
 ### \[DONE\] (5) ~~Parser swallows the unary `+`~~
 

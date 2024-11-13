@@ -484,7 +484,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue3197-e.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3210.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3221.p4
-Typecheck success: test/program/ill-typed/issue3221.p4
+(type_cast_expr) Invalid cast from bit<2> to type t1 (= bit<1>)
+Error while typechecking p4 file: test/program/ill-typed/issue3221.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3233.p4
 Typecheck success: test/program/ill-typed/issue3233.p4
@@ -1129,4 +1130,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 265/299 (88.63%) [FAIL] 34/299 (11.37%)
-Typecheck: [PASS] 199/265 (75.09%) [FAIL] 66/265 (24.91%)
+Typecheck: [PASS] 200/265 (75.47%) [FAIL] 65/265 (24.53%)
