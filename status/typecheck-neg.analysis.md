@@ -487,30 +487,7 @@ So the below program is checked as correct.
 const bool b = +false;
 ```
 
-### (6) Parser not ending in `accept` nor `reject`
-
-```p4
-state start {
-    transition state_1;
-}
-state state_1 {
-    transition state_2;
-}
-state state_2 {
-    transition state_3;
-}
-state state_3 {
-    transition state_2;
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue2373.p4
-</details>
-
-### \[DONE\] (7) ~~Instantiation without abstract method~~
+### \[DONE\] (6) ~~Instantiation without abstract method~~
 
 ```p4
 extern g {
@@ -521,7 +498,7 @@ package p(g a);
 p(g()) main;
 ```
 
-### (8) Shift and arbitrary precision integer
+### (7) Shift and arbitrary precision integer
 
 ```p4
 header H {
@@ -551,7 +528,7 @@ hdr.v = (bit<8>)(a >> b);
 * shift-int-non-const.p4
 </details>
 
-### \[DONE\] (9) ~~Method with same name as object~~
+### \[DONE\] (8) ~~Method with same name as object~~
 
 ```p4
 extern X {
@@ -945,6 +922,34 @@ h = pkt.lookahead<H>();
 
 * issue4146.p4
 * issue600.p4
+</details>
+
+## 3. Reachability analysis of parser state machine
+
+The test case implies a constraint that the parser state machine should terminate in either `accept` or `reject` state.
+But it is not mentioned in the specification.
+Also it requires unrolling of parser states, which will not be performed in p4cherry, since p4cherry is a P4 interpreter, not a compiler.
+
+
+```p4
+state start {
+    transition state_1;
+}
+state state_1 {
+    transition state_2;
+}
+state state_2 {
+    transition state_3;
+}
+state state_3 {
+    transition state_2;
+}
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue2373.p4
 </details>
 
 # E. Unsupported
