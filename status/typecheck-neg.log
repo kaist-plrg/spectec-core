@@ -102,7 +102,8 @@ Error while typechecking p4 file: test/program/ill-typed/default_action.p4
 Error while typechecking p4 file: test/program/ill-typed/default_action1.p4
 
 >>> Running typecheck test on test/program/ill-typed/directionless.p4
-Typecheck success: test/program/ill-typed/directionless.p4
+(check_valid_functyp') All directionless action parameters must be at the end of the parameter list
+Error while typechecking p4 file: test/program/ill-typed/directionless.p4
 
 >>> Running typecheck test on test/program/ill-typed/div.p4
 (type_binop_div_mod) Division or modulo by a non-positive integer -2 is not allowed
@@ -275,7 +276,16 @@ Error while typechecking p4 file: test/program/ill-typed/issue1230.p4
 Error while typechecking p4 file: test/program/ill-typed/issue1296.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1331.p4
-Typecheck success: test/program/ill-typed/issue1331.p4
+(check_valid_constyp_nesting) Invalid nesting of parser ( pkt extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }) inside control ( pkt extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+extract(hdr) : extern_method<T>(out hdr T) -> void
+extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
+length() : extern_method<>() -> bit<32>
+lookahead() : extern_method<T>() -> T }, inout ether header ethernet { data = bit<112> })
+Error while typechecking p4 file: test/program/ill-typed/issue1331.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1336.p4
 parser error: File test/program/ill-typed/issue1336.p4, line 3, characters 14-15
@@ -378,10 +388,12 @@ Error while typechecking p4 file: test/program/ill-typed/issue2332.p4
 Error while typechecking p4 file: test/program/ill-typed/issue2335.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2354-1.p4
-Typecheck success: test/program/ill-typed/issue2354-1.p4
+(check_valid_functyp_nesting) Invalid nesting of int inside action( x int)
+Error while typechecking p4 file: test/program/ill-typed/issue2354-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2354.p4
-Typecheck success: test/program/ill-typed/issue2354.p4
+(check_valid_functyp_nesting) Invalid nesting of int inside action(in val int)
+Error while typechecking p4 file: test/program/ill-typed/issue2354.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2373.p4
 Typecheck success: test/program/ill-typed/issue2373.p4
@@ -399,7 +411,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue2441.p4
 Error while typechecking p4 file: test/program/ill-typed/issue2444-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2454.p4
-Typecheck success: test/program/ill-typed/issue2454.p4
+(check_valid_functyp_nesting) Invalid nesting of control () inside func( t control ()) -> void
+Error while typechecking p4 file: test/program/ill-typed/issue2454.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2496.p4
 Typecheck success: test/program/ill-typed/issue2496.p4
@@ -429,15 +442,15 @@ Typecheck success: test/program/ill-typed/issue2597.p4
 Typecheck success: test/program/ill-typed/issue2835-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3045-1.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
+(check_valid_functyp_nesting) Invalid nesting of extern register { write(index, value) : extern_method<>(in index bit<32>, in value T) -> void } inside func( r extern register { write(index, value) : extern_method<>(in index bit<32>, in value T) -> void }, in t T) -> void
 Error while typechecking p4 file: test/program/ill-typed/issue3045-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3045-2.p4
-(type_control_decl) Control declarations cannot be generic
+(check_valid_functyp_nesting) Invalid nesting of extern register { write(index, value) : extern_method<>(in index bit<32>, in value T) -> void } inside func( r extern register { write(index, value) : extern_method<>(in index bit<32>, in value T) -> void }, in t T) -> void
 Error while typechecking p4 file: test/program/ill-typed/issue3045-2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3045.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
+(check_valid_functyp_nesting) Invalid nesting of extern register { write(index, value) : extern_method<>(in index bit<32>, in value T) -> void } inside func( r extern register { write(index, value) : extern_method<>(in index bit<32>, in value T) -> void }, in t T) -> void
 Error while typechecking p4 file: test/program/ill-typed/issue3045.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3057-1.p4
@@ -630,7 +643,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3787.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3808-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3808.p4
-(coerce_type) Cannot coerce type table to table
+(check_valid_functyp_nesting) Invalid nesting of table inside extern_func(in a table) -> void
 Error while typechecking p4 file: test/program/ill-typed/issue3808.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3813.p4
@@ -704,7 +717,8 @@ seq<int>> to header_union U { h1 = header H1 { f = bit<32> }; h2 = header H2 { g
 Error while typechecking p4 file: test/program/ill-typed/issue561-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue584.p4
-Typecheck success: test/program/ill-typed/issue584.p4
+(check_valid_functyp_nesting) Invalid nesting of int inside extern_func(out result bit<16>, in algo enum HashAlgorithm, in base bit<16>, in data bit<32>, in max int) -> void
+Error while typechecking p4 file: test/program/ill-typed/issue584.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue600.p4
 Typecheck success: test/program/ill-typed/issue600.p4
@@ -714,7 +728,8 @@ Typecheck success: test/program/ill-typed/issue600.p4
 Error while typechecking p4 file: test/program/ill-typed/issue67.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue764.p4
-Typecheck success: test/program/ill-typed/issue764.p4
+(check_valid_functyp_nesting) Invalid nesting of int inside extern_func(in x int) -> void
+Error while typechecking p4 file: test/program/ill-typed/issue764.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue774-1.p4
 (type_call) Don't care argument can only be used for an out function/method argument
@@ -728,18 +743,20 @@ Typecheck success: test/program/ill-typed/issue774-2.p4
 Error while typechecking p4 file: test/program/ill-typed/issue803-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue807.p4
-(check_valid_var_type) Type control () is not a valid variable type
+(check_valid_functyp_nesting) Invalid nesting of control () inside extern_method( c1 control ()) -> void
 Error while typechecking p4 file: test/program/ill-typed/issue807.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue816-1.p4
-(check_valid_var_type) Type control () is not a valid variable type
+(check_valid_constyp_nesting) Invalid nesting of package inside control ()
 Error while typechecking p4 file: test/program/ill-typed/issue816-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue816.p4
-Typecheck success: test/program/ill-typed/issue816.p4
+(check_valid_functyp_nesting) Invalid nesting of control () inside action(in c1 control (), in c2 control ())
+Error while typechecking p4 file: test/program/ill-typed/issue816.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue818.p4
-Typecheck success: test/program/ill-typed/issue818.p4
+(check_valid_constyp_nesting) Invalid nesting of control () inside extern WrapControl { execute() : extern_method<>() -> void }
+Error while typechecking p4 file: test/program/ill-typed/issue818.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue819-1.p4
 (specialize_typedef) Type definition extern WrapControls<T1, T2> { execute1() : extern_method<>() -> void
@@ -827,10 +844,12 @@ Error while parsing p4 file: test/program/ill-typed/p_e.p4
 Error while typechecking p4 file: test/program/ill-typed/package.p4
 
 >>> Running typecheck test on test/program/ill-typed/param.p4
-Typecheck success: test/program/ill-typed/param.p4
+(check_valid_functyp_nesting) Invalid nesting of extern E { call() : extern_method<>() -> void } inside action( e extern E { call() : extern_method<>() -> void })
+Error while typechecking p4 file: test/program/ill-typed/param.p4
 
 >>> Running typecheck test on test/program/ill-typed/parser-arg.p4
-Typecheck success: test/program/ill-typed/parser-arg.p4
+(check_valid_functyp_nesting) Invalid nesting of parser () inside parser_apply( p parser ())
+Error while typechecking p4 file: test/program/ill-typed/parser-arg.p4
 
 >>> Running typecheck test on test/program/ill-typed/persistent_e.p4
 (check_ctk) z is not a compile-time known expression
@@ -944,14 +963,16 @@ Error while typechecking p4 file: test/program/ill-typed/stack3.p4
 Error while typechecking p4 file: test/program/ill-typed/stack_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/string-e.p4
-Typecheck success: test/program/ill-typed/string-e.p4
+(check_valid_functyp_nesting) Invalid nesting of string inside extern_func(in s string) -> void
+Error while typechecking p4 file: test/program/ill-typed/string-e.p4
 
 >>> Running typecheck test on test/program/ill-typed/string-e1.p4
 (check_valid_typedef_nesting) Invalid nesting of string inside struct S<> { s = string }
 Error while typechecking p4 file: test/program/ill-typed/string-e1.p4
 
 >>> Running typecheck test on test/program/ill-typed/string-e2.p4
-Typecheck success: test/program/ill-typed/string-e2.p4
+(check_valid_functyp_nesting) Invalid nesting of string inside extern_func(in data string) -> void
+Error while typechecking p4 file: test/program/ill-typed/string-e2.p4
 
 >>> Running typecheck test on test/program/ill-typed/struct_e.p4
 (type_expr_acc_expr) Member data does not exist in v
@@ -1108,4 +1129,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 265/299 (88.63%) [FAIL] 34/299 (11.37%)
-Typecheck: [PASS] 186/265 (70.19%) [FAIL] 79/265 (29.81%)
+Typecheck: [PASS] 199/265 (75.09%) [FAIL] 66/265 (24.91%)

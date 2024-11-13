@@ -4,7 +4,7 @@
 
 Restricting function well-formedness (parameter types and return types) and valid call-sites.
 
-### (1) Function well-formedness
+### \[DONE\] (1) ~~Function well-formedness~~
 
 e.g., action should not take an `int` parameter.
 
@@ -23,24 +23,6 @@ control D() {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue2260-1.p4
-* issue2354-1.p4
-* issue2354.p4
-* issue2454.p4
-* issue3273.p4
-* issue584.p4
-* issue764.p4
-* issue816.p4
-* issue818.p4
-* param.p4
-* parser-arg.p4
-* string-e.p4
-* string-e2.p4
-</details>
-
 For actions, the spec mentions:
 
 > Action parameters that have no direction (e.g., port in the previous example) indicate “action data.” All such parameters must appear at the end of the parameter list. (14.1)
@@ -51,12 +33,6 @@ action a(bit x0, out bit y0) {
     y0 = x0 & x;
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* directionless.p4
-</details>
 
 ### (2) Function call-sites
 
@@ -80,7 +56,6 @@ control c() {
 <summary>Tests</summary>
 
 * call-table.p4
-* issue1331.p4
 * issue2597.p4
 * issue2835-bmv2.p4
 * issue388.p4
@@ -839,6 +814,74 @@ This is not true because the `apply` block can access the local declarations.
 <summary>Tests</summary>
 * issue2544_shadowing1.p4
 * issue2545.p4
+</details>
+
+## 7. Type inference for `int`
+
+```p4
+T f<T>(T x) {
+    return x;
+}
+...
+bit<8> y = f(255);
+```
+
+This should type check with `T` as `int`. (It is also well-formed since `int` is a directionless parameter.)
+But the p4c compiler rejects this program with the following error:
+
+```
+issue2260-1.p4(8): [--Werror=type-error] error: 'f(255)'
+        bit<8> y = f(255);
+                   ^^^^^^
+  ---- Actual error:
+  'int' type can only be unified with 'int', 'bit<>', or 'signed<>' types, not with '<returned type>'
+  ---- Originating from:
+issue2260-1.p4(3): Return type 'T' cannot be used for '<returned type>'
+  T f<T>(T x) {
+      ^
+  Where 'T' is bound to 'int'
+  ---- Originating from:
+issue2260-1.p4(3): Function type 'f' does not match invocation type '<Method call>'
+  T f<T>(T x) {
+    ^
+issue2260-1.p4(8)
+          bit<8> y = f(255);
+                     ^^^^^^
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue2260-1.p4
+</details>
+
+## 8. Returning `int` from a method is illegal?
+
+```p4
+extern e {
+    e();
+    abstract int f();
+}
+
+e() t = {
+    int f() { return 1; }
+};
+```
+
+p4c rejects this program with the following error:
+
+```
+issue3273.p4(3): [--Werror=type-error] error: int: illegal return type for method
+    abstract int f();
+             ^^^
+```
+
+However, the spec does not mandate this.
+
+<details>
+<summary>Tests</summary>
+
+* issue3273.p4
 </details>
 
 # D. More than a type check? (Requiring domain-specific knowledge)

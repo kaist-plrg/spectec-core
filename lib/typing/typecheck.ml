@@ -2046,7 +2046,7 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t)
   in
   let args_il_typed = List.combine args_il typ_args in
   let typ_ret = FuncType.get_typ_ret ft in
-  let targs_il, params, typ_ret =
+  let ft, targs_il, params, typ_ret =
     match tids_fresh with
     | Some tids_fresh ->
         let theta = infer_targs tids_fresh params args_il_typed in
@@ -2056,11 +2056,13 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t)
             tids_fresh
           |> List.map (fun typ -> typ $ no_info)
         in
+        let ft = Subst.subst_functyp theta ft in
         let params = List.map (Subst.subst_param theta) params in
         let typ_ret = Subst.subst_typ theta typ_ret in
-        (targs_il, params, typ_ret)
-    | None -> (targs_il, params, typ_ret)
+        (ft, targs_il, params, typ_ret)
+    | None -> (ft, targs_il, params, typ_ret)
   in
+  WF.check_valid_functyp cursor ctx ft;
   let action = FuncType.is_action ft in
   let args_il = type_call_convention ~action cursor ctx params args_il_typed in
   (targs_il, args_il, typ_ret)
@@ -2070,7 +2072,6 @@ and type_call_func_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     : Type.t * Ctk.t * Il.Ast.expr' =
   (* Find the function definition and specialize it if generic *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
-  (* (TODO) Need to check its well-formedness after specialization *)
   let ft, tids_fresh, args_default =
     type_func cursor ctx var_func targs_il args
   in
@@ -2095,7 +2096,6 @@ and type_call_method_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     Type.t * Ctk.t * Il.Ast.expr' =
   (* Find the function definition and specialize it if generic *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
-  (* (TODO) Need to check its well-formedness after specialization *)
   let ft, expr_base_il, tids_fresh, args_default =
     type_method cursor ctx expr_base member targs_il args
   in
@@ -2221,7 +2221,6 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
       El.Pp.pp_var var_inst;
     assert false);
   let cd, args_default = Option.get cd_matched in
-  (* (TODO) Need to check its well-formedness after specialization *)
   let ct, tids_fresh =
     let targs = List.map it targs_il in
     specialize_consdef cd targs
@@ -2238,7 +2237,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     align_cparams_with_args cparams typ_args args_il
   in
   let args_il_typed = List.combine args_il typ_args in
-  let targs_il, cparams, typ_inst =
+  let ct, targs_il, cparams, typ_inst =
     match tids_fresh with
     | Some tids_fresh ->
         let theta = infer_targs tids_fresh cparams args_il_typed in
@@ -2248,11 +2247,13 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
             tids_fresh
           |> List.map (fun typ -> typ $ no_info)
         in
+        let ct = Subst.subst_constyp theta ct in
         let cparams = List.map (Subst.subst_cparam theta) cparams in
         let typ_inst = Subst.subst_typ theta typ_inst in
-        (targs_il, cparams, typ_inst)
-    | None -> (targs_il, cparams, typ_inst)
+        (ct, targs_il, cparams, typ_inst)
+    | None -> (ct, targs_il, cparams, typ_inst)
   in
+  WF.check_valid_constyp cursor ctx ct;
   let args_il =
     type_call_convention ~action:false cursor ctx cparams args_il_typed
   in
@@ -2760,7 +2761,6 @@ and type_call_func_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     : Ctx.t * Flow.t * Il.Ast.stmt' =
   (* Find the function definition and specialize it is generic *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
-  (* (TODO) Need to check its well-formedness after specialization *)
   let ft, tids_fresh, args_default =
     type_func cursor ctx var_func targs_il args
   in
@@ -2779,9 +2779,7 @@ and type_call_method_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (targs : El.Ast.targ list) (args : El.Ast.arg list) :
     Ctx.t * Flow.t * Il.Ast.stmt' =
   (* Find the function definition and specialize it is generic *)
-  (* (TODO) Implement type inference for missing type arguments *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
-  (* (TODO) Need to check its well-formedness after specialization *)
   let ft, expr_base_il, tids_fresh, args_default =
     type_method cursor ctx expr_base member targs_il args
   in
@@ -4050,8 +4048,18 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let ctx' = Ctx.set_blockkind Ctx.Parser ctx' in
   let cparams_il = List.map (type_cparam Ctx.Block ctx') cparams in
   let ctx' = Ctx.add_cparams Ctx.Block cparams_il ctx' in
-  (* Typecheck and add apply parameters to the block context *)
+  (* Typecheck parser apply method *)
   let params_il = List.map (type_param Ctx.Block ctx') params in
+  let fd_apply =
+    let params =
+      List.map it params_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    Types.ParserApplyMethodD params
+  in
+  WF.check_valid_funcdef Ctx.Block ctx fd_apply;
+  (* Add apply parameters to the block context *)
   let ctx' = Ctx.add_params Ctx.Block params_il ctx' in
   (* Typecheck and add local declarations to the block context *)
   let ctx', locals_il = type_decls Ctx.Block ctx' locals in
@@ -4709,8 +4717,18 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let ctx' = Ctx.set_blockkind Ctx.Control ctx' in
   let cparams_il = List.map (type_cparam Ctx.Block ctx') cparams in
   let ctx' = Ctx.add_cparams Ctx.Block cparams_il ctx' in
-  (* Typecheck and add apply parameters to the block context *)
+  (* Typecheck control apply method *)
   let params_il = List.map (type_param Ctx.Block ctx') params in
+  let fd_apply =
+    let params =
+      List.map it params_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    Types.ControlApplyMethodD params
+  in
+  WF.check_valid_funcdef Ctx.Block ctx fd_apply;
+  (* Add apply parameters to the block context *)
   let ctx' = Ctx.add_params Ctx.Block params_il ctx' in
   (* Typecheck and add local declarations to the block context *)
   let ctx', locals_il = type_decls Ctx.Block ctx' locals in
