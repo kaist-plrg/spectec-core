@@ -373,6 +373,15 @@ module Type = struct
   let pp = pp_typ
   let eq = eq_typ
 
+  let rec get_width typ =
+    match typ with
+    | FIntT width | FBitT width | VBitT width ->
+        width |> Bigint.to_int |> Option.get
+    | NewT (_, typ_inner) -> get_width typ_inner
+    | _ ->
+        Format.printf "(get_width) %a must be a numeric type\n" pp typ;
+        assert false
+
   let is_numeric typ =
     match typ with IntT | FIntT _ | FBitT _ -> true | _ -> false
 

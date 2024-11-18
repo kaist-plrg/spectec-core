@@ -681,6 +681,8 @@ and Table : sig
     annotations : Annotation.t list;
     matches : Match.t list;
     action : action_ref;
+    priority : Expression.t option;
+    const : bool;
   }
 
   type property = Source.info property'
@@ -688,7 +690,12 @@ and Table : sig
   and 'a property' =
     | Key of { tags : 'a; keys : key list }
     | Actions of { tags : 'a; actions : action_ref list }
-    | Entries of { tags : 'a; entries : entry list }
+    | Entries of {
+        tags : 'a;
+        annotations : Annotation.t list;
+        entries : entry list;
+        const : bool;
+      }
     | DefaultAction of { tags : 'a; action : action_ref; const : bool }
     | Custom of {
         tags : 'a;
@@ -723,6 +730,8 @@ end = struct
     annotations : Annotation.t list;
     matches : Match.t list;
     action : action_ref;
+    priority : Expression.t option;
+    const : bool;
   }
 
   type property = Source.info property'
@@ -730,7 +739,12 @@ end = struct
   and 'a property' =
     | Key of { tags : 'a; keys : key list }
     | Actions of { tags : 'a; actions : action_ref list }
-    | Entries of { tags : 'a; entries : entry list }
+    | Entries of {
+        tags : 'a;
+        annotations : Annotation.t list;
+        entries : entry list;
+        const : bool;
+      }
     | DefaultAction of { tags : 'a; action : action_ref; const : bool }
     | Custom of {
         tags : 'a;
@@ -847,6 +861,7 @@ and Declaration : sig
       }
     | Function of {
         tags : 'a;
+        annotations : Annotation.t list;
         return : Type.t;
         name : Text.t;
         type_params : Text.t list;
@@ -1018,6 +1033,7 @@ end = struct
       }
     | Function of {
         tags : 'a;
+        annotations : Annotation.t list;
         return : Type.t;
         name : Text.t;
         type_params : Text.t list;

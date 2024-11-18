@@ -217,6 +217,8 @@ rule tokenize = parse
       { PACKAGE (info lexbuf) }
   | "pragma" 
       { PRAGMA (info lexbuf) }
+  | "priority"
+      { PRIORITY (info lexbuf) }
   | "return"
       { RETURN (info lexbuf) }
   | "select"
@@ -231,6 +233,8 @@ rule tokenize = parse
       { SWITCH (info lexbuf) }
   | "table"
       { TABLE (info lexbuf) }
+  | "this"
+      { THIS (info lexbuf) }  
   | "transition"
       { TRANSITION (info lexbuf) }
   | "tuple"

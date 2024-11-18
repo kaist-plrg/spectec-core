@@ -19,3 +19,25 @@ test/program/well-typed/string_anno.p4:22:8: warning: missing terminating '"' ch
 newline") const bit d = 1;
        ^
 2 warnings generated.
+(check_priority) Warning: Duplicate priority 40
+(check_priority) Warning: Duplicate priority 40
+(check_priority) Warning: Duplicate priority 40
+(check_priority) Warning: entries_out_of_priority_order
+(check_priority) Warning: entries_out_of_priority_order
+(check_priority) Warning: entries_out_of_priority_order
+(check_priority) Warning: Duplicate priority 13
+(check_priority) Warning: Duplicate priority 14
+(check_priority) Warning: entries_out_of_priority_order
+(check_priority) Warning: Duplicate priority 13
+(check_priority) Warning: Duplicate priority 14
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: Duplicate priority 2001
+(check_priority) Warning: entries_out_of_priority_order

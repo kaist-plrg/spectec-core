@@ -359,8 +359,7 @@ Typecheck success: test/program/well-typed/empty.p4
 Typecheck success: test/program/well-typed/emptyTuple.p4
 
 >>> Running typecheck test on test/program/well-typed/entries-prio.p4
-parser error: File test/program/well-typed/entries-prio.p4, line 33, characters 8-15
-Error while parsing p4 file: test/program/well-typed/entries-prio.p4
+Typecheck success: test/program/well-typed/entries-prio.p4
 
 >>> Running typecheck test on test/program/well-typed/enum-bmv2.p4
 Typecheck success: test/program/well-typed/enum-bmv2.p4
@@ -789,8 +788,7 @@ Typecheck success: test/program/well-typed/hit-expr-bmv2.p4
 Typecheck success: test/program/well-typed/index.p4
 
 >>> Running typecheck test on test/program/well-typed/init-entries-bmv2.p4
-parser error: File test/program/well-typed/init-entries-bmv2.p4, line 77, characters 8-15
-Error while parsing p4 file: test/program/well-typed/init-entries-bmv2.p4
+Typecheck success: test/program/well-typed/init-entries-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/initializer.p4
 Typecheck success: test/program/well-typed/initializer.p4
@@ -2341,7 +2339,6 @@ Typecheck success: test/program/well-typed/pragma-string.p4
 Typecheck success: test/program/well-typed/pragmas.p4
 
 >>> Running typecheck test on test/program/well-typed/precedence-lt.p4
-(coerce_types_binary) Cannot coerce types int and bool
 Error while typechecking p4 file: test/program/well-typed/precedence-lt.p4
 
 >>> Running typecheck test on test/program/well-typed/pred.p4
@@ -3005,6 +3002,7 @@ Typecheck success: test/program/well-typed/unreachable-accept.p4
 Typecheck success: test/program/well-typed/unreachable.p4
 
 >>> Running typecheck test on test/program/well-typed/unused.p4
+(coerce_types_binary) Cannot coerce types int and bool
 (check_eq_typ_alpha) Types control (inout s struct S { h = header Header { data1 = bit<32>; data2 = bit<32>; data3 = bit<32> } }) and control (inout v any) are not equal
 Error while typechecking p4 file: test/program/well-typed/unused.p4
 
@@ -3065,5 +3063,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 >>> Running typecheck test on test/program/well-typed/xor_test.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1018/1020 (99.80%) [FAIL] 2/1020 (0.20%)
-Typecheck: [PASS] 1016/1018 (99.80%) [FAIL] 2/1018 (0.20%)
+Parser on file: [PASS] 1020/1020 (100.00%) [FAIL] 0/1020 (0.00%)
+Typecheck: [PASS] 1018/1020 (99.80%) [FAIL] 2/1020 (0.20%)

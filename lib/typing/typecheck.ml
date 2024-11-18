@@ -1,6 +1,7 @@
 open Runtime.Domain
 module Ctk = Runtime.Ctk
 module Value = Runtime.Value
+module Numerics = Runtime.Numerics
 module Types = Runtime.Types
 module Type = Types.Type
 module TypeDef = Types.TypeDef
@@ -1423,12 +1424,12 @@ and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : El.Ast.expr)
    In a set context, the expressions default and _ denote the universal set,
    which contains all possible values of a given type. *)
 
-and type_keyset (cursor : Ctx.cursor) (ctx : Ctx.t) (typ_key : Type.t)
-    (keyset : El.Ast.keyset) : Il.Ast.keyset =
-  type_keyset' cursor ctx typ_key keyset.it $ keyset.at
+and type_select_case_keyset (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (typ_key : Type.t) (keyset : El.Ast.keyset) : Il.Ast.keyset =
+  type_select_case_keyset' cursor ctx typ_key keyset.it $ keyset.at
 
-and type_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ_key : Type.t)
-    (keyset : El.Ast.keyset') : Il.Ast.keyset' =
+and type_select_case_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (typ_key : Type.t) (keyset : El.Ast.keyset') : Il.Ast.keyset' =
   assert (cursor = Ctx.Local);
   match keyset with
   | ExprK expr ->
@@ -1461,8 +1462,8 @@ and type_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ_key : Type.t)
                  % { typ = Types.SetT expr_il.note.typ; ctk = expr_il.note.ctk })
         | _ ->
             Format.printf
-              "(type_keyset) Key type %a and the type %a of the keyset \
-               expression %a must be set types\n"
+              "(type_select_case_keyset) Key type %a and the type %a of the \
+               keyset expression %a must be set types\n"
               Type.pp typ_key Type.pp typ (Il.Pp.pp_expr ~level:0) expr_il;
             assert false
       in
@@ -1470,19 +1471,22 @@ and type_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ_key : Type.t)
   | DefaultK -> Lang.Ast.DefaultK
   | AnyK -> Lang.Ast.AnyK
 
-and type_keysets (cursor : Ctx.cursor) (ctx : Ctx.t) (typs_key : Type.t list)
-    (keysets : El.Ast.keyset list) : Il.Ast.keyset list =
+and type_select_case_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (typs_key : Type.t list) (keysets : El.Ast.keyset list) : Il.Ast.keyset list
+    =
   match (typs_key, keysets) with
-  | [ typ_key ], [ keyset ] -> [ type_keyset cursor ctx typ_key keyset ]
+  | [ typ_key ], [ keyset ] ->
+      [ type_select_case_keyset cursor ctx typ_key keyset ]
   | _, [ keyset ] ->
       let typ_key = Types.SeqT typs_key in
-      [ type_keyset cursor ctx typ_key keyset ]
+      [ type_select_case_keyset cursor ctx typ_key keyset ]
   | typs_key, keysets ->
       if List.length typs_key <> List.length keysets then (
         Format.printf
-          "(type_keysets) Number of select keys must match the number of cases\n";
+          "(type_select_case_keysets) Number of select keys must match the \
+           number of cases\n";
         assert false);
-      List.map2 (type_keyset cursor ctx) typs_key keysets
+      List.map2 (type_select_case_keyset cursor ctx) typs_key keysets
 
 and type_select_case (cursor : Ctx.cursor) (ctx : Ctx.t)
     (typs_key : Type.t list) (case : El.Ast.select_case) : Il.Ast.select_case =
@@ -1493,7 +1497,7 @@ and type_select_case' (cursor : Ctx.cursor) (ctx : Ctx.t)
     =
   assert (cursor = Ctx.Local);
   let keysets, state_label = case in
-  let keysets_il = type_keysets cursor ctx typs_key keysets in
+  let keysets_il = type_select_case_keysets cursor ctx typs_key keysets in
   let rtype_label = Ctx.find_rtype_opt cursor state_label.it ctx in
   if
     not
@@ -4238,24 +4242,20 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     assert false);
   let annos_il = List.map (type_anno cursor ctx) annos in
   let table_ctx = Tblctx.empty in
+  let table_ctx, table_customs_il =
+    type_table_customs cursor ctx table_ctx table.customs
+  in
   let table_ctx, table_keys_il =
     type_table_keys cursor ctx table_ctx table.keys
   in
   let table_ctx, table_actions_il =
     type_table_actions cursor ctx table_ctx table.actions
   in
-  let table_action_vars =
-    List.map it table_actions_il |> List.map (fun (var, _, _) -> var)
-  in
-  WF.check_distinct_vars table_action_vars;
-  let table_entries_il =
-    List.map (type_table_entry cursor ctx table_ctx) table.entries
+  let table_ctx, table_entries_il =
+    type_table_entries cursor ctx table_ctx table.entries
   in
   let table_default_il =
     type_table_default cursor ctx table_ctx table.default
-  in
-  let table_customs_il =
-    List.map (type_table_custom cursor ctx) table.customs
   in
   (* (TODO) Should we add action_list(T), apply_result(T) type in env? And should we add decl to?
      Petr4 did, and also it puts id in TableT instead of typ *)
@@ -4305,7 +4305,7 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 and check_table_key (match_kind : string) (typ : Type.t) : unit =
   if not (check_table_key' match_kind typ) then (
     Format.printf
-      "(check_table_key) %a is not a valid table key type for match kind %s.\n"
+      "(check_table_key) %a is not a valid table key type for match kind %s\n"
       Type.pp typ match_kind;
     assert false)
 
@@ -4354,6 +4354,7 @@ and type_table_key (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
 and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
     (table_key : El.Ast.table_key') : Tblctx.t * Il.Ast.table_key' =
   let expr, match_kind, annos = table_key in
+  let annos_il = List.map (type_anno cursor ctx) annos in
   let expr_il = type_expr cursor ctx expr in
   let typ = expr_il.note.typ in
   let value_match_kind = Ctx.find_value_opt cursor match_kind.it ctx in
@@ -4366,7 +4367,7 @@ and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
         assert false
   in
   check_table_key value_match_kind typ;
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let table_ctx = Tblctx.update_mode value_match_kind typ table_ctx in
   let table_key_il = (expr_il, match_kind, annos_il) in
   let typ_key = Types.SetT typ in
   let table_ctx = Tblctx.add_key (typ_key, value_match_kind) table_ctx in
@@ -4393,17 +4394,17 @@ and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
    are forbidden in the expressions supplied as action arguments. *)
 
 and type_call_action_partial (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (params : Types.param list) (args_il : (Il.Ast.arg * Type.t) list) :
+    (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list) :
     Il.Ast.arg list =
-  (* (TODO) : check including table funcitons *)
-  let params =
+  (* Rule out directionless parameters, that will be supplied by the control plane *)
+  let params_specified =
     List.filter_map
       (fun param ->
         let _, dir, _, _ = param in
-        match dir with Lang.Ast.No -> None | _ -> Some param)
+        match (dir : Lang.Ast.dir') with No -> None | _ -> Some param)
       params
   in
-  type_call_convention ~action:true cursor ctx params args_il
+  type_call_convention ~action:true cursor ctx params_specified args_il_typed
 
 and type_table_action (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
     (table_action : El.Ast.table_action) : Tblctx.t * Il.Ast.table_action =
@@ -4415,41 +4416,48 @@ and type_table_action (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
 and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_action : El.Ast.table_action') :
     Tblctx.t * Il.Ast.table_action' =
-  let var, args, annos = table_action in
+  let var_action, args, annos = table_action in
   let fd =
     let args = FId.to_names args in
-    Ctx.find_non_overloaded_opt Ctx.find_funcdef_non_overloaded_opt cursor var
-      args ctx
+    Ctx.find_non_overloaded_opt Ctx.find_funcdef_non_overloaded_opt cursor
+      var_action args ctx
   in
   if Option.is_none fd then (
     Format.printf "(type_table_action) There is no action named %a\n"
-      El.Pp.pp_var var;
+      El.Pp.pp_var var_action;
     assert false);
   let fd = Option.get fd in
   if not (match fd with Types.ActionD _ -> true | _ -> false) then (
-    Format.printf "(type_table_action) %a is not an action\n" El.Pp.pp_var var;
+    Format.printf "(type_table_action) %a is not an action\n" El.Pp.pp_var
+      var_action;
     assert false);
   let params = FuncDef.get_params fd in
   let args_il_typed = List.map (type_arg cursor ctx) args in
-  let args_il_before = List.map fst args_il_typed in
+  let args_il_specified = List.map fst args_il_typed in
   let args_il = type_call_action_partial cursor ctx params args_il_typed in
   let annos_il = List.map (type_anno cursor ctx) annos in
-  let table_action_il = (var, args_il, annos_il) in
+  let table_action_il = (var_action, args_il, annos_il) in
   let table_ctx =
-    Tblctx.add_action (var.it, params, args_il_before) table_ctx
+    Tblctx.add_action (var_action.it, params, args_il_specified) table_ctx
   in
   (table_ctx, table_action_il)
 
 and type_table_actions (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_actions : El.Ast.table_action list) :
     Tblctx.t * Il.Ast.table_action list =
-  List.fold_left
-    (fun (table_ctx, table_actions_il) table_action ->
-      let table_ctx, table_action_il =
-        type_table_action cursor ctx table_ctx table_action
-      in
-      (table_ctx, table_actions_il @ [ table_action_il ]))
-    (table_ctx, []) table_actions
+  let table_ctx, table_actions_il =
+    List.fold_left
+      (fun (table_ctx, table_actions_il) table_action ->
+        let table_ctx, table_action_il =
+          type_table_action cursor ctx table_ctx table_action
+        in
+        (table_ctx, table_actions_il @ [ table_action_il ]))
+      (table_ctx, []) table_actions
+  in
+  List.map it table_actions_il
+  |> List.map (fun (action_name, _, _) -> action_name)
+  |> WF.check_distinct_vars;
+  (table_ctx, table_actions_il)
 
 (* (14.2.1.3) Default action
 
@@ -4478,8 +4486,8 @@ and type_call_default_action (cursor : Ctx.cursor) (ctx : Ctx.t)
   in
   if not (Il.Eq.eq_args args_action args_il_dyn) then (
     Format.printf
-      "(type_call_default_action_partial) Arguments %a and %a are \
-       syntactically different\n"
+      "(type_call_default_action) Arguments %a and %a are syntactically \
+       different\n"
       Il.Pp.pp_args args_action Il.Pp.pp_args args_il_dyn;
     assert false);
   type_call_convention ~action:true cursor ctx params args_il_typed
@@ -4532,14 +4540,100 @@ and type_table_default' (cursor : Ctx.cursor) (ctx : Ctx.t)
    the type of the element of the set. The actionRef component must be an action which appears
    in the table actions list (and must not have the @defaultonly annotation), with all its arguments bound. *)
 
+(* (14.2.1.4) Entry priorities
+
+   If a table has fields where their match_kinds are all exact or lpm, there is no reason to
+   assign numeric priorities to its entries. If they are all exact, duplicate keys are not allowed,
+   and thus every lookup key can match at most one entry, so there is no need for a tiebreaker.
+   If there is an lpm field, the priority of the entry corresponds to the length of the prefix,
+   i.e. if a lookup key matches multiple prefixes, the longest prefix is always the winner.
+
+   Thus there is a table property largest_priority_wins. If explicitly specified for a table,
+   its value must be boolean. If true, then the priority values use the largest_priority_wins convention.
+   If false, then the priority values use the smallest_priority_wins convention. If the table property
+   is not present at all, then the default convention is true, corresponding to largest_priority_wins.
+
+   In some cases, developers may wish the initial priority values to have “gaps” between their values,
+   to leave room for possible later insertion of new entries between two initial entries.
+   They can achieve this by explicitly specifying all priority values, of course, but as a convenience
+   we define the table property priority_delta to be a positive integer value, with a default value
+   of 1 if not specified for a table, to use as a default difference between the priorities of
+   consecutive entries.
+
+   There are two steps that occur at compile time for a table with the entries property
+   involving entry priorities:
+
+    - Determine the value of the priority of every entry in the entries list.
+    - Issue any errors or warnings that are appropriate for these priority values.
+      Warnings may be suppressed via an appropriate @noWarn annotation.
+
+   These steps are performed independently for each table with the entries property,
+   and each is described in more detail below.
+
+   In general, if the developer specifies a priority value for an entry,
+   that is the value that will be used.
+
+   If the developer does not specify priority values for any entry, then the compiler calculates
+   priority values for every entry as follows:
+
+    // For this pseudocode, table entries in the `entries` list are
+    // numbered 0 through n-1, 0 being the first to appear in order in the
+    // source code.  Their priority values are named prio[0] through
+    // prio[n-1].
+    int p = 1;
+    if (largest_priority_wins == true) {
+      for (int j = n-1; j >= 0; j -= 1) {
+        prio[j] = p;
+        p += priority_delta;
+      }
+    } else {
+      for (int j = 0; j < n; j += 1) {
+        prio[j] = p;
+        p += priority_delta;
+      }
+    }
+
+   If the developer specifies priority values for at least one entry, then in order to simplify
+   the rules for determining priorities of entries without one in the source code, the first entry must
+   have a priority value explicitly provided. The priorities of entries that do not have one in
+   the source code (if any) are determined as follows:
+
+    // Same conventions here as in the previous block of pseudocode above.
+    // If entry j has a priority value specified in the source code,
+    // prio_specified[j] is true, otherwise it is false.
+    assert(prio_specified[0]);  // compile time error if prio_specified[0] is false
+    p = prio[0];
+    for (int j = 1; j < n; j += 1) {
+      if (prio_specified[j]) {
+        p = prio[j];
+      } else {
+        if (largest_priority_wins == true) {
+            p -= priority_delta;
+        } else {
+            p += priority_delta;
+        }
+        prio[j] = p;
+      }
+    }
+
+   In the second step, the compiler issues errors for out of range priority values,
+   and/or warnings for certain combinations of entry priorities that might be unintended by the developer,
+   unless the developer explicitly disables those warnings.
+
+   If any priority values are negative, or larger than the maximum supported value,
+   that is a compile time error. *)
+
 and type_table_entry_keyset (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_ctx_key : Type.t * Il.Ast.match_kind') (keyset : El.Ast.keyset) :
-    Il.Ast.keyset =
-  type_table_entry_keyset' cursor ctx table_ctx_key keyset.it $ keyset.at
+    (table_ctx : Tblctx.t) (table_ctx_key : Type.t * Il.Ast.match_kind')
+    (keyset : El.Ast.keyset) : Tblctx.state * Il.Ast.keyset =
+  let entry_state, table_entry_keyset_il =
+    type_table_entry_keyset' cursor ctx table_ctx table_ctx_key keyset.it
+  in
+  (entry_state, table_entry_keyset_il $ keyset.at)
 
 and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_ctx_key : Type.t * Il.Ast.match_kind') (keyset : El.Ast.keyset') :
-    Il.Ast.keyset' =
+    (table_ctx : Tblctx.t) (table_ctx_key : Type.t * Il.Ast.match_kind')
+    (keyset : El.Ast.keyset') : Tblctx.state * Il.Ast.keyset' =
   let typ_key, match_kind = table_ctx_key in
   match keyset with
   | ExprK expr ->
@@ -4565,6 +4659,22 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
             let typ = Types.SetT expr_il.note.typ in
             Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
       in
+      let entry_state =
+        match (match_kind, table_ctx.mode) with
+        | "lpm", NoPriLpm prefix_max -> (
+            match expr_il.it with
+            | MaskE { expr_mask; _ } ->
+                let prefix_max = prefix_max |> Bigint.of_int in
+                let value_mask =
+                  Static.eval_expr cursor ctx expr_mask |> it |> Value.get_num
+                in
+                let value_mask =
+                  Numerics.bit_of_raw_int value_mask prefix_max
+                in
+                Tblctx.get_lpm_prefix value_mask
+            | _ -> Tblctx.Lpm prefix_max)
+        | _ -> Tblctx.NoLpm
+      in
       let typ = expr_il.note.typ in
       let expr_il =
         match (typ_key, typ) with
@@ -4584,32 +4694,67 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
               Type.pp typ_key Type.pp typ (Il.Pp.pp_expr ~level:0) expr_il;
             assert false
       in
-      Lang.Ast.ExprK expr_il
+      (entry_state, Lang.Ast.ExprK expr_il)
   | DefaultK ->
       if match_kind = "exact" then (
         Format.printf
           "(type_action_keyset) exact match does not allow default expression \n";
         assert false);
-      Lang.Ast.DefaultK
+      let entry_state =
+        match (match_kind, table_ctx.mode) with
+        | "lpm", NoPriLpm prefix_max -> Tblctx.Lpm prefix_max
+        | _ -> Tblctx.NoLpm
+      in
+      (entry_state, Lang.Ast.DefaultK)
   | AnyK ->
       if match_kind = "exact" then (
         Format.printf
           "(type_action_keyset) exact match does not allow wildcard expression \n";
         assert false);
-      Lang.Ast.AnyK
+      let entry_state =
+        match (match_kind, table_ctx.mode) with
+        | "lpm", NoPriLpm _ -> Tblctx.Lpm 0
+        | _ -> Tblctx.NoLpm
+      in
+      (entry_state, Lang.Ast.AnyK)
 
 and type_table_entry_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_ctx : Tblctx.t) (keysets : El.Ast.keyset list) : Il.Ast.keyset list =
+    (table_ctx : Tblctx.t) (keysets : El.Ast.keyset list) :
+    Tblctx.state * Il.Ast.keyset list =
   match (table_ctx.keys, keysets) with
-  | _, [ { it = DefaultK; at; note } ] -> [ Lang.Ast.DefaultK $$ at % note ]
-  | _, [ { it = AnyK; at; note } ] -> [ Lang.Ast.AnyK $$ at % note ]
+  | _, [ { it = DefaultK; at; note } ] ->
+      let keyset_il = Lang.Ast.DefaultK $$ at % note in
+      let entry_state =
+        match table_ctx.mode with
+        | NoPriLpm prefix_max -> Tblctx.Lpm prefix_max
+        | _ -> Tblctx.NoLpm
+      in
+      (entry_state, [ keyset_il ])
+  | _, [ { it = AnyK; at; note } ] ->
+      let keyset_il = Lang.Ast.AnyK $$ at % note in
+      let entry_state =
+        match table_ctx.mode with
+        | NoPriLpm _ -> Tblctx.Lpm 0
+        | _ -> Tblctx.NoLpm
+      in
+      (entry_state, [ keyset_il ])
   | table_ctx_keys, keysets ->
       if List.length table_ctx_keys <> List.length keysets then (
         Format.printf
           "(type_table_entry_keysets) Number of select keys must match the \
            number of cases\n";
         assert false);
-      List.map2 (type_table_entry_keyset cursor ctx) table_ctx_keys keysets
+      List.fold_left2
+        (fun (entry_state_prev, entry_keysets) table_ctx_key table_entry_keyset ->
+          let entry_state_curr, table_entry_keyset_il =
+            type_table_entry_keyset cursor ctx table_ctx table_ctx_key
+              table_entry_keyset
+          in
+          let entry_state =
+            Tblctx.update_state entry_state_prev entry_state_curr
+          in
+          (entry_state, entry_keysets @ [ table_entry_keyset_il ]))
+        (Tblctx.NoLpm, []) table_ctx_keys keysets
 
 and type_call_entry_action (cursor : Ctx.cursor) (ctx : Ctx.t)
     (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list)
@@ -4640,17 +4785,157 @@ and type_table_entry_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let annos_il = List.map (type_anno cursor ctx) annos in
   (var, args_il, annos_il)
 
+and check_priority (table_ctx : Tblctx.t) (priority_curr : int) : unit =
+  if priority_curr < 0 then (
+    Format.printf "(check_priority) Priority must not be negative\n";
+    assert false);
+  if table_ctx.priorities.values = [] then ()
+  else
+    let largest_wins = table_ctx.priorities.largest_wins in
+    let priority_prev = Tblctx.find_last_priority table_ctx in
+    if
+      (largest_wins && priority_curr > priority_prev)
+      || ((not largest_wins) && priority_curr < priority_prev)
+    then
+      Format.eprintf "(check_priority) Warning: entries_out_of_priority_order\n";
+    if List.mem priority_curr table_ctx.priorities.values then
+      Format.eprintf "(check_priority) Warning: Duplicate priority %d\n"
+        priority_curr
+
+and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (entry_state : Tblctx.state)
+    (priority : El.Ast.expr option) : Tblctx.t * Il.Ast.expr option =
+  if table_ctx.entries.const && Option.is_some priority then (
+    Format.printf
+      "(type_table_entry_priority) Cannot define priority within constant \
+       entries\n";
+    assert false);
+  match table_ctx.mode with
+  | NoPri ->
+      if Option.is_some priority then (
+        Format.printf
+          "(type_table_entry_priority) Cannot define priority when there are \
+           only exact fields\n";
+        assert false);
+      (table_ctx, None)
+  | NoPriLpm _ ->
+      if Option.is_some priority then (
+        Format.printf
+          "(type_table_entry_priority) Cannot define priority when there are \
+           only lpm fields\n";
+        assert false);
+      let value_prefix =
+        match entry_state with
+        | Lpm prefix -> Bigint.of_int prefix
+        | _ -> assert false
+      in
+      let priority_il =
+        Il.Ast.(
+          Il.Ast.ValueE { value = Value.IntV value_prefix $ no_info }
+          $$ no_info % { typ = Types.IntT; ctk = Ctk.LCTK })
+        |> Option.some
+      in
+      (table_ctx, priority_il)
+  (* Neglect lpm prefix when lpm is used with explicit priority for other match kinds *)
+  | _ when table_ctx.priorities.values = [] ->
+      let value_priority =
+        match priority with
+        | Some priority ->
+            let priority_il = type_expr cursor ctx priority in
+            Static.eval_expr cursor ctx priority_il |> it |> Value.get_num
+        | None ->
+            let largest_wins = table_ctx.priorities.largest_wins in
+            let delta = table_ctx.priorities.delta in
+            let size = table_ctx.entries.size in
+            if largest_wins then 1 + ((size - 1) * delta) |> Bigint.of_int
+            else Bigint.one
+      in
+      let priority_il =
+        Il.Ast.(
+          Il.Ast.ValueE { value = Value.IntV value_priority $ no_info }
+          $$ no_info % { typ = Types.IntT; ctk = Ctk.LCTK })
+        |> Option.some
+      in
+      let value_priority = value_priority |> Bigint.to_int |> Option.get in
+      check_priority table_ctx value_priority;
+      let table_ctx =
+        if Option.is_some priority then Tblctx.set_priority_init true table_ctx
+        else table_ctx
+      in
+      let table_ctx = Tblctx.add_priority value_priority table_ctx in
+      (table_ctx, priority_il)
+  | _ ->
+      if (not table_ctx.priorities.init) && Option.is_some priority then (
+        Format.printf
+          "(type_table_entry_priority) The priority of the first entry must be \
+           defined if priorities are explicitly specified\n";
+        assert false);
+      let value_priority =
+        match priority with
+        | Some priority ->
+            let priority_il = type_expr cursor ctx priority in
+            Static.eval_expr cursor ctx priority_il |> it |> Value.get_num
+        | None ->
+            let largest_wins = table_ctx.priorities.largest_wins in
+            let delta = table_ctx.priorities.delta in
+            let value_priority_prev = Tblctx.find_last_priority table_ctx in
+            if largest_wins then value_priority_prev - delta |> Bigint.of_int
+            else value_priority_prev + delta |> Bigint.of_int
+      in
+      let priority_il =
+        Il.Ast.(
+          Il.Ast.ValueE { value = Value.IntV value_priority $ no_info }
+          $$ no_info % { typ = Types.IntT; ctk = Ctk.LCTK })
+        |> Option.some
+      in
+      let value_priority = value_priority |> Bigint.to_int |> Option.get in
+      check_priority table_ctx value_priority;
+      let table_ctx = Tblctx.add_priority value_priority table_ctx in
+      (table_ctx, priority_il)
+
 and type_table_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_entry : El.Ast.table_entry) : Il.Ast.table_entry =
-  type_table_entry' cursor ctx table_ctx table_entry.it $ table_entry.at
+    (table_entry : El.Ast.table_entry) : Tblctx.t * Il.Ast.table_entry =
+  let table_ctx, table_entry_il =
+    type_table_entry' cursor ctx table_ctx table_entry.it
+  in
+  (table_ctx, table_entry_il $ table_entry.at)
 
 and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_entry : El.Ast.table_entry') : Il.Ast.table_entry' =
-  let keysets, action, annos = table_entry in
-  let keysets_il = type_table_entry_keysets cursor ctx table_ctx keysets in
+    (table_entry : El.Ast.table_entry') : Tblctx.t * Il.Ast.table_entry' =
+  let keysets, action, priority, table_entry_const, annos = table_entry in
+  let entry_state, keysets_il =
+    type_table_entry_keysets cursor ctx table_ctx keysets
+  in
   let action_il = type_table_entry_action cursor ctx table_ctx action in
+  let table_ctx, priority_il =
+    type_table_entry_priority cursor ctx table_ctx entry_state priority
+  in
   let annos_il = List.map (type_anno cursor ctx) annos in
-  (keysets_il, action_il, annos_il)
+  let table_entry_il =
+    (keysets_il, action_il, priority_il, table_entry_const, annos_il)
+  in
+  (table_ctx, table_entry_il)
+
+and type_table_entries (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t)
+    (table_entries : El.Ast.table_entry list * El.Ast.table_entries_const) :
+    Tblctx.t * (Il.Ast.table_entry list * Il.Ast.table_entries_const) =
+  let table_entries, table_entries_const = table_entries in
+  let table_ctx =
+    let entries_size = List.length table_entries in
+    Tblctx.set_entries_size entries_size table_ctx
+  in
+  let table_ctx = Tblctx.set_entries_const table_entries_const table_ctx in
+  let table_ctx, table_entries_il =
+    List.fold_left
+      (fun (table_ctx, entries) table_entry ->
+        let table_ctx, table_entry_il =
+          type_table_entry cursor ctx table_ctx table_entry
+        in
+        (table_ctx, entries @ [ table_entry_il ]))
+      (table_ctx, []) table_entries
+  in
+  (table_ctx, (table_entries_il, table_entries_const))
 
 (* (14.2.1.5) Size
 
@@ -4669,41 +4954,73 @@ and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
    interpreted on the state of the data plane. This restriction is needed to ensure that it is possible to
    reason about the behavior of tables during compilation. *)
 
-and type_table_custom (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_custom : El.Ast.table_custom) : Il.Ast.table_custom =
-  type_table_custom' cursor ctx table_custom.it $ table_custom.at
+and type_table_custom (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
+    (table_custom : El.Ast.table_custom) : Tblctx.t * Il.Ast.table_custom =
+  let table_ctx, table_custom_il =
+    type_table_custom' cursor ctx table_ctx table_custom.it
+  in
+  (table_ctx, table_custom_il $ table_custom.at)
 
 and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_custom : El.Ast.table_custom') : Il.Ast.table_custom' =
+    (table_ctx : Tblctx.t) (table_custom : El.Ast.table_custom') :
+    Tblctx.t * Il.Ast.table_custom' =
   let member, expr, custom_const, annos = table_custom in
   let expr_il = type_expr cursor ctx expr in
   let typ = expr_il.note.typ in
   let annos_il = List.map (type_anno cursor ctx) annos in
-  (match member.it with
-  | "size" ->
-      if not (Type.is_numeric typ) then (
-        Format.printf
-          "(type_table_custom) size should be numeric type, not %a\n"
-          Types.pp_typ typ;
-        assert false)
-  | "largest_priority_wins" ->
-      if typ <> BoolT then (
-        Format.printf
-          "(type_table_custom) largest_priority_wins should be boolean type, \
-           not %a\n"
-          Types.pp_typ typ;
-        assert false)
-  | "priority_delta" ->
-      if not (Type.is_numeric typ) then (
-        Format.printf
-          "(type_table_custom) priority_delta should be numeric type, not %a\n"
-          Types.pp_typ typ;
-        assert false)
-  | _ ->
-      Format.printf "(type_table_custom) Custom element %s is undefined\n"
-        member.it;
-      assert false);
-  (member, expr_il, custom_const, annos_il)
+  let table_ctx =
+    match member.it with
+    | "size" ->
+        if not (Type.is_numeric typ) then (
+          Format.printf
+            "(type_table_custom) size should be a numeric type, not %a\n"
+            Types.pp_typ typ;
+          assert false);
+        table_ctx
+    | "largest_priority_wins" ->
+        if not (typ = BoolT) then (
+          Format.printf
+            "(type_table_custom) largest_priority_wins should be a boolean \
+             type, not %a\n"
+            Types.pp_typ typ;
+          assert false);
+        let value = Static.eval_expr cursor ctx expr_il in
+        let largest_priority_wins = value.it |> Value.get_bool in
+        Tblctx.set_largest_priority_wins largest_priority_wins table_ctx
+    | "priority_delta" ->
+        if not (Type.is_numeric typ) then (
+          Format.printf
+            "(type_table_custom) priority_delta should be a numeric type, not %a\n"
+            Types.pp_typ typ;
+          assert false);
+        let value = Static.eval_expr cursor ctx expr_il in
+        let priority_delta =
+          value.it |> Value.get_num |> Bigint.to_int |> Option.get
+        in
+        if priority_delta <= 0 then (
+          Format.printf
+            "(type_table_custom) priority_delta should be a positive intager, \
+             not %d\n"
+            priority_delta;
+          assert false);
+        Tblctx.set_priority_delta priority_delta table_ctx
+    | _ ->
+        Format.printf "(type_table_custom) Custom element %s is undefined\n"
+          member.it;
+        assert false
+  in
+  (table_ctx, (member, expr_il, custom_const, annos_il))
+
+and type_table_customs (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (table_customs : El.Ast.table_custom list) :
+    Tblctx.t * Il.Ast.table_custom list =
+  List.fold_left
+    (fun (table_ctx, customs) table_custom ->
+      let table_ctx, table_custom_il =
+        type_table_custom cursor ctx table_ctx table_custom
+      in
+      (table_ctx, customs @ [ table_custom_il ]))
+    (table_ctx, []) table_customs
 
 (* (7.2.12.2) Control type declarations *)
 

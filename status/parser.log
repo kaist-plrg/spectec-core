@@ -438,8 +438,8 @@ Parser roundtrip success: test/program/well-typed/empty.p4
 Parser roundtrip success: test/program/well-typed/emptyTuple.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/entries-prio.p4
-parser error: File test/program/well-typed/entries-prio.p4, line 33, characters 8-15
-Error while parsing p4 file: test/program/well-typed/entries-prio.p4
+parser error: File test/program/well-typed/entries-prio.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/entries-prio.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/enum-bmv2.p4
 parser error: File test/program/well-typed/enum-bmv2.p4, line 20, characters 37-40
@@ -511,7 +511,7 @@ parser error: File test/program/well-typed/flowlet_switching-bmv2.p4, line 20, c
 Error while parsing p4 string: test/program/well-typed/flowlet_switching-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/fold_match.p4
-parser error: File test/program/well-typed/fold_match.p4, line 6, characters 28-29
+parser error: File test/program/well-typed/fold_match.p4, line 9, characters 11-12
 Error while parsing p4 string: test/program/well-typed/fold_match.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/free-form-annotation.p4
@@ -996,8 +996,8 @@ parser error: File test/program/well-typed/index.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/index.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/init-entries-bmv2.p4
-parser error: File test/program/well-typed/init-entries-bmv2.p4, line 77, characters 8-15
-Error while parsing p4 file: test/program/well-typed/init-entries-bmv2.p4
+parser error: File test/program/well-typed/init-entries-bmv2.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/init-entries-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/initializer.p4
 Parser roundtrip success: test/program/well-typed/initializer.p4
@@ -2003,11 +2003,11 @@ parser error: File test/program/well-typed/issue3329-bmv2.p4, line 20, character
 Error while parsing p4 string: test/program/well-typed/issue3329-bmv2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue3333.p4
-parser error: File test/program/well-typed/issue3333.p4, line 9, characters 22-23
+parser error: File test/program/well-typed/issue3333.p4, line 11, characters 11-12
 Error while parsing p4 string: test/program/well-typed/issue3333.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue3343.p4
-parser error: File test/program/well-typed/issue3343.p4, line 7, characters 16-17
+parser error: File test/program/well-typed/issue3343.p4, line 8, characters 11-12
 Error while parsing p4 string: test/program/well-typed/issue3343.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue3364.p4
@@ -2245,15 +2245,15 @@ parser error: File test/program/well-typed/issue4883_dup_has_returned_decl2.p4, 
 Error while parsing p4 string: test/program/well-typed/issue4883_dup_has_returned_decl2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue4901_new_start_with_no_start_loopback.p4
-parser error: File test/program/well-typed/issue4901_new_start_with_no_start_loopback.p4, line 10, characters 22-23
+parser error: File test/program/well-typed/issue4901_new_start_with_no_start_loopback.p4, line 11, characters 11-12
 Error while parsing p4 string: test/program/well-typed/issue4901_new_start_with_no_start_loopback.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue4901_new_start_with_start_state_loopback.p4
-parser error: File test/program/well-typed/issue4901_new_start_with_start_state_loopback.p4, line 11, characters 22-23
+parser error: File test/program/well-typed/issue4901_new_start_with_start_state_loopback.p4, line 12, characters 11-12
 Error while parsing p4 string: test/program/well-typed/issue4901_new_start_with_start_state_loopback.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue4901_new_start_with_start_state_loopback2.p4
-parser error: File test/program/well-typed/issue4901_new_start_with_start_state_loopback2.p4, line 11, characters 22-23
+parser error: File test/program/well-typed/issue4901_new_start_with_start_state_loopback2.p4, line 12, characters 11-12
 Error while parsing p4 string: test/program/well-typed/issue4901_new_start_with_start_state_loopback2.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue496.p4
@@ -3459,7 +3459,7 @@ parser error: File test/program/well-typed/select-struct.p4, line 20, characters
 Error while parsing p4 string: test/program/well-typed/select-struct.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/select-type.p4
-parser error: File test/program/well-typed/select-type.p4, line 7, characters 22-23
+parser error: File test/program/well-typed/select-type.p4, line 8, characters 11-12
 Error while parsing p4 string: test/program/well-typed/select-type.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/serEnumImplCast.p4
@@ -3933,6 +3933,6 @@ Error while parsing p4 string: test/program/well-typed/xdp_vlan_push_pop_ebpf-ke
 parser error: File test/program/well-typed/xor_test.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1018/1020 (99.80%) [FAIL] 2/1020 (0.20%)
-Parser on string: [PASS] 148/1018 (14.54%) [FAIL] 870/1018 (85.46%)
+Parser on file: [PASS] 1020/1020 (100.00%) [FAIL] 0/1020 (0.00%)
+Parser on string: [PASS] 148/1020 (14.51%) [FAIL] 872/1020 (85.49%)
 Parser roundtrip: [PASS] 135/148 (91.22%) [FAIL] 13/148 (8.78%)

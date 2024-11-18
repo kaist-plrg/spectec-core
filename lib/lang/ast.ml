@@ -190,7 +190,7 @@ and ('typ, 'note, 'expr, 'decl) parser_state' =
 and ('note, 'expr) table = {
   keys : ('note, 'expr) table_key list;
   actions : ('note, 'expr) table_action list;
-  entries : ('note, 'expr) table_entry list;
+  entries : ('note, 'expr) table_entry list * table_entries_const;
   default : ('note, 'expr) table_default option;
   customs : ('note, 'expr) table_custom list;
 }
@@ -213,7 +213,12 @@ and ('note, 'expr) table_entry = ('note, 'expr) table_entry' phrase
 and ('note, 'expr) table_entry' =
   ('note, 'expr) keyset list
   * ('note, 'expr) table_action
+  * ('note, 'expr) expr option
+  * table_entry_const
   * ('note, 'expr) anno list
+
+and table_entries_const = bool
+and table_entry_const = bool
 
 (* Table default properties *)
 and ('note, 'expr) table_default = ('note, 'expr) table_default' phrase

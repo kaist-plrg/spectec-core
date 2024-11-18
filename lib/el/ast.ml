@@ -298,6 +298,8 @@ and table_action' = (unit, expr') L.table_action'
 (* Table entries *)
 and table_entry = (unit, expr') L.table_entry
 and table_entry' = (unit, expr') L.table_entry'
+and table_entries_const = L.table_entries_const
+and table_entry_const = L.table_entry_const
 
 (* Table default properties *)
 and table_default = (unit, expr') L.table_default
