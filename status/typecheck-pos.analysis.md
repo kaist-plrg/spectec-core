@@ -784,6 +784,86 @@ Virtual() cntr = {
 
 This is implemented in current p4cherry, but it would be nice to have a clear spec on this.
 
+## 12. Restrictions on call sites [call-site-restrictions](../test/program/well-typed-excluded/spec-clarify/call-site-restrictions)
+
+The spec lists restrictions on what kind of calls can be made from which places in a P4 program.
+
+>             | can be called at run time from this place in a P4 program
+>             |         | control | parser or |		
+>             | parser	| apply	  | control	  |		
+> This type	  | state	| block	  | top level | action | extern	| function
+> package	  | N/A	    | N/A	  | N/A	      | N/A	   | N/A	| N/A
+> parser	  | yes	    | no	  | no	      | no	   | no	    | no
+> control	  | no	    | yes	  | no	      | no	   | no	    | no
+> extern	  | yes	    | yes	  | yes	      | yes	   | no	    | no
+> table	      | no	    | yes	  | no	      | no	   | no	    | no
+> value-set	  | yes	    | no	  | no	      | no	   | no	    | no
+> action	  | no	    | yes	  | no	      | yes	   | no	    | no
+> function	  | yes	    | yes	  | no	      | yes	   | no	    | yes
+> value types | N/A	    | N/A	  | N/A	      | N/A	   | N/A	| N/A
+
+However, below tests expect that functions are callable from a parser top level.
+
+```p4
+bit<16> incr(in bit<16> x) {
+    return x + 1;
+}
+parser ParserImpl(packet_in packet,
+                  out headers hdr,
+                  inout metadata meta,
+                  inout standard_metadata_t standard_metadata) {
+    bit<16> tmp_port = incr((bit<16>) standard_metadata.ingress_port);
+    ...
+}
+```
+
+And calling functions from a control top level.
+
+```p4
+bit<16> give_val() {
+    return 16w1;
+}
+control ingress(inout Headers h) {
+    Headers foo = { { 1, 1, give_val() }};
+    ...
+}
+```
+
+And calling an extern function from a function body.
+
+```p4
+extern bit<32> f(in bit<32> x, out bit<16> y);
+void x() {
+    f(x = 1, y = _);
+}
+```
+
+And calling a function or a table within a table body.
+This is implemented in current p4cherry, but it would be ideal to have a clear spec for it.
+
+```p4
+bit<16> simple_action() {
+    return 16w1;
+}
+...
+table simple_table {
+    key = {
+        simple_action(): exact @name("dummy_name") ;
+    }
+    ...
+}
+```
+
+```p4
+table sub_table { ... }
+table simple_table {
+    key = {
+        sub_table.apply().hit: exact @name("dummy_name") ;
+    }
+    ...
+}
+```
+
 # D. Need Test Clarification
 
 ## 1. Scope of abstract method when initializing an instance: [abstract-method-scoping](../test/program/well-typed-excluded/test-clarify/abstract-method-scoping)
@@ -808,22 +888,7 @@ control ingress(inout headers hdr) {
     };
 ```
 
-## 2. Syntax for select keyset: [select-keyset-syntax](../test/program/well-typed-excluded/test-clarify/select-keyset-syntax)
-
-This should be a negative test.
-
-```p4
-transition select (hdr.h.f1) {
-    0x8100  : p1; /* Works */
-    (0x9100) : p1; /* Also Works */
-    0xA100 &&& 0xEFFF  : p1; /* Works */
-    (0xC100 &&& 0xEFFF) : p1; /* Syntax error: ',' expected */
-    _ : p1; /* Works */
-    (_): reject; /* Syntax error: ',' expected */
-}
-```
-
-## 3. Shift by signed integer: [shift-by-signed-int](../test/program/well-typed-excluded/test-clarify/shift-by-signed-int)
+## 2. Shift by signed integer: [shift-by-signed-int](../test/program/well-typed-excluded/test-clarify/shift-by-signed-int)
 
 This shifts by a signed integer, which is illegal.
 This should be a negative test.
@@ -835,7 +900,7 @@ bit<4> func(in bit<4> l) {
 }
 ```
 
-## 4. Duplicate definition of `match_kind`: [duplicate-match-kind](../test/program/well-typed-excluded/test-clarify/duplicate-match-kind)
+## 3. Duplicate definition of `match_kind`: [duplicate-match-kind](../test/program/well-typed-excluded/test-clarify/duplicate-match-kind)
 
 `ternary` is defined twice.
 This should be a negative test.
@@ -848,7 +913,7 @@ match_kind {
 }
 ```
 
-## 5. Mask expressions for `exact` key: [mask-exact-key](../test/program/well-typed-excluded/test-clarify/mask-exact-key)
+## 4. Mask expressions for `exact` key: [mask-exact-key](../test/program/well-typed-excluded/test-clarify/mask-exact-key)
 
 We cannot use mask expressions for `exact` key.
 This should be a negative test.
@@ -864,7 +929,7 @@ table unit {
 }
 ```
 
-## 6. Nesting `match_kind` or `int` inside a tuple type: [tuple-nesting](../test/program/well-typed-excluded/test-clarify/tuple-nesting)
+## 5. Nesting `match_kind` or `int` inside a tuple type: [tuple-nesting](../test/program/well-typed-excluded/test-clarify/tuple-nesting)
 
 `match_kind` and `int` *cannot* be nested inside a tuple type.
 This should be a negative test.
@@ -877,7 +942,7 @@ const tuple<match_kind> exact_once = { exact };
 tuple<int> t = { t1 };
 ```
 
-## 7. Implicit cast of `value_set` in `select` expression: [value-set-implicit-cast](../test/program/well-typed-excluded/test-clarify/value-set-implicit-cast)
+## 6. Implicit cast of `value_set` in `select` expression: [value-set-implicit-cast](../test/program/well-typed-excluded/test-clarify/value-set-implicit-cast)
 
 When a value set, of type `set<T>` is used as a select label, it can be implicitly cast to the select key type `set<T'>`.
 However, below programs expect loose type casting rules.
@@ -909,7 +974,7 @@ state start {
 
 Here, we *cannot* implicitly cast `value_set_t` (which a struct type) to `bit<32>`.
 
-## 8. Implicit cast of a singleton sequence to a scalar in table entry: [aggregate-to-scalar-implicit-cast](../test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast)
+## 7. Implicit cast of a singleton sequence to a scalar in table entry: [aggregate-to-scalar-implicit-cast](../test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast)
 
 Some programs expect implicit cast of a singleton sequence to a scalar in table entry, which is illegal, in a strict sense.
 
@@ -933,14 +998,14 @@ table ingress_tbl {
 
 Here, `{(8w0x20++8w0x02++8w0x04++8w0x20)}` is a singleton sequence, and it should not be implicitly cast to a scalar type `IPv4Address`, or `bit<32>`.
 
-## 9. Implicit cast of newtype: [newtype-implicit-cast](../test/program/well-typed-excluded/test-clarify/newtype-implicit-cast)
+## 8. Implicit cast of newtype: [newtype-implicit-cast](../test/program/well-typed-excluded/test-clarify/newtype-implicit-cast)
 
 New types introduced by keyword `type` *cannot* be implicitly cast to its underlying type.
 However, below programs seem to violate this restriction.
 
 p4c accepts these as valid.
 
-## 10. Coercion from a fixed width integer to an arbitrary precision integer: [fixed-to-arbitrary-implicit-cast](../test/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast)
+## 9. Coercion from a fixed width integer to an arbitrary precision integer: [fixed-to-arbitrary-implicit-cast](../test/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast)
 
 This is illegal, but the test case below seem to violate this.
 
@@ -948,7 +1013,7 @@ This is illegal, but the test case below seem to violate this.
 const int z1 = 2w1;
 ```
 
-## 11. Equality check (`==`) on a variable type: [type-variable-equality-op](../test/program/well-typed-excluded/test-clarify/type-variable-equality-op)
+## 10. Equality check (`==`) on a variable type: [type-variable-equality-op](../test/program/well-typed-excluded/test-clarify/type-variable-equality-op)
 
 The spec only allows assignment (`=`) for types that are type variables.
 But the test case below seems to violate this.
@@ -962,7 +1027,7 @@ bool g<t>(in t a) {
 }
 ```
 
-## 12. Package constructors cannot be overloaded [package-overload](../test/program/well-typed-excluded/test-clarify/package-overload)
+## 11. Package constructors cannot be overloaded [package-overload](../test/program/well-typed-excluded/test-clarify/package-overload)
 
 A package declaration implies two things: a type declaration and a constructor declaration.
 Since they are bundled together, the synatx does not allow overloading of package constructors. (Unlike extern object constructors.)
@@ -979,7 +1044,7 @@ package mypackaget<t>(mypt<t> t1, mypt<t> t2);
 * issue3379.p4
 </details>
 
-## 13. Function declarations should not shadow [shadow-func](../test/program/well-typed-excluded/test-clarify/shadow-func)
+## 12. Function declarations should not shadow [shadow-func](../test/program/well-typed-excluded/test-clarify/shadow-func)
 
 (Although the spec does not explicitly disallow duplicate names in general,) p4c compiler rejects such programs.
 
@@ -997,7 +1062,7 @@ void f1(in h[value1 == max ? 1 : -1] a){}
 * issue3699.p4
 </details>
 
-## 14. Scope of a control parameter [control-param-scope](../test/program/well-typed-excluded/test-clarify/control-param-scope)
+## 13. Scope of a control parameter [control-param-scope](../test/program/well-typed-excluded/test-clarify/control-param-scope)
 
 Similar [issue](typecheck-neg.analysis.md#6.%20Scope%20of%20a%20control%20parameter) in the negative type checker test.
 
@@ -1028,7 +1093,7 @@ control MyIngress(inout H p) {
 * shadow3.p4
 </details>
 
-## 15. Accessing a header stack of size zero [access-header-stack-zero](../test/program/well-typed-excluded/test-clarify/access-header-stack-zero)
+## 14. Accessing a header stack of size zero [access-header-stack-zero](../test/program/well-typed-excluded/test-clarify/access-header-stack-zero)
 
 ```p4
 bit<32> b;

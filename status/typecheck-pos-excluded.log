@@ -1,4 +1,4 @@
-Running typecheck tests on 234 files
+Running typecheck tests on 249 files
 
 
 >>> Running typecheck test on test/program/well-typed-excluded/future/concat-string/issue4932.p4
@@ -126,11 +126,11 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/access-compile-time-known/tuple3.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory1.p4
-(check_ctk) createWidget<bit<8>, bit<16>>(16w0, 8w0) is not a compile-time known expression
+(check_call_site) Function extern_func( a bit<16>,  b bit<8>) -> extern widget {  } cannot be called from Package
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory2.p4
-(check_ctk) createWidget<bit<8>, bit<16>>(16w0, 8w0) is not a compile-time known expression
+(check_call_site) Function extern_func( a bit<16>,  b bit<8>) -> extern widget {  } cannot be called from Package
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/hashext3.p4
@@ -138,14 +138,71 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/hashext3.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/issue3531.p4
+(check_call_site) Function extern_func( check bool,  message string) -> bool cannot be called from Empty
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/issue3531.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/control-toplevel-call-func/issue2488-bmv2.p4
+(check_call_site) Function func(inout s bit<48>) -> bit<48> cannot be called from Control
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/control-toplevel-call-func/issue2488-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/control-toplevel-call-func/issue2543-1.p4
+(check_call_site) Function func() -> bit<16> cannot be called from Control
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/control-toplevel-call-func/issue2543-1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3274-2.p4
+(check_call_site) Function extern_func(in x bit<32>, out y bit<16>) -> bit<32> cannot be called from Function
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3274-2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3274.p4
+(check_call_site) Function extern_func(in x bit<32>, out y bit<16>) -> bit<32> cannot be called from Function
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3274.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3292.p4
+(check_call_site) Function extern_func(in p header h { f = t }) -> void cannot be called from Function
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3292.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue4500.p4
+(check_call_site) Function extern_func( x enum E) -> void cannot be called from Function
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue4500.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/parser-toplevel-call-func/issue1538.p4
+(check_call_site) Function func(in x bit<16>) -> bit<16> cannot be called from Parser
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/parser-toplevel-call-func/issue1538.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/parser-toplevel-call-func/issue2957.p4
+(check_call_site) Function func(in val bit<3>, in bound bit<3>) -> bit<3> cannot be called from Parser
+Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/parser-toplevel-call-func/issue2957.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue2258-bmv2.p4
+Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue2258-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue2266.p4
+Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue2266.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue2321.p4
+Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue2321.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue4796.p4
+Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue4796.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-table/issue2362-bmv2.p4
+Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-table/issue2362-bmv2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-table/issue2546-1.p4
+Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-table/issue2546-1.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-table/issue2546-2.p4
+Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-table/issue2546-2.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-table/issue2546.p4
+Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-table/issue2546.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/bfd_offload.p4
 (check_eq_typ_alpha) Types int and bit<16> are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/bfd_offload.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/calc-ebpf.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
+(check_instantiation_site) extern hash_table {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/calc-ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/constructor_cast.p4
@@ -285,7 +342,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/omec/up4.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/pr1363.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
+(check_instantiation_site) extern ActionProfile {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/pr1363.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-action-profile1.p4
@@ -532,7 +589,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/action-two-params.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/op_bin.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
+(check_instantiation_site) extern hash_table {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/op_bin.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/table-entries-no-arg-actions.p4
@@ -558,7 +615,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast/issue3283.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/mask-on-exact-match/spec-ex25.p4
-(type_table_custom) Custom element implementation is undefined
+(check_instantiation_site) extern tbl {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/mask-on-exact-match/spec-ex25.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/pins/pins_fabric.p4
@@ -590,9 +647,6 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/package-overload/issue3379.p4
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/package-overload/issue3379.p4
-
->>> Running typecheck test on test/program/well-typed-excluded/test-clarify/select-keyset-syntax/issue2514.p4
-Typecheck success: test/program/well-typed-excluded/test-clarify/select-keyset-syntax/issue2514.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/shadow-func/issue3699.p4
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/shadow-func/issue3699.p4
@@ -660,11 +714,11 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-most-types1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile-bmv2.p4
-(type_table_custom) Custom element implementation is undefined
+(check_instantiation_site) extern action_profile {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/action_profile-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_max_group_size_annotation.p4
-(type_table_custom) Custom element implementation is undefined
+(check_instantiation_site) extern action_profile {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_max_group_size_annotation.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_sum_of_members_annotation.p4
@@ -688,7 +742,7 @@ parser error: File test/program/well-typed-excluded/unsupported/custom-table-ele
 Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/init_ebpf.p4
-(check_eq_typ_alpha) Types int and bit<32> are not equal
+(check_instantiation_site) extern hash_table {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/init_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/issue2791_ebpf.p4
@@ -939,5 +993,5 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/s
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector6.p4
 
-Parser on file: [PASS] 210/234 (89.74%) [FAIL] 24/234 (10.26%)
-Typecheck: [PASS] 1/210 (0.48%) [FAIL] 209/210 (99.52%)
+Parser on file: [PASS] 225/249 (90.36%) [FAIL] 24/249 (9.64%)
+Typecheck: [PASS] 8/225 (3.56%) [FAIL] 217/225 (96.44%)

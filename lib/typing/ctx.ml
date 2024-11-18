@@ -33,7 +33,7 @@ type localkind =
   | ExternAbstractMethod of Types.Type.t
   | ParserState
   | ControlApplyMethod
-  | TableMethod
+  | TableApplyMethod
 
 type gt = {
   cdenv : Envs.CDEnv.t;
@@ -512,7 +512,7 @@ let pp_localkind fmt (kind : localkind) =
   | ExternAbstractMethod _ -> F.fprintf fmt "ExternAbstractMethod"
   | ParserState -> F.fprintf fmt "ParserState"
   | ControlApplyMethod -> F.fprintf fmt "ControlApplyMethod"
-  | TableMethod -> F.fprintf fmt "TableMethod"
+  | TableApplyMethod -> F.fprintf fmt "TableApplyMethod"
 
 let pp_lt fmt (lt : lt) =
   F.fprintf fmt

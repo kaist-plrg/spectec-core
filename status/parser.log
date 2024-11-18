@@ -1,4 +1,4 @@
-Running parser roundtrip tests on 1020 files
+Running parser roundtrip tests on 1005 files
 
 
 >>> Running parser roundtrip test on test/program/well-typed/action-bind.p4
@@ -1265,10 +1265,6 @@ Error while parsing p4 string: test/program/well-typed/issue1524.p4
 parser error: File test/program/well-typed/issue1535.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue1535.p4
 
->>> Running parser roundtrip test on test/program/well-typed/issue1538.p4
-parser error: File test/program/well-typed/issue1538.p4, line 20, characters 37-40
-Error while parsing p4 string: test/program/well-typed/issue1538.p4
-
 >>> Running parser roundtrip test on test/program/well-typed/issue1540.p4
 parser error: File test/program/well-typed/issue1540.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue1540.p4
@@ -1555,10 +1551,6 @@ Error while parsing p4 string: test/program/well-typed/issue2225-bmv2.p4
 parser error: File test/program/well-typed/issue2248.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue2248.p4
 
->>> Running parser roundtrip test on test/program/well-typed/issue2258-bmv2.p4
-parser error: File test/program/well-typed/issue2258-bmv2.p4, line 20, characters 37-40
-Error while parsing p4 string: test/program/well-typed/issue2258-bmv2.p4
-
 >>> Running parser roundtrip test on test/program/well-typed/issue2260-2.p4
 Parser roundtrip success: test/program/well-typed/issue2260-2.p4
 
@@ -1568,10 +1560,6 @@ Error while parsing p4 string: test/program/well-typed/issue2261.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue2265-1.p4
 Parser roundtrip success: test/program/well-typed/issue2265-1.p4
-
->>> Running parser roundtrip test on test/program/well-typed/issue2266.p4
-parser error: File test/program/well-typed/issue2266.p4, line 20, characters 37-40
-Error while parsing p4 string: test/program/well-typed/issue2266.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue2273.p4
 parser error: File test/program/well-typed/issue2273.p4, line 20, characters 37-40
@@ -1629,10 +1617,6 @@ Error while parsing p4 string: test/program/well-typed/issue2314.p4
 parser error: File test/program/well-typed/issue232-bmv2.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue232-bmv2.p4
 
->>> Running parser roundtrip test on test/program/well-typed/issue2321.p4
-parser error: File test/program/well-typed/issue2321.p4, line 20, characters 37-40
-Error while parsing p4 string: test/program/well-typed/issue2321.p4
-
 >>> Running parser roundtrip test on test/program/well-typed/issue2330-1.p4
 parser error: File test/program/well-typed/issue2330-1.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue2330-1.p4
@@ -1687,10 +1671,6 @@ Error while parsing p4 string: test/program/well-typed/issue2356.p4
 parser error: File test/program/well-typed/issue2359.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue2359.p4
 
->>> Running parser roundtrip test on test/program/well-typed/issue2362-bmv2.p4
-parser error: File test/program/well-typed/issue2362-bmv2.p4, line 20, characters 37-40
-Error while parsing p4 string: test/program/well-typed/issue2362-bmv2.p4
-
 >>> Running parser roundtrip test on test/program/well-typed/issue2375-1-bmv2.p4
 parser error: File test/program/well-typed/issue2375-1-bmv2.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue2375-1-bmv2.p4
@@ -1742,10 +1722,6 @@ Error while parsing p4 string: test/program/well-typed/issue2485.p4
 parser error: File test/program/well-typed/issue2487.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue2487.p4
 
->>> Running parser roundtrip test on test/program/well-typed/issue2488-bmv2.p4
-parser error: File test/program/well-typed/issue2488-bmv2.p4, line 20, characters 37-40
-Error while parsing p4 string: test/program/well-typed/issue2488-bmv2.p4
-
 >>> Running parser roundtrip test on test/program/well-typed/issue249.p4
 parser error: File test/program/well-typed/issue249.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue249.p4
@@ -1758,13 +1734,13 @@ Error while parsing p4 string: test/program/well-typed/issue2495-bmv2.p4
 parser error: File test/program/well-typed/issue2498-bmv2.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue2498-bmv2.p4
 
+>>> Running parser roundtrip test on test/program/well-typed/issue2514.p4
+parser error: File test/program/well-typed/issue2514.p4, line 20, characters 37-40
+Error while parsing p4 string: test/program/well-typed/issue2514.p4
+
 >>> Running parser roundtrip test on test/program/well-typed/issue2542.p4
 parser error: File test/program/well-typed/issue2542.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue2542.p4
-
->>> Running parser roundtrip test on test/program/well-typed/issue2543-1.p4
-parser error: File test/program/well-typed/issue2543-1.p4, line 20, characters 37-40
-Error while parsing p4 string: test/program/well-typed/issue2543-1.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue2543-2.p4
 parser error: File test/program/well-typed/issue2543-2.p4, line 20, characters 37-40
@@ -1773,18 +1749,6 @@ Error while parsing p4 string: test/program/well-typed/issue2543-2.p4
 >>> Running parser roundtrip test on test/program/well-typed/issue2544_shadowing2.p4
 parser error: File test/program/well-typed/issue2544_shadowing2.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue2544_shadowing2.p4
-
->>> Running parser roundtrip test on test/program/well-typed/issue2546-1.p4
-parser error: File test/program/well-typed/issue2546-1.p4, line 20, characters 37-40
-Error while parsing p4 string: test/program/well-typed/issue2546-1.p4
-
->>> Running parser roundtrip test on test/program/well-typed/issue2546-2.p4
-parser error: File test/program/well-typed/issue2546-2.p4, line 20, characters 37-40
-Error while parsing p4 string: test/program/well-typed/issue2546-2.p4
-
->>> Running parser roundtrip test on test/program/well-typed/issue2546.p4
-parser error: File test/program/well-typed/issue2546.p4, line 20, characters 37-40
-Error while parsing p4 string: test/program/well-typed/issue2546.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue2583_simplify_slice.p4
 parser error: File test/program/well-typed/issue2583_simplify_slice.p4, line 20, characters 37-40
@@ -1893,10 +1857,6 @@ Error while parsing p4 string: test/program/well-typed/issue2905.p4
 parser error: File test/program/well-typed/issue2956.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue2956.p4
 
->>> Running parser roundtrip test on test/program/well-typed/issue2957.p4
-parser error: File test/program/well-typed/issue2957.p4, line 20, characters 37-40
-Error while parsing p4 string: test/program/well-typed/issue2957.p4
-
 >>> Running parser roundtrip test on test/program/well-typed/issue2958.p4
 parser error: File test/program/well-typed/issue2958.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue2958.p4
@@ -1976,21 +1936,11 @@ Error while parsing p4 string: test/program/well-typed/issue323.p4
 >>> Running parser roundtrip test on test/program/well-typed/issue3274-1.p4
 Parser roundtrip success: test/program/well-typed/issue3274-1.p4
 
->>> Running parser roundtrip test on test/program/well-typed/issue3274-2.p4
-Parser roundtrip success: test/program/well-typed/issue3274-2.p4
-
->>> Running parser roundtrip test on test/program/well-typed/issue3274.p4
-Parser roundtrip success: test/program/well-typed/issue3274.p4
-
 >>> Running parser roundtrip test on test/program/well-typed/issue3288.p4
 Parser roundtrip success: test/program/well-typed/issue3288.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue3289.p4
 Parser roundtrip success: test/program/well-typed/issue3289.p4
-
->>> Running parser roundtrip test on test/program/well-typed/issue3292.p4
-parser error: File test/program/well-typed/issue3292.p4, line 2, characters 2-3
-Error while parsing p4 string: test/program/well-typed/issue3292.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue3307.p4
 Parser roundtrip success: test/program/well-typed/issue3307.p4
@@ -2175,9 +2125,6 @@ Error while parsing p4 string: test/program/well-typed/issue447-5-bmv2.p4
 parser error: File test/program/well-typed/issue447-bmv2.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/issue447-bmv2.p4
 
->>> Running parser roundtrip test on test/program/well-typed/issue4500.p4
-Parser roundtrip success: test/program/well-typed/issue4500.p4
-
 >>> Running parser roundtrip test on test/program/well-typed/issue4507_1.p4
 Parser roundtrip success: test/program/well-typed/issue4507_1.p4
 
@@ -2227,10 +2174,6 @@ Error while parsing p4 string: test/program/well-typed/issue4775-2.p4
 >>> Running parser roundtrip test on test/program/well-typed/issue4775.p4
 parser error: File test/program/well-typed/issue4775.p4, line 10, characters 2-9
 Error while parsing p4 string: test/program/well-typed/issue4775.p4
-
->>> Running parser roundtrip test on test/program/well-typed/issue4796.p4
-parser error: File test/program/well-typed/issue4796.p4, line 20, characters 37-40
-Error while parsing p4 string: test/program/well-typed/issue4796.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue486-bmv2.p4
 parser error: File test/program/well-typed/issue486-bmv2.p4, line 20, characters 37-40
@@ -3933,6 +3876,6 @@ Error while parsing p4 string: test/program/well-typed/xdp_vlan_push_pop_ebpf-ke
 parser error: File test/program/well-typed/xor_test.p4, line 20, characters 37-40
 Error while parsing p4 string: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1020/1020 (100.00%) [FAIL] 0/1020 (0.00%)
-Parser on string: [PASS] 148/1020 (14.51%) [FAIL] 872/1020 (85.49%)
-Parser roundtrip: [PASS] 135/148 (91.22%) [FAIL] 13/148 (8.78%)
+Parser on file: [PASS] 1005/1005 (100.00%) [FAIL] 0/1005 (0.00%)
+Parser on string: [PASS] 145/1005 (14.43%) [FAIL] 860/1005 (85.57%)
+Parser roundtrip: [PASS] 132/145 (91.03%) [FAIL] 13/145 (8.97%)

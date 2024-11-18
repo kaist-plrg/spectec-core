@@ -38,7 +38,8 @@ Error while typechecking p4 file: test/program/ill-typed/binary_e.p4
 Error while typechecking p4 file: test/program/ill-typed/bitExtract_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/call-table.p4
-Typecheck success: test/program/ill-typed/call-table.p4
+(check_call_site) Function table_apply cannot be called from Action
+Error while typechecking p4 file: test/program/ill-typed/call-table.p4
 
 >>> Running typecheck test on test/program/ill-typed/call1_e.p4
 (type_instantiation) S is not an instance type
@@ -181,7 +182,8 @@ Error while typechecking p4 file: test/program/ill-typed/function_e.p4
 Error while typechecking p4 file: test/program/ill-typed/function_e1.p4
 
 >>> Running typecheck test on test/program/ill-typed/function_e2.p4
-Typecheck success: test/program/ill-typed/function_e2.p4
+(check_call_site) Function action() cannot be called from Function
+Error while typechecking p4 file: test/program/ill-typed/function_e2.p4
 
 >>> Running typecheck test on test/program/ill-typed/functors2_e.p4
 (type_instantiation) p is not an instance type
@@ -276,15 +278,11 @@ Error while typechecking p4 file: test/program/ill-typed/issue1230.p4
 Error while typechecking p4 file: test/program/ill-typed/issue1296.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1331.p4
-(check_valid_constyp_nesting) Invalid nesting of parser ( pkt extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
+(check_call_site) Function parser_apply( pkt extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
 extract(hdr) : extern_method<T>(out hdr T) -> void
 extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
 length() : extern_method<>() -> bit<32>
-lookahead() : extern_method<T>() -> T }) inside control ( pkt extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
-extract(hdr) : extern_method<T>(out hdr T) -> void
-extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
-length() : extern_method<>() -> bit<32>
-lookahead() : extern_method<T>() -> T }, inout ether header ethernet { data = bit<112> })
+lookahead() : extern_method<T>() -> T }) cannot be called from ControlApplyMethod
 Error while typechecking p4 file: test/program/ill-typed/issue1331.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1336.p4
@@ -436,21 +434,22 @@ Typecheck success: test/program/ill-typed/issue2544_shadowing1.p4
 Typecheck success: test/program/ill-typed/issue2545.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2597.p4
-Typecheck success: test/program/ill-typed/issue2597.p4
+(check_call_site) Function control_apply() cannot be called from Action
+Error while typechecking p4 file: test/program/ill-typed/issue2597.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2835-bmv2.p4
 Typecheck success: test/program/ill-typed/issue2835-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3045-1.p4
-(check_valid_functyp_nesting) Invalid nesting of extern register { write(index, value) : extern_method<>(in index bit<32>, in value T) -> void } inside func( r extern register { write(index, value) : extern_method<>(in index bit<32>, in value T) -> void }, in t T) -> void
+(check_call_site) Function extern_method(in index bit<32>, in value T) -> void cannot be called from Function
 Error while typechecking p4 file: test/program/ill-typed/issue3045-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3045-2.p4
-(check_valid_functyp_nesting) Invalid nesting of extern register { write(index, value) : extern_method<>(in index bit<32>, in value T) -> void } inside func( r extern register { write(index, value) : extern_method<>(in index bit<32>, in value T) -> void }, in t T) -> void
+(check_call_site) Function extern_method(in index bit<32>, in value T) -> void cannot be called from Function
 Error while typechecking p4 file: test/program/ill-typed/issue3045-2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3045.p4
-(check_valid_functyp_nesting) Invalid nesting of extern register { write(index, value) : extern_method<>(in index bit<32>, in value T) -> void } inside func( r extern register { write(index, value) : extern_method<>(in index bit<32>, in value T) -> void }, in t T) -> void
+(check_call_site) Function extern_method(in index bit<32>, in value T) -> void cannot be called from Function
 Error while typechecking p4 file: test/program/ill-typed/issue3045.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3057-1.p4
@@ -473,6 +472,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3170-1.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3170.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3188.p4
+(check_call_site) Function extern_func( check bool,  message string) -> bool cannot be called from Empty
 Error while typechecking p4 file: test/program/ill-typed/issue3188.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3197-e.p4
@@ -680,7 +680,8 @@ bit<16>> }
 Error while typechecking p4 file: test/program/ill-typed/issue407-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue413.p4
-Typecheck success: test/program/ill-typed/issue413.p4
+(check_call_site) Function action(in bar bit<16>, out bar2 bit<8>) cannot be called from ParserState
+Error while typechecking p4 file: test/program/ill-typed/issue413.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue4136.p4
 (type_bitstring_acc_expr) Invalid slice [-1:1] for int
@@ -754,7 +755,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue807.p4
 Error while typechecking p4 file: test/program/ill-typed/issue816-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue816.p4
-(check_valid_functyp_nesting) Invalid nesting of control () inside action(in c1 control (), in c2 control ())
+(check_call_site) Function control_apply() cannot be called from Action
 Error while typechecking p4 file: test/program/ill-typed/issue816.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue818.p4
@@ -1129,4 +1130,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 266/299 (88.96%) [FAIL] 33/299 (11.04%)
-Typecheck: [PASS] 202/266 (75.94%) [FAIL] 64/266 (24.06%)
+Typecheck: [PASS] 206/266 (77.44%) [FAIL] 60/266 (22.56%)

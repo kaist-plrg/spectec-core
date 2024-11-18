@@ -1942,6 +1942,53 @@ and align_params_with_args (params : Types.param list) (typ_args : Type.t list)
           (params @ [ param ], typ_args @ [ typ_arg ], args_il @ [ arg_il ]))
     ([], [], []) params args
 
+and check_call_site (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) : unit
+    =
+  match cursor with
+  | Global | Block -> (
+      let kind = ctx.block.kind in
+      match (kind, ft) with
+      | ( Parser,
+          ( ExternFunctionT _ | ExternMethodT _ | ExternAbstractMethodT _
+          | BuiltinMethodT _ ) )
+      | ( Control,
+          ( ExternFunctionT _ | ExternMethodT _ | ExternAbstractMethodT _
+          | BuiltinMethodT _ ) ) ->
+          ()
+      | _ ->
+          Format.printf
+            "(check_call_site) Function %a cannot be called from %a\n"
+            FuncType.pp ft Ctx.pp_blockkind kind;
+          assert false)
+  | Local -> (
+      let kind = ctx.local.kind in
+      match (kind, ft) with
+      | Function _, (FunctionT _ | BuiltinMethodT _)
+      | ( Action,
+          ( ActionT _ | FunctionT _ | ExternFunctionT _ | ExternMethodT _
+          | ExternAbstractMethodT _ | BuiltinMethodT _ ) )
+      | ( ExternAbstractMethod _,
+          ( ExternFunctionT _ | ExternMethodT _ | ExternAbstractMethodT _
+          | BuiltinMethodT _ ) )
+      | ( ParserState,
+          ( ExternFunctionT _ | FunctionT _ | ExternMethodT _
+          | ExternAbstractMethodT _ | ParserApplyMethodT _ | BuiltinMethodT _ )
+        )
+      | ( ControlApplyMethod,
+          ( ActionT _ | ExternFunctionT _ | FunctionT _ | ExternMethodT _
+          | ExternAbstractMethodT _ | ControlApplyMethodT _ | BuiltinMethodT _
+          | TableApplyMethodT _ ) )
+      | ( TableApplyMethod,
+          ( ActionT _ | ExternFunctionT _ | FunctionT _ | ExternMethodT _
+          | ExternAbstractMethodT _ | TableApplyMethodT _ | BuiltinMethodT _ ) )
+        ->
+          ()
+      | _ ->
+          Format.printf
+            "(check_call_site) Function %a cannot be called from %a\n"
+            FuncType.pp ft Ctx.pp_localkind kind;
+          assert false)
+
 and type_func (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : El.Ast.var)
     (targs_il : Il.Ast.targ list) (args : El.Ast.arg list) :
     FuncType.t * TId.t list option * Il.Ast.id' list =
@@ -2067,6 +2114,7 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t)
     | None -> (ft, targs_il, params, typ_ret)
   in
   WF.check_valid_functyp cursor ctx ft;
+  check_call_site cursor ctx ft;
   let action = FuncType.is_action ft in
   let args_il = type_call_convention ~action cursor ctx params args_il_typed in
   (targs_il, args_il, typ_ret)
@@ -3156,6 +3204,46 @@ and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    in the top-level scope. When calling another method of the same instance the this
    keyword is used to indicate the current object instance. *)
 
+and type_instantiation_init_extern_abstract_method_decl (cursor : Ctx.cursor)
+    (ctx : Ctx.t) (id : El.Ast.id) (tparams : El.Ast.tparam list)
+    (params : El.Ast.param list) (typ_ret : El.Ast.typ) (body : El.Ast.block) :
+    FuncDef.t * Il.Ast.decl' =
+  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern) then (
+    Format.printf
+      "(type_instantiation_init_extern_abstract_method_decl) Extern abstract \
+       method initializer declarations must be in a block\n";
+    assert false);
+  (* Construct function layer context *)
+  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
+  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
+  let typ_ret = eval_type_with_check Ctx.Local ctx' typ_ret in
+  let ctx' = Ctx.set_localkind (Ctx.ExternAbstractMethod typ_ret.it) ctx' in
+  (* Typecheck and add parameters to the local context *)
+  let params_il = List.map (type_param Ctx.Local ctx') params in
+  let ctx' = Ctx.add_params Ctx.Local params_il ctx' in
+  (* Typecheck body *)
+  let _ctx', flow, block_il = type_block Ctx.Local ctx' Cont body in
+  if flow <> Flow.Ret && typ_ret.it <> Types.VoidT then (
+    Format.printf
+      "(type_instantiation_init_extern_abstract_method_decl) A function must \
+       return a value on all possible execution paths\n";
+    assert false);
+  (* Create a function definition *)
+  let fd =
+    let tparams = List.map it tparams in
+    let params =
+      List.map it params_il
+      |> List.map (fun (id, dir, typ, value_default, _) ->
+             (id.it, dir.it, typ.it, Option.map it value_default))
+    in
+    Types.ExternMethodD (tparams, params, typ_ret.it)
+  in
+  let decl_il =
+    Il.Ast.FuncD { id; typ_ret; tparams; params = params_il; body = block_il }
+  in
+  WF.check_valid_funcdef cursor ctx fd;
+  (fd, decl_il)
+
 and type_instantiation_init_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     (tenv_abstract : Envs.TEnv.t) (fdenv_abstract : Envs.FDEnv.t)
     (init : El.Ast.decl) : Envs.TEnv.t * Envs.FDEnv.t * Il.Ast.decl =
@@ -3181,18 +3269,17 @@ and type_instantiation_init_decl' (cursor : Ctx.cursor) (ctx : Ctx.t)
       let ctx =
         {
           ctx with
-          block = { ctx.block with frame = (Envs.VEnv.empty, tenv_abstract) };
+          block =
+            {
+              ctx.block with
+              kind = Ctx.Extern;
+              frame = (Envs.VEnv.empty, tenv_abstract);
+            };
         }
       in
-      let ctx, decl_il =
-        type_function_decl cursor ctx id tparams params typ_ret body
-      in
-      let fd = Ctx.find_funcdef cursor fid ctx in
-      let fd =
-        match fd with
-        | FunctionD (tparams, params, typ_ret) ->
-            Types.ExternMethodD (tparams, params, typ_ret)
-        | _ -> assert false
+      let fd, decl_il =
+        type_instantiation_init_extern_abstract_method_decl Ctx.Block ctx id
+          tparams params typ_ret body
       in
       let fdenv_abstract =
         Envs.FDEnv.add_nodup_overloaded fid fd fdenv_abstract
@@ -3682,8 +3769,6 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    A function with a return type of void can simply use the return statement with no arguments.
    A function with a non-void return type must return a value of the suitable type
    on all possible execution paths. *)
-
-(* (TODO) Aren't functions also allowed in object initializers? *)
 
 and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (tparams : El.Ast.tparam list) (params : El.Ast.param list)
@@ -4240,22 +4325,23 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.printf
       "(type_table_decl) Table declarations must be in a control block\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let ctx = Ctx.set_localkind Ctx.TableApplyMethod ctx in
+  let annos_il = List.map (type_anno Ctx.Block ctx) annos in
   let table_ctx = Tblctx.empty in
   let table_ctx, table_customs_il =
-    type_table_customs cursor ctx table_ctx table.customs
+    type_table_customs Ctx.Local ctx table_ctx table.customs
   in
   let table_ctx, table_keys_il =
-    type_table_keys cursor ctx table_ctx table.keys
+    type_table_keys Ctx.Local ctx table_ctx table.keys
   in
   let table_ctx, table_actions_il =
-    type_table_actions cursor ctx table_ctx table.actions
+    type_table_actions Ctx.Local ctx table_ctx table.actions
   in
   let table_ctx, table_entries_il =
-    type_table_entries cursor ctx table_ctx table.entries
+    type_table_entries Ctx.Local ctx table_ctx table.entries
   in
   let table_default_il =
-    type_table_default cursor ctx table_ctx table.default
+    type_table_default Ctx.Local ctx table_ctx table.default
   in
   (* (TODO) Should we add action_list(T), apply_result(T) type in env? And should we add decl to?
      Petr4 did, and also it puts id in TableT instead of typ *)

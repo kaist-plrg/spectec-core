@@ -1,6 +1,6 @@
 # A. Fix Logic
 
-## 1. Function definition and calls
+## \[DONE\] 1. ~~Function definition and calls~~
 
 Restricting function well-formedness (parameter types and return types) and valid call-sites.
 
@@ -45,7 +45,7 @@ void func() {
 }
 ```
 
-### (3) Function call-sites
+### \[DONE\] (3) ~~Function call-sites~~
 
 Relating to valid call-sites,
 
@@ -62,32 +62,6 @@ control c() {
     apply {}
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* call-table.p4
-* issue2597.p4
-* issue2835-bmv2.p4
-* issue413.p4
-</details>
-
-Also table application is disallowed in action argument.
-But not sure how to enforce this.
-
-```p4
-a_two(
-    t_two.apply().hit ?
-        bump_val(hdr.ethernet.etherType) :
-        hdr.ethernet.etherType,
-    bump_val(hdr.ethernet.etherType));
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue2835-bmv2.p4
-</details>
 
 ## \[DONE\] 2. ~~Duplicate declarations in the same namespace~~
 
@@ -493,6 +467,24 @@ extern X {
     void X();
 }
 ```
+
+### (9) Table application is disallowed in action argument
+
+But not sure how to enforce this.
+
+```p4
+a_two(
+    t_two.apply().hit ?
+        bump_val(hdr.ethernet.etherType) :
+        hdr.ethernet.etherType,
+    bump_val(hdr.ethernet.etherType));
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue2835-bmv2.p4
+</details>
 
 # B. Need spec clarification
 
