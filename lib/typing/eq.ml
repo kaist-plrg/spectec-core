@@ -50,7 +50,7 @@ let rec eq_typ_alpha (typ_a : Type.t) (typ_b : Type.t) : bool =
       Lang.Eq.eq_id' id_a id_b && FIdMap.eq eq_funcdef_alpha fdenv_a fdenv_b
   | ParserT params_a, ParserT params_b | ControlT params_a, ControlT params_b ->
       List.for_all2 eq_param_alpha params_a params_b
-  | PackageT, PackageT | TopT, TopT -> true
+  | PackageT, PackageT | AnyT, AnyT -> true
   | SeqT typs_inner_a, SeqT typs_inner_b ->
       List.for_all2 eq_typ_alpha typs_inner_a typs_inner_b
   | RecordT fields_a, RecordT fields_b ->

@@ -4,7 +4,7 @@
 
 Restricting function well-formedness (parameter types and return types) and valid call-sites.
 
-### (1) Function well-formedness
+### \[DONE\] (1) ~~Function well-formedness~~
 
 e.g., action should not take an `int` parameter.
 
@@ -23,24 +23,6 @@ control D() {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue2260-1.p4
-* issue2354-1.p4
-* issue2354.p4
-* issue2454.p4
-* issue3273.p4
-* issue584.p4
-* issue764.p4
-* issue816.p4
-* issue818.p4
-* param.p4
-* parser-arg.p4
-* string-e.p4
-* string-e2.p4
-</details>
-
 For actions, the spec mentions:
 
 > Action parameters that have no direction (e.g., port in the previous example) indicate “action data.” All such parameters must appear at the end of the parameter list. (14.1)
@@ -52,13 +34,18 @@ action a(bit x0, out bit y0) {
 }
 ```
 
-<details>
-<summary>Tests</summary>
+### \[DONE\] (2) ~~Constructor call-sites~~
 
-* directionless.p4
-</details>
+Relating to valid call-sites,
 
-### (2) Function call-sites
+```p4
+package myp(bit a);
+void func() {
+    myp(1w1) a;
+}
+```
+
+### (3) Function call-sites
 
 Relating to valid call-sites,
 
@@ -80,10 +67,8 @@ control c() {
 <summary>Tests</summary>
 
 * call-table.p4
-* issue1331.p4
 * issue2597.p4
 * issue2835-bmv2.p4
-* issue388.p4
 * issue413.p4
 </details>
 
@@ -331,22 +316,7 @@ action a0() {
 * issue3299.p4
 </details>
 
-### (4) No instantiation within function body
-
-```p4
-package myp(bit a);
-void func() {
-    myp(1w1) a;
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue3271.p4
-</details>
-
-### (5) Already expecting `NoAction`
+### (4) Already expecting `NoAction`
 
 ```p4
 action NoAction(bit t) {}
@@ -382,7 +352,7 @@ control c() {
 * issue3644.p4
 </details>
 
-### (6) `main` should be a package
+### (5) `main` should be a package
 
 ```p4
 extern MyExtern {
@@ -445,13 +415,7 @@ The spec mentions:
 value_set<int>(4) myvs;
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue3346.p4
-</details>
-
-### (4) Implicit cast omitting an intermediate step
+### \[DONE\] (4) ~~Implicit cast omitting an intermediate step~~
 
 ```p4
 typedef bit<1> b1;
@@ -465,12 +429,6 @@ t1 func(b2 a) {
 ```
 
 Here, we are trying to cast `bit<2>` to `t1`, which is a new type for `bit<1>`. But we *cannot* implicitly cast `bit<2>` to `bit<1>`.
-
-<details>
-<summary>Tests</summary>
-
-* issue3221.p4
-</details>
 
 ### \[DONE\] (5) ~~Parser swallows the unary `+`~~
 
@@ -487,30 +445,7 @@ So the below program is checked as correct.
 const bool b = +false;
 ```
 
-### (6) Parser not ending in `accept` nor `reject`
-
-```p4
-state start {
-    transition state_1;
-}
-state state_1 {
-    transition state_2;
-}
-state state_2 {
-    transition state_3;
-}
-state state_3 {
-    transition state_2;
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue2373.p4
-</details>
-
-### \[DONE\] (7) ~~Instantiation without abstract method~~
+### \[DONE\] (6) ~~Instantiation without abstract method~~
 
 ```p4
 extern g {
@@ -521,7 +456,7 @@ package p(g a);
 p(g()) main;
 ```
 
-### (8) Shift and arbitrary precision integer
+### (7) Shift and arbitrary precision integer
 
 ```p4
 header H {
@@ -551,7 +486,7 @@ hdr.v = (bit<8>)(a >> b);
 * shift-int-non-const.p4
 </details>
 
-### \[DONE\] (9) ~~Method with same name as object~~
+### \[DONE\] (8) ~~Method with same name as object~~
 
 ```p4
 extern X {
@@ -607,6 +542,26 @@ table t1 {
 
 * issue473.p4
 </details>
+
+## 3. Restrictions on constructor invocation sites
+
+The spec puts restrictions on constructor invocation sites in Appendix F.
+Specifically for the top-level,
+
+> can be instantiated in this place
+> This type	  | top level
+> package	  | yes
+> parser	  | no 
+> control	  | no 
+> extern	  | yes
+> function	  | yes
+> table	no	  | no 
+> value-set	  | yes
+> value types | N/A
+
+Yet, parsers and controls can be instantiated in the top-level, when they are used as constructor arguments to a package instantiation.
+So the spec should be more precise on this matter.
+p4cherry adjusts the instantiation site for constructor arguments as package-local when instantiating a package at the top-level scope.
 
 # C. Need test clarification
 
@@ -864,6 +819,74 @@ This is not true because the `apply` block can access the local declarations.
 * issue2545.p4
 </details>
 
+## 7. Type inference for `int`
+
+```p4
+T f<T>(T x) {
+    return x;
+}
+...
+bit<8> y = f(255);
+```
+
+This should type check with `T` as `int`. (It is also well-formed since `int` is a directionless parameter.)
+But the p4c compiler rejects this program with the following error:
+
+```
+issue2260-1.p4(8): [--Werror=type-error] error: 'f(255)'
+        bit<8> y = f(255);
+                   ^^^^^^
+  ---- Actual error:
+  'int' type can only be unified with 'int', 'bit<>', or 'signed<>' types, not with '<returned type>'
+  ---- Originating from:
+issue2260-1.p4(3): Return type 'T' cannot be used for '<returned type>'
+  T f<T>(T x) {
+      ^
+  Where 'T' is bound to 'int'
+  ---- Originating from:
+issue2260-1.p4(3): Function type 'f' does not match invocation type '<Method call>'
+  T f<T>(T x) {
+    ^
+issue2260-1.p4(8)
+          bit<8> y = f(255);
+                     ^^^^^^
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue2260-1.p4
+</details>
+
+## 8. Returning `int` from a method is illegal?
+
+```p4
+extern e {
+    e();
+    abstract int f();
+}
+
+e() t = {
+    int f() { return 1; }
+};
+```
+
+p4c rejects this program with the following error:
+
+```
+issue3273.p4(3): [--Werror=type-error] error: int: illegal return type for method
+    abstract int f();
+             ^^^
+```
+
+However, the spec does not mandate this.
+
+<details>
+<summary>Tests</summary>
+
+* issue3273.p4
+</details>
+
 # D. More than a type check? (Requiring domain-specific knowledge)
 
 ## 1. Semantics of packet extraction
@@ -945,6 +968,34 @@ h = pkt.lookahead<H>();
 
 * issue4146.p4
 * issue600.p4
+</details>
+
+## 3. Reachability analysis of parser state machine
+
+The test case implies a constraint that the parser state machine should terminate in either `accept` or `reject` state.
+But it is not mentioned in the specification.
+Also it requires unrolling of parser states, which will not be performed in p4cherry, since p4cherry is a P4 interpreter, not a compiler.
+
+
+```p4
+state start {
+    transition state_1;
+}
+state state_1 {
+    transition state_2;
+}
+state state_2 {
+    transition state_3;
+}
+state state_3 {
+    transition state_2;
+}
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue2373.p4
 </details>
 
 # E. Unsupported

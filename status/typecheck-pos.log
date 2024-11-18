@@ -3003,7 +3003,7 @@ Typecheck success: test/program/well-typed/unreachable.p4
 
 >>> Running typecheck test on test/program/well-typed/unused.p4
 (coerce_types_binary) Cannot coerce types int and bool
-(check_eq_typ_alpha) Types control (inout s struct S { h = header Header { data1 = bit<32>; data2 = bit<32>; data3 = bit<32> } }) and control (inout v top) are not equal
+(check_eq_typ_alpha) Types control (inout s struct S { h = header Header { data1 = bit<32>; data2 = bit<32>; data3 = bit<32> } }) and control (inout v any) are not equal
 Error while typechecking p4 file: test/program/well-typed/unused.p4
 
 >>> Running typecheck test on test/program/well-typed/use-priority-as-name.p4

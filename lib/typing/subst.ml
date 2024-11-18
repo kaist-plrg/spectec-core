@@ -88,7 +88,7 @@ let rec subst_typ (theta : Theta.t) (typ : Type.t) : Type.t =
   | ControlT params ->
       let params = List.map (subst_param theta) params in
       ControlT params
-  | PackageT | TopT -> typ
+  | PackageT | AnyT -> typ
   | SeqT typs_inner ->
       let typs_inner = List.map (subst_typ theta) typs_inner in
       SeqT typs_inner
@@ -119,6 +119,41 @@ and subst_param (theta : Theta.t) (param : Types.param) : Types.param =
   let typ = subst_typ theta typ in
   (id, dir, typ, value_default)
 
+and subst_functyp (theta : Theta.t) (ft : Types.functyp) : Types.functyp =
+  match ft with
+  | ActionT params ->
+      let params = List.map (subst_param theta) params in
+      ActionT params
+  | ExternFunctionT (params, typ_ret) ->
+      let params = List.map (subst_param theta) params in
+      let typ_ret = subst_typ theta typ_ret in
+      ExternFunctionT (params, typ_ret)
+  | FunctionT (params, typ_ret) ->
+      let params = List.map (subst_param theta) params in
+      let typ_ret = subst_typ theta typ_ret in
+      FunctionT (params, typ_ret)
+  | ExternMethodT (params, typ_ret) ->
+      let params = List.map (subst_param theta) params in
+      let typ_ret = subst_typ theta typ_ret in
+      ExternMethodT (params, typ_ret)
+  | ExternAbstractMethodT (params, typ_ret) ->
+      let params = List.map (subst_param theta) params in
+      let typ_ret = subst_typ theta typ_ret in
+      ExternAbstractMethodT (params, typ_ret)
+  | ParserApplyMethodT params ->
+      let params = List.map (subst_param theta) params in
+      ParserApplyMethodT params
+  | ControlApplyMethodT params ->
+      let params = List.map (subst_param theta) params in
+      ControlApplyMethodT params
+  | BuiltinMethodT (params, typ_ret) ->
+      let params = List.map (subst_param theta) params in
+      let typ_ret = subst_typ theta typ_ret in
+      BuiltinMethodT (params, typ_ret)
+  | TableApplyMethodT typ_ret ->
+      let typ_ret = subst_typ theta typ_ret in
+      TableApplyMethodT typ_ret
+
 and subst_funcdef (theta : Theta.t) (fd : Types.funcdef) : Types.funcdef =
   let subst_funcdef' (theta : Theta.t) (tparams : Types.tparam list)
       (params : Types.param list) (typ_ret : Type.t) :
@@ -134,6 +169,9 @@ and subst_funcdef (theta : Theta.t) (fd : Types.funcdef) : Types.funcdef =
     (tparams, params, typ_ret)
   in
   match fd with
+  | ActionD params ->
+      let params = List.map (subst_param theta) params in
+      ActionD params
   | ExternFunctionD (tparams, params, typ_ret) ->
       let tparams, params, typ_ret =
         subst_funcdef' theta tparams params typ_ret
@@ -144,9 +182,6 @@ and subst_funcdef (theta : Theta.t) (fd : Types.funcdef) : Types.funcdef =
         subst_funcdef' theta tparams params typ_ret
       in
       FunctionD (tparams, params, typ_ret)
-  | ActionD params ->
-      let params = List.map (subst_param theta) params in
-      ActionD params
   | ExternMethodD (tparams, params, typ_ret) ->
       let tparams, params, typ_ret =
         subst_funcdef' theta tparams params typ_ret
@@ -166,3 +201,9 @@ and subst_funcdef (theta : Theta.t) (fd : Types.funcdef) : Types.funcdef =
 
 and subst_cparam (theta : Theta.t) (cparam : Types.cparam) : Types.cparam =
   subst_param theta cparam
+
+and subst_constyp (theta : Theta.t) (ct : Types.constyp) : Types.constyp =
+  let cparams, typ = ct in
+  let cparams = List.map (subst_cparam theta) cparams in
+  let typ = subst_typ theta typ in
+  (cparams, typ)
