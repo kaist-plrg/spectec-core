@@ -44,8 +44,8 @@ and typ =
   | ControlT of param list
   | PackageT
   | TableT of typ
-  (* Top type *)
-  | TopT
+  (* Any type (top type) *)
+  | AnyT
   (* Synthesized types : variables can never be declared of this type *)
   | SeqT of typ list
   | SeqDefaultT of typ list
@@ -166,7 +166,7 @@ and pp_typ fmt typ =
   | ControlT params -> F.fprintf fmt "control (%a)" pp_params params
   | PackageT -> F.fprintf fmt "package"
   | TableT _ -> F.pp_print_string fmt "table"
-  | TopT -> F.pp_print_string fmt "top"
+  | AnyT -> F.pp_print_string fmt "any"
   | SeqT typs -> F.fprintf fmt "seq<%a>" (P.pp_list pp_typ ",@ ") typs
   | SeqDefaultT typs ->
       F.fprintf fmt "seq<%a, ...>" (P.pp_list pp_typ ",@ ") typs
@@ -333,7 +333,7 @@ and eq_typ typ_a typ_b =
       E.eq_id' id_a id_b && FIdMap.eq eq_funcdef fdenv_a fdenv_b
   | ParserT params_a, ParserT params_b | ControlT params_a, ControlT params_b ->
       List.for_all2 eq_param params_a params_b
-  | PackageT, PackageT | TopT, TopT -> true
+  | PackageT, PackageT | AnyT, AnyT -> true
   | SeqT typs_a, SeqT typs_b | SeqDefaultT typs_a, SeqDefaultT typs_b ->
       List.for_all2 eq_typ typs_a typs_b
   | RecordT fields_a, RecordT fields_b
@@ -390,7 +390,7 @@ module Type = struct
     | StackT (typ_inner, _) -> is_ground typ_inner
     | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
         List.map snd fields |> List.for_all is_ground
-    | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> true
+    | ExternT _ | ParserT _ | ControlT _ | PackageT | AnyT -> true
     | SeqT typs_inner | SeqDefaultT typs_inner ->
         List.for_all is_ground typs_inner
     | RecordT fields | RecordDefaultT fields ->
@@ -415,7 +415,7 @@ module Type = struct
     | StackT (typ_inner, _) -> is_defaultable typ_inner
     | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
         List.map snd fields |> List.for_all is_defaultable
-    | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT | SeqT _
+    | ExternT _ | ParserT _ | ControlT _ | PackageT | AnyT | SeqT _
     | SeqDefaultT _ | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT
     | SetT _ | StateT | TableT _ ->
         false
@@ -433,7 +433,7 @@ module Type = struct
     | StackT (typ_inner, _) -> can_equals typ_inner
     | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
         List.map snd fields |> List.for_all can_equals
-    | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> false
+    | ExternT _ | ParserT _ | ControlT _ | PackageT | AnyT -> false
     | SeqT typs_inner -> List.for_all can_equals typs_inner
     | SeqDefaultT _ -> false
     | RecordT fields -> List.map snd fields |> List.for_all can_equals

@@ -484,6 +484,14 @@ let pp_gt fmt (gt : gt) =
      @[<v 0>[Frame]:@ %a@]@]" Envs.CDEnv.pp gt.cdenv Envs.TDEnv.pp gt.tdenv
     Envs.FDEnv.pp gt.fdenv pp_frame gt.frame
 
+let pp_blockkind fmt (kind : blockkind) =
+  match kind with
+  | Empty -> F.fprintf fmt "Empty"
+  | Extern -> F.fprintf fmt "Extern"
+  | Parser -> F.fprintf fmt "Parser"
+  | Control -> F.fprintf fmt "Control"
+  | Package -> F.fprintf fmt "Package"
+
 let pp_bt fmt (bt : bt) =
   F.fprintf fmt
     "@[@[<v 0>[Block %s<%s>]:@ %a@]@\n\
@@ -491,14 +499,20 @@ let pp_bt fmt (bt : bt) =
      @[<v 0>[Functions]:@ %a@]@\n\
      @[<v 0>[Frame]:@ %a@]@]" bt.id
     (String.concat ", " bt.tparams)
-    (fun fmt (kind : blockkind) ->
-      match kind with
-      | Empty -> F.fprintf fmt "Empty"
-      | Extern -> F.fprintf fmt "Extern"
-      | Parser -> F.fprintf fmt "Parser"
-      | Control -> F.fprintf fmt "Control"
-      | Package -> F.fprintf fmt "Package")
-    bt.kind Envs.TDEnv.pp bt.tdenv Envs.FDEnv.pp bt.fdenv pp_frame bt.frame
+    pp_blockkind bt.kind Envs.TDEnv.pp bt.tdenv Envs.FDEnv.pp bt.fdenv pp_frame
+    bt.frame
+
+let pp_localkind fmt (kind : localkind) =
+  match kind with
+  | Empty -> F.fprintf fmt "Empty"
+  | ExternFunction -> F.fprintf fmt "ExternFunction"
+  | Function _ -> F.fprintf fmt "Function"
+  | Action -> F.fprintf fmt "Action"
+  | ExternMethod -> F.fprintf fmt "ExternMethod"
+  | ExternAbstractMethod _ -> F.fprintf fmt "ExternAbstractMethod"
+  | ParserState -> F.fprintf fmt "ParserState"
+  | ControlApplyMethod -> F.fprintf fmt "ControlApplyMethod"
+  | TableMethod -> F.fprintf fmt "TableMethod"
 
 let pp_lt fmt (lt : lt) =
   F.fprintf fmt
@@ -506,18 +520,8 @@ let pp_lt fmt (lt : lt) =
      @[<v 0>[Typedefs]:@ %a@]@\n\
      @[<v 0>[Frames]:@ %a@]@]" lt.id
     (String.concat ", " lt.tparams)
-    (fun fmt kind ->
-      match (kind : localkind) with
-      | Empty -> F.fprintf fmt "Empty"
-      | ExternFunction -> F.fprintf fmt "ExternFunction"
-      | Function _ -> F.fprintf fmt "Function"
-      | Action -> F.fprintf fmt "Action"
-      | ExternMethod -> F.fprintf fmt "ExternMethod"
-      | ExternAbstractMethod _ -> F.fprintf fmt "ExternAbstractMethod"
-      | ParserState -> F.fprintf fmt "ParserState"
-      | ControlApplyMethod -> F.fprintf fmt "ControlApplyMethod"
-      | TableMethod -> F.fprintf fmt "TableMethod")
-    lt.kind Envs.TDEnv.pp lt.tdenv (F.pp_print_list pp_frame) lt.frames
+    pp_localkind lt.kind Envs.TDEnv.pp lt.tdenv (F.pp_print_list pp_frame)
+    lt.frames
 
 let pp fmt ctx =
   F.fprintf fmt

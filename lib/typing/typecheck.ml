@@ -205,7 +205,7 @@ let infer_targs (tids_fresh : TId.t list) (params : Types.param list)
     (fun tid typ_opt theta ->
       match typ_opt with
       | Some typ -> Subst.Theta.add tid typ theta
-      | None -> Subst.Theta.add tid Types.TopT theta)
+      | None -> Subst.Theta.add tid Types.AnyT theta)
     cstr Subst.Theta.empty
 
 (* (6.7) L-values
@@ -246,7 +246,7 @@ and check_lvalue' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_il : Il.Ast.expr) :
 and check_lvalue_type (typ : Type.t) : bool =
   match typ with
   | NewT (_, typ_inner) -> check_lvalue_type typ_inner
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | TopT -> false
+  | ExternT _ | ParserT _ | ControlT _ | PackageT | AnyT -> false
   | _ -> true
 
 (* Type evaluation *)
@@ -327,7 +327,7 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ') :
       let td = Option.get td in
       let typs = List.map (eval_type cursor ctx) typs |> List.map it in
       specialize_typedef td typs
-  | AnyT -> Types.TopT
+  | AnyT -> Types.AnyT
 
 and specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
   let check_arity tparams =
@@ -408,21 +408,21 @@ and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) :
   let fresh_targ tid = Types.VarT tid in
   let specialize_funcdef' funcDef tparams targs params typ_ret =
     let targs, tids_fresh =
-      (* Insert fresh type variables if omitted *)
+      (* Insert fresh type variables if omitted
+         Otherwise, check the arity and insert fresh type variables for any types *)
       if List.length tparams > 0 && List.length targs = 0 then
         let tids_fresh =
           List.init (List.length tparams) (fun _ -> fresh_tid ())
         in
         let targs = List.map fresh_targ tids_fresh in
         (targs, Some tids_fresh)
-        (* Otherwise, check the arity and insert fresh type variables for top types *)
       else (
         check_arity tparams targs;
         let targs, tids_fresh =
           List.fold_left
             (fun (targs, tids_fresh) targ ->
               match (targ : Type.t) with
-              | TopT ->
+              | AnyT ->
                   let tid_fresh = fresh_tid () in
                   let targ_fresh = fresh_targ tid_fresh in
                   (targs @ [ targ_fresh ], tids_fresh @ [ tid_fresh ])
@@ -479,7 +479,7 @@ and specialize_consdef (cd : ConsDef.t) (targs : Type.t list) :
   let fresh_targ tid = Types.VarT tid in
   let tparams, cparams, typ = cd in
   (* Insert fresh type variables if omitted
-     Otherwise, check the arity and insert fresh type variables for top types *)
+     Otherwise, check the arity and insert fresh type variables for any types *)
   let targs, tids_fresh =
     if List.length tparams > 0 && List.length targs = 0 then
       let tids_fresh =
@@ -493,7 +493,7 @@ and specialize_consdef (cd : ConsDef.t) (targs : Type.t list) :
         List.fold_left
           (fun (targs, tids_fresh) targ ->
             match (targ : Type.t) with
-            | TopT ->
+            | AnyT ->
                 let tid_fresh = fresh_tid () in
                 let targ_fresh = fresh_targ tid_fresh in
                 (targs @ [ targ_fresh ], tids_fresh @ [ tid_fresh ])
@@ -2207,6 +2207,41 @@ and align_cparams_with_args (cparams : Types.cparam list)
     (typ_args : Type.t list) (args_il : Il.Ast.arg list) =
   align_params_with_args cparams typ_args args_il
 
+and check_instantiation_site (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (typ_inst : Type.t) : unit =
+  match cursor with
+  | Global -> (
+      match typ_inst with
+      | ExternT _ | PackageT -> ()
+      | _ ->
+          Format.printf
+            "(check_instantiation_site) %a cannot be instantiated at top level\n"
+            Type.pp typ_inst;
+          assert false)
+  | Block -> (
+      let kind = ctx.block.kind in
+      match (kind, typ_inst) with
+      | Ctx.Package, (ExternT _ | ParserT _ | ControlT _ | PackageT)
+      | Ctx.Parser, (ExternT _ | ParserT _)
+      | Ctx.Control, (ExternT _ | ControlT _ | TableT _) ->
+          ()
+      | _ ->
+          Format.printf
+            "(check_instantiation_site) %a cannot be instantiated in %a\n"
+            Type.pp typ_inst Ctx.pp_blockkind kind;
+          assert false)
+  | Local -> (
+      let kind = ctx.local.kind in
+      match (kind, typ_inst) with
+      | Ctx.ParserState, (ExternT _ | ParserT _)
+      | Ctx.ControlApplyMethod, (ExternT _ | ControlT _) ->
+          ()
+      | _ ->
+          Format.printf
+            "(check_instantiation_site) %a cannot be instantiated in %a\n"
+            Type.pp typ_inst Ctx.pp_localkind kind;
+          assert false)
+
 and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
     : Type.t * Ctk.t * Il.Ast.expr' =
@@ -2225,13 +2260,26 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     let targs = List.map it targs_il in
     specialize_consdef cd targs
   in
-  (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
-  (* Check if the arguments match the parameters *)
   let cparams, typ_inst = ct in
+  (* Check if the arguments match the parameters *)
   let cparams =
     List.filter (fun (id, _, _, _) -> not (List.mem id args_default)) cparams
   in
-  let args_il, typ_args = List.map (type_arg cursor ctx) args |> List.split in
+  let args_il, typ_args =
+    (* Adjust the context if instantiating a package at top level
+       Actually, the spec is quite imprecise in restricting parser, control
+       instantiations in top-level, while they are necessarily instantiated
+       (namelessly) in a package instantiation *)
+    let cursor, ctx =
+      match (cursor, typ_inst) with
+      | Global, PackageT ->
+          let cursor = Ctx.Block in
+          let ctx = Ctx.set_blockkind Ctx.Package ctx in
+          (cursor, ctx)
+      | _ -> (cursor, ctx)
+    in
+    List.map (type_arg cursor ctx) args |> List.split
+  in
   check_instantiation_arity var_inst cparams args_il;
   let cparams, typ_args, args_il =
     align_cparams_with_args cparams typ_args args_il
@@ -2254,6 +2302,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     | None -> (ct, targs_il, cparams, typ_inst)
   in
   WF.check_valid_constyp cursor ctx ct;
+  check_instantiation_site cursor ctx typ_inst;
   let args_il =
     type_call_convention ~action:false cursor ctx cparams args_il_typed
   in
@@ -2301,8 +2350,8 @@ and type_arg' (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : El.Ast.arg') :
       let typ = expr_il.note.typ in
       let arg_il = Lang.Ast.NameA (id, Some expr_il) in
       (arg_il, typ)
-  | NameA (id, None) -> (Lang.Ast.NameA (id, None), TopT)
-  | AnyA -> (Lang.Ast.AnyA, TopT)
+  | NameA (id, None) -> (Lang.Ast.NameA (id, None), AnyT)
+  | AnyA -> (Lang.Ast.AnyA, AnyT)
 
 (* Statement typing *)
 
@@ -3047,7 +3096,7 @@ and check_valid_var_type' (typ : Type.t) : bool =
   | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
   | UnionT _ ->
       true
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | TopT | SeqT _
+  | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | AnyT | SeqT _
   | SeqDefaultT _ | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT | SetT _
   | StateT ->
       false
@@ -4273,7 +4322,7 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
           false
       (* No equality op *)
       | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
-      | TableT _ | TopT | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _
+      | TableT _ | AnyT | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _
       | DefaultT | InvalidT | SetT _ | StateT ->
           false)
   | "lpm" | "ternary" | "range" -> (
@@ -4287,7 +4336,7 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
           false
       (* No equality op *)
       | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
-      | TableT _ | TopT | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _
+      | TableT _ | AnyT | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _
       | DefaultT | InvalidT | SetT _ | StateT ->
           false)
   | _ ->

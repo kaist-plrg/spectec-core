@@ -480,7 +480,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3188.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3197-e.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3210.p4
-(type_func) Function t not found
+(check_instantiation_site) parser () cannot be instantiated in Function
 Error while typechecking p4 file: test/program/ill-typed/issue3210.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3221.p4
@@ -499,11 +499,12 @@ Error while typechecking p4 file: test/program/ill-typed/issue3246.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3264.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3271-1.p4
-(type_func) Function h not found
+(check_instantiation_site) extern g1 { f() : extern_method<>() -> void } cannot be instantiated in Function
 Error while typechecking p4 file: test/program/ill-typed/issue3271-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3271.p4
-Typecheck success: test/program/ill-typed/issue3271.p4
+(check_instantiation_site) package cannot be instantiated in Function
+Error while typechecking p4 file: test/program/ill-typed/issue3271.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3273.p4
 Typecheck success: test/program/ill-typed/issue3273.p4
@@ -640,7 +641,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3751.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3787.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3808-1.p4
-(coerce_type) Cannot coerce type table to top
+(coerce_type) Cannot coerce type table to any
 Error while typechecking p4 file: test/program/ill-typed/issue3808-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3808.p4
@@ -662,7 +663,8 @@ Typecheck success: test/program/ill-typed/issue3846.p4
 Typecheck success: test/program/ill-typed/issue3847.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue388.p4
-Typecheck success: test/program/ill-typed/issue388.p4
+(check_instantiation_site) control () cannot be instantiated at top level
+Error while typechecking p4 file: test/program/ill-typed/issue388.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue394.p4
 (check_valid_var_type) Type extern C { get() : extern_method<>() -> bool } is not a valid variable type
@@ -788,7 +790,7 @@ parser error: File test/program/ill-typed/loop3-err.p4, line 51, characters 15-1
 Error while parsing p4 file: test/program/ill-typed/loop3-err.p4
 
 >>> Running typecheck test on test/program/ill-typed/methodArgDontcare.p4
-(coerce_type) Cannot coerce type int to top
+(coerce_type) Cannot coerce type int to any
 Error while typechecking p4 file: test/program/ill-typed/methodArgDontcare.p4
 
 >>> Running typecheck test on test/program/ill-typed/minWidth.p4
@@ -1130,4 +1132,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 265/299 (88.63%) [FAIL] 34/299 (11.37%)
-Typecheck: [PASS] 200/265 (75.47%) [FAIL] 65/265 (24.53%)
+Typecheck: [PASS] 202/265 (76.23%) [FAIL] 63/265 (23.77%)

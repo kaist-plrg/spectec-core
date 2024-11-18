@@ -34,7 +34,18 @@ action a(bit x0, out bit y0) {
 }
 ```
 
-### (2) Function call-sites
+### \[DONE\] (2) ~~Constructor call-sites~~
+
+Relating to valid call-sites,
+
+```p4
+package myp(bit a);
+void func() {
+    myp(1w1) a;
+}
+```
+
+### (3) Function call-sites
 
 Relating to valid call-sites,
 
@@ -58,7 +69,6 @@ control c() {
 * call-table.p4
 * issue2597.p4
 * issue2835-bmv2.p4
-* issue388.p4
 * issue413.p4
 </details>
 
@@ -306,22 +316,7 @@ action a0() {
 * issue3299.p4
 </details>
 
-### (4) No instantiation within function body
-
-```p4
-package myp(bit a);
-void func() {
-    myp(1w1) a;
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue3271.p4
-</details>
-
-### (5) Already expecting `NoAction`
+### (4) Already expecting `NoAction`
 
 ```p4
 action NoAction(bit t) {}
@@ -357,7 +352,7 @@ control c() {
 * issue3644.p4
 </details>
 
-### (6) `main` should be a package
+### (5) `main` should be a package
 
 ```p4
 extern MyExtern {
@@ -419,12 +414,6 @@ The spec mentions:
 ```p4
 value_set<int>(4) myvs;
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue3346.p4
-</details>
 
 ### \[DONE\] (4) ~~Implicit cast omitting an intermediate step~~
 
@@ -553,6 +542,26 @@ table t1 {
 
 * issue473.p4
 </details>
+
+## 3. Restrictions on constructor invocation sites
+
+The spec puts restrictions on constructor invocation sites in Appendix F.
+Specifically for the top-level,
+
+> can be instantiated in this place
+> This type	  | top level
+> package	  | yes
+> parser	  | no 
+> control	  | no 
+> extern	  | yes
+> function	  | yes
+> table	no	  | no 
+> value-set	  | yes
+> value types | N/A
+
+Yet, parsers and controls can be instantiated in the top-level, when they are used as constructor arguments to a package instantiation.
+So the spec should be more precise on this matter.
+p4cherry adjusts the instantiation site for constructor arguments as package-local when instantiating a package at the top-level scope.
 
 # C. Need test clarification
 
