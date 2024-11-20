@@ -287,18 +287,27 @@ and parser_state' = (typ', unit, expr', decl') L.parser_state'
 (* Table *)
 and table = (unit, expr') L.table
 
+(* Table properties *)
+and table_property = (unit, expr') L.table_property
+
 (* Table keys *)
+and table_keys = (unit, expr') L.table_keys
+and table_keys' = (unit, expr') L.table_keys'
 and table_key = (unit, expr') L.table_key
 and table_key' = (unit, expr') L.table_key'
 
 (* Table action references *)
+and table_actions = (unit, expr') L.table_actions
+and table_actions' = (unit, expr') L.table_actions'
 and table_action = (unit, expr') L.table_action
 and table_action' = (unit, expr') L.table_action'
 
 (* Table entries *)
+and table_entries = (unit, expr') L.table_entries
+and table_entries' = (unit, expr') L.table_entries'
+and table_entries_const = L.table_entries_const
 and table_entry = (unit, expr') L.table_entry
 and table_entry' = (unit, expr') L.table_entry'
-and table_entries_const = L.table_entries_const
 and table_entry_const = L.table_entry_const
 
 (* Table default properties *)

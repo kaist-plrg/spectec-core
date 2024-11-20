@@ -4285,6 +4285,61 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
           action_list(T) action_run;
       } *)
 
+and check_table_properties (table : El.Ast.table) : unit =
+  let keys =
+    List.filter
+      (fun (table_property : El.Ast.table_property) ->
+        match table_property with KeyP _ -> true | _ -> false)
+      table
+    |> List.length
+  in
+  if keys > 1 then (
+    Format.printf
+      "(check_table_properties) A table should have at most one key property\n";
+    assert false);
+  let actions =
+    List.filter
+      (fun (table_property : El.Ast.table_property) ->
+        match table_property with ActionP _ -> true | _ -> false)
+      table
+    |> List.length
+  in
+  if actions <> 1 then (
+    Format.printf
+      "(check_table_properties) A table should have one action property\n";
+    assert false);
+  ()
+
+and type_table_property (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (table_property : El.Ast.table_property) :
+    Tblctx.t * Il.Ast.table_property =
+  match table_property with
+  | KeyP table_keys ->
+      let table_ctx, table_keys_il =
+        type_table_keys cursor ctx table_ctx table_keys
+      in
+      (table_ctx, KeyP table_keys_il)
+  | ActionP table_actions ->
+      let table_ctx, table_actions_il =
+        type_table_actions cursor ctx table_ctx table_actions
+      in
+      (table_ctx, ActionP table_actions_il)
+  | EntryP table_entries ->
+      let table_ctx, table_entries_il =
+        type_table_entries cursor ctx table_ctx table_entries
+      in
+      (table_ctx, EntryP table_entries_il)
+  | DefaultP table_default ->
+      let table_default_il =
+        type_table_default cursor ctx table_ctx table_default
+      in
+      (table_ctx, DefaultP table_default_il)
+  | CustomP table_custom ->
+      let table_ctx, table_custom_il =
+        type_table_custom cursor ctx table_ctx table_custom
+      in
+      (table_ctx, CustomP table_custom_il)
+
 and type_table_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (id : El.Ast.id) : Ctx.t =
   let id_enum = "action_list(" ^ id.it ^ ")" in
@@ -4325,23 +4380,18 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.printf
       "(type_table_decl) Table declarations must be in a control block\n";
     assert false);
-  let ctx = Ctx.set_localkind Ctx.TableApplyMethod ctx in
   let annos_il = List.map (type_anno Ctx.Block ctx) annos in
   let table_ctx = Tblctx.empty in
-  let table_ctx, table_customs_il =
-    type_table_customs Ctx.Local ctx table_ctx table.customs
-  in
-  let table_ctx, table_keys_il =
-    type_table_keys Ctx.Local ctx table_ctx table.keys
-  in
-  let table_ctx, table_actions_il =
-    type_table_actions Ctx.Local ctx table_ctx table.actions
-  in
-  let table_ctx, table_entries_il =
-    type_table_entries Ctx.Local ctx table_ctx table.entries
-  in
-  let table_default_il =
-    type_table_default Ctx.Local ctx table_ctx table.default
+  check_table_properties table;
+  let table_ctx, table_il =
+    let ctx = Ctx.set_localkind Ctx.TableApplyMethod ctx in
+    List.fold_left
+      (fun (table_ctx, table_properties_il) table_property ->
+        let table_ctx, table_property_il =
+          type_table_property Ctx.Local ctx table_ctx table_property
+        in
+        (table_ctx, table_properties_il @ [ table_property_il ]))
+      (table_ctx, []) table
   in
   (* (TODO) Should we add action_list(T), apply_result(T) type in env? And should we add decl to?
      Petr4 did, and also it puts id in TableT instead of typ *)
@@ -4353,16 +4403,6 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Types.TableT typ_struct
   in
   let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.DYN ctx in
-  let table_il =
-    Lang.Ast.
-      {
-        keys = table_keys_il;
-        actions = table_actions_il;
-        entries = table_entries_il;
-        default = table_default_il;
-        customs = table_customs_il;
-      }
-  in
   let decl_il = Il.Ast.TableD { id; table = table_il; annos = annos_il } in
   (ctx, decl_il)
 
@@ -4459,8 +4499,8 @@ and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
   let table_ctx = Tblctx.add_key (typ_key, value_match_kind) table_ctx in
   (table_ctx, table_key_il)
 
-and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_keys : El.Ast.table_key list) : Tblctx.t * Il.Ast.table_key list =
+and type_table_keys' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
+    (table_keys : El.Ast.table_keys') : Tblctx.t * Il.Ast.table_keys' =
   List.fold_left
     (fun (table_ctx, table_keys_il) table_key ->
       let table_ctx, table_key_il =
@@ -4468,6 +4508,13 @@ and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
       in
       (table_ctx, table_keys_il @ [ table_key_il ]))
     (table_ctx, []) table_keys
+
+and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
+    (table_keys : El.Ast.table_keys) : Tblctx.t * Il.Ast.table_keys =
+  let table_ctx, table_keys_il =
+    type_table_keys' cursor ctx table_ctx table_keys.it
+  in
+  (table_ctx, table_keys_il $ table_keys.at)
 
 (* (14.2.1.2) Actions
 
@@ -4528,9 +4575,9 @@ and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   in
   (table_ctx, table_action_il)
 
-and type_table_actions (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_ctx : Tblctx.t) (table_actions : El.Ast.table_action list) :
-    Tblctx.t * Il.Ast.table_action list =
+and type_table_actions' (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (table_actions : El.Ast.table_actions') :
+    Tblctx.t * Il.Ast.table_actions' =
   let table_ctx, table_actions_il =
     List.fold_left
       (fun (table_ctx, table_actions_il) table_action ->
@@ -4544,6 +4591,14 @@ and type_table_actions (cursor : Ctx.cursor) (ctx : Ctx.t)
   |> List.map (fun (action_name, _, _) -> action_name)
   |> WF.check_distinct_vars;
   (table_ctx, table_actions_il)
+
+and type_table_actions (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (table_actions : El.Ast.table_actions) :
+    Tblctx.t * Il.Ast.table_actions =
+  let table_ctx, table_actions_il =
+    type_table_actions' cursor ctx table_ctx table_actions.it
+  in
+  (table_ctx, table_actions_il $ table_actions.at)
 
 (* (14.2.1.3) Default action
 
@@ -4601,21 +4656,17 @@ and type_table_default_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let annos_il = List.map (type_anno cursor ctx) annos in
   (var, args_il, annos_il)
 
-and type_table_default (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_ctx : Tblctx.t) (table_default : El.Ast.table_default option) :
-    Il.Ast.table_default option =
-  match table_default with
-  | Some table_default ->
-      type_table_default' cursor ctx table_ctx table_default.it
-      $ table_default.at |> Option.some
-  | None -> None
-
 and type_table_default' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_default : El.Ast.table_default') :
     Il.Ast.table_default' =
   let action, default_const = table_default in
   let action_il = type_table_default_action cursor ctx table_ctx action in
   (action_il, default_const)
+
+and type_table_default (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (table_default : El.Ast.table_default) :
+    Il.Ast.table_default =
+  type_table_default' cursor ctx table_ctx table_default.it $ table_default.at
 
 (* (14.2.1.4) Entries
 
@@ -5002,11 +5053,14 @@ and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
   in
   (table_ctx, table_entry_il)
 
-and type_table_entries (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_ctx : Tblctx.t)
-    (table_entries : El.Ast.table_entry list * El.Ast.table_entries_const) :
-    Tblctx.t * (Il.Ast.table_entry list * Il.Ast.table_entries_const) =
+and type_table_entries' (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (table_entries : El.Ast.table_entries') :
+    Tblctx.t * Il.Ast.table_entries' =
   let table_entries, table_entries_const = table_entries in
+  if table_ctx.keys = [] && table_entries <> [] then (
+    Format.printf
+      "(type_table_entries') Entries cannot be specified for a table with no key\n";
+    assert false);
   let table_ctx =
     let entries_size = List.length table_entries in
     Tblctx.set_entries_size entries_size table_ctx
@@ -5022,6 +5076,14 @@ and type_table_entries (cursor : Ctx.cursor) (ctx : Ctx.t)
       (table_ctx, []) table_entries
   in
   (table_ctx, (table_entries_il, table_entries_const))
+
+and type_table_entries (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (table_entries : El.Ast.table_entries) :
+    Tblctx.t * Il.Ast.table_entries =
+  let table_ctx, table_entries_il =
+    type_table_entries' cursor ctx table_ctx table_entries.it
+  in
+  (table_ctx, table_entries_il $ table_entries.at)
 
 (* (14.2.1.5) Size
 
@@ -5096,17 +5158,6 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
         assert false
   in
   (table_ctx, (member, expr_il, custom_const, annos_il))
-
-and type_table_customs (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_ctx : Tblctx.t) (table_customs : El.Ast.table_custom list) :
-    Tblctx.t * Il.Ast.table_custom list =
-  List.fold_left
-    (fun (table_ctx, customs) table_custom ->
-      let table_ctx, table_custom_il =
-        type_table_custom cursor ctx table_ctx table_custom
-      in
-      (table_ctx, customs @ [ table_custom_il ]))
-    (table_ctx, []) table_customs
 
 (* (7.2.12.2) Control type declarations *)
 

@@ -483,6 +483,14 @@ and eq_parser_states parser_states_a parser_states_b =
 
 and eq_table table_a table_b = E.eq_table eq_expr table_a table_b
 
+(* Table properties *)
+
+and eq_table_property table_property_a table_property_b =
+  E.eq_table_property eq_expr table_property_a table_property_b
+
+and eq_table_properties table_properties_a table_properties_b =
+  E.eq_table_properties eq_expr table_properties_a table_properties_b
+
 (* Table keys *)
 
 and eq_table_key' table_key_a table_key_b =
@@ -490,6 +498,9 @@ and eq_table_key' table_key_a table_key_b =
 
 and eq_table_key table_key_a table_key_b =
   E.eq_table_key eq_expr table_key_a table_key_b
+
+and eq_table_keys' table_keys_a table_keys_b =
+  E.eq_table_keys' eq_expr table_keys_a table_keys_b
 
 and eq_table_keys table_keys_a table_keys_b =
   E.eq_table_keys eq_expr table_keys_a table_keys_b
@@ -502,6 +513,9 @@ and eq_table_action' table_action_a table_action_b =
 and eq_table_action table_action_a table_action_b =
   E.eq_table_action eq_expr table_action_a table_action_b
 
+and eq_table_actions' table_actions_a table_actions_b =
+  E.eq_table_actions' eq_expr table_actions_a table_actions_b
+
 and eq_table_actions table_actions_a table_actions_b =
   E.eq_table_actions eq_expr table_actions_a table_actions_b
 
@@ -512,6 +526,9 @@ and eq_table_entry' table_entry_a table_entry_b =
 
 and eq_table_entry table_entry_a table_entry_b =
   E.eq_table_entry eq_expr table_entry_a table_entry_b
+
+and eq_table_entries' table_entries_a table_entries_b =
+  E.eq_table_entries' eq_expr table_entries_a table_entries_b
 
 and eq_table_entries table_entries_a table_entries_b =
   E.eq_table_entries eq_expr table_entries_a table_entries_b
@@ -531,9 +548,6 @@ and eq_table_custom' table_custom_a table_custom_b =
 
 and eq_table_custom table_custom_a table_custom_b =
   E.eq_table_custom eq_expr table_custom_a table_custom_b
-
-and eq_table_customs table_customs_a table_customs_b =
-  E.eq_table_customs eq_expr table_customs_a table_customs_b
 
 (* Program *)
 

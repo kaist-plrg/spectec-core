@@ -390,6 +390,14 @@ and pp_parser_states ?(level = 0) fmt parser_states =
 
 and pp_table ?(level = 0) fmt table = P.pp_table ~level pp_expr fmt table
 
+(* Table properties *)
+
+and pp_table_property ?(level = 0) fmt table_properties =
+  P.pp_table_property ~level pp_expr fmt table_properties
+
+and pp_table_properties ?(level = 0) fmt table_properties =
+  P.pp_table_properties ~level pp_expr fmt table_properties
+
 (* Table keys *)
 
 and pp_table_key' ?(level = 0) fmt table_key' =
@@ -397,6 +405,9 @@ and pp_table_key' ?(level = 0) fmt table_key' =
 
 and pp_table_key ?(level = 0) fmt table_key =
   P.pp_table_key ~level pp_expr fmt table_key
+
+and pp_table_keys' ?(level = 0) fmt table_keys' =
+  P.pp_table_keys' ~level pp_expr fmt table_keys'
 
 and pp_table_keys ?(level = 0) fmt table_keys =
   P.pp_table_keys ~level pp_expr fmt table_keys
@@ -409,6 +420,9 @@ and pp_table_action' ?(level = 0) fmt table_action' =
 and pp_table_action ?(level = 0) fmt table_action =
   P.pp_table_action ~level pp_expr fmt table_action
 
+and pp_table_actions' ?(level = 0) fmt table_actions' =
+  P.pp_table_actions' ~level pp_expr fmt table_actions'
+
 and pp_table_actions ?(level = 0) fmt table_actions =
   P.pp_table_actions ~level pp_expr fmt table_actions
 
@@ -419,6 +433,9 @@ and pp_table_entry' ?(level = 0) fmt table_entry' =
 
 and pp_table_entry ?(level = 0) fmt table_entry =
   P.pp_table_entry ~level pp_expr fmt table_entry
+
+and pp_table_entries' ?(level = 0) fmt table_entries' =
+  P.pp_table_entries' ~level pp_expr fmt table_entries'
 
 and pp_table_entries ?(level = 0) fmt table_entries =
   P.pp_table_entries ~level pp_expr fmt table_entries
@@ -438,9 +455,6 @@ and pp_table_custom' ?(level = 0) fmt table_custom' =
 
 and pp_table_custom ?(level = 0) fmt table_custom =
   P.pp_table_custom ~level pp_expr fmt table_custom
-
-and pp_table_customs ?(level = 0) fmt table_customs =
-  P.pp_table_customs ~level pp_expr fmt table_customs
 
 (* Program *)
 

@@ -332,7 +332,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue1986.p4
 Error while typechecking p4 file: test/program/ill-typed/issue2021.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2033.p4
-Typecheck success: test/program/ill-typed/issue2033.p4
+(type_table_action_default) There is no action named nop in actions list
+Error while typechecking p4 file: test/program/ill-typed/issue2033.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2036-1.p4
 (coerce_type) Cannot coerce type tuple<bit<8>> to struct s { x = bit<8> }
@@ -570,7 +571,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue3378.p4
 Typecheck success: test/program/ill-typed/issue3430.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3442.p4
-Typecheck success: test/program/ill-typed/issue3442.p4
+(type_table_entries') Entries cannot be specified for a table with no key
+Error while typechecking p4 file: test/program/ill-typed/issue3442.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue345.p4
 (type_control_decl) Control declarations cannot be generic
@@ -798,7 +800,8 @@ Error while typechecking p4 file: test/program/ill-typed/methodArgDontcare.p4
 Error while parsing p4 file: test/program/ill-typed/minWidth.p4
 
 >>> Running typecheck test on test/program/ill-typed/missing_actions.p4
-Typecheck success: test/program/ill-typed/missing_actions.p4
+(check_table_properties) A table should have one action property
+Error while typechecking p4 file: test/program/ill-typed/missing_actions.p4
 
 >>> Running typecheck test on test/program/ill-typed/missing_match.p4
 (type_table_key) noSuchMatch is not a valid match_kind
@@ -1002,7 +1005,8 @@ Typecheck success: test/program/ill-typed/structured-annotation-e2.p4
 Typecheck success: test/program/ill-typed/structured-annotation-e3.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-decl-order.p4
-Typecheck success: test/program/ill-typed/table-entries-decl-order.p4
+(type_table_entries') Entries cannot be specified for a table with no key
+Error while typechecking p4 file: test/program/ill-typed/table-entries-decl-order.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-exact-ternary.p4
 (type_table_entry_keysets) Number of select keys must match the number of cases
@@ -1130,4 +1134,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 266/299 (88.96%) [FAIL] 33/299 (11.04%)
-Typecheck: [PASS] 206/266 (77.44%) [FAIL] 60/266 (22.56%)
+Typecheck: [PASS] 210/266 (78.95%) [FAIL] 56/266 (21.05%)

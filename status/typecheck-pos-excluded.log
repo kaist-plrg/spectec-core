@@ -589,7 +589,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/action-two-params.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/op_bin.p4
-(check_instantiation_site) extern hash_table {  } cannot be instantiated in TableApplyMethod
+(coerce_type) Cannot coerce type seq<bit<128>> to bit<128>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/op_bin.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/table-entries-no-arg-actions.p4
@@ -615,7 +615,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast/issue3283.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/mask-on-exact-match/spec-ex25.p4
-(check_instantiation_site) extern tbl {  } cannot be instantiated in TableApplyMethod
+(type_action_keyset) match_kind exact cannot use mask expression 
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/mask-on-exact-match/spec-ex25.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/pins/pins_fabric.p4
@@ -954,7 +954,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/o
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/optional-param/pna-dpdk-direct-counter.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/action_selector_shared-bmv2.p4
-(type_table_custom) Custom element implementation is undefined
+(check_table_key) selector is not a valid match_kind
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/action_selector_shared-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/issue1560-bmv2.p4
@@ -962,19 +962,19 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/s
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/issue1560-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/pna-action-selector-1.p4
-(type_table_custom) Custom element pna_implementation is undefined
+(check_table_key) selector is not a valid match_kind
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/pna-action-selector-1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/pna-action-selector.p4
-(type_table_custom) Custom element pna_implementation is undefined
+(check_table_key) selector is not a valid match_kind
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/pna-action-selector.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector1.p4
-(type_table_custom) Custom element psa_implementation is undefined
+(check_table_key) selector is not a valid match_kind
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector2.p4
-(type_table_custom) Custom element psa_implementation is undefined
+(check_table_key) selector is not a valid match_kind
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector3.p4
@@ -982,11 +982,11 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/s
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector3.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector4.p4
-(type_table_custom) Custom element psa_implementation is undefined
+(check_table_key) selector is not a valid match_kind
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector4.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector5.p4
-(type_table_custom) Custom element psa_implementation is undefined
+(check_table_key) selector is not a valid match_kind
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector5.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector6.p4

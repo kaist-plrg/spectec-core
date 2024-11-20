@@ -362,11 +362,28 @@ and eq_parser_states (eq_typ : 'typ eq_typ) (eq_expr : ('note, 'expr) eq_expr)
 
 and eq_table (eq_expr : ('note, 'expr) eq_expr) (table_a : ('note, 'expr) table)
     (table_b : ('note, 'expr) table) =
-  eq_table_keys eq_expr table_a.keys table_b.keys
-  && eq_table_actions eq_expr table_a.actions table_b.actions
-  && eq_table_entries eq_expr table_a.entries table_b.entries
-  && eq_option (eq_table_default eq_expr) table_a.default table_b.default
-  && eq_table_customs eq_expr table_a.customs table_b.customs
+  eq_table_properties eq_expr table_a table_b
+
+(* Table properties *)
+
+and eq_table_properties (eq_expr : ('note, 'expr) eq_expr) table_properties_a
+    table_properties_b =
+  eq_list (eq_table_property eq_expr) table_properties_a table_properties_b
+
+and eq_table_property (eq_expr : ('note, 'expr) eq_expr) table_property_a
+    table_property_b =
+  match (table_property_a, table_property_b) with
+  | KeyP table_keys_a, KeyP table_keys_b ->
+      eq_table_keys eq_expr table_keys_a table_keys_b
+  | ActionP table_actions_a, ActionP table_actions_b ->
+      eq_table_actions eq_expr table_actions_a table_actions_b
+  | EntryP table_entries_a, EntryP table_entries_b ->
+      eq_table_entries eq_expr table_entries_a table_entries_b
+  | DefaultP table_default_a, DefaultP table_default_b ->
+      eq_table_default eq_expr table_default_a table_default_b
+  | CustomP table_custom_a, CustomP table_custom_b ->
+      eq_table_custom eq_expr table_custom_a table_custom_b
+  | _ -> false
 
 (* Table keys *)
 
@@ -380,8 +397,12 @@ and eq_table_key' (eq_expr : ('note, 'expr) eq_expr) table_key_a table_key_b =
 and eq_table_key (eq_expr : ('note, 'expr) eq_expr) table_key_a table_key_b =
   eq_table_key' eq_expr table_key_a.it table_key_b.it
 
-and eq_table_keys (eq_expr : ('note, 'expr) eq_expr) table_keys_a table_keys_b =
+and eq_table_keys' (eq_expr : ('note, 'expr) eq_expr) table_keys_a table_keys_b
+    =
   eq_list (eq_table_key eq_expr) table_keys_a table_keys_b
+
+and eq_table_keys (eq_expr : ('note, 'expr) eq_expr) table_keys_a table_keys_b =
+  eq_table_keys' eq_expr table_keys_a.it table_keys_b.it
 
 (* Table action references *)
 
@@ -397,25 +418,41 @@ and eq_table_action (eq_expr : ('note, 'expr) eq_expr) table_action_a
     table_action_b =
   eq_table_action' eq_expr table_action_a.it table_action_b.it
 
-and eq_table_actions (eq_expr : ('note, 'expr) eq_expr) table_actions_a
+and eq_table_actions' (eq_expr : ('note, 'expr) eq_expr) table_actions_a
     table_actions_b =
   eq_list (eq_table_action eq_expr) table_actions_a table_actions_b
 
+and eq_table_actions (eq_expr : ('note, 'expr) eq_expr) table_actions_a
+    table_actions_b =
+  eq_table_actions' eq_expr table_actions_a.it table_actions_b.it
+
 (* Table entries *)
-and eq_priority (eq_expr : ('note, 'expr) eq_expr) priority_a priority_b =
-  eq_expr priority_a priority_b
+
+and eq_table_entry_priority (eq_expr : ('note, 'expr) eq_expr)
+    table_entry_priority_a table_entry_priority_b =
+  eq_expr table_entry_priority_a table_entry_priority_b
 
 and eq_table_entry' (eq_expr : ('note, 'expr) eq_expr) table_entry_a
     table_entry_b =
-  let keysets_a, table_action_a, priority_a, table_entry_const_a, annos_a =
+  let ( keysets_a,
+        table_action_a,
+        table_entry_priority_a,
+        table_entry_const_a,
+        annos_a ) =
     table_entry_a
   in
-  let keysets_b, table_action_b, priority_b, table_entry_const_b, annos_b =
+  let ( keysets_b,
+        table_action_b,
+        table_entry_priority_b,
+        table_entry_const_b,
+        annos_b ) =
     table_entry_b
   in
   eq_keysets eq_expr keysets_a keysets_b
   && eq_table_action eq_expr table_action_a table_action_b
-  && eq_option (eq_priority eq_expr) priority_a priority_b
+  && eq_option
+       (eq_table_entry_priority eq_expr)
+       table_entry_priority_a table_entry_priority_b
   && table_entry_const_a = table_entry_const_b
   && eq_annos eq_expr annos_a annos_b
 
@@ -423,12 +460,16 @@ and eq_table_entry (eq_expr : ('note, 'expr) eq_expr) table_entry_a
     table_entry_b =
   eq_table_entry' eq_expr table_entry_a.it table_entry_b.it
 
+and eq_table_entries' (eq_expr : ('note, 'expr) eq_expr) table_entries_a
+    table_entries_b =
+  let table_entries_a, table_entry_const_a = table_entries_a in
+  let table_entries_b, table_entry_const_b = table_entries_b in
+  eq_list (eq_table_entry eq_expr) table_entries_a table_entries_b
+  && table_entry_const_a = table_entry_const_b
+
 and eq_table_entries (eq_expr : ('note, 'expr) eq_expr) table_entries_a
     table_entries_b =
-  let table_entries_a, table_entries_const_a = table_entries_a in
-  let table_entries_b, table_entries_const_b = table_entries_b in
-  eq_list (eq_table_entry eq_expr) table_entries_a table_entries_b
-  && table_entries_const_a = table_entries_const_b
+  eq_table_entries' eq_expr table_entries_a.it table_entries_b.it
 
 (* Table default properties *)
 
@@ -456,10 +497,6 @@ and eq_table_custom' (eq_expr : ('note, 'expr) eq_expr) table_custom_a
 and eq_table_custom (eq_expr : ('note, 'expr) eq_expr) table_custom_a
     table_custom_b =
   eq_table_custom' eq_expr table_custom_a.it table_custom_b.it
-
-and eq_table_customs (eq_expr : ('note, 'expr) eq_expr) table_customs_a
-    table_customs_b =
-  eq_list (eq_table_custom eq_expr) table_customs_a table_customs_b
 
 (* Program *)
 

@@ -678,69 +678,25 @@ and transform_parser_states (states : Parser.state list) : El.parser_state list
 
 (* Tables *)
 
-and transform_table_properties (properties : Table.property list) : El.table =
-  let table_keys, table_actions, table_entries, table_default, table_customs =
-    List.fold_left
-      (fun ( table_keys,
-             table_actions,
-             table_entries,
-             table_default,
-             table_customs ) (property : Table.property) ->
-        match property with
-        | Key { keys; _ } ->
-            let table_keys = transform_table_keys keys in
-            ( table_keys,
-              table_actions,
-              table_entries,
-              table_default,
-              table_customs )
-        | Actions { actions; _ } ->
-            let table_actions = transform_table_actions actions in
-            ( table_keys,
-              table_actions,
-              table_entries,
-              table_default,
-              table_customs )
-        | Entries { entries; const; _ } ->
-            let table_entries = transform_table_entries entries const in
-            ( table_keys,
-              table_actions,
-              table_entries,
-              table_default,
-              table_customs )
-        | DefaultAction { action; const; tags = at; _ } ->
-            assert (table_default = None);
-            let table_action = transform_table_action action in
-            let table_default = Some ((table_action, const) $ at) in
-            ( table_keys,
-              table_actions,
-              table_entries,
-              table_default,
-              table_customs )
-        | Custom { name; value; const; tags = at; annotations } ->
-            let text_name = transform_text name in
-            let expr = transform_expr value in
-            let annos = transform_annos annotations in
-            let table_custom = (text_name, expr, const, annos) $ at in
-            ( table_keys,
-              table_actions,
-              table_entries,
-              table_default,
-              table_customs @ [ table_custom ] ))
-      ([], [], ([], false), None, [])
-      properties
-  in
-  {
-    keys = table_keys;
-    actions = table_actions;
-    entries = table_entries;
-    default = table_default;
-    customs = table_customs;
-  }
+and transform_table_property (property : Table.property) : El.table_property =
+  match property with
+  | Key { keys; tags = at } -> L.KeyP (transform_table_keys keys $ at)
+  | Actions { actions; tags = at } ->
+      L.ActionP (transform_table_actions actions $ at)
+  | Entries { entries; const; tags = at; _ } ->
+      L.EntryP (transform_table_entries entries const $ at)
+  | DefaultAction { action; const; tags = at } ->
+      L.DefaultP (transform_table_default action const $ at)
+  | Custom { name; value; const; annotations; tags = at } ->
+      L.CustomP (transform_table_custom name value const annotations $ at)
+
+and transform_table_properties (properties : Table.property list) :
+    El.table_property list =
+  List.map transform_table_property properties
 
 (* Table keys *)
 
-and transform_table_keys (keys : Table.key list) : El.table_key list =
+and transform_table_keys (keys : Table.key list) : El.table_keys' =
   List.map
     (fun (key : Table.key) ->
       let Table.{ key; match_kind; tags = at; annotations } = key in
@@ -750,7 +706,7 @@ and transform_table_keys (keys : Table.key list) : El.table_key list =
       $ at)
     keys
 
-(* Table actions *)
+(* Table action references *)
 
 and transform_table_action (action : Table.action_ref) : El.table_action =
   let Table.{ name; args; tags = at; annotations } = action in
@@ -760,7 +716,7 @@ and transform_table_action (action : Table.action_ref) : El.table_action =
   (var, args, annos) $ at
 
 and transform_table_actions (actions : Table.action_ref list) :
-    El.table_action list =
+    El.table_actions' =
   List.map transform_table_action actions
 
 (* Table entries *)
@@ -770,14 +726,32 @@ and transform_table_entry (entry : Table.entry) : El.table_entry =
   in
   let keysets = transform_keysets matches in
   let table_action = transform_table_action action in
-  let priority = Option.map transform_expr priority in
+  let table_entry_priority = Option.map transform_expr priority in
   let annos = transform_annos annotations in
-  (keysets, table_action, priority, const, annos) $ at
+  (keysets, table_action, table_entry_priority, const, annos) $ at
 
 and transform_table_entries (entries : Table.entry list) (const : bool) :
-    El.table_entry list * El.table_entries_const =
-  let entries = List.map transform_table_entry entries in
-  (entries, const)
+    El.table_entries' =
+  let table_entries = List.map transform_table_entry entries in
+  (table_entries, const)
+
+(* Table default properties *)
+
+and transform_table_default (action : Table.action_ref) (const : bool) :
+    El.table_default' =
+  let table_action = transform_table_action action in
+  (table_action, const)
+
+(* Table custom properties *)
+
+and transform_table_custom (name : Text.t) (value : Expression.t) (const : bool)
+    (annotations : Annotation.t list) : El.table_custom' =
+  let text_name = transform_text name in
+  let expr = transform_expr value in
+  let annos = transform_annos annotations in
+  (text_name, expr, const, annos)
+
+(* Program declarations *)
 
 (* Program *)
 

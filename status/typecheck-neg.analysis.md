@@ -100,7 +100,7 @@ apply {
 
 ## 3. Table property
 
-### (1) Missing table action property
+### \[DONE\] (1) ~~Missing table action property~~
 
 ```p4
 table t {
@@ -108,13 +108,7 @@ table t {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* missing_actions.p4
-</details>
-
-### (2) Specifying table entry with empty key
+### \[DONE\] (2) ~~Specifying table entry with empty key~~
 
 ```p4
 table t {
@@ -126,13 +120,7 @@ table t {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue3442.p4
-</details>
-
-### (3) Table properties are sensitive to the order of declaration
+### \[DONE\] (3) ~~Table properties are sensitive to the order of declaration~~
 
 ```p4
 table badtable {
@@ -144,13 +132,6 @@ apply {
     badtable.apply();
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue2033.p4
-* table-entries-decl-order.p4
-</details>
 
 ### (4) Bad mask for longest prefix match
 
@@ -430,37 +411,7 @@ package p(g a);
 p(g()) main;
 ```
 
-### (7) Shift and arbitrary precision integer
-
-```p4
-header H {
-    bit<8> a;
-    bit<8> b;
-    bit<8> c;
-}
-struct Headers {
-    H h;
-}
-control ingress(inout Headers h, inout Meta m, inout standard_metadata_t sm) {
-    apply {
-        h.h.a = (1 << h.h.c) + 8w2;
-    }
-}
-```
-
-```p4
-const int a = 5;
-hdr.v = (bit<8>)(a >> b);
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue2206.p4
-* shift-int-non-const.p4
-</details>
-
-### \[DONE\] (8) ~~Method with same name as object~~
+### \[DONE\] (7) ~~Method with same name as object~~
 
 ```p4
 extern X {
@@ -468,7 +419,7 @@ extern X {
 }
 ```
 
-### (9) Table application is disallowed in action argument
+### (8) Table application is disallowed in action argument
 
 But not sure how to enforce this.
 
@@ -877,6 +828,50 @@ However, the spec does not mandate this.
 <summary>Tests</summary>
 
 * issue3273.p4
+</details>
+
+### 9. Shifting an arbitrary precision integer
+
+Below tests expect that when an arbitrary precision integer is shifted either left or right, the right operand should be a compile-time known value.
+
+However, the spec says, for arbitrary precision integers:
+
+> Arithmetic shift left and right denoted by << and >>. These operations produce an int result. The right operand must be either an unsigned value of type bit<S> or a compile-time known value that is a non-negative integer. (8.8)
+
+i.e., if the right operand is `bit<S>`, then it need not be a compile-time known value.
+
+```p4
+header H {
+    bit<8> a;
+    bit<8> b;
+    bit<8> c;
+}
+struct Headers {
+    H h;
+}
+control ingress(inout Headers h, inout Meta m, inout standard_metadata_t sm) {
+    apply {
+        h.h.a = (1 << h.h.c) + 8w2;
+    }
+}
+```
+
+```
+issue2206.p4(27): [--Werror=type-error] error: 1 << h.h.c: shift result type is arbitrary-precision int, but right operand is not constant; width of left operand of shift needs to be specified or both operands need to be constant
+        h.h.a = (1 << h.h.c) + 8w2;
+                 ^^^^^^^^^^
+```
+
+```p4
+const int a = 5;
+hdr.v = (bit<8>)(a >> b);
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue2206.p4
+* shift-int-non-const.p4
 </details>
 
 # D. More than a type check? (Requiring domain-specific knowledge)

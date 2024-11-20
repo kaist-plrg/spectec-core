@@ -187,27 +187,39 @@ and ('typ, 'note, 'expr, 'decl) parser_state' =
   state_label * ('typ, 'note, 'expr, 'decl) block * ('note, 'expr) anno list
 
 (* Table *)
-and ('note, 'expr) table = {
-  keys : ('note, 'expr) table_key list;
-  actions : ('note, 'expr) table_action list;
-  entries : ('note, 'expr) table_entry list * table_entries_const;
-  default : ('note, 'expr) table_default option;
-  customs : ('note, 'expr) table_custom list;
-}
+and ('note, 'expr) table = ('note, 'expr) table_property list
+
+(* Table properties *)
+and ('note, 'expr) table_property =
+  | KeyP of ('note, 'expr) table_keys
+  | ActionP of ('note, 'expr) table_actions
+  | EntryP of ('note, 'expr) table_entries
+  | DefaultP of ('note, 'expr) table_default
+  | CustomP of ('note, 'expr) table_custom
 
 (* Table keys *)
+and ('note, 'expr) table_keys = ('note, 'expr) table_keys' phrase
+and ('note, 'expr) table_keys' = ('note, 'expr) table_key list
 and ('note, 'expr) table_key = ('note, 'expr) table_key' phrase
 
 and ('note, 'expr) table_key' =
   ('note, 'expr) expr * match_kind * ('note, 'expr) anno list
 
 (* Table action references *)
+and ('note, 'expr) table_actions = ('note, 'expr) table_actions' phrase
+and ('note, 'expr) table_actions' = ('note, 'expr) table_action list
 and ('note, 'expr) table_action = ('note, 'expr) table_action' phrase
 
 and ('note, 'expr) table_action' =
   var * ('note, 'expr) arg list * ('note, 'expr) anno list
 
 (* Table entries *)
+and ('note, 'expr) table_entries = ('note, 'expr) table_entries' phrase
+
+and ('note, 'expr) table_entries' =
+  ('note, 'expr) table_entry list * table_entries_const
+
+and table_entries_const = bool
 and ('note, 'expr) table_entry = ('note, 'expr) table_entry' phrase
 
 and ('note, 'expr) table_entry' =
@@ -217,7 +229,6 @@ and ('note, 'expr) table_entry' =
   * table_entry_const
   * ('note, 'expr) anno list
 
-and table_entries_const = bool
 and table_entry_const = bool
 
 (* Table default properties *)

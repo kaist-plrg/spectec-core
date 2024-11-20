@@ -359,29 +359,24 @@ and pp_parser_states ?(level = 0) (pp_typ : 'typ pp_typ)
 
 and pp_table ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
     (table : ('note, 'expr) table) =
-  match table.default with
-  | Some table_default ->
-      F.fprintf fmt "{\n%a\n%a\n%a\n%a\n%a\n%s}"
-        (pp_table_keys ~level:(level + 1) pp_expr)
-        table.keys
-        (pp_table_actions ~level:(level + 1) pp_expr)
-        table.actions
-        (pp_table_entries ~level:(level + 1) pp_expr)
-        table.entries
-        (pp_table_default ~level:(level + 1) pp_expr)
-        table_default
-        (pp_table_customs ~level:(level + 1) pp_expr)
-        table.customs (indent level)
-  | None ->
-      F.fprintf fmt "{\n%a\n%a\n%a\n%a\n%s}"
-        (pp_table_keys ~level:(level + 1) pp_expr)
-        table.keys
-        (pp_table_actions ~level:(level + 1) pp_expr)
-        table.actions
-        (pp_table_entries ~level:(level + 1) pp_expr)
-        table.entries
-        (pp_table_customs ~level:(level + 1) pp_expr)
-        table.customs (indent level)
+  F.fprintf fmt "table {\n%a%s}"
+    (pp_table_properties ~level:(level + 1) pp_expr)
+    table (indent level)
+
+(* Table properties *)
+
+and pp_table_property ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
+    (table_property : ('note, 'expr) table_property) =
+  match table_property with
+  | KeyP table_keys -> pp_table_keys ~level pp_expr fmt table_keys
+  | ActionP table_actions -> pp_table_actions ~level pp_expr fmt table_actions
+  | EntryP table_entries -> pp_table_entries ~level pp_expr fmt table_entries
+  | DefaultP table_default -> pp_table_default ~level pp_expr fmt table_default
+  | CustomP table_custom -> pp_table_custom ~level pp_expr fmt table_custom
+
+and pp_table_properties ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
+    table_properties =
+  pp_list (pp_table_property ~level pp_expr) "\n" fmt table_properties
 
 (* Table keys *)
 
@@ -394,14 +389,15 @@ and pp_table_key' ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt table_key'
 and pp_table_key ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt table_key =
   pp_table_key' ~level pp_expr fmt table_key.it
 
+and pp_table_keys' ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
+    table_keys =
+  F.fprintf fmt "%skey = {\n%a\n%s}" (indent level)
+    (pp_list (pp_table_key ~level:(level + 1) pp_expr) "\n")
+    table_keys (indent level)
+
 and pp_table_keys ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt table_keys
     =
-  match table_keys with
-  | [] -> ()
-  | _ ->
-      F.fprintf fmt "%skey = {\n%a\n%s}" (indent level)
-        (pp_list (pp_table_key ~level:(level + 1) pp_expr) "\n")
-        table_keys (indent level)
+  pp_table_keys' ~level pp_expr fmt table_keys.it
 
 (* Table action references *)
 
@@ -417,26 +413,28 @@ and pp_table_action ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
     table_action =
   pp_table_action' ~level pp_expr fmt table_action.it
 
+and pp_table_actions' ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
+    table_actions =
+  F.fprintf fmt "%sactions = {\n%a\n%s}" (indent level)
+    (pp_list (pp_table_action ~level:(level + 1) pp_expr) "\n")
+    table_actions (indent level)
+
 and pp_table_actions ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
     table_actions =
-  match table_actions with
-  | [] -> ()
-  | _ ->
-      F.fprintf fmt "%sactions = {\n%a\n%s}" (indent level)
-        (pp_list (pp_table_action ~level:(level + 1) pp_expr) "\n")
-        table_actions (indent level)
+  pp_table_actions' ~level pp_expr fmt table_actions.it
 
 (* Table entries *)
 
 and pp_table_entry' ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
     table_entry' =
-  (* TODO : pp : priority *)
-  let keysets, table_action, priority, const, _annos = table_entry' in
+  let keysets, table_action, table_entry_priority, table_entry_const, _annos =
+    table_entry'
+  in
   F.fprintf fmt "%s%s%s%a%s%a : %a" (indent level)
-    (if const then "const " else "      ")
-    (if priority |> Option.is_some then "priority = " else "                ")
-    (pp_option pp_expr) priority
-    (if priority |> Option.is_some then " : " else "")
+    (if table_entry_const then "const " else "")
+    (if table_entry_priority |> Option.is_some then "priority = " else "")
+    (pp_option pp_expr) table_entry_priority
+    (if table_entry_priority |> Option.is_some then " : " else "")
     (pp_keysets pp_expr) keysets
     (pp_table_action ~level:(level + 1) pp_expr)
     table_action
@@ -445,16 +443,17 @@ and pp_table_entry ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
     table_entry =
   pp_table_entry' ~level pp_expr fmt table_entry.it
 
-and pp_table_entries ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
+and pp_table_entries' ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
     table_entries =
   let table_entries, table_entries_const = table_entries in
-  match table_entries with
-  | [] -> ()
-  | _ ->
-      F.fprintf fmt "%s%s entries = {\n%a\n%s}" (indent level)
-        (if table_entries_const then "const " else "")
-        (pp_list (pp_table_entry ~level:(level + 1) pp_expr) "\n")
-        table_entries (indent level)
+  F.fprintf fmt "%s%sentries = {\n%a\n%s}" (indent level)
+    (if table_entries_const then "const " else "")
+    (pp_list (pp_table_entry ~level:(level + 1) pp_expr) "\n")
+    table_entries (indent level)
+
+and pp_table_entries ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
+    table_entries =
+  pp_table_entries' ~level pp_expr fmt table_entries.it
 
 (* Table default properties *)
 
@@ -482,10 +481,6 @@ and pp_table_custom' ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
 and pp_table_custom ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
     table_custom =
   pp_table_custom' ~level pp_expr fmt table_custom.it
-
-and pp_table_customs ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
-    table_customs =
-  pp_list (pp_table_custom ~level:(level + 1) pp_expr) "\n" fmt table_customs
 
 (* Program *)
 
