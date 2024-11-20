@@ -48,26 +48,26 @@ let rec pp fmt value =
       F.fprintf fmt "stack { %a }" (P.pp_list pp "; ") values
   | StructV fields ->
       F.fprintf fmt "struct { %a }"
-        (P.pp_pairs (P.pp_member' ~level:0) pp "; ")
+        (P.pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
         fields
   | HeaderV (_valid, fields) ->
       F.fprintf fmt "header { %a }"
-        (P.pp_pairs (P.pp_member' ~level:0) pp "; ")
+        (P.pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
         fields
   | UnionV fields ->
       F.fprintf fmt "header_union { %a }"
-        (P.pp_pairs (P.pp_member' ~level:0) pp "; ")
+        (P.pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
         fields
   | SeqV values -> F.fprintf fmt "seq { %a }" (P.pp_list pp ", ") values
   | SeqDefaultV values ->
       F.fprintf fmt "seq { %a, ... }" (P.pp_list pp ", ") values
   | RecordV fields ->
       F.fprintf fmt "record { %a }"
-        (P.pp_pairs (P.pp_member' ~level:0) pp "; ")
+        (P.pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
         fields
   | RecordDefaultV fields ->
       F.fprintf fmt "record { %a, ... }"
-        (P.pp_pairs (P.pp_member' ~level:0) pp "; ")
+        (P.pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
         fields
   | DefaultV -> F.pp_print_string fmt "..."
   | InvalidV -> F.pp_print_string fmt "{#}"

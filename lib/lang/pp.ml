@@ -11,14 +11,14 @@ let pp_list pp_elem sep fmt l =
 
 let pp_option pp_elem fmt = function Some x -> pp_elem fmt x | None -> ()
 
-let pp_pairs ?(trailing = false) ?(level = 0) pp_k pp_v sep fmt pairs =
+let pp_pairs ?(trailing = false) ?(level = 0) pp_k pp_v rel sep fmt pairs =
   F.fprintf fmt "%a"
     (Format.pp_print_list
        ~pp_sep:(fun fmt () -> F.fprintf fmt sep)
        (fun fmt (k, v) ->
-         F.fprintf fmt "%s%a = %a" (indent level) pp_k k pp_v v))
+         F.fprintf fmt "%s%a%s%a" (indent level) pp_k k rel pp_v v))
     pairs;
-  if trailing then F.fprintf fmt sep
+  if trailing && pairs <> [] then F.fprintf fmt sep
 
 (* Parameterized printer types *)
 
@@ -145,7 +145,7 @@ let rec pp_anno' (pp_expr : ('note, 'expr) pp_expr) fmt anno' =
         exprs
   | RecordN (text, fields) ->
       F.fprintf fmt "@%a[%a]" pp_text text
-        (pp_pairs pp_member (pp_expr ~level:0) ", ")
+        (pp_pairs pp_member (pp_expr ~level:0) " = " ", ")
         fields
 
 and pp_anno (pp_expr : ('note, 'expr) pp_expr) fmt anno =
@@ -270,9 +270,14 @@ let rec pp_stmt' ?(level = 0) (pp_typ : 'typ pp_typ)
       F.fprintf fmt "%s%a%a.apply%a;" (indent level) pp_var var_inst
         (pp_targs pp_typ) targs (pp_args pp_expr) args
   | TransS { expr_label } ->
-      F.fprintf fmt "%stransition %a;" (indent level)
-        (pp_expr ~level:(level + 1))
-        expr_label
+      let sexpr_label =
+        F.asprintf "%a" (pp_expr ~level:(level + 1)) expr_label
+      in
+      let trailing_semicolon =
+        if String.starts_with ~prefix:"select(" sexpr_label then "" else ";"
+      in
+      F.fprintf fmt "%stransition %s%s" (indent level) sexpr_label
+        trailing_semicolon
   | DeclS { decl } -> pp_decl ~level fmt decl
 
 and pp_stmt ?(level = 0) (pp_typ : 'typ pp_typ)
@@ -316,7 +321,7 @@ and pp_switch_case' ?(level = 0) (pp_typ : 'typ pp_typ)
         (pp_block ~level:(level + 1) pp_typ pp_expr pp_decl)
         block
   | FallC switch_label ->
-      F.fprintf fmt "%s%a;" (indent level) (pp_switch_label pp_expr)
+      F.fprintf fmt "%s%a:" (indent level) (pp_switch_label pp_expr)
         switch_label
 
 and pp_switch_case ?(level = 0) (pp_typ : 'typ pp_typ)
@@ -359,7 +364,7 @@ and pp_parser_states ?(level = 0) (pp_typ : 'typ pp_typ)
 
 and pp_table ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
     (table : ('note, 'expr) table) =
-  F.fprintf fmt "table {\n%a%s}"
+  F.fprintf fmt "{\n%a\n%s}"
     (pp_table_properties ~level:(level + 1) pp_expr)
     table (indent level)
 
@@ -462,7 +467,7 @@ and pp_table_default' ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
   let table_action, table_default_const = table_default' in
   F.fprintf fmt "%s%sdefault_action = %a" (indent level)
     (if table_default_const then "const " else "")
-    (pp_table_action ~level:(level + 1) pp_expr)
+    (pp_table_action ~level:0 pp_expr)
     table_action
 
 and pp_table_default ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt

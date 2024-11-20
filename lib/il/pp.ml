@@ -117,14 +117,15 @@ and pp_expr' ?(level = 0) fmt expr' =
   | SeqE { exprs } ->
       F.fprintf fmt "{ %a }" (P.pp_list (pp_expr ~level:0) ", ") exprs
   | SeqDefaultE { exprs } ->
-      F.fprintf fmt "{ %a, ... }" (P.pp_list (pp_expr ~level:0) ", ") exprs
+      if exprs = [] then F.pp_print_string fmt "{ ... }"
+      else F.fprintf fmt "{ %a, ... }" (P.pp_list (pp_expr ~level:0) ", ") exprs
   | RecordE { fields } ->
       F.fprintf fmt "{ %a }"
-        (P.pp_pairs pp_member (pp_expr ~level:0) ", ")
+        (P.pp_pairs pp_member (pp_expr ~level:0) " = " ", ")
         fields
   | RecordDefaultE { fields } ->
       F.fprintf fmt "{ %a, ... }"
-        (P.pp_pairs pp_member (pp_expr ~level:0) ", ")
+        (P.pp_pairs pp_member (pp_expr ~level:0) " = " ", ")
         fields
   | DefaultE -> F.pp_print_string fmt "..."
   | UnE { unop; expr } ->
@@ -144,7 +145,7 @@ and pp_expr' ?(level = 0) fmt expr' =
       F.fprintf fmt "%a .. %a" (pp_expr ~level:0) expr_lb (pp_expr ~level:0)
         expr_ub
   | SelectE { exprs_select; cases } ->
-      F.fprintf fmt "select (%a) {\n%a\n%s}" (pp_exprs ~level:0) exprs_select
+      F.fprintf fmt "select(%a) {\n%a\n%s}" (pp_exprs ~level:0) exprs_select
         (pp_select_cases ~level:(level + 1))
         cases (P.indent level)
   | ArrAccE { expr_base; expr_idx } ->

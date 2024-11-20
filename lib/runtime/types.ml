@@ -150,15 +150,15 @@ and pp_typ fmt typ =
   | StackT (typ, size) -> F.fprintf fmt "%a[%a]" pp_typ typ Bigint.pp size
   | StructT (id, fields) ->
       F.fprintf fmt "struct %a { %a }" P.pp_id' id
-        (P.pp_pairs P.pp_member' pp_typ "; ")
+        (P.pp_pairs P.pp_member' pp_typ " " "; ")
         fields
   | HeaderT (id, fields) ->
       F.fprintf fmt "header %a { %a }" P.pp_id' id
-        (P.pp_pairs P.pp_member' pp_typ "; ")
+        (P.pp_pairs P.pp_member' pp_typ " " "; ")
         fields
   | UnionT (id, fields) ->
       F.fprintf fmt "header_union %a { %a }" P.pp_id' id
-        (P.pp_pairs P.pp_member' pp_typ "; ")
+        (P.pp_pairs P.pp_member' pp_typ " " "; ")
         fields
   | ExternT (id, fdenv) ->
       F.fprintf fmt "extern %a %a" P.pp_id' id (FIdMap.pp pp_funcdef) fdenv
@@ -171,10 +171,12 @@ and pp_typ fmt typ =
   | SeqDefaultT typs ->
       F.fprintf fmt "seq<%a, ...>" (P.pp_list pp_typ ",@ ") typs
   | RecordT fields ->
-      F.fprintf fmt "record { %a }" (P.pp_pairs P.pp_member' pp_typ "; ") fields
+      F.fprintf fmt "record { %a }"
+        (P.pp_pairs P.pp_member' pp_typ " " "; ")
+        fields
   | RecordDefaultT fields ->
       F.fprintf fmt "record { %a, ... }"
-        (P.pp_pairs P.pp_member' pp_typ "; ")
+        (P.pp_pairs P.pp_member' pp_typ " " "; ")
         fields
   | DefaultT -> F.pp_print_string fmt "default"
   | InvalidT -> F.pp_print_string fmt "{#}"
@@ -193,19 +195,19 @@ and pp_typdef fmt typdef =
         members
   | SEnumD (id, typ, fields) ->
       F.fprintf fmt "enum<%a> %a { %a }" pp_typ typ P.pp_id' id
-        (P.pp_pairs P.pp_member' Value.pp ", ")
+        (P.pp_pairs P.pp_member' Value.pp " = " ", ")
         fields
   | StructD (id, tparams, fields) ->
       F.fprintf fmt "struct %a<%a> { %a }" P.pp_id' id pp_tparams tparams
-        (P.pp_pairs P.pp_member' pp_typ "; ")
+        (P.pp_pairs P.pp_member' pp_typ " " "; ")
         fields
   | HeaderD (id, tparams, fields) ->
       F.fprintf fmt "header %a<%a> { %a }" P.pp_id' id pp_tparams tparams
-        (P.pp_pairs P.pp_member' pp_typ "; ")
+        (P.pp_pairs P.pp_member' pp_typ " " "; ")
         fields
   | UnionD (id, tparams, fields) ->
       F.fprintf fmt "header_union %a<%a> { %a }" P.pp_id' id pp_tparams tparams
-        (P.pp_pairs P.pp_member' pp_typ "; ")
+        (P.pp_pairs P.pp_member' pp_typ " " "; ")
         fields
   | ExternD (id, tparams, fdenv) ->
       F.fprintf fmt "extern %a<%a> %a" P.pp_id' id pp_tparams tparams

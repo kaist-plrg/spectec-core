@@ -60,21 +60,30 @@ let pp_dir fmt dir = P.pp_dir fmt dir
 let rec pp_typ' fmt typ' =
   match typ' with
   | VoidT -> F.pp_print_string fmt "void"
-  | ErrT -> F.pp_print_string fmt "err"
+  | ErrT -> F.pp_print_string fmt "error"
   | MatchKindT -> F.pp_print_string fmt "match_kind"
   | StrT -> F.pp_print_string fmt "string"
   | BoolT -> F.pp_print_string fmt "bool"
   | IntT -> F.pp_print_string fmt "int"
-  | FIntT expr_width -> F.fprintf fmt "int<%a>" (pp_expr ~level:0) expr_width
-  | FBitT expr_width -> F.fprintf fmt "bit<%a>" (pp_expr ~level:0) expr_width
-  | VBitT expr_width -> F.fprintf fmt "varbit<%a>" (pp_expr ~level:0) expr_width
+  | FIntT expr_width -> (
+      match expr_width.it with
+      | VarE _ -> F.fprintf fmt "int<(%a)>" (pp_expr ~level:0) expr_width
+      | _ -> F.fprintf fmt "int<%a>" (pp_expr ~level:0) expr_width)
+  | FBitT expr_width -> (
+      match expr_width.it with
+      | VarE _ -> F.fprintf fmt "bit<(%a)>" (pp_expr ~level:0) expr_width
+      | _ -> F.fprintf fmt "bit<%a>" (pp_expr ~level:0) expr_width)
+  | VBitT expr_width -> (
+      match expr_width.it with
+      | VarE _ -> F.fprintf fmt "varbit<(%a)>" (pp_expr ~level:0) expr_width
+      | _ -> F.fprintf fmt "varbit<%a>" (pp_expr ~level:0) expr_width)
   | NameT var -> F.fprintf fmt "%a" pp_var var
   | SpecT (var, targs) -> F.fprintf fmt "%a%a" pp_var var pp_targs targs
   | StackT (typ, expr_size) ->
       F.fprintf fmt "%a[%a]" pp_typ typ (pp_expr ~level:0) expr_size
   | ListT typ -> F.fprintf fmt "list<%a>" pp_typ typ
   | TupleT typs -> F.fprintf fmt "tuple<%a>" pp_typs typs
-  | AnyT -> F.pp_print_string fmt "any"
+  | AnyT -> F.pp_print_string fmt "_"
 
 and pp_typ fmt typ = pp_typ' fmt typ.it
 and pp_typs fmt typs = P.pp_list pp_typ ", " fmt typs
@@ -132,14 +141,15 @@ and pp_expr' ?(level = 0) fmt expr' =
   | SeqE { exprs } ->
       F.fprintf fmt "{ %a }" (P.pp_list (pp_expr ~level:0) ", ") exprs
   | SeqDefaultE { exprs } ->
-      F.fprintf fmt "{ %a, ... }" (P.pp_list (pp_expr ~level:0) ", ") exprs
+      if exprs = [] then F.pp_print_string fmt "{ ... }"
+      else F.fprintf fmt "{ %a, ... }" (P.pp_list (pp_expr ~level:0) ", ") exprs
   | RecordE { fields } ->
       F.fprintf fmt "{ %a }"
-        (P.pp_pairs pp_member (pp_expr ~level:0) ", ")
+        (P.pp_pairs pp_member (pp_expr ~level:0) " = " ", ")
         fields
   | RecordDefaultE { fields } ->
       F.fprintf fmt "{ %a, ... }"
-        (P.pp_pairs pp_member (pp_expr ~level:0) ", ")
+        (P.pp_pairs pp_member (pp_expr ~level:0) " = " ", ")
         fields
   | DefaultE -> F.pp_print_string fmt "..."
   | InvalidE -> F.pp_print_string fmt "{#}"
@@ -160,7 +170,7 @@ and pp_expr' ?(level = 0) fmt expr' =
       F.fprintf fmt "%a .. %a" (pp_expr ~level:0) expr_lb (pp_expr ~level:0)
         expr_ub
   | SelectE { exprs_select; cases } ->
-      F.fprintf fmt "select (%a) {\n%a\n%s}" (pp_exprs ~level:0) exprs_select
+      F.fprintf fmt "select(%a) {\n%a\n%s}" (pp_exprs ~level:0) exprs_select
         (pp_select_cases ~level:(level + 1))
         cases (P.indent level)
   | ArrAccE { expr_base; expr_idx } ->
@@ -274,31 +284,31 @@ and pp_decl' ?(level = 0) fmt decl' =
         (pp_members ~level:(level + 1))
         members (P.indent level)
   | StructD { id; tparams; fields; annos = _annos } ->
-      let fields = List.map (fun (member, typ, _) -> (member, typ)) fields in
+      let fields = List.map (fun (member, typ, _) -> (typ, member)) fields in
       F.fprintf fmt "%sstruct %a%a {\n%a\n%s}" (P.indent level) pp_id id
         pp_tparams tparams
-        (P.pp_pairs ~trailing:true ~level:(level + 1) pp_member pp_typ ";\n")
+        (P.pp_pairs ~trailing:true ~level:(level + 1) pp_typ pp_member " " ";\n")
         fields (P.indent level)
   | HeaderD { id; tparams; fields; annos = _annos } ->
-      let fields = List.map (fun (member, typ, _) -> (member, typ)) fields in
+      let fields = List.map (fun (member, typ, _) -> (typ, member)) fields in
       F.fprintf fmt "%sheader %a%a {\n%a\n%s}" (P.indent level) pp_id id
         pp_tparams tparams
-        (P.pp_pairs ~trailing:true ~level:(level + 1) pp_member pp_typ ";\n")
+        (P.pp_pairs ~trailing:true ~level:(level + 1) pp_typ pp_member " " ";\n")
         fields (P.indent level)
   | UnionD { id; tparams; fields; annos = _annos } ->
-      let fields = List.map (fun (member, typ, _) -> (member, typ)) fields in
+      let fields = List.map (fun (member, typ, _) -> (typ, member)) fields in
       F.fprintf fmt "%sheader_union %a%a {\n%a\n%s}" (P.indent level) pp_id id
         pp_tparams tparams
-        (P.pp_pairs ~trailing:true ~level:(level + 1) pp_member pp_typ ";\n")
+        (P.pp_pairs ~trailing:true ~level:(level + 1) pp_typ pp_member " " ";\n")
         fields (P.indent level)
   | EnumD { id; members; annos = _annos } ->
-      F.fprintf fmt "%senum %a {\n%a\n%s}" (P.indent level) pp_id id
+      F.fprintf fmt "%senum %a {\n%a\n%s};" (P.indent level) pp_id id
         (pp_members ~level:(level + 1))
         members (P.indent level)
   | SEnumD { id; typ; fields; annos = _annos } ->
-      F.fprintf fmt "%senum %a %a {\n%a\n%s}" (P.indent level) pp_typ typ pp_id
+      F.fprintf fmt "%senum %a %a {\n%a\n%s};" (P.indent level) pp_typ typ pp_id
         id
-        (P.pp_pairs pp_id (pp_expr ~level:0) ";\n")
+        (P.pp_pairs pp_id (pp_expr ~level:0) " = " ",\n")
         fields (P.indent level)
   | NewTypeD { id; typdef; annos = _annos } -> (
       match typdef with

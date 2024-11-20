@@ -7,6 +7,11 @@ let parse includes filename =
   | Some program -> program
   | None -> failwith "Error while parsing p4."
 
+let roundtrip includes filename =
+  match Frontend.Parse.roundtrip_file includes filename with
+  | Some program -> program
+  | None -> failwith "Error while roundtripping p4."
+
 let typecheck includes filename =
   let program = parse includes filename in
   Typing.Typecheck.type_program program
@@ -16,9 +21,14 @@ let parse_command =
     (let open Command.Let_syntax in
      let open Command.Param in
      let%map includes = flag "-i" (listed string) ~doc:"include paths"
+     and roundtrip_flag =
+       flag "-r" no_arg ~doc:"parse, stringify, and parse the program"
      and filename = anon ("file.p4" %: string) in
      fun () ->
-       let program = parse includes filename in
+       let program =
+         let func = if roundtrip_flag then roundtrip else parse in
+         func includes filename
+       in
        Format.printf "%a\n" El.Pp.pp_program program)
 
 let typecheck_command =

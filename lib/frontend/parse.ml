@@ -36,3 +36,9 @@ let parse_string (filename : string) (str : string) =
   (* assume str is preprocessed *)
   let* tokens = lex filename str in
   parse tokens
+
+let roundtrip_file (includes : string list) (filename : string) =
+  let* program = parse_file includes filename in
+  let program_str = Format.asprintf "%a\n" El.Pp.pp_program program in
+  let* program' = parse_string filename program_str in
+  if El.Eq.eq_program program program' then Some program else None

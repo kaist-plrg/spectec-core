@@ -50,6 +50,8 @@ Typecheck success: test/program/well-typed/alias.p4
 Typecheck success: test/program/well-typed/annotation-bug.p4
 
 >>> Running typecheck test on test/program/well-typed/annotation-inline-propagate.p4
+(eq_id): drop does not equal Set_dmac
+(eq_id): NoAction does not equal set_hdr
 Typecheck success: test/program/well-typed/annotation-inline-propagate.p4
 
 >>> Running typecheck test on test/program/well-typed/annotations.p4
@@ -113,6 +115,8 @@ Typecheck success: test/program/well-typed/array_field1.p4
 Typecheck success: test/program/well-typed/assign.p4
 
 >>> Running typecheck test on test/program/well-typed/basic2-bmv2.p4
+(eq_id): NoAction does not equal ipv4_forward
+(eq_id): NoAction does not equal drop
 Typecheck success: test/program/well-typed/basic2-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/basic_routing-bmv2.p4
@@ -143,6 +147,8 @@ Typecheck success: test/program/well-typed/bool_ebpf.p4
 Typecheck success: test/program/well-typed/bool_to_bit_cast.p4
 
 >>> Running typecheck test on test/program/well-typed/bvec-hdr-bmv2.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 Typecheck success: test/program/well-typed/bvec-hdr-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/bvec_union-bmv2.p4
@@ -170,6 +176,8 @@ Typecheck success: test/program/well-typed/chain.p4
 Typecheck success: test/program/well-typed/chain1.p4
 
 >>> Running typecheck test on test/program/well-typed/checksum-l4-bmv2.p4
+(eq_id): NoAction does not equal foot
+(eq_id): NoAction does not equal foou
 Typecheck success: test/program/well-typed/checksum-l4-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/checksum1-bmv2.p4
@@ -275,15 +283,59 @@ Typecheck success: test/program/well-typed/count_ebpf.p4
 Typecheck success: test/program/well-typed/crash-typechecker.p4
 
 >>> Running typecheck test on test/program/well-typed/crc32-bmv2.p4
+(eq_id): operation_drop does not equal operation_add
+(eq_id): operation_drop does not equal operation_sub
+(eq_id): operation_drop does not equal operation_and
+(eq_id): operation_drop does not equal operation_or
+(eq_id): operation_drop does not equal operation_xor
+(eq_id): operation_drop does not equal operation_crc
+(eq_id): operation_sub does not equal operation_add
+(eq_id): operation_and does not equal operation_add
+(eq_id): operation_and does not equal operation_sub
+(eq_id): operation_or does not equal operation_add
+(eq_id): operation_or does not equal operation_sub
+(eq_id): operation_or does not equal operation_and
+(eq_id): operation_xor does not equal operation_add
+(eq_id): operation_xor does not equal operation_sub
+(eq_id): operation_xor does not equal operation_and
+(eq_id): operation_xor does not equal operation_or
+(eq_id): operation_crc does not equal operation_add
+(eq_id): operation_crc does not equal operation_sub
+(eq_id): operation_crc does not equal operation_and
+(eq_id): operation_crc does not equal operation_or
+(eq_id): operation_crc does not equal operation_xor
 Typecheck success: test/program/well-typed/crc32-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/csum_ubpf.p4
 Typecheck success: test/program/well-typed/csum_ubpf.p4
 
 >>> Running typecheck test on test/program/well-typed/custom-type-restricted-fields.p4
+(eq_id): NoAction does not equal set_addr
+(eq_id): NoAction does not equal my_drop
 Typecheck success: test/program/well-typed/custom-type-restricted-fields.p4
 
 >>> Running typecheck test on test/program/well-typed/dash/dash-pipeline-pna-dpdk.p4
+(eq_id): deny does not equal permit
+(eq_id): deny does not equal permit_and_continue
+(eq_id): deny does not equal permit
+(eq_id): deny does not equal permit_and_continue
+(eq_id): deny does not equal permit
+(eq_id): deny does not equal permit_and_continue
+(eq_id): drop does not equal route_vnet
+(eq_id): drop does not equal route_vnet_direct
+(eq_id): drop does not equal route_direct
+(eq_id): drop does not equal route_service_tunnel
+(eq_id): drop does not equal set_tunnel_mapping
+(eq_id): drop does not equal set_private_link_mapping
+(eq_id): set_inbound_direction does not equal set_outbound_direction
+(eq_id): deny does not equal set_eni
+(eq_id): NoAction does not equal set_policy_meter_class
+(eq_id): NoAction does not equal meter_bucket_action
+(eq_id): deny does not equal accept
+(eq_id): deny does not equal set_eni_attrs
+(eq_id): deny does not equal permit
+(eq_id): deny does not equal tunnel_decap
+(eq_id): deny does not equal tunnel_decap_pa_validate
 Typecheck success: test/program/well-typed/dash/dash-pipeline-pna-dpdk.p4
 
 >>> Running typecheck test on test/program/well-typed/decl.p4
@@ -359,6 +411,12 @@ Typecheck success: test/program/well-typed/empty.p4
 Typecheck success: test/program/well-typed/emptyTuple.p4
 
 >>> Running typecheck test on test/program/well-typed/entries-prio.p4
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
 Typecheck success: test/program/well-typed/entries-prio.p4
 
 >>> Running typecheck test on test/program/well-typed/enum-bmv2.p4
@@ -419,6 +477,16 @@ Typecheck success: test/program/well-typed/filter.p4
 Typecheck success: test/program/well-typed/flag_lost-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/flowlet_switching-bmv2.p4
+(eq_id): NoAction does not equal rewrite_mac
+(eq_id): NoAction does not equal _drop
+(eq_id): NoAction does not equal _drop
+(eq_id): NoAction does not equal set_ecmp_select
+(eq_id): NoAction does not equal _drop
+(eq_id): NoAction does not equal set_nhop
+(eq_id): NoAction does not equal lookup_flowlet_map
+(eq_id): NoAction does not equal set_dmac
+(eq_id): NoAction does not equal _drop
+(eq_id): NoAction does not equal update_flowlet_id
 Typecheck success: test/program/well-typed/flowlet_switching-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/fold_match.p4
@@ -479,6 +547,7 @@ Typecheck success: test/program/well-typed/gauntlet_enum_assign-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_exit_after_valid-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_exit_combination_1-bmv2.p4
+(eq_id): NoAction does not equal dummy
 Typecheck success: test/program/well-typed/gauntlet_exit_combination_1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_exit_combination_10-bmv2.p4
@@ -725,6 +794,7 @@ Typecheck success: test/program/well-typed/gauntlet_typedef_cast-bmv2.p4
 Typecheck success: test/program/well-typed/gauntlet_uninitialized_bool_struct-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/gauntlet_variable_shadowing-bmv2.p4
+(eq_id): NoAction does not equal a_0
 Typecheck success: test/program/well-typed/gauntlet_variable_shadowing-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/generic-struct-tuple.p4
@@ -788,6 +858,60 @@ Typecheck success: test/program/well-typed/hit-expr-bmv2.p4
 Typecheck success: test/program/well-typed/index.p4
 
 >>> Running typecheck test on test/program/well-typed/init-entries-bmv2.p4
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
 Typecheck success: test/program/well-typed/init-entries-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/initializer.p4
@@ -881,6 +1005,7 @@ Typecheck success: test/program/well-typed/ipv4-actions_ubpf.p4
 Typecheck success: test/program/well-typed/ipv6-actions_ubpf.p4
 
 >>> Running typecheck test on test/program/well-typed/ipv6-switch-ml-bmv2.p4
+(eq_id): drop does not equal rewrite_mac
 Typecheck success: test/program/well-typed/ipv6-switch-ml-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue-2123-2-bmv2.p4
@@ -959,6 +1084,11 @@ Typecheck success: test/program/well-typed/issue134-bmv2.p4
 Typecheck success: test/program/well-typed/issue1342.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1352-bmv2.p4
+(eq_id): NoAction does not equal set_dmac
+(eq_id): NoAction does not equal drop
+(eq_id): NoAction does not equal set_nhop
+(eq_id): NoAction does not equal drop
+(eq_id): NoAction does not equal rewrite_mac
 Typecheck success: test/program/well-typed/issue1352-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1386.p4
@@ -1007,15 +1137,18 @@ Typecheck success: test/program/well-typed/issue1540.p4
 Typecheck success: test/program/well-typed/issue1541.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1544-1-bmv2.p4
+(eq_id): my_drop does not equal set_port
 Typecheck success: test/program/well-typed/issue1544-1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1544-2-bmv2.p4
+(eq_id): my_drop does not equal set_port
 Typecheck success: test/program/well-typed/issue1544-2-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1544-2.p4
 Typecheck success: test/program/well-typed/issue1544-2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1544-bmv2.p4
+(eq_id): my_drop does not equal set_port
 Typecheck success: test/program/well-typed/issue1544-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1566-bmv2.p4
@@ -1028,12 +1161,18 @@ Typecheck success: test/program/well-typed/issue1586.p4
 Typecheck success: test/program/well-typed/issue1595-1.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1595.p4
+(eq_id): NoAction does not equal a1
+(eq_id): NoAction does not equal a2
+(eq_id): NoAction does not equal a3
+(eq_id): NoAction does not equal a4
 Typecheck success: test/program/well-typed/issue1595.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1607-bmv2.p4
 Typecheck success: test/program/well-typed/issue1607-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1630-bmv2.p4
+(eq_id): NoAction does not equal ipv4_forward
+(eq_id): NoAction does not equal drop
 Typecheck success: test/program/well-typed/issue1630-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1638.p4
@@ -1052,6 +1191,8 @@ Typecheck success: test/program/well-typed/issue1717.p4
 Typecheck success: test/program/well-typed/issue1724.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1739-bmv2.p4
+(eq_id): my_drop does not equal set_output
+(eq_id): NoAction does not equal my_drop
 Typecheck success: test/program/well-typed/issue1739-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1755-1-bmv2.p4
@@ -1124,6 +1265,7 @@ Typecheck success: test/program/well-typed/issue1985.p4
 Typecheck success: test/program/well-typed/issue1989-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue1997.p4
+(eq_id): b does not equal a
 Typecheck success: test/program/well-typed/issue1997.p4
 
 >>> Running typecheck test on test/program/well-typed/issue2036-3.p4
@@ -1553,12 +1695,16 @@ Typecheck success: test/program/well-typed/issue3374.p4
 Typecheck success: test/program/well-typed/issue3394.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3483_ubpf.p4
+(eq_id): NoAction does not equal Reject
 Typecheck success: test/program/well-typed/issue3483_ubpf.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3486.p4
 Typecheck success: test/program/well-typed/issue3486.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3488-1-bmv2.p4
+(eq_id): send_to_port does not equal action1
+(eq_id): send_to_port does not equal action2
+(eq_id): send_to_port does not equal action3
 Typecheck success: test/program/well-typed/issue3488-1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3488-bmv2.p4
@@ -1568,6 +1714,12 @@ Typecheck success: test/program/well-typed/issue3488-bmv2.p4
 Typecheck success: test/program/well-typed/issue355-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue3550.p4
+(eq_id): execute does not equal NoAction
+(eq_id): execute does not equal NoAction
+(eq_id): execute does not equal NoAction
+(eq_id): execute does not equal NoAction
+(eq_id): execute does not equal NoAction
+(eq_id): execute does not equal NoAction
 Typecheck success: test/program/well-typed/issue3550.p4
 
 >>> Running typecheck test on test/program/well-typed/issue356-bmv2.p4
@@ -1640,9 +1792,11 @@ Typecheck success: test/program/well-typed/issue414-bmv2.p4
 Typecheck success: test/program/well-typed/issue4143.p4
 
 >>> Running typecheck test on test/program/well-typed/issue420.p4
+(eq_id): NoAction does not equal foo
 Typecheck success: test/program/well-typed/issue420.p4
 
 >>> Running typecheck test on test/program/well-typed/issue422.p4
+(eq_id): NoAction does not equal foo
 Typecheck success: test/program/well-typed/issue422.p4
 
 >>> Running typecheck test on test/program/well-typed/issue430-1-bmv2.p4
@@ -1760,6 +1914,9 @@ Typecheck success: test/program/well-typed/issue561-6-bmv2.p4
 Typecheck success: test/program/well-typed/issue561-7-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue561-bmv2.p4
+(eq_id): my_drop does not equal set_l2ptr
+(eq_id): my_drop does not equal set_bd_dmac_intf
+(eq_id): my_drop does not equal rewrite_mac
 Typecheck success: test/program/well-typed/issue561-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue561.p4
@@ -1850,6 +2007,9 @@ Typecheck success: test/program/well-typed/issue951.p4
 Typecheck success: test/program/well-typed/issue955.p4
 
 >>> Running typecheck test on test/program/well-typed/issue982.p4
+(eq_id): NoAction does not equal process_clone_h0
+(eq_id): NoAction does not equal process_clone_h1
+(eq_id): NoAction does not equal do_clone
 Typecheck success: test/program/well-typed/issue982.p4
 
 >>> Running typecheck test on test/program/well-typed/issue983-bmv2.p4
@@ -1865,9 +2025,11 @@ Typecheck success: test/program/well-typed/issue986-bmv2.p4
 Typecheck success: test/program/well-typed/issue995-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/key-bmv2.p4
+(eq_id): NoAction does not equal a
 Typecheck success: test/program/well-typed/key-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/key1-bmv2.p4
+(eq_id): NoAction does not equal a
 Typecheck success: test/program/well-typed/key1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/key_after_exit.p4
@@ -1910,6 +2072,7 @@ Typecheck success: test/program/well-typed/list8.p4
 Typecheck success: test/program/well-typed/list9.p4
 
 >>> Running typecheck test on test/program/well-typed/lj_example.p4
+(eq_id): Drop_1 does not equal Drop_action
 Typecheck success: test/program/well-typed/lj_example.p4
 
 >>> Running typecheck test on test/program/well-typed/localize_action_dont_care_args.p4
@@ -1934,9 +2097,13 @@ Typecheck success: test/program/well-typed/m_psa-dpdk-non-zero-arg-default-actio
 Typecheck success: test/program/well-typed/mask.p4
 
 >>> Running typecheck test on test/program/well-typed/match-on-exprs-bmv2.p4
+(eq_id): NoAction does not equal foo
+(eq_id): NoAction does not equal my_drop
 Typecheck success: test/program/well-typed/match-on-exprs-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/match-on-exprs2-bmv2.p4
+(eq_id): NoAction does not equal foo
+(eq_id): NoAction does not equal my_drop
 Typecheck success: test/program/well-typed/match-on-exprs2-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/match.p4
@@ -1979,12 +2146,18 @@ Typecheck success: test/program/well-typed/nested-tuple.p4
 Typecheck success: test/program/well-typed/nested-tuple1.p4
 
 >>> Running typecheck test on test/program/well-typed/nested_if_else.p4
+(eq_id): NoAction does not equal ipv4_forward
+(eq_id): NoAction does not equal drop
 Typecheck success: test/program/well-typed/nested_if_else.p4
 
 >>> Running typecheck test on test/program/well-typed/nested_if_lvalue_dependencies.p4
+(eq_id): NoAction does not equal ipv4_forward
+(eq_id): NoAction does not equal drop
 Typecheck success: test/program/well-typed/nested_if_lvalue_dependencies.p4
 
 >>> Running typecheck test on test/program/well-typed/nested_if_statement.p4
+(eq_id): NoAction does not equal ipv4_forward
+(eq_id): NoAction does not equal drop
 Typecheck success: test/program/well-typed/nested_if_statement.p4
 
 >>> Running typecheck test on test/program/well-typed/nested_select.p4
@@ -2015,6 +2188,8 @@ Typecheck success: test/program/well-typed/octal.p4
 Typecheck success: test/program/well-typed/overwrite.p4
 
 >>> Running typecheck test on test/program/well-typed/p416-type-use3.p4
+(eq_id): my_drop does not equal set_output
+(eq_id): my_drop does not equal set_headers
 Typecheck success: test/program/well-typed/p416-type-use3.p4
 
 >>> Running typecheck test on test/program/well-typed/p4rt_digest_complex.p4
@@ -2024,6 +2199,7 @@ Typecheck success: test/program/well-typed/p4rt_digest_complex.p4
 Typecheck success: test/program/well-typed/package.p4
 
 >>> Running typecheck test on test/program/well-typed/parenthesis-test_ubpf.p4
+(eq_id): NoAction does not equal Reject
 Typecheck success: test/program/well-typed/parenthesis-test_ubpf.p4
 
 >>> Running typecheck test on test/program/well-typed/parse.p4
@@ -2138,9 +2314,11 @@ Typecheck success: test/program/well-typed/pipeline.p4
 Typecheck success: test/program/well-typed/pkginfo_annotation.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-direction-main-parser-err.p4
+(eq_id): default_route_drop does not equal next_hop
 Typecheck success: test/program/well-typed/pna-direction-main-parser-err.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-direction.p4
+(eq_id): default_route_drop does not equal next_hop
 Typecheck success: test/program/well-typed/pna-direction.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-dpdk-bvec_union.p4
@@ -2150,6 +2328,8 @@ Typecheck success: test/program/well-typed/pna-dpdk-bvec_union.p4
 Typecheck success: test/program/well-typed/pna-dpdk-flatten-local-struct-decl.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-dpdk-header-stack-assignment.p4
+(eq_id): NoAction does not equal encap_one_tunnel_layer_ipv4
+(eq_id): NoAction does not equal decap_one_tunnel_layer_just_before_eth
 Typecheck success: test/program/well-typed/pna-dpdk-header-stack-assignment.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-dpdk-header-union-stack.p4
@@ -2186,21 +2366,27 @@ Typecheck success: test/program/well-typed/pna-dpdk-union-bmv2.p4
 Typecheck success: test/program/well-typed/pna-dpdk-wrong-warning.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-elim-hdr-copy-dpdk.p4
+(eq_id): default_route_drop does not equal next_hop
 Typecheck success: test/program/well-typed/pna-elim-hdr-copy-dpdk.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-SelectByDirection.p4
+(eq_id): default_route_drop does not equal next_hop
 Typecheck success: test/program/well-typed/pna-example-SelectByDirection.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-SelectByDirection1.p4
+(eq_id): default_route_drop does not equal next_hop
 Typecheck success: test/program/well-typed/pna-example-SelectByDirection1.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-SelectByDirection2.p4
+(eq_id): default_route_drop does not equal forward
 Typecheck success: test/program/well-typed/pna-example-SelectByDirection2.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-bAnd-in-tableKey.p4
+(eq_id): default_route_drop does not equal next_hop
 Typecheck success: test/program/well-typed/pna-example-bAnd-in-tableKey.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-dpdk-optional.p4
+(eq_id): default_route_drop does not equal next_hop
 Typecheck success: test/program/well-typed/pna-example-dpdk-optional.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-dpdk-varbit-1.p4
@@ -2216,18 +2402,27 @@ Typecheck success: test/program/well-typed/pna-example-header-union.p4
 Typecheck success: test/program/well-typed/pna-example-header-union1.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-ipsec.p4
+(eq_id): drop does not equal ipsec_enable
+(eq_id): drop does not equal ipsec_bypass
+(eq_id): ipsec_bypass does not equal ipsec_enable
+(eq_id): drop does not equal next_hop_set
 Typecheck success: test/program/well-typed/pna-example-ipsec.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-mirror-packet-1.p4
+(eq_id): NoAction does not equal send_with_mirror
+(eq_id): NoAction does not equal drop_with_mirror
 Typecheck success: test/program/well-typed/pna-example-mirror-packet-1.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-mirror-packet.p4
+(eq_id): NoAction does not equal send_with_mirror
+(eq_id): NoAction does not equal drop_with_mirror
 Typecheck success: test/program/well-typed/pna-example-mirror-packet.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-pass-1.p4
 Typecheck success: test/program/well-typed/pna-example-pass-1.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-pass-2.p4
+(eq_id): default_route_drop does not equal next_hop
 Typecheck success: test/program/well-typed/pna-example-pass-2.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-pass-3.p4
@@ -2243,9 +2438,12 @@ Typecheck success: test/program/well-typed/pna-example-pass.p4
 Typecheck success: test/program/well-typed/pna-example-recirculate.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-template.p4
+(eq_id): default_route_drop does not equal next_hop
 Typecheck success: test/program/well-typed/pna-example-template.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-tunnel.p4
+(eq_id): NoAction does not equal decap_outer_ipv4
+(eq_id): NoAction does not equal set_tunnel
 Typecheck success: test/program/well-typed/pna-example-tunnel.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-example-varIndex-1.p4
@@ -2276,9 +2474,11 @@ Typecheck success: test/program/well-typed/pna-lookahead-structure.p4
 Typecheck success: test/program/well-typed/pna-subparser.p4
 
 >>> Running typecheck test on test/program/well-typed/pna-too-big-label-name-dpdk.p4
+(eq_id): default_route_drop does not equal next_hop
 Typecheck success: test/program/well-typed/pna-too-big-label-name-dpdk.p4
 
 >>> Running typecheck test on test/program/well-typed/pragma-action.p4
+(eq_id): drop does not equal Set_dmac
 Typecheck success: test/program/well-typed/pragma-action.p4
 
 >>> Running typecheck test on test/program/well-typed/pragma-deprecated.p4
@@ -2294,6 +2494,7 @@ Typecheck success: test/program/well-typed/pragma-string.p4
 Typecheck success: test/program/well-typed/pragmas.p4
 
 >>> Running typecheck test on test/program/well-typed/precedence-lt.p4
+(coerce_types_binary) Cannot coerce types int and bool
 Error while typechecking p4 file: test/program/well-typed/precedence-lt.p4
 
 >>> Running typecheck test on test/program/well-typed/pred.p4
@@ -2330,6 +2531,7 @@ Typecheck success: test/program/well-typed/psa-conditional_operator.p4
 Typecheck success: test/program/well-typed/psa-dpdk-128bitCast.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-checksum-arg-header.p4
+(eq_id): drop does not equal vxlan_encap
 Typecheck success: test/program/well-typed/psa-dpdk-checksum-arg-header.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-errorcode-1.p4
@@ -2342,15 +2544,18 @@ Typecheck success: test/program/well-typed/psa-dpdk-errorcode-2.p4
 Typecheck success: test/program/well-typed/psa-dpdk-errorcode.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-flatten-local-struct.p4
+(eq_id): drop does not equal action1
 Typecheck success: test/program/well-typed/psa-dpdk-flatten-local-struct.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-hdr-field-non-align.p4
 Typecheck success: test/program/well-typed/psa-dpdk-hdr-field-non-align.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-large-header-fields.p4
+(eq_id): NoAction_1 does not equal macswp
 Typecheck success: test/program/well-typed/psa-dpdk-large-header-fields.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-large-struct-fields.p4
+(eq_id): NoAction_1 does not equal macswp
 Typecheck success: test/program/well-typed/psa-dpdk-large-struct-fields.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-lpm-match-err3.p4
@@ -2378,9 +2583,13 @@ Typecheck success: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-
 Typecheck success: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-04.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-non-zero-arg-default-action-05.p4
+(eq_id): NoAction does not equal macswp
+(eq_id): NoAction does not equal nonDefAct
 Typecheck success: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-05.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-non-zero-arg-default-action-06.p4
+(eq_id): NoAction does not equal macswp
+(eq_id): NoAction does not equal nonDefAct
 Typecheck success: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-06.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-non-zero-arg-default-action-07.p4
@@ -2396,6 +2605,10 @@ Typecheck success: test/program/well-typed/psa-dpdk-non-zero-arg-default-action-
 Typecheck success: test/program/well-typed/psa-dpdk-struct-field.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-table-entries-exact-ternary.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 Typecheck success: test/program/well-typed/psa-dpdk-table-entries-exact-ternary.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-table-key-consolidation-if-1.p4
@@ -2471,6 +2684,7 @@ Typecheck success: test/program/well-typed/psa-dpdk-table-key-isValid7.p4
 Typecheck success: test/program/well-typed/psa-dpdk-tmp-mask-align.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-dpdk-token-too-big.p4
+(eq_id): drop does not equal vxlan_encap_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk_dpdk
 Typecheck success: test/program/well-typed/psa-dpdk-token-too-big.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-drop-all-bmv2.p4
@@ -2483,6 +2697,9 @@ Typecheck success: test/program/well-typed/psa-drop-all-corrected-bmv2.p4
 Typecheck success: test/program/well-typed/psa-e2e-cloning-basic-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-example-digest-bmv2.p4
+(eq_id): unknown_source does not equal NoAction
+(eq_id): NoAction does not equal do_L2_forward
+(eq_id): NoAction does not equal do_tst
 Typecheck success: test/program/well-typed/psa-example-digest-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/psa-example-dpdk-byte-alignment_4.p4
@@ -2630,9 +2847,20 @@ Typecheck success: test/program/well-typed/runtime-index-2-bmv2.p4
 Typecheck success: test/program/well-typed/runtime-index-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/same_name_for_table_and_action.p4
+(eq_id): NoAction does not equal do_something_0
 Typecheck success: test/program/well-typed/same_name_for_table_and_action.p4
 
 >>> Running typecheck test on test/program/well-typed/saturated-bmv2.p4
+(eq_id): drop does not equal usat_plus
+(eq_id): drop does not equal usat_minus
+(eq_id): drop does not equal sat_plus
+(eq_id): drop does not equal sat_minus
+(eq_id): usat_minus does not equal usat_plus
+(eq_id): sat_plus does not equal usat_plus
+(eq_id): sat_plus does not equal usat_minus
+(eq_id): sat_minus does not equal usat_plus
+(eq_id): sat_minus does not equal usat_minus
+(eq_id): sat_minus does not equal sat_plus
 Typecheck success: test/program/well-typed/saturated-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/scalarmeta-bmv2.p4
@@ -2831,6 +3059,8 @@ Typecheck success: test/program/well-typed/structure-valued-expr-ok-1-bmv2.p4
 Typecheck success: test/program/well-typed/structured-annotation.p4
 
 >>> Running typecheck test on test/program/well-typed/structured_annotations.p4
+(eq_id): NoAction does not equal redirect
+(eq_id): NoAction does not equal my_drop
 Typecheck success: test/program/well-typed/structured_annotations.p4
 
 >>> Running typecheck test on test/program/well-typed/subparser-with-header-stack-bmv2.p4
@@ -2843,30 +3073,59 @@ Typecheck success: test/program/well-typed/switch-expression.p4
 Typecheck success: test/program/well-typed/synth-action.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-exact-bmv2.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 Typecheck success: test/program/well-typed/table-entries-exact-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-exact-ternary-bmv2.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 Typecheck success: test/program/well-typed/table-entries-exact-ternary-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-lpm-bmv2.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 Typecheck success: test/program/well-typed/table-entries-lpm-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-optional-bmv2.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 Typecheck success: test/program/well-typed/table-entries-optional-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-priority-bmv2.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 Typecheck success: test/program/well-typed/table-entries-priority-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-range-bmv2.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 Typecheck success: test/program/well-typed/table-entries-range-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-ser-enum-bmv2.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 Typecheck success: test/program/well-typed/table-entries-ser-enum-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-ternary-bmv2.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 Typecheck success: test/program/well-typed/table-entries-ternary-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-entries-valid-bmv2.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 Typecheck success: test/program/well-typed/table-entries-valid-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/table-key-serenum-bmv2.p4
@@ -2876,6 +3135,14 @@ Typecheck success: test/program/well-typed/table-key-serenum-bmv2.p4
 Typecheck success: test/program/well-typed/template.p4
 
 >>> Running typecheck test on test/program/well-typed/ternary2-bmv2.p4
+(eq_id): noop does not equal setb1
+(eq_id): noop does not equal setbyte
+(eq_id): noop does not equal act1
+(eq_id): noop does not equal act2
+(eq_id): noop does not equal act3
+(eq_id): noop does not equal setbyte
+(eq_id): noop does not equal setbyte
+(eq_id): noop does not equal setbyte
 Typecheck success: test/program/well-typed/ternary2-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/test-parserinvalidargument-error-bmv2.p4
@@ -2957,23 +3224,38 @@ Typecheck success: test/program/well-typed/unreachable-accept.p4
 Typecheck success: test/program/well-typed/unreachable.p4
 
 >>> Running typecheck test on test/program/well-typed/unused.p4
-(coerce_types_binary) Cannot coerce types int and bool
-(check_eq_typ_alpha) Types control (inout s struct S { h = header Header { data1 = bit<32>; data2 = bit<32>; data3 = bit<32> } }) and control (inout v any) are not equal
+(check_eq_typ_alpha) Types control (inout s struct S { h header Header { data1 bit<32>; data2 bit<32>; data3 bit<32> } }) and control (inout v any) are not equal
 Error while typechecking p4 file: test/program/well-typed/unused.p4
 
 >>> Running typecheck test on test/program/well-typed/use-priority-as-name.p4
+(eq_id): my_drop does not equal set_l2ptr_and_prio
+(eq_id): my_drop does not equal set_bd_dmac_intf
+(eq_id): my_drop does not equal rewrite_mac
 Typecheck success: test/program/well-typed/use-priority-as-name.p4
 
 >>> Running typecheck test on test/program/well-typed/useless-cast.p4
 Typecheck success: test/program/well-typed/useless-cast.p4
 
 >>> Running typecheck test on test/program/well-typed/v1model-const-entries-bmv2.p4
+(eq_id): act_hit does not equal act_miss
+(eq_id): act_hit does not equal act_miss
+(eq_id): act_hit does not equal act_miss
 Typecheck success: test/program/well-typed/v1model-const-entries-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed/v1model-digest-containing-ser-enum.p4
+(eq_id): NoAction does not equal set_dmac
+(eq_id): NoAction does not equal drop
+(eq_id): NoAction does not equal set_nhop
+(eq_id): NoAction does not equal drop
+(eq_id): NoAction does not equal rewrite_mac
 Typecheck success: test/program/well-typed/v1model-digest-containing-ser-enum.p4
 
 >>> Running typecheck test on test/program/well-typed/v1model-digest-custom-type.p4
+(eq_id): NoAction does not equal set_dmac
+(eq_id): NoAction does not equal drop
+(eq_id): NoAction does not equal set_nhop
+(eq_id): NoAction does not equal drop
+(eq_id): NoAction does not equal rewrite_mac
 Typecheck success: test/program/well-typed/v1model-digest-custom-type.p4
 
 >>> Running typecheck test on test/program/well-typed/valid.p4
@@ -3001,6 +3283,7 @@ Typecheck success: test/program/well-typed/very_simple_model.p4
 Typecheck success: test/program/well-typed/virtual2.p4
 
 >>> Running typecheck test on test/program/well-typed/vss-example.p4
+(eq_id): NoAction does not equal Send_to_cpu
 Typecheck success: test/program/well-typed/vss-example.p4
 
 >>> Running typecheck test on test/program/well-typed/wrong-warning.p4
@@ -3016,6 +3299,7 @@ Typecheck success: test/program/well-typed/xdp_dec_ttl_ebpf-kernel.p4
 Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 
 >>> Running typecheck test on test/program/well-typed/xor_test.p4
+(eq_id): NoAction does not equal forward_and_do_something
 Typecheck success: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1005/1005 (100.00%) [FAIL] 0/1005 (0.00%)

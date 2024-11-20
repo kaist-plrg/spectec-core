@@ -6,6 +6,10 @@ Error while typechecking p4 file: test/program/ill-typed/accept_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/action-bind.p4
 (type_parser_states) A "start" state must exist
+(eq_id): x does not equal y
+(eq_var): x does not equal y
+(eq_expr): x does not equal y
+(eq_arg): x does not equal y
 (type_call_default_action) Arguments (x) and (y) are syntactically different
 Error while typechecking p4 file: test/program/ill-typed/action-bind.p4
 
@@ -95,6 +99,7 @@ Error while typechecking p4 file: test/program/ill-typed/default-last-switch.p4
 Error while typechecking p4 file: test/program/ill-typed/default-param.p4
 
 >>> Running typecheck test on test/program/ill-typed/default_action.p4
+(eq_id): b does not equal a
 (type_table_action_default) There is no action named b in actions list
 Error while typechecking p4 file: test/program/ill-typed/default_action.p4
 
@@ -148,7 +153,7 @@ Error while typechecking p4 file: test/program/ill-typed/duplicate-label.p4
 Typecheck success: test/program/ill-typed/enumCast.p4
 
 >>> Running typecheck test on test/program/ill-typed/equality-fail.p4
-(coerce_types_binary) Cannot coerce types varbit<32> and header H { a = bit<32>; b = varbit<32> }
+(coerce_types_binary) Cannot coerce types varbit<32> and header H { a bit<32>; b varbit<32> }
 Error while typechecking p4 file: test/program/ill-typed/equality-fail.p4
 
 >>> Running typecheck test on test/program/ill-typed/expression_e.p4
@@ -206,12 +211,12 @@ parser error: File test/program/ill-typed/header1_e.p4, line 18, characters 4-5
 Error while parsing p4 file: test/program/ill-typed/header1_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/header2_e.p4
-(check_valid_typedef_nesting) Invalid nesting of parser () inside struct s1<> { field = parser () }
+(check_valid_typedef_nesting) Invalid nesting of parser () inside struct s1<> { field parser () }
 Error while typechecking p4 file: test/program/ill-typed/header2_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/header3.p4
 (check_valid_typedef_nesting) Invalid nesting of tuple<bit<1>,
-bit<1>> inside header H<> { field1 = tuple<bit<1>,Error while typechecking p4 file: test/program/ill-typed/header3.p4
+bit<1>> inside header H<> { field1 tuple<bit<1>,Error while typechecking p4 file: test/program/ill-typed/header3.p4
 
 >>> Running typecheck test on test/program/ill-typed/implicit.p4
 
@@ -224,14 +229,23 @@ Error while typechecking p4 file: test/program/ill-typed/implicit.p4
 Error while typechecking p4 file: test/program/ill-typed/incorrect-label.p4
 
 >>> Running typecheck test on test/program/ill-typed/init-entries-error1-bmv2.p4
+(eq_id): a_params does not equal a
 (type_table_entry_priority) Cannot define priority when there are only exact fields
 Error while typechecking p4 file: test/program/ill-typed/init-entries-error1-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/init-entries-error2-bmv2.p4
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
 (type_table_entry_priority) The priority of the first entry must be defined if priorities are explicitly specified
 Error while typechecking p4 file: test/program/ill-typed/init-entries-error2-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/init-entries-error3-bmv2.p4
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
+(eq_id): a_params does not equal a
 (check_priority) Priority must not be negative
 Error while typechecking p4 file: test/program/ill-typed/init-entries-error3-bmv2.p4
 
@@ -290,6 +304,10 @@ parser error: File test/program/ill-typed/issue1336.p4, line 3, characters 14-15
 Error while parsing p4 file: test/program/ill-typed/issue1336.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1542.p4
+(eq_id): multicast does not equal drop
+(eq_id): multicast does not equal drop
+(eq_expr): 1 does not equal 2
+(eq_arg): 1 does not equal 2
 (type_call_default_action) Arguments (1) and (2) are syntactically different
 Error while typechecking p4 file: test/program/ill-typed/issue1542.p4
 
@@ -298,6 +316,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue1542.p4
 Error while typechecking p4 file: test/program/ill-typed/issue1557-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1580.p4
+(eq_id): a3 does not equal a1
+(eq_id): a3 does not equal a2
 Typecheck success: test/program/ill-typed/issue1580.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1732.p4
@@ -308,6 +328,7 @@ Typecheck success: test/program/ill-typed/issue1732.p4
 Error while typechecking p4 file: test/program/ill-typed/issue1777-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1803_same_table_name.p4
+(eq_id): NoAction does not equal drop
 Typecheck success: test/program/ill-typed/issue1803_same_table_name.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1932-1.p4
@@ -336,15 +357,15 @@ Error while typechecking p4 file: test/program/ill-typed/issue2021.p4
 Error while typechecking p4 file: test/program/ill-typed/issue2033.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2036-1.p4
-(coerce_type) Cannot coerce type tuple<bit<8>> to struct s { x = bit<8> }
+(coerce_type) Cannot coerce type tuple<bit<8>> to struct s { x bit<8> }
 Error while typechecking p4 file: test/program/ill-typed/issue2036-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2036-2.p4
-(check_eq_typ_alpha) Types tuple<bit<8>> and struct s { x = bit<8> } are not equal
+(check_eq_typ_alpha) Types tuple<bit<8>> and struct s { x bit<8> } are not equal
 Error while typechecking p4 file: test/program/ill-typed/issue2036-2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2036.p4
-(coerce_type) Cannot coerce type tuple<bit<8>> to struct s { x = bit<8> }
+(coerce_type) Cannot coerce type tuple<bit<8>> to struct s { x bit<8> }
 Error while typechecking p4 file: test/program/ill-typed/issue2036.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2206.p4
@@ -354,11 +375,11 @@ Typecheck success: test/program/ill-typed/issue2206.p4
 Typecheck success: test/program/ill-typed/issue2220.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2230-1-bmv2.p4
-(check_eq_typ_alpha) Types header h1_t { f1 = bit<8>; f2 = bit<8> } and header h2_t { f1 = bit<8>; f2 = bit<8> } are not equal
+(check_eq_typ_alpha) Types header h1_t { f1 bit<8>; f2 bit<8> } and header h2_t { f1 bit<8>; f2 bit<8> } are not equal
 Error while typechecking p4 file: test/program/ill-typed/issue2230-1-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2230.p4
-(coerce_type) Cannot coerce type header h1_t { f1 = bit<8>; f2 = bit<8> } to header h2_t { f1 = bit<8>; f2 = bit<8> }
+(coerce_type) Cannot coerce type header h1_t { f1 bit<8>; f2 bit<8> } to header h2_t { f1 bit<8>; f2 bit<8> }
 Error while typechecking p4 file: test/program/ill-typed/issue2230.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2260-1.p4
@@ -371,7 +392,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue2267.p4
 Typecheck success: test/program/ill-typed/issue2283_2-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2290.p4
-(check_valid_typedef_nesting) Invalid nesting of header simple_header { a = bit<8> } inside header nested_header<> { s = header simple_header { a = bit<8> } }
+(check_valid_typedef_nesting) Invalid nesting of header simple_header { a bit<8> } inside header nested_header<> { s header simple_header { a bit<8> } }
 Error while typechecking p4 file: test/program/ill-typed/issue2290.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2317.p4
@@ -439,6 +460,11 @@ Typecheck success: test/program/ill-typed/issue2545.p4
 Error while typechecking p4 file: test/program/ill-typed/issue2597.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2835-bmv2.p4
+(eq_id): NoAction does not equal a_one
+(eq_id): NoAction does not equal a_two
+(eq_id): NoAction does not equal a_one
+(eq_id): NoAction does not equal a_two
+(eq_id): NoAction does not equal my_drop
 Typecheck success: test/program/ill-typed/issue2835-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3045-1.p4
@@ -465,11 +491,11 @@ Error while typechecking p4 file: test/program/ill-typed/issue306.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3153.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3170-1.p4
-(check_valid_type_nesting) Invalid nesting of struct y { tt = header yy { tt = bit<1> }[2] } inside header t { y = struct y { tt = header yy { tt = bit<1> }[2] } }
+(check_valid_type_nesting) Invalid nesting of struct y { tt header yy { tt bit<1> }[2] } inside header t { y struct y { tt header yy { tt bit<1> }[2] } }
 Error while typechecking p4 file: test/program/ill-typed/issue3170-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3170.p4
-(specialize_typedef) Type definition header t<tt> { y = tt } expects 1 type arguments but 0 were given
+(specialize_typedef) Type definition header t<tt> { y tt } expects 1 type arguments but 0 were given
 Error while typechecking p4 file: test/program/ill-typed/issue3170.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3188.p4
@@ -528,11 +554,11 @@ Error while typechecking p4 file: test/program/ill-typed/issue3293.p4
 Typecheck success: test/program/ill-typed/issue3299.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3304.p4
-(check_valid_type_nesting) Invalid nesting of parser (in a bit<1>) inside struct s { field = parser (in a bit<1>) }
+(check_valid_type_nesting) Invalid nesting of parser (in a bit<1>) inside struct s { field parser (in a bit<1>) }
 Error while typechecking p4 file: test/program/ill-typed/issue3304.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3305.p4
-(specialize_typedef) Type definition struct s1<t> { field = t } expects 1 type arguments but 0 were given
+(specialize_typedef) Type definition struct s1<t> { field t } expects 1 type arguments but 0 were given
 Error while typechecking p4 file: test/program/ill-typed/issue3305.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3316.p4
@@ -619,6 +645,9 @@ Typecheck success: test/program/ill-typed/issue3644.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3656.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3671-2.p4
+(eq_id): f0 does not equal f1
+(eq_expr): { f0 = ext1(), f1 = ext2() } does not equal { f1 = ext1(), f0 = ext2() }
+(eq_arg): { f0 = ext1(), f1 = ext2() } does not equal { f1 = ext1(), f0 = ext2() }
 (type_call_default_action) Arguments ({ f0 = ext1(), f1 = ext2() }) and ({ f1 = ext1(), f0 = ext2() }) are syntactically different
 Error while typechecking p4 file: test/program/ill-typed/issue3671-2.p4
 
@@ -677,7 +706,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue394.p4
 Error while typechecking p4 file: test/program/ill-typed/issue401.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue407-1.p4
-(check_valid_typedef_nesting) Invalid nesting of error inside header H<> { x7 = error; x8 = bool; x9 = enum myenum1; x10 = header Ethernet_h { dstAddr = bit<48>; srcAddr = bit<48>; etherType = bit<16> }; x11 = header Ethernet_h { dstAddr = bit<48>; srcAddr = bit<48>; etherType = bit<16> }[4]; x12 = struct mystruct1 { a = bit<4>; b = bit<4> }; x13 = struct mystruct2 { foo = struct mystruct1 { a = bit<4>; b = bit<4> }; a = bit<4>; b = bit<4> }; x14 = tuple<bit<8>,
+(check_valid_typedef_nesting) Invalid nesting of error inside header H<> { x7 error; x8 bool; x9 enum myenum1; x10 header Ethernet_h { dstAddr bit<48>; srcAddr bit<48>; etherType bit<16> }; x11 header Ethernet_h { dstAddr bit<48>; srcAddr bit<48>; etherType bit<16> }[4]; x12 struct mystruct1 { a bit<4>; b bit<4> }; x13 struct mystruct2 { foo struct mystruct1 { a bit<4>; b bit<4> }; a bit<4>; b bit<4> }; x14 tuple<bit<8>,
 bit<16>> }
 Error while typechecking p4 file: test/program/ill-typed/issue407-1.p4
 
@@ -706,6 +735,7 @@ Typecheck success: test/program/ill-typed/issue4146.p4
 Error while typechecking p4 file: test/program/ill-typed/issue435.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue473.p4
+(eq_id): b does not equal a1
 Typecheck success: test/program/ill-typed/issue473.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue477.p4
@@ -715,11 +745,12 @@ Typecheck success: test/program/ill-typed/issue477.p4
 Typecheck success: test/program/ill-typed/issue478.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue532.p4
+(eq_id): NoAction does not equal select_entry
 Typecheck success: test/program/ill-typed/issue532.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue561-1.p4
 (coerce_type) Cannot coerce type seq<seq<int>,
-seq<int>> to header_union U { h1 = header H1 { f = bit<32> }; h2 = header H2 { g = bit<32> } }
+seq<int>> to header_union U { h1 header H1 { f bit<32> }; h2 header H2 { g bit<32> } }
 Error while typechecking p4 file: test/program/ill-typed/issue561-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue584.p4
@@ -774,6 +805,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue819-1.p4
 Error while typechecking p4 file: test/program/ill-typed/issue819.p4
 
 >>> Running typecheck test on test/program/ill-typed/key-name.p4
+(eq_id): NoAction does not equal a
 Typecheck success: test/program/ill-typed/key-name.p4
 
 >>> Running typecheck test on test/program/ill-typed/list-error.p4
@@ -863,7 +895,7 @@ Error while typechecking p4 file: test/program/ill-typed/parser-arg.p4
 Error while typechecking p4 file: test/program/ill-typed/persistent_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/pr2918.p4
-(check_valid_type_nesting) Invalid nesting of struct S { b = bit<8> } inside set<struct S { b = bit<8> }>
+(check_valid_type_nesting) Invalid nesting of struct S { b bit<8> } inside set<struct S { b bit<8> }>
 Error while typechecking p4 file: test/program/ill-typed/pr2918.p4
 
 >>> Running typecheck test on test/program/ill-typed/psa-meter2.p4
@@ -871,7 +903,7 @@ Error while typechecking p4 file: test/program/ill-typed/pr2918.p4
 Error while typechecking p4 file: test/program/ill-typed/psa-meter2.p4
 
 >>> Running typecheck test on test/program/ill-typed/psa-type-hdr.p4
-(check_valid_typedef_nesting) Invalid nesting of header ipv4_t { version = bit<4>; ihl = bit<4>; diffserv = bit<8>; totalLen = bit<16>; identification = bit<16>; flags = bit<3>; fragOffset = bit<13>; ttl = bit<8>; protocol = bit<8>; hdrChecksum = bit<16>; srcAddr = bit<32>; dstAddr = bit<32> } inside type IPV4T_t (= header ipv4_t { version = bit<4>; ihl = bit<4>; diffserv = bit<8>; totalLen = bit<16>; identification = bit<16>; flags = bit<3>; fragOffset = bit<13>; ttl = bit<8>; protocol = bit<8>; hdrChecksum = bit<16>; srcAddr = bit<32>; dstAddr = bit<32> })
+(check_valid_typedef_nesting) Invalid nesting of header ipv4_t { version bit<4>; ihl bit<4>; diffserv bit<8>; totalLen bit<16>; identification bit<16>; flags bit<3>; fragOffset bit<13>; ttl bit<8>; protocol bit<8>; hdrChecksum bit<16>; srcAddr bit<32>; dstAddr bit<32> } inside type IPV4T_t (= header ipv4_t { version bit<4>; ihl bit<4>; diffserv bit<8>; totalLen bit<16>; identification bit<16>; flags bit<3>; fragOffset bit<13>; ttl bit<8>; protocol bit<8>; hdrChecksum bit<16>; srcAddr bit<32>; dstAddr bit<32> })
 Error while typechecking p4 file: test/program/ill-typed/psa-type-hdr.p4
 
 >>> Running typecheck test on test/program/ill-typed/push_nonconstant.p4
@@ -887,7 +919,7 @@ Error while typechecking p4 file: test/program/ill-typed/range_e.p4
 Error while typechecking p4 file: test/program/ill-typed/scope.p4
 
 >>> Running typecheck test on test/program/ill-typed/select-struct.p4
-(check_valid_type_nesting) Invalid nesting of struct H { b = bit<12> } inside set<struct H { b = bit<12> }>
+(check_valid_type_nesting) Invalid nesting of struct H { b bit<12> } inside set<struct H { b bit<12> }>
 Error while typechecking p4 file: test/program/ill-typed/select-struct.p4
 
 >>> Running typecheck test on test/program/ill-typed/select-varbits.p4
@@ -972,7 +1004,7 @@ Error while typechecking p4 file: test/program/ill-typed/stack_e.p4
 Error while typechecking p4 file: test/program/ill-typed/string-e.p4
 
 >>> Running typecheck test on test/program/ill-typed/string-e1.p4
-(check_valid_typedef_nesting) Invalid nesting of string inside struct S<> { s = string }
+(check_valid_typedef_nesting) Invalid nesting of string inside struct S<> { s string }
 Error while typechecking p4 file: test/program/ill-typed/string-e1.p4
 
 >>> Running typecheck test on test/program/ill-typed/string-e2.p4
@@ -984,7 +1016,7 @@ Error while typechecking p4 file: test/program/ill-typed/string-e2.p4
 Error while typechecking p4 file: test/program/ill-typed/struct_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/structure-valued-expr-errs-1.p4
-(coerce_type) Cannot coerce type seq<> to header h1_t { f1 = bit<8> }
+(coerce_type) Cannot coerce type seq<> to header h1_t { f1 bit<8> }
 Error while typechecking p4 file: test/program/ill-typed/structure-valued-expr-errs-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/structure-valued-expr-errs-2.p4
@@ -1009,17 +1041,29 @@ Typecheck success: test/program/ill-typed/structured-annotation-e3.p4
 Error while typechecking p4 file: test/program/ill-typed/table-entries-decl-order.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-exact-ternary.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 (type_table_entry_keysets) Number of select keys must match the number of cases
 Error while typechecking p4 file: test/program/ill-typed/table-entries-exact-ternary.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-exact.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 (type_table_entry_keysets) Number of select keys must match the number of cases
 Error while typechecking p4 file: test/program/ill-typed/table-entries-exact.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-lpm-2.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 Error while typechecking p4 file: test/program/ill-typed/table-entries-lpm-2.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-lpm.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 Error while typechecking p4 file: test/program/ill-typed/table-entries-lpm.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-optional-2-bmv2.p4
@@ -1031,10 +1075,17 @@ parser error: File test/program/ill-typed/table-entries-outside-table.p4, line 6
 Error while parsing p4 file: test/program/ill-typed/table-entries-outside-table.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-range.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 (type_table_entry_keysets) Number of select keys must match the number of cases
 Error while typechecking p4 file: test/program/ill-typed/table-entries-range.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-ternary.p4
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
+(eq_id): a_with_control_params does not equal a
 (type_action_keyset) match_kind ternary cannot use range expression 
 Error while typechecking p4 file: test/program/ill-typed/table-entries-ternary.p4
 
@@ -1051,14 +1102,14 @@ Error while parsing p4 file: test/program/ill-typed/tuple-left.p4
 Error while typechecking p4 file: test/program/ill-typed/tuple-newtype.p4
 
 >>> Running typecheck test on test/program/ill-typed/tuple-to-header.p4
-(coerce_type) Cannot coerce type tuple<bit<32>> to header H { x = bit<32> }
+(coerce_type) Cannot coerce type tuple<bit<32>> to header H { x bit<32> }
 Error while typechecking p4 file: test/program/ill-typed/tuple-to-header.p4
 
 >>> Running typecheck test on test/program/ill-typed/twovarbit.p4
 Typecheck success: test/program/ill-typed/twovarbit.p4
 
 >>> Running typecheck test on test/program/ill-typed/type-field.p4
-(type_type_acc_expr) struct h<> { d = header d_t { f = bit<32> } } cannot be accessed
+(type_type_acc_expr) struct h<> { d header d_t { f bit<32> } } cannot be accessed
 Error while typechecking p4 file: test/program/ill-typed/type-field.p4
 
 >>> Running typecheck test on test/program/ill-typed/type-in-expr-lex0.p4

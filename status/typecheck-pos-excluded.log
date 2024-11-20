@@ -158,7 +158,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3274.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3292.p4
-(check_call_site) Function extern_func(in p header h { f = t }) -> void cannot be called from Function
+(check_call_site) Function extern_func(in p header h { f t }) -> void cannot be called from Function
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3292.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue4500.p4
@@ -180,6 +180,9 @@ Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restr
 Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue2266.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue2321.p4
+(eq_id): NoAction does not equal a1
+(eq_id): NoAction does not equal a2
+(eq_id): NoAction does not equal my_drop
 Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue2321.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue4796.p4
@@ -202,6 +205,21 @@ Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restr
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/bfd_offload.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/calc-ebpf.p4
+(eq_id): operation_drop does not equal operation_add
+(eq_id): operation_drop does not equal operation_sub
+(eq_id): operation_drop does not equal operation_and
+(eq_id): operation_drop does not equal operation_or
+(eq_id): operation_drop does not equal operation_xor
+(eq_id): operation_sub does not equal operation_add
+(eq_id): operation_and does not equal operation_add
+(eq_id): operation_and does not equal operation_sub
+(eq_id): operation_or does not equal operation_add
+(eq_id): operation_or does not equal operation_sub
+(eq_id): operation_or does not equal operation_and
+(eq_id): operation_xor does not equal operation_add
+(eq_id): operation_xor does not equal operation_sub
+(eq_id): operation_xor does not equal operation_and
+(eq_id): operation_xor does not equal operation_or
 (check_instantiation_site) extern hash_table {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/calc-ebpf.p4
 
@@ -220,13 +238,13 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_extern_arguments_2.p4
 (check_eq_typ_alpha) Types seq<int,
 int,
-bit<16>> and header ethernet_t { dst_addr = bit<48>; src_addr = bit<48>; eth_type = bit<16> } are not equal
+bit<16>> and header ethernet_t { dst_addr bit<48>; src_addr bit<48>; eth_type bit<16> } are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_extern_arguments_2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_hdr_in_value-bmv2.p4
 (check_eq_typ_alpha) Types seq<seq<bit<48>,
 bit<48>,
-bit<16>>> and struct Headers { eth_hdr = header ethernet_t { dst_addr = bit<48>; src_addr = bit<48>; eth_type = bit<16> } } are not equal
+bit<16>>> and struct Headers { eth_hdr header ethernet_t { dst_addr bit<48>; src_addr bit<48>; eth_type bit<16> } } are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_hdr_in_value-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1001-1-bmv2.p4
@@ -286,11 +304,12 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1814-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1958.p4
+(eq_id): NoAction does not equal foo2_action
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1958.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2648.p4
-(check_eq_typ_alpha) Types seq<bit<8>> and header H { a = bit<8> } are not equal
+(check_eq_typ_alpha) Types seq<bit<8>> and header H { a bit<8> } are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2648.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2844-enum.p4
@@ -298,6 +317,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2844-enum.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue298-bmv2.p4
+(eq_id): NoAction does not equal _drop
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue298-bmv2.p4
 
@@ -310,7 +330,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue383-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue4288.p4
-(check_eq_typ_alpha) Types seq<int> and header hdr_t { f0 = bit<8> } are not equal
+(check_eq_typ_alpha) Types seq<int> and header hdr_t { f0 bit<8> } are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue4288.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue562-bmv2.p4
@@ -326,11 +346,11 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue871.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue933-1.p4
-(check_eq_typ_alpha) Types seq<int> and struct headers { x = bit<32> } are not equal
+(check_eq_typ_alpha) Types seq<int> and struct headers { x bit<32> } are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue933-1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/list7.p4
-(check_eq_typ_alpha) Types record { f = int } and struct S { f = bit<32> } are not equal
+(check_eq_typ_alpha) Types record { f int } and struct S { f bit<32> } are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/list7.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/named-arg1.p4
@@ -538,7 +558,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/strength.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/generic-constrained/default-package-argument.p4
-(coerce_type) Cannot coerce type control (inout hdr struct empty_t {  }, inout meta struct empty_t {  }, in imeta struct intrinsic_metadata_t { f0 = bit<8>; f1 = bit<8> }) to control (inout hdr H, inout meta M, in intr_md struct intrinsic_metadata_t { f0 = bit<8>; f1 = bit<8> })
+(coerce_type) Cannot coerce type control (inout hdr struct empty_t {  }, inout meta struct empty_t {  }, in imeta struct intrinsic_metadata_t { f0 bit<8>; f1 bit<8> }) to control (inout hdr H, inout meta M, in intr_md struct intrinsic_metadata_t { f0 bit<8>; f1 bit<8> })
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/generic-constrained/default-package-argument.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default/default-control-argument.p4
@@ -549,6 +569,9 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue2037.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue3671.p4
+(eq_id): f0 does not equal f1
+(eq_expr): { f0 = ext(), f1 = ext() } does not equal { f1 = ext(), f0 = ext() }
+(eq_arg): { f0 = ext(), f1 = ext() } does not equal { f1 = ext(), f0 = ext() }
 (type_call_default_action) Arguments ({ f0 = ext(), f1 = ext() }) and ({ f1 = ext(), f0 = ext() }) are syntactically different
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue3671.p4
 
@@ -585,6 +608,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/access-header-stack-zero/minsize.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/action-two-params.p4
+(eq_id): drop does not equal actTbl
 (coerce_type) Cannot coerce type seq<bit<32>> to bit<32>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/action-two-params.p4
 
@@ -615,6 +639,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast/issue3283.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/mask-on-exact-match/spec-ex25.p4
+(eq_id): drop does not equal Set_dmac
 (type_action_keyset) match_kind exact cannot use mask expression 
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/mask-on-exact-match/spec-ex25.p4
 
@@ -684,19 +709,19 @@ V>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/type-variable-equality-op/issue3291-1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-nested-struct.p4
-(check_valid_type_nesting) Invalid nesting of struct value_set_t { field = bit<32>; inner = struct inner_value_set_t { field = bit<32> } } inside set<struct value_set_t { field = bit<32>; inner = struct inner_value_set_t { field = bit<32> } }>
+(check_valid_type_nesting) Invalid nesting of struct value_set_t { field bit<32>; inner struct inner_value_set_t { field bit<32> } } inside set<struct value_set_t { field bit<32>; inner struct inner_value_set_t { field bit<32> } }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-nested-struct.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-1-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of struct value_set_t { field = bit<32> } inside set<struct value_set_t { field = bit<32> }>
+(check_valid_type_nesting) Invalid nesting of struct value_set_t { field bit<32> } inside set<struct value_set_t { field bit<32> }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-2-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of struct value_set_t { field = bit<16>; field2 = bit<3> } inside set<struct value_set_t { field = bit<16>; field2 = bit<3> }>
+(check_valid_type_nesting) Invalid nesting of struct value_set_t { field bit<16>; field2 bit<3> } inside set<struct value_set_t { field bit<16>; field2 bit<3> }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-2-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-3-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of struct value_set_t { field1 = bit<16>; field2 = bit<3>; field3 = bit<6>; field4 = bit<5> } inside set<struct value_set_t { field1 = bit<16>; field2 = bit<3>; field3 = bit<6>; field4 = bit<5> }>
+(check_valid_type_nesting) Invalid nesting of struct value_set_t { field1 bit<16>; field2 bit<3>; field3 bit<6>; field4 bit<5> } inside set<struct value_set_t { field1 bit<16>; field2 bit<3>; field3 bit<6>; field4 bit<5> }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-3-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs.p4
@@ -706,30 +731,37 @@ bit<2>> to seq<bit<32>,Error while typechecking p4 file: test/program/well-typed
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-enumint-types1.p4
 
 bit<2>>
-(check_valid_type_nesting) Invalid nesting of struct valueset1_t { addr0 = bit<48>; e = bit<8>; e0 = bit<8>; e00 = bit<8> } inside set<struct valueset1_t { addr0 = bit<48>; e = bit<8>; e0 = bit<8>; e00 = bit<8> }>
+(check_valid_type_nesting) Invalid nesting of struct valueset1_t { addr0 bit<48>; e bit<8>; e0 bit<8>; e00 bit<8> } inside set<struct valueset1_t { addr0 bit<48>; e bit<8>; e0 bit<8>; e00 bit<8> }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-enumint-types1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-most-types1.p4
-(check_valid_type_nesting) Invalid nesting of struct valueset1_t { addr0 = bit<48>; e = bit<8>; e0 = bit<8>; e00 = bit<8> } inside set<struct valueset1_t { addr0 = bit<48>; e = bit<8>; e0 = bit<8>; e00 = bit<8> }>
+(check_valid_type_nesting) Invalid nesting of struct valueset1_t { addr0 bit<48>; e bit<8>; e0 bit<8>; e00 bit<8> } inside set<struct valueset1_t { addr0 bit<48>; e bit<8>; e0 bit<8>; e00 bit<8> }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-most-types1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile-bmv2.p4
+(eq_id): NoAction does not equal drop
 (check_instantiation_site) extern action_profile {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/action_profile-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_max_group_size_annotation.p4
+(eq_id): NoAction does not equal drop
 (check_instantiation_site) extern action_profile {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_max_group_size_annotation.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_sum_of_members_annotation.p4
+(eq_id): NoAction does not equal drop
 (type_table_custom) Custom element implementation is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_sum_of_members_annotation.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/dash/dash-pipeline-v1model-bmv2.p4
+(eq_id): deny does not equal permit
+(eq_id): deny does not equal permit_and_continue
 (type_table_custom) Custom element counters is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/dash/dash-pipeline-v1model-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/dash-pipeline-v1model-bmv2.p4
+(eq_id): deny does not equal permit
+(eq_id): deny does not equal permit_and_continue
 (type_table_custom) Custom element counters is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/dash-pipeline-v1model-bmv2.p4
 
@@ -762,6 +794,7 @@ parser error: File test/program/well-typed-excluded/unsupported/custom-table-ele
 Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue2816_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/issue297-bmv2.p4
+(eq_id): NoAction does not equal drop
 (type_table_custom) Custom element implementation is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue297-bmv2.p4
 
@@ -770,6 +803,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/c
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue364-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/issue461-bmv2.p4
+(eq_id): drop_with_count does not equal set_l2ptr
 (type_table_custom) Custom element counters is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue461-bmv2.p4
 
@@ -794,10 +828,18 @@ parser error: File test/program/well-typed-excluded/unsupported/custom-table-ele
 Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/lpm_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/named_meter_1-bmv2.p4
+(eq_id): NoAction does not equal _drop
+(eq_id): NoAction does not equal _nop
+(eq_id): NoAction does not equal m_action_0
+(eq_id): NoAction does not equal _nop_0
 (type_table_custom) Custom element meters is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/named_meter_1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/named_meter_bmv2.p4
+(eq_id): NoAction does not equal _drop
+(eq_id): NoAction does not equal _nop
+(eq_id): NoAction does not equal m_action_0
+(eq_id): NoAction does not equal _nop_0
 (type_table_custom) Custom element meters is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/named_meter_bmv2.p4
 
@@ -858,6 +900,10 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/c
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-use-annon.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-example-tcp-connection-tracking.p4
+(eq_id): tcp_fin_or_rst_packet does not equal tcp_syn_packet
+(eq_id): tcp_fin_or_rst_packet does not equal tcp_syn_packet
+(eq_id): tcp_other_packets does not equal tcp_syn_packet
+(eq_id): tcp_other_packets does not equal tcp_fin_or_rst_packet
 (type_table_custom) Custom element add_on_miss is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-example-tcp-connection-tracking.p4
 
@@ -870,6 +916,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/c
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/psa-counter4.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/psa-example-counters-bmv2.p4
+(eq_id): default_route_drop does not equal next_hop
 (type_table_custom) Custom element psa_direct_counter is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/psa-example-counters-bmv2.p4
 

@@ -1,6 +1,9 @@
 module E = Lang.Eq
+module P = Pp
 open Ast
 open Util.Source
+
+(* Syntactic equality, modulo annotations for now *)
 
 (* Numbers *)
 
@@ -85,14 +88,16 @@ let rec eq_typ' typ_a typ_b =
   | AnyT, AnyT -> true
   | _ -> false
 
-and eq_typ typ_a typ_b = eq_typ' typ_a.it typ_b.it
+and eq_typ typ_a typ_b =
+  eq_typ' typ_a.it typ_b.it |> E.check "typ" P.pp_typ typ_a typ_b
+
 and eq_typs typs_a typs_b = E.eq_list eq_typ typs_a typs_b
 
 (* Annotations *)
 
 and eq_anno' anno_a anno_b = E.eq_anno' eq_expr anno_a anno_b
-and eq_anno anno_a anno_b = E.eq_anno eq_expr anno_a anno_b
-and eq_annos annos_a annos_b = E.eq_annos eq_expr annos_a annos_b
+and eq_anno anno_a anno_b = E.eq_anno P.pp_expr eq_expr anno_a anno_b
+and eq_annos annos_a annos_b = E.eq_annos P.pp_expr eq_expr annos_a annos_b
 
 (* Type parameters *)
 
@@ -103,11 +108,10 @@ and eq_tparams tparams_a tparams_b = E.eq_list eq_tparam tparams_a tparams_b
 (* Parameters *)
 
 and eq_param' param_a param_b =
-  let id_a, dir_a, typ_a, value_default_a, annos_a = param_a in
-  let id_b, dir_b, typ_b, value_default_b, annos_b = param_b in
+  let id_a, dir_a, typ_a, value_default_a, _annos_a = param_a in
+  let id_b, dir_b, typ_b, value_default_b, _annos_b = param_b in
   eq_id id_a id_b && eq_dir dir_a dir_b && eq_typ typ_a typ_b
   && E.eq_option eq_expr value_default_a value_default_b
-  && eq_annos annos_a annos_b
 
 and eq_param param_a param_b = eq_param' param_a.it param_b.it
 and eq_params params_a params_b = E.eq_list eq_param params_a params_b
@@ -121,14 +125,14 @@ and eq_cparams cparams_a cparams_b = E.eq_list eq_cparam cparams_a cparams_b
 (* Type arguments *)
 
 and eq_targ' targ_a targ_b = eq_typ targ_a targ_b
-and eq_targ targ_a targ_b = E.eq_targ eq_typ targ_a targ_b
-and eq_targs targs_a targs_b = E.eq_targs eq_typ targs_a targs_b
+and eq_targ targ_a targ_b = E.eq_targ P.pp_typ eq_typ targ_a targ_b
+and eq_targs targs_a targs_b = E.eq_targs P.pp_typ eq_typ targs_a targs_b
 
 (* Arguments *)
 
 and eq_arg' arg_a arg_b = E.eq_arg' eq_expr arg_a arg_b
-and eq_arg arg_a arg_b = E.eq_arg eq_expr arg_a arg_b
-and eq_args args_a args_b = E.eq_args eq_expr args_a args_b
+and eq_arg arg_a arg_b = E.eq_arg P.pp_expr eq_expr arg_a arg_b
+and eq_args args_a args_b = E.eq_args P.pp_expr eq_expr args_a args_b
 
 (* Expressions *)
 
@@ -246,38 +250,51 @@ and eq_expr' expr_a expr_b =
       && eq_targs targs_a targs_b && eq_args args_a args_b
   | _ -> false
 
-and eq_expr expr_a expr_b = eq_expr' expr_a.it expr_b.it
+and eq_expr expr_a expr_b =
+  eq_expr' expr_a.it expr_b.it |> E.check "expr" P.pp_expr expr_a expr_b
+
 and eq_exprs exprs_a exprs_b = E.eq_list eq_expr exprs_a exprs_b
 
 (* Keyset expressions *)
 
 and eq_keyset' keyset_a keyset_b = E.eq_keyset' eq_expr keyset_a keyset_b
-and eq_keyset keyset_a keyset_b = E.eq_keyset eq_expr keyset_a keyset_b
-and eq_keysets keysets_a keysets_b = E.eq_keysets eq_expr keysets_a keysets_b
+
+and eq_keyset keyset_a keyset_b =
+  E.eq_keyset P.pp_expr eq_expr keyset_a keyset_b
+
+and eq_keysets keysets_a keysets_b =
+  E.eq_keysets P.pp_expr eq_expr keysets_a keysets_b
 
 (* Select-cases for select *)
 
 and eq_select_case' select_case_a select_case_b =
-  E.eq_select_case' eq_expr select_case_a select_case_b
+  E.eq_select_case' P.pp_expr eq_expr select_case_a select_case_b
 
 and eq_select_case select_case_a select_case_b =
-  E.eq_select_case eq_expr select_case_a select_case_b
+  E.eq_select_case P.pp_expr eq_expr select_case_a select_case_b
 
 and eq_select_cases select_cases_a select_cases_b =
-  E.eq_select_cases eq_expr select_cases_a select_cases_b
+  E.eq_select_cases P.pp_expr eq_expr select_cases_a select_cases_b
 
 (* Statements *)
 
-and eq_stmt' stmt_a stmt_b = E.eq_stmt' eq_typ eq_expr eq_decl stmt_a stmt_b
-and eq_stmt stmt_a stmt_b = E.eq_stmt eq_typ eq_expr eq_decl stmt_a stmt_b
-and eq_stmts stmts_a stmts_b = E.eq_stmts eq_typ eq_expr eq_decl stmts_a stmts_b
+and eq_stmt' stmt_a stmt_b =
+  E.eq_stmt' P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl stmt_a stmt_b
+
+and eq_stmt stmt_a stmt_b =
+  E.eq_stmt P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl stmt_a stmt_b
+
+and eq_stmts stmts_a stmts_b =
+  E.eq_stmts P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl stmts_a stmts_b
 
 (* Blocks (sequence of statements) *)
 
 and eq_block' block_a block_b =
-  E.eq_block' eq_typ eq_expr eq_decl block_a block_b
+  E.eq_block' P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl block_a
+    block_b
 
-and eq_block block_a block_b = E.eq_block eq_typ eq_expr eq_decl block_a block_b
+and eq_block block_a block_b =
+  E.eq_block P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl block_a block_b
 
 (* Match-cases for switch *)
 
@@ -285,30 +302,30 @@ and eq_switch_label' switch_label_a switch_label_b =
   E.eq_switch_label' switch_label_a switch_label_b
 
 and eq_switch_label switch_label_a switch_label_b =
-  E.eq_switch_label switch_label_a switch_label_b
+  E.eq_switch_label P.pp_expr switch_label_a switch_label_b
 
 and eq_switch_case' switch_case_a switch_case_b =
-  E.eq_switch_case' eq_typ eq_expr eq_decl switch_case_a switch_case_b
+  E.eq_switch_case' P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
+    switch_case_a switch_case_b
 
 and eq_switch_case switch_case_a switch_case_b =
-  E.eq_switch_case eq_typ eq_expr eq_decl switch_case_a switch_case_b
+  E.eq_switch_case P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
+    switch_case_a switch_case_b
 
 and eq_switch_cases switch_cases_a switch_cases_b =
-  E.eq_switch_cases eq_typ eq_expr eq_decl switch_cases_a switch_cases_b
+  E.eq_switch_cases P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
+    switch_cases_a switch_cases_b
 
 (* Declarations *)
 
 and eq_decl' decl_a decl_b =
   match (decl_a, decl_b) with
-  | ( ConstD { id = id_a; typ = typ_a; value = value_a; annos = annos_a },
-      ConstD { id = id_b; typ = typ_b; value = value_b; annos = annos_b } ) ->
+  | ( ConstD { id = id_a; typ = typ_a; value = value_a; annos = _annos_a },
+      ConstD { id = id_b; typ = typ_b; value = value_b; annos = _annos_b } ) ->
       eq_id id_a id_b && eq_typ typ_a typ_b && eq_expr value_a value_b
-      && eq_annos annos_a annos_b
-  | ( VarD { id = id_a; typ = typ_a; init = init_a; annos = annos_a },
-      VarD { id = id_b; typ = typ_b; init = init_b; annos = annos_b } ) ->
-      eq_id id_a id_b && eq_typ typ_a typ_b
-      && E.eq_option eq_expr init_a init_b
-      && eq_annos annos_a annos_b
+  | ( VarD { id = id_a; typ = typ_a; init = init_a; annos = _annos_a },
+      VarD { id = id_b; typ = typ_b; init = init_b; annos = _annos_b } ) ->
+      eq_id id_a id_b && eq_typ typ_a typ_b && E.eq_option eq_expr init_a init_b
   | ( InstD
         {
           id = id_a;
@@ -316,7 +333,7 @@ and eq_decl' decl_a decl_b =
           targs = targs_a;
           args = args_a;
           init = init_a;
-          annos = annos_a;
+          annos = _annos_a;
         },
       InstD
         {
@@ -325,62 +342,63 @@ and eq_decl' decl_a decl_b =
           targs = targs_b;
           args = args_b;
           init = init_b;
-          annos = annos_b;
+          annos = _annos_b;
         } ) ->
       eq_id id_a id_b
       && eq_var var_inst_a var_inst_b
       && eq_targs targs_a targs_b && eq_args args_a args_b
-      && eq_decls init_a init_b && eq_annos annos_a annos_b
+      && eq_decls init_a init_b
   | ErrD { members = members_a }, ErrD { members = members_b }
   | MatchKindD { members = members_a }, MatchKindD { members = members_b } ->
       eq_members members_a members_b
   | ( StructD
-        { id = id_a; tparams = tparams_a; fields = fields_a; annos = annos_a },
+        { id = id_a; tparams = tparams_a; fields = fields_a; annos = _annos_a },
       StructD
-        { id = id_b; tparams = tparams_b; fields = fields_b; annos = annos_b } )
+        { id = id_b; tparams = tparams_b; fields = fields_b; annos = _annos_b }
+    )
   | ( HeaderD
-        { id = id_a; tparams = tparams_a; fields = fields_a; annos = annos_a },
+        { id = id_a; tparams = tparams_a; fields = fields_a; annos = _annos_a },
       HeaderD
-        { id = id_b; tparams = tparams_b; fields = fields_b; annos = annos_b } )
+        { id = id_b; tparams = tparams_b; fields = fields_b; annos = _annos_b }
+    )
   | ( UnionD
-        { id = id_a; tparams = tparams_a; fields = fields_a; annos = annos_a },
+        { id = id_a; tparams = tparams_a; fields = fields_a; annos = _annos_a },
       UnionD
-        { id = id_b; tparams = tparams_b; fields = fields_b; annos = annos_b } )
-    ->
+        { id = id_b; tparams = tparams_b; fields = fields_b; annos = _annos_b }
+    ) ->
+      let fields_a =
+        List.map (fun (member, typ, _) -> (member, typ)) fields_a
+      in
+      let fields_b =
+        List.map (fun (member, typ, _) -> (member, typ)) fields_b
+      in
       eq_id id_a id_b
       && eq_tparams tparams_a tparams_b
-      && E.eq_triples eq_id eq_typ eq_annos fields_a fields_b
-      && eq_annos annos_a annos_b
-  | ( EnumD { id = id_a; members = members_a; annos = annos_a },
-      EnumD { id = id_b; members = members_b; annos = annos_b } ) ->
-      eq_id id_a id_b
-      && eq_members members_a members_b
-      && eq_annos annos_a annos_b
-  | ( SEnumD { id = id_a; typ = typ_a; fields = fields_a; annos = annos_a },
-      SEnumD { id = id_b; typ = typ_b; fields = fields_b; annos = annos_b } ) ->
+      && E.eq_pairs eq_member eq_typ fields_a fields_b
+  | ( EnumD { id = id_a; members = members_a; annos = _annos_a },
+      EnumD { id = id_b; members = members_b; annos = _annos_b } ) ->
+      eq_id id_a id_b && eq_members members_a members_b
+  | ( SEnumD { id = id_a; typ = typ_a; fields = fields_a; annos = _annos_a },
+      SEnumD { id = id_b; typ = typ_b; fields = fields_b; annos = _annos_b } )
+    ->
       eq_id id_a id_b && eq_typ typ_a typ_b
       && E.eq_pairs eq_id eq_expr fields_a fields_b
-      && eq_annos annos_a annos_b
-  | ( NewTypeD { id = id_a; typdef = typdef_a; annos = annos_a },
-      NewTypeD { id = id_b; typdef = typdef_b; annos = annos_b } )
-  | ( TypeDefD { id = id_a; typdef = typdef_a; annos = annos_a },
-      TypeDefD { id = id_b; typdef = typdef_b; annos = annos_b } ) ->
-      eq_id id_a id_b
-      && E.eq_alt eq_typ eq_decl typdef_a typdef_b
-      && eq_annos annos_a annos_b
-  | ( ValueSetD { id = id_a; typ = typ_a; size = size_a; annos = annos_a },
-      ValueSetD { id = id_b; typ = typ_b; size = size_b; annos = annos_b } ) ->
+  | ( NewTypeD { id = id_a; typdef = typdef_a; annos = _annos_a },
+      NewTypeD { id = id_b; typdef = typdef_b; annos = _annos_b } )
+  | ( TypeDefD { id = id_a; typdef = typdef_a; annos = _annos_a },
+      TypeDefD { id = id_b; typdef = typdef_b; annos = _annos_b } ) ->
+      eq_id id_a id_b && E.eq_alt eq_typ eq_decl typdef_a typdef_b
+  | ( ValueSetD { id = id_a; typ = typ_a; size = size_a; annos = _annos_a },
+      ValueSetD { id = id_b; typ = typ_b; size = size_b; annos = _annos_b } ) ->
       eq_id id_a id_b && eq_typ typ_a typ_b && eq_expr size_a size_b
-      && eq_annos annos_a annos_b
   | ( ParserTypeD
-        { id = id_a; tparams = tparams_a; params = params_a; annos = annos_a },
+        { id = id_a; tparams = tparams_a; params = params_a; annos = _annos_a },
       ParserTypeD
-        { id = id_b; tparams = tparams_b; params = params_b; annos = annos_b } )
-    ->
+        { id = id_b; tparams = tparams_b; params = params_b; annos = _annos_b }
+    ) ->
       eq_id id_a id_b
       && eq_tparams tparams_a tparams_b
       && eq_params params_a params_b
-      && eq_annos annos_a annos_b
   | ( ParserD
         {
           id = id_a;
@@ -389,7 +407,7 @@ and eq_decl' decl_a decl_b =
           cparams = cparams_a;
           locals = locals_a;
           states = states_a;
-          annos = annos_a;
+          annos = _annos_a;
         },
       ParserD
         {
@@ -399,7 +417,7 @@ and eq_decl' decl_a decl_b =
           cparams = cparams_b;
           locals = locals_b;
           states = states_b;
-          annos = annos_b;
+          annos = _annos_b;
         } ) ->
       eq_id id_a id_b
       && eq_tparams tparams_a tparams_b
@@ -407,25 +425,21 @@ and eq_decl' decl_a decl_b =
       && eq_cparams cparams_a cparams_b
       && eq_decls locals_a locals_b
       && eq_parser_states states_a states_b
-      && eq_annos annos_a annos_b
-  | ( ActionD { id = id_a; params = params_a; body = body_a; annos = annos_a },
-      ActionD { id = id_b; params = params_b; body = body_b; annos = annos_b } )
-    ->
-      eq_id id_a id_b
-      && eq_params params_a params_b
-      && eq_block body_a body_b && eq_annos annos_a annos_b
-  | ( TableD { id = id_a; table = table_a; annos = annos_a },
-      TableD { id = id_b; table = table_b; annos = annos_b } ) ->
-      eq_id id_a id_b && eq_table table_a table_b && eq_annos annos_a annos_b
+  | ( ActionD { id = id_a; params = params_a; body = body_a; annos = _annos_a },
+      ActionD { id = id_b; params = params_b; body = body_b; annos = _annos_b }
+    ) ->
+      eq_id id_a id_b && eq_params params_a params_b && eq_block body_a body_b
+  | ( TableD { id = id_a; table = table_a; annos = _annos_a },
+      TableD { id = id_b; table = table_b; annos = _annos_b } ) ->
+      eq_id id_a id_b && eq_table table_a table_b
   | ( ControlTypeD
-        { id = id_a; tparams = tparams_a; params = params_a; annos = annos_a },
+        { id = id_a; tparams = tparams_a; params = params_a; annos = _annos_a },
       ControlTypeD
-        { id = id_b; tparams = tparams_b; params = params_b; annos = annos_b } )
-    ->
+        { id = id_b; tparams = tparams_b; params = params_b; annos = _annos_b }
+    ) ->
       eq_id id_a id_b
       && eq_tparams tparams_a tparams_b
       && eq_params params_a params_b
-      && eq_annos annos_a annos_b
   | ( ControlD
         {
           id = id_a;
@@ -434,7 +448,7 @@ and eq_decl' decl_a decl_b =
           cparams = cparams_a;
           locals = locals_a;
           body = body_a;
-          annos = annos_a;
+          annos = _annos_a;
         },
       ControlD
         {
@@ -444,14 +458,13 @@ and eq_decl' decl_a decl_b =
           cparams = cparams_b;
           locals = locals_b;
           body = body_b;
-          annos = annos_b;
+          annos = _annos_b;
         } ) ->
       eq_id id_a id_b
       && eq_tparams tparams_a tparams_b
       && eq_params params_a params_b
       && eq_cparams cparams_a cparams_b
       && eq_decls locals_a locals_b && eq_block body_a body_b
-      && eq_annos annos_a annos_b
   | ( FuncD
         {
           id = id_a;
@@ -478,7 +491,7 @@ and eq_decl' decl_a decl_b =
           typ_ret = typ_ret_a;
           tparams = tparams_a;
           params = params_a;
-          annos = annos_a;
+          annos = _annos_a;
         },
       ExternFuncD
         {
@@ -486,25 +499,22 @@ and eq_decl' decl_a decl_b =
           typ_ret = typ_ret_b;
           tparams = tparams_b;
           params = params_b;
-          annos = annos_b;
+          annos = _annos_b;
         } ) ->
       eq_id id_a id_b && eq_typ typ_ret_a typ_ret_b
       && eq_tparams tparams_a tparams_b
       && eq_params params_a params_b
-      && eq_annos annos_a annos_b
-  | ( ExternConstructorD { id = id_a; cparams = cparams_a; annos = annos_a },
-      ExternConstructorD { id = id_b; cparams = cparams_b; annos = annos_b } )
+  | ( ExternConstructorD { id = id_a; cparams = cparams_a; annos = _annos_a },
+      ExternConstructorD { id = id_b; cparams = cparams_b; annos = _annos_b } )
     ->
-      eq_id id_a id_b
-      && eq_cparams cparams_a cparams_b
-      && eq_annos annos_a annos_b
+      eq_id id_a id_b && eq_cparams cparams_a cparams_b
   | ( ExternAbstractMethodD
         {
           id = id_a;
           typ_ret = typ_ret_a;
           tparams = tparams_a;
           params = params_a;
-          annos = annos_a;
+          annos = _annos_a;
         },
       ExternAbstractMethodD
         {
@@ -512,7 +522,7 @@ and eq_decl' decl_a decl_b =
           typ_ret = typ_ret_b;
           tparams = tparams_b;
           params = params_b;
-          annos = annos_b;
+          annos = _annos_b;
         } )
   | ( ExternMethodD
         {
@@ -520,7 +530,7 @@ and eq_decl' decl_a decl_b =
           typ_ret = typ_ret_a;
           tparams = tparams_a;
           params = params_a;
-          annos = annos_a;
+          annos = _annos_a;
         },
       ExternMethodD
         {
@@ -528,56 +538,68 @@ and eq_decl' decl_a decl_b =
           typ_ret = typ_ret_b;
           tparams = tparams_b;
           params = params_b;
-          annos = annos_b;
+          annos = _annos_b;
         } ) ->
       eq_id id_a id_b && eq_typ typ_ret_a typ_ret_b
       && eq_tparams tparams_a tparams_b
       && eq_params params_a params_b
-      && eq_annos annos_a annos_b
   | ( ExternObjectD
-        { id = id_a; tparams = tparams_a; mthds = mthds_a; annos = annos_a },
+        { id = id_a; tparams = tparams_a; mthds = mthds_a; annos = _annos_a },
       ExternObjectD
-        { id = id_b; tparams = tparams_b; mthds = mthds_b; annos = annos_b } )
+        { id = id_b; tparams = tparams_b; mthds = mthds_b; annos = _annos_b } )
     ->
       eq_id id_a id_b
       && eq_tparams tparams_a tparams_b
-      && eq_decls mthds_a mthds_b && eq_annos annos_a annos_b
+      && eq_decls mthds_a mthds_b
   | ( PackageTypeD
-        { id = id_a; tparams = tparams_a; cparams = cparams_a; annos = annos_a },
+        {
+          id = id_a;
+          tparams = tparams_a;
+          cparams = cparams_a;
+          annos = _annos_a;
+        },
       PackageTypeD
-        { id = id_b; tparams = tparams_b; cparams = cparams_b; annos = annos_b }
-    ) ->
+        {
+          id = id_b;
+          tparams = tparams_b;
+          cparams = cparams_b;
+          annos = _annos_b;
+        } ) ->
       eq_id id_a id_b
       && eq_tparams tparams_a tparams_b
       && eq_cparams cparams_a cparams_b
-      && eq_annos annos_a annos_b
   | _ -> false
 
-and eq_decl decl_a decl_b = eq_decl' decl_a.it decl_b.it
+and eq_decl decl_a decl_b =
+  eq_decl' decl_a.it decl_b.it |> E.check "decl" P.pp_decl decl_a decl_b
+
 and eq_decls decls_a decls_b = E.eq_list eq_decl decls_a decls_b
 
 (* Parser states *)
 
 and eq_parser_state' parser_state_a parser_state_b =
-  E.eq_parser_state' eq_typ eq_expr eq_decl parser_state_a parser_state_b
+  E.eq_parser_state' P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
+    parser_state_a parser_state_b
 
 and eq_parser_state parser_state_a parser_state_b =
-  E.eq_parser_state eq_typ eq_expr eq_decl parser_state_a parser_state_b
+  E.eq_parser_state P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
+    parser_state_a parser_state_b
 
 and eq_parser_states parser_states_a parser_states_b =
-  E.eq_parser_states eq_typ eq_expr eq_decl parser_states_a parser_states_b
+  E.eq_parser_states P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
+    parser_states_a parser_states_b
 
 (* Tables *)
 
-and eq_table table_a table_b = E.eq_table eq_expr table_a table_b
+and eq_table table_a table_b = E.eq_table P.pp_expr eq_expr table_a table_b
 
 (* Table properties *)
 
 and eq_table_property table_property_a table_property_b =
-  E.eq_table_property eq_expr table_property_a table_property_b
+  E.eq_table_property P.pp_expr eq_expr table_property_a table_property_b
 
 and eq_table_properties table_properties_a table_properties_b =
-  E.eq_table_properties eq_expr table_properties_a table_properties_b
+  E.eq_table_properties P.pp_expr eq_expr table_properties_a table_properties_b
 
 (* Table keys *)
 
@@ -585,49 +607,49 @@ and eq_table_key' table_key_a table_key_b =
   E.eq_table_key' eq_expr table_key_a table_key_b
 
 and eq_table_key table_key_a table_key_b =
-  E.eq_table_key eq_expr table_key_a table_key_b
+  E.eq_table_key P.pp_expr eq_expr table_key_a table_key_b
 
 and eq_table_keys' table_keys_a table_keys_b =
-  E.eq_table_keys' eq_expr table_keys_a table_keys_b
+  E.eq_table_keys' P.pp_expr eq_expr table_keys_a table_keys_b
 
 and eq_table_keys table_keys_a table_keys_b =
-  E.eq_table_keys eq_expr table_keys_a table_keys_b
+  E.eq_table_keys P.pp_expr eq_expr table_keys_a table_keys_b
 
 (* Table action references *)
 
 and eq_table_action' table_action_a table_action_b =
-  E.eq_table_action' eq_expr table_action_a table_action_b
+  E.eq_table_action' P.pp_expr eq_expr table_action_a table_action_b
 
 and eq_table_action table_action_a table_action_b =
-  E.eq_table_action eq_expr table_action_a table_action_b
+  E.eq_table_action P.pp_expr eq_expr table_action_a table_action_b
 
 and eq_table_actions' table_actions_a table_actions_b =
-  E.eq_table_actions' eq_expr table_actions_a table_actions_b
+  E.eq_table_actions' P.pp_expr eq_expr table_actions_a table_actions_b
 
 and eq_table_actions table_actions_a table_actions_b =
-  E.eq_table_actions eq_expr table_actions_a table_actions_b
+  E.eq_table_actions P.pp_expr eq_expr table_actions_a table_actions_b
 
 (* Table entries *)
 
 and eq_table_entry' table_entry_a table_entry_b =
-  E.eq_table_entry' eq_expr table_entry_a table_entry_b
+  E.eq_table_entry' P.pp_expr eq_expr table_entry_a table_entry_b
 
 and eq_table_entry table_entry_a table_entry_b =
-  E.eq_table_entry eq_expr table_entry_a table_entry_b
+  E.eq_table_entry P.pp_expr eq_expr table_entry_a table_entry_b
 
 and eq_table_entries' table_entries_a table_entries_b =
-  E.eq_table_entries' eq_expr table_entries_a table_entries_b
+  E.eq_table_entries' P.pp_expr eq_expr table_entries_a table_entries_b
 
 and eq_table_entries table_entries_a table_entries_b =
-  E.eq_table_entries eq_expr table_entries_a table_entries_b
+  E.eq_table_entries P.pp_expr eq_expr table_entries_a table_entries_b
 
 (* Table default properties *)
 
 and eq_table_default' table_default_a table_default_b =
-  E.eq_table_default' eq_expr table_default_a table_default_b
+  E.eq_table_default' P.pp_expr eq_expr table_default_a table_default_b
 
 and eq_table_default table_default_a table_default_b =
-  E.eq_table_default eq_expr table_default_a table_default_b
+  E.eq_table_default P.pp_expr eq_expr table_default_a table_default_b
 
 (* Table custorm properties *)
 
@@ -635,7 +657,7 @@ and eq_table_custom' table_custom_a table_custom_b =
   E.eq_table_custom' eq_expr table_custom_a table_custom_b
 
 and eq_table_custom table_custom_a table_custom_b =
-  E.eq_table_custom eq_expr table_custom_a table_custom_b
+  E.eq_table_custom P.pp_expr eq_expr table_custom_a table_custom_b
 
 (* Program *)
 
