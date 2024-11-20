@@ -31,13 +31,19 @@ module IdMap = struct
     let bindings = bindings m in
     Format.fprintf fmt "{ %a }" (Format.pp_print_list pp_binding) bindings
 
-  let subset eq_v m1 m2 =
-    List.for_all
-      (fun (k, v1) ->
-        match find_opt k m2 with Some v2 -> eq_v v1 v2 | None -> false)
-      (bindings m1)
+  let diff m_a m_b =
+    let keys_a = keys m_a in
+    let keys_b = keys m_b in
+    let keys_diff = List.filter (fun k -> not (List.mem k keys_b)) keys_a in
+    List.fold_left (fun acc k -> add k (find k m_a) acc) empty keys_diff
 
-  let eq eq_v m1 m2 = subset eq_v m1 m2 && subset eq_v m2 m1
+  let subset eq_v m_a m_b =
+    List.for_all
+      (fun (k, v_a) ->
+        match find_opt k m_b with Some v_b -> eq_v v_a v_b | None -> false)
+      (bindings m_a)
+
+  let eq eq_v m_a m_b = subset eq_v m_a m_b && subset eq_v m_b m_a
   let of_list l = List.fold_left (fun acc (k, v) -> add k v acc) empty l
 end
 
@@ -105,13 +111,19 @@ module FIdMap = struct
     let bindings = bindings m in
     Format.fprintf fmt "{ %a }" (Format.pp_print_list pp_binding) bindings
 
-  let subset eq_v m1 m2 =
-    List.for_all
-      (fun (k, v1) ->
-        match find_opt k m2 with Some v2 -> eq_v v1 v2 | None -> false)
-      (bindings m1)
+  let diff m_a m_b =
+    let keys_a = keys m_a in
+    let keys_b = keys m_b in
+    let keys_diff = List.filter (fun k -> not (List.mem k keys_b)) keys_a in
+    List.fold_left (fun acc k -> add k (find k m_a) acc) empty keys_diff
 
-  let eq eq_v m1 m2 = subset eq_v m1 m2 && subset eq_v m2 m1
+  let subset eq_v m_a m_b =
+    List.for_all
+      (fun (k, v_a) ->
+        match find_opt k m_b with Some v_b -> eq_v v_a v_b | None -> false)
+      (bindings m_a)
+
+  let eq eq_v m_a m_b = subset eq_v m_a m_b && subset eq_v m_b m_a
   let of_list l = List.fold_left (fun acc (k, v) -> add k v acc) empty l
 end
 

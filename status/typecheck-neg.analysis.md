@@ -209,7 +209,12 @@ action act() {
 
 ## 5. Context-sensitivity (some impose implicit domain-specific P4 knowledge)
 
-### (1) `.last`, `.lastIndex` only allowed within parser
+### \[DONE\] (1) ~~`.last`, `.lastIndex` only allowed within parser~~
+
+The spec mentions:
+
+> * hs.last: produces a reference to the element with index hs.nextIndex - 1 in the stack, if such an element exists. May only be used in a parser.
+> * hs.lastIndex: produces a 32-bit unsigned integer that encodes the index hs.nextIndex - 1. May only be used in a parser. (8.18)
 
 ```p4
 action a(in s v) {
@@ -234,10 +239,23 @@ control c() {
 * next.p4
 </details>
 
-### (2) Calling `verify` within a control
+### \[DONE\] (2) ~~Calling `verify` within a control~~
 
-But this is specific to P4 invariant.
-Not something that can be inferred from the code itself.
+The spec mentions:
+
+> The verify statement provides a simple form of error handling. verify can only be invoked within a parser; (13.7)
+
+~~But this is specific to P4 invariant. Not something that can be inferred from the code itself.~~
+
+Actually, should have modeled `verify` as a dedicated AST node.
+But `verify` exists as an extern function, supposedly for backward-compatibility reasons?
+
+```p4
+// TODO: remove from this file, convert to built-in
+/// Check a predicate @check in the parser; if the predicate is true do nothing,
+/// otherwise set the parser error to @toSignal, and transition to the `reject` state.
+extern void verify(in bool check, in error toSignal);
+```
 
 ```p4
 control C() {
@@ -253,9 +271,15 @@ control C() {
 * control-verify.p4
 </details>
 
-### (3) No switch inside action
+### \[DONE\] (3) ~~No switch inside action~~
 
-But maybe this is only specific to `p4test`.
+~~But maybe this is only specific to `p4test`.~~
+
+The spec mentions:
+
+> The switch statement can only be used within control blocks. (12.7)
+
+Yet, it does seem to impose a stronger restriction that switch can only be used within the apply block of a control.
 
 ```p4
 action a0() {
@@ -271,43 +295,7 @@ action a0() {
 * issue3299.p4
 </details>
 
-### (4) Already expecting `NoAction`
-
-```p4
-action NoAction(bit t) {}
-control c() {
-    table t {
-        actions = {}
-    }
-    apply {}
-}
-```
-
-```
-issue3644-1.p4(1): [--Werror=Target model error] error: NoAction: Expected an action with no parameters; did you include core.p4?
-action NoAction(bit t) {}
-       ^^^^^^^^
-```
-
-```p4
-const bit NoAction = 1;
-control c() {
-    table t {
-        actions = {}
-    }
-    apply {}
-}
-```
-
-<details>
-<summary>Tests</summary>
-
-* issue3644-1.p4
-* issue3644-2.p4
-* issue3644.p4
-</details>
-
-### (5) `main` should be a package
+### \[DONE\] (4) ~~Variable `main` should be a package instance~~
 
 ```p4
 extern MyExtern {
@@ -315,13 +303,6 @@ extern MyExtern {
 }
 MyExtern() main;
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue4140.p4
-* issue4144.p4
-</details>
 
 ## 6. Devils are in the details
 
@@ -617,7 +598,7 @@ action select_entry(choices_t choices) { ... }
 * issue532.p4
 </details>
 
-## 5. Constructors and functions live in the same namespace?
+## 5. Variables, type varaibles, constructors, and functions live in the same namespace?
 
 ```p4
 control foo (in bit<8> x, out bit<8> y) { apply { y = x + 7; } }
@@ -640,7 +621,24 @@ But we can distinguish the use of an identifier as a function or a constructor f
 
 <details>
 <summary>Tests</summary>
+
 * issue1932.p4
+</details>
+
+Similarly for varaibles and functions: `main` is reserved for the top-level package instance.
+But is `main` allowed for type variables, constructors, and functions?
+p4cherry allows such and p4c disallows such as below.
+
+```p4
+extern main {}
+```
+
+Here, `main` is a constructor name, not a variable name.
+
+<details>
+<summary>Tests</summary>
+
+* issue4144.p4
 </details>
 
 ## 6. Scope of a control parameter
@@ -836,7 +834,7 @@ Below tests expect that when an arbitrary precision integer is shifted either le
 
 However, the spec says, for arbitrary precision integers:
 
-> Arithmetic shift left and right denoted by << and >>. These operations produce an int result. The right operand must be either an unsigned value of type bit<S> or a compile-time known value that is a non-negative integer. (8.8)
+> Arithmetic shift left and right denoted by << and >>. These operations produce an int result. The right operand must be either an unsigned value of type bit\<S\> or a compile-time known value that is a non-negative integer. (8.8)
 
 i.e., if the right operand is `bit<S>`, then it need not be a compile-time known value.
 
@@ -856,7 +854,7 @@ control ingress(inout Headers h, inout Meta m, inout standard_metadata_t sm) {
 }
 ```
 
-```
+```p4
 issue2206.p4(27): [--Werror=type-error] error: 1 << h.h.c: shift result type is arbitrary-precision int, but right operand is not constant; width of left operand of shift needs to be specified or both operands need to be constant
         h.h.a = (1 << h.h.c) + 8w2;
                  ^^^^^^^^^^
@@ -1144,4 +1142,40 @@ state start {
 * issue-2123_e.p4
 * issue122.p4
 * issue3430.p4
+</details>
+
+## 5. Target-specific: Already expecting `NoAction` even when core.p4 is not included
+
+```p4
+action NoAction(bit t) {}
+control c() {
+    table t {
+        actions = {}
+    }
+    apply {}
+}
+```
+
+```
+issue3644-1.p4(1): [--Werror=Target model error] error: NoAction: Expected an action with no parameters; did you include core.p4?
+action NoAction(bit t) {}
+       ^^^^^^^^
+```
+
+```p4
+const bit NoAction = 1;
+control c() {
+    table t {
+        actions = {}
+    }
+    apply {}
+}
+```
+
+<details>
+<summary>Tests</summary>
+
+* issue3644-1.p4
+* issue3644-2.p4
+* issue3644.p4
 </details>

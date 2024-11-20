@@ -1790,6 +1790,17 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let typ =
     match typ_base with
     | StackT (typ_inner, _) -> (
+        if
+          (match member.it with "last" | "lastIndex" -> true | _ -> false)
+          && not
+               ((cursor = Ctx.Block && ctx.block.kind = Ctx.Parser)
+               || (cursor = Ctx.Local && ctx.local.kind = Ctx.ParserState))
+        then (
+          Format.printf
+            "(type_expr_acc_expr) last and lastIndex of %a may only be \
+             accessed within a parser\n"
+            (El.Pp.pp_expr ~level:0) expr_base;
+          assert false);
         match member.it with
         | "size" | "lastIndex" -> Types.FBitT (Bigint.of_int 32)
         | "next" | "last" -> typ_inner
@@ -2498,6 +2509,11 @@ and type_assign_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
 and type_switch_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (expr_switch : El.Ast.expr) (cases : El.Ast.switch_case list) :
     Ctx.t * Flow.t * Il.Ast.stmt' =
+  if not (cursor = Ctx.Local && ctx.local.kind = Ctx.ControlApplyMethod) then (
+    Format.printf
+      "(type_switch_stmt) Switch statements can only be used within a control \
+       apply block.\n";
+    assert false);
   let expr_switch_il = type_expr cursor ctx expr_switch in
   match expr_switch_il.it with
   | ExprAccE
@@ -2857,15 +2873,31 @@ and type_return_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (_flow : Flow.t)
 
 (* (8.20) Method invocations and function calls *)
 
+(* (13.7) verify
+
+   The verify statement provides a simple form of error handling.
+   verify can only be invoked within a parser;
+   it is used syntactically as if it were a function with the following signature:
+
+    extern void verify(in bool condition, in error err); *)
+
 and type_call_func_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (var_func : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
     : Ctx.t * Flow.t * Il.Ast.stmt' =
+  if
+    (match var_func.it with Current { it = "verify"; _ } -> true | _ -> false)
+    && not
+         ((cursor = Ctx.Block && ctx.block.kind = Ctx.Parser)
+         || (cursor = Ctx.Local && ctx.local.kind = Ctx.ParserState))
+  then (
+    Format.printf
+      "(type_call_func_stmt) verify statement must be invoked within a parser\n";
+    assert false);
   (* Find the function definition and specialize it is generic *)
   let targs_il = List.map (eval_type_with_check cursor ctx) targs in
   let ft, tids_fresh, args_default =
     type_func cursor ctx var_func targs_il args
   in
-  (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
   let targs_il, args_il, _typ =
     type_call cursor ctx tids_fresh ft targs_il args args_default
@@ -2884,7 +2916,6 @@ and type_call_method_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   let ft, expr_base_il, tids_fresh, args_default =
     type_method cursor ctx expr_base member targs_il args
   in
-  (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
   let targs_il, args_il, _typ =
     type_call cursor ctx tids_fresh ft targs_il args args_default
@@ -4008,8 +4039,11 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let ctx'' = Ctx.add_tparams Ctx.Block tparams ctx'' in
   let ctx'', cons_il = type_decls Ctx.Block ctx'' cons in
   (* Update the context with the constructor definition environment *)
+  let cdenv_diff = Envs.CDEnv.diff ctx''.global.cdenv ctx.global.cdenv in
   let ctx =
-    { ctx with global = { ctx.global with cdenv = ctx''.global.cdenv } }
+    Envs.CDEnv.fold
+      (fun cid cd ctx -> Ctx.add_consdef cid cd ctx)
+      cdenv_diff ctx
   in
   let decl_il =
     Il.Ast.ExternObjectD
@@ -5332,8 +5366,11 @@ and type_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     type_package_constructor_decl Ctx.Block ctx' id cparams
   in
   (* Update the context with the constructor definition environment *)
+  let cdenv_diff = Envs.CDEnv.diff ctx'.global.cdenv ctx.global.cdenv in
   let ctx =
-    { ctx with global = { ctx.global with cdenv = ctx'.global.cdenv } }
+    Envs.CDEnv.fold
+      (fun cid cd ctx -> Ctx.add_consdef cid cd ctx)
+      cdenv_diff ctx
   in
   let decl_il =
     Il.Ast.PackageTypeD { id; tparams; cparams = cparams_il; annos = annos_il }

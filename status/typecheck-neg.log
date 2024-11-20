@@ -85,7 +85,8 @@ parser error: File test/program/ill-typed/control-inline.p4, line 34, characters
 Error while parsing p4 file: test/program/ill-typed/control-inline.p4
 
 >>> Running typecheck test on test/program/ill-typed/control-verify.p4
-Typecheck success: test/program/ill-typed/control-verify.p4
+(type_call_func_stmt) verify statement must be invoked within a parser
+Error while typechecking p4 file: test/program/ill-typed/control-verify.p4
 
 >>> Running typecheck test on test/program/ill-typed/default-initializer-err.p4
 Error while parsing p4 file: test/program/ill-typed/default-initializer-err.p4
@@ -551,7 +552,8 @@ Typecheck success: test/program/ill-typed/issue3291.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3293.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3299.p4
-Typecheck success: test/program/ill-typed/issue3299.p4
+(type_switch_stmt) Switch statements can only be used within a control apply block.
+Error while typechecking p4 file: test/program/ill-typed/issue3299.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3304.p4
 (check_valid_type_nesting) Invalid nesting of parser (in a bit<1>) inside struct s { field parser (in a bit<1>) }
@@ -605,7 +607,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue3442.p4
 Error while typechecking p4 file: test/program/ill-typed/issue345.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3522.p4
-Typecheck success: test/program/ill-typed/issue3522.p4
+(type_expr_acc_expr) last and lastIndex of v.field may only be accessed within a parser
+Error while typechecking p4 file: test/program/ill-typed/issue3522.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3534.p4
 Typecheck success: test/program/ill-typed/issue3534.p4
@@ -719,7 +722,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue413.p4
 Error while typechecking p4 file: test/program/ill-typed/issue4136.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue4140.p4
-Typecheck success: test/program/ill-typed/issue4140.p4
+(add_rtype) main is reserved for a package instance at the top level
+Error while typechecking p4 file: test/program/ill-typed/issue4140.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue4142.p4
 Error while parsing p4 file: test/program/ill-typed/issue4142.p4
@@ -864,7 +868,8 @@ Error while typechecking p4 file: test/program/ill-typed/neg.p4
 Error while typechecking p4 file: test/program/ill-typed/newtype-err.p4
 
 >>> Running typecheck test on test/program/ill-typed/next.p4
-Typecheck success: test/program/ill-typed/next.p4
+(type_expr_acc_expr) last and lastIndex of stack may only be accessed within a parser
+Error while typechecking p4 file: test/program/ill-typed/next.p4
 
 >>> Running typecheck test on test/program/ill-typed/nostart.p4
 (type_parser_states) A "start" state must exist
@@ -1185,4 +1190,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 266/299 (88.96%) [FAIL] 33/299 (11.04%)
-Typecheck: [PASS] 210/266 (78.95%) [FAIL] 56/266 (21.05%)
+Typecheck: [PASS] 215/266 (80.83%) [FAIL] 51/266 (19.17%)
