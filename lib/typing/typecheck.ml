@@ -1816,6 +1816,13 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
             member.it (El.Pp.pp_expr ~level:0) expr_base;
           assert false);
         Option.get typ_inner
+    | TableStructT (_id, fields) ->
+        let typ_inner = List.assoc_opt member.it fields in
+        if Option.is_none typ_inner then (
+          Format.printf "(type_expr_acc_expr) Member %s does not exist in %a\n"
+            member.it (El.Pp.pp_expr ~level:0) expr_base;
+          assert false);
+        Option.get typ_inner
     | _ ->
         Format.printf "(type_expr_acc_expr) %a cannot be accessed\n"
           (El.Pp.pp_expr ~level:0) expr_base;
@@ -2515,24 +2522,11 @@ and type_switch_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
        apply block.\n";
     assert false);
   let expr_switch_il = type_expr cursor ctx expr_switch in
-  match expr_switch_il.it with
-  | ExprAccE
-      {
-        expr_base =
-          {
-            it =
-              CallMethodE
-                {
-                  expr_base =
-                    { it = VarE { var = { it = Current id_table; _ } }; _ };
-                  member = member_method;
-                  _;
-                };
-            _;
-          };
-        member = member_acc;
-      }
-    when member_method.it = "apply" && member_acc.it = "action_run" ->
+  let typ_switch = expr_switch_il.note.typ in
+  match typ_switch with
+  | TableEnumT (id, _) ->
+      let id_table = String.sub id 12 (String.length id - 12) in
+      let id_table = String.sub id_table 0 (String.length id_table - 1) in
       type_switch_table_stmt cursor ctx flow expr_switch_il id_table cases
   | _ -> type_switch_general_stmt cursor ctx flow expr_switch_il cases
 
@@ -2548,7 +2542,8 @@ and type_switch_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
    the default_action was executed. *)
 
 and type_switch_table_label (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (id_table : Il.Ast.id) (label : El.Ast.switch_label) : Il.Ast.switch_label =
+    (id_table : Il.Ast.id') (label : El.Ast.switch_label) : Il.Ast.switch_label
+    =
   let label_il =
     match label.it with
     | ExprL
@@ -2557,21 +2552,21 @@ and type_switch_table_label (cursor : Ctx.cursor) (ctx : Ctx.t)
           at = at_expr;
           _;
         } ->
-        let id_enum = "action_list(" ^ id_table.it ^ ")" in
+        let id_enum = "action_list(" ^ id_table ^ ")" in
         let member = id_action.it in
         let id_field = id_enum ^ "." ^ member in
         let value_enum = Ctx.find_value_opt cursor id_field ctx in
         if
           not
             (match value_enum with
-            | Some (Value.EnumFieldV (id_enum', member'))
+            | Some (Value.TableEnumFieldV (id_enum', member'))
               when id_enum = id_enum' && member = member' ->
                 true
             | _ -> false)
         then (
           Format.printf
             "(type_switch_table_label) Action %a was not declared in table %a\n"
-            Il.Pp.pp_id id_action Il.Pp.pp_id id_table;
+            Il.Pp.pp_id id_action Il.Pp.pp_id' id_table;
           assert false);
         let typ_enum, _, ctk_enum = Ctx.find_rtype cursor id_field ctx in
         let expr_il =
@@ -2593,7 +2588,7 @@ and type_switch_table_label (cursor : Ctx.cursor) (ctx : Ctx.t)
   label_il $ label.at
 
 and type_switch_table_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
-    (id_table : Il.Ast.id) (case : El.Ast.switch_case) :
+    (id_table : Il.Ast.id') (case : El.Ast.switch_case) :
     Flow.t * Il.Ast.switch_label * Il.Ast.switch_case =
   match case.it with
   | MatchC (label, block) ->
@@ -2607,7 +2602,7 @@ and type_switch_table_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
       (flow, label_il, case_il)
 
 and type_switch_table_cases (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
-    (id_table : Il.Ast.id) (cases : El.Ast.switch_case list) :
+    (id_table : Il.Ast.id') (cases : El.Ast.switch_case list) :
     Flow.t * Il.Ast.switch_case list =
   let flows_case, _, cases_il =
     type_switch_table_cases' cursor ctx flow id_table [] [] [] cases
@@ -2620,7 +2615,7 @@ and type_switch_table_cases (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   (flow, cases_il)
 
 and type_switch_table_cases' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
-    (id_table : Il.Ast.id) (flows_case : Flow.t list)
+    (id_table : Il.Ast.id') (flows_case : Flow.t list)
     (labels_seen : string list) (cases_il : Il.Ast.switch_case list)
     (cases : El.Ast.switch_case list) :
     Flow.t list * string list * Il.Ast.switch_case list =
@@ -2653,7 +2648,7 @@ and type_switch_table_cases' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
         cases_il cases
 
 and type_switch_table_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
-    (expr_switch_il : Il.Ast.expr) (id_table : Il.Ast.id)
+    (expr_switch_il : Il.Ast.expr) (id_table : Il.Ast.id')
     (cases : El.Ast.switch_case list) : Ctx.t * Flow.t * Il.Ast.stmt' =
   let flow, cases_il = type_switch_table_cases cursor ctx flow id_table cases in
   let stmt_il =
@@ -3179,9 +3174,9 @@ and check_valid_var_type' (typ : Type.t) : bool =
   | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
   | UnionT _ ->
       true
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | AnyT | SeqT _
-  | SeqDefaultT _ | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT | SetT _
-  | StateT ->
+  | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | AnyT
+  | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
+  | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
       false
 
 and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
@@ -4375,38 +4370,32 @@ and type_table_property (cursor : Ctx.cursor) (ctx : Ctx.t)
       (table_ctx, CustomP table_custom_il)
 
 and type_table_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_ctx : Tblctx.t) (id : El.Ast.id) : Ctx.t =
+    (table_ctx : Tblctx.t) (id : El.Ast.id) : Ctx.t * Type.t =
   let id_enum = "action_list(" ^ id.it ^ ")" in
   let members =
     List.map
       (fun (var, _, _) -> Format.asprintf "%a" Il.Pp.pp_var' var)
       table_ctx.actions
   in
+  let typ_enum = Types.TableEnumT (id_enum, members) in
   let ctx =
     List.fold_left
       (fun ctx member ->
-        let value = Value.EnumFieldV (id_enum, member) in
-        let typ = Types.EnumT (id_enum, members) in
+        let value = Value.TableEnumFieldV (id_enum, member) in
         let id_field = id_enum ^ "." ^ member in
         Ctx.add_value cursor id_field value ctx
-        |> Ctx.add_rtype cursor id_field typ Lang.Ast.No Ctk.LCTK)
+        |> Ctx.add_rtype cursor id_field typ_enum Lang.Ast.No Ctk.LCTK)
       ctx members
   in
-  let td_enum = Types.EnumD (id_enum, members) in
-  WF.check_valid_typedef cursor ctx td_enum;
-  let ctx = Ctx.add_typedef cursor id_enum td_enum ctx in
   let id_struct = "apply_result(" ^ id.it ^ ")" in
-  let td_struct =
-    let typ_enum = specialize_typedef td_enum [] in
-    Types.StructD
+  let typ_struct =
+    Types.TableStructT
       ( id_struct,
-        [],
         [
           ("hit", Types.BoolT); ("miss", Types.BoolT); ("action_run", typ_enum);
         ] )
   in
-  let ctx = Ctx.add_typedef cursor id_struct td_struct ctx in
-  ctx
+  (ctx, typ_struct)
 
 and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (table : El.Ast.table) (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
@@ -4427,15 +4416,8 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         (table_ctx, table_properties_il @ [ table_property_il ]))
       (table_ctx, []) table
   in
-  (* (TODO) Should we add action_list(T), apply_result(T) type in env? And should we add decl to?
-     Petr4 did, and also it puts id in TableT instead of typ *)
-  let ctx = type_table_type_decl cursor ctx table_ctx id in
-  let typ =
-    let id_struct = "apply_result(" ^ id.it ^ ")" in
-    let td_struct = Ctx.find_typedef cursor id_struct ctx in
-    let typ_struct = specialize_typedef td_struct [] in
-    Types.TableT typ_struct
-  in
+  let ctx, typ_struct = type_table_type_decl cursor ctx table_ctx id in
+  let typ = Types.TableT typ_struct in
   let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.DYN ctx in
   let decl_il = Il.Ast.TableD { id; table = table_il; annos = annos_il } in
   (ctx, decl_il)
@@ -4482,8 +4464,8 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
           false
       (* No equality op *)
       | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
-      | TableT _ | AnyT | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _
-      | DefaultT | InvalidT | SetT _ | StateT ->
+      | TableT _ | AnyT | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _
+      | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
           false)
   | "lpm" | "ternary" | "range" -> (
       match typ with
@@ -4496,8 +4478,8 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
           false
       (* No equality op *)
       | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
-      | TableT _ | AnyT | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _
-      | DefaultT | InvalidT | SetT _ | StateT ->
+      | TableT _ | AnyT | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _
+      | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
           false)
   | _ ->
       Format.printf "(check_table_key) %s is not a valid match_kind\n"

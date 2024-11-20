@@ -47,6 +47,8 @@ and typ =
   (* Any type (top type) *)
   | AnyT
   (* Synthesized types : variables can never be declared of this type *)
+  | TableEnumT of L.id' * L.member' list
+  | TableStructT of L.id' * (L.member' * typ) list
   | SeqT of typ list
   | SeqDefaultT of typ list
   | RecordT of (L.member' * typ) list
@@ -167,6 +169,11 @@ and pp_typ fmt typ =
   | PackageT -> F.fprintf fmt "package"
   | TableT _ -> F.pp_print_string fmt "table"
   | AnyT -> F.pp_print_string fmt "any"
+  | TableEnumT (id, _) -> F.fprintf fmt "enum_table %a" P.pp_id' id
+  | TableStructT (id, fields) ->
+      F.fprintf fmt "struct_table %a { %a }" P.pp_id' id
+        (P.pp_pairs P.pp_member' pp_typ " " "; ")
+        fields
   | SeqT typs -> F.fprintf fmt "seq<%a>" (P.pp_list pp_typ ",@ ") typs
   | SeqDefaultT typs ->
       F.fprintf fmt "seq<%a, ...>" (P.pp_list pp_typ ",@ ") typs
@@ -336,6 +343,14 @@ and eq_typ typ_a typ_b =
   | ParserT params_a, ParserT params_b | ControlT params_a, ControlT params_b ->
       List.for_all2 eq_param params_a params_b
   | PackageT, PackageT | AnyT, AnyT -> true
+  | TableEnumT (id_a, members_a), TableEnumT (id_b, members_b) ->
+      E.eq_id' id_a id_b && List.for_all2 E.eq_member' members_a members_b
+  | TableStructT (id_a, fields_a), TableStructT (id_b, fields_b) ->
+      E.eq_id' id_a id_b
+      && List.for_all2
+           (fun (member_a, typ_a) (member_b, typ_b) ->
+             E.eq_member' member_a member_b && eq_typ typ_a typ_b)
+           fields_a fields_b
   | SeqT typs_a, SeqT typs_b | SeqDefaultT typs_a, SeqDefaultT typs_b ->
       List.for_all2 eq_typ typs_a typs_b
   | RecordT fields_a, RecordT fields_b
@@ -402,6 +417,7 @@ module Type = struct
     | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
         List.map snd fields |> List.for_all is_ground
     | ExternT _ | ParserT _ | ControlT _ | PackageT | AnyT -> true
+    | TableEnumT _ | TableStructT _ -> true
     | SeqT typs_inner | SeqDefaultT typs_inner ->
         List.for_all is_ground typs_inner
     | RecordT fields | RecordDefaultT fields ->
@@ -426,9 +442,9 @@ module Type = struct
     | StackT (typ_inner, _) -> is_defaultable typ_inner
     | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
         List.map snd fields |> List.for_all is_defaultable
-    | ExternT _ | ParserT _ | ControlT _ | PackageT | AnyT | SeqT _
-    | SeqDefaultT _ | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT
-    | SetT _ | StateT | TableT _ ->
+    | ExternT _ | ParserT _ | ControlT _ | PackageT | AnyT | TableEnumT _
+    | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _
+    | DefaultT | InvalidT | SetT _ | StateT | TableT _ ->
         false
 
   let rec can_equals typ =
@@ -444,7 +460,9 @@ module Type = struct
     | StackT (typ_inner, _) -> can_equals typ_inner
     | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
         List.map snd fields |> List.for_all can_equals
-    | ExternT _ | ParserT _ | ControlT _ | PackageT | AnyT -> false
+    | ExternT _ | ParserT _ | ControlT _ | PackageT | AnyT | TableEnumT _
+    | TableStructT _ ->
+        false
     | SeqT typs_inner -> List.for_all can_equals typs_inner
     | SeqDefaultT _ -> false
     | RecordT fields -> List.map snd fields |> List.for_all can_equals

@@ -691,10 +691,12 @@ Error while typechecking p4 file: test/program/ill-typed/issue3813.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3814.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3846.p4
-Typecheck success: test/program/ill-typed/issue3846.p4
+(coerce_types_binary) Cannot coerce types struct_table apply_result(tt) { hit bool; miss bool; action_run enum_table action_list(tt) } and struct_table apply_result(tt) { hit bool; miss bool; action_run enum_table action_list(tt) }
+Error while typechecking p4 file: test/program/ill-typed/issue3846.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3847.p4
-Typecheck success: test/program/ill-typed/issue3847.p4
+(coerce_types_binary) Cannot coerce types enum_table action_list(tt) and enum_table action_list(tt)
+Error while typechecking p4 file: test/program/ill-typed/issue3847.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue388.p4
 (check_instantiation_site) control () cannot be instantiated at top level
@@ -1190,4 +1192,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 266/299 (88.96%) [FAIL] 33/299 (11.04%)
-Typecheck: [PASS] 215/266 (80.83%) [FAIL] 51/266 (19.17%)
+Typecheck: [PASS] 217/266 (81.58%) [FAIL] 49/266 (18.42%)

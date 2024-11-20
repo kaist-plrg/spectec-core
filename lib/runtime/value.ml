@@ -19,6 +19,8 @@ type t =
   | StructV of (L.member' * t) list
   | HeaderV of bool * (L.member' * t) list
   | UnionV of (L.member' * t) list
+  | TableEnumFieldV of L.id' * L.member'
+  | TableStructV of (L.member' * t) list
   | SeqV of t list
   | SeqDefaultV of t list
   | RecordV of (L.member' * t) list
@@ -56,6 +58,12 @@ let rec pp fmt value =
         fields
   | UnionV fields ->
       F.fprintf fmt "header_union { %a }"
+        (P.pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
+        fields
+  | TableEnumFieldV (id, member) ->
+      F.fprintf fmt "%a.%a" P.pp_id' id (P.pp_member' ~level:0) member
+  | TableStructV fields ->
+      F.fprintf fmt "table { %a }"
         (P.pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
         fields
   | SeqV values -> F.fprintf fmt "seq { %a }" (P.pp_list pp ", ") values
@@ -107,6 +115,13 @@ let rec eq t_a t_b =
              member_a = member_b && eq value_a value_b)
            fields_a fields_b
   | UnionV fields_a, UnionV fields_b ->
+      List.for_all2
+        (fun (member_a, value_a) (member_b, value_b) ->
+          member_a = member_b && eq value_a value_b)
+        fields_a fields_b
+  | TableEnumFieldV (id_a, member_a), TableEnumFieldV (id_b, member_b) ->
+      id_a = id_b && member_a = member_b
+  | TableStructV fields_a, TableStructV fields_b ->
       List.for_all2
         (fun (member_a, value_a) (member_b, value_b) ->
           member_a = member_b && eq value_a value_b)
