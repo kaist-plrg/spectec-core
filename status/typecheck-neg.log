@@ -1065,12 +1065,14 @@ Error while typechecking p4 file: test/program/ill-typed/table-entries-exact.p4
 >>> Running typecheck test on test/program/ill-typed/table-entries-lpm-2.p4
 (eq_id): a_with_control_params does not equal a
 (eq_id): a_with_control_params does not equal a
+(get_lpm_prefix) 8w225 is an invalid lpm mask
 Error while typechecking p4 file: test/program/ill-typed/table-entries-lpm-2.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-lpm.p4
 (eq_id): a_with_control_params does not equal a
 (eq_id): a_with_control_params does not equal a
 (eq_id): a_with_control_params does not equal a
+(get_lpm_prefix) 8w15 is an invalid lpm mask
 Error while typechecking p4 file: test/program/ill-typed/table-entries-lpm.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-optional-2-bmv2.p4

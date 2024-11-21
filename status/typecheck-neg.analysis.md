@@ -133,7 +133,7 @@ apply {
 }
 ```
 
-### (4) Bad mask for longest prefix match
+### \[DONE\] (4) ~~Bad mask for longest prefix match~~
 
 ```p4
 // value has 1s outside of field bit width
@@ -153,12 +153,6 @@ apply {
 // bit width
 0x100 : a_with_control_params(15);
 ```
-
-<details>
-<summary>Tests</summary>
-
-* table-entries-lpm-2.p4
-</details>
 
 ## 4. Compile-time evaluation
 
@@ -318,7 +312,7 @@ b.extract(_);
 * issue774-2.p4
 </details>
 
-### (2) Table invocation results are incomparable
+### \[DONE\] (2) ~~Table invocation results are incomparable~~
 
 ```p4
 table tt {
@@ -337,13 +331,6 @@ The spec mentions:
 
 > table.apply().action_run, which can only appear as the expression of a switch statement (see Section 12.7), and when it appears there, it must be the entire expression. (12.5)
 > Any expression containing table.apply().hit or table.apply().miss (see Section 14.2.2), which can be part of arbitrarily complex expressions in many places of a P4 program. (12.5)
-
-<details>
-<summary>Tests</summary>
-
-* issue3846.p4
-* issue3847.p4
-</details>
 
 ### \[DONE\] (3) ~~Nesting `int` inside a value set~~
 

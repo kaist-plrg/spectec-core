@@ -57,10 +57,16 @@ let get_lpm_prefix value_mask =
         if Bigint.(value % two <> zero) then
           get_lpm_prefix' value_mask_next (prefix + 1)
         else if prefix = 0 then get_lpm_prefix' value_mask_next 0
-        else failwith "invalid lpm mask"
-    | _ -> failwith "(get_prefix) wrong type for lpm mask"
+        else assert false
+    | _ -> assert false
   in
-  let prefix = get_lpm_prefix' value_mask 0 in
+  let prefix =
+    try get_lpm_prefix' value_mask 0
+    with _ ->
+      Format.printf "(get_lpm_prefix) %a is an invalid lpm mask\n" Value.pp
+        value_mask;
+      assert false
+  in
   Lpm prefix
 
 (* Setters and adders *)
