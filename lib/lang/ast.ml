@@ -186,7 +186,7 @@ and ('typ, 'note, 'expr, 'decl) parser_state =
 and ('typ, 'note, 'expr, 'decl) parser_state' =
   state_label * ('typ, 'note, 'expr, 'decl) block * ('note, 'expr) anno list
 
-(* Table *)
+(* Tables *)
 and ('note, 'expr) table = ('note, 'expr) table_property list
 
 (* Table properties *)

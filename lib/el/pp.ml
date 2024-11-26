@@ -88,6 +88,8 @@ let rec pp_typ' fmt typ' =
 and pp_typ fmt typ = pp_typ' fmt typ.it
 and pp_typs fmt typs = P.pp_list pp_typ ", " fmt typs
 
+(* Values *)
+
 (* Annotations *)
 
 and pp_anno' fmt anno' = P.pp_anno pp_expr fmt anno'

@@ -133,6 +133,8 @@ let pp_dir fmt dir = pp_dir' fmt dir.it
 
 (* Types *)
 
+(* Values *)
+
 (* Annotations *)
 
 let rec pp_anno' (pp_expr : ('note, 'expr) pp_expr) fmt anno' =
@@ -343,8 +345,8 @@ and pp_switch_cases ?(level = 0) (pp_typ : 'typ pp_typ)
 and pp_parser_state' ?(level = 0) (pp_typ : 'typ pp_typ)
     (pp_expr : ('note, 'expr) pp_expr) (pp_decl : 'decl pp_decl) fmt
     parser_state' =
-  let label, block, _annos = parser_state' in
-  F.fprintf fmt "%sstate %s\n%a" (indent level) label.it
+  let state_label, block, _annos = parser_state' in
+  F.fprintf fmt "%sstate %a\n%a" (indent level) pp_state_label state_label
     (pp_block ~level:(level + 1) pp_typ pp_expr pp_decl)
     block
 

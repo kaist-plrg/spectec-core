@@ -51,12 +51,12 @@ and dir' = L.dir'
 
 (* Types *)
 type typ = typ' L.typ
-and typ' = Type.t
+and typ' = Type.t L.typ'
 
 (* Values *)
 
 type value = value' L.value
-and value' = Value.t
+and value' = Value.t L.value'
 
 (* Annotations *)
 and anno = (note, expr') L.anno
@@ -72,11 +72,11 @@ and param' = L.id * dir * typ * value option * anno list
 
 (* Constructor parameters *)
 and cparam = cparam' L.cparam
-and cparam' = param'
+and cparam' = param' L.cparam'
 
 (* Type arguments *)
 and targ = typ' L.targ
-and targ' = typ'
+and targ' = typ' L.targ'
 
 (* Arguments *)
 and arg = (note, expr') L.arg

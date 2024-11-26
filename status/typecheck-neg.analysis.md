@@ -387,9 +387,15 @@ extern X {
 }
 ```
 
-### (8) Table application is disallowed in action argument
+### \[DONE\] (8) ~~Table application is disallowed in action argument~~
+
+The spec mentions:
+
+> Applying tables, whether directly via an expression like table1.apply().hit, or indirectly, are forbidden in the expressions supplied as action arguments. (14.2.1.2)
 
 But not sure how to enforce this.
+
+Solved by introducing an AST walker, though it is inefficient.
 
 ```p4
 a_two(
@@ -398,12 +404,6 @@ a_two(
         hdr.ethernet.etherType,
     bump_val(hdr.ethernet.etherType));
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue2835-bmv2.p4
-</details>
 
 # B. Need spec clarification
 

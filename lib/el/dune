@@ -1,4 +1,4 @@
 (library
  (name el)
  (libraries util lang)
- (modules ast pp eq))
+ (modules ast pp eq walk))

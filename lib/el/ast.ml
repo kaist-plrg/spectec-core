@@ -65,6 +65,10 @@ and typ' =
   | TupleT of typ list
   | AnyT
 
+(* Values *)
+and value = expr' L.value
+and value' = expr' L.value'
+
 (* Annotations *)
 and anno = (unit, expr') L.anno
 and anno' = (unit, expr') L.anno'
@@ -79,11 +83,11 @@ and param' = L.id * dir * typ * expr option * anno list
 
 (* Constructor parameters *)
 and cparam = cparam' L.cparam
-and cparam' = param'
+and cparam' = param' L.cparam'
 
 (* Type arguments *)
 and targ = typ' L.targ
-and targ' = typ'
+and targ' = typ' L.targ'
 
 (* Arguments *)
 and arg = (unit, expr') L.arg
@@ -284,7 +288,7 @@ and decl' =
 and parser_state = (typ', unit, expr', decl') L.parser_state
 and parser_state' = (typ', unit, expr', decl') L.parser_state'
 
-(* Table *)
+(* Tables *)
 and table = (unit, expr') L.table
 
 (* Table properties *)

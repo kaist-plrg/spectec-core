@@ -463,10 +463,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue2597.p4
 >>> Running typecheck test on test/program/ill-typed/issue2835-bmv2.p4
 (eq_id): NoAction does not equal a_one
 (eq_id): NoAction does not equal a_two
-(eq_id): NoAction does not equal a_one
-(eq_id): NoAction does not equal a_two
-(eq_id): NoAction does not equal my_drop
-Typecheck success: test/program/ill-typed/issue2835-bmv2.p4
+(check_table_apply_as_arg) Applying tables is forbidden in the expressions supplied as action arguments
+Error while typechecking p4 file: test/program/ill-typed/issue2835-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3045-1.p4
 (check_call_site) Function extern_method(in index bit<32>, in value T) -> void cannot be called from Function
@@ -1194,4 +1192,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 266/299 (88.96%) [FAIL] 33/299 (11.04%)
-Typecheck: [PASS] 217/266 (81.58%) [FAIL] 49/266 (18.42%)
+Typecheck: [PASS] 218/266 (81.95%) [FAIL] 48/266 (18.05%)

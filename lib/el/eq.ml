@@ -93,6 +93,8 @@ and eq_typ typ_a typ_b =
 
 and eq_typs typs_a typs_b = E.eq_list eq_typ typs_a typs_b
 
+(* Values *)
+
 (* Annotations *)
 
 and eq_anno' anno_a anno_b = E.eq_anno' eq_expr anno_a anno_b
@@ -108,10 +110,10 @@ and eq_tparams tparams_a tparams_b = E.eq_list eq_tparam tparams_a tparams_b
 (* Parameters *)
 
 and eq_param' param_a param_b =
-  let id_a, dir_a, typ_a, value_default_a, _annos_a = param_a in
-  let id_b, dir_b, typ_b, value_default_b, _annos_b = param_b in
+  let id_a, dir_a, typ_a, expr_default_a, _annos_a = param_a in
+  let id_b, dir_b, typ_b, expr_default_b, _annos_b = param_b in
   eq_id id_a id_b && eq_dir dir_a dir_b && eq_typ typ_a typ_b
-  && E.eq_option eq_expr value_default_a value_default_b
+  && E.eq_option eq_expr expr_default_a expr_default_b
 
 and eq_param param_a param_b = eq_param' param_a.it param_b.it
 and eq_params params_a params_b = E.eq_list eq_param params_a params_b

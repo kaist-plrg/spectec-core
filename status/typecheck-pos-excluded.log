@@ -564,17 +564,6 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default/default-control-argument.p4
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default/default-control-argument.p4
 
->>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue2037.p4
-(type_table_action_default) There is no action named a in actions list
-Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue2037.p4
-
->>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue3671.p4
-(eq_id): f0 does not equal f1
-(eq_expr): { f0 = ext(), f1 = ext() } does not equal { f1 = ext(), f0 = ext() }
-(eq_arg): { f0 = ext(), f1 = ext() } does not equal { f1 = ext(), f0 = ext() }
-(type_call_default_action) Arguments ({ f0 = ext(), f1 = ext() }) and ({ f1 = ext(), f0 = ext() }) are syntactically different
-Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq/issue3671.p4
-
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/typedef-objects/extern-inst-as-param.p4
 (check_valid_typedef_nesting) Invalid nesting of extern MyCounter { count(index) : extern_method<>(in index bit<10>) -> void } inside typedef extern MyCounter { count(index) : extern_method<>(in index bit<10>) -> void }
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/typedef-objects/extern-inst-as-param.p4
@@ -679,6 +668,17 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/shift-by-signed-int/issue3287.p4
 (coerce_types_binary_numeric) Cannot coerce types bit<4> and int<6>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/shift-by-signed-int/issue3287.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/table-action-syntactic-eq/issue2037.p4
+(type_table_action_default) There is no action named a in actions list
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/table-action-syntactic-eq/issue2037.p4
+
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/table-action-syntactic-eq/issue3671.p4
+(eq_id): f0 does not equal f1
+(eq_expr): { f0 = ext(), f1 = ext() } does not equal { f1 = ext(), f0 = ext() }
+(eq_arg): { f0 = ext(), f1 = ext() } does not equal { f1 = ext(), f0 = ext() }
+(type_call_default_action) Arguments ({ f0 = ext(), f1 = ext() }) and ({ f1 = ext(), f0 = ext() }) are syntactically different
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/table-action-syntactic-eq/issue3671.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3091-1.p4
 (check_valid_type_nesting) Invalid nesting of match_kind inside tuple<match_kind>

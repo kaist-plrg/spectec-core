@@ -158,6 +158,8 @@ let eq_dir dir_a dir_b =
 
 (* Types *)
 
+(* Values *)
+
 (* Annotations *)
 
 let rec eq_anno' (eq_expr : ('note, 'expr) eq_expr) anno_a anno_b =

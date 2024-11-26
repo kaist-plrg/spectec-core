@@ -14,6 +14,37 @@ module WF = Wellformed
 module F = Format
 open Util.Source
 
+(* Fold *)
+
+let rec fold_expr (f : Il.Ast.expr -> 'a -> 'a) (acc : 'a) (expr : Il.Ast.expr)
+    =
+  match expr.it with
+  | ValueE _ | VarE _ -> f expr acc
+  | SeqE { exprs } | SeqDefaultE { exprs } -> fold_exprs f acc exprs |> f expr
+  | RecordE { fields } | RecordDefaultE { fields } ->
+      fields |> List.map snd |> fold_exprs f acc |> f expr
+  | DefaultE -> f expr acc
+  | UnE { expr; _ } -> fold_expr f acc expr |> f expr
+  | BinE { expr_l; expr_r; _ } ->
+      [ expr_l; expr_r ] |> fold_exprs f acc |> f expr
+  | TernE { expr_cond; expr_then; expr_else } ->
+      [ expr_cond; expr_then; expr_else ] |> fold_exprs f acc |> f expr
+  | CastE { expr; _ } -> fold_expr f acc expr |> f expr
+  | MaskE { expr_base; expr_mask } ->
+      [ expr_base; expr_mask ] |> fold_exprs f acc |> f expr
+  | RangeE { expr_lb; expr_ub } ->
+      [ expr_lb; expr_ub ] |> fold_exprs f acc |> f expr
+  | SelectE { exprs_select; _ } -> exprs_select |> fold_exprs f acc |> f expr
+  | ArrAccE { expr_base; expr_idx } ->
+      [ expr_base; expr_idx ] |> fold_exprs f acc |> f expr
+  | BitAccE { expr_base; _ } | ExprAccE { expr_base; _ } ->
+      fold_expr f acc expr_base |> f expr
+  | CallFuncE _ | CallMethodE _ | CallTypeE _ | InstE _ -> f expr acc
+
+and fold_exprs (f : Il.Ast.expr -> 'a -> 'a) (acc : 'a)
+    (exprs : Il.Ast.expr list) : 'a =
+  exprs |> List.fold_left (fold_expr f) acc
+
 (* Coercion rules *)
 
 let insert_cast (expr_il : Il.Ast.expr) (typ : Type.t) : Il.Ast.expr =
@@ -593,9 +624,32 @@ and type_cparam (cursor : Ctx.cursor) (ctx : Ctx.t) (cparam : El.Ast.cparam) :
       The directionless parameters in this case behave like in parameters. See Section 14.1.1 for further details.
     - Default parameter values are only allowed for ‘in’ or direction-less parameters; these values must evaluate to compile-time constants. *)
 
+and check_table_apply_as_arg ~(action : bool) (args_il : Il.Ast.arg list) : unit
+    =
+  let found_table_apply = ref false in
+  let walker =
+    {
+      Il.Walk.walker with
+      walk_expr =
+        (fun walker (expr : Il.Ast.expr) ->
+          if !found_table_apply then ()
+          else
+            match (expr.note.typ : Type.t) with
+            | TableStructT _ -> found_table_apply := true
+            | _ -> Il.Walk.walk_expr walker expr);
+    }
+  in
+  Lang.Walk.walk_list (Il.Walk.walk_arg walker) args_il;
+  if action && !found_table_apply then (
+    Format.printf
+      "(check_table_apply_as_arg) Applying tables is forbidden in the \
+       expressions supplied as action arguments\n";
+    assert false)
+
 and type_call_convention ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
     (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list) :
     Il.Ast.arg list =
+  check_table_apply_as_arg ~action (List.map fst args_il_typed);
   List.map2 (type_call_convention' ~action cursor ctx) params args_il_typed
 
 and type_call_convention' ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
@@ -2145,7 +2199,6 @@ and type_call_func_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let ft, tids_fresh, args_default =
     type_func cursor ctx var_func targs_il args
   in
-  (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
   let targs_il, args_il, typ =
     type_call cursor ctx tids_fresh ft targs_il args args_default
@@ -2169,7 +2222,6 @@ and type_call_method_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let ft, expr_base_il, tids_fresh, args_default =
     type_method cursor ctx expr_base member targs_il args
   in
-  (* (TODO) Implement restrictions on compile time and run time calls (Appendix F) *)
   (* Check if the arguments match the parameters *)
   let targs_il, args_il, typ =
     type_call cursor ctx tids_fresh ft targs_il args args_default
