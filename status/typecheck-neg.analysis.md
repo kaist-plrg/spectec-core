@@ -407,7 +407,10 @@ a_two(
 
 # B. Need spec clarification
 
-## 1. Test too strict on explicit cast
+## \[REPORTED\] 1. Test too strict on explicit cast
+
+Waiting for spec clarification, [Issue#1351](https://github.com/p4lang/p4-spec/issues/1351).
+And a [Related Discussion](https://github.com/p4lang/p4c/issues/3233) in the p4c repo.
 
 ```p4
 struct s {
@@ -420,10 +423,7 @@ s func(bit t, bit t1) {
 }
 ```
 
-[Related Discussion](https://github.com/p4lang/p4c/issues/3233)
-
 Rationale for disallowing this: the P4 spec does not allow explicit cast to a struct type, with one exception, when initializing a struct variable.
-
 But maybe this is too strict?
 
 <details>
@@ -432,7 +432,9 @@ But maybe this is too strict?
 * issue3233.p4
 </details>
 
-## 2. Directionless action arguments in a program acts like `in`?
+## \[REPORTED\] 2. Directionless action arguments in a program acts like `in`?
+
+Waiting for spec clarification, [Issue#1350](https://github.com/p4lang/p4-spec/issues/1350).
 
 Partly yes, because they can be implicitly cast (ongoing PR exists).
 Partly no, because they must be compile-time known.
@@ -454,21 +456,25 @@ table t1 {
 * issue473.p4
 </details>
 
-## 3. Restrictions on constructor invocation sites
+## \[REPORTED\] 3. Restrictions on constructor invocation sites
+
+Waiting for spec clarification, [Issue#1349](https://github.com/p4lang/p4-spec/issues/1349).
 
 The spec puts restrictions on constructor invocation sites in Appendix F.
 Specifically for the top-level,
 
-> can be instantiated in this place
-> This type	  | top level
-> package	  | yes
-> parser	  | no 
-> control	  | no 
-> extern	  | yes
-> function	  | yes
-> table	no	  | no 
-> value-set	  | yes
-> value types | N/A
+```plaintext
+can be instantiated in this place
+This type       | top level
+package         | yes
+parser          | no 
+control         | no 
+extern          | yes
+function        | yes
+table           | no 
+value-set       | yes
+value types     | N/A
+```
 
 Yet, parsers and controls can be instantiated in the top-level, when they are used as constructor arguments to a package instantiation.
 So the spec should be more precise on this matter.
@@ -815,7 +821,7 @@ However, the spec does not mandate this.
 * issue3273.p4
 </details>
 
-### 9. Shifting an arbitrary precision integer
+## 9. Shifting an arbitrary precision integer
 
 Below tests expect that when an arbitrary precision integer is shifted either left or right, the right operand should be a compile-time known value.
 

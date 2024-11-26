@@ -222,9 +222,9 @@ bit<8> add_1(in bit<8> c, in bit<8> d) { return 2; }
 
 </details>
 
-### (5) Instantiation block
+### \[DONE\] (5) ~~Instantiation block~~
 
-#### (a) Instantiation declaration within an instantiation block (1)
+#### \[DONE\] (a) ~~Instantiation declaration within an instantiation block~~
 
 When an instantiation block has an instantiation declaration, which the current transformer assumes as invalid.
 
@@ -242,12 +242,6 @@ Virtual() cntr = {
     }
 };
 ```
-
-<details>
-<summary>Tests</summary>
-
-* virtual2.p4
-</details>
 
 #### \[DONE\] (b) ~~Instantiation block with an abstract method~~
 
@@ -478,7 +472,7 @@ For example, `...`, `{ (* expressions *) ... }`, and `{ (* key-value pairs *) ..
         else Expression.List { tags; values = values @ [value_last] } }
 ```
 
-### (5) Support `priority` of table entry (2)
+### \[DONE\] (5) ~~Support `priority` of table entry~~
 
 ```p4
 entries = {
@@ -486,13 +480,6 @@ entries = {
     ...
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* entries-prio.p4
-* init-entries-bmv2.p4
-</details>
 
 ### \[DONE\] (6) ~~Support general switch statement~~
 
@@ -543,7 +530,9 @@ extern BFD_Offload {
 BFD_Offload(32768) bfd_session_liveness_tracker = ...;
 ```
 
-## 2. How to match abstract methods when initializing an instance?: [abstract-method-overload](../test/program/well-typed-excluded/spec-clarify/abstract-method-overload)
+## \[REPORTED\] 2. How to match abstract methods when initializing an instance?: [abstract-method-overload](../test/program/well-typed-excluded/spec-clarify/abstract-method-overload)
+
+Waiting for spec clarification, [Issue#1346](https://github.com/p4lang/p4-spec/issues/1346).
 
 When initializing an instance with an abstract method, to determine if the method was declared as abstract, I believe we should match the method using both the method name and argument names.
 Mainly because P4 allows overloading of methods through argument names.
@@ -582,155 +571,9 @@ Virtual() cntr = {
 };
 ```
 
-## 3. Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this: [buitin-local-compile-time-known](../test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known)
+## \[REPORTED\] 3. Scope when instantiating with an initialization block
 
-```p4
-@pure extern HashAlgorithm_t random_hash(bool msb, bool extend);
-...
-hdr.hash = Hash<big<16>>(random_hash(false, false)).get(hdr.h1);
-```
-```p4
-const bool test = static_assert(V1MODEL_VERSION >= 20160101, "V1 model version is not >= 20160101");
-```
-```p4
-extern widget createWidget<T, U>(U a, T b);
-parser P();
-parser p1()(widget w) { ... }
-package sw0(P p);
-sw0(p1(createWidget(16w0, 8w0))) main;
-```
-
-## \[REPORTED (not by me)\] 4. Is it legal to divide a fixed-width integer?: [fixed-width-div-and-mod](../test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod)
-
-[Issue#1327](https://github.com/p4lang/p4-spec/issues/1327), seems like a PR will be made soon.
-
-```p4
-bit<4> tmp = 4w0 - 4w1;
-h.rshift.a = tmp / 4w2;
-```
-
-<details>
-<summary>Tests</summary>
-
-* gauntlet_various_ops-bmv2.p4
-* issue2190.p4
-* issue2287-bmv2.p4
-* precedence.p4
-* strength.p4
-</details>
-
-Note that implicit cast is allowed for arbitrary precision integer to fixed-width integer, and not the other way around.
-
-```p4
-x = 32w5 / 3;
-```
-
-## 5. Equivalence of table actions: [table-action-syntactic-eq](../test/program/well-typed-excluded/spec-clarify/table-action-syntactic-eq)
-
-For default action, the spec mentions:
-
-> In particular, the expressions passed as `in`, `out`, or `inout` parameters must be syntactically identical to the expressions used in one of the elements of the `actions` list. (14.2.1.3)
-
-But the test cases below seem to violate this.
-
-```p4
-actions = { a1({ f0 = ext(), f1 = ext() } ); }
-default_action = a1({ f1 = ext(), f0 = ext() });
-```
-```p4
-action a() {}
-control c() {
-    table t {
-        actions = { .a; }
-        default_action = a;
-    }
-    apply {}
-}
-```
-
-## \[REPORTED\] 6. Are accesses compile-time known?: [access-compile-time-known](../test/program/well-typed-excluded/spec-clarify/access-compile-time-known)
-
-Waiting for spec clarification, [Issue#1323](https://github.com/p4lang/p4-spec/issues/1323) and [PR#1329](https://github.com/p4lang/p4-spec/pull/1329).
-
-### \[REPORTED\] (1) Accessing a tuple element with a local compile-time known index is also a local compile-time known value?
-
-```p4
-const tuple<bit<32>, bit<32>> t = { 0, 1 };
-const bit<32> f = t[0];
-```
-
-### \[REPORTED\] (2) Accessing a field of a local compile-time known struct is also a local compile-time known value?
-
-```p4
-const T t = { 32s10, 32s20 };
-const int<32> x = t.t1;
-```
-
-## \[REPORTED\] 7. Type aliasing allowed for externs?: [typedef-objects](../test/program/well-typed-excluded/spec-clarify/typedef-objects)
-
-Waiting for spec clarification, [Issue#1314](https://github.com/p4lang/p4-spec/issues/1314) and [PR#1328](https://github.com/p4lang/p4-spec/pull/1328)
-
-Spec section 7.2.8 lists type nesting rules, but it does not mention whether it is legal to make a type alias of an extern object type via `typedef`.
-
-```p4
-extern MyCounter<I> {
-    MyCounter(bit<32> size);
-    void count(in I index);
-}
-typedef bit<10> my_counter_index_t;
-typedef MyCounter<my_counter_index_t> my_counter_t;
-```
-
-## 8. Constraints on size of a value set?
-
-The spec does not mention if the size given to a value set declaration should be local compile-time known, compile-time known, or neither.
-I suspect it should be at least compile-time known, and it is already reflected in the current p4cherry implementation.
-
-## 9. A generic type that imposes (or implies) a type constraint: [generic-constrained](../test/program/well-typed-excluded/spec-clarify/generic-constrained)
-
-```p4
-control nothing(
-    inout empty_t hdr,
-    inout empty_t meta,
-    in intrinsic_metadata_t imeta) { apply {} }
-
-control C<H, M>(
-    inout H hdr,
-    inout M meta,
-    in intrinsic_metadata_t intr_md);
-
-package P<H, M>(C<H, M> c = nothing());
-```
-
-Here, the package type is declared as a generic type that takes two type parameters, `H` and `M`.
-But, the default argument to `c` is `nothing()`, which imposes a type constraint that `H` should be `empty_t` and `M` should be `empty_t`.
-
-## 10. Matching control type in the presence of default parameter: [matching-control-type-decl-with-default](../test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default)
-
-A control and package type declaration declares the template of a control or package.
-The test below expects that a control that omits the default parameter should match the control type declaration that includes the default parameter.
-I am not sure if this should be allowed.
-Because, a user may just look at the type declarations and try to supply `intr_md` to the `MyC()` instance explicitly. But this would result in an error since `MyC()` does not expect `intr_md`.
-
-```p4
-control C<H, M>(
-    inout H hdr,
-    inout M meta,
-    in intrinsic_metadata_t intr_md = {0, 0});
-
-package P<H, M>(C<H, M> c);
-
-struct hdr_t { }
-struct meta_t { }
-
-control MyC(inout hdr_t hdr, inout meta_t meta) {
-   apply {}
-}
-
-P(MyC()) main;
-```
-
-## 11. Scope when instantiating with an initialization block
+Waiting for spec clarification, [Issue#1346](https://github.com/p4lang/p4-spec/issues/1346).
 
 In P4, initialization block is used to initialize abstract methods when instantiating an extern object.
 The spec mentions that:
@@ -784,23 +627,156 @@ Virtual() cntr = {
 
 This is implemented in current p4cherry, but it would be nice to have a clear spec on this.
 
-## 12. Restrictions on call sites [call-site-restrictions](../test/program/well-typed-excluded/spec-clarify/call-site-restrictions)
+## \[REPORTED (not by me)\] 4. Is it legal to divide a fixed-width integer?: [fixed-width-div-and-mod](../test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod)
+
+[Issue#1327](https://github.com/p4lang/p4-spec/issues/1327), seems like a PR will be made soon.
+
+```p4
+bit<4> tmp = 4w0 - 4w1;
+h.rshift.a = tmp / 4w2;
+```
+
+<details>
+<summary>Tests</summary>
+
+* gauntlet_various_ops-bmv2.p4
+* issue2190.p4
+* issue2287-bmv2.p4
+* precedence.p4
+* strength.p4
+</details>
+
+Note that implicit cast is allowed for arbitrary precision integer to fixed-width integer, and not the other way around.
+
+```p4
+x = 32w5 / 3;
+```
+
+## \[REPORTED\] 6. Are accesses compile-time known?: [access-compile-time-known](../test/program/well-typed-excluded/spec-clarify/access-compile-time-known)
+
+Waiting for spec clarification, [Issue#1323](https://github.com/p4lang/p4-spec/issues/1323) and [PR#1329](https://github.com/p4lang/p4-spec/pull/1329).
+
+### \[REPORTED\] (1) Accessing a tuple element with a local compile-time known index is also a local compile-time known value?
+
+```p4
+const tuple<bit<32>, bit<32>> t = { 0, 1 };
+const bit<32> f = t[0];
+```
+
+### \[REPORTED\] (2) Accessing a field of a local compile-time known struct is also a local compile-time known value?
+
+```p4
+const T t = { 32s10, 32s20 };
+const int<32> x = t.t1;
+```
+
+## \[REPORTED\] 7. Type aliasing allowed for externs?: [typedef-objects](../test/program/well-typed-excluded/spec-clarify/typedef-objects)
+
+Waiting for spec clarification, [Issue#1314](https://github.com/p4lang/p4-spec/issues/1314) and [PR#1328](https://github.com/p4lang/p4-spec/pull/1328)
+
+Spec section 7.2.8 lists type nesting rules, but it does not mention whether it is legal to make a type alias of an extern object type via `typedef`.
+
+```p4
+extern MyCounter<I> {
+    MyCounter(bit<32> size);
+    void count(in I index);
+}
+typedef bit<10> my_counter_index_t;
+typedef MyCounter<my_counter_index_t> my_counter_t;
+```
+
+## \[REPORTED\] 8. Constraints on size of a value set?
+
+Waiting for spec clarification, [Issue#1347](https://github.com/p4lang/p4-spec/issues/1347).
+
+The spec does not mention if the size given to a value set declaration should be local compile-time known, compile-time known, or neither.
+I suspect it should be at least compile-time known, and it is already reflected in the current p4cherry implementation.
+
+## 9. A generic type that imposes (or implies) a type constraint: [generic-constrained](../test/program/well-typed-excluded/spec-clarify/generic-constrained)
+
+```p4
+control nothing(
+    inout empty_t hdr,
+    inout empty_t meta,
+    in intrinsic_metadata_t imeta) { apply {} }
+
+control C<H, M>(
+    inout H hdr,
+    inout M meta,
+    in intrinsic_metadata_t intr_md);
+
+package P<H, M>(C<H, M> c = nothing());
+```
+
+Here, the package type is declared as a generic type that takes two type parameters, `H` and `M`.
+But, the default argument to `c` is `nothing()`, which imposes a type constraint that `H` should be `empty_t` and `M` should be `empty_t`.
+
+## \[REPORTED\] 10. Matching control type in the presence of default parameter: [matching-control-type-decl-with-default](../test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default)
+
+Waiting for spec clarification, [Issue#1348](https://github.com/p4lang/p4-spec/issues/1348).
+
+A control and package type declaration declares the template of a control or package.
+The test below expects that a control that omits the default parameter should match the control type declaration that includes the default parameter.
+I am not sure if this should be allowed.
+Because, a user may just look at the type declarations and try to supply `intr_md` to the `MyC()` instance explicitly. But this would result in an error since `MyC()` does not expect `intr_md`.
+
+```p4
+control C<H, M>(
+    inout H hdr,
+    inout M meta,
+    in intrinsic_metadata_t intr_md = {0, 0});
+
+package P<H, M>(C<H, M> c);
+
+struct hdr_t { }
+struct meta_t { }
+
+control MyC(inout hdr_t hdr, inout meta_t meta) {
+   apply {}
+}
+
+P(MyC()) main;
+```
+
+## 11. Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this: [buitin-local-compile-time-known](../test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known)
+
+```p4
+@pure extern HashAlgorithm_t random_hash(bool msb, bool extend);
+...
+hdr.hash = Hash<big<16>>(random_hash(false, false)).get(hdr.h1);
+```
+```p4
+const bool test = static_assert(V1MODEL_VERSION >= 20160101, "V1 model version is not >= 20160101");
+```
+```p4
+extern widget createWidget<T, U>(U a, T b);
+parser P();
+parser p1()(widget w) { ... }
+package sw0(P p);
+sw0(p1(createWidget(16w0, 8w0))) main;
+```
+
+## \[REPORTED\] 12. Restrictions on call sites: [call-site-restrictions](../test/program/well-typed-excluded/spec-clarify/call-site-restrictions)
+
+Waiting for spec clarification, [Issue#1349](https://github.com/p4lang/p4-spec/issues/1349).
 
 The spec lists restrictions on what kind of calls can be made from which places in a P4 program.
 
->             | can be called at run time from this place in a P4 program
->             |         | control | parser or |		
->             | parser	| apply	  | control	  |		
-> This type	  | state	| block	  | top level | action | extern	| function
-> package	  | N/A	    | N/A	  | N/A	      | N/A	   | N/A	| N/A
-> parser	  | yes	    | no	  | no	      | no	   | no	    | no
-> control	  | no	    | yes	  | no	      | no	   | no	    | no
-> extern	  | yes	    | yes	  | yes	      | yes	   | no	    | no
-> table	      | no	    | yes	  | no	      | no	   | no	    | no
-> value-set	  | yes	    | no	  | no	      | no	   | no	    | no
-> action	  | no	    | yes	  | no	      | yes	   | no	    | no
-> function	  | yes	    | yes	  | no	      | yes	   | no	    | yes
-> value types | N/A	    | N/A	  | N/A	      | N/A	   | N/A	| N/A
+```plaintext
+            | can be called at run time from this place in a P4 program
+            |           | control   | parser or |		
+            | parser    | apply	    | control   |		
+This type   | state     | block	    | top level | action    | extern    | function
+package	    | N/A       | N/A       | N/A       | N/A       | N/A       | N/A
+parser      | yes       | no        | no        | no        | no        | no
+control     | no        | yes       | no        | no        | no        | no
+extern      | yes       | yes       | yes       | yes       | no        | no
+table       | no        | yes       | no        | no        | no        | no
+value-set   | yes       | no        | no        | no        | no        | no
+action      | no        | yes       | no        | yes       | no        | no
+function    | yes       | yes       | no        | yes       | no        | yes
+value types | N/A       | N/A       | N/A       | N/A       | N/A       | N/A
+```
 
 However, below tests expect that functions are callable from a parser top level.
 
@@ -840,6 +816,7 @@ void x() {
 
 And calling a function or a table within a table body.
 This is implemented in current p4cherry, but it would be ideal to have a clear spec for it.
+We may interpret the spec as: table keys can only be evaluated within a control apply block
 
 ```p4
 bit<16> simple_action() {
@@ -1027,7 +1004,7 @@ bool g<t>(in t a) {
 }
 ```
 
-## 11. Package constructors cannot be overloaded [package-overload](../test/program/well-typed-excluded/test-clarify/package-overload)
+## 11. Package constructors cannot be overloaded: [package-overload](../test/program/well-typed-excluded/test-clarify/package-overload)
 
 A package declaration implies two things: a type declaration and a constructor declaration.
 Since they are bundled together, the synatx does not allow overloading of package constructors. (Unlike extern object constructors.)
@@ -1044,7 +1021,7 @@ package mypackaget<t>(mypt<t> t1, mypt<t> t2);
 * issue3379.p4
 </details>
 
-## 12. Function declarations should not shadow [shadow-func](../test/program/well-typed-excluded/test-clarify/shadow-func)
+## 12. Function declarations should not shadow: [shadow-func](../test/program/well-typed-excluded/test-clarify/shadow-func)
 
 (Although the spec does not explicitly disallow duplicate names in general,) p4c compiler rejects such programs.
 
@@ -1062,7 +1039,7 @@ void f1(in h[value1 == max ? 1 : -1] a){}
 * issue3699.p4
 </details>
 
-## 13. Scope of a control parameter [control-param-scope](../test/program/well-typed-excluded/test-clarify/control-param-scope)
+## 13. Scope of a control parameter: [control-param-scope](../test/program/well-typed-excluded/test-clarify/control-param-scope)
 
 Similar [issue](typecheck-neg.analysis.md#6.%20Scope%20of%20a%20control%20parameter) in the negative type checker test.
 
@@ -1093,7 +1070,7 @@ control MyIngress(inout H p) {
 * shadow3.p4
 </details>
 
-## 14. Accessing a header stack of size zero [access-header-stack-zero](../test/program/well-typed-excluded/test-clarify/access-header-stack-zero)
+## 14. Accessing a header stack of size zero: [access-header-stack-zero](../test/program/well-typed-excluded/test-clarify/access-header-stack-zero)
 
 ```p4
 bit<32> b;
@@ -1120,6 +1097,29 @@ h.hs[-1].f2 = 8;
 
 * minsize.p4
 </details>
+
+## 15. Equivalence of table actions: [table-action-syntactic-eq](../test/program/well-typed-excluded/test-clarify/table-action-syntactic-eq)
+
+For default action, the spec mentions:
+
+> In particular, the expressions passed as `in`, `out`, or `inout` parameters must be syntactically identical to the expressions used in one of the elements of the `actions` list. (14.2.1.3)
+
+But the test cases below seem to violate this.
+
+```p4
+actions = { a1({ f0 = ext(), f1 = ext() } ); }
+default_action = a1({ f1 = ext(), f0 = ext() });
+```
+```p4
+action a() {}
+control c() {
+    table t {
+        actions = { .a; }
+        default_action = a;
+    }
+    apply {}
+}
+```
 
 # E. Future extension
 
