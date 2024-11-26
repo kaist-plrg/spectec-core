@@ -180,9 +180,6 @@ Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restr
 Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue2266.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue2321.p4
-(eq_id): NoAction does not equal a1
-(eq_id): NoAction does not equal a2
-(eq_id): NoAction does not equal my_drop
 Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue2321.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue4796.p4
@@ -205,21 +202,6 @@ Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restr
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/bfd_offload.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/calc-ebpf.p4
-(eq_id): operation_drop does not equal operation_add
-(eq_id): operation_drop does not equal operation_sub
-(eq_id): operation_drop does not equal operation_and
-(eq_id): operation_drop does not equal operation_or
-(eq_id): operation_drop does not equal operation_xor
-(eq_id): operation_sub does not equal operation_add
-(eq_id): operation_and does not equal operation_add
-(eq_id): operation_and does not equal operation_sub
-(eq_id): operation_or does not equal operation_add
-(eq_id): operation_or does not equal operation_sub
-(eq_id): operation_or does not equal operation_and
-(eq_id): operation_xor does not equal operation_add
-(eq_id): operation_xor does not equal operation_sub
-(eq_id): operation_xor does not equal operation_and
-(eq_id): operation_xor does not equal operation_or
 (check_instantiation_site) extern hash_table {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/calc-ebpf.p4
 
@@ -304,7 +286,6 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1814-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1958.p4
-(eq_id): NoAction does not equal foo2_action
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1958.p4
 
@@ -317,7 +298,6 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2844-enum.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue298-bmv2.p4
-(eq_id): NoAction does not equal _drop
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue298-bmv2.p4
 
@@ -597,7 +577,6 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/access-header-stack-zero/minsize.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/action-two-params.p4
-(eq_id): drop does not equal actTbl
 (coerce_type) Cannot coerce type seq<bit<32>> to bit<32>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/action-two-params.p4
 
@@ -628,7 +607,6 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast/issue3283.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/mask-on-exact-match/spec-ex25.p4
-(eq_id): drop does not equal Set_dmac
 (type_action_keyset) match_kind exact cannot use mask expression 
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/mask-on-exact-match/spec-ex25.p4
 
@@ -674,9 +652,6 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/table-action-syntactic-eq/issue2037.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/table-action-syntactic-eq/issue3671.p4
-(eq_id): f0 does not equal f1
-(eq_expr): { f0 = ext(), f1 = ext() } does not equal { f1 = ext(), f0 = ext() }
-(eq_arg): { f0 = ext(), f1 = ext() } does not equal { f1 = ext(), f0 = ext() }
 (type_call_default_action) Arguments ({ f0 = ext(), f1 = ext() }) and ({ f1 = ext(), f0 = ext() }) are syntactically different
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/table-action-syntactic-eq/issue3671.p4
 
@@ -739,29 +714,22 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-most-types1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile-bmv2.p4
-(eq_id): NoAction does not equal drop
 (check_instantiation_site) extern action_profile {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/action_profile-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_max_group_size_annotation.p4
-(eq_id): NoAction does not equal drop
 (check_instantiation_site) extern action_profile {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_max_group_size_annotation.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_sum_of_members_annotation.p4
-(eq_id): NoAction does not equal drop
 (type_table_custom) Custom element implementation is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_sum_of_members_annotation.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/dash/dash-pipeline-v1model-bmv2.p4
-(eq_id): deny does not equal permit
-(eq_id): deny does not equal permit_and_continue
 (type_table_custom) Custom element counters is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/dash/dash-pipeline-v1model-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/dash-pipeline-v1model-bmv2.p4
-(eq_id): deny does not equal permit
-(eq_id): deny does not equal permit_and_continue
 (type_table_custom) Custom element counters is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/dash-pipeline-v1model-bmv2.p4
 
@@ -794,7 +762,6 @@ parser error: File test/program/well-typed-excluded/unsupported/custom-table-ele
 Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue2816_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/issue297-bmv2.p4
-(eq_id): NoAction does not equal drop
 (type_table_custom) Custom element implementation is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue297-bmv2.p4
 
@@ -803,7 +770,6 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/c
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue364-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/issue461-bmv2.p4
-(eq_id): drop_with_count does not equal set_l2ptr
 (type_table_custom) Custom element counters is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/issue461-bmv2.p4
 
@@ -828,18 +794,10 @@ parser error: File test/program/well-typed-excluded/unsupported/custom-table-ele
 Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/lpm_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/named_meter_1-bmv2.p4
-(eq_id): NoAction does not equal _drop
-(eq_id): NoAction does not equal _nop
-(eq_id): NoAction does not equal m_action_0
-(eq_id): NoAction does not equal _nop_0
 (type_table_custom) Custom element meters is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/named_meter_1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/named_meter_bmv2.p4
-(eq_id): NoAction does not equal _drop
-(eq_id): NoAction does not equal _nop
-(eq_id): NoAction does not equal m_action_0
-(eq_id): NoAction does not equal _nop_0
 (type_table_custom) Custom element meters is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/named_meter_bmv2.p4
 
@@ -900,10 +858,6 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/c
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-use-annon.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/pna-example-tcp-connection-tracking.p4
-(eq_id): tcp_fin_or_rst_packet does not equal tcp_syn_packet
-(eq_id): tcp_fin_or_rst_packet does not equal tcp_syn_packet
-(eq_id): tcp_other_packets does not equal tcp_syn_packet
-(eq_id): tcp_other_packets does not equal tcp_fin_or_rst_packet
 (type_table_custom) Custom element add_on_miss is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/pna-example-tcp-connection-tracking.p4
 
@@ -916,7 +870,6 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/c
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/psa-counter4.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/psa-example-counters-bmv2.p4
-(eq_id): default_route_drop does not equal next_hop
 (type_table_custom) Custom element psa_direct_counter is undefined
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/psa-example-counters-bmv2.p4
 

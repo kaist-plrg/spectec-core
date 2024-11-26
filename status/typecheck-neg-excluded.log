@@ -86,24 +86,18 @@ Typecheck success: test/program/ill-typed-excluded/test-clarify/type-inference-r
 Typecheck success: test/program/ill-typed-excluded/unsupported/annotation/annotation.p4
 
 >>> Running typecheck test on test/program/ill-typed-excluded/unsupported/annotation/issue1580.p4
-(eq_id): b does not equal a1
-(eq_id): NoAction does not equal select_entry
-(eq_id): a3 does not equal a1
-(eq_id): a3 does not equal a2
 Typecheck success: test/program/ill-typed-excluded/unsupported/annotation/issue1580.p4
 
 >>> Running typecheck test on test/program/ill-typed-excluded/unsupported/annotation/issue1732.p4
 Typecheck success: test/program/ill-typed-excluded/unsupported/annotation/issue1732.p4
 
 >>> Running typecheck test on test/program/ill-typed-excluded/unsupported/annotation/issue1803_same_table_name.p4
-(eq_id): NoAction does not equal drop
 Typecheck success: test/program/ill-typed-excluded/unsupported/annotation/issue1803_same_table_name.p4
 
 >>> Running typecheck test on test/program/ill-typed-excluded/unsupported/annotation/issue2283_2-bmv2.p4
 Typecheck success: test/program/ill-typed-excluded/unsupported/annotation/issue2283_2-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed-excluded/unsupported/annotation/key-name.p4
-(eq_id): NoAction does not equal a
 Typecheck success: test/program/ill-typed-excluded/unsupported/annotation/key-name.p4
 
 >>> Running typecheck test on test/program/ill-typed-excluded/unsupported/annotation/spec-ex32_e.p4

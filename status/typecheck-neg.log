@@ -6,10 +6,6 @@ Error while typechecking p4 file: test/program/ill-typed/accept_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/action-bind.p4
 (type_parser_states) A "start" state must exist
-(eq_id): x does not equal y
-(eq_var): x does not equal y
-(eq_expr): x does not equal y
-(eq_arg): x does not equal y
 (type_call_default_action) Arguments (x) and (y) are syntactically different
 Error while typechecking p4 file: test/program/ill-typed/action-bind.p4
 
@@ -97,7 +93,6 @@ Error while typechecking p4 file: test/program/ill-typed/default-last-switch.p4
 Error while typechecking p4 file: test/program/ill-typed/default-param.p4
 
 >>> Running typecheck test on test/program/ill-typed/default_action.p4
-(eq_id): b does not equal a
 (type_table_action_default) There is no action named b in actions list
 Error while typechecking p4 file: test/program/ill-typed/default_action.p4
 
@@ -218,23 +213,14 @@ Error while typechecking p4 file: test/program/ill-typed/implicit.p4
 Error while typechecking p4 file: test/program/ill-typed/incorrect-label.p4
 
 >>> Running typecheck test on test/program/ill-typed/init-entries-error1-bmv2.p4
-(eq_id): a_params does not equal a
 (type_table_entry_priority) Cannot define priority when there are only exact fields
 Error while typechecking p4 file: test/program/ill-typed/init-entries-error1-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/init-entries-error2-bmv2.p4
-(eq_id): a_params does not equal a
-(eq_id): a_params does not equal a
-(eq_id): a_params does not equal a
-(eq_id): a_params does not equal a
-(eq_id): a_params does not equal a
 (type_table_entry_priority) The priority of the first entry must be defined if priorities are explicitly specified
 Error while typechecking p4 file: test/program/ill-typed/init-entries-error2-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/init-entries-error3-bmv2.p4
-(eq_id): a_params does not equal a
-(eq_id): a_params does not equal a
-(eq_id): a_params does not equal a
 (check_priority) Priority must not be negative
 Error while typechecking p4 file: test/program/ill-typed/init-entries-error3-bmv2.p4
 
@@ -287,10 +273,6 @@ parser error: File test/program/ill-typed/issue1336.p4, line 3, characters 14-15
 Error while parsing p4 file: test/program/ill-typed/issue1336.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1542.p4
-(eq_id): multicast does not equal drop
-(eq_id): multicast does not equal drop
-(eq_expr): 1 does not equal 2
-(eq_arg): 1 does not equal 2
 (type_call_default_action) Arguments (1) and (2) are syntactically different
 Error while typechecking p4 file: test/program/ill-typed/issue1542.p4
 
@@ -404,8 +386,6 @@ Error while typechecking p4 file: test/program/ill-typed/issue2544_self_ref.p4
 Error while typechecking p4 file: test/program/ill-typed/issue2597.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2835-bmv2.p4
-(eq_id): NoAction does not equal a_one
-(eq_id): NoAction does not equal a_two
 (check_table_apply_as_arg) Applying tables is forbidden in the expressions supplied as action arguments
 Error while typechecking p4 file: test/program/ill-typed/issue2835-bmv2.p4
 
@@ -553,9 +533,6 @@ Error while typechecking p4 file: test/program/ill-typed/issue3622.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3656.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3671-2.p4
-(eq_id): f0 does not equal f1
-(eq_expr): { f0 = ext1(), f1 = ext2() } does not equal { f1 = ext1(), f0 = ext2() }
-(eq_arg): { f0 = ext1(), f1 = ext2() } does not equal { f1 = ext1(), f0 = ext2() }
 (type_call_default_action) Arguments ({ f0 = ext1(), f1 = ext2() }) and ({ f1 = ext1(), f0 = ext2() }) are syntactically different
 Error while typechecking p4 file: test/program/ill-typed/issue3671-2.p4
 
@@ -902,30 +879,18 @@ Error while parsing p4 file: test/program/ill-typed/structured-annotation-e.p4
 Error while typechecking p4 file: test/program/ill-typed/table-entries-decl-order.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-exact-ternary.p4
-(eq_id): a_with_control_params does not equal a
-(eq_id): a_with_control_params does not equal a
-(eq_id): a_with_control_params does not equal a
-(eq_id): a_with_control_params does not equal a
 (type_table_entry_keysets) Number of select keys must match the number of cases
 Error while typechecking p4 file: test/program/ill-typed/table-entries-exact-ternary.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-exact.p4
-(eq_id): a_with_control_params does not equal a
-(eq_id): a_with_control_params does not equal a
-(eq_id): a_with_control_params does not equal a
 (type_table_entry_keysets) Number of select keys must match the number of cases
 Error while typechecking p4 file: test/program/ill-typed/table-entries-exact.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-lpm-2.p4
-(eq_id): a_with_control_params does not equal a
-(eq_id): a_with_control_params does not equal a
 (get_lpm_prefix) 8w225 is an invalid lpm mask
 Error while typechecking p4 file: test/program/ill-typed/table-entries-lpm-2.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-lpm.p4
-(eq_id): a_with_control_params does not equal a
-(eq_id): a_with_control_params does not equal a
-(eq_id): a_with_control_params does not equal a
 (get_lpm_prefix) 8w15 is an invalid lpm mask
 Error while typechecking p4 file: test/program/ill-typed/table-entries-lpm.p4
 
@@ -938,17 +903,10 @@ parser error: File test/program/ill-typed/table-entries-outside-table.p4, line 6
 Error while parsing p4 file: test/program/ill-typed/table-entries-outside-table.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-range.p4
-(eq_id): a_with_control_params does not equal a
-(eq_id): a_with_control_params does not equal a
-(eq_id): a_with_control_params does not equal a
 (type_table_entry_keysets) Number of select keys must match the number of cases
 Error while typechecking p4 file: test/program/ill-typed/table-entries-range.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-ternary.p4
-(eq_id): a_with_control_params does not equal a
-(eq_id): a_with_control_params does not equal a
-(eq_id): a_with_control_params does not equal a
-(eq_id): a_with_control_params does not equal a
 (type_action_keyset) match_kind ternary cannot use range expression 
 Error while typechecking p4 file: test/program/ill-typed/table-entries-ternary.p4
 
