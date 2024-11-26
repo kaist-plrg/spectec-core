@@ -54,4 +54,6 @@ $ ./p4cherry typecheck -i test/arch [FILENAME].p4
 
 ### Type checker
 * **[Positive type checker tests](status/typecheck-pos.log)** (well-typed programs should be accepted)
+* [Excluded positive type checker tests](status/typecheck-pos-excluded.log)
 * **[Negavie type checker tests](status/typecheck-neg.log)** (ill-typed programs should be rejected)
+* [Excluded negative type checker tests](status/typecheck-neg-excluded.log)

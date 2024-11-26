@@ -98,7 +98,7 @@ apply {
 }
 ```
 
-## 3. Table property
+## \[DONE\] 3. ~~Table property~~
 
 ### \[DONE\] (1) ~~Missing table action property~~
 
@@ -154,7 +154,7 @@ apply {
 0x100 : a_with_control_params(15);
 ```
 
-## 4. Compile-time evaluation
+## \[DONE\] 4. ~~Compile-time evaluation~~
 
 ### \[DONE\] (1) ~~Stack bounds check if compile-time known~~
 
@@ -201,7 +201,7 @@ action act() {
 }
 ```
 
-## 5. Context-sensitivity (some impose implicit domain-specific P4 knowledge)
+## \[DONE\] 5. Context-sensitivity (some impose implicit domain-specific P4 knowledge)
 
 ### \[DONE\] (1) ~~`.last`, `.lastIndex` only allowed within parser~~
 
@@ -407,7 +407,7 @@ a_two(
 
 # B. Need spec clarification
 
-## \[REPORTED\] 1. Test too strict on explicit cast
+## \[REPORTED\] 1. Test too strict on explicit cast: [cast-to-struct](../test/program/ill-typed-excluded/spec-clarify/cast-to-struct)
 
 Waiting for spec clarification, [Issue#1351](https://github.com/p4lang/p4-spec/issues/1351).
 And a [Related Discussion](https://github.com/p4lang/p4c/issues/3233) in the p4c repo.
@@ -426,13 +426,7 @@ s func(bit t, bit t1) {
 Rationale for disallowing this: the P4 spec does not allow explicit cast to a struct type, with one exception, when initializing a struct variable.
 But maybe this is too strict?
 
-<details>
-<summary>Tests</summary>
-
-* issue3233.p4
-</details>
-
-## \[REPORTED\] 2. Directionless action arguments in a program acts like `in`?
+## \[REPORTED\] 2. Directionless action arguments in a program acts like `in`?: [directionless-action-arg-as-in](../test/program/ill-typed-excluded/spec-clarify/directionless-action-arg-as-in)
 
 Waiting for spec clarification, [Issue#1350](https://github.com/p4lang/p4-spec/issues/1350).
 
@@ -449,12 +443,6 @@ table t1 {
     default_action = b(meta.c, (bit<8>) meta.d);
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue473.p4
-</details>
 
 ## \[REPORTED\] 3. Restrictions on constructor invocation sites
 
@@ -482,7 +470,7 @@ p4cherry adjusts the instantiation site for constructor arguments as package-loc
 
 # C. Need test clarification
 
-## 1. Implicit cast between a serializable enum and its underlying type should be allowed
+## 1. Implicit cast between a serializable enum and its underlying type should be allowed: [implicit-cast-senum](../test/program/ill-typed-excluded/test-clarify/implicit-cast-senum)
 
 ```p4
 enum bit<32> X {
@@ -529,18 +517,7 @@ control c(in e v) {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* enumCast.p4
-* issue2220.p4
-* issue3534.p4
-* issue3623-2.p4
-* issue3623-3.p4
-* serEnumImplCast.p4
-</details>
-
-## 2. Comparison between sequence and record types
+## 2. Comparison between sequence and record types: [compare-sequence-record](../test/program/ill-typed-excluded/test-clarify/compare-sequence-record)
 
 ```p4
 bool b1 = { 1, 2 } == { 1, 2 };
@@ -550,13 +527,7 @@ bool b2_ = { a = 1,b = 2 } == { a = 1, b = 2 };
 
 I think this should be allowed.
 
-<details>
-<summary>Tests</summary>
-
-* issue3057-1.p4
-</details>
-
-## 3. Too strict for indirect recursive type?
+## 3. Too strict for indirect recursive type?: [self-nesting-struct](../test/program/ill-typed-excluded/test-clarify/self-nesting-struct)
 
 ```p4
 struct h<t>{
@@ -566,13 +537,7 @@ typedef h<bit> tt;
 typedef h<tt> t;
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue3291.p4
-</details>
-
-## 4. Struct parameter not allowed for an action?
+## 4. Struct parameter not allowed for an action?: [action-struct-param](../test/program/ill-typed-excluded/test-clarify/action-struct-param)
 
 ```p4
 struct choices_t {
@@ -585,13 +550,7 @@ struct choices_t {
 action select_entry(choices_t choices) { ... }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue532.p4
-</details>
-
-## 5. Variables, type varaibles, constructors, and functions live in the same namespace?
+## 5. Variables, type varaibles, constructors, and functions live in the same namespace?: [namespace-var-tvar-func-ctor](../test/program/ill-typed-excluded/test-clarify/namespace-var-tvar-func-ctor)
 
 ```p4
 control foo (in bit<8> x, out bit<8> y) { apply { y = x + 7; } }
@@ -612,12 +571,6 @@ control foo (in bit<8> x, out bit<8> y) { apply { y = x + 7; } }
 
 But we can distinguish the use of an identifier as a function or a constructor from the syntax. So we may consider them as living in different namespaces, so the above program should (or can) be accepted.
 
-<details>
-<summary>Tests</summary>
-
-* issue1932.p4
-</details>
-
 Similarly for varaibles and functions: `main` is reserved for the top-level package instance.
 But is `main` allowed for type variables, constructors, and functions?
 p4cherry allows such and p4c disallows such as below.
@@ -628,13 +581,7 @@ extern main {}
 
 Here, `main` is a constructor name, not a variable name.
 
-<details>
-<summary>Tests</summary>
-
-* issue4144.p4
-</details>
-
-## 6. Scope of a control parameter
+## 6. Scope of a control parameter: [control-shadowing](../test/program/ill-typed-excluded/test-clarify/control-shadowing)
 
 What is the scope of a control parameter?
 Does it live in the same level as the local declarations, or does it live in the same level as the `apply` block?
@@ -750,10 +697,9 @@ This is not true because the `apply` block can access the local declarations.
 <details>
 <summary>Tests</summary>
 * issue2544_shadowing1.p4
-* issue2545.p4
 </details>
 
-## 7. Type inference for `int`
+## 7. Type inference for `int`: [type-inference-return-int](../test/program/ill-typed-excluded/test-clarify/type-inference-return-int)
 
 ```p4
 T f<T>(T x) {
@@ -786,13 +732,7 @@ issue2260-1.p4(8)
                      ^^^^^^
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue2260-1.p4
-</details>
-
-## 8. Returning `int` from a method is illegal?
+## 8. Returning `int` from a method is illegal?: [method-int-return](../test/program/ill-typed-excluded/test-clarify/method-int-return)
 
 ```p4
 extern e {
@@ -814,12 +754,6 @@ issue3273.p4(3): [--Werror=type-error] error: int: illegal return type for metho
 ```
 
 However, the spec does not mandate this.
-
-<details>
-<summary>Tests</summary>
-
-* issue3273.p4
-</details>
 
 ## 9. Shifting an arbitrary precision integer
 
@@ -858,16 +792,35 @@ const int a = 5;
 hdr.v = (bit<8>)(a >> b);
 ```
 
-<details>
-<summary>Tests</summary>
+## 10. Calling an extern with nested struct argument is not supported: [extern-nested-struct-param](../test/program/ill-typed-excluded/test-clarify/extern-nested-struct-param)
 
-* issue2206.p4
-* shift-int-non-const.p4
-</details>
+p4c disallows calling an extern function with a nested struct argument with `out` direction.
+
+This is overly restrictive, as mentioned in this [Issue#2545](https://github.com/p4lang/p4c/issues/2545).
+
+> This is an interesting case. p4test contains a pass which indeed does not support extern functions with out arguments that are nested structs. This pass is usable as a mid-end pass for p4c-bm2-ss, but it is not a general-purpose pass. I will improve the compiler to give an error for this case rather than generating an illegal program. This is a case where p4test is too restrictive; it does not handle arbitrary legal p4 programs.
+
+```p4
+extern bit<64> call_extern(inout Headers val);
+
+control ingress(inout Headers h) {
+    apply {
+        Headers tmp = h;
+        call_extern(tmp);
+        h = tmp;
+    }
+}
+```
+
+```plaintext
+issue2545.p4(17): [--Werror=target-error] error: call_extern({ eth_hdr = tmp_0_eth_hdr }): extern functions with 'out' nested struct argument (val) not supported
+        call_extern(tmp);
+        ^^^^^^^^^^^^^^^^
+```
 
 # D. More than a type check? (Requiring domain-specific knowledge)
 
-## 1. Semantics of packet extraction
+## 1. Semantics of packet extraction: [packet-extract](../test/program/ill-typed-excluded/over-typecheck/packet-extract)
 
 Some tests impose implicit (at least in the code syntax level) restrictions.
 
@@ -917,17 +870,7 @@ parser MyParser(packet_in b, out my_packet p) {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* extract.p4
-* extract1.p4
-* issue477.p4
-* issue478.p4
-* twovarbit.p4
-</details>
-
-## 2. Semantics of packet lookahead
+## 2. Semantics of packet lookahead: [packet-lookahead](../test/program/ill-typed-excluded/over-typecheck/packet-lookahead)
 
 ```p4
 packet.lookahead<void>();
@@ -941,14 +884,7 @@ header H {
 h = pkt.lookahead<H>();
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue4146.p4
-* issue600.p4
-</details>
-
-## 3. Reachability analysis of parser state machine
+## 3. Reachability analysis of parser state machine: [parser-state-reachability](../test/program/ill-typed-excluded/over-typecheck/parser-state-reachability)
 
 The test case implies a constraint that the parser state machine should terminate in either `accept` or `reject` state.
 But it is not mentioned in the specification.
@@ -978,7 +914,7 @@ state state_3 {
 
 # E. Unsupported
 
-## 1. Practical concerns: using `exact` match kind internally in a `switch` implementation
+## 1. Practical concerns: using `exact` match kind internally in a `switch` implementation: [switch-internal-match-kind](../test/program/ill-typed-excluded/unsupported/switch-internal-match-kind)
 
 ```p4
 control c(in bit<4> a) {
@@ -996,13 +932,7 @@ control c(in bit<4> a) {
 
 But this is unnecessary for p4cherry.
 
-<details>
-<summary>Tests</summary>
-
-* issue3613.p4
-</details>
-
-## 2. Practical concerns: large number
+## 2. Practical concerns: large number: [large-number](../test/program/ill-typed-excluded/unsupported/large-number)
 
 ```p4
 // this expression will slow the compiler to a crawl to print a warning
@@ -1011,13 +941,7 @@ h.eth_hdr.eth_type =  1985245330 << 903012108;
 
 This is irrelevant for p4cherry.
 
-<details>
-<summary>Tests</summary>
-
-* issue2496.p4
-</details>
-
-## 3. Annotation
+## 3. Annotation: [annotation](../test/program/ill-typed-excluded/unsupported/annotation)
 
 ```p4
 @pkginfo
@@ -1079,22 +1003,7 @@ header Hdr {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* annotation.p4
-* issue1580.p4
-* issue1732.p4
-* issue1803_same_table_name.p4
-* issue2283_2-bmv2.p4
-* key-name.p4
-* spec-ex32_e.p4
-* structured-annotation-e1.p4
-* structured-annotation-e2.p4
-* structured-annotation-e3.p4
-</details>
-
-## 4. Target-specific: select cases should be compile-time known?
+## 4. Target-specific: select cases should be compile-time known?: [select-case-compile-time-known](../test/program/ill-typed-excluded/unsupported/select-case-compile-time-known)
 
 The spec mentions:
 
@@ -1129,15 +1038,7 @@ state start {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue-2123_e.p4
-* issue122.p4
-* issue3430.p4
-</details>
-
-## 5. Target-specific: Already expecting `NoAction` even when core.p4 is not included
+## 5. Target-specific: Already expecting `NoAction` even when core.p4 is not included [expect-noaction](../test/program/ill-typed-excluded/unsupported/expect-noaction)
 
 ```p4
 action NoAction(bit t) {}
@@ -1164,11 +1065,3 @@ control c() {
     apply {}
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue3644-1.p4
-* issue3644-2.p4
-* issue3644.p4
-</details>

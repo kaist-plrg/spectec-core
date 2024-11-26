@@ -1,4 +1,4 @@
-Running typecheck tests on 299 files
+Running typecheck tests on 252 files
 
 
 >>> Running typecheck test on test/program/ill-typed/accept_e.p4
@@ -25,9 +25,6 @@ Error while typechecking p4 file: test/program/ill-typed/action-bind3.p4
 >>> Running typecheck test on test/program/ill-typed/action-named-default-bmv2.p4
 parser error: File test/program/ill-typed/action-named-default-bmv2.p4, line 56, characters 11-18
 Error while parsing p4 file: test/program/ill-typed/action-named-default-bmv2.p4
-
->>> Running typecheck test on test/program/ill-typed/annotation.p4
-Typecheck success: test/program/ill-typed/annotation.p4
 
 >>> Running typecheck test on test/program/ill-typed/assign.p4
 (check_lvalue) e1 is not an l-value
@@ -150,9 +147,6 @@ Error while typechecking p4 file: test/program/ill-typed/dupConst.p4
 (type_switch_table_cases') Label a was used multiple times
 Error while typechecking p4 file: test/program/ill-typed/duplicate-label.p4
 
->>> Running typecheck test on test/program/ill-typed/enumCast.p4
-Typecheck success: test/program/ill-typed/enumCast.p4
-
 >>> Running typecheck test on test/program/ill-typed/equality-fail.p4
 (coerce_types_binary) Cannot coerce types varbit<32> and header H { a bit<32>; b varbit<32> }
 Error while typechecking p4 file: test/program/ill-typed/equality-fail.p4
@@ -164,12 +158,6 @@ Error while parsing p4 file: test/program/ill-typed/expression_e.p4
 >>> Running typecheck test on test/program/ill-typed/extern.p4
 (check_valid_param') Extern objects can only be passed as directionless parameters but in was given
 Error while typechecking p4 file: test/program/ill-typed/extern.p4
-
->>> Running typecheck test on test/program/ill-typed/extract.p4
-Typecheck success: test/program/ill-typed/extract.p4
-
->>> Running typecheck test on test/program/ill-typed/extract1.p4
-Typecheck success: test/program/ill-typed/extract1.p4
 
 >>> Running typecheck test on test/program/ill-typed/factory-err2.p4
 (type_control_decl) Control declarations cannot be generic
@@ -266,9 +254,6 @@ Error while typechecking p4 file: test/program/ill-typed/interface_e.p4
 parser error: File test/program/ill-typed/invalid-invalid.p4, line 2, characters 0-0
 Error while parsing p4 file: test/program/ill-typed/invalid-invalid.p4
 
->>> Running typecheck test on test/program/ill-typed/issue-2123_e.p4
-Typecheck success: test/program/ill-typed/issue-2123_e.p4
-
 >>> Running typecheck test on test/program/ill-typed/issue1006-1.p4
 (check_eq_typ_alpha) Types bit<16> and bit<8> are not equal
 Error while typechecking p4 file: test/program/ill-typed/issue1006-1.p4
@@ -280,9 +265,6 @@ Error while typechecking p4 file: test/program/ill-typed/issue1059.p4
 >>> Running typecheck test on test/program/ill-typed/issue1202.p4
 parser error: File test/program/ill-typed/issue1202.p4, line 1, characters 18-21
 Error while parsing p4 file: test/program/ill-typed/issue1202.p4
-
->>> Running typecheck test on test/program/ill-typed/issue122.p4
-Typecheck success: test/program/ill-typed/issue122.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1230.p4
 (type_table_custom) size should be a numeric type, not bool
@@ -316,30 +298,15 @@ Error while typechecking p4 file: test/program/ill-typed/issue1542.p4
 (type_expr_acc_expr) Member drop does not exist in smeta
 Error while typechecking p4 file: test/program/ill-typed/issue1557-bmv2.p4
 
->>> Running typecheck test on test/program/ill-typed/issue1580.p4
-(eq_id): a3 does not equal a1
-(eq_id): a3 does not equal a2
-Typecheck success: test/program/ill-typed/issue1580.p4
-
->>> Running typecheck test on test/program/ill-typed/issue1732.p4
-Typecheck success: test/program/ill-typed/issue1732.p4
-
 >>> Running typecheck test on test/program/ill-typed/issue1777-bmv2.p4
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/ill-typed/issue1777-bmv2.p4
-
->>> Running typecheck test on test/program/ill-typed/issue1803_same_table_name.p4
-(eq_id): NoAction does not equal drop
-Typecheck success: test/program/ill-typed/issue1803_same_table_name.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1932-1.p4
 Error while typechecking p4 file: test/program/ill-typed/issue1932-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1932-2.p4
 Error while typechecking p4 file: test/program/ill-typed/issue1932-2.p4
-
->>> Running typecheck test on test/program/ill-typed/issue1932.p4
-Typecheck success: test/program/ill-typed/issue1932.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1986-1.p4
 (coerce_type) Cannot coerce type bit<0> to bit<2>
@@ -369,12 +336,6 @@ Error while typechecking p4 file: test/program/ill-typed/issue2036-2.p4
 (coerce_type) Cannot coerce type tuple<bit<8>> to struct s { x bit<8> }
 Error while typechecking p4 file: test/program/ill-typed/issue2036.p4
 
->>> Running typecheck test on test/program/ill-typed/issue2206.p4
-Typecheck success: test/program/ill-typed/issue2206.p4
-
->>> Running typecheck test on test/program/ill-typed/issue2220.p4
-Typecheck success: test/program/ill-typed/issue2220.p4
-
 >>> Running typecheck test on test/program/ill-typed/issue2230-1-bmv2.p4
 (check_eq_typ_alpha) Types header h1_t { f1 bit<8>; f2 bit<8> } and header h2_t { f1 bit<8>; f2 bit<8> } are not equal
 Error while typechecking p4 file: test/program/ill-typed/issue2230-1-bmv2.p4
@@ -383,14 +344,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue2230-1-bmv2.p4
 (coerce_type) Cannot coerce type header h1_t { f1 bit<8>; f2 bit<8> } to header h2_t { f1 bit<8>; f2 bit<8> }
 Error while typechecking p4 file: test/program/ill-typed/issue2230.p4
 
->>> Running typecheck test on test/program/ill-typed/issue2260-1.p4
-Typecheck success: test/program/ill-typed/issue2260-1.p4
-
 >>> Running typecheck test on test/program/ill-typed/issue2267.p4
 Error while typechecking p4 file: test/program/ill-typed/issue2267.p4
-
->>> Running typecheck test on test/program/ill-typed/issue2283_2-bmv2.p4
-Typecheck success: test/program/ill-typed/issue2283_2-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2290.p4
 (check_valid_typedef_nesting) Invalid nesting of header simple_header { a bit<8> } inside header nested_header<> { s header simple_header { a bit<8> } }
@@ -416,9 +371,6 @@ Error while typechecking p4 file: test/program/ill-typed/issue2354-1.p4
 (check_valid_functyp_nesting) Invalid nesting of int inside action(in val int)
 Error while typechecking p4 file: test/program/ill-typed/issue2354.p4
 
->>> Running typecheck test on test/program/ill-typed/issue2373.p4
-Typecheck success: test/program/ill-typed/issue2373.p4
-
 >>> Running typecheck test on test/program/ill-typed/issue2413.p4
 (type_func) Function x not found
 Error while typechecking p4 file: test/program/ill-typed/issue2413.p4
@@ -435,9 +387,6 @@ Error while typechecking p4 file: test/program/ill-typed/issue2444-1.p4
 (check_valid_functyp_nesting) Invalid nesting of control () inside func( t control ()) -> void
 Error while typechecking p4 file: test/program/ill-typed/issue2454.p4
 
->>> Running typecheck test on test/program/ill-typed/issue2496.p4
-Typecheck success: test/program/ill-typed/issue2496.p4
-
 >>> Running typecheck test on test/program/ill-typed/issue2525.p4
 (type_switch_table_cases') Default label must be the last switch label
 Error while typechecking p4 file: test/program/ill-typed/issue2525.p4
@@ -449,12 +398,6 @@ Error while parsing p4 file: test/program/ill-typed/issue2544_recursive.p4
 >>> Running typecheck test on test/program/ill-typed/issue2544_self_ref.p4
 (eval_type') Type definition E does not exist
 Error while typechecking p4 file: test/program/ill-typed/issue2544_self_ref.p4
-
->>> Running typecheck test on test/program/ill-typed/issue2544_shadowing1.p4
-Typecheck success: test/program/ill-typed/issue2544_shadowing1.p4
-
->>> Running typecheck test on test/program/ill-typed/issue2545.p4
-Typecheck success: test/program/ill-typed/issue2545.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2597.p4
 (check_call_site) Function control_apply() cannot be called from Action
@@ -477,9 +420,6 @@ Error while typechecking p4 file: test/program/ill-typed/issue3045-2.p4
 >>> Running typecheck test on test/program/ill-typed/issue3045.p4
 (check_call_site) Function extern_method(in index bit<32>, in value T) -> void cannot be called from Function
 Error while typechecking p4 file: test/program/ill-typed/issue3045.p4
-
->>> Running typecheck test on test/program/ill-typed/issue3057-1.p4
-Typecheck success: test/program/ill-typed/issue3057-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue306.p4
 (type_expr_acc_expr) Member stack does not exist in p
@@ -513,9 +453,6 @@ Error while parsing p4 file: test/program/ill-typed/issue3210.p4
 (type_cast_expr) Invalid cast from bit<2> to type t1 (= bit<1>)
 Error while typechecking p4 file: test/program/ill-typed/issue3221.p4
 
->>> Running typecheck test on test/program/ill-typed/issue3233.p4
-Typecheck success: test/program/ill-typed/issue3233.p4
-
 >>> Running typecheck test on test/program/ill-typed/issue3246.p4
 (ctk_call_method_expr) minSizeInBits does not take type arguments or arguments
 Error while typechecking p4 file: test/program/ill-typed/issue3246.p4
@@ -532,18 +469,12 @@ Error while parsing p4 file: test/program/ill-typed/issue3271-1.p4
 parser error: File test/program/ill-typed/issue3271.p4, line 3, characters 7-8
 Error while parsing p4 file: test/program/ill-typed/issue3271.p4
 
->>> Running typecheck test on test/program/ill-typed/issue3273.p4
-Typecheck success: test/program/ill-typed/issue3273.p4
-
 >>> Running typecheck test on test/program/ill-typed/issue3282.p4
 (type_instantiation_expr) Cannot instantiate an abstract extern object at expression level
 Error while typechecking p4 file: test/program/ill-typed/issue3282.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3285.p4
 Error while parsing p4 file: test/program/ill-typed/issue3285.p4
-
->>> Running typecheck test on test/program/ill-typed/issue3291.p4
-Typecheck success: test/program/ill-typed/issue3291.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3293.p4
 (specialize_typedef) Type definition struct t1<t> {  } expects 1 type arguments but 0 were given
@@ -593,9 +524,6 @@ Error while typechecking p4 file: test/program/ill-typed/issue3363.p4
 package>
 Error while typechecking p4 file: test/program/ill-typed/issue3378.p4
 
->>> Running typecheck test on test/program/ill-typed/issue3430.p4
-Typecheck success: test/program/ill-typed/issue3430.p4
-
 >>> Running typecheck test on test/program/ill-typed/issue3442.p4
 (type_table_entries') Entries cannot be specified for a table with no key
 Error while typechecking p4 file: test/program/ill-typed/issue3442.p4
@@ -608,9 +536,6 @@ Error while typechecking p4 file: test/program/ill-typed/issue345.p4
 (type_expr_acc_expr) last and lastIndex of v.field may only be accessed within a parser
 Error while typechecking p4 file: test/program/ill-typed/issue3522.p4
 
->>> Running typecheck test on test/program/ill-typed/issue3534.p4
-Typecheck success: test/program/ill-typed/issue3534.p4
-
 >>> Running typecheck test on test/program/ill-typed/issue3589.p4
 (coerce_types_binary) Cannot coerce types table and table
 Error while typechecking p4 file: test/program/ill-typed/issue3589.p4
@@ -619,27 +544,9 @@ Error while typechecking p4 file: test/program/ill-typed/issue3589.p4
 (type_switch_table_label) Switch label must be an action name
 Error while typechecking p4 file: test/program/ill-typed/issue3611.p4
 
->>> Running typecheck test on test/program/ill-typed/issue3613.p4
-Typecheck success: test/program/ill-typed/issue3613.p4
-
 >>> Running typecheck test on test/program/ill-typed/issue3622.p4
 (type_switch_table_label) Switch label must be an action name
 Error while typechecking p4 file: test/program/ill-typed/issue3622.p4
-
->>> Running typecheck test on test/program/ill-typed/issue3623-2.p4
-Typecheck success: test/program/ill-typed/issue3623-2.p4
-
->>> Running typecheck test on test/program/ill-typed/issue3623-3.p4
-Typecheck success: test/program/ill-typed/issue3623-3.p4
-
->>> Running typecheck test on test/program/ill-typed/issue3644-1.p4
-Typecheck success: test/program/ill-typed/issue3644-1.p4
-
->>> Running typecheck test on test/program/ill-typed/issue3644-2.p4
-Typecheck success: test/program/ill-typed/issue3644-2.p4
-
->>> Running typecheck test on test/program/ill-typed/issue3644.p4
-Typecheck success: test/program/ill-typed/issue3644.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3656.p4
 (specialize_funcdef) Function action() expects 0 type arguments but 1 were given
@@ -728,29 +635,9 @@ Error while typechecking p4 file: test/program/ill-typed/issue4140.p4
 >>> Running typecheck test on test/program/ill-typed/issue4142.p4
 Error while parsing p4 file: test/program/ill-typed/issue4142.p4
 
->>> Running typecheck test on test/program/ill-typed/issue4144.p4
-Typecheck success: test/program/ill-typed/issue4144.p4
-
->>> Running typecheck test on test/program/ill-typed/issue4146.p4
-Typecheck success: test/program/ill-typed/issue4146.p4
-
 >>> Running typecheck test on test/program/ill-typed/issue435.p4
 (type_extern_constructor_decl) Extern constructor must have the same name as the object
 Error while typechecking p4 file: test/program/ill-typed/issue435.p4
-
->>> Running typecheck test on test/program/ill-typed/issue473.p4
-(eq_id): b does not equal a1
-Typecheck success: test/program/ill-typed/issue473.p4
-
->>> Running typecheck test on test/program/ill-typed/issue477.p4
-Typecheck success: test/program/ill-typed/issue477.p4
-
->>> Running typecheck test on test/program/ill-typed/issue478.p4
-Typecheck success: test/program/ill-typed/issue478.p4
-
->>> Running typecheck test on test/program/ill-typed/issue532.p4
-(eq_id): NoAction does not equal select_entry
-Typecheck success: test/program/ill-typed/issue532.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue561-1.p4
 (coerce_type) Cannot coerce type seq<seq<int>,
@@ -760,9 +647,6 @@ Error while typechecking p4 file: test/program/ill-typed/issue561-1.p4
 >>> Running typecheck test on test/program/ill-typed/issue584.p4
 (check_valid_functyp_nesting) Invalid nesting of int inside extern_func(out result bit<16>, in algo enum HashAlgorithm, in base bit<16>, in data bit<32>, in max int) -> void
 Error while typechecking p4 file: test/program/ill-typed/issue584.p4
-
->>> Running typecheck test on test/program/ill-typed/issue600.p4
-Typecheck success: test/program/ill-typed/issue600.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue67.p4
 (coerce_type) Cannot coerce type int to bool
@@ -807,10 +691,6 @@ Error while typechecking p4 file: test/program/ill-typed/issue819-1.p4
 >>> Running typecheck test on test/program/ill-typed/issue819.p4
 (eval_type') Type definition MyC1 does not exist
 Error while typechecking p4 file: test/program/ill-typed/issue819.p4
-
->>> Running typecheck test on test/program/ill-typed/key-name.p4
-(eq_id): NoAction does not equal a
-Typecheck success: test/program/ill-typed/key-name.p4
 
 >>> Running typecheck test on test/program/ill-typed/list-error.p4
 (check_eq_typ_alpha) Types list<bit<16>> and list<bit<32>> are not equal
@@ -935,9 +815,6 @@ Error while typechecking p4 file: test/program/ill-typed/select-varbits.p4
 (type_instantiation) c is not an instance type
 Error while typechecking p4 file: test/program/ill-typed/self-call.p4
 
->>> Running typecheck test on test/program/ill-typed/serEnumImplCast.p4
-Typecheck success: test/program/ill-typed/serEnumImplCast.p4
-
 >>> Running typecheck test on test/program/ill-typed/serenum-type.p4
 (coerce_type) Cannot coerce type int to type EthT (= type Base2_t (= type Base1_t (= bit<16>)))
 Error while typechecking p4 file: test/program/ill-typed/serenum-type.p4
@@ -945,9 +822,6 @@ Error while typechecking p4 file: test/program/ill-typed/serenum-type.p4
 >>> Running typecheck test on test/program/ill-typed/serenum-typedef.p4
 (coerce_type) Cannot coerce type int to type Base_t (= bit<16>)
 Error while typechecking p4 file: test/program/ill-typed/serenum-typedef.p4
-
->>> Running typecheck test on test/program/ill-typed/shift-int-non-const.p4
-Typecheck success: test/program/ill-typed/shift-int-non-const.p4
 
 >>> Running typecheck test on test/program/ill-typed/shift_e.p4
 parser error: File test/program/ill-typed/shift_e.p4, line 20, characters 24-25
@@ -965,9 +839,6 @@ Error while typechecking p4 file: test/program/ill-typed/signs.p4
 (type_bitstring_acc_expr) Invalid slice [2:5] for bit<4>
 Error while typechecking p4 file: test/program/ill-typed/slice_out_of_bound.p4
 
->>> Running typecheck test on test/program/ill-typed/spec-ex32_e.p4
-Typecheck success: test/program/ill-typed/spec-ex32_e.p4
-
 >>> Running typecheck test on test/program/ill-typed/spec-issue1297-string-cat-err-0.p4
 (coerce_types_binary_numeric) Cannot coerce types string and string
 Error while typechecking p4 file: test/program/ill-typed/spec-issue1297-string-cat-err-0.p4
@@ -975,12 +846,6 @@ Error while typechecking p4 file: test/program/ill-typed/spec-issue1297-string-c
 >>> Running typecheck test on test/program/ill-typed/spec-issue1297-string-cat-err-1.p4
 (coerce_types_binary_numeric) Cannot coerce types string and int
 Error while typechecking p4 file: test/program/ill-typed/spec-issue1297-string-cat-err-1.p4
-
->>> Running typecheck test on test/program/ill-typed/spec-issue1297-string-cat-err-2-anno.p4
-Typecheck success: test/program/ill-typed/spec-issue1297-string-cat-err-2-anno.p4
-
->>> Running typecheck test on test/program/ill-typed/spec-issue1297-string-cat-err-3-anno.p4
-Typecheck success: test/program/ill-typed/spec-issue1297-string-cat-err-3-anno.p4
 
 >>> Running typecheck test on test/program/ill-typed/spec-issue563.p4
 (eval_type') Type definition A does not exist
@@ -1031,15 +896,6 @@ Error while parsing p4 file: test/program/ill-typed/structure-valued-expr-errs-2
 >>> Running typecheck test on test/program/ill-typed/structured-annotation-e.p4
 parser error: File test/program/ill-typed/structured-annotation-e.p4, line 1, characters 22-23
 Error while parsing p4 file: test/program/ill-typed/structured-annotation-e.p4
-
->>> Running typecheck test on test/program/ill-typed/structured-annotation-e1.p4
-Typecheck success: test/program/ill-typed/structured-annotation-e1.p4
-
->>> Running typecheck test on test/program/ill-typed/structured-annotation-e2.p4
-Typecheck success: test/program/ill-typed/structured-annotation-e2.p4
-
->>> Running typecheck test on test/program/ill-typed/structured-annotation-e3.p4
-Typecheck success: test/program/ill-typed/structured-annotation-e3.p4
 
 >>> Running typecheck test on test/program/ill-typed/table-entries-decl-order.p4
 (type_table_entries') Entries cannot be specified for a table with no key
@@ -1111,9 +967,6 @@ Error while typechecking p4 file: test/program/ill-typed/tuple-newtype.p4
 >>> Running typecheck test on test/program/ill-typed/tuple-to-header.p4
 (coerce_type) Cannot coerce type tuple<bit<32>> to header H { x bit<32> }
 Error while typechecking p4 file: test/program/ill-typed/tuple-to-header.p4
-
->>> Running typecheck test on test/program/ill-typed/twovarbit.p4
-Typecheck success: test/program/ill-typed/twovarbit.p4
 
 >>> Running typecheck test on test/program/ill-typed/type-field.p4
 (type_type_acc_expr) struct h<> { d header d_t { f bit<32> } } cannot be accessed
@@ -1191,5 +1044,5 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 (type_cast_expr) Invalid cast from int<2> to bool
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
-Parser on file: [PASS] 266/299 (88.96%) [FAIL] 33/299 (11.04%)
-Typecheck: [PASS] 218/266 (81.95%) [FAIL] 48/266 (18.05%)
+Parser on file: [PASS] 219/252 (86.90%) [FAIL] 33/252 (13.10%)
+Typecheck: [PASS] 218/219 (99.54%) [FAIL] 1/219 (0.46%)
