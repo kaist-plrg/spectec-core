@@ -554,7 +554,6 @@ Error while typechecking p4 file: test/program/ill-typed/issue3751.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3787.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3808-1.p4
-(coerce_type) Cannot coerce type table to any
 Error while typechecking p4 file: test/program/ill-typed/issue3808-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3808.p4
@@ -662,7 +661,6 @@ execute2() : extern_method<>() -> void } expects 2 type arguments but 0 were giv
 Error while typechecking p4 file: test/program/ill-typed/issue819-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue819.p4
-(eval_type') Type definition MyC1 does not exist
 Error while typechecking p4 file: test/program/ill-typed/issue819.p4
 
 >>> Running typecheck test on test/program/ill-typed/list-error.p4

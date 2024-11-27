@@ -226,13 +226,6 @@ control c() {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue3522.p4
-* next.p4
-</details>
-
 ### \[DONE\] (2) ~~Calling `verify` within a control~~
 
 The spec mentions:
@@ -259,12 +252,6 @@ control C() {
 }
 ```
 
-<details>
-<summary>Test</summary>
-
-* control-verify.p4
-</details>
-
 ### \[DONE\] (3) ~~No switch inside action~~
 
 ~~But maybe this is only specific to `p4test`.~~
@@ -282,12 +269,6 @@ action a0() {
 	}
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue3299.p4
-</details>
 
 ### \[DONE\] (4) ~~Variable `main` should be a package instance~~
 
@@ -690,11 +671,6 @@ above is rejected and below is accepted. (above implies that `param` = `apply` a
 
 This is not true because the `apply` block can access the local declarations.
 
-<details>
-<summary>Tests</summary>
-* issue2544_shadowing1.p4
-</details>
-
 ## 7. Type inference for `int`: [type-inference-return-int](../test/program/ill-typed-excluded/test-clarify/type-inference-return-int)
 
 ```p4
@@ -901,12 +877,6 @@ state state_3 {
     transition state_2;
 }
 ```
-
-<details>
-<summary>Tests</summary>
-
-* issue2373.p4
-</details>
 
 # E. Unsupported
 

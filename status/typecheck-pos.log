@@ -1802,16 +1802,7 @@ Typecheck success: test/program/well-typed/issue793.p4
 Typecheck success: test/program/well-typed/issue794.p4
 
 >>> Running typecheck test on test/program/well-typed/issue803-2.p4
-(check_eq_typ_alpha) Types package { parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
-extract(hdr) : extern_method<T>(out hdr T) -> void
-extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
-length() : extern_method<>() -> bit<32>
-lookahead() : extern_method<T>() -> T }, out parsedHeaders struct ing_in_headers { ethernet header ethernet_t { dstAddr bit<48>; srcAddr bit<48>; etherType bit<16> }; a0 bit<10> }), control (in inputHeaders struct ing_in_headers { ethernet header ethernet_t { dstAddr bit<48>; srcAddr bit<48>; etherType bit<16> }; a0 bit<10> }, in inCtrl struct InControl { inputPort bit<4> }, out outputHeaders struct ing_out_headers { ethernet header ethernet_t { dstAddr bit<48>; srcAddr bit<48>; etherType bit<16> }; a1 bit<11> }, out toEgress struct ing_to_egr { x bit<4> }, out outCtrl struct OutControl { outputPort bit<4> }), control (in outputHeaders struct ing_out_headers { ethernet header ethernet_t { dstAddr bit<48>; srcAddr bit<48>; etherType bit<16> }; a1 bit<11> },  b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }) } and package { parser ( b extern packet_in { advance(sizeInBits) : extern_method<>(in sizeInBits bit<32>) -> void
-extract(hdr) : extern_method<T>(out hdr T) -> void
-extract(variableSizeHeader, variableFieldSizeInBits) : extern_method<T>(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void
-length() : extern_method<>() -> bit<32>
-lookahead() : extern_method<T>() -> T }, out parsedHeaders any), control (in inputHeaders any, in inCtrl struct InControl { inputPort bit<4> }, out outputHeaders any, out toEgress struct ing_to_egr { x bit<4> }, out outCtrl struct OutControl { outputPort bit<4> }), control (in outputHeaders any,  b extern packet_out { emit(hdr) : extern_method<T>(in hdr T) -> void }) } are not equal
-Error while typechecking p4 file: test/program/well-typed/issue803-2.p4
+Typecheck success: test/program/well-typed/issue803-2.p4
 
 >>> Running typecheck test on test/program/well-typed/issue803-3.p4
 Typecheck success: test/program/well-typed/issue803-3.p4
@@ -2300,7 +2291,6 @@ Typecheck success: test/program/well-typed/pragma-string.p4
 Typecheck success: test/program/well-typed/pragmas.p4
 
 >>> Running typecheck test on test/program/well-typed/precedence-lt.p4
-(coerce_types_binary) Cannot coerce types int and bool
 Error while typechecking p4 file: test/program/well-typed/precedence-lt.p4
 
 >>> Running typecheck test on test/program/well-typed/pred.p4
@@ -2964,8 +2954,7 @@ Typecheck success: test/program/well-typed/unreachable-accept.p4
 Typecheck success: test/program/well-typed/unreachable.p4
 
 >>> Running typecheck test on test/program/well-typed/unused.p4
-(check_eq_typ_alpha) Types control (inout s struct S { h header Header { data1 bit<32>; data2 bit<32>; data3 bit<32> } }) and control (inout v any) are not equal
-Error while typechecking p4 file: test/program/well-typed/unused.p4
+Typecheck success: test/program/well-typed/unused.p4
 
 >>> Running typecheck test on test/program/well-typed/use-priority-as-name.p4
 Typecheck success: test/program/well-typed/use-priority-as-name.p4
@@ -3025,4 +3014,5 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1004/1004 (100.00%) [FAIL] 0/1004 (0.00%)
-Typecheck: [PASS] 1001/1004 (99.70%) [FAIL] 3/1004 (0.30%)
+Typecheck: [PASS] 1003/1004 (99.90%) [FAIL] 1/1004 (0.10%)
+(coerce_types_binary) Cannot coerce types int and bool

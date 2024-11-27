@@ -107,9 +107,9 @@ let check_distinct_vars (vars : Lang.Ast.var list) : unit =
    typedefs that are not generic. maybe consider only check_valid_type
    after evaluating surface types of StackT, TupleT and SpecT *)
 
-let rec check_valid_type (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : Type.t) :
-    unit =
-  let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
+let rec check_valid_type ?(tids_fresh = []) (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (typ : Type.t) : unit =
+  let tset = Ctx.get_tparams cursor ctx @ tids_fresh |> TIdSet.of_list in
   check_valid_type' tset typ
 
 and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =

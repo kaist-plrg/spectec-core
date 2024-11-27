@@ -170,9 +170,9 @@ transition select (o.b.x) {
 }
 ```
 
-### (3) Type Inference
+### \[DONE\] (3) ~~Type Inference~~
 
-#### (a) Type inference when `_` was used on the parameter side (1)
+#### \[DONE\] (a) ~~Type inference when `_` was used on the parameter side~~
 
 ```p4
 package Switch<T>(Ingress<T, _, _> ingress, Egress<T, _, _> egress);
@@ -189,12 +189,18 @@ package top(cproto<_> _c);
 top(c()) main;
 ```
 
-<details>
-<summary>Tests</summary>
+Solved by inserting fresh type parameters to represent each `_`.
+e.g., the second program is transformed to:
 
-* issue803-2.p4
-* unused.p4
-</details>
+```p4
+control c (inout S s) { ... }
+control cproto<T> (inout T v);
+package top<__WILD_0>(cproto<__WILD_0> _c);
+top(c()) main;
+```
+
+This also implies that `_` can be used only when the enclosing type definition, function definition, or constructor definition is generic.
+e.g., `action a(S<_> s) { ... }` is illegal.
 
 #### \[DONE\] (b) ~~Mixture of type inference and coercion~~
 
