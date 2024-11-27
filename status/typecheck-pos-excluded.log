@@ -1,4 +1,4 @@
-Running typecheck tests on 249 files
+Running typecheck tests on 250 files
 
 
 >>> Running typecheck test on test/program/well-typed-excluded/future/concat-string/issue4932.p4
@@ -218,15 +218,11 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/extern2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_extern_arguments_2.p4
-(check_eq_typ_alpha) Types seq<int,
-int,
-bit<16>> and header ethernet_t { dst_addr bit<48>; src_addr bit<48>; eth_type bit<16> } are not equal
+(check_eq_typ_alpha) Types seq<int, int, bit<16>> and header ethernet_t { dst_addr bit<48>; src_addr bit<48>; eth_type bit<16> } are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_extern_arguments_2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_hdr_in_value-bmv2.p4
-(check_eq_typ_alpha) Types seq<seq<bit<48>,
-bit<48>,
-bit<16>>> and struct Headers { eth_hdr header ethernet_t { dst_addr bit<48>; src_addr bit<48>; eth_type bit<16> } } are not equal
+(check_eq_typ_alpha) Types seq<seq<bit<48>, bit<48>, bit<16>>> and struct Headers { eth_hdr header ethernet_t { dst_addr bit<48>; src_addr bit<48>; eth_type bit<16> } } are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_hdr_in_value-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1001-1-bmv2.p4
@@ -668,18 +664,18 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3238.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/tuple-nesting/list3.p4
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-tuple<K, K>,Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/tuple-nesting/list3.p4
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int, tuple<K, K>, V>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/tuple-nesting/list3.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/tuple-nesting/list4.p4
+(check_valid_type_nesting) Invalid nesting of int inside tuple<int, tuple<K, K>, V>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/tuple-nesting/list4.p4
 
-V>
-(check_valid_type_nesting) Invalid nesting of int inside tuple<int,
-tuple<K, K>,Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/tuple-nesting/list4.p4
+>>> Running typecheck test on test/program/well-typed-excluded/test-clarify/type-inference-should-fail/issue2105.p4
+(infer_targs) Type variable __WILD_0 could not be inferred
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/type-inference-should-fail/issue2105.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/type-variable-equality-op/issue3291-1.p4
-
-V>
 (type_binop_compare_equal) Type t cannot be compared of equality
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/type-variable-equality-op/issue3291-1.p4
 
@@ -700,12 +696,10 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-3-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs.p4
-(coerce_type) Cannot coerce type tuple<bit<32>,
-bit<2>> to seq<bit<32>,Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs.p4
+(coerce_type) Cannot coerce type tuple<bit<32>, bit<2>> to seq<bit<32>, bit<2>>
+Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-enumint-types1.p4
-
-bit<2>>
 (check_valid_type_nesting) Invalid nesting of struct valueset1_t { addr0 bit<48>; e bit<8>; e0 bit<8>; e00 bit<8> } inside set<struct valueset1_t { addr0 bit<48>; e bit<8>; e0 bit<8>; e00 bit<8> }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-enumint-types1.p4
 
@@ -993,5 +987,5 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/s
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector6.p4
 
-Parser on file: [PASS] 225/249 (90.36%) [FAIL] 24/249 (9.64%)
-Typecheck: [PASS] 8/225 (3.56%) [FAIL] 217/225 (96.44%)
+Parser on file: [PASS] 226/250 (90.40%) [FAIL] 24/250 (9.60%)
+Typecheck: [PASS] 8/226 (3.54%) [FAIL] 218/226 (96.46%)

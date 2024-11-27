@@ -1,4 +1,4 @@
-Running parser roundtrip tests on 1005 files
+Running parser roundtrip tests on 1004 files
 
 
 >>> Running parser roundtrip test on test/program/well-typed/action-bind.p4
@@ -1146,9 +1146,6 @@ Parser roundtrip success: test/program/well-typed/issue2104-1.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue2104.p4
 Parser roundtrip success: test/program/well-typed/issue2104.p4
-
->>> Running parser roundtrip test on test/program/well-typed/issue2105.p4
-Parser roundtrip success: test/program/well-typed/issue2105.p4
 
 >>> Running parser roundtrip test on test/program/well-typed/issue2126.p4
 Parser roundtrip success: test/program/well-typed/issue2126.p4
@@ -3016,6 +3013,6 @@ Parser roundtrip success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.
 >>> Running parser roundtrip test on test/program/well-typed/xor_test.p4
 Parser roundtrip success: test/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1005/1005 (100.00%) [FAIL] 0/1005 (0.00%)
-Parser on string: [PASS] 1005/1005 (100.00%) [FAIL] 0/1005 (0.00%)
-Parser roundtrip: [PASS] 1005/1005 (100.00%) [FAIL] 0/1005 (0.00%)
+Parser on file: [PASS] 1004/1004 (100.00%) [FAIL] 0/1004 (0.00%)
+Parser on string: [PASS] 1004/1004 (100.00%) [FAIL] 0/1004 (0.00%)
+Parser roundtrip: [PASS] 1004/1004 (100.00%) [FAIL] 0/1004 (0.00%)

@@ -260,7 +260,7 @@ let add_rtype cursor id typ dir ctk ctx =
     id = "main"
     && not
          (cursor = Global
-         && match typ with Types.PackageT -> true | _ -> false)
+         && match typ with Types.PackageT _ -> true | _ -> false)
   then (
     F.printf
       "(add_rtype) main is reserved for a package instance at the top level\n";

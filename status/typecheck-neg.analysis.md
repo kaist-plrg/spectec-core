@@ -298,19 +298,15 @@ extern MyExtern {
 MyExtern() main;
 ```
 
-## 6. Devils are in the details
+## \[DONE\] 6. ~~Devils are in the details~~
 
-### (1) Type inference should fail
+### \[DONE\] (1) ~~Type inference should fail~~
 
 ```p4
 b.extract(_);
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue774-2.p4
-</details>
+Type inference fails if we cannot infer a concrete type for the don't care argument.
 
 ### \[DONE\] (2) ~~Table invocation results are incomparable~~
 

@@ -14,37 +14,6 @@ module WF = Wellformed
 module F = Format
 open Util.Source
 
-(* Fold *)
-
-let rec fold_expr (f : Il.Ast.expr -> 'a -> 'a) (acc : 'a) (expr : Il.Ast.expr)
-    =
-  match expr.it with
-  | ValueE _ | VarE _ -> f expr acc
-  | SeqE { exprs } | SeqDefaultE { exprs } -> fold_exprs f acc exprs |> f expr
-  | RecordE { fields } | RecordDefaultE { fields } ->
-      fields |> List.map snd |> fold_exprs f acc |> f expr
-  | DefaultE -> f expr acc
-  | UnE { expr; _ } -> fold_expr f acc expr |> f expr
-  | BinE { expr_l; expr_r; _ } ->
-      [ expr_l; expr_r ] |> fold_exprs f acc |> f expr
-  | TernE { expr_cond; expr_then; expr_else } ->
-      [ expr_cond; expr_then; expr_else ] |> fold_exprs f acc |> f expr
-  | CastE { expr; _ } -> fold_expr f acc expr |> f expr
-  | MaskE { expr_base; expr_mask } ->
-      [ expr_base; expr_mask ] |> fold_exprs f acc |> f expr
-  | RangeE { expr_lb; expr_ub } ->
-      [ expr_lb; expr_ub ] |> fold_exprs f acc |> f expr
-  | SelectE { exprs_select; _ } -> exprs_select |> fold_exprs f acc |> f expr
-  | ArrAccE { expr_base; expr_idx } ->
-      [ expr_base; expr_idx ] |> fold_exprs f acc |> f expr
-  | BitAccE { expr_base; _ } | ExprAccE { expr_base; _ } ->
-      fold_expr f acc expr_base |> f expr
-  | CallFuncE _ | CallMethodE _ | CallTypeE _ | InstE _ -> f expr acc
-
-and fold_exprs (f : Il.Ast.expr -> 'a -> 'a) (acc : 'a)
-    (exprs : Il.Ast.expr list) : 'a =
-  exprs |> List.fold_left (fold_expr f) acc
-
 (* Coercion rules *)
 
 let insert_cast (expr_il : Il.Ast.expr) (typ : Type.t) : Il.Ast.expr =
@@ -180,6 +149,7 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
       in
       let typs_inner_arg = List.map (fun (_, _, typ, _) -> typ) params_arg in
       gen_cstrs cstr typs_inner_param typs_inner_arg
+  | PackageT typs_param, PackageT typs_arg -> gen_cstrs cstr typs_param typs_arg
   | _ -> cstr
 
 and gen_cstr_fd (cstr : cstr_t) (fd_param : FuncDef.t) (fd_arg : FuncDef.t) :
@@ -236,8 +206,11 @@ let infer_targs (tids_fresh : TId.t list) (params : Types.param list)
   TIdMap.fold
     (fun tid typ_opt theta ->
       match typ_opt with
-      | Some typ -> Subst.Theta.add tid typ theta
-      | None -> Subst.Theta.add tid Types.AnyT theta)
+      | None | Some Types.AnyT ->
+          Format.printf "(infer_targs) Type variable %a could not be inferred\n"
+            TId.pp tid;
+          assert false
+      | Some typ -> Subst.Theta.add tid typ theta)
     cstr Subst.Theta.empty
 
 (* (6.7) L-values
@@ -278,7 +251,7 @@ and check_lvalue' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_il : Il.Ast.expr) :
 and check_lvalue_type (typ : Type.t) : bool =
   match typ with
   | NewT (_, typ_inner) -> check_lvalue_type typ_inner
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | AnyT -> false
+  | ExternT _ | ParserT _ | ControlT _ | PackageT _ | AnyT -> false
   | _ -> true
 
 (* Type evaluation *)
@@ -422,9 +395,11 @@ and specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
       let theta = List.combine tparams targs |> Subst.Theta.of_list in
       let params = List.map (Subst.subst_param theta) params in
       Types.ControlT params
-  | PackageD tparams ->
+  | PackageD (tparams, typs_inner) ->
       check_arity tparams;
-      Types.PackageT
+      let theta = List.combine tparams targs |> Subst.Theta.of_list in
+      let typs_inner = List.map (Subst.subst_typ theta) typs_inner in
+      Types.PackageT typs_inner
 
 and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) :
     FuncType.t * TId.t list option =
@@ -2185,6 +2160,7 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t)
         (ft, targs_il, params, typ_ret)
     | None -> (ft, targs_il, params, typ_ret)
   in
+  (* check_call_targs targs_il; *)
   WF.check_valid_functyp cursor ctx ft;
   check_call_site cursor ctx ft;
   let action = FuncType.is_action ft in
@@ -2334,7 +2310,7 @@ and check_instantiation_site (cursor : Ctx.cursor) (ctx : Ctx.t)
   match cursor with
   | Global -> (
       match typ_inst with
-      | ExternT _ | PackageT -> ()
+      | ExternT _ | PackageT _ -> ()
       | _ ->
           Format.printf
             "(check_instantiation_site) %a cannot be instantiated at top level\n"
@@ -2343,7 +2319,7 @@ and check_instantiation_site (cursor : Ctx.cursor) (ctx : Ctx.t)
   | Block -> (
       let kind = ctx.block.kind in
       match (kind, typ_inst) with
-      | Ctx.Package, (ExternT _ | ParserT _ | ControlT _ | PackageT)
+      | Ctx.Package, (ExternT _ | ParserT _ | ControlT _ | PackageT _)
       | Ctx.Parser, (ExternT _ | ParserT _)
       | Ctx.Control, (ExternT _ | ControlT _ | TableT _) ->
           ()
@@ -2394,7 +2370,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
        (namelessly) in a package instantiation *)
     let cursor, ctx =
       match (cursor, typ_inst) with
-      | Global, PackageT ->
+      | Global, PackageT _ ->
           let cursor = Ctx.Block in
           let ctx = Ctx.set_blockkind Ctx.Package ctx in
           (cursor, ctx)
@@ -3226,7 +3202,7 @@ and check_valid_var_type' (typ : Type.t) : bool =
   | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
   | UnionT _ ->
       true
-  | ExternT _ | ParserT _ | ControlT _ | PackageT | TableT _ | AnyT
+  | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ | AnyT
   | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
   | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
       false
@@ -4515,7 +4491,7 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
       | UnionT _ ->
           false
       (* No equality op *)
-      | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
+      | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT _
       | TableT _ | AnyT | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _
       | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
           false)
@@ -4529,7 +4505,7 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
       | StackT _ | StructT _ | HeaderT _ | UnionT _ ->
           false
       (* No equality op *)
-      | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT
+      | VoidT | StrT | VarT _ | ExternT _ | ParserT _ | ControlT _ | PackageT _
       | TableT _ | AnyT | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _
       | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
           false)
@@ -5346,8 +5322,8 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    (they cannot be in, out, or inout). Otherwise package types are very similar to parser type declarations. *)
 
 and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (id : El.Ast.id) (cparams : El.Ast.cparam list) : Ctx.t * Il.Ast.cparam list
-    =
+    (id : El.Ast.id) (cparams : El.Ast.cparam list) :
+    TypeDef.t * ConsDef.t * Il.Ast.cparam list =
   if not (cursor = Ctx.Block && ctx.block.kind = Package) then (
     Format.printf
       "(type_package_constructor_decl) Package constructor declarations must \
@@ -5359,9 +5335,15 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
        name as the object\n";
     assert false);
   let tparams = Ctx.get_tparams cursor ctx in
-  let cid = FId.to_fid id cparams in
   let cparams_il = List.map (type_cparam Ctx.Block ctx) cparams in
-  let td = Ctx.find_typedef Ctx.Global id.it ctx in
+  let td =
+    let typs_inner =
+      List.map it cparams_il
+      |> List.map (fun (_, _, typ_inner, _, _) -> typ_inner.it)
+    in
+    Types.PackageD (tparams, typs_inner)
+  in
+  WF.check_valid_typedef cursor ctx td;
   let typ_args = List.map (fun tparam -> Types.VarT tparam) tparams in
   let typ = specialize_typedef td typ_args in
   let cd =
@@ -5373,8 +5355,7 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     (tparams, cparams, typ)
   in
   WF.check_valid_consdef Ctx.Block ctx cd;
-  let ctx = Ctx.add_consdef cid cd ctx in
-  (ctx, cparams_il)
+  (td, cd, cparams_il)
 
 and type_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (tparams : El.Ast.tparam list) (cparams : El.Ast.cparam list)
@@ -5384,27 +5365,17 @@ and type_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       "(type_package_type_decl) Package type declarations must be global\n";
     assert false);
   let annos_il = List.map (type_anno cursor ctx) annos in
-  (* Create a package type definition
-     and add it to the context *)
-  let td =
-    let tparams = List.map it tparams in
-    Types.PackageD tparams
-  in
-  WF.check_valid_typedef cursor ctx td;
-  let ctx = Ctx.add_typedef cursor id.it td ctx in
   (* Package type declaration is implicitly a constructor declaration *)
-  let ctx' = Ctx.set_id Ctx.Block id.it ctx in
-  let ctx' = Ctx.set_blockkind Ctx.Package ctx' in
-  let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
-  let ctx', cparams_il =
-    type_package_constructor_decl Ctx.Block ctx' id cparams
+  let td, cd, cparams_il =
+    let ctx = Ctx.set_id Ctx.Block id.it ctx in
+    let ctx = Ctx.set_blockkind Ctx.Package ctx in
+    let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
+    type_package_constructor_decl Ctx.Block ctx id cparams
   in
-  (* Update the context with the constructor definition environment *)
-  let cdenv_diff = Envs.CDEnv.diff ctx'.global.cdenv ctx.global.cdenv in
+  let ctx = Ctx.add_typedef cursor id.it td ctx in
   let ctx =
-    Envs.CDEnv.fold
-      (fun cid cd ctx -> Ctx.add_consdef cid cd ctx)
-      cdenv_diff ctx
+    let cid = FId.to_fid id cparams in
+    Ctx.add_consdef cid cd ctx
   in
   let decl_il =
     Il.Ast.PackageTypeD { id; tparams; cparams = cparams_il; annos = annos_il }

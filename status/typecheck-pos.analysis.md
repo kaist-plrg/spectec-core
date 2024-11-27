@@ -175,6 +175,14 @@ transition select (o.b.x) {
 #### (a) Type inference when `_` was used on the parameter side (1)
 
 ```p4
+package Switch<T>(Ingress<T, _, _> ingress, Egress<T, _, _> egress);
+
+Ingress(ing_parse(), ingress(), ing_deparse()) ig1;
+Egress(egr_parse(), egress(), egr_deparse()) eg1;
+Switch(ig1, eg1) main;
+```
+
+```p4
 control c (inout S s) { ... }
 control cproto<T> (inout T v);
 package top(cproto<_> _c);
@@ -184,6 +192,7 @@ top(c()) main;
 <details>
 <summary>Tests</summary>
 
+* issue803-2.p4
 * unused.p4
 </details>
 
@@ -1120,6 +1129,19 @@ control c() {
     apply {}
 }
 ```
+
+## 16. Type inference should fail: [type-inference-should-fail](../test/program/well-typed-excluded/test-clarify/type-inference-should-fail)
+
+```p4
+control e<T>();
+package top<T>(e<T> e);
+
+control c() { apply {} }
+top<_>(c()) main;
+```
+
+For this case, we *cannot* infer a concrete type for `_` in `top<_>`.
+So the type inference should fail, but p4c treats this as valid.
 
 # E. Future extension
 

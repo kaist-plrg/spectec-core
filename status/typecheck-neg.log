@@ -199,12 +199,10 @@ Error while parsing p4 file: test/program/ill-typed/header1_e.p4
 Error while typechecking p4 file: test/program/ill-typed/header2_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/header3.p4
-(check_valid_typedef_nesting) Invalid nesting of tuple<bit<1>,
-bit<1>> inside header H<> { field1 tuple<bit<1>,Error while typechecking p4 file: test/program/ill-typed/header3.p4
+(check_valid_typedef_nesting) Invalid nesting of tuple<bit<1>, bit<1>> inside header H<> { field1 tuple<bit<1>, bit<1>> }
+Error while typechecking p4 file: test/program/ill-typed/header3.p4
 
 >>> Running typecheck test on test/program/ill-typed/implicit.p4
-
-bit<1>> }
 (coerce_type) Cannot coerce type int<32> to bit<32>
 Error while typechecking p4 file: test/program/ill-typed/implicit.p4
 
@@ -500,8 +498,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3359.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3363.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3378.p4
-(check_valid_type_nesting) Invalid nesting of package inside tuple<package,
-package>
+(check_valid_type_nesting) Invalid nesting of package {  } inside tuple<package {  }, package {  }>
 Error while typechecking p4 file: test/program/ill-typed/issue3378.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3442.p4
@@ -593,8 +590,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue394.p4
 Error while typechecking p4 file: test/program/ill-typed/issue401.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue407-1.p4
-(check_valid_typedef_nesting) Invalid nesting of error inside header H<> { x7 error; x8 bool; x9 enum myenum1; x10 header Ethernet_h { dstAddr bit<48>; srcAddr bit<48>; etherType bit<16> }; x11 header Ethernet_h { dstAddr bit<48>; srcAddr bit<48>; etherType bit<16> }[4]; x12 struct mystruct1 { a bit<4>; b bit<4> }; x13 struct mystruct2 { foo struct mystruct1 { a bit<4>; b bit<4> }; a bit<4>; b bit<4> }; x14 tuple<bit<8>,
-bit<16>> }
+(check_valid_typedef_nesting) Invalid nesting of error inside header H<> { x7 error; x8 bool; x9 enum myenum1; x10 header Ethernet_h { dstAddr bit<48>; srcAddr bit<48>; etherType bit<16> }; x11 header Ethernet_h { dstAddr bit<48>; srcAddr bit<48>; etherType bit<16> }[4]; x12 struct mystruct1 { a bit<4>; b bit<4> }; x13 struct mystruct2 { foo struct mystruct1 { a bit<4>; b bit<4> }; a bit<4>; b bit<4> }; x14 tuple<bit<8>, bit<16>> }
 Error while typechecking p4 file: test/program/ill-typed/issue407-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue413.p4
@@ -617,8 +613,7 @@ Error while parsing p4 file: test/program/ill-typed/issue4142.p4
 Error while typechecking p4 file: test/program/ill-typed/issue435.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue561-1.p4
-(coerce_type) Cannot coerce type seq<seq<int>,
-seq<int>> to header_union U { h1 header H1 { f bit<32> }; h2 header H2 { g bit<32> } }
+(coerce_type) Cannot coerce type seq<seq<int>, seq<int>> to header_union U { h1 header H1 { f bit<32> }; h2 header H2 { g bit<32> } }
 Error while typechecking p4 file: test/program/ill-typed/issue561-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue584.p4
@@ -638,7 +633,8 @@ Error while typechecking p4 file: test/program/ill-typed/issue764.p4
 Error while typechecking p4 file: test/program/ill-typed/issue774-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue774-2.p4
-Typecheck success: test/program/ill-typed/issue774-2.p4
+(infer_targs) Type variable __WILD_0 could not be inferred
+Error while typechecking p4 file: test/program/ill-typed/issue774-2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue803-1.p4
 (type_instantiation) Ingress is not an instance type
@@ -649,7 +645,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue803-1.p4
 Error while typechecking p4 file: test/program/ill-typed/issue807.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue816-1.p4
-(check_valid_constyp_nesting) Invalid nesting of package inside control ()
+(check_valid_constyp_nesting) Invalid nesting of package { control (), control () } inside control ()
 Error while typechecking p4 file: test/program/ill-typed/issue816-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue816.p4
@@ -686,7 +682,7 @@ parser error: File test/program/ill-typed/loop3-err.p4, line 51, characters 15-1
 Error while parsing p4 file: test/program/ill-typed/loop3-err.p4
 
 >>> Running typecheck test on test/program/ill-typed/methodArgDontcare.p4
-(coerce_type) Cannot coerce type int to any
+(infer_targs) Type variable __WILD_0 could not be inferred
 Error while typechecking p4 file: test/program/ill-typed/methodArgDontcare.p4
 
 >>> Running typecheck test on test/program/ill-typed/minWidth.p4
@@ -1003,4 +999,4 @@ Error while typechecking p4 file: test/program/ill-typed/virtual6.p4
 Error while typechecking p4 file: test/program/ill-typed/wrong-cast.p4
 
 Parser on file: [PASS] 219/252 (86.90%) [FAIL] 33/252 (13.10%)
-Typecheck: [PASS] 218/219 (99.54%) [FAIL] 1/219 (0.46%)
+Typecheck: [PASS] 219/219 (100.00%) [FAIL] 0/219 (0.00%)

@@ -88,7 +88,10 @@ let rec subst_typ (theta : Theta.t) (typ : Type.t) : Type.t =
   | ControlT params ->
       let params = List.map (subst_param theta) params in
       ControlT params
-  | PackageT | AnyT -> typ
+  | PackageT typs_inner ->
+      let typs_inner = List.map (subst_typ theta) typs_inner in
+      PackageT typs_inner
+  | AnyT -> typ
   | TableEnumT _ | TableStructT _ -> typ
   | SeqT typs_inner ->
       let typs_inner = List.map (subst_typ theta) typs_inner in
