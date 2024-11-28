@@ -387,9 +387,11 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
   | NewD (_id, typ_inner) ->
       check_valid_type' tset typ_inner;
       check_valid_typedef_nesting td typ_inner
-  | StructD (_id, tparams, fields) ->
+  | StructD (_id, tparams, tparams_hidden, fields) ->
       check_distinct_names tparams;
-      let tset = TIdSet.union tset (TIdSet.of_list tparams) in
+      let tset =
+        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
+      in
       let members, typs_inner = List.split fields in
       check_distinct_names members;
       List.iter
@@ -397,9 +399,11 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
           check_valid_type' tset typ_inner;
           check_valid_typedef_nesting td typ_inner)
         typs_inner
-  | HeaderD (_id, tparams, fields) ->
+  | HeaderD (_id, tparams, tparams_hidden, fields) ->
       check_distinct_names tparams;
-      let tset = TIdSet.union tset (TIdSet.of_list tparams) in
+      let tset =
+        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
+      in
       let members, typs_inner = List.split fields in
       check_distinct_names members;
       List.iter
@@ -407,9 +411,11 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
           check_valid_type' tset typ_inner;
           check_valid_typedef_nesting td typ_inner)
         typs_inner
-  | UnionD (_id, tparams, fields) ->
+  | UnionD (_id, tparams, tparams_hidden, fields) ->
       check_distinct_names tparams;
-      let tset = TIdSet.union tset (TIdSet.of_list tparams) in
+      let tset =
+        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
+      in
       let members, typs_inner = List.split fields in
       check_distinct_names members;
       List.iter
@@ -423,17 +429,24 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
       check_distinct_names members;
       check_valid_type' tset typ_inner;
       check_valid_typedef_nesting td typ_inner
-  | ExternD (_id, tparams, fdenv) ->
+  | ExternD (_id, tparams, tparams_hidden, fdenv) ->
       check_distinct_names tparams;
-      let tset = TIdSet.union tset (TIdSet.of_list tparams) in
+      let tset =
+        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
+      in
       Envs.FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
-  | ParserD (tparams, params) | ControlD (tparams, params) ->
+  | ParserD (tparams, tparams_hidden, params)
+  | ControlD (tparams, tparams_hidden, params) ->
       check_distinct_names tparams;
-      let tset = TIdSet.union tset (TIdSet.of_list tparams) in
+      let tset =
+        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
+      in
       List.iter (fun fd -> check_valid_param' tset fd) params
-  | PackageD (tparams, typs_inner) ->
+  | PackageD (tparams, tparams_hidden, typs_inner) ->
       check_distinct_names tparams;
-      let tset = TIdSet.union tset (TIdSet.of_list tparams) in
+      let tset =
+        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
+      in
       List.iter (check_valid_type' tset) typs_inner
 
 and check_valid_typedef_nesting (td : TypeDef.t) (typ_inner : Type.t) : unit =
@@ -743,17 +756,25 @@ and check_valid_funcdef (cursor : Ctx.cursor) (ctx : Ctx.t) (fd : FuncDef.t) :
 and check_valid_funcdef' (tset : TIdSet.t) (fd : FuncDef.t) : unit =
   match fd with
   | ActionD params -> check_valid_functyp' tset (ActionT params)
-  | ExternFunctionD (tparams, params, typ_ret) ->
-      let tset = TIdSet.union tset (TIdSet.of_list tparams) in
+  | ExternFunctionD (tparams, tparams_hidden, params, typ_ret) ->
+      let tset =
+        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
+      in
       check_valid_functyp' tset (ExternFunctionT (params, typ_ret))
-  | FunctionD (tparams, params, typ_ret) ->
-      let tset = TIdSet.union tset (TIdSet.of_list tparams) in
+  | FunctionD (tparams, tparams_hidden, params, typ_ret) ->
+      let tset =
+        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
+      in
       check_valid_functyp' tset (FunctionT (params, typ_ret))
-  | ExternMethodD (tparams, params, typ_ret) ->
-      let tset = TIdSet.union tset (TIdSet.of_list tparams) in
+  | ExternMethodD (tparams, tparams_hidden, params, typ_ret) ->
+      let tset =
+        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
+      in
       check_valid_functyp' tset (ExternMethodT (params, typ_ret))
-  | ExternAbstractMethodD (tparams, params, typ_ret) ->
-      let tset = TIdSet.union tset (TIdSet.of_list tparams) in
+  | ExternAbstractMethodD (tparams, tparams_hidden, params, typ_ret) ->
+      let tset =
+        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
+      in
       check_valid_functyp' tset (ExternAbstractMethodT (params, typ_ret))
   | ParserApplyMethodD params ->
       check_valid_functyp' tset (ParserApplyMethodT params)
@@ -844,7 +865,7 @@ and check_valid_consdef (cursor : Ctx.cursor) (ctx : Ctx.t) (cd : ConsDef.t) :
   check_valid_consdef' tset cd
 
 and check_valid_consdef' (tset : TIdSet.t) (cd : ConsDef.t) : unit =
-  let tparams, cparams, typ = cd in
-  let tset = TIdSet.union tset (TIdSet.of_list tparams) in
+  let tparams, tparams_hidden, cparams, typ = cd in
+  let tset = tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset in
   let ct = (cparams, typ) in
   check_valid_constyp' tset ct

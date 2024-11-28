@@ -378,21 +378,24 @@ and specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
   | SEnumD (id, typ_inner, fields) ->
       check_arity [];
       Types.SEnumT (id, typ_inner, fields)
-  | StructD (id, tparams, fields) ->
+  | StructD (id, tparams, tparams_hidden, fields) ->
+      let tparams = tparams @ tparams_hidden in
       check_arity tparams;
       let theta = List.combine tparams targs |> Subst.Theta.of_list in
       let members, typs_inner = List.split fields in
       let typs_inner = List.map (Subst.subst_typ theta) typs_inner in
       let fields = List.combine members typs_inner in
       Types.StructT (id, fields)
-  | HeaderD (id, tparams, fields) ->
+  | HeaderD (id, tparams, tparams_hidden, fields) ->
+      let tparams = tparams @ tparams_hidden in
       check_arity tparams;
       let theta = List.combine tparams targs |> Subst.Theta.of_list in
       let members, typs_inner = List.split fields in
       let typs_inner = List.map (Subst.subst_typ theta) typs_inner in
       let fields = List.combine members typs_inner in
       Types.HeaderT (id, fields)
-  | UnionD (id, tparams, fields) ->
+  | UnionD (id, tparams, tparams_hidden, fields) ->
+      let tparams = tparams @ tparams_hidden in
       check_arity tparams;
       let theta = List.combine tparams targs |> Subst.Theta.of_list in
       let members, typs_inner = List.split fields in
@@ -400,22 +403,26 @@ and specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
       let fields = List.combine members typs_inner in
       Types.UnionT (id, fields)
   (* Object types are generic *)
-  | ExternD (id, tparams, fdenv) ->
+  | ExternD (id, tparams, tparams_hidden, fdenv) ->
+      let tparams = tparams @ tparams_hidden in
       check_arity tparams;
       let theta = List.combine tparams targs |> Subst.Theta.of_list in
       let fdenv = Envs.FDEnv.map (Subst.subst_funcdef theta) fdenv in
       Types.ExternT (id, fdenv)
-  | ParserD (tparams, params) ->
+  | ParserD (tparams, tparams_hidden, params) ->
+      let tparams = tparams @ tparams_hidden in
       check_arity tparams;
       let theta = List.combine tparams targs |> Subst.Theta.of_list in
       let params = List.map (Subst.subst_param theta) params in
       Types.ParserT params
-  | ControlD (tparams, params) ->
+  | ControlD (tparams, tparams_hidden, params) ->
+      let tparams = tparams @ tparams_hidden in
       check_arity tparams;
       let theta = List.combine tparams targs |> Subst.Theta.of_list in
       let params = List.map (Subst.subst_param theta) params in
       Types.ControlT params
-  | PackageD (tparams, typs_inner) ->
+  | PackageD (tparams, tparams_hidden, typs_inner) ->
+      let tparams = tparams @ tparams_hidden in
       check_arity tparams;
       let theta = List.combine tparams targs |> Subst.Theta.of_list in
       let typs_inner = List.map (Subst.subst_typ theta) typs_inner in
@@ -433,20 +440,36 @@ and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) :
   in
   let fresh_tid () = "__WILD_" ^ string_of_int (Ctx.fresh ()) in
   let fresh_targ tid = Types.VarT tid in
-  let specialize_funcdef' funcDef tparams targs params typ_ret =
+  let specialize_funcdef' funcDef tparams tparams_hidden targs params typ_ret =
     let targs, tids_fresh =
       (* Insert fresh type variables if omitted
          Otherwise, check the arity *)
-      if List.length tparams > 0 && List.length targs = 0 then
+      if
+        List.length targs = 0
+        && List.length tparams + List.length tparams_hidden > 0
+      then
         let tids_fresh =
-          List.init (List.length tparams) (fun _ -> fresh_tid ())
+          List.init
+            (List.length tparams + List.length tparams_hidden)
+            (fun _ -> fresh_tid ())
         in
         let targs = List.map fresh_targ tids_fresh in
+        (targs, Some tids_fresh)
+      else if
+        List.length targs > 0
+        && List.length tparams = List.length targs
+        && List.length tparams_hidden > 0
+      then
+        let tids_fresh =
+          List.init (List.length tparams_hidden) (fun _ -> fresh_tid ())
+        in
+        let targs = targs @ List.map fresh_targ tids_fresh in
         (targs, Some tids_fresh)
       else (
         check_arity tparams targs;
         (targs, None))
     in
+    let tparams = tparams @ tparams_hidden in
     let theta = List.combine tparams targs |> Subst.Theta.of_list in
     let params = List.map (Subst.subst_param theta) params in
     let typ_ret = Subst.subst_typ theta typ_ret in
@@ -458,20 +481,20 @@ and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) :
       check_arity [] targs;
       (ActionT params, None)
   (* extern function, function, and extern (abstract) method are generic *)
-  | ExternFunctionD (tparams, params, typ_ret) ->
+  | ExternFunctionD (tparams, tparams_hidden, params, typ_ret) ->
       let funcDef params typ_ret = Types.ExternFunctionT (params, typ_ret) in
-      specialize_funcdef' funcDef tparams targs params typ_ret
-  | FunctionD (tparams, params, typ_ret) ->
+      specialize_funcdef' funcDef tparams tparams_hidden targs params typ_ret
+  | FunctionD (tparams, tparams_hidden, params, typ_ret) ->
       let funcDef params typ_ret = Types.FunctionT (params, typ_ret) in
-      specialize_funcdef' funcDef tparams targs params typ_ret
-  | ExternMethodD (tparams, params, typ_ret) ->
+      specialize_funcdef' funcDef tparams tparams_hidden targs params typ_ret
+  | ExternMethodD (tparams, tparams_hidden, params, typ_ret) ->
       let funcDef params typ_ret = Types.ExternMethodT (params, typ_ret) in
-      specialize_funcdef' funcDef tparams targs params typ_ret
-  | ExternAbstractMethodD (tparams, params, typ_ret) ->
+      specialize_funcdef' funcDef tparams tparams_hidden targs params typ_ret
+  | ExternAbstractMethodD (tparams, tparams_hidden, params, typ_ret) ->
       let funcDef params typ_ret =
         Types.ExternAbstractMethodT (params, typ_ret)
       in
-      specialize_funcdef' funcDef tparams targs params typ_ret
+      specialize_funcdef' funcDef tparams tparams_hidden targs params typ_ret
   (* parser and control apply methods are not generic *)
   | ParserApplyMethodD params ->
       check_arity [] targs;
@@ -492,32 +515,38 @@ and specialize_consdef (cd : ConsDef.t) (targs : Type.t list) :
   in
   let fresh_tid () = "__WILD_" ^ string_of_int (Ctx.fresh ()) in
   let fresh_targ tid = Types.VarT tid in
-  let tparams, cparams, typ = cd in
+  let tparams, tparams_hidden, cparams, typ = cd in
   (* Insert fresh type variables if omitted
-     Otherwise, check the arity and insert fresh type variables for any types *)
+     Otherwise, check the arity *)
   let targs, tids_fresh =
-    if List.length tparams > 0 && List.length targs = 0 then
+    (* Insert fresh type variables if omitted
+       Otherwise, check the arity *)
+    if
+      List.length targs = 0
+      && List.length tparams + List.length tparams_hidden > 0
+    then
       let tids_fresh =
-        List.init (List.length tparams) (fun _ -> fresh_tid ())
+        List.init
+          (List.length tparams + List.length tparams_hidden)
+          (fun _ -> fresh_tid ())
       in
       let targs = List.map fresh_targ tids_fresh in
       (targs, Some tids_fresh)
+    else if
+      List.length targs > 0
+      && List.length tparams = List.length targs
+      && List.length tparams_hidden > 0
+    then
+      let tids_fresh =
+        List.init (List.length tparams_hidden) (fun _ -> fresh_tid ())
+      in
+      let targs = targs @ List.map fresh_targ tids_fresh in
+      (targs, Some tids_fresh)
     else (
       check_arity tparams targs;
-      let targs, tids_fresh =
-        List.fold_left
-          (fun (targs, tids_fresh) targ ->
-            match (targ : Type.t) with
-            | AnyT ->
-                let tid_fresh = fresh_tid () in
-                let targ_fresh = fresh_targ tid_fresh in
-                (targs @ [ targ_fresh ], tids_fresh @ [ tid_fresh ])
-            | _ -> (targs @ [ targ ], tids_fresh))
-          ([], []) targs
-      in
-      let tids_fresh = if tids_fresh = [] then None else Some tids_fresh in
-      (targs, tids_fresh))
+      (targs, None))
   in
+  let tparams = tparams @ tparams_hidden in
   let theta = List.combine tparams targs |> Subst.Theta.of_list in
   let cparams = List.map (Subst.subst_cparam theta) cparams in
   let typ = Subst.subst_typ theta typ in
@@ -3347,7 +3376,7 @@ and type_instantiation_init_extern_abstract_method_decl (cursor : Ctx.cursor)
   let ctx' = Ctx.set_localkind (Ctx.ExternAbstractMethod typ_ret.it) ctx' in
   (* Typecheck and add parameters to the local context *)
   (* (BATMAN) *)
-  let params_il, _tids_fresh =
+  let params_il, tids_fresh =
     List.fold_left
       (fun (params_il, tids_fresh) param ->
         let param_il, tids_fresh_param = type_param Ctx.Local ctx' param in
@@ -3355,13 +3384,12 @@ and type_instantiation_init_extern_abstract_method_decl (cursor : Ctx.cursor)
       ([], []) params
   in
   let ctx' = Ctx.add_params Ctx.Local params_il ctx' in
-  let ctx', tparams =
-    let tparams_fresh =
+  let ctx', tparams_hidden =
+    let tparams_hidden =
       List.map (fun tid_fresh -> tid_fresh $ no_info) tids_fresh
     in
-    let ctx' = Ctx.add_tparams Ctx.Local tparams_fresh ctx' in
-    let tparams = tparams @ tparams_fresh in
-    (ctx', tparams)
+    let ctx' = Ctx.add_tparams Ctx.Local tparams_hidden ctx' in
+    (ctx', tparams_hidden)
   in
   (* Typecheck body *)
   let _ctx', flow, block_il = type_block Ctx.Local ctx' Cont body in
@@ -3373,12 +3401,13 @@ and type_instantiation_init_extern_abstract_method_decl (cursor : Ctx.cursor)
   (* Create a function definition *)
   let fd =
     let tparams = List.map it tparams in
+    let tparams_hidden = List.map it tparams_hidden in
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ExternMethodD (tparams, params, typ_ret.it)
+    Types.ExternMethodD (tparams, tparams_hidden, params, typ_ret.it)
   in
   let decl_il =
     Il.Ast.FuncD { id; typ_ret; tparams; params = params_il; body = block_il }
@@ -3477,10 +3506,16 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
                   (match (fd_extern : FuncDef.t option) with
                   | Some
                       (ExternAbstractMethodD
-                        (tparams_extern, params_extern, typ_ret_extern)) ->
+                        ( tparams_extern,
+                          tparams_hidden_extern,
+                          params_extern,
+                          typ_ret_extern )) ->
                       let fd_extern =
                         Types.ExternMethodD
-                          (tparams_extern, params_extern, typ_ret_extern)
+                          ( tparams_extern,
+                            tparams_hidden_extern,
+                            params_extern,
+                            typ_ret_extern )
                       in
                       Eq.eq_funcdef_alpha fd_extern fd_abstract
                   | _ -> false)
@@ -3609,18 +3644,13 @@ and type_struct_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         (typs @ [ typ ], tids_fresh @ tids_fresh_typ))
       ([], []) typs
   in
-  let tparams =
-    let tparams_fresh =
-      List.map (fun tid_fresh -> tid_fresh $ no_info) tids_fresh
-    in
-    tparams @ tparams_fresh
-  in
   let td =
     let tparams = List.map it tparams in
+    let tparams_hidden = tids_fresh in
     let members = List.map it members in
     let typs = List.map it typs in
     let fields = List.combine members typs in
-    Types.StructD (id.it, tparams, fields)
+    Types.StructD (id.it, tparams, tparams_hidden, fields)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -3652,18 +3682,13 @@ and type_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         (typs @ [ typ ], tids_fresh @ tids_fresh_typ))
       ([], []) typs
   in
-  let tparams =
-    let tparams_fresh =
-      List.map (fun tid_fresh -> tid_fresh $ no_info) tids_fresh
-    in
-    tparams @ tparams_fresh
-  in
   let td =
     let tparams = List.map it tparams in
+    let tparams_hidden = tids_fresh in
     let members = List.map it members in
     let typs = List.map it typs in
     let fields = List.combine members typs in
-    Types.HeaderD (id.it, tparams, fields)
+    Types.HeaderD (id.it, tparams, tparams_hidden, fields)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -3695,18 +3720,13 @@ and type_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         (typs @ [ typ ], tids_fresh @ tids_fresh_typ))
       ([], []) typs
   in
-  let tparams =
-    let tparams_fresh =
-      List.map (fun tid_fresh -> tid_fresh $ no_info) tids_fresh
-    in
-    tparams @ tparams_fresh
-  in
   let td =
     let tparams = List.map it tparams in
+    let tparams_hidden = tids_fresh in
     let members = List.map it members in
     let typs = List.map it typs in
     let fields = List.combine members typs in
-    Types.UnionD (id.it, tparams, fields)
+    Types.UnionD (id.it, tparams, tparams_hidden, fields)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -3978,13 +3998,12 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       ([], []) params
   in
   let ctx' = Ctx.add_params Ctx.Local params_il ctx' in
-  let ctx', tparams =
-    let tparams_fresh =
+  let ctx', tparams_hidden =
+    let tparams_hidden =
       List.map (fun tid_fresh -> tid_fresh $ no_info) tids_fresh
     in
-    let ctx' = Ctx.add_tparams Ctx.Local tparams_fresh ctx' in
-    let tparams = tparams @ tparams_fresh in
-    (ctx', tparams)
+    let ctx' = Ctx.add_tparams Ctx.Local tparams_hidden ctx' in
+    (ctx', tparams_hidden)
   in
   (* Typecheck body *)
   let _ctx', flow, block_il = type_block Ctx.Local ctx' Cont body in
@@ -3996,12 +4015,13 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   (* Create a function definition *)
   let fd =
     let tparams = List.map it tparams in
+    let tparams_hidden = List.map it tparams_hidden in
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.FunctionD (tparams, params, typ_ret.it)
+    Types.FunctionD (tparams, tparams_hidden, params, typ_ret.it)
   in
   WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
@@ -4039,21 +4059,16 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
         (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
       ([], []) params
   in
-  let tparams =
-    let tparams_fresh =
-      List.map (fun tid_fresh -> tid_fresh $ no_info) tids_fresh
-    in
-    tparams @ tparams_fresh
-  in
   (* Create an extern function definition *)
   let fd =
     let tparams = List.map it tparams in
+    let tparams_hidden = tids_fresh in
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ExternFunctionD (tparams, params, typ_ret.it)
+    Types.ExternFunctionD (tparams, tparams_hidden, params, typ_ret.it)
   in
   WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
@@ -4088,7 +4103,7 @@ and type_extern_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let tparams = Ctx.get_tparams cursor ctx in
   let cid = FId.to_fid id cparams in
   (* (REAL BATMAN) *)
-  let cparams_il, _tids_fresh =
+  let cparams_il, tids_fresh =
     List.fold_left
       (fun (cparams_il, tids_fresh) cparam ->
         let cparam_il, tids_fresh_cparam = type_cparam cursor ctx cparam in
@@ -4099,12 +4114,13 @@ and type_extern_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let typ_args = List.map (fun tparam -> Types.VarT tparam) tparams in
   let typ = specialize_typedef td typ_args in
   let cd =
+    let tparams_hidden = tids_fresh in
     let cparams =
       List.map it cparams_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    (tparams, cparams, typ)
+    (tparams, tparams_hidden, cparams, typ)
   in
   WF.check_valid_consdef cursor ctx cd;
   let ctx = Ctx.add_consdef cid cd ctx in
@@ -4145,20 +4161,15 @@ and type_extern_abstract_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
       ([], []) params
   in
   (* Create an extern abstract method definition *)
-  let tparams =
-    let tparams_fresh =
-      List.map (fun tid_fresh -> tid_fresh $ no_info) tids_fresh
-    in
-    tparams @ tparams_fresh
-  in
   let fd =
     let tparams = List.map it tparams in
+    let tparams_hidden = tids_fresh in
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ExternAbstractMethodD (tparams, params, typ_ret.it)
+    Types.ExternAbstractMethodD (tparams, tparams_hidden, params, typ_ret.it)
   in
   WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
@@ -4193,21 +4204,16 @@ and type_extern_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
       ([], []) params
   in
-  let tparams =
-    let tparams_fresh =
-      List.map (fun tid_fresh -> tid_fresh $ no_info) tids_fresh
-    in
-    tparams @ tparams_fresh
-  in
   (* Create an extern method definition *)
   let fd =
     let tparams = List.map it tparams in
+    let tparams_hidden = tids_fresh in
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ExternMethodD (tparams, params, typ_ret.it)
+    Types.ExternMethodD (tparams, tparams_hidden, params, typ_ret.it)
   in
   WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
@@ -4256,7 +4262,7 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
      and add it to the context *)
   let td =
     let tparams = List.map it tparams in
-    Types.ExternD (id.it, tparams, ctx'.block.fdenv)
+    Types.ExternD (id.it, tparams, [], ctx'.block.fdenv)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -4351,22 +4357,17 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
       ([], []) params
   in
-  let tparams =
-    let tparams_fresh =
-      List.map (fun tid_fresh -> tid_fresh $ no_info) tids_fresh
-    in
-    tparams @ tparams_fresh
-  in
   (* Create a parser type definition
      and add it to the context *)
   let td =
     let tparams = List.map it tparams in
+    let tparams_hidden = tids_fresh in
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ParserD (tparams, params)
+    Types.ParserD (tparams, tparams_hidden, params)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -4508,7 +4509,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    ([], cparams, typ)
+    ([], [], cparams, typ)
   in
   WF.check_valid_consdef Ctx.Block ctx cd;
   let ctx = Ctx.add_consdef cid cd ctx in
@@ -5459,22 +5460,17 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
       ([], []) params
   in
-  let tparams =
-    let tparams_fresh =
-      List.map (fun tid_fresh -> tid_fresh $ no_info) tids_fresh
-    in
-    tparams @ tparams_fresh
-  in
   (* Create a control type definition
      and add it to the context *)
   let td =
     let tparams = List.map it tparams in
+    let tparams_hidden = tids_fresh in
     let params =
       List.map it params_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ControlD (tparams, params)
+    Types.ControlD (tparams, tparams_hidden, params)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -5558,7 +5554,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    ([], cparams, typ)
+    ([], [], cparams, typ)
   in
   WF.check_valid_consdef Ctx.Block ctx cd;
   let ctx = Ctx.add_consdef cid cd ctx in
@@ -5603,31 +5599,33 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
         (cparams_il @ [ cparam_il ], tids_fresh @ tids_fresh_cparam))
       ([], []) cparams
   in
-  let tparams =
-    let tparams_fresh =
-      List.map (fun tid_fresh -> tid_fresh $ no_info) tids_fresh
-    in
-    tparams @ tparams_fresh
+  let tparams_hidden =
+    List.map (fun tid_fresh -> tid_fresh $ no_info) tids_fresh
   in
   let td =
     let tparams = List.map it tparams in
+    let tparams_hidden = List.map it tparams_hidden in
     let typs_inner =
       List.map it cparams_il
       |> List.map (fun (_, _, typ_inner, _, _) -> typ_inner.it)
     in
-    Types.PackageD (tparams, typs_inner)
+    Types.PackageD (tparams, tparams_hidden, typs_inner)
   in
   WF.check_valid_typedef cursor ctx td;
-  let typ_args = List.map (fun tparam -> Types.VarT tparam.it) tparams in
+  let typ_args =
+    List.map (fun tparam -> Types.VarT tparam.it) tparams
+    @ List.map (fun tparam_hidden -> Types.VarT tparam_hidden.it) tparams_hidden
+  in
   let typ = specialize_typedef td typ_args in
   let cd =
     let tparams = List.map it tparams in
+    let tparams_hidden = List.map it tparams_hidden in
     let cparams =
       List.map it cparams_il
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    (tparams, cparams, typ)
+    (tparams, tparams_hidden, cparams, typ)
   in
   WF.check_valid_consdef Ctx.Block ctx cd;
   (td, cd, tparams, cparams_il)

@@ -160,42 +160,50 @@ and subst_functyp (theta : Theta.t) (ft : Types.functyp) : Types.functyp =
 
 and subst_funcdef (theta : Theta.t) (fd : Types.funcdef) : Types.funcdef =
   let subst_funcdef' (theta : Theta.t) (tparams : Types.tparam list)
-      (params : Types.param list) (typ_ret : Type.t) :
-      Types.tparam list * Types.param list * Type.t =
+      (tparams_hidden : Types.tparam list) (params : Types.param list)
+      (typ_ret : Type.t) :
+      Types.tparam list * Types.tparam list * Types.param list * Type.t =
     let frees_in =
       List.map Free.free_param params @ [ Free.free_typ typ_ret ]
       |> List.fold_left TIdSet.union TIdSet.empty
     in
     let frees_in = TIdSet.diff frees_in (TIdSet.of_list tparams) in
-    let theta, tparams = subst_forall theta tparams frees_in in
+    let theta, tparams =
+      subst_forall theta (tparams @ tparams_hidden) frees_in
+    in
+    let tparams, tparams_hidden =
+      let is_hidden i = i >= List.length tparams - List.length tparams_hidden in
+      ( List.filteri (fun i _ -> not (is_hidden i)) tparams,
+        List.filteri (fun i _ -> is_hidden i) tparams )
+    in
     let params = List.map (subst_param theta) params in
     let typ_ret = subst_typ theta typ_ret in
-    (tparams, params, typ_ret)
+    (tparams, tparams_hidden, params, typ_ret)
   in
   match fd with
   | ActionD params ->
       let params = List.map (subst_param theta) params in
       ActionD params
-  | ExternFunctionD (tparams, params, typ_ret) ->
-      let tparams, params, typ_ret =
-        subst_funcdef' theta tparams params typ_ret
+  | ExternFunctionD (tparams, tparams_hidden, params, typ_ret) ->
+      let tparams, tparams_hidden, params, typ_ret =
+        subst_funcdef' theta tparams tparams_hidden params typ_ret
       in
-      ExternFunctionD (tparams, params, typ_ret)
-  | FunctionD (tparams, params, typ_ret) ->
-      let tparams, params, typ_ret =
-        subst_funcdef' theta tparams params typ_ret
+      ExternFunctionD (tparams, tparams_hidden, params, typ_ret)
+  | FunctionD (tparams, tparams_hidden, params, typ_ret) ->
+      let tparams, tparams_hidden, params, typ_ret =
+        subst_funcdef' theta tparams tparams_hidden params typ_ret
       in
-      FunctionD (tparams, params, typ_ret)
-  | ExternMethodD (tparams, params, typ_ret) ->
-      let tparams, params, typ_ret =
-        subst_funcdef' theta tparams params typ_ret
+      FunctionD (tparams, tparams_hidden, params, typ_ret)
+  | ExternMethodD (tparams, tparams_hidden, params, typ_ret) ->
+      let tparams, tparams_hidden, params, typ_ret =
+        subst_funcdef' theta tparams tparams_hidden params typ_ret
       in
-      ExternMethodD (tparams, params, typ_ret)
-  | ExternAbstractMethodD (tparams, params, typ_ret) ->
-      let tparams, params, typ_ret =
-        subst_funcdef' theta tparams params typ_ret
+      ExternMethodD (tparams, tparams_hidden, params, typ_ret)
+  | ExternAbstractMethodD (tparams, tparams_hidden, params, typ_ret) ->
+      let tparams, tparams_hidden, params, typ_ret =
+        subst_funcdef' theta tparams tparams_hidden params typ_ret
       in
-      ExternAbstractMethodD (tparams, params, typ_ret)
+      ExternAbstractMethodD (tparams, tparams_hidden, params, typ_ret)
   | ParserApplyMethodD params ->
       let params = List.map (subst_param theta) params in
       ParserApplyMethodD params

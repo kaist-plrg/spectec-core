@@ -2756,7 +2756,9 @@ Typecheck success: test/program/well-typed/spec-ex34.p4
 Typecheck success: test/program/well-typed/spec-issue1060.p4
 
 >>> Running typecheck test on test/program/well-typed/specIssue884.p4
-Typecheck success: test/program/well-typed/specIssue884.p4
+(coerce_types_binary) Cannot coerce types int and bool
+(infer_targs) Type variable __WILD_3 could not be inferred
+Error while typechecking p4 file: test/program/well-typed/specIssue884.p4
 
 >>> Running typecheck test on test/program/well-typed/specialization.p4
 Typecheck success: test/program/well-typed/specialization.p4
@@ -3014,5 +3016,4 @@ Typecheck success: test/program/well-typed/xdp_vlan_push_pop_ebpf-kernel.p4
 Typecheck success: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1004/1004 (100.00%) [FAIL] 0/1004 (0.00%)
-Typecheck: [PASS] 1003/1004 (99.90%) [FAIL] 1/1004 (0.10%)
-(coerce_types_binary) Cannot coerce types int and bool
+Typecheck: [PASS] 1002/1004 (99.80%) [FAIL] 2/1004 (0.20%)

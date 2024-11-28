@@ -67,14 +67,14 @@ and typdef =
   | EnumD of L.id' * L.member' list
   | SEnumD of L.id' * typ * (L.member' * Value.t) list
   (* Aggregate type definitions *)
-  | StructD of L.id' * tparam list * (L.member' * typ) list
-  | HeaderD of L.id' * tparam list * (L.member' * typ) list
-  | UnionD of L.id' * tparam list * (L.member' * typ) list
+  | StructD of L.id' * tparam list * tparam list * (L.member' * typ) list
+  | HeaderD of L.id' * tparam list * tparam list * (L.member' * typ) list
+  | UnionD of L.id' * tparam list * tparam list * (L.member' * typ) list
   (* Object type definitions *)
-  | ExternD of L.id' * tparam list * funcdef FIdMap.t
-  | ParserD of tparam list * param list
-  | ControlD of tparam list * param list
-  | PackageD of tparam list * typ list
+  | ExternD of L.id' * tparam list * tparam list * funcdef FIdMap.t
+  | ParserD of tparam list * tparam list * param list
+  | ControlD of tparam list * tparam list * param list
+  | PackageD of tparam list * tparam list * typ list
 
 (* Function types *)
 and functyp =
@@ -91,10 +91,10 @@ and functyp =
 (* Function definitions *)
 and funcdef =
   | ActionD of param list
-  | ExternFunctionD of tparam list * param list * typ
-  | FunctionD of tparam list * param list * typ
-  | ExternMethodD of tparam list * param list * typ
-  | ExternAbstractMethodD of tparam list * param list * typ
+  | ExternFunctionD of tparam list * tparam list * param list * typ
+  | FunctionD of tparam list * tparam list * param list * typ
+  | ExternMethodD of tparam list * tparam list * param list * typ
+  | ExternAbstractMethodD of tparam list * tparam list * param list * typ
   | ParserApplyMethodD of param list
   | ControlApplyMethodD of param list
 
@@ -104,7 +104,7 @@ type constyp = param list * typ
 
 (* Constructor definitions *)
 
-type consdef = tparam list * param list * typ
+type consdef = tparam list * tparam list * param list * typ
 
 (* Pretty-printers *)
 
@@ -204,28 +204,33 @@ and pp_typdef fmt typdef =
       F.fprintf fmt "enum<%a> %a { %a }" pp_typ typ P.pp_id' id
         (P.pp_pairs P.pp_member' Value.pp " = " ", ")
         fields
-  | StructD (id, tparams, fields) ->
-      F.fprintf fmt "struct %a<%a> { %a }" P.pp_id' id pp_tparams tparams
+  | StructD (id, tparams, tparams_hidden, fields) ->
+      F.fprintf fmt "struct %a<%a><%a> { %a }" P.pp_id' id pp_tparams tparams
+        pp_tparams tparams_hidden
         (P.pp_pairs P.pp_member' pp_typ " " "; ")
         fields
-  | HeaderD (id, tparams, fields) ->
-      F.fprintf fmt "header %a<%a> { %a }" P.pp_id' id pp_tparams tparams
+  | HeaderD (id, tparams, tparams_hidden, fields) ->
+      F.fprintf fmt "header %a<%a><%a> { %a }" P.pp_id' id pp_tparams tparams
+        pp_tparams tparams_hidden
         (P.pp_pairs P.pp_member' pp_typ " " "; ")
         fields
-  | UnionD (id, tparams, fields) ->
-      F.fprintf fmt "header_union %a<%a> { %a }" P.pp_id' id pp_tparams tparams
+  | UnionD (id, tparams, tparams_hidden, fields) ->
+      F.fprintf fmt "header_union %a<%a><%a> { %a }" P.pp_id' id pp_tparams
+        tparams pp_tparams tparams_hidden
         (P.pp_pairs P.pp_member' pp_typ " " "; ")
         fields
-  | ExternD (id, tparams, fdenv) ->
-      F.fprintf fmt "extern %a<%a> %a" P.pp_id' id pp_tparams tparams
-        (FIdMap.pp pp_funcdef) fdenv
-  | ParserD (tparams, params) ->
-      F.fprintf fmt "parser <%a>(%a)" pp_tparams tparams pp_params params
-  | ControlD (tparams, params) ->
-      F.fprintf fmt "control <%a>(%a)" pp_tparams tparams pp_params params
-  | PackageD (tparams, typs) ->
-      F.fprintf fmt "package <%a> { %a }" pp_tparams tparams
-        (P.pp_list pp_typ ", ") typs
+  | ExternD (id, tparams, tparams_hidden, fdenv) ->
+      F.fprintf fmt "extern %a<%a><%a> %a" P.pp_id' id pp_tparams tparams
+        pp_tparams tparams_hidden (FIdMap.pp pp_funcdef) fdenv
+  | ParserD (tparams, tparams_hidden, params) ->
+      F.fprintf fmt "parser <%a><%a>(%a)" pp_tparams tparams pp_tparams
+        tparams_hidden pp_params params
+  | ControlD (tparams, tparams_hidden, params) ->
+      F.fprintf fmt "control <%a><%a>(%a)" pp_tparams tparams pp_tparams
+        tparams_hidden pp_params params
+  | PackageD (tparams, tparams_hidden, typs) ->
+      F.fprintf fmt "package <%a><%a> { %a }" pp_tparams tparams pp_tparams
+        tparams_hidden (P.pp_list pp_typ ", ") typs
 
 (* Function types *)
 
@@ -254,18 +259,18 @@ and pp_functyp fmt functyp =
 and pp_funcdef fmt funcdef =
   match funcdef with
   | ActionD params -> F.fprintf fmt "action(%a)" pp_params params
-  | ExternFunctionD (tparams, params, typ) ->
-      F.fprintf fmt "extern_func<%a>(%a) -> %a" pp_tparams tparams pp_params
-        params pp_typ typ
-  | FunctionD (tparams, params, typ) ->
-      F.fprintf fmt "func<%a>(%a) -> %a" pp_tparams tparams pp_params params
-        pp_typ typ
-  | ExternMethodD (tparams, params, typ) ->
-      F.fprintf fmt "extern_method<%a>(%a) -> %a" pp_tparams tparams pp_params
-        params pp_typ typ
-  | ExternAbstractMethodD (tparams, params, typ) ->
-      F.fprintf fmt "extern_abstract_method<%a>(%a) -> %a" pp_tparams tparams
-        pp_params params pp_typ typ
+  | ExternFunctionD (tparams, tparams_hidden, params, typ) ->
+      F.fprintf fmt "extern_func<%a><%a>(%a) -> %a" pp_tparams tparams
+        pp_tparams tparams_hidden pp_params params pp_typ typ
+  | FunctionD (tparams, tparams_hidden, params, typ) ->
+      F.fprintf fmt "func<%a><%a>(%a) -> %a" pp_tparams tparams pp_tparams
+        tparams_hidden pp_params params pp_typ typ
+  | ExternMethodD (tparams, tparams_hidden, params, typ) ->
+      F.fprintf fmt "extern_method<%a><%a>(%a) -> %a" pp_tparams tparams
+        pp_tparams tparams_hidden pp_params params pp_typ typ
+  | ExternAbstractMethodD (tparams, tparams_hidden, params, typ) ->
+      F.fprintf fmt "extern_abstract_method<%a><%a>(%a) -> %a" pp_tparams
+        tparams pp_tparams tparams_hidden pp_params params pp_typ typ
   | ParserApplyMethodD params ->
       F.fprintf fmt "parser_apply(%a)" pp_params params
   | ControlApplyMethodD params ->
@@ -280,9 +285,9 @@ let pp_constyp fmt constyp =
 (* Constructor definitions *)
 
 let pp_consdef fmt consdef =
-  let tparams, cparams, typ = consdef in
-  F.fprintf fmt "constructor<%a> (%a) -> %a" pp_tparams tparams pp_cparams
-    cparams pp_typ typ
+  let tparams, tparams_hidden, cparams, typ = consdef in
+  F.fprintf fmt "constructor<%a><%a> (%a) -> %a" pp_tparams tparams pp_tparams
+    tparams_hidden pp_cparams cparams pp_typ typ
 
 (* Equality *)
 
@@ -369,15 +374,16 @@ and eq_typ typ_a typ_b =
 and eq_funcdef funcdef_a funcdef_b =
   match (funcdef_a, funcdef_b) with
   | ActionD params_a, ActionD params_b -> eq_params params_a params_b
-  | ( ExternFunctionD (tparams_a, params_a, typ_a),
-      ExternFunctionD (tparams_b, params_b, typ_b) )
-  | ( FunctionD (tparams_a, params_a, typ_a),
-      FunctionD (tparams_b, params_b, typ_b) )
-  | ( ExternMethodD (tparams_a, params_a, typ_a),
-      ExternMethodD (tparams_b, params_b, typ_b) )
-  | ( ExternAbstractMethodD (tparams_a, params_a, typ_a),
-      ExternAbstractMethodD (tparams_b, params_b, typ_b) ) ->
+  | ( ExternFunctionD (tparams_a, tparams_hidden_a, params_a, typ_a),
+      ExternFunctionD (tparams_b, tparams_hidden_b, params_b, typ_b) )
+  | ( FunctionD (tparams_a, tparams_hidden_a, params_a, typ_a),
+      FunctionD (tparams_b, tparams_hidden_b, params_b, typ_b) )
+  | ( ExternMethodD (tparams_a, tparams_hidden_a, params_a, typ_a),
+      ExternMethodD (tparams_b, tparams_hidden_b, params_b, typ_b) )
+  | ( ExternAbstractMethodD (tparams_a, tparams_hidden_a, params_a, typ_a),
+      ExternAbstractMethodD (tparams_b, tparams_hidden_b, params_b, typ_b) ) ->
       eq_tparams tparams_a tparams_b
+      && eq_tparams tparams_hidden_a tparams_hidden_b
       && eq_params params_a params_b
       && eq_typ typ_a typ_b
   | ParserApplyMethodD params_a, ParserApplyMethodD params_b
@@ -540,18 +546,20 @@ module FuncDef = struct
 
   let get_params = function
     | ActionD params
-    | ExternFunctionD (_, params, _)
-    | FunctionD (_, params, _)
-    | ExternMethodD (_, params, _)
-    | ExternAbstractMethodD (_, params, _)
+    | ExternFunctionD (_, _, params, _)
+    | FunctionD (_, _, params, _)
+    | ExternMethodD (_, _, params, _)
+    | ExternAbstractMethodD (_, _, params, _)
     | ParserApplyMethodD params
     | ControlApplyMethodD params ->
         params
 
   let get_typ_ret = function
     | ActionD _ -> VoidT
-    | ExternFunctionD (_, _, typ_ret) | FunctionD (_, _, typ_ret) -> typ_ret
-    | ExternMethodD (_, _, typ_ret) | ExternAbstractMethodD (_, _, typ_ret) ->
+    | ExternFunctionD (_, _, _, typ_ret) | FunctionD (_, _, _, typ_ret) ->
+        typ_ret
+    | ExternMethodD (_, _, _, typ_ret) | ExternAbstractMethodD (_, _, _, typ_ret)
+      ->
         typ_ret
     | ParserApplyMethodD _ | ControlApplyMethodD _ -> VoidT
 end

@@ -72,7 +72,10 @@ and eq_param_alpha (param_a : Types.param) (param_b : Types.param) : bool =
   Lang.Eq.eq_dir' dir_a dir_b && eq_typ_alpha typ_a typ_b
 
 and eq_funcdef_alpha (funcdef_a : FuncDef.t) (funcdef_b : FuncDef.t) : bool =
-  let eq_funcdef' tparams_a params_a typ_ret_a tparams_b params_b typ_ret_b =
+  let eq_funcdef' tparams_a tparams_hidden_a params_a typ_ret_a tparams_b
+      tparams_hidden_b params_b typ_ret_b =
+    let tparams_a = tparams_a @ tparams_hidden_a in
+    let tparams_b = tparams_b @ tparams_hidden_b in
     assert (List.length tparams_a = List.length tparams_b);
     let frees_a =
       Free.free_fd funcdef_a |> TIdSet.union (TIdSet.of_list tparams_a)
@@ -111,16 +114,18 @@ and eq_funcdef_alpha (funcdef_a : FuncDef.t) (funcdef_b : FuncDef.t) : bool =
     && eq_typ_alpha typ_ret_a typ_ret_b
   in
   match (funcdef_a, funcdef_b) with
-  | ( ExternFunctionD (tparams_a, params_a, typ_a),
-      ExternFunctionD (tparams_b, params_b, typ_b) )
-  | ( FunctionD (tparams_a, params_a, typ_a),
-      FunctionD (tparams_b, params_b, typ_b) )
-  | ( ExternMethodD (tparams_a, params_a, typ_a),
-      ExternMethodD (tparams_b, params_b, typ_b) )
-  | ( ExternAbstractMethodD (tparams_a, params_a, typ_a),
-      ExternAbstractMethodD (tparams_b, params_b, typ_b) ) ->
+  | ( ExternFunctionD (tparams_a, tparams_hidden_a, params_a, typ_a),
+      ExternFunctionD (tparams_b, tparams_hidden_b, params_b, typ_b) )
+  | ( FunctionD (tparams_a, tparams_hidden_a, params_a, typ_a),
+      FunctionD (tparams_b, tparams_hidden_b, params_b, typ_b) )
+  | ( ExternMethodD (tparams_a, tparams_hidden_a, params_a, typ_a),
+      ExternMethodD (tparams_b, tparams_hidden_b, params_b, typ_b) )
+  | ( ExternAbstractMethodD (tparams_a, tparams_hidden_a, params_a, typ_a),
+      ExternAbstractMethodD (tparams_b, tparams_hidden_b, params_b, typ_b) ) ->
       List.length tparams_a = List.length tparams_b
-      && eq_funcdef' tparams_a params_a typ_a tparams_b params_b typ_b
+      && List.length tparams_hidden_a = List.length tparams_hidden_b
+      && eq_funcdef' tparams_a tparams_hidden_a params_a typ_a tparams_b
+           tparams_hidden_b params_b typ_b
   | _ -> false
 
 let check_eq_typ_alpha (typ_l : Type.t) (typ_r : Type.t) : unit =

@@ -45,9 +45,9 @@ and free_param (param : Types.param) : TIdSet.t =
 
 and free_fd (fd : Types.funcdef) : TIdSet.t =
   match fd with
-  | ExternFunctionD (tparams, params, typ_ret)
-  | FunctionD (tparams, params, typ_ret) ->
-      let bounds = TIdSet.of_list tparams in
+  | ExternFunctionD (tparams, tparams_hidden, params, typ_ret)
+  | FunctionD (tparams, tparams_hidden, params, typ_ret) ->
+      let bounds = TIdSet.of_list (tparams @ tparams_hidden) in
       let frees =
         List.map free_param params @ [ free_typ typ_ret ]
         |> List.fold_left TIdSet.union TIdSet.empty
@@ -55,9 +55,9 @@ and free_fd (fd : Types.funcdef) : TIdSet.t =
       TIdSet.diff frees bounds
   | ActionD params ->
       List.map free_param params |> List.fold_left TIdSet.union TIdSet.empty
-  | ExternMethodD (tparams, params, typ_ret)
-  | ExternAbstractMethodD (tparams, params, typ_ret) ->
-      let bounds = TIdSet.of_list tparams in
+  | ExternMethodD (tparams, tparams_hidden, params, typ_ret)
+  | ExternAbstractMethodD (tparams, tparams_hidden, params, typ_ret) ->
+      let bounds = TIdSet.of_list (tparams @ tparams_hidden) in
       let frees =
         List.map free_param params @ [ free_typ typ_ret ]
         |> List.fold_left TIdSet.union TIdSet.empty
