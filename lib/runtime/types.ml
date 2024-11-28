@@ -35,14 +35,14 @@ and typ =
   | ListT of typ
   | TupleT of typ list
   | StackT of typ * Bigint.t
-  | StructT of L.id' * (L.member' * typ) list
-  | HeaderT of L.id' * (L.member' * typ) list
-  | UnionT of L.id' * (L.member' * typ) list
+  | StructT of L.id' * (L.member' * typ) list * typ TIdMap.t
+  | HeaderT of L.id' * (L.member' * typ) list * typ TIdMap.t
+  | UnionT of L.id' * (L.member' * typ) list * typ TIdMap.t
   (* Object types *)
-  | ExternT of L.id' * funcdef FIdMap.t
-  | ParserT of param list
-  | ControlT of param list
-  | PackageT of typ list
+  | ExternT of L.id' * funcdef FIdMap.t * typ TIdMap.t
+  | ParserT of param list * typ TIdMap.t
+  | ControlT of param list * typ TIdMap.t
+  | PackageT of typ list * typ TIdMap.t
   | TableT of typ
   (* Synthesized types : variables can never be declared of this type *)
   (* Any type (top type) *)
@@ -150,23 +150,30 @@ and pp_typ fmt typ =
   | ListT typ -> F.fprintf fmt "list<%a>" pp_typ typ
   | TupleT typs -> F.fprintf fmt "tuple<%a>" (P.pp_list pp_typ ", ") typs
   | StackT (typ, size) -> F.fprintf fmt "%a[%a]" pp_typ typ Bigint.pp size
-  | StructT (id, fields) ->
-      F.fprintf fmt "struct %a { %a }" P.pp_id' id
+  | StructT (id, fields, theta) ->
+      F.fprintf fmt "struct %a<%a> { %a }" P.pp_id' id (TIdMap.pp pp_typ) theta
         (P.pp_pairs P.pp_member' pp_typ " " "; ")
         fields
-  | HeaderT (id, fields) ->
-      F.fprintf fmt "header %a { %a }" P.pp_id' id
+  | HeaderT (id, fields, theta) ->
+      F.fprintf fmt "header %a<%a> { %a }" P.pp_id' id (TIdMap.pp pp_typ) theta
         (P.pp_pairs P.pp_member' pp_typ " " "; ")
         fields
-  | UnionT (id, fields) ->
-      F.fprintf fmt "header_union %a { %a }" P.pp_id' id
+  | UnionT (id, fields, theta) ->
+      F.fprintf fmt "header_union %a<%a> { %a }" P.pp_id' id (TIdMap.pp pp_typ)
+        theta
         (P.pp_pairs P.pp_member' pp_typ " " "; ")
         fields
-  | ExternT (id, fdenv) ->
-      F.fprintf fmt "extern %a %a" P.pp_id' id (FIdMap.pp pp_funcdef) fdenv
-  | ParserT params -> F.fprintf fmt "parser (%a)" pp_params params
-  | ControlT params -> F.fprintf fmt "control (%a)" pp_params params
-  | PackageT typs -> F.fprintf fmt "package { %a }" (P.pp_list pp_typ ", ") typs
+  | ExternT (id, fdenv, theta) ->
+      F.fprintf fmt "extern %a<%a> %a" P.pp_id' id (TIdMap.pp pp_typ) theta
+        (FIdMap.pp pp_funcdef) fdenv
+  | ParserT (params, theta) ->
+      F.fprintf fmt "parser <%a> (%a)" (TIdMap.pp pp_typ) theta pp_params params
+  | ControlT (params, theta) ->
+      F.fprintf fmt "control <%a> (%a)" (TIdMap.pp pp_typ) theta pp_params
+        params
+  | PackageT (typs, theta) ->
+      F.fprintf fmt "package <%a> { %a }" (TIdMap.pp pp_typ) theta
+        (P.pp_list pp_typ ", ") typs
   | TableT _ -> F.pp_print_string fmt "table"
   | AnyT -> F.pp_print_string fmt "any"
   | TableEnumT (id, _) -> F.fprintf fmt "enum_table %a" P.pp_id' id
@@ -341,15 +348,22 @@ and eq_typ typ_a typ_b =
   | TupleT typs_a, TupleT typs_b -> List.for_all2 eq_typ typs_a typs_b
   | StackT (typ_a, size_a), StackT (typ_b, size_b) ->
       eq_typ typ_a typ_b && Bigint.(size_a = size_b)
-  | StructT (id_a, fields_a), StructT (id_b, fields_b)
-  | HeaderT (id_a, fields_a), HeaderT (id_b, fields_b)
-  | UnionT (id_a, fields_a), UnionT (id_b, fields_b) ->
-      E.eq_id' id_a id_b && E.eq_pairs E.eq_member' eq_typ fields_a fields_b
-  | ExternT (id_a, fdenv_a), ExternT (id_b, fdenv_b) ->
-      E.eq_id' id_a id_b && FIdMap.eq eq_funcdef fdenv_a fdenv_b
-  | ParserT params_a, ParserT params_b | ControlT params_a, ControlT params_b ->
+  | StructT (id_a, fields_a, theta_a), StructT (id_b, fields_b, theta_b)
+  | HeaderT (id_a, fields_a, theta_a), HeaderT (id_b, fields_b, theta_b)
+  | UnionT (id_a, fields_a, theta_a), UnionT (id_b, fields_b, theta_b) ->
+      E.eq_id' id_a id_b
+      && E.eq_pairs E.eq_member' eq_typ fields_a fields_b
+      && TIdMap.eq eq_typ theta_a theta_b
+  | ExternT (id_a, fdenv_a, theta_a), ExternT (id_b, fdenv_b, theta_b) ->
+      E.eq_id' id_a id_b
+      && FIdMap.eq eq_funcdef fdenv_a fdenv_b
+      && TIdMap.eq eq_typ theta_a theta_b
+  | ParserT (params_a, theta_a), ParserT (params_b, theta_b)
+  | ControlT (params_a, theta_a), ControlT (params_b, theta_b) ->
       List.for_all2 eq_param params_a params_b
-  | PackageT typs_a, PackageT typs_b -> List.for_all2 eq_typ typs_a typs_b
+      && TIdMap.eq eq_typ theta_a theta_b
+  | PackageT (typs_a, theta_a), PackageT (typs_b, theta_b) ->
+      List.for_all2 eq_typ typs_a typs_b && TIdMap.eq eq_typ theta_a theta_b
   | AnyT, AnyT -> true
   | TableEnumT (id_a, members_a), TableEnumT (id_b, members_b) ->
       E.eq_id' id_a id_b && List.for_all2 E.eq_member' members_a members_b
@@ -423,7 +437,7 @@ module Type = struct
     | ListT typ_inner -> is_ground typ_inner
     | TupleT typs_inner -> List.for_all is_ground typs_inner
     | StackT (typ_inner, _) -> is_ground typ_inner
-    | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
+    | StructT (_, fields, _) | HeaderT (_, fields, _) | UnionT (_, fields, _) ->
         List.map snd fields |> List.for_all is_ground
     | ExternT _ | ParserT _ | ControlT _ | PackageT _ | AnyT -> true
     | TableEnumT _ | TableStructT _ -> true
@@ -449,19 +463,12 @@ module Type = struct
     | ListT _ -> false
     | TupleT typs_inner -> List.for_all is_defaultable typs_inner
     | StackT (typ_inner, _) -> is_defaultable typ_inner
-    | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
+    | StructT (_, fields, _) | HeaderT (_, fields, _) | UnionT (_, fields, _) ->
         List.map snd fields |> List.for_all is_defaultable
     | ExternT _ | ParserT _ | ControlT _ | PackageT _ | AnyT | TableEnumT _
     | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _
     | DefaultT | InvalidT | SetT _ | StateT | TableT _ ->
         false
-
-  let is_synthesized typ =
-    match typ with
-    | AnyT | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
-    | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
-        true
-    | _ -> false
 
   let rec can_equals typ =
     match typ with
@@ -474,7 +481,7 @@ module Type = struct
     | SEnumT (_, typ_inner, _) | ListT typ_inner -> can_equals typ_inner
     | TupleT typs_inner -> List.for_all can_equals typs_inner
     | StackT (typ_inner, _) -> can_equals typ_inner
-    | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
+    | StructT (_, fields, _) | HeaderT (_, fields, _) | UnionT (_, fields, _) ->
         List.map snd fields |> List.for_all can_equals
     | ExternT _ | ParserT _ | ControlT _ | PackageT _ | AnyT | TableEnumT _
     | TableStructT _ ->

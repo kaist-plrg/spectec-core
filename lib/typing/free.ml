@@ -17,15 +17,15 @@ let rec free_typ (typ : Type.t) : TIdSet.t =
   | TupleT typs_inner ->
       List.map free_typ typs_inner |> List.fold_left TIdSet.union TIdSet.empty
   | StackT (typ_inner, _) -> free_typ typ_inner
-  | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
+  | StructT (_, fields, _) | HeaderT (_, fields, _) | UnionT (_, fields, _) ->
       List.map snd fields |> List.map free_typ
       |> List.fold_left TIdSet.union TIdSet.empty
-  | ExternT (_, fdenv) ->
+  | ExternT (_, fdenv, _) ->
       Envs.FDEnv.bindings fdenv |> List.map snd |> List.map free_fd
       |> List.fold_left TIdSet.union TIdSet.empty
-  | ParserT params | ControlT params ->
+  | ParserT (params, _) | ControlT (params, _) ->
       List.map free_param params |> List.fold_left TIdSet.union TIdSet.empty
-  | PackageT typs_inner ->
+  | PackageT (typs_inner, _) ->
       List.map free_typ typs_inner |> List.fold_left TIdSet.union TIdSet.empty
   | AnyT -> TIdSet.empty
   | TableEnumT _ | TableStructT _ -> TIdSet.empty

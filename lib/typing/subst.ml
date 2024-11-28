@@ -43,6 +43,12 @@ let subst_forall (theta : Theta.t) (tvars : TId.t list) (frees_in : TIdSet.t) :
   (theta, tvars)
 
 let rec subst_typ (theta : Theta.t) (typ : Type.t) : Type.t =
+  let subst_theta (theta : Theta.t) (theta_inner : Theta.t) : Theta.t =
+    Theta.fold
+      (fun tid typ theta_inner ->
+        Theta.add tid (subst_typ theta typ) theta_inner)
+      theta_inner Theta.empty
+  in
   match typ with
   | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
   | VBitT _ ->
@@ -64,33 +70,40 @@ let rec subst_typ (theta : Theta.t) (typ : Type.t) : Type.t =
   | StackT (typ_inner, size) ->
       let typ_inner = subst_typ theta typ_inner in
       StackT (typ_inner, size)
-  | StructT (id, fields) ->
+  | StructT (id, fields, theta_inner) ->
       let fields =
         List.map (fun (id, typ) -> (id, subst_typ theta typ)) fields
       in
-      StructT (id, fields)
-  | HeaderT (id, fields) ->
+      let theta_inner = subst_theta theta theta_inner in
+      StructT (id, fields, theta_inner)
+  | HeaderT (id, fields, theta_inner) ->
       let fields =
         List.map (fun (id, typ) -> (id, subst_typ theta typ)) fields
       in
-      HeaderT (id, fields)
-  | UnionT (id, fields) ->
+      let theta_inner = subst_theta theta theta_inner in
+      HeaderT (id, fields, theta_inner)
+  | UnionT (id, fields, theta_inner) ->
       let fields =
         List.map (fun (id, typ) -> (id, subst_typ theta typ)) fields
       in
-      UnionT (id, fields)
-  | ExternT (id, fdenv) ->
+      let theta_inner = subst_theta theta theta_inner in
+      UnionT (id, fields, theta_inner)
+  | ExternT (id, fdenv, theta_inner) ->
       let fdenv = Envs.FDEnv.map (fun fd -> subst_funcdef theta fd) fdenv in
-      ExternT (id, fdenv)
-  | ParserT params ->
+      let theta_inner = subst_theta theta theta_inner in
+      ExternT (id, fdenv, theta_inner)
+  | ParserT (params, theta_inner) ->
       let params = List.map (subst_param theta) params in
-      ParserT params
-  | ControlT params ->
+      let theta_inner = subst_theta theta theta_inner in
+      ParserT (params, theta_inner)
+  | ControlT (params, theta_inner) ->
       let params = List.map (subst_param theta) params in
-      ControlT params
-  | PackageT typs_inner ->
+      let theta_inner = subst_theta theta theta_inner in
+      ControlT (params, theta_inner)
+  | PackageT (typs_inner, theta_inner) ->
       let typs_inner = List.map (subst_typ theta) typs_inner in
-      PackageT typs_inner
+      let theta_inner = subst_theta theta theta_inner in
+      PackageT (typs_inner, theta_inner)
   | AnyT -> typ
   | TableEnumT _ | TableStructT _ -> typ
   | SeqT typs_inner ->

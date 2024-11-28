@@ -37,11 +37,11 @@ let rec min_size_in_bits' (typ : Type.t) : Bigint.t =
         (fun size typ_inner -> Bigint.(size + min_size_in_bits' typ_inner))
         Bigint.zero typs_inner
   | StackT (typ_inner, size) -> Bigint.(size * min_size_in_bits' typ_inner)
-  | StructT (_id, fields) | HeaderT (_id, fields) ->
+  | StructT (_, fields, _) | HeaderT (_, fields, _) ->
       List.fold_left
         (fun size (_, typ_inner) -> Bigint.(size + min_size_in_bits' typ_inner))
         Bigint.zero fields
-  | UnionT (_id, fields) ->
+  | UnionT (_, fields, _) ->
       let sizes =
         List.map (fun (_, typ_inner) -> min_size_in_bits' typ_inner) fields
       in
@@ -69,11 +69,11 @@ let rec max_size_in_bits' (typ : Type.t) : Bigint.t =
         (fun size typ_inner -> Bigint.(size + max_size_in_bits' typ_inner))
         Bigint.zero typs_inner
   | StackT (typ_inner, size) -> Bigint.(size * max_size_in_bits' typ_inner)
-  | StructT (_id, fields) | HeaderT (_id, fields) ->
+  | StructT (_, fields, _) | HeaderT (_, fields, _) ->
       List.fold_left
         (fun size (_, typ_inner) -> Bigint.(size + max_size_in_bits' typ_inner))
         Bigint.zero fields
-  | UnionT (_id, fields) ->
+  | UnionT (_, fields, _) ->
       let sizes =
         List.map (fun (_, typ_inner) -> max_size_in_bits' typ_inner) fields
       in

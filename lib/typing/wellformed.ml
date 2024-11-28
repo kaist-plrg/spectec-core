@@ -139,7 +139,7 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
   | StackT (typ_inner, _) ->
       check_valid_type' tset typ_inner;
       check_valid_type_nesting typ typ_inner
-  | StructT (_id, fields) ->
+  | StructT (_, fields, _) | HeaderT (_, fields, _) | UnionT (_, fields, _) ->
       let members, typs_inner = List.split fields in
       check_distinct_names members;
       List.iter
@@ -147,27 +147,11 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
           check_valid_type' tset typ_inner;
           check_valid_type_nesting typ typ_inner)
         typs_inner
-  | HeaderT (_id, fields) ->
-      let members, typs_inner = List.split fields in
-      check_distinct_names members;
-      List.iter
-        (fun typ_inner ->
-          check_valid_type' tset typ_inner;
-          check_valid_type_nesting typ typ_inner)
-        typs_inner
-  | UnionT (_id, fields) ->
-      let members, typs_inner = List.split fields in
-      check_distinct_names members;
-      List.iter
-        (fun typ_inner ->
-          check_valid_type' tset typ_inner;
-          check_valid_type_nesting typ typ_inner)
-        typs_inner
-  | ExternT (_id, fdenv) ->
+  | ExternT (_, fdenv, _) ->
       Envs.FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
-  | ParserT params | ControlT params ->
+  | ParserT (params, _) | ControlT (params, _) ->
       List.iter (fun fd -> check_valid_param' tset fd) params
-  | PackageT typs_inner -> List.iter (check_valid_type' tset) typs_inner
+  | PackageT (typs_inner, _) -> List.iter (check_valid_type' tset) typs_inner
   | AnyT -> ()
   | TableEnumT _ | TableStructT _ -> ()
   | SeqT typs_inner | SeqDefaultT typs_inner ->
@@ -309,7 +293,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | ListT _ | TupleT _ | StackT _ -> false
       (* A special case: when struct is nested inside a header,
          because structs allow more nested types than a header, we need to check recursively *)
-      | StructT (_, fields) ->
+      | StructT (_, fields, _) ->
           let _, typs_inner = List.split fields in
           List.for_all (check_valid_type_nesting' typ) typs_inner
       | HeaderT _ | UnionT _ -> false
@@ -384,34 +368,12 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
   | DefD typ_inner ->
       check_valid_type' tset typ_inner;
       check_valid_typedef_nesting td typ_inner
-  | NewD (_id, typ_inner) ->
+  | NewD (_, typ_inner) ->
       check_valid_type' tset typ_inner;
       check_valid_typedef_nesting td typ_inner
-  | StructD (_id, tparams, tparams_hidden, fields) ->
-      check_distinct_names tparams;
-      let tset =
-        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
-      in
-      let members, typs_inner = List.split fields in
-      check_distinct_names members;
-      List.iter
-        (fun typ_inner ->
-          check_valid_type' tset typ_inner;
-          check_valid_typedef_nesting td typ_inner)
-        typs_inner
-  | HeaderD (_id, tparams, tparams_hidden, fields) ->
-      check_distinct_names tparams;
-      let tset =
-        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
-      in
-      let members, typs_inner = List.split fields in
-      check_distinct_names members;
-      List.iter
-        (fun typ_inner ->
-          check_valid_type' tset typ_inner;
-          check_valid_typedef_nesting td typ_inner)
-        typs_inner
-  | UnionD (_id, tparams, tparams_hidden, fields) ->
+  | StructD (_, tparams, tparams_hidden, fields)
+  | HeaderD (_, tparams, tparams_hidden, fields)
+  | UnionD (_, tparams, tparams_hidden, fields) ->
       check_distinct_names tparams;
       let tset =
         tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
@@ -544,7 +506,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
          because structs allow more nested types than a header, we need to check recursively *)
       (* This recursion holds because the inner types that a struct allows is a
          superset of the inner types that a header allows *)
-      | StructT (_, fields) ->
+      | StructT (_, fields, _) ->
           let _, typs_inner = List.split fields in
           List.for_all (check_valid_typedef_nesting' td) typs_inner
       | HeaderT _ | UnionT _ -> false

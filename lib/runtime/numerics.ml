@@ -627,12 +627,12 @@ and eval_cast_seq (typ : Type.t) (values : Value.t list) : Value.t =
   | TupleT typs_inner ->
       let values = List.map2 eval_cast typs_inner values in
       TupleV values
-  | StructT (_, fields) ->
+  | StructT (_, fields, _) ->
       let members, typs_inner = List.split fields in
       let values = List.map2 eval_cast typs_inner values in
       let fields = List.combine members values in
       StructV fields
-  | HeaderT (_, fields) ->
+  | HeaderT (_, fields, _) ->
       let members, typs_inner = List.split fields in
       let values = List.map2 eval_cast typs_inner values in
       let fields = List.combine members values in
@@ -655,7 +655,7 @@ and eval_cast_seq_default (typ : Type.t) (values : Value.t list) : Value.t =
         @ List.map eval_default typs_inner_default
       in
       TupleV values
-  | StructT (_, fields_typ) ->
+  | StructT (_, fields_typ, _) ->
       let before i = i < List.length values in
       let members, typs_inner = List.split fields_typ in
       let typs_inner_default =
@@ -668,7 +668,7 @@ and eval_cast_seq_default (typ : Type.t) (values : Value.t list) : Value.t =
       in
       let fields = List.combine members values in
       StructV fields
-  | HeaderT (_, fields_typ) ->
+  | HeaderT (_, fields_typ, _) ->
       let before i = i < List.length values in
       let members, typs_inner = List.split fields_typ in
       let typs_inner_default =
@@ -689,7 +689,7 @@ and eval_cast_seq_default (typ : Type.t) (values : Value.t list) : Value.t =
 and eval_cast_record (typ : Type.t) (fields_value : (string * Value.t) list) :
     Value.t =
   match typ with
-  | StructT (_, fields_typ) ->
+  | StructT (_, fields_typ, _) ->
       let fields =
         List.fold_left
           (fun fields (member, typ) ->
@@ -699,7 +699,7 @@ and eval_cast_record (typ : Type.t) (fields_value : (string * Value.t) list) :
           [] fields_typ
       in
       StructV fields
-  | HeaderT (_, fields_typ) ->
+  | HeaderT (_, fields_typ, _) ->
       let fields =
         List.fold_left
           (fun fields (member, typ) ->
@@ -716,7 +716,7 @@ and eval_cast_record (typ : Type.t) (fields_value : (string * Value.t) list) :
 and eval_cast_record_default (typ : Type.t)
     (fields_value : (string * Value.t) list) : Value.t =
   match typ with
-  | StructT (_, fields_typ) ->
+  | StructT (_, fields_typ, _) ->
       let fields =
         List.fold_left
           (fun fields (member, typ) ->
@@ -729,7 +729,7 @@ and eval_cast_record_default (typ : Type.t)
           [] fields_typ
       in
       StructV fields
-  | HeaderT (_, fields_typ) ->
+  | HeaderT (_, fields_typ, _) ->
       let fields =
         List.fold_left
           (fun fields (member, typ) ->
@@ -751,12 +751,12 @@ and eval_cast_default (typ : Type.t) : Value.t = eval_default typ
 
 and eval_cast_invalid (typ : Type.t) : Value.t =
   match typ with
-  | HeaderT (_, fields) ->
+  | HeaderT (_, fields, _) ->
       let members, typs = List.split fields in
       let values = List.map eval_default typs in
       let fields = List.combine members values in
       HeaderV (false, fields)
-  | UnionT (_, fields) ->
+  | UnionT (_, fields, _) ->
       let members, typs = List.split fields in
       let values = List.map eval_default typs in
       let fields = List.combine members values in
@@ -843,17 +843,17 @@ and eval_default (typ : Type.t) : Value.t =
         List.init (Bigint.to_int_exn size) (fun _ -> eval_default typ_inner)
       in
       StackV (values, Bigint.zero, size)
-  | StructT (_, fields) ->
+  | StructT (_, fields, _) ->
       let members, typs_inner = List.split fields in
       let values = List.map eval_default typs_inner in
       let fields = List.combine members values in
       StructV fields
-  | HeaderT (_, fields) ->
+  | HeaderT (_, fields, _) ->
       let members, typs_inner = List.split fields in
       let values = List.map eval_default typs_inner in
       let fields = List.combine members values in
       HeaderV (false, fields)
-  | UnionT (_, fields) ->
+  | UnionT (_, fields, _) ->
       let members, typs_inner = List.split fields in
       let values = List.map eval_default typs_inner in
       let fields = List.combine members values in

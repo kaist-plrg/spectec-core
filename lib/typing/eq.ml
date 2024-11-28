@@ -37,21 +37,27 @@ let rec eq_typ_alpha (typ_a : Type.t) (typ_b : Type.t) : bool =
       List.for_all2 eq_typ_alpha typs_inner_a typs_inner_b
   | StackT (typ_inner_a, size_a), StackT (typ_inner_b, size_b) ->
       eq_typ_alpha typ_inner_a typ_inner_b && Bigint.(size_a = size_b)
-  | StructT (id_a, fields_a), StructT (id_b, fields_b)
-  | HeaderT (id_a, fields_a), HeaderT (id_b, fields_b)
-  | UnionT (id_a, fields_a), UnionT (id_b, fields_b) ->
+  | StructT (id_a, fields_a, theta_a), StructT (id_b, fields_b, theta_b)
+  | HeaderT (id_a, fields_a, theta_a), HeaderT (id_b, fields_b, theta_b)
+  | UnionT (id_a, fields_a, theta_a), UnionT (id_b, fields_b, theta_b) ->
       Lang.Eq.eq_id' id_a id_b
       && List.for_all2
            (fun (member_a, typ_inner_a) (member_b, typ_inner_b) ->
              Lang.Eq.eq_member' member_a member_b
              && eq_typ_alpha typ_inner_a typ_inner_b)
            fields_a fields_b
-  | ExternT (id_a, fdenv_a), ExternT (id_b, fdenv_b) ->
-      Lang.Eq.eq_id' id_a id_b && FIdMap.eq eq_funcdef_alpha fdenv_a fdenv_b
-  | ParserT params_a, ParserT params_b | ControlT params_a, ControlT params_b ->
+      && (Subst.Theta.eq eq_typ_alpha) theta_a theta_b
+  | ExternT (id_a, fdenv_a, theta_a), ExternT (id_b, fdenv_b, theta_b) ->
+      Lang.Eq.eq_id' id_a id_b
+      && FIdMap.eq eq_funcdef_alpha fdenv_a fdenv_b
+      && (Subst.Theta.eq eq_typ_alpha) theta_a theta_b
+  (* (TODO) This applies structural typing for parser, control, and package types, but is it correct? *)
+  | ParserT (params_a, _), ParserT (params_b, _)
+  | ControlT (params_a, _), ControlT (params_b, _) ->
       List.for_all2 eq_param_alpha params_a params_b
-  | PackageT typs_inner_a, PackageT typs_inner_b ->
+  | PackageT (typs_inner_a, theta_a), PackageT (typs_inner_b, theta_b) ->
       List.for_all2 eq_typ_alpha typs_inner_a typs_inner_b
+      && (Subst.Theta.eq eq_typ_alpha) theta_a theta_b
   | AnyT, AnyT -> true
   | SeqT typs_inner_a, SeqT typs_inner_b ->
       List.for_all2 eq_typ_alpha typs_inner_a typs_inner_b

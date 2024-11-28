@@ -126,11 +126,11 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/access-compile-time-known/tuple3.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory1.p4
-(check_call_site) Function extern_func( a bit<16>,  b bit<8>) -> extern widget {  } cannot be called from Package
+(check_call_site) Function extern_func( a bit<16>,  b bit<8>) -> extern widget<{  }> {  } cannot be called from Package
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory2.p4
-(check_call_site) Function extern_func( a bit<16>,  b bit<8>) -> extern widget {  } cannot be called from Package
+(check_call_site) Function extern_func( a bit<16>,  b bit<8>) -> extern widget<{ T : bit<8> }> {  } cannot be called from Package
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/hashext3.p4
@@ -158,7 +158,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3274.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3292.p4
-(check_call_site) Function extern_func(in p header h { f t }) -> void cannot be called from Function
+(check_call_site) Function extern_func(in p header h<{ t : t }> { f t }) -> void cannot be called from Function
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3292.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue4500.p4
@@ -202,7 +202,7 @@ Typecheck success: test/program/well-typed-excluded/spec-clarify/call-site-restr
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/bfd_offload.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/calc-ebpf.p4
-(check_instantiation_site) extern hash_table {  } cannot be instantiated in TableApplyMethod
+(check_instantiation_site) extern hash_table<{  }> {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/calc-ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/constructor_cast.p4
@@ -218,11 +218,11 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/extern2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_extern_arguments_2.p4
-(check_eq_typ_alpha) Types seq<int, int, bit<16>> and header ethernet_t { dst_addr bit<48>; src_addr bit<48>; eth_type bit<16> } are not equal
+(check_eq_typ_alpha) Types seq<int, int, bit<16>> and header ethernet_t<{  }> { dst_addr bit<48>; src_addr bit<48>; eth_type bit<16> } are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_extern_arguments_2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_hdr_in_value-bmv2.p4
-(check_eq_typ_alpha) Types seq<seq<bit<48>, bit<48>, bit<16>>> and struct Headers { eth_hdr header ethernet_t { dst_addr bit<48>; src_addr bit<48>; eth_type bit<16> } } are not equal
+(check_eq_typ_alpha) Types seq<seq<bit<48>, bit<48>, bit<16>>> and struct Headers<{  }> { eth_hdr header ethernet_t<{  }> { dst_addr bit<48>; src_addr bit<48>; eth_type bit<16> } } are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/gauntlet_hdr_in_value-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1001-1-bmv2.p4
@@ -286,7 +286,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1958.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2648.p4
-(check_eq_typ_alpha) Types seq<bit<8>> and header H { a bit<8> } are not equal
+(check_eq_typ_alpha) Types seq<bit<8>> and header H<{  }> { a bit<8> } are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2648.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2844-enum.p4
@@ -306,7 +306,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue383-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue4288.p4
-(check_eq_typ_alpha) Types seq<int> and header hdr_t { f0 bit<8> } are not equal
+(check_eq_typ_alpha) Types seq<int> and header hdr_t<{  }> { f0 bit<8> } are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue4288.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue562-bmv2.p4
@@ -322,11 +322,11 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue871.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue933-1.p4
-(check_eq_typ_alpha) Types seq<int> and struct headers { x bit<32> } are not equal
+(check_eq_typ_alpha) Types seq<int> and struct headers<{  }> { x bit<32> } are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue933-1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/list7.p4
-(check_eq_typ_alpha) Types record { f int } and struct S { f bit<32> } are not equal
+(check_eq_typ_alpha) Types record { f int } and struct S<{  }> { f bit<32> } are not equal
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/list7.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/named-arg1.p4
@@ -338,7 +338,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/omec/up4.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/pr1363.p4
-(check_instantiation_site) extern ActionProfile {  } cannot be instantiated in TableApplyMethod
+(check_instantiation_site) extern ActionProfile<{  }> {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/pr1363.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-action-profile1.p4
@@ -534,30 +534,31 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/strength.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/generic-constrained/default-package-argument.p4
-(coerce_type) Cannot coerce type control (inout hdr struct empty_t {  }, inout meta struct empty_t {  }, in imeta struct intrinsic_metadata_t { f0 bit<8>; f1 bit<8> }) to control (inout hdr H, inout meta M, in intr_md struct intrinsic_metadata_t { f0 bit<8>; f1 bit<8> })
+(coerce_type) Cannot coerce type control <{  }> (inout hdr struct empty_t<{  }> {  }, inout meta struct empty_t<{  }> {  }, in imeta struct intrinsic_metadata_t<{  }> { f0 bit<8>; f1 bit<8> }) to control <{ H : H
+M : M }> (inout hdr H, inout meta M, in intr_md struct intrinsic_metadata_t<{  }> { f0 bit<8>; f1 bit<8> })
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/generic-constrained/default-package-argument.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default/default-control-argument.p4
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default/default-control-argument.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/typedef-objects/extern-inst-as-param.p4
-(check_valid_typedef_nesting) Invalid nesting of extern MyCounter { count(index) : extern_method<><>(in index bit<10>) -> void } inside typedef extern MyCounter { count(index) : extern_method<><>(in index bit<10>) -> void }
+(check_valid_typedef_nesting) Invalid nesting of extern MyCounter<{ I : bit<10> }> { count(index) : extern_method<><>(in index bit<10>) -> void } inside typedef extern MyCounter<{ I : bit<10> }> { count(index) : extern_method<><>(in index bit<10>) -> void }
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/typedef-objects/extern-inst-as-param.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/typedef-objects/issue2735-bmv2.p4
-(check_valid_typedef_nesting) Invalid nesting of extern register { read(result, index) : extern_method<><>(out result bit<69>, in index bit<32>) -> void
-write(index, value) : extern_method<><>(in index bit<32>, in value bit<69>) -> void } inside typedef extern register { read(result, index) : extern_method<><>(out result bit<69>, in index bit<32>) -> void
+(check_valid_typedef_nesting) Invalid nesting of extern register<{ T : bit<69> }> { read(result, index) : extern_method<><>(out result bit<69>, in index bit<32>) -> void
+write(index, value) : extern_method<><>(in index bit<32>, in value bit<69>) -> void } inside typedef extern register<{ T : bit<69> }> { read(result, index) : extern_method<><>(out result bit<69>, in index bit<32>) -> void
 write(index, value) : extern_method<><>(in index bit<32>, in value bit<69>) -> void }
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/typedef-objects/issue2735-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/typedef-objects/issue2735.p4
-(check_valid_typedef_nesting) Invalid nesting of extern register { read(result, index) : extern_method<><>(out result bit<69>, in index bit<32>) -> void
-write(index, value) : extern_method<><>(in index bit<32>, in value bit<69>) -> void } inside typedef extern register { read(result, index) : extern_method<><>(out result bit<69>, in index bit<32>) -> void
+(check_valid_typedef_nesting) Invalid nesting of extern register<{ T : bit<69> }> { read(result, index) : extern_method<><>(out result bit<69>, in index bit<32>) -> void
+write(index, value) : extern_method<><>(in index bit<32>, in value bit<69>) -> void } inside typedef extern register<{ T : bit<69> }> { read(result, index) : extern_method<><>(out result bit<69>, in index bit<32>) -> void
 write(index, value) : extern_method<><>(in index bit<32>, in value bit<69>) -> void }
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/typedef-objects/issue2735.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/typedef-objects/typedef-constructor.p4
-(check_valid_typedef_nesting) Invalid nesting of extern MyCounter { count(index) : extern_method<><>(in index bit<10>) -> void } inside typedef extern MyCounter { count(index) : extern_method<><>(in index bit<10>) -> void }
+(check_valid_typedef_nesting) Invalid nesting of extern MyCounter<{ I : bit<10> }> { count(index) : extern_method<><>(in index bit<10>) -> void } inside typedef extern MyCounter<{ I : bit<10> }> { count(index) : extern_method<><>(in index bit<10>) -> void }
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/typedef-objects/typedef-constructor.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/abstract-method-scoping/issue2273-1.p4
@@ -680,19 +681,19 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/type-variable-equality-op/issue3291-1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-nested-struct.p4
-(check_valid_type_nesting) Invalid nesting of struct value_set_t { field bit<32>; inner struct inner_value_set_t { field bit<32> } } inside set<struct value_set_t { field bit<32>; inner struct inner_value_set_t { field bit<32> } }>
+(check_valid_type_nesting) Invalid nesting of struct value_set_t<{  }> { field bit<32>; inner struct inner_value_set_t<{  }> { field bit<32> } } inside set<struct value_set_t<{  }> { field bit<32>; inner struct inner_value_set_t<{  }> { field bit<32> } }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-nested-struct.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-1-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of struct value_set_t { field bit<32> } inside set<struct value_set_t { field bit<32> }>
+(check_valid_type_nesting) Invalid nesting of struct value_set_t<{  }> { field bit<32> } inside set<struct value_set_t<{  }> { field bit<32> }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-1-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-2-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of struct value_set_t { field bit<16>; field2 bit<3> } inside set<struct value_set_t { field bit<16>; field2 bit<3> }>
+(check_valid_type_nesting) Invalid nesting of struct value_set_t<{  }> { field bit<16>; field2 bit<3> } inside set<struct value_set_t<{  }> { field bit<16>; field2 bit<3> }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-2-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-3-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of struct value_set_t { field1 bit<16>; field2 bit<3>; field3 bit<6>; field4 bit<5> } inside set<struct value_set_t { field1 bit<16>; field2 bit<3>; field3 bit<6>; field4 bit<5> }>
+(check_valid_type_nesting) Invalid nesting of struct value_set_t<{  }> { field1 bit<16>; field2 bit<3>; field3 bit<6>; field4 bit<5> } inside set<struct value_set_t<{  }> { field1 bit<16>; field2 bit<3>; field3 bit<6>; field4 bit<5> }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs-struct-3-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs.p4
@@ -700,19 +701,19 @@ Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-enumint-types1.p4
-(check_valid_type_nesting) Invalid nesting of struct valueset1_t { addr0 bit<48>; e bit<8>; e0 bit<8>; e00 bit<8> } inside set<struct valueset1_t { addr0 bit<48>; e bit<8>; e0 bit<8>; e00 bit<8> }>
+(check_valid_type_nesting) Invalid nesting of struct valueset1_t<{  }> { addr0 bit<48>; e bit<8>; e0 bit<8>; e00 bit<8> } inside set<struct valueset1_t<{  }> { addr0 bit<48>; e bit<8>; e0 bit<8>; e00 bit<8> }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-enumint-types1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-most-types1.p4
-(check_valid_type_nesting) Invalid nesting of struct valueset1_t { addr0 bit<48>; e bit<8>; e0 bit<8>; e00 bit<8> } inside set<struct valueset1_t { addr0 bit<48>; e bit<8>; e0 bit<8>; e00 bit<8> }>
+(check_valid_type_nesting) Invalid nesting of struct valueset1_t<{  }> { addr0 bit<48>; e bit<8>; e0 bit<8>; e00 bit<8> } inside set<struct valueset1_t<{  }> { addr0 bit<48>; e bit<8>; e0 bit<8>; e00 bit<8> }>
 Error while typechecking p4 file: test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-most-types1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile-bmv2.p4
-(check_instantiation_site) extern action_profile {  } cannot be instantiated in TableApplyMethod
+(check_instantiation_site) extern action_profile<{  }> {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/action_profile-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_max_group_size_annotation.p4
-(check_instantiation_site) extern action_profile {  } cannot be instantiated in TableApplyMethod
+(check_instantiation_site) extern action_profile<{  }> {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_max_group_size_annotation.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/action_profile_sum_of_members_annotation.p4
@@ -736,7 +737,7 @@ parser error: File test/program/well-typed-excluded/unsupported/custom-table-ele
 Error while parsing p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/init_ebpf.p4
-(check_instantiation_site) extern hash_table {  } cannot be instantiated in TableApplyMethod
+(check_instantiation_site) extern hash_table<{  }> {  } cannot be instantiated in TableApplyMethod
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/custom-table-element/init_ebpf.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/custom-table-element/issue2791_ebpf.p4
@@ -940,7 +941,7 @@ Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/o
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/optional-param/issue3051.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/optional-param/issue3417.p4
-(infer_targs) Type variable __WILD_2 could not be inferred
+(type_instantiation_decl) Abstract method apply(val, rv) was not declared
 Error while typechecking p4 file: test/program/well-typed-excluded/unsupported/optional-param/issue3417.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/unsupported/optional-param/pna-dpdk-direct-counter.p4

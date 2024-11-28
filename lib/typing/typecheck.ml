@@ -115,41 +115,67 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
   | StackT (typ_inner_param, size_param), StackT (typ_inner_arg, size_arg)
     when Bigint.(size_param = size_arg) ->
       gen_cstr cstr typ_inner_param typ_inner_arg
-  | StructT (id_param, fields_param), StructT (id_arg, fields_arg)
+  | ( StructT (id_param, _fields_param, theta_param),
+      StructT (id_arg, _fields_arg, theta_arg) )
     when id_param = id_arg ->
-      let typs_inner_param = List.map snd fields_param in
-      let typs_inner_arg = List.map snd fields_arg in
-      gen_cstrs cstr typs_inner_param typs_inner_arg
-  | HeaderT (id_param, fields_param), HeaderT (id_arg, fields_arg)
-    when id_param = id_arg ->
-      let typs_inner_param = List.map snd fields_param in
-      let typs_inner_arg = List.map snd fields_arg in
-      gen_cstrs cstr typs_inner_param typs_inner_arg
-  | UnionT (id_param, fields_param), UnionT (id_arg, fields_arg)
-    when id_param = id_arg ->
-      let typs_inner_param = List.map snd fields_param in
-      let typs_inner_arg = List.map snd fields_arg in
-      gen_cstrs cstr typs_inner_param typs_inner_arg
-  | ExternT (id_param, fdenv_param), ExternT (id_arg, fdenv_arg)
-    when id_param = id_arg ->
-      let keys_param = FIdMap.keys fdenv_param |> FIdSet.of_list in
-      let keys_arg = FIdMap.keys fdenv_arg |> FIdSet.of_list in
-      assert (FIdSet.eq keys_param keys_arg);
+      let keys_param = TIdMap.keys theta_param |> TIdSet.of_list in
+      let keys_arg = TIdMap.keys theta_arg |> TIdSet.of_list in
+      assert (TIdSet.eq keys_param keys_arg);
       let keys = keys_param in
-      FIdSet.fold
+      TIdSet.fold
         (fun key cstr ->
-          let fd_param = FIdMap.find key fdenv_param in
-          let fd_arg = FIdMap.find key fdenv_arg in
-          gen_cstr_fd cstr fd_param fd_arg)
+          let typ_param = TIdMap.find key theta_param in
+          let typ_arg = TIdMap.find key theta_arg in
+          gen_cstr cstr typ_param typ_arg)
         keys cstr
-  | ParserT params_param, ParserT params_arg
-  | ControlT params_param, ControlT params_arg ->
+  | ( HeaderT (id_param, _fields_param, theta_param),
+      HeaderT (id_arg, _fields_arg, theta_arg) )
+    when id_param = id_arg ->
+      let keys_param = TIdMap.keys theta_param |> TIdSet.of_list in
+      let keys_arg = TIdMap.keys theta_arg |> TIdSet.of_list in
+      assert (TIdSet.eq keys_param keys_arg);
+      let keys = keys_param in
+      TIdSet.fold
+        (fun key cstr ->
+          let typ_param = TIdMap.find key theta_param in
+          let typ_arg = TIdMap.find key theta_arg in
+          gen_cstr cstr typ_param typ_arg)
+        keys cstr
+  | ( UnionT (id_param, _fields_param, theta_param),
+      UnionT (id_arg, _fields_arg, theta_arg) )
+    when id_param = id_arg ->
+      let keys_param = TIdMap.keys theta_param |> TIdSet.of_list in
+      let keys_arg = TIdMap.keys theta_arg |> TIdSet.of_list in
+      assert (TIdSet.eq keys_param keys_arg);
+      let keys = keys_param in
+      TIdSet.fold
+        (fun key cstr ->
+          let typ_param = TIdMap.find key theta_param in
+          let typ_arg = TIdMap.find key theta_arg in
+          gen_cstr cstr typ_param typ_arg)
+        keys cstr
+  | ( ExternT (id_param, _fdenv_param, theta_param),
+      ExternT (id_arg, _fdenv_arg, theta_arg) )
+    when id_param = id_arg ->
+      let keys_param = TIdMap.keys theta_param |> TIdSet.of_list in
+      let keys_arg = TIdMap.keys theta_arg |> TIdSet.of_list in
+      assert (TIdSet.eq keys_param keys_arg);
+      let keys = keys_param in
+      TIdSet.fold
+        (fun key cstr ->
+          let typ_param = TIdMap.find key theta_param in
+          let typ_arg = TIdMap.find key theta_arg in
+          gen_cstr cstr typ_param typ_arg)
+        keys cstr
+  | ParserT (params_param, _), ParserT (params_arg, _)
+  | ControlT (params_param, _), ControlT (params_arg, _) ->
       let typs_inner_param =
         List.map (fun (_, _, typ, _) -> typ) params_param
       in
       let typs_inner_arg = List.map (fun (_, _, typ, _) -> typ) params_arg in
       gen_cstrs cstr typs_inner_param typs_inner_arg
-  | PackageT typs_param, PackageT typs_arg -> gen_cstrs cstr typs_param typs_arg
+  | PackageT (typs_param, _), PackageT (typs_arg, _) ->
+      gen_cstrs cstr typs_param typs_arg
   | _ -> cstr
 
 and gen_cstr_fd (cstr : cstr_t) (fd_param : FuncDef.t) (fd_arg : FuncDef.t) :
@@ -385,7 +411,7 @@ and specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
       let members, typs_inner = List.split fields in
       let typs_inner = List.map (Subst.subst_typ theta) typs_inner in
       let fields = List.combine members typs_inner in
-      Types.StructT (id, fields)
+      Types.StructT (id, fields, theta)
   | HeaderD (id, tparams, tparams_hidden, fields) ->
       let tparams = tparams @ tparams_hidden in
       check_arity tparams;
@@ -393,7 +419,7 @@ and specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
       let members, typs_inner = List.split fields in
       let typs_inner = List.map (Subst.subst_typ theta) typs_inner in
       let fields = List.combine members typs_inner in
-      Types.HeaderT (id, fields)
+      Types.HeaderT (id, fields, theta)
   | UnionD (id, tparams, tparams_hidden, fields) ->
       let tparams = tparams @ tparams_hidden in
       check_arity tparams;
@@ -401,32 +427,32 @@ and specialize_typedef (td : TypeDef.t) (targs : Type.t list) : Type.t =
       let members, typs_inner = List.split fields in
       let typs_inner = List.map (Subst.subst_typ theta) typs_inner in
       let fields = List.combine members typs_inner in
-      Types.UnionT (id, fields)
+      Types.UnionT (id, fields, theta)
   (* Object types are generic *)
   | ExternD (id, tparams, tparams_hidden, fdenv) ->
       let tparams = tparams @ tparams_hidden in
       check_arity tparams;
       let theta = List.combine tparams targs |> Subst.Theta.of_list in
       let fdenv = Envs.FDEnv.map (Subst.subst_funcdef theta) fdenv in
-      Types.ExternT (id, fdenv)
+      Types.ExternT (id, fdenv, theta)
   | ParserD (tparams, tparams_hidden, params) ->
       let tparams = tparams @ tparams_hidden in
       check_arity tparams;
       let theta = List.combine tparams targs |> Subst.Theta.of_list in
       let params = List.map (Subst.subst_param theta) params in
-      Types.ParserT params
+      Types.ParserT (params, theta)
   | ControlD (tparams, tparams_hidden, params) ->
       let tparams = tparams @ tparams_hidden in
       check_arity tparams;
       let theta = List.combine tparams targs |> Subst.Theta.of_list in
       let params = List.map (Subst.subst_param theta) params in
-      Types.ControlT params
+      Types.ControlT (params, theta)
   | PackageD (tparams, tparams_hidden, typs_inner) ->
       let tparams = tparams @ tparams_hidden in
       check_arity tparams;
       let theta = List.combine tparams targs |> Subst.Theta.of_list in
       let typs_inner = List.map (Subst.subst_typ theta) typs_inner in
-      Types.PackageT typs_inner
+      Types.PackageT (typs_inner, theta)
 
 and specialize_funcdef (fd : FuncDef.t) (targs : Type.t list) :
     FuncType.t * TId.t list option =
@@ -1878,7 +1904,7 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
               "(type_expr_acc_expr) Invalid member %s for header stack\n"
               member.it;
             assert false)
-    | StructT (_id, fields) | HeaderT (_id, fields) | UnionT (_id, fields) ->
+    | StructT (_, fields, _) | HeaderT (_, fields, _) | UnionT (_, fields, _) ->
         let typ_inner = List.assoc_opt member.it fields in
         if Option.is_none typ_inner then (
           Format.printf "(type_expr_acc_expr) Member %s does not exist in %a\n"
@@ -2133,8 +2159,8 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
         Types.BuiltinMethodT ([], Types.VoidT) |> wrap_builtin
     | UnionT _, "isValid" ->
         Types.BuiltinMethodT ([], Types.BoolT) |> wrap_builtin
-    | ExternT (_, fdenv), _ -> find_method fdenv
-    | ParserT params, _ ->
+    | ExternT (_, fdenv, _), _ -> find_method fdenv
+    | ParserT (params, _), _ ->
         let fd = Types.ParserApplyMethodD params in
         let fdenv =
           let params =
@@ -2147,7 +2173,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
           Envs.FDEnv.add_nodup_non_overloaded fid fd Envs.FDEnv.empty
         in
         find_method fdenv
-    | ControlT params, _ ->
+    | ControlT (params, _), _ ->
         let fd = Types.ControlApplyMethodD params in
         let fdenv =
           let params =
@@ -2489,7 +2515,7 @@ and type_instantiation_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     : Type.t * Ctk.t * Il.Ast.expr' =
   let typ, ctk, expr_il = type_instantiation cursor ctx var_inst targs args in
   (match typ with
-  | ExternT (_, fdenv_extern) ->
+  | ExternT (_, fdenv_extern, _) ->
       if
         Envs.FDEnv.exists
           (fun _ (fd : FuncDef.t) ->
@@ -3375,7 +3401,6 @@ and type_instantiation_init_extern_abstract_method_decl (cursor : Ctx.cursor)
   assert (tids_fresh = []);
   let ctx' = Ctx.set_localkind (Ctx.ExternAbstractMethod typ_ret.it) ctx' in
   (* Typecheck and add parameters to the local context *)
-  (* (BATMAN) *)
   let params_il, tids_fresh =
     List.fold_left
       (fun (params_il, tids_fresh) param ->
@@ -3488,7 +3513,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   (* Typecheck abstract methods defined by object initializers (for externs only) *)
   let typ, init_il =
     match typ with
-    | ExternT (id, fdenv_extern) ->
+    | ExternT (id, fdenv_extern, theta) ->
         let ctx =
           { Ctx.empty with global = ctx.global }
           |> Ctx.add_rtype Ctx.Local "this" typ Lang.Ast.No Ctk.CTK
@@ -3537,7 +3562,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
                 assert false
             | _ -> ())
           fdenv_extern;
-        (Types.ExternT (id, fdenv_extern), init_il)
+        (Types.ExternT (id, fdenv_extern, theta), init_il)
     | _ when init <> [] ->
         Format.printf
           "(type_instantiation_decl) Initializers are only allowed for extern \
@@ -3635,7 +3660,6 @@ and type_struct_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       ([], [], []) fields
   in
   let _annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
-  (* (BATMAN) *)
   let typs, tids_fresh =
     let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
     List.fold_left
@@ -3673,7 +3697,6 @@ and type_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       ([], [], []) fields
   in
   let _annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
-  (* (BATMAN) *)
   let typs, tids_fresh =
     let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
     List.fold_left
@@ -3711,7 +3734,6 @@ and type_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       ([], [], []) fields
   in
   let _annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
-  (* (BATMAN) *)
   let typs, tids_fresh =
     let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
     List.fold_left
@@ -3989,7 +4011,6 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   assert (tids_fresh = []);
   let ctx' = Ctx.set_localkind (Ctx.Function typ_ret.it) ctx' in
   (* Typecheck and add parameters to the local context *)
-  (* (BATMAN) *)
   let params_il, tids_fresh =
     List.fold_left
       (fun (params_il, tids_fresh) param ->
@@ -4051,7 +4072,6 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   assert (tids_fresh = []);
   let ctx' = Ctx.set_localkind Ctx.ExternFunction ctx' in
   (* Typecheck and add parameters to the local context *)
-  (* (BATMAN) *)
   let params_il, tids_fresh =
     List.fold_left
       (fun (params_il, tids_fresh) param ->
@@ -4102,7 +4122,6 @@ and type_extern_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let annos_il = List.map (type_anno cursor ctx) annos in
   let tparams = Ctx.get_tparams cursor ctx in
   let cid = FId.to_fid id cparams in
-  (* (REAL BATMAN) *)
   let cparams_il, tids_fresh =
     List.fold_left
       (fun (cparams_il, tids_fresh) cparam ->
@@ -4152,7 +4171,6 @@ and type_extern_abstract_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   assert (tids_fresh = []);
   let ctx' = Ctx.set_localkind (Ctx.ExternAbstractMethod typ_ret.it) ctx' in
   (* Typecheck and add parameters to the local context *)
-  (* (BATMAN) *)
   let params_il, tids_fresh =
     List.fold_left
       (fun (params_il, tids_fresh) param ->
@@ -4196,7 +4214,6 @@ and type_extern_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   assert (tids_fresh = []);
   let ctx' = Ctx.set_localkind Ctx.ExternMethod ctx' in
   (* Typecheck and add parameters to the local context *)
-  (* (BATMAN) *)
   let params_il, tids_fresh =
     List.fold_left
       (fun (params_il, tids_fresh) param ->
@@ -4349,7 +4366,6 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Parser ctx' in
   let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
-  (* (BATMAN) *)
   let params_il, tids_fresh =
     List.fold_left
       (fun (params_il, tids_fresh) param ->
@@ -4501,7 +4517,11 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ParserT params
+    let theta =
+      List.map (fun tparam -> (tparam.it, Types.VarT tparam.it)) tparams
+      |> Subst.Theta.of_list
+    in
+    Types.ParserT (params, theta)
   in
   let cd =
     let cparams =
@@ -5452,7 +5472,6 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let ctx' = Ctx.set_id Ctx.Local id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Control ctx' in
   let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
-  (* (BATMAN) *)
   let params_il, tids_fresh =
     List.fold_left
       (fun (params_il, tids_fresh) param ->
@@ -5546,7 +5565,11 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ControlT params
+    let theta =
+      List.map (fun tparam -> (tparam.it, Types.VarT tparam.it)) tparams
+      |> Subst.Theta.of_list
+    in
+    Types.ControlT (params, theta)
   in
   let cd =
     let cparams =
@@ -5591,7 +5614,6 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
       "(type_package_constructor_decl) Package constructor must have the same \
        name as the object\n";
     assert false);
-  (* (BATMAN) *)
   let cparams_il, tids_fresh =
     List.fold_left
       (fun (cparams_il, tids_fresh) cparam ->
