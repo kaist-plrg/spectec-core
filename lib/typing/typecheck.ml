@@ -719,8 +719,8 @@ and type_call_convention' ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
   | NameA (_, None) | AnyA ->
       if dir_param <> Lang.Ast.Out then (
         Format.printf
-          "(type_call) Don't care argument can only be used for an out \
-           function/method argument\n";
+          "(type_call_convention') Don't care argument can only be used for an \
+           out function/method argument\n";
         assert false);
       arg_il
 
@@ -2104,7 +2104,7 @@ and check_call_site (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) : unit
 
 and type_func (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : El.Ast.var)
     (targs_il : Il.Ast.targ list) (args : El.Ast.arg list) :
-    FuncType.t * TId.t list option * Il.Ast.id' list =
+    FuncType.t * TId.t list option * Types.tparam list * Il.Ast.id' list =
   let targs = List.map it targs_il in
   let fd_matched =
     let args = FId.to_names args in
@@ -2115,13 +2115,18 @@ and type_func (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : El.Ast.var)
     Format.printf "(type_func) Function %a not found\n" El.Pp.pp_var var_func;
     assert false);
   let fd, args_default = Option.get fd_matched in
+  let tparams = FuncDef.get_tparams fd |> fst in
   let ft, tids_fresh = specialize_funcdef fd targs in
-  (ft, tids_fresh, args_default)
+  (ft, tids_fresh, tparams, args_default)
 
 and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
     (member : El.Ast.member) (targs_il : Il.Ast.targ list)
     (args : El.Ast.arg list) :
-    FuncType.t * Il.Ast.expr * TId.t list option * Il.Ast.id' list =
+    FuncType.t
+    * Il.Ast.expr
+    * TId.t list option
+    * Types.tparam list
+    * Il.Ast.id' list =
   let error_not_found () =
     Format.printf "(type_method) Method %s not found for %a\n" member.it
       (El.Pp.pp_expr ~level:0) expr_base;
@@ -2130,8 +2135,8 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
   let targs = List.map it targs_il in
   let expr_base_il = type_expr cursor ctx expr_base in
   let typ_base = expr_base_il.note.typ in
-  let ft, tids_fresh, args_default =
-    let wrap_builtin ft = (ft, None, []) in
+  let ft, tids_fresh, tparams, args_default =
+    let wrap_builtin ft = (ft, None, [], []) in
     let find_method fdenv =
       let fd_matched =
         let args = FId.to_names args in
@@ -2140,7 +2145,8 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
       match fd_matched with
       | Some (fd, args_default) ->
           let ft, tids_fresh = specialize_funcdef fd targs in
-          (ft, tids_fresh, args_default)
+          let tparams = FuncDef.get_tparams fd |> fst in
+          (ft, tids_fresh, tparams, args_default)
       | None -> error_not_found ()
     in
     match (typ_base, member.it) with
@@ -2192,12 +2198,12 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
         | _ -> error_not_found ())
     | _ -> error_not_found ()
   in
-  (ft, expr_base_il, tids_fresh, args_default)
+  (ft, expr_base_il, tids_fresh, tparams, args_default)
 
 and type_call (cursor : Ctx.cursor) (ctx : Ctx.t)
     (tids_fresh : TId.t list option) (ft : FuncType.t)
-    (targs_il : Il.Ast.targ list) (args : El.Ast.arg list)
-    (args_default : Il.Ast.id' list) :
+    (tparams : Types.tparam list) (targs_il : Il.Ast.targ list)
+    (args : El.Ast.arg list) (args_default : Il.Ast.id' list) :
     Il.Ast.targ list * Il.Ast.arg list * Type.t =
   let params = FuncType.get_params ft in
   let params =
@@ -2215,10 +2221,14 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t)
     | Some tids_fresh ->
         let theta = infer_targs tids_fresh params args_il_typed in
         let targs_il =
-          List.map
-            (fun tid_fresh -> Subst.Theta.find tid_fresh theta)
-            tids_fresh
-          |> List.map (fun typ -> typ $ no_info)
+          targs_il
+          @ (List.map
+               (fun tid_fresh -> Subst.Theta.find tid_fresh theta)
+               tids_fresh
+            |> List.map (fun typ -> typ $ no_info))
+        in
+        let targs_il =
+          List.filteri (fun i _ -> i < List.length tparams) targs_il
         in
         let ft = Subst.subst_functyp theta ft in
         let params = List.map (Subst.subst_param theta) params in
@@ -2243,7 +2253,7 @@ and type_call_func_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
         (targs_il @ [ targ_il ], tids_fresh @ tids_fresh_targ))
       ([], []) targs
   in
-  let ft, tids_fresh_inserted, args_default =
+  let ft, tids_fresh_inserted, tparams, args_default =
     type_func cursor ctx var_func targs_il args
   in
   let tids_fresh =
@@ -2254,7 +2264,7 @@ and type_call_func_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   in
   (* Check if the arguments match the parameters *)
   let targs_il, args_il, typ =
-    type_call cursor ctx tids_fresh ft targs_il args args_default
+    type_call cursor ctx tids_fresh ft tparams targs_il args args_default
   in
   if typ = Types.VoidT then (
     Format.printf
@@ -2278,7 +2288,7 @@ and type_call_method_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
         (targs_il @ [ targ_il ], tids_fresh @ tids_fresh_targ))
       ([], []) targs
   in
-  let ft, expr_base_il, tids_fresh_inserted, args_default =
+  let ft, expr_base_il, tids_fresh_inserted, tparams, args_default =
     type_method cursor ctx expr_base member targs_il args
   in
   let tids_fresh =
@@ -2289,7 +2299,7 @@ and type_call_method_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   in
   (* Check if the arguments match the parameters *)
   let targs_il, args_il, typ =
-    type_call cursor ctx tids_fresh ft targs_il args args_default
+    type_call cursor ctx tids_fresh ft tparams targs_il args args_default
   in
   if typ = Types.VoidT then (
     Format.printf
@@ -2489,10 +2499,15 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     | Some tids_fresh ->
         let theta = infer_targs tids_fresh cparams args_il_typed in
         let targs_il =
-          List.map
-            (fun tid_fresh -> Subst.Theta.find tid_fresh theta)
-            tids_fresh
-          |> List.map (fun typ -> typ $ no_info)
+          targs_il
+          @ (List.map
+               (fun tid_fresh -> Subst.Theta.find tid_fresh theta)
+               tids_fresh
+            |> List.map (fun typ -> typ $ no_info))
+        in
+        let targs_il =
+          let tparams, _, _, _ = cd in
+          List.filteri (fun i _ -> i < List.length tparams) targs_il
         in
         let ct = Subst.subst_constyp theta ct in
         let cparams = List.map (Subst.subst_cparam theta) cparams in
@@ -3025,7 +3040,7 @@ and type_call_func_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
         (targs_il @ [ targ_il ], tids_fresh @ tids_fresh_targ))
       ([], []) targs
   in
-  let ft, tids_fresh_inserted, args_default =
+  let ft, tids_fresh_inserted, tparams, args_default =
     type_func cursor ctx var_func targs_il args
   in
   let tids_fresh =
@@ -3036,7 +3051,7 @@ and type_call_func_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   in
   (* Check if the arguments match the parameters *)
   let targs_il, args_il, _typ =
-    type_call cursor ctx tids_fresh ft targs_il args args_default
+    type_call cursor ctx tids_fresh ft tparams targs_il args args_default
   in
   let stmt_il =
     Lang.Ast.CallFuncS { var_func; targs = targs_il; args = args_il }
@@ -3055,7 +3070,7 @@ and type_call_method_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
         (targs_il @ [ targ_il ], tids_fresh @ tids_fresh_targ))
       ([], []) targs
   in
-  let ft, expr_base_il, tids_fresh_inserted, args_default =
+  let ft, expr_base_il, tids_fresh_inserted, tparams, args_default =
     type_method cursor ctx expr_base member targs_il args
   in
   let tids_fresh =
@@ -3066,7 +3081,7 @@ and type_call_method_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   in
   (* Check if the arguments match the parameters *)
   let targs_il, args_il, _typ =
-    type_call cursor ctx tids_fresh ft targs_il args args_default
+    type_call cursor ctx tids_fresh ft tparams targs_il args args_default
   in
   let stmt_il =
     Lang.Ast.CallMethodS

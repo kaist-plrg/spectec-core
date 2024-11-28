@@ -551,6 +551,15 @@ module FuncDef = struct
         true
     | _ -> false
 
+  let get_tparams = function
+    | ActionD _ -> ([], [])
+    | ExternFunctionD (tparams, tparams_hidden, _, _)
+    | FunctionD (tparams, tparams_hidden, _, _)
+    | ExternMethodD (tparams, tparams_hidden, _, _)
+    | ExternAbstractMethodD (tparams, tparams_hidden, _, _) ->
+        (tparams, tparams_hidden)
+    | ParserApplyMethodD _ | ControlApplyMethodD _ -> ([], [])
+
   let get_params = function
     | ActionD params
     | ExternFunctionD (_, _, params, _)

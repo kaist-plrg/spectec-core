@@ -628,7 +628,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue67.p4
 Error while typechecking p4 file: test/program/ill-typed/issue764.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue774-1.p4
-(type_call) Don't care argument can only be used for an out function/method argument
+(type_call_convention') Don't care argument can only be used for an out function/method argument
 Error while typechecking p4 file: test/program/ill-typed/issue774-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue774-2.p4
