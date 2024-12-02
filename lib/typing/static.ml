@@ -1,6 +1,6 @@
-module Ctk = Runtime.Ctk
+module Ctk = Runtime.Domain.Ctk
 module Value = Runtime.Value
-module Types = Runtime.Types
+module Types = Runtime.Tdomain.Types
 module Type = Types.Type
 module F = Format
 open Util.Source

@@ -1,7 +1,7 @@
 module L = Lang.Ast
-module Ctk = Runtime.Ctk
+module Ctk = Runtime.Domain.Ctk
 module Value = Runtime.Value
-module Type = Runtime.Types.Type
+module Type = Runtime.Tdomain.Types.Type
 open Util.Source
 
 type ('a, 'b) alt = ('a, 'b) L.alt

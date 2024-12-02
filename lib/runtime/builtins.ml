@@ -1,4 +1,4 @@
-module Type = Types.Type
+module Type = Tdomain.Types.Type
 
 (* Size evaluation *)
 
@@ -26,6 +26,7 @@ module Type = Types.Type
       the application of the method to the underlying type *)
 
 let rec min_size_in_bits' (typ : Type.t) : Bigint.t =
+  let typ = Type.saturate typ in
   match typ with
   | BoolT -> Bigint.one
   | FBitT width | FIntT width -> width
@@ -37,11 +38,11 @@ let rec min_size_in_bits' (typ : Type.t) : Bigint.t =
         (fun size typ_inner -> Bigint.(size + min_size_in_bits' typ_inner))
         Bigint.zero typs_inner
   | StackT (typ_inner, size) -> Bigint.(size * min_size_in_bits' typ_inner)
-  | StructT (_, fields, _) | HeaderT (_, fields, _) ->
+  | StructT (_, fields) | HeaderT (_, fields) ->
       List.fold_left
         (fun size (_, typ_inner) -> Bigint.(size + min_size_in_bits' typ_inner))
         Bigint.zero fields
-  | UnionT (_, fields, _) ->
+  | UnionT (_, fields) ->
       let sizes =
         List.map (fun (_, typ_inner) -> min_size_in_bits' typ_inner) fields
       in
@@ -59,6 +60,7 @@ let min_size_in_bytes (typ : Type.t) : Value.t =
   IntV size
 
 let rec max_size_in_bits' (typ : Type.t) : Bigint.t =
+  let typ = Type.saturate typ in
   match typ with
   | BoolT -> Bigint.one
   | FBitT width | FIntT width | VBitT width -> width
@@ -69,11 +71,11 @@ let rec max_size_in_bits' (typ : Type.t) : Bigint.t =
         (fun size typ_inner -> Bigint.(size + max_size_in_bits' typ_inner))
         Bigint.zero typs_inner
   | StackT (typ_inner, size) -> Bigint.(size * max_size_in_bits' typ_inner)
-  | StructT (_, fields, _) | HeaderT (_, fields, _) ->
+  | StructT (_, fields) | HeaderT (_, fields) ->
       List.fold_left
         (fun size (_, typ_inner) -> Bigint.(size + max_size_in_bits' typ_inner))
         Bigint.zero fields
-  | UnionT (_, fields, _) ->
+  | UnionT (_, fields) ->
       let sizes =
         List.map (fun (_, typ_inner) -> max_size_in_bits' typ_inner) fields
       in

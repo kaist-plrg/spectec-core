@@ -58,7 +58,7 @@ let pp_dir fmt dir = P.pp_dir fmt dir
 (* Types *)
 
 let rec pp_typ fmt typ = pp_typ' fmt typ.it
-and pp_typ' fmt typ = Runtime.Types.Type.pp fmt typ
+and pp_typ' fmt typ = Runtime.Tdomain.Types.Type.pp fmt typ
 and pp_typs fmt typs = P.pp_list pp_typ ", " fmt typs
 
 (* Values *)

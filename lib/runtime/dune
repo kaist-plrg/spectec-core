@@ -1,4 +1,5 @@
+(include_subdirs qualified)
+
 (library
  (name runtime)
- (libraries bignum util lang el)
- (modules domain ctk dir value types envs numerics builtins))
+ (libraries bignum util lang el))

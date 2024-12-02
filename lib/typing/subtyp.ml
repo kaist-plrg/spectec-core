@@ -1,5 +1,5 @@
-open Runtime.Domain
-module Types = Runtime.Types
+open Runtime.Domain.Dom
+module Types = Runtime.Tdomain.Types
 module Type = Types.Type
 
 (* (8.11.1) Explicit casts
@@ -49,7 +49,7 @@ let check_explicit_castable (typ : Type.t) : bool =
   | _ -> false
 
 let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
-  let explicit_unequal () =
+  let explicit_unequal (typ_from : Type.t) (typ_to : Type.t) =
     match (typ_from, typ_to) with
     (* bit<1> ↔ bool *)
     | FBitT width_from, BoolT when width_from = Bigint.one -> true
@@ -96,14 +96,14 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
         && List.for_all
              (fun typ_from_inner -> explicit typ_from_inner typ_to_inner)
              typs_from_inner
-    | SeqT typs_from_inner, StructT (_, fields_to, _)
-    | SeqT typs_from_inner, HeaderT (_, fields_to, _) ->
+    | SeqT typs_from_inner, StructT (_, fields_to)
+    | SeqT typs_from_inner, HeaderT (_, fields_to) ->
         let typs_to_inner = List.map snd fields_to in
         List.length typs_from_inner = List.length typs_to_inner
         && List.for_all2 explicit typs_from_inner typs_to_inner
     (* casts of a key-value list to a struct type or a header type (see Section 8.13) *)
-    | RecordT fields_from, StructT (_, fields_to, _)
-    | RecordT fields_from, HeaderT (_, fields_to, _) ->
+    | RecordT fields_from, StructT (_, fields_to)
+    | RecordT fields_from, HeaderT (_, fields_to) ->
         let compare (member_a, _) (member_b, _) = compare member_a member_b in
         let members_from, typs_from_inner =
           List.sort compare fields_from |> List.split
@@ -134,8 +134,8 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
              (fun typ_from_inner -> explicit typ_from_inner typ_to_inner)
              typs_from_inner
         && Type.is_defaultable typ_to_inner
-    | SeqDefaultT typs_from_inner, StructT (_, fields_to, _)
-    | SeqDefaultT typs_from_inner, HeaderT (_, fields_to, _) ->
+    | SeqDefaultT typs_from_inner, StructT (_, fields_to)
+    | SeqDefaultT typs_from_inner, HeaderT (_, fields_to) ->
         if List.length typs_from_inner >= List.length fields_to then false
         else
           let before i = i < List.length typs_from_inner in
@@ -147,8 +147,8 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
           in
           List.for_all2 explicit typs_from_inner typs_to_inner
           && List.for_all Type.is_defaultable typs_to_default_inner
-    | RecordDefaultT fields_from, StructT (_, fields_to, _)
-    | RecordDefaultT fields_from, HeaderT (_, fields_to, _) ->
+    | RecordDefaultT fields_from, StructT (_, fields_to)
+    | RecordDefaultT fields_from, HeaderT (_, fields_to) ->
         let members_from = List.map fst fields_from |> IdSet.of_list in
         let members_to = List.map fst fields_to |> IdSet.of_list in
         if not (IdSet.subset members_from members_to) then false
@@ -174,8 +174,10 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
   in
   (* casts where the destination type is the same as the source type
      if the destination type appears in this list (this excludes e.g., parsers or externs). *)
-  if Eq.eq_typ_alpha typ_from typ_to then check_explicit_castable typ_to
-  else explicit_unequal ()
+  let typ_from = Type.saturate typ_from in
+  let typ_to = Type.saturate typ_to in
+  if Type.eq_alpha typ_from typ_to then check_explicit_castable typ_to
+  else explicit_unequal typ_from typ_to
 
 (* (8.11.2) Implicit casts
 
@@ -201,7 +203,7 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
    converted automatically to a structure-valued expression (see 8.13). *)
 
 and implicit (typ_from : Type.t) (typ_to : Type.t) : bool =
-  let implicit_unequal () =
+  let implicit_unequal (typ_from : Type.t) (typ_to : Type.t) =
     match (typ_from, typ_to) with
     (* int <: fint and int <: fbit *)
     | IntT, FIntT _ | IntT, FBitT _ -> true
@@ -228,8 +230,8 @@ and implicit (typ_from : Type.t) (typ_to : Type.t) : bool =
              typs_a_inner
     (* seq tau* <: struct id (id', tau')* if (tau <: tau')* and
        seq tau* <: header id (id', tau')* if (tau <: tau')* *)
-    | SeqT typs_a_inner, StructT (_, fields_b, _)
-    | SeqT typs_a_inner, HeaderT (_, fields_b, _) ->
+    | SeqT typs_a_inner, StructT (_, fields_b)
+    | SeqT typs_a_inner, HeaderT (_, fields_b) ->
         let typs_b_inner = List.map snd fields_b in
         List.length typs_a_inner = List.length typs_b_inner
         && List.for_all2 implicit typs_a_inner typs_b_inner
@@ -239,8 +241,8 @@ and implicit (typ_from : Type.t) (typ_to : Type.t) : bool =
         && List.for_all2 implicit typs_a_inner typs_b_inner
     (* record (id', tau)* <: struct id (id', tau')* if (tau <: tau')* and
        record (id', tau)* <: header id (id', tau')* if (tau <: tau')* *)
-    | RecordT fields_a, StructT (_, fields_b, _)
-    | RecordT fields_a, HeaderT (_, fields_b, _) ->
+    | RecordT fields_a, StructT (_, fields_b)
+    | RecordT fields_a, HeaderT (_, fields_b) ->
         let compare (member_a, _) (member_b, _) = compare member_a member_b in
         let members_a, typs_a_inner =
           List.sort compare fields_a |> List.split
@@ -278,8 +280,8 @@ and implicit (typ_from : Type.t) (typ_to : Type.t) : bool =
              (fun typ_from_inner -> implicit typ_from_inner typ_to_inner)
              typs_from_inner
         && Type.is_defaultable typ_to_inner
-    | SeqDefaultT typs_from_inner, StructT (_, fields_to, _)
-    | SeqDefaultT typs_from_inner, HeaderT (_, fields_to, _) ->
+    | SeqDefaultT typs_from_inner, StructT (_, fields_to)
+    | SeqDefaultT typs_from_inner, HeaderT (_, fields_to) ->
         if List.length typs_from_inner >= List.length fields_to then false
         else
           let before i = i < List.length typs_from_inner in
@@ -291,8 +293,8 @@ and implicit (typ_from : Type.t) (typ_to : Type.t) : bool =
           in
           List.for_all2 implicit typs_from_inner typs_to_inner
           && List.for_all Type.is_defaultable typs_to_default_inner
-    | RecordDefaultT fields_from, StructT (_, fields_to, _)
-    | RecordDefaultT fields_from, HeaderT (_, fields_to, _) ->
+    | RecordDefaultT fields_from, StructT (_, fields_to)
+    | RecordDefaultT fields_from, HeaderT (_, fields_to) ->
         let members_from = List.map fst fields_from |> IdSet.of_list in
         let members_to = List.map fst fields_to |> IdSet.of_list in
         if not (IdSet.subset members_from members_to) then false
@@ -316,4 +318,7 @@ and implicit (typ_from : Type.t) (typ_to : Type.t) : bool =
     | InvalidT, HeaderT _ | InvalidT, UnionT _ -> true
     | _ -> false
   in
-  if Eq.eq_typ_alpha typ_from typ_to then true else implicit_unequal ()
+  let typ_from = Type.saturate typ_from in
+  let typ_to = Type.saturate typ_to in
+  if Type.eq_alpha typ_from typ_to then true
+  else implicit_unequal typ_from typ_to

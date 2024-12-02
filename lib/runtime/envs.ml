@@ -1,20 +1,20 @@
 open Domain
-open Types
+open Tdomain.Types
 
 (* Environment for variable identifiers *)
 
-module VEnv = MakeIdEnv (Value)
-module RType = MakeTriple (Type) (Dir) (Ctk)
-module TEnv = MakeIdEnv (RType)
+module VEnv = Dom.MakeIdEnv (Value)
+module RType = Dom.MakeTriple (Type) (Dir) (Ctk)
+module TEnv = Dom.MakeIdEnv (RType)
 
 (* Environment for type identifiers *)
 
-module TDEnv = MakeTIdEnv (TypeDef)
+module TDEnv = Dom.MakeTIdEnv (TypeDef)
 
 (* Environment for function identifiers *)
 
-module FDEnv = MakeFIdEnv (FuncDef)
+module FDEnv = Dom.MakeFIdEnv (FuncDef)
 
 (* Environment for constructor identifiers *)
 
-module CDEnv = MakeCIdEnv (ConsDef)
+module CDEnv = Dom.MakeCIdEnv (ConsDef)

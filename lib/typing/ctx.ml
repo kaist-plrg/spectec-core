@@ -1,7 +1,8 @@
 module L = Lang.Ast
 module Value = Runtime.Value
-module Types = Runtime.Types
-module Ctk = Runtime.Ctk
+module Types = Runtime.Tdomain.Types
+module Type = Types.Type
+module Ctk = Runtime.Domain.Ctk
 module Envs = Runtime.Envs
 module F = Format
 open Util.Source
@@ -260,7 +261,7 @@ let add_rtype cursor id typ dir ctk ctx =
     id = "main"
     && not
          (cursor = Global
-         && match typ with Types.PackageT _ -> true | _ -> false)
+         && match Type.saturate typ with Types.PackageT _ -> true | _ -> false)
   then (
     F.printf
       "(add_rtype) main is reserved for a package instance at the top level\n";

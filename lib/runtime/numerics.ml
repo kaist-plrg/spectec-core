@@ -13,7 +13,7 @@
  * under the License.
  *)
 
-module Type = Types.Type
+module Type = Tdomain.Types.Type
 open Util.Source
 
 (* Bit manipulation *)
@@ -555,6 +555,7 @@ let eval_bitstring_access (value : Value.t) (hvalue : Value.t)
 (* Type cast evaluation *)
 
 let rec eval_cast_bool (typ : Type.t) (b : bool) : Value.t =
+  let typ = Type.saturate typ in
   match typ with
   | BoolT -> BoolV b
   | FBitT width_to -> FBitV (width_to, if b then Bigint.one else Bigint.zero)
@@ -564,6 +565,7 @@ let rec eval_cast_bool (typ : Type.t) (b : bool) : Value.t =
       |> failwith
 
 and eval_cast_int (typ : Type.t) (i : Bigint.t) : Value.t =
+  let typ = Type.saturate typ in
   match typ with
   | BoolT -> BoolV Bigint.(i = one)
   | IntT -> IntV i
@@ -577,6 +579,7 @@ and eval_cast_int (typ : Type.t) (i : Bigint.t) : Value.t =
       |> failwith
 
 and eval_cast_fint (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
+  let typ = Type.saturate typ in
   match typ with
   | IntT -> IntV i
   | FIntT width_to -> int_of_raw_int i width_to
@@ -588,6 +591,7 @@ and eval_cast_fint (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
       |> failwith
 
 and eval_cast_fbit (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
+  let typ = Type.saturate typ in
   match typ with
   | BoolT -> BoolV Bigint.(i = one)
   | IntT -> IntV i
@@ -601,10 +605,12 @@ and eval_cast_fbit (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
 
 and eval_cast_senum_field (typ : Type.t) (_id : string) (_member : string)
     (value : Value.t) : Value.t =
+  let typ = Type.saturate typ in
   eval_cast typ value
 
 and eval_cast_struct (typ : Type.t) (fields_value : (string * Value.t) list) :
     Value.t =
+  let typ = Type.saturate typ in
   match typ with
   | StructT _ -> StructV fields_value
   | _ ->
@@ -613,6 +619,7 @@ and eval_cast_struct (typ : Type.t) (fields_value : (string * Value.t) list) :
 
 and eval_cast_header (typ : Type.t) (valid : bool)
     (fields_value : (string * Value.t) list) : Value.t =
+  let typ = Type.saturate typ in
   match typ with
   | HeaderT _ -> HeaderV (valid, fields_value)
   | _ ->
@@ -620,6 +627,7 @@ and eval_cast_header (typ : Type.t) (valid : bool)
       |> failwith
 
 and eval_cast_seq (typ : Type.t) (values : Value.t list) : Value.t =
+  let typ = Type.saturate typ in
   match typ with
   | ListT typ_inner ->
       let values = List.map (eval_cast typ_inner) values in
@@ -627,12 +635,12 @@ and eval_cast_seq (typ : Type.t) (values : Value.t list) : Value.t =
   | TupleT typs_inner ->
       let values = List.map2 eval_cast typs_inner values in
       TupleV values
-  | StructT (_, fields, _) ->
+  | StructT (_, fields) ->
       let members, typs_inner = List.split fields in
       let values = List.map2 eval_cast typs_inner values in
       let fields = List.combine members values in
       StructV fields
-  | HeaderT (_, fields, _) ->
+  | HeaderT (_, fields) ->
       let members, typs_inner = List.split fields in
       let values = List.map2 eval_cast typs_inner values in
       let fields = List.combine members values in
@@ -643,6 +651,7 @@ and eval_cast_seq (typ : Type.t) (values : Value.t list) : Value.t =
       |> failwith
 
 and eval_cast_seq_default (typ : Type.t) (values : Value.t list) : Value.t =
+  let typ = Type.saturate typ in
   match typ with
   | TupleT typs_inner ->
       let before i = i < List.length values in
@@ -655,7 +664,7 @@ and eval_cast_seq_default (typ : Type.t) (values : Value.t list) : Value.t =
         @ List.map eval_default typs_inner_default
       in
       TupleV values
-  | StructT (_, fields_typ, _) ->
+  | StructT (_, fields_typ) ->
       let before i = i < List.length values in
       let members, typs_inner = List.split fields_typ in
       let typs_inner_default =
@@ -668,7 +677,7 @@ and eval_cast_seq_default (typ : Type.t) (values : Value.t list) : Value.t =
       in
       let fields = List.combine members values in
       StructV fields
-  | HeaderT (_, fields_typ, _) ->
+  | HeaderT (_, fields_typ) ->
       let before i = i < List.length values in
       let members, typs_inner = List.split fields_typ in
       let typs_inner_default =
@@ -688,8 +697,9 @@ and eval_cast_seq_default (typ : Type.t) (values : Value.t list) : Value.t =
 
 and eval_cast_record (typ : Type.t) (fields_value : (string * Value.t) list) :
     Value.t =
+  let typ = Type.saturate typ in
   match typ with
-  | StructT (_, fields_typ, _) ->
+  | StructT (_, fields_typ) ->
       let fields =
         List.fold_left
           (fun fields (member, typ) ->
@@ -699,7 +709,7 @@ and eval_cast_record (typ : Type.t) (fields_value : (string * Value.t) list) :
           [] fields_typ
       in
       StructV fields
-  | HeaderT (_, fields_typ, _) ->
+  | HeaderT (_, fields_typ) ->
       let fields =
         List.fold_left
           (fun fields (member, typ) ->
@@ -715,8 +725,9 @@ and eval_cast_record (typ : Type.t) (fields_value : (string * Value.t) list) :
 
 and eval_cast_record_default (typ : Type.t)
     (fields_value : (string * Value.t) list) : Value.t =
+  let typ = Type.saturate typ in
   match typ with
-  | StructT (_, fields_typ, _) ->
+  | StructT (_, fields_typ) ->
       let fields =
         List.fold_left
           (fun fields (member, typ) ->
@@ -729,7 +740,7 @@ and eval_cast_record_default (typ : Type.t)
           [] fields_typ
       in
       StructV fields
-  | HeaderT (_, fields_typ, _) ->
+  | HeaderT (_, fields_typ) ->
       let fields =
         List.fold_left
           (fun fields (member, typ) ->
@@ -750,13 +761,14 @@ and eval_cast_record_default (typ : Type.t)
 and eval_cast_default (typ : Type.t) : Value.t = eval_default typ
 
 and eval_cast_invalid (typ : Type.t) : Value.t =
+  let typ = Type.saturate typ in
   match typ with
-  | HeaderT (_, fields, _) ->
+  | HeaderT (_, fields) ->
       let members, typs = List.split fields in
       let values = List.map eval_default typs in
       let fields = List.combine members values in
       HeaderV (false, fields)
-  | UnionT (_, fields, _) ->
+  | UnionT (_, fields) ->
       let members, typs = List.split fields in
       let values = List.map eval_default typs in
       let fields = List.combine members values in
@@ -815,6 +827,7 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
    extern types, parser types, control types, package types. *)
 
 and eval_default (typ : Type.t) : Value.t =
+  let typ = Type.saturate typ in
   match typ with
   | ErrT -> ErrV "NoError"
   | StrT -> StrV ""
@@ -843,17 +856,17 @@ and eval_default (typ : Type.t) : Value.t =
         List.init (Bigint.to_int_exn size) (fun _ -> eval_default typ_inner)
       in
       StackV (values, Bigint.zero, size)
-  | StructT (_, fields, _) ->
+  | StructT (_, fields) ->
       let members, typs_inner = List.split fields in
       let values = List.map eval_default typs_inner in
       let fields = List.combine members values in
       StructV fields
-  | HeaderT (_, fields, _) ->
+  | HeaderT (_, fields) ->
       let members, typs_inner = List.split fields in
       let values = List.map eval_default typs_inner in
       let fields = List.combine members values in
       HeaderV (false, fields)
-  | UnionT (_, fields, _) ->
+  | UnionT (_, fields) ->
       let members, typs_inner = List.split fields in
       let values = List.map eval_default typs_inner in
       let fields = List.combine members values in
