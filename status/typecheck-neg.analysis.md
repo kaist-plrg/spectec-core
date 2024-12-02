@@ -403,25 +403,7 @@ s func(bit t, bit t1) {
 Rationale for disallowing this: the P4 spec does not allow explicit cast to a struct type, with one exception, when initializing a struct variable.
 But maybe this is too strict?
 
-## \[REPORTED\] 2. Directionless action arguments in a program acts like `in`?: [directionless-action-arg-as-in](../test/program/ill-typed-excluded/spec-clarify/directionless-action-arg-as-in)
-
-Waiting for spec clarification, [Issue#1350](https://github.com/p4lang/p4-spec/issues/1350).
-
-Partly yes, because they can be implicitly cast (ongoing PR exists).
-Partly no, because they must be compile-time known.
-
-```p4
-action b(inout bit<32> x, bit<8> data) {
-    meta.a = meta.a ^ (bit<4>) x ^ (bit<4>) data;
-}
-table t1 {
-    key = { hdr.ethernet.srcAddr : exact; }
-    actions = { b(meta.c); }
-    default_action = b(meta.c, (bit<8>) meta.d);
-}
-```
-
-## \[REPORTED\] 3. Restrictions on constructor invocation sites
+## \[REPORTED\] 2. Restrictions on constructor invocation sites
 
 Waiting for spec clarification, [Issue#1349](https://github.com/p4lang/p4-spec/issues/1349).
 
@@ -788,6 +770,25 @@ control ingress(inout Headers h) {
 issue2545.p4(17): [--Werror=target-error] error: call_extern({ eth_hdr = tmp_0_eth_hdr }): extern functions with 'out' nested struct argument (val) not supported
         call_extern(tmp);
         ^^^^^^^^^^^^^^^^
+```
+
+## \[REPORTED\] 11. Directionless action arguments in a program acts like `in`?: [directionless-action-arg-as-in](../test/program/ill-typed-excluded/test-clarify/directionless-action-arg-as-in)
+
+Waiting for test clarification, [Issue#5042](https://github.com/p4lang/p4c/issues/5042).
+
+~~Waiting for spec clarification, [Issue#1350](https://github.com/p4lang/p4-spec/issues/1350).~~
+
+~~Partly yes, because they can be implicitly cast (ongoing PR exists). Partly no, because they must be compile-time known.~~
+
+```p4
+action b(inout bit<32> x, bit<8> data) {
+    meta.a = meta.a ^ (bit<4>) x ^ (bit<4>) data;
+}
+table t1 {
+    key = { hdr.ethernet.srcAddr : exact; }
+    actions = { b(meta.c); }
+    default_action = b(meta.c, (bit<8>) meta.d);
+}
 ```
 
 # D. More than a type check? (Requiring domain-specific knowledge)
