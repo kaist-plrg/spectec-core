@@ -3335,31 +3335,41 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
           Envs.FDEnv.fold
             (fun fid fd_abstract fdenv_extern ->
               let fd_extern = Envs.FDEnv.find_opt fid fdenv_extern in
-              (* (TODO) What if extern abstract method decl has type parameters? *)
               if
                 not
                   (match (fd_extern : FuncDef.t option) with
-                  | Some
-                      (ExternAbstractMethodD
-                        ( tparams_extern,
-                          tparams_hidden_extern,
-                          params_extern,
-                          typ_ret_extern )) ->
-                      let fd_extern =
-                        Types.ExternMethodD
-                          ( tparams_extern,
-                            tparams_hidden_extern,
-                            params_extern,
-                            typ_ret_extern )
-                      in
-                      FuncDef.eq_alpha fd_extern fd_abstract
+                  | Some (ExternAbstractMethodD _) -> true
                   | _ -> false)
               then (
                 Format.printf
                   "(type_instantiation_decl) Abstract method %a was not declared\n"
                   FId.pp fid;
                 assert false);
-              Envs.FDEnv.add fid fd_abstract fdenv_extern)
+              let fd_extern =
+                let fd_extern = Option.get fd_extern in
+                let tparams, tparams_hidden, params, typ_ret =
+                  match fd_extern with
+                  | ExternAbstractMethodD
+                      (tparams, tparams_hidden, params, typ_ret) ->
+                      (tparams, tparams_hidden, params, typ_ret)
+                  | _ -> assert false
+                in
+                Types.ExternMethodD (tparams, tparams_hidden, params, typ_ret)
+              in
+              let fd_extern_inner =
+                let theta =
+                  List.combine (tparams @ tparams_hidden) typs_inner
+                  |> TIdMap.of_list
+                in
+                FuncDef.subst theta fd_extern
+              in
+              if not (FuncDef.eq_alpha fd_extern_inner fd_abstract) then (
+                Format.printf
+                  "(type_instantiation_decl) Abstract method %a does not match \
+                   the declared type\n"
+                  FId.pp fid;
+                assert false);
+              Envs.FDEnv.add fid fd_extern fdenv_extern)
             fdenv_abstract fdenv_extern
         in
         Envs.FDEnv.iter

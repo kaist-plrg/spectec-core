@@ -28,9 +28,6 @@ Typecheck success: test/program/ill-typed-excluded/over-typecheck/parser-state-r
 >>> Running typecheck test on test/program/ill-typed-excluded/spec-clarify/cast-to-struct/issue3233.p4
 Typecheck success: test/program/ill-typed-excluded/spec-clarify/cast-to-struct/issue3233.p4
 
->>> Running typecheck test on test/program/ill-typed-excluded/spec-clarify/directionless-action-arg-as-in/issue473.p4
-Typecheck success: test/program/ill-typed-excluded/spec-clarify/directionless-action-arg-as-in/issue473.p4
-
 >>> Running typecheck test on test/program/ill-typed-excluded/test-clarify/action-struct-param/issue532.p4
 Typecheck success: test/program/ill-typed-excluded/test-clarify/action-struct-param/issue532.p4
 
@@ -39,6 +36,9 @@ Typecheck success: test/program/ill-typed-excluded/test-clarify/compare-sequence
 
 >>> Running typecheck test on test/program/ill-typed-excluded/test-clarify/control-shadowing/issue2544_shadowing1.p4
 Typecheck success: test/program/ill-typed-excluded/test-clarify/control-shadowing/issue2544_shadowing1.p4
+
+>>> Running typecheck test on test/program/ill-typed-excluded/test-clarify/directionless-action-arg-as-in/issue473.p4
+Typecheck success: test/program/ill-typed-excluded/test-clarify/directionless-action-arg-as-in/issue473.p4
 
 >>> Running typecheck test on test/program/ill-typed-excluded/test-clarify/extern-nested-struct-param/issue2545.p4
 Typecheck success: test/program/ill-typed-excluded/test-clarify/extern-nested-struct-param/issue2545.p4
