@@ -707,7 +707,10 @@ Waiting for spec clarification, [Issue#1347](https://github.com/p4lang/p4-spec/i
 The spec does not mention if the size given to a value set declaration should be local compile-time known, compile-time known, or neither.
 I suspect it should be at least compile-time known, and it is already reflected in the current p4cherry implementation.
 
-## 9. A generic type that imposes (or implies) a type constraint: [generic-constrained](../test/program/well-typed-excluded/spec-clarify/generic-constrained)
+## \[REPORETED\] 9. A generic type that imposes (or implies) a type constraint: [generic-constrained](../test/program/well-typed-excluded/spec-clarify/generic-constrained)
+
+Waiting for spec clarification, [Issue#1353](https://github.com/p4lang/p4-spec/issues/1353).
+Also found a related compiler bug: [Issue#5041](https://github.com/p4lang/p4c/issues/5041).
 
 ```p4
 control nothing(
