@@ -547,7 +547,7 @@ BFD_Offload(32768) bfd_session_liveness_tracker = ...;
 
 ## \[REPORTED\] 2. How to match abstract methods when initializing an instance?: [abstract-method-overload](../test/program/well-typed-excluded/spec-clarify/abstract-method-overload)
 
-Waiting for spec clarification, [Issue#1346](https://github.com/p4lang/p4-spec/issues/1346).
+Waiting for spec clarification, [Issue#1346](https://github.com/p4lang/p4-spec/issues/1346) and [PR#1355](https://github.com/p4lang/p4-spec/pull/1355).
 
 When initializing an instance with an abstract method, to determine if the method was declared as abstract, I believe we should match the method using both the method name and argument names.
 Mainly because P4 allows overloading of methods through argument names.
@@ -588,7 +588,7 @@ Virtual() cntr = {
 
 ## \[REPORTED\] 3. Scope when instantiating with an initialization block
 
-Waiting for spec clarification, [Issue#1346](https://github.com/p4lang/p4-spec/issues/1346).
+Waiting for spec clarification, [Issue#1346](https://github.com/p4lang/p4-spec/issues/1346) and [PR#1355](https://github.com/p4lang/p4-spec/pull/1355).
 
 In P4, initialization block is used to initialize abstract methods when instantiating an extern object.
 The spec mentions that:
@@ -776,7 +776,7 @@ sw0(p1(createWidget(16w0, 8w0))) main;
 
 ## \[REPORTED\] 12. Restrictions on call sites: [call-site-restrictions](../test/program/well-typed-excluded/spec-clarify/call-site-restrictions)
 
-Waiting for spec clarification, [Issue#1349](https://github.com/p4lang/p4-spec/issues/1349).
+Waiting for spec clarification, [Issue#1349](https://github.com/p4lang/p4-spec/issues/1349) and [PR#1356](https://github.com/p4lang/p4-spec/pull/1356).
 
 The spec lists restrictions on what kind of calls can be made from which places in a P4 program.
 
