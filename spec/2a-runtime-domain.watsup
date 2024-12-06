@@ -3,6 +3,8 @@
 syntax set(syntax K) = K*
 syntax map(syntax K, syntax V) = (K, V)*
 
+;; Display Hack to enclose the set in curly braces
+def $in_set(syntax K, K*) : bool   hint(show % <- %latex("\\{") % %latex("\\}"))
 
 ;; Map on id domain
 

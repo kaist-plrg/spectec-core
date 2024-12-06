@@ -239,15 +239,19 @@ rule Expr_ok/typeacce-senumt:
 
 rule Expr_ok/expracce-stackt-last-lastindex:
   p C |- ExprAccE expr_b member : FBitT 32
+  ----
   -- Expr_ok: p C |- expr_b : typ_b
   -- if StackT typ_b_in size = $saturate_typ(typ_b)
-  -- if member = "last" \/ member = "lastIndex"
+  ----
+  -- if $in_set(member, "last" "lastIndex")
 
 rule Expr_ok/expracce-stackt-next-last:
   p C |- ExprAccE expr_b member : typ_b_in
+  ----
   -- Expr_ok: p C |- expr_b : typ_b
   -- if StackT typ_b_in size = $saturate_typ(typ_b)
-  -- if member = "next" \/ member = "last"
+  ----
+  -- if $in_set(member, "next" "last")
 
 rule Expr_ok/expracce-structt:
   p C |- ExprAccE expr_b member : typ
@@ -311,7 +315,7 @@ rule Expr_ok/calltypee:
   ----
   -- if typdef = $find_typdef(p, C, name)
   ----
-  -- if member = "minSizeInBits" \/ member = "minSizeInBytes" \/ member = "maxSizeInBits" \/ member = "maxSizeInBytes"
+  -- if $in_set(member, "minSizeInBits" "minSizeInBytes" "maxSizeInBits" "maxSizeInBytes")
   ---- 
   -- if functyp = BuiltinMethodT eps IntT
   ----

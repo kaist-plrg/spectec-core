@@ -20,17 +20,17 @@ rule Method_ok/builtin:
   ----
   -- (Type_ok: p C |- targ : typ_a)*
   ----
-  -- if member = "minSizeInBits" \/ member = "minSizeInBytes" \/ member = "maxSizeInBits" \/ member = "maxSizeInBytes"
+  -- if $in_set(member, "minSizeInBits" "minSizeInBytes" "maxSizeInBits" "maxSizeInBytes")
 
-;; TODO LaTeX won't render BuiltinMethodT due to overfull hbox
-;;rule Method_ok/stackt:
-;;  p C |- expr_b member eps arg* : functyp
-;;  ----
-;;  -- Expr_ok: p C |- expr_b: typ_b
-;;  -- if StackT typ_b_in size_b = $saturate_typ(typ_b)
-;;  ----
-;;  -- if member = "push_front" \/ member = "pop_front"
-;;  -- if functyp = BuiltinMethodT ("count", NO, IntT, eps) IntT
+rule Method_ok/stackt:
+  p C |- expr_b member eps arg* : BuiltinMethodT paramtyp IntT
+  ----
+  -- Expr_ok: p C |- expr_b: typ_b
+  -- if StackT typ_b_in size_b = $saturate_typ(typ_b)
+  ----
+  -- if $in_set(member, "push\\_front" "pop\\_back")
+  ----
+  -- if paramtyp = "count" NO IntT eps
 
 rule Method_ok/headert-isvalid:
   p C |- expr_b "isValid" eps arg* : BuiltinMethodT eps BoolT
@@ -44,7 +44,7 @@ rule Method_ok/headert-setvalid-setinvalid:
   -- Expr_ok: p C |- expr_b: typ_b
   -- if HeaderT id_b (member, typ_b_in)* = $saturate_typ(typ_b)
   ----
-  -- if member = "setValid" \/ member = "setInvalid"
+  -- if $in_set(member, "setValid" "setInvalid")
 
 rule Method_ok/uniont:
   p C |- expr_b "isValid" eps arg* : BuiltinMethodT eps BoolT

@@ -1,2 +1,6 @@
-rule Type_wf/void:
-  VoidT : OK
+rule Type_wf/basetyp:
+  btyp : OK
+
+rule Type_wf/deftyp:
+  ListT typ*
+  -- (Type_wf: typ : OK)*

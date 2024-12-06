@@ -6,7 +6,7 @@ relation Eval_static: cursor context |- expr ~> val
 ;; Type evaluation
 
 relation Type_ok: cursor context |- type : typ
-relation Type_wf: type : OK
+relation Type_wf: typ : OK
 
 ;; Expression, Statement, and Declaration typing
 
