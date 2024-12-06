@@ -174,8 +174,8 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
   in
   (* casts where the destination type is the same as the source type
      if the destination type appears in this list (this excludes e.g., parsers or externs). *)
-  let typ_from = Type.saturate typ_from in
-  let typ_to = Type.saturate typ_to in
+  let typ_from = Type.canon typ_from in
+  let typ_to = Type.canon typ_to in
   if Type.eq_alpha typ_from typ_to then check_explicit_castable typ_to
   else explicit_unequal typ_from typ_to
 
@@ -318,7 +318,7 @@ and implicit (typ_from : Type.t) (typ_to : Type.t) : bool =
     | InvalidT, HeaderT _ | InvalidT, UnionT _ -> true
     | _ -> false
   in
-  let typ_from = Type.saturate typ_from in
-  let typ_to = Type.saturate typ_to in
+  let typ_from = Type.canon typ_from in
+  let typ_to = Type.canon typ_to in
   if Type.eq_alpha typ_from typ_to then true
   else implicit_unequal typ_from typ_to

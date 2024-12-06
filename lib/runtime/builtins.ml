@@ -26,8 +26,9 @@ module Type = Tdomain.Types.Type
       the application of the method to the underlying type *)
 
 let rec min_size_in_bits' (typ : Type.t) : Bigint.t =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
+  | SpecT _ | DefT _ -> assert false
   | BoolT -> Bigint.one
   | FBitT width | FIntT width -> width
   | VBitT _ -> Bigint.zero
@@ -60,8 +61,9 @@ let min_size_in_bytes (typ : Type.t) : Value.t =
   IntV size
 
 let rec max_size_in_bits' (typ : Type.t) : Bigint.t =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
+  | SpecT _ | DefT _ -> assert false
   | BoolT -> Bigint.one
   | FBitT width | FIntT width | VBitT width -> width
   | NewT (_, typ_inner) -> max_size_in_bits' typ_inner

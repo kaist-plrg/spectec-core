@@ -14,11 +14,13 @@ module Type = struct
   let eq_alpha = eq_typ_alpha
   let free = free_typ
   let subst = subst_typ
-  let saturate = saturate_typ
+  let unroll = unroll_typ
+  let canon = canon_typ
 
   let rec get_width typ =
-    let typ = saturate_typ typ in
+    let typ = canon_typ typ in
     match typ with
+    | SpecT _ | DefT _ -> assert false
     | FIntT width | FBitT width | VBitT width ->
         width |> Bigint.to_int |> Option.get
     | NewT (_, typ_inner) -> get_width typ_inner
@@ -27,17 +29,20 @@ module Type = struct
         assert false
 
   let is_numeric typ =
-    let typ = saturate_typ typ in
-    match typ with IntT | FIntT _ | FBitT _ -> true | _ -> false
+    let typ = canon_typ typ in
+    match typ with
+    | SpecT _ | DefT _ -> assert false
+    | IntT | FIntT _ | FBitT _ -> true
+    | _ -> false
 
   let rec is_ground typ =
-    let typ = saturate_typ typ in
+    let typ = canon_typ typ in
     match typ with
+    | SpecT _ | DefT _ -> assert false
     | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
     | VBitT _ ->
         true
     | VarT _ -> false
-    | SpecT _ -> assert false
     | NewT (_, typ_inner) -> is_ground typ_inner
     | EnumT _ -> true
     | SEnumT (_, typ_inner, _) -> is_ground typ_inner
@@ -58,14 +63,14 @@ module Type = struct
     | TableT _ -> true
 
   let rec is_defaultable typ =
-    let typ = saturate_typ typ in
+    let typ = canon_typ typ in
     match typ with
+    | SpecT _ | DefT _ -> assert false
     | VoidT -> false
     | ErrT -> true
     | MatchKindT -> false
     | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ -> true
     | VarT _ -> false
-    | SpecT _ -> assert false
     | NewT (_, typ_inner) -> is_defaultable typ_inner
     | EnumT _ -> true
     | SEnumT (_, typ_inner, _) -> is_defaultable typ_inner
@@ -80,13 +85,13 @@ module Type = struct
         false
 
   let rec can_equals typ =
-    let typ = saturate_typ typ in
+    let typ = canon_typ typ in
     match typ with
+    | SpecT _ | DefT _ -> assert false
     | VoidT -> false
     | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ ->
         true
     | VarT _ -> false
-    | SpecT _ -> assert false
     | NewT (_, typ_inner) -> can_equals typ_inner
     | EnumT _ -> true
     | SEnumT (_, typ_inner, _) | ListT typ_inner -> can_equals typ_inner

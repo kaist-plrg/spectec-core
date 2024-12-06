@@ -1,4 +1,4 @@
-# build and executables
+# p4cherry build and executables
 _build
 p4cherry
 p4cherry-test
@@ -6,6 +6,17 @@ p4cherry-test
 doc/_sphinx
 doc/spectec
 
-# logs
+# p4cherry-test logs
 log
 error
+
+# spectec
+watsup
+spec-gen.include
+*.aux
+*.log
+*.tex
+*.pdf
+
+# calculus
+!calculus/*.tex

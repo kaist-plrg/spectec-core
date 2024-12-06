@@ -555,8 +555,9 @@ let eval_bitstring_access (value : Value.t) (hvalue : Value.t)
 (* Type cast evaluation *)
 
 let rec eval_cast_bool (typ : Type.t) (b : bool) : Value.t =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
+  | SpecT _ | DefT _ -> assert false
   | BoolT -> BoolV b
   | FBitT width_to -> FBitV (width_to, if b then Bigint.one else Bigint.zero)
   | NewT (_, typ_inner) -> eval_cast_bool typ_inner b
@@ -565,8 +566,9 @@ let rec eval_cast_bool (typ : Type.t) (b : bool) : Value.t =
       |> failwith
 
 and eval_cast_int (typ : Type.t) (i : Bigint.t) : Value.t =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
+  | SpecT _ | DefT _ -> assert false
   | BoolT -> BoolV Bigint.(i = one)
   | IntT -> IntV i
   | FIntT width -> int_of_raw_int i width
@@ -579,8 +581,9 @@ and eval_cast_int (typ : Type.t) (i : Bigint.t) : Value.t =
       |> failwith
 
 and eval_cast_fint (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
+  | SpecT _ | DefT _ -> assert false
   | IntT -> IntV i
   | FIntT width_to -> int_of_raw_int i width_to
   | FBitT width_to -> bit_of_raw_int i width_to
@@ -591,8 +594,9 @@ and eval_cast_fint (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
       |> failwith
 
 and eval_cast_fbit (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
+  | SpecT _ | DefT _ -> assert false
   | BoolT -> BoolV Bigint.(i = one)
   | IntT -> IntV i
   | FIntT width_to -> int_of_raw_int i width_to
@@ -605,13 +609,13 @@ and eval_cast_fbit (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
 
 and eval_cast_senum_field (typ : Type.t) (_id : string) (_member : string)
     (value : Value.t) : Value.t =
-  let typ = Type.saturate typ in
   eval_cast typ value
 
 and eval_cast_struct (typ : Type.t) (fields_value : (string * Value.t) list) :
     Value.t =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
+  | SpecT _ | DefT _ -> assert false
   | StructT _ -> StructV fields_value
   | _ ->
       Format.asprintf "(TODO) Cast from struct to type %a undefined" Type.pp typ
@@ -619,16 +623,18 @@ and eval_cast_struct (typ : Type.t) (fields_value : (string * Value.t) list) :
 
 and eval_cast_header (typ : Type.t) (valid : bool)
     (fields_value : (string * Value.t) list) : Value.t =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
+  | SpecT _ | DefT _ -> assert false
   | HeaderT _ -> HeaderV (valid, fields_value)
   | _ ->
       Format.asprintf "(TODO) Cast from struct to type %a undefined" Type.pp typ
       |> failwith
 
 and eval_cast_seq (typ : Type.t) (values : Value.t list) : Value.t =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
+  | SpecT _ | DefT _ -> assert false
   | ListT typ_inner ->
       let values = List.map (eval_cast typ_inner) values in
       SeqV values
@@ -651,8 +657,9 @@ and eval_cast_seq (typ : Type.t) (values : Value.t list) : Value.t =
       |> failwith
 
 and eval_cast_seq_default (typ : Type.t) (values : Value.t list) : Value.t =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
+  | SpecT _ | DefT _ -> assert false
   | TupleT typs_inner ->
       let before i = i < List.length values in
       let typs_inner_default =
@@ -697,8 +704,9 @@ and eval_cast_seq_default (typ : Type.t) (values : Value.t list) : Value.t =
 
 and eval_cast_record (typ : Type.t) (fields_value : (string * Value.t) list) :
     Value.t =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
+  | SpecT _ | DefT _ -> assert false
   | StructT (_, fields_typ) ->
       let fields =
         List.fold_left
@@ -725,8 +733,9 @@ and eval_cast_record (typ : Type.t) (fields_value : (string * Value.t) list) :
 
 and eval_cast_record_default (typ : Type.t)
     (fields_value : (string * Value.t) list) : Value.t =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
+  | SpecT _ | DefT _ -> assert false
   | StructT (_, fields_typ) ->
       let fields =
         List.fold_left
@@ -761,8 +770,9 @@ and eval_cast_record_default (typ : Type.t)
 and eval_cast_default (typ : Type.t) : Value.t = eval_default typ
 
 and eval_cast_invalid (typ : Type.t) : Value.t =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
+  | SpecT _ | DefT _ -> assert false
   | HeaderT (_, fields) ->
       let members, typs = List.split fields in
       let values = List.map eval_default typs in
@@ -827,8 +837,9 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
    extern types, parser types, control types, package types. *)
 
 and eval_default (typ : Type.t) : Value.t =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
+  | SpecT _ | DefT _ -> assert false
   | ErrT -> ErrV "NoError"
   | StrT -> StrV ""
   | BoolT -> BoolV false

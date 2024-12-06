@@ -26,6 +26,7 @@ and typ =
   | VarT of L.id'
   | SpecT of typdef * typ list
   (* 2b. Derived value types *)
+  | DefT of typ
   | NewT of L.id' * typ
   | EnumT of L.id' * L.member' list
   | SEnumT of L.id' * typ * (L.member' * Value.t) list

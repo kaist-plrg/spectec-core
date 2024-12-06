@@ -70,6 +70,9 @@ and subst_typ (theta : theta) (typ : typ) : typ =
       let td = subst_typdef theta td in
       let typs_inner = subst_typs theta typs_inner in
       SpecT (td, typs_inner)
+  | DefT typ_inner ->
+      let typ_inner = subst_typ theta typ_inner in
+      DefT typ_inner
   | NewT (id, typ_inner) ->
       let typ_inner = subst_typ theta typ_inner in
       NewT (id, typ_inner)
@@ -573,123 +576,19 @@ and specialize_consdef (fresh : unit -> int) (cd : consdef) (targs : typ list) :
   let ct = (cparams, typ) in
   (ct, tids_fresh)
 
-(* Saturation: recursive specialization *)
+(* Unroll: recursive specialization *)
 
-let rec saturate_typ (typ : typ) : typ =
+let rec unroll_typ (typ : typ) : typ =
   match typ with
-  | SpecT (td, typs_inner) -> specialize_typdef td typs_inner |> saturate_typ
+  | SpecT (td, typs_inner) -> specialize_typdef td typs_inner |> unroll_typ
   | _ -> typ
 
-(* (1* Saturation: specialize all type definitions *1) *)
+(* Canon: recursive specialization and type alias resolution *)
 
-(* (1* Parameters *1) *)
-
-(* let rec saturate_param (param : param) : param = *)
-(*   let id, dir, typ, value_default = param in *)
-(*   let typ = saturate_typ typ in *)
-(*   (id, dir, typ, value_default) *)
-
-(* and saturate_params (params : param list) : param list = *)
-(*   List.map saturate_param params *)
-
-(* (1* Types *1) *)
-
-(* and saturate_typ (typ : typ) : typ = *)
-(*   match typ with *)
-(*   | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _ *)
-(*   | VBitT _ | VarT _ -> *)
-(*       typ *)
-(*   | SpecT (td, typs_inner) -> specialize_typdef td typs_inner |> saturate_typ *)
-(*   | NewT (id, typ_inner) -> *)
-(*       let typ_inner = saturate_typ typ_inner in *)
-(*       NewT (id, typ_inner) *)
-(*   | EnumT _ -> typ *)
-(*   | SEnumT (id, typ_inner, fields) -> *)
-(*       let typ_inner = saturate_typ typ_inner in *)
-(*       SEnumT (id, typ_inner, fields) *)
-(*   | ListT typ_inner -> *)
-(*       let typ_inner = saturate_typ typ_inner in *)
-(*       ListT typ_inner *)
-(*   | TupleT typs_inner -> *)
-(*       let typs_inner = saturate_typs typs_inner in *)
-(*       TupleT typs_inner *)
-(*   | StackT (typ_inner, size) -> *)
-(*       let typ_inner = saturate_typ typ_inner in *)
-(*       StackT (typ_inner, size) *)
-(*   | StructT (id, fields) -> *)
-(*       let fields = List.map (fun (id, typ) -> (id, saturate_typ typ)) fields in *)
-(*       StructT (id, fields) *)
-(*   | HeaderT (id, fields) -> *)
-(*       let fields = List.map (fun (id, typ) -> (id, saturate_typ typ)) fields in *)
-(*       HeaderT (id, fields) *)
-(*   | UnionT (id, fields) -> *)
-(*       let fields = List.map (fun (id, typ) -> (id, saturate_typ typ)) fields in *)
-(*       UnionT (id, fields) *)
-(*   | ExternT (id, fdenv) -> *)
-(*       let fdenv = FIdMap.map (fun fd -> saturate_funcdef fd) fdenv in *)
-(*       ExternT (id, fdenv) *)
-(*   | ParserT params -> *)
-(*       let params = saturate_params params in *)
-(*       ParserT params *)
-(*   | ControlT params -> *)
-(*       let params = saturate_params params in *)
-(*       ControlT params *)
-(*   | PackageT typs_inner -> *)
-(*       let typs_inner = saturate_typs typs_inner in *)
-(*       PackageT typs_inner *)
-(*   | TableT typ_inner -> *)
-(*       let typ_inner = saturate_typ typ_inner in *)
-(*       TableT typ_inner *)
-(*   | AnyT | TableEnumT _ -> typ *)
-(*   | TableStructT (id, fields) -> *)
-(*       let fields = List.map (fun (id, typ) -> (id, saturate_typ typ)) fields in *)
-(*       TableStructT (id, fields) *)
-(*   | SeqT typs_inner -> *)
-(*       let typs_inner = saturate_typs typs_inner in *)
-(*       SeqT typs_inner *)
-(*   | SeqDefaultT typs_inner -> *)
-(*       let typs_inner = saturate_typs typs_inner in *)
-(*       SeqDefaultT typs_inner *)
-(*   | RecordT fields -> *)
-(*       let fields = List.map (fun (id, typ) -> (id, saturate_typ typ)) fields in *)
-(*       RecordT fields *)
-(*   | RecordDefaultT fields -> *)
-(*       let fields = List.map (fun (id, typ) -> (id, saturate_typ typ)) fields in *)
-(*       RecordDefaultT fields *)
-(*   | DefaultT | InvalidT -> typ *)
-(*   | SetT typ_inner -> *)
-(*       let typ_inner = saturate_typ typ_inner in *)
-(*       SetT typ_inner *)
-(*   | StateT -> typ *)
-
-(* and saturate_typs (typs : typ list) : typ list = List.map saturate_typ typs *)
-
-(* (1* Function definitions *1) *)
-
-(* and saturate_funcdef (fd : funcdef) : funcdef = *)
-(*   match fd with *)
-(*   | ActionD params -> *)
-(*       let params = saturate_params params in *)
-(*       ActionD params *)
-(*   | ExternFunctionD (tparams, tparams_hidden, params, typ_ret) -> *)
-(*       let params = saturate_params params in *)
-(*       let typ_ret = saturate_typ typ_ret in *)
-(*       ExternFunctionD (tparams, tparams_hidden, params, typ_ret) *)
-(*   | FunctionD (tparams, tparams_hidden, params, typ_ret) -> *)
-(*       let params = saturate_params params in *)
-(*       let typ_ret = saturate_typ typ_ret in *)
-(*       FunctionD (tparams, tparams_hidden, params, typ_ret) *)
-(*   | ExternMethodD (tparams, tparams_hidden, params, typ_ret) -> *)
-(*       let params = saturate_params params in *)
-(*       let typ_ret = saturate_typ typ_ret in *)
-(*       ExternMethodD (tparams, tparams_hidden, params, typ_ret) *)
-(*   | ExternAbstractMethodD (tparams, tparams_hidden, params, typ_ret) -> *)
-(*       let params = saturate_params params in *)
-(*       let typ_ret = saturate_typ typ_ret in *)
-(*       ExternAbstractMethodD (tparams, tparams_hidden, params, typ_ret) *)
-(*   | ParserApplyMethodD params -> *)
-(*       let params = saturate_params params in *)
-(*       ParserApplyMethodD params *)
-(*   | ControlApplyMethodD params -> *)
-(*       let params = saturate_params params in *)
-(*       ControlApplyMethodD params *)
+let rec canon_typ (typ : typ) : typ =
+  match typ with
+  | SpecT (td, typs_inner) ->
+      let typ = specialize_typdef td typs_inner in
+      canon_typ typ
+  | DefT typ_inner -> canon_typ typ_inner
+  | _ -> typ

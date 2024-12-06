@@ -110,7 +110,6 @@ let check_distinct_vars (vars : Lang.Ast.var list) : unit =
 let rec check_valid_type ?(tids_fresh = []) (cursor : Ctx.cursor) (ctx : Ctx.t)
     (typ : Type.t) : unit =
   let tset = Ctx.get_tparams cursor ctx @ tids_fresh |> TIdSet.of_list in
-  let typ = Type.saturate typ in
   check_valid_type' tset typ
 
 and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
@@ -125,6 +124,9 @@ and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
       else ()
   | SpecT (td, typs_inner) ->
       TypeDef.specialize td typs_inner |> check_valid_type' tset
+  | DefT typ_inner ->
+      check_valid_type' tset typ_inner;
+      check_valid_type_nesting typ typ_inner
   | NewT (_id, typ_inner) ->
       check_valid_type' tset typ_inner;
       check_valid_type_nesting typ typ_inner
@@ -187,6 +189,25 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
   | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
   | VBitT _ | VarT _ | SpecT _ ->
       error_not_nest ()
+  | DefT _ -> (
+      match typ_inner with
+      | VoidT -> false
+      | ErrT -> true
+      | MatchKindT -> false
+      | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
+      | SpecT (td_inner, typs_inner) ->
+          TypeDef.specialize td_inner typs_inner
+          |> check_valid_type_nesting' typ
+      | DefT typ_inner -> check_valid_type_nesting' typ typ_inner
+      | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
+      | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
+      | HeaderT _ | UnionT _ ->
+          true
+      | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ -> false
+      | AnyT -> true
+      | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
+      | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
+          false)
   | NewT _ -> (
       match typ_inner with
       | VoidT | ErrT | MatchKindT | StrT -> false
@@ -197,6 +218,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VarT _ -> true
       | SpecT (td, typs_inner) ->
           TypeDef.specialize td typs_inner |> check_valid_type_nesting' typ
+      | DefT typ_inner -> check_valid_type_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
       | HeaderT _ | UnionT _ ->
@@ -215,6 +237,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VarT _ -> true
       | SpecT (td, typs_inner) ->
           TypeDef.specialize td typs_inner |> check_valid_type_nesting' typ
+      | DefT typ_inner -> check_valid_type_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
       | HeaderT _ | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT _
@@ -232,6 +255,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
           true
       | SpecT (td, typs_inner) ->
           TypeDef.specialize td typs_inner |> check_valid_type_nesting' typ
+      | DefT typ_inner -> check_valid_type_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
       | HeaderT _ | UnionT _ ->
@@ -251,6 +275,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
       | SpecT (td, typs_inner) ->
           TypeDef.specialize td typs_inner |> check_valid_type_nesting' typ
+      | DefT typ_inner -> check_valid_type_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ -> true
       | ListT _ -> false
@@ -268,6 +293,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VarT _ -> true
       | SpecT (td, typs_inner) ->
           TypeDef.specialize td typs_inner |> check_valid_type_nesting' typ
+      | DefT typ_inner -> check_valid_type_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _ -> false
       | HeaderT _ | UnionT _ -> true
@@ -286,6 +312,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
       | SpecT (td, typs_inner) ->
           TypeDef.specialize td typs_inner |> check_valid_type_nesting' typ
+      | DefT typ_inner -> check_valid_type_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ -> true
       | ListT _ -> false
@@ -303,6 +330,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
       | SpecT (td, typs_inner) ->
           TypeDef.specialize td typs_inner |> check_valid_type_nesting' typ
+      | DefT typ_inner -> check_valid_type_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
       | EnumT _ -> false
       | SEnumT _ -> true
@@ -326,6 +354,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VarT _ -> true
       | SpecT (td, typs_inner) ->
           TypeDef.specialize td typs_inner |> check_valid_type_nesting' typ
+      | DefT typ_inner -> check_valid_type_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ -> false
       | StructT _ -> false
@@ -350,6 +379,7 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VarT _ -> false
       | SpecT (td, typs_inner) ->
           TypeDef.specialize td typs_inner |> check_valid_type_nesting' typ
+      | DefT typ_inner -> check_valid_type_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_type_nesting' typ typ_inner
       | EnumT _ | SEnumT _ -> true
       (* A special case: when list is nested inside a set,
@@ -469,6 +499,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | SpecT (td_inner, typs_inner) ->
           TypeDef.specialize td_inner typs_inner
           |> check_valid_typedef_nesting' td
+      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
       | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
       | HeaderT _ | UnionT _ ->
@@ -489,6 +520,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | SpecT (td_inner, typs_inner) ->
           TypeDef.specialize td_inner typs_inner
           |> check_valid_typedef_nesting' td
+      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
       | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
       | HeaderT _ | UnionT _ ->
@@ -508,6 +540,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | SpecT (td_inner, typs_inner) ->
           TypeDef.specialize td_inner typs_inner
           |> check_valid_typedef_nesting' td
+      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
       | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
       | HeaderT _ | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT _
@@ -526,6 +559,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | SpecT (td_inner, typs_inner) ->
           TypeDef.specialize td_inner typs_inner
           |> check_valid_typedef_nesting' td
+      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
       | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
       | HeaderT _ | UnionT _ ->
@@ -546,6 +580,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | SpecT (td_inner, typs_inner) ->
           TypeDef.specialize td_inner typs_inner
           |> check_valid_typedef_nesting' td
+      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
       | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ | SEnumT _ -> true
       | ListT _ -> false
@@ -564,6 +599,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | SpecT (td_inner, typs_inner) ->
           TypeDef.specialize td_inner typs_inner
           |> check_valid_typedef_nesting' td
+      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
       | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _ -> false
       | HeaderT _ | UnionT _ -> true
@@ -583,6 +619,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | SpecT (td_inner, typs_inner) ->
           TypeDef.specialize td_inner typs_inner
           |> check_valid_typedef_nesting' td
+      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
       | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ | SEnumT _ -> true
       | ListT _ -> false
@@ -601,6 +638,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | SpecT (td_inner, typs_inner) ->
           TypeDef.specialize td_inner typs_inner
           |> check_valid_typedef_nesting' td
+      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
       | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ -> false
       | SEnumT _ -> true
@@ -627,6 +665,7 @@ and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
       | SpecT (td_inner, typs_inner) ->
           TypeDef.specialize td_inner typs_inner
           |> check_valid_typedef_nesting' td
+      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
       | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
       | EnumT _ | SEnumT _ -> false
       | ListT _ | TupleT _ | StackT _ -> false
@@ -699,7 +738,7 @@ and check_valid_param (cursor : Ctx.cursor) (ctx : Ctx.t) (param : Types.param)
 and check_valid_param' (tset : TIdSet.t) (param : Types.param) : unit =
   let _, dir, typ, value_default = param in
   check_valid_type' tset typ;
-  if not (match Type.saturate typ with ExternT _ -> dir = No | _ -> true) then (
+  if not (match Type.canon typ with ExternT _ -> dir = No | _ -> true) then (
     Format.printf
       "(check_valid_param') Extern objects can only be passed as directionless \
        parameters but %a was given\n"
@@ -922,7 +961,7 @@ and check_valid_constyp_nesting (typ : Type.t) (cparams : Types.cparam list) :
     cparams
 
 and check_valid_constyp_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
   | ExternT _ -> (
       match typ_inner with

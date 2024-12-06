@@ -26,7 +26,7 @@ let insert_cast (expr_il : Il.Ast.expr) (typ : Type.t) : Il.Ast.expr =
 (* Precondition: checker should always result in false for serializable enum case *)
 let rec coerce_type_unary_numeric (checker : Type.t -> bool)
     (expr_il : Il.Ast.expr) : Il.Ast.expr =
-  let typ = expr_il.note.typ |> Type.saturate in
+  let typ = expr_il.note.typ |> Type.canon in
   match typ with
   | _ when checker typ -> expr_il
   | SEnumT (_, typ_inner, _) ->
@@ -56,8 +56,8 @@ let rec coerce_types_binary (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr)
 and coerce_types_binary_numeric (checker : Type.t -> Type.t -> bool)
     (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) :
     Il.Ast.expr * Il.Ast.expr =
-  let typ_l = expr_l_il.note.typ |> Type.saturate in
-  let typ_r = expr_r_il.note.typ |> Type.saturate in
+  let typ_l = expr_l_il.note.typ |> Type.canon in
+  let typ_r = expr_r_il.note.typ |> Type.canon in
   match (typ_l, typ_r) with
   | _ when checker typ_l typ_r -> (expr_l_il, expr_r_il)
   | SEnumT (_, typ_l_inner, _), _ ->
@@ -1460,11 +1460,11 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (expr_idx : El.Ast.expr) :
     Type.t * Ctk.t * Il.Ast.expr' =
   let expr_base_il = type_expr cursor ctx expr_base in
-  let typ_base = expr_base_il.note.typ |> Type.saturate in
+  let typ_base = expr_base_il.note.typ |> Type.canon in
   let expr_idx_il = type_expr cursor ctx expr_idx in
   let expr_idx_il = coerce_type_unary_numeric Type.is_numeric expr_idx_il in
   let typ, expr_il =
-    let typ_base = Type.saturate typ_base in
+    let typ_base = Type.canon typ_base in
     match typ_base with
     | TupleT typs_base_inner ->
         let value_idx = Static.eval_expr cursor ctx expr_idx_il in
@@ -1545,7 +1545,7 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     - a serializable enum with an underlying type that is bit<W> or int<W> (section 7.2.1). *)
 
 and check_bitstring_base (typ : Type.t) : bool =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with
   | IntT -> true
   | FIntT width -> Bigint.(width > zero)
@@ -1553,12 +1553,12 @@ and check_bitstring_base (typ : Type.t) : bool =
   | _ -> false
 
 and check_bitstring_index (typ : Type.t) : bool =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match typ with IntT | FIntT _ | FBitT _ -> true | _ -> false
 
 and check_bitstring_slice_range' (typ_base : Type.t) (idx_lo : Bigint.t)
     (idx_hi : Bigint.t) : bool =
-  let typ_base = Type.saturate typ_base in
+  let typ_base = Type.canon typ_base in
   match typ_base with
   | IntT -> true
   | FIntT width_base | FBitT width_base ->
@@ -1695,7 +1695,7 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (member : El.Ast.member) :
     Type.t * Ctk.t * Il.Ast.expr' =
   let expr_base_il = type_expr cursor ctx expr_base in
-  let typ_base = expr_base_il.note.typ |> Type.saturate in
+  let typ_base = expr_base_il.note.typ |> Type.canon in
   let typ =
     match typ_base with
     | StackT (typ_inner, _) -> (
@@ -1945,7 +1945,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
   in
   let targs = List.map it targs_il in
   let expr_base_il = type_expr cursor ctx expr_base in
-  let typ_base = expr_base_il.note.typ |> Type.saturate in
+  let typ_base = expr_base_il.note.typ |> Type.canon in
   let ft, tids_fresh, tparams, args_default =
     let wrap_builtin ft = (ft, [], [], []) in
     let find_method fdenv =
@@ -2207,7 +2207,7 @@ and align_cparams_with_args (cparams : Types.cparam list)
 
 and check_instantiation_site (cursor : Ctx.cursor) (ctx : Ctx.t)
     (typ_inst : Type.t) : unit =
-  let typ_inst = Type.saturate typ_inst in
+  let typ_inst = Type.canon typ_inst in
   match cursor with
   | Global -> (
       match typ_inst with
@@ -2277,7 +2277,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
        instantiations in top-level, while they are necessarily instantiated
        (namelessly) in a package instantiation *)
     let cursor, ctx =
-      let typ_inst = Type.saturate typ_inst in
+      let typ_inst = Type.canon typ_inst in
       match (cursor, typ_inst) with
       | Global, PackageT _ ->
           let cursor = Ctx.Block in
@@ -2327,7 +2327,7 @@ and type_instantiation_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
     : Type.t * Ctk.t * Il.Ast.expr' =
   let typ, ctk, expr_il = type_instantiation cursor ctx var_inst targs args in
-  (match Type.saturate typ with
+  (match Type.canon typ with
   | ExternT (_, fdenv_extern) ->
       if
         Envs.FDEnv.exists
@@ -2690,7 +2690,7 @@ and type_switch_general_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (expr_switch_il : Il.Ast.expr) (cases : El.Ast.switch_case list) :
     Ctx.t * Flow.t * Il.Ast.stmt' =
   let typ_switch = expr_switch_il.note.typ in
-  (match Type.saturate typ_switch with
+  (match Type.canon typ_switch with
   | ErrT | FIntT _ | FBitT _ | EnumT _ | SEnumT _ -> ()
   | _ ->
       Format.printf
@@ -2905,9 +2905,7 @@ and type_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   let typ, _, expr_il = type_instantiation cursor ctx var_inst targs [] in
   if
     not
-      (match Type.saturate typ with
-      | ParserT _ | ControlT _ -> true
-      | _ -> false)
+      (match Type.canon typ with ParserT _ | ControlT _ -> true | _ -> false)
   then (
     Format.printf
       "(type_call_inst_stmt) Direct type invocation is only defined for a \
@@ -3134,6 +3132,7 @@ and check_valid_var_type' (typ : Type.t) : bool =
   | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
   | SpecT (td, typs_inner) ->
       TypeDef.specialize td typs_inner |> check_valid_var_type'
+  | DefT typ_inner -> check_valid_var_type' typ_inner
   | NewT (_, typ_inner) -> check_valid_var_type' typ_inner
   | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
   | UnionT _ ->
@@ -4552,13 +4551,14 @@ and check_table_key (match_kind : string) (typ : Type.t) : unit =
     assert false)
 
 and check_table_key' (match_kind : string) (typ : Type.t) : bool =
-  let typ = Type.saturate typ in
+  let typ = Type.canon typ in
   match match_kind with
   | "exact" | "optional" -> (
       match typ with
       | ErrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ | EnumT _ -> true
       | SEnumT (_, typ_inner, _) -> check_table_key' match_kind typ_inner
-      | NewT (_, typs_inner) -> check_table_key' match_kind typs_inner
+      | DefT typ_inner -> check_table_key' match_kind typ_inner
+      | NewT (_, typ_inner) -> check_table_key' match_kind typ_inner
       (* Has eq op but not appropriate for table key *)
       | ListT _ | TupleT _ | MatchKindT | StackT _ | StructT _ | HeaderT _
       | UnionT _ ->
@@ -4573,6 +4573,7 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
       match typ with
       | IntT | FIntT _ | FBitT _ -> true
       | SEnumT (_, typ_inner, _) -> check_table_key' match_kind typ_inner
+      | DefT typ_inner -> check_table_key' match_kind typ_inner
       | NewT (_, typs_inner) -> check_table_key' match_kind typs_inner
       (* Has eq op but not appropriate for table key *)
       | BoolT | ListT _ | TupleT _ | EnumT _ | VBitT _ | ErrT | MatchKindT

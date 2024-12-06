@@ -22,7 +22,7 @@ and free_typ (typ : typ) : TIdSet.t =
   | VarT id -> TIdSet.singleton id
   | SpecT (td, typs_inner) ->
       free_typdef td |> TIdSet.union (free_typs typs_inner)
-  | NewT (_, typ_inner) -> free_typ typ_inner
+  | DefT typ_inner | NewT (_, typ_inner) -> free_typ typ_inner
   | EnumT _ -> TIdSet.empty
   | SEnumT (_, typ_inner, _) -> free_typ typ_inner
   | ListT typ_inner -> free_typ typ_inner

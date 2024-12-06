@@ -42,6 +42,7 @@ and pp_typ fmt typ =
   | VarT id -> P.pp_id' fmt id
   | SpecT (typdef, typs) ->
       F.fprintf fmt "%a<%a>" pp_typdef typdef (P.pp_list pp_typ ", ") typs
+  | DefT typ -> F.fprintf fmt "typedef %a" pp_typ typ
   | NewT (id, typ) -> F.fprintf fmt "type %a (%a)" P.pp_id' id pp_typ typ
   | EnumT (id, fields) ->
       F.fprintf fmt "enum %a { %a }" P.pp_id' id

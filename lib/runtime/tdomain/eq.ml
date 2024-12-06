@@ -42,6 +42,7 @@ and eq_typ typ_a typ_b =
   | VarT id_a, VarT id_b -> E.eq_id' id_a id_b
   | SpecT (typdef_a, typs_a), SpecT (typdef_b, typs_b) ->
       eq_typdef typdef_a typdef_b && eq_typs typs_a typs_b
+  | DefT typ_a, DefT typ_b -> eq_typ typ_a typ_b
   | NewT (id_a, typ_a), NewT (id_b, typ_b) ->
       E.eq_id' id_a id_b && eq_typ typ_a typ_b
   | EnumT (id_a, members_a), EnumT (id_b, members_b) ->
@@ -198,6 +199,7 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
       if is_nominal typ_inner_a && is_nominal typ_inner_b then
         eq_typs_alpha typs_inner_a typs_inner_b
       else true
+  | DefT typ_inner_a, DefT typ_inner_b -> eq_typ_alpha typ_inner_a typ_inner_b
   | NewT (id_a, typ_inner_a), NewT (id_b, typ_inner_b) ->
       E.eq_id' id_a id_b && eq_typ_alpha typ_inner_a typ_inner_b
   | EnumT (id_a, members_a), EnumT (id_b, members_b) ->

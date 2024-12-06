@@ -257,15 +257,19 @@ let add_value cursor id value ctx =
       { ctx with local = { ctx.local with frames = frame :: frames } }
 
 let add_rtype cursor id typ dir ctk ctx =
-  if
-    id = "main"
-    && not
-         (cursor = Global
-         && match Type.saturate typ with Types.PackageT _ -> true | _ -> false)
-  then (
-    F.printf
-      "(add_rtype) main is reserved for a package instance at the top level\n";
-    assert false);
+  let check_main () =
+    let typ = Type.canon typ in
+    if
+      id = "main"
+      && not
+           (cursor = Global
+           && match typ with Types.PackageT _ -> true | _ -> false)
+    then (
+      F.printf
+        "(add_rtype) main is reserved for a package instance at the top level\n";
+      assert false)
+  in
+  check_main ();
   match cursor with
   | Global ->
       let venv, tenv = ctx.global.frame in
