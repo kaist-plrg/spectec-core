@@ -170,100 +170,16 @@ and subst_typdef (theta : theta) (td : typdef) : typdef =
     (theta, tparams, tparams_hidden)
   in
   match td with
-  | DefD typ_inner ->
+  | MonoD typ_inner ->
       let typ_inner = subst_typ theta typ_inner in
-      DefD typ_inner
-  | NewD (id, typ_inner) ->
-      let typ_inner = subst_typ theta typ_inner in
-      NewD (id, typ_inner)
-  | EnumD _ -> td
-  | SEnumD (id, typ_inner, fields) ->
-      let typ_inner = subst_typ theta typ_inner in
-      SEnumD (id, typ_inner, fields)
-  | ListD (tparam, typ_inner) ->
+      MonoD typ_inner
+  | PolyD (tparams, tparams_hidden, typ_inner) ->
       let frees_in = Free.free_typ typ_inner in
       let theta, tparams, tparams_hidden =
-        subst_typdef' theta frees_in [ tparam ] []
+        subst_typdef' theta frees_in tparams tparams_hidden
       in
-      assert (List.length tparams = 1 && tparams_hidden = []);
-      let tparam = List.hd tparams in
       let typ_inner = subst_typ theta typ_inner in
-      ListD (tparam, typ_inner)
-  | TupleD (tparams, typs_inner) ->
-      let frees_in = Free.free_typs typs_inner in
-      let theta, tparams, tparams_hidden =
-        subst_typdef' theta frees_in tparams []
-      in
-      assert (tparams_hidden = []);
-      let typs_inner = subst_typs theta typs_inner in
-      TupleD (tparams, typs_inner)
-  | StackD (tparam, typ_inner, size) ->
-      let frees_in = Free.free_typ typ_inner in
-      let theta, tparams, tparams_hidden =
-        subst_typdef' theta frees_in [ tparam ] []
-      in
-      assert (List.length tparams = 1 && tparams_hidden = []);
-      let tparam = List.hd tparams in
-      let typ_inner = subst_typ theta typ_inner in
-      StackD (tparam, typ_inner, size)
-  | StructD (id, tparams, tparams_hidden, fields) ->
-      let frees_in = List.map snd fields |> Free.free_typs in
-      let theta, tparams, tparams_hidden =
-        subst_typdef' theta frees_in tparams tparams_hidden
-      in
-      let fields =
-        List.map (fun (id, typ) -> (id, subst_typ theta typ)) fields
-      in
-      StructD (id, tparams, tparams_hidden, fields)
-  | HeaderD (id, tparams, tparams_hidden, fields) ->
-      let frees_in = List.map snd fields |> Free.free_typs in
-      let theta, tparams, tparams_hidden =
-        subst_typdef' theta frees_in tparams tparams_hidden
-      in
-      let fields =
-        List.map (fun (id, typ) -> (id, subst_typ theta typ)) fields
-      in
-      HeaderD (id, tparams, tparams_hidden, fields)
-  | UnionD (id, tparams, tparams_hidden, fields) ->
-      let frees_in = List.map snd fields |> Free.free_typs in
-      let theta, tparams, tparams_hidden =
-        subst_typdef' theta frees_in tparams tparams_hidden
-      in
-      let fields =
-        List.map (fun (id, typ) -> (id, subst_typ theta typ)) fields
-      in
-      UnionD (id, tparams, tparams_hidden, fields)
-  | ExternD (id, tparams, tparams_hidden, fdenv) ->
-      let frees_in =
-        FIdMap.bindings fdenv |> List.map snd |> List.map Free.free_funcdef
-        |> List.fold_left TIdSet.union TIdSet.empty
-      in
-      let theta, tparams, tparams_hidden =
-        subst_typdef' theta frees_in tparams tparams_hidden
-      in
-      let fdenv = FIdMap.map (fun fd -> subst_funcdef theta fd) fdenv in
-      ExternD (id, tparams, tparams_hidden, fdenv)
-  | ParserD (tparams, tparams_hidden, params) ->
-      let frees_in = Free.free_params params in
-      let theta, tparams, tparams_hidden =
-        subst_typdef' theta frees_in tparams tparams_hidden
-      in
-      let params = List.map (subst_param theta) params in
-      ParserD (tparams, tparams_hidden, params)
-  | ControlD (tparams, tparams_hidden, params) ->
-      let frees_in = Free.free_params params in
-      let theta, tparams, tparams_hidden =
-        subst_typdef' theta frees_in tparams tparams_hidden
-      in
-      let params = List.map (subst_param theta) params in
-      ControlD (tparams, tparams_hidden, params)
-  | PackageD (tparams, tparams_hidden, typs_inner) ->
-      let frees_in = Free.free_typs typs_inner in
-      let theta, tparams, tparams_hidden =
-        subst_typdef' theta frees_in tparams tparams_hidden
-      in
-      let typs_inner = subst_typs theta typs_inner in
-      PackageD (tparams, tparams_hidden, typs_inner)
+      PolyD (tparams, tparams_hidden, typ_inner)
 
 (* Function types *)
 
@@ -375,81 +291,15 @@ let specialize_typdef (td : typdef) (targs : typ list) : typ =
       assert false)
   in
   match td with
-  | DefD typ_inner ->
+  | MonoD typ_inner ->
       check_arity [];
       typ_inner
-  | NewD (id, typ_inner) ->
-      check_arity [];
-      NewT (id, typ_inner)
-  | EnumD (id, members) ->
-      check_arity [];
-      EnumT (id, members)
-  | SEnumD (id, typ_inner, fields) ->
-      check_arity [];
-      SEnumT (id, typ_inner, fields)
-  | ListD (tparam, typ_inner) ->
-      check_arity [ tparam ];
-      let theta = TIdMap.singleton tparam (List.hd targs) in
+  | PolyD (tparams, tparams_hidden, typ_inner) ->
+      let tparams = tparams @ tparams_hidden in
+      check_arity tparams;
+      let theta = List.combine tparams targs |> TIdMap.of_list in
       let typ_inner = subst_typ theta typ_inner in
-      ListT typ_inner
-  | TupleD (tparams, typs_inner) ->
-      check_arity tparams;
-      let theta = List.combine tparams targs |> TIdMap.of_list in
-      let typs_inner = subst_typs theta typs_inner in
-      TupleT typs_inner
-  | StackD (tparam, typ_inner, size) ->
-      check_arity [ tparam ];
-      let theta = TIdMap.singleton tparam (List.hd targs) in
-      let typ_inner = subst_typ theta typ_inner in
-      StackT (typ_inner, size)
-  | StructD (id, tparams, tparams_hidden, fields) ->
-      let tparams = tparams @ tparams_hidden in
-      check_arity tparams;
-      let theta = List.combine tparams targs |> TIdMap.of_list in
-      let fields =
-        List.map (fun (id, typ) -> (id, subst_typ theta typ)) fields
-      in
-      StructT (id, fields)
-  | HeaderD (id, tparams, tparams_hidden, fields) ->
-      let tparams = tparams @ tparams_hidden in
-      check_arity tparams;
-      let theta = List.combine tparams targs |> TIdMap.of_list in
-      let fields =
-        List.map (fun (id, typ) -> (id, subst_typ theta typ)) fields
-      in
-      HeaderT (id, fields)
-  | UnionD (id, tparams, tparams_hidden, fields) ->
-      let tparams = tparams @ tparams_hidden in
-      check_arity tparams;
-      let theta = List.combine tparams targs |> TIdMap.of_list in
-      let fields =
-        List.map (fun (id, typ) -> (id, subst_typ theta typ)) fields
-      in
-      UnionT (id, fields)
-  | ExternD (id, tparams, tparams_hidden, fdenv) ->
-      let tparams = tparams @ tparams_hidden in
-      check_arity tparams;
-      let theta = List.combine tparams targs |> TIdMap.of_list in
-      let fdenv = FIdMap.map (subst_funcdef theta) fdenv in
-      ExternT (id, fdenv)
-  | ParserD (tparams, tparams_hidden, params) ->
-      let tparams = tparams @ tparams_hidden in
-      check_arity tparams;
-      let theta = List.combine tparams targs |> TIdMap.of_list in
-      let params = subst_params theta params in
-      ParserT params
-  | ControlD (tparams, tparams_hidden, params) ->
-      let tparams = tparams @ tparams_hidden in
-      check_arity tparams;
-      let theta = List.combine tparams targs |> TIdMap.of_list in
-      let params = subst_params theta params in
-      ControlT params
-  | PackageD (tparams, tparams_hidden, typs_inner) ->
-      let tparams = tparams @ tparams_hidden in
-      check_arity tparams;
-      let theta = List.combine tparams targs |> TIdMap.of_list in
-      let typs_inner = subst_typs theta typs_inner in
-      PackageT typs_inner
+      typ_inner
 
 (* Funcdef specialization *)
 

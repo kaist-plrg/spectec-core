@@ -415,269 +415,35 @@ and check_valid_typedef (cursor : Ctx.cursor) (ctx : Ctx.t) (td : TypeDef.t) :
 
 and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
   match td with
-  | DefD typ_inner ->
-      check_valid_type' tset typ_inner;
-      check_valid_typedef_nesting td typ_inner
-  | NewD (_, typ_inner) ->
-      check_valid_type' tset typ_inner;
-      check_valid_typedef_nesting td typ_inner
-  | EnumD (_id, members) -> check_distinct_names members
-  | SEnumD (_id, typ_inner, fields) ->
-      let members, _ = List.split fields in
-      check_distinct_names members;
-      check_valid_type' tset typ_inner;
-      check_valid_typedef_nesting td typ_inner
-  | ListD (tparam, typ_inner) ->
-      let tset = TIdSet.add tparam tset in
-      check_valid_type' tset typ_inner;
-      check_valid_typedef_nesting td typ_inner
-  | TupleD (tparams, typs_inner) ->
+  | MonoD typ_inner ->
+      if
+        not
+          (match typ_inner with
+          | DefT _ | NewT _ | EnumT _ | SEnumT _ -> true
+          | _ -> false)
+      then (
+        Format.printf
+          "(check_valid_typedef) %a is not a definable monomorphic type\n"
+          Type.pp typ_inner;
+        assert false);
+      check_valid_type' tset typ_inner
+  | PolyD (tparams, tparams_hidden, typ_inner) ->
+      if
+        not
+          (match typ_inner with
+          | ListT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _
+          | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ ->
+              true
+          | _ -> false)
+      then (
+        Format.printf
+          "(check_valid_typedef) %a is not a definable generic type\n" Type.pp
+          typ_inner;
+        assert false);
+      let tparams = tparams @ tparams_hidden in
       check_distinct_names tparams;
       let tset = tparams |> TIdSet.of_list |> TIdSet.union tset in
-      List.iter (check_valid_type' tset) typs_inner;
-      List.iter (check_valid_typedef_nesting td) typs_inner
-  | StackD (tparam, typ_inner, _) ->
-      let tset = TIdSet.add tparam tset in
-      check_valid_type' tset typ_inner;
-      check_valid_typedef_nesting td typ_inner
-  | StructD (_, tparams, tparams_hidden, fields)
-  | HeaderD (_, tparams, tparams_hidden, fields)
-  | UnionD (_, tparams, tparams_hidden, fields) ->
-      check_distinct_names tparams;
-      let tset =
-        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
-      in
-      let members, typs_inner = List.split fields in
-      check_distinct_names members;
-      List.iter
-        (fun typ_inner ->
-          check_valid_type' tset typ_inner;
-          check_valid_typedef_nesting td typ_inner)
-        typs_inner
-  | ExternD (_id, tparams, tparams_hidden, fdenv) ->
-      check_distinct_names tparams;
-      let tset =
-        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
-      in
-      Envs.FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
-  | ParserD (tparams, tparams_hidden, params)
-  | ControlD (tparams, tparams_hidden, params) ->
-      check_distinct_names tparams;
-      let tset =
-        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
-      in
-      List.iter (fun fd -> check_valid_param' tset fd) params
-  | PackageD (tparams, tparams_hidden, typs_inner) ->
-      check_distinct_names tparams;
-      let tset =
-        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
-      in
-      List.iter (check_valid_type' tset) typs_inner
-
-and check_valid_typedef_nesting (td : TypeDef.t) (typ_inner : Type.t) : unit =
-  if not (check_valid_typedef_nesting' td typ_inner) then (
-    Format.printf
-      "(check_valid_typedef_nesting) Invalid nesting of %a inside %a\n" Type.pp
-      typ_inner TypeDef.pp td;
-    assert false)
-  else ()
-
-and check_valid_typedef_nesting' (td : TypeDef.t) (typ_inner : Type.t) : bool =
-  let error_not_nest () : bool =
-    Format.printf
-      "(check_valid_typedef_nesting) %a is not a nested type definition\n"
-      TypeDef.pp td;
-    false
-  in
-  match td with
-  | DefD _ -> (
-      match typ_inner with
-      | VoidT -> false
-      | ErrT -> true
-      | MatchKindT -> false
-      | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-      | SpecT (td_inner, typs_inner) ->
-          TypeDef.specialize td_inner typs_inner
-          |> check_valid_typedef_nesting' td
-      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
-      | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
-      | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
-      | HeaderT _ | UnionT _ ->
-          true
-      | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ -> false
-      | AnyT -> true
-      | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
-      | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
-          false)
-  | NewD _ -> (
-      match typ_inner with
-      | VoidT | ErrT | MatchKindT | StrT -> false
-      | BoolT -> true
-      | IntT -> false
-      | FIntT _ | FBitT _ -> true
-      | VBitT _ -> false
-      | VarT _ -> true
-      | SpecT (td_inner, typs_inner) ->
-          TypeDef.specialize td_inner typs_inner
-          |> check_valid_typedef_nesting' td
-      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
-      | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
-      | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
-      | HeaderT _ | UnionT _ ->
-          false
-      | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ -> false
-      | AnyT -> true
-      | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
-      | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
-          false)
-  | EnumD _ -> error_not_nest ()
-  | SEnumD _ -> (
-      match typ_inner with
-      | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT -> false
-      | FIntT _ | FBitT _ -> true
-      | VBitT _ -> false
-      | VarT _ -> true
-      | SpecT (td_inner, typs_inner) ->
-          TypeDef.specialize td_inner typs_inner
-          |> check_valid_typedef_nesting' td
-      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
-      | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
-      | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
-      | HeaderT _ | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT _
-      | TableT _ ->
-          false
-      | AnyT -> true
-      | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
-      | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
-          false)
-  | ListD _ -> (
-      match typ_inner with
-      | VoidT -> false
-      | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _
-      | VarT _ ->
-          true
-      | SpecT (td_inner, typs_inner) ->
-          TypeDef.specialize td_inner typs_inner
-          |> check_valid_typedef_nesting' td
-      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
-      | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
-      | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
-      | HeaderT _ | UnionT _ ->
-          true
-      | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ -> false
-      | AnyT -> true
-      | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
-      | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
-          false)
-  | TupleD _ -> (
-      match typ_inner with
-      | VoidT -> false
-      | ErrT -> true
-      | MatchKindT | StrT -> false
-      | BoolT -> true
-      | IntT -> false
-      | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-      | SpecT (td_inner, typs_inner) ->
-          TypeDef.specialize td_inner typs_inner
-          |> check_valid_typedef_nesting' td
-      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
-      | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
-      | EnumT _ | SEnumT _ -> true
-      | ListT _ -> false
-      | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> true
-      | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ -> false
-      | AnyT -> true
-      | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
-      | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
-          false)
-  | StackD _ -> (
-      match typ_inner with
-      | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
-      | VBitT _ ->
-          false
-      | VarT _ -> true
-      | SpecT (td_inner, typs_inner) ->
-          TypeDef.specialize td_inner typs_inner
-          |> check_valid_typedef_nesting' td
-      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
-      | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
-      | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _ -> false
-      | HeaderT _ | UnionT _ -> true
-      | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ -> false
-      | AnyT -> true
-      | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
-      | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
-          false)
-  | StructD _ -> (
-      match typ_inner with
-      | VoidT -> false
-      | ErrT -> true
-      | MatchKindT | StrT -> false
-      | BoolT -> true
-      | IntT -> false
-      | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-      | SpecT (td_inner, typs_inner) ->
-          TypeDef.specialize td_inner typs_inner
-          |> check_valid_typedef_nesting' td
-      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
-      | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
-      | EnumT _ | SEnumT _ -> true
-      | ListT _ -> false
-      | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _ -> true
-      | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ -> false
-      | AnyT -> true
-      | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
-      | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
-          false)
-  | HeaderD _ -> (
-      match typ_inner with
-      | VoidT | ErrT | MatchKindT | StrT -> false
-      | BoolT -> true
-      | IntT -> false
-      | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-      | SpecT (td_inner, typs_inner) ->
-          TypeDef.specialize td_inner typs_inner
-          |> check_valid_typedef_nesting' td
-      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
-      | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
-      | EnumT _ -> false
-      | SEnumT _ -> true
-      | ListT _ | TupleT _ | StackT _ -> false
-      (* A special case: when struct is nested inside a header,
-         because structs allow more nested types than a header, we need to check recursively *)
-      (* This recursion holds because the inner types that a struct allows is a
-         superset of the inner types that a header allows *)
-      | StructT (_, fields) ->
-          let _, typs_inner = List.split fields in
-          List.for_all (check_valid_typedef_nesting' td) typs_inner
-      | HeaderT _ | UnionT _ -> false
-      | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ -> false
-      | AnyT -> true
-      | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
-      | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
-          false)
-  | UnionD _ -> (
-      match typ_inner with
-      | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
-      | VBitT _ ->
-          false
-      | VarT _ -> true
-      | SpecT (td_inner, typs_inner) ->
-          TypeDef.specialize td_inner typs_inner
-          |> check_valid_typedef_nesting' td
-      | DefT typ_inner -> check_valid_typedef_nesting' td typ_inner
-      | NewT (_id, typ_inner) -> check_valid_typedef_nesting' td typ_inner
-      | EnumT _ | SEnumT _ -> false
-      | ListT _ | TupleT _ | StackT _ -> false
-      | StructT _ -> false
-      | HeaderT _ -> true
-      | UnionT _ | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ ->
-          false
-      | AnyT -> true
-      | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
-      | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
-          false)
-  | ExternD _ | ParserD _ | ControlD _ | PackageD _ -> error_not_nest ()
+      check_valid_type' tset typ_inner
 
 (* (6.8.1) Justification
 

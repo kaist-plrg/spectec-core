@@ -40,8 +40,14 @@ and pp_typ fmt typ =
   | FBitT width -> F.fprintf fmt "bit<%a>" Bigint.pp width
   | VBitT width -> F.fprintf fmt "varbit<%a>" Bigint.pp width
   | VarT id -> P.pp_id' fmt id
-  | SpecT (typdef, typs) ->
-      F.fprintf fmt "%a<%a>" pp_typdef typdef (P.pp_list pp_typ ", ") typs
+  | SpecT (td, typs) -> (
+      match td with
+      | MonoD typ ->
+          assert (typs = []);
+          pp_typ fmt typ
+      | PolyD (tparams, tparams_hidden, typ) ->
+          F.fprintf fmt "(%a<%a @@ %a>)<%a>" pp_typ typ pp_tparams tparams
+            pp_tparams tparams_hidden (P.pp_list pp_typ ", ") typs)
   | DefT typ -> F.fprintf fmt "typedef %a" pp_typ typ
   | NewT (id, typ) -> F.fprintf fmt "type %a (%a)" P.pp_id' id pp_typ typ
   | EnumT (id, fields) ->
@@ -99,51 +105,10 @@ and pp_typ fmt typ =
 
 and pp_typdef fmt typdef =
   match typdef with
-  | DefD typ -> F.fprintf fmt "typedef %a" pp_typ typ
-  | NewD (id, typ) -> F.fprintf fmt "type %a (= %a)" P.pp_id' id pp_typ typ
-  | EnumD (id, members) ->
-      F.fprintf fmt "enum %a { %a }" P.pp_id' id
-        (P.pp_list P.pp_member' ", ")
-        members
-  | SEnumD (id, typ, fields) ->
-      F.fprintf fmt "enum<%a> %a { %a }" pp_typ typ P.pp_id' id
-        (P.pp_pairs P.pp_member' Value.pp " = " ", ")
-        fields
-  | ListD (tparam, typ) ->
-      F.fprintf fmt "list<%a> %a" pp_tparam tparam pp_typ typ
-  | TupleD (tparams, typs) ->
-      F.fprintf fmt "tuple<%a> { %a }" pp_tparams tparams
-        (P.pp_list pp_typ ", ") typs
-  | StackD (tparam, typ, size) ->
-      F.fprintf fmt "stack<%a> %a[%a]" pp_tparam tparam pp_typ typ Bigint.pp
-        size
-  | StructD (id, tparams, tparams_hidden, fields) ->
-      F.fprintf fmt "struct %a<%a><%a> { %a }" P.pp_id' id pp_tparams tparams
-        pp_tparams tparams_hidden
-        (P.pp_pairs P.pp_member' pp_typ " " "; ")
-        fields
-  | HeaderD (id, tparams, tparams_hidden, fields) ->
-      F.fprintf fmt "header %a<%a><%a> { %a }" P.pp_id' id pp_tparams tparams
-        pp_tparams tparams_hidden
-        (P.pp_pairs P.pp_member' pp_typ " " "; ")
-        fields
-  | UnionD (id, tparams, tparams_hidden, fields) ->
-      F.fprintf fmt "header_union %a<%a><%a> { %a }" P.pp_id' id pp_tparams
-        tparams pp_tparams tparams_hidden
-        (P.pp_pairs P.pp_member' pp_typ " " "; ")
-        fields
-  | ExternD (id, tparams, tparams_hidden, fdenv) ->
-      F.fprintf fmt "extern %a<%a><%a> %a" P.pp_id' id pp_tparams tparams
-        pp_tparams tparams_hidden (FIdMap.pp pp_funcdef) fdenv
-  | ParserD (tparams, tparams_hidden, params) ->
-      F.fprintf fmt "parser <%a><%a>(%a)" pp_tparams tparams pp_tparams
-        tparams_hidden pp_params params
-  | ControlD (tparams, tparams_hidden, params) ->
-      F.fprintf fmt "control <%a><%a>(%a)" pp_tparams tparams pp_tparams
-        tparams_hidden pp_params params
-  | PackageD (tparams, tparams_hidden, typs) ->
-      F.fprintf fmt "package <%a><%a> { %a }" pp_tparams tparams pp_tparams
-        tparams_hidden (P.pp_list pp_typ ", ") typs
+  | MonoD typ -> F.fprintf fmt "mono -> %a" pp_typ typ
+  | PolyD (tparams, tparams_hidden, typ) ->
+      F.fprintf fmt "poly <%a><%a> -> %a" pp_tparams tparams pp_tparams
+        tparams_hidden pp_typ typ
 
 (* Function types *)
 

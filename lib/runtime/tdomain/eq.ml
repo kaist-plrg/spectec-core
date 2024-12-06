@@ -84,50 +84,12 @@ and eq_typs typs_a typs_b = E.eq_list eq_typ typs_a typs_b
 
 and eq_typdef typdef_a typdef_b =
   match (typdef_a, typdef_b) with
-  | DefD typ_a, DefD typ_b -> eq_typ typ_a typ_b
-  | NewD (id_a, typ_a), NewD (id_b, typ_b) ->
-      E.eq_id' id_a id_b && eq_typ typ_a typ_b
-  | EnumD (id_a, members_a), EnumD (id_b, members_b) ->
-      E.eq_id' id_a id_b && E.eq_list E.eq_member' members_a members_b
-  | SEnumD (id_a, typ_a, fields_a), SEnumD (id_b, typ_b, fields_b) ->
-      E.eq_id' id_a id_b && eq_typ typ_a typ_b
-      && E.eq_pairs E.eq_member' Value.eq fields_a fields_b
-  | ListD (tparam_a, typ_a), ListD (tparam_b, typ_b) ->
-      eq_tparam tparam_a tparam_b && eq_typ typ_a typ_b
-  | TupleD (tparams_a, typs_a), TupleD (tparams_b, typs_b) ->
-      eq_tparams tparams_a tparams_b && eq_typs typs_a typs_b
-  | StackD (tparam_a, typ_a, size_a), StackD (tparam_b, typ_b, size_b) ->
-      eq_tparam tparam_a tparam_b
+  | MonoD typ_a, MonoD typ_b -> eq_typ typ_a typ_b
+  | ( PolyD (tparams_a, tparams_hidden_a, typ_a),
+      PolyD (tparams_b, tparams_hidden_b, typ_b) ) ->
+      eq_tparams tparams_a tparams_b
+      && eq_tparams tparams_hidden_a tparams_hidden_b
       && eq_typ typ_a typ_b
-      && Bigint.(size_a = size_b)
-  | ( StructD (id_a, tparams_a, tparams_hidden_a, fields_a),
-      StructD (id_b, tparams_b, tparams_hidden_b, fields_b) )
-  | ( HeaderD (id_a, tparams_a, tparams_hidden_a, fields_a),
-      HeaderD (id_b, tparams_b, tparams_hidden_b, fields_b) )
-  | ( UnionD (id_a, tparams_a, tparams_hidden_a, fields_a),
-      UnionD (id_b, tparams_b, tparams_hidden_b, fields_b) ) ->
-      E.eq_id' id_a id_b
-      && eq_tparams tparams_a tparams_b
-      && eq_tparams tparams_hidden_a tparams_hidden_b
-      && E.eq_pairs E.eq_member' eq_typ fields_a fields_b
-  | ( ExternD (id_a, tparams_a, tparams_hidden_a, fdenv_a),
-      ExternD (id_b, tparams_b, tparams_hidden_b, fdenv_b) ) ->
-      E.eq_id' id_a id_b
-      && eq_tparams tparams_a tparams_b
-      && eq_tparams tparams_hidden_a tparams_hidden_b
-      && FIdMap.eq eq_funcdef fdenv_a fdenv_b
-  | ( ParserD (tparams_a, tparams_hidden_a, params_a),
-      ParserD (tparams_b, tparams_hidden_b, params_b) )
-  | ( ControlD (tparams_a, tparams_hidden_a, params_a),
-      ControlD (tparams_b, tparams_hidden_b, params_b) ) ->
-      eq_tparams tparams_a tparams_b
-      && eq_tparams tparams_hidden_a tparams_hidden_b
-      && eq_params params_a params_b
-  | ( PackageD (tparams_a, tparams_hidden_a, typs_a),
-      PackageD (tparams_b, tparams_hidden_b, typs_b) ) ->
-      eq_tparams tparams_a tparams_b
-      && eq_tparams tparams_hidden_a tparams_hidden_b
-      && eq_typs typs_a typs_b
   | _ -> false
 
 (* Function definitions *)
@@ -169,7 +131,9 @@ and eq_params_alpha (params_a : param list) (params_b : param list) : bool =
 and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
   let is_nominal (typ : typ) : bool =
     match typ with
-    | EnumT _ | SEnumT _ | StructT _ | HeaderT _ | UnionT _ | ExternT _ -> true
+    | NewT _ | EnumT _ | SEnumT _ | StructT _ | HeaderT _ | UnionT _ | ExternT _
+      ->
+        true
     | _ -> false
   in
   match (typ_a, typ_b) with
@@ -185,12 +149,6 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
   | VBitT width_a, VBitT width_b ->
       Bigint.(width_a = width_b)
   | VarT id_a, VarT id_b -> E.eq_id' id_a id_b
-  | SpecT ((DefD _ as td), typs_inner_a), _ ->
-      let typ_inner_a = Subst.specialize_typdef td typs_inner_a in
-      eq_typ_alpha typ_inner_a typ_b
-  | _, SpecT ((DefD _ as td), typs_inner_b) ->
-      let typ_inner_b = Subst.specialize_typdef td typs_inner_b in
-      eq_typ_alpha typ_a typ_inner_b
   | SpecT (td_a, typs_inner_a), SpecT (td_b, typs_inner_b) ->
       let typ_inner_a = Subst.specialize_typdef td_a typs_inner_a in
       let typ_inner_b = Subst.specialize_typdef td_b typs_inner_b in
@@ -199,7 +157,14 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
       if is_nominal typ_inner_a && is_nominal typ_inner_b then
         eq_typs_alpha typs_inner_a typs_inner_b
       else true
-  | DefT typ_inner_a, DefT typ_inner_b -> eq_typ_alpha typ_inner_a typ_inner_b
+  | SpecT (td_a, typs_inner_a), _ ->
+      let typ_inner_a = Subst.specialize_typdef td_a typs_inner_a in
+      eq_typ_alpha typ_inner_a typ_b
+  | _, SpecT (td_b, typs_inner_b) ->
+      let typ_inner_b = Subst.specialize_typdef td_b typs_inner_b in
+      eq_typ_alpha typ_a typ_inner_b
+  | DefT typ_inner_a, _ -> eq_typ_alpha typ_inner_a typ_b
+  | _, DefT typ_inner_b -> eq_typ_alpha typ_a typ_inner_b
   | NewT (id_a, typ_inner_a), NewT (id_b, typ_inner_b) ->
       E.eq_id' id_a id_b && eq_typ_alpha typ_inner_a typ_inner_b
   | EnumT (id_a, members_a), EnumT (id_b, members_b) ->
@@ -237,141 +202,6 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
 
 and eq_typs_alpha (typs_a : typ list) (typs_b : typ list) : bool =
   E.eq_list eq_typ_alpha typs_a typs_b
-
-(* (1* Type definitions *1) *)
-
-(* and eq_typdef_alpha (td_a : typdef) (td_b : typdef) : bool = *)
-(*   let eq_typdef'' tparams_a tparams_hidden_a tparams_b tparams_hidden_b = *)
-(*     let tparams_a = tparams_a @ tparams_hidden_a in *)
-(*     let tparams_b = tparams_b @ tparams_hidden_b in *)
-(*     assert (List.length tparams_a = List.length tparams_b); *)
-(*     let frees_a = *)
-(*       Free.free_typdef td_a |> TIdSet.union (TIdSet.of_list tparams_a) *)
-(*     in *)
-(*     let frees_b = *)
-(*       Free.free_typdef td_b |> TIdSet.union (TIdSet.of_list tparams_b) *)
-(*     in *)
-(*     let frees = TIdSet.union frees_a frees_b in *)
-(*     let theta_a, theta_b, _, _ = *)
-(*       List.fold_left2 *)
-(*         (fun (theta_a, theta_b, tparams_fresh, frees) tparam_a tparam_b -> *)
-(*           let tparam_fresh, frees = *)
-(*             let tparam_fresh = *)
-(*               "Fresh" ^ string_of_int (List.length tparams_fresh) *)
-(*             in *)
-(*             if TIdSet.mem tparam_fresh frees then *)
-(*               Subst.fresh_tvar tparam_fresh frees *)
-(*             else (tparam_fresh, frees) *)
-(*           in *)
-(*           let theta_a = TIdMap.add tparam_a (VarT tparam_fresh) theta_a in *)
-(*           let theta_b = TIdMap.add tparam_b (VarT tparam_fresh) theta_b in *)
-(*           (theta_a, theta_b, tparams_fresh @ [ tparam_fresh ], frees)) *)
-(*         (TIdMap.empty, TIdMap.empty, [], frees) *)
-(*         tparams_a tparams_b *)
-(*     in *)
-(*     (theta_a, theta_b) *)
-(*   in *)
-(*   let eq_typdef' tparams_a tparams_hidden_a tparams_b tparams_hidden_b = *)
-(*     if *)
-(*       List.length tparams_a = List.length tparams_b *)
-(*       && List.length tparams_hidden_a = List.length tparams_hidden_b *)
-(*     then *)
-(*       Some (eq_typdef'' tparams_a tparams_hidden_a tparams_b tparams_hidden_b) *)
-(*     else None *)
-(*   in *)
-(*   match (td_a, td_b) with *)
-(*   | DefD typ_inner_a, DefD typ_inner_b -> eq_typ_alpha typ_inner_a typ_inner_b *)
-(*   | NewD (id_a, typ_inner_a), NewD (id_b, typ_inner_b) -> *)
-(*       E.eq_id' id_a id_b && eq_typ_alpha typ_inner_a typ_inner_b *)
-(*   | EnumD (id_a, members_a), EnumD (id_b, members_b) -> *)
-(*       E.eq_id' id_a id_b && E.eq_list E.eq_member' members_a members_b *)
-(*   | SEnumD (id_a, typ_inner_a, fields_a), SEnumD (id_b, typ_inner_b, fields_b) *)
-(*     -> *)
-(*       E.eq_id' id_a id_b *)
-(*       && eq_typ_alpha typ_inner_a typ_inner_b *)
-(*       && E.eq_pairs E.eq_member' Value.eq fields_a fields_b *)
-(*   | ListD (tparam_a, typ_inner_a), ListD (tparam_b, typ_inner_b) -> ( *)
-(*       match eq_typdef' [ tparam_a ] [] [ tparam_b ] [] with *)
-(*       | Some (theta_a, theta_b) -> *)
-(*           let typ_inner_a = Subst.subst_typ theta_a typ_inner_a in *)
-(*           let typ_inner_b = Subst.subst_typ theta_b typ_inner_b in *)
-(*           eq_typ_alpha typ_inner_a typ_inner_b *)
-(*       | None -> false) *)
-(*   | TupleD (tparams_a, typs_inner_a), TupleD (tparams_b, typs_inner_b) -> ( *)
-(*       match eq_typdef' tparams_a [] tparams_b [] with *)
-(*       | Some (theta_a, theta_b) -> *)
-(*           let typs_inner_a = Subst.subst_typs theta_a typs_inner_a in *)
-(*           let typs_inner_b = Subst.subst_typs theta_b typs_inner_b in *)
-(*           eq_typs_alpha typs_inner_a typs_inner_b *)
-(*       | None -> false) *)
-(*   | ( StackD (tparam_a, typ_inner_a, size_a), *)
-(*       StackD (tparam_b, typ_inner_b, size_b) ) -> ( *)
-(*       match eq_typdef' [ tparam_a ] [] [ tparam_b ] [] with *)
-(*       | Some (theta_a, theta_b) -> *)
-(*           let typ_inner_a = Subst.subst_typ theta_a typ_inner_a in *)
-(*           let typ_inner_b = Subst.subst_typ theta_b typ_inner_b in *)
-(*           eq_typ_alpha typ_inner_a typ_inner_b && Bigint.(size_a = size_b) *)
-(*       | None -> false) *)
-(*   | ( StructD (id_a, tparams_a, tparams_hidden_a, fields_a), *)
-(*       StructD (id_b, tparams_b, tparams_hidden_b, fields_b) ) *)
-(*   | ( HeaderD (id_a, tparams_a, tparams_hidden_a, fields_a), *)
-(*       HeaderD (id_b, tparams_b, tparams_hidden_b, fields_b) ) *)
-(*   | ( UnionD (id_a, tparams_a, tparams_hidden_a, fields_a), *)
-(*       UnionD (id_b, tparams_b, tparams_hidden_b, fields_b) ) -> ( *)
-(*       match *)
-(*         eq_typdef' tparams_a tparams_hidden_a tparams_b tparams_hidden_b *)
-(*       with *)
-(*       | Some (theta_a, theta_b) -> *)
-(*           let fields_a = *)
-(*             List.map *)
-(*               (fun (member_a, typ_inner_a) -> *)
-(*                 let typ_inner_a = Subst.subst_typ theta_a typ_inner_a in *)
-(*                 (member_a, typ_inner_a)) *)
-(*               fields_a *)
-(*           in *)
-(*           let fields_b = *)
-(*             List.map *)
-(*               (fun (member_b, typ_inner_b) -> *)
-(*                 let typ_inner_b = Subst.subst_typ theta_b typ_inner_b in *)
-(*                 (member_b, typ_inner_b)) *)
-(*               fields_b *)
-(*           in *)
-(*           E.eq_id' id_a id_b *)
-(*           && E.eq_pairs E.eq_member' eq_typ_alpha fields_a fields_b *)
-(*       | None -> false) *)
-(*   | ( ExternD (id_a, tparams_a, tparams_hidden_a, fdenv_a), *)
-(*       ExternD (id_b, tparams_b, tparams_hidden_b, fdenv_b) ) -> ( *)
-(*       match *)
-(*         eq_typdef' tparams_a tparams_hidden_a tparams_b tparams_hidden_b *)
-(*       with *)
-(*       | Some (theta_a, theta_b) -> *)
-(*           let fdenv_a = FIdMap.map (Subst.subst_funcdef theta_a) fdenv_a in *)
-(*           let fdenv_b = FIdMap.map (Subst.subst_funcdef theta_b) fdenv_b in *)
-(*           E.eq_id' id_a id_b && FIdMap.eq eq_funcdef_alpha fdenv_a fdenv_b *)
-(*       | None -> false) *)
-(*   | ( ParserD (tparams_a, tparams_hidden_a, params_a), *)
-(*       ParserD (tparams_b, tparams_hidden_b, params_b) ) *)
-(*   | ( ControlD (tparams_a, tparams_hidden_a, params_a), *)
-(*       ControlD (tparams_b, tparams_hidden_b, params_b) ) -> ( *)
-(*       match *)
-(*         eq_typdef' tparams_a tparams_hidden_a tparams_b tparams_hidden_b *)
-(*       with *)
-(*       | Some (theta_a, theta_b) -> *)
-(*           let params_a = Subst.subst_params theta_a params_a in *)
-(*           let params_b = Subst.subst_params theta_b params_b in *)
-(*           eq_params_alpha params_a params_b *)
-(*       | None -> false) *)
-(*   | ( PackageD (tparams_a, tparams_hidden_a, typs_a), *)
-(*       PackageD (tparams_b, tparams_hidden_b, typs_b) ) -> ( *)
-(*       match *)
-(*         eq_typdef' tparams_a tparams_hidden_a tparams_b tparams_hidden_b *)
-(*       with *)
-(*       | Some (theta_a, theta_b) -> *)
-(*           let typs_a = Subst.subst_typs theta_a typs_a in *)
-(*           let typs_b = Subst.subst_typs theta_b typs_b in *)
-(*           eq_typs_alpha typs_a typs_b *)
-(*       | None -> false) *)
-(*   | _ -> false *)
 
 (* Function definitions *)
 

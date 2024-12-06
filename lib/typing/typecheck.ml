@@ -112,12 +112,6 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
   match (typ_param, typ_arg) with
   | VarT tid, typ_arg when TIdMap.mem tid cstr ->
       TIdMap.add tid (Some typ_arg) cstr
-  | SpecT ((DefD _ as td), typs_param_inner), _ ->
-      let typ_param_inner = TypeDef.specialize td typs_param_inner in
-      gen_cstr cstr typ_param_inner typ_arg
-  | _, SpecT ((DefD _ as td), typs_arg_inner) ->
-      let typ_arg_inner = TypeDef.specialize td typs_arg_inner in
-      gen_cstr cstr typ_param typ_arg_inner
   | SpecT (td_param, typs_inner_param), SpecT (td_arg, typs_inner_arg) ->
       let typ_param_inner = TypeDef.specialize td_param typs_inner_param in
       let typ_arg_inner = TypeDef.specialize td_arg typs_inner_arg in
@@ -125,6 +119,8 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
       if is_nominal typ_param_inner && is_nominal typ_arg_inner then
         gen_cstrs cstr_inner typs_inner_param typs_inner_arg
       else cstr_inner
+  | DefT typ_inner_param, _ -> gen_cstr cstr typ_inner_param typ_arg
+  | _, DefT typ_inner_arg -> gen_cstr cstr typ_param typ_inner_arg
   | NewT (id_param, typ_inner_param), NewT (id_arg, typ_inner_arg)
     when id_param = id_arg ->
       gen_cstr cstr typ_inner_param typ_inner_arg
@@ -320,13 +316,19 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
       let size =
         expr_size_il |> Static.eval_expr cursor ctx |> it |> Value.get_num
       in
-      let td = Types.StackD ("T", Types.VarT "T", size) in
+      let td =
+        let typ_stack = Types.StackT (Types.VarT "T", size) in
+        Types.PolyD ([ "T" ], [], typ_stack)
+      in
       let typ = Types.SpecT (td, [ typ_inner.it ]) in
       let tids_fresh = tids_fresh @ tids_fresh_inner in
       (typ, tids_fresh)
   | ListT typ_inner ->
       let typ_inner, tids_fresh_inner = eval_type cursor ctx typ_inner in
-      let td = Types.ListD ("T", Types.VarT "T") in
+      let td =
+        let typ_list = Types.ListT (Types.VarT "T") in
+        Types.PolyD ([ "T" ], [], typ_list)
+      in
       let typ = Types.SpecT (td, [ typ_inner.it ]) in
       let tids_fresh = tids_fresh @ tids_fresh_inner in
       (typ, tids_fresh)
@@ -343,7 +345,8 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
           List.init (List.length typs_inner) (fun i -> "T" ^ string_of_int i)
         in
         let typs_inner = List.map (fun tparam -> Types.VarT tparam) tparams in
-        Types.TupleD (tparams, typs_inner)
+        let typ_tuple = Types.TupleT typs_inner in
+        Types.PolyD (tparams, [], typ_tuple)
       in
       let typ = Types.SpecT (td, typs_inner) in
       (typ, tids_fresh)
@@ -1635,8 +1638,17 @@ and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     assert false);
   let td_base = Option.get td_base in
   let typ, value =
-    match td_base with
-    | EnumD (id, members) ->
+    let typ_base =
+      match td_base with
+      | MonoD typ_base -> typ_base
+      | _ ->
+          Format.printf "(type_type_acc_expr) Cannot access a generic type %a\n"
+            TypeDef.pp td_base;
+          assert false
+    in
+    let typ_base = Type.canon typ_base in
+    match typ_base with
+    | EnumT (id, members) ->
         if not (List.mem member.it members) then (
           Format.printf "(type_type_acc_expr) Member %s does not exist in %a\n"
             member.it TypeDef.pp td_base;
@@ -1644,7 +1656,7 @@ and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
         let typ = Types.SpecT (td_base, []) in
         let value = Value.EnumFieldV (id, member.it) in
         (typ, value)
-    | SEnumD (id, _, fields) ->
+    | SEnumT (id, _, fields) ->
         if not (List.mem_assoc member.it fields) then (
           Format.printf "(type_type_acc_expr) Member %s does not exist in %a\n"
             member.it TypeDef.pp td_base;
@@ -3321,75 +3333,82 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   (* Typecheck abstract methods defined by object initializers (for externs only) *)
   let typ, init_il =
-    match typ with
-    | SpecT (ExternD (id, tparams, tparams_hidden, fdenv_extern), typs_inner) ->
-        let ctx =
-          { Ctx.empty with global = ctx.global }
-          |> Ctx.add_rtype Ctx.Local "this" typ Lang.Ast.No Ctk.CTK
-        in
-        let _, fdenv_abstract, init_il =
-          type_instantiation_init_decls ctx init
-        in
-        let fdenv_extern =
-          Envs.FDEnv.fold
-            (fun fid fd_abstract fdenv_extern ->
-              let fd_extern = Envs.FDEnv.find_opt fid fdenv_extern in
-              if
-                not
-                  (match (fd_extern : FuncDef.t option) with
-                  | Some (ExternAbstractMethodD _) -> true
-                  | _ -> false)
-              then (
-                Format.printf
-                  "(type_instantiation_decl) Abstract method %a was not declared\n"
-                  FId.pp fid;
-                assert false);
-              let fd_extern =
-                let fd_extern = Option.get fd_extern in
-                let tparams, tparams_hidden, params, typ_ret =
-                  match fd_extern with
-                  | ExternAbstractMethodD
-                      (tparams, tparams_hidden, params, typ_ret) ->
-                      (tparams, tparams_hidden, params, typ_ret)
-                  | _ -> assert false
-                in
-                Types.ExternMethodD (tparams, tparams_hidden, params, typ_ret)
+    if init = [] then (typ, [])
+    else
+      let id, tparams, tparams_hidden, fdenv_extern, typs_inner =
+        match typ with
+        | SpecT
+            ( PolyD (tparams, tparams_hidden, ExternT (id, fdenv_extern)),
+              typs_inner ) ->
+            (id, tparams, tparams_hidden, fdenv_extern, typs_inner)
+        | _ ->
+            Format.printf
+              "(type_instantiation_decl) Initializers are only allowed for \
+               extern objects\n";
+            assert false
+      in
+      let ctx =
+        { Ctx.empty with global = ctx.global }
+        |> Ctx.add_rtype Ctx.Local "this" typ Lang.Ast.No Ctk.CTK
+      in
+      let _, fdenv_abstract, init_il = type_instantiation_init_decls ctx init in
+      let fdenv_extern =
+        Envs.FDEnv.fold
+          (fun fid fd_abstract fdenv_extern ->
+            let fd_extern = Envs.FDEnv.find_opt fid fdenv_extern in
+            if
+              not
+                (match (fd_extern : FuncDef.t option) with
+                | Some (ExternAbstractMethodD _) -> true
+                | _ -> false)
+            then (
+              Format.printf
+                "(type_instantiation_decl) Abstract method %a was not declared\n"
+                FId.pp fid;
+              assert false);
+            let fd_extern =
+              let fd_extern = Option.get fd_extern in
+              let tparams, tparams_hidden, params, typ_ret =
+                match fd_extern with
+                | ExternAbstractMethodD
+                    (tparams, tparams_hidden, params, typ_ret) ->
+                    (tparams, tparams_hidden, params, typ_ret)
+                | _ -> assert false
               in
-              let fd_extern_inner =
-                let theta =
-                  List.combine (tparams @ tparams_hidden) typs_inner
-                  |> TIdMap.of_list
-                in
-                FuncDef.subst theta fd_extern
+              Types.ExternMethodD (tparams, tparams_hidden, params, typ_ret)
+            in
+            let fd_extern_inner =
+              let theta =
+                List.combine (tparams @ tparams_hidden) typs_inner
+                |> TIdMap.of_list
               in
-              if not (FuncDef.eq_alpha fd_extern_inner fd_abstract) then (
-                Format.printf
-                  "(type_instantiation_decl) Abstract method %a does not match \
-                   the declared type\n"
-                  FId.pp fid;
-                assert false);
-              Envs.FDEnv.add fid fd_extern fdenv_extern)
-            fdenv_abstract fdenv_extern
-        in
-        Envs.FDEnv.iter
-          (fun fid fd_extern ->
-            match (fd_extern : FuncDef.t) with
-            | ExternAbstractMethodD _ ->
-                Format.printf
-                  "(type_instantiation_decl) Abstract method %a was not defined\n"
-                  FId.pp fid;
-                assert false
-            | _ -> ())
-          fdenv_extern;
-        let td = Types.ExternD (id, tparams, tparams_hidden, fdenv_extern) in
-        let typ = Types.SpecT (td, typs_inner) in
-        (typ, init_il)
-    | _ when init <> [] ->
-        Format.printf
-          "(type_instantiation_decl) Initializers are only allowed for extern \
-           objects\n";
-        assert false
-    | _ -> (typ, [])
+              FuncDef.subst theta fd_extern
+            in
+            if not (FuncDef.eq_alpha fd_extern_inner fd_abstract) then (
+              Format.printf
+                "(type_instantiation_decl) Abstract method %a does not match \
+                 the declared type\n"
+                FId.pp fid;
+              assert false);
+            Envs.FDEnv.add fid fd_extern fdenv_extern)
+          fdenv_abstract fdenv_extern
+      in
+      Envs.FDEnv.iter
+        (fun fid fd_extern ->
+          match (fd_extern : FuncDef.t) with
+          | ExternAbstractMethodD _ ->
+              Format.printf
+                "(type_instantiation_decl) Abstract method %a was not defined\n"
+                FId.pp fid;
+              assert false
+          | _ -> ())
+        fdenv_extern;
+      let td =
+        let typ_extern = Types.ExternT (id, fdenv_extern) in
+        Types.PolyD (tparams, tparams_hidden, typ_extern)
+      in
+      let typ = Types.SpecT (td, typs_inner) in
+      (typ, init_il)
   in
   let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
   let decl_il =
@@ -3495,7 +3514,8 @@ and type_struct_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let members = List.map it members in
     let typs = List.map it typs in
     let fields = List.combine members typs in
-    Types.StructD (id.it, tparams, tparams_hidden, fields)
+    let typ_struct = Types.StructT (id.it, fields) in
+    Types.PolyD (tparams, tparams_hidden, typ_struct)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -3532,7 +3552,8 @@ and type_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let members = List.map it members in
     let typs = List.map it typs in
     let fields = List.combine members typs in
-    Types.HeaderD (id.it, tparams, tparams_hidden, fields)
+    let typ_header = Types.HeaderT (id.it, fields) in
+    Types.PolyD (tparams, tparams_hidden, typ_header)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -3569,7 +3590,8 @@ and type_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let members = List.map it members in
     let typs = List.map it typs in
     let fields = List.combine members typs in
-    Types.UnionD (id.it, tparams, tparams_hidden, fields)
+    let typ_union = Types.UnionT (id.it, fields) in
+    Types.PolyD (tparams, tparams_hidden, typ_union)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -3587,7 +3609,10 @@ and type_enum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     assert false);
   let _annos_il = List.map (type_anno cursor ctx) annos in
   let members = List.map it members in
-  let td = Types.EnumD (id.it, members) in
+  let td =
+    let typ_enum = Types.EnumT (id.it, members) in
+    Types.MonoD typ_enum
+  in
   let ctx =
     List.fold_left
       (fun ctx member ->
@@ -3648,7 +3673,10 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       (ctx, []) fields
   in
   (* Clear out the block context *)
-  let td = Types.SEnumD (id.it, typ.it, fields) in
+  let td =
+    let typ_senum = Types.SEnumT (id.it, typ.it, fields) in
+    Types.MonoD typ_senum
+  in
   let ctx =
     let members = List.map fst fields in
     let ctx =
@@ -3682,28 +3710,31 @@ and type_newtype_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.printf "(type_newtype_decl) New type declarations must be global\n";
     assert false);
   let _annos_il = List.map (type_anno cursor ctx) annos in
-  match typdef with
-  | Left typ ->
-      let typ, tids_fresh = eval_type_with_check cursor ctx typ in
-      assert (tids_fresh = []);
-      let td = Types.NewD (id.it, typ.it) in
-      WF.check_valid_typedef cursor ctx td;
-      let ctx = Ctx.add_typedef cursor id.it td ctx in
-      ctx
-  | Right decl ->
-      let ctx', _ = type_decl cursor ctx decl in
-      let tid_newtype =
-        TIdSet.diff
-          (Envs.TDEnv.keys ctx'.global.tdenv |> TIdSet.of_list)
-          (Envs.TDEnv.keys ctx.global.tdenv |> TIdSet.of_list)
-      in
-      assert (TIdSet.cardinal tid_newtype = 1);
-      let tid_newtype = TIdSet.choose tid_newtype in
-      let td_newtype = Ctx.find_typedef cursor tid_newtype ctx' in
-      let typ = TypeDef.specialize td_newtype [] in
-      let td = Types.NewD (id.it, typ) in
-      let ctx = Ctx.add_typedef cursor id.it td ctx' in
-      ctx
+  let typ =
+    match typdef with
+    | Left typ ->
+        let typ, tids_fresh = eval_type_with_check cursor ctx typ in
+        assert (tids_fresh = []);
+        typ.it
+    | Right decl ->
+        let ctx', _ = type_decl cursor ctx decl in
+        let tid_newtype =
+          TIdSet.diff
+            (Envs.TDEnv.keys ctx'.global.tdenv |> TIdSet.of_list)
+            (Envs.TDEnv.keys ctx.global.tdenv |> TIdSet.of_list)
+        in
+        assert (TIdSet.cardinal tid_newtype = 1);
+        let tid_newtype = TIdSet.choose tid_newtype in
+        let td_newtype = Ctx.find_typedef cursor tid_newtype ctx' in
+        TypeDef.specialize td_newtype []
+  in
+  let td =
+    let typ_new = Types.NewT (id.it, typ) in
+    Types.MonoD typ_new
+  in
+  WF.check_valid_typedef cursor ctx td;
+  let ctx = Ctx.add_typedef cursor id.it td ctx in
+  ctx
 
 (* (7.5) typedef
 
@@ -3719,28 +3750,31 @@ and type_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.printf "(type_typedef_decl) Typedef declarations must be global\n";
     assert false);
   let _annos_il = List.map (type_anno cursor ctx) annos in
-  match typdef with
-  | Left typ ->
-      let typ, tids_fresh = eval_type_with_check cursor ctx typ in
-      assert (tids_fresh = []);
-      let td = Types.DefD typ.it in
-      WF.check_valid_typedef cursor ctx td;
-      let ctx = Ctx.add_typedef cursor id.it td ctx in
-      ctx
-  | Right decl ->
-      let ctx', _ = type_decl cursor ctx decl in
-      let tid_typedef =
-        TIdSet.diff
-          (Envs.TDEnv.keys ctx'.global.tdenv |> TIdSet.of_list)
-          (Envs.TDEnv.keys ctx.global.tdenv |> TIdSet.of_list)
-      in
-      assert (TIdSet.cardinal tid_typedef = 1);
-      let tid_typedef = TIdSet.choose tid_typedef in
-      let td_typedef = Ctx.find_typedef cursor tid_typedef ctx' in
-      let typ = TypeDef.specialize td_typedef [] in
-      let td = Types.DefD typ in
-      let ctx = Ctx.add_typedef cursor id.it td ctx' in
-      ctx
+  let typ =
+    match typdef with
+    | Left typ ->
+        let typ, tids_fresh = eval_type_with_check cursor ctx typ in
+        assert (tids_fresh = []);
+        typ.it
+    | Right decl ->
+        let ctx', _ = type_decl cursor ctx decl in
+        let tid_typedef =
+          TIdSet.diff
+            (Envs.TDEnv.keys ctx'.global.tdenv |> TIdSet.of_list)
+            (Envs.TDEnv.keys ctx.global.tdenv |> TIdSet.of_list)
+        in
+        assert (TIdSet.cardinal tid_typedef = 1);
+        let tid_typedef = TIdSet.choose tid_typedef in
+        let td_typedef = Ctx.find_typedef cursor tid_typedef ctx' in
+        TypeDef.specialize td_typedef []
+  in
+  let td =
+    let typ_def = Types.DefT typ in
+    Types.MonoD typ_def
+  in
+  WF.check_valid_typedef cursor ctx td;
+  let ctx = Ctx.add_typedef cursor id.it td ctx in
+  ctx
 
 (* (14.1) Actions
 
@@ -4100,7 +4134,8 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
      and add it to the context *)
   let td =
     let tparams = List.map it tparams in
-    Types.ExternD (id.it, tparams, [], ctx'.block.fdenv)
+    let typ_extern = Types.ExternT (id.it, ctx'.block.fdenv) in
+    Types.PolyD (tparams, [], typ_extern)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -4204,7 +4239,8 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ParserD (tparams, tparams_hidden, params)
+    let typ_param = Types.ParserT params in
+    Types.PolyD (tparams, tparams_hidden, typ_param)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -4338,7 +4374,9 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.SpecT (Types.ParserD ([], [], params), [])
+    let typ_parser = Types.ParserT params in
+    let td_parser = Types.PolyD ([], [], typ_parser) in
+    Types.SpecT (td_parser, [])
   in
   let cd =
     let cparams =
@@ -5311,7 +5349,8 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ControlD (tparams, tparams_hidden, params)
+    let typ_control = Types.ControlT params in
+    Types.PolyD (tparams, tparams_hidden, typ_control)
   in
   WF.check_valid_typedef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
@@ -5387,7 +5426,9 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.SpecT (Types.ControlD ([], [], params), [])
+    let typ_control = Types.ControlT params in
+    let td_control = Types.PolyD ([], [], typ_control) in
+    Types.SpecT (td_control, [])
   in
   let cd =
     let cparams =
@@ -5449,7 +5490,8 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
       List.map it cparams_il
       |> List.map (fun (_, _, typ_inner, _, _) -> typ_inner.it)
     in
-    Types.PackageD (tparams, tparams_hidden, typs_inner)
+    let typ_package = Types.PackageT typs_inner in
+    Types.PolyD (tparams, tparams_hidden, typ_package)
   in
   WF.check_valid_typedef cursor ctx td;
   let typ_args =

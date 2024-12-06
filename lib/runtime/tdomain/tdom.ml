@@ -56,26 +56,7 @@ and typ =
   | StateT
 
 (* Type definitions *)
-and typdef =
-  (* 1. Derived type constructors that do not take type parameters *)
-  | DefD of typ
-  | NewD of L.id' * typ
-  | EnumD of L.id' * L.member' list
-  | SEnumD of L.id' * typ * (L.member' * Value.t) list
-  (* 2. Derived type constructors that take type parameters *)
-  (* 2a. Builtin type constructors *)
-  | ListD of tparam * typ
-  | TupleD of tparam list * typ list
-  | StackD of tparam * typ * Bigint.t
-  (* 2b. Derived type constructors for value types *)
-  | StructD of L.id' * tparam list * tparam list * (L.member' * typ) list
-  | HeaderD of L.id' * tparam list * tparam list * (L.member' * typ) list
-  | UnionD of L.id' * tparam list * tparam list * (L.member' * typ) list
-  (* 2c. Derived type constructors for object types *)
-  | ExternD of L.id' * tparam list * tparam list * funcdef FIdMap.t
-  | ParserD of tparam list * tparam list * param list
-  | ControlD of tparam list * tparam list * param list
-  | PackageD of tparam list * tparam list * typ list
+and typdef = MonoD of typ | PolyD of tparam list * tparam list * typ
 
 (* Function types *)
 and functyp =
