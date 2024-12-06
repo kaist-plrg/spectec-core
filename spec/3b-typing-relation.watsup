@@ -1,0 +1,19 @@
+;; Static evaluation
+
+relation Eval_static: cursor context |- expr ~> val
+
+
+;; Type evaluation
+
+relation Type_ok: cursor context |- type : typ
+relation Type_wf: type : OK
+
+;; Expression, Statement, and Declaration typing
+
+relation Call_ok: cursor context |- functyp arg* : typ
+relation Func_ok: cursor context |- name targ* arg* : functyp
+relation Method_ok: cursor context |- expr member targ* arg* : functyp
+
+relation Expr_ok: cursor context |- expr : typ
+relation Stmt_ok: cursor context flow |- stmt : OK
+relation Decl_ok: cursor context |- decl : context

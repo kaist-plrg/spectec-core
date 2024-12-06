@@ -1,0 +1,2 @@
+rule Eval_static/boole:
+   p C |- BoolE b ~> BoolV b

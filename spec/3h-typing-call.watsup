@@ -1,0 +1,64 @@
+;; Function typing
+
+;; TODO should consider overload resolution and default parameters
+
+rule Func_ok:
+   p C |- name targ* arg* : functyp
+   ----
+   -- (Type_ok: p C |- targ: typ_a)*
+   -- if funcdef = $find_funcdef(GLOBAL, C, name)
+   ----
+   -- if functyp = $specialize_funcdef(funcdef, typ_a*)
+
+
+;; Method typing
+
+;; TODO check that builtin is defined on typ_b
+rule Method_ok/builtin:
+  p C |- expr_b member eps eps : BuiltinMethodT eps IntT
+  -- Expr_ok: p C |- expr_b : typ_b
+  ----
+  -- (Type_ok: p C |- targ : typ_a)*
+  ----
+  -- if member = "minSizeInBits" \/ member = "minSizeInBytes" \/ member = "maxSizeInBits" \/ member = "maxSizeInBytes"
+
+;; TODO LaTeX won't render BuiltinMethodT due to overfull hbox
+;;rule Method_ok/stackt:
+;;  p C |- expr_b member eps arg* : functyp
+;;  ----
+;;  -- Expr_ok: p C |- expr_b: typ_b
+;;  -- if StackT typ_b_in size_b = $saturate_typ(typ_b)
+;;  ----
+;;  -- if member = "push_front" \/ member = "pop_front"
+;;  -- if functyp = BuiltinMethodT ("count", NO, IntT, eps) IntT
+
+rule Method_ok/headert-isvalid:
+  p C |- expr_b "isValid" eps arg* : BuiltinMethodT eps BoolT
+  ----
+  -- Expr_ok: p C |- expr_b: typ_b
+  -- if HeaderT id_b (member, typ_b_in)* = $saturate_typ(typ_b)
+
+rule Method_ok/headert-setvalid-setinvalid:
+  p C |- expr_b member eps arg* : BuiltinMethodT eps VoidT
+  ----
+  -- Expr_ok: p C |- expr_b: typ_b
+  -- if HeaderT id_b (member, typ_b_in)* = $saturate_typ(typ_b)
+  ----
+  -- if member = "setValid" \/ member = "setInvalid"
+
+rule Method_ok/uniont:
+  p C |- expr_b "isValid" eps arg* : BuiltinMethodT eps BoolT
+  ----
+  -- Expr_ok: p C |- expr_b: typ_b
+  -- if UnionT id_b (member, typ_b_in)* = $saturate_typ(typ_b)
+
+rule Method_ok/externt:
+  p C |- expr_b member targ* arg* : functyp
+  ----
+  -- Expr_ok: p C |- expr_b: typ_b
+  -- if ExternT id_b fmap_b = $saturate_typ(typ_b)
+  ----
+  -- (Type_ok: p C |- targ: typ_a)*
+  ----
+  -- if funcdef = $find_fdenv(fmap_b, member)
+  -- if functyp = $specialize_funcdef(funcdef, typ_a*)

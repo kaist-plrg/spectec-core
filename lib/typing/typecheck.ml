@@ -579,9 +579,9 @@ and type_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr') :
       type_array_acc_expr cursor ctx expr_base expr_idx
   | BitAccE { expr_base; expr_lo; expr_hi } ->
       type_bitstring_acc_expr cursor ctx expr_base expr_lo expr_hi
+  | ErrAccE { member } -> type_error_acc_expr cursor ctx member
   | TypeAccE { var_base; member } ->
       type_type_acc_expr cursor ctx var_base member
-  | ErrAccE { member } -> type_error_acc_expr cursor ctx member
   | ExprAccE { expr_base; member } ->
       type_expr_acc_expr cursor ctx expr_base member
   | CallFuncE { var_func; targs; args } ->
@@ -1469,11 +1469,10 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (expr_idx : El.Ast.expr) :
     Type.t * Ctk.t * Il.Ast.expr' =
   let expr_base_il = type_expr cursor ctx expr_base in
-  let typ_base = expr_base_il.note.typ |> Type.canon in
   let expr_idx_il = type_expr cursor ctx expr_idx in
   let expr_idx_il = coerce_type_unary_numeric Type.is_numeric expr_idx_il in
   let typ, expr_il =
-    let typ_base = Type.canon typ_base in
+    let typ_base = expr_base_il.note.typ |> Type.canon in
     match typ_base with
     | TupleT typs_base_inner ->
         let value_idx = Static.eval_expr cursor ctx expr_idx_il in
@@ -1713,8 +1712,8 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (member : El.Ast.member) :
     Type.t * Ctk.t * Il.Ast.expr' =
   let expr_base_il = type_expr cursor ctx expr_base in
-  let typ_base = expr_base_il.note.typ |> Type.canon in
   let typ =
+    let typ_base = expr_base_il.note.typ |> Type.canon in
     match typ_base with
     | StackT (typ_inner, _) -> (
         if

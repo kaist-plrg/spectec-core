@@ -1,0 +1,26 @@
+;; Constant declaration
+
+rule Decl_ok/constd:
+  p C |- ConstD id type expr : C''
+  ----
+  -- Type_ok: p C |- type : typ_t
+  -- Expr_ok: p C |- expr : typ_e
+  -- Sub_impl: typ_e <: typ_t
+  -- Eval_static: p C |- expr ~> val
+  ----
+  -- if C' = $add_val(p, C, id, val)
+  -- if C'' = $add_typ(p, C', id, typ_t)
+
+;; Variable declaration
+
+rule Decl_ok/vard-init:
+  p C |- VarD id type expr? : C'
+  -- Type_ok: p C |- type : typ_t
+  -- Expr_ok: p C |- expr : typ_e
+  -- Sub_impl: typ_e <: typ_t
+  -- if C' = $add_typ(p, C, id, typ_t)
+
+rule Decl_ok/vard-noinit:
+  p C |- VarD id type eps : C'
+  -- Type_ok: p C |- type : typ_t
+  -- if C' = $add_typ(p, C, id, typ_t)

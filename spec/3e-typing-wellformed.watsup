@@ -1,0 +1,2 @@
+rule Type_wf/void:
+  VoidT : OK

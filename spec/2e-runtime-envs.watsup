@@ -1,0 +1,7 @@
+syntax venv = imap(val)
+syntax tenv = imap(typ)
+syntax tdenv = tmap(typdef)
+syntax fdenv = fmap(funcdef)
+syntax cdenv = fmap(consdef)
+
+def $find_fdenv(fdenv, fid) : funcdef   hint(show %#`[%])

@@ -1,0 +1,322 @@
+;; Boolean expression
+
+rule Expr_ok/boole:
+  p C |- BoolE b : BoolT
+
+
+;; String expression
+
+rule Expr_ok/stre:
+  p C |- StrE t : StrT
+
+
+;; Number expression
+
+rule Expr_ok/nume-intt:
+  p C |- NumE (INT i) : IntT
+
+rule Expr_ok/nume-fintt:
+  p C |- NumE (FINT w i) : FIntT w
+
+rule Expr_ok/nume-fbitt:
+  p C |- NumE (FBIT w i) : FBitT w
+
+
+;; Variable expression
+
+rule Expr_ok/namee:
+  p C |- NameE name : typ
+  -- if typ = $find_typ(p, C, name)
+
+
+;; Sequence expression
+
+rule Expr_ok/seqe:
+  p C |- SeqE expr* : SeqT typ_e*
+  -- (Expr_ok: p C |- expr : typ_e)*
+
+rule Expr_ok/seqdefaulte:
+  p C |- SeqDefaultE expr* : SeqDefaultT typ_e*
+  -- (Expr_ok: p C |- expr : typ_e)*
+
+
+;; Record expression
+
+rule Expr_ok/recorde:
+  p C |- RecordE (member, expr)* : RecordT (member, typ_e)*
+  -- (Expr_ok: p C |- expr : typ_e)*
+
+rule Expr_ok/recorddefaulte:
+  p C |- RecordDefaultE (member, expr)* : RecordDefaultT (member, typ_e)*
+  -- (Expr_ok: p C |- expr : typ_e)*
+
+
+;; Default expression
+
+rule Expr_ok/defaulte:
+  p C |- DefaultE : DefaultT
+
+
+;; Invalid expression
+
+rule Expr_ok/invalide:
+  p C |- InvalidE : InvalidT
+
+
+;; Unary expression
+
+rule Expr_ok/une-bnot:
+  p C |- UnE BNOT expr : typ
+  -- Expr_ok: p C |- expr : typ_e
+  -- Sub_impl: typ_e <: typ
+  -- if typ = FIntT w \/ typ = FBitT w
+
+rule Expr_ok/une-lnot:
+  p C |- UnE LNOT expr : BoolT
+  -- Expr_ok: p C |- expr : typ_e
+  -- Sub_impl: typ_e <: BoolT
+
+rule Expr_ok/une-uminus-intt:
+  p C |- UnE UMINUS expr : IntT
+  -- Expr_ok: p C |- expr : typ_e
+  -- Sub_impl: typ_e <: IntT
+
+rule Expr_ok/une-uminus:
+  p C |- UnE UMINUS expr : typ
+  -- Expr_ok: p C |- expr : typ_e
+  -- Sub_impl: typ_e <: typ
+  -- if typ = IntT \/ typ = FIntT w \/ typ = FBitT w
+
+rule Expr_ok/une-uplus:
+  p C |- UnE UPLUS expr : typ
+  -- Expr_ok: p C |- expr : typ_e
+  -- Sub_impl: typ_e <: typ
+  -- if typ = IntT \/ typ = FIntT w \/ typ = FBitT w
+
+
+;; Binary expression
+
+;;rule Expr_ok/bine:
+;;  p C |- BinE binop expr_l expr_r : typ
+
+
+;; Ternary expression
+
+;; TODO restriction on compile-time evaluation of IntT
+rule Expr_ok/terne:
+  p C |- TernE expr_c expr_t expr_f : typ
+  ----
+  -- Expr_ok: p C |- expr_c : typ_c
+  -- Sub_impl: typ_c <: BoolT
+  ----
+  -- Expr_ok: p C |- expr_t : typ_t
+  -- Expr_ok: p C |- expr_f : typ_f
+  ----
+  -- Sub_impl: typ_t <: typ
+  -- Sub_impl: typ_f <: typ
+
+
+;; Cast expression
+
+rule Expr_ok/caste:
+  p C |- CastE type expr : typ_t
+  -- Type_ok: p C |- type : typ_t
+  -- Expr_ok: p C |- expr : typ_e
+  -- Sub_expl: typ_e <: typ_t
+
+
+;; Mask expression
+
+rule Expr_ok/maske:
+  p C |- MaskE expr_b expr_m : SetT typ
+  ----
+  -- Expr_ok: p C |- expr_b : typ_b
+  -- Expr_ok: p C |- expr_m : typ_m
+  ----
+  -- Sub_impl: typ_b <: typ
+  -- Sub_impl: typ_m <: typ
+  -- if typ = IntT \/ typ = FIntT w \/ typ = FBitT w
+
+
+;; Range expression
+
+rule Expr_ok/rangee:
+  p C |- RangeE expr_l expr_u : SetT typ
+  ----
+  -- Expr_ok: p C |- expr_l : typ_b
+  -- Expr_ok: p C |- expr_u : typ_m
+  ----
+  -- Sub_impl: typ_l <: typ
+  -- Sub_impl: typ_u <: typ
+  -- if typ = IntT \/ typ = FIntT w \/ typ = FBitT w
+
+
+;; Select expression
+
+
+;; Array access expression
+
+;; TODO maybe want to introduce numeric type into syntax
+rule Expr_ok/arracce-tuplet:
+  p C |- ArrAccE expr_b expr_i : typ
+  ----
+  -- Expr_ok: p C |- expr_b : typ_b
+  -- Expr_ok: p C |- expr_i : typ_i
+  -- Sub_impl: typ_i <: typ_i'
+  ----
+  -- if typ_i' = IntT \/ typ_i' = FIntT w \/ typ_i' = FBitT w
+  ----
+  -- if TupleT typs_b_in* = $saturate_typ(typ_b)
+  -- Eval_static: p C |- expr_i ~> val_i
+  -- if i = $reduce_num(val_i)
+  -- if typ = typs_b_in*[i]
+
+;; TODO add bounds check if expr_i is compile-time known
+rule Expr_ok/arracce-stackt:
+  p C |- ArrAccE expr_b expr_i : typ_b_in
+  ----
+  -- Expr_ok: p C |- expr_b : typ_b
+  -- Expr_ok: p C |- expr_i : typ_i
+  -- Sub_impl: typ_i <: typ_i'
+  ----
+  -- if typ_i' = IntT \/ typ_i' = FIntT w_i' \/ typ_i' = FBitT w_i'
+  ----
+  -- if StackT typ_b_in size = $saturate_typ(typ_b)
+
+
+;; Bitstring access expression
+
+;; TODO check bitstring slice range
+rule Expr_ok/bitacce:
+  p C |- BitAccE expr_b expr_l expr_h : typ
+  ----
+  -- Expr_ok: p C |- expr_b : typ_b
+  -- Sub_impl: typ_b <: typ_b'
+  ----
+  -- if typ_b' = IntT \/ (typ_b' = FIntT w_b' /\ w_b' >= 1) \/ (typ_b' = FBitT w_b' /\ w_b' >= 0)
+  ----
+  -- Expr_ok: p C |- expr_l : typ_l
+  -- Sub_impl: typ_l <: typ_l'
+  -- if typ_l' = IntT \/ typ_l' = FIntT w_l' \/ typ_l' = FBitT w_l'
+  ----
+  -- Eval_static: p C |- expr_l ~> val_l
+  -- if i_l = $reduce_num(val_l)
+  ----
+  -- Expr_ok: p C |- expr_h : typ_h
+  -- Sub_impl: typ_h <: typ_h'
+  -- if typ_h' = IntT \/ typ_h' = FIntT w_h' \/ typ_h' = FBitT w_h'
+  ----
+  -- Eval_static: p C |- expr_h ~> val_h
+  -- if i_h = $reduce_num(val_h)
+  ----
+  -- if typ = FBitT $(i_h - i_l + 1)
+
+
+;; Error access expression
+
+rule Expr_ok/erracce:
+  p C |- ErrAccE member : ErrT
+  -- if tid = $concat_text("error.", member)
+  -- if ErrV member = $find_val(p, C, CURRENT tid)
+
+
+;; Type access expression
+
+rule Expr_ok/typeacce-enumt:
+  p C |- TypeAccE name member : SpecT td eps
+  -- if td = $find_typdef(p, C, name)
+  -- if EnumD id_t member_t* = td
+  -- if member <- member_t*
+
+rule Expr_ok/typeacce-senumt:
+  p C |- TypeAccE name member : SpecT td eps
+  -- if td = $find_typdef(p, C, name)
+  -- if SEnumD id_t typ_t (member_t, val_t)* = td
+  -- if member <- member_t*
+
+
+;; Expression access expression
+
+rule Expr_ok/expracce-stackt-last-lastindex:
+  p C |- ExprAccE expr_b member : FBitT 32
+  -- Expr_ok: p C |- expr_b : typ_b
+  -- if StackT typ_b_in size = $saturate_typ(typ_b)
+  -- if member = "last" \/ member = "lastIndex"
+
+rule Expr_ok/expracce-stackt-next-last:
+  p C |- ExprAccE expr_b member : typ_b_in
+  -- Expr_ok: p C |- expr_b : typ_b
+  -- if StackT typ_b_in size = $saturate_typ(typ_b)
+  -- if member = "next" \/ member = "last"
+
+rule Expr_ok/expracce-structt:
+  p C |- ExprAccE expr_b member : typ
+  ----
+  -- Expr_ok: p C |- expr_b : typ_b
+  -- if StructT id_b (member_b, typ_b_in)* = $saturate_typ(typ_b)
+  ----
+  -- if (member, typ) <- (member_b, typ_b_in)*
+
+rule Expr_ok/expracce-headert:
+  p C |- ExprAccE expr_b member : typ
+  ----
+  -- Expr_ok: p C |- expr_b : typ_b
+  -- if HeaderT id_b (member_b, typ_b_in)* = $saturate_typ(typ_b)
+  ----
+  -- if (member, typ) <- (member_b, typ_b_in)*
+
+rule Expr_ok/expracce-uniont:
+  p C |- ExprAccE expr_b member : typ
+  ----
+  -- Expr_ok: p C |- expr_b : typ_b
+  -- if UnionT id_b (member_b, typ_b_in)* = $saturate_typ(typ_b)
+  ----
+  -- if (member, typ) <- (member_b, typ_b_in)*
+
+rule Expr_ok/expracce-tablestructt:
+  p C |- ExprAccE expr_b member : typ
+  ----
+  -- Expr_ok: p C |- expr_b : typ_b
+  -- if TableStructT id_b (member_b, typ_b_in)* = $saturate_typ(typ_b)
+  ----
+  -- if (member, typ) <- (member_b, typ_b_in)*
+
+
+;; Function call expression
+
+rule Expr_ok/callfunce:
+  p C |- CallFuncE name targ* arg* : typ
+  ----
+  -- Func_ok: p C |- name targ* arg* : functyp
+  ----
+  -- Call_ok: p C |- functyp arg* : typ
+  -- if typ =/= VoidT
+
+;; Method call expression
+
+rule Expr_ok/callmethode:
+  p C |- CallMethodE expr_b member targ* arg* : typ
+  ----
+  -- Method_ok: p C |- expr_b member targ* arg* : functyp
+  ----
+  -- Call_ok: p C |- functyp arg* : typ
+  -- if typ =/= VoidT
+
+
+;; Type call expression
+
+;; TODO check that builtin is defined on typdef
+rule Expr_ok/calltypee:
+  p C |- CallTypeE name member eps arg* : typ
+  ----
+  -- if typdef = $find_typdef(p, C, name)
+  ----
+  -- if member = "minSizeInBits" \/ member = "minSizeInBytes" \/ member = "maxSizeInBits" \/ member = "maxSizeInBytes"
+  ---- 
+  -- if functyp = BuiltinMethodT eps IntT
+  ----
+  -- Call_ok: p C |- functyp arg* : typ
+  -- if typ =/= VoidT
+
+
+;; Nameless instantiation expression

@@ -1,0 +1,23 @@
+;; Set and map
+
+syntax set(syntax K) = K*
+syntax map(syntax K, syntax V) = (K, V)*
+
+
+;; Map on id domain
+
+syntax imap(syntax V) = map(id, V)
+
+
+;; Map on tid domain
+
+syntax tid = id
+syntax tmap(syntax V) = map(tid, V)
+
+def $fresh_tid() : tid  hint(show FRESH#_#TID)
+
+;; Map on fid domain
+
+;; TODO fid should handle overload resolution
+syntax fid = id
+syntax fmap(syntax V) = map(fid, V)

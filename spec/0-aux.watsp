@@ -1,0 +1,1 @@
+def $concat_text(text, text) : text   hint(show %#%latex("++")#%)

@@ -1,0 +1,121 @@
+;; Runtime Type
+
+syntax typ
+
+syntax typ/base =
+  | VoidT         hint(show VOID#_#T)
+  | ErrT          hint(show ERR#_#T)
+  | MatchKindT    hint(show MATCH#_#KIND#_#T)
+  | StrT          hint(show STR#_#T)
+  | BoolT         hint(show BOOL#_#T)
+  | IntT          hint(show INT#_#T)
+  | FIntT int     hint(show FINT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
+  | FBitT int     hint(show FBIT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
+  | VBitT int     hint(show VBIT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
+  | ...
+
+syntax typ/derived = ...
+  | VarT id                         hint(show VAR#_#T %)
+  | SpecT typdef typ*               hint(show SPEC#_#T %#%latex("\\langle")#%#%latex("\\rangle"))
+  | NewT id typ                     hint(show NEW#_#T % %)
+  | EnumT id member*                hint(show ENUM#_#T % %latex("\\{")#%#%latex("\\}"))
+  | SEnumT id typ (member, val)*    hint(show SENUM#_#T % %latex("\\{")#%#%latex("\\}"))
+  | ListT typ                       hint(show LIST#_#T %)
+  | TupleT typ*                     hint(show TUPLE#_#T %)
+  | StackT typ int                  hint(show STACK#_#T %#`[%])
+  | StructT id (member, typ)*       hint(show STRUCT#_#T % %latex("\\{")#%#%latex("\\}"))
+  | HeaderT id (member, typ)*       hint(show HEADER#_#T % %latex("\\{")#%#%latex("\\}"))
+  | UnionT id (member, typ)*        hint(show UNION#_#T % %latex("\\{")#%#%latex("\\}"))
+  | ExternT id fmap(funcdef)        hint(show EXTERN#_#T % %)
+  | ParserT (id, dir, typ, val?)*   hint(show PARSER#_#T (%))
+  | ControlT (id, dir, typ, val?)*  hint(show CONTROL#_#T (%))
+  | PackageT typ*                   hint(show PACKAGE#_#T %)
+  | TableT typ                      hint(show TABLE#_#T %)
+  | ...
+
+syntax typ/synth = ...
+  | DefaultT                        hint(show DEFAULT#_#T)
+  | SeqT typ*                       hint(show SEQ#_#T %)
+  | SeqDefaultT typ*                hint(show SEQ#_#DEFAULT#_#T %)
+  | RecordT (member, typ)*          hint(show RECORD#_#T %latex("\\{")#%#%latex("\\}"))
+  | RecordDefaultT (member, typ)*   hint(show RECORD#_#DEFAULT#_#T %latex("\\{")#%#%latex("\\}"))
+  | InvalidT                        hint(show INVALID#_#T)
+  | SetT typ                        hint(show SET#_#T)
+  | StateT                          hint(show STATE#_#T)
+  | TableEnumT id member*           hint(show TABLE#_#ENUM#_#T % %latex("\\{")#%#%latex("\\}"))
+  | TableStructT id (member, typ)*  hint(show TABLE#_#STRUCT#_#T % %latex("\\{")#%#%latex("\\}"))
+  | AnyT                            hint(show ANY#_#T)
+
+;; Type Definition
+
+syntax typdef
+
+syntax typdef/mono =
+  | DefD typ                        hint(show DEF#_#D %)
+  | NewD id typ                     hint(show NEW#_#D % %)
+  | EnumD id member*                hint(show ENUM#_#D % %latex("\\{")#%#%latex("\\}"))
+  | SEnumD id typ (member, val)*    hint(show SENUM#_#D % % %latex("\\{")#%#%latex("\\}"))
+  | ...
+
+syntax typdef/poly = ...
+  | ListD tparam typ                          hint(show LIST#_#D#%latex("\\langle")#%#%latex("\\rangle") %)
+  | TupleD tparam* typ*                       hint(show TUPLE#_#D#%latex("\\langle")#%#%latex("\\rangle") %)
+  | StackD tparam typ int                     hint(show STACK#_#D#%latex("\\langle")#%#%latex("\\rangle") %#`[%])
+  | StructD id tparam* (member, typ)*         hint(show STRUCT#_#D %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
+  | HeaderD id tparam* (member, typ)*         hint(show HEADER#_#D %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
+  | UnionD id tparam* (member, typ)*          hint(show UNION#_#D %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
+  | ExternD id tparam* fmap(funcdef)          hint(show EXTERN#_#D %#%latex("\\langle")#%#%latex("\\rangle") %)
+  | ParserD tparam* (id, dir, typ, val?)*     hint(show PARSER#_#D#%latex("\\langle")#%#%latex("\\rangle") (%))
+  | ControlD tparam* (id, dir, typ, val?)*    hint(show CONTROL#_#D#%latex("\\langle")#%#%latex("\\rangle") (%))
+  | PackageD tparam* typ*                     hint(show PACKAGE#_#D#%latex("\\langle")#%#%latex("\\rangle") %)
+
+;; Function Type
+
+syntax functyp =
+  | BuiltinMethodT (id, dir, typ, val?)* typ          hint(show BUILTIN#_#METHOD#_#T (%) %latex("\\rightarrow") %)
+  | ActionT (id, dir, typ, val?)*                     hint(show ACTION#_#T (%))
+  | ParserApplyMethodT (id, dir, typ, val?)* typ      hint(show PARSER#_#APPLY#_#METHOD#_#T (%) %latex("\\rightarrow") %)
+  | ControlApplyMethodT (id, dir, typ, val?)* typ     hint(show CONTROL#_#APPLY#_#METHOD#_#T (%) %latex("\\rightarrow") %)
+  | TableApplyMethodT (id, dir, typ, val?)* typ       hint(show TABLE#_#APPLY#_#METHOD#_#T (%) %latex("\\rightarrow") %)
+  | ExternFunctionT (id, dir, typ, val?)* typ         hint(show EXTERN#_#FUNCTION#_#T (%) %latex("\\rightarrow") %)
+  | FunctionT (id, dir, typ, val?)* typ               hint(show FUNCTION#_#T (%) %latex("\\rightarrow") %)
+  | ExternMethodT (id, dir, typ, val?)* typ           hint(show EXTERN#_#METHOD#_#T (%) %latex("\\rightarrow") %)
+  | ExternAbstractMethodT (id, dir, typ, val?)* typ   hint(show EXTERN#_#ABSTRACT#_#METHOD#_#T (%) %latex("\\rightarrow") %)
+
+;; Function Definition
+
+syntax funcdef
+
+syntax funcdef/mono =
+  | ActionD (id, dir, typ, val?)*                 hint(show ACTION#_#D (%))
+  | ParserApplyMethodD (id, dir, typ, val?)*      hint(show PARSER#_#APPLY#_#METHOD#_#D (%))
+  | ControlApplyMethodD (id, dir, typ, val?)*     hint(show CONTROL#_#APPLY#_#METHOD#_#D (%))
+  | ...
+
+syntax funcdef/poly = ...
+  | ExternFunctionD tparam* (id, dir, typ, val?)* typ         hint(show EXTERN#_#FUNCTION#_#D#%latex("\\langle")#%L#%latex("\\rangle") (%) %latex("\\rightarrow") %)
+  | FunctionD tparam* (id, dir, typ, val?)* typ               hint(show FUNCTION#_#D#%latex("\\langle")#%L#%latex("\\rangle") (%) %latex("\\rightarrow") %)
+  | ExternMethodD tparam* (id, dir, typ, val?)* typ           hint(show EXTERN#_#METHOD#_#D#%latex("\\langle")#%L#%latex("\\rangle") (%) %latex("\\rightarrow") %)
+  | ExternAbstractMethodD tparam* (id, dir, typ, val?)* typ   hint(show EXTERN#_#ABSTRACT#_#METHOD#_#D#%latex("\\langle")#%L#%latex("\\rangle") (%) %latex("\\rightarrow") %)
+
+;; Constructor Type
+
+syntax constyp = (id, dir, typ, val?)* typ  hint(show CONS#_#T (%) %latex("\\rightarrow") %)
+
+;; Constructor Definition
+
+syntax consdef = tparam* (id, dir, typ, val?)* typ hint(show CONS#_#D#%latex("\\langle")#%#%latex("\\rangle") (%) %latex("\\rightarrow") %)
+
+;; Substitution
+
+def $subst_typ(tenv, typ) : typ
+
+;; Specialization
+
+def $specialize_typdef(typdef, typ*) : typ  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
+
+def $specialize_funcdef(funcdef, typ*) : functyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
+
+;; Saturation
+
+def $saturate_typ(typ) : typ
