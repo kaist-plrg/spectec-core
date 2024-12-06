@@ -92,26 +92,37 @@ and eq_typdef typdef_a typdef_b =
       && eq_typ typ_a typ_b
   | _ -> false
 
+(* Function types *)
+
+and eq_functyp functyp_a functyp_b =
+  match (functyp_a, functyp_b) with
+  | ActionT params_a, ActionT params_b -> eq_params params_a params_b
+  | ExternFunctionT (params_a, typ_ret_a), ExternFunctionT (params_b, typ_ret_b)
+  | FunctionT (params_a, typ_ret_a), FunctionT (params_b, typ_ret_b)
+  | ExternMethodT (params_a, typ_ret_a), ExternMethodT (params_b, typ_ret_b)
+  | ( ExternAbstractMethodT (params_a, typ_ret_a),
+      ExternAbstractMethodT (params_b, typ_ret_b) ) ->
+      eq_params params_a params_b && eq_typ typ_ret_a typ_ret_b
+  | ParserApplyMethodT params_a, ParserApplyMethodT params_b
+  | ControlApplyMethodT params_a, ControlApplyMethodT params_b ->
+      eq_params params_a params_b
+  | BuiltinMethodT (params_a, typ_ret_a), BuiltinMethodT (params_b, typ_ret_b)
+    ->
+      eq_params params_a params_b && eq_typ typ_ret_a typ_ret_b
+  | TableApplyMethodT typ_ret_a, TableApplyMethodT typ_ret_b ->
+      eq_typ typ_ret_a typ_ret_b
+  | _ -> false
+
 (* Function definitions *)
 
 and eq_funcdef fd_a fd_b =
   match (fd_a, fd_b) with
-  | ActionD params_a, ActionD params_b -> eq_params params_a params_b
-  | ( ExternFunctionD (tparams_a, tparams_hidden_a, params_a, typ_a),
-      ExternFunctionD (tparams_b, tparams_hidden_b, params_b, typ_b) )
-  | ( FunctionD (tparams_a, tparams_hidden_a, params_a, typ_a),
-      FunctionD (tparams_b, tparams_hidden_b, params_b, typ_b) )
-  | ( ExternMethodD (tparams_a, tparams_hidden_a, params_a, typ_a),
-      ExternMethodD (tparams_b, tparams_hidden_b, params_b, typ_b) )
-  | ( ExternAbstractMethodD (tparams_a, tparams_hidden_a, params_a, typ_a),
-      ExternAbstractMethodD (tparams_b, tparams_hidden_b, params_b, typ_b) ) ->
+  | MonoFD ft_a, MonoFD ft_b -> eq_functyp ft_a ft_b
+  | ( PolyFD (tparams_a, tparams_hidden_a, ft_a),
+      PolyFD (tparams_b, tparams_hidden_b, ft_b) ) ->
       eq_tparams tparams_a tparams_b
       && eq_tparams tparams_hidden_a tparams_hidden_b
-      && eq_params params_a params_b
-      && eq_typ typ_a typ_b
-  | ParserApplyMethodD params_a, ParserApplyMethodD params_b
-  | ControlApplyMethodD params_a, ControlApplyMethodD params_b ->
-      eq_params params_a params_b
+      && eq_functyp ft_a ft_b
   | _ -> false
 
 (* Alpha-equivalence *)
@@ -203,19 +214,40 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
 and eq_typs_alpha (typs_a : typ list) (typs_b : typ list) : bool =
   E.eq_list eq_typ_alpha typs_a typs_b
 
+(* Function types *)
+
+and eq_functyp_alpha (ft_a : functyp) (ft_b : functyp) : bool =
+  match (ft_a, ft_b) with
+  | ActionT params_a, ActionT params_b -> eq_params_alpha params_a params_b
+  | ExternFunctionT (params_a, typ_ret_a), ExternFunctionT (params_b, typ_ret_b)
+  | FunctionT (params_a, typ_ret_a), FunctionT (params_b, typ_ret_b)
+  | ExternMethodT (params_a, typ_ret_a), ExternMethodT (params_b, typ_ret_b)
+  | ( ExternAbstractMethodT (params_a, typ_ret_a),
+      ExternAbstractMethodT (params_b, typ_ret_b) ) ->
+      eq_params_alpha params_a params_b && eq_typ_alpha typ_ret_a typ_ret_b
+  | ParserApplyMethodT params_a, ParserApplyMethodT params_b
+  | ControlApplyMethodT params_a, ControlApplyMethodT params_b ->
+      eq_params_alpha params_a params_b
+  | BuiltinMethodT (params_a, typ_ret_a), BuiltinMethodT (params_b, typ_ret_b)
+    ->
+      eq_params_alpha params_a params_b && eq_typ_alpha typ_ret_a typ_ret_b
+  | TableApplyMethodT typ_ret_a, TableApplyMethodT typ_ret_b ->
+      eq_typ_alpha typ_ret_a typ_ret_b
+  | _ -> false
+
 (* Function definitions *)
 
 and eq_funcdef_alpha (fd_a : funcdef) (fd_b : funcdef) : bool =
-  let eq_funcdef'' tparams_a tparams_hidden_a params_a typ_ret_a tparams_b
-      tparams_hidden_b params_b typ_ret_b =
+  let eq_funcdef_alpha'' tparams_a tparams_hidden_a ft_a tparams_b
+      tparams_hidden_b ft_b =
     let tparams_a = tparams_a @ tparams_hidden_a in
     let tparams_b = tparams_b @ tparams_hidden_b in
     assert (List.length tparams_a = List.length tparams_b);
     let frees_a =
-      Free.free_funcdef fd_a |> TIdSet.union (TIdSet.of_list tparams_a)
+      Free.free_functyp ft_a |> TIdSet.union (TIdSet.of_list tparams_a)
     in
     let frees_b =
-      Free.free_funcdef fd_b |> TIdSet.union (TIdSet.of_list tparams_b)
+      Free.free_functyp ft_b |> TIdSet.union (TIdSet.of_list tparams_b)
     in
     let frees = TIdSet.union frees_a frees_b in
     let theta_a, theta_b, _, _ =
@@ -235,35 +267,21 @@ and eq_funcdef_alpha (fd_a : funcdef) (fd_b : funcdef) : bool =
         (TIdMap.empty, TIdMap.empty, [], frees)
         tparams_a tparams_b
     in
-    let params_a = List.map (Subst.subst_param theta_a) params_a in
-    let typ_ret_a = Subst.subst_typ theta_a typ_ret_a in
-    let params_b = List.map (Subst.subst_param theta_b) params_b in
-    let typ_ret_b = Subst.subst_typ theta_b typ_ret_b in
-    List.length params_a = List.length params_b
-    && List.for_all2 eq_param_alpha params_a params_b
-    && eq_typ_alpha typ_ret_a typ_ret_b
+    let ft_a = Subst.subst_functyp theta_a ft_a in
+    let ft_b = Subst.subst_functyp theta_b ft_b in
+    eq_functyp_alpha ft_a ft_b
   in
-  let eq_funcdef' tparams_a tparams_hidden_a params_a typ_ret_a tparams_b
-      tparams_hidden_b params_b typ_ret_b =
+  let eq_funcdef_alpha' tparams_a tparams_hidden_a ft_a tparams_b
+      tparams_hidden_b ft_b =
     List.length tparams_a = List.length tparams_b
     && List.length tparams_hidden_a = List.length tparams_hidden_b
-    && eq_funcdef'' tparams_a tparams_hidden_a params_a typ_ret_a tparams_b
-         tparams_hidden_b params_b typ_ret_b
+    && eq_funcdef_alpha'' tparams_a tparams_hidden_a ft_a tparams_b
+         tparams_hidden_b ft_b
   in
   match (fd_a, fd_b) with
-  | ActionD params_a, ActionD params_b -> eq_params params_a params_b
-  | ( ExternFunctionD (tparams_a, tparams_hidden_a, params_a, typ_ret_a),
-      ExternFunctionD (tparams_b, tparams_hidden_b, params_b, typ_ret_b) )
-  | ( FunctionD (tparams_a, tparams_hidden_a, params_a, typ_ret_a),
-      FunctionD (tparams_b, tparams_hidden_b, params_b, typ_ret_b) )
-  | ( ExternMethodD (tparams_a, tparams_hidden_a, params_a, typ_ret_a),
-      ExternMethodD (tparams_b, tparams_hidden_b, params_b, typ_ret_b) )
-  | ( ExternAbstractMethodD (tparams_a, tparams_hidden_a, params_a, typ_ret_a),
-      ExternAbstractMethodD (tparams_b, tparams_hidden_b, params_b, typ_ret_b) )
-    ->
-      eq_funcdef' tparams_a tparams_hidden_a params_a typ_ret_a tparams_b
-        tparams_hidden_b params_b typ_ret_b
-  | ParserApplyMethodD params_a, ParserApplyMethodD params_b
-  | ControlApplyMethodD params_a, ControlApplyMethodD params_b ->
-      eq_params params_a params_b
+  | MonoFD ft_a, MonoFD ft_b -> eq_functyp_alpha ft_a ft_b
+  | ( PolyFD (tparams_a, tparams_hidden_a, ft_a),
+      PolyFD (tparams_b, tparams_hidden_b, ft_b) ) ->
+      eq_funcdef_alpha' tparams_a tparams_hidden_a ft_a tparams_b
+        tparams_hidden_b ft_b
   | _ -> false

@@ -541,23 +541,23 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default/default-control-argument.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/typedef-objects/extern-inst-as-param.p4
-(check_valid_type_nesting) Invalid nesting of (extern MyCounter { count(index) : extern_method<><>(in index I) -> void }<I @ >)<typedef bit<10>> inside typedef (extern MyCounter { count(index) : extern_method<><>(in index I) -> void }<I @ >)<typedef bit<10>>
+(check_valid_type_nesting) Invalid nesting of (extern MyCounter { count(index) : extern_method(in index I) -> void< @ > }<I @ >)<typedef bit<10>> inside typedef (extern MyCounter { count(index) : extern_method(in index I) -> void< @ > }<I @ >)<typedef bit<10>>
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/typedef-objects/extern-inst-as-param.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/typedef-objects/issue2735-bmv2.p4
-(check_valid_type_nesting) Invalid nesting of (extern register { read(result, index) : extern_method<><>(out result T, in index bit<32>) -> void
-write(index, value) : extern_method<><>(in index bit<32>, in value T) -> void }<T @ >)<typedef bit<69>> inside typedef (extern register { read(result, index) : extern_method<><>(out result T, in index bit<32>) -> void
-write(index, value) : extern_method<><>(in index bit<32>, in value T) -> void }<T @ >)<typedef bit<69>>
+(check_valid_type_nesting) Invalid nesting of (extern register { read(result, index) : extern_method(out result T, in index bit<32>) -> void< @ >
+write(index, value) : extern_method(in index bit<32>, in value T) -> void< @ > }<T @ >)<typedef bit<69>> inside typedef (extern register { read(result, index) : extern_method(out result T, in index bit<32>) -> void< @ >
+write(index, value) : extern_method(in index bit<32>, in value T) -> void< @ > }<T @ >)<typedef bit<69>>
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/typedef-objects/issue2735-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/typedef-objects/issue2735.p4
-(check_valid_type_nesting) Invalid nesting of (extern register { read(result, index) : extern_method<><>(out result T, in index bit<32>) -> void
-write(index, value) : extern_method<><>(in index bit<32>, in value T) -> void }<T @ >)<typedef bit<69>> inside typedef (extern register { read(result, index) : extern_method<><>(out result T, in index bit<32>) -> void
-write(index, value) : extern_method<><>(in index bit<32>, in value T) -> void }<T @ >)<typedef bit<69>>
+(check_valid_type_nesting) Invalid nesting of (extern register { read(result, index) : extern_method(out result T, in index bit<32>) -> void< @ >
+write(index, value) : extern_method(in index bit<32>, in value T) -> void< @ > }<T @ >)<typedef bit<69>> inside typedef (extern register { read(result, index) : extern_method(out result T, in index bit<32>) -> void< @ >
+write(index, value) : extern_method(in index bit<32>, in value T) -> void< @ > }<T @ >)<typedef bit<69>>
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/typedef-objects/issue2735.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/typedef-objects/typedef-constructor.p4
-(check_valid_type_nesting) Invalid nesting of (extern MyCounter { count(index) : extern_method<><>(in index I) -> void }<I @ >)<typedef bit<10>> inside typedef (extern MyCounter { count(index) : extern_method<><>(in index I) -> void }<I @ >)<typedef bit<10>>
+(check_valid_type_nesting) Invalid nesting of (extern MyCounter { count(index) : extern_method(in index I) -> void< @ > }<I @ >)<typedef bit<10>> inside typedef (extern MyCounter { count(index) : extern_method(in index I) -> void< @ > }<I @ >)<typedef bit<10>>
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/typedef-objects/typedef-constructor.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/test-clarify/abstract-method-scoping/issue2273-1.p4

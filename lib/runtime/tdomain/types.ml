@@ -125,6 +125,25 @@ module FuncType = struct
   type t = functyp
 
   let pp = pp_functyp
+  let eq = eq_functyp
+  let eq_alpha = eq_functyp_alpha
+
+  let eq_kind ft_a ft_b =
+    match (ft_a, ft_b) with
+    | ActionT _, ActionT _ -> true
+    | ExternFunctionT _, ExternFunctionT _
+    | FunctionT _, FunctionT _
+    | ExternMethodT _, ExternMethodT _
+    | ExternMethodT _, ExternAbstractMethodT _
+    | ExternAbstractMethodT _, ExternMethodT _
+    | ExternAbstractMethodT _, ExternAbstractMethodT _
+    | ParserApplyMethodT _, ParserApplyMethodT _
+    | ControlApplyMethodT _, ControlApplyMethodT _
+    | BuiltinMethodT _, BuiltinMethodT _
+    | TableApplyMethodT _, TableApplyMethodT _ ->
+        true
+    | _ -> false
+
   let subst = subst_functyp
   let is_action = function ActionT _ -> true | _ -> false
 
@@ -161,16 +180,8 @@ module FuncDef = struct
 
   let eq_kind fd_a fd_b =
     match (fd_a, fd_b) with
-    | ActionD _, ActionD _
-    | ExternFunctionD _, ExternFunctionD _
-    | FunctionD _, FunctionD _
-    | ExternMethodD _, ExternMethodD _
-    | ExternMethodD _, ExternAbstractMethodD _
-    | ExternAbstractMethodD _, ExternMethodD _
-    | ExternAbstractMethodD _, ExternAbstractMethodD _
-    | ParserApplyMethodD _, ParserApplyMethodD _
-    | ControlApplyMethodD _, ControlApplyMethodD _ ->
-        true
+    | MonoFD ft_a, MonoFD ft_b | PolyFD (_, _, ft_a), PolyFD (_, _, ft_b) ->
+        FuncType.eq_kind ft_a ft_b
     | _ -> false
 
   let free = free_funcdef
@@ -178,32 +189,14 @@ module FuncDef = struct
   let specialize = specialize_funcdef
 
   let get_tparams = function
-    | ActionD _ -> ([], [])
-    | ExternFunctionD (tparams, tparams_hidden, _, _)
-    | FunctionD (tparams, tparams_hidden, _, _)
-    | ExternMethodD (tparams, tparams_hidden, _, _)
-    | ExternAbstractMethodD (tparams, tparams_hidden, _, _) ->
-        (tparams, tparams_hidden)
-    | ParserApplyMethodD _ | ControlApplyMethodD _ -> ([], [])
+    | MonoFD _ -> ([], [])
+    | PolyFD (tparams, tparams_hidden, _) -> (tparams, tparams_hidden)
 
   let get_params = function
-    | ActionD params
-    | ExternFunctionD (_, _, params, _)
-    | FunctionD (_, _, params, _)
-    | ExternMethodD (_, _, params, _)
-    | ExternAbstractMethodD (_, _, params, _)
-    | ParserApplyMethodD params
-    | ControlApplyMethodD params ->
-        params
+    | MonoFD ft | PolyFD (_, _, ft) -> FuncType.get_params ft
 
   let get_typ_ret = function
-    | ActionD _ -> VoidT
-    | ExternFunctionD (_, _, _, typ_ret)
-    | FunctionD (_, _, _, typ_ret)
-    | ExternMethodD (_, _, _, typ_ret)
-    | ExternAbstractMethodD (_, _, _, typ_ret) ->
-        typ_ret
-    | ParserApplyMethodD _ | ControlApplyMethodD _ -> VoidT
+    | MonoFD ft | PolyFD (_, _, ft) -> FuncType.get_typ_ret ft
 end
 
 module ConsType = struct

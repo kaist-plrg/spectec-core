@@ -72,13 +72,8 @@ and functyp =
 
 (* Function definitions *)
 and funcdef =
-  | ActionD of param list
-  | ExternFunctionD of tparam list * tparam list * param list * typ
-  | FunctionD of tparam list * tparam list * param list * typ
-  | ExternMethodD of tparam list * tparam list * param list * typ
-  | ExternAbstractMethodD of tparam list * tparam list * param list * typ
-  | ParserApplyMethodD of param list
-  | ControlApplyMethodD of param list
+  | MonoFD of functyp
+  | PolyFD of tparam list * tparam list * functyp
 
 (* Constructor types *)
 

@@ -221,13 +221,12 @@ and subst_functyp (theta : theta) (ft : functyp) : functyp =
 (* Function definitions *)
 
 and subst_funcdef (theta : theta) (fd : funcdef) : funcdef =
-  let subst_funcdef' (theta : theta) (tparams : tparam list)
-      (tparams_hidden : tparam list) (params : param list) (typ_ret : typ) :
-      tparam list * tparam list * param list * typ =
+  let subst_funcdef' (theta : theta) (frees_in : TIdSet.t)
+      (tparams : tparam list) (tparams_hidden : tparam list) :
+      theta * tparam list * tparam list =
     let frees_in =
-      TIdSet.union (Free.free_params params) (Free.free_typ typ_ret)
+      TIdSet.diff frees_in (TIdSet.of_list (tparams @ tparams_hidden))
     in
-    let frees_in = TIdSet.diff frees_in (TIdSet.of_list tparams) in
     let theta, tparams =
       subst_forall theta (tparams @ tparams_hidden) frees_in
     in
@@ -236,40 +235,19 @@ and subst_funcdef (theta : theta) (fd : funcdef) : funcdef =
       ( List.filteri (fun i _ -> not (is_hidden i)) tparams,
         List.filteri (fun i _ -> is_hidden i) tparams )
     in
-    let params = List.map (subst_param theta) params in
-    let typ_ret = subst_typ theta typ_ret in
-    (tparams, tparams_hidden, params, typ_ret)
+    (theta, tparams, tparams_hidden)
   in
   match fd with
-  | ActionD params ->
-      let params = List.map (subst_param theta) params in
-      ActionD params
-  | ExternFunctionD (tparams, tparams_hidden, params, typ_ret) ->
-      let tparams, tparams_hidden, params, typ_ret =
-        subst_funcdef' theta tparams tparams_hidden params typ_ret
+  | MonoFD ft ->
+      let ft = subst_functyp theta ft in
+      MonoFD ft
+  | PolyFD (tparams, tparams_hidden, ft) ->
+      let frees_in = Free.free_functyp ft in
+      let theta, tparams, tparams_hidden =
+        subst_funcdef' theta frees_in tparams tparams_hidden
       in
-      ExternFunctionD (tparams, tparams_hidden, params, typ_ret)
-  | FunctionD (tparams, tparams_hidden, params, typ_ret) ->
-      let tparams, tparams_hidden, params, typ_ret =
-        subst_funcdef' theta tparams tparams_hidden params typ_ret
-      in
-      FunctionD (tparams, tparams_hidden, params, typ_ret)
-  | ExternMethodD (tparams, tparams_hidden, params, typ_ret) ->
-      let tparams, tparams_hidden, params, typ_ret =
-        subst_funcdef' theta tparams tparams_hidden params typ_ret
-      in
-      ExternMethodD (tparams, tparams_hidden, params, typ_ret)
-  | ExternAbstractMethodD (tparams, tparams_hidden, params, typ_ret) ->
-      let tparams, tparams_hidden, params, typ_ret =
-        subst_funcdef' theta tparams tparams_hidden params typ_ret
-      in
-      ExternAbstractMethodD (tparams, tparams_hidden, params, typ_ret)
-  | ParserApplyMethodD params ->
-      let params = List.map (subst_param theta) params in
-      ParserApplyMethodD params
-  | ControlApplyMethodD params ->
-      let params = List.map (subst_param theta) params in
-      ControlApplyMethodD params
+      let ft = subst_functyp theta ft in
+      PolyFD (tparams, tparams_hidden, ft)
 
 (* Constructor types *)
 
@@ -313,66 +291,45 @@ let specialize_funcdef (fresh : unit -> int) (fd : funcdef) (targs : typ list) :
         Pp.pp_funcdef fd (List.length tparams) (List.length targs);
       assert false)
   in
-  let fresh_tid () = "__WILD_" ^ string_of_int (fresh ()) in
-  let fresh_targ tid = VarT tid in
-  let specialize_funcdef' ctor tparams tparams_hidden targs params typ_ret =
-    let targs, tids_fresh =
+  match fd with
+  | MonoFD ft ->
+      check_arity [];
+      (ft, [])
+  | PolyFD (tparams, tparams_hidden, ft) ->
       (* Insert fresh type variables if omitted
          Otherwise, check the arity *)
-      if
-        List.length targs = 0
-        && List.length tparams + List.length tparams_hidden > 0
-      then
-        let tids_fresh =
-          List.init
-            (List.length tparams + List.length tparams_hidden)
-            (fun _ -> fresh_tid ())
-        in
-        let targs = List.map fresh_targ tids_fresh in
-        (targs, tids_fresh)
-      else if
-        List.length targs > 0
-        && List.length tparams = List.length targs
-        && List.length tparams_hidden > 0
-      then
-        let tids_fresh =
-          List.init (List.length tparams_hidden) (fun _ -> fresh_tid ())
-        in
-        let targs = targs @ List.map fresh_targ tids_fresh in
-        (targs, tids_fresh)
-      else (
-        check_arity targs;
-        (targs, []))
-    in
-    let tparams = tparams @ tparams_hidden in
-    let theta = List.combine tparams targs |> TIdMap.of_list in
-    let params = subst_params theta params in
-    let typ_ret = subst_typ theta typ_ret in
-    let ft = ctor params typ_ret in
-    (ft, tids_fresh)
-  in
-  match fd with
-  | ActionD params ->
-      check_arity [];
-      (ActionT params, [])
-  | ExternFunctionD (tparams, tparams_hidden, params, typ_ret) ->
-      let ctor params typ_ret = ExternFunctionT (params, typ_ret) in
-      specialize_funcdef' ctor tparams tparams_hidden targs params typ_ret
-  | FunctionD (tparams, tparams_hidden, params, typ_ret) ->
-      let ctor params typ_ret = FunctionT (params, typ_ret) in
-      specialize_funcdef' ctor tparams tparams_hidden targs params typ_ret
-  | ExternMethodD (tparams, tparams_hidden, params, typ_ret) ->
-      let ctor params typ_ret = ExternMethodT (params, typ_ret) in
-      specialize_funcdef' ctor tparams tparams_hidden targs params typ_ret
-  | ExternAbstractMethodD (tparams, tparams_hidden, params, typ_ret) ->
-      let ctor params typ_ret = ExternAbstractMethodT (params, typ_ret) in
-      specialize_funcdef' ctor tparams tparams_hidden targs params typ_ret
-  | ParserApplyMethodD params ->
-      check_arity [];
-      (ParserApplyMethodT params, [])
-  | ControlApplyMethodD params ->
-      check_arity [];
-      (ControlApplyMethodT params, [])
+      let fresh_tid () = "__WILD_" ^ string_of_int (fresh ()) in
+      let fresh_targ tid = VarT tid in
+      let targs, tids_fresh =
+        if
+          List.length targs = 0
+          && List.length tparams + List.length tparams_hidden > 0
+        then
+          let tids_fresh =
+            List.init
+              (List.length tparams + List.length tparams_hidden)
+              (fun _ -> fresh_tid ())
+          in
+          let targs = List.map fresh_targ tids_fresh in
+          (targs, tids_fresh)
+        else if
+          List.length targs > 0
+          && List.length tparams = List.length targs
+          && List.length tparams_hidden > 0
+        then
+          let tids_fresh =
+            List.init (List.length tparams_hidden) (fun _ -> fresh_tid ())
+          in
+          let targs = targs @ List.map fresh_targ tids_fresh in
+          (targs, tids_fresh)
+        else (
+          check_arity targs;
+          (targs, []))
+      in
+      let tparams = tparams @ tparams_hidden in
+      let theta = List.combine tparams targs |> TIdMap.of_list in
+      let ft = subst_functyp theta ft in
+      (ft, tids_fresh)
 
 (* Constructor definition specialization *)
 

@@ -1990,7 +1990,10 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
         Types.BuiltinMethodT ([], Types.BoolT) |> wrap_builtin
     | ExternT (_, fdenv), _ -> find_method fdenv
     | ParserT params, _ ->
-        let fd = Types.ParserApplyMethodD params in
+        let fd =
+          let ft = Types.ParserApplyMethodT params in
+          Types.MonoFD ft
+        in
         let fdenv =
           let params =
             List.map
@@ -2003,7 +2006,10 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
         in
         find_method fdenv
     | ControlT params, _ ->
-        let fd = Types.ControlApplyMethodD params in
+        let fd =
+          let ft = Types.ControlApplyMethodT params in
+          Types.MonoFD ft
+        in
         let fdenv =
           let params =
             List.map
@@ -2344,7 +2350,9 @@ and type_instantiation_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       if
         Envs.FDEnv.exists
           (fun _ (fd : FuncDef.t) ->
-            match fd with ExternAbstractMethodD _ -> true | _ -> false)
+            match fd with
+            | PolyFD (_, _, ExternAbstractMethodT _) -> true
+            | _ -> false)
           fdenv_extern
       then (
         Format.printf
@@ -3253,7 +3261,8 @@ and type_instantiation_init_extern_abstract_method_decl (cursor : Ctx.cursor)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ExternMethodD (tparams, tparams_hidden, params, typ_ret.it)
+    let ft = Types.ExternMethodT (params, typ_ret.it) in
+    Types.PolyFD (tparams, tparams_hidden, ft)
   in
   let decl_il =
     Il.Ast.FuncD { id; typ_ret; tparams; params = params_il; body = block_il }
@@ -3359,7 +3368,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
             if
               not
                 (match (fd_extern : FuncDef.t option) with
-                | Some (ExternAbstractMethodD _) -> true
+                | Some (PolyFD (_, _, ExternAbstractMethodT _)) -> true
                 | _ -> false)
             then (
               Format.printf
@@ -3370,12 +3379,15 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
               let fd_extern = Option.get fd_extern in
               let tparams, tparams_hidden, params, typ_ret =
                 match fd_extern with
-                | ExternAbstractMethodD
-                    (tparams, tparams_hidden, params, typ_ret) ->
+                | PolyFD
+                    ( tparams,
+                      tparams_hidden,
+                      ExternAbstractMethodT (params, typ_ret) ) ->
                     (tparams, tparams_hidden, params, typ_ret)
                 | _ -> assert false
               in
-              Types.ExternMethodD (tparams, tparams_hidden, params, typ_ret)
+              let ft = Types.ExternMethodT (params, typ_ret) in
+              Types.PolyFD (tparams, tparams_hidden, ft)
             in
             let fd_extern_inner =
               let theta =
@@ -3396,7 +3408,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       Envs.FDEnv.iter
         (fun fid fd_extern ->
           match (fd_extern : FuncDef.t) with
-          | ExternAbstractMethodD _ ->
+          | PolyFD (_, _, ExternAbstractMethodT _) ->
               Format.printf
                 "(type_instantiation_decl) Abstract method %a was not defined\n"
                 FId.pp fid;
@@ -3832,7 +3844,8 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ActionD params
+    let ft = Types.ActionT params in
+    Types.MonoFD ft
   in
   WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_non_overload cursor fid fd ctx in
@@ -3897,7 +3910,8 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.FunctionD (tparams, tparams_hidden, params, typ_ret.it)
+    let ft = Types.FunctionT (params, typ_ret.it) in
+    Types.PolyFD (tparams, tparams_hidden, ft)
   in
   WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
@@ -3943,7 +3957,8 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ExternFunctionD (tparams, tparams_hidden, params, typ_ret.it)
+    let ft = Types.ExternFunctionT (params, typ_ret.it) in
+    Types.PolyFD (tparams, tparams_hidden, ft)
   in
   WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
@@ -4042,7 +4057,8 @@ and type_extern_abstract_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ExternAbstractMethodD (tparams, tparams_hidden, params, typ_ret.it)
+    let ft = Types.ExternAbstractMethodT (params, typ_ret.it) in
+    Types.PolyFD (tparams, tparams_hidden, ft)
   in
   WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
@@ -4085,7 +4101,8 @@ and type_extern_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ExternMethodD (tparams, tparams_hidden, params, typ_ret.it)
+    let ft = Types.ExternMethodT (params, typ_ret.it) in
+    Types.PolyFD (tparams, tparams_hidden, ft)
   in
   WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
@@ -4358,7 +4375,8 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ParserApplyMethodD params
+    let ft = Types.ParserApplyMethodT params in
+    Types.MonoFD ft
   in
   WF.check_valid_funcdef Ctx.Block ctx fd_apply;
   (* Add apply parameters to the block context *)
@@ -4718,7 +4736,8 @@ and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
       El.Pp.pp_var var_action;
     assert false);
   let fd = Option.get fd in
-  if not (match fd with Types.ActionD _ -> true | _ -> false) then (
+  if not (match (fd : FuncDef.t) with MonoFD (ActionT _) -> true | _ -> false)
+  then (
     Format.printf "(type_table_action) %a is not an action\n" El.Pp.pp_var
       var_action;
     assert false);
@@ -5408,7 +5427,8 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    Types.ControlApplyMethodD params
+    let ft = Types.ControlApplyMethodT params in
+    Types.MonoFD ft
   in
   WF.check_valid_funcdef Ctx.Block ctx fd_apply;
   (* Add apply parameters to the block context *)

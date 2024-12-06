@@ -105,10 +105,10 @@ and pp_typ fmt typ =
 
 and pp_typdef fmt typdef =
   match typdef with
-  | MonoD typ -> F.fprintf fmt "mono -> %a" pp_typ typ
+  | MonoD typ -> F.fprintf fmt "%a" pp_typ typ
   | PolyD (tparams, tparams_hidden, typ) ->
-      F.fprintf fmt "poly <%a><%a> -> %a" pp_tparams tparams pp_tparams
-        tparams_hidden pp_typ typ
+      F.fprintf fmt "%a<%a @@ %a>" pp_typ typ pp_tparams tparams pp_tparams
+        tparams_hidden
 
 (* Function types *)
 
@@ -136,23 +136,10 @@ and pp_functyp fmt functyp =
 
 and pp_funcdef fmt funcdef =
   match funcdef with
-  | ActionD params -> F.fprintf fmt "action(%a)" pp_params params
-  | ExternFunctionD (tparams, tparams_hidden, params, typ) ->
-      F.fprintf fmt "extern_func<%a><%a>(%a) -> %a" pp_tparams tparams
-        pp_tparams tparams_hidden pp_params params pp_typ typ
-  | FunctionD (tparams, tparams_hidden, params, typ) ->
-      F.fprintf fmt "func<%a><%a>(%a) -> %a" pp_tparams tparams pp_tparams
-        tparams_hidden pp_params params pp_typ typ
-  | ExternMethodD (tparams, tparams_hidden, params, typ) ->
-      F.fprintf fmt "extern_method<%a><%a>(%a) -> %a" pp_tparams tparams
-        pp_tparams tparams_hidden pp_params params pp_typ typ
-  | ExternAbstractMethodD (tparams, tparams_hidden, params, typ) ->
-      F.fprintf fmt "extern_abstract_method<%a><%a>(%a) -> %a" pp_tparams
-        tparams pp_tparams tparams_hidden pp_params params pp_typ typ
-  | ParserApplyMethodD params ->
-      F.fprintf fmt "parser_apply(%a)" pp_params params
-  | ControlApplyMethodD params ->
-      F.fprintf fmt "control_apply(%a)" pp_params params
+  | MonoFD ft -> F.fprintf fmt "%a" pp_functyp ft
+  | PolyFD (tparams, tparams_hidden, ft) ->
+      F.fprintf fmt "%a<%a @@ %a>" pp_functyp ft pp_tparams tparams pp_tparams
+        tparams_hidden
 
 (* Constructor types *)
 
@@ -164,5 +151,5 @@ let pp_constyp fmt constyp =
 
 let pp_consdef fmt consdef =
   let tparams, tparams_hidden, cparams, typ = consdef in
-  F.fprintf fmt "constructor<%a><%a> (%a) -> %a" pp_tparams tparams pp_tparams
+  F.fprintf fmt "constructor<%a @@ %a> (%a) -> %a" pp_tparams tparams pp_tparams
     tparams_hidden pp_cparams cparams pp_typ typ

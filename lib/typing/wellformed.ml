@@ -643,31 +643,37 @@ and check_valid_funcdef (cursor : Ctx.cursor) (ctx : Ctx.t) (fd : FuncDef.t) :
 
 and check_valid_funcdef' (tset : TIdSet.t) (fd : FuncDef.t) : unit =
   match fd with
-  | ActionD params -> check_valid_functyp' tset (ActionT params)
-  | ExternFunctionD (tparams, tparams_hidden, params, typ_ret) ->
+  | MonoFD ft ->
+      if
+        not
+          (match ft with
+          | ActionT _ | ParserApplyMethodT _ | ControlApplyMethodT _
+          | BuiltinMethodT _ | TableApplyMethodT _ ->
+              true
+          | _ -> false)
+      then (
+        Format.printf
+          "(check_valid_funcdef) %a is not a definable monomorphic function\n"
+          FuncType.pp ft;
+        assert false);
+      check_valid_functyp' tset ft
+  | PolyFD (tparams, tparams_hidden, ft) ->
+      if
+        not
+          (match ft with
+          | ExternFunctionT _ | FunctionT _ | ExternMethodT _
+          | ExternAbstractMethodT _ ->
+              true
+          | _ -> false)
+      then (
+        Format.printf
+          "(check_valid_funcdef) %a is not a definable generic function\n"
+          FuncType.pp ft;
+        assert false);
       let tset =
         tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
       in
-      check_valid_functyp' tset (ExternFunctionT (params, typ_ret))
-  | FunctionD (tparams, tparams_hidden, params, typ_ret) ->
-      let tset =
-        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
-      in
-      check_valid_functyp' tset (FunctionT (params, typ_ret))
-  | ExternMethodD (tparams, tparams_hidden, params, typ_ret) ->
-      let tset =
-        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
-      in
-      check_valid_functyp' tset (ExternMethodT (params, typ_ret))
-  | ExternAbstractMethodD (tparams, tparams_hidden, params, typ_ret) ->
-      let tset =
-        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
-      in
-      check_valid_functyp' tset (ExternAbstractMethodT (params, typ_ret))
-  | ParserApplyMethodD params ->
-      check_valid_functyp' tset (ParserApplyMethodT params)
-  | ControlApplyMethodD params ->
-      check_valid_functyp' tset (ControlApplyMethodT params)
+      check_valid_functyp' tset ft
 
 (* (Appendix F) Restrictions on compile time and run time calls
 

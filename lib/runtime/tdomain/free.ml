@@ -56,16 +56,25 @@ and free_typdef (td : typdef) : TIdSet.t =
       free_typ typ_inner
       |> TIdSet.diff (TIdSet.of_list (tparams @ tparams_hidden))
 
+(* Function types *)
+
+and free_functyp (ft : functyp) : TIdSet.t =
+  match ft with
+  | ActionT params -> free_params params
+  | ExternFunctionT (params, typ_ret)
+  | FunctionT (params, typ_ret)
+  | ExternMethodT (params, typ_ret)
+  | ExternAbstractMethodT (params, typ_ret) ->
+      free_params params |> TIdSet.union (free_typ typ_ret)
+  | ParserApplyMethodT params | ControlApplyMethodT params -> free_params params
+  | BuiltinMethodT (params, typ_ret) ->
+      free_params params |> TIdSet.union (free_typ typ_ret)
+  | TableApplyMethodT typ_ret -> free_typ typ_ret
+
 (* Function definitions *)
 
 and free_funcdef (fd : funcdef) : TIdSet.t =
   match fd with
-  | ActionD params -> free_params params
-  | ExternFunctionD (tparams, tparams_hidden, params, typ)
-  | FunctionD (tparams, tparams_hidden, params, typ)
-  | ExternMethodD (tparams, tparams_hidden, params, typ)
-  | ExternAbstractMethodD (tparams, tparams_hidden, params, typ) ->
-      free_params params
-      |> TIdSet.union (free_typ typ)
-      |> TIdSet.diff (TIdSet.of_list (tparams @ tparams_hidden))
-  | ParserApplyMethodD params | ControlApplyMethodD params -> free_params params
+  | MonoFD ft -> free_functyp ft
+  | PolyFD (tparams, tparams_hidden, ft) ->
+      free_functyp ft |> TIdSet.diff (TIdSet.of_list (tparams @ tparams_hidden))
