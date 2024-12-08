@@ -106,12 +106,18 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
     cstr_t =
   let is_nominal (typ : Type.t) : bool =
     match typ with
-    | EnumT _ | SEnumT _ | StructT _ | HeaderT _ | UnionT _ | ExternT _ -> true
+    | NewT _ | EnumT _ | SEnumT _ | StructT _ | HeaderT _ | UnionT _ | ExternT _
+      ->
+        true
     | _ -> false
   in
   match (typ_param, typ_arg) with
   | VarT tid, typ_arg when TIdMap.mem tid cstr ->
       TIdMap.add tid (Some typ_arg) cstr
+  | SpecT (MonoD (DefT typ_inner_param), []), _ ->
+      gen_cstr cstr typ_inner_param typ_arg
+  | _, SpecT (MonoD (DefT typ_inner_arg), []) ->
+      gen_cstr cstr typ_param typ_inner_arg
   | SpecT (td_param, typs_inner_param), SpecT (td_arg, typs_inner_arg) ->
       let typ_param_inner = TypeDef.specialize td_param typs_inner_param in
       let typ_arg_inner = TypeDef.specialize td_arg typs_inner_arg in
@@ -119,8 +125,8 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
       if is_nominal typ_param_inner && is_nominal typ_arg_inner then
         gen_cstrs cstr_inner typs_inner_param typs_inner_arg
       else cstr_inner
-  | DefT typ_inner_param, _ -> gen_cstr cstr typ_inner_param typ_arg
-  | _, DefT typ_inner_arg -> gen_cstr cstr typ_param typ_inner_arg
+  | DefT typ_inner_param, DefT typ_inner_arg ->
+      gen_cstr cstr typ_inner_param typ_inner_arg
   | NewT (id_param, typ_inner_param), NewT (id_arg, typ_inner_arg)
     when id_param = id_arg ->
       gen_cstr cstr typ_inner_param typ_inner_arg
