@@ -279,7 +279,7 @@ let rec eval_type (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ) :
 and eval_type_with_check (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
     : Il.Ast.typ * TId.t list =
   let typ, tids_fresh = eval_type cursor ctx typ in
-  WF.check_valid_type cursor ctx ~tids_fresh typ.it;
+  WF.check_valid_typ cursor ctx ~tids_fresh typ.it;
   (typ, tids_fresh)
 
 and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
@@ -641,7 +641,7 @@ and type_seq_expr ~(default : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
       (Types.SeqDefaultT typs, Il.Ast.SeqDefaultE { exprs = exprs_il })
     else (Types.SeqT typs, Il.Ast.SeqE { exprs = exprs_il })
   in
-  WF.check_valid_type cursor ctx typ;
+  WF.check_valid_typ cursor ctx typ;
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
 
@@ -692,7 +692,7 @@ and type_record_expr ~(default : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
       (Types.RecordDefaultT fields_typ, Il.Ast.RecordDefaultE { fields })
     else (Types.RecordT fields_typ, Il.Ast.RecordE { fields })
   in
-  WF.check_valid_type cursor ctx typ;
+  WF.check_valid_typ cursor ctx typ;
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
 
@@ -1355,7 +1355,7 @@ and type_select_case_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
             Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
       in
       let typ_key = Types.SetT typ_key in
-      WF.check_valid_type cursor ctx typ_key;
+      WF.check_valid_typ cursor ctx typ_key;
       let typ = expr_il.note.typ in
       let expr_il =
         match (typ_key, typ) with
@@ -3034,15 +3034,6 @@ and type_decl' (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : El.Ast.decl') :
       |> wrap_some
   (* Object declarations *)
   (* Extern *)
-  | ExternConstructorD { id; cparams; annos } ->
-      type_extern_constructor_decl cursor ctx id cparams annos |> wrap_some
-  | ExternAbstractMethodD { id; typ_ret; tparams; params; annos } ->
-      type_extern_abstract_method_decl cursor ctx id tparams params typ_ret
-        annos
-      |> wrap_some
-  | ExternMethodD { id; typ_ret; tparams; params; annos } ->
-      type_extern_method_decl cursor ctx id tparams params typ_ret annos
-      |> wrap_some
   | ExternObjectD { id; tparams; mthds; annos } ->
       type_extern_object_decl cursor ctx id tparams mthds annos |> wrap_some
   (* Parser *)
@@ -3526,7 +3517,7 @@ and type_struct_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_struct = Types.StructT (id.it, fields) in
     Types.PolyD (tparams, tparams_hidden, typ_struct)
   in
-  WF.check_valid_typedef cursor ctx td;
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -3564,7 +3555,7 @@ and type_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_header = Types.HeaderT (id.it, fields) in
     Types.PolyD (tparams, tparams_hidden, typ_header)
   in
-  WF.check_valid_typedef cursor ctx td;
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -3602,7 +3593,7 @@ and type_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_union = Types.UnionT (id.it, fields) in
     Types.PolyD (tparams, tparams_hidden, typ_union)
   in
-  WF.check_valid_typedef cursor ctx td;
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -3632,7 +3623,7 @@ and type_enum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         |> Ctx.add_rtype cursor id_field typ Lang.Ast.No Ctk.LCTK)
       ctx members
   in
-  WF.check_valid_typedef cursor ctx td;
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -3700,7 +3691,7 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     in
     { Ctx.empty with global = ctx.global }
   in
-  WF.check_valid_typedef cursor ctx td;
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -3741,7 +3732,7 @@ and type_newtype_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_new = Types.NewT (id.it, typ) in
     Types.MonoD typ_new
   in
-  WF.check_valid_typedef cursor ctx td;
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -3781,7 +3772,7 @@ and type_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_def = Types.DefT typ in
     Types.MonoD typ_def
   in
-  WF.check_valid_typedef cursor ctx td;
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -3973,21 +3964,17 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
    these must have the same name as the enclosing extern type, no type parameters, and no return type.
    Extern declarations may only appear as allowed by the architecture model and may be specific to a target. *)
 
-and type_extern_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (id : El.Ast.id) (cparams : El.Ast.cparam list) (annos : El.Ast.anno list) :
-    Ctx.t * Il.Ast.decl' =
-  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern) then (
-    Format.printf
-      "(type_extern_constructor_decl) Extern constructor declarations must be \
-       in an extern block\n";
-    assert false);
+and type_extern_constructor_mthd (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (id : El.Ast.id) (tparams : El.Ast.tparam list)
+    (cparams : El.Ast.cparam list) (annos : El.Ast.anno list) :
+    Ctx.t * Il.Ast.mthd' =
+  assert (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern);
   if id.it <> ctx.block.id then (
     Format.printf
       "(type_extern_constructor_decl) Extern constructor must have the same \
        name as the object\n";
     assert false);
   let annos_il = List.map (type_anno cursor ctx) annos in
-  let tparams = Ctx.get_tparams cursor ctx in
   let cid = FId.to_fid id cparams in
   let cparams_il, tids_fresh =
     List.fold_left
@@ -3997,9 +3984,10 @@ and type_extern_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
       ([], []) cparams
   in
   let td = Ctx.find_typedef Ctx.Global id.it ctx in
-  let typ_args = List.map (fun tparam -> Types.VarT tparam) tparams in
+  let typ_args = List.map (fun tparam -> Types.VarT tparam.it) tparams in
   let typ = Types.SpecT (td, typ_args) in
   let cd =
+    let tparams = List.map it tparams in
     let tparams_hidden = tids_fresh in
     let cparams =
       List.map it cparams_il
@@ -4010,10 +3998,10 @@ and type_extern_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   in
   WF.check_valid_consdef cursor ctx cd;
   let ctx = Ctx.add_consdef cid cd ctx in
-  let decl_il =
-    Il.Ast.ExternConstructorD { id; cparams = cparams_il; annos = annos_il }
+  let mthd_il =
+    Lang.Ast.ExternConsM { id; cparams = cparams_il; annos = annos_il }
   in
-  (ctx, decl_il)
+  (ctx, mthd_il)
 
 (* (7.2.10.2) Extern objects - Abstract methods
 
@@ -4021,14 +4009,10 @@ and type_extern_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
    Such methods are described with the abstract keyword prior to the method definition.
    When such an object is instantiated the user has to supply an implementation of all the abstract methods. *)
 
-and type_extern_abstract_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
+and type_extern_abstract_method_mthd (cursor : Ctx.cursor) (ctx : Ctx.t)
     (id : El.Ast.id) (tparams : El.Ast.tparam list) (params : El.Ast.param list)
-    (typ_ret : El.Ast.typ) (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
-  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern) then (
-    Format.printf
-      "(type_extern_abstract_method_decl) Extern method declarations must be \
-       in an extern block\n";
-    assert false);
+    (typ_ret : El.Ast.typ) (annos : El.Ast.anno list) : Ctx.t * Il.Ast.mthd' =
+  assert (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern);
   let annos_il = List.map (type_anno cursor ctx) annos in
   let fid = FId.to_fid id params in
   (* Construct extern abstract method layer context *)
@@ -4059,20 +4043,16 @@ and type_extern_abstract_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   in
   WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
-  let decl_il =
-    Il.Ast.ExternAbstractMethodD
+  let mthd_il =
+    Lang.Ast.ExternAbstractM
       { id; tparams; params = params_il; typ_ret; annos = annos_il }
   in
-  (ctx, decl_il)
+  (ctx, mthd_il)
 
-and type_extern_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
+and type_extern_method_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (tparams : El.Ast.tparam list) (params : El.Ast.param list)
-    (typ_ret : El.Ast.typ) (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
-  if not (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern) then (
-    Format.printf
-      "(type_extern_method_decl) Extern method declarations must be in an \
-       extern block\n";
-    assert false);
+    (typ_ret : El.Ast.typ) (annos : El.Ast.anno list) : Ctx.t * Il.Ast.mthd' =
+  assert (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern);
   let annos_il = List.map (type_anno cursor ctx) annos in
   let fid = FId.to_fid id params in
   (* Construct extern method layer context *)
@@ -4103,14 +4083,40 @@ and type_extern_method_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
-  let decl_il =
-    Il.Ast.ExternMethodD
+  let mthd_il =
+    Lang.Ast.ExternM
       { id; tparams; params = params_il; typ_ret; annos = annos_il }
   in
-  (ctx, decl_il)
+  (ctx, mthd_il)
+
+and type_mthd' (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (tparams : El.Ast.tparam list) (mthd : El.Ast.mthd') : Ctx.t * Il.Ast.mthd'
+    =
+  match mthd with
+  | ExternConsM { id; cparams; annos } ->
+      type_extern_constructor_mthd cursor ctx id tparams cparams annos
+  | ExternAbstractM { id; tparams; params; typ_ret; annos } ->
+      type_extern_abstract_method_mthd cursor ctx id tparams params typ_ret
+        annos
+  | ExternM { id; tparams; params; typ_ret; annos } ->
+      type_extern_method_mthd cursor ctx id tparams params typ_ret annos
+
+and type_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (tparams : El.Ast.tparam list)
+    (mthd : El.Ast.mthd) : Ctx.t * Il.Ast.mthd =
+  let ctx, mthd_il = type_mthd' cursor ctx tparams mthd.it in
+  (ctx, mthd_il $ mthd.at)
+
+and type_mthds (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (tparams : El.Ast.tparam list) (mthds : El.Ast.mthd list) :
+    Ctx.t * Il.Ast.mthd list =
+  List.fold_left
+    (fun (ctx, mthds_il) mthd ->
+      let ctx, mthd_il = type_mthd cursor ctx tparams mthd in
+      (ctx, mthds_il @ [ mthd_il ]))
+    (ctx, []) mthds
 
 and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (tparams : El.Ast.tparam list) (mthds : El.Ast.decl list)
+    (tparams : El.Ast.tparam list) (mthds : El.Ast.mthd list)
     (annos : El.Ast.anno list) : Ctx.t * Il.Ast.decl' =
   if cursor <> Ctx.Global then (
     Format.printf
@@ -4120,16 +4126,16 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   (* Separate constructors and methods *)
   let cons, mthds =
     List.partition
-      (fun (mthd : El.Ast.decl) ->
-        match mthd.it with ExternConstructorD _ -> true | _ -> false)
+      (fun (mthd : El.Ast.mthd) ->
+        match mthd.it with ExternConsM _ -> true | _ -> false)
       mthds
   in
   (* Check that method names do not overlap with the object name *)
   let mthds_names =
     List.map
-      (fun (mthd : El.Ast.decl) ->
+      (fun (mthd : El.Ast.mthd) ->
         match mthd.it with
-        | ExternAbstractMethodD { id; _ } | ExternMethodD { id; _ } -> id.it
+        | ExternAbstractM { id; _ } | ExternM { id; _ } -> id.it
         | _ -> assert false)
       mthds
   in
@@ -4143,7 +4149,7 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let ctx' = Ctx.set_id Ctx.Block id.it ctx in
   let ctx' = Ctx.set_blockkind Ctx.Extern ctx' in
   let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
-  let ctx', mthds_il = type_decls Ctx.Block ctx' mthds in
+  let ctx', mthds_il = type_mthds Ctx.Block ctx' tparams mthds in
   (* Create an extern object type definition
      and add it to the context *)
   let td =
@@ -4151,14 +4157,14 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_extern = Types.ExternT (id.it, ctx'.block.fdenv) in
     Types.PolyD (tparams, [], typ_extern)
   in
-  WF.check_valid_typedef cursor ctx td;
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   (* Typecheck constructors to update constructor definition environment
      This comes after method typing to prevent recursive instantiation *)
   let ctx'' = Ctx.set_id Ctx.Block id.it ctx in
   let ctx'' = Ctx.set_blockkind Ctx.Extern ctx'' in
   let ctx'' = Ctx.add_tparams Ctx.Block tparams ctx'' in
-  let ctx'', cons_il = type_decls Ctx.Block ctx'' cons in
+  let ctx'', cons_il = type_mthds Ctx.Block ctx'' tparams cons in
   (* Update the context with the constructor definition environment *)
   let cdenv_diff = Envs.CDEnv.diff ctx''.global.cdenv ctx.global.cdenv in
   let ctx =
@@ -4205,7 +4211,7 @@ and type_value_set_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let expr_size_il = type_expr cursor ctx expr_size in
   Static.check_ctk expr_size_il;
   let typ = Types.SetT typ_inner.it in
-  WF.check_valid_type cursor ctx typ;
+  WF.check_valid_typ cursor ctx typ;
   let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
   let decl_il =
     Il.Ast.ValueSetD
@@ -4256,7 +4262,7 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_param = Types.ParserT params in
     Types.PolyD (tparams, tparams_hidden, typ_param)
   in
-  WF.check_valid_typedef cursor ctx td;
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -5368,7 +5374,7 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_control = Types.ControlT params in
     Types.PolyD (tparams, tparams_hidden, typ_control)
   in
-  WF.check_valid_typedef cursor ctx td;
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -5510,7 +5516,7 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     let typ_package = Types.PackageT typs_inner in
     Types.PolyD (tparams, tparams_hidden, typ_package)
   in
-  WF.check_valid_typedef cursor ctx td;
+  WF.check_valid_typdef cursor ctx td;
   let typ_args =
     List.map (fun tparam -> Types.VarT tparam.it) tparams
     @ List.map (fun tparam_hidden -> Types.VarT tparam_hidden.it) tparams_hidden

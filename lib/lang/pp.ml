@@ -23,6 +23,7 @@ let pp_pairs ?(trailing = false) ?(level = 0) pp_k pp_v rel sep fmt pairs =
 (* Parameterized printer types *)
 
 type 'typ pp_typ = F.formatter -> 'typ typ -> unit
+type 'param pp_param = F.formatter -> 'param param -> unit
 
 type ('note, 'expr) pp_expr =
   ?level:int -> F.formatter -> ('note, 'expr) expr -> unit
@@ -488,6 +489,25 @@ and pp_table_custom' ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
 and pp_table_custom ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
     table_custom =
   pp_table_custom' ~level pp_expr fmt table_custom.it
+
+(* Methods *)
+
+and pp_mthd' ?(level = 0) (pp_typ : 'typ pp_typ) (pp_param : 'param pp_param)
+    (_pp_expr : ('note, 'expr) pp_expr) fmt mthd' =
+  match mthd' with
+  | ExternConsM { id; cparams; annos = _annos } ->
+      F.fprintf fmt "%s%a%a;" (indent level) pp_id id (pp_list pp_param ", ")
+        cparams
+  | ExternAbstractM { id; typ_ret; tparams; params; annos = _annos } ->
+      F.fprintf fmt "%sabstract %a %a%a%a;" (indent level) pp_typ typ_ret pp_id
+        id pp_tparams tparams (pp_list pp_param ", ") params
+  | ExternM { id; typ_ret; tparams; params; annos = _annos } ->
+      F.fprintf fmt "%s%a %a%a%a;" (indent level) pp_typ typ_ret pp_id id
+        pp_tparams tparams (pp_list pp_param ", ") params
+
+and pp_mthd ?(level = 0) (pp_typ : 'typ pp_typ) (pp_param : 'param pp_param)
+    (pp_expr : ('note, 'expr) pp_expr) fmt mthd =
+  pp_mthd' ~level pp_typ pp_param pp_expr fmt mthd.it
 
 (* Program *)
 

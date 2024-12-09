@@ -276,18 +276,10 @@ and pp_decl' ?(level = 0) fmt decl' =
   | ExternFuncD { id; typ_ret; tparams; params; annos = _annos } ->
       F.fprintf fmt "%sextern %a %a%a%a;" (P.indent level) pp_typ typ_ret pp_id
         id pp_tparams tparams pp_params params
-  | ExternConstructorD { id; cparams; annos = _annos } ->
-      F.fprintf fmt "%s%a%a;" (P.indent level) pp_id id pp_params cparams
-  | ExternAbstractMethodD { id; typ_ret; tparams; params; annos = _annos } ->
-      F.fprintf fmt "%sabstract %a %a%a%a;" (P.indent level) pp_typ typ_ret
-        pp_id id pp_tparams tparams pp_params params
-  | ExternMethodD { id; typ_ret; tparams; params; annos = _annos } ->
-      F.fprintf fmt "%s%a %a%a%a;" (P.indent level) pp_typ typ_ret pp_id id
-        pp_tparams tparams pp_params params
   | ExternObjectD { id; tparams; mthds; annos = _annos } ->
       F.fprintf fmt "%sextern %a%a {\n%a\n%s}" (P.indent level) pp_id id
         pp_tparams tparams
-        (pp_decls ~level:(level + 1))
+        (P.pp_list (pp_mthd ~level:(level + 1)) "\n")
         mthds (P.indent level)
   | PackageTypeD { id; tparams; cparams; annos = _annos } ->
       F.fprintf fmt "%spackage %a%a%a;" (P.indent level) pp_id id pp_tparams
@@ -378,6 +370,14 @@ and pp_table_custom' ?(level = 0) fmt table_custom' =
 
 and pp_table_custom ?(level = 0) fmt table_custom =
   P.pp_table_custom ~level pp_expr fmt table_custom
+
+(* Methods *)
+
+and pp_mthd' ?(level = 0) fmt mthd' =
+  P.pp_mthd' ~level pp_typ pp_param pp_expr fmt mthd'
+
+and pp_mthd ?(level = 0) fmt mthd =
+  P.pp_mthd ~level pp_typ pp_param pp_expr fmt mthd
 
 (* Program *)
 

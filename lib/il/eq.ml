@@ -470,46 +470,6 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
       && eq_typ ~dbg typ_ret_a typ_ret_b
       && eq_tparams ~dbg tparams_a tparams_b
       && eq_params ~dbg params_a params_b
-  | ( ExternConstructorD { id = id_a; cparams = cparams_a; annos = _annos_a },
-      ExternConstructorD { id = id_b; cparams = cparams_b; annos = _annos_b } )
-    ->
-      eq_id ~dbg id_a id_b && eq_cparams ~dbg cparams_a cparams_b
-  | ( ExternAbstractMethodD
-        {
-          id = id_a;
-          typ_ret = typ_ret_a;
-          tparams = tparams_a;
-          params = params_a;
-          annos = _annos_a;
-        },
-      ExternAbstractMethodD
-        {
-          id = id_b;
-          typ_ret = typ_ret_b;
-          tparams = tparams_b;
-          params = params_b;
-          annos = _annos_b;
-        } )
-  | ( ExternMethodD
-        {
-          id = id_a;
-          typ_ret = typ_ret_a;
-          tparams = tparams_a;
-          params = params_a;
-          annos = _annos_a;
-        },
-      ExternMethodD
-        {
-          id = id_b;
-          typ_ret = typ_ret_b;
-          tparams = tparams_b;
-          params = params_b;
-          annos = _annos_b;
-        } ) ->
-      eq_id ~dbg id_a id_b
-      && eq_typ ~dbg typ_ret_a typ_ret_b
-      && eq_tparams ~dbg tparams_a tparams_b
-      && eq_params ~dbg params_a params_b
   | ( ExternObjectD
         { id = id_a; tparams = tparams_a; mthds = mthds_a; annos = _annos_a },
       ExternObjectD
@@ -517,7 +477,7 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
     ->
       eq_id ~dbg id_a id_b
       && eq_tparams ~dbg tparams_a tparams_b
-      && E.eq_list (eq_decl ~dbg) mthds_a mthds_b
+      && E.eq_list (eq_mthd ~dbg) mthds_a mthds_b
   | ( PackageTypeD
         {
           id = id_a;
@@ -629,6 +589,15 @@ and eq_table_custom' ?(dbg = false) table_custom_a table_custom_b =
 
 and eq_table_custom ?(dbg = false) table_custom_a table_custom_b =
   E.eq_table_custom ~dbg P.pp_expr eq_expr table_custom_a table_custom_b
+
+(* Methods *)
+
+and eq_mthd' ?(dbg = false) mthd_a mthd_b =
+  E.eq_mthd' ~dbg eq_typ eq_param eq_expr mthd_a mthd_b
+
+and eq_mthd ?(dbg = false) mthd_a mthd_b =
+  E.eq_mthd ~dbg P.pp_typ P.pp_param P.pp_expr eq_typ eq_param eq_expr mthd_a
+    mthd_b
 
 (* Program *)
 

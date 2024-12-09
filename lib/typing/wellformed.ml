@@ -103,72 +103,72 @@ let check_distinct_vars (vars : Lang.Ast.var list) : unit =
 
    The type of the values in the set must be either bit<>, int<>, tuple, struct, or serializable enum. *)
 
-(* (TODO) check_valid_type and check_valid_typedef quite redundant for
+(* (TODO) check_valid_typ and check_valid_typdef quite redundant for
    typedefs that are not generic. maybe consider only check_valid_type
    after evaluating surface types of StackT, TupleT and SpecT *)
 
-let rec check_valid_type ?(tids_fresh = []) (cursor : Ctx.cursor) (ctx : Ctx.t)
+let rec check_valid_typ ?(tids_fresh = []) (cursor : Ctx.cursor) (ctx : Ctx.t)
     (typ : Type.t) : unit =
   let tset = Ctx.get_tparams cursor ctx @ tids_fresh |> TIdSet.of_list in
-  check_valid_type' tset typ
+  check_valid_typ' tset typ
 
-and check_valid_type' (tset : TIdSet.t) (typ : Type.t) : unit =
+and check_valid_typ' (tset : TIdSet.t) (typ : Type.t) : unit =
   match typ with
   | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
   | VBitT _ ->
       ()
   | VarT id ->
       if not (TIdSet.mem id tset) then (
-        Format.printf "(check_valid_type) %s is a free type variable\n" id;
+        Format.printf "(check_valid_typ) %s is a free type variable\n" id;
         assert false)
       else ()
   | SpecT (td, typs_inner) ->
-      TypeDef.specialize td typs_inner |> check_valid_type' tset
+      TypeDef.specialize td typs_inner |> check_valid_typ' tset
   | DefT typ_inner ->
-      check_valid_type' tset typ_inner;
+      check_valid_typ' tset typ_inner;
       check_valid_type_nesting typ typ_inner
   | NewT (_id, typ_inner) ->
-      check_valid_type' tset typ_inner;
+      check_valid_typ' tset typ_inner;
       check_valid_type_nesting typ typ_inner
   | EnumT _ -> ()
   | SEnumT (_, typ_inner, _) -> check_valid_type_nesting typ typ_inner
   | ListT typ_inner ->
-      check_valid_type' tset typ_inner;
+      check_valid_typ' tset typ_inner;
       check_valid_type_nesting typ typ_inner
   | TupleT typs_inner ->
       List.iter
         (fun typ_inner ->
-          check_valid_type' tset typ_inner;
+          check_valid_typ' tset typ_inner;
           check_valid_type_nesting typ typ_inner)
         typs_inner
   | StackT (typ_inner, _) ->
-      check_valid_type' tset typ_inner;
+      check_valid_typ' tset typ_inner;
       check_valid_type_nesting typ typ_inner
   | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
       let members, typs_inner = List.split fields in
       check_distinct_names members;
       List.iter
         (fun typ_inner ->
-          check_valid_type' tset typ_inner;
+          check_valid_typ' tset typ_inner;
           check_valid_type_nesting typ typ_inner)
         typs_inner
   | ExternT (_, fdenv) ->
       Envs.FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
   | ParserT params | ControlT params ->
       List.iter (fun fd -> check_valid_param' tset fd) params
-  | PackageT typs_inner -> List.iter (check_valid_type' tset) typs_inner
+  | PackageT typs_inner -> List.iter (check_valid_typ' tset) typs_inner
   | TableT _ -> ()
   | AnyT -> ()
   | TableEnumT _ | TableStructT _ -> ()
   | SeqT typs_inner | SeqDefaultT typs_inner ->
-      List.iter (check_valid_type' tset) typs_inner
+      List.iter (check_valid_typ' tset) typs_inner
   | RecordT fields | RecordDefaultT fields ->
       let members, typs_inner = List.split fields in
       check_distinct_names members;
-      List.iter (check_valid_type' tset) typs_inner
+      List.iter (check_valid_typ' tset) typs_inner
   | DefaultT | InvalidT -> ()
   | SetT typ_inner ->
-      check_valid_type' tset typ_inner;
+      check_valid_typ' tset typ_inner;
       check_valid_type_nesting typ typ_inner
   | StateT -> ()
 
@@ -408,12 +408,12 @@ and check_valid_type_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
           false)
   | StateT -> error_not_nest ()
 
-and check_valid_typedef (cursor : Ctx.cursor) (ctx : Ctx.t) (td : TypeDef.t) :
+and check_valid_typdef (cursor : Ctx.cursor) (ctx : Ctx.t) (td : TypeDef.t) :
     unit =
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
-  check_valid_typedef' tset td
+  check_valid_typdef'' tset td
 
-and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
+and check_valid_typdef'' (tset : TIdSet.t) (td : TypeDef.t) : unit =
   match td with
   | MonoD typ_inner ->
       if
@@ -423,10 +423,10 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
           | _ -> false)
       then (
         Format.printf
-          "(check_valid_typedef) %a is not a definable monomorphic type\n"
+          "(check_valid_typdef') %a is not a definable monomorphic type\n"
           Type.pp typ_inner;
         assert false);
-      check_valid_type' tset typ_inner
+      check_valid_typ' tset typ_inner
   | PolyD (tparams, tparams_hidden, typ_inner) ->
       if
         not
@@ -437,13 +437,13 @@ and check_valid_typedef' (tset : TIdSet.t) (td : TypeDef.t) : unit =
           | _ -> false)
       then (
         Format.printf
-          "(check_valid_typedef) %a is not a definable generic type\n" Type.pp
+          "(check_valid_typdef') %a is not a definable generic type\n" Type.pp
           typ_inner;
         assert false);
       let tparams = tparams @ tparams_hidden in
       check_distinct_names tparams;
       let tset = tparams |> TIdSet.of_list |> TIdSet.union tset in
-      check_valid_type' tset typ_inner
+      check_valid_typ' tset typ_inner
 
 (* (6.8.1) Justification
 
@@ -503,7 +503,7 @@ and check_valid_param (cursor : Ctx.cursor) (ctx : Ctx.t) (param : Types.param)
 
 and check_valid_param' (tset : TIdSet.t) (param : Types.param) : unit =
   let _, dir, typ, value_default = param in
-  check_valid_type' tset typ;
+  check_valid_typ' tset typ;
   if not (match Type.canon typ with ExternT _ -> dir = No | _ -> true) then (
     Format.printf
       "(check_valid_param') Extern objects can only be passed as directionless \
@@ -553,21 +553,21 @@ and check_valid_functyp' (tset : TIdSet.t) (ft : FuncType.t) : unit =
       check_valid_functyp_nesting ft params
   | ExternFunctionT (params, typ_ret) | FunctionT (params, typ_ret) ->
       check_valid_params' tset params;
-      check_valid_type' tset typ_ret;
+      check_valid_typ' tset typ_ret;
       check_valid_functyp_nesting ft params
   | ExternMethodT (params, typ_ret) | ExternAbstractMethodT (params, typ_ret) ->
       check_valid_params' tset params;
-      check_valid_type' tset typ_ret;
+      check_valid_typ' tset typ_ret;
       check_valid_functyp_nesting ft params
   | ParserApplyMethodT params | ControlApplyMethodT params ->
       check_valid_params' tset params;
       check_valid_functyp_nesting ft params
   | BuiltinMethodT (params, typ_ret) ->
       check_valid_params' tset params;
-      check_valid_type' tset typ_ret;
+      check_valid_typ' tset typ_ret;
       check_valid_functyp_nesting ft params
   | TableApplyMethodT typ_ret ->
-      check_valid_type' tset typ_ret;
+      check_valid_typ' tset typ_ret;
       check_valid_functyp_nesting ft []
 
 and check_valid_functyp_nesting (ft : FuncType.t) (params : Types.param list) :
@@ -702,7 +702,7 @@ and check_valid_cparam' (tset : TIdSet.t) (cparam : Types.cparam) : unit =
     Format.printf
       "(check_valid_cparam') Constructor parameters must be directionless\n";
     assert false);
-  check_valid_type' tset typ
+  check_valid_typ' tset typ
 
 and check_valid_cparams' (tset : TIdSet.t) (cparams : Types.cparam list) : unit
     =
@@ -718,7 +718,7 @@ and check_valid_constyp (cursor : Ctx.cursor) (ctx : Ctx.t) (ct : ConsType.t) :
 and check_valid_constyp' (tset : TIdSet.t) (ct : ConsType.t) : unit =
   let cparams, typ = ct in
   check_valid_cparams' tset cparams;
-  check_valid_type' tset typ;
+  check_valid_typ' tset typ;
   check_valid_constyp_nesting typ cparams
 
 and check_valid_constyp_nesting (typ : Type.t) (cparams : Types.cparam list) :

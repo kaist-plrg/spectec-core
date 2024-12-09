@@ -114,6 +114,10 @@ type ('note, 'typ, 'value, 'param, 'expr, 'decl) walker = {
     ('note, 'typ, 'value, 'param, 'expr, 'decl) walker ->
     ('note, 'expr) table_custom ->
     unit;
+  walk_mthd :
+    ('note, 'typ, 'value, 'param, 'expr, 'decl) walker ->
+    ('typ, 'param, 'note, 'expr) mthd ->
+    unit;
   walk_program :
     ('note, 'typ, 'value, 'param, 'expr, 'decl) walker -> 'decl program -> unit;
 }
@@ -279,7 +283,7 @@ let walk_stmt (walker : ('note, 'typ, 'value, 'param, 'expr, 'decl) walker) stmt
   let walk_stmt = walker.walk_stmt walker in
   let walk_block = walker.walk_block walker in
   let walk_switch_case = walker.walk_switch_case walker in
-  let walk_delc = walker.walk_decl walker in
+  let walk_decl = walker.walk_decl walker in
   match stmt.it with
   | EmptyS -> ()
   | AssignS { expr_l; expr_r } ->
@@ -309,7 +313,7 @@ let walk_stmt (walker : ('note, 'typ, 'value, 'param, 'expr, 'decl) walker) stmt
       walk_list walk_targ targs;
       walk_list walk_arg args
   | TransS { expr_label } -> walk_expr expr_label
-  | DeclS { decl } -> walk_delc decl
+  | DeclS { decl } -> walk_decl decl
 
 (* Blocks (sequences of statements) *)
 
@@ -442,6 +446,25 @@ let walk_table_custom
   let id, expr, _table_custom_const, _annos = table_custom.it in
   walk_id id;
   walk_expr expr
+
+(* Methods *)
+
+let walk_mthd (walker : ('note, 'typ, 'value, 'param, 'expr, 'decl) walker) mthd
+    =
+  let walk_id = walker.walk_id walker in
+  let walk_tparam = walker.walk_tparam walker in
+  let walk_cparam = walker.walk_cparam walker in
+  let walk_typ = walker.walk_typ walker in
+  match mthd.it with
+  | ExternConsM { id; cparams; annos = _annos } ->
+      walk_id id;
+      walk_list walk_cparam cparams
+  | ExternAbstractM { id; typ_ret; tparams; params; annos = _annos }
+  | ExternM { id; typ_ret; tparams; params; annos = _annos } ->
+      walk_id id;
+      walk_typ typ_ret;
+      walk_list walk_tparam tparams;
+      walk_list walk_cparam params
 
 (* Program *)
 

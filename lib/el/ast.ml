@@ -255,25 +255,10 @@ and decl' =
       annos : anno list;
     }
   (* Extern objects *)
-  | ExternConstructorD of { id : id; cparams : cparam list; annos : anno list }
-  | ExternAbstractMethodD of {
-      id : id;
-      typ_ret : typ;
-      tparams : tparam list;
-      params : param list;
-      annos : anno list;
-    }
-  | ExternMethodD of {
-      id : id;
-      typ_ret : typ;
-      tparams : tparam list;
-      params : param list;
-      annos : anno list;
-    }
   | ExternObjectD of {
       id : id;
       tparams : tparam list;
-      mthds : decl list;
+      mthds : mthd list;
       annos : anno list;
     }
   (* Package *)
@@ -323,6 +308,10 @@ and table_default_const = L.table_default_const
 and table_custom = (unit, expr') L.table_custom
 and table_custom' = (unit, expr') L.table_custom'
 and table_custom_const = L.table_custom_const
+
+(* Methods *)
+and mthd = (typ', param', unit, expr') L.mthd
+and mthd' = (typ', param', unit, expr') L.mthd'
 
 (* Program *)
 type program = decl' L.program

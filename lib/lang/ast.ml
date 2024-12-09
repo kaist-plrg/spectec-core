@@ -247,5 +247,30 @@ and ('note, 'expr) table_custom' =
 
 and table_custom_const = bool
 
+(* Methods : parameterized by 'mthd *)
+and ('typ, 'param, 'note, 'expr) mthd =
+  ('typ, 'param, 'note, 'expr) mthd' phrase
+
+and ('typ, 'param, 'note, 'expr) mthd' =
+  | ExternConsM of {
+      id : id;
+      cparams : 'param cparam list;
+      annos : ('note, 'expr) anno list;
+    }
+  | ExternAbstractM of {
+      id : id;
+      typ_ret : 'typ typ;
+      tparams : tparam list;
+      params : 'param param list;
+      annos : ('note, 'expr) anno list;
+    }
+  | ExternM of {
+      id : id;
+      typ_ret : 'typ typ;
+      tparams : tparam list;
+      params : 'param param list;
+      annos : ('note, 'expr) anno list;
+    }
+
 (* Program *)
 type 'decl program = 'decl decl list

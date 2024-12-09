@@ -202,6 +202,7 @@ let walk_decl (walker : walker) decl =
   let walk_decl = walker.walk_decl walker in
   let walk_parser_state = walker.walk_parser_state walker in
   let walk_table = walker.walk_table walker in
+  let walk_mthd = walker.walk_mthd walker in
   match decl.it with
   | ConstD { id; typ; value; annos = _annos } ->
       walk_id id;
@@ -253,19 +254,10 @@ let walk_decl (walker : walker) decl =
       walk_typ typ_ret;
       W.walk_list walk_tparam tparams;
       W.walk_list walk_param params
-  | ExternConstructorD { id; cparams; annos = _annos } ->
-      walk_id id;
-      W.walk_list walk_param cparams
-  | ExternAbstractMethodD { id; typ_ret; tparams; params; annos = _annos }
-  | ExternMethodD { id; typ_ret; tparams; params; annos = _annos } ->
-      walk_id id;
-      walk_typ typ_ret;
-      W.walk_list walk_tparam tparams;
-      W.walk_list walk_param params
   | ExternObjectD { id; tparams; mthds; annos = _annos } ->
       walk_id id;
       W.walk_list walk_tparam tparams;
-      W.walk_list walk_decl mthds
+      W.walk_list walk_mthd mthds
   | PackageTypeD { id; tparams; cparams; annos = _annos } ->
       walk_id id;
       W.walk_list walk_tparam tparams;
@@ -319,6 +311,10 @@ let walk_table_default (walker : walker) table_default =
 let walk_table_custom (walker : walker) table_custom =
   W.walk_table_custom walker table_custom
 
+(* Methods *)
+
+let walk_mthd (walker : walker) mthd = W.walk_mthd walker mthd
+
 (* Program *)
 
 let walk_program (walker : walker) program = W.walk_program walker program
@@ -364,5 +360,6 @@ let walker : walker =
     walk_table_entries;
     walk_table_default;
     walk_table_custom;
+    walk_mthd;
     walk_program;
   }

@@ -613,13 +613,13 @@ and transform_serial_fields (fields : (Text.t * Expression.t) list) :
       (transform_member field, transform_expr value))
     fields
 
-and transform_method (mthd : MethodPrototype.t) : El.decl =
+and transform_method (mthd : MethodPrototype.t) : El.mthd =
   match mthd with
   | Constructor { name; params; tags = at; annotations } ->
       let id = transform_id name in
       let cparams = transform_params params in
       let annos = transform_annos annotations in
-      El.ExternConstructorD { id; cparams; annos } $ at
+      L.ExternConsM { id; cparams; annos } $ at
   | AbstractMethod { name; return; type_params; params; tags = at; annotations }
     ->
       let id = transform_id name in
@@ -627,16 +627,16 @@ and transform_method (mthd : MethodPrototype.t) : El.decl =
       let tparams = transform_tparams type_params in
       let params = transform_params params in
       let annos = transform_annos annotations in
-      El.ExternAbstractMethodD { id; typ_ret; tparams; params; annos } $ at
+      L.ExternAbstractM { id; typ_ret; tparams; params; annos } $ at
   | Method { name; return; type_params; params; tags = at; annotations } ->
       let id = transform_id name in
       let typ_ret = transform_type return in
       let tparams = transform_tparams type_params in
       let params = transform_params params in
       let annos = transform_annos annotations in
-      El.ExternMethodD { id; typ_ret; tparams; params; annos } $ at
+      L.ExternM { id; typ_ret; tparams; params; annos } $ at
 
-and transform_methods (mthds : MethodPrototype.t list) : El.decl list =
+and transform_methods (mthds : MethodPrototype.t list) : El.mthd list =
   List.map transform_method mthds
 
 (* Parser state machine *)
