@@ -60,5 +60,5 @@ rule Method_ok/externt:
   ----
   -- (Type_ok: p C |- targ: typ_a)*
   ----
-  -- if funcdef = $find_fdenv(fmap_b, member)
+  -- if funcdef = $find_env(fid, funcdef, fmap_b, member)
   -- if functyp = $specialize_funcdef(funcdef, typ_a*)

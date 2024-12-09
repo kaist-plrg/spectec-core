@@ -19,6 +19,7 @@ syntax basetyp =
 syntax deftyp =
   | VarT id                         hint(show VAR#_#T %)
   | SpecT typdef typ*               hint(show SPEC#_#T %#%latex("\\langle")#%#%latex("\\rangle"))
+  | DefT typ                        hint(show DEF#_#T %)
   | NewT id typ                     hint(show NEW#_#T % %)
   | EnumT id member*                hint(show ENUM#_#T % %latex("\\{")#%#%latex("\\}"))
   | SEnumT id typ (member, val)*    hint(show SENUM#_#T % %latex("\\{")#%#%latex("\\}"))
@@ -28,9 +29,9 @@ syntax deftyp =
   | StructT id (member, typ)*       hint(show STRUCT#_#T % %latex("\\{")#%#%latex("\\}"))
   | HeaderT id (member, typ)*       hint(show HEADER#_#T % %latex("\\{")#%#%latex("\\}"))
   | UnionT id (member, typ)*        hint(show UNION#_#T % %latex("\\{")#%#%latex("\\}"))
-  | ExternT id fmap(funcdef)        hint(show EXTERN#_#T % %)
-  | ParserT paramtyp*   hint(show PARSER#_#T (%))
-  | ControlT paramtyp*  hint(show CONTROL#_#T (%))
+  | ExternT id map(fid, funcdef)    hint(show EXTERN#_#T % %)
+  | ParserT paramtyp*               hint(show PARSER#_#T (%))
+  | ControlT paramtyp*              hint(show CONTROL#_#T (%))
   | PackageT typ*                   hint(show PACKAGE#_#T %)
   | TableT typ                      hint(show TABLE#_#T %)
 
@@ -56,26 +57,9 @@ var styp : synthtyp
 
 ;; Type Definition
 
-syntax typdef
-
-syntax typdef/mono =
-  | DefD typ                        hint(show DEF#_#D %)
-  | NewD id typ                     hint(show NEW#_#D % %)
-  | EnumD id member*                hint(show ENUM#_#D % %latex("\\{")#%#%latex("\\}"))
-  | SEnumD id typ (member, val)*    hint(show SENUM#_#D % % %latex("\\{")#%#%latex("\\}"))
-  | ...
-
-syntax typdef/poly = ...
-  | ListD tparam typ                          hint(show LIST#_#D#%latex("\\langle")#%#%latex("\\rangle") %)
-  | TupleD tparam* typ*                       hint(show TUPLE#_#D#%latex("\\langle")#%#%latex("\\rangle") %)
-  | StackD tparam typ int                     hint(show STACK#_#D#%latex("\\langle")#%#%latex("\\rangle") %#`[%])
-  | StructD id tparam* (member, typ)*         hint(show STRUCT#_#D %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
-  | HeaderD id tparam* (member, typ)*         hint(show HEADER#_#D %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
-  | UnionD id tparam* (member, typ)*          hint(show UNION#_#D %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
-  | ExternD id tparam* fmap(funcdef)          hint(show EXTERN#_#D %#%latex("\\langle")#%#%latex("\\rangle") %)
-  | ParserD tparam* paramtyp*     hint(show PARSER#_#D#%latex("\\langle")#%#%latex("\\rangle") (%))
-  | ControlD tparam* paramtyp*    hint(show CONTROL#_#D#%latex("\\langle")#%#%latex("\\rangle") (%))
-  | PackageD tparam* typ*                     hint(show PACKAGE#_#D#%latex("\\langle")#%#%latex("\\rangle") %)
+syntax typdef =
+  | MonoD typ           hint(show MONO#_#D %)
+  | PolyD tparam* typ   hint(show POLY#_#D % %latex("\\rightarrow") %)
 
 
 ;; Function Type
@@ -94,19 +78,9 @@ syntax functyp =
 
 ;; Function Definition
 
-syntax funcdef
-
-syntax funcdef/mono =
-  | ActionD paramtyp*                 hint(show ACTION#_#D (%))
-  | ParserApplyMethodD paramtyp*      hint(show PARSER#_#APPLY#_#METHOD#_#D (%))
-  | ControlApplyMethodD paramtyp*     hint(show CONTROL#_#APPLY#_#METHOD#_#D (%))
-  | ...
-
-syntax funcdef/poly = ...
-  | ExternFunctionD tparam* paramtyp* typ         hint(show EXTERN#_#FUNCTION#_#D#%latex("\\langle")#%L#%latex("\\rangle") (%) %latex("\\rightarrow") %)
-  | FunctionD tparam* paramtyp* typ               hint(show FUNCTION#_#D#%latex("\\langle")#%L#%latex("\\rangle") (%) %latex("\\rightarrow") %)
-  | ExternMethodD tparam* paramtyp* typ           hint(show EXTERN#_#METHOD#_#D#%latex("\\langle")#%L#%latex("\\rangle") (%) %latex("\\rightarrow") %)
-  | ExternAbstractMethodD tparam* paramtyp* typ   hint(show EXTERN#_#ABSTRACT#_#METHOD#_#D#%latex("\\langle")#%L#%latex("\\rangle") (%) %latex("\\rightarrow") %)
+syntax funcdef =
+  | MonoFD functyp            hint(show MONO#_#FD %)
+  | PolyFD tparam* functyp    hint(show POLY#_#FD % %latex("\\rightarrow") %)
 
 
 ;; Constructor Type
@@ -130,7 +104,9 @@ def $specialize_typdef(typdef, typ*) : typ  hint(show %#%latex("\\langle")#%#%la
 
 def $specialize_funcdef(funcdef, typ*) : functyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
+def $specialize_consdef(consdef, typ*) : constyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
+
 
 ;; Saturation
 
-def $saturate_typ(typ) : typ
+def $saturate_typ(typ) : typ  hint(show %#%latex("|_{\\mathtt{norm}}"))

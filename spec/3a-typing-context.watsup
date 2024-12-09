@@ -4,11 +4,24 @@ syntax cursor = GLOBAL | BLOCK | LOCAL
 
 var p : cursor
 
+
 ;; Control Flow
 
 syntax flow = CONT | RET
 
-;; Global Layer
+var f : flow
+
+def $join_flow(flow*) : flow  hint(show %latex("\\sqcup") %)
+def $join_flow(f*) = RET
+  -- if f* =/= eps
+  -- if (f = RET)*
+def $join_flow(f*) = CONT
+  -- otherwise
+
+
+;; Layered context
+
+;; Global layer
 
 syntax glayer =
   { CDENV cdenv,
@@ -16,7 +29,7 @@ syntax glayer =
     FDENV fdenv,
     FRAME (venv, tenv) }
 
-;; Block Layer
+;; Block layer
 
 syntax bkind = EMPTY | EXTERN | PARSER | CONTROL | PACKAGE
 
@@ -28,7 +41,7 @@ syntax blayer =
     FDENV fdenv,
     FRAME (venv, tenv) }
 
-;; Local Layer
+;; Local layer
 
 syntax lkind =
   | EMPTY
@@ -48,7 +61,7 @@ syntax llayer =
     TDENV tdenv,
     FRAMES (venv, tenv)* }
 
-;; Typing Context
+;; Typing context
 
 syntax context = 
   { GLOBAL glayer,
@@ -56,6 +69,18 @@ syntax context =
     LOCAL llayer }
 
 var C : context
+
+
+;; Scope management
+
+def $enter(context) : context   hint(show ENTER %)
+def $exit(context) : context    hint(show EXIT %)
+
+def $find_returntyp(lkind) : typ
+def $find_returntyp(FUNC typ) = typ
+def $find_returntyp(ACTION) = VoidT
+def $find_returntyp(EXTERNABSTRACTMETHOD typ) = typ
+def $find_returntyp(CONTROLAPPLYMETHOD) = VoidT
 
 ;; Adders
 
@@ -67,6 +92,7 @@ def $add_typdef(cursor, context, tid, typdef): context   hint(show %2.%1#%latex(
 
 def $add_funcdef(cursor, context, fid, funcdef): context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
+
 ;; Finders
 
 def $find_val(cursor, context, name) : val  hint(show %2#%latex("@")#%1#`[%3])
@@ -76,3 +102,5 @@ def $find_typ(cursor, context, name) : typ  hint(show %2#%latex("@")#%1#`[%3])
 def $find_typdef(cursor, context, name) : typdef  hint(show %2#%latex("@")#%1#`[%3])
 
 def $find_funcdef(cursor, context, name) : funcdef  hint(show %2#%latex("@")#%1#`[%3])
+
+def $find_consdef(cursor, context, name) : consdef  hint(show %2#%latex("@")#%1#`[%3])

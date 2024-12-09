@@ -166,14 +166,14 @@ rule Expr_ok/arracce-tuplet:
   ----
   -- if typ_i' = IntT \/ typ_i' = FIntT w \/ typ_i' = FBitT w
   ----
-  -- if TupleT typs_b_in* = $saturate_typ(typ_b)
+  -- if TupleT typs_b'* = $saturate_typ(typ_b)
   -- Eval_static: p C |- expr_i ~> val_i
   -- if i = $reduce_num(val_i)
-  -- if typ = typs_b_in*[i]
+  -- if typ = typs_b'*[i]
 
 ;; TODO add bounds check if expr_i is compile-time known
 rule Expr_ok/arracce-stackt:
-  p C |- ArrAccE expr_b expr_i : typ_b_in
+  p C |- ArrAccE expr_b expr_i : typ_b'
   ----
   -- Expr_ok: p C |- expr_b : typ_b
   -- Expr_ok: p C |- expr_i : typ_i
@@ -181,7 +181,7 @@ rule Expr_ok/arracce-stackt:
   ----
   -- if typ_i' = IntT \/ typ_i' = FIntT w_i' \/ typ_i' = FBitT w_i'
   ----
-  -- if StackT typ_b_in size = $saturate_typ(typ_b)
+  -- if StackT typ_b' size = $saturate_typ(typ_b)
 
 
 ;; Bitstring access expression
@@ -216,22 +216,22 @@ rule Expr_ok/bitacce:
 
 rule Expr_ok/erracce:
   p C |- ErrAccE member : ErrT
-  -- if tid = $concat_text("error.", member)
-  -- if ErrV member = $find_val(p, C, CURRENT tid)
+  -- if id = $concat_texts("error." member)
+  -- if ErrV member = $find_val(p, C, TOP id)
 
 
 ;; Type access expression
 
 rule Expr_ok/typeacce-enumt:
   p C |- TypeAccE name member : SpecT td eps
-  -- if td = $find_typdef(p, C, name)
-  -- if EnumD id_t member_t* = td
+  -- if MonoD typ = $find_typdef(p, C, name)
+  -- if EnumT id_t member_t* = typ
   -- if member <- member_t*
 
 rule Expr_ok/typeacce-senumt:
   p C |- TypeAccE name member : SpecT td eps
-  -- if td = $find_typdef(p, C, name)
-  -- if SEnumD id_t typ_t (member_t, val_t)* = td
+  -- if MonoD typ = $find_typdef(p, C, name)
+  -- if SEnumT id_t typ_t (member_t, val_t)* = typ
   -- if member <- member_t*
 
 
@@ -241,15 +241,15 @@ rule Expr_ok/expracce-stackt-last-lastindex:
   p C |- ExprAccE expr_b member : FBitT 32
   ----
   -- Expr_ok: p C |- expr_b : typ_b
-  -- if StackT typ_b_in size = $saturate_typ(typ_b)
+  -- if StackT typ_b' size = $saturate_typ(typ_b)
   ----
   -- if $in_set(member, "last" "lastIndex")
 
 rule Expr_ok/expracce-stackt-next-last:
-  p C |- ExprAccE expr_b member : typ_b_in
+  p C |- ExprAccE expr_b member : typ_b'
   ----
   -- Expr_ok: p C |- expr_b : typ_b
-  -- if StackT typ_b_in size = $saturate_typ(typ_b)
+  -- if StackT typ_b' size = $saturate_typ(typ_b)
   ----
   -- if $in_set(member, "next" "last")
 
@@ -257,33 +257,33 @@ rule Expr_ok/expracce-structt:
   p C |- ExprAccE expr_b member : typ
   ----
   -- Expr_ok: p C |- expr_b : typ_b
-  -- if StructT id_b (member_b, typ_b_in)* = $saturate_typ(typ_b)
+  -- if StructT id_b (member_b, typ_b')* = $saturate_typ(typ_b)
   ----
-  -- if (member, typ) <- (member_b, typ_b_in)*
+  -- if (member, typ) <- (member_b, typ_b')*
 
 rule Expr_ok/expracce-headert:
   p C |- ExprAccE expr_b member : typ
   ----
   -- Expr_ok: p C |- expr_b : typ_b
-  -- if HeaderT id_b (member_b, typ_b_in)* = $saturate_typ(typ_b)
+  -- if HeaderT id_b (member_b, typ_b')* = $saturate_typ(typ_b)
   ----
-  -- if (member, typ) <- (member_b, typ_b_in)*
+  -- if (member, typ) <- (member_b, typ_b')*
 
 rule Expr_ok/expracce-uniont:
   p C |- ExprAccE expr_b member : typ
   ----
   -- Expr_ok: p C |- expr_b : typ_b
-  -- if UnionT id_b (member_b, typ_b_in)* = $saturate_typ(typ_b)
+  -- if UnionT id_b (member_b, typ_b')* = $saturate_typ(typ_b)
   ----
-  -- if (member, typ) <- (member_b, typ_b_in)*
+  -- if (member, typ) <- (member_b, typ_b')*
 
 rule Expr_ok/expracce-tablestructt:
   p C |- ExprAccE expr_b member : typ
   ----
   -- Expr_ok: p C |- expr_b : typ_b
-  -- if TableStructT id_b (member_b, typ_b_in)* = $saturate_typ(typ_b)
+  -- if TableStructT id_b (member_b, typ_b')* = $saturate_typ(typ_b)
   ----
-  -- if (member, typ) <- (member_b, typ_b_in)*
+  -- if (member, typ) <- (member_b, typ_b')*
 
 
 ;; Function call expression
@@ -295,6 +295,7 @@ rule Expr_ok/callfunce:
   ----
   -- Call_ok: p C |- functyp arg* : typ
   -- if typ =/= VoidT
+
 
 ;; Method call expression
 
@@ -324,3 +325,42 @@ rule Expr_ok/calltypee:
 
 
 ;; Nameless instantiation expression
+
+rule Expr_ok/inste:
+  p C |- InstE name targ* arg* : typ
+  -- (Type_ok: p C |- targ : typ_a)*
+  -- if consdef = $find_consdef(p, C, name)
+  -- if constyp = $specialize_consdef(consdef, typ_a*)
+  -- Inst_ok: p C |- constyp arg* : typ
+
+
+;; L-value expression
+
+def $assignable(typ) : bool
+
+def $assignable(DefT typ) = $assignable(typ)
+def $assignable(NewT id typ) = $assignable(typ)
+def $assignable(ParserT paramtyp*) = false
+def $assignable(ControlT paramtyp*) = false
+def $assignable(PackageT typ*) = false
+def $assignable(TableT typ) = false
+def $assignable(styp) = false
+def $assignable(typ) = true
+  -- otherwise
+
+rule Lval_ok/namee:
+  p C |- NameE name : OK
+  -- if typ = $find_typ(p, C, name)
+  -- if $assignable(typ)
+
+rule Lval_ok/arracce:
+  p C |- ArrAccE expr_b expr_i : OK
+  -- Lval_ok: p C |- expr_b : OK
+
+rule Lval_ok/bitacce:
+  p C |- BitAccE expr_b expr_l expr_h : OK
+  -- Lval_ok: p C |- expr_b : OK
+
+rule Lval_ok/expracce:
+  p C |- ExprAccE expr_b member : OK
+  -- Lval_ok: p C |- expr_b : OK

@@ -51,7 +51,7 @@ module Type = struct
     | StackT (typ_inner, _) -> is_ground typ_inner
     | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
         List.map snd fields |> List.for_all is_ground
-    | ExternT _ | ParserT _ | ControlT _ | PackageT _ | AnyT -> true
+    | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ | AnyT -> true
     | TableEnumT _ | TableStructT _ -> true
     | SeqT typs_inner | SeqDefaultT typs_inner ->
         List.for_all is_ground typs_inner
@@ -60,7 +60,23 @@ module Type = struct
     | DefaultT | InvalidT -> true
     | SetT typ_inner -> is_ground typ_inner
     | StateT -> true
-    | TableT _ -> true
+
+  let rec is_assignable typ =
+    let typ = canon_typ typ in
+    match typ with
+    | SpecT _ | DefT _ -> assert false
+    | VoidT -> false
+    | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _
+    | VarT _ ->
+        true
+    | NewT (_, typ_inner) -> is_assignable typ_inner
+    | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
+    | UnionT _ ->
+        true
+    | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ | AnyT
+    | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
+    | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
+        false
 
   let rec is_defaultable typ =
     let typ = canon_typ typ in
@@ -79,9 +95,9 @@ module Type = struct
     | StackT (typ_inner, _) -> is_defaultable typ_inner
     | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
         List.map snd fields |> List.for_all is_defaultable
-    | ExternT _ | ParserT _ | ControlT _ | PackageT _ | AnyT | TableEnumT _
-    | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _
-    | DefaultT | InvalidT | SetT _ | StateT | TableT _ ->
+    | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ | AnyT
+    | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
+    | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
         false
 
   let rec can_equals typ =
@@ -99,8 +115,8 @@ module Type = struct
     | StackT (typ_inner, _) -> can_equals typ_inner
     | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
         List.map snd fields |> List.for_all can_equals
-    | ExternT _ | ParserT _ | ControlT _ | PackageT _ | AnyT | TableEnumT _
-    | TableStructT _ ->
+    | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ | AnyT
+    | TableEnumT _ | TableStructT _ ->
         false
     | SeqT typs_inner -> List.for_all can_equals typs_inner
     | SeqDefaultT _ -> false
@@ -108,7 +124,7 @@ module Type = struct
     | RecordDefaultT _ -> false
     | DefaultT -> false
     | InvalidT -> true
-    | SetT _ | StateT | TableT _ -> false
+    | SetT _ | StateT -> false
 end
 
 module TypeDef = struct

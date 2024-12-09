@@ -14,6 +14,11 @@ relation Call_ok: cursor context |- functyp arg* : typ
 relation Func_ok: cursor context |- name targ* arg* : functyp
 relation Method_ok: cursor context |- expr member targ* arg* : functyp
 
+relation Inst_ok: cursor context |- constyp arg* : typ
+
+relation Lval_ok: cursor context |- expr : OK
+
 relation Expr_ok: cursor context |- expr : typ
-relation Stmt_ok: cursor context flow |- stmt : OK
+relation Stmt_ok: cursor context flow |- stmt : context flow
+relation Stmts_ok: cursor context flow |- stmt* : context flow
 relation Decl_ok: cursor context |- decl : context

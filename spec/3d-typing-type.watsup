@@ -29,26 +29,26 @@ rule Type_ok/vbitt:
   -- if w = $reduce_num(val)
 
 rule Type_ok/stackt:
-  p C |- StackT type expr : SpecT typdef (VarT tid)
+  p C |- StackT type expr : SpecT typdef typ
   ----
   -- Type_ok: p C |- type : typ
   -- Eval_static: p C |- expr ~> val
   -- if s = $reduce_num(val)
   ----
   -- if tid = $fresh_tid()
-  -- if typdef = StackD tid typ s
+  -- if typdef = PolyD tid (StackT (VarT tid) s)
 
 rule Type_ok/listt:
-  p C |- ListT type : SpecT typdef (VarT tid)
+  p C |- ListT type : SpecT typdef typ
   -- Type_ok: p C |- type : typ
   -- if tid = $fresh_tid()
-  -- if typdef = ListD tid typ
+  -- if typdef = PolyD tid (ListT (VarT tid))
 
 rule Type_ok/tuplet:
-  p C |- TupleT type* : SpecT typdef (VarT tid)*
+  p C |- TupleT type* : SpecT typdef typ*
   -- (Type_ok: p C |- type : typ)*
   -- if (tid = $fresh_tid())*
-  -- if typdef = TupleD tid* typ*
+  -- if typdef = PolyD tid* (TupleT (VarT tid)*)
 
 ;; TODO handle the case where it is a type parameter
 rule Type_ok/namet:

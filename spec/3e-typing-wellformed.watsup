@@ -2,5 +2,5 @@ rule Type_wf/basetyp:
   btyp : OK
 
 rule Type_wf/deftyp:
-  ListT typ*
-  -- (Type_wf: typ : OK)*
+  ListT typ : OK
+  -- Type_wf: typ : OK

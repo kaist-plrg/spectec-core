@@ -177,6 +177,7 @@ syntax switchlabel =
 syntax switchcase = 
   | MatchC switchlabel block  hint(show CASE % %)
   | FallC switchlabel         hint(show CASE %)
+
 ;; Parser state machine
 
 syntax parserstate = statelabel block

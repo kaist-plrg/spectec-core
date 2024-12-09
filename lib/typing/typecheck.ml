@@ -260,18 +260,12 @@ and check_lvalue' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_il : Il.Ast.expr) :
           var;
         assert false);
       let typ, dir, _ = Option.get rtype in
-      match dir with In | No -> false | _ -> check_lvalue_type typ)
+      match dir with In | No -> false | _ -> Type.is_assignable typ)
   | ArrAccE { expr_base; _ }
   | BitAccE { expr_base; _ }
   | ExprAccE { expr_base; _ } ->
       check_lvalue' cursor ctx expr_base
   | _ -> false
-
-and check_lvalue_type (typ : Type.t) : bool =
-  match typ with
-  | NewT (_, typ_inner) -> check_lvalue_type typ_inner
-  | ExternT _ | ParserT _ | ControlT _ | PackageT _ | AnyT -> false
-  | _ -> true
 
 (* Type evaluation *)
 
@@ -2761,8 +2755,6 @@ and type_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
 
    It contains a sequence of statements and declarations, which are executed sequentially.
    The variables and constants within a block statement are only visible within the block. *)
-
-(* (CHECK) Can context ever change after type checking a block? *)
 
 and type_block (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (block : El.Ast.block) : Ctx.t * Flow.t * Il.Ast.block =

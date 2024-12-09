@@ -1,25 +1,16 @@
 ;; Set and map
 
-syntax set(syntax K) = K*
-syntax map(syntax K, syntax V) = (K, V)*
+syntax set(syntax K) = SET K*   hint(show %latex("\\{") % %latex("\\}"))
+syntax map(syntax K, syntax V) = MAP (K, V)*  hint(show %latex("\\{") % %latex("\\}"))
 
 ;; Display Hack to enclose the set in curly braces
 def $in_set(syntax K, K*) : bool   hint(show % <- %latex("\\{") % %latex("\\}"))
 
-;; Map on id domain
-
-syntax imap(syntax V) = map(id, V)
-
-
-;; Map on tid domain
+;; Identifiers
 
 syntax tid = id
-syntax tmap(syntax V) = map(tid, V)
 
 def $fresh_tid() : tid  hint(show FRESH#_#TID)
 
-;; Map on fid domain
-
 ;; TODO fid should handle overload resolution
 syntax fid = id
-syntax fmap(syntax V) = map(fid, V)

@@ -1,1 +1,1 @@
-def $concat_text(text, text) : text   hint(show %#%latex("++")#%)
+def $concat_texts(text*) : text   hint(show %)
