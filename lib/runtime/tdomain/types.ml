@@ -135,6 +135,7 @@ module TypeDef = struct
   let free = free_typdef
   let subst = subst_typdef
   let specialize = specialize_typdef
+  let specialize_poly = specialize_typdef_poly
 end
 
 module FuncType = struct

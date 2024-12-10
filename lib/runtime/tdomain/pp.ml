@@ -40,14 +40,10 @@ and pp_typ fmt typ =
   | FBitT width -> F.fprintf fmt "bit<%a>" Bigint.pp width
   | VBitT width -> F.fprintf fmt "varbit<%a>" Bigint.pp width
   | VarT id -> P.pp_id' fmt id
-  | SpecT (td, typs) -> (
-      match td with
-      | MonoD typ ->
-          assert (typs = []);
-          pp_typ fmt typ
-      | PolyD (tparams, tparams_hidden, typ) ->
-          F.fprintf fmt "(%a<%a @@ %a>)<%a>" pp_typ typ pp_tparams tparams
-            pp_tparams tparams_hidden (P.pp_list pp_typ ", ") typs)
+  | SpecT (tdp, typs) ->
+      let tparams, tparams_hidden, typ = tdp in
+      F.fprintf fmt "(%a<%a @@ %a>)<%a>" pp_typ typ pp_tparams tparams
+        pp_tparams tparams_hidden (P.pp_list pp_typ ", ") typs
   | DefT typ -> F.fprintf fmt "typedef %a" pp_typ typ
   | NewT (id, typ) -> F.fprintf fmt "type %a (%a)" P.pp_id' id pp_typ typ
   | EnumT (id, fields) ->
@@ -105,10 +101,17 @@ and pp_typ fmt typ =
 
 and pp_typdef fmt typdef =
   match typdef with
-  | MonoD typ -> F.fprintf fmt "%a" pp_typ typ
-  | PolyD (tparams, tparams_hidden, typ) ->
-      F.fprintf fmt "%a<%a @@ %a>" pp_typ typ pp_tparams tparams pp_tparams
-        tparams_hidden
+  | MonoD tdm -> pp_typdef_mono fmt tdm
+  | PolyD tdp -> pp_typdef_poly fmt tdp
+
+and pp_typdef_mono fmt tdm = pp_typ fmt tdm
+
+and pp_typdef_poly fmt tdp =
+  let tparams, tparams_hidden, typ = tdp in
+  F.fprintf fmt "%a<%a @@ %a>" pp_typ typ pp_tparams tparams pp_tparams
+    tparams_hidden
+
+(* Member definitions *)
 
 (* Function types *)
 

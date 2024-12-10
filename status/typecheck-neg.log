@@ -183,7 +183,7 @@ Error while typechecking p4 file: test/program/ill-typed/functors2_e.p4
 Error while typechecking p4 file: test/program/ill-typed/functors3_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/generic1_e.p4
-(specialize_typdef) Type definition extern If { id(d) : extern_method(in d T) -> T< @ > }<T @ > expects 1 type arguments but 0 were given
+(specialize_typdef_poly) Type definition extern If { id(d) : extern_method(in d T) -> T< @ > }<T @ > expects 1 type arguments but 0 were given
 Error while typechecking p4 file: test/program/ill-typed/generic1_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/globalVar_e.p4
@@ -412,7 +412,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3153.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3170-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3170.p4
-(specialize_typdef) Type definition header t { y tt }<tt @ > expects 1 type arguments but 0 were given
+(specialize_typdef_poly) Type definition header t { y tt }<tt @ > expects 1 type arguments but 0 were given
 Error while typechecking p4 file: test/program/ill-typed/issue3170.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3188.p4
@@ -455,7 +455,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3282.p4
 Error while parsing p4 file: test/program/ill-typed/issue3285.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3293.p4
-(specialize_typdef) Type definition struct t1 {  }<t @ > expects 1 type arguments but 0 were given
+(specialize_typdef_poly) Type definition struct t1 {  }<t @ > expects 1 type arguments but 0 were given
 Error while typechecking p4 file: test/program/ill-typed/issue3293.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3299.p4
@@ -467,7 +467,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3299.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3304.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3305.p4
-(specialize_typdef) Type definition struct s1 { field t }<t @ > expects 1 type arguments but 0 were given
+(specialize_typdef_poly) Type definition struct s1 { field t }<t @ > expects 1 type arguments but 0 were given
 Error while typechecking p4 file: test/program/ill-typed/issue3305.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3316.p4
@@ -656,7 +656,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue816.p4
 Error while typechecking p4 file: test/program/ill-typed/issue818.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue819-1.p4
-(specialize_typdef) Type definition extern WrapControls { execute1() : extern_method() -> void< @ >
+(specialize_typdef_poly) Type definition extern WrapControls { execute1() : extern_method() -> void< @ >
 execute2() : extern_method() -> void< @ > }<T1, T2 @ > expects 2 type arguments but 0 were given
 Error while typechecking p4 file: test/program/ill-typed/issue819-1.p4
 

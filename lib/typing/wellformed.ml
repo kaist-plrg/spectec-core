@@ -118,8 +118,8 @@ and check_valid_typ' (tset : TIdSet.t) (typ : Type.t) : unit =
         Format.printf "(check_valid_typ) %s is a free type variable\n" id;
         assert false)
       else ()
-  | SpecT (td, typs_inner) ->
-      TypeDef.specialize td typs_inner |> check_valid_typ' tset
+  | SpecT (tdp, typs_inner) ->
+      TypeDef.specialize_poly tdp typs_inner |> check_valid_typ' tset
   | DefT typ_inner ->
       check_valid_typ' tset typ_inner;
       check_valid_typ_nesting typ typ_inner
@@ -191,8 +191,9 @@ and check_valid_typ_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | ErrT -> true
       | MatchKindT -> false
       | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-      | SpecT (td_inner, typs_inner) ->
-          TypeDef.specialize td_inner typs_inner |> check_valid_typ_nesting' typ
+      | SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
+          |> check_valid_typ_nesting' typ
       | DefT typ_inner -> check_valid_typ_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_typ_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
@@ -211,8 +212,9 @@ and check_valid_typ_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | FIntT _ | FBitT _ -> true
       | VBitT _ -> false
       | VarT _ -> true
-      | SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner |> check_valid_typ_nesting' typ
+      | SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
+          |> check_valid_typ_nesting' typ
       | DefT typ_inner -> check_valid_typ_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_typ_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
@@ -230,8 +232,9 @@ and check_valid_typ_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | FIntT _ | FBitT _ -> true
       | VBitT _ -> false
       | VarT _ -> true
-      | SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner |> check_valid_typ_nesting' typ
+      | SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
+          |> check_valid_typ_nesting' typ
       | DefT typ_inner -> check_valid_typ_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_typ_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
@@ -248,8 +251,9 @@ and check_valid_typ_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _
       | VarT _ ->
           true
-      | SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner |> check_valid_typ_nesting' typ
+      | SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
+          |> check_valid_typ_nesting' typ
       | DefT typ_inner -> check_valid_typ_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_typ_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
@@ -268,8 +272,9 @@ and check_valid_typ_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | BoolT -> true
       | IntT -> false
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-      | SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner |> check_valid_typ_nesting' typ
+      | SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
+          |> check_valid_typ_nesting' typ
       | DefT typ_inner -> check_valid_typ_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_typ_nesting' typ typ_inner
       | EnumT _ | SEnumT _ -> true
@@ -286,8 +291,9 @@ and check_valid_typ_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VBitT _ ->
           false
       | VarT _ -> true
-      | SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner |> check_valid_typ_nesting' typ
+      | SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
+          |> check_valid_typ_nesting' typ
       | DefT typ_inner -> check_valid_typ_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_typ_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _ -> false
@@ -305,8 +311,9 @@ and check_valid_typ_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | BoolT -> true
       | IntT -> false
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-      | SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner |> check_valid_typ_nesting' typ
+      | SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
+          |> check_valid_typ_nesting' typ
       | DefT typ_inner -> check_valid_typ_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_typ_nesting' typ typ_inner
       | EnumT _ | SEnumT _ -> true
@@ -323,8 +330,9 @@ and check_valid_typ_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | BoolT -> true
       | IntT -> false
       | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-      | SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner |> check_valid_typ_nesting' typ
+      | SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
+          |> check_valid_typ_nesting' typ
       | DefT typ_inner -> check_valid_typ_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_typ_nesting' typ typ_inner
       | EnumT _ -> false
@@ -347,8 +355,9 @@ and check_valid_typ_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | VBitT _ ->
           false
       | VarT _ -> true
-      | SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner |> check_valid_typ_nesting' typ
+      | SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
+          |> check_valid_typ_nesting' typ
       | DefT typ_inner -> check_valid_typ_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_typ_nesting' typ typ_inner
       | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ -> false
@@ -372,8 +381,9 @@ and check_valid_typ_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | FIntT _ | FBitT _ -> true
       | VBitT _ -> false
       | VarT _ -> false
-      | SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner |> check_valid_typ_nesting' typ
+      | SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
+          |> check_valid_typ_nesting' typ
       | DefT typ_inner -> check_valid_typ_nesting' typ typ_inner
       | NewT (_id, typ_inner) -> check_valid_typ_nesting' typ typ_inner
       | EnumT _ | SEnumT _ -> true
@@ -585,8 +595,8 @@ and check_valid_functyp_nesting' (ft : FuncType.t) (dir : Lang.Ast.dir')
       | (In | Out | InOut), StrT
       | _, (ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _) ->
           false
-      | _, SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner
+      | _, SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
           |> check_valid_functyp_nesting' ft dir
       | _ -> true)
   | ExternFunctionT _ -> (
@@ -594,8 +604,8 @@ and check_valid_functyp_nesting' (ft : FuncType.t) (dir : Lang.Ast.dir')
       | (In | Out | InOut), (StrT | IntT)
       | _, (ParserT _ | ControlT _ | PackageT _ | TableT _) ->
           false
-      | _, SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner
+      | _, SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
           |> check_valid_functyp_nesting' ft dir
       | _ -> true)
   | FunctionT _ -> (
@@ -603,8 +613,8 @@ and check_valid_functyp_nesting' (ft : FuncType.t) (dir : Lang.Ast.dir')
       | (In | Out | InOut), (StrT | IntT)
       | _, (ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _) ->
           false
-      | _, SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner
+      | _, SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
           |> check_valid_functyp_nesting' ft dir
       | _ -> true)
   | ExternMethodT _ | ExternAbstractMethodT _ -> (
@@ -612,8 +622,8 @@ and check_valid_functyp_nesting' (ft : FuncType.t) (dir : Lang.Ast.dir')
       | (In | Out | InOut), (StrT | IntT)
       | _, (ParserT _ | ControlT _ | PackageT _ | TableT _) ->
           false
-      | _, SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner
+      | _, SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
           |> check_valid_functyp_nesting' ft dir
       | _ -> true)
   | ParserApplyMethodT _ | ControlApplyMethodT _ -> (
@@ -621,8 +631,8 @@ and check_valid_functyp_nesting' (ft : FuncType.t) (dir : Lang.Ast.dir')
       | (In | Out | InOut), (StrT | IntT)
       | _, (ParserT _ | ControlT _ | PackageT _ | TableT _) ->
           false
-      | _, SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner
+      | _, SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
           |> check_valid_functyp_nesting' ft dir
       | _ -> true)
   | _ -> true
@@ -733,26 +743,30 @@ and check_valid_constyp_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
   | ExternT _ -> (
       match typ_inner with
       | ParserT _ | ControlT _ | PackageT _ | TableT _ -> false
-      | SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner |> check_valid_constyp_nesting' typ
+      | SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
+          |> check_valid_constyp_nesting' typ
       | _ -> true)
   | ParserT _ -> (
       match typ_inner with
       | ControlT _ | PackageT _ | TableT _ -> false
-      | SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner |> check_valid_constyp_nesting' typ
+      | SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
+          |> check_valid_constyp_nesting' typ
       | _ -> true)
   | ControlT _ -> (
       match typ_inner with
       | ParserT _ | PackageT _ | TableT _ -> false
-      | SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner |> check_valid_constyp_nesting' typ
+      | SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
+          |> check_valid_constyp_nesting' typ
       | _ -> true)
   | PackageT _ -> (
       match typ_inner with
       | TableT _ -> false
-      | SpecT (td, typs_inner) ->
-          TypeDef.specialize td typs_inner |> check_valid_constyp_nesting' typ
+      | SpecT (tdp_inner, typs_inner) ->
+          TypeDef.specialize_poly tdp_inner typs_inner
+          |> check_valid_constyp_nesting' typ
       | _ -> true)
   | _ -> true
 

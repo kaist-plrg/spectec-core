@@ -24,7 +24,7 @@ and typ =
   (* 2. Derived types *)
   (* 2a. Derived type constructor *)
   | VarT of L.id'
-  | SpecT of typdef * typ list
+  | SpecT of typdef_poly * typ list
   (* 2b. Derived value types *)
   | DefT of typ
   | NewT of L.id' * typ
@@ -56,7 +56,9 @@ and typ =
   | StateT
 
 (* Type definitions *)
-and typdef = MonoD of typ | PolyD of tparam list * tparam list * typ
+and typdef = MonoD of typdef_mono | PolyD of typdef_poly
+and typdef_mono = typ
+and typdef_poly = tparam list * tparam list * typ
 
 (* Function types *)
 and functyp =

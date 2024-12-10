@@ -115,9 +115,11 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
   | VarT tid, typ_arg when TIdMap.mem tid cstr ->
       (* (TODO) Add occurs check? *)
       TIdMap.add tid (Some typ_arg) cstr
-  | SpecT (td_param, typs_inner_param), SpecT (td_arg, typs_inner_arg) ->
-      let typ_param_inner = TypeDef.specialize td_param typs_inner_param in
-      let typ_arg_inner = TypeDef.specialize td_arg typs_inner_arg in
+  | SpecT (tdp_param, typs_inner_param), SpecT (tdp_arg, typs_inner_arg) ->
+      let typ_param_inner =
+        TypeDef.specialize_poly tdp_param typs_inner_param
+      in
+      let typ_arg_inner = TypeDef.specialize_poly tdp_arg typs_inner_arg in
       let cstr_inner = gen_cstr cstr typ_param_inner typ_arg_inner in
       if is_nominal typ_param_inner && is_nominal typ_arg_inner then
         gen_cstrs cstr_inner typs_inner_param typs_inner_arg
@@ -313,20 +315,20 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
       let size =
         expr_size_il |> Static.eval_expr cursor ctx |> it |> Value.get_num
       in
-      let td =
+      let tdp =
         let typ_stack = Types.StackT (Types.VarT "T", size) in
-        Types.PolyD ([ "T" ], [], typ_stack)
+        ([ "T" ], [], typ_stack)
       in
-      let typ = Types.SpecT (td, [ typ_inner.it ]) in
+      let typ = Types.SpecT (tdp, [ typ_inner.it ]) in
       let tids_fresh = tids_fresh @ tids_fresh_inner in
       (typ, tids_fresh)
   | ListT typ_inner ->
       let typ_inner, tids_fresh_inner = eval_type cursor ctx typ_inner in
-      let td =
+      let tdp =
         let typ_list = Types.ListT (Types.VarT "T") in
-        Types.PolyD ([ "T" ], [], typ_list)
+        ([ "T" ], [], typ_list)
       in
-      let typ = Types.SpecT (td, [ typ_inner.it ]) in
+      let typ = Types.SpecT (tdp, [ typ_inner.it ]) in
       let tids_fresh = tids_fresh @ tids_fresh_inner in
       (typ, tids_fresh)
   | TupleT typs_inner ->
@@ -337,22 +339,22 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
             (typs_inner @ [ typ_inner.it ], tids_fresh @ tids_fresh_inner))
           ([], tids_fresh) typs_inner
       in
-      let td =
+      let tdp =
         let tparams =
           List.init (List.length typs_inner) (fun i -> "T" ^ string_of_int i)
         in
         let typs_inner = List.map (fun tparam -> Types.VarT tparam) tparams in
         let typ_tuple = Types.TupleT typs_inner in
-        Types.PolyD (tparams, [], typ_tuple)
+        (tparams, [], typ_tuple)
       in
-      let typ = Types.SpecT (td, typs_inner) in
+      let typ = Types.SpecT (tdp, typs_inner) in
       (typ, tids_fresh)
   | NameT var -> (
       let td = Ctx.find_opt Ctx.find_typedef_opt cursor var ctx in
       match td with
-      | Some (MonoD typ) -> (typ, tids_fresh)
-      | Some (PolyD _ as td) ->
-          let typ = Types.SpecT (td, []) in
+      | Some (MonoD tdm) -> (tdm, tids_fresh)
+      | Some (PolyD tdp) ->
+          let typ = Types.SpecT (tdp, []) in
           (typ, tids_fresh)
       | None ->
           Format.printf "(eval_type') Type definition %a does not exist\n"
@@ -361,8 +363,8 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
   | SpecT (var, typs) -> (
       let td = Ctx.find_opt Ctx.find_typedef_opt cursor var ctx in
       match td with
-      | Some (MonoD typ) -> (typ, tids_fresh)
-      | Some (PolyD _ as td) ->
+      | Some (MonoD tdm) -> (tdm, tids_fresh)
+      | Some (PolyD tdp) ->
           let typs, tids_fresh =
             List.fold_left
               (fun (typs, tids_fresh) typ ->
@@ -370,7 +372,7 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
                 (typs @ [ typ.it ], tids_fresh @ tids_fresh_inner))
               ([], tids_fresh) typs
           in
-          let typ = Types.SpecT (td, typs) in
+          let typ = Types.SpecT (tdp, typs) in
           (typ, tids_fresh)
       | None ->
           Format.printf "(eval_type') Type definition %a does not exist\n"
@@ -3131,8 +3133,8 @@ and check_valid_var_type' (typ : Type.t) : bool =
   | BoolT -> true
   | IntT -> false
   | FIntT _ | FBitT _ | VBitT _ | VarT _ -> true
-  | SpecT (td, typs_inner) ->
-      TypeDef.specialize td typs_inner |> check_valid_var_type'
+  | SpecT (tdp, typs_inner) ->
+      TypeDef.specialize_poly tdp typs_inner |> check_valid_var_type'
   | DefT typ_inner -> check_valid_var_type' typ_inner
   | NewT (_, typ_inner) -> check_valid_var_type' typ_inner
   | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
@@ -3328,8 +3330,8 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       let id, tparams, tparams_hidden, fdenv_extern, typs_inner =
         match typ with
         | SpecT
-            ( PolyD (tparams, tparams_hidden, ExternT (id, fdenv_extern)),
-              typs_inner ) ->
+            ((tparams, tparams_hidden, ExternT (id, fdenv_extern)), typs_inner)
+          ->
             (id, tparams, tparams_hidden, fdenv_extern, typs_inner)
         | _ ->
             Format.printf
@@ -3396,11 +3398,11 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
               assert false
           | _ -> ())
         fdenv_extern;
-      let td =
+      let tdp =
         let typ_extern = Types.ExternT (id, fdenv_extern) in
-        Types.PolyD (tparams, tparams_hidden, typ_extern)
+        (tparams, tparams_hidden, typ_extern)
       in
-      let typ = Types.SpecT (td, typs_inner) in
+      let typ = Types.SpecT (tdp, typs_inner) in
       (typ, init_il)
   in
   let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
@@ -3972,9 +3974,14 @@ and type_extern_constructor_mthd (cursor : Ctx.cursor) (ctx : Ctx.t)
         (cparams_il @ [ cparam_il ], tids_fresh @ tids_fresh_cparam))
       ([], []) cparams
   in
-  let td = Ctx.find_typedef Ctx.Global id.it ctx in
+  let tdp =
+    let td = Ctx.find_typedef Ctx.Global id.it ctx in
+    match td with
+    | Types.PolyD ((_, _, ExternT _) as tdp) -> tdp
+    | _ -> assert false
+  in
   let typ_args = List.map (fun tparam -> Types.VarT tparam.it) tparams in
-  let typ = Types.SpecT (td, typ_args) in
+  let typ = Types.SpecT (tdp, typ_args) in
   let cd =
     let tparams = List.map it tparams in
     let tparams_hidden = tids_fresh in
@@ -4385,8 +4392,8 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
     let typ_parser = Types.ParserT params in
-    let td_parser = Types.PolyD ([], [], typ_parser) in
-    Types.SpecT (td_parser, [])
+    let tdp = ([], [], typ_parser) in
+    Types.SpecT (tdp, [])
   in
   let cd =
     let cparams =
@@ -5439,8 +5446,8 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
     let typ_control = Types.ControlT params in
-    let td_control = Types.PolyD ([], [], typ_control) in
-    Types.SpecT (td_control, [])
+    let tdp = ([], [], typ_control) in
+    Types.SpecT (tdp, [])
   in
   let cd =
     let cparams =
@@ -5495,7 +5502,7 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let tparams_hidden =
     List.map (fun tid_fresh -> tid_fresh $ no_info) tids_fresh
   in
-  let td =
+  let tdp =
     let tparams = List.map it tparams in
     let tparams_hidden = List.map it tparams_hidden in
     let typs_inner =
@@ -5503,14 +5510,15 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
       |> List.map (fun (_, _, typ_inner, _, _) -> typ_inner.it)
     in
     let typ_package = Types.PackageT typs_inner in
-    Types.PolyD (tparams, tparams_hidden, typ_package)
+    (tparams, tparams_hidden, typ_package)
   in
+  let td = Types.PolyD tdp in
   WF.check_valid_typdef cursor ctx td;
   let typ_args =
     List.map (fun tparam -> Types.VarT tparam.it) tparams
     @ List.map (fun tparam_hidden -> Types.VarT tparam_hidden.it) tparams_hidden
   in
-  let typ = Types.SpecT (td, typ_args) in
+  let typ = Types.SpecT (tdp, typ_args) in
   let cd =
     let tparams = List.map it tparams in
     let tparams_hidden = List.map it tparams_hidden in

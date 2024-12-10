@@ -21,7 +21,7 @@ and free_typ (typ : typ) : TIdSet.t =
       TIdSet.empty
   | VarT id -> TIdSet.singleton id
   | SpecT (td, typs_inner) ->
-      free_typdef td |> TIdSet.union (free_typs typs_inner)
+      free_typdef_poly td |> TIdSet.union (free_typs typs_inner)
   | DefT typ_inner | NewT (_, typ_inner) -> free_typ typ_inner
   | EnumT _ -> TIdSet.empty
   | SEnumT (_, typ_inner, _) -> free_typ typ_inner
@@ -51,10 +51,14 @@ and free_typs (typs : typ list) : TIdSet.t =
 
 and free_typdef (td : typdef) : TIdSet.t =
   match td with
-  | MonoD typ_inner -> free_typ typ_inner
-  | PolyD (tparams, tparams_hidden, typ_inner) ->
-      free_typ typ_inner
-      |> TIdSet.diff (TIdSet.of_list (tparams @ tparams_hidden))
+  | MonoD tdm -> free_typdef_mono tdm
+  | PolyD tdp -> free_typdef_poly tdp
+
+and free_typdef_mono (tdm : typdef_mono) : TIdSet.t = free_typ tdm
+
+and free_typdef_poly (tdp : typdef_poly) : TIdSet.t =
+  let tparams, tparams_hidden, typ_inner = tdp in
+  free_typ typ_inner |> TIdSet.diff (TIdSet.of_list (tparams @ tparams_hidden))
 
 (* Function types *)
 

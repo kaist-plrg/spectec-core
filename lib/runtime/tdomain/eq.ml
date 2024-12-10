@@ -40,8 +40,8 @@ and eq_typ typ_a typ_b =
   | VBitT width_a, VBitT width_b ->
       Bigint.(width_a = width_b)
   | VarT id_a, VarT id_b -> E.eq_id' id_a id_b
-  | SpecT (typdef_a, typs_a), SpecT (typdef_b, typs_b) ->
-      eq_typdef typdef_a typdef_b && eq_typs typs_a typs_b
+  | SpecT (tdp_a, typs_a), SpecT (tdp_b, typs_b) ->
+      eq_typdef_poly tdp_a tdp_b && eq_typs typs_a typs_b
   | DefT typ_a, DefT typ_b -> eq_typ typ_a typ_b
   | NewT (id_a, typ_a), NewT (id_b, typ_b) ->
       E.eq_id' id_a id_b && eq_typ typ_a typ_b
@@ -82,20 +82,25 @@ and eq_typs typs_a typs_b = E.eq_list eq_typ typs_a typs_b
 
 (* Type definitions *)
 
-and eq_typdef typdef_a typdef_b =
-  match (typdef_a, typdef_b) with
-  | MonoD typ_a, MonoD typ_b -> eq_typ typ_a typ_b
-  | ( PolyD (tparams_a, tparams_hidden_a, typ_a),
-      PolyD (tparams_b, tparams_hidden_b, typ_b) ) ->
-      eq_tparams tparams_a tparams_b
-      && eq_tparams tparams_hidden_a tparams_hidden_b
-      && eq_typ typ_a typ_b
+and eq_typdef td_a td_b =
+  match (td_a, td_b) with
+  | MonoD tdm_a, MonoD tdm_b -> eq_typdef_mono tdm_a tdm_b
+  | PolyD tdp_a, PolyD tdp_b -> eq_typdef_poly tdp_a tdp_b
   | _ -> false
+
+and eq_typdef_mono tdm_a tdm_b = eq_typ tdm_a tdm_b
+
+and eq_typdef_poly tdp_a tdp_b =
+  let tparams_a, tparams_hidden_a, typ_a = tdp_a in
+  let tparams_b, tparams_hidden_b, typ_b = tdp_b in
+  eq_tparams tparams_a tparams_b
+  && eq_tparams tparams_hidden_a tparams_hidden_b
+  && eq_typ typ_a typ_b
 
 (* Function types *)
 
-and eq_functyp functyp_a functyp_b =
-  match (functyp_a, functyp_b) with
+and eq_functyp ft_a ft_b =
+  match (ft_a, ft_b) with
   | ActionT params_a, ActionT params_b -> eq_params params_a params_b
   | ExternFunctionT (params_a, typ_ret_a), ExternFunctionT (params_b, typ_ret_b)
   | FunctionT (params_a, typ_ret_a), FunctionT (params_b, typ_ret_b)
@@ -160,9 +165,9 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
   | VBitT width_a, VBitT width_b ->
       Bigint.(width_a = width_b)
   | VarT id_a, VarT id_b -> E.eq_id' id_a id_b
-  | SpecT (td_a, typs_inner_a), SpecT (td_b, typs_inner_b) ->
-      let typ_inner_a = Subst.specialize_typdef td_a typs_inner_a in
-      let typ_inner_b = Subst.specialize_typdef td_b typs_inner_b in
+  | SpecT (tdp_a, typs_inner_a), SpecT (tdp_b, typs_inner_b) ->
+      let typ_inner_a = Subst.specialize_typdef_poly tdp_a typs_inner_a in
+      let typ_inner_b = Subst.specialize_typdef_poly tdp_b typs_inner_b in
       eq_typ_alpha typ_inner_a typ_inner_b
       &&
       if is_nominal typ_inner_a && is_nominal typ_inner_b then
