@@ -195,11 +195,11 @@ parser error: File test/program/ill-typed/header1_e.p4, line 18, characters 4-5
 Error while parsing p4 file: test/program/ill-typed/header1_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/header2_e.p4
-(check_valid_type_nesting) Invalid nesting of (parser ()< @ >)<> inside struct s1 { field (parser ()< @ >)<> }
+(check_valid_typ_nesting) Invalid nesting of (parser ()< @ >)<> inside struct s1 { field (parser ()< @ >)<> }
 Error while typechecking p4 file: test/program/ill-typed/header2_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/header3.p4
-(check_valid_type_nesting) Invalid nesting of (tuple<T0, T1><T0, T1 @ >)<bit<1>, bit<1>> inside header H { field1 (tuple<T0, T1><T0, T1 @ >)<bit<1>, bit<1>> }
+(check_valid_typ_nesting) Invalid nesting of (tuple<T0, T1><T0, T1 @ >)<bit<1>, bit<1>> inside header H { field1 (tuple<T0, T1><T0, T1 @ >)<bit<1>, bit<1>> }
 Error while typechecking p4 file: test/program/ill-typed/header3.p4
 
 >>> Running typecheck test on test/program/ill-typed/implicit.p4
@@ -328,7 +328,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue2230.p4
 Error while typechecking p4 file: test/program/ill-typed/issue2267.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2290.p4
-(check_valid_type_nesting) Invalid nesting of (header simple_header { a bit<8> }< @ >)<> inside header nested_header { s (header simple_header { a bit<8> }< @ >)<> }
+(check_valid_typ_nesting) Invalid nesting of (header simple_header { a bit<8> }< @ >)<> inside header nested_header { s (header simple_header { a bit<8> }< @ >)<> }
 Error while typechecking p4 file: test/program/ill-typed/issue2290.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2317.p4
@@ -408,7 +408,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue306.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3153.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3170-1.p4
-(check_valid_type_nesting) Invalid nesting of (struct y { tt (T[2]<T @ >)<(header yy { tt bit<1> }< @ >)<>> }< @ >)<> inside header t { y (struct y { tt (T[2]<T @ >)<(header yy { tt bit<1> }< @ >)<>> }< @ >)<> }
+(check_valid_typ_nesting) Invalid nesting of (struct y { tt (T[2]<T @ >)<(header yy { tt bit<1> }< @ >)<>> }< @ >)<> inside header t { y (struct y { tt (T[2]<T @ >)<(header yy { tt bit<1> }< @ >)<>> }< @ >)<> }
 Error while typechecking p4 file: test/program/ill-typed/issue3170-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3170.p4
@@ -463,7 +463,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3293.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3299.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3304.p4
-(check_valid_type_nesting) Invalid nesting of (parser (in a t)<t @ >)<bit<1>> inside struct s { field (parser (in a t)<t @ >)<bit<1>> }
+(check_valid_typ_nesting) Invalid nesting of (parser (in a t)<t @ >)<bit<1>> inside struct s { field (parser (in a t)<t @ >)<bit<1>> }
 Error while typechecking p4 file: test/program/ill-typed/issue3304.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3305.p4
@@ -474,7 +474,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3305.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3316.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3335.p4
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(check_valid_typ_nesting) Invalid nesting of int inside set<int>
 Error while typechecking p4 file: test/program/ill-typed/issue3335.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3338.p4
@@ -486,7 +486,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3338.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3345.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3346.p4
-(check_valid_type_nesting) Invalid nesting of int inside set<int>
+(check_valid_typ_nesting) Invalid nesting of int inside set<int>
 Error while typechecking p4 file: test/program/ill-typed/issue3346.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3359.p4
@@ -498,7 +498,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3359.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3363.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3378.p4
-(check_valid_type_nesting) Invalid nesting of (package {  }< @ >)<> inside tuple<(package {  }< @ >)<>, (package {  }< @ >)<>>
+(check_valid_typ_nesting) Invalid nesting of (package {  }< @ >)<> inside tuple<(package {  }< @ >)<>, (package {  }< @ >)<>>
 Error while typechecking p4 file: test/program/ill-typed/issue3378.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3442.p4
@@ -538,11 +538,11 @@ Error while typechecking p4 file: test/program/ill-typed/issue3671-2.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3727.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3750-1.p4
-(check_valid_type_nesting) Invalid nesting of (extern ct { apply() : extern_method() -> void< @ > }< @ >)<> inside tuple<(extern ct { apply() : extern_method() -> void< @ > }< @ >)<>>
+(check_valid_typ_nesting) Invalid nesting of (extern ct { apply() : extern_method() -> void< @ > }< @ >)<> inside tuple<(extern ct { apply() : extern_method() -> void< @ > }< @ >)<>>
 Error while typechecking p4 file: test/program/ill-typed/issue3750-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3750.p4
-(check_valid_type_nesting) Invalid nesting of (control ()< @ >)<> inside tuple<(control ()< @ >)<>>
+(check_valid_typ_nesting) Invalid nesting of (control ()< @ >)<> inside tuple<(control ()< @ >)<>>
 Error while typechecking p4 file: test/program/ill-typed/issue3750.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3751.p4
@@ -589,7 +589,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue394.p4
 Error while typechecking p4 file: test/program/ill-typed/issue401.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue407-1.p4
-(check_valid_type_nesting) Invalid nesting of error inside header H { x7 error; x8 bool; x9 enum myenum1 { MY_ENUM1_VAL1, MY_ENUM1_VAL2, MY_ENUM1_VAL3 }; x10 (header Ethernet_h { dstAddr typedef bit<48>; srcAddr typedef bit<48>; etherType bit<16> }< @ >)<>; x11 (T[4]<T @ >)<(header Ethernet_h { dstAddr typedef bit<48>; srcAddr typedef bit<48>; etherType bit<16> }< @ >)<>>; x12 (struct mystruct1 { a bit<4>; b bit<4> }< @ >)<>; x13 (struct mystruct2 { foo (struct mystruct1 { a bit<4>; b bit<4> }< @ >)<>; a bit<4>; b bit<4> }< @ >)<>; x14 typedef (tuple<T0, T1><T0, T1 @ >)<bit<8>, bit<16>> }
+(check_valid_typ_nesting) Invalid nesting of error inside header H { x7 error; x8 bool; x9 enum myenum1 { MY_ENUM1_VAL1, MY_ENUM1_VAL2, MY_ENUM1_VAL3 }; x10 (header Ethernet_h { dstAddr typedef bit<48>; srcAddr typedef bit<48>; etherType bit<16> }< @ >)<>; x11 (T[4]<T @ >)<(header Ethernet_h { dstAddr typedef bit<48>; srcAddr typedef bit<48>; etherType bit<16> }< @ >)<>>; x12 (struct mystruct1 { a bit<4>; b bit<4> }< @ >)<>; x13 (struct mystruct2 { foo (struct mystruct1 { a bit<4>; b bit<4> }< @ >)<>; a bit<4>; b bit<4> }< @ >)<>; x14 typedef (tuple<T0, T1><T0, T1 @ >)<bit<8>, bit<16>> }
 Error while typechecking p4 file: test/program/ill-typed/issue407-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue413.p4
@@ -751,7 +751,7 @@ Error while typechecking p4 file: test/program/ill-typed/parser-arg.p4
 Error while typechecking p4 file: test/program/ill-typed/persistent_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/pr2918.p4
-(check_valid_type_nesting) Invalid nesting of (struct S { b bit<8> }< @ >)<> inside set<(struct S { b bit<8> }< @ >)<>>
+(check_valid_typ_nesting) Invalid nesting of (struct S { b bit<8> }< @ >)<> inside set<(struct S { b bit<8> }< @ >)<>>
 Error while typechecking p4 file: test/program/ill-typed/pr2918.p4
 
 >>> Running typecheck test on test/program/ill-typed/psa-meter2.p4
@@ -759,7 +759,7 @@ Error while typechecking p4 file: test/program/ill-typed/pr2918.p4
 Error while typechecking p4 file: test/program/ill-typed/psa-meter2.p4
 
 >>> Running typecheck test on test/program/ill-typed/psa-type-hdr.p4
-(check_valid_type_nesting) Invalid nesting of (header ipv4_t { version bit<4>; ihl bit<4>; diffserv bit<8>; totalLen bit<16>; identification bit<16>; flags bit<3>; fragOffset bit<13>; ttl bit<8>; protocol bit<8>; hdrChecksum bit<16>; srcAddr bit<32>; dstAddr bit<32> }< @ >)<> inside type IPV4T_t ((header ipv4_t { version bit<4>; ihl bit<4>; diffserv bit<8>; totalLen bit<16>; identification bit<16>; flags bit<3>; fragOffset bit<13>; ttl bit<8>; protocol bit<8>; hdrChecksum bit<16>; srcAddr bit<32>; dstAddr bit<32> }< @ >)<>)
+(check_valid_typ_nesting) Invalid nesting of (header ipv4_t { version bit<4>; ihl bit<4>; diffserv bit<8>; totalLen bit<16>; identification bit<16>; flags bit<3>; fragOffset bit<13>; ttl bit<8>; protocol bit<8>; hdrChecksum bit<16>; srcAddr bit<32>; dstAddr bit<32> }< @ >)<> inside type IPV4T_t ((header ipv4_t { version bit<4>; ihl bit<4>; diffserv bit<8>; totalLen bit<16>; identification bit<16>; flags bit<3>; fragOffset bit<13>; ttl bit<8>; protocol bit<8>; hdrChecksum bit<16>; srcAddr bit<32>; dstAddr bit<32> }< @ >)<>)
 Error while typechecking p4 file: test/program/ill-typed/psa-type-hdr.p4
 
 >>> Running typecheck test on test/program/ill-typed/push_nonconstant.p4
@@ -775,11 +775,11 @@ Error while typechecking p4 file: test/program/ill-typed/range_e.p4
 Error while typechecking p4 file: test/program/ill-typed/scope.p4
 
 >>> Running typecheck test on test/program/ill-typed/select-struct.p4
-(check_valid_type_nesting) Invalid nesting of (struct H { b bit<12> }< @ >)<> inside set<(struct H { b bit<12> }< @ >)<>>
+(check_valid_typ_nesting) Invalid nesting of (struct H { b bit<12> }< @ >)<> inside set<(struct H { b bit<12> }< @ >)<>>
 Error while typechecking p4 file: test/program/ill-typed/select-struct.p4
 
 >>> Running typecheck test on test/program/ill-typed/select-varbits.p4
-(check_valid_type_nesting) Invalid nesting of varbit<12> inside set<varbit<12>>
+(check_valid_typ_nesting) Invalid nesting of varbit<12> inside set<varbit<12>>
 Error while typechecking p4 file: test/program/ill-typed/select-varbits.p4
 
 >>> Running typecheck test on test/program/ill-typed/self-call.p4
@@ -837,7 +837,7 @@ Error while typechecking p4 file: test/program/ill-typed/stack2.p4
 Error while typechecking p4 file: test/program/ill-typed/stack3.p4
 
 >>> Running typecheck test on test/program/ill-typed/stack_e.p4
-(check_valid_type_nesting) Invalid nesting of (struct s {  }< @ >)<> inside (struct s {  }< @ >)<>[5]
+(check_valid_typ_nesting) Invalid nesting of (struct s {  }< @ >)<> inside (struct s {  }< @ >)<>[5]
 Error while typechecking p4 file: test/program/ill-typed/stack_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/string-e.p4
@@ -845,7 +845,7 @@ Error while typechecking p4 file: test/program/ill-typed/stack_e.p4
 Error while typechecking p4 file: test/program/ill-typed/string-e.p4
 
 >>> Running typecheck test on test/program/ill-typed/string-e1.p4
-(check_valid_type_nesting) Invalid nesting of string inside struct S { s string }
+(check_valid_typ_nesting) Invalid nesting of string inside struct S { s string }
 Error while typechecking p4 file: test/program/ill-typed/string-e1.p4
 
 >>> Running typecheck test on test/program/ill-typed/string-e2.p4
@@ -913,7 +913,7 @@ parser error: File test/program/ill-typed/tuple-left.p4, line 21, characters 11-
 Error while parsing p4 file: test/program/ill-typed/tuple-left.p4
 
 >>> Running typecheck test on test/program/ill-typed/tuple-newtype.p4
-(check_valid_type_nesting) Invalid nesting of (tuple<T0><T0 @ >)<bit<1>> inside type T ((tuple<T0><T0 @ >)<bit<1>>)
+(check_valid_typ_nesting) Invalid nesting of (tuple<T0><T0 @ >)<bit<1>> inside type T ((tuple<T0><T0 @ >)<bit<1>>)
 Error while typechecking p4 file: test/program/ill-typed/tuple-newtype.p4
 
 >>> Running typecheck test on test/program/ill-typed/tuple-to-header.p4
@@ -949,7 +949,7 @@ Error while typechecking p4 file: test/program/ill-typed/typecheck1_e.p4
 Error while typechecking p4 file: test/program/ill-typed/typecheck_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/typedef-and-type-definitions.p4
-(check_valid_type_nesting) Invalid nesting of int inside type intT_t (int)
+(check_valid_typ_nesting) Invalid nesting of int inside type intT_t (int)
 Error while typechecking p4 file: test/program/ill-typed/typedef-and-type-definitions.p4
 
 >>> Running typecheck test on test/program/ill-typed/underscore1_e.p4

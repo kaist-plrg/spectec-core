@@ -160,8 +160,6 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
   | VBitT width_a, VBitT width_b ->
       Bigint.(width_a = width_b)
   | VarT id_a, VarT id_b -> E.eq_id' id_a id_b
-  | SpecT (MonoD (DefT typ_inner_a), []), _ -> eq_typ_alpha typ_inner_a typ_b
-  | _, SpecT (MonoD (DefT typ_inner_b), []) -> eq_typ_alpha typ_a typ_inner_b
   | SpecT (td_a, typs_inner_a), SpecT (td_b, typs_inner_b) ->
       let typ_inner_a = Subst.specialize_typdef td_a typs_inner_a in
       let typ_inner_b = Subst.specialize_typdef td_b typs_inner_b in
@@ -170,7 +168,8 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
       if is_nominal typ_inner_a && is_nominal typ_inner_b then
         eq_typs_alpha typs_inner_a typs_inner_b
       else true
-  | DefT typ_inner_a, DefT typ_inner_b -> eq_typ_alpha typ_inner_a typ_inner_b
+  | DefT typ_inner_a, _ -> eq_typ_alpha typ_inner_a typ_b
+  | _, DefT typ_inner_b -> eq_typ_alpha typ_a typ_inner_b
   | NewT (id_a, typ_inner_a), NewT (id_b, typ_inner_b) ->
       E.eq_id' id_a id_b && eq_typ_alpha typ_inner_a typ_inner_b
   | EnumT (id_a, members_a), EnumT (id_b, members_b) ->

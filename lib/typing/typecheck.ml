@@ -113,11 +113,8 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
   in
   match (typ_param, typ_arg) with
   | VarT tid, typ_arg when TIdMap.mem tid cstr ->
+      (* (TODO) Add occurs check? *)
       TIdMap.add tid (Some typ_arg) cstr
-  | SpecT (MonoD (DefT typ_inner_param), []), _ ->
-      gen_cstr cstr typ_inner_param typ_arg
-  | _, SpecT (MonoD (DefT typ_inner_arg), []) ->
-      gen_cstr cstr typ_param typ_inner_arg
   | SpecT (td_param, typs_inner_param), SpecT (td_arg, typs_inner_arg) ->
       let typ_param_inner = TypeDef.specialize td_param typs_inner_param in
       let typ_arg_inner = TypeDef.specialize td_arg typs_inner_arg in
@@ -125,8 +122,8 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
       if is_nominal typ_param_inner && is_nominal typ_arg_inner then
         gen_cstrs cstr_inner typs_inner_param typs_inner_arg
       else cstr_inner
-  | DefT typ_inner_param, DefT typ_inner_arg ->
-      gen_cstr cstr typ_inner_param typ_inner_arg
+  | DefT typ_inner_param, _ -> gen_cstr cstr typ_inner_param typ_arg
+  | _, DefT typ_inner_arg -> gen_cstr cstr typ_param typ_inner_arg
   | NewT (id_param, typ_inner_param), NewT (id_arg, typ_inner_arg)
     when id_param = id_arg ->
       gen_cstr cstr typ_inner_param typ_inner_arg
@@ -350,36 +347,35 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
       in
       let typ = Types.SpecT (td, typs_inner) in
       (typ, tids_fresh)
-  (* When a type variable is bound by the type parameters (top-scoped variable should be unallowed) *)
-  (* (TODO) Why not shove in the type parameters into the typedef environment? *)
-  | NameT { it = Current id; _ }
-    when Ctx.find_tparam_opt cursor id.it ctx |> Option.is_some ->
-      (Types.VarT id.it, tids_fresh)
-  | NameT var ->
+  | NameT var -> (
       let td = Ctx.find_opt Ctx.find_typedef_opt cursor var ctx in
-      if Option.is_none td then (
-        Format.printf "(eval_type') Type definition %a does not exist\n"
-          El.Pp.pp_var var;
-        assert false);
-      let td = Option.get td in
-      let typ = Types.SpecT (td, []) in
-      (typ, tids_fresh)
-  | SpecT (var, typs) ->
+      match td with
+      | Some (MonoD typ) -> (typ, tids_fresh)
+      | Some (PolyD _ as td) ->
+          let typ = Types.SpecT (td, []) in
+          (typ, tids_fresh)
+      | None ->
+          Format.printf "(eval_type') Type definition %a does not exist\n"
+            El.Pp.pp_var var;
+          assert false)
+  | SpecT (var, typs) -> (
       let td = Ctx.find_opt Ctx.find_typedef_opt cursor var ctx in
-      if Option.is_none td then (
-        Format.printf "(eval_type') Type definition %a does not exist\n"
-          El.Pp.pp_var var;
-        assert false);
-      let td = Option.get td in
-      let typs, tids_fresh =
-        List.fold_left
-          (fun (typs, tids_fresh) typ ->
-            let typ, tids_fresh_inner = eval_type cursor ctx typ in
-            (typs @ [ typ.it ], tids_fresh @ tids_fresh_inner))
-          ([], tids_fresh) typs
-      in
-      let typ = Types.SpecT (td, typs) in
-      (typ, tids_fresh)
+      match td with
+      | Some (MonoD typ) -> (typ, tids_fresh)
+      | Some (PolyD _ as td) ->
+          let typs, tids_fresh =
+            List.fold_left
+              (fun (typs, tids_fresh) typ ->
+                let typ, tids_fresh_inner = eval_type cursor ctx typ in
+                (typs @ [ typ.it ], tids_fresh @ tids_fresh_inner))
+              ([], tids_fresh) typs
+          in
+          let typ = Types.SpecT (td, typs) in
+          (typ, tids_fresh)
+      | None ->
+          Format.printf "(eval_type') Type definition %a does not exist\n"
+            El.Pp.pp_var var;
+          assert false)
   | AnyT ->
       let tid_fresh = fresh_tid () in
       let typ = Types.VarT tid_fresh in
@@ -1645,25 +1641,22 @@ and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
             TypeDef.pp td_base;
           assert false
     in
-    let typ_base = Type.canon typ_base in
-    match typ_base with
+    match Type.canon typ_base with
     | EnumT (id, members) ->
         if not (List.mem member.it members) then (
           Format.printf "(type_type_acc_expr) Member %s does not exist in %a\n"
             member.it TypeDef.pp td_base;
           assert false);
-        let typ = Types.SpecT (td_base, []) in
         let value = Value.EnumFieldV (id, member.it) in
-        (typ, value)
+        (typ_base, value)
     | SEnumT (id, _, fields) ->
         if not (List.mem_assoc member.it fields) then (
           Format.printf "(type_type_acc_expr) Member %s does not exist in %a\n"
             member.it TypeDef.pp td_base;
           assert false);
-        let typ = Types.SpecT (td_base, []) in
         let value_inner = List.assoc member.it fields in
         let value = Value.SEnumFieldV (id, member.it, value_inner) in
-        (typ, value)
+        (typ_base, value)
     | _ ->
         Format.printf "(type_type_acc_expr) %a cannot be accessed\n" TypeDef.pp
           td_base;
@@ -3609,18 +3602,16 @@ and type_enum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     assert false);
   let _annos_il = List.map (type_anno cursor ctx) annos in
   let members = List.map it members in
-  let td =
-    let typ_enum = Types.EnumT (id.it, members) in
-    Types.MonoD typ_enum
-  in
+  let typ_enum = Types.EnumT (id.it, members) in
+  let td = Types.MonoD typ_enum in
   let ctx =
     List.fold_left
       (fun ctx member ->
-        let value = Value.EnumFieldV (id.it, member) in
-        let typ = Types.SpecT (td, []) in
+        let value_field = Value.EnumFieldV (id.it, member) in
+        let typ_field = typ_enum in
         let id_field = id.it ^ "." ^ member in
-        Ctx.add_value cursor id_field value ctx
-        |> Ctx.add_rtype cursor id_field typ Lang.Ast.No Ctk.LCTK)
+        Ctx.add_value cursor id_field value_field ctx
+        |> Ctx.add_rtype cursor id_field typ_field Lang.Ast.No Ctk.LCTK)
       ctx members
   in
   WF.check_valid_typdef cursor ctx td;
@@ -3673,17 +3664,15 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       (ctx, []) fields
   in
   (* Clear out the block context *)
-  let td =
-    let typ_senum = Types.SEnumT (id.it, typ.it, fields) in
-    Types.MonoD typ_senum
-  in
+  let typ_senum = Types.SEnumT (id.it, typ.it, fields) in
+  let td = Types.MonoD typ_senum in
   let ctx =
     let members = List.map fst fields in
     let ctx =
       List.fold_left
         (fun ctx member ->
           let value_field = Ctx.find_value Ctx.Block member ctx in
-          let typ_field = Types.SpecT (td, []) in
+          let typ_field = typ_senum in
           let id_field = id.it ^ "." ^ member in
           Ctx.add_value cursor id_field value_field ctx
           |> Ctx.add_rtype cursor id_field typ_field Lang.Ast.No Ctk.LCTK)

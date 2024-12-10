@@ -45,7 +45,6 @@ type gt = {
 
 type bt = {
   id : L.id';
-  tparams : L.tparam' list;
   kind : blockkind;
   tdenv : Envs.TDEnv.t;
   fdenv : Envs.FDEnv.t;
@@ -54,7 +53,6 @@ type bt = {
 
 type lt = {
   id : L.id';
-  tparams : L.tparam' list;
   kind : localkind;
   tdenv : Envs.TDEnv.t;
   frames : (Envs.VEnv.t * Envs.TEnv.t) list;
@@ -73,16 +71,13 @@ let empty_gt =
 let empty_bt =
   {
     id = "";
-    tparams = [];
     kind = Empty;
     tdenv = Envs.TDEnv.empty;
     fdenv = Envs.FDEnv.empty;
     frame = (Envs.VEnv.empty, Envs.TEnv.empty);
   }
 
-let empty_lt =
-  { id = ""; tparams = []; kind = Empty; tdenv = Envs.TDEnv.empty; frames = [] }
-
+let empty_lt = { id = ""; kind = Empty; tdenv = Envs.TDEnv.empty; frames = [] }
 let empty = { global = empty_gt; block = empty_bt; local = empty_lt }
 
 (* Frame management *)
@@ -122,8 +117,10 @@ let set_localkind kind ctx = { ctx with local = { ctx.local with kind } }
 let rec get_tparams cursor ctx =
   match cursor with
   | Global -> []
-  | Block -> ctx.block.tparams
-  | Local -> ctx.local.tparams @ get_tparams Block ctx
+  | Block -> Envs.TDEnv.bindings ctx.block.tdenv |> List.map fst
+  | Local ->
+      (Envs.TDEnv.bindings ctx.local.tdenv |> List.map fst)
+      @ get_tparams Block ctx
 
 (* Adders *)
 
@@ -145,12 +142,24 @@ let add_tparam cursor tparam ctx =
   | Block ->
       {
         ctx with
-        block = { ctx.block with tparams = ctx.block.tparams @ [ tparam.it ] };
+        block =
+          {
+            ctx.block with
+            tdenv =
+              Envs.TDEnv.add tparam.it (Types.MonoD (VarT tparam.it))
+                ctx.block.tdenv;
+          };
       }
   | Local ->
       {
         ctx with
-        local = { ctx.local with tparams = ctx.local.tparams @ [ tparam.it ] };
+        local =
+          {
+            ctx.local with
+            tdenv =
+              Envs.TDEnv.add tparam.it (Types.MonoD (VarT tparam.it))
+                ctx.local.tdenv;
+          };
       }
 
 let add_tparams cursor tparams ctx =
@@ -341,19 +350,6 @@ let find_cont finder cursor id ctx = function
   | Some value -> Some value
   | None -> finder cursor id ctx
 
-(* Finder for type parameter *)
-
-let rec find_tparam_opt cursor tparam ctx =
-  match cursor with
-  | Global -> None
-  | Block -> List.find_opt (fun tp -> tp = tparam) ctx.block.tparams
-  | Local ->
-      List.find_opt (fun tp -> tp = tparam) ctx.local.tparams
-      |> find_cont find_tparam_opt Block tparam ctx
-
-let find_tparam cursor tparam ctx =
-  find_tparam_opt cursor tparam ctx |> Option.get
-
 (* Finder for type definition *)
 
 let rec find_typedef_opt cursor tid ctx =
@@ -508,13 +504,11 @@ let pp_blockkind fmt (kind : blockkind) =
 
 let pp_bt fmt (bt : bt) =
   F.fprintf fmt
-    "@[@[<v 0>[Block %s<%s>]:@ %a@]@\n\
+    "@[@[<v 0>[Block %s]:@ %a@]@\n\
      @[<v 0>[Typedefs]:@ %a@]@\n\
      @[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Frame]:@ %a@]@]" bt.id
-    (String.concat ", " bt.tparams)
-    pp_blockkind bt.kind Envs.TDEnv.pp bt.tdenv Envs.FDEnv.pp bt.fdenv pp_frame
-    bt.frame
+     @[<v 0>[Frame]:@ %a@]@]" bt.id pp_blockkind bt.kind Envs.TDEnv.pp bt.tdenv
+    Envs.FDEnv.pp bt.fdenv pp_frame bt.frame
 
 let pp_localkind fmt (kind : localkind) =
   match kind with
@@ -530,12 +524,10 @@ let pp_localkind fmt (kind : localkind) =
 
 let pp_lt fmt (lt : lt) =
   F.fprintf fmt
-    "@[@[<v 0>[Local %s<%s>]:@ %a@]@\n\
+    "@[@[<v 0>[Local %s]:@ %a@]@\n\
      @[<v 0>[Typedefs]:@ %a@]@\n\
-     @[<v 0>[Frames]:@ %a@]@]" lt.id
-    (String.concat ", " lt.tparams)
-    pp_localkind lt.kind Envs.TDEnv.pp lt.tdenv (F.pp_print_list pp_frame)
-    lt.frames
+     @[<v 0>[Frames]:@ %a@]@]" lt.id pp_localkind lt.kind Envs.TDEnv.pp lt.tdenv
+    (F.pp_print_list pp_frame) lt.frames
 
 let pp fmt ctx =
   F.fprintf fmt
