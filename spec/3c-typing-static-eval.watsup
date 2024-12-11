@@ -127,7 +127,7 @@ rule Eval_static/callmethode:
   ----
   -- if $in_set(member, "minSizeInBits" "minSizeInBytes" "maxSizeInBits" "maxSizeInBytes")
   ----
-  -- Expr_ok: p C |- expr_b : typ_b
+  -- Expr_ok: p C |- expr_b : typ_b ctk_b
   -- if val = $size_builtin(typ_b, member)
 
 
@@ -138,5 +138,5 @@ rule Eval_static/calltypee:
   ----
   -- if $in_set(member, "minSizeInBits" "minSizeInBytes" "maxSizeInBits" "maxSizeInBytes")
   ----
-  -- if typ = $find_typ(p, C, name)
+  -- if MonoD typ = $find_typdef(p, C, name)
   -- if val = $size_builtin(typ, member)

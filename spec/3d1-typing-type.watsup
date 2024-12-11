@@ -29,33 +29,42 @@ rule Type_ok/vbitt:
   -- if w = $reduce_num(val)
 
 rule Type_ok/stackt:
-  p C |- StackT type expr : SpecT typdef typ
+  p C |- StackT type expr : SpecT ptd typ
   ----
   -- Type_ok: p C |- type : typ
   -- Eval_static: p C |- expr ~> val
   -- if s = $reduce_num(val)
   ----
   -- if tid = $fresh_tid()
-  -- if typdef = PolyD tid (StackT (VarT tid) s)
+  -- if ptd = PolyD tid (StackT (VarT tid) s)
 
 rule Type_ok/listt:
-  p C |- ListT type : SpecT typdef typ
+  p C |- ListT type : SpecT ptd typ
   -- Type_ok: p C |- type : typ
   -- if tid = $fresh_tid()
-  -- if typdef = PolyD tid (ListT (VarT tid))
+  -- if ptd = PolyD tid (ListT (VarT tid))
 
 rule Type_ok/tuplet:
-  p C |- TupleT type* : SpecT typdef typ*
+  p C |- TupleT type* : SpecT ptd typ*
   -- (Type_ok: p C |- type : typ)*
   -- if (tid = $fresh_tid())*
-  -- if typdef = PolyD tid* (TupleT (VarT tid)*)
+  -- if ptd = PolyD tid* (TupleT (VarT tid)*)
 
-;; TODO handle the case where it is a type parameter
-rule Type_ok/namet:
-  p C |- NameT name : SpecT typdef eps
-  -- if typdef = $find_typdef(p, C, name)
+rule Type_ok/namet-mono:
+  p C |- NameT name : typ
+  -- if MonoD typ = $find_typdef(p, C, name)
 
-rule Type_ok/spect:
-  p C |- SpecT name type* : SpecT typdef typ*
-  -- if typdef = $find_typdef(p, C, name) 
+rule Type_ok/namet-poly:
+  p C |- NameT name : SpecT ptd eps
+  -- if PolyD tparam* typ = $find_typdef(p, C, name)
+  -- if ptd = PolyD tparam* typ
+
+rule Type_ok/spect-mono:
+  p C |- SpecT name eps : typ
+  -- if MonoD typ = $find_typdef(p, C, name) 
+
+rule Type_ok/spect-poly:
+  p C |- SpecT name type* : SpecT ptd typ*
+  -- if PolyD tparam* typ = $find_typdef(p, C, name)
+  -- if ptd = PolyD tparam* typ
   -- (Type_ok: p C |- type : typ)*

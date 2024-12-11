@@ -16,7 +16,7 @@ rule Func_ok:
 ;; TODO check that builtin is defined on typ_b
 rule Method_ok/builtin:
   p C |- expr_b member eps eps : BuiltinMethodT eps IntT
-  -- Expr_ok: p C |- expr_b : typ_b
+  -- Expr_ok: p C |- expr_b : typ_b ctk_b
   ----
   -- (Type_ok: p C |- targ : typ_a)*
   ----
@@ -25,8 +25,8 @@ rule Method_ok/builtin:
 rule Method_ok/stackt:
   p C |- expr_b member eps arg* : BuiltinMethodT paramtyp IntT
   ----
-  -- Expr_ok: p C |- expr_b: typ_b
-  -- if StackT typ_b_in size_b = $saturate_typ(typ_b)
+  -- Expr_ok: p C |- expr_b: typ_b ctk_b
+  -- if StackT typ_b_in size_b = $canon_typ(typ_b)
   ----
   -- if $in_set(member, "push\\_front" "pop\\_back")
   ----
@@ -35,28 +35,28 @@ rule Method_ok/stackt:
 rule Method_ok/headert-isvalid:
   p C |- expr_b "isValid" eps arg* : BuiltinMethodT eps BoolT
   ----
-  -- Expr_ok: p C |- expr_b: typ_b
-  -- if HeaderT id_b (member, typ_b_in)* = $saturate_typ(typ_b)
+  -- Expr_ok: p C |- expr_b: typ_b ctk_b
+  -- if HeaderT id_b (member, typ_b_in)* = $canon_typ(typ_b)
 
 rule Method_ok/headert-setvalid-setinvalid:
   p C |- expr_b member eps arg* : BuiltinMethodT eps VoidT
   ----
-  -- Expr_ok: p C |- expr_b: typ_b
-  -- if HeaderT id_b (member, typ_b_in)* = $saturate_typ(typ_b)
+  -- Expr_ok: p C |- expr_b: typ_b ctk_b
+  -- if HeaderT id_b (member, typ_b_in)* = $canon_typ(typ_b)
   ----
   -- if $in_set(member, "setValid" "setInvalid")
 
 rule Method_ok/uniont:
   p C |- expr_b "isValid" eps arg* : BuiltinMethodT eps BoolT
   ----
-  -- Expr_ok: p C |- expr_b: typ_b
-  -- if UnionT id_b (member, typ_b_in)* = $saturate_typ(typ_b)
+  -- Expr_ok: p C |- expr_b: typ_b ctk_b
+  -- if UnionT id_b (member, typ_b_in)* = $canon_typ(typ_b)
 
 rule Method_ok/externt:
   p C |- expr_b member targ* arg* : functyp
   ----
-  -- Expr_ok: p C |- expr_b: typ_b
-  -- if ExternT id_b fmap_b = $saturate_typ(typ_b)
+  -- Expr_ok: p C |- expr_b: typ_b ctk_b
+  -- if ExternT id_b fmap_b = $canon_typ(typ_b)
   ----
   -- (Type_ok: p C |- targ: typ_a)*
   ----

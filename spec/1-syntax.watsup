@@ -231,7 +231,9 @@ syntax decl =
   | UnionD id tparam* (member, type)*                          hint(show UNION %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
   | EnumD id member*                                          hint(show ENUM % %latex("\\{")#%#%latex("\\}"))
   | SEnumD id type (member, expr)*                             hint(show ENUM % % %latex("\\{")#%#%latex("\\}"))
+  ;; TODO NewTypeD id decl is also valid
   | NewTypeD id type                                           hint(show typeE % %)
+  ;; TODO TypeDefD id decl is also valid
   | TypeDefD id type                                           hint(show typeEDEF % %)
   | ValueSetD id type expr                                     hint(show VALUE#_#SET % % %)
   | ParserTypeD id tparam* param*                             hint(show PARSER %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())

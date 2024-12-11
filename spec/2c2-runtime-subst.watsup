@@ -1,0 +1,23 @@
+;; Substitution (capture-avoiding)
+
+def $subst_typ(tenv, typ) : typ   hint(show %2#%latex("/")%1)
+
+
+;; Specialization
+
+def $specialize_typdef(typdef, typ*) : typ  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
+
+def $specialize_funcdef(funcdef, typ*) : functyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
+
+def $specialize_consdef(consdef, typ*) : constyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
+
+
+;; Canonicalization (recursive specialization and typedef unrolling)
+
+def $canon_typ(typ) : typ  hint(show %#%latex("|_{\\mathtt{norm}}"))
+
+def $canon_typ(SpecT ptd typ_a*) = $canon_typ(typ)
+  -- if typ = $specialize_typdef(ptd, typ_a*)
+def $canon_typ(DefT typ) = $canon_typ(typ)
+def $canon_typ(typ) = typ
+  -- otherwise

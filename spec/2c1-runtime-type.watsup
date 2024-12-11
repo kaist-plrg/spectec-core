@@ -1,11 +1,14 @@
 ;; Parameter Type
 
-syntax paramtyp = id dir typ val?
+syntax paramtyp hint(show %latex("\\tau_\\texttt{p}")) =
+  id dir typ val?
+
+var pt : paramtyp hint(show %latex("\\tau_\\texttt{p}"))
 
 
-;; Runtime Type
+;; Type
 
-syntax basetyp =
+syntax basetyp hint(show %latex("\\tau_\\texttt{base}")) =
   | VoidT         hint(show VOID#_#T)
   | ErrT          hint(show ERR#_#T)
   | MatchKindT    hint(show MATCH#_#KIND#_#T)
@@ -16,9 +19,9 @@ syntax basetyp =
   | FBitT int     hint(show FBIT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
   | VBitT int     hint(show VBIT#_#T#%latex("\\langle")#%#%latex("\\rangle")) 
 
-syntax deftyp =
+syntax deftyp hint(show %latex("\\tau_\\texttt{def}")) =
   | VarT id                         hint(show VAR#_#T %)
-  | SpecT typdef typ*               hint(show SPEC#_#T %#%latex("\\langle")#%#%latex("\\rangle"))
+  | SpecT polytypdef typ*           hint(show SPEC#_#T %#%latex("\\langle")#%#%latex("\\rangle"))
   | DefT typ                        hint(show DEF#_#T %)
   | NewT id typ                     hint(show NEW#_#T % %)
   | EnumT id member*                hint(show ENUM#_#T % %latex("\\{")#%#%latex("\\}"))
@@ -35,7 +38,7 @@ syntax deftyp =
   | PackageT typ*                   hint(show PACKAGE#_#T %)
   | TableT typ                      hint(show TABLE#_#T %)
 
-syntax synthtyp =
+syntax synthtyp hint(show %latex("\\tau_\\texttt{synth}")) =
   | DefaultT                        hint(show DEFAULT#_#T)
   | SeqT typ*                       hint(show SEQ#_#T %)
   | SeqDefaultT typ*                hint(show SEQ#_#DEFAULT#_#T %)
@@ -48,23 +51,32 @@ syntax synthtyp =
   | TableStructT id (member, typ)*  hint(show TABLE#_#STRUCT#_#T % %latex("\\{")#%#%latex("\\}"))
   | AnyT                            hint(show ANY#_#T)
 
-syntax typ = basetyp | deftyp | synthtyp
+syntax typ hint(show %latex("\\tau")) =
+  basetyp | deftyp | synthtyp 
 
-var btyp : basetyp
-var dtyp : deftyp
-var styp : synthtyp
+var btyp : basetyp    hint(show %latex("\\tau_\\texttt{base}"))
+var dtyp : deftyp     hint(show %latex("\\tau_\\texttt{def}"))
+var styp : synthtyp   hint(show %latex("\\tau_\\texttt{synth}"))
 
 
 ;; Type Definition
 
-syntax typdef =
-  | MonoD typ           hint(show MONO#_#D %)
-  | PolyD tparam* typ   hint(show POLY#_#D % %latex("\\rightarrow") %)
+syntax monotypdef hint(show %latex("\\delta_\\texttt{mt}")) =
+  MonoD typ           hint(show MONO#_#D %)
+syntax polytypdef hint(show %latex("\\delta_\\texttt{pt}")) =
+  PolyD tparam* typ   hint(show POLY#_#D %)
 
+syntax typdef hint(show %latex("\\delta")) =
+  | monotypdef
+  | polytypdef
+
+var mtd : monotypdef    hint(show %latex("\\delta_\\texttt{mt}"))
+var ptd : polytypdef    hint(show %latex("\\delta_\\texttt{pt}"))
+var td : typdef         hint(show %latex("\\delta_\\texttt{t}"))
 
 ;; Function Type
 
-syntax functyp =
+syntax functyp hint(show %latex("\\tau_\\texttt{f}")) =
   | BuiltinMethodT paramtyp* typ          hint(show BUILTIN#_#METHOD#_#T (%) %latex("\\rightarrow") %)
   | ActionT paramtyp*                     hint(show ACTION#_#T (%))
   | ParserApplyMethodT paramtyp* typ      hint(show PARSER#_#APPLY#_#METHOD#_#T (%) %latex("\\rightarrow") %)
@@ -75,38 +87,29 @@ syntax functyp =
   | ExternMethodT paramtyp* typ           hint(show EXTERN#_#METHOD#_#T (%) %latex("\\rightarrow") %)
   | ExternAbstractMethodT paramtyp* typ   hint(show EXTERN#_#ABSTRACT#_#METHOD#_#T (%) %latex("\\rightarrow") %)
 
+var ft : functyp   hint(show %latex("\\tau_\\texttt{f}"))
+
 
 ;; Function Definition
 
-syntax funcdef =
+syntax funcdef hint(show %latex("\\delta_\\texttt{f}")) =
   | MonoFD functyp            hint(show MONO#_#FD %)
   | PolyFD tparam* functyp    hint(show POLY#_#FD % %latex("\\rightarrow") %)
+
+var fd : funcdef hint(show %latex("\\delta_\\texttt{f}"))
 
 
 ;; Constructor Type
 
-syntax constyp = paramtyp* typ  hint(show CONS#_#T (%) %latex("\\rightarrow") %)
+syntax constyp hint(show %latex("\\tau_\\texttt{c}")) =
+  paramtyp* typ  hint(show CONS#_#T (%) %latex("\\rightarrow") %)
+
+var ct : constyp hint(show %latex("\\tau_\\texttt{c}"))
 
 
 ;; Constructor Definition
 
-syntax consdef = tparam* paramtyp* typ hint(show CONS#_#D#%latex("\\langle")#%#%latex("\\rangle") (%) %latex("\\rightarrow") %)
+syntax consdef hint(show %latex("\\delta_\\texttt{c}")) =
+  tparam* paramtyp* typ hint(show CONS#_#D#%latex("\\langle")#%#%latex("\\rangle") (%) %latex("\\rightarrow") %)
 
-
-;; Substitution
-
-def $subst_typ(tenv, typ) : typ
-
-
-;; Specialization
-
-def $specialize_typdef(typdef, typ*) : typ  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
-
-def $specialize_funcdef(funcdef, typ*) : functyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
-
-def $specialize_consdef(consdef, typ*) : constyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
-
-
-;; Saturation
-
-def $saturate_typ(typ) : typ  hint(show %#%latex("|_{\\mathtt{norm}}"))
+var cd : consdef hint(show %latex("\\delta_\\texttt{c}"))

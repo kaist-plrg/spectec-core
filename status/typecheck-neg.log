@@ -35,7 +35,7 @@ Error while typechecking p4 file: test/program/ill-typed/binary_e.p4
 Error while typechecking p4 file: test/program/ill-typed/bitExtract_e.p4
 
 >>> Running typecheck test on test/program/ill-typed/call-table.p4
-(check_call_site) Function table_apply cannot be called from Action
+(check_call_site) table_apply cannot be called from Action
 Error while typechecking p4 file: test/program/ill-typed/call-table.p4
 
 >>> Running typecheck test on test/program/ill-typed/call1_e.p4
@@ -171,7 +171,7 @@ Error while typechecking p4 file: test/program/ill-typed/function_e.p4
 Error while typechecking p4 file: test/program/ill-typed/function_e1.p4
 
 >>> Running typecheck test on test/program/ill-typed/function_e2.p4
-(check_call_site) Function action() cannot be called from Function
+(check_call_site) action() cannot be called from Function
 Error while typechecking p4 file: test/program/ill-typed/function_e2.p4
 
 >>> Running typecheck test on test/program/ill-typed/functors2_e.p4
@@ -259,7 +259,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue1230.p4
 Error while typechecking p4 file: test/program/ill-typed/issue1296.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue1331.p4
-(check_call_site) Function parser_apply( pkt (extern packet_in { advance(sizeInBits) : extern_method(in sizeInBits bit<32>) -> void< @ >
+(check_call_site) parser_apply( pkt (extern packet_in { advance(sizeInBits) : extern_method(in sizeInBits bit<32>) -> void< @ >
 extract(hdr) : extern_method(out hdr T) -> void<T @ >
 extract(variableSizeHeader, variableFieldSizeInBits) : extern_method(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void<T @ >
 length() : extern_method() -> bit<32>< @ >
@@ -380,7 +380,7 @@ Error while parsing p4 file: test/program/ill-typed/issue2544_recursive.p4
 Error while typechecking p4 file: test/program/ill-typed/issue2544_self_ref.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2597.p4
-(check_call_site) Function control_apply() cannot be called from Action
+(check_call_site) control_apply() cannot be called from Action
 Error while typechecking p4 file: test/program/ill-typed/issue2597.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue2835-bmv2.p4
@@ -388,15 +388,15 @@ Error while typechecking p4 file: test/program/ill-typed/issue2597.p4
 Error while typechecking p4 file: test/program/ill-typed/issue2835-bmv2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3045-1.p4
-(check_call_site) Function extern_method(in index bit<32>, in value T) -> void cannot be called from Function
+(check_call_site) extern_method(in index bit<32>, in value T) -> void cannot be called from Function
 Error while typechecking p4 file: test/program/ill-typed/issue3045-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3045-2.p4
-(check_call_site) Function extern_method(in index bit<32>, in value T) -> void cannot be called from Function
+(check_call_site) extern_method(in index bit<32>, in value T) -> void cannot be called from Function
 Error while typechecking p4 file: test/program/ill-typed/issue3045-2.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3045.p4
-(check_call_site) Function extern_method(in index bit<32>, in value T) -> void cannot be called from Function
+(check_call_site) extern_method(in index bit<32>, in value T) -> void cannot be called from Function
 Error while typechecking p4 file: test/program/ill-typed/issue3045.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue306.p4
@@ -416,7 +416,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue3170-1.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3170.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3188.p4
-(check_call_site) Function extern_func( check bool,  message string) -> bool cannot be called from Empty
+(check_call_site) extern_func( check bool,  message string) -> bool cannot be called from top level
 Error while typechecking p4 file: test/program/ill-typed/issue3188.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3197-e.p4
@@ -593,7 +593,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue401.p4
 Error while typechecking p4 file: test/program/ill-typed/issue407-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue413.p4
-(check_call_site) Function action(in bar bit<16>, out bar2 bit<8>) cannot be called from ParserState
+(check_call_site) action(in bar bit<16>, out bar2 bit<8>) cannot be called from ParserState
 Error while typechecking p4 file: test/program/ill-typed/issue413.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue4136.p4
@@ -648,7 +648,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue807.p4
 Error while typechecking p4 file: test/program/ill-typed/issue816-1.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue816.p4
-(check_call_site) Function control_apply() cannot be called from Action
+(check_call_site) control_apply() cannot be called from Action
 Error while typechecking p4 file: test/program/ill-typed/issue816.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue818.p4

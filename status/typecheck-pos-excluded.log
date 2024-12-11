@@ -126,11 +126,11 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/access-compile-time-known/tuple3.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory1.p4
-(check_call_site) Function extern_func( a bit<16>,  b bit<8>) -> (extern widget {  }< @ >)<> cannot be called from Package
+(check_call_site) extern_func( a bit<16>,  b bit<8>) -> (extern widget {  }< @ >)<> cannot be called from Package
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory2.p4
-(check_call_site) Function extern_func( a bit<16>,  b bit<8>) -> (extern widget {  }<T @ >)<bit<8>> cannot be called from Package
+(check_call_site) extern_func( a bit<16>,  b bit<8>) -> (extern widget {  }<T @ >)<bit<8>> cannot be called from Package
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/factory2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/hashext3.p4
@@ -138,39 +138,39 @@ Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/hashext3.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/issue3531.p4
-(check_call_site) Function extern_func( check bool,  message string) -> bool cannot be called from Empty
+(check_call_site) extern_func( check bool,  message string) -> bool cannot be called from top level
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known/issue3531.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/control-toplevel-call-func/issue2488-bmv2.p4
-(check_call_site) Function func(inout s bit<48>) -> bit<48> cannot be called from Control
+(check_call_site) func(inout s bit<48>) -> bit<48> cannot be called from Control
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/control-toplevel-call-func/issue2488-bmv2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/control-toplevel-call-func/issue2543-1.p4
-(check_call_site) Function func() -> bit<16> cannot be called from Control
+(check_call_site) func() -> bit<16> cannot be called from Control
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/control-toplevel-call-func/issue2543-1.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3274-2.p4
-(check_call_site) Function extern_func(in x bit<32>, out y bit<16>) -> bit<32> cannot be called from Function
+(check_call_site) extern_func(in x bit<32>, out y bit<16>) -> bit<32> cannot be called from Function
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3274-2.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3274.p4
-(check_call_site) Function extern_func(in x bit<32>, out y bit<16>) -> bit<32> cannot be called from Function
+(check_call_site) extern_func(in x bit<32>, out y bit<16>) -> bit<32> cannot be called from Function
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3274.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3292.p4
-(check_call_site) Function extern_func(in p (header h { f t }<t @ >)<t>) -> void cannot be called from Function
+(check_call_site) extern_func(in p (header h { f t }<t @ >)<t>) -> void cannot be called from Function
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue3292.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue4500.p4
-(check_call_site) Function extern_func( x enum E { e0 }) -> void cannot be called from Function
+(check_call_site) extern_func( x enum E { e0 }) -> void cannot be called from Function
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/func-body-call-extern/issue4500.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/parser-toplevel-call-func/issue1538.p4
-(check_call_site) Function func(in x bit<16>) -> bit<16> cannot be called from Parser
+(check_call_site) func(in x bit<16>) -> bit<16> cannot be called from Parser
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/parser-toplevel-call-func/issue1538.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/parser-toplevel-call-func/issue2957.p4
-(check_call_site) Function func(in val bit<3>, in bound bit<3>) -> bit<3> cannot be called from Parser
+(check_call_site) func(in val bit<3>, in bound bit<3>) -> bit<3> cannot be called from Parser
 Error while typechecking p4 file: test/program/well-typed-excluded/spec-clarify/call-site-restrictions/parser-toplevel-call-func/issue2957.p4
 
 >>> Running typecheck test on test/program/well-typed-excluded/spec-clarify/call-site-restrictions/table-body-call-func/issue2258-bmv2.p4

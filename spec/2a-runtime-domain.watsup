@@ -6,11 +6,14 @@ syntax map(syntax K, syntax V) = MAP (K, V)*  hint(show %latex("\\{") % %latex("
 ;; Display Hack to enclose the set in curly braces
 def $in_set(syntax K, K*) : bool   hint(show % <- %latex("\\{") % %latex("\\}"))
 
-;; Identifiers
+
+;; Type identifiers
 
 syntax tid = id
 
 def $fresh_tid() : tid  hint(show FRESH#_#TID)
 
-;; TODO fid should handle overload resolution
+
+;; Function identifiers
+
 syntax fid = id

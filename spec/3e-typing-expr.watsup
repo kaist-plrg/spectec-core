@@ -1,95 +1,99 @@
 ;; Boolean expression
 
 rule Expr_ok/boole:
-  p C |- BoolE b : BoolT
+  p C |- BoolE b : BoolT LCTK
 
 
 ;; String expression
 
 rule Expr_ok/stre:
-  p C |- StrE t : StrT
+  p C |- StrE t : StrT LCTK
 
 
 ;; Number expression
 
 rule Expr_ok/nume-intt:
-  p C |- NumE (INT i) : IntT
+  p C |- NumE (INT i) : IntT LCTK
 
 rule Expr_ok/nume-fintt:
-  p C |- NumE (FINT w i) : FIntT w
+  p C |- NumE (FINT w i) : (FIntT w) LCTK
 
 rule Expr_ok/nume-fbitt:
-  p C |- NumE (FBIT w i) : FBitT w
+  p C |- NumE (FBIT w i) : (FBitT w) LCTK
 
 
 ;; Variable expression
 
 rule Expr_ok/namee:
-  p C |- NameE name : typ
-  -- if typ = $find_typ(p, C, name)
+  p C |- NameE name : typ ctk
+  -- if typ dir ctk = $find_typ(p, C, name)
 
 
 ;; Sequence expression
 
 rule Expr_ok/seqe:
-  p C |- SeqE expr* : SeqT typ_e*
-  -- (Expr_ok: p C |- expr : typ_e)*
+  p C |- SeqE expr* : (SeqT typ_e*) ctk
+  -- (Expr_ok: p C |- expr : typ_e ctk_e)*
+  -- if ctk = $joins_ctk(ctk_e*)
 
 rule Expr_ok/seqdefaulte:
-  p C |- SeqDefaultE expr* : SeqDefaultT typ_e*
-  -- (Expr_ok: p C |- expr : typ_e)*
+  p C |- SeqDefaultE expr* : (SeqDefaultT typ_e*) ctk
+  -- (Expr_ok: p C |- expr : typ_e ctk_e)*
+  -- if ctk = $joins_ctk(ctk_e*)
 
 
 ;; Record expression
 
 rule Expr_ok/recorde:
-  p C |- RecordE (member, expr)* : RecordT (member, typ_e)*
-  -- (Expr_ok: p C |- expr : typ_e)*
+  p C |- RecordE (member, expr)* : (RecordT (member, typ_e)*) ctk
+  -- (Expr_ok: p C |- expr : typ_e ctk_e)*
+  -- if ctk = $joins_ctk(ctk_e*)
 
 rule Expr_ok/recorddefaulte:
-  p C |- RecordDefaultE (member, expr)* : RecordDefaultT (member, typ_e)*
-  -- (Expr_ok: p C |- expr : typ_e)*
+  p C |- RecordDefaultE (member, expr)* : (RecordDefaultT (member, typ_e)*) ctk
+  -- (Expr_ok: p C |- expr : typ_e ctk_e)*
+  -- if ctk = $joins_ctk(ctk_e*)
 
 
 ;; Default expression
 
 rule Expr_ok/defaulte:
-  p C |- DefaultE : DefaultT
+  p C |- DefaultE : DefaultT LCTK
 
 
 ;; Invalid expression
 
 rule Expr_ok/invalide:
-  p C |- InvalidE : InvalidT
+  p C |- InvalidE : InvalidT LCTK
 
 
 ;; Unary expression
 
 rule Expr_ok/une-bnot:
-  p C |- UnE BNOT expr : typ
-  -- Expr_ok: p C |- expr : typ_e
+  p C |- UnE BNOT expr : typ ctk_e
+  -- Expr_ok: p C |- expr : typ_e ctk_e
   -- Sub_impl: typ_e <: typ
   -- if typ = FIntT w \/ typ = FBitT w
 
 rule Expr_ok/une-lnot:
-  p C |- UnE LNOT expr : BoolT
-  -- Expr_ok: p C |- expr : typ_e
+  p C |- UnE LNOT expr : BoolT ctk_e
+  -- Expr_ok: p C |- expr : typ_e ctk_e
   -- Sub_impl: typ_e <: BoolT
 
 rule Expr_ok/une-uminus-intt:
-  p C |- UnE UMINUS expr : IntT
-  -- Expr_ok: p C |- expr : typ_e
+  p C |- UnE UMINUS expr : IntT ctk_e
+  -- Expr_ok: p C |- expr : typ_e ctk_e
   -- Sub_impl: typ_e <: IntT
 
 rule Expr_ok/une-uminus:
-  p C |- UnE UMINUS expr : typ
-  -- Expr_ok: p C |- expr : typ_e
+  p C |- UnE UMINUS expr : typ ctk_e
+  -- Expr_ok: p C |- expr : typ_e ctk_e
   -- Sub_impl: typ_e <: typ
   -- if typ = IntT \/ typ = FIntT w \/ typ = FBitT w
 
 rule Expr_ok/une-uplus:
-  p C |- UnE UPLUS expr : typ
-  -- Expr_ok: p C |- expr : typ_e
+  p C |- UnE UPLUS expr : typ ctk_e
+  -- Expr_ok: p C |- expr : typ_e ctk_e
   -- Sub_impl: typ_e <: typ
   -- if typ = IntT \/ typ = FIntT w \/ typ = FBitT w
 
@@ -104,34 +108,36 @@ rule Expr_ok/une-uplus:
 
 ;; TODO restriction on compile-time evaluation of IntT
 rule Expr_ok/terne:
-  p C |- TernE expr_c expr_t expr_f : typ
+  p C |- TernE expr_c expr_t expr_f : typ ctk
   ----
-  -- Expr_ok: p C |- expr_c : typ_c
+  -- Expr_ok: p C |- expr_c : typ_c ctk_c
   -- Sub_impl: typ_c <: BoolT
   ----
-  -- Expr_ok: p C |- expr_t : typ_t
-  -- Expr_ok: p C |- expr_f : typ_f
+  -- Expr_ok: p C |- expr_t : typ_t ctk_t
+  -- Expr_ok: p C |- expr_f : typ_f ctk_f
   ----
   -- Sub_impl: typ_t <: typ
   -- Sub_impl: typ_f <: typ
+  ----
+  -- if ctk = $joins_ctk(ctk_c ctk_t ctk_f)
 
 
 ;; Cast expression
 
 rule Expr_ok/caste:
-  p C |- CastE type expr : typ_t
+  p C |- CastE type expr : typ_t ctk_e
   -- Type_ok: p C |- type : typ_t
-  -- Expr_ok: p C |- expr : typ_e
+  -- Expr_ok: p C |- expr : typ_e ctk_e
   -- Sub_expl: typ_e <: typ_t
 
 
 ;; Mask expression
 
 rule Expr_ok/maske:
-  p C |- MaskE expr_b expr_m : SetT typ
+  p C |- MaskE expr_b expr_m : (SetT typ) DYN
   ----
-  -- Expr_ok: p C |- expr_b : typ_b
-  -- Expr_ok: p C |- expr_m : typ_m
+  -- Expr_ok: p C |- expr_b : typ_b ctk_b
+  -- Expr_ok: p C |- expr_m : typ_m ctk_m
   ----
   -- Sub_impl: typ_b <: typ
   -- Sub_impl: typ_m <: typ
@@ -141,10 +147,10 @@ rule Expr_ok/maske:
 ;; Range expression
 
 rule Expr_ok/rangee:
-  p C |- RangeE expr_l expr_u : SetT typ
+  p C |- RangeE expr_l expr_u : (SetT typ) DYN
   ----
-  -- Expr_ok: p C |- expr_l : typ_b
-  -- Expr_ok: p C |- expr_u : typ_m
+  -- Expr_ok: p C |- expr_l : typ_l ctk_l
+  -- Expr_ok: p C |- expr_u : typ_u ctk_u
   ----
   -- Sub_impl: typ_l <: typ
   -- Sub_impl: typ_u <: typ
@@ -158,51 +164,51 @@ rule Expr_ok/rangee:
 
 ;; TODO maybe want to introduce numeric type into syntax
 rule Expr_ok/arracce-tuplet:
-  p C |- ArrAccE expr_b expr_i : typ
+  p C |- ArrAccE expr_b expr_i : typ DYN
   ----
-  -- Expr_ok: p C |- expr_b : typ_b
-  -- Expr_ok: p C |- expr_i : typ_i
+  -- Expr_ok: p C |- expr_b : typ_b ctk_b
+  -- Expr_ok: p C |- expr_i : typ_i ctk_i
   -- Sub_impl: typ_i <: typ_i'
   ----
   -- if typ_i' = IntT \/ typ_i' = FIntT w \/ typ_i' = FBitT w
   ----
-  -- if TupleT typs_b'* = $saturate_typ(typ_b)
+  -- if TupleT typs_b'* = $canon_typ(typ_b)
   -- Eval_static: p C |- expr_i ~> val_i
   -- if i = $reduce_num(val_i)
   -- if typ = typs_b'*[i]
 
 ;; TODO add bounds check if expr_i is compile-time known
 rule Expr_ok/arracce-stackt:
-  p C |- ArrAccE expr_b expr_i : typ_b'
+  p C |- ArrAccE expr_b expr_i : typ_b' DYN
   ----
-  -- Expr_ok: p C |- expr_b : typ_b
-  -- Expr_ok: p C |- expr_i : typ_i
+  -- Expr_ok: p C |- expr_b : typ_b ctk_b
+  -- Expr_ok: p C |- expr_i : typ_i ctk_i
   -- Sub_impl: typ_i <: typ_i'
   ----
   -- if typ_i' = IntT \/ typ_i' = FIntT w_i' \/ typ_i' = FBitT w_i'
   ----
-  -- if StackT typ_b' size = $saturate_typ(typ_b)
+  -- if StackT typ_b' size = $canon_typ(typ_b)
 
 
 ;; Bitstring access expression
 
 ;; TODO check bitstring slice range
 rule Expr_ok/bitacce:
-  p C |- BitAccE expr_b expr_l expr_h : typ
+  p C |- BitAccE expr_b expr_l expr_h : typ ctk_b
   ----
-  -- Expr_ok: p C |- expr_b : typ_b
+  -- Expr_ok: p C |- expr_b : typ_b ctk_b
   -- Sub_impl: typ_b <: typ_b'
   ----
   -- if typ_b' = IntT \/ (typ_b' = FIntT w_b' /\ w_b' >= 1) \/ (typ_b' = FBitT w_b' /\ w_b' >= 0)
   ----
-  -- Expr_ok: p C |- expr_l : typ_l
+  -- Expr_ok: p C |- expr_l : typ_l LCTK
   -- Sub_impl: typ_l <: typ_l'
   -- if typ_l' = IntT \/ typ_l' = FIntT w_l' \/ typ_l' = FBitT w_l'
   ----
   -- Eval_static: p C |- expr_l ~> val_l
   -- if i_l = $reduce_num(val_l)
   ----
-  -- Expr_ok: p C |- expr_h : typ_h
+  -- Expr_ok: p C |- expr_h : typ_h LCTK
   -- Sub_impl: typ_h <: typ_h'
   -- if typ_h' = IntT \/ typ_h' = FIntT w_h' \/ typ_h' = FBitT w_h'
   ----
@@ -215,7 +221,7 @@ rule Expr_ok/bitacce:
 ;; Error access expression
 
 rule Expr_ok/erracce:
-  p C |- ErrAccE member : ErrT
+  p C |- ErrAccE member : ErrT LCTK
   -- if id = $concat_texts("error." member)
   -- if ErrV member = $find_val(p, C, TOP id)
 
@@ -223,65 +229,73 @@ rule Expr_ok/erracce:
 ;; Type access expression
 
 rule Expr_ok/typeacce-enumt:
-  p C |- TypeAccE name member : SpecT td eps
+  p C |- TypeAccE name member : typ LCTK
   -- if MonoD typ = $find_typdef(p, C, name)
-  -- if EnumT id_t member_t* = typ
+  -- if EnumT id_t member_t* = $canon_typ(typ)
   -- if member <- member_t*
 
 rule Expr_ok/typeacce-senumt:
-  p C |- TypeAccE name member : SpecT td eps
+  p C |- TypeAccE name member : typ LCTK
   -- if MonoD typ = $find_typdef(p, C, name)
-  -- if SEnumT id_t typ_t (member_t, val_t)* = typ
+  -- if SEnumT id_t typ_t (member_t, val_t)* = $canon_typ(typ)
   -- if member <- member_t*
 
 
 ;; Expression access expression
 
-rule Expr_ok/expracce-stackt-last-lastindex:
-  p C |- ExprAccE expr_b member : FBitT 32
+rule Expr_ok/expracce-stackt-size:
+  p C |- ExprAccE expr_b member : (FBitT 32) LCTK
   ----
-  -- Expr_ok: p C |- expr_b : typ_b
-  -- if StackT typ_b' size = $saturate_typ(typ_b)
+  -- Expr_ok: p C |- expr_b : typ_b ctk_b
+  -- if StackT typ_b' size = $canon_typ(typ_b)
   ----
-  -- if $in_set(member, "last" "lastIndex")
+  -- if $in_set(member, "size")
+
+rule Expr_ok/expracce-stackt-lastindex:
+  p C |- ExprAccE expr_b member : (FBitT 32) DYN
+  ----
+  -- Expr_ok: p C |- expr_b : typ_b ctk_b
+  -- if StackT typ_b' size = $canon_typ(typ_b)
+  ----
+  -- if $in_set(member, "lastIndex")
 
 rule Expr_ok/expracce-stackt-next-last:
-  p C |- ExprAccE expr_b member : typ_b'
+  p C |- ExprAccE expr_b member : typ_b' DYN
   ----
-  -- Expr_ok: p C |- expr_b : typ_b
-  -- if StackT typ_b' size = $saturate_typ(typ_b)
+  -- Expr_ok: p C |- expr_b : typ_b ctk_b
+  -- if StackT typ_b' size = $canon_typ(typ_b)
   ----
   -- if $in_set(member, "next" "last")
 
 rule Expr_ok/expracce-structt:
-  p C |- ExprAccE expr_b member : typ
+  p C |- ExprAccE expr_b member : typ DYN
   ----
-  -- Expr_ok: p C |- expr_b : typ_b
-  -- if StructT id_b (member_b, typ_b')* = $saturate_typ(typ_b)
+  -- Expr_ok: p C |- expr_b : typ_b ctk_b
+  -- if StructT id_b (member_b, typ_b')* = $canon_typ(typ_b)
   ----
   -- if (member, typ) <- (member_b, typ_b')*
 
 rule Expr_ok/expracce-headert:
-  p C |- ExprAccE expr_b member : typ
+  p C |- ExprAccE expr_b member : typ DYN
   ----
-  -- Expr_ok: p C |- expr_b : typ_b
-  -- if HeaderT id_b (member_b, typ_b')* = $saturate_typ(typ_b)
+  -- Expr_ok: p C |- expr_b : typ_b ctk_b
+  -- if HeaderT id_b (member_b, typ_b')* = $canon_typ(typ_b)
   ----
   -- if (member, typ) <- (member_b, typ_b')*
 
 rule Expr_ok/expracce-uniont:
-  p C |- ExprAccE expr_b member : typ
+  p C |- ExprAccE expr_b member : typ DYN
   ----
-  -- Expr_ok: p C |- expr_b : typ_b
-  -- if UnionT id_b (member_b, typ_b')* = $saturate_typ(typ_b)
+  -- Expr_ok: p C |- expr_b : typ_b ctk_b
+  -- if UnionT id_b (member_b, typ_b')* = $canon_typ(typ_b)
   ----
   -- if (member, typ) <- (member_b, typ_b')*
 
 rule Expr_ok/expracce-tablestructt:
-  p C |- ExprAccE expr_b member : typ
+  p C |- ExprAccE expr_b member : typ DYN
   ----
-  -- Expr_ok: p C |- expr_b : typ_b
-  -- if TableStructT id_b (member_b, typ_b')* = $saturate_typ(typ_b)
+  -- Expr_ok: p C |- expr_b : typ_b ctk_b
+  -- if TableStructT id_b (member_b, typ_b')* = $canon_typ(typ_b)
   ----
   -- if (member, typ) <- (member_b, typ_b')*
 
@@ -289,7 +303,7 @@ rule Expr_ok/expracce-tablestructt:
 ;; Function call expression
 
 rule Expr_ok/callfunce:
-  p C |- CallFuncE name targ* arg* : typ
+  p C |- CallFuncE name targ* arg* : typ DYN
   ----
   -- Func_ok: p C |- name targ* arg* : functyp
   ----
@@ -300,7 +314,7 @@ rule Expr_ok/callfunce:
 ;; Method call expression
 
 rule Expr_ok/callmethode:
-  p C |- CallMethodE expr_b member targ* arg* : typ
+  p C |- CallMethodE expr_b member targ* arg* : typ DYN
   ----
   -- Method_ok: p C |- expr_b member targ* arg* : functyp
   ----
@@ -312,7 +326,7 @@ rule Expr_ok/callmethode:
 
 ;; TODO check that builtin is defined on typdef
 rule Expr_ok/calltypee:
-  p C |- CallTypeE name member eps arg* : typ
+  p C |- CallTypeE name member eps arg* : typ DYN
   ----
   -- if typdef = $find_typdef(p, C, name)
   ----
@@ -327,7 +341,7 @@ rule Expr_ok/calltypee:
 ;; Nameless instantiation expression
 
 rule Expr_ok/inste:
-  p C |- InstE name targ* arg* : typ
+  p C |- InstE name targ* arg* : typ CTK
   -- (Type_ok: p C |- targ : typ_a)*
   -- if consdef = $find_consdef(p, C, name)
   -- if constyp = $specialize_consdef(consdef, typ_a*)
@@ -350,7 +364,8 @@ def $assignable(typ) = true
 
 rule Lval_ok/namee:
   p C |- NameE name : OK
-  -- if typ = $find_typ(p, C, name)
+  -- if typ dir ctk = $find_typ(p, C, name)
+  -- if dir = OUT \/ dir = INOUT
   -- if $assignable(typ)
 
 rule Lval_ok/arracce:

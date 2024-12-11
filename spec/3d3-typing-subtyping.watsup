@@ -1,13 +1,8 @@
-;; Subtyping
-
-relation Sub_expl: typ <: typ
-relation Sub_impl: typ <: typ
-
 ;; Explicit Casts
 
-rule Sub_expl/saturate:
+rule Sub_expl/canon:
   typ <: typ'
-  -- Sub_expl: $saturate_typ(typ) <: $saturate_typ(typ')
+  -- Sub_expl: $canon_typ(typ) <: $canon_typ(typ')
 
 rule Sub_expl/fbitt-boolt:
   FBitT 1 <: BoolT
@@ -95,11 +90,12 @@ rule Sub_expl/invalidt-headert:
 rule Sub_expl/invalidt-uniont:
   InvalidT <: UnionT id fields
 
+
 ;; Implicit Casts
 
-rule Sub_impl/saturate:
+rule Sub_impl/canon:
   typ <: typ'
-  -- Sub_impl: $saturate_typ(typ) <: $saturate_typ(typ')
+  -- Sub_impl: $canon_typ(typ) <: $canon_typ(typ')
 
 rule Sub_impl/intt-fbitt:
   IntT <: FBitT i

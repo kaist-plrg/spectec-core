@@ -19,9 +19,9 @@ rule Stmt_ok/emptys:
 
 rule Stmt_ok/assigns:
   p C f |- AssignS expr_l expr_r : C f
-  -- Expr_ok: p C |- expr_l : typ_l
+  -- Expr_ok: p C |- expr_l : typ_l DYN
   -- Lval_ok: p C |- expr_l : OK
-  -- Expr_ok: p C |- expr_r : typ_r
+  -- Expr_ok: p C |- expr_r : typ_r ctk_r
   -- Sub_impl: typ_r <: typ_l
 
 
@@ -68,7 +68,7 @@ rule Switch_tbl_cases_ok/seq:
 
 rule Stmt_ok/switchs-tbl:
   p C f |- SwitchS expr case* : C f'
-  -- Expr_ok: p C |- expr : TableEnumT id member
+  -- Expr_ok: p C |- expr : (TableEnumT id member) ctk_e
   -- if id = $concat_texts("action\\_list(" id_t ")")
   -- Switch_tbl_cases_ok: p C f id_t |- case* : f'
 
@@ -78,7 +78,7 @@ relation Switch_gen_label_ok:
 
 rule Switch_gen_label_ok/exprl:
   p C typ_s |- ExprL expr : OK
-  -- Expr_ok: p C |- expr : typ
+  -- Expr_ok: p C |- expr : typ ctk
   -- Sub_impl: typ <: typ_s
 
 rule Switch_gen_label_ok/defaultl:
@@ -111,9 +111,9 @@ rule Switch_gen_cases_ok/seq:
 
 rule Stmt_ok/switchs-gen:
   p C f |- SwitchS expr case* : C f'
-  -- Expr_ok: p C |- expr : typ
+  -- Expr_ok: p C |- expr : typ ctk
   ----
-  -- (if $saturate_typ(typ) = ErrT \/ $saturate_typ(typ) = FIntT w \/ $saturate_typ(typ) = FBitT w \/ $saturate_typ(typ) = EnumT id member* \/ $saturate_typ(typ) = SEnumT id typ' (member, val)*)
+  -- (if $canon_typ(typ) = ErrT \/ $canon_typ(typ) = FIntT w \/ $canon_typ(typ) = FBitT w \/ $canon_typ(typ) = EnumT id member* \/ $canon_typ(typ) = SEnumT id typ' (member, val)*)
   ----
   -- Switch_gen_cases_ok: p C f typ |- case* : f'
 
@@ -121,10 +121,10 @@ rule Stmt_ok/switchs-gen:
 
 rule Stmt_ok/ifs:
   p C f |- IfS expr_c stmt_t stmt_f : C f'
-  -- Expr_ok: p C |- expr_c : BoolT
+  -- Expr_ok: p C |- expr_c : BoolT ctk_c
   -- Stmt_ok: p C f |- stmt_t : C_t f_t
   -- Stmt_ok: p C f |- stmt_f : C_f f_f
-  -- if f' = $join_flow(f_t f_f)
+  -- if f' = $join_flow(f_t, f_f)
 
 
 ;; Block statement
@@ -153,7 +153,7 @@ rule Stmt_ok/rets-none:
 
 rule Stmt_ok/rets-none:
   LOCAL C f |- RetS expr? : C RET
-  -- Expr_ok: p C |- expr : typ
+  -- Expr_ok: p C |- expr : typ ctk
   -- if typ_r = $find_returntyp(C.LOCAL.KIND)
   -- Sub_impl: typ <: typ_r
 
@@ -186,10 +186,10 @@ rule Stmt_ok/callinsts:
   -- if constyp = $specialize_consdef(consdef, eps)
   -- Inst_ok: p C |- constyp eps : typ
   ----
-  -- if ($saturate_typ(typ) = ParserT paramtyp*) \/ ($saturate_typ(typ) = ControlT paramtyp*)
+  -- if ($canon_typ(typ) = ParserT paramtyp*) \/ ($canon_typ(typ) = ControlT paramtyp*)
   ----
   -- if (TOP id = name) \/ (CURRENT id = name)
-  -- if C' = $add_typ(p, C, id, typ)
+  -- if C' = $add_typ(p, C, id, typ NO CTK)
   ----
   -- Stmt_ok: p C' f |- CallMethodS (NameE (CURRENT id)) "apply" targ* arg* : C' f'
 
@@ -198,7 +198,7 @@ rule Stmt_ok/callinsts:
 
 rule Stmt_ok/transs:
   p C f |- TransS expr : C f
-  -- Expr_ok: p C |- expr : StateT
+  -- Expr_ok: p C |- expr : StateT ctk
 
 
 ;; Declaration statement

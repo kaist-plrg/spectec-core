@@ -363,7 +363,14 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
   | SpecT (var, typs) -> (
       let td = Ctx.find_opt Ctx.find_typedef_opt cursor var ctx in
       match td with
-      | Some (MonoD tdm) -> (tdm, tids_fresh)
+      | Some (MonoD tdm) ->
+          if typs <> [] then (
+            Format.printf
+              "(eval_type') Type definition %a is monomorphic but type \
+               arguments are supplied\n"
+              El.Pp.pp_var var;
+            assert false);
+          (tdm, tids_fresh)
       | Some (PolyD tdp) ->
           let typs, tids_fresh =
             List.fold_left
@@ -1878,7 +1885,11 @@ and align_params_with_args (params : Types.param list) (typ_args : Type.t list)
 and check_call_site (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) : unit
     =
   match cursor with
-  | Global | Block -> (
+  | Global ->
+      Format.printf "(check_call_site) %a cannot be called from top level\n"
+        FuncType.pp ft;
+      assert false
+  | Block -> (
       let kind = ctx.block.kind in
       match (kind, ft) with
       | ( Parser,
@@ -1889,8 +1900,7 @@ and check_call_site (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) : unit
           | BuiltinMethodT _ ) ) ->
           ()
       | _ ->
-          Format.printf
-            "(check_call_site) Function %a cannot be called from %a\n"
+          Format.printf "(check_call_site) %a cannot be called from %a\n"
             FuncType.pp ft Ctx.pp_blockkind kind;
           assert false)
   | Local -> (
@@ -1917,8 +1927,7 @@ and check_call_site (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) : unit
         ->
           ()
       | _ ->
-          Format.printf
-            "(check_call_site) Function %a cannot be called from %a\n"
+          Format.printf "(check_call_site) %a cannot be called from %a\n"
             FuncType.pp ft Ctx.pp_localkind kind;
           assert false)
 
@@ -3808,7 +3817,7 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let params_il, tids_fresh =
     List.fold_left
       (fun (params_il, tids_fresh) param ->
-        let param_il, tids_fresh_param = type_param Ctx.Local ctx' param in
+        let param_il, tids_fresh_param = type_param cursor ctx' param in
         (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
       ([], []) params
   in
@@ -4201,6 +4210,11 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 and type_value_set_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (typ : El.Ast.typ) (expr_size : El.Ast.expr) (annos : El.Ast.anno list) :
     Ctx.t * Il.Ast.decl' =
+  if not (cursor = Global || (cursor = Block && ctx.block.kind = Parser)) then (
+    Format.printf
+      "(type_value_set_decl) Value set declarations must be global or in a \
+       parser\n";
+    assert false);
   let annos_il = List.map (type_anno cursor ctx) annos in
   let typ_inner, tids_fresh = eval_type_with_check cursor ctx typ in
   assert (tids_fresh = []);
@@ -5484,13 +5498,8 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     TypeDef.t * ConsDef.t * Il.Ast.tparam list * Il.Ast.cparam list =
   if not (cursor = Ctx.Block && ctx.block.kind = Package) then (
     Format.printf
-      "(type_package_constructor_decl) Package constructor declarations must \
-       be in a package block\n";
-    assert false);
-  if id.it <> ctx.block.id then (
-    Format.printf
-      "(type_package_constructor_decl) Package constructor must have the same \
-       name as the object\n";
+      "(type_package_constructor_decl) Package constructor declaration must be \
+       in a package block\n";
     assert false);
   let cparams_il, tids_fresh =
     List.fold_left

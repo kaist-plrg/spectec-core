@@ -6,19 +6,28 @@ relation Eval_static: cursor context |- expr ~> val
 ;; Type evaluation
 
 relation Type_ok: cursor context |- type : typ
+
 relation Type_wf: typ : OK
+relation TypeDef_wf: typdef : OK
+relation FuncDef_wf: cursor context |- funcdef : OK
+relation ConsDef_wf: cursor context |- consdef : OK
+
+relation Sub_expl: typ <: typ
+relation Sub_impl: typ <: typ
+
 
 ;; Expression, Statement, and Declaration typing
+
+relation Expr_ok: cursor context |- expr : typ ctk
+
+relation Lval_ok: cursor context |- expr : OK
+relation Stmt_ok: cursor context flow |- stmt : context flow
+relation Stmts_ok: cursor context flow |- stmt* : context flow
+
+relation Decl_ok: cursor context |- decl : context
 
 relation Call_ok: cursor context |- functyp arg* : typ
 relation Func_ok: cursor context |- name targ* arg* : functyp
 relation Method_ok: cursor context |- expr member targ* arg* : functyp
 
 relation Inst_ok: cursor context |- constyp arg* : typ
-
-relation Lval_ok: cursor context |- expr : OK
-
-relation Expr_ok: cursor context |- expr : typ
-relation Stmt_ok: cursor context flow |- stmt : context flow
-relation Stmts_ok: cursor context flow |- stmt* : context flow
-relation Decl_ok: cursor context |- decl : context

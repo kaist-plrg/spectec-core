@@ -1,1 +1,9 @@
+;; String manipulation
+
 def $concat_texts(text*) : text   hint(show %)
+
+
+;; Set manipulation
+
+;; (???) Need to append an empty %latex() to the end, otherwise the last parentheses disappear
+def $distinct(syntax K, K*) : bool  hint(show %latex("\\neq")#(%2)#%latex())
