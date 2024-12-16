@@ -200,12 +200,22 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
       eq_params_alpha params_a params_b
   | PackageT typs_inner_a, PackageT typs_inner_b ->
       eq_typs_alpha typs_inner_a typs_inner_b
+  | TableT typ_a, TableT typ_b -> eq_typ_alpha typ_a typ_b
   | AnyT, AnyT -> true
+  | TableEnumT (id_a, members_a), TableEnumT (id_b, members_b) ->
+      E.eq_id' id_a id_b && E.eq_list E.eq_member' members_a members_b
+  | TableStructT (id_a, fields_a), TableStructT (id_b, fields_b) ->
+      E.eq_id' id_a id_b
+      && E.eq_pairs E.eq_member' eq_typ_alpha fields_a fields_b
   | SeqT typs_inner_a, SeqT typs_inner_b ->
+      eq_typs_alpha typs_inner_a typs_inner_b
+  | SeqDefaultT typs_inner_a, SeqDefaultT typs_inner_b ->
       eq_typs_alpha typs_inner_a typs_inner_b
   | RecordT fields_a, RecordT fields_b ->
       E.eq_pairs E.eq_member' eq_typ_alpha fields_a fields_b
-  | InvalidT, InvalidT -> true
+  | RecordDefaultT fields_a, RecordDefaultT fields_b ->
+      E.eq_pairs E.eq_member' eq_typ_alpha fields_a fields_b
+  | DefaultT, DefaultT | InvalidT, InvalidT -> true
   | SetT typ_inner_a, SetT typ_inner_b -> eq_typ_alpha typ_inner_a typ_inner_b
   | StateT, StateT -> true
   | _ -> false

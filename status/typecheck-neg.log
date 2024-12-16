@@ -514,7 +514,7 @@ Error while typechecking p4 file: test/program/ill-typed/issue345.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3522.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3589.p4
-(coerce_types_binary) Cannot coerce types table and table
+(type_binop_compare_equal) Type table cannot be compared of equality
 Error while typechecking p4 file: test/program/ill-typed/issue3589.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3611.p4
@@ -569,11 +569,11 @@ Error while typechecking p4 file: test/program/ill-typed/issue3813.p4
 Error while typechecking p4 file: test/program/ill-typed/issue3814.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3846.p4
-(coerce_types_binary) Cannot coerce types struct_table apply_result(tt) { hit bool; miss bool; action_run enum_table action_list(tt) } and struct_table apply_result(tt) { hit bool; miss bool; action_run enum_table action_list(tt) }
+(type_binop_compare_equal) Type struct_table apply_result(tt) { hit bool; miss bool; action_run enum_table action_list(tt) } cannot be compared of equality
 Error while typechecking p4 file: test/program/ill-typed/issue3846.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue3847.p4
-(coerce_types_binary) Cannot coerce types enum_table action_list(tt) and enum_table action_list(tt)
+(type_binop_compare_equal) Type enum_table action_list(tt) cannot be compared of equality
 Error while typechecking p4 file: test/program/ill-typed/issue3847.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue388.p4

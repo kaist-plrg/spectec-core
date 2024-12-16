@@ -1,0 +1,65 @@
+;;
+;; Type constructor checks
+;;
+
+def $is_base(typ) : bool                hint(show % IS BASE TYPE)
+
+def $is_prim(typ) : bool                hint(show % IS PRIMITIVE TYPE)
+def $is_voidt(typ) : bool               hint(show % IS VOID_T)
+def $is_errt(typ) : bool                hint(show % IS ERR_T)
+def $is_matchkindt(typ) : bool          hint(show % IS MATCH_KIND_T)
+def $is_strt(typ) : bool                hint(show % IS STR_T)
+def $is_boolt(typ) : bool               hint(show % IS BOOL_T)
+
+def $is_num(typ) : bool                 hint(show % IS NUMERIC TYPE)
+def $is_intt(typ) : bool                hint(show % IS INT_T)
+def $is_fintt(typ) : bool               hint(show % IS FINT_T)
+def $is_fbitt(typ) : bool               hint(show % IS FBIT_T)
+def $is_vbitt(typ) : bool               hint(show % IS VBIT_T)
+
+def $is_abstract(typ) : bool            hint(show % IS ABSTRACT TYPE)
+def $is_vart(typ) : bool                hint(show % IS VAR_T)
+
+def $is_def(typ) : bool                 hint(show % IS DEFINED TYPE)
+
+def $is_alias(typ) : bool               hint(show % IS ALIAS TYPE)
+def $is_deft(typ) : bool                hint(show % IS DEF_T)
+
+def $is_data(typ) : bool                hint(show % IS DATA TYPE)
+def $is_newt(typ) : bool                hint(show % IS NEW_T)
+def $is_newt_in_senumt(typ) : bool      hint(show % IS NEW_T IN SENUM_T)
+def $is_enumt(typ) : bool               hint(show % IS ENUM_T)
+def $is_senumt(typ) : bool              hint(show % IS SENUM_T)
+def $is_listt(typ) : bool               hint(show % IS LIST_T)
+def $is_tuplet(typ) : bool              hint(show % IS TUPLE_T)
+def $is_tuplet_in_sett(typ) : bool      hint(show % IS TUPLE_T IN SEQ_T)
+def $is_stackt(typ) : bool              hint(show % IS STACK_T)
+def $is_structt(typ) : bool             hint(show % IS STRUCT_T)
+def $is_structt_in_headert(typ) : bool  hint(show % IS STRUCT_T IN HEADER_T)
+def $is_headert(typ) : bool             hint(show % IS HEADER_T)
+def $is_uniont(typ) : bool              hint(show % IS UNION_T)
+
+def $is_obj(typ) : bool                 hint(show % IS OBJECT TYPE)
+def $is_externt(typ) : bool             hint(show % IS EXTERN_T)
+def $is_parsert(typ) : bool             hint(show % IS PARSER_T)
+def $is_controlt(typ) : bool            hint(show % IS CONTROL_T)
+def $is_packaget(typ) : bool            hint(show % IS PACKAGE_T)
+def $is_tablet(typ) : bool              hint(show % IS TABLE_T)
+
+def $is_synth(typ) : bool               hint(show % IS SYNTHESIZED TYPE)
+def $is_seqt(typ) : bool                hint(show % is SEQ_T)
+def $is_seqt_in_sett(typ) : bool        hint(show % is SEQ_T IN SET_T)
+
+;;
+;; Function type constructor checks
+;;
+
+def $is_builtinmethodt(functyp) : bool            hint(show % IS BUILTIN_METHOD_T)
+def $is_actiont(functyp) : bool                   hint(show % IS ACTION_T)
+def $is_parserapplymethodt(functyp) : bool        hint(show % IS PARSER_APPLY_METHOD_T)
+def $is_controlapplymethodt(functyp) : bool       hint(show % IS CONTROL_APPLY_METHOD_T)
+def $is_tableapplymethodt(functyp) : bool         hint(show % IS TABLE_APPLY_METHOD_T)
+def $is_externfunct(functyp) : bool               hint(show % IS EXTERN_FUNC_T)
+def $is_funct(functyp) : bool                     hint(show % IS FUNC_T)
+def $is_externmethodt(functyp) : bool             hint(show % IS EXTERN_METHOD_T)
+def $is_externabstractmethodt(functyp) : bool     hint(show % IS EXTERN_ABSTRACT_METHOD_T)

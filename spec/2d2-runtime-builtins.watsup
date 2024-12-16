@@ -1,4 +1,6 @@
+;;
 ;; Size
+;;
 
 ;; (???) Need to append an empty %latex() to the end, otherwise the last parentheses disappear
 def $size_builtin(typ, member) : val  hint(show %2#(%1)#%latex(""))

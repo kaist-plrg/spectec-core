@@ -5493,8 +5493,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    (they cannot be in, out, or inout). Otherwise package types are very similar to parser type declarations. *)
 
 and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (id : El.Ast.id) (tparams : El.Ast.tparam list)
-    (cparams : El.Ast.cparam list) :
+    (tparams : El.Ast.tparam list) (cparams : El.Ast.cparam list) :
     TypeDef.t * ConsDef.t * Il.Ast.tparam list * Il.Ast.cparam list =
   if not (cursor = Ctx.Block && ctx.block.kind = Package) then (
     Format.printf
@@ -5554,7 +5553,7 @@ and type_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let ctx = Ctx.set_id Ctx.Block id.it ctx in
     let ctx = Ctx.set_blockkind Ctx.Package ctx in
     let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
-    type_package_constructor_decl Ctx.Block ctx id tparams cparams
+    type_package_constructor_decl Ctx.Block ctx tparams cparams
   in
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   let ctx =

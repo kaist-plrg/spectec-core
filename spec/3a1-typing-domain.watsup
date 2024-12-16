@@ -1,4 +1,6 @@
+;;
 ;; Compile-time known-ness
+;;
 
 syntax ctk = LCTK | CTK | DYN
 
@@ -19,7 +21,9 @@ def $joins_ctk(ctk_a ctk_b) = $join_ctk(ctk_a, ctk_b)
 def $joins_ctk(ctk_a ctk_b ctk_c*) = $joins_ctk(ctk_d ctk_c*) 
   -- if ctk_d = $join_ctk(ctk_a, ctk_b)
 
+;;
 ;; Control Flow
+;;
 
 syntax flow = CONT | RET
 
@@ -29,18 +33,20 @@ def $join_flow(flow, flow) : flow  hint(show %1 %latex("\\sqcup_\\texttt{flow}")
 def $join_flow(RET, RET) = RET
 def $join_flow(f_a, f_b) = CONT
 
-
+;;
 ;; Runtime type
+;;
 
 syntax rtyp = typ dir ctk
 
-
+;;
 ;; Environments
+;;
 
-syntax venv = map(id, val)
-syntax tenv = map(id, rtyp)
-syntax tdenv = map(tid, typdef)
-syntax fdenv = map(fid, funcdef)
-syntax cdenv = map(fid, consdef)
+syntax venv hint(show %latex("\\Sigma")) = map(id, val)
+syntax tenv hint(show %latex("\\Gamma")) = map(id, rtyp)
+syntax tdenv hint(show %latex("\\Delta_\\texttt{t}")) = map(tid, typdef)
+syntax fdenv hint(show %latex("\\Delta_\\texttt{f}")) = map(fid, funcdef)
+syntax cdenv hint(show %latex("\\Delta_\\texttt{c}")) = map(fid, consdef)
 
 def $find_env(syntax K, syntax V, map(K, V), K) : V  hint(show %3#`[%4])

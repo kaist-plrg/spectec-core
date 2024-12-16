@@ -1,4 +1,6 @@
+;;
 ;; Value
+;;
 
 syntax val =
   | ErrV member                     hint(show ERR#_#V %)
@@ -26,8 +28,12 @@ syntax val =
   | DefaultV                        hint(show DEFAULT#_#V)
   | InvalidV                        hint(show INVALID#_#V)
 
-def $reduce_num(val) : int
+;;
+;; Helpers
+;;
 
-def $reduce_num(IntV i) = i
-def $reduce_num(FIntV w i) = i
-def $reduce_num(FBitV w i) = i
+def $num(val) : int
+
+def $num(IntV i) = i
+def $num(FIntV w i) = i
+def $num(FBitV w i) = i

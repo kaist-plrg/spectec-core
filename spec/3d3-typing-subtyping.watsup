@@ -1,4 +1,6 @@
+;;
 ;; Explicit Casts
+;;
 
 rule Sub_expl/canon:
   typ <: typ'
@@ -91,7 +93,9 @@ rule Sub_expl/invalidt-uniont:
   InvalidT <: UnionT id fields
 
 
+;;
 ;; Implicit Casts
+;;
 
 rule Sub_impl/canon:
   typ <: typ'

@@ -1,44 +1,37 @@
-;; Statements
-
-rule Stmts_ok/empty:
-  p C f |- eps : C f
-
-rule Stmts_ok/seq:
-  p C f |- stmt_h stmt_t* : C'' f''
-  -- Stmt_ok: p C f |- stmt_h : C' f'
-  -- Stmts_ok: p C' f' |- stmt_t* : C'' f''
-
-
+;;
 ;; Empty statement
+;;
 
 rule Stmt_ok/emptys:
   p C f |- EmptyS : C f
 
-
+;;
 ;; Assignment statement
+;;
 
 rule Stmt_ok/assigns:
   p C f |- AssignS expr_l expr_r : C f
   -- Expr_ok: p C |- expr_l : typ_l DYN
-  -- Lval_ok: p C |- expr_l : OK
+  -- Lval_ok: p C |- expr_l
   -- Expr_ok: p C |- expr_r : typ_r ctk_r
   -- Sub_impl: typ_r <: typ_l
 
-
+;;
 ;; Switch statement
 ;; TODO check for duplicate label and non-last default label
+;;
 
 relation Switch_tbl_label_ok:
-  cursor context id |- switchlabel : OK
+  cursor context id |- switchlabel
 
 rule Switch_tbl_label_ok/exprl:
-  p C id_t |- ExprL (NameE (CURRENT id_a)) : OK
+  p C id_t |- ExprL (NameE (CURRENT id_a))
   -- if id_e = $concat_texts("action\\_list(" id_t ")")
   -- if id = $concat_texts(id_e "." id_a)
   -- if TableEnumFieldV id_e id_a = $find_val(p, C, CURRENT id)
 
 rule Switch_tbl_label_ok/defaultl:
-  p C id_t |- DefaultL : OK
+  p C id_t |- DefaultL
 
 
 relation Switch_tbl_case_ok:
@@ -46,12 +39,12 @@ relation Switch_tbl_case_ok:
 
 rule Switch_tbl_case_ok/matchc:
   p C f id_t |- MatchC label block : f'
-  -- Switch_tbl_label_ok: p C id_t |- label : OK
+  -- Switch_tbl_label_ok: p C id_t |- label
   -- Stmt_ok: p C f |- BlockS block : C' f'
 
 rule Switch_tbl_case_ok/fallc:
   p C f id_t |- FallC label : f
-  -- Switch_tbl_label_ok: p C id_t |- label : OK
+  -- Switch_tbl_label_ok: p C id_t |- label
 
 
 relation Switch_tbl_cases_ok:
@@ -74,27 +67,27 @@ rule Stmt_ok/switchs-tbl:
 
 
 relation Switch_gen_label_ok:
-  cursor context typ |- switchlabel : OK
+  cursor context typ |- switchlabel
 
 rule Switch_gen_label_ok/exprl:
-  p C typ_s |- ExprL expr : OK
+  p C typ_s |- ExprL expr
   -- Expr_ok: p C |- expr : typ ctk
   -- Sub_impl: typ <: typ_s
 
 rule Switch_gen_label_ok/defaultl:
-  p C typ_s |- DefaultL : OK
+  p C typ_s |- DefaultL
 
 relation Switch_gen_case_ok:
   cursor context flow typ |- switchcase : flow
 
 rule Switch_gen_case_ok/matchc:
   p C f typ_s |- MatchC label block : f'
-  -- Switch_gen_label_ok: p C typ_s |- label : OK
+  -- Switch_gen_label_ok: p C typ_s |- label
   -- Stmt_ok: p C f |- BlockS block : C' f'
 
 rule Switch_gen_case_ok/fallc:
   p C f typ_s |- FallC label : f
-  -- Switch_gen_label_ok: p C typ_s |- label : OK
+  -- Switch_gen_label_ok: p C typ_s |- label
 
 
 relation Switch_gen_cases_ok:
@@ -117,7 +110,9 @@ rule Stmt_ok/switchs-gen:
   ----
   -- Switch_gen_cases_ok: p C f typ |- case* : f'
 
+;;
 ;; If statement
+;;
 
 rule Stmt_ok/ifs:
   p C f |- IfS expr_c stmt_t stmt_f : C f'
@@ -126,8 +121,9 @@ rule Stmt_ok/ifs:
   -- Stmt_ok: p C f |- stmt_f : C_f f_f
   -- if f' = $join_flow(f_t, f_f)
 
-
+;;
 ;; Block statement
+;;
 
 rule Stmt_ok/blocks:
   p C f |- BlockS block : C''' f'
@@ -136,14 +132,16 @@ rule Stmt_ok/blocks:
   -- Stmts_ok: p C' f |- stmt* : C'' f'
   -- if C''' = $exit(C'')
 
-
+;;
 ;; Exit statement
+;;
 
 rule Stmt_ok/exits:
   p C f |- ExitS : C f
 
-
+;;
 ;; Return statement
+;;
 
 rule Stmt_ok/rets-none:
   LOCAL C f |- RetS eps : C RET
@@ -151,14 +149,15 @@ rule Stmt_ok/rets-none:
   -- if typ_r = $find_returntyp(C.LOCAL.KIND)
   -- Sub_impl: typ <: typ_r
 
-rule Stmt_ok/rets-none:
+rule Stmt_ok/rets-some:
   LOCAL C f |- RetS expr? : C RET
   -- Expr_ok: p C |- expr : typ ctk
   -- if typ_r = $find_returntyp(C.LOCAL.KIND)
   -- Sub_impl: typ <: typ_r
 
-
+;;
 ;; Function call statement
+;;
 
 rule Stmt_ok/callfuncs:
   p C f |- CallFuncS name targ* arg* : C f
@@ -167,8 +166,9 @@ rule Stmt_ok/callfuncs:
   ----
   -- Call_ok: p C |- functyp arg* : typ
 
-
+;;
 ;; Method call statement
+;;
 
 rule Stmt_ok/callmethods:
   p C f |- CallMethodS expr_b member targ* arg* : C f
@@ -177,8 +177,9 @@ rule Stmt_ok/callmethods:
   ----
   -- Call_ok: p C |- functyp arg* : typ
 
-
+;;
 ;; Instantiation statement
+;;
 
 rule Stmt_ok/callinsts:
   p C f |- CallInstS name targ* arg* : C f
@@ -193,16 +194,30 @@ rule Stmt_ok/callinsts:
   ----
   -- Stmt_ok: p C' f |- CallMethodS (NameE (CURRENT id)) "apply" targ* arg* : C' f'
 
-
+;;
 ;; Transition statement
+;;
 
 rule Stmt_ok/transs:
   p C f |- TransS expr : C f
   -- Expr_ok: p C |- expr : StateT ctk
 
-
+;;
 ;; Declaration statement
+;;
 
 rule Stmt_ok/decls:
   p C f |- DeclS decl : C' f
   -- Decl_ok: p C |- decl : C'
+
+;;
+;; Statement sequence
+;;
+
+rule Stmts_ok/nil:
+  p C f |- eps : C f
+
+rule Stmts_ok/cons:
+  p C f |- stmt_h stmt_t* : C'' f''
+  -- Stmt_ok: p C f |- stmt_h : C' f'
+  -- Stmts_ok: p C' f' |- stmt_t* : C'' f''

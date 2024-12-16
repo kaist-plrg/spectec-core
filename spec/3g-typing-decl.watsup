@@ -1,4 +1,6 @@
+;;
 ;; Constant declaration
+;;
 
 rule Decl_ok/constd:
   p C |- ConstD id type expr : C''
@@ -11,25 +13,27 @@ rule Decl_ok/constd:
   -- if C' = $add_val(p, C, id, val)
   -- if C'' = $add_typ(p, C', id, typ_t NO LCTK)
 
-
+;;
 ;; Variable declaration
+;;
 
-rule Decl_ok/vard-init:
+rule Decl_ok/vard-none:
+  p C |- VarD id type eps : C'
+  -- Type_ok: p C |- type : typ_t
+  -- if C' = $add_typ(p, C, id, typ_t INOUT DYN)
+
+rule Decl_ok/vard-some:
   p C |- VarD id type expr? : C'
   -- Type_ok: p C |- type : typ_t
   -- Expr_ok: p C |- expr : typ_e ctk_e
   -- Sub_impl: typ_e <: typ_t
   -- if C' = $add_typ(p, C, id, typ_t INOUT DYN)
 
-rule Decl_ok/vard-noinit:
-  p C |- VarD id type eps : C'
-  -- Type_ok: p C |- type : typ_t
-  -- if C' = $add_typ(p, C, id, typ_t INOUT DYN)
-
-
+;;
 ;; Instance declaration
+;;
 
-rule Decl_ok/instd-noinit:
+rule Decl_ok/instd-none:
   p C |- InstD id name_inst targ* arg* eps : C'
   ----
   -- (Type_ok: p C |- targ : typ_a)*
@@ -40,8 +44,9 @@ rule Decl_ok/instd-noinit:
   -- Inst_ok: p C |- ct arg* : typ
   -- if C' = $add_typ(p, C, id, typ NO CTK)
 
-
+;;
 ;; Error declaration
+;;
 
 rule Decl_ok/errd:
   GLOBAL C |- ErrD member* : C''
@@ -56,8 +61,9 @@ rule Decl_ok/errd:
   ----
   -- if C'' = $add_typs(GLOBAL, C, id_e*, rtyp_e*)
 
-
+;;
 ;; Match kind declaration
+;;
 
 rule Decl_ok/matchkindd:
   GLOBAL C |- MatchKindD member* : C''
@@ -72,8 +78,9 @@ rule Decl_ok/matchkindd:
   ----
   -- if C'' = $add_typs(GLOBAL, C, id_m*, rtyp_m*)
 
-
+;;
 ;; Struct declaration
+;;
 
 rule Decl_ok/structd:
   GLOBAL C |- StructD id tparam* (member_f, type_f)* : C'
@@ -82,12 +89,14 @@ rule Decl_ok/structd:
   ----
   -- if typ_s = StructT id (member_f, typ_f)*
   -- if td = PolyD tparam* typ_s
-  -- TypeDef_wf: td : OK
+  -- if tidset = $bound_tid(C)
+  -- TypeDef_wf: tidset |- td
   ----
   -- if C' = $add_typdef(GLOBAL, C, id, td)
 
-
+;;
 ;; Header declaration
+;;
 
 rule Decl_ok/headerd:
   GLOBAL C |- HeaderD id tparam* (member_f, type_f)* : C'
@@ -96,12 +105,14 @@ rule Decl_ok/headerd:
   ----
   -- if typ_s = HeaderT id (member_f, typ_f)*
   -- if td = PolyD tparam* typ_s
-  -- TypeDef_wf: td : OK
+  -- if tidset = $bound_tid(C)
+  -- TypeDef_wf: tidset |- td
   ----
   -- if C' = $add_typdef(GLOBAL, C, id, td)
 
-
+;;
 ;; Header union declaration
+;;
 
 rule Decl_ok/uniond:
   GLOBAL C |- UnionD id tparam* (member_f, type_f)* : C'
@@ -110,12 +121,14 @@ rule Decl_ok/uniond:
   ----
   -- if typ_s = UnionT id (member_f, typ_f)*
   -- if td = PolyD tparam* typ_s
-  -- TypeDef_wf: td : OK
+  -- if tidset = $bound_tid(C)
+  -- TypeDef_wf: tidset |- td
   ----
   -- if C' = $add_typdef(GLOBAL, C, id, td)
 
-
+;;
 ;; Enum declaration
+;;
 
 rule Decl_ok/enumd:
   GLOBAL C |- EnumD id member* : C'''
@@ -132,14 +145,17 @@ rule Decl_ok/enumd:
   -- if C'' = $add_typs(GLOBAL, C, id_e*, rtyp_e*)
   ----
   -- if td = MonoD typ_e
-  -- TypeDef_wf: td : OK
+  -- if tidset = $bound_tid(C)
+  -- TypeDef_wf: tidset |- td
   -- if C''' = $add_typdef(GLOBAL, C, id, td)
 
-
+;;
 ;; Serializable enum declaration
+;;
 
-
+;;
 ;; New type declaration
+;;
 
 rule Decl_ok/newtyped:
   GLOBAL C |- NewTypeD id type : C'
@@ -148,11 +164,13 @@ rule Decl_ok/newtyped:
   -- if typ_n = NewT id typ
   ----
   -- if td = MonoD typ_n
-  -- TypeDef_wf: td : OK
+  -- if tidset = $bound_tid(C)
+  -- TypeDef_wf: tidset |- td
   -- if C' = $add_typdef(GLOBAL, C, id, td)
 
-
+;;
 ;; Typedef declaration
+;;
 
 rule Decl_ok/typedefd:
   GLOBAL C |- TypeDefD id type : C'
@@ -161,11 +179,13 @@ rule Decl_ok/typedefd:
   -- if typ_d = DefT typ
   ----
   -- if td = MonoD typ_d
-  -- TypeDef_wf: td : OK
+  -- if tidset = $bound_tid(C)
+  -- TypeDef_wf: tidset |- td
   -- if C' = $add_typdef(GLOBAL, C, id, td)
 
-
+;;
 ;; Parameter typing
+;;
 
 relation Param_ok:
   cursor context |- param : paramtyp
@@ -181,8 +201,9 @@ rule Param_ok/param-nodefault:
   p C |- id dir type eps : id dir typ_p eps
   -- Type_ok: p C |- type : typ_p
 
-
+;;
 ;; Action declaration
+;;
 
 rule Decl_ok/actiond:
   p C |- ActionD id param* block : C'''
@@ -199,11 +220,15 @@ rule Decl_ok/actiond:
   -- Stmt_ok: LOCAL C'' CONT |- BlockS block : C''' CONT
   ----
   -- if fd = MonoFD (ActionT paramtyp*)
-  -- FuncDef_wf: p C |- fd : OK
+  ----
+  -- if tidset = $bound_tid(C)
+  -- FuncDef_wf: tidset |- fd
+  ----
   -- if C''' = $add_funcdef(p, C, id, fd)
 
-
+;;
 ;; Function declaration
+;;
 
 rule Decl_ok/funcd:
   GLOBAL C |- FuncD id type_r tparam* param* block : C'''
@@ -221,12 +246,16 @@ rule Decl_ok/funcd:
   -- Stmt_ok: LOCAL C'' CONT |- BlockS block : C''' f
   -- if f = RET \/ (f = CONT /\ typ_r = VoidT)
   ----
-  -- if fd = PolyFD tparam* (FunctionT paramtyp* typ_r)
-  -- FuncDef_wf: GLOBAL C |- fd : OK
+  -- if fd = PolyFD tparam* (FuncT paramtyp* typ_r)
+  ----
+  -- if tidset = $bound_tid(C)
+  -- FuncDef_wf: tidset |- fd
+  ----
   -- if C''' = $add_funcdef(GLOBAL, C, id, fd)
 
-
+;;
 ;; Extern function declaration
+;;
 
 rule Decl_ok/externfuncd:
   GLOBAL C |- ExternFuncD id type_r tparam* param* : C'''
@@ -241,15 +270,20 @@ rule Decl_ok/externfuncd:
   -- if (id_p dir_p typ_p val_p = paramtyp)*
   -- if C'' = $add_typs(LOCAL, C, id_p*, (typ_p dir_p DYN)*)
   ----
-  -- if fd = PolyFD tparam* (ExternFunctionT paramtyp* typ_r)
-  -- FuncDef_wf: GLOBAL C |- fd : OK
+  -- if fd = PolyFD tparam* (ExternFuncT paramtyp* typ_r)
+  ----
+  -- if tidset = $bound_tid(C)
+  -- FuncDef_wf: tidset |- fd
+  ----
   -- if C''' = $add_funcdef(GLOBAL, C, id, fd)
 
-
+;;
 ;; Extern object declaration
+;;
 
-
+;;
 ;; Value set declaration
+;;
 
 rule Decl_ok/valuesetd:
   p C |- ValueSetD id type expr : C'
@@ -262,8 +296,9 @@ rule Decl_ok/valuesetd:
   ----
   -- if C' = $add_typ(p, C, id, typ NO CTK)
 
-
+;;
 ;; Parser type declaration
+;;
 
 rule Decl_ok/parsertyped:
   GLOBAL C |- ParserTypeD id tparam* param* : C'''
@@ -277,14 +312,17 @@ rule Decl_ok/parsertyped:
   -- if td = PolyD tparam* (ParserT paramtyp*)
   -- if C''' = $add_typdef(GLOBAL, C, id, td)
 
-
+;;
 ;; Parser declaration
+;;
 
-
+;;
 ;; Table declaration
+;;
 
-
+;;
 ;; Control type declaration
+;;
 
 rule Decl_ok/controltyped:
   GLOBAL C |- ControlTypeD id tparam* param* : C'''
@@ -298,11 +336,13 @@ rule Decl_ok/controltyped:
   -- if td = PolyD tparam* (ControlT paramtyp*)
   -- if C''' = $add_typdef(GLOBAL, C, id, td)
 
-
+;;
 ;; Control declaration
+;;
 
-
+;;
 ;; Package declaration
+;;
 
 rule Decl_ok/packagetyped:
   GLOBAL C |- PackageTypeD id tparam* cparam* : C''''
@@ -315,11 +355,26 @@ rule Decl_ok/packagetyped:
   ----
   -- if (id_cp dir_cp typ_cp val_cp = paramtyp)*
   -- if ptd = PolyD tparam* (PackageT typ_cp*)
-  -- TypeDef_wf: ptd : OK
+  -- if tidset = $bound_tid(C)
+  -- TypeDef_wf: tidset |- ptd
   ----
   -- if typ = SpecT ptd (VarT tparam)*
-  -- if cd = tparam* paramtyp* typ
-  -- ConsDef_wf: BLOCK C'' |- cd : OK
+  -- if cd = tparam* (paramtyp* typ)
+  ----
+  -- if tidset = $bound_tid(C')
+  -- ConsDef_wf: tidset' |- cd
   ----
   -- if C''' = $add_typdef(GLOBAL, C, id, ptd)
   -- if C'''' = $add_consdef(GLOBAL, C''', id, cd)
+
+;;
+;; Declaration sequence
+;;
+
+rule Decls_ok/nil:
+  p C |- eps : C
+
+rule Decls_ok/cons:
+  p C |- decl_h decl_t* : C''
+  -- Decl_ok: p C |- decl_h : C'
+  -- Decls_ok: p C' |- decl_t* : C''

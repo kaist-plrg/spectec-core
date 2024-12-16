@@ -1,0 +1,178 @@
+;;
+;; Nominal and structural types
+;;
+
+def $nominal(typ) : bool
+
+def $nominal(SpecT ptd typ_a*) = $nominal(typ)
+  -- if typ = $specialize_typdef(ptd, typ_a*)
+def $nominal(DefT typ) = $nominal(typ)
+def $nominal(NewT id typ) = true
+def $nominal(EnumT id member*) = true
+def $nominal(SEnumT id typ (member, val)*) = true
+def $nominal(StructT id (member, typ)*) = true
+def $nominal(HeaderT id (member, typ)*) = true
+def $nominal(UnionT id (member, typ)*) = true
+def $nominal(ExternT id fmap) = true
+def $nominal(TableT typ) = true
+def $nominal(typ) = false
+  -- otherwise
+
+;;
+;; Alpha-equivalence of types
+;;
+
+relation Type_alpha: typ ~~ typ
+
+
+rule Type_alpha/basetyp:
+  btyp ~~ btyp
+  -- if btyp = btyp
+
+rule Type_alpha/vart:
+  (VarT id) ~~ (VarT id)
+
+rule Type_alpha/spect-nominal:
+  (SpecT ptd_a typ_a*) ~~ (SpecT ptd_b typ_b*)
+  ----
+  -- if typ_a' = $specialize_typdef(ptd_a, typ_a*)
+  -- if typ_b' = $specialize_typdef(ptd_b, typ_b*)
+  ----
+  -- Type_alpha: typ_a' ~~ typ_b'
+  ----
+  -- if $nominal(typ_a') /\ $nominal(typ_b')
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+rule Type_alpha/spect-structural:
+  (SpecT ptd_a typ_a*) ~~ (SpecT ptd_b typ_b*)
+  ----
+  -- if typ_a' = $specialize_typdef(ptd_a, typ_a*)
+  -- if typ_b' = $specialize_typdef(ptd_b, typ_b*)
+  ----
+  -- Type_alpha: typ_a' ~~ typ_b'
+  ----
+  -- if ~$nominal(typ_a') /\ ~$nominal(typ_b')
+
+rule Type_alpha/deft-left:
+  (DefT typ_a) ~~ typ_b
+  -- Type_alpha: typ_a ~~ typ_b
+
+rule Type_alpha/deft-right:
+  typ_a ~~ (DefT typ_b)
+  -- Type_alpha: typ_a ~~ typ_b
+
+rule Type_alpha/newt:
+  (NewT id_a typ_a) ~~ (NewT id_b typ_b)
+  -- if id_a = id_b
+  -- Type_alpha: typ_a ~~ typ_b
+
+rule Type_alpha/enumt:
+  (EnumT id_a member_a*) ~~ (EnumT id_b member_b*)
+  -- if id_a = id_b
+  -- if (member_a = member_b)*
+
+rule Type_alpha/senumt:
+  (SEnumT id_a typ_a (member_a, val_a)*) ~~ (SEnumT id_b typ_b (member_b, val_b)*)
+  -- if id_a = id_b
+  -- Type_alpha: typ_a ~~ typ_b
+  -- if (member_a = member_b)*
+  -- if (val_a = val_b)*
+
+rule Type_alpha/listt:
+  (ListT typ_a) ~~ (ListT typ_b)
+  -- Type_alpha: typ_a ~~ typ_b
+
+rule Type_alpha/tuplet:
+  (TupleT typ_a*) ~~ (TupleT typ_b*)
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+rule Type_alpha/stackt:
+  (StackT typ_a size_a) ~~ (StackT typ_b size_b)
+  -- Type_alpha: typ_a ~~ typ_b
+  -- if size_a = size_b
+
+rule Type_alpha/structt:
+  (StructT id_a (member_a, typ_a)*) ~~ (StructT id_b (member_b, typ_b)*)
+  -- if id_a = id_b
+  -- if (member_a = member_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+rule Type_alpha/headert:
+  (HeaderT id_a (member_a, typ_a)*) ~~ (HeaderT id_b (member_b, typ_b)*)
+  -- if id_a = id_b
+  -- if (member_a = member_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+rule Type_alpha/uniont:
+  (UnionT id_a (member_a, typ_a)*) ~~ (UnionT id_b (member_b, typ_b)*)
+  -- if id_a = id_b
+  -- if (member_a = member_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+;;rule Type_alpha/externt:
+;;  (ExternT id_a fmap_a) ~~ (ExternT id_b fmap_b)
+
+rule Type_alpha/parsert:
+  (ParserT paramtyp_a*) ~~ (ParserT paramtyp_b*)
+  -- if (id_a dir_a typ_a val_a = paramtyp_a)*
+  -- if (id_b dir_b typ_b val_b = paramtyp_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+rule Type_alpha/controlt:
+  (ControlT paramtyp_a*) ~~ (ControlT paramtyp_b*)
+  -- if (id_a dir_a typ_a val_a = paramtyp_a)*
+  -- if (id_b dir_b typ_b val_b = paramtyp_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+rule Type_alpha/packaget:
+  (PackageT typ_a*) ~~ (PackageT typ_b*)
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+rule Type_alpha/tablet:
+  (TableT typ_a) ~~ (TableT typ_b)
+  -- Type_alpha: typ_a ~~ typ_b
+
+rule Type_alpha/defaultt:
+  DefaultT ~~ DefaultT
+
+rule Type_alpha/seqt:
+  (SeqT typ_a*) ~~ (SeqT typ_b*)
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+rule Type_alpha/seqdefaultt:
+  (SeqDefaultT typ_a*) ~~ (SeqDefaultT typ_b*)
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+rule Type_alpha/recordt:
+  (RecordT (member_a, typ_a)*) ~~ (RecordT (member_b, typ_b)*)
+  -- if (member_a = member_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+rule Type_alpha/recorddefaultt:
+  (RecordDefaultT (member_a, typ_a)*) ~~ (RecordDefaultT (member_b, typ_b)*)
+  -- if (member_a = member_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+rule Type_alpha/invalidt:
+  InvalidT ~~ InvalidT
+
+rule Type_alpha/sett:
+  (SetT typ_a) ~~ (SetT typ_b)
+  -- Type_alpha: typ_a ~~ typ_b
+
+rule Type_alpha/statet:
+  StateT ~~ StateT
+
+rule Type_alpha/tableenumt:
+  (TableEnumT id_a member_a*) ~~ (TableEnumT id_b member_b*)
+  -- if id_a = id_b
+  -- if (member_a = member_b)*
+
+rule Type_alpha/tablestructt:
+  (TableStructT id_a (member_a, typ_a)*) ~~ (TableStructT id_b (member_b, typ_b)*)
+  -- if id_a = id_b
+  -- if (member_a = member_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+rule Type_alpha/anyt:
+  AnyT ~~ AnyT

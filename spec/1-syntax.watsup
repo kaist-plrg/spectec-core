@@ -1,41 +1,61 @@
+;;
 ;; Numbers
+;;
 
 syntax num =
   | INT int       hint(show %)
   | FINT int int  hint(show %#S#%)
   | FBIT int int  hint(show %#W#%)
 
+;;
 ;; Texts
+;;
 
+;;
 ;; Identifiers
+;;
 
 syntax id = text
 
+;;
 ;; Variables (scoped identifiers)
+;;
 
 syntax name =
   | TOP id      hint(show .%)
   | CURRENT id  hint(show %)
 
+;;
 ;; Members
+;;
 
 syntax member = id
 
+;;
 ;; Match kinds
+;;
 
 syntax matchkind = id
 
+;;
 ;; State labels
+;;
 
 syntax statelabel = id
 
+;;
 ;; Unary operators
+;;
 
 syntax unop =
   | BNOT    hint(show %latex("\\sim"))
   | LNOT    hint(show %latex("!"))
   | UPLUS   hint(show %latex("+"))
   | UMINUS  hint(show %latex("-"))
+
+;;
+;; Binary operators
+;;
 
 syntax binop =
   | PLUS    hint(show %latex("+"))
@@ -60,11 +80,15 @@ syntax binop =
   | LAND    hint(show %latex("\\&\\&"))
   | LOR     hint(show %latex("||"))
 
+;;
 ;; Directions
+;;
 
 syntax dir = | NO | IN | OUT | INOUT
 
+;;
 ;; Types
+;;
 
 syntax type =
   | VoidT              hint(show VOID)
@@ -82,41 +106,57 @@ syntax type =
   | SpecT name type*    hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
   | AnyT               hint(show _)
 
+;;
 ;; Type parameters
+;;
 
 syntax tparam = id
 
+;;
 ;; Parameters
+;;
 
 syntax param = id dir type expr?
 
+;;
 ;; Constructor parameters
+;;
 
 syntax cparam = param
 
+;;
 ;; Type arguments
+;;
 
 syntax targ = type
 
+;;
 ;; Arguments
+;;
 
 syntax arg =
   | ExprA expr     hint(show %)
   | NameA id expr  hint(show % = %)
   | AnyA           hint(show _)
 
-;; Keyset Expressions
+;;
+;; Keyset expressions
+;;
 
 syntax keyset =
   | ExprK expr  hint(show %)
   | DefaultK    hint(show DEFAULT)
   | AnyK        hint(show _)
 
+;;
 ;; Select-cases for select
+;;
 
 syntax selectcase = keyset* statelabel
 
+;;
 ;; Expressions
+;;
 
 syntax expr =
   | BoolE bool                            hint(show %)
@@ -147,12 +187,15 @@ syntax expr =
   | CallTypeE name member targ* arg*      hint(show %.%#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
   | InstE name targ* arg*                 hint(show %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
 
+;;
 ;; Blocks (sequence of statements)
+;;
 
-;; (???) Why can't we define a display hint for syntax block = stmt*?
 syntax block = BlockB stmt*   hint(show %latex("\\{")#%#%latex("\\}"))
 
+;;
 ;; Statements
+;;
 
 syntax stmt =
   | EmptyS                                hint(show EMPTY)
@@ -168,7 +211,9 @@ syntax stmt =
   | TransS expr                           hint(show TRANSITION %)
   | DeclS decl                            hint(show %)
 
-;; Match-cases for switch
+;;
+;; Match labels and cases for switch
+;;
 
 syntax switchlabel =
   | ExprL expr  hint(show %)
@@ -178,38 +223,54 @@ syntax switchcase =
   | MatchC switchlabel block  hint(show CASE % %)
   | FallC switchlabel         hint(show CASE %)
 
+;;
 ;; Parser state machine
+;;
 
 syntax parserstate = statelabel block
 
+;;
 ;; Tables
+;;
 
 syntax tbl = tblprop*
 
+;;
 ;; Table keys
+;;
 
 syntax tblkey = expr matchkind
 syntax tblkeyprop = tblkey*
 
+;;
 ;; Table actions
+;;
 
 syntax tblaction = name arg*
 syntax tblactionprop = tblaction*
 
+;;
 ;; Table entries
+;;
 
 syntax tblentry = keyset* tblaction expr? bool
 syntax tblentryprop = tblentry* bool
 
+;;
 ;; Table default properties
+;;
 
 syntax tbldefaultprop = tblaction bool
 
+;;
 ;; Table custom properties
+;;
 
 syntax tblcustomprop = member expr bool
 
+;;
 ;; Table properties
+;;
 
 syntax tblprop =
   | KeyP tblkeyprop           hint(show KEYS %latex("\\{")#%#%latex("\\}"))
@@ -218,38 +279,48 @@ syntax tblprop =
   | DefaultP tbldefaultprop   hint(show DEFAULT#_#ACTION %latex("\\{")#%#%latex("\\}"))
   | CustomP tblcustomprop     hint(show CUSTOM %latex("\\{")#%#%latex("\\}"))
 
+;;
+;; Methods
+;;
+
+syntax method =
+  | ExternConsM id cparam*                      hint(show %(%))
+  | ExternAbstractM id type tparam* param*      hint(show ABSTRACT %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex())
+  | ExternM id type tparam* param*              hint(show %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex())
+
+;;
 ;; Declarations
+;;
 
 syntax decl =
-  | ConstD id type expr                                        hint(show CONST %2 %1 = %3)
-  | VarD id type expr?                                         hint(show %2 %1 = %3)
+  | ConstD id type expr                                       hint(show CONST %2 %1 = %3)
+  | VarD id type expr?                                        hint(show %2 %1 = %3)
   | ErrD member*                                              hint(show ERROR %latex("\\{")#%#%latex("\\}"))
   | MatchKindD member*                                        hint(show MATCH#_#KIND %latex("\\{")#%#%latex("\\}"))
   | InstD id name targ* arg* decl*                            hint(show %2#%latex("\\langle")#%3#%latex("\\rangle")#(%4) %1 = %latex("\\{")#%5#%latex("\\}"))
-  | StructD id tparam* (member, type)*                         hint(show STRUCT %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
-  | HeaderD id tparam* (member, type)*                         hint(show HEADER %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
-  | UnionD id tparam* (member, type)*                          hint(show UNION %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
+  | StructD id tparam* (member, type)*                        hint(show STRUCT %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
+  | HeaderD id tparam* (member, type)*                        hint(show HEADER %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
+  | UnionD id tparam* (member, type)*                         hint(show UNION %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
   | EnumD id member*                                          hint(show ENUM % %latex("\\{")#%#%latex("\\}"))
-  | SEnumD id type (member, expr)*                             hint(show ENUM % % %latex("\\{")#%#%latex("\\}"))
+  | SEnumD id type (member, expr)*                            hint(show ENUM % % %latex("\\{")#%#%latex("\\}"))
   ;; TODO NewTypeD id decl is also valid
-  | NewTypeD id type                                           hint(show typeE % %)
+  | NewTypeD id type                                          hint(show TYPE % %)
   ;; TODO TypeDefD id decl is also valid
-  | TypeDefD id type                                           hint(show typeEDEF % %)
-  | ValueSetD id type expr                                     hint(show VALUE#_#SET % % %)
+  | TypeDefD id type                                          hint(show TYPEDEF % %)
+  | ValueSetD id type expr                                    hint(show VALUE#_#SET % % %)
   | ParserTypeD id tparam* param*                             hint(show PARSER %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
   | ParserD id tparam* param* cparam* decl* parserstate*      hint(show PARSER %#%latex("\\langle")#%#%latex("\\rangle")#(%)#(%)#%latex() %latex("\\{")#%%#%latex("\\}"))
   | TableD id tbl                                             hint(show TABLE % %latex("\\{")#%#%latex("\\}"))
   | ControlTypeD id tparam* param*                            hint(show CONTROL %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
   | ControlD id tparam* param* cparam* decl* block            hint(show CONTROL %#%latex("\\langle")#%#%latex("\\rangle")#(%)#(%)#%latex() %latex("\\{")#% APPLY %#%latex("\\}"))
   | ActionD id param* block                                   hint(show ACTION %(%) %)
-  | FuncD id type tparam* param* block                         hint(show %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex() %5)
-  | ExternFuncD id type tparam* param*                         hint(show EXTERN %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex())
-  | ExternConstructorD id cparam*                             hint(show %(%))
-  | ExternAbstractMethodD id type tparam* param*               hint(show ABSTRACT %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex())
-  | ExternMethodD id type tparam* param*                       hint(show %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex())
-  | ExternObjectD id tparam* decl*                            hint(show EXTERN %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
+  | FuncD id type tparam* param* block                        hint(show %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex() %5)
+  | ExternFuncD id type tparam* param*                        hint(show EXTERN %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex())
+  | ExternObjectD id tparam* method*                          hint(show EXTERN %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
   | PackageTypeD id tparam* cparam*                           hint(show PACKAGE %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
 
+;;
 ;; Program
+;;
 
 syntax program = decl*

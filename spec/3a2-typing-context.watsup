@@ -69,6 +69,12 @@ def $find_returntyp(ACTION) = VoidT
 def $find_returntyp(EXTERNABSTRACTMETHOD typ) = typ
 def $find_returntyp(CONTROLAPPLYMETHOD) = VoidT
 
+
+;; Collecting bounds
+
+def $bound_tid(context) : tidset
+
+
 ;; Adders
 
 def $add_val(cursor, context, id, val) : context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
