@@ -162,7 +162,7 @@ rule Stmt_ok/rets-some:
 rule Stmt_ok/callfuncs:
   p C f |- CallFuncS name targ* arg* : C f
   ----
-  -- Func_ok: p C |- name targ* arg* : functyp
+  -- FuncType_ok: p C |- name targ* arg* : functyp
   ----
   -- Call_ok: p C |- functyp arg* : typ
 
@@ -173,7 +173,7 @@ rule Stmt_ok/callfuncs:
 rule Stmt_ok/callmethods:
   p C f |- CallMethodS expr_b member targ* arg* : C f
   ----
-  -- Method_ok: p C |- expr_b member targ* arg* : functyp
+  -- MethodType_ok: p C |- expr_b member targ* arg* : functyp
   ----
   -- Call_ok: p C |- functyp arg* : typ
 

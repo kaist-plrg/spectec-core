@@ -61,15 +61,14 @@ module Type = struct
     | SetT typ_inner -> is_ground typ_inner
     | StateT -> true
 
-  let rec is_assignable typ =
+  let is_assignable typ =
     let typ = canon_typ typ in
     match typ with
     | SpecT _ | DefT _ -> assert false
     | VoidT -> false
     | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _
-    | VarT _ ->
+    | VarT _ | NewT _ ->
         true
-    | NewT (_, typ_inner) -> is_assignable typ_inner
     | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
     | UnionT _ ->
         true
@@ -100,7 +99,7 @@ module Type = struct
     | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
         false
 
-  let rec can_equals typ =
+  let is_equalable typ =
     let typ = canon_typ typ in
     match typ with
     | SpecT _ | DefT _ -> assert false
@@ -108,19 +107,15 @@ module Type = struct
     | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ ->
         true
     | VarT _ -> false
-    | NewT (_, typ_inner) -> can_equals typ_inner
-    | EnumT _ -> true
-    | SEnumT (_, typ_inner, _) | ListT typ_inner -> can_equals typ_inner
-    | TupleT typs_inner -> List.for_all can_equals typs_inner
-    | StackT (typ_inner, _) -> can_equals typ_inner
-    | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
-        List.map snd fields |> List.for_all can_equals
+    | NewT _ | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
+    | HeaderT _ | UnionT _ ->
+        true
     | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ | AnyT
     | TableEnumT _ | TableStructT _ ->
         false
-    | SeqT typs_inner -> List.for_all can_equals typs_inner
+    | SeqT _ -> true
     | SeqDefaultT _ -> false
-    | RecordT fields -> List.map snd fields |> List.for_all can_equals
+    | RecordT _ -> true
     | RecordDefaultT _ -> false
     | DefaultT -> false
     | InvalidT -> true

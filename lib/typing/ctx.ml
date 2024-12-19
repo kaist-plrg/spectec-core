@@ -77,7 +77,9 @@ let empty_bt =
     frame = (Envs.VEnv.empty, Envs.TEnv.empty);
   }
 
-let empty_lt = { id = ""; kind = Empty; tdenv = Envs.TDEnv.empty; frames = [] }
+let empty_lt =
+  { id = ""; kind = Empty; tdenv = Envs.TDEnv.empty; frames = [] }
+
 let empty = { global = empty_gt; block = empty_bt; local = empty_lt }
 
 (* Frame management *)
@@ -507,8 +509,9 @@ let pp_bt fmt (bt : bt) =
     "@[@[<v 0>[Block %s]:@ %a@]@\n\
      @[<v 0>[Typedefs]:@ %a@]@\n\
      @[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Frame]:@ %a@]@]" bt.id pp_blockkind bt.kind Envs.TDEnv.pp bt.tdenv
-    Envs.FDEnv.pp bt.fdenv pp_frame bt.frame
+     @[<v 0>[Frame]:@ %a@]@]" bt.id
+    pp_blockkind bt.kind Envs.TDEnv.pp bt.tdenv Envs.FDEnv.pp bt.fdenv pp_frame
+    bt.frame
 
 let pp_localkind fmt (kind : localkind) =
   match kind with
@@ -526,8 +529,9 @@ let pp_lt fmt (lt : lt) =
   F.fprintf fmt
     "@[@[<v 0>[Local %s]:@ %a@]@\n\
      @[<v 0>[Typedefs]:@ %a@]@\n\
-     @[<v 0>[Frames]:@ %a@]@]" lt.id pp_localkind lt.kind Envs.TDEnv.pp lt.tdenv
-    (F.pp_print_list pp_frame) lt.frames
+     @[<v 0>[Frames]:@ %a@]@]" lt.id
+    pp_localkind lt.kind Envs.TDEnv.pp lt.tdenv (F.pp_print_list pp_frame)
+    lt.frames
 
 let pp fmt ctx =
   F.fprintf fmt

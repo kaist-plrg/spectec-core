@@ -1,4 +1,38 @@
 ;;
+;; Parameter typing
+;;
+
+relation Param_ok:
+  cursor context |- param : paramtyp
+
+rule Param_ok/param-default:
+  p C |- id dir type expr? : id dir typ_p val?
+  -- Type_ok: p C |- type : typ_p
+  -- Expr_ok: p C |- expr : typ_e LCTK
+  -- Sub_impl: typ_e <: typ_p
+  -- Eval_static: p C |- expr ~> val
+
+rule Param_ok/param-nodefault:
+  p C |- id dir type eps : id dir typ_p eps
+  -- Type_ok: p C |- type : typ_p
+
+;; Constructor Parameter typing
+
+relation CParam_ok:
+  cursor context |- cparam : paramtyp
+
+rule CParam_ok/cparam-default:
+  p C |- id dir type expr? : id dir typ_p val?
+  -- Type_ok: p C |- type : typ_p
+  -- Expr_ok: p C |- expr : typ_e LCTK
+  -- Sub_impl: typ_e <: typ_p
+  -- Eval_static: p C |- expr ~> val
+
+rule CParam_ok/cparam-nodefault:
+  p C |- id dir type eps : id dir typ_p eps
+  -- Type_ok: p C |- type : typ_p
+
+;;
 ;; Constant declaration
 ;;
 
@@ -31,6 +65,7 @@ rule Decl_ok/vard-some:
 
 ;;
 ;; Instance declaration
+;; (TODO) Specify when object initializer block is present
 ;;
 
 rule Decl_ok/instd-none:
@@ -138,20 +173,74 @@ rule Decl_ok/enumd:
   -- if (id_e = $concat_texts(id "." member))*
   -- if (val_e = EnumFieldV id member)*
   -- if typ_e = EnumT id member*
-  -- if rtyp_e = typ_e NO LCTK
   ----
   -- if C' = $add_vals(GLOBAL, C, id_e*, val_e*)
   ----
-  -- if C'' = $add_typs(GLOBAL, C, id_e*, rtyp_e*)
+  -- if C'' = $add_typs(GLOBAL, C', id_e*, (typ_e NO LCTK)*)
   ----
   -- if td = MonoD typ_e
   -- if tidset = $bound_tid(C)
   -- TypeDef_wf: tidset |- td
-  -- if C''' = $add_typdef(GLOBAL, C, id, td)
+  -- if C''' = $add_typdef(GLOBAL, C'', id, td)
 
 ;;
 ;; Serializable enum declaration
 ;;
+
+relation SEnum_field_ok:
+  context id typ (member, val)* |- member expr : context (member, val)*
+
+rule SEnum_field_ok:
+  C id_s typ_s (member_s, val_s)* |- member expr : C'' (member_s', val_s')*
+  ----
+  -- Expr_ok: BLOCK C |- expr : typ LCTK
+  -- Sub_impl: typ <: typ_s
+  -- Eval_static: BLOCK C |- expr ~> val_e
+  ----
+  -- if val = SEnumFieldV id_s member val_e
+  -- if C' = $add_val(BLOCK, C, member, val)
+  ----
+  -- if member_s'* = member_s* member
+  -- if val_s'* = val_s* val
+  -- if typ_f = SEnumT id_s typ_s (member_s', val_s')*
+  ----
+  -- if C'' = $add_typ(BLOCK, C, member, typ_f NO LCTK)
+
+
+relation SEnum_fields_ok:
+  context id typ (member, val)* |- (member, expr)* : context (member, val)*
+
+rule SEnum_fields_ok/nil:
+  C id typ (member, val)* |- eps : C (member, val)*
+
+rule SEnum_fields_ok/cons:
+  C id typ (member, val)* |- (member_h, expr_h) (member_t, expr_t)* : C'' (member'', val'')*
+  ----
+  -- SEnum_field_ok: C id typ (member, val)* |- member_h expr_h : C' (member', val')*
+  ----
+  -- SEnum_fields_ok: C' id typ (member', val')* |- (member_t, expr_t)* : C'' (member'', val'')*
+
+
+rule Decl_ok/senumd:
+  GLOBAL C |- SEnumD id type (member, expr)* : C''''
+  ----
+  -- if $distinct(member, member*)
+  ----
+  -- Type_ok: GLOBAL C |- type : typ
+  ----
+  -- SEnum_fields_ok: C id typ eps |- (member, expr)* : C' (member, val_s)*
+  ----
+  -- if (id_s = $concat_texts(id "." member))*
+  -- if typ_s = SEnumT id typ (member, val_s)*
+  ----
+  -- if C'' = $add_vals(GLOBAL, C, id_s*, val_s*)
+  ----
+  -- if C''' = $add_typs(GLOBAL, C'', id_s*, (typ_s NO LCTK)*)
+  ----
+  -- if td = MonoD typ_s
+  -- if tidset = $bound_tid(C)
+  -- TypeDef_wf: tidset |- td
+  -- if C'''' = $add_typdef(GLOBAL, C''', id, td)
 
 ;;
 ;; New type declaration
@@ -184,66 +273,48 @@ rule Decl_ok/typedefd:
   -- if C' = $add_typdef(GLOBAL, C, id, td)
 
 ;;
-;; Parameter typing
-;;
-
-relation Param_ok:
-  cursor context |- param : paramtyp
-
-rule Param_ok/param-default:
-  p C |- id dir type expr? : id dir typ_p val?
-  -- Type_ok: p C |- type : typ_p
-  -- Expr_ok: p C |- expr : typ_e LCTK
-  -- Sub_impl: typ_e <: typ_p
-  -- Eval_static: p C |- expr ~> val
-
-rule Param_ok/param-nodefault:
-  p C |- id dir type eps : id dir typ_p eps
-  -- Type_ok: p C |- type : typ_p
-
-;;
 ;; Action declaration
 ;;
 
 rule Decl_ok/actiond:
-  p C |- ActionD id param* block : C'''
+  p C_0 |- ActionD id param* block : C_4
   ----
-  -- if p = GLOBAL \/ (p = BLOCK /\ C.BLOCK.KIND = CONTROL)
+  -- if p = GLOBAL \/ (p = BLOCK /\ C_0.BLOCK.KIND = CONTROL)
   ----
-  -- if C' = $set_localkind(C, ACTION)
+  -- if C_1 = $set_localkind(C_1, ACTION)
   ----
-  -- (Param_ok: LOCAL C' |- param : paramtyp)*
+  -- (Param_ok: LOCAL C_1 |- param : paramtyp)*
   ----
   -- if (id_p dir_p typ_p val_p = paramtyp)*
-  -- if C'' = $add_typs(LOCAL, C, id_p*, (typ_p dir_p DYN)*)
+  -- if C_2 = $add_typs(LOCAL, C_1, id_p*, (typ_p dir_p DYN)*)
   ----
-  -- Stmt_ok: LOCAL C'' CONT |- BlockS block : C''' CONT
+  -- Stmt_ok: LOCAL C_2 CONT |- BlockS block : C_3 CONT
   ----
-  -- if fd = MonoFD (ActionT paramtyp*)
+  -- if funcdef = MonoFD (ActionT paramtyp*)
   ----
-  -- if tidset = $bound_tid(C)
-  -- FuncDef_wf: tidset |- fd
+  -- if tidset = $bound_tid(C_0)
+  -- FuncDef_wf: tidset |- funcdef
   ----
-  -- if C''' = $add_funcdef(p, C, id, fd)
+  -- if C_4 = $add_funcdef(p, C_0, id, funcdef)
 
 ;;
 ;; Function declaration
 ;;
 
 rule Decl_ok/funcd:
-  GLOBAL C |- FuncD id type_r tparam* param* block : C'''
+  GLOBAL C_0 |- FuncD id type_r tparam* param* block : C_5
   ----
-  -- if C' = $add_typdefs(LOCAL, C, tparam*, (MonoD (VarT tparam))*)
-  -- Type_ok: LOCAL C' |- type_r : typ_r
+  -- if C_1 = $add_typdefs(LOCAL, C_0, tparam*, (MonoD (VarT tparam))*)
+  -- Type_ok: LOCAL C_1 |- type_r : typ_r
   ----
-  -- if C' = $set_localkind(C, FUNC typ_r)
+  -- if C_2 = $set_localkind(C_1, FUNC typ_r)
   ----
-  -- (Param_ok: LOCAL C' |- param : paramtyp)*
+  -- (Param_ok: LOCAL C_2 |- param : paramtyp)*
   ----
   -- if (id_p dir_p typ_p val_p = paramtyp)*
-  -- if C'' = $add_typs(LOCAL, C, id_p*, (typ_p dir_p DYN)*)
+  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p dir_p DYN)*)
   ----
-  -- Stmt_ok: LOCAL C'' CONT |- BlockS block : C''' f
+  -- Stmt_ok: LOCAL C_3 CONT |- BlockS block : C_4 f
   -- if f = RET \/ (f = CONT /\ typ_r = VoidT)
   ----
   -- if fd = PolyFD tparam* (FuncT paramtyp* typ_r)
@@ -251,35 +322,126 @@ rule Decl_ok/funcd:
   -- if tidset = $bound_tid(C)
   -- FuncDef_wf: tidset |- fd
   ----
-  -- if C''' = $add_funcdef(GLOBAL, C, id, fd)
+  -- if C_5 = $add_funcdef(GLOBAL, C_0, id, fd)
 
 ;;
 ;; Extern function declaration
 ;;
 
 rule Decl_ok/externfuncd:
-  GLOBAL C |- ExternFuncD id type_r tparam* param* : C'''
+  GLOBAL C_0 |- ExternFuncD id type_r tparam* param* : C_4
   ----
-  -- if C' = $add_typdefs(LOCAL, C, tparam*, (MonoD (VarT tparam))*)
-  -- Type_ok: LOCAL C' |- type_r : typ_r
+  -- if C_1 = $add_typdefs(LOCAL, C_0, tparam*, (MonoD (VarT tparam))*)
+  -- Type_ok: LOCAL C_1 |- type_r : typ_r
   ----
-  -- if C' = $set_localkind(C, EXTERNFUNC)
+  -- if C_2 = $set_localkind(C_1, EXTERNFUNC)
   ----
-  -- (Param_ok: LOCAL C' |- param : paramtyp)*
+  -- (Param_ok: LOCAL C_2 |- param : paramtyp)*
   ----
   -- if (id_p dir_p typ_p val_p = paramtyp)*
-  -- if C'' = $add_typs(LOCAL, C, id_p*, (typ_p dir_p DYN)*)
+  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p dir_p DYN)*)
   ----
   -- if fd = PolyFD tparam* (ExternFuncT paramtyp* typ_r)
   ----
-  -- if tidset = $bound_tid(C)
+  -- if tidset = $bound_tid(C_0)
   -- FuncDef_wf: tidset |- fd
   ----
-  -- if C''' = $add_funcdef(GLOBAL, C, id, fd)
+  -- if C_4 = $add_funcdef(GLOBAL, C_0, id, fd)
 
 ;;
 ;; Extern object declaration
 ;;
+
+def $split_methods(method*) : (method*, method*)
+
+
+relation Method_ok:
+  context id |- method : context
+
+rule Method_ok/externconsm:
+  C id_e |- ExternConsM id_e cparam* : C'
+  ----
+  -- (CParam_ok: BLOCK C |- cparam : paramtyp)*
+  ----
+  -- if PolyD tparam_e* typ_e = $find_typdef(GLOBAL, C, CURRENT id_e)
+  -- if typ = SpecT (PolyD tparam_e* typ_e) (VarT tparam_e)*
+  -- if consdef = ConsD tparam_e* (ConsT paramtyp* typ)
+  ----
+  -- if tidset = $bound_tid(C)
+  -- ConsDef_wf: tidset |- consdef
+  ----
+  -- if C' = $add_consdef(GLOBAL, C, id_e, consdef)
+
+rule Method_ok/externabstractm:
+  C_0 id_e |- ExternAbstractM id type_r tparam* param* : C_4
+  ----
+  -- if C_1 = $add_typdefs(LOCAL, C_0, tparam*, (MonoD (VarT tparam))*)
+  -- Type_ok: LOCAL C_1 |- type_r : typ_r 
+  ----
+  -- if C_2 = $set_localkind(C_1, EXTERNABSTRACTMETHOD typ_r)
+  ----
+  -- (Param_ok: LOCAL C_2 |- param : paramtyp)*
+  ----
+  -- if (id_p dir_p typ_p val_p = paramtyp)*
+  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p dir_p DYN)*)
+  ----
+  -- if fd = PolyFD tparam* (ExternAbstractMethodT paramtyp* typ_r)
+  ----
+  -- if tidset = $bound_tid(C_0)
+  -- FuncDef_wf: tidset |- fd
+  ----
+  -- if C_4 = $add_funcdef(BLOCK, C_0, id, fd)
+
+rule Method_ok/externm:
+  C_0 id_e |- ExternM id type_r tparam* param* : C_4
+  ----
+  -- if C_1 = $add_typdefs(LOCAL, C_0, tparam*, (MonoD (VarT tparam))*)
+  -- Type_ok: LOCAL C_1 |- type_r : typ_r 
+  ----
+  -- if C_2 = $set_localkind(C_1, EXTERNMETHOD)
+  ----
+  -- (Param_ok: LOCAL C_2 |- param : paramtyp)*
+  ----
+  -- if (id_p dir_p typ_p val_p = paramtyp)*
+  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p dir_p DYN)*)
+  ----
+  -- if fd = PolyFD tparam* (ExternMethodT paramtyp* typ_r)
+  ----
+  -- if tidset = $bound_tid(C_0)
+  -- FuncDef_wf: tidset |- fd
+  ----
+  -- if C_4 = $add_funcdef(BLOCK, C_0, id, fd)
+
+
+relation Methods_ok:
+  context id |- method* : context
+
+rule Methods_ok/nil:
+  C id_e |- eps : C
+
+rule Methods_ok/cons:
+  C id_e |- method_h method_t* : C''
+  -- Method_ok: C id_e |- method_h : C'
+  -- Methods_ok: C' id_e |- method_t* : C''
+
+
+rule Decl_ok/externobjectd:
+  GLOBAL C_0 |- ExternObjectD id tparam* method* : C_8
+  ----
+  -- if (method_c*, method_m*) = $split_methods(method*)
+  ----
+  -- if C_1 = $set_blockkind(C_0, EXTERN)
+  -- if C_2 = $add_typdefs(BLOCK, C_1, tparam*, (MonoD (VarT tparam))*)
+  -- Methods_ok: C_2 id |- method_m* : C_3
+  ----
+  -- if td = PolyD tparam* (ExternT id C_3.BLOCK.FDENV)
+  -- if C_4 = $add_typdef(GLOBAL, C_0, id, td)
+  ----
+  -- if C_5 = $set_blockkind(C_4, EXTERN)
+  -- if C_6 = $add_typdefs(BLOCK, C_5, tparam*, (MonoD (VarT tparma))*)
+  -- Methods_ok: C_6 id |- method_c* : C_7
+  ----
+  -- if C_8 = C_4[ .GLOBAL.CDENV = C_7.GLOBAL.CDENV ]
 
 ;;
 ;; Value set declaration
@@ -316,6 +478,69 @@ rule Decl_ok/parsertyped:
 ;; Parser declaration
 ;;
 
+relation ParserState_ok:
+  context |- parserstate : context
+
+rule ParserState_ok:
+  C |- statelabel block : C'
+  -- Stmt_ok: LOCAL C CONT |- BlockS block : C' CONT
+
+
+relation ParserStates_ok:
+  context |- parserstate* : context
+
+rule ParserStates_ok/nil:
+  C |- eps : C
+
+rule ParserStates_ok/cons:
+  C |- parserstate_h parserstate_t* : C''
+  -- ParserState_ok: C |- parserstate_h : C'
+  -- ParserStates_ok: C' |- parserstate_t* : C''
+
+
+rule Decl_ok/parserd:
+  GLOBAL C_0 |- ParserD id eps param* cparam* decl* parserstate* : C_8
+  ----
+  -- if C_1 = $set_blockkind(C_0, PARSER)
+  ----
+  -- (Param_ok: LOCAL C_1 |- cparam : paramtyp_c)*
+  ----
+  -- if (id_c dir_c typ_c val_c = paramtyp_c)*
+  -- if C_2 = $add_typs(BLOCK, C_1, id_c*, (typ_c dir_c CTK)*)
+  ----
+  -- (Param_ok: LOCAL C_2 |- param : paramtyp_c)*
+  ----
+  -- if (id_p dir_p typ_p val_p = paramtyp)*
+  ----
+  -- if funcdef_apply = MonoFD (ParserApplyMethodT paramtyp*)
+  -- if tidset = $bound_tid(C_0)
+  -- FuncDef_wf: tidset |- funcdef_apply
+  ----
+  -- if C_3 = $add_typs(BLOCK, C_2, id_p*, (typ_p dir_p DYN)*)
+  ----
+  -- Decls_ok: BLOCK C_3 |- decl* : C_4
+  ----
+  -- if (statelabel block = parserstate)*
+  ----
+  -- if $distinct(statelabel, statelabel*)
+  -- if $in_set(statelabel, "start", SET statelabel*)
+  -- if ~($in_set(statelabel, "accept", SET statelabel*))
+  -- if ~($in_set(statelabel, "reject", SET statelabel*))
+  ----
+  -- if C_5 = $set_localkind(C_4, PARSERSTATE)
+  ----
+  -- if C_6 = $add_typs(LOCAL, C_5, statelabel*, (StateT NO DYN)*)
+  ----
+  -- ParserStates_ok: C_6 |- parserstate : C_7
+  ----
+  -- if ptd = PolyD eps (ParserT paramtyp*)
+  -- if typ = SpecT ptd eps
+  -- if consdef = ConsD eps (ConsT paramtyp_c* typ)
+  ----
+  -- ConsDef_wf: tidset |- consdef
+  ----
+  -- if C_8 = $add_consdef(GLOBAL, C_0, id, consdef)
+
 ;;
 ;; Table declaration
 ;;
@@ -340,6 +565,40 @@ rule Decl_ok/controltyped:
 ;; Control declaration
 ;;
 
+rule Decl_ok/controld:
+  GLOBAL C_0 |- ControlD id eps param* cparam* decl* block : C_7
+  ----
+  -- if C_1 = $set_blockkind(C_0, CONTROL)
+  ----
+  -- (Param_ok: LOCAL C_1 |- cparam : paramtyp_c)*
+  ----
+  -- if (id_c dir_c typ_c val_c = paramtyp_c)*
+  -- if C_2 = $add_typs(BLOCK, C_1, id_c*, (typ_c dir_c CTK)*)
+  ----
+  -- (Param_ok: LOCAL C_2 |- param : paramtyp_c)*
+  ----
+  -- if (id_p dir_p typ_p val_p = paramtyp)*
+  ----
+  -- if funcdef_apply = MonoFD (ControlApplyMethodT paramtyp*)
+  -- if tidset = $bound_tid(C_0)
+  -- FuncDef_wf: tidset |- funcdef_apply
+  ----
+  -- if C_3 = $add_typs(BLOCK, C_2, id_p*, (typ_p dir_p DYN)*)
+  ----
+  -- Decls_ok: BLOCK C_3 |- decl* : C_4
+  ----
+  -- if C_5 = $set_localkind(C_4, CONTROLAPPLYMETHOD)
+  ----
+  -- Stmt_ok: LOCAL C_5 CONT |- BlockS block : C_6 f
+  ----
+  -- if ptd = PolyD eps (ControlT paramtyp*)
+  -- if typ = SpecT ptd eps
+  -- if consdef = ConsD eps (ConsT paramtyp_c* typ)
+  ----
+  -- ConsDef_wf: tidset |- consdef
+  ----
+  -- if C_7 = $add_consdef(GLOBAL, C_0, id, consdef)
+
 ;;
 ;; Package declaration
 ;;
@@ -351,7 +610,7 @@ rule Decl_ok/packagetyped:
   ----
   -- if C'' = $set_blockkind(C', PARSER)
   ----
-  -- (Param_ok: BLOCK C'' |- cparam : paramtyp)*
+  -- (CParam_ok: BLOCK C'' |- cparam : paramtyp)*
   ----
   -- if (id_cp dir_cp typ_cp val_cp = paramtyp)*
   -- if ptd = PolyD tparam* (PackageT typ_cp*)
@@ -359,7 +618,7 @@ rule Decl_ok/packagetyped:
   -- TypeDef_wf: tidset |- ptd
   ----
   -- if typ = SpecT ptd (VarT tparam)*
-  -- if cd = tparam* (paramtyp* typ)
+  -- if cd = ConsD tparam* (ConsT paramtyp* typ)
   ----
   -- if tidset = $bound_tid(C')
   -- ConsDef_wf: tidset' |- cd

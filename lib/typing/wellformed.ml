@@ -419,9 +419,9 @@ and check_valid_typ_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | TupleT typs_inner ->
           List.for_all check_valid_typ_nesting_tuple_in_set' typs_inner
       | StackT _ | StructT _ | HeaderT _ | UnionT _ | ExternT _ | ParserT _
-      | ControlT _ | PackageT _ | TableT _ ->
+      | ControlT _ | PackageT _ | TableT _ | AnyT | TableEnumT _
+      | TableStructT _ ->
           false
-      | AnyT | TableEnumT _ | TableStructT _ -> false
       (* A special case: when sequence is nested inside a set,
          because sequences allow more nested types than a set, we need to check recursively *)
       (* This recursion holds because the inner types that a sequence allows is a

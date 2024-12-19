@@ -83,7 +83,7 @@ rule Expr_ok/une-bnot:
   p C |- UnE BNOT expr : typ ctk_e
   -- Expr_ok: p C |- expr : typ_e ctk_e
   -- Sub_impl: typ_e <: typ
-  -- if typ = FIntT w \/ typ = FBitT w
+  -- if $is_fintt(typ) \/ $is_fbitt(typ)
 
 rule Expr_ok/une-lnot:
   p C |- UnE LNOT expr : BoolT ctk_e
@@ -99,20 +99,168 @@ rule Expr_ok/une-uminus:
   p C |- UnE UMINUS expr : typ ctk_e
   -- Expr_ok: p C |- expr : typ_e ctk_e
   -- Sub_impl: typ_e <: typ
-  -- if typ = IntT \/ typ = FIntT w \/ typ = FBitT w
+  -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
 
 rule Expr_ok/une-uplus:
   p C |- UnE UPLUS expr : typ ctk_e
   -- Expr_ok: p C |- expr : typ_e ctk_e
   -- Sub_impl: typ_e <: typ
-  -- if typ = IntT \/ typ = FIntT w \/ typ = FBitT w
+  -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
 
 ;;
 ;; Binary expression
 ;;
 
-;;rule Expr_ok/bine:
-;;  p C |- BinE binop expr_l expr_r : typ
+rule Expr_ok/bine-plus-minus-mult:
+  p C |- BinE binop expr_l expr_r : typ ctk
+  ----
+  -- if $in_set(binop, binop, SET PLUS MINUS MUL)
+  ----
+  -- Expr_ok: p C |- expr_l : typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  ----
+  -- Sub_impl: typ_l <: typ
+  -- Sub_impl: typ_r <: typ
+  -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
+  ----
+  -- if ctk = $join_ctk(ctk_l, ctk_r)
+
+rule Expr_ok/bine-sat-plus-minus:
+  p C |- BinE binop expr_l expr_r : typ ctk
+  ----
+  -- if $in_set(binop, binop, SET SPLUS SMINUS)
+  ----
+  -- Expr_ok: p C |- expr_l : typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  ----
+  -- Sub_impl: typ_l <: typ
+  -- Sub_impl: typ_r <: typ
+  -- if $is_fintt(typ) \/ $is_fbitt(typ)
+  ----
+  -- if ctk = $join_ctk(ctk_l, ctk_r)
+
+rule Expr_ok/bine-div-mod:
+  p C |- BinE binop expr_l expr_r : typ ctk
+  ----
+  -- if $in_set(binop, binop, SET DIV MOD)
+  ----
+  -- Expr_ok: p C |- expr_l : typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  ----
+  -- Sub_impl: typ_l <: IntT
+  -- Sub_impl: typ_r <: IntT
+  ----
+  -- if ctk = $join_ctk(ctk_l, ctk_r)
+
+rule Expr_ok/bine-shift:
+  p C |- BinE binop expr_l expr_r : typ ctk
+  ----
+  -- if $in_set(binop, binop, SET SHL SHR)
+  ----
+  -- Expr_ok: p C |- expr_l : typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  ----
+  -- Sub_impl: typ_l <: typ_l'
+  -- Sub_impl: typ_r <: typ_r'
+  -- if ($is_fbitt(typ_l') /\ $is_fbitt(typ_r'))
+        \/ ($is_fbitt(typ_l') /\ $is_intt(typ_r'))
+        \/ ($is_fintt(typ_l') /\ $is_fbitt(typ_r'))
+        \/ ($is_fintt(typ_l') /\ $is_intt(typ_r'))
+        \/ ($is_intt(typ_l') /\ $is_fbitt(typ_r'))
+        \/ ($is_intt(typ_l') /\ $is_intt(typ_r'))
+  ----
+  -- if $implies($is_intt(typ_r'), ctk_r = LCTK)
+  ----
+  -- if ctk = $join_ctk(ctk_l, ctk_r)
+
+
+def $equalable(typ) : bool    hint(show % IS EQUALABLE)
+def $equalable'(typ) : bool
+
+def $equalable(typ) = $equalable'($canon_typ(typ)) 
+
+def $equalable'(VoidT) = false
+def $equalable'(VarT id) = false
+def $equalable'(ExternT id fmap) = false
+def $equalable'(ParserT paramtyp*) = false
+def $equalable'(ControlT paramtyp*) = false
+def $equalable'(PackageT typ*) = false
+def $equalable'(TableT typ) = false
+def $equalable'(synthtyp) = $is_seqt(synthtyp) \/ $is_recordt(synthtyp)
+def $equalable'(typ) = true
+
+
+rule Expr_ok/bine-compare-eq:
+  p C |- BinE binop expr_l expr_r : typ ctk
+  ----
+  -- if $in_set(binop,binop, SET EQ NE)
+  ----
+  -- Expr_ok: p C |- expr_l : typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  ----
+  -- Sub_impl: typ_l <: typ
+  -- Sub_impl: typ_r <: typ
+  ----
+  -- if $equalable(typ_l)
+  ----
+  -- if ctk = $join_ctk(ctk_l, ctk_r)
+
+rule Expr_ok/bine-compare:
+  p C |- BinE binop expr_l expr_r : typ ctk
+  ----
+  -- if $in_set(binop, binop, SET LE GE LT GT)
+  ----
+  -- Expr_ok: p C |- expr_l : typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  ----
+  -- Sub_impl: typ_l <: typ
+  -- Sub_impl: typ_r <: typ
+  -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
+  ----
+  -- if ctk = $join_ctk(ctk_l, ctk_r)
+
+rule Expr_ok/bine-bitwise:
+  p C |- BinE binop expr_l expr_r : typ ctk
+  ----
+  -- if $in_set(binop, binop, SET BAND BXOR BOR)
+  -- Expr_ok: p C |- expr_l : typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  ----
+  -- Sub_impl: typ_l <: typ
+  -- Sub_impl: typ_r <: typ
+  -- if $is_fintt(typ) \/ $is_fbitt(typ)
+  ----
+  -- if ctk = $join_ctk(ctk_l, ctk_r)
+
+rule Expr_ok/bine-concat:
+  p C |- BinE CONCAT expr_l expr_r : typ ctk
+  ----
+  -- Expr_ok: p C |- expr_l : typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  ----
+  -- Sub_impl: typ_l <: typ_l'
+  -- Sub_impl: typ_r <: typ_r'
+  -- if ((typ_l' = FIntT w_l' /\ typ_r' = FIntT w_r')
+          \/ (typ_l' = FIntT w_l' /\ typ_r' = FBitT w_r')
+          \/ (typ_l' = FBitT w_l' /\ typ_r' = FIntT w_r')
+          \/ (typ_l' = FBitT w_l' /\ typ_r' = FBitT w_r'))
+  ----
+  -- if $implies($is_fintt(typ_l'), typ = FIntT $(w_l' + w_r'))
+        \/ $implies($is_fbitt(typ_l'), typ = FIntT $(w_l' + w_r'))
+  ----
+  -- if ctk = $join_ctk(ctk_l, ctk_r)
+
+rule Expr_ok/bine-logical:
+  p C |- BinE binop expr_l expr_r : BoolT ctk
+  ----
+  -- if $in_set(binop, binop, SET LAND LOR)
+  -- Expr_ok: p C |- expr_l : typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  ----
+  -- Sub_impl: typ_l <: BoolT
+  -- Sub_impl: typ_r <: BoolT
+  ----
+  -- if ctk = $join_ctk(ctk_l, ctk_r)
 
 ;;
 ;; Ternary expression
@@ -192,6 +340,11 @@ rule Expr_ok/rangee:
 ;; Select expression
 ;;
 
+;;rule Expr_ok/selecte:
+;;  LOCAL C |- SelectE expr_k* selectcase* : StateT DYN
+;;  -- if C.LOCAL.KIND = PARSERSTATE
+;;  -- (Expr_ok: expr_k : typ_k ctk_k)*
+
 ;;
 ;; Array access expression
 ;;
@@ -225,7 +378,7 @@ rule Expr_ok/arracce-stackt:
 ;; Bitstring access expression
 ;;
 
-;; TODO check bitstring slice range
+;; (TODO) check bitstring slice range
 rule Expr_ok/bitacce:
   p C |- BitAccE expr_b expr_l expr_h : typ ctk_b
   ----
@@ -285,7 +438,7 @@ rule Expr_ok/expracce-stackt-size:
   -- Expr_ok: p C |- expr_b : typ_b ctk_b
   -- if StackT typ_b' size = $canon_typ(typ_b)
   ----
-  -- if $in_set(member, "size")
+  -- if $in_set(member, member, SET "size")
 
 rule Expr_ok/expracce-stackt-lastindex:
   p C |- ExprAccE expr_b member : (FBitT 32) DYN
@@ -293,7 +446,7 @@ rule Expr_ok/expracce-stackt-lastindex:
   -- Expr_ok: p C |- expr_b : typ_b ctk_b
   -- if StackT typ_b' size = $canon_typ(typ_b)
   ----
-  -- if $in_set(member, "lastIndex")
+  -- if $in_set(member, member, SET "lastIndex")
 
 rule Expr_ok/expracce-stackt-next-last:
   p C |- ExprAccE expr_b member : typ_b' DYN
@@ -301,7 +454,7 @@ rule Expr_ok/expracce-stackt-next-last:
   -- Expr_ok: p C |- expr_b : typ_b ctk_b
   -- if StackT typ_b' size = $canon_typ(typ_b)
   ----
-  -- if $in_set(member, "next" "last")
+  -- if $in_set(member, member, SET "next" "last")
 
 rule Expr_ok/expracce-structt:
   p C |- ExprAccE expr_b member : typ DYN
@@ -342,7 +495,7 @@ rule Expr_ok/expracce-tablestructt:
 rule Expr_ok/callfunce:
   p C |- CallFuncE name targ* arg* : typ DYN
   ----
-  -- Func_ok: p C |- name targ* arg* : functyp
+  -- FuncType_ok: p C |- name targ* arg* : functyp
   ----
   -- Call_ok: p C |- functyp arg* : typ
   -- if typ =/= VoidT
@@ -354,7 +507,7 @@ rule Expr_ok/callfunce:
 rule Expr_ok/callmethode:
   p C |- CallMethodE expr_b member targ* arg* : typ DYN
   ----
-  -- Method_ok: p C |- expr_b member targ* arg* : functyp
+  -- MethodType_ok: p C |- expr_b member targ* arg* : functyp
   ----
   -- Call_ok: p C |- functyp arg* : typ
   -- if typ =/= VoidT
@@ -369,7 +522,7 @@ rule Expr_ok/calltypee:
   ----
   -- if typdef = $find_typdef(p, C, name)
   ----
-  -- if $in_set(member, "minSizeInBits" "minSizeInBytes" "maxSizeInBits" "maxSizeInBytes")
+  -- if $in_set(member, member, SET "minSizeInBits" "minSizeInBytes" "maxSizeInBits" "maxSizeInBytes")
   ---- 
   -- if functyp = BuiltinMethodT eps IntT
   ----
@@ -391,18 +544,18 @@ rule Expr_ok/inste:
 ;; L-value expression
 ;;
 
-def $assignable(typ) : bool
+def $assignable(typ) : bool     hint(show % IS ASSIGNABLE)
+def $assignable'(typ) : bool
 
-def $assignable(SpecT ptd typ_a*) = $nominal(typ)
-  -- if typ = $specialize_typdef(ptd, typ_a*)
-def $assignable(DefT typ) = $assignable(typ)
-def $assignable(NewT id typ) = $assignable(typ)
-def $assignable(ParserT paramtyp*) = false
-def $assignable(ControlT paramtyp*) = false
-def $assignable(PackageT typ*) = false
-def $assignable(TableT typ) = false
-def $assignable(styp) = false
-def $assignable(typ) = true
+def $assignable(typ) = $assignable'($canon_typ(typ))
+
+def $assignable'(VoidT) = false
+def $assignable'(ParserT paramtyp*) = false
+def $assignable'(ControlT paramtyp*) = false
+def $assignable'(PackageT typ*) = false
+def $assignable'(TableT typ) = false
+def $assignable'(styp) = false
+def $assignable'(typ) = true
   -- otherwise
 
 

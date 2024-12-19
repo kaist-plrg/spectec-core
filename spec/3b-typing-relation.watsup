@@ -27,7 +27,7 @@ relation Decl_ok: cursor context |- decl : context
 relation Decls_ok: cursor context |- decl* : context
 
 relation Call_ok: cursor context |- functyp arg* : typ
-relation Func_ok: cursor context |- name targ* arg* : functyp
-relation Method_ok: cursor context |- expr member targ* arg* : functyp
+relation FuncType_ok: cursor context |- name targ* arg* : functyp
+relation MethodType_ok: cursor context |- expr member targ* arg* : functyp
 
 relation Inst_ok: cursor context |- constyp arg* : typ

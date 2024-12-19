@@ -47,8 +47,9 @@ def $is_packaget(typ) : bool            hint(show % IS PACKAGE_T)
 def $is_tablet(typ) : bool              hint(show % IS TABLE_T)
 
 def $is_synth(typ) : bool               hint(show % IS SYNTHESIZED TYPE)
-def $is_seqt(typ) : bool                hint(show % is SEQ_T)
-def $is_seqt_in_sett(typ) : bool        hint(show % is SEQ_T IN SET_T)
+def $is_seqt(typ) : bool                hint(show % IS SEQ_T)
+def $is_seqt_in_sett(typ) : bool        hint(show % IS SEQ_T IN SET_T)
+def $is_recordt(typ) : bool             hint(show % IS RECORD_T)
 
 ;;
 ;; Function type constructor checks

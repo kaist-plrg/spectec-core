@@ -2,21 +2,19 @@
 ;; Set
 ;;
 
-syntax set(syntax K) hint(show %latex("\\{") % %latex("\\}")) = K*
+syntax set(syntax K) hint(show %latex("\\{") % %latex("\\}")) = SET K*
 
+def $in_set(syntax K, K, set(K)) : bool hint(show %2 %latex("\\in") %3)
 def $intersect_set(syntax K, set(K), set(K)) : set(K)   hint(show %2 %latex("\\cap") %3)
 def $union_set(syntax K, set(K), set(K)) : set(K)   hint(show %2 %latex("\\cup") %3)
 def $diff_set(syntax K, set(K), set(K)) : set(K)   hint(show %2 %latex("\\setminus") %3)
-
-;; Display Hack to enclose the set in curly braces
-def $in_set(syntax K, K*) : bool   hint(show % <- %latex("\\{") % %latex("\\}"))
 
 
 ;;
 ;; Map
 ;;
 
-syntax map(syntax K, syntax V) hint(show %latex("\\{") % %latex("\\rightarrow") % %latex("\\}")) = (K, V)*
+syntax map(syntax K, syntax V) hint(show %latex("\\{") % %latex("\\rightarrow") % %latex("\\}")) = MAP (K, V)*
 
 def $in_map(syntax K, syntax V, K, map(K, V)) : V   hint(show %3 <- %4)
 

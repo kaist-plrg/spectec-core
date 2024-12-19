@@ -1011,7 +1011,7 @@ and type_binop_saturating_plus_minus (binop : Lang.Ast.binop)
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
   (typ, expr_il)
 
-and check_binop_div (typ_l : Type.t) (typ_r : Type.t) : bool =
+and check_binop_div_mod (typ_l : Type.t) (typ_r : Type.t) : bool =
   match (typ_l, typ_r) with IntT, IntT -> true | _ -> false
 
 and type_binop_div_mod (cursor : Ctx.cursor) (ctx : Ctx.t)
@@ -1019,7 +1019,7 @@ and type_binop_div_mod (cursor : Ctx.cursor) (ctx : Ctx.t)
     : Type.t * Il.Ast.expr' =
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   let expr_l_il, expr_r_il =
-    coerce_types_binary_numeric check_binop_div expr_l_il expr_r_il
+    coerce_types_binary_numeric check_binop_div_mod expr_l_il expr_r_il
   in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
   (* Non-positivity check if the right hand side is local compile-time known *)
@@ -1090,7 +1090,7 @@ and type_binop_compare_equal (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
   let typ = expr_l_il.note.typ in
-  if not (Type.can_equals typ) then (
+  if not (Type.is_equalable typ) then (
     Format.printf
       "(type_binop_compare_equal) Type %a cannot be compared of equality\n"
       Type.pp typ;
@@ -4311,7 +4311,8 @@ and type_parser_state' (cursor : Ctx.cursor) (ctx : Ctx.t)
     Format.printf "(type_parser_state) Parser state must be local\n";
     assert false);
   let annos_il = List.map (type_anno cursor ctx) annos in
-  let ctx, _flow, block_il = type_block Ctx.Local ctx Cont block in
+  let ctx, flow, block_il = type_block Ctx.Local ctx Cont block in
+  assert (flow = Flow.Cont);
   let state_il = (label, block_il, annos_il) in
   (ctx, state_il)
 
@@ -4377,7 +4378,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let params_il, tids_fresh =
     List.fold_left
       (fun (params_il, tids_fresh) param ->
-        let param_il, tids_fresh_param = type_param Ctx.Local ctx' param in
+        let param_il, tids_fresh_param = type_param Ctx.BLOCK ctx' param in
         (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
       ([], []) params
   in

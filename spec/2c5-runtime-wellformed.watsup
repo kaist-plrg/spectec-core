@@ -24,7 +24,7 @@ rule Type_wf/baset:
 
 rule Type_wf/vart:
   tidset |- VarT tid
-  -- if tid <- tidset
+  -- if $in_set(tid, tid, tidset)
 
 rule Type_wf/spect:
   tidset |- SpecT ptd typ_a*
@@ -150,7 +150,12 @@ rule Type_wf/uniont:
   ----
   -- (Type_wf: tidset |- typ)*
 
-;; rule Type_wf/ExternT
+rule Type_wf/externt:
+  tidset |- ExternT id fmap
+  ----
+  -- if MAP (fid, funcdef)* = fmap
+  ----
+  -- (FuncDef_wf: tidset |- funcdef)*
 
 rule Type_wf/parsert:
   tidset |- ParserT paramtyp*
@@ -254,7 +259,7 @@ rule TypeDef_wf/polyd:
         \/ $is_packaget(typ)
   ----
   -- if $distinct(tparam, tparam*)
-  -- if tidset' = $union_set(tid, tidset, tparam*)
+  -- if tidset' = $union_set(tid, tidset, SET tparam*)
   -- Type_wf: tidset' |- typ
 
 ;;
@@ -350,7 +355,7 @@ rule FuncDef_wf/polyfd:
         \/ $is_externabstractmethodt(functyp)
   ----
   -- if $distinct(tparam, tparam*)
-  -- if tidset' = $union_set(tid, tidset, tparam*)
+  -- if tidset' = $union_set(tid, tidset, SET tparam*)
   -- FuncType_wf: tidset' |- functyp
 
 ;;
@@ -376,7 +381,7 @@ rule CParamTypes_wf:
 ;;
 
 rule ConsType_wf/externt:
-  tidset |- paramtyp* (ExternT id fmap)
+  tidset |- ConsT paramtyp* (ExternT id fmap)
   -- CParamTypes_wf: tidset |- paramtyp*
   ----
   -- if (id dir typ val = paramtyp)*
@@ -387,7 +392,7 @@ rule ConsType_wf/externt:
   -- if (~$is_synth(typ))*
 
 rule ConsType_wf/parsert:
-  tidset |- paramtyp* (ParserT paramtyp'*)
+  tidset |- ConsT paramtyp* (ParserT paramtyp'*)
   -- CParamTypes_wf: tidset |- paramtyp*
   ----
   -- if (id dir typ val = paramtyp)*
@@ -397,7 +402,7 @@ rule ConsType_wf/parsert:
   -- if (~$is_synth(typ))*
 
 rule ConsType_wf/controlt:
-  tidset |- paramtyp* (ControlT paramtyp'*)
+  tidset |- ConsT paramtyp* (ControlT paramtyp'*)
   -- CParamTypes_wf: tidset |- paramtyp*
   ----
   -- if (id dir typ val = paramtyp)*
@@ -407,7 +412,7 @@ rule ConsType_wf/controlt:
   -- if (~$is_synth(typ))*
 
 rule ConsType_wf/packaget:
-  tidset |- paramtyp* (PackageT typ'*)
+  tidset |- ConsT paramtyp* (PackageT typ'*)
   -- CParamTypes_wf: tidset |- paramtyp*
   ----
   -- if (id dir typ val = paramtyp)*
@@ -419,9 +424,9 @@ rule ConsType_wf/packaget:
 ;;
 
 rule ConsDef_wf:
-  tidset |- tparam* constyp
+  tidset |- ConsD tparam* constyp
   ----
-  -- if paramtyp* typ_r = constyp
+  -- if ConsT paramtyp* typ_r = constyp
   -- if typ_r' = $canon_typ(typ_r)
   ----
   -- if $is_externt(typ_r')
@@ -430,5 +435,5 @@ rule ConsDef_wf:
         \/ $is_packaget(typ_r')
   ----
   -- if $distinct(tparam, tparam*)
-  -- if tidset' = $union_set(tid, tidset, tparam*)
+  -- if tidset' = $union_set(tid, tidset, SET tparam*)
   -- ConsType_wf: tidset' |- constyp
