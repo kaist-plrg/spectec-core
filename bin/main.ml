@@ -39,7 +39,9 @@ let typecheck_command =
      and filename = anon ("file.p4" %: string) in
      fun () ->
        let program = typecheck includes filename in
-       Format.printf "%a\n" Il.Pp.pp_program program)
+       match program with
+       | Ok program -> Format.printf "%a\n" Il.Pp.pp_program program
+       | Error msg -> Format.printf "Error: %s\n" msg)
 
 let command =
   Command.group ~summary:"p4cherry: an interpreter of the p4_16 language"
