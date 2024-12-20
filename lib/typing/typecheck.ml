@@ -268,47 +268,47 @@ and check_lvalue' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_il : Il.Ast.expr) :
 module TIdMap = MakeTIdEnv (Type)
 
 let rec eval_type (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ) :
-    Il.Ast.typ * TId.t list =
-  let typ_il, tids_fresh = eval_type' cursor ctx [] typ.it in
-  (typ_il $ typ.at, tids_fresh)
+    (Il.Ast.typ * TId.t list) res =
+  let* typ_il, tids_fresh = eval_type' cursor ctx [] typ.it in
+  Ok (typ_il $ typ.at, tids_fresh)
 
 and eval_type_with_check (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
-    : Il.Ast.typ * TId.t list =
-  let typ, tids_fresh = eval_type cursor ctx typ in
+    : (Il.Ast.typ * TId.t list) res =
+  let* typ, tids_fresh = eval_type cursor ctx typ in
   WF.check_valid_typ cursor ctx ~tids_fresh typ.it;
-  (typ, tids_fresh)
+  Ok (typ, tids_fresh)
 
 and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
-    (typ : El.Ast.typ') : Il.Ast.typ' * TId.t list =
+    (typ : El.Ast.typ') : (Il.Ast.typ' * TId.t list) res =
   let fresh_tid () = "__WILD_" ^ string_of_int (Ctx.fresh ()) in
   match typ with
-  | VoidT -> (Types.VoidT, tids_fresh)
-  | ErrT -> (Types.ErrT, tids_fresh)
-  | MatchKindT -> (Types.MatchKindT, tids_fresh)
-  | StrT -> (Types.StrT, tids_fresh)
-  | BoolT -> (Types.BoolT, tids_fresh)
-  | IntT -> (Types.IntT, tids_fresh)
+  | VoidT -> Ok (Types.VoidT, tids_fresh)
+  | ErrT -> Ok (Types.ErrT, tids_fresh)
+  | MatchKindT -> Ok (Types.MatchKindT, tids_fresh)
+  | StrT -> Ok (Types.StrT, tids_fresh)
+  | BoolT -> Ok (Types.BoolT, tids_fresh)
+  | IntT -> Ok (Types.IntT, tids_fresh)
   | FIntT expr_width ->
-      let expr_width_il = type_expr cursor ctx expr_width in
+      let* expr_width_il = type_expr cursor ctx expr_width in
       let width =
         expr_width_il |> Static.eval_expr cursor ctx |> it |> Value.get_num
       in
-      (Types.FIntT width, tids_fresh)
+      Ok (Types.FIntT width, tids_fresh)
   | FBitT expr_width ->
-      let expr_width_il = type_expr cursor ctx expr_width in
+      let* expr_width_il = type_expr cursor ctx expr_width in
       let width =
         expr_width_il |> Static.eval_expr cursor ctx |> it |> Value.get_num
       in
-      (Types.FBitT width, tids_fresh)
+      Ok (Types.FBitT width, tids_fresh)
   | VBitT expr_width ->
-      let expr_width_il = type_expr cursor ctx expr_width in
+      let* expr_width_il = type_expr cursor ctx expr_width in
       let width =
         expr_width_il |> Static.eval_expr cursor ctx |> it |> Value.get_num
       in
-      (Types.VBitT width, tids_fresh)
+      Ok (Types.VBitT width, tids_fresh)
   | StackT (typ_inner, expr_size) ->
-      let typ_inner, tids_fresh_inner = eval_type cursor ctx typ_inner in
-      let expr_size_il = type_expr cursor ctx expr_size in
+      let* typ_inner, tids_fresh_inner = eval_type cursor ctx typ_inner in
+      let* expr_size_il = type_expr cursor ctx expr_size in
       let size =
         expr_size_il |> Static.eval_expr cursor ctx |> it |> Value.get_num
       in
@@ -318,24 +318,21 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
       in
       let typ = Types.SpecT (tdp, [ typ_inner.it ]) in
       let tids_fresh = tids_fresh @ tids_fresh_inner in
-      (typ, tids_fresh)
+      Ok (typ, tids_fresh)
   | ListT typ_inner ->
-      let typ_inner, tids_fresh_inner = eval_type cursor ctx typ_inner in
+      let* typ_inner, tids_fresh_inner = eval_type cursor ctx typ_inner in
       let tdp =
         let typ_list = Types.ListT (Types.VarT "T") in
         ([ "T" ], [], typ_list)
       in
       let typ = Types.SpecT (tdp, [ typ_inner.it ]) in
       let tids_fresh = tids_fresh @ tids_fresh_inner in
-      (typ, tids_fresh)
+      Ok (typ, tids_fresh)
   | TupleT typs_inner ->
-      let typs_inner, tids_fresh =
-        List.fold_left
-          (fun (typs_inner, tids_fresh) typ_inner ->
-            let typ_inner, tids_fresh_inner = eval_type cursor ctx typ_inner in
-            (typs_inner @ [ typ_inner.it ], tids_fresh @ tids_fresh_inner))
-          ([], tids_fresh) typs_inner
+      let* typs_inner, tids_fresh =
+        eval_types cursor ctx tids_fresh typs_inner
       in
+      let typs_inner = List.map it typs_inner in
       let tdp =
         let tparams =
           List.init (List.length typs_inner) (fun i -> "T" ^ string_of_int i)
@@ -345,14 +342,14 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
         (tparams, [], typ_tuple)
       in
       let typ = Types.SpecT (tdp, typs_inner) in
-      (typ, tids_fresh)
+      Ok (typ, tids_fresh)
   | NameT var -> (
       let td = Ctx.find_opt Ctx.find_typedef_opt cursor var ctx in
       match td with
-      | Some (MonoD tdm) -> (tdm, tids_fresh)
+      | Some (MonoD tdm) -> Ok (tdm, tids_fresh)
       | Some (PolyD tdp) ->
           let typ = Types.SpecT (tdp, []) in
-          (typ, tids_fresh)
+          Ok (typ, tids_fresh)
       | None ->
           Format.printf "(eval_type') Type definition %a does not exist\n"
             El.Pp.pp_var var;
@@ -367,17 +364,12 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
                arguments are supplied\n"
               El.Pp.pp_var var;
             assert false);
-          (tdm, tids_fresh)
+          Ok (tdm, tids_fresh)
       | Some (PolyD tdp) ->
-          let typs, tids_fresh =
-            List.fold_left
-              (fun (typs, tids_fresh) typ ->
-                let typ, tids_fresh_inner = eval_type cursor ctx typ in
-                (typs @ [ typ.it ], tids_fresh @ tids_fresh_inner))
-              ([], tids_fresh) typs
-          in
+          let* typs, tids_fresh = eval_types cursor ctx tids_fresh typs in
+          let typs = List.map it typs in
           let typ = Types.SpecT (tdp, typs) in
-          (typ, tids_fresh)
+          Ok (typ, tids_fresh)
       | None ->
           Format.printf "(eval_type') Type definition %a does not exist\n"
             El.Pp.pp_var var;
@@ -385,53 +377,104 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
   | AnyT ->
       let tid_fresh = fresh_tid () in
       let typ = Types.VarT tid_fresh in
-      (typ, tids_fresh @ [ tid_fresh ])
+      Ok (typ, tids_fresh @ [ tid_fresh ])
+
+and eval_types_with_check (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (tids_fresh : TId.t list) (typs : El.Ast.typ list) :
+    (Il.Ast.typ list * TId.t list) res =
+  let rec eval_types_with_check' (typs_il, tids_fresh) = function
+    | [] -> Ok (typs_il, tids_fresh)
+    | typ :: typs ->
+        let* typ_il, tids_fresh_new = eval_type_with_check cursor ctx typ in
+        eval_types_with_check'
+          (typs_il @ [ typ_il ], tids_fresh @ tids_fresh_new)
+          typs
+  in
+  eval_types_with_check' ([], tids_fresh) typs
+
+and eval_types (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
+    (typs : El.Ast.typ list) : (Il.Ast.typ list * TId.t list) res =
+  let rec eval_types' (typs_il, tids_fresh) = function
+    | [] -> Ok (typs_il, tids_fresh)
+    | typ :: typs ->
+        let* typ_il, tids_fresh_new = eval_type cursor ctx typ in
+        eval_types' (typs_il @ [ typ_il ], tids_fresh @ tids_fresh_new) typs
+  in
+  eval_types' ([], tids_fresh) typs
 
 (* Annotation typing *)
 
 and type_anno (cursor : Ctx.cursor) (ctx : Ctx.t) (anno : El.Ast.anno) :
-    Il.Ast.anno =
-  type_anno' cursor ctx anno.it $ anno.at
+    Il.Ast.anno res =
+  let* anno_il = type_anno' cursor ctx anno.it in
+  Ok (anno_il $ anno.at)
 
 and type_anno' (cursor : Ctx.cursor) (ctx : Ctx.t) (anno : El.Ast.anno') :
-    Il.Ast.anno' =
+    Il.Ast.anno' res =
   match anno with
-  | EmptyN text -> Lang.Ast.EmptyN text
-  | TextN (text, texts) -> Lang.Ast.TextN (text, texts)
+  | EmptyN text -> Ok (Lang.Ast.EmptyN text)
+  | TextN (text, texts) -> Ok (Lang.Ast.TextN (text, texts))
   | ExprN (text, exprs) ->
-      let exprs = List.map (type_expr cursor ctx) exprs in
-      Lang.Ast.ExprN (text, exprs)
+      let* exprs_il = type_exprs cursor ctx exprs in
+      Ok (Lang.Ast.ExprN (text, exprs_il))
   | RecordN (text, fields) ->
       let members, exprs = List.split fields in
-      let exprs = List.map (type_expr cursor ctx) exprs in
-      Lang.Ast.RecordN (text, List.combine members exprs)
+      let* exprs_il = type_exprs cursor ctx exprs in
+      Ok (Lang.Ast.RecordN (text, List.combine members exprs_il))
+
+and type_annos (cursor : Ctx.cursor) (ctx : Ctx.t) (annos : El.Ast.anno list) :
+    Il.Ast.anno list res =
+  let rec type_annos' annos_il = function
+    | [] -> Ok annos_il
+    | anno :: annos ->
+        let* anno_il = type_anno cursor ctx anno in
+        type_annos' (annos_il @ [ anno_il ]) annos
+  in
+  type_annos' [] annos
 
 (* Parameter typing *)
 
 and type_param (cursor : Ctx.cursor) (ctx : Ctx.t) (param : El.Ast.param) :
-    Il.Ast.param * TId.t list =
-  let param_il, tids_fresh = type_param' cursor ctx param.it in
-  (param_il $ param.at, tids_fresh)
+    (Il.Ast.param * TId.t list) res =
+  let* param_il, tids_fresh = type_param' cursor ctx param.it in
+  Ok (param_il $ param.at, tids_fresh)
 
 and type_param' (cursor : Ctx.cursor) (ctx : Ctx.t) (param : El.Ast.param') :
-    Il.Ast.param' * TId.t list =
+    (Il.Ast.param' * TId.t list) res =
   let id, dir, typ, expr_default, annos = param in
-  let typ, tids_fresh = eval_type_with_check cursor ctx typ in
-  let value_default_il =
-    Option.map
-      (fun expr_default ->
-        let expr_default_il = type_expr cursor ctx expr_default in
+  let* typ, tids_fresh = eval_type_with_check cursor ctx typ in
+  let* value_default_il =
+    match expr_default with
+    | Some expr_default ->
+        let* expr_default_il = type_expr cursor ctx expr_default in
         let expr_default_il = coerce_type_assign expr_default_il typ.it in
-        Static.eval_expr cursor ctx expr_default_il)
-      expr_default
+        let value_default_il = Static.eval_expr cursor ctx expr_default_il in
+        Ok (Some value_default_il)
+    | None -> Ok None
   in
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let* annos_il = type_annos cursor ctx annos in
   let param_il = (id, dir, typ, value_default_il, annos_il) in
-  (param_il, tids_fresh)
+  Ok (param_il, tids_fresh)
+
+and type_params (cursor : Ctx.cursor) (ctx : Ctx.t) (params : El.Ast.param list)
+    : (Il.Ast.param list * TId.t list) res =
+  let rec type_params' params_il tids_fresh = function
+    | [] -> Ok (params_il, tids_fresh)
+    | param :: params ->
+        let* param_il, tids_fresh_new = type_param cursor ctx param in
+        type_params' (params_il @ [ param_il ])
+          (tids_fresh @ tids_fresh_new)
+          params
+  in
+  type_params' [] [] params
 
 and type_cparam (cursor : Ctx.cursor) (ctx : Ctx.t) (cparam : El.Ast.cparam) :
-    Il.Ast.cparam * TId.t list =
+    (Il.Ast.cparam * TId.t list) res =
   type_param cursor ctx cparam
+
+and type_cparams (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (cparams : El.Ast.cparam list) : (Il.Ast.cparam list * TId.t list) res =
+  type_params cursor ctx cparams
 
 (* Calling convention *)
 
@@ -542,12 +585,12 @@ and type_call_convention' ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
 (* Expression typing *)
 
 and type_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr) :
-    Il.Ast.expr =
-  let typ, ctk, expr_il = type_expr' cursor ctx expr.it in
-  Il.Ast.(expr_il $$ expr.at % { typ; ctk })
+    Il.Ast.expr res =
+  let* typ, ctk, expr_il = type_expr' cursor ctx expr.it in
+  Ok Il.Ast.(expr_il $$ expr.at % { typ; ctk })
 
 and type_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr') :
-    Type.t * Ctk.t * Il.Ast.expr' =
+    (Type.t * Ctk.t * Il.Ast.expr') res =
   match expr with
   | BoolE { boolean } -> type_bool_expr boolean
   | StrE { text } -> type_str_expr text
@@ -589,15 +632,25 @@ and type_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : El.Ast.expr') :
   | InstE { var_inst; targs; args } ->
       type_instantiation_expr cursor ctx var_inst targs args
 
-and type_bool_expr (boolean : bool) : Type.t * Ctk.t * Il.Ast.expr' =
+and type_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : El.Ast.expr list) :
+    Il.Ast.expr list res =
+  let rec type_exprs' exprs_il = function
+    | [] -> Ok exprs_il
+    | expr :: exprs ->
+        let* expr_il = type_expr cursor ctx expr in
+        type_exprs' (exprs_il @ [ expr_il ]) exprs
+  in
+  type_exprs' [] exprs
+
+and type_bool_expr (boolean : bool) : (Type.t * Ctk.t * Il.Ast.expr') res =
   let value = Value.BoolV boolean in
-  (Types.BoolT, Ctk.LCTK, Il.Ast.ValueE { value = value $ no_info })
+  Ok (Types.BoolT, Ctk.LCTK, Il.Ast.ValueE { value = value $ no_info })
 
-and type_str_expr (text : El.Ast.text) : Type.t * Ctk.t * Il.Ast.expr' =
+and type_str_expr (text : El.Ast.text) : (Type.t * Ctk.t * Il.Ast.expr') res =
   let value = Value.StrV text.it in
-  (Types.StrT, Ctk.LCTK, Il.Ast.ValueE { value = value $ text.at })
+  Ok (Types.StrT, Ctk.LCTK, Il.Ast.ValueE { value = value $ text.at })
 
-and type_num_expr (num : El.Ast.num) : Type.t * Ctk.t * Il.Ast.expr' =
+and type_num_expr (num : El.Ast.num) : (Type.t * Ctk.t * Il.Ast.expr') res =
   let value, typ =
     match num.it with
     | value, Some (width, signed) ->
@@ -607,10 +660,10 @@ and type_num_expr (num : El.Ast.num) : Type.t * Ctk.t * Il.Ast.expr' =
   in
   let ctk = Ctk.LCTK in
   let expr_il = Il.Ast.ValueE { value = value $ num.at } in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
-    Type.t * Ctk.t * Il.Ast.expr' =
+    (Type.t * Ctk.t * Il.Ast.expr') res =
   let rtype = Ctx.find_opt Ctx.find_rtype_opt cursor var ctx in
   if Option.is_none rtype then (
     Format.printf "(type_var_expr) %a is a free identifier\n" El.Pp.pp_var var;
@@ -618,7 +671,7 @@ and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
   let typ, _, _ = Option.get rtype in
   let expr_il = Il.Ast.VarE { var } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (8.12) Operations on tuple expressions
 
@@ -633,8 +686,8 @@ and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
    using the ... notation the three dots must appear last in the initializer. *)
 
 and type_seq_expr ~(default : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (exprs : El.Ast.expr list) : Type.t * Ctk.t * Il.Ast.expr' =
-  let exprs_il = List.map (type_expr cursor ctx) exprs in
+    (exprs : El.Ast.expr list) : (Type.t * Ctk.t * Il.Ast.expr') res =
+  let* exprs_il = type_exprs cursor ctx exprs in
   let typs =
     List.map note exprs_il |> List.map (fun Il.Ast.{ typ; _ } -> typ)
   in
@@ -645,7 +698,7 @@ and type_seq_expr ~(default : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
   in
   WF.check_valid_typ cursor ctx typ;
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (8.13) Operations on structure-valued expressions
 
@@ -681,9 +734,9 @@ and type_seq_expr ~(default : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and type_record_expr ~(default : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
     (fields : (El.Ast.member * El.Ast.expr) list) :
-    Type.t * Ctk.t * Il.Ast.expr' =
+    (Type.t * Ctk.t * Il.Ast.expr') res =
   let members, exprs = List.split fields in
-  let exprs_il = List.map (type_expr cursor ctx) exprs in
+  let* exprs_il = type_exprs cursor ctx exprs in
   let typs =
     List.map note exprs_il |> List.map (fun Il.Ast.{ typ; _ } -> typ)
   in
@@ -696,16 +749,16 @@ and type_record_expr ~(default : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
   in
   WF.check_valid_typ cursor ctx typ;
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (8.26) Initializing with default values
 
    A left-value can be initialized automatically with a default value of the
    suitable type using the syntax ... (see Section 7.3). *)
 
-and type_default_expr () : Type.t * Ctk.t * Il.Ast.expr' =
+and type_default_expr () : (Type.t * Ctk.t * Il.Ast.expr') res =
   let value = Value.DefaultV in
-  (Types.DefaultT, Ctk.LCTK, Il.Ast.ValueE { value = value $ no_info })
+  Ok (Types.DefaultT, Ctk.LCTK, Il.Ast.ValueE { value = value $ no_info })
 
 (* (8.17) Operations on headers
    (8.19) Operations on header unions
@@ -715,9 +768,9 @@ and type_default_expr () : Type.t * Ctk.t * Il.Ast.expr' =
    explicit cast on this expression in cases where it cannot determine the
    particular header or header union type from the context. *)
 
-and type_invalid_expr () : Type.t * Ctk.t * Il.Ast.expr' =
+and type_invalid_expr () : (Type.t * Ctk.t * Il.Ast.expr') res =
   let value = Value.InvalidV in
-  (Types.InvalidT, Ctk.LCTK, Il.Ast.ValueE { value = value $ no_info })
+  Ok (Types.InvalidT, Ctk.LCTK, Il.Ast.ValueE { value = value $ no_info })
 
 (* (8.6) Operations on fixed-width bit types (unsigned integers)
 
@@ -771,8 +824,8 @@ and check_unop_uminus (typ : Type.t) =
   match typ with IntT | FIntT _ | FBitT _ -> true | _ -> false
 
 and type_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : El.Ast.unop)
-    (expr : El.Ast.expr) : Type.t * Ctk.t * Il.Ast.expr' =
-  let expr_il = type_expr cursor ctx expr in
+    (expr : El.Ast.expr) : (Type.t * Ctk.t * Il.Ast.expr') res =
+  let* expr_il = type_expr cursor ctx expr in
   let expr_il =
     match unop.it with
     | BNotOp -> coerce_type_unary_numeric check_unop_bnot expr_il
@@ -783,7 +836,7 @@ and type_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : El.Ast.unop)
   let typ = expr_il.note.typ in
   let expr_il = Il.Ast.UnE { unop; expr = expr_il } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (8.2) Operaions on error types
 
@@ -979,8 +1032,8 @@ and check_binop_plus_minus_mult (typ_l : Type.t) (typ_r : Type.t) : bool =
   | _ -> false
 
 and type_binop_plus_minus_mult (binop : Lang.Ast.binop)
-    (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr'
-    =
+    (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) :
+    (Type.t * Il.Ast.expr') res =
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   let expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_plus_minus_mult expr_l_il expr_r_il
@@ -988,7 +1041,7 @@ and type_binop_plus_minus_mult (binop : Lang.Ast.binop)
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
   let typ = expr_l_il.note.typ in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
-  (typ, expr_il)
+  Ok (typ, expr_il)
 
 and check_binop_saturating_plus_minus (typ_l : Type.t) (typ_r : Type.t) : bool =
   match (typ_l, typ_r) with
@@ -997,8 +1050,8 @@ and check_binop_saturating_plus_minus (typ_l : Type.t) (typ_r : Type.t) : bool =
   | _ -> false
 
 and type_binop_saturating_plus_minus (binop : Lang.Ast.binop)
-    (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr'
-    =
+    (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) :
+    (Type.t * Il.Ast.expr') res =
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   let expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_plus_minus_mult expr_l_il expr_r_il
@@ -1006,14 +1059,14 @@ and type_binop_saturating_plus_minus (binop : Lang.Ast.binop)
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
   let typ = expr_l_il.note.typ in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
-  (typ, expr_il)
+  Ok (typ, expr_il)
 
 and check_binop_div_mod (typ_l : Type.t) (typ_r : Type.t) : bool =
   match (typ_l, typ_r) with IntT, IntT -> true | _ -> false
 
 and type_binop_div_mod (cursor : Ctx.cursor) (ctx : Ctx.t)
     (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr)
-    : Type.t * Il.Ast.expr' =
+    : (Type.t * Il.Ast.expr') res =
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   let expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_div_mod expr_l_il expr_r_il
@@ -1031,7 +1084,7 @@ and type_binop_div_mod (cursor : Ctx.cursor) (ctx : Ctx.t)
        assert false));
   let typ = expr_l_il.note.typ in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
-  (typ, expr_il)
+  Ok (typ, expr_il)
 
 and check_binop_shift (typ_l : Type.t) (typ_r : Type.t) : bool =
   match (typ_l, typ_r) with
@@ -1045,7 +1098,7 @@ and check_binop_shift (typ_l : Type.t) (typ_r : Type.t) : bool =
   | _ -> false
 
 and type_binop_shift (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
-    (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr' =
+    (expr_r_il : Il.Ast.expr) : (Type.t * Il.Ast.expr') res =
   let expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_shift expr_l_il expr_r_il
   in
@@ -1062,7 +1115,7 @@ and type_binop_shift (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
   | _ -> ());
   let typ = typ_l in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
-  (typ, expr_il)
+  Ok (typ, expr_il)
 
 and check_binop_compare (typ_l : Type.t) (typ_r : Type.t) : bool =
   match (typ_l, typ_r) with
@@ -1072,7 +1125,7 @@ and check_binop_compare (typ_l : Type.t) (typ_r : Type.t) : bool =
   | _ -> false
 
 and type_binop_compare (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
-    (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr' =
+    (expr_r_il : Il.Ast.expr) : (Type.t * Il.Ast.expr') res =
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   let expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_compare expr_l_il expr_r_il
@@ -1080,10 +1133,10 @@ and type_binop_compare (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
   let typ = Types.BoolT in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
-  (typ, expr_il)
+  Ok (typ, expr_il)
 
 and type_binop_compare_equal (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
-    (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr' =
+    (expr_r_il : Il.Ast.expr) : (Type.t * Il.Ast.expr') res =
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
   let typ = expr_l_il.note.typ in
@@ -1094,7 +1147,7 @@ and type_binop_compare_equal (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     assert false);
   let typ = Types.BoolT in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
-  (typ, expr_il)
+  Ok (typ, expr_il)
 
 and check_binop_bitwise (typ_l : Type.t) (typ_r : Type.t) : bool =
   match (typ_l, typ_r) with
@@ -1103,7 +1156,7 @@ and check_binop_bitwise (typ_l : Type.t) (typ_r : Type.t) : bool =
   | _ -> false
 
 and type_binop_bitwise (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
-    (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr' =
+    (expr_r_il : Il.Ast.expr) : (Type.t * Il.Ast.expr') res =
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   let expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_bitwise expr_l_il expr_r_il
@@ -1111,7 +1164,7 @@ and type_binop_bitwise (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
   let typ = expr_l_il.note.typ in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
-  (typ, expr_il)
+  Ok (typ, expr_il)
 
 and check_binop_concat (typ_l : Type.t) (typ_r : Type.t) : bool =
   match (typ_l, typ_r) with
@@ -1120,7 +1173,7 @@ and check_binop_concat (typ_l : Type.t) (typ_r : Type.t) : bool =
   | _ -> false
 
 and type_binop_concat (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
-    (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr' =
+    (expr_r_il : Il.Ast.expr) : (Type.t * Il.Ast.expr') res =
   let expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_concat expr_l_il expr_r_il
   in
@@ -1134,27 +1187,27 @@ and type_binop_concat (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     | _ -> assert false
   in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
-  (typ, expr_il)
+  Ok (typ, expr_il)
 
 and check_binop_logical (typ_l : Type.t) (typ_r : Type.t) : bool =
   match (typ_l, typ_r) with BoolT, BoolT -> true | _ -> false
 
 and type_binop_logical (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
-    (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr' =
+    (expr_r_il : Il.Ast.expr) : (Type.t * Il.Ast.expr') res =
   let expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_logical expr_l_il expr_r_il
   in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
   let typ = Types.BoolT in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
-  (typ, expr_il)
+  Ok (typ, expr_il)
 
 and type_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
     (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) :
-    Type.t * Ctk.t * Il.Ast.expr' =
-  let expr_l_il = type_expr cursor ctx expr_l in
-  let expr_r_il = type_expr cursor ctx expr_r in
-  let typ, expr_il =
+    (Type.t * Ctk.t * Il.Ast.expr') res =
+  let* expr_l_il = type_expr cursor ctx expr_l in
+  let* expr_r_il = type_expr cursor ctx expr_r in
+  let* typ, expr_il =
     match binop.it with
     | PlusOp | MinusOp | MulOp ->
         type_binop_plus_minus_mult binop expr_l_il expr_r_il
@@ -1169,7 +1222,7 @@ and type_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
     | LAndOp | LOrOp -> type_binop_logical binop expr_l_il expr_r_il
   in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (8.5.1) Conditional operator
 
@@ -1184,16 +1237,16 @@ and type_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
 
 and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_cond : El.Ast.expr) (expr_then : El.Ast.expr)
-    (expr_else : El.Ast.expr) : Type.t * Ctk.t * Il.Ast.expr' =
-  let expr_cond_il = type_expr cursor ctx expr_cond in
+    (expr_else : El.Ast.expr) : (Type.t * Ctk.t * Il.Ast.expr') res =
+  let* expr_cond_il = type_expr cursor ctx expr_cond in
   let typ_cond = expr_cond_il.note.typ in
   let ctk_cond = expr_cond_il.note.ctk in
   if typ_cond <> Types.BoolT then (
     Format.printf "(type_ternop_expr) Condition %a must be a boolean\n"
       (El.Pp.pp_expr ~level:0) expr_cond;
     assert false);
-  let expr_then_il = type_expr cursor ctx expr_then in
-  let expr_else_il = type_expr cursor ctx expr_else in
+  let* expr_then_il = type_expr cursor ctx expr_then in
+  let* expr_else_il = type_expr cursor ctx expr_else in
   let expr_then_il, expr_else_il =
     coerce_types_binary expr_then_il expr_else_il
   in
@@ -1216,7 +1269,7 @@ and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       }
   in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (8.11) Casts
 
@@ -1225,10 +1278,10 @@ and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
    introduced by typedef, type, and enum. *)
 
 and type_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
-    (expr : El.Ast.expr) : Type.t * Ctk.t * Il.Ast.expr' =
-  let typ_target, tids_fresh = eval_type_with_check cursor ctx typ in
+    (expr : El.Ast.expr) : (Type.t * Ctk.t * Il.Ast.expr') res =
+  let* typ_target, tids_fresh = eval_type_with_check cursor ctx typ in
   assert (tids_fresh = []);
-  let expr_il = type_expr cursor ctx expr in
+  let* expr_il = type_expr cursor ctx expr in
   let typ = expr_il.note.typ in
   if not (Subtyp.explicit typ typ_target.it) then (
     Format.printf "(type_cast_expr) Invalid cast from %a to %a\n" Type.pp typ
@@ -1237,7 +1290,7 @@ and type_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
   let typ = typ_target.it in
   let expr_il = Il.Ast.CastE { typ = typ_target; expr = expr_il } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (8.15.3) Masks
 
@@ -1260,9 +1313,9 @@ and check_mask (typ_l : Type.t) (typ_r : Type.t) : bool =
   | _ -> false
 
 and type_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
-    (expr_mask : El.Ast.expr) : Type.t * Ctk.t * Il.Ast.expr' =
-  let expr_base_il = type_expr cursor ctx expr_base in
-  let expr_mask_il = type_expr cursor ctx expr_mask in
+    (expr_mask : El.Ast.expr) : (Type.t * Ctk.t * Il.Ast.expr') res =
+  let* expr_base_il = type_expr cursor ctx expr_base in
+  let* expr_mask_il = type_expr cursor ctx expr_mask in
   let expr_base_il, expr_mask_il =
     coerce_types_binary expr_base_il expr_mask_il
   in
@@ -1278,7 +1331,7 @@ and type_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
     Il.Ast.MaskE { expr_base = expr_base_il; expr_mask = expr_mask_il }
   in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (8.15.4) Ranges
 
@@ -1297,9 +1350,9 @@ and check_range (typ_l : Type.t) (typ_r : Type.t) : bool =
   | _ -> false
 
 and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : El.Ast.expr)
-    (expr_ub : El.Ast.expr) : Type.t * Ctk.t * Il.Ast.expr' =
-  let expr_lb_il = type_expr cursor ctx expr_lb in
-  let expr_ub_il = type_expr cursor ctx expr_ub in
+    (expr_ub : El.Ast.expr) : (Type.t * Ctk.t * Il.Ast.expr') res =
+  let* expr_lb_il = type_expr cursor ctx expr_lb in
+  let* expr_ub_il = type_expr cursor ctx expr_ub in
   let expr_lb_il, expr_ub_il = coerce_types_binary expr_lb_il expr_ub_il in
   let expr_lb_il, expr_ub_il =
     coerce_types_binary_numeric check_range expr_lb_il expr_ub_il
@@ -1311,7 +1364,7 @@ and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : El.Ast.expr)
      where the underlying type will be implicitly cast *)
   let expr_il = Il.Ast.RangeE { expr_lb = expr_lb_il; expr_ub = expr_ub_il } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (13.6) Select expressions
 
@@ -1335,26 +1388,31 @@ and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : El.Ast.expr)
    which contains all possible values of a given type. *)
 
 and type_select_case_keyset (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (typ_key : Type.t) (keyset : El.Ast.keyset) : Il.Ast.keyset =
-  type_select_case_keyset' cursor ctx typ_key keyset.it $ keyset.at
+    (typ_key : Type.t) (keyset : El.Ast.keyset) : Il.Ast.keyset res =
+  let* keyset_il = type_select_case_keyset' cursor ctx typ_key keyset.it in
+  Ok (keyset_il $ keyset.at)
 
 and type_select_case_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (typ_key : Type.t) (keyset : El.Ast.keyset') : Il.Ast.keyset' =
+    (typ_key : Type.t) (keyset : El.Ast.keyset') : Il.Ast.keyset' res =
   assert (cursor = Ctx.Local);
   match keyset with
   | ExprK expr ->
-      let expr_il =
-        let expr_il = type_expr cursor ctx expr in
+      let* expr_il =
+        let* expr_il = type_expr cursor ctx expr in
         match expr_il.it with
         (* When the keyset expression is a mask or range, it is already a set *)
-        | MaskE _ | RangeE _ -> expr_il
+        | MaskE _ | RangeE _ -> Ok expr_il
         (* When the keyset expression is already a set (as a value set) *)
         | VarE _ when match expr_il.note.typ with SetT _ -> true | _ -> false ->
-            expr_il
+            Ok expr_il
         (* Otherwise, wrap the expression in a set *)
         | _ ->
             let typ = Types.SetT expr_il.note.typ in
-            Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
+            let expr_il =
+              Il.Ast.(
+                expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
+            in
+            Ok expr_il
       in
       let typ_key = Types.SetT typ_key in
       WF.check_valid_typ cursor ctx typ_key;
@@ -1377,37 +1435,64 @@ and type_select_case_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
               Type.pp typ_key Type.pp typ (Il.Pp.pp_expr ~level:0) expr_il;
             assert false
       in
-      Lang.Ast.ExprK expr_il
-  | DefaultK -> Lang.Ast.DefaultK
-  | AnyK -> Lang.Ast.AnyK
+      Ok (Lang.Ast.ExprK expr_il)
+  | DefaultK -> Ok Lang.Ast.DefaultK
+  | AnyK -> Ok Lang.Ast.AnyK
 
 and type_select_case_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (typs_key : Type.t list) (keysets : El.Ast.keyset list) : Il.Ast.keyset list
-    =
+    (typs_key : Type.t list) (keysets : El.Ast.keyset list) :
+    Il.Ast.keyset list res =
   match (typs_key, keysets) with
   | [ typ_key ], [ keyset ] ->
-      [ type_select_case_keyset cursor ctx typ_key keyset ]
+      let* keyset_il = type_select_case_keyset cursor ctx typ_key keyset in
+      Ok [ keyset_il ]
   | _, [ keyset ] ->
       let typ_key = Types.SeqT typs_key in
-      [ type_select_case_keyset cursor ctx typ_key keyset ]
+      let* keyset_il = type_select_case_keyset cursor ctx typ_key keyset in
+      Ok [ keyset_il ]
   | typs_key, keysets ->
       if List.length typs_key <> List.length keysets then (
         Format.printf
           "(type_select_case_keysets) Number of select keys must match the \
            number of cases\n";
         assert false);
-      List.map2 (type_select_case_keyset cursor ctx) typs_key keysets
+      let rec type_select_case_keysets' keysets_il typs_key keysets =
+        match (typs_key, keysets) with
+        | [], [] -> Ok keysets_il
+        | typ_key :: typs_key, keyset :: keysets ->
+            let* keyset_il =
+              type_select_case_keyset cursor ctx typ_key keyset
+            in
+            type_select_case_keysets'
+              (keysets_il @ [ keyset_il ])
+              typs_key keysets
+        | _ -> assert false
+      in
+      type_select_case_keysets' [] typs_key keysets
 
 and type_select_case (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (typs_key : Type.t list) (case : El.Ast.select_case) : Il.Ast.select_case =
-  type_select_case' cursor ctx typs_key case.it $ case.at
+    (typs_key : Type.t list) (case : El.Ast.select_case) :
+    Il.Ast.select_case res =
+  let* case_il = type_select_case' cursor ctx typs_key case.it in
+  Ok (case_il $ case.at)
+
+and type_select_cases (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (typs_key : Type.t list) (cases : El.Ast.select_case list) :
+    Il.Ast.select_case list res =
+  let rec type_select_cases' cases_il typs_key = function
+    | [] -> Ok cases_il
+    | case :: cases ->
+        let* case_il = type_select_case cursor ctx typs_key case in
+        type_select_cases' (cases_il @ [ case_il ]) typs_key cases
+  in
+  type_select_cases' [] typs_key cases
 
 and type_select_case' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (typs_key : Type.t list) (case : El.Ast.select_case') : Il.Ast.select_case'
-    =
+    (typs_key : Type.t list) (case : El.Ast.select_case') :
+    Il.Ast.select_case' res =
   assert (cursor = Ctx.Local);
   let keysets, state_label = case in
-  let keysets_il = type_select_case_keysets cursor ctx typs_key keysets in
+  let* keysets_il = type_select_case_keysets cursor ctx typs_key keysets in
   let rtype_label = Ctx.find_rtype_opt cursor state_label.it ctx in
   if
     not
@@ -1416,11 +1501,11 @@ and type_select_case' (cursor : Ctx.cursor) (ctx : Ctx.t)
     Format.printf "(type_transition_stmt) Label %s is not a valid label\n"
       state_label.it;
     assert false);
-  (keysets_il, state_label)
+  Ok (keysets_il, state_label)
 
 and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (exprs_select : El.Ast.expr list) (cases : El.Ast.select_case list) :
-    Type.t * Ctk.t * Il.Ast.expr' =
+    (Type.t * Ctk.t * Il.Ast.expr') res =
   if
     not
       (cursor = Ctx.Local
@@ -1430,17 +1515,17 @@ and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       "(type_select_expr) Select expression must be in a parser state (more \
        strictly, only nested inside a transition statement)\n";
     assert false);
-  let exprs_select_il = List.map (type_expr cursor ctx) exprs_select in
+  let* exprs_select_il = type_exprs cursor ctx exprs_select in
   let typs_select =
     List.map (fun expr -> Il.Ast.(expr.note.typ)) exprs_select_il
   in
-  let cases_il = List.map (type_select_case cursor ctx typs_select) cases in
+  let* cases_il = type_select_cases cursor ctx typs_select cases in
   let typ = Types.StateT in
   let expr_il =
     Il.Ast.SelectE { exprs_select = exprs_select_il; cases = cases_il }
   in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (8.12) Operations on tuple expressions
 
@@ -1463,9 +1548,9 @@ and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (expr_idx : El.Ast.expr) :
-    Type.t * Ctk.t * Il.Ast.expr' =
-  let expr_base_il = type_expr cursor ctx expr_base in
-  let expr_idx_il = type_expr cursor ctx expr_idx in
+    (Type.t * Ctk.t * Il.Ast.expr') res =
+  let* expr_base_il = type_expr cursor ctx expr_base in
+  let* expr_idx_il = type_expr cursor ctx expr_idx in
   let expr_idx_il = coerce_type_unary_numeric Type.is_numeric expr_idx_il in
   let typ, expr_il =
     let typ_base = expr_base_il.note.typ |> Type.canon in
@@ -1509,7 +1594,7 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
         assert false
   in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (8.6) Operations on fixed-width bit types (unsigned integers)
 
@@ -1584,17 +1669,17 @@ and check_bitstring_slice_range (typ_base : Type.t) (idx_lo : Bigint.t)
 
 and type_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (expr_lo : El.Ast.expr) (expr_hi : El.Ast.expr) :
-    Type.t * Ctk.t * Il.Ast.expr' =
-  let expr_base_il = type_expr cursor ctx expr_base in
+    (Type.t * Ctk.t * Il.Ast.expr') res =
+  let* expr_base_il = type_expr cursor ctx expr_base in
   let expr_base_il =
     coerce_type_unary_numeric check_bitstring_base expr_base_il
   in
   let typ_base = expr_base_il.note.typ in
-  let expr_lo_il = type_expr cursor ctx expr_lo in
+  let* expr_lo_il = type_expr cursor ctx expr_lo in
   let expr_lo_il = coerce_type_unary_numeric check_bitstring_index expr_lo_il in
   let value_lo = Static.eval_expr cursor ctx expr_lo_il in
   let idx_lo = value_lo.it |> Value.get_num in
-  let expr_hi_il = type_expr cursor ctx expr_hi in
+  let* expr_hi_il = type_expr cursor ctx expr_hi in
   let expr_hi_il = coerce_type_unary_numeric check_bitstring_index expr_hi_il in
   let value_hi = Static.eval_expr cursor ctx expr_hi_il in
   let idx_hi = value_hi.it |> Value.get_num in
@@ -1605,14 +1690,14 @@ and type_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     Il.Ast.BitAccE { expr_base = expr_base_il; value_lo; value_hi }
   in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (8.2) Operations on error types
 
    Symbolic names declared by an error declaration belong to the error namespace. *)
 
 and type_error_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (member : El.Ast.member) : Type.t * Ctk.t * Il.Ast.expr' =
+    (member : El.Ast.member) : (Type.t * Ctk.t * Il.Ast.expr') res =
   let value_error = Ctx.find_value_opt cursor ("error." ^ member.it) ctx in
   if Option.is_none value_error then (
     Format.printf "(type_error_acc_expr) Member %s does not exist in error\n"
@@ -1622,7 +1707,7 @@ and type_error_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let typ = Types.ErrT in
   let expr_il = Il.Ast.ValueE { value = value_error $ member.at } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (8.3) Operations on enum types
 
@@ -1631,7 +1716,7 @@ and type_error_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (var_base : El.Ast.var) (member : El.Ast.member) :
-    Type.t * Ctk.t * Il.Ast.expr' =
+    (Type.t * Ctk.t * Il.Ast.expr') res =
   let td_base = Ctx.find_opt Ctx.find_typedef_opt cursor var_base ctx in
   if Option.is_none td_base then (
     Format.printf "(type_type_acc_expr) %a is a free identifier\n" El.Pp.pp_var
@@ -1670,7 +1755,7 @@ and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   in
   let expr_il = Il.Ast.ValueE { value = value $ member.at } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (8.16) Operations on struct types
 
@@ -1703,8 +1788,8 @@ and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (member : El.Ast.member) :
-    Type.t * Ctk.t * Il.Ast.expr' =
-  let expr_base_il = type_expr cursor ctx expr_base in
+    (Type.t * Ctk.t * Il.Ast.expr') res =
+  let* expr_base_il = type_expr cursor ctx expr_base in
   let typ =
     let typ_base = expr_base_il.note.typ |> Type.canon in
     match typ_base with
@@ -1749,7 +1834,7 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   in
   let expr_il = Il.Ast.ExprAccE { expr_base = expr_base_il; member } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (8.20) Method invocations and function calls
 
@@ -1948,15 +2033,19 @@ and type_func (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : El.Ast.var)
 and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
     (member : El.Ast.member) (targs_il : Il.Ast.targ list)
     (args : El.Ast.arg list) :
-    FuncType.t * Il.Ast.expr * TId.t list * Types.tparam list * Il.Ast.id' list
-    =
+    (FuncType.t
+    * Il.Ast.expr
+    * TId.t list
+    * Types.tparam list
+    * Il.Ast.id' list)
+    res =
   let error_not_found () =
     Format.printf "(type_method) Method %s not found for %a\n" member.it
       (El.Pp.pp_expr ~level:0) expr_base;
     assert false
   in
   let targs = List.map it targs_il in
-  let expr_base_il = type_expr cursor ctx expr_base in
+  let* expr_base_il = type_expr cursor ctx expr_base in
   let typ_base = expr_base_il.note.typ |> Type.canon in
   let ft, tids_fresh, tparams, args_default =
     let wrap_builtin ft = (ft, [], [], []) in
@@ -2027,18 +2116,19 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
         | _ -> error_not_found ())
     | _ -> error_not_found ()
   in
-  (ft, expr_base_il, tids_fresh, tparams, args_default)
+  Ok (ft, expr_base_il, tids_fresh, tparams, args_default)
 
 and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
     (ft : FuncType.t) (tparams : Types.tparam list)
     (targs_il : Il.Ast.targ list) (args : El.Ast.arg list)
     (args_default : Il.Ast.id' list) :
-    Il.Ast.targ list * Il.Ast.arg list * Type.t =
+    (Il.Ast.targ list * Il.Ast.arg list * Type.t) res =
   let params = FuncType.get_params ft in
   let params =
     List.filter (fun (id, _, _, _) -> not (List.mem id args_default)) params
   in
-  let args_il, typ_args = List.map (type_arg cursor ctx) args |> List.split in
+  let* args_il_typed = type_args cursor ctx args in
+  let args_il, typ_args = List.split args_il_typed in
   check_call_arity ft params args_il;
   let params, typ_args, args_il =
     align_params_with_args params typ_args args_il
@@ -2069,25 +2159,19 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
   check_call_site cursor ctx ft;
   let action = FuncType.is_action ft in
   let args_il = type_call_convention ~action cursor ctx params args_il_typed in
-  (targs_il, args_il, typ_ret)
+  Ok (targs_il, args_il, typ_ret)
 
 and type_call_func_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (var_func : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
-    : Type.t * Ctk.t * Il.Ast.expr' =
+    : (Type.t * Ctk.t * Il.Ast.expr') res =
   (* Find the function definition and specialize it if generic *)
-  let targs_il, tids_fresh =
-    List.fold_left
-      (fun (targs_il, tids_fresh) targ ->
-        let targ_il, tids_fresh_targ = eval_type_with_check cursor ctx targ in
-        (targs_il @ [ targ_il ], tids_fresh @ tids_fresh_targ))
-      ([], []) targs
-  in
+  let* targs_il, tids_fresh = eval_types_with_check cursor ctx [] targs in
   let ft, tids_fresh_inserted, tparams, args_default =
     type_func cursor ctx var_func targs_il args
   in
   let tids_fresh = tids_fresh @ tids_fresh_inserted in
   (* Check if the arguments match the parameters *)
-  let targs_il, args_il, typ =
+  let* targs_il, args_il, typ =
     type_call cursor ctx tids_fresh ft tparams targs_il args args_default
   in
   if typ = Types.VoidT then (
@@ -2098,26 +2182,20 @@ and type_call_func_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     Il.Ast.CallFuncE { var_func; targs = targs_il; args = args_il }
   in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 and type_call_method_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (member : El.Ast.member)
     (targs : El.Ast.targ list) (args : El.Ast.arg list) :
-    Type.t * Ctk.t * Il.Ast.expr' =
+    (Type.t * Ctk.t * Il.Ast.expr') res =
   (* Find the function definition and specialize it if generic *)
-  let targs_il, tids_fresh =
-    List.fold_left
-      (fun (targs_il, tids_fresh) targ ->
-        let targ_il, tids_fresh_targ = eval_type_with_check cursor ctx targ in
-        (targs_il @ [ targ_il ], tids_fresh @ tids_fresh_targ))
-      ([], []) targs
-  in
-  let ft, expr_base_il, tids_fresh_inserted, tparams, args_default =
+  let* targs_il, tids_fresh = eval_types_with_check cursor ctx [] targs in
+  let* ft, expr_base_il, tids_fresh_inserted, tparams, args_default =
     type_method cursor ctx expr_base member targs_il args
   in
   let tids_fresh = tids_fresh @ tids_fresh_inserted in
   (* Check if the arguments match the parameters *)
-  let targs_il, args_il, typ =
+  let* targs_il, args_il, typ =
     type_call cursor ctx tids_fresh ft tparams targs_il args args_default
   in
   if typ = Types.VoidT then (
@@ -2129,7 +2207,7 @@ and type_call_method_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       { expr_base = expr_base_il; member; targs = targs_il; args = args_il }
   in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (9) Compile-time size determination
 
@@ -2139,7 +2217,7 @@ and type_call_method_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and type_call_type_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (var_typ : El.Ast.var) (member : El.Ast.member) (targs : El.Ast.targ list)
-    (args : El.Ast.arg list) : Type.t * Ctk.t * Il.Ast.expr' =
+    (args : El.Ast.arg list) : (Type.t * Ctk.t * Il.Ast.expr') res =
   if
     member.it <> "minSizeInBits"
     && member.it <> "minSizeInBytes"
@@ -2161,7 +2239,7 @@ and type_call_type_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let expr_il = Il.Ast.CallTypeE { typ = typ $ var_typ.at; member } in
   let typ = Types.IntT in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* (8.21) Constructor invocations
 
@@ -2261,15 +2339,9 @@ and check_instantiation_site (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
-    : Type.t * Ctk.t * Il.Ast.expr' =
+    : (Type.t * Ctk.t * Il.Ast.expr') res =
   (* Find the constructor definition and specialize it if necessary *)
-  let targs_il, tids_fresh =
-    List.fold_left
-      (fun (targs_il, tids_fresh) targ ->
-        let targ_il, tids_fresh_targ = eval_type_with_check cursor ctx targ in
-        (targs_il @ [ targ_il ], tids_fresh @ tids_fresh_targ))
-      ([], []) targs
-  in
+  let* targs_il, tids_fresh = eval_types_with_check cursor ctx [] targs in
   let cd_matched =
     let args = FId.to_names args in
     Ctx.find_overloaded_opt Ctx.find_consdef_opt cursor var_inst args ctx
@@ -2289,7 +2361,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
   let cparams =
     List.filter (fun (id, _, _, _) -> not (List.mem id args_default)) cparams
   in
-  let args_il, typ_args =
+  let* args_il, typ_args =
     (* Adjust the context if instantiating a package at top level
        Actually, the spec is quite imprecise in restricting parser, control
        instantiations in top-level, while they are necessarily instantiated
@@ -2303,7 +2375,8 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
           (cursor, ctx)
       | _ -> (cursor, ctx)
     in
-    List.map (type_arg cursor ctx) args |> List.split
+    let* args_il_typed = type_args cursor ctx args in
+    Ok (List.split args_il_typed)
   in
   check_instantiation_arity var_inst cparams args_il;
   let cparams, typ_args, args_il =
@@ -2339,12 +2412,12 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
   let typ = typ_inst in
   let expr_il = Il.Ast.InstE { var_inst; targs = targs_il; args = args_il } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 and type_instantiation_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
-    : Type.t * Ctk.t * Il.Ast.expr' =
-  let typ, ctk, expr_il = type_instantiation cursor ctx var_inst targs args in
+    : (Type.t * Ctk.t * Il.Ast.expr') res =
+  let* typ, ctk, expr_il = type_instantiation cursor ctx var_inst targs args in
   (match Type.canon typ with
   | ExternT (_, fdenv_extern) ->
       if
@@ -2360,30 +2433,40 @@ and type_instantiation_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
            object at expression level\n";
         assert false)
   | _ -> ());
-  (typ, ctk, expr_il)
+  Ok (typ, ctk, expr_il)
 
 (* Argument typing *)
 
 and type_arg (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : El.Ast.arg) :
-    Il.Ast.arg * Type.t =
-  let arg_il, typ = type_arg' cursor ctx arg.it in
-  (arg_il $ arg.at, typ)
+    (Il.Ast.arg * Type.t) res =
+  let* arg_il, typ = type_arg' cursor ctx arg.it in
+  Ok (arg_il $ arg.at, typ)
 
 and type_arg' (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : El.Ast.arg') :
-    Il.Ast.arg' * Type.t =
+    (Il.Ast.arg' * Type.t) res =
   match arg with
   | ExprA expr ->
-      let expr_il = type_expr cursor ctx expr in
+      let* expr_il = type_expr cursor ctx expr in
       let typ = expr_il.note.typ in
       let arg_il = Lang.Ast.ExprA expr_il in
-      (arg_il, typ)
+      Ok (arg_il, typ)
   | NameA (id, Some expr) ->
-      let expr_il = type_expr cursor ctx expr in
+      let* expr_il = type_expr cursor ctx expr in
       let typ = expr_il.note.typ in
       let arg_il = Lang.Ast.NameA (id, Some expr_il) in
-      (arg_il, typ)
-  | NameA (id, None) -> (Lang.Ast.NameA (id, None), AnyT)
-  | AnyA -> (Lang.Ast.AnyA, AnyT)
+      Ok (arg_il, typ)
+  | NameA (id, None) -> Ok (Lang.Ast.NameA (id, None), AnyT)
+  | AnyA -> Ok (Lang.Ast.AnyA, AnyT)
+
+and type_args (cursor : Ctx.cursor) (ctx : Ctx.t) (args : El.Ast.arg list) :
+    (Il.Ast.arg * Type.t) list res =
+  let rec type_args' ctx args_il_typed = function
+    | [] -> Ok args_il_typed
+    | arg :: args ->
+        let* arg_il, typ = type_arg cursor ctx arg in
+        type_args' ctx (args_il_typed @ [ (arg_il, typ) ]) args
+  in
+  type_args' ctx [] args
 
 (* Statement typing *)
 
@@ -2436,10 +2519,10 @@ and type_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
 and type_assign_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (expr_l : El.Ast.expr) (expr_r : El.Ast.expr) :
     (Ctx.t * Flow.t * Il.Ast.stmt') res =
-  let expr_l_il = type_expr cursor ctx expr_l in
+  let* expr_l_il = type_expr cursor ctx expr_l in
   let typ_l = expr_l_il.note.typ in
   check_lvalue cursor ctx expr_l_il;
-  let expr_r_il = type_expr cursor ctx expr_r in
+  let* expr_r_il = type_expr cursor ctx expr_r in
   let expr_r_il = coerce_type_assign expr_r_il typ_l in
   let stmt_il = Lang.Ast.AssignS { expr_l = expr_l_il; expr_r = expr_r_il } in
   Ok (ctx, flow, stmt_il)
@@ -2485,7 +2568,7 @@ and type_switch_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
       "(type_switch_stmt) Switch statements can only be used within a control \
        apply block.\n";
     assert false);
-  let expr_switch_il = type_expr cursor ctx expr_switch in
+  let* expr_switch_il = type_expr cursor ctx expr_switch in
   let typ_switch = expr_switch_il.note.typ in
   match typ_switch with
   | TableEnumT (id, _) ->
@@ -2638,29 +2721,30 @@ and type_switch_table_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
    a left brace character {, to avoid ambiguity with a block statement. *)
 
 and type_switch_general_label (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (typ_switch : Type.t) (label : El.Ast.switch_label) : Il.Ast.switch_label =
-  let label_il =
+    (typ_switch : Type.t) (label : El.Ast.switch_label) :
+    Il.Ast.switch_label res =
+  let* label_il =
     match label.it with
     | ExprL expr ->
-        let expr_il = type_expr cursor ctx expr in
+        let* expr_il = type_expr cursor ctx expr in
         let expr_il = coerce_type_assign expr_il typ_switch in
         Static.check_lctk expr_il;
-        Lang.Ast.ExprL expr_il
-    | DefaultL -> Lang.Ast.DefaultL
+        Ok (Lang.Ast.ExprL expr_il)
+    | DefaultL -> Ok Lang.Ast.DefaultL
   in
-  label_il $ label.at
+  Ok (label_il $ label.at)
 
 and type_switch_general_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (typ_switch : Type.t) (case : El.Ast.switch_case) :
     (Flow.t * Il.Ast.switch_label * Il.Ast.switch_case) res =
   match case.it with
   | MatchC (label, block) ->
-      let label_il = type_switch_general_label cursor ctx typ_switch label in
+      let* label_il = type_switch_general_label cursor ctx typ_switch label in
       let* _ctx, flow, block_il = type_block cursor ctx flow block in
       let case_il = Lang.Ast.MatchC (label_il, block_il) $ case.at in
       Ok (flow, label_il, case_il)
   | FallC label ->
-      let label_il = type_switch_general_label cursor ctx typ_switch label in
+      let* label_il = type_switch_general_label cursor ctx typ_switch label in
       let case_il = Lang.Ast.FallC label_il $ case.at in
       Ok (flow, label_il, case_il)
 
@@ -2737,7 +2821,7 @@ and type_switch_general_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
 and type_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (expr_cond : El.Ast.expr) (stmt_then : El.Ast.stmt)
     (stmt_else : El.Ast.stmt) : (Ctx.t * Flow.t * Il.Ast.stmt') res =
-  let expr_cond_il = type_expr cursor ctx expr_cond in
+  let* expr_cond_il = type_expr cursor ctx expr_cond in
   let typ_cond = expr_cond_il.note.typ in
   if typ_cond <> Types.BoolT then (
     Format.printf "(type_if_stmt) Condition %a must be a boolean\n"
@@ -2772,7 +2856,7 @@ and type_block (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
 and type_block' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (stmts : El.Ast.stmt list) (annos : El.Ast.anno list) :
     (Ctx.t * Flow.t * Il.Ast.block') res =
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let* annos_il = type_annos cursor ctx annos in
   let* ctx, flow, stmts_il = type_stmts cursor ctx flow stmts in
   let block_il = (stmts_il, annos_il) in
   Ok (ctx, flow, block_il)
@@ -2813,19 +2897,19 @@ and type_return_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (_flow : Flow.t)
     | ControlApplyMethod -> Types.VoidT
     | _ -> assert false
   in
-  let expr_ret_il =
+  let* expr_ret_il =
     match expr_ret with
     | Some expr_ret ->
-        let expr_ret_il = type_expr cursor ctx expr_ret in
+        let* expr_ret_il = type_expr cursor ctx expr_ret in
         let expr_ret_il = coerce_type_assign expr_ret_il typ_ret_func in
-        Some expr_ret_il
+        Ok (Some expr_ret_il)
     | None ->
         if typ_ret_func <> Types.VoidT then (
           Format.printf
             "(type_return_stmt) Function must return a value of type %a\n"
             Type.pp typ_ret_func;
           assert false);
-        None
+        Ok None
   in
   let stmt_il = Lang.Ast.RetS { expr_ret = expr_ret_il } in
   Ok (ctx, Flow.Ret, stmt_il)
@@ -2853,19 +2937,13 @@ and type_call_func_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
       "(type_call_func_stmt) verify statement must be invoked within a parser\n";
     assert false);
   (* Find the function definition and specialize if it is generic *)
-  let targs_il, tids_fresh =
-    List.fold_left
-      (fun (targs_il, tids_fresh) targ ->
-        let targ_il, tids_fresh_targ = eval_type_with_check cursor ctx targ in
-        (targs_il @ [ targ_il ], tids_fresh @ tids_fresh_targ))
-      ([], []) targs
-  in
+  let* targs_il, tids_fresh = eval_types_with_check cursor ctx [] targs in
   let ft, tids_fresh_inserted, tparams, args_default =
     type_func cursor ctx var_func targs_il args
   in
   let tids_fresh = tids_fresh @ tids_fresh_inserted in
   (* Check if the arguments match the parameters *)
-  let targs_il, args_il, _typ =
+  let* targs_il, args_il, _typ =
     type_call cursor ctx tids_fresh ft tparams targs_il args args_default
   in
   let stmt_il =
@@ -2878,19 +2956,13 @@ and type_call_method_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (targs : El.Ast.targ list) (args : El.Ast.arg list) :
     (Ctx.t * Flow.t * Il.Ast.stmt') res =
   (* Find the function definition and specialize if it is generic *)
-  let targs_il, tids_fresh =
-    List.fold_left
-      (fun (targs_il, tids_fresh) targ ->
-        let targ_il, tids_fresh_targ = eval_type_with_check cursor ctx targ in
-        (targs_il @ [ targ_il ], tids_fresh @ tids_fresh_targ))
-      ([], []) targs
-  in
-  let ft, expr_base_il, tids_fresh_inserted, tparams, args_default =
+  let* targs_il, tids_fresh = eval_types_with_check cursor ctx [] targs in
+  let* ft, expr_base_il, tids_fresh_inserted, tparams, args_default =
     type_method cursor ctx expr_base member targs_il args
   in
   let tids_fresh = tids_fresh @ tids_fresh_inserted in
   (* Check if the arguments match the parameters *)
-  let targs_il, args_il, _typ =
+  let* targs_il, args_il, _typ =
     type_call cursor ctx tids_fresh ft tparams targs_il args args_default
   in
   let stmt_il =
@@ -2924,7 +2996,7 @@ and type_call_method_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
 and type_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
     : (Ctx.t * Flow.t * Il.Ast.stmt') res =
-  let typ, _, expr_il = type_instantiation cursor ctx var_inst targs [] in
+  let* typ, _, expr_il = type_instantiation cursor ctx var_inst targs [] in
   if
     not
       (match Type.canon typ with ParserT _ | ControlT _ -> true | _ -> false)
@@ -2970,7 +3042,7 @@ and type_transition_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     Format.printf
       "(type_transition_stmt) Transition statement must be in a parser state\n";
     assert false);
-  let expr_label_il = type_expr cursor ctx expr_label in
+  let* expr_label_il = type_expr cursor ctx expr_label in
   let typ_label = expr_label_il.note.typ in
   if not (match typ_label with StateT -> true | _ -> false) then (
     Format.printf "(type_transition_stmt) Label %a is not a valid label\n"
@@ -3083,10 +3155,10 @@ and type_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (decls : El.Ast.decl list) :
 and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (typ : El.Ast.typ) (expr : El.Ast.expr) (annos : El.Ast.anno list) :
     (Ctx.t * Il.Ast.decl') res =
-  let annos_il = List.map (type_anno cursor ctx) annos in
-  let typ_target, tids_fresh = eval_type_with_check cursor ctx typ in
+  let* annos_il = type_annos cursor ctx annos in
+  let* typ_target, tids_fresh = eval_type_with_check cursor ctx typ in
   assert (tids_fresh = []);
-  let expr_il = type_expr cursor ctx expr in
+  let* expr_il = type_expr cursor ctx expr in
   let expr_il = coerce_type_assign expr_il typ_target.it in
   let value = Static.eval_expr cursor ctx expr_il in
   let ctx =
@@ -3178,17 +3250,17 @@ and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
        parser state, an action body, a control block's apply sub-block, the \
        list of local declarations in a parser or a control\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
-  let typ_target, tids_fresh = eval_type_with_check cursor ctx typ in
+  let* annos_il = type_annos cursor ctx annos in
+  let* typ_target, tids_fresh = eval_type_with_check cursor ctx typ in
   assert (tids_fresh = []);
   check_valid_var_type typ_target.it;
-  let expr_init_il =
-    Option.map
-      (fun expr_init ->
-        let expr_init_il = type_expr cursor ctx expr_init in
+  let* expr_init_il =
+    match expr_init with
+    | Some expr_init ->
+        let* expr_init_il = type_expr cursor ctx expr_init in
         let expr_init_il = coerce_type_assign expr_init_il typ_target.it in
-        expr_init_il)
-      expr_init
+        Ok (Some expr_init_il)
+    | None -> Ok None
   in
   let ctx =
     Ctx.add_rtype cursor id.it typ_target.it Lang.Ast.InOut Ctk.DYN ctx
@@ -3220,17 +3292,11 @@ and type_instantiation_init_extern_abstract_method_decl (cursor : Ctx.cursor)
     assert false);
   (* Construct function layer context *)
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx in
-  let typ_ret, tids_fresh = eval_type_with_check Ctx.Local ctx' typ_ret in
+  let* typ_ret, tids_fresh = eval_type_with_check Ctx.Local ctx' typ_ret in
   assert (tids_fresh = []);
   let ctx' = Ctx.set_localkind (Ctx.ExternAbstractMethod typ_ret.it) ctx' in
   (* Typecheck and add parameters to the local context *)
-  let params_il, tids_fresh =
-    List.fold_left
-      (fun (params_il, tids_fresh) param ->
-        let param_il, tids_fresh_param = type_param Ctx.Local ctx' param in
-        (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
-      ([], []) params
-  in
+  let* params_il, tids_fresh = type_params Ctx.Local ctx' params in
   let ctx' = Ctx.add_params Ctx.Local params_il ctx' in
   let ctx', tparams_hidden =
     let tparams_hidden =
@@ -3328,8 +3394,8 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (var_inst : El.Ast.var) (targs : El.Ast.targ list) (args : El.Ast.arg list)
     (init : El.Ast.decl list) (annos : El.Ast.anno list) :
     (Ctx.t * Il.Ast.decl') res =
-  let annos_il = List.map (type_anno cursor ctx) annos in
-  let typ, _, expr_il = type_instantiation cursor ctx var_inst targs args in
+  let* annos_il = type_annos cursor ctx annos in
+  let* typ, _, expr_il = type_instantiation cursor ctx var_inst targs args in
   let targs_il, args_il =
     match expr_il with
     | Il.Ast.InstE { targs = targs_il; args = args_il; _ } -> (targs_il, args_il)
@@ -3501,21 +3567,23 @@ and type_struct_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   if cursor <> Ctx.Global then (
     Format.printf "(type_struct_decl) Struct declarations must be global\n";
     assert false);
-  let _annos_il = List.map (type_anno cursor ctx) annos in
+  let* _annos_il = type_annos cursor ctx annos in
   let members, typs, annoss =
     List.fold_left
       (fun (members, typs, annoss) (member, typ, annos) ->
         (members @ [ member ], typs @ [ typ ], annoss @ [ annos ]))
       ([], [], []) fields
   in
-  let _annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
-  let typs, tids_fresh =
-    let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
+  let* _annoss_il =
     List.fold_left
-      (fun (typs, tids_fresh) typ ->
-        let typ, tids_fresh_typ = eval_type_with_check Ctx.Block ctx typ in
-        (typs @ [ typ ], tids_fresh @ tids_fresh_typ))
-      ([], []) typs
+      (fun annoss_il annos ->
+        let* annos_il = type_annos cursor ctx annos in
+        Result.bind annoss_il (fun annoss_il -> Ok (annoss_il @ [ annos_il ])))
+      (Ok []) annoss
+  in
+  let* typs, tids_fresh =
+    let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
+    eval_types_with_check Ctx.Block ctx [] typs
   in
   let td =
     let tparams = List.map it tparams in
@@ -3539,7 +3607,7 @@ and type_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   if cursor <> Ctx.Global then (
     Format.printf "(type_header_decl) Header declarations must be global\n";
     assert false);
-  let _annos_il = List.map (type_anno cursor ctx) annos in
+  let* _annos_il = type_annos cursor ctx annos in
   let members, typs, annoss =
     List.fold_left
       (fun (members, typs, annoss) (member, typ, annos) ->
@@ -3547,13 +3615,9 @@ and type_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       ([], [], []) fields
   in
   let _annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
-  let typs, tids_fresh =
+  let* typs, tids_fresh =
     let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
-    List.fold_left
-      (fun (typs, tids_fresh) typ ->
-        let typ, tids_fresh_typ = eval_type_with_check Ctx.Block ctx typ in
-        (typs @ [ typ ], tids_fresh @ tids_fresh_typ))
-      ([], []) typs
+    eval_types_with_check Ctx.Block ctx [] typs
   in
   let td =
     let tparams = List.map it tparams in
@@ -3584,14 +3648,16 @@ and type_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         (members @ [ member ], typs @ [ typ ], annoss @ [ annos ]))
       ([], [], []) fields
   in
-  let _annoss_il = List.map (List.map (type_anno cursor ctx)) annoss in
-  let typs, tids_fresh =
-    let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
+  let* _annoss_il =
     List.fold_left
-      (fun (typs, tids_fresh) typ ->
-        let typ, tids_fresh_typ = eval_type_with_check Ctx.Block ctx typ in
-        (typs @ [ typ ], tids_fresh @ tids_fresh_typ))
-      ([], []) typs
+      (fun annoss_il annos ->
+        let* annos_il = type_annos cursor ctx annos in
+        Result.bind annoss_il (fun annoss_il -> Ok (annoss_il @ [ annos_il ])))
+      (Ok []) annoss
+  in
+  let* typs, tids_fresh =
+    let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
+    eval_types_with_check Ctx.Block ctx [] typs
   in
   let td =
     let tparams = List.map it tparams in
@@ -3616,7 +3682,7 @@ and type_enum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   if cursor <> Ctx.Global then (
     Format.printf "(type_enum_decl) Enum declarations must be global\n";
     assert false);
-  let _annos_il = List.map (type_anno cursor ctx) annos in
+  let* _annos_il = type_annos cursor ctx annos in
   let members = List.map it members in
   let typ_enum = Types.EnumT (id.it, members) in
   let td = Types.MonoD typ_enum in
@@ -3656,28 +3722,31 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.printf
       "(type_senum_decl) Serializable enum declarations must be global\n";
     assert false);
-  let _annos_il = List.map (type_anno cursor ctx) annos in
-  let typ, tids_fresh = eval_type_with_check cursor ctx typ in
+  let* _annos_il = type_annos cursor ctx annos in
+  let* typ, tids_fresh = eval_type_with_check cursor ctx typ in
   assert (tids_fresh = []);
   (* Temporarily add members to the senum block context,
      to allow initializers to refer to earlier members *)
-  let ctx, fields =
-    List.fold_left
-      (fun (ctx, fields) (member, expr_field) ->
-        let expr_field_il = type_expr Ctx.Block ctx expr_field in
-        let expr_field_il = coerce_type_assign expr_field_il typ.it in
-        let value_field = Static.eval_expr Ctx.Block ctx expr_field_il in
-        let value_field =
-          Value.SEnumFieldV (id.it, member.it, value_field.it)
-        in
-        let typ_field = Types.SEnumT (id.it, typ.it, fields) in
-        let ctx =
-          Ctx.add_value Ctx.Block member.it value_field ctx
-          |> Ctx.add_rtype Ctx.Block member.it typ_field Lang.Ast.No Ctk.LCTK
-        in
-        let fields = fields @ [ (member.it, value_field) ] in
-        (ctx, fields))
-      (ctx, []) fields
+  let* ctx, fields =
+    let rec type_senum_decl_fields' ctx fields_value = function
+      | [] -> Ok (ctx, fields_value)
+      | (member, expr_field) :: fields_expr ->
+          let* expr_field_il = type_expr Ctx.Block ctx expr_field in
+          let expr_field_il = coerce_type_assign expr_field_il typ.it in
+          let value_field = Static.eval_expr Ctx.Block ctx expr_field_il in
+          let value_field =
+            Value.SEnumFieldV (id.it, member.it, value_field.it)
+          in
+          let typ_field = Types.SEnumT (id.it, typ.it, fields_value) in
+          let ctx =
+            Ctx.add_value Ctx.Block member.it value_field ctx
+            |> Ctx.add_rtype Ctx.Block member.it typ_field Lang.Ast.No Ctk.LCTK
+          in
+          type_senum_decl_fields' ctx
+            (fields_value @ [ (member.it, value_field) ])
+            fields_expr
+    in
+    type_senum_decl_fields' ctx [] fields
   in
   (* Clear out the block context *)
   let typ_senum = Types.SEnumT (id.it, typ.it, fields) in
@@ -3714,11 +3783,11 @@ and type_newtype_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   if cursor <> Ctx.Global then (
     Format.printf "(type_newtype_decl) New type declarations must be global\n";
     assert false);
-  let _annos_il = List.map (type_anno cursor ctx) annos in
+  let* _annos_il = type_annos cursor ctx annos in
   let* typ =
     match typdef with
     | Left typ ->
-        let typ, tids_fresh = eval_type_with_check cursor ctx typ in
+        let* typ, tids_fresh = eval_type_with_check cursor ctx typ in
         assert (tids_fresh = []);
         Ok typ.it
     | Right decl ->
@@ -3755,11 +3824,11 @@ and type_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   if cursor <> Ctx.Global then (
     Format.printf "(type_typedef_decl) Typedef declarations must be global\n";
     assert false);
-  let _annos_il = List.map (type_anno cursor ctx) annos in
+  let* _annos_il = type_annos cursor ctx annos in
   let* typ =
     match typdef with
     | Left typ ->
-        let typ, tids_fresh = eval_type_with_check cursor ctx typ in
+        let* typ, tids_fresh = eval_type_with_check cursor ctx typ in
         assert (tids_fresh = []);
         Ok typ.it
     | Right decl ->
@@ -3815,18 +3884,12 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       "(type_action_decl) Action declarations must be global or in a control \
        block\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let* annos_il = type_annos cursor ctx annos in
   let fid = FId.to_fid id params in
   (* Construct action layer context *)
   let ctx' = Ctx.set_localkind Ctx.Action ctx in
   (* Typecheck and add parameters to the local context *)
-  let params_il, tids_fresh =
-    List.fold_left
-      (fun (params_il, tids_fresh) param ->
-        let param_il, tids_fresh_param = type_param cursor ctx' param in
-        (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
-      ([], []) params
-  in
+  let* params_il, tids_fresh = type_params cursor ctx' params in
   assert (tids_fresh = []);
   let ctx' = Ctx.add_params Ctx.Local params_il ctx' in
   (* Typecheck body *)
@@ -3868,17 +3931,11 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let fid = FId.to_fid id params in
   (* Construct function layer context *)
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx in
-  let typ_ret, tids_fresh = eval_type_with_check Ctx.Local ctx' typ_ret in
+  let* typ_ret, tids_fresh = eval_type_with_check Ctx.Local ctx' typ_ret in
   assert (tids_fresh = []);
   let ctx' = Ctx.set_localkind (Ctx.Function typ_ret.it) ctx' in
   (* Typecheck and add parameters to the local context *)
-  let params_il, tids_fresh =
-    List.fold_left
-      (fun (params_il, tids_fresh) param ->
-        let param_il, tids_fresh_param = type_param Ctx.Local ctx' param in
-        (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
-      ([], []) params
-  in
+  let* params_il, tids_fresh = type_params Ctx.Local ctx' params in
   let ctx' = Ctx.add_params Ctx.Local params_il ctx' in
   let ctx', tparams_hidden =
     let tparams_hidden =
@@ -3926,21 +3983,15 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     Format.printf
       "(type_extern_function_decl) Extern function declarations must be global\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let* annos_il = type_annos cursor ctx annos in
   let fid = FId.to_fid id params in
   (* Construct extern function layer context *)
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx in
-  let typ_ret, tids_fresh = eval_type_with_check Ctx.Local ctx' typ_ret in
+  let* typ_ret, tids_fresh = eval_type_with_check Ctx.Local ctx' typ_ret in
   assert (tids_fresh = []);
   let ctx' = Ctx.set_localkind Ctx.ExternFunction ctx' in
   (* Typecheck and add parameters to the local context *)
-  let params_il, tids_fresh =
-    List.fold_left
-      (fun (params_il, tids_fresh) param ->
-        let param_il, tids_fresh_param = type_param Ctx.Local ctx' param in
-        (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
-      ([], []) params
-  in
+  let* params_il, tids_fresh = type_params Ctx.Local ctx' params in
   (* Create an extern function definition *)
   let fd =
     let tparams = List.map it tparams in
@@ -3974,15 +4025,9 @@ and type_extern_constructor_mthd (cursor : Ctx.cursor) (ctx : Ctx.t)
     (cparams : El.Ast.cparam list) (annos : El.Ast.anno list) :
     (Ctx.t * Il.Ast.mthd') res =
   assert (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let* annos_il = type_annos cursor ctx annos in
   let cid = FId.to_fid id cparams in
-  let cparams_il, tids_fresh =
-    List.fold_left
-      (fun (cparams_il, tids_fresh) cparam ->
-        let cparam_il, tids_fresh_cparam = type_cparam cursor ctx cparam in
-        (cparams_il @ [ cparam_il ], tids_fresh @ tids_fresh_cparam))
-      ([], []) cparams
-  in
+  let* cparams_il, tids_fresh = type_cparams cursor ctx cparams in
   let tdp =
     let td = Ctx.find_typedef Ctx.Global id.it ctx in
     match td with
@@ -4019,21 +4064,15 @@ and type_extern_abstract_method_mthd (cursor : Ctx.cursor) (ctx : Ctx.t)
     (typ_ret : El.Ast.typ) (annos : El.Ast.anno list) :
     (Ctx.t * Il.Ast.mthd') res =
   assert (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let* annos_il = type_annos cursor ctx annos in
   let fid = FId.to_fid id params in
   (* Construct extern abstract method layer context *)
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx in
-  let typ_ret, tids_fresh = eval_type_with_check Ctx.Local ctx' typ_ret in
+  let* typ_ret, tids_fresh = eval_type_with_check Ctx.Local ctx' typ_ret in
   assert (tids_fresh = []);
   let ctx' = Ctx.set_localkind (Ctx.ExternAbstractMethod typ_ret.it) ctx' in
   (* Typecheck and add parameters to the local context *)
-  let params_il, tids_fresh =
-    List.fold_left
-      (fun (params_il, tids_fresh) param ->
-        let param_il, tids_fresh_param = type_param Ctx.Local ctx' param in
-        (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
-      ([], []) params
-  in
+  let* params_il, tids_fresh = type_params cursor ctx' params in
   (* Create an extern abstract method definition *)
   let fd =
     let tparams = List.map it tparams in
@@ -4059,21 +4098,15 @@ and type_extern_method_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (typ_ret : El.Ast.typ) (annos : El.Ast.anno list) :
     (Ctx.t * Il.Ast.mthd') res =
   assert (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let* annos_il = type_annos cursor ctx annos in
   let fid = FId.to_fid id params in
   (* Construct extern method layer context *)
   let ctx' = Ctx.add_tparams Ctx.Local tparams ctx in
-  let typ_ret, tids_fresh = eval_type_with_check Ctx.Local ctx' typ_ret in
+  let* typ_ret, tids_fresh = eval_type_with_check Ctx.Local ctx' typ_ret in
   assert (tids_fresh = []);
   let ctx' = Ctx.set_localkind Ctx.ExternMethod ctx' in
   (* Typecheck and add parameters to the local context *)
-  let params_il, tids_fresh =
-    List.fold_left
-      (fun (params_il, tids_fresh) param ->
-        let param_il, tids_fresh_param = type_param Ctx.Local ctx' param in
-        (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
-      ([], []) params
-  in
+  let* params_il, tids_fresh = type_params Ctx.Local ctx' params in
   (* Create an extern method definition *)
   let fd =
     let tparams = List.map it tparams in
@@ -4129,7 +4162,7 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.printf
       "(type_extern_object_decl) Extern object declarations must be global\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let* annos_il = type_annos cursor ctx annos in
   (* Separate constructors and methods *)
   let cons, mthds =
     List.partition
@@ -4215,10 +4248,10 @@ and type_value_set_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       "(type_value_set_decl) Value set declarations must be global or in a \
        parser\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
-  let typ_inner, tids_fresh = eval_type_with_check cursor ctx typ in
+  let* annos_il = type_annos cursor ctx annos in
+  let* typ_inner, tids_fresh = eval_type_with_check cursor ctx typ in
   assert (tids_fresh = []);
-  let expr_size_il = type_expr cursor ctx expr_size in
+  let* expr_size_il = type_expr cursor ctx expr_size in
   Static.check_ctk expr_size_il;
   let typ = Types.SetT typ_inner.it in
   WF.check_valid_typ cursor ctx typ;
@@ -4246,18 +4279,12 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.printf
       "(type_parser_type_decl) Parser type declarations must be global\n";
     assert false);
-  let _annos_il = List.map (type_anno cursor ctx) annos in
+  let* _annos_il = type_annos cursor ctx annos in
   (* Typecheck implicit "apply" method
      to construct function definition environment *)
   let ctx' = Ctx.set_blockkind Ctx.Parser ctx in
   let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
-  let params_il, tids_fresh =
-    List.fold_left
-      (fun (params_il, tids_fresh) param ->
-        let param_il, tids_fresh_param = type_param Ctx.Local ctx' param in
-        (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
-      ([], []) params
-  in
+  let* params_il, tids_fresh = type_params Ctx.Block ctx' params in
   (* Create a parser type definition
      and add it to the context *)
   let td =
@@ -4309,7 +4336,7 @@ and type_parser_state' (cursor : Ctx.cursor) (ctx : Ctx.t)
   then (
     Format.printf "(type_parser_state) Parser state must be local\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let* annos_il = type_annos cursor ctx annos in
   let* ctx, flow, block_il = type_block Ctx.Local ctx Cont block in
   assert (flow = Flow.Cont);
   let state_il = (label, block_il, annos_il) in
@@ -4358,27 +4385,15 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   if tparams <> [] then (
     Format.printf "(type_parser_decl) Parser declarations cannot be generic\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let* annos_il = type_annos cursor ctx annos in
   let cid = FId.to_fid id cparams in
   let ctx' = Ctx.set_blockkind Ctx.Parser ctx in
   (* Typecheck and add constructor parameters to the block context *)
-  let cparams_il, tids_fresh =
-    List.fold_left
-      (fun (cparams_il, tids_fresh) cparam ->
-        let cparam_il, tids_fresh_cparam = type_cparam Ctx.Block ctx' cparam in
-        (cparams_il @ [ cparam_il ], tids_fresh @ tids_fresh_cparam))
-      ([], []) cparams
-  in
+  let* cparams_il, tids_fresh = type_cparams cursor ctx' cparams in
   assert (tids_fresh = []);
   let ctx' = Ctx.add_cparams Ctx.Block cparams_il ctx' in
   (* Typecheck parser apply method *)
-  let params_il, tids_fresh =
-    List.fold_left
-      (fun (params_il, tids_fresh) param ->
-        let param_il, tids_fresh_param = type_param Ctx.Block ctx' param in
-        (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
-      ([], []) params
-  in
+  let* params_il, tids_fresh = type_params Ctx.Block ctx' params in
   assert (tids_fresh = []);
   let fd_apply =
     let params =
@@ -4507,33 +4522,48 @@ and check_table_properties (table : El.Ast.table) : unit =
 
 and type_table_property (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_property : El.Ast.table_property) :
-    Tblctx.t * Il.Ast.table_property =
+    (Tblctx.t * Il.Ast.table_property) res =
   match table_property with
   | KeyP table_keys ->
-      let table_ctx, table_keys_il =
+      let* table_ctx, table_keys_il =
         type_table_keys cursor ctx table_ctx table_keys
       in
-      (table_ctx, KeyP table_keys_il)
+      Ok (table_ctx, Lang.Ast.KeyP table_keys_il)
   | ActionP table_actions ->
-      let table_ctx, table_actions_il =
+      let* table_ctx, table_actions_il =
         type_table_actions cursor ctx table_ctx table_actions
       in
-      (table_ctx, ActionP table_actions_il)
+      Ok (table_ctx, Lang.Ast.ActionP table_actions_il)
   | EntryP table_entries ->
-      let table_ctx, table_entries_il =
+      let* table_ctx, table_entries_il =
         type_table_entries cursor ctx table_ctx table_entries
       in
-      (table_ctx, EntryP table_entries_il)
+      Ok (table_ctx, Lang.Ast.EntryP table_entries_il)
   | DefaultP table_default ->
-      let table_default_il =
+      let* table_default_il =
         type_table_default cursor ctx table_ctx table_default
       in
-      (table_ctx, DefaultP table_default_il)
+      Ok (table_ctx, Lang.Ast.DefaultP table_default_il)
   | CustomP table_custom ->
-      let table_ctx, table_custom_il =
+      let* table_ctx, table_custom_il =
         type_table_custom cursor ctx table_ctx table_custom
       in
-      (table_ctx, CustomP table_custom_il)
+      Ok (table_ctx, Lang.Ast.CustomP table_custom_il)
+
+and type_table_properties (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (table_properties : El.Ast.table) :
+    (Tblctx.t * Il.Ast.table) res =
+  let rec type_table_properties' table_ctx table_properties_il = function
+    | [] -> Ok (table_ctx, table_properties_il)
+    | table_property :: table_properties ->
+        let* table_ctx, table_property_il =
+          type_table_property cursor ctx table_ctx table_property
+        in
+        type_table_properties' table_ctx
+          (table_properties_il @ [ table_property_il ])
+          table_properties
+  in
+  type_table_properties' table_ctx [] table_properties
 
 and type_table_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (id : El.Ast.id) : Ctx.t * Type.t =
@@ -4570,18 +4600,12 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.printf
       "(type_table_decl) Table declarations must be in a control block\n";
     assert false);
-  let annos_il = List.map (type_anno Ctx.Block ctx) annos in
+  let* annos_il = type_annos cursor ctx annos in
   let table_ctx = Tblctx.empty in
   check_table_properties table;
-  let table_ctx, table_il =
+  let* table_ctx, table_il =
     let ctx = Ctx.set_localkind Ctx.TableApplyMethod ctx in
-    List.fold_left
-      (fun (table_ctx, table_properties_il) table_property ->
-        let table_ctx, table_property_il =
-          type_table_property Ctx.Local ctx table_ctx table_property
-        in
-        (table_ctx, table_properties_il @ [ table_property_il ]))
-      (table_ctx, []) table
+    type_table_properties Ctx.Local ctx table_ctx table
   in
   let ctx, typ_struct = type_table_type_decl cursor ctx table_ctx id in
   let typ = Types.TableT typ_struct in
@@ -4659,17 +4683,17 @@ and check_table_key' (match_kind : string) (typ : Type.t) : bool =
       assert false
 
 and type_table_key (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_key : El.Ast.table_key) : Tblctx.t * Il.Ast.table_key =
-  let table_ctx, table_key_il =
+    (table_key : El.Ast.table_key) : (Tblctx.t * Il.Ast.table_key) res =
+  let* table_ctx, table_key_il =
     type_table_key' cursor ctx table_ctx table_key.it
   in
-  (table_ctx, table_key_il $ table_key.at)
+  Ok (table_ctx, table_key_il $ table_key.at)
 
 and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_key : El.Ast.table_key') : Tblctx.t * Il.Ast.table_key' =
+    (table_key : El.Ast.table_key') : (Tblctx.t * Il.Ast.table_key') res =
   let expr, match_kind, annos = table_key in
-  let annos_il = List.map (type_anno cursor ctx) annos in
-  let expr_il = type_expr cursor ctx expr in
+  let* annos_il = type_annos cursor ctx annos in
+  let* expr_il = type_expr cursor ctx expr in
   let typ = expr_il.note.typ in
   let value_match_kind = Ctx.find_value_opt cursor match_kind.it ctx in
   let value_match_kind =
@@ -4685,24 +4709,24 @@ and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
   let table_key_il = (expr_il, match_kind, annos_il) in
   let typ_key = Types.SetT typ in
   let table_ctx = Tblctx.add_key (typ_key, value_match_kind) table_ctx in
-  (table_ctx, table_key_il)
-
-and type_table_keys' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_keys : El.Ast.table_keys') : Tblctx.t * Il.Ast.table_keys' =
-  List.fold_left
-    (fun (table_ctx, table_keys_il) table_key ->
-      let table_ctx, table_key_il =
-        type_table_key cursor ctx table_ctx table_key
-      in
-      (table_ctx, table_keys_il @ [ table_key_il ]))
-    (table_ctx, []) table_keys
+  Ok (table_ctx, table_key_il)
 
 and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_keys : El.Ast.table_keys) : Tblctx.t * Il.Ast.table_keys =
-  let table_ctx, table_keys_il =
-    type_table_keys' cursor ctx table_ctx table_keys.it
+    (table_keys : El.Ast.table_keys) : (Tblctx.t * Il.Ast.table_keys) res =
+  let rec type_table_keys' cursor ctx table_ctx table_keys_il = function
+    | [] -> Ok (table_ctx, table_keys_il)
+    | table_key :: table_keys ->
+        let* table_ctx, table_key_il =
+          type_table_key cursor ctx table_ctx table_key
+        in
+        type_table_keys' cursor ctx table_ctx
+          (table_keys_il @ [ table_key_il ])
+          table_keys
   in
-  (table_ctx, table_keys_il $ table_keys.at)
+  let* table_ctx, table_keys_il =
+    type_table_keys' cursor ctx table_ctx [] table_keys.it
+  in
+  Ok (table_ctx, table_keys_il $ table_keys.at)
 
 (* (14.2.1.2) Actions
 
@@ -4728,15 +4752,16 @@ and type_call_action_partial (cursor : Ctx.cursor) (ctx : Ctx.t)
   type_call_convention ~action:true cursor ctx params_specified args_il_typed
 
 and type_table_action (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_action : El.Ast.table_action) : Tblctx.t * Il.Ast.table_action =
-  let table_ctx, table_action_il =
+    (table_action : El.Ast.table_action) : (Tblctx.t * Il.Ast.table_action) res
+    =
+  let* table_ctx, table_action_il =
     type_table_action' cursor ctx table_ctx table_action.it
   in
-  (table_ctx, table_action_il $ table_action.at)
+  Ok (table_ctx, table_action_il $ table_action.at)
 
 and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_action : El.Ast.table_action') :
-    Tblctx.t * Il.Ast.table_action' =
+    (Tblctx.t * Il.Ast.table_action') res =
   let var_action, args, annos = table_action in
   let fd =
     let args = FId.to_names args in
@@ -4754,40 +4779,36 @@ and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
       var_action;
     assert false);
   let params = FuncDef.get_params fd in
-  let args_il_typed = List.map (type_arg cursor ctx) args in
+  let* args_il_typed = type_args cursor ctx args in
   let args_il_specified = List.map fst args_il_typed in
   let args_il = type_call_action_partial cursor ctx params args_il_typed in
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let* annos_il = type_annos cursor ctx annos in
   let table_action_il = (var_action, args_il, annos_il) in
   let table_ctx =
     Tblctx.add_action (var_action.it, params, args_il_specified) table_ctx
   in
-  (table_ctx, table_action_il)
+  Ok (table_ctx, table_action_il)
 
-and type_table_actions' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_ctx : Tblctx.t) (table_actions : El.Ast.table_actions') :
-    Tblctx.t * Il.Ast.table_actions' =
-  let table_ctx, table_actions_il =
-    List.fold_left
-      (fun (table_ctx, table_actions_il) table_action ->
-        let table_ctx, table_action_il =
+and type_table_actions (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (table_ctx : Tblctx.t) (table_actions : El.Ast.table_actions) :
+    (Tblctx.t * Il.Ast.table_actions) res =
+  let rec type_table_actions' table_ctx table_actions_il = function
+    | [] -> Ok (table_ctx, table_actions_il)
+    | table_action :: table_actions ->
+        let* table_ctx, table_action_il =
           type_table_action cursor ctx table_ctx table_action
         in
-        (table_ctx, table_actions_il @ [ table_action_il ]))
-      (table_ctx, []) table_actions
+        type_table_actions' table_ctx
+          (table_actions_il @ [ table_action_il ])
+          table_actions
+  in
+  let* table_ctx, table_actions_il =
+    type_table_actions' table_ctx [] table_actions.it
   in
   List.map it table_actions_il
   |> List.map (fun (action_name, _, _) -> action_name)
   |> WF.check_distinct_vars;
-  (table_ctx, table_actions_il)
-
-and type_table_actions (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_ctx : Tblctx.t) (table_actions : El.Ast.table_actions) :
-    Tblctx.t * Il.Ast.table_actions =
-  let table_ctx, table_actions_il =
-    type_table_actions' cursor ctx table_ctx table_actions.it
-  in
-  (table_ctx, table_actions_il $ table_actions.at)
+  Ok (table_ctx, table_actions_il $ table_actions.at)
 
 (* (14.2.1.3) Default action
 
@@ -4824,13 +4845,17 @@ and type_call_default_action (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and type_table_default_action (cursor : Ctx.cursor) (ctx : Ctx.t)
     (tblctx : Tblctx.t) (table_action : El.Ast.table_action) :
-    Il.Ast.table_action =
-  type_table_default_action' cursor ctx tblctx table_action.it $ table_action.at
+    Il.Ast.table_action res =
+  let* table_action_il =
+    type_table_default_action' cursor ctx tblctx table_action.it
+  in
+  Ok (table_action_il $ table_action.at)
 
 and type_table_default_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (tblctx : Tblctx.t) (table_action : El.Ast.table_action') :
-    Il.Ast.table_action' =
+    Il.Ast.table_action' res =
   let var, args, annos = table_action in
+  let* annos_il = type_annos cursor ctx annos in
   let table_action = Tblctx.find_action tblctx var in
   if Option.is_none table_action then (
     Format.printf
@@ -4838,24 +4863,26 @@ and type_table_default_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
       El.Pp.pp_var var;
     assert false);
   let params, args_action = Option.get table_action in
-  let args_il_typed = List.map (type_arg cursor ctx) args in
+  let* args_il_typed = type_args cursor ctx args in
   let args_il =
     type_call_default_action cursor ctx params args_il_typed args_action
   in
-  let annos_il = List.map (type_anno cursor ctx) annos in
-  (var, args_il, annos_il)
+  Ok (var, args_il, annos_il)
 
 and type_table_default' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_default : El.Ast.table_default') :
-    Il.Ast.table_default' =
+    Il.Ast.table_default' res =
   let action, default_const = table_default in
-  let action_il = type_table_default_action cursor ctx table_ctx action in
-  (action_il, default_const)
+  let* action_il = type_table_default_action cursor ctx table_ctx action in
+  Ok (action_il, default_const)
 
 and type_table_default (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_default : El.Ast.table_default) :
-    Il.Ast.table_default =
-  type_table_default' cursor ctx table_ctx table_default.it $ table_default.at
+    Il.Ast.table_default res =
+  let* table_default_il =
+    type_table_default' cursor ctx table_ctx table_default.it
+  in
+  Ok (table_default_il $ table_default.at)
 
 (* (14.2.1.4) Entries
 
@@ -4951,19 +4978,19 @@ and type_table_default (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and type_table_entry_keyset (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_ctx_key : Type.t * Il.Ast.match_kind')
-    (keyset : El.Ast.keyset) : Tblctx.state * Il.Ast.keyset =
-  let entry_state, table_entry_keyset_il =
+    (keyset : El.Ast.keyset) : (Tblctx.state * Il.Ast.keyset) res =
+  let* entry_state, table_entry_keyset_il =
     type_table_entry_keyset' cursor ctx table_ctx table_ctx_key keyset.it
   in
-  (entry_state, table_entry_keyset_il $ keyset.at)
+  Ok (entry_state, table_entry_keyset_il $ keyset.at)
 
 and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_ctx_key : Type.t * Il.Ast.match_kind')
-    (keyset : El.Ast.keyset') : Tblctx.state * Il.Ast.keyset' =
+    (keyset : El.Ast.keyset') : (Tblctx.state * Il.Ast.keyset') res =
   let typ_key, match_kind = table_ctx_key in
   match keyset with
   | ExprK expr ->
-      let expr_il =
+      let* expr_il =
         match expr.it with
         | MaskE _ ->
             if match_kind = "lpm" || match_kind = "ternary" then
@@ -4981,9 +5008,11 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
                 match_kind;
               assert false)
         | _ ->
-            let expr_il = type_expr Ctx.Local ctx expr in
+            let* expr_il = type_expr Ctx.Local ctx expr in
             let typ = Types.SetT expr_il.note.typ in
-            Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
+            Ok
+              Il.Ast.(
+                expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
       in
       let entry_state =
         match (match_kind, table_ctx.mode) with
@@ -5020,7 +5049,7 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
               Type.pp typ_key Type.pp typ (Il.Pp.pp_expr ~level:0) expr_il;
             assert false
       in
-      (entry_state, Lang.Ast.ExprK expr_il)
+      Ok (entry_state, Lang.Ast.ExprK expr_il)
   | DefaultK ->
       if match_kind = "exact" then (
         Format.printf
@@ -5031,7 +5060,7 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
         | "lpm", NoPriLpm prefix_max -> Tblctx.Lpm prefix_max
         | _ -> Tblctx.NoLpm
       in
-      (entry_state, Lang.Ast.DefaultK)
+      Ok (entry_state, Lang.Ast.DefaultK)
   | AnyK ->
       if match_kind = "exact" then (
         Format.printf
@@ -5042,11 +5071,11 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
         | "lpm", NoPriLpm _ -> Tblctx.Lpm 0
         | _ -> Tblctx.NoLpm
       in
-      (entry_state, Lang.Ast.AnyK)
+      Ok (entry_state, Lang.Ast.AnyK)
 
 and type_table_entry_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (keysets : El.Ast.keyset list) :
-    Tblctx.state * Il.Ast.keyset list =
+    (Tblctx.state * Il.Ast.keyset list) res =
   match (table_ctx.keys, keysets) with
   | _, [ { it = DefaultK; at; note } ] ->
       let keyset_il = Lang.Ast.DefaultK $$ at % note in
@@ -5055,7 +5084,7 @@ and type_table_entry_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
         | NoPriLpm prefix_max -> Tblctx.Lpm prefix_max
         | _ -> Tblctx.NoLpm
       in
-      (entry_state, [ keyset_il ])
+      Ok (entry_state, [ keyset_il ])
   | _, [ { it = AnyK; at; note } ] ->
       let keyset_il = Lang.Ast.AnyK $$ at % note in
       let entry_state =
@@ -5063,24 +5092,30 @@ and type_table_entry_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
         | NoPriLpm _ -> Tblctx.Lpm 0
         | _ -> Tblctx.NoLpm
       in
-      (entry_state, [ keyset_il ])
+      Ok (entry_state, [ keyset_il ])
   | table_ctx_keys, keysets ->
       if List.length table_ctx_keys <> List.length keysets then (
         Format.printf
           "(type_table_entry_keysets) Number of select keys must match the \
            number of cases\n";
         assert false);
-      List.fold_left2
-        (fun (entry_state_prev, entry_keysets) table_ctx_key table_entry_keyset ->
-          let entry_state_curr, table_entry_keyset_il =
-            type_table_entry_keyset cursor ctx table_ctx table_ctx_key
-              table_entry_keyset
-          in
-          let entry_state =
-            Tblctx.update_state entry_state_prev entry_state_curr
-          in
-          (entry_state, entry_keysets @ [ table_entry_keyset_il ]))
-        (Tblctx.NoLpm, []) table_ctx_keys keysets
+      let rec type_table_entry_keysets' entry_state table_entry_keysets_il =
+        function
+        | [] -> Ok (entry_state, table_entry_keysets_il)
+        | (table_ctx_key, table_entry_keyset) :: keysets ->
+            let* entry_state_curr, table_entry_keyset_il =
+              type_table_entry_keyset cursor ctx table_ctx table_ctx_key
+                table_entry_keyset
+            in
+            let entry_state =
+              Tblctx.update_state entry_state entry_state_curr
+            in
+            type_table_entry_keysets' entry_state
+              (table_entry_keysets_il @ [ table_entry_keyset_il ])
+              keysets
+      in
+      type_table_entry_keysets' Tblctx.NoLpm []
+        (List.combine table_ctx_keys keysets)
 
 and type_call_entry_action (cursor : Ctx.cursor) (ctx : Ctx.t)
     (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list)
@@ -5089,14 +5124,17 @@ and type_call_entry_action (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and type_table_entry_action (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_action : El.Ast.table_action) :
-    Il.Ast.table_action =
-  type_table_entry_action' cursor ctx table_ctx table_action.it
-  $ table_action.at
+    Il.Ast.table_action res =
+  let* table_action_il =
+    type_table_entry_action' cursor ctx table_ctx table_action.it
+  in
+  Ok (table_action_il $ table_action.at)
 
 and type_table_entry_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_action : El.Ast.table_action') :
-    Il.Ast.table_action' =
+    Il.Ast.table_action' res =
   let var, args, annos = table_action in
+  let* annos_il = type_annos cursor ctx annos in
   let table_action = Tblctx.find_action table_ctx var in
   if Option.is_none table_action then (
     Format.printf
@@ -5104,12 +5142,11 @@ and type_table_entry_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
       El.Pp.pp_var var;
     assert false);
   let params, args_action = Option.get table_action in
-  let args_il_typed = List.map (type_arg cursor ctx) args in
+  let* args_il_typed = type_args cursor ctx args in
   let args_il =
     type_call_entry_action cursor ctx params args_il_typed args_action
   in
-  let annos_il = List.map (type_anno cursor ctx) annos in
-  (var, args_il, annos_il)
+  Ok (var, args_il, annos_il)
 
 and check_priority (table_ctx : Tblctx.t) (priority_curr : int) : unit =
   if priority_curr < 0 then (
@@ -5130,7 +5167,7 @@ and check_priority (table_ctx : Tblctx.t) (priority_curr : int) : unit =
 
 and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (entry_state : Tblctx.state)
-    (priority : El.Ast.expr option) : Tblctx.t * Il.Ast.expr option =
+    (priority : El.Ast.expr option) : (Tblctx.t * Il.Ast.expr option) res =
   if table_ctx.entries.const && Option.is_some priority then (
     Format.printf
       "(type_table_entry_priority) Cannot define priority within constant \
@@ -5143,7 +5180,7 @@ and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
           "(type_table_entry_priority) Cannot define priority when there are \
            only exact fields\n";
         assert false);
-      (table_ctx, None)
+      Ok (table_ctx, None)
   | NoPriLpm _ ->
       if Option.is_some priority then (
         Format.printf
@@ -5161,20 +5198,26 @@ and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
           $$ no_info % { typ = Types.IntT; ctk = Ctk.LCTK })
         |> Option.some
       in
-      (table_ctx, priority_il)
+      Ok (table_ctx, priority_il)
   (* Neglect lpm prefix when lpm is used with explicit priority for other match kinds *)
   | _ when table_ctx.priorities.values = [] ->
-      let value_priority =
+      let* value_priority =
         match priority with
         | Some priority ->
-            let priority_il = type_expr cursor ctx priority in
-            Static.eval_expr cursor ctx priority_il |> it |> Value.get_num
+            let* priority_il = type_expr cursor ctx priority in
+            let value_priority =
+              Static.eval_expr cursor ctx priority_il |> it |> Value.get_num
+            in
+            Ok value_priority
         | None ->
             let largest_wins = table_ctx.priorities.largest_wins in
             let delta = table_ctx.priorities.delta in
             let size = table_ctx.entries.size in
-            if largest_wins then 1 + ((size - 1) * delta) |> Bigint.of_int
-            else Bigint.one
+            let value_priority =
+              if largest_wins then 1 + ((size - 1) * delta) |> Bigint.of_int
+              else Bigint.one
+            in
+            Ok value_priority
       in
       let priority_il =
         Il.Ast.(
@@ -5189,24 +5232,30 @@ and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
         else table_ctx
       in
       let table_ctx = Tblctx.add_priority value_priority table_ctx in
-      (table_ctx, priority_il)
+      Ok (table_ctx, priority_il)
   | _ ->
       if (not table_ctx.priorities.init) && Option.is_some priority then (
         Format.printf
           "(type_table_entry_priority) The priority of the first entry must be \
            defined if priorities are explicitly specified\n";
         assert false);
-      let value_priority =
+      let* value_priority =
         match priority with
         | Some priority ->
-            let priority_il = type_expr cursor ctx priority in
-            Static.eval_expr cursor ctx priority_il |> it |> Value.get_num
+            let* priority_il = type_expr cursor ctx priority in
+            let value_priority =
+              Static.eval_expr cursor ctx priority_il |> it |> Value.get_num
+            in
+            Ok value_priority
         | None ->
             let largest_wins = table_ctx.priorities.largest_wins in
             let delta = table_ctx.priorities.delta in
             let value_priority_prev = Tblctx.find_last_priority table_ctx in
-            if largest_wins then value_priority_prev - delta |> Bigint.of_int
-            else value_priority_prev + delta |> Bigint.of_int
+            let value_priority =
+              if largest_wins then value_priority_prev - delta |> Bigint.of_int
+              else value_priority_prev + delta |> Bigint.of_int
+            in
+            Ok value_priority
       in
       let priority_il =
         Il.Ast.(
@@ -5217,34 +5266,34 @@ and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
       let value_priority = value_priority |> Bigint.to_int |> Option.get in
       check_priority table_ctx value_priority;
       let table_ctx = Tblctx.add_priority value_priority table_ctx in
-      (table_ctx, priority_il)
+      Ok (table_ctx, priority_il)
 
 and type_table_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_entry : El.Ast.table_entry) : Tblctx.t * Il.Ast.table_entry =
-  let table_ctx, table_entry_il =
+    (table_entry : El.Ast.table_entry) : (Tblctx.t * Il.Ast.table_entry) res =
+  let* table_ctx, table_entry_il =
     type_table_entry' cursor ctx table_ctx table_entry.it
   in
-  (table_ctx, table_entry_il $ table_entry.at)
+  Ok (table_ctx, table_entry_il $ table_entry.at)
 
 and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_entry : El.Ast.table_entry') : Tblctx.t * Il.Ast.table_entry' =
+    (table_entry : El.Ast.table_entry') : (Tblctx.t * Il.Ast.table_entry') res =
   let keysets, action, priority, table_entry_const, annos = table_entry in
-  let entry_state, keysets_il =
+  let* annos_il = type_annos cursor ctx annos in
+  let* entry_state, keysets_il =
     type_table_entry_keysets cursor ctx table_ctx keysets
   in
-  let action_il = type_table_entry_action cursor ctx table_ctx action in
-  let table_ctx, priority_il =
+  let* action_il = type_table_entry_action cursor ctx table_ctx action in
+  let* table_ctx, priority_il =
     type_table_entry_priority cursor ctx table_ctx entry_state priority
   in
-  let annos_il = List.map (type_anno cursor ctx) annos in
   let table_entry_il =
     (keysets_il, action_il, priority_il, table_entry_const, annos_il)
   in
-  (table_ctx, table_entry_il)
+  Ok (table_ctx, table_entry_il)
 
 and type_table_entries' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_entries : El.Ast.table_entries') :
-    Tblctx.t * Il.Ast.table_entries' =
+    (Tblctx.t * Il.Ast.table_entries') res =
   let table_entries, table_entries_const = table_entries in
   if table_ctx.keys = [] && table_entries <> [] then (
     Format.printf
@@ -5255,24 +5304,28 @@ and type_table_entries' (cursor : Ctx.cursor) (ctx : Ctx.t)
     Tblctx.set_entries_size entries_size table_ctx
   in
   let table_ctx = Tblctx.set_entries_const table_entries_const table_ctx in
-  let table_ctx, table_entries_il =
-    List.fold_left
-      (fun (table_ctx, entries) table_entry ->
-        let table_ctx, table_entry_il =
-          type_table_entry cursor ctx table_ctx table_entry
-        in
-        (table_ctx, entries @ [ table_entry_il ]))
-      (table_ctx, []) table_entries
+  let* table_ctx, table_entries_il =
+    let rec type_table_entries'' table_ctx table_entries_il = function
+      | [] -> Ok (table_ctx, table_entries_il)
+      | table_entry :: table_entries ->
+          let* table_ctx, table_entry_il =
+            type_table_entry cursor ctx table_ctx table_entry
+          in
+          type_table_entries'' table_ctx
+            (table_entries_il @ [ table_entry_il ])
+            table_entries
+    in
+    type_table_entries'' table_ctx [] table_entries
   in
-  (table_ctx, (table_entries_il, table_entries_const))
+  Ok (table_ctx, (table_entries_il, table_entries_const))
 
 and type_table_entries (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_entries : El.Ast.table_entries) :
-    Tblctx.t * Il.Ast.table_entries =
-  let table_ctx, table_entries_il =
+    (Tblctx.t * Il.Ast.table_entries) res =
+  let* table_ctx, table_entries_il =
     type_table_entries' cursor ctx table_ctx table_entries.it
   in
-  (table_ctx, table_entries_il $ table_entries.at)
+  Ok (table_ctx, table_entries_il $ table_entries.at)
 
 (* (14.2.1.5) Size
 
@@ -5292,19 +5345,20 @@ and type_table_entries (cursor : Ctx.cursor) (ctx : Ctx.t)
    reason about the behavior of tables during compilation. *)
 
 and type_table_custom (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
-    (table_custom : El.Ast.table_custom) : Tblctx.t * Il.Ast.table_custom =
-  let table_ctx, table_custom_il =
+    (table_custom : El.Ast.table_custom) : (Tblctx.t * Il.Ast.table_custom) res
+    =
+  let* table_ctx, table_custom_il =
     type_table_custom' cursor ctx table_ctx table_custom.it
   in
-  (table_ctx, table_custom_il $ table_custom.at)
+  Ok (table_ctx, table_custom_il $ table_custom.at)
 
 and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_custom : El.Ast.table_custom') :
-    Tblctx.t * Il.Ast.table_custom' =
+    (Tblctx.t * Il.Ast.table_custom') res =
   let member, expr, custom_const, annos = table_custom in
-  let expr_il = type_expr cursor ctx expr in
+  let* annos_il = type_annos cursor ctx annos in
+  let* expr_il = type_expr cursor ctx expr in
   let typ = expr_il.note.typ in
-  let annos_il = List.map (type_anno cursor ctx) annos in
   let table_ctx =
     match member.it with
     | "size" ->
@@ -5346,7 +5400,7 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
           member.it;
         assert false
   in
-  (table_ctx, (member, expr_il, custom_const, annos_il))
+  Ok (table_ctx, (member, expr_il, custom_const, annos_il))
 
 (* (7.2.12.2) Control type declarations *)
 
@@ -5357,18 +5411,12 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.printf
       "(type_control_type_decl) Control type declarations must be global\n";
     assert false);
-  let _annos_il = List.map (type_anno cursor ctx) annos in
+  let* _annos_il = type_annos cursor ctx annos in
   (* Typecheck implicit "apply" method
      to construct function definition environment *)
   let ctx' = Ctx.set_blockkind Ctx.Control ctx in
   let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
-  let params_il, tids_fresh =
-    List.fold_left
-      (fun (params_il, tids_fresh) param ->
-        let param_il, tids_fresh_param = type_param Ctx.Local ctx' param in
-        (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
-      ([], []) params
-  in
+  let* params_il, tids_fresh = type_params Ctx.Local ctx' params in
   (* Create a control type definition
      and add it to the context *)
   let td =
@@ -5410,27 +5458,15 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   if tparams <> [] then (
     Format.printf "(type_control_decl) Control declarations cannot be generic\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let* annos_il = type_annos cursor ctx annos in
   let cid = FId.to_fid id cparams in
   let ctx' = Ctx.set_blockkind Ctx.Control ctx in
   (* Typecheck and add constructor parameters to the block context *)
-  let cparams_il, tids_fresh =
-    List.fold_left
-      (fun (cparams_il, tids_fresh) cparam ->
-        let cparam_il, tids_fresh_cparam = type_cparam Ctx.Block ctx' cparam in
-        (cparams_il @ [ cparam_il ], tids_fresh @ tids_fresh_cparam))
-      ([], []) cparams
-  in
+  let* cparams_il, tids_fresh = type_cparams Ctx.Block ctx' cparams in
   assert (tids_fresh = []);
   let ctx' = Ctx.add_cparams Ctx.Block cparams_il ctx' in
   (* Typecheck control apply method *)
-  let params_il, tids_fresh =
-    List.fold_left
-      (fun (params_il, tids_fresh) param ->
-        let param_il, tids_fresh_param = type_param Ctx.Local ctx' param in
-        (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
-      ([], []) params
-  in
+  let* params_il, tids_fresh = type_params Ctx.Local ctx' params in
   assert (tids_fresh = []);
   let fd_apply =
     let params =
@@ -5491,19 +5527,13 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 
 and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     (tparams : El.Ast.tparam list) (cparams : El.Ast.cparam list) :
-    TypeDef.t * ConsDef.t * Il.Ast.tparam list * Il.Ast.cparam list =
+    (TypeDef.t * ConsDef.t * Il.Ast.tparam list * Il.Ast.cparam list) res =
   if not (cursor = Ctx.Block && ctx.block.kind = Package) then (
     Format.printf
       "(type_package_constructor_decl) Package constructor declaration must be \
        in a package block\n";
     assert false);
-  let cparams_il, tids_fresh =
-    List.fold_left
-      (fun (cparams_il, tids_fresh) cparam ->
-        let cparam_il, tids_fresh_cparam = type_cparam Ctx.Block ctx cparam in
-        (cparams_il @ [ cparam_il ], tids_fresh @ tids_fresh_cparam))
-      ([], []) cparams
-  in
+  let* cparams_il, tids_fresh = type_cparams Ctx.Block ctx cparams in
   let tparams_hidden =
     List.map (fun tid_fresh -> tid_fresh $ no_info) tids_fresh
   in
@@ -5535,7 +5565,7 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     (tparams, tparams_hidden, cparams, typ)
   in
   WF.check_valid_consdef Ctx.Block ctx cd;
-  (td, cd, tparams, cparams_il)
+  Ok (td, cd, tparams, cparams_il)
 
 and type_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (tparams : El.Ast.tparam list) (cparams : El.Ast.cparam list)
@@ -5544,9 +5574,9 @@ and type_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Format.printf
       "(type_package_type_decl) Package type declarations must be global\n";
     assert false);
-  let annos_il = List.map (type_anno cursor ctx) annos in
+  let* annos_il = type_annos cursor ctx annos in
   (* Package type declaration is implicitly a constructor declaration *)
-  let td, cd, tparams, cparams_il =
+  let* td, cd, tparams, cparams_il =
     let ctx = Ctx.set_blockkind Ctx.Package ctx in
     let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
     type_package_constructor_decl Ctx.Block ctx tparams cparams
