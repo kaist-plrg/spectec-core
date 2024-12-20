@@ -3,6 +3,7 @@ open Pp
 open Eq
 open Free
 open Subst
+open Utils
 
 (* Modules *)
 
@@ -28,98 +29,12 @@ module Type = struct
         Format.printf "(get_width) %a must be a numeric type\n" pp typ;
         assert false
 
-  let is_numeric typ =
-    let typ = canon_typ typ in
-    match typ with
-    | SpecT _ | DefT _ -> assert false
-    | IntT | FIntT _ | FBitT _ -> true
-    | _ -> false
-
-  let rec is_ground typ =
-    let typ = canon_typ typ in
-    match typ with
-    | SpecT _ | DefT _ -> assert false
-    | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
-    | VBitT _ ->
-        true
-    | VarT _ -> false
-    | NewT (_, typ_inner) -> is_ground typ_inner
-    | EnumT _ -> true
-    | SEnumT (_, typ_inner, _) -> is_ground typ_inner
-    | ListT typ_inner -> is_ground typ_inner
-    | TupleT typs_inner -> List.for_all is_ground typs_inner
-    | StackT (typ_inner, _) -> is_ground typ_inner
-    | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
-        List.map snd fields |> List.for_all is_ground
-    | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ | AnyT -> true
-    | TableEnumT _ | TableStructT _ -> true
-    | SeqT typs_inner | SeqDefaultT typs_inner ->
-        List.for_all is_ground typs_inner
-    | RecordT fields | RecordDefaultT fields ->
-        List.map snd fields |> List.for_all is_ground
-    | DefaultT | InvalidT -> true
-    | SetT typ_inner -> is_ground typ_inner
-    | StateT -> true
-
-  let is_assignable typ =
-    let typ = canon_typ typ in
-    match typ with
-    | SpecT _ | DefT _ -> assert false
-    | VoidT -> false
-    | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _
-    | VarT _ | NewT _ ->
-        true
-    | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
-    | UnionT _ ->
-        true
-    | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ | AnyT
-    | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
-    | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
-        false
-
-  let rec is_defaultable typ =
-    let typ = canon_typ typ in
-    match typ with
-    | SpecT _ | DefT _ -> assert false
-    | VoidT -> false
-    | ErrT -> true
-    | MatchKindT -> false
-    | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ -> true
-    | VarT _ -> false
-    | NewT (_, typ_inner) -> is_defaultable typ_inner
-    | EnumT _ -> true
-    | SEnumT (_, typ_inner, _) -> is_defaultable typ_inner
-    | ListT _ -> false
-    | TupleT typs_inner -> List.for_all is_defaultable typs_inner
-    | StackT (typ_inner, _) -> is_defaultable typ_inner
-    | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
-        List.map snd fields |> List.for_all is_defaultable
-    | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ | AnyT
-    | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
-    | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
-        false
-
-  let is_equalable typ =
-    let typ = canon_typ typ in
-    match typ with
-    | SpecT _ | DefT _ -> assert false
-    | VoidT -> false
-    | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _ ->
-        true
-    | VarT _ -> false
-    | NewT _ | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _
-    | HeaderT _ | UnionT _ ->
-        true
-    | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ | AnyT
-    | TableEnumT _ | TableStructT _ ->
-        false
-    | SeqT _ -> true
-    | SeqDefaultT _ -> false
-    | RecordT _ -> true
-    | RecordDefaultT _ -> false
-    | DefaultT -> false
-    | InvalidT -> true
-    | SetT _ | StateT -> false
+  let is_numeric = is_numeric_typ
+  let is_nominal = is_nominal_typ
+  let is_ground = is_ground_typ
+  let is_assignable = is_assignable_typ
+  let is_defaultable = is_defaultable_typ
+  let is_equalable = is_equalable_typ
 end
 
 module TypeDef = struct
@@ -139,48 +54,11 @@ module FuncType = struct
   let pp = pp_functyp
   let eq = eq_functyp
   let eq_alpha = eq_functyp_alpha
-
-  let eq_kind ft_a ft_b =
-    match (ft_a, ft_b) with
-    | ActionT _, ActionT _ -> true
-    | ExternFunctionT _, ExternFunctionT _
-    | FunctionT _, FunctionT _
-    | ExternMethodT _, ExternMethodT _
-    | ExternMethodT _, ExternAbstractMethodT _
-    | ExternAbstractMethodT _, ExternMethodT _
-    | ExternAbstractMethodT _, ExternAbstractMethodT _
-    | ParserApplyMethodT _, ParserApplyMethodT _
-    | ControlApplyMethodT _, ControlApplyMethodT _
-    | BuiltinMethodT _, BuiltinMethodT _
-    | TableApplyMethodT _, TableApplyMethodT _ ->
-        true
-    | _ -> false
-
+  let eq_kind = eq_functyp_kind
   let subst = subst_functyp
-  let is_action = function ActionT _ -> true | _ -> false
-
-  let get_params = function
-    | ActionT params
-    | ExternFunctionT (params, _)
-    | FunctionT (params, _)
-    | ExternMethodT (params, _)
-    | ExternAbstractMethodT (params, _)
-    | ParserApplyMethodT params
-    | ControlApplyMethodT params
-    | BuiltinMethodT (params, _) ->
-        params
-    | TableApplyMethodT _ -> []
-
-  let get_typ_ret = function
-    | ActionT _ -> VoidT
-    | ExternFunctionT (_, typ_ret)
-    | FunctionT (_, typ_ret)
-    | ExternMethodT (_, typ_ret)
-    | ExternAbstractMethodT (_, typ_ret) ->
-        typ_ret
-    | ParserApplyMethodT _ | ControlApplyMethodT _ -> VoidT
-    | TableApplyMethodT typ_ret -> typ_ret
-    | BuiltinMethodT (_, typ_ret) -> typ_ret
+  let is_action = is_action_functyp
+  let get_params = get_params_functyp
+  let get_typ_ret = get_typ_ret_functyp
 end
 
 module FuncDef = struct
@@ -189,26 +67,13 @@ module FuncDef = struct
   let pp = pp_funcdef
   let eq = eq_funcdef
   let eq_alpha = eq_funcdef_alpha
-
-  let eq_kind fd_a fd_b =
-    match (fd_a, fd_b) with
-    | MonoFD ft_a, MonoFD ft_b | PolyFD (_, _, ft_a), PolyFD (_, _, ft_b) ->
-        FuncType.eq_kind ft_a ft_b
-    | _ -> false
-
+  let eq_kind = eq_funcdef_kind
   let free = free_funcdef
   let subst = subst_funcdef
   let specialize = specialize_funcdef
-
-  let get_tparams = function
-    | MonoFD _ -> ([], [])
-    | PolyFD (tparams, tparams_hidden, _) -> (tparams, tparams_hidden)
-
-  let get_params = function
-    | MonoFD ft | PolyFD (_, _, ft) -> FuncType.get_params ft
-
-  let get_typ_ret = function
-    | MonoFD ft | PolyFD (_, _, ft) -> FuncType.get_typ_ret ft
+  let get_tparams = get_tparams_funcdef
+  let get_params = get_params_funcdef
+  let get_typ_ret = get_typ_ret_funcdef
 end
 
 module ConsType = struct
@@ -222,11 +87,6 @@ module ConsDef = struct
   type t = consdef
 
   let pp = pp_consdef
-
-  let eq_kind cd_a cd_b =
-    let _, _, _, typ_ret_a = cd_a in
-    let _, _, _, typ_ret_b = cd_b in
-    eq_typ typ_ret_a typ_ret_b
-
+  let eq_kind cd_a cd_b = eq_consdef_kind cd_a cd_b
   let specialize = specialize_consdef
 end

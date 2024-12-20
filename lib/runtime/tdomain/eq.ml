@@ -1,5 +1,6 @@
 open Domain.Dom
 open Tdom
+open Utils
 module E = Lang.Eq
 
 (* Equality *)
@@ -130,6 +131,35 @@ and eq_funcdef fd_a fd_b =
       && eq_functyp ft_a ft_b
   | _ -> false
 
+(* Equal kinds *)
+
+let eq_functyp_kind ft_a ft_b =
+  match (ft_a, ft_b) with
+  | ActionT _, ActionT _ -> true
+  | ExternFunctionT _, ExternFunctionT _
+  | FunctionT _, FunctionT _
+  | ExternMethodT _, ExternMethodT _
+  | ExternMethodT _, ExternAbstractMethodT _
+  | ExternAbstractMethodT _, ExternMethodT _
+  | ExternAbstractMethodT _, ExternAbstractMethodT _
+  | ParserApplyMethodT _, ParserApplyMethodT _
+  | ControlApplyMethodT _, ControlApplyMethodT _
+  | BuiltinMethodT _, BuiltinMethodT _
+  | TableApplyMethodT _, TableApplyMethodT _ ->
+      true
+  | _ -> false
+
+let eq_funcdef_kind fd_a fd_b =
+  match (fd_a, fd_b) with
+  | MonoFD ft_a, MonoFD ft_b | PolyFD (_, _, ft_a), PolyFD (_, _, ft_b) ->
+      eq_functyp_kind ft_a ft_b
+  | _ -> false
+
+let eq_consdef_kind cd_a cd_b =
+  let _, _, _, typ_ret_a = cd_a in
+  let _, _, _, typ_ret_b = cd_b in
+  eq_typ typ_ret_a typ_ret_b
+
 (* Alpha-equivalence *)
 
 (* Parameters *)
@@ -145,13 +175,6 @@ and eq_params_alpha (params_a : param list) (params_b : param list) : bool =
 (* Types *)
 
 and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
-  let is_nominal (typ : typ) : bool =
-    match typ with
-    | NewT _ | EnumT _ | SEnumT _ | StructT _ | HeaderT _ | UnionT _ | ExternT _
-      ->
-        true
-    | _ -> false
-  in
   match (typ_a, typ_b) with
   | VoidT, VoidT
   | ErrT, ErrT
@@ -170,7 +193,7 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
       let typ_inner_b = Subst.specialize_typdef_poly tdp_b typs_inner_b in
       eq_typ_alpha typ_inner_a typ_inner_b
       &&
-      if is_nominal typ_inner_a && is_nominal typ_inner_b then
+      if is_nominal_typ typ_inner_a && is_nominal_typ typ_inner_b then
         eq_typs_alpha typs_inner_a typs_inner_b
       else true
   | DefT typ_inner_a, _ -> eq_typ_alpha typ_inner_a typ_b
