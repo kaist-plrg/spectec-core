@@ -608,7 +608,6 @@ Error while typechecking p4 file: test/program/ill-typed/issue4140.p4
 Error while parsing p4 file: test/program/ill-typed/issue4142.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue435.p4
-(type_extern_constructor_decl) Extern constructor must have the same name as the object
 Error while typechecking p4 file: test/program/ill-typed/issue435.p4
 
 >>> Running typecheck test on test/program/ill-typed/issue561-1.p4

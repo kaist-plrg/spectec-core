@@ -3216,8 +3216,7 @@ and type_instantiation_init_extern_abstract_method_decl (cursor : Ctx.cursor)
        method initializer declarations must be in a block\n";
     assert false);
   (* Construct function layer context *)
-  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
-  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
+  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx in
   let typ_ret, tids_fresh = eval_type_with_check Ctx.Local ctx' typ_ret in
   assert (tids_fresh = []);
   let ctx' = Ctx.set_localkind (Ctx.ExternAbstractMethod typ_ret.it) ctx' in
@@ -3811,8 +3810,7 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let annos_il = List.map (type_anno cursor ctx) annos in
   let fid = FId.to_fid id params in
   (* Construct action layer context *)
-  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
-  let ctx' = Ctx.set_localkind Ctx.Action ctx' in
+  let ctx' = Ctx.set_localkind Ctx.Action ctx in
   (* Typecheck and add parameters to the local context *)
   let params_il, tids_fresh =
     List.fold_left
@@ -3861,8 +3859,7 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     assert false);
   let fid = FId.to_fid id params in
   (* Construct function layer context *)
-  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
-  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
+  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx in
   let typ_ret, tids_fresh = eval_type_with_check Ctx.Local ctx' typ_ret in
   assert (tids_fresh = []);
   let ctx' = Ctx.set_localkind (Ctx.Function typ_ret.it) ctx' in
@@ -3923,8 +3920,7 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let annos_il = List.map (type_anno cursor ctx) annos in
   let fid = FId.to_fid id params in
   (* Construct extern function layer context *)
-  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
-  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
+  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx in
   let typ_ret, tids_fresh = eval_type_with_check Ctx.Local ctx' typ_ret in
   assert (tids_fresh = []);
   let ctx' = Ctx.set_localkind Ctx.ExternFunction ctx' in
@@ -3969,11 +3965,6 @@ and type_extern_constructor_mthd (cursor : Ctx.cursor) (ctx : Ctx.t)
     (cparams : El.Ast.cparam list) (annos : El.Ast.anno list) :
     Ctx.t * Il.Ast.mthd' =
   assert (cursor = Ctx.Block && ctx.block.kind = Ctx.Extern);
-  if id.it <> ctx.block.id then (
-    Format.printf
-      "(type_extern_constructor_decl) Extern constructor must have the same \
-       name as the object\n";
-    assert false);
   let annos_il = List.map (type_anno cursor ctx) annos in
   let cid = FId.to_fid id cparams in
   let cparams_il, tids_fresh =
@@ -4021,8 +4012,7 @@ and type_extern_abstract_method_mthd (cursor : Ctx.cursor) (ctx : Ctx.t)
   let annos_il = List.map (type_anno cursor ctx) annos in
   let fid = FId.to_fid id params in
   (* Construct extern abstract method layer context *)
-  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
-  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
+  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx in
   let typ_ret, tids_fresh = eval_type_with_check Ctx.Local ctx' typ_ret in
   assert (tids_fresh = []);
   let ctx' = Ctx.set_localkind (Ctx.ExternAbstractMethod typ_ret.it) ctx' in
@@ -4061,8 +4051,7 @@ and type_extern_method_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let annos_il = List.map (type_anno cursor ctx) annos in
   let fid = FId.to_fid id params in
   (* Construct extern method layer context *)
-  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
-  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx' in
+  let ctx' = Ctx.add_tparams Ctx.Local tparams ctx in
   let typ_ret, tids_fresh = eval_type_with_check Ctx.Local ctx' typ_ret in
   assert (tids_fresh = []);
   let ctx' = Ctx.set_localkind Ctx.ExternMethod ctx' in
@@ -4151,8 +4140,7 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     assert false);
   (* Typecheck methods and abstract methods
      to construct function definition environment *)
-  let ctx' = Ctx.set_id Ctx.Block id.it ctx in
-  let ctx' = Ctx.set_blockkind Ctx.Extern ctx' in
+  let ctx' = Ctx.set_blockkind Ctx.Extern ctx in
   let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
   let ctx', mthds_il = type_mthds Ctx.Block ctx' tparams mthds in
   (* Create an extern object type definition
@@ -4166,8 +4154,7 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   (* Typecheck constructors to update constructor definition environment
      This comes after method typing to prevent recursive instantiation *)
-  let ctx'' = Ctx.set_id Ctx.Block id.it ctx in
-  let ctx'' = Ctx.set_blockkind Ctx.Extern ctx'' in
+  let ctx'' = Ctx.set_blockkind Ctx.Extern ctx in
   let ctx'' = Ctx.add_tparams Ctx.Block tparams ctx'' in
   let ctx'', cons_il = type_mthds Ctx.Block ctx'' tparams cons in
   (* Update the context with the constructor definition environment *)
@@ -4249,8 +4236,7 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let _annos_il = List.map (type_anno cursor ctx) annos in
   (* Typecheck implicit "apply" method
      to construct function definition environment *)
-  let ctx' = Ctx.set_id Ctx.Block id.it ctx in
-  let ctx' = Ctx.set_blockkind Ctx.Parser ctx' in
+  let ctx' = Ctx.set_blockkind Ctx.Parser ctx in
   let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
   let params_il, tids_fresh =
     List.fold_left
@@ -4338,10 +4324,6 @@ and type_parser_states (_cursor : Ctx.cursor) (ctx : Ctx.t)
   let _ctx', states_il =
     List.fold_left
       (fun (ctx', states) state ->
-        let ctx' =
-          let label, _, _ = state.it in
-          Ctx.set_id Ctx.Local label.it ctx'
-        in
         let ctx', state_il = type_parser_state Ctx.Local ctx' state in
         (ctx', states @ [ state_il ]))
       (ctx', []) states
@@ -4362,8 +4344,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     assert false);
   let annos_il = List.map (type_anno cursor ctx) annos in
   let cid = FId.to_fid id cparams in
-  let ctx' = Ctx.set_id Ctx.Block id.it ctx in
-  let ctx' = Ctx.set_blockkind Ctx.Parser ctx' in
+  let ctx' = Ctx.set_blockkind Ctx.Parser ctx in
   (* Typecheck and add constructor parameters to the block context *)
   let cparams_il, tids_fresh =
     List.fold_left
@@ -4378,7 +4359,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let params_il, tids_fresh =
     List.fold_left
       (fun (params_il, tids_fresh) param ->
-        let param_il, tids_fresh_param = type_param Ctx.BLOCK ctx' param in
+        let param_il, tids_fresh_param = type_param Ctx.Block ctx' param in
         (params_il @ [ param_il ], tids_fresh @ tids_fresh_param))
       ([], []) params
   in
@@ -5362,8 +5343,7 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let _annos_il = List.map (type_anno cursor ctx) annos in
   (* Typecheck implicit "apply" method
      to construct function definition environment *)
-  let ctx' = Ctx.set_id Ctx.Local id.it ctx in
-  let ctx' = Ctx.set_blockkind Ctx.Control ctx' in
+  let ctx' = Ctx.set_blockkind Ctx.Control ctx in
   let ctx' = Ctx.add_tparams Ctx.Block tparams ctx' in
   let params_il, tids_fresh =
     List.fold_left
@@ -5414,8 +5394,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     assert false);
   let annos_il = List.map (type_anno cursor ctx) annos in
   let cid = FId.to_fid id cparams in
-  let ctx' = Ctx.set_id Ctx.Block id.it ctx in
-  let ctx' = Ctx.set_blockkind Ctx.Control ctx' in
+  let ctx' = Ctx.set_blockkind Ctx.Control ctx in
   (* Typecheck and add constructor parameters to the block context *)
   let cparams_il, tids_fresh =
     List.fold_left
@@ -5450,7 +5429,6 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   (* Typecheck and add local declarations to the block context *)
   let ctx', locals_il = type_decls Ctx.Block ctx' locals in
   (* Typecheck implicit "apply" method *)
-  let ctx' = Ctx.set_id Ctx.Local "apply" ctx' in
   let ctx' = Ctx.set_localkind Ctx.ControlApplyMethod ctx' in
   let _ctx', _flow, body_il = type_block Ctx.Local ctx' Cont body in
   (* Create a control constructor definition *)
@@ -5551,7 +5529,6 @@ and type_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let annos_il = List.map (type_anno cursor ctx) annos in
   (* Package type declaration is implicitly a constructor declaration *)
   let td, cd, tparams, cparams_il =
-    let ctx = Ctx.set_id Ctx.Block id.it ctx in
     let ctx = Ctx.set_blockkind Ctx.Package ctx in
     let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
     type_package_constructor_decl Ctx.Block ctx tparams cparams

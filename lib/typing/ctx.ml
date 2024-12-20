@@ -44,7 +44,6 @@ type gt = {
 }
 
 type bt = {
-  id : L.id';
   kind : blockkind;
   tdenv : Envs.TDEnv.t;
   fdenv : Envs.FDEnv.t;
@@ -52,7 +51,6 @@ type bt = {
 }
 
 type lt = {
-  id : L.id';
   kind : localkind;
   tdenv : Envs.TDEnv.t;
   frames : (Envs.VEnv.t * Envs.TEnv.t) list;
@@ -70,16 +68,13 @@ let empty_gt =
 
 let empty_bt =
   {
-    id = "";
     kind = Empty;
     tdenv = Envs.TDEnv.empty;
     fdenv = Envs.FDEnv.empty;
     frame = (Envs.VEnv.empty, Envs.TEnv.empty);
   }
 
-let empty_lt =
-  { id = ""; kind = Empty; tdenv = Envs.TDEnv.empty; frames = [] }
-
+let empty_lt = { kind = Empty; tdenv = Envs.TDEnv.empty; frames = [] }
 let empty = { global = empty_gt; block = empty_bt; local = empty_lt }
 
 (* Frame management *)
@@ -102,14 +97,6 @@ let exit_frame ctx =
   | _ :: frames -> { ctx with local = { ctx.local with frames } }
 
 (* Setters *)
-
-let set_id cursor id ctx =
-  match cursor with
-  | Global ->
-      F.eprintf "(set_id) Global cursor has no identifier\n";
-      assert false
-  | Block -> { ctx with block = { ctx.block with id } }
-  | Local -> { ctx with local = { ctx.local with id } }
 
 let set_blockkind kind ctx = { ctx with block = { ctx.block with kind } }
 let set_localkind kind ctx = { ctx with local = { ctx.local with kind } }
@@ -506,12 +493,11 @@ let pp_blockkind fmt (kind : blockkind) =
 
 let pp_bt fmt (bt : bt) =
   F.fprintf fmt
-    "@[@[<v 0>[Block %s]:@ %a@]@\n\
+    "@[@[<v 0>[[Block]]:@ %a@]@\n\
      @[<v 0>[Typedefs]:@ %a@]@\n\
      @[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Frame]:@ %a@]@]" bt.id
-    pp_blockkind bt.kind Envs.TDEnv.pp bt.tdenv Envs.FDEnv.pp bt.fdenv pp_frame
-    bt.frame
+     @[<v 0>[Frame]:@ %a@]@]" pp_blockkind bt.kind Envs.TDEnv.pp bt.tdenv
+    Envs.FDEnv.pp bt.fdenv pp_frame bt.frame
 
 let pp_localkind fmt (kind : localkind) =
   match kind with
@@ -527,11 +513,10 @@ let pp_localkind fmt (kind : localkind) =
 
 let pp_lt fmt (lt : lt) =
   F.fprintf fmt
-    "@[@[<v 0>[Local %s]:@ %a@]@\n\
+    "@[@[<v 0>[[Local]]:@ %a@]@\n\
      @[<v 0>[Typedefs]:@ %a@]@\n\
-     @[<v 0>[Frames]:@ %a@]@]" lt.id
-    pp_localkind lt.kind Envs.TDEnv.pp lt.tdenv (F.pp_print_list pp_frame)
-    lt.frames
+     @[<v 0>[Frames]:@ %a@]@]" pp_localkind lt.kind Envs.TDEnv.pp lt.tdenv
+    (F.pp_print_list pp_frame) lt.frames
 
 let pp fmt ctx =
   F.fprintf fmt
