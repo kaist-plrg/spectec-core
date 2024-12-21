@@ -2291,7 +2291,7 @@ Typecheck success: test/program/well-typed/pragma-string.p4
 Typecheck success: test/program/well-typed/pragmas.p4
 
 >>> Running typecheck test on test/program/well-typed/precedence-lt.p4
-Error while typechecking p4 file: test/program/well-typed/precedence-lt.p4
+Error while typechecking test/program/well-typed/precedence-lt.p4: (coerce_types_binary) cannot coerce types int and bool
 
 >>> Running typecheck test on test/program/well-typed/pred.p4
 Typecheck success: test/program/well-typed/pred.p4
@@ -3015,4 +3015,3 @@ Typecheck success: test/program/well-typed/xor_test.p4
 
 Parser on file: [PASS] 1004/1004 (100.00%) [FAIL] 0/1004 (0.00%)
 Typecheck: [PASS] 1003/1004 (99.90%) [FAIL] 1/1004 (0.10%)
-(coerce_types_binary) Cannot coerce types int and bool

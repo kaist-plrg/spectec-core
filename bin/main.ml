@@ -2,19 +2,17 @@ open Core
 
 let version = "0.1"
 
-let parse includes filename =
-  match Frontend.Parse.parse_file includes filename with
-  | Some program -> program
-  | None -> failwith "Error while parsing p4."
+let parse includes filename : (El.Ast.program, string) result =
+  Frontend.Parse.parse_file includes filename
 
-let roundtrip includes filename =
-  match Frontend.Parse.roundtrip_file includes filename with
-  | Some program -> program
-  | None -> failwith "Error while roundtripping p4."
+let roundtrip includes filename : (El.Ast.program, string) result =
+  Frontend.Parse.roundtrip_file includes filename
 
-let typecheck includes filename =
+let typecheck includes filename : (Il.Ast.program, string) result =
   let program = parse includes filename in
-  Typing.Typecheck.type_program program
+  match program with
+  | Ok program -> Typing.Typecheck.type_program program
+  | Error msg -> Error msg
 
 let parse_command =
   Command.basic ~summary:"parse a p4_16 program"
@@ -29,7 +27,9 @@ let parse_command =
          let func = if roundtrip_flag then roundtrip else parse in
          func includes filename
        in
-       Format.printf "%a\n" El.Pp.pp_program program)
+       match program with
+       | Ok program -> Format.printf "%a\n" El.Pp.pp_program program
+       | Error msg -> Format.printf "Error: %s\n" msg)
 
 let typecheck_command =
   Command.basic ~summary:"typecheck a p4_16 program"

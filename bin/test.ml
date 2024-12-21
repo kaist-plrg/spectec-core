@@ -32,33 +32,34 @@ let rec collect_files testdir =
 (* Parser roundtrip test *)
 
 let parse_file stat includes filename =
-  let program =
-    try Frontend.Parse.parse_file includes filename with _ -> None
-  in
-  if Option.is_none program then (
-    stat.fail_file <- stat.fail_file + 1;
-    Printf.sprintf "Error while parsing p4 file: %s" filename |> print_endline);
-  (stat, program)
+  let program = Frontend.Parse.parse_file includes filename in
+  match program with
+  | Ok program -> Ok (stat, program)
+  | Error msg ->
+      stat.fail_file <- stat.fail_file + 1;
+      Error (stat, msg)
 
 let parse_string stat filename file =
-  let program =
-    try Frontend.Parse.parse_string filename file with _ -> None
-  in
-  if Option.is_none program then (
-    stat.fail_string <- stat.fail_string + 1;
-    Printf.sprintf "Error while parsing p4 string: %s" filename |> print_endline);
-  (stat, program)
+  let program = Frontend.Parse.parse_string filename file in
+  match program with
+  | Ok program -> Ok (stat, program)
+  | Error msg ->
+      stat.fail_string <- stat.fail_string + 1;
+      Error (stat, msg)
 
 let parse_roundtrip stat includes filename =
-  let stat, program = parse_file stat includes filename in
-  match program with
-  | None -> stat
-  | Some program -> (
+  match parse_file stat includes filename with
+  | Error (stat, msg) ->
+      Printf.sprintf "Error while parsing file: %s" msg |> print_endline;
+      stat
+  | Ok (stat, program) -> (
       let file' = Format.asprintf "%a\n" El.Pp.pp_program program in
-      let stat, program' = parse_string stat filename file' in
-      match program' with
-      | None -> stat
-      | Some program' ->
+      match parse_string stat filename file' with
+      | Error (stat, msg) ->
+          Printf.sprintf "Error while parsing string %s: %s" filename msg
+          |> print_endline;
+          stat
+      | Ok (stat, program') ->
           if El.Eq.eq_program program program' then
             Printf.sprintf "Parser roundtrip success: %s" filename
             |> print_endline
@@ -100,19 +101,32 @@ let parse_command =
 (* Typecheck test *)
 
 let typecheck stat includes mode filename =
-  let stat, program = parse_file stat includes filename in
-  match program with
-  | None -> stat
-  | Some program -> (
+  match parse_file stat includes filename with
+  | Error (stat, msg) ->
+      Printf.sprintf "Error while parsing file: %s" msg |> print_endline;
+      stat
+  | Ok (stat, program) -> (
+      let on_success filename =
+        Printf.sprintf "Typecheck success: %s" filename |> print_endline
+      in
+      let on_error filename msg =
+        Printf.sprintf "Error while typechecking %s: %s" filename msg
+        |> print_endline
+      in
       try
-        Typing.Typecheck.type_program program |> ignore;
-        if mode = Neg then stat.fail_typecheck <- stat.fail_typecheck + 1;
-        Printf.sprintf "Typecheck success: %s" filename |> print_endline;
-        stat
+        let program = Typing.Typecheck.type_program program in
+        match program with
+        | Ok _ ->
+            if mode = Neg then stat.fail_typecheck <- stat.fail_typecheck + 1;
+            on_success filename;
+            stat
+        | Error msg ->
+            if mode = Pos then stat.fail_typecheck <- stat.fail_typecheck + 1;
+            on_error filename msg;
+            stat
       with _ ->
         if mode = Pos then stat.fail_typecheck <- stat.fail_typecheck + 1;
-        Printf.sprintf "Error while typechecking p4 file: %s" filename
-        |> print_endline;
+        on_error filename "crash";
         stat)
 
 let typecheck_test includes mode testdir =

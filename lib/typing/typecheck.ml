@@ -14,9 +14,13 @@ module WF = Wellformed
 module F = Format
 open Util.Source
 
-type 'a res = ('a, string) result
+(* Error handling *)
+
+type err = string
+type 'a res = ('a, err) result
 
 let ( let* ) = Result.bind
+let check (b : bool) (msg : string) : unit res = if b then Ok () else Error msg
 
 (* Coercion rules *)
 
@@ -29,41 +33,41 @@ let insert_cast (expr_il : Il.Ast.expr) (typ : Type.t) : Il.Ast.expr =
 
 (* Precondition: checker should always result in false for serializable enum case *)
 let rec coerce_type_unary_numeric (checker : Type.t -> bool)
-    (expr_il : Il.Ast.expr) : Il.Ast.expr =
+    (expr_il : Il.Ast.expr) : Il.Ast.expr res =
   let typ = expr_il.note.typ |> Type.canon in
   match typ with
-  | _ when checker typ -> expr_il
+  | _ when checker typ -> Ok expr_il
   | SEnumT (_, typ_inner, _) ->
       let expr_il = insert_cast expr_il typ_inner in
       coerce_type_unary_numeric checker expr_il
   | _ ->
-      Format.printf "(coerce_type_unary) Cannot coerce type %a\n" Type.pp typ;
-      assert false
+      Format.asprintf "(coerce_type_unary) cannot coerce type %a" Type.pp typ
+      |> Result.error
 
 (* Coercion for binary *)
 
 let rec coerce_types_binary (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr)
-    : Il.Ast.expr * Il.Ast.expr =
+    : (Il.Ast.expr * Il.Ast.expr) res =
   let typ_l = expr_l_il.note.typ in
   let typ_r = expr_r_il.note.typ in
-  if Type.eq_alpha typ_l typ_r then (expr_l_il, expr_r_il)
+  if Type.eq_alpha typ_l typ_r then Ok (expr_l_il, expr_r_il)
   else if Subtyp.implicit typ_l typ_r then
-    (insert_cast expr_l_il typ_r, expr_r_il)
+    Ok (insert_cast expr_l_il typ_r, expr_r_il)
   else if Subtyp.implicit typ_r typ_l then
-    (expr_l_il, insert_cast expr_r_il typ_l)
-  else (
-    Format.printf "(coerce_types_binary) Cannot coerce types %a and %a\n"
-      Type.pp expr_l_il.note.typ Type.pp expr_r_il.note.typ;
-    assert false)
+    Ok (expr_l_il, insert_cast expr_r_il typ_l)
+  else
+    Format.asprintf "(coerce_types_binary) cannot coerce types %a and %a"
+      Type.pp expr_l_il.note.typ Type.pp expr_r_il.note.typ
+    |> Result.error
 
 (* Precondition: checker should always result in false for serializable enum case *)
 and coerce_types_binary_numeric (checker : Type.t -> Type.t -> bool)
     (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) :
-    Il.Ast.expr * Il.Ast.expr =
+    (Il.Ast.expr * Il.Ast.expr) res =
   let typ_l = expr_l_il.note.typ |> Type.canon in
   let typ_r = expr_r_il.note.typ |> Type.canon in
   match (typ_l, typ_r) with
-  | _ when checker typ_l typ_r -> (expr_l_il, expr_r_il)
+  | _ when checker typ_l typ_r -> Ok (expr_l_il, expr_r_il)
   | SEnumT (_, typ_l_inner, _), _ ->
       let expr_l_il = insert_cast expr_l_il typ_l_inner in
       coerce_types_binary_numeric checker expr_l_il expr_r_il
@@ -71,22 +75,23 @@ and coerce_types_binary_numeric (checker : Type.t -> Type.t -> bool)
       let expr_r_il = insert_cast expr_r_il typ_r_inner in
       coerce_types_binary_numeric checker expr_l_il expr_r_il
   | _ ->
-      Format.printf
-        "(coerce_types_binary_numeric) Cannot coerce types %a and %a\n" Type.pp
-        typ_l Type.pp typ_r;
-      assert false
+      Format.asprintf
+        "(coerce_types_binary_numeric) cannot coerce types %a and %a" Type.pp
+        typ_l Type.pp typ_r
+      |> Result.error
 
 (* Coercion for assignment (including assignment by call and return) *)
 
 and coerce_type_assign (expr_from_il : Il.Ast.expr) (typ_to : Type.t) :
-    Il.Ast.expr =
+    Il.Ast.expr res =
   let typ_from = expr_from_il.note.typ in
-  if Type.eq_alpha typ_from typ_to then expr_from_il
-  else if Subtyp.implicit typ_from typ_to then insert_cast expr_from_il typ_to
-  else (
-    Format.printf "(coerce_type) Cannot coerce type %a to %a\n" Type.pp
-      expr_from_il.note.typ Type.pp typ_to;
-    assert false)
+  if Type.eq_alpha typ_from typ_to then Ok expr_from_il
+  else if Subtyp.implicit typ_from typ_to then
+    Ok (insert_cast expr_from_il typ_to)
+  else
+    Format.asprintf "(coerce_type) cannot coerce type %a to %a" Type.pp
+      expr_from_il.note.typ Type.pp typ_to
+    |> Result.error
 
 (* Type inference *)
 
@@ -107,20 +112,20 @@ let empty_cstr (tids_fresh : TId.t list) : cstr_t =
   List.map (fun tid_fresh -> (tid_fresh, None)) tids_fresh |> TIdMap.of_list
 
 let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
-    cstr_t =
+    cstr_t res =
   match (typ_param, typ_arg) with
   | VarT tid, typ_arg when TIdMap.mem tid cstr ->
       (* (TODO) Add occurs check? *)
-      TIdMap.add tid (Some typ_arg) cstr
+      Ok (TIdMap.add tid (Some typ_arg) cstr)
   | SpecT (tdp_param, typs_inner_param), SpecT (tdp_arg, typs_inner_arg) ->
       let typ_param_inner =
         TypeDef.specialize_poly tdp_param typs_inner_param
       in
       let typ_arg_inner = TypeDef.specialize_poly tdp_arg typs_inner_arg in
-      let cstr_inner = gen_cstr cstr typ_param_inner typ_arg_inner in
+      let* cstr_inner = gen_cstr cstr typ_param_inner typ_arg_inner in
       if Type.is_nominal typ_param_inner && Type.is_nominal typ_arg_inner then
         gen_cstrs cstr_inner typs_inner_param typs_inner_arg
-      else cstr_inner
+      else Ok cstr_inner
   | DefT typ_inner_param, _ -> gen_cstr cstr typ_inner_param typ_arg
   | _, DefT typ_inner_arg -> gen_cstr cstr typ_param typ_inner_arg
   | NewT (id_param, typ_inner_param), NewT (id_arg, typ_inner_arg)
@@ -154,10 +159,11 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
       let keys = keys_param in
       FIdSet.fold
         (fun key cstr ->
+          let* cstr = cstr in
           let fd_param = FIdMap.find key fdenv_param in
           let fd_arg = FIdMap.find key fdenv_arg in
           gen_cstr_fd cstr fd_param fd_arg)
-        keys cstr
+        keys (Ok cstr)
   | ParserT params_param, ParserT params_arg
   | ControlT params_param, ControlT params_arg ->
       let typs_inner_param =
@@ -166,20 +172,20 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
       let typs_inner_arg = List.map (fun (_, _, typ, _) -> typ) params_arg in
       gen_cstrs cstr typs_inner_param typs_inner_arg
   | PackageT typs_param, PackageT typs_arg -> gen_cstrs cstr typs_param typs_arg
-  | _ -> cstr
+  | _ -> Ok cstr
 
 and gen_cstr_fd (cstr : cstr_t) (fd_param : FuncDef.t) (fd_arg : FuncDef.t) :
-    cstr_t =
+    cstr_t res =
   let params_param = FuncDef.get_params fd_param in
   let params_arg = FuncDef.get_params fd_arg in
   let typs_param = List.map (fun (_, _, typ, _) -> typ) params_param in
   let typs_arg = List.map (fun (_, _, typ, _) -> typ) params_arg in
-  let cstr_params = gen_cstrs cstr typs_param typs_arg in
+  let* cstr_params = gen_cstrs cstr typs_param typs_arg in
   gen_cstr cstr_params
     (FuncDef.get_typ_ret fd_param)
     (FuncDef.get_typ_ret fd_arg)
 
-and merge_cstr (cstr_old : cstr_t) (cstr_new : cstr_t) : cstr_t =
+and merge_cstr (cstr_old : cstr_t) (cstr_new : cstr_t) : cstr_t res =
   let keys_old = TIdMap.keys cstr_old |> TIdSet.of_list in
   let keys_new = TIdMap.keys cstr_new |> TIdSet.of_list in
   assert (
@@ -188,45 +194,57 @@ and merge_cstr (cstr_old : cstr_t) (cstr_new : cstr_t) : cstr_t =
   let keys = keys_old in
   TIdSet.fold
     (fun key cstr ->
+      let* cstr = cstr in
       let typ_old = TIdMap.find key cstr_old in
       let typ_new = TIdMap.find key cstr_new in
       match (typ_old, typ_new) with
-      | None, _ -> TIdMap.add key typ_new cstr
-      | _, None -> TIdMap.add key typ_old cstr
+      | None, _ -> Ok (TIdMap.add key typ_new cstr)
+      | _, None -> Ok (TIdMap.add key typ_old cstr)
       | Some typ_old, Some typ_new ->
           if Subtyp.implicit typ_old typ_new then
-            TIdMap.add key (Some typ_new) cstr
+            Ok (TIdMap.add key (Some typ_new) cstr)
           else if Subtyp.implicit typ_new typ_old then
-            TIdMap.add key (Some typ_old) cstr
-          else (
-            Format.printf "(merge_cstr) Type %a and %a do not match\n" Type.pp
-              typ_old Type.pp typ_new;
-            assert false))
-    keys TIdMap.empty
+            Ok (TIdMap.add key (Some typ_old) cstr)
+          else
+            Format.asprintf "(merge_cstr) type %a and %a do not match" Type.pp
+              typ_old Type.pp typ_new
+            |> Result.error)
+    keys (Ok TIdMap.empty)
 
 and gen_cstrs (cstr : cstr_t) (typ_params : Type.t list)
-    (typ_args : Type.t list) : cstr_t =
-  let cstrs =
-    List.map2
-      (fun typ_param typ_arg -> gen_cstr cstr typ_param typ_arg)
-      typ_params typ_args
+    (typ_args : Type.t list) : cstr_t res =
+  let rec gen_cstrs' cstrs typ_params typ_args =
+    match (typ_params, typ_args) with
+    | [], [] -> Ok cstrs
+    | typ_param :: typ_params, typ_arg :: typ_args ->
+        let* cstr = gen_cstr cstr typ_param typ_arg in
+        gen_cstrs' (cstrs @ [ cstr ]) typ_params typ_args
+    | _ -> assert false
   in
-  List.fold_left merge_cstr cstr cstrs
+  let* cstrs_arg = gen_cstrs' [] typ_params typ_args in
+  let rec merge_cstrs' cstr = function
+    | [] -> cstr
+    | cstr_arg :: cstrs_arg ->
+        let* cstr = cstr in
+        merge_cstrs' (merge_cstr cstr cstr_arg) cstrs_arg
+  in
+  merge_cstrs' (Ok cstr) cstrs_arg
 
 let infer_targs (tids_fresh : TId.t list) (params : Types.param list)
-    (args_il_typed : (Il.Ast.arg * Type.t) list) : Type.t TIdMap.t =
+    (args_il_typed : (Il.Ast.arg * Type.t) list) : Type.t TIdMap.t res =
   let cstr = empty_cstr tids_fresh in
   let typ_params = List.map (fun (_, _, typ, _) -> typ) params in
   let typ_args = List.map snd args_il_typed in
-  let cstr = gen_cstrs cstr typ_params typ_args in
+  let* cstr = gen_cstrs cstr typ_params typ_args in
   TIdMap.fold
     (fun tid typ_opt theta ->
+      let* theta = theta in
       match typ_opt with
       | None | Some Types.AnyT ->
-          Format.printf "(infer_targs) Type %s cannot be inferred\n" tid;
-          assert false
-      | Some typ -> TIdMap.add tid typ theta)
-    cstr TIdMap.empty
+          Format.asprintf "(infer_targs) type %s cannot be inferred" tid
+          |> Result.error
+      | Some typ -> Ok (TIdMap.add tid typ theta))
+    cstr (Ok TIdMap.empty)
 
 (* (6.7) L-values
 
@@ -351,29 +369,29 @@ and eval_type' (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
           let typ = Types.SpecT (tdp, []) in
           Ok (typ, tids_fresh)
       | None ->
-          Format.printf "(eval_type') Type definition %a does not exist\n"
-            El.Pp.pp_var var;
-          assert false)
+          Format.asprintf "(eval_type') type definition %a does not exist"
+            El.Pp.pp_var var
+          |> Result.error)
   | SpecT (var, typs) -> (
       let td = Ctx.find_opt Ctx.find_typedef_opt cursor var ctx in
       match td with
       | Some (MonoD tdm) ->
-          if typs <> [] then (
-            Format.printf
-              "(eval_type') Type definition %a is monomorphic but type \
-               arguments are supplied\n"
-              El.Pp.pp_var var;
-            assert false);
-          Ok (tdm, tids_fresh)
+          if typs = [] then Ok (tdm, tids_fresh)
+          else
+            Format.asprintf
+              "(eval_type') type definition %a is monomorphic but type \
+               arguments are supplied"
+              El.Pp.pp_var var
+            |> Result.error
       | Some (PolyD tdp) ->
           let* typs, tids_fresh = eval_types cursor ctx tids_fresh typs in
           let typs = List.map it typs in
           let typ = Types.SpecT (tdp, typs) in
           Ok (typ, tids_fresh)
       | None ->
-          Format.printf "(eval_type') Type definition %a does not exist\n"
-            El.Pp.pp_var var;
-          assert false)
+          Format.asprintf "(eval_type') type definition %a does not exist"
+            El.Pp.pp_var var
+          |> Result.error)
   | AnyT ->
       let tid_fresh = fresh_tid () in
       let typ = Types.VarT tid_fresh in
@@ -447,7 +465,7 @@ and type_param' (cursor : Ctx.cursor) (ctx : Ctx.t) (param : El.Ast.param') :
     match expr_default with
     | Some expr_default ->
         let* expr_default_il = type_expr cursor ctx expr_default in
-        let expr_default_il = coerce_type_assign expr_default_il typ.it in
+        let* expr_default_il = coerce_type_assign expr_default_il typ.it in
         let value_default_il = Static.eval_expr cursor ctx expr_default_il in
         Ok (Some value_default_il)
     | None -> Ok None
@@ -546,12 +564,23 @@ and check_table_apply_as_arg ~(action : bool) (args_il : Il.Ast.arg list) : unit
 
 and type_call_convention ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
     (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list) :
-    Il.Ast.arg list =
+    Il.Ast.arg list res =
   check_table_apply_as_arg ~action (List.map fst args_il_typed);
-  List.map2 (type_call_convention' ~action cursor ctx) params args_il_typed
+  let rec type_call_convention'' args_il params args_il_typed =
+    match (params, args_il_typed) with
+    | [], [] -> Ok args_il
+    | param :: params, arg_il_typed :: args_il_typed ->
+        let* arg_il =
+          type_call_convention' ~action cursor ctx param arg_il_typed
+        in
+        type_call_convention'' (args_il @ [ arg_il ]) params args_il_typed
+    | [], _ | _, [] -> assert false
+  in
+  type_call_convention'' [] params args_il_typed
 
 and type_call_convention' ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (param : Types.param) (arg_il_typed : Il.Ast.arg * Type.t) : Il.Ast.arg =
+    (param : Types.param) (arg_il_typed : Il.Ast.arg * Type.t) : Il.Ast.arg res
+    =
   let arg_il, typ_arg = arg_il_typed in
   let _, dir_param, typ_param, _ = param in
   let type_expr_arg (expr_il : Il.Ast.expr) =
@@ -560,27 +589,29 @@ and type_call_convention' ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
     | Lang.Ast.Out | Lang.Ast.InOut ->
         check_eq_typ_alpha typ_arg typ_param;
         check_lvalue cursor ctx expr_il;
-        expr_il
+        Ok expr_il
     | Lang.Ast.No when action -> coerce_type_assign expr_il typ_param
     | Lang.Ast.No ->
         check_eq_typ_alpha typ_arg typ_param;
         Static.check_ctk expr_il;
-        expr_il
+        Ok expr_il
   in
   match (arg_il.it : Il.Ast.arg') with
   | ExprA expr_il ->
-      let expr_il = type_expr_arg expr_il in
-      Lang.Ast.ExprA expr_il $ arg_il.at
+      let* expr_il = type_expr_arg expr_il in
+      let arg_il = Lang.Ast.ExprA expr_il $ arg_il.at in
+      Ok arg_il
   | NameA (id, Some expr_il) ->
-      let expr_il = type_expr_arg expr_il in
-      Lang.Ast.NameA (id, Some expr_il) $ arg_il.at
+      let* expr_il = type_expr_arg expr_il in
+      let arg_il = Lang.Ast.NameA (id, Some expr_il) $ arg_il.at in
+      Ok arg_il
   | NameA (_, None) | AnyA ->
-      if dir_param <> Lang.Ast.Out then (
-        Format.printf
-          "(type_call_convention') Don't care argument can only be used for an \
-           out function/method argument\n";
-        assert false);
-      arg_il
+      if dir_param = Lang.Ast.Out then Ok arg_il
+      else
+        Format.asprintf
+          "(type_call_convention') don't care argument can only be used for an \
+           out function/method argument"
+        |> Result.error
 
 (* Expression typing *)
 
@@ -665,9 +696,11 @@ and type_num_expr (num : El.Ast.num) : (Type.t * Ctk.t * Il.Ast.expr') res =
 and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
     (Type.t * Ctk.t * Il.Ast.expr') res =
   let rtype = Ctx.find_opt Ctx.find_rtype_opt cursor var ctx in
-  if Option.is_none rtype then (
-    Format.printf "(type_var_expr) %a is a free identifier\n" El.Pp.pp_var var;
-    assert false);
+  let* _ =
+    check (Option.is_some rtype)
+      (Format.asprintf "(type_var_expr) %a is a free identifier" El.Pp.pp_var
+         var)
+  in
   let typ, _, _ = Option.get rtype in
   let expr_il = Il.Ast.VarE { var } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
@@ -826,7 +859,7 @@ and check_unop_uminus (typ : Type.t) =
 and type_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : El.Ast.unop)
     (expr : El.Ast.expr) : (Type.t * Ctk.t * Il.Ast.expr') res =
   let* expr_il = type_expr cursor ctx expr in
-  let expr_il =
+  let* expr_il =
     match unop.it with
     | BNotOp -> coerce_type_unary_numeric check_unop_bnot expr_il
     | LNotOp -> coerce_type_unary_numeric check_unop_lnot expr_il
@@ -1034,8 +1067,8 @@ and check_binop_plus_minus_mult (typ_l : Type.t) (typ_r : Type.t) : bool =
 and type_binop_plus_minus_mult (binop : Lang.Ast.binop)
     (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) :
     (Type.t * Il.Ast.expr') res =
-  let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
-  let expr_l_il, expr_r_il =
+  let* expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
+  let* expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_plus_minus_mult expr_l_il expr_r_il
   in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
@@ -1052,8 +1085,8 @@ and check_binop_saturating_plus_minus (typ_l : Type.t) (typ_r : Type.t) : bool =
 and type_binop_saturating_plus_minus (binop : Lang.Ast.binop)
     (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) :
     (Type.t * Il.Ast.expr') res =
-  let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
-  let expr_l_il, expr_r_il =
+  let* expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
+  let* expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_plus_minus_mult expr_l_il expr_r_il
   in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
@@ -1067,8 +1100,8 @@ and check_binop_div_mod (typ_l : Type.t) (typ_r : Type.t) : bool =
 and type_binop_div_mod (cursor : Ctx.cursor) (ctx : Ctx.t)
     (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr)
     : (Type.t * Il.Ast.expr') res =
-  let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
-  let expr_l_il, expr_r_il =
+  let* expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
+  let* expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_div_mod expr_l_il expr_r_il
   in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
@@ -1099,7 +1132,7 @@ and check_binop_shift (typ_l : Type.t) (typ_r : Type.t) : bool =
 
 and type_binop_shift (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     (expr_r_il : Il.Ast.expr) : (Type.t * Il.Ast.expr') res =
-  let expr_l_il, expr_r_il =
+  let* expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_shift expr_l_il expr_r_il
   in
   let typ_l, typ_r = (expr_l_il.note.typ, expr_r_il.note.typ) in
@@ -1126,8 +1159,8 @@ and check_binop_compare (typ_l : Type.t) (typ_r : Type.t) : bool =
 
 and type_binop_compare (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     (expr_r_il : Il.Ast.expr) : (Type.t * Il.Ast.expr') res =
-  let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
-  let expr_l_il, expr_r_il =
+  let* expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
+  let* expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_compare expr_l_il expr_r_il
   in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
@@ -1137,7 +1170,7 @@ and type_binop_compare (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
 
 and type_binop_compare_equal (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     (expr_r_il : Il.Ast.expr) : (Type.t * Il.Ast.expr') res =
-  let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
+  let* expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
   let typ = expr_l_il.note.typ in
   if not (Type.is_equalable typ) then (
@@ -1157,8 +1190,8 @@ and check_binop_bitwise (typ_l : Type.t) (typ_r : Type.t) : bool =
 
 and type_binop_bitwise (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     (expr_r_il : Il.Ast.expr) : (Type.t * Il.Ast.expr') res =
-  let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
-  let expr_l_il, expr_r_il =
+  let* expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
+  let* expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_bitwise expr_l_il expr_r_il
   in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
@@ -1174,7 +1207,7 @@ and check_binop_concat (typ_l : Type.t) (typ_r : Type.t) : bool =
 
 and type_binop_concat (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     (expr_r_il : Il.Ast.expr) : (Type.t * Il.Ast.expr') res =
-  let expr_l_il, expr_r_il =
+  let* expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_concat expr_l_il expr_r_il
   in
   let typ_l, typ_r = (expr_l_il.note.typ, expr_r_il.note.typ) in
@@ -1194,7 +1227,8 @@ and check_binop_logical (typ_l : Type.t) (typ_r : Type.t) : bool =
 
 and type_binop_logical (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     (expr_r_il : Il.Ast.expr) : (Type.t * Il.Ast.expr') res =
-  let expr_l_il, expr_r_il =
+  let* expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
+  let* expr_l_il, expr_r_il =
     coerce_types_binary_numeric check_binop_logical expr_l_il expr_r_il
   in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
@@ -1247,7 +1281,7 @@ and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     assert false);
   let* expr_then_il = type_expr cursor ctx expr_then in
   let* expr_else_il = type_expr cursor ctx expr_else in
-  let expr_then_il, expr_else_il =
+  let* expr_then_il, expr_else_il =
     coerce_types_binary expr_then_il expr_else_il
   in
   assert (Type.eq_alpha expr_then_il.note.typ expr_else_il.note.typ);
@@ -1316,10 +1350,10 @@ and type_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
     (expr_mask : El.Ast.expr) : (Type.t * Ctk.t * Il.Ast.expr') res =
   let* expr_base_il = type_expr cursor ctx expr_base in
   let* expr_mask_il = type_expr cursor ctx expr_mask in
-  let expr_base_il, expr_mask_il =
+  let* expr_base_il, expr_mask_il =
     coerce_types_binary expr_base_il expr_mask_il
   in
-  let expr_base_il, expr_mask_il =
+  let* expr_base_il, expr_mask_il =
     coerce_types_binary_numeric check_mask expr_base_il expr_mask_il
   in
   assert (Type.eq_alpha expr_base_il.note.typ expr_mask_il.note.typ);
@@ -1353,8 +1387,8 @@ and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : El.Ast.expr)
     (expr_ub : El.Ast.expr) : (Type.t * Ctk.t * Il.Ast.expr') res =
   let* expr_lb_il = type_expr cursor ctx expr_lb in
   let* expr_ub_il = type_expr cursor ctx expr_ub in
-  let expr_lb_il, expr_ub_il = coerce_types_binary expr_lb_il expr_ub_il in
-  let expr_lb_il, expr_ub_il =
+  let* expr_lb_il, expr_ub_il = coerce_types_binary expr_lb_il expr_ub_il in
+  let* expr_lb_il, expr_ub_il =
     coerce_types_binary_numeric check_range expr_lb_il expr_ub_il
   in
   assert (Type.eq_alpha expr_lb_il.note.typ expr_ub_il.note.typ);
@@ -1417,17 +1451,23 @@ and type_select_case_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
       let typ_key = Types.SetT typ_key in
       WF.check_valid_typ cursor ctx typ_key;
       let typ = expr_il.note.typ in
-      let expr_il =
+      let* expr_il =
         match (typ_key, typ) with
         | SetT typ_key_inner, SetT typ_inner ->
             let expr_il =
               { expr_il with note = { expr_il.note with typ = typ_inner } }
             in
-            let expr_il = coerce_type_assign expr_il typ_key_inner in
-            Il.Ast.(
-              expr_il.it
-              $$ expr_il.at
-                 % { typ = Types.SetT expr_il.note.typ; ctk = expr_il.note.ctk })
+            let* expr_il = coerce_type_assign expr_il typ_key_inner in
+            let expr_il =
+              Il.Ast.(
+                expr_il.it
+                $$ expr_il.at
+                   % {
+                       typ = Types.SetT expr_il.note.typ;
+                       ctk = expr_il.note.ctk;
+                     })
+            in
+            Ok expr_il
         | _ ->
             Format.printf
               "(type_select_case_keyset) Key type %a and the type %a of the \
@@ -1551,7 +1591,7 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (Type.t * Ctk.t * Il.Ast.expr') res =
   let* expr_base_il = type_expr cursor ctx expr_base in
   let* expr_idx_il = type_expr cursor ctx expr_idx in
-  let expr_idx_il = coerce_type_unary_numeric Type.is_numeric expr_idx_il in
+  let* expr_idx_il = coerce_type_unary_numeric Type.is_numeric expr_idx_il in
   let typ, expr_il =
     let typ_base = expr_base_il.note.typ |> Type.canon in
     match typ_base with
@@ -1671,16 +1711,20 @@ and type_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (expr_lo : El.Ast.expr) (expr_hi : El.Ast.expr) :
     (Type.t * Ctk.t * Il.Ast.expr') res =
   let* expr_base_il = type_expr cursor ctx expr_base in
-  let expr_base_il =
+  let* expr_base_il =
     coerce_type_unary_numeric check_bitstring_base expr_base_il
   in
   let typ_base = expr_base_il.note.typ in
   let* expr_lo_il = type_expr cursor ctx expr_lo in
-  let expr_lo_il = coerce_type_unary_numeric check_bitstring_index expr_lo_il in
+  let* expr_lo_il =
+    coerce_type_unary_numeric check_bitstring_index expr_lo_il
+  in
   let value_lo = Static.eval_expr cursor ctx expr_lo_il in
   let idx_lo = value_lo.it |> Value.get_num in
   let* expr_hi_il = type_expr cursor ctx expr_hi in
-  let expr_hi_il = coerce_type_unary_numeric check_bitstring_index expr_hi_il in
+  let* expr_hi_il =
+    coerce_type_unary_numeric check_bitstring_index expr_hi_il
+  in
   let value_hi = Static.eval_expr cursor ctx expr_hi_il in
   let idx_hi = value_hi.it |> Value.get_num in
   check_bitstring_slice_range typ_base idx_lo idx_hi;
@@ -2135,11 +2179,11 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
   in
   let args_il_typed = List.combine args_il typ_args in
   let typ_ret = FuncType.get_typ_ret ft in
-  let ft, targs_il, params, typ_ret =
+  let* ft, targs_il, params, typ_ret =
     match tids_fresh with
-    | [] -> (ft, targs_il, params, typ_ret)
+    | [] -> Ok (ft, targs_il, params, typ_ret)
     | _ ->
-        let theta = infer_targs tids_fresh params args_il_typed in
+        let* theta = infer_targs tids_fresh params args_il_typed in
         let targs_il =
           targs_il
           @ (List.map (fun tid_fresh -> TIdMap.find tid_fresh theta) tids_fresh
@@ -2153,12 +2197,12 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
           List.map (Runtime.Tdomain.Subst.subst_param theta) params
         in
         let typ_ret = Type.subst theta typ_ret in
-        (ft, targs_il, params, typ_ret)
+        Ok (ft, targs_il, params, typ_ret)
   in
   WF.check_valid_functyp cursor ctx ft;
   check_call_site cursor ctx ft;
   let action = FuncType.is_action ft in
-  let args_il = type_call_convention ~action cursor ctx params args_il_typed in
+  let* args_il = type_call_convention ~action cursor ctx params args_il_typed in
   Ok (targs_il, args_il, typ_ret)
 
 and type_call_func_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
@@ -2383,11 +2427,11 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     align_cparams_with_args cparams typ_args args_il
   in
   let args_il_typed = List.combine args_il typ_args in
-  let ct, targs_il, cparams, typ_inst =
+  let* ct, targs_il, cparams, typ_inst =
     match tids_fresh with
-    | [] -> (ct, targs_il, cparams, typ_inst)
+    | [] -> Ok (ct, targs_il, cparams, typ_inst)
     | _ ->
-        let theta = infer_targs tids_fresh cparams args_il_typed in
+        let* theta = infer_targs tids_fresh cparams args_il_typed in
         let targs_il =
           targs_il
           @ (List.map (fun tid_fresh -> TIdMap.find tid_fresh theta) tids_fresh
@@ -2402,11 +2446,11 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
           List.map (Runtime.Tdomain.Subst.subst_cparam theta) cparams
         in
         let typ_inst = Type.subst theta typ_inst in
-        (ct, targs_il, cparams, typ_inst)
+        Ok (ct, targs_il, cparams, typ_inst)
   in
   WF.check_valid_constyp cursor ctx ct;
   check_instantiation_site cursor ctx typ_inst;
-  let args_il =
+  let* args_il =
     type_call_convention ~action:false cursor ctx cparams args_il_typed
   in
   let typ = typ_inst in
@@ -2523,7 +2567,7 @@ and type_assign_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   let typ_l = expr_l_il.note.typ in
   check_lvalue cursor ctx expr_l_il;
   let* expr_r_il = type_expr cursor ctx expr_r in
-  let expr_r_il = coerce_type_assign expr_r_il typ_l in
+  let* expr_r_il = coerce_type_assign expr_r_il typ_l in
   let stmt_il = Lang.Ast.AssignS { expr_l = expr_l_il; expr_r = expr_r_il } in
   Ok (ctx, flow, stmt_il)
 
@@ -2727,7 +2771,7 @@ and type_switch_general_label (cursor : Ctx.cursor) (ctx : Ctx.t)
     match label.it with
     | ExprL expr ->
         let* expr_il = type_expr cursor ctx expr in
-        let expr_il = coerce_type_assign expr_il typ_switch in
+        let* expr_il = coerce_type_assign expr_il typ_switch in
         Static.check_lctk expr_il;
         Ok (Lang.Ast.ExprL expr_il)
     | DefaultL -> Ok Lang.Ast.DefaultL
@@ -2901,7 +2945,7 @@ and type_return_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (_flow : Flow.t)
     match expr_ret with
     | Some expr_ret ->
         let* expr_ret_il = type_expr cursor ctx expr_ret in
-        let expr_ret_il = coerce_type_assign expr_ret_il typ_ret_func in
+        let* expr_ret_il = coerce_type_assign expr_ret_il typ_ret_func in
         Ok (Some expr_ret_il)
     | None ->
         if typ_ret_func <> Types.VoidT then (
@@ -3159,7 +3203,7 @@ and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let* typ_target, tids_fresh = eval_type_with_check cursor ctx typ in
   assert (tids_fresh = []);
   let* expr_il = type_expr cursor ctx expr in
-  let expr_il = coerce_type_assign expr_il typ_target.it in
+  let* expr_il = coerce_type_assign expr_il typ_target.it in
   let value = Static.eval_expr cursor ctx expr_il in
   let ctx =
     Ctx.add_value cursor id.it value.it ctx
@@ -3258,7 +3302,7 @@ and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     match expr_init with
     | Some expr_init ->
         let* expr_init_il = type_expr cursor ctx expr_init in
-        let expr_init_il = coerce_type_assign expr_init_il typ_target.it in
+        let* expr_init_il = coerce_type_assign expr_init_il typ_target.it in
         Ok (Some expr_init_il)
     | None -> Ok None
   in
@@ -3507,9 +3551,10 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 
 and type_error_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     (members : El.Ast.member list) : Ctx.t res =
-  if cursor <> Ctx.Global then (
-    Format.printf "(type_error_decl) Error declarations must be global\n";
-    assert false);
+  let* _ =
+    check (cursor = Ctx.Global)
+      "(type_error_decl) Error declarations must be global"
+  in
   let type_error_decl' (ctx : Ctx.t) (member : El.Ast.member) : Ctx.t =
     let id = "error." ^ member.it in
     if Ctx.find_value_opt cursor id ctx |> Option.is_some then (
@@ -3732,7 +3777,7 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       | [] -> Ok (ctx, fields_value)
       | (member, expr_field) :: fields_expr ->
           let* expr_field_il = type_expr Ctx.Block ctx expr_field in
-          let expr_field_il = coerce_type_assign expr_field_il typ.it in
+          let* expr_field_il = coerce_type_assign expr_field_il typ.it in
           let value_field = Static.eval_expr Ctx.Block ctx expr_field_il in
           let value_field =
             Value.SEnumFieldV (id.it, member.it, value_field.it)
@@ -4740,7 +4785,7 @@ and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
 
 and type_call_action_partial (cursor : Ctx.cursor) (ctx : Ctx.t)
     (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list) :
-    Il.Ast.arg list =
+    Il.Ast.arg list res =
   (* Rule out directionless parameters, that will be supplied by the control plane *)
   let params_specified =
     List.filter_map
@@ -4781,7 +4826,7 @@ and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let params = FuncDef.get_params fd in
   let* args_il_typed = type_args cursor ctx args in
   let args_il_specified = List.map fst args_il_typed in
-  let args_il = type_call_action_partial cursor ctx params args_il_typed in
+  let* args_il = type_call_action_partial cursor ctx params args_il_typed in
   let* annos_il = type_annos cursor ctx annos in
   let table_action_il = (var_action, args_il, annos_il) in
   let table_ctx =
@@ -4825,7 +4870,7 @@ and type_table_actions (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and type_call_default_action (cursor : Ctx.cursor) (ctx : Ctx.t)
     (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list)
-    (args_action : Il.Ast.arg list) : Il.Ast.arg list =
+    (args_action : Il.Ast.arg list) : Il.Ast.arg list res =
   let args_il_dyn =
     List.map2
       (fun param arg_il_typed ->
@@ -4864,7 +4909,7 @@ and type_table_default_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
     assert false);
   let params, args_action = Option.get table_action in
   let* args_il_typed = type_args cursor ctx args in
-  let args_il =
+  let* args_il =
     type_call_default_action cursor ctx params args_il_typed args_action
   in
   Ok (var, args_il, annos_il)
@@ -5031,17 +5076,23 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
         | _ -> Tblctx.NoLpm
       in
       let typ = expr_il.note.typ in
-      let expr_il =
+      let* expr_il =
         match (typ_key, typ) with
         | SetT typ_key_inner, SetT typ_inner ->
             let expr_il =
               { expr_il with note = { expr_il.note with typ = typ_inner } }
             in
-            let expr_il = coerce_type_assign expr_il typ_key_inner in
-            Il.Ast.(
-              expr_il.it
-              $$ expr_il.at
-                 % { typ = Types.SetT expr_il.note.typ; ctk = expr_il.note.ctk })
+            let* expr_il = coerce_type_assign expr_il typ_key_inner in
+            let expr_il =
+              Il.Ast.(
+                expr_il.it
+                $$ expr_il.at
+                   % {
+                       typ = Types.SetT expr_il.note.typ;
+                       ctk = expr_il.note.ctk;
+                     })
+            in
+            Ok expr_il
         | _ ->
             Format.printf
               "(type_table_entry_keyset') Key type %a and the type %a of the \
@@ -5119,7 +5170,7 @@ and type_table_entry_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and type_call_entry_action (cursor : Ctx.cursor) (ctx : Ctx.t)
     (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list)
-    (args_action : Il.Ast.arg list) : Il.Ast.arg list =
+    (args_action : Il.Ast.arg list) : Il.Ast.arg list res =
   type_call_default_action cursor ctx params args_il_typed args_action
 
 and type_table_entry_action (cursor : Ctx.cursor) (ctx : Ctx.t)
@@ -5143,7 +5194,7 @@ and type_table_entry_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
     assert false);
   let params, args_action = Option.get table_action in
   let* args_il_typed = type_args cursor ctx args in
-  let args_il =
+  let* args_il =
     type_call_entry_action cursor ctx params args_il_typed args_action
   in
   Ok (var, args_il, annos_il)
