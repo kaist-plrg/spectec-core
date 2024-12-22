@@ -516,7 +516,6 @@ rule Expr_ok/callmethode:
 ;; Type call expression
 ;;
 
-;; TODO check that builtin is defined on typdef
 rule Expr_ok/calltypee:
   p C |- CallTypeE name member eps arg* : typ DYN
   ----
