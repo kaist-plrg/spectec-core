@@ -10,9 +10,7 @@ let roundtrip includes filename : (El.Ast.program, string) result =
 
 let typecheck includes filename : (Il.Ast.program, string) result =
   let program = parse includes filename in
-  match program with
-  | Ok program -> Typing.Typecheck.type_program program
-  | Error msg -> Error msg
+  Result.bind ~f:Typing.Typecheck.type_program program
 
 let parse_command =
   Command.basic ~summary:"parse a p4_16 program"

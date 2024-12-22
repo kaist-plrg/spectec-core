@@ -106,28 +106,22 @@ let typecheck stat includes mode filename =
       Printf.sprintf "Error while parsing file: %s" msg |> print_endline;
       stat
   | Ok (stat, program) -> (
-      let on_success filename =
-        Printf.sprintf "Typecheck success: %s" filename |> print_endline
+      let on_success stat filename =
+        Printf.sprintf "Typecheck success: %s" filename |> print_endline;
+        if mode = Neg then stat.fail_typecheck <- stat.fail_typecheck + 1;
+        stat
       in
-      let on_error filename msg =
-        Printf.sprintf "Error while typechecking %s: %s" filename msg
-        |> print_endline
+      let on_error stat msg =
+        Printf.sprintf "Error while typechecking: %s" msg |> print_endline;
+        if mode = Pos then stat.fail_typecheck <- stat.fail_typecheck + 1;
+        stat
       in
       try
         let program = Typing.Typecheck.type_program program in
         match program with
-        | Ok _ ->
-            if mode = Neg then stat.fail_typecheck <- stat.fail_typecheck + 1;
-            on_success filename;
-            stat
-        | Error msg ->
-            if mode = Pos then stat.fail_typecheck <- stat.fail_typecheck + 1;
-            on_error filename msg;
-            stat
-      with _ ->
-        if mode = Pos then stat.fail_typecheck <- stat.fail_typecheck + 1;
-        on_error filename "crash";
-        stat)
+        | Ok _ -> on_success stat filename
+        | Error msg -> on_error stat msg
+      with _ -> on_error stat "crash")
 
 let typecheck_test includes mode testdir =
   let files = collect_files testdir in

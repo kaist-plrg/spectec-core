@@ -9,8 +9,9 @@ module ConsType = Types.ConsType
 module ConsDef = Types.ConsDef
 module Envs = Runtime.Envs
 module F = Format
+open Error
 
-let check_distinct_names (names : string list) : unit =
+let check_distinct_names (names : string list) : unit res =
   let distinct =
     List.fold_left
       (fun (distinct, names) name ->
@@ -20,12 +21,9 @@ let check_distinct_names (names : string list) : unit =
       (true, []) names
     |> fst
   in
-  if not distinct then (
-    Format.printf "(check_distinct_names) Names are not distinct\n";
-    assert false)
-  else ()
+  check distinct "(check_distinct_names) names are not distinct"
 
-let check_distinct_vars (vars : Lang.Ast.var list) : unit =
+let check_distinct_vars (vars : Lang.Ast.var list) : unit res =
   let ids_top, ids_current =
     List.partition_map
       (fun (var : Lang.Ast.var) ->
@@ -34,7 +32,7 @@ let check_distinct_vars (vars : Lang.Ast.var list) : unit =
         | Current id -> Either.Right id.it)
       vars
   in
-  check_distinct_names ids_top;
+  let* _ = check_distinct_names ids_top in
   check_distinct_names ids_current
 
 (* Well-formedness checks for
@@ -104,76 +102,74 @@ let check_distinct_vars (vars : Lang.Ast.var list) : unit =
    The type of the values in the set must be either bit<>, int<>, tuple, struct, or serializable enum. *)
 
 let rec check_valid_typ ?(tids_fresh = []) (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (typ : Type.t) : unit =
+    (typ : Type.t) : unit res =
   let tset = Ctx.get_tparams cursor ctx @ tids_fresh |> TIdSet.of_list in
   check_valid_typ' tset typ
 
-and check_valid_typ' (tset : TIdSet.t) (typ : Type.t) : unit =
+and check_valid_typ' (tset : TIdSet.t) (typ : Type.t) : unit res =
   match typ with
   | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
   | VBitT _ ->
-      ()
+      Ok ()
   | VarT id ->
-      if not (TIdSet.mem id tset) then (
-        Format.printf "(check_valid_typ) %s is a free type variable\n" id;
-        assert false)
-      else ()
+      check (TIdSet.mem id tset)
+        (Format.asprintf "(check_valid_typ) %s is a free type variable" id)
   | SpecT (tdp, typs_inner) ->
       TypeDef.specialize_poly tdp typs_inner |> check_valid_typ' tset
   | DefT typ_inner ->
-      check_valid_typ' tset typ_inner;
+      let* _ = check_valid_typ' tset typ_inner in
       check_valid_typ_nesting typ typ_inner
   | NewT (_, typ_inner) ->
-      check_valid_typ' tset typ_inner;
+      let* _ = check_valid_typ' tset typ_inner in
       check_valid_typ_nesting typ typ_inner
-  | EnumT _ -> ()
+  | EnumT _ -> Ok ()
   | SEnumT (_, typ_inner, _) -> check_valid_typ_nesting typ typ_inner
   | ListT typ_inner ->
-      check_valid_typ' tset typ_inner;
+      let* _ = check_valid_typ' tset typ_inner in
       check_valid_typ_nesting typ typ_inner
-  | TupleT typs_inner ->
-      List.iter
-        (fun typ_inner ->
-          check_valid_typ' tset typ_inner;
-          check_valid_typ_nesting typ typ_inner)
-        typs_inner
+  | TupleT typs_inner -> check_valid_typs' tset typ typs_inner
   | StackT (typ_inner, _) ->
-      check_valid_typ' tset typ_inner;
+      let* _ = check_valid_typ' tset typ_inner in
       check_valid_typ_nesting typ typ_inner
   | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
       let members, typs_inner = List.split fields in
-      check_distinct_names members;
-      List.iter
-        (fun typ_inner ->
-          check_valid_typ' tset typ_inner;
-          check_valid_typ_nesting typ typ_inner)
-        typs_inner
+      let* _ = check_distinct_names members in
+      check_valid_typs' tset typ typs_inner
   | ExternT (_, fdenv) ->
-      Envs.FDEnv.iter (fun _ fd -> check_valid_funcdef' tset fd) fdenv
-  | ParserT params | ControlT params ->
-      List.iter (fun fd -> check_valid_param' tset fd) params
-  | PackageT typs_inner -> List.iter (check_valid_typ' tset) typs_inner
-  | TableT _ -> ()
-  | AnyT -> ()
-  | TableEnumT _ | TableStructT _ -> ()
+      Envs.FDEnv.bindings fdenv |> List.map snd |> check_valid_funcdefs' tset
+  | ParserT params | ControlT params -> check_valid_params' tset params
+  | PackageT typs_inner -> check_valid_typs' tset typ typs_inner
+  | TableT _ -> Ok ()
+  | AnyT -> Ok ()
+  | TableEnumT _ | TableStructT _ -> Ok ()
   | SeqT typs_inner | SeqDefaultT typs_inner ->
-      List.iter (check_valid_typ' tset) typs_inner
+      check_valid_typs' tset typ typs_inner
   | RecordT fields | RecordDefaultT fields ->
       let members, typs_inner = List.split fields in
-      check_distinct_names members;
-      List.iter (check_valid_typ' tset) typs_inner
-  | DefaultT | InvalidT -> ()
+      let* _ = check_distinct_names members in
+      check_valid_typs' tset typ typs_inner
+  | DefaultT | InvalidT -> Ok ()
   | SetT typ_inner ->
-      check_valid_typ' tset typ_inner;
+      let* _ = check_valid_typ' tset typ_inner in
       check_valid_typ_nesting typ typ_inner
-  | StateT -> ()
+  | StateT -> Ok ()
 
-and check_valid_typ_nesting (typ : Type.t) (typ_inner : Type.t) : unit =
-  if not (check_valid_typ_nesting' typ typ_inner) then (
-    Format.printf "(check_valid_typ_nesting) Invalid nesting of %a inside %a\n"
-      Type.pp typ_inner Type.pp typ;
-    assert false)
-  else ()
+and check_valid_typs' (tset : TIdSet.t) (typ : Type.t)
+    (typs_inner : Type.t list) : unit res =
+  let rec check_valid_typs'' = function
+    | [] -> Ok ()
+    | typ_inner :: typs_inner ->
+        let* _ = check_valid_typ' tset typ_inner in
+        let* _ = check_valid_typ_nesting typ typ_inner in
+        check_valid_typs'' typs_inner
+  in
+  check_valid_typs'' typs_inner
+
+and check_valid_typ_nesting (typ : Type.t) (typ_inner : Type.t) : unit res =
+  check
+    (check_valid_typ_nesting' typ typ_inner)
+    (Format.asprintf "(check_valid_typ_nesting) invalid nesting of %a inside %a"
+       Type.pp typ_inner Type.pp typ)
 
 and check_valid_typ_nesting_new_in_senum' (typ_inner : Type.t) : bool =
   let typ_inner = Type.canon typ_inner in
@@ -398,10 +394,11 @@ and check_valid_typ_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
       | AnyT | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _
       | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
           false)
-  | ExternT _ | ParserT _ | ControlT _ | PackageT _ | TableT _ | AnyT
-  | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
-  | RecordDefaultT _ | DefaultT | InvalidT ->
-      error_not_nest ()
+  | ExternT _ | ParserT _ | ControlT _ -> error_not_nest ()
+  | PackageT _ -> true
+  | TableT _ | AnyT | TableEnumT _ | TableStructT _ -> error_not_nest ()
+  | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _ -> true
+  | DefaultT | InvalidT -> error_not_nest ()
   | SetT _ -> (
       match typ_inner with
       | SpecT _ | DefT _ -> assert false
@@ -434,39 +431,37 @@ and check_valid_typ_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
   | StateT -> error_not_nest ()
 
 and check_valid_typdef (cursor : Ctx.cursor) (ctx : Ctx.t) (td : TypeDef.t) :
-    unit =
+    unit res =
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
   check_valid_typdef'' tset td
 
-and check_valid_typdef'' (tset : TIdSet.t) (td : TypeDef.t) : unit =
+and check_valid_typdef'' (tset : TIdSet.t) (td : TypeDef.t) : unit res =
   match td with
   | MonoD typ_inner ->
-      if
-        not
+      let* _ =
+        check
           (match typ_inner with
           | VarT _ | DefT _ | NewT _ | EnumT _ | SEnumT _ | TableT _ -> true
           | _ -> false)
-      then (
-        Format.printf
-          "(check_valid_typdef') %a is not a definable monomorphic type\n"
-          Type.pp typ_inner;
-        assert false);
+          (Format.asprintf
+             "(check_valid_typdef') %a is not a definable monomorphic type"
+             Type.pp typ_inner)
+      in
       check_valid_typ' tset typ_inner
   | PolyD (tparams, tparams_hidden, typ_inner) ->
-      if
-        not
+      let* _ =
+        check
           (match typ_inner with
           | ListT _ | TupleT _ | StackT _ | StructT _ | HeaderT _ | UnionT _
           | ExternT _ | ParserT _ | ControlT _ | PackageT _ ->
               true
           | _ -> false)
-      then (
-        Format.printf
-          "(check_valid_typdef') %a is not a definable generic type\n" Type.pp
-          typ_inner;
-        assert false);
+          (Format.asprintf
+             "(check_valid_typdef') %a is not a definable generic type" Type.pp
+             typ_inner)
+      in
       let tparams = tparams @ tparams_hidden in
-      check_distinct_names tparams;
+      let* _ = check_distinct_names tparams in
       let tset = tparams |> TIdSet.of_list |> TIdSet.union tset in
       check_valid_typ' tset typ_inner
 
@@ -522,89 +517,101 @@ and check_valid_typdef'' (tset : TIdSet.t) (td : TypeDef.t) : unit =
    as an argument for such a parameter *)
 
 and check_valid_param (cursor : Ctx.cursor) (ctx : Ctx.t) (param : Types.param)
-    : unit =
+    : unit res =
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
   check_valid_param' tset param
 
-and check_valid_param' (tset : TIdSet.t) (param : Types.param) : unit =
+and check_valid_param' (tset : TIdSet.t) (param : Types.param) : unit res =
   let _, dir, typ, value_default = param in
-  check_valid_typ' tset typ;
-  if not (match Type.canon typ with ExternT _ -> dir = No | _ -> true) then (
-    Format.printf
-      "(check_valid_param') Extern objects can only be passed as directionless \
-       parameters but %a was given\n"
-      Dir.pp dir;
-    assert false);
+  let* _ = check_valid_typ' tset typ in
+  let* _ =
+    check
+      (match Type.canon typ with ExternT _ -> dir = No | _ -> true)
+      (Format.asprintf
+         "(check_valid_param') extern objects can only be passed as \
+          directionless parameters but direction %a was given"
+         Dir.pp dir)
+  in
   match value_default with
   | Some _ when not (match dir with In | No -> true | _ -> false) ->
-      Format.printf
-        "(check_valid_param') Default values are only allowed for in or \
-         directionless parameters but %a was given\n"
-        Dir.pp dir;
-      assert false
-  | _ -> ()
+      Format.asprintf
+        "(check_valid_param') default values are only allowed for in or \
+         directionless parameters but direction %a was given"
+        Dir.pp dir
+      |> error_no_info
+  | _ -> Ok ()
 
-and check_valid_params' (tset : TIdSet.t) (params : Types.param list) : unit =
+and check_valid_params' (tset : TIdSet.t) (params : Types.param list) : unit res
+    =
   let ids = List.map (fun (id, _, _, _) -> id) params in
-  check_distinct_names ids;
-  List.iter (check_valid_param' tset) params
+  let* _ = check_distinct_names ids in
+  let rec check_valid_params'' = function
+    | [] -> Ok ()
+    | param :: params ->
+        let* _ = check_valid_param' tset param in
+        check_valid_params'' params
+  in
+  check_valid_params'' params
 
 and check_valid_functyp (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) :
-    unit =
+    unit res =
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
   check_valid_functyp' tset ft
 
-and check_valid_functyp' (tset : TIdSet.t) (ft : FuncType.t) : unit =
+and check_valid_functyp' (tset : TIdSet.t) (ft : FuncType.t) : unit res =
   match ft with
   | ActionT params ->
-      check_valid_params' tset params;
+      let* _ = check_valid_params' tset params in
       let check_trailing_action params =
-        let rec check_trailing_action' allow_directionless params =
-          match params with
+        let rec check_trailing_action' allow_directionless = function
+          | [] -> Ok ()
           | (_, dir, _, _) :: params ->
               if dir = Lang.Ast.No && allow_directionless then
                 check_trailing_action' allow_directionless params
-              else if dir = Lang.Ast.No then (
-                Format.printf
-                  "(check_valid_functyp') All directionless action parameters \
-                   must be at the end of the parameter list\n";
-                assert false)
+              else if dir = Lang.Ast.No then
+                Format.asprintf
+                  "(check_valid_functyp') all directionless action parameters \
+                   must be at the end of the parameter list"
+                |> error_no_info
               else check_trailing_action' false params
-          | [] -> ()
         in
         check_trailing_action' true (List.rev params)
       in
-      check_trailing_action params;
+      let* _ = check_trailing_action params in
       check_valid_functyp_nesting ft params
-  | ExternFunctionT (params, typ_ret) | FunctionT (params, typ_ret) ->
-      check_valid_params' tset params;
-      check_valid_typ' tset typ_ret;
-      check_valid_functyp_nesting ft params
-  | ExternMethodT (params, typ_ret) | ExternAbstractMethodT (params, typ_ret) ->
-      check_valid_params' tset params;
-      check_valid_typ' tset typ_ret;
+  | ExternFunctionT (params, typ_ret)
+  | FunctionT (params, typ_ret)
+  | ExternMethodT (params, typ_ret)
+  | ExternAbstractMethodT (params, typ_ret) ->
+      let* _ = check_valid_params' tset params in
+      let* _ = check_valid_typ' tset typ_ret in
       check_valid_functyp_nesting ft params
   | ParserApplyMethodT params | ControlApplyMethodT params ->
-      check_valid_params' tset params;
+      let* _ = check_valid_params' tset params in
       check_valid_functyp_nesting ft params
   | BuiltinMethodT (params, typ_ret) ->
-      check_valid_params' tset params;
-      check_valid_typ' tset typ_ret;
+      let* _ = check_valid_params' tset params in
+      let* _ = check_valid_typ' tset typ_ret in
       check_valid_functyp_nesting ft params
   | TableApplyMethodT typ_ret ->
-      check_valid_typ' tset typ_ret;
+      let* _ = check_valid_typ' tset typ_ret in
       check_valid_functyp_nesting ft []
 
 and check_valid_functyp_nesting (ft : FuncType.t) (params : Types.param list) :
-    unit =
-  List.iter
-    (fun (_, dir, typ_inner, _) ->
-      if not (check_valid_functyp_nesting' ft dir typ_inner) then (
-        Format.printf
-          "(check_valid_functyp_nesting) Invalid nesting of %a inside %a\n"
-          Type.pp typ_inner FuncType.pp ft;
-        assert false))
-    params
+    unit res =
+  let rec check_valid_functyp_nesting'' = function
+    | [] -> Ok ()
+    | (_, dir, typ_inner, _) :: params ->
+        let* _ =
+          check
+            (check_valid_functyp_nesting' ft dir typ_inner)
+            (Format.asprintf
+               "(check_valid_functyp_nesting) invalid nesting of %a inside %a"
+               Type.pp typ_inner FuncType.pp ft)
+        in
+        check_valid_functyp_nesting'' params
+  in
+  check_valid_functyp_nesting'' params
 
 and check_valid_functyp_nesting' (ft : FuncType.t) (dir : Lang.Ast.dir')
     (typ_inner : Type.t) : bool =
@@ -649,47 +656,50 @@ and check_valid_functyp_nesting' (ft : FuncType.t) (dir : Lang.Ast.dir')
   | _ -> true
 
 and check_valid_funcdef (cursor : Ctx.cursor) (ctx : Ctx.t) (fd : FuncDef.t) :
-    unit =
-  if cursor = Ctx.Local then (
-    Format.printf
-      "(check_valid_funcdef) Function definitions must not be local\n";
-    assert false);
+    unit res =
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
   check_valid_funcdef' tset fd
 
-and check_valid_funcdef' (tset : TIdSet.t) (fd : FuncDef.t) : unit =
+and check_valid_funcdef' (tset : TIdSet.t) (fd : FuncDef.t) : unit res =
   match fd with
   | MonoFD ft ->
-      if
-        not
+      let* _ =
+        check
           (match ft with
           | ActionT _ | ParserApplyMethodT _ | ControlApplyMethodT _
           | BuiltinMethodT _ | TableApplyMethodT _ ->
               true
           | _ -> false)
-      then (
-        Format.printf
-          "(check_valid_funcdef) %a is not a definable monomorphic function\n"
-          FuncType.pp ft;
-        assert false);
+          (Format.asprintf
+             "(check_valid_funcdef) %a is not a definable monomorphic function"
+             FuncType.pp ft)
+      in
       check_valid_functyp' tset ft
   | PolyFD (tparams, tparams_hidden, ft) ->
-      if
-        not
+      let* _ =
+        check
           (match ft with
           | ExternFunctionT _ | FunctionT _ | ExternMethodT _
           | ExternAbstractMethodT _ ->
               true
           | _ -> false)
-      then (
-        Format.printf
-          "(check_valid_funcdef) %a is not a definable generic function\n"
-          FuncType.pp ft;
-        assert false);
+          (Format.asprintf
+             "(check_valid_funcdef) %a is not a definable generic function"
+             FuncType.pp ft)
+      in
       let tset =
         tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
       in
       check_valid_functyp' tset ft
+
+and check_valid_funcdefs' (tset : TIdSet.t) (fds : FuncDef.t list) : unit res =
+  let rec check_valid_funcdefs'' = function
+    | [] -> Ok ()
+    | fd :: fds ->
+        let* _ = check_valid_funcdef' tset fd in
+        check_valid_funcdefs'' fds
+  in
+  check_valid_funcdefs'' fds
 
 (* (Appendix F) Restrictions on compile time and run time calls
 
@@ -708,45 +718,58 @@ and check_valid_funcdef' (tset : TIdSet.t) (fd : FuncDef.t) : unit =
    value types | yes	    | yes    | yes	   | yes *)
 
 and check_valid_cparam (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (cparam : Types.cparam) : unit =
+    (cparam : Types.cparam) : unit res =
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
   check_valid_cparam' tset cparam
 
-and check_valid_cparam' (tset : TIdSet.t) (cparam : Types.cparam) : unit =
+and check_valid_cparam' (tset : TIdSet.t) (cparam : Types.cparam) : unit res =
   let _, dir, typ, _ = cparam in
-  if not (match (dir : Il.Ast.dir') with No -> true | _ -> false) then (
-    Format.printf
-      "(check_valid_cparam') Constructor parameters must be directionless\n";
-    assert false);
+  let* _ =
+    check
+      (match (dir : Il.Ast.dir') with No -> true | _ -> false)
+      (Format.asprintf
+         "(check_valid_cparam') constructor parameters must be directionless")
+  in
   check_valid_typ' tset typ
 
-and check_valid_cparams' (tset : TIdSet.t) (cparams : Types.cparam list) : unit
-    =
+and check_valid_cparams' (tset : TIdSet.t) (cparams : Types.cparam list) :
+    unit res =
   let ids = List.map (fun (id, _, _, _) -> id) cparams in
-  check_distinct_names ids;
-  List.iter (check_valid_cparam' tset) cparams
+  let* _ = check_distinct_names ids in
+  let rec check_valid_cparams'' = function
+    | [] -> Ok ()
+    | cparam :: cparams ->
+        let* _ = check_valid_cparam' tset cparam in
+        check_valid_cparams'' cparams
+  in
+  check_valid_cparams'' cparams
 
 and check_valid_constyp (cursor : Ctx.cursor) (ctx : Ctx.t) (ct : ConsType.t) :
-    unit =
+    unit res =
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
   check_valid_constyp' tset ct
 
-and check_valid_constyp' (tset : TIdSet.t) (ct : ConsType.t) : unit =
+and check_valid_constyp' (tset : TIdSet.t) (ct : ConsType.t) : unit res =
   let cparams, typ = ct in
-  check_valid_cparams' tset cparams;
-  check_valid_typ' tset typ;
+  let* _ = check_valid_cparams' tset cparams in
+  let* _ = check_valid_typ' tset typ in
   check_valid_constyp_nesting typ cparams
 
 and check_valid_constyp_nesting (typ : Type.t) (cparams : Types.cparam list) :
-    unit =
-  List.iter
-    (fun (_, _, typ_inner, _) ->
-      if not (check_valid_constyp_nesting' typ typ_inner) then (
-        Format.printf
-          "(check_valid_constyp_nesting) Invalid nesting of %a inside %a\n"
-          Type.pp typ_inner Type.pp typ;
-        assert false))
-    cparams
+    unit res =
+  let rec check_valid_constyp_nesting'' = function
+    | [] -> Ok ()
+    | (_, _, typ_inner, _) :: cparams ->
+        let* _ =
+          check
+            (check_valid_constyp_nesting' typ typ_inner)
+            (Format.asprintf
+               "(check_valid_constyp_nesting) invalid nesting of %a inside %a"
+               Type.pp typ_inner Type.pp typ)
+        in
+        check_valid_constyp_nesting'' cparams
+  in
+  check_valid_constyp_nesting'' cparams
 
 and check_valid_constyp_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
   let typ = Type.canon typ in
@@ -775,26 +798,21 @@ and check_valid_constyp_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
   | _ -> true
 
 and check_valid_consdef (cursor : Ctx.cursor) (ctx : Ctx.t) (cd : ConsDef.t) :
-    unit =
-  if cursor <> Ctx.Block then (
-    Format.printf
-      "(check_valid_consdef) Constructor definitions must be in a block\n";
-    assert false);
+    unit res =
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
   check_valid_consdef' tset cd
 
-and check_valid_consdef' (tset : TIdSet.t) (cd : ConsDef.t) : unit =
+and check_valid_consdef' (tset : TIdSet.t) (cd : ConsDef.t) : unit res =
   let tparams, tparams_hidden, cparams, typ = cd in
-  if
-    not
+  let* _ =
+    check
       (match Type.canon typ with
       | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> true
       | _ -> false)
-  then (
-    Format.printf
-      "(check_valid_consdef') %a is not a definable constructor type\n" Type.pp
-      typ;
-    assert false);
+      (Format.asprintf
+         "(check_valid_consdef') %a is not a definable constructor type" Type.pp
+         typ)
+  in
   let tset = tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset in
   let ct = (cparams, typ) in
   check_valid_constyp' tset ct
