@@ -15,6 +15,7 @@ watsup
 spec-gen.include
 *.aux
 *.log
+!p4/status/*.log
 *.tex
 !spec/spec.tex
 *.pdf
