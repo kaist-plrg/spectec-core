@@ -166,7 +166,13 @@ and pp_tparams fmt tparams =
 
 (* Parameters *)
 
+and pp_params (pp_param : 'param pp_param) fmt params =
+  F.fprintf fmt "(%a)" (pp_list pp_param ", ") params
+
 (* Constructor parameters *)
+
+and pp_cparams (pp_param : 'param pp_param) fmt cparams =
+  F.fprintf fmt "(%a)" (pp_list pp_param ", ") cparams
 
 (* Type arguments *)
 
@@ -496,14 +502,14 @@ and pp_mthd' ?(level = 0) (pp_typ : 'typ pp_typ) (pp_param : 'param pp_param)
     (_pp_expr : ('note, 'expr) pp_expr) fmt mthd' =
   match mthd' with
   | ExternConsM { id; cparams; annos = _annos } ->
-      F.fprintf fmt "%s%a%a;" (indent level) pp_id id (pp_list pp_param ", ")
+      F.fprintf fmt "%s%a%a;" (indent level) pp_id id (pp_params pp_param)
         cparams
   | ExternAbstractM { id; typ_ret; tparams; params; annos = _annos } ->
       F.fprintf fmt "%sabstract %a %a%a%a;" (indent level) pp_typ typ_ret pp_id
-        id pp_tparams tparams (pp_list pp_param ", ") params
+        id pp_tparams tparams (pp_params pp_param) params
   | ExternM { id; typ_ret; tparams; params; annos = _annos } ->
       F.fprintf fmt "%s%a %a%a%a;" (indent level) pp_typ typ_ret pp_id id
-        pp_tparams tparams (pp_list pp_param ", ") params
+        pp_tparams tparams (pp_params pp_param) params
 
 and pp_mthd ?(level = 0) (pp_typ : 'typ pp_typ) (pp_param : 'param pp_param)
     (pp_expr : ('note, 'expr) pp_expr) fmt mthd =

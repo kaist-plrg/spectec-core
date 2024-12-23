@@ -49,9 +49,11 @@ let is_assignable_typ typ =
   match typ with
   | SpecT _ | DefT _ -> assert false
   | VoidT -> false
-  | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _ | VBitT _
-  | VarT _ | NewT _ ->
-      true
+  | ErrT | MatchKindT -> true
+  | StrT -> false
+  | BoolT -> true
+  | IntT -> false
+  | FIntT _ | FBitT _ | VBitT _ | VarT _ | NewT _ -> true
   | EnumT _ | SEnumT _ | ListT _ | TupleT _ | StackT _ | StructT _ | HeaderT _
   | UnionT _ ->
       true
