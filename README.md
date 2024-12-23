@@ -1,10 +1,11 @@
-# P4Cherry
+# P4-SpecTec
 
-(WIP) A to-be interpreter for P4, cherry-picked from the Petr4 project.
+A to-be interpreter for P4, cherry-picked from the Petr4 project.
+Also a to-be formal specification for P4, using the SpecTec framework.
 
 ## Building
 
-### Prerequisites
+### Prerequisites for p4cherry
 
 You will need `ocaml` installed with `dune` and `menhir` library using `opam`.
 
@@ -14,12 +15,12 @@ You will need `ocaml` installed with `dune` and `menhir` library using `opam`.
   $ opam init
   ```
 
-* Set `ocaml` as version 4.14.0.
+* Create OCaml switch for version 4.14.0.
   ```
   $ opam switch create 4.14.0
   ```
   
-* Install `dune` version 3.13.0 and `menhir` version 20231231 and `core` version `v0.15.0` via `opam` .
+* Install `dune` version 3.13.0 and `menhir` version 20231231 and `core` version `v0.15.0` via `opam`.
   ```
   $ opam install dune menhir core.v0.15.0
   ```
@@ -31,29 +32,59 @@ $ dune build p4cherry.opam
 $ opam install .
 ```
 
+### Prerequisites for SpecTec
+
+* Create OCaml switch for version 5.0.0.
+  ```
+  $ opam switch create 5.0.0
+  ```
+  
+* Install `mdx` version 2.3.1, and `zarith` version 1.12, via `opam` (default versions).
+  ```
+  $ opam install mdx zarith
+  ```
+
 ### Building the Project
 
 ```shell
-$ make
+$ make build
 ```
 
-This creates an executable `p4cherry` in the project root.
+This creates executables `p4cherry`, `p4cherry-test`, and `watsup` in the project root.
 
-## Run parser and type checker for an Example File
+## p4cherry: A language implementation for P4
+
+### To Run the Parser and the Type Checker for an Example File
 
 ```shell
 $ ./p4cherry parse -i test/arch [FILENAME].p4
 $ ./p4cherry typecheck -i test/arch [FILENAME].p4
 ```
 
-## Current Test Status
+### Current Test Status
 
-### Parser
+You can run the tests with
 
-**[Parsing, pretty-printing, and roundtripping](status/parser.log)**
+```shell
+$ make test
+```
 
-### Type checker
-* **[Positive type checker tests](status/typecheck-pos.log)** (well-typed programs should be accepted)
-* [Excluded positive type checker tests](status/typecheck-pos-excluded.log)
-* **[Negavie type checker tests](status/typecheck-neg.log)** (ill-typed programs should be rejected)
-* [Excluded negative type checker tests](status/typecheck-neg-excluded.log)
+#### Parser
+
+**[Parsing, pretty-printing, and roundtripping](p4/status/parser.log)**
+
+#### Type checker
+* **[Positive type checker tests](p4/status/typecheck-pos.log)** (well-typed programs should be accepted)
+* [Excluded positive type checker tests](p4/status/typecheck-pos-excluded.log)
+* **[Negavie type checker tests](p4/status/typecheck-neg.log)** (ill-typed programs should be rejected)
+* [Excluded negative type checker tests](p4/status/typecheck-neg-excluded.log)
+
+## P4-SpecTec: A language specification for P4
+
+### To Build the Spec and Output in LaTeX
+
+```shell
+$ make spec
+```
+
+This creates a PDF spec in spec/spec.pdf.

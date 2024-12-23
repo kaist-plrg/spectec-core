@@ -16,6 +16,7 @@ spec-gen.include
 *.aux
 *.log
 *.tex
+!spec/spec.tex
 *.pdf
 
 # calculus

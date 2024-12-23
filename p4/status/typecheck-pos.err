@@ -1,21 +1,21 @@
-test/program/well-typed/pragma-string.p4:25:14: warning: missing terminating '"' character [-Winvalid-pp-token]
+p4/test/program/well-typed/pragma-string.p4:25:14: warning: missing terminating '"' character [-Winvalid-pp-token]
 @pragma name "string with
              ^
-test/program/well-typed/pragma-string.p4:26:8: warning: missing terminating '"' character [-Winvalid-pp-token]
+p4/test/program/well-typed/pragma-string.p4:26:8: warning: missing terminating '"' character [-Winvalid-pp-token]
 newline"
        ^
 2 warnings generated.
-test/program/well-typed/specIssue884.p4:38:9: warning: missing terminating '"' character [-Winvalid-pp-token]
+p4/test/program/well-typed/specIssue884.p4:38:9: warning: missing terminating '"' character [-Winvalid-pp-token]
         "1000100
         ^
-test/program/well-typed/specIssue884.p4:41:17: warning: missing terminating '"' character [-Winvalid-pp-token]
+p4/test/program/well-typed/specIssue884.p4:41:17: warning: missing terminating '"' character [-Winvalid-pp-token]
          0001001") hamming;
                 ^
 2 warnings generated.
-test/program/well-typed/string_anno.p4:21:7: warning: missing terminating '"' character [-Winvalid-pp-token]
+p4/test/program/well-typed/string_anno.p4:21:7: warning: missing terminating '"' character [-Winvalid-pp-token]
 @name("string with
       ^
-test/program/well-typed/string_anno.p4:22:8: warning: missing terminating '"' character [-Winvalid-pp-token]
+p4/test/program/well-typed/string_anno.p4:22:8: warning: missing terminating '"' character [-Winvalid-pp-token]
 newline") const bit d = 1;
        ^
 2 warnings generated.
