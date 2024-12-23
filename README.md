@@ -5,23 +5,28 @@ Also a to-be formal specification for P4, using the SpecTec framework.
 
 ## Building
 
+This uses SpecTec as its submodule.
+
+```shell
+$ git submodule init
+$ git submodule update
+```
+
 ### Prerequisites for p4cherry
 
-You will need `ocaml` installed with `dune` and `menhir` library using `opam`.
-
 * Install `opam` version 2.0.5 or higher.
-  ```
+  ```shell
   $ apt-get install opam
   $ opam init
   ```
 
 * Create OCaml switch for version 4.14.0.
-  ```
+  ```shell
   $ opam switch create 4.14.0
   ```
   
 * Install `dune` version 3.13.0 and `menhir` version 20231231 and `core` version `v0.15.0` via `opam`.
-  ```
+  ```shell
   $ opam install dune menhir core.v0.15.0
   ```
 
@@ -35,12 +40,12 @@ $ opam install .
 ### Prerequisites for SpecTec
 
 * Create OCaml switch for version 5.0.0.
-  ```
+  ```shell
   $ opam switch create 5.0.0
   ```
   
 * Install `mdx` version 2.3.1, and `zarith` version 1.12, via `opam` (default versions).
-  ```
+  ```shell
   $ opam install mdx zarith
   ```
 
@@ -63,7 +68,7 @@ $ ./p4cherry typecheck -i test/arch [FILENAME].p4
 
 ### Current Test Status
 
-You can run the tests with
+You can run the tests with:
 
 ```shell
 $ make test
