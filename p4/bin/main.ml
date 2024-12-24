@@ -3,15 +3,14 @@ open Util.Error
 
 let version = "0.1"
 
-let parse includes filename : El.Ast.program res =
+let parse includes filename : El.Ast.program =
   Frontend.Parse.parse_file includes filename
 
-let roundtrip includes filename : El.Ast.program res =
+let roundtrip includes filename : El.Ast.program =
   Frontend.Parse.roundtrip_file includes filename
 
-let typecheck includes filename : Il.Ast.program res =
-  let program = parse includes filename in
-  Result.bind ~f:Typing.Typecheck.type_program program
+let typecheck includes filename : Il.Ast.program =
+  parse includes filename |> Typing.Typecheck.type_program
 
 let parse_command =
   Command.basic ~summary:"parse a p4_16 program"
@@ -22,14 +21,14 @@ let parse_command =
        flag "-r" no_arg ~doc:"parse, stringify, and parse the program"
      and filename = anon ("file.p4" %: string) in
      fun () ->
-       let program =
-         let func = if roundtrip_flag then roundtrip else parse in
-         func includes filename
-       in
-       match program with
-       | Ok program -> Format.printf "%a\n" El.Pp.pp_program program
-       | Error (msg, info) ->
-           Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
+       try
+         let program =
+           let func = if roundtrip_flag then roundtrip else parse in
+           func includes filename
+         in
+         Format.printf "%a\n" El.Pp.pp_program program
+       with ParseErr (msg, info) ->
+         Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
 
 let typecheck_command =
   Command.basic ~summary:"typecheck a p4_16 program"
@@ -38,11 +37,11 @@ let typecheck_command =
      let%map includes = flag "-i" (listed string) ~doc:"include paths"
      and filename = anon ("file.p4" %: string) in
      fun () ->
-       let program = typecheck includes filename in
-       match program with
-       | Ok program -> Format.printf "%a\n" Il.Pp.pp_program program
-       | Error (msg, info) ->
-           Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
+       try
+         let program = typecheck includes filename in
+         Format.printf "%a\n" Il.Pp.pp_program program
+       with ParseErr (msg, info) | CheckErr (msg, info) ->
+         Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
 
 let command =
   Command.group ~summary:"p4cherry: an interpreter of the p4_16 language"

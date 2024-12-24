@@ -1,6 +1,9 @@
 open Util.Source
 open Util.Error
 
+let check = check_checker
+let error_no_info = error_checker_no_info
+
 (* Variable identifiers *)
 
 module Id = struct
@@ -151,12 +154,12 @@ struct
   let find id env =
     match find_opt id env with
     | Some value -> value
-    | None -> Format.asprintf "Key not found: %a\n" Id.pp id |> failwith
+    | None -> Format.asprintf "key not found: %a" Id.pp id |> error_no_info
 
   let add_nodup id value env =
     if mem id env then
-      Format.asprintf "Key already exists: %a\n" Id.pp id |> error_no_info
-    else add id value env |> ok
+      Format.asprintf "key already exists: %a" Id.pp id |> error_no_info
+    else add id value env
 end
 
 module MakeTIdEnv = MakeIdEnv
@@ -182,7 +185,7 @@ struct
   let find (fid : FId.t) fenv =
     match find_opt fid fenv with
     | Some func -> func
-    | None -> Format.asprintf "Key not found: %a\n" FId.pp fid |> failwith
+    | None -> Format.asprintf "key not found: %a" FId.pp fid |> error_no_info
 
   (* Lookups for matching call site to def site *)
 
@@ -241,7 +244,7 @@ struct
     else None
 
   let find_overloaded_opt (fname, args) fenv =
-    let* _ = check_named_args args in
+    check_named_args args;
     let arg_names =
       if List.for_all Option.is_some args then
         List.map Option.get args |> List.sort String.compare
@@ -268,8 +271,8 @@ struct
         (bindings fenv)
     in
     match funcs with
-    | [] -> None |> ok
-    | [ func ] -> Some func |> ok
+    | [] -> None
+    | [ func ] -> Some func
     | _ ->
         Format.asprintf
           "(find_overloaded_opt) cannot resolve overloaded function given %a"
@@ -278,8 +281,9 @@ struct
 
   let find_overloaded (fname, args) fenv =
     match find_overloaded_opt (fname, args) fenv with
-    | Ok (Some value) -> value
-    | _ -> Format.asprintf "Key not found: %a\n" FId.pp_name fname |> failwith
+    | Some value -> value
+    | _ ->
+        Format.asprintf "key not found: %a" FId.pp_name fname |> error_no_info
 
   (* Non-overloaded lookup, allowing defaults *)
 
@@ -288,39 +292,35 @@ struct
     |> List.map snd
 
   let find_non_overloaded_opt (fname, args) fenv =
-    let* _ = check_named_args args in
+    check_named_args args;
     let funcs = find_non_overloaded_opt' fname fenv in
-    match funcs with
-    | [] -> None |> ok
-    | [ func ] -> Some func |> ok
-    | _ -> assert false
+    match funcs with [] -> None | [ func ] -> Some func | _ -> assert false
 
   let find_non_overloaded (fname, args) fenv =
     match find_non_overloaded_opt (fname, args) fenv with
-    | Ok (Some value) -> value
-    | _ -> Format.asprintf "Key not found: %a\n" FId.pp_name fname |> failwith
+    | Some value -> value
+    | _ ->
+        Format.asprintf "key not found: %a" FId.pp_name fname |> error_no_info
 
   (* Adders *)
 
   let add_nodup_overloaded fid value fenv =
     if mem fid fenv then
-      Format.asprintf "Key already exists: %a\n" FId.pp fid |> error_no_info
+      Format.asprintf "key already exists: %a" FId.pp fid |> error_no_info
     else
       let fname, _ = fid in
       match find_non_overloaded_opt' fname fenv with
-      | [] -> add fid value fenv |> ok
+      | [] -> add fid value fenv
       | values ->
           if not (List.for_all (V.eq_kind value) values) then
-            Format.asprintf "Key already exists: %a\n" FId.pp fid
-            |> error_no_info
-          else add fid value fenv |> ok
+            Format.asprintf "key already exists: %a" FId.pp fid |> error_no_info
+          else add fid value fenv
 
   let add_nodup_non_overloaded fid value fenv =
     let fname, _ = fid in
     match find_non_overloaded_opt' fname fenv with
-    | [] -> add fid value fenv |> ok
-    | _ ->
-        Format.asprintf "Key already exists: %a\n" FId.pp fid |> error_no_info
+    | [] -> add fid value fenv
+    | _ -> Format.asprintf "key already exists: %a" FId.pp fid |> error_no_info
 end
 
 module MakeCIdEnv = MakeFIdEnv

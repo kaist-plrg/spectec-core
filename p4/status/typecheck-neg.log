@@ -22,7 +22,7 @@ Error: File p4/test/program/ill-typed/action-bind3.p4, line 21, characters 20-27
 (type_call_action_partial) a expects 1 arguments but 2 were given
 
 >>> Running typecheck test on p4/test/program/ill-typed/action-named-default-bmv2.p4
-Error: File p4/test/program/ill-typed/action-named-default-bmv2.p4, line 56, characters 11-18
+Error on file: File p4/test/program/ill-typed/action-named-default-bmv2.p4, line 56, characters 11-18
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/assign.p4
@@ -62,11 +62,11 @@ Error: File p4/test/program/ill-typed/const_e.p4, line 18, characters 12-15
 (check_ctk) I() is not a local compile-time known expression
 
 >>> Running typecheck test on p4/test/program/ill-typed/constructor1_e.p4
-Error: File p4/test/program/ill-typed/constructor1_e.p4, line 18, characters 8-9
+Error on file: File p4/test/program/ill-typed/constructor1_e.p4, line 18, characters 8-9
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/constructor2_e.p4
-Error: File p4/test/program/ill-typed/constructor2_e.p4, line 18, characters 5-6
+Error on file: File p4/test/program/ill-typed/constructor2_e.p4, line 18, characters 5-6
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/constructor3_e.p4
@@ -78,7 +78,7 @@ Error: File p4/test/program/ill-typed/constructor_e.p4, from line 16 character 0
 (type_extern_object_decl) method names must not overlap with the object name
 
 >>> Running typecheck test on p4/test/program/ill-typed/control-inline.p4
-Error: File p4/test/program/ill-typed/control-inline.p4, line 34, characters 10-11
+Error on file: File p4/test/program/ill-typed/control-inline.p4, line 34, characters 10-11
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/control-verify.p4
@@ -86,7 +86,7 @@ Error: File p4/test/program/ill-typed/control-verify.p4, line 7, characters 4-35
 (type_call_func_stmt) verify must be invoked within a parser
 
 >>> Running typecheck test on p4/test/program/ill-typed/default-initializer-err.p4
-Error: 
+Error on file: 
 transform error
 
 >>> Running typecheck test on p4/test/program/ill-typed/default-last-switch.p4
@@ -127,8 +127,7 @@ Error: File p4/test/program/ill-typed/div3.p4, line 19, characters 12-17
 
 >>> Running typecheck test on p4/test/program/ill-typed/dup-param.p4
 Error: File p4/test/program/ill-typed/dup-param.p4, from line 17 character 0 to line 19 character 1
-Key already exists: p
-
+key already exists: p
 
 >>> Running typecheck test on p4/test/program/ill-typed/dup-param1.p4
 Error: File p4/test/program/ill-typed/dup-param1.p4, from line 17 character 0 to line 19 character 1
@@ -144,8 +143,7 @@ Error: File p4/test/program/ill-typed/dup-param3.p4, from line 17 character 0 to
 
 >>> Running typecheck test on p4/test/program/ill-typed/dupConst.p4
 Error: File p4/test/program/ill-typed/dupConst.p4, line 17, characters 0-19
-Key already exists: a
-
+key already exists: a
 
 >>> Running typecheck test on p4/test/program/ill-typed/duplicate-label.p4
 Error: File p4/test/program/ill-typed/duplicate-label.p4, from line 24 character 8 to line 27 character 9
@@ -156,7 +154,7 @@ Error: File p4/test/program/ill-typed/equality-fail.p4, line 23, characters 12-1
 (coerce_types_binary) cannot coerce types varbit<32> and (header H { a bit<32>; b varbit<32> }< @ >)<>
 
 >>> Running typecheck test on p4/test/program/ill-typed/expression_e.p4
-Error: File p4/test/program/ill-typed/expression_e.p4, line 21, characters 19-20
+Error on file: File p4/test/program/ill-typed/expression_e.p4, line 21, characters 19-20
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/extern.p4
@@ -192,16 +190,15 @@ Error: File p4/test/program/ill-typed/functors3_e.p4, line 18, characters 0-7
 (type_instantiation) instance s not found
 
 >>> Running typecheck test on p4/test/program/ill-typed/generic1_e.p4
-(specialize_typdef_poly) Type definition extern If { id(d) : extern_method(in d T) -> T< @ > }<T @ > expects 1 type arguments but 0 were given
-Error: 
-crash
+Error: File p4/test/program/ill-typed/generic1_e.p4, line 21, characters 11-13
+(specialize_typdef_poly) type definition extern If { id(d) : extern_method(in d T) -> T< @ > }<T @ > expects 1 type arguments but 0 were given
 
 >>> Running typecheck test on p4/test/program/ill-typed/globalVar_e.p4
-Error: File p4/test/program/ill-typed/globalVar_e.p4, line 16, characters 5-6
+Error on file: File p4/test/program/ill-typed/globalVar_e.p4, line 16, characters 5-6
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/header1_e.p4
-Error: File p4/test/program/ill-typed/header1_e.p4, line 18, characters 4-5
+Error on file: File p4/test/program/ill-typed/header1_e.p4, line 18, characters 4-5
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/header2_e.p4
@@ -245,7 +242,7 @@ Error: File p4/test/program/ill-typed/interface_e.p4, line 21, characters 4-10
 (type_instantiation) instance X not found
 
 >>> Running typecheck test on p4/test/program/ill-typed/invalid-invalid.p4
-Error: File p4/test/program/ill-typed/invalid-invalid.p4, line 2, characters 0-0
+Error on file: File p4/test/program/ill-typed/invalid-invalid.p4, line 2, characters 0-0
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1006-1.p4
@@ -257,7 +254,7 @@ Error: File p4/test/program/ill-typed/issue1059.p4, line 9, characters 10-13
 (type_expr_acc_expr) Member x does not exist in x
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1202.p4
-Error: File p4/test/program/ill-typed/issue1202.p4, line 1, characters 18-21
+Error on file: File p4/test/program/ill-typed/issue1202.p4, line 1, characters 18-21
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1230.p4
@@ -277,7 +274,7 @@ length() : extern_method() -> bit<32>< @ >
 lookahead() : extern_method() -> T<T @ > }< @ >)<>) cannot be called from ControlApplyMethod
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1336.p4
-Error: File p4/test/program/ill-typed/issue1336.p4, line 3, characters 14-15
+Error on file: File p4/test/program/ill-typed/issue1336.p4, line 3, characters 14-15
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1542.p4
@@ -294,13 +291,11 @@ Error: File p4/test/program/ill-typed/issue1777-bmv2.p4, line 54, characters 4-3
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1932-1.p4
 Error: File p4/test/program/ill-typed/issue1932-1.p4, line 10, characters 4-49
-Key already exists: foo(x)
-
+key already exists: foo(x)
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1932-2.p4
 Error: File p4/test/program/ill-typed/issue1932-2.p4, line 9, characters 0-45
-Key already exists: foo(x)
-
+key already exists: foo(x)
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1986-1.p4
 Error: File p4/test/program/ill-typed/issue1986-1.p4, from line 22 character 8 to line 24 character 9
@@ -340,8 +335,7 @@ Error: File p4/test/program/ill-typed/issue2230.p4, line 70, characters 8-24
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2267.p4
 Error: File p4/test/program/ill-typed/issue2267.p4, from line 4 character 2 to line 7 character 3
-Key already exists: t
-
+key already exists: t
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2290.p4
 Error: File p4/test/program/ill-typed/issue2290.p4, from line 15 character 0 to line 17 character 1
@@ -388,7 +382,7 @@ Error: File p4/test/program/ill-typed/issue2525.p4, from line 64 character 8 to 
 (type_switch_table_cases') default label must be the last switch label
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2544_recursive.p4
-Error: File p4/test/program/ill-typed/issue2544_recursive.p4, line 2, characters 11-12
+Error on file: File p4/test/program/ill-typed/issue2544_recursive.p4, line 2, characters 11-12
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2544_self_ref.p4
@@ -424,13 +418,12 @@ Error: File p4/test/program/ill-typed/issue3153.p4, line 1, characters 15-21
 (coerce_type_unary) cannot coerce type bool
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3170-1.p4
-Error: File p4/test/program/ill-typed/issue3170-1.p4, line 11, characters 0-17
+Error: File p4/test/program/ill-typed/issue3170-1.p4, line 11, characters 8-12
 (check_valid_typ_nesting) invalid nesting of (struct y { tt (T[2]<T @ >)<(header yy { tt bit<1> }< @ >)<>> }< @ >)<> inside header t { y (struct y { tt (T[2]<T @ >)<(header yy { tt bit<1> }< @ >)<>> }< @ >)<> }
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3170.p4
-(specialize_typdef_poly) Type definition header t { y tt }<tt @ > expects 1 type arguments but 0 were given
-Error: 
-crash
+Error: File p4/test/program/ill-typed/issue3170.p4, line 6, characters 8-9
+(specialize_typdef_poly) type definition header t { y tt }<tt @ > expects 1 type arguments but 0 were given
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3188.p4
 Error: File p4/test/program/ill-typed/issue3188.p4, line 3, characters 18-92
@@ -441,7 +434,7 @@ Error: File p4/test/program/ill-typed/issue3197-e.p4, line 2, characters 1-5
 (type_func) function f not found
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3210.p4
-Error: File p4/test/program/ill-typed/issue3210.p4, line 9, characters 5-6
+Error on file: File p4/test/program/ill-typed/issue3210.p4, line 9, characters 5-6
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3221.p4
@@ -457,11 +450,11 @@ Error: File p4/test/program/ill-typed/issue3264.p4, line 4, characters 6-10
 (type_var_expr) this is a free identifier
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3271-1.p4
-Error: File p4/test/program/ill-typed/issue3271-1.p4, line 23, characters 7-8
+Error on file: File p4/test/program/ill-typed/issue3271-1.p4, line 23, characters 7-8
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3271.p4
-Error: File p4/test/program/ill-typed/issue3271.p4, line 3, characters 7-8
+Error on file: File p4/test/program/ill-typed/issue3271.p4, line 3, characters 7-8
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3282.p4
@@ -469,26 +462,24 @@ Error: File p4/test/program/ill-typed/issue3282.p4, line 6, characters 2-5
 (type_instantiation_expr) cannot instantiate an abstract extern object at expression level
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3285.p4
-Error: 
+Error on file: 
 transform error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3293.p4
-(specialize_typdef_poly) Type definition struct t1 {  }<t @ > expects 1 type arguments but 0 were given
-Error: 
-crash
+Error: File p4/test/program/ill-typed/issue3293.p4, line 3, characters 7-9
+(specialize_typdef_poly) type definition struct t1 {  }<t @ > expects 1 type arguments but 0 were given
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3299.p4
 Error: File p4/test/program/ill-typed/issue3299.p4, from line 17 character 1 to line 19 character 2
 (type_switch_stmt) switch statements can only be used within a control apply block
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3304.p4
-Error: File p4/test/program/ill-typed/issue3304.p4, from line 10 character 0 to line 14 character 1
+Error: File p4/test/program/ill-typed/issue3304.p4, line 10, characters 0-9
 (check_valid_typ_nesting) invalid nesting of (parser (in a t)<t @ >)<bit<1>> inside struct s { field (parser (in a t)<t @ >)<bit<1>> }
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3305.p4
-(specialize_typdef_poly) Type definition struct s1 { field t }<t @ > expects 1 type arguments but 0 were given
-Error: 
-crash
+Error: File p4/test/program/ill-typed/issue3305.p4, line 13, characters 4-9
+(specialize_typdef_poly) type definition struct s1 { field t }<t @ > expects 1 type arguments but 0 were given
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3316.p4
 Error: File p4/test/program/ill-typed/issue3316.p4, line 5, characters 17-21
@@ -519,7 +510,7 @@ Error: File p4/test/program/ill-typed/issue3363.p4, line 8, characters 6-13
 (type_binop_compare_equal) type (extern e {  }< @ >)<> cannot be compared of equality
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3378.p4
-Error: File p4/test/program/ill-typed/issue3378.p4, line 2, characters 10-22
+Error: File p4/test/program/ill-typed/issue3378.p4, line 2, characters 10-20
 (check_valid_typ_nesting) invalid nesting of (package {  }< @ >)<> inside tuple<(package {  }< @ >)<>, (package {  }< @ >)<>>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3442.p4
@@ -547,9 +538,8 @@ Error: File p4/test/program/ill-typed/issue3622.p4, line 10, characters 12-24
 (type_switch_table_label) switch label must be an action name
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3656.p4
-(specialize_funcdef) Function action() expects 0 type arguments but 1 were given
-Error: 
-crash
+Error: File p4/test/program/ill-typed/issue3656.p4, line 4, characters 8-17
+(specialize_funcdef) function action() expects 0 type arguments but 1 were given
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3671-2.p4
 Error: File p4/test/program/ill-typed/issue3671-2.p4, line 17, characters 8-55
@@ -560,11 +550,11 @@ Error: File p4/test/program/ill-typed/issue3727.p4, line 7, characters 15-20
 (type_table_action) f2 is not an action
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3750-1.p4
-Error: File p4/test/program/ill-typed/issue3750-1.p4, line 9, characters 7-18
+Error: File p4/test/program/ill-typed/issue3750-1.p4, line 9, characters 7-16
 (check_valid_typ_nesting) invalid nesting of (extern ct { apply() : extern_method() -> void< @ > }< @ >)<> inside tuple<(extern ct { apply() : extern_method() -> void< @ > }< @ >)<>>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3750.p4
-Error: File p4/test/program/ill-typed/issue3750.p4, line 2, characters 7-18
+Error: File p4/test/program/ill-typed/issue3750.p4, line 2, characters 7-16
 (check_valid_typ_nesting) invalid nesting of (control ()< @ >)<> inside tuple<(control ()< @ >)<>>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3751.p4
@@ -576,8 +566,8 @@ Error: File p4/test/program/ill-typed/issue3787.p4, line 3, characters 0-18
 (check_valid_param') extern objects can only be passed as directionless parameters but direction in was given
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3808-1.p4
-Error: 
-crash
+Error: File p4/test/program/ill-typed/issue3808-1.p4, from line 8 character 0 to line 17 character 1
+(type_control_decl) a control cannot have implicit type parameters
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3808.p4
 Error: File p4/test/program/ill-typed/issue3808.p4, line 11, characters 4-12
@@ -629,12 +619,12 @@ Error: File p4/test/program/ill-typed/issue4140.p4, line 7, characters 0-16
 (add_rtype) main is reserved for a package instance at the top level
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue4142.p4
-Error: 
+Error on file: 
 transform error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue435.p4
-Error: 
-crash
+Error: File p4/test/program/ill-typed/issue435.p4, line 7, characters 4-42
+(type_extern_constructor_mthd) constructors are only allowed for extern objects
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue561-1.p4
 Error: File p4/test/program/ill-typed/issue561-1.p4, line 29, characters 8-33
@@ -681,29 +671,28 @@ Error: File p4/test/program/ill-typed/issue818.p4, line 13, characters 2-19
 (check_valid_constyp_nesting) invalid nesting of (control ()< @ >)<> inside (extern WrapControl { execute() : extern_method() -> void< @ > }< @ >)<>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue819-1.p4
-(specialize_typdef_poly) Type definition extern WrapControls { execute1() : extern_method() -> void< @ >
+Error: File p4/test/program/ill-typed/issue819-1.p4, line 14, characters 13-25
+(specialize_typdef_poly) type definition extern WrapControls { execute1() : extern_method() -> void< @ >
 execute2() : extern_method() -> void< @ > }<T1, T2 @ > expects 2 type arguments but 0 were given
-Error: 
-crash
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue819.p4
-Error: 
-crash
+Error: File p4/test/program/ill-typed/issue819.p4, from line 14 character 0 to line 18 character 1
+(type_control_decl) a control cannot have implicit type parameters
 
 >>> Running typecheck test on p4/test/program/ill-typed/list-error.p4
 Error: File p4/test/program/ill-typed/list-error.p4, line 9, characters 4-34
 (check_eq_typ_alpha) Types (list<T><T @ >)<bit<16>> and (list<T><T @ >)<bit<32>> are not equal
 
 >>> Running typecheck test on p4/test/program/ill-typed/loop1-err.p4
-Error: File p4/test/program/ill-typed/loop1-err.p4, line 3, characters 9-10
+Error on file: File p4/test/program/ill-typed/loop1-err.p4, line 3, characters 9-10
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/loop2-err.p4
-Error: File p4/test/program/ill-typed/loop2-err.p4, line 5, characters 13-16
+Error on file: File p4/test/program/ill-typed/loop2-err.p4, line 5, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/loop3-err.p4
-Error: File p4/test/program/ill-typed/loop3-err.p4, line 51, characters 15-17
+Error on file: File p4/test/program/ill-typed/loop3-err.p4, line 51, characters 15-17
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/methodArgDontcare.p4
@@ -711,7 +700,7 @@ Error: File p4/test/program/ill-typed/methodArgDontcare.p4, line 7, characters 4
 (infer_targs) type __WILD_0 cannot be inferred
 
 >>> Running typecheck test on p4/test/program/ill-typed/minWidth.p4
-Error: 
+Error on file: 
 transform error
 
 >>> Running typecheck test on p4/test/program/ill-typed/missing_actions.p4
@@ -759,7 +748,7 @@ Error: File p4/test/program/ill-typed/not_bound.p4, line 36, characters 8-19
 (type_func) function set_nhop not found
 
 >>> Running typecheck test on p4/test/program/ill-typed/p_e.p4
-Error: File p4/test/program/ill-typed/p_e.p4, line 18, characters 0-0
+Error on file: File p4/test/program/ill-typed/p_e.p4, line 18, characters 0-0
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/package.p4
@@ -823,7 +812,7 @@ Error: File p4/test/program/ill-typed/serenum-typedef.p4, line 8, characters 0-9
 (coerce_type) cannot coerce type int to typedef typedef typedef type Base_t (bit<16>)
 
 >>> Running typecheck test on p4/test/program/ill-typed/shift_e.p4
-Error: File p4/test/program/ill-typed/shift_e.p4, line 20, characters 24-25
+Error on file: File p4/test/program/ill-typed/shift_e.p4, line 20, characters 24-25
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/signed.p4
@@ -868,7 +857,7 @@ Error: File p4/test/program/ill-typed/stack3.p4, line 34, characters 10-21
 (check_ctk) ((s1.size) + (((bit<32>) (1)))) is not a local compile-time known expression
 
 >>> Running typecheck test on p4/test/program/ill-typed/stack_e.p4
-Error: File p4/test/program/ill-typed/stack_e.p4, line 23, characters 8-20
+Error: File p4/test/program/ill-typed/stack_e.p4, line 23, characters 8-12
 (check_valid_typ_nesting) invalid nesting of (struct s {  }< @ >)<> inside (struct s {  }< @ >)<>[5]
 
 >>> Running typecheck test on p4/test/program/ill-typed/string-e.p4
@@ -892,11 +881,11 @@ Error: File p4/test/program/ill-typed/structure-valued-expr-errs-1.p4, line 100,
 (coerce_type) cannot coerce type seq<> to (header h1_t { f1 bit<8> }< @ >)<>
 
 >>> Running typecheck test on p4/test/program/ill-typed/structure-valued-expr-errs-2.p4
-Error: File p4/test/program/ill-typed/structure-valued-expr-errs-2.p4, line 106, characters 27-28
+Error on file: File p4/test/program/ill-typed/structure-valued-expr-errs-2.p4, line 106, characters 27-28
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/structured-annotation-e.p4
-Error: File p4/test/program/ill-typed/structured-annotation-e.p4, line 1, characters 22-23
+Error on file: File p4/test/program/ill-typed/structured-annotation-e.p4, line 1, characters 22-23
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/table-entries-decl-order.p4
@@ -926,7 +915,7 @@ Error: File p4/test/program/ill-typed/table-entries-optional-2-bmv2.p4, line 69,
 (type_table_entry_keyset) match_kind optional cannot use mask expression
 
 >>> Running typecheck test on p4/test/program/ill-typed/table-entries-outside-table.p4
-Error: File p4/test/program/ill-typed/table-entries-outside-table.p4, line 68, characters 10-17
+Error on file: File p4/test/program/ill-typed/table-entries-outside-table.p4, line 68, characters 10-17
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/table-entries-range.p4
@@ -942,7 +931,7 @@ Error: File p4/test/program/ill-typed/template_e.p4, line 16, characters 0-17
 (check_distinct_names) names are not distinct
 
 >>> Running typecheck test on p4/test/program/ill-typed/tuple-left.p4
-Error: File p4/test/program/ill-typed/tuple-left.p4, line 21, characters 11-12
+Error on file: File p4/test/program/ill-typed/tuple-left.p4, line 21, characters 11-12
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/tuple-newtype.p4
@@ -958,11 +947,11 @@ Error: File p4/test/program/ill-typed/type-field.p4, line 59, characters 13-14
 (type_type_acc_expr) Cannot access a generic type struct h { d (header d_t { f bit<32> }< @ >)<> }< @ >
 
 >>> Running typecheck test on p4/test/program/ill-typed/type-in-expr-lex0.p4
-Error: File p4/test/program/ill-typed/type-in-expr-lex0.p4, line 8, characters 25-26
+Error on file: File p4/test/program/ill-typed/type-in-expr-lex0.p4, line 8, characters 25-26
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/type-in-expr-lex1.p4
-Error: File p4/test/program/ill-typed/type-in-expr-lex1.p4, line 8, characters 21-22
+Error on file: File p4/test/program/ill-typed/type-in-expr-lex1.p4, line 8, characters 21-22
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/type-in-expr.p4
@@ -986,19 +975,19 @@ Error: File p4/test/program/ill-typed/typedef-and-type-definitions.p4, line 112,
 (check_valid_typ_nesting) invalid nesting of int inside type intT_t (int)
 
 >>> Running typecheck test on p4/test/program/ill-typed/underscore1_e.p4
-Error: File p4/test/program/ill-typed/underscore1_e.p4, line 17, characters 8-9
+Error on file: File p4/test/program/ill-typed/underscore1_e.p4, line 17, characters 8-9
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/underscore2_e.p4
-Error: File p4/test/program/ill-typed/underscore2_e.p4, line 19, characters 12-13
+Error on file: File p4/test/program/ill-typed/underscore2_e.p4, line 19, characters 12-13
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/underscore3_e.p4
-Error: File p4/test/program/ill-typed/underscore3_e.p4, line 16, characters 10-11
+Error on file: File p4/test/program/ill-typed/underscore3_e.p4, line 16, characters 10-11
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/underscore_e.p4
-Error: File p4/test/program/ill-typed/underscore_e.p4, line 16, characters 12-13
+Error on file: File p4/test/program/ill-typed/underscore_e.p4, line 16, characters 12-13
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/virtual1.p4
@@ -1029,5 +1018,5 @@ Error: File p4/test/program/ill-typed/virtual6.p4, from line 23 character 4 to l
 Error: File p4/test/program/ill-typed/wrong-cast.p4, line 2, characters 15-24
 (type_cast_expr) invalid cast from int<2> to bool
 
-Parser on file: [PASS] 219/252 (86.90%) [FAIL] 33/252 (13.10%)
-Typecheck: [PASS] 219/219 (100.00%) [FAIL] 0/219 (0.00%)
+Parser on file: [PASS] 252/252 (100.00%) [FAIL] 0/252 (0.00%)
+Typecheck: [PASS] 252/252 (100.00%) [FAIL] 0/252 (0.00%)

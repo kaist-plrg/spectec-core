@@ -1,5 +1,9 @@
 open Domain.Dom
 open Tdom
+open Util.Error
+
+let check = check_checker
+let error_no_info = error_checker_no_info
 
 type theta = typ TIdMap.t
 
@@ -259,22 +263,21 @@ let rec specialize_typdef (td : typdef) (targs : typ list) : typ =
   | PolyD tdp -> specialize_typdef_poly tdp targs
 
 and specialize_typdef_mono (tdm : typdef_mono) (targs : typ list) : typ =
-  if targs <> [] then (
-    Format.printf
-      "(specialize_typdef_mono) Type definition %a expects 0 type arguments \
-       but %d were given\n"
-      Pp.pp_typdef_mono tdm (List.length targs);
-    assert false);
+  check (targs = [])
+    (Format.asprintf
+       "(specialize_typdef_mono) type definition %a expects 0 type arguments \
+        but %d were given"
+       Pp.pp_typdef_mono tdm (List.length targs));
   tdm
 
 and specialize_typdef_poly (tdp : typdef_poly) (targs : typ list) : typ =
   let check_arity tparams =
-    if List.length targs <> List.length tparams then (
-      Format.printf
-        "(specialize_typdef_poly) Type definition %a expects %d type arguments \
-         but %d were given\n"
-        Pp.pp_typdef_poly tdp (List.length tparams) (List.length targs);
-      assert false)
+    check
+      (List.length targs = List.length tparams)
+      (Format.asprintf
+         "(specialize_typdef_poly) type definition %a expects %d type \
+          arguments but %d were given"
+         Pp.pp_typdef_poly tdp (List.length tparams) (List.length targs))
   in
   let tparams, tparams_hidden, typ_inner = tdp in
   let tparams = tparams @ tparams_hidden in
@@ -288,12 +291,12 @@ and specialize_typdef_poly (tdp : typdef_poly) (targs : typ list) : typ =
 let specialize_funcdef (fresh : unit -> int) (fd : funcdef) (targs : typ list) :
     functyp * TId.t list =
   let check_arity tparams =
-    if List.length targs <> List.length tparams then (
-      Format.printf
-        "(specialize_funcdef) Function %a expects %d type arguments but %d \
-         were given\n"
-        Pp.pp_funcdef fd (List.length tparams) (List.length targs);
-      assert false)
+    check
+      (List.length targs = List.length tparams)
+      (Format.asprintf
+         "(specialize_funcdef) function %a expects %d type arguments but %d \
+          were given"
+         Pp.pp_funcdef fd (List.length tparams) (List.length targs))
   in
   match fd with
   | MonoFD ft ->
@@ -340,12 +343,12 @@ let specialize_funcdef (fresh : unit -> int) (fd : funcdef) (targs : typ list) :
 and specialize_consdef (fresh : unit -> int) (cd : consdef) (targs : typ list) :
     constyp * TId.t list =
   let check_arity tparams =
-    if List.length targs <> List.length tparams then (
-      Format.printf
-        "(specialize_consdef) Constructor %a expects %d type arguments but %d \
-         were given\n"
-        Pp.pp_consdef cd (List.length tparams) (List.length targs);
-      assert false)
+    check
+      (List.length targs = List.length tparams)
+      (Format.asprintf
+         "(specialize_consdef) constructor %a expects %d type arguments but %d \
+          were given"
+         Pp.pp_consdef cd (List.length tparams) (List.length targs))
   in
   let fresh_tid () = "__WILD_" ^ string_of_int (fresh ()) in
   let fresh_targ tid = VarT tid in

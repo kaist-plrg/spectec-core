@@ -10,39 +10,39 @@ Error: File p4/test/program/well-typed-excluded/future/concat-string/spec-issue1
 (coerce_types_binary_numeric) cannot coerce types string and string
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop1.p4
-Error: File p4/test/program/well-typed-excluded/future/forloop/forloop1.p4, line 23, characters 16-17
+Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop1.p4, line 23, characters 16-17
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop2.p4
-Error: File p4/test/program/well-typed-excluded/future/forloop/forloop2.p4, line 16, characters 9-12
+Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop2.p4, line 16, characters 9-12
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop3.p4
-Error: File p4/test/program/well-typed-excluded/future/forloop/forloop3.p4, line 18, characters 13-16
+Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop3.p4, line 18, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop4.p4
-Error: File p4/test/program/well-typed-excluded/future/forloop/forloop4.p4, line 22, characters 13-16
+Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop4.p4, line 22, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop5.p4
-Error: File p4/test/program/well-typed-excluded/future/forloop/forloop5.p4, line 18, characters 13-16
+Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop5.p4, line 18, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop5a.p4
-Error: File p4/test/program/well-typed-excluded/future/forloop/forloop5a.p4, line 18, characters 13-16
+Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop5a.p4, line 18, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop6.p4
-Error: File p4/test/program/well-typed-excluded/future/forloop/forloop6.p4, line 19, characters 13-16
+Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop6.p4, line 19, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop7.p4
-Error: File p4/test/program/well-typed-excluded/future/forloop/forloop7.p4, line 18, characters 13-16
+Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop7.p4, line 18, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/issue4739.p4
-Error: File p4/test/program/well-typed-excluded/future/forloop/issue4739.p4, line 51, characters 13-16
+Error on file: File p4/test/program/well-typed-excluded/future/forloop/issue4739.p4, line 51, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/generic-parser-control/functors6.p4
@@ -544,7 +544,7 @@ Error: File p4/test/program/well-typed-excluded/spec-clarify/generic-constrained
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default/default-control-argument.p4
 Error: File p4/test/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default/default-control-argument.p4, line 22, characters 0-14
-(gen_cstrs) type parameters and arguments do not match
+(gen_cstrs) list lengths do not match: 3 and 2
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/spec-clarify/typedef-objects/extern-inst-as-param.p4
 Error: File p4/test/program/well-typed-excluded/spec-clarify/typedef-objects/extern-inst-as-param.p4, line 9, characters 0-51
@@ -592,13 +592,11 @@ Error: File p4/test/program/well-typed-excluded/test-clarify/aggregate-to-scalar
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/control-param-scope/shadow-after-use.p4
 Error: File p4/test/program/well-typed-excluded/test-clarify/control-param-scope/shadow-after-use.p4, from line 21 character 4 to line 23 character 5
-Key already exists: x
-
+key already exists: x
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/control-param-scope/shadow3.p4
 Error: File p4/test/program/well-typed-excluded/test-clarify/control-param-scope/shadow3.p4, line 20, characters 2-15
-Key already exists: p
-
+key already exists: p
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/duplicate-match-kind/pipe.p4
 Error: File p4/test/program/well-typed-excluded/test-clarify/duplicate-match-kind/pipe.p4, from line 19 character 0 to line 22 character 1
@@ -642,18 +640,15 @@ Error: File p4/test/program/well-typed-excluded/test-clarify/newtype-implicit-ca
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/package-overload/issue3379-1.p4
 Error: File p4/test/program/well-typed-excluded/test-clarify/package-overload/issue3379-1.p4, line 13, characters 0-45
-Key already exists: mypackaget
-
+key already exists: mypackaget
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/package-overload/issue3379.p4
 Error: File p4/test/program/well-typed-excluded/test-clarify/package-overload/issue3379.p4, line 14, characters 0-42
-Key already exists: mypackaget
-
+key already exists: mypackaget
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/shadow-func/issue3699.p4
 Error: File p4/test/program/well-typed-excluded/test-clarify/shadow-func/issue3699.p4, line 12, characters 0-46
-Key already exists: f1(a)
-
+key already exists: f1(a)
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/shift-by-signed-int/issue3287.p4
 Error: File p4/test/program/well-typed-excluded/test-clarify/shift-by-signed-int/issue3287.p4, line 6, characters 9-16
@@ -668,23 +663,23 @@ Error: File p4/test/program/well-typed-excluded/test-clarify/table-action-syntac
 (type_call_default_action) arguments ({ f0 = ext(), f1 = ext() }) and ({ f1 = ext(), f0 = ext() }) are syntactically different
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3091-1.p4
-Error: File p4/test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3091-1.p4, line 3, characters 0-45
+Error: File p4/test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3091-1.p4, line 3, characters 6-23
 (check_valid_typ_nesting) invalid nesting of match_kind inside tuple<match_kind>
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3091.p4
-Error: File p4/test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3091.p4, line 216, characters 0-33
+Error: File p4/test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3091.p4, line 216, characters 8-26
 (check_valid_typ_nesting) invalid nesting of match_kind inside tuple<match_kind>
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3238.p4
-Error: File p4/test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3238.p4, line 3, characters 2-22
+Error: File p4/test/program/well-typed-excluded/test-clarify/tuple-nesting/issue3238.p4, line 3, characters 2-12
 (check_valid_typ_nesting) invalid nesting of int inside tuple<int>
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/tuple-nesting/list3.p4
-Error: File p4/test/program/well-typed-excluded/test-clarify/tuple-nesting/list3.p4, line 6, characters 6-55
+Error: File p4/test/program/well-typed-excluded/test-clarify/tuple-nesting/list3.p4, line 6, characters 6-50
 (check_valid_typ_nesting) invalid nesting of typedef int inside tuple<typedef int, (tuple<T0, T1><T0, T1 @ >)<K, K>, V>
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/tuple-nesting/list4.p4
-Error: File p4/test/program/well-typed-excluded/test-clarify/tuple-nesting/list4.p4, line 6, characters 6-55
+Error: File p4/test/program/well-typed-excluded/test-clarify/tuple-nesting/list4.p4, line 6, characters 6-50
 (check_valid_typ_nesting) invalid nesting of typedef int inside tuple<typedef int, (tuple<T0, T1><T0, T1 @ >)<K, K>, V>
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/type-inference-should-fail/issue2105.p4
@@ -748,7 +743,7 @@ Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element
 (type_table_custom) custom element counters is undefined
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4
-Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4, line 23, characters 4-14
+Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4, line 23, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/init_ebpf.p4
@@ -756,19 +751,19 @@ Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element
 (check_instantiation_site) extern hash_table {  } cannot be instantiated in TableApplyMethod
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2791_ebpf.p4
-Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2791_ebpf.p4, line 7, characters 4-14
+Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2791_ebpf.p4, line 7, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2793_ebpf.p4
-Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2793_ebpf.p4, line 24, characters 4-14
+Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2793_ebpf.p4, line 24, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2816-1_ebpf.p4
-Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2816-1_ebpf.p4, line 24, characters 4-14
+Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2816-1_ebpf.p4, line 24, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2816_ebpf.p4
-Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2816_ebpf.p4, line 7, characters 4-14
+Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2816_ebpf.p4, line 7, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue297-bmv2.p4
@@ -784,7 +779,7 @@ Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element
 (type_table_custom) custom element counters is undefined
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue870_ebpf.p4
-Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue870_ebpf.p4, line 24, characters 4-14
+Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue870_ebpf.p4, line 24, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/junk-prop-bmv2.p4
@@ -792,15 +787,15 @@ Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element
 (type_table_custom) custom element junk is undefined
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/key-issue-1020_ebpf.p4
-Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/key-issue-1020_ebpf.p4, line 7, characters 4-14
+Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/key-issue-1020_ebpf.p4, line 7, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/key_ebpf.p4
-Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/key_ebpf.p4, line 7, characters 4-14
+Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/key_ebpf.p4, line 7, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/lpm_ebpf.p4
-Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/lpm_ebpf.p4, line 24, characters 4-14
+Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/lpm_ebpf.p4, line 24, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/named_meter_1-bmv2.p4
@@ -904,27 +899,27 @@ Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element
 (type_table_custom) custom element psa_direct_meter is undefined
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/stack_ebpf.p4
-Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/stack_ebpf.p4, line 24, characters 4-14
+Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/stack_ebpf.p4, line 24, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/switch_ebpf.p4
-Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/switch_ebpf.p4, line 24, characters 4-14
+Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/switch_ebpf.p4, line 24, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/ternary_ebpf.p4
-Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/ternary_ebpf.p4, line 22, characters 4-14
+Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/ternary_ebpf.p4, line 22, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/test_ebpf.p4
-Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/test_ebpf.p4, line 24, characters 4-14
+Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/test_ebpf.p4, line 24, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/two_ebpf.p4
-Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/two_ebpf.p4, line 23, characters 4-14
+Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/two_ebpf.p4, line 23, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/valid_ebpf.p4
-Error: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/valid_ebpf.p4, line 8, characters 4-14
+Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/valid_ebpf.p4, line 8, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/optional-param/gauntlet_optional-bmv2.p4
@@ -965,43 +960,43 @@ Error: File p4/test/program/well-typed-excluded/unsupported/optional-param/pna-d
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/selector-match-kind/action_selector_shared-bmv2.p4
 Error: File p4/test/program/well-typed-excluded/unsupported/selector-match-kind/action_selector_shared-bmv2.p4, line 38, characters 8-40
-(check_table_key) selector is not a valid match_kind
+(check_table_key) bit<32> is not a valid table key type for match kind selector
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/selector-match-kind/issue1560-bmv2.p4
 Error: File p4/test/program/well-typed-excluded/unsupported/selector-match-kind/issue1560-bmv2.p4, from line 152 character 8 to line 155 character 9
-(check_table_key) selector is not a valid match_kind
+(check_table_key) bit<16> is not a valid table key type for match kind selector
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/selector-match-kind/pna-action-selector-1.p4
 Error: File p4/test/program/well-typed-excluded/unsupported/selector-match-kind/pna-action-selector-1.p4, from line 112 character 8 to line 115 character 9
-(check_table_key) selector is not a valid match_kind
+(check_table_key) bit<16> is not a valid table key type for match kind selector
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/selector-match-kind/pna-action-selector.p4
 Error: File p4/test/program/well-typed-excluded/unsupported/selector-match-kind/pna-action-selector.p4, from line 109 character 8 to line 112 character 9
-(check_table_key) selector is not a valid match_kind
+(check_table_key) bit<16> is not a valid table key type for match kind selector
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector1.p4
 Error: File p4/test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector1.p4, from line 59 character 8 to line 62 character 9
-(check_table_key) selector is not a valid match_kind
+(check_table_key) bit<16> is not a valid table key type for match kind selector
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector2.p4
 Error: File p4/test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector2.p4, from line 60 character 8 to line 64 character 9
-(check_table_key) selector is not a valid match_kind
+(check_table_key) bit<16> is not a valid table key type for match kind selector
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector3.p4
 Error: File p4/test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector3.p4, from line 59 character 8 to line 63 character 9
-(check_table_key) selector is not a valid match_kind
+(check_table_key) bit<16> is not a valid table key type for match kind selector
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector4.p4
 Error: File p4/test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector4.p4, from line 59 character 8 to line 62 character 9
-(check_table_key) selector is not a valid match_kind
+(check_table_key) bit<16> is not a valid table key type for match kind selector
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector5.p4
 Error: File p4/test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector5.p4, from line 59 character 8 to line 62 character 9
-(check_table_key) selector is not a valid match_kind
+(check_table_key) bit<16> is not a valid table key type for match kind selector
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector6.p4
 Error: File p4/test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector6.p4, line 55, characters 4-27
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 
-Parser on file: [PASS] 226/250 (90.40%) [FAIL] 24/250 (9.60%)
-Typecheck: [PASS] 8/226 (3.54%) [FAIL] 218/226 (96.46%)
+Parser on file: [PASS] 250/250 (100.00%) [FAIL] 0/250 (0.00%)
+Typecheck: [PASS] 8/250 (3.20%) [FAIL] 242/250 (96.80%)

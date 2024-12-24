@@ -5,6 +5,8 @@ module Type = Types.Type
 open Util.Source
 open Util.Error
 
+let error_no_info = error_checker_no_info
+
 type pt = { values : int list; init : bool; delta : int; largest_wins : bool }
 type et = { size : int; const : bool }
 
@@ -49,7 +51,7 @@ let empty =
 let get_lpm_prefix value_mask =
   let rec get_lpm_prefix' value_mask prefix =
     match (value_mask : Value.t) with
-    | FBitV (width, _) when Bigint.(width = zero) -> prefix |> ok
+    | FBitV (width, _) when Bigint.(width = zero) -> prefix
     | FBitV (width, value) ->
         let two = Bigint.(one + one) in
         let width_next = Bigint.(width - one) in
@@ -67,8 +69,8 @@ let get_lpm_prefix value_mask =
           value_mask
         |> error_no_info
   in
-  let* prefix = get_lpm_prefix' value_mask 0 in
-  Lpm prefix |> ok
+  let prefix = get_lpm_prefix' value_mask 0 in
+  Lpm prefix
 
 (* Setters and adders *)
 
@@ -111,19 +113,18 @@ let update_mode (match_kind : string) (typ_key : Type.t) table_ctx =
   match (match_kind, table_ctx.mode) with
   | "lpm", NoPri ->
       let prefix_max = Type.get_width typ_key in
-      set_mode (NoPriLpm prefix_max) table_ctx |> ok
-  | "lpm", Pri -> set_mode PriLpm table_ctx |> ok
+      set_mode (NoPriLpm prefix_max) table_ctx
+  | "lpm", Pri -> set_mode PriLpm table_ctx
   | "lpm", _ -> "(update_mode) too many lpms" |> error_no_info
-  | ("range" | "ternary" | "optional"), NoPri -> set_mode Pri table_ctx |> ok
-  | ("range" | "ternary" | "optional"), NoPriLpm _ ->
-      set_mode PriLpm table_ctx |> ok
-  | _ -> table_ctx |> ok
+  | ("range" | "ternary" | "optional"), NoPri -> set_mode Pri table_ctx
+  | ("range" | "ternary" | "optional"), NoPriLpm _ -> set_mode PriLpm table_ctx
+  | _ -> table_ctx
 
 let update_state (state_prev : state) (state_curr : state) =
   match (state_prev, state_curr) with
-  | NoLpm, Lpm _ -> state_curr |> ok
-  | Lpm _, NoLpm -> state_prev |> ok
-  | NoLpm, NoLpm -> NoLpm |> ok
+  | NoLpm, Lpm _ -> state_curr
+  | Lpm _, NoLpm -> state_prev
+  | NoLpm, NoLpm -> NoLpm
   | Lpm _, Lpm _ -> "(update_state) too many lpms" |> error_no_info
 
 (* Finders *)

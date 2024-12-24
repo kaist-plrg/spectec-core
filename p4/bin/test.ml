@@ -1,3 +1,5 @@
+open Util.Error
+
 let version = "0.1"
 
 type stat = {
@@ -8,6 +10,8 @@ type stat = {
 }
 
 type mode = Pos | Neg
+
+exception TestParseErr of stat
 
 let log_stat name fails total : unit =
   let passes = total - fails in
@@ -32,43 +36,39 @@ let rec collect_files testdir =
 (* Parser roundtrip test *)
 
 let parse_file stat includes filename =
-  let program = Frontend.Parse.parse_file includes filename in
-  match program with
-  | Ok program -> Ok (stat, program)
-  | Error (msg, info) ->
-      stat.fail_file <- stat.fail_file + 1;
-      Error (stat, msg, info)
+  try
+    let program = Frontend.Parse.parse_file includes filename in
+    (stat, program)
+  with ParseErr (msg, info) ->
+    stat.fail_file <- stat.fail_file;
+    Format.asprintf "Error on file: %a\n%s" Util.Source.pp info msg
+    |> print_endline;
+    raise (TestParseErr stat)
 
 let parse_string stat filename file =
-  let program = Frontend.Parse.parse_string filename file in
-  match program with
-  | Ok program -> Ok (stat, program)
-  | Error (msg, info) ->
-      stat.fail_string <- stat.fail_string + 1;
-      Error (stat, msg, info)
+  try
+    let program = Frontend.Parse.parse_string filename file in
+    (stat, program)
+  with ParseErr (msg, info) ->
+    stat.fail_string <- stat.fail_string;
+    Format.asprintf "Error on string: %a\n%s" Util.Source.pp info msg
+    |> print_endline;
+    raise (TestParseErr stat)
 
 let parse_roundtrip stat includes filename =
   Format.asprintf "\n>>> Running parser roundtrip test on %s" filename
   |> print_endline;
-  match parse_file stat includes filename with
-  | Error (stat, msg, info) ->
-      Format.asprintf "Error: %a\n%s" Util.Source.pp info msg |> print_endline;
-      stat
-  | Ok (stat, program) -> (
-      let file' = Format.asprintf "%a\n" El.Pp.pp_program program in
-      match parse_string stat filename file' with
-      | Error (stat, msg, info) ->
-          Format.asprintf "Error: %a\n%s" Util.Source.pp info msg
-          |> print_endline;
-          stat
-      | Ok (stat, program') ->
-          if El.Eq.eq_program program program' then
-            Format.asprintf "Parser roundtrip success: %s" filename
-            |> print_endline
-          else (
-            stat.fail_roundtrip <- stat.fail_roundtrip + 1;
-            Format.asprintf "Error: parser roundtrip fail" |> print_endline);
-          stat)
+  try
+    let stat, program' = parse_file stat includes filename in
+    let file' = Format.asprintf "%a\n" El.Pp.pp_program program' in
+    let stat, program'' = parse_string stat filename file' in
+    if El.Eq.eq_program program' program'' then
+      Format.asprintf "Parser roundtrip success: %s" filename |> print_endline
+    else (
+      stat.fail_roundtrip <- stat.fail_roundtrip + 1;
+      Format.asprintf "Error: parser roundtrip fail" |> print_endline);
+    stat
+  with TestParseErr stat -> stat
 
 let parse_test includes testdir =
   let files = collect_files testdir in
@@ -100,27 +100,27 @@ let parse_command =
 (* Typecheck test *)
 
 let typecheck stat includes mode filename =
-  match parse_file stat includes filename with
-  | Error (stat, msg, info) ->
+  let on_success stat =
+    if mode = Neg then stat.fail_typecheck <- stat.fail_typecheck + 1;
+    stat
+  in
+  let on_error stat =
+    if mode = Pos then stat.fail_typecheck <- stat.fail_typecheck + 1;
+    stat
+  in
+  try
+    let stat, program = parse_file stat includes filename in
+    let _program = Typing.Typecheck.type_program program in
+    Format.asprintf "Typecheck success" |> print_endline;
+    on_success stat
+  with
+  | TestParseErr stat -> on_error stat
+  | CheckErr (msg, info) ->
       Format.asprintf "Error: %a\n%s" Util.Source.pp info msg |> print_endline;
-      stat
-  | Ok (stat, program) -> (
-      let on_success stat =
-        Format.asprintf "Typecheck success" |> print_endline;
-        if mode = Neg then stat.fail_typecheck <- stat.fail_typecheck + 1;
-        stat
-      in
-      let on_error ?(info = Util.Source.no_info) stat msg =
-        Format.asprintf "Error: %a\n%s" Util.Source.pp info msg |> print_endline;
-        if mode = Pos then stat.fail_typecheck <- stat.fail_typecheck + 1;
-        stat
-      in
-      try
-        let program = Typing.Typecheck.type_program program in
-        match program with
-        | Ok _ -> on_success stat
-        | Error (msg, info) -> on_error stat msg ~info
-      with _ -> on_error stat "crash")
+      on_error stat
+  | _ ->
+      Format.asprintf "Error: unknown error" |> print_endline;
+      on_error stat
 
 let typecheck_test includes mode testdir =
   let files = collect_files testdir in
