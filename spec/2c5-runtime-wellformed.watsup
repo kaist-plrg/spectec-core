@@ -293,17 +293,21 @@ rule FuncType_wf/builtinmethodt:
   -- ParamTypes_wf: tidset |- paramtyp*
   -- Type_wf: tidset |- typ_r
 
-;; (TODO) How to check that directionless action parameters
+;; (TODO-Jaehyun) How to check that directionless action parameters
 ;; must be at the end of the parameter list?
 rule FuncType_wf/actiont:
   tidset |- ActionT paramtyp*
   -- ParamTypes_wf: tidset |- paramtyp*
   -- (Type_wf: tidset |- typ)*
 
+;; (TODO) Add parameter nesting rule.
+;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/parserapplymethodt:
   tidset |- ParserApplyMethodT paramtyp*
   -- ParamTypes_wf: tidset |- paramtyp*
 
+;; (TODO) Add parameter nesting rule.
+;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/controlapplymethodt:
   tidset |- ControlApplyMethodT paramtyp*
   -- ParamTypes_wf: tidset |- paramtyp*
@@ -311,21 +315,29 @@ rule FuncType_wf/controlapplymethodt:
 rule FuncType_wf/tableapplymethodt:
   tidset |- TableApplyMethodT (TableStructT id (member, typ)*)
 
+;; (TODO) Add parameter nesting rule.
+;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/externfunctiont:
   tidset |- ExternFuncT paramtyp* typ_r
   -- ParamTypes_wf: tidset |- paramtyp*
   -- Type_wf: tidset |- typ_r
 
+;; (TODO) Add parameter nesting rule.
+;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/functiont:
   tidset |- FuncT paramtyp* typ_r
   -- ParamTypes_wf: tidset |- paramtyp*
   -- Type_wf: tidset |- typ_r
 
+;; (TODO) Add parameter nesting rule.
+;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/externmethodt:
   tidset |- ExternMethodT paramtyp* typ_r
   -- ParamTypes_wf: tidset |- paramtyp*
   -- Type_wf: tidset |- typ_r
 
+;; (TODO) Add parameter nesting rule.
+;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/externabstractmethodt:
   tidset |- ExternMethodT paramtyp* typ_r
   -- ParamTypes_wf: tidset |- paramtyp*

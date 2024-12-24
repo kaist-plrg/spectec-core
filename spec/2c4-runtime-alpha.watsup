@@ -109,6 +109,10 @@ rule Type_alpha/uniont:
   -- if (member_a = member_b)*
   -- (Type_alpha: typ_a ~~ typ_b)*
 
+;; (TODO) Fill in the rule.
+;; This would require defining alpha-equivalence of function definitions,
+;; also ignore hidden type parameters here.
+;; (runtime/tdomain/eq.ml/eq_typ)
 ;;rule Type_alpha/externt:
 ;;  (ExternT id_a fmap_a) ~~ (ExternT id_b fmap_b)
 

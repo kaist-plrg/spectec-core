@@ -6,6 +6,10 @@ rule Sub_expl/canon:
   typ <: typ'
   -- Sub_expl: $canon_typ(typ) <: $canon_typ(typ')
 
+rule Sub_expl/eq:
+  typ <: typ'
+  -- Type_alpha: typ ~~ typ'
+
 rule Sub_expl/fbitt-boolt:
   FBitT 1 <: BoolT
 
@@ -68,22 +72,40 @@ rule Sub_expl/seqt-stackt:
   -- (Sub_expl: typ' <: typ'')*
   -- if |typ'*| <= i
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_expl/recordt-structt:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_expl/recordt-headert:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_expl/defaultt:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_expl/seqdefaultt-tuplet:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_expl/seqdefaultt-stackt:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_expl/seqdefaultt-structt:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_expl/seqdefaultt-headert:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_expl/recorddefaultt-structt:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_expl/recorddefaultt-headert:
 
 rule Sub_expl/invalidt-headert:
@@ -100,6 +122,10 @@ rule Sub_expl/invalidt-uniont:
 rule Sub_impl/canon:
   typ <: typ'
   -- Sub_impl: $canon_typ(typ) <: $canon_typ(typ')
+
+rule Sub_expl/eq:
+  typ <: typ'
+  -- Type_alpha: typ ~~ typ'
 
 rule Sub_impl/intt-fbitt:
   IntT <: FBitT i
@@ -128,22 +154,40 @@ rule Sub_impl/seqt-stackt:
   -- (Sub_impl: typ' <: typ'')*
   -- if |typ'*| <= i
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_impl/recordt-structt:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_impl/recordt-headert:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_impl/defaultt:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_impl/seqdefaultt-tuplet:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_impl/seqdefaultt-stackt:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_impl/seqdefaultt-structt:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_impl/seqdefaultt-headert:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_impl/recorddefaultt-structt:
 
+;; (TODO) Fill in the rule.
+;; (typing/subtyp.ml)
 ;; rule Sub_impl/recorddefaultt-headert:
 
 rule Sub_impl/invalidt-headert:

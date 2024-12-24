@@ -65,7 +65,6 @@ rule Decl_ok/vard-some:
 
 ;;
 ;; Instance declaration
-;; (TODO) Specify when object initializer block is present
 ;;
 
 rule Decl_ok/instd-none:
@@ -78,6 +77,10 @@ rule Decl_ok/instd-none:
   ----
   -- Inst_ok: p C |- ct arg* : typ
   -- if C' = $add_typ(p, C, id, typ NO CTK)
+
+;; (TODO-Jaehyun) Specify when object initializer block is present
+;;rule Decl_ok/instd-some:
+;;  p C |- InstD id name_inst targ* arg* decl* : C'
 
 ;;
 ;; Error declaration
@@ -544,6 +547,16 @@ rule Decl_ok/parserd:
 ;;
 ;; Table declaration
 ;;
+
+;; (TODO) Fill in the rule.
+;; This is a tough one. Would have to define table context as well.
+;; A good starting point would be only checking the types,
+;; without checking the detailed validity of each table properties (e.g. lpm prefix checks).
+;; (typing/typecheck.ml/type_table_decl, typing/tablectx.ml)
+;; rule Decl_ok/tabled:
+;; BLOCK C |- TableD id tblprop* : C'
+;; ----
+;; -- if C.BLOCK.KIND = CONTROL 
 
 ;;
 ;; Control type declaration

@@ -18,7 +18,7 @@ rule Stmt_ok/assigns:
 
 ;;
 ;; Switch statement
-;; TODO check for duplicate label and non-last default label
+;; (TODO-Jaehyun) check for duplicate label and non-last default label
 ;;
 
 relation Switch_tbl_label_ok:

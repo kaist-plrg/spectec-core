@@ -2,16 +2,25 @@
 ;; Substitution (capture-avoiding)
 ;;
 
+;; (TODO) Fill in the body.
+;; May have to define additional functions.
+;; (runtime/tdomain/subst.ml/subst_typ)
 def $subst_typ(tenv, typ) : typ   hint(show %2#%latex("/")%1)
 
 ;;
 ;; Specialization
 ;;
 
+;; (TODO) Fill in the body.
+;; (runtime/tdomain/subst.ml/specialize_typdef)
 def $specialize_typdef(typdef, typ*) : typ  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
+;; (TODO) Fill in the body, without considering hidden type parameters and fresh type variables.
+;; (runtime/tdomain/subst.ml/specialize_funcdef)
 def $specialize_funcdef(funcdef, typ*) : functyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
+;; (TODO) Fill in the body, without considering hidden type parameters and fresh type variables.
+;; (runtime/tdomain/subst.ml/specialize_consdef)
 def $specialize_consdef(consdef, typ*) : constyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
 ;;

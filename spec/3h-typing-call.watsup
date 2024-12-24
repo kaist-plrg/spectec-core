@@ -1,6 +1,17 @@
-;; Function typing
+;;
+;; Calling convention
+;;
 
-;; TODO should consider overload resolution and default parameters
+;; (TODO) Write the rules for call typing.
+;; Ignore calls by argument names (e.g., f(a = 1)), default parameters,
+;; and type inference for now.
+;; (typing/typecheck.ml/type_call, typing/typecheck/type_call_convention)
+
+;;
+;; Function typing
+;;
+
+;; (TODO-Jaehyun) should consider overload resolution and default parameters
 
 rule FuncType_ok:
    p C |- name targ* arg* : functyp
@@ -10,10 +21,11 @@ rule FuncType_ok:
    ----
    -- if functyp = $specialize_funcdef(funcdef, typ_a*)
 
-
+;;
 ;; Method typing
+;;
 
-;; TODO check that builtin is defined on typ_b
+;; (TODO-Jaehyun) check that builtin is defined on typ_b
 rule MethodType_ok/builtin:
   p C |- expr_b member eps eps : BuiltinMethodT eps IntT
   -- Expr_ok: p C |- expr_b : typ_b ctk_b

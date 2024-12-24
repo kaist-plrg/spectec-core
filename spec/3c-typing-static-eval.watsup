@@ -1,3 +1,6 @@
+;; (TODO-Jaehyun) The whole thing doesn't make sense
+;; unless we introduce p4cherry IL into the type system
+
 ;; Boolean expression
 
 rule Eval_static/boole:

@@ -340,6 +340,10 @@ rule Expr_ok/rangee:
 ;; Select expression
 ;;
 
+;; (TODO) Fill in the rule.
+;; Would be a good idea to define a new relation for checking the internals of a select.
+;; PTAL at the rules for switch statement in 3f-typing-stmt.
+;; (typing/typecheck.ml/type_select_expr)
 ;;rule Expr_ok/selecte:
 ;;  LOCAL C |- SelectE expr_k* selectcase* : StateT DYN
 ;;  -- if C.LOCAL.KIND = PARSERSTATE
@@ -378,7 +382,7 @@ rule Expr_ok/arracce-stackt:
 ;; Bitstring access expression
 ;;
 
-;; (TODO) check bitstring slice range
+;; (TODO-Jaehyun) check bitstring slice range
 rule Expr_ok/bitacce:
   p C |- BitAccE expr_b expr_l expr_h : typ ctk_b
   ----
