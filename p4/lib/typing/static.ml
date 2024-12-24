@@ -4,7 +4,7 @@ module Types = Runtime.Tdomain.Types
 module Type = Types.Type
 module F = Format
 open Util.Source
-open Error
+open Util.Error
 
 (* (18.1) Compile-time known and local compile-time known values
 
@@ -173,8 +173,8 @@ and ctk_call_type_expr (typ : Il.Ast.typ) (member : Il.Ast.member) : Ctk.t res =
 
 let rec eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr) :
     Il.Ast.value res =
-  let* _ = check_lctk expr |> error_info expr.at in
-  let* value = eval_expr' cursor ctx expr.it |> error_info expr.at in
+  let* _ = check_lctk expr |> error_pass_info expr.at in
+  let* value = eval_expr' cursor ctx expr.it |> error_pass_info expr.at in
   Ok (value $ expr.at)
 
 and eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
@@ -201,13 +201,7 @@ and eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
 
 and eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : Il.Ast.expr list) :
     Il.Ast.value list res =
-  let rec eval_exprs' values = function
-    | [] -> Ok values
-    | expr :: exprs ->
-        let* value = eval_expr cursor ctx expr in
-        eval_exprs' (values @ [ value ]) exprs
-  in
-  eval_exprs' [] exprs
+  map_res (eval_expr cursor ctx) exprs
 
 and eval_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : Il.Ast.var) :
     Value.t res =

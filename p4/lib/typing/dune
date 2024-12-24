@@ -1,4 +1,4 @@
 (library
  (name typing)
  (libraries lang el il runtime)
- (modules error ctx tblctx subtyp static wellformed flow typecheck))
+ (modules ctx tblctx subtyp static wellformed flow typecheck))

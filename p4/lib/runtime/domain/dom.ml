@@ -1,4 +1,5 @@
 open Util.Source
+open Util.Error
 
 (* Variable identifiers *)
 
@@ -154,8 +155,8 @@ struct
 
   let add_nodup id value env =
     if mem id env then
-      Format.asprintf "Key already exists: %a\n" Id.pp id |> failwith
-    else add id value env
+      Format.asprintf "Key already exists: %a\n" Id.pp id |> error_no_info
+    else add id value env |> ok
 end
 
 module MakeTIdEnv = MakeIdEnv
@@ -188,12 +189,10 @@ struct
   (* Overloaded lookup, allowing defaults *)
 
   let check_named_args args =
-    if not (List.for_all Option.is_some args || List.for_all Option.is_none args)
-    then (
-      Format.printf
-        "(check_named_args) Either all or no arguments must specify the \
-         parameter name\n";
-      assert false)
+    check
+      (List.for_all Option.is_some args || List.for_all Option.is_none args)
+      "(check_named_args) either all or no arguments must specify the \
+       parameter name"
 
   (* (6.8.1) Justification
 
@@ -242,7 +241,7 @@ struct
     else None
 
   let find_overloaded_opt (fname, args) fenv =
-    check_named_args args;
+    let* _ = check_named_args args in
     let arg_names =
       if List.for_all Option.is_some args then
         List.map Option.get args |> List.sort String.compare
@@ -268,19 +267,19 @@ struct
           else find_match_unnamed_default func args params)
         (bindings fenv)
     in
-    if List.length funcs > 2 then (
-      Format.printf
-        "(find_overloaded_opt) Cannot resolve overloaded function given %a\n"
-        FId.pp_name fname;
-      assert false);
-    assert (List.length funcs <= 1);
-    match funcs with [] -> None | _ -> Some (List.hd funcs)
+    match funcs with
+    | [] -> None |> ok
+    | [ func ] -> Some func |> ok
+    | _ ->
+        Format.asprintf
+          "(find_overloaded_opt) cannot resolve overloaded function given %a"
+          FId.pp_name fname
+        |> error_no_info
 
   let find_overloaded (fname, args) fenv =
     match find_overloaded_opt (fname, args) fenv with
-    | Some value -> value
-    | None ->
-        Format.asprintf "Key not found: %a\n" FId.pp_name fname |> failwith
+    | Ok (Some value) -> value
+    | _ -> Format.asprintf "Key not found: %a\n" FId.pp_name fname |> failwith
 
   (* Non-overloaded lookup, allowing defaults *)
 
@@ -289,36 +288,39 @@ struct
     |> List.map snd
 
   let find_non_overloaded_opt (fname, args) fenv =
-    check_named_args args;
+    let* _ = check_named_args args in
     let funcs = find_non_overloaded_opt' fname fenv in
-    assert (List.length funcs <= 1);
-    match funcs with [] -> None | _ -> Some (List.hd funcs)
+    match funcs with
+    | [] -> None |> ok
+    | [ func ] -> Some func |> ok
+    | _ -> assert false
 
   let find_non_overloaded (fname, args) fenv =
     match find_non_overloaded_opt (fname, args) fenv with
-    | Some value -> value
-    | None ->
-        Format.asprintf "Key not found: %a\n" FId.pp_name fname |> failwith
+    | Ok (Some value) -> value
+    | _ -> Format.asprintf "Key not found: %a\n" FId.pp_name fname |> failwith
 
   (* Adders *)
 
   let add_nodup_overloaded fid value fenv =
     if mem fid fenv then
-      Format.asprintf "Key already exists: %a\n" FId.pp fid |> failwith
+      Format.asprintf "Key already exists: %a\n" FId.pp fid |> error_no_info
     else
       let fname, _ = fid in
       match find_non_overloaded_opt' fname fenv with
-      | [] -> add fid value fenv
+      | [] -> add fid value fenv |> ok
       | values ->
           if not (List.for_all (V.eq_kind value) values) then
-            Format.asprintf "Key already exists: %a\n" FId.pp fid |> failwith
-          else add fid value fenv
+            Format.asprintf "Key already exists: %a\n" FId.pp fid
+            |> error_no_info
+          else add fid value fenv |> ok
 
   let add_nodup_non_overloaded fid value fenv =
     let fname, _ = fid in
     match find_non_overloaded_opt' fname fenv with
-    | [] -> add fid value fenv
-    | _ -> Format.asprintf "Key already exists: %a\n" FId.pp fid |> failwith
+    | [] -> add fid value fenv |> ok
+    | _ ->
+        Format.asprintf "Key already exists: %a\n" FId.pp fid |> error_no_info
 end
 
 module MakeCIdEnv = MakeFIdEnv

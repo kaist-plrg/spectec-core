@@ -1,3 +1,3 @@
 (library
  (name util)
- (modules source))
+ (modules source error))

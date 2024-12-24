@@ -9,7 +9,7 @@ module ConsType = Types.ConsType
 module ConsDef = Types.ConsDef
 module Envs = Runtime.Envs
 module F = Format
-open Error
+open Util.Error
 
 let check_distinct_names (names : string list) : unit res =
   let distinct =
@@ -156,14 +156,11 @@ and check_valid_typ' (tset : TIdSet.t) (typ : Type.t) : unit res =
 
 and check_valid_typs' (tset : TIdSet.t) (typ : Type.t)
     (typs_inner : Type.t list) : unit res =
-  let rec check_valid_typs'' = function
-    | [] -> Ok ()
-    | typ_inner :: typs_inner ->
-        let* _ = check_valid_typ' tset typ_inner in
-        let* _ = check_valid_typ_nesting typ typ_inner in
-        check_valid_typs'' typs_inner
-  in
-  check_valid_typs'' typs_inner
+  iter_res
+    (fun typ_inner ->
+      let* _ = check_valid_typ' tset typ_inner in
+      check_valid_typ_nesting typ typ_inner)
+    typs_inner
 
 and check_valid_typ_nesting (typ : Type.t) (typ_inner : Type.t) : unit res =
   check
@@ -545,13 +542,7 @@ and check_valid_params' (tset : TIdSet.t) (params : Types.param list) : unit res
     =
   let ids = List.map (fun (id, _, _, _) -> id) params in
   let* _ = check_distinct_names ids in
-  let rec check_valid_params'' = function
-    | [] -> Ok ()
-    | param :: params ->
-        let* _ = check_valid_param' tset param in
-        check_valid_params'' params
-  in
-  check_valid_params'' params
+  iter_res (check_valid_param' tset) params
 
 and check_valid_functyp (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) :
     unit res =
@@ -599,19 +590,14 @@ and check_valid_functyp' (tset : TIdSet.t) (ft : FuncType.t) : unit res =
 
 and check_valid_functyp_nesting (ft : FuncType.t) (params : Types.param list) :
     unit res =
-  let rec check_valid_functyp_nesting'' = function
-    | [] -> Ok ()
-    | (_, dir, typ_inner, _) :: params ->
-        let* _ =
-          check
-            (check_valid_functyp_nesting' ft dir typ_inner)
-            (Format.asprintf
-               "(check_valid_functyp_nesting) invalid nesting of %a inside %a"
-               Type.pp typ_inner FuncType.pp ft)
-        in
-        check_valid_functyp_nesting'' params
-  in
-  check_valid_functyp_nesting'' params
+  iter_res
+    (fun (_, dir, typ, _) ->
+      check
+        (check_valid_functyp_nesting' ft dir typ)
+        (Format.asprintf
+           "(check_valid_functyp_nesting) invalid nesting of %a inside %a"
+           Type.pp typ FuncType.pp ft))
+    params
 
 and check_valid_functyp_nesting' (ft : FuncType.t) (dir : Lang.Ast.dir')
     (typ_inner : Type.t) : bool =
@@ -693,13 +679,7 @@ and check_valid_funcdef' (tset : TIdSet.t) (fd : FuncDef.t) : unit res =
       check_valid_functyp' tset ft
 
 and check_valid_funcdefs' (tset : TIdSet.t) (fds : FuncDef.t list) : unit res =
-  let rec check_valid_funcdefs'' = function
-    | [] -> Ok ()
-    | fd :: fds ->
-        let* _ = check_valid_funcdef' tset fd in
-        check_valid_funcdefs'' fds
-  in
-  check_valid_funcdefs'' fds
+  iter_res (check_valid_funcdef' tset) fds
 
 (* (Appendix F) Restrictions on compile time and run time calls
 
@@ -736,13 +716,7 @@ and check_valid_cparams' (tset : TIdSet.t) (cparams : Types.cparam list) :
     unit res =
   let ids = List.map (fun (id, _, _, _) -> id) cparams in
   let* _ = check_distinct_names ids in
-  let rec check_valid_cparams'' = function
-    | [] -> Ok ()
-    | cparam :: cparams ->
-        let* _ = check_valid_cparam' tset cparam in
-        check_valid_cparams'' cparams
-  in
-  check_valid_cparams'' cparams
+  iter_res (check_valid_cparam' tset) cparams
 
 and check_valid_constyp (cursor : Ctx.cursor) (ctx : Ctx.t) (ct : ConsType.t) :
     unit res =
@@ -757,19 +731,14 @@ and check_valid_constyp' (tset : TIdSet.t) (ct : ConsType.t) : unit res =
 
 and check_valid_constyp_nesting (typ : Type.t) (cparams : Types.cparam list) :
     unit res =
-  let rec check_valid_constyp_nesting'' = function
-    | [] -> Ok ()
-    | (_, _, typ_inner, _) :: cparams ->
-        let* _ =
-          check
-            (check_valid_constyp_nesting' typ typ_inner)
-            (Format.asprintf
-               "(check_valid_constyp_nesting) invalid nesting of %a inside %a"
-               Type.pp typ_inner Type.pp typ)
-        in
-        check_valid_constyp_nesting'' cparams
-  in
-  check_valid_constyp_nesting'' cparams
+  iter_res
+    (fun (_, _, typ_inner, _) ->
+      check
+        (check_valid_constyp_nesting' typ typ_inner)
+        (Format.asprintf
+           "(check_valid_constyp_nesting) invalid nesting of %a inside %a"
+           Type.pp typ_inner Type.pp typ))
+    cparams
 
 and check_valid_constyp_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
   let typ = Type.canon typ in

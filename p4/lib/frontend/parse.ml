@@ -1,15 +1,15 @@
-open Util
+open Util.Error
 
 let preprocess (includes : string list) (filename : string) =
   try Ok (Preprocessor.preprocess includes filename)
-  with _ -> Error "preprocessor error"
+  with _ -> "preprocessor error" |> error_no_info
 
 let lex (filename : string) (file : string) =
   try
     let () = Lexer.reset () in
     let () = Lexer.set_filename filename in
     Ok (Lexing.from_string file)
-  with Lexer.Error s -> Error (Format.asprintf "lexer error: %s" s)
+  with Lexer.Error s -> Format.asprintf "lexer error: %s" s |> error_no_info
 
 let parse (lexbuf : Lexing.lexbuf) =
   try
@@ -19,8 +19,8 @@ let parse (lexbuf : Lexing.lexbuf) =
   with
   | Parser.Error ->
       let info = Lexer.info lexbuf in
-      Error (Format.asprintf "parser error: %a" Source.pp info)
-  | _ -> Error "transform error"
+      Error ("parser error", info)
+  | _ -> "transform error" |> error_no_info
 
 let ( let* ) = Result.bind
 
@@ -41,4 +41,4 @@ let roundtrip_file (includes : string list) (filename : string) =
   if El.Eq.eq_program program program' then Ok program
   else (
     El.Eq.eq_program ~dbg:true program program' |> ignore;
-    Error "roundtrip error")
+    "roundtrip error" |> error_no_info)

@@ -19,6 +19,13 @@ build-p4:
 	ln -f $(EXEMAIN) ./$(MAIN)
 	ln -f $(EXETEST) ./$(TEST)
 
+build-p4-release:
+	rm -f ./$(MAIN) ./$(TEST)
+	opam switch 4.14.0
+	cd p4 && opam exec -- dune build --profile release && echo
+	ln -f $(EXEMAIN) ./$(MAIN)
+	ln -f $(EXETEST) ./$(TEST)
+
 build-spectec:
 	rm -f ./$(SPEC)
 	opam switch 5.0.0
@@ -37,7 +44,8 @@ spec: build-spectec
 .PHONY: fmt
 
 fmt:
-	cd p4 && dune build @fmt --auto-promote
+	opam switch 4.14.0
+	cd p4 && opam exec dune fmt
 
 # Tests
 
@@ -45,14 +53,14 @@ fmt:
 
 test: test-parser test-typecheck-pos test-typecheck-neg
 
-test-parser: build-p4
+test-parser: build-p4-release
 	./$(TEST) parse -i p4/test/arch p4/test/program/well-typed > p4/status/parser.log 2> p4/status/parser.err
 
-test-typecheck-pos: build-p4
+test-typecheck-pos: build-p4-release
 	./$(TEST) typecheck -i p4/test/arch -p p4/test/program/well-typed > p4/status/typecheck-pos.log 2> p4/status/typecheck-pos.err
 	./$(TEST) typecheck -i p4/test/arch -p p4/test/program/well-typed-excluded > p4/status/typecheck-pos-excluded.log 2> p4/status/typecheck-pos-excluded.err
 
-test-typecheck-neg: build-p4
+test-typecheck-neg: build-p4-release
 	./$(TEST) typecheck -i p4/test/arch -n p4/test/program/ill-typed > p4/status/typecheck-neg.log 2> p4/status/typecheck-neg.err
 	./$(TEST) typecheck -i p4/test/arch -n p4/test/program/ill-typed-excluded > p4/status/typecheck-neg-excluded.log 2> p4/status/typecheck-neg-excluded.err
 

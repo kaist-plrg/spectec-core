@@ -3,6 +3,7 @@ module Numerics = Runtime.Numerics
 module Types = Runtime.Tdomain.Types
 module Type = Types.Type
 open Util.Source
+open Util.Error
 
 type pt = { values : int list; init : bool; delta : int; largest_wins : bool }
 type et = { size : int; const : bool }
@@ -48,7 +49,7 @@ let empty =
 let get_lpm_prefix value_mask =
   let rec get_lpm_prefix' value_mask prefix =
     match (value_mask : Value.t) with
-    | FBitV (width, _) when Bigint.(width = zero) -> prefix
+    | FBitV (width, _) when Bigint.(width = zero) -> prefix |> ok
     | FBitV (width, value) ->
         let two = Bigint.(one + one) in
         let width_next = Bigint.(width - one) in
@@ -57,17 +58,17 @@ let get_lpm_prefix value_mask =
         if Bigint.(value % two <> zero) then
           get_lpm_prefix' value_mask_next (prefix + 1)
         else if prefix = 0 then get_lpm_prefix' value_mask_next 0
-        else assert false
-    | _ -> assert false
+        else
+          Format.asprintf "(get_lpm_prefix) %a is an invalid lpm mask\n"
+            Value.pp value_mask
+          |> error_no_info
+    | _ ->
+        Format.asprintf "(get_lpm_prefix) %a is an invalid lpm mask\n" Value.pp
+          value_mask
+        |> error_no_info
   in
-  let prefix =
-    try get_lpm_prefix' value_mask 0
-    with _ ->
-      Format.printf "(get_lpm_prefix) %a is an invalid lpm mask\n" Value.pp
-        value_mask;
-      assert false
-  in
-  Lpm prefix
+  let* prefix = get_lpm_prefix' value_mask 0 in
+  Lpm prefix |> ok
 
 (* Setters and adders *)
 
@@ -110,23 +111,20 @@ let update_mode (match_kind : string) (typ_key : Type.t) table_ctx =
   match (match_kind, table_ctx.mode) with
   | "lpm", NoPri ->
       let prefix_max = Type.get_width typ_key in
-      set_mode (NoPriLpm prefix_max) table_ctx
-  | "lpm", Pri -> set_mode PriLpm table_ctx
-  | "lpm", _ ->
-      Format.printf "(update_mode) Too many lpms\n";
-      assert false
-  | ("range" | "ternary" | "optional"), NoPri -> set_mode Pri table_ctx
-  | ("range" | "ternary" | "optional"), NoPriLpm _ -> set_mode PriLpm table_ctx
-  | _ -> table_ctx
+      set_mode (NoPriLpm prefix_max) table_ctx |> ok
+  | "lpm", Pri -> set_mode PriLpm table_ctx |> ok
+  | "lpm", _ -> "(update_mode) too many lpms" |> error_no_info
+  | ("range" | "ternary" | "optional"), NoPri -> set_mode Pri table_ctx |> ok
+  | ("range" | "ternary" | "optional"), NoPriLpm _ ->
+      set_mode PriLpm table_ctx |> ok
+  | _ -> table_ctx |> ok
 
 let update_state (state_prev : state) (state_curr : state) =
   match (state_prev, state_curr) with
-  | NoLpm, Lpm _ -> state_curr
-  | Lpm _, NoLpm -> state_prev
-  | NoLpm, NoLpm -> NoLpm
-  | Lpm _, Lpm _ ->
-      Format.printf "(update_state) Too many lpms\n";
-      assert false
+  | NoLpm, Lpm _ -> state_curr |> ok
+  | Lpm _, NoLpm -> state_prev |> ok
+  | NoLpm, NoLpm -> NoLpm |> ok
+  | Lpm _, Lpm _ -> "(update_state) too many lpms" |> error_no_info
 
 (* Finders *)
 
