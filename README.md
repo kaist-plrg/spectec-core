@@ -39,7 +39,7 @@ $ git submodule update
 ### Prerequisites for SpecTec
 
 * Create OCaml switch for version 5.0.0.
-  Install `dune` version 3.11.0, `menhir` version 20230608, `mdx` version 2.3.1, and `zarith` version 1.12, via `opam` (default versions).
+  Install `dune` version 3.11.0, `menhir` version 20230608, `mdx` version 2.3.1, and `zarith` version 1.13, via `opam` (default versions).
   ```shell
   $ opam switch create 5.0.0
   $ eval $(opam env)
