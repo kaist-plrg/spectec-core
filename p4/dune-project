@@ -11,4 +11,5 @@
   (maintainers "99jaehyunlee@gmail.com")
   (depends
     bignum
-    (core (and (>= "v0.15.0") (< "v0.16.0")))))
+    (core (and (>= "v0.15.0") (< "v0.16.0")))
+    (core_unix (and (>= "v0.15.0") (< "v0.16.0")))))

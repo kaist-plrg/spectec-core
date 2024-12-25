@@ -21,32 +21,29 @@ $ git submodule update
   ```
 
 * Create OCaml switch for version 4.14.0.
+  Install `dune` version 3.13.0 and `menhir` version 20231231 and `core` version `v0.15.0` via `opam`.
   ```shell
   $ opam switch create 4.14.0
-  ```
-  
-* Install `dune` version 3.13.0 and `menhir` version 20231231 and `core` version `v0.15.0` via `opam`.
-  ```shell
+  $ eval $(opam env)
   $ opam install dune menhir core.v0.15.0
   ```
 
 * Install the project.
-
-```shell
-$ dune build p4cherry.opam 
-$ opam install .
-```
+  ```shell
+  $ cd p4
+  $ dune build p4cherry.opam 
+  $ opam install .
+  $ cd ..
+  ```
 
 ### Prerequisites for SpecTec
 
 * Create OCaml switch for version 5.0.0.
+  Install `dune` version 3.11.0, `menhir` version 20230608, `mdx` version 2.3.1, and `zarith` version 1.12, via `opam` (default versions).
   ```shell
   $ opam switch create 5.0.0
-  ```
-  
-* Install `mdx` version 2.3.1, and `zarith` version 1.12, via `opam` (default versions).
-  ```shell
-  $ opam install mdx zarith
+  $ eval $(opam env)
+  $ opam install dune menhir mdx zarith
   ```
 
 ### Building the Project
@@ -56,6 +53,10 @@ $ make build
 ```
 
 This creates executables `p4cherry`, `p4cherry-test`, and `watsup` in the project root.
+
+### Additional Notes
+
+You may also need `libgmp-dev` and `pkg-config`, if the error message says so.
 
 ## p4cherry: A language implementation for P4
 
