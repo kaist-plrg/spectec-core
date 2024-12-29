@@ -10,6 +10,9 @@ rule Type_ok/matchkindt:
 rule Type_ok/strt:
   p C |- StrT : StrT
 
+rule Type_ok/boolt:
+  p C |- BoolT : BoolT
+
 rule Type_ok/intt:
   p C |- IntT : IntT
 

@@ -29,7 +29,7 @@ rule Sub_expl/fbitt-fbitt:
   FBitT i <: FBitT j
 
 rule Sub_expl/fintt-fintt:
-  FIntT i <: FBitT j
+  FIntT i <: FIntT j
 
 rule Sub_expl/fbitt-intt:
   FBitT i <: IntT

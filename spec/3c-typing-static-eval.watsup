@@ -49,9 +49,9 @@ rule Eval_static/recorde:
 ;; Unary expression
 
 rule Eval_static/une:
-  p C |- UnE unop expr ~> val
+  p C |- UnE unop expr ~> val'
   -- Eval_static: p C |- expr ~> val
-  -- if val = $un_op(unop, val)
+  -- if val' = $un_op(unop, val)
 
 
 ;; Binary expression
