@@ -137,6 +137,53 @@ module CId = FId
 module CIdSet = FIdSet
 module CIdMap = FIdMap
 
+(* Object identifiers *)
+
+module OId = struct
+  type t = Id.t list
+
+  let pp fmt t = String.concat "." t |> Format.fprintf fmt "%s"
+  let compare = compare
+end
+
+module OIdSet = struct
+  include Set.Make (OId)
+
+  let pp fmt s =
+    let pp_oid fmt oid = Format.fprintf fmt "%a" OId.pp oid in
+    Format.fprintf fmt "{ %a }" (Format.pp_print_list pp_oid) (elements s)
+
+  let eq = equal
+  let of_list l = List.fold_left (fun acc x -> add x acc) empty l
+end
+
+module OIdMap = struct
+  include Map.Make (OId)
+
+  let keys m = List.map fst (bindings m)
+  let values m = List.map snd (bindings m)
+
+  let pp pp_v fmt m =
+    let pp_binding fmt (k, v) = Format.fprintf fmt "%a : %a" OId.pp k pp_v v in
+    let bindings = bindings m in
+    Format.fprintf fmt "{ %a }" (Format.pp_print_list pp_binding) bindings
+
+  let diff m_a m_b =
+    let keys_a = keys m_a in
+    let keys_b = keys m_b in
+    let keys_diff = List.filter (fun k -> not (List.mem k keys_b)) keys_a in
+    List.fold_left (fun acc k -> add k (find k m_a) acc) empty keys_diff
+
+  let subset eq_v m_a m_b =
+    List.for_all
+      (fun (k, v_a) ->
+        match find_opt k m_b with Some v_b -> eq_v v_a v_b | None -> false)
+      (bindings m_a)
+
+  let eq eq_v m_a m_b = subset eq_v m_a m_b && subset eq_v m_b m_a
+  let of_list l = List.fold_left (fun acc (k, v) -> add k v acc) empty l
+end
+
 (* Environment functor *)
 
 module MakeIdEnv (V : sig
@@ -324,6 +371,29 @@ struct
 end
 
 module MakeCIdEnv = MakeFIdEnv
+
+module MakeOIdEnv (V : sig
+  type t
+
+  val pp : Format.formatter -> t -> unit
+end) =
+struct
+  include OIdMap
+
+  type t = V.t OIdMap.t
+
+  let pp fmt env = OIdMap.pp V.pp fmt env
+
+  let find id env =
+    match find_opt id env with
+    | Some value -> value
+    | None -> Format.asprintf "key not found: %a" OId.pp id |> error_no_info
+
+  let add_nodup id value env =
+    if mem id env then
+      Format.asprintf "key already exists: %a" OId.pp id |> error_no_info
+    else add id value env
+end
 
 (* Pair functor *)
 

@@ -1,9 +1,9 @@
 module L = Lang.Ast
-module Value = Runtime.Value
-module Types = Runtime.Tdomain.Types
+module Value = Runtime_static.Value
+module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
-module Ctk = Runtime.Domain.Ctk
-module Envs = Runtime.Envs
+module Ctk = Runtime_static.Ctk
+module Envs = Runtime_static.Envs
 module F = Format
 open Util.Source
 open Util.Error

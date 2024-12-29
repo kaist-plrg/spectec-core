@@ -58,13 +58,13 @@ let pp_dir fmt dir = P.pp_dir fmt dir
 (* Types *)
 
 let rec pp_typ fmt typ = pp_typ' fmt typ.it
-and pp_typ' fmt typ = Runtime.Tdomain.Types.Type.pp fmt typ
+and pp_typ' fmt typ = Runtime_static.Tdomain.Types.Type.pp fmt typ
 and pp_typs fmt typs = P.pp_list pp_typ ", " fmt typs
 
 (* Values *)
 
 let rec pp_value fmt value = pp_value' fmt value.it
-and pp_value' fmt value = Runtime.Value.pp fmt value
+and pp_value' fmt value = Runtime_static.Value.pp fmt value
 
 (* Annotations *)
 

@@ -1,13 +1,13 @@
-open Runtime.Domain.Dom
-module Dir = Runtime.Domain.Dir
-module Types = Runtime.Tdomain.Types
+open Domain.Dom
+module Dir = Runtime_static.Dir
+module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
 module TypeDef = Types.TypeDef
 module FuncType = Types.FuncType
 module FuncDef = Types.FuncDef
 module ConsType = Types.ConsType
 module ConsDef = Types.ConsDef
-module Envs = Runtime.Envs
+module Envs = Runtime_static.Envs
 module F = Format
 open Util.Error
 

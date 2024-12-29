@@ -1,0 +1,4 @@
+(library
+ (name runtime_dynamic)
+ (libraries lang il domain runtime_static)
+ (modules func cons object envs))

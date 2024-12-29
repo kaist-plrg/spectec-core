@@ -1,6 +1,6 @@
-module Value = Runtime.Value
-module Numerics = Runtime.Numerics
-module Types = Runtime.Tdomain.Types
+module Value = Runtime_static.Value
+module Numerics = Runtime_static.Numerics
+module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
 open Util.Source
 open Util.Error

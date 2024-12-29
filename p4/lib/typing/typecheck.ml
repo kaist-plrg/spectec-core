@@ -1,15 +1,15 @@
-open Runtime.Domain.Dom
-module Ctk = Runtime.Domain.Ctk
-module Value = Runtime.Value
-module Numerics = Runtime.Numerics
-module Types = Runtime.Tdomain.Types
+open Domain.Dom
+module Ctk = Runtime_static.Ctk
+module Value = Runtime_static.Value
+module Numerics = Runtime_static.Numerics
+module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
 module TypeDef = Types.TypeDef
 module FuncType = Types.FuncType
 module FuncDef = Types.FuncDef
 module ConsType = Types.ConsType
 module ConsDef = Types.ConsDef
-module Envs = Runtime.Envs
+module Envs = Runtime_static.Envs
 module WF = Wellformed
 module F = Format
 open Util.Source
@@ -2136,7 +2136,7 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
         in
         let ft = FuncType.subst theta ft in
         let params =
-          List.map (Runtime.Tdomain.Subst.subst_param theta) params
+          List.map (Runtime_static.Tdomain.Subst.subst_param theta) params
         in
         let typ_ret = Type.subst theta typ_ret in
         (ft, targs_il, params, typ_ret)
@@ -2380,7 +2380,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
         in
         let ct = ConsType.subst theta ct in
         let cparams =
-          List.map (Runtime.Tdomain.Subst.subst_cparam theta) cparams
+          List.map (Runtime_static.Tdomain.Subst.subst_cparam theta) cparams
         in
         let typ_inst = Type.subst theta typ_inst in
         (ct, targs_il, cparams, typ_inst)
@@ -4130,7 +4130,7 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    further discussion on the implementation of parser value set size.
 
    The value set is populated by the control plane by methods
-   specified in the P4Runtime specification. *)
+   specified in the P4Runtime_static specification. *)
 
 (* (13.6) Select expressions
 

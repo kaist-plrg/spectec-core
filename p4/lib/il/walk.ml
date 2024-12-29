@@ -1,7 +1,4 @@
 module W = Lang.Walk
-
-(* open Runtime.Domain *)
-(* open Runtime.Types *)
 open Ast
 open Util.Source
 

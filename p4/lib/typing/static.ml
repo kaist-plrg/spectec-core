@@ -1,7 +1,9 @@
-module Ctk = Runtime.Domain.Ctk
-module Value = Runtime.Value
-module Types = Runtime.Tdomain.Types
+module Ctk = Runtime_static.Ctk
+module Value = Runtime_static.Value
+module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
+module Numerics = Runtime_static.Numerics
+module Builtins = Runtime_static.Builtins
 module F = Format
 open Util.Source
 open Util.Error
@@ -228,14 +230,14 @@ and eval_record_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
 and eval_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : Il.Ast.unop)
     (expr : Il.Ast.expr) : Value.t =
   let value = eval_expr cursor ctx expr in
-  let value = Runtime.Numerics.eval_unop unop value.it in
+  let value = Numerics.eval_unop unop value.it in
   value
 
 and eval_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : Il.Ast.binop)
     (expr_l : Il.Ast.expr) (expr_r : Il.Ast.expr) : Value.t =
   let value_l = eval_expr cursor ctx expr_l in
   let value_r = eval_expr cursor ctx expr_r in
-  let value = Runtime.Numerics.eval_binop binop value_l.it value_r.it in
+  let value = Numerics.eval_binop binop value_l.it value_r.it in
   value
 
 and eval_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
@@ -250,7 +252,7 @@ and eval_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
 and eval_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : Il.Ast.typ)
     (expr : Il.Ast.expr) : Value.t =
   let value = eval_expr cursor ctx expr in
-  let value = Runtime.Numerics.eval_cast typ.it value.it in
+  let value = Numerics.eval_cast typ.it value.it in
   value
 
 and eval_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
@@ -260,7 +262,7 @@ and eval_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let value_base = value_base.it in
   let value_lo, value_hi = (value_lo.it, value_hi.it) in
   let value =
-    Runtime.Numerics.eval_bitstring_access value_base value_hi value_lo
+    Numerics.eval_bitstring_access value_base value_hi value_lo
   in
   value
 
@@ -282,7 +284,7 @@ and eval_call_method_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t)
     | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits" | "maxSizeInBytes" ->
         assert (targs = [] && args = []);
         let typ_base = expr_base.note.typ in
-        Runtime.Builtins.size typ_base member.it
+        Builtins.size typ_base member.it
     | _ -> assert false
   in
   value
@@ -292,7 +294,7 @@ and eval_call_type_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t) (typ : Il.Ast.typ)
   let value =
     match member.it with
     | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits" | "maxSizeInBytes" ->
-        Runtime.Builtins.size typ.it member.it
+        Builtins.size typ.it member.it
     | _ -> assert false
   in
   value
