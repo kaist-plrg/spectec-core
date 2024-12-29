@@ -23,11 +23,12 @@ def $nominal(typ) = false
 ;;
 
 relation Type_alpha: typ ~~ typ
-
+relation FuncDef_alpha: funcdef ~~ funcdef
+relation FuncType_alpha: functyp ~~ functyp
 
 rule Type_alpha/basetyp:
-  btyp ~~ btyp
-  -- if btyp = btyp
+  basetyp ~~ basetyp
+  -- if basetyp = basetyp
 
 rule Type_alpha/vart:
   (VarT id) ~~ (VarT id)
@@ -120,12 +121,16 @@ rule Type_alpha/parsert:
   (ParserT paramtyp_a*) ~~ (ParserT paramtyp_b*)
   -- if (id_a dir_a typ_a val_a = paramtyp_a)*
   -- if (id_b dir_b typ_b val_b = paramtyp_b)*
+  ----
+  -- if (dir_a = dir_b)*
   -- (Type_alpha: typ_a ~~ typ_b)*
 
 rule Type_alpha/controlt:
   (ControlT paramtyp_a*) ~~ (ControlT paramtyp_b*)
   -- if (id_a dir_a typ_a val_a = paramtyp_a)*
   -- if (id_b dir_b typ_b val_b = paramtyp_b)*
+  ----
+  -- if (dir_a = dir_b)*
   -- (Type_alpha: typ_a ~~ typ_b)*
 
 rule Type_alpha/packaget:
@@ -180,3 +185,78 @@ rule Type_alpha/tablestructt:
 
 rule Type_alpha/anyt:
   AnyT ~~ AnyT
+
+
+rule FuncType_alpha/builtinmethodt:
+  (BuiltinMethodT paramtyp_a* typ_r_a) ~~ (BuiltinMethodT paramtyp_b* typ_r_b)
+  -- if (id_a dir_a typ_a val_a = paramtyp_a)*
+  -- if (id_b dir_b typ_b val_b = paramtyp_b)*
+  ----
+  -- (if dir_a = dir_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+  -- (Type_alpha: typ_r_a ~~ typ_r_b)
+
+rule FuncType_alpha/actiont:
+  (ActionT paramtyp_a*) ~~ (ActionT paramtyp_b*)
+  -- if (id_a dir_a typ_a val_a = paramtyp_a)*
+  -- if (id_b dir_b typ_b val_b = paramtyp_b)*
+  ----
+  -- (if dir_a = dir_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+rule FuncType_alpha/parserapplymethodt:
+  (ParserApplyMethodT paramtyp_a*) ~~ (ParserApplyMethodT paramtyp_b*)
+  -- if (id_a dir_a typ_a val_a = paramtyp_a)*
+  -- if (id_b dir_b typ_b val_b = paramtyp_b)*
+  ----
+  -- (if dir_a = dir_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+rule FuncType_alpha/controlapplymethodt:
+  (ControlApplyMethodT paramtyp_a*) ~~ (ControlApplyMethodT paramtyp_b*)
+  -- if (id_a dir_a typ_a val_a = paramtyp_a)*
+  -- if (id_b dir_b typ_b val_b = paramtyp_b)*
+  ----
+  -- (if dir_a = dir_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+
+rule FuncType_alpha/tableapplymethodt:
+  (TableApplyMethodT typ_a) ~~ (TableApplyMethodT typ_b)
+  -- (Type_alpha: typ_a ~~ typ_b)
+
+rule FuncType_alpha/externfunctiont:
+  (ExternFuncT paramtyp_a* typ_r_a) ~~ (ExternFuncT paramtyp_b* typ_r_b)
+  -- if (id_a dir_a typ_a val_a = paramtyp_a)*
+  -- if (id_b dir_b typ_b val_b = paramtyp_b)*
+  ----
+  -- (if dir_a = dir_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+  -- (Type_alpha: typ_r_a ~~ typ_r_b)
+
+rule FuncType_alpha/functiont:
+  (FuncT paramtyp_a* typ_r_a) ~~ (FuncT paramtyp_b* typ_r_b)
+  -- if (id_a dir_a typ_a val_a = paramtyp_a)*
+  -- if (id_b dir_b typ_b val_b = paramtyp_b)*
+  ----
+  -- (if dir_a = dir_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+  -- (Type_alpha: typ_r_a ~~ typ_r_b)
+
+rule FuncType_alpha/externmethodt:
+  (ExternMethodT paramtyp_a* typ_r_a) ~~ (ExternMethodT paramtyp_b* typ_r_b)
+  -- if (id_a dir_a typ_a val_a = paramtyp_a)*
+  -- if (id_b dir_b typ_b val_b = paramtyp_b)*
+  ----
+  -- (if dir_a = dir_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+  -- (Type_alpha: typ_r_a ~~ typ_r_b)
+
+rule FuncType_alpha/externabstractmethodt:
+  (ExternAbstractMethodT paramtyp_a* typ_r_a) ~~
+  (ExternAbstractMethodT paramtyp_b* typ_r_b)
+  -- if (id_a dir_a typ_a val_a = paramtyp_a)*
+  -- if (id_b dir_b typ_b val_b = paramtyp_b)*
+  ----
+  -- (if dir_a = dir_b)*
+  -- (Type_alpha: typ_a ~~ typ_b)*
+  -- (Type_alpha: typ_r_a ~~ typ_r_b)

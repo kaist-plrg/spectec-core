@@ -47,7 +47,7 @@ syntax aliastyp hint(show %latex("\\tau_\\texttt{alias}")) =
 syntax datatyp hint(show %latex("\\tau_\\texttt{data}")) =
   | NewT id typ                     hint(show NEW#_#T % %)
   | EnumT id member*                hint(show ENUM#_#T % %latex("\\{")#%#%latex("\\}"))
-  | SEnumT id typ (member, val)*    hint(show SENUM#_#T % %latex("\\{")#%#%latex("\\}"))
+  | SEnumT id typ (member, val)*    hint(show SENUM#_#T % % %latex("\\{")#%#%latex("\\}"))
   | ListT typ                       hint(show LIST#_#T %)
   | TupleT typ*                     hint(show TUPLE#_#T %)
   | StackT typ int                  hint(show STACK#_#T %#`[%])

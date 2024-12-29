@@ -10,8 +10,8 @@ relation ParamTypes_wf: tidset |- paramtyp*
 relation FuncType_wf: tidset |- functyp
 relation FuncDef_wf: tidset |- funcdef
 
-relation CParamType_wf: tidset |- paramtyp
-relation CParamTypes_wf: tidset |- paramtyp*
+relation CParamType_wf: tidset consctxt |- paramtyp
+relation CParamTypes_wf: tidset consctxt |- paramtyp*
 relation ConsType_wf: tidset |- constyp
 relation ConsDef_wf: tidset |- consdef
 
@@ -272,7 +272,7 @@ rule ParamType_wf/none:
   -- if ~(typ = ExternT id_t fmap_t /\ dir =/= NO)
 
 rule ParamType_wf/some:
-  tidset |- id dir typ val?
+  tidset |- id dir typ val
   -- Type_wf: tidset |- typ
   -- if ~(typ = ExternT id_t fmap_t /\ dir =/= NO)
   -- if dir = IN \/ dir = NO
@@ -288,6 +288,8 @@ rule ParamTypes_wf:
 ;; (TODO) Restrict parameter types
 ;;
 
+;; (TODO) Add parameter nesting rule.
+;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/builtinmethodt:
   tidset |- BuiltinMethodT paramtyp* typ_r
   -- ParamTypes_wf: tidset |- paramtyp*
@@ -312,6 +314,8 @@ rule FuncType_wf/controlapplymethodt:
   tidset |- ControlApplyMethodT paramtyp*
   -- ParamTypes_wf: tidset |- paramtyp*
 
+;; (TODO) Add parameter nesting rule.
+;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/tableapplymethodt:
   tidset |- TableApplyMethodT (TableStructT id (member, typ)*)
 
@@ -375,57 +379,68 @@ rule FuncDef_wf/polyfd:
 ;;
 
 rule CParamType_wf/none:
-  tidset |- id NO typ eps
+  tidset consctxt |- id NO typ eps
   -- Type_wf: tidset |- typ
 
 rule CParamType_wf/some:
-  tidset |- id NO typ val?
+  tidset consctxt |- id NO typ val
   -- Type_wf: tidset |- typ
 
 rule CParamTypes_wf:
-  tidset |- paramtyp*
+  tidset consctxt |- paramtyp*
   -- if (id dir typ val = paramtyp)*
   -- if $distinct(id, id*)
-  -- (ParamType_wf: tidset |- paramtyp)*
+  -- (CParamType_wf: tidset consctxt |- paramtyp)*
 
 ;;
 ;; Well-formedness of constructor types
 ;;
 
 rule ConsType_wf/externt:
-  tidset |- ConsT paramtyp* (ExternT id fmap)
-  -- CParamTypes_wf: tidset |- paramtyp*
+  tidset |- ConsT paramtyp* typ'
+  -- if ExternT id fmap = typ'
+  -- CParamTypes_wf: tidset consctxt |- paramtyp*
+  -- Type_wf: tidset |- typ'
   ----
   -- if (id dir typ val = paramtyp)*
   -- if (~$is_parsert(typ))*
   -- if (~$is_controlt(typ))*
+  ----
   -- if (~$is_packaget(typ))*
   -- if (~$is_tablet(typ))*
   -- if (~$is_synth(typ))*
 
 rule ConsType_wf/parsert:
-  tidset |- ConsT paramtyp* (ParserT paramtyp'*)
-  -- CParamTypes_wf: tidset |- paramtyp*
+  tidset |- ConsT paramtyp* typ'
+  -- if ParserT paramtyp'* = typ'
+  -- CParamTypes_wf: tidset consctxt |- paramtyp*
+  -- Type_wf: tidset |- typ'
   ----
   -- if (id dir typ val = paramtyp)*
   -- if (~$is_controlt(typ))*
   -- if (~$is_packaget(typ))*
+  ----
   -- if (~$is_tablet(typ))*
   -- if (~$is_synth(typ))*
 
 rule ConsType_wf/controlt:
-  tidset |- ConsT paramtyp* (ControlT paramtyp'*)
-  -- CParamTypes_wf: tidset |- paramtyp*
+  tidset |- ConsT paramtyp* typ'
+  -- if ControlT paramtyp'* = typ'
+  -- CParamTypes_wf: tidset consctxt |- paramtyp*
+  -- Type_wf: tidset |- typ'
   ----
   -- if (id dir typ val = paramtyp)*
   -- if (~$is_controlt(typ))*
   -- if (~$is_packaget(typ))*
+  ----
   -- if (~$is_tablet(typ))*
   -- if (~$is_synth(typ))*
 
 rule ConsType_wf/packaget:
-  tidset |- ConsT paramtyp* (PackageT typ'*)
-  -- CParamTypes_wf: tidset |- paramtyp*
+  tidset |- ConsT paramtyp* typ'
+  -- if PackageT typ'* = typ'
+  -- CParamTypes_wf: tidset consctxt |- paramtyp*
+  -- Type_wf: tidset |- typ'
   ----
   -- if (id dir typ val = paramtyp)*
   -- if (~$is_tablet(typ))*

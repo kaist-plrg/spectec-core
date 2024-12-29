@@ -65,14 +65,14 @@ syntax binop =
   | MUL     hint(show %latex("*"))
   | DIV     hint(show %latex("/"))
   | MOD     hint(show %latex("\\%"))
-  | SHL     hint(show %latex("<<"))
-  | SHR     hint(show %latex(">>"))
-  | LE      hint(show %latex("<="))
-  | GE      hint(show %latex(">="))
+  | SHL     hint(show %latex("<\\!<"))
+  | SHR     hint(show %latex(">\\!>"))
+  | LE      hint(show %latex("\\leq"))
+  | GE      hint(show %latex("\\geq"))
   | LT      hint(show %latex("<"))
   | GT      hint(show %latex(">"))
   | EQ      hint(show %latex("=="))
-  | NE      hint(show %latex("!="))
+  | NE      hint(show %latex("!\\!="))
   | BAND    hint(show %latex("\\&"))
   | BXOR    hint(show %latex("\\wedge"))
   | BOR     hint(show %latex("|"))
@@ -92,18 +92,19 @@ syntax dir = | NO | IN | OUT | INOUT
 
 syntax type =
   | VoidT              hint(show VOID)
-  | ErrT               hint(show BOOL)
+  | ErrT               hint(show ERROR)
   | MatchKindT         hint(show MATCH_KIND)
   | StrT               hint(show STRING)
+  | BoolT              hint(show BOOL)
   | IntT               hint(show INT)
   | FIntT expr         hint(show INT#%latex("\\langle")#%#%latex("\\rangle"))
   | FBitT expr         hint(show BIT#%latex("\\langle")#%#%latex("\\rangle"))
   | VBitT expr         hint(show VARBIT#%latex("\\langle")#%#%latex("\\rangle"))
-  | StackT type expr    hint(show %#`[%])
-  | ListT type          hint(show LIST#%latex("\\langle")#%#%latex("\\rangle"))
-  | TupleT type*        hint(show TUPLE#%latex("\\langle")#%#%latex("\\rangle"))
+  | StackT type expr   hint(show %#`[%])
+  | ListT type         hint(show LIST#%latex("\\langle")#%#%latex("\\rangle"))
+  | TupleT type*       hint(show TUPLE#%latex("\\langle")#%#%latex("\\rangle"))
   | NameT name         hint(show %)
-  | SpecT name type*    hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
+  | SpecT name type*   hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
   | AnyT               hint(show _)
 
 ;;
@@ -123,6 +124,12 @@ syntax param = id dir type expr?
 ;;
 
 syntax cparam = param
+
+;;
+;; Constructor context indicator
+;;
+
+syntax consctxt hint(show %latex("\\texttt{c}")) = _
 
 ;;
 ;; Type arguments
