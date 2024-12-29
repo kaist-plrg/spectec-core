@@ -14,7 +14,7 @@ let is_nominal_typ (typ : typ) : bool =
   match typ with
   | SpecT _ | DefT _ -> assert false
   | NewT _ | EnumT _ | SEnumT _ | StructT _ | HeaderT _ | UnionT _ | ExternT _
-    ->
+  | TableT _ ->
       true
   | _ -> false
 

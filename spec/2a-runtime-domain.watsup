@@ -2,7 +2,8 @@
 ;; Set
 ;;
 
-syntax set(syntax K) hint(show %latex("\\{") %#%latex("^* \\}")) = SET K*
+syntax set(syntax K) hint(show %latex("\\{")#%#%latex("^* \\}")) =
+  SET K* hint(show %latex("\\{")#%#%latex("\\}"))
 
 def $in_set(syntax K, K, set(K)) : bool   hint(show %2 %latex("\\in") %3)
 def $eq_set(syntax K, set(K), set(K)) : bool   hint(show %2 %latex("=") %3)
@@ -15,7 +16,9 @@ def $diff_set(syntax K, set(K), set(K)) : set(K)   hint(show %2 %latex("\\setmin
 ;; Map
 ;;
 
-syntax map(syntax K, syntax V) hint(show %latex("\\{(")#% %latex("\\mapsto") %#%latex(")^*\\}")) = MAP (K, V)*
+syntax map(syntax K, syntax V) hint(show %latex("\\{(")#% %latex("\\mapsto") %#%latex(")^*\\}")) =
+  MAP K* V* hint(show %latex("\\{(")#% %latex("\\mapsto") %#%latex(")\\}"))
+  -- if |K*| = |V*|
 
 def $in_map(syntax K, syntax V, K, map(K, V)) : V   hint(show %3 <- %4)
 def $find_map(syntax K, syntax V, map(K, V), K) : V  hint(show %3#`[%4])
