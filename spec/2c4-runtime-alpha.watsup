@@ -110,12 +110,15 @@ rule Type_alpha/uniont:
   -- if (member_a = member_b)*
   -- (Type_alpha: typ_a ~~ typ_b)*
 
-;; (TODO) Fill in the rule.
-;; This would require defining alpha-equivalence of function definitions,
-;; also ignore hidden type parameters here.
-;; (runtime/tdomain/eq.ml/eq_typ)
-;;rule Type_alpha/externt:
-;;  (ExternT id_a fmap_a) ~~ (ExternT id_b fmap_b)
+rule Type_alpha/externt:
+  (ExternT id_a fmap_a) ~~ (ExternT id_b fmap_b)
+  -- if id_a = id_b
+  ----
+  -- if MAP fid_a* funcdef_a* = fmap_a
+  -- if MAP fid_b* funcdef_b* = fmap_b
+  ----
+  -- if $eq_set(fid, SET fid_a*, SET fid_b*)
+  -- (FuncDef_alpha: $find_map(fid, funcdef, fmap_a, fid_a) ~~ $find_map(fid, funcdef, fmap_b, fid_a))*
 
 rule Type_alpha/parsert:
   (ParserT paramtyp_a*) ~~ (ParserT paramtyp_b*)
@@ -186,6 +189,19 @@ rule Type_alpha/tablestructt:
 rule Type_alpha/anyt:
   AnyT ~~ AnyT
 
+rule FuncDef_alpha/monofd:
+  (MonoFD ft_a) ~~ (MonoFD ft_b)
+  -- FuncType_alpha: ft_a ~~ ft_b
+
+rule FuncDef_alpha/polyfd:
+  (PolyFD tparam_a* ft_a) ~~ (PolyFD tparam_b* ft_b)
+  -- if |tparam_a*| = |tparam_b*|
+  ----
+  -- if ft_a' = $subst_functyp(MAP tparam_a* (VarT $fresh_tid())*, ft_a)
+  ----
+  -- if ft_b' = $subst_functyp(MAP tparam_b* (VarT $fresh_tid())*, ft_b)
+  ----
+  -- FuncType_alpha: ft_a' ~~ ft_b'
 
 rule FuncType_alpha/builtinmethodt:
   (BuiltinMethodT paramtyp_a* typ_r_a) ~~ (BuiltinMethodT paramtyp_b* typ_r_b)
