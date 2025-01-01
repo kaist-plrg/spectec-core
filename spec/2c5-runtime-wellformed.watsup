@@ -2,18 +2,18 @@
 ;; Relations for well-formedness
 ;;
 
-relation Type_wf: tidset |- typ
-relation TypeDef_wf: tidset |- typdef
+relation Type_wf       : tidset |- typ
+relation TypeDef_wf    : tidset |- typdef
 
-relation ParamType_wf: tidset |- paramtyp
-relation ParamTypes_wf: tidset |- paramtyp*
-relation FuncType_wf: tidset |- functyp
-relation FuncDef_wf: tidset |- funcdef
+relation ParamType_wf  : tidset |- paramtyp
+relation ParamTypes_wf : tidset |- paramtyp*
+relation FuncType_wf   : tidset |- functyp
+relation FuncDef_wf    : tidset |- funcdef
 
-relation CParamType_wf: tidset consctxt |- paramtyp
+relation CParamType_wf : tidset consctxt |- paramtyp
 relation CParamTypes_wf: tidset consctxt |- paramtyp*
-relation ConsType_wf: tidset |- constyp
-relation ConsDef_wf: tidset |- consdef
+relation ConsType_wf   : tidset |- constyp
+relation ConsDef_wf    : tidset |- consdef
 
 ;;
 ;; Well-formedness of types
@@ -33,19 +33,16 @@ rule Type_wf/spect:
 
 rule Type_wf/deft:
   tidset |- DefT typ
-  ----
   -- if typ' = $canon_typ(typ)
   ----
   -- if ($is_base(typ') /\ ~$is_voidt(typ') /\ ~$is_matchkindt(typ'))
         \/ $is_vart(typ')
-        \/ $is_newt(typ')
         \/ $is_data(typ')
   ----
   -- Type_wf: tidset |- typ
 
 rule Type_wf/newt:
   tidset |- NewT id typ
-  ----
   -- if typ' = $canon_typ(typ)
   ----
   -- if $is_boolt(typ')
@@ -58,12 +55,11 @@ rule Type_wf/newt:
 
 rule Type_wf/enumt:
   tidset |- EnumT id member*
-  -- if $distinct(member, member*)
+  -- if $distinct(member, member*)    ;; CHECK L128
 
 rule Type_wf/senumt:
   tidset |- SEnumT id typ (member, val)*
-  ----
-  -- if $distinct(member, member*)
+  -- if $distinct(member, member*)    ;; CHECK L129
   ----
   -- if typ' = $canon_typ(typ)
   ----
@@ -76,31 +72,26 @@ rule Type_wf/senumt:
 
 rule Type_wf/listt:
   tidset |- ListT typ
-  ----
   -- if typ' = $canon_typ(typ)
   ----
   -- if ($is_base(typ') /\ ~$is_voidt(typ'))
-        \/ $is_newt(typ')
         \/ $is_data(typ')
   ----
   -- Type_wf: tidset |- typ
 
 rule Type_wf/tuplet:
   tidset |- TupleT typ*
-  ----
   -- if (typ' = $canon_typ(typ))*
   ----
   -- if ($is_errt(typ') \/ $is_boolt(typ')
           \/ ($is_num(typ') /\ ~$is_intt(typ'))
           \/ $is_vart(typ')
-          \/ $is_newt(typ')
           \/ ($is_data(typ') /\ ~$is_listt(typ')))*
   ----
   -- (Type_wf: tidset |- typ)*
 
 rule Type_wf/stackt:
   tidset |- StackT typ size
-  ----
   -- if size >= 0
   ----
   -- if typ' = $canon_typ(typ)
@@ -111,7 +102,6 @@ rule Type_wf/stackt:
 
 rule Type_wf/structt:
   tidset |- StructT id (member, typ)*
-  ----
   -- if $distinct(member, member*)
   ----
   -- if (typ' = $canon_typ(typ))*
@@ -119,14 +109,12 @@ rule Type_wf/structt:
   -- if ($is_errt(typ') \/ $is_boolt(typ')
         \/ ($is_num(typ') /\ ~$is_intt(typ'))
         \/ $is_vart(typ')
-        \/ $is_newt(typ')
         \/ ($is_data(typ') /\ ~$is_listt(typ')))*
   ----
   -- (Type_wf: tidset |- typ)*
 
 rule Type_wf/headert:
   tidset |- HeaderT id (member, typ)*
-  ----
   -- if $distinct(member, member*)
   ----
   -- if (typ' = $canon_typ(typ))*
@@ -134,6 +122,7 @@ rule Type_wf/headert:
   -- if ($is_boolt(typ')
         \/ ($is_num(typ') /\ ~$is_intt(typ'))
         \/ $is_vart(typ')
+        \/ $is_newt(typ')
         \/ $is_senumt(typ')
         \/ $is_structt_in_headert(typ'))*
   ----
@@ -141,18 +130,16 @@ rule Type_wf/headert:
 
 rule Type_wf/uniont:
   tidset |- UnionT id (member, typ)*
-  ----
   -- if $distinct(member, member*)
   ----
   -- if (typ' = $canon_typ(typ))*
   ----
-  -- if ($is_vart(typ') \/ $is_headert(typ'))*
+  -- if ($is_vart(typ') \/ $is_newt(typ') \/ $is_headert(typ'))*
   ----
   -- (Type_wf: tidset |- typ)*
 
 rule Type_wf/externt:
   tidset |- ExternT id fmap
-  ----
   -- if MAP fid* funcdef* = fmap
   ----
   -- (FuncDef_wf: tidset |- funcdef)*
@@ -172,7 +159,7 @@ rule Type_wf/packaget:
   -- (Type_wf: tidset |- typ)*
 
 rule Type_wf/tablet:
-  tidset |- TableT typ
+  tidset |- TableT typ                 ;; CHECK L145
   -- Type_wf: tidset |- typ
 
 rule Type_wf/defaultt:
@@ -201,10 +188,10 @@ rule Type_wf/invalidt:
 
 rule Type_wf/sett:
   tidset |- SetT typ
-  ----
   -- if typ' = $canon_typ(typ)
   ----
   -- if $is_boolt(typ') \/ $is_fintt(typ') \/ $is_fbitt(typ')
+        \/ $is_vart(typ')
         \/ $is_newt(typ')
         \/ $is_enumt(typ')
         \/ $is_senumt(typ')
@@ -218,11 +205,11 @@ rule Type_wf/statet:
 
 rule Type_wf/tableenumt:
   tidset |- TableEnumT id member*
-  -- if $distinct(member, member*)
+  -- if $distinct(member, member*)           ;; CHECK L147
 
 rule Type_wf/tablestructt:
   tidset |- TableStructT id (member, typ)*
-  -- if $distinct(member, member*)
+  -- if $distinct(member, member*)           ;; CHECK L147
   -- (Type_wf: tidset |- typ)*
 
 rule Type_wf/anyt:
@@ -234,7 +221,6 @@ rule Type_wf/anyt:
 
 rule TypeDef_wf/monod:
   tidset |- MonoD typ
-  ----
   -- if $is_vart(typ)
         \/ $is_deft(typ)
         \/ $is_newt(typ)
@@ -246,7 +232,6 @@ rule TypeDef_wf/monod:
 
 rule TypeDef_wf/polyd:
   tidset |- PolyD tparam* typ
-  ----
   -- if $is_listt(typ)
         \/ $is_tuplet(typ)
         \/ $is_stackt(typ)
@@ -269,12 +254,12 @@ rule TypeDef_wf/polyd:
 rule ParamType_wf/none:
   tidset |- id dir typ eps
   -- Type_wf: tidset |- typ
-  -- if ~(typ = ExternT id_t fmap_t /\ dir =/= NO)
+  -- if ~($canon_typ(typ) = ExternT id_t fmap_t /\ dir =/= NO)
 
 rule ParamType_wf/some:
   tidset |- id dir typ val
   -- Type_wf: tidset |- typ
-  -- if ~(typ = ExternT id_t fmap_t /\ dir =/= NO)
+  -- if ~($canon_typ(typ) = ExternT id_t fmap_t /\ dir =/= NO)
   -- if dir = IN \/ dir = NO
 
 rule ParamTypes_wf:
@@ -285,67 +270,95 @@ rule ParamTypes_wf:
 
 ;;
 ;; Well-formedness of function types
-;; (TODO) Restrict parameter types
 ;;
 
-;; (TODO) Add parameter nesting rule.
-;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/builtinmethodt:
   tidset |- BuiltinMethodT paramtyp* typ_r
   -- ParamTypes_wf: tidset |- paramtyp*
   -- Type_wf: tidset |- typ_r
 
-;; (TODO-Jaehyun) How to check that directionless action parameters
-;; must be at the end of the parameter list?
 rule FuncType_wf/actiont:
   tidset |- ActionT paramtyp*
   -- ParamTypes_wf: tidset |- paramtyp*
-  -- (Type_wf: tidset |- typ)*
+  -- if (id dir typ val = paramtyp)*
+  -- if $is_trailing_action(dir*)
+  -- if (typ' = $canon_typ(typ))*
+  ----
+  -- if (~$is_deft(typ') /\ ~$is_spect(typ') /\ ~$is_intt(typ')
+         /\ ~$is_obj(typ')
+         /\ (~$is_strt(typ') \/ (dir = NO)))*
 
-;; (TODO) Add parameter nesting rule.
-;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/parserapplymethodt:
   tidset |- ParserApplyMethodT paramtyp*
   -- ParamTypes_wf: tidset |- paramtyp*
+  -- if (id dir typ val = paramtyp)*
+  -- if (typ' = $canon_typ(typ))*
+  ----
+  -- if (~$is_deft(typ') /\ ~$is_spect(typ')
+         /\ ~($is_obj(typ') /\ ~$is_externt(typ'))
+         /\ (~($is_strt(typ') \/ $is_intt(typ'))
+             \/ (dir = NO)))*
 
-;; (TODO) Add parameter nesting rule.
-;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/controlapplymethodt:
   tidset |- ControlApplyMethodT paramtyp*
   -- ParamTypes_wf: tidset |- paramtyp*
+  -- if (id dir typ val = paramtyp)*
+  -- if (typ' = $canon_typ(typ))*
+  ----
+  -- if (~$is_deft(typ') /\ ~$is_spect(typ')
+         /\ ~($is_obj(typ') /\ ~$is_externt(typ'))
+         /\ (~($is_strt(typ') \/ $is_intt(typ'))
+             \/ (dir = NO)))*
 
-;; (TODO) Add parameter nesting rule.
-;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/tableapplymethodt:
   tidset |- TableApplyMethodT (TableStructT id (member, typ)*)
 
-;; (TODO) Add parameter nesting rule.
-;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/externfunctiont:
   tidset |- ExternFuncT paramtyp* typ_r
   -- ParamTypes_wf: tidset |- paramtyp*
   -- Type_wf: tidset |- typ_r
+  -- if (id dir typ val = paramtyp)*
+  -- if (typ' = $canon_typ(typ))*
+  ----
+  -- if (~$is_deft(typ') /\ ~$is_spect(typ')
+         /\ ~($is_obj(typ') /\ ~$is_externt(typ'))
+         /\ (~($is_strt(typ') \/ $is_intt(typ'))
+             \/ (dir = NO)))*
 
-;; (TODO) Add parameter nesting rule.
-;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/functiont:
   tidset |- FuncT paramtyp* typ_r
   -- ParamTypes_wf: tidset |- paramtyp*
   -- Type_wf: tidset |- typ_r
+  -- if (id dir typ val = paramtyp)*
+  -- if (typ' = $canon_typ(typ))*
+  ----
+  -- if (~$is_deft(typ') /\ ~$is_spect(typ') /\ ~$is_obj(typ')
+         /\ (~($is_strt(typ') \/ $is_intt(typ'))
+             \/ (dir = NO)))*
 
-;; (TODO) Add parameter nesting rule.
-;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/externmethodt:
   tidset |- ExternMethodT paramtyp* typ_r
   -- ParamTypes_wf: tidset |- paramtyp*
   -- Type_wf: tidset |- typ_r
+  -- if (id dir typ val = paramtyp)*
+  -- if (typ' = $canon_typ(typ))*
+  ----
+  -- if (~$is_deft(typ') /\ ~$is_spect(typ')
+         /\ ~($is_obj(typ') /\ ~$is_externt(typ'))
+         /\ (~($is_strt(typ') \/ $is_intt(typ'))
+             \/ (dir = NO)))*
 
-;; (TODO) Add parameter nesting rule.
-;; (typing/wellformed.ml/check_valid_functyp_nesting)
 rule FuncType_wf/externabstractmethodt:
-  tidset |- ExternMethodT paramtyp* typ_r
+  tidset |- ExternAbstractMethodT paramtyp* typ_r
   -- ParamTypes_wf: tidset |- paramtyp*
   -- Type_wf: tidset |- typ_r
+  -- if (id dir typ val = paramtyp)*
+  -- if (typ' = $canon_typ(typ))*
+  ----
+  -- if (~$is_deft(typ') /\ ~$is_spect(typ')
+         /\ ~($is_obj(typ') /\ ~$is_externt(typ'))
+         /\ (~($is_strt(typ') \/ $is_intt(typ'))
+             \/ (dir = NO)))*
 
 ;;
 ;; Well-formedness of function definitions
@@ -353,7 +366,6 @@ rule FuncType_wf/externabstractmethodt:
 
 rule FuncDef_wf/monofd:
   tidset |- MonoFD functyp
-  ----
   -- if $is_builtinmethodt(functyp)
         \/ $is_actiont(functyp)
         \/ $is_parserapplymethodt(functyp)
@@ -364,13 +376,12 @@ rule FuncDef_wf/monofd:
 
 rule FuncDef_wf/polyfd:
   tidset |- PolyFD tparam* functyp
-  ----
   -- if $is_externfunct(functyp)
         \/ $is_funct(functyp)
         \/ $is_externmethodt(functyp)
         \/ $is_externabstractmethodt(functyp)
   ----
-  -- if $distinct(tparam, tparam*)
+  -- if $distinct(tparam, tparam*)                 ;; CHECK L669
   -- if tidset' = $union_set(tid, tidset, SET tparam*)
   -- FuncType_wf: tidset' |- functyp
 
@@ -397,54 +408,52 @@ rule CParamTypes_wf:
 ;;
 
 rule ConsType_wf/externt:
-  tidset |- ConsT paramtyp* typ'
-  -- if ExternT id fmap = typ'
+  tidset |- ConsT paramtyp* typ
   -- CParamTypes_wf: tidset consctxt |- paramtyp*
-  -- Type_wf: tidset |- typ'
+  -- Type_wf: tidset |- typ
+  -- if ExternT id fmap = $canon_typ(typ)
   ----
   -- if (id dir typ val = paramtyp)*
-  -- if (~$is_parsert(typ))*
-  -- if (~$is_controlt(typ))*
+  -- if (typ' = $canon_typ(typ))*
   ----
-  -- if (~$is_packaget(typ))*
-  -- if (~$is_tablet(typ))*
-  -- if (~$is_synth(typ))*
+  -- if (~$is_deft(typ') /\ ~$is_spect(typ')
+         /\ ~($is_obj(typ') /\ ~$is_externt(typ')))*
 
 rule ConsType_wf/parsert:
-  tidset |- ConsT paramtyp* typ'
-  -- if ParserT paramtyp'* = typ'
+  tidset |- ConsT paramtyp* typ
   -- CParamTypes_wf: tidset consctxt |- paramtyp*
-  -- Type_wf: tidset |- typ'
+  -- Type_wf: tidset |- typ
+  -- if ParserT paramtyp'* = $canon_typ(typ)
   ----
   -- if (id dir typ val = paramtyp)*
-  -- if (~$is_controlt(typ))*
-  -- if (~$is_packaget(typ))*
+  -- if (typ' = $canon_typ(typ))*
   ----
-  -- if (~$is_tablet(typ))*
-  -- if (~$is_synth(typ))*
+  -- if (~$is_deft(typ') /\ ~$is_spect(typ')
+         /\ ~$is_controlt(typ') /\ ~$is_packaget(typ') /\ ~$is_tablet(typ'))*
 
 rule ConsType_wf/controlt:
-  tidset |- ConsT paramtyp* typ'
-  -- if ControlT paramtyp'* = typ'
+  tidset |- ConsT paramtyp* typ
   -- CParamTypes_wf: tidset consctxt |- paramtyp*
-  -- Type_wf: tidset |- typ'
+  -- Type_wf: tidset |- typ
+  -- if ControlT paramtyp'* = $canon_typ(typ)
   ----
   -- if (id dir typ val = paramtyp)*
-  -- if (~$is_controlt(typ))*
-  -- if (~$is_packaget(typ))*
+  -- if (typ' = $canon_typ(typ))*
   ----
-  -- if (~$is_tablet(typ))*
-  -- if (~$is_synth(typ))*
+  -- if (~$is_deft(typ') /\ ~$is_spect(typ')
+         /\ ~$is_parsert(typ') /\ ~$is_packaget(typ') /\ ~$is_tablet(typ'))*
 
 rule ConsType_wf/packaget:
-  tidset |- ConsT paramtyp* typ'
-  -- if PackageT typ'* = typ'
+  tidset |- ConsT paramtyp* typ
   -- CParamTypes_wf: tidset consctxt |- paramtyp*
-  -- Type_wf: tidset |- typ'
+  -- Type_wf: tidset |- typ
+  -- if PackageT ty* = $canon_typ(typ)
   ----
   -- if (id dir typ val = paramtyp)*
-  -- if (~$is_tablet(typ))*
-  -- if (~$is_synth(typ))*
+  -- if (typ' = $canon_typ(typ))*
+  ----
+  -- if (~$is_deft(typ') /\ ~$is_spect(typ') /\ ~$is_tablet(typ'))*
+
 
 ;;
 ;; Well-formedness of constructor definitions
@@ -452,7 +461,6 @@ rule ConsType_wf/packaget:
 
 rule ConsDef_wf:
   tidset |- ConsD tparam* constyp
-  ----
   -- if ConsT paramtyp* typ_r = constyp
   -- if typ_r' = $canon_typ(typ_r)
   ----
@@ -461,6 +469,6 @@ rule ConsDef_wf:
         \/ $is_controlt(typ_r')
         \/ $is_packaget(typ_r')
   ----
-  -- if $distinct(tparam, tparam*)
+  -- if $distinct(tparam, tparam*)                ;; CHECK L773
   -- if tidset' = $union_set(tid, tidset, SET tparam*)
   -- ConsType_wf: tidset' |- constyp

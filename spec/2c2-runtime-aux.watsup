@@ -19,6 +19,7 @@ def $is_vbitt(typ) : bool               hint(show % IS VBIT_T)
 
 def $is_abstract(typ) : bool            hint(show % IS ABSTRACT TYPE)
 def $is_vart(typ) : bool                hint(show % IS VAR_T)
+def $is_spect(typ) : bool               hint(show % IS SPEC_T)
 
 def $is_def(typ) : bool                 hint(show % IS DEFINED TYPE)
 
@@ -64,3 +65,5 @@ def $is_externfunct(functyp) : bool               hint(show % IS EXTERN_FUNC_T)
 def $is_funct(functyp) : bool                     hint(show % IS FUNC_T)
 def $is_externmethodt(functyp) : bool             hint(show % IS EXTERN_METHOD_T)
 def $is_externabstractmethodt(functyp) : bool     hint(show % IS EXTERN_ABSTRACT_METHOD_T)
+
+def $is_trailing_action(dir*) : bool              hint(show % IS TRAILING ACTION_T)
