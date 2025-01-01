@@ -1,6 +1,7 @@
 module P = Lang.Pp
 module F = Format
 open Ast
+open Util.Pp
 open Util.Source
 
 (* Numbers *)
@@ -59,7 +60,7 @@ let pp_dir fmt dir = P.pp_dir fmt dir
 
 let rec pp_typ fmt typ = pp_typ' fmt typ.it
 and pp_typ' fmt typ = Runtime_static.Tdomain.Types.Type.pp fmt typ
-and pp_typs fmt typs = P.pp_list pp_typ ", " fmt typs
+and pp_typs fmt typs = pp_list pp_typ ", " fmt typs
 
 (* Values *)
 
@@ -88,7 +89,7 @@ and pp_param' fmt param' =
   | None -> F.fprintf fmt "%a %a %a" pp_dir dir pp_typ typ pp_id id
 
 and pp_param fmt param = pp_param' fmt param.it
-and pp_params fmt params = F.fprintf fmt "(%a)" (P.pp_list pp_param ", ") params
+and pp_params fmt params = F.fprintf fmt "(%a)" (pp_list pp_param ", ") params
 
 (* Constructor parameters *)
 
@@ -115,17 +116,17 @@ and pp_expr' ?(level = 0) fmt expr' =
   | ValueE { value } -> pp_value fmt value
   | VarE { var } -> pp_var fmt var
   | SeqE { exprs } ->
-      F.fprintf fmt "{ %a }" (P.pp_list (pp_expr ~level:0) ", ") exprs
+      F.fprintf fmt "{ %a }" (pp_list (pp_expr ~level:0) ", ") exprs
   | SeqDefaultE { exprs } ->
       if exprs = [] then F.pp_print_string fmt "{ ... }"
-      else F.fprintf fmt "{ %a, ... }" (P.pp_list (pp_expr ~level:0) ", ") exprs
+      else F.fprintf fmt "{ %a, ... }" (pp_list (pp_expr ~level:0) ", ") exprs
   | RecordE { fields } ->
       F.fprintf fmt "{ %a }"
-        (P.pp_pairs pp_member (pp_expr ~level:0) " = " ", ")
+        (pp_pairs pp_member (pp_expr ~level:0) " = " ", ")
         fields
   | RecordDefaultE { fields } ->
       F.fprintf fmt "{ %a, ... }"
-        (P.pp_pairs pp_member (pp_expr ~level:0) " = " ", ")
+        (pp_pairs pp_member (pp_expr ~level:0) " = " ", ")
         fields
   | DefaultE -> F.pp_print_string fmt "..."
   | UnE { unop; expr } ->
@@ -147,7 +148,7 @@ and pp_expr' ?(level = 0) fmt expr' =
   | SelectE { exprs_select; cases } ->
       F.fprintf fmt "select(%a) {\n%a\n%s}" (pp_exprs ~level:0) exprs_select
         (pp_select_cases ~level:(level + 1))
-        cases (P.indent level)
+        cases (indent level)
   | ArrAccE { expr_base; expr_idx } ->
       F.fprintf fmt "%a[%a]" (pp_expr ~level:0) expr_base (pp_expr ~level:0)
         expr_idx
@@ -168,7 +169,7 @@ and pp_expr' ?(level = 0) fmt expr' =
       F.fprintf fmt "%a%a%a" pp_var var_inst pp_targs targs pp_args args
 
 and pp_expr ?(level = 0) fmt expr = pp_expr' ~level fmt expr.it
-and pp_exprs ?(level = 0) fmt exprs = P.pp_list (pp_expr ~level) ", " fmt exprs
+and pp_exprs ?(level = 0) fmt exprs = pp_list (pp_expr ~level) ", " fmt exprs
 
 (* Keyset expressions *)
 
@@ -228,67 +229,67 @@ and pp_switch_cases ?(level = 0) fmt switch_cases =
 and pp_decl' ?(level = 0) fmt decl' =
   match decl' with
   | ConstD { id; typ; value; annos = _annos } ->
-      F.fprintf fmt "%sconst %a %a = %a;" (P.indent level) pp_typ typ pp_id id
+      F.fprintf fmt "%sconst %a %a = %a;" (indent level) pp_typ typ pp_id id
         pp_value value
   | VarD { id; typ; init; annos = _annos } -> (
       match init with
       | Some expr_init ->
-          F.fprintf fmt "%s%a %a = %a;" (P.indent level) pp_typ typ pp_id id
+          F.fprintf fmt "%s%a %a = %a;" (indent level) pp_typ typ pp_id id
             (pp_expr ~level:0) expr_init
-      | None -> F.fprintf fmt "%s%a %a;" (P.indent level) pp_typ typ pp_id id)
+      | None -> F.fprintf fmt "%s%a %a;" (indent level) pp_typ typ pp_id id)
   | InstD { id; var_inst; targs; args; init; annos = _annos } -> (
       match init with
       | [] ->
-          F.fprintf fmt "%s%a%a%a %a;" (P.indent level) pp_var var_inst pp_targs
+          F.fprintf fmt "%s%a%a%a %a;" (indent level) pp_var var_inst pp_targs
             targs pp_args args pp_id id
       | init ->
-          F.fprintf fmt "%s%a%a%a %a = {\n%a\n%s};" (P.indent level) pp_var
+          F.fprintf fmt "%s%a%a%a %a = {\n%a\n%s};" (indent level) pp_var
             var_inst pp_targs targs pp_args args pp_id id
             (pp_decls ~level:(level + 1))
-            init (P.indent level))
+            init (indent level))
   | ValueSetD { id; typ; size; annos = _annos } ->
-      F.fprintf fmt "%svalue_set<%a>(%a) %a;" (P.indent level) pp_typ typ
+      F.fprintf fmt "%svalue_set<%a>(%a) %a;" (indent level) pp_typ typ
         (pp_expr ~level:0) size pp_id id
   | ParserD { id; tparams; params; cparams; locals; states; annos = _annos } ->
-      F.fprintf fmt "%sparser %a%a%a%a {\n%a%a\n%s}" (P.indent level) pp_id id
+      F.fprintf fmt "%sparser %a%a%a%a {\n%a%a\n%s}" (indent level) pp_id id
         pp_tparams tparams pp_params params pp_cparams cparams
         (pp_decls ~level:(level + 1))
         locals
         (pp_parser_states ~level:(level + 1))
-        states (P.indent level)
+        states (indent level)
   | ActionD { id; params; body; annos = _annos } ->
-      F.fprintf fmt "%saction %a%a\n%a" (P.indent level) pp_id id pp_params
-        params (pp_block ~level) body
+      F.fprintf fmt "%saction %a%a\n%a" (indent level) pp_id id pp_params params
+        (pp_block ~level) body
   | TableD { id; table; annos = _annos } ->
-      F.fprintf fmt "%stable %a %a" (P.indent level) pp_id id (pp_table ~level)
+      F.fprintf fmt "%stable %a %a" (indent level) pp_id id (pp_table ~level)
         table
   | ControlD { id; tparams; params; cparams; locals; body; annos = _annos } ->
-      F.fprintf fmt "%scontrol %a%a%a%a {\n%a%sapply\n%a\n%s}" (P.indent level)
+      F.fprintf fmt "%scontrol %a%a%a%a {\n%a%sapply\n%a\n%s}" (indent level)
         pp_id id pp_tparams tparams pp_params params pp_cparams cparams
         (pp_decls ~level:(level + 1))
         locals
-        (P.indent (level + 1))
+        (indent (level + 1))
         (pp_block ~level:(level + 1))
-        body (P.indent level)
+        body (indent level)
   | FuncD { id; typ_ret; tparams; params; body } ->
-      F.fprintf fmt "%s%a %a%a%a\n%a" (P.indent level) pp_typ typ_ret pp_id id
+      F.fprintf fmt "%s%a %a%a%a\n%a" (indent level) pp_typ typ_ret pp_id id
         pp_tparams tparams pp_params params (pp_block ~level) body
   | ExternFuncD { id; typ_ret; tparams; params; annos = _annos } ->
-      F.fprintf fmt "%sextern %a %a%a%a;" (P.indent level) pp_typ typ_ret pp_id
-        id pp_tparams tparams pp_params params
+      F.fprintf fmt "%sextern %a %a%a%a;" (indent level) pp_typ typ_ret pp_id id
+        pp_tparams tparams pp_params params
   | ExternObjectD { id; tparams; mthds; annos = _annos } ->
-      F.fprintf fmt "%sextern %a%a {\n%a\n%s}" (P.indent level) pp_id id
+      F.fprintf fmt "%sextern %a%a {\n%a\n%s}" (indent level) pp_id id
         pp_tparams tparams
-        (P.pp_list (pp_mthd ~level:(level + 1)) "\n")
-        mthds (P.indent level)
+        (pp_list (pp_mthd ~level:(level + 1)) "\n")
+        mthds (indent level)
   | PackageTypeD { id; tparams; cparams; annos = _annos } ->
-      F.fprintf fmt "%spackage %a%a%a;" (P.indent level) pp_id id pp_tparams
+      F.fprintf fmt "%spackage %a%a%a;" (indent level) pp_id id pp_tparams
         tparams pp_cparams cparams
 
 and pp_decl ?(level = 0) fmt decl = pp_decl' ~level fmt decl.it
 
 and pp_decls ?(level = 0) fmt decls =
-  P.pp_list (pp_decl ~level:(level + 1)) "\n" fmt decls
+  pp_list (pp_decl ~level:(level + 1)) "\n" fmt decls
 
 (* Parser states *)
 

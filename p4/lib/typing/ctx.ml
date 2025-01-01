@@ -62,6 +62,8 @@ type lt = {
 
 type t = { global : gt; block : bt; local : lt }
 
+(* Constructors *)
+
 let empty_gt =
   {
     cdenv = Envs.CDEnv.empty;
@@ -404,7 +406,7 @@ let find_overloaded finder_overloaded_opt cursor var args ctx =
 let pp_frame fmt frame =
   let venv, tenv = frame in
   F.fprintf fmt "@[@[<v 0>[Values]:@ %a@]@\n@[<v 0>[Types]:@ %a@]@]"
-    Envs.VEnv.pp venv Envs.TEnv.pp tenv
+    (Envs.VEnv.pp ~level:0) venv (Envs.TEnv.pp ~level:0) tenv
 
 let pp_gt fmt (gt : gt) =
   F.fprintf fmt
@@ -412,8 +414,8 @@ let pp_gt fmt (gt : gt) =
      @[@[<v 0>[Constructors]:@ %a@]@\n\
      @[<v 0>[Typedefs]:@ %a@]@\n\
      @[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Frame]:@ %a@]@]" Envs.CDEnv.pp gt.cdenv Envs.TDEnv.pp gt.tdenv
-    Envs.FDEnv.pp gt.fdenv pp_frame gt.frame
+     @[<v 0>[Frame]:@ %a@]@]" Envs.CDEnv.pp gt.cdenv (Envs.TDEnv.pp ~level:0)
+    gt.tdenv Envs.FDEnv.pp gt.fdenv pp_frame gt.frame
 
 let pp_blockkind fmt (kind : blockkind) =
   match kind with
@@ -428,8 +430,8 @@ let pp_bt fmt (bt : bt) =
     "@[@[<v 0>[[Block]]:@ %a@]@\n\
      @[<v 0>[Typedefs]:@ %a@]@\n\
      @[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Frame]:@ %a@]@]" pp_blockkind bt.kind Envs.TDEnv.pp bt.tdenv
-    Envs.FDEnv.pp bt.fdenv pp_frame bt.frame
+     @[<v 0>[Frame]:@ %a@]@]" pp_blockkind bt.kind (Envs.TDEnv.pp ~level:0)
+    bt.tdenv Envs.FDEnv.pp bt.fdenv pp_frame bt.frame
 
 let pp_localkind fmt (kind : localkind) =
   match kind with
@@ -447,8 +449,8 @@ let pp_lt fmt (lt : lt) =
   F.fprintf fmt
     "@[@[<v 0>[[Local]]:@ %a@]@\n\
      @[<v 0>[Typedefs]:@ %a@]@\n\
-     @[<v 0>[Frames]:@ %a@]@]" pp_localkind lt.kind Envs.TDEnv.pp lt.tdenv
-    (F.pp_print_list pp_frame) lt.frames
+     @[<v 0>[Frames]:@ %a@]@]" pp_localkind lt.kind (Envs.TDEnv.pp ~level:0)
+    lt.tdenv (F.pp_print_list pp_frame) lt.frames
 
 let pp fmt ctx =
   F.fprintf fmt

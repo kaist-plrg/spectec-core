@@ -15,4 +15,4 @@ module CEnv = MakeCIdEnv (Cons)
 
 (* Environment for objects *)
 
-module OEnv = MakeOIdEnv (Object)
+module Sto = MakeOIdEnv (Object)

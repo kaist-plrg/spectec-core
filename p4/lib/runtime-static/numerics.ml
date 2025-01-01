@@ -84,14 +84,18 @@ let int_of_raw_int (n : Bigint.t) (w : Bigint.t) : Value.t =
 let eval_unop_not (value : Value.t) : Value.t =
   match value with
   | BoolV b -> BoolV (not b)
-  | _ -> Format.asprintf "Not a boolean value: %a" Value.pp value |> failwith
+  | _ ->
+      Format.asprintf "Not a boolean value: %a" (Value.pp ~level:0) value
+      |> failwith
 
 let eval_unop_bitnot (value : Value.t) : Value.t =
   match value with
   | FBitV (width, value) ->
       let value = bitwise_neg value width in
       FBitV (width, value)
-  | _ -> Format.asprintf "Not a bit value: %a" Value.pp value |> failwith
+  | _ ->
+      Format.asprintf "Not a bit value: %a" (Value.pp ~level:0) value
+      |> failwith
 
 let eval_unop_uminus (value : Value.t) : Value.t =
   match value with
@@ -102,7 +106,9 @@ let eval_unop_uminus (value : Value.t) : Value.t =
   | FBitV (width, value) ->
       let value = Bigint.(power_of_two width - value) in
       FBitV (width, value)
-  | _ -> Format.asprintf "Not an integer value: %a" Value.pp value |> failwith
+  | _ ->
+      Format.asprintf "Not an integer value: %a" (Value.pp ~level:0) value
+      |> failwith
 
 let eval_unop (op : Lang.Ast.unop) (value : Value.t) : Value.t =
   match op.it with
@@ -151,8 +157,8 @@ let rec eval_binop_plus (lvalue : Value.t) (rvalue : Value.t) : Value.t =
       eval_binop_plus (int_of_raw_int lvalue width) rvalue
   | IntV lvalue, IntV rvalue -> IntV Bigint.(lvalue + rvalue)
   | _ ->
-      Format.asprintf "Invalid addition: %a + %a" Value.pp lvalue Value.pp
-        rvalue
+      Format.asprintf "Invalid addition: %a + %a" (Value.pp ~level:0) lvalue
+        (Value.pp ~level:0) rvalue
       |> failwith
 
 let rec eval_binop_plussat (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -170,8 +176,8 @@ let rec eval_binop_plussat (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   | IntV lvalue, FIntV (width, _) ->
       eval_binop_plussat (int_of_raw_int lvalue width) rvalue
   | _ ->
-      Format.asprintf "Invalid addition with saturation: %a (+) %a" Value.pp
-        lvalue Value.pp rvalue
+      Format.asprintf "Invalid addition with saturation: %a (+) %a"
+        (Value.pp ~level:0) lvalue (Value.pp ~level:0) rvalue
       |> failwith
 
 let rec eval_binop_minus (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -192,8 +198,8 @@ let rec eval_binop_minus (lvalue : Value.t) (rvalue : Value.t) : Value.t =
       eval_binop_minus (int_of_raw_int lvalue width) rvalue
   | IntV lvalue, IntV rvalue -> IntV Bigint.(lvalue - rvalue)
   | _ ->
-      Format.asprintf "Invalid subtraction: %a - %a" Value.pp lvalue Value.pp
-        rvalue
+      Format.asprintf "Invalid subtraction: %a - %a" (Value.pp ~level:0) lvalue
+        (Value.pp ~level:0) rvalue
       |> failwith
 
 let rec eval_binop_minussat (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -211,8 +217,8 @@ let rec eval_binop_minussat (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   | IntV lvalue, FIntV (width, _) ->
       eval_binop_minussat (int_of_raw_int lvalue width) rvalue
   | _ ->
-      Format.asprintf "Invalid subtraction with saturation: %a (-) %a" Value.pp
-        lvalue Value.pp rvalue
+      Format.asprintf "Invalid subtraction with saturation: %a (-) %a"
+        (Value.pp ~level:0) lvalue (Value.pp ~level:0) rvalue
       |> failwith
 
 let rec eval_binop_mul (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -233,8 +239,8 @@ let rec eval_binop_mul (lvalue : Value.t) (rvalue : Value.t) : Value.t =
       eval_binop_mul (int_of_raw_int lvalue width) rvalue
   | IntV lvalue, IntV rvalue -> IntV Bigint.(lvalue * rvalue)
   | _ ->
-      Format.asprintf "Invalid multiplication: %a * %a" Value.pp lvalue Value.pp
-        rvalue
+      Format.asprintf "Invalid multiplication: %a * %a" (Value.pp ~level:0)
+        lvalue (Value.pp ~level:0) rvalue
       |> failwith
 
 let eval_binop_div (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -244,8 +250,8 @@ let eval_binop_div (lvalue : Value.t) (rvalue : Value.t) : Value.t =
       let value = Bigint.(lvalue / rvalue) in
       FBitV (width, value)
   | _ ->
-      Format.asprintf "Invalid division: %a / %a" Value.pp lvalue Value.pp
-        rvalue
+      Format.asprintf "Invalid division: %a / %a" (Value.pp ~level:0) lvalue
+        (Value.pp ~level:0) rvalue
       |> failwith
 
 let eval_binop_mod (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -255,7 +261,8 @@ let eval_binop_mod (lvalue : Value.t) (rvalue : Value.t) : Value.t =
       let value = Bigint.(lvalue % rvalue) in
       FBitV (width, value)
   | _ ->
-      Format.asprintf "Invalid modulo: %a %% %a" Value.pp lvalue Value.pp rvalue
+      Format.asprintf "Invalid modulo: %a %% %a" (Value.pp ~level:0) lvalue
+        (Value.pp ~level:0) rvalue
       |> failwith
 
 let eval_binop_shl (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -286,8 +293,8 @@ let eval_binop_shl (lvalue : Value.t) (rvalue : Value.t) : Value.t =
       in
       FIntV (width, value)
   | _ ->
-      Format.asprintf "Invalid shift left: %a << %a" Value.pp lvalue Value.pp
-        rvalue
+      Format.asprintf "Invalid shift left: %a << %a" (Value.pp ~level:0) lvalue
+        (Value.pp ~level:0) rvalue
       |> failwith
 
 let eval_binop_shr (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -320,8 +327,8 @@ let eval_binop_shr (lvalue : Value.t) (rvalue : Value.t) : Value.t =
       in
       FBitV (width, value)
   | _ ->
-      Format.asprintf "Invalid shift right: %a >> %a" Value.pp lvalue Value.pp
-        rvalue
+      Format.asprintf "Invalid shift right: %a >> %a" (Value.pp ~level:0) lvalue
+        (Value.pp ~level:0) rvalue
       |> failwith
 
 let rec eval_binop_le (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -337,8 +344,8 @@ let rec eval_binop_le (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   | FIntV (width, _), IntV rvalue ->
       eval_binop_le lvalue (int_of_raw_int rvalue width)
   | _ ->
-      Format.asprintf "Invalid less than or equal: %a <= %a" Value.pp lvalue
-        Value.pp rvalue
+      Format.asprintf "Invalid less than or equal: %a <= %a" (Value.pp ~level:0)
+        lvalue (Value.pp ~level:0) rvalue
       |> failwith
 
 let rec eval_binop_ge (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -354,8 +361,8 @@ let rec eval_binop_ge (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   | FIntV (width, _), IntV rvalue ->
       eval_binop_ge lvalue (int_of_raw_int rvalue width)
   | _ ->
-      Format.asprintf "Invalid greater than or equal: %a >= %a" Value.pp lvalue
-        Value.pp rvalue
+      Format.asprintf "Invalid greater than or equal: %a >= %a"
+        (Value.pp ~level:0) lvalue (Value.pp ~level:0) rvalue
       |> failwith
 
 let rec eval_binop_lt (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -371,8 +378,8 @@ let rec eval_binop_lt (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   | FIntV (width, _), IntV rvalue ->
       eval_binop_lt lvalue (int_of_raw_int rvalue width)
   | _ ->
-      Format.asprintf "Invalid less than: %a < %a" Value.pp lvalue Value.pp
-        rvalue
+      Format.asprintf "Invalid less than: %a < %a" (Value.pp ~level:0) lvalue
+        (Value.pp ~level:0) rvalue
       |> failwith
 
 let rec eval_binop_gt (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -388,8 +395,8 @@ let rec eval_binop_gt (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   | FIntV (width, _), IntV rvalue ->
       eval_binop_gt lvalue (int_of_raw_int rvalue width)
   | _ ->
-      Format.asprintf "Invalid greater than: %a > %a" Value.pp lvalue Value.pp
-        rvalue
+      Format.asprintf "Invalid greater than: %a > %a" (Value.pp ~level:0) lvalue
+        (Value.pp ~level:0) rvalue
       |> failwith
 
 let rec eval_binop_eq_entries (lentries : (string * Value.t) list)
@@ -434,8 +441,8 @@ and eval_binop_eq (lvalue : Value.t) (rvalue : Value.t) : bool =
   | SEnumFieldV (lid, lmember, lvalue), SEnumFieldV (rid, rmember, rvalue) ->
       lid = rid && lmember = rmember && eval_binop_eq lvalue rvalue
   | _ ->
-      Format.asprintf "Invalid equality: %a == %a" Value.pp lvalue Value.pp
-        rvalue
+      Format.asprintf "Invalid equality: %a == %a" (Value.pp ~level:0) lvalue
+        (Value.pp ~level:0) rvalue
       |> failwith
 
 let eval_binop_ne (lvalue : Value.t) (rvalue : Value.t) : bool =
@@ -451,8 +458,8 @@ let rec eval_binop_bitand (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   | IntV lvalue, FBitV (width, _) ->
       eval_binop_bitand (bit_of_raw_int lvalue width) rvalue
   | _ ->
-      Format.asprintf "Invalid bitwise and: %a & %a" Value.pp lvalue Value.pp
-        rvalue
+      Format.asprintf "Invalid bitwise and: %a & %a" (Value.pp ~level:0) lvalue
+        (Value.pp ~level:0) rvalue
       |> failwith
 
 let rec eval_binop_bitxor (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -465,8 +472,8 @@ let rec eval_binop_bitxor (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   | IntV lvalue, FBitV (width, _) ->
       eval_binop_bitxor (bit_of_raw_int lvalue width) rvalue
   | _ ->
-      Format.asprintf "Invalid bitwise xor: %a ^ %a" Value.pp lvalue Value.pp
-        rvalue
+      Format.asprintf "Invalid bitwise xor: %a ^ %a" (Value.pp ~level:0) lvalue
+        (Value.pp ~level:0) rvalue
       |> failwith
 
 let rec eval_binop_bitor (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -479,8 +486,8 @@ let rec eval_binop_bitor (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   | IntV lvalue, FBitV (width, _) ->
       eval_binop_bitor (bit_of_raw_int lvalue width) rvalue
   | _ ->
-      Format.asprintf "Invalid bitwise or: %a | %a" Value.pp lvalue Value.pp
-        rvalue
+      Format.asprintf "Invalid bitwise or: %a | %a" (Value.pp ~level:0) lvalue
+        (Value.pp ~level:0) rvalue
       |> failwith
 
 let rec eval_binop_plusplus (lvalue : Value.t) (rvalue : Value.t) : Value.t =
@@ -494,24 +501,24 @@ let rec eval_binop_plusplus (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   | IntV lvalue, FBitV (width, _) ->
       eval_binop_plusplus (bit_of_raw_int lvalue width) rvalue
   | _ ->
-      Format.asprintf "Invalid concatenation: %a ++ %a" Value.pp lvalue Value.pp
-        rvalue
+      Format.asprintf "Invalid concatenation: %a ++ %a" (Value.pp ~level:0)
+        lvalue (Value.pp ~level:0) rvalue
       |> failwith
 
 let eval_binop_and (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | BoolV b1, BoolV b2 -> BoolV (b1 && b2)
   | _ ->
-      Format.asprintf "Invalid and operator: %a && %a" Value.pp lvalue Value.pp
-        rvalue
+      Format.asprintf "Invalid and operator: %a && %a" (Value.pp ~level:0)
+        lvalue (Value.pp ~level:0) rvalue
       |> failwith
 
 let eval_binop_or (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
   | BoolV b1, BoolV b2 -> BoolV (b1 || b2)
   | _ ->
-      Format.asprintf "Invalid or operator: %a || %a" Value.pp lvalue Value.pp
-        rvalue
+      Format.asprintf "Invalid or operator: %a || %a" (Value.pp ~level:0) lvalue
+        (Value.pp ~level:0) rvalue
       |> failwith
 
 let eval_binop (op : Lang.Ast.binop) (lvalue : Value.t) (rvalue : Value.t) :
@@ -562,7 +569,8 @@ let rec eval_cast_bool (typ : Type.t) (b : bool) : Value.t =
   | FBitT width_to -> FBitV (width_to, if b then Bigint.one else Bigint.zero)
   | NewT (_, typ_inner) -> eval_cast_bool typ_inner b
   | _ ->
-      Format.asprintf "(TODO) Cast from bool to type %a undefined" Type.pp typ
+      Format.asprintf "(TODO) Cast from bool to type %a undefined"
+        (Type.pp ~level:0) typ
       |> failwith
 
 and eval_cast_int (typ : Type.t) (i : Bigint.t) : Value.t =
@@ -576,8 +584,8 @@ and eval_cast_int (typ : Type.t) (i : Bigint.t) : Value.t =
   | NewT (_, typ_inner) -> eval_cast_int typ_inner i
   | _ ->
       Format.asprintf
-        "(TODO) Cast from arbitrary-precision int to type %a undefined" Type.pp
-        typ
+        "(TODO) Cast from arbitrary-precision int to type %a undefined"
+        (Type.pp ~level:0) typ
       |> failwith
 
 and eval_cast_fint (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
@@ -590,7 +598,8 @@ and eval_cast_fint (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
   | NewT (_, typ_inner) -> eval_cast_fint typ_inner width i
   | _ ->
       Format.asprintf
-        "(TODO) Cast from fixed-precision int to type %a undefined" Type.pp typ
+        "(TODO) Cast from fixed-precision int to type %a undefined"
+        (Type.pp ~level:0) typ
       |> failwith
 
 and eval_cast_fbit (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
@@ -604,7 +613,8 @@ and eval_cast_fbit (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
   | NewT (_, typ_inner) -> eval_cast_fbit typ_inner width i
   | _ ->
       Format.asprintf
-        "(TODO) Cast from fixed-precision bit to type %a undefined" Type.pp typ
+        "(TODO) Cast from fixed-precision bit to type %a undefined"
+        (Type.pp ~level:0) typ
       |> failwith
 
 and eval_cast_senum_field (typ : Type.t) (_id : string) (_member : string)
@@ -618,7 +628,8 @@ and eval_cast_struct (typ : Type.t) (fields_value : (string * Value.t) list) :
   | SpecT _ | DefT _ -> assert false
   | StructT _ -> StructV fields_value
   | _ ->
-      Format.asprintf "(TODO) Cast from struct to type %a undefined" Type.pp typ
+      Format.asprintf "(TODO) Cast from struct to type %a undefined"
+        (Type.pp ~level:0) typ
       |> failwith
 
 and eval_cast_header (typ : Type.t) (valid : bool)
@@ -628,7 +639,8 @@ and eval_cast_header (typ : Type.t) (valid : bool)
   | SpecT _ | DefT _ -> assert false
   | HeaderT _ -> HeaderV (valid, fields_value)
   | _ ->
-      Format.asprintf "(TODO) Cast from struct to type %a undefined" Type.pp typ
+      Format.asprintf "(TODO) Cast from struct to type %a undefined"
+        (Type.pp ~level:0) typ
       |> failwith
 
 and eval_cast_seq (typ : Type.t) (values : Value.t list) : Value.t =
@@ -652,8 +664,8 @@ and eval_cast_seq (typ : Type.t) (values : Value.t list) : Value.t =
       let fields = List.combine members values in
       HeaderV (true, fields)
   | _ ->
-      Format.asprintf "(TODO) Cast from sequence to type %a undefined" Type.pp
-        typ
+      Format.asprintf "(TODO) Cast from sequence to type %a undefined"
+        (Type.pp ~level:0) typ
       |> failwith
 
 and eval_cast_seq_default (typ : Type.t) (values : Value.t list) : Value.t =
@@ -699,7 +711,7 @@ and eval_cast_seq_default (typ : Type.t) (values : Value.t list) : Value.t =
       HeaderV (true, fields)
   | _ ->
       Format.asprintf "(TODO) Cast from default sequence to type %a undefined"
-        Type.pp typ
+        (Type.pp ~level:0) typ
       |> failwith
 
 and eval_cast_record (typ : Type.t) (fields_value : (string * Value.t) list) :
@@ -728,7 +740,8 @@ and eval_cast_record (typ : Type.t) (fields_value : (string * Value.t) list) :
       in
       HeaderV (true, fields)
   | _ ->
-      Format.asprintf "(TODO) Cast from record to type %a undefined" Type.pp typ
+      Format.asprintf "(TODO) Cast from record to type %a undefined"
+        (Type.pp ~level:0) typ
       |> failwith
 
 and eval_cast_record_default (typ : Type.t)
@@ -764,7 +777,7 @@ and eval_cast_record_default (typ : Type.t)
       HeaderV (true, fields)
   | _ ->
       Format.asprintf "(TODO) Cast from default record to type %a undefined"
-        Type.pp typ
+        (Type.pp ~level:0) typ
       |> failwith
 
 and eval_cast_default (typ : Type.t) : Value.t = eval_default typ
@@ -784,8 +797,8 @@ and eval_cast_invalid (typ : Type.t) : Value.t =
       let fields = List.combine members values in
       UnionV fields
   | _ ->
-      Format.asprintf "(TODO) Cast from invalid to type %a undefined" Type.pp
-        typ
+      Format.asprintf "(TODO) Cast from invalid to type %a undefined"
+        (Type.pp ~level:0) typ
       |> failwith
 
 and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
@@ -804,8 +817,8 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
   | DefaultV -> eval_cast_default typ
   | InvalidV -> eval_cast_invalid typ
   | _ ->
-      Format.asprintf "(TODO) Cast from %a to type %a undefined" Value.pp value
-        Type.pp typ
+      Format.asprintf "(TODO) Cast from %a to type %a undefined"
+        (Value.pp ~level:0) value (Type.pp ~level:0) typ
       |> failwith
 
 (* Default evaluation *)
@@ -883,6 +896,6 @@ and eval_default (typ : Type.t) : Value.t =
       let fields = List.combine members values in
       UnionV fields
   | _ ->
-      Format.asprintf "(default) Default value not defined for type %a" Type.pp
-        typ
+      Format.asprintf "(default) Default value not defined for type %a"
+        (Type.pp ~level:0) typ
       |> failwith

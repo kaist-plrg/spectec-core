@@ -62,11 +62,11 @@ let get_lpm_prefix value_mask =
         else if prefix = 0 then get_lpm_prefix' value_mask_next 0
         else
           Format.asprintf "(get_lpm_prefix) %a is an invalid lpm mask\n"
-            Value.pp value_mask
+            (Value.pp ~level:0) value_mask
           |> error_no_info
     | _ ->
-        Format.asprintf "(get_lpm_prefix) %a is an invalid lpm mask\n" Value.pp
-          value_mask
+        Format.asprintf "(get_lpm_prefix) %a is an invalid lpm mask\n"
+          (Value.pp ~level:0) value_mask
         |> error_no_info
   in
   let prefix = get_lpm_prefix' value_mask 0 in

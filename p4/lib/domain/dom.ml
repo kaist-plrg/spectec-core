@@ -1,3 +1,5 @@
+module F = Format
+open Util.Pp
 open Util.Source
 open Util.Error
 
@@ -9,7 +11,7 @@ let error_no_info = error_checker_no_info
 module Id = struct
   type t = string
 
-  let pp fmt t = Format.fprintf fmt "%s" t
+  let pp fmt t = F.fprintf fmt "%s" t
   let compare = compare
 end
 
@@ -17,8 +19,8 @@ module IdSet = struct
   include Set.Make (Id)
 
   let pp fmt s =
-    let pp_id fmt id = Format.fprintf fmt "%a" Id.pp id in
-    Format.fprintf fmt "{ %a }" (Format.pp_print_list pp_id) (elements s)
+    let pp_id fmt id = F.fprintf fmt "%a" Id.pp id in
+    F.fprintf fmt "{ %a }" (pp_list pp_id ", ") (elements s)
 
   let eq = equal
   let of_list l = List.fold_left (fun acc x -> add x acc) empty l
@@ -27,13 +29,19 @@ end
 module IdMap = struct
   include Map.Make (Id)
 
+  type 'v pp_v = ?level:int -> F.formatter -> 'v -> unit
+
   let keys m = List.map fst (bindings m)
   let values m = List.map snd (bindings m)
 
-  let pp pp_v fmt m =
-    let pp_binding fmt (k, v) = Format.fprintf fmt "%a : %a" Id.pp k pp_v v in
+  let pp ?(level = 0) (pp_v : 'v pp_v) fmt m =
+    let pp_binding fmt (k, v) =
+      F.fprintf fmt "%s%a : %a" (indent level) Id.pp k
+        (pp_v ~level:(level + 1))
+        v
+    in
     let bindings = bindings m in
-    Format.fprintf fmt "{ %a }" (Format.pp_print_list pp_binding) bindings
+    F.fprintf fmt "{ %a }" (pp_list pp_binding "\n") bindings
 
   let diff m_a m_b =
     let keys_a = keys m_a in
@@ -64,18 +72,14 @@ module FId = struct
   and name = string
   and param = string * bool
 
-  let pp_name fmt name = Format.fprintf fmt "%s" name
+  let pp_name fmt name = F.fprintf fmt "%s" name
   let compare = compare
-  let pp_param fmt (id, _) = Format.fprintf fmt "%s" id
+  let pp_param fmt (id, _) = F.fprintf fmt "%s" id
 
   let pp fmt (name, params) =
-    Format.fprintf fmt "%a(%a)" pp_name name
-      (Format.pp_print_list
-         ~pp_sep:(fun fmt () -> Format.pp_print_string fmt ", ")
-         pp_param)
-      params
+    F.fprintf fmt "%a(%a)" pp_name name (pp_list pp_param ", ") params
 
-  let to_fid (id : El.Ast.id) (params : El.Ast.param list) =
+  let to_fid id params =
     let params =
       List.map
         (fun param ->
@@ -85,7 +89,7 @@ module FId = struct
     in
     (id.it, params)
 
-  let to_names (args : El.Ast.arg list) =
+  let to_names args =
     List.map
       (fun arg ->
         match arg.it with Lang.Ast.NameA (id, _) -> Some id.it | _ -> None)
@@ -98,8 +102,8 @@ module FIdSet = struct
   let eq = equal
 
   let pp fmt s =
-    let pp_fid fmt fid = Format.fprintf fmt "%a" FId.pp fid in
-    Format.fprintf fmt "{ %a }" (Format.pp_print_list pp_fid) (elements s)
+    let pp_fid fmt fid = F.fprintf fmt "%a" FId.pp fid in
+    F.fprintf fmt "{ %a }" (pp_list pp_fid ", ") (elements s)
 
   let of_list l = List.fold_left (fun acc x -> add x acc) empty l
 end
@@ -111,9 +115,9 @@ module FIdMap = struct
   let values m = List.map snd (bindings m)
 
   let pp pp_v fmt m =
-    let pp_binding fmt (k, v) = Format.fprintf fmt "%a : %a" FId.pp k pp_v v in
+    let pp_binding fmt (k, v) = F.fprintf fmt "%a : %a" FId.pp k pp_v v in
     let bindings = bindings m in
-    Format.fprintf fmt "{ %a }" (Format.pp_print_list pp_binding) bindings
+    F.fprintf fmt "{ %a }" (pp_list pp_binding "\n") bindings
 
   let diff m_a m_b =
     let keys_a = keys m_a in
@@ -142,7 +146,7 @@ module CIdMap = FIdMap
 module OId = struct
   type t = Id.t list
 
-  let pp fmt t = String.concat "." t |> Format.fprintf fmt "%s"
+  let pp fmt t = String.concat "." t |> F.fprintf fmt "%s"
   let compare = compare
 end
 
@@ -150,8 +154,8 @@ module OIdSet = struct
   include Set.Make (OId)
 
   let pp fmt s =
-    let pp_oid fmt oid = Format.fprintf fmt "%a" OId.pp oid in
-    Format.fprintf fmt "{ %a }" (Format.pp_print_list pp_oid) (elements s)
+    let pp_oid fmt oid = F.fprintf fmt "%a" OId.pp oid in
+    F.fprintf fmt "{ %a }" (pp_list pp_oid ", ") (elements s)
 
   let eq = equal
   let of_list l = List.fold_left (fun acc x -> add x acc) empty l
@@ -164,9 +168,9 @@ module OIdMap = struct
   let values m = List.map snd (bindings m)
 
   let pp pp_v fmt m =
-    let pp_binding fmt (k, v) = Format.fprintf fmt "%a : %a" OId.pp k pp_v v in
+    let pp_binding fmt (k, v) = F.fprintf fmt "%a : %a" OId.pp k pp_v v in
     let bindings = bindings m in
-    Format.fprintf fmt "{ %a }" (Format.pp_print_list pp_binding) bindings
+    F.fprintf fmt "{ %a }" (pp_list pp_binding "\n") bindings
 
   let diff m_a m_b =
     let keys_a = keys m_a in
@@ -189,23 +193,23 @@ end
 module MakeIdEnv (V : sig
   type t
 
-  val pp : Format.formatter -> t -> unit
+  val pp : ?level:int -> F.formatter -> t -> unit
 end) =
 struct
   include IdMap
 
   type t = V.t IdMap.t
 
-  let pp fmt env = IdMap.pp V.pp fmt env
+  let pp ?(level = 0) fmt env = IdMap.pp ~level V.pp fmt env
 
   let find id env =
     match find_opt id env with
     | Some value -> value
-    | None -> Format.asprintf "key not found: %a" Id.pp id |> error_no_info
+    | None -> F.asprintf "key not found: %a" Id.pp id |> error_no_info
 
   let add_nodup id value env =
     if mem id env then
-      Format.asprintf "key already exists: %a" Id.pp id |> error_no_info
+      F.asprintf "key already exists: %a" Id.pp id |> error_no_info
     else add id value env
 end
 
@@ -214,7 +218,7 @@ module MakeTIdEnv = MakeIdEnv
 module MakeFIdEnv (V : sig
   type t
 
-  val pp : Format.formatter -> t -> unit
+  val pp : F.formatter -> t -> unit
   val eq_kind : t -> t -> bool
 end) =
 struct
@@ -232,7 +236,7 @@ struct
   let find (fid : FId.t) fenv =
     match find_opt fid fenv with
     | Some func -> func
-    | None -> Format.asprintf "key not found: %a" FId.pp fid |> error_no_info
+    | None -> F.asprintf "key not found: %a" FId.pp fid |> error_no_info
 
   (* Lookups for matching call site to def site *)
 
@@ -321,7 +325,7 @@ struct
     | [] -> None
     | [ func ] -> Some func
     | _ ->
-        Format.asprintf
+        F.asprintf
           "(find_overloaded_opt) cannot resolve overloaded function given %a"
           FId.pp_name fname
         |> error_no_info
@@ -329,8 +333,7 @@ struct
   let find_overloaded (fname, args) fenv =
     match find_overloaded_opt (fname, args) fenv with
     | Some value -> value
-    | _ ->
-        Format.asprintf "key not found: %a" FId.pp_name fname |> error_no_info
+    | _ -> F.asprintf "key not found: %a" FId.pp_name fname |> error_no_info
 
   (* Non-overloaded lookup, allowing defaults *)
 
@@ -346,28 +349,27 @@ struct
   let find_non_overloaded (fname, args) fenv =
     match find_non_overloaded_opt (fname, args) fenv with
     | Some value -> value
-    | _ ->
-        Format.asprintf "key not found: %a" FId.pp_name fname |> error_no_info
+    | _ -> F.asprintf "key not found: %a" FId.pp_name fname |> error_no_info
 
   (* Adders *)
 
   let add_nodup_overloaded fid value fenv =
     if mem fid fenv then
-      Format.asprintf "key already exists: %a" FId.pp fid |> error_no_info
+      F.asprintf "key already exists: %a" FId.pp fid |> error_no_info
     else
       let fname, _ = fid in
       match find_non_overloaded_opt' fname fenv with
       | [] -> add fid value fenv
       | values ->
           if not (List.for_all (V.eq_kind value) values) then
-            Format.asprintf "key already exists: %a" FId.pp fid |> error_no_info
+            F.asprintf "key already exists: %a" FId.pp fid |> error_no_info
           else add fid value fenv
 
   let add_nodup_non_overloaded fid value fenv =
     let fname, _ = fid in
     match find_non_overloaded_opt' fname fenv with
     | [] -> add fid value fenv
-    | _ -> Format.asprintf "key already exists: %a" FId.pp fid |> error_no_info
+    | _ -> F.asprintf "key already exists: %a" FId.pp fid |> error_no_info
 end
 
 module MakeCIdEnv = MakeFIdEnv
@@ -375,7 +377,7 @@ module MakeCIdEnv = MakeFIdEnv
 module MakeOIdEnv (V : sig
   type t
 
-  val pp : Format.formatter -> t -> unit
+  val pp : F.formatter -> t -> unit
 end) =
 struct
   include OIdMap
@@ -387,11 +389,11 @@ struct
   let find id env =
     match find_opt id env with
     | Some value -> value
-    | None -> Format.asprintf "key not found: %a" OId.pp id |> error_no_info
+    | None -> F.asprintf "key not found: %a" OId.pp id |> error_no_info
 
   let add_nodup id value env =
     if mem id env then
-      Format.asprintf "key already exists: %a" OId.pp id |> error_no_info
+      F.asprintf "key already exists: %a" OId.pp id |> error_no_info
     else add id value env
 end
 
@@ -400,16 +402,16 @@ end
 module MakePair (A : sig
   type t
 
-  val pp : Format.formatter -> t -> unit
+  val pp : F.formatter -> t -> unit
 end) (B : sig
   type t
 
-  val pp : Format.formatter -> t -> unit
+  val pp : F.formatter -> t -> unit
 end) =
 struct
   type t = A.t * B.t
 
-  let pp fmt (a, b) = Format.fprintf fmt "(%a, %a)" A.pp a B.pp b
+  let pp fmt (a, b) = F.fprintf fmt "(%a, %a)" A.pp a B.pp b
 end
 
 (* Triple functor *)
@@ -417,18 +419,19 @@ end
 module MakeTriple (A : sig
   type t
 
-  val pp : Format.formatter -> t -> unit
+  val pp : ?level:int -> F.formatter -> t -> unit
 end) (B : sig
   type t
 
-  val pp : Format.formatter -> t -> unit
+  val pp : F.formatter -> t -> unit
 end) (C : sig
   type t
 
-  val pp : Format.formatter -> t -> unit
+  val pp : F.formatter -> t -> unit
 end) =
 struct
   type t = A.t * B.t * C.t
 
-  let pp fmt (a, b, c) = Format.fprintf fmt "(%a, %a, %a)" A.pp a B.pp b C.pp c
+  let pp ?(level = 0) fmt (a, b, c) =
+    F.fprintf fmt "(%a, %a, %a)" (A.pp ~level) a B.pp b C.pp c
 end

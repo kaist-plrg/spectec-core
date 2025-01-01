@@ -17,14 +17,6 @@ open Util.Error
 
 let error_no_info = error_checker_no_info
 let error_pass_info = error_checker_pass_info
-
-let map2_exn name f l1 l2 =
-  try List.map2 f l1 l2
-  with Invalid_argument _ ->
-    Format.asprintf "(%s) list lengths do not match: %d and %d" name
-      (List.length l1) (List.length l2)
-    |> error_no_info
-
 let check = check_checker
 
 (* Coercion rules *)
@@ -49,7 +41,8 @@ let rec coerce_type_unary_numeric (checker : Type.t -> bool)
       let expr_il = insert_cast expr_il typ_inner in
       coerce_type_unary_numeric checker expr_il
   | _ ->
-      Format.asprintf "(coerce_type_unary) cannot coerce type %a" Type.pp typ
+      Format.asprintf "(coerce_type_unary) cannot coerce type %a"
+        (Type.pp ~level:0) typ
       |> error_no_info
 
 (* Coercion for binary *)
@@ -67,7 +60,8 @@ let rec coerce_types_binary (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr)
     (expr_l_il, expr_r_il)
   else
     Format.asprintf "(coerce_types_binary) cannot coerce types %a and %a"
-      Type.pp expr_l_il.note.typ Type.pp expr_r_il.note.typ
+      (Type.pp ~level:0) expr_l_il.note.typ (Type.pp ~level:0)
+      expr_r_il.note.typ
     |> error_no_info
 
 (* Precondition: checker should alwaysult in false for serializable enum case *)
@@ -86,8 +80,8 @@ and coerce_types_binary_numeric (checker : Type.t -> Type.t -> bool)
       coerce_types_binary_numeric checker expr_l_il expr_r_il
   | _ ->
       Format.asprintf
-        "(coerce_types_binary_numeric) cannot coerce types %a and %a" Type.pp
-        typ_l Type.pp typ_r
+        "(coerce_types_binary_numeric) cannot coerce types %a and %a"
+        (Type.pp ~level:0) typ_l (Type.pp ~level:0) typ_r
       |> error_no_info
 
 (* Coercion for assignment (including assignment by call and return) *)
@@ -98,8 +92,8 @@ and coerce_type_assign (expr_from_il : Il.Ast.expr) (typ_to : Type.t) :
   if Type.eq_alpha typ_from typ_to then expr_from_il
   else if Subtyp.implicit typ_from typ_to then insert_cast expr_from_il typ_to
   else
-    Format.asprintf "(coerce_type) cannot coerce type %a to %a" Type.pp
-      expr_from_il.note.typ Type.pp typ_to
+    Format.asprintf "(coerce_type) cannot coerce type %a to %a"
+      (Type.pp ~level:0) expr_from_il.note.typ (Type.pp ~level:0) typ_to
     |> error_no_info
 
 (* Type inference *)
@@ -215,15 +209,19 @@ and merge_cstr (cstr_old : cstr_t) (cstr_new : cstr_t) : cstr_t =
           else if Subtyp.implicit typ_new typ_old then
             TIdMap.add key (Some typ_old) cstr
           else
-            Format.asprintf "(merge_cstr) type %a and %a do not match" Type.pp
-              typ_old Type.pp typ_new
+            Format.asprintf "(merge_cstr) type %a and %a do not match"
+              (Type.pp ~level:0) typ_old (Type.pp ~level:0) typ_new
             |> error_no_info)
     keys TIdMap.empty
 
 and gen_cstrs (cstr : cstr_t) (typ_params : Type.t list)
     (typ_args : Type.t list) : cstr_t =
+  check
+    (List.length typ_params = List.length typ_args)
+    (Format.asprintf "(gen_cstrs) list lengths do not match: %d and %d"
+       (List.length typ_params) (List.length typ_args));
   let cstrs =
-    map2_exn "gen_cstrs"
+    List.map2
       (fun typ_param typ_arg -> gen_cstr cstr typ_param typ_arg)
       typ_params typ_args
   in
@@ -521,7 +519,7 @@ and check_eq_typ_alpha (typ_l : Type.t) (typ_r : Type.t) : unit =
   check
     (Type.eq_alpha typ_l typ_r)
     (Format.asprintf "(check_eq_typ_alpha) Types %a and %a are not equal"
-       Type.pp typ_l Type.pp typ_r)
+       (Type.pp ~level:0) typ_l (Type.pp ~level:0) typ_r)
 
 and check_table_apply_as_arg ~(action : bool) (args_il : Il.Ast.arg list) : unit
     =
@@ -1090,7 +1088,7 @@ and type_binop_div_mod (cursor : Ctx.cursor) (ctx : Ctx.t)
        (Format.asprintf
           "(type_binop_div_mod) Division or modulo by a non-positive integer \
            %a is not allowed"
-          Value.pp value_divisor.it));
+          (Value.pp ~level:0) value_divisor.it));
   let typ = expr_l_il.note.typ in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
   (typ, expr_il)
@@ -1119,9 +1117,8 @@ and type_binop_shift (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     (implies
        (match typ_r with FIntT _ | IntT -> true | _ -> false)
        (Ctk.is_lctk expr_r_il.note.ctk))
-    "(type_binop_shift) if a signed integer type is used as the right \
-     operand of a shift operator, it must be a local compile-time known \
-     integer";
+    "(type_binop_shift) if a signed integer type is used as the right operand \
+     of a shift operator, it must be a local compile-time known integer";
   let typ = typ_l in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
   (typ, expr_il)
@@ -1152,7 +1149,7 @@ and type_binop_compare_equal (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
   check (Type.is_equalable typ)
     (Format.asprintf
        "(type_binop_compare_equal) type %a cannot be compared of equality"
-       Type.pp typ);
+       (Type.pp ~level:0) typ);
   let typ = Types.BoolT in
   let expr_il = Il.Ast.BinE { binop; expr_l = expr_l_il; expr_r = expr_r_il } in
   (typ, expr_il)
@@ -1293,8 +1290,8 @@ and type_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
   let typ = expr_il.note.typ in
   check
     (Subtyp.explicit typ typ_target.it)
-    (Format.asprintf "(type_cast_expr) invalid cast from %a to %a" Type.pp typ
-       Type.pp typ_target.it);
+    (Format.asprintf "(type_cast_expr) invalid cast from %a to %a"
+       (Type.pp ~level:0) typ (Type.pp ~level:0) typ_target.it);
   let typ = typ_target.it in
   let expr_il = Il.Ast.CastE { typ = typ_target; expr = expr_il } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
@@ -1446,7 +1443,8 @@ and type_select_case_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
             Format.asprintf
               "(type_select_case_keyset) Key type %a and the type %a of the \
                keyset expression %a must be set types\n"
-              Type.pp typ_key Type.pp typ (Il.Pp.pp_expr ~level:0) expr_il
+              (Type.pp ~level:0) typ_key (Type.pp ~level:0) typ
+              (Il.Pp.pp_expr ~level:0) expr_il
             |> error_no_info
       in
       Lang.Ast.ExprK expr_il
@@ -1583,8 +1581,9 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
            check
              (Bigint.(idx >= zero) && Bigint.(idx < size))
              (Format.asprintf
-                "(type_array_acc_expr) Index %a out of range for %a" Value.pp
-                value_idx.it (Il.Pp.pp_expr ~level:0) expr_base_il));
+                "(type_array_acc_expr) Index %a out of range for %a"
+                (Value.pp ~level:0) value_idx.it (Il.Pp.pp_expr ~level:0)
+                expr_base_il));
         (typ, expr_il)
     | _ ->
         Format.asprintf "(type_array_acc_expr) %a cannot be indexed"
@@ -1662,7 +1661,7 @@ and check_bitstring_slice_range (typ_base : Type.t) (idx_lo : Bigint.t)
     && check_bitstring_slice_range' typ_base idx_lo idx_hi)
     (Format.asprintf
        "(check_bitstring_slice_range) Invalid slice [%a:%a] for %a\n" Bigint.pp
-       idx_lo Bigint.pp idx_hi Type.pp typ_base)
+       idx_lo Bigint.pp idx_hi (Type.pp ~level:0) typ_base)
 
 and type_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (expr_lo : El.Ast.expr) (expr_hi : El.Ast.expr) :
@@ -1725,7 +1724,7 @@ and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       | MonoD typ_base -> typ_base
       | _ ->
           Format.asprintf "(type_type_acc_expr) Cannot access a generic type %a"
-            TypeDef.pp td_base
+            (TypeDef.pp ~level:0) td_base
           |> error_no_info
     in
     match Type.canon typ_base with
@@ -1733,20 +1732,20 @@ and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
         check
           (List.mem member.it members)
           (Format.asprintf "(type_type_acc_expr) member %s does not exist in %a"
-             member.it TypeDef.pp td_base);
+             member.it (TypeDef.pp ~level:0) td_base);
         let value = Value.EnumFieldV (id, member.it) in
         (typ_base, value)
     | SEnumT (id, _, fields) ->
         check
           (List.mem_assoc member.it fields)
           (Format.asprintf "(type_type_acc_expr) member %s does not exist in %a"
-             member.it TypeDef.pp td_base);
+             member.it (TypeDef.pp ~level:0) td_base);
         let value_inner = List.assoc member.it fields in
         let value = Value.SEnumFieldV (id, member.it, value_inner) in
         (typ_base, value)
     | _ ->
         Format.asprintf "(type_type_acc_expr) %a cannot be accessed\n"
-          TypeDef.pp td_base
+          (TypeDef.pp ~level:0) td_base
         |> error_no_info
   in
   let expr_il = Il.Ast.ValueE { value = value $ member.at } in
@@ -2292,7 +2291,7 @@ and check_instantiation_site (cursor : Ctx.cursor) (ctx : Ctx.t)
       | _ ->
           Format.asprintf
             "(check_instantiation_site) %a cannot be instantiated at top level"
-            Type.pp typ_inst
+            (Type.pp ~level:0) typ_inst
           |> error_no_info)
   | Block -> (
       let kind = ctx.block.kind in
@@ -2303,8 +2302,8 @@ and check_instantiation_site (cursor : Ctx.cursor) (ctx : Ctx.t)
           ()
       | _ ->
           Format.asprintf
-            "(check_instantiation_site) %a cannot be instantiated in %a" Type.pp
-            typ_inst Ctx.pp_blockkind kind
+            "(check_instantiation_site) %a cannot be instantiated in %a"
+            (Type.pp ~level:0) typ_inst Ctx.pp_blockkind kind
           |> error_no_info)
   | Local -> (
       let kind = ctx.local.kind in
@@ -2314,8 +2313,8 @@ and check_instantiation_site (cursor : Ctx.cursor) (ctx : Ctx.t)
           ()
       | _ ->
           Format.asprintf
-            "(check_instantiation_site) %a cannot be instantiated in %a" Type.pp
-            typ_inst Ctx.pp_localkind kind
+            "(check_instantiation_site) %a cannot be instantiated in %a"
+            (Type.pp ~level:0) typ_inst Ctx.pp_localkind kind
           |> error_no_info)
 
 and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
@@ -2777,7 +2776,7 @@ and type_switch_general_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     | _ -> false)
     (Format.asprintf
        "(type_switch_general_stmt) switch expression is unsupported for type %a"
-       Type.pp typ_switch);
+       (Type.pp ~level:0) typ_switch);
   let flow, cases_il =
     type_switch_general_cases cursor ctx flow typ_switch cases
   in
@@ -2875,7 +2874,7 @@ and type_return_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (_flow : Flow.t)
           (typ_ret_func = Types.VoidT)
           (Format.asprintf
              "(type_return_stmt) function must return a value of type %a"
-             Type.pp typ_ret_func);
+             (Type.pp ~level:0) typ_ret_func);
         None
   in
   let stmt_il = Lang.Ast.RetS { expr_ret = expr_ret_il } in
@@ -3165,7 +3164,8 @@ and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 and check_valid_var_type (typ : Type.t) : unit =
   check (Type.is_assignable typ)
     (Format.asprintf
-       "(check_valid_var_type) type %a is not a valid variable type" Type.pp typ)
+       "(check_valid_var_type) type %a is not a valid variable type"
+       (Type.pp ~level:0) typ)
 
 and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (typ : El.Ast.typ) (expr_init : El.Ast.expr option)
@@ -4515,7 +4515,7 @@ and check_table_key (match_kind : string) (typ : Type.t) : unit =
     (check_table_key' match_kind typ)
     (Format.asprintf
        "(check_table_key) %a is not a valid table key type for match kind %s"
-       Type.pp typ match_kind)
+       (Type.pp ~level:0) typ match_kind)
 
 and check_table_key' (match_kind : string) (typ : Type.t) : bool =
   let typ = Type.canon typ in
@@ -4941,7 +4941,8 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
             Format.asprintf
               "(type_table_entry_keyset') key type %a and the type %a of the \
                keyset expression %a must be set types"
-              Type.pp typ_key Type.pp typ (Il.Pp.pp_expr ~level:0) expr_il
+              (Type.pp ~level:0) typ_key (Type.pp ~level:0) typ
+              (Il.Pp.pp_expr ~level:0) expr_il
             |> error_no_info
       in
       (entry_state, Lang.Ast.ExprK expr_il)
@@ -5243,15 +5244,15 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
     | "size" ->
         check (Type.is_numeric typ)
           (Format.asprintf
-             "(type_table_custom) size should be a numeric type, not %a" Type.pp
-             typ);
+             "(type_table_custom) size should be a numeric type, not %a"
+             (Type.pp ~level:0) typ);
         table_ctx
     | "largest_priority_wins" ->
         check (typ = BoolT)
           (Format.asprintf
              "(type_table_custom) largest_priority_wins should be a boolean \
               type, not %a"
-             Type.pp typ);
+             (Type.pp ~level:0) typ);
         let value = Static.eval_expr cursor ctx expr_il in
         let largest_priority_wins = value.it |> Value.get_bool in
         let table_ctx =
@@ -5263,7 +5264,7 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
           (Format.asprintf
              "(type_table_custom) priority_delta should be a numeric type, not \
               %a"
-             Type.pp typ);
+             (Type.pp ~level:0) typ);
         let value = Static.eval_expr cursor ctx expr_il in
         let priority_delta =
           value.it |> Value.get_num |> Bigint.to_int |> Option.get

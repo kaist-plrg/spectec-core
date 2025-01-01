@@ -261,9 +261,7 @@ and eval_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let value_base = eval_expr cursor ctx expr_base in
   let value_base = value_base.it in
   let value_lo, value_hi = (value_lo.it, value_hi.it) in
-  let value =
-    Numerics.eval_bitstring_access value_base value_hi value_lo
-  in
+  let value = Numerics.eval_bitstring_access value_base value_hi value_lo in
   value
 
 and eval_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)

@@ -185,7 +185,7 @@ and check_valid_typ_nesting (typ : Type.t) (typ_inner : Type.t) : unit =
   check
     (check_valid_typ_nesting' typ typ_inner)
     (Format.asprintf "(check_valid_typ_nesting) invalid nesting of %a inside %a"
-       Type.pp typ_inner Type.pp typ)
+       (Type.pp ~level:0) typ_inner (Type.pp ~level:0) typ)
 
 and check_valid_typ_nesting_new_in_senum' (typ_inner : Type.t) : bool =
   let typ_inner = Type.canon typ_inner in
@@ -265,8 +265,8 @@ and check_valid_typ_nesting_seq_in_set' (typ_inner : Type.t) : bool =
 
 and check_valid_typ_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
   let error_not_nest () : bool =
-    Format.printf "(check_valid_typ_nesting) %a is not a nested type\n" Type.pp
-      typ;
+    Format.printf "(check_valid_typ_nesting) %a is not a nested type\n"
+      (Type.pp ~level:0) typ;
     false
   in
   let typ_inner = Type.canon typ_inner in
@@ -472,7 +472,7 @@ and check_valid_typdef'' (tset : TIdSet.t) (td : TypeDef.t) : unit =
         | _ -> false)
         (Format.asprintf
            "(check_valid_typdef') %a is not a definable monomorphic type"
-           Type.pp typ_inner);
+           (Type.pp ~level:0) typ_inner);
       check_valid_typ' tset typ_inner
   | PolyD (tparams, tparams_hidden, typ_inner) ->
       check
@@ -482,8 +482,8 @@ and check_valid_typdef'' (tset : TIdSet.t) (td : TypeDef.t) : unit =
             true
         | _ -> false)
         (Format.asprintf
-           "(check_valid_typdef') %a is not a definable generic type" Type.pp
-           typ_inner);
+           "(check_valid_typdef') %a is not a definable generic type"
+           (Type.pp ~level:0) typ_inner);
       let tparams = tparams @ tparams_hidden in
       check_distinct_names tparams;
       let tset = tparams |> TIdSet.of_list |> TIdSet.union tset in
@@ -620,7 +620,7 @@ and check_valid_functyp_nesting (ft : FuncType.t) (params : Types.param list) :
         (check_valid_functyp_nesting' ft dir typ)
         (Format.asprintf
            "(check_valid_functyp_nesting) invalid nesting of %a inside %a"
-           Type.pp typ FuncType.pp ft))
+           (Type.pp ~level:0) typ FuncType.pp ft))
     params
 
 and check_valid_functyp_nesting' (ft : FuncType.t) (dir : Lang.Ast.dir')
@@ -755,7 +755,7 @@ and check_valid_constyp_nesting (typ : Type.t) (cparams : Types.cparam list) :
         (check_valid_constyp_nesting' typ typ_inner)
         (Format.asprintf
            "(check_valid_constyp_nesting) invalid nesting of %a inside %a"
-           Type.pp typ_inner Type.pp typ))
+           (Type.pp ~level:0) typ_inner (Type.pp ~level:0) typ))
     cparams
 
 and check_valid_constyp_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
@@ -796,8 +796,8 @@ and check_valid_consdef' (tset : TIdSet.t) (cd : ConsDef.t) : unit =
     | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> true
     | _ -> false)
     (Format.asprintf
-       "(check_valid_consdef') %a is not a definable constructor type" Type.pp
-       typ);
+       "(check_valid_consdef') %a is not a definable constructor type"
+       (Type.pp ~level:0) typ);
   let tparams = tparams @ tparams_hidden in
   check_distinct_names tparams;
   let tset = tparams |> TIdSet.of_list |> TIdSet.union tset in

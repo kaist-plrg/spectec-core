@@ -106,6 +106,15 @@ let is_equalable_typ typ =
   | InvalidT -> true
   | SetT _ | StateT -> false
 
+let rec get_width_typ typ =
+  let typ = Subst.canon_typ typ in
+  match typ with
+  | SpecT _ | DefT _ -> assert false
+  | FIntT width | FBitT width | VBitT width ->
+      width |> Bigint.to_int |> Option.get
+  | NewT (_, typ_inner) -> get_width_typ typ_inner
+  | _ -> assert false
+
 (* Function type utils *)
 
 let is_action_functyp = function ActionT _ -> true | _ -> false

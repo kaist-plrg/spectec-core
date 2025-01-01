@@ -1,4 +1,4 @@
 (library
  (name instance)
  (libraries lang il domain runtime_static runtime_dynamic)
- (modules instantiate))
+ (modules ctx instantiate))

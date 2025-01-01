@@ -17,24 +17,13 @@ module Type = struct
   let subst = subst_typ
   let unroll = unroll_typ
   let canon = canon_typ
-
-  let rec get_width typ =
-    let typ = canon_typ typ in
-    match typ with
-    | SpecT _ | DefT _ -> assert false
-    | FIntT width | FBitT width | VBitT width ->
-        width |> Bigint.to_int |> Option.get
-    | NewT (_, typ_inner) -> get_width typ_inner
-    | _ ->
-        Format.printf "(get_width) %a must be a numeric type\n" pp typ;
-        assert false
-
   let is_numeric = is_numeric_typ
   let is_nominal = is_nominal_typ
   let is_ground = is_ground_typ
   let is_assignable = is_assignable_typ
   let is_defaultable = is_defaultable_typ
   let is_equalable = is_equalable_typ
+  let get_width = get_width_typ
 end
 
 module TypeDef = struct

@@ -49,7 +49,8 @@ let rec min_size_in_bits' (typ : Type.t) : Bigint.t =
       in
       List.fold_left Bigint.min Bigint.zero sizes
   | _ ->
-      Format.asprintf "(TODO) Size of type %a undefined" Type.pp typ |> failwith
+      Format.asprintf "(TODO) Size of type %a undefined" (Type.pp ~level:0) typ
+      |> failwith
 
 let min_size_in_bits (typ : Type.t) : Value.t =
   let size = min_size_in_bits' typ in
@@ -83,7 +84,8 @@ let rec max_size_in_bits' (typ : Type.t) : Bigint.t =
       in
       List.fold_left Bigint.max Bigint.zero sizes
   | _ ->
-      Format.asprintf "(TODO) Size of type %a undefined" Type.pp typ |> failwith
+      Format.asprintf "(TODO) Size of type %a undefined" (Type.pp ~level:0) typ
+      |> failwith
 
 let max_size_in_bits (typ : Type.t) : Value.t =
   let size = max_size_in_bits' typ in

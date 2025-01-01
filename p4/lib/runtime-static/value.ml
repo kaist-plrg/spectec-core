@@ -1,6 +1,7 @@
 module L = Lang.Ast
 module P = Lang.Pp
 module F = Format
+open Util.Pp
 
 type t =
   | ErrV of L.member'
@@ -27,8 +28,10 @@ type t =
   | RecordDefaultV of (L.member' * t) list
   | DefaultV
   | InvalidV
+  | RefV of Domain.Dom.OId.t
 
-let rec pp fmt value =
+let rec pp ?(level = 0) fmt value =
+  level |> ignore;
   match value with
   | ErrV member -> F.fprintf fmt "error.%a" (P.pp_member' ~level:0) member
   | MatchKindV member -> P.pp_member' ~level:0 fmt member
@@ -42,43 +45,44 @@ let rec pp fmt value =
   | EnumFieldV (id, member) ->
       F.fprintf fmt "%a.%a" P.pp_id' id (P.pp_member' ~level:0) member
   | SEnumFieldV (id, member, value) ->
-      F.fprintf fmt "%a.%a(= %a)" P.pp_id' id (P.pp_member' ~level:0) member pp
-        value
-  | ListV values -> F.fprintf fmt "list { %a }" (P.pp_list pp ", ") values
-  | TupleV values -> F.fprintf fmt "tuple { %a }" (P.pp_list pp ", ") values
+      F.fprintf fmt "%a.%a(= %a)" P.pp_id' id (P.pp_member' ~level:0) member
+        (pp ~level:0) value
+  | ListV values -> F.fprintf fmt "list { %a }" (pp_list pp ", ") values
+  | TupleV values -> F.fprintf fmt "tuple { %a }" (pp_list pp ", ") values
   | StackV (values, _idx, _size) ->
-      F.fprintf fmt "stack { %a }" (P.pp_list pp "; ") values
+      F.fprintf fmt "stack { %a }" (pp_list pp "; ") values
   | StructV fields ->
       F.fprintf fmt "struct { %a }"
-        (P.pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
+        (pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
         fields
   | HeaderV (_valid, fields) ->
       F.fprintf fmt "header { %a }"
-        (P.pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
+        (pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
         fields
   | UnionV fields ->
       F.fprintf fmt "header_union { %a }"
-        (P.pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
+        (pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
         fields
   | TableEnumFieldV (id, member) ->
       F.fprintf fmt "%a.%a" P.pp_id' id (P.pp_member' ~level:0) member
   | TableStructV fields ->
       F.fprintf fmt "table { %a }"
-        (P.pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
+        (pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
         fields
-  | SeqV values -> F.fprintf fmt "seq { %a }" (P.pp_list pp ", ") values
+  | SeqV values -> F.fprintf fmt "seq { %a }" (pp_list pp ", ") values
   | SeqDefaultV values ->
-      F.fprintf fmt "seq { %a, ... }" (P.pp_list pp ", ") values
+      F.fprintf fmt "seq { %a, ... }" (pp_list pp ", ") values
   | RecordV fields ->
       F.fprintf fmt "record { %a }"
-        (P.pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
+        (pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
         fields
   | RecordDefaultV fields ->
       F.fprintf fmt "record { %a, ... }"
-        (P.pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
+        (pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
         fields
   | DefaultV -> F.pp_print_string fmt "..."
   | InvalidV -> F.pp_print_string fmt "{#}"
+  | RefV oid -> F.fprintf fmt "!%a" Domain.Dom.OId.pp oid
 
 (* Equality *)
 
@@ -136,6 +140,7 @@ let rec eq t_a t_b =
         fields_a fields_b
   | DefaultV, DefaultV -> true
   | InvalidV, InvalidV -> true
+  | RefV oid_a, RefV oid_b -> oid_a = oid_b
   | _ -> false
 
 (* Getters *)
@@ -143,14 +148,14 @@ let rec eq t_a t_b =
 let get_bool t : bool =
   match t with
   | BoolV value -> value
-  | _ -> Format.asprintf "Not a bool value: %a" pp t |> failwith
+  | _ -> Format.asprintf "Not a bool value: %a" (pp ~level:0) t |> failwith
 
 let get_num t : Bigint.t =
   match t with
   | IntV value -> value
   | FIntV (_, value) -> value
   | FBitV (_, value) -> value
-  | _ -> Format.asprintf "Not a int/bit value: %a" pp t |> failwith
+  | _ -> Format.asprintf "Not a int/bit value: %a" (pp ~level:0) t |> failwith
 
 let rec get_width t =
   match t with
@@ -165,14 +170,16 @@ let rec get_width t =
       List.fold_left
         (fun acc value -> Bigint.(acc + get_width value))
         Bigint.zero values
-  | _ -> Format.asprintf "Cannot get width of value: %a" pp t |> failwith
+  | _ ->
+      Format.asprintf "Cannot get width of value: %a" (pp ~level:0) t
+      |> failwith
 
 let get_tuple t =
   match t with
   | TupleV values -> values
-  | _ -> Format.asprintf "Not a tuple value: %a" pp t |> failwith
+  | _ -> Format.asprintf "Not a tuple value: %a" (pp ~level:0) t |> failwith
 
 let get_enum t =
   match t with
   | EnumFieldV (id, member) -> (id, member)
-  | _ -> Format.asprintf "Not an enum value: %a" pp t |> failwith
+  | _ -> Format.asprintf "Not an enum value: %a" (pp ~level:0) t |> failwith
