@@ -154,3 +154,21 @@ syntax consdef hint(show %latex("\\delta_\\texttt{c}")) =
   ConsD tparam* constyp hint(show CONS#_#D % %latex("\\rightarrow") %)
 
 var cd : consdef hint(show %latex("\\delta_\\texttt{c}"))
+
+;;
+;; Runtime type
+;;
+
+syntax rtyp = typ dir ctk
+
+;;
+;; Environments
+;;
+
+syntax venv hint(show %latex("\\Sigma")) = map(id, val)
+syntax tenv hint(show %latex("\\Gamma")) = map(id, rtyp)
+syntax tdenv hint(show %latex("\\Delta_\\texttt{t}")) = map(tid, typdef)
+syntax fdenv hint(show %latex("\\Delta_\\texttt{f}")) = map(fid, funcdef)
+syntax cdenv hint(show %latex("\\Delta_\\texttt{c}")) = map(fid, consdef)
+
+def $find_env(syntax K, syntax V, map(K, V), K) : V  hint(show %3#`[%4])

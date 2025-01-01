@@ -32,21 +32,3 @@ var f : flow
 def $join_flow(flow, flow) : flow  hint(show %1 %latex("\\sqcup_\\texttt{flow}") %2)
 def $join_flow(RET, RET) = RET
 def $join_flow(f_a, f_b) = CONT
-
-;;
-;; Runtime type
-;;
-
-syntax rtyp = typ dir ctk
-
-;;
-;; Environments
-;;
-
-syntax venv hint(show %latex("\\Sigma")) = map(id, val)
-syntax tenv hint(show %latex("\\Gamma")) = map(id, rtyp)
-syntax tdenv hint(show %latex("\\Delta_\\texttt{t}")) = map(tid, typdef)
-syntax fdenv hint(show %latex("\\Delta_\\texttt{f}")) = map(fid, funcdef)
-syntax cdenv hint(show %latex("\\Delta_\\texttt{c}")) = map(fid, consdef)
-
-def $find_env(syntax K, syntax V, map(K, V), K) : V  hint(show %3#`[%4])

@@ -105,8 +105,9 @@ rule Switch_gen_cases_ok/seq:
 rule Stmt_ok/switchs-gen:
   p C f |- SwitchS expr case* : C f'
   -- Expr_ok: p C |- expr : typ ctk
+  -- if typ' = $canon_typ(typ)
   ----
-  -- (if $canon_typ(typ) = ErrT \/ $canon_typ(typ) = FIntT w \/ $canon_typ(typ) = FBitT w \/ $canon_typ(typ) = EnumT id member* \/ $canon_typ(typ) = SEnumT id typ' (member, val)*)
+  -- (if typ' = ErrT \/ typ' = FIntT w \/ typ' = FBitT w \/ typ' = EnumT id member* \/ typ' = SEnumT id typ' (member, val)*)
   ----
   -- Switch_gen_cases_ok: p C f typ |- case* : f'
 
