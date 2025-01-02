@@ -20,7 +20,7 @@ module IdSet = struct
 
   let pp fmt s =
     let pp_id fmt id = F.fprintf fmt "%a" Id.pp id in
-    F.fprintf fmt "{ %a }" (pp_list pp_id ", ") (elements s)
+    F.fprintf fmt "{ %a }" (pp_list pp_id ~sep:Comma) (elements s)
 
   let eq = equal
   let of_list l = List.fold_left (fun acc x -> add x acc) empty l
@@ -36,12 +36,12 @@ module IdMap = struct
 
   let pp ?(level = 0) (pp_v : 'v pp_v) fmt m =
     let pp_binding fmt (k, v) =
-      F.fprintf fmt "%s%a : %a" (indent level) Id.pp k
-        (pp_v ~level:(level + 1))
-        v
+      F.fprintf fmt "%a : %a" Id.pp k (pp_v ~level:(level + 2)) v
     in
     let bindings = bindings m in
-    F.fprintf fmt "{ %a }" (pp_list pp_binding "\n") bindings
+    F.fprintf fmt "{\n%a\n%s}"
+      (pp_list ~level:(level + 1) pp_binding ~sep:Nl)
+      bindings (indent level)
 
   let diff m_a m_b =
     let keys_a = keys m_a in
@@ -77,7 +77,7 @@ module FId = struct
   let pp_param fmt (id, _) = F.fprintf fmt "%s" id
 
   let pp fmt (name, params) =
-    F.fprintf fmt "%a(%a)" pp_name name (pp_list pp_param ", ") params
+    F.fprintf fmt "%a(%a)" pp_name name (pp_list pp_param ~sep:Comma) params
 
   let to_fid id params =
     let params =
@@ -103,7 +103,7 @@ module FIdSet = struct
 
   let pp fmt s =
     let pp_fid fmt fid = F.fprintf fmt "%a" FId.pp fid in
-    F.fprintf fmt "{ %a }" (pp_list pp_fid ", ") (elements s)
+    F.fprintf fmt "{ %a }" (pp_list pp_fid ~sep:Comma) (elements s)
 
   let of_list l = List.fold_left (fun acc x -> add x acc) empty l
 end
@@ -111,13 +111,19 @@ end
 module FIdMap = struct
   include Map.Make (FId)
 
+  type 'v pp_v = ?level:int -> F.formatter -> 'v -> unit
+
   let keys m = List.map fst (bindings m)
   let values m = List.map snd (bindings m)
 
-  let pp pp_v fmt m =
-    let pp_binding fmt (k, v) = F.fprintf fmt "%a : %a" FId.pp k pp_v v in
+  let pp ?(level = 0) (pp_v : 'v pp_v) fmt m =
+    let pp_binding fmt (k, v) =
+      F.fprintf fmt "%a : %a" FId.pp k (pp_v ~level:(level + 2)) v
+    in
     let bindings = bindings m in
-    F.fprintf fmt "{ %a }" (pp_list pp_binding "\n") bindings
+    F.fprintf fmt "{\n%a\n%s}"
+      (pp_list ~level:(level + 1) pp_binding ~sep:Nl)
+      bindings (indent level)
 
   let diff m_a m_b =
     let keys_a = keys m_a in
@@ -155,7 +161,7 @@ module OIdSet = struct
 
   let pp fmt s =
     let pp_oid fmt oid = F.fprintf fmt "%a" OId.pp oid in
-    F.fprintf fmt "{ %a }" (pp_list pp_oid ", ") (elements s)
+    F.fprintf fmt "{ %a }" (pp_list pp_oid ~sep:Comma) (elements s)
 
   let eq = equal
   let of_list l = List.fold_left (fun acc x -> add x acc) empty l
@@ -164,13 +170,19 @@ end
 module OIdMap = struct
   include Map.Make (OId)
 
+  type 'v pp_v = ?level:int -> F.formatter -> 'v -> unit
+
   let keys m = List.map fst (bindings m)
   let values m = List.map snd (bindings m)
 
-  let pp pp_v fmt m =
-    let pp_binding fmt (k, v) = F.fprintf fmt "%a : %a" OId.pp k pp_v v in
+  let pp ?(level = 0) (pp_v : 'v pp_v) fmt m =
+    let pp_binding fmt (k, v) =
+      F.fprintf fmt "%a : %a" OId.pp k (pp_v ~level:(level + 2)) v
+    in
     let bindings = bindings m in
-    F.fprintf fmt "{ %a }" (pp_list pp_binding "\n") bindings
+    F.fprintf fmt "{\n%a\n%s}"
+      (pp_list ~level:(level + 1) pp_binding ~sep:Nl)
+      bindings (indent level)
 
   let diff m_a m_b =
     let keys_a = keys m_a in
@@ -218,7 +230,7 @@ module MakeTIdEnv = MakeIdEnv
 module MakeFIdEnv (V : sig
   type t
 
-  val pp : F.formatter -> t -> unit
+  val pp : ?level:int -> F.formatter -> t -> unit
   val eq_kind : t -> t -> bool
 end) =
 struct
@@ -377,14 +389,14 @@ module MakeCIdEnv = MakeFIdEnv
 module MakeOIdEnv (V : sig
   type t
 
-  val pp : F.formatter -> t -> unit
+  val pp : ?level:int -> F.formatter -> t -> unit
 end) =
 struct
   include OIdMap
 
   type t = V.t OIdMap.t
 
-  let pp fmt env = OIdMap.pp V.pp fmt env
+  let pp ?(level = 0) fmt env = OIdMap.pp ~level V.pp fmt env
 
   let find id env =
     match find_opt id env with

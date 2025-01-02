@@ -134,7 +134,7 @@ let pp_bt fmt (bt : bt) =
 
 let pp_lt fmt (lt : lt) =
   F.fprintf fmt "@[@[<v 0>[[Local]]@]@\n@[%a@]@]"
-    (pp_list (Envs.VEnv.pp ~level:0) "\n")
+    (pp_list (Envs.VEnv.pp ~level:0) ~sep:Nl)
     lt.venvs
 
 let pp fmt ctx =

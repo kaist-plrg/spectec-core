@@ -389,5 +389,5 @@ and eval_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 
 let instantiate_program (program : program) : unit =
   let _ctx, _sto, _decls = eval_decls Ctx.Global Ctx.empty Sto.empty program in
-  F.printf "%a\n" Sto.pp _sto;
+  F.printf "%a\n" (Sto.pp ~level:0) _sto;
   ()

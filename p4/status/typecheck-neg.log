@@ -35,7 +35,9 @@ Error: File p4/test/program/ill-typed/binary_e.p4, line 32, characters 12-16
 
 >>> Running typecheck test on p4/test/program/ill-typed/bitExtract_e.p4
 Error: File p4/test/program/ill-typed/bitExtract_e.p4, line 25, characters 19-25
-(coerce_type_unary) cannot coerce type struct S {  }
+(coerce_type_unary) cannot coerce type struct S {
+
+}
 
 >>> Running typecheck test on p4/test/program/ill-typed/call-table.p4
 Error: File p4/test/program/ill-typed/call-table.p4, line 24, characters 8-18
@@ -155,7 +157,10 @@ Error: File p4/test/program/ill-typed/enumCast.p4, line 26, characters 8-16
 
 >>> Running typecheck test on p4/test/program/ill-typed/equality-fail.p4
 Error: File p4/test/program/ill-typed/equality-fail.p4, line 23, characters 12-19
-(coerce_types_binary) cannot coerce types varbit<32> and (header H { a bit<32>; b varbit<32> }< @ >)<>
+(coerce_types_binary) cannot coerce types varbit<32> and (header H {
+    a bit<32>;
+    b varbit<32>
+  })<>
 
 >>> Running typecheck test on p4/test/program/ill-typed/expression_e.p4
 Error on file: File p4/test/program/ill-typed/expression_e.p4, line 21, characters 19-20
@@ -195,7 +200,9 @@ Error: File p4/test/program/ill-typed/functors3_e.p4, line 18, characters 0-7
 
 >>> Running typecheck test on p4/test/program/ill-typed/generic1_e.p4
 Error: File p4/test/program/ill-typed/generic1_e.p4, line 21, characters 11-13
-(specialize_typdef_poly) type definition extern If { id(d) : extern_method(in d T) -> T< @ > }<T @ > expects 1 type arguments but 0 were given
+(specialize_typdef_poly) type definition extern If {
+    id(d) : extern_method(in d T) -> T
+  }<T> expects 1 type arguments but 0 were given
 
 >>> Running typecheck test on p4/test/program/ill-typed/globalVar_e.p4
 Error on file: File p4/test/program/ill-typed/globalVar_e.p4, line 16, characters 5-6
@@ -207,11 +214,15 @@ parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/header2_e.p4
 Error: File p4/test/program/ill-typed/header2_e.p4, from line 25 character 0 to line 28 character 1
-(check_valid_typ_nesting) invalid nesting of (parser ()< @ >)<> inside struct s1 { field (parser ()< @ >)<> }
+(check_valid_typ_nesting) invalid nesting of (parser ())<> inside struct s1 {
+  field (parser ())<>
+}
 
 >>> Running typecheck test on p4/test/program/ill-typed/header3.p4
 Error: File p4/test/program/ill-typed/header3.p4, from line 16 character 0 to line 19 character 1
-(check_valid_typ_nesting) invalid nesting of (tuple<T0, T1><T0, T1 @ >)<bit<1>, bit<1>> inside header H { field1 (tuple<T0, T1><T0, T1 @ >)<bit<1>, bit<1>> }
+(check_valid_typ_nesting) invalid nesting of (tuple<T0, T1><T0, T1>)<bit<1>, bit<1>> inside header H {
+  field1 (tuple<T0, T1><T0, T1>)<bit<1>, bit<1>>
+}
 
 >>> Running typecheck test on p4/test/program/ill-typed/implicit.p4
 Error: File p4/test/program/ill-typed/implicit.p4, line 19, characters 4-21
@@ -271,11 +282,15 @@ Error: File p4/test/program/ill-typed/issue1296.p4, line 7, characters 0-41
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1331.p4
 Error: File p4/test/program/ill-typed/issue1331.p4, line 26, characters 8-21
-(check_call_site) parser_apply( pkt (extern packet_in { advance(sizeInBits) : extern_method(in sizeInBits bit<32>) -> void< @ >
-extract(hdr) : extern_method(out hdr T) -> void<T @ >
-extract(variableSizeHeader, variableFieldSizeInBits) : extern_method(out variableSizeHeader T, in variableFieldSizeInBits bit<32>) -> void<T @ >
-length() : extern_method() -> bit<32>< @ >
-lookahead() : extern_method() -> T<T @ > }< @ >)<>) cannot be called from ControlApplyMethod
+(check_call_site) parser_apply(pkt (extern packet_in {
+          advance(sizeInBits) : extern_method(in sizeInBits bit<32>) -> void
+          extract(hdr) : extern_method(out hdr T) -> void<T>
+          extract(variableSizeHeader, variableFieldSizeInBits) : extern_method(
+              out variableSizeHeader T,
+              in variableFieldSizeInBits bit<32>) -> void<T>
+          length() : extern_method() -> bit<32>
+          lookahead() : extern_method() -> T<T>
+        })<>) cannot be called from ControlApplyMethod
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1336.p4
 Error on file: File p4/test/program/ill-typed/issue1336.p4, line 3, characters 14-15
@@ -319,15 +334,21 @@ Error: File p4/test/program/ill-typed/issue2033.p4, line 10, characters 5-26
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2036-1.p4
 Error: File p4/test/program/ill-typed/issue2036-1.p4, line 10, characters 8-13
-(coerce_type) cannot coerce type (tuple<T0><T0 @ >)<bit<8>> to (struct s { x bit<8> }< @ >)<>
+(coerce_type) cannot coerce type (tuple<T0><T0>)<bit<8>> to (struct s {
+    x bit<8>
+  })<>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2036-2.p4
 Error: File p4/test/program/ill-typed/issue2036-2.p4, line 10, characters 8-13
-(check_eq_typ_alpha) Types (tuple<T0><T0 @ >)<bit<8>> and (struct s { x bit<8> }< @ >)<> are not equal
+(check_eq_typ_alpha) Types (tuple<T0><T0>)<bit<8>> and (struct s {
+    x bit<8>
+  })<> are not equal
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2036.p4
 Error: File p4/test/program/ill-typed/issue2036.p4, line 23, characters 4-15
-(coerce_type) cannot coerce type (tuple<T0><T0 @ >)<bit<8>> to (struct s { x bit<8> }< @ >)<>
+(coerce_type) cannot coerce type (tuple<T0><T0>)<bit<8>> to (struct s {
+    x bit<8>
+  })<>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2220.p4
 Error: File p4/test/program/ill-typed/issue2220.p4, line 11, characters 1-28
@@ -335,11 +356,23 @@ Error: File p4/test/program/ill-typed/issue2220.p4, line 11, characters 1-28
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2230-1-bmv2.p4
 Error: File p4/test/program/ill-typed/issue2230-1-bmv2.p4, line 115, characters 8-29
-(check_eq_typ_alpha) Types (header h1_t { f1 bit<8>; f2 bit<8> }< @ >)<> and (header h2_t { f1 bit<8>; f2 bit<8> }< @ >)<> are not equal
+(check_eq_typ_alpha) Types (header h1_t {
+    f1 bit<8>;
+    f2 bit<8>
+  })<> and (header h2_t {
+    f1 bit<8>;
+    f2 bit<8>
+  })<> are not equal
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2230.p4
 Error: File p4/test/program/ill-typed/issue2230.p4, line 70, characters 8-24
-(coerce_type) cannot coerce type (header h1_t { f1 bit<8>; f2 bit<8> }< @ >)<> to (header h2_t { f1 bit<8>; f2 bit<8> }< @ >)<>
+(coerce_type) cannot coerce type (header h1_t {
+    f1 bit<8>;
+    f2 bit<8>
+  })<> to (header h2_t {
+    f1 bit<8>;
+    f2 bit<8>
+  })<>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2267.p4
 Error: File p4/test/program/ill-typed/issue2267.p4, from line 4 character 2 to line 7 character 3
@@ -347,7 +380,13 @@ key already exists: t
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2290.p4
 Error: File p4/test/program/ill-typed/issue2290.p4, from line 15 character 0 to line 17 character 1
-(check_valid_typ_nesting) invalid nesting of (header simple_header { a bit<8> }< @ >)<> inside header nested_header { s (header simple_header { a bit<8> }< @ >)<> }
+(check_valid_typ_nesting) invalid nesting of (header simple_header {
+    a bit<8>
+  })<> inside header nested_header {
+  s (header simple_header {
+      a bit<8>
+    })<>
+}
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2317.p4
 Error: File p4/test/program/ill-typed/issue2317.p4, line 16, characters 8-12
@@ -363,7 +402,7 @@ Error: File p4/test/program/ill-typed/issue2335.p4, line 3, characters 4-14
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2354-1.p4
 Error: File p4/test/program/ill-typed/issue2354-1.p4, from line 3 character 4 to line 4 character 5
-(check_valid_functyp_nesting) invalid nesting of int inside action( x int)
+(check_valid_functyp_nesting) invalid nesting of int inside action(x int)
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2354.p4
 Error: File p4/test/program/ill-typed/issue2354.p4, from line 28 character 4 to line 30 character 5
@@ -383,7 +422,7 @@ Error: File p4/test/program/ill-typed/issue2444-1.p4, line 1, characters 0-19
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2454.p4
 Error: File p4/test/program/ill-typed/issue2454.p4, line 8, characters 8-13
-(check_valid_functyp_nesting) invalid nesting of (control ()< @ >)<> inside func( t (control ()< @ >)<>) -> void
+(check_valid_functyp_nesting) invalid nesting of (control ())<> inside func(t (control ())<>) -> void
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2525.p4
 Error: File p4/test/program/ill-typed/issue2525.p4, from line 64 character 8 to line 68 character 9
@@ -407,15 +446,21 @@ Error: File p4/test/program/ill-typed/issue2835-bmv2.p4, line 86, characters 12-
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3045-1.p4
 Error: File p4/test/program/ill-typed/issue3045-1.p4, line 9, characters 2-16
-(check_call_site) extern_method(in index bit<32>, in value T) -> void cannot be called from Function
+(check_call_site) extern_method(
+  in index bit<32>,
+  in value T) -> void cannot be called from Function
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3045-2.p4
 Error: File p4/test/program/ill-typed/issue3045-2.p4, line 9, characters 2-16
-(check_call_site) extern_method(in index bit<32>, in value T) -> void cannot be called from Function
+(check_call_site) extern_method(
+  in index bit<32>,
+  in value T) -> void cannot be called from Function
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3045.p4
 Error: File p4/test/program/ill-typed/issue3045.p4, line 9, characters 2-16
-(check_call_site) extern_method(in index bit<32>, in value T) -> void cannot be called from Function
+(check_call_site) extern_method(
+  in index bit<32>,
+  in value T) -> void cannot be called from Function
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue306.p4
 Error: File p4/test/program/ill-typed/issue306.p4, line 45, characters 14-21
@@ -427,15 +472,29 @@ Error: File p4/test/program/ill-typed/issue3153.p4, line 1, characters 15-21
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3170-1.p4
 Error: File p4/test/program/ill-typed/issue3170-1.p4, line 11, characters 8-12
-(check_valid_typ_nesting) invalid nesting of (struct y { tt (T[2]<T @ >)<(header yy { tt bit<1> }< @ >)<>> }< @ >)<> inside header t { y (struct y { tt (T[2]<T @ >)<(header yy { tt bit<1> }< @ >)<>> }< @ >)<> }
+(check_valid_typ_nesting) invalid nesting of (struct y {
+    tt (T[2]<T>)<(header yy {
+          tt bit<1>
+        })<>>
+  })<> inside header t {
+  y (struct y {
+      tt (T[2]<T>)<(header yy {
+            tt bit<1>
+          })<>>
+    })<>
+}
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3170.p4
 Error: File p4/test/program/ill-typed/issue3170.p4, line 6, characters 8-9
-(specialize_typdef_poly) type definition header t { y tt }<tt @ > expects 1 type arguments but 0 were given
+(specialize_typdef_poly) type definition header t {
+  y tt
+}<tt> expects 1 type arguments but 0 were given
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3188.p4
 Error: File p4/test/program/ill-typed/issue3188.p4, line 3, characters 18-92
-(check_call_site) extern_func( check bool,  message string) -> bool cannot be called from top level
+(check_call_site) extern_func(
+  check bool,
+  message string) -> bool cannot be called from top level
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3197-e.p4
 Error: File p4/test/program/ill-typed/issue3197-e.p4, line 2, characters 1-5
@@ -475,7 +534,9 @@ transform error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3293.p4
 Error: File p4/test/program/ill-typed/issue3293.p4, line 3, characters 7-9
-(specialize_typdef_poly) type definition struct t1 {  }<t @ > expects 1 type arguments but 0 were given
+(specialize_typdef_poly) type definition struct t1 {
+
+}<t> expects 1 type arguments but 0 were given
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3299.p4
 Error: File p4/test/program/ill-typed/issue3299.p4, from line 17 character 1 to line 19 character 2
@@ -483,11 +544,15 @@ Error: File p4/test/program/ill-typed/issue3299.p4, from line 17 character 1 to 
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3304.p4
 Error: File p4/test/program/ill-typed/issue3304.p4, line 10, characters 0-9
-(check_valid_typ_nesting) invalid nesting of (parser (in a t)<t @ >)<bit<1>> inside struct s { field (parser (in a t)<t @ >)<bit<1>> }
+(check_valid_typ_nesting) invalid nesting of (parser (in a t)<t>)<bit<1>> inside struct s {
+  field (parser (in a t)<t>)<bit<1>>
+}
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3305.p4
 Error: File p4/test/program/ill-typed/issue3305.p4, line 13, characters 4-9
-(specialize_typdef_poly) type definition struct s1 { field t }<t @ > expects 1 type arguments but 0 were given
+(specialize_typdef_poly) type definition struct s1 {
+  field t
+}<t> expects 1 type arguments but 0 were given
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3316.p4
 Error: File p4/test/program/ill-typed/issue3316.p4, line 5, characters 17-21
@@ -511,15 +576,23 @@ Error: File p4/test/program/ill-typed/issue3346.p4, line 2, characters 2-25
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3359.p4
 Error: File p4/test/program/ill-typed/issue3359.p4, line 14, characters 4-24
-(check_valid_var_type) type (parser (in tt bit<1>)< @ >)<> is not a valid variable type
+(check_valid_var_type) type (parser (in tt bit<1>))<> is not a valid variable type
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3363.p4
 Error: File p4/test/program/ill-typed/issue3363.p4, line 8, characters 6-13
-(type_binop_compare_equal) type (extern e {  }< @ >)<> cannot be compared of equality
+(type_binop_compare_equal) type (extern e {
+
+    })<> cannot be compared of equality
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3378.p4
 Error: File p4/test/program/ill-typed/issue3378.p4, line 2, characters 10-20
-(check_valid_typ_nesting) invalid nesting of (package {  }< @ >)<> inside tuple<(package {  }< @ >)<>, (package {  }< @ >)<>>
+(check_valid_typ_nesting) invalid nesting of (package {
+
+  })<> inside tuple<(package {
+
+    })<>, (package {
+
+    })<>>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3442.p4
 Error: File p4/test/program/ill-typed/issue3442.p4, from line 12 character 4 to line 14 character 5
@@ -571,11 +644,15 @@ Error: File p4/test/program/ill-typed/issue3727.p4, line 7, characters 15-20
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3750-1.p4
 Error: File p4/test/program/ill-typed/issue3750-1.p4, line 9, characters 7-16
-(check_valid_typ_nesting) invalid nesting of (extern ct { apply() : extern_method() -> void< @ > }< @ >)<> inside tuple<(extern ct { apply() : extern_method() -> void< @ > }< @ >)<>>
+(check_valid_typ_nesting) invalid nesting of (extern ct {
+      apply() : extern_method() -> void
+    })<> inside tuple<(extern ct {
+        apply() : extern_method() -> void
+      })<>>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3750.p4
 Error: File p4/test/program/ill-typed/issue3750.p4, line 2, characters 7-16
-(check_valid_typ_nesting) invalid nesting of (control ()< @ >)<> inside tuple<(control ()< @ >)<>>
+(check_valid_typ_nesting) invalid nesting of (control ())<> inside tuple<(control ())<>>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3751.p4
 Error: File p4/test/program/ill-typed/issue3751.p4, line 3, characters 2-23
@@ -603,7 +680,11 @@ Error: File p4/test/program/ill-typed/issue3814.p4, line 14, characters 2-8
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3846.p4
 Error: File p4/test/program/ill-typed/issue3846.p4, line 9, characters 8-32
-(type_binop_compare_equal) type struct_table apply_result(tt) { hit bool; miss bool; action_run enum_table action_list(tt) } cannot be compared of equality
+(type_binop_compare_equal) type struct_table apply_result(tt) {
+  hit bool;
+  miss bool;
+  action_run enum_table action_list(tt)
+} cannot be compared of equality
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3847.p4
 Error: File p4/test/program/ill-typed/issue3847.p4, line 9, characters 8-54
@@ -615,7 +696,9 @@ Error: File p4/test/program/ill-typed/issue388.p4, line 29, characters 0-6
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue394.p4
 Error: File p4/test/program/ill-typed/issue394.p4, line 19, characters 4-8
-(check_valid_var_type) type (extern C { get() : extern_method() -> bool< @ > }< @ >)<> is not a valid variable type
+(check_valid_var_type) type (extern C {
+      get() : extern_method() -> bool
+    })<> is not a valid variable type
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue401.p4
 Error: File p4/test/program/ill-typed/issue401.p4, line 42, characters 15-29
@@ -623,11 +706,40 @@ Error: File p4/test/program/ill-typed/issue401.p4, line 42, characters 15-29
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue407-1.p4
 Error: File p4/test/program/ill-typed/issue407-1.p4, from line 46 character 0 to line 55 character 1
-(check_valid_typ_nesting) invalid nesting of error inside header H { x7 error; x8 bool; x9 enum myenum1 { MY_ENUM1_VAL1, MY_ENUM1_VAL2, MY_ENUM1_VAL3 }; x10 (header Ethernet_h { dstAddr typedef bit<48>; srcAddr typedef bit<48>; etherType bit<16> }< @ >)<>; x11 (T[4]<T @ >)<(header Ethernet_h { dstAddr typedef bit<48>; srcAddr typedef bit<48>; etherType bit<16> }< @ >)<>>; x12 (struct mystruct1 { a bit<4>; b bit<4> }< @ >)<>; x13 (struct mystruct2 { foo (struct mystruct1 { a bit<4>; b bit<4> }< @ >)<>; a bit<4>; b bit<4> }< @ >)<>; x14 typedef (tuple<T0, T1><T0, T1 @ >)<bit<8>, bit<16>> }
+(check_valid_typ_nesting) invalid nesting of error inside header H {
+  x7 error;
+  x8 bool;
+  x9 enum myenum1 { MY_ENUM1_VAL1, MY_ENUM1_VAL2, MY_ENUM1_VAL3 };
+  x10 (header Ethernet_h {
+      dstAddr typedef bit<48>;
+      srcAddr typedef bit<48>;
+      etherType bit<16>
+    })<>;
+  x11 (T[4]<T>)<(header Ethernet_h {
+        dstAddr typedef bit<48>;
+        srcAddr typedef bit<48>;
+        etherType bit<16>
+      })<>>;
+  x12 (struct mystruct1 {
+      a bit<4>;
+      b bit<4>
+    })<>;
+  x13 (struct mystruct2 {
+      foo (struct mystruct1 {
+          a bit<4>;
+          b bit<4>
+        })<>;
+      a bit<4>;
+      b bit<4>
+    })<>;
+  x14 typedef (tuple<T0, T1><T0, T1>)<bit<8>, bit<16>>
+}
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue413.p4
 Error: File p4/test/program/ill-typed/issue413.p4, line 41, characters 8-33
-(check_call_site) action(in bar bit<16>, out bar2 bit<8>) cannot be called from ParserState
+(check_call_site) action(
+  in bar bit<16>,
+  out bar2 bit<8>) cannot be called from ParserState
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue4136.p4
 Error: File p4/test/program/ill-typed/issue4136.p4, line 12, characters 16-23
@@ -648,11 +760,23 @@ Error: File p4/test/program/ill-typed/issue435.p4, line 7, characters 4-42
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue561-1.p4
 Error: File p4/test/program/ill-typed/issue561-1.p4, line 29, characters 8-33
-(coerce_type) cannot coerce type seq<seq<int>, seq<int>> to (header_union U { h1 (header H1 { f bit<32> }< @ >)<>; h2 (header H2 { g bit<32> }< @ >)<> }< @ >)<>
+(coerce_type) cannot coerce type seq<seq<int>, seq<int>> to (header_union U {
+    h1 (header H1 {
+        f bit<32>
+      })<>;
+    h2 (header H2 {
+        g bit<32>
+      })<>
+  })<>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue584.p4
 Error: File p4/test/program/ill-typed/issue584.p4, line 28, characters 8-58
-(check_valid_functyp_nesting) invalid nesting of int inside extern_func(out result bit<16>, in algo enum HashAlgorithm { crc32, crc32_custom, crc16, crc16_custom, random, identity, csum16, xor16 }, in base bit<16>, in data bit<32>, in max int) -> void
+(check_valid_functyp_nesting) invalid nesting of int inside extern_func(
+  out result bit<16>,
+  in algo enum HashAlgorithm { crc32, crc32_custom, crc16, crc16_custom, random, identity, csum16, xor16 },
+  in base bit<16>,
+  in data bit<32>,
+  in max int) -> void
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue67.p4
 Error: File p4/test/program/ill-typed/issue67.p4, line 1, characters 0-18
@@ -676,11 +800,13 @@ Error: File p4/test/program/ill-typed/issue803-1.p4, line 14, characters 0-28
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue807.p4
 Error: File p4/test/program/ill-typed/issue807.p4, line 9, characters 2-19
-(check_valid_functyp_nesting) invalid nesting of (control ()< @ >)<> inside extern_method( c1 (control ()< @ >)<>) -> void
+(check_valid_functyp_nesting) invalid nesting of (control ())<> inside extern_method(c1 (control ())<>) -> void
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue816-1.p4
 Error: File p4/test/program/ill-typed/issue816-1.p4, from line 14 character 0 to line 17 character 1
-(check_valid_constyp_nesting) invalid nesting of (package { (control ()< @ >)<>, (control ()< @ >)<> }< @ >)<> inside (control ()< @ >)<>
+(check_valid_constyp_nesting) invalid nesting of (package {
+(control ())<>, (control ())<>
+  })<> inside (control ())<>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue816.p4
 Error: File p4/test/program/ill-typed/issue816.p4, line 18, characters 8-19
@@ -688,12 +814,16 @@ Error: File p4/test/program/ill-typed/issue816.p4, line 18, characters 8-19
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue818.p4
 Error: File p4/test/program/ill-typed/issue818.p4, line 13, characters 2-19
-(check_valid_constyp_nesting) invalid nesting of (control ()< @ >)<> inside (extern WrapControl { execute() : extern_method() -> void< @ > }< @ >)<>
+(check_valid_constyp_nesting) invalid nesting of (control ())<> inside (extern WrapControl {
+      execute() : extern_method() -> void
+    })<>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue819-1.p4
 Error: File p4/test/program/ill-typed/issue819-1.p4, line 14, characters 13-25
-(specialize_typdef_poly) type definition extern WrapControls { execute1() : extern_method() -> void< @ >
-execute2() : extern_method() -> void< @ > }<T1, T2 @ > expects 2 type arguments but 0 were given
+(specialize_typdef_poly) type definition extern WrapControls {
+    execute1() : extern_method() -> void
+    execute2() : extern_method() -> void
+  }<T1, T2> expects 2 type arguments but 0 were given
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue819.p4
 Error: File p4/test/program/ill-typed/issue819.p4, from line 14 character 0 to line 18 character 1
@@ -701,7 +831,7 @@ Error: File p4/test/program/ill-typed/issue819.p4, from line 14 character 0 to l
 
 >>> Running typecheck test on p4/test/program/ill-typed/list-error.p4
 Error: File p4/test/program/ill-typed/list-error.p4, line 9, characters 4-34
-(check_eq_typ_alpha) Types (list<T><T @ >)<bit<16>> and (list<T><T @ >)<bit<32>> are not equal
+(check_eq_typ_alpha) Types (list<T><T>)<bit<16>> and (list<T><T>)<bit<32>> are not equal
 
 >>> Running typecheck test on p4/test/program/ill-typed/loop1-err.p4
 Error on file: File p4/test/program/ill-typed/loop1-err.p4, line 3, characters 9-10
@@ -733,7 +863,7 @@ Error: File p4/test/program/ill-typed/missing_match.p4, line 21, characters 8-34
 
 >>> Running typecheck test on p4/test/program/ill-typed/module_e.p4
 Error: File p4/test/program/ill-typed/module_e.p4, line 25, characters 0-14
-(check_eq_typ_alpha) Types (parser (in x bit<1>)< @ >)<> and (parser (out filter bool)< @ >)<> are not equal
+(check_eq_typ_alpha) Types (parser (in x bit<1>))<> and (parser (out filter bool))<> are not equal
 
 >>> Running typecheck test on p4/test/program/ill-typed/mux_e.p4
 Error: File p4/test/program/ill-typed/mux_e.p4, line 24, characters 12-21
@@ -777,11 +907,15 @@ Error: File p4/test/program/ill-typed/package.p4, line 18, characters 0-24
 
 >>> Running typecheck test on p4/test/program/ill-typed/param.p4
 Error: File p4/test/program/ill-typed/param.p4, line 22, characters 4-31
-(check_valid_functyp_nesting) invalid nesting of (extern E { call() : extern_method() -> void< @ > }< @ >)<> inside action( e (extern E { call() : extern_method() -> void< @ > }< @ >)<>)
+(check_valid_functyp_nesting) invalid nesting of (extern E {
+      call() : extern_method() -> void
+    })<> inside action(e (extern E {
+          call() : extern_method() -> void
+        })<>)
 
 >>> Running typecheck test on p4/test/program/ill-typed/parser-arg.p4
 Error: File p4/test/program/ill-typed/parser-arg.p4, from line 21 character 0 to line 26 character 1
-(check_valid_functyp_nesting) invalid nesting of (parser ()< @ >)<> inside parser_apply( p (parser ()< @ >)<>)
+(check_valid_functyp_nesting) invalid nesting of (parser ())<> inside parser_apply(p (parser ())<>)
 
 >>> Running typecheck test on p4/test/program/ill-typed/persistent_e.p4
 Error: File p4/test/program/ill-typed/persistent_e.p4, line 23, characters 4-12
@@ -789,7 +923,11 @@ Error: File p4/test/program/ill-typed/persistent_e.p4, line 23, characters 4-12
 
 >>> Running typecheck test on p4/test/program/ill-typed/pr2918.p4
 Error: File p4/test/program/ill-typed/pr2918.p4, from line 19 character 8 to line 22 character 9
-(check_valid_typ_nesting) invalid nesting of (struct S { b bit<8> }< @ >)<> inside set<(struct S { b bit<8> }< @ >)<>>
+(check_valid_typ_nesting) invalid nesting of (struct S {
+    b bit<8>
+  })<> inside set<(struct S {
+      b bit<8>
+    })<>>
 
 >>> Running typecheck test on p4/test/program/ill-typed/psa-meter2.p4
 Error: File p4/test/program/ill-typed/psa-meter2.p4, line 55, characters 4-57
@@ -797,7 +935,33 @@ Error: File p4/test/program/ill-typed/psa-meter2.p4, line 55, characters 4-57
 
 >>> Running typecheck test on p4/test/program/ill-typed/psa-type-hdr.p4
 Error: File p4/test/program/ill-typed/psa-type-hdr.p4, line 43, characters 0-20
-(check_valid_typ_nesting) invalid nesting of (header ipv4_t { version bit<4>; ihl bit<4>; diffserv bit<8>; totalLen bit<16>; identification bit<16>; flags bit<3>; fragOffset bit<13>; ttl bit<8>; protocol bit<8>; hdrChecksum bit<16>; srcAddr bit<32>; dstAddr bit<32> }< @ >)<> inside type IPV4T_t ((header ipv4_t { version bit<4>; ihl bit<4>; diffserv bit<8>; totalLen bit<16>; identification bit<16>; flags bit<3>; fragOffset bit<13>; ttl bit<8>; protocol bit<8>; hdrChecksum bit<16>; srcAddr bit<32>; dstAddr bit<32> }< @ >)<>)
+(check_valid_typ_nesting) invalid nesting of (header ipv4_t {
+    version bit<4>;
+    ihl bit<4>;
+    diffserv bit<8>;
+    totalLen bit<16>;
+    identification bit<16>;
+    flags bit<3>;
+    fragOffset bit<13>;
+    ttl bit<8>;
+    protocol bit<8>;
+    hdrChecksum bit<16>;
+    srcAddr bit<32>;
+    dstAddr bit<32>
+  })<> inside type IPV4T_t ((header ipv4_t {
+      version bit<4>;
+      ihl bit<4>;
+      diffserv bit<8>;
+      totalLen bit<16>;
+      identification bit<16>;
+      flags bit<3>;
+      fragOffset bit<13>;
+      ttl bit<8>;
+      protocol bit<8>;
+      hdrChecksum bit<16>;
+      srcAddr bit<32>;
+      dstAddr bit<32>
+    })<>)
 
 >>> Running typecheck test on p4/test/program/ill-typed/push_nonconstant.p4
 Error: File p4/test/program/ill-typed/push_nonconstant.p4, line 10, characters 8-24
@@ -813,7 +977,11 @@ Error: File p4/test/program/ill-typed/scope.p4, line 25, characters 22-23
 
 >>> Running typecheck test on p4/test/program/ill-typed/select-struct.p4
 Error: File p4/test/program/ill-typed/select-struct.p4, from line 11 character 8 to line 14 character 9
-(check_valid_typ_nesting) invalid nesting of (struct H { b bit<12> }< @ >)<> inside set<(struct H { b bit<12> }< @ >)<>>
+(check_valid_typ_nesting) invalid nesting of (struct H {
+    b bit<12>
+  })<> inside set<(struct H {
+      b bit<12>
+    })<>>
 
 >>> Running typecheck test on p4/test/program/ill-typed/select-varbits.p4
 Error: File p4/test/program/ill-typed/select-varbits.p4, from line 16 character 8 to line 19 character 9
@@ -874,7 +1042,11 @@ Error: File p4/test/program/ill-typed/stack1_e.p4, line 22, characters 10-11
 
 >>> Running typecheck test on p4/test/program/ill-typed/stack2.p4
 Error: File p4/test/program/ill-typed/stack2.p4, line 24, characters 8-24
-(coerce_type) cannot coerce type (T[3]<T @ >)<(header h {  }< @ >)<>> to (T[5]<T @ >)<(header h {  }< @ >)<>>
+(coerce_type) cannot coerce type (T[3]<T>)<(header h {
+
+    })<>> to (T[5]<T>)<(header h {
+
+    })<>>
 
 >>> Running typecheck test on p4/test/program/ill-typed/stack3.p4
 Error: File p4/test/program/ill-typed/stack3.p4, line 34, characters 10-21
@@ -882,7 +1054,11 @@ Error: File p4/test/program/ill-typed/stack3.p4, line 34, characters 10-21
 
 >>> Running typecheck test on p4/test/program/ill-typed/stack_e.p4
 Error: File p4/test/program/ill-typed/stack_e.p4, line 23, characters 8-12
-(check_valid_typ_nesting) invalid nesting of (struct s {  }< @ >)<> inside (struct s {  }< @ >)<>[5]
+(check_valid_typ_nesting) invalid nesting of (struct s {
+
+  })<> inside (struct s {
+
+    })<>[5]
 
 >>> Running typecheck test on p4/test/program/ill-typed/string-e.p4
 Error: File p4/test/program/ill-typed/string-e.p4, line 1, characters 0-27
@@ -890,7 +1066,9 @@ Error: File p4/test/program/ill-typed/string-e.p4, line 1, characters 0-27
 
 >>> Running typecheck test on p4/test/program/ill-typed/string-e1.p4
 Error: File p4/test/program/ill-typed/string-e1.p4, from line 1 character 0 to line 3 character 1
-(check_valid_typ_nesting) invalid nesting of string inside struct S { s string }
+(check_valid_typ_nesting) invalid nesting of string inside struct S {
+  s string
+}
 
 >>> Running typecheck test on p4/test/program/ill-typed/string-e2.p4
 Error: File p4/test/program/ill-typed/string-e2.p4, line 5, characters 8-16
@@ -902,7 +1080,9 @@ Error: File p4/test/program/ill-typed/struct_e.p4, line 24, characters 8-14
 
 >>> Running typecheck test on p4/test/program/ill-typed/structure-valued-expr-errs-1.p4
 Error: File p4/test/program/ill-typed/structure-valued-expr-errs-1.p4, line 100, characters 12-24
-(coerce_type) cannot coerce type seq<> to (header h1_t { f1 bit<8> }< @ >)<>
+(coerce_type) cannot coerce type seq<> to (header h1_t {
+    f1 bit<8>
+  })<>
 
 >>> Running typecheck test on p4/test/program/ill-typed/structure-valued-expr-errs-2.p4
 Error on file: File p4/test/program/ill-typed/structure-valued-expr-errs-2.p4, line 106, characters 27-28
@@ -960,15 +1140,21 @@ parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/tuple-newtype.p4
 Error: File p4/test/program/ill-typed/tuple-newtype.p4, line 5, characters 0-18
-(check_valid_typ_nesting) invalid nesting of (tuple<T0><T0 @ >)<bit<1>> inside type T ((tuple<T0><T0 @ >)<bit<1>>)
+(check_valid_typ_nesting) invalid nesting of (tuple<T0><T0>)<bit<1>> inside type T ((tuple<T0><T0>)<bit<1>>)
 
 >>> Running typecheck test on p4/test/program/ill-typed/tuple-to-header.p4
 Error: File p4/test/program/ill-typed/tuple-to-header.p4, line 23, characters 8-14
-(coerce_type) cannot coerce type (tuple<T0><T0 @ >)<bit<32>> to (header H { x bit<32> }< @ >)<>
+(coerce_type) cannot coerce type (tuple<T0><T0>)<bit<32>> to (header H {
+    x bit<32>
+  })<>
 
 >>> Running typecheck test on p4/test/program/ill-typed/type-field.p4
 Error: File p4/test/program/ill-typed/type-field.p4, line 59, characters 13-14
-(type_type_acc_expr) Cannot access a generic type struct h { d (header d_t { f bit<32> }< @ >)<> }< @ >
+(type_type_acc_expr) Cannot access a generic type struct h {
+  d (header d_t {
+      f bit<32>
+    })<>
+}
 
 >>> Running typecheck test on p4/test/program/ill-typed/type-in-expr-lex0.p4
 Error on file: File p4/test/program/ill-typed/type-in-expr-lex0.p4, line 8, characters 25-26

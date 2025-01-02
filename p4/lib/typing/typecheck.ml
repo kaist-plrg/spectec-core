@@ -1928,8 +1928,8 @@ and check_call_arity (ft : FuncType.t) (params : Types.param list)
   check
     (arity_params = arity_args)
     (Format.asprintf
-       "(check_call_arity) Function %a expects %d arguments but %d were given\n"
-       FuncType.pp ft arity_params arity_args)
+       "(check_call_arity) function %a expects %d arguments but %d were given\n"
+       (FuncType.pp ~level:0) ft arity_params arity_args)
 
 (* Invariant: parameters and arguments are checked of arity and all-or-nothing named *)
 and align_params_with_args (params : Types.param list) (typ_args : Type.t list)
@@ -1958,7 +1958,7 @@ and check_call_site (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) : unit
   match cursor with
   | Global ->
       Format.asprintf "(check_call_site) %a cannot be called from top level"
-        FuncType.pp ft
+        (FuncType.pp ~level:0) ft
       |> error_no_info
   | Block -> (
       let kind = ctx.block.kind in
@@ -1972,7 +1972,7 @@ and check_call_site (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) : unit
           ()
       | _ ->
           Format.asprintf "(check_call_site) %a cannot be called from %a"
-            FuncType.pp ft Ctx.pp_blockkind kind
+            (FuncType.pp ~level:0) ft Ctx.pp_blockkind kind
           |> error_no_info)
   | Local -> (
       let kind = ctx.local.kind in
@@ -1999,7 +1999,7 @@ and check_call_site (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) : unit
           ()
       | _ ->
           Format.asprintf "(check_call_site) %a cannot be called from %a"
-            FuncType.pp ft Ctx.pp_localkind kind
+            (FuncType.pp ~level:0) ft Ctx.pp_localkind kind
           |> error_no_info)
 
 and type_func (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : El.Ast.var)

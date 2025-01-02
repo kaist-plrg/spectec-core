@@ -9,29 +9,41 @@ type t =
   | PackageC of tparam list * cparam list
   | TableC of table
 
-let pp fmt = function
+let pp ?(level = 0) fmt = function
   | ExternC (tparams, cparams, mthds) ->
       Format.fprintf fmt "ExternC%a%a -> {\n%a\n}" Il.Pp.pp_tparams tparams
-        Il.Pp.pp_cparams cparams
-        (pp_list (Il.Pp.pp_mthd ~level:1) "\n")
+        (Il.Pp.pp_cparams ~level:(level + 1))
+        cparams
+        (pp_list ~level:(level + 1) Il.Pp.pp_mthd ~sep:Nl)
         mthds
   | ParserC (tparams, cparams, params, decls, states) ->
       Format.fprintf fmt "ParserC%a%a -> %a {\n%a\n%a\n}" Il.Pp.pp_tparams
-        tparams Il.Pp.pp_cparams cparams Il.Pp.pp_params params
-        (pp_list (Il.Pp.pp_decl ~level:1) "\n")
+        tparams
+        (Il.Pp.pp_cparams ~level:(level + 1))
+        cparams
+        (Il.Pp.pp_params ~level:(level + 1))
+        params
+        (Il.Pp.pp_decls ~level:(level + 1))
         decls
-        (pp_list (Il.Pp.pp_parser_state ~level:1) "\n")
+        (Il.Pp.pp_parser_states ~level:(level + 1))
         states
   | ControlC (tparams, cparams, params, decls, block) ->
       Format.fprintf fmt "ControlC%a%a -> %a {\n%a\n%a\n}" Il.Pp.pp_tparams
-        tparams Il.Pp.pp_cparams cparams Il.Pp.pp_params params
-        (pp_list (Il.Pp.pp_decl ~level:1) "\n")
-        decls (Il.Pp.pp_block ~level:1) block
+        tparams
+        (Il.Pp.pp_cparams ~level:(level + 1))
+        cparams
+        (Il.Pp.pp_params ~level:(level + 1))
+        params
+        (Il.Pp.pp_decls ~level:(level + 1))
+        decls
+        (Il.Pp.pp_block ~level:(level + 1))
+        block
   | PackageC (tparams, cparams) ->
       Format.fprintf fmt "PackageC%a%a" Il.Pp.pp_tparams tparams
-        Il.Pp.pp_cparams cparams
+        (Il.Pp.pp_cparams ~level:(level + 1))
+        cparams
   | TableC table ->
-      Format.fprintf fmt "TableC %a" (Il.Pp.pp_table ~level:0) table
+      Format.fprintf fmt "TableC %a" (Il.Pp.pp_table ~level:(level + 1)) table
 
 let eq_kind cons_a cons_b =
   match (cons_a, cons_b) with

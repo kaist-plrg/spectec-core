@@ -267,7 +267,8 @@ and specialize_typdef_mono (tdm : typdef_mono) (targs : typ list) : typ =
     (Format.asprintf
        "(specialize_typdef_mono) type definition %a expects 0 type arguments \
         but %d were given"
-       Pp.pp_typdef_mono tdm (List.length targs));
+       (Pp.pp_typdef_mono ~level:0)
+       tdm (List.length targs));
   tdm
 
 and specialize_typdef_poly (tdp : typdef_poly) (targs : typ list) : typ =
@@ -277,7 +278,8 @@ and specialize_typdef_poly (tdp : typdef_poly) (targs : typ list) : typ =
       (Format.asprintf
          "(specialize_typdef_poly) type definition %a expects %d type \
           arguments but %d were given"
-         Pp.pp_typdef_poly tdp (List.length tparams) (List.length targs))
+         (Pp.pp_typdef_poly ~level:0)
+         tdp (List.length tparams) (List.length targs))
   in
   let tparams, tparams_hidden, typ_inner = tdp in
   let tparams = tparams @ tparams_hidden in
@@ -296,7 +298,7 @@ let specialize_funcdef (fresh : unit -> int) (fd : funcdef) (targs : typ list) :
       (Format.asprintf
          "(specialize_funcdef) function %a expects %d type arguments but %d \
           were given"
-         Pp.pp_funcdef fd (List.length tparams) (List.length targs))
+         (Pp.pp_funcdef ~level:0) fd (List.length tparams) (List.length targs))
   in
   match fd with
   | MonoFD ft ->
@@ -348,7 +350,7 @@ and specialize_consdef (fresh : unit -> int) (cd : consdef) (targs : typ list) :
       (Format.asprintf
          "(specialize_consdef) constructor %a expects %d type arguments but %d \
           were given"
-         Pp.pp_consdef cd (List.length tparams) (List.length targs))
+         (Pp.pp_consdef ~level:0) cd (List.length tparams) (List.length targs))
   in
   let fresh_tid () = "__WILD_" ^ string_of_int (fresh ()) in
   let fresh_targ tid = VarT tid in

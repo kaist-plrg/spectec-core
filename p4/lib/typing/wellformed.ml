@@ -620,7 +620,7 @@ and check_valid_functyp_nesting (ft : FuncType.t) (params : Types.param list) :
         (check_valid_functyp_nesting' ft dir typ)
         (Format.asprintf
            "(check_valid_functyp_nesting) invalid nesting of %a inside %a"
-           (Type.pp ~level:0) typ FuncType.pp ft))
+           (Type.pp ~level:0) typ (FuncType.pp ~level:0) ft))
     params
 
 and check_valid_functyp_nesting' (ft : FuncType.t) (dir : Lang.Ast.dir')
@@ -681,7 +681,7 @@ and check_valid_funcdef' (tset : TIdSet.t) (fd : FuncDef.t) : unit =
         | _ -> false)
         (Format.asprintf
            "(check_valid_funcdef) %a is not a definable monomorphic function"
-           FuncType.pp ft);
+           (FuncType.pp ~level:0) ft);
       check_valid_functyp' tset ft
   | PolyFD (tparams, tparams_hidden, ft) ->
       check
@@ -692,7 +692,7 @@ and check_valid_funcdef' (tset : TIdSet.t) (fd : FuncDef.t) : unit =
         | _ -> false)
         (Format.asprintf
            "(check_valid_funcdef) %a is not a definable generic function"
-           FuncType.pp ft);
+           (FuncType.pp ~level:0) ft);
       let tparams = tparams @ tparams_hidden in
       check_distinct_names tparams;
       let tset = tparams |> TIdSet.of_list |> TIdSet.union tset in

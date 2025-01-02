@@ -31,11 +31,10 @@ type t =
   | RefV of Domain.Dom.OId.t
 
 let rec pp ?(level = 0) fmt value =
-  level |> ignore;
   match value with
-  | ErrV member -> F.fprintf fmt "error.%a" (P.pp_member' ~level:0) member
-  | MatchKindV member -> P.pp_member' ~level:0 fmt member
-  | StrV s -> F.pp_print_string fmt s
+  | ErrV member -> F.fprintf fmt "error.%a" P.pp_member' member
+  | MatchKindV member -> F.fprintf fmt "%a" P.pp_member' member
+  | StrV s -> F.fprintf fmt "%s" s
   | BoolV b -> F.fprintf fmt "%b" b
   | IntV i -> F.fprintf fmt "%a" Bigint.pp i
   | FIntV (width, i) -> F.fprintf fmt "%as%a" Bigint.pp width Bigint.pp i
@@ -43,45 +42,47 @@ let rec pp ?(level = 0) fmt value =
   | VBitV (width_max, _, i) ->
       F.fprintf fmt "%av%a" Bigint.pp width_max Bigint.pp i
   | EnumFieldV (id, member) ->
-      F.fprintf fmt "%a.%a" P.pp_id' id (P.pp_member' ~level:0) member
+      F.fprintf fmt "%a.%a" P.pp_id' id P.pp_member' member
   | SEnumFieldV (id, member, value) ->
-      F.fprintf fmt "%a.%a(= %a)" P.pp_id' id (P.pp_member' ~level:0) member
-        (pp ~level:0) value
-  | ListV values -> F.fprintf fmt "list { %a }" (pp_list pp ", ") values
-  | TupleV values -> F.fprintf fmt "tuple { %a }" (pp_list pp ", ") values
+      F.fprintf fmt "%a.%a(= %a)" P.pp_id' id P.pp_member' member (pp ~level)
+        value
+  | ListV values -> F.fprintf fmt "list { %a }" (pp_list pp ~sep:Comma) values
+  | TupleV values -> F.fprintf fmt "tuple { %a }" (pp_list pp ~sep:Comma) values
   | StackV (values, _idx, _size) ->
-      F.fprintf fmt "stack { %a }" (pp_list pp "; ") values
+      F.fprintf fmt "stack { %a }" (pp_list pp ~sep:Comma) values
   | StructV fields ->
-      F.fprintf fmt "struct { %a }"
-        (pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
-        fields
+      F.fprintf fmt "struct {\n%a\n%s}"
+        (pp_pairs ~level:(level + 1) P.pp_member' pp ~rel:Eq ~sep:SemicolonNl)
+        fields (indent level)
   | HeaderV (_valid, fields) ->
-      F.fprintf fmt "header { %a }"
-        (pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
-        fields
+      F.fprintf fmt "header {\n%a\n%s}"
+        (pp_pairs ~level:(level + 1) P.pp_member' pp ~rel:Eq ~sep:SemicolonNl)
+        fields (indent level)
   | UnionV fields ->
-      F.fprintf fmt "header_union { %a }"
-        (pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
-        fields
+      F.fprintf fmt "header_union {\n%a\n%s}"
+        (pp_pairs ~level:(level + 1) P.pp_member' pp ~rel:Eq ~sep:SemicolonNl)
+        fields (indent level)
   | TableEnumFieldV (id, member) ->
-      F.fprintf fmt "%a.%a" P.pp_id' id (P.pp_member' ~level:0) member
+      F.fprintf fmt "%a.%a" P.pp_id' id P.pp_member' member
   | TableStructV fields ->
-      F.fprintf fmt "table { %a }"
-        (pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
-        fields
-  | SeqV values -> F.fprintf fmt "seq { %a }" (pp_list pp ", ") values
+      F.fprintf fmt "table {\n%a\n%s}"
+        (pp_pairs ~level:(level + 1) P.pp_member' pp ~rel:Eq ~sep:SemicolonNl)
+        fields (indent level)
+  | SeqV values -> F.fprintf fmt "seq { %a }" (pp_list pp ~sep:Comma) values
   | SeqDefaultV values ->
-      F.fprintf fmt "seq { %a, ... }" (pp_list pp ", ") values
+      F.fprintf fmt "seq { %a, ... }" (pp_list pp ~sep:Comma) values
   | RecordV fields ->
-      F.fprintf fmt "record { %a }"
-        (pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
-        fields
+      F.fprintf fmt "record {\n%a\n%s}"
+        (pp_pairs ~level:(level + 1) P.pp_member' pp ~rel:Eq ~sep:SemicolonNl)
+        fields (indent level)
   | RecordDefaultV fields ->
-      F.fprintf fmt "record { %a, ... }"
-        (pp_pairs (P.pp_member' ~level:0) pp " = " "; ")
+      F.fprintf fmt "record {\n%a\n%s, ...\n%s}"
+        (pp_pairs ~level:(level + 1) P.pp_member' pp ~rel:Eq ~sep:SemicolonNl)
         fields
-  | DefaultV -> F.pp_print_string fmt "..."
-  | InvalidV -> F.pp_print_string fmt "{#}"
+        (indent (level + 1))
+        (indent level)
+  | DefaultV -> F.fprintf fmt "..."
+  | InvalidV -> F.fprintf fmt "{#}"
   | RefV oid -> F.fprintf fmt "!%a" Domain.Dom.OId.pp oid
 
 (* Equality *)
