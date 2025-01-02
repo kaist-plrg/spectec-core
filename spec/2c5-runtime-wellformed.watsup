@@ -55,11 +55,11 @@ rule Type_wf/newt:
 
 rule Type_wf/enumt:
   tidset |- EnumT id member*
-  -- if $distinct(member, member*)    ;; CHECK L128
+  -- if $distinct(member, member*)
 
 rule Type_wf/senumt:
   tidset |- SEnumT id typ (member, val)*
-  -- if $distinct(member, member*)    ;; CHECK L129
+  -- if $distinct(member, member*)
   ----
   -- if typ' = $canon_typ(typ)
   ----
@@ -159,7 +159,11 @@ rule Type_wf/packaget:
   -- (Type_wf: tidset |- typ)*
 
 rule Type_wf/tablet:
-  tidset |- TableT typ                 ;; CHECK L145
+  tidset |- TableT typ
+  -- if typ' = $canon_typ(typ)
+  ----
+  -- if $is_table_structt(typ')
+  ----
   -- Type_wf: tidset |- typ
 
 rule Type_wf/defaultt:
@@ -205,12 +209,14 @@ rule Type_wf/statet:
 
 rule Type_wf/tableenumt:
   tidset |- TableEnumT id member*
-  -- if $distinct(member, member*)           ;; CHECK L147
+  -- if $distinct(member, member*)
 
 rule Type_wf/tablestructt:
   tidset |- TableStructT id (member, typ)*
-  -- if $distinct(member, member*)           ;; CHECK L147
-  -- (Type_wf: tidset |- typ)*
+  -- if member* = "hit" "miss" "action\\_run"
+  -- if typ* = BoolT BoolT (TableEnumT id_e member_e*)
+  ----
+  -- Type_wf: tidset |- TableEnumT id_e member_e*
 
 rule Type_wf/anyt:
   tidset |- AnyT
@@ -381,7 +387,7 @@ rule FuncDef_wf/polyfd:
         \/ $is_externmethodt(functyp)
         \/ $is_externabstractmethodt(functyp)
   ----
-  -- if $distinct(tparam, tparam*)                 ;; CHECK L669
+  -- if $distinct(tparam, tparam*)
   -- if tidset' = $union_set(tid, tidset, SET tparam*)
   -- FuncType_wf: tidset' |- functyp
 
@@ -469,6 +475,6 @@ rule ConsDef_wf:
         \/ $is_controlt(typ_r')
         \/ $is_packaget(typ_r')
   ----
-  -- if $distinct(tparam, tparam*)                ;; CHECK L773
+  -- if $distinct(tparam, tparam*)
   -- if tidset' = $union_set(tid, tidset, SET tparam*)
   -- ConsType_wf: tidset' |- constyp

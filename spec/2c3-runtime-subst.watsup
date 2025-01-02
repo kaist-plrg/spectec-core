@@ -5,9 +5,8 @@
 syntax theta hint(show %latex("\\theta")) = map(id, typ)
 
 ;; No definitions for the following declarations
-def $free_typ(typ) : tid*                                  hint(show %latex("FV(")#%1#%latex(")"))
-def $free_functyp(functyp) : tid*                          hint(show %latex("FV(")#%1#%latex(")"))
-def $subst_forall(theta, tparam*, tid*) : (theta, tparam*) hint(show %latex("(\\forall")#%2#%latex(".")#%3#%latex(")")#%1)
+def $free_typ(typ) : set(tid)                              hint(show %latex("FV(")#%1#%latex(")"))
+def $free_functyp(functyp) : set(tid)                      hint(show %latex("FV(")#%1#%latex(")"))
 
 def $subst_typ(theta, typ) : typ                           hint(show %2#%latex("/")#%1)
 def $subst_typdef_poly(theta, polytypdef) : polytypdef     hint(show %2#%latex("/")#%1)
@@ -51,12 +50,22 @@ def $subst_typ(theta, typ) = typ
 
 ;; Type definitions
 def $subst_typdef_poly(theta, PolyD tparam* typ) = PolyD tparam'* ($subst_typ(theta', typ))
-  -- if (theta', tparam'*) = $subst_forall(theta, tparam*, $free_typ(typ))
+  -- if SET tid_free* = $diff_set(tid, $free_typ(typ), SET tparam*)
+  -- if tidset_capture = $unions_set(tid, ($free_typ($find_map(tid, typ, theta, tid_free)))*)
+  -- if (tparam' = $fresh_tid())*
+  -- if |tparam*| = |tparam'*|
+  -- if ($not_in_set(tid, tparam', tidset_capture))*
+  -- if theta' = $extends_map(tid, typ, theta, tparam*, (VarT tparam')*)
 
 ;; Function definitions
 def $subst_funcdef(theta, MonoFD ft) = MonoFD ($subst_functyp(theta, ft))
 def $subst_funcdef(theta, PolyFD tparam* ft) = PolyFD tparam'* ($subst_functyp(theta', ft))
-  -- if (theta', tparam'*) = $subst_forall(theta, tparam*, $free_functyp(ft))
+  -- if SET tid_free* = $diff_set(tid, $free_functyp(ft), SET tparam*)
+  -- if tidset_capture = $unions_set(tid, ($free_typ($find_map(tid, typ, theta, tid_free)))*)
+  -- if (tparam' = $fresh_tid())*
+  -- if |tparam*| = |tparam'*|
+  -- if ($not_in_set(tid, tparam', tidset_capture))*
+  -- if theta' = $extends_map(tid, typ, theta, tparam*, (VarT tparam')*)
 
 ;; Function types
 def $subst_functyp(theta, BuiltinMethodT paramtyp* typ) = BuiltinMethodT paramtyp'* ($subst_typ(theta, typ))

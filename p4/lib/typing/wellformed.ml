@@ -125,8 +125,11 @@ and check_valid_typ' (tset : TIdSet.t) (typ : Type.t) : unit =
   | NewT (_, typ_inner) ->
       check_valid_typ' tset typ_inner;
       check_valid_typ_nesting typ typ_inner
-  | EnumT _ -> ()
-  | SEnumT (_, typ_inner, _) -> check_valid_typ_nesting typ typ_inner
+  | EnumT (_, members) -> check_distinct_names members
+  | SEnumT (_, typ_inner, fidles) ->
+      check_valid_typ_nesting typ typ_inner;
+      let members = List.map fst fidles in
+      check_distinct_names members
   | ListT typ_inner ->
       check_valid_typ' tset typ_inner;
       check_valid_typ_nesting typ typ_inner
@@ -142,9 +145,22 @@ and check_valid_typ' (tset : TIdSet.t) (typ : Type.t) : unit =
       Envs.FDEnv.bindings fdenv |> List.map snd |> check_valid_funcdefs' tset
   | ParserT params | ControlT params -> check_valid_params' tset params
   | PackageT typs_inner -> check_valid_typs' tset typ typs_inner
-  | TableT _ -> ()
+  | TableT typ_inner ->
+      check_valid_typ' tset typ_inner;
+      check_valid_typ_nesting typ typ_inner
   | AnyT -> ()
-  | TableEnumT _ | TableStructT _ -> ()
+  | TableEnumT (_, members) -> check_distinct_names members
+  | TableStructT (_, fields) -> (
+      match fields with
+      | [
+       ("hit", BoolT);
+       ("miss", BoolT);
+       ("action_run", (TableEnumT _ as typ_inner));
+      ] ->
+          check_valid_typ' tset typ_inner
+      | _ ->
+          "(check_valid_typ) table struct must have exactly 3 fields: hit, \
+           miss, and action_run" |> error_no_info)
   | SeqT typs_inner | SeqDefaultT typs_inner ->
       check_valid_typs' tset typ typs_inner
   | RecordT fields | RecordDefaultT fields ->
@@ -396,7 +412,19 @@ and check_valid_typ_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
           false)
   | ExternT _ | ParserT _ | ControlT _ -> error_not_nest ()
   | PackageT _ -> true
-  | TableT _ | AnyT | TableEnumT _ | TableStructT _ -> error_not_nest ()
+  | TableT _ -> (
+      match typ_inner with
+      | SpecT _ | DefT _ -> assert false
+      | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
+      | VBitT _ | VarT _ | NewT _ | EnumT _ | SEnumT _ | ListT _ | TupleT _
+      | StackT _ | StructT _ | HeaderT _ | UnionT _ | ExternT _ | ParserT _
+      | ControlT _ | PackageT _ | TableT _ | AnyT | TableEnumT _ ->
+          false
+      | TableStructT _ -> true
+      | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _ | DefaultT
+      | InvalidT | SetT _ | StateT ->
+          false)
+  | AnyT | TableEnumT _ | TableStructT _ -> error_not_nest ()
   | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _ -> true
   | DefaultT | InvalidT -> error_not_nest ()
   | SetT _ -> (
@@ -665,9 +693,9 @@ and check_valid_funcdef' (tset : TIdSet.t) (fd : FuncDef.t) : unit =
         (Format.asprintf
            "(check_valid_funcdef) %a is not a definable generic function"
            FuncType.pp ft);
-      let tset =
-        tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset
-      in
+      let tparams = tparams @ tparams_hidden in
+      check_distinct_names tparams;
+      let tset = tparams |> TIdSet.of_list |> TIdSet.union tset in
       check_valid_functyp' tset ft
 
 and check_valid_funcdefs' (tset : TIdSet.t) (fds : FuncDef.t list) : unit =
@@ -770,6 +798,8 @@ and check_valid_consdef' (tset : TIdSet.t) (cd : ConsDef.t) : unit =
     (Format.asprintf
        "(check_valid_consdef') %a is not a definable constructor type" Type.pp
        typ);
-  let tset = tparams @ tparams_hidden |> TIdSet.of_list |> TIdSet.union tset in
+  let tparams = tparams @ tparams_hidden in
+  check_distinct_names tparams;
+  let tset = tparams |> TIdSet.of_list |> TIdSet.union tset in
   let ct = (cparams, typ) in
   check_valid_constyp' tset ct
