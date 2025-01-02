@@ -3416,6 +3416,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     Il.Ast.InstD
       {
         id;
+        typ = typ $ no_info;
         var_inst;
         targs = targs_il;
         args = args_il;

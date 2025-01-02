@@ -247,7 +247,7 @@ and ('note, 'expr) table_custom' =
 
 and table_custom_const = bool
 
-(* Methods : parameterized by 'mthd *)
+(* Methods *)
 and ('typ, 'param, 'note, 'expr) mthd =
   ('typ, 'param, 'note, 'expr) mthd' phrase
 

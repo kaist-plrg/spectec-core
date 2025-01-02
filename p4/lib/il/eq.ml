@@ -344,6 +344,7 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
   | ( InstD
         {
           id = id_a;
+          typ = typ_a;
           var_inst = var_inst_a;
           targs = targs_a;
           args = args_a;
@@ -353,6 +354,7 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
       InstD
         {
           id = id_b;
+          typ = typ_b;
           var_inst = var_inst_b;
           targs = targs_b;
           args = args_b;
@@ -360,6 +362,7 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
           annos = _annos_b;
         } ) ->
       eq_id ~dbg id_a id_b
+      && eq_typ ~dbg typ_a typ_b
       && eq_var ~dbg var_inst_a var_inst_b
       && eq_targs ~dbg targs_a targs_b
       && eq_args ~dbg args_a args_b

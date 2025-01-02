@@ -8,12 +8,11 @@ type t =
   | FuncF of tparam list * param list * block
   | ExternFuncF of tparam list * param list
   | ExternMethodF of tparam list * param list
-  | ParserApplyMethodF of
-      param list * Value.t IdMap.t * t FIdMap.t * decl list * block
-  | ControlApplyMethodF of
-      param list * Value.t IdMap.t * t FIdMap.t * decl list * block
+  | ParserApplyMethodF of param list * t FIdMap.t * decl list * block
+  | ControlApplyMethodF of param list * t FIdMap.t * decl list * block
   | BuiltinMethodF of param list
   | TableApplyMethodF
+  | ParserStateF of block
 
 let rec pp ?(level = 0) fmt = function
   | ActionF (params, block) ->
@@ -36,46 +35,30 @@ let rec pp ?(level = 0) fmt = function
       Format.fprintf fmt "ExternMethodF%a %a" Il.Pp.pp_tparams tparams
         (Il.Pp.pp_params ~level:(level + 1))
         params
-  | ParserApplyMethodF (params, venv, fenv, locals, block) ->
+  | ParserApplyMethodF (params, fenv, locals, block) ->
       Format.fprintf fmt
-        "ParserApplyMethodF%a {\n\
-         %svenv : %a\n\
-         %sfenv : %a\n\
-         %slocals : %a\n\
-         %s%a\n\
-         %s}"
+        "ParserApplyMethodF%a {\n%sfenv : %a\n%slocals :\n%a\n%s%a\n%s}"
         (Il.Pp.pp_params ~level:(level + 1))
         params
-        (indent (level + 1))
-        (IdMap.pp ~level:(level + 1) Value.pp)
-        venv
         (indent (level + 1))
         (FIdMap.pp ~level:(level + 1) pp)
         fenv
         (indent (level + 1))
-        (Il.Pp.pp_decls ~level:(level + 1))
+        (Il.Pp.pp_decls ~level:(level + 2))
         locals
         (indent (level + 1))
         (Il.Pp.pp_block ~level:(level + 1))
         block (indent level)
-  | ControlApplyMethodF (params, venv, fenv, locals, block) ->
+  | ControlApplyMethodF (params, fenv, locals, block) ->
       Format.fprintf fmt
-        "ControlApplyMethodF%a {\n\
-         %svenv : %a\n\
-         %sfenv : %a\n\
-         %slocals : %a\n\
-         %s%a\n\
-         %s}"
+        "ControlApplyMethodF%a {\n%sfenv : %a\n%slocals :\n%a\n%s%a\n%s}"
         (Il.Pp.pp_params ~level:(level + 1))
         params
-        (indent (level + 1))
-        (IdMap.pp ~level:(level + 1) Value.pp)
-        venv
         (indent (level + 1))
         (FIdMap.pp ~level:(level + 1) pp)
         fenv
         (indent (level + 1))
-        (Il.Pp.pp_decls ~level:(level + 1))
+        (Il.Pp.pp_decls ~level:(level + 2))
         locals
         (indent (level + 1))
         (Il.Pp.pp_block ~level:(level + 1))
@@ -85,6 +68,10 @@ let rec pp ?(level = 0) fmt = function
         (Il.Pp.pp_params ~level:(level + 1))
         params
   | TableApplyMethodF -> Format.fprintf fmt "TableApplyMethodF"
+  | ParserStateF block ->
+      Format.fprintf fmt "ParserStateF %a"
+        (Il.Pp.pp_block ~level:(level + 1))
+        block
 
 let eq_kind func_a func_b =
   match (func_a, func_b) with
@@ -96,4 +83,5 @@ let eq_kind func_a func_b =
   | ControlApplyMethodF _, ControlApplyMethodF _ -> true
   | BuiltinMethodF _, BuiltinMethodF _ -> true
   | TableApplyMethodF, TableApplyMethodF -> true
+  | ParserStateF _, ParserStateF _ -> true
   | _ -> false

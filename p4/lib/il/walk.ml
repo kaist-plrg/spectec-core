@@ -209,8 +209,9 @@ let walk_decl (walker : walker) decl =
       walk_id id;
       walk_typ typ;
       W.walk_option walk_expr init
-  | InstD { id; var_inst; targs; args; init; annos = _annos } ->
+  | InstD { id; typ; var_inst; targs; args; init; annos = _annos } ->
       walk_id id;
+      walk_typ typ;
       walk_var var_inst;
       W.walk_list walk_targ targs;
       W.walk_list walk_arg args;

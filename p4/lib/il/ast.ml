@@ -145,6 +145,7 @@ and decl' =
   | VarD of { id : id; typ : typ; init : expr option; annos : anno list }
   | InstD of {
       id : id;
+      typ : typ;
       var_inst : var;
       targs : typ list;
       args : arg list;

@@ -324,14 +324,18 @@ and pp_decl' ?(level = 0) fmt decl' =
             (pp_typ ~level:(level + 1))
             typ pp_id id (pp_expr ~level:0) expr_init
       | None -> F.fprintf fmt "%a %a;" (pp_typ ~level:(level + 1)) typ pp_id id)
-  | InstD { id; var_inst; targs; args; init; annos = _annos } -> (
+  | InstD { id; typ; var_inst; targs; args; init; annos = _annos } -> (
       match init with
       | [] ->
-          F.fprintf fmt "%a%a%a %a;" pp_var var_inst
+          F.fprintf fmt "%a %a%a%a %a;"
+            (pp_typ ~level:(level + 1)) typ
+            pp_var var_inst
             (pp_targs ~level:(level + 1))
             targs pp_args args pp_id id
       | init ->
-          F.fprintf fmt "%a%a%a %a = {\n%a\n%s};" pp_var var_inst
+          F.fprintf fmt "%a %a%a%a %a = {\n%a\n%s};"
+            (pp_typ ~level:(level + 1)) typ
+            pp_var var_inst
             (pp_targs ~level:(level + 1))
             targs pp_args args pp_id id
             (pp_decls ~level:(level + 1))
