@@ -1,7 +1,6 @@
 ;; String manipulation
 
 def $concat_texts(text*) : text   hint(show %)
-def $compare(syntax T, T, T) : bool
 
 
 ;; Set manipulation
@@ -16,10 +15,8 @@ def $implies(bool, bool) : bool     hint(show % %latex("\\Rightarrow") %)
 
 ;; List manipulation
 
-def $sort(syntax T1, syntax T2, (T1, T2)*) : (T1, T2)*
 def $split(syntax T1, syntax T2, (T1, T2)*) : (T1*, T2*)
-def $pred(int, typ) : bool
-def $filteri(syntax T, def $fun(int, T) : bool, T*) : T*
+def $partition(syntax T, T*, nat) : (T*, T*)
 def $assoc(syntax T1, syntax T2, T1, (T1, T2)*) : T2
 
 ;; Type utils

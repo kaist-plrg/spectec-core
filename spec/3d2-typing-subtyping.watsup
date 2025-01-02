@@ -83,28 +83,26 @@ rule Sub_expl/seqt-headert:
   -- (Sub_expl: typ' <: typ'')*
 
 rule Sub_expl/recordt-structt:
-  RecordT fields_a <: StructT id fields_b
-  -- if (member_a*, typ'*) = $split(member, typ, $sort(member, typ, fields_a))
-  -- if (member_b*, typ''*) = $split(member, typ, $sort(member, typ, fields_b))
-  -- if ($compare(member, member_a, member_b))*
-  -- (Sub_expl: typ' <: typ'')*
+  RecordT (member', typ')* <: StructT id (member'', typ'')*
+  -- if $eq_set(member, SET member'*, SET member''*)
+  ----
+  -- (Sub_expl: $find_map(member, typ, MAP member'* typ'*, member') <: $find_map(member, typ, MAP member''* typ''*, member''))*
 
 rule Sub_expl/recordt-headert:
-  RecordT fields_a <: HeaderT id fields_b
-  -- if (member_a*, typ'*) = $split(member, typ, $sort(member, typ, fields_a))
-  -- if (member_b*, typ''*) = $split(member, typ, $sort(member, typ, fields_b))
-  -- if ($compare(member, member_a, member_b))*
-  -- (Sub_expl: typ' <: typ'')*
+  RecordT (member', typ')* <: HeaderT id (member'', typ'')*
+  -- if $eq_set(member, SET member'*, SET member''*)
+  ----
+  -- (Sub_expl: $find_map(member, typ, MAP member'* typ'*, member') <: $find_map(member, typ, MAP member''* typ''*, member''))*
 
 rule Sub_expl/defaultt:
   DefaultT <: typ
   -- if $is_deftable(typ)
 
-rule Sub_expl/seqdefaultt-tuplet: ;; Maybe refactoring to a method like List.partition in F# would be more readable?
+rule Sub_expl/seqdefaultt-tuplet:
   SeqDefaultT typ'* <: TupleT typ''*
   -- if |typ'*| < |typ''*|
-  -- if typ'''* = $filteri(typ, def $pred, typ''*)
-  -- if typ''''* = $filteri(typ, def $pred, typ''*)
+  -- if (typ'''*, typ''''*) = $partition(typ, typ''*, |typ'*|)
+  ----
   -- (Sub_expl: typ' <: typ'''')*
   -- if ($is_deftable(typ'''))*
 
@@ -117,16 +115,16 @@ rule Sub_expl/seqdefaultt-stackt:
 rule Sub_expl/seqdefaultt-structt:
   SeqDefaultT typ'* <: StructT id (member, typ'')*
   -- if |typ'*| < |typ''*|
-  -- if typ'''* = $filteri(typ, def $pred, typ''*)
-  -- if typ''''* = $filteri(typ, def $pred, typ''*)
+  -- if (typ'''*, typ''''*) = $partition(typ, typ''*, |typ'*|)
+  ----
   -- (Sub_expl: typ' <: typ'''')*
   -- if ($is_deftable(typ'''))*
 
 rule Sub_expl/seqdefaultt-headert:
   SeqDefaultT typ'* <: HeaderT id (member, typ'')*
   -- if |typ'*| < |typ''*|
-  -- if typ'''* = $filteri(typ, def $pred, typ''*)
-  -- if typ''''* = $filteri(typ, def $pred, typ''*)
+  -- if (typ'''*, typ''''*) = $partition(typ, typ''*, |typ'*|)
+  ----
   -- (Sub_expl: typ' <: typ'''')*
   -- if ($is_deftable(typ'''))*
 
@@ -134,18 +132,24 @@ rule Sub_expl/recorddefaultt-structt:
   RecordDefaultT (member', typ')* <: StructT id (member'', typ'')*
   -- if members_from = $to_set(member, member'*)
   -- if members_to = $to_set(member, member''*)
+  ----
   -- if $is_subset(member, members_from, members_to)
   -- if SET member'''* = $diff_set(member, members_to, members_from)
+  ----
   -- (Sub_expl: $assoc(member, typ, member', (member', typ')*) <: $assoc(member, typ, member', (member'', typ'')*))*
+  ----
   -- if ($is_deftable($assoc(member, typ, member''', (member'', typ'')*)))*
 
 rule Sub_expl/recorddefaultt-headert:
   RecordDefaultT (member', typ')* <: HeaderT id (member, typ'')*
   -- if members_from = $to_set(member, member'*)
   -- if members_to = $to_set(member, member''*)
+  ----
   -- if $is_subset(member, members_from, members_to)
   -- if SET member'''* = $diff_set(member, members_to, members_from)
+  ----
   -- (Sub_expl: $assoc(member, typ, member', (member', typ')*) <: $assoc(member, typ, member', (member'', typ'')*))*
+  ----
   -- if ($is_deftable($assoc(member, typ, member''', (member'', typ'')*)))*
 
 
