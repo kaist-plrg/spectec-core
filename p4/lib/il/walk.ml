@@ -2,7 +2,7 @@ module W = Lang.Walk
 open Ast
 open Util.Source
 
-type walker = (note, typ', value', param', expr', decl') W.walker
+type walker = (note, typ', value', param', expr', stmt', decl') W.walker
 
 (* Numbers *)
 
@@ -168,7 +168,48 @@ let walk_select_case (walker : walker) select_case =
 
 (* Statements *)
 
-let walk_stmt (walker : walker) stmt = W.walk_stmt walker stmt
+let walk_stmt (walker : walker) stmt =
+  let walk_var = walker.walk_var walker in
+  let walk_member = walker.walk_member walker in
+  let walk_typ = walker.walk_typ walker in
+  let walk_targ = walker.walk_targ walker in
+  let walk_arg = walker.walk_arg walker in
+  let walk_expr = walker.walk_expr walker in
+  let walk_stmt = walker.walk_stmt walker in
+  let walk_block = walker.walk_block walker in
+  let walk_switch_case = walker.walk_switch_case walker in
+  let walk_decl = walker.walk_decl walker in
+  match stmt.it with
+  | EmptyS -> ()
+  | AssignS { expr_l; expr_r } ->
+      walk_expr expr_l;
+      walk_expr expr_r
+  | SwitchS { expr_switch; cases } ->
+      walk_expr expr_switch;
+      W.walk_list walk_switch_case cases
+  | IfS { expr_cond; stmt_then; stmt_else } ->
+      walk_expr expr_cond;
+      walk_stmt stmt_then;
+      walk_stmt stmt_else
+  | BlockS { block } -> walk_block block
+  | ExitS -> ()
+  | RetS { expr_ret } -> W.walk_option walk_expr expr_ret
+  | CallFuncS { var_func; targs; args } ->
+      walk_var var_func;
+      W.walk_list walk_targ targs;
+      W.walk_list walk_arg args
+  | CallMethodS { expr_base; member; targs; args } ->
+      walk_expr expr_base;
+      walk_member member;
+      W.walk_list walk_targ targs;
+      W.walk_list walk_arg args
+  | CallInstS { typ; var_inst; targs; args } ->
+      walk_typ typ;
+      walk_var var_inst;
+      W.walk_list walk_targ targs;
+      W.walk_list walk_arg args
+  | TransS { expr_label } -> walk_expr expr_label
+  | DeclS { decl } -> walk_decl decl
 
 (* Blocks (sequence of statements) *)
 
@@ -227,8 +268,9 @@ let walk_decl (walker : walker) decl =
       W.walk_list walk_cparam cparams;
       W.walk_list walk_decl locals;
       W.walk_list walk_parser_state states
-  | TableD { id; table; annos = _annos } ->
+  | TableD { id; typ; table; annos = _annos } ->
       walk_id id;
+      walk_typ typ;
       walk_table table
   | ControlD { id; tparams; params; cparams; locals; body; annos = _annos } ->
       walk_id id;

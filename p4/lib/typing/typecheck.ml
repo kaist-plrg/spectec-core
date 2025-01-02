@@ -2455,14 +2455,14 @@ and type_stmt' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (stmt : El.Ast.stmt') : Ctx.t * Flow.t * Il.Ast.stmt' =
   check (cursor = Ctx.Local) "Statements must be local";
   match stmt with
-  | EmptyS -> (ctx, flow, Lang.Ast.EmptyS)
+  | EmptyS -> (ctx, flow, Il.Ast.EmptyS)
   | AssignS { expr_l; expr_r } -> type_assign_stmt cursor ctx flow expr_l expr_r
   | SwitchS { expr_switch; cases } ->
       type_switch_stmt cursor ctx flow expr_switch cases
   | IfS { expr_cond; stmt_then; stmt_else } ->
       type_if_stmt cursor ctx flow expr_cond stmt_then stmt_else
   | BlockS { block } -> type_block_stmt cursor ctx flow block
-  | ExitS -> (ctx, flow, Lang.Ast.ExitS)
+  | ExitS -> (ctx, flow, Il.Ast.ExitS)
   | RetS { expr_ret } -> type_return_stmt cursor ctx flow expr_ret
   | CallFuncS { var_func; targs; args } ->
       type_call_func_stmt cursor ctx flow var_func targs args
@@ -2496,7 +2496,7 @@ and type_assign_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   check_lvalue cursor ctx expr_l_il;
   let expr_r_il = type_expr cursor ctx expr_r in
   let expr_r_il = coerce_type_assign expr_r_il typ_l in
-  let stmt_il = Lang.Ast.AssignS { expr_l = expr_l_il; expr_r = expr_r_il } in
+  let stmt_il = Il.Ast.AssignS { expr_l = expr_l_il; expr_r = expr_r_il } in
   (ctx, flow, stmt_il)
 
 (* (12.7) Switch statement
@@ -2670,7 +2670,7 @@ and type_switch_table_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (cases : El.Ast.switch_case list) : Ctx.t * Flow.t * Il.Ast.stmt' =
   let flow, cases_il = type_switch_table_cases cursor ctx flow id_table cases in
   let stmt_il =
-    Lang.Ast.SwitchS { expr_switch = expr_switch_il; cases = cases_il }
+    Il.Ast.SwitchS { expr_switch = expr_switch_il; cases = cases_il }
   in
   (ctx, flow, stmt_il)
 
@@ -2781,7 +2781,7 @@ and type_switch_general_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     type_switch_general_cases cursor ctx flow typ_switch cases
   in
   let stmt_il =
-    Lang.Ast.SwitchS { expr_switch = expr_switch_il; cases = cases_il }
+    Il.Ast.SwitchS { expr_switch = expr_switch_il; cases = cases_il }
   in
   (ctx, flow, stmt_il)
 
@@ -2801,7 +2801,7 @@ and type_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   let _ctx', flow_then, stmt_then_il = type_stmt cursor ctx flow stmt_then in
   let _ctx', flow_else, stmt_else_il = type_stmt cursor ctx flow stmt_else in
   let stmt_il =
-    Lang.Ast.IfS
+    Il.Ast.IfS
       {
         expr_cond = expr_cond_il;
         stmt_then = stmt_then_il;
@@ -2835,7 +2835,7 @@ and type_block' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
 and type_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (block : El.Ast.block) : Ctx.t * Flow.t * Il.Ast.stmt' =
   let ctx, flow, block_il = type_block cursor ctx flow block in
-  let stmt_il = Lang.Ast.BlockS { block = block_il } in
+  let stmt_il = Il.Ast.BlockS { block = block_il } in
   (ctx, flow, stmt_il)
 
 (* (12.4) Return statement
@@ -2877,7 +2877,7 @@ and type_return_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (_flow : Flow.t)
              (Type.pp ~level:0) typ_ret_func);
         None
   in
-  let stmt_il = Lang.Ast.RetS { expr_ret = expr_ret_il } in
+  let stmt_il = Il.Ast.RetS { expr_ret = expr_ret_il } in
   (ctx, Flow.Ret, stmt_il)
 
 (* (8.20) Method invocations and function calls *)
@@ -2912,7 +2912,7 @@ and type_call_func_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     type_call cursor ctx tids_fresh ft tparams targs_il args args_default
   in
   let stmt_il =
-    Lang.Ast.CallFuncS { var_func; targs = targs_il; args = args_il }
+    Il.Ast.CallFuncS { var_func; targs = targs_il; args = args_il }
   in
   (ctx, flow, stmt_il)
 
@@ -2931,7 +2931,7 @@ and type_call_method_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     type_call cursor ctx tids_fresh ft tparams targs_il args args_default
   in
   let stmt_il =
-    Lang.Ast.CallMethodS
+    Il.Ast.CallMethodS
       { expr_base = expr_base_il; member; targs = targs_il; args = args_il }
   in
   (ctx, flow, stmt_il)
@@ -2971,25 +2971,24 @@ and type_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     | Il.Ast.InstE { var_inst; targs = targs_il; _ } -> (var_inst, targs_il)
     | _ -> assert false
   in
-  (* (TODO) Should handle the case where the same name is used in the same scope *)
   let id = Format.asprintf "%a" Il.Pp.pp_var var_inst $ no_info in
-  let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
+  let ctx' = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
   let expr_base =
     El.Ast.VarE { var = Lang.Ast.Current id $ no_info } $ no_info
   in
   let member = "apply" $ no_info in
-  let ctx, flow, stmt_il =
-    type_call_method_stmt cursor ctx flow expr_base member [] args
+  let _ctx', flow, stmt_il =
+    type_call_method_stmt cursor ctx' flow expr_base member [] args
   in
   let args_il =
     match stmt_il with
-    | Lang.Ast.CallMethodS { args = args_il; _ } -> args_il
+    | Il.Ast.CallMethodS { args = args_il; _ } -> args_il
     | _ -> assert false
   in
   let stmt_il =
-    Lang.Ast.CallInstS { var_inst; targs = targs_il; args = args_il }
+    Il.Ast.CallInstS
+      { typ = typ $ no_info; var_inst; targs = targs_il; args = args_il }
   in
-  let ctx = Ctx.remove_rtype cursor id.it ctx in
   (ctx, flow, stmt_il)
 
 (* (13.5) Transition statements
@@ -3008,7 +3007,7 @@ and type_transition_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (match typ_label with StateT -> true | _ -> false)
     (Format.asprintf "(type_transition_stmt) label %a must be a state"
        (El.Pp.pp_expr ~level:0) expr_label);
-  let stmt_il = Lang.Ast.TransS { expr_label = expr_label_il } in
+  let stmt_il = Il.Ast.TransS { expr_label = expr_label_il } in
   (ctx, flow, stmt_il)
 
 and type_decl_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
@@ -3016,8 +3015,8 @@ and type_decl_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   let ctx, decl_il = type_decl cursor ctx decl in
   let stmt_il =
     match decl_il with
-    | Some decl_il -> Lang.Ast.DeclS { decl = decl_il }
-    | None -> Lang.Ast.EmptyS
+    | Some decl_il -> Il.Ast.DeclS { decl = decl_il }
+    | None -> Il.Ast.EmptyS
   in
   (ctx, flow, stmt_il)
 
@@ -4486,7 +4485,10 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let ctx, typ_struct = type_table_type_decl cursor ctx table_ctx id in
   let typ = Types.TableT typ_struct in
   let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.DYN ctx in
-  let decl_il = Il.Ast.TableD { id; table = table_il; annos = annos_il } in
+  let decl_il =
+    Il.Ast.TableD
+      { id; typ = typ $ no_info; table = table_il; annos = annos_il }
+  in
   (ctx, decl_il)
 
 (* (14.2.1.1) Keys

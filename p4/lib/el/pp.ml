@@ -231,21 +231,68 @@ and pp_select_cases ?(level = 0) fmt select_cases =
 (* Statements *)
 
 and pp_stmt' ?(level = 0) fmt stmt' =
-  P.pp_stmt' ~level pp_typ pp_expr pp_decl fmt stmt'
+  match stmt' with
+  | EmptyS -> F.fprintf fmt ";"
+  | AssignS { expr_l; expr_r } ->
+      F.fprintf fmt "%a = %a;"
+        (pp_expr ~level:(level + 1))
+        expr_l
+        (pp_expr ~level:(level + 1))
+        expr_r
+  | SwitchS { expr_switch; cases } ->
+      F.fprintf fmt "switch (%a) {\n%a\n%s}"
+        (pp_expr ~level:(level + 1))
+        expr_switch
+        (pp_switch_cases ~level:(level + 1))
+        cases (indent level)
+  | IfS { expr_cond; stmt_then; stmt_else } -> (
+      match stmt_else.it with
+      | EmptyS ->
+          F.fprintf fmt "if (%a) %a"
+            (pp_expr ~level:(level + 1))
+            expr_cond (pp_stmt ~level) stmt_then
+      | _ ->
+          F.fprintf fmt "if (%a) %a\n%selse %a"
+            (pp_expr ~level:(level + 1))
+            expr_cond (pp_stmt ~level) stmt_then (indent level) (pp_stmt ~level)
+            stmt_else)
+  | BlockS { block } -> pp_block ~level fmt block
+  | ExitS -> F.fprintf fmt "exit;"
+  | RetS { expr_ret } -> (
+      match expr_ret with
+      | Some expr_ret ->
+          F.fprintf fmt "return %a;" (pp_expr ~level:(level + 1)) expr_ret
+      | None -> F.fprintf fmt "return;")
+  | CallFuncS { var_func; targs; args } ->
+      F.fprintf fmt "%a%a%a;" pp_var var_func pp_targs targs pp_args args
+  | CallMethodS { expr_base; member; targs; args } ->
+      F.fprintf fmt "%a.%a%a%a;"
+        (pp_expr ~level:(level + 1))
+        expr_base pp_member member pp_targs targs pp_args args
+  | CallInstS { var_inst; targs; args } ->
+      F.fprintf fmt "%a%a.apply%a;" pp_var var_inst pp_targs targs pp_args args
+  | TransS { expr_label } ->
+      let sexpr_label =
+        F.asprintf "%a" (pp_expr ~level:(level + 1)) expr_label
+      in
+      let trailing_semicolon =
+        if String.starts_with ~prefix:"select(" sexpr_label then "" else ";"
+      in
+      F.fprintf fmt "transition %s%s" sexpr_label trailing_semicolon
+  | DeclS { decl } -> pp_decl ~level fmt decl
 
-and pp_stmt ?(level = 0) fmt stmt =
-  P.pp_stmt ~level pp_typ pp_expr pp_decl fmt stmt
+and pp_stmt ?(level = 0) fmt stmt = pp_stmt' ~level fmt stmt.it
 
 and pp_stmts ?(level = 0) fmt stmts =
-  P.pp_stmts ~level pp_typ pp_expr pp_decl fmt stmts
+  pp_list ~level (pp_stmt ~level) ~sep:Nl fmt stmts
 
 (* Blocks (sequence of statements) *)
 
 and pp_block' ?(level = 0) fmt block' =
-  P.pp_block' ~level pp_typ pp_expr pp_decl fmt block'
+  P.pp_block' ~level pp_expr pp_stmt fmt block'
 
 and pp_block ?(level = 0) fmt block =
-  P.pp_block ~level pp_typ pp_expr pp_decl fmt block
+  P.pp_block ~level pp_expr pp_stmt fmt block
 
 (* Match-cases for switch *)
 
@@ -256,13 +303,13 @@ and pp_switch_label fmt switch_label =
   P.pp_switch_label pp_expr fmt switch_label
 
 and pp_switch_case' ?(level = 0) fmt switch_case' =
-  P.pp_switch_case' ~level pp_typ pp_expr pp_decl fmt switch_case'
+  P.pp_switch_case' ~level pp_expr pp_stmt fmt switch_case'
 
 and pp_switch_case ?(level = 0) fmt switch_case =
-  P.pp_switch_case ~level pp_typ pp_expr pp_decl fmt switch_case
+  P.pp_switch_case ~level pp_expr pp_stmt fmt switch_case
 
 and pp_switch_cases ?(level = 0) fmt switch_cases =
-  P.pp_switch_cases ~level pp_typ pp_expr pp_decl fmt switch_cases
+  P.pp_switch_cases ~level pp_expr pp_stmt fmt switch_cases
 
 (* Declarations *)
 
@@ -385,13 +432,13 @@ and pp_decls ?(level = 0) fmt decls =
 (* Parser states *)
 
 and pp_parser_state' ?(level = 0) fmt parser_state' =
-  P.pp_parser_state' ~level pp_typ pp_expr pp_decl fmt parser_state'
+  P.pp_parser_state' ~level pp_expr pp_stmt fmt parser_state'
 
 and pp_parser_state ?(level = 0) fmt parser_state =
-  P.pp_parser_state ~level pp_typ pp_expr pp_decl fmt parser_state
+  P.pp_parser_state ~level pp_expr pp_stmt fmt parser_state
 
 and pp_parser_states ?(level = 0) fmt parser_states =
-  P.pp_parser_states ~level pp_typ pp_expr pp_decl fmt parser_states
+  P.pp_parser_states ~level pp_expr pp_stmt fmt parser_states
 
 (* Tables *)
 

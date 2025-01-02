@@ -11,6 +11,7 @@ type 'param pp_param = F.formatter -> 'param param -> unit
 type ('note, 'expr) pp_expr =
   ?level:int -> F.formatter -> ('note, 'expr) expr -> unit
 
+type 'stmt pp_stmt = ?level:int -> F.formatter -> 'stmt stmt -> unit
 type 'decl pp_decl = ?level:int -> F.formatter -> 'decl decl -> unit
 
 (* Numbers *)
@@ -213,88 +214,20 @@ and pp_select_cases ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
 
 (* Statements *)
 
-let rec pp_stmt' ?(level = 0) (pp_typ : 'typ pp_typ)
-    (pp_expr : ('note, 'expr) pp_expr) (pp_decl : 'decl pp_decl) fmt stmt' =
-  match stmt' with
-  | EmptyS -> F.fprintf fmt ";"
-  | AssignS { expr_l; expr_r } ->
-      F.fprintf fmt "%a = %a;"
-        (pp_expr ~level:(level + 1))
-        expr_l
-        (pp_expr ~level:(level + 1))
-        expr_r
-  | SwitchS { expr_switch; cases } ->
-      F.fprintf fmt "switch (%a) {\n%a\n%s}"
-        (pp_expr ~level:(level + 1))
-        expr_switch
-        (pp_switch_cases ~level:(level + 1) pp_typ pp_expr pp_decl)
-        cases (indent level)
-  | IfS { expr_cond; stmt_then; stmt_else } -> (
-      match stmt_else.it with
-      | EmptyS ->
-          F.fprintf fmt "if (%a) %a"
-            (pp_expr ~level:(level + 1))
-            expr_cond
-            (pp_stmt ~level pp_typ pp_expr pp_decl)
-            stmt_then
-      | _ ->
-          F.fprintf fmt "if (%a) %a\n%selse %a"
-            (pp_expr ~level:(level + 1))
-            expr_cond
-            (pp_stmt ~level pp_typ pp_expr pp_decl)
-            stmt_then (indent level)
-            (pp_stmt ~level pp_typ pp_expr pp_decl)
-            stmt_else)
-  | BlockS { block } -> pp_block ~level pp_typ pp_expr pp_decl fmt block
-  | ExitS -> F.fprintf fmt "exit;"
-  | RetS { expr_ret } -> (
-      match expr_ret with
-      | Some expr_ret ->
-          F.fprintf fmt "return %a;" (pp_expr ~level:(level + 1)) expr_ret
-      | None -> F.fprintf fmt "return;")
-  | CallFuncS { var_func; targs; args } ->
-      F.fprintf fmt "%a%a%a;" pp_var var_func (pp_targs pp_typ) targs
-        (pp_args pp_expr) args
-  | CallMethodS { expr_base; member; targs; args } ->
-      F.fprintf fmt "%a.%a%a%a;"
-        (pp_expr ~level:(level + 1))
-        expr_base pp_member member (pp_targs pp_typ) targs (pp_args pp_expr)
-        args
-  | CallInstS { var_inst; targs; args } ->
-      F.fprintf fmt "%a%a.apply%a;" pp_var var_inst (pp_targs pp_typ) targs
-        (pp_args pp_expr) args
-  | TransS { expr_label } ->
-      let sexpr_label =
-        F.asprintf "%a" (pp_expr ~level:(level + 1)) expr_label
-      in
-      let trailing_semicolon =
-        if String.starts_with ~prefix:"select(" sexpr_label then "" else ";"
-      in
-      F.fprintf fmt "transition %s%s" sexpr_label trailing_semicolon
-  | DeclS { decl } -> pp_decl ~level fmt decl
-
-and pp_stmt ?(level = 0) (pp_typ : 'typ pp_typ)
-    (pp_expr : ('note, 'expr) pp_expr) (pp_decl : 'decl pp_decl) fmt stmt =
-  pp_stmt' ~level pp_typ pp_expr pp_decl fmt stmt.it
-
-and pp_stmts ?(level = 0) (pp_typ : 'typ pp_typ)
-    (pp_expr : ('note, 'expr) pp_expr) (pp_decl : 'decl pp_decl) fmt stmts =
-  pp_list ~level (pp_stmt ~level pp_typ pp_expr pp_decl) ~sep:Nl fmt stmts
-
 (* Blocks (sequence of statements) *)
 
-and pp_block' ?(level = 0) (pp_typ : 'typ pp_typ)
-    (pp_expr : ('note, 'expr) pp_expr) (pp_decl : 'decl pp_decl) fmt block' =
+and pp_block' ?(level = 0) (_pp_expr : ('note, 'expr) pp_expr)
+    (pp_stmt : 'stmt pp_stmt) fmt block' =
   let stmts, _anno = block' in
   if stmts = [] then F.fprintf fmt "{}"
   else
     F.fprintf fmt "{\n%a\n%s}"
-      (pp_stmts ~level:(level + 1) pp_typ pp_expr pp_decl)
+      (pp_list ~level:(level + 1) pp_stmt ~sep:Nl)
       stmts (indent level)
 
-and pp_block ?(level = 0) (pp_typ : 'typ pp_typ)
-    (pp_expr : ('note, 'expr) pp_expr) (pp_decl : 'decl pp_decl) fmt block =
-  pp_block' ~level pp_typ pp_expr pp_decl fmt block.it
+and pp_block ?(level = 0) (pp_expr : ('note, 'expr) pp_expr)
+    (pp_stmt : 'stmt pp_stmt) fmt block =
+  pp_block' ~level pp_expr pp_stmt fmt block.it
 
 (* Match-cases for switch *)
 
@@ -306,51 +239,45 @@ and pp_switch_label' (pp_expr : ('note, 'expr) pp_expr) fmt switch_label' =
 and pp_switch_label (pp_expr : ('note, 'expr) pp_expr) fmt switch_label =
   pp_switch_label' pp_expr fmt switch_label.it
 
-and pp_switch_case' ?(level = 0) (pp_typ : 'typ pp_typ)
-    (pp_expr : ('note, 'expr) pp_expr) (pp_decl : 'decl pp_decl) fmt
-    switch_case' =
+and pp_switch_case' ?(level = 0) (pp_expr : ('note, 'expr) pp_expr)
+    (pp_stmt : 'stmt pp_stmt) fmt switch_case' =
   match switch_case' with
   | MatchC (switch_label, block) ->
       F.fprintf fmt "%a: %a" (pp_switch_label pp_expr) switch_label
-        (pp_block ~level:(level + 1) pp_typ pp_expr pp_decl)
+        (pp_block ~level:(level + 1) pp_expr pp_stmt)
         block
   | FallC switch_label ->
       F.fprintf fmt "%a:" (pp_switch_label pp_expr) switch_label
 
-and pp_switch_case ?(level = 0) (pp_typ : 'typ pp_typ)
-    (pp_expr : ('note, 'expr) pp_expr) (pp_decl : 'decl pp_decl) fmt switch_case
-    =
-  pp_switch_case' ~level pp_typ pp_expr pp_decl fmt switch_case.it
+and pp_switch_case ?(level = 0) (pp_expr : ('note, 'expr) pp_expr)
+    (pp_stmt : 'stmt pp_stmt) fmt switch_case =
+  pp_switch_case' ~level pp_expr pp_stmt fmt switch_case.it
 
-and pp_switch_cases ?(level = 0) (pp_typ : 'typ pp_typ)
-    (pp_expr : ('note, 'expr) pp_expr) (pp_decl : 'decl pp_decl) fmt
-    switch_cases =
+and pp_switch_cases ?(level = 0) (pp_expr : ('note, 'expr) pp_expr)
+    (pp_stmt : 'stmt pp_stmt) fmt switch_cases =
   pp_list ~level
-    (pp_switch_case ~level pp_typ pp_expr pp_decl)
+    (pp_switch_case ~level pp_expr pp_stmt)
     ~sep:Nl fmt switch_cases
 
 (* Declarations *)
 
 (* Parser states *)
 
-and pp_parser_state' ?(level = 0) (pp_typ : 'typ pp_typ)
-    (pp_expr : ('note, 'expr) pp_expr) (pp_decl : 'decl pp_decl) fmt
-    parser_state' =
+and pp_parser_state' ?(level = 0) (pp_expr : ('note, 'expr) pp_expr)
+    (pp_stmt : 'stmt pp_stmt) fmt parser_state' =
   let state_label, block, _annos = parser_state' in
   F.fprintf fmt "state %a %a" pp_state_label state_label
-    (pp_block ~level:(level + 1) pp_typ pp_expr pp_decl)
+    (pp_block ~level:(level + 1) pp_expr pp_stmt)
     block
 
-and pp_parser_state ?(level = 0) (pp_typ : 'typ pp_typ)
-    (pp_expr : ('note, 'expr) pp_expr) (pp_decl : 'decl pp_decl) fmt
-    parser_state =
-  pp_parser_state' ~level pp_typ pp_expr pp_decl fmt parser_state.it
+and pp_parser_state ?(level = 0) (pp_expr : ('note, 'expr) pp_expr)
+    (pp_stmt : 'stmt pp_stmt) fmt parser_state =
+  pp_parser_state' ~level pp_expr pp_stmt fmt parser_state.it
 
-and pp_parser_states ?(level = 0) (pp_typ : 'typ pp_typ)
-    (pp_expr : ('note, 'expr) pp_expr) (pp_decl : 'decl pp_decl) fmt
-    parser_states =
+and pp_parser_states ?(level = 0) (pp_expr : ('note, 'expr) pp_expr)
+    (pp_stmt : 'stmt pp_stmt) fmt parser_states =
   pp_list ~level
-    (pp_parser_state ~level pp_typ pp_expr pp_decl)
+    (pp_parser_state ~level pp_expr pp_stmt)
     ~sep:Nl fmt parser_states
 
 (* Tables *)

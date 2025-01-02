@@ -133,7 +133,7 @@ and do_instantiate_parser (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     let fenv_apply = FIdMap.diff ctx_apply.block.fenv ctx.block.fenv in
     let body_apply =
       let stmt_apply =
-        L.TransS
+        TransS
           {
             expr_label =
               VarE { var = L.Current ("start" $ no_info) $ no_info }
@@ -197,12 +197,12 @@ and eval_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (stmt : stmt) :
   in
   let wrap_some ~at (ctx, sto, stmt) = (ctx, sto, Some (stmt $ at)) in
   match stmt.it with
-  | L.BlockS { block } ->
+  | BlockS { block } ->
       eval_block_stmt cursor ctx sto block |> wrap_some ~at:stmt.at
-  | L.CallInstS { var_inst; targs; args } ->
-      eval_call_inst_stmt cursor ctx sto var_inst targs args
+  | CallInstS { typ; var_inst; targs; args } ->
+      eval_call_inst_stmt cursor ctx sto typ var_inst targs args
       |> wrap_some ~at:stmt.at
-  | L.DeclS { decl } -> eval_decl_stmt cursor ctx sto decl |> wrap ~at:stmt.at
+  | DeclS { decl } -> eval_decl_stmt cursor ctx sto decl |> wrap ~at:stmt.at
   | _ -> (ctx, sto, stmt.it) |> wrap_some ~at:stmt.at
 
 and eval_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
@@ -228,10 +228,10 @@ and eval_block (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (block : block)
 and eval_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (block : block) : Ctx.t * Sto.t * stmt' =
   let ctx, sto, block = eval_block cursor ctx sto block in
-  (ctx, sto, L.BlockS { block })
+  (ctx, sto, BlockS { block })
 
 and eval_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
-    (var_inst : var) (targs : typ list) (args : arg list) :
+    (typ : typ) (var_inst : var) (targs : typ list) (args : arg list) :
     Ctx.t * Sto.t * stmt' =
   let cons, args_default =
     let args = FId.to_names args in
@@ -246,9 +246,9 @@ and eval_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
   let stmt =
     let expr_inst =
       ValueE { value = value $ no_info }
-      $$ (no_info, { typ = Types.VoidT; ctk = Ctk.CTK })
+      $$ (no_info, { typ = typ.it; ctk = Ctk.CTK })
     in
-    L.CallMethodS
+    CallMethodS
       { expr_base = expr_inst; member = "apply" $ no_info; targs; args }
   in
   (ctx, sto, stmt)
@@ -256,7 +256,7 @@ and eval_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 and eval_decl_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (decl : decl) : Ctx.t * Sto.t * stmt' option =
   let ctx, sto, decl = eval_decl cursor ctx sto decl in
-  let stmt = Option.map (fun decl -> L.DeclS { decl }) decl in
+  let stmt = Option.map (fun decl -> DeclS { decl }) decl in
   (ctx, sto, stmt)
 
 (* Expression evaluation *)
@@ -286,23 +286,22 @@ and eval_inst_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 
 and eval_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (decl : decl) :
     Ctx.t * Sto.t * decl option =
-  let wrap_some (ctx, sto, decl) = (ctx, sto, Some decl) in
+  let wrap_some ~at (ctx, sto, decl) = (ctx, sto, Some (decl $ at)) in
   let wrap_ctx_some ctx = (ctx, sto, Some decl) in
-  let wrap_none (ctx, sto) = (ctx, sto, None) in
   let wrap_ctx_none ctx = (ctx, sto, None) in
   match decl.it with
   | ConstD { id; typ; value; annos } ->
       eval_const_decl cursor ctx id typ value annos |> wrap_ctx_some
-  | VarD _ -> ctx |> wrap_ctx_some
+  | VarD _ -> (ctx, sto, decl.it) |> wrap_some ~at:decl.at
   | InstD { id; typ; var_inst; targs; args; init; annos } ->
       eval_inst_decl cursor ctx sto id typ var_inst targs args init annos
-      |> wrap_some
+      |> wrap_some ~at:decl.at
   | ValueSetD _ -> ctx |> wrap_ctx_some
   | ParserD { id; tparams; params; cparams; locals; states; annos } ->
       eval_parser_decl cursor ctx id tparams params cparams locals states annos
       |> wrap_ctx_none
-  | TableD { id; table; annos } ->
-      eval_table_decl cursor ctx sto id table annos |> wrap_none
+  | TableD { id; typ; table; annos } ->
+      eval_table_decl cursor ctx sto id typ table annos |> wrap_some ~at:decl.at
   | ControlD { id; tparams; params; cparams; locals; body; annos } ->
       eval_control_decl cursor ctx id tparams params cparams locals body annos
       |> wrap_ctx_none
@@ -324,8 +323,8 @@ and eval_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id) (_typ : typ)
   Ctx.add_value cursor id.it value.it ctx
 
 and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
-    (typ : typ) (var_inst : var) (targs : typ list) (args : arg list) (_init : decl list)
-    (_annos : anno list) : Ctx.t * Sto.t * decl =
+    (typ : typ) (var_inst : var) (targs : typ list) (args : arg list)
+    (_init : decl list) (_annos : anno list) : Ctx.t * Sto.t * decl' =
   let cons, args_default =
     let args = FId.to_names args in
     Ctx.find_overloaded Ctx.find_cons_opt cursor var_inst args ctx
@@ -344,7 +343,6 @@ and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
       $$ (no_info, { typ = typ.it; ctk = Ctk.CTK })
     in
     VarD { id; typ; init = Some expr_inst; annos = [] }
-    $ no_info
   in
   (ctx, sto, decl)
 
@@ -357,7 +355,7 @@ and eval_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   Ctx.add_cons cursor cid cons ctx
 
 and eval_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
-    (table : table) (_annos : anno list) : Ctx.t * Sto.t =
+    (typ : typ) (table : table) (_annos : anno list) : Ctx.t * Sto.t * decl' =
   let cons = Cons.TableC table in
   let sto, obj =
     let ctx = Ctx.enter_path id.it ctx in
@@ -367,7 +365,14 @@ and eval_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
   let sto = Sto.add oid obj sto in
   let value = Value.RefV oid in
   let ctx = Ctx.add_value cursor id.it value ctx in
-  (ctx, sto)
+  let decl =
+    let expr_inst =
+      ValueE { value = value $ no_info }
+      $$ (no_info, { typ = typ.it; ctk = Ctk.CTK })
+    in
+    VarD { id; typ; init = Some expr_inst; annos = [] }
+  in
+  (ctx, sto, decl)
 
 and eval_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (params : param list) (cparams : cparam list)

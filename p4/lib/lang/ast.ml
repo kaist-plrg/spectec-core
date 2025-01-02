@@ -120,59 +120,23 @@ and ('note, 'expr) keyset' = ExprK of ('note, 'expr) expr | DefaultK | AnyK
 and ('note, 'expr) select_case = ('note, 'expr) select_case' phrase
 and ('note, 'expr) select_case' = ('note, 'expr) keyset list * state_label
 
-(* Statements *)
-and ('typ, 'note, 'expr, 'decl) stmt = ('typ, 'note, 'expr, 'decl) stmt' phrase
-
-and ('typ, 'note, 'expr, 'decl) stmt' =
-  | EmptyS
-  | AssignS of { expr_l : ('note, 'expr) expr; expr_r : ('note, 'expr) expr }
-  | SwitchS of {
-      expr_switch : ('note, 'expr) expr;
-      cases : ('typ, 'note, 'expr, 'decl) switch_case list;
-    }
-  | IfS of {
-      expr_cond : ('note, 'expr) expr;
-      stmt_then : ('typ, 'note, 'expr, 'decl) stmt;
-      stmt_else : ('typ, 'note, 'expr, 'decl) stmt;
-    }
-  | BlockS of { block : ('typ, 'note, 'expr, 'decl) block }
-  | ExitS
-  | RetS of { expr_ret : ('note, 'expr) expr option }
-  | CallFuncS of {
-      var_func : var;
-      targs : 'typ targ list;
-      args : ('note, 'expr) arg list;
-    }
-  | CallMethodS of {
-      expr_base : ('note, 'expr) expr;
-      member : member;
-      targs : 'typ targ list;
-      args : ('note, 'expr) arg list;
-    }
-  | CallInstS of {
-      var_inst : var;
-      targs : 'typ targ list;
-      args : ('note, 'expr) arg list;
-    }
-  | TransS of { expr_label : ('note, 'expr) expr }
-  | DeclS of { decl : 'decl decl }
+(* Statements : parameterized by 'stmt *)
+and 'stmt stmt = 'stmt stmt' phrase
+and 'stmt stmt' = 'stmt
 
 (* Blocks (sequence of statements) *)
-and ('typ, 'note, 'expr, 'decl) block =
-  ('typ, 'note, 'expr, 'decl) block' phrase
-
-and ('typ, 'note, 'expr, 'decl) block' =
-  ('typ, 'note, 'expr, 'decl) stmt list * ('note, 'expr) anno list
+and ('note, 'expr, 'stmt) block = ('note, 'expr, 'stmt) block' phrase
+and ('note, 'expr, 'stmt) block' = 'stmt stmt list * ('note, 'expr) anno list
 
 (* Match-cases for switch *)
 and ('note, 'expr) switch_label = ('note, 'expr) switch_label' phrase
 and ('note, 'expr) switch_label' = ExprL of ('note, 'expr) expr | DefaultL
 
-and ('typ, 'note, 'expr, 'decl) switch_case =
-  ('typ, 'note, 'expr, 'decl) switch_case' phrase
+and ('note, 'expr, 'stmt) switch_case =
+  ('note, 'expr, 'stmt) switch_case' phrase
 
-and ('typ, 'note, 'expr, 'decl) switch_case' =
-  | MatchC of ('note, 'expr) switch_label * ('typ, 'note, 'expr, 'decl) block
+and ('note, 'expr, 'stmt) switch_case' =
+  | MatchC of ('note, 'expr) switch_label * ('note, 'expr, 'stmt) block
   | FallC of ('note, 'expr) switch_label
 
 (* Declarations : parameterized by 'decl *)
@@ -180,11 +144,11 @@ and 'decl decl = 'decl decl' phrase
 and 'decl decl' = 'decl
 
 (* Parser state machine *)
-and ('typ, 'note, 'expr, 'decl) parser_state =
-  ('typ, 'note, 'expr, 'decl) parser_state' phrase
+and ('note, 'expr, 'stmt) parser_state =
+  ('note, 'expr, 'stmt) parser_state' phrase
 
-and ('typ, 'note, 'expr, 'decl) parser_state' =
-  state_label * ('typ, 'note, 'expr, 'decl) block * ('note, 'expr) anno list
+and ('note, 'expr, 'stmt) parser_state' =
+  state_label * ('note, 'expr, 'stmt) block * ('note, 'expr) anno list
 
 (* Tables *)
 and ('note, 'expr) table = ('note, 'expr) table_property list

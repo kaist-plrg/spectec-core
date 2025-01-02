@@ -318,26 +318,84 @@ and eq_select_cases ?(dbg = false) select_cases_a select_cases_b =
 (* Statements *)
 
 and eq_stmt' ?(dbg = false) stmt_a stmt_b =
-  E.eq_stmt' ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl stmt_a
-    stmt_b
+  match (stmt_a, stmt_b) with
+  | EmptyS, EmptyS -> true
+  | ( AssignS { expr_l = expr_l_a; expr_r = expr_r_a },
+      AssignS { expr_l = expr_l_b; expr_r = expr_r_b } ) ->
+      eq_expr ~dbg expr_l_a expr_l_b && eq_expr ~dbg expr_r_a expr_r_b
+  | ( SwitchS { expr_switch = expr_switch_a; cases = cases_a },
+      SwitchS { expr_switch = expr_switch_b; cases = cases_b } ) ->
+      eq_expr ~dbg expr_switch_a expr_switch_b
+      && eq_switch_cases ~dbg cases_a cases_b
+  | ( IfS
+        {
+          expr_cond = expr_cond_a;
+          stmt_then = stmt_then_a;
+          stmt_else = stmt_else_a;
+        },
+      IfS
+        {
+          expr_cond = expr_cond_b;
+          stmt_then = stmt_then_b;
+          stmt_else = stmt_else_b;
+        } ) ->
+      eq_expr ~dbg expr_cond_a expr_cond_b
+      && eq_stmt ~dbg stmt_then_a stmt_then_b
+      && eq_stmt ~dbg stmt_else_a stmt_else_b
+  | BlockS { block = block_a }, BlockS { block = block_b } ->
+      eq_block ~dbg block_a block_b
+  | ExitS, ExitS -> true
+  | RetS { expr_ret = expr_ret_a }, RetS { expr_ret = expr_ret_b } ->
+      E.eq_option (eq_expr ~dbg) expr_ret_a expr_ret_b
+  | ( CallFuncS { var_func = var_func_a; targs = targs_a; args = args_a },
+      CallFuncS { var_func = var_func_b; targs = targs_b; args = args_b } ) ->
+      eq_var ~dbg var_func_a var_func_b
+      && eq_targs ~dbg targs_a targs_b
+      && eq_args ~dbg args_a args_b
+  | ( CallMethodS
+        {
+          expr_base = expr_base_a;
+          member = member_a;
+          targs = targs_a;
+          args = args_a;
+        },
+      CallMethodS
+        {
+          expr_base = expr_base_b;
+          member = member_b;
+          targs = targs_b;
+          args = args_b;
+        } ) ->
+      eq_expr ~dbg expr_base_a expr_base_b
+      && eq_member ~dbg member_a member_b
+      && eq_targs ~dbg targs_a targs_b
+      && eq_args ~dbg args_a args_b
+  | ( CallInstS { var_inst = var_inst_a; targs = targs_a; args = args_a },
+      CallInstS { var_inst = var_inst_b; targs = targs_b; args = args_b } ) ->
+      eq_var ~dbg var_inst_a var_inst_b
+      && eq_targs ~dbg targs_a targs_b
+      && eq_args ~dbg args_a args_b
+  | TransS { expr_label = expr_label_a }, TransS { expr_label = expr_label_b }
+    ->
+      eq_expr ~dbg expr_label_a expr_label_b
+  | DeclS { decl = decl_a }, DeclS { decl = decl_b } ->
+      eq_decl ~dbg decl_a decl_b
+  | _ -> false
 
 and eq_stmt ?(dbg = false) stmt_a stmt_b =
-  E.eq_stmt ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl stmt_a
-    stmt_b
+  eq_stmt' ~dbg stmt_a.it stmt_b.it
+  |> E.check ~dbg "stmt" Pp.pp_stmt stmt_a stmt_b
 
 and eq_stmts ?(dbg = false) stmts_a stmts_b =
-  E.eq_stmts ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl stmts_a
-    stmts_b
+  E.eq_list (eq_stmt ~dbg) stmts_a stmts_b
 
 (* Blocks (sequence of statements) *)
 
 and eq_block' ?(dbg = false) block_a block_b =
-  E.eq_block' ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl block_a
-    block_b
+  E.eq_block' ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt block_a block_b
 
 and eq_block ?(dbg = false) block_a block_b =
-  E.eq_block ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl block_a
-    block_b
+  E.eq_block ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt block_a block_b
 
 (* Match-cases for switch *)
 
@@ -348,16 +406,16 @@ and eq_switch_label ?(dbg = false) switch_label_a switch_label_b =
   E.eq_switch_label ~dbg P.pp_expr switch_label_a switch_label_b
 
 and eq_switch_case' ?(dbg = false) switch_case_a switch_case_b =
-  E.eq_switch_case' ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
-    switch_case_a switch_case_b
+  E.eq_switch_case' ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt switch_case_a
+    switch_case_b
 
 and eq_switch_case ?(dbg = false) switch_case_a switch_case_b =
-  E.eq_switch_case ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
-    switch_case_a switch_case_b
+  E.eq_switch_case ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt switch_case_a
+    switch_case_b
 
 and eq_switch_cases ?(dbg = false) switch_cases_a switch_cases_b =
-  E.eq_switch_cases ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
-    switch_cases_a switch_cases_b
+  E.eq_switch_cases ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt switch_cases_a
+    switch_cases_b
 
 (* Declarations *)
 
@@ -594,16 +652,16 @@ and eq_decls ?(dbg = false) decls_a decls_b =
 (* Parser states *)
 
 and eq_parser_state' ?(dbg = false) parser_state_a parser_state_b =
-  E.eq_parser_state' ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
-    parser_state_a parser_state_b
+  E.eq_parser_state' ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt parser_state_a
+    parser_state_b
 
 and eq_parser_state ?(dbg = false) parser_state_a parser_state_b =
-  E.eq_parser_state ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
-    parser_state_a parser_state_b
+  E.eq_parser_state ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt parser_state_a
+    parser_state_b
 
 and eq_parser_states ?(dbg = false) parser_states_a parser_states_b =
-  E.eq_parser_states ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
-    parser_states_a parser_states_b
+  E.eq_parser_states ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt parser_states_a
+    parser_states_b
 
 (* Tables *)
 

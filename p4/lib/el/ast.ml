@@ -143,18 +143,36 @@ and select_case = (unit, expr') L.select_case
 and select_case' = (unit, expr') L.select_case'
 
 (* Statements *)
-and stmt = (typ', unit, expr', decl') L.stmt
-and stmt' = (typ', unit, expr', decl') L.stmt'
+and stmt = stmt' L.stmt
+
+and stmt' =
+  | EmptyS
+  | AssignS of { expr_l : expr; expr_r : expr }
+  | SwitchS of { expr_switch : expr; cases : switch_case list }
+  | IfS of { expr_cond : expr; stmt_then : stmt; stmt_else : stmt }
+  | BlockS of { block : block }
+  | ExitS
+  | RetS of { expr_ret : expr option }
+  | CallFuncS of { var_func : var; targs : targ list; args : arg list }
+  | CallMethodS of {
+      expr_base : expr;
+      member : member;
+      targs : targ list;
+      args : arg list;
+    }
+  | CallInstS of { var_inst : var; targs : targ list; args : arg list }
+  | TransS of { expr_label : expr }
+  | DeclS of { decl : decl }
 
 (* Blocks (sequence of statements) *)
-and block = (typ', unit, expr', decl') L.block
-and block' = (typ', unit, expr', decl') L.block'
+and block = (unit, expr', stmt') L.block
+and block' = (unit, expr', stmt') L.block'
 
 (* Match-cases for switch *)
 and switch_label = (unit, expr') L.switch_label
 and switch_label' = (unit, expr') L.switch_label'
-and switch_case = (typ', unit, expr', decl') L.switch_case
-and switch_case' = (typ', unit, expr', decl') L.switch_case'
+and switch_case = (unit, expr', stmt') L.switch_case
+and switch_case' = (unit, expr', stmt') L.switch_case'
 
 (* Declarations *)
 and decl = decl' L.decl
@@ -270,8 +288,8 @@ and decl' =
     }
 
 (* Parser state machine *)
-and parser_state = (typ', unit, expr', decl') L.parser_state
-and parser_state' = (typ', unit, expr', decl') L.parser_state'
+and parser_state = (unit, expr', stmt') L.parser_state
+and parser_state' = (unit, expr', stmt') L.parser_state'
 
 (* Tables *)
 and table = (unit, expr') L.table
