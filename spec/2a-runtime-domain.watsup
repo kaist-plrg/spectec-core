@@ -12,6 +12,8 @@ def $intersect_set(syntax K, set(K), set(K)) : set(K)  hint(show %2 %latex("\\ca
 def $union_set(syntax K, set(K), set(K)) : set(K)      hint(show %2 %latex("\\cup") %3)
 def $unions_set(syntax K, set(K)*) : set(K)            hint(show %latex("\\bigcup") %2)
 def $diff_set(syntax K, set(K), set(K)) : set(K)       hint(show %2 %latex("\\setminus") %3)
+def $is_subset(syntax K, set(K), set(K)) : bool        hint(show %2 %latex("\\subset") %3)
+def $to_set(syntax T, T*) : set(T)                     hint(show %latex("\\{") %2 %latex("\\}"))
 
 ;;
 ;; Map

@@ -72,44 +72,85 @@ rule Sub_expl/seqt-stackt:
   -- (Sub_expl: typ' <: typ'')*
   -- if |typ'*| <= i
 
-;; (TODO) Fill in the rule.
-;; (typing/subtyp.ml)
-;; rule Sub_expl/recordt-structt:
+rule Sub_expl/seqt-structt:
+  SeqT typ'* <: StructT id (member, typ'')*
+  -- if |typ'*| = |typ''*|
+  -- (Sub_expl: typ' <: typ'')*
 
-;; (TODO) Fill in the rule.
-;; (typing/subtyp.ml)
-;; rule Sub_expl/recordt-headert:
+rule Sub_expl/seqt-headert:
+  SeqT typ'* <: HeaderT id (member, typ'')*
+  -- if |typ'*| = |typ''*|
+  -- (Sub_expl: typ' <: typ'')*
 
-;; (TODO) Fill in the rule.
-;; (typing/subtyp.ml)
-;; rule Sub_expl/defaultt:
+rule Sub_expl/recordt-structt:
+  RecordT fields_a <: StructT id fields_b
+  -- if (member_a*, typ'*) = $split(member, typ, $sort(member, typ, fields_a))
+  -- if (member_b*, typ''*) = $split(member, typ, $sort(member, typ, fields_b))
+  -- if ($compare(member, member_a, member_b))*
+  -- (Sub_expl: typ' <: typ'')*
 
-;; (TODO) Fill in the rule.
-;; (typing/subtyp.ml)
-;; rule Sub_expl/seqdefaultt-tuplet:
+rule Sub_expl/recordt-headert:
+  RecordT fields_a <: HeaderT id fields_b
+  -- if (member_a*, typ'*) = $split(member, typ, $sort(member, typ, fields_a))
+  -- if (member_b*, typ''*) = $split(member, typ, $sort(member, typ, fields_b))
+  -- if ($compare(member, member_a, member_b))*
+  -- (Sub_expl: typ' <: typ'')*
 
-;; (TODO) Fill in the rule.
-;; (typing/subtyp.ml)
-;; rule Sub_expl/seqdefaultt-stackt:
+rule Sub_expl/defaultt:
+  DefaultT <: typ
+  -- if $is_deftable(typ)
 
-;; (TODO) Fill in the rule.
-;; (typing/subtyp.ml)
-;; rule Sub_expl/seqdefaultt-structt:
+rule Sub_expl/seqdefaultt-tuplet: ;; Maybe refactoring to a method like List.partition in F# would be more readable?
+  SeqDefaultT typ'* <: TupleT typ''*
+  -- if |typ'*| < |typ''*|
+  -- if typ'''* = $filteri(typ, def $pred, typ''*)
+  -- if typ''''* = $filteri(typ, def $pred, typ''*)
+  -- (Sub_expl: typ' <: typ'''')*
+  -- if ($is_deftable(typ'''))*
 
-;; (TODO) Fill in the rule.
-;; (typing/subtyp.ml)
-;; rule Sub_expl/seqdefaultt-headert:
+rule Sub_expl/seqdefaultt-stackt:
+  SeqDefaultT typ'* <: StackT typ'' i
+  -- if |typ'*| < i
+  -- (Sub_expl: typ' <: typ'')*
+  -- if $is_deftable(typ'')
 
-;; (TODO) Fill in the rule.
-;; (typing/subtyp.ml)
-;; rule Sub_expl/recorddefaultt-structt:
+rule Sub_expl/seqdefaultt-structt:
+  SeqDefaultT typ'* <: StructT id (member, typ'')*
+  -- if |typ'*| < |typ''*|
+  -- if typ'''* = $filteri(typ, def $pred, typ''*)
+  -- if typ''''* = $filteri(typ, def $pred, typ''*)
+  -- (Sub_expl: typ' <: typ'''')*
+  -- if ($is_deftable(typ'''))*
 
-;; (TODO) Fill in the rule.
-;; (typing/subtyp.ml)
-;; rule Sub_expl/recorddefaultt-headert:
+rule Sub_expl/seqdefaultt-headert:
+  SeqDefaultT typ'* <: HeaderT id (member, typ'')*
+  -- if |typ'*| < |typ''*|
+  -- if typ'''* = $filteri(typ, def $pred, typ''*)
+  -- if typ''''* = $filteri(typ, def $pred, typ''*)
+  -- (Sub_expl: typ' <: typ'''')*
+  -- if ($is_deftable(typ'''))*
+
+rule Sub_expl/recorddefaultt-structt:
+  RecordDefaultT (member', typ')* <: StructT id (member'', typ'')*
+  -- if members_from = $to_set(member, member'*)
+  -- if members_to = $to_set(member, member''*)
+  -- if $is_subset(member, members_from, members_to)
+  -- if SET member'''* = $diff_set(member, members_to, members_from)
+  -- (Sub_expl: $assoc(member, typ, member', (member', typ')*) <: $assoc(member, typ, member', (member'', typ'')*))*
+  -- if ($is_deftable($assoc(member, typ, member''', (member'', typ'')*)))*
+
+rule Sub_expl/recorddefaultt-headert:
+  RecordDefaultT (member', typ')* <: HeaderT id (member, typ'')*
+  -- if members_from = $to_set(member, member'*)
+  -- if members_to = $to_set(member, member''*)
+  -- if $is_subset(member, members_from, members_to)
+  -- if SET member'''* = $diff_set(member, members_to, members_from)
+  -- (Sub_expl: $assoc(member, typ, member', (member', typ')*) <: $assoc(member, typ, member', (member'', typ'')*))*
+  -- if ($is_deftable($assoc(member, typ, member''', (member'', typ'')*)))*
+
 
 rule Sub_expl/invalidt-headert:
-   InvalidT <: HeaderT id fields
+  InvalidT <: HeaderT id fields
 
 rule Sub_expl/invalidt-uniont:
   InvalidT <: UnionT id fields
