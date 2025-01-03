@@ -7,7 +7,8 @@ type t =
   | ActionF of param list * block
   | FuncF of tparam list * param list * block
   | ExternFuncF of tparam list * param list
-  | ExternMethodF of tparam list * param list
+  | ExternMethodF of tparam list * param list * block option
+  | ExternAbstractMethodF of tparam list * param list
   | ParserApplyMethodF of param list * t FIdMap.t * decl list * block
   | ControlApplyMethodF of param list * t FIdMap.t * decl list * block
   | BuiltinMethodF of param list
@@ -31,8 +32,14 @@ let rec pp ?(level = 0) fmt = function
       Format.fprintf fmt "ExternFuncF%a %a" Il.Pp.pp_tparams tparams
         (Il.Pp.pp_params ~level:(level + 1))
         params
-  | ExternMethodF (tparams, params) ->
-      Format.fprintf fmt "ExternMethodF%a %a" Il.Pp.pp_tparams tparams
+  | ExternMethodF (tparams, params, block) ->
+      Format.fprintf fmt "ExternMethodF%a %a %a" Il.Pp.pp_tparams tparams
+        (Il.Pp.pp_params ~level:(level + 1))
+        params
+        (pp_option (Il.Pp.pp_block ~level:(level + 1)))
+        block
+  | ExternAbstractMethodF (tparams, params) ->
+      Format.fprintf fmt "ExternAbstractMethodF%a %a" Il.Pp.pp_tparams tparams
         (Il.Pp.pp_params ~level:(level + 1))
         params
   | ParserApplyMethodF (params, fenv, locals, block) ->

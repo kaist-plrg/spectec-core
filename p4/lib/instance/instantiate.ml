@@ -1,10 +1,12 @@
 open Domain.Dom
 open Il.Ast
 module L = Lang.Ast
+module Ctk = Runtime_static.Ctk
 module Value = Runtime_static.Value
 module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
-module Ctk = Runtime_static.Ctk
+module Numerics = Runtime_static.Numerics
+module Builtins = Runtime_static.Builtins
 module Func = Runtime_dynamic.Func
 module Cons = Runtime_dynamic.Cons
 module Obj = Runtime_dynamic.Object
@@ -119,9 +121,15 @@ let rec do_instantiate (cursor : Ctx.cursor) (ctx_caller : Ctx.t) (sto : Sto.t)
   let sto, obj = do_instantiate_cons ctx_callee sto in
   (sto, obj)
 
-and do_instantiate_extern (_cursor : Ctx.cursor) (_ctx : Ctx.t) (_sto : Sto.t)
-    (_mthds : mthd list) : Sto.t * Obj.t =
-  failwith "(TODO) do_instantiate_extern"
+(* (TODO) Handle object initializer block *)
+and do_instantiate_extern (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (mthds : mthd list) : Sto.t * Obj.t =
+  assert (cursor = Ctx.Block);
+  let ctx = eval_mthds cursor ctx mthds in
+  let venv = ctx.block.venv in
+  let fenv = ctx.block.fenv in
+  let obj = Obj.ExternO (venv, fenv) in
+  (sto, obj)
 
 and do_instantiate_parser (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (params : param list) (decls : decl list) (states : parser_state list) :
@@ -130,7 +138,7 @@ and do_instantiate_parser (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
   let ctx_apply, sto, decls = eval_decls cursor ctx sto decls in
   let ctx_apply, sto = eval_parser_states cursor ctx_apply sto states in
   let func_apply =
-    let fenv_apply = FIdMap.diff ctx_apply.block.fenv ctx.block.fenv in
+    let fenv_apply = ctx_apply.block.fenv in
     let body_apply =
       let stmt_apply =
         TransS
@@ -158,7 +166,7 @@ and do_instantiate_control (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
   let ctx_apply, sto, decls = eval_decls cursor ctx sto decls in
   let ctx_apply, sto, body = eval_block Ctx.Local ctx_apply sto body in
   let func_apply =
-    let fenv_apply = FIdMap.diff ctx_apply.block.fenv ctx.block.fenv in
+    let fenv_apply = ctx_apply.block.fenv in
     Func.ControlApplyMethodF (params, fenv_apply, decls, body)
   in
   let ctx_control =
@@ -173,6 +181,7 @@ and do_instantiate_package (_cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) :
   let obj = Obj.PackageO ctx.block.venv in
   (sto, obj)
 
+(* (TODO) Handle custom table properties *)
 and do_instantiate_table (_cursor : Ctx.cursor) (_ctx : Ctx.t) (sto : Sto.t)
     (table : table) : Sto.t * Obj.t =
   let obj = Obj.TableO table in
@@ -233,16 +242,12 @@ and eval_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 and eval_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (typ : typ) (var_inst : var) (targs : typ list) (args : arg list) :
     Ctx.t * Sto.t * stmt' =
-  let cons, args_default =
-    let args = FId.to_names args in
-    Ctx.find_overloaded Ctx.find_cons_opt cursor var_inst args ctx
-  in
-  let sto, obj = do_instantiate cursor ctx sto cons targs args args_default in
+  let cons, _ = Ctx.find_overloaded Ctx.find_cons_opt cursor var_inst [] ctx in
+  let sto, obj = do_instantiate cursor ctx sto cons targs [] [] in
   let id = F.asprintf "%a" Il.Pp.pp_var var_inst in
   let oid = ctx.path @ [ id ] in
   let sto = Sto.add oid obj sto in
   let value = Value.RefV oid in
-  let ctx = Ctx.add_value cursor id value ctx in
   let stmt =
     let expr_inst =
       ValueE { value = value $ no_info }
@@ -266,10 +271,159 @@ and eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (expr : expr) :
   let wrap_value value = (sto, value) in
   match expr.it with
   | ValueE { value } -> value.it |> wrap_value
+  | VarE { var } -> eval_var_expr cursor ctx sto var
+  | SeqE { exprs } -> eval_seq_expr cursor ctx sto exprs
+  | SeqDefaultE { exprs } -> eval_seq_default_expr cursor ctx sto exprs
+  | RecordE { fields } -> eval_record_expr cursor ctx sto fields
+  | RecordDefaultE { fields } -> eval_record_default_expr cursor ctx sto fields
+  | DefaultE -> eval_default_expr cursor ctx sto
+  | UnE { unop; expr } -> eval_unop_expr cursor ctx sto unop expr
+  | BinE { binop; expr_l; expr_r } ->
+      eval_binop_expr cursor ctx sto binop expr_l expr_r
+  | TernE { expr_cond; expr_then; expr_else } ->
+      eval_ternop_expr cursor ctx sto expr_cond expr_then expr_else
+  | CastE { typ; expr } -> eval_cast_expr cursor ctx sto typ expr
+  | BitAccE { expr_base; value_lo; value_hi } ->
+      eval_bitstring_acc_expr cursor ctx sto expr_base value_lo value_hi
+  | ExprAccE { expr_base; member } ->
+      eval_expr_acc_expr cursor ctx sto expr_base member
+  | CallMethodE { expr_base; member; targs; args } ->
+      eval_call_method_expr cursor ctx sto expr_base member targs args
+  | CallTypeE { typ; member } -> eval_call_type_expr cursor ctx sto typ member
   | InstE { var_inst; targs; args } ->
       eval_inst_expr cursor ctx sto var_inst targs args
-  | _ -> failwith "(TODO) eval_expr"
+  | _ ->
+      F.asprintf "(eval_expr) %a is not compile-time known"
+        (Il.Pp.pp_expr ~level:0) expr
+      |> error_info expr.at
 
+and eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (exprs : expr list) : Sto.t * Value.t list =
+  List.fold_left
+    (fun (sto, values) expr ->
+      let sto, value = eval_expr cursor ctx sto expr in
+      (sto, values @ [ value ]))
+    (sto, []) exprs
+
+and eval_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (var : var)
+    : Sto.t * Value.t =
+  let value = Ctx.find Ctx.find_value_opt cursor var ctx in
+  (sto, value)
+
+and eval_seq_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (exprs : expr list) : Sto.t * Value.t =
+  let sto, values = eval_exprs cursor ctx sto exprs in
+  let value = Value.SeqV values in
+  (sto, value)
+
+and eval_seq_default_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (exprs : expr list) : Sto.t * Value.t =
+  let sto, values = eval_exprs cursor ctx sto exprs in
+  let value = Value.SeqDefaultV values in
+  (sto, value)
+
+and eval_record_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (fields : (member * expr) list) : Sto.t * Value.t =
+  let members, exprs = List.split fields in
+  let members = List.map it members in
+  let sto, values = eval_exprs cursor ctx sto exprs in
+  let fields = List.combine members values in
+  let value = Value.RecordV fields in
+  (sto, value)
+
+and eval_record_default_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (fields : (member * expr) list) : Sto.t * Value.t =
+  let members, exprs = List.split fields in
+  let members = List.map it members in
+  let sto, values = eval_exprs cursor ctx sto exprs in
+  let fields = List.combine members values in
+  let value = Value.RecordDefaultV fields in
+  (sto, value)
+
+and eval_default_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t) (sto : Sto.t) :
+    Sto.t * Value.t =
+  let value = Value.DefaultV in
+  (sto, value)
+
+and eval_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (unop : unop) (expr : expr) : Sto.t * Value.t =
+  let sto, value = eval_expr cursor ctx sto expr in
+  let value = Numerics.eval_unop unop value in
+  (sto, value)
+
+and eval_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (binop : binop) (expr_l : expr) (expr_r : expr) : Sto.t * Value.t =
+  let sto, value_l = eval_expr cursor ctx sto expr_l in
+  let sto, value_r = eval_expr cursor ctx sto expr_r in
+  let value = Numerics.eval_binop binop value_l value_r in
+  (sto, value)
+
+and eval_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (expr_cond : expr) (expr_then : expr) (expr_else : expr) : Sto.t * Value.t =
+  let sto, value_cond = eval_expr cursor ctx sto expr_cond in
+  let cond = Value.get_bool value_cond in
+  let expr = if cond then expr_then else expr_else in
+  let sto, value = eval_expr cursor ctx sto expr in
+  (sto, value)
+
+and eval_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (typ : typ)
+    (expr : expr) : Sto.t * Value.t =
+  let sto, value = eval_expr cursor ctx sto expr in
+  let value = Numerics.eval_cast typ.it value in
+  (sto, value)
+
+and eval_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (expr_base : expr) (value_lo : value) (value_hi : value) : Sto.t * Value.t =
+  let sto, value_base = eval_expr cursor ctx sto expr_base in
+  let value =
+    Numerics.eval_bitstring_access value_base value_lo.it value_hi.it
+  in
+  (sto, value)
+
+and eval_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (expr_base : expr) (member : member) : Sto.t * Value.t =
+  let sto, value_base = eval_expr cursor ctx sto expr_base in
+  let value =
+    match value_base with
+    | StackV (_, _, size) when member.it = "size" -> Value.IntV size
+    | _ ->
+        F.asprintf "(eval_expr_acc_expr) %a.%a is not compile-time known"
+          (Il.Pp.pp_expr ~level:0) expr_base Il.Pp.pp_member member
+        |> error_no_info
+  in
+  (sto, value)
+
+and eval_call_method_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t) (sto : Sto.t)
+    (expr_base : expr) (member : member) (targs : typ list) (args : arg list) :
+    Sto.t * Value.t =
+  let value =
+    match member.it with
+    | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits" | "maxSizeInBytes" ->
+        assert (targs = [] && args = []);
+        let typ_base = expr_base.note.typ in
+        Builtins.size typ_base member.it
+    | _ ->
+        F.asprintf "(eval_call_method_expr) %a.%a is not compile-time known"
+          (Il.Pp.pp_expr ~level:0) expr_base Il.Pp.pp_member member
+        |> error_no_info
+  in
+  (sto, value)
+
+and eval_call_type_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t) (sto : Sto.t)
+    (typ : Il.Ast.typ) (member : Il.Ast.member) : Sto.t * Value.t =
+  let value =
+    match member.it with
+    | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits" | "maxSizeInBytes" ->
+        Builtins.size typ.it member.it
+    | _ ->
+        F.asprintf "(eval_call_typ_expr) %a.%a is not compile-time known"
+          (Il.Pp.pp_typ ~level:0) typ Il.Pp.pp_member member
+        |> error_no_info
+  in
+  (sto, value)
+
+(* (TODO) What if nameless instantiation is not passed as a constructor argument?
+   Then the reference value will be lost, i.e., not bound in any environment. *)
 and eval_inst_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (var_inst : var) (targs : typ list) (args : arg list) : Sto.t * Value.t =
   let cons, args_default =
@@ -318,13 +472,24 @@ and eval_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (decl : decl) :
       eval_package_type_decl cursor ctx id tparams cparams annos
       |> wrap_ctx_none
 
+and eval_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (decls : decl list) : Ctx.t * Sto.t * decl list =
+  List.fold_left
+    (fun (ctx, sto, decls) decl ->
+      let ctx, sto, decl = eval_decl cursor ctx sto decl in
+      let decls =
+        match decl with Some decl -> decls @ [ decl ] | None -> decls
+      in
+      (ctx, sto, decls))
+    (ctx, sto, []) decls
+
 and eval_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id) (_typ : typ)
     (value : value) (_annos : anno list) : Ctx.t =
   Ctx.add_value cursor id.it value.it ctx
 
 and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
     (typ : typ) (var_inst : var) (targs : typ list) (args : arg list)
-    (_init : decl list) (_annos : anno list) : Ctx.t * Sto.t * decl' =
+    (init : decl list) (_annos : anno list) : Ctx.t * Sto.t * decl' =
   let cons, args_default =
     let args = FId.to_names args in
     Ctx.find_overloaded Ctx.find_cons_opt cursor var_inst args ctx
@@ -332,6 +497,35 @@ and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
   let sto, obj =
     let ctx = Ctx.enter_path id.it ctx in
     do_instantiate cursor ctx sto cons targs args args_default
+  in
+  let sto, obj =
+    match obj with
+    | Obj.ExternO (venv_obj, fenv_obj) ->
+        let ctx_init =
+          { Ctx.empty with path = ctx.path @ [ id.it ]; global = ctx.global }
+        in
+        let ctx_init, sto, _ = eval_decls Ctx.Block ctx_init sto init in
+        let venv_obj =
+          Envs.VEnv.bindings ctx_init.block.venv
+          |> List.fold_left
+               (fun venv_obj (id, value) -> Envs.VEnv.add id value venv_obj)
+               venv_obj
+        in
+        let fenv_obj =
+          Envs.FEnv.bindings ctx_init.block.fenv
+          |> List.fold_left
+               (fun fenv_obj (fid, func) ->
+                 let func =
+                   match func with
+                   | Func.FuncF (tparams, params, body) ->
+                       Func.ExternMethodF (tparams, params, Some body)
+                   | _ -> assert false
+                 in
+                 Envs.FEnv.remove fid fenv_obj |> Envs.FEnv.add fid func)
+               fenv_obj
+        in
+        (sto, Obj.ExternO (venv_obj, fenv_obj))
+    | _ -> (sto, obj)
   in
   let oid = ctx.path @ [ id.it ] in
   let sto = Sto.add oid obj sto in
@@ -425,17 +619,6 @@ and eval_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let cons = Cons.PackageC (tparams, cparams) in
   Ctx.add_cons cursor cid cons ctx
 
-and eval_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
-    (decls : decl list) : Ctx.t * Sto.t * decl list =
-  List.fold_left
-    (fun (ctx, sto, decls) decl ->
-      let ctx, sto, decl = eval_decl cursor ctx sto decl in
-      let decls =
-        match decl with Some decl -> decls @ [ decl ] | None -> decls
-      in
-      (ctx, sto, decls))
-    (ctx, sto, []) decls
-
 (* Parser state evaluation *)
 
 and eval_parser_state_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
@@ -457,9 +640,40 @@ and eval_parser_states (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (fun (ctx, sto) state -> eval_parser_state_decl cursor ctx sto state)
     (ctx, sto) states
 
+(* Method evaluation *)
+
+and eval_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (mthd : mthd) : Ctx.t =
+  assert (cursor = Ctx.Block);
+  match mthd.it with
+  | ExternAbstractM { id; typ_ret; tparams; params; annos } ->
+      eval_extern_abstract_mthd cursor ctx id typ_ret tparams params annos
+  | ExternM { id; typ_ret; tparams; params; annos } ->
+      eval_extern_mthd cursor ctx id typ_ret tparams params annos
+  | _ -> assert false
+
+and eval_mthds (cursor : Ctx.cursor) (ctx : Ctx.t) (mthds : mthd list) : Ctx.t =
+  List.fold_left (fun ctx mthd -> eval_mthd cursor ctx mthd) ctx mthds
+
+and eval_extern_abstract_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (_typ_ret : typ) (tparams : tparam list) (params : param list)
+    (_annos : anno list) : Ctx.t =
+  let fid = FId.to_fid id params in
+  let func = Func.ExternAbstractMethodF (tparams, params) in
+  Ctx.add_func_overload cursor fid func ctx
+
+and eval_extern_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (_typ_ret : typ) (tparams : tparam list) (params : param list)
+    (_annos : anno list) : Ctx.t =
+  let fid = FId.to_fid id params in
+  let func = Func.ExternMethodF (tparams, params, None) in
+  Ctx.add_func_overload cursor fid func ctx
+
 (* Program evaluation *)
 
-let instantiate_program (program : program) : unit =
-  let _ctx, _sto, _decls = eval_decls Ctx.Global Ctx.empty Sto.empty program in
-  (* F.printf "%a\n" (Sto.pp ~level:0) _sto; *)
-  ()
+let instantiate_program (program : program) : Envs.VEnv.t * Envs.FEnv.t * Sto.t
+    =
+  Ctx.refresh ();
+  let ctx, sto, _decls = eval_decls Ctx.Global Ctx.empty Sto.empty program in
+  let venv = ctx.global.venv in
+  let fenv = ctx.global.fenv in
+  (venv, fenv, sto)

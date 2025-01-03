@@ -52,7 +52,7 @@ let instantiate_command =
      fun () ->
        try
          let program = typecheck includes filename in
-         Instance.Instantiate.instantiate_program program
+         Instance.Instantiate.instantiate_program program |> ignore
        with ParseErr (msg, info) | CheckErr (msg, info) ->
          Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
 

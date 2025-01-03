@@ -4,6 +4,16 @@ module F = Format
 open Util.Pp
 open Util.Source
 
+(* Global counter for unique identifiers *)
+
+let tick = ref 0
+let refresh () = tick := 0
+
+let fresh () =
+  let id = !tick in
+  tick := !tick + 1;
+  id
+
 (* Context is consisted of layers of environments *)
 
 type cursor = Global | Block | Local
@@ -97,6 +107,28 @@ let add_value cursor id value ctx =
 
 (* Finders *)
 
+let find_cont finder cursor id ctx = function
+  | Some value -> Some value
+  | None -> finder cursor id ctx
+
+(* Finder for value *)
+
+let rec find_value_opt cursor id ctx =
+  match cursor with
+  | Global -> Envs.VEnv.find_opt id ctx.global.venv
+  | Block ->
+      Envs.VEnv.find_opt id ctx.block.venv
+      |> find_cont find_value_opt Global id ctx
+  | Local ->
+      let venvs = ctx.local.venvs in
+      List.fold_left
+        (fun value venv ->
+          match value with
+          | Some _ -> value
+          | None -> Envs.VEnv.find_opt id venv)
+        None venvs
+      |> find_cont find_value_opt Block id ctx
+
 (* Finder for constructor *)
 
 let find_cons_opt _cursor (cname, args) ctx =
@@ -106,6 +138,14 @@ let find_cons cursor (cname, args) ctx =
   find_cons_opt cursor (cname, args) ctx |> Option.get
 
 (* Finder combinator *)
+
+let find_opt finder_opt cursor var ctx =
+  match var.it with
+  | L.Top id -> finder_opt Global id.it ctx
+  | L.Current id -> finder_opt cursor id.it ctx
+
+let find finder_opt cursor var ctx =
+  find_opt finder_opt cursor var ctx |> Option.get
 
 let find_overloaded_opt finder_overloaded_opt cursor var args ctx =
   match var.it with

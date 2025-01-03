@@ -574,7 +574,7 @@ and type_call_convention' ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
     | Lang.Ast.No when action -> coerce_type_assign expr_il typ_param
     | Lang.Ast.No ->
         check_eq_typ_alpha typ_arg typ_param;
-        let _ = Static.check_ctk expr_il in
+        Static.check_ctk expr_il;
         expr_il
   in
   match (arg_il.it : Il.Ast.arg') with
@@ -703,7 +703,7 @@ and type_seq_expr ~(default : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
       (Types.SeqDefaultT typs, Il.Ast.SeqDefaultE { exprs = exprs_il })
     else (Types.SeqT typs, Il.Ast.SeqE { exprs = exprs_il })
   in
-  let _ = WF.check_valid_typ cursor ctx typ in
+  WF.check_valid_typ cursor ctx typ;
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
 
@@ -754,7 +754,7 @@ and type_record_expr ~(default : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
       (Types.RecordDefaultT fields_typ, Il.Ast.RecordDefaultE { fields })
     else (Types.RecordT fields_typ, Il.Ast.RecordE { fields })
   in
-  let _ = WF.check_valid_typ cursor ctx typ in
+  WF.check_valid_typ cursor ctx typ;
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
 
@@ -1420,7 +1420,7 @@ and type_select_case_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
             expr_il
       in
       let typ_key = Types.SetT typ_key in
-      let _ = WF.check_valid_typ cursor ctx typ_key in
+      WF.check_valid_typ cursor ctx typ_key;
       let typ = expr_il.note.typ in
       let expr_il =
         match (typ_key, typ) with
@@ -2140,8 +2140,8 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
         let typ_ret = Type.subst theta typ_ret in
         (ft, targs_il, params, typ_ret)
   in
-  let _ = WF.check_valid_functyp cursor ctx ft in
-  let _ = check_call_site cursor ctx ft in
+  WF.check_valid_functyp cursor ctx ft;
+  check_call_site cursor ctx ft;
   let action = FuncType.is_action ft in
   let args_il = type_call_convention ~action cursor ctx params args_il_typed in
   (targs_il, args_il, typ_ret)
@@ -2384,8 +2384,8 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
         let typ_inst = Type.subst theta typ_inst in
         (ct, targs_il, cparams, typ_inst)
   in
-  let _ = WF.check_valid_constyp cursor ctx ct in
-  let _ = check_instantiation_site cursor ctx typ_inst in
+  WF.check_valid_constyp cursor ctx ct;
+  check_instantiation_site cursor ctx typ_inst;
   let args_il =
     type_call_convention ~action:false cursor ctx cparams args_il_typed
   in
@@ -2703,7 +2703,7 @@ and type_switch_general_label' (cursor : Ctx.cursor) (ctx : Ctx.t)
   | ExprL expr ->
       let expr_il = type_expr cursor ctx expr in
       let expr_il = coerce_type_assign expr_il typ_switch in
-      let _ = Static.check_lctk expr_il in
+      Static.check_lctk expr_il;
       Lang.Ast.ExprL expr_il
   | DefaultL -> Lang.Ast.DefaultL
 
@@ -3257,7 +3257,7 @@ and type_instantiation_init_extern_abstract_method_decl (cursor : Ctx.cursor)
   let decl_il =
     Il.Ast.FuncD { id; typ_ret; tparams; params = params_il; body = block_il }
   in
-  let _ = WF.check_valid_funcdef cursor ctx fd in
+  WF.check_valid_funcdef cursor ctx fd;
   (fd, decl_il)
 
 and type_instantiation_init_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
@@ -3390,19 +3390,17 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
           fdenv_extern
           (Envs.FDEnv.bindings fdenv_abstract)
       in
-      let _ =
-        List.iter
-          (fun (fid, fd) ->
-            match fd with
-            | Types.PolyFD (_, _, ExternAbstractMethodT _) ->
-                Format.asprintf
-                  "(type_instantiation_decl) abstract method %a was not \
-                   implemented"
-                  FId.pp fid
-                |> error_no_info
-            | _ -> ())
-          (Envs.FDEnv.bindings fdenv_extern)
-      in
+      List.iter
+        (fun (fid, fd) ->
+          match fd with
+          | Types.PolyFD (_, _, ExternAbstractMethodT _) ->
+              Format.asprintf
+                "(type_instantiation_decl) abstract method %a was not \
+                 implemented"
+                FId.pp fid
+              |> error_no_info
+          | _ -> ())
+        (Envs.FDEnv.bindings fdenv_extern);
       let tdp =
         let typ_extern = Types.ExternT (id, fdenv_extern) in
         (tparams, tparams_hidden, typ_extern)
@@ -3514,7 +3512,7 @@ and type_struct_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_struct = Types.StructT (id.it, fields) in
     Types.PolyD (tparams, tparams_hidden, typ_struct)
   in
-  let _ = WF.check_valid_typdef cursor ctx td in
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -3547,7 +3545,7 @@ and type_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_header = Types.HeaderT (id.it, fields) in
     Types.PolyD (tparams, tparams_hidden, typ_header)
   in
-  let _ = WF.check_valid_typdef cursor ctx td in
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -3586,7 +3584,7 @@ and type_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_union = Types.UnionT (id.it, fields) in
     Types.PolyD (tparams, tparams_hidden, typ_union)
   in
-  let _ = WF.check_valid_typdef cursor ctx td in
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -3613,7 +3611,7 @@ and type_enum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         |> Ctx.add_rtype cursor id_field typ_field Lang.Ast.No Ctk.LCTK)
       ctx members
   in
-  let _ = WF.check_valid_typdef cursor ctx td in
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -3676,7 +3674,7 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     in
     { Ctx.empty with global = ctx.global }
   in
-  let _ = WF.check_valid_typdef cursor ctx td in
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -3717,7 +3715,7 @@ and type_newtype_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_new = Types.NewT (id.it, typ) in
     Types.MonoD typ_new
   in
-  let _ = WF.check_valid_typdef cursor ctx td in
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -3757,7 +3755,7 @@ and type_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_def = Types.DefT typ in
     Types.MonoD typ_def
   in
-  let _ = WF.check_valid_typdef cursor ctx td in
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -3809,7 +3807,7 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let ft = Types.ActionT params in
     Types.MonoFD ft
   in
-  let _ = WF.check_valid_funcdef cursor ctx fd in
+  WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_non_overload cursor fid fd ctx in
   let decl_il =
     Il.Ast.ActionD { id; params = params_il; body = block_il; annos = annos_il }
@@ -3866,7 +3864,7 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let ft = Types.FunctionT (params, typ_ret.it) in
     Types.PolyFD (tparams, tparams_hidden, ft)
   in
-  let _ = WF.check_valid_funcdef cursor ctx fd in
+  WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
   let decl_il =
     Il.Ast.FuncD { id; typ_ret; tparams; params = params_il; body = block_il }
@@ -3904,7 +3902,7 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     let ft = Types.ExternFunctionT (params, typ_ret.it) in
     Types.PolyFD (tparams, tparams_hidden, ft)
   in
-  let _ = WF.check_valid_funcdef cursor ctx fd in
+  WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
   let decl_il =
     Il.Ast.ExternFuncD
@@ -3948,7 +3946,7 @@ and type_extern_constructor_mthd (cursor : Ctx.cursor) (ctx : Ctx.t)
     in
     (tparams, tparams_hidden, cparams, typ)
   in
-  let _ = WF.check_valid_consdef cursor ctx cd in
+  WF.check_valid_consdef cursor ctx cd;
   let ctx = Ctx.add_consdef cid cd ctx in
   let mthd_il =
     Lang.Ast.ExternConsM { id; cparams = cparams_il; annos = annos_il }
@@ -3986,7 +3984,7 @@ and type_extern_abstract_method_mthd (cursor : Ctx.cursor) (ctx : Ctx.t)
     let ft = Types.ExternAbstractMethodT (params, typ_ret.it) in
     Types.PolyFD (tparams, tparams_hidden, ft)
   in
-  let _ = WF.check_valid_funcdef cursor ctx fd in
+  WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
   let mthd_il =
     Lang.Ast.ExternAbstractM
@@ -4019,7 +4017,7 @@ and type_extern_method_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let ft = Types.ExternMethodT (params, typ_ret.it) in
     Types.PolyFD (tparams, tparams_hidden, ft)
   in
-  let _ = WF.check_valid_funcdef cursor ctx fd in
+  WF.check_valid_funcdef cursor ctx fd;
   let ctx = Ctx.add_funcdef_overload cursor fid fd ctx in
   let mthd_il =
     Lang.Ast.ExternM
@@ -4093,7 +4091,7 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_extern = Types.ExternT (id.it, ctx'.block.fdenv) in
     Types.PolyD (tparams, [], typ_extern)
   in
-  let _ = WF.check_valid_typdef cursor ctx td in
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   (* Typecheck constructors to update constructor definition environment
      This comes after method typing to prevent recursive instantiation *)
@@ -4148,9 +4146,9 @@ and type_value_set_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let typ_inner, tids_fresh = eval_type_with_check cursor ctx typ in
   assert (tids_fresh = []);
   let expr_size_il = type_expr cursor ctx expr_size in
-  let _ = Static.check_ctk expr_size_il in
+  Static.check_ctk expr_size_il;
   let typ = Types.SetT typ_inner.it in
-  let _ = WF.check_valid_typ cursor ctx typ in
+  WF.check_valid_typ cursor ctx typ;
   let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
   let decl_il =
     Il.Ast.ValueSetD
@@ -4192,7 +4190,7 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_param = Types.ParserT params in
     Types.PolyD (tparams, tparams_hidden, typ_param)
   in
-  let _ = WF.check_valid_typdef cursor ctx td in
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -4242,7 +4240,7 @@ and type_parser_states (_cursor : Ctx.cursor) (ctx : Ctx.t)
     ((not (List.mem "accept" labels)) && not (List.mem "reject" labels))
     "(type_parser_states) \"accpet\" and \"reject\" states areerved";
   let labels = "accept" :: "reject" :: labels in
-  let _ = WF.check_distinct_names labels in
+  WF.check_distinct_names labels;
   let ctx' = Ctx.set_localkind Ctx.ParserState ctx in
   let ctx' =
     List.fold_left
@@ -4290,7 +4288,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let ft = Types.ParserApplyMethodT params in
     Types.MonoFD ft
   in
-  let _ = WF.check_valid_funcdef Ctx.Block ctx fd_apply in
+  WF.check_valid_funcdef Ctx.Block ctx fd_apply;
   (* Add apply parameters to the block context *)
   let ctx' = Ctx.add_params Ctx.Block params_il ctx' in
   (* Typecheck and add local declarations to the block context *)
@@ -4316,7 +4314,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     in
     ([], [], cparams, typ)
   in
-  let _ = WF.check_valid_consdef Ctx.Block ctx cd in
+  WF.check_valid_consdef Ctx.Block ctx cd;
   let ctx = Ctx.add_consdef cid cd ctx in
   let decl_il =
     Il.Ast.ParserD
@@ -4690,11 +4688,9 @@ and type_table_actions (cursor : Ctx.cursor) (ctx : Ctx.t)
     let table_ctx, table_actions_il =
       type_table_actions' cursor ctx table_ctx table_actions.it
     in
-    let _ =
-      List.map it table_actions_il
-      |> List.map (fun (action_name, _, _) -> action_name)
-      |> WF.check_distinct_vars
-    in
+    List.map it table_actions_il
+    |> List.map (fun (action_name, _, _) -> action_name)
+    |> WF.check_distinct_vars;
     (table_ctx, table_actions_il $ table_actions.at)
   with CheckErr _ as err -> error_pass_info table_actions.at err
 
@@ -5111,7 +5107,7 @@ and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
         |> Option.some
       in
       let value_priority = value_priority |> Bigint.to_int |> Option.get in
-      let _ = check_table_entry_priority table_ctx value_priority in
+      check_table_entry_priority table_ctx value_priority;
       let table_ctx =
         if Option.is_some priority then Tblctx.set_priority_init true table_ctx
         else table_ctx
@@ -5147,7 +5143,7 @@ and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
         |> Option.some
       in
       let value_priority = value_priority |> Bigint.to_int |> Option.get in
-      let _ = check_table_entry_priority table_ctx value_priority in
+      check_table_entry_priority table_ctx value_priority;
       let table_ctx = Tblctx.add_priority value_priority table_ctx in
       (table_ctx, priority_il)
 
@@ -5312,7 +5308,7 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let typ_control = Types.ControlT params in
     Types.PolyD (tparams, tparams_hidden, typ_control)
   in
-  let _ = WF.check_valid_typdef cursor ctx td in
+  WF.check_valid_typdef cursor ctx td;
   let ctx = Ctx.add_typedef cursor id.it td ctx in
   ctx
 
@@ -5358,7 +5354,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     let ft = Types.ControlApplyMethodT params in
     Types.MonoFD ft
   in
-  let _ = WF.check_valid_funcdef Ctx.Block ctx fd_apply in
+  WF.check_valid_funcdef Ctx.Block ctx fd_apply;
   (* Add apply parameters to the block context *)
   let ctx' = Ctx.add_params Ctx.Block params_il ctx' in
   (* Typecheck and add local declarations to the block context *)
@@ -5385,7 +5381,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     in
     ([], [], cparams, typ)
   in
-  let _ = WF.check_valid_consdef Ctx.Block ctx cd in
+  WF.check_valid_consdef Ctx.Block ctx cd;
   let ctx = Ctx.add_consdef cid cd ctx in
   let decl_il =
     Il.Ast.ControlD
@@ -5428,7 +5424,7 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     (tparams, tparams_hidden, typ_package)
   in
   let td = Types.PolyD tdp in
-  let _ = WF.check_valid_typdef cursor ctx td in
+  WF.check_valid_typdef cursor ctx td;
   let typ_args =
     List.map (fun tparam -> Types.VarT tparam.it) tparams
     @ List.map (fun tparam_hidden -> Types.VarT tparam_hidden.it) tparams_hidden
@@ -5444,7 +5440,7 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     in
     (tparams, tparams_hidden, cparams, typ)
   in
-  let _ = WF.check_valid_consdef Ctx.Block ctx cd in
+  WF.check_valid_consdef Ctx.Block ctx cd;
   (td, cd, tparams, cparams_il)
 
 and type_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
