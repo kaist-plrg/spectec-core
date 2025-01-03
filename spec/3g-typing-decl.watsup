@@ -9,7 +9,7 @@ rule Param_ok/param-default:
   p C |- id dir type expr? : id dir typ_p val?
   -- Type_ok: p C |- type : typ_p
   -- Expr_ok: p C |- expr : typ_e LCTK
-  -- Sub_impl: typ_e <: typ_p
+  -- Sub_impl: typ_e << typ_p
   -- Eval_static: p C |- expr ~> val
 
 rule Param_ok/param-nodefault:
@@ -25,7 +25,7 @@ rule CParam_ok/cparam-default:
   p C |- id dir type expr? : id dir typ_p val?
   -- Type_ok: p C |- type : typ_p
   -- Expr_ok: p C |- expr : typ_e LCTK
-  -- Sub_impl: typ_e <: typ_p
+  -- Sub_impl: typ_e << typ_p
   -- Eval_static: p C |- expr ~> val
 
 rule CParam_ok/cparam-nodefault:
@@ -41,7 +41,7 @@ rule Decl_ok/constd:
   ----
   -- Type_ok: p C |- type : typ_t
   -- Expr_ok: p C |- expr : typ_e LCTK
-  -- Sub_impl: typ_e <: typ_t
+  -- Sub_impl: typ_e << typ_t
   -- Eval_static: p C |- expr ~> val
   ----
   -- if C' = $add_val(p, C, id, val)
@@ -60,7 +60,7 @@ rule Decl_ok/vard-some:
   p C |- VarD id type expr? : C'
   -- Type_ok: p C |- type : typ_t
   -- Expr_ok: p C |- expr : typ_e ctk_e
-  -- Sub_impl: typ_e <: typ_t
+  -- Sub_impl: typ_e << typ_t
   -- if C' = $add_typ(p, C, id, typ_t INOUT DYN)
 
 ;;
@@ -197,7 +197,7 @@ rule SEnum_field_ok:
   C id_s typ_s (member_s, val_s)* |- member expr : C'' (member_s', val_s')*
   ----
   -- Expr_ok: BLOCK C |- expr : typ LCTK
-  -- Sub_impl: typ <: typ_s
+  -- Sub_impl: typ << typ_s
   -- Eval_static: BLOCK C |- expr ~> val_e
   ----
   -- if val = SEnumFieldV id_s member val_e

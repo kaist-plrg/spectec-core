@@ -45,19 +45,19 @@ rule Sub_expl/intt-fintt:
 
 rule Sub_expl/newt-innert:
   NewT id typ' <: typ
-  -- Sub_impl: typ' <: typ
+  -- Sub_impl: typ' << typ
 
 rule Sub_expl/innert-newt:
   typ <: NewT id typ'
-  -- Sub_impl: typ <: typ'
+  -- Sub_impl: typ << typ'
 
 rule Sub_expl/senumt-innert:
   SEnumT id typ' fields <: typ
-  -- Sub_impl: typ' <: typ
+  -- Sub_impl: typ' << typ
 
 rule Sub_expl/innert-senumt:
   typ <: SEnumT id typ' fields
-  -- Sub_impl: typ <: typ'
+  -- Sub_impl: typ << typ'
 
 rule Sub_expl/seqt-list:
   SeqT typ'* <: ListT typ''
@@ -74,12 +74,10 @@ rule Sub_expl/seqt-stackt:
 
 rule Sub_expl/seqt-structt:
   SeqT typ'* <: StructT id (member, typ'')*
-  -- if |typ'*| = |typ''*|
   -- (Sub_expl: typ' <: typ'')*
 
 rule Sub_expl/seqt-headert:
   SeqT typ'* <: HeaderT id (member, typ'')*
-  -- if |typ'*| = |typ''*|
   -- (Sub_expl: typ' <: typ'')*
 
 rule Sub_expl/recordt-structt:
@@ -165,38 +163,38 @@ rule Sub_expl/invalidt-uniont:
 ;;
 
 rule Sub_impl/canon:
-  typ <: typ'
-  -- Sub_impl: $canon_typ(typ) <: $canon_typ(typ')
+  typ << typ'
+  -- Sub_impl: $canon_typ(typ) << $canon_typ(typ')
 
-rule Sub_expl/eq:
-  typ <: typ'
+rule Sub_impl/eq:
+  typ << typ'
   -- Type_alpha: typ ~~ typ'
 
 rule Sub_impl/intt-fbitt:
-  IntT <: FBitT i
+  IntT << FBitT i
 
 rule Sub_impl/intt-fintt:
-  IntT <: FIntT i
+  IntT << FIntT i
 
 rule Sub_impl/senumt-innert:
-  SEnumT id typ' fields <: typ
-  -- Sub_impl: typ' <: typ
+  SEnumT id typ' fields << typ
+  -- Sub_impl: typ' << typ
 
 rule Sub_impl/innert-senumt:
-  typ <: SEnumT id typ' fields
-  -- Sub_impl: typ <: typ'
+  typ << SEnumT id typ' fields
+  -- Sub_impl: typ << typ'
 
 rule Sub_impl/seqt-list:
-  SeqT typ'* <: ListT typ''
-  -- (Sub_impl: typ' <: typ'')*
+  SeqT typ'* << ListT typ''
+  -- (Sub_impl: typ' << typ'')*
 
 rule Sub_impl/seqt-tuplet:
-  SeqT typ'* <: TupleT typ''*
-  -- (Sub_impl: typ' <: typ'')*
+  SeqT typ'* << TupleT typ''*
+  -- (Sub_impl: typ' << typ'')*
 
 rule Sub_impl/seqt-stackt:
-  SeqT typ'* <: StackT typ'' i
-  -- (Sub_impl: typ' <: typ'')*
+  SeqT typ'* << StackT typ'' i
+  -- (Sub_impl: typ' << typ'')*
   -- if |typ'*| <= i
 
 ;; (TODO) Fill in the rule.
@@ -236,7 +234,7 @@ rule Sub_impl/seqt-stackt:
 ;; rule Sub_impl/recorddefaultt-headert:
 
 rule Sub_impl/invalidt-headert:
-   InvalidT <: HeaderT id fields
+   InvalidT << HeaderT id fields
 
 rule Sub_impl/invalidt-uniont:
-  InvalidT <: UnionT id fields
+  InvalidT << UnionT id fields

@@ -68,9 +68,9 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
     | FBitT _, IntT -> true
     (* int<W> → int *)
     | FIntT _, IntT -> true
-    (* int<W> → int *)
-    | IntT, FBitT _ -> true
     (* int → bit<W> *)
+    | IntT, FBitT _ -> true
+    (* int → int<W> *)
     | IntT, FIntT _ -> true
     (* casts between two types that are introduced by typedef and
        are equivalent to one of the above combinations *)

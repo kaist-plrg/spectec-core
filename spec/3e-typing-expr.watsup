@@ -82,29 +82,29 @@ rule Expr_ok/invalide:
 rule Expr_ok/une-bnot:
   p C |- UnE BNOT expr : typ ctk_e
   -- Expr_ok: p C |- expr : typ_e ctk_e
-  -- Sub_impl: typ_e <: typ
+  -- Sub_impl: typ_e << typ
   -- if $is_fintt(typ) \/ $is_fbitt(typ)
 
 rule Expr_ok/une-lnot:
   p C |- UnE LNOT expr : BoolT ctk_e
   -- Expr_ok: p C |- expr : typ_e ctk_e
-  -- Sub_impl: typ_e <: BoolT
+  -- Sub_impl: typ_e << BoolT
 
 rule Expr_ok/une-uminus-intt:
   p C |- UnE UMINUS expr : IntT ctk_e
   -- Expr_ok: p C |- expr : typ_e ctk_e
-  -- Sub_impl: typ_e <: IntT
+  -- Sub_impl: typ_e << IntT
 
 rule Expr_ok/une-uminus:
   p C |- UnE UMINUS expr : typ ctk_e
   -- Expr_ok: p C |- expr : typ_e ctk_e
-  -- Sub_impl: typ_e <: typ
+  -- Sub_impl: typ_e << typ
   -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
 
 rule Expr_ok/une-uplus:
   p C |- UnE UPLUS expr : typ ctk_e
   -- Expr_ok: p C |- expr : typ_e ctk_e
-  -- Sub_impl: typ_e <: typ
+  -- Sub_impl: typ_e << typ
   -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
 
 ;;
@@ -119,8 +119,8 @@ rule Expr_ok/bine-plus-minus-mult:
   -- Expr_ok: p C |- expr_l : typ_l ctk_l
   -- Expr_ok: p C |- expr_r : typ_r ctk_r
   ----
-  -- Sub_impl: typ_l <: typ
-  -- Sub_impl: typ_r <: typ
+  -- Sub_impl: typ_l << typ
+  -- Sub_impl: typ_r << typ
   -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
@@ -133,8 +133,8 @@ rule Expr_ok/bine-sat-plus-minus:
   -- Expr_ok: p C |- expr_l : typ_l ctk_l
   -- Expr_ok: p C |- expr_r : typ_r ctk_r
   ----
-  -- Sub_impl: typ_l <: typ
-  -- Sub_impl: typ_r <: typ
+  -- Sub_impl: typ_l << typ
+  -- Sub_impl: typ_r << typ
   -- if $is_fintt(typ) \/ $is_fbitt(typ)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
@@ -147,8 +147,8 @@ rule Expr_ok/bine-div-mod:
   -- Expr_ok: p C |- expr_l : typ_l ctk_l
   -- Expr_ok: p C |- expr_r : typ_r ctk_r
   ----
-  -- Sub_impl: typ_l <: IntT
-  -- Sub_impl: typ_r <: IntT
+  -- Sub_impl: typ_l << IntT
+  -- Sub_impl: typ_r << IntT
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
@@ -160,8 +160,8 @@ rule Expr_ok/bine-shift:
   -- Expr_ok: p C |- expr_l : typ_l ctk_l
   -- Expr_ok: p C |- expr_r : typ_r ctk_r
   ----
-  -- Sub_impl: typ_l <: typ_l'
-  -- Sub_impl: typ_r <: typ_r'
+  -- Sub_impl: typ_l << typ_l'
+  -- Sub_impl: typ_r << typ_r'
   -- if ($is_fbitt(typ_l') /\ $is_fbitt(typ_r'))
         \/ ($is_fbitt(typ_l') /\ $is_intt(typ_r'))
         \/ ($is_fintt(typ_l') /\ $is_fbitt(typ_r'))
@@ -198,8 +198,8 @@ rule Expr_ok/bine-compare-eq:
   -- Expr_ok: p C |- expr_l : typ_l ctk_l
   -- Expr_ok: p C |- expr_r : typ_r ctk_r
   ----
-  -- Sub_impl: typ_l <: typ
-  -- Sub_impl: typ_r <: typ
+  -- Sub_impl: typ_l << typ
+  -- Sub_impl: typ_r << typ
   ----
   -- if $equalable(typ_l)
   ----
@@ -213,8 +213,8 @@ rule Expr_ok/bine-compare:
   -- Expr_ok: p C |- expr_l : typ_l ctk_l
   -- Expr_ok: p C |- expr_r : typ_r ctk_r
   ----
-  -- Sub_impl: typ_l <: typ
-  -- Sub_impl: typ_r <: typ
+  -- Sub_impl: typ_l << typ
+  -- Sub_impl: typ_r << typ
   -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
@@ -226,8 +226,8 @@ rule Expr_ok/bine-bitwise:
   -- Expr_ok: p C |- expr_l : typ_l ctk_l
   -- Expr_ok: p C |- expr_r : typ_r ctk_r
   ----
-  -- Sub_impl: typ_l <: typ
-  -- Sub_impl: typ_r <: typ
+  -- Sub_impl: typ_l << typ
+  -- Sub_impl: typ_r << typ
   -- if $is_fintt(typ) \/ $is_fbitt(typ)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
@@ -238,8 +238,8 @@ rule Expr_ok/bine-concat:
   -- Expr_ok: p C |- expr_l : typ_l ctk_l
   -- Expr_ok: p C |- expr_r : typ_r ctk_r
   ----
-  -- Sub_impl: typ_l <: typ_l'
-  -- Sub_impl: typ_r <: typ_r'
+  -- Sub_impl: typ_l << typ_l'
+  -- Sub_impl: typ_r << typ_r'
   -- if ((typ_l' = FIntT w_l' /\ typ_r' = FIntT w_r')
           \/ (typ_l' = FIntT w_l' /\ typ_r' = FBitT w_r')
           \/ (typ_l' = FBitT w_l' /\ typ_r' = FIntT w_r')
@@ -257,8 +257,8 @@ rule Expr_ok/bine-logical:
   -- Expr_ok: p C |- expr_l : typ_l ctk_l
   -- Expr_ok: p C |- expr_r : typ_r ctk_r
   ----
-  -- Sub_impl: typ_l <: BoolT
-  -- Sub_impl: typ_r <: BoolT
+  -- Sub_impl: typ_l << BoolT
+  -- Sub_impl: typ_r << BoolT
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
@@ -270,13 +270,13 @@ rule Expr_ok/terne-nointt:
   p C |- TernE expr_c expr_t expr_f : typ ctk
   ----
   -- Expr_ok: p C |- expr_c : typ_c ctk_c
-  -- Sub_impl: typ_c <: BoolT
+  -- Sub_impl: typ_c << BoolT
   ----
   -- Expr_ok: p C |- expr_t : typ_t ctk_t
   -- Expr_ok: p C |- expr_f : typ_f ctk_f
   ----
-  -- Sub_impl: typ_t <: typ
-  -- Sub_impl: typ_f <: typ
+  -- Sub_impl: typ_t << typ
+  -- Sub_impl: typ_f << typ
   ----
   -- if typ =/= IntT
   ----
@@ -286,13 +286,13 @@ rule Expr_ok/terne-intt:
   p C |- TernE expr_c expr_t expr_f : typ ctk
   ----
   -- Expr_ok: p C |- expr_c : typ_c ctk_c
-  -- Sub_impl: typ_c <: BoolT
+  -- Sub_impl: typ_c << BoolT
   ----
   -- Expr_ok: p C |- expr_t : typ_t ctk_t
   -- Expr_ok: p C |- expr_f : typ_f ctk_f
   ----
-  -- Sub_impl: typ_t <: IntT
-  -- Sub_impl: typ_f <: IntT
+  -- Sub_impl: typ_t << IntT
+  -- Sub_impl: typ_f << IntT
   ----
   -- if ctk_t = LCTK /\ ctk_f = LCTK
   ----
@@ -318,8 +318,8 @@ rule Expr_ok/maske:
   -- Expr_ok: p C |- expr_b : typ_b ctk_b
   -- Expr_ok: p C |- expr_m : typ_m ctk_m
   ----
-  -- Sub_impl: typ_b <: typ
-  -- Sub_impl: typ_m <: typ
+  -- Sub_impl: typ_b << typ
+  -- Sub_impl: typ_m << typ
   -- if typ = IntT \/ typ = FIntT w \/ typ = FBitT w
 
 ;;
@@ -332,8 +332,8 @@ rule Expr_ok/rangee:
   -- Expr_ok: p C |- expr_l : typ_l ctk_l
   -- Expr_ok: p C |- expr_u : typ_u ctk_u
   ----
-  -- Sub_impl: typ_l <: typ
-  -- Sub_impl: typ_u <: typ
+  -- Sub_impl: typ_l << typ
+  -- Sub_impl: typ_u << typ
   -- if typ = IntT \/ typ = FIntT w \/ typ = FBitT w
 
 ;;
@@ -358,7 +358,7 @@ rule Expr_ok/arracce-tuplet:
   ----
   -- Expr_ok: p C |- expr_b : typ_b ctk_b
   -- Expr_ok: p C |- expr_i : typ_i ctk_i
-  -- Sub_impl: typ_i <: typ_i'
+  -- Sub_impl: typ_i << typ_i'
   ----
   -- if typ_i' = IntT \/ typ_i' = FIntT w \/ typ_i' = FBitT w
   ----
@@ -372,7 +372,7 @@ rule Expr_ok/arracce-stackt:
   ----
   -- Expr_ok: p C |- expr_b : typ_b ctk_b
   -- Expr_ok: p C |- expr_i : typ_i LCTK
-  -- Sub_impl: typ_i <: typ_i'
+  -- Sub_impl: typ_i << typ_i'
   ----
   -- if typ_i' = IntT \/ typ_i' = FIntT w_i' \/ typ_i' = FBitT w_i'
   ----
@@ -387,19 +387,19 @@ rule Expr_ok/bitacce:
   p C |- BitAccE expr_b expr_l expr_h : typ ctk_b
   ----
   -- Expr_ok: p C |- expr_b : typ_b ctk_b
-  -- Sub_impl: typ_b <: typ_b'
+  -- Sub_impl: typ_b << typ_b'
   ----
   -- if typ_b' = IntT \/ (typ_b' = FIntT w_b' /\ w_b' >= 1) \/ (typ_b' = FBitT w_b' /\ w_b' >= 0)
   ----
   -- Expr_ok: p C |- expr_l : typ_l LCTK
-  -- Sub_impl: typ_l <: typ_l'
+  -- Sub_impl: typ_l << typ_l'
   -- if typ_l' = IntT \/ typ_l' = FIntT w_l' \/ typ_l' = FBitT w_l'
   ----
   -- Eval_static: p C |- expr_l ~> val_l
   -- if i_l = $num(val_l)
   ----
   -- Expr_ok: p C |- expr_h : typ_h LCTK
-  -- Sub_impl: typ_h <: typ_h'
+  -- Sub_impl: typ_h << typ_h'
   -- if typ_h' = IntT \/ typ_h' = FIntT w_h' \/ typ_h' = FBitT w_h'
   ----
   -- Eval_static: p C |- expr_h ~> val_h
