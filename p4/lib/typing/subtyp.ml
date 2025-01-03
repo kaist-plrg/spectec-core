@@ -205,42 +205,42 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
 and implicit (typ_from : Type.t) (typ_to : Type.t) : bool =
   let implicit_unequal (typ_from : Type.t) (typ_to : Type.t) =
     match (typ_from, typ_to) with
-    (* int <: fint and int <: fbit *)
+    (* int << fint and int << fbit *)
     | IntT, FIntT _ | IntT, FBitT _ -> true
-    (* tau <: senum tau, senum tau <: tau, and
-       senum tau <: senum tau' if tau <: tau' *)
+    (* tau << senum tau, senum tau << tau, and
+       senum tau << senum tau' if tau << tau' *)
     | SEnumT (_, typ_from_inner, _), _ when implicit typ_from_inner typ_to ->
         true
     | _, SEnumT (_, typ_to_inner, _) when implicit typ_from typ_to_inner -> true
-    (* seq tau* <: list tau' if (tau <: tau')* *)
+    (* seq tau* << list tau' if (tau << tau')* *)
     | SeqT typs_a_inner, ListT typ_to_inner ->
         List.for_all
           (fun typ_from_inner -> implicit typ_from_inner typ_to_inner)
           typs_a_inner
-    (* seq tau* <: tuple tau'* if (tau <: tau')* *)
+    (* seq tau* << tuple tau'* if (tau << tau')* *)
     | SeqT typs_a_inner, TupleT typs_b_inner ->
         List.length typs_a_inner = List.length typs_b_inner
         && List.for_all2 implicit typs_a_inner typs_b_inner
-    (* seq tau* <: stack tau' if (tau <: tau')* *)
+    (* seq tau* << stack tau' if (tau << tau')* *)
     | SeqT typs_a_inner, StackT (typ_to_inner, size_to) ->
         let size_from = List.length typs_a_inner |> Bigint.of_int in
-        Bigint.(size_from = size_to)
+        Bigint.(size_from <= size_to)
         && List.for_all
              (fun typ_from_inner -> implicit typ_from_inner typ_to_inner)
              typs_a_inner
-    (* seq tau* <: struct id (id', tau')* if (tau <: tau')* and
-       seq tau* <: header id (id', tau')* if (tau <: tau')* *)
+    (* seq tau* << struct id (id', tau')* if (tau << tau')* and
+       seq tau* << header id (id', tau')* if (tau << tau')* *)
     | SeqT typs_a_inner, StructT (_, fields_b)
     | SeqT typs_a_inner, HeaderT (_, fields_b) ->
         let typs_b_inner = List.map snd fields_b in
         List.length typs_a_inner = List.length typs_b_inner
         && List.for_all2 implicit typs_a_inner typs_b_inner
-    (* seq tau* <: seq tau'* if (tau <: tau')* *)
+    (* seq tau* << seq tau'* if (tau << tau')* *)
     | SeqT typs_a_inner, SeqT typs_b_inner ->
         List.length typs_a_inner = List.length typs_b_inner
         && List.for_all2 implicit typs_a_inner typs_b_inner
-    (* record (id', tau)* <: struct id (id', tau')* if (tau <: tau')* and
-       record (id', tau)* <: header id (id', tau')* if (tau <: tau')* *)
+    (* record (id', tau)* << struct id (id', tau')* if (tau << tau')* and
+       record (id', tau)* << header id (id', tau')* if (tau << tau')* *)
     | RecordT fields_a, StructT (_, fields_b)
     | RecordT fields_a, HeaderT (_, fields_b) ->
         let compare (member_a, _) (member_b, _) = compare member_a member_b in
@@ -253,13 +253,13 @@ and implicit (typ_from : Type.t) (typ_to : Type.t) : bool =
         List.length typs_a_inner = List.length typs_b_inner
         && List.for_all2 ( = ) members_a members_b
         && List.for_all2 implicit typs_a_inner typs_b_inner
-    (* default <: tau if tau is defaultable,
-       seqdefault tau* <: tuple tau'* if (tau <: tau')*,
-       seqdefault tau* <: stack tau' if (tau <: tau')*,
-       seqdefault tau* <: struct id (id', tau')* if (tau <: tau')*,
-       seqdefault tau* <: header id (id', tau')* if (tau <: tau')*,
-       recorddefault (id', tau)* <: struct id (id', tau')* if (tau <: tau')*,
-       recorddefault (id', tau)* <: header id (id', tau')* if (tau <: tau')* *)
+    (* default << tau if tau is defaultable,
+       seqdefault tau* << tuple tau'* if (tau << tau')*,
+       seqdefault tau* << stack tau' if (tau << tau')*,
+       seqdefault tau* << struct id (id', tau')* if (tau << tau')*,
+       seqdefault tau* << header id (id', tau')* if (tau << tau')*,
+       recorddefault (id', tau)* << struct id (id', tau')* if (tau << tau')*,
+       recorddefault (id', tau)* << header id (id', tau')* if (tau << tau')* *)
     | DefaultT, _ when Type.is_defaultable typ_to -> true
     | SeqDefaultT typs_from_inner, TupleT typs_to_inner ->
         if List.length typs_from_inner >= List.length typs_to_inner then false
@@ -314,7 +314,7 @@ and implicit (typ_from : Type.t) (typ_to : Type.t) : bool =
                  in
                  Type.is_defaultable typ_to_default_inner)
                members_to_default
-    (* invalid <: header _ and invalid <: union _ *)
+    (* invalid << header _ and invalid << union _ *)
     | InvalidT, HeaderT _ | InvalidT, UnionT _ -> true
     | _ -> false
   in
