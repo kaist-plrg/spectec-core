@@ -128,27 +128,21 @@ rule Sub_expl/seqdefaultt-headert:
 
 rule Sub_expl/recorddefaultt-structt:
   RecordDefaultT (member', typ')* <: StructT id (member'', typ'')*
-  -- if members_from = $to_set(member, member'*)
-  -- if members_to = $to_set(member, member''*)
+  -- if $is_subset(member, SET member'*, SET member''*)
+  -- if SET member'''* = $diff_set(member, SET member''*, SET member'*)
   ----
-  -- if $is_subset(member, members_from, members_to)
-  -- if SET member'''* = $diff_set(member, members_to, members_from)
+  -- (Sub_expl: $find_map(member, typ, MAP member'* typ'*, member') <: $find_map(member, typ, MAP member''* typ''*, member'))*
   ----
-  -- (Sub_expl: $assoc(member, typ, member', (member', typ')*) <: $assoc(member, typ, member', (member'', typ'')*))*
-  ----
-  -- if ($is_deftable($assoc(member, typ, member''', (member'', typ'')*)))*
+  -- if ($is_deftable($find_map(member, typ, MAP member''* typ''*, member''')))*
 
 rule Sub_expl/recorddefaultt-headert:
-  RecordDefaultT (member', typ')* <: HeaderT id (member, typ'')*
-  -- if members_from = $to_set(member, member'*)
-  -- if members_to = $to_set(member, member''*)
+  RecordDefaultT (member', typ')* <: HeaderT id (member'', typ'')*
+  -- if $is_subset(member, SET member'*, SET member''*)
+  -- if SET member'''* = $diff_set(member, SET member''*, SET member'*)
   ----
-  -- if $is_subset(member, members_from, members_to)
-  -- if SET member'''* = $diff_set(member, members_to, members_from)
+  -- (Sub_expl: $find_map(member, typ, MAP member'* typ'*, member') <: $find_map(member, typ, MAP member''* typ''*, member'))*
   ----
-  -- (Sub_expl: $assoc(member, typ, member', (member', typ')*) <: $assoc(member, typ, member', (member'', typ'')*))*
-  ----
-  -- if ($is_deftable($assoc(member, typ, member''', (member'', typ'')*)))*
+  -- if ($is_deftable($find_map(member, typ, MAP member''* typ''*, member''')))*
 
 
 rule Sub_expl/invalidt-headert:
