@@ -1,4 +1,4 @@
-Running typecheck tests on 1004 files
+Running typecheck tests on 1005 files
 
 
 >>> Running typecheck test on p4/test/program/well-typed/action-bind.p4
@@ -371,7 +371,8 @@ Typecheck success
 Typecheck success
 
 >>> Running typecheck test on p4/test/program/well-typed/enumCast.p4
-Typecheck success
+Error: File p4/test/program/well-typed/enumCast.p4, line 39, characters 14-20
+(coerce_types_binary) cannot coerce types enum<bit<8>> E1 { e1 = E1.e1(= 8w0), e2 = E1.e2(= 8w1), e3 = E1.e3(= 8w2) } and enum<bit<8>> E2 { e1 = E2.e1(= 8w10), e2 = E2.e2(= 8w11), e3 = E2.e3(= 8w12) }
 
 >>> Running typecheck test on p4/test/program/well-typed/equality-bmv2.p4
 Typecheck success
@@ -1519,6 +1520,9 @@ Typecheck success
 >>> Running typecheck test on p4/test/program/well-typed/issue3274-1.p4
 Typecheck success
 
+>>> Running typecheck test on p4/test/program/well-typed/issue3287.p4
+Typecheck success
+
 >>> Running typecheck test on p4/test/program/well-typed/issue3288.p4
 Typecheck success
 
@@ -1535,7 +1539,8 @@ Typecheck success
 Typecheck success
 
 >>> Running typecheck test on p4/test/program/well-typed/issue3333.p4
-Typecheck success
+Error: File p4/test/program/well-typed/issue3333.p4, from line 4 character 8 to line 7 character 9
+(coerce_type) cannot coerce type int to enum<bit<8>> myenum { value = myenum.value(= 8w0) }
 
 >>> Running typecheck test on p4/test/program/well-typed/issue3343.p4
 Typecheck success
@@ -2859,7 +2864,8 @@ Typecheck success
 Typecheck success
 
 >>> Running typecheck test on p4/test/program/well-typed/table-entries-ser-enum-bmv2.p4
-Typecheck success
+Error: File p4/test/program/well-typed/table-entries-ser-enum-bmv2.p4, line 74, characters 37-52
+(coerce_types_binary) cannot coerce types enum<bit<16>> MyEnum2B { MBR1 = MyEnum2B.MBR1(= 16w10), MBR2 = MyEnum2B.MBR2(= 16w43776) } and int
 
 >>> Running typecheck test on p4/test/program/well-typed/table-entries-ternary-bmv2.p4
 Typecheck success
@@ -3014,5 +3020,5 @@ Typecheck success
 >>> Running typecheck test on p4/test/program/well-typed/xor_test.p4
 Typecheck success
 
-Parser on file: [PASS] 1004/1004 (100.00%) [FAIL] 0/1004 (0.00%)
-Typecheck: [PASS] 1003/1004 (99.90%) [FAIL] 1/1004 (0.10%)
+Parser on file: [PASS] 1005/1005 (100.00%) [FAIL] 0/1005 (0.00%)
+Typecheck: [PASS] 1001/1005 (99.60%) [FAIL] 4/1005 (0.40%)

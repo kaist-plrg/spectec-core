@@ -382,7 +382,7 @@ a_two(
     bump_val(hdr.ethernet.etherType));
 ```
 
-# B. Need spec clarification
+# B. Need Spec Clarification
 
 ## \[REPORTED\] 1. Test too strict on explicit cast: [cast-to-struct](../test/program/ill-typed-excluded/spec-clarify/cast-to-struct)
 
@@ -427,56 +427,9 @@ Yet, parsers and controls can be instantiated in the top-level, when they are us
 So the spec should be more precise on this matter.
 p4cherry adjusts the instantiation site for constructor arguments as package-local when instantiating a package at the top-level scope.
 
-# C. Need test clarification
+# C. Need Test Clarification
 
-## 1. Implicit cast between a serializable enum and its underlying type should be allowed: [implicit-cast-senum](../test/program/ill-typed-excluded/test-clarify/implicit-cast-senum)
-
-```p4
-enum bit<32> X {
-    Zero = 0,
-    One = 1
-}
-...
-X y = 1;    // Error: no implicit cast to enum
-y = 32w1;   // Error: no implicit cast to enum
-```
-
-```p4
-enum bit<8> myEnum { One = 1 }
-struct S {
-    myEnum val;
-}
-...
-S s1 = { val = (bit<8>)0 };
-```
-
-```p4
-enum bit<2> e{ t = 1 }
-
-e f(in bool c, in bit<2> v0, in bit<2> v1) {
-  return c ? v0 : v1;
-}
-e f1(in bool c, in bit<2> v0, in e v1) {
-  return c ? v0 : v1;
-}
-e f2(in bool c, in e v0, in bit<2> v1) {
-  return c ? v0 : v1;
-}
-```
-
-```p4
-enum bit<4> e { a = 1 }
-control c(in e v) {
-  apply {
-    switch(v) {
-      4w1:
-      default: {}
-    }
-  }
-}
-```
-
-## 2. Comparison between sequence and record types: [compare-sequence-record](../test/program/ill-typed-excluded/test-clarify/compare-sequence-record)
+## 1. Comparison between sequence and record types: [compare-sequence-record](../test/program/ill-typed-excluded/test-clarify/compare-sequence-record)
 
 ```p4
 bool b1 = { 1, 2 } == { 1, 2 };
@@ -486,7 +439,7 @@ bool b2_ = { a = 1,b = 2 } == { a = 1, b = 2 };
 
 I think this should be allowed.
 
-## 3. Too strict for indirect recursive type?: [self-nesting-struct](../test/program/ill-typed-excluded/test-clarify/self-nesting-struct)
+## 2. Too strict for indirect recursive type?: [self-nesting-struct](../test/program/ill-typed-excluded/test-clarify/self-nesting-struct)
 
 ```p4
 struct h<t>{
@@ -496,7 +449,7 @@ typedef h<bit> tt;
 typedef h<tt> t;
 ```
 
-## 4. Struct parameter not allowed for an action?: [action-struct-param](../test/program/ill-typed-excluded/test-clarify/action-struct-param)
+## 3. Struct parameter not allowed for an action?: [action-struct-param](../test/program/ill-typed-excluded/test-clarify/action-struct-param)
 
 ```p4
 struct choices_t {
@@ -509,7 +462,7 @@ struct choices_t {
 action select_entry(choices_t choices) { ... }
 ```
 
-## 5. Variables, type varaibles, constructors, and functions live in the same namespace?: [namespace-var-tvar-func-ctor](../test/program/ill-typed-excluded/test-clarify/namespace-var-tvar-func-ctor)
+## 4. Variables, type varaibles, constructors, and functions live in the same namespace?: [namespace-var-tvar-func-ctor](../test/program/ill-typed-excluded/test-clarify/namespace-var-tvar-func-ctor)
 
 ```p4
 control foo (in bit<8> x, out bit<8> y) { apply { y = x + 7; } }
@@ -540,7 +493,7 @@ extern main {}
 
 Here, `main` is a constructor name, not a variable name.
 
-## 6. Scope of a control parameter: [control-shadowing](../test/program/ill-typed-excluded/test-clarify/control-shadowing)
+## 5. Scope of a control parameter: [control-shadowing](../test/program/ill-typed-excluded/test-clarify/control-shadowing)
 
 What is the scope of a control parameter?
 Does it live in the same level as the local declarations, or does it live in the same level as the `apply` block?
@@ -653,7 +606,9 @@ above is rejected and below is accepted. (above implies that `param` = `apply` a
 
 This is not true because the `apply` block can access the local declarations.
 
-## 7. Type inference for `int`: [type-inference-return-int](../test/program/ill-typed-excluded/test-clarify/type-inference-return-int)
+## \[REPORTED\] 6. Type inference for `int`: [type-inference-return-int](../test/program/ill-typed-excluded/test-clarify/type-inference-return-int)
+
+Reported to p4c, [Issue#5090](https://github.com/p4lang/p4c/issues/5090).
 
 ```p4
 T f<T>(T x) {
@@ -686,7 +641,7 @@ issue2260-1.p4(8)
                      ^^^^^^
 ```
 
-## 8. Returning `int` from a method is illegal?: [method-int-return](../test/program/ill-typed-excluded/test-clarify/method-int-return)
+## 7. Returning `int` from a method is illegal?: [method-int-return](../test/program/ill-typed-excluded/test-clarify/method-int-return)
 
 ```p4
 extern e {
@@ -709,7 +664,9 @@ issue3273.p4(3): [--Werror=type-error] error: int: illegal return type for metho
 
 However, the spec does not mandate this.
 
-## 9. Shifting an arbitrary precision integer
+## \[REPORTED\] 8. Shifting an arbitrary precision integer: [shift-int-by-fixed](../test/program/ill-typed-excluded/test-clarify/shift-int-by-fixed)
+
+Reported to p4c, [Issue#5091](https://github.com/p4lang/p4c/issues/5091).
 
 Below tests expect that when an arbitrary precision integer is shifted either left or right, the right operand should be a compile-time known value.
 
@@ -746,7 +703,7 @@ const int a = 5;
 hdr.v = (bit<8>)(a >> b);
 ```
 
-## 10. Calling an extern with nested struct argument is not supported: [extern-nested-struct-param](../test/program/ill-typed-excluded/test-clarify/extern-nested-struct-param)
+## 9. Calling an extern with nested struct argument is not supported: [extern-nested-struct-param](../test/program/ill-typed-excluded/test-clarify/extern-nested-struct-param)
 
 p4c disallows calling an extern function with a nested struct argument with `out` direction.
 
@@ -772,7 +729,7 @@ issue2545.p4(17): [--Werror=target-error] error: call_extern({ eth_hdr = tmp_0_e
         ^^^^^^^^^^^^^^^^
 ```
 
-## \[REPORTED\] 11. Directionless action arguments in a program acts like `in`?: [directionless-action-arg-as-in](../test/program/ill-typed-excluded/test-clarify/directionless-action-arg-as-in)
+## \[REPORTED\] 10. Directionless action arguments in a program acts like `in`?: [directionless-action-arg-as-in](../test/program/ill-typed-excluded/test-clarify/directionless-action-arg-as-in)
 
 Waiting for test clarification, [Issue#5042](https://github.com/p4lang/p4c/issues/5042).
 

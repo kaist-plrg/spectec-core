@@ -23,7 +23,7 @@ argument:
 ;
 ```
 
-### \[REVISIT\] (2) Operator precedence (1)
+### (2) Operator precedence (1)
 
 The spec mentions:
 
@@ -83,6 +83,56 @@ There can be basically two ways to fix this issue.
 <summary>Tests</summary>
 
 * precedence-lt.p4
+</details>
+
+### (3) Implicit cast involving serializable enums
+
+```p4
+enum bit<8> E1 {
+   e1 = 0, e2 = 1, e3 = 2
+}
+
+enum bit<8> E2 {
+   e1 = 10, e2 = 11, e3 = 12
+}
+
+E1 a = E1.e1;
+E2 b = E2.e2;
+
+bb = (a == b); // how to cast a to bit<8> and b to bit<8> at the same time?
+```
+
+```p4
+enum bit<16> MyEnum2B {
+    MBR1 = 10,
+    MBR2 = 0xab00
+}
+MyEnum2B.MBR2 &&& 0xff00 // how to cast MyEnum2B.MBR2 to bit<16>?
+```
+
+Seems like p4cherry has to implement the concept of a least common supertype when coercing two different types.
+Currently, it tries to coerce the first type to the second type and vice-versa, but it should also consider the least common supertype.
+
+```p4
+enum bit<8> myenum {  value = 0 }
+parser MyParser1(in  myenum a) {
+    state start {
+        transition select(a) {
+                1 .. 22: state1; // is it legal to cast set<int> to myenum?
+                _: accept;
+        }
+    }
+}
+```
+
+Above is questionable.
+
+<details>
+<summary>Tests</summary>
+
+* enumCast.p4
+* issue3333.p4
+* table-entries-ser-enum-bmv2.p4
 </details>
 
 ## 2. Overlooked Features (requires structural change)
@@ -861,7 +911,9 @@ table simple_table {
 
 # D. Need Test Clarification
 
-## 1. Scope of abstract method when initializing an instance: [abstract-method-scoping](../test/program/well-typed-excluded/test-clarify/abstract-method-scoping)
+## \[REPORTED\] 1. Scope of abstract method when initializing an instance: [abstract-method-scoping](../test/program/well-typed-excluded/test-clarify/abstract-method-scoping)
+
+Reported to p4c, [Issue#5084](https://github.com/p4lang/p4c/issues/5084).
 
 When initializing an instance with an abstract method, it can only refer to its arguments or identifiers in the top-level scope.
 The spec mentions:
@@ -883,19 +935,9 @@ control ingress(inout headers hdr) {
     };
 ```
 
-## 2. Shift by signed integer: [shift-by-signed-int](../test/program/well-typed-excluded/test-clarify/shift-by-signed-int)
+## \[REPORTED\] 2. Duplicate definition of `match_kind`: [duplicate-match-kind](../test/program/well-typed-excluded/test-clarify/duplicate-match-kind)
 
-This shifts by a signed integer, which is illegal.
-This should be a negative test.
-
-```p4
-bit<4> func(in bit<4> l) {
-  const int<6> tt = 1;
-  return l << tt;
-}
-```
-
-## 3. Duplicate definition of `match_kind`: [duplicate-match-kind](../test/program/well-typed-excluded/test-clarify/duplicate-match-kind)
+Reported to p4c, [Issue#5085](https://github.com/p4lang/p4c/issues/5085).
 
 `ternary` is defined twice.
 This should be a negative test.
@@ -908,7 +950,7 @@ match_kind {
 }
 ```
 
-## 4. Mask expressions for `exact` key: [mask-exact-key](../test/program/well-typed-excluded/test-clarify/mask-exact-key)
+## 3. Mask expressions for `exact` key: [mask-exact-key](../test/program/well-typed-excluded/test-clarify/mask-exact-key)
 
 We cannot use mask expressions for `exact` key.
 This should be a negative test.
@@ -924,7 +966,9 @@ table unit {
 }
 ```
 
-## 5. Nesting `match_kind` or `int` inside a tuple type: [tuple-nesting](../test/program/well-typed-excluded/test-clarify/tuple-nesting)
+## \[REPORTED\] 4. Nesting `match_kind` or `int` inside a tuple type: [tuple-nesting](../test/program/well-typed-excluded/test-clarify/tuple-nesting)
+
+Reported to p4c, [Issue#5086](https://github.com/p4lang/p4c/issues/5086).
 
 `match_kind` and `int` *cannot* be nested inside a tuple type.
 This should be a negative test.
@@ -937,7 +981,7 @@ const tuple<match_kind> exact_once = { exact };
 tuple<int> t = { t1 };
 ```
 
-## 6. Implicit cast of `value_set` in `select` expression: [value-set-implicit-cast](../test/program/well-typed-excluded/test-clarify/value-set-implicit-cast)
+## 5. Implicit cast of `value_set` in `select` expression: [value-set-implicit-cast](../test/program/well-typed-excluded/test-clarify/value-set-implicit-cast)
 
 When a value set, of type `set<T>` is used as a select label, it can be implicitly cast to the select key type `set<T'>`.
 However, below programs expect loose type casting rules.
@@ -969,7 +1013,7 @@ state start {
 
 Here, we *cannot* implicitly cast `value_set_t` (which a struct type) to `bit<32>`.
 
-## 7. Implicit cast of a singleton sequence to a scalar in table entry: [aggregate-to-scalar-implicit-cast](../test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast)
+## 6. Implicit cast of a singleton sequence to a scalar in table entry: [aggregate-to-scalar-implicit-cast](../test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast)
 
 Some programs expect implicit cast of a singleton sequence to a scalar in table entry, which is illegal, in a strict sense.
 
@@ -993,14 +1037,18 @@ table ingress_tbl {
 
 Here, `{(8w0x20++8w0x02++8w0x04++8w0x20)}` is a singleton sequence, and it should not be implicitly cast to a scalar type `IPv4Address`, or `bit<32>`.
 
-## 8. Implicit cast of newtype: [newtype-implicit-cast](../test/program/well-typed-excluded/test-clarify/newtype-implicit-cast)
+## \[REPORTED\] 7. Implicit cast of newtype: [newtype-implicit-cast](../test/program/well-typed-excluded/test-clarify/newtype-implicit-cast)
+
+Reported to p4c, [Issue#5087](https://github.com/p4lang/p4c/issues/5087).
 
 New types introduced by keyword `type` *cannot* be implicitly cast to its underlying type.
 However, below programs seem to violate this restriction.
 
 p4c accepts these as valid.
 
-## 9. Coercion from a fixed width integer to an arbitrary precision integer: [fixed-to-arbitrary-implicit-cast](../test/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast)
+## \[REPORTED\] 8. Coercion from a fixed width integer to an arbitrary precision integer: [fixed-to-arbitrary-implicit-cast](../test/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast)
+
+Reported to p4c, [Issue#5088](https://github.com/p4lang/p4c/issues/5088).
 
 This is illegal, but the test case below seem to violate this.
 
@@ -1008,7 +1056,7 @@ This is illegal, but the test case below seem to violate this.
 const int z1 = 2w1;
 ```
 
-## 10. Equality check (`==`) on a variable type: [type-variable-equality-op](../test/program/well-typed-excluded/test-clarify/type-variable-equality-op)
+## 9. Equality check (`==`) on a variable type: [type-variable-equality-op](../test/program/well-typed-excluded/test-clarify/type-variable-equality-op)
 
 The spec only allows assignment (`=`) for types that are type variables.
 But the test case below seems to violate this.
@@ -1022,7 +1070,9 @@ bool g<t>(in t a) {
 }
 ```
 
-## 11. Package constructors cannot be overloaded: [package-overload](../test/program/well-typed-excluded/test-clarify/package-overload)
+## \[REPORTED\] 10. Package constructors cannot be overloaded: [package-overload](../test/program/well-typed-excluded/test-clarify/package-overload)
+
+Reported to p4c, [Issue#5089](https://github.com/p4lang/p4c/issues/5089).
 
 A package declaration implies two things: a type declaration and a constructor declaration.
 Since they are bundled together, the synatx does not allow overloading of package constructors. (Unlike extern object constructors.)
@@ -1032,14 +1082,7 @@ package mypackaget<t>(mypt<t> t2);
 package mypackaget<t>(mypt<t> t1, mypt<t> t2);
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue3379-1.p4
-* issue3379.p4
-</details>
-
-## 12. Function declarations should not shadow: [shadow-func](../test/program/well-typed-excluded/test-clarify/shadow-func)
+## 11. Function declarations should not shadow: [shadow-func](../test/program/well-typed-excluded/test-clarify/shadow-func)
 
 (Although the spec does not explicitly disallow duplicate names in general,) p4c compiler rejects such programs.
 
@@ -1051,13 +1094,7 @@ void f1(in h[(max |+| 0) == max ? 1 : -1] a){}
 void f1(in h[value1 == max ? 1 : -1] a){}
 ```
 
-<details>
-<summary>Tests</summary>
-
-* issue3699.p4
-</details>
-
-## 13. Scope of a control parameter: [control-param-scope](../test/program/well-typed-excluded/test-clarify/control-param-scope)
+## 12. Scope of a control parameter: [control-param-scope](../test/program/well-typed-excluded/test-clarify/control-param-scope)
 
 Similar [issue](typecheck-neg.analysis.md#6.%20Scope%20of%20a%20control%20parameter) in the negative type checker test.
 
@@ -1081,14 +1118,7 @@ control MyIngress(inout H p) {
 }
 ```
 
-<details>
-<summary>Tests</summary>
-
-* shadow-after-use.p4
-* shadow3.p4
-</details>
-
-## 14. Accessing a header stack of size zero: [access-header-stack-zero](../test/program/well-typed-excluded/test-clarify/access-header-stack-zero)
+## 13. Accessing a header stack of size zero: [access-header-stack-zero](../test/program/well-typed-excluded/test-clarify/access-header-stack-zero)
 
 ```p4
 bit<32> b;
@@ -1110,13 +1140,7 @@ h.hs[-1].f1 = 5;
 h.hs[-1].f2 = 8;
 ```
 
-<details>
-<summary>Tests</summary>
-
-* minsize.p4
-</details>
-
-## 15. Equivalence of table actions: [table-action-syntactic-eq](../test/program/well-typed-excluded/test-clarify/table-action-syntactic-eq)
+## 14. Equivalence of table actions: [table-action-syntactic-eq](../test/program/well-typed-excluded/test-clarify/table-action-syntactic-eq)
 
 For default action, the spec mentions:
 
@@ -1139,7 +1163,7 @@ control c() {
 }
 ```
 
-## 16. Type inference should fail: [type-inference-should-fail](../test/program/well-typed-excluded/test-clarify/type-inference-should-fail)
+## 15. Type inference should fail: [type-inference-should-fail](../test/program/well-typed-excluded/test-clarify/type-inference-should-fail)
 
 ```p4
 control e<T>();

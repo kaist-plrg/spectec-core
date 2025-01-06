@@ -1,4 +1,4 @@
-Running typecheck tests on 46 files
+Running typecheck tests on 40 files
 
 
 >>> Running typecheck test on p4/test/program/ill-typed-excluded/over-typecheck/packet-extract/extract.p4
@@ -41,24 +41,6 @@ Typecheck success
 Typecheck success
 
 >>> Running typecheck test on p4/test/program/ill-typed-excluded/test-clarify/extern-nested-struct-param/issue2545.p4
-Typecheck success
-
->>> Running typecheck test on p4/test/program/ill-typed-excluded/test-clarify/implicit-cast-senum/enumCast.p4
-Typecheck success
-
->>> Running typecheck test on p4/test/program/ill-typed-excluded/test-clarify/implicit-cast-senum/issue2220.p4
-Typecheck success
-
->>> Running typecheck test on p4/test/program/ill-typed-excluded/test-clarify/implicit-cast-senum/issue3534.p4
-Typecheck success
-
->>> Running typecheck test on p4/test/program/ill-typed-excluded/test-clarify/implicit-cast-senum/issue3623-2.p4
-Typecheck success
-
->>> Running typecheck test on p4/test/program/ill-typed-excluded/test-clarify/implicit-cast-senum/issue3623-3.p4
-Typecheck success
-
->>> Running typecheck test on p4/test/program/ill-typed-excluded/test-clarify/implicit-cast-senum/serEnumImplCast.p4
 Typecheck success
 
 >>> Running typecheck test on p4/test/program/ill-typed-excluded/test-clarify/method-int-return/issue3273.p4
@@ -139,5 +121,5 @@ Typecheck success
 >>> Running typecheck test on p4/test/program/ill-typed-excluded/unsupported/switch-internal-match-kind/issue3613.p4
 Typecheck success
 
-Parser on file: [PASS] 46/46 (100.00%) [FAIL] 0/46 (0.00%)
-Typecheck: [PASS] 0/46 (0.00%) [FAIL] 46/46 (100.00%)
+Parser on file: [PASS] 40/40 (100.00%) [FAIL] 0/40 (0.00%)
+Typecheck: [PASS] 0/40 (0.00%) [FAIL] 40/40 (100.00%)

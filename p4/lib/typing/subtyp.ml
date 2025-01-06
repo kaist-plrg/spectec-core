@@ -207,11 +207,9 @@ and implicit (typ_from : Type.t) (typ_to : Type.t) : bool =
     match (typ_from, typ_to) with
     (* int << fint and int << fbit *)
     | IntT, FIntT _ | IntT, FBitT _ -> true
-    (* tau << senum tau, senum tau << tau, and
-       senum tau << senum tau' if tau << tau' *)
+    (* senum tau << tau *)
     | SEnumT (_, typ_from_inner, _), _ when implicit typ_from_inner typ_to ->
         true
-    | _, SEnumT (_, typ_to_inner, _) when implicit typ_from typ_to_inner -> true
     (* seq tau* << list tau' if (tau << tau')* *)
     | SeqT typs_a_inner, ListT typ_to_inner ->
         List.for_all

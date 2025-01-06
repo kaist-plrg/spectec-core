@@ -1,4 +1,4 @@
-Running typecheck tests on 250 files
+Running typecheck tests on 249 files
 
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/concat-string/issue4932.p4
@@ -650,10 +650,6 @@ key already exists: mypackaget
 Error: File p4/test/program/well-typed-excluded/test-clarify/shadow-func/issue3699.p4, line 12, characters 0-46
 key already exists: f1(a)
 
->>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/shift-by-signed-int/issue3287.p4
-Error: File p4/test/program/well-typed-excluded/test-clarify/shift-by-signed-int/issue3287.p4, line 6, characters 9-16
-(coerce_types_binary_numeric) cannot coerce types bit<4> and int<6>
-
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/table-action-syntactic-eq/issue2037.p4
 Error: File p4/test/program/well-typed-excluded/test-clarify/table-action-syntactic-eq/issue2037.p4, line 5, characters 8-27
 (type_table_action_default) there is no action named a in actions list
@@ -998,5 +994,5 @@ Error: File p4/test/program/well-typed-excluded/unsupported/selector-match-kind/
 Error: File p4/test/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector6.p4, line 55, characters 4-27
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 
-Parser on file: [PASS] 250/250 (100.00%) [FAIL] 0/250 (0.00%)
-Typecheck: [PASS] 8/250 (3.20%) [FAIL] 242/250 (96.80%)
+Parser on file: [PASS] 249/249 (100.00%) [FAIL] 0/249 (0.00%)
+Typecheck: [PASS] 8/249 (3.21%) [FAIL] 241/249 (96.79%)

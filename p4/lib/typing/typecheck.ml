@@ -1097,10 +1097,13 @@ and type_binop_div_mod (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and check_binop_shift (typ_l : Type.t) (typ_r : Type.t) : bool =
   match (typ_l, typ_r) with
-  | FBitT _, FBitT _
-  | FBitT _, IntT
+  | FIntT _, FIntT _
   | FIntT _, FBitT _
   | FIntT _, IntT
+  | FBitT _, FIntT _
+  | FBitT _, FBitT _
+  | FBitT _, IntT
+  | IntT, FIntT _
   | IntT, FBitT _
   | IntT, IntT ->
       true
@@ -1114,9 +1117,9 @@ and type_binop_shift (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
   let typ_l, typ_r = (expr_l_il.note.typ, expr_r_il.note.typ) in
   check
     (implies
-       (match typ_r with IntT -> true | _ -> false)
+       (match typ_r with FIntT _ | IntT -> true | _ -> false)
        (Ctk.is_lctk expr_r_il.note.ctk))
-    "(type_binop_shift) if an arbitrary integer type is used as the right \
+    "(type_binop_shift) if a signed integer type is used as the right \
      operand of a shift operator, it must be a local compile-time known \
      integer";
   let typ = typ_l in

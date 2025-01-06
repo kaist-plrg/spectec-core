@@ -173,10 +173,6 @@ rule Sub_impl/senumt-innert:
   SEnumT id typ' fields << typ
   -- Sub_impl: typ' << typ
 
-rule Sub_impl/innert-senumt:
-  typ << SEnumT id typ' fields
-  -- Sub_impl: typ << typ'
-
 rule Sub_impl/seqt-list:
   SeqT typ'* << ListT typ''
   -- (Sub_impl: typ' << typ'')*

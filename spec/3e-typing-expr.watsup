@@ -162,14 +162,17 @@ rule Expr_ok/bine-shift:
   ----
   -- Sub_impl: typ_l << typ_l'
   -- Sub_impl: typ_r << typ_r'
-  -- if ($is_fbitt(typ_l') /\ $is_fbitt(typ_r'))
-        \/ ($is_fbitt(typ_l') /\ $is_intt(typ_r'))
+  -- if ($is_fintt(typ_l') /\ $is_fintt(typ_r'))
         \/ ($is_fintt(typ_l') /\ $is_fbitt(typ_r'))
         \/ ($is_fintt(typ_l') /\ $is_intt(typ_r'))
+        \/ ($is_fbitt(typ_l') /\ $is_fintt(typ_r'))
+        \/ ($is_fbitt(typ_l') /\ $is_fbitt(typ_r'))
+        \/ ($is_fbitt(typ_l') /\ $is_intt(typ_r'))
+        \/ ($is_intt(typ_l') /\ $is_fintt(typ_r'))
         \/ ($is_intt(typ_l') /\ $is_fbitt(typ_r'))
         \/ ($is_intt(typ_l') /\ $is_intt(typ_r'))
   ----
-  -- if $implies($is_intt(typ_r'), ctk_r = LCTK)
+  -- if $implies($is_fintt(typ_r') \/ $is_intt(typ_r'), ctk_r = LCTK)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
