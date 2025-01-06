@@ -7,5 +7,5 @@
 
 (library
  (name stf)
- (libraries core)
+ (libraries core util)
  (modules ast lexer parser parse print compare))

@@ -1,0 +1,4 @@
+(library
+ (name exec)
+ (libraries lang il domain runtime_static runtime_dynamic instance stf)
+ (modules sig ctx driver interp v1model))

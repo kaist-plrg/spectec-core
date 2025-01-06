@@ -190,12 +190,12 @@ let typecheck_command =
 let instantiate stat includes filename =
   let stat, program = parse_file stat includes filename in
   let program = Typing.Typecheck.type_program program in
-  let venv, fenv, sto = Instance.Instantiate.instantiate_program program in
-  (stat, venv, fenv, sto)
+  let ctx_gt, sto = Instance.Instantiate.instantiate_program program in
+  (stat, ctx_gt, sto)
 
 let instantiate_test stat includes filename =
   try
-    let stat, _venv, _fenv, sto = instantiate stat includes filename in
+    let stat, _ctx_gt, sto = instantiate stat includes filename in
     Format.asprintf "Instantiate success: %d objects"
       (Runtime_dynamic.Envs.Sto.cardinal sto)
     |> print_endline;

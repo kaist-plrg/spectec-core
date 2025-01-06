@@ -13,4 +13,5 @@
   (re_export runtime_dynamic)
   (re_export typing)
   (re_export instance)
+  (re_export exec)
   (re_export stf)))

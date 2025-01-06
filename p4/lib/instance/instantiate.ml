@@ -602,6 +602,11 @@ and eval_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
       (fun mthd -> match mthd.it with L.ExternConsM _ -> true | _ -> false)
       mthds
   in
+  let conss =
+    if conss = [] then
+      [ L.ExternConsM { id; cparams = []; annos = [] } $ no_info ]
+    else conss
+  in
   List.fold_left
     (fun ctx cons ->
       match cons.it with
@@ -670,10 +675,7 @@ and eval_extern_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
 
 (* Program evaluation *)
 
-let instantiate_program (program : program) : Envs.VEnv.t * Envs.FEnv.t * Sto.t
-    =
+let instantiate_program (program : program) : Ctx.gt * Sto.t =
   Ctx.refresh ();
   let ctx, sto, _decls = eval_decls Ctx.Global Ctx.empty Sto.empty program in
-  let venv = ctx.global.venv in
-  let fenv = ctx.global.fenv in
-  (venv, fenv, sto)
+  (ctx.global, sto)

@@ -2996,6 +2996,8 @@ and type_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
    The last statement in a parser state is an optional transition statement,
    which transfers control to another state, possibly accept or reject. *)
 
+(* (TODO) Consider modeling states as function instead of a value *)
+
 and type_transition_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (expr_label : El.Ast.expr) : Ctx.t * Flow.t * Il.Ast.stmt' =
   check

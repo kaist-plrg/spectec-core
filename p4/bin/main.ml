@@ -56,12 +56,35 @@ let instantiate_command =
        with ParseErr (msg, info) | CheckErr (msg, info) ->
          Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
 
+let run_command =
+  Command.basic ~summary:"run a p4_16 program"
+    (let open Command.Let_syntax in
+     let open Command.Param in
+     let%map includes = flag "-i" (listed string) ~doc:"include paths"
+     and filename = anon ("file.p4" %: string)
+     and stfname = anon ("file.stf" %: string) in
+     fun () ->
+       try
+         let program = typecheck includes filename in
+         let ctx_gt, sto = Instance.Instantiate.instantiate_program program in
+         let (module Driver) =
+           (module Exec.Driver.Make (Exec.V1model.Make) (Exec.Interp.Make)
+           : Exec.Driver.DRIVER)
+         in
+         let stmts_stf = Stf.Parse.parse_file stfname in
+         Driver.run ctx_gt sto stmts_stf
+       with
+       | ParseErr (msg, info) | CheckErr (msg, info) ->
+           Format.printf "Error: %a\n%s\n" Util.Source.pp info msg
+       | StfErr msg -> Format.printf "Error: %s\n" msg)
+
 let command =
   Command.group ~summary:"p4cherry: an interpreter of the p4_16 language"
     [
       ("parse", parse_command);
       ("typecheck", typecheck_command);
       ("instantiate", instantiate_command);
+      ("run", run_command);
     ]
 
 let () = Command_unix.run ~version command
