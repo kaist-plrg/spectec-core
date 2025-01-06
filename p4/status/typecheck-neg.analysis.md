@@ -493,7 +493,9 @@ extern main {}
 
 Here, `main` is a constructor name, not a variable name.
 
-## 5. Scope of a control parameter: [control-shadowing](../test/program/ill-typed-excluded/test-clarify/control-shadowing)
+## \[REPORTED\] 5. Scope of a control parameter: [control-shadowing](../test/program/ill-typed-excluded/test-clarify/control-shadowing)
+
+Reported to p4c, [Issue#5092](https://github.com/p4lang/p4c/issues/5092).
 
 What is the scope of a control parameter?
 Does it live in the same level as the local declarations, or does it live in the same level as the `apply` block?
