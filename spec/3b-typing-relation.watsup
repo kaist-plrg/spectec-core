@@ -26,6 +26,10 @@ relation Stmts_ok: cursor context flow |- stmt* : context flow
 relation Decl_ok: cursor context |- decl : context
 relation Decls_ok: cursor context |- decl* : context
 
+relation Expr_arg_ok: cursor context |- paramtyp (arg, typ) : typ
+relation Arg_ok: cursor context |- arg : typ
+relation Call_site_ok: cursor context |- functyp
+relation Call_convention_ok: cursor context |- paramtyp (arg, typ) : typ
 relation Call_ok: cursor context |- functyp arg* : typ
 relation FuncType_ok: cursor context |- name targ* arg* : functyp
 relation MethodType_ok: cursor context |- expr member targ* arg* : functyp

@@ -2,10 +2,139 @@
 ;; Calling convention
 ;;
 
-;; (TODO) Write the rules for call typing.
-;; Ignore calls by argument names (e.g., f(a = 1)), default parameters,
-;; and type inference for now.
-;; (typing/typecheck.ml/type_call, typing/typecheck/type_call_convention)
+def $is_table_apply_in_arg(arg) : bool   hint(show % IS TABLE_APPLY_IN_ARG)
+
+rule Expr_arg_ok/in:
+  p C |- (id IN typ val?) (ExprA expr, typ') : typ
+  -- Expr_ok: p C |- expr : typ'' ctk
+  -- Sub_impl: typ'' << typ
+
+rule Expr_arg_ok/out:
+  p C |- (id OUT typ val?) (ExprA expr, typ') : typ
+  -- Type_alpha: typ' ~~ typ
+  -- Lval_ok: p C |- expr
+
+rule Expr_arg_ok/inout:
+  p C |- (id INOUT typ val?) (ExprA expr, typ') : typ
+  -- Type_alpha: typ' ~~ typ
+  -- Lval_ok: p C |- expr
+
+rule Expr_arg_ok/no-actiont:
+  p C |- (id NO typ val?) (ExprA expr, typ') : typ
+  -- Expr_ok: p C |- expr : typ'' ctk
+  -- Sub_impl: typ'' << typ
+
+rule Expr_arg_ok/no-not-actiont:
+  p C |- (id NO typ val?) (ExprA expr, typ') : typ
+  -- Type_alpha: typ' ~~ typ
+  -- Expr_ok: p C |- expr : typ'' CTK
+
+rule Call_convention_ok/anya:
+  p C |- (id OUT typ val?) (AnyA, typ) : typ
+
+rule Call_convention_ok/expra:
+  p C |- pt (ExprA expr, typ) : typ'
+  -- Expr_arg_ok: p C |- pt (ExprA expr, typ) : typ'
+
+rule Call_ok/actiont:
+  p C |- (ActionT pt*) arg* : voidt
+  -- (Arg_ok: p C |- arg : typ)*
+  -- if |pt*| = |arg*|
+  ----
+  -- if tidset = $bound_tid(C)
+  -- FuncType_wf: tidset |- (ActionT pt*)
+  ----
+  -- Call_site_ok: p C |- (ActionT pt*)
+  -- if $is_table_apply_in_arg(arg)*
+  -- (Call_convention_ok: p C |- pt (arg, typ) : typ'')*
+
+rule Call_ok/extern-funct:
+  p C |- (ExternFuncT pt* typ) arg* : typ
+  -- (Arg_ok: p C |- arg : typ')*
+  -- if |pt*| = |arg*|
+  ----
+  -- if tidset = $bound_tid(C)
+  -- FuncType_wf: tidset |- (ExternFuncT pt* typ)
+  ----
+  -- Call_site_ok: p C |- (ExternFuncT pt* typ)
+  -- (Call_convention_ok: p C |- pt (arg, typ') : typ'')*
+
+rule Call_ok/funct:
+  p C |- (FuncT pt* typ) arg* : typ
+  -- (Arg_ok: p C |- arg : typ')*
+  -- if |pt*| = |arg*|
+  ----
+  -- if tidset = $bound_tid(C)
+  -- FuncType_wf: tidset |- (FuncT pt* typ)
+  ----
+  -- Call_site_ok: p C |- (FuncT pt* typ)
+  -- (Call_convention_ok: p C |- pt (arg, typ') : typ'')*
+
+rule Call_ok/extern-methodt: ;; typ return
+  p C |- (ExternMethodT pt* typ) arg* : typ
+  -- (Arg_ok: p C |- arg : typ')*
+  -- if |pt*| = |arg*|
+  ----
+  -- if tidset = $bound_tid(C)
+  -- FuncType_wf: tidset |- (ExternMethodT pt* typ)
+  ----
+  -- Call_site_ok: p C |- (ExternMethodT pt* typ)
+  -- (Call_convention_ok: p C |- pt (arg, typ') : typ'')*
+
+rule Call_ok/extern-abstract-methodt: ;; typ return
+  p C |- (ExternAbstractMethodT pt* typ) arg* : typ
+  -- (Arg_ok: p C |- arg : typ')*
+  -- if |pt*| = |arg*|
+  ----
+  -- if tidset = $bound_tid(C)
+  -- FuncType_wf: tidset |- (ExternAbstractMethodT pt* typ)
+  ----
+  -- Call_site_ok: p C |- (ExternAbstractMethodT pt* typ)
+  -- (Call_convention_ok: p C |- pt (arg, typ') : typ'')*
+
+rule Call_ok/parser-apply-methodt: ;; voidt return
+  p C |- (ParserApplyMethodT pt*) arg* : voidt
+  -- (Arg_ok: p C |- arg : typ)*
+  -- if |pt*| = |arg*|
+  ----
+  -- if tidset = $bound_tid(C)
+  -- FuncType_wf: tidset |- (ParserApplyMethodT pt*)
+  ----
+  -- Call_site_ok: p C |- (ParserApplyMethodT pt*)
+  -- (Call_convention_ok: p C |- pt (arg, typ) : typ')*
+
+rule Call_ok/control-apply-methodt: ;; voidt return
+  p C |- (ControlApplyMethodT pt*) arg* : voidt
+  -- (Arg_ok: p C |- arg : typ)*
+  -- if |pt*| = |arg*|
+  ----
+  -- if tidset = $bound_tid(C)
+  -- FuncType_wf: tidset |- (ControlApplyMethodT pt*)
+  ----
+  -- Call_site_ok: p C |- (ControlApplyMethodT pt*)
+  -- (Call_convention_ok: p C |- pt (arg, typ) : typ')*
+
+rule Call_ok/builtin-methodt: ;; typ return
+  p C |- (BuiltinMethodT pt* typ) arg* : typ
+  -- (Arg_ok: p C |- arg : typ')*
+  -- if |pt*| = |arg*|
+  ----
+  -- if tidset = $bound_tid(C)
+  -- FuncType_wf: tidset |- (BuiltinMethodT pt* typ)
+  ----
+  -- Call_site_ok: p C |- (BuiltinMethodT pt* typ)
+  -- (Call_convention_ok: p C |- pt (arg, typ') : typ'')*
+
+rule Call_ok/table-apply-methodt: ;; typ return
+  p C |- (TableApplyMethodT typ) arg* : typ
+  -- (Arg_ok: p C |- arg : typ')*
+  -- if |arg*| = 0
+  ----
+  -- if tidset = $bound_tid(C)
+  -- FuncType_wf: tidset |- (TableApplyMethodT typ)
+  ----
+  -- Call_site_ok: p C |- (TableApplyMethodT typ)
+  -- (Call_convention_ok: p C |- pt (arg, typ') : typ'')*
 
 ;;
 ;; Function typing
