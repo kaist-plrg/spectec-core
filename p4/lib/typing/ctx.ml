@@ -4,6 +4,11 @@ module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
 module Ctk = Runtime_static.Ctk
 module Envs = Runtime_static.Envs
+module VEnv = Envs.VEnv
+module TEnv = Envs.TEnv
+module TDEnv = Envs.TDEnv
+module FDEnv = Envs.FDEnv
+module CDEnv = Envs.CDEnv
 module F = Format
 open Util.Source
 open Util.Error
@@ -41,59 +46,48 @@ type localkind =
   | TableApplyMethod
 
 type gt = {
-  cdenv : Envs.CDEnv.t;
-  tdenv : Envs.TDEnv.t;
-  fdenv : Envs.FDEnv.t;
-  frame : Envs.VEnv.t * Envs.TEnv.t;
+  cdenv : CDEnv.t;
+  tdenv : TDEnv.t;
+  fdenv : FDEnv.t;
+  frame : VEnv.t * TEnv.t;
 }
 
 type bt = {
   kind : blockkind;
-  tdenv : Envs.TDEnv.t;
-  fdenv : Envs.FDEnv.t;
-  frame : Envs.VEnv.t * Envs.TEnv.t;
+  tdenv : TDEnv.t;
+  fdenv : FDEnv.t;
+  frame : VEnv.t * TEnv.t;
 }
 
-type lt = {
-  kind : localkind;
-  tdenv : Envs.TDEnv.t;
-  frames : (Envs.VEnv.t * Envs.TEnv.t) list;
-}
-
+type lt = { kind : localkind; tdenv : TDEnv.t; frames : (VEnv.t * TEnv.t) list }
 type t = { global : gt; block : bt; local : lt }
 
 (* Constructors *)
 
 let empty_gt =
   {
-    cdenv = Envs.CDEnv.empty;
-    tdenv = Envs.TDEnv.empty;
-    fdenv = Envs.FDEnv.empty;
-    frame = (Envs.VEnv.empty, Envs.TEnv.empty);
+    cdenv = CDEnv.empty;
+    tdenv = TDEnv.empty;
+    fdenv = FDEnv.empty;
+    frame = (VEnv.empty, TEnv.empty);
   }
 
 let empty_bt =
   {
     kind = Empty;
-    tdenv = Envs.TDEnv.empty;
-    fdenv = Envs.FDEnv.empty;
-    frame = (Envs.VEnv.empty, Envs.TEnv.empty);
+    tdenv = TDEnv.empty;
+    fdenv = FDEnv.empty;
+    frame = (VEnv.empty, TEnv.empty);
   }
 
-let empty_lt = { kind = Empty; tdenv = Envs.TDEnv.empty; frames = [] }
+let empty_lt = { kind = Empty; tdenv = TDEnv.empty; frames = [] }
 let empty = { global = empty_gt; block = empty_bt; local = empty_lt }
 
 (* Frame management *)
 
 let enter_frame ctx =
-  {
-    ctx with
-    local =
-      {
-        ctx.local with
-        frames = (Envs.VEnv.empty, Envs.TEnv.empty) :: ctx.local.frames;
-      };
-  }
+  let frames = (VEnv.empty, TEnv.empty) :: ctx.local.frames in
+  { ctx with local = { ctx.local with frames } }
 
 let exit_frame ctx =
   match ctx.local.frames with
@@ -110,15 +104,14 @@ let set_localkind kind ctx = { ctx with local = { ctx.local with kind } }
 let rec get_tparams cursor ctx =
   match cursor with
   | Global -> []
-  | Block -> Envs.TDEnv.bindings ctx.block.tdenv |> List.map fst
+  | Block -> TDEnv.bindings ctx.block.tdenv |> List.map fst
   | Local ->
-      (Envs.TDEnv.bindings ctx.local.tdenv |> List.map fst)
-      @ get_tparams Block ctx
+      (TDEnv.bindings ctx.local.tdenv |> List.map fst) @ get_tparams Block ctx
 
 (* Adders *)
 
 let add_consdef cid cd ctx =
-  let cdenv = Envs.CDEnv.add_nodup_overloaded cid cd ctx.global.cdenv in
+  let cdenv = CDEnv.add_nodup_overloaded cid cd ctx.global.cdenv in
   { ctx with global = { ctx.global with cdenv } }
 
 let add_tparam cursor tparam ctx =
@@ -132,8 +125,7 @@ let add_tparam cursor tparam ctx =
           {
             ctx.block with
             tdenv =
-              Envs.TDEnv.add tparam.it (Types.MonoD (VarT tparam.it))
-                ctx.block.tdenv;
+              TDEnv.add tparam.it (Types.MonoD (VarT tparam.it)) ctx.block.tdenv;
           };
       }
   | Local ->
@@ -143,8 +135,7 @@ let add_tparam cursor tparam ctx =
           {
             ctx.local with
             tdenv =
-              Envs.TDEnv.add tparam.it (Types.MonoD (VarT tparam.it))
-                ctx.local.tdenv;
+              TDEnv.add tparam.it (Types.MonoD (VarT tparam.it)) ctx.local.tdenv;
           };
       }
 
@@ -154,22 +145,22 @@ let add_tparams cursor tparams ctx =
 let add_typedef cursor tid td ctx =
   match cursor with
   | Global ->
-      let tdenv = Envs.TDEnv.add_nodup tid td ctx.global.tdenv in
+      let tdenv = TDEnv.add_nodup tid td ctx.global.tdenv in
       { ctx with global = { ctx.global with tdenv } }
   | Block ->
-      let tdenv = Envs.TDEnv.add_nodup tid td ctx.block.tdenv in
+      let tdenv = TDEnv.add_nodup tid td ctx.block.tdenv in
       { ctx with block = { ctx.block with tdenv } }
   | Local ->
-      let tdenv = Envs.TDEnv.add_nodup tid td ctx.local.tdenv in
+      let tdenv = TDEnv.add_nodup tid td ctx.local.tdenv in
       { ctx with local = { ctx.local with tdenv } }
 
 let add_funcdef_non_overload cursor fid fd ctx =
   match cursor with
   | Global ->
-      let fdenv = Envs.FDEnv.add_nodup_non_overloaded fid fd ctx.global.fdenv in
+      let fdenv = FDEnv.add_nodup_non_overloaded fid fd ctx.global.fdenv in
       { ctx with global = { ctx.global with fdenv } }
   | Block ->
-      let fdenv = Envs.FDEnv.add_nodup_non_overloaded fid fd ctx.block.fdenv in
+      let fdenv = FDEnv.add_nodup_non_overloaded fid fd ctx.block.fdenv in
       { ctx with block = { ctx.block with fdenv } }
   | Local ->
       "(add_funcdef_non_overload) local cursor cannot have function definitions"
@@ -178,10 +169,10 @@ let add_funcdef_non_overload cursor fid fd ctx =
 let add_funcdef_overload cursor fid fd ctx =
   match cursor with
   | Global ->
-      let fdenv = Envs.FDEnv.add_nodup_overloaded fid fd ctx.global.fdenv in
+      let fdenv = FDEnv.add_nodup_overloaded fid fd ctx.global.fdenv in
       { ctx with global = { ctx.global with fdenv } }
   | Block ->
-      let fdenv = Envs.FDEnv.add_nodup_overloaded fid fd ctx.block.fdenv in
+      let fdenv = FDEnv.add_nodup_overloaded fid fd ctx.block.fdenv in
       { ctx with block = { ctx.block with fdenv } }
   | Local ->
       "(add_funcdef_overload) Local cursor cannot have function definitions"
@@ -191,19 +182,19 @@ let add_value cursor id value ctx =
   match cursor with
   | Global ->
       let venv, tenv = ctx.global.frame in
-      let venv = Envs.VEnv.add_nodup id value venv in
+      let venv = VEnv.add_nodup id value venv in
       { ctx with global = { ctx.global with frame = (venv, tenv) } }
   | Block ->
       let venv, tenv = ctx.block.frame in
-      let venv = Envs.VEnv.add_nodup id value venv in
+      let venv = VEnv.add_nodup id value venv in
       { ctx with block = { ctx.block with frame = (venv, tenv) } }
   | Local ->
       let frames = ctx.local.frames in
       let (venv, tenv), frames =
-        if frames = [] then ((Envs.VEnv.empty, Envs.TEnv.empty), [])
+        if frames = [] then ((VEnv.empty, TEnv.empty), [])
         else (List.hd frames, List.tl frames)
       in
-      let venv = Envs.VEnv.add_nodup id value venv in
+      let venv = VEnv.add_nodup id value venv in
       let frame = (venv, tenv) in
       { ctx with local = { ctx.local with frames = frame :: frames } }
 
@@ -216,19 +207,19 @@ let add_rtype cursor id typ dir ctk ctx =
   match cursor with
   | Global ->
       let venv, tenv = ctx.global.frame in
-      let tenv = Envs.TEnv.add_nodup id (typ, dir, ctk) tenv in
+      let tenv = TEnv.add_nodup id (typ, dir, ctk) tenv in
       { ctx with global = { ctx.global with frame = (venv, tenv) } }
   | Block ->
       let venv, tenv = ctx.block.frame in
-      let tenv = Envs.TEnv.add_nodup id (typ, dir, ctk) tenv in
+      let tenv = TEnv.add_nodup id (typ, dir, ctk) tenv in
       { ctx with block = { ctx.block with frame = (venv, tenv) } }
   | Local ->
       let frames = ctx.local.frames in
       let (venv, tenv), frames =
-        if frames = [] then ((Envs.VEnv.empty, Envs.TEnv.empty), [])
+        if frames = [] then ((VEnv.empty, TEnv.empty), [])
         else (List.hd frames, List.tl frames)
       in
-      let tenv = Envs.TEnv.add_nodup id (typ, dir, ctk) tenv in
+      let tenv = TEnv.add_nodup id (typ, dir, ctk) tenv in
       let frame = (venv, tenv) in
       { ctx with local = { ctx.local with frames = frame :: frames } }
 
@@ -250,21 +241,21 @@ let remove_rtype cursor id ctx =
       let venv, tenv = ctx.global.frame in
       {
         ctx with
-        global = { ctx.global with frame = (venv, Envs.TEnv.remove id tenv) };
+        global = { ctx.global with frame = (venv, TEnv.remove id tenv) };
       }
   | Block ->
       let venv, tenv = ctx.block.frame in
       {
         ctx with
-        block = { ctx.block with frame = (venv, Envs.TEnv.remove id tenv) };
+        block = { ctx.block with frame = (venv, TEnv.remove id tenv) };
       }
   | Local ->
       let frames = ctx.local.frames in
       let (venv, tenv), frames =
-        if frames = [] then ((Envs.VEnv.empty, Envs.TEnv.empty), [])
+        if frames = [] then ((VEnv.empty, TEnv.empty), [])
         else (List.hd frames, List.tl frames)
       in
-      let frame = (venv, Envs.TEnv.remove id tenv) in
+      let frame = (venv, TEnv.remove id tenv) in
       { ctx with local = { ctx.local with frames = frame :: frames } }
 
 (* Finders *)
@@ -277,12 +268,12 @@ let find_cont finder cursor id ctx = function
 
 let rec find_typedef_opt cursor tid ctx =
   match cursor with
-  | Global -> Envs.TDEnv.find_opt tid ctx.global.tdenv
+  | Global -> TDEnv.find_opt tid ctx.global.tdenv
   | Block ->
-      Envs.TDEnv.find_opt tid ctx.block.tdenv
+      TDEnv.find_opt tid ctx.block.tdenv
       |> find_cont find_typedef_opt Global tid ctx
   | Local ->
-      Envs.TDEnv.find_opt tid ctx.local.tdenv
+      TDEnv.find_opt tid ctx.local.tdenv
       |> find_cont find_typedef_opt Block tid ctx
 
 let find_typedef cursor tid ctx = find_typedef_opt cursor tid ctx |> Option.get
@@ -291,41 +282,30 @@ let find_typedef cursor tid ctx = find_typedef_opt cursor tid ctx |> Option.get
 
 let rec find_funcdef_opt cursor (fname, args) ctx =
   match cursor with
-  | Global -> Envs.FDEnv.find_opt (fname, args) ctx.global.fdenv
+  | Global -> FDEnv.find_func_opt (fname, args) ctx.global.fdenv
   | Block ->
-      Envs.FDEnv.find_opt (fname, args) ctx.block.fdenv
+      FDEnv.find_func_opt (fname, args) ctx.block.fdenv
       |> find_cont find_funcdef_opt Global (fname, args) ctx
   | Local -> find_funcdef_opt Block (fname, args) ctx
 
 let find_funcdef cursor (fname, args) ctx =
   find_funcdef_opt cursor (fname, args) ctx |> Option.get
 
-let rec find_funcdef_overloaded_opt cursor (fname, args) ctx =
+let rec find_funcdef_by_name_opt cursor (fname, args) ctx =
   match cursor with
-  | Global -> Envs.FDEnv.find_overloaded_opt (fname, args) ctx.global.fdenv
+  | Global -> FDEnv.find_func_by_name_opt fname ctx.global.fdenv
   | Block ->
-      Envs.FDEnv.find_overloaded_opt (fname, args) ctx.block.fdenv
-      |> find_cont find_funcdef_overloaded_opt Global (fname, args) ctx
-  | Local -> find_funcdef_overloaded_opt Block (fname, args) ctx
+      FDEnv.find_func_by_name_opt fname ctx.block.fdenv
+      |> find_cont find_funcdef_by_name_opt Global (fname, args) ctx
+  | Local -> find_funcdef_by_name_opt Block (fname, args) ctx
 
-let find_funcdef_overloaded cursor (fname, args) ctx =
-  find_funcdef_overloaded_opt cursor (fname, args) ctx |> Option.get
-
-let rec find_funcdef_non_overloaded_opt cursor (fname, args) ctx =
-  match cursor with
-  | Global -> Envs.FDEnv.find_non_overloaded_opt (fname, args) ctx.global.fdenv
-  | Block ->
-      Envs.FDEnv.find_non_overloaded_opt (fname, args) ctx.block.fdenv
-      |> find_cont find_funcdef_non_overloaded_opt Global (fname, args) ctx
-  | Local -> find_funcdef_non_overloaded_opt Block (fname, args) ctx
-
-let find_funcdef_non_overloaded cursor (fname, args) ctx =
-  find_funcdef_non_overloaded_opt cursor (fname, args) ctx |> Option.get
+let find_funcdef_by_name cursor fname ctx =
+  find_funcdef_by_name_opt cursor fname ctx |> Option.get
 
 (* Finder for constructor definition *)
 
 let find_consdef_opt _cursor (cname, args) ctx =
-  Envs.CDEnv.find_overloaded_opt (cname, args) ctx.global.cdenv
+  CDEnv.find_func_opt (cname, args) ctx.global.cdenv
 
 let find_consdef cursor (cname, args) ctx =
   find_consdef_opt cursor (cname, args) ctx |> Option.get
@@ -336,17 +316,17 @@ let rec find_value_opt cursor id ctx =
   match cursor with
   | Global ->
       let venv, _ = ctx.global.frame in
-      Envs.VEnv.find_opt id venv
+      VEnv.find_opt id venv
   | Block ->
       let venv, _ = ctx.block.frame in
-      Envs.VEnv.find_opt id venv |> find_cont find_value_opt Global id ctx
+      VEnv.find_opt id venv |> find_cont find_value_opt Global id ctx
   | Local ->
       let venvs = ctx.local.frames |> List.map fst in
       List.fold_left
         (fun value venv ->
           match value with
           | Some value -> Some value
-          | None -> Envs.VEnv.find_opt id venv)
+          | None -> VEnv.find_opt id venv)
         None venvs
       |> find_cont find_value_opt Block id ctx
 
@@ -358,17 +338,15 @@ let rec find_rtype_opt cursor id ctx =
   match cursor with
   | Global ->
       let _, tenv = ctx.global.frame in
-      Envs.TEnv.find_opt id tenv
+      TEnv.find_opt id tenv
   | Block ->
       let _, tenv = ctx.block.frame in
-      Envs.TEnv.find_opt id tenv |> find_cont find_rtype_opt Global id ctx
+      TEnv.find_opt id tenv |> find_cont find_rtype_opt Global id ctx
   | Local ->
       let tenvs = ctx.local.frames |> List.map snd in
       List.fold_left
         (fun typ tenv ->
-          match typ with
-          | Some typ -> Some typ
-          | None -> Envs.TEnv.find_opt id tenv)
+          match typ with Some typ -> Some typ | None -> TEnv.find_opt id tenv)
         None tenvs
       |> find_cont find_rtype_opt Block id ctx
 
@@ -384,29 +362,20 @@ let find_opt finder_opt cursor var ctx =
 let find finder_opt cursor var ctx =
   find_opt finder_opt cursor var ctx |> Option.get
 
-let find_non_overloaded_opt finder_non_overloaded_opt cursor var args ctx =
+let find_f_opt finder_f_opt cursor var args ctx =
   match var.it with
-  | L.Top id -> finder_non_overloaded_opt Global (id.it, args) ctx
-  | L.Current id -> finder_non_overloaded_opt cursor (id.it, args) ctx
+  | L.Top id -> finder_f_opt Global (id.it, args) ctx
+  | L.Current id -> finder_f_opt cursor (id.it, args) ctx
 
-let find_non_overloaded finder_non_overloaded_opt cursor var args ctx =
-  find_non_overloaded_opt finder_non_overloaded_opt cursor var args ctx
-  |> Option.get
-
-let find_overloaded_opt finder_overloaded_opt cursor var args ctx =
-  match var.it with
-  | L.Top id -> finder_overloaded_opt Global (id.it, args) ctx
-  | L.Current id -> finder_overloaded_opt cursor (id.it, args) ctx
-
-let find_overloaded finder_overloaded_opt cursor var args ctx =
-  find_overloaded_opt finder_overloaded_opt cursor var args ctx |> Option.get
+let find_f finder_f_opt cursor var args ctx =
+  find_f_opt finder_f_opt cursor var args ctx |> Option.get
 
 (* Pretty-printer *)
 
 let pp_frame fmt frame =
   let venv, tenv = frame in
   F.fprintf fmt "@[@[<v 0>[Values]:@ %a@]@\n@[<v 0>[Types]:@ %a@]@]"
-    (Envs.VEnv.pp ~level:0) venv (Envs.TEnv.pp ~level:0) tenv
+    (VEnv.pp ~level:0) venv (TEnv.pp ~level:0) tenv
 
 let pp_gt fmt (gt : gt) =
   F.fprintf fmt
@@ -414,8 +383,8 @@ let pp_gt fmt (gt : gt) =
      @[@[<v 0>[Constructors]:@ %a@]@\n\
      @[<v 0>[Typedefs]:@ %a@]@\n\
      @[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Frame]:@ %a@]@]" Envs.CDEnv.pp gt.cdenv (Envs.TDEnv.pp ~level:0)
-    gt.tdenv Envs.FDEnv.pp gt.fdenv pp_frame gt.frame
+     @[<v 0>[Frame]:@ %a@]@]" (CDEnv.pp ~level:0) gt.cdenv (TDEnv.pp ~level:0)
+    gt.tdenv (FDEnv.pp ~level:0) gt.fdenv pp_frame gt.frame
 
 let pp_blockkind fmt (kind : blockkind) =
   match kind with
@@ -430,8 +399,8 @@ let pp_bt fmt (bt : bt) =
     "@[@[<v 0>[[Block]]:@ %a@]@\n\
      @[<v 0>[Typedefs]:@ %a@]@\n\
      @[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Frame]:@ %a@]@]" pp_blockkind bt.kind (Envs.TDEnv.pp ~level:0)
-    bt.tdenv Envs.FDEnv.pp bt.fdenv pp_frame bt.frame
+     @[<v 0>[Frame]:@ %a@]@]" pp_blockkind bt.kind (TDEnv.pp ~level:0) bt.tdenv
+    (FDEnv.pp ~level:0) bt.fdenv pp_frame bt.frame
 
 let pp_localkind fmt (kind : localkind) =
   match kind with
@@ -449,8 +418,8 @@ let pp_lt fmt (lt : lt) =
   F.fprintf fmt
     "@[@[<v 0>[[Local]]:@ %a@]@\n\
      @[<v 0>[Typedefs]:@ %a@]@\n\
-     @[<v 0>[Frames]:@ %a@]@]" pp_localkind lt.kind (Envs.TDEnv.pp ~level:0)
-    lt.tdenv (F.pp_print_list pp_frame) lt.frames
+     @[<v 0>[Frames]:@ %a@]@]" pp_localkind lt.kind (TDEnv.pp ~level:0) lt.tdenv
+    (F.pp_print_list pp_frame) lt.frames
 
 let pp fmt ctx =
   F.fprintf fmt

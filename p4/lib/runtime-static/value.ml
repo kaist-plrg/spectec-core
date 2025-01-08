@@ -28,6 +28,7 @@ type t =
   | RecordDefaultV of (L.member' * t) list
   | DefaultV
   | InvalidV
+  | StateV of L.id'
   | RefV of Domain.Dom.OId.t
 
 let rec pp ?(level = 0) fmt value =
@@ -83,6 +84,7 @@ let rec pp ?(level = 0) fmt value =
         (indent level)
   | DefaultV -> F.fprintf fmt "..."
   | InvalidV -> F.fprintf fmt "{#}"
+  | StateV id -> F.fprintf fmt "state %a" P.pp_id' id
   | RefV oid -> F.fprintf fmt "!%a" Domain.Dom.OId.pp oid
 
 (* Equality *)
@@ -141,6 +143,7 @@ let rec eq t_a t_b =
         fields_a fields_b
   | DefaultV, DefaultV -> true
   | InvalidV, InvalidV -> true
+  | StateV id_a, StateV id_b -> id_a = id_b
   | RefV oid_a, RefV oid_b -> oid_a = oid_b
   | _ -> false
 
@@ -184,3 +187,8 @@ let get_enum t =
   match t with
   | EnumFieldV (id, member) -> (id, member)
   | _ -> Format.asprintf "Not an enum value: %a" (pp ~level:0) t |> failwith
+
+let get_state t =
+  match t with
+  | StateV id -> id
+  | _ -> Format.asprintf "Not a state value: %a" (pp ~level:0) t |> failwith

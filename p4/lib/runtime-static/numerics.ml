@@ -333,7 +333,9 @@ let eval_binop_shr (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_le (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | FBitV (_, lvalue), FBitV (_, rvalue) | IntV lvalue, IntV rvalue ->
+  | FIntV (_, lvalue), FIntV (_, rvalue)
+  | FBitV (_, lvalue), FBitV (_, rvalue)
+  | IntV lvalue, IntV rvalue ->
       BoolV Bigint.(lvalue <= rvalue)
   | IntV lvalue, FBitV (width, _) ->
       eval_binop_le (bit_of_raw_int lvalue width) rvalue
@@ -350,7 +352,9 @@ let rec eval_binop_le (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_ge (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | FBitV (_, lvalue), FBitV (_, rvalue) | IntV lvalue, IntV rvalue ->
+  | FIntV (_, lvalue), FIntV (_, rvalue)
+  | FBitV (_, lvalue), FBitV (_, rvalue)
+  | IntV lvalue, IntV rvalue ->
       BoolV Bigint.(lvalue >= rvalue)
   | IntV lvalue, FBitV (width, _) ->
       eval_binop_ge (bit_of_raw_int lvalue width) rvalue
@@ -367,7 +371,9 @@ let rec eval_binop_ge (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_lt (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | FBitV (_, lvalue), FBitV (_, rvalue) | IntV lvalue, IntV rvalue ->
+  | FIntV (_, lvalue), FIntV (_, rvalue)
+  | FBitV (_, lvalue), FBitV (_, rvalue)
+  | IntV lvalue, IntV rvalue ->
       BoolV Bigint.(lvalue < rvalue)
   | IntV lvalue, FBitV (width, _) ->
       eval_binop_lt (bit_of_raw_int lvalue width) rvalue
@@ -384,7 +390,9 @@ let rec eval_binop_lt (lvalue : Value.t) (rvalue : Value.t) : Value.t =
 
 let rec eval_binop_gt (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   match (lvalue, rvalue) with
-  | FBitV (_, lvalue), FBitV (_, rvalue) | IntV lvalue, IntV rvalue ->
+  | FIntV (_, lvalue), FIntV (_, rvalue)
+  | FBitV (_, lvalue), FBitV (_, rvalue)
+  | IntV lvalue, IntV rvalue ->
       BoolV Bigint.(lvalue > rvalue)
   | IntV lvalue, FBitV (width, _) ->
       eval_binop_gt (bit_of_raw_int lvalue width) rvalue

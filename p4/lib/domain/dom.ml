@@ -43,6 +43,9 @@ module IdMap = struct
       (pp_list ~level:(level + 1) pp_binding ~sep:Nl)
       bindings (indent level)
 
+  let extend env_a env_b =
+    List.fold_left (fun env (k, v) -> add k v env) env_a (bindings env_b)
+
   let diff m_a m_b =
     let keys_a = keys m_a in
     let keys_b = keys m_b in
@@ -223,6 +226,9 @@ struct
     if mem id env then
       F.asprintf "key already exists: %a" Id.pp id |> error_no_info
     else add id value env
+
+  let extend_nodup env_a env_b =
+    List.fold_left (fun env (k, v) -> add_nodup k v env) env_a (bindings env_b)
 end
 
 module MakeTIdEnv = MakeIdEnv
@@ -238,7 +244,7 @@ struct
 
   type t = V.t FIdMap.t
 
-  let pp fmt env = FIdMap.pp V.pp fmt env
+  let pp ?(level = 0) fmt env = FIdMap.pp ~level V.pp fmt env
 
   (* Lookup for matching def site to def site *)
   (* (TODO) This must also impose the restriction that default values must be coherent, if specified *)
@@ -251,8 +257,6 @@ struct
     | None -> F.asprintf "key not found: %a" FId.pp fid |> error_no_info
 
   (* Lookups for matching call site to def site *)
-
-  (* Overloaded lookup, allowing defaults *)
 
   let check_named_args args =
     check
@@ -279,12 +283,13 @@ struct
   let check_arity args params = List.length args = List.length params
   let check_args_named arg_names = arg_names <> []
 
-  let find_match_named func arg_names params =
+  let find_match_named fid func arg_names params =
     let param_names = List.map fst params in
     let param_names = List.sort String.compare param_names in
-    if List.for_all2 ( = ) arg_names param_names then Some (func, []) else None
+    if List.for_all2 ( = ) arg_names param_names then Some (fid, func, [])
+    else None
 
-  let find_match_named_default func arg_names params =
+  let find_match_named_default fid func arg_names params =
     let param_names = List.map fst params in
     let param_names = List.sort String.compare param_names in
     let param_missing_names =
@@ -295,18 +300,18 @@ struct
     let arg_names =
       arg_names @ param_missing_names |> List.sort String.compare
     in
-    find_match_named func arg_names params
-    |> Option.map (fun (func, _) -> (func, param_missing_names))
+    find_match_named fid func arg_names params
+    |> Option.map (fun (fid, func, _) -> (fid, func, param_missing_names))
 
-  let find_match_unnamed_default func args params =
+  let find_match_unnamed_default fid func args params =
     let params_default =
       List.filteri (fun i _ -> i >= List.length args) params
     in
     let params_names, params_default = List.split params_default in
-    if List.for_all Fun.id params_default then Some (func, params_names)
+    if List.for_all Fun.id params_default then Some (fid, func, params_names)
     else None
 
-  let find_overloaded_opt (fname, args) fenv =
+  let find_func_opt (fname, args) fenv =
     check_named_args args;
     let arg_names =
       if List.for_all Option.is_some args then
@@ -315,7 +320,8 @@ struct
     in
     let funcs =
       List.filter_map
-        (fun ((fname', params), func) ->
+        (fun (fid, func) ->
+          let fname', params = fid in
           (* Falls into roughly five cases:
              (1) Name mismatch or more args than params
              (2) Arity match
@@ -326,11 +332,11 @@ struct
           else if check_arity_more args params then None
           else if check_arity args params then
             if check_args_named arg_names then
-              find_match_named func arg_names params
-            else Some (func, [])
+              find_match_named fid func arg_names params
+            else Some (fid, func, [])
           else if check_args_named arg_names then
-            find_match_named_default func arg_names params
-          else find_match_unnamed_default func args params)
+            find_match_named_default fid func arg_names params
+          else find_match_unnamed_default fid func args params)
         (bindings fenv)
     in
     match funcs with
@@ -342,24 +348,28 @@ struct
           FId.pp_name fname
         |> error_no_info
 
-  let find_overloaded (fname, args) fenv =
-    match find_overloaded_opt (fname, args) fenv with
+  let find_func (fname, args) fenv =
+    match find_func_opt (fname, args) fenv with
     | Some value -> value
     | _ -> F.asprintf "key not found: %a" FId.pp_name fname |> error_no_info
 
-  (* Non-overloaded lookup, allowing defaults *)
-
-  let find_non_overloaded_opt' fname fenv =
+  let find_funcs_by_name fname fenv =
     List.filter (fun ((fname', _), _) -> fname = fname') (bindings fenv)
     |> List.map snd
 
-  let find_non_overloaded_opt (fname, args) fenv =
-    check_named_args args;
-    let funcs = find_non_overloaded_opt' fname fenv in
-    match funcs with [] -> None | [ func ] -> Some func | _ -> assert false
+  let find_func_by_name_opt fname fenv =
+    let funcs = find_funcs_by_name fname fenv in
+    match funcs with
+    | [] -> None
+    | [ func ] -> Some func
+    | _ ->
+        F.asprintf
+          "(find_func_by_name_opt) cannot resolve overloaded function given %a"
+          FId.pp_name fname
+        |> error_no_info
 
-  let find_non_overloaded (fname, args) fenv =
-    match find_non_overloaded_opt (fname, args) fenv with
+  let find_func_by_name fname fenv =
+    match find_func_by_name_opt fname fenv with
     | Some value -> value
     | _ -> F.asprintf "key not found: %a" FId.pp_name fname |> error_no_info
 
@@ -367,19 +377,18 @@ struct
 
   let add_nodup_overloaded fid value fenv =
     if mem fid fenv then
-      F.asprintf "key already exists: %a" FId.pp fid |> error_no_info
-    else
-      let fname, _ = fid in
-      match find_non_overloaded_opt' fname fenv with
-      | [] -> add fid value fenv
-      | values ->
-          if not (List.for_all (V.eq_kind value) values) then
-            F.asprintf "key already exists: %a" FId.pp fid |> error_no_info
-          else add fid value fenv
+      F.asprintf "key already exists: %a" FId.pp fid |> error_no_info;
+    let fname, _ = fid in
+    match find_funcs_by_name fname fenv with
+    | [] -> add fid value fenv
+    | values ->
+        if not (List.for_all (V.eq_kind value) values) then
+          F.asprintf "key already exists: %a" FId.pp fid |> error_no_info
+        else add fid value fenv
 
   let add_nodup_non_overloaded fid value fenv =
     let fname, _ = fid in
-    match find_non_overloaded_opt' fname fenv with
+    match find_funcs_by_name fname fenv with
     | [] -> add fid value fenv
     | _ -> F.asprintf "key already exists: %a" FId.pp fid |> error_no_info
 end

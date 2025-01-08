@@ -1,19 +1,32 @@
+open Domain.Dom
 open Il.Ast
-module Envs = Runtime_dynamic.Envs
-module Sto = Envs.Sto
+module Envs_static = Runtime_static.Envs
+module Envs_dynamic = Runtime_dynamic.Envs
+module VEnv = Envs_dynamic.VEnv
+module FEnv = Envs_dynamic.FEnv
+module CEnv = Envs_dynamic.CEnv
+module Sto = Envs_dynamic.Sto
 
 module type ARCH = sig
-  val interp_extern : Ctx.t -> Ctx.t * Sig.t
-  val drive : Instance.Ctx.gt -> Sto.t -> Stf.Ast.stmt list -> unit
+  val eval_extern : Ctx.t -> OId.t -> FId.t -> Ctx.t * Sig.t
+  val drive : CEnv.t -> FEnv.t -> VEnv.t -> Sto.t -> Stf.Ast.stmt list -> unit
 end
 
 module type INTERP = sig
   val init : Sto.t -> unit
-  val interp_call : Ctx.t -> expr -> typ list -> arg list -> Ctx.t * Sig.t
+
+  val eval_method_call :
+    Ctx.cursor ->
+    Ctx.t ->
+    expr ->
+    member ->
+    targ list ->
+    arg list ->
+    Ctx.t * Sig.t
 end
 
 module type DRIVER = sig
-  val run : Instance.Ctx.gt -> Sto.t -> Stf.Ast.stmt list -> unit
+  val run : CEnv.t -> FEnv.t -> VEnv.t -> Sto.t -> Stf.Ast.stmt list -> unit
 end
 
 module Make

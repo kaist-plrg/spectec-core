@@ -1,6 +1,6 @@
 module L = Lang.Ast
-module Envs = Runtime_dynamic.Envs
 module F = Format
+module Envs = Runtime_dynamic.Envs
 open Util.Pp
 open Util.Source
 
@@ -132,7 +132,7 @@ let rec find_value_opt cursor id ctx =
 (* Finder for constructor *)
 
 let find_cons_opt _cursor (cname, args) ctx =
-  Envs.CEnv.find_overloaded_opt (cname, args) ctx.global.cenv
+  Envs.CEnv.find_func_opt (cname, args) ctx.global.cenv
 
 let find_cons cursor (cname, args) ctx =
   find_cons_opt cursor (cname, args) ctx |> Option.get
@@ -162,15 +162,15 @@ let pp_gt fmt (gt : gt) =
     "@[@[<v 0>[[Global]]@]@\n\
      @[@[<v 0>[Constructors]:@ %a@]@\n\
      @[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Values]:@ %a@]@]" Envs.CEnv.pp gt.cenv Envs.FEnv.pp gt.fenv
-    (Envs.VEnv.pp ~level:0) gt.venv
+     @[<v 0>[Values]:@ %a@]@]" (Envs.CEnv.pp ~level:0) gt.cenv
+    (Envs.FEnv.pp ~level:0) gt.fenv (Envs.VEnv.pp ~level:0) gt.venv
 
 let pp_bt fmt (bt : bt) =
   F.fprintf fmt
     "@[@[<v 0>[[Block]]@]@\n\
      @[@[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Values]:@ %a@]@]" Envs.FEnv.pp bt.fenv (Envs.VEnv.pp ~level:0)
-    bt.venv
+     @[<v 0>[Values]:@ %a@]@]" (Envs.FEnv.pp ~level:0) bt.fenv
+    (Envs.VEnv.pp ~level:0) bt.venv
 
 let pp_lt fmt (lt : lt) =
   F.fprintf fmt "@[@[<v 0>[[Local]]@]@\n@[%a@]@]"

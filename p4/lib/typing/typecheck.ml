@@ -10,6 +10,11 @@ module FuncDef = Types.FuncDef
 module ConsType = Types.ConsType
 module ConsDef = Types.ConsDef
 module Envs = Runtime_static.Envs
+module VEnv = Envs.VEnv
+module TEnv = Envs.TEnv
+module TDEnv = Envs.TDEnv
+module FDEnv = Envs.FDEnv
+module CDEnv = Envs.CDEnv
 module WF = Wellformed
 module F = Format
 open Util.Source
@@ -2008,13 +2013,12 @@ and type_func (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : El.Ast.var)
   let targs = List.map it targs_il in
   let fd_matched =
     let args = FId.to_names args in
-    Ctx.find_overloaded_opt Ctx.find_funcdef_overloaded_opt cursor var_func args
-      ctx
+    Ctx.find_f_opt Ctx.find_funcdef_opt cursor var_func args ctx
   in
   check
     (Option.is_some fd_matched)
     (Format.asprintf "(type_func) function %a not found" El.Pp.pp_var var_func);
-  let fd, args_default = Option.get fd_matched in
+  let _, fd, args_default = Option.get fd_matched in
   let tparams = FuncDef.get_tparams fd |> fst in
   let ft, tids_fresh = FuncDef.specialize Ctx.fresh fd targs in
   (ft, tids_fresh, tparams, args_default)
@@ -2037,10 +2041,10 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
     let find_method fdenv =
       let fd_matched =
         let args = FId.to_names args in
-        Envs.FDEnv.find_overloaded_opt (member.it, args) fdenv
+        FDEnv.find_func_opt (member.it, args) fdenv
       in
       match fd_matched with
-      | Some (fd, args_default) ->
+      | Some (_, fd, args_default) ->
           let ft, tids_fresh = FuncDef.specialize Ctx.fresh fd targs in
           let tparams = FuncDef.get_tparams fd |> fst in
           (ft, tids_fresh, tparams, args_default)
@@ -2076,7 +2080,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
               params
           in
           let fid = ("apply", params) in
-          Envs.FDEnv.add_nodup_non_overloaded fid fd Envs.FDEnv.empty
+          FDEnv.add_nodup_non_overloaded fid fd FDEnv.empty
         in
         find_method fdenv
     | ControlT params, _ ->
@@ -2092,7 +2096,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
               params
           in
           let fid = ("apply", params) in
-          Envs.FDEnv.add_nodup_non_overloaded fid fd Envs.FDEnv.empty
+          FDEnv.add_nodup_non_overloaded fid fd FDEnv.empty
         in
         find_method fdenv
     | TableT typ, _ -> (
@@ -2324,13 +2328,13 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
   let targs_il, tids_fresh = eval_types_with_check cursor ctx [] targs in
   let cd_matched =
     let args = FId.to_names args in
-    Ctx.find_overloaded_opt Ctx.find_consdef_opt cursor var_inst args ctx
+    Ctx.find_f_opt Ctx.find_consdef_opt cursor var_inst args ctx
   in
   check
     (Option.is_some cd_matched)
     (Format.asprintf "(type_instantiation) instance %a not found" El.Pp.pp_var
        var_inst);
-  let cd, args_default = Option.get cd_matched in
+  let _, cd, args_default = Option.get cd_matched in
   let ct, tids_fresh_inserted =
     let targs = List.map it targs_il in
     ConsDef.specialize Ctx.fresh cd targs
@@ -2402,7 +2406,7 @@ and type_instantiation_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (match Type.canon typ with
     | ExternT (_, fdenv_extern) ->
         not
-          (Envs.FDEnv.exists
+          (FDEnv.exists
              (fun _ (fd : FuncDef.t) ->
                match fd with
                | PolyFD (_, _, ExternAbstractMethodT _) -> true
@@ -3263,8 +3267,8 @@ and type_instantiation_init_extern_abstract_method_decl (cursor : Ctx.cursor)
   (fd, decl_il)
 
 and type_instantiation_init_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (tenv_abstract : Envs.TEnv.t) (fdenv_abstract : Envs.FDEnv.t)
-    (init : El.Ast.decl) : Envs.TEnv.t * Envs.FDEnv.t * Il.Ast.decl =
+    (tenv_abstract : TEnv.t) (fdenv_abstract : FDEnv.t) (init : El.Ast.decl) :
+    TEnv.t * FDEnv.t * Il.Ast.decl =
   let tenv_abstract, fdenv_abstract, init_il =
     type_instantiation_init_decl' cursor ctx tenv_abstract fdenv_abstract
       init.it
@@ -3272,15 +3276,15 @@ and type_instantiation_init_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   (tenv_abstract, fdenv_abstract, init_il $ init.at)
 
 and type_instantiation_init_decl' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (tenv_abstract : Envs.TEnv.t) (fdenv_abstract : Envs.FDEnv.t)
-    (init : El.Ast.decl') : Envs.TEnv.t * Envs.FDEnv.t * Il.Ast.decl' =
+    (tenv_abstract : TEnv.t) (fdenv_abstract : FDEnv.t) (init : El.Ast.decl') :
+    TEnv.t * FDEnv.t * Il.Ast.decl' =
   match init with
   | InstD { id; var_inst; targs; args; init; annos } ->
       let ctx, decl_il =
         type_instantiation_decl cursor ctx id var_inst targs args init annos
       in
       let rtype = Ctx.find_rtype cursor id.it ctx in
-      let tenv_abstract = Envs.TEnv.add_nodup id.it rtype tenv_abstract in
+      let tenv_abstract = TEnv.add_nodup id.it rtype tenv_abstract in
       (tenv_abstract, fdenv_abstract, decl_il)
   | FuncD { id; typ_ret; tparams; params; body } ->
       let fid = FId.to_fid id params in
@@ -3291,7 +3295,7 @@ and type_instantiation_init_decl' (cursor : Ctx.cursor) (ctx : Ctx.t)
             {
               ctx.block with
               kind = Ctx.Extern;
-              frame = (Envs.VEnv.empty, tenv_abstract);
+              frame = (VEnv.empty, tenv_abstract);
             };
         }
       in
@@ -3299,9 +3303,7 @@ and type_instantiation_init_decl' (cursor : Ctx.cursor) (ctx : Ctx.t)
         type_instantiation_init_extern_abstract_method_decl Ctx.Block ctx id
           tparams params typ_ret body
       in
-      let fdenv_abstract =
-        Envs.FDEnv.add_nodup_overloaded fid fd fdenv_abstract
-      in
+      let fdenv_abstract = FDEnv.add_nodup_overloaded fid fd fdenv_abstract in
       (tenv_abstract, fdenv_abstract, decl_il)
   | _ ->
       Format.asprintf
@@ -3310,7 +3312,7 @@ and type_instantiation_init_decl' (cursor : Ctx.cursor) (ctx : Ctx.t)
       |> error_no_info
 
 and type_instantiation_init_decls (ctx : Ctx.t) (inits : El.Ast.decl list) :
-    Envs.TEnv.t * Envs.FDEnv.t * Il.Ast.decl list =
+    TEnv.t * FDEnv.t * Il.Ast.decl list =
   List.fold_left
     (fun (tenv_abstract, fdenv_abstract, inits_il) init ->
       let tenv_abstract, fdenv_abstract, init_il =
@@ -3318,7 +3320,7 @@ and type_instantiation_init_decls (ctx : Ctx.t) (inits : El.Ast.decl list) :
           init
       in
       (tenv_abstract, fdenv_abstract, inits_il @ [ init_il ]))
-    (Envs.TEnv.empty, Envs.FDEnv.empty, [])
+    (TEnv.empty, FDEnv.empty, [])
     inits
 
 and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
@@ -3356,7 +3358,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       let fdenv_extern =
         List.fold_left
           (fun fdenv_extern (fid, fd_abstract) ->
-            let fd_extern = Envs.FDEnv.find_opt fid fdenv_extern in
+            let fd_extern = FDEnv.find_opt fid fdenv_extern in
             let fd_extern =
               match (fd_extern : FuncDef.t option) with
               | Some
@@ -3387,10 +3389,10 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
                  "(type_instantiation_decl) abstract method %a does not match \
                   the declared type"
                  FId.pp fid);
-            let fdenv_extern = Envs.FDEnv.add fid fd_extern fdenv_extern in
+            let fdenv_extern = FDEnv.add fid fd_extern fdenv_extern in
             fdenv_extern)
           fdenv_extern
-          (Envs.FDEnv.bindings fdenv_abstract)
+          (FDEnv.bindings fdenv_abstract)
       in
       List.iter
         (fun (fid, fd) ->
@@ -3402,7 +3404,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
                 FId.pp fid
               |> error_no_info
           | _ -> ())
-        (Envs.FDEnv.bindings fdenv_extern);
+        (FDEnv.bindings fdenv_extern);
       let tdp =
         let typ_extern = Types.ExternT (id, fdenv_extern) in
         (tparams, tparams_hidden, typ_extern)
@@ -3704,8 +3706,8 @@ and type_newtype_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         let ctx', _ = type_decl cursor ctx decl in
         let tid_newtype =
           TIdSet.diff
-            (Envs.TDEnv.keys ctx'.global.tdenv |> TIdSet.of_list)
-            (Envs.TDEnv.keys ctx.global.tdenv |> TIdSet.of_list)
+            (TDEnv.keys ctx'.global.tdenv |> TIdSet.of_list)
+            (TDEnv.keys ctx.global.tdenv |> TIdSet.of_list)
         in
         assert (TIdSet.cardinal tid_newtype = 1);
         let tid_newtype = TIdSet.choose tid_newtype in
@@ -3744,8 +3746,8 @@ and type_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         let ctx', _ = type_decl cursor ctx decl in
         let tid_typedef =
           TIdSet.diff
-            (Envs.TDEnv.keys ctx'.global.tdenv |> TIdSet.of_list)
-            (Envs.TDEnv.keys ctx.global.tdenv |> TIdSet.of_list)
+            (TDEnv.keys ctx'.global.tdenv |> TIdSet.of_list)
+            (TDEnv.keys ctx.global.tdenv |> TIdSet.of_list)
         in
         assert (TIdSet.cardinal tid_typedef = 1);
         let tid_typedef = TIdSet.choose tid_typedef in
@@ -4101,12 +4103,12 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let ctx'' = Ctx.add_tparams Ctx.Block tparams ctx'' in
   let ctx'', cons_il = type_mthds Ctx.Block ctx'' tparams cons in
   (* Update the context with the constructor definition environment *)
-  let cdenv_diff = Envs.CDEnv.diff ctx''.global.cdenv ctx.global.cdenv in
+  let cdenv_diff = CDEnv.diff ctx''.global.cdenv ctx.global.cdenv in
   let ctx =
     List.fold_left
       (fun ctx (cid, cd) -> Ctx.add_consdef cid cd ctx)
       ctx
-      (Envs.CDEnv.bindings cdenv_diff)
+      (CDEnv.bindings cdenv_diff)
   in
   let decl_il =
     Il.Ast.ExternObjectD
@@ -4648,8 +4650,7 @@ and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let var_action, args, annos = table_action in
   let fd =
     let args = FId.to_names args in
-    Ctx.find_non_overloaded_opt Ctx.find_funcdef_non_overloaded_opt cursor
-      var_action args ctx
+    Ctx.find_f_opt Ctx.find_funcdef_by_name_opt cursor var_action args ctx
   in
   check (Option.is_some fd)
     (Format.asprintf "(type_table_action) there is no action named %a\n"

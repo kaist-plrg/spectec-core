@@ -11,6 +11,9 @@ module Func = Runtime_dynamic.Func
 module Cons = Runtime_dynamic.Cons
 module Obj = Runtime_dynamic.Object
 module Envs = Runtime_dynamic.Envs
+module VEnv = Envs.VEnv
+module FEnv = Envs.FEnv
+module CEnv = Envs.CEnv
 module Sto = Envs.Sto
 module F = Format
 open Util.Source
@@ -138,6 +141,7 @@ and do_instantiate_parser (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
   let ctx_apply, sto, decls = eval_decls cursor ctx sto decls in
   let ctx_apply, sto = eval_parser_states cursor ctx_apply sto states in
   let func_apply =
+    let venv_apply = ctx_apply.block.venv in
     let fenv_apply = ctx_apply.block.fenv in
     let body_apply =
       let stmt_apply =
@@ -151,7 +155,7 @@ and do_instantiate_parser (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
       in
       ([ stmt_apply ], []) $ no_info
     in
-    Func.ParserApplyMethodF (params, fenv_apply, decls, body_apply)
+    Func.ParserApplyMethodF (params, venv_apply, fenv_apply, decls, body_apply)
   in
   let ctx_parser =
     let fid_apply = FId.to_fid ("apply" $ no_info) params in
@@ -184,7 +188,10 @@ and do_instantiate_package (_cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) :
 (* (TODO) Handle custom table properties *)
 and do_instantiate_table (_cursor : Ctx.cursor) (_ctx : Ctx.t) (sto : Sto.t)
     (table : table) : Sto.t * Obj.t =
-  let obj = Obj.TableO table in
+  let fid_apply = FId.to_fid ("apply" $ no_info) [] in
+  let func_apply = Func.TableApplyMethodF table in
+  let fenv = FEnv.add fid_apply func_apply FEnv.empty in
+  let obj = Obj.TableO fenv in
   (sto, obj)
 
 (* Argument evaluation *)
@@ -242,7 +249,9 @@ and eval_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 and eval_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (typ : typ) (var_inst : var) (targs : typ list) (args : arg list) :
     Ctx.t * Sto.t * stmt' =
-  let cons, _ = Ctx.find_overloaded Ctx.find_cons_opt cursor var_inst [] ctx in
+  let _, cons, _ =
+    Ctx.find_overloaded Ctx.find_cons_opt cursor var_inst [] ctx
+  in
   let sto, obj = do_instantiate cursor ctx sto cons targs [] [] in
   let id = F.asprintf "%a" Il.Pp.pp_var var_inst in
   let oid = ctx.path @ [ id ] in
@@ -426,7 +435,7 @@ and eval_call_type_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t) (sto : Sto.t)
    Then the reference value will be lost, i.e., not bound in any environment. *)
 and eval_inst_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (var_inst : var) (targs : typ list) (args : arg list) : Sto.t * Value.t =
-  let cons, args_default =
+  let _, cons, args_default =
     let args = FId.to_names args in
     Ctx.find_overloaded Ctx.find_cons_opt cursor var_inst args ctx
   in
@@ -490,7 +499,7 @@ and eval_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id) (_typ : typ)
 and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
     (typ : typ) (var_inst : var) (targs : typ list) (args : arg list)
     (init : decl list) (_annos : anno list) : Ctx.t * Sto.t * decl' =
-  let cons, args_default =
+  let _, cons, args_default =
     let args = FId.to_names args in
     Ctx.find_overloaded Ctx.find_cons_opt cursor var_inst args ctx
   in
@@ -506,13 +515,13 @@ and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
         in
         let ctx_init, sto, _ = eval_decls Ctx.Block ctx_init sto init in
         let venv_obj =
-          Envs.VEnv.bindings ctx_init.block.venv
+          VEnv.bindings ctx_init.block.venv
           |> List.fold_left
-               (fun venv_obj (id, value) -> Envs.VEnv.add id value venv_obj)
+               (fun venv_obj (id, value) -> VEnv.add id value venv_obj)
                venv_obj
         in
         let fenv_obj =
-          Envs.FEnv.bindings ctx_init.block.fenv
+          FEnv.bindings ctx_init.block.fenv
           |> List.fold_left
                (fun fenv_obj (fid, func) ->
                  let func =
@@ -521,7 +530,7 @@ and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
                        Func.ExternMethodF (tparams, params, Some body)
                    | _ -> assert false
                  in
-                 Envs.FEnv.remove fid fenv_obj |> Envs.FEnv.add fid func)
+                 FEnv.remove fid fenv_obj |> FEnv.add fid func)
                fenv_obj
         in
         (sto, Obj.ExternO (venv_obj, fenv_obj))
@@ -631,19 +640,39 @@ and eval_parser_state_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
   assert (cursor = Ctx.Block);
   let label, block, _annos = state.it in
   let ctx, sto, block = eval_block Ctx.Local ctx sto block in
+  let value_state = Value.StateV label.it in
   let func_state = Func.ParserStateF block in
   let ctx =
+    let id_state = label.it in
     let fid_state = FId.to_fid label [] in
-    Ctx.add_func_non_overload cursor fid_state func_state ctx
+    Ctx.add_value cursor id_state value_state ctx
+    |> Ctx.add_func_non_overload cursor fid_state func_state
   in
   (ctx, sto)
+
+and eval_parser_state_builtin_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (label : state_label) : Ctx.t =
+  let value_state = Value.StateV label.it in
+  let func_state = Func.ParserStateF (([], []) $ no_info) in
+  let ctx =
+    let id_state = label.it in
+    let fid_state = FId.to_fid label [] in
+    Ctx.add_value cursor id_state value_state ctx
+    |> Ctx.add_func_non_overload cursor fid_state func_state
+  in
+  ctx
 
 and eval_parser_states (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (states : parser_state list) : Ctx.t * Sto.t =
   assert (cursor = Ctx.Block);
-  List.fold_left
-    (fun (ctx, sto) state -> eval_parser_state_decl cursor ctx sto state)
-    (ctx, sto) states
+  let ctx = eval_parser_state_builtin_decl cursor ctx ("accept" $ no_info) in
+  let ctx = eval_parser_state_builtin_decl cursor ctx ("reject" $ no_info) in
+  let ctx, sto =
+    List.fold_left
+      (fun (ctx, sto) state -> eval_parser_state_decl cursor ctx sto state)
+      (ctx, sto) states
+  in
+  (ctx, sto)
 
 (* Method evaluation *)
 
@@ -675,7 +704,10 @@ and eval_extern_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
 
 (* Program evaluation *)
 
-let instantiate_program (program : program) : Ctx.gt * Sto.t =
+let instantiate_program (program : program) : CEnv.t * FEnv.t * VEnv.t * Sto.t =
   Ctx.refresh ();
   let ctx, sto, _decls = eval_decls Ctx.Global Ctx.empty Sto.empty program in
-  (ctx.global, sto)
+  let cenv = ctx.global.cenv in
+  let fenv = ctx.global.fenv in
+  let venv = ctx.global.venv in
+  (cenv, fenv, venv, sto)

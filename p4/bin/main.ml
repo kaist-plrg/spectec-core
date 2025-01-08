@@ -66,13 +66,15 @@ let run_command =
      fun () ->
        try
          let program = typecheck includes filename in
-         let ctx_gt, sto = Instance.Instantiate.instantiate_program program in
+         let cenv, fenv, venv, sto =
+           Instance.Instantiate.instantiate_program program
+         in
          let (module Driver) =
            (module Exec.Driver.Make (Exec.V1model.Make) (Exec.Interp.Make)
            : Exec.Driver.DRIVER)
          in
          let stmts_stf = Stf.Parse.parse_file stfname in
-         Driver.run ctx_gt sto stmts_stf
+         Driver.run cenv fenv venv sto stmts_stf
        with
        | ParseErr (msg, info) | CheckErr (msg, info) ->
            Format.printf "Error: %a\n%s\n" Util.Source.pp info msg

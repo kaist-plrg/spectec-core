@@ -1,5 +1,4 @@
 open Domain.Dom
-open Il.Ast
 module F = Format
 module Value = Runtime_static.Value
 open Util.Pp
@@ -9,7 +8,7 @@ type t =
   | ParserO of Value.t IdMap.t * Func.t FIdMap.t
   | ControlO of Value.t IdMap.t * Func.t FIdMap.t
   | PackageO of Value.t IdMap.t
-  | TableO of table
+  | TableO of Func.t FIdMap.t
 
 let pp ?(level = 0) fmt = function
   | ExternO (venv, fenv) ->
@@ -41,8 +40,8 @@ let pp ?(level = 0) fmt = function
         (indent (level + 1))
         (IdMap.pp ~level:(level + 1) Value.pp)
         venv (indent level)
-  | TableO table ->
-      F.fprintf fmt "TableO {\n%s%a\n%s}"
+  | TableO fenv ->
+      F.fprintf fmt "PackageO {\n%sfenv : %a\n%s}"
         (indent (level + 1))
-        (Il.Pp.pp_table ~level:(level + 1))
-        table (indent level)
+        (FIdMap.pp ~level:(level + 1) Func.pp)
+        fenv (indent level)
