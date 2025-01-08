@@ -126,12 +126,6 @@ syntax param = id dir type expr?
 syntax cparam = param
 
 ;;
-;; Constructor context indicator
-;;
-
-syntax consctxt hint(show %latex("\\texttt{c}")) = _
-
-;;
 ;; Type arguments
 ;;
 

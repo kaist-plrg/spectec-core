@@ -1,32 +1,42 @@
 ;;
+;; Constructor context indicator
+;;
+
+syntax consctxt hint(show %latex("\\texttt{c}")) = _
+
+;;
+;; Action context indicator
+;;
+
+syntax actctxt = ACT | NOACT
+
+;;
 ;; Expression check
 ;;
 
-def $is_boole(expr) : bool                hint(show % IS BOOL_EXPR)
-def $is_stre(expr) : bool                 hint(show % IS STR_EXPR)
-def $is_nume(expr) : bool                 hint(show % IS NUM_EXPR)
-def $is_namee(expr) : bool                hint(show % IS NAME_EXPR)
-def $is_seqe(expr) : bool                 hint(show % IS SEQ_EXPR)
-def $is_seq_defte(expr) : bool            hint(show % IS SEQ_DEFT_EXPR)
-def $is_recorde(expr) : bool              hint(show % IS RECORD_EXPR)
-def $is_record_defte(expr) : bool         hint(show % IS RECORD_DEFT_EXPR)
-def $is_defte(expr) : bool                hint(show % IS DEFT_EXPR)
-def $is_invalide(expr) : bool             hint(show % IS INVALID_EXPR)
-def $is_une(expr) : bool                  hint(show % IS UNARY_EXPR)
-def $is_bine(expr) : bool                 hint(show % IS BINARY_EXPR)
-def $is_terne(expr) : bool                hint(show % IS TERNARY_EXPR)
-def $is_caste(expr) : bool                hint(show % IS CAST_EXPR)
-def $is_maske(expr) : bool                hint(show % IS MASK_EXPR)
-def $is_rangee(expr) : bool               hint(show % IS RANGE_EXPR)
-def $is_selecte(expr) : bool              hint(show % IS SELECT_EXPR)
-def $is_arracce(expr) : bool              hint(show % IS ARR_ACC_EXPR)
-def $is_bitacce(expr) : bool              hint(show % IS BIT_ACC_EXPR)
-def $is_erracce(expr) : bool              hint(show % IS ERR_ACC_EXPR)
-def $is_typacce(expr) : bool              hint(show % IS TYP_ACC_EXPR)
-def $is_expracce(expr) : bool             hint(show % IS EXPR_ACC_EXPR)
-def $is_callfunce(expr) : bool            hint(show % IS CALL_FUNC_EXPR)
-def $is_callmethode(expr) : bool          hint(show % IS CALL_METHOD_EXPR)
-def $is_calltype(expr) : bool             hint(show % IS CALL_TYP_EXPR)
-def $is_inste(expr) : bool                hint(show % IS INST_EXPR)
-
-
+def $is_boole(expr) : bool                hint(show % IS BOOL_E)
+def $is_stre(expr) : bool                 hint(show % IS STR_E)
+def $is_nume(expr) : bool                 hint(show % IS NUM_E)
+def $is_namee(expr) : bool                hint(show % IS NAME_E)
+def $is_seqe(expr) : bool                 hint(show % IS SEQ_E)
+def $is_seq_defte(expr) : bool            hint(show % IS SEQ_DEFT_E)
+def $is_recorde(expr) : bool              hint(show % IS RECORD_E)
+def $is_record_defte(expr) : bool         hint(show % IS RECORD_DEFT_E)
+def $is_defte(expr) : bool                hint(show % IS DEFT_E)
+def $is_invalide(expr) : bool             hint(show % IS INVALID_E)
+def $is_une(expr) : bool                  hint(show % IS UNARY_E)
+def $is_bine(expr) : bool                 hint(show % IS BINARY_E)
+def $is_terne(expr) : bool                hint(show % IS TERNARY_E)
+def $is_caste(expr) : bool                hint(show % IS CAST_E)
+def $is_maske(expr) : bool                hint(show % IS MASK_E)
+def $is_rangee(expr) : bool               hint(show % IS RANGE_E)
+def $is_selecte(expr) : bool              hint(show % IS SELECT_E)
+def $is_arracce(expr) : bool              hint(show % IS ARR_ACC_E)
+def $is_bitacce(expr) : bool              hint(show % IS BIT_ACC_E)
+def $is_erracce(expr) : bool              hint(show % IS ERR_ACC_E)
+def $is_typacce(expr) : bool              hint(show % IS TYP_ACC_E)
+def $is_expracce(expr) : bool             hint(show % IS E_ACC_E)
+def $is_callfunce(expr) : bool            hint(show % IS CALL_FUNC_E)
+def $is_callmethode(expr) : bool          hint(show % IS CALL_METHOD_E)
+def $is_calltype(expr) : bool             hint(show % IS CALL_TYP_E)
+def $is_inste(expr) : bool                hint(show % IS INST_E)
