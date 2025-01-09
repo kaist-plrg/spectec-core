@@ -3,6 +3,7 @@ open Source
 exception ParseErr of string * info
 exception CheckErr of string * info
 exception InstErr of string * info
+exception InterpErr of string * info
 exception StfErr of string
 
 (* Constructors *)
@@ -23,6 +24,16 @@ let error_checker_pass_info (info : info) = function
 
 let error_inst_info (info : info) (msg : string) = raise (InstErr (msg, info))
 let error_inst_no_info (msg : string) = raise (InstErr (msg, no_info))
+
+let error_interp_info (info : info) (msg : string) =
+  raise (InterpErr (msg, info))
+
+let error_interp_no_info (msg : string) = raise (InterpErr (msg, no_info))
+
+let error_interp_pass_info (info : info) = function
+  | InterpErr (msg, M "") -> raise (InterpErr (msg, info))
+  | err -> raise err
+
 let error_stf (msg : string) = raise (StfErr msg)
 
 (* Conditionals *)
