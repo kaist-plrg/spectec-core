@@ -51,7 +51,7 @@ fmt:
 
 .PHONY: test test-parser test-typecheck
 
-test: test-parser test-typecheck-pos test-typecheck-neg test-instantiate
+test: test-parser test-typecheck-pos test-typecheck-neg test-instantiate test-run-v1model
 
 test-parser: build-p4-release
 	./$(TEST) parse -i p4/test/arch p4/test/program/well-typed > p4/status/parser.log 2> p4/status/parser.err
@@ -66,6 +66,9 @@ test-typecheck-neg: build-p4-release
 
 test-instantiate: build-p4-release
 	./$(TEST) instantiate -i p4/test/arch p4/test/program/well-typed > p4/status/instantiate.log 2> p4/status/instantiate.err
+
+test-run-v1model: build-p4-release
+	./$(TEST) run -i p4/test/arch -a v1model p4/test/program/well-typed p4/test/stf/v1model > p4/status/run-v1model.log 2> p4/status/run-v1model.err
 
 # Cleanup
 

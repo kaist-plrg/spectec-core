@@ -15,6 +15,9 @@ module FEnv = Envs_dynamic.FEnv
 module CEnv = Envs_dynamic.CEnv
 module Sto = Envs_dynamic.Sto
 open Util.Source
+open Util.Error
+
+let error_no_info = error_interp_no_info
 
 (* (TODO) Inserts VoidT, shouldn't matter in dynamics but not a good practice either *)
 let no_info_expr = (no_info, Il.Ast.{ typ = Types.VoidT; ctk = Ctk.DYN })
@@ -150,8 +153,9 @@ module Make (Interp : INTERP) : ARCH = struct
         externs := Externs.add "packet_out" (PacketOut pkt_out) !externs;
         (ctx, Sig.Ret None)
     | _ ->
-        Format.asprintf "Unknown extern: %a.%a" OId.pp oid FId.pp fid
-        |> failwith
+        Format.asprintf "(eval_extern) unknown extern: %a.%a" OId.pp oid FId.pp
+          fid
+        |> error_no_info
 
   (* Pipeline driver *)
 
@@ -296,7 +300,10 @@ module Make (Interp : INTERP) : ARCH = struct
         | (port_out, packet_out) :: queue_packet ->
             compare (port_out, packet_out) (port_expect, packet_expect);
             (ctx, queue_packet, queue_expect))
-    | _ -> (ctx, queue_packet, queue_expect)
+    | _ ->
+        Format.asprintf "(drive_stf_stmt) unknown stf stmt: %a"
+          Stf.Print.print_stmt stmt_stf
+        |> error_no_info
 
   let drive_stf_stmts (ctx : Ctx.t) (stmts_stf : Stf.Ast.stmt list) : unit =
     List.fold_left

@@ -61,6 +61,7 @@ let run_command =
     (let open Command.Let_syntax in
      let open Command.Param in
      let%map includes = flag "-i" (listed string) ~doc:"include paths"
+     and arch = flag "-a" (required string) ~doc:"target architecture"
      and filename = anon ("file.p4" %: string)
      and stfname = anon ("file.stf" %: string) in
      fun () ->
@@ -70,8 +71,11 @@ let run_command =
            Instance.Instantiate.instantiate_program program
          in
          let (module Driver) =
-           (module Exec.Driver.Make (Exec.V1model.Make) (Exec.Interp.Make)
-           : Exec.Driver.DRIVER)
+           match arch with
+           | "v1model" ->
+               (module Exec.Driver.Make (Exec.V1model.Make) (Exec.Interp.Make)
+               : Exec.Driver.DRIVER)
+           | _ -> failwith "unsupported architecture"
          in
          let stmts_stf = Stf.Parse.parse_file stfname in
          Driver.run cenv fenv venv sto stmts_stf

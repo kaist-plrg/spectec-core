@@ -1,6 +1,11 @@
 module Value = Runtime_static.Value
 module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
+open Util.Error
+
+let error_no_info = error_interp_no_info
+
+(* Bit manipulation *)
 
 type bits = bool Array.t
 
@@ -61,6 +66,8 @@ let rec sizeof (ctx : Ctx.t) (typ : Type.t) : int =
       |> List.fold_left ( + ) 0
   | _ -> Format.asprintf "(TODO: sizeof) %a" (Type.pp ~level:0) typ |> failwith
 
+(* Input packet *)
+
 module PacketIn = struct
   type t = { bits : bits; idx : int; len : int }
 
@@ -114,11 +121,15 @@ module PacketIn = struct
     let ctx = Ctx.update_value Ctx.Local "hdr" hdr ctx in
     (ctx, pkt)
 
-  let extract_varsize (_ctx : Ctx.t) _pkt = failwith "TODO"
-  let lookahead (_ctx : Ctx.t) _pkt = failwith "TODO"
-  let advance (_ctx : Ctx.t) _pkt = failwith "TODO"
-  let length (_ctx : Ctx.t) _pkt = failwith "TODO"
+  let extract_varsize (_ctx : Ctx.t) _pkt =
+    "(TODO : extract_varsize)" |> error_no_info
+
+  let lookahead (_ctx : Ctx.t) _pkt = "(TODO : lookahead)" |> error_no_info
+  let advance (_ctx : Ctx.t) _pkt = "(TODO : advance)" |> error_no_info
+  let length (_ctx : Ctx.t) _pkt = "(TODO : length)" |> error_no_info
 end
+
+(* Output packet *)
 
 module PacketOut = struct
   type t = { bits : bits }
@@ -137,7 +148,7 @@ module PacketOut = struct
         List.fold_left (fun pkt (_, value) -> deparse pkt value) pkt fields
     | _ ->
         Format.asprintf "(TODO: deparse) %a" (Value.pp ~level:0) value
-        |> failwith
+        |> error_no_info
 
   (* Write @hdr into the output packet, advancing cursor.
      @T can be a header type, a header stack, a header_union, or a struct

@@ -583,8 +583,8 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and eval_func_call (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : var)
       (targs : typ list) (args : arg list) : Ctx.t * Sig.t =
-    Format.printf "Call %a%a%a\n" Il.Pp.pp_var var_func
-      (Il.Pp.pp_targs ~level:0) targs Il.Pp.pp_args args;
+    (* Format.printf "Call %a%a%a\n" Il.Pp.pp_var var_func *)
+    (*   (Il.Pp.pp_targs ~level:0) targs Il.Pp.pp_args args; *)
     let (fid, func, args_default), cursor_func =
       let args = FId.to_names args in
       Ctx.find_f_at Ctx.find_func_at_opt cursor var_func args ctx
@@ -604,8 +604,8 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and eval_method_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
       (member : member) (targs : typ list) (args : arg list) : Ctx.t * Sig.t =
-    Format.printf "Call %a.%a%a%a\n" (Il.Pp.pp_expr ~level:0) expr_base
-      Il.Pp.pp_member member (Il.Pp.pp_targs ~level:0) targs Il.Pp.pp_args args;
+    (* Format.printf "Call %a.%a%a%a\n" (Il.Pp.pp_expr ~level:0) expr_base *)
+    (*   Il.Pp.pp_member member (Il.Pp.pp_targs ~level:0) targs Il.Pp.pp_args args; *)
     let ctx, value_base = eval_expr cursor ctx expr_base in
     match value_base with
     | RefV path ->

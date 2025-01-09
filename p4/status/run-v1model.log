@@ -1,0 +1,1129 @@
+Running run tests on 196 files
+
+
+>>> Running run test on p4/test/program/well-typed/arith-bmv2.p4 with p4/test/stf/v1model/arith-bmv2.stf
+[PASS] Expected: 0 00000000000000000000000000000000 / Actual: 0 00000000000000000000000000000000
+[PASS] Expected: 0 00000001000000000000000000000001 / Actual: 0 00000001000000000000000000000001
+[PASS] Expected: 0 00000001000000010000000000000002 / Actual: 0 00000001000000010000000000000002
+[PASS] Expected: 0 00000011000000220000000000000033 / Actual: 0 00000011000000220000000000000033
+[PASS] Expected: 0 FFFFFFFF000000010000000000000000 / Actual: 0 FFFFFFFF000000010000000000000000
+Run success
+
+>>> Running run test on p4/test/program/well-typed/arith-inline-bmv2.p4 with p4/test/stf/v1model/arith-inline-bmv2.stf
+[PASS] Expected: 0 00000000000000000000000000000000 / Actual: 0 00000000000000000000000000000000
+[PASS] Expected: 0 00000001000000000000000000000001 / Actual: 0 00000001000000000000000000000001
+[PASS] Expected: 0 00000001000000010000000000000002 / Actual: 0 00000001000000010000000000000002
+[PASS] Expected: 0 00000011000000220000000000000033 / Actual: 0 00000011000000220000000000000033
+[PASS] Expected: 0 FFFFFFFF000000010000000000000000 / Actual: 0 FFFFFFFF000000010000000000000000
+Run success
+
+>>> Running run test on p4/test/program/well-typed/arith1-bmv2.p4 with p4/test/stf/v1model/arith1-bmv2.stf
+[PASS] Expected: 0 000000000000000000 / Actual: 0 000000000000000000
+[PASS] Expected: 0 000000010000000000 / Actual: 0 000000010000000000
+[PASS] Expected: 0 000000010000000201 / Actual: 0 000000010000000201
+[PASS] Expected: 0 000000110000002201 / Actual: 0 000000110000002201
+[FAIL] Expected: 0 FFFFFFFF0000000101 / Actual: 0 FFFFFFFF0000000100
+[PASS] Expected: 0 FFFFFFFFFFFFFFFE00 / Actual: 0 FFFFFFFFFFFFFFFE00
+Run success
+
+>>> Running run test on p4/test/program/well-typed/arith2-bmv2.p4 with p4/test/stf/v1model/arith2-bmv2.stf
+[PASS] Expected: 0 000000000000000101 / Actual: 0 000000000000000101
+[PASS] Expected: 0 000000000000000000 / Actual: 0 000000000000000000
+[PASS] Expected: 0 000000010000000000 / Actual: 0 000000010000000000
+[PASS] Expected: 0 000000010000000201 / Actual: 0 000000010000000201
+[PASS] Expected: 0 000000110000002201 / Actual: 0 000000110000002201
+[PASS] Expected: 0 FFFFFFFF0000000100 / Actual: 0 FFFFFFFF0000000100
+[PASS] Expected: 0 FFFFFFFFFFFFFFFE00 / Actual: 0 FFFFFFFFFFFFFFFE00
+Run success
+
+>>> Running run test on p4/test/program/well-typed/arith2-inline-bmv2.p4 with p4/test/stf/v1model/arith2-inline-bmv2.stf
+[PASS] Expected: 0 000000000000000001 / Actual: 0 000000000000000001
+[PASS] Expected: 0 000000010000000001 / Actual: 0 000000010000000001
+[PASS] Expected: 0 000000000000000100 / Actual: 0 000000000000000100
+[PASS] Expected: 0 000000010000000101 / Actual: 0 000000010000000101
+[PASS] Expected: 0 000000110000002200 / Actual: 0 000000110000002200
+[PASS] Expected: 0 FFFFFFFF0000000101 / Actual: 0 FFFFFFFF0000000101
+Run success
+
+>>> Running run test on p4/test/program/well-typed/arith3-bmv2.p4 with p4/test/stf/v1model/arith3-bmv2.stf
+[PASS] Expected: 0 00000000000000000000000000 / Actual: 0 00000000000000000000000000
+[PASS] Expected: 0 00000001000000000000000001 / Actual: 0 00000001000000000000000001
+[PASS] Expected: 0 00000001020000000000000004 / Actual: 0 00000001020000000000000004
+[PASS] Expected: 0 00000011100000000000110000 / Actual: 0 00000011100000000000110000
+[PASS] Expected: 0 00000011140000000001100000 / Actual: 0 00000011140000000001100000
+[PASS] Expected: 0 000000111C0000000010000000 / Actual: 0 000000111C0000000010000000
+[PASS] Expected: 0 FFFFFFFF0100000000FFFFFFFE / Actual: 0 FFFFFFFF0100000000FFFFFFFE
+[PASS] Expected: 0 FFFFFFFFFF0000000000000000 / Actual: 0 FFFFFFFFFF0000000000000000
+Run success
+
+>>> Running run test on p4/test/program/well-typed/arith4-bmv2.p4 with p4/test/stf/v1model/arith4-bmv2.stf
+[PASS] Expected: 0 00000000000000000000000000 / Actual: 0 00000000000000000000000000
+[PASS] Expected: 0 00000001000000000000000001 / Actual: 0 00000001000000000000000001
+[PASS] Expected: 0 00000001020000000000000000 / Actual: 0 00000001020000000000000000
+[PASS] Expected: 0 00000011010000000000000008 / Actual: 0 00000011010000000000000008
+[PASS] Expected: 0 00000011040000000000000001 / Actual: 0 00000011040000000000000001
+[PASS] Expected: 0 11111111100000000000001111 / Actual: 0 11111111100000000000001111
+[PASS] Expected: 0 FFFFFFFF01000000007FFFFFFF / Actual: 0 FFFFFFFF01000000007FFFFFFF
+[PASS] Expected: 0 FFFFFFFFFF0000000000000000 / Actual: 0 FFFFFFFFFF0000000000000000
+Run success
+
+>>> Running run test on p4/test/program/well-typed/arith5-bmv2.p4 with p4/test/stf/v1model/arith5-bmv2.stf
+[PASS] Expected: 0 00000000000000000000000000 / Actual: 0 00000000000000000000000000
+[PASS] Expected: 0 00000001000000000000000001 / Actual: 0 00000001000000000000000001
+[PASS] Expected: 0 00000001020000000000000000 / Actual: 0 00000001020000000000000000
+[PASS] Expected: 0 00000011010000000000000008 / Actual: 0 00000011010000000000000008
+[PASS] Expected: 0 00000011040000000000000001 / Actual: 0 00000011040000000000000001
+[PASS] Expected: 0 11111111100000000000001111 / Actual: 0 11111111100000000000001111
+[PASS] Expected: 0 FFFFFFFF01FFFFFFFFFFFFFFFF / Actual: 0 FFFFFFFF01FFFFFFFFFFFFFFFF
+[PASS] Expected: 0 FFFFFFFFFFFFFFFFFFFFFFFFFF / Actual: 0 FFFFFFFFFFFFFFFFFFFFFFFFFF
+[PASS] Expected: 0 8FFFFFFF01FFFFFFFFC7FFFFFF / Actual: 0 8FFFFFFF01FFFFFFFFC7FFFFFF
+Run success
+
+>>> Running run test on p4/test/program/well-typed/array-copy-bmv2.p4 with p4/test/stf/v1model/array-copy-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/bvec-hdr-bmv2.p4 with p4/test/stf/v1model/bvec-hdr-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/checksum-l4-bmv2.p4 with p4/test/stf/v1model/checksum-l4-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/checksum1-bmv2.p4 with p4/test/stf/v1model/checksum1-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/checksum2-bmv2.p4 with p4/test/stf/v1model/checksum2-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/checksum3-bmv2.p4 with p4/test/stf/v1model/checksum3-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/constant-in-calculation-bmv2.p4 with p4/test/stf/v1model/constant-in-calculation-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/default-action-arg-bmv2.p4 with p4/test/stf/v1model/default-action-arg-bmv2.stf
+[PASS] Expected: 0 00000000000AABCDEF01 / Actual: 0 00000000000AABCDEF01
+[PASS] Expected: 0 00000000000B00000000 / Actual: 0 00000000000B00000000
+[PASS] Expected: 0 00000000000B00000000 / Actual: 0 00000000000B00000000
+[PASS] Expected: 0 00000000001B00000000 / Actual: 0 00000000001B00000000
+[PASS] Expected: 0 00000000000900000000 / Actual: 0 00000000000900000000
+Run success
+
+>>> Running run test on p4/test/program/well-typed/default_action-bmv2.p4 with p4/test/stf/v1model/default_action-bmv2.stf
+[PASS] Expected: 0 000000000000000A / Actual: 0 000000000000000A
+[PASS] Expected: 0 000000010000000B / Actual: 0 000000010000000B
+[PASS] Expected: 0 000000010000000B / Actual: 0 000000010000000B
+[PASS] Expected: 0 000000110000001B / Actual: 0 000000110000001B
+[PASS] Expected: 0 FFFFFFFF00000009 / Actual: 0 FFFFFFFF00000009
+Run success
+
+>>> Running run test on p4/test/program/well-typed/enum-bmv2.p4 with p4/test/stf/v1model/enum-bmv2.stf
+[PASS] Expected: 0 000000000000000000000000 / Actual: 0 000000000000000000000000
+[PASS] Expected: 0 000000010000000000000000 / Actual: 0 000000010000000000000000
+[PASS] Expected: 0 000000010000000100000001 / Actual: 0 000000010000000100000001
+[PASS] Expected: 0 000000110000002200000022 / Actual: 0 000000110000002200000022
+[PASS] Expected: 0 FFFFFFFF0000000100000001 / Actual: 0 FFFFFFFF0000000100000001
+Run success
+
+>>> Running run test on p4/test/program/well-typed/equality-bmv2.p4 with p4/test/stf/v1model/equality-bmv2.stf
+Error on run: File p4/test/program/well-typed/equality-bmv2.p4, line 26, characters 8-29
+(eval_extern) unknown extern: packet_in.extract(variableSizeHeader, variableFieldSizeInBits)
+
+>>> Running run test on p4/test/program/well-typed/equality-varbit-bmv2.p4 with p4/test/stf/v1model/equality-varbit-bmv2.stf
+Error on run: File p4/test/program/well-typed/equality-varbit-bmv2.p4, line 20, characters 8-29
+(eval_extern) unknown extern: packet_in.extract(variableSizeHeader, variableFieldSizeInBits)
+
+>>> Running run test on p4/test/program/well-typed/flag_lost-bmv2.p4 with p4/test/stf/v1model/flag_lost-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_action_mux-bmv2.p4 with p4/test/stf/v1model/gauntlet_action_mux-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_action_mux-bmv2.p4, line 62, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+};
+  h = header {
+  a = 8w1;
+  b = 8w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_action_return-bmv2.p4 with p4/test/stf/v1model/gauntlet_action_return-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_arithref_cast-bmv2.p4 with p4/test/stf/v1model/gauntlet_arithref_cast-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_complex_initialization-bmv2.p4 with p4/test/stf/v1model/gauntlet_complex_initialization-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_complex_initialization-bmv2.p4, line 51, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_copy_out-bmv2.p4 with p4/test/stf/v1model/gauntlet_copy_out-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_copy_out-bmv2.p4, line 54, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+};
+  h = header {
+  a = 8w12;
+  b = 8w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_enum_assign-bmv2.p4 with p4/test/stf/v1model/gauntlet_enum_assign-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_enum_assign-bmv2.p4, line 31, characters 8-20
+(TODO: deparse) struct {
+
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_after_valid-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_after_valid-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_1-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_1-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_1-bmv2.p4, from line 48 character 8 to line 54 character 9
+switch (simple_table.apply().action_run) {
+  dummy: {}
+  default: {
+      return;
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_10-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_10-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_11-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_11-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_11-bmv2.p4, from line 44 character 8 to line 49 character 9
+switch (simple_table.apply().action_run) {
+  simple_action: {
+      h.eth_hdr.eth_type = 16w1;
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_13-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_13-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_13-bmv2.p4, from line 39 character 8 to line 43 character 9
+switch (simple_table.apply().action_run) {
+  simple_action: {
+      h.eth_hdr.src_addr = 48w1;
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_14-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_14-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_14-bmv2.p4, from line 39 character 8 to line 44 character 9
+switch (simple_table.apply().action_run) {
+  exit_action: {
+      h.eth_hdr.eth_type = ((bit<16>) (1));
+      exit;
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_15-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_15-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_15-bmv2.p4, from line 41 character 8 to line 54 character 9
+switch (simple_table.apply().action_run) {
+  simple_action: {
+      h.eth_hdr.eth_type = 16w1;
+      exit;
+    }
+  NoAction: {
+      h.eth_hdr.eth_type = 16w2;
+      exit;
+    }
+  default: {
+      h.eth_hdr.eth_type = 16w3;
+      exit;
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_16-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_16-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_16-bmv2.p4, from line 41 character 12 to line 46 character 13
+switch (simple_table.apply().action_run) {
+  dummy_action: {
+      h.eth_hdr.eth_type = ((bit<16>) (1));
+      return;
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_17-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_17-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_17-bmv2.p4, from line 45 character 8 to line 54 character 9
+switch (simple_table_1.apply().action_run) {
+  dummy_action: {
+      switch (simple_table_2.apply().action_run) {
+  dummy_action: {
+      h.eth_hdr.src_addr = ((bit<48>) (4));
+      return;
+    }
+}
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_18-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_18-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_18-bmv2.p4, line 47, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_19-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_19-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_2-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_2-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_2-bmv2.p4, from line 38 character 8 to line 43 character 9
+switch (simple_table.apply().action_run) {
+  dummy: {
+      h.eth_hdr.src_addr = ((bit<48>) (1));
+      exit;
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_20-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_20-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_20-bmv2.p4, line 63, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_21-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_21-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_21-bmv2.p4, line 54, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w3
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_22-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_22-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_22-bmv2.p4, line 54, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w1;
+  eth_type = 16w3
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_23-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_23-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_23-bmv2.p4, from line 41 character 8 to line 45 character 9
+switch (simple_table.apply().action_run) {
+  simple_action: {
+      exit;
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_3-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_3-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_3-bmv2.p4, from line 40 character 8 to line 44 character 9
+switch (simple_table.apply().action_run) {
+  do_action: {
+      return;
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_4-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_4-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_4-bmv2.p4, from line 40 character 8 to line 45 character 9
+switch (simple_table.apply().action_run) {
+  exit_action: {
+      h.eth_hdr.eth_type = 16w1;
+      exit_action();
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_5-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_5-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_5-bmv2.p4, line 50, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_6-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_6-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_6-bmv2.p4, line 45, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w1
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_7-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_7-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_7-bmv2.p4, line 49, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_8-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_8-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_8-bmv2.p4, line 48, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_9-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_9-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_9-bmv2.p4, from line 42 character 8 to line 50 character 9
+switch (simple_table.apply().action_run) {
+  simple_action: {
+      if (true) {
+  return;
+}
+else {
+  h.eth_hdr.eth_type = 16w1;
+}
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_function_if_hdr_return-bmv2.p4 with p4/test/stf/v1model/gauntlet_function_if_hdr_return-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_function_return-bmv2.p4 with p4/test/stf/v1model/gauntlet_function_return-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_function_return_cast-bmv2.p4 with p4/test/stf/v1model/gauntlet_function_return_cast-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_hdr_assign_1-bmv2.p4 with p4/test/stf/v1model/gauntlet_hdr_assign_1-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_hdr_assign_1-bmv2.p4, line 60, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w2
+};
+  h = header {
+  a = 16w0;
+  b = 8w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_hdr_assign_2-bmv2.p4 with p4/test/stf/v1model/gauntlet_hdr_assign_2-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_hdr_function_cast-bmv2.p4 with p4/test/stf/v1model/gauntlet_hdr_function_cast-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_hdr_init-bmv2.p4 with p4/test/stf/v1model/gauntlet_hdr_init-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_hdr_int_initializer-bmv2.p4 with p4/test/stf/v1model/gauntlet_hdr_int_initializer-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_hdr_int_initializer-bmv2.p4, line 51, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_hdr_out_in_action-bmv2.p4 with p4/test/stf/v1model/gauntlet_hdr_out_in_action-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_hdr_out_in_action-bmv2.p4, line 61, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+};
+  h = header {
+  a = 8w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_hdr_set_valid-bmv2.p4 with p4/test/stf/v1model/gauntlet_hdr_set_valid-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_hdr_set_valid-bmv2.p4, line 55, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+};
+  h = header {
+  a = 16w0;
+  b = 64w0;
+  c = 16w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_index_1-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_1-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_index_2-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_2-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_index_4-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_4-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_index_5-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_5-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_index_6-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_6-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_index_7-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_7-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_index_8-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_8-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_index_9-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_9-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_indirect_hdr_assign_1-bmv2.p4 with p4/test/stf/v1model/gauntlet_indirect_hdr_assign_1-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_indirect_hdr_assign_1-bmv2.p4, line 53, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_indirect_hdr_assign_2-bmv2.p4 with p4/test/stf/v1model/gauntlet_indirect_hdr_assign_2-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_indirect_hdr_assign_2-bmv2.p4, line 54, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_instance_overwrite-bmv2.p4 with p4/test/stf/v1model/gauntlet_instance_overwrite-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_int_casting-bmv2.p4 with p4/test/stf/v1model/gauntlet_int_casting-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_int_casting-bmv2.p4, line 56, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_int_slice-bmv2.p4 with p4/test/stf/v1model/gauntlet_int_slice-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_int_slice-bmv2.p4, line 60, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+};
+  h = header {
+  a = 8w2
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_invalid_hdr_assign-bmv2.p4 with p4/test/stf/v1model/gauntlet_invalid_hdr_assign-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_invalid_hdr_short_circuit-bmv2.p4 with p4/test/stf/v1model/gauntlet_invalid_hdr_short_circuit-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_list_as_in_argument-bmv2.p4 with p4/test/stf/v1model/gauntlet_list_as_in_argument-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_list_as_in_argument-bmv2.p4, line 52, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w1
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_mux_eval-bmv2.p4 with p4/test/stf/v1model/gauntlet_mux_eval-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_mux_hdr-bmv2.p4 with p4/test/stf/v1model/gauntlet_mux_hdr-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_mux_typecasting-bmv2.p4 with p4/test/stf/v1model/gauntlet_mux_typecasting-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_mux_typecasting-bmv2.p4, line 39, characters 54-64
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w7
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_mux_validity-bmv2.p4 with p4/test/stf/v1model/gauntlet_mux_validity-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_mux_validity-bmv2.p4, line 56, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w1
+};
+  h = header {
+  a = 8w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_nested_ifs_in_function-bmv2.p4 with p4/test/stf/v1model/gauntlet_nested_ifs_in_function-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_nested_slice-bmv2.p4 with p4/test/stf/v1model/gauntlet_nested_slice-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_nested_switch-bmv2.p4 with p4/test/stf/v1model/gauntlet_nested_switch-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_nested_switch-bmv2.p4, line 58, characters 54-64
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_nested_table_calls-bmv2.p4 with p4/test/stf/v1model/gauntlet_nested_table_calls-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_return_truncate-bmv2.p4 with p4/test/stf/v1model/gauntlet_return_truncate-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_set_invalid-bmv2.p4 with p4/test/stf/v1model/gauntlet_set_invalid-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_set_valid_in_function-bmv2.p4 with p4/test/stf/v1model/gauntlet_set_valid_in_function-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_short_circuit-bmv2.p4 with p4/test/stf/v1model/gauntlet_short_circuit-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_side_effect_order_1-bmv2.p4 with p4/test/stf/v1model/gauntlet_side_effect_order_1-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_side_effect_order_1-bmv2.p4, line 52, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+};
+  h = header {
+  a = 16w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_side_effect_order_2-bmv2.p4 with p4/test/stf/v1model/gauntlet_side_effect_order_2-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_side_effect_order_2-bmv2.p4, line 50, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+};
+  h = header {
+  a = 8w3
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_side_effect_order_3-bmv2.p4 with p4/test/stf/v1model/gauntlet_side_effect_order_3-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_side_effect_order_4-bmv2.p4 with p4/test/stf/v1model/gauntlet_side_effect_order_4-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_side_effect_order_5-bmv2.p4 with p4/test/stf/v1model/gauntlet_side_effect_order_5-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_side_effects_in_mux-bmv2.p4 with p4/test/stf/v1model/gauntlet_side_effects_in_mux-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_switch_exclusivity-bmv2.p4 with p4/test/stf/v1model/gauntlet_switch_exclusivity-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_switch_exclusivity-bmv2.p4, from line 37 character 8 to line 44 character 9
+switch (simple_table.apply().action_run) {
+  action_0: {
+      h.eth_hdr.src_addr = val_0;
+    }
+  action_1: {
+      val_0 = 48w10;
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_switch_nested_table_apply-bmv2.p4 with p4/test/stf/v1model/gauntlet_switch_nested_table_apply-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_switch_nested_table_apply-bmv2.p4, from line 49 character 8 to line 53 character 9
+switch (simple_table_2.apply().action_run) {
+  NoAction: {
+      simple_table_1.apply();
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_switch_shadowing-bmv2.p4 with p4/test/stf/v1model/gauntlet_switch_shadowing-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_switch_shadowing-bmv2.p4, from line 45 character 8 to line 51 character 9
+switch (simple_table.apply().action_run) {
+  action_1: {
+      action_1();
+    }
+  action_2: {}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_table_call_in_expression-bmv2.p4 with p4/test/stf/v1model/gauntlet_table_call_in_expression-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_typedef_cast-bmv2.p4 with p4/test/stf/v1model/gauntlet_typedef_cast-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_typedef_cast-bmv2.p4, line 52, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+};
+  h = header {
+  a = 8w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_uninitialized_bool_struct-bmv2.p4 with p4/test/stf/v1model/gauntlet_uninitialized_bool_struct-bmv2.stf
+Error on run: File p4/test/program/well-typed/gauntlet_uninitialized_bool_struct-bmv2.p4, from line 44 character 8 to line 52 character 9
+switch (simple_table.apply().action_run) {
+  dummy_action: {
+      if (!tmp.is_bool) {
+  exit;
+}
+      h.eth_hdr.dst_addr = ((bit<48>) (1));
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_variable_shadowing-bmv2.p4 with p4/test/stf/v1model/gauntlet_variable_shadowing-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/hash-extern-bmv2.p4 with p4/test/stf/v1model/hash-extern-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/header-bool-bmv2.p4 with p4/test/stf/v1model/header-bool-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/header-stack-ops-bmv2.p4 with p4/test/stf/v1model/header-stack-ops-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/internet_checksum1-bmv2.p4 with p4/test/stf/v1model/internet_checksum1-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/invalid-hdr-warnings3-bmv2.p4 with p4/test/stf/v1model/invalid-hdr-warnings3-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/ipv6-switch-ml-bmv2.p4 with p4/test/stf/v1model/ipv6-switch-ml-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue-2123-2-bmv2.p4 with p4/test/stf/v1model/issue-2123-2-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue-2123-3-bmv2.p4 with p4/test/stf/v1model/issue-2123-3-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue1000-bmv2.p4 with p4/test/stf/v1model/issue1000-bmv2.stf
+[FAIL] Expected: 0 CAFEADFFFFFF00000000000000A7 / Actual: 0 CAFEADFFFFFF0000000000000000
+[FAIL] Expected: 0 CAFEAD00000000000000000000A7 / Actual: 0 CAFEAD0000000000000000000000
+[FAIL] Expected: 0 CAFEAEFFFFFF00000000000000A6 / Actual: 0 CAFEAEFFFFFF0000000000000000
+[FAIL] Expected: 0 CAFE51FFFFFF00000000000000A6 / Actual: 0 CAFE51FFFFFF0000000000000000
+[FAIL] Expected: 0 CA7EADFFFFFF00000000000000A5 / Actual: 0 CA7EADFFFFFF0000000000000000
+[FAIL] Expected: 0 CA81ADFFFFFF00000000000000A5 / Actual: 0 CA81ADFFFFFF0000000000000000
+[FAIL] Expected: 0 CBFEADFFFFFF00000000000000A3 / Actual: 0 CBFEADFFFFFF0000000000000000
+[FAIL] Expected: 0 34FEADFFFFFF00000000000000A3 / Actual: 0 34FEADFFFFFF0000000000000000
+[FAIL] Expected: 0 CADEA5FFFFFF00000000000000A4 / Actual: 0 CADEA5FFFFFF0000000000000000
+[FAIL] Expected: 0 CA215AFFFFFF00000000000000A4 / Actual: 0 CA215AFFFFFF0000000000000000
+[FAIL] Expected: 0 C2FEA3FFFFFF00000000000000A2 / Actual: 0 C2FEA3FFFFFF0000000000000000
+[FAIL] Expected: 0 3DFE5CFFFFFF00000000000000A2 / Actual: 0 3DFE5CFFFFFF0000000000000000
+[FAIL] Expected: 0 C2FAADFFFFFF00000000000000A1 / Actual: 0 C2FAADFFFFFF0000000000000000
+[FAIL] Expected: 0 3D05ADFFFFFF00000000000000A1 / Actual: 0 3D05ADFFFFFF0000000000000000
+[FAIL] Expected: 0 DAF6A9FFFFFF00000000000000A0 / Actual: 0 DAF6A9FFFFFF0000000000000000
+[FAIL] Expected: 0 350956FFFFFF00000000000000A0 / Actual: 0 350956FFFFFF0000000000000000
+Run success
+
+>>> Running run test on p4/test/program/well-typed/issue1025-bmv2.p4 with p4/test/stf/v1model/issue1025-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue1049-bmv2.p4 with p4/test/stf/v1model/issue1049-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue1062-1-bmv2.p4 with p4/test/stf/v1model/issue1062-1-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue1566-bmv2.p4 with p4/test/stf/v1model/issue1566-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue1755-1-bmv2.p4 with p4/test/stf/v1model/issue1755-1-bmv2.stf
+Error on run: File p4/test/program/well-typed/issue1755-1-bmv2.p4, line 21, characters 8-26
+(eval_extern) unknown extern: packet_in.advance(sizeInBits)
+
+>>> Running run test on p4/test/program/well-typed/issue1755-bmv2.p4 with p4/test/stf/v1model/issue1755-bmv2.stf
+Error on run: File p4/test/program/well-typed/issue1755-bmv2.p4, line 15, characters 8-26
+(eval_extern) unknown extern: packet_in.advance(sizeInBits)
+
+>>> Running run test on p4/test/program/well-typed/issue1768-bmv2.p4 with p4/test/stf/v1model/issue1768-bmv2.stf
+Error on run: File p4/test/program/well-typed/issue1768-bmv2.p4, line 17, characters 8-31
+(eval_extern) unknown extern: packet_in.lookahead()
+
+>>> Running run test on p4/test/program/well-typed/issue1824-bmv2.p4 with p4/test/stf/v1model/issue1824-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue2147-bmv2.p4 with p4/test/stf/v1model/issue2147-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue2153-bmv2.p4 with p4/test/stf/v1model/issue2153-bmv2.stf
+Error on run: 
+(drive_stf_stmt) unknown stf stmt: add simple_table  hdr.h.b(0x55) do_something() 
+
+>>> Running run test on p4/test/program/well-typed/issue2170-bmv2.p4 with p4/test/stf/v1model/issue2170-bmv2.stf
+Error on run: File p4/test/program/well-typed/issue2170-bmv2.p4, from line 71 character 8 to line 75 character 9
+switch (simple_table.apply().action_run) {
+  NoAction: {
+      return;
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/issue2176-bmv2.p4 with p4/test/stf/v1model/issue2176-bmv2.stf
+Error on run: File p4/test/program/well-typed/issue2176-bmv2.p4, line 25, characters 8-25
+(TODO: deparse) struct {
+  eth = header {
+  dstAddr = 48w18764998447377;
+  srcAddr = 48w37529996894754;
+  etherType = 16w13107
+};
+  h = header {
+  a = 8w0;
+  b = 8w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/issue2205-1-bmv2.p4 with p4/test/stf/v1model/issue2205-1-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue2205-bmv2.p4 with p4/test/stf/v1model/issue2205-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue2221-bmv2.p4 with p4/test/stf/v1model/issue2221-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue2225-bmv2.p4 with p4/test/stf/v1model/issue2225-bmv2.stf
+Error on run: File p4/test/program/well-typed/issue2225-bmv2.p4, line 42, characters 54-64
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w3
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/issue2343-bmv2.p4 with p4/test/stf/v1model/issue2343-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue2375-1-bmv2.p4 with p4/test/stf/v1model/issue2375-1-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue2375-bmv2.p4 with p4/test/stf/v1model/issue2375-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue2383-bmv2.p4 with p4/test/stf/v1model/issue2383-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue2392-bmv2.p4 with p4/test/stf/v1model/issue2392-bmv2.stf
+Error on run: File p4/test/program/well-typed/issue2392-bmv2.p4, line 55, characters 8-20
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w1
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/issue2498-bmv2.p4 with p4/test/stf/v1model/issue2498-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue2614-bmv2.p4 with p4/test/stf/v1model/issue2614-bmv2.stf
+Error on run: File p4/test/program/well-typed/issue2614-bmv2.p4, line 46, characters 54-64
+(TODO: deparse) struct {
+  eth_hdr = header {
+  dst_addr = 48w0;
+  src_addr = 48w0;
+  eth_type = 16w0
+};
+  h = header {
+  a = 8w128
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/issue3488-1-bmv2.p4 with p4/test/stf/v1model/issue3488-1-bmv2.stf
+Error on run: File p4/test/program/well-typed/issue3488-1-bmv2.p4, from line 163 character 8 to line 168 character 9
+switch (pre_tbl1.apply().action_run) {
+  action1:
+  action2: {
+      in_tbl2.apply();
+    }
+}
+
+>>> Running run test on p4/test/program/well-typed/issue3488-bmv2.p4 with p4/test/stf/v1model/issue3488-bmv2.stf
+Error on run: 
+(drive_stf_stmt) unknown stf stmt: add test_ingress.pre_tbl1  hdr.ipv4.dst_addr(0xcb0b3bfe) test_ingress.action3() 
+
+>>> Running run test on p4/test/program/well-typed/issue447-1-bmv2.p4 with p4/test/stf/v1model/issue447-1-bmv2.stf
+Error on run: File p4/test/program/well-typed/issue447-1-bmv2.p4, line 25, characters 8-38
+(eval_extern) unknown extern: packet_in.extract(variableSizeHeader, variableFieldSizeInBits)
+
+>>> Running run test on p4/test/program/well-typed/issue447-2-bmv2.p4 with p4/test/stf/v1model/issue447-2-bmv2.stf
+Error on run: File p4/test/program/well-typed/issue447-2-bmv2.p4, line 31, characters 8-27
+(TODO: deparse) 32v0
+
+>>> Running run test on p4/test/program/well-typed/issue447-3-bmv2.p4 with p4/test/stf/v1model/issue447-3-bmv2.stf
+[FAIL] Expected: 0 34567890 / Actual: 0 00000000
+[FAIL] Expected: 0 567890 / Actual: 0 00000000
+Run success
+
+>>> Running run test on p4/test/program/well-typed/issue447-4-bmv2.p4 with p4/test/stf/v1model/issue447-4-bmv2.stf
+[FAIL] Expected: 0 34567890 / Actual: 0 00000000
+[FAIL] Expected: 0 567890 / Actual: 0 00000000
+Run success
+
+>>> Running run test on p4/test/program/well-typed/issue447-5-bmv2.p4 with p4/test/stf/v1model/issue447-5-bmv2.stf
+Error on run: File p4/test/program/well-typed/issue447-5-bmv2.p4, line 32, characters 8-28
+(TODO: deparse) 32v0
+
+>>> Running run test on p4/test/program/well-typed/issue447-bmv2.p4 with p4/test/stf/v1model/issue447-bmv2.stf
+Error on run: File p4/test/program/well-typed/issue447-bmv2.p4, line 39, characters 8-31
+(eval_extern) unknown extern: packet_in.extract(variableSizeHeader, variableFieldSizeInBits)
+
+>>> Running run test on p4/test/program/well-typed/issue510-bmv2.p4 with p4/test/stf/v1model/issue510-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue561-1-bmv2.p4 with p4/test/stf/v1model/issue561-1-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue561-2-bmv2.p4 with p4/test/stf/v1model/issue561-2-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue561-3-bmv2.p4 with p4/test/stf/v1model/issue561-3-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue561-4-bmv2.p4 with p4/test/stf/v1model/issue561-4-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue561-5-bmv2.p4 with p4/test/stf/v1model/issue561-5-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue561-6-bmv2.p4 with p4/test/stf/v1model/issue561-6-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue561-7-bmv2.p4 with p4/test/stf/v1model/issue561-7-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue635-bmv2.p4 with p4/test/stf/v1model/issue635-bmv2.stf
+[FAIL] Expected: 0 1234567890 / Actual: 0 12345678
+Run success
+
+>>> Running run test on p4/test/program/well-typed/issue655-bmv2.p4 with p4/test/stf/v1model/issue655-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue774-4-bmv2.p4 with p4/test/stf/v1model/issue774-4-bmv2.stf
+Error on run: File p4/test/program/well-typed/issue774-4-bmv2.p4, line 35, characters 8-20
+(TODO: deparse) struct {
+  h = header {
+  data = 32w0
+}
+}
+
+>>> Running run test on p4/test/program/well-typed/issue983-bmv2.p4 with p4/test/stf/v1model/issue983-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/issue995-bmv2.p4 with p4/test/stf/v1model/issue995-bmv2.stf
+[FAIL] Expected: 0 0000000004560000022E00000005 / Actual: 0 0000000004560000022E00000000
+[FAIL] Expected: 0 FFFFFFFFF456FFFF012FFFFF0004 / Actual: 0 FFFFFFFFF456FFFF012FFFFF0000
+[FAIL] Expected: 0 0000000004560000012F00000001 / Actual: 0 0000000004560000012F00000000
+[FAIL] Expected: 0 000000000456FFFF012FFFFF0002 / Actual: 0 000000000456FFFF012FFFFF0000
+[FAIL] Expected: 0 0000000004568000012F00000002 / Actual: 0 0000000004568000012F00000000
+[FAIL] Expected: 0 FFFFFFFFF4560000012F00000003 / Actual: 0 FFFFFFFFF4560000012F00000000
+[FAIL] Expected: 0 8000000004560000012F00000003 / Actual: 0 8000000004560000012F00000000
+[FAIL] Expected: 0 FFFFFFFFF456FFFF012FFFFF0004 / Actual: 0 FFFFFFFFF456FFFF012FFFFF0000
+[FAIL] Expected: 0 0400000004560200012F00000004 / Actual: 0 0400000004560200012F00000000
+[FAIL] Expected: 0 FFFFFFFFF456FFFF012EFFFF0005 / Actual: 0 FFFFFFFFF456FFFF012EFFFF0000
+[FAIL] Expected: 0 0000000004760000012F00000005 / Actual: 0 0000000004760000012F00000000
+Run success
+
+>>> Running run test on p4/test/program/well-typed/key-bmv2.p4 with p4/test/stf/v1model/key-bmv2.stf
+Error on run: 
+(drive_stf_stmt) unknown stf stmt: add c.t  e(0) c.a() 
+
+>>> Running run test on p4/test/program/well-typed/match-on-exprs-bmv2.p4 with p4/test/stf/v1model/match-on-exprs-bmv2.stf
+Error on run: 
+(drive_stf_stmt) unknown stf stmt: add t1  ethernet.srcAddr.slice(0x1f) dstAddr_lsbs(0x010101010101) etherType_less_10(0xf00f) ingressImpl.foo((out_port, 3)) 
+
+>>> Running run test on p4/test/program/well-typed/parser_error-bmv2.p4 with p4/test/stf/v1model/parser_error-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/predication_issue_1.p4 with p4/test/stf/v1model/predication_issue_1.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/predication_issue_2.p4 with p4/test/stf/v1model/predication_issue_2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/predication_issue_3.p4 with p4/test/stf/v1model/predication_issue_3.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/psa-drop-all-bmv2.p4 with p4/test/stf/v1model/psa-drop-all-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/psa-drop-all-corrected-bmv2.p4 with p4/test/stf/v1model/psa-drop-all-corrected-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/psa-e2e-cloning-basic-bmv2.p4 with p4/test/stf/v1model/psa-e2e-cloning-basic-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/psa-example-register2-bmv2.p4 with p4/test/stf/v1model/psa-example-register2-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/psa-fwd-bmv2.p4 with p4/test/stf/v1model/psa-fwd-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/psa-i2e-cloning-basic-bmv2.p4 with p4/test/stf/v1model/psa-i2e-cloning-basic-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/psa-multicast-basic-2-bmv2.p4 with p4/test/stf/v1model/psa-multicast-basic-2-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/psa-multicast-basic-bmv2.p4 with p4/test/stf/v1model/psa-multicast-basic-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/psa-multicast-basic-corrected-bmv2.p4 with p4/test/stf/v1model/psa-multicast-basic-corrected-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/psa-parser-error-test-bmv2.p4 with p4/test/stf/v1model/psa-parser-error-test-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/psa-recirculate-no-meta-bmv2.p4 with p4/test/stf/v1model/psa-recirculate-no-meta-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/psa-resubmit-bmv2.p4 with p4/test/stf/v1model/psa-resubmit-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/psa-top-level-assignments-bmv2.p4 with p4/test/stf/v1model/psa-top-level-assignments-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/psa-unicast-or-drop-bmv2.p4 with p4/test/stf/v1model/psa-unicast-or-drop-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/psa-unicast-or-drop-corrected-bmv2.p4 with p4/test/stf/v1model/psa-unicast-or-drop-corrected-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/runtime-index-2-bmv2.p4 with p4/test/stf/v1model/runtime-index-2-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/runtime-index-bmv2.p4 with p4/test/stf/v1model/runtime-index-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/saturated-bmv2.p4 with p4/test/stf/v1model/saturated-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/stack_complex-bmv2.p4 with p4/test/stf/v1model/stack_complex-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/subparser-with-header-stack-bmv2.p4 with p4/test/stf/v1model/subparser-with-header-stack-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/table-entries-exact-bmv2.p4 with p4/test/stf/v1model/table-entries-exact-bmv2.stf
+[FAIL] Expected: 1 01********** / Actual: 0 0111110000B0
+[FAIL] Expected: 2 02********** / Actual: 0 0211810000B0
+[PASS] Expected: 0 03********** / Actual: 0 0310000000B0
+[PASS] Expected: 0 04********** / Actual: 0 0411110000B0
+Run success
+
+>>> Running run test on p4/test/program/well-typed/table-entries-exact-ternary-bmv2.p4 with p4/test/stf/v1model/table-entries-exact-ternary-bmv2.stf
+[FAIL] Expected: 1 01********** / Actual: 0 0111110000B0
+[FAIL] Expected: 2 02********** / Actual: 0 0211810000B0
+[FAIL] Expected: 3 03********** / Actual: 0 0310000000B0
+[FAIL] Expected: 4 04********** / Actual: 0 0411110000B0
+[PASS] Expected: 0 0211F1****** / Actual: 0 0211F10000B0
+Run success
+
+>>> Running run test on p4/test/program/well-typed/table-entries-lpm-bmv2.p4 with p4/test/stf/v1model/table-entries-lpm-bmv2.stf
+[FAIL] Expected: 11 0B****11**** / Actual: 0 0B00001100B0
+[FAIL] Expected: 11 0B****10**** / Actual: 0 0B00001000B0
+[FAIL] Expected: 12 0C****12**** / Actual: 0 0C00001200B0
+[FAIL] Expected: 13 0D****FF**** / Actual: 0 0D0000FF00B0
+Run success
+
+>>> Running run test on p4/test/program/well-typed/table-entries-optional-bmv2.p4 with p4/test/stf/v1model/table-entries-optional-bmv2.stf
+[FAIL] Expected: 1 AA********** / Actual: 0 AA11110000B0
+[FAIL] Expected: 2 AB********** / Actual: 0 AB11110000B0
+[FAIL] Expected: 3 AA********** / Actual: 0 AA11120000B0
+[FAIL] Expected: 4 A9********** / Actual: 0 A911100000B0
+Run success
+
+>>> Running run test on p4/test/program/well-typed/table-entries-priority-bmv2.p4 with p4/test/stf/v1model/table-entries-priority-bmv2.stf
+[FAIL] Expected: 1 010001****** / Actual: 0 0100010000B0
+[FAIL] Expected: 3 021001****** / Actual: 0 0210010000B0
+[FAIL] Expected: 3 03********** / Actual: 0 0311810000B0
+Run success
+
+>>> Running run test on p4/test/program/well-typed/table-entries-range-bmv2.p4 with p4/test/stf/v1model/table-entries-range-bmv2.stf
+[FAIL] Expected: 21 15******01** / Actual: 0 1500000001B0
+[FAIL] Expected: 21 15******07** / Actual: 0 1500000007B0
+[FAIL] Expected: 22 16******0A** / Actual: 0 160000000AB0
+[FAIL] Expected: 24 18******0F** / Actual: 0 180000000FB0
+[FAIL] Expected: 23 17******10** / Actual: 0 1700000010B0
+[FAIL] Expected: 23 17******F0** / Actual: 0 17000000F0B0
+Run success
+
+>>> Running run test on p4/test/program/well-typed/table-entries-ser-enum-bmv2.p4 with p4/test/stf/v1model/table-entries-ser-enum-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/table-entries-ternary-bmv2.p4 with p4/test/stf/v1model/table-entries-ternary-bmv2.stf
+[FAIL] Expected: 1 01********** / Actual: 0 0111110000B0
+[FAIL] Expected: 1 02********** / Actual: 0 0200010000B0
+[FAIL] Expected: 2 03********** / Actual: 0 0311870000B0
+[FAIL] Expected: 3 04********** / Actual: 0 0410000000B0
+[FAIL] Expected: 4 04********** / Actual: 0 04AAAA0000B0
+Run success
+
+>>> Running run test on p4/test/program/well-typed/ternary2-bmv2.p4 with p4/test/stf/v1model/ternary2-bmv2.stf
+Error on run: 
+(drive_stf_stmt) unknown stf stmt: add test1 0 data.f1(0x****0101) ingress.setb1((val, 0x7f), (port, 2)) 
+
+>>> Running run test on p4/test/program/well-typed/test-parserinvalidargument-error-bmv2.p4 with p4/test/stf/v1model/test-parserinvalidargument-error-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/union-bmv2.p4 with p4/test/stf/v1model/union-bmv2.stf
+[FAIL] Expected: 0 0023456666 / Actual: 0 00
+[FAIL] Expected: 0 0123456666 / Actual: 0 01
+Run success
+
+>>> Running run test on p4/test/program/well-typed/union-valid-bmv2.p4 with p4/test/stf/v1model/union-valid-bmv2.stf
+[FAIL] Expected: 0 0123456789 / Actual: 0 01234567
+Run success
+
+>>> Running run test on p4/test/program/well-typed/union1-bmv2.p4 with p4/test/stf/v1model/union1-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/union2-bmv2.p4 with p4/test/stf/v1model/union2-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/union3-bmv2.p4 with p4/test/stf/v1model/union3-bmv2.stf
+Error: unknown error
+
+>>> Running run test on p4/test/program/well-typed/v1model-const-entries-bmv2.p4 with p4/test/stf/v1model/v1model-const-entries-bmv2.stf
+[FAIL] Expected: 1 0A01020300000000000000010000 / Actual: 1 0A01020300000000DEADBEEF0000
+[FAIL] Expected: 1 0A01020300010000000000020000 / Actual: 1 0A01020300010000DEADBEEF0000
+[FAIL] Expected: 1 0B01020300010000000000030000 / Actual: 1 0B01020300010000DEADBEEF0000
+Run success
+
+Parser on file: [PASS] 196/196 (100.00%) [FAIL] 0/196 (0.00%)
+Typecheck: [PASS] 196/196 (100.00%) [FAIL] 0/196 (0.00%)
+Instantiate: [PASS] 196/196 (100.00%) [FAIL] 0/196 (0.00%)
+Run: [PASS] 26/196 (13.27%) [FAIL] 170/196 (86.73%)
