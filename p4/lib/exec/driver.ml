@@ -9,7 +9,7 @@ module Sto = Envs_dynamic.Sto
 
 module type ARCH = sig
   val eval_extern : Ctx.t -> OId.t -> FId.t -> Ctx.t * Sig.t
-  val drive : CEnv.t -> FEnv.t -> VEnv.t -> Sto.t -> Stf.Ast.stmt list -> unit
+  val drive : CEnv.t -> FEnv.t -> VEnv.t -> Sto.t -> Stf.Ast.stmt list -> bool
 end
 
 module type INTERP = sig
@@ -26,7 +26,7 @@ module type INTERP = sig
 end
 
 module type DRIVER = sig
-  val run : CEnv.t -> FEnv.t -> VEnv.t -> Sto.t -> Stf.Ast.stmt list -> unit
+  val run : CEnv.t -> FEnv.t -> VEnv.t -> Sto.t -> Stf.Ast.stmt list -> bool
 end
 
 module Make

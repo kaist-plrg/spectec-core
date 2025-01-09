@@ -30,6 +30,7 @@ exception TestCheckErr of string * Util.Source.info * stat
 exception TestCheckNegErr of stat
 exception TestInstErr of string * Util.Source.info * stat
 exception TestInterpErr of string * Util.Source.info * stat
+exception TestStfErr of stat
 
 let log_stat name fails total : unit =
   let passes = total - fails in
@@ -263,7 +264,8 @@ let run stat (module Driver : Exec.Driver.DRIVER) includes filename stfname =
   try
     let stat, cenv, fenv, venv, sto = instantiate stat includes filename in
     let stmts_stf = Stf.Parse.parse_file stfname in
-    Driver.run cenv fenv venv sto stmts_stf;
+    let pass = Driver.run cenv fenv venv sto stmts_stf in
+    if not pass then raise (TestStfErr stat);
     stat
   with InterpErr (msg, info) -> raise (TestInterpErr (msg, info, stat))
 
@@ -294,19 +296,17 @@ let run_test stat (module Driver : Exec.Driver.DRIVER) includes filename stfname
       |> print_endline;
       stat.fail_run <- stat.fail_run + 1;
       stat
+  | TestStfErr stat ->
+      Format.asprintf "Error on stf test" |> print_endline;
+      stat.fail_run <- stat.fail_run + 1;
+      stat
   | _ ->
       Format.asprintf "Error: unknown error" |> print_endline;
       stat.fail_run <- stat.fail_run + 1;
       stat
 
 let run_test_driver includes arch testdir stfdir =
-  let (module Driver) =
-    match arch with
-    | "v1model" ->
-        (module Exec.Driver.Make (Exec.V1model.Make) (Exec.Interp.Make)
-        : Exec.Driver.DRIVER)
-    | _ -> failwith "unsupported architecture"
-  in
+  let (module Driver) = Exec.Gen.gen arch in
   let module FMap = Map.Make (String) in
   let files = collect_files ~suffix:".p4" testdir in
   let files_map =

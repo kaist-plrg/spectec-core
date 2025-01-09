@@ -22,3 +22,6 @@ spec-gen.include
 
 # calculus
 !calculus/*.tex
+
+# scripts
+run.sh

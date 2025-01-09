@@ -2,6 +2,7 @@ open Domain.Dom
 open Il.Ast
 open Driver
 module L = Lang.Ast
+module F = Format
 module Value = Runtime_static.Value
 module Numerics = Runtime_static.Numerics
 module Func = Runtime_dynamic.Func
@@ -15,6 +16,7 @@ open Util.Error
 
 let error_no_info = error_interp_no_info
 let error_pass_info = error_interp_pass_info
+let check = check_interp
 
 module Make (Arch : ARCH) : INTERP = struct
   (* Global store *)
@@ -38,6 +40,17 @@ module Make (Arch : ARCH) : INTERP = struct
     | ExprAccE { expr_base; member } -> (
         let ctx, value_base = eval_expr cursor ctx expr_base in
         match value_base with
+        | StackV (values_stack, idx_stack, size) ->
+            let idx_stack = idx_stack |> Bigint.to_int |> Option.get in
+            let values_stack =
+              List.mapi
+                (fun idx value_stack ->
+                  if idx = idx_stack then value else value_stack)
+                values_stack
+            in
+            let idx_stack = idx_stack + 1 |> Bigint.of_int in
+            let value_base = Value.StackV (values_stack, idx_stack, size) in
+            eval_write_lvalue cursor ctx expr_base value_base
         | StructV fields ->
             let fields = eval_write_lvalue_fields fields member value in
             let value_base = Value.StructV fields in
@@ -47,13 +60,12 @@ module Make (Arch : ARCH) : INTERP = struct
             let value_base = Value.HeaderV (true, fields) in
             eval_write_lvalue cursor ctx expr_base value_base
         | _ ->
-            Format.asprintf "(TODO: eval_write_lvalue) %a" (Value.pp ~level:0)
-              value
-            |> failwith)
+            F.asprintf "(TODO: eval_write_lvalue) %a" (Value.pp ~level:0) value
+            |> error_no_info)
     | _ ->
-        Format.asprintf "(TODO: eval_write_lvalue) %a" (Il.Pp.pp_expr ~level:0)
+        F.asprintf "(TODO: eval_write_lvalue) %a" (Il.Pp.pp_expr ~level:0)
           lvalue
-        |> failwith
+        |> error_no_info
 
   (* Argument evaluation *)
 
@@ -66,8 +78,7 @@ module Make (Arch : ARCH) : INTERP = struct
       Ctx.t * Value.t =
     match arg with
     | L.ExprA expr | L.NameA (_, Some expr) -> eval_expr cursor ctx expr
-    | _ ->
-        Format.asprintf "(TODO: eval_arg) %a" Il.Pp.pp_arg' arg |> error_no_info
+    | _ -> F.asprintf "(TODO: eval_arg) %a" Il.Pp.pp_arg' arg |> error_no_info
 
   (* Expression evaluation *)
 
@@ -94,6 +105,8 @@ module Make (Arch : ARCH) : INTERP = struct
     | TernE { expr_cond; expr_then; expr_else } ->
         eval_ternop_expr cursor ctx expr_cond expr_then expr_else
     | CastE { typ; expr } -> eval_cast_expr cursor ctx typ expr
+    | SelectE { exprs_select; cases } ->
+        eval_select_expr cursor ctx exprs_select cases
     | ArrAccE { expr_base; expr_idx } ->
         eval_array_acc_expr cursor ctx expr_base expr_idx
     | BitAccE { expr_base; value_lo; value_hi } ->
@@ -101,11 +114,11 @@ module Make (Arch : ARCH) : INTERP = struct
     | ExprAccE { expr_base; member } ->
         eval_expr_acc_expr cursor ctx expr_base member
     | CallFuncE { var_func; targs; args } ->
-        eval_func_call_expr cursor ctx var_func targs args
+        eval_call_func_expr cursor ctx var_func targs args
     | CallMethodE { expr_base; member; targs; args } ->
-        eval_method_call_expr cursor ctx expr_base member targs args
+        eval_call_method_expr cursor ctx expr_base member targs args
     | _ ->
-        Format.asprintf "(TODO: eval_expr) %a" (Il.Pp.pp_expr' ~level:0) expr
+        F.asprintf "(TODO: eval_expr) %a" (Il.Pp.pp_expr' ~level:0) expr
         |> error_no_info
 
   and eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : expr list) :
@@ -147,22 +160,81 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and eval_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : binop)
       (expr_l : expr) (expr_r : expr) : Ctx.t * Value.t =
-    let ctx, value_l = eval_expr cursor ctx expr_l in
-    let ctx, value_r = eval_expr cursor ctx expr_r in
-    let value = Numerics.eval_binop binop value_l value_r in
-    (ctx, value)
+    match binop.it with
+    | L.LAndOp ->
+        let ctx, value_l = eval_expr cursor ctx expr_l in
+        let cond = Value.get_bool value_l in
+        if cond then eval_expr cursor ctx expr_r else (ctx, value_l)
+    | L.LOrOp ->
+        let ctx, value_l = eval_expr cursor ctx expr_l in
+        let cond = Value.get_bool value_l in
+        if cond then (ctx, value_l) else eval_expr cursor ctx expr_r
+    | _ ->
+        let ctx, value_l = eval_expr cursor ctx expr_l in
+        let ctx, value_r = eval_expr cursor ctx expr_r in
+        let value = Numerics.eval_binop binop value_l value_r in
+        (ctx, value)
 
   and eval_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_cond : expr)
       (expr_then : expr) (expr_else : expr) : Ctx.t * Value.t =
     let ctx, value_cond = eval_expr cursor ctx expr_cond in
-    let value = Value.get_bool value_cond in
-    let expr = if value then expr_then else expr_else in
+    let cond = Value.get_bool value_cond in
+    let expr = if cond then expr_then else expr_else in
     eval_expr cursor ctx expr
 
-  and eval_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : Il.Ast.typ)
-      (expr : Il.Ast.expr) : Ctx.t * Value.t =
+  and eval_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : typ)
+      (expr : expr) : Ctx.t * Value.t =
     let ctx, value = eval_expr cursor ctx expr in
     let value = Numerics.eval_cast typ.it value in
+    (ctx, value)
+
+  and eval_select_case_keyset (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (value_key : Value.t) (keyset : keyset) : Ctx.t * bool =
+    match keyset.it with
+    | ExprK expr ->
+        (* (TODO) Handle match against set produced by mask or range *)
+        let ctx, value = eval_expr cursor ctx expr in
+        let matched = Numerics.eval_binop_eq value_key value in
+        (ctx, matched)
+    | DefaultK | AnyK -> (ctx, true)
+
+  and eval_select_case_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (values_key : Value.t list) (case : select_case) :
+      Ctx.t * state_label option =
+    let keysets, label = case.it in
+    let ctx, matched =
+      match (values_key, keysets) with
+      | [ value_key ], [ keyset ] ->
+          eval_select_case_keyset cursor ctx value_key keyset
+      | _, [ keyset ] ->
+          let value_key = Value.SeqV values_key in
+          eval_select_case_keyset cursor ctx value_key keyset
+      | values_key, keysets ->
+          check
+            (List.length values_key = List.length keysets)
+            "(eval_select_expr) number of select keys must match the number of \
+             keysets";
+          List.fold_left2
+            (fun (ctx, matched) value_key keyset ->
+              if matched then (ctx, matched)
+              else eval_select_case_keyset cursor ctx value_key keyset)
+            (ctx, true) values_key keysets
+    in
+    if matched then (ctx, Some label) else (ctx, None)
+
+  and eval_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (exprs_select : expr list) (cases : select_case list) : Ctx.t * Value.t =
+    let ctx, values_key = eval_exprs cursor ctx exprs_select in
+    let ctx, label =
+      List.fold_left
+        (fun (ctx, label) case ->
+          if Option.is_some label then (ctx, label)
+          else eval_select_case_keysets cursor ctx values_key case)
+        (ctx, None) cases
+    in
+    check (Option.is_some label) "(eval_select_expr) no matching case found";
+    let label = Option.get label in
+    let value = Value.StateV label.it in
     (ctx, value)
 
   and eval_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
@@ -194,30 +266,46 @@ module Make (Arch : ARCH) : INTERP = struct
     let ctx, value_base = eval_expr cursor ctx expr_base in
     let value =
       match value_base with
+      | StackV (values, idx, size) -> (
+          match member.it with
+          | "size" -> Value.FBitV (Bigint.of_int 32, size)
+          | "next" -> idx |> Bigint.to_int |> Option.get |> List.nth values
+          | "last" ->
+              Bigint.(idx - one)
+              |> Bigint.to_int |> Option.get |> List.nth values
+          | "lastIndex" -> Value.FBitV (Bigint.of_int 32, Bigint.(idx - one))
+          | _ ->
+              F.asprintf
+                "(eval_expr_acc_expr) invalid member %a for header stack"
+                Il.Pp.pp_member member
+              |> error_no_info)
       | StructV fields | HeaderV (_, fields) | UnionV fields ->
           List.assoc member.it fields
       | RefV path -> Value.RefV (path @ [ member.it ])
-      | _ -> Format.asprintf "%a" (Value.pp ~level:0) value_base |> failwith
+      | _ ->
+          F.asprintf "(TODO: eval_expr_acc_expr) %a" (Value.pp ~level:0)
+            value_base
+          |> error_no_info
     in
     (ctx, value)
 
-  and eval_func_call_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : var)
+  and eval_call_func_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : var)
       (targs : typ list) (args : arg list) : Ctx.t * Value.t =
     let ctx, sign = eval_func_call cursor ctx var_func targs args in
     match sign with
     | Ret (Some value) -> (ctx, value)
     | _ ->
-        "(eval_func_call_expr) function call as an expression must return a \
+        "(eval_call_func_expr) function call as an expression must return a \
          value" |> error_no_info
 
-  and eval_method_call_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
+  and eval_call_method_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       (expr_base : expr) (member : member) (targs : typ list) (args : arg list)
       : Ctx.t * Value.t =
     let ctx, sign = eval_method_call cursor ctx expr_base member targs args in
     match sign with
     | Ret (Some value) -> (ctx, value)
     | _ ->
-        "(eval_method_call_expr) method call as an expression must return a \
+        "(eval_call_method_expr) method call as an expression must return a \
          value" |> error_no_info
 
   (* Statement evaluation *)
@@ -251,7 +339,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | TransS { expr_label } ->
         cont sign (fun () -> eval_trans_stmt cursor ctx expr_label)
     | DeclS { decl } -> cont sign (fun () -> eval_decl_stmt cursor ctx decl)
-    | _ -> Format.asprintf "%a" (Il.Pp.pp_stmt' ~level:0) stmt |> error_no_info
+    | _ -> F.asprintf "%a" (Il.Pp.pp_stmt' ~level:0) stmt |> error_no_info
 
   and eval_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (sign : Sig.t)
       (stmts : stmt list) : Ctx.t * Sig.t =
@@ -268,8 +356,8 @@ module Make (Arch : ARCH) : INTERP = struct
   and eval_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_cond : expr)
       (stmt_then : stmt) (stmt_else : stmt) : Ctx.t * Sig.t =
     let ctx, value_cond = eval_expr cursor ctx expr_cond in
-    let value = Value.get_bool value_cond in
-    let stmt = if value then stmt_then else stmt_else in
+    let cond = Value.get_bool value_cond in
+    let stmt = if cond then stmt_then else stmt_else in
     eval_stmt cursor ctx Sig.Cont stmt
 
   and eval_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (block : block) :
@@ -293,12 +381,14 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and eval_func_call_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : var)
       (targs : typ list) (args : arg list) : Ctx.t * Sig.t =
-    eval_func_call cursor ctx var_func targs args
+    let ctx, sign = eval_func_call cursor ctx var_func targs args in
+    match sign with Cont | Ret _ -> (ctx, Cont) | Exit -> (ctx, Exit)
 
   and eval_method_call_stmt (cursor : Ctx.cursor) (ctx : Ctx.t)
       (expr_base : expr) (member : member) (targs : typ list) (args : arg list)
       : Ctx.t * Sig.t =
-    eval_method_call cursor ctx expr_base member targs args
+    let ctx, sign = eval_method_call cursor ctx expr_base member targs args in
+    match sign with Cont | Ret _ -> (ctx, Cont) | Exit -> (ctx, Exit)
 
   and eval_trans_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_label : expr) :
       Ctx.t * Sig.t =
@@ -325,8 +415,8 @@ module Make (Arch : ARCH) : INTERP = struct
     | VarD { id; typ; init; annos } ->
         eval_var_decl cursor ctx id typ init annos
     | _ ->
-        Format.asprintf "(TODO: eval_decl) %a" (Il.Pp.pp_decl' ~level:0) decl
-        |> failwith
+        F.asprintf "(TODO: eval_decl) %a" (Il.Pp.pp_decl' ~level:0) decl
+        |> error_no_info
 
   and eval_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (decls : decl list) : Ctx.t
       =
@@ -351,6 +441,7 @@ module Make (Arch : ARCH) : INTERP = struct
 
   (* Table evaluation *)
 
+  (* (TODO) Actually perform match-action logic *)
   and eval_table (cursor : Ctx.cursor) (ctx : Ctx.t) (table : table) :
       Ctx.t * Sig.t =
     let table_default =
@@ -360,7 +451,18 @@ module Make (Arch : ARCH) : INTERP = struct
           | L.DefaultP table_default -> Some table_default
           | _ -> None)
         table
-      |> List.hd
+      |> fun table_default ->
+      match table_default with
+      | [] ->
+          let var_action = L.Top ("NoAction" $ no_info) $ no_info in
+          let args_action = [] in
+          let annos_action = [] in
+          let action_default =
+            (var_action, args_action, annos_action) $ no_info
+          in
+          (action_default, false) $ no_info
+      | [ table_default ] -> table_default
+      | _ -> error_no_info "(eval_table) table has multiple default entries"
     in
     let action_default, _ = table_default.it in
     let var_action, args_action, _annos_action = action_default.it in
@@ -456,6 +558,13 @@ module Make (Arch : ARCH) : INTERP = struct
       Ctx.t * Sig.t =
     match func with
     (* Callee enters local layer *)
+    | ActionF (params, block) ->
+        assert (targs = []);
+        eval_inter_action_call cursor_caller ctx_caller ctx_callee params block
+          args args_default
+    | FuncF (tparams, params, block) ->
+        eval_inter_func_call cursor_caller ctx_caller ctx_callee tparams params
+          block targs args args_default
     | ExternMethodF (tparams, params, None) ->
         eval_inter_extern_method_call cursor_caller ctx_caller ctx_callee oid
           fid tparams params targs args args_default
@@ -479,8 +588,48 @@ module Make (Arch : ARCH) : INTERP = struct
         eval_inter_apply_method_call cursor_caller ctx_caller ctx_callee params
           locals block args args_default
     | _ ->
-        Format.asprintf "(TODO: eval_inter_call) %a" (Func.pp ~level:0) func
-        |> failwith
+        F.asprintf "(TODO: eval_inter_call) %a" (Func.pp ~level:0) func
+        |> error_no_info
+
+  and eval_inter_action_call (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
+      (ctx_callee : Ctx.t) (params : param list) (block : block)
+      (args : arg list) (args_default : id' list) : Ctx.t * Sig.t =
+    let params, args, _params_default, _args_default =
+      align_params_with_args params args args_default
+    in
+    let ctx_caller, ctx_callee =
+      copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
+    in
+    let ctx_callee, sign =
+      let stmt_block = BlockS { block } $ no_info in
+      eval_stmt Ctx.Local ctx_callee Sig.Cont stmt_block
+    in
+    let ctx_caller = { ctx_caller with global = ctx_callee.global } in
+    let ctx_caller =
+      copyout cursor_caller ctx_caller Ctx.Local ctx_callee params args
+    in
+    (ctx_caller, sign)
+
+  and eval_inter_func_call (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
+      (ctx_callee : Ctx.t) (tparams : tparam list) (params : param list)
+      (block : block) (targs : typ list) (args : arg list)
+      (args_default : id' list) : Ctx.t * Sig.t =
+    let ctx_callee = Ctx.add_typs Ctx.Local tparams targs ctx_callee in
+    let params, args, _params_default, _args_default =
+      align_params_with_args params args args_default
+    in
+    let ctx_caller, ctx_callee =
+      copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
+    in
+    let ctx_callee, sign =
+      let stmt_block = BlockS { block } $ no_info in
+      eval_stmt Ctx.Local ctx_callee Sig.Cont stmt_block
+    in
+    let ctx_caller = { ctx_caller with global = ctx_callee.global } in
+    let ctx_caller =
+      copyout cursor_caller ctx_caller Ctx.Local ctx_callee params args
+    in
+    (ctx_caller, sign)
 
   and eval_inter_extern_method_call (cursor_caller : Ctx.cursor)
       (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (oid : OId.t) (fid : FId.t)
@@ -539,8 +688,8 @@ module Make (Arch : ARCH) : INTERP = struct
         eval_intra_table_apply_method_call cursor_caller ctx_caller ctx_callee
           table
     | _ ->
-        Format.asprintf "(TODO: eval_intra_call) %a" (Func.pp ~level:0) func
-        |> failwith
+        F.asprintf "(TODO: eval_intra_call) %a" (Func.pp ~level:0) func
+        |> error_no_info
 
   and eval_intra_action_call (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
       (ctx_callee : Ctx.t) (params : param list) (block : block)
@@ -583,7 +732,7 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and eval_func_call (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : var)
       (targs : typ list) (args : arg list) : Ctx.t * Sig.t =
-    (* Format.printf "Call %a%a%a\n" Il.Pp.pp_var var_func *)
+    (* F.printf "Call %a%a%a\n" Il.Pp.pp_var var_func *)
     (*   (Il.Pp.pp_targs ~level:0) targs Il.Pp.pp_args args; *)
     let (fid, func, args_default), cursor_func =
       let args = FId.to_names args in
@@ -604,14 +753,16 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and eval_method_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
       (member : member) (targs : typ list) (args : arg list) : Ctx.t * Sig.t =
-    (* Format.printf "Call %a.%a%a%a\n" (Il.Pp.pp_expr ~level:0) expr_base *)
+    (* F.printf "Call %a.%a%a%a\n" (Il.Pp.pp_expr ~level:0) expr_base *)
     (*   Il.Pp.pp_member member (Il.Pp.pp_targs ~level:0) targs Il.Pp.pp_args args; *)
     let ctx, value_base = eval_expr cursor ctx expr_base in
     match value_base with
     | RefV path ->
         let obj = Sto.find path !sto in
         eval_obj_call cursor ctx path obj member targs args
-    | _ -> Format.asprintf "%a" (Value.pp ~level:0) value_base |> failwith
+    | _ ->
+        F.asprintf "(TODO: eval_method_call) %a" (Value.pp ~level:0) value_base
+        |> error_no_info
 
   and eval_obj_call (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
       (oid : OId.t) (obj : Obj.t) (member : member) (targs : typ list)
@@ -649,5 +800,7 @@ module Make (Arch : ARCH) : INTERP = struct
         let ctx_callee = Ctx.copy Ctx.Block ctx_caller in
         eval_intra_call cursor_caller ctx_caller ctx_callee oid fid func targs
           args args_default
-    | _ -> Format.asprintf "%a" (Obj.pp ~level:0) obj |> failwith
+    | _ ->
+        F.asprintf "(TODO: eval_obj_call) %a" (Obj.pp ~level:0) obj
+        |> error_no_info
 end

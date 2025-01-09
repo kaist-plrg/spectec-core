@@ -53,7 +53,8 @@ let instantiate_command =
        try
          let program = typecheck includes filename in
          Instance.Instantiate.instantiate_program program |> ignore
-       with ParseErr (msg, info) | CheckErr (msg, info) ->
+       with
+       | ParseErr (msg, info) | CheckErr (msg, info) | InstErr (msg, info) ->
          Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
 
 let run_command =
@@ -70,17 +71,14 @@ let run_command =
          let cenv, fenv, venv, sto =
            Instance.Instantiate.instantiate_program program
          in
-         let (module Driver) =
-           match arch with
-           | "v1model" ->
-               (module Exec.Driver.Make (Exec.V1model.Make) (Exec.Interp.Make)
-               : Exec.Driver.DRIVER)
-           | _ -> failwith "unsupported architecture"
-         in
+         let (module Driver) = Exec.Gen.gen arch in
          let stmts_stf = Stf.Parse.parse_file stfname in
-         Driver.run cenv fenv venv sto stmts_stf
+         Driver.run cenv fenv venv sto stmts_stf |> ignore
        with
-       | ParseErr (msg, info) | CheckErr (msg, info) ->
+       | ParseErr (msg, info)
+       | CheckErr (msg, info)
+       | InstErr (msg, info)
+       | InterpErr (msg, info) ->
            Format.printf "Error: %a\n%s\n" Util.Source.pp info msg
        | StfErr msg -> Format.printf "Error: %s\n" msg)
 

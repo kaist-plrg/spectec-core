@@ -147,6 +147,27 @@ module Make (Interp : INTERP) : ARCH = struct
         let ctx, pkt_in = Core.PacketIn.extract ctx packet_in in
         externs := Externs.add "packet_in" (PacketIn pkt_in) !externs;
         (ctx, Sig.Ret None)
+    | ( [ "packet_in" ],
+        ( "extract",
+          [ ("variableSizeHeader", false); ("variableFieldSizeInBits", false) ]
+        ) ) ->
+        let packet_in = get_pkt_in () in
+        let ctx, pkt_in = Core.PacketIn.extract_varsize ctx packet_in in
+        externs := Externs.add "packet_in" (PacketIn pkt_in) !externs;
+        (ctx, Sig.Ret None)
+    | [ "packet_in" ], ("lookahead", []) ->
+        let packet_in = get_pkt_in () in
+        let hdr = Core.PacketIn.lookahead ctx packet_in in
+        (ctx, Sig.Ret (Some hdr))
+    | [ "packet_in" ], ("advance", [ ("sizeInBits", false) ]) ->
+        let packet_in = get_pkt_in () in
+        let pkt_in = Core.PacketIn.advance ctx packet_in in
+        externs := Externs.add "packet_in" (PacketIn pkt_in) !externs;
+        (ctx, Sig.Ret None)
+    | [ "packet_in" ], ("length", []) ->
+        let packet_in = get_pkt_in () in
+        let len = Core.PacketIn.length packet_in in
+        (ctx, Sig.Ret (Some len))
     | [ "packet_out" ], ("emit", [ ("hdr", false) ]) ->
         let packet_out = get_pkt_out () in
         let ctx, pkt_out = Core.PacketOut.emit ctx packet_out in
@@ -260,7 +281,7 @@ module Make (Interp : INTERP) : ARCH = struct
     let packet_out = get_pkt_out () |> F.asprintf "%a" Core.PacketOut.pp in
     (port_out, packet_out)
 
-  let drive_stf_stmt (ctx : Ctx.t) (queue_packet : result list)
+  let drive_stf_stmt (ctx : Ctx.t) (pass : bool) (queue_packet : result list)
       (queue_expect : result list) (stmt_stf : Stf.Ast.stmt) =
     let compare_packet packet_out packet_expect : bool =
       let to_list s = List.init (String.length s) (String.get s) in
@@ -271,13 +292,17 @@ module Make (Interp : INTERP) : ARCH = struct
            (fun same o e -> same && (e = '*' || o = e))
            true packet_out packet_expect
     in
-    let compare (port_out, packet_out) (port_expect, packet_expect) : unit =
-      if port_out = port_expect && compare_packet packet_out packet_expect then
-        F.printf "[PASS] Expected: %d %s / Actual: %d %s\n" port_expect
+    let compare (port_out, packet_out) (port_expect, packet_expect) : bool =
+      let pass =
+        port_out = port_expect && compare_packet packet_out packet_expect
+      in
+      if pass then
+        F.printf "[PASS] Expected: %d %s / Got: %d %s\n" port_expect
           packet_expect port_out packet_out
       else
-        F.printf "[FAIL] Expected: %d %s / Actual: %d %s\n" port_expect
-          packet_expect port_out packet_out
+        F.printf "[FAIL] Expected: %d %s / Got: %d %s\n" port_expect
+          packet_expect port_out packet_out;
+      pass
     in
     match stmt_stf with
     | Stf.Ast.Packet (port_in, packet_in) -> (
@@ -287,33 +312,44 @@ module Make (Interp : INTERP) : ARCH = struct
         match queue_expect with
         | [] ->
             let queue_packet = queue_packet @ [ (port_out, packet_out) ] in
-            (ctx, queue_packet, queue_expect)
+            (ctx, pass, queue_packet, queue_expect)
         | (port_expect, packet_expect) :: queue_expect ->
-            compare (port_out, packet_out) (port_expect, packet_expect);
-            (ctx, queue_packet, queue_expect))
+            let pass =
+              compare (port_out, packet_out) (port_expect, packet_expect)
+              && pass
+            in
+            (ctx, pass, queue_packet, queue_expect))
     | Stf.Ast.Expect (port_expect, Some packet_expect) -> (
         let port_expect = int_of_string port_expect in
         let packet_expect = String.uppercase_ascii packet_expect in
         match queue_packet with
         | [] ->
-            (ctx, queue_packet, queue_expect @ [ (port_expect, packet_expect) ])
+            ( ctx,
+              pass,
+              queue_packet,
+              queue_expect @ [ (port_expect, packet_expect) ] )
         | (port_out, packet_out) :: queue_packet ->
-            compare (port_out, packet_out) (port_expect, packet_expect);
-            (ctx, queue_packet, queue_expect))
+            let pass =
+              compare (port_out, packet_out) (port_expect, packet_expect)
+              && pass
+            in
+            (ctx, pass, queue_packet, queue_expect))
     | _ ->
         Format.asprintf "(drive_stf_stmt) unknown stf stmt: %a"
           Stf.Print.print_stmt stmt_stf
         |> error_no_info
 
-  let drive_stf_stmts (ctx : Ctx.t) (stmts_stf : Stf.Ast.stmt list) : unit =
-    List.fold_left
-      (fun (ctx, queue_packet, queue_expect) stmt_stf ->
-        drive_stf_stmt ctx queue_packet queue_expect stmt_stf)
-      (ctx, [], []) stmts_stf
-    |> ignore
+  let drive_stf_stmts (ctx : Ctx.t) (stmts_stf : Stf.Ast.stmt list) : bool =
+    let _, pass, _, _ =
+      List.fold_left
+        (fun (ctx, pass, queue_packet, queue_expect) stmt_stf ->
+          drive_stf_stmt ctx pass queue_packet queue_expect stmt_stf)
+        (ctx, true, [], []) stmts_stf
+    in
+    pass
 
   let drive (cenv : CEnv.t) (fenv : FEnv.t) (venv : VEnv.t) (sto : Sto.t)
-      (_stmts_stf : Stf.Ast.stmt list) : unit =
+      (_stmts_stf : Stf.Ast.stmt list) : bool =
     let ctx = { Ctx.empty with global = { cenv; fenv; venv } } in
     let ctx, sto = init ctx sto in
     Interp.init sto;

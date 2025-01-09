@@ -310,8 +310,9 @@ let eval_binop_shr (lvalue : Value.t) (rvalue : Value.t) : Value.t =
   | FIntV (width, lvalue), FBitV (_, rvalue)
   | FIntV (width, lvalue), FIntV (_, rvalue)
   | FIntV (width, lvalue), IntV rvalue ->
+      let lvalue = of_two_complement lvalue width in
       let exp = power_of_two Bigint.(width - one) in
-      let arith = Bigint.(of_two_complement lvalue width > exp) in
+      let arith = Bigint.(lvalue > exp) in
       let value =
         to_two_complement (shift_bitstring_right lvalue rvalue arith exp) width
       in

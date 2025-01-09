@@ -44,4 +44,7 @@ let check_checker (b : bool) (msg : string) : unit =
 let check_inst (b : bool) (msg : string) : unit =
   if not b then error_inst_no_info msg
 
+let check_interp (b : bool) (msg : string) : unit =
+  if not b then error_interp_no_info msg
+
 let implies (p : bool) (q : bool) : bool = (not p) || q

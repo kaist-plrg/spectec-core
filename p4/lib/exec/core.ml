@@ -1,6 +1,7 @@
 module Value = Runtime_static.Value
 module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
+module Numerics = Runtime_static.Numerics
 open Util.Error
 
 let error_no_info = error_interp_no_info
@@ -46,25 +47,44 @@ let bits_to_string bits =
   in
   loop 0 ""
 
-let bits_to_int bits =
+let bits_to_int_unsigned bits =
   Array.fold_left (fun i bit -> (i lsl 1) + if bit then 1 else 0) 0 bits
   |> Bigint.of_int
 
-let int_to_bits value size =
+let bits_to_int_signed bits =
+  let sign = bits.(0) in
+  let int_unsigned = bits_to_int_unsigned bits in
+  if sign then
+    let int_max =
+      let len = Array.length bits - 1 in
+      Bigint.(one lsl len)
+    in
+    Bigint.(int_unsigned - (int_max * (one + one)))
+  else int_unsigned
+
+let int_to_bits_unsigned value size =
   Array.init size (fun i -> Bigint.(value land (one lsl i) > zero))
   |> Array.to_list |> List.rev |> Array.of_list
 
-let rec sizeof (ctx : Ctx.t) (typ : Type.t) : int =
+let int_to_bits_signed value size =
+  let mask = Bigint.((one lsl size) - one) in
+  let value = Bigint.(value land mask) in
+  int_to_bits_unsigned value size
+
+let rec sizeof ?(varsize = 0) (ctx : Ctx.t) (typ : Type.t) : int =
   let typ = Ctx.resolve_typ Ctx.Local typ ctx |> Type.canon in
   match typ with
   | DefT _ | SpecT _ -> assert false
   | BoolT -> 1
   | FIntT width | FBitT width -> width |> Bigint.to_int |> Option.get
-  | HeaderT (_, fields) ->
+  | VBitT _ -> varsize
+  | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
       fields
-      |> List.map (fun (_, typ) -> sizeof ctx typ)
+      |> List.map (fun (_, typ) -> sizeof ~varsize ctx typ)
       |> List.fold_left ( + ) 0
-  | _ -> Format.asprintf "(TODO: sizeof) %a" (Type.pp ~level:0) typ |> failwith
+  | _ ->
+      Format.asprintf "(TODO: sizeof) %a" (Type.pp ~level:0) typ
+      |> error_no_info
 
 (* Input packet *)
 
@@ -82,25 +102,44 @@ module PacketIn = struct
     let pkt = { pkt with idx = pkt.idx + size } in
     (pkt, bits)
 
-  let rec write (bits_in : bits) (value : Value.t) =
+  let rec write ?(varsize = 0) (bits_in : bits) (value : Value.t) =
     match value with
     | FIntV (width, _) ->
         let size = width |> Bigint.to_int |> Option.get in
         let bits = Array.sub bits_in 0 size in
         let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
-        let value = Value.FIntV (width, bits_to_int bits) in
+        let value = Value.FIntV (width, bits_to_int_signed bits) in
         (bits_in, value)
     | FBitV (width, _) ->
         let size = width |> Bigint.to_int |> Option.get in
         let bits = Array.sub bits_in 0 size in
         let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
-        let value = Value.FBitV (width, bits_to_int bits) in
+        let value = Value.FBitV (width, bits_to_int_unsigned bits) in
+        (bits_in, value)
+    | VBitV (width_max, _, _) ->
+        let size = varsize in
+        let bits = Array.sub bits_in 0 size in
+        let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
+        let value =
+          Value.VBitV
+            (width_max, Bigint.of_int varsize, bits_to_int_unsigned bits)
+        in
+        (bits_in, value)
+    | StructV fields ->
+        let bits_in, fields =
+          List.fold_left
+            (fun (bits_in, fields) (member, value) ->
+              let bits_in, value = write ~varsize bits_in value in
+              (bits_in, fields @ [ (member, value) ]))
+            (bits_in, []) fields
+        in
+        let value = Value.StructV fields in
         (bits_in, value)
     | HeaderV (_, fields) ->
         let bits_in, fields =
           List.fold_left
             (fun (bits_in, fields) (member, value) ->
-              let bits_in, value = write bits_in value in
+              let bits_in, value = write ~varsize bits_in value in
               (bits_in, fields @ [ (member, value) ]))
             (bits_in, []) fields
         in
@@ -112,6 +151,7 @@ module PacketIn = struct
   (* Read a header from the packet into a fixed-sized header @hdr and advance the cursor.
      May trigger error PacketTooShort or StackOutOfBounds.
      @T must be a fixed-size header type
+
      void extract<T>(out T hdr); *)
   let extract (ctx : Ctx.t) pkt : Ctx.t * t =
     let typ = Ctx.find_typ Ctx.Local "T" ctx in
@@ -121,12 +161,55 @@ module PacketIn = struct
     let ctx = Ctx.update_value Ctx.Local "hdr" hdr ctx in
     (ctx, pkt)
 
-  let extract_varsize (_ctx : Ctx.t) _pkt =
-    "(TODO : extract_varsize)" |> error_no_info
+  (* Read bits from the packet into a variable-sized header @variableSizeHeader
+     and advance the cursor.
+     @T must be a header containing exactly 1 varbit field.
+     May trigger errors PacketTooShort, StackOutOfBounds, or HeaderTooShort.
 
-  let lookahead (_ctx : Ctx.t) _pkt = "(TODO : lookahead)" |> error_no_info
-  let advance (_ctx : Ctx.t) _pkt = "(TODO : advance)" |> error_no_info
-  let length (_ctx : Ctx.t) _pkt = "(TODO : length)" |> error_no_info
+     void extract<T>(out T variableSizeHeader,
+                      in bit<32> variableFieldSizeInBits); *)
+  let extract_varsize (ctx : Ctx.t) pkt =
+    let typ = Ctx.find_typ Ctx.Local "T" ctx in
+    let hdr = Ctx.find_value Ctx.Local "variableSizeHeader" ctx in
+    let varsize =
+      Ctx.find_value Ctx.Local "variableFieldSizeInBits" ctx
+      |> Value.get_num |> Bigint.to_int |> Option.get
+    in
+    let pkt, bits = sizeof ~varsize ctx typ |> parse pkt in
+    let hdr = write ~varsize bits hdr |> snd in
+    let ctx = Ctx.update_value Ctx.Local "variableSizeHeader" hdr ctx in
+    (ctx, pkt)
+
+  (* Read bits from the packet without advancing the cursor.
+     @returns: the bits read from the packet.
+     T may be an arbitrary fixed-size type.
+
+     T lookahead<T>(); *)
+  let lookahead (ctx : Ctx.t) pkt : Value.t =
+    let typ = Ctx.find_typ Ctx.Local "T" ctx in
+    let hdr = Numerics.eval_default typ in
+    let _pkt, bits = sizeof ctx typ |> parse pkt in
+    let hdr = write bits hdr |> snd in
+    hdr
+
+  (* Advance the packet cursor by the specified number of bits.
+
+     void advance(in bit<32> sizeInBits); *)
+  let advance (ctx : Ctx.t) pkt =
+    let size =
+      Ctx.find_value Ctx.Local "sizeInBits" ctx
+      |> Value.get_num |> Bigint.to_int |> Option.get
+    in
+    let pkt = { pkt with idx = pkt.idx + size } in
+    pkt
+
+  (* @return packet length in bytes.  This method may be unavailable on
+     some target architectures.
+
+     bit<32> length(); *)
+  let length pkt =
+    let len = if pkt.len mod 8 = 0 then pkt.len / 8 else (pkt.len / 8) + 1 in
+    Value.FIntV (Bigint.of_int 32, Bigint.of_int len)
 end
 
 (* Output packet *)
@@ -140,11 +223,17 @@ module PacketOut = struct
   let rec deparse pkt (value : Value.t) =
     match value with
     | BoolV b -> { bits = Array.append pkt.bits (Array.make 1 b) }
-    | FIntV (width, value) | FBitV (width, value) ->
+    | FIntV (width, value) ->
         let width = width |> Bigint.to_int |> Option.get in
-        let bits = int_to_bits value width in
+        let bits = int_to_bits_signed value width in
         { bits = Array.append pkt.bits bits }
-    | HeaderV (_, fields) ->
+    | FBitV (width, value) | VBitV (_, width, value) ->
+        let width = width |> Bigint.to_int |> Option.get in
+        let bits = int_to_bits_unsigned value width in
+        { bits = Array.append pkt.bits bits }
+    | StackV (values, _, _) ->
+        List.fold_left (fun pkt value -> deparse pkt value) pkt values
+    | StructV fields | HeaderV (_, fields) ->
         List.fold_left (fun pkt (_, value) -> deparse pkt value) pkt fields
     | _ ->
         Format.asprintf "(TODO: deparse) %a" (Value.pp ~level:0) value
@@ -153,6 +242,7 @@ module PacketOut = struct
   (* Write @hdr into the output packet, advancing cursor.
      @T can be a header type, a header stack, a header_union, or a struct
      containing fields with such types.
+
      void emit<T>(in T hdr); *)
   let emit (ctx : Ctx.t) pkt =
     let hdr = Ctx.find_value Ctx.Local "hdr" ctx in
