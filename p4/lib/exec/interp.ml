@@ -88,7 +88,7 @@ module Make (Arch : ARCH) : INTERP = struct
             let idx_stack = idx_stack + 1 |> Bigint.of_int in
             let value_base = Value.StackV (values_stack, idx_stack, size) in
             eval_write_lvalue cursor ctx expr_base value_base
-        | StructV fields ->
+        | StructV (id, fields) ->
             let fields =
               List.map
                 (fun (member, value) ->
@@ -96,9 +96,9 @@ module Make (Arch : ARCH) : INTERP = struct
                   else (member, value))
                 fields
             in
-            let value_base = Value.StructV fields in
+            let value_base = Value.StructV (id, fields) in
             eval_write_lvalue cursor ctx expr_base value_base
-        | HeaderV (_, fields) ->
+        | HeaderV (id, _, fields) ->
             let fields =
               List.map
                 (fun (member, value) ->
@@ -106,9 +106,9 @@ module Make (Arch : ARCH) : INTERP = struct
                   else (member, value))
                 fields
             in
-            let value_base = Value.HeaderV (true, fields) in
+            let value_base = Value.HeaderV (id, true, fields) in
             eval_write_lvalue cursor ctx expr_base value_base
-        | UnionV fields ->
+        | UnionV (id, fields) ->
             let fields =
               List.map
                 (fun (member, value) ->
@@ -116,7 +116,7 @@ module Make (Arch : ARCH) : INTERP = struct
                   else (member, value))
                 fields
             in
-            let value_base = Value.UnionV fields in
+            let value_base = Value.UnionV (id, fields) in
             eval_write_lvalue cursor ctx expr_base value_base
         | _ ->
             F.asprintf "(TODO: eval_write_lvalue) %a" (Il.Pp.pp_expr ~level:0)
@@ -347,10 +347,10 @@ module Make (Arch : ARCH) : INTERP = struct
                 "(eval_expr_acc_expr) invalid member %a for header stack"
                 Il.Pp.pp_member member
               |> error_no_info)
-      | StructV fields
-      | HeaderV (_, fields)
-      | UnionV fields
-      | TableStructV fields ->
+      | StructV (_, fields)
+      | HeaderV (_, _, fields)
+      | UnionV (_, fields)
+      | TableStructV (_, fields) ->
           List.assoc member.it fields
       | RefV path -> Value.RefV (path @ [ member.it ])
       | _ ->
@@ -740,7 +740,8 @@ module Make (Arch : ARCH) : INTERP = struct
         Value.TableEnumFieldV ("action_list(" ^ id ^ ")", member)
       in
       Value.TableStructV
-        [ ("hit", hit); ("miss", miss); ("action_run", action_run) ]
+        ( "apply_result(" ^ id ^ ")",
+          [ ("hit", hit); ("miss", miss); ("action_run", action_run) ] )
     in
     (ctx, value, action)
 
@@ -1092,7 +1093,7 @@ module Make (Arch : ARCH) : INTERP = struct
       (expr_base : expr) (value_base : Value.t) (member : member)
       (targs : typ list) (args : arg list) : Ctx.t * Sig.t =
     match value_base with
-    | HeaderV (valid, fields) -> (
+    | HeaderV (id, valid, fields) -> (
         assert (args = [] && targs = []);
         match member.it with
         | "isValid" ->
@@ -1100,12 +1101,12 @@ module Make (Arch : ARCH) : INTERP = struct
             let sign = Sig.Ret (Some value) in
             (ctx, sign)
         | "setValid" ->
-            let value_base = Value.HeaderV (true, fields) in
+            let value_base = Value.HeaderV (id, true, fields) in
             let ctx = eval_write_lvalue cursor ctx expr_base value_base in
             let sign = Sig.Ret None in
             (ctx, sign)
         | "setInvalid" ->
-            let value_base = Value.HeaderV (false, fields) in
+            let value_base = Value.HeaderV (id, false, fields) in
             let ctx = eval_write_lvalue cursor ctx expr_base value_base in
             let sign = Sig.Ret None in
             (ctx, sign)

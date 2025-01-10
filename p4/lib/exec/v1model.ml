@@ -244,7 +244,7 @@ module Make (Interp : INTERP) : ARCH = struct
       let value_port = Value.FBitV (Bigint.of_int 9, Bigint.of_int port_in) in
       let value_std_meta = Ctx.find_value Ctx.Global "standard_metadata" ctx in
       match value_std_meta with
-      | Value.StructV fields ->
+      | Value.StructV (id, fields) ->
           let fields =
             List.map
               (fun (id, value) ->
@@ -252,7 +252,7 @@ module Make (Interp : INTERP) : ARCH = struct
                 (id, value))
               fields
           in
-          Value.StructV fields
+          Value.StructV (id, fields)
       | _ -> assert false
     in
     let ctx =
@@ -275,7 +275,7 @@ module Make (Interp : INTERP) : ARCH = struct
     let port_out =
       let value_std_meta = Ctx.find_value Ctx.Global "standard_metadata" ctx in
       match value_std_meta with
-      | Value.StructV fields ->
+      | Value.StructV (_, fields) ->
           List.assoc "egress_spec" fields
           |> Value.get_num |> Bigint.to_int |> Option.get
       | _ -> assert false

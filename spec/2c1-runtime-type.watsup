@@ -60,7 +60,7 @@ syntax objtyp hint(show %latex("\\tau_\\texttt{obj}")) =
   | ParserT paramtyp*               hint(show PARSER#_#T (%))
   | ControlT paramtyp*              hint(show CONTROL#_#T (%))
   | PackageT typ*                   hint(show PACKAGE#_#T %)
-  | TableT typ                      hint(show TABLE#_#T %)
+  | TableT id typ                   hint(show TABLE#_#T %)
 
 syntax deftyp hint(show %latex("\\tau_\\texttt{def}")) =
   | aliastyp | datatyp | objtyp

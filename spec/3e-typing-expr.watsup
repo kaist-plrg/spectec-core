@@ -188,7 +188,7 @@ def $equalable'(ExternT id fmap) = false
 def $equalable'(ParserT paramtyp*) = false
 def $equalable'(ControlT paramtyp*) = false
 def $equalable'(PackageT typ*) = false
-def $equalable'(TableT typ) = false
+def $equalable'(TableT id typ) = false
 def $equalable'(synthtyp) = $is_seqt(synthtyp) \/ $is_recordt(synthtyp)
 def $equalable'(typ) = true
 
@@ -610,7 +610,7 @@ def $assignable'(VoidT) = false
 def $assignable'(ParserT paramtyp*) = false
 def $assignable'(ControlT paramtyp*) = false
 def $assignable'(PackageT typ*) = false
-def $assignable'(TableT typ) = false
+def $assignable'(TableT id typ) = false
 def $assignable'(styp) = false
 def $assignable'(typ) = true
   -- otherwise

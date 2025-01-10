@@ -4,6 +4,7 @@ module F = Format
 open Util.Pp
 
 type t =
+  (* 1. Base values *)
   | ErrV of L.member'
   | MatchKindV of L.member'
   | StrV of string
@@ -12,16 +13,18 @@ type t =
   | FIntV of Bigint.t * Bigint.t
   | FBitV of Bigint.t * Bigint.t
   | VBitV of Bigint.t * Bigint.t * Bigint.t
+  (* 2. Derived values *)
   | EnumFieldV of L.id' * L.member'
   | SEnumFieldV of L.id' * L.member' * t
   | ListV of t list
   | TupleV of t list
   | StackV of (t list * Bigint.t * Bigint.t)
-  | StructV of (L.member' * t) list
-  | HeaderV of bool * (L.member' * t) list
-  | UnionV of (L.member' * t) list
+  | StructV of L.id' * (L.member' * t) list
+  | HeaderV of L.id' * bool * (L.member' * t) list
+  | UnionV of L.id' * (L.member' * t) list
+  (* 3. Synthesized values *)
   | TableEnumFieldV of L.id' * L.member'
-  | TableStructV of (L.member' * t) list
+  | TableStructV of L.id' * (L.member' * t) list
   | SeqV of t list
   | SeqDefaultV of t list
   | RecordV of (L.member' * t) list
@@ -51,22 +54,22 @@ let rec pp ?(level = 0) fmt value =
   | TupleV values -> F.fprintf fmt "tuple { %a }" (pp_list pp ~sep:Comma) values
   | StackV (values, _idx, _size) ->
       F.fprintf fmt "stack { %a }" (pp_list pp ~sep:Comma) values
-  | StructV fields ->
-      F.fprintf fmt "struct {\n%a\n%s}"
+  | StructV (id, fields) ->
+      F.fprintf fmt "struct %a {\n%a\n%s}" P.pp_id' id
         (pp_pairs ~level:(level + 1) P.pp_member' pp ~rel:Eq ~sep:SemicolonNl)
         fields (indent level)
-  | HeaderV (_valid, fields) ->
-      F.fprintf fmt "header {\n%a\n%s}"
+  | HeaderV (id, _valid, fields) ->
+      F.fprintf fmt "header %a {\n%a\n%s}" P.pp_id' id
         (pp_pairs ~level:(level + 1) P.pp_member' pp ~rel:Eq ~sep:SemicolonNl)
         fields (indent level)
-  | UnionV fields ->
-      F.fprintf fmt "header_union {\n%a\n%s}"
+  | UnionV (id, fields) ->
+      F.fprintf fmt "header_union %a {\n%a\n%s}" P.pp_id' id
         (pp_pairs ~level:(level + 1) P.pp_member' pp ~rel:Eq ~sep:SemicolonNl)
         fields (indent level)
   | TableEnumFieldV (id, member) ->
       F.fprintf fmt "%a.%a" P.pp_id' id P.pp_member' member
-  | TableStructV fields ->
-      F.fprintf fmt "table {\n%a\n%s}"
+  | TableStructV (id, fields) ->
+      F.fprintf fmt "table_struct %a {\n%a\n%s}" P.pp_id' id
         (pp_pairs ~level:(level + 1) P.pp_member' pp ~rel:Eq ~sep:SemicolonNl)
         fields (indent level)
   | SeqV values -> F.fprintf fmt "seq { %a }" (pp_list pp ~sep:Comma) values
@@ -85,7 +88,7 @@ let rec pp ?(level = 0) fmt value =
   | DefaultV -> F.fprintf fmt "..."
   | InvalidV -> F.fprintf fmt "{#}"
   | StateV id -> F.fprintf fmt "state %a" P.pp_id' id
-  | RefV oid -> F.fprintf fmt "!%a" Domain.Dom.OId.pp oid
+  | RefV oid -> F.fprintf fmt "ref %a" Domain.Dom.OId.pp oid
 
 (* Equality *)
 
@@ -110,29 +113,32 @@ let rec eq t_a t_b =
   | TupleV values_a, TupleV values_b -> List.for_all2 eq values_a values_b
   | StackV (values_a, _, size_a), StackV (values_b, _, size_b) ->
       List.for_all2 eq values_a values_b && Bigint.(size_a = size_b)
-  | StructV fields_a, StructV fields_b ->
-      List.for_all2
-        (fun (member_a, value_a) (member_b, value_b) ->
-          member_a = member_b && eq value_a value_b)
-        fields_a fields_b
-  | HeaderV (valid_a, fields_a), HeaderV (valid_b, fields_b) ->
-      valid_a = valid_b
+  | StructV (id_a, fields_a), StructV (id_b, fields_b) ->
+      id_a = id_b
       && List.for_all2
            (fun (member_a, value_a) (member_b, value_b) ->
              member_a = member_b && eq value_a value_b)
            fields_a fields_b
-  | UnionV fields_a, UnionV fields_b ->
-      List.for_all2
-        (fun (member_a, value_a) (member_b, value_b) ->
-          member_a = member_b && eq value_a value_b)
-        fields_a fields_b
+  | HeaderV (id_a, valid_a, fields_a), HeaderV (id_b, valid_b, fields_b) ->
+      id_a = id_b && valid_a = valid_b
+      && List.for_all2
+           (fun (member_a, value_a) (member_b, value_b) ->
+             member_a = member_b && eq value_a value_b)
+           fields_a fields_b
+  | UnionV (id_a, fields_a), UnionV (id_b, fields_b) ->
+      id_a = id_b
+      && List.for_all2
+           (fun (member_a, value_a) (member_b, value_b) ->
+             member_a = member_b && eq value_a value_b)
+           fields_a fields_b
   | TableEnumFieldV (id_a, member_a), TableEnumFieldV (id_b, member_b) ->
       id_a = id_b && member_a = member_b
-  | TableStructV fields_a, TableStructV fields_b ->
-      List.for_all2
-        (fun (member_a, value_a) (member_b, value_b) ->
-          member_a = member_b && eq value_a value_b)
-        fields_a fields_b
+  | TableStructV (id_a, fields_a), TableStructV (id_b, fields_b) ->
+      id_a = id_b
+      && List.for_all2
+           (fun (member_a, value_a) (member_b, value_b) ->
+             member_a = member_b && eq value_a value_b)
+           fields_a fields_b
   | SeqV values_a, SeqV values_b | SeqDefaultV values_a, SeqDefaultV values_b ->
       List.for_all2 eq values_a values_b
   | RecordV fields_a, RecordV fields_b
@@ -169,7 +175,7 @@ let rec get_width t =
       List.fold_left
         (fun acc value -> Bigint.(acc + get_width value))
         Bigint.zero values
-  | StructV fields | HeaderV (_, fields) ->
+  | StructV (_, fields) | HeaderV (_, _, fields) ->
       let values = List.map snd fields in
       List.fold_left
         (fun acc value -> Bigint.(acc + get_width value))

@@ -129,7 +129,7 @@ module PacketIn = struct
             (width_max, Bigint.of_int varsize, bits_to_int_unsigned bits)
         in
         (bits_in, value)
-    | StructV fields ->
+    | StructV (id, fields) ->
         let bits_in, fields =
           List.fold_left
             (fun (bits_in, fields) (member, value) ->
@@ -137,9 +137,9 @@ module PacketIn = struct
               (bits_in, fields @ [ (member, value) ]))
             (bits_in, []) fields
         in
-        let value = Value.StructV fields in
+        let value = Value.StructV (id, fields) in
         (bits_in, value)
-    | HeaderV (_, fields) ->
+    | HeaderV (id, _, fields) ->
         let bits_in, fields =
           List.fold_left
             (fun (bits_in, fields) (member, value) ->
@@ -147,9 +147,9 @@ module PacketIn = struct
               (bits_in, fields @ [ (member, value) ]))
             (bits_in, []) fields
         in
-        let value = Value.HeaderV (true, fields) in
+        let value = Value.HeaderV (id, true, fields) in
         (bits_in, value)
-    | UnionV fields ->
+    | UnionV (id, fields) ->
         let bits_in, fields =
           List.fold_left
             (fun (bits_in, fields) (member, value) ->
@@ -157,7 +157,7 @@ module PacketIn = struct
               (bits_in, fields @ [ (member, value) ]))
             (bits_in, []) fields
         in
-        let value = Value.StructV fields in
+        let value = Value.UnionV (id, fields) in
         (bits_in, value)
     | _ ->
         Format.asprintf "(TODO: write) %a" (Value.pp ~level:0) value |> failwith
@@ -247,7 +247,7 @@ module PacketOut = struct
         { bits = Array.append pkt.bits bits }
     | StackV (values, _, _) ->
         List.fold_left (fun pkt value -> deparse pkt value) pkt values
-    | StructV fields | HeaderV (_, fields) | UnionV fields ->
+    | StructV (_, fields) | HeaderV (_, _, fields) | UnionV (_, fields) ->
         List.fold_left (fun pkt (_, value) -> deparse pkt value) pkt fields
     | _ ->
         Format.asprintf "(TODO: deparse) %a" (Value.pp ~level:0) value
