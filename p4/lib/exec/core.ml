@@ -93,6 +93,10 @@ module PacketIn = struct
 
   let pp fmt pkt = Format.fprintf fmt "%s" (bits_to_string pkt.bits)
 
+  let pp_remaining fmt pkt =
+    let bits = Array.sub pkt.bits pkt.idx (pkt.len - pkt.idx) in
+    pp fmt { pkt with bits }
+
   let init (pkt : string) =
     let bits = string_to_bits pkt in
     { bits; idx = 0; len = Array.length bits }
@@ -144,6 +148,16 @@ module PacketIn = struct
             (bits_in, []) fields
         in
         let value = Value.HeaderV (true, fields) in
+        (bits_in, value)
+    | UnionV fields ->
+        let bits_in, fields =
+          List.fold_left
+            (fun (bits_in, fields) (member, value) ->
+              let bits_in, value = write ~varsize bits_in value in
+              (bits_in, fields @ [ (member, value) ]))
+            (bits_in, []) fields
+        in
+        let value = Value.StructV fields in
         (bits_in, value)
     | _ ->
         Format.asprintf "(TODO: write) %a" (Value.pp ~level:0) value |> failwith
@@ -233,7 +247,7 @@ module PacketOut = struct
         { bits = Array.append pkt.bits bits }
     | StackV (values, _, _) ->
         List.fold_left (fun pkt value -> deparse pkt value) pkt values
-    | StructV fields | HeaderV (_, fields) ->
+    | StructV fields | HeaderV (_, fields) | UnionV fields ->
         List.fold_left (fun pkt (_, value) -> deparse pkt value) pkt fields
     | _ ->
         Format.asprintf "(TODO: deparse) %a" (Value.pp ~level:0) value

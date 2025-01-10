@@ -223,7 +223,8 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
       eq_params_alpha params_a params_b
   | PackageT typs_inner_a, PackageT typs_inner_b ->
       eq_typs_alpha typs_inner_a typs_inner_b
-  | TableT typ_a, TableT typ_b -> eq_typ_alpha typ_a typ_b
+  | TableT (id_a, typ_a), TableT (id_b, typ_b) ->
+      E.eq_id' id_a id_b && eq_typ_alpha typ_a typ_b
   | AnyT, AnyT -> true
   | TableEnumT (id_a, members_a), TableEnumT (id_b, members_b) ->
       E.eq_id' id_a id_b && E.eq_list E.eq_member' members_a members_b

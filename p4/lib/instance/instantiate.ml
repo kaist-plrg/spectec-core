@@ -66,9 +66,9 @@ let rec do_instantiate (cursor : Ctx.cursor) (ctx_caller : Ctx.t) (sto : Sto.t)
   (* Unpack constructor *)
   let _tparams, cparams, do_instantiate_cons =
     match cons with
-    | ExternC (tparams, cparams, mthds) ->
+    | ExternC (id, tparams, cparams, mthds) ->
         let do_instantiate_cons ctx_callee sto =
-          do_instantiate_extern Ctx.Block ctx_callee sto mthds
+          do_instantiate_extern Ctx.Block ctx_callee sto id mthds
         in
         (tparams, cparams, do_instantiate_cons)
     | ParserC (tparams, cparams, params, decls, states) ->
@@ -86,9 +86,9 @@ let rec do_instantiate (cursor : Ctx.cursor) (ctx_caller : Ctx.t) (sto : Sto.t)
           do_instantiate_package Ctx.Block ctx_callee sto
         in
         (tparams, cparams, do_instantiate_cons)
-    | TableC table ->
+    | TableC (id, table) ->
         let do_instantiate_table ctx_callee sto =
-          do_instantiate_table Ctx.Block ctx_callee sto table
+          do_instantiate_table Ctx.Block ctx_callee sto id table
         in
         ([], [], do_instantiate_table)
   in
@@ -124,14 +124,13 @@ let rec do_instantiate (cursor : Ctx.cursor) (ctx_caller : Ctx.t) (sto : Sto.t)
   let sto, obj = do_instantiate_cons ctx_callee sto in
   (sto, obj)
 
-(* (TODO) Handle object initializer block *)
 and do_instantiate_extern (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
-    (mthds : mthd list) : Sto.t * Obj.t =
+    (id : id') (mthds : mthd list) : Sto.t * Obj.t =
   assert (cursor = Ctx.Block);
   let ctx = eval_mthds cursor ctx mthds in
   let venv = ctx.block.venv in
   let fenv = ctx.block.fenv in
-  let obj = Obj.ExternO (venv, fenv) in
+  let obj = Obj.ExternO (id, venv, fenv) in
   (sto, obj)
 
 and do_instantiate_parser (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
@@ -187,11 +186,11 @@ and do_instantiate_package (_cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) :
 
 (* (TODO) Handle custom table properties *)
 and do_instantiate_table (_cursor : Ctx.cursor) (_ctx : Ctx.t) (sto : Sto.t)
-    (table : table) : Sto.t * Obj.t =
+    (id : id') (table : table) : Sto.t * Obj.t =
   let fid_apply = FId.to_fid ("apply" $ no_info) [] in
   let func_apply = Func.TableApplyMethodF table in
   let fenv = FEnv.add fid_apply func_apply FEnv.empty in
-  let obj = Obj.TableO fenv in
+  let obj = Obj.TableO (id, fenv) in
   (sto, obj)
 
 (* Argument evaluation *)
@@ -509,7 +508,7 @@ and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
   in
   let sto, obj =
     match obj with
-    | Obj.ExternO (venv_obj, fenv_obj) ->
+    | Obj.ExternO (id_obj, venv_obj, fenv_obj) ->
         let ctx_init =
           { Ctx.empty with path = ctx.path @ [ id.it ]; global = ctx.global }
         in
@@ -533,7 +532,7 @@ and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
                  FEnv.remove fid fenv_obj |> FEnv.add fid func)
                fenv_obj
         in
-        (sto, Obj.ExternO (venv_obj, fenv_obj))
+        (sto, Obj.ExternO (id_obj, venv_obj, fenv_obj))
     | _ -> (sto, obj)
   in
   let oid = ctx.path @ [ id.it ] in
@@ -559,7 +558,7 @@ and eval_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
 
 and eval_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
     (typ : typ) (table : table) (_annos : anno list) : Ctx.t * Sto.t * decl' =
-  let cons = Cons.TableC table in
+  let cons = Cons.TableC (id.it, table) in
   let sto, obj =
     let ctx = Ctx.enter_path id.it ctx in
     do_instantiate cursor ctx sto cons [] [] []
@@ -621,7 +620,7 @@ and eval_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
       match cons.it with
       | L.ExternConsM { id = _id; cparams; annos = _annos } ->
           let cid = FId.to_fid id cparams in
-          let cons = Cons.ExternC (tparams, cparams, mthds) in
+          let cons = Cons.ExternC (id.it, tparams, cparams, mthds) in
           Ctx.add_cons cursor cid cons ctx
       | _ -> assert false)
     ctx conss

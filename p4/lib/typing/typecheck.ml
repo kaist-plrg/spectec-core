@@ -2094,7 +2094,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
           FDEnv.add_nodup_non_overloaded fid fd FDEnv.empty
         in
         find_method fdenv
-    | TableT typ, _ -> (
+    | TableT (_, typ), _ -> (
         match member.it with
         | "apply" -> Types.TableApplyMethodT typ |> wrap_builtin
         | _ -> error_not_found ())
@@ -4478,7 +4478,7 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     type_table_properties Ctx.Local ctx table_ctx table
   in
   let ctx, typ_struct = type_table_type_decl cursor ctx table_ctx id in
-  let typ = Types.TableT typ_struct in
+  let typ = Types.TableT (id.it, typ_struct) in
   let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.DYN ctx in
   let decl_il =
     Il.Ast.TableD
@@ -4964,6 +4964,7 @@ and type_table_entry_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (keysets : El.Ast.keyset list) :
     Tblctx.state * Il.Ast.keyset list =
   match (table_ctx.keys, keysets) with
+  (* (TODO) Check if this logic is redundant *)
   | _, [ { it = DefaultK; at; note } ] ->
       let keyset_il = Lang.Ast.DefaultK $$ at % note in
       let entry_state =

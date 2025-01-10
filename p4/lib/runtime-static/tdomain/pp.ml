@@ -134,7 +134,7 @@ and pp_typ ?(level = 0) fmt typ =
       F.fprintf fmt "package {\n%a\n%s}"
         (pp_list ~level:(level + 1) (pp_typ ~level:(level + 1)) ~sep:Comma)
         typs (indent level)
-  | TableT _ -> F.pp_print_string fmt "table"
+  | TableT (id, _) -> F.fprintf fmt "table %a" P.pp_id' id
   | AnyT -> F.pp_print_string fmt "any"
   | TableEnumT (id, _) -> F.fprintf fmt "enum_table %a" P.pp_id' id
   | TableStructT (id, fields) ->

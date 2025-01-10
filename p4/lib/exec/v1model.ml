@@ -264,9 +264,12 @@ module Make (Interp : INTERP) : ARCH = struct
     let pkt_out = PacketOut (Core.PacketOut.init ()) in
     externs := Externs.add "packet_out" pkt_out !externs;
     (* Execute packet processing pipeline *)
+    let ctx = ctx |> drive_p in
+    let pkt_payload =
+      get_pkt_in () |> F.asprintf "%a" Core.PacketIn.pp_remaining
+    in
     let ctx =
-      ctx |> drive_p |> drive_vr |> drive_ig |> drive_eg |> drive_ck
-      |> drive_dep
+      ctx |> drive_vr |> drive_ig |> drive_eg |> drive_ck |> drive_dep
     in
     (* Check egress port *)
     let port_out =
@@ -279,6 +282,7 @@ module Make (Interp : INTERP) : ARCH = struct
     in
     (* Check output packet *)
     let packet_out = get_pkt_out () |> F.asprintf "%a" Core.PacketOut.pp in
+    let packet_out = packet_out ^ pkt_payload in
     (port_out, packet_out)
 
   let drive_stf_stmt (ctx : Ctx.t) (pass : bool) (queue_packet : result list)

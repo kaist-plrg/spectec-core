@@ -27,40 +27,100 @@ module Make (Arch : ARCH) : INTERP = struct
   (* L-value evaluation *)
 
   let rec eval_write_lvalue (cursor : Ctx.cursor) (ctx : Ctx.t) (lvalue : expr)
-      (value : Value.t) : Ctx.t =
-    let eval_write_lvalue_fields (fields : (member' * Value.t) list)
-        (member : member) (value : Value.t) =
-      List.map
-        (fun (member', value') ->
-          if member.it = member' then (member', value) else (member', value'))
-        fields
-    in
+      (value_rhs : Value.t) : Ctx.t =
     match lvalue.it with
-    | VarE { var } -> Ctx.update Ctx.update_value_opt cursor var value ctx
-    | ExprAccE { expr_base; member } -> (
+    | VarE { var } -> Ctx.update Ctx.update_value_opt cursor var value_rhs ctx
+    | BitAccE { expr_base; value_lo; value_hi } -> (
         let ctx, value_base = eval_expr cursor ctx expr_base in
+        match (value_base, value_rhs) with
+        | FBitV (width, value), FBitV (_, value_rhs) ->
+            let value_lo = value_lo.it |> Value.get_num in
+            let value_hi = value_hi.it |> Value.get_num in
+            let value_rhs = Bigint.(value_rhs lsl to_int_exn value_lo) in
+            let mask_hi =
+              let mask_hi = Numerics.power_of_two Bigint.(value_hi + one) in
+              Bigint.(mask_hi - one)
+            in
+            let mask_lo =
+              let mask_lo = Numerics.power_of_two value_hi in
+              Bigint.(mask_lo - one)
+            in
+            let mask = Bigint.(mask_hi lxor mask_lo) in
+            let value = Bigint.(value land mask lxor value_rhs) in
+            let value_base = Value.FBitV (width, value) in
+            eval_write_lvalue cursor ctx expr_base value_base
+        | _ ->
+            F.asprintf "(eval_write_lvalue) %a cannot be sliced"
+              (Value.pp ~level:0) value_base
+            |> error_no_info)
+    | ArrAccE { expr_base; expr_idx } -> (
+        let ctx, value_base = eval_expr cursor ctx expr_base in
+        let ctx, value_idx = eval_expr cursor ctx expr_idx in
+        let idx_target =
+          value_idx |> Value.get_num |> Bigint.to_int |> Option.get
+        in
         match value_base with
         | StackV (values_stack, idx_stack, size) ->
+            let values_stack =
+              List.mapi
+                (fun idx value_stack ->
+                  if idx = idx_target then value_rhs else value_stack)
+                values_stack
+            in
+            let value_base = Value.StackV (values_stack, idx_stack, size) in
+            eval_write_lvalue cursor ctx expr_base value_base
+        | _ ->
+            F.asprintf "(TODO: eval_write_lvalue) %a" (Il.Pp.pp_expr ~level:0)
+              expr_base
+            |> error_no_info)
+    | ExprAccE { expr_base; member = member_target } -> (
+        let ctx, value_base = eval_expr cursor ctx expr_base in
+        match value_base with
+        | StackV (values_stack, idx_stack, size) when member_target.it = "next"
+          ->
             let idx_stack = idx_stack |> Bigint.to_int |> Option.get in
             let values_stack =
               List.mapi
                 (fun idx value_stack ->
-                  if idx = idx_stack then value else value_stack)
+                  if idx = idx_stack then value_rhs else value_stack)
                 values_stack
             in
             let idx_stack = idx_stack + 1 |> Bigint.of_int in
             let value_base = Value.StackV (values_stack, idx_stack, size) in
             eval_write_lvalue cursor ctx expr_base value_base
         | StructV fields ->
-            let fields = eval_write_lvalue_fields fields member value in
+            let fields =
+              List.map
+                (fun (member, value) ->
+                  if member_target.it = member then (member, value_rhs)
+                  else (member, value))
+                fields
+            in
             let value_base = Value.StructV fields in
             eval_write_lvalue cursor ctx expr_base value_base
         | HeaderV (_, fields) ->
-            let fields = eval_write_lvalue_fields fields member value in
+            let fields =
+              List.map
+                (fun (member, value) ->
+                  if member_target.it = member then (member, value_rhs)
+                  else (member, value))
+                fields
+            in
             let value_base = Value.HeaderV (true, fields) in
             eval_write_lvalue cursor ctx expr_base value_base
+        | UnionV fields ->
+            let fields =
+              List.map
+                (fun (member, value) ->
+                  if member_target.it = member then (member, value_rhs)
+                  else (member, value))
+                fields
+            in
+            let value_base = Value.UnionV fields in
+            eval_write_lvalue cursor ctx expr_base value_base
         | _ ->
-            F.asprintf "(TODO: eval_write_lvalue) %a" (Value.pp ~level:0) value
+            F.asprintf "(TODO: eval_write_lvalue) %a" (Il.Pp.pp_expr ~level:0)
+              expr_base
             |> error_no_info)
     | _ ->
         F.asprintf "(TODO: eval_write_lvalue) %a" (Il.Pp.pp_expr ~level:0)
@@ -105,6 +165,9 @@ module Make (Arch : ARCH) : INTERP = struct
     | TernE { expr_cond; expr_then; expr_else } ->
         eval_ternop_expr cursor ctx expr_cond expr_then expr_else
     | CastE { typ; expr } -> eval_cast_expr cursor ctx typ expr
+    | MaskE _ | RangeE _ ->
+        F.asprintf "(TODO: eval_expr) %a" (Il.Pp.pp_expr' ~level:0) expr
+        |> error_no_info
     | SelectE { exprs_select; cases } ->
         eval_select_expr cursor ctx exprs_select cases
     | ArrAccE { expr_base; expr_idx } ->
@@ -117,8 +180,13 @@ module Make (Arch : ARCH) : INTERP = struct
         eval_call_func_expr cursor ctx var_func targs args
     | CallMethodE { expr_base; member; targs; args } ->
         eval_call_method_expr cursor ctx expr_base member targs args
-    | _ ->
+    | CallTypeE _ ->
         F.asprintf "(TODO: eval_expr) %a" (Il.Pp.pp_expr' ~level:0) expr
+        |> error_no_info
+    | InstE _ ->
+        F.asprintf
+          "(eval_expr) instantiation should have been handled by the \
+           instantiation phase"
         |> error_no_info
 
   and eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : expr list) :
@@ -188,7 +256,7 @@ module Make (Arch : ARCH) : INTERP = struct
     let value = Numerics.eval_cast typ.it value in
     (ctx, value)
 
-  and eval_select_case_keyset (cursor : Ctx.cursor) (ctx : Ctx.t)
+  and eval_select_match_keyset (cursor : Ctx.cursor) (ctx : Ctx.t)
       (value_key : Value.t) (keyset : keyset) : Ctx.t * bool =
     match keyset.it with
     | ExprK expr ->
@@ -198,27 +266,27 @@ module Make (Arch : ARCH) : INTERP = struct
         (ctx, matched)
     | DefaultK | AnyK -> (ctx, true)
 
-  and eval_select_case_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
+  and eval_select_match (cursor : Ctx.cursor) (ctx : Ctx.t)
       (values_key : Value.t list) (case : select_case) :
       Ctx.t * state_label option =
     let keysets, label = case.it in
     let ctx, matched =
       match (values_key, keysets) with
       | [ value_key ], [ keyset ] ->
-          eval_select_case_keyset cursor ctx value_key keyset
+          eval_select_match_keyset cursor ctx value_key keyset
       | _, [ keyset ] ->
           let value_key = Value.SeqV values_key in
-          eval_select_case_keyset cursor ctx value_key keyset
+          eval_select_match_keyset cursor ctx value_key keyset
       | values_key, keysets ->
           check
             (List.length values_key = List.length keysets)
-            "(eval_select_expr) number of select keys must match the number of \
-             keysets";
+            "(eval_select_match) number of select keys must match the number \
+             of keysets";
           List.fold_left2
             (fun (ctx, matched) value_key keyset ->
               if matched then (ctx, matched)
-              else eval_select_case_keyset cursor ctx value_key keyset)
-            (ctx, true) values_key keysets
+              else eval_select_match_keyset cursor ctx value_key keyset)
+            (ctx, false) values_key keysets
     in
     if matched then (ctx, Some label) else (ctx, None)
 
@@ -229,7 +297,7 @@ module Make (Arch : ARCH) : INTERP = struct
       List.fold_left
         (fun (ctx, label) case ->
           if Option.is_some label then (ctx, label)
-          else eval_select_case_keysets cursor ctx values_key case)
+          else eval_select_match cursor ctx values_key case)
         (ctx, None) cases
     in
     check (Option.is_some label) "(eval_select_expr) no matching case found";
@@ -279,7 +347,10 @@ module Make (Arch : ARCH) : INTERP = struct
                 "(eval_expr_acc_expr) invalid member %a for header stack"
                 Il.Pp.pp_member member
               |> error_no_info)
-      | StructV fields | HeaderV (_, fields) | UnionV fields ->
+      | StructV fields
+      | HeaderV (_, fields)
+      | UnionV fields
+      | TableStructV fields ->
           List.assoc member.it fields
       | RefV path -> Value.RefV (path @ [ member.it ])
       | _ ->
@@ -324,6 +395,8 @@ module Make (Arch : ARCH) : INTERP = struct
     | EmptyS -> cont sign (fun () -> (ctx, Sig.Cont))
     | AssignS { expr_l; expr_r } ->
         cont sign (fun () -> eval_assign_stmt cursor ctx expr_l expr_r)
+    | SwitchS { expr_switch; cases } ->
+        cont sign (fun () -> eval_switch_stmt cursor ctx expr_switch cases)
     | IfS { expr_cond; stmt_then; stmt_else } ->
         cont sign (fun () ->
             eval_if_stmt cursor ctx expr_cond stmt_then stmt_else)
@@ -336,10 +409,14 @@ module Make (Arch : ARCH) : INTERP = struct
     | CallMethodS { expr_base; member; targs; args } ->
         cont sign (fun () ->
             eval_method_call_stmt cursor ctx expr_base member targs args)
+    | CallInstS _ ->
+        F.asprintf
+          "(eval_stmt) instantiation should have been handled by the \
+           instantiation phase"
+        |> error_no_info
     | TransS { expr_label } ->
         cont sign (fun () -> eval_trans_stmt cursor ctx expr_label)
     | DeclS { decl } -> cont sign (fun () -> eval_decl_stmt cursor ctx decl)
-    | _ -> F.asprintf "%a" (Il.Pp.pp_stmt' ~level:0) stmt |> error_no_info
 
   and eval_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (sign : Sig.t)
       (stmts : stmt list) : Ctx.t * Sig.t =
@@ -352,6 +429,99 @@ module Make (Arch : ARCH) : INTERP = struct
     let ctx, value_r = eval_expr cursor ctx expr_r in
     let ctx = eval_write_lvalue cursor ctx expr_l value_r in
     (ctx, Cont)
+
+  and eval_switch_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_switch : expr)
+      (cases : switch_case list) : Ctx.t * Sig.t =
+    let typ_switch = expr_switch.note.typ in
+    let ctx, value_switch = eval_expr cursor ctx expr_switch in
+    match typ_switch with
+    | TableEnumT (id_table, _) ->
+        let id_table = String.sub id_table 12 (String.length id_table - 12) in
+        let id_table = String.sub id_table 0 (String.length id_table - 1) in
+        eval_switch_table_stmt cursor ctx id_table value_switch cases
+    | _ -> eval_switch_general_stmt cursor ctx value_switch cases
+
+  and eval_switch_table_match_label (id_table : id') (value_switch : Value.t)
+      (label : switch_label) : bool =
+    match label.it with
+    | ExprL { it = VarE { var = { it = Current id_action; _ } }; _ } -> (
+        match value_switch with
+        | TableEnumFieldV (id_enum, member_enum) ->
+            id_enum = id_table && member_enum = id_action.it
+        | _ -> assert false)
+    | ExprL _ ->
+        F.asprintf
+          "(eval_switch_table_match_label) switch label must be an action name"
+        |> error_no_info
+    | DefaultL -> true
+
+  and eval_switch_table_match (id_table : id') (fallthrough : bool)
+      (value_switch : Value.t) (case : switch_case) : bool * block option =
+    match case.it with
+    | MatchC (_, block) when fallthrough -> (false, Some block)
+    | MatchC (label, block) ->
+        let matched =
+          eval_switch_table_match_label id_table value_switch label
+        in
+        if matched then (false, Some block) else (false, None)
+    | FallC label ->
+        let matched =
+          eval_switch_table_match_label id_table value_switch label
+        in
+        if matched then (true, None) else (false, None)
+
+  and eval_switch_table_stmt (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (id_table : id') (value_switch : Value.t) (cases : switch_case list) :
+      Ctx.t * Sig.t =
+    let _, block =
+      List.fold_left
+        (fun (fallthrough, block) case ->
+          if Option.is_some block then (false, block)
+          else eval_switch_table_match id_table fallthrough value_switch case)
+        (false, None) cases
+    in
+    match block with
+    | Some block -> eval_block_stmt cursor ctx block
+    | None -> (ctx, Cont)
+
+  and eval_switch_general_match_label (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (value_switch : Value.t) (label : switch_label) : Ctx.t * bool =
+    match label.it with
+    | ExprL expr ->
+        let ctx, value = eval_expr cursor ctx expr in
+        let matched = Numerics.eval_binop_eq value_switch value in
+        (ctx, matched)
+    | DefaultL -> (ctx, true)
+
+  and eval_switch_general_match (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (fallthrough : bool) (value_switch : Value.t) (case : switch_case) :
+      Ctx.t * bool * block option =
+    match case.it with
+    | MatchC (_, block) when fallthrough -> (ctx, false, Some block)
+    | MatchC (label, block) ->
+        let ctx, matched =
+          eval_switch_general_match_label cursor ctx value_switch label
+        in
+        if matched then (ctx, false, Some block) else (ctx, false, None)
+    | FallC label ->
+        let ctx, matched =
+          eval_switch_general_match_label cursor ctx value_switch label
+        in
+        if matched then (ctx, true, None) else (ctx, false, None)
+
+  and eval_switch_general_stmt (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (value_switch : Value.t) (cases : switch_case list) : Ctx.t * Sig.t =
+    let ctx, _, block =
+      List.fold_left
+        (fun (ctx, fallthrough, block) case ->
+          if Option.is_some block then (ctx, false, block)
+          else
+            eval_switch_general_match cursor ctx fallthrough value_switch case)
+        (ctx, false, None) cases
+    in
+    match block with
+    | Some block -> eval_block_stmt cursor ctx block
+    | None -> (ctx, Cont)
 
   and eval_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_cond : expr)
       (stmt_then : stmt) (stmt_else : stmt) : Ctx.t * Sig.t =
@@ -415,7 +585,9 @@ module Make (Arch : ARCH) : INTERP = struct
     | VarD { id; typ; init; annos } ->
         eval_var_decl cursor ctx id typ init annos
     | _ ->
-        F.asprintf "(TODO: eval_decl) %a" (Il.Pp.pp_decl' ~level:0) decl
+        F.asprintf
+          "(eval_decl) %a should have been handled by the instantiation phase"
+          (Il.Pp.pp_decl' ~level:0) decl
         |> error_no_info
 
   and eval_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (decls : decl list) : Ctx.t
@@ -441,36 +613,181 @@ module Make (Arch : ARCH) : INTERP = struct
 
   (* Table evaluation *)
 
-  (* (TODO) Actually perform match-action logic *)
-  and eval_table (cursor : Ctx.cursor) (ctx : Ctx.t) (table : table) :
-      Ctx.t * Sig.t =
-    let table_default =
-      List.filter_map
-        (fun table_property ->
-          match table_property with
-          | L.DefaultP table_default -> Some table_default
-          | _ -> None)
-        table
-      |> fun table_default ->
-      match table_default with
-      | [] ->
-          let var_action = L.Top ("NoAction" $ no_info) $ no_info in
-          let args_action = [] in
-          let annos_action = [] in
-          let action_default =
-            (var_action, args_action, annos_action) $ no_info
+  and get_table_keys (table : table) : table_keys option =
+    List.filter_map
+      (function L.KeyP table_keys -> Some table_keys | _ -> None)
+      table
+    |> function
+    | [] -> None
+    | [ table_keys ] -> Some table_keys
+    | _ ->
+        "(get_table_keys) a table should have at most one key property"
+        |> error_no_info
+
+  and get_table_actions (table : table) : table_actions =
+    List.filter_map
+      (function L.ActionP table_actions -> Some table_actions | _ -> None)
+      table
+    |> function
+    | [ table_actions ] -> table_actions
+    | _ ->
+        "(get_table_actions) a table should have exactly one action property"
+        |> error_no_info
+
+  and get_table_default (table : table) : table_default =
+    List.filter_map
+      (function L.DefaultP table_default -> Some table_default | _ -> None)
+      table
+    |> function
+    | [] ->
+        let var_action = L.Top ("NoAction" $ no_info) $ no_info in
+        let action_default = (var_action, [], []) $ no_info in
+        (action_default, false) $ no_info
+    | [ table_default ] -> table_default
+    | _ ->
+        "(get_table_default) a table should have at most one default property"
+        |> error_no_info
+
+  (* (TODO) How to support multiple table entry properties? *)
+  and get_table_entries (table : table) : table_entries =
+    List.filter_map
+      (function L.EntryP table_entries -> Some table_entries | _ -> None)
+      table
+    |> function
+    | [] -> ([], false) $ no_info
+    | [ table_entries ] -> table_entries
+    | _ ->
+        "(get_table_entries) a table should have at most one entries property"
+        |> error_no_info
+
+  and eval_table_match_keyset (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (table_key : Value.t * match_kind) (keyset : keyset) : Ctx.t * bool =
+    let value_key, match_kind_key = table_key in
+    match keyset.it with
+    | ExprK expr -> (
+        let ctx, value = eval_expr cursor ctx expr in
+        match match_kind_key.it with
+        | "exact" ->
+            let matched = Numerics.eval_binop_eq value_key value in
+            (ctx, matched)
+        | _ -> assert false)
+    | _ -> assert false
+
+  and eval_table_match_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (table_keys : (Value.t * match_kind) list) (table_entry : table_entry) :
+      Ctx.t * (var * arg list) option =
+    let keysets, table_action, _priority, _, _ = table_entry.it in
+    match (table_keys, keysets) with
+    | _, [ { it = L.DefaultK; _ } ] | _, [ { it = L.AnyK; _ } ] ->
+        let action =
+          let var_action, args_action, _ = table_action.it in
+          Some (var_action, args_action)
+        in
+        (ctx, action)
+    | table_keys, keysets ->
+        check
+          (List.length table_keys = List.length keysets)
+          "(eval_table_match_keysets) number of table keys must match the \
+           number of keysets";
+        let ctx, matched =
+          List.fold_left2
+            (fun (ctx, matched) table_key keyset ->
+              if matched then (ctx, matched)
+              else eval_table_match_keyset cursor ctx table_key keyset)
+            (ctx, false) table_keys keysets
+        in
+        let action =
+          if matched then
+            let var_action, args_action, _ = table_action.it in
+            Some (var_action, args_action)
+          else None
+        in
+        (ctx, action)
+
+  and eval_table_match (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id')
+      (table_keys : (Value.t * match_kind) list) (table_actions : string list)
+      (action_default : var * arg list) (table_entries : table_entries) :
+      Ctx.t * Value.t * (var * arg list) =
+    let table_entries, _ = table_entries.it in
+    let ctx, actions =
+      List.fold_left
+        (fun (ctx, actions) table_entry ->
+          let ctx, action =
+            eval_table_match_keysets cursor ctx table_keys table_entry
           in
-          (action_default, false) $ no_info
-      | [ table_default ] -> table_default
-      | _ -> error_no_info "(eval_table) table has multiple default entries"
+          let actions = actions @ Option.to_list action in
+          (ctx, actions))
+        (ctx, []) table_entries
     in
-    let action_default, _ = table_default.it in
-    let var_action, args_action, _annos_action = action_default.it in
+    let action, matched =
+      match actions with
+      | [] -> (action_default, false)
+      | [ action ] -> (action, true)
+      | _ ->
+          F.asprintf "(TODO: eval_table_match) multiple matching actions found"
+          |> error_no_info
+    in
+    let value =
+      let hit = Value.BoolV matched in
+      let miss = Value.BoolV (not matched) in
+      let action_run =
+        let member =
+          if matched then
+            let var_action, _ = action in
+            F.asprintf "%a" Il.Pp.pp_var var_action
+          else List.hd table_actions
+        in
+        Value.TableEnumFieldV ("action_list(" ^ id ^ ")", member)
+      in
+      Value.TableStructV
+        [ ("hit", hit); ("miss", miss); ("action_run", action_run) ]
+    in
+    (ctx, value, action)
+
+  and eval_table (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id') (table : table)
+      : Ctx.t * Sig.t =
+    (* Fetch table properties *)
+    let table_keys = get_table_keys table in
+    let table_actions = get_table_actions table in
+    let table_default = get_table_default table in
+    let table_entries = get_table_entries table in
+    (* Evaluate table keys *)
+    let ctx, table_keys =
+      match table_keys with
+      | Some table_keys ->
+          List.fold_left
+            (fun (ctx, table_keys) table_key ->
+              let expr_key, match_kind_key, _annos_key = table_key.it in
+              let ctx, value_key = eval_expr cursor ctx expr_key in
+              (ctx, table_keys @ [ (value_key, match_kind_key) ]))
+            (ctx, []) table_keys.it
+      | None -> (ctx, [])
+    in
+    (* Perform match against table entries *)
+    let ctx, value, action =
+      let table_actions =
+        List.map
+          (fun table_action ->
+            let var_action, _, _ = table_action.it in
+            F.asprintf "%a" Il.Pp.pp_var var_action)
+          table_actions.it
+      in
+      let table_action_default, _ = table_default.it in
+      let var_action_default, args_action_default, _ =
+        table_action_default.it
+      in
+      let action_default = (var_action_default, args_action_default) in
+      eval_table_match cursor ctx id table_keys table_actions action_default
+        table_entries
+    in
+    (* Perform the matched action *)
+    let var_action, args_action = action in
     let stmt_call_action =
       CallFuncS { var_func = var_action; targs = []; args = args_action }
-      $ action_default.at
+      $ no_info
     in
-    eval_stmt cursor ctx Sig.Cont stmt_call_action
+    let ctx, _sign = eval_stmt cursor ctx Sig.Cont stmt_call_action in
+    (ctx, Sig.Ret (Some value))
 
   (* Call evaluation *)
 
@@ -588,7 +905,8 @@ module Make (Arch : ARCH) : INTERP = struct
         eval_inter_apply_method_call cursor_caller ctx_caller ctx_callee params
           locals block args args_default
     | _ ->
-        F.asprintf "(TODO: eval_inter_call) %a" (Func.pp ~level:0) func
+        F.asprintf "(TODO: eval_inter_call) %a %a" FId.pp fid (Func.pp ~level:0)
+          func
         |> error_no_info
 
   and eval_inter_action_call (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
@@ -671,7 +989,7 @@ module Make (Arch : ARCH) : INTERP = struct
   (* Intra-block call *)
 
   and eval_intra_call (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
-      (ctx_callee : Ctx.t) (_oid : OId.t) (_fid : FId.t) (func : Func.t)
+      (ctx_callee : Ctx.t) (oid : OId.t) (fid : FId.t) (func : Func.t)
       (targs : typ list) (args : arg list) (args_default : id' list) :
       Ctx.t * Sig.t =
     match func with
@@ -685,10 +1003,12 @@ module Make (Arch : ARCH) : INTERP = struct
         eval_intra_parser_state_call cursor_caller ctx_caller ctx_callee block
     | TableApplyMethodF table ->
         assert (targs = [] && args = [] && args_default = []);
+        let id = oid |> List.rev |> List.hd in
         eval_intra_table_apply_method_call cursor_caller ctx_caller ctx_callee
-          table
+          id table
     | _ ->
-        F.asprintf "(TODO: eval_intra_call) %a" (Func.pp ~level:0) func
+        F.asprintf "(TODO: eval_intra_call) %a %a" FId.pp fid (Func.pp ~level:0)
+          func
         |> error_no_info
 
   and eval_intra_action_call (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
@@ -722,9 +1042,9 @@ module Make (Arch : ARCH) : INTERP = struct
     (ctx_caller, sign)
 
   and eval_intra_table_apply_method_call (_cursor_caller : Ctx.cursor)
-      (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (table : table) : Ctx.t * Sig.t
-      =
-    let ctx_callee, sign = eval_table Ctx.Block ctx_callee table in
+      (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (id : id') (table : table) :
+      Ctx.t * Sig.t =
+    let ctx_callee, sign = eval_table Ctx.Block ctx_callee id table in
     let ctx_caller = { ctx_caller with block = ctx_callee.block } in
     (ctx_caller, sign)
 
@@ -757,11 +1077,45 @@ module Make (Arch : ARCH) : INTERP = struct
     (*   Il.Pp.pp_member member (Il.Pp.pp_targs ~level:0) targs Il.Pp.pp_args args; *)
     let ctx, value_base = eval_expr cursor ctx expr_base in
     match value_base with
+    | HeaderV _ | StackV _ ->
+        eval_builtin_method_call cursor ctx expr_base value_base member targs
+          args
     | RefV path ->
         let obj = Sto.find path !sto in
         eval_obj_call cursor ctx path obj member targs args
     | _ ->
-        F.asprintf "(TODO: eval_method_call) %a" (Value.pp ~level:0) value_base
+        F.asprintf "(TODO: eval_method_call) %a.%a" (Value.pp ~level:0)
+          value_base Il.Pp.pp_member member
+        |> error_no_info
+
+  and eval_builtin_method_call (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (expr_base : expr) (value_base : Value.t) (member : member)
+      (targs : typ list) (args : arg list) : Ctx.t * Sig.t =
+    match value_base with
+    | HeaderV (valid, fields) -> (
+        assert (args = [] && targs = []);
+        match member.it with
+        | "isValid" ->
+            let value = Value.BoolV valid in
+            let sign = Sig.Ret (Some value) in
+            (ctx, sign)
+        | "setValid" ->
+            let value_base = Value.HeaderV (true, fields) in
+            let ctx = eval_write_lvalue cursor ctx expr_base value_base in
+            let sign = Sig.Ret None in
+            (ctx, sign)
+        | "setInvalid" ->
+            let value_base = Value.HeaderV (false, fields) in
+            let ctx = eval_write_lvalue cursor ctx expr_base value_base in
+            let sign = Sig.Ret None in
+            (ctx, sign)
+        | _ ->
+            F.asprintf "(eval_builtin_method_call) invalid method %a for header"
+              Il.Pp.pp_member member
+            |> error_no_info)
+    | _ ->
+        F.asprintf "(TODO: eval_builtin_method_call) %a.%a" (Value.pp ~level:0)
+          value_base Il.Pp.pp_member member
         |> error_no_info
 
   and eval_obj_call (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
@@ -769,7 +1123,7 @@ module Make (Arch : ARCH) : INTERP = struct
       (args : arg list) : Ctx.t * Sig.t =
     match obj with
     (* Inter-block call *)
-    | ExternO (venv, fenv) ->
+    | ExternO (_id, venv, fenv) ->
         let fid, func, args_default =
           let args = FId.to_names args in
           FEnv.find_func (member.it, args) fenv
@@ -792,7 +1146,7 @@ module Make (Arch : ARCH) : INTERP = struct
         eval_inter_call cursor_caller ctx_caller ctx_callee oid fid func targs
           args args_default
     (* Intra-block call *)
-    | TableO fenv ->
+    | TableO (_id, fenv) ->
         let fid, func, args_default =
           let args = FId.to_names args in
           FEnv.find_func (member.it, args) fenv
@@ -801,6 +1155,7 @@ module Make (Arch : ARCH) : INTERP = struct
         eval_intra_call cursor_caller ctx_caller ctx_callee oid fid func targs
           args args_default
     | _ ->
-        F.asprintf "(TODO: eval_obj_call) %a" (Obj.pp ~level:0) obj
+        F.asprintf "(TODO: eval_obj_call) %a %a" OId.pp oid (Obj.pp ~level:0)
+          obj
         |> error_no_info
 end

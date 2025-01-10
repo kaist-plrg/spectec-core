@@ -35,7 +35,7 @@ and free_typ (typ : typ) : TIdSet.t =
       |> List.fold_left TIdSet.union TIdSet.empty
   | ParserT params | ControlT params -> free_params params
   | PackageT typs_inner -> free_typs typs_inner
-  | TableT typ_inner -> free_typ typ_inner
+  | TableT (_, typ_inner) -> free_typ typ_inner
   | AnyT | TableEnumT _ -> TIdSet.empty
   | TableStructT (_, fields) -> List.map snd fields |> free_typs
   | SeqT typs_inner | SeqDefaultT typs_inner -> free_typs typs_inner

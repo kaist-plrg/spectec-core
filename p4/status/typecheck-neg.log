@@ -616,7 +616,7 @@ Error on typecheck: File p4/test/program/ill-typed/issue3534.p4, line 5, charact
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3589.p4
 Error on typecheck: File p4/test/program/ill-typed/issue3589.p4, line 8, characters 13-19
-(type_binop_compare_equal) type table cannot be compared of equality
+(type_binop_compare_equal) type table t cannot be compared of equality
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3611.p4
 Error on typecheck: File p4/test/program/ill-typed/issue3611.p4, line 12, characters 6-7
@@ -672,7 +672,7 @@ Error on typecheck: File p4/test/program/ill-typed/issue3808-1.p4, from line 8 c
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3808.p4
 Error on typecheck: File p4/test/program/ill-typed/issue3808.p4, line 11, characters 4-12
-(check_valid_functyp_nesting) invalid nesting of table inside extern_func(in a table) -> void
+(check_valid_functyp_nesting) invalid nesting of table t inside extern_func(in a table t) -> void
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3813.p4
 Error on typecheck: File p4/test/program/ill-typed/issue3813.p4, line 8, characters 9-12

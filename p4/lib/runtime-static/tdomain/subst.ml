@@ -120,9 +120,9 @@ and subst_typ (theta : theta) (typ : typ) : typ =
   | PackageT typs_inner ->
       let typs_inner = subst_typs theta typs_inner in
       PackageT typs_inner
-  | TableT typ_inner ->
+  | TableT (id, typ_inner) ->
       let typ_inner = subst_typ theta typ_inner in
-      TableT typ_inner
+      TableT (id, typ_inner)
   | AnyT | TableEnumT _ -> typ
   | TableStructT (id, fields) ->
       let fields =

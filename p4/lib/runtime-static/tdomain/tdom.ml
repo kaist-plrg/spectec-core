@@ -41,7 +41,7 @@ and typ =
   | ParserT of param list
   | ControlT of param list
   | PackageT of typ list
-  | TableT of typ
+  | TableT of L.id' * typ
   (* 3. Synthesized types *)
   | AnyT
   | TableEnumT of L.id' * L.member' list

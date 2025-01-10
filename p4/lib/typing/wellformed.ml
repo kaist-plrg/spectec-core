@@ -145,7 +145,7 @@ and check_valid_typ' (tset : TIdSet.t) (typ : Type.t) : unit =
       Envs.FDEnv.bindings fdenv |> List.map snd |> check_valid_funcdefs' tset
   | ParserT params | ControlT params -> check_valid_params' tset params
   | PackageT typs_inner -> check_valid_typs' tset typ typs_inner
-  | TableT typ_inner ->
+  | TableT (_, typ_inner) ->
       check_valid_typ' tset typ_inner;
       check_valid_typ_nesting typ typ_inner
   | AnyT -> ()

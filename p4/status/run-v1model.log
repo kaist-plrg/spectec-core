@@ -84,39 +84,39 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/bvec-hdr-bmv2.p4 with p4/test/stf/v1model/bvec-hdr-bmv2.stf
-[FAIL] Expected: 1 01********** / Got: 0 0111110000B0
-[FAIL] Expected: 2 02********** / Got: 0 0211810000B0
+[PASS] Expected: 1 01********** / Got: 1 0111110000B0
+[PASS] Expected: 2 02********** / Got: 2 0211810000B0
 [PASS] Expected: 0 03********** / Got: 0 0310000000B0
 [PASS] Expected: 0 04********** / Got: 0 0411110000B0
-Error on stf test
+Run success
 
 >>> Running run test on p4/test/program/well-typed/checksum-l4-bmv2.p4 with p4/test/stf/v1model/checksum-l4-bmv2.stf
 Error on run: File p4/test/program/well-typed/checksum-l4-bmv2.p4, line 154, characters 8-68
-(TODO: eval_inter_call) ExternFuncF (
+(TODO: eval_inter_call) verify(check, toSignal) ExternFuncF (
   in bool check,
   in error toSignal)
 
 >>> Running run test on p4/test/program/well-typed/checksum1-bmv2.p4 with p4/test/stf/v1model/checksum1-bmv2.stf
 Error on run: File p4/test/program/well-typed/checksum1-bmv2.p4, line 102, characters 8-68
-(TODO: eval_inter_call) ExternFuncF (
+(TODO: eval_inter_call) verify(check, toSignal) ExternFuncF (
   in bool check,
   in error toSignal)
 
 >>> Running run test on p4/test/program/well-typed/checksum2-bmv2.p4 with p4/test/stf/v1model/checksum2-bmv2.stf
 Error on run: File p4/test/program/well-typed/checksum2-bmv2.p4, line 107, characters 8-68
-(TODO: eval_inter_call) ExternFuncF (
+(TODO: eval_inter_call) verify(check, toSignal) ExternFuncF (
   in bool check,
   in error toSignal)
 
 >>> Running run test on p4/test/program/well-typed/checksum3-bmv2.p4 with p4/test/stf/v1model/checksum3-bmv2.stf
 Error on run: File p4/test/program/well-typed/checksum3-bmv2.p4, line 107, characters 8-68
-(TODO: eval_inter_call) ExternFuncF (
+(TODO: eval_inter_call) verify(check, toSignal) ExternFuncF (
   in bool check,
   in error toSignal)
 
 >>> Running run test on p4/test/program/well-typed/constant-in-calculation-bmv2.p4 with p4/test/stf/v1model/constant-in-calculation-bmv2.stf
 Error on run: File p4/test/program/well-typed/constant-in-calculation-bmv2.p4, line 27, characters 8-61
-(TODO: eval_inter_call) ExternFuncF<O, T, D, M> (
+(TODO: eval_inter_call) hash(result, algo, base, data, max) ExternFuncF<O, T, D, M> (
   out O result,
   in enum HashAlgorithm { crc32, crc32_custom, crc16, crc16_custom, random, identity, csum16, xor16 } algo,
   in T base,
@@ -148,31 +148,34 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/equality-bmv2.p4 with p4/test/stf/v1model/equality-bmv2.stf
-Error on run: File p4/test/program/well-typed/equality-bmv2.p4, line 37, characters 8-28
-(TODO: eval_method_call) header {
-  same = 8w0
-}
+[PASS] Expected: 0 0123456789ABCDEFFEDCBA9876543200 / Got: 0 0123456789ABCDEFFEDCBA9876543200
+[PASS] Expected: 0 0123456789012345678901234567890F / Got: 0 0123456789012345678901234567890F
+Run success
 
 >>> Running run test on p4/test/program/well-typed/equality-varbit-bmv2.p4 with p4/test/stf/v1model/equality-varbit-bmv2.stf
 [PASS] Expected: 1 0123456789 / Got: 1 0123456789
 Run success
 
 >>> Running run test on p4/test/program/well-typed/flag_lost-bmv2.p4 with p4/test/stf/v1model/flag_lost-bmv2.stf
-Error on run: File p4/test/program/well-typed/flag_lost-bmv2.p4, line 88, characters 12-30
-(TODO: eval_method_call) header {
-  version = 4w0;
-  ihl = 4w0;
-  diffserv = 8w0;
-  totalLen = 16w0;
-  identification = 16w0;
-  flags = 3w0;
-  fragOffset = 13w0;
-  ttl = 8w0;
-  protocol = 8w0;
-  hdrChecksum = 16w0;
-  srcAddr = 32w0;
-  dstAddr = 32w0
-}
+Error on run: File p4/test/program/well-typed/flag_lost-bmv2.p4, line 66, characters 8-40
+(TODO: eval_inter_call) mark_to_drop(standard_metadata) ExternFuncF (inout (struct standard_metadata_t {
+        ingress_port bit<9>;
+        egress_spec bit<9>;
+        egress_port bit<9>;
+        instance_type bit<32>;
+        packet_length bit<32>;
+        enq_timestamp bit<32>;
+        enq_qdepth bit<19>;
+        deq_timedelta bit<32>;
+        deq_qdepth bit<19>;
+        ingress_global_timestamp bit<48>;
+        egress_global_timestamp bit<48>;
+        mcast_grp bit<16>;
+        egress_rid bit<16>;
+        checksum_error bit<1>;
+        parser_error error;
+        priority bit<3>
+      })<> standard_metadata)
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_action_mux-bmv2.p4 with p4/test/stf/v1model/gauntlet_action_mux-bmv2.stf
 [PASS] Expected: 0 00000000000000000000000000000100 / Got: 0 00000000000000000000000000000100
@@ -203,104 +206,53 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_after_valid-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_after_valid-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_exit_after_valid-bmv2.p4, line 35, characters 12-25
-(TODO: eval_method_call) header {
-  a = 48w0
-}
+[PASS] Expected: 0 0000000000000000000000000000000000000000 / Got: 0 0000000000000000000000000000000000000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_1-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_1-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_1-bmv2.p4, from line 48 character 8 to line 54 character 9
-switch (simple_table.apply().action_run) {
-  dummy: {}
-  default: {
-      return;
-    }
-}
+[PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_10-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_10-bmv2.stf
 [PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_11-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_11-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_11-bmv2.p4, from line 44 character 8 to line 49 character 9
-switch (simple_table.apply().action_run) {
-  simple_action: {
-      h.eth_hdr.eth_type = 16w1;
-    }
-}
+[PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_13-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_13-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_13-bmv2.p4, from line 39 character 8 to line 43 character 9
-switch (simple_table.apply().action_run) {
-  simple_action: {
-      h.eth_hdr.src_addr = 48w1;
-    }
-}
+[PASS] Expected: 0 0000000000020000000000000000 / Got: 0 0000000000020000000000000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_14-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_14-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_14-bmv2.p4, from line 39 character 8 to line 44 character 9
-switch (simple_table.apply().action_run) {
-  exit_action: {
-      h.eth_hdr.eth_type = ((bit<16>) (1));
-      exit;
-    }
-}
+[PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_15-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_15-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_15-bmv2.p4, from line 41 character 8 to line 54 character 9
-switch (simple_table.apply().action_run) {
-  simple_action: {
-      h.eth_hdr.eth_type = 16w1;
-      exit;
-    }
-  NoAction: {
-      h.eth_hdr.eth_type = 16w2;
-      exit;
-    }
-  default: {
-      h.eth_hdr.eth_type = 16w3;
-      exit;
-    }
-}
+[FAIL] Expected: 0 0000000000000000000000000002 / Got: 0 0000000000000000000000000003
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_16-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_16-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_16-bmv2.p4, from line 41 character 12 to line 46 character 13
-switch (simple_table.apply().action_run) {
-  dummy_action: {
-      h.eth_hdr.eth_type = ((bit<16>) (1));
-      return;
-    }
-}
+[PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_17-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_17-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_17-bmv2.p4, from line 45 character 8 to line 54 character 9
-switch (simple_table_1.apply().action_run) {
-  dummy_action: {
-      switch (simple_table_2.apply().action_run) {
-  dummy_action: {
-      h.eth_hdr.src_addr = ((bit<48>) (4));
-      return;
-    }
-}
-    }
-}
+[PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_18-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_18-bmv2.stf
 [PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_19-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_19-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_19-bmv2.p4, line 43, characters 38-60
-(eval_call_method_expr) method call as an expression must return a value
+[PASS] Expected: 0 0000000000000000000000010003 / Got: 0 0000000000000000000000010003
+[PASS] Expected: 0 0000000000000000000000010002 / Got: 0 0000000000000000000000010002
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_2-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_2-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_2-bmv2.p4, from line 38 character 8 to line 43 character 9
-switch (simple_table.apply().action_run) {
-  dummy: {
-      h.eth_hdr.src_addr = ((bit<48>) (1));
-      exit;
-    }
-}
+[PASS] Expected: 0 0000000000050000000000000000 / Got: 0 0000000000050000000000000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_20-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_20-bmv2.stf
 [PASS] Expected: 0 0000000000000000000000000002 / Got: 0 0000000000000000000000000002
@@ -312,33 +264,20 @@ Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_22-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_22-bmv2.stf
 [PASS] Expected: 0 0000000000000000000000010003 / Got: 0 0000000000000000000000010003
-Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_22-bmv2.p4, line 40, characters 57-68
-(eval_call_method_expr) method call as an expression must return a value
+[PASS] Expected: 0 0000000000000000000000010002 / Got: 0 0000000000000000000000010002
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_23-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_23-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_23-bmv2.p4, from line 41 character 8 to line 45 character 9
-switch (simple_table.apply().action_run) {
-  simple_action: {
-      exit;
-    }
-}
+[PASS] Expected: 0 0000000000000000000000000001 / Got: 0 0000000000000000000000000001
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_3-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_3-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_3-bmv2.p4, from line 40 character 8 to line 44 character 9
-switch (simple_table.apply().action_run) {
-  do_action: {
-      return;
-    }
-}
+[PASS] Expected: 0 0000000000020000000000000001 / Got: 0 0000000000020000000000000001
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_4-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_4-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_4-bmv2.p4, from line 40 character 8 to line 45 character 9
-switch (simple_table.apply().action_run) {
-  exit_action: {
-      h.eth_hdr.eth_type = 16w1;
-      exit_action();
-    }
-}
+[PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_5-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_5-bmv2.stf
 [PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
@@ -357,25 +296,16 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_9-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_9-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_exit_combination_9-bmv2.p4, from line 42 character 8 to line 50 character 9
-switch (simple_table.apply().action_run) {
-  simple_action: {
-      if (true) {
-  return;
-}
-else {
-  h.eth_hdr.eth_type = 16w1;
-}
-    }
-}
+[PASS] Expected: 0 0000000000000000000000000002 / Got: 0 0000000000000000000000000002
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_function_if_hdr_return-bmv2.p4 with p4/test/stf/v1model/gauntlet_function_if_hdr_return-bmv2.stf
 [PASS] Expected: 0 0000000000010000000000010001 / Got: 0 0000000000010000000000010001
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_function_return-bmv2.p4 with p4/test/stf/v1model/gauntlet_function_return-bmv2.stf
-[PASS] Expected: 0 00 / Got: 0 00
-Run success
+[FAIL] Expected: 0 00 / Got: 0 0000
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_function_return_cast-bmv2.p4 with p4/test/stf/v1model/gauntlet_function_return_cast-bmv2.stf
 [PASS] Expected: 0 00000000000000000000000000FF / Got: 0 00000000000000000000000000FF
@@ -386,11 +316,8 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_hdr_assign_2-bmv2.p4 with p4/test/stf/v1model/gauntlet_hdr_assign_2-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_hdr_assign_2-bmv2.p4, line 38, characters 8-25
-(TODO: eval_method_call) header {
-  a = 8w1;
-  b = 8w0
-}
+[PASS] Expected: 0 0000000000000000000000000000**02 / Got: 0 00000000000000000000000000000102
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_hdr_function_cast-bmv2.p4 with p4/test/stf/v1model/gauntlet_hdr_function_cast-bmv2.stf
 [PASS] Expected: 0 00000000000300000000000300030000000000010000000000010001 / Got: 0 00000000000300000000000300030000000000010000000000010001
@@ -399,12 +326,8 @@ Error on run: File p4/test/program/well-typed/gauntlet_hdr_assign_2-bmv2.p4, lin
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_hdr_init-bmv2.p4 with p4/test/stf/v1model/gauntlet_hdr_init-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_hdr_init-bmv2.p4, line 38, characters 8-24
-(TODO: eval_method_call) header {
-  dst_addr = 48w0;
-  src_addr = 48w0;
-  eth_type = 16w0
-}
+[PASS] Expected: 0 00000000000100000000000100010000000000010000000000010001 / Got: 0 00000000000100000000000100010000000000010000000000010001
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_hdr_int_initializer-bmv2.p4 with p4/test/stf/v1model/gauntlet_hdr_int_initializer-bmv2.stf
 [PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
@@ -426,35 +349,40 @@ Error on stf test
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_index_1-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_1-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_index_1-bmv2.p4, line 45, characters 8-40
-(TODO: eval_write_lvalue) h.h[bound(h.i.a, 3w1)]
+[PASS] Expected: 0 0000000000000000000000000000400000000000000001 / Got: 0 0000000000000000000000000000400000000000000001
+[PASS] Expected: 0 0000000000000000000000000000200000000000000001 / Got: 0 0000000000000000000000000000200000000000000001
+[PASS] Expected: 0 0000000000000000000000000000000000000100000001 / Got: 0 0000000000000000000000000000000000000100000001
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_index_2-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_2-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_index_2-bmv2.p4, line 36, characters 8-29
-(TODO: eval_write_lvalue) h.h[0]
+[PASS] Expected: 0 00000000000000000000000000000000 / Got: 0 00000000000000000000000000000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_index_4-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_4-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_index_4-bmv2.p4, line 38, characters 8-31
-(TODO: eval_write_lvalue) h.h[0]
+[PASS] Expected: 0 00000000000000000000000000000000000200000000 / Got: 0 00000000000000000000000000000000000200000000
+[PASS] Expected: 0 00000000000000000000000000010000000100000000 / Got: 0 00000000000000000000000000010000000100000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_index_5-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_5-bmv2.stf
 Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_index_6-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_6-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_index_6-bmv2.p4, line 36, characters 8-34
-(TODO: eval_write_lvalue) h.h[1w0]
+[PASS] Expected: 0 0000000000000000000000000000000000 / Got: 0 0000000000000000000000000000000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_index_7-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_7-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_index_7-bmv2.p4, line 51, characters 8-47
-(TODO: eval_write_lvalue) h.h[max(h.i.id)]
+[FAIL] Expected: 0 0000000000000000000000000000000100 / Got: 0 0000000000000000000000000000010000
+[PASS] Expected: 0 0000000000000000000000000000010100 / Got: 0 0000000000000000000000000000010100
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_index_8-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_8-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_index_8-bmv2.p4, line 51, characters 12-43
-(TODO: eval_write_lvalue) h.h[max(h.i.idx)]
+[PASS] Expected: 0 000000000000000000000000000001000000 / Got: 0 000000000000000000000000000001000000
+[PASS] Expected: 0 000000000000000000000000000001000080 / Got: 0 000000000000000000000000000001000080
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_index_9-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_9-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_index_9-bmv2.p4, line 38, characters 8-35
-(TODO: eval_write_lvalue) h.h[((3w0) << (h.h[1].a))]
+[PASS] Expected: 0 00000000000000000000000000000100 / Got: 0 00000000000000000000000000000100
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_indirect_hdr_assign_1-bmv2.p4 with p4/test/stf/v1model/gauntlet_indirect_hdr_assign_1-bmv2.stf
 [PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
@@ -465,8 +393,8 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_instance_overwrite-bmv2.p4 with p4/test/stf/v1model/gauntlet_instance_overwrite-bmv2.stf
-[PASS] Expected: 0 000000 / Got: 0 000000
-Run success
+[FAIL] Expected: 0 000000 / Got: 0 000000000000
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_int_casting-bmv2.p4 with p4/test/stf/v1model/gauntlet_int_casting-bmv2.stf
 [PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
@@ -481,7 +409,7 @@ Run success
 Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_invalid_hdr_short_circuit-bmv2.p4 with p4/test/stf/v1model/gauntlet_invalid_hdr_short_circuit-bmv2.stf
-[FAIL] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000000000
+[FAIL] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000000000000000
 Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_list_as_in_argument-bmv2.p4 with p4/test/stf/v1model/gauntlet_list_as_in_argument-bmv2.stf
@@ -489,12 +417,8 @@ Error on stf test
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_mux_eval-bmv2.p4 with p4/test/stf/v1model/gauntlet_mux_eval-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_mux_eval-bmv2.p4, line 30, characters 8-23
-(TODO: eval_method_call) header {
-  dst_addr = 48w0;
-  src_addr = 48w0;
-  eth_type = 16w0
-}
+[PASS] Expected: 0 000000000000************0000 / Got: 0 0000000000000000000000000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_mux_hdr-bmv2.p4 with p4/test/stf/v1model/gauntlet_mux_hdr-bmv2.stf
 [PASS] Expected: 0 000000000000000000000000000000000000 / Got: 0 000000000000000000000000000000000000
@@ -514,27 +438,24 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_nested_slice-bmv2.p4 with p4/test/stf/v1model/gauntlet_nested_slice-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_nested_slice-bmv2.p4, line 37, characters 8-31
-(TODO: eval_write_lvalue) n[7:4][3:0][3:0]
+[FAIL] Expected: 0 00000000000000000000000000000F0000 / Got: 0 0000000000000000000000000000800000
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_nested_switch-bmv2.p4 with p4/test/stf/v1model/gauntlet_nested_switch-bmv2.stf
 [PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_nested_table_calls-bmv2.p4 with p4/test/stf/v1model/gauntlet_nested_table_calls-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_nested_table_calls-bmv2.p4, line 44, characters 46-64
-(eval_call_method_expr) method call as an expression must return a value
+[PASS] Expected: 0 0000000000000000000000000002 / Got: 0 0000000000000000000000000002
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_return_truncate-bmv2.p4 with p4/test/stf/v1model/gauntlet_return_truncate-bmv2.stf
 [PASS] Expected: 0 000000000000000000000000000000000000000000000000000004 / Got: 0 000000000000000000000000000000000000000000000000000004
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_set_invalid-bmv2.p4 with p4/test/stf/v1model/gauntlet_set_invalid-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_set_invalid-bmv2.p4, line 36, characters 8-25
-(TODO: eval_method_call) header {
-  a = 8w1;
-  b = 8w0
-}
+[PASS] Expected: 0 0000000000000000000000000000**02 / Got: 0 00000000000000000000000000000102
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_set_valid_in_function-bmv2.p4 with p4/test/stf/v1model/gauntlet_set_valid_in_function-bmv2.stf
 [PASS] Expected: 0 00000000000000000000000000000000000000000000000000 / Got: 0 00000000000000000000000000000000000000000000000000
@@ -587,51 +508,28 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_switch_exclusivity-bmv2.p4 with p4/test/stf/v1model/gauntlet_switch_exclusivity-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_switch_exclusivity-bmv2.p4, from line 37 character 8 to line 44 character 9
-switch (simple_table.apply().action_run) {
-  action_0: {
-      h.eth_hdr.src_addr = val_0;
-    }
-  action_1: {
-      val_0 = 48w10;
-    }
-}
-
->>> Running run test on p4/test/program/well-typed/gauntlet_switch_nested_table_apply-bmv2.p4 with p4/test/stf/v1model/gauntlet_switch_nested_table_apply-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_switch_nested_table_apply-bmv2.p4, from line 49 character 8 to line 53 character 9
-switch (simple_table_2.apply().action_run) {
-  NoAction: {
-      simple_table_1.apply();
-    }
-}
-
->>> Running run test on p4/test/program/well-typed/gauntlet_switch_shadowing-bmv2.p4 with p4/test/stf/v1model/gauntlet_switch_shadowing-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_switch_shadowing-bmv2.p4, from line 45 character 8 to line 51 character 9
-switch (simple_table.apply().action_run) {
-  action_1: {
-      action_1();
-    }
-  action_2: {}
-}
-
->>> Running run test on p4/test/program/well-typed/gauntlet_table_call_in_expression-bmv2.p4 with p4/test/stf/v1model/gauntlet_table_call_in_expression-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_table_call_in_expression-bmv2.p4, line 48, characters 11-31
-(eval_call_method_expr) method call as an expression must return a value
-
->>> Running run test on p4/test/program/well-typed/gauntlet_typedef_cast-bmv2.p4 with p4/test/stf/v1model/gauntlet_typedef_cast-bmv2.stf
-[PASS] Expected: 0 000000000000000000000000000000 / Got: 0 000000000000000000000000000000
+[PASS] Expected: 0 0000000000000000000000010000 / Got: 0 0000000000000000000000010000
 Run success
 
+>>> Running run test on p4/test/program/well-typed/gauntlet_switch_nested_table_apply-bmv2.p4 with p4/test/stf/v1model/gauntlet_switch_nested_table_apply-bmv2.stf
+[PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
+Run success
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_switch_shadowing-bmv2.p4 with p4/test/stf/v1model/gauntlet_switch_shadowing-bmv2.stf
+[PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
+Run success
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_table_call_in_expression-bmv2.p4 with p4/test/stf/v1model/gauntlet_table_call_in_expression-bmv2.stf
+[PASS] Expected: 0 0000000000010000000000000001 / Got: 0 0000000000010000000000000001
+Run success
+
+>>> Running run test on p4/test/program/well-typed/gauntlet_typedef_cast-bmv2.p4 with p4/test/stf/v1model/gauntlet_typedef_cast-bmv2.stf
+[FAIL] Expected: 0 000000000000000000000000000000 / Got: 0 00000000000000000000000000000000
+Error on stf test
+
 >>> Running run test on p4/test/program/well-typed/gauntlet_uninitialized_bool_struct-bmv2.p4 with p4/test/stf/v1model/gauntlet_uninitialized_bool_struct-bmv2.stf
-Error on run: File p4/test/program/well-typed/gauntlet_uninitialized_bool_struct-bmv2.p4, from line 44 character 8 to line 52 character 9
-switch (simple_table.apply().action_run) {
-  dummy_action: {
-      if (!tmp.is_bool) {
-  exit;
-}
-      h.eth_hdr.dst_addr = ((bit<48>) (1));
-    }
-}
+[PASS] Expected: 0 0000000000000000000000010000 / Got: 0 0000000000000000000000010000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_variable_shadowing-bmv2.p4 with p4/test/stf/v1model/gauntlet_variable_shadowing-bmv2.stf
 [PASS] Expected: 0 0000000000000000000000000000000000000000000001 / Got: 0 0000000000000000000000000000000000000000000001
@@ -645,7 +543,7 @@ Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/header-stack-ops-bmv2.p4 with p4/test/stf/v1model/header-stack-ops-bmv2.stf
 Error on run: File p4/test/program/well-typed/header-stack-ops-bmv2.p4, line 62, characters 8-58
-(TODO: eval_inter_call) ExternFuncF (
+(TODO: eval_inter_call) verify(check, toSignal) ExternFuncF (
   in bool check,
   in error toSignal)
 
@@ -653,10 +551,8 @@ Error on run: File p4/test/program/well-typed/header-stack-ops-bmv2.p4, line 62,
 Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/invalid-hdr-warnings3-bmv2.p4 with p4/test/stf/v1model/invalid-hdr-warnings3-bmv2.stf
-Error on run: File p4/test/program/well-typed/invalid-hdr-warnings3-bmv2.p4, line 28, characters 8-24
-(TODO: eval_method_call) header {
-  data = 32w0
-}
+[PASS] Expected: 0 F802AAFF1F9A05DA00E7797EBB054E157BE295737132E0F4AB8DD8A95CD7A84357C403CCF495285090A841C4070EBD5064DAE5191ADCC8511508FCB332D45FF7B45CA3F9A092090F4BB4E973B43D9F400B56F27ECCD0FAAE45FB66273D7A00DE0E076B579EA897888A6A59AEDD3E99A4D5EE5F6A9CDAFE22D2F3E080CD15FAA8F4E2A5759ED13A879C11D0219EE7AE8B72BE589958056D14E92EA85D1E0F7169F264643694E81A40E4BE127BA9C5C2BD3A3503592A9306A9EFD77C51EDDA0C1ABC3BAE8D242D0EA0DB65AE895C582017690A6BF228037B0E2D365B6F59D998DE80DF5A7DBD5C5D83017B70E55C02A0495EF345BCFB9C420EC0 / Got: 0 F802AAFF1F9A05DA00E7797EBB054E157BE295737132E0F4AB8DD8A95CD7A84357C403CCF495285090A841C4070EBD5064DAE5191ADCC8511508FCB332D45FF7B45CA3F9A092090F4BB4E973B43D9F400B56F27ECCD0FAAE45FB66273D7A00DE0E076B579EA897888A6A59AEDD3E99A4D5EE5F6A9CDAFE22D2F3E080CD15FAA8F4E2A5759ED13A879C11D0219EE7AE8B72BE589958056D14E92EA85D1E0F7169F264643694E81A40E4BE127BA9C5C2BD3A3503592A9306A9EFD77C51EDDA0C1ABC3BAE8D242D0EA0DB65AE895C582017690A6BF228037B0E2D365B6F59D998DE80DF5A7DBD5C5D83017B70E55C02A0495EF345BCFB9C420EC0
+Run success
 
 >>> Running run test on p4/test/program/well-typed/ipv6-switch-ml-bmv2.p4 with p4/test/stf/v1model/ipv6-switch-ml-bmv2.stf
 Error: unknown error
@@ -666,10 +562,8 @@ Error on run: File p4/test/program/well-typed/issue-2123-2-bmv2.p4, line 68, cha
 (TODO: eval_expr) 2048 .. 2054
 
 >>> Running run test on p4/test/program/well-typed/issue-2123-3-bmv2.p4 with p4/test/stf/v1model/issue-2123-3-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue-2123-3-bmv2.p4, line 108, characters 38-54
-(TODO: eval_method_call) header {
-  f4 = 8w0
-}
+Error on run: File p4/test/program/well-typed/issue-2123-3-bmv2.p4, line 68, characters 13-25
+(TODO: eval_expr) 97 .. 103
 
 >>> Running run test on p4/test/program/well-typed/issue1000-bmv2.p4 with p4/test/stf/v1model/issue1000-bmv2.stf
 [PASS] Expected: 0 CAFEADFFFFFF00000000000000A7 / Got: 0 CAFEADFFFFFF00000000000000A7
@@ -686,34 +580,24 @@ Error on run: File p4/test/program/well-typed/issue-2123-3-bmv2.p4, line 108, ch
 [FAIL] Expected: 0 3DFE5CFFFFFF00000000000000A2 / Got: 0 3DFE5CFFFFFF00000000000000A7
 [FAIL] Expected: 0 C2FAADFFFFFF00000000000000A1 / Got: 0 C2FAADFFFFFF00000000000000A7
 [FAIL] Expected: 0 3D05ADFFFFFF00000000000000A1 / Got: 0 3D05ADFFFFFF00000000000000A7
-[FAIL] Expected: 0 DAF6A9FFFFFF00000000000000A0 / Got: 0 DAF6A9FFFFFF00000000000000A7
-[FAIL] Expected: 0 350956FFFFFF00000000000000A0 / Got: 0 350956FFFFFF00000000000000A7
+[FAIL] Expected: 0 DAF6A9FFFFFF00000000000000A0 / Got: 0 DAF6A9FFFFFF00000000000000A6
+[FAIL] Expected: 0 350956FFFFFF00000000000000A0 / Got: 0 350956FFFFFF00000000000000A6
 Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/issue1025-bmv2.p4 with p4/test/stf/v1model/issue1025-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue1025-bmv2.p4, line 132, characters 29-51
-(TODO: eval_method_call) header {
-  dstAddr = 48w90520731923714;
-  srcAddr = 48w8796747434940;
-  etherType = 16w2048
-}
+[PASS] Expected: 0 000000010101080027018BBC08004400002C000100004006CDB30A00020F0A02030483031000157D005000000000000000005002200061010000 / Got: 0 000000010101080027018BBC08004400002C000100004006CDB30A00020F0A02030483031000157D005000000000000000005002200061010000
+[FAIL] Expected: 0 000000010000080027018BBC080048000030000100004006C89F0A00020F0A0203048307100A01020300157D005000000000000000005002200061010000 / Got: 0 000000010101080027018BBC080048000030000100004006C89F0A00020F0A0203040307100A01020300157D005000000000000000005002200061010000
+[FAIL] Expected: 0 000000010000080027018BBC080045000030000100004006C89F0A00020F0A0203048307100A01157D005000000000000000005002200061010000 / Got: 0 000000010101080027018BBC080045000030000100004006C89F0A00020F0A0203048307100A01157D005000000000000000005002200061010000
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/issue1049-bmv2.p4 with p4/test/stf/v1model/issue1049-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue1049-bmv2.p4, line 104, characters 12-30
-(TODO: eval_method_call) header {
-  version = 4w4;
-  ihl = 4w5;
-  diffserv = 8w0;
-  totalLen = 16w20;
-  identification = 16w1;
-  flags = 3w0;
-  fragOffset = 13w0;
-  ttl = 8w64;
-  protocol = 8w0;
-  hdrChecksum = 16w19662;
-  srcAddr = 32w202116108;
-  dstAddr = 32w335675906
-}
+Error on run: File p4/test/program/well-typed/issue1049-bmv2.p4, from line 82 character 8 to line 84 character 30
+(TODO: eval_inter_call) hash(result, algo, base, data, max) ExternFuncF<O, T, D, M> (
+  out O result,
+  in enum HashAlgorithm { crc32, crc32_custom, crc16, crc16_custom, random, identity, csum16, xor16 } algo,
+  in T base,
+  in D data,
+  in M max)
 
 >>> Running run test on p4/test/program/well-typed/issue1062-1-bmv2.p4 with p4/test/stf/v1model/issue1062-1-bmv2.stf
 Error: unknown error
@@ -722,39 +606,35 @@ Error: unknown error
 Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/issue1755-1-bmv2.p4 with p4/test/stf/v1model/issue1755-1-bmv2.stf
-[FAIL] Expected: 0 11223344 / Got: 0 
-[FAIL] Expected: 0 223344 / Got: 0 
-[FAIL] Expected: 0 3344 / Got: 0 
-Error on stf test
+[PASS] Expected: 0 11223344 / Got: 0 11223344
+[PASS] Expected: 0 223344 / Got: 0 223344
+[PASS] Expected: 0 3344 / Got: 0 3344
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue1755-bmv2.p4 with p4/test/stf/v1model/issue1755-bmv2.stf
-[FAIL] Expected: 0 00 / Got: 0 
-Error on stf test
+[PASS] Expected: 0 00 / Got: 0 00
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue1768-bmv2.p4 with p4/test/stf/v1model/issue1768-bmv2.stf
 Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/issue1824-bmv2.p4 with p4/test/stf/v1model/issue1824-bmv2.stf
 Error on run: File p4/test/program/well-typed/issue1824-bmv2.p4, line 40, characters 8-43
-(TODO: eval_inter_call) ExternFuncF (
+(TODO: eval_inter_call) verify(check, toSignal) ExternFuncF (
   in bool check,
   in error toSignal)
 
 >>> Running run test on p4/test/program/well-typed/issue2147-bmv2.p4 with p4/test/stf/v1model/issue2147-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue2147-bmv2.p4, line 56, characters 8-25
-(TODO: eval_write_lvalue) hdr.h.a[0:0]
+[PASS] Expected: 0 1111111111112222222222223333FE / Got: 0 1111111111112222222222223333FE
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue2153-bmv2.p4 with p4/test/stf/v1model/issue2153-bmv2.stf
 Error on run: 
 (drive_stf_stmt) unknown stf stmt: add simple_table  hdr.h.b(0x55) do_something() 
 
 >>> Running run test on p4/test/program/well-typed/issue2170-bmv2.p4 with p4/test/stf/v1model/issue2170-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue2170-bmv2.p4, from line 71 character 8 to line 75 character 9
-switch (simple_table.apply().action_run) {
-  NoAction: {
-      return;
-    }
-}
+[FAIL] Expected: 0 1111111111112222222222223333FFEE / Got: 0 111111111111222222222222333300EE
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/issue2176-bmv2.p4 with p4/test/stf/v1model/issue2176-bmv2.stf
 [PASS] Expected: 0 1111111111112222222222223333FF00 / Got: 0 1111111111112222222222223333FF00
@@ -797,34 +677,31 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/issue2498-bmv2.p4 with p4/test/stf/v1model/issue2498-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue2498-bmv2.p4, line 42, characters 8-33
-(TODO: eval_write_lvalue) h.h.a[0:0]
+[FAIL] Expected: 0 000000000000000000000000000003 / Got: 0 000000000000000000000000000001
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/issue2614-bmv2.p4 with p4/test/stf/v1model/issue2614-bmv2.stf
 [PASS] Expected: 0 000000000000000000000000000080 / Got: 0 000000000000000000000000000080
 Run success
 
 >>> Running run test on p4/test/program/well-typed/issue3488-1-bmv2.p4 with p4/test/stf/v1model/issue3488-1-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue3488-1-bmv2.p4, from line 163 character 8 to line 168 character 9
-switch (pre_tbl1.apply().action_run) {
-  action1:
-  action2: {
-      in_tbl2.apply();
-    }
-}
+[FAIL] Expected: 2 525400123502080027F87BEA0000 / Got: 2 525400123502080027F87BEA00000000000000000000000000000000000000000000
+[FAIL] Expected: 2 00123502525427F87BEA08000000 / Got: 2 00123502525427F87BEA080000000000000000000000000000000000000000000000
+[FAIL] Expected: 2 3502525400127BEA080027F80000 / Got: 2 3502525400127BEA080027F800000000000000000000000000000000000000000000
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/issue3488-bmv2.p4 with p4/test/stf/v1model/issue3488-bmv2.stf
 Error on run: 
 (drive_stf_stmt) unknown stf stmt: add test_ingress.pre_tbl1  hdr.ipv4.dst_addr(0xcb0b3bfe) test_ingress.action3() 
 
 >>> Running run test on p4/test/program/well-typed/issue447-1-bmv2.p4 with p4/test/stf/v1model/issue447-1-bmv2.stf
-[FAIL] Expected: 0 5678123490 / Got: 0 56781234
-Error on stf test
+[PASS] Expected: 0 5678123490 / Got: 0 5678123490
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue447-2-bmv2.p4 with p4/test/stf/v1model/issue447-2-bmv2.stf
-[FAIL] Expected: 0 1234567890 / Got: 0 12
-[FAIL] Expected: 0 1234567890 / Got: 0 1234
-Error on stf test
+[PASS] Expected: 0 1234567890 / Got: 0 1234567890
+[PASS] Expected: 0 1234567890 / Got: 0 1234567890
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue447-3-bmv2.p4 with p4/test/stf/v1model/issue447-3-bmv2.stf
 [PASS] Expected: 0 34567890 / Got: 0 34567890
@@ -835,66 +712,68 @@ Error: unknown error
 Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/issue447-5-bmv2.p4 with p4/test/stf/v1model/issue447-5-bmv2.stf
-[FAIL] Expected: 0 3412567890 / Got: 0 3412
-[FAIL] Expected: 0 5678123490 / Got: 0 56781234
-Error on stf test
+[PASS] Expected: 0 3412567890 / Got: 0 3412567890
+[PASS] Expected: 0 5678123490 / Got: 0 5678123490
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue447-bmv2.p4 with p4/test/stf/v1model/issue447-bmv2.stf
-[FAIL] Expected: 0 1234567890 / Got: 0 1234
-Error on stf test
+[PASS] Expected: 0 1234567890 / Got: 0 1234567890
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue510-bmv2.p4 with p4/test/stf/v1model/issue510-bmv2.stf
 Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/issue561-1-bmv2.p4 with p4/test/stf/v1model/issue561-1-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue561-1-bmv2.p4, line 41, characters 8-35
-(TODO: eval_write_lvalue) header {
-  data = 8w0
-}
+[FAIL] Expected: 0 00FF0000 / Got: 0 00FF00000000
+[FAIL] Expected: 0 01FFFF00 / Got: 0 0100FFFF00
+[FAIL] Expected: 0 02000000 / Got: 0 02000000000000
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/issue561-2-bmv2.p4 with p4/test/stf/v1model/issue561-2-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue561-2-bmv2.p4, line 41, characters 8-35
-(TODO: eval_write_lvalue) header {
-  data = 8w0
-}
+[FAIL] Expected: 0 000000 / Got: 0 00FF00000000
+[FAIL] Expected: 0 0100 / Got: 0 0100FFFF00
+[FAIL] Expected: 0 02000000 / Got: 0 02000000000000
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/issue561-3-bmv2.p4 with p4/test/stf/v1model/issue561-3-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue561-3-bmv2.p4, line 41, characters 8-35
-(TODO: eval_write_lvalue) header {
-  data = 8w0
-}
+[FAIL] Expected: 0 00FFFF0000 / Got: 0 00AAFFFF0000
+[FAIL] Expected: 0 01FF00 / Got: 0 01FFAAAA00
+[FAIL] Expected: 0 02000000 / Got: 0 02000000000000
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/issue561-4-bmv2.p4 with p4/test/stf/v1model/issue561-4-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue561-4-bmv2.p4, line 43, characters 8-38
-(TODO: eval_write_lvalue) header {
-  data = 8w0
-}
+[FAIL] Expected: 0 00AAAA0000 / Got: 0 00AA0000AA00000000
+[FAIL] Expected: 0 01AAFFFF00 / Got: 0 01AA000000FFFF00
+[FAIL] Expected: 0 02FFFFAA00 / Got: 0 0200FFFFAA000000
+[FAIL] Expected: 0 03FFFFFFFF / Got: 0 0300FFFF00FFFF
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/issue561-5-bmv2.p4 with p4/test/stf/v1model/issue561-5-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue561-5-bmv2.p4, line 41, characters 8-38
-(TODO: eval_write_lvalue) header {
-  data = 8w0
-}
+[FAIL] Expected: 0 00FF0000 / Got: 0 00FF00000000
+[FAIL] Expected: 0 01FFFF00 / Got: 0 0100FFFF00
+[FAIL] Expected: 0 02000000 / Got: 0 02000000000000
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/issue561-6-bmv2.p4 with p4/test/stf/v1model/issue561-6-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue561-6-bmv2.p4, line 43, characters 8-40
-(TODO: eval_write_lvalue) header {
-  data = 8w0
-}
+[FAIL] Expected: 0 00AAAA0000 / Got: 0 00AA0000AA00000000
+[FAIL] Expected: 0 01AAFFFF00 / Got: 0 01AA000000FFFF00
+[FAIL] Expected: 0 02FFFFAA00 / Got: 0 0200FFFFAA000000
+[FAIL] Expected: 0 03FFFFFFFF / Got: 0 0300FFFF00FFFF
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/issue561-7-bmv2.p4 with p4/test/stf/v1model/issue561-7-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue561-7-bmv2.p4, line 41, characters 8-38
-(TODO: eval_write_lvalue) header {
-  data = 8w0
-}
+[FAIL] Expected: 0 000000 / Got: 0 00FF00000000
+[FAIL] Expected: 0 0100 / Got: 0 0100FFFF00
+[FAIL] Expected: 0 02000000 / Got: 0 02000000000000
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/issue635-bmv2.p4 with p4/test/stf/v1model/issue635-bmv2.stf
-[FAIL] Expected: 0 1234567890 / Got: 0 12345678
-Error on stf test
+[PASS] Expected: 0 1234567890 / Got: 0 1234567890
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue655-bmv2.p4 with p4/test/stf/v1model/issue655-bmv2.stf
 Error on run: File p4/test/program/well-typed/issue655-bmv2.p4, line 42, characters 8-74
-(TODO: eval_inter_call) ExternFuncF<T, O> (
+(TODO: eval_inter_call) verify_checksum(condition, data, checksum, algo) ExternFuncF<T, O> (
   in bool condition,
   in T data,
   in O checksum,
@@ -910,17 +789,8 @@ Run success
 
 >>> Running run test on p4/test/program/well-typed/issue995-bmv2.p4 with p4/test/stf/v1model/issue995-bmv2.stf
 [FAIL] Expected: 0 0000000004560000022E00000005 / Got: 0 0000000004560000022E00000001
-[FAIL] Expected: 0 FFFFFFFFF456FFFF012FFFFF0004 / Got: 0 FFFFFFFFF456FFFF012FFFFF0001
-[PASS] Expected: 0 0000000004560000012F00000001 / Got: 0 0000000004560000012F00000001
-[FAIL] Expected: 0 000000000456FFFF012FFFFF0002 / Got: 0 000000000456FFFF012FFFFF0001
-[FAIL] Expected: 0 0000000004568000012F00000002 / Got: 0 0000000004568000012F00000001
-[FAIL] Expected: 0 FFFFFFFFF4560000012F00000003 / Got: 0 FFFFFFFFF4560000012F00000001
-[FAIL] Expected: 0 8000000004560000012F00000003 / Got: 0 8000000004560000012F00000001
-[FAIL] Expected: 0 FFFFFFFFF456FFFF012FFFFF0004 / Got: 0 FFFFFFFFF456FFFF012FFFFF0001
-[FAIL] Expected: 0 0400000004560200012F00000004 / Got: 0 0400000004560200012F00000001
-[FAIL] Expected: 0 FFFFFFFFF456FFFF012EFFFF0005 / Got: 0 FFFFFFFFF456FFFF012EFFFF0001
-[FAIL] Expected: 0 0000000004760000012F00000005 / Got: 0 0000000004760000012F00000001
-Error on stf test
+Error on run: File p4/test/program/well-typed/issue995-bmv2.p4, line 41, characters 13-39
+(TODO: eval_expr) 19857408 &&& 4294901760
 
 >>> Running run test on p4/test/program/well-typed/key-bmv2.p4 with p4/test/stf/v1model/key-bmv2.stf
 Error on run: 
@@ -939,12 +809,13 @@ Error: unknown error
 Run success
 
 >>> Running run test on p4/test/program/well-typed/predication_issue_2.p4 with p4/test/stf/v1model/predication_issue_2.stf
-Error on run: File p4/test/program/well-typed/predication_issue_2.p4, line 47, characters 12-29
-(TODO: eval_write_lvalue) h.h[val]
+[PASS] Expected: 0 6D67CB3881D6C326FEBBC1D6BB13298801 / Got: 0 6D67CB3881D6C326FEBBC1D6BB13298801
+[PASS] Expected: 0 52074692B760B1B59F8772F6B4160001CB / Got: 0 52074692B760B1B59F8772F6B4160001CB
+Run success
 
 >>> Running run test on p4/test/program/well-typed/predication_issue_3.p4 with p4/test/stf/v1model/predication_issue_3.stf
-Error on run: File p4/test/program/well-typed/predication_issue_3.p4, line 41, characters 12-39
-(TODO: eval_write_lvalue) h.h[bound(3w0, 3w1)]
+[PASS] Expected: 0 00000000000000000000000000000100 / Got: 0 00000000000000000000000000000100
+Run success
 
 >>> Running run test on p4/test/program/well-typed/psa-drop-all-bmv2.p4 with p4/test/stf/v1model/psa-drop-all-bmv2.stf
 Error: unknown error
@@ -992,33 +863,27 @@ Error: unknown error
 Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/runtime-index-2-bmv2.p4 with p4/test/stf/v1model/runtime-index-2-bmv2.stf
-Error on run: File p4/test/program/well-typed/runtime-index-2-bmv2.p4, line 52, characters 8-38
-(TODO: eval_write_lvalue) hdr.vector[0]
+[FAIL] Expected: 0 CA0107FC001C111111111111F0450805012345CA89ABF7EF / Got: 0 CA0107FC001C11111111111100450805012345CA89ABF7EF
+[FAIL] Expected: 0 CAFA07FC001C111111111111CAEF61B80123456789CACDEF / Got: 0 CAFA07FC001C111111111111006F61B80123456789CACDEF
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/runtime-index-bmv2.p4 with p4/test/stf/v1model/runtime-index-bmv2.stf
-Error on run: File p4/test/program/well-typed/runtime-index-bmv2.p4, line 60, characters 8-38
-(TODO: eval_write_lvalue) hdr.vector[0]
+[PASS] Expected: 0 CA0107FC001C1111111111110800028AAB0300000000010123456789CECD8A018A / Got: 0 CA0107FC001C1111111111110800028AAB0300000000010123456789CECD8A018A
+[PASS] Expected: 0 CA0107FC001C1111111111110800008ADE03AEAD8AEF8A0123456789ABCDEF0123 / Got: 0 CA0107FC001C1111111111110800008ADE03AEAD8AEF8A0123456789ABCDEF0123
+Run success
 
 >>> Running run test on p4/test/program/well-typed/saturated-bmv2.p4 with p4/test/stf/v1model/saturated-bmv2.stf
-Error on run: File p4/test/program/well-typed/saturated-bmv2.p4, line 74, characters 20-48
-(TODO: eval_inter_call) ExternFuncF (inout (struct standard_metadata_t {
-        ingress_port bit<9>;
-        egress_spec bit<9>;
-        egress_port bit<9>;
-        instance_type bit<32>;
-        packet_length bit<32>;
-        enq_timestamp bit<32>;
-        enq_qdepth bit<19>;
-        deq_timedelta bit<32>;
-        deq_qdepth bit<19>;
-        ingress_global_timestamp bit<48>;
-        egress_global_timestamp bit<48>;
-        mcast_grp bit<16>;
-        egress_rid bit<16>;
-        checksum_error bit<1>;
-        parser_error error;
-        priority bit<3>
-      })<> standard_metadata)
+[PASS] Expected: 0 01010102000000000000 / Got: 0 01010102000000000000
+[PASS] Expected: 0 02020101000000000000 / Got: 0 02020101000000000000
+[PASS] Expected: 0 01FE02FF000000000000 / Got: 0 01FE02FF000000000000
+[PASS] Expected: 0 02080A00000000000000 / Got: 0 02080A00000000000000
+[PASS] Expected: 0 03000000000A000A0014 / Got: 0 03000000000A000A0014
+[PASS] Expected: 0 030000007FFE000A7FFF / Got: 0 030000007FFE000A7FFF
+[PASS] Expected: 0 04000000000A0014FFF6 / Got: 0 04000000000A0014FFF6
+[PASS] Expected: 0 040000008002000A8000 / Got: 0 040000008002000A8000
+[PASS] Expected: 0 030000000001FFF6FFF7 / Got: 0 030000000001FFF6FFF7
+[PASS] Expected: 0 040000000001FFF6000B / Got: 0 040000000001FFF6000B
+Run success
 
 >>> Running run test on p4/test/program/well-typed/stack_complex-bmv2.p4 with p4/test/stf/v1model/stack_complex-bmv2.stf
 [FAIL] Expected: 4 0000000100000002 / Got: 4 000000010000000200000000000000000000000000000000
@@ -1028,59 +893,36 @@ Error on stf test
 Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/table-entries-exact-bmv2.p4 with p4/test/stf/v1model/table-entries-exact-bmv2.stf
-[FAIL] Expected: 1 01********** / Got: 0 0111110000B0
-[FAIL] Expected: 2 02********** / Got: 0 0211810000B0
+[PASS] Expected: 1 01********** / Got: 1 0111110000B0
+[PASS] Expected: 2 02********** / Got: 2 0211810000B0
 [PASS] Expected: 0 03********** / Got: 0 0310000000B0
 [PASS] Expected: 0 04********** / Got: 0 0411110000B0
-Error on stf test
+Run success
 
 >>> Running run test on p4/test/program/well-typed/table-entries-exact-ternary-bmv2.p4 with p4/test/stf/v1model/table-entries-exact-ternary-bmv2.stf
-[FAIL] Expected: 1 01********** / Got: 0 0111110000B0
-[FAIL] Expected: 2 02********** / Got: 0 0211810000B0
-[FAIL] Expected: 3 03********** / Got: 0 0310000000B0
-[FAIL] Expected: 4 04********** / Got: 0 0411110000B0
-[PASS] Expected: 0 0211F1****** / Got: 0 0211F10000B0
-Error on stf test
+Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/table-entries-lpm-bmv2.p4 with p4/test/stf/v1model/table-entries-lpm-bmv2.stf
-[FAIL] Expected: 11 0B****11**** / Got: 0 0B00001100B0
-[FAIL] Expected: 11 0B****10**** / Got: 0 0B00001000B0
-[FAIL] Expected: 12 0C****12**** / Got: 0 0C00001200B0
-[FAIL] Expected: 13 0D****FF**** / Got: 0 0D0000FF00B0
-Error on stf test
+Error on run: File p4/test/program/well-typed/table-entries-lpm-bmv2.p4, line 64, characters 12-25
+(TODO: eval_expr) 17 &&& 240
 
 >>> Running run test on p4/test/program/well-typed/table-entries-optional-bmv2.p4 with p4/test/stf/v1model/table-entries-optional-bmv2.stf
-[FAIL] Expected: 1 AA********** / Got: 0 AA11110000B0
-[FAIL] Expected: 2 AB********** / Got: 0 AB11110000B0
-[FAIL] Expected: 3 AA********** / Got: 0 AA11120000B0
-[FAIL] Expected: 4 A9********** / Got: 0 A911100000B0
-Error on stf test
+Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/table-entries-priority-bmv2.p4 with p4/test/stf/v1model/table-entries-priority-bmv2.stf
-[FAIL] Expected: 1 010001****** / Got: 0 0100010000B0
-[FAIL] Expected: 3 021001****** / Got: 0 0210010000B0
-[FAIL] Expected: 3 03********** / Got: 0 0311810000B0
-Error on stf test
+Error on run: File p4/test/program/well-typed/table-entries-priority-bmv2.p4, line 77, characters 12-26
+(TODO: eval_expr) 4369 &&& 15
 
 >>> Running run test on p4/test/program/well-typed/table-entries-range-bmv2.p4 with p4/test/stf/v1model/table-entries-range-bmv2.stf
-[FAIL] Expected: 21 15******01** / Got: 0 1500000001B0
-[FAIL] Expected: 21 15******07** / Got: 0 1500000007B0
-[FAIL] Expected: 22 16******0A** / Got: 0 160000000AB0
-[FAIL] Expected: 24 18******0F** / Got: 0 180000000FB0
-[FAIL] Expected: 23 17******10** / Got: 0 1700000010B0
-[FAIL] Expected: 23 17******F0** / Got: 0 17000000F0B0
-Error on stf test
+Error on run: File p4/test/program/well-typed/table-entries-range-bmv2.p4, line 64, characters 12-16
+(TODO: eval_expr) 1 .. 8
 
 >>> Running run test on p4/test/program/well-typed/table-entries-ser-enum-bmv2.p4 with p4/test/stf/v1model/table-entries-ser-enum-bmv2.stf
 Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/table-entries-ternary-bmv2.p4 with p4/test/stf/v1model/table-entries-ternary-bmv2.stf
-[FAIL] Expected: 1 01********** / Got: 0 0111110000B0
-[FAIL] Expected: 1 02********** / Got: 0 0200010000B0
-[FAIL] Expected: 2 03********** / Got: 0 0311870000B0
-[FAIL] Expected: 3 04********** / Got: 0 0410000000B0
-[FAIL] Expected: 4 04********** / Got: 0 04AAAA0000B0
-Error on stf test
+Error on run: File p4/test/program/well-typed/table-entries-ternary-bmv2.p4, line 65, characters 12-26
+(TODO: eval_expr) 4369 &&& 15
 
 >>> Running run test on p4/test/program/well-typed/ternary2-bmv2.p4 with p4/test/stf/v1model/ternary2-bmv2.stf
 Error on run: 
@@ -1090,39 +932,35 @@ Error on run:
 Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/union-bmv2.p4 with p4/test/stf/v1model/union-bmv2.stf
-Error on run: File p4/test/program/well-typed/union-bmv2.p4, line 50, characters 8-26
-(TODO: eval_write_lvalue) header {
-  a = 8w35
-}
+[FAIL] Expected: 0 0023456666 / Got: 0 00230000456666
+[FAIL] Expected: 0 0123456666 / Got: 0 010023456666
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/union-valid-bmv2.p4 with p4/test/stf/v1model/union-valid-bmv2.stf
 Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/union1-bmv2.p4 with p4/test/stf/v1model/union1-bmv2.stf
-Error on run: File p4/test/program/well-typed/union1-bmv2.p4, line 50, characters 8-26
-(TODO: eval_write_lvalue) header {
-  a = 8w35
-}
+[FAIL] Expected: 0 002345666666 / Got: 0 0023000045666666
+[FAIL] Expected: 0 01666666 / Got: 0 01002345666666
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/union2-bmv2.p4 with p4/test/stf/v1model/union2-bmv2.stf
-Error on run: File p4/test/program/well-typed/union2-bmv2.p4, line 50, characters 8-26
-(TODO: eval_write_lvalue) header {
-  a = 8w35
-}
+[FAIL] Expected: 0 0023666666 / Got: 0 00230000666666
+[FAIL] Expected: 0 01FF6666 / Got: 0 01FF23456666
+[FAIL] Expected: 0 01FF6666 / Got: 0 01FF54326666
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/union3-bmv2.p4 with p4/test/stf/v1model/union3-bmv2.stf
-Error on run: File p4/test/program/well-typed/union3-bmv2.p4, line 51, characters 8-26
-(TODO: eval_write_lvalue) header {
-  a = 8w35
-}
+[FAIL] Expected: 0 0023666666 / Got: 0 002300000000666666
+[FAIL] Expected: 0 0123456666 / Got: 0 0100234523456666
+[FAIL] Expected: 0 0154326666 / Got: 0 0100543254326666
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/v1model-const-entries-bmv2.p4 with p4/test/stf/v1model/v1model-const-entries-bmv2.stf
-[FAIL] Expected: 1 0A01020300000000000000010000 / Got: 1 0A01020300000000DEADBEEF0000
-[FAIL] Expected: 1 0A01020300010000000000020000 / Got: 1 0A01020300010000DEADBEEF0000
-[FAIL] Expected: 1 0B01020300010000000000030000 / Got: 1 0B01020300010000DEADBEEF0000
-Error on stf test
+Error on run: File p4/test/program/well-typed/v1model-const-entries-bmv2.p4, line 69, characters 12-45
+(TODO: eval_expr) 10999444996096 &&& 281474976710655
 
 Parser on file: [PASS] 196/196 (100.00%) [FAIL] 0/196 (0.00%)
 Typecheck: [PASS] 196/196 (100.00%) [FAIL] 0/196 (0.00%)
 Instantiate: [PASS] 196/196 (100.00%) [FAIL] 0/196 (0.00%)
-Run: [PASS] 70/196 (35.71%) [FAIL] 126/196 (64.29%)
+Run: [PASS] 113/196 (57.65%) [FAIL] 83/196 (42.35%)
