@@ -126,12 +126,6 @@ syntax param = id dir type expr?
 syntax cparam = param
 
 ;;
-;; Constructor context indicator
-;;
-
-syntax consctxt hint(show %latex("\\texttt{c}")) = _
-
-;;
 ;; Type arguments
 ;;
 
@@ -142,9 +136,9 @@ syntax targ = type
 ;;
 
 syntax arg =
-  | ExprA expr     hint(show %)
-  | NameA id expr  hint(show % = %)
-  | AnyA           hint(show _)
+  | ExprA expr      hint(show %)
+  | NameA id expr?  hint(show % = %)
+  | AnyA            hint(show _)
 
 ;;
 ;; Keyset expressions
@@ -226,7 +220,7 @@ syntax switchlabel =
   | ExprL expr  hint(show %)
   | DefaultL    hint(show DEFAULT)
 
-syntax switchcase = 
+syntax switchcase =
   | MatchC switchlabel block  hint(show CASE % %)
   | FallC switchlabel         hint(show CASE %)
 
