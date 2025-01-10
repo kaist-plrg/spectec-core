@@ -2,7 +2,7 @@
 ;; Calling convention
 ;;
 
-syntax pmap hint(show PARAMS_MAP) = map(id, paramtyp)
+syntax pmap = map(id, paramtyp)
 
 def $align_params_with_args'(pmap, paramtyp, typ, arg): (paramtyp, typ, arg) hint(show ALIGN_PARAMS_WITH_ARGS'%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(")"))
 
