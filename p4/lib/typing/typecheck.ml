@@ -36,7 +36,7 @@ let insert_cast (expr_il : Il.Ast.expr) (typ : Type.t) : Il.Ast.expr =
 
 (* Coercion for unary *)
 
-(* Precondition: checker should alwaysult in false for serializable enum case *)
+(* Precondition: checker should always result in false for serializable enum case *)
 let rec coerce_type_unary_numeric (checker : Type.t -> bool)
     (expr_il : Il.Ast.expr) : Il.Ast.expr =
   let typ = expr_il.note.typ |> Type.canon in
@@ -1310,7 +1310,7 @@ and type_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : El.Ast.typ)
    Similar to other binary operations, the mask operator allows the compiler to
    automatically insert casts to unify the argument types in certain situations (section 8.11.2).
 
-   P4 architectures may impose additionaltrictions on the expressions on the left and
+   P4 architectures may impose additional restrictions on the expressions on the left and
    right-hand side of a mask operator: for example, they may require that
    either or both sub-expressions be compile-time known values. *)
 
@@ -1406,50 +1406,26 @@ and type_select_case_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
   assert (cursor = Ctx.Local);
   match keyset with
   | ExprK expr ->
+      let expr_il = type_expr cursor ctx expr in
       let expr_il =
-        let expr_il = type_expr cursor ctx expr in
-        match expr_il.it with
-        (* When the keyset expression is a mask or range, it is already a set *)
-        | MaskE _ | RangeE _ -> expr_il
-        (* When the keyset expression is already a set (as a value set) *)
-        | VarE _ when match expr_il.note.typ with SetT _ -> true | _ -> false ->
-            expr_il
-        (* Otherwise, wrap the expression in a set *)
-        | _ ->
-            let typ = Types.SetT expr_il.note.typ in
-            let expr_il =
-              Il.Ast.(
-                expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
-            in
-            expr_il
-      in
-      let typ_key = Types.SetT typ_key in
-      WF.check_valid_typ cursor ctx typ_key;
-      let typ = expr_il.note.typ in
-      let expr_il =
-        match (typ_key, typ) with
-        | SetT typ_key_inner, SetT typ_inner ->
-            let expr_il =
-              { expr_il with note = { expr_il.note with typ = typ_inner } }
-            in
-            let expr_il = coerce_type_assign expr_il typ_key_inner in
-            let expr_il =
-              Il.Ast.(
-                expr_il.it
-                $$ expr_il.at
-                   % {
-                       typ = Types.SetT expr_il.note.typ;
-                       ctk = expr_il.note.ctk;
-                     })
-            in
-            expr_il
-        | _ ->
-            F.asprintf
-              "(type_select_case_keyset) Key type %a and the type %a of the \
-               keyset expression %a must be set types\n"
-              (Type.pp ~level:0) typ_key (Type.pp ~level:0) typ
-              (Il.Pp.pp_expr ~level:0) expr_il
-            |> error_no_info
+        match expr_il.note.typ with
+        | SetT typ_inner ->
+            check
+              (Subtyp.implicit typ_inner typ_key)
+              (F.asprintf
+                 "(type_select_case_keyset') keyset expression should have \
+                  type %a, but got %a"
+                 (Type.pp ~level:0) typ_key (Type.pp ~level:0) typ_inner);
+            if Type.eq_alpha typ_inner typ_key then expr_il
+            else insert_cast expr_il (Types.SetT typ_key)
+        | typ ->
+            check
+              (Subtyp.implicit typ typ_key)
+              (F.asprintf
+                 "(type_select_case_keyset') keyset expression should have \
+                  type %a, but got %a"
+                 (Type.pp ~level:0) typ_key (Type.pp ~level:0) typ);
+            insert_cast expr_il (Types.SetT typ_key)
       in
       Lang.Ast.ExprK expr_il
   | DefaultK -> Lang.Ast.DefaultK
@@ -1518,6 +1494,9 @@ and type_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let typs_select =
     List.map (fun expr -> Il.Ast.(expr.note.typ)) exprs_select_il
   in
+  List.iter
+    (fun typ_select -> WF.check_valid_typ cursor ctx (Types.SetT typ_select))
+    typs_select;
   let cases_il = type_select_cases cursor ctx typs_select cases in
   let typ = Types.StateT in
   let expr_il =
@@ -4563,6 +4542,7 @@ and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
   let annos_il = type_annos cursor ctx annos in
   let expr_il = type_expr cursor ctx expr in
   let typ = expr_il.note.typ in
+  WF.check_valid_typ cursor ctx typ;
   let value_match_kind = Ctx.find_value_opt cursor match_kind.it ctx in
   let value_match_kind =
     match value_match_kind with
@@ -4575,8 +4555,7 @@ and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
   check_table_key value_match_kind typ;
   let table_ctx = Tblctx.update_mode value_match_kind typ table_ctx in
   let table_key_il = (expr_il, match_kind, annos_il) in
-  let typ_key = Types.SetT typ in
-  let table_ctx = Tblctx.add_key (typ_key, value_match_kind) table_ctx in
+  let table_ctx = Tblctx.add_key (typ, value_match_kind) table_ctx in
   (table_ctx, table_key_il)
 
 and type_table_keys' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
@@ -4879,28 +4858,7 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let typ_key, match_kind = table_ctx_key in
   match keyset with
   | ExprK expr ->
-      let expr_il =
-        match expr.it with
-        | MaskE _ ->
-            check
-              (match_kind = "lpm" || match_kind = "ternary")
-              (F.asprintf
-                 "(type_table_entry_keyset) match_kind %s cannot use mask \
-                  expression"
-                 match_kind);
-            type_expr cursor ctx expr
-        | RangeE _ ->
-            check (match_kind = "range")
-              (F.asprintf
-                 "(type_action_keyset) match_kind %s cannot use range \
-                  expression"
-                 match_kind);
-            type_expr cursor ctx expr
-        | _ ->
-            let expr_il = type_expr Ctx.Local ctx expr in
-            let typ = Types.SetT expr_il.note.typ in
-            Il.Ast.(expr_il.it $$ expr_il.at % { typ; ctk = expr_il.note.ctk })
-      in
+      let expr_il = type_expr cursor ctx expr in
       let entry_state =
         match (match_kind, table_ctx.mode) with
         | "lpm", NoPriLpm prefix_max -> (
@@ -4914,36 +4872,55 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
             | _ -> Tblctx.Lpm prefix_max)
         | _ -> Tblctx.NoLpm
       in
-      let typ = expr_il.note.typ in
       let expr_il =
-        match (typ_key, typ) with
-        | SetT typ_key_inner, SetT typ_inner ->
-            let expr_il =
-              { expr_il with note = { expr_il.note with typ = typ_inner } }
-            in
-            let expr_il = coerce_type_assign expr_il typ_key_inner in
-            let expr_il =
-              Il.Ast.(
-                expr_il.it
-                $$ expr_il.at
-                   % {
-                       typ = Types.SetT expr_il.note.typ;
-                       ctk = expr_il.note.ctk;
-                     })
-            in
-            expr_il
-        | _ ->
-            F.asprintf
-              "(type_table_entry_keyset') key type %a and the type %a of the \
-               keyset expression %a must be set types"
-              (Type.pp ~level:0) typ_key (Type.pp ~level:0) typ
-              (Il.Pp.pp_expr ~level:0) expr_il
-            |> error_no_info
+        match expr_il with
+        | { it = MaskE _; note = { typ; _ }; _ } -> (
+            check
+              (match_kind = "lpm" || match_kind = "ternary")
+              (F.asprintf
+                 "(type_table_entry_keyset') match_kind %s cannot use mask \
+                  expression"
+                 match_kind);
+            match typ with
+            | SetT typ_inner when Subtyp.implicit typ_inner typ_key ->
+                if Type.eq_alpha typ_inner typ_key then expr_il
+                else insert_cast expr_il (Types.SetT typ_key)
+            | _ ->
+                F.asprintf
+                  "(type_table_entry_keyset') keyset expression should have \
+                   type %a, but got %a"
+                  (Type.pp ~level:0) typ_key (Type.pp ~level:0) typ
+                |> error_no_info)
+        | { it = RangeE _; note = { typ; _ }; _ } -> (
+            check (match_kind = "range")
+              (F.asprintf
+                 "(type_table_entry_keyset') match_kind %s cannot use range \
+                  expression"
+                 match_kind);
+            match typ with
+            | SetT typ_inner when Subtyp.implicit typ_inner typ_key ->
+                if Type.eq_alpha typ_inner typ_key then expr_il
+                else insert_cast expr_il (Types.SetT typ_key)
+            | _ ->
+                F.asprintf
+                  "(type_table_entry_keyset') keyset expression should have \
+                   type %a, but got %a"
+                  (Type.pp ~level:0) typ_key (Type.pp ~level:0) typ
+                |> error_no_info)
+        | { it = _; note = { typ; _ }; _ } ->
+            check
+              (Subtyp.implicit typ typ_key)
+              (F.asprintf
+                 "(type_table_entry_keyset') keyset expression should have \
+                  type %a, but got %a"
+                 (Type.pp ~level:0) typ_key (Type.pp ~level:0) typ);
+            insert_cast expr_il (Types.SetT typ_key)
       in
       (entry_state, Lang.Ast.ExprK expr_il)
   | DefaultK ->
       check (match_kind <> "exact")
-        "(type_action_keyset) exact match does not allow default expression";
+        "(type_table_entry_keyset') exact match does not allow default \
+         expression";
       let entry_state =
         match (match_kind, table_ctx.mode) with
         | "lpm", NoPriLpm prefix_max -> Tblctx.Lpm prefix_max
@@ -4952,7 +4929,8 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
       (entry_state, Lang.Ast.DefaultK)
   | AnyK ->
       check (match_kind <> "exact")
-        "(type_action_keyset) exact match does not allow wildcard expression";
+        "(type_table_entry_keyset') exact match does not allow wildcard \
+         expression";
       let entry_state =
         match (match_kind, table_ctx.mode) with
         | "lpm", NoPriLpm _ -> Tblctx.Lpm 0

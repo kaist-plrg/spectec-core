@@ -170,6 +170,10 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
                members_to_default
     (* casts of an invalid expression {#} to a header or a header union type *)
     | InvalidT, HeaderT _ | InvalidT, UnionT _ -> true
+    (* casts of set types *)
+    | SetT typ_from_inner, SetT typ_to_inner ->
+        explicit typ_from_inner typ_to_inner
+    | typ_from, SetT typ_to_inner -> explicit typ_from typ_to_inner
     | _ -> false
   in
   (* casts where the destination type is the same as the source type

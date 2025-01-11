@@ -27,6 +27,12 @@ syntax val =
   | RecordDefaultV (member, val)*   hint(show RECORD#_#DEFAULT#_#V %latex("\\{")#%#%latex("\\}"))
   | DefaultV                        hint(show DEFAULT#_#V)
   | InvalidV                        hint(show INVALID#_#V)
+  | SetV setval                     hint(show SET#_#V %)
+
+syntax setval =
+  | SingletonSet val                hint(show %latex("\\{") % %latex("\\}"))
+  | MaskSet val val                 hint(show %latex("\\{") % %latex("\\&\\&\\&") % %latex("\\}"))
+  | RangeSet val val                hint(show %latex("\\{") % ... % %latex("\\}"))
 
 ;;
 ;; Helpers

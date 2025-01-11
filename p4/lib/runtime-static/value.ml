@@ -22,6 +22,8 @@ type t =
   | StructV of L.id' * (L.member' * t) list
   | HeaderV of L.id' * bool * (L.member' * t) list
   | UnionV of L.id' * (L.member' * t) list
+  (* 2c. Derived object reference values *)
+  | RefV of Domain.Dom.OId.t
   (* 3. Synthesized values *)
   | TableEnumFieldV of L.id' * L.member'
   | TableStructV of L.id' * (L.member' * t) list
@@ -31,8 +33,8 @@ type t =
   | RecordDefaultV of (L.member' * t) list
   | DefaultV
   | InvalidV
+  | SetV of [ `Singleton of t | `Mask of t * t | `Range of t * t ]
   | StateV of L.id'
-  | RefV of Domain.Dom.OId.t
 
 let rec pp ?(level = 0) fmt value =
   match value with
@@ -66,6 +68,7 @@ let rec pp ?(level = 0) fmt value =
       F.fprintf fmt "header_union %a {\n%a\n%s}" P.pp_id' id
         (pp_pairs ~level:(level + 1) P.pp_member' pp ~rel:Eq ~sep:SemicolonNl)
         fields (indent level)
+  | RefV oid -> F.fprintf fmt "ref %a" Domain.Dom.OId.pp oid
   | TableEnumFieldV (id, member) ->
       F.fprintf fmt "%a.%a" P.pp_id' id P.pp_member' member
   | TableStructV (id, fields) ->
@@ -87,8 +90,12 @@ let rec pp ?(level = 0) fmt value =
         (indent level)
   | DefaultV -> F.fprintf fmt "..."
   | InvalidV -> F.fprintf fmt "{#}"
+  | SetV (`Singleton value) -> F.fprintf fmt "set { %a }" (pp ~level) value
+  | SetV (`Mask (value, mask)) ->
+      F.fprintf fmt "set { %a &&& %a }" (pp ~level) value (pp ~level) mask
+  | SetV (`Range (value_lb, value_ub)) ->
+      F.fprintf fmt "set { %a .. %a }" (pp ~level) value_lb (pp ~level) value_ub
   | StateV id -> F.fprintf fmt "state %a" P.pp_id' id
-  | RefV oid -> F.fprintf fmt "ref %a" Domain.Dom.OId.pp oid
 
 (* Equality *)
 
@@ -131,6 +138,7 @@ let rec eq t_a t_b =
            (fun (member_a, value_a) (member_b, value_b) ->
              member_a = member_b && eq value_a value_b)
            fields_a fields_b
+  | RefV oid_a, RefV oid_b -> oid_a = oid_b
   | TableEnumFieldV (id_a, member_a), TableEnumFieldV (id_b, member_b) ->
       id_a = id_b && member_a = member_b
   | TableStructV (id_a, fields_a), TableStructV (id_b, fields_b) ->
@@ -149,8 +157,13 @@ let rec eq t_a t_b =
         fields_a fields_b
   | DefaultV, DefaultV -> true
   | InvalidV, InvalidV -> true
+  | SetV (`Singleton value_a), SetV (`Singleton value_b) -> eq value_a value_b
+  | SetV (`Mask (value_a, mask_a)), SetV (`Mask (value_b, mask_b)) ->
+      eq value_a value_b && eq mask_a mask_b
+  | ( SetV (`Range (value_lb_a, value_ub_a)),
+      SetV (`Range (value_lb_b, value_ub_b)) ) ->
+      eq value_lb_a value_lb_b && eq value_ub_a value_ub_b
   | StateV id_a, StateV id_b -> id_a = id_b
-  | RefV oid_a, RefV oid_b -> oid_a = oid_b
   | _ -> false
 
 (* Getters *)

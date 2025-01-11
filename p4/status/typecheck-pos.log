@@ -1540,7 +1540,7 @@ Typecheck success
 
 >>> Running typecheck test on p4/test/program/well-typed/issue3333.p4
 Error on typecheck: File p4/test/program/well-typed/issue3333.p4, from line 4 character 8 to line 7 character 9
-(coerce_type) cannot coerce type int to enum<bit<8>> myenum { value = myenum.value(= 8w0) }
+(type_select_case_keyset') keyset expression should have type enum<bit<8>> myenum { value = myenum.value(= 8w0) }, but got int
 
 >>> Running typecheck test on p4/test/program/well-typed/issue3343.p4
 Typecheck success

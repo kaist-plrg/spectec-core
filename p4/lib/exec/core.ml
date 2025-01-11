@@ -247,7 +247,13 @@ module PacketOut = struct
         { bits = Array.append pkt.bits bits }
     | StackV (values, _, _) ->
         List.fold_left (fun pkt value -> deparse pkt value) pkt values
-    | StructV (_, fields) | HeaderV (_, _, fields) | UnionV (_, fields) ->
+    | StructV (_, fields) ->
+        List.fold_left (fun pkt (_, value) -> deparse pkt value) pkt fields
+    | HeaderV (_, valid, fields) ->
+        if valid then
+          List.fold_left (fun pkt (_, value) -> deparse pkt value) pkt fields
+        else pkt
+    | UnionV (_, fields) ->
         List.fold_left (fun pkt (_, value) -> deparse pkt value) pkt fields
     | _ ->
         Format.asprintf "(TODO: deparse) %a" (Value.pp ~level:0) value

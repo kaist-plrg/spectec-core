@@ -318,11 +318,11 @@ key already exists: foo(x)
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1986-1.p4
 Error on typecheck: File p4/test/program/ill-typed/issue1986-1.p4, from line 22 character 8 to line 24 character 9
-(coerce_type) cannot coerce type bit<0> to bit<2>
+(type_select_case_keyset') keyset expression should have type bit<2>, but got bit<0>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1986.p4
 Error on typecheck: File p4/test/program/ill-typed/issue1986.p4, from line 17 character 8 to line 19 character 9
-(coerce_type) cannot coerce type seq<bit<0>> to bit<1>
+(type_select_case_keyset') keyset expression should have type bit<1>, but got seq<bit<0>>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2021.p4
 Error on typecheck: File p4/test/program/ill-typed/issue2021.p4, line 8, characters 8-17
@@ -572,7 +572,7 @@ Error on typecheck: File p4/test/program/ill-typed/issue3338.p4, from line 1 cha
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3345.p4
 Error on typecheck: File p4/test/program/ill-typed/issue3345.p4, from line 3 character 4 to line 6 character 4
-(coerce_type) cannot coerce type bit<1> to bool
+(type_select_case_keyset') keyset expression should have type bool, but got bit<1>
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3346.p4
 Error on typecheck: File p4/test/program/ill-typed/issue3346.p4, line 2, characters 2-25
@@ -1120,7 +1120,7 @@ Error on typecheck: File p4/test/program/ill-typed/table-entries-lpm.p4, line 71
 
 >>> Running typecheck test on p4/test/program/ill-typed/table-entries-optional-2-bmv2.p4
 Error on typecheck: File p4/test/program/ill-typed/table-entries-optional-2-bmv2.p4, line 69, characters 47-74
-(type_table_entry_keyset) match_kind optional cannot use mask expression
+(type_table_entry_keyset') match_kind optional cannot use mask expression
 
 >>> Running typecheck test on p4/test/program/ill-typed/table-entries-outside-table.p4
 Error on file: File p4/test/program/ill-typed/table-entries-outside-table.p4, line 68, characters 10-17
@@ -1132,7 +1132,7 @@ Error on typecheck: File p4/test/program/ill-typed/table-entries-range.p4, line 
 
 >>> Running typecheck test on p4/test/program/ill-typed/table-entries-ternary.p4
 Error on typecheck: File p4/test/program/ill-typed/table-entries-ternary.p4, line 74, characters 17-23
-(type_action_keyset) match_kind ternary cannot use range expression
+(type_table_entry_keyset') match_kind ternary cannot use range expression
 
 >>> Running typecheck test on p4/test/program/ill-typed/template_e.p4
 Error on typecheck: File p4/test/program/ill-typed/template_e.p4, line 16, characters 0-17

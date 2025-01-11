@@ -140,6 +140,23 @@ module Make (Arch : ARCH) : INTERP = struct
     | L.ExprA expr | L.NameA (_, Some expr) -> eval_expr cursor ctx expr
     | _ -> F.asprintf "(TODO: eval_arg) %a" Il.Pp.pp_arg' arg |> error_no_info
 
+  (* Keyset expression evaluation *)
+
+  and eval_keyset_match (value_key : Value.t) (value_set : Value.t) : bool =
+    match value_set with
+    | SetV (`Singleton value) -> Numerics.eval_binop_eq value_key value
+    | SetV (`Mask (value_base, value_mask)) ->
+        let value_key = Numerics.eval_binop_bitand value_key value_mask in
+        Numerics.eval_binop_eq value_base value_key
+    | SetV (`Range (value_lb, value_ub)) ->
+        let lb = Numerics.eval_binop_le value_lb value_key in
+        let ub = Numerics.eval_binop_le value_key value_ub in
+        Numerics.eval_binop_and lb ub |> Value.get_bool
+    | _ ->
+        F.asprintf "(eval_keyset_match) %a must be a set value"
+          (Value.pp ~level:0) value_set
+        |> error_no_info
+
   (* Expression evaluation *)
 
   and eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : expr) :
@@ -165,9 +182,9 @@ module Make (Arch : ARCH) : INTERP = struct
     | TernE { expr_cond; expr_then; expr_else } ->
         eval_ternop_expr cursor ctx expr_cond expr_then expr_else
     | CastE { typ; expr } -> eval_cast_expr cursor ctx typ expr
-    | MaskE _ | RangeE _ ->
-        F.asprintf "(TODO: eval_expr) %a" (Il.Pp.pp_expr' ~level:0) expr
-        |> error_no_info
+    | MaskE { expr_base; expr_mask } ->
+        eval_mask_expr cursor ctx expr_base expr_mask
+    | RangeE { expr_lb; expr_ub } -> eval_range_expr cursor ctx expr_lb expr_ub
     | SelectE { exprs_select; cases } ->
         eval_select_expr cursor ctx exprs_select cases
     | ArrAccE { expr_base; expr_idx } ->
@@ -256,13 +273,26 @@ module Make (Arch : ARCH) : INTERP = struct
     let value = Numerics.eval_cast typ.it value in
     (ctx, value)
 
+  and eval_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
+      (expr_mask : expr) : Ctx.t * Value.t =
+    let ctx, value_base = eval_expr cursor ctx expr_base in
+    let ctx, value_mask = eval_expr cursor ctx expr_mask in
+    let value = Value.SetV (`Mask (value_base, value_mask)) in
+    (ctx, value)
+
+  and eval_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : expr)
+      (expr_ub : expr) : Ctx.t * Value.t =
+    let ctx, value_lb = eval_expr cursor ctx expr_lb in
+    let ctx, value_ub = eval_expr cursor ctx expr_ub in
+    let value = Value.SetV (`Range (value_lb, value_ub)) in
+    (ctx, value)
+
   and eval_select_match_keyset (cursor : Ctx.cursor) (ctx : Ctx.t)
       (value_key : Value.t) (keyset : keyset) : Ctx.t * bool =
     match keyset.it with
     | ExprK expr ->
-        (* (TODO) Handle match against set produced by mask or range *)
         let ctx, value = eval_expr cursor ctx expr in
-        let matched = Numerics.eval_binop_eq value_key value in
+        let matched = eval_keyset_match value_key value in
         (ctx, matched)
     | DefaultK | AnyK -> (ctx, true)
 
@@ -660,28 +690,37 @@ module Make (Arch : ARCH) : INTERP = struct
         "(get_table_entries) a table should have at most one entries property"
         |> error_no_info
 
+  and get_table_customs (table : table) : table_custom list =
+    List.filter_map
+      (function L.CustomP table_custom -> Some table_custom | _ -> None)
+      table
+
   and eval_table_match_keyset (cursor : Ctx.cursor) (ctx : Ctx.t)
       (table_key : Value.t * match_kind) (keyset : keyset) : Ctx.t * bool =
-    let value_key, match_kind_key = table_key in
+    let value_key, _match_kind = table_key in
     match keyset.it with
-    | ExprK expr -> (
+    | ExprK expr ->
         let ctx, value = eval_expr cursor ctx expr in
-        match match_kind_key.it with
-        | "exact" ->
-            let matched = Numerics.eval_binop_eq value_key value in
-            (ctx, matched)
-        | _ -> assert false)
-    | _ -> assert false
+        let matched = eval_keyset_match value_key value in
+        (ctx, matched)
+    | DefaultK | AnyK -> (ctx, true)
 
   and eval_table_match_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
       (table_keys : (Value.t * match_kind) list) (table_entry : table_entry) :
-      Ctx.t * (var * arg list) option =
-    let keysets, table_action, _priority, _, _ = table_entry.it in
+      Ctx.t * (var * arg list * int option) option =
+    let keysets, table_action, priority, _, _ = table_entry.it in
+    let priority =
+      Option.map
+        (fun priority ->
+          eval_expr cursor ctx priority
+          |> snd |> Value.get_num |> Bigint.to_int_exn)
+        priority
+    in
     match (table_keys, keysets) with
     | _, [ { it = L.DefaultK; _ } ] | _, [ { it = L.AnyK; _ } ] ->
         let action =
           let var_action, args_action, _ = table_action.it in
-          Some (var_action, args_action)
+          Some (var_action, args_action, priority)
         in
         (ctx, action)
     | table_keys, keysets ->
@@ -699,15 +738,15 @@ module Make (Arch : ARCH) : INTERP = struct
         let action =
           if matched then
             let var_action, args_action, _ = table_action.it in
-            Some (var_action, args_action)
+            Some (var_action, args_action, priority)
           else None
         in
         (ctx, action)
 
   and eval_table_match (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id')
-      (table_keys : (Value.t * match_kind) list) (table_actions : string list)
-      (action_default : var * arg list) (table_entries : table_entries) :
-      Ctx.t * Value.t * (var * arg list) =
+      (largest_priority_wins : bool) (table_keys : (Value.t * match_kind) list)
+      (table_actions : string list) (action_default : var * arg list)
+      (table_entries : table_entries) : Ctx.t * Value.t * (var * arg list) =
     let table_entries, _ = table_entries.it in
     let ctx, actions =
       List.fold_left
@@ -722,10 +761,26 @@ module Make (Arch : ARCH) : INTERP = struct
     let action, matched =
       match actions with
       | [] -> (action_default, false)
-      | [ action ] -> (action, true)
+      | [ (var_action, args_action, _) ] -> ((var_action, args_action), true)
       | _ ->
-          F.asprintf "(TODO: eval_table_match) multiple matching actions found"
-          |> error_no_info
+          let priorities =
+            List.map (fun (_, _, priority) -> priority) actions
+          in
+          check
+            (List.for_all Option.is_some priorities)
+            "(eval_table_match) cannot tie-break between actions without \
+             priorities";
+          let actions =
+            List.map
+              (fun (var_action, args_action, priority) ->
+                (var_action, args_action, Option.get priority))
+              actions
+            |> List.sort (fun (_, _, priority_a) (_, _, priority_b) ->
+                   Int.compare priority_a priority_b)
+            |> if largest_priority_wins then List.rev else Fun.id
+          in
+          let var_action, args_action, _ = List.hd actions in
+          ((var_action, args_action), true)
     in
     let value =
       let hit = Value.BoolV matched in
@@ -752,6 +807,18 @@ module Make (Arch : ARCH) : INTERP = struct
     let table_actions = get_table_actions table in
     let table_default = get_table_default table in
     let table_entries = get_table_entries table in
+    let table_customs = get_table_customs table in
+    (* Evaluate table custom properties *)
+    let largest_priority_wins =
+      List.find_map
+        (fun table_custom ->
+          let member, expr, _, _ = table_custom.it in
+          if member.it = "largest_priority_wins" then
+            eval_expr cursor ctx expr |> snd |> Value.get_bool |> Option.some
+          else None)
+        table_customs
+      |> Option.value ~default:true
+    in
     (* Evaluate table keys *)
     let ctx, table_keys =
       match table_keys with
@@ -778,8 +845,8 @@ module Make (Arch : ARCH) : INTERP = struct
         table_action_default.it
       in
       let action_default = (var_action_default, args_action_default) in
-      eval_table_match cursor ctx id table_keys table_actions action_default
-        table_entries
+      eval_table_match cursor ctx id largest_priority_wins table_keys
+        table_actions action_default table_entries
     in
     (* Perform the matched action *)
     let var_action, args_action = action in

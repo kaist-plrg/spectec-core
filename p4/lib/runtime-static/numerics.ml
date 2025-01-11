@@ -593,6 +593,9 @@ and eval_cast_int (typ : Type.t) (i : Bigint.t) : Value.t =
   | FIntT width -> int_of_raw_int i width
   | FBitT width -> bit_of_raw_int i width
   | NewT (_, typ_inner) -> eval_cast_int typ_inner i
+  | SetT typ_inner ->
+      let value = eval_cast_int typ_inner i in
+      SetV (`Singleton value)
   | _ ->
       Format.asprintf
         "(TODO) Cast from arbitrary-precision int to type %a undefined"
@@ -607,6 +610,9 @@ and eval_cast_fint (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
   | FIntT width_to -> int_of_raw_int i width_to
   | FBitT width_to -> bit_of_raw_int i width_to
   | NewT (_, typ_inner) -> eval_cast_fint typ_inner width i
+  | SetT typ_inner ->
+      let value = eval_cast_fint typ_inner width i in
+      SetV (`Singleton value)
   | _ ->
       Format.asprintf
         "(TODO) Cast from fixed-precision int to type %a undefined"
@@ -622,6 +628,9 @@ and eval_cast_fbit (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
   | FIntT width_to -> int_of_raw_int i width_to
   | FBitT width_to -> bit_of_raw_int i width_to
   | NewT (_, typ_inner) -> eval_cast_fbit typ_inner width i
+  | SetT typ_inner ->
+      let value = eval_cast_fbit typ_inner width i in
+      SetV (`Singleton value)
   | _ ->
       Format.asprintf
         "(TODO) Cast from fixed-precision bit to type %a undefined"
@@ -812,6 +821,44 @@ and eval_cast_invalid (typ : Type.t) : Value.t =
         (Type.pp ~level:0) typ
       |> failwith
 
+and eval_cast_set_singleton (typ : Type.t) (value : Value.t) : Value.t =
+  let typ = Type.canon typ in
+  match typ with
+  | SpecT _ | DefT _ -> assert false
+  | SetT typ_inner -> SetV (`Singleton (eval_cast typ_inner value))
+  | _ ->
+      Format.asprintf "(TODO) Cast from set singleton to type %a undefined"
+        (Type.pp ~level:0) typ
+      |> failwith
+
+and eval_cast_set_mask (typ : Type.t) (value : Value.t) (mask : Value.t) :
+    Value.t =
+  let typ = Type.canon typ in
+  match typ with
+  | SpecT _ | DefT _ -> assert false
+  | SetT typ_inner ->
+      let value = eval_cast typ_inner value in
+      let mask = eval_cast typ_inner mask in
+      SetV (`Mask (value, mask))
+  | _ ->
+      Format.asprintf "(TODO) Cast from set mask to type %a undefined"
+        (Type.pp ~level:0) typ
+      |> failwith
+
+and eval_cast_set_range (typ : Type.t) (value : Value.t) (range : Value.t) :
+    Value.t =
+  let typ = Type.canon typ in
+  match typ with
+  | SpecT _ | DefT _ -> assert false
+  | SetT typ_inner ->
+      let value = eval_cast typ_inner value in
+      let range = eval_cast typ_inner range in
+      SetV (`Range (value, range))
+  | _ ->
+      Format.asprintf "(TODO) Cast from set range to type %a undefined"
+        (Type.pp ~level:0) typ
+      |> failwith
+
 and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
   match value with
   | BoolV b -> eval_cast_bool typ b
@@ -826,6 +873,9 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
   | RecordV fields -> eval_cast_record typ fields
   | RecordDefaultV fields -> eval_cast_record_default typ fields
   | DefaultV -> eval_cast_default typ
+  | SetV (`Singleton value) -> eval_cast_set_singleton typ value
+  | SetV (`Mask (value, mask)) -> eval_cast_set_mask typ value mask
+  | SetV (`Range (value, range)) -> eval_cast_set_range typ value range
   | InvalidV -> eval_cast_invalid typ
   | _ ->
       Format.asprintf "(TODO) Cast from %a to type %a undefined"

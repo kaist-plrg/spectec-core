@@ -343,57 +343,45 @@ rule Expr_ok/rangee:
 ;; Select expression
 ;;
 
-relation Select_case_keyset_ok: cursor context typ |- keyset : typ ctk
+relation Select_case_keyset_ok: cursor context typ |- keyset
 
-rule Select_case_keyset_ok/exprk-maske:
-  LOCAL C typ_k |- (ExprK (MaskE expr_b expr_m)) : (SetT typ_k) ctk'
-  -- Expr_ok: LOCAL C |- (MaskE expr_b expr_m) : (SetT typ') ctk'
-  -- Sub_impl: typ' << typ_k
+rule Select_case_keyset_ok/exprk-sett:
+  LOCAL C typ_k |- ExprK expr
+  -- Expr_ok: LOCAL C |- expr : (SetT typ) ctk
+  -- Sub_impl: typ << typ_k
 
-rule Select_case_keyset_ok/exprk-range:
-  LOCAL C typ_k |- (ExprK (RangeE expr_l expr_r)) : (SetT typ_k) ctk'
-  -- Expr_ok: LOCAL C |- (RangeE expr_l expr_r) : (SetT typ') ctk'
-  -- Sub_impl: typ' << typ_k
-
-rule Select_case_keyset_ok/exprk-namee:
-  LOCAL C typ_k |- (ExprK (NameE name)) : (SetT typ_k) ctk'
-  -- Expr_ok: LOCAL C |- (NameE name) : (SetT typ') ctk'
-  -- Sub_impl: typ' << typ_k
-
-rule Select_case_keyset_ok/exprk-else:
-  LOCAL C typ_k |- (ExprK expr) : (SetT typ_k) ctk'
-  -- Expr_ok: LOCAL C |- expr : (SetT typ') ctk'
-  ----
-  -- if ~($is_maske(expr) \/ $is_rangee(expr) \/ $is_namee(expr))
-  ----
-  -- Sub_impl: typ' << typ_k
+rule Select_case_keyset_ok/exprk-not-sett:
+  LOCAL C typ_k |- ExprK expr 
+  -- Expr_ok: LOCAL C |- expr : typ ctk 
+  -- if ~$is_sett(typ)
+  -- Sub_impl: typ << typ_k
 
 rule Select_case_keyset_ok/defaultk:
-  LOCAL C typ_k |- DefaultK : typ' ctk'
+  LOCAL C typ_k |- DefaultK
 
 rule Select_case_keyset_ok/anyk:
-  LOCAL C typ_k |- AnyK : typ' ctk'
+  LOCAL C typ_k |- AnyK
 
-relation Select_case_keysets_ok: cursor context |- typ* keyset* : typ* ctk*
+relation Select_case_keysets_ok: cursor context |- typ* keyset*
 
 rule Select_case_keysets_ok/one-to-one:
-  p C |- typ_k keyset : typ'* ctk'*
-  -- Select_case_keyset_ok: p C typ_k |- keyset : typ' ctk'
+  p C |- typ_k keyset
+  -- Select_case_keyset_ok: p C typ_k |- keyset
 
 rule Select_case_keysets_ok/many-to-one:
-  p C |- typ_k* keyset : typ'* ctk'*
-  -- Select_case_keyset_ok: p C (SeqT typ_k*) |- keyset : typ' ctk'
+  p C |- typ_k* keyset
+  -- Select_case_keyset_ok: p C (SeqT typ_k*) |- keyset
 
 rule Select_case_keysets_ok/many-to-many:
-  p C |- typ_k* keyset* : typ'* ctk'*
+  p C |- typ_k* keyset*
   -- if |typ_k*| = |keyset*|
-  -- (Select_case_keyset_ok: p C typ_k |- keyset : typ' ctk')*
+  -- (Select_case_keyset_ok: p C typ_k |- keyset)*
 
-relation Select_case_ok: cursor context typ* |- selectcase : typ ctk
+relation Select_case_ok: cursor context typ* |- selectcase
 
 rule Select_case_ok/singleton:
-  LOCAL C typ_k* |- keyset* statelabel : StateT ctk''
-  -- Select_case_keysets_ok: LOCAL C |- typ_k* keyset* : typ'* ctk'*
+  LOCAL C typ_k* |- keyset* statelabel
+  -- Select_case_keysets_ok: LOCAL C |- typ_k* keyset*
   -- if StateT dir'' ctk'' = $find_typ(LOCAL, C, CURRENT statelabel)
 
 rule Expr_ok/selecte:
@@ -401,7 +389,10 @@ rule Expr_ok/selecte:
   -- if C.LOCAL.KIND = PARSERSTATE
   -- (Expr_ok: LOCAL C |- expr_k : typ_k ctk_k)*
   ----
-  -- (Select_case_ok: LOCAL C typ_k* |- selectcase : StateT DYN)*
+  -- if tidset = $bound_tid(C)
+  -- (Type_wf: tidset |- SetT typ_k)*
+  ----
+  -- (Select_case_ok: LOCAL C typ_k* |- selectcase)*
 
 ;;
 ;; Array access expression

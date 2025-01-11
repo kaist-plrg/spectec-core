@@ -670,15 +670,15 @@ Error on typecheck: File p4/test/program/well-typed-excluded/test-clarify/access
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/action-two-params.p4
 Error on typecheck: File p4/test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/action-two-params.p4, line 72, characters 40-90
-(coerce_type) cannot coerce type seq<bit<32>> to typedef bit<32>
+(type_table_entry_keyset') keyset expression should have type typedef bit<32>, but got seq<bit<32>>
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/op_bin.p4
 Error on typecheck: File p4/test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/op_bin.p4, line 76, characters 133-153
-(coerce_type) cannot coerce type seq<bit<128>> to bit<128>
+(type_table_entry_keyset') keyset expression should have type bit<128>, but got seq<bit<128>>
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/table-entries-no-arg-actions.p4
 Error on typecheck: File p4/test/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast/table-entries-no-arg-actions.p4, line 29, characters 18-22
-(coerce_type) cannot coerce type seq<int> to bit<2>
+(type_table_entry_keyset') keyset expression should have type bit<2>, but got seq<int>
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/control-param-scope/shadow-after-use.p4
 Error on typecheck: File p4/test/program/well-typed-excluded/test-clarify/control-param-scope/shadow-after-use.p4, from line 21 character 4 to line 23 character 5
@@ -702,7 +702,7 @@ Error on typecheck: File p4/test/program/well-typed-excluded/test-clarify/fixed-
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/mask-on-exact-match/spec-ex25.p4
 Error on typecheck: File p4/test/program/well-typed-excluded/test-clarify/mask-on-exact-match/spec-ex25.p4, line 41, characters 50-59
-(type_table_entry_keyset) match_kind exact cannot use mask expression
+(type_table_entry_keyset') match_kind exact cannot use mask expression
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/pins/pins_fabric.p4
 Error on typecheck: File p4/test/program/well-typed-excluded/test-clarify/newtype-implicit-cast/pins/pins_fabric.p4, line 143, characters 0-31
@@ -824,7 +824,7 @@ Error on typecheck: File p4/test/program/well-typed-excluded/test-clarify/value-
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs.p4
 Error on typecheck: File p4/test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/pvs.p4, from line 13 character 8 to line 16 character 9
-(coerce_type) cannot coerce type (tuple<T0, T1><T0, T1>)<bit<32>, bit<2>> to seq<bit<32>, bit<2>>
+(type_select_case_keyset') keyset expression should have type seq<bit<32>, bit<2>>, but got (tuple<T0, T1><T0, T1>)<bit<32>, bit<2>>
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-enumint-types1.p4
 Error on typecheck: File p4/test/program/well-typed-excluded/test-clarify/value-set-implicit-cast/v1model-p4runtime-enumint-types1.p4, line 340, characters 4-40
