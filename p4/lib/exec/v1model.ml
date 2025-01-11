@@ -140,7 +140,14 @@ module Make (Interp : INTERP) : ARCH = struct
 
   (* Extern interpreter *)
 
-  let eval_extern (ctx : Ctx.t) (oid : OId.t) (fid : FId.t) : Ctx.t * Sig.t =
+  let eval_extern_func_call (_ctx : Ctx.t) (fid : FId.t) : Ctx.t * Sig.t =
+    match fid with
+    | _ ->
+        Format.asprintf "(eval_extern) unknown extern: %a" FId.pp fid
+        |> error_no_info
+
+  let eval_extern_method_call (ctx : Ctx.t) (oid : OId.t) (fid : FId.t) :
+      Ctx.t * Sig.t =
     match (oid, fid) with
     | [ "packet_in" ], ("extract", [ ("hdr", false) ]) ->
         let packet_in = get_pkt_in () in

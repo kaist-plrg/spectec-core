@@ -1,4 +1,4 @@
-Running run tests on 196 files
+Running run tests on 181 files
 
 
 >>> Running run test on p4/test/program/well-typed/arith-bmv2.p4 with p4/test/stf/v1model/arith-bmv2.stf
@@ -92,36 +92,23 @@ Run success
 
 >>> Running run test on p4/test/program/well-typed/checksum-l4-bmv2.p4 with p4/test/stf/v1model/checksum-l4-bmv2.stf
 Error on run: File p4/test/program/well-typed/checksum-l4-bmv2.p4, line 154, characters 8-68
-(TODO: eval_inter_call) verify(check, toSignal) ExternFuncF (
-  in bool check,
-  in error toSignal)
+(eval_extern) unknown extern: verify(check, toSignal)
 
 >>> Running run test on p4/test/program/well-typed/checksum1-bmv2.p4 with p4/test/stf/v1model/checksum1-bmv2.stf
 Error on run: File p4/test/program/well-typed/checksum1-bmv2.p4, line 102, characters 8-68
-(TODO: eval_inter_call) verify(check, toSignal) ExternFuncF (
-  in bool check,
-  in error toSignal)
+(eval_extern) unknown extern: verify(check, toSignal)
 
 >>> Running run test on p4/test/program/well-typed/checksum2-bmv2.p4 with p4/test/stf/v1model/checksum2-bmv2.stf
 Error on run: File p4/test/program/well-typed/checksum2-bmv2.p4, line 107, characters 8-68
-(TODO: eval_inter_call) verify(check, toSignal) ExternFuncF (
-  in bool check,
-  in error toSignal)
+(eval_extern) unknown extern: verify(check, toSignal)
 
 >>> Running run test on p4/test/program/well-typed/checksum3-bmv2.p4 with p4/test/stf/v1model/checksum3-bmv2.stf
 Error on run: File p4/test/program/well-typed/checksum3-bmv2.p4, line 107, characters 8-68
-(TODO: eval_inter_call) verify(check, toSignal) ExternFuncF (
-  in bool check,
-  in error toSignal)
+(eval_extern) unknown extern: verify(check, toSignal)
 
 >>> Running run test on p4/test/program/well-typed/constant-in-calculation-bmv2.p4 with p4/test/stf/v1model/constant-in-calculation-bmv2.stf
 Error on run: File p4/test/program/well-typed/constant-in-calculation-bmv2.p4, line 27, characters 8-61
-(TODO: eval_inter_call) hash(result, algo, base, data, max) ExternFuncF<O, T, D, M> (
-  out O result,
-  in enum HashAlgorithm { crc32, crc32_custom, crc16, crc16_custom, random, identity, csum16, xor16 } algo,
-  in T base,
-  in D data,
-  in M max)
+(eval_extern) unknown extern: hash(result, algo, base, data, max)
 
 >>> Running run test on p4/test/program/well-typed/default-action-arg-bmv2.p4 with p4/test/stf/v1model/default-action-arg-bmv2.stf
 [PASS] Expected: 0 00000000000AABCDEF01 / Got: 0 00000000000AABCDEF01
@@ -158,24 +145,7 @@ Run success
 
 >>> Running run test on p4/test/program/well-typed/flag_lost-bmv2.p4 with p4/test/stf/v1model/flag_lost-bmv2.stf
 Error on run: File p4/test/program/well-typed/flag_lost-bmv2.p4, line 66, characters 8-40
-(TODO: eval_inter_call) mark_to_drop(standard_metadata) ExternFuncF (inout (struct standard_metadata_t {
-        ingress_port bit<9>;
-        egress_spec bit<9>;
-        egress_port bit<9>;
-        instance_type bit<32>;
-        packet_length bit<32>;
-        enq_timestamp bit<32>;
-        enq_qdepth bit<19>;
-        deq_timedelta bit<32>;
-        deq_qdepth bit<19>;
-        ingress_global_timestamp bit<48>;
-        egress_global_timestamp bit<48>;
-        mcast_grp bit<16>;
-        egress_rid bit<16>;
-        checksum_error bit<1>;
-        parser_error error;
-        priority bit<3>
-      })<> standard_metadata)
+(eval_extern) unknown extern: mark_to_drop(standard_metadata)
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_action_mux-bmv2.p4 with p4/test/stf/v1model/gauntlet_action_mux-bmv2.stf
 [PASS] Expected: 0 00000000000000000000000000000100 / Got: 0 00000000000000000000000000000100
@@ -543,9 +513,7 @@ Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/header-stack-ops-bmv2.p4 with p4/test/stf/v1model/header-stack-ops-bmv2.stf
 Error on run: File p4/test/program/well-typed/header-stack-ops-bmv2.p4, line 62, characters 8-58
-(TODO: eval_inter_call) verify(check, toSignal) ExternFuncF (
-  in bool check,
-  in error toSignal)
+(eval_extern) unknown extern: verify(check, toSignal)
 
 >>> Running run test on p4/test/program/well-typed/internet_checksum1-bmv2.p4 with p4/test/stf/v1model/internet_checksum1-bmv2.stf
 Error: unknown error
@@ -627,12 +595,7 @@ Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/issue1049-bmv2.p4 with p4/test/stf/v1model/issue1049-bmv2.stf
 Error on run: File p4/test/program/well-typed/issue1049-bmv2.p4, from line 82 character 8 to line 84 character 30
-(TODO: eval_inter_call) hash(result, algo, base, data, max) ExternFuncF<O, T, D, M> (
-  out O result,
-  in enum HashAlgorithm { crc32, crc32_custom, crc16, crc16_custom, random, identity, csum16, xor16 } algo,
-  in T base,
-  in D data,
-  in M max)
+(eval_extern) unknown extern: hash(result, algo, base, data, max)
 
 >>> Running run test on p4/test/program/well-typed/issue1062-1-bmv2.p4 with p4/test/stf/v1model/issue1062-1-bmv2.stf
 Error: unknown error
@@ -655,9 +618,7 @@ Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/issue1824-bmv2.p4 with p4/test/stf/v1model/issue1824-bmv2.stf
 Error on run: File p4/test/program/well-typed/issue1824-bmv2.p4, line 40, characters 8-43
-(TODO: eval_inter_call) verify(check, toSignal) ExternFuncF (
-  in bool check,
-  in error toSignal)
+(eval_extern) unknown extern: verify(check, toSignal)
 
 >>> Running run test on p4/test/program/well-typed/issue2147-bmv2.p4 with p4/test/stf/v1model/issue2147-bmv2.stf
 [PASS] Expected: 0 1111111111112222222222223333FE / Got: 0 1111111111112222222222223333FE
@@ -808,11 +769,7 @@ Run success
 
 >>> Running run test on p4/test/program/well-typed/issue655-bmv2.p4 with p4/test/stf/v1model/issue655-bmv2.stf
 Error on run: File p4/test/program/well-typed/issue655-bmv2.p4, line 42, characters 8-74
-(TODO: eval_inter_call) verify_checksum(condition, data, checksum, algo) ExternFuncF<T, O> (
-  in bool condition,
-  in T data,
-  in O checksum,
-  enum HashAlgorithm { crc32, crc32_custom, crc16, crc16_custom, random, identity, csum16, xor16 } algo)
+(eval_extern) unknown extern: verify_checksum(condition, data, checksum, algo)
 
 >>> Running run test on p4/test/program/well-typed/issue774-4-bmv2.p4 with p4/test/stf/v1model/issue774-4-bmv2.stf
 [PASS] Expected: 0 00000001 / Got: 0 00000001
@@ -860,51 +817,6 @@ Run success
 >>> Running run test on p4/test/program/well-typed/predication_issue_3.p4 with p4/test/stf/v1model/predication_issue_3.stf
 [PASS] Expected: 0 00000000000000000000000000000100 / Got: 0 00000000000000000000000000000100
 Run success
-
->>> Running run test on p4/test/program/well-typed/psa-drop-all-bmv2.p4 with p4/test/stf/v1model/psa-drop-all-bmv2.stf
-Error: unknown error
-
->>> Running run test on p4/test/program/well-typed/psa-drop-all-corrected-bmv2.p4 with p4/test/stf/v1model/psa-drop-all-corrected-bmv2.stf
-Error: unknown error
-
->>> Running run test on p4/test/program/well-typed/psa-e2e-cloning-basic-bmv2.p4 with p4/test/stf/v1model/psa-e2e-cloning-basic-bmv2.stf
-Error: unknown error
-
->>> Running run test on p4/test/program/well-typed/psa-example-register2-bmv2.p4 with p4/test/stf/v1model/psa-example-register2-bmv2.stf
-Error: unknown error
-
->>> Running run test on p4/test/program/well-typed/psa-fwd-bmv2.p4 with p4/test/stf/v1model/psa-fwd-bmv2.stf
-Error: unknown error
-
->>> Running run test on p4/test/program/well-typed/psa-i2e-cloning-basic-bmv2.p4 with p4/test/stf/v1model/psa-i2e-cloning-basic-bmv2.stf
-Error: unknown error
-
->>> Running run test on p4/test/program/well-typed/psa-multicast-basic-2-bmv2.p4 with p4/test/stf/v1model/psa-multicast-basic-2-bmv2.stf
-Error: unknown error
-
->>> Running run test on p4/test/program/well-typed/psa-multicast-basic-bmv2.p4 with p4/test/stf/v1model/psa-multicast-basic-bmv2.stf
-Error: unknown error
-
->>> Running run test on p4/test/program/well-typed/psa-multicast-basic-corrected-bmv2.p4 with p4/test/stf/v1model/psa-multicast-basic-corrected-bmv2.stf
-Error: unknown error
-
->>> Running run test on p4/test/program/well-typed/psa-parser-error-test-bmv2.p4 with p4/test/stf/v1model/psa-parser-error-test-bmv2.stf
-Error: unknown error
-
->>> Running run test on p4/test/program/well-typed/psa-recirculate-no-meta-bmv2.p4 with p4/test/stf/v1model/psa-recirculate-no-meta-bmv2.stf
-Error: unknown error
-
->>> Running run test on p4/test/program/well-typed/psa-resubmit-bmv2.p4 with p4/test/stf/v1model/psa-resubmit-bmv2.stf
-Error: unknown error
-
->>> Running run test on p4/test/program/well-typed/psa-top-level-assignments-bmv2.p4 with p4/test/stf/v1model/psa-top-level-assignments-bmv2.stf
-Error: unknown error
-
->>> Running run test on p4/test/program/well-typed/psa-unicast-or-drop-bmv2.p4 with p4/test/stf/v1model/psa-unicast-or-drop-bmv2.stf
-Error: unknown error
-
->>> Running run test on p4/test/program/well-typed/psa-unicast-or-drop-corrected-bmv2.p4 with p4/test/stf/v1model/psa-unicast-or-drop-corrected-bmv2.stf
-Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/runtime-index-2-bmv2.p4 with p4/test/stf/v1model/runtime-index-2-bmv2.stf
 [FAIL] Expected: 0 CA0107FC001C111111111111F0450805012345CA89ABF7EF / Got: 0 CA0107FC001C11111111111100450805012345CA89ABF7EF
@@ -1029,7 +941,7 @@ Run success
 [PASS] Expected: 1 0B01020300010000000000030000 / Got: 1 0B01020300010000000000030000
 Run success
 
-Parser on file: [PASS] 196/196 (100.00%) [FAIL] 0/196 (0.00%)
-Typecheck: [PASS] 196/196 (100.00%) [FAIL] 0/196 (0.00%)
-Instantiate: [PASS] 196/196 (100.00%) [FAIL] 0/196 (0.00%)
-Run: [PASS] 132/196 (67.35%) [FAIL] 64/196 (32.65%)
+Parser on file: [PASS] 181/181 (100.00%) [FAIL] 0/181 (0.00%)
+Typecheck: [PASS] 181/181 (100.00%) [FAIL] 0/181 (0.00%)
+Instantiate: [PASS] 181/181 (100.00%) [FAIL] 0/181 (0.00%)
+Run: [PASS] 132/181 (72.93%) [FAIL] 49/181 (27.07%)

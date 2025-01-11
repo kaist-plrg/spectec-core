@@ -8,7 +8,8 @@ module CEnv = Envs_dynamic.CEnv
 module Sto = Envs_dynamic.Sto
 
 module type ARCH = sig
-  val eval_extern : Ctx.t -> OId.t -> FId.t -> Ctx.t * Sig.t
+  val eval_extern_func_call : Ctx.t -> FId.t -> Ctx.t * Sig.t
+  val eval_extern_method_call : Ctx.t -> OId.t -> FId.t -> Ctx.t * Sig.t
   val drive : CEnv.t -> FEnv.t -> VEnv.t -> Sto.t -> Stf.Ast.stmt list -> bool
 end
 

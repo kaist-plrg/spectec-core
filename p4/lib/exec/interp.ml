@@ -944,6 +944,9 @@ module Make (Arch : ARCH) : INTERP = struct
     | FuncF (tparams, params, block) ->
         eval_inter_func_call cursor_caller ctx_caller ctx_callee tparams params
           block targs args args_default
+    | ExternFuncF (tparams, params) ->
+        eval_inter_extern_func_call cursor_caller ctx_caller ctx_callee fid
+          tparams params targs args args_default
     | ExternMethodF (tparams, params, None) ->
         eval_inter_extern_method_call cursor_caller ctx_caller ctx_callee oid
           fid tparams params targs args args_default
@@ -1011,6 +1014,23 @@ module Make (Arch : ARCH) : INTERP = struct
     in
     (ctx_caller, sign)
 
+  and eval_inter_extern_func_call (cursor_caller : Ctx.cursor)
+      (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (fid : FId.t)
+      (tparams : tparam list) (params : param list) (targs : typ list)
+      (args : arg list) (args_default : id' list) : Ctx.t * Sig.t =
+    let ctx_callee = Ctx.add_typs Ctx.Local tparams targs ctx_callee in
+    let params, args, _params_default, _args_default =
+      align_params_with_args params args args_default
+    in
+    let ctx_caller, ctx_callee =
+      copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
+    in
+    let ctx_callee, sign = Arch.eval_extern_func_call ctx_callee fid in
+    let ctx_caller =
+      copyout cursor_caller ctx_caller Ctx.Local ctx_callee params args
+    in
+    (ctx_caller, sign)
+
   and eval_inter_extern_method_call (cursor_caller : Ctx.cursor)
       (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (oid : OId.t) (fid : FId.t)
       (tparams : tparam list) (params : param list) (targs : typ list)
@@ -1022,7 +1042,7 @@ module Make (Arch : ARCH) : INTERP = struct
     let ctx_caller, ctx_callee =
       copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
     in
-    let ctx_callee, sign = Arch.eval_extern ctx_callee oid fid in
+    let ctx_callee, sign = Arch.eval_extern_method_call ctx_callee oid fid in
     let ctx_caller =
       copyout cursor_caller ctx_caller Ctx.Local ctx_callee params args
     in
