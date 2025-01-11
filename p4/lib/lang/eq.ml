@@ -46,6 +46,9 @@ type ('note, 'expr) eq_expr =
 type 'stmt eq_stmt = ?dbg:bool -> 'stmt stmt -> 'stmt stmt -> bool
 type 'decl eq_decl = ?dbg:bool -> 'decl decl -> 'decl decl -> bool
 
+type 'table_entry eq_table_entry =
+  ?dbg:bool -> 'table_entry table_entry -> 'table_entry table_entry -> bool
+
 (* Numbers *)
 
 let eq_num' num_a num_b =
@@ -369,27 +372,38 @@ and eq_parser_states ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
 (* Tables *)
 
 and eq_table ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_expr : ('note, 'expr) eq_expr) (table_a : ('note, 'expr) table)
-    (table_b : ('note, 'expr) table) =
-  eq_table_properties ~dbg pp_expr eq_expr table_a table_b
+    (pp_table_entry : 'table_entry Pp.pp_table_entry)
+    (eq_expr : ('note, 'expr) eq_expr)
+    (eq_table_entry : 'table_entry eq_table_entry)
+    (table_a : ('note, 'expr, 'table_entry) table)
+    (table_b : ('note, 'expr, 'table_entry) table) =
+  eq_table_properties ~dbg pp_expr pp_table_entry eq_expr eq_table_entry table_a
+    table_b
 
 (* Table properties *)
 
 and eq_table_properties ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_expr : ('note, 'expr) eq_expr) table_properties_a table_properties_b =
+    (pp_table_entry : 'table_entry Pp.pp_table_entry)
+    (eq_expr : ('note, 'expr) eq_expr)
+    (eq_table_entry : 'table_entry eq_table_entry) table_properties_a
+    table_properties_b =
   eq_list
-    (eq_table_property ~dbg pp_expr eq_expr)
+    (eq_table_property ~dbg pp_expr pp_table_entry eq_expr eq_table_entry)
     table_properties_a table_properties_b
 
 and eq_table_property ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_expr : ('note, 'expr) eq_expr) table_property_a table_property_b =
+    (pp_table_entry : 'table_entry Pp.pp_table_entry)
+    (eq_expr : ('note, 'expr) eq_expr)
+    (eq_table_entry : 'table_entry eq_table_entry) table_property_a
+    table_property_b =
   match (table_property_a, table_property_b) with
   | KeyP table_keys_a, KeyP table_keys_b ->
       eq_table_keys ~dbg pp_expr eq_expr table_keys_a table_keys_b
   | ActionP table_actions_a, ActionP table_actions_b ->
       eq_table_actions ~dbg pp_expr eq_expr table_actions_a table_actions_b
   | EntryP table_entries_a, EntryP table_entries_b ->
-      eq_table_entries ~dbg pp_expr eq_expr table_entries_a table_entries_b
+      eq_table_entries ~dbg pp_table_entry eq_table_entry table_entries_a
+        table_entries_b
   | DefaultP table_default_a, DefaultP table_default_b ->
       eq_table_default ~dbg pp_expr eq_expr table_default_a table_default_b
   | CustomP table_custom_a, CustomP table_custom_b ->
@@ -447,55 +461,23 @@ and eq_table_actions ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
 
 (* Table entries *)
 
-and eq_table_entry_priority ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_expr : ('note, 'expr) eq_expr) table_entry_priority_a
-    table_entry_priority_b =
-  eq_expr ~dbg table_entry_priority_a table_entry_priority_b
-  |> check ~dbg "table_entry_priority" pp_expr table_entry_priority_a
-       table_entry_priority_b
-
-and eq_table_entry' ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_expr : ('note, 'expr) eq_expr) table_entry_a table_entry_b =
-  let ( keysets_a,
-        table_action_a,
-        table_entry_priority_a,
-        table_entry_const_a,
-        _annos_a ) =
-    table_entry_a
-  in
-  let ( keysets_b,
-        table_action_b,
-        table_entry_priority_b,
-        table_entry_const_b,
-        _annos_b ) =
-    table_entry_b
-  in
-  eq_keysets ~dbg pp_expr eq_expr keysets_a keysets_b
-  && eq_table_action ~dbg pp_expr eq_expr table_action_a table_action_b
-  && eq_option
-       (eq_table_entry_priority ~dbg pp_expr eq_expr)
-       table_entry_priority_a table_entry_priority_b
-  && table_entry_const_a = table_entry_const_b
-
-and eq_table_entry ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_expr : ('note, 'expr) eq_expr) table_entry_a table_entry_b =
-  eq_table_entry' ~dbg pp_expr eq_expr table_entry_a.it table_entry_b.it
-  |> check ~dbg "table_entry"
-       (Pp.pp_table_entry pp_expr)
-       table_entry_a table_entry_b
-
-and eq_table_entries' ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_expr : ('note, 'expr) eq_expr) table_entries_a table_entries_b =
+and eq_table_entries' ?(dbg = false)
+    (_pp_table_entry : 'table_entry Pp.pp_table_entry)
+    (eq_table_entry : 'table_entry eq_table_entry) table_entries_a
+    table_entries_b =
   let table_entries_a, table_entry_const_a = table_entries_a in
   let table_entries_b, table_entry_const_b = table_entries_b in
-  eq_list (eq_table_entry ~dbg pp_expr eq_expr) table_entries_a table_entries_b
+  eq_list (eq_table_entry ~dbg) table_entries_a table_entries_b
   && table_entry_const_a = table_entry_const_b
 
-and eq_table_entries ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_expr : ('note, 'expr) eq_expr) table_entries_a table_entries_b =
-  eq_table_entries' ~dbg pp_expr eq_expr table_entries_a.it table_entries_b.it
+and eq_table_entries ?(dbg = false)
+    (pp_table_entry : 'table_entry Pp.pp_table_entry)
+    (eq_table_entry : 'table_entry eq_table_entry) table_entries_a
+    table_entries_b =
+  eq_table_entries' ~dbg pp_table_entry eq_table_entry table_entries_a.it
+    table_entries_b.it
   |> check ~dbg "table_entries"
-       (Pp.pp_table_entries pp_expr)
+       (Pp.pp_table_entries pp_table_entry)
        table_entries_a table_entries_b
 
 (* Table default properties *)

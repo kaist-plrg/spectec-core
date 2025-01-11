@@ -14,6 +14,9 @@ type ('note, 'expr) pp_expr =
 type 'stmt pp_stmt = ?level:int -> F.formatter -> 'stmt stmt -> unit
 type 'decl pp_decl = ?level:int -> F.formatter -> 'decl decl -> unit
 
+type 'table_entry pp_table_entry =
+  F.formatter -> 'table_entry table_entry -> unit
+
 (* Numbers *)
 
 let pp_num' fmt num' =
@@ -282,26 +285,31 @@ and pp_parser_states ?(level = 0) (pp_expr : ('note, 'expr) pp_expr)
 
 (* Tables *)
 
-and pp_table ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
-    (table : ('note, 'expr) table) =
+and pp_table ?(level = 0) (pp_expr : ('note, 'expr) pp_expr)
+    (pp_table_entry : 'table_entry pp_table_entry) fmt
+    (table : ('note, 'expr, 'table_entry) table) =
   F.fprintf fmt "{\n%a\n%s}"
-    (pp_table_properties ~level:(level + 1) pp_expr)
+    (pp_table_properties ~level:(level + 1) pp_expr pp_table_entry)
     table (indent level)
 
 (* Table properties *)
 
-and pp_table_property ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
-    (table_property : ('note, 'expr) table_property) =
+and pp_table_property ?(level = 0) (pp_expr : ('note, 'expr) pp_expr)
+    (pp_table_entry : 'table_entry pp_table_entry) fmt
+    (table_property : ('note, 'expr, 'table_entry) table_property) =
   match table_property with
   | KeyP table_keys -> pp_table_keys ~level pp_expr fmt table_keys
   | ActionP table_actions -> pp_table_actions ~level pp_expr fmt table_actions
-  | EntryP table_entries -> pp_table_entries ~level pp_expr fmt table_entries
+  | EntryP table_entries ->
+      pp_table_entries ~level pp_table_entry fmt table_entries
   | DefaultP table_default -> pp_table_default pp_expr fmt table_default
   | CustomP table_custom -> pp_table_custom pp_expr fmt table_custom
 
-and pp_table_properties ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
-    table_properties =
-  pp_list ~level (pp_table_property ~level pp_expr) ~sep:Nl fmt table_properties
+and pp_table_properties ?(level = 0) (pp_expr : ('note, 'expr) pp_expr)
+    (pp_table_entry : 'table_entry pp_table_entry) fmt table_properties =
+  pp_list ~level
+    (pp_table_property ~level pp_expr pp_table_entry)
+    ~sep:Nl fmt table_properties
 
 (* Table keys *)
 
@@ -345,31 +353,17 @@ and pp_table_actions ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
 
 (* Table entries *)
 
-and pp_table_entry' (pp_expr : ('note, 'expr) pp_expr) fmt table_entry' =
-  let keysets, table_action, table_entry_priority, table_entry_const, _annos =
-    table_entry'
-  in
-  F.fprintf fmt "%s%s%a%s%a : %a"
-    (if table_entry_const then "const " else "")
-    (if table_entry_priority |> Option.is_some then "priority = " else "")
-    (pp_option pp_expr) table_entry_priority
-    (if table_entry_priority |> Option.is_some then " : " else "")
-    (pp_keysets pp_expr) keysets (pp_table_action pp_expr) table_action
-
-and pp_table_entry (pp_expr : ('note, 'expr) pp_expr) fmt table_entry =
-  pp_table_entry' pp_expr fmt table_entry.it
-
-and pp_table_entries' ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
-    table_entries =
+and pp_table_entries' ?(level = 0)
+    (pp_table_entry : 'table_entry pp_table_entry) fmt table_entries =
   let table_entries, table_entries_const = table_entries in
   F.fprintf fmt "%sentries = {\n%a\n%s}"
     (if table_entries_const then "const " else "")
-    (pp_list ~level:(level + 1) (pp_table_entry pp_expr) ~sep:Nl)
+    (pp_list ~level:(level + 1) pp_table_entry ~sep:Nl)
     table_entries (indent level)
 
-and pp_table_entries ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
-    table_entries =
-  pp_table_entries' ~level pp_expr fmt table_entries.it
+and pp_table_entries ?(level = 0) (pp_table_entry : 'table_entry pp_table_entry)
+    fmt table_entries =
+  pp_table_entries' ~level pp_table_entry fmt table_entries.it
 
 (* Table default properties *)
 

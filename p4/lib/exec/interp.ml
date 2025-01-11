@@ -56,9 +56,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | ArrAccE { expr_base; expr_idx } -> (
         let ctx, value_base = eval_expr cursor ctx expr_base in
         let ctx, value_idx = eval_expr cursor ctx expr_idx in
-        let idx_target =
-          value_idx |> Value.get_num |> Bigint.to_int |> Option.get
-        in
+        let idx_target = value_idx |> Value.get_num |> Bigint.to_int_exn in
         match value_base with
         | StackV (values_stack, idx_stack, size) ->
             let values_stack =
@@ -78,7 +76,7 @@ module Make (Arch : ARCH) : INTERP = struct
         match value_base with
         | StackV (values_stack, idx_stack, size) when member_target.it = "next"
           ->
-            let idx_stack = idx_stack |> Bigint.to_int |> Option.get in
+            let idx_stack = idx_stack |> Bigint.to_int_exn in
             let values_stack =
               List.mapi
                 (fun idx value_stack ->
@@ -342,7 +340,7 @@ module Make (Arch : ARCH) : INTERP = struct
     (* (TODO) Insert bounds check *)
     match value_base with
     | TupleV values | StackV (values, _, _) ->
-        let idx = Value.get_num value_idx |> Bigint.to_int |> Option.get in
+        let idx = Value.get_num value_idx |> Bigint.to_int_exn in
         let value = List.nth values idx in
         (ctx, value)
     | _ ->
@@ -367,10 +365,8 @@ module Make (Arch : ARCH) : INTERP = struct
       | StackV (values, idx, size) -> (
           match member.it with
           | "size" -> Value.FBitV (Bigint.of_int 32, size)
-          | "next" -> idx |> Bigint.to_int |> Option.get |> List.nth values
-          | "last" ->
-              Bigint.(idx - one)
-              |> Bigint.to_int |> Option.get |> List.nth values
+          | "next" -> idx |> Bigint.to_int_exn |> List.nth values
+          | "last" -> Bigint.(idx - one) |> Bigint.to_int_exn |> List.nth values
           | "lastIndex" -> Value.FBitV (Bigint.of_int 32, Bigint.(idx - one))
           | _ ->
               F.asprintf
@@ -711,9 +707,7 @@ module Make (Arch : ARCH) : INTERP = struct
     let keysets, table_action, priority, _, _ = table_entry.it in
     let priority =
       Option.map
-        (fun priority ->
-          eval_expr cursor ctx priority
-          |> snd |> Value.get_num |> Bigint.to_int_exn)
+        (fun priority -> priority.it |> Value.get_num |> Bigint.to_int_exn)
         priority
     in
     match (table_keys, keysets) with

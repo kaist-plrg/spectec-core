@@ -151,13 +151,14 @@ and ('note, 'expr, 'stmt) parser_state' =
   state_label * ('note, 'expr, 'stmt) block * ('note, 'expr) anno list
 
 (* Tables *)
-and ('note, 'expr) table = ('note, 'expr) table_property list
+and ('note, 'expr, 'table_entry) table =
+  ('note, 'expr, 'table_entry) table_property list
 
 (* Table properties *)
-and ('note, 'expr) table_property =
+and ('note, 'expr, 'table_entry) table_property =
   | KeyP of ('note, 'expr) table_keys
   | ActionP of ('note, 'expr) table_actions
-  | EntryP of ('note, 'expr) table_entries
+  | EntryP of 'table_entry table_entries
   | DefaultP of ('note, 'expr) table_default
   | CustomP of ('note, 'expr) table_custom
 
@@ -177,22 +178,15 @@ and ('note, 'expr) table_action = ('note, 'expr) table_action' phrase
 and ('note, 'expr) table_action' =
   var * ('note, 'expr) arg list * ('note, 'expr) anno list
 
-(* Table entries *)
-and ('note, 'expr) table_entries = ('note, 'expr) table_entries' phrase
+(* Table entries : parameterized by 'table_entry *)
+and 'table_entry table_entries = 'table_entry table_entries' phrase
 
-and ('note, 'expr) table_entries' =
-  ('note, 'expr) table_entry list * table_entries_const
+and 'table_entry table_entries' =
+  'table_entry table_entry list * table_entries_const
 
 and table_entries_const = bool
-and ('note, 'expr) table_entry = ('note, 'expr) table_entry' phrase
-
-and ('note, 'expr) table_entry' =
-  ('note, 'expr) keyset list
-  * ('note, 'expr) table_action
-  * ('note, 'expr) expr option
-  * table_entry_const
-  * ('note, 'expr) anno list
-
+and 'table_entry table_entry = 'table_entry table_entry' phrase
+and 'table_entry table_entry' = 'table_entry
 and table_entry_const = bool
 
 (* Table default properties *)

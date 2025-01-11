@@ -586,16 +586,18 @@ and eq_parser_states ?(dbg = false) parser_states_a parser_states_b =
 (* Tables *)
 
 and eq_table ?(dbg = false) table_a table_b =
-  E.eq_table ~dbg P.pp_expr eq_expr table_a table_b
+  E.eq_table ~dbg P.pp_expr P.pp_table_entry eq_expr eq_table_entry table_a
+    table_b
 
 (* Table properties *)
 
 and eq_table_property ?(dbg = false) table_property_a table_property_b =
-  E.eq_table_property ~dbg P.pp_expr eq_expr table_property_a table_property_b
+  E.eq_table_property ~dbg P.pp_expr P.pp_table_entry eq_expr eq_table_entry
+    table_property_a table_property_b
 
 and eq_table_properties ?(dbg = false) table_properties_a table_properties_b =
-  E.eq_table_properties ~dbg P.pp_expr eq_expr table_properties_a
-    table_properties_b
+  E.eq_table_properties ~dbg P.pp_expr P.pp_table_entry eq_expr eq_table_entry
+    table_properties_a table_properties_b
 
 (* Table keys *)
 
@@ -628,16 +630,36 @@ and eq_table_actions ?(dbg = false) table_actions_a table_actions_b =
 (* Table entries *)
 
 and eq_table_entry' ?(dbg = false) table_entry_a table_entry_b =
-  E.eq_table_entry' ~dbg P.pp_expr eq_expr table_entry_a table_entry_b
+  let ( keysets_a,
+        table_action_a,
+        table_entry_priority_a,
+        table_entry_const_a,
+        _annos_a ) =
+    table_entry_a
+  in
+  let ( keysets_b,
+        table_action_b,
+        table_entry_priority_b,
+        table_entry_const_b,
+        _annos_b ) =
+    table_entry_b
+  in
+  eq_keysets ~dbg keysets_a keysets_b
+  && eq_table_action ~dbg table_action_a table_action_b
+  && E.eq_option eq_value table_entry_priority_a table_entry_priority_b
+  && table_entry_const_a = table_entry_const_b
 
 and eq_table_entry ?(dbg = false) table_entry_a table_entry_b =
-  E.eq_table_entry ~dbg P.pp_expr eq_expr table_entry_a table_entry_b
+  eq_table_entry' ~dbg table_entry_a.it table_entry_b.it
+  |> E.check ~dbg "table_entry" P.pp_table_entry table_entry_a table_entry_b
 
 and eq_table_entries' ?(dbg = false) table_entries_a table_entries_b =
-  E.eq_table_entries' ~dbg P.pp_expr eq_expr table_entries_a table_entries_b
+  E.eq_table_entries' ~dbg P.pp_table_entry eq_table_entry table_entries_a
+    table_entries_b
 
 and eq_table_entries ?(dbg = false) table_entries_a table_entries_b =
-  E.eq_table_entries ~dbg P.pp_expr eq_expr table_entries_a table_entries_b
+  E.eq_table_entries ~dbg P.pp_table_entry eq_table_entry table_entries_a
+    table_entries_b
 
 (* Table default properties *)
 

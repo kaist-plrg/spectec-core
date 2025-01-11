@@ -2,7 +2,8 @@ module W = Lang.Walk
 open Ast
 open Util.Source
 
-type walker = (note, typ', value', param', expr', stmt', decl') W.walker
+type walker =
+  (note, typ', value', param', expr', stmt', decl', table_entry') W.walker
 
 (* Numbers *)
 
@@ -336,7 +337,15 @@ let walk_table_actions (walker : walker) table_actions =
 (* Table entries *)
 
 let walk_table_entry (walker : walker) table_entry =
-  W.walk_table_entry walker table_entry
+  let walk_value = walker.walk_value walker in
+  let walk_keyset = walker.walk_keyset walker in
+  let walk_table_action = walker.walk_table_action walker in
+  let keysets, table_action, table_entry_priority, _table_entry_const, _annos =
+    table_entry.it
+  in
+  W.walk_list walk_keyset keysets;
+  walk_table_action table_action;
+  W.walk_option walk_value table_entry_priority
 
 let walk_table_entries (walker : walker) table_entries =
   W.walk_table_entries walker table_entries

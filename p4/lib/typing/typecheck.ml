@@ -1535,9 +1535,7 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     match typ_base with
     | TupleT typs_base_inner ->
         let value_idx = Static.eval_expr cursor ctx expr_idx_il in
-        let idx =
-          value_idx.it |> Value.get_num |> Bigint.to_int |> Option.get
-        in
+        let idx = value_idx.it |> Value.get_num |> Bigint.to_int_exn in
         check
           (idx >= 0 && idx < List.length typs_base_inner)
           (F.asprintf "(type_array_acc_expr) Index %d out of range for %a\n" idx
@@ -5029,7 +5027,7 @@ and check_table_entry_priority (table_ctx : Tblctx.t) (priority_curr : int) :
 
 and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (entry_state : Tblctx.state)
-    (priority : El.Ast.expr option) : Tblctx.t * Il.Ast.expr option =
+    (priority : El.Ast.expr option) : Tblctx.t * Il.Ast.value option =
   check
     (implies table_ctx.entries.const (Option.is_none priority))
     "(type_table_entry_priority) cannot define priority within constant entries";
@@ -5048,12 +5046,7 @@ and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
         | Lpm prefix -> Bigint.of_int prefix
         | _ -> assert false
       in
-      let priority_il =
-        Il.Ast.(
-          Il.Ast.ValueE { value = Value.IntV value_prefix $ no_info }
-          $$ no_info % { typ = Types.IntT; ctk = Ctk.LCTK })
-        |> Option.some
-      in
+      let priority_il = Value.IntV value_prefix $ no_info |> Option.some in
       (table_ctx, priority_il)
   (* Neglect lpm prefix when lpm is used with explicit priority for other match kinds *)
   | _ when table_ctx.priorities.values = [] ->
@@ -5074,13 +5067,8 @@ and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
             in
             priority
       in
-      let priority_il =
-        Il.Ast.(
-          Il.Ast.ValueE { value = Value.IntV value_priority $ no_info }
-          $$ no_info % { typ = Types.IntT; ctk = Ctk.LCTK })
-        |> Option.some
-      in
-      let value_priority = value_priority |> Bigint.to_int |> Option.get in
+      let priority_il = Value.IntV value_priority $ no_info |> Option.some in
+      let value_priority = value_priority |> Bigint.to_int_exn in
       check_table_entry_priority table_ctx value_priority;
       let table_ctx =
         if Option.is_some priority then Tblctx.set_priority_init true table_ctx
@@ -5110,13 +5098,8 @@ and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
             in
             priority
       in
-      let priority_il =
-        Il.Ast.(
-          Il.Ast.ValueE { value = Value.IntV value_priority $ no_info }
-          $$ no_info % { typ = Types.IntT; ctk = Ctk.LCTK })
-        |> Option.some
-      in
-      let value_priority = value_priority |> Bigint.to_int |> Option.get in
+      let priority_il = Value.IntV value_priority $ no_info |> Option.some in
+      let value_priority = value_priority |> Bigint.to_int_exn in
       check_table_entry_priority table_ctx value_priority;
       let table_ctx = Tblctx.add_priority value_priority table_ctx in
       (table_ctx, priority_il)
@@ -5239,9 +5222,7 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
               %a"
              (Type.pp ~level:0) typ);
         let value = Static.eval_expr cursor ctx expr_il in
-        let priority_delta =
-          value.it |> Value.get_num |> Bigint.to_int |> Option.get
-        in
+        let priority_delta = value.it |> Value.get_num |> Bigint.to_int_exn in
         check (priority_delta > 0)
           (F.asprintf
              "(type_table_custom) priority_delta should be a positive integer, \

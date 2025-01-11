@@ -76,7 +76,7 @@ let rec sizeof ?(varsize = 0) (ctx : Ctx.t) (typ : Type.t) : int =
   match typ with
   | DefT _ | SpecT _ -> assert false
   | BoolT -> 1
-  | FIntT width | FBitT width -> width |> Bigint.to_int |> Option.get
+  | FIntT width | FBitT width -> width |> Bigint.to_int_exn
   | VBitT _ -> varsize
   | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
       fields
@@ -109,13 +109,13 @@ module PacketIn = struct
   let rec write ?(varsize = 0) (bits_in : bits) (value : Value.t) =
     match value with
     | FIntV (width, _) ->
-        let size = width |> Bigint.to_int |> Option.get in
+        let size = width |> Bigint.to_int_exn in
         let bits = Array.sub bits_in 0 size in
         let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
         let value = Value.FIntV (width, bits_to_int_signed bits) in
         (bits_in, value)
     | FBitV (width, _) ->
-        let size = width |> Bigint.to_int |> Option.get in
+        let size = width |> Bigint.to_int_exn in
         let bits = Array.sub bits_in 0 size in
         let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
         let value = Value.FBitV (width, bits_to_int_unsigned bits) in
@@ -187,7 +187,7 @@ module PacketIn = struct
     let hdr = Ctx.find_value Ctx.Local "variableSizeHeader" ctx in
     let varsize =
       Ctx.find_value Ctx.Local "variableFieldSizeInBits" ctx
-      |> Value.get_num |> Bigint.to_int |> Option.get
+      |> Value.get_num |> Bigint.to_int_exn
     in
     let pkt, bits = sizeof ~varsize ctx typ |> parse pkt in
     let hdr = write ~varsize bits hdr |> snd in
@@ -212,7 +212,7 @@ module PacketIn = struct
   let advance (ctx : Ctx.t) pkt =
     let size =
       Ctx.find_value Ctx.Local "sizeInBits" ctx
-      |> Value.get_num |> Bigint.to_int |> Option.get
+      |> Value.get_num |> Bigint.to_int_exn
     in
     let pkt = { pkt with idx = pkt.idx + size } in
     pkt
@@ -238,11 +238,11 @@ module PacketOut = struct
     match value with
     | BoolV b -> { bits = Array.append pkt.bits (Array.make 1 b) }
     | FIntV (width, value) ->
-        let width = width |> Bigint.to_int |> Option.get in
+        let width = width |> Bigint.to_int_exn in
         let bits = int_to_bits_signed value width in
         { bits = Array.append pkt.bits bits }
     | FBitV (width, value) | VBitV (_, width, value) ->
-        let width = width |> Bigint.to_int |> Option.get in
+        let width = width |> Bigint.to_int_exn in
         let bits = int_to_bits_unsigned value width in
         { bits = Array.append pkt.bits bits }
     | StackV (values, _, _) ->

@@ -456,15 +456,16 @@ and pp_parser_states ?(level = 0) fmt parser_states =
 
 (* Tables *)
 
-and pp_table ?(level = 0) fmt table = P.pp_table ~level pp_expr fmt table
+and pp_table ?(level = 0) fmt table =
+  P.pp_table ~level pp_expr pp_table_entry fmt table
 
 (* Table properties *)
 
 and pp_table_property ?(level = 0) fmt table_properties =
-  P.pp_table_property ~level pp_expr fmt table_properties
+  P.pp_table_property ~level pp_expr pp_table_entry fmt table_properties
 
 and pp_table_properties ?(level = 0) fmt table_properties =
-  P.pp_table_properties ~level pp_expr fmt table_properties
+  P.pp_table_properties ~level pp_expr pp_table_entry fmt table_properties
 
 (* Table keys *)
 
@@ -494,15 +495,23 @@ and pp_table_actions ?(level = 0) fmt table_actions =
 (* Table entries *)
 
 and pp_table_entry' fmt table_entry' =
-  P.pp_table_entry' pp_expr fmt table_entry'
+  let keysets, table_action, table_entry_priority, table_entry_const, _annos =
+    table_entry'
+  in
+  F.fprintf fmt "%s%s%a%s%a : %a"
+    (if table_entry_const then "const " else "")
+    (if table_entry_priority |> Option.is_some then "priority = " else "")
+    (pp_option pp_value) table_entry_priority
+    (if table_entry_priority |> Option.is_some then " : " else "")
+    pp_keysets keysets pp_table_action table_action
 
-and pp_table_entry fmt table_entry = P.pp_table_entry pp_expr fmt table_entry
+and pp_table_entry fmt table_entry = pp_table_entry' fmt table_entry.it
 
 and pp_table_entries' ?(level = 0) fmt table_entries' =
-  P.pp_table_entries' ~level pp_expr fmt table_entries'
+  P.pp_table_entries' ~level pp_table_entry fmt table_entries'
 
 and pp_table_entries ?(level = 0) fmt table_entries =
-  P.pp_table_entries ~level pp_expr fmt table_entries
+  P.pp_table_entries ~level pp_table_entry fmt table_entries
 
 (* Table default properties *)
 
