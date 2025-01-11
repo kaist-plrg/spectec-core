@@ -42,10 +42,10 @@ module Make (Arch : ARCH) : INTERP = struct
               Bigint.(mask_hi - one)
             in
             let mask_lo =
-              let mask_lo = Numerics.power_of_two value_hi in
+              let mask_lo = Numerics.power_of_two value_lo in
               Bigint.(mask_lo - one)
             in
-            let mask = Bigint.(mask_hi lxor mask_lo) in
+            let mask = Bigint.(lnot (mask_hi lxor mask_lo)) in
             let value = Bigint.(value land mask lxor value_rhs) in
             let value_base = Value.FBitV (width, value) in
             eval_write_lvalue cursor ctx expr_base value_base
@@ -144,6 +144,7 @@ module Make (Arch : ARCH) : INTERP = struct
     match value_set with
     | SetV (`Singleton value) -> Numerics.eval_binop_eq value_key value
     | SetV (`Mask (value_base, value_mask)) ->
+        let value_base = Numerics.eval_binop_bitand value_base value_mask in
         let value_key = Numerics.eval_binop_bitand value_key value_mask in
         Numerics.eval_binop_eq value_base value_key
     | SetV (`Range (value_lb, value_ub)) ->
@@ -312,9 +313,9 @@ module Make (Arch : ARCH) : INTERP = struct
              of keysets";
           List.fold_left2
             (fun (ctx, matched) value_key keyset ->
-              if matched then (ctx, matched)
+              if not matched then (ctx, matched)
               else eval_select_match_keyset cursor ctx value_key keyset)
-            (ctx, false) values_key keysets
+            (ctx, true) values_key keysets
     in
     if matched then (ctx, Some label) else (ctx, None)
 
@@ -725,9 +726,9 @@ module Make (Arch : ARCH) : INTERP = struct
         let ctx, matched =
           List.fold_left2
             (fun (ctx, matched) table_key keyset ->
-              if matched then (ctx, matched)
+              if not matched then (ctx, matched)
               else eval_table_match_keyset cursor ctx table_key keyset)
-            (ctx, false) table_keys keysets
+            (ctx, true) table_keys keysets
         in
         let action =
           if matched then
