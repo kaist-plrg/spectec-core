@@ -1,4 +1,4 @@
-Running run tests on 181 files
+Running run tests on 179 files
 
 
 >>> Running run test on p4/test/program/well-typed/arith-bmv2.p4 with p4/test/stf/v1model/arith-bmv2.stf
@@ -505,18 +505,14 @@ Run success
 [PASS] Expected: 0 0000000000000000000000000000000000000000000001 / Got: 0 0000000000000000000000000000000000000000000001
 Run success
 
->>> Running run test on p4/test/program/well-typed/hash-extern-bmv2.p4 with p4/test/stf/v1model/hash-extern-bmv2.stf
-Error: unknown error
-
 >>> Running run test on p4/test/program/well-typed/header-bool-bmv2.p4 with p4/test/stf/v1model/header-bool-bmv2.stf
-Error: unknown error
+[FAIL] Expected: 0 80666666 / Got: 0 8001666666
+[FAIL] Expected: 0 81666666 / Got: 0 8101666666
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/header-stack-ops-bmv2.p4 with p4/test/stf/v1model/header-stack-ops-bmv2.stf
 Error on run: File p4/test/program/well-typed/header-stack-ops-bmv2.p4, line 62, characters 8-58
 (eval_extern) unknown extern: verify(check, toSignal)
-
->>> Running run test on p4/test/program/well-typed/internet_checksum1-bmv2.p4 with p4/test/stf/v1model/internet_checksum1-bmv2.stf
-Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/invalid-hdr-warnings3-bmv2.p4 with p4/test/stf/v1model/invalid-hdr-warnings3-bmv2.stf
 [PASS] Expected: 0 F802AAFF1F9A05DA00E7797EBB054E157BE295737132E0F4AB8DD8A95CD7A84357C403CCF495285090A841C4070EBD5064DAE5191ADCC8511508FCB332D45FF7B45CA3F9A092090F4BB4E973B43D9F400B56F27ECCD0FAAE45FB66273D7A00DE0E076B579EA897888A6A59AEDD3E99A4D5EE5F6A9CDAFE22D2F3E080CD15FAA8F4E2A5759ED13A879C11D0219EE7AE8B72BE589958056D14E92EA85D1E0F7169F264643694E81A40E4BE127BA9C5C2BD3A3503592A9306A9EFD77C51EDDA0C1ABC3BAE8D242D0EA0DB65AE895C582017690A6BF228037B0E2D365B6F59D998DE80DF5A7DBD5C5D83017B70E55C02A0495EF345BCFB9C420EC0 / Got: 0 F802AAFF1F9A05DA00E7797EBB054E157BE295737132E0F4AB8DD8A95CD7A84357C403CCF495285090A841C4070EBD5064DAE5191ADCC8511508FCB332D45FF7B45CA3F9A092090F4BB4E973B43D9F400B56F27ECCD0FAAE45FB66273D7A00DE0E076B579EA897888A6A59AEDD3E99A4D5EE5F6A9CDAFE22D2F3E080CD15FAA8F4E2A5759ED13A879C11D0219EE7AE8B72BE589958056D14E92EA85D1E0F7169F264643694E81A40E4BE127BA9C5C2BD3A3503592A9306A9EFD77C51EDDA0C1ABC3BAE8D242D0EA0DB65AE895C582017690A6BF228037B0E2D365B6F59D998DE80DF5A7DBD5C5D83017B70E55C02A0495EF345BCFB9C420EC0
@@ -598,7 +594,8 @@ Error on run: File p4/test/program/well-typed/issue1049-bmv2.p4, from line 82 ch
 (eval_extern) unknown extern: hash(result, algo, base, data, max)
 
 >>> Running run test on p4/test/program/well-typed/issue1062-1-bmv2.p4 with p4/test/stf/v1model/issue1062-1-bmv2.stf
-Error: unknown error
+Error on run: File p4/test/program/well-typed/issue1062-1-bmv2.p4, line 37, characters 8-23
+PacketTooShort
 
 >>> Running run test on p4/test/program/well-typed/issue1566-bmv2.p4 with p4/test/stf/v1model/issue1566-bmv2.stf
 Error on run: File p4/test/program/well-typed/issue1566-bmv2.p4, line 88, characters 8-40
@@ -615,7 +612,8 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/issue1768-bmv2.p4 with p4/test/stf/v1model/issue1768-bmv2.stf
-Error: unknown error
+Error on run: File p4/test/program/well-typed/issue1768-bmv2.p4, line 17, characters 8-31
+PacketTooShort
 
 >>> Running run test on p4/test/program/well-typed/issue1824-bmv2.p4 with p4/test/stf/v1model/issue1824-bmv2.stf
 Error on run: File p4/test/program/well-typed/issue1824-bmv2.p4, line 40, characters 8-43
@@ -702,11 +700,13 @@ Run success
 
 >>> Running run test on p4/test/program/well-typed/issue447-3-bmv2.p4 with p4/test/stf/v1model/issue447-3-bmv2.stf
 [PASS] Expected: 0 34567890 / Got: 0 34567890
-Error: unknown error
+Error on run: File p4/test/program/well-typed/issue447-3-bmv2.p4, line 26, characters 8-28
+PacketTooShort
 
 >>> Running run test on p4/test/program/well-typed/issue447-4-bmv2.p4 with p4/test/stf/v1model/issue447-4-bmv2.stf
 [PASS] Expected: 0 34567890 / Got: 0 34567890
-Error: unknown error
+Error on run: File p4/test/program/well-typed/issue447-4-bmv2.p4, line 25, characters 8-28
+PacketTooShort
 
 >>> Running run test on p4/test/program/well-typed/issue447-5-bmv2.p4 with p4/test/stf/v1model/issue447-5-bmv2.stf
 [PASS] Expected: 0 3412567890 / Got: 0 3412567890
@@ -718,7 +718,8 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/issue510-bmv2.p4 with p4/test/stf/v1model/issue510-bmv2.stf
-Error: unknown error
+[PASS] Expected: 0 34567890 / Got: 0 34567890
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue561-1-bmv2.p4 with p4/test/stf/v1model/issue561-1-bmv2.stf
 [PASS] Expected: 0 00FF0000 / Got: 0 00FF0000
@@ -803,7 +804,9 @@ Error on run:
 (drive_stf_stmt) unknown stf stmt: add t1  ethernet.srcAddr.slice(0x1f) dstAddr_lsbs(0x010101010101) etherType_less_10(0xf00f) ingressImpl.foo((out_port, 3)) 
 
 >>> Running run test on p4/test/program/well-typed/parser_error-bmv2.p4 with p4/test/stf/v1model/parser_error-bmv2.stf
-Error: unknown error
+[PASS] Expected: 0 0123456789101112131415160A0B / Got: 0 0123456789101112131415160A0B
+Error on run: File p4/test/program/well-typed/parser_error-bmv2.p4, line 20, characters 8-28
+PacketTooShort
 
 >>> Running run test on p4/test/program/well-typed/predication_issue_1.p4 with p4/test/stf/v1model/predication_issue_1.stf
 [PASS] Expected: 0 0000000000010000000000000000 / Got: 0 0000000000010000000000000000
@@ -847,7 +850,8 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/subparser-with-header-stack-bmv2.p4 with p4/test/stf/v1model/subparser-with-header-stack-bmv2.stf
-Error: unknown error
+Error on run: File p4/test/program/well-typed/subparser-with-header-stack-bmv2.p4, line 76, characters 8-58
+(eval_extern) unknown extern: verify(check, toSignal)
 
 >>> Running run test on p4/test/program/well-typed/table-entries-exact-bmv2.p4 with p4/test/stf/v1model/table-entries-exact-bmv2.stf
 [PASS] Expected: 1 01********** / Got: 1 0111110000B0
@@ -894,7 +898,8 @@ Error on stf test
 Run success
 
 >>> Running run test on p4/test/program/well-typed/table-entries-ser-enum-bmv2.p4 with p4/test/stf/v1model/table-entries-ser-enum-bmv2.stf
-Error: unknown error
+Error on typecheck: File p4/test/program/well-typed/table-entries-ser-enum-bmv2.p4, line 74, characters 37-52
+(coerce_types_binary) cannot coerce types enum<bit<16>> MyEnum2B { MBR1 = MyEnum2B.MBR1(= 16w10), MBR2 = MyEnum2B.MBR2(= 16w43776) } and int
 
 >>> Running run test on p4/test/program/well-typed/table-entries-ternary-bmv2.p4 with p4/test/stf/v1model/table-entries-ternary-bmv2.stf
 [PASS] Expected: 1 01********** / Got: 1 0111110000B0
@@ -909,7 +914,12 @@ Error on run:
 (drive_stf_stmt) unknown stf stmt: add test1 0 data.f1(0x****0101) ingress.setb1((val, 0x7f), (port, 2)) 
 
 >>> Running run test on p4/test/program/well-typed/test-parserinvalidargument-error-bmv2.p4 with p4/test/stf/v1model/test-parserinvalidargument-error-bmv2.stf
-Error: unknown error
+[PASS] Expected: 1 FFFFFFFFFF00A5A5A5A5A5A50000DEADBEEF / Got: 1 FFFFFFFFFF00A5A5A5A5A5A50000DEADBEEF
+[PASS] Expected: 1 FFFFFFFFFF00A5A5A5A5A5A50008DEADBEEF / Got: 1 FFFFFFFFFF00A5A5A5A5A5A50008DEADBEEF
+[PASS] Expected: 1 FFFFFFFFFF00A5A5A5A5A5A50010DEADBEEF / Got: 1 FFFFFFFFFF00A5A5A5A5A5A50010DEADBEEF
+[FAIL] Expected: 1 FFFFFFFFFF04A5A5A5A5A5A500185A5A5ADEADBEEF / Got: 1 FFFFFFFFFF00A5A5A5A5A5A50018DEADBEEF
+Error on run: File p4/test/program/well-typed/test-parserinvalidargument-error-bmv2.p4, from line 50 character 8 to line 51 character 51
+PacketTooShort
 
 >>> Running run test on p4/test/program/well-typed/union-bmv2.p4 with p4/test/stf/v1model/union-bmv2.stf
 [PASS] Expected: 0 0023456666 / Got: 0 0023456666
@@ -917,7 +927,8 @@ Error: unknown error
 Run success
 
 >>> Running run test on p4/test/program/well-typed/union-valid-bmv2.p4 with p4/test/stf/v1model/union-valid-bmv2.stf
-Error: unknown error
+Error on run: File p4/test/program/well-typed/union-valid-bmv2.p4, line 50, characters 8-26
+PacketTooShort
 
 >>> Running run test on p4/test/program/well-typed/union1-bmv2.p4 with p4/test/stf/v1model/union1-bmv2.stf
 [PASS] Expected: 0 002345666666 / Got: 0 002345666666
@@ -942,7 +953,7 @@ Run success
 [PASS] Expected: 1 0B01020300010000000000030000 / Got: 1 0B01020300010000000000030000
 Run success
 
-Parser on file: [PASS] 181/181 (100.00%) [FAIL] 0/181 (0.00%)
-Typecheck: [PASS] 181/181 (100.00%) [FAIL] 0/181 (0.00%)
-Instantiate: [PASS] 181/181 (100.00%) [FAIL] 0/181 (0.00%)
-Run: [PASS] 146/181 (80.66%) [FAIL] 35/181 (19.34%)
+Parser on file: [PASS] 179/179 (100.00%) [FAIL] 0/179 (0.00%)
+Typecheck: [PASS] 178/179 (99.44%) [FAIL] 1/179 (0.56%)
+Instantiate: [PASS] 178/178 (100.00%) [FAIL] 0/178 (0.00%)
+Run: [PASS] 147/178 (82.58%) [FAIL] 31/178 (17.42%)

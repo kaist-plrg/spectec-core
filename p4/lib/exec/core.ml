@@ -5,6 +5,7 @@ module Numerics = Runtime_static.Numerics
 open Util.Error
 
 let error_no_info = error_interp_no_info
+let check = check_interp
 
 (* Bit manipulation *)
 
@@ -102,12 +103,18 @@ module PacketIn = struct
     { bits; idx = 0; len = Array.length bits }
 
   let parse pkt (size : int) =
+    check (pkt.idx + size <= pkt.len) "PacketTooShort";
     let bits = Array.sub pkt.bits pkt.idx size in
     let pkt = { pkt with idx = pkt.idx + size } in
     (pkt, bits)
 
   let rec write ?(varsize = 0) (bits_in : bits) (value : Value.t) =
     match value with
+    | BoolV _ ->
+        let bits = Array.sub bits_in 0 1 in
+        let bits_in = Array.sub bits_in 1 (Array.length bits_in - 1) in
+        let value = Value.BoolV bits.(0) in
+        (bits_in, value)
     | FIntV (width, _) ->
         let size = width |> Bigint.to_int_exn in
         let bits = Array.sub bits_in 0 size in

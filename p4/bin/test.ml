@@ -127,14 +127,14 @@ let parse_command =
 let typecheck stat includes mode filename =
   try
     let stat, program = parse_file stat includes filename in
-    let _program = Typing.Typecheck.type_program program in
+    let program = Typing.Typecheck.type_program program in
     if mode = Neg then raise (TestCheckNegErr stat);
-    stat
+    (stat, program)
   with CheckErr (msg, info) -> raise (TestCheckErr (msg, info, stat))
 
 let typecheck_test stat includes mode filename =
   try
-    let stat = typecheck stat includes mode filename in
+    let stat, _program = typecheck stat includes mode filename in
     Format.asprintf "Typecheck success" |> print_endline;
     stat
   with
@@ -194,8 +194,7 @@ let typecheck_command =
 
 let instantiate stat includes filename =
   try
-    let stat, program = parse_file stat includes filename in
-    let program = Typing.Typecheck.type_program program in
+    let stat, program = typecheck stat includes Pos filename in
     let cenv, fenv, venv, sto =
       Instance.Instantiate.instantiate_program program
     in

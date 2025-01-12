@@ -422,6 +422,8 @@ let rec eval_binop_eq_entries (lentries : (string * Value.t) list)
 
 and eval_binop_eq (lvalue : Value.t) (rvalue : Value.t) : bool =
   match (lvalue, rvalue) with
+  | ErrV lmember, ErrV rmember | MatchKindV lmember, MatchKindV rmember ->
+      lmember = rmember
   | BoolV b1, BoolV b2 -> b1 = b2
   | IntV lvalue, IntV rvalue
   | FBitV (_, lvalue), FBitV (_, rvalue)

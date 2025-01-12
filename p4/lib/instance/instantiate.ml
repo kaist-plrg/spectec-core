@@ -137,11 +137,15 @@ and do_instantiate_parser (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (params : param list) (decls : decl list) (states : parser_state list) :
     Sto.t * Obj.t =
   assert (cursor = Ctx.Block);
-  let ctx_apply, sto, decls = eval_decls cursor ctx sto decls in
-  let ctx_apply, sto = eval_parser_states cursor ctx_apply sto states in
+  let ctx_apply_locals, sto, decls = eval_decls cursor ctx sto decls in
+  let ctx_apply_states, sto =
+    eval_parser_states cursor ctx_apply_locals sto states
+  in
   let func_apply =
-    let venv_apply = ctx_apply.block.venv in
-    let fenv_apply = ctx_apply.block.fenv in
+    let venv_apply =
+      VEnv.diff ctx_apply_states.block.venv ctx_apply_locals.block.venv
+    in
+    let fenv_apply = ctx_apply_states.block.fenv in
     let body_apply =
       let stmt_apply =
         TransS
@@ -166,10 +170,12 @@ and do_instantiate_parser (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 and do_instantiate_control (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (params : param list) (decls : decl list) (body : block) : Sto.t * Obj.t =
   assert (cursor = Ctx.Block);
-  let ctx_apply, sto, decls = eval_decls cursor ctx sto decls in
-  let ctx_apply, sto, body = eval_block Ctx.Local ctx_apply sto body in
+  let ctx_apply_locals, sto, decls = eval_decls cursor ctx sto decls in
+  let ctx_apply_block, sto, body =
+    eval_block Ctx.Local ctx_apply_locals sto body
+  in
   let func_apply =
-    let fenv_apply = ctx_apply.block.fenv in
+    let fenv_apply = ctx_apply_block.block.fenv in
     Func.ControlApplyMethodF (params, fenv_apply, decls, body)
   in
   let ctx_control =
