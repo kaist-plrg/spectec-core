@@ -200,8 +200,8 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_15-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_15-bmv2.stf
-[FAIL] Expected: 0 0000000000000000000000000002 / Got: 0 0000000000000000000000000003
-Error on stf test
+[PASS] Expected: 0 0000000000000000000000000002 / Got: 0 0000000000000000000000000002
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_exit_combination_16-bmv2.p4 with p4/test/stf/v1model/gauntlet_exit_combination_16-bmv2.stf
 [PASS] Expected: 0 0000000000000000000000000000 / Got: 0 0000000000000000000000000000
@@ -341,9 +341,9 @@ Error: unknown error
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_index_7-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_7-bmv2.stf
-[FAIL] Expected: 0 0000000000000000000000000000000100 / Got: 0 0000000000000000000000000000010000
+[PASS] Expected: 0 0000000000000000000000000000000100 / Got: 0 0000000000000000000000000000000100
 [PASS] Expected: 0 0000000000000000000000000000010100 / Got: 0 0000000000000000000000000000010100
-Error on stf test
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_index_8-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_8-bmv2.stf
 [PASS] Expected: 0 000000000000000000000000000001000000 / Got: 0 000000000000000000000000000001000000
@@ -601,7 +601,8 @@ Error on run: File p4/test/program/well-typed/issue1049-bmv2.p4, from line 82 ch
 Error: unknown error
 
 >>> Running run test on p4/test/program/well-typed/issue1566-bmv2.p4 with p4/test/stf/v1model/issue1566-bmv2.stf
-Error: unknown error
+Error on run: File p4/test/program/well-typed/issue1566-bmv2.p4, line 88, characters 8-40
+(eval_lvalue_of_expr') ref main.ig.E cannot be an l-value
 
 >>> Running run test on p4/test/program/well-typed/issue1755-1-bmv2.p4 with p4/test/stf/v1model/issue1755-1-bmv2.stf
 [PASS] Expected: 0 11223344 / Got: 0 11223344
@@ -629,8 +630,8 @@ Error on run:
 (drive_stf_stmt) unknown stf stmt: add simple_table  hdr.h.b(0x55) do_something() 
 
 >>> Running run test on p4/test/program/well-typed/issue2170-bmv2.p4 with p4/test/stf/v1model/issue2170-bmv2.stf
-[FAIL] Expected: 0 1111111111112222222222223333FFEE / Got: 0 111111111111222222222222333300EE
-Error on stf test
+[PASS] Expected: 0 1111111111112222222222223333FFEE / Got: 0 1111111111112222222222223333FFEE
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue2176-bmv2.p4 with p4/test/stf/v1model/issue2176-bmv2.stf
 [PASS] Expected: 0 1111111111112222222222223333FF00 / Got: 0 1111111111112222222222223333FF00
@@ -944,4 +945,4 @@ Run success
 Parser on file: [PASS] 181/181 (100.00%) [FAIL] 0/181 (0.00%)
 Typecheck: [PASS] 181/181 (100.00%) [FAIL] 0/181 (0.00%)
 Instantiate: [PASS] 181/181 (100.00%) [FAIL] 0/181 (0.00%)
-Run: [PASS] 143/181 (79.01%) [FAIL] 38/181 (20.99%)
+Run: [PASS] 146/181 (80.66%) [FAIL] 35/181 (19.34%)
