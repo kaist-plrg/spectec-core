@@ -166,35 +166,20 @@ module Make (Arch : ARCH) : INTERP = struct
             let idx_stack = idx_stack + 1 |> Bigint.of_int in
             let value_base = Value.StackV (values_stack, idx_stack, size) in
             eval_lvalue_write cursor ctx lvalue_base value_base
-        | StructV (id, fields) ->
-            let fields =
-              List.map
-                (fun (member, value) ->
-                  if member_target = member then (member, value_rhs)
-                  else (member, value))
-                fields
+        | StructV _ ->
+            let value_base =
+              Value.update_struct_field value_base member_target value_rhs
             in
-            let value_base = Value.StructV (id, fields) in
             eval_lvalue_write cursor ctx lvalue_base value_base
-        | HeaderV (id, _, fields) ->
-            let fields =
-              List.map
-                (fun (member, value) ->
-                  if member_target = member then (member, value_rhs)
-                  else (member, value))
-                fields
+        | HeaderV _ ->
+            let value_base =
+              Value.update_header_field value_base member_target value_rhs
             in
-            let value_base = Value.HeaderV (id, true, fields) in
             eval_lvalue_write cursor ctx lvalue_base value_base
-        | UnionV (id, fields) ->
-            let fields =
-              List.map
-                (fun (member, value) ->
-                  if member_target = member then (member, value_rhs)
-                  else (member, value))
-                fields
+        | UnionV _ ->
+            let value_base =
+              Value.update_union_field value_base member_target value_rhs
             in
-            let value_base = Value.UnionV (id, fields) in
             eval_lvalue_write cursor ctx lvalue_base value_base
         | _ ->
             F.asprintf "(TODO: eval_lvalue_write) %a" (LValue.pp ~level:0)
@@ -1281,6 +1266,23 @@ module Make (Arch : ARCH) : INTERP = struct
             (ctx, sign)
         | _ ->
             F.asprintf "(eval_builtin_method_call) invalid method %a for header"
+              Il.Pp.pp_member member
+            |> error_no_info)
+    | UnionV (_, fields) -> (
+        assert (args = [] && targs = []);
+        match member.it with
+        | "isValid" ->
+            let value =
+              List.map snd fields
+              |> List.map Value.get_header_valid
+              |> List.exists Fun.id
+            in
+            let value = Value.BoolV value in
+            let sign = Sig.Ret (Some value) in
+            (ctx, sign)
+        | _ ->
+            F.asprintf
+              "(eval_builtin_method_call) invalid method %a for header union"
               Il.Pp.pp_member member
             |> error_no_info)
     | _ ->

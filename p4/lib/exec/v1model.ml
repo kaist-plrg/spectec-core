@@ -250,17 +250,7 @@ module Make (Interp : INTERP) : ARCH = struct
     let value_std_meta =
       let value_port = Value.FBitV (Bigint.of_int 9, Bigint.of_int port_in) in
       let value_std_meta = Ctx.find_value Ctx.Global "standard_metadata" ctx in
-      match value_std_meta with
-      | Value.StructV (id, fields) ->
-          let fields =
-            List.map
-              (fun (id, value) ->
-                let value = if id = "ingress_port" then value_port else value in
-                (id, value))
-              fields
-          in
-          Value.StructV (id, fields)
-      | _ -> assert false
+      Value.update_struct_field value_std_meta "ingress_port" value_port
     in
     let ctx =
       Ctx.update_value Ctx.Global "standard_metadata" value_std_meta ctx
@@ -281,11 +271,8 @@ module Make (Interp : INTERP) : ARCH = struct
     (* Check egress port *)
     let port_out =
       let value_std_meta = Ctx.find_value Ctx.Global "standard_metadata" ctx in
-      match value_std_meta with
-      | Value.StructV (_, fields) ->
-          List.assoc "egress_spec" fields
-          |> Value.get_num |> Bigint.to_int |> Option.get
-      | _ -> assert false
+      let _, fields = Value.get_struct value_std_meta in
+      List.assoc "egress_spec" fields |> Value.get_num |> Bigint.to_int_exn
     in
     (* Check output packet *)
     let packet_out = get_pkt_out () |> F.asprintf "%a" Core.PacketOut.pp in

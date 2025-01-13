@@ -506,9 +506,9 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/header-bool-bmv2.p4 with p4/test/stf/v1model/header-bool-bmv2.stf
-[FAIL] Expected: 0 80666666 / Got: 0 8001666666
-[FAIL] Expected: 0 81666666 / Got: 0 8101666666
-Error on stf test
+[PASS] Expected: 0 80666666 / Got: 0 80666666
+[PASS] Expected: 0 81666666 / Got: 0 81666666
+Run success
 
 >>> Running run test on p4/test/program/well-typed/header-stack-ops-bmv2.p4 with p4/test/stf/v1model/header-stack-ops-bmv2.stf
 Error on run: File p4/test/program/well-typed/header-stack-ops-bmv2.p4, line 62, characters 8-58
@@ -734,10 +734,10 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/issue561-3-bmv2.p4 with p4/test/stf/v1model/issue561-3-bmv2.stf
-[FAIL] Expected: 0 00FFFF0000 / Got: 0 00AAFFFF0000
-[FAIL] Expected: 0 01FF00 / Got: 0 01FFAAAA00
+[PASS] Expected: 0 00FFFF0000 / Got: 0 00FFFF0000
+[PASS] Expected: 0 01FF00 / Got: 0 01FF00
 [PASS] Expected: 0 02000000 / Got: 0 02000000
-Error on stf test
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue561-4-bmv2.p4 with p4/test/stf/v1model/issue561-4-bmv2.stf
 [PASS] Expected: 0 00AAAA0000 / Got: 0 00AAAA0000
@@ -956,4 +956,4 @@ Run success
 Parser on file: [PASS] 179/179 (100.00%) [FAIL] 0/179 (0.00%)
 Typecheck: [PASS] 178/179 (99.44%) [FAIL] 1/179 (0.56%)
 Instantiate: [PASS] 178/178 (100.00%) [FAIL] 0/178 (0.00%)
-Run: [PASS] 147/178 (82.58%) [FAIL] 31/178 (17.42%)
+Run: [PASS] 149/178 (83.71%) [FAIL] 29/178 (16.29%)
