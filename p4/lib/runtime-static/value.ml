@@ -60,8 +60,8 @@ let rec pp ?(level = 0) fmt value =
       F.fprintf fmt "struct %a {\n%a\n%s}" P.pp_id' id
         (pp_pairs ~level:(level + 1) P.pp_member' pp ~rel:Eq ~sep:SemicolonNl)
         fields (indent level)
-  | HeaderV (id, _valid, fields) ->
-      F.fprintf fmt "header %a {\n%a\n%s}" P.pp_id' id
+  | HeaderV (id, valid, fields) ->
+      F.fprintf fmt "header %a (%b) {\n%a\n%s}" P.pp_id' id valid
         (pp_pairs ~level:(level + 1) P.pp_member' pp ~rel:Eq ~sep:SemicolonNl)
         fields (indent level)
   | UnionV (id, fields) ->

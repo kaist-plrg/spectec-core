@@ -4212,7 +4212,7 @@ and type_parser_states (_cursor : Ctx.cursor) (ctx : Ctx.t)
     "(type_parser_states) a \"start\" state must exist";
   check
     ((not (List.mem "accept" labels)) && not (List.mem "reject" labels))
-    "(type_parser_states) \"accpet\" and \"reject\" states areerved";
+    "(type_parser_states) \"accpet\" and \"reject\" states are reserved";
   let labels = "accept" :: "reject" :: labels in
   WF.check_distinct_names labels;
   let ctx' = Ctx.set_localkind Ctx.ParserState ctx in

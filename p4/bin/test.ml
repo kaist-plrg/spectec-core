@@ -29,6 +29,7 @@ exception TestParseRoundtripErr of stat
 exception TestCheckErr of string * Util.Source.info * stat
 exception TestCheckNegErr of stat
 exception TestInstErr of string * Util.Source.info * stat
+exception TestParseStfErr of string * stat
 exception TestInterpErr of string * Util.Source.info * stat
 exception TestStfErr of stat
 
@@ -83,12 +84,12 @@ let parse_test stat includes filename =
     stat
   with
   | TestParseFileErr (msg, info, stat) ->
-      Format.asprintf "Error on file: %a\n%s" Util.Source.pp info msg
+      Format.asprintf "Error on file parser: %a\n%s" Util.Source.pp info msg
       |> print_endline;
       stat.fail_parse_file <- stat.fail_parse_file + 1;
       stat
   | TestParseStringErr (msg, info, stat) ->
-      Format.asprintf "Error on string: %a\n%s" Util.Source.pp info msg
+      Format.asprintf "Error on string parser: %a\n%s" Util.Source.pp info msg
       |> print_endline;
       stat.fail_parse_string <- stat.fail_parse_string + 1;
       stat
@@ -139,7 +140,7 @@ let typecheck_test stat includes mode filename =
     stat
   with
   | TestParseFileErr (msg, info, stat) ->
-      Format.asprintf "Error on file: %a\n%s" Util.Source.pp info msg
+      Format.asprintf "Error on parser: %a\n%s" Util.Source.pp info msg
       |> print_endline;
       stat.fail_parse_file <- stat.fail_parse_file + 1;
       stat
@@ -210,7 +211,7 @@ let instantiate_test stat includes filename =
     stat
   with
   | TestParseFileErr (msg, info, stat) ->
-      Format.asprintf "Error on file: %a\n%s" Util.Source.pp info msg
+      Format.asprintf "Error on parser: %a\n%s" Util.Source.pp info msg
       |> print_endline;
       stat.fail_parse_file <- stat.fail_parse_file + 1;
       stat
@@ -266,7 +267,9 @@ let run stat (module Driver : Exec.Driver.DRIVER) includes filename stfname =
     let pass = Driver.run cenv fenv venv sto stmts_stf in
     if not pass then raise (TestStfErr stat);
     stat
-  with InterpErr (msg, info) -> raise (TestInterpErr (msg, info, stat))
+  with
+  | StfErr msg -> raise (TestParseStfErr (msg, stat))
+  | InterpErr (msg, info) -> raise (TestInterpErr (msg, info, stat))
 
 let run_test stat (module Driver : Exec.Driver.DRIVER) includes filename stfname
     =
@@ -276,7 +279,7 @@ let run_test stat (module Driver : Exec.Driver.DRIVER) includes filename stfname
     stat
   with
   | TestParseFileErr (msg, info, stat) ->
-      Format.asprintf "Error on file: %a\n%s" Util.Source.pp info msg
+      Format.asprintf "Error on parser: %a\n%s" Util.Source.pp info msg
       |> print_endline;
       stat.fail_parse_file <- stat.fail_parse_file + 1;
       stat
@@ -289,6 +292,10 @@ let run_test stat (module Driver : Exec.Driver.DRIVER) includes filename stfname
       Format.asprintf "Error on instantiate: %a\n%s" Util.Source.pp info msg
       |> print_endline;
       stat.fail_instantiate <- stat.fail_instantiate + 1;
+      stat
+  | TestParseStfErr (msg, stat) ->
+      Format.asprintf "Error on stf parser:\n%s" msg |> print_endline;
+      stat.fail_run <- stat.fail_run + 1;
       stat
   | TestInterpErr (msg, info, stat) ->
       Format.asprintf "Error on run: %a\n%s" Util.Source.pp info msg

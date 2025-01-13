@@ -519,7 +519,8 @@ Error on run: File p4/test/program/well-typed/header-stack-ops-bmv2.p4, line 62,
 Run success
 
 >>> Running run test on p4/test/program/well-typed/ipv6-switch-ml-bmv2.p4 with p4/test/stf/v1model/ipv6-switch-ml-bmv2.stf
-Error: unknown error
+Error on stf parser:
+parser error
 
 >>> Running run test on p4/test/program/well-typed/issue-2123-2-bmv2.p4 with p4/test/stf/v1model/issue-2123-2-bmv2.stf
 [PASS] Expected: 3 E0FFFFFFFFFFFFFFFFFFFFFF07FF00 / Got: 3 E0FFFFFFFFFFFFFFFFFFFFFF07FF00
