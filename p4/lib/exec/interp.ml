@@ -6,10 +6,12 @@ module F = Format
 module Value = Runtime_static.Value
 module LValue = Runtime_static.Lvalue
 module Numerics = Runtime_static.Numerics
+module State = Runtime_dynamic.State
 module Func = Runtime_dynamic.Func
 module Obj = Runtime_dynamic.Object
 module Envs = Runtime_dynamic.Envs
 module TEnv = Envs.TEnv
+module SEnv = Envs.SEnv
 module FEnv = Envs.FEnv
 module Sto = Envs.Sto
 open Util.Source
@@ -642,20 +644,27 @@ module Make (Arch : ARCH) : INTERP = struct
   and eval_func_call_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : var)
       (targs : typ list) (args : arg list) : Ctx.t * Sig.t =
     let ctx, sign = eval_func_call cursor ctx var_func targs args in
-    match sign with Cont | Ret _ -> (ctx, Cont) | Exit -> (ctx, Exit)
+    match sign with
+    | Cont | Ret _ -> (ctx, Cont)
+    | Exit -> (ctx, Exit)
+    | _ -> assert false
 
   and eval_method_call_stmt (cursor : Ctx.cursor) (ctx : Ctx.t)
       (expr_base : expr) (member : member) (targs : typ list) (args : arg list)
       : Ctx.t * Sig.t =
     let ctx, sign = eval_method_call cursor ctx expr_base member targs args in
-    match sign with Cont | Ret _ -> (ctx, Cont) | Exit -> (ctx, Exit)
+    match sign with
+    | Cont | Ret _ | Trans `Accept -> (ctx, Cont)
+    | Trans (`Reject value) -> (ctx, Trans (`Reject value))
+    | Exit -> (ctx, Exit)
+    | _ -> assert false
 
   and eval_trans_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_label : expr) :
       Ctx.t * Sig.t =
     let ctx, value_label = eval_expr cursor ctx expr_label in
     let label = Value.get_state value_label in
-    let var_state = L.Current (label $ no_info) $ no_info in
-    eval_func_call cursor ctx var_state [] []
+    let sign = Sig.Trans (`State label) in
+    (ctx, sign)
 
   and eval_decl_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : decl) :
       Ctx.t * Sig.t =
@@ -700,6 +709,30 @@ module Make (Arch : ARCH) : INTERP = struct
           (ctx, value)
     in
     Ctx.add_value cursor id.it value ctx
+
+  (* Parser state machine evaluation *)
+
+  and eval_parser_state_machine (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (sign : Sig.t) : Ctx.t * Sig.t =
+    assert (cursor = Ctx.Block);
+    match sign with
+    | Trans (`State id) ->
+        let state = Ctx.find_state cursor id ctx in
+        let ctx, sign = eval_parser_state cursor ctx state in
+        eval_parser_state_machine cursor ctx sign
+    | _ -> (ctx, sign)
+
+  and eval_parser_state (cursor : Ctx.cursor) (ctx : Ctx.t) (state : State.t) :
+      Ctx.t * Sig.t =
+    assert (cursor = Ctx.Block);
+    let ctx, sign =
+      let stmt_block = BlockS { block = state } $ no_info in
+      eval_stmt Ctx.Local ctx Sig.Cont stmt_block
+    in
+    match sign with
+    | Cont -> (ctx, Sig.Trans (`Reject (Value.ErrV "noError")))
+    | Trans _ -> (ctx, sign)
+    | _ -> assert false
 
   (* Table evaluation *)
 
@@ -1023,24 +1056,26 @@ module Make (Arch : ARCH) : INTERP = struct
         eval_inter_extern_method_call cursor_caller ctx_caller ctx_callee oid
           fid tparams params targs args args_default
     (* Callee enters block layer, then into local layer *)
-    | ParserApplyMethodF (params, venv, fenv, locals, block) ->
+    | ParserApplyMethodF (params, senv, locals) ->
         assert (targs = []);
         let ctx_callee =
-          let venv = VEnv.extend_nodup ctx_callee.block.venv venv in
-          { ctx_callee with block = { tenv = TEnv.empty; venv; fenv } }
+          let tenv = TEnv.empty in
+          let venv = VEnv.empty in
+          let fenv = FEnv.empty in
+          { ctx_callee with block = { tenv; fenv; senv; venv } }
         in
-        eval_inter_apply_method_call cursor_caller ctx_caller ctx_callee params
-          locals block args args_default
+        eval_inter_parser_apply_method_call cursor_caller ctx_caller ctx_callee
+          params locals args args_default
     | ControlApplyMethodF (params, fenv, locals, block) ->
         assert (targs = []);
         let ctx_callee =
-          {
-            ctx_callee with
-            block = { tenv = TEnv.empty; venv = VEnv.empty; fenv };
-          }
+          let tenv = TEnv.empty in
+          let senv = SEnv.empty in
+          let venv = VEnv.empty in
+          { ctx_callee with block = { tenv; fenv; senv; venv } }
         in
-        eval_inter_apply_method_call cursor_caller ctx_caller ctx_callee params
-          locals block args args_default
+        eval_inter_control_apply_method_call cursor_caller ctx_caller ctx_callee
+          params locals block args args_default
     | _ ->
         F.asprintf "(TODO: eval_inter_call) %a %a" FId.pp fid (Func.pp ~level:0)
           func
@@ -1120,7 +1155,34 @@ module Make (Arch : ARCH) : INTERP = struct
     in
     (ctx_caller, sign)
 
-  and eval_inter_apply_method_call (cursor_caller : Ctx.cursor)
+  and eval_inter_parser_apply_method_call (cursor_caller : Ctx.cursor)
+      (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (params : param list)
+      (locals : decl list) (args : arg list) (args_default : id' list) :
+      Ctx.t * Sig.t =
+    let params, args, _params_default, _args_default =
+      align_params_with_args params args args_default
+    in
+    let ctx_caller, ctx_callee, lvalues =
+      copyin cursor_caller ctx_caller Ctx.Block ctx_callee params args
+    in
+    let ctx_callee = eval_decls Ctx.Block ctx_callee locals in
+    let ctx_callee =
+      ctx_callee.block.senv |> SEnv.bindings |> List.map fst
+      |> List.fold_left
+           (fun ctx_callee id ->
+             Ctx.add_value Ctx.Block id (Value.StateV id) ctx_callee)
+           ctx_callee
+    in
+    let ctx_callee, sign =
+      eval_parser_state_machine Ctx.Block ctx_callee
+        (Sig.Trans (`State "start"))
+    in
+    let ctx_caller =
+      copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
+    in
+    (ctx_caller, sign)
+
+  and eval_inter_control_apply_method_call (cursor_caller : Ctx.cursor)
       (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (params : param list)
       (locals : decl list) (block : block) (args : arg list)
       (args_default : id' list) : Ctx.t * Sig.t =
@@ -1152,9 +1214,6 @@ module Make (Arch : ARCH) : INTERP = struct
         assert (targs = []);
         eval_intra_action_call cursor_caller ctx_caller ctx_callee params block
           args args_default
-    | ParserStateF block ->
-        assert (targs = [] && args = [] && args_default = []);
-        eval_intra_parser_state_call cursor_caller ctx_caller ctx_callee block
     | TableApplyMethodF table ->
         assert (targs = [] && args = [] && args_default = []);
         let id = oid |> List.rev |> List.hd in
@@ -1182,17 +1241,6 @@ module Make (Arch : ARCH) : INTERP = struct
     let ctx_caller =
       copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
     in
-    (ctx_caller, sign)
-
-  and eval_intra_parser_state_call (_cursor_caller : Ctx.cursor)
-      (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (block : block) : Ctx.t * Sig.t
-      =
-    let ctx_callee, sign =
-      let stmt_block = BlockS { block } $ no_info in
-      eval_stmt Ctx.Local ctx_callee Sig.Cont stmt_block
-    in
-    let ctx_callee = Ctx.copy Ctx.Block ctx_callee in
-    let ctx_caller = { ctx_caller with block = ctx_callee.block } in
     (ctx_caller, sign)
 
   and eval_intra_table_apply_method_call (_cursor_caller : Ctx.cursor)

@@ -142,23 +142,8 @@ and do_instantiate_parser (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     eval_parser_states cursor ctx_apply_locals sto states
   in
   let func_apply =
-    let venv_apply =
-      VEnv.diff ctx_apply_states.block.venv ctx_apply_locals.block.venv
-    in
-    let fenv_apply = ctx_apply_states.block.fenv in
-    let body_apply =
-      let stmt_apply =
-        TransS
-          {
-            expr_label =
-              VarE { var = L.Current ("start" $ no_info) $ no_info }
-              $$ (no_info, { typ = Types.StateT; ctk = Ctk.DYN });
-          }
-        $ no_info
-      in
-      ([ stmt_apply ], []) $ no_info
-    in
-    Func.ParserApplyMethodF (params, venv_apply, fenv_apply, decls, body_apply)
+    let senv_apply = ctx_apply_states.block.senv in
+    Func.ParserApplyMethodF (params, senv_apply, decls)
   in
   let ctx_parser =
     let fid_apply = FId.to_fid ("apply" $ no_info) params in
@@ -646,24 +631,22 @@ and eval_parser_state_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
   let label, block, _annos = state.it in
   let ctx, sto, block = eval_block Ctx.Local ctx sto block in
   let value_state = Value.StateV label.it in
-  let func_state = Func.ParserStateF block in
+  let state = block in
   let ctx =
     let id_state = label.it in
-    let fid_state = FId.to_fid label [] in
     Ctx.add_value cursor id_state value_state ctx
-    |> Ctx.add_func_non_overload cursor fid_state func_state
+    |> Ctx.add_state cursor id_state state
   in
   (ctx, sto)
 
 and eval_parser_state_builtin_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
     (label : state_label) : Ctx.t =
   let value_state = Value.StateV label.it in
-  let func_state = Func.ParserStateF (([], []) $ no_info) in
+  let state = ([], []) $ no_info in
   let ctx =
     let id_state = label.it in
-    let fid_state = FId.to_fid label [] in
     Ctx.add_value cursor id_state value_state ctx
-    |> Ctx.add_func_non_overload cursor fid_state func_state
+    |> Ctx.add_state cursor id_state state
   in
   ctx
 

@@ -11,6 +11,10 @@ module VEnv = MakeIdEnv (Value)
 
 module TEnv = MakeTIdEnv (Type)
 
+(* Environment for parser states *)
+
+module SEnv = MakeIdEnv (State)
+
 (* Environment for functions *)
 
 module FEnv = MakeFIdEnv (Func)

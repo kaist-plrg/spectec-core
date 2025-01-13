@@ -1,5 +1,6 @@
 open Domain.Dom
 open Il.Ast
+module F = Format
 module Value = Runtime_static.Value
 open Util.Pp
 
@@ -9,65 +10,51 @@ type t =
   | ExternFuncF of tparam list * param list
   | ExternMethodF of tparam list * param list * block option
   | ExternAbstractMethodF of tparam list * param list
-  | ParserApplyMethodF of
-      param list * Value.t IdMap.t * t FIdMap.t * decl list * block
+  | ParserApplyMethodF of param list * State.t IdMap.t * decl list
   | ControlApplyMethodF of param list * t FIdMap.t * decl list * block
   | BuiltinMethodF of param list
   | TableApplyMethodF of table
-  | ParserStateF of block
 
 let rec pp ?(level = 0) fmt = function
   | ActionF (params, block) ->
-      Format.fprintf fmt "ActionF%a %a"
+      F.fprintf fmt "ActionF%a %a"
         (Il.Pp.pp_params ~level:(level + 1))
         params
         (Il.Pp.pp_block ~level:(level + 1))
         block
   | FuncF (tparams, params, block) ->
-      Format.fprintf fmt "FuncF%a%a %a" Il.Pp.pp_tparams tparams
+      F.fprintf fmt "FuncF%a%a %a" Il.Pp.pp_tparams tparams
         (Il.Pp.pp_params ~level:(level + 1))
         params
         (Il.Pp.pp_block ~level:(level + 1))
         block
   | ExternFuncF (tparams, params) ->
-      Format.fprintf fmt "ExternFuncF%a %a" Il.Pp.pp_tparams tparams
+      F.fprintf fmt "ExternFuncF%a %a" Il.Pp.pp_tparams tparams
         (Il.Pp.pp_params ~level:(level + 1))
         params
   | ExternMethodF (tparams, params, block) ->
-      Format.fprintf fmt "ExternMethodF%a %a %a" Il.Pp.pp_tparams tparams
+      F.fprintf fmt "ExternMethodF%a %a %a" Il.Pp.pp_tparams tparams
         (Il.Pp.pp_params ~level:(level + 1))
         params
         (pp_option (Il.Pp.pp_block ~level:(level + 1)))
         block
   | ExternAbstractMethodF (tparams, params) ->
-      Format.fprintf fmt "ExternAbstractMethodF%a %a" Il.Pp.pp_tparams tparams
+      F.fprintf fmt "ExternAbstractMethodF%a %a" Il.Pp.pp_tparams tparams
         (Il.Pp.pp_params ~level:(level + 1))
         params
-  | ParserApplyMethodF (params, venv, fenv, locals, block) ->
-      Format.fprintf fmt
-        "ParserApplyMethodF%a {\n\
-         %svenv : %a\n\
-         %sfenv : %a\n\
-         %slocals :\n\
-         %a\n\
-         %s%a\n\
-         %s}"
+  | ParserApplyMethodF (params, senv, locals) ->
+      F.fprintf fmt "ParserApplyMethodF%a {\n%ssenv : %a\n%slocals :\n%a\n%s}"
         (Il.Pp.pp_params ~level:(level + 1))
         params
         (indent (level + 1))
-        (IdMap.pp ~level:(level + 1) Value.pp)
-        venv
-        (indent (level + 1))
-        (FIdMap.pp ~level:(level + 1) pp)
-        fenv
+        (IdMap.pp ~level:(level + 1) State.pp)
+        senv
         (indent (level + 1))
         (Il.Pp.pp_decls ~level:(level + 2))
         locals
         (indent (level + 1))
-        (Il.Pp.pp_block ~level:(level + 1))
-        block (indent level)
   | ControlApplyMethodF (params, fenv, locals, block) ->
-      Format.fprintf fmt
+      F.fprintf fmt
         "ControlApplyMethodF%a {\n%sfenv : %a\n%slocals :\n%a\n%s%a\n%s}"
         (Il.Pp.pp_params ~level:(level + 1))
         params
@@ -81,17 +68,13 @@ let rec pp ?(level = 0) fmt = function
         (Il.Pp.pp_block ~level:(level + 1))
         block (indent level)
   | BuiltinMethodF params ->
-      Format.fprintf fmt "BuiltinMethodF%a"
+      F.fprintf fmt "BuiltinMethodF%a"
         (Il.Pp.pp_params ~level:(level + 1))
         params
   | TableApplyMethodF table ->
-      Format.fprintf fmt "TableApplyMethodF %a"
+      F.fprintf fmt "TableApplyMethodF %a"
         (Il.Pp.pp_table ~level:(level + 1))
         table
-  | ParserStateF block ->
-      Format.fprintf fmt "ParserStateF %a"
-        (Il.Pp.pp_block ~level:(level + 1))
-        block
 
 let eq_kind func_a func_b =
   match (func_a, func_b) with
@@ -103,7 +86,6 @@ let eq_kind func_a func_b =
   | ControlApplyMethodF _, ControlApplyMethodF _ -> true
   | BuiltinMethodF _, BuiltinMethodF _ -> true
   | TableApplyMethodF _, TableApplyMethodF _ -> true
-  | ParserStateF _, ParserStateF _ -> true
   | _ -> false
 
 let get_params = function
@@ -111,7 +93,7 @@ let get_params = function
   | FuncF (_, params, _) -> params
   | ExternFuncF (_, params) -> params
   | ExternMethodF (_, params, _) -> params
-  | ParserApplyMethodF (params, _, _, _, _) -> params
+  | ParserApplyMethodF (params, _, _) -> params
   | ControlApplyMethodF (params, _, _, _) -> params
   | BuiltinMethodF params -> params
   | _ -> []

@@ -21,14 +21,16 @@ type cursor = Global | Block | Local
 (* Defining each layer *)
 
 type gt = { cenv : Envs.CEnv.t; fenv : Envs.FEnv.t; venv : Envs.VEnv.t }
-type bt = { fenv : Envs.FEnv.t; venv : Envs.VEnv.t }
+type bt = { fenv : Envs.FEnv.t; senv : Envs.SEnv.t; venv : Envs.VEnv.t }
 type lt = { venvs : Envs.VEnv.t list }
 type t = { path : Domain.Dom.OId.t; global : gt; block : bt; local : lt }
 
 let empty_gt =
   { cenv = Envs.CEnv.empty; fenv = Envs.FEnv.empty; venv = Envs.VEnv.empty }
 
-let empty_bt = { fenv = Envs.FEnv.empty; venv = Envs.VEnv.empty }
+let empty_bt =
+  { fenv = Envs.FEnv.empty; senv = Envs.SEnv.empty; venv = Envs.VEnv.empty }
+
 let empty_lt = { venvs = [] }
 let empty = { path = []; global = empty_gt; block = empty_bt; local = empty_lt }
 
@@ -85,6 +87,14 @@ let add_func_overload cursor fid func ctx =
       { ctx with block = { ctx.block with fenv } }
   | Local -> assert false
 
+let add_state cursor id state ctx =
+  match cursor with
+  | Block ->
+      let senv = ctx.block.senv in
+      let senv = Envs.SEnv.add_nodup id state senv in
+      { ctx with block = { ctx.block with senv } }
+  | _ -> assert false
+
 let add_value cursor id value ctx =
   match cursor with
   | Global ->
@@ -128,6 +138,8 @@ let rec find_value_opt cursor id ctx =
           | None -> Envs.VEnv.find_opt id venv)
         None venvs
       |> find_cont find_value_opt Block id ctx
+
+let find_value cursor id ctx = find_value_opt cursor id ctx |> Option.get
 
 (* Finder for constructor *)
 

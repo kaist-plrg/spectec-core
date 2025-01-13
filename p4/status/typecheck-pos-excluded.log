@@ -10,39 +10,39 @@ Error on typecheck: File p4/test/program/well-typed-excluded/future/concat-strin
 (coerce_types_binary_numeric) cannot coerce types string and string
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop1.p4
-Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop1.p4, line 23, characters 16-17
+Error on parser: File p4/test/program/well-typed-excluded/future/forloop/forloop1.p4, line 23, characters 16-17
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop2.p4
-Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop2.p4, line 16, characters 9-12
+Error on parser: File p4/test/program/well-typed-excluded/future/forloop/forloop2.p4, line 16, characters 9-12
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop3.p4
-Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop3.p4, line 18, characters 13-16
+Error on parser: File p4/test/program/well-typed-excluded/future/forloop/forloop3.p4, line 18, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop4.p4
-Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop4.p4, line 22, characters 13-16
+Error on parser: File p4/test/program/well-typed-excluded/future/forloop/forloop4.p4, line 22, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop5.p4
-Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop5.p4, line 18, characters 13-16
+Error on parser: File p4/test/program/well-typed-excluded/future/forloop/forloop5.p4, line 18, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop5a.p4
-Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop5a.p4, line 18, characters 13-16
+Error on parser: File p4/test/program/well-typed-excluded/future/forloop/forloop5a.p4, line 18, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop6.p4
-Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop6.p4, line 19, characters 13-16
+Error on parser: File p4/test/program/well-typed-excluded/future/forloop/forloop6.p4, line 19, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/forloop7.p4
-Error on file: File p4/test/program/well-typed-excluded/future/forloop/forloop7.p4, line 18, characters 13-16
+Error on parser: File p4/test/program/well-typed-excluded/future/forloop/forloop7.p4, line 18, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/forloop/issue4739.p4
-Error on file: File p4/test/program/well-typed-excluded/future/forloop/issue4739.p4, line 51, characters 13-16
+Error on parser: File p4/test/program/well-typed-excluded/future/forloop/issue4739.p4, line 51, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/future/generic-parser-control/functors6.p4
@@ -883,7 +883,7 @@ Error on typecheck: File p4/test/program/well-typed-excluded/unsupported/custom-
 (type_table_custom) custom element counters is undefined
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4
-Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4, line 23, characters 4-14
+Error on parser: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4, line 23, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/init_ebpf.p4
@@ -893,19 +893,19 @@ Error on typecheck: File p4/test/program/well-typed-excluded/unsupported/custom-
   } cannot be instantiated in TableApplyMethod
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2791_ebpf.p4
-Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2791_ebpf.p4, line 7, characters 4-14
+Error on parser: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2791_ebpf.p4, line 7, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2793_ebpf.p4
-Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2793_ebpf.p4, line 24, characters 4-14
+Error on parser: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2793_ebpf.p4, line 24, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2816-1_ebpf.p4
-Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2816-1_ebpf.p4, line 24, characters 4-14
+Error on parser: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2816-1_ebpf.p4, line 24, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2816_ebpf.p4
-Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2816_ebpf.p4, line 7, characters 4-14
+Error on parser: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue2816_ebpf.p4, line 7, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue297-bmv2.p4
@@ -921,7 +921,7 @@ Error on typecheck: File p4/test/program/well-typed-excluded/unsupported/custom-
 (type_table_custom) custom element counters is undefined
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue870_ebpf.p4
-Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue870_ebpf.p4, line 24, characters 4-14
+Error on parser: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/issue870_ebpf.p4, line 24, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/junk-prop-bmv2.p4
@@ -929,15 +929,15 @@ Error on typecheck: File p4/test/program/well-typed-excluded/unsupported/custom-
 (type_table_custom) custom element junk is undefined
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/key-issue-1020_ebpf.p4
-Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/key-issue-1020_ebpf.p4, line 7, characters 4-14
+Error on parser: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/key-issue-1020_ebpf.p4, line 7, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/key_ebpf.p4
-Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/key_ebpf.p4, line 7, characters 4-14
+Error on parser: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/key_ebpf.p4, line 7, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/lpm_ebpf.p4
-Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/lpm_ebpf.p4, line 24, characters 4-14
+Error on parser: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/lpm_ebpf.p4, line 24, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/named_meter_1-bmv2.p4
@@ -1041,27 +1041,27 @@ Error on typecheck: File p4/test/program/well-typed-excluded/unsupported/custom-
 (type_table_custom) custom element psa_direct_meter is undefined
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/stack_ebpf.p4
-Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/stack_ebpf.p4, line 24, characters 4-14
+Error on parser: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/stack_ebpf.p4, line 24, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/switch_ebpf.p4
-Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/switch_ebpf.p4, line 24, characters 4-14
+Error on parser: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/switch_ebpf.p4, line 24, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/ternary_ebpf.p4
-Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/ternary_ebpf.p4, line 22, characters 4-14
+Error on parser: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/ternary_ebpf.p4, line 22, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/test_ebpf.p4
-Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/test_ebpf.p4, line 24, characters 4-14
+Error on parser: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/test_ebpf.p4, line 24, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/two_ebpf.p4
-Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/two_ebpf.p4, line 23, characters 4-14
+Error on parser: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/two_ebpf.p4, line 23, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/custom-table-element/valid_ebpf.p4
-Error on file: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/valid_ebpf.p4, line 8, characters 4-14
+Error on parser: File p4/test/program/well-typed-excluded/unsupported/custom-table-element/valid_ebpf.p4, line 8, characters 4-14
 parser error
 
 >>> Running typecheck test on p4/test/program/well-typed-excluded/unsupported/optional-param/gauntlet_optional-bmv2.p4

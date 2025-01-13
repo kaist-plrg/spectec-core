@@ -22,7 +22,7 @@ Error on typecheck: File p4/test/program/ill-typed/action-bind3.p4, line 21, cha
 (type_call_action_partial) a expects 1 arguments but 2 were given
 
 >>> Running typecheck test on p4/test/program/ill-typed/action-named-default-bmv2.p4
-Error on file: File p4/test/program/ill-typed/action-named-default-bmv2.p4, line 56, characters 11-18
+Error on parser: File p4/test/program/ill-typed/action-named-default-bmv2.p4, line 56, characters 11-18
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/assign.p4
@@ -64,11 +64,11 @@ Error on typecheck: File p4/test/program/ill-typed/const_e.p4, line 18, characte
 (check_ctk) I() is not a local compile-time known expression
 
 >>> Running typecheck test on p4/test/program/ill-typed/constructor1_e.p4
-Error on file: File p4/test/program/ill-typed/constructor1_e.p4, line 18, characters 8-9
+Error on parser: File p4/test/program/ill-typed/constructor1_e.p4, line 18, characters 8-9
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/constructor2_e.p4
-Error on file: File p4/test/program/ill-typed/constructor2_e.p4, line 18, characters 5-6
+Error on parser: File p4/test/program/ill-typed/constructor2_e.p4, line 18, characters 5-6
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/constructor3_e.p4
@@ -80,7 +80,7 @@ Error on typecheck: File p4/test/program/ill-typed/constructor_e.p4, from line 1
 (type_extern_object_decl) method names must not overlap with the object name
 
 >>> Running typecheck test on p4/test/program/ill-typed/control-inline.p4
-Error on file: File p4/test/program/ill-typed/control-inline.p4, line 34, characters 10-11
+Error on parser: File p4/test/program/ill-typed/control-inline.p4, line 34, characters 10-11
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/control-verify.p4
@@ -88,7 +88,7 @@ Error on typecheck: File p4/test/program/ill-typed/control-verify.p4, line 7, ch
 (type_call_func_stmt) verify must be invoked within a parser
 
 >>> Running typecheck test on p4/test/program/ill-typed/default-initializer-err.p4
-Error on file: 
+Error on parser: 
 transform error
 
 >>> Running typecheck test on p4/test/program/ill-typed/default-last-switch.p4
@@ -163,7 +163,7 @@ Error on typecheck: File p4/test/program/ill-typed/equality-fail.p4, line 23, ch
   })<>
 
 >>> Running typecheck test on p4/test/program/ill-typed/expression_e.p4
-Error on file: File p4/test/program/ill-typed/expression_e.p4, line 21, characters 19-20
+Error on parser: File p4/test/program/ill-typed/expression_e.p4, line 21, characters 19-20
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/extern.p4
@@ -205,11 +205,11 @@ Error on typecheck: File p4/test/program/ill-typed/generic1_e.p4, line 21, chara
   }<T> expects 1 type arguments but 0 were given
 
 >>> Running typecheck test on p4/test/program/ill-typed/globalVar_e.p4
-Error on file: File p4/test/program/ill-typed/globalVar_e.p4, line 16, characters 5-6
+Error on parser: File p4/test/program/ill-typed/globalVar_e.p4, line 16, characters 5-6
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/header1_e.p4
-Error on file: File p4/test/program/ill-typed/header1_e.p4, line 18, characters 4-5
+Error on parser: File p4/test/program/ill-typed/header1_e.p4, line 18, characters 4-5
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/header2_e.p4
@@ -257,7 +257,7 @@ Error on typecheck: File p4/test/program/ill-typed/interface_e.p4, line 21, char
 (type_instantiation) instance X not found
 
 >>> Running typecheck test on p4/test/program/ill-typed/invalid-invalid.p4
-Error on file: File p4/test/program/ill-typed/invalid-invalid.p4, line 2, characters 0-0
+Error on parser: File p4/test/program/ill-typed/invalid-invalid.p4, line 2, characters 0-0
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1006-1.p4
@@ -269,7 +269,7 @@ Error on typecheck: File p4/test/program/ill-typed/issue1059.p4, line 9, charact
 (type_expr_acc_expr) Member x does not exist in x
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1202.p4
-Error on file: File p4/test/program/ill-typed/issue1202.p4, line 1, characters 18-21
+Error on parser: File p4/test/program/ill-typed/issue1202.p4, line 1, characters 18-21
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1230.p4
@@ -293,7 +293,7 @@ Error on typecheck: File p4/test/program/ill-typed/issue1331.p4, line 26, charac
         })<>) cannot be called from ControlApplyMethod
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1336.p4
-Error on file: File p4/test/program/ill-typed/issue1336.p4, line 3, characters 14-15
+Error on parser: File p4/test/program/ill-typed/issue1336.p4, line 3, characters 14-15
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue1542.p4
@@ -433,7 +433,7 @@ Error on typecheck: File p4/test/program/ill-typed/issue2525.p4, from line 64 ch
 (type_switch_table_cases') default label must be the last switch label
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2544_recursive.p4
-Error on file: File p4/test/program/ill-typed/issue2544_recursive.p4, line 2, characters 11-12
+Error on parser: File p4/test/program/ill-typed/issue2544_recursive.p4, line 2, characters 11-12
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue2544_self_ref.p4
@@ -505,7 +505,7 @@ Error on typecheck: File p4/test/program/ill-typed/issue3197-e.p4, line 2, chara
 (type_func) function f not found
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3210.p4
-Error on file: File p4/test/program/ill-typed/issue3210.p4, line 9, characters 5-6
+Error on parser: File p4/test/program/ill-typed/issue3210.p4, line 9, characters 5-6
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3221.p4
@@ -521,11 +521,11 @@ Error on typecheck: File p4/test/program/ill-typed/issue3264.p4, line 4, charact
 (type_var_expr) this is a free identifier
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3271-1.p4
-Error on file: File p4/test/program/ill-typed/issue3271-1.p4, line 23, characters 7-8
+Error on parser: File p4/test/program/ill-typed/issue3271-1.p4, line 23, characters 7-8
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3271.p4
-Error on file: File p4/test/program/ill-typed/issue3271.p4, line 3, characters 7-8
+Error on parser: File p4/test/program/ill-typed/issue3271.p4, line 3, characters 7-8
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3282.p4
@@ -533,7 +533,7 @@ Error on typecheck: File p4/test/program/ill-typed/issue3282.p4, line 6, charact
 (type_instantiation_expr) cannot instantiate an abstract extern object at expression level
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3285.p4
-Error on file: 
+Error on parser: 
 transform error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue3293.p4
@@ -755,7 +755,7 @@ Error on typecheck: File p4/test/program/ill-typed/issue4140.p4, line 7, charact
 (add_rtype) main is reserved for a package instance at the top level
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue4142.p4
-Error on file: 
+Error on parser: 
 transform error
 
 >>> Running typecheck test on p4/test/program/ill-typed/issue435.p4
@@ -838,15 +838,15 @@ Error on typecheck: File p4/test/program/ill-typed/list-error.p4, line 9, charac
 (check_eq_typ_alpha) Types (list<T><T>)<bit<16>> and (list<T><T>)<bit<32>> are not equal
 
 >>> Running typecheck test on p4/test/program/ill-typed/loop1-err.p4
-Error on file: File p4/test/program/ill-typed/loop1-err.p4, line 3, characters 9-10
+Error on parser: File p4/test/program/ill-typed/loop1-err.p4, line 3, characters 9-10
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/loop2-err.p4
-Error on file: File p4/test/program/ill-typed/loop2-err.p4, line 5, characters 13-16
+Error on parser: File p4/test/program/ill-typed/loop2-err.p4, line 5, characters 13-16
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/loop3-err.p4
-Error on file: File p4/test/program/ill-typed/loop3-err.p4, line 51, characters 15-17
+Error on parser: File p4/test/program/ill-typed/loop3-err.p4, line 51, characters 15-17
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/methodArgDontcare.p4
@@ -854,7 +854,7 @@ Error on typecheck: File p4/test/program/ill-typed/methodArgDontcare.p4, line 7,
 (infer_targs) type __WILD_0 cannot be inferred
 
 >>> Running typecheck test on p4/test/program/ill-typed/minWidth.p4
-Error on file: 
+Error on parser: 
 transform error
 
 >>> Running typecheck test on p4/test/program/ill-typed/missing_actions.p4
@@ -902,7 +902,7 @@ Error on typecheck: File p4/test/program/ill-typed/not_bound.p4, line 36, charac
 (type_func) function set_nhop not found
 
 >>> Running typecheck test on p4/test/program/ill-typed/p_e.p4
-Error on file: File p4/test/program/ill-typed/p_e.p4, line 18, characters 0-0
+Error on parser: File p4/test/program/ill-typed/p_e.p4, line 18, characters 0-0
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/package.p4
@@ -1008,7 +1008,7 @@ Error on typecheck: File p4/test/program/ill-typed/serenum-typedef.p4, line 8, c
 (coerce_type) cannot coerce type int to typedef typedef typedef type Base_t (bit<16>)
 
 >>> Running typecheck test on p4/test/program/ill-typed/shift_e.p4
-Error on file: File p4/test/program/ill-typed/shift_e.p4, line 20, characters 24-25
+Error on parser: File p4/test/program/ill-typed/shift_e.p4, line 20, characters 24-25
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/signed.p4
@@ -1089,11 +1089,11 @@ Error on typecheck: File p4/test/program/ill-typed/structure-valued-expr-errs-1.
   })<>
 
 >>> Running typecheck test on p4/test/program/ill-typed/structure-valued-expr-errs-2.p4
-Error on file: File p4/test/program/ill-typed/structure-valued-expr-errs-2.p4, line 106, characters 27-28
+Error on parser: File p4/test/program/ill-typed/structure-valued-expr-errs-2.p4, line 106, characters 27-28
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/structured-annotation-e.p4
-Error on file: File p4/test/program/ill-typed/structured-annotation-e.p4, line 1, characters 22-23
+Error on parser: File p4/test/program/ill-typed/structured-annotation-e.p4, line 1, characters 22-23
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/table-entries-decl-order.p4
@@ -1123,7 +1123,7 @@ Error on typecheck: File p4/test/program/ill-typed/table-entries-optional-2-bmv2
 (type_table_entry_keyset') match_kind optional cannot use mask expression
 
 >>> Running typecheck test on p4/test/program/ill-typed/table-entries-outside-table.p4
-Error on file: File p4/test/program/ill-typed/table-entries-outside-table.p4, line 68, characters 10-17
+Error on parser: File p4/test/program/ill-typed/table-entries-outside-table.p4, line 68, characters 10-17
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/table-entries-range.p4
@@ -1139,7 +1139,7 @@ Error on typecheck: File p4/test/program/ill-typed/template_e.p4, line 16, chara
 (check_distinct_names) names are not distinct
 
 >>> Running typecheck test on p4/test/program/ill-typed/tuple-left.p4
-Error on file: File p4/test/program/ill-typed/tuple-left.p4, line 21, characters 11-12
+Error on parser: File p4/test/program/ill-typed/tuple-left.p4, line 21, characters 11-12
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/tuple-newtype.p4
@@ -1161,11 +1161,11 @@ Error on typecheck: File p4/test/program/ill-typed/type-field.p4, line 59, chara
 }
 
 >>> Running typecheck test on p4/test/program/ill-typed/type-in-expr-lex0.p4
-Error on file: File p4/test/program/ill-typed/type-in-expr-lex0.p4, line 8, characters 25-26
+Error on parser: File p4/test/program/ill-typed/type-in-expr-lex0.p4, line 8, characters 25-26
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/type-in-expr-lex1.p4
-Error on file: File p4/test/program/ill-typed/type-in-expr-lex1.p4, line 8, characters 21-22
+Error on parser: File p4/test/program/ill-typed/type-in-expr-lex1.p4, line 8, characters 21-22
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/type-in-expr.p4
@@ -1189,19 +1189,19 @@ Error on typecheck: File p4/test/program/ill-typed/typedef-and-type-definitions.
 (check_valid_typ_nesting) invalid nesting of int inside type intT_t (int)
 
 >>> Running typecheck test on p4/test/program/ill-typed/underscore1_e.p4
-Error on file: File p4/test/program/ill-typed/underscore1_e.p4, line 17, characters 8-9
+Error on parser: File p4/test/program/ill-typed/underscore1_e.p4, line 17, characters 8-9
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/underscore2_e.p4
-Error on file: File p4/test/program/ill-typed/underscore2_e.p4, line 19, characters 12-13
+Error on parser: File p4/test/program/ill-typed/underscore2_e.p4, line 19, characters 12-13
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/underscore3_e.p4
-Error on file: File p4/test/program/ill-typed/underscore3_e.p4, line 16, characters 10-11
+Error on parser: File p4/test/program/ill-typed/underscore3_e.p4, line 16, characters 10-11
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/underscore_e.p4
-Error on file: File p4/test/program/ill-typed/underscore_e.p4, line 16, characters 12-13
+Error on parser: File p4/test/program/ill-typed/underscore_e.p4, line 16, characters 12-13
 parser error
 
 >>> Running typecheck test on p4/test/program/ill-typed/virtual1.p4

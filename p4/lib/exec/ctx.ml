@@ -6,6 +6,7 @@ module Envs_static = Runtime_static.Envs
 module Envs_dynamic = Runtime_dynamic.Envs
 module VEnv = Envs_dynamic.VEnv
 module TEnv = Envs_dynamic.TEnv
+module SEnv = Envs_dynamic.SEnv
 module FEnv = Envs_dynamic.FEnv
 module CEnv = Envs_dynamic.CEnv
 open Util.Pp
@@ -23,12 +24,15 @@ let pp_cursor fmt = function
 (* Defining each layer *)
 
 type gt = { cenv : CEnv.t; fenv : FEnv.t; venv : VEnv.t }
-type bt = { tenv : TEnv.t; fenv : FEnv.t; venv : VEnv.t }
+type bt = { tenv : TEnv.t; fenv : FEnv.t; senv : SEnv.t; venv : VEnv.t }
 type lt = { tenv : TEnv.t; venvs : VEnv.t list }
 type t = { global : gt; block : bt; local : lt }
 
 let empty_gt = { cenv = CEnv.empty; fenv = FEnv.empty; venv = VEnv.empty }
-let empty_bt = { tenv = TEnv.empty; fenv = FEnv.empty; venv = VEnv.empty }
+
+let empty_bt =
+  { tenv = TEnv.empty; fenv = FEnv.empty; senv = SEnv.empty; venv = VEnv.empty }
+
 let empty_lt = { tenv = TEnv.empty; venvs = [] }
 let empty = { global = empty_gt; block = empty_bt; local = empty_lt }
 
@@ -184,6 +188,17 @@ let rec find_typ_opt cursor id ctx =
       TEnv.find_opt id tenv |> find_cont find_typ_opt Block id ctx
 
 let find_typ cursor id ctx = find_typ_opt cursor id ctx |> Option.get
+
+(* Finder for state *)
+
+let rec find_state_opt cursor id ctx =
+  match cursor with
+  | Global -> None
+  | Block ->
+      SEnv.find_opt id ctx.block.senv |> find_cont find_state_opt Global id ctx
+  | Local -> find_state_opt Block id ctx
+
+let find_state cursor id ctx = find_state_opt cursor id ctx |> Option.get
 
 (* Finder for function *)
 
