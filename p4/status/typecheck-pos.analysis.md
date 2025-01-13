@@ -806,7 +806,20 @@ control MyC(inout hdr_t hdr, inout meta_t meta) {
 P(MyC()) main;
 ```
 
-## 11. Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this: [buitin-local-compile-time-known](../test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known)
+## \[DISCUSSED\] 11. Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this: [buitin-local-compile-time-known](../test/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known)
+
+Discussed with Andy and Nate,
+
+> You are correct that since the extern function returns an instance of an extern object, it is very similar to a constructor invocation, but it does not seem to be explicitly mentioned in any of the cases of compile-time known values today.
+> Perhaps it should be explicitly included?  At least if the current p4c allows that case generally, it is a reasonable question to ask in the LDWG.
+
+> Since it is an extern function returning an instance of an extern object, and not a constructor call, I cannot think of any reason that such an extern function (or non-constructor extern method) would be required to always return the same extern object instance on each call.
+> It might internally flip a coin and return one of two different extern objects, for example.
+> Thus without some kind of annotation like @pure or @noSideEffects on an extern function, and a restriction that all the parameters are compile-time known values, I don't think it would be reasonable to define in the spec that extern functions returning extern object instances always return a compile-time known value.
+
+Reaction:
+
+> Implementation-specific behavior of p4c.
 
 ```p4
 @pure extern HashAlgorithm_t random_hash(bool msb, bool extend);
@@ -950,7 +963,17 @@ match_kind {
 }
 ```
 
-## 3. Mask expressions for `exact` key: [mask-exact-key](../test/program/well-typed-excluded/test-clarify/mask-exact-key)
+## \[DISCUSSED\] 3. Mask expressions for `exact` key: [mask-exact-key](../test/program/well-typed-excluded/test-clarify/mask-exact-key)
+
+Discussed with Andy,
+
+> Semantically, I believe that the select key expression 8w0xde matching exactly one value is equivalent to (8w0xde &&& 8w0xff).
+> That said, such a mask is completely redundant for an exact match field, and it would only be semantically correct if the mask were equal to (2^W-1), where W is the width in bits of the field being matched.
+> If p4c accepts a ternary mask of 0xFF_00_00_00 for a 32-bit field, that seems like a bug.  The simplest check to add to p4c would simply be "always give an error if you attempt to use &&& in a match expression for an exact match field".
+
+Reaction:
+
+> Implementation-specific behavior of p4c. p4c is more permissive than the spec, but it is safe in semantic-equivalent sense.
 
 We cannot use mask expressions for `exact` key.
 This should be a negative test.
@@ -1056,7 +1079,17 @@ This is illegal, but the test case below seem to violate this.
 const int z1 = 2w1;
 ```
 
-## 9. Equality check (`==`) on a variable type: [type-variable-equality-op](../test/program/well-typed-excluded/test-clarify/type-variable-equality-op)
+## \[DISCUSSED\] 9. Equality check (`==`) on a variable type: [type-variable-equality-op](../test/program/well-typed-excluded/test-clarify/type-variable-equality-op)
+
+Discussed with Andy,
+
+> I recall discussions in prior language design work group meetings of introducing something like Rust's traits, or some other way of specifying in P4 source code which operations should be legal on a variable whose type is a type variable.
+> I don't think those got very far, and unfortunately this is not an area that has received a lot of focus from the language design work group outside of a few brief discussions, that I can recall, so I do not have a ready answer for this question.
+> One alternative is to disallow equality comparisons on variables whose type is a type variable, definitely.
+
+Reaction:
+
+> Needs extension of P4 language design.
 
 The spec only allows assignment (`=`) for types that are type variables.
 But the test case below seems to violate this.
@@ -1082,7 +1115,9 @@ package mypackaget<t>(mypt<t> t2);
 package mypackaget<t>(mypt<t> t1, mypt<t> t2);
 ```
 
-## 11. Function declarations should not shadow: [shadow-func](../test/program/well-typed-excluded/test-clarify/shadow-func)
+## \[REPORTED\] 11. Function declarations should not shadow: [shadow-func](../test/program/well-typed-excluded/test-clarify/shadow-func)
+
+Reported to p4c, [Issue#5096](https://github.com/p4lang/p4c/issues/5096).
 
 (Although the spec does not explicitly disallow duplicate names in general,) p4c compiler rejects such programs.
 
@@ -1118,7 +1153,9 @@ control MyIngress(inout H p) {
 }
 ```
 
-## 13. Accessing a header stack of size zero: [access-header-stack-zero](../test/program/well-typed-excluded/test-clarify/access-header-stack-zero)
+## \[REPORTED\] 13. Accessing a header stack of size zero: [access-header-stack-zero](../test/program/well-typed-excluded/test-clarify/access-header-stack-zero)
+
+Reported to p4c, [Issue#5095](https://github.com/p4lang/p4c/issues/5095).
 
 ```p4
 bit<32> b;
@@ -1140,7 +1177,17 @@ h.hs[-1].f1 = 5;
 h.hs[-1].f2 = 8;
 ```
 
-## 14. Equivalence of table actions: [table-action-syntactic-eq](../test/program/well-typed-excluded/test-clarify/table-action-syntactic-eq)
+## \[DISCUSSED\] 14. Equivalence of table actions: [table-action-syntactic-eq](../test/program/well-typed-excluded/test-clarify/table-action-syntactic-eq)
+
+Discussed with Andy,
+
+> Have you found cases where p4c allowed a default action where the expression was somehow not semantically equal to the expressions in the action list?
+> I do not know whether it makes sense to attempt to change the specification to say something more general than "syntactically identical".  That potentially leads down a rabbit hole of trying to precisely define which things are considered "the same", and which are not.
+> Even with "syntactically identical", this is after lexing, so any practical check must ignore differences in comments and white space outside of strings, etc.  Depending upon where the check is implemented in p4c, whatever passes are done before this check can increase the number of differences that p4c will permit.
+
+Reaction:
+
+> Implementation-specific behavior of p4c. p4c is more permissive than the spec, but it is safe in semantic-equivalent sense.
 
 For default action, the spec mentions:
 
