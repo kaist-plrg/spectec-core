@@ -140,8 +140,15 @@ module Make (Interp : INTERP) : ARCH = struct
 
   (* Extern interpreter *)
 
-  let eval_extern_func_call (_ctx : Ctx.t) (fid : FId.t) : Ctx.t * Sig.t =
+  let eval_extern_func_call (ctx : Ctx.t) (fid : FId.t) : Ctx.t * Sig.t =
     match fid with
+    | "verify", [ ("check", false); ("toSignal", false) ] ->
+        let check = Ctx.find_value Ctx.Local "check" ctx |> Value.get_bool in
+        if check then (ctx, Sig.Ret None)
+        else
+          let value_error = Ctx.find_value Ctx.Local "toSignal" ctx in
+          let sign = Sig.Trans (`Reject value_error) in
+          (ctx, sign)
     | _ ->
         Format.asprintf "(eval_extern) unknown extern: %a" FId.pp fid
         |> error_no_info
@@ -151,21 +158,21 @@ module Make (Interp : INTERP) : ARCH = struct
     match (oid, fid) with
     | [ "packet_in" ], ("extract", [ ("hdr", false) ]) ->
         let packet_in = get_pkt_in () in
-        let ctx, pkt_in = Core.PacketIn.extract ctx packet_in in
+        let ctx, sign, pkt_in = Core.PacketIn.extract ctx packet_in in
         externs := Externs.add "packet_in" (PacketIn pkt_in) !externs;
-        (ctx, Sig.Ret None)
+        (ctx, sign)
     | ( [ "packet_in" ],
         ( "extract",
           [ ("variableSizeHeader", false); ("variableFieldSizeInBits", false) ]
         ) ) ->
         let packet_in = get_pkt_in () in
-        let ctx, pkt_in = Core.PacketIn.extract_varsize ctx packet_in in
+        let ctx, sign, pkt_in = Core.PacketIn.extract_varsize ctx packet_in in
         externs := Externs.add "packet_in" (PacketIn pkt_in) !externs;
-        (ctx, Sig.Ret None)
+        (ctx, sign)
     | [ "packet_in" ], ("lookahead", []) ->
         let packet_in = get_pkt_in () in
-        let hdr = Core.PacketIn.lookahead ctx packet_in in
-        (ctx, Sig.Ret (Some hdr))
+        let sign = Core.PacketIn.lookahead ctx packet_in in
+        (ctx, sign)
     | [ "packet_in" ], ("advance", [ ("sizeInBits", false) ]) ->
         let packet_in = get_pkt_in () in
         let pkt_in = Core.PacketIn.advance ctx packet_in in
@@ -191,14 +198,14 @@ module Make (Interp : INTERP) : ARCH = struct
   type packet = string
   type result = port * packet
 
-  let drive_p (ctx : Ctx.t) : Ctx.t =
+  let drive_p (ctx : Ctx.t) : Ctx.t * Sig.t =
     let expr_base, func, args =
       let oid = [ "main"; "p" ] in
       let func = "apply" in
       let args = [ "packet_in"; "hdr"; "meta"; "standard_metadata" ] in
       make_call oid func args
     in
-    Interp.eval_method_call Ctx.Global ctx expr_base func [] args |> fst
+    Interp.eval_method_call Ctx.Global ctx expr_base func [] args
 
   let drive_vr (ctx : Ctx.t) : Ctx.t =
     let expr_base, func, args =
@@ -261,10 +268,24 @@ module Make (Interp : INTERP) : ARCH = struct
     let pkt_out = PacketOut (Core.PacketOut.init ()) in
     externs := Externs.add "packet_out" pkt_out !externs;
     (* Execute packet processing pipeline *)
-    let ctx = ctx |> drive_p in
+    (* Execute the parser block *)
+    let ctx, sign = ctx |> drive_p in
     let pkt_payload =
       get_pkt_in () |> F.asprintf "%a" Core.PacketIn.pp_remaining
     in
+    let ctx =
+      match sign with
+      | Trans (`Reject value) ->
+          let value_std_meta =
+            let value_std_meta =
+              Ctx.find_value Ctx.Global "standard_metadata" ctx
+            in
+            Value.update_struct_field value_std_meta "parser_error" value
+          in
+          Ctx.update_value Ctx.Global "standard_metadata" value_std_meta ctx
+      | _ -> ctx
+    in
+    (* Execute the remaining blocks *)
     let ctx =
       ctx |> drive_vr |> drive_ig |> drive_eg |> drive_ck |> drive_dep
     in

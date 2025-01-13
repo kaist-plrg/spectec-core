@@ -495,10 +495,10 @@ module Make (Arch : ARCH) : INTERP = struct
     | RetS { expr_ret } ->
         cont sign (fun () -> eval_return_stmt cursor ctx expr_ret)
     | CallFuncS { var_func; targs; args } ->
-        cont sign (fun () -> eval_func_call_stmt cursor ctx var_func targs args)
+        cont sign (fun () -> eval_call_func_stmt cursor ctx var_func targs args)
     | CallMethodS { expr_base; member; targs; args } ->
         cont sign (fun () ->
-            eval_method_call_stmt cursor ctx expr_base member targs args)
+            eval_call_method_stmt cursor ctx expr_base member targs args)
     | CallInstS _ ->
         F.asprintf
           "(eval_stmt) instantiation should have been handled by the \
@@ -641,15 +641,16 @@ module Make (Arch : ARCH) : INTERP = struct
     in
     (ctx, sign_ret)
 
-  and eval_func_call_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : var)
+  and eval_call_func_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : var)
       (targs : typ list) (args : arg list) : Ctx.t * Sig.t =
     let ctx, sign = eval_func_call cursor ctx var_func targs args in
     match sign with
-    | Cont | Ret _ -> (ctx, Cont)
+    | Cont | Ret _ | Trans `Accept -> (ctx, Cont)
+    | Trans (`Reject value) -> (ctx, Trans (`Reject value))
     | Exit -> (ctx, Exit)
     | _ -> assert false
 
-  and eval_method_call_stmt (cursor : Ctx.cursor) (ctx : Ctx.t)
+  and eval_call_method_stmt (cursor : Ctx.cursor) (ctx : Ctx.t)
       (expr_base : expr) (member : member) (targs : typ list) (args : arg list)
       : Ctx.t * Sig.t =
     let ctx, sign = eval_method_call cursor ctx expr_base member targs args in
@@ -716,6 +717,8 @@ module Make (Arch : ARCH) : INTERP = struct
       (sign : Sig.t) : Ctx.t * Sig.t =
     assert (cursor = Ctx.Block);
     match sign with
+    | Trans (`State "accept") -> (ctx, Trans `Accept)
+    | Trans (`State "reject") -> (ctx, Trans (`Reject (Value.ErrV "NoError")))
     | Trans (`State id) ->
         let state = Ctx.find_state cursor id ctx in
         let ctx, sign = eval_parser_state cursor ctx state in
@@ -730,7 +733,7 @@ module Make (Arch : ARCH) : INTERP = struct
       eval_stmt Ctx.Local ctx Sig.Cont stmt_block
     in
     match sign with
-    | Cont -> (ctx, Sig.Trans (`Reject (Value.ErrV "noError")))
+    | Cont -> (ctx, Sig.Trans (`Reject (Value.ErrV "NoError")))
     | Trans _ -> (ctx, sign)
     | _ -> assert false
 
@@ -1280,7 +1283,7 @@ module Make (Arch : ARCH) : INTERP = struct
     let ctx, lvalue_base = eval_lvalue_of_expr cursor ctx expr_base in
     let value_base = eval_lvalue cursor ctx lvalue_base in
     match value_base with
-    | HeaderV _ | StackV _ ->
+    | HeaderV _ | UnionV _ | StackV _ ->
         eval_builtin_method_call cursor ctx lvalue_base value_base member targs
           args
     | RefV path ->

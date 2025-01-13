@@ -87,6 +87,20 @@ let rec sizeof ?(varsize = 0) (ctx : Ctx.t) (typ : Type.t) : int =
       Format.asprintf "(TODO: sizeof) %a" (Type.pp ~level:0) typ
       |> error_no_info
 
+let rec sizeof_max (ctx : Ctx.t) (typ : Type.t) : int =
+  let typ = Ctx.resolve_typ Ctx.Local typ ctx |> Type.canon in
+  match typ with
+  | DefT _ | SpecT _ -> assert false
+  | BoolT -> 1
+  | FIntT width | FBitT width | VBitT width -> width |> Bigint.to_int_exn
+  | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
+      fields
+      |> List.map (fun (_, typ) -> sizeof_max ctx typ)
+      |> List.fold_left ( + ) 0
+  | _ ->
+      Format.asprintf "(TODO: sizeof_max) %a" (Type.pp ~level:0) typ
+      |> error_no_info
+
 (* Input packet *)
 
 module PacketIn = struct
@@ -103,7 +117,6 @@ module PacketIn = struct
     { bits; idx = 0; len = Array.length bits }
 
   let parse pkt (size : int) =
-    check (pkt.idx + size <= pkt.len) "PacketTooShort";
     let bits = Array.sub pkt.bits pkt.idx size in
     let pkt = { pkt with idx = pkt.idx + size } in
     (pkt, bits)
@@ -174,13 +187,19 @@ module PacketIn = struct
      @T must be a fixed-size header type
 
      void extract<T>(out T hdr); *)
-  let extract (ctx : Ctx.t) pkt : Ctx.t * t =
+  let extract (ctx : Ctx.t) pkt : Ctx.t * Sig.t * t =
     let typ = Ctx.find_typ Ctx.Local "T" ctx in
     let hdr = Ctx.find_value Ctx.Local "hdr" ctx in
-    let pkt, bits = sizeof ctx typ |> parse pkt in
-    let hdr = write bits hdr |> snd in
-    let ctx = Ctx.update_value Ctx.Local "hdr" hdr ctx in
-    (ctx, pkt)
+    let size = sizeof ctx typ in
+    if pkt.idx + size > pkt.len then
+      let sign = Sig.Trans (`Reject (Value.ErrV "PacketTooShort")) in
+      (ctx, sign, pkt)
+    else
+      let pkt, bits = parse pkt size in
+      let hdr = write bits hdr |> snd in
+      let ctx = Ctx.update_value Ctx.Local "hdr" hdr ctx in
+      let sign = Sig.Ret None in
+      (ctx, sign, pkt)
 
   (* Read bits from the packet into a variable-sized header @variableSizeHeader
      and advance the cursor.
@@ -189,29 +208,43 @@ module PacketIn = struct
 
      void extract<T>(out T variableSizeHeader,
                       in bit<32> variableFieldSizeInBits); *)
-  let extract_varsize (ctx : Ctx.t) pkt =
+  let extract_varsize (ctx : Ctx.t) pkt : Ctx.t * Sig.t * t =
     let typ = Ctx.find_typ Ctx.Local "T" ctx in
     let hdr = Ctx.find_value Ctx.Local "variableSizeHeader" ctx in
     let varsize =
       Ctx.find_value Ctx.Local "variableFieldSizeInBits" ctx
       |> Value.get_num |> Bigint.to_int_exn
     in
-    let pkt, bits = sizeof ~varsize ctx typ |> parse pkt in
-    let hdr = write ~varsize bits hdr |> snd in
-    let ctx = Ctx.update_value Ctx.Local "variableSizeHeader" hdr ctx in
-    (ctx, pkt)
+    let size = sizeof ~varsize ctx typ in
+    let size_max = sizeof_max ctx typ in
+    if pkt.idx + size > pkt.len then
+      let sign = Sig.Trans (`Reject (Value.ErrV "PacketTooShort")) in
+      (ctx, sign, pkt)
+    else if size > size_max then
+      let sign = Sig.Trans (`Reject (Value.ErrV "HeaderTooShort")) in
+      (ctx, sign, pkt)
+    else
+      let pkt, bits = sizeof ~varsize ctx typ |> parse pkt in
+      let hdr = write ~varsize bits hdr |> snd in
+      let ctx = Ctx.update_value Ctx.Local "variableSizeHeader" hdr ctx in
+      let sign = Sig.Ret None in
+      (ctx, sign, pkt)
 
   (* Read bits from the packet without advancing the cursor.
      @returns: the bits read from the packet.
      T may be an arbitrary fixed-size type.
 
      T lookahead<T>(); *)
-  let lookahead (ctx : Ctx.t) pkt : Value.t =
+  let lookahead (ctx : Ctx.t) pkt : Sig.t =
     let typ = Ctx.find_typ Ctx.Local "T" ctx in
     let hdr = Numerics.eval_default typ in
-    let _pkt, bits = sizeof ctx typ |> parse pkt in
-    let hdr = write bits hdr |> snd in
-    hdr
+    let size = sizeof ctx typ in
+    if pkt.idx + size > pkt.len then
+      Sig.Trans (`Reject (Value.ErrV "PacketTooShort"))
+    else
+      let _pkt, bits = parse pkt size in
+      let hdr = write bits hdr |> snd in
+      Sig.Ret (Some hdr)
 
   (* Advance the packet cursor by the specified number of bits.
 

@@ -29,10 +29,10 @@ add test1 0 data.f1(0x****0101) ingress.setb1((val, 0x7f), (port, 2))
 ## 4. Unknown Extern
 
 ```plaintext
-verify(check, toSignal)
+verify_checksum(condition, data, checksum, algo)
+update_checksum(condition, data, checksum, algo)
 hash(result, algo, base, data, max)
 mark_to_drop(standard_metadata)
-verify_checksum(condition, data, checksum, algo)
 ```
 
 * checksum-l4-bmv2.p4
@@ -40,31 +40,26 @@ verify_checksum(condition, data, checksum, algo)
 * checksum2-bmv2.p4
 * checksum3-bmv2.p4
 * constant-in-calculation-bmv2.p4
-* gauntlet_action_mux-bmv2.p4
-* header-stack-ops-bmv2.p4
 * issue1049-bmv2.p4
-* issue1824-bmv2.p4
+* issue1768-bmv2.p4
 * issue655-bmv2.p4
-* subparser-with-header-stack-bmv2.p4
 
 ## 5. Out-of-bounds stack access
 
 * gauntlet_index_5-bmv2.p4
 
-## 6. Emitting PacketTooShort
+## 6. Handle ParserInvalidArgumentError
 
-* issue1062-1-bmv2.p4
-* issue1768-bmv2.p4
-* issue447-3-bmv2.p4
-* issue447-4-bmv2.p4
-* parser_error-bmv2.p4
 * test-parserinvalidargument-error-bmv2.p4
-* union-valid-bmv2.p4
 
 ## 7. Requires better l-value handling, related to direct invocation
 
 Direct invocation is transformed into a call to `ValueE` in the instantiation phase, but there is no support for l-values in `ValueE`.
 Maybe instantiation should rather translate this into first a binding to a temporary variable and then a call to that variable instead.
+
+## 8. `push_front` and `pop_back` built-in methods
+
+* header-stack-ops-bmv2.p4
 
 * issue1566-bmv2.p4
 

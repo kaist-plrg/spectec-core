@@ -91,20 +91,20 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/checksum-l4-bmv2.p4 with p4/test/stf/v1model/checksum-l4-bmv2.stf
-Error on run: File p4/test/program/well-typed/checksum-l4-bmv2.p4, line 154, characters 8-68
-(eval_extern) unknown extern: verify(check, toSignal)
+Error on run: File p4/test/program/well-typed/checksum-l4-bmv2.p4, from line 243 character 8 to line 257 character 56
+(eval_extern) unknown extern: verify_checksum(condition, data, checksum, algo)
 
 >>> Running run test on p4/test/program/well-typed/checksum1-bmv2.p4 with p4/test/stf/v1model/checksum1-bmv2.stf
-Error on run: File p4/test/program/well-typed/checksum1-bmv2.p4, line 102, characters 8-68
-(eval_extern) unknown extern: verify(check, toSignal)
+Error on run: File p4/test/program/well-typed/checksum1-bmv2.p4, from line 157 character 8 to line 171 character 56
+(eval_extern) unknown extern: verify_checksum(condition, data, checksum, algo)
 
 >>> Running run test on p4/test/program/well-typed/checksum2-bmv2.p4 with p4/test/stf/v1model/checksum2-bmv2.stf
-Error on run: File p4/test/program/well-typed/checksum2-bmv2.p4, line 107, characters 8-68
-(eval_extern) unknown extern: verify(check, toSignal)
+Error on run: File p4/test/program/well-typed/checksum2-bmv2.p4, from line 158 character 8 to line 171 character 56
+(eval_extern) unknown extern: verify_checksum(condition, data, checksum, algo)
 
 >>> Running run test on p4/test/program/well-typed/checksum3-bmv2.p4 with p4/test/stf/v1model/checksum3-bmv2.stf
-Error on run: File p4/test/program/well-typed/checksum3-bmv2.p4, line 107, characters 8-68
-(eval_extern) unknown extern: verify(check, toSignal)
+Error on run: File p4/test/program/well-typed/checksum3-bmv2.p4, from line 163 character 8 to line 176 character 56
+(eval_extern) unknown extern: update_checksum(condition, data, checksum, algo)
 
 >>> Running run test on p4/test/program/well-typed/constant-in-calculation-bmv2.p4 with p4/test/stf/v1model/constant-in-calculation-bmv2.stf
 Error on run: File p4/test/program/well-typed/constant-in-calculation-bmv2.p4, line 27, characters 8-61
@@ -511,8 +511,34 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/header-stack-ops-bmv2.p4 with p4/test/stf/v1model/header-stack-ops-bmv2.stf
-Error on run: File p4/test/program/well-typed/header-stack-ops-bmv2.p4, line 62, characters 8-58
-(eval_extern) unknown extern: verify(check, toSignal)
+[PASS] Expected: 0 01000000010202DEAD0303BE / Got: 0 01000000010202DEAD0303BE
+Error on run: File p4/test/program/well-typed/header-stack-ops-bmv2.p4, line 94, characters 16-37
+(TODO: eval_builtin_method_call) stack { header h2_t (true) {
+  hdr_type = 8w2;
+  f1 = 8w222;
+  f2 = 8w173;
+  next_hdr_type = 8w3
+}, header h2_t (false) {
+  hdr_type = 8w0;
+  f1 = 8w0;
+  f2 = 8w0;
+  next_hdr_type = 8w0
+}, header h2_t (false) {
+  hdr_type = 8w0;
+  f1 = 8w0;
+  f2 = 8w0;
+  next_hdr_type = 8w0
+}, header h2_t (false) {
+  hdr_type = 8w0;
+  f1 = 8w0;
+  f2 = 8w0;
+  next_hdr_type = 8w0
+}, header h2_t (false) {
+  hdr_type = 8w0;
+  f1 = 8w0;
+  f2 = 8w0;
+  next_hdr_type = 8w0
+} }.push_front
 
 >>> Running run test on p4/test/program/well-typed/invalid-hdr-warnings3-bmv2.p4 with p4/test/stf/v1model/invalid-hdr-warnings3-bmv2.stf
 [PASS] Expected: 0 F802AAFF1F9A05DA00E7797EBB054E157BE295737132E0F4AB8DD8A95CD7A84357C403CCF495285090A841C4070EBD5064DAE5191ADCC8511508FCB332D45FF7B45CA3F9A092090F4BB4E973B43D9F400B56F27ECCD0FAAE45FB66273D7A00DE0E076B579EA897888A6A59AEDD3E99A4D5EE5F6A9CDAFE22D2F3E080CD15FAA8F4E2A5759ED13A879C11D0219EE7AE8B72BE589958056D14E92EA85D1E0F7169F264643694E81A40E4BE127BA9C5C2BD3A3503592A9306A9EFD77C51EDDA0C1ABC3BAE8D242D0EA0DB65AE895C582017690A6BF228037B0E2D365B6F59D998DE80DF5A7DBD5C5D83017B70E55C02A0495EF345BCFB9C420EC0 / Got: 0 F802AAFF1F9A05DA00E7797EBB054E157BE295737132E0F4AB8DD8A95CD7A84357C403CCF495285090A841C4070EBD5064DAE5191ADCC8511508FCB332D45FF7B45CA3F9A092090F4BB4E973B43D9F400B56F27ECCD0FAAE45FB66273D7A00DE0E076B579EA897888A6A59AEDD3E99A4D5EE5F6A9CDAFE22D2F3E080CD15FAA8F4E2A5759ED13A879C11D0219EE7AE8B72BE589958056D14E92EA85D1E0F7169F264643694E81A40E4BE127BA9C5C2BD3A3503592A9306A9EFD77C51EDDA0C1ABC3BAE8D242D0EA0DB65AE895C582017690A6BF228037B0E2D365B6F59D998DE80DF5A7DBD5C5D83017B70E55C02A0495EF345BCFB9C420EC0
@@ -586,17 +612,17 @@ Run success
 
 >>> Running run test on p4/test/program/well-typed/issue1025-bmv2.p4 with p4/test/stf/v1model/issue1025-bmv2.stf
 [PASS] Expected: 0 000000010101080027018BBC08004400002C000100004006CDB30A00020F0A02030483031000157D005000000000000000005002200061010000 / Got: 0 000000010101080027018BBC08004400002C000100004006CDB30A00020F0A02030483031000157D005000000000000000005002200061010000
-[FAIL] Expected: 0 000000010000080027018BBC080048000030000100004006C89F0A00020F0A0203048307100A01020300157D005000000000000000005002200061010000 / Got: 0 000000010101080027018BBC080048000030000100004006C89F0A00020F0A0203040307100A01020300157D005000000000000000005002200061010000
-[FAIL] Expected: 0 000000010000080027018BBC080045000030000100004006C89F0A00020F0A0203048307100A01157D005000000000000000005002200061010000 / Got: 0 000000010101080027018BBC080045000030000100004006C89F0A00020F0A0203048307100A01157D005000000000000000005002200061010000
-Error on stf test
+[PASS] Expected: 0 000000010000080027018BBC080048000030000100004006C89F0A00020F0A0203048307100A01020300157D005000000000000000005002200061010000 / Got: 0 000000010000080027018BBC080048000030000100004006C89F0A00020F0A0203048307100A01020300157D005000000000000000005002200061010000
+[PASS] Expected: 0 000000010000080027018BBC080045000030000100004006C89F0A00020F0A0203048307100A01157D005000000000000000005002200061010000 / Got: 0 000000010000080027018BBC080045000030000100004006C89F0A00020F0A0203048307100A01157D005000000000000000005002200061010000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue1049-bmv2.p4 with p4/test/stf/v1model/issue1049-bmv2.stf
 Error on run: File p4/test/program/well-typed/issue1049-bmv2.p4, from line 82 character 8 to line 84 character 30
 (eval_extern) unknown extern: hash(result, algo, base, data, max)
 
 >>> Running run test on p4/test/program/well-typed/issue1062-1-bmv2.p4 with p4/test/stf/v1model/issue1062-1-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue1062-1-bmv2.p4, line 37, characters 8-23
-PacketTooShort
+[PASS] Expected: 0 00000000 / Got: 0 00000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue1566-bmv2.p4 with p4/test/stf/v1model/issue1566-bmv2.stf
 Error on run: File p4/test/program/well-typed/issue1566-bmv2.p4, line 88, characters 8-40
@@ -613,12 +639,12 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/issue1768-bmv2.p4 with p4/test/stf/v1model/issue1768-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue1768-bmv2.p4, line 17, characters 8-31
-PacketTooShort
+Error on run: File p4/test/program/well-typed/issue1768-bmv2.p4, line 32, characters 12-44
+(eval_extern) unknown extern: mark_to_drop(standard_metadata)
 
 >>> Running run test on p4/test/program/well-typed/issue1824-bmv2.p4 with p4/test/stf/v1model/issue1824-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue1824-bmv2.p4, line 40, characters 8-43
-(eval_extern) unknown extern: verify(check, toSignal)
+[PASS] Expected: 0 000000000BAD778899AABBCC / Got: 0 000000000BAD778899AABBCC
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue2147-bmv2.p4 with p4/test/stf/v1model/issue2147-bmv2.stf
 [PASS] Expected: 0 1111111111112222222222223333FE / Got: 0 1111111111112222222222223333FE
@@ -701,13 +727,13 @@ Run success
 
 >>> Running run test on p4/test/program/well-typed/issue447-3-bmv2.p4 with p4/test/stf/v1model/issue447-3-bmv2.stf
 [PASS] Expected: 0 34567890 / Got: 0 34567890
-Error on run: File p4/test/program/well-typed/issue447-3-bmv2.p4, line 26, characters 8-28
-PacketTooShort
+[PASS] Expected: 0 567890 / Got: 0 567890
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue447-4-bmv2.p4 with p4/test/stf/v1model/issue447-4-bmv2.stf
 [PASS] Expected: 0 34567890 / Got: 0 34567890
-Error on run: File p4/test/program/well-typed/issue447-4-bmv2.p4, line 25, characters 8-28
-PacketTooShort
+[PASS] Expected: 0 567890 / Got: 0 567890
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue447-5-bmv2.p4 with p4/test/stf/v1model/issue447-5-bmv2.stf
 [PASS] Expected: 0 3412567890 / Got: 0 3412567890
@@ -806,8 +832,8 @@ Error on run:
 
 >>> Running run test on p4/test/program/well-typed/parser_error-bmv2.p4 with p4/test/stf/v1model/parser_error-bmv2.stf
 [PASS] Expected: 0 0123456789101112131415160A0B / Got: 0 0123456789101112131415160A0B
-Error on run: File p4/test/program/well-typed/parser_error-bmv2.p4, line 20, characters 8-28
-PacketTooShort
+[PASS] Expected: 0 0000000000000000000000000000012345678910 / Got: 0 0000000000000000000000000000012345678910
+Run success
 
 >>> Running run test on p4/test/program/well-typed/predication_issue_1.p4 with p4/test/stf/v1model/predication_issue_1.stf
 [PASS] Expected: 0 0000000000010000000000000000 / Got: 0 0000000000010000000000000000
@@ -851,8 +877,8 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/subparser-with-header-stack-bmv2.p4 with p4/test/stf/v1model/subparser-with-header-stack-bmv2.stf
-Error on run: File p4/test/program/well-typed/subparser-with-header-stack-bmv2.p4, line 76, characters 8-58
-(eval_extern) unknown extern: verify(check, toSignal)
+[PASS] Expected: 0 01000000030202DEAD0202BEEF0303BE / Got: 0 01000000030202DEAD0202BEEF0303BE
+Run success
 
 >>> Running run test on p4/test/program/well-typed/table-entries-exact-bmv2.p4 with p4/test/stf/v1model/table-entries-exact-bmv2.stf
 [PASS] Expected: 1 01********** / Got: 1 0111110000B0
@@ -918,9 +944,11 @@ Error on run:
 [PASS] Expected: 1 FFFFFFFFFF00A5A5A5A5A5A50000DEADBEEF / Got: 1 FFFFFFFFFF00A5A5A5A5A5A50000DEADBEEF
 [PASS] Expected: 1 FFFFFFFFFF00A5A5A5A5A5A50008DEADBEEF / Got: 1 FFFFFFFFFF00A5A5A5A5A5A50008DEADBEEF
 [PASS] Expected: 1 FFFFFFFFFF00A5A5A5A5A5A50010DEADBEEF / Got: 1 FFFFFFFFFF00A5A5A5A5A5A50010DEADBEEF
-[FAIL] Expected: 1 FFFFFFFFFF04A5A5A5A5A5A500185A5A5ADEADBEEF / Got: 1 FFFFFFFFFF00A5A5A5A5A5A50018DEADBEEF
-Error on run: File p4/test/program/well-typed/test-parserinvalidargument-error-bmv2.p4, from line 50 character 8 to line 51 character 51
-PacketTooShort
+[PASS] Expected: 1 FFFFFFFFFF04A5A5A5A5A5A500185A5A5ADEADBEEF / Got: 1 FFFFFFFFFF04A5A5A5A5A5A500185A5A5ADEADBEEF
+[PASS] Expected: 1 FFFFFFFFFF01A5A5A5A5A5A500105A / Got: 1 FFFFFFFFFF01A5A5A5A5A5A500105A
+[FAIL] Expected: 1 FFFFFFFFFF06A5A5A5A5A5A50001DEADBEEF / Got: 1 FFFFFFFFFF00A5A5A5A5A5A50001BD5B7DDE
+[FAIL] Expected: 1 FFFFFFFFFF06A5A5A5A5A5A50007DEADBEEF / Got: 1 FFFFFFFFFF00A5A5A5A5A5A5000756DF778
+Error on stf test
 
 >>> Running run test on p4/test/program/well-typed/union-bmv2.p4 with p4/test/stf/v1model/union-bmv2.stf
 [PASS] Expected: 0 0023456666 / Got: 0 0023456666
@@ -928,8 +956,8 @@ PacketTooShort
 Run success
 
 >>> Running run test on p4/test/program/well-typed/union-valid-bmv2.p4 with p4/test/stf/v1model/union-valid-bmv2.stf
-Error on run: File p4/test/program/well-typed/union-valid-bmv2.p4, line 50, characters 8-26
-PacketTooShort
+[PASS] Expected: 0 0123456789 / Got: 0 0123456789
+Run success
 
 >>> Running run test on p4/test/program/well-typed/union1-bmv2.p4 with p4/test/stf/v1model/union1-bmv2.stf
 [PASS] Expected: 0 002345666666 / Got: 0 002345666666
@@ -957,4 +985,4 @@ Run success
 Parser on file: [PASS] 179/179 (100.00%) [FAIL] 0/179 (0.00%)
 Typecheck: [PASS] 178/179 (99.44%) [FAIL] 1/179 (0.56%)
 Instantiate: [PASS] 178/178 (100.00%) [FAIL] 0/178 (0.00%)
-Run: [PASS] 149/178 (83.71%) [FAIL] 29/178 (16.29%)
+Run: [PASS] 157/178 (88.20%) [FAIL] 21/178 (11.80%)
