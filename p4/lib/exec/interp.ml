@@ -5,6 +5,8 @@ module L = Lang.Ast
 module F = Format
 module Value = Runtime_static.Value
 module LValue = Runtime_static.Lvalue
+module Types = Runtime_static.Tdomain.Types
+module Type = Types.Type
 module Numerics = Runtime_static.Numerics
 module State = Runtime_dynamic.State
 module Func = Runtime_dynamic.Func
@@ -22,6 +24,39 @@ let error_pass_info = error_interp_pass_info
 let check = check_interp
 
 module Make (Arch : ARCH) : INTERP = struct
+  (* Call kinds
+     (i) InterGlobal: call that inherits only global context
+     (ii) InterBlock: call that inherits global context,
+                      and the block context of the callee object
+     (iii) IntraBlock: call that inherits global context,
+                       and the block context of the caller object *)
+
+  type callkind =
+    | InterGlobal of {
+        fid : FId.t;
+        func : Func.t;
+        targs : targ list;
+        args : arg list;
+        args_default : id' list;
+      }
+    | InterBlock of {
+        oid : OId.t;
+        fid : FId.t;
+        venv_block : VEnv.t;
+        func : Func.t;
+        targs : targ list;
+        args : arg list;
+        args_default : id' list;
+      }
+    | IntraBlock of {
+        oid : OId.t;
+        fid : FId.t;
+        func : Func.t;
+        targs : targ list;
+        args : arg list;
+        args_default : id' list;
+      }
+
   (* Global store *)
 
   let sto = ref Envs.Sto.empty
@@ -1050,56 +1085,191 @@ module Make (Arch : ARCH) : INTERP = struct
     in
     List.fold_left2 copyout' ctx_caller params lvalues
 
-  (* Inter-block call *)
+  and eval_call (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
+      (callkind : callkind) : Ctx.t * Sig.t =
+    match callkind with
+    | InterGlobal { fid; func; targs; args; args_default } ->
+        eval_call'
+          ~pre:(fun (ctx_caller : Ctx.t) -> Ctx.copy Ctx.Global ctx_caller)
+          ~post:(fun (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) ->
+            { ctx_caller with global = ctx_callee.global })
+          cursor_caller ctx_caller [] fid func targs args args_default
+    | InterBlock { oid; fid; venv_block; func; targs; args; args_default } ->
+        eval_call'
+          ~pre:(fun (ctx_caller : Ctx.t) ->
+            let ctx_callee = Ctx.copy Global ctx_caller in
+            {
+              ctx_callee with
+              block = { ctx_caller.block with venv = venv_block };
+            })
+          ~post:(fun (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) ->
+            { ctx_caller with global = ctx_callee.global })
+          cursor_caller ctx_caller oid fid func targs args args_default
+    | IntraBlock { oid; fid; func; targs; args; args_default } ->
+        eval_call'
+          ~pre:(fun (ctx_caller : Ctx.t) -> Ctx.copy Ctx.Block ctx_caller)
+          ~post:(fun (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) ->
+            { ctx_caller with block = ctx_callee.block })
+          cursor_caller ctx_caller oid fid func targs args args_default
 
-  and eval_inter_call (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
-      (ctx_callee : Ctx.t) (oid : OId.t) (fid : FId.t) (func : Func.t)
-      (targs : typ list) (args : arg list) (args_default : id' list) :
-      Ctx.t * Sig.t =
+  and eval_call' ~pre ~post (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
+      (oid : OId.t) (fid : FId.t) (func : Func.t) (targs : targ list)
+      (args : arg list) (args_default : id' list) : Ctx.t * Sig.t =
     match func with
-    (* Callee enters local layer *)
+    | BuiltinMethodF (params, lvalue) ->
+        eval_builtin_method_call ~pre ~post cursor_caller ctx_caller fid params
+          lvalue args args_default
     | ActionF (params, block) ->
-        assert (targs = []);
-        eval_inter_action_call cursor_caller ctx_caller ctx_callee params block
-          args args_default
+        eval_action_call ~pre ~post cursor_caller ctx_caller params targs args
+          args_default block
     | FuncF (tparams, params, block) ->
-        eval_inter_func_call cursor_caller ctx_caller ctx_callee tparams params
-          block targs args args_default
+        eval_function_call ~pre ~post cursor_caller ctx_caller tparams params
+          targs args args_default block
     | ExternFuncF (tparams, params) ->
-        eval_inter_extern_func_call cursor_caller ctx_caller ctx_callee fid
+        eval_extern_function_call ~pre ~post cursor_caller ctx_caller fid
           tparams params targs args args_default
     | ExternMethodF (tparams, params, None) ->
-        eval_inter_extern_method_call cursor_caller ctx_caller ctx_callee oid
-          fid tparams params targs args args_default
-    (* Callee enters block layer, then into local layer *)
+        eval_extern_method_call ~pre ~post cursor_caller ctx_caller oid fid
+          tparams params targs args args_default
+    | ExternMethodF (_, _, Some _) ->
+        F.asprintf "(TODO: eval_call') %a" (Func.pp ~level:0) func
+        |> error_no_info
+    | ExternAbstractMethodF _ ->
+        F.asprintf "(eval_call') cannot call an abstract method %a" FId.pp fid
+        |> error_no_info
     | ParserApplyMethodF (params, senv, locals) ->
-        assert (targs = []);
-        let ctx_callee =
-          let tenv = TEnv.empty in
-          let venv = VEnv.empty in
-          let fenv = FEnv.empty in
-          { ctx_callee with block = { tenv; fenv; senv; venv } }
-        in
-        eval_inter_parser_apply_method_call cursor_caller ctx_caller ctx_callee
-          params locals args args_default
+        eval_parser_apply_method_call ~pre ~post cursor_caller ctx_caller params
+          args args_default senv locals
     | ControlApplyMethodF (params, fenv, locals, block) ->
-        assert (targs = []);
-        let ctx_callee =
-          let tenv = TEnv.empty in
-          let senv = SEnv.empty in
-          let venv = VEnv.empty in
-          { ctx_callee with block = { tenv; fenv; senv; venv } }
+        eval_control_apply_method_call ~pre ~post cursor_caller ctx_caller
+          params args args_default fenv locals block
+    | TableApplyMethodF table ->
+        eval_table_apply_method_call ~pre ~post cursor_caller ctx_caller oid
+          table
+
+  and eval_builtin_method_call ~pre ~post (cursor_caller : Ctx.cursor)
+      (ctx_caller : Ctx.t) (fid : FId.t) (params : param list)
+      (lvalue_base : LValue.t) (args : arg list) (args_default : id' list) :
+      Ctx.t * Sig.t =
+    let value_base = eval_lvalue cursor_caller ctx_caller lvalue_base in
+    let ctx_callee = pre ctx_caller in
+    let params, args, _params_default, _args_default =
+      align_params_with_args params args args_default
+    in
+    let ctx_caller, ctx_callee, lvalues =
+      copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
+    in
+    let ctx_callee, sign, value_base =
+      match (value_base, fid) with
+      | StackV (values, idx, size), fid ->
+          eval_builtin_stack_method_call Ctx.Local ctx_callee fid values idx
+            size
+      | HeaderV (id, valid, fields), fid ->
+          eval_builtin_header_method_call Ctx.Local ctx_callee fid id valid
+            fields
+      | UnionV (id, fields), fid ->
+          eval_builtin_union_method_call Ctx.Local ctx_callee fid id fields
+      | _ ->
+          F.asprintf "(eval_builtin_method_call) %a cannot be called on %a"
+            FId.pp fid (Value.pp ~level:0) value_base
+          |> error_no_info
+    in
+    let ctx_caller = post ctx_caller ctx_callee in
+    let ctx_caller =
+      copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
+    in
+    let ctx_caller =
+      match value_base with
+      | Some value_base ->
+          eval_lvalue_write cursor_caller ctx_caller lvalue_base value_base
+      | None -> ctx_caller
+    in
+    (ctx_caller, sign)
+
+  and eval_builtin_stack_method_call (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (fid : FId.t) (values : Value.t list) (idx : Bigint.t) (size : Bigint.t) :
+      Ctx.t * Sig.t * Value.t option =
+    match fid with
+    | "push_front", [ ("count", false) ] ->
+        let value_count = Ctx.find_value cursor "count" ctx in
+        let count = value_count |> Value.get_num in
+        let values =
+          let count = count |> Bigint.to_int_exn in
+          List.init (List.length values) (fun idx ->
+              if idx < count then Value.set_invalid (List.nth values idx)
+              else List.nth values (idx - count))
         in
-        eval_inter_control_apply_method_call cursor_caller ctx_caller ctx_callee
-          params locals block args args_default
+        let idx =
+          if Bigint.(idx + count > size) then size else Bigint.(idx + count)
+        in
+        let value_base = Value.StackV (values, idx, size) in
+        let sign = Sig.Ret None in
+        (ctx, sign, Some value_base)
+    | "pop_front", [ ("count", false) ] ->
+        let value_count = Ctx.find_value cursor "count" ctx in
+        let count = value_count |> Value.get_num in
+        let values =
+          let count = count |> Bigint.to_int_exn in
+          let size = size |> Bigint.to_int_exn in
+          List.init (List.length values) (fun idx ->
+              if idx + count < size then List.nth values (idx + count)
+              else Value.set_invalid (List.nth values idx))
+        in
+        let idx =
+          if Bigint.(idx >= count) then Bigint.(idx - count) else Bigint.zero
+        in
+        let value_base = Value.StackV (values, idx, size) in
+        let sign = Sig.Ret None in
+        (ctx, sign, Some value_base)
     | _ ->
-        F.asprintf "(TODO: eval_inter_call) %a %a" FId.pp fid (Func.pp ~level:0)
-          func
+        F.asprintf
+          "(eval_builtin_stack_method_call) invalid method %a for header stack"
+          FId.pp fid
         |> error_no_info
 
-  and eval_inter_action_call (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
-      (ctx_callee : Ctx.t) (params : param list) (block : block)
-      (args : arg list) (args_default : id' list) : Ctx.t * Sig.t =
+  and eval_builtin_header_method_call (_cursor : Ctx.cursor) (ctx : Ctx.t)
+      (fid : FId.t) (id : id') (valid : bool)
+      (fields : (member' * Value.t) list) : Ctx.t * Sig.t * Value.t option =
+    match fid with
+    | "isValid", [] ->
+        let value_valid = Value.BoolV valid in
+        let sign = Sig.Ret (Some value_valid) in
+        (ctx, sign, None)
+    | "setValid", [] ->
+        let value_base = Value.HeaderV (id, true, fields) in
+        let sign = Sig.Ret None in
+        (ctx, sign, Some value_base)
+    | "setInvalid", [] ->
+        let value_base = Value.HeaderV (id, false, fields) in
+        let sign = Sig.Ret None in
+        (ctx, sign, Some value_base)
+    | _ ->
+        F.asprintf
+          "(eval_builtin_header_method_call) invalid method %a for header"
+          FId.pp fid
+        |> error_no_info
+
+  and eval_builtin_union_method_call (_cursor : Ctx.cursor) (ctx : Ctx.t)
+      (fid : FId.t) (_id : id') (fields : (member' * Value.t) list) :
+      Ctx.t * Sig.t * Value.t option =
+    match fid with
+    | "isValid", [] ->
+        let valid = List.map snd fields |> List.exists Value.get_header_valid in
+        let value_valid = Value.BoolV valid in
+        let sign = Sig.Ret (Some value_valid) in
+        (ctx, sign, None)
+    | _ ->
+        F.asprintf
+          "(eval_builtin_union_method_call) invalid method %a for union" FId.pp
+          fid
+        |> error_no_info
+
+  and eval_action_call ~pre ~post (cursor_caller : Ctx.cursor)
+      (ctx_caller : Ctx.t) (params : param list) (targs : targ list)
+      (args : arg list) (args_default : id' list) (block : block) :
+      Ctx.t * Sig.t =
+    let ctx_callee = pre ctx_caller in
+    check (targs = []) "(eval_action_call) action cannot have type arguments";
     let params, args, _params_default, _args_default =
       align_params_with_args params args args_default
     in
@@ -1110,16 +1280,17 @@ module Make (Arch : ARCH) : INTERP = struct
       let stmt_block = BlockS { block } $ no_info in
       eval_stmt Ctx.Local ctx_callee Sig.Cont stmt_block
     in
-    let ctx_caller = { ctx_caller with global = ctx_callee.global } in
+    let ctx_caller = post ctx_caller ctx_callee in
     let ctx_caller =
       copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
     in
     (ctx_caller, sign)
 
-  and eval_inter_func_call (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
-      (ctx_callee : Ctx.t) (tparams : tparam list) (params : param list)
-      (block : block) (targs : typ list) (args : arg list)
-      (args_default : id' list) : Ctx.t * Sig.t =
+  and eval_function_call ~pre ~post (cursor_caller : Ctx.cursor)
+      (ctx_caller : Ctx.t) (tparams : tparam list) (params : param list)
+      (targs : typ list) (args : arg list) (args_default : id' list)
+      (block : block) : Ctx.t * Sig.t =
+    let ctx_callee = pre ctx_caller in
     let ctx_callee = Ctx.add_typs Ctx.Local tparams targs ctx_callee in
     let params, args, _params_default, _args_default =
       align_params_with_args params args args_default
@@ -1131,16 +1302,17 @@ module Make (Arch : ARCH) : INTERP = struct
       let stmt_block = BlockS { block } $ no_info in
       eval_stmt Ctx.Local ctx_callee Sig.Cont stmt_block
     in
-    let ctx_caller = { ctx_caller with global = ctx_callee.global } in
+    let ctx_caller = post ctx_caller ctx_callee in
     let ctx_caller =
       copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
     in
     (ctx_caller, sign)
 
-  and eval_inter_extern_func_call (cursor_caller : Ctx.cursor)
-      (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (fid : FId.t)
-      (tparams : tparam list) (params : param list) (targs : typ list)
-      (args : arg list) (args_default : id' list) : Ctx.t * Sig.t =
+  and eval_extern_function_call ~pre ~post (cursor_caller : Ctx.cursor)
+      (ctx_caller : Ctx.t) (fid : FId.t) (tparams : tparam list)
+      (params : param list) (targs : typ list) (args : arg list)
+      (args_default : id' list) : Ctx.t * Sig.t =
+    let ctx_callee = pre ctx_caller in
     let ctx_callee = Ctx.add_typs Ctx.Local tparams targs ctx_callee in
     let params, args, _params_default, _args_default =
       align_params_with_args params args args_default
@@ -1149,15 +1321,17 @@ module Make (Arch : ARCH) : INTERP = struct
       copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
     in
     let ctx_callee, sign = Arch.eval_extern_func_call ctx_callee fid in
+    let ctx_caller = post ctx_caller ctx_callee in
     let ctx_caller =
       copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
     in
     (ctx_caller, sign)
 
-  and eval_inter_extern_method_call (cursor_caller : Ctx.cursor)
-      (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (oid : OId.t) (fid : FId.t)
-      (tparams : tparam list) (params : param list) (targs : typ list)
-      (args : arg list) (args_default : id' list) : Ctx.t * Sig.t =
+  and eval_extern_method_call ~pre ~post (cursor_caller : Ctx.cursor)
+      (ctx_caller : Ctx.t) (oid : OId.t) (fid : FId.t) (tparams : tparam list)
+      (params : param list) (targs : typ list) (args : arg list)
+      (args_default : id' list) : Ctx.t * Sig.t =
+    let ctx_callee = pre ctx_caller in
     let ctx_callee = Ctx.add_typs Ctx.Local tparams targs ctx_callee in
     let params, args, _params_default, _args_default =
       align_params_with_args params args args_default
@@ -1166,22 +1340,20 @@ module Make (Arch : ARCH) : INTERP = struct
       copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
     in
     let ctx_callee, sign = Arch.eval_extern_method_call ctx_callee oid fid in
+    let ctx_caller = post ctx_caller ctx_callee in
     let ctx_caller =
       copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
     in
     (ctx_caller, sign)
 
-  and eval_inter_parser_apply_method_call (cursor_caller : Ctx.cursor)
-      (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (params : param list)
-      (locals : decl list) (args : arg list) (args_default : id' list) :
+  and eval_parser_apply_method_call ~pre ~post (cursor_caller : Ctx.cursor)
+      (ctx_caller : Ctx.t) (params : param list) (args : arg list)
+      (args_default : id' list) (senv : SEnv.t) (locals : decl list) :
       Ctx.t * Sig.t =
-    let params, args, _params_default, _args_default =
-      align_params_with_args params args args_default
+    let ctx_callee = pre ctx_caller in
+    let ctx_callee =
+      { ctx_callee with block = { ctx_callee.block with senv } }
     in
-    let ctx_caller, ctx_callee, lvalues =
-      copyin cursor_caller ctx_caller Ctx.Block ctx_callee params args
-    in
-    let ctx_callee = eval_decls Ctx.Block ctx_callee locals in
     let ctx_callee =
       ctx_callee.block.senv |> SEnv.bindings |> List.map fst
       |> List.fold_left
@@ -1189,19 +1361,31 @@ module Make (Arch : ARCH) : INTERP = struct
              Ctx.add_value Ctx.Block id (Value.StateV id) ctx_callee)
            ctx_callee
     in
+    let params, args, _params_default, _args_default =
+      align_params_with_args params args args_default
+    in
+    let ctx_caller, ctx_callee, lvalues =
+      copyin cursor_caller ctx_caller Ctx.Block ctx_callee params args
+    in
+    let ctx_callee = eval_decls Ctx.Block ctx_callee locals in
     let ctx_callee, sign =
       eval_parser_state_machine Ctx.Block ctx_callee
         (Sig.Trans (`State "start"))
     in
+    let ctx_caller = post ctx_caller ctx_callee in
     let ctx_caller =
-      copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
+      copyout cursor_caller ctx_caller Ctx.Block ctx_callee params lvalues
     in
     (ctx_caller, sign)
 
-  and eval_inter_control_apply_method_call (cursor_caller : Ctx.cursor)
-      (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (params : param list)
-      (locals : decl list) (block : block) (args : arg list)
-      (args_default : id' list) : Ctx.t * Sig.t =
+  and eval_control_apply_method_call ~pre ~post (cursor_caller : Ctx.cursor)
+      (ctx_caller : Ctx.t) (params : param list) (args : arg list)
+      (args_default : id' list) (fenv : FEnv.t) (locals : decl list)
+      (block : block) : Ctx.t * Sig.t =
+    let ctx_callee = pre ctx_caller in
+    let ctx_callee =
+      { ctx_callee with block = { ctx_callee.block with fenv } }
+    in
     let params, args, _params_default, _args_default =
       align_params_with_args params args args_default
     in
@@ -1213,185 +1397,95 @@ module Make (Arch : ARCH) : INTERP = struct
       let stmt_block = BlockS { block } $ no_info in
       eval_stmt Ctx.Local ctx_callee Sig.Cont stmt_block
     in
+    let ctx_caller = post ctx_caller ctx_callee in
     let ctx_caller =
-      copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
+      copyout cursor_caller ctx_caller Ctx.Block ctx_callee params lvalues
     in
     (ctx_caller, sign)
 
-  (* Intra-block call *)
-
-  and eval_intra_call (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
-      (ctx_callee : Ctx.t) (oid : OId.t) (fid : FId.t) (func : Func.t)
-      (targs : typ list) (args : arg list) (args_default : id' list) :
-      Ctx.t * Sig.t =
-    match func with
-    (* Callee enters local layer *)
-    | ActionF (params, block) ->
-        assert (targs = []);
-        eval_intra_action_call cursor_caller ctx_caller ctx_callee params block
-          args args_default
-    | TableApplyMethodF table ->
-        assert (targs = [] && args = [] && args_default = []);
-        let id = oid |> List.rev |> List.hd in
-        eval_intra_table_apply_method_call cursor_caller ctx_caller ctx_callee
-          id table
-    | _ ->
-        F.asprintf "(TODO: eval_intra_call) %a %a" FId.pp fid (Func.pp ~level:0)
-          func
-        |> error_no_info
-
-  and eval_intra_action_call (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
-      (ctx_callee : Ctx.t) (params : param list) (block : block)
-      (args : arg list) (args_default : id' list) : Ctx.t * Sig.t =
-    let params, args, _params_default, _args_default =
-      align_params_with_args params args args_default
-    in
-    let ctx_caller, ctx_callee, lvalues =
-      copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
-    in
-    let ctx_callee, sign =
-      let stmt_block = BlockS { block } $ no_info in
-      eval_stmt Ctx.Local ctx_callee Sig.Cont stmt_block
-    in
-    let ctx_caller = { ctx_caller with block = ctx_callee.block } in
-    let ctx_caller =
-      copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
-    in
-    (ctx_caller, sign)
-
-  and eval_intra_table_apply_method_call (_cursor_caller : Ctx.cursor)
-      (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (id : id') (table : table) :
-      Ctx.t * Sig.t =
+  and eval_table_apply_method_call ~pre ~post (_cursor_caller : Ctx.cursor)
+      (ctx_caller : Ctx.t) (oid : OId.t) (table : table) : Ctx.t * Sig.t =
+    let id = oid |> List.rev |> List.hd in
+    let ctx_callee = pre ctx_caller in
     let ctx_callee, sign = eval_table Ctx.Block ctx_callee id table in
-    let ctx_caller = { ctx_caller with block = ctx_callee.block } in
+    let ctx_caller = post ctx_caller ctx_callee in
     (ctx_caller, sign)
 
   (* Entry point: function call *)
 
-  and eval_func_call (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : var)
-      (targs : typ list) (args : arg list) : Ctx.t * Sig.t =
-    (* F.printf "Call %a%a%a\n" Il.Pp.pp_var var_func *)
-    (*   (Il.Pp.pp_targs ~level:0) targs Il.Pp.pp_args args; *)
+  and eval_func (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : var)
+      (targs : targ list) (args : arg list) : callkind =
     let (fid, func, args_default), cursor_func =
       let args = FId.to_names args in
       Ctx.find_f_at Ctx.find_func_at_opt cursor var_func args ctx
     in
     match cursor_func with
-    | Ctx.Global ->
-        let ctx_callee = Ctx.copy Ctx.Global ctx in
-        eval_inter_call cursor ctx ctx_callee [] fid func targs args
-          args_default
-    | Ctx.Block ->
-        let ctx_callee = Ctx.copy Ctx.Block ctx in
-        eval_intra_call cursor ctx ctx_callee [] fid func targs args
-          args_default
+    | Ctx.Global -> InterGlobal { fid; func; targs; args; args_default }
+    | Ctx.Block -> IntraBlock { oid = []; fid; func; targs; args; args_default }
     | Ctx.Local -> assert false
+
+  and eval_func_call (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : var)
+      (targs : typ list) (args : arg list) : Ctx.t * Sig.t =
+    let callkind = eval_func cursor ctx var_func targs args in
+    eval_call cursor ctx callkind
 
   (* Entry point: method call *)
 
-  and eval_method_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
-      (member : member) (targs : typ list) (args : arg list) : Ctx.t * Sig.t =
-    (* F.printf "Call %a.%a%a%a\n" (Il.Pp.pp_expr ~level:0) expr_base *)
-    (*   Il.Pp.pp_member member (Il.Pp.pp_targs ~level:0) targs Il.Pp.pp_args args; *)
+  and eval_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
+      (member : member) (targs : targ list) (args : arg list) : Ctx.t * callkind
+      =
     let ctx, lvalue_base = eval_lvalue_of_expr cursor ctx expr_base in
     let value_base = eval_lvalue cursor ctx lvalue_base in
-    match value_base with
-    | HeaderV _ | UnionV _ | StackV _ ->
-        eval_builtin_method_call cursor ctx lvalue_base value_base member targs
-          args
-    | RefV path ->
-        let obj = Sto.find path !sto in
-        eval_obj_call cursor ctx path obj member targs args
-    | _ ->
-        F.asprintf "(TODO: eval_method_call) %a.%a" (Value.pp ~level:0)
-          value_base Il.Pp.pp_member member
-        |> error_no_info
+    let callkind =
+      match (value_base, member.it) with
+      | StackV _, "push_front" | StackV _, "pop_front" ->
+          let fid = (member.it, [ ("count", false) ]) in
+          let params =
+            [
+              ("count" $ no_info, L.In $ no_info, Types.IntT $ no_info, None, [])
+              $ no_info;
+            ]
+          in
+          let func = Func.BuiltinMethodF (params, lvalue_base) in
+          InterGlobal { fid; func; targs; args; args_default = [] }
+      | HeaderV _, "isValid"
+      | HeaderV _, "setValid"
+      | HeaderV _, "setInvalid"
+      | UnionV _, "isValid" ->
+          let fid = (member.it, []) in
+          let func = Func.BuiltinMethodF ([], lvalue_base) in
+          InterGlobal { fid; func; targs = []; args; args_default = [] }
+      | RefV oid, member -> (
+          let obj = Sto.find oid !sto in
+          match obj with
+          | ExternO (_, venv_block, fenv_block)
+          | ParserO (venv_block, fenv_block)
+          | ControlO (venv_block, fenv_block) ->
+              let fid, func, args_default =
+                let args = FId.to_names args in
+                FEnv.find_func (member, args) fenv_block
+              in
+              InterBlock
+                { oid; fid; venv_block; func; targs; args; args_default }
+          | TableO (_, fenv_block) ->
+              let fid, func, args_default =
+                let args = FId.to_names args in
+                FEnv.find_func (member, args) fenv_block
+              in
+              IntraBlock { oid; fid; func; targs; args; args_default }
+          | _ ->
+              F.asprintf "(eval_method) method %a not found for object %a"
+                Il.Pp.pp_member' member (Obj.pp ~level:0) obj
+              |> error_no_info)
+      | _ ->
+          F.asprintf "(eval_method) method %a not found for value %a"
+            Il.Pp.pp_member member (Value.pp ~level:0) value_base
+          |> error_no_info
+    in
+    (ctx, callkind)
 
-  and eval_builtin_method_call (cursor : Ctx.cursor) (ctx : Ctx.t)
-      (lvalue_base : LValue.t) (value_base : Value.t) (member : member)
-      (targs : typ list) (args : arg list) : Ctx.t * Sig.t =
-    match value_base with
-    | HeaderV (id, valid, fields) -> (
-        assert (args = [] && targs = []);
-        match member.it with
-        | "isValid" ->
-            let value = Value.BoolV valid in
-            let sign = Sig.Ret (Some value) in
-            (ctx, sign)
-        | "setValid" ->
-            let value_base = Value.HeaderV (id, true, fields) in
-            let ctx = eval_lvalue_write cursor ctx lvalue_base value_base in
-            let sign = Sig.Ret None in
-            (ctx, sign)
-        | "setInvalid" ->
-            let value_base = Value.HeaderV (id, false, fields) in
-            let ctx = eval_lvalue_write cursor ctx lvalue_base value_base in
-            let sign = Sig.Ret None in
-            (ctx, sign)
-        | _ ->
-            F.asprintf "(eval_builtin_method_call) invalid method %a for header"
-              Il.Pp.pp_member member
-            |> error_no_info)
-    | UnionV (_, fields) -> (
-        assert (args = [] && targs = []);
-        match member.it with
-        | "isValid" ->
-            let value =
-              List.map snd fields
-              |> List.map Value.get_header_valid
-              |> List.exists Fun.id
-            in
-            let value = Value.BoolV value in
-            let sign = Sig.Ret (Some value) in
-            (ctx, sign)
-        | _ ->
-            F.asprintf
-              "(eval_builtin_method_call) invalid method %a for header union"
-              Il.Pp.pp_member member
-            |> error_no_info)
-    | _ ->
-        F.asprintf "(TODO: eval_builtin_method_call) %a.%a" (Value.pp ~level:0)
-          value_base Il.Pp.pp_member member
-        |> error_no_info
-
-  and eval_obj_call (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
-      (oid : OId.t) (obj : Obj.t) (member : member) (targs : typ list)
-      (args : arg list) : Ctx.t * Sig.t =
-    match obj with
-    (* Inter-block call *)
-    | ExternO (_id, venv, fenv) ->
-        let fid, func, args_default =
-          let args = FId.to_names args in
-          FEnv.find_func (member.it, args) fenv
-        in
-        let ctx_callee = Ctx.copy Ctx.Global ctx_caller in
-        let ctx_callee =
-          { ctx_callee with block = { ctx_callee.block with venv } }
-        in
-        eval_inter_call cursor_caller ctx_caller ctx_callee oid fid func targs
-          args args_default
-    | ParserO (venv, fenv) | ControlO (venv, fenv) ->
-        let fid, func, args_default =
-          let args = FId.to_names args in
-          FEnv.find_func (member.it, args) fenv
-        in
-        let ctx_callee = Ctx.copy Ctx.Global ctx_caller in
-        let ctx_callee =
-          { ctx_callee with block = { ctx_callee.block with venv } }
-        in
-        eval_inter_call cursor_caller ctx_caller ctx_callee oid fid func targs
-          args args_default
-    (* Intra-block call *)
-    | TableO (_id, fenv) ->
-        let fid, func, args_default =
-          let args = FId.to_names args in
-          FEnv.find_func (member.it, args) fenv
-        in
-        let ctx_callee = Ctx.copy Ctx.Block ctx_caller in
-        eval_intra_call cursor_caller ctx_caller ctx_callee oid fid func targs
-          args args_default
-    | _ ->
-        F.asprintf "(TODO: eval_obj_call) %a %a" OId.pp oid (Obj.pp ~level:0)
-          obj
-        |> error_no_info
+  and eval_method_call (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
+      (member : member) (targs : typ list) (args : arg list) : Ctx.t * Sig.t =
+    let ctx, callkind = eval_method cursor ctx expr_base member targs args in
+    eval_call cursor ctx callkind
 end

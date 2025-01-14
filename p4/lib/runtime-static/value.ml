@@ -234,10 +234,29 @@ let get_state t : L.id' =
 
 (* Setters *)
 
-let set_header_valid t valid =
+let set_header_invalid t =
   match t with
-  | HeaderV (id, _, fields) -> HeaderV (id, valid, fields)
+  | HeaderV (id, _, fields) -> HeaderV (id, false, fields)
   | _ -> Format.asprintf "Not a header value: %a" (pp ~level:0) t |> failwith
+
+let set_union_invalid t =
+  match t with
+  | UnionV (id, fields) ->
+      let fields =
+        List.map
+          (fun (member, value) -> (member, set_header_invalid value))
+          fields
+      in
+      UnionV (id, fields)
+  | _ -> Format.asprintf "Not a union value: %a" (pp ~level:0) t |> failwith
+
+let set_invalid t =
+  match t with
+  | HeaderV _ -> set_header_invalid t
+  | UnionV _ -> set_union_invalid t
+  | _ ->
+      Format.asprintf "Not a header or union value: %a" (pp ~level:0) t
+      |> failwith
 
 (* Updaters *)
 
@@ -285,7 +304,7 @@ let update_union_field t member_target value_target =
           List.map
             (fun (member, value) ->
               if member = member_target then (member, value)
-              else (member, set_header_valid value false))
+              else (member, set_header_invalid value))
             fields
         else fields
       in

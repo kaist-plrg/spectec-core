@@ -2001,7 +2001,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
     FuncType.t * Il.Ast.expr * TId.t list * Types.tparam list * Il.Ast.id' list
     =
   let error_not_found () =
-    F.asprintf "(type_method) method %s not found for %a" member.it
+    F.asprintf "(type_method) method %a not found for %a" El.Pp.pp_member member
       (El.Pp.pp_expr ~level:0) expr_base
     |> error_no_info
   in
@@ -2029,7 +2029,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
     | _, "maxSizeInBytes" ->
         Types.BuiltinMethodT ([], Types.IntT) |> wrap_builtin
     | StackT _, "push_front" | StackT _, "pop_front" ->
-        let params = [ ("count", Lang.Ast.No, Types.IntT, None) ] in
+        let params = [ ("count", Lang.Ast.In, Types.IntT, None) ] in
         let typ_ret = Types.VoidT in
         Types.BuiltinMethodT (params, typ_ret) |> wrap_builtin
     | HeaderT _, "isValid" ->
