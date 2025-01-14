@@ -19,6 +19,78 @@ open Util.Error
 
 let error_no_info = error_interp_no_info
 
+(* V1Model extern objects *)
+
+module Counter = struct
+  type t =
+    | Packets of Bigint.t list
+    | Bytes of Bigint.t list
+    | PacketsAndBytes of (Bigint.t * Bigint.t) list
+
+  let pp fmt _ctr = F.fprintf fmt "Counter"
+
+  let init (size : Value.t) (typ : Value.t) : t =
+    let size = size |> Value.get_num |> Bigint.to_int_exn in
+    match typ with
+    | EnumFieldV ("CounterType", "packets") ->
+        Packets (List.init size (fun _ -> Bigint.zero))
+    | EnumFieldV ("CounterType", "bytes") ->
+        Bytes (List.init size (fun _ -> Bigint.zero))
+    | EnumFieldV ("CounterType", "packets_and_bytes") ->
+        PacketsAndBytes (List.init size (fun _ -> (Bigint.zero, Bigint.zero)))
+    | _ -> assert false
+
+  (* count() causes the counter state with the specified index to be
+      read, modified, and written back, atomically relative to the
+      processing of other packets, updating the packet count, byte
+      count, or both, depending upon the CounterType of the counter
+      instance used when it was constructed.
+
+      @param index The index of the counter state in the array to be
+                   updated, normally a value in the range [0,
+                   size-1].  If index >= size, no counter state will be
+                   updated.
+
+     void count(in bit<32> index); *)
+  let count (ctx : Ctx.t) (len : Bigint.t) ctr : Ctx.t * Sig.t * t =
+    let index_target =
+      Ctx.find_value Ctx.Local "index" ctx |> Value.get_num |> Bigint.to_int_exn
+    in
+    let ctr =
+      match ctr with
+      | Packets counts ->
+          let counts =
+            List.mapi
+              (fun idx count ->
+                if idx = index_target then Bigint.(count + one) else count)
+              counts
+          in
+          Packets counts
+      | Bytes counts ->
+          let counts =
+            List.mapi
+              (fun idx count ->
+                if idx = index_target then Bigint.(count + len) else count)
+              counts
+          in
+          Bytes counts
+      | PacketsAndBytes packets_and_bytes ->
+          let packets_and_bytes =
+            List.mapi
+              (fun idx (count_packets, count_bytes) ->
+                if idx = index_target then
+                  (Bigint.(count_packets + one), Bigint.(count_bytes + len))
+                else (count_packets, count_bytes))
+              packets_and_bytes
+          in
+          PacketsAndBytes packets_and_bytes
+    in
+    let sign = Sig.Ret None in
+    (ctx, sign, ctr)
+end
+
+(* V1Model Pipeline *)
+
 (* (TODO) Inserts VoidT, shouldn't matter in dynamics but not a good practice either *)
 let no_info_expr = (no_info, Il.Ast.{ typ = Types.VoidT; ctk = Ctk.DYN })
 
@@ -49,7 +121,17 @@ module Make (Interp : INTERP) : ARCH = struct
 
   module Externs = Map.Make (Id)
 
-  type extern = PacketIn of Core.PacketIn.t | PacketOut of Core.PacketOut.t
+  type extern =
+    | PacketIn of Core.PacketIn.t
+    | PacketOut of Core.PacketOut.t
+    | Counter of Counter.t
+
+  let pp_extern fmt extern =
+    match extern with
+    | PacketIn pkt_in -> F.fprintf fmt "PacketIn %a" Core.PacketIn.pp pkt_in
+    | PacketOut pkt_out ->
+        F.fprintf fmt "PacketOut %a" Core.PacketOut.pp pkt_out
+    | Counter ctr -> F.fprintf fmt "Counter %a" Counter.pp ctr
 
   let externs = ref Externs.empty
 
@@ -68,7 +150,8 @@ module Make (Interp : INTERP) : ARCH = struct
   let drop_spec = Value.FBitV (Bigint.of_int 9, Bigint.of_int 511)
 
   (* Initializer:
-      instantiate packet_in/out and
+      instantiate packet_in/out,
+      initializer counters if any,
       construct global hdr, meta, and standard_metadata values *)
 
   let init_instantiate_packet_in (ctx : Ctx.t) (sto : Sto.t) : Ctx.t * Sto.t =
@@ -107,6 +190,19 @@ module Make (Interp : INTERP) : ARCH = struct
     let sto = Sto.add oid obj sto in
     (ctx, sto)
 
+  let init_counters (sto : Sto.t) : unit =
+    Sto.iter
+      (fun oid obj ->
+        match obj with
+        | Obj.ExternO ("counter", venv, _) ->
+            let size = VEnv.find "size" venv in
+            let typ = VEnv.find "type" venv in
+            let ctr = Counter.init size typ in
+            let id = String.concat "." oid in
+            externs := Externs.add id (Counter ctr) !externs
+        | _ -> ())
+      sto
+
   let init_var (ctx : Ctx.t) (id : Id.t) (typ : Type.t) : Ctx.t =
     let value = Numerics.eval_default typ in
     let ctx = Ctx.add_value Ctx.Global id value ctx in
@@ -139,6 +235,7 @@ module Make (Interp : INTERP) : ARCH = struct
   let init (ctx : Ctx.t) (sto : Sto.t) : Ctx.t * Sto.t =
     let ctx, sto = init_instantiate_packet_in ctx sto in
     let ctx, sto = init_instantiate_packet_out ctx sto in
+    init_counters sto;
     let ctx = init_vars ctx sto in
     (ctx, sto)
 
@@ -179,41 +276,43 @@ module Make (Interp : INTERP) : ARCH = struct
 
   let eval_extern_method_call (ctx : Ctx.t) (oid : OId.t) (fid : FId.t) :
       Ctx.t * Sig.t =
-    match (oid, fid) with
-    | [ "packet_in" ], ("extract", [ ("hdr", false) ]) ->
-        let packet_in = get_pkt_in () in
-        let ctx, sign, pkt_in = Core.PacketIn.extract ctx packet_in in
-        externs := Externs.add "packet_in" (PacketIn pkt_in) !externs;
+    let id = String.concat "." oid in
+    let extern = Externs.find id !externs in
+    match (extern, fid) with
+    | PacketIn pkt_in, ("extract", [ ("hdr", false) ]) ->
+        let ctx, sign, pkt_in = Core.PacketIn.extract ctx pkt_in in
+        externs := Externs.add id (PacketIn pkt_in) !externs;
         (ctx, sign)
-    | ( [ "packet_in" ],
+    | ( PacketIn pkt_in,
         ( "extract",
           [ ("variableSizeHeader", false); ("variableFieldSizeInBits", false) ]
         ) ) ->
-        let packet_in = get_pkt_in () in
-        let ctx, sign, pkt_in = Core.PacketIn.extract_varsize ctx packet_in in
-        externs := Externs.add "packet_in" (PacketIn pkt_in) !externs;
+        let ctx, sign, pkt_in = Core.PacketIn.extract_varsize ctx pkt_in in
+        externs := Externs.add id (PacketIn pkt_in) !externs;
         (ctx, sign)
-    | [ "packet_in" ], ("lookahead", []) ->
-        let packet_in = get_pkt_in () in
-        let sign = Core.PacketIn.lookahead ctx packet_in in
+    | PacketIn pkt_in, ("lookahead", []) ->
+        let sign = Core.PacketIn.lookahead ctx pkt_in in
         (ctx, sign)
-    | [ "packet_in" ], ("advance", [ ("sizeInBits", false) ]) ->
-        let packet_in = get_pkt_in () in
-        let pkt_in = Core.PacketIn.advance ctx packet_in in
-        externs := Externs.add "packet_in" (PacketIn pkt_in) !externs;
+    | PacketIn pkt_in, ("advance", [ ("sizeInBits", false) ]) ->
+        let pkt_in = Core.PacketIn.advance ctx pkt_in in
+        externs := Externs.add id (PacketIn pkt_in) !externs;
         (ctx, Sig.Ret None)
-    | [ "packet_in" ], ("length", []) ->
-        let packet_in = get_pkt_in () in
-        let len = Core.PacketIn.length packet_in in
+    | PacketIn pkt_in, ("length", []) ->
+        let len = Core.PacketIn.length pkt_in in
         (ctx, Sig.Ret (Some len))
-    | [ "packet_out" ], ("emit", [ ("hdr", false) ]) ->
-        let packet_out = get_pkt_out () in
-        let ctx, pkt_out = Core.PacketOut.emit ctx packet_out in
-        externs := Externs.add "packet_out" (PacketOut pkt_out) !externs;
+    | PacketOut pkt_out, ("emit", [ ("hdr", false) ]) ->
+        let ctx, pkt_out = Core.PacketOut.emit ctx pkt_out in
+        externs := Externs.add id (PacketOut pkt_out) !externs;
         (ctx, Sig.Ret None)
+    | Counter ctr, ("count", [ ("index", false) ]) ->
+        let pkt_in = get_pkt_in () in
+        let len = pkt_in.len |> Bigint.of_int in
+        let ctx, sign, ctr = Counter.count ctx len ctr in
+        externs := Externs.add id (Counter ctr) !externs;
+        (ctx, sign)
     | _ ->
-        Format.asprintf "(eval_extern) unknown extern: %a.%a" OId.pp oid FId.pp
-          fid
+        Format.asprintf "(TODO: eval_extern_method_call) %a.%a" pp_extern extern
+          FId.pp fid
         |> error_no_info
 
   (* Pipeline driver *)

@@ -615,8 +615,8 @@ Error on run: File p4/test/program/well-typed/issue1049-bmv2.p4, from line 82 ch
 Run success
 
 >>> Running run test on p4/test/program/well-typed/issue1566-bmv2.p4 with p4/test/stf/v1model/issue1566-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue1566-bmv2.p4, line 88, characters 8-40
-(eval_lvalue_of_expr') ref main.ig.E cannot be an l-value
+[PASS] Expected: 0 000000000000000000000000AFE9 / Got: 0 000000000000000000000000AFE9
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue1755-1-bmv2.p4 with p4/test/stf/v1model/issue1755-1-bmv2.stf
 [PASS] Expected: 0 11223344 / Got: 0 11223344
@@ -975,4 +975,4 @@ Run success
 Parser on file: [PASS] 179/179 (100.00%) [FAIL] 0/179 (0.00%)
 Typecheck: [PASS] 178/179 (99.44%) [FAIL] 1/179 (0.56%)
 Instantiate: [PASS] 178/178 (100.00%) [FAIL] 0/178 (0.00%)
-Run: [PASS] 162/178 (91.01%) [FAIL] 16/178 (8.99%)
+Run: [PASS] 163/178 (91.57%) [FAIL] 15/178 (8.43%)

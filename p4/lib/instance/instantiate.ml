@@ -252,8 +252,21 @@ and eval_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
       ValueE { value = value $ no_info }
       $$ (no_info, { typ = typ.it; ctk = Ctk.CTK })
     in
-    CallMethodS
-      { expr_base = expr_inst; member = "apply" $ no_info; targs; args }
+    let decl_inst =
+      VarD { id = id $ no_info; typ; init = Some expr_inst; annos = [] }
+      $ no_info
+    in
+    let stmt_decl = DeclS { decl = decl_inst } $ no_info in
+    let expr_base =
+      VarE { var = L.Current (id $ no_info) $ no_info }
+      $$ (no_info, { typ = typ.it; ctk = Ctk.CTK })
+    in
+    let stmt_call =
+      CallMethodS { expr_base; member = "apply" $ no_info; targs; args }
+      $ no_info
+    in
+    let block = ([ stmt_decl; stmt_call ], []) $ no_info in
+    BlockS { block }
   in
   (ctx, sto, stmt)
 
