@@ -83,11 +83,15 @@ module PacketIn = struct
 
   let pp_remaining fmt pkt =
     let bits = Array.sub pkt.bits pkt.idx (pkt.len - pkt.idx) in
-    pp fmt { pkt with bits }
+    Format.fprintf fmt "%s" (bits_to_string bits)
 
   let init (pkt : string) =
     let bits = string_to_bits pkt in
     { bits; idx = 0; len = Array.length bits }
+
+  let get_remaining (pkt : t) =
+    let bits = Array.sub pkt.bits pkt.idx (pkt.len - pkt.idx) in
+    bits
 
   let rec sizeof ?(varsize = 0) (ctx : Ctx.t) (typ : Type.t) : int =
     let typ = Ctx.resolve_typ Ctx.Local typ ctx |> Type.canon in

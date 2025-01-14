@@ -195,12 +195,25 @@ let get_num t : Bigint.t =
   | IntV value -> value
   | FIntV (_, value) -> value
   | FBitV (_, value) -> value
+  | VBitV (_, _, value) -> value
   | _ -> Format.asprintf "Not a int/bit value: %a" (pp ~level:0) t |> failwith
 
 let get_tuple t : t list =
   match t with
   | TupleV values -> values
   | _ -> Format.asprintf "Not a tuple value: %a" (pp ~level:0) t |> failwith
+
+let get_seq t : t list =
+  match t with
+  | SeqV values -> values
+  | _ -> Format.asprintf "Not a sequence value: %a" (pp ~level:0) t |> failwith
+
+let get_tuple_or_seq t : t list =
+  match t with
+  | TupleV values | SeqV values -> values
+  | _ ->
+      Format.asprintf "Not a tuple or sequence value: %a" (pp ~level:0) t
+      |> failwith
 
 let get_struct t : L.id' * (L.member' * t) list =
   match t with

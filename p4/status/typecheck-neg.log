@@ -969,7 +969,7 @@ Error on typecheck: File p4/test/program/ill-typed/psa-type-hdr.p4, line 43, cha
 
 >>> Running typecheck test on p4/test/program/ill-typed/push_nonconstant.p4
 Error on typecheck: File p4/test/program/ill-typed/push_nonconstant.p4, line 10, characters 8-24
-(check_eq_typ_alpha) Types bit<32> and int are not equal
+(coerce_type) cannot coerce type bit<32> to int
 
 >>> Running typecheck test on p4/test/program/ill-typed/range_e.p4
 Error on typecheck: File p4/test/program/ill-typed/range_e.p4, line 20, characters 12-22

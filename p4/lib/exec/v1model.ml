@@ -265,11 +265,226 @@ module Make (Interp : INTERP) : ARCH = struct
     in
     (ctx, Sig.Ret None)
 
+  (* Calculate a hash function of the value specified by the data
+     parameter.  The value written to the out parameter named result
+     will always be in the range [base, base+max-1] inclusive, if max >=
+     1.  If max=0, the value written to result will always be base.
+
+     Note that the types of all of the parameters may be the same as, or
+     different from, each other, and thus their bit widths are allowed
+     to be different.
+
+     @param O          Must be a type bit<W>
+     @param D          Must be a tuple type where all the fields are bit-fields
+                       (type bit<W> or int<W>) or varbits.
+     @param T          Must be a type bit<W>
+     @param M          Must be a type bit<W>
+
+     extern void hash<O, T, D, M>(out O result, in HashAlgorithm algo,
+                                  in T base, in D data, in M max); *)
+
+  let eval_extern_hash (ctx : Ctx.t) : Ctx.t * Sig.t =
+    let base = Ctx.find_value Ctx.Local "base" ctx |> Value.get_num in
+    let max = Ctx.find_value Ctx.Local "max" ctx |> Value.get_num in
+    let values =
+      Ctx.find_value Ctx.Local "data" ctx |> Value.get_tuple_or_seq
+    in
+    let algo = Ctx.find_value Ctx.Local "algo" ctx in
+    let result =
+      match algo with
+      | EnumFieldV ("HashAlgorithm", algo) ->
+          Hash.compute_checksum algo values |> Hash.adjust base max
+      | _ -> assert false
+    in
+    let value_result =
+      let typ_result = Ctx.find_typ Ctx.Local "O" ctx in
+      let value_result = Value.IntV result in
+      Numerics.eval_cast typ_result value_result
+    in
+    let ctx = Ctx.update_value Ctx.Local "result" value_result ctx in
+    (ctx, Sig.Ret None)
+
+  (* Verifies the checksum of the supplied data.  If this method detects
+     that a checksum of the data is not correct, then the value of the
+     standard_metadata checksum_error field will be equal to 1 when the
+     packet begins ingress processing.
+
+     Calling verify_checksum is only supported in the VerifyChecksum
+     control.
+
+     @param T          Must be a tuple type where all the tuple elements
+                       are of type bit<W>, int<W>, or varbit<W>.  The
+                       total length of the fields must be a multiple of
+                       the output size.
+     @param O          Checksum type; must be bit<X> type.
+     @param condition  If 'false' the verification always succeeds.
+     @param data       Data whose checksum is verified.
+     @param checksum   Expected checksum of the data; note that it must
+                       be a left-value.
+     @param algo       Algorithm to use for checksum (not all algorithms
+                       may be supported).  Must be a compile-time
+                       constant.
+
+     extern void verify_checksum<T, O>(in bool condition, in T data,
+                                       in O checksum, HashAlgorithm algo);
+
+     verify_checksum_with_payload is identical in all ways to
+     verify_checksum, except that it includes the payload of the packet
+     in the checksum calculation.  The payload is defined as "all bytes
+     of the packet which were not parsed by the parser".
+
+     Calling verify_checksum_with_payload is only supported in the
+     VerifyChecksum control.
+
+     extern void verify_checksum_with_payload<T, O>(in bool condition, in T data,
+                                                    in O checksum, HashAlgorithm algo); *)
+  let eval_extern_verify_checksum ~(payload : bool) (ctx : Ctx.t) :
+      Ctx.t * Sig.t =
+    let condition =
+      Ctx.find_value Ctx.Local "condition" ctx |> Value.get_bool
+    in
+    let values =
+      Ctx.find_value Ctx.Local "data" ctx |> Value.get_tuple_or_seq
+    in
+    let values =
+      if payload then
+        let bits_payload = get_pkt_in () |> Core.PacketIn.get_remaining in
+        let width_payload = Array.length bits_payload |> Bigint.of_int in
+        let value_paylod = Core.bits_to_int_unsigned bits_payload in
+        let value_payload = Value.FBitV (width_payload, value_paylod) in
+        values @ [ value_payload ]
+      else values
+    in
+    let checksum_expect =
+      Ctx.find_value Ctx.Local "checksum" ctx |> Value.get_num
+    in
+    let algo = Ctx.find_value Ctx.Local "algo" ctx in
+    if not condition then (ctx, Sig.Ret None)
+    else
+      let checksum_compute =
+        match algo with
+        | EnumFieldV ("HashAlgorithm", algo) ->
+            Hash.compute_checksum algo values
+        | _ -> assert false
+      in
+      let verified = Bigint.(checksum_expect = checksum_compute) in
+      let ctx =
+        if not verified then
+          let value_checksum_error =
+            Value.FBitV (Bigint.of_int 1, Bigint.one)
+          in
+          let value_std_meta =
+            Ctx.find_value Ctx.Global "standard_metadata" ctx
+          in
+          let value_std_meta =
+            Value.update_struct_field value_std_meta "checksum_error"
+              value_checksum_error
+          in
+          Ctx.update_value Ctx.Global "standard_metadata" value_std_meta ctx
+        else ctx
+      in
+      (ctx, Sig.Ret None)
+
+  (* Computes the checksum of the supplied data and writes it to the
+     checksum parameter.
+
+     Calling update_checksum is only supported in the ComputeChecksum
+     control.
+
+     @param T          Must be a tuple type where all the tuple elements
+                       are of type bit<W>, int<W>, or varbit<W>.  The
+                       total length of the fields must be a multiple of
+                       the output size.
+     @param O          Output type; must be bit<X> type.
+     @param condition  If 'false' the checksum parameter is not changed
+     @param data       Data whose checksum is computed.
+     @param checksum   Checksum of the data.
+     @param algo       Algorithm to use for checksum (not all algorithms
+                       may be supported).  Must be a compile-time
+                       constant.
+
+     extern void update_checksum<T, O>(in bool condition, in T data,
+                                       inout O checksum, HashAlgorithm algo);
+
+     update_checksum_with_payload is identical in all ways to
+     update_checksum, except that it includes the payload of the packet
+     in the checksum calculation.  The payload is defined as "all bytes
+     of the packet which were not parsed by the parser".
+
+     Calling update_checksum_with_payload is only supported in the
+     ComputeChecksum control.
+
+     extern void update_checksum_with_payload<T, O>(in bool condition, in T data,
+                                                    inout O checksum, HashAlgorithm algo); *)
+  let eval_extern_update_checksum ~(payload : bool) (ctx : Ctx.t) :
+      Ctx.t * Sig.t =
+    let condition =
+      Ctx.find_value Ctx.Local "condition" ctx |> Value.get_bool
+    in
+    let values =
+      Ctx.find_value Ctx.Local "data" ctx |> Value.get_tuple_or_seq
+    in
+    let values =
+      if payload then
+        let bits_payload = get_pkt_in () |> Core.PacketIn.get_remaining in
+        let width_payload = Array.length bits_payload |> Bigint.of_int in
+        let value_paylod = Core.bits_to_int_unsigned bits_payload in
+        let value_payload = Value.FBitV (width_payload, value_paylod) in
+        values @ [ value_payload ]
+      else values
+    in
+    let algo = Ctx.find_value Ctx.Local "algo" ctx in
+    if not condition then (ctx, Sig.Ret None)
+    else
+      let checksum_compute =
+        match algo with
+        | EnumFieldV ("HashAlgorithm", algo) ->
+            Hash.compute_checksum algo values
+        | _ -> assert false
+      in
+      let value_checksum =
+        let typ_checksum = Ctx.find_typ Ctx.Local "O" ctx in
+        let value_checksum = Value.IntV checksum_compute in
+        Numerics.eval_cast typ_checksum value_checksum
+      in
+      let ctx = Ctx.update_value Ctx.Local "checksum" value_checksum ctx in
+      (ctx, Sig.Ret None)
+
   let eval_extern_func_call (ctx : Ctx.t) (fid : FId.t) : Ctx.t * Sig.t =
-    match fid with
+    let fname, args = fid in
+    match (fname, args) with
+    (* core.p4 *)
     | "verify", [ ("check", false); ("toSignal", false) ] -> Core.verify ctx
+    (* v1model.p4 *)
     | "mark_to_drop", [ ("standard_metadata", false) ] ->
         eval_extern_mark_to_drop ctx
+    | ( "hash",
+        [
+          ("result", false);
+          ("algo", false);
+          ("base", false);
+          ("data", false);
+          ("max", false);
+        ] ) ->
+        eval_extern_hash ctx
+    | ( ("verify_checksum" | "verify_checksum_with_payload"),
+        [
+          ("condition", false);
+          ("data", false);
+          ("checksum", false);
+          ("algo", false);
+        ] ) ->
+        let payload = fname = "verify_checksum_with_payload" in
+        eval_extern_verify_checksum ~payload ctx
+    | ( ("update_checksum" | "update_checksum_with_payload"),
+        [
+          ("condition", false);
+          ("data", false);
+          ("checksum", false);
+          ("algo", false);
+        ] ) ->
+        let payload = fname = "update_checksum_with_payload" in
+        eval_extern_update_checksum ~payload ctx
     | _ ->
         Format.asprintf "(eval_extern) unknown extern: %a" FId.pp fid
         |> error_no_info
