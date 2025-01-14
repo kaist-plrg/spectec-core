@@ -42,24 +42,16 @@ hash(result, algo, base, data, max)
 * issue1049-bmv2.p4
 * issue655-bmv2.p4
 
-## 5. Out-of-bounds stack access
-
-* gauntlet_index_5-bmv2.p4
-
-## 6. Handle ParserInvalidArgumentError
+## 5. Handle ParserInvalidArgumentError
 
 * test-parserinvalidargument-error-bmv2.p4
 
-## 7. Requires better l-value handling, related to direct invocation
+## 6. Requires better l-value handling, related to direct invocation
 
 * issue1566-bmv2.p4
 
 Direct invocation is transformed into a call to `ValueE` in the instantiation phase, but there is no support for l-values in `ValueE`.
 Maybe instantiation should rather translate this into first a binding to a temporary variable and then a call to that variable instead.
-
-## 8. `push_front` and `pop_back` built-in methods
-
-* header-stack-ops-bmv2.p4
 
 # B. Need Test Clarification
 

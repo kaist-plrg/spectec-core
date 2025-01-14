@@ -333,7 +333,10 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_index_5-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_5-bmv2.stf
-Error: unknown error
+[PASS] Expected: 0 00000000000200000000000000000000000000000000 / Got: 0 00000000000200000000000000000000000000000000
+[PASS] Expected: 0 00000000000000000000000000000000000000000000 / Got: 0 00000000000000000000000000000000000000000000
+[PASS] Expected: 0 00000000000100000000000000000000000000000000 / Got: 0 00000000000100000000000000000000000000000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_index_6-bmv2.p4 with p4/test/stf/v1model/gauntlet_index_6-bmv2.stf
 [PASS] Expected: 0 0000000000000000000000000000000000 / Got: 0 0000000000000000000000000000000000
@@ -972,4 +975,4 @@ Run success
 Parser on file: [PASS] 179/179 (100.00%) [FAIL] 0/179 (0.00%)
 Typecheck: [PASS] 178/179 (99.44%) [FAIL] 1/179 (0.56%)
 Instantiate: [PASS] 178/178 (100.00%) [FAIL] 0/178 (0.00%)
-Run: [PASS] 160/178 (89.89%) [FAIL] 18/178 (10.11%)
+Run: [PASS] 161/178 (90.45%) [FAIL] 17/178 (9.55%)

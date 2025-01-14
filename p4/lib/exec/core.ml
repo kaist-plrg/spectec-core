@@ -72,34 +72,7 @@ let int_to_bits_signed value size =
   let value = Bigint.(value land mask) in
   int_to_bits_unsigned value size
 
-let rec sizeof ?(varsize = 0) (ctx : Ctx.t) (typ : Type.t) : int =
-  let typ = Ctx.resolve_typ Ctx.Local typ ctx |> Type.canon in
-  match typ with
-  | DefT _ | SpecT _ -> assert false
-  | BoolT -> 1
-  | FIntT width | FBitT width -> width |> Bigint.to_int_exn
-  | VBitT _ -> varsize
-  | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
-      fields
-      |> List.map (fun (_, typ) -> sizeof ~varsize ctx typ)
-      |> List.fold_left ( + ) 0
-  | _ ->
-      Format.asprintf "(TODO: sizeof) %a" (Type.pp ~level:0) typ
-      |> error_no_info
-
-let rec sizeof_max (ctx : Ctx.t) (typ : Type.t) : int =
-  let typ = Ctx.resolve_typ Ctx.Local typ ctx |> Type.canon in
-  match typ with
-  | DefT _ | SpecT _ -> assert false
-  | BoolT -> 1
-  | FIntT width | FBitT width | VBitT width -> width |> Bigint.to_int_exn
-  | StructT (_, fields) | HeaderT (_, fields) | UnionT (_, fields) ->
-      fields
-      |> List.map (fun (_, typ) -> sizeof_max ctx typ)
-      |> List.fold_left ( + ) 0
-  | _ ->
-      Format.asprintf "(TODO: sizeof_max) %a" (Type.pp ~level:0) typ
-      |> error_no_info
+(* Core extern objects *)
 
 (* Input packet *)
 
@@ -115,6 +88,35 @@ module PacketIn = struct
   let init (pkt : string) =
     let bits = string_to_bits pkt in
     { bits; idx = 0; len = Array.length bits }
+
+  let rec sizeof ?(varsize = 0) (ctx : Ctx.t) (typ : Type.t) : int =
+    let typ = Ctx.resolve_typ Ctx.Local typ ctx |> Type.canon in
+    match typ with
+    | DefT _ | SpecT _ -> assert false
+    | BoolT -> 1
+    | FIntT width | FBitT width -> width |> Bigint.to_int_exn
+    | VBitT _ -> varsize
+    | StructT (_, fields) | HeaderT (_, fields) ->
+        fields
+        |> List.map (fun (_, typ) -> sizeof ~varsize ctx typ)
+        |> List.fold_left ( + ) 0
+    | _ ->
+        Format.asprintf "(TODO: sizeof) %a" (Type.pp ~level:0) typ
+        |> error_no_info
+
+  let rec sizeof_max (ctx : Ctx.t) (typ : Type.t) : int =
+    let typ = Ctx.resolve_typ Ctx.Local typ ctx |> Type.canon in
+    match typ with
+    | DefT _ | SpecT _ -> assert false
+    | BoolT -> 1
+    | FIntT width | FBitT width | VBitT width -> width |> Bigint.to_int_exn
+    | StructT (_, fields) | HeaderT (_, fields) ->
+        fields
+        |> List.map (fun (_, typ) -> sizeof_max ctx typ)
+        |> List.fold_left ( + ) 0
+    | _ ->
+        Format.asprintf "(TODO: sizeof_max) %a" (Type.pp ~level:0) typ
+        |> error_no_info
 
   let parse pkt (size : int) =
     let bits = Array.sub pkt.bits pkt.idx size in
@@ -168,16 +170,6 @@ module PacketIn = struct
             (bits_in, []) fields
         in
         let value = Value.HeaderV (id, true, fields) in
-        (bits_in, value)
-    | UnionV (id, fields) ->
-        let bits_in, fields =
-          List.fold_left
-            (fun (bits_in, fields) (member, value) ->
-              let bits_in, value = write ~varsize bits_in value in
-              (bits_in, fields @ [ (member, value) ]))
-            (bits_in, []) fields
-        in
-        let value = Value.UnionV (id, fields) in
         (bits_in, value)
     | _ ->
         Format.asprintf "(TODO: write) %a" (Value.pp ~level:0) value |> failwith
@@ -310,7 +302,7 @@ module PacketOut = struct
     (ctx, pkt)
 end
 
-(* Core externs *)
+(* Core extern functions *)
 
 (* Check a predicate @check in the parser; if the predicate is true do nothing,
    otherwise set the parser error to @toSignal, and transition to the `reject` state.

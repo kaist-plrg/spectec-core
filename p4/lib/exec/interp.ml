@@ -115,10 +115,15 @@ module Make (Arch : ARCH) : INTERP = struct
         Numerics.eval_bitstring_access value_base idx_hi idx_lo
     | ArrAccLV (lvalue_base, idx) -> (
         let value_base = eval_lvalue cursor ctx lvalue_base in
+        let idx = idx |> Value.get_num in
         match value_base with
-        | TupleV values | StackV (values, _, _) ->
-            let idx = idx |> Value.get_num |> Bigint.to_int_exn in
-            List.nth values idx
+        | TupleV values -> idx |> Bigint.to_int_exn |> List.nth values
+        | StackV (values, _, size) when Bigint.(idx >= size) ->
+            (* (TODO) What if the stack is of size zero? *)
+            let value = List.hd values in
+            let value = Value.set_invalid value in
+            value
+        | StackV (values, _, _) -> idx |> Bigint.to_int_exn |> List.nth values
         | _ ->
             F.asprintf "(eval_lvalue) %a cannot be indexed" (Value.pp ~level:0)
               value_base
@@ -174,9 +179,11 @@ module Make (Arch : ARCH) : INTERP = struct
             |> error_no_info)
     | ArrAccLV (lvalue_base, idx_target) -> (
         let value_base = eval_lvalue cursor ctx lvalue_base in
-        let idx_target = idx_target |> Value.get_num |> Bigint.to_int_exn in
+        let idx_target = idx_target |> Value.get_num in
         match value_base with
+        | StackV (_, _, size) when Bigint.(idx_target >= size) -> ctx
         | StackV (values_stack, idx_stack, size) ->
+            let idx_target = idx_target |> Bigint.to_int_exn in
             let values_stack =
               List.mapi
                 (fun idx value_stack ->
@@ -436,13 +443,18 @@ module Make (Arch : ARCH) : INTERP = struct
       (expr_idx : expr) : Ctx.t * Value.t =
     let ctx, value_base = eval_expr cursor ctx expr_base in
     let ctx, value_idx = eval_expr cursor ctx expr_idx in
+    let idx = value_idx |> Value.get_num in
     match value_base with
-    | TupleV values | StackV (values, _, _) ->
-        let idx = Value.get_num value_idx |> Bigint.to_int_exn in
-        check
-          (0 <= idx && idx < List.length values)
-          "(eval_array_expr) index out of bounds";
-        let value = List.nth values idx in
+    | TupleV values ->
+        let value = idx |> Bigint.to_int_exn |> List.nth values in
+        (ctx, value)
+    | StackV (values, _, size) when Bigint.(idx >= size) ->
+        (* (TODO) What if the stack is of size zero? *)
+        let value = List.hd values in
+        let value = Value.set_invalid value in
+        (ctx, value)
+    | StackV (values, _, _) ->
+        let value = idx |> Bigint.to_int_exn |> List.nth values in
         (ctx, value)
     | _ ->
         F.asprintf "(eval_array_expr) %a cannot be indexed" (Value.pp ~level:0)
