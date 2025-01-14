@@ -207,9 +207,19 @@ let get_struct t : L.id' * (L.member' * t) list =
   | StructV (id, fields) -> (id, fields)
   | _ -> Format.asprintf "Not a struct value: %a" (pp ~level:0) t |> failwith
 
+let get_struct_field t member_target : t =
+  match t with
+  | StructV (_, fields) -> List.assoc member_target fields
+  | _ -> Format.asprintf "Not a struct value: %a" (pp ~level:0) t |> failwith
+
 let get_header t : L.id' * bool * (L.member' * t) list =
   match t with
   | HeaderV (id, valid, fields) -> (id, valid, fields)
+  | _ -> Format.asprintf "Not a header value: %a" (pp ~level:0) t |> failwith
+
+let get_header_field t member_target : t =
+  match t with
+  | HeaderV (_, _, fields) -> List.assoc member_target fields
   | _ -> Format.asprintf "Not a header value: %a" (pp ~level:0) t |> failwith
 
 let get_header_valid t : bool =

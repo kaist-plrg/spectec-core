@@ -32,7 +32,6 @@ add test1 0 data.f1(0x****0101) ingress.setb1((val, 0x7f), (port, 2))
 verify_checksum(condition, data, checksum, algo)
 update_checksum(condition, data, checksum, algo)
 hash(result, algo, base, data, max)
-mark_to_drop(standard_metadata)
 ```
 
 * checksum-l4-bmv2.p4
@@ -41,7 +40,6 @@ mark_to_drop(standard_metadata)
 * checksum3-bmv2.p4
 * constant-in-calculation-bmv2.p4
 * issue1049-bmv2.p4
-* issue1768-bmv2.p4
 * issue655-bmv2.p4
 
 ## 5. Out-of-bounds stack access
@@ -54,14 +52,14 @@ mark_to_drop(standard_metadata)
 
 ## 7. Requires better l-value handling, related to direct invocation
 
+* issue1566-bmv2.p4
+
 Direct invocation is transformed into a call to `ValueE` in the instantiation phase, but there is no support for l-values in `ValueE`.
 Maybe instantiation should rather translate this into first a binding to a temporary variable and then a call to that variable instead.
 
 ## 8. `push_front` and `pop_back` built-in methods
 
 * header-stack-ops-bmv2.p4
-
-* issue1566-bmv2.p4
 
 # B. Need Test Clarification
 

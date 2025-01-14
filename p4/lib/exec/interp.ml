@@ -401,10 +401,12 @@ module Make (Arch : ARCH) : INTERP = struct
       (expr_idx : expr) : Ctx.t * Value.t =
     let ctx, value_base = eval_expr cursor ctx expr_base in
     let ctx, value_idx = eval_expr cursor ctx expr_idx in
-    (* (TODO) Insert bounds check *)
     match value_base with
     | TupleV values | StackV (values, _, _) ->
         let idx = Value.get_num value_idx |> Bigint.to_int_exn in
+        check
+          (0 <= idx && idx < List.length values)
+          "(eval_array_expr) index out of bounds";
         let value = List.nth values idx in
         (ctx, value)
     | _ ->
@@ -647,8 +649,12 @@ module Make (Arch : ARCH) : INTERP = struct
     match sign with
     | Cont | Ret _ | Trans `Accept -> (ctx, Cont)
     | Trans (`Reject value) -> (ctx, Trans (`Reject value))
+    | Trans (`State _) ->
+        F.asprintf
+          "(eval_call_func_stmt) function call should not result in a state \
+           transition"
+        |> error_no_info
     | Exit -> (ctx, Exit)
-    | _ -> assert false
 
   and eval_call_method_stmt (cursor : Ctx.cursor) (ctx : Ctx.t)
       (expr_base : expr) (member : member) (targs : typ list) (args : arg list)
@@ -657,8 +663,12 @@ module Make (Arch : ARCH) : INTERP = struct
     match sign with
     | Cont | Ret _ | Trans `Accept -> (ctx, Cont)
     | Trans (`Reject value) -> (ctx, Trans (`Reject value))
+    | Trans (`State _) ->
+        F.asprintf
+          "(eval_call_method_stmt) method call should not result in a state \
+           transition"
+        |> error_no_info
     | Exit -> (ctx, Exit)
-    | _ -> assert false
 
   and eval_trans_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_label : expr) :
       Ctx.t * Sig.t =
@@ -733,9 +743,12 @@ module Make (Arch : ARCH) : INTERP = struct
       eval_stmt Ctx.Local ctx Sig.Cont stmt_block
     in
     match sign with
-    | Cont -> (ctx, Sig.Trans (`Reject (Value.ErrV "NoError")))
+    | Cont -> (ctx, Sig.Trans (`State "reject"))
     | Trans _ -> (ctx, sign)
-    | _ -> assert false
+    | _ ->
+        F.asprintf
+          "(eval_parser_state) parser state should result in a state transition"
+        |> error_no_info
 
   (* Table evaluation *)
 

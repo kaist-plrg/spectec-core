@@ -144,8 +144,7 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/flag_lost-bmv2.p4 with p4/test/stf/v1model/flag_lost-bmv2.stf
-Error on run: File p4/test/program/well-typed/flag_lost-bmv2.p4, line 66, characters 8-40
-(eval_extern) unknown extern: mark_to_drop(standard_metadata)
+Run success
 
 >>> Running run test on p4/test/program/well-typed/gauntlet_action_mux-bmv2.p4 with p4/test/stf/v1model/gauntlet_action_mux-bmv2.stf
 [PASS] Expected: 0 00000000000000000000000000000100 / Got: 0 00000000000000000000000000000100
@@ -639,8 +638,8 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/issue1768-bmv2.p4 with p4/test/stf/v1model/issue1768-bmv2.stf
-Error on run: File p4/test/program/well-typed/issue1768-bmv2.p4, line 32, characters 12-44
-(eval_extern) unknown extern: mark_to_drop(standard_metadata)
+[PASS] Expected: 0 112233445566778899AABBCCDDEEFF / Got: 0 112233445566778899AABBCCDDEEFF
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue1824-bmv2.p4 with p4/test/stf/v1model/issue1824-bmv2.stf
 [PASS] Expected: 0 000000000BAD778899AABBCC / Got: 0 000000000BAD778899AABBCC
@@ -985,4 +984,4 @@ Run success
 Parser on file: [PASS] 179/179 (100.00%) [FAIL] 0/179 (0.00%)
 Typecheck: [PASS] 178/179 (99.44%) [FAIL] 1/179 (0.56%)
 Instantiate: [PASS] 178/178 (100.00%) [FAIL] 0/178 (0.00%)
-Run: [PASS] 157/178 (88.20%) [FAIL] 21/178 (11.80%)
+Run: [PASS] 159/178 (89.33%) [FAIL] 19/178 (10.67%)

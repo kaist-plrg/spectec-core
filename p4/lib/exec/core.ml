@@ -309,3 +309,17 @@ module PacketOut = struct
     let pkt = deparse pkt hdr in
     (ctx, pkt)
 end
+
+(* Core externs *)
+
+(* Check a predicate @check in the parser; if the predicate is true do nothing,
+   otherwise set the parser error to @toSignal, and transition to the `reject` state.
+
+   extern void verify(in bool check, in error toSignal); *)
+let verify (ctx : Ctx.t) : Ctx.t * Sig.t =
+  let check = Ctx.find_value Ctx.Local "check" ctx |> Value.get_bool in
+  if check then (ctx, Sig.Ret None)
+  else
+    let value_error = Ctx.find_value Ctx.Local "toSignal" ctx in
+    let sign = Sig.Trans (`Reject value_error) in
+    (ctx, sign)

@@ -63,6 +63,10 @@ module Make (Interp : INTERP) : ARCH = struct
     | PacketOut pkt_out -> pkt_out
     | _ -> assert false
 
+  (* Configurations *)
+
+  let drop_spec = Value.FBitV (Bigint.of_int 9, Bigint.of_int 511)
+
   (* Initializer:
       instantiate packet_in/out and
       construct global hdr, meta, and standard_metadata values *)
@@ -140,15 +144,35 @@ module Make (Interp : INTERP) : ARCH = struct
 
   (* Extern interpreter *)
 
+  (* mark_to_drop(standard_metadata) is a primitive action that modifies
+     standard_metadata.egress_spec to an implementation-specific special
+     value that in some cases causes the packet to be dropped at the end
+     of ingress or egress processing.  It also assigns 0 to
+     standard_metadata.mcast_grp.  Either of those metadata fields may
+     be changed by executing later P4 code, after calling
+     mark_to_drop(), and this can change the resulting behavior of the
+     packet to do something other than drop.
+
+     extern void mark_to_drop(inout standard_metadata_t standard_metadata); *)
+  let eval_extern_mark_to_drop (ctx : Ctx.t) : Ctx.t * Sig.t =
+    let value_std_meta = Ctx.find_value Ctx.Local "standard_metadata" ctx in
+    let value_std_meta =
+      Value.update_struct_field value_std_meta "egress_spec" drop_spec
+    in
+    let value_std_meta =
+      Value.update_struct_field value_std_meta "mcast_grp"
+        (FBitV (Bigint.of_int 16, Bigint.of_int 0))
+    in
+    let ctx =
+      Ctx.update_value Ctx.Local "standard_metadata" value_std_meta ctx
+    in
+    (ctx, Sig.Ret None)
+
   let eval_extern_func_call (ctx : Ctx.t) (fid : FId.t) : Ctx.t * Sig.t =
     match fid with
-    | "verify", [ ("check", false); ("toSignal", false) ] ->
-        let check = Ctx.find_value Ctx.Local "check" ctx |> Value.get_bool in
-        if check then (ctx, Sig.Ret None)
-        else
-          let value_error = Ctx.find_value Ctx.Local "toSignal" ctx in
-          let sign = Sig.Trans (`Reject value_error) in
-          (ctx, sign)
+    | "verify", [ ("check", false); ("toSignal", false) ] -> Core.verify ctx
+    | "mark_to_drop", [ ("standard_metadata", false) ] ->
+        eval_extern_mark_to_drop ctx
     | _ ->
         Format.asprintf "(eval_extern) unknown extern: %a" FId.pp fid
         |> error_no_info
@@ -252,7 +276,9 @@ module Make (Interp : INTERP) : ARCH = struct
     in
     Interp.eval_method_call Ctx.Global ctx expr_base func [] args |> fst
 
-  let drive_pipe (ctx : Ctx.t) (port_in : port) (packet_in : packet) : result =
+  let drive_pipe (ctx : Ctx.t) (port_in : port) (packet_in : packet) :
+      result option =
+    let ( let* ) = Option.bind in
     (* Update ingress port *)
     let value_std_meta =
       let value_port = Value.FBitV (Bigint.of_int 9, Bigint.of_int port_in) in
@@ -285,10 +311,26 @@ module Make (Interp : INTERP) : ARCH = struct
           Ctx.update_value Ctx.Global "standard_metadata" value_std_meta ctx
       | _ -> ctx
     in
-    (* Execute the remaining blocks *)
-    let ctx =
-      ctx |> drive_vr |> drive_ig |> drive_eg |> drive_ck |> drive_dep
+    (* Execute the checksum verification block *)
+    let ctx = ctx |> drive_vr in
+    (* Execute the ingress block *)
+    let ctx = ctx |> drive_ig in
+    let drop =
+      let value_std_meta = Ctx.find_value Ctx.Global "standard_metadata" ctx in
+      Value.get_struct_field value_std_meta "egress_spec" = drop_spec
     in
+    let* ctx = if drop then None else Some ctx in
+    (* Execute the egress block if not dropped *)
+    let ctx = ctx |> drive_eg in
+    let drop =
+      let value_std_meta = Ctx.find_value Ctx.Global "standard_metadata" ctx in
+      Value.get_struct_field value_std_meta "egress_spec" = drop_spec
+    in
+    let* ctx = if drop then None else Some ctx in
+    (* Execute the checksum computation block if not dropped *)
+    let ctx = ctx |> drive_ck in
+    (* Execute the deparser block if not dropped *)
+    let ctx = ctx |> drive_dep in
     (* Check egress port *)
     let port_out =
       let value_std_meta = Ctx.find_value Ctx.Global "standard_metadata" ctx in
@@ -298,7 +340,7 @@ module Make (Interp : INTERP) : ARCH = struct
     (* Check output packet *)
     let packet_out = get_pkt_out () |> F.asprintf "%a" Core.PacketOut.pp in
     let packet_out = packet_out ^ pkt_payload in
-    (port_out, packet_out)
+    Some (port_out, packet_out)
 
   let drive_stf_stmt (ctx : Ctx.t) (pass : bool) (queue_packet : result list)
       (queue_expect : result list) (stmt_stf : Stf.Ast.stmt) =
@@ -327,17 +369,20 @@ module Make (Interp : INTERP) : ARCH = struct
     | Stf.Ast.Packet (port_in, packet_in) -> (
         let port_in = int_of_string port_in in
         let packet_in = String.uppercase_ascii packet_in in
-        let port_out, packet_out = drive_pipe ctx port_in packet_in in
-        match queue_expect with
-        | [] ->
-            let queue_packet = queue_packet @ [ (port_out, packet_out) ] in
-            (ctx, pass, queue_packet, queue_expect)
-        | (port_expect, packet_expect) :: queue_expect ->
-            let pass =
-              compare (port_out, packet_out) (port_expect, packet_expect)
-              && pass
-            in
-            (ctx, pass, queue_packet, queue_expect))
+        let result_out = drive_pipe ctx port_in packet_in in
+        match result_out with
+        | None -> (ctx, pass, queue_packet, queue_expect)
+        | Some (port_out, packet_out) -> (
+            match queue_expect with
+            | [] ->
+                let queue_packet = queue_packet @ [ (port_out, packet_out) ] in
+                (ctx, pass, queue_packet, queue_expect)
+            | (port_expect, packet_expect) :: queue_expect ->
+                let pass =
+                  compare (port_out, packet_out) (port_expect, packet_expect)
+                  && pass
+                in
+                (ctx, pass, queue_packet, queue_expect)))
     | Stf.Ast.Expect (port_expect, Some packet_expect) -> (
         let port_expect = int_of_string port_expect in
         let packet_expect = String.uppercase_ascii packet_expect in
@@ -359,12 +404,13 @@ module Make (Interp : INTERP) : ARCH = struct
         |> error_no_info
 
   let drive_stf_stmts (ctx : Ctx.t) (stmts_stf : Stf.Ast.stmt list) : bool =
-    let _, pass, _, _ =
+    let _, pass, _, queue_expect =
       List.fold_left
         (fun (ctx, pass, queue_packet, queue_expect) stmt_stf ->
           drive_stf_stmt ctx pass queue_packet queue_expect stmt_stf)
         (ctx, true, [], []) stmts_stf
     in
+    let pass = pass && queue_expect = [] in
     pass
 
   let drive (cenv : CEnv.t) (fenv : FEnv.t) (venv : VEnv.t) (sto : Sto.t)
