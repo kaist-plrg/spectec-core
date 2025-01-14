@@ -204,23 +204,32 @@ module PacketIn = struct
     let typ = Ctx.find_typ Ctx.Local "T" ctx in
     let hdr = Ctx.find_value Ctx.Local "variableSizeHeader" ctx in
     let varsize =
-      Ctx.find_value Ctx.Local "variableFieldSizeInBits" ctx
+      Ctx.find_value Ctx.Local "variableFieldSizeInBits" ctx |> Value.get_num
+    in
+    let alignment =
+      Numerics.eval_bitstring_access' varsize (Bigint.of_int 2)
+        (Bigint.of_int 0)
       |> Value.get_num |> Bigint.to_int_exn
     in
-    let size = sizeof ~varsize ctx typ in
-    let size_max = sizeof_max ctx typ in
-    if pkt.idx + size > pkt.len then
-      let sign = Sig.Trans (`Reject (Value.ErrV "PacketTooShort")) in
-      (ctx, sign, pkt)
-    else if size > size_max then
-      let sign = Sig.Trans (`Reject (Value.ErrV "HeaderTooShort")) in
+    if alignment <> 0 then
+      let sign = Sig.Trans (`Reject (Value.ErrV "ParserInvalidArgument")) in
       (ctx, sign, pkt)
     else
-      let pkt, bits = sizeof ~varsize ctx typ |> parse pkt in
-      let hdr = write ~varsize bits hdr |> snd in
-      let ctx = Ctx.update_value Ctx.Local "variableSizeHeader" hdr ctx in
-      let sign = Sig.Ret None in
-      (ctx, sign, pkt)
+      let varsize = varsize |> Bigint.to_int_exn in
+      let size = sizeof ~varsize ctx typ in
+      let size_max = sizeof_max ctx typ in
+      if pkt.idx + size > pkt.len then
+        let sign = Sig.Trans (`Reject (Value.ErrV "PacketTooShort")) in
+        (ctx, sign, pkt)
+      else if size > size_max then
+        let sign = Sig.Trans (`Reject (Value.ErrV "HeaderTooShort")) in
+        (ctx, sign, pkt)
+      else
+        let pkt, bits = sizeof ~varsize ctx typ |> parse pkt in
+        let hdr = write ~varsize bits hdr |> snd in
+        let ctx = Ctx.update_value Ctx.Local "variableSizeHeader" hdr ctx in
+        let sign = Sig.Ret None in
+        (ctx, sign, pkt)
 
   (* Read bits from the packet without advancing the cursor.
      @returns: the bits read from the packet.

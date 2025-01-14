@@ -42,11 +42,7 @@ hash(result, algo, base, data, max)
 * issue1049-bmv2.p4
 * issue655-bmv2.p4
 
-## 5. Handle ParserInvalidArgumentError
-
-* test-parserinvalidargument-error-bmv2.p4
-
-## 6. Requires better l-value handling, related to direct invocation
+## 5. Requires better l-value handling, related to direct invocation
 
 * issue1566-bmv2.p4
 
