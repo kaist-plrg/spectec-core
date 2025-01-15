@@ -1,3 +1,13 @@
+Cannot find file for p4/test/stf/v1model/extern-funcs-bmv2.stf in p4/test/program/well-typed
+Cannot find file for p4/test/stf/v1model/gauntlet_hdr_in_value-bmv2.stf in p4/test/program/well-typed
+Cannot find file for p4/test/stf/v1model/gauntlet_optional-bmv2.stf in p4/test/program/well-typed
+Cannot find file for p4/test/stf/v1model/gauntlet_various_ops-bmv2.stf in p4/test/program/well-typed
+Cannot find file for p4/test/stf/v1model/issue1097-2-bmv2.stf in p4/test/program/well-typed
+Cannot find file for p4/test/stf/v1model/issue1814-1-bmv2.stf in p4/test/program/well-typed
+Cannot find file for p4/test/stf/v1model/issue1879-bmv2.stf in p4/test/program/well-typed
+Cannot find file for p4/test/stf/v1model/issue2287-bmv2.stf in p4/test/program/well-typed
+Cannot find file for p4/test/stf/v1model/issue2488-bmv2.stf in p4/test/program/well-typed
+Cannot find file for p4/test/stf/v1model/v1model-special-ops-bmv2.stf in p4/test/program/well-typed
 Running run tests on 179 files
 
 

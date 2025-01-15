@@ -24,6 +24,12 @@ let error_pass_info = error_interp_pass_info
 let check = check_interp
 
 module Make (Arch : ARCH) : INTERP = struct
+  (* Global store *)
+
+  let sto = ref Sto.empty
+  let init (_sto : Sto.t) : unit = sto := _sto
+  let update (oid : OId.t) (obj : Obj.t) : unit = sto := Sto.add oid obj !sto
+
   (* Call kinds
      (i) InterGlobal: call that inherits only global context
      (ii) InterBlock: call that inherits global context,
@@ -56,11 +62,6 @@ module Make (Arch : ARCH) : INTERP = struct
         args : arg list;
         args_default : id' list;
       }
-
-  (* Global store *)
-
-  let sto = ref Envs.Sto.empty
-  let init (_sto : Sto.t) : unit = sto := _sto
 
   (* L-value evaluation *)
 
@@ -1149,12 +1150,12 @@ module Make (Arch : ARCH) : INTERP = struct
     | ExternAbstractMethodF _ ->
         F.asprintf "(eval_call') cannot call an abstract method %a" FId.pp fid
         |> error_no_info
-    | ParserApplyMethodF (params, senv, locals) ->
+    | ParserApplyMethodF (params, decls, senv) ->
         eval_parser_apply_method_call ~pre ~post cursor_caller ctx_caller params
-          args args_default senv locals
-    | ControlApplyMethodF (params, fenv, locals, block) ->
+          args args_default decls senv
+    | ControlApplyMethodF (params, decls, fenv, block) ->
         eval_control_apply_method_call ~pre ~post cursor_caller ctx_caller
-          params args args_default fenv locals block
+          params args args_default decls fenv block
     | TableApplyMethodF table ->
         eval_table_apply_method_call ~pre ~post cursor_caller ctx_caller oid
           table
@@ -1360,9 +1361,16 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and eval_parser_apply_method_call ~pre ~post (cursor_caller : Ctx.cursor)
       (ctx_caller : Ctx.t) (params : param list) (args : arg list)
-      (args_default : id' list) (senv : SEnv.t) (locals : decl list) :
+      (args_default : id' list) (decls : decl list) (senv : SEnv.t) :
       Ctx.t * Sig.t =
     let ctx_callee = pre ctx_caller in
+    let params, args, _params_default, _args_default =
+      align_params_with_args params args args_default
+    in
+    let ctx_caller, ctx_callee, lvalues =
+      copyin cursor_caller ctx_caller Ctx.Block ctx_callee params args
+    in
+    let ctx_callee = eval_decls Ctx.Block ctx_callee decls in
     let ctx_callee =
       { ctx_callee with block = { ctx_callee.block with senv } }
     in
@@ -1373,13 +1381,6 @@ module Make (Arch : ARCH) : INTERP = struct
              Ctx.add_value Ctx.Block id (Value.StateV id) ctx_callee)
            ctx_callee
     in
-    let params, args, _params_default, _args_default =
-      align_params_with_args params args args_default
-    in
-    let ctx_caller, ctx_callee, lvalues =
-      copyin cursor_caller ctx_caller Ctx.Block ctx_callee params args
-    in
-    let ctx_callee = eval_decls Ctx.Block ctx_callee locals in
     let ctx_callee, sign =
       eval_parser_state_machine Ctx.Block ctx_callee
         (Sig.Trans (`State "start"))
@@ -1392,19 +1393,19 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and eval_control_apply_method_call ~pre ~post (cursor_caller : Ctx.cursor)
       (ctx_caller : Ctx.t) (params : param list) (args : arg list)
-      (args_default : id' list) (fenv : FEnv.t) (locals : decl list)
+      (args_default : id' list) (decls : decl list) (fenv : FEnv.t)
       (block : block) : Ctx.t * Sig.t =
     let ctx_callee = pre ctx_caller in
-    let ctx_callee =
-      { ctx_callee with block = { ctx_callee.block with fenv } }
-    in
     let params, args, _params_default, _args_default =
       align_params_with_args params args args_default
     in
     let ctx_caller, ctx_callee, lvalues =
       copyin cursor_caller ctx_caller Ctx.Block ctx_callee params args
     in
-    let ctx_callee = eval_decls Ctx.Block ctx_callee locals in
+    let ctx_callee = eval_decls Ctx.Block ctx_callee decls in
+    let ctx_callee =
+      { ctx_callee with block = { ctx_callee.block with fenv } }
+    in
     let ctx_callee, sign =
       let stmt_block = BlockS { block } $ no_info in
       eval_stmt Ctx.Local ctx_callee Sig.Cont stmt_block
@@ -1470,19 +1471,42 @@ module Make (Arch : ARCH) : INTERP = struct
       | RefV oid, member -> (
           let obj = Sto.find oid !sto in
           match obj with
-          | ExternO (_, venv_block, fenv_block)
-          | ParserO (venv_block, fenv_block)
-          | ControlO (venv_block, fenv_block) ->
+          | ExternO (_, venv_block, fenv_block) ->
               let fid, func, args_default =
                 let args = FId.to_names args in
                 FEnv.find_func (member, args) fenv_block
               in
               InterBlock
                 { oid; fid; venv_block; func; targs; args; args_default }
-          | TableO (_, fenv_block) ->
+          | ParserO (venv_block, params, decls, senv) ->
               let fid, func, args_default =
+                let fid = FId.to_fid ("apply" $ no_info) params in
+                let func = Func.ParserApplyMethodF (params, decls, senv) in
+                let fenv = FEnv.add fid func FEnv.empty in
                 let args = FId.to_names args in
-                FEnv.find_func (member, args) fenv_block
+                FEnv.find_func (member, args) fenv
+              in
+              InterBlock
+                { oid; fid; venv_block; func; targs; args; args_default }
+          | ControlO (venv_block, params, decls, fenv, block) ->
+              let fid, func, args_default =
+                let fid = FId.to_fid ("apply" $ no_info) params in
+                let func =
+                  Func.ControlApplyMethodF (params, decls, fenv, block)
+                in
+                let fenv = FEnv.add fid func FEnv.empty in
+                let args = FId.to_names args in
+                FEnv.find_func (member, args) fenv
+              in
+              InterBlock
+                { oid; fid; venv_block; func; targs; args; args_default }
+          | TableO (_, table) ->
+              let fid, func, args_default =
+                let fid = FId.to_fid ("apply" $ no_info) [] in
+                let func = Func.TableApplyMethodF table in
+                let fenv = FEnv.add fid func FEnv.empty in
+                let args = FId.to_names args in
+                FEnv.find_func (member, args) fenv
               in
               IntraBlock { oid; fid; func; targs; args; args_default }
           | _ ->

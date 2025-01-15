@@ -168,7 +168,7 @@ let rec eq t_a t_b =
 
 (* Getters *)
 
-let rec get_width t =
+let rec get_width t : Bigint.t =
   match t with
   | BoolV _ -> Bigint.one
   | FIntV (width, _) | FBitV (width, _) | VBitV (_, width, _) -> width

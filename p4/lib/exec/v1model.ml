@@ -212,12 +212,11 @@ module Make (Interp : INTERP) : ARCH = struct
     (* (TODO) A better way to get the necessary types? *)
     let typ_hdr, typ_meta, typ_std_meta =
       let obj_main_p = Sto.find [ "main"; "p" ] sto in
-      let func_main_p_apply =
+      let params =
         match obj_main_p with
-        | Obj.ParserO (_, fenv) -> FEnv.find_func_by_name "apply" fenv
+        | Obj.ParserO (_, params, _, _) -> params
         | _ -> assert false
       in
-      let params = Func.get_params func_main_p_apply in
       match params with
       | _
         :: { it = _, _, typ_hdr, _, _; _ }
@@ -665,7 +664,8 @@ module Make (Interp : INTERP) : ARCH = struct
     Some (port_out, packet_out)
 
   let drive_stf_stmt (ctx : Ctx.t) (pass : bool) (queue_packet : result list)
-      (queue_expect : result list) (stmt_stf : Stf.Ast.stmt) =
+      (queue_expect : result list) (stmt_stf : Stf.Ast.stmt) :
+      Ctx.t * bool * result list * result list =
     let compare_packet packet_out packet_expect : bool =
       let to_list s = List.init (String.length s) (String.get s) in
       let packet_out = to_list packet_out in

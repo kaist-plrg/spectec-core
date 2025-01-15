@@ -1,6 +1,7 @@
 open Domain.Dom
 open Il.Ast
 module Envs_static = Runtime_static.Envs
+module Obj = Runtime_dynamic.Object
 module Envs_dynamic = Runtime_dynamic.Envs
 module VEnv = Envs_dynamic.VEnv
 module FEnv = Envs_dynamic.FEnv
@@ -14,7 +15,9 @@ module type ARCH = sig
 end
 
 module type INTERP = sig
+  val sto : Sto.t ref
   val init : Sto.t -> unit
+  val update : OId.t -> Obj.t -> unit
 
   val eval_method_call :
     Ctx.cursor ->

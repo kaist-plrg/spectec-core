@@ -26,17 +26,6 @@ add test1 0 data.f1(0x****0101) ingress.setb1((val, 0x7f), (port, 2))
 * match-on-exprs-bmv2.stf
 * ternary2-bmv2.stf
 
-## 4. Unknown Extern
-
-```plaintext
-verify_checksum_with_payload(condition, data, checksum, algo) // handle payload
-update_checksum_with_payload(condition, data, checksum, algo) // handle payload
-hash(result, algo, base, data, max) // handle crc16
-```
-
-* checksum-l4-bmv2.p4
-* issue1049-bmv2.p4
-
 # B. Need Test Clarification
 
 ## 1. gauntlet_invalid_hdr_short_circuit-bmv2

@@ -331,7 +331,10 @@ let run_test_driver includes arch testdir stfdir =
         let stf_name = String.split_on_char '.' stf_name |> List.hd in
         if FMap.mem stf_name files_map then
           Some (FMap.find stf_name files_map, stf)
-        else None)
+        else (
+          Format.asprintf "Cannot find file for %s in %s" stf testdir
+          |> print_endline;
+          None))
       stfs
   in
   let total = List.length tests in

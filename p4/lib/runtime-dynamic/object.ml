@@ -1,16 +1,17 @@
-open Domain.Dom
-module L = Lang.Ast
-module P = Lang.Pp
 module F = Format
+open Domain.Dom
 module Value = Runtime_static.Value
+module L = Il.Ast
+module P = Il.Pp
 open Util.Pp
 
 type t =
   | ExternO of L.id' * Value.t IdMap.t * Func.t FIdMap.t
-  | ParserO of Value.t IdMap.t * Func.t FIdMap.t
-  | ControlO of Value.t IdMap.t * Func.t FIdMap.t
+  | ParserO of Value.t IdMap.t * L.param list * L.decl list * State.t IdMap.t
+  | ControlO of
+      Value.t IdMap.t * L.param list * L.decl list * Func.t FIdMap.t * L.block
   | PackageO of Value.t IdMap.t
-  | TableO of L.id' * Func.t FIdMap.t
+  | TableO of L.id' * L.table
 
 let pp ?(level = 0) fmt = function
   | ExternO (id, venv, fenv) ->
@@ -21,29 +22,42 @@ let pp ?(level = 0) fmt = function
         (indent (level + 1))
         (FIdMap.pp ~level:(level + 1) Func.pp)
         fenv (indent level)
-  | ParserO (venv, fenv) ->
-      F.fprintf fmt "ParserO {\n%svenv : %a\n%sfenv: %a\n%s}"
+  | ParserO (venv, params, decls, senv) ->
+      F.fprintf fmt "ParserO%a {\n%svenv : %a\n%slocals: %a\n%ssenv: %a\n%s}"
+        (P.pp_params ~level:(level + 1))
+        params
         (indent (level + 1))
         (IdMap.pp ~level:(level + 1) Value.pp)
         venv
         (indent (level + 1))
-        (FIdMap.pp ~level:(level + 1) Func.pp)
-        fenv (indent level)
-  | ControlO (venv, fenv) ->
-      F.fprintf fmt "ControlO {\n%svenv : %a\n%sfenv: %a\n%s}"
+        (P.pp_decls ~level:(level + 2))
+        decls
+        (indent (level + 1))
+        (IdMap.pp ~level:(level + 1) State.pp)
+        senv (indent level)
+  | ControlO (venv, params, decls, fenv, block) ->
+      F.fprintf fmt
+        "ControlO%a {\n%svenv : %a\n%slocals :\n%a\n%sfenv : %a\n%s%a\n%s}"
+        (P.pp_params ~level:(level + 1))
+        params
         (indent (level + 1))
         (IdMap.pp ~level:(level + 1) Value.pp)
         venv
         (indent (level + 1))
+        (P.pp_decls ~level:(level + 2))
+        decls
+        (indent (level + 1))
         (FIdMap.pp ~level:(level + 1) Func.pp)
-        fenv (indent level)
+        fenv
+        (indent (level + 1))
+        (P.pp_block ~level:(level + 1))
+        block (indent level)
   | PackageO venv ->
       F.fprintf fmt "PackageO {\n%svenv : %a\n%s}"
         (indent (level + 1))
         (IdMap.pp ~level:(level + 1) Value.pp)
         venv (indent level)
-  | TableO (id, fenv) ->
-      F.fprintf fmt "TableO %a {\n%sfenv : %a\n%s}" P.pp_id' id
-        (indent (level + 1))
-        (FIdMap.pp ~level:(level + 1) Func.pp)
-        fenv (indent level)
+  | TableO (id, table) ->
+      F.fprintf fmt "TableO %a %a" P.pp_id' id
+        (P.pp_table ~level:(level + 1))
+        table

@@ -141,33 +141,21 @@ and do_instantiate_parser (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
   let ctx_apply_states, sto =
     eval_parser_states cursor ctx_apply_locals sto states
   in
-  let func_apply =
-    let senv_apply = ctx_apply_states.block.senv in
-    Func.ParserApplyMethodF (params, senv_apply, decls)
-  in
-  let ctx_parser =
-    let fid_apply = FId.to_fid ("apply" $ no_info) params in
-    Ctx.add_func_non_overload cursor fid_apply func_apply ctx
-  in
-  let obj = Obj.ParserO (ctx_parser.block.venv, ctx_parser.block.fenv) in
+  let venv = ctx.block.venv in
+  let senv = ctx_apply_states.block.senv in
+  let obj = Obj.ParserO (venv, params, decls, senv) in
   (sto, obj)
 
 and do_instantiate_control (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
-    (params : param list) (decls : decl list) (body : block) : Sto.t * Obj.t =
+    (params : param list) (decls : decl list) (block : block) : Sto.t * Obj.t =
   assert (cursor = Ctx.Block);
   let ctx_apply_locals, sto, decls = eval_decls cursor ctx sto decls in
-  let ctx_apply_block, sto, body =
-    eval_block Ctx.Local ctx_apply_locals sto body
+  let _ctx_apply_block, sto, block =
+    eval_block Ctx.Local ctx_apply_locals sto block
   in
-  let func_apply =
-    let fenv_apply = ctx_apply_block.block.fenv in
-    Func.ControlApplyMethodF (params, fenv_apply, decls, body)
-  in
-  let ctx_control =
-    let fid_apply = FId.to_fid ("apply" $ no_info) params in
-    Ctx.add_func_non_overload cursor fid_apply func_apply ctx
-  in
-  let obj = Obj.ControlO (ctx_control.block.venv, ctx_control.block.fenv) in
+  let venv = ctx.block.venv in
+  let fenv = ctx_apply_locals.block.fenv in
+  let obj = Obj.ControlO (venv, params, decls, fenv, block) in
   (sto, obj)
 
 and do_instantiate_package (_cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) :
@@ -178,10 +166,7 @@ and do_instantiate_package (_cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) :
 (* (TODO) Handle custom table properties *)
 and do_instantiate_table (_cursor : Ctx.cursor) (_ctx : Ctx.t) (sto : Sto.t)
     (id : id') (table : table) : Sto.t * Obj.t =
-  let fid_apply = FId.to_fid ("apply" $ no_info) [] in
-  let func_apply = Func.TableApplyMethodF table in
-  let fenv = FEnv.add fid_apply func_apply FEnv.empty in
-  let obj = Obj.TableO (id, fenv) in
+  let obj = Obj.TableO (id, table) in
   (sto, obj)
 
 (* Argument evaluation *)

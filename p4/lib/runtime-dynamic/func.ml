@@ -12,8 +12,8 @@ type t =
   | ExternFuncF of tparam list * param list
   | ExternMethodF of tparam list * param list * block option
   | ExternAbstractMethodF of tparam list * param list
-  | ParserApplyMethodF of param list * State.t IdMap.t * decl list
-  | ControlApplyMethodF of param list * t FIdMap.t * decl list * block
+  | ParserApplyMethodF of param list * decl list * State.t IdMap.t
+  | ControlApplyMethodF of param list * decl list * t FIdMap.t * block
   | TableApplyMethodF of table
 
 let rec pp ?(level = 0) fmt = function
@@ -47,28 +47,28 @@ let rec pp ?(level = 0) fmt = function
       F.fprintf fmt "ExternAbstractMethodF%a %a" Il.Pp.pp_tparams tparams
         (Il.Pp.pp_params ~level:(level + 1))
         params
-  | ParserApplyMethodF (params, senv, locals) ->
+  | ParserApplyMethodF (params, decls, senv) ->
       F.fprintf fmt "ParserApplyMethodF%a {\n%ssenv : %a\n%slocals :\n%a\n%s}"
         (Il.Pp.pp_params ~level:(level + 1))
         params
         (indent (level + 1))
+        (Il.Pp.pp_decls ~level:(level + 2))
+        decls
+        (indent (level + 1))
         (IdMap.pp ~level:(level + 1) State.pp)
         senv
         (indent (level + 1))
-        (Il.Pp.pp_decls ~level:(level + 2))
-        locals
-        (indent (level + 1))
-  | ControlApplyMethodF (params, fenv, locals, block) ->
+  | ControlApplyMethodF (params, decls, fenv, block) ->
       F.fprintf fmt
-        "ControlApplyMethodF%a {\n%sfenv : %a\n%slocals :\n%a\n%s%a\n%s}"
+        "ControlApplyMethodF%a {\n%slocals : %a\n%sfenv :\n%a\n%s%a\n%s}"
         (Il.Pp.pp_params ~level:(level + 1))
         params
         (indent (level + 1))
+        (Il.Pp.pp_decls ~level:(level + 2))
+        decls
+        (indent (level + 1))
         (FIdMap.pp ~level:(level + 1) pp)
         fenv
-        (indent (level + 1))
-        (Il.Pp.pp_decls ~level:(level + 2))
-        locals
         (indent (level + 1))
         (Il.Pp.pp_block ~level:(level + 1))
         block (indent level)
