@@ -93,6 +93,13 @@ module PacketIn = struct
     let bits = Array.sub pkt.bits pkt.idx (pkt.len - pkt.idx) in
     bits
 
+  let get_remaining_bytes (pkt : t) =
+    let bits = get_remaining pkt in
+    let len = Array.length bits in
+    check (len mod 8 = 0) "(get_remaining_bytes) payload is not byte-aligned";
+    let len = len / 8 in
+    Array.init len (fun i -> Array.sub bits (i * 8) 8 |> bits_to_int_unsigned)
+
   let rec sizeof ?(varsize = 0) (ctx : Ctx.t) (typ : Type.t) : int =
     let typ = Ctx.resolve_typ Ctx.Local typ ctx |> Type.canon in
     match typ with

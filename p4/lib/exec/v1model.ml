@@ -348,11 +348,15 @@ module Make (Interp : INTERP) : ARCH = struct
     in
     let values =
       if payload then
-        let bits_payload = get_pkt_in () |> Core.PacketIn.get_remaining in
-        let width_payload = Array.length bits_payload |> Bigint.of_int in
-        let value_paylod = Core.bits_to_int_unsigned bits_payload in
-        let value_payload = Value.FBitV (width_payload, value_paylod) in
-        values @ [ value_payload ]
+        let bytes_payload =
+          get_pkt_in () |> Core.PacketIn.get_remaining_bytes |> Array.to_list
+        in
+        let values_payload =
+          List.map
+            (fun byte -> Value.FBitV (Bigint.of_int 8, byte))
+            bytes_payload
+        in
+        values @ values_payload
       else values
     in
     let checksum_expect =
@@ -426,11 +430,15 @@ module Make (Interp : INTERP) : ARCH = struct
     in
     let values =
       if payload then
-        let bits_payload = get_pkt_in () |> Core.PacketIn.get_remaining in
-        let width_payload = Array.length bits_payload |> Bigint.of_int in
-        let value_paylod = Core.bits_to_int_unsigned bits_payload in
-        let value_payload = Value.FBitV (width_payload, value_paylod) in
-        values @ [ value_payload ]
+        let bytes_payload =
+          get_pkt_in () |> Core.PacketIn.get_remaining_bytes |> Array.to_list
+        in
+        let values_payload =
+          List.map
+            (fun byte -> Value.FBitV (Bigint.of_int 8, byte))
+            bytes_payload
+        in
+        values @ values_payload
       else values
     in
     let algo = Ctx.find_value Ctx.Local "algo" ctx in
