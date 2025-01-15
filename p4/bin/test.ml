@@ -3,12 +3,12 @@ open Util.Error
 let version = "0.1"
 
 type stat = {
-  mutable fail_parse_file : int;
-  mutable fail_parse_string : int;
-  mutable fail_parse_roundtrip : int;
-  mutable fail_typecheck : int;
-  mutable fail_instantiate : int;
-  mutable fail_run : int;
+  fail_parse_file : int;
+  fail_parse_string : int;
+  fail_parse_roundtrip : int;
+  fail_typecheck : int;
+  fail_instantiate : int;
+  fail_run : int;
 }
 
 let empty_stat =
@@ -20,6 +20,14 @@ let empty_stat =
     fail_instantiate = 0;
     fail_run = 0;
   }
+
+let eq_stat stat_a stat_b =
+  stat_a.fail_parse_file = stat_b.fail_parse_file
+  && stat_a.fail_parse_string = stat_b.fail_parse_string
+  && stat_a.fail_parse_roundtrip = stat_b.fail_parse_roundtrip
+  && stat_a.fail_typecheck = stat_b.fail_typecheck
+  && stat_a.fail_instantiate = stat_b.fail_instantiate
+  && stat_a.fail_run = stat_b.fail_run
 
 type mode = Pos | Neg
 
@@ -86,17 +94,14 @@ let parse_test stat includes filename =
   | TestParseFileErr (msg, info, stat) ->
       Format.asprintf "Error on file parser: %a\n%s" Util.Source.pp info msg
       |> print_endline;
-      stat.fail_parse_file <- stat.fail_parse_file + 1;
-      stat
+      { stat with fail_parse_file = stat.fail_parse_file + 1 }
   | TestParseStringErr (msg, info, stat) ->
       Format.asprintf "Error on string parser: %a\n%s" Util.Source.pp info msg
       |> print_endline;
-      stat.fail_parse_string <- stat.fail_parse_string + 1;
-      stat
+      { stat with fail_parse_string = stat.fail_parse_string + 1 }
   | TestParseRoundtripErr stat ->
       Format.asprintf "Error: parser roundtrip fail" |> print_endline;
-      stat.fail_parse_roundtrip <- stat.fail_parse_roundtrip + 1;
-      stat
+      { stat with fail_parse_roundtrip = stat.fail_parse_roundtrip + 1 }
 
 let parse_test_driver includes testdir =
   let files = collect_files ~suffix:".p4" testdir in
@@ -142,21 +147,17 @@ let typecheck_test stat includes mode filename =
   | TestParseFileErr (msg, info, stat) ->
       Format.asprintf "Error on parser: %a\n%s" Util.Source.pp info msg
       |> print_endline;
-      stat.fail_parse_file <- stat.fail_parse_file + 1;
-      stat
+      { stat with fail_parse_file = stat.fail_parse_file + 1 }
   | TestCheckErr (msg, info, stat) ->
       Format.asprintf "Error on typecheck: %a\n%s" Util.Source.pp info msg
       |> print_endline;
-      stat.fail_typecheck <- stat.fail_typecheck + 1;
-      stat
+      { stat with fail_typecheck = stat.fail_typecheck + 1 }
   | TestCheckNegErr stat ->
       Format.asprintf "Error: typecheck success" |> print_endline;
-      stat.fail_typecheck <- stat.fail_typecheck + 1;
-      stat
+      { stat with fail_typecheck = stat.fail_typecheck + 1 }
   | _ ->
       Format.asprintf "Error: unknown error" |> print_endline;
-      stat.fail_typecheck <- stat.fail_typecheck + 1;
-      stat
+      { stat with fail_typecheck = stat.fail_typecheck + 1 }
 
 let typecheck_test_driver includes mode testdir =
   let files = collect_files ~suffix:".p4" testdir in
@@ -213,22 +214,18 @@ let instantiate_test stat includes filename =
   | TestParseFileErr (msg, info, stat) ->
       Format.asprintf "Error on parser: %a\n%s" Util.Source.pp info msg
       |> print_endline;
-      stat.fail_parse_file <- stat.fail_parse_file + 1;
-      stat
+      { stat with fail_parse_file = stat.fail_parse_file + 1 }
   | TestCheckErr (msg, info, stat) ->
       Format.asprintf "Error on typecheck: %a\n%s" Util.Source.pp info msg
       |> print_endline;
-      stat.fail_typecheck <- stat.fail_typecheck + 1;
-      stat
+      { stat with fail_typecheck = stat.fail_typecheck + 1 }
   | TestInstErr (msg, info, stat) ->
       Format.asprintf "Error on instantiate: %a\n%s" Util.Source.pp info msg
       |> print_endline;
-      stat.fail_instantiate <- stat.fail_instantiate + 1;
-      stat
+      { stat with fail_instantiate = stat.fail_instantiate + 1 }
   | _ ->
       Format.asprintf "Error: unknown error" |> print_endline;
-      stat.fail_instantiate <- stat.fail_instantiate + 1;
-      stat
+      { stat with fail_instantiate = stat.fail_instantiate + 1 }
 
 let instantiate_test_driver includes testdir =
   let files = collect_files ~suffix:".p4" testdir in
@@ -281,37 +278,39 @@ let run_test stat (module Driver : Exec.Driver.DRIVER) includes filename stfname
   | TestParseFileErr (msg, info, stat) ->
       Format.asprintf "Error on parser: %a\n%s" Util.Source.pp info msg
       |> print_endline;
-      stat.fail_parse_file <- stat.fail_parse_file + 1;
-      stat
+      { stat with fail_parse_file = stat.fail_parse_file + 1 }
   | TestCheckErr (msg, info, stat) ->
       Format.asprintf "Error on typecheck: %a\n%s" Util.Source.pp info msg
       |> print_endline;
-      stat.fail_typecheck <- stat.fail_typecheck + 1;
-      stat
+      { stat with fail_typecheck = stat.fail_typecheck + 1 }
   | TestInstErr (msg, info, stat) ->
       Format.asprintf "Error on instantiate: %a\n%s" Util.Source.pp info msg
       |> print_endline;
-      stat.fail_instantiate <- stat.fail_instantiate + 1;
-      stat
+      { stat with fail_instantiate = stat.fail_instantiate + 1 }
   | TestParseStfErr (msg, stat) ->
       Format.asprintf "Error on stf parser:\n%s" msg |> print_endline;
-      stat.fail_run <- stat.fail_run + 1;
-      stat
+      { stat with fail_run = stat.fail_run + 1 }
   | TestInterpErr (msg, info, stat) ->
       Format.asprintf "Error on run: %a\n%s" Util.Source.pp info msg
       |> print_endline;
-      stat.fail_run <- stat.fail_run + 1;
-      stat
+      { stat with fail_run = stat.fail_run + 1 }
   | TestStfErr stat ->
       Format.asprintf "Error on stf test" |> print_endline;
-      stat.fail_run <- stat.fail_run + 1;
-      stat
+      { stat with fail_run = stat.fail_run + 1 }
   | _ ->
       Format.asprintf "Error: unknown error" |> print_endline;
-      stat.fail_run <- stat.fail_run + 1;
-      stat
+      { stat with fail_run = stat.fail_run + 1 }
 
-let run_test_driver includes arch testdir stfdir =
+let run_test_with_patch stat (module Driver : Exec.Driver.DRIVER) includes
+    filename patchname stfname =
+  let stat_next = run_test stat (module Driver) includes filename stfname in
+  if eq_stat stat stat_next then stat
+  else (
+    Format.asprintf ">>>>> Rerunning run test on %s with %s" filename patchname
+    |> print_endline;
+    run_test stat (module Driver) includes filename patchname)
+
+let run_test_driver includes arch testdir patchdir stfdir =
   let (module Driver) = Exec.Gen.gen arch in
   let module FMap = Map.Make (String) in
   let files = collect_files ~suffix:".p4" testdir in
@@ -323,6 +322,17 @@ let run_test_driver includes arch testdir stfdir =
         FMap.add file_name file files_map)
       FMap.empty files
   in
+  let patches = collect_files ~suffix:".stf" patchdir in
+  let patches_map =
+    List.fold_left
+      (fun patches_map patch ->
+        let patch_name =
+          String.split_on_char '/' patch |> List.rev |> List.hd
+        in
+        let patch_name = String.split_on_char '.' patch_name |> List.hd in
+        FMap.add patch_name patch patches_map)
+      FMap.empty patches
+  in
   let stfs = collect_files ~suffix:".stf" stfdir in
   let tests =
     List.filter_map
@@ -330,7 +340,9 @@ let run_test_driver includes arch testdir stfdir =
         let stf_name = String.split_on_char '/' stf |> List.rev |> List.hd in
         let stf_name = String.split_on_char '.' stf_name |> List.hd in
         if FMap.mem stf_name files_map then
-          Some (FMap.find stf_name files_map, stf)
+          let file = FMap.find stf_name files_map in
+          let patch = FMap.find_opt stf_name patches_map in
+          Some (file, patch, stf)
         else (
           Format.asprintf "Cannot find file for %s in %s" stf testdir
           |> print_endline;
@@ -342,10 +354,15 @@ let run_test_driver includes arch testdir stfdir =
   Format.asprintf "Running run tests on %d files\n" total |> print_endline;
   let stat =
     List.fold_left
-      (fun stat (filename, stfname) ->
+      (fun stat (filename, patchname, stfname) ->
         Format.asprintf "\n>>> Running run test on %s with %s" filename stfname
         |> print_endline;
-        run_test stat (module Driver) includes filename stfname)
+        match patchname with
+        | Some patchname ->
+            run_test_with_patch stat
+              (module Driver)
+              includes filename patchname stfname
+        | None -> run_test stat (module Driver) includes filename stfname)
       stat tests
   in
   log_stat "\nParser on file" stat.fail_parse_file total;
@@ -362,9 +379,10 @@ let run_command =
      let open Core.Command.Param in
      let%map includes = flag "-i" (listed string) ~doc:"include paths"
      and arch = flag "-a" (required string) ~doc:"target architecture"
+     and patchdir = flag "-p" (required string) ~doc:"patch directory"
      and testdir = anon ("testdir" %: string)
      and stfdir = anon ("stfdir" %: string) in
-     fun () -> run_test_driver includes arch testdir stfdir)
+     fun () -> run_test_driver includes arch testdir patchdir stfdir)
 
 let command =
   Core.Command.group ~summary:"p4cherry-test"

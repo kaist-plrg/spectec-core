@@ -13,17 +13,9 @@ Refer to **A.1.(3) Implicit cast involving serializable enums** in [typechecker 
 ## 3. Unknown STF statement
 
 ```plaintext
-add simple_table  hdr.h.b(0x55) do_something()
-add test_ingress.pre_tbl1  hdr.ipv4.dst_addr(0xcb0b3bfe) test_ingress.action3()
-add c.t  e(0) c.a()
-add t1  ethernet.srcAddr.slice(0x1f) dstAddr_lsbs(0x010101010101) etherType_less_10(0xf00f) ingressImpl.foo((out_port, 3))
 add test1 0 data.f1(0x****0101) ingress.setb1((val, 0x7f), (port, 2))
 ```
 
-* issue2153-bmv2.stf
-* issue3488-bmv2.stf
-* key-bmv2.stf
-* match-on-exprs-bmv2.stf
 * ternary2-bmv2.stf
 
 # B. Need Test Clarification

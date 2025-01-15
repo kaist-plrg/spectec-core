@@ -11,7 +11,7 @@ type t =
   | ControlO of
       Value.t IdMap.t * L.param list * L.decl list * Func.t FIdMap.t * L.block
   | PackageO of Value.t IdMap.t
-  | TableO of L.id' * L.table
+  | TableO of L.id' * Table.t
 
 let pp ?(level = 0) fmt = function
   | ExternO (id, venv, fenv) ->
@@ -59,5 +59,18 @@ let pp ?(level = 0) fmt = function
         venv (indent level)
   | TableO (id, table) ->
       F.fprintf fmt "TableO %a %a" P.pp_id' id
-        (P.pp_table ~level:(level + 1))
+        (Table.pp ~level:(level + 1))
         table
+
+(* Getters *)
+
+let get_control t =
+  match t with
+  | ControlO (venv, params, decls, fenv, block) ->
+      (venv, params, decls, fenv, block)
+  | _ -> failwith "(get_control) Not a control"
+
+let get_table t : L.id' * Table.t =
+  match t with
+  | TableO (id, table) -> (id, table)
+  | _ -> failwith "(get_table) Not a table"

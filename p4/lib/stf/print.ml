@@ -1,6 +1,9 @@
 open Ast
 module F = Format
 
+let convert_dollar_to_brackets (s : string) : string =
+  Str.global_replace (Str.regexp "\\$\\([0-9]+\\)") "[\\1]" s
+
 let print_option fmt printer = function Some s -> printer fmt s | None -> ()
 let print_int fmt i = F.fprintf fmt "%d" i
 let print_string fmt s = F.fprintf fmt "%s" s

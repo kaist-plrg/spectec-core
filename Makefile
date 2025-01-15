@@ -68,7 +68,7 @@ test-instantiate: build-p4-release
 	./$(TEST) instantiate -i p4/test/arch p4/test/program/well-typed > p4/status/instantiate.log 2> p4/status/instantiate.err
 
 test-run-v1model: build-p4-release
-	./$(TEST) run -i p4/test/arch -a v1model p4/test/program/well-typed p4/test/stf/v1model > p4/status/run-v1model.log 2> p4/status/run-v1model.err
+	./$(TEST) run -a v1model -i p4/test/arch -p p4/test/stf/v1model-patch p4/test/program/well-typed p4/test/stf/v1model > p4/status/run-v1model.log 2> p4/status/run-v1model.err
 
 # Cleanup
 

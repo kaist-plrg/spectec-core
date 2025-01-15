@@ -660,8 +660,9 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/issue2153-bmv2.p4 with p4/test/stf/v1model/issue2153-bmv2.stf
-Error on run: 
-(drive_stf_stmt) unknown stf stmt: add simple_table  hdr.h.b(0x55) do_something() 
+[PASS] Expected: 0 1111111111112222222222223333FFEE / Got: 0 1111111111112222222222223333FFEE
+[PASS] Expected: 1 11111111111122222222222233330055 / Got: 1 11111111111122222222222233330055
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue2170-bmv2.p4 with p4/test/stf/v1model/issue2170-bmv2.stf
 [PASS] Expected: 0 1111111111112222222222223333FFEE / Got: 0 1111111111112222222222223333FFEE
@@ -722,8 +723,9 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/issue3488-bmv2.p4 with p4/test/stf/v1model/issue3488-bmv2.stf
-Error on run: 
-(drive_stf_stmt) unknown stf stmt: add test_ingress.pre_tbl1  hdr.ipv4.dst_addr(0xcb0b3bfe) test_ingress.action3() 
+Error: unknown error
+>>>>> Rerunning run test on p4/test/program/well-typed/issue3488-bmv2.p4 with p4/test/stf/v1model-patch/issue3488-bmv2.stf
+Run success
 
 >>> Running run test on p4/test/program/well-typed/issue447-1-bmv2.p4 with p4/test/stf/v1model/issue447-1-bmv2.stf
 [PASS] Expected: 0 5678123490 / Got: 0 5678123490
@@ -837,12 +839,17 @@ Run success
 Run success
 
 >>> Running run test on p4/test/program/well-typed/key-bmv2.p4 with p4/test/stf/v1model/key-bmv2.stf
-Error on run: 
-(drive_stf_stmt) unknown stf stmt: add c.t  e(0) c.a() 
+Error: unknown error
+>>>>> Rerunning run test on p4/test/program/well-typed/key-bmv2.p4 with p4/test/stf/v1model-patch/key-bmv2.stf
+[PASS] Expected: 0 0000000000000000 / Got: 0 0000000000000000
+[PASS] Expected: 0 0000000100000000 / Got: 0 0000000100000000
+[PASS] Expected: 0 0000000200000002 / Got: 0 0000000200000002
+[PASS] Expected: 0 0000001000000000 / Got: 0 0000001000000000
+Run success
 
 >>> Running run test on p4/test/program/well-typed/match-on-exprs-bmv2.p4 with p4/test/stf/v1model/match-on-exprs-bmv2.stf
-Error on run: 
-(drive_stf_stmt) unknown stf stmt: add t1  ethernet.srcAddr.slice(0x1f) dstAddr_lsbs(0x010101010101) etherType_less_10(0xf00f) ingressImpl.foo((out_port, 3)) 
+[PASS] Expected: 3 FF01FF7DFF010000007C003EF019 / Got: 3 FF01FF7DFF010000007C003EF019
+Run success
 
 >>> Running run test on p4/test/program/well-typed/parser_error-bmv2.p4 with p4/test/stf/v1model/parser_error-bmv2.stf
 [PASS] Expected: 0 0123456789101112131415160A0B / Got: 0 0123456789101112131415160A0B
@@ -952,7 +959,10 @@ Run success
 
 >>> Running run test on p4/test/program/well-typed/ternary2-bmv2.p4 with p4/test/stf/v1model/ternary2-bmv2.stf
 Error on run: 
-(drive_stf_stmt) unknown stf stmt: add test1 0 data.f1(0x****0101) ingress.setb1((val, 0x7f), (port, 2)) 
+(TODO: find_table_key) data.f1
+>>>>> Rerunning run test on p4/test/program/well-typed/ternary2-bmv2.p4 with p4/test/stf/v1model-patch/ternary2-bmv2.stf
+Error on run: File p4/test/program/well-typed/ternary2-bmv2.p4, line 117, characters 8-26
+(TODO: deparse) 2
 
 >>> Running run test on p4/test/program/well-typed/test-parserinvalidargument-error-bmv2.p4 with p4/test/stf/v1model/test-parserinvalidargument-error-bmv2.stf
 [PASS] Expected: 1 FFFFFFFFFF00A5A5A5A5A5A50000DEADBEEF / Got: 1 FFFFFFFFFF00A5A5A5A5A5A50000DEADBEEF
@@ -999,4 +1009,4 @@ Run success
 Parser on file: [PASS] 179/179 (100.00%) [FAIL] 0/179 (0.00%)
 Typecheck: [PASS] 178/179 (99.44%) [FAIL] 1/179 (0.56%)
 Instantiate: [PASS] 178/178 (100.00%) [FAIL] 0/178 (0.00%)
-Run: [PASS] 170/178 (95.51%) [FAIL] 8/178 (4.49%)
+Run: [PASS] 174/178 (97.75%) [FAIL] 4/178 (2.25%)

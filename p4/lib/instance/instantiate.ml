@@ -1,5 +1,5 @@
+module F = Format
 open Domain.Dom
-open Il.Ast
 module L = Lang.Ast
 module Ctk = Runtime_static.Ctk
 module Value = Runtime_static.Value
@@ -7,6 +7,8 @@ module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
 module Numerics = Runtime_static.Numerics
 module Builtins = Runtime_static.Builtins
+open Il.Ast
+module Table = Runtime_dynamic.Table
 module Func = Runtime_dynamic.Func
 module Cons = Runtime_dynamic.Cons
 module Obj = Runtime_dynamic.Object
@@ -15,7 +17,6 @@ module VEnv = Envs.VEnv
 module FEnv = Envs.FEnv
 module CEnv = Envs.CEnv
 module Sto = Envs.Sto
-module F = Format
 open Util.Source
 open Util.Error
 
@@ -166,6 +167,7 @@ and do_instantiate_package (_cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) :
 (* (TODO) Handle custom table properties *)
 and do_instantiate_table (_cursor : Ctx.cursor) (_ctx : Ctx.t) (sto : Sto.t)
     (id : id') (table : table) : Sto.t * Obj.t =
+  let table = Table.init table in
   let obj = Obj.TableO (id, table) in
   (sto, obj)
 

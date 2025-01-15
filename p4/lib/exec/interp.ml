@@ -1,13 +1,13 @@
-open Domain.Dom
-open Il.Ast
-open Driver
-module L = Lang.Ast
 module F = Format
+open Domain.Dom
+module L = Lang.Ast
+open Il.Ast
 module Value = Runtime_static.Value
-module LValue = Runtime_static.Lvalue
 module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
 module Numerics = Runtime_static.Numerics
+module LValue = Runtime_dynamic.Lvalue
+module Table = Runtime_dynamic.Table
 module State = Runtime_dynamic.State
 module Func = Runtime_dynamic.Func
 module Obj = Runtime_dynamic.Object
@@ -16,6 +16,7 @@ module TEnv = Envs.TEnv
 module SEnv = Envs.SEnv
 module FEnv = Envs.FEnv
 module Sto = Envs.Sto
+open Driver
 open Util.Source
 open Util.Error
 
@@ -800,58 +801,6 @@ module Make (Arch : ARCH) : INTERP = struct
 
   (* Table evaluation *)
 
-  and get_table_keys (table : table) : table_keys option =
-    List.filter_map
-      (function L.KeyP table_keys -> Some table_keys | _ -> None)
-      table
-    |> function
-    | [] -> None
-    | [ table_keys ] -> Some table_keys
-    | _ ->
-        "(get_table_keys) a table should have at most one key property"
-        |> error_no_info
-
-  and get_table_actions (table : table) : table_actions =
-    List.filter_map
-      (function L.ActionP table_actions -> Some table_actions | _ -> None)
-      table
-    |> function
-    | [ table_actions ] -> table_actions
-    | _ ->
-        "(get_table_actions) a table should have exactly one action property"
-        |> error_no_info
-
-  and get_table_default (table : table) : table_default =
-    List.filter_map
-      (function L.DefaultP table_default -> Some table_default | _ -> None)
-      table
-    |> function
-    | [] ->
-        let var_action = L.Top ("NoAction" $ no_info) $ no_info in
-        let action_default = (var_action, [], []) $ no_info in
-        (action_default, false) $ no_info
-    | [ table_default ] -> table_default
-    | _ ->
-        "(get_table_default) a table should have at most one default property"
-        |> error_no_info
-
-  (* (TODO) How to support multiple table entry properties? *)
-  and get_table_entries (table : table) : table_entries =
-    List.filter_map
-      (function L.EntryP table_entries -> Some table_entries | _ -> None)
-      table
-    |> function
-    | [] -> ([], false) $ no_info
-    | [ table_entries ] -> table_entries
-    | _ ->
-        "(get_table_entries) a table should have at most one entries property"
-        |> error_no_info
-
-  and get_table_customs (table : table) : table_custom list =
-    List.filter_map
-      (function L.CustomP table_custom -> Some table_custom | _ -> None)
-      table
-
   and eval_table_match_keyset (cursor : Ctx.cursor) (ctx : Ctx.t)
       (table_key : Value.t * match_kind) (keyset : keyset) : Ctx.t * bool =
     let value_key, _match_kind = table_key in
@@ -900,9 +849,8 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and eval_table_match (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id')
       (largest_priority_wins : bool) (table_keys : (Value.t * match_kind) list)
-      (action_default : var * arg list) (table_entries : table_entries) :
+      (action_default : var * arg list) (table_entries : table_entry list) :
       Ctx.t * Value.t * (var * arg list) =
-    let table_entries, _ = table_entries.it in
     let ctx, actions =
       List.fold_left
         (fun (ctx, actions) table_entry ->
@@ -955,14 +903,8 @@ module Make (Arch : ARCH) : INTERP = struct
     in
     (ctx, value, action)
 
-  and eval_table (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id') (table : table)
-      : Ctx.t * Sig.t =
-    (* Fetch table properties *)
-    let table_keys = get_table_keys table in
-    let _table_actions = get_table_actions table in
-    let table_default = get_table_default table in
-    let table_entries = get_table_entries table in
-    let table_customs = get_table_customs table in
+  and eval_table (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id')
+      (table : Table.t) : Ctx.t * Sig.t =
     (* Evaluate table custom properties *)
     let largest_priority_wins =
       List.find_map
@@ -971,28 +913,26 @@ module Make (Arch : ARCH) : INTERP = struct
           if member.it = "largest_priority_wins" then
             eval_expr cursor ctx expr |> snd |> Value.get_bool |> Option.some
           else None)
-        table_customs
+        table.customs
       |> Option.value ~default:true
     in
     (* Evaluate table keys *)
     let ctx, table_keys =
-      match table_keys with
-      | Some table_keys ->
-          List.fold_left
-            (fun (ctx, table_keys) table_key ->
-              let expr_key, match_kind_key, _annos_key = table_key.it in
-              let ctx, value_key = eval_expr cursor ctx expr_key in
-              (ctx, table_keys @ [ (value_key, match_kind_key) ]))
-            (ctx, []) table_keys.it
-      | None -> (ctx, [])
+      List.fold_left
+        (fun (ctx, table_keys) table_key ->
+          let expr_key, match_kind_key, _annos_key = table_key.it in
+          let ctx, value_key = eval_expr cursor ctx expr_key in
+          (ctx, table_keys @ [ (value_key, match_kind_key) ]))
+        (ctx, []) table.keys
     in
     (* Perform match against table entries *)
     let ctx, value, action =
-      let table_action_default, _ = table_default.it in
+      let _, table_action_default = table.action_default in
       let var_action_default, args_action_default, _ =
         table_action_default.it
       in
       let action_default = (var_action_default, args_action_default) in
+      let _, table_entries = table.entries in
       eval_table_match cursor ctx id largest_priority_wins table_keys
         action_default table_entries
     in
@@ -1417,7 +1357,7 @@ module Make (Arch : ARCH) : INTERP = struct
     (ctx_caller, sign)
 
   and eval_table_apply_method_call ~pre ~post (_cursor_caller : Ctx.cursor)
-      (ctx_caller : Ctx.t) (oid : OId.t) (table : table) : Ctx.t * Sig.t =
+      (ctx_caller : Ctx.t) (oid : OId.t) (table : Table.t) : Ctx.t * Sig.t =
     let id = oid |> List.rev |> List.hd in
     let ctx_callee = pre ctx_caller in
     let ctx_callee, sign = eval_table Ctx.Block ctx_callee id table in

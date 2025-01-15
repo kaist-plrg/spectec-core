@@ -1,6 +1,6 @@
 open Domain.Dom
-open Il.Ast
 module Envs_static = Runtime_static.Envs
+open Il.Ast
 module Obj = Runtime_dynamic.Object
 module Envs_dynamic = Runtime_dynamic.Envs
 module VEnv = Envs_dynamic.VEnv

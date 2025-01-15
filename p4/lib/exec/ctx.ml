@@ -1,5 +1,5 @@
-module L = Lang.Ast
 module F = Format
+module L = Lang.Ast
 module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
 module Envs_static = Runtime_static.Envs

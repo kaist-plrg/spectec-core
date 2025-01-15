@@ -1,8 +1,8 @@
-open Domain.Dom
-open Il.Ast
 module F = Format
+open Domain.Dom
 module Value = Runtime_static.Value
-module LValue = Runtime_static.Lvalue
+open Il.Ast
+module LValue = Lvalue
 open Util.Pp
 
 type t =
@@ -14,7 +14,7 @@ type t =
   | ExternAbstractMethodF of tparam list * param list
   | ParserApplyMethodF of param list * decl list * State.t IdMap.t
   | ControlApplyMethodF of param list * decl list * t FIdMap.t * block
-  | TableApplyMethodF of table
+  | TableApplyMethodF of Table.t
 
 let rec pp ?(level = 0) fmt = function
   | BuiltinMethodF (params, _lvalue) ->
@@ -73,9 +73,7 @@ let rec pp ?(level = 0) fmt = function
         (Il.Pp.pp_block ~level:(level + 1))
         block (indent level)
   | TableApplyMethodF table ->
-      F.fprintf fmt "TableApplyMethodF %a"
-        (Il.Pp.pp_table ~level:(level + 1))
-        table
+      F.fprintf fmt "TableApplyMethodF %a" (Table.pp ~level:(level + 1)) table
 
 let eq_kind func_a func_b =
   match (func_a, func_b) with

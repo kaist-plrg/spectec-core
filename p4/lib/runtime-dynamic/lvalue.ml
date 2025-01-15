@@ -1,6 +1,7 @@
-module L = Lang.Ast
-module P = Lang.Pp
 module F = Format
+module L = Il.Ast
+module P = Il.Pp
+module Value = Runtime_static.Value
 
 type t =
   | VarLV of L.var'
