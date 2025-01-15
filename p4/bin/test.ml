@@ -322,7 +322,10 @@ let run_test_driver includes arch testdir patchdir stfdir =
         FMap.add file_name file files_map)
       FMap.empty files
   in
-  let patches = collect_files ~suffix:".stf" patchdir in
+  let patches =
+    Option.map (collect_files ~suffix:".stf") patchdir
+    |> Option.value ~default:[]
+  in
   let patches_map =
     List.fold_left
       (fun patches_map patch ->
@@ -379,7 +382,7 @@ let run_command =
      let open Core.Command.Param in
      let%map includes = flag "-i" (listed string) ~doc:"include paths"
      and arch = flag "-a" (required string) ~doc:"target architecture"
-     and patchdir = flag "-p" (required string) ~doc:"patch directory"
+     and patchdir = flag "-p" (optional string) ~doc:"patch directory"
      and testdir = anon ("testdir" %: string)
      and stfdir = anon ("stfdir" %: string) in
      fun () -> run_test_driver includes arch testdir patchdir stfdir)

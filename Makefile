@@ -54,21 +54,25 @@ fmt:
 test: test-parser test-typecheck-pos test-typecheck-neg test-instantiate test-run-v1model
 
 test-parser: build-p4-release
-	./$(TEST) parse -i p4/test/arch p4/test/program/well-typed > p4/status/parser.log 2> p4/status/parser.err
+	./$(TEST) parse -i p4/test/arch p4/test/p4c/program/well-typed > p4/status/p4c/parser.log 2> p4/status/p4c/parser.err
+	./$(TEST) parse -i p4/test/arch p4/test/petr4/program > p4/status/petr4/parser.log 2> p4/status/petr4/parser.err
 
 test-typecheck-pos: build-p4-release
-	./$(TEST) typecheck -i p4/test/arch -p p4/test/program/well-typed > p4/status/typecheck-pos.log 2> p4/status/typecheck-pos.err
-	./$(TEST) typecheck -i p4/test/arch -p p4/test/program/well-typed-excluded > p4/status/typecheck-pos-excluded.log 2> p4/status/typecheck-pos-excluded.err
+	./$(TEST) typecheck -i p4/test/arch -p p4/test/p4c/program/well-typed > p4/status/p4c/typecheck-pos.log 2> p4/status/p4c/typecheck-pos.err
+	./$(TEST) typecheck -i p4/test/arch -p p4/test/p4c/program/well-typed-excluded > p4/status/p4c/typecheck-pos-excluded.log 2> p4/status/p4c/typecheck-pos-excluded.err
+	./$(TEST) typecheck -i p4/test/arch -p p4/test/petr4/program > p4/status/petr4/typecheck-pos.log 2> p4/status/petr4/typecheck-pos.err
 
 test-typecheck-neg: build-p4-release
-	./$(TEST) typecheck -i p4/test/arch -n p4/test/program/ill-typed > p4/status/typecheck-neg.log 2> p4/status/typecheck-neg.err
-	./$(TEST) typecheck -i p4/test/arch -n p4/test/program/ill-typed-excluded > p4/status/typecheck-neg-excluded.log 2> p4/status/typecheck-neg-excluded.err
+	./$(TEST) typecheck -i p4/test/arch -n p4/test/p4c/program/ill-typed > p4/status/p4c/typecheck-neg.log 2> p4/status/p4c/typecheck-neg.err
+	./$(TEST) typecheck -i p4/test/arch -n p4/test/p4c/program/ill-typed-excluded > p4/status/p4c/typecheck-neg-excluded.log 2> p4/status/p4c/typecheck-neg-excluded.err
 
 test-instantiate: build-p4-release
-	./$(TEST) instantiate -i p4/test/arch p4/test/program/well-typed > p4/status/instantiate.log 2> p4/status/instantiate.err
+	./$(TEST) instantiate -i p4/test/arch p4/test/p4c/program/well-typed > p4/status/p4c/instantiate.log 2> p4/status/p4c/instantiate.err
+	./$(TEST) instantiate -i p4/test/arch p4/test/petr4/program > p4/status/petr4/instantiate.log 2> p4/status/petr4/instantiate.err
 
 test-run-v1model: build-p4-release
-	./$(TEST) run -a v1model -i p4/test/arch -p p4/test/stf/v1model-patch p4/test/program/well-typed p4/test/stf/v1model > p4/status/run-v1model.log 2> p4/status/run-v1model.err
+	./$(TEST) run -a v1model -i p4/test/arch -p p4/test/p4c/stf/v1model-patch p4/test/p4c/program/well-typed p4/test/p4c/stf/v1model > p4/status/p4c/run-v1model.log 2> p4/status/p4c/run-v1model.err
+	./$(TEST) run -a v1model -i p4/test/arch p4/test/petr4/program p4/test/petr4/stf > p4/status/petr4/run-v1model.log 2> p4/status/petr4/run-v1model.err
 
 # Cleanup
 
