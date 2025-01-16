@@ -49,6 +49,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | InterBlock of {
         oid : OId.t;
         fid : FId.t;
+        tenv_block : TEnv.t;
         venv_block : VEnv.t;
         func : Func.t;
         targs : targ list;
@@ -1047,13 +1048,15 @@ module Make (Arch : ARCH) : INTERP = struct
           ~post:(fun (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) ->
             { ctx_caller with global = ctx_callee.global })
           cursor_caller ctx_caller [] fid func targs args args_default
-    | InterBlock { oid; fid; venv_block; func; targs; args; args_default } ->
+    | InterBlock
+        { oid; fid; tenv_block; venv_block; func; targs; args; args_default } ->
         eval_call'
           ~pre:(fun (ctx_caller : Ctx.t) ->
             let ctx_callee = Ctx.copy Global ctx_caller in
             {
               ctx_callee with
-              block = { ctx_caller.block with venv = venv_block };
+              block =
+                { ctx_caller.block with tenv = tenv_block; venv = venv_block };
             })
           ~post:(fun (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) ->
             { ctx_caller with global = ctx_callee.global })
@@ -1411,13 +1414,22 @@ module Make (Arch : ARCH) : INTERP = struct
       | RefV oid, member -> (
           let obj = Sto.find oid !sto in
           match obj with
-          | ExternO (_, venv_block, fenv_block) ->
+          | ExternO (_, tenv_block, venv_block, fenv_block) ->
               let fid, func, args_default =
                 let args = FId.to_names args in
                 FEnv.find_func (member, args) fenv_block
               in
               InterBlock
-                { oid; fid; venv_block; func; targs; args; args_default }
+                {
+                  oid;
+                  fid;
+                  tenv_block;
+                  venv_block;
+                  func;
+                  targs;
+                  args;
+                  args_default;
+                }
           | ParserO (venv_block, params, decls, senv) ->
               let fid, func, args_default =
                 let fid = FId.to_fid ("apply" $ no_info) params in
@@ -1427,7 +1439,16 @@ module Make (Arch : ARCH) : INTERP = struct
                 FEnv.find_func (member, args) fenv
               in
               InterBlock
-                { oid; fid; venv_block; func; targs; args; args_default }
+                {
+                  oid;
+                  fid;
+                  tenv_block = TEnv.empty;
+                  venv_block;
+                  func;
+                  targs;
+                  args;
+                  args_default;
+                }
           | ControlO (venv_block, params, decls, fenv, block) ->
               let fid, func, args_default =
                 let fid = FId.to_fid ("apply" $ no_info) params in
@@ -1439,7 +1460,16 @@ module Make (Arch : ARCH) : INTERP = struct
                 FEnv.find_func (member, args) fenv
               in
               InterBlock
-                { oid; fid; venv_block; func; targs; args; args_default }
+                {
+                  oid;
+                  fid;
+                  tenv_block = TEnv.empty;
+                  venv_block;
+                  func;
+                  targs;
+                  args;
+                  args_default;
+                }
           | TableO (_, table) ->
               let fid, func, args_default =
                 let fid = FId.to_fid ("apply" $ no_info) [] in

@@ -10,6 +10,7 @@ module Table = Runtime_dynamic.Table
 module Func = Runtime_dynamic.Func
 module Obj = Runtime_dynamic.Object
 module Envs_dynamic = Runtime_dynamic.Envs
+module TEnv = Envs_dynamic.TEnv
 module VEnv = Envs_dynamic.VEnv
 module FEnv = Envs_dynamic.FEnv
 module CEnv = Envs_dynamic.CEnv
@@ -90,6 +91,82 @@ module Counter = struct
     (ctx, sign, ctr)
 end
 
+module Register = struct
+  type t = Type.t * Value.t list
+
+  let pp fmt _reg = F.fprintf fmt "Register"
+
+  let init (typ : Type.t) (size : Value.t) : t =
+    let value_default = Numerics.eval_default typ in
+    let size = size |> Value.get_num |> Bigint.to_int_exn in
+    let values = List.init size (fun _ -> value_default) in
+    (typ, values)
+
+  (* read() reads the state of the register array stored at the
+     specified index, and returns it as the value written to the
+     result parameter.
+
+     @param index The index of the register array element to be
+                  read, normally a value in the range [0, size-1].
+     @param result Only types T that are bit<W> are currently
+                  supported.  When index is in range, the value of
+                  result becomes the value read from the register
+                  array element.  When index >= size, the final
+                  value of result is not specified, and should be
+                  ignored by the caller.
+
+     void read(out T result, in bit<32> index); *)
+  let read (ctx : Ctx.t) reg : Ctx.t * Sig.t * t =
+    let typ, values = reg in
+    let index_target =
+      Ctx.find_value Ctx.Local "index" ctx |> Value.get_num |> Bigint.to_int_exn
+    in
+    let value =
+      if index_target < List.length values then List.nth values index_target
+      else Numerics.eval_default typ
+    in
+    let ctx = Ctx.update_value Ctx.Local "result" value ctx in
+    let sign = Sig.Ret None in
+    let reg = (typ, values) in
+    (ctx, sign, reg)
+
+  (* write() writes the state of the register array at the specified
+     index, with the value provided by the value parameter.
+
+     If you wish to perform a read() followed later by a write() to
+     the same register array element, and you wish the
+     read-modify-write sequence to be atomic relative to other
+     processed packets, then there may be parallel implementations
+     of the v1model architecture for which you must execute them in
+     a P4_16 block annotated with an @atomic annotation.  See the
+     P4_16 language specification description of the @atomic
+     annotation for more details.
+
+     @param index The index of the register array element to be
+                  written, normally a value in the range [0,
+                  size-1].  If index >= size, no register state will
+                  be updated.
+     @param value Only types T that are bit<W> are currently
+                  supported.  When index is in range, this
+                  parameter's value is written into the register
+                  array element specified by index.
+     void write(in bit<32> index, in T value); *)
+  let write (ctx : Ctx.t) reg : Ctx.t * Sig.t * t =
+    let typ, values = reg in
+    let index_target =
+      Ctx.find_value Ctx.Local "index" ctx |> Value.get_num |> Bigint.to_int_exn
+    in
+    let value_target = Ctx.find_value Ctx.Local "value" ctx in
+    let values =
+      List.mapi
+        (fun idx value -> if idx = index_target then value_target else value)
+        values
+    in
+    let sign = Sig.Ret None in
+    let reg = (typ, values) in
+    (ctx, sign, reg)
+end
+
 (* V1Model Pipeline *)
 
 (* (TODO) Inserts VoidT, shouldn't matter in dynamics but not a good practice either *)
@@ -126,6 +203,7 @@ module Make (Interp : INTERP) : ARCH = struct
     | PacketIn of Core.PacketIn.t
     | PacketOut of Core.PacketOut.t
     | Counter of Counter.t
+    | Register of Register.t
 
   let pp_extern fmt extern =
     match extern with
@@ -133,6 +211,7 @@ module Make (Interp : INTERP) : ARCH = struct
     | PacketOut pkt_out ->
         F.fprintf fmt "PacketOut %a" Core.PacketOut.pp pkt_out
     | Counter ctr -> F.fprintf fmt "Counter %a" Counter.pp ctr
+    | Register reg -> F.fprintf fmt "Register %a" Register.pp reg
 
   let externs = ref Externs.empty
 
@@ -195,12 +274,25 @@ module Make (Interp : INTERP) : ARCH = struct
     Sto.iter
       (fun oid obj ->
         match obj with
-        | Obj.ExternO ("counter", venv, _) ->
+        | Obj.ExternO ("counter", _, venv, _) ->
             let size = VEnv.find "size" venv in
             let typ = VEnv.find "type" venv in
             let ctr = Counter.init size typ in
             let id = String.concat "." oid in
             externs := Externs.add id (Counter ctr) !externs
+        | _ -> ())
+      sto
+
+  let init_registers (sto : Sto.t) : unit =
+    Sto.iter
+      (fun oid obj ->
+        match obj with
+        | Obj.ExternO ("register", tenv, venv, _) ->
+            let typ = TEnv.find "T" tenv in
+            let size = VEnv.find "size" venv in
+            let reg = Register.init typ size in
+            let id = String.concat "." oid in
+            externs := Externs.add id (Register reg) !externs
         | _ -> ())
       sto
 
@@ -236,6 +328,7 @@ module Make (Interp : INTERP) : ARCH = struct
     let ctx, sto = init_instantiate_packet_in ctx sto in
     let ctx, sto = init_instantiate_packet_out ctx sto in
     init_counters sto;
+    init_registers sto;
     let ctx = init_vars ctx sto in
     (ctx, sto)
 
@@ -532,6 +625,14 @@ module Make (Interp : INTERP) : ARCH = struct
         let len = pkt_in.len |> Bigint.of_int in
         let ctx, sign, ctr = Counter.count ctx len ctr in
         externs := Externs.add id (Counter ctr) !externs;
+        (ctx, sign)
+    | Register reg, ("read", [ ("result", false); ("index", false) ]) ->
+        let ctx, sign, reg = Register.read ctx reg in
+        externs := Externs.add id (Register reg) !externs;
+        (ctx, sign)
+    | Register reg, ("write", [ ("index", false); ("value", false) ]) ->
+        let ctx, sign, reg = Register.write ctx reg in
+        externs := Externs.add id (Register reg) !externs;
         (ctx, sign)
     | _ ->
         Format.asprintf "(TODO: eval_extern_method_call) %a.%a" pp_extern extern

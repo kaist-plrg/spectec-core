@@ -50,7 +50,8 @@ let bits_to_string bits =
 
 let bits_to_int_unsigned bits =
   Array.fold_left
-    (fun i bit -> Bigint.(i lsl 1 + if bit then one else zero)) Bigint.zero bits
+    (fun i bit -> Bigint.((i lsl 1) + if bit then one else zero))
+    Bigint.zero bits
 
 let bits_to_int_signed bits =
   let sign = bits.(0) in

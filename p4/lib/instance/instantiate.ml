@@ -62,10 +62,10 @@ let align_cparams_with_args (cparams : cparam list) (args : arg list)
   (cparams, args, cparams_default, args_default)
 
 let rec do_instantiate (cursor : Ctx.cursor) (ctx_caller : Ctx.t) (sto : Sto.t)
-    (cons : Cons.t) (_targs : typ list) (args : arg list)
+    (cons : Cons.t) (targs : typ list) (args : arg list)
     (args_default : id' list) : Sto.t * Obj.t =
   (* Unpack constructor *)
-  let _tparams, cparams, do_instantiate_cons =
+  let tparams, cparams, do_instantiate_cons =
     match cons with
     | ExternC (id, tparams, cparams, mthds) ->
         let do_instantiate_cons ctx_callee sto =
@@ -98,7 +98,9 @@ let rec do_instantiate (cursor : Ctx.cursor) (ctx_caller : Ctx.t) (sto : Sto.t)
     let ctx_callee = Ctx.empty in
     { ctx_callee with path = ctx_caller.path; global = ctx_caller.global }
   in
-  (* Bind constructor parameters to the callee context *)
+  (* Bind type arguments to the callee context *)
+  let ctx_callee = Ctx.add_typs Ctx.Block tparams targs ctx_callee in
+  (* Bind constructor arguments to the callee context *)
   let cparams, args, cparams_default, args_default =
     align_cparams_with_args cparams args args_default
   in
@@ -129,9 +131,10 @@ and do_instantiate_extern (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (id : id') (mthds : mthd list) : Sto.t * Obj.t =
   assert (cursor = Ctx.Block);
   let ctx = eval_mthds cursor ctx mthds in
+  let tenv = ctx.block.tenv in
   let venv = ctx.block.venv in
   let fenv = ctx.block.fenv in
-  let obj = Obj.ExternO (id, venv, fenv) in
+  let obj = Obj.ExternO (id, tenv, venv, fenv) in
   (sto, obj)
 
 and do_instantiate_parser (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
@@ -161,7 +164,9 @@ and do_instantiate_control (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 
 and do_instantiate_package (_cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) :
     Sto.t * Obj.t =
-  let obj = Obj.PackageO ctx.block.venv in
+  let tenv = ctx.block.tenv in
+  let venv = ctx.block.venv in
+  let obj = Obj.PackageO (tenv, venv) in
   (sto, obj)
 
 (* (TODO) Handle custom table properties *)
@@ -499,7 +504,7 @@ and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
   in
   let sto, obj =
     match obj with
-    | Obj.ExternO (id_obj, venv_obj, fenv_obj) ->
+    | Obj.ExternO (id_obj, tenv_obj, venv_obj, fenv_obj) ->
         let ctx_init =
           { Ctx.empty with path = ctx.path @ [ id.it ]; global = ctx.global }
         in
@@ -523,7 +528,7 @@ and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
                  FEnv.remove fid fenv_obj |> FEnv.add fid func)
                fenv_obj
         in
-        (sto, Obj.ExternO (id_obj, venv_obj, fenv_obj))
+        (sto, Obj.ExternO (id_obj, tenv_obj, venv_obj, fenv_obj))
     | _ -> (sto, obj)
   in
   let oid = ctx.path @ [ id.it ] in

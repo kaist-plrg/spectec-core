@@ -134,7 +134,10 @@ Run success
 Run success
 
 >>> Running run test on p4/test/petr4/program/register.p4 with p4/test/petr4/stf/register.stf
-Error: unknown error
+[PASS] Expected: 0 0000000000 / Got: 0 0000000000
+[PASS] Expected: 0 0000000F00 / Got: 0 0000000F00
+[PASS] Expected: 0 0000001E00 / Got: 0 0000001E00
+Run success
 
 >>> Running run test on p4/test/petr4/program/scope.p4 with p4/test/petr4/stf/scope.stf
 [PASS] Expected: 0 00 / Got: 0 00
@@ -195,4 +198,4 @@ Run success
 Parser on file: [PASS] 48/48 (100.00%) [FAIL] 0/48 (0.00%)
 Typecheck: [PASS] 43/48 (89.58%) [FAIL] 5/48 (10.42%)
 Instantiate: [PASS] 43/43 (100.00%) [FAIL] 0/43 (0.00%)
-Run: [PASS] 37/43 (86.05%) [FAIL] 6/43 (13.95%)
+Run: [PASS] 38/43 (88.37%) [FAIL] 5/43 (11.63%)

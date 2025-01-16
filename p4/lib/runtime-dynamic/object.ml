@@ -1,21 +1,27 @@
 module F = Format
 open Domain.Dom
 module Value = Runtime_static.Value
+module Types = Runtime_static.Tdomain.Types
+module Type = Types.Type
 module L = Il.Ast
 module P = Il.Pp
 open Util.Pp
 
 type t =
-  | ExternO of L.id' * Value.t IdMap.t * Func.t FIdMap.t
+  | ExternO of L.id' * Type.t TIdMap.t * Value.t IdMap.t * Func.t FIdMap.t
   | ParserO of Value.t IdMap.t * L.param list * L.decl list * State.t IdMap.t
   | ControlO of
       Value.t IdMap.t * L.param list * L.decl list * Func.t FIdMap.t * L.block
-  | PackageO of Value.t IdMap.t
+  | PackageO of Type.t TIdMap.t * Value.t IdMap.t
   | TableO of L.id' * Table.t
 
 let pp ?(level = 0) fmt = function
-  | ExternO (id, venv, fenv) ->
-      F.fprintf fmt "ExternO %a {\n%svenv : %a\n%sfenv: %a\n%s}" P.pp_id' id
+  | ExternO (id, tenv, venv, fenv) ->
+      F.fprintf fmt "ExternO %a {\n%stenv : %a\n%svenv : %a\n%sfenv: %a\n%s}"
+        P.pp_id' id
+        (indent (level + 1))
+        (TIdMap.pp ~level:(level + 1) Type.pp)
+        tenv
         (indent (level + 1))
         (IdMap.pp ~level:(level + 1) Value.pp)
         venv
@@ -52,8 +58,11 @@ let pp ?(level = 0) fmt = function
         (indent (level + 1))
         (P.pp_block ~level:(level + 1))
         block (indent level)
-  | PackageO venv ->
-      F.fprintf fmt "PackageO {\n%svenv : %a\n%s}"
+  | PackageO (tenv, venv) ->
+      F.fprintf fmt "PackageO {\n%stenv : %a\n%svenv : %a\n%s}"
+        (indent (level + 1))
+        (TIdMap.pp ~level:(level + 1) Type.pp)
+        tenv
         (indent (level + 1))
         (IdMap.pp ~level:(level + 1) Value.pp)
         venv (indent level)
