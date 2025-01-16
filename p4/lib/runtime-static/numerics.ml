@@ -101,7 +101,7 @@ let eval_unop_uminus (value : Value.t) : Value.t =
   match value with
   | IntV value -> IntV (Bigint.neg value)
   | FIntV (width, value) ->
-      let value = to_two_complement (Bigint.neg value) width in
+      let value = to_two_complement Bigint.(-value) width in
       FIntV (width, value)
   | FBitV (width, value) ->
       let value = Bigint.(power_of_two width - value) in
@@ -609,7 +609,9 @@ and eval_cast_fint (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
   match typ with
   | SpecT _ | DefT _ -> assert false
   | IntT -> IntV i
-  | FIntT width_to -> int_of_raw_int i width_to
+  | FIntT width_to ->
+      let i = to_two_complement i width in
+      int_of_raw_int i width_to
   | FBitT width_to -> bit_of_raw_int i width_to
   | NewT (_, typ_inner) -> eval_cast_fint typ_inner width i
   | SetT typ_inner ->

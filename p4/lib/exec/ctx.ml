@@ -123,22 +123,22 @@ let rec update_value_opt cursor id value ctx =
       if Option.is_some ctx' then ctx' else update_value_opt Global id value ctx
   | Local ->
       let venvs = ctx.local.venvs in
-      let ctx', _ =
+      let venvs, updated =
         List.fold_left
-          (fun (ctx', venvs) venv ->
-            match ctx' with
-            | Some ctx' -> (Some ctx', venvs @ [ venv ])
-            | None -> (
-                match VEnv.find_opt id venv with
-                | Some _ ->
-                    let venv = VEnv.add id value venv in
-                    let venvs = venvs @ [ venv ] in
-                    let ctx = { ctx with local = { ctx.local with venvs } } in
-                    (Some ctx, venvs)
-                | None -> (None, venvs @ [ venv ])))
-          (None, []) venvs
+          (fun (venvs, updated) venv ->
+            if updated then (venvs @ [ venv ], updated)
+            else
+              match VEnv.find_opt id venv with
+              | Some _ ->
+                  let venv = VEnv.add id value venv in
+                  (venvs @ [ venv ], true)
+              | None -> (venvs @ [ venv ], false))
+          ([], false) venvs
       in
-      if Option.is_some ctx' then ctx' else update_value_opt Block id value ctx
+      if updated then
+        let ctx = { ctx with local = { ctx.local with venvs } } in
+        Some ctx
+      else update_value_opt Block id value ctx
 
 let update_value cursor id value ctx =
   update_value_opt cursor id value ctx |> Option.get

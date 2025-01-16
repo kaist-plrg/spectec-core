@@ -116,6 +116,7 @@ let compute_hash (algo : string) ((width, value) : Bigint.t * Bigint.t) :
   match algo with
   | "csum16" -> compute_hash_csum16 width value
   | "crc16" -> compute_hash_crc16 width value
+  | "identity" -> value
   | _ -> F.asprintf "(TODO: compute_hash) %s" algo |> error_no_info
 
 let package (values : Value.t list) : Bigint.t * Bigint.t =

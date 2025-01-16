@@ -22,8 +22,8 @@ Run success
 Run success
 
 >>> Running run test on p4/test/petr4/program/casts.p4 with p4/test/petr4/stf/casts.stf
-[FAIL] Expected: 0 010F0F04FFFFF800000005000000050000000500000005000000060000000600 / Got: 0 010F0F040F0F0800000005000000050000000500000005000000060000000600
-Error on stf test
+[PASS] Expected: 0 010F0F04FFFFF800000005000000050000000500000005000000060000000600 / Got: 0 010F0F04FFFFF800000005000000050000000500000005000000060000000600
+Run success
 
 >>> Running run test on p4/test/petr4/program/counter.p4 with p4/test/petr4/stf/counter.stf
 [PASS] Expected: 0 00 / Got: 0 00
@@ -58,11 +58,12 @@ Run success
 Run success
 
 >>> Running run test on p4/test/petr4/program/hash_identity.p4 with p4/test/petr4/stf/hash_identity.stf
-Error on run: File p4/test/petr4/program/hash_identity.p4, from line 51 character 8 to line 52 character 101
-(TODO: compute_hash) identity
+[PASS] Expected: 0 0123456789ABCDEF0123456789ABCD0000000000 / Got: 0 0123456789ABCDEF0123456789ABCD0000000000
+Run success
 
 >>> Running run test on p4/test/petr4/program/header-test.p4 with p4/test/petr4/stf/header-test.stf
-Error: unknown error
+[PASS] Expected: 0 01010000010001020300 / Got: 0 01010000010001020300
+Run success
 
 >>> Running run test on p4/test/petr4/program/hello.p4 with p4/test/petr4/stf/hello.stf
 [PASS] Expected: 9 2A2A*A2A2A2A2A2*2A2A2A2A21 / Got: 9 2A2A2A2A2A2A2A2A2A2A2A2A21
@@ -152,7 +153,8 @@ Run success
 Run success
 
 >>> Running run test on p4/test/petr4/program/struct.p4 with p4/test/petr4/stf/struct.stf
-Error: unknown error
+[PASS] Expected: 0 2A012A0100 / Got: 0 2A012A0100
+Run success
 
 >>> Running run test on p4/test/petr4/program/subcontrol.p4 with p4/test/petr4/stf/subcontrol.stf
 [PASS] Expected: 0 0700 / Got: 0 0700
@@ -193,4 +195,4 @@ Run success
 Parser on file: [PASS] 48/48 (100.00%) [FAIL] 0/48 (0.00%)
 Typecheck: [PASS] 43/48 (89.58%) [FAIL] 5/48 (10.42%)
 Instantiate: [PASS] 43/43 (100.00%) [FAIL] 0/43 (0.00%)
-Run: [PASS] 33/43 (76.74%) [FAIL] 10/43 (23.26%)
+Run: [PASS] 37/43 (86.05%) [FAIL] 6/43 (13.95%)
