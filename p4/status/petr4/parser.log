@@ -1,0 +1,150 @@
+Running parser roundtrip tests on 48 files
+
+
+>>> Running parser roundtrip test on p4/test/petr4/program/bitstring_slices.p4
+Parser roundtrip success: p4/test/petr4/program/bitstring_slices.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/bitstrings.p4
+Parser roundtrip success: p4/test/petr4/program/bitstrings.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/bitstrings2.p4
+Parser roundtrip success: p4/test/petr4/program/bitstrings2.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/bool.p4
+Parser roundtrip success: p4/test/petr4/program/bool.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/bool2.p4
+Parser roundtrip success: p4/test/petr4/program/bool2.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/casts.p4
+Parser roundtrip success: p4/test/petr4/program/casts.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/counter.p4
+Parser roundtrip success: p4/test/petr4/program/counter.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/dynamic.p4
+Parser roundtrip success: p4/test/petr4/program/dynamic.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/equality.p4
+Parser roundtrip success: p4/test/petr4/program/equality.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/error.p4
+Parser roundtrip success: p4/test/petr4/program/error.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/error2.p4
+Parser roundtrip success: p4/test/petr4/program/error2.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/exit.p4
+Parser roundtrip success: p4/test/petr4/program/exit.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/extraction.p4
+Parser roundtrip success: p4/test/petr4/program/extraction.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/function_scoping.p4
+Parser roundtrip success: p4/test/petr4/program/function_scoping.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/hash_identity.p4
+Parser roundtrip success: p4/test/petr4/program/hash_identity.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/header-test.p4
+Parser roundtrip success: p4/test/petr4/program/header-test.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/hello.p4
+Parser roundtrip success: p4/test/petr4/program/hello.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/int.p4
+Parser roundtrip success: p4/test/petr4/program/int.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/int2.p4
+Parser roundtrip success: p4/test/petr4/program/int2.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/issue235.p4
+Parser roundtrip success: p4/test/petr4/program/issue235.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/issue393-1.p4
+Parser roundtrip success: p4/test/petr4/program/issue393-1.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/issue393-2.p4
+Parser roundtrip success: p4/test/petr4/program/issue393-2.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/issue396-1.p4
+Parser roundtrip success: p4/test/petr4/program/issue396-1.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/masks.p4
+Parser roundtrip success: p4/test/petr4/program/masks.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/multiple-calls.p4
+Parser roundtrip success: p4/test/petr4/program/multiple-calls.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/named-arg-copy-out.p4
+Parser roundtrip success: p4/test/petr4/program/named-arg-copy-out.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/named-arg.p4
+Parser roundtrip success: p4/test/petr4/program/named-arg.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/out_params.p4
+Parser roundtrip success: p4/test/petr4/program/out_params.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/parser-locators-stack.p4
+Parser roundtrip success: p4/test/petr4/program/parser-locators-stack.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/parser-locators.p4
+Parser roundtrip success: p4/test/petr4/program/parser-locators.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/parsing.p4
+Parser roundtrip success: p4/test/petr4/program/parsing.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/ranges.p4
+Parser roundtrip success: p4/test/petr4/program/ranges.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/rawint.p4
+Parser roundtrip success: p4/test/petr4/program/rawint.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/register.p4
+Parser roundtrip success: p4/test/petr4/program/register.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/scope.p4
+Parser roundtrip success: p4/test/petr4/program/scope.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/shifts.p4
+Parser roundtrip success: p4/test/petr4/program/shifts.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/simple_function.p4
+Parser roundtrip success: p4/test/petr4/program/simple_function.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/stack.p4
+Parser roundtrip success: p4/test/petr4/program/stack.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/struct.p4
+Parser roundtrip success: p4/test/petr4/program/struct.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/subcontrol.p4
+Parser roundtrip success: p4/test/petr4/program/subcontrol.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/subparser.p4
+Parser roundtrip success: p4/test/petr4/program/subparser.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/switch-stmt.p4
+Parser roundtrip success: p4/test/petr4/program/switch-stmt.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/table.p4
+Parser roundtrip success: p4/test/petr4/program/table.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/table2.p4
+Parser roundtrip success: p4/test/petr4/program/table2.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/table3.p4
+Parser roundtrip success: p4/test/petr4/program/table3.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/union.p4
+Parser roundtrip success: p4/test/petr4/program/union.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/uop.p4
+Parser roundtrip success: p4/test/petr4/program/uop.p4
+
+>>> Running parser roundtrip test on p4/test/petr4/program/zero.p4
+Parser roundtrip success: p4/test/petr4/program/zero.p4
+
+Parser on file: [PASS] 48/48 (100.00%) [FAIL] 0/48 (0.00%)
+Parser on string: [PASS] 48/48 (100.00%) [FAIL] 0/48 (0.00%)
+Parser roundtrip: [PASS] 48/48 (100.00%) [FAIL] 0/48 (0.00%)

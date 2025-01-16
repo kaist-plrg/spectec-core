@@ -1,0 +1,155 @@
+Running instantiate tests on 48 files
+
+
+>>> Running instantiate test on p4/test/petr4/program/bitstring_slices.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/bitstrings.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/bitstrings2.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/bool.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/bool2.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/casts.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/counter.p4
+Instantiate success: 10 objects
+
+>>> Running instantiate test on p4/test/petr4/program/dynamic.p4
+Error on typecheck: File p4/test/petr4/program/dynamic.p4, line 35, characters 2-9
+key already exists: x
+
+>>> Running instantiate test on p4/test/petr4/program/equality.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/error.p4
+Error on typecheck: File p4/test/petr4/program/error.p4, line 15, characters 23-30
+(type_array_acc_expr) Index 15 out of range for hdr
+
+>>> Running instantiate test on p4/test/petr4/program/error2.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/exit.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/extraction.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/function_scoping.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/hash_identity.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/header-test.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/hello.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/int.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/int2.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/issue235.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/issue393-1.p4
+Instantiate success: 8 objects
+
+>>> Running instantiate test on p4/test/petr4/program/issue393-2.p4
+Error on typecheck: File p4/test/petr4/program/issue393-2.p4, line 26, characters 2-18
+key already exists: x
+
+>>> Running instantiate test on p4/test/petr4/program/issue396-1.p4
+Error on typecheck: File p4/test/petr4/program/issue396-1.p4, line 36, characters 20-24
+(check_call_site) func(inout y bit<8>) -> bit<8> cannot be called from Control
+
+>>> Running instantiate test on p4/test/petr4/program/masks.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/multiple-calls.p4
+Instantiate success: 8 objects
+
+>>> Running instantiate test on p4/test/petr4/program/named-arg-copy-out.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/named-arg.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/out_params.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/parser-locators-stack.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/parser-locators.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/parsing.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/ranges.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/rawint.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/register.p4
+Instantiate success: 8 objects
+
+>>> Running instantiate test on p4/test/petr4/program/scope.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/shifts.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/simple_function.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/stack.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/struct.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/subcontrol.p4
+Instantiate success: 8 objects
+
+>>> Running instantiate test on p4/test/petr4/program/subparser.p4
+Error on typecheck: File p4/test/petr4/program/subparser.p4, line 74, characters 8-56
+(check_ctk) standard_metadata is not a compile-time known expression
+
+>>> Running instantiate test on p4/test/petr4/program/switch-stmt.p4
+Instantiate success: 8 objects
+
+>>> Running instantiate test on p4/test/petr4/program/table.p4
+Instantiate success: 8 objects
+
+>>> Running instantiate test on p4/test/petr4/program/table2.p4
+Instantiate success: 8 objects
+
+>>> Running instantiate test on p4/test/petr4/program/table3.p4
+Instantiate success: 8 objects
+
+>>> Running instantiate test on p4/test/petr4/program/union.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/uop.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on p4/test/petr4/program/zero.p4
+Instantiate success: 7 objects
+
+Parser on file: [PASS] 48/48 (100.00%) [FAIL] 0/48 (0.00%)
+Typecheck: [PASS] 43/48 (89.58%) [FAIL] 5/48 (10.42%)
+Instantiate: [PASS] 43/43 (100.00%) [FAIL] 0/43 (0.00%)
