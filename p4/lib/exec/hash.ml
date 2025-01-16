@@ -78,8 +78,7 @@ let compute_hash_crc16 (width : Bigint.t) (value : Bigint.t) : Bigint.t =
   List.fold_left
     (fun (hash_value : Bigint.t) (byte_value : Bigint.t) ->
       let hash_value_shifted =
-        Numerics.shift_bitstring_right hash_value (Bigint.of_int 8) false
-          Bigint.zero
+        Numerics.shift_bitstring_right hash_value (Bigint.of_int 8)
       in
       let crc_idx =
         Bigint.bit_xor hash_value byte_value

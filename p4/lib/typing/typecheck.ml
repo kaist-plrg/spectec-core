@@ -666,8 +666,8 @@ and type_num_expr (num : El.Ast.num) : Type.t * Ctk.t * Il.Ast.expr' =
   let value, typ =
     match num.it with
     | value, Some (width, signed) ->
-        if signed then (Value.FIntV (width, value), Types.FIntT width)
-        else (Value.FBitV (width, value), Types.FBitT width)
+        if signed then (Numerics.int_of_raw_int value width, Types.FIntT width)
+        else (Numerics.bit_of_raw_int value width, Types.FBitT width)
     | value, None -> (Value.IntV value, Types.IntT)
   in
   let ctk = Ctk.LCTK in
@@ -1099,15 +1099,15 @@ and type_binop_div_mod (cursor : Ctx.cursor) (ctx : Ctx.t)
 
 and check_binop_shift (typ_l : Type.t) (typ_r : Type.t) : bool =
   match (typ_l, typ_r) with
-  | FIntT _, FIntT _
-  | FIntT _, FBitT _
-  | FIntT _, IntT
-  | FBitT _, FIntT _
-  | FBitT _, FBitT _
-  | FBitT _, IntT
+  | IntT, IntT
   | IntT, FIntT _
   | IntT, FBitT _
-  | IntT, IntT ->
+  | FIntT _, IntT
+  | FIntT _, FIntT _
+  | FIntT _, FBitT _
+  | FBitT _, IntT
+  | FBitT _, FIntT _
+  | FBitT _, FBitT _ ->
       true
   | _ -> false
 

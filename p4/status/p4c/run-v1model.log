@@ -190,6 +190,11 @@ Run success
 Run success
 
 >>> Running run test on p4/test/p4c/program/well-typed/gauntlet_enum_assign-bmv2.p4 with p4/test/p4c/stf/v1model/gauntlet_enum_assign-bmv2.stf
+[FAIL] Remaining packets to be matched:
+(0) 2 00
+Error on stf test
+>>>>> Rerunning run test on p4/test/p4c/program/well-typed/gauntlet_enum_assign-bmv2.p4 with p4/test/p4c/stf/v1model-patch/gauntlet_enum_assign-bmv2.stf
+[PASS] Expected: 2 00 / Got: 2 00
 Run success
 
 >>> Running run test on p4/test/p4c/program/well-typed/gauntlet_exit_after_valid-bmv2.p4 with p4/test/p4c/stf/v1model/gauntlet_exit_after_valid-bmv2.stf

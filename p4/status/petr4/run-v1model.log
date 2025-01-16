@@ -1,201 +1,189 @@
-Running run tests on 48 files
+Cannot find file for p4/test/petr4/stf/dynamic.stf in p4/test/petr4/program/well-typed
+Cannot find file for p4/test/petr4/stf/error.stf in p4/test/petr4/program/well-typed
+Cannot find file for p4/test/petr4/stf/issue393-2.stf in p4/test/petr4/program/well-typed
+Cannot find file for p4/test/petr4/stf/issue396-1.stf in p4/test/petr4/program/well-typed
+Cannot find file for p4/test/petr4/stf/subparser.stf in p4/test/petr4/program/well-typed
+Running run tests on 43 files
 
 
->>> Running run test on p4/test/petr4/program/bitstring_slices.p4 with p4/test/petr4/stf/bitstring_slices.stf
+>>> Running run test on p4/test/petr4/program/well-typed/bitstring_slices.p4 with p4/test/petr4/stf/bitstring_slices.stf
 [PASS] Expected: 0 2B0A6A1A0100010302012A3F00 / Got: 0 2B0A6A1A0100010302012A3F00
 Run success
 
->>> Running run test on p4/test/petr4/program/bitstrings.p4 with p4/test/petr4/stf/bitstrings.stf
+>>> Running run test on p4/test/petr4/program/well-typed/bitstrings.p4 with p4/test/petr4/stf/bitstrings.stf
 [PASS] Expected: 0 01010101010101012A2A2A2A2A00 / Got: 0 01010101010101012A2A2A2A2A00
 Run success
 
->>> Running run test on p4/test/petr4/program/bitstrings2.p4 with p4/test/petr4/stf/bitstrings2.stf
+>>> Running run test on p4/test/petr4/program/well-typed/bitstrings2.p4 with p4/test/petr4/stf/bitstrings2.stf
 [PASS] Expected: 0 2A2AD52A2A2A2A2AFF002A2A0100 / Got: 0 2A2AD52A2A2A2A2AFF002A2A0100
 Run success
 
->>> Running run test on p4/test/petr4/program/bool.p4 with p4/test/petr4/stf/bool.stf
+>>> Running run test on p4/test/petr4/program/well-typed/bool.p4 with p4/test/petr4/stf/bool.stf
 [PASS] Expected: 0 010101000000010100010000 / Got: 0 010101000000010100010000
 Run success
 
->>> Running run test on p4/test/petr4/program/bool2.p4 with p4/test/petr4/stf/bool2.stf
+>>> Running run test on p4/test/petr4/program/well-typed/bool2.p4 with p4/test/petr4/stf/bool2.stf
 [PASS] Expected: 0 010001000000010101000000 / Got: 0 010001000000010101000000
 Run success
 
->>> Running run test on p4/test/petr4/program/casts.p4 with p4/test/petr4/stf/casts.stf
+>>> Running run test on p4/test/petr4/program/well-typed/casts.p4 with p4/test/petr4/stf/casts.stf
 [PASS] Expected: 0 010F0F04FFFFF800000005000000050000000500000005000000060000000600 / Got: 0 010F0F04FFFFF800000005000000050000000500000005000000060000000600
 Run success
 
->>> Running run test on p4/test/petr4/program/counter.p4 with p4/test/petr4/stf/counter.stf
+>>> Running run test on p4/test/petr4/program/well-typed/counter.p4 with p4/test/petr4/stf/counter.stf
 [PASS] Expected: 0 00 / Got: 0 00
 Run success
 
->>> Running run test on p4/test/petr4/program/dynamic.p4 with p4/test/petr4/stf/dynamic.stf
-Error on typecheck: File p4/test/petr4/program/dynamic.p4, line 35, characters 2-9
-key already exists: x
-
->>> Running run test on p4/test/petr4/program/equality.p4 with p4/test/petr4/stf/equality.stf
+>>> Running run test on p4/test/petr4/program/well-typed/equality.p4 with p4/test/petr4/stf/equality.stf
 [FAIL] Expected: 9 000001010101010100 / Got: 0 3000001013330101010100
 Error on stf test
 
->>> Running run test on p4/test/petr4/program/error.p4 with p4/test/petr4/stf/error.stf
-Error on typecheck: File p4/test/petr4/program/error.p4, line 15, characters 23-30
-(type_array_acc_expr) Index 15 out of range for hdr
-
->>> Running run test on p4/test/petr4/program/error2.p4 with p4/test/petr4/stf/error2.stf
+>>> Running run test on p4/test/petr4/program/well-typed/error2.p4 with p4/test/petr4/stf/error2.stf
 [PASS] Expected: 1 0000 / Got: 1 0000
 Run success
 
->>> Running run test on p4/test/petr4/program/exit.p4 with p4/test/petr4/stf/exit.stf
-Error on run: File p4/test/petr4/program/exit.p4, line 16, characters 26-54
+>>> Running run test on p4/test/petr4/program/well-typed/exit.p4 with p4/test/petr4/stf/exit.stf
+Error on run: File p4/test/petr4/program/well-typed/exit.p4, line 16, characters 26-54
 (eval_call_method_expr) method call as an expression must return a value
 
->>> Running run test on p4/test/petr4/program/extraction.p4 with p4/test/petr4/stf/extraction.stf
+>>> Running run test on p4/test/petr4/program/well-typed/extraction.p4 with p4/test/petr4/stf/extraction.stf
 [PASS] Expected: 0 4848656C6C6F2C20576F726C6421 / Got: 0 4848656C6C6F2C20576F726C6421
 Run success
 
->>> Running run test on p4/test/petr4/program/function_scoping.p4 with p4/test/petr4/stf/function_scoping.stf
+>>> Running run test on p4/test/petr4/program/well-typed/function_scoping.p4 with p4/test/petr4/stf/function_scoping.stf
 [PASS] Expected: 0 2A00 / Got: 0 2A00
 Run success
 
->>> Running run test on p4/test/petr4/program/hash_identity.p4 with p4/test/petr4/stf/hash_identity.stf
+>>> Running run test on p4/test/petr4/program/well-typed/hash_identity.p4 with p4/test/petr4/stf/hash_identity.stf
 [PASS] Expected: 0 0123456789ABCDEF0123456789ABCD0000000000 / Got: 0 0123456789ABCDEF0123456789ABCD0000000000
 Run success
 
->>> Running run test on p4/test/petr4/program/header-test.p4 with p4/test/petr4/stf/header-test.stf
+>>> Running run test on p4/test/petr4/program/well-typed/header-test.p4 with p4/test/petr4/stf/header-test.stf
 [PASS] Expected: 0 01010000010001020300 / Got: 0 01010000010001020300
 Run success
 
->>> Running run test on p4/test/petr4/program/hello.p4 with p4/test/petr4/stf/hello.stf
+>>> Running run test on p4/test/petr4/program/well-typed/hello.p4 with p4/test/petr4/stf/hello.stf
 [PASS] Expected: 9 2A2A*A2A2A2A2A2*2A2A2A2A21 / Got: 9 2A2A2A2A2A2A2A2A2A2A2A2A21
 Run success
 
->>> Running run test on p4/test/petr4/program/int.p4 with p4/test/petr4/stf/int.stf
-[PASS] Expected: 0 2A2A2A2A7F8000 / Got: 0 2A2A2A2A7F8000
+>>> Running run test on p4/test/petr4/program/well-typed/int.p4 with p4/test/petr4/stf/int.stf
+[FAIL] Expected: 0 2A2A2A2A7F8000 / Got: 0 2A2A2A2A807F00
+Error on stf test
+>>>>> Rerunning run test on p4/test/petr4/program/well-typed/int.p4 with p4/test/petr4/stf-patch/int.stf
+[PASS] Expected: 0 2A2A2A2A807F00 / Got: 0 2A2A2A2A807F00
 Run success
 
->>> Running run test on p4/test/petr4/program/int2.p4 with p4/test/petr4/stf/int2.stf
-[FAIL] Expected: 0 01010101010101012A2A2A2A2A00 / Got: 0 00010000010101012A2A2A2A2A00
-Error on stf test
+>>> Running run test on p4/test/petr4/program/well-typed/int2.p4 with p4/test/petr4/stf/int2.stf
+[PASS] Expected: 0 01010101010101012A2A2A2A2A00 / Got: 0 01010101010101012A2A2A2A2A00
+Run success
 
->>> Running run test on p4/test/petr4/program/issue235.p4 with p4/test/petr4/stf/issue235.stf
+>>> Running run test on p4/test/petr4/program/well-typed/issue235.p4 with p4/test/petr4/stf/issue235.stf
 [PASS] Expected: 0 00000000000000010000000000000000 / Got: 0 00000000000000010000000000000000
 Run success
 
->>> Running run test on p4/test/petr4/program/issue393-1.p4 with p4/test/petr4/stf/issue393-1.stf
+>>> Running run test on p4/test/petr4/program/well-typed/issue393-1.p4 with p4/test/petr4/stf/issue393-1.stf
 [PASS] Expected: 0 FF / Got: 0 FF
 Run success
 
->>> Running run test on p4/test/petr4/program/issue393-2.p4 with p4/test/petr4/stf/issue393-2.stf
-Error on typecheck: File p4/test/petr4/program/issue393-2.p4, line 26, characters 2-18
-key already exists: x
-
->>> Running run test on p4/test/petr4/program/issue396-1.p4 with p4/test/petr4/stf/issue396-1.stf
-Error on typecheck: File p4/test/petr4/program/issue396-1.p4, line 36, characters 20-24
-(check_call_site) func(inout y bit<8>) -> bit<8> cannot be called from Control
-
->>> Running run test on p4/test/petr4/program/masks.p4 with p4/test/petr4/stf/masks.stf
+>>> Running run test on p4/test/petr4/program/well-typed/masks.p4 with p4/test/petr4/stf/masks.stf
 [PASS] Expected: 0 010203040500 / Got: 0 010203040500
 Run success
 
->>> Running run test on p4/test/petr4/program/multiple-calls.p4 with p4/test/petr4/stf/multiple-calls.stf
+>>> Running run test on p4/test/petr4/program/well-typed/multiple-calls.p4 with p4/test/petr4/stf/multiple-calls.stf
 [PASS] Expected: 0 02 / Got: 0 02
 Run success
 
->>> Running run test on p4/test/petr4/program/named-arg-copy-out.p4 with p4/test/petr4/stf/named-arg-copy-out.stf
+>>> Running run test on p4/test/petr4/program/well-typed/named-arg-copy-out.p4 with p4/test/petr4/stf/named-arg-copy-out.stf
 [PASS] Expected: 0 01AABB040506 / Got: 0 01AABB040506
 Run success
 
->>> Running run test on p4/test/petr4/program/named-arg.p4 with p4/test/petr4/stf/named-arg.stf
+>>> Running run test on p4/test/petr4/program/well-typed/named-arg.p4 with p4/test/petr4/stf/named-arg.stf
 [PASS] Expected: 0 01BBAAAABB06 / Got: 0 01BBAAAABB06
 Run success
 
->>> Running run test on p4/test/petr4/program/out_params.p4 with p4/test/petr4/stf/out_params.stf
+>>> Running run test on p4/test/petr4/program/well-typed/out_params.p4 with p4/test/petr4/stf/out_params.stf
 [PASS] Expected: 0 0002010300 / Got: 0 0002010300
 Run success
 
->>> Running run test on p4/test/petr4/program/parser-locators-stack.p4 with p4/test/petr4/stf/parser-locators-stack.stf
+>>> Running run test on p4/test/petr4/program/well-typed/parser-locators-stack.p4 with p4/test/petr4/stf/parser-locators-stack.stf
 [PASS] Expected: 0 01 / Got: 0 01
 Run success
 
->>> Running run test on p4/test/petr4/program/parser-locators.p4 with p4/test/petr4/stf/parser-locators.stf
+>>> Running run test on p4/test/petr4/program/well-typed/parser-locators.p4 with p4/test/petr4/stf/parser-locators.stf
 [PASS] Expected: 0 01 / Got: 0 01
 Run success
 
->>> Running run test on p4/test/petr4/program/parsing.p4 with p4/test/petr4/stf/parsing.stf
+>>> Running run test on p4/test/petr4/program/well-typed/parsing.p4 with p4/test/petr4/stf/parsing.stf
 [PASS] Expected: 0 01020304050600 / Got: 0 01020304050600
 Run success
 
->>> Running run test on p4/test/petr4/program/ranges.p4 with p4/test/petr4/stf/ranges.stf
+>>> Running run test on p4/test/petr4/program/well-typed/ranges.p4 with p4/test/petr4/stf/ranges.stf
 [PASS] Expected: 0 01020304050600 / Got: 0 01020304050600
 Run success
 
->>> Running run test on p4/test/petr4/program/rawint.p4 with p4/test/petr4/stf/rawint.stf
+>>> Running run test on p4/test/petr4/program/well-typed/rawint.p4 with p4/test/petr4/stf/rawint.stf
 [PASS] Expected: 0 01010101010101012A2A2A2A2A2A2A00 / Got: 0 01010101010101012A2A2A2A2A2A2A00
 Run success
 
->>> Running run test on p4/test/petr4/program/register.p4 with p4/test/petr4/stf/register.stf
+>>> Running run test on p4/test/petr4/program/well-typed/register.p4 with p4/test/petr4/stf/register.stf
 [PASS] Expected: 0 0000000000 / Got: 0 0000000000
 [PASS] Expected: 0 0000000F00 / Got: 0 0000000F00
 [PASS] Expected: 0 0000001E00 / Got: 0 0000001E00
 Run success
 
->>> Running run test on p4/test/petr4/program/scope.p4 with p4/test/petr4/stf/scope.stf
+>>> Running run test on p4/test/petr4/program/well-typed/scope.p4 with p4/test/petr4/stf/scope.stf
 [PASS] Expected: 0 00 / Got: 0 00
 Run success
 
->>> Running run test on p4/test/petr4/program/shifts.p4 with p4/test/petr4/stf/shifts.stf
+>>> Running run test on p4/test/petr4/program/well-typed/shifts.p4 with p4/test/petr4/stf/shifts.stf
 [PASS] Expected: 0 01A82A00 / Got: 0 01A82A00
 Run success
 
->>> Running run test on p4/test/petr4/program/simple_function.p4 with p4/test/petr4/stf/simple_function.stf
+>>> Running run test on p4/test/petr4/program/well-typed/simple_function.p4 with p4/test/petr4/stf/simple_function.stf
 [PASS] Expected: 0 2A2A000000 / Got: 0 2A2A000000
 Run success
 
->>> Running run test on p4/test/petr4/program/stack.p4 with p4/test/petr4/stf/stack.stf
+>>> Running run test on p4/test/petr4/program/well-typed/stack.p4 with p4/test/petr4/stf/stack.stf
 [PASS] Expected: 0 000000052A2A2A2A2A2A2A2A00 / Got: 0 000000052A2A2A2A2A2A2A2A00
 Run success
 
->>> Running run test on p4/test/petr4/program/struct.p4 with p4/test/petr4/stf/struct.stf
+>>> Running run test on p4/test/petr4/program/well-typed/struct.p4 with p4/test/petr4/stf/struct.stf
 [PASS] Expected: 0 2A012A0100 / Got: 0 2A012A0100
 Run success
 
->>> Running run test on p4/test/petr4/program/subcontrol.p4 with p4/test/petr4/stf/subcontrol.stf
+>>> Running run test on p4/test/petr4/program/well-typed/subcontrol.p4 with p4/test/petr4/stf/subcontrol.stf
 [PASS] Expected: 0 0700 / Got: 0 0700
 Run success
 
->>> Running run test on p4/test/petr4/program/subparser.p4 with p4/test/petr4/stf/subparser.stf
-Error on typecheck: File p4/test/petr4/program/subparser.p4, line 74, characters 8-56
-(check_ctk) standard_metadata is not a compile-time known expression
-
->>> Running run test on p4/test/petr4/program/switch-stmt.p4 with p4/test/petr4/stf/switch-stmt.stf
+>>> Running run test on p4/test/petr4/program/well-typed/switch-stmt.p4 with p4/test/petr4/stf/switch-stmt.stf
 [PASS] Expected: 1 020200 / Got: 1 020200
 Run success
 
->>> Running run test on p4/test/petr4/program/table.p4 with p4/test/petr4/stf/table.stf
+>>> Running run test on p4/test/petr4/program/well-typed/table.p4 with p4/test/petr4/stf/table.stf
 [PASS] Expected: 0 00 / Got: 0 00
 Run success
 
->>> Running run test on p4/test/petr4/program/table2.p4 with p4/test/petr4/stf/table2.stf
+>>> Running run test on p4/test/petr4/program/well-typed/table2.p4 with p4/test/petr4/stf/table2.stf
 [FAIL] Expected: 1 0600 / Got: 6 0600
 Error on stf test
 
->>> Running run test on p4/test/petr4/program/table3.p4 with p4/test/petr4/stf/table3.stf
+>>> Running run test on p4/test/petr4/program/well-typed/table3.p4 with p4/test/petr4/stf/table3.stf
 [FAIL] Expected: 0 0400 / Got: 339 0400
 Error on stf test
 
->>> Running run test on p4/test/petr4/program/union.p4 with p4/test/petr4/stf/union.stf
+>>> Running run test on p4/test/petr4/program/well-typed/union.p4 with p4/test/petr4/stf/union.stf
 [PASS] Expected: 0 2A0100002A0001002A00012A01000000000000 / Got: 0 2A0100002A0001002A00012A01000000000000
 Run success
 
->>> Running run test on p4/test/petr4/program/uop.p4 with p4/test/petr4/stf/uop.stf
+>>> Running run test on p4/test/petr4/program/well-typed/uop.p4 with p4/test/petr4/stf/uop.stf
 [PASS] Expected: 0 0A0BFB0100 / Got: 0 0A0BFB0100
 Run success
 
->>> Running run test on p4/test/petr4/program/zero.p4 with p4/test/petr4/stf/zero.stf
+>>> Running run test on p4/test/petr4/program/well-typed/zero.p4 with p4/test/petr4/stf/zero.stf
 [PASS] Expected: 9 00 / Got: 9 00
 Run success
 
-Parser on file: [PASS] 48/48 (100.00%) [FAIL] 0/48 (0.00%)
-Typecheck: [PASS] 43/48 (89.58%) [FAIL] 5/48 (10.42%)
+Parser on file: [PASS] 43/43 (100.00%) [FAIL] 0/43 (0.00%)
+Typecheck: [PASS] 43/43 (100.00%) [FAIL] 0/43 (0.00%)
 Instantiate: [PASS] 43/43 (100.00%) [FAIL] 0/43 (0.00%)
-Run: [PASS] 38/43 (88.37%) [FAIL] 5/43 (11.63%)
+Run: [PASS] 39/43 (90.70%) [FAIL] 4/43 (9.30%)

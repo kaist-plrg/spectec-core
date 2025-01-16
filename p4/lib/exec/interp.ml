@@ -258,7 +258,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | SetV (`Range (value_lb, value_ub)) ->
         let lb = Numerics.eval_binop_le value_lb value_key in
         let ub = Numerics.eval_binop_le value_key value_ub in
-        Numerics.eval_binop_and lb ub |> Value.get_bool
+        lb && ub
     | _ ->
         F.asprintf "(eval_keyset_match) %a must be a set value"
           (Value.pp ~level:0) value_set

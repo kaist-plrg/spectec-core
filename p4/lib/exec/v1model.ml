@@ -1011,19 +1011,29 @@ module Make (Interp : INTERP) : ARCH = struct
         |> error_no_info
 
   let drive_stf_stmts (ctx : Ctx.t) (stmts_stf : Stf.Ast.stmt list) : bool =
-    let _, pass, _, queue_expect =
+    let _, pass, queue_packet, queue_expect =
       List.fold_left
         (fun (ctx, pass, queue_packet, queue_expect) stmt_stf ->
           drive_stf_stmt ctx pass queue_packet queue_expect stmt_stf)
         (ctx, true, [], []) stmts_stf
     in
-    let pass = pass && queue_expect = [] in
+    let pass = pass && queue_packet = [] && queue_expect = [] in
+    if queue_packet <> [] then (
+      F.printf "[FAIL] Remaining packets to be matched:\n";
+      List.iteri
+        (fun idx (port, packet) -> F.printf "(%d) %d %s\n" idx port packet)
+        queue_packet);
+    if queue_expect <> [] then (
+      F.printf "[FAIL] Expected packets to be output:\n";
+      List.iteri
+        (fun idx (port, packet) -> F.printf "(%d) %d %s\n" idx port packet)
+        queue_expect);
     pass
 
   let drive (cenv : CEnv.t) (fenv : FEnv.t) (venv : VEnv.t) (sto : Sto.t)
-      (_stmts_stf : Stf.Ast.stmt list) : bool =
+      (stmts_stf : Stf.Ast.stmt list) : bool =
     let ctx = { Ctx.empty with global = { cenv; fenv; venv } } in
     let ctx, sto = init ctx sto in
     Interp.init sto;
-    drive_stf_stmts ctx _stmts_stf
+    drive_stf_stmts ctx stmts_stf
 end

@@ -20,7 +20,7 @@ add test1 0 data.f1(0x****0101) ingress.setb1((val, 0x7f), (port, 2))
 
 # B. Need Test Clarification
 
-## 1. gauntlet_invalid_hdr_short_circuit-bmv2
+## 1. Payload is not extracted
 
 ```plaintext
 [FAIL] Expected: 0 0000000000000000000000000000
@@ -45,9 +45,11 @@ pkt.extract(hdr.eth_hdr);
 
 Adding `pkt.extract(hdr.h);` would extract the `h` header and the test would pass.
 
+* gauntlet_invalid_hdr_short_circuit-bmv2.p4
+
 # C. Unsupported Features
 
-## 1. table-entries-priority-bmv2
+## 1. Table priority annotation
 
 ```p4
 const entries = {
@@ -68,3 +70,5 @@ entries = {
     priority=1: 0x1181 &&& 0xF00F : a_with_control_params(3);
 }
 ```
+
+* table-entries-priority-bmv2

@@ -146,13 +146,13 @@ module PacketIn = struct
         let size = width |> Bigint.to_int_exn in
         let bits = Array.sub bits_in 0 size in
         let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
-        let value = Value.FIntV (width, bits_to_int_signed bits) in
+        let value = Numerics.int_of_raw_int (bits_to_int_signed bits) width in
         (bits_in, value)
     | FBitV (width, _) ->
         let size = width |> Bigint.to_int_exn in
         let bits = Array.sub bits_in 0 size in
         let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
-        let value = Value.FBitV (width, bits_to_int_unsigned bits) in
+        let value = Numerics.bit_of_raw_int (bits_to_int_unsigned bits) width in
         (bits_in, value)
     | VBitV (width_max, _, _) ->
         let size = varsize in
