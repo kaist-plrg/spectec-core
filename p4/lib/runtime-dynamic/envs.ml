@@ -1,7 +1,6 @@
 open Domain.Dom
-module Value = Runtime_static.Value
-module Types = Runtime_static.Tdomain.Types
-module Type = Types.Type
+module Value = Runtime_static.Vdomain.Value
+module Type = Runtime_static.Tdomain.Types.Type
 
 (* Environment for variables *)
 

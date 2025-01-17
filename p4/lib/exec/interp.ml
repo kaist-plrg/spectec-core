@@ -2,7 +2,8 @@ module F = Format
 open Domain.Dom
 module L = Lang.Ast
 open Il.Ast
-module Value = Runtime_static.Value
+module Num = Runtime_static.Vdomain.Num
+module Value = Runtime_static.Vdomain.Value
 module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
 module Numerics = Runtime_static.Numerics
@@ -165,11 +166,11 @@ module Make (Arch : ARCH) : INTERP = struct
             let value_hi = value_hi |> Value.get_num in
             let value_rhs = Bigint.(value_rhs lsl to_int_exn value_lo) in
             let mask_hi =
-              let mask_hi = Numerics.power_of_two Bigint.(value_hi + one) in
+              let mask_hi = Num.power_of_two Bigint.(value_hi + one) in
               Bigint.(mask_hi - one)
             in
             let mask_lo =
-              let mask_lo = Numerics.power_of_two value_lo in
+              let mask_lo = Num.power_of_two value_lo in
               Bigint.(mask_lo - one)
             in
             let mask = Bigint.(lnot (mask_hi lxor mask_lo)) in

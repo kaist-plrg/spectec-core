@@ -1,3 +1,4 @@
+module Value = Vdomain.Value
 module Type = Tdomain.Types.Type
 
 (* Size evaluation *)

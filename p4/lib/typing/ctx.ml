@@ -1,5 +1,5 @@
 module L = Lang.Ast
-module Value = Runtime_static.Value
+module Value = Runtime_static.Vdomain.Value
 module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
 module Ctk = Runtime_static.Ctk

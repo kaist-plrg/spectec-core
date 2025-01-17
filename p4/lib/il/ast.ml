@@ -1,6 +1,6 @@
 module L = Lang.Ast
 module Ctk = Runtime_static.Ctk
-module Value = Runtime_static.Value
+module Value = Runtime_static.Vdomain.Value
 module Type = Runtime_static.Tdomain.Types.Type
 open Util.Source
 

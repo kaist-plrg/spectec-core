@@ -1,7 +1,7 @@
 open Domain.Dom
 module Ctk = Runtime_static.Ctk
-module Value = Runtime_static.Value
-module Numerics = Runtime_static.Numerics
+module Num = Runtime_static.Vdomain.Num
+module Value = Runtime_static.Vdomain.Value
 module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
 module TypeDef = Types.TypeDef
@@ -9,6 +9,7 @@ module FuncType = Types.FuncType
 module FuncDef = Types.FuncDef
 module ConsType = Types.ConsType
 module ConsDef = Types.ConsDef
+module Numerics = Runtime_static.Numerics
 module Envs = Runtime_static.Envs
 module VEnv = Envs.VEnv
 module TEnv = Envs.TEnv
@@ -666,8 +667,8 @@ and type_num_expr (num : El.Ast.num) : Type.t * Ctk.t * Il.Ast.expr' =
   let value, typ =
     match num.it with
     | value, Some (width, signed) ->
-        if signed then (Numerics.int_of_raw_int value width, Types.FIntT width)
-        else (Numerics.bit_of_raw_int value width, Types.FBitT width)
+        if signed then (Num.int_of_raw_int value width, Types.FIntT width)
+        else (Num.bit_of_raw_int value width, Types.FBitT width)
     | value, None -> (Value.IntV value, Types.IntT)
   in
   let ctk = Ctk.LCTK in
@@ -4865,7 +4866,7 @@ and type_table_entry_keyset' (cursor : Ctx.cursor) (ctx : Ctx.t)
                 let prefix_max = prefix_max |> Bigint.of_int in
                 let value_mask = Static.eval_expr cursor ctx expr_mask in
                 let mask = value_mask.it |> Value.get_num in
-                let mask = Numerics.bit_of_raw_int mask prefix_max in
+                let mask = Num.bit_of_raw_int mask prefix_max in
                 Tblctx.get_lpm_prefix mask
             | _ -> Tblctx.Lpm prefix_max)
         | _ -> Tblctx.NoLpm

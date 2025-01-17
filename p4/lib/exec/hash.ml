@@ -14,7 +14,8 @@
  *)
 
 module F = Format
-module Value = Runtime_static.Value
+module Num = Runtime_static.Vdomain.Num
+module Value = Runtime_static.Vdomain.Value
 module Numerics = Runtime_static.Numerics
 open Util.Error
 
@@ -64,10 +65,8 @@ let rec partition_bytes width value =
   else
     let hi = Bigint.(width - one) in
     let lo = Bigint.(width - of_int 8) in
-    let byte_value = Numerics.slice_bitstring value hi lo in
-    let bytes_rest =
-      Numerics.slice_bitstring value Bigint.(lo - one) Bigint.zero
-    in
+    let byte_value = Num.slice_bitstring value hi lo in
+    let bytes_rest = Num.slice_bitstring value Bigint.(lo - one) Bigint.zero in
     byte_value :: partition_bytes lo bytes_rest
 
 let compute_hash_crc16 (width : Bigint.t) (value : Bigint.t) : Bigint.t =
@@ -78,7 +77,7 @@ let compute_hash_crc16 (width : Bigint.t) (value : Bigint.t) : Bigint.t =
   List.fold_left
     (fun (hash_value : Bigint.t) (byte_value : Bigint.t) ->
       let hash_value_shifted =
-        Numerics.shift_bitstring_right hash_value (Bigint.of_int 8)
+        Num.shift_bitstring_right hash_value (Bigint.of_int 8)
       in
       let crc_idx =
         Bigint.bit_xor hash_value byte_value
@@ -92,20 +91,25 @@ let compute_hash_csum16 (width : Bigint.t) (value : Bigint.t) : Bigint.t =
   check
     Bigint.(width % of_int 16 = zero)
     "(compute_hash_csum16) input to csum16 is not 16-bit aligned";
+  let add_one_complement (v : Bigint.t) (w : Bigint.t) : Bigint.t =
+    let tmp = Bigint.(v + w) in
+    let thres = Num.power_of_two (Bigint.of_int 16) in
+    if Bigint.(tmp >= thres) then Bigint.((tmp % thres) + one)
+    else Bigint.(tmp % thres)
+  in
   let rec hash (value_hash : Bigint.t) (width : Bigint.t) (value : Bigint.t) =
     if Bigint.(width = zero) then value_hash
     else
       let msb = Bigint.(width - one) in
       let lsb = Bigint.(width - of_int 16) in
       let value_hash =
-        Numerics.add_one_complement value_hash
-          (Numerics.slice_bitstring value msb lsb)
+        add_one_complement value_hash (Num.slice_bitstring value msb lsb)
       in
-      let value = Bigint.(Numerics.slice_bitstring value (msb - one) zero) in
+      let value = Bigint.(Num.slice_bitstring value (msb - one) zero) in
       hash value_hash lsb value
   in
   let value_hash = hash Bigint.zero width value in
-  Numerics.bitwise_neg value_hash (Bigint.of_int 16)
+  Num.bitwise_neg value_hash (Bigint.of_int 16)
 
 let adjust (base : Bigint.t) (rmax : Bigint.t) (value : Bigint.t) : Bigint.t =
   if Bigint.(rmax = zero) then base else Bigint.((value % (rmax - base)) + base)
@@ -121,12 +125,11 @@ let compute_hash (algo : string) ((width, value) : Bigint.t * Bigint.t) :
 let package (values : Value.t list) : Bigint.t * Bigint.t =
   values
   |> List.map (fun value -> (Value.get_width value, Value.get_num value))
-  |> List.map (fun (width, value) ->
-         (width, Numerics.of_two_complement value width))
+  |> List.map (fun (width, value) -> (width, Num.of_two_complement value width))
   |> List.fold_left
        (fun (width_pack, value_pack) (width, value) ->
          let width_pack = Bigint.(width_pack + width) in
-         let value_pack = Numerics.shift_bitstring_left value_pack width in
+         let value_pack = Num.shift_bitstring_left value_pack width in
          let value_pack = Bigint.(value_pack + value) in
          (width_pack, value_pack))
        (Bigint.zero, Bigint.zero)

@@ -1,6 +1,8 @@
+module F = Format
 module L = Lang.Ast
 module P = Lang.Pp
-module F = Format
+module Value = Runtime_static.Vdomain.Value
+module Type = Runtime_static.Tdomain.Types.Type
 open Ast
 open Util.Pp
 open Util.Source
@@ -60,9 +62,7 @@ let pp_dir fmt dir = P.pp_dir fmt dir
 (* Types *)
 
 let rec pp_typ ?(level = 0) fmt typ = pp_typ' ~level fmt typ.it
-
-and pp_typ' ?(level = 0) fmt typ =
-  Runtime_static.Tdomain.Types.Type.pp ~level fmt typ
+and pp_typ' ?(level = 0) fmt typ = Type.pp ~level fmt typ
 
 and pp_typs ?(level = 0) fmt typs =
   pp_list ~level (pp_typ ~level) ~sep:CommaNl fmt typs
@@ -70,7 +70,7 @@ and pp_typs ?(level = 0) fmt typs =
 (* Values *)
 
 let rec pp_value fmt value = pp_value' fmt value.it
-and pp_value' fmt value = Runtime_static.Value.pp fmt value
+and pp_value' fmt value = Value.pp fmt value
 
 (* Annotations *)
 

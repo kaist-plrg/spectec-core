@@ -1,6 +1,7 @@
+module F = Format
 open Domain.Dom
 module L = Lang.Ast
-module F = Format
+module Value = Vdomain.Value
 
 (* Elaborated parameters *)
 

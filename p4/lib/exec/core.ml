@@ -1,4 +1,5 @@
-module Value = Runtime_static.Value
+module Num = Runtime_static.Vdomain.Num
+module Value = Runtime_static.Vdomain.Value
 module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
 module Numerics = Runtime_static.Numerics
@@ -146,21 +147,21 @@ module PacketIn = struct
         let size = width |> Bigint.to_int_exn in
         let bits = Array.sub bits_in 0 size in
         let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
-        let value = Numerics.int_of_raw_int (bits_to_int_signed bits) width in
+        let value = Num.int_of_raw_int (bits_to_int_signed bits) width in
         (bits_in, value)
     | FBitV (width, _) ->
         let size = width |> Bigint.to_int_exn in
         let bits = Array.sub bits_in 0 size in
         let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
-        let value = Numerics.bit_of_raw_int (bits_to_int_unsigned bits) width in
+        let value = Num.bit_of_raw_int (bits_to_int_unsigned bits) width in
         (bits_in, value)
     | VBitV (width_max, _, _) ->
         let size = varsize in
         let bits = Array.sub bits_in 0 size in
         let bits_in = Array.sub bits_in size (Array.length bits_in - size) in
+        let width = Bigint.of_int varsize in
         let value =
-          Value.VBitV
-            (width_max, Bigint.of_int varsize, bits_to_int_unsigned bits)
+          Num.vbit_of_raw_int (bits_to_int_unsigned bits) width width_max
         in
         (bits_in, value)
     | StructV (id, fields) ->

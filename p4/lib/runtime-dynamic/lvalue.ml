@@ -1,7 +1,7 @@
 module F = Format
+module Value = Runtime_static.Vdomain.Value
 module L = Il.Ast
 module P = Il.Pp
-module Value = Runtime_static.Value
 
 type t =
   | VarLV of L.var'

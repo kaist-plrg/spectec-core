@@ -1,7 +1,8 @@
-module Value = Runtime_static.Value
-module Numerics = Runtime_static.Numerics
+module Num = Runtime_static.Vdomain.Num
+module Value = Runtime_static.Vdomain.Value
 module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
+module Numerics = Runtime_static.Numerics
 open Util.Source
 open Util.Error
 
@@ -56,7 +57,7 @@ let get_lpm_prefix value_mask =
         let two = Bigint.(one + one) in
         let width_next = Bigint.(width - one) in
         let value_next = Bigint.(value / two) in
-        let value_mask_next = Numerics.bit_of_raw_int value_next width_next in
+        let value_mask_next = Num.bit_of_raw_int value_next width_next in
         if Bigint.(value % two <> zero) then
           get_lpm_prefix' value_mask_next (prefix + 1)
         else if prefix = 0 then get_lpm_prefix' value_mask_next 0
