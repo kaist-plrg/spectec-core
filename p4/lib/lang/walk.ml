@@ -3,161 +3,521 @@ open Util.Source
 
 (* Parameterized walk types *)
 
-type ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker = {
+type ('note,
+       'typ,
+       'value,
+       'param,
+       'expr,
+       'stmt,
+       'decl,
+       'table_action,
+       'table_entry)
+     walker = {
   walk_num :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     num ->
     unit;
   walk_text :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     text ->
     unit;
   walk_id :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     id ->
     unit;
   walk_var :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     var ->
     unit;
   walk_member :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     member ->
     unit;
   walk_state_label :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     state_label ->
     unit;
   walk_match_kind :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     match_kind ->
     unit;
   walk_unop :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     unop ->
     unit;
   walk_binop :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     binop ->
     unit;
   walk_dir :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     dir ->
     unit;
   walk_typ :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     'typ typ ->
     unit;
   walk_value :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     'value value ->
     unit;
   walk_anno :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     ('note, 'expr) anno ->
     unit;
   walk_tparam :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     tparam ->
     unit;
   walk_param :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     'param param ->
     unit;
   walk_cparam :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     'param cparam ->
     unit;
   walk_targ :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     'typ targ ->
     unit;
   walk_arg :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     ('note, 'expr) arg ->
     unit;
   walk_expr :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     ('note, 'expr) expr ->
     unit;
   walk_keyset :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     ('note, 'expr) keyset ->
     unit;
   walk_select_case :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     ('note, 'expr) select_case ->
     unit;
   walk_stmt :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     'stmt stmt ->
     unit;
   walk_block :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     ('note, 'expr, 'stmt) block ->
     unit;
   walk_switch_label :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     ('note, 'expr) switch_label ->
     unit;
   walk_switch_case :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     ('note, 'expr, 'stmt) switch_case ->
     unit;
   walk_decl :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     'decl decl ->
     unit;
   walk_parser_state :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     ('note, 'expr, 'stmt) parser_state ->
     unit;
   walk_table :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
-    ('note, 'expr, 'table_entry) table ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
+    ('note, 'expr, 'table_action, 'table_entry) table ->
     unit;
   walk_table_property :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
-    ('note, 'expr, 'table_entry) table_property ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
+    ('note, 'expr, 'table_action, 'table_entry) table_property ->
     unit;
   walk_table_keys :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     ('note, 'expr) table_keys ->
     unit;
   walk_table_key :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     ('note, 'expr) table_key ->
     unit;
   walk_table_actions :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
-    ('note, 'expr) table_actions ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
+    'table_action table_actions ->
     unit;
   walk_table_action :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
-    ('note, 'expr) table_action ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
+    'table_action table_action ->
     unit;
   walk_table_entries :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     'table_entry table_entries ->
     unit;
   walk_table_entry :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     'table_entry table_entry ->
     unit;
   walk_table_default :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
-    ('note, 'expr) table_default ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
+    'table_action table_default ->
     unit;
   walk_table_custom :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     ('note, 'expr) table_custom ->
     unit;
   walk_mthd :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     ('typ, 'param, 'note, 'expr) mthd ->
     unit;
   walk_program :
-    ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker ->
+    ( 'note,
+      'typ,
+      'value,
+      'param,
+      'expr,
+      'stmt,
+      'decl,
+      'table_action,
+      'table_entry )
+    walker ->
     'decl program ->
     unit;
 }
@@ -180,32 +540,64 @@ let walk_pair (f_k : 'a -> unit) (f_v : 'b -> unit) (x, y) : unit =
 
 let walk_num
     (_walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    _num =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) _num =
   ()
 
 (* Texts *)
 
 let walk_text
     (_walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    _text =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) _text =
   ()
 
 (* Identifiers *)
 
 let walk_id
     (_walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    _id =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) _id =
   ()
 
 (* Variables (scoped identifiers) *)
 
 let walk_var
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    var =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) var =
   let walk_id = walker.walk_id walker in
   match var.it with Top id | Current id -> walk_id id
 
@@ -213,48 +605,96 @@ let walk_var
 
 let walk_member
     (_walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    _member =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) _member =
   ()
 
 (* State labels *)
 
 let walk_state_label
     (_walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    _state_label =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) _state_label =
   ()
 
 (* Match kinds *)
 
 let walk_match_kind
     (_walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    _match_kind =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) _match_kind =
   ()
 
 (* Unary operators *)
 
 let walk_unop
     (_walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    _unop =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) _unop =
   ()
 
 (* Binary operators *)
 
 let walk_binop
     (_walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    _binop =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) _binop =
   ()
 
 (* Directions *)
 
 let walk_dir
     (_walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    _dir =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) _dir =
   ()
 
 (* Types *)
@@ -265,8 +705,16 @@ let walk_dir
 
 let walk_anno
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    anno =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) anno =
   let walk_text = walker.walk_text walker in
   let walk_id = walker.walk_id walker in
   let walk_member = walker.walk_member walker in
@@ -290,8 +738,16 @@ let walk_anno
 
 let walk_tparam
     (_walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    _tparam =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) _tparam =
   ()
 
 (* Parameters *)
@@ -302,8 +758,16 @@ let walk_tparam
 
 let walk_targ
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    targ =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) targ =
   let walk_typ = walker.walk_typ walker in
   walk_typ targ
 
@@ -311,8 +775,16 @@ let walk_targ
 
 let walk_arg
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    arg =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) arg =
   let walk_id = walker.walk_id walker in
   let walk_expr = walker.walk_expr walker in
   match arg.it with
@@ -328,8 +800,16 @@ let walk_arg
 
 let walk_keyset
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    keyset =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) keyset =
   let walk_expr = walker.walk_expr walker in
   match keyset.it with ExprK expr -> walk_expr expr | DefaultK | AnyK -> ()
 
@@ -337,8 +817,16 @@ let walk_keyset
 
 let walk_select_case
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    select_case =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) select_case =
   let walk_state_label = walker.walk_state_label walker in
   let walk_keyset = walker.walk_keyset walker in
   let keysets, state_label = select_case.it in
@@ -351,8 +839,16 @@ let walk_select_case
 
 let walk_block
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    block =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) block =
   let walk_stmt = walker.walk_stmt walker in
   let stmts, _annos = block.it in
   walk_list walk_stmt stmts
@@ -361,15 +857,31 @@ let walk_block
 
 let walk_switch_label
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    switch_label =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) switch_label =
   let walk_expr = walker.walk_expr walker in
   match switch_label.it with ExprL expr -> walk_expr expr | DefaultL -> ()
 
 let walk_switch_case
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    switch_case =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) switch_case =
   let walk_switch_label = walker.walk_switch_label walker in
   let walk_block = walker.walk_block walker in
   match switch_case.it with
@@ -384,8 +896,16 @@ let walk_switch_case
 
 let walk_parser_state
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    parser_state =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) parser_state =
   let walk_state_label = walker.walk_state_label walker in
   let walk_block = walker.walk_block walker in
   let state_label, block, _annos = parser_state.it in
@@ -396,8 +916,16 @@ let walk_parser_state
 
 let walk_table
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    table =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) table =
   let walk_table_property = walker.walk_table_property walker in
   walk_list walk_table_property table
 
@@ -405,8 +933,16 @@ let walk_table
 
 let walk_table_property
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    table_property =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) table_property =
   let walk_table_keys = walker.walk_table_keys walker in
   let walk_table_actions = walker.walk_table_actions walker in
   let walk_table_entries = walker.walk_table_entries walker in
@@ -423,8 +959,16 @@ let walk_table_property
 
 let walk_table_key
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    table_key =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) table_key =
   let walk_match_kind = walker.walk_match_kind walker in
   let walk_expr = walker.walk_expr walker in
   let expr, match_kind, _annos = table_key.it in
@@ -433,27 +977,33 @@ let walk_table_key
 
 let walk_table_keys
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    table_keys =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) table_keys =
   let walk_table_key = walker.walk_table_key walker in
   walk_list walk_table_key table_keys.it
 
 (* Table actions *)
 
-let walk_table_action
-    (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    table_action =
-  let walk_var = walker.walk_var walker in
-  let walk_arg = walker.walk_arg walker in
-  let var, args, _annos = table_action.it in
-  walk_var var;
-  walk_list walk_arg args
-
 let walk_table_actions
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    table_actions =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) table_actions =
   let walk_table_action = walker.walk_table_action walker in
   walk_list walk_table_action table_actions.it
 
@@ -461,8 +1011,16 @@ let walk_table_actions
 
 let walk_table_entries
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    table_entries =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) table_entries =
   let walk_table_entry = walker.walk_table_entry walker in
   let table_entries, _table_entries_const = table_entries.it in
   walk_list walk_table_entry table_entries
@@ -471,8 +1029,16 @@ let walk_table_entries
 
 let walk_table_default
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    table_default =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) table_default =
   let walk_table_action = walker.walk_table_action walker in
   let table_action, _table_default_const = table_default.it in
   walk_table_action table_action
@@ -481,8 +1047,16 @@ let walk_table_default
 
 let walk_table_custom
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    table_custom =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) table_custom =
   let walk_id = walker.walk_id walker in
   let walk_expr = walker.walk_expr walker in
   let id, expr, _table_custom_const, _annos = table_custom.it in
@@ -493,8 +1067,16 @@ let walk_table_custom
 
 let walk_mthd
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    mthd =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) mthd =
   let walk_id = walker.walk_id walker in
   let walk_tparam = walker.walk_tparam walker in
   let walk_cparam = walker.walk_cparam walker in
@@ -514,7 +1096,15 @@ let walk_mthd
 
 let walk_program
     (walker :
-      ('note, 'typ, 'value, 'param, 'expr, 'stmt, 'decl, 'table_entry) walker)
-    program =
+      ( 'note,
+        'typ,
+        'value,
+        'param,
+        'expr,
+        'stmt,
+        'decl,
+        'table_action,
+        'table_entry )
+      walker) program =
   let walk_decl = walker.walk_decl walker in
   walk_list walk_decl program

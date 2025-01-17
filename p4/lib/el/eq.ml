@@ -666,18 +666,18 @@ and eq_parser_states ?(dbg = false) parser_states_a parser_states_b =
 (* Tables *)
 
 and eq_table ?(dbg = false) table_a table_b =
-  E.eq_table ~dbg P.pp_expr P.pp_table_entry eq_expr eq_table_entry table_a
-    table_b
+  E.eq_table ~dbg P.pp_expr P.pp_table_action P.pp_table_entry eq_expr
+    eq_table_action eq_table_entry table_a table_b
 
 (* Table properties *)
 
 and eq_table_property ?(dbg = false) table_property_a table_property_b =
-  E.eq_table_property ~dbg P.pp_expr P.pp_table_entry eq_expr eq_table_entry
-    table_property_a table_property_b
+  E.eq_table_property ~dbg P.pp_expr P.pp_table_action P.pp_table_entry eq_expr
+    eq_table_action eq_table_entry table_property_a table_property_b
 
 and eq_table_properties ?(dbg = false) table_properties_a table_properties_b =
-  E.eq_table_properties ~dbg P.pp_expr P.pp_table_entry eq_expr eq_table_entry
-    table_properties_a table_properties_b
+  E.eq_table_properties ~dbg P.pp_expr P.pp_table_action P.pp_table_entry
+    eq_expr eq_table_action eq_table_entry table_properties_a table_properties_b
 
 (* Table keys *)
 
@@ -696,16 +696,21 @@ and eq_table_keys ?(dbg = false) table_keys_a table_keys_b =
 (* Table action references *)
 
 and eq_table_action' ?(dbg = false) table_action_a table_action_b =
-  E.eq_table_action' ~dbg P.pp_expr eq_expr table_action_a table_action_b
+  let var_a, args_a, _annos_a = table_action_a in
+  let var_b, args_b, _annos_b = table_action_b in
+  eq_var ~dbg var_a var_b && eq_args ~dbg args_a args_b
 
 and eq_table_action ?(dbg = false) table_action_a table_action_b =
-  E.eq_table_action ~dbg P.pp_expr eq_expr table_action_a table_action_b
+  eq_table_action' ~dbg table_action_a.it table_action_b.it
+  |> E.check ~dbg "table_action" P.pp_table_action table_action_a table_action_b
 
 and eq_table_actions' ?(dbg = false) table_actions_a table_actions_b =
-  E.eq_table_actions' ~dbg P.pp_expr eq_expr table_actions_a table_actions_b
+  E.eq_table_actions' ~dbg P.pp_table_action eq_table_action table_actions_a
+    table_actions_b
 
 and eq_table_actions ?(dbg = false) table_actions_a table_actions_b =
-  E.eq_table_actions ~dbg P.pp_expr eq_expr table_actions_a table_actions_b
+  E.eq_table_actions ~dbg P.pp_table_action eq_table_action table_actions_a
+    table_actions_b
 
 (* Table entries *)
 
@@ -742,10 +747,12 @@ and eq_table_entries ?(dbg = false) table_entries_a table_entries_b =
 (* Table default properties *)
 
 and eq_table_default' ?(dbg = false) table_default_a table_default_b =
-  E.eq_table_default' ~dbg P.pp_expr eq_expr table_default_a table_default_b
+  E.eq_table_default' ~dbg P.pp_table_action eq_table_action table_default_a
+    table_default_b
 
 and eq_table_default ?(dbg = false) table_default_a table_default_b =
-  E.eq_table_default ~dbg P.pp_expr eq_expr table_default_a table_default_b
+  E.eq_table_default ~dbg P.pp_table_action eq_table_action table_default_a
+    table_default_b
 
 (* Table custorm properties *)
 

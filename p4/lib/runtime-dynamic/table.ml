@@ -42,7 +42,8 @@ let pp ?(level = 0) fmt table =
     table.actions
     (indent (level + 1))
     (if table_action_default_const then "const " else "")
-    P.pp_table_action table_action_default
+    (P.pp_table_action ~level:(level + 2))
+    table_action_default
     (indent (level + 1))
     (if table_entries_const then "const" else "")
     (pp_list ~level:(level + 2) P.pp_table_entry ~sep:Nl)
@@ -81,7 +82,7 @@ let init_table_default (table : table) : bool * table_action =
   |> function
   | [] ->
       let var_action = L.Top ("NoAction" $ no_info) $ no_info in
-      let table_action_default = (var_action, [], []) $ no_info in
+      let table_action_default = (var_action, [], [], []) $ no_info in
       (false, table_action_default)
   | [ (table_action, table_action_const) ] -> (table_action_const, table_action)
   | _ ->

@@ -46,6 +46,9 @@ type ('note, 'expr) eq_expr =
 type 'stmt eq_stmt = ?dbg:bool -> 'stmt stmt -> 'stmt stmt -> bool
 type 'decl eq_decl = ?dbg:bool -> 'decl decl -> 'decl decl -> bool
 
+type 'table_action eq_table_action =
+  ?dbg:bool -> 'table_action table_action -> 'table_action table_action -> bool
+
 type 'table_entry eq_table_entry =
   ?dbg:bool -> 'table_entry table_entry -> 'table_entry table_entry -> bool
 
@@ -372,40 +375,49 @@ and eq_parser_states ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
 (* Tables *)
 
 and eq_table ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
+    (pp_table_action : 'table_action Pp.pp_table_action)
     (pp_table_entry : 'table_entry Pp.pp_table_entry)
     (eq_expr : ('note, 'expr) eq_expr)
+    (eq_table_action : 'table_action eq_table_action)
     (eq_table_entry : 'table_entry eq_table_entry)
-    (table_a : ('note, 'expr, 'table_entry) table)
-    (table_b : ('note, 'expr, 'table_entry) table) =
-  eq_table_properties ~dbg pp_expr pp_table_entry eq_expr eq_table_entry table_a
-    table_b
+    (table_a : ('note, 'expr, 'table_action, 'table_entry) table)
+    (table_b : ('note, 'expr, 'table_action, 'table_entry) table) =
+  eq_table_properties ~dbg pp_expr pp_table_action pp_table_entry eq_expr
+    eq_table_action eq_table_entry table_a table_b
 
 (* Table properties *)
 
 and eq_table_properties ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
+    (pp_table_action : 'table_action Pp.pp_table_action)
     (pp_table_entry : 'table_entry Pp.pp_table_entry)
     (eq_expr : ('note, 'expr) eq_expr)
+    (eq_table_action : 'table_action eq_table_action)
     (eq_table_entry : 'table_entry eq_table_entry) table_properties_a
     table_properties_b =
   eq_list
-    (eq_table_property ~dbg pp_expr pp_table_entry eq_expr eq_table_entry)
+    (eq_table_property ~dbg pp_expr pp_table_action pp_table_entry eq_expr
+       eq_table_action eq_table_entry)
     table_properties_a table_properties_b
 
 and eq_table_property ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
+    (pp_table_action : 'table_action Pp.pp_table_action)
     (pp_table_entry : 'table_entry Pp.pp_table_entry)
     (eq_expr : ('note, 'expr) eq_expr)
+    (eq_table_action : 'table_action eq_table_action)
     (eq_table_entry : 'table_entry eq_table_entry) table_property_a
     table_property_b =
   match (table_property_a, table_property_b) with
   | KeyP table_keys_a, KeyP table_keys_b ->
       eq_table_keys ~dbg pp_expr eq_expr table_keys_a table_keys_b
   | ActionP table_actions_a, ActionP table_actions_b ->
-      eq_table_actions ~dbg pp_expr eq_expr table_actions_a table_actions_b
+      eq_table_actions ~dbg pp_table_action eq_table_action table_actions_a
+        table_actions_b
   | EntryP table_entries_a, EntryP table_entries_b ->
       eq_table_entries ~dbg pp_table_entry eq_table_entry table_entries_a
         table_entries_b
   | DefaultP table_default_a, DefaultP table_default_b ->
-      eq_table_default ~dbg pp_expr eq_expr table_default_a table_default_b
+      eq_table_default ~dbg pp_table_action eq_table_action table_default_a
+        table_default_b
   | CustomP table_custom_a, CustomP table_custom_b ->
       eq_table_custom ~dbg pp_expr eq_expr table_custom_a table_custom_b
   | _ -> false
@@ -435,28 +447,20 @@ and eq_table_keys ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
 
 (* Table action references *)
 
-and eq_table_action' ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_expr : ('note, 'expr) eq_expr) table_action_a table_action_b =
-  let var_a, args_a, _annos_a = table_action_a in
-  let var_b, args_b, _annos_b = table_action_b in
-  eq_var ~dbg var_a var_b && eq_args ~dbg pp_expr eq_expr args_a args_b
+and eq_table_actions' ?(dbg = false)
+    (_pp_table_action : 'table_action Pp.pp_table_action)
+    (eq_table_action : 'table_action eq_table_action) table_actions_a
+    table_actions_b =
+  eq_list (eq_table_action ~dbg) table_actions_a table_actions_b
 
-and eq_table_action ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_expr : ('note, 'expr) eq_expr) table_action_a table_action_b =
-  eq_table_action' ~dbg pp_expr eq_expr table_action_a.it table_action_b.it
-  |> check ~dbg "table_action"
-       (Pp.pp_table_action pp_expr)
-       table_action_a table_action_b
-
-and eq_table_actions' ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_expr : ('note, 'expr) eq_expr) table_actions_a table_actions_b =
-  eq_list (eq_table_action ~dbg pp_expr eq_expr) table_actions_a table_actions_b
-
-and eq_table_actions ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_expr : ('note, 'expr) eq_expr) table_actions_a table_actions_b =
-  eq_table_actions' ~dbg pp_expr eq_expr table_actions_a.it table_actions_b.it
+and eq_table_actions ?(dbg = false)
+    (pp_table_action : 'table_action Pp.pp_table_action)
+    (eq_table_action : 'table_action eq_table_action) table_actions_a
+    table_actions_b =
+  eq_table_actions' ~dbg pp_table_action eq_table_action table_actions_a.it
+    table_actions_b.it
   |> check ~dbg "table_actions"
-       (Pp.pp_table_actions pp_expr)
+       (Pp.pp_table_actions pp_table_action)
        table_actions_a table_actions_b
 
 (* Table entries *)
@@ -482,18 +486,23 @@ and eq_table_entries ?(dbg = false)
 
 (* Table default properties *)
 
-and eq_table_default' ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_expr : ('note, 'expr) eq_expr) table_default_a table_default_b =
+and eq_table_default' ?(dbg = false)
+    (_pp_table_action : 'table_action Pp.pp_table_action)
+    (eq_table_action : 'table_action eq_table_action) table_default_a
+    table_default_b =
   let table_action_a, table_default_const_a = table_default_a in
   let table_action_b, table_default_const_b = table_default_b in
-  eq_table_action ~dbg pp_expr eq_expr table_action_a table_action_b
+  eq_table_action ~dbg table_action_a table_action_b
   && table_default_const_a = table_default_const_b
 
-and eq_table_default ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_expr : ('note, 'expr) eq_expr) table_default_a table_default_b =
-  eq_table_default' ~dbg pp_expr eq_expr table_default_a.it table_default_b.it
+and eq_table_default ?(dbg = false)
+    (pp_table_action : 'table_action Pp.pp_table_action)
+    (eq_table_action : 'table_action eq_table_action) table_default_a
+    table_default_b =
+  eq_table_default' ~dbg pp_table_action eq_table_action table_default_a.it
+    table_default_b.it
   |> check ~dbg "table_default"
-       (Pp.pp_table_default pp_expr)
+       (Pp.pp_table_default pp_table_action)
        table_default_a table_default_b
 
 (* Table custom properties *)

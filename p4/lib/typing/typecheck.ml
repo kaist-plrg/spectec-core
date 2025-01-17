@@ -4588,13 +4588,14 @@ and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
 
 and type_call_action_partial (cursor : Ctx.cursor) (ctx : Ctx.t)
     (var : El.Ast.var) (params : Types.param list)
-    (args_il_typed : (Il.Ast.arg * Type.t) list) : Il.Ast.arg list =
+    (args_il_typed : (Il.Ast.arg * Type.t) list) :
+    Il.Ast.arg list * Il.Ast.param list =
   (* Rule out directionless parameters, that will be supplied by the control plane *)
-  let params_specified =
-    List.filter_map
+  let params_specified, params_control =
+    List.partition
       (fun param ->
         let _, dir, _, _ = param in
-        match (dir : Lang.Ast.dir') with No -> None | _ -> Some param)
+        match (dir : Lang.Ast.dir') with No -> false | _ -> true)
       params
   in
   check
@@ -4604,7 +4605,22 @@ and type_call_action_partial (cursor : Ctx.cursor) (ctx : Ctx.t)
        El.Pp.pp_var var
        (List.length params_specified)
        (List.length args_il_typed));
-  type_call_convention ~action:true cursor ctx params_specified args_il_typed
+  let args_il =
+    type_call_convention ~action:true cursor ctx params_specified args_il_typed
+  in
+  let params_control_il =
+    List.map
+      (fun (id, dir, typ, value_default) ->
+        let value_default =
+          Option.map
+            (fun value_default -> value_default $ no_info)
+            value_default
+        in
+        (id $ no_info, dir $ no_info, typ $ no_info, value_default, [])
+        $ no_info)
+      params_control
+  in
+  (args_il, params_control_il)
 
 and type_table_action (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
     (table_action : El.Ast.table_action) : Tblctx.t * Il.Ast.table_action =
@@ -4634,11 +4650,11 @@ and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let params = FuncDef.get_params fd in
   let args_il_typed = type_args cursor ctx args in
   let args_il_specified = List.map fst args_il_typed in
-  let args_il =
+  let args_il, params_control_il =
     type_call_action_partial cursor ctx var_action params args_il_typed
   in
   let annos_il = type_annos cursor ctx annos in
-  let table_action_il = (var_action, args_il, annos_il) in
+  let table_action_il = (var_action, args_il, annos_il, params_control_il) in
   let table_ctx =
     Tblctx.add_action (var_action.it, params, args_il_specified) table_ctx
   in
@@ -4663,7 +4679,7 @@ and type_table_actions (cursor : Ctx.cursor) (ctx : Ctx.t)
       type_table_actions' cursor ctx table_ctx table_actions.it
     in
     List.map it table_actions_il
-    |> List.map (fun (action_name, _, _) -> action_name)
+    |> List.map (fun (action_name, _, _, _) -> action_name)
     |> WF.check_distinct_vars;
     (table_ctx, table_actions_il $ table_actions.at)
   with CheckErr _ as err -> error_pass_info table_actions.at err
@@ -4732,7 +4748,7 @@ and type_table_default_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let args_il =
     type_call_default_action cursor ctx var params args_il_typed args_action
   in
-  (var, args_il, annos_il)
+  (var, args_il, annos_il, [])
 
 and type_table_default' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_default : El.Ast.table_default') :
@@ -5005,7 +5021,7 @@ and type_table_entry_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let args_il =
     type_call_entry_action cursor ctx var params args_il_typed args_action
   in
-  (var, args_il, annos_il)
+  (var, args_il, annos_il, [])
 
 and check_table_entry_priority (table_ctx : Tblctx.t) (priority_curr : int) :
     unit =

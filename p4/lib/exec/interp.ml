@@ -825,7 +825,7 @@ module Make (Arch : ARCH) : INTERP = struct
     match (table_keys, keysets) with
     | _, [ { it = L.DefaultK; _ } ] | _, [ { it = L.AnyK; _ } ] ->
         let action =
-          let var_action, args_action, _ = table_action.it in
+          let var_action, args_action, _, _ = table_action.it in
           Some (var_action, args_action, priority)
         in
         (ctx, action)
@@ -843,7 +843,7 @@ module Make (Arch : ARCH) : INTERP = struct
         in
         let action =
           if matched then
-            let var_action, args_action, _ = table_action.it in
+            let var_action, args_action, _, _ = table_action.it in
             Some (var_action, args_action, priority)
           else None
         in
@@ -930,7 +930,7 @@ module Make (Arch : ARCH) : INTERP = struct
     (* Perform match against table entries *)
     let ctx, value, action =
       let _, table_action_default = table.action_default in
-      let var_action_default, args_action_default, _ =
+      let var_action_default, args_action_default, _, _ =
         table_action_default.it
       in
       let action_default = (var_action_default, args_action_default) in

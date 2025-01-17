@@ -236,10 +236,10 @@ and parser_state = (note, expr', stmt') L.parser_state
 and parser_state' = (note, expr', stmt') L.parser_state'
 
 (* Table *)
-and table = (note, expr', table_entry') L.table
+and table = (note, expr', table_action', table_entry') L.table
 
 (* Table properties *)
-and table_property = (note, expr', table_entry') L.table_property
+and table_property = (note, expr', table_action', table_entry') L.table_property
 
 (* Table keys *)
 and table_keys = (note, expr') L.table_keys
@@ -248,10 +248,10 @@ and table_key = (note, expr') L.table_key
 and table_key' = (note, expr') L.table_key'
 
 (* Table action references *)
-and table_actions = (note, expr') L.table_actions
-and table_actions' = (note, expr') L.table_actions'
-and table_action = (note, expr') L.table_action
-and table_action' = (note, expr') L.table_action'
+and table_actions = table_action' L.table_actions
+and table_actions' = table_action' L.table_actions'
+and table_action = table_action' L.table_action
+and table_action' = var * arg list * anno list * param list
 
 (* Table entries *)
 and table_entries = table_entry' L.table_entries
@@ -265,8 +265,8 @@ and table_entry' =
 and table_entry_const = L.table_entry_const
 
 (* Table default properties *)
-and table_default = (note, expr') L.table_default
-and table_default' = (note, expr') L.table_default'
+and table_default = table_action' L.table_default
+and table_default' = table_action' L.table_default'
 and table_default_const = L.table_default_const
 
 (* Table custom properties *)

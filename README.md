@@ -81,15 +81,26 @@ $ make test
 
 #### Parser
 
-**[Parsing, pretty-printing, and roundtripping](p4/status/parser.log)**
+Parsing, pretty-printing, and roundtripping [p4c](p4/status/p4c/parser.log) [petr4](p4/status/petr4/parser.log)
 
 #### Type checker
-* Positive type checker tests [p4c](p4/status/p4c/typecheck-pos.log) [petr4](p4/status/petr4/typecheck-pos.log) (well-typed programs should be accepted)
+
+* Positive type checker tests (well-typed programs should be accepted) [p4c](p4/status/p4c/typecheck-pos.log) [petr4](p4/status/petr4/typecheck-pos.log)
 * Excluded positive type checker tests [p4c](p4/status/p4c/typecheck-pos-excluded.log)
-* Negative type checker tests [p4c](p4/status/p4c/typecheck-neg.log) (ill-typed programs should be rejected)
+* Negative type checker tests (ill-typed programs should be rejected) [p4c](p4/status/p4c/typecheck-neg.log)
 * Excluded negative type checker tests [p4c](p4/status/p4c/typecheck-neg-excluded.log)
 
+Analysis of test failures: [p4c-pos](p4/status/p4c/typecheck-pos.analysis.md) [p4c-neg](p4/status/p4c/typecheck-neg.analysis.md) [petr4-pos](p4/status/petr4/typecheck-pos.analysis.md)
+
+#### Instantiator
+
+Instantiation of stateful objects [p4c](p4/status/p4c/instantiate.log) [petr4](p4/status/petr4/instantiate.log)
+
 ## P4-SpecTec: A language specification for P4
+
+Running STF tests against the p4c compiler test suite and petr4 custom test suite (for V1Model) [p4c](p4/status/p4c/run-v1model.log) [petr4](p4/status/petr4/run-v1model.log)
+
+Analysis of test failures: [p4c](p4/status/p4c/run-v1model.analysis.md) [petr4](p4/status/petr4/run-v1model.analysis.md)
 
 ### To Build the Spec and Output in LaTeX
 

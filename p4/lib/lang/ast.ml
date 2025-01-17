@@ -151,15 +151,15 @@ and ('note, 'expr, 'stmt) parser_state' =
   state_label * ('note, 'expr, 'stmt) block * ('note, 'expr) anno list
 
 (* Tables *)
-and ('note, 'expr, 'table_entry) table =
-  ('note, 'expr, 'table_entry) table_property list
+and ('note, 'expr, 'table_action, 'table_entry) table =
+  ('note, 'expr, 'table_action, 'table_entry) table_property list
 
 (* Table properties *)
-and ('note, 'expr, 'table_entry) table_property =
+and ('note, 'expr, 'table_action, 'table_entry) table_property =
   | KeyP of ('note, 'expr) table_keys
-  | ActionP of ('note, 'expr) table_actions
+  | ActionP of 'table_action table_actions
   | EntryP of 'table_entry table_entries
-  | DefaultP of ('note, 'expr) table_default
+  | DefaultP of 'table_action table_default
   | CustomP of ('note, 'expr) table_custom
 
 (* Table keys *)
@@ -170,13 +170,11 @@ and ('note, 'expr) table_key = ('note, 'expr) table_key' phrase
 and ('note, 'expr) table_key' =
   ('note, 'expr) expr * match_kind * ('note, 'expr) anno list
 
-(* Table action references *)
-and ('note, 'expr) table_actions = ('note, 'expr) table_actions' phrase
-and ('note, 'expr) table_actions' = ('note, 'expr) table_action list
-and ('note, 'expr) table_action = ('note, 'expr) table_action' phrase
-
-and ('note, 'expr) table_action' =
-  var * ('note, 'expr) arg list * ('note, 'expr) anno list
+(* Table action references : parameterized by `table_action *)
+and 'table_action table_actions = 'table_action table_actions' phrase
+and 'table_action table_actions' = 'table_action table_action list
+and 'table_action table_action = 'table_action table_action' phrase
+and 'table_action table_action' = 'table_action
 
 (* Table entries : parameterized by 'table_entry *)
 and 'table_entry table_entries = 'table_entry table_entries' phrase
@@ -190,10 +188,10 @@ and 'table_entry table_entry' = 'table_entry
 and table_entry_const = bool
 
 (* Table default properties *)
-and ('note, 'expr) table_default = ('note, 'expr) table_default' phrase
+and 'table_action table_default = 'table_action table_default' phrase
 
-and ('note, 'expr) table_default' =
-  ('note, 'expr) table_action * table_default_const
+and 'table_action table_default' =
+  'table_action table_action * table_default_const
 
 and table_default_const = bool
 

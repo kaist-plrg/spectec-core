@@ -966,8 +966,11 @@ Run success
 Error on run: 
 (TODO: find_table_key) data.f1
 >>>>> Rerunning run test on p4/test/p4c/program/well-typed/ternary2-bmv2.p4 with p4/test/p4c/stf/v1model-patch/ternary2-bmv2.stf
-Error on run: File p4/test/p4c/program/well-typed/ternary2-bmv2.p4, line 117, characters 8-26
-(TODO: deparse) 2
+[PASS] Expected: 2 00000101************7F66******** / Got: 2 000001010000020203037F6677778800
+[PASS] Expected: 3 00000202************0766******** / Got: 3 00000202000003030404076677778800
+[PASS] Expected: 2 010101010202020203037F262500257F01020304 / Got: 2 010101010202020203037F262500257F01020304
+[PASS] Expected: 2 010101010202020203037F66252527FF3333287F01020304 / Got: 2 010101010202020203037F66252527FF3333287F01020304
+Run success
 
 >>> Running run test on p4/test/p4c/program/well-typed/test-parserinvalidargument-error-bmv2.p4 with p4/test/p4c/stf/v1model/test-parserinvalidargument-error-bmv2.stf
 [PASS] Expected: 1 FFFFFFFFFF00A5A5A5A5A5A50000DEADBEEF / Got: 1 FFFFFFFFFF00A5A5A5A5A5A50000DEADBEEF
@@ -1014,4 +1017,4 @@ Run success
 Parser on file: [PASS] 179/179 (100.00%) [FAIL] 0/179 (0.00%)
 Typecheck: [PASS] 178/179 (99.44%) [FAIL] 1/179 (0.56%)
 Instantiate: [PASS] 178/178 (100.00%) [FAIL] 0/178 (0.00%)
-Run: [PASS] 174/178 (97.75%) [FAIL] 4/178 (2.25%)
+Run: [PASS] 175/178 (98.31%) [FAIL] 3/178 (1.69%)

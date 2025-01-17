@@ -443,15 +443,17 @@ and pp_parser_states ?(level = 0) fmt parser_states =
 (* Tables *)
 
 and pp_table ?(level = 0) fmt table =
-  P.pp_table ~level pp_expr pp_table_entry fmt table
+  P.pp_table ~level pp_expr pp_table_action pp_table_entry fmt table
 
 (* Table properties *)
 
 and pp_table_property ?(level = 0) fmt table_properties =
-  P.pp_table_property ~level pp_expr pp_table_entry fmt table_properties
+  P.pp_table_property ~level pp_expr pp_table_action pp_table_entry fmt
+    table_properties
 
 and pp_table_properties ?(level = 0) fmt table_properties =
-  P.pp_table_properties ~level pp_expr pp_table_entry fmt table_properties
+  P.pp_table_properties ~level pp_expr pp_table_action pp_table_entry fmt
+    table_properties
 
 (* Table keys *)
 
@@ -467,16 +469,18 @@ and pp_table_keys ?(level = 0) fmt table_keys =
 (* Table action references *)
 
 and pp_table_action' fmt table_action' =
-  P.pp_table_action' pp_expr fmt table_action'
+  let var, args, _annos = table_action' in
+  match args with
+  | [] -> F.fprintf fmt "%a;" pp_var var
+  | _ -> F.fprintf fmt "%a%a;" pp_var var pp_args args
 
-and pp_table_action fmt table_action =
-  P.pp_table_action pp_expr fmt table_action
+and pp_table_action fmt table_action = pp_table_action' fmt table_action.it
 
 and pp_table_actions' ?(level = 0) fmt table_actions' =
-  P.pp_table_actions' ~level pp_expr fmt table_actions'
+  P.pp_table_actions' ~level pp_table_action fmt table_actions'
 
 and pp_table_actions ?(level = 0) fmt table_actions =
-  P.pp_table_actions ~level pp_expr fmt table_actions
+  P.pp_table_actions ~level pp_table_action fmt table_actions
 
 (* Table entries *)
 
@@ -502,10 +506,10 @@ and pp_table_entries ?(level = 0) fmt table_entries =
 (* Table default properties *)
 
 and pp_table_default' fmt table_default' =
-  P.pp_table_default' pp_expr fmt table_default'
+  P.pp_table_default' pp_table_action fmt table_default'
 
 and pp_table_default fmt table_default =
-  P.pp_table_default pp_expr fmt table_default
+  P.pp_table_default pp_table_action fmt table_default
 
 (* Table custom properties *)
 

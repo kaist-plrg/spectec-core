@@ -3,7 +3,16 @@ open Ast
 open Util.Source
 
 type walker =
-  (note, typ', value', param', expr', stmt', decl', table_entry') W.walker
+  ( note,
+    typ',
+    value',
+    param',
+    expr',
+    stmt',
+    decl',
+    table_action',
+    table_entry' )
+  W.walker
 
 (* Numbers *)
 
@@ -329,7 +338,11 @@ let walk_table_keys (walker : walker) table_keys =
 (* Table action references *)
 
 let walk_table_action (walker : walker) table_action =
-  W.walk_table_action walker table_action
+  let walk_var = walker.walk_var walker in
+  let walk_arg = walker.walk_arg walker in
+  let var, args, _annos, _params_control = table_action.it in
+  walk_var var;
+  W.walk_list walk_arg args
 
 let walk_table_actions (walker : walker) table_actions =
   W.walk_table_actions walker table_actions

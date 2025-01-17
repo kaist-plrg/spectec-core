@@ -697,7 +697,7 @@ module Make (Interp : INTERP) : ARCH = struct
     let table_action =
       List.filter_map
         (fun table_action ->
-          let var_action, _args_action, _annos = table_action.it in
+          let var_action, _, _, _ = table_action.it in
           match var_action.it with
           | Lang.Ast.Top id | Lang.Ast.Current id ->
               if id.it = id_action then Some table_action else None)
@@ -787,23 +787,38 @@ module Make (Interp : INTERP) : ARCH = struct
     let action =
       let id_action, args_action_supplied = action in
       let table_action = find_table_action id_action table in
-      let var_action, args_action, annos = table_action.it in
+      let var_action, args_action, annos, params_control = table_action.it in
+      let module PMap = Map.Make (String) in
+      let pmap_control =
+        List.map it params_control
+        |> List.mapi (fun idx (id, _, typ, _, _) -> (idx, id.it, typ.it))
+        |> List.fold_left
+             (fun pmap (idx, id, typ) -> PMap.add id (idx, typ) pmap)
+             PMap.empty
+      in
       let args_action_supplied =
-        List.map
-          (fun arg_action_supplied ->
-            (* (TODO) Should check the validity of the argument name *)
-            let _id_arg, num_arg = arg_action_supplied in
-            let num_arg = num_arg |> int_of_string |> Bigint.of_int in
-            let value_arg = Value.IntV num_arg $ no_info in
-            (* (TODO) Should insert proper casts *)
-            let expr_arg =
-              Il.Ast.ValueE { value = value_arg } $$ no_info_expr
-            in
-            Lang.Ast.ExprA expr_arg $ no_info)
-          args_action_supplied
+        args_action_supplied
+        |> List.map (fun arg_action_supplied ->
+               (* (TODO) Should check the validity of the argument name *)
+               let id_arg, num_arg = arg_action_supplied in
+               let idx, typ = PMap.find id_arg pmap_control in
+               let num_arg = num_arg |> int_of_string |> Bigint.of_int in
+               let value_arg = Value.IntV num_arg $ no_info in
+               let expr_arg =
+                 Il.Ast.ValueE { value = value_arg } $$ no_info_expr
+               in
+               let expr_arg =
+                 Il.Ast.(
+                   CastE { typ = typ $ no_info; expr = expr_arg }
+                   $$ (no_info, { typ; ctk = Ctk.DYN }))
+               in
+               let arg = Lang.Ast.ExprA expr_arg $ no_info in
+               (idx, arg))
+        |> List.sort (fun (idx_a, _) (idx_b, _) -> compare idx_a idx_b)
+        |> List.map snd
       in
       let args_action = args_action @ args_action_supplied in
-      (var_action, args_action, annos) $ no_info
+      (var_action, args_action, annos, []) $ no_info
     in
     (* (TODO) Should insert proper priority value *)
     let priority =
@@ -1005,6 +1020,8 @@ module Make (Interp : INTERP) : ARCH = struct
     | Stf.Ast.Add (id_table, priority, keys, action, _) ->
         add_table_entry id_table keys action priority;
         (ctx, pass, queue_packet, queue_expect)
+    (* Timing *)
+    | Stf.Ast.Wait -> (ctx, pass, queue_packet, queue_expect)
     | _ ->
         Format.asprintf "(drive_stf_stmt) unknown stf stmt: %a"
           Stf.Print.print_stmt stmt_stf

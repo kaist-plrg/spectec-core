@@ -10,14 +10,6 @@ Refer to **A.1.(3) Implicit cast involving serializable enums** in [typechecker 
 
 * ipv6-switch-ml-bmv2.stf
 
-## 3. Unknown STF statement
-
-```plaintext
-add test1 0 data.f1(0x****0101) ingress.setb1((val, 0x7f), (port, 2))
-```
-
-* ternary2-bmv2.stf
-
 # B. Need Test Clarification
 
 ## 1. Payload is not extracted
@@ -46,6 +38,19 @@ pkt.extract(hdr.eth_hdr);
 Adding `pkt.extract(hdr.h);` would extract the `h` header and the test would pass.
 
 * gauntlet_invalid_hdr_short_circuit-bmv2.p4
+
+## 2. Header is not emitted
+
+```plaintext
+expect 2 00000101 ******** **** 7f 66
+// expect 2 00000101 ******** **** 7f 66 **** ** **
+packet 0 00000101 00000202 0303 55 66 7777 88 00
+```
+
+The test does not expect the header stack to be emitted.
+After patching the SFT test as in the comment, the test would pass.
+
+* ternary2-bmv2.stf
 
 # C. Unsupported Features
 

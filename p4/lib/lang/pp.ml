@@ -14,6 +14,9 @@ type ('note, 'expr) pp_expr =
 type 'stmt pp_stmt = ?level:int -> F.formatter -> 'stmt stmt -> unit
 type 'decl pp_decl = ?level:int -> F.formatter -> 'decl decl -> unit
 
+type 'table_action pp_table_action =
+  F.formatter -> 'table_action table_action -> unit
+
 type 'table_entry pp_table_entry =
   F.formatter -> 'table_entry table_entry -> unit
 
@@ -286,29 +289,35 @@ and pp_parser_states ?(level = 0) (pp_expr : ('note, 'expr) pp_expr)
 (* Tables *)
 
 and pp_table ?(level = 0) (pp_expr : ('note, 'expr) pp_expr)
+    (pp_table_action : 'table_action pp_table_action)
     (pp_table_entry : 'table_entry pp_table_entry) fmt
-    (table : ('note, 'expr, 'table_entry) table) =
+    (table : ('note, 'expr, 'table_action, 'table_entry) table) =
   F.fprintf fmt "{\n%a\n%s}"
-    (pp_table_properties ~level:(level + 1) pp_expr pp_table_entry)
+    (pp_table_properties ~level:(level + 1) pp_expr pp_table_action
+       pp_table_entry)
     table (indent level)
 
 (* Table properties *)
 
 and pp_table_property ?(level = 0) (pp_expr : ('note, 'expr) pp_expr)
+    (pp_table_action : 'table_action pp_table_action)
     (pp_table_entry : 'table_entry pp_table_entry) fmt
-    (table_property : ('note, 'expr, 'table_entry) table_property) =
+    (table_property :
+      ('note, 'expr, 'table_action, 'table_entry) table_property) =
   match table_property with
   | KeyP table_keys -> pp_table_keys ~level pp_expr fmt table_keys
-  | ActionP table_actions -> pp_table_actions ~level pp_expr fmt table_actions
+  | ActionP table_actions ->
+      pp_table_actions ~level pp_table_action fmt table_actions
   | EntryP table_entries ->
       pp_table_entries ~level pp_table_entry fmt table_entries
-  | DefaultP table_default -> pp_table_default pp_expr fmt table_default
+  | DefaultP table_default -> pp_table_default pp_table_action fmt table_default
   | CustomP table_custom -> pp_table_custom pp_expr fmt table_custom
 
 and pp_table_properties ?(level = 0) (pp_expr : ('note, 'expr) pp_expr)
+    (pp_table_action : 'table_action pp_table_action)
     (pp_table_entry : 'table_entry pp_table_entry) fmt table_properties =
   pp_list ~level
-    (pp_table_property ~level pp_expr pp_table_entry)
+    (pp_table_property ~level pp_expr pp_table_action pp_table_entry)
     ~sep:Nl fmt table_properties
 
 (* Table keys *)
@@ -332,24 +341,15 @@ and pp_table_keys ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt table_keys
 
 (* Table action references *)
 
-and pp_table_action' (pp_expr : ('note, 'expr) pp_expr) fmt table_action' =
-  let var, args, _annos = table_action' in
-  match args with
-  | [] -> F.fprintf fmt "%a;" pp_var var
-  | _ -> F.fprintf fmt "%a%a;" pp_var var (pp_args pp_expr) args
-
-and pp_table_action (pp_expr : ('note, 'expr) pp_expr) fmt table_action =
-  pp_table_action' pp_expr fmt table_action.it
-
-and pp_table_actions' ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
-    table_actions =
+and pp_table_actions' ?(level = 0)
+    (pp_table_action : 'table_action pp_table_action) fmt table_actions =
   F.fprintf fmt "actions = {\n%a\n%s}"
-    (pp_list ~level:(level + 1) (pp_table_action pp_expr) ~sep:Nl)
+    (pp_list ~level:(level + 1) pp_table_action ~sep:Nl)
     table_actions (indent level)
 
-and pp_table_actions ?(level = 0) (pp_expr : ('note, 'expr) pp_expr) fmt
-    table_actions =
-  pp_table_actions' ~level pp_expr fmt table_actions.it
+and pp_table_actions ?(level = 0)
+    (pp_table_action : 'table_action pp_table_action) fmt table_actions =
+  pp_table_actions' ~level pp_table_action fmt table_actions.it
 
 (* Table entries *)
 
@@ -367,14 +367,16 @@ and pp_table_entries ?(level = 0) (pp_table_entry : 'table_entry pp_table_entry)
 
 (* Table default properties *)
 
-and pp_table_default' (pp_expr : ('note, 'expr) pp_expr) fmt table_default' =
+and pp_table_default' (pp_table_action : 'table_action pp_table_action) fmt
+    table_default' =
   let table_action, table_default_const = table_default' in
   F.fprintf fmt "%sdefault_action = %a"
     (if table_default_const then "const " else "")
-    (pp_table_action pp_expr) table_action
+    pp_table_action table_action
 
-and pp_table_default (pp_expr : ('note, 'expr) pp_expr) fmt table_default =
-  pp_table_default' pp_expr fmt table_default.it
+and pp_table_default (pp_table_action : 'table_action pp_table_action) fmt
+    table_default =
+  pp_table_default' pp_table_action fmt table_default.it
 
 (* Table custom properties *)
 
