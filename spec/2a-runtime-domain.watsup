@@ -26,7 +26,7 @@ def $in_map(syntax K, syntax V, K, map(K, V)) : V                     hint(show 
 def $in_dom_map(syntax K, syntax V, K, map(K, V)) : bool              hint(show %3#%latex("\\in Domain(")#%4#%latex(")"))
 def $find_map(syntax K, syntax V, map(K, V), K) : V                   hint(show %3#`[%4])
 def $extends_map(syntax K, syntax V, map(K, V), K*, V*) : map(K, V)   hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
-
+def $update_map(syntax K, syntax V, map(K, V), K, V) : map(K, V)      hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
 
 ;;
 ;; Type identifiers

@@ -2,22 +2,6 @@
 ;; Calling convention
 ;;
 
-syntax pmap = map(id, paramtyp)
-
-def $align_params_with_args'(pmap, paramtyp, typ, arg): (paramtyp, typ, arg) hint(show ALIGN_PARAMS_WITH_ARGS'%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(")"))
-
-def $align_params_with_args'(pmap, paramtyp, typ, ExprA expr) = (paramtyp, typ, ExprA expr)
-def $align_params_with_args'(pmap, paramtyp, typ, NameA id expr?) = (paramtyp', typ, (NameA id expr?))
-  -- if paramtyp' = $find_map(id, paramtyp, pmap, id)
-def $align_params_with_args'(pmap, paramtyp, typ, AnyA) = (paramtyp, typ, AnyA)
-
-def $align_params_with_args(paramtyp*, typ*, arg*): (paramtyp*, typ*, arg*) hint(show ALIGN_PARAMS_WITH_ARGS%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(")"))
-
-def $align_params_with_args(paramtyp*, typ*, arg*) = (paramtyp'*, typ'*, arg'*)
-  -- if (id dir typ val?)* = paramtyp*
-  -- if pmap = MAP id* paramtyp*
-  -- (if (paramtyp', typ', arg') = $align_params_with_args'(pmap, paramtyp, typ, arg))*
-
 rule Call_convention_ok/in:
   p C actctxt |- (id IN typ_p val?) ~~ (expr, typ_a)
   -- Expr_ok: p C |- expr : typ_e ctk

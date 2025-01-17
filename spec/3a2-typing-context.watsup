@@ -47,7 +47,7 @@ syntax llayer =
 
 ;; Typing context
 
-syntax context = 
+syntax context =
   { GLOBAL glayer,
     BLOCK blayer,
     LOCAL llayer }
@@ -84,6 +84,23 @@ def $add_vals(cursor, context, id*, val*) : context   hint(show %2.%1#%latex("\\
 def $add_typ(cursor, context, id, rtyp): context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
 def $add_typs(cursor, context, id*, rtyp*) : context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
+
+def $add_param(cursor, context, paramtyp) : context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
+
+def $add_param(p, C, pt) = C'
+    -- if id NO typ val? = pt
+    -- if C' = $add_typ(p, C, id, typ NO CTK)
+def $add_param(p, C, pt) = C'
+    -- if id dir typ val? = pt
+    -- if dir = IN \/ dir = OUT \/ dir = INOUT
+    -- if C' = $add_typ(p, C, id, typ dir DYN)
+
+def $add_params(cursor, context, paramtyp*) : context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
+
+def $add_params(p, C, eps) = C
+def $add_params(p, C, pt_h pt_t*) = C''
+    -- if C' = $add_param(p, C, pt_h)
+    -- if C'' = $add_params(p, C', pt_t*)
 
 def $add_typdef(cursor, context, tid, typdef): context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
