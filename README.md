@@ -96,11 +96,13 @@ Analysis of test failures: [p4c-pos](p4/status/p4c/typecheck-pos.analysis.md) [p
 
 Instantiation of stateful objects [p4c](p4/status/p4c/instantiate.log) [petr4](p4/status/petr4/instantiate.log)
 
-## P4-SpecTec: A language specification for P4
+#### Interpreter
 
 Running STF tests against the p4c compiler test suite and petr4 custom test suite (for V1Model) [p4c](p4/status/p4c/run-v1model.log) [petr4](p4/status/petr4/run-v1model.log)
 
 Analysis of test failures: [p4c](p4/status/p4c/run-v1model.analysis.md) [petr4](p4/status/petr4/run-v1model.analysis.md)
+
+## P4-SpecTec: A language specification for P4
 
 ### To Build the Spec and Output in LaTeX
 
