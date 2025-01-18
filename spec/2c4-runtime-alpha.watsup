@@ -19,30 +19,6 @@ def $nominal(typ) = false
   -- otherwise
 
 ;;
-;;  Alpha-equivalence of exprs
-;;
-
-relation Expr_alpha: expr ~~ expr
-
-;;
-;;  Alpha-equivalence of args
-;;
-
-relation Arg_alpha: arg ~~ arg
-
-rule Arg_alpha/expra:
-  ExprA expr_a ~~ ExprA expr_b
-  -- Expr_alpha: expr_a ~~ expr_b
-
-rule Arg_alpha/namea:
-  NameA id_a expr_a ~~ NameA id_b expr_b
-  -- if id_a = id_b
-  -- Expr_alpha: expr_a ~~ expr_b
-
-rule Arg_alpha/anya:
-  AnyA ~~ AnyA
-
-;;
 ;; Alpha-equivalence of types
 ;;
 

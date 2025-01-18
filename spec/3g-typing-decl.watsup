@@ -548,34 +548,30 @@ rule Decl_ok/parserd:
 ;; Table declaration
 ;;
 
-def $filter_out_args_with_no_dir(paramtyp*, arg*) : arg*    hint(show FILTER_OUT_ARGS_WITH_NO_DIR(%1, %2))
+def $filter_directionless_args(paramtyp*, arg*) : arg*    hint(show FILTER_OUT_ARGS_WITH_NO_DIR(%1, %2))
 
-def $filter_out_args_with_no_dir(eps, eps) = eps
-def $filter_out_args_with_no_dir(pt_h pt_t*, arg_h arg_t*) = arg_h $filter_out_args_with_no_dir(pt_t*, arg_t*)
-  -- if id dir typ val? = pt_h
-  -- if dir = IN \/ dir = OUT \/ dir = INOUT
-def $filter_out_args_with_no_dir(pt_h pt_t*, arg_h arg_t*) = $filter_out_args_with_no_dir(pt_t*, arg_t*)
-  -- if id dir typ val? = pt_h
-  -- if dir = NO
+def $filter_directionless_args(eps, eps) = eps
+def $filter_directionless_args(pt_h pt_t*, arg_h arg_t*) = $filter_directionless_args(pt_t*, arg_t*)
+  -- if id NO typ val? = pt_h
+def $filter_directionless_args(pt_h pt_t*, arg_h arg_t*) = arg_h $filter_directionless_args(pt_t*, arg_t*)
+  -- otherwise
 
-def $filter_out_params_with_no_dir(paramtyp*) : paramtyp*   hint(show FILTER_OUT_PARAMS_WITH_NO_DIR(%1))
+def $filter_directionless_params(paramtyp*) : paramtyp*   hint(show FILTER_OUT_PARAMS_WITH_NO_DIR(%1))
 
-def $filter_out_params_with_no_dir(eps) = eps
-def $filter_out_params_with_no_dir(pt_h pt_t*) = pt_h $filter_out_params_with_no_dir(pt_t*)
-  -- if id dir typ val? = pt_h
-  -- if dir = IN \/ dir = OUT \/ dir = INOUT
-def $filter_out_params_with_no_dir(pt_h pt_t*) = $filter_out_params_with_no_dir(pt_t*)
-  -- if id dir typ val? = pt_h
-  -- if dir = NO
+def $filter_directionless_params(eps) = eps
+def $filter_directionless_params(pt_h pt_t*) = $filter_directionless_params(pt_t*)
+  -- if id NO typ val? = pt_h
+def $filter_directionless_params(pt_h pt_t*) = pt_h $filter_directionless_params(pt_t*)
+  -- otherwise
 
 relation Call_default_action_ok: cursor context |- name paramtyp* (arg*, typ*) arg*
 
 rule Call_default_action_ok:
   p C |- name pt* (arg*, typ*) arg_a*
   -- if |pt*| = |arg*|
-  -- if arg'* = $filter_out_args_with_no_dir(pt*, arg*)
+  -- if arg_data* = $filter_directionless_args(pt*, arg*)
   ----
-  -- (Arg_alpha: arg_a ~~ arg')*
+  -- if (arg_a = arg_data)*
   -- (Call_convention_arg_ok: p C ACT |- pt ~~ (arg, typ))*
 
 def $check_table_key(matchkind, typ) : bool   hint(show CHECK_TABLE_KEY(%1, %2))
@@ -606,159 +602,159 @@ def $check_table_key(matchkind, typ) = $check_table_key(matchkind, typ'')
 def $check_table_key(matchkind, typ) = false
   -- otherwise
 
-relation Table_key_ok: cursor context |- tblctx tblkey : tblctx ;; check
+relation Table_key_ok: cursor context tblctx |- tblkey : tblctx
 
 rule Table_key_ok:
-  p C |- tblctx (expr matchkind) : tblctx''
+  p C tblctx |- (expr matchkind) : tblctx''
   -- Expr_ok: p C |- expr : typ ctk
-  -- if (MatchKindV matchkind') = $find_val(p, C, CURRENT matchkind)
+  -- if (MatchKindV matchkind) = $find_val(p, C, CURRENT matchkind)
   ----
-  -- if $check_table_key(matchkind', typ)
-  -- if tblctx' = $update_mode(matchkind', typ, tblctx)
+  -- if $check_table_key(matchkind, typ)
+  -- if tblctx' = $update_mode(matchkind, typ, tblctx)
   ----
-  -- if tblctx'' = $add_key((SetT typ, matchkind'), tblctx')
+  -- if tblctx'' = $add_key((SetT typ, matchkind), tblctx')
 
-relation Table_keys_ok: cursor context |- tblctx tblkeyprop : tblctx ;; check
+relation Table_keys_ok: cursor context tblctx |- tblkeyprop : tblctx
 
 rule Table_keys_ok/nil:
-  p C |- tblctx eps : tblctx
+  p C tblctx |- eps : tblctx
 
 rule Table_keys_ok/cons:
-  p C |- tblctx (tblkey_h tblkey_t*) : tblctx''
-  -- Table_key_ok: p C |- tblctx tblkey_h : tblctx'
-  -- Table_keys_ok: p C |- tblctx' tblkey_t* : tblctx''
+  p C tblctx |- (tblkey_h tblkey_t*) : tblctx''
+  -- Table_key_ok: p C tblctx |- tblkey_h : tblctx'
+  -- Table_keys_ok: p C tblctx' |- tblkey_t* : tblctx''
 
-relation Call_action_partial_ok: cursor context |- name paramtyp* arg* typ* ;; check
+relation Call_action_partial_ok: cursor context |- name paramtyp* arg* typ*
 
 rule Call_action_partial_ok:
   p C |- name pt* arg* typ*
-  -- if pt'* = $filter_out_params_with_no_dir(pt*)
+  -- if pt'* = $filter_directionless_params(pt*)
   -- if |pt'*| = |arg*|
   -- (Call_convention_arg_ok: p C ACT |- pt' ~~ (arg, typ))*
 
-relation Table_action_ok: cursor context |- tblctx tblaction : tblctx ;; check
+relation Table_action_ok: cursor context tblctx |- tblaction : tblctx
 
 rule Table_action_ok:
-  p C |- tblctx (name arg*) : tblctx'
+  p C tblctx |- (name arg*) : tblctx'
   -- if MonoFD (ActionT pt*) = $find_funcdef(p, C, name)
   -- (Arg_ok: p C |- arg : typ)*
   ----
   -- Call_action_partial_ok: p C |- name pt* arg* typ*
   -- if tblctx' = $add_action((name, pt*, arg*), tblctx)
 
-relation Table_actions_ok: cursor context |- tblctx tblactionprop : tblctx ;; check
+relation Table_actions_ok: cursor context tblctx |- tblactionprop : tblctx
 
 rule Table_actions_ok/nil:
-  p C |- tblctx eps : tblctx
+  p C tblctx |- eps : tblctx
 
 rule Table_actions_ok/cons:
-  p C |- tblctx (tblaction_h tblaction_t*) : tblctx''
-  -- Table_action_ok: p C |- tblctx tblaction_h : tblctx'
-  -- Table_actions_ok: p C |- tblctx' tblaction_t* : tblctx''
+  p C tblctx |- (tblaction_h tblaction_t*) : tblctx''
+  -- Table_action_ok: p C tblctx |- tblaction_h : tblctx'
+  -- Table_actions_ok: p C tblctx' |- tblaction_t* : tblctx''
   ----
   -- if (name arg*)* = tblactionprop
   -- if $distinct(name, name*)
 
 def $of_two_complement(int, int) : int
 
-relation Table_entry_keyset_ok: cursor context |- tblctx key keyset : state
+relation Table_entry_keyset_ok: cursor context tblctx |- key keyset : tblstate
 
 rule Table_entry_keyset_ok/exprk-maske-lpm:
-  p C |- tblctx (SetT typ_k, "lpm") (ExprK (MaskE expr_b expr_m)) : state_e
+  p C tblctx |- (SetT typ_k, "lpm") (ExprK (MaskE expr_b expr_m)) : state_e
   -- Expr_ok: p C |- (MaskE expr_b expr_m) : (SetT typ) ctk
   -- if tblctx.MODE = NOPRILPM i
   ----
   -- Eval_static: p C |- expr_m ~> val_m
   ----
-  -- if val_m = IntV m \/ val_m = FIntV w m \/ val_m = FBitV w m
+  -- if val_m = IntV m \/ val_m = FIntV w m \/ val_m = FBitV w m ;; (TODO)
   ----
   -- if state_e = $get_lpm_prefix(FBitV i $of_two_complement(m, i))
   -- Sub_impl: typ << typ_k
 
 rule Table_entry_keyset_ok/exprk-maske-ternary:
-  p C |- tblctx (SetT typ_k, "ternary") (ExprK (MaskE expr_b expr_m)) : NOLPM
+  p C tblctx |- (SetT typ_k, "ternary") (ExprK (MaskE expr_b expr_m)) : NOLPM
   -- Expr_ok: p C |- (MaskE expr_b expr_m) : (SetT typ) ctk
   -- Sub_impl: typ << typ_k
 
 rule Table_entry_keyset_ok/exprk-rangee:
-  p C |- tblctx (SetT typ_k, "range") (ExprK (RangeE expr_l expr_r)) : NOLPM
+  p C tblctx |- (SetT typ_k, "range") (ExprK (RangeE expr_l expr_r)) : NOLPM
   -- Expr_ok: p C |- (RangeE expr_l expr_r) : (SetT typ) ctk
   -- Sub_impl: typ << typ_k
 
 rule Table_entry_keyset_ok/exprk-else:
-  p C |- tblctx (SetT typ_k, matchkind) (ExprK expr) : NOLPM
+  p C tblctx |- (SetT typ_k, matchkind) (ExprK expr) : NOLPM
   -- if ~($is_maske(expr) \/ $is_rangee(expr))
   -- Expr_ok: LOCAL C |- expr : typ ctk
   ----
-  -- if typ' = SetT typ
-  -- Sub_impl: typ' << typ_k
+  -- Sub_impl: (SetT typ) << typ_k
 
-relation Table_entry_state_fold: cursor context |- tblctx state key* keyset* : state
+relation Table_entry_keysets_state_ok: cursor context tblctx tblstate |- key* keyset* : tblstate
 
-rule Table_entry_state_fold/nil:
-  p C |- tblctx state eps eps : state
+rule Table_entry_keysets_state_ok/nil:
+  p C tblctx tblstate |- eps eps : tblstate
 
-rule Table_entry_state_fold/cons:
-  p C |- tblctx state (key_h key_t*) (keyset_h keyset_t*) : state''
-  -- Table_entry_keyset_ok: p C |- tblctx key_h keyset_h : state'
-  -- Table_entry_state_fold: p C |- tblctx state' key_t* keyset_t* : state''
+rule Table_entry_keysets_state_ok/cons:
+  p C tblctx tblstate |- (key_h key_t*) (keyset_h keyset_t*) : tblstate'''
+  -- Table_entry_keyset_ok: p C tblctx |- key_h keyset_h : tblstate'
+  -- if tblstate'' = $update_state(tblstate, tblstate')
+  -- Table_entry_keysets_state_ok: p C tblctx tblstate'' |- key_t* keyset_t* : tblstate'''
 
-relation Table_entry_keysets_ok: cursor context |- tblctx keyset* : state
+relation Table_entry_keysets_ok: cursor context tblctx |- keyset* : tblstate
 
 rule Table_entry_keysets_ok/noprilpm-defaultk:
-  p C |- tblctx DefaultK : (LPM i)
+  p C tblctx |- DefaultK : (LPM i)
   -- if tblctx.MODE = NOPRILPM i
 
 rule Table_entry_keysets_ok/else-defaultk:
-  p C |- tblctx DefaultK : NOLPM
+  p C tblctx |- DefaultK : NOLPM
 
 rule Table_entry_keysets_ok/noprilpm-anyk:
-  p C |- tblctx AnyK : (LPM 0)
+  p C tblctx |- AnyK : (LPM 0)
   -- if tblctx.MODE = NOPRILPM i
 
 rule Table_entry_keysets_ok/else-anyk:
-  p C |- tblctx AnyK : NOLPM
+  p C tblctx |- AnyK : NOLPM
 
 rule Table_entry_keysets_ok/others:
-  p C |- tblctx keyset* : state
+  p C tblctx |- keyset* : tblstate
   -- if |tblctx.KEYS| = |keyset*|
-  -- Table_entry_state_fold: p C |- tblctx NOLPM tblctx.KEYS keyset* : state
+  -- Table_entry_keysets_state_ok: p C tblctx NOLPM |- tblctx.KEYS keyset* : tblstate
 
-relation Table_entry_action_ok: cursor context |- tblctx tblaction
+relation Table_entry_action_ok: cursor context tblctx |- tblaction
 
 rule Table_entry_action_ok:
-  p C |- tblctx (name arg*)
+  p C tblctx |- (name arg*)
   -- if (pt*, arg_a*) = $find_action(tblctx, name)
   -- (Arg_ok: p C |- arg : typ)*
   ----
   -- Call_default_action_ok: p C |- name pt* (arg*, typ*) arg_a*
 
-relation Table_entry_priority_ok: cursor context |- tblctx state expr? : tblctx
+relation Table_entry_priority_ok: cursor context tblctx tblstate |- expr? : tblctx
 
 rule Table_entry_priority_ok/nopri:
-  LOCAL C |- tblctx state eps : tblctx
+  LOCAL C tblctx tblstate |- eps : tblctx
   -- if tblctx.MODE = NOPRI
 
 rule Table_entry_priority_ok/noprilpm:
-  LOCAL C |- tblctx (LPM prefix) eps : tblctx
+  LOCAL C tblctx (LPM prefix) |- eps : tblctx
   -- if tblctx.MODE = NOPRILPM i
 
 rule Table_entry_priority_ok/priority-values-nil-somep:
-  LOCAL C |- tblctx state expr : tblctx''
+  LOCAL C tblctx tblstate |- expr : tblctx''
   -- if ~tblctx.ENTRIES.CONST
   -- if tblctx.PRIORITIES.VALUES = eps
   ----
   -- Expr_ok: LOCAL C |- expr : typ ctk
   -- Eval_static: LOCAL C |- expr ~> val
   ----
-  -- if val = IntV i \/ val = FIntV w i \/ val = FBitV w i
+  -- if val = IntV i \/ val = FIntV w i \/ val = FBitV w i ;; (TODO)
   -- if i >= 0
   ----
   -- if tblctx' = $set_priority_init(true, tblctx)
   -- if tblctx'' = $add_priority(i, tblctx')
 
 rule Table_entry_priority_ok/priority-values-nil-none-lw:
-  LOCAL C |- tblctx state eps : tblctx''
+  LOCAL C tblctx tblstate |- eps : tblctx''
   -- if tblctx.PRIORITIES.VALUES = eps
   -- if tblctx.PRIORITIES.LARGEST_WINS
   ----
@@ -772,7 +768,7 @@ rule Table_entry_priority_ok/priority-values-nil-none-lw:
   -- if tblctx'' = $add_priority(i, tblctx')
 
 rule Table_entry_priority_ok/priority-values-nil-none-no-lw:
-  LOCAL C |- tblctx state eps : tblctx''
+  LOCAL C tblctx tblstate |- eps : tblctx''
   -- if tblctx.PRIORITIES.VALUES = eps
   -- if ~tblctx.PRIORITIES.LARGEST_WINS
   ----
@@ -782,20 +778,20 @@ rule Table_entry_priority_ok/priority-values-nil-none-no-lw:
   -- if tblctx'' = $add_priority(i, tblctx')
 
 rule Table_entry_priority_ok/else-somep:
-  LOCAL C |- tblctx state expr : tblctx'
+  LOCAL C tblctx tblstate |- expr : tblctx'
   -- if ~tblctx.ENTRIES.CONST
   -- if tblctx.PRIORITIES.INIT
   ----
   -- Expr_ok: LOCAL C |- expr : typ ctk
   -- Eval_static: LOCAL C |- expr ~> val
   ----
-  -- if val = IntV i \/ val = FIntV w i \/ val = FBitV w i
+  -- if val = IntV i \/ val = FIntV w i \/ val = FBitV w i ;; (TODO)
   -- if i >= 0
   ----
   -- if tblctx' = $add_priority(i, tblctx)
 
 rule Table_entry_priority_ok/else-none-lw:
-  LOCAL C |- tblctx state eps : tblctx'
+  LOCAL C tblctx tblstate |- eps : tblctx'
   -- if delta = tblctx.PRIORITIES.DELTA
   -- if i = $find_last_priority(tblctx)
   ----
@@ -806,7 +802,7 @@ rule Table_entry_priority_ok/else-none-lw:
   -- if tblctx' = $add_priority(i', tblctx)
 
 rule Table_entry_priority_ok/else-none-no-lw:
-  LOCAL C |- tblctx state eps : tblctx'
+  LOCAL C tblctx tblstate |- eps : tblctx'
   -- if delta = tblctx.PRIORITIES.DELTA
   -- if i = $find_last_priority(tblctx)
   ----
@@ -816,52 +812,61 @@ rule Table_entry_priority_ok/else-none-no-lw:
   -- if i' >= 0
   -- if tblctx' = $add_priority(i', tblctx)
 
-relation Table_entry_ok: cursor context |- tblctx tblentry : tblctx
+relation Table_entry_ok: cursor context tblctx |- tblentry : tblctx
 
 rule Table_entry_ok:
-  p C |- tblctx (keyset* tblaction expr? bool) : tblctx'
-  -- Table_entry_keysets_ok: p C |- tblctx keyset* : state
+  p C tblctx |- (keyset* tblaction expr? bool) : tblctx'
+  -- Table_entry_keysets_ok: p C tblctx |- keyset* : tblstate
   ----
-  -- Table_entry_action_ok: p C |- tblctx tblaction
+  -- Table_entry_action_ok: p C tblctx |- tblaction
   ----
-  -- Table_entry_priority_ok: p C |- tblctx state expr? : tblctx'
+  -- Table_entry_priority_ok: p C tblctx tblstate |- expr? : tblctx'
 
-relation Table_entries_ok: cursor context |- tblctx tblentryprop : tblctx ;; check
+relation Table_entries_fold_ok: cursor context tblctx |- tblentry* : tblctx
+
+rule Table_entries_fold_ok/nil:
+  p C tblctx |- eps : tblctx
+
+rule Table_entries_fold_ok/cons:
+  p C tblctx |- tblentry_h tblentry_t* : tblctx''
+  -- Table_entry_ok: p C tblctx |- tblentry_h : tblctx'
+  -- Table_entries_fold_ok: p C tblctx' |- tblentry_t* : tblctx''
+
+relation Table_entries_ok: cursor context tblctx |- tblentryprop : tblctx
 
 rule Table_entries_ok/nil:
-  p C |- tblctx (eps bool) : tblctx''
+  p C tblctx |- (eps bool) : tblctx''
   -- if tblctx' = $set_entries_size(0, tblctx)
   -- if tblctx'' = $set_entries_const(bool, tblctx')
 
 rule Table_entries_ok/cons:
-  p C |- tblctx (tblentry* bool) : tblctx''''
+  p C tblctx |- (tblentry* bool) : tblctx'''
   -- if $implies(|tblctx.KEYS| = 0, |tblentry*| = 0)
   -- if tblctx' = $set_entries_size(|tblentry*|, tblctx)
   ----
   -- if tblctx'' = $set_entries_const(bool, tblctx')
   -- if tblentry_h tblentry_t* = tblentry*
   ----
-  -- Table_entry_ok: p C |- tblctx'' tblentry_h : tblctx'''
-  -- Table_entries_ok: p C |- tblctx''' (tblentry_t* bool) : tblctx''''
+  -- Table_entries_fold_ok: p C tblctx'' |- tblentry* : tblctx'''
 
-relation Table_default_ok: cursor context |- tblctx tbldefaultprop
+relation Table_default_ok: cursor context tblctx |- tbldefaultprop
 
 rule Table_default_ok:
-  p C |- tblctx ((name arg*) bool)
+  p C tblctx |- ((name arg*) bool)
   -- if (pt*, arg_a*) = $find_action(tblctx, name)
   -- (Arg_ok: p C |- arg : typ)*
   ----
   -- Call_default_action_ok: p C |- name pt* (arg*, typ*) arg_a*
 
-relation Table_custom_ok: cursor context |- tblctx tblcustomprop : tblctx
+relation Table_custom_ok: cursor context tblctx |- tblcustomprop : tblctx
 
 rule Table_custom_ok/size:
-  p C |- tblctx ("size" expr bool) : tblctx
+  p C tblctx |- ("size" expr bool) : tblctx
   -- Expr_ok: p C |- expr : typ ctk
   -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
 
 rule Table_custom_ok/largest_priority_wins:
-  p C |- tblctx ("largest\\_priority\\_wins" expr bool) : tblctx'
+  p C tblctx |- ("largest\\_priority\\_wins" expr bool) : tblctx'
   -- Expr_ok: p C |- expr : typ ctk
   -- if $is_boolt(typ)
   ----
@@ -869,88 +874,83 @@ rule Table_custom_ok/largest_priority_wins:
   -- if tblctx' = $set_largest_priority_wins(b, tblctx)
 
 rule Table_custom_ok/priority_delta:
-  p C |- tblctx ("priority\\_delta" expr bool) : tblctx'
+  p C tblctx |- ("priority\\_delta" expr bool) : tblctx'
   -- Expr_ok: p C |- expr : typ ctk
   -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
   ----
   -- Eval_static: p C |- expr ~> val
-  -- if val = IntV i \/ val = FIntV w i \/ val = FBitV w i
+  -- if val = IntV i \/ val = FIntV w i \/ val = FBitV w i ;; (TODO)
   ----
   -- if i > 0
   -- if tblctx' = $set_priority_delta(i, tblctx)
 
-relation Table_prop_ok: cursor context |- tblctx tblprop : tblctx ;; check
+relation Table_prop_ok: cursor context tblctx |- tblprop : tblctx
 
 rule Table_prop_ok/keyp:
-  p C |- tblctx (KeyP tblkeyprop) : tblctx'
-  -- Table_keys_ok: p C |- tblctx tblkeyprop : tblctx'
+  p C tblctx |- (KeyP tblkeyprop) : tblctx'
+  -- Table_keys_ok: p C tblctx |- tblkeyprop : tblctx'
 
 rule Table_prop_ok/actionp:
-  p C |- tblctx (ActionP tblactionprop) : tblctx'
-  -- Table_actions_ok: p C |- tblctx tblactionprop : tblctx'
+  p C tblctx |- (ActionP tblactionprop) : tblctx'
+  -- Table_actions_ok: p C tblctx |- tblactionprop : tblctx'
 
 rule Table_prop_ok/entryp:
-  p C |- tblctx (EntryP tblentryprop) : tblctx'
-  -- Table_entries_ok: p C |- tblctx tblentryprop : tblctx'
+  p C tblctx |- (EntryP tblentryprop) : tblctx'
+  -- Table_entries_ok: p C tblctx |- tblentryprop : tblctx'
 
 rule Table_prop_ok/defaultp:
-  p C |- tblctx (DefaultP tbldefaultprop) : tblctx
-  -- Table_default_ok: p C |- tblctx tbldefaultprop
+  p C tblctx |- (DefaultP tbldefaultprop) : tblctx
+  -- Table_default_ok: p C tblctx |- tbldefaultprop
 
 rule Table_prop_ok/customp:
-  p C |- tblctx (CustomP tblcustomprop) : tblctx'
-  -- Table_custom_ok: p C |- tblctx tblcustomprop : tblctx'
+  p C tblctx |- (CustomP tblcustomprop) : tblctx'
+  -- Table_custom_ok: p C tblctx |- tblcustomprop : tblctx'
 
-relation Table_props_ok: cursor context |- tblctx tbl : tblctx ;; check
+relation Table_props_ok: cursor context tblctx |- tbl : tblctx
 
 rule Table_props_ok/nil:
-  p C |- tblctx eps : tblctx
+  p C tblctx |- eps : tblctx
 
 rule Table_props_ok/cons:
-  p C |- tblctx (tblprop_h tblprop_t*) : tblctx''
-  -- Table_prop_ok: p C |- tblctx tblprop_h : tblctx'
-  -- Table_props_ok: p C |- tblctx' tblprop_t* : tblctx''
+  p C tblctx |- (tblprop_h tblprop_t*) : tblctx''
+  -- Table_prop_ok: p C tblctx |- tblprop_h : tblctx'
+  -- Table_props_ok: p C tblctx' |- tblprop_t* : tblctx''
 
-relation Table_type_decl_fold_ok: cursor context id typ |- member* : context
-
-rule Table_type_decl_fold_ok/nil:
-  BLOCK C id_e typ_e |- eps : C
-
-rule Table_type_decl_fold_ok/cons:
-  BLOCK C id_e typ_e |- member_h member_t* : C'''
-  -- if val = TableEnumFieldV id_e member_h
-  -- if id_f = $concat_texts(id_e "." member_h)
-  ----
-  -- if C' = $add_val(LOCAL, C, id_f, val)
-  -- if C'' = $add_typ(LOCAL, C', id_f, typ_e NO LCTK)
-  ----
-  -- Table_type_decl_fold_ok: LOCAL C id_e typ_e |- member_t* : C'''
-
-relation Table_type_decl_ok: cursor context |- tblctx id : context typ
+relation Table_type_decl_ok: cursor context tblctx |- id : context typ
 
 rule Table_type_decl_ok:
-  BLOCK C |- tblctx id : C' typ_s
+  BLOCK C tblctx |- id : C'' typ_s
   -- if id_e = $concat_texts("action\\_list(" id ")")
   -- if (name, pt*, arg*)* = tblctx.ACTIONS
   ----
-  -- if (member = $format_name(name))*
+  -- if (member = $string_of_name(name))*
   -- if typ_e = TableEnumT id_e member*
   ----
-  -- Table_type_decl_fold_ok: BLOCK C id_e typ_e |- member* : C'
+  -- if (val_e = TableEnumFieldV id_e member)*
+  -- if (id_f = $concat_texts(id_e "." member))*
+  ----
+  -- if C' = $add_vals(BLOCK, C, id_f*, val_e*)
+  ----
+  -- if C'' = $add_typs(BLOCK, C', id_f*, (typ_e NO LCTK)*)
+  ----
   -- if id_s = $concat_texts("apply\\_result(" id ")")
   ----
   -- if typ_s = TableStructT id_s ("hit", BoolT) ("miss", BoolT) ("action\\_run", typ_e)
 
-rule Decl_ok/tabled: ;; check
+rule Decl_ok/tabled:
   BLOCK C_0 |- TableD id tblprop* : C_3
   -- if C_0.BLOCK.KIND = CONTROL
-  -- if |(tblprop = KeyP)*| <= 1 /\ |(tblprop = ActionP)*| = 1
+  -- if |$keys_of_table(tblprop*)| <= 1 /\ |$actions_of_table(tblprop*)| = 1
   ----
   -- if C_1 = $set_localkind(C_0, TABLEAPPLYMETHOD)
-  -- Table_props_ok: LOCAL C_1 |- tblctx tblprop* : tblctx'
+  -- Table_props_ok: LOCAL C_1 tblctx |- tblprop* : tblctx'
   ----
-  -- Table_type_decl_ok: BLOCK C_1 |- tblctx' id : C_2 typ_s
-  -- if typ = TableT typ_s
+  -- Table_type_decl_ok: BLOCK C_1 tblctx' |- id : C_2 typ_tbl
+  -- if typ = TableT typ_tbl
+  ----
+  -- if tidset = $bound_tid(C_2)
+  -- Type_wf: tidset |- typ
+  ----
   -- if C_3 = $add_typ(BLOCK, C_2, id, typ NO DYN)
 
 ;;

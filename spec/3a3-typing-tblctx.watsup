@@ -29,11 +29,11 @@ syntax tblctx =
     ENTRIES entry,
     MODE mode }
 
-syntax state =
+syntax tblstate =
   | LPM int
   | NOLPM
 
-def $get_lpm_prefix(val) : state
+def $get_lpm_prefix(val) : tblstate
 
 ;; Adders
 
@@ -53,9 +53,29 @@ def $set_mode(mode, tblctx) : tblctx
 ;; Updaters
 
 def $update_mode(text, typ, tblctx) : tblctx
-def $update_state(state, state) : state
+def $update_state(tblstate, tblstate) : tblstate
+
+def $update_state(NOLPM, LPM i) = LPM i
+def $update_state(LPM i, NOLPM) = LPM i
+def $update_state(NOLPM, NOLPM) = NOLPM
 
 ;; Finders
 
 def $find_action(tblctx, name) : (paramtyp*, arg*)
 def $find_last_priority(tblctx) : int
+
+;; Helpers
+
+def $keys_of_table(tbl) : tblkeyprop*
+
+def $keys_of_table(eps) = eps
+def $keys_of_table((KeyP tblkeyprop) tblprop_t*) = tblkeyprop $keys_of_table(tblprop_t*)
+def $keys_of_table(tblprop_h tblprop_t*) = $keys_of_table(tblprop_t*)
+  -- otherwise
+
+def $actions_of_table(tbl) : tblactionprop*
+
+def $actions_of_table(eps) = eps
+def $actions_of_table((ActionP tblactionprop) tblprop_t*) = tblactionprop $actions_of_table(tblprop_t*)
+def $actions_of_table(tblprop_h tblprop_t*) = $actions_of_table(tblprop_t*)
+  -- otherwise
