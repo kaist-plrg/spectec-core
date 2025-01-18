@@ -4,12 +4,12 @@ module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
 module Ctk = Runtime_static.Ctk
 module Envs = Runtime_static.Envs
-module VEnv = Envs.VEnv
-module TEnv = Envs.TEnv
+module Frame = Envs.Frame
 module TDEnv = Envs.TDEnv
 module FDEnv = Envs.FDEnv
 module CDEnv = Envs.CDEnv
 module F = Format
+open Util.Pp
 open Util.Source
 open Util.Error
 
@@ -45,21 +45,16 @@ type localkind =
   | ControlApplyMethod
   | TableApplyMethod
 
-type gt = {
-  cdenv : CDEnv.t;
-  tdenv : TDEnv.t;
-  fdenv : FDEnv.t;
-  frame : VEnv.t * TEnv.t;
-}
+type gt = { cdenv : CDEnv.t; tdenv : TDEnv.t; fdenv : FDEnv.t; frame : Frame.t }
 
 type bt = {
   kind : blockkind;
   tdenv : TDEnv.t;
   fdenv : FDEnv.t;
-  frame : VEnv.t * TEnv.t;
+  frame : Frame.t;
 }
 
-type lt = { kind : localkind; tdenv : TDEnv.t; frames : (VEnv.t * TEnv.t) list }
+type lt = { kind : localkind; tdenv : TDEnv.t; frames : Frame.t list }
 type t = { global : gt; block : bt; local : lt }
 
 (* Constructors *)
@@ -69,7 +64,7 @@ let empty_gt =
     cdenv = CDEnv.empty;
     tdenv = TDEnv.empty;
     fdenv = FDEnv.empty;
-    frame = (VEnv.empty, TEnv.empty);
+    frame = Frame.empty;
   }
 
 let empty_bt =
@@ -77,7 +72,7 @@ let empty_bt =
     kind = Empty;
     tdenv = TDEnv.empty;
     fdenv = FDEnv.empty;
-    frame = (VEnv.empty, TEnv.empty);
+    frame = Frame.empty;
   }
 
 let empty_lt = { kind = Empty; tdenv = TDEnv.empty; frames = [] }
@@ -86,7 +81,7 @@ let empty = { global = empty_gt; block = empty_bt; local = empty_lt }
 (* Frame management *)
 
 let enter_frame ctx =
-  let frames = (VEnv.empty, TEnv.empty) :: ctx.local.frames in
+  let frames = Frame.empty :: ctx.local.frames in
   { ctx with local = { ctx.local with frames } }
 
 let exit_frame ctx =
@@ -178,85 +173,40 @@ let add_funcdef_overload cursor fid fd ctx =
       "(add_funcdef_overload) Local cursor cannot have function definitions"
       |> error_no_info
 
-let add_value cursor id value ctx =
-  match cursor with
-  | Global ->
-      let venv, tenv = ctx.global.frame in
-      let venv = VEnv.add_nodup id value venv in
-      { ctx with global = { ctx.global with frame = (venv, tenv) } }
-  | Block ->
-      let venv, tenv = ctx.block.frame in
-      let venv = VEnv.add_nodup id value venv in
-      { ctx with block = { ctx.block with frame = (venv, tenv) } }
-  | Local ->
-      let frames = ctx.local.frames in
-      let (venv, tenv), frames =
-        if frames = [] then ((VEnv.empty, TEnv.empty), [])
-        else (List.hd frames, List.tl frames)
-      in
-      let venv = VEnv.add_nodup id value venv in
-      let frame = (venv, tenv) in
-      { ctx with local = { ctx.local with frames = frame :: frames } }
-
-let add_rtype cursor id typ dir ctk ctx =
+let add_stype cursor id typ dir ctk value ctx =
   check
     (implies (id = "main")
        (cursor = Global
        && match Type.canon typ with Types.PackageT _ -> true | _ -> false))
-    "(add_rtype) main is reserved for a package instance at the top level";
+    "(add_stype) main is reserved for a package instance at the top level";
   match cursor with
   | Global ->
-      let venv, tenv = ctx.global.frame in
-      let tenv = TEnv.add_nodup id (typ, dir, ctk) tenv in
-      { ctx with global = { ctx.global with frame = (venv, tenv) } }
+      let frame = Frame.add_nodup id (typ, dir, ctk, value) ctx.global.frame in
+      { ctx with global = { ctx.global with frame } }
   | Block ->
-      let venv, tenv = ctx.block.frame in
-      let tenv = TEnv.add_nodup id (typ, dir, ctk) tenv in
-      { ctx with block = { ctx.block with frame = (venv, tenv) } }
+      let frame = Frame.add_nodup id (typ, dir, ctk, value) ctx.block.frame in
+      { ctx with block = { ctx.block with frame } }
   | Local ->
       let frames = ctx.local.frames in
-      let (venv, tenv), frames =
-        if frames = [] then ((VEnv.empty, TEnv.empty), [])
+      let frame, frames =
+        if frames = [] then (Frame.empty, [])
         else (List.hd frames, List.tl frames)
       in
-      let tenv = TEnv.add_nodup id (typ, dir, ctk) tenv in
-      let frame = (venv, tenv) in
-      { ctx with local = { ctx.local with frames = frame :: frames } }
+      let frame = Frame.add_nodup id (typ, dir, ctk, value) frame in
+      let frames = frame :: frames in
+      { ctx with local = { ctx.local with frames } }
+
+let add_type cursor id typ dir ctk = add_stype cursor id typ dir ctk None
 
 let add_param cursor param ctx =
   let id, dir, typ, _, _ = param.it in
   let ctk = if dir.it = Lang.Ast.No then Ctk.CTK else Ctk.DYN in
-  add_rtype cursor id.it typ.it dir.it ctk ctx
+  add_stype cursor id.it typ.it dir.it ctk None ctx
 
 let add_params cursor params ctx =
   List.fold_left (fun ctx param -> add_param cursor param ctx) ctx params
 
 let add_cparams = add_params
-
-(* Removers *)
-
-let remove_rtype cursor id ctx =
-  match cursor with
-  | Global ->
-      let venv, tenv = ctx.global.frame in
-      {
-        ctx with
-        global = { ctx.global with frame = (venv, TEnv.remove id tenv) };
-      }
-  | Block ->
-      let venv, tenv = ctx.block.frame in
-      {
-        ctx with
-        block = { ctx.block with frame = (venv, TEnv.remove id tenv) };
-      }
-  | Local ->
-      let frames = ctx.local.frames in
-      let (venv, tenv), frames =
-        if frames = [] then ((VEnv.empty, TEnv.empty), [])
-        else (List.hd frames, List.tl frames)
-      in
-      let frame = (venv, TEnv.remove id tenv) in
-      { ctx with local = { ctx.local with frames = frame :: frames } }
 
 (* Finders *)
 
@@ -315,42 +265,43 @@ let find_consdef cursor (cname, args) ctx =
 let rec find_value_opt cursor id ctx =
   match cursor with
   | Global ->
-      let venv, _ = ctx.global.frame in
-      VEnv.find_opt id venv
+      Option.bind (Frame.find_opt id ctx.global.frame) (fun (_, _, _, value) ->
+          value)
   | Block ->
-      let venv, _ = ctx.block.frame in
-      VEnv.find_opt id venv |> find_cont find_value_opt Global id ctx
+      Option.bind (Frame.find_opt id ctx.block.frame) (fun (_, _, _, value) ->
+          value)
+      |> find_cont find_value_opt Global id ctx
   | Local ->
-      let venvs = ctx.local.frames |> List.map fst in
       List.fold_left
-        (fun value venv ->
+        (fun value frame ->
           match value with
           | Some value -> Some value
-          | None -> VEnv.find_opt id venv)
-        None venvs
+          | None ->
+              Option.bind (Frame.find_opt id frame) (fun (_, _, _, value) ->
+                  value))
+        None ctx.local.frames
       |> find_cont find_value_opt Block id ctx
 
 let find_value cursor id ctx = find_value_opt cursor id ctx |> Option.get
 
-(* Finder for runtime type *)
+(* Finder for type *)
 
-let rec find_rtype_opt cursor id ctx =
+let rec find_stype_opt cursor id ctx =
   match cursor with
-  | Global ->
-      let _, tenv = ctx.global.frame in
-      TEnv.find_opt id tenv
+  | Global -> Frame.find_opt id ctx.global.frame
   | Block ->
-      let _, tenv = ctx.block.frame in
-      TEnv.find_opt id tenv |> find_cont find_rtype_opt Global id ctx
+      Frame.find_opt id ctx.block.frame
+      |> find_cont find_stype_opt Global id ctx
   | Local ->
-      let tenvs = ctx.local.frames |> List.map snd in
       List.fold_left
-        (fun typ tenv ->
-          match typ with Some typ -> Some typ | None -> TEnv.find_opt id tenv)
-        None tenvs
-      |> find_cont find_rtype_opt Block id ctx
+        (fun typ frame ->
+          match typ with
+          | Some typ -> Some typ
+          | None -> Frame.find_opt id frame)
+        None ctx.local.frames
+      |> find_cont find_stype_opt Block id ctx
 
-let find_rtype cursor id ctx = find_rtype_opt cursor id ctx |> Option.get
+let find_stype cursor id ctx = find_stype_opt cursor id ctx |> Option.get
 
 (* Finder combinator *)
 
@@ -372,19 +323,21 @@ let find_f finder_f_opt cursor var args ctx =
 
 (* Pretty-printer *)
 
-let pp_frame fmt frame =
-  let venv, tenv = frame in
-  F.fprintf fmt "@[@[<v 0>[Values]:@ %a@]@\n@[<v 0>[Types]:@ %a@]@]"
-    (VEnv.pp ~level:0) venv (TEnv.pp ~level:0) tenv
-
-let pp_gt fmt (gt : gt) =
+let pp_gt ?(level = 0) fmt (gt : gt) =
   F.fprintf fmt
     "@[@[<v 0>[[Global]]@]@\n\
      @[@[<v 0>[Constructors]:@ %a@]@\n\
      @[<v 0>[Typedefs]:@ %a@]@\n\
      @[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Frame]:@ %a@]@]" (CDEnv.pp ~level:0) gt.cdenv (TDEnv.pp ~level:0)
-    gt.tdenv (FDEnv.pp ~level:0) gt.fdenv pp_frame gt.frame
+     @[<v 0>[Frame]:@ %a@]@]"
+    (CDEnv.pp ~level:(level + 1))
+    gt.cdenv
+    (TDEnv.pp ~level:(level + 1))
+    gt.tdenv
+    (FDEnv.pp ~level:(level + 1))
+    gt.fdenv
+    (Frame.pp ~level:(level + 1))
+    gt.frame
 
 let pp_blockkind fmt (kind : blockkind) =
   match kind with
@@ -394,13 +347,18 @@ let pp_blockkind fmt (kind : blockkind) =
   | Control -> F.fprintf fmt "Control"
   | Package -> F.fprintf fmt "Package"
 
-let pp_bt fmt (bt : bt) =
+let pp_bt ?(level = 0) fmt (bt : bt) =
   F.fprintf fmt
     "@[@[<v 0>[[Block]]:@ %a@]@\n\
      @[<v 0>[Typedefs]:@ %a@]@\n\
      @[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Frame]:@ %a@]@]" pp_blockkind bt.kind (TDEnv.pp ~level:0) bt.tdenv
-    (FDEnv.pp ~level:0) bt.fdenv pp_frame bt.frame
+     @[<v 0>[Frame]:@ %a@]@]" pp_blockkind bt.kind
+    (TDEnv.pp ~level:(level + 1))
+    bt.tdenv
+    (FDEnv.pp ~level:(level + 1))
+    bt.fdenv
+    (Frame.pp ~level:(level + 1))
+    bt.frame
 
 let pp_localkind fmt (kind : localkind) =
   match kind with
@@ -414,16 +372,25 @@ let pp_localkind fmt (kind : localkind) =
   | ControlApplyMethod -> F.fprintf fmt "ControlApplyMethod"
   | TableApplyMethod -> F.fprintf fmt "TableApplyMethod"
 
-let pp_lt fmt (lt : lt) =
+let pp_lt ?(level = 0) fmt (lt : lt) =
   F.fprintf fmt
     "@[@[<v 0>[[Local]]:@ %a@]@\n\
      @[<v 0>[Typedefs]:@ %a@]@\n\
-     @[<v 0>[Frames]:@ %a@]@]" pp_localkind lt.kind (TDEnv.pp ~level:0) lt.tdenv
-    (F.pp_print_list pp_frame) lt.frames
+     @[<v 0>[Frames]:@ %a@]@]" pp_localkind lt.kind
+    (TDEnv.pp ~level:(level + 1))
+    lt.tdenv
+    (pp_list ~level:(level + 1) Frame.pp ~sep:Nl)
+    lt.frames
 
-let pp fmt ctx =
+let pp ?(level = 0) fmt ctx =
   F.fprintf fmt
     "@[@[<v 0>[[Context]]@]@\n\
      @[<v 0>[Global]:@ %a@]@\n\
      @[<v 0>[Block]:@ %a@]@\n\
-     @[<v 0>[Local]:@ %a@]@]" pp_gt ctx.global pp_bt ctx.block pp_lt ctx.local
+     @[<v 0>[Local]:@ %a@]@]"
+    (pp_gt ~level:(level + 1))
+    ctx.global
+    (pp_bt ~level:(level + 1))
+    ctx.block
+    (pp_lt ~level:(level + 1))
+    ctx.local

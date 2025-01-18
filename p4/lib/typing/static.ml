@@ -95,10 +95,10 @@ let rec ctk_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
 
 and ctk_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : Il.Ast.var) : Ctk.t
     =
-  let rtype = Ctx.find_opt Ctx.find_rtype_opt cursor var ctx in
-  check (Option.is_some rtype)
+  let stype = Ctx.find_opt Ctx.find_stype_opt cursor var ctx in
+  check (Option.is_some stype)
     (Format.asprintf "(ctk_var_expr) %a a free variable\n" Il.Pp.pp_var var);
-  let _, _, ctk = Option.get rtype in
+  let _, _, ctk, _ = Option.get stype in
   ctk
 
 and ctk_seq_expr (exprs : Il.Ast.expr list) : Ctk.t =

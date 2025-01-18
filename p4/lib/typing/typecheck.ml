@@ -11,8 +11,7 @@ module ConsType = Types.ConsType
 module ConsDef = Types.ConsDef
 module Numerics = Runtime_static.Numerics
 module Envs = Runtime_static.Envs
-module VEnv = Envs.VEnv
-module TEnv = Envs.TEnv
+module Frame = Envs.Frame
 module TDEnv = Envs.TDEnv
 module FDEnv = Envs.FDEnv
 module CDEnv = Envs.CDEnv
@@ -269,10 +268,10 @@ and check_lvalue' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_il : Il.Ast.expr) :
     bool =
   match expr_il.it with
   | VarE { var } -> (
-      let rtype = Ctx.find_opt Ctx.find_rtype_opt cursor var ctx in
-      match rtype with
+      let stype = Ctx.find_opt Ctx.find_stype_opt cursor var ctx in
+      match stype with
       | None -> false
-      | Some (typ, dir, _) -> (
+      | Some (typ, dir, _, _) -> (
           match dir with In | No -> false | _ -> Type.is_assignable typ))
   | ArrAccE { expr_base; _ }
   | BitAccE { expr_base; _ }
@@ -677,10 +676,10 @@ and type_num_expr (num : El.Ast.num) : Type.t * Ctk.t * Il.Ast.expr' =
 
 and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
     Type.t * Ctk.t * Il.Ast.expr' =
-  let rtype = Ctx.find_opt Ctx.find_rtype_opt cursor var ctx in
-  check (Option.is_some rtype)
+  let stype = Ctx.find_opt Ctx.find_stype_opt cursor var ctx in
+  check (Option.is_some stype)
     (F.asprintf "(type_var_expr) %a is a free identifier" El.Pp.pp_var var);
-  let typ, _, _ = Option.get rtype in
+  let typ, _, _, _ = Option.get stype in
   let expr_il = Il.Ast.VarE { var } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
@@ -1476,9 +1475,9 @@ and type_select_case' (cursor : Ctx.cursor) (ctx : Ctx.t)
   assert (cursor = Ctx.Local);
   let keysets, state_label = case in
   let keysets_il = type_select_case_keysets cursor ctx typs_key keysets in
-  let rtype_label = Ctx.find_rtype_opt cursor state_label.it ctx in
+  let stype_label = Ctx.find_stype_opt cursor state_label.it ctx in
   check
-    (match rtype_label with Some (Types.StateT, _, _) -> true | _ -> false)
+    (match stype_label with Some (Types.StateT, _, _, _) -> true | _ -> false)
     (F.asprintf "(type_select_case) Label %s is not a valid label"
        state_label.it);
   (keysets_il, state_label)
@@ -2567,7 +2566,7 @@ and type_switch_table_label' (cursor : Ctx.cursor) (ctx : Ctx.t)
         (F.asprintf
            "(type_switch_table_label) action %a was not declared in table %a"
            Il.Pp.pp_id id_action Il.Pp.pp_id' id_table);
-      let typ_enum, _, ctk_enum = Ctx.find_rtype cursor id_field ctx in
+      let typ_enum, _, ctk_enum, _ = Ctx.find_stype cursor id_field ctx in
       let expr_il =
         Il.Ast.(
           VarE
@@ -2948,7 +2947,7 @@ and type_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     | _ -> assert false
   in
   let id = F.asprintf "%a" Il.Pp.pp_var var_inst $ no_info in
-  let ctx' = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
+  let ctx' = Ctx.add_type cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
   let expr_base =
     El.Ast.VarE { var = Lang.Ast.Current id $ no_info } $ no_info
   in
@@ -3098,8 +3097,8 @@ and type_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let expr_il = coerce_type_assign expr_il typ_target.it in
   let value = Static.eval_expr cursor ctx expr_il in
   let ctx =
-    Ctx.add_value cursor id.it value.it ctx
-    |> Ctx.add_rtype cursor id.it typ_target.it Lang.Ast.No Ctk.LCTK
+    Ctx.add_stype cursor id.it typ_target.it Lang.Ast.No Ctk.LCTK
+      (Some value.it) ctx
   in
   let decl_il =
     Il.Ast.ConstD { id; typ = typ_target; value; annos = annos_il }
@@ -3172,7 +3171,7 @@ and type_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     | None -> None
   in
   let ctx =
-    Ctx.add_rtype cursor id.it typ_target.it Lang.Ast.InOut Ctk.DYN ctx
+    Ctx.add_type cursor id.it typ_target.it Lang.Ast.InOut Ctk.DYN ctx
   in
   let decl_il =
     Il.Ast.VarD { id; typ = typ_target; init = expr_init_il; annos = annos_il }
@@ -3238,36 +3237,31 @@ and type_instantiation_init_extern_abstract_method_decl (cursor : Ctx.cursor)
   (fd, decl_il)
 
 and type_instantiation_init_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (tenv_abstract : TEnv.t) (fdenv_abstract : FDEnv.t) (init : El.Ast.decl) :
-    TEnv.t * FDEnv.t * Il.Ast.decl =
-  let tenv_abstract, fdenv_abstract, init_il =
-    type_instantiation_init_decl' cursor ctx tenv_abstract fdenv_abstract
+    (frame_abstract : Frame.t) (fdenv_abstract : FDEnv.t) (init : El.Ast.decl) :
+    Frame.t * FDEnv.t * Il.Ast.decl =
+  let frame_abstract, fdenv_abstract, init_il =
+    type_instantiation_init_decl' cursor ctx frame_abstract fdenv_abstract
       init.it
   in
-  (tenv_abstract, fdenv_abstract, init_il $ init.at)
+  (frame_abstract, fdenv_abstract, init_il $ init.at)
 
 and type_instantiation_init_decl' (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (tenv_abstract : TEnv.t) (fdenv_abstract : FDEnv.t) (init : El.Ast.decl') :
-    TEnv.t * FDEnv.t * Il.Ast.decl' =
+    (frame_abstract : Frame.t) (fdenv_abstract : FDEnv.t) (init : El.Ast.decl')
+    : Frame.t * FDEnv.t * Il.Ast.decl' =
   match init with
   | InstD { id; var_inst; targs; args; init; annos } ->
       let ctx, decl_il =
         type_instantiation_decl cursor ctx id var_inst targs args init annos
       in
-      let rtype = Ctx.find_rtype cursor id.it ctx in
-      let tenv_abstract = TEnv.add_nodup id.it rtype tenv_abstract in
-      (tenv_abstract, fdenv_abstract, decl_il)
+      let stype = Ctx.find_stype cursor id.it ctx in
+      let frame_abstract = Frame.add_nodup id.it stype frame_abstract in
+      (frame_abstract, fdenv_abstract, decl_il)
   | FuncD { id; typ_ret; tparams; params; body } ->
       let fid = FId.to_fid id params in
       let ctx =
         {
           ctx with
-          block =
-            {
-              ctx.block with
-              kind = Ctx.Extern;
-              frame = (VEnv.empty, tenv_abstract);
-            };
+          block = { ctx.block with kind = Ctx.Extern; frame = frame_abstract };
         }
       in
       let fd, decl_il =
@@ -3275,7 +3269,7 @@ and type_instantiation_init_decl' (cursor : Ctx.cursor) (ctx : Ctx.t)
           tparams params typ_ret body
       in
       let fdenv_abstract = FDEnv.add_nodup_overloaded fid fd fdenv_abstract in
-      (tenv_abstract, fdenv_abstract, decl_il)
+      (frame_abstract, fdenv_abstract, decl_il)
   | _ ->
       F.asprintf
         "(type_instantiation_init_decl) Instantiation initializer should be an \
@@ -3283,15 +3277,15 @@ and type_instantiation_init_decl' (cursor : Ctx.cursor) (ctx : Ctx.t)
       |> error_no_info
 
 and type_instantiation_init_decls (ctx : Ctx.t) (inits : El.Ast.decl list) :
-    TEnv.t * FDEnv.t * Il.Ast.decl list =
+    Frame.t * FDEnv.t * Il.Ast.decl list =
   List.fold_left
-    (fun (tenv_abstract, fdenv_abstract, inits_il) init ->
-      let tenv_abstract, fdenv_abstract, init_il =
-        type_instantiation_init_decl Ctx.Global ctx tenv_abstract fdenv_abstract
-          init
+    (fun (frame_abstract, fdenv_abstract, inits_il) init ->
+      let frame_abstract, fdenv_abstract, init_il =
+        type_instantiation_init_decl Ctx.Global ctx frame_abstract
+          fdenv_abstract init
       in
-      (tenv_abstract, fdenv_abstract, inits_il @ [ init_il ]))
-    (TEnv.empty, FDEnv.empty, [])
+      (frame_abstract, fdenv_abstract, inits_il @ [ init_il ]))
+    (Frame.empty, FDEnv.empty, [])
     inits
 
 and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
@@ -3323,7 +3317,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       in
       let ctx =
         { Ctx.empty with global = ctx.global }
-        |> Ctx.add_rtype Ctx.Local "this" typ Lang.Ast.No Ctk.CTK
+        |> Ctx.add_type Ctx.Local "this" typ Lang.Ast.No Ctk.CTK
       in
       let _, fdenv_abstract, init_il = type_instantiation_init_decls ctx init in
       let fdenv_extern =
@@ -3383,7 +3377,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       let typ = Types.SpecT (tdp, typs_inner) in
       (typ, init_il)
   in
-  let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
+  let ctx = Ctx.add_type cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
   let decl_il =
     Il.Ast.InstD
       {
@@ -3416,8 +3410,7 @@ and type_error_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
         (F.asprintf "(type_error_decl) error %s was already defined" id);
       let value = Value.ErrV member.it in
       let typ = Types.ErrT in
-      Ctx.add_value cursor id value ctx
-      |> Ctx.add_rtype cursor id typ Lang.Ast.No Ctk.LCTK)
+      Ctx.add_stype cursor id typ Lang.Ast.No Ctk.LCTK (Some value) ctx)
     ctx members
 
 (* (7.1.3) The match kind type
@@ -3445,8 +3438,7 @@ and type_match_kind_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
            id);
       let value = Value.MatchKindV member.it in
       let typ = Types.MatchKindT in
-      Ctx.add_value cursor id value ctx
-      |> Ctx.add_rtype cursor id typ Lang.Ast.No Ctk.LCTK)
+      Ctx.add_stype cursor id typ Lang.Ast.No Ctk.LCTK (Some value) ctx)
     ctx members
 
 (* (7.2.5) Struct types
@@ -3582,8 +3574,8 @@ and type_enum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         let value_field = Value.EnumFieldV (id.it, member) in
         let typ_field = typ_enum in
         let id_field = id.it ^ "." ^ member in
-        Ctx.add_value cursor id_field value_field ctx
-        |> Ctx.add_rtype cursor id_field typ_field Lang.Ast.No Ctk.LCTK)
+        Ctx.add_stype cursor id_field typ_field Lang.Ast.No Ctk.LCTK
+          (Some value_field) ctx)
       ctx members
   in
   WF.check_valid_typdef cursor ctx td;
@@ -3626,8 +3618,8 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         in
         let typ_field = Types.SEnumT (id.it, typ.it, fields_value) in
         let ctx =
-          Ctx.add_value Ctx.Block member.it value_field ctx
-          |> Ctx.add_rtype Ctx.Block member.it typ_field Lang.Ast.No Ctk.LCTK
+          Ctx.add_stype Ctx.Block member.it typ_field Lang.Ast.No Ctk.LCTK
+            (Some value_field) ctx
         in
         (ctx, fields_value @ [ (member.it, value_field) ]))
       (ctx, []) fields
@@ -3643,8 +3635,8 @@ and type_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
           let value_field = Ctx.find_value Ctx.Block member ctx in
           let typ_field = typ_senum in
           let id_field = id.it ^ "." ^ member in
-          Ctx.add_value cursor id_field value_field ctx
-          |> Ctx.add_rtype cursor id_field typ_field Lang.Ast.No Ctk.LCTK)
+          Ctx.add_stype cursor id_field typ_field Lang.Ast.No Ctk.LCTK
+            (Some value_field) ctx)
         ctx members
     in
     { Ctx.empty with global = ctx.global }
@@ -4124,7 +4116,7 @@ and type_value_set_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   Static.check_ctk expr_size_il;
   let typ = Types.SetT typ_inner.it in
   WF.check_valid_typ cursor ctx typ;
-  let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
+  let ctx = Ctx.add_type cursor id.it typ Lang.Ast.No Ctk.CTK ctx in
   let decl_il =
     Il.Ast.ValueSetD
       { id; typ = typ_inner; size = expr_size_il; annos = annos_il }
@@ -4220,7 +4212,7 @@ and type_parser_states (_cursor : Ctx.cursor) (ctx : Ctx.t)
   let ctx' =
     List.fold_left
       (fun ctx' label ->
-        Ctx.add_rtype Ctx.Local label Types.StateT Lang.Ast.No Ctk.DYN ctx')
+        Ctx.add_type Ctx.Local label Types.StateT Lang.Ast.No Ctk.DYN ctx')
       ctx' labels
   in
   let _ctx', states_il =
@@ -4429,8 +4421,8 @@ and type_table_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
       (fun ctx member ->
         let value = Value.TableEnumFieldV (id_enum, member) in
         let id_field = id_enum ^ "." ^ member in
-        Ctx.add_value cursor id_field value ctx
-        |> Ctx.add_rtype cursor id_field typ_enum Lang.Ast.No Ctk.LCTK)
+        Ctx.add_stype cursor id_field typ_enum Lang.Ast.No Ctk.LCTK (Some value)
+          ctx)
       ctx members
   in
   let id_struct = "apply_result(" ^ id.it ^ ")" in
@@ -4457,7 +4449,7 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   let ctx, typ_struct = type_table_type_decl cursor ctx table_ctx id in
   let typ = Types.TableT (id.it, typ_struct) in
-  let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.DYN ctx in
+  let ctx = Ctx.add_type cursor id.it typ Lang.Ast.No Ctk.DYN ctx in
   let decl_il =
     Il.Ast.TableD
       { id; typ = typ $ no_info; table = table_il; annos = annos_il }

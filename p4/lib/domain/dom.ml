@@ -418,6 +418,21 @@ struct
     else add id value env
 end
 
+(* Option functor *)
+
+module MakeOption (T : sig
+  type t
+
+  val pp : ?level:int -> F.formatter -> t -> unit
+end) =
+struct
+  type t = T.t option
+
+  let pp ?(level = 0) fmt = function
+    | Some t -> F.fprintf fmt "%a" (T.pp ~level) t
+    | None -> F.fprintf fmt "()"
+end
+
 (* Pair functor *)
 
 module MakePair (A : sig
@@ -455,4 +470,31 @@ struct
 
   let pp ?(level = 0) fmt (a, b, c) =
     F.fprintf fmt "(%a, %a, %a)" (A.pp ~level) a B.pp b C.pp c
+end
+
+(* Quad functor *)
+
+module MakeQuad (A : sig
+  type t
+
+  val pp : ?level:int -> F.formatter -> t -> unit
+end) (B : sig
+  type t
+
+  val pp : F.formatter -> t -> unit
+end) (C : sig
+  type t
+
+  val pp : F.formatter -> t -> unit
+end) (D : sig
+  type t
+
+  val pp : ?level:int -> F.formatter -> t -> unit
+end) =
+struct
+  type t = A.t * B.t * C.t * D.t
+
+  let pp ?(level = 0) fmt (a, b, c, d) =
+    F.fprintf fmt "(%a, %a, %a, %a)" (A.pp ~level) a B.pp b C.pp c (D.pp ~level)
+      d
 end

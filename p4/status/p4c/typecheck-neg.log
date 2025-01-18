@@ -752,7 +752,7 @@ Error on typecheck: File p4/test/p4c/program/ill-typed/issue4136.p4, line 12, ch
 
 >>> Running typecheck test on p4/test/p4c/program/ill-typed/issue4140.p4
 Error on typecheck: File p4/test/p4c/program/ill-typed/issue4140.p4, line 7, characters 0-16
-(add_rtype) main is reserved for a package instance at the top level
+(add_stype) main is reserved for a package instance at the top level
 
 >>> Running typecheck test on p4/test/p4c/program/ill-typed/issue4142.p4
 Error on parser: 
