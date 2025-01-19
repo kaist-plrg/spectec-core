@@ -429,6 +429,9 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
       VarD { id = id_b; typ = typ_b; init = init_b; annos = _annos_b } ) ->
       eq_id ~dbg id_a id_b && eq_typ ~dbg typ_a typ_b
       && E.eq_option (eq_expr ~dbg) init_a init_b
+  | ErrD { members = members_a }, ErrD { members = members_b }
+  | MatchKindD { members = members_a }, MatchKindD { members = members_b } ->
+      eq_members ~dbg members_a members_b
   | ( InstD
         {
           id = id_a;
@@ -452,9 +455,6 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
       && eq_targs ~dbg targs_a targs_b
       && eq_args ~dbg args_a args_b
       && eq_decls ~dbg init_a init_b
-  | ErrD { members = members_a }, ErrD { members = members_b }
-  | MatchKindD { members = members_a }, MatchKindD { members = members_b } ->
-      eq_members ~dbg members_a members_b
   | ( StructD
         { id = id_a; tparams = tparams_a; fields = fields_a; annos = _annos_a },
       StructD
@@ -531,12 +531,6 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
       && eq_cparams ~dbg cparams_a cparams_b
       && eq_decls ~dbg locals_a locals_b
       && eq_parser_states ~dbg states_a states_b
-  | ( ActionD { id = id_a; params = params_a; body = body_a; annos = _annos_a },
-      ActionD { id = id_b; params = params_b; body = body_b; annos = _annos_b }
-    ) ->
-      eq_id ~dbg id_a id_b
-      && eq_params ~dbg params_a params_b
-      && eq_block ~dbg body_a body_b
   | ( TableD { id = id_a; table = table_a; annos = _annos_a },
       TableD { id = id_b; table = table_b; annos = _annos_b } ) ->
       eq_id ~dbg id_a id_b && eq_table ~dbg table_a table_b
@@ -573,6 +567,12 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
       && eq_params ~dbg params_a params_b
       && eq_cparams ~dbg cparams_a cparams_b
       && eq_decls ~dbg locals_a locals_b
+      && eq_block ~dbg body_a body_b
+  | ( ActionD { id = id_a; params = params_a; body = body_a; annos = _annos_a },
+      ActionD { id = id_b; params = params_b; body = body_b; annos = _annos_b }
+    ) ->
+      eq_id ~dbg id_a id_b
+      && eq_params ~dbg params_a params_b
       && eq_block ~dbg body_a body_b
   | ( FuncD
         {

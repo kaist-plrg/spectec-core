@@ -238,6 +238,7 @@ let walk_switch_case (walker : walker) switch_case =
 let walk_decl (walker : walker) decl =
   let walk_id = walker.walk_id walker in
   let walk_var = walker.walk_var walker in
+  let walk_member = walker.walk_member walker in
   let walk_typ = walker.walk_typ walker in
   let walk_value = walker.walk_value walker in
   let walk_tparam = walker.walk_tparam walker in
@@ -260,6 +261,7 @@ let walk_decl (walker : walker) decl =
       walk_id id;
       walk_typ typ;
       W.walk_option walk_expr init
+  | ErrD { members } | MatchKindD { members } -> W.walk_list walk_member members
   | InstD { id; typ; var_inst; targs; args; init; annos = _annos } ->
       walk_id id;
       walk_typ typ;
@@ -267,10 +269,34 @@ let walk_decl (walker : walker) decl =
       W.walk_list walk_targ targs;
       W.walk_list walk_arg args;
       W.walk_list walk_decl init
+  | StructD { id; tparams; tparams_hidden; fields; annos = _annos }
+  | HeaderD { id; tparams; tparams_hidden; fields; annos = _annos }
+  | UnionD { id; tparams; tparams_hidden; fields; annos = _annos } ->
+      walk_id id;
+      W.walk_list walk_tparam tparams;
+      W.walk_list walk_tparam tparams_hidden;
+      List.map (fun (member, typ, _) -> (member, typ)) fields
+      |> W.walk_list (W.walk_pair walk_member walk_typ)
+  | EnumD { id; members; annos = _annos } ->
+      walk_id id;
+      W.walk_list walk_member members
+  | SEnumD { id; typ; fields; annos = _annos } ->
+      walk_id id;
+      walk_typ typ;
+      W.walk_list (W.walk_pair walk_member walk_value) fields
+  | NewTypeD { id; typdef; annos = _annos }
+  | TypeDefD { id; typdef; annos = _annos } ->
+      walk_id id;
+      W.walk_alt walk_typ walk_decl typdef
   | ValueSetD { id; typ; size; annos = _annos } ->
       walk_id id;
       walk_typ typ;
       walk_expr size
+  | ParserTypeD { id; tparams; tparams_hidden; params; annos = _annos } ->
+      walk_id id;
+      W.walk_list walk_tparam tparams;
+      W.walk_list walk_tparam tparams_hidden;
+      W.walk_list walk_param params
   | ParserD { id; tparams; params; cparams; locals; states; annos = _annos } ->
       walk_id id;
       W.walk_list walk_tparam tparams;
@@ -282,6 +308,11 @@ let walk_decl (walker : walker) decl =
       walk_id id;
       walk_typ typ;
       walk_table table
+  | ControlTypeD { id; tparams; tparams_hidden; params; annos = _annos } ->
+      walk_id id;
+      W.walk_list walk_tparam tparams;
+      W.walk_list walk_tparam tparams_hidden;
+      W.walk_list walk_param params
   | ControlD { id; tparams; params; cparams; locals; body; annos = _annos } ->
       walk_id id;
       W.walk_list walk_tparam tparams;

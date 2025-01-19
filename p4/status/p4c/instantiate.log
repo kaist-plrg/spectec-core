@@ -372,7 +372,7 @@ Instantiate success: 0 objects
 
 >>> Running instantiate test on p4/test/p4c/program/well-typed/enumCast.p4
 Error on typecheck: File p4/test/p4c/program/well-typed/enumCast.p4, line 39, characters 14-20
-(coerce_types_binary) cannot coerce types enum<bit<8>> E1 { e1 = E1.e1(= 8w0), e2 = E1.e2(= 8w1), e3 = E1.e3(= 8w2) } and enum<bit<8>> E2 { e1 = E2.e1(= 8w10), e2 = E2.e2(= 8w11), e3 = E2.e3(= 8w12) }
+(coerce_types_binary) cannot coerce types enum<bit<8>> E1 { e1 = 8w0, e2 = 8w1, e3 = 8w2 } and enum<bit<8>> E2 { e1 = 8w10, e2 = 8w11, e3 = 8w12 }
 
 >>> Running instantiate test on p4/test/p4c/program/well-typed/equality-bmv2.p4
 Instantiate success: 7 objects
@@ -1540,7 +1540,7 @@ Instantiate success: 7 objects
 
 >>> Running instantiate test on p4/test/p4c/program/well-typed/issue3333.p4
 Error on typecheck: File p4/test/p4c/program/well-typed/issue3333.p4, from line 4 character 8 to line 7 character 9
-(type_select_case_keyset') keyset expression should have type enum<bit<8>> myenum { value = myenum.value(= 8w0) }, but got int
+(type_select_case_keyset') keyset expression should have type enum<bit<8>> myenum { value = 8w0 }, but got int
 
 >>> Running instantiate test on p4/test/p4c/program/well-typed/issue3343.p4
 Instantiate success: 0 objects
@@ -2865,7 +2865,7 @@ Instantiate success: 8 objects
 
 >>> Running instantiate test on p4/test/p4c/program/well-typed/table-entries-ser-enum-bmv2.p4
 Error on typecheck: File p4/test/p4c/program/well-typed/table-entries-ser-enum-bmv2.p4, line 74, characters 37-52
-(coerce_types_binary) cannot coerce types enum<bit<16>> MyEnum2B { MBR1 = MyEnum2B.MBR1(= 16w10), MBR2 = MyEnum2B.MBR2(= 16w43776) } and int
+(coerce_types_binary) cannot coerce types enum<bit<16>> MyEnum2B { MBR1 = 16w10, MBR2 = 16w43776 } and int
 
 >>> Running instantiate test on p4/test/p4c/program/well-typed/table-entries-ternary-bmv2.p4
 Instantiate success: 8 objects

@@ -3,23 +3,28 @@ open Domain.Dom
 module L = Lang.Ast
 module Ctk = Runtime_static.Ctk
 module Value = Runtime_static.Vdomain.Value
-module Type = Runtime_static.Tdomain.Types.Type
+module Types = Runtime_static.Tdomain.Types
+module Type = Types.Type
 module Numerics = Runtime_static.Numerics
 module Builtins = Runtime_static.Builtins
+module Envs_static = Runtime_static.Envs
+module FDEnv = Envs_static.FDEnv
 open Il.Ast
 module Table = Runtime_dynamic.Table
 module Func = Runtime_dynamic.Func
 module Cons = Runtime_dynamic.Cons
 module Obj = Runtime_dynamic.Object
-module Envs = Runtime_dynamic.Envs
-module VEnv = Envs.VEnv
-module FEnv = Envs.FEnv
-module CEnv = Envs.CEnv
-module Sto = Envs.Sto
+module Envs_dynamic = Runtime_dynamic.Envs
+module VEnv = Envs_dynamic.VEnv
+module TDEnv = Envs_dynamic.TDEnv
+module FEnv = Envs_dynamic.FEnv
+module CEnv = Envs_dynamic.CEnv
+module Sto = Envs_dynamic.Sto
 open Util.Source
 open Util.Error
 
 let error_info = error_inst_info
+let check = check_inst
 
 (* Instantiation logic (recursive) *)
 
@@ -184,88 +189,6 @@ and eval_arg (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (arg : arg) :
   | _ ->
       F.asprintf "(eval_arg) instantiation arguments must not be missing"
       |> error_info arg.at
-
-(* Statement evaluation *)
-
-and eval_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (stmt : stmt) :
-    Ctx.t * Sto.t * stmt option =
-  let wrap ~at (ctx, sto, stmt) =
-    (ctx, sto, Option.map (fun stmt -> stmt $ at) stmt)
-  in
-  let wrap_some ~at (ctx, sto, stmt) = (ctx, sto, Some (stmt $ at)) in
-  match stmt.it with
-  | BlockS { block } ->
-      eval_block_stmt cursor ctx sto block |> wrap_some ~at:stmt.at
-  | CallInstS { typ; var_inst; targs; args } ->
-      eval_call_inst_stmt cursor ctx sto typ var_inst targs args
-      |> wrap_some ~at:stmt.at
-  | DeclS { decl } -> eval_decl_stmt cursor ctx sto decl |> wrap ~at:stmt.at
-  | _ -> (ctx, sto, stmt.it) |> wrap_some ~at:stmt.at
-
-and eval_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
-    (stmts : stmt list) : Ctx.t * Sto.t * stmt list =
-  List.fold_left
-    (fun (ctx, sto, stmts) stmt ->
-      let ctx, sto, stmt = eval_stmt cursor ctx sto stmt in
-      let stmts =
-        match stmt with Some stmt -> stmts @ [ stmt ] | None -> stmts
-      in
-      (ctx, sto, stmts))
-    (ctx, sto, []) stmts
-
-and eval_block (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (block : block)
-    : Ctx.t * Sto.t * block =
-  let stmts, annos = block.it in
-  let ctx = Ctx.enter_frame ctx in
-  let ctx, sto, stmts = eval_stmts cursor ctx sto stmts in
-  let ctx = Ctx.exit_frame ctx in
-  let block = (stmts, annos) $ block.at in
-  (ctx, sto, block)
-
-and eval_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
-    (block : block) : Ctx.t * Sto.t * stmt' =
-  let ctx, sto, block = eval_block cursor ctx sto block in
-  (ctx, sto, BlockS { block })
-
-and eval_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
-    (typ : typ) (var_inst : var) (targs : typ list) (args : arg list) :
-    Ctx.t * Sto.t * stmt' =
-  let _, cons, _ =
-    Ctx.find_overloaded Ctx.find_cons_opt cursor var_inst [] ctx
-  in
-  let sto, obj = do_instantiate cursor ctx sto cons targs [] [] in
-  let id = F.asprintf "%a" Il.Pp.pp_var var_inst in
-  let oid = ctx.path @ [ id ] in
-  let sto = Sto.add oid obj sto in
-  let value = Value.RefV oid in
-  let stmt =
-    let expr_inst =
-      ValueE { value = value $ no_info }
-      $$ (no_info, { typ = typ.it; ctk = Ctk.CTK })
-    in
-    let decl_inst =
-      VarD { id = id $ no_info; typ; init = Some expr_inst; annos = [] }
-      $ no_info
-    in
-    let stmt_decl = DeclS { decl = decl_inst } $ no_info in
-    let expr_base =
-      VarE { var = L.Current (id $ no_info) $ no_info }
-      $$ (no_info, { typ = typ.it; ctk = Ctk.CTK })
-    in
-    let stmt_call =
-      CallMethodS { expr_base; member = "apply" $ no_info; targs; args }
-      $ no_info
-    in
-    let block = ([ stmt_decl; stmt_call ], []) $ no_info in
-    BlockS { block }
-  in
-  (ctx, sto, stmt)
-
-and eval_decl_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
-    (decl : decl) : Ctx.t * Sto.t * stmt' option =
-  let ctx, sto, decl = eval_decl cursor ctx sto decl in
-  let stmt = Option.map (fun decl -> DeclS { decl }) decl in
-  (ctx, sto, stmt)
 
 (* Expression evaluation *)
 
@@ -439,41 +362,153 @@ and eval_inst_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
   let value = Value.RefV oid in
   (sto, value)
 
+(* Statement evaluation *)
+
+and eval_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (stmt : stmt) :
+    Ctx.t * Sto.t * stmt =
+  let wrap ~at (ctx, sto, stmt) = (ctx, sto, stmt $ at) in
+  match stmt.it with
+  | BlockS { block } -> eval_block_stmt cursor ctx sto block |> wrap ~at:stmt.at
+  | CallInstS { typ; var_inst; targs; args } ->
+      eval_call_inst_stmt cursor ctx sto typ var_inst targs args
+      |> wrap ~at:stmt.at
+  | DeclS { decl } -> eval_decl_stmt cursor ctx sto decl |> wrap ~at:stmt.at
+  | _ -> (ctx, sto, stmt.it) |> wrap ~at:stmt.at
+
+and eval_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (stmts : stmt list) : Ctx.t * Sto.t * stmt list =
+  List.fold_left
+    (fun (ctx, sto, stmts) stmt ->
+      let ctx, sto, stmt = eval_stmt cursor ctx sto stmt in
+      (ctx, sto, stmts @ [ stmt ]))
+    (ctx, sto, []) stmts
+
+and eval_block (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (block : block)
+    : Ctx.t * Sto.t * block =
+  let stmts, annos = block.it in
+  let ctx = Ctx.enter_frame ctx in
+  let ctx, sto, stmts = eval_stmts cursor ctx sto stmts in
+  let ctx = Ctx.exit_frame ctx in
+  let block = (stmts, annos) $ block.at in
+  (ctx, sto, block)
+
+and eval_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (block : block) : Ctx.t * Sto.t * stmt' =
+  let ctx, sto, block = eval_block cursor ctx sto block in
+  (ctx, sto, BlockS { block })
+
+and eval_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (typ : typ) (var_inst : var) (targs : typ list) (args : arg list) :
+    Ctx.t * Sto.t * stmt' =
+  let _, cons, _ =
+    Ctx.find_overloaded Ctx.find_cons_opt cursor var_inst [] ctx
+  in
+  let sto, obj = do_instantiate cursor ctx sto cons targs [] [] in
+  let id = F.asprintf "%a" Il.Pp.pp_var var_inst in
+  let oid = ctx.path @ [ id ] in
+  let sto = Sto.add oid obj sto in
+  let value = Value.RefV oid in
+  let stmt =
+    let expr_inst =
+      ValueE { value = value $ no_info }
+      $$ (no_info, { typ = typ.it; ctk = Ctk.CTK })
+    in
+    let decl_inst =
+      VarD { id = id $ no_info; typ; init = Some expr_inst; annos = [] }
+      $ no_info
+    in
+    let stmt_decl = DeclS { decl = decl_inst } $ no_info in
+    let expr_base =
+      VarE { var = L.Current (id $ no_info) $ no_info }
+      $$ (no_info, { typ = typ.it; ctk = Ctk.CTK })
+    in
+    let stmt_call =
+      CallMethodS { expr_base; member = "apply" $ no_info; targs; args }
+      $ no_info
+    in
+    let block = ([ stmt_decl; stmt_call ], []) $ no_info in
+    BlockS { block }
+  in
+  (ctx, sto, stmt)
+
+and eval_decl_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (decl : decl) : Ctx.t * Sto.t * stmt' =
+  let ctx, sto, decl = eval_decl cursor ctx sto decl in
+  let stmt = match decl with Some decl -> DeclS { decl } | None -> EmptyS in
+  (ctx, sto, stmt)
+
 (* Declaration evaluation *)
 
 and eval_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (decl : decl) :
     Ctx.t * Sto.t * decl option =
-  let wrap_some ~at (ctx, sto, decl) = (ctx, sto, Some (decl $ at)) in
-  let wrap_ctx_some ctx = (ctx, sto, Some decl) in
-  let wrap_ctx_none ctx = (ctx, sto, None) in
+  let wrap ~at (ctx, sto, decl) =
+    if cursor = Ctx.Global then (ctx, sto, None)
+    else (ctx, sto, Some (decl $ at))
+  in
+  let wrap_some ctx = (ctx, sto, Some decl) in
+  let wrap_none ctx = (ctx, sto, None) in
   match decl.it with
+  (* Constant, variable, error, match_kind, and instance declarations *)
   | ConstD { id; typ; value; annos } ->
-      eval_const_decl cursor ctx id typ value annos |> wrap_ctx_some
-  | VarD _ -> (ctx, sto, decl.it) |> wrap_some ~at:decl.at
+      eval_const_decl cursor ctx id typ value annos
+      |> if cursor = Ctx.Global then wrap_none else wrap_some
+  | VarD _ -> ctx |> if cursor = Ctx.Global then wrap_none else wrap_some
+  | ErrD { members } -> eval_error_decl cursor ctx members |> wrap_none
+  | MatchKindD { members } ->
+      eval_match_kind_decl cursor ctx members |> wrap_none
   | InstD { id; typ; var_inst; targs; args; init; annos } ->
       eval_inst_decl cursor ctx sto id typ var_inst targs args init annos
-      |> wrap_some ~at:decl.at
-  | ValueSetD _ -> ctx |> wrap_ctx_some
-  | ParserD { id; tparams; params; cparams; locals; states; annos } ->
-      eval_parser_decl cursor ctx id tparams params cparams locals states annos
-      |> wrap_ctx_none
-  | TableD { id; typ; table; annos } ->
-      eval_table_decl cursor ctx sto id typ table annos |> wrap_some ~at:decl.at
-  | ControlD { id; tparams; params; cparams; locals; body; annos } ->
-      eval_control_decl cursor ctx id tparams params cparams locals body annos
-      |> wrap_ctx_none
+      |> wrap ~at:decl.at
+  (* Derived type declarations *)
+  | StructD { id; tparams; tparams_hidden; fields; annos } ->
+      eval_struct_decl cursor ctx id tparams tparams_hidden fields annos
+      |> wrap_none
+  | HeaderD { id; tparams; tparams_hidden; fields; annos } ->
+      eval_header_decl cursor ctx id tparams tparams_hidden fields annos
+      |> wrap_none
+  | UnionD { id; tparams; tparams_hidden; fields; annos } ->
+      eval_union_decl cursor ctx id tparams tparams_hidden fields annos
+      |> wrap_none
+  | EnumD { id; members; annos } ->
+      eval_enum_decl cursor ctx id members annos |> wrap_none
+  | SEnumD { id; typ; fields; annos } ->
+      eval_senum_decl cursor ctx id typ fields annos |> wrap_none
+  | NewTypeD { id; typdef; annos } ->
+      eval_newtype_decl cursor ctx id typdef annos |> wrap_none
+  | TypeDefD { id; typdef; annos } ->
+      eval_typedef_decl cursor ctx id typdef annos |> wrap_none
+  (* Function declarations *)
   | ActionD { id; params; body; annos } ->
-      eval_action_decl cursor ctx id params body annos |> wrap_ctx_none
+      eval_action_decl cursor ctx id params body annos |> wrap_none
   | FuncD { id; typ_ret; tparams; params; body } ->
-      eval_func_decl cursor ctx id typ_ret tparams params body |> wrap_ctx_none
+      eval_func_decl cursor ctx id typ_ret tparams params body |> wrap_none
   | ExternFuncD { id; typ_ret; tparams; params; annos } ->
       eval_extern_func_decl cursor ctx id typ_ret tparams params annos
-      |> wrap_ctx_none
+      |> wrap_none
+  (* Object declarations *)
+  (* Extern *)
   | ExternObjectD { id; tparams; mthds; annos } ->
-      eval_extern_object_decl cursor ctx id tparams mthds annos |> wrap_ctx_none
+      eval_extern_object_decl cursor ctx id tparams mthds annos |> wrap_none
+  (* Parser *)
+  | ValueSetD _ -> ctx |> wrap_some
+  | ParserTypeD { id; tparams; tparams_hidden; params; annos } ->
+      eval_parser_type_decl cursor ctx id tparams tparams_hidden params annos
+      |> wrap_none
+  | ParserD { id; tparams; params; cparams; locals; states; annos } ->
+      eval_parser_decl cursor ctx id tparams params cparams locals states annos
+      |> wrap_none
+  (* Control *)
+  | TableD { id; typ; table; annos } ->
+      eval_table_decl cursor ctx sto id typ table annos |> wrap ~at:decl.at
+  | ControlTypeD { id; tparams; tparams_hidden; params; annos } ->
+      eval_control_type_decl cursor ctx id tparams tparams_hidden params annos
+      |> wrap_none
+  | ControlD { id; tparams; params; cparams; locals; body; annos } ->
+      eval_control_decl cursor ctx id tparams params cparams locals body annos
+      |> wrap_none
+  (* Package *)
   | PackageTypeD { id; tparams; cparams; annos } ->
-      eval_package_type_decl cursor ctx id tparams cparams annos
-      |> wrap_ctx_none
+      eval_package_type_decl cursor ctx id tparams cparams annos |> wrap_none
 
 and eval_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (decls : decl list) : Ctx.t * Sto.t * decl list =
@@ -486,9 +521,35 @@ and eval_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
       (ctx, sto, decls))
     (ctx, sto, []) decls
 
+(* (11.1) Constants *)
+
 and eval_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id) (_typ : typ)
     (value : value) (_annos : anno list) : Ctx.t =
   Ctx.add_value cursor id.it value.it ctx
+
+(* (7.1.2) The error type *)
+
+and eval_error_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (members : member list)
+    : Ctx.t =
+  check (cursor = Ctx.Global)
+    "(eval_error_decl) error declaration must be global";
+  let members = List.map it members in
+  let ids = List.map (fun member -> "error." ^ member) members in
+  let values = List.map (fun member -> Value.ErrV member) members in
+  Ctx.add_values cursor ids values ctx
+
+(* (7.1.3) The match kind type *)
+
+and eval_match_kind_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (members : member list) : Ctx.t =
+  check (cursor = Ctx.Global)
+    "(eval_match_kind_decl) match_kind declaration must be global";
+  let members = List.map it members in
+  let values = List.map (fun member -> Value.MatchKindV member) members in
+  Ctx.add_values cursor members values ctx
+
+(* (8.21) Constructor invocations *)
+(* (10.3.1) Instantiating objects with abstract methods *)
 
 and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
     (typ : typ) (var_inst : var) (targs : typ list) (args : arg list)
@@ -543,6 +604,278 @@ and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
   in
   (ctx, sto, decl)
 
+(* (7.2.5) Struct types *)
+
+and eval_struct_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (tparams : tparam list) (tparams_hidden : tparam list)
+    (fields : (member * typ * anno list) list) (_annos : anno list) : Ctx.t =
+  check (cursor = Ctx.Global)
+    "(eval_struct_decl) struct declarations must be global";
+  let td =
+    let tparams = List.map it tparams in
+    let tparams_hidden = List.map it tparams_hidden in
+    let members, typs, _annoss =
+      List.fold_left
+        (fun (members, typs, annoss) (member, typ, annos) ->
+          (members @ [ member.it ], typs @ [ typ.it ], annoss @ [ annos ]))
+        ([], [], []) fields
+    in
+    let fields = List.combine members typs in
+    let typ_struct = Types.StructT (id.it, fields) in
+    Types.PolyD (tparams, tparams_hidden, typ_struct)
+  in
+  Ctx.add_typdef cursor id.it td ctx
+
+(* (7.2.2) Header types *)
+
+and eval_header_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (tparams : tparam list) (tparams_hidden : tparam list)
+    (fields : (member * typ * anno list) list) (_annos : anno list) : Ctx.t =
+  check (cursor = Ctx.Global)
+    "(eval_header_decl) header declarations must be global";
+  let td =
+    let tparams = List.map it tparams in
+    let tparams_hidden = List.map it tparams_hidden in
+    let members, typs, _annoss =
+      List.fold_left
+        (fun (members, typs, annoss) (member, typ, annos) ->
+          (members @ [ member.it ], typs @ [ typ.it ], annoss @ [ annos ]))
+        ([], [], []) fields
+    in
+    let fields = List.combine members typs in
+    let typ_struct = Types.HeaderT (id.it, fields) in
+    Types.PolyD (tparams, tparams_hidden, typ_struct)
+  in
+  Ctx.add_typdef cursor id.it td ctx
+
+(* (7.2.4) Header unions *)
+
+and eval_union_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (tparams : tparam list) (tparams_hidden : tparam list)
+    (fields : (member * typ * anno list) list) (_annos : anno list) : Ctx.t =
+  check (cursor = Ctx.Global)
+    "(eval_header_decl) union declarations must be global";
+  let td =
+    let tparams = List.map it tparams in
+    let tparams_hidden = List.map it tparams_hidden in
+    let members, typs, _annoss =
+      List.fold_left
+        (fun (members, typs, annoss) (member, typ, annos) ->
+          (members @ [ member.it ], typs @ [ typ.it ], annoss @ [ annos ]))
+        ([], [], []) fields
+    in
+    let fields = List.combine members typs in
+    let typ_struct = Types.UnionT (id.it, fields) in
+    Types.PolyD (tparams, tparams_hidden, typ_struct)
+  in
+  Ctx.add_typdef cursor id.it td ctx
+
+(* (7.2.1) Enumeration types *)
+
+and eval_enum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (members : member list) (_annos : anno list) : Ctx.t =
+  check (cursor = Ctx.Global)
+    "(eval_enum_decl) enum declarations must be global";
+  let members = List.map it members in
+  let ids = List.map (fun member -> id.it ^ "." ^ member) members in
+  let values =
+    List.map (fun member -> Value.EnumFieldV (id.it, member)) members
+  in
+  let ctx = Ctx.add_values cursor ids values ctx in
+  let td =
+    let typ_enum = Types.EnumT (id.it, members) in
+    Types.MonoD typ_enum
+  in
+  Ctx.add_typdef cursor id.it td ctx
+
+(* (7.2.1) Enumeration types *)
+
+and eval_senum_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id) (typ : typ)
+    (fields : (member * value) list) (_annos : anno list) : Ctx.t =
+  check (cursor = Ctx.Global)
+    "(eval_senum_decl) serializable enum declarations must be global";
+  let members, values = List.split fields in
+  let members = List.map it members in
+  let values = List.map it values in
+  let ids = List.map (fun member -> id.it ^ "." ^ member) members in
+  let values =
+    List.map2
+      (fun member value -> Value.SEnumFieldV (id.it, member, value))
+      members values
+  in
+  let ctx = Ctx.add_values cursor ids values ctx in
+  let td =
+    let fields = List.combine members values in
+    let typ_senum = Types.SEnumT (id.it, typ.it, fields) in
+    Types.MonoD typ_senum
+  in
+  Ctx.add_typdef cursor id.it td ctx
+
+(* (7.6) Introducing new types *)
+
+and eval_newtype_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (typdef : (typ, decl) Lang.Ast.alt) (_annos : anno list) : Ctx.t =
+  check (cursor = Ctx.Global)
+    "(eval_newtype_decl) new type declarations must be global";
+  let typ =
+    match typdef with
+    | Left typ -> typ.it
+    | Right decl -> (
+        let ctx', _, _ = eval_decl cursor ctx Sto.empty decl in
+        let tid_newtype =
+          TIdSet.diff
+            (TDEnv.keys ctx'.global.tdenv |> TIdSet.of_list)
+            (TDEnv.keys ctx.global.tdenv |> TIdSet.of_list)
+        in
+        assert (TIdSet.cardinal tid_newtype = 1);
+        let tid_newtype = TIdSet.choose tid_newtype in
+        let td_newtype = Ctx.find_typdef cursor tid_newtype ctx' in
+        match td_newtype with
+        | Types.MonoD typ -> typ
+        | Types.PolyD td_poly -> Types.SpecT (td_poly, []))
+  in
+  let td =
+    let typ_new = Types.NewT (id.it, typ) in
+    Types.MonoD typ_new
+  in
+  Ctx.add_typdef cursor id.it td ctx
+
+(* (7.5) typedef *)
+
+and eval_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (typdef : (typ, decl) Lang.Ast.alt) (_annos : anno list) : Ctx.t =
+  check (cursor = Ctx.Global)
+    "(eval_typedef_decl) typedef declarations must be global";
+  let typ =
+    match typdef with
+    | Left typ -> typ.it
+    | Right decl -> (
+        let ctx', _, _ = eval_decl cursor ctx Sto.empty decl in
+        let tid_newtype =
+          TIdSet.diff
+            (TDEnv.keys ctx'.global.tdenv |> TIdSet.of_list)
+            (TDEnv.keys ctx.global.tdenv |> TIdSet.of_list)
+        in
+        assert (TIdSet.cardinal tid_newtype = 1);
+        let tid_newtype = TIdSet.choose tid_newtype in
+        let td_newtype = Ctx.find_typdef cursor tid_newtype ctx' in
+        match td_newtype with
+        | Types.MonoD typ -> typ
+        | Types.PolyD td_poly -> Types.SpecT (td_poly, []))
+  in
+  let td =
+    let typ_def = Types.DefT typ in
+    Types.MonoD typ_def
+  in
+  Ctx.add_typdef cursor id.it td ctx
+
+(* (14.1) Actions *)
+
+and eval_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (params : param list) (body : block) (_annos : anno list) : Ctx.t =
+  let fid = FId.to_fid id params in
+  let func = Func.ActionF (params, body) in
+  Ctx.add_func_non_overload cursor fid func ctx
+
+(* (10) Function declarations *)
+
+and eval_func_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (_typ_ret : typ) (tparams : tparam list) (params : param list)
+    (body : block) : Ctx.t =
+  let fid = FId.to_fid id params in
+  let func = Func.FuncF (tparams, params, body) in
+  Ctx.add_func_overload cursor fid func ctx
+
+(* (7.2.10.1) Extern functions *)
+
+and eval_extern_func_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (_typ_ret : typ) (tparams : tparam list) (params : param list)
+    (_annos : anno list) : Ctx.t =
+  let fid = FId.to_fid id params in
+  let func = Func.ExternFuncF (tparams, params) in
+  Ctx.add_func_overload cursor fid func ctx
+
+(* (7.2.10.2) Extern objects *)
+
+and eval_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (tparams : tparam list) (mthds : mthd list) (_annos : anno list) : Ctx.t =
+  let conss, mthds =
+    List.partition
+      (fun mthd -> match mthd.it with L.ExternConsM _ -> true | _ -> false)
+      mthds
+  in
+  let td =
+    let fdenv =
+      List.fold_left
+        (fun fdenv mthd ->
+          match mthd.it with
+          | L.ExternAbstractM { id; typ_ret; tparams; params; _ } ->
+              let fid = FId.to_fid id params in
+              let tparams = List.map it tparams in
+              let params =
+                List.map it params
+                |> List.map (fun (id, typ, dir, value_default, _) ->
+                       (id.it, typ.it, dir.it, Option.map it value_default))
+              in
+              let ft = Types.ExternAbstractMethodT (params, typ_ret.it) in
+              let fd = Types.PolyFD (tparams, [], ft) in
+              FDEnv.add fid fd fdenv
+          | L.ExternM { id; typ_ret; tparams; params; _ } ->
+              let fid = FId.to_fid id params in
+              let tparams = List.map it tparams in
+              let params =
+                List.map it params
+                |> List.map (fun (id, typ, dir, value_default, _) ->
+                       (id.it, typ.it, dir.it, Option.map it value_default))
+              in
+              let ft = Types.ExternMethodT (params, typ_ret.it) in
+              let fd = Types.PolyFD (tparams, [], ft) in
+              FDEnv.add fid fd fdenv
+          | _ -> assert false)
+        FEnv.empty mthds
+    in
+    let tparams = List.map it tparams in
+    let typ_extern = Types.ExternT (id.it, fdenv) in
+    Types.PolyD (tparams, [], typ_extern)
+  in
+  let ctx = Ctx.add_typdef cursor id.it td ctx in
+  let conss =
+    if conss = [] then
+      [ L.ExternConsM { id; cparams = []; annos = [] } $ no_info ]
+    else conss
+  in
+  List.fold_left
+    (fun ctx cons ->
+      match cons.it with
+      | L.ExternConsM { cparams; _ } ->
+          let cid = FId.to_fid id cparams in
+          let cons = Cons.ExternC (id.it, tparams, cparams, mthds) in
+          Ctx.add_cons cursor cid cons ctx
+      | _ -> assert false)
+    ctx conss
+
+(* (7.2.12) Parser and control blocks types *)
+
+and eval_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (tparams : tparam list) (tparams_hidden : tparam list) (params : param list)
+    (_annos : anno list) : Ctx.t =
+  check (cursor = Ctx.Global)
+    "(eval_parser_type_decl) parser type declarations must be global";
+  let td =
+    let tparams = List.map it tparams in
+    let tparams_hidden = List.map it tparams_hidden in
+    let params =
+      List.map it params
+      |> List.map (fun (id, typ, dir, value_default, _) ->
+             (id.it, typ.it, dir.it, Option.map it value_default))
+    in
+    let typ_parser = Types.ParserT params in
+    Types.PolyD (tparams, tparams_hidden, typ_parser)
+  in
+  Ctx.add_typdef cursor id.it td ctx
+
+(* (13.2) Parser declarations *)
+
 and eval_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (params : param list) (cparams : cparam list)
     (locals : decl list) (states : parser_state list) (_annos : anno list) :
@@ -550,6 +883,8 @@ and eval_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let cid = FId.to_fid id cparams in
   let cons = Cons.ParserC (tparams, cparams, params, locals, states) in
   Ctx.add_cons cursor cid cons ctx
+
+(* (14.2) Tables *)
 
 and eval_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
     (typ : typ) (table : table) (_annos : anno list) : Ctx.t * Sto.t * decl' =
@@ -571,6 +906,28 @@ and eval_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
   in
   (ctx, sto, decl)
 
+(* (7.2.12.2) Control type declarations *)
+
+and eval_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
+    (tparams : tparam list) (tparams_hidden : tparam list) (params : param list)
+    (_annos : anno list) : Ctx.t =
+  check (cursor = Ctx.Global)
+    "(eval_control_type_decl) control type declarations must be global";
+  let td =
+    let tparams = List.map it tparams in
+    let tparams_hidden = List.map it tparams_hidden in
+    let params =
+      List.map it params
+      |> List.map (fun (id, typ, dir, value_default, _) ->
+             (id.it, typ.it, dir.it, Option.map it value_default))
+    in
+    let typ_parser = Types.ControlT params in
+    Types.PolyD (tparams, tparams_hidden, typ_parser)
+  in
+  Ctx.add_typdef cursor id.it td ctx
+
+(* (14) Control blocks *)
+
 and eval_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (params : param list) (cparams : cparam list)
     (locals : decl list) (body : block) (_annos : anno list) : Ctx.t =
@@ -578,51 +935,22 @@ and eval_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let cons = Cons.ControlC (tparams, cparams, params, locals, body) in
   Ctx.add_cons cursor cid cons ctx
 
-and eval_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
-    (params : param list) (body : block) (_annos : anno list) : Ctx.t =
-  let fid = FId.to_fid id params in
-  let func = Func.ActionF (params, body) in
-  Ctx.add_func_non_overload cursor fid func ctx
-
-and eval_func_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
-    (_typ_ret : typ) (tparams : tparam list) (params : param list)
-    (body : block) : Ctx.t =
-  let fid = FId.to_fid id params in
-  let func = Func.FuncF (tparams, params, body) in
-  Ctx.add_func_overload cursor fid func ctx
-
-and eval_extern_func_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
-    (_typ_ret : typ) (tparams : tparam list) (params : param list)
-    (_annos : anno list) : Ctx.t =
-  let fid = FId.to_fid id params in
-  let func = Func.ExternFuncF (tparams, params) in
-  Ctx.add_func_overload cursor fid func ctx
-
-and eval_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
-    (tparams : tparam list) (mthds : mthd list) (_annos : anno list) : Ctx.t =
-  let conss, mthds =
-    List.partition
-      (fun mthd -> match mthd.it with L.ExternConsM _ -> true | _ -> false)
-      mthds
-  in
-  let conss =
-    if conss = [] then
-      [ L.ExternConsM { id; cparams = []; annos = [] } $ no_info ]
-    else conss
-  in
-  List.fold_left
-    (fun ctx cons ->
-      match cons.it with
-      | L.ExternConsM { id = _id; cparams; annos = _annos } ->
-          let cid = FId.to_fid id cparams in
-          let cons = Cons.ExternC (id.it, tparams, cparams, mthds) in
-          Ctx.add_cons cursor cid cons ctx
-      | _ -> assert false)
-    ctx conss
+(* (7.2.13) Package types *)
 
 and eval_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (cparams : cparam list) (_annos : anno list) : Ctx.t
     =
+  let td =
+    let tparams = List.map it tparams in
+    let typ_package =
+      let typs_inner =
+        List.map it cparams |> List.map (fun (_, _, typ, _, _) -> typ.it)
+      in
+      Types.PackageT typs_inner
+    in
+    Types.PolyD (tparams, [], typ_package)
+  in
+  let ctx = Ctx.add_typdef cursor id.it td ctx in
   let cid = FId.to_fid id cparams in
   let cons = Cons.PackageC (tparams, cparams) in
   Ctx.add_cons cursor cid cons ctx
@@ -675,7 +1003,12 @@ and eval_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (mthd : mthd) : Ctx.t =
       eval_extern_abstract_mthd cursor ctx id typ_ret tparams params annos
   | ExternM { id; typ_ret; tparams; params; annos } ->
       eval_extern_mthd cursor ctx id typ_ret tparams params annos
-  | _ -> assert false
+  | _ ->
+      F.asprintf
+        "(eval_mthd) %a is a constructor and should have been handled prior to \
+         instantiation"
+        Il.Pp.pp_mthd mthd
+      |> error_info mthd.at
 
 and eval_mthds (cursor : Ctx.cursor) (ctx : Ctx.t) (mthds : mthd list) : Ctx.t =
   List.fold_left (fun ctx mthd -> eval_mthd cursor ctx mthd) ctx mthds
@@ -694,27 +1027,16 @@ and eval_extern_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let func = Func.ExternMethodF (tparams, params, None) in
   Ctx.add_func_overload cursor fid func ctx
 
-(* Program evaluation *)
+(* Program evaluation:
+   Instantiates the program, creating a global environment and a store. *)
 
 let instantiate_program (program : program) :
     CEnv.t * TDEnv.t * FEnv.t * VEnv.t * Sto.t =
   Ctx.refresh ();
-  let tdenv, frame, decls = program in
-  let ctx =
-    let ctx = Ctx.empty in
-    let venv =
-      Frame.bindings frame
-      |> List.fold_left
-           (fun venv (id, stype) ->
-             let _, _, _, value = stype in
-             match value with
-             | Some value -> VEnv.add id value venv
-             | None -> venv)
-           VEnv.empty
-    in
-    { ctx with global = { ctx.global with tdenv; venv } }
-  in
-  let ctx, sto, _decls = eval_decls Ctx.Global ctx Sto.empty decls in
+  let decls = program in
+  let ctx, sto, decls = eval_decls Ctx.Global Ctx.empty Sto.empty decls in
+  check (decls = [])
+    "(instantiate_program) some declarations were not handled by instantiation";
   let cenv = ctx.global.cenv in
   let tdenv = ctx.global.tdenv in
   let fenv = ctx.global.fenv in

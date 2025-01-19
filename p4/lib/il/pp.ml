@@ -69,8 +69,8 @@ and pp_typs ?(level = 0) fmt typs =
 
 (* Values *)
 
-let rec pp_value fmt value = pp_value' fmt value.it
-and pp_value' fmt value = Value.pp fmt value
+let rec pp_value ?(level = 0) fmt value = pp_value' ~level fmt value.it
+and pp_value' ?(level = 0) fmt value = Value.pp ~level fmt value
 
 (* Annotations *)
 
@@ -92,11 +92,15 @@ and pp_param' ?(level = 0) fmt param' =
       if dir.it = L.No then
         F.fprintf fmt "%a %a = %a"
           (pp_typ ~level:(level + 1))
-          typ pp_id id pp_value value_default
+          typ pp_id id
+          (pp_value ~level:(level + 1))
+          value_default
       else
         F.fprintf fmt "%a %a %a = %a" pp_dir dir
           (pp_typ ~level:(level + 1))
-          typ pp_id id pp_value value_default
+          typ pp_id id
+          (pp_value ~level:(level + 1))
+          value_default
   | None ->
       if dir.it = L.No then
         F.fprintf fmt "%a %a" (pp_typ ~level:(level + 1)) typ pp_id id
@@ -216,7 +220,11 @@ and pp_expr' ?(level = 0) fmt expr' =
   | BitAccE { expr_base; value_lo; value_hi } ->
       F.fprintf fmt "%a[%a:%a]"
         (pp_expr ~level:(level + 1))
-        expr_base pp_value value_hi pp_value value_lo
+        expr_base
+        (pp_value ~level:(level + 1))
+        value_hi
+        (pp_value ~level:(level + 1))
+        value_lo
   | ExprAccE { expr_base; member } ->
       F.fprintf fmt "%a.%a"
         (pp_expr ~level:(level + 1))
@@ -357,7 +365,9 @@ and pp_decl' ?(level = 0) fmt decl' =
   | ConstD { id; typ; value; annos = _annos } ->
       F.fprintf fmt "const %a %a = %a;"
         (pp_typ ~level:(level + 1))
-        typ pp_id id pp_value value
+        typ pp_id id
+        (pp_value ~level:(level + 1))
+        value
   | VarD { id; typ; init; annos = _annos } -> (
       match init with
       | Some expr_init ->
@@ -365,6 +375,14 @@ and pp_decl' ?(level = 0) fmt decl' =
             (pp_typ ~level:(level + 1))
             typ pp_id id (pp_expr ~level:0) expr_init
       | None -> F.fprintf fmt "%a %a;" (pp_typ ~level:(level + 1)) typ pp_id id)
+  | ErrD { members } ->
+      F.fprintf fmt "error {\n%a\n%s}"
+        (pp_members ~level:(level + 1))
+        members (indent level)
+  | MatchKindD { members } ->
+      F.fprintf fmt "match_kind {\n%a\n%s}"
+        (pp_members ~level:(level + 1))
+        members (indent level)
   | InstD { id; typ; var_inst; targs; args; init; annos = _annos } -> (
       match init with
       | [] ->
@@ -381,12 +399,65 @@ and pp_decl' ?(level = 0) fmt decl' =
             targs pp_args args pp_id id
             (pp_decls ~level:(level + 1))
             init (indent level))
+  | StructD { id; tparams; tparams_hidden; fields; annos = _annos } ->
+      let fields = List.map (fun (member, typ, _) -> (typ, member)) fields in
+      F.fprintf fmt "struct %a%a {\n%a\n%s}" pp_id id pp_tparams
+        (tparams @ tparams_hidden)
+        (pp_pairs ~trailing:true ~level:(level + 1) pp_typ pp_member ~rel:Space
+           ~sep:SemicolonNl)
+        fields (indent level)
+  | HeaderD { id; tparams; tparams_hidden; fields; annos = _annos } ->
+      let fields = List.map (fun (member, typ, _) -> (typ, member)) fields in
+      F.fprintf fmt "header %a%a {\n%a\n%s}" pp_id id pp_tparams
+        (tparams @ tparams_hidden)
+        (pp_pairs ~trailing:true ~level:(level + 1) pp_typ pp_member ~rel:Space
+           ~sep:SemicolonNl)
+        fields (indent level)
+  | UnionD { id; tparams; tparams_hidden; fields; annos = _annos } ->
+      let fields = List.map (fun (member, typ, _) -> (typ, member)) fields in
+      F.fprintf fmt "header_union %a%a {\n%a\n%s}" pp_id id pp_tparams
+        (tparams @ tparams_hidden)
+        (pp_pairs ~trailing:true ~level:(level + 1) pp_typ pp_member ~rel:Space
+           ~sep:SemicolonNl)
+        fields (indent level)
+  | EnumD { id; members; annos = _annos } ->
+      F.fprintf fmt "enum %a {\n%a\n%s};" pp_id id
+        (pp_members ~level:(level + 1))
+        members (indent level)
+  | SEnumD { id; typ; fields; annos = _annos } ->
+      F.fprintf fmt "enum %a %a {\n%a\n%s};"
+        (pp_typ ~level:(level + 1))
+        typ pp_id id
+        (pp_pairs pp_id (pp_value ~level:(level + 1)) ~rel:Eq ~sep:CommaNl)
+        fields (indent level)
+  | NewTypeD { id; typdef; annos = _annos } -> (
+      match typdef with
+      | Left typ ->
+          F.fprintf fmt "type %a %a;" (pp_typ ~level:(level + 1)) typ pp_id id
+      | Right decl ->
+          F.fprintf fmt "type %a %a;" (pp_decl ~level:(level + 1)) decl pp_id id
+      )
+  | TypeDefD { id; typdef; annos = _annos } -> (
+      match typdef with
+      | Left typ ->
+          F.fprintf fmt "typedef %a %a;"
+            (pp_typ ~level:(level + 1))
+            typ pp_id id
+      | Right decl ->
+          F.fprintf fmt "typedef %a %a;"
+            (pp_decl ~level:(level + 1))
+            decl pp_id id)
   | ValueSetD { id; typ; size; annos = _annos } ->
       F.fprintf fmt "value_set<%a>(%a) %a;"
         (pp_typ ~level:(level + 1))
         typ
         (pp_expr ~level:(level + 1))
         size pp_id id
+  | ParserTypeD { id; tparams; tparams_hidden; params; annos = _annos } ->
+      F.fprintf fmt "parser %a%a%a;" pp_id id pp_tparams
+        (tparams @ tparams_hidden)
+        (pp_params ~level:(level + 1))
+        params
   | ParserD { id; tparams; params; cparams; locals; states; annos = _annos } ->
       F.fprintf fmt "parser %a%a%a%a {\n%a\n%a\n%s}" pp_id id pp_tparams tparams
         (pp_params ~level:(level + 1))
@@ -397,14 +468,15 @@ and pp_decl' ?(level = 0) fmt decl' =
         locals
         (pp_parser_states ~level:(level + 1))
         states (indent level)
-  | ActionD { id; params; body; annos = _annos } ->
-      F.fprintf fmt "action %a%a %a" pp_id id
-        (pp_params ~level:(level + 1))
-        params (pp_block ~level) body
   | TableD { id; typ; table; annos = _annos } ->
       F.fprintf fmt "%a table %a %a"
         (pp_typ ~level:(level + 1))
         typ pp_id id (pp_table ~level) table
+  | ControlTypeD { id; tparams; tparams_hidden; params; annos = _annos } ->
+      F.fprintf fmt "control %a%a%a;" pp_id id pp_tparams
+        (tparams @ tparams_hidden)
+        (pp_params ~level:(level + 1))
+        params
   | ControlD { id; tparams; params; cparams; locals; body; annos = _annos } ->
       F.fprintf fmt "control %a%a%a%a {\n%a\n%sapply %a\n%s}" pp_id id
         pp_tparams tparams
@@ -417,6 +489,10 @@ and pp_decl' ?(level = 0) fmt decl' =
         (indent (level + 1))
         (pp_block ~level:(level + 1))
         body (indent level)
+  | ActionD { id; params; body; annos = _annos } ->
+      F.fprintf fmt "action %a%a %a" pp_id id
+        (pp_params ~level:(level + 1))
+        params (pp_block ~level) body
   | FuncD { id; typ_ret; tparams; params; body } ->
       F.fprintf fmt "%a %a%a%a %a"
         (pp_typ ~level:(level + 1))
@@ -551,6 +627,4 @@ and pp_mthds ?(level = 0) fmt mthds =
 
 (* Program *)
 
-let pp_program fmt program =
-  let _tdenv, _frame, decls = program in
-  P.pp_program pp_decl fmt decls
+let pp_program fmt program = P.pp_program pp_decl fmt program

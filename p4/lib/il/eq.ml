@@ -410,6 +410,9 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
       VarD { id = id_b; typ = typ_b; init = init_b; annos = _annos_b } ) ->
       eq_id ~dbg id_a id_b && eq_typ ~dbg typ_a typ_b
       && E.eq_option (eq_expr ~dbg) init_a init_b
+  | ErrD { members = members_a }, ErrD { members = members_b }
+  | MatchKindD { members = members_a }, MatchKindD { members = members_b } ->
+      eq_members ~dbg members_a members_b
   | ( InstD
         {
           id = id_a;
@@ -435,10 +438,102 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
       && eq_targs ~dbg targs_a targs_b
       && eq_args ~dbg args_a args_b
       && eq_decls ~dbg init_a init_b
+  | ( StructD
+        {
+          id = id_a;
+          tparams = tparams_a;
+          tparams_hidden = tparams_hidden_a;
+          fields = fields_a;
+          annos = _annos_a;
+        },
+      StructD
+        {
+          id = id_b;
+          tparams = tparams_b;
+          tparams_hidden = tparams_hidden_b;
+          fields = fields_b;
+          annos = _annos_b;
+        } )
+  | ( HeaderD
+        {
+          id = id_a;
+          tparams = tparams_a;
+          tparams_hidden = tparams_hidden_a;
+          fields = fields_a;
+          annos = _annos_a;
+        },
+      HeaderD
+        {
+          id = id_b;
+          tparams = tparams_b;
+          tparams_hidden = tparams_hidden_b;
+          fields = fields_b;
+          annos = _annos_b;
+        } )
+  | ( UnionD
+        {
+          id = id_a;
+          tparams = tparams_a;
+          tparams_hidden = tparams_hidden_a;
+          fields = fields_a;
+          annos = _annos_a;
+        },
+      UnionD
+        {
+          id = id_b;
+          tparams = tparams_b;
+          tparams_hidden = tparams_hidden_b;
+          fields = fields_b;
+          annos = _annos_b;
+        } ) ->
+      let fields_a =
+        List.map (fun (member, typ, _) -> (member, typ)) fields_a
+      in
+      let fields_b =
+        List.map (fun (member, typ, _) -> (member, typ)) fields_b
+      in
+      eq_id ~dbg id_a id_b
+      && eq_tparams ~dbg tparams_a tparams_b
+      && eq_tparams ~dbg tparams_hidden_a tparams_hidden_b
+      && E.eq_pairs (eq_member ~dbg) (eq_typ ~dbg) fields_a fields_b
+  | ( EnumD { id = id_a; members = members_a; annos = _annos_a },
+      EnumD { id = id_b; members = members_b; annos = _annos_b } ) ->
+      eq_id ~dbg id_a id_b && eq_members ~dbg members_a members_b
+  | ( SEnumD { id = id_a; typ = typ_a; fields = fields_a; annos = _annos_a },
+      SEnumD { id = id_b; typ = typ_b; fields = fields_b; annos = _annos_b } )
+    ->
+      eq_id ~dbg id_a id_b && eq_typ ~dbg typ_a typ_b
+      && E.eq_pairs (eq_id ~dbg) (eq_value ~dbg) fields_a fields_b
+  | ( NewTypeD { id = id_a; typdef = typdef_a; annos = _annos_a },
+      NewTypeD { id = id_b; typdef = typdef_b; annos = _annos_b } )
+  | ( TypeDefD { id = id_a; typdef = typdef_a; annos = _annos_a },
+      TypeDefD { id = id_b; typdef = typdef_b; annos = _annos_b } ) ->
+      eq_id ~dbg id_a id_b
+      && E.eq_alt (eq_typ ~dbg) (eq_decl ~dbg) typdef_a typdef_b
   | ( ValueSetD { id = id_a; typ = typ_a; size = size_a; annos = _annos_a },
       ValueSetD { id = id_b; typ = typ_b; size = size_b; annos = _annos_b } ) ->
       eq_id ~dbg id_a id_b && eq_typ ~dbg typ_a typ_b
       && eq_expr ~dbg size_a size_b
+  | ( ParserTypeD
+        {
+          id = id_a;
+          tparams = tparams_a;
+          tparams_hidden = tparams_hidden_a;
+          params = params_a;
+          annos = _annos_a;
+        },
+      ParserTypeD
+        {
+          id = id_b;
+          tparams = tparams_b;
+          tparams_hidden = tparams_hidden_b;
+          params = params_b;
+          annos = _annos_b;
+        } ) ->
+      eq_id ~dbg id_a id_b
+      && eq_tparams ~dbg tparams_a tparams_b
+      && eq_tparams ~dbg tparams_hidden_a tparams_hidden_b
+      && eq_params ~dbg params_a params_b
   | ( ParserD
         {
           id = id_a;
@@ -465,16 +560,30 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
       && eq_cparams ~dbg cparams_a cparams_b
       && eq_decls ~dbg locals_a locals_b
       && eq_parser_states ~dbg states_a states_b
-  | ( ActionD { id = id_a; params = params_a; body = body_a; annos = _annos_a },
-      ActionD { id = id_b; params = params_b; body = body_b; annos = _annos_b }
-    ) ->
-      eq_id ~dbg id_a id_b
-      && eq_params ~dbg params_a params_b
-      && eq_block ~dbg body_a body_b
   | ( TableD { id = id_a; typ = typ_a; table = table_a; annos = _annos_a },
       TableD { id = id_b; typ = typ_b; table = table_b; annos = _annos_b } ) ->
       eq_id ~dbg id_a id_b && eq_typ ~dbg typ_a typ_b
       && eq_table ~dbg table_a table_b
+  | ( ControlTypeD
+        {
+          id = id_a;
+          tparams = tparams_a;
+          tparams_hidden = tparams_hidden_a;
+          params = params_a;
+          annos = _annos_a;
+        },
+      ControlTypeD
+        {
+          id = id_b;
+          tparams = tparams_b;
+          tparams_hidden = tparams_hidden_b;
+          params = params_b;
+          annos = _annos_b;
+        } ) ->
+      eq_id ~dbg id_a id_b
+      && eq_tparams ~dbg tparams_a tparams_b
+      && eq_tparams ~dbg tparams_hidden_a tparams_hidden_b
+      && eq_params ~dbg params_a params_b
   | ( ControlD
         {
           id = id_a;
@@ -500,6 +609,12 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
       && eq_params ~dbg params_a params_b
       && eq_cparams ~dbg cparams_a cparams_b
       && eq_decls ~dbg locals_a locals_b
+      && eq_block ~dbg body_a body_b
+  | ( ActionD { id = id_a; params = params_a; body = body_a; annos = _annos_a },
+      ActionD { id = id_b; params = params_b; body = body_b; annos = _annos_b }
+    ) ->
+      eq_id ~dbg id_a id_b
+      && eq_params ~dbg params_a params_b
       && eq_block ~dbg body_a body_b
   | ( FuncD
         {
@@ -703,8 +818,4 @@ and eq_mthd ?(dbg = false) mthd_a mthd_b =
 (* Program *)
 
 let eq_program ?(dbg = false) program_a program_b =
-  let tdenv_a, frame_a, decls_a = program_a in
-  let tdenv_b, frame_b, decls_b = program_b in
-  TDEnv.eq TypeDef.eq tdenv_a tdenv_b
-  && Frame.eq SType.eq frame_a frame_b
-  && E.eq_program ~dbg eq_decl decls_a decls_b
+  E.eq_program ~dbg eq_decl program_a program_b

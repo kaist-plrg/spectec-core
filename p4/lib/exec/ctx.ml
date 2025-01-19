@@ -79,24 +79,7 @@ let resolve_typ cursor typ ctx =
 
 (* Adders *)
 
-let add_value cursor id value ctx =
-  match cursor with
-  | Global ->
-      let venv = ctx.global.venv in
-      let venv = VEnv.add_nodup id value venv in
-      { ctx with global = { ctx.global with venv } }
-  | Block ->
-      let venv = ctx.block.venv in
-      let venv = VEnv.add_nodup id value venv in
-      { ctx with block = { ctx.block with venv } }
-  | Local ->
-      let venvs = ctx.local.venvs in
-      let venv, venvs =
-        if venvs = [] then (VEnv.empty, []) else (List.hd venvs, List.tl venvs)
-      in
-      let venv = VEnv.add_nodup id value venv in
-      let venvs = venv :: venvs in
-      { ctx with local = { ctx.local with venvs } }
+(* Adders for type definitions *)
 
 let add_typ cursor id typ ctx =
   match cursor with
@@ -116,7 +99,30 @@ let add_typs cursor tparams targs ctx =
     ctx
     (List.combine tparams targs)
 
+(* Adders for values *)
+
+let add_value cursor id value ctx =
+  match cursor with
+  | Global ->
+      let venv = ctx.global.venv in
+      let venv = VEnv.add_nodup id value venv in
+      { ctx with global = { ctx.global with venv } }
+  | Block ->
+      let venv = ctx.block.venv in
+      let venv = VEnv.add_nodup id value venv in
+      { ctx with block = { ctx.block with venv } }
+  | Local ->
+      let venvs = ctx.local.venvs in
+      let venv, venvs =
+        if venvs = [] then (VEnv.empty, []) else (List.hd venvs, List.tl venvs)
+      in
+      let venv = VEnv.add_nodup id value venv in
+      let venvs = venv :: venvs in
+      { ctx with local = { ctx.local with venvs } }
+
 (* Updaters *)
+
+(* Updaters for values *)
 
 let rec update_value_opt cursor id value ctx =
   match cursor with
@@ -155,7 +161,7 @@ let rec update_value_opt cursor id value ctx =
 let update_value cursor id value ctx =
   update_value_opt cursor id value ctx |> Option.get
 
-(* Updater combinator *)
+(* Updater combinators *)
 
 let update_opt updater_opt cursor var value ctx =
   match var.it with
@@ -171,37 +177,7 @@ let find_cont finder cursor id ctx = function
   | Some value -> Some value
   | None -> finder cursor id ctx
 
-(* Finder for value *)
-
-let rec find_value_opt cursor id ctx =
-  match cursor with
-  | Global -> VEnv.find_opt id ctx.global.venv
-  | Block ->
-      VEnv.find_opt id ctx.block.venv |> find_cont find_value_opt Global id ctx
-  | Local ->
-      let venvs = ctx.local.venvs in
-      List.fold_left
-        (fun value venv ->
-          match value with Some _ -> value | None -> VEnv.find_opt id venv)
-        None venvs
-      |> find_cont find_value_opt Block id ctx
-
-let find_value cursor id ctx = find_value_opt cursor id ctx |> Option.get
-
-(* Finder for type *)
-
-let rec find_typ_opt cursor id ctx =
-  match cursor with
-  | Global -> None
-  | Block ->
-      Theta.find_opt id ctx.block.theta |> find_cont find_typ_opt Global id ctx
-  | Local ->
-      let theta = ctx.local.theta in
-      Theta.find_opt id theta |> find_cont find_typ_opt Block id ctx
-
-let find_typ cursor id ctx = find_typ_opt cursor id ctx |> Option.get
-
-(* Finder for state *)
+(* Finders for states *)
 
 let rec find_state_opt cursor id ctx =
   match cursor with
@@ -212,7 +188,7 @@ let rec find_state_opt cursor id ctx =
 
 let find_state cursor id ctx = find_state_opt cursor id ctx |> Option.get
 
-(* Finder for function *)
+(* Finders for functions *)
 
 let rec find_func_at_opt cursor (fname, args) ctx =
   match cursor with
@@ -234,7 +210,44 @@ let find_func_opt cursor (fname, args) ctx =
 let find_func cursor (fname, args) ctx =
   find_func_opt cursor (fname, args) ctx |> Option.get
 
-(* Finder combinator *)
+(* Finders for values *)
+
+let rec find_value_opt cursor id ctx =
+  match cursor with
+  | Global -> VEnv.find_opt id ctx.global.venv
+  | Block ->
+      VEnv.find_opt id ctx.block.venv |> find_cont find_value_opt Global id ctx
+  | Local ->
+      let venvs = ctx.local.venvs in
+      List.fold_left
+        (fun value venv ->
+          match value with Some _ -> value | None -> VEnv.find_opt id venv)
+        None venvs
+      |> find_cont find_value_opt Block id ctx
+
+let find_value cursor id ctx = find_value_opt cursor id ctx |> Option.get
+
+(* Finders for type definitions *)
+
+let find_typdef_opt cursor id ctx =
+  match cursor with
+  | Global -> TDEnv.find_opt id ctx.global.tdenv
+  | Block | Local -> TDEnv.find_opt id ctx.global.tdenv
+
+let find_typdef cursor id ctx = find_typdef_opt cursor id ctx |> Option.get
+
+let rec find_typ_opt cursor id ctx =
+  match cursor with
+  | Global -> None
+  | Block ->
+      Theta.find_opt id ctx.block.theta |> find_cont find_typ_opt Global id ctx
+  | Local ->
+      let theta = ctx.local.theta in
+      Theta.find_opt id theta |> find_cont find_typ_opt Block id ctx
+
+let find_typ cursor id ctx = find_typ_opt cursor id ctx |> Option.get
+
+(* Finder combinators *)
 
 let find_opt finder_opt cursor var ctx =
   match var.it with

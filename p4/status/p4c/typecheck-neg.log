@@ -153,7 +153,7 @@ Error on typecheck: File p4/test/p4c/program/ill-typed/duplicate-label.p4, from 
 
 >>> Running typecheck test on p4/test/p4c/program/ill-typed/enumCast.p4
 Error on typecheck: File p4/test/p4c/program/ill-typed/enumCast.p4, line 26, characters 8-16
-(coerce_type) cannot coerce type int to enum<bit<32>> X { Zero = X.Zero(= 32w0), One = X.One(= 32w1) }
+(coerce_type) cannot coerce type int to enum<bit<32>> X { Zero = 32w0, One = 32w1 }
 
 >>> Running typecheck test on p4/test/p4c/program/ill-typed/equality-fail.p4
 Error on typecheck: File p4/test/p4c/program/ill-typed/equality-fail.p4, line 23, characters 12-19
@@ -355,7 +355,7 @@ Error on typecheck: File p4/test/p4c/program/ill-typed/issue2220.p4, line 11, ch
 (coerce_type) cannot coerce type record {
   val bit<8>
 } to (struct S {
-    val enum<bit<8>> myEnum { One = myEnum.One(= 8w1) }
+    val enum<bit<8>> myEnum { One = 8w1 }
   })<>
 
 >>> Running typecheck test on p4/test/p4c/program/ill-typed/issue2230-1-bmv2.p4
@@ -612,7 +612,7 @@ Error on typecheck: File p4/test/p4c/program/ill-typed/issue3522.p4, line 10, ch
 
 >>> Running typecheck test on p4/test/p4c/program/ill-typed/issue3534.p4
 Error on typecheck: File p4/test/p4c/program/ill-typed/issue3534.p4, line 5, characters 2-21
-(coerce_type) cannot coerce type bit<2> to enum<bit<2>> e { t = e.t(= 2w1) }
+(coerce_type) cannot coerce type bit<2> to enum<bit<2>> e { t = 2w1 }
 
 >>> Running typecheck test on p4/test/p4c/program/ill-typed/issue3589.p4
 Error on typecheck: File p4/test/p4c/program/ill-typed/issue3589.p4, line 8, characters 13-19
@@ -628,11 +628,11 @@ Error on typecheck: File p4/test/p4c/program/ill-typed/issue3622.p4, line 10, ch
 
 >>> Running typecheck test on p4/test/p4c/program/ill-typed/issue3623-2.p4
 Error on typecheck: File p4/test/p4c/program/ill-typed/issue3623-2.p4, line 9, characters 6-9
-(coerce_type) cannot coerce type bit<4> to enum<bit<4>> e { a = e.a(= 4w1) }
+(coerce_type) cannot coerce type bit<4> to enum<bit<4>> e { a = 4w1 }
 
 >>> Running typecheck test on p4/test/p4c/program/ill-typed/issue3623-3.p4
 Error on typecheck: File p4/test/p4c/program/ill-typed/issue3623-3.p4, line 9, characters 6-7
-(coerce_type) cannot coerce type int to enum<bit<4>> e { a = e.a(= 4w1) }
+(coerce_type) cannot coerce type int to enum<bit<4>> e { a = 4w1 }
 
 >>> Running typecheck test on p4/test/p4c/program/ill-typed/issue3656.p4
 Error on typecheck: File p4/test/p4c/program/ill-typed/issue3656.p4, line 4, characters 8-17
@@ -997,7 +997,7 @@ Error on typecheck: File p4/test/p4c/program/ill-typed/self-call.p4, line 17, ch
 
 >>> Running typecheck test on p4/test/p4c/program/ill-typed/serEnumImplCast.p4
 Error on typecheck: File p4/test/p4c/program/ill-typed/serEnumImplCast.p4, line 16, characters 8-36
-(coerce_type) cannot coerce type bit<2> to enum<bit<2>> foo_t { A = foo_t.A(= 2w0), B = foo_t.B(= 2w1), C = foo_t.C(= 2w2), D = foo_t.D(= 2w3) }
+(coerce_type) cannot coerce type bit<2> to enum<bit<2>> foo_t { A = 2w0, B = 2w1, C = 2w2, D = 2w3 }
 
 >>> Running typecheck test on p4/test/p4c/program/ill-typed/serenum-type.p4
 Error on typecheck: File p4/test/p4c/program/ill-typed/serenum-type.p4, line 8, characters 0-9

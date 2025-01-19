@@ -166,9 +166,11 @@ and switch_case' = (note, expr', stmt') L.switch_case'
 and decl = decl' phrase
 
 and decl' =
-  (* Constant, variable and instance declarations *)
+  (* Constant, variable, error, match_kind, and instance declarations *)
   | ConstD of { id : id; typ : typ; value : value; annos : anno list }
   | VarD of { id : id; typ : typ; init : expr option; annos : anno list }
+  | ErrD of { members : member list }
+  | MatchKindD of { members : member list }
   | InstD of {
       id : id;
       typ : typ;
@@ -178,10 +180,48 @@ and decl' =
       init : decl list;
       annos : anno list;
     }
+  (* Type declarations *)
+  | StructD of {
+      id : id;
+      tparams : tparam list;
+      tparams_hidden : tparam list;
+      fields : (member * typ * anno list) list;
+      annos : anno list;
+    }
+  | HeaderD of {
+      id : id;
+      tparams : tparam list;
+      tparams_hidden : tparam list;
+      fields : (member * typ * anno list) list;
+      annos : anno list;
+    }
+  | UnionD of {
+      id : id;
+      tparams : tparam list;
+      tparams_hidden : tparam list;
+      fields : (member * typ * anno list) list;
+      annos : anno list;
+    }
+  | EnumD of { id : id; members : member list; annos : anno list }
+  | SEnumD of {
+      id : id;
+      typ : typ;
+      fields : (member * value) list;
+      annos : anno list;
+    }
+  | NewTypeD of { id : id; typdef : (typ, decl) alt; annos : anno list }
+  | TypeDefD of { id : id; typdef : (typ, decl) alt; annos : anno list }
   (* Object declarations *)
   (* Value Set *)
   | ValueSetD of { id : id; typ : typ; size : expr; annos : anno list }
   (* Parser *)
+  | ParserTypeD of {
+      id : id;
+      tparams : tparam list;
+      tparams_hidden : tparam list;
+      params : param list;
+      annos : anno list;
+    }
   | ParserD of {
       id : id;
       tparams : tparam list;
@@ -194,6 +234,13 @@ and decl' =
   (* Table *)
   | TableD of { id : id; typ : typ; table : table; annos : anno list }
   (* Control *)
+  | ControlTypeD of {
+      id : id;
+      tparams : tparam list;
+      tparams_hidden : tparam list;
+      params : param list;
+      annos : anno list;
+    }
   | ControlD of {
       id : id;
       tparams : tparam list;
@@ -282,4 +329,4 @@ and mthd = (typ', param', note, expr') L.mthd
 and mthd' = (typ', param', note, expr') L.mthd'
 
 (* Program *)
-type program = TDEnv.t * Frame.t * decl' L.program
+type program = decl' L.program

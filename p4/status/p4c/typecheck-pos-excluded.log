@@ -261,7 +261,7 @@ Error on typecheck: File p4/test/p4c/program/well-typed-excluded/spec-clarify/di
 
 >>> Running typecheck test on p4/test/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1001-1-bmv2.p4
 Error on typecheck: File p4/test/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1001-1-bmv2.p4, line 24, characters 8-84
-(check_eq_typ_alpha) Types enum<bit<8>> PreservedFieldList { Field = PreservedFieldList.Field(= 8w1) } and bit<8> are not equal
+(check_eq_typ_alpha) Types enum<bit<8>> PreservedFieldList { Field = 8w1 } and bit<8> are not equal
 
 >>> Running typecheck test on p4/test/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1001-bmv2.p4
 Error on typecheck: File p4/test/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1001-bmv2.p4, line 20, characters 8-61
@@ -327,7 +327,7 @@ Error on typecheck: File p4/test/p4c/program/well-typed-excluded/spec-clarify/di
 
 >>> Running typecheck test on p4/test/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2844-enum.p4
 Error on typecheck: File p4/test/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2844-enum.p4, line 46, characters 4-59
-(check_eq_typ_alpha) Types enum<bit<32>> sizes { COUNTER_SIZE = sizes.COUNTER_SIZE(= 32w1024) } and bit<32> are not equal
+(check_eq_typ_alpha) Types enum<bit<32>> sizes { COUNTER_SIZE = 32w1024 } and bit<32> are not equal
 
 >>> Running typecheck test on p4/test/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue298-bmv2.p4
 Error on typecheck: File p4/test/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue298-bmv2.p4, line 169, characters 4-43

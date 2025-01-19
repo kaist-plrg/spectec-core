@@ -4,6 +4,7 @@ module Ctk = Runtime_static.Ctk
 module Value = Runtime_static.Vdomain.Value
 module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
+module TypeDef = Types.TypeDef
 module Envs_static = Runtime_static.Envs
 module Numerics = Runtime_static.Numerics
 module Table = Runtime_dynamic.Table
@@ -304,22 +305,20 @@ module Make (Interp : INTERP) : ARCH = struct
     ctx
 
   let init_vars (ctx : Ctx.t) (sto : Sto.t) : Ctx.t =
-    (* (TODO) A better way to get the necessary types? *)
-    let typ_hdr, typ_meta, typ_std_meta =
-      let obj_main_p = Sto.find [ "main"; "p" ] sto in
-      let params =
-        match obj_main_p with
-        | Obj.ParserO (_, params, _, _) -> params
-        | _ -> assert false
-      in
-      match params with
-      | _
-        :: { it = _, _, typ_hdr, _, _; _ }
-        :: { it = _, _, typ_meta, _, _; _ }
-        :: { it = _, _, typ_std_meta, _, _; _ }
-        :: _ ->
-          (typ_hdr.it, typ_meta.it, typ_std_meta.it)
+    let typ_hdr, typ_meta =
+      let obj_main = Sto.find [ "main" ] sto in
+      match obj_main with
+      | Obj.PackageO (theta, _) ->
+          let typ_hdr = Theta.find "H" theta in
+          let typ_meta = Theta.find "M" theta in
+          (typ_hdr, typ_meta)
       | _ -> assert false
+    in
+    let typ_std_meta =
+      let td_std_meta =
+        Ctx.find_typdef Ctx.Global "standard_metadata_t" ctx
+      in
+      TypeDef.specialize td_std_meta []
     in
     let ctx = init_var ctx "hdr" typ_hdr in
     let ctx = init_var ctx "meta" typ_meta in
@@ -801,7 +800,6 @@ module Make (Interp : INTERP) : ARCH = struct
       let args_action_supplied =
         args_action_supplied
         |> List.map (fun arg_action_supplied ->
-               (* (TODO) Should check the validity of the argument name *)
                let id_arg, num_arg = arg_action_supplied in
                let idx, typ = PMap.find id_arg pmap_control in
                let num_arg = num_arg |> int_of_string |> Bigint.of_int in
@@ -822,7 +820,7 @@ module Make (Interp : INTERP) : ARCH = struct
       let args_action = args_action @ args_action_supplied in
       (var_action, args_action, annos, []) $ no_info
     in
-    (* (TODO) Should insert proper priority value *)
+    (* (TODO) Should validate priority value *)
     let priority =
       Option.map
         (fun priority -> Value.IntV (Bigint.of_int priority) $ no_info)

@@ -11,6 +11,10 @@ module FEnv = Envs_dynamic.FEnv
 module CEnv = Envs_dynamic.CEnv
 open Util.Pp
 open Util.Source
+open Util.Error
+
+let error_no_info = error_inst_no_info
+let check = check_inst
 
 (* Global counter for unique identifiers *)
 
@@ -76,11 +80,15 @@ let exit_frame ctx =
 
 (* Adders *)
 
+(* Adders for constructors *)
+
 let add_cons cursor cid cons ctx =
   assert (cursor = Global);
   let cenv = ctx.global.cenv in
   let cenv = CEnv.add_nodup_overloaded cid cons cenv in
   { ctx with global = { ctx.global with cenv } }
+
+(* Adders for type definitions *)
 
 let add_tparam cursor tparam typ ctx =
   match cursor with
@@ -96,6 +104,18 @@ let add_tparams cursor tparams typs ctx =
   List.fold_left2
     (fun ctx tparam typ -> add_tparam cursor tparam typ ctx)
     ctx tparams typs
+
+let add_typdef cursor tid td ctx =
+  match cursor with
+  | Global ->
+      let tdenv = ctx.global.tdenv in
+      let tdenv = TDEnv.add_nodup tid td tdenv in
+      { ctx with global = { ctx.global with tdenv } }
+  | Block | Local ->
+      "(add_typdef) block and local layer cannot have type definitions"
+      |> error_no_info
+
+(* Adders for functions *)
 
 let add_func_non_overload cursor fid func ctx =
   match cursor with
@@ -129,6 +149,8 @@ let add_state cursor id state ctx =
       { ctx with block = { ctx.block with senv } }
   | _ -> assert false
 
+(* Adders for values *)
+
 let add_value cursor id value ctx =
   match cursor with
   | Global ->
@@ -148,13 +170,35 @@ let add_value cursor id value ctx =
       let venvs = venv :: venvs in
       { ctx with local = { ctx.local with venvs } }
 
+let add_values cursor ids values ctx =
+  List.fold_left2
+    (fun ctx id value -> add_value cursor id value ctx)
+    ctx ids values
+
 (* Finders *)
 
 let find_cont finder cursor id ctx = function
   | Some value -> Some value
   | None -> finder cursor id ctx
 
-(* Finder for value *)
+(* Finders for constructors *)
+
+let find_cons_opt _cursor (cname, args) ctx =
+  CEnv.find_func_opt (cname, args) ctx.global.cenv
+
+let find_cons cursor (cname, args) ctx =
+  find_cons_opt cursor (cname, args) ctx |> Option.get
+
+(* Finders for type definitions *)
+
+let find_typdef_opt cursor tid ctx =
+  match cursor with
+  | Global -> TDEnv.find_opt tid ctx.global.tdenv
+  | Block | Local -> TDEnv.find_opt tid ctx.global.tdenv
+
+let find_typdef cursor tid ctx = find_typdef_opt cursor tid ctx |> Option.get
+
+(* Finders for values *)
 
 let rec find_value_opt cursor id ctx =
   match cursor with
@@ -171,15 +215,7 @@ let rec find_value_opt cursor id ctx =
 
 let find_value cursor id ctx = find_value_opt cursor id ctx |> Option.get
 
-(* Finder for constructor *)
-
-let find_cons_opt _cursor (cname, args) ctx =
-  CEnv.find_func_opt (cname, args) ctx.global.cenv
-
-let find_cons cursor (cname, args) ctx =
-  find_cons_opt cursor (cname, args) ctx |> Option.get
-
-(* Finder combinator *)
+(* Finder combinators *)
 
 let find_opt finder_opt cursor var ctx =
   match var.it with

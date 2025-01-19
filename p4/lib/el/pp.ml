@@ -394,9 +394,6 @@ and pp_decl' ?(level = 0) fmt decl' =
         locals
         (pp_parser_states ~level:(level + 1))
         states (indent level)
-  | ActionD { id; params; body; annos = _annos } ->
-      F.fprintf fmt "action %a%a %a" pp_id id pp_params params (pp_block ~level)
-        body
   | TableD { id; table; annos = _annos } ->
       F.fprintf fmt "table %a %a" pp_id id (pp_table ~level) table
   | ControlTypeD { id; tparams; params; annos = _annos } ->
@@ -410,6 +407,9 @@ and pp_decl' ?(level = 0) fmt decl' =
         (indent (level + 1))
         (pp_block ~level:(level + 1))
         body (indent level)
+  | ActionD { id; params; body; annos = _annos } ->
+      F.fprintf fmt "action %a%a %a" pp_id id pp_params params (pp_block ~level)
+        body
   | FuncD { id; typ_ret; tparams; params; body } ->
       F.fprintf fmt "%a %a%a%a %a" pp_typ typ_ret pp_id id pp_tparams tparams
         pp_params params (pp_block ~level) body

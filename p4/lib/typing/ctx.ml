@@ -105,14 +105,18 @@ let rec get_tparams cursor ctx =
 
 (* Adders *)
 
+(* Adders for constructor definitions *)
+
 let add_consdef cid cd ctx =
   let cdenv = CDEnv.add_nodup_overloaded cid cd ctx.global.cdenv in
   { ctx with global = { ctx.global with cdenv } }
 
+(* Adders for type definitions *)
+
 let add_tparam cursor tparam ctx =
   match cursor with
   | Global ->
-      "(add_tparam) global cursor cannot be type-parameterized" |> error_no_info
+      "(add_tparam) global layer cannot be type-parameterized" |> error_no_info
   | Block ->
       let tdenv =
         TDEnv.add_nodup tparam.it (Types.MonoD (VarT tparam.it)) ctx.block.tdenv
@@ -127,7 +131,7 @@ let add_tparam cursor tparam ctx =
 let add_tparams cursor tparams ctx =
   List.fold_left (fun ctx tparam -> add_tparam cursor tparam ctx) ctx tparams
 
-let add_typedef cursor tid td ctx =
+let add_typdef cursor tid td ctx =
   match cursor with
   | Global ->
       let tdenv = TDEnv.add_nodup tid td ctx.global.tdenv in
@@ -139,6 +143,8 @@ let add_typedef cursor tid td ctx =
       let tdenv = TDEnv.add_nodup tid td ctx.local.tdenv in
       { ctx with local = { ctx.local with tdenv } }
 
+(* Adders for function definitions *)
+
 let add_funcdef_non_overload cursor fid fd ctx =
   match cursor with
   | Global ->
@@ -148,7 +154,7 @@ let add_funcdef_non_overload cursor fid fd ctx =
       let fdenv = FDEnv.add_nodup_non_overloaded fid fd ctx.block.fdenv in
       { ctx with block = { ctx.block with fdenv } }
   | Local ->
-      "(add_funcdef_non_overload) local cursor cannot have function definitions"
+      "(add_funcdef_non_overload) local layer cannot have function definitions"
       |> error_no_info
 
 let add_funcdef_overload cursor fid fd ctx =
@@ -160,8 +166,10 @@ let add_funcdef_overload cursor fid fd ctx =
       let fdenv = FDEnv.add_nodup_overloaded fid fd ctx.block.fdenv in
       { ctx with block = { ctx.block with fdenv } }
   | Local ->
-      "(add_funcdef_overload) Local cursor cannot have function definitions"
+      "(add_funcdef_overload) local layer cannot have function definitions"
       |> error_no_info
+
+(* Adders for types and values *)
 
 let add_stype cursor id typ dir ctk value ctx =
   check
@@ -204,21 +212,29 @@ let find_cont finder cursor id ctx = function
   | Some value -> Some value
   | None -> finder cursor id ctx
 
-(* Finder for type definition *)
+(* Finders for constructor definitions *)
 
-let rec find_typedef_opt cursor tid ctx =
+let find_consdef_opt _cursor (cname, args) ctx =
+  CDEnv.find_func_opt (cname, args) ctx.global.cdenv
+
+let find_consdef cursor (cname, args) ctx =
+  find_consdef_opt cursor (cname, args) ctx |> Option.get
+
+(* Finders for type definitions *)
+
+let rec find_typdef_opt cursor tid ctx =
   match cursor with
   | Global -> TDEnv.find_opt tid ctx.global.tdenv
   | Block ->
       TDEnv.find_opt tid ctx.block.tdenv
-      |> find_cont find_typedef_opt Global tid ctx
+      |> find_cont find_typdef_opt Global tid ctx
   | Local ->
       TDEnv.find_opt tid ctx.local.tdenv
-      |> find_cont find_typedef_opt Block tid ctx
+      |> find_cont find_typdef_opt Block tid ctx
 
-let find_typedef cursor tid ctx = find_typedef_opt cursor tid ctx |> Option.get
+let find_typdef cursor tid ctx = find_typdef_opt cursor tid ctx |> Option.get
 
-(* Finder for function definition *)
+(* Finders for function definitions *)
 
 let rec find_funcdef_opt cursor (fname, args) ctx =
   match cursor with
@@ -242,15 +258,24 @@ let rec find_funcdef_by_name_opt cursor (fname, args) ctx =
 let find_funcdef_by_name cursor fname ctx =
   find_funcdef_by_name_opt cursor fname ctx |> Option.get
 
-(* Finder for constructor definition *)
+(* Finders for types and values *)
 
-let find_consdef_opt _cursor (cname, args) ctx =
-  CDEnv.find_func_opt (cname, args) ctx.global.cdenv
+let rec find_stype_opt cursor id ctx =
+  match cursor with
+  | Global -> Frame.find_opt id ctx.global.frame
+  | Block ->
+      Frame.find_opt id ctx.block.frame
+      |> find_cont find_stype_opt Global id ctx
+  | Local ->
+      List.fold_left
+        (fun typ frame ->
+          match typ with
+          | Some typ -> Some typ
+          | None -> Frame.find_opt id frame)
+        None ctx.local.frames
+      |> find_cont find_stype_opt Block id ctx
 
-let find_consdef cursor (cname, args) ctx =
-  find_consdef_opt cursor (cname, args) ctx |> Option.get
-
-(* Finder for value *)
+let find_stype cursor id ctx = find_stype_opt cursor id ctx |> Option.get
 
 let rec find_value_opt cursor id ctx =
   match cursor with
@@ -274,26 +299,7 @@ let rec find_value_opt cursor id ctx =
 
 let find_value cursor id ctx = find_value_opt cursor id ctx |> Option.get
 
-(* Finder for type *)
-
-let rec find_stype_opt cursor id ctx =
-  match cursor with
-  | Global -> Frame.find_opt id ctx.global.frame
-  | Block ->
-      Frame.find_opt id ctx.block.frame
-      |> find_cont find_stype_opt Global id ctx
-  | Local ->
-      List.fold_left
-        (fun typ frame ->
-          match typ with
-          | Some typ -> Some typ
-          | None -> Frame.find_opt id frame)
-        None ctx.local.frames
-      |> find_cont find_stype_opt Block id ctx
-
-let find_stype cursor id ctx = find_stype_opt cursor id ctx |> Option.get
-
-(* Finder combinator *)
+(* Finder combinators *)
 
 let find_opt finder_opt cursor var ctx =
   match var.it with
