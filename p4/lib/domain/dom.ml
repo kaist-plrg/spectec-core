@@ -424,6 +424,7 @@ module MakeOption (T : sig
   type t
 
   val pp : ?level:int -> F.formatter -> t -> unit
+  val eq : t -> t -> bool
 end) =
 struct
   type t = T.t option
@@ -431,6 +432,12 @@ struct
   let pp ?(level = 0) fmt = function
     | Some t -> F.fprintf fmt "%a" (T.pp ~level) t
     | None -> F.fprintf fmt "()"
+
+  let eq opt_a opt_b =
+    match (opt_a, opt_b) with
+    | Some a, Some b -> T.eq a b
+    | None, None -> true
+    | _ -> false
 end
 
 (* Pair functor *)
@@ -439,15 +446,18 @@ module MakePair (A : sig
   type t
 
   val pp : F.formatter -> t -> unit
+  val eq : t -> t -> bool
 end) (B : sig
   type t
 
   val pp : F.formatter -> t -> unit
+  val eq : t -> t -> bool
 end) =
 struct
   type t = A.t * B.t
 
   let pp fmt (a, b) = F.fprintf fmt "(%a, %a)" A.pp a B.pp b
+  let eq (a_1, b_1) (a_2, b_2) = A.eq a_1 a_2 && B.eq b_1 b_2
 end
 
 (* Triple functor *)
@@ -456,20 +466,26 @@ module MakeTriple (A : sig
   type t
 
   val pp : ?level:int -> F.formatter -> t -> unit
+  val eq : t -> t -> bool
 end) (B : sig
   type t
 
   val pp : F.formatter -> t -> unit
+  val eq : t -> t -> bool
 end) (C : sig
   type t
 
   val pp : F.formatter -> t -> unit
+  val eq : t -> t -> bool
 end) =
 struct
   type t = A.t * B.t * C.t
 
   let pp ?(level = 0) fmt (a, b, c) =
     F.fprintf fmt "(%a, %a, %a)" (A.pp ~level) a B.pp b C.pp c
+
+  let eq (a_1, b_1, c_1) (a_2, b_2, c_2) =
+    A.eq a_1 a_2 && B.eq b_1 b_2 && C.eq c_1 c_2
 end
 
 (* Quad functor *)
@@ -478,18 +494,22 @@ module MakeQuad (A : sig
   type t
 
   val pp : ?level:int -> F.formatter -> t -> unit
+  val eq : t -> t -> bool
 end) (B : sig
   type t
 
   val pp : F.formatter -> t -> unit
+  val eq : t -> t -> bool
 end) (C : sig
   type t
 
   val pp : F.formatter -> t -> unit
+  val eq : t -> t -> bool
 end) (D : sig
   type t
 
   val pp : ?level:int -> F.formatter -> t -> unit
+  val eq : t -> t -> bool
 end) =
 struct
   type t = A.t * B.t * C.t * D.t
@@ -497,4 +517,7 @@ struct
   let pp ?(level = 0) fmt (a, b, c, d) =
     F.fprintf fmt "(%a, %a, %a, %a)" (A.pp ~level) a B.pp b C.pp c (D.pp ~level)
       d
+
+  let eq (a_1, b_1, c_1, d_1) (a_2, b_2, c_2, d_2) =
+    A.eq a_1 a_2 && B.eq b_1 b_2 && C.eq c_1 c_2 && D.eq d_1 d_2
 end

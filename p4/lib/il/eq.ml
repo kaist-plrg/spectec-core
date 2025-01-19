@@ -1,6 +1,13 @@
 module E = Lang.Eq
-module P = Pp
+module Ctk = Runtime_static.Ctk
+module Types = Runtime_static.Tdomain.Types
+module TypeDef = Types.TypeDef
+module Envs = Runtime_static.Envs
+module SType = Envs.SType
+module Frame = Envs.Frame
+module TDEnv = Envs.TDEnv
 open Ast
+module P = Pp
 open Util.Source
 
 (* Syntactic equality, modulo annotations for now *)
@@ -696,4 +703,8 @@ and eq_mthd ?(dbg = false) mthd_a mthd_b =
 (* Program *)
 
 let eq_program ?(dbg = false) program_a program_b =
-  E.eq_program ~dbg eq_decl program_a program_b
+  let tdenv_a, frame_a, decls_a = program_a in
+  let tdenv_b, frame_b, decls_b = program_b in
+  TDEnv.eq TypeDef.eq tdenv_a tdenv_b
+  && Frame.eq SType.eq frame_a frame_b
+  && E.eq_program ~dbg eq_decl decls_a decls_b

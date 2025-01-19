@@ -10,8 +10,8 @@ module Table = Runtime_dynamic.Table
 module Func = Runtime_dynamic.Func
 module Obj = Runtime_dynamic.Object
 module Envs_dynamic = Runtime_dynamic.Envs
-module TEnv = Envs_dynamic.TEnv
 module VEnv = Envs_dynamic.VEnv
+module Theta = Envs_dynamic.Theta
 module FEnv = Envs_dynamic.FEnv
 module CEnv = Envs_dynamic.CEnv
 module Sto = Envs_dynamic.Sto
@@ -239,9 +239,10 @@ module Make (Interp : INTERP) : ARCH = struct
     let sto, obj =
       let ctx_inst =
         let cenv = ctx.global.cenv in
+        let tdenv = ctx.global.tdenv in
         let fenv = ctx.global.fenv in
         let venv = ctx.global.venv in
-        { Instance.Ctx.empty with global = { cenv; fenv; venv } }
+        { Instance.Ctx.empty with global = { cenv; tdenv; fenv; venv } }
       in
       Instance.Instantiate.do_instantiate Instance.Ctx.Global ctx_inst sto cons
         [] [] []
@@ -257,9 +258,10 @@ module Make (Interp : INTERP) : ARCH = struct
     let sto, obj =
       let ctx_inst =
         let cenv = ctx.global.cenv in
+        let tdenv = ctx.global.tdenv in
         let fenv = ctx.global.fenv in
         let venv = ctx.global.venv in
-        { Instance.Ctx.empty with global = { cenv; fenv; venv } }
+        { Instance.Ctx.empty with global = { cenv; tdenv; fenv; venv } }
       in
       Instance.Instantiate.do_instantiate Instance.Ctx.Global ctx_inst sto cons
         [] [] []
@@ -287,8 +289,8 @@ module Make (Interp : INTERP) : ARCH = struct
     Sto.iter
       (fun oid obj ->
         match obj with
-        | Obj.ExternO ("register", tenv, venv, _) ->
-            let typ = TEnv.find "T" tenv in
+        | Obj.ExternO ("register", theta, venv, _) ->
+            let typ = Theta.find "T" theta in
             let size = VEnv.find "size" venv in
             let reg = Register.init typ size in
             let id = String.concat "." oid in
@@ -1047,9 +1049,9 @@ module Make (Interp : INTERP) : ARCH = struct
         queue_expect);
     pass
 
-  let drive (cenv : CEnv.t) (fenv : FEnv.t) (venv : VEnv.t) (sto : Sto.t)
-      (stmts_stf : Stf.Ast.stmt list) : bool =
-    let ctx = { Ctx.empty with global = { cenv; fenv; venv } } in
+  let drive (cenv : CEnv.t) (tdenv : TDEnv.t) (fenv : FEnv.t) (venv : VEnv.t)
+      (sto : Sto.t) (stmts_stf : Stf.Ast.stmt list) : bool =
+    let ctx = { Ctx.empty with global = { cenv; tdenv; fenv; venv } } in
     let ctx, sto = init ctx sto in
     Interp.init sto;
     drive_stf_stmts ctx stmts_stf

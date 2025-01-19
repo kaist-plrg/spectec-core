@@ -68,12 +68,12 @@ let run_command =
      fun () ->
        try
          let program = typecheck includes filename in
-         let cenv, fenv, venv, sto =
+         let cenv, tdenv, fenv, venv, sto =
            Instance.Instantiate.instantiate_program program
          in
          let (module Driver) = Exec.Gen.gen arch in
          let stmts_stf = Stf.Parse.parse_file stfname in
-         Driver.run cenv fenv venv sto stmts_stf |> ignore
+         Driver.run cenv tdenv fenv venv sto stmts_stf |> ignore
        with
        | ParseErr (msg, info)
        | CheckErr (msg, info)

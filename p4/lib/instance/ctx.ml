@@ -1,9 +1,12 @@
 module F = Format
 module L = Lang.Ast
+module Types = Runtime_static.Tdomain.Types
+module TypeDef = Types.TypeDef
 module Envs_dynamic = Runtime_dynamic.Envs
 module VEnv = Envs_dynamic.VEnv
-module TEnv = Envs_dynamic.TEnv
 module SEnv = Envs_dynamic.SEnv
+module Theta = Envs_dynamic.Theta
+module TDEnv = Envs_dynamic.TDEnv
 module FEnv = Envs_dynamic.FEnv
 module CEnv = Envs_dynamic.CEnv
 open Util.Pp
@@ -25,17 +28,28 @@ type cursor = Global | Block | Local
 
 (* Defining each layer *)
 
-type gt = { cenv : CEnv.t; fenv : FEnv.t; venv : VEnv.t }
-type bt = { tenv : TEnv.t; fenv : FEnv.t; senv : SEnv.t; venv : VEnv.t }
-type lt = { venvs : VEnv.t list }
+type gt = { cenv : CEnv.t; tdenv : TDEnv.t; fenv : FEnv.t; venv : VEnv.t }
+type bt = { theta : Theta.t; fenv : FEnv.t; senv : SEnv.t; venv : VEnv.t }
+type lt = { theta : Theta.t; venvs : VEnv.t list }
 type t = { path : Domain.Dom.OId.t; global : gt; block : bt; local : lt }
 
-let empty_gt = { cenv = CEnv.empty; fenv = FEnv.empty; venv = VEnv.empty }
+let empty_gt =
+  {
+    cenv = CEnv.empty;
+    tdenv = TDEnv.empty;
+    fenv = FEnv.empty;
+    venv = VEnv.empty;
+  }
 
 let empty_bt =
-  { tenv = TEnv.empty; fenv = FEnv.empty; senv = SEnv.empty; venv = VEnv.empty }
+  {
+    theta = Theta.empty;
+    fenv = FEnv.empty;
+    senv = SEnv.empty;
+    venv = VEnv.empty;
+  }
 
-let empty_lt = { venvs = [] }
+let empty_lt = { theta = Theta.empty; venvs = [] }
 let empty = { path = []; global = empty_gt; block = empty_bt; local = empty_lt }
 
 (* Path management *)
@@ -52,12 +66,13 @@ let exit_path ctx =
 (* Frame management *)
 
 let enter_frame ctx =
-  { ctx with local = { venvs = VEnv.empty :: ctx.local.venvs } }
+  let venvs = VEnv.empty :: ctx.local.venvs in
+  { ctx with local = { ctx.local with venvs } }
 
 let exit_frame ctx =
   match ctx.local.venvs with
   | [] -> assert false
-  | _ :: venvs -> { ctx with local = { venvs } }
+  | _ :: venvs -> { ctx with local = { ctx.local with venvs } }
 
 (* Adders *)
 
@@ -67,20 +82,20 @@ let add_cons cursor cid cons ctx =
   let cenv = CEnv.add_nodup_overloaded cid cons cenv in
   { ctx with global = { ctx.global with cenv } }
 
-let add_typ cursor id typ ctx =
+let add_tparam cursor tparam typ ctx =
   match cursor with
   | Global -> assert false
   | Block ->
-      let tenv = ctx.block.tenv in
-      let tenv = TEnv.add_nodup id typ tenv in
-      { ctx with block = { ctx.block with tenv } }
-  | Local -> assert false
+      let theta = Theta.add tparam.it typ.it ctx.block.theta in
+      { ctx with block = { ctx.block with theta } }
+  | Local ->
+      let theta = Theta.add tparam.it typ.it ctx.local.theta in
+      { ctx with local = { ctx.local with theta } }
 
-let add_typs cursor tparams targs ctx =
-  List.fold_left
-    (fun ctx (tparam, targ) -> add_typ cursor tparam.it targ.it ctx)
-    ctx
-    (List.combine tparams targs)
+let add_tparams cursor tparams typs ctx =
+  List.fold_left2
+    (fun ctx tparam typ -> add_tparam cursor tparam typ ctx)
+    ctx tparams typs
 
 let add_func_non_overload cursor fid func ctx =
   match cursor with
@@ -131,7 +146,7 @@ let add_value cursor id value ctx =
       in
       let venv = VEnv.add_nodup id value venv in
       let venvs = venv :: venvs in
-      { ctx with local = { venvs } }
+      { ctx with local = { ctx.local with venvs } }
 
 (* Finders *)
 
@@ -184,30 +199,56 @@ let find_overloaded finder_overloaded_opt cursor var args ctx =
 
 (* Pretty-printer *)
 
-let pp_gt fmt (gt : gt) =
+let pp_gt ?(level = 0) fmt (gt : gt) =
   F.fprintf fmt
-    "@[@[<v 0>[[Global]]@]@\n\
-     @[@[<v 0>[Constructors]:@ %a@]@\n\
-     @[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Values]:@ %a@]@]" (CEnv.pp ~level:0) gt.cenv (FEnv.pp ~level:0)
-    gt.fenv (VEnv.pp ~level:0) gt.venv
+    "%s[[Global Layer]]\n%s[Constructors]%a\n%s[Functions]%a\n%s[Values]%a\n"
+    (indent level)
+    (indent (level + 1))
+    (CEnv.pp ~level:(level + 2))
+    gt.cenv
+    (indent (level + 1))
+    (FEnv.pp ~level:(level + 2))
+    gt.fenv
+    (indent (level + 1))
+    (VEnv.pp ~level:(level + 2))
+    gt.venv
 
-let pp_bt fmt (bt : bt) =
+let pp_bt ?(level = 0) fmt (bt : bt) =
   F.fprintf fmt
-    "@[@[<v 0>[[Block]]@]@\n\
-     @[@[<v 0>[Functions]:@ %a@]@\n\
-     @[@[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Values]:@ %a@]@]" (TEnv.pp ~level:0) bt.tenv (FEnv.pp ~level:0)
-    bt.fenv (VEnv.pp ~level:0) bt.venv
+    "%s[[Block Layer]]\n\
+     %s[Theta]%a\n\
+     %s[Functions]%a\n\
+     %s[States]%a\n\
+     %s[Values]%a\n"
+    (indent level)
+    (indent (level + 1))
+    (Theta.pp ~level:(level + 2))
+    bt.theta
+    (indent (level + 1))
+    (FEnv.pp ~level:(level + 2))
+    bt.fenv
+    (indent (level + 1))
+    (SEnv.pp ~level:(level + 2))
+    bt.senv
+    (indent (level + 1))
+    (VEnv.pp ~level:(level + 2))
+    bt.venv
 
-let pp_lt fmt (lt : lt) =
-  F.fprintf fmt "@[@[<v 0>[[Local]]@]@\n@[%a@]@]"
-    (pp_list (VEnv.pp ~level:0) ~sep:Nl)
+let pp_lt ?(level = 0) fmt (lt : lt) =
+  F.fprintf fmt "%s[[Local Layer]]\n%s[Theta]%a\n%s[Values]\n%a\n"
+    (indent level)
+    (indent (level + 1))
+    (Theta.pp ~level:(level + 2))
+    lt.theta
+    (indent (level + 1))
+    (pp_list ~level:(level + 2) VEnv.pp ~sep:Nl)
     lt.venvs
 
-let pp fmt ctx =
-  F.fprintf fmt
-    "@[@[<v 0>[[Context]]@]@\n\
-     @[<v 0>[Global]:@ %a@]@\n\
-     @[<v 0>[Block]:@ %a@]@\n\
-     @[<v 0>[Local]:@ %a@]@]" pp_gt ctx.global pp_bt ctx.block pp_lt ctx.local
+let pp ?(level = 0) fmt ctx =
+  F.fprintf fmt "===== Context =====\n%a%a%a"
+    (pp_gt ~level:(level + 1))
+    ctx.global
+    (pp_bt ~level:(level + 1))
+    ctx.block
+    (pp_lt ~level:(level + 1))
+    ctx.local

@@ -2,6 +2,9 @@ module L = Lang.Ast
 module Ctk = Runtime_static.Ctk
 module Value = Runtime_static.Vdomain.Value
 module Type = Runtime_static.Tdomain.Types.Type
+module Envs = Runtime_static.Envs
+module Frame = Envs.Frame
+module TDEnv = Envs.TDEnv
 open Util.Source
 
 type ('a, 'b) alt = ('a, 'b) L.alt
@@ -279,4 +282,4 @@ and mthd = (typ', param', note, expr') L.mthd
 and mthd' = (typ', param', note, expr') L.mthd'
 
 (* Program *)
-type program = decl' L.program
+type program = TDEnv.t * Frame.t * decl' L.program

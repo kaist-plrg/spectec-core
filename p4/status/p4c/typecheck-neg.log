@@ -1136,7 +1136,7 @@ Error on typecheck: File p4/test/p4c/program/ill-typed/table-entries-ternary.p4,
 
 >>> Running typecheck test on p4/test/p4c/program/ill-typed/template_e.p4
 Error on typecheck: File p4/test/p4c/program/ill-typed/template_e.p4, line 16, characters 0-17
-(check_distinct_names) names are not distinct
+key already exists: T
 
 >>> Running typecheck test on p4/test/p4c/program/ill-typed/tuple-left.p4
 Error on parser: File p4/test/p4c/program/ill-typed/tuple-left.p4, line 21, characters 11-12

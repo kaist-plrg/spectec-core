@@ -197,15 +197,15 @@ let typecheck_command =
 let instantiate stat includes filename =
   try
     let stat, program = typecheck stat includes Pos filename in
-    let cenv, fenv, venv, sto =
+    let cenv, tdenv, fenv, venv, sto =
       Instance.Instantiate.instantiate_program program
     in
-    (stat, cenv, fenv, venv, sto)
+    (stat, cenv, tdenv, fenv, venv, sto)
   with InstErr (msg, info) -> raise (TestInstErr (msg, info, stat))
 
 let instantiate_test stat includes filename =
   try
-    let stat, _cenv, _fenv, _venv, sto = instantiate stat includes filename in
+    let stat, _, _, _, _, sto = instantiate stat includes filename in
     Format.asprintf "Instantiate success: %d objects"
       (Runtime_dynamic.Envs.Sto.cardinal sto)
     |> print_endline;
@@ -259,9 +259,11 @@ let instantiate_command =
 
 let run stat (module Driver : Exec.Driver.DRIVER) includes filename stfname =
   try
-    let stat, cenv, fenv, venv, sto = instantiate stat includes filename in
+    let stat, cenv, tdenv, fenv, venv, sto =
+      instantiate stat includes filename
+    in
     let stmts_stf = Stf.Parse.parse_file stfname in
-    let pass = Driver.run cenv fenv venv sto stmts_stf in
+    let pass = Driver.run cenv tdenv fenv venv sto stmts_stf in
     if not pass then raise (TestStfErr stat);
     stat
   with

@@ -15,12 +15,12 @@ type t =
   | TableO of L.id' * Table.t
 
 let pp ?(level = 0) fmt = function
-  | ExternO (id, tenv, venv, fenv) ->
-      F.fprintf fmt "ExternO %a {\n%stenv : %a\n%svenv : %a\n%sfenv: %a\n%s}"
+  | ExternO (id, theta, venv, fenv) ->
+      F.fprintf fmt "ExternO %a {\n%stheta : %a\n%svenv : %a\n%sfenv: %a\n%s}"
         P.pp_id' id
         (indent (level + 1))
         (TIdMap.pp ~level:(level + 1) Type.pp)
-        tenv
+        theta
         (indent (level + 1))
         (IdMap.pp ~level:(level + 1) Value.pp)
         venv
@@ -57,11 +57,11 @@ let pp ?(level = 0) fmt = function
         (indent (level + 1))
         (P.pp_block ~level:(level + 1))
         block (indent level)
-  | PackageO (tenv, venv) ->
-      F.fprintf fmt "PackageO {\n%stenv : %a\n%svenv : %a\n%s}"
+  | PackageO (theta, venv) ->
+      F.fprintf fmt "PackageO {\n%stheta : %a\n%svenv : %a\n%s}"
         (indent (level + 1))
         (TIdMap.pp ~level:(level + 1) Type.pp)
-        tenv
+        theta
         (indent (level + 1))
         (IdMap.pp ~level:(level + 1) Value.pp)
         venv (indent level)

@@ -5,9 +5,6 @@ open Tdomain.Types
 
 module SType = MakeQuad (Type) (Dir) (Ctk) (MakeOption (Value))
 module Frame = MakeIdEnv (SType)
-module VEnv = MakeIdEnv (Value)
-module RType = MakeTriple (Type) (Dir) (Ctk)
-module TEnv = MakeIdEnv (RType)
 
 (* Environment for type identifiers *)
 

@@ -8,11 +8,18 @@ let pp fmt t =
   | CTK -> F.fprintf fmt "compile-time known"
   | DYN -> F.fprintf fmt "dynamic"
 
+let eq ctk_a ctk_b =
+  match (ctk_a, ctk_b) with
+  | LCTK, LCTK -> true
+  | CTK, CTK -> true
+  | DYN, DYN -> true
+  | _ -> false
+
 let is_lctk = function LCTK -> true | _ -> false
 let is_ctk = function LCTK | CTK -> true | _ -> false
 
-let join t1 t2 =
-  match (t1, t2) with
+let join ctk_a ctk_b =
+  match (ctk_a, ctk_b) with
   | LCTK, LCTK -> LCTK
   | LCTK, CTK | CTK, LCTK | CTK, CTK -> CTK
   | _ -> DYN

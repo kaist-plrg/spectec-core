@@ -551,4 +551,6 @@ and pp_mthds ?(level = 0) fmt mthds =
 
 (* Program *)
 
-let pp_program fmt program = P.pp_program pp_decl fmt program
+let pp_program fmt program =
+  let _tdenv, _frame, decls = program in
+  P.pp_program pp_decl fmt decls

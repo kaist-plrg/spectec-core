@@ -4,6 +4,7 @@ open Il.Ast
 module Obj = Runtime_dynamic.Object
 module Envs_dynamic = Runtime_dynamic.Envs
 module VEnv = Envs_dynamic.VEnv
+module TDEnv = Envs_dynamic.TDEnv
 module FEnv = Envs_dynamic.FEnv
 module CEnv = Envs_dynamic.CEnv
 module Sto = Envs_dynamic.Sto
@@ -11,7 +12,9 @@ module Sto = Envs_dynamic.Sto
 module type ARCH = sig
   val eval_extern_func_call : Ctx.t -> FId.t -> Ctx.t * Sig.t
   val eval_extern_method_call : Ctx.t -> OId.t -> FId.t -> Ctx.t * Sig.t
-  val drive : CEnv.t -> FEnv.t -> VEnv.t -> Sto.t -> Stf.Ast.stmt list -> bool
+
+  val drive :
+    CEnv.t -> TDEnv.t -> FEnv.t -> VEnv.t -> Sto.t -> Stf.Ast.stmt list -> bool
 end
 
 module type INTERP = sig
@@ -30,7 +33,8 @@ module type INTERP = sig
 end
 
 module type DRIVER = sig
-  val run : CEnv.t -> FEnv.t -> VEnv.t -> Sto.t -> Stf.Ast.stmt list -> bool
+  val run :
+    CEnv.t -> TDEnv.t -> FEnv.t -> VEnv.t -> Sto.t -> Stf.Ast.stmt list -> bool
 end
 
 module Make

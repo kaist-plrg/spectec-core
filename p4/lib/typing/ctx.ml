@@ -114,25 +114,15 @@ let add_tparam cursor tparam ctx =
   | Global ->
       "(add_tparam) global cursor cannot be type-parameterized" |> error_no_info
   | Block ->
-      {
-        ctx with
-        block =
-          {
-            ctx.block with
-            tdenv =
-              TDEnv.add tparam.it (Types.MonoD (VarT tparam.it)) ctx.block.tdenv;
-          };
-      }
+      let tdenv =
+        TDEnv.add_nodup tparam.it (Types.MonoD (VarT tparam.it)) ctx.block.tdenv
+      in
+      { ctx with block = { ctx.block with tdenv } }
   | Local ->
-      {
-        ctx with
-        local =
-          {
-            ctx.local with
-            tdenv =
-              TDEnv.add tparam.it (Types.MonoD (VarT tparam.it)) ctx.local.tdenv;
-          };
-      }
+      let tdenv =
+        TDEnv.add_nodup tparam.it (Types.MonoD (VarT tparam.it)) ctx.local.tdenv
+      in
+      { ctx with local = { ctx.local with tdenv } }
 
 let add_tparams cursor tparams ctx =
   List.fold_left (fun ctx tparam -> add_tparam cursor tparam ctx) ctx tparams
@@ -325,18 +315,16 @@ let find_f finder_f_opt cursor var args ctx =
 
 let pp_gt ?(level = 0) fmt (gt : gt) =
   F.fprintf fmt
-    "@[@[<v 0>[[Global]]@]@\n\
-     @[@[<v 0>[Constructors]:@ %a@]@\n\
-     @[<v 0>[Typedefs]:@ %a@]@\n\
-     @[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Frame]:@ %a@]@]"
-    (CDEnv.pp ~level:(level + 1))
+    "%s[[Global Layer]]\n%s[Constructors]%a\n%s[Functions]%a\n%s[Frame]%a\n"
+    (indent level)
+    (indent (level + 1))
+    (CDEnv.pp ~level:(level + 2))
     gt.cdenv
-    (TDEnv.pp ~level:(level + 1))
-    gt.tdenv
-    (FDEnv.pp ~level:(level + 1))
+    (indent (level + 1))
+    (FDEnv.pp ~level:(level + 2))
     gt.fdenv
-    (Frame.pp ~level:(level + 1))
+    (indent (level + 1))
+    (Frame.pp ~level:(level + 2))
     gt.frame
 
 let pp_blockkind fmt (kind : blockkind) =
@@ -349,15 +337,16 @@ let pp_blockkind fmt (kind : blockkind) =
 
 let pp_bt ?(level = 0) fmt (bt : bt) =
   F.fprintf fmt
-    "@[@[<v 0>[[Block]]:@ %a@]@\n\
-     @[<v 0>[Typedefs]:@ %a@]@\n\
-     @[<v 0>[Functions]:@ %a@]@\n\
-     @[<v 0>[Frame]:@ %a@]@]" pp_blockkind bt.kind
-    (TDEnv.pp ~level:(level + 1))
+    "%s[[Block Layer %a]]\n%s[Typedefs]%a\n%s[Functions]%a\n%s[Frame]%a\n"
+    (indent level) pp_blockkind bt.kind
+    (indent (level + 1))
+    (TDEnv.pp ~level:(level + 2))
     bt.tdenv
-    (FDEnv.pp ~level:(level + 1))
+    (indent (level + 1))
+    (FDEnv.pp ~level:(level + 2))
     bt.fdenv
-    (Frame.pp ~level:(level + 1))
+    (indent (level + 1))
+    (Frame.pp ~level:(level + 2))
     bt.frame
 
 let pp_localkind fmt (kind : localkind) =
@@ -373,21 +362,17 @@ let pp_localkind fmt (kind : localkind) =
   | TableApplyMethod -> F.fprintf fmt "TableApplyMethod"
 
 let pp_lt ?(level = 0) fmt (lt : lt) =
-  F.fprintf fmt
-    "@[@[<v 0>[[Local]]:@ %a@]@\n\
-     @[<v 0>[Typedefs]:@ %a@]@\n\
-     @[<v 0>[Frames]:@ %a@]@]" pp_localkind lt.kind
-    (TDEnv.pp ~level:(level + 1))
+  F.fprintf fmt "%s[[Local Layer %a]]\n%s[Typedefs]%a\n%s[Values]\n%a\n"
+    (indent level) pp_localkind lt.kind
+    (indent (level + 1))
+    (TDEnv.pp ~level:(level + 2))
     lt.tdenv
-    (pp_list ~level:(level + 1) Frame.pp ~sep:Nl)
+    (indent (level + 1))
+    (pp_list ~level:(level + 2) Frame.pp ~sep:Nl)
     lt.frames
 
 let pp ?(level = 0) fmt ctx =
-  F.fprintf fmt
-    "@[@[<v 0>[[Context]]@]@\n\
-     @[<v 0>[Global]:@ %a@]@\n\
-     @[<v 0>[Block]:@ %a@]@\n\
-     @[<v 0>[Local]:@ %a@]@]"
+  F.fprintf fmt "===== Context =====\n%a%a%a"
     (pp_gt ~level:(level + 1))
     ctx.global
     (pp_bt ~level:(level + 1))

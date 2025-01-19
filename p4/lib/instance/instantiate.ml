@@ -98,7 +98,7 @@ let rec do_instantiate (cursor : Ctx.cursor) (ctx_caller : Ctx.t) (sto : Sto.t)
     { ctx_callee with path = ctx_caller.path; global = ctx_caller.global }
   in
   (* Bind type arguments to the callee context *)
-  let ctx_callee = Ctx.add_typs Ctx.Block tparams targs ctx_callee in
+  let ctx_callee = Ctx.add_tparams Ctx.Block tparams targs ctx_callee in
   (* Bind constructor arguments to the callee context *)
   let cparams, args, cparams_default, args_default =
     align_cparams_with_args cparams args args_default
@@ -130,10 +130,10 @@ and do_instantiate_extern (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (id : id') (mthds : mthd list) : Sto.t * Obj.t =
   assert (cursor = Ctx.Block);
   let ctx = eval_mthds cursor ctx mthds in
-  let tenv = ctx.block.tenv in
+  let theta = ctx.block.theta in
   let venv = ctx.block.venv in
   let fenv = ctx.block.fenv in
-  let obj = Obj.ExternO (id, tenv, venv, fenv) in
+  let obj = Obj.ExternO (id, theta, venv, fenv) in
   (sto, obj)
 
 and do_instantiate_parser (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
@@ -163,9 +163,9 @@ and do_instantiate_control (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 
 and do_instantiate_package (_cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) :
     Sto.t * Obj.t =
-  let tenv = ctx.block.tenv in
+  let theta = ctx.block.theta in
   let venv = ctx.block.venv in
-  let obj = Obj.PackageO (tenv, venv) in
+  let obj = Obj.PackageO (theta, venv) in
   (sto, obj)
 
 (* (TODO) Handle custom table properties *)
@@ -696,10 +696,27 @@ and eval_extern_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
 
 (* Program evaluation *)
 
-let instantiate_program (program : program) : CEnv.t * FEnv.t * VEnv.t * Sto.t =
+let instantiate_program (program : program) :
+    CEnv.t * TDEnv.t * FEnv.t * VEnv.t * Sto.t =
   Ctx.refresh ();
-  let ctx, sto, _decls = eval_decls Ctx.Global Ctx.empty Sto.empty program in
+  let tdenv, frame, decls = program in
+  let ctx =
+    let ctx = Ctx.empty in
+    let venv =
+      Frame.bindings frame
+      |> List.fold_left
+           (fun venv (id, stype) ->
+             let _, _, _, value = stype in
+             match value with
+             | Some value -> VEnv.add id value venv
+             | None -> venv)
+           VEnv.empty
+    in
+    { ctx with global = { ctx.global with tdenv; venv } }
+  in
+  let ctx, sto, _decls = eval_decls Ctx.Global ctx Sto.empty decls in
   let cenv = ctx.global.cenv in
+  let tdenv = ctx.global.tdenv in
   let fenv = ctx.global.fenv in
   let venv = ctx.global.venv in
-  (cenv, fenv, venv, sto)
+  (cenv, tdenv, fenv, venv, sto)

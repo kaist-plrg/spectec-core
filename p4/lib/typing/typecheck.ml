@@ -3011,10 +3011,13 @@ and type_decl' (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : El.Ast.decl') :
     Ctx.t * Il.Ast.decl' option =
   let wrap_none ctx = (ctx, None) in
   let wrap_some (ctx, decl_il) = (ctx, Some decl_il) in
+  let wrap (ctx, decl_il) =
+    if cursor = Ctx.Global then wrap_none ctx else wrap_some (ctx, decl_il)
+  in
   match decl with
   (* Constant, variable, and object declarations *)
   | ConstD { id; typ; value; annos } ->
-      type_const_decl cursor ctx id typ value annos |> wrap_some
+      type_const_decl cursor ctx id typ value annos |> wrap
   | VarD { id; typ; init; annos } ->
       type_var_decl cursor ctx id typ init annos |> wrap_some
   | InstD { id; var_inst; targs; args; init; annos } ->
@@ -5433,5 +5436,7 @@ and type_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
 
 let type_program (program : El.Ast.program) : Il.Ast.program =
   Ctx.refresh ();
-  let _ctx, program_il = type_decls Ctx.Global Ctx.empty program in
-  program_il
+  let ctx, decls_il = type_decls Ctx.Global Ctx.empty program in
+  let tdenv = ctx.global.tdenv in
+  let frame = ctx.global.frame in
+  (tdenv, frame, decls_il)
