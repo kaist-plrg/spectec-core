@@ -36,4 +36,5 @@ relation Call_ok: cursor context |- functyp arg* : typ
 relation FuncType_ok: cursor context |- name targ* arg* : functyp
 relation MethodType_ok: cursor context |- expr member targ* arg* : functyp
 
+relation Inst_site_ok: cursor context |- constyp : INSTSITE_OK
 relation Inst_ok: cursor context |- constyp arg* : typ

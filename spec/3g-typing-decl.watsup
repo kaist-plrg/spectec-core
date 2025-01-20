@@ -64,154 +64,61 @@ rule Decl_ok/vard-some:
   -- if C' = $add_typ(p, C, id, typ_t INOUT DYN)
 
 ;;
-;; Instance declaration
+;; Instantiation declaration
 ;;
 
-syntax pmap = map(id, paramtyp)
-
-def $align_params_with_args'(pmap, paramtyp, typ, arg): (paramtyp, typ, arg) hint(show ALIGN_PARAMS_WITH_ARGS'%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(")"))
-
-def $align_params_with_args'(pmap, paramtyp, typ, ExprA expr) = (paramtyp, typ, ExprA expr)
-def $align_params_with_args'(pmap, paramtyp, typ, NameA id expr?) = (paramtyp', typ, (NameA id expr?))
-  -- if paramtyp' = $find_map(id, paramtyp, pmap, id)
-def $align_params_with_args'(pmap, paramtyp, typ, AnyA) = (paramtyp, typ, AnyA)
-
-def $align_params_with_args(paramtyp*, typ*, arg*): (paramtyp*, typ*, arg*) hint(show ALIGN_PARAMS_WITH_ARGS%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(")"))
-
-def $align_params_with_args(paramtyp*, typ*, arg*) = (paramtyp'*, typ'*, arg'*)
-  -- if (id dir typ val?)* = paramtyp*
-  -- if pmap = MAP id* paramtyp*
-  -- (if (paramtyp', typ', arg') = $align_params_with_args'(pmap, paramtyp, typ, arg))*
-
-relation Inst_site_ok: cursor context |- constyp : INSTSITE_OK
-
-rule Inst_site_ok/global:
-  GLOBAL C |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- if typ_i' = $canon_typ(typ_i)
-  -- if $is_externt(typ_i') \/ $is_packaget(typ_i')
-
-rule Inst_site_ok/block-package:
-  BLOCK C |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- if typ_i' = $canon_typ(typ_i)
-  -- if C.BLOCK.KIND = PACKAGE
-  ----
-  -- if $is_externt(typ_i') \/ $is_parsert(typ_i')
-      \/ $is_controlt(typ_i') \/ $is_packaget(typ_i')
-
-rule Inst_site_ok/block-parser:
-  BLOCK C |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- if typ_i' = $canon_typ(typ_i)
-  -- if C.BLOCK.KIND = PARSER
-  ----
-  -- if $is_externt(typ_i') \/ $is_parsert(typ_i')
-
-rule Inst_site_ok/block-control:
-  BLOCK C |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- if typ_i' = $canon_typ(typ_i)
-  -- if C.BLOCK.KIND = CONTROL
-  ----
-  -- if $is_externt(typ_i') \/ $is_controlt(typ_i') \/ $is_tablet(typ_i')
-
-rule Inst_site_ok/local-parserstate:
-  LOCAL C |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- if typ_i' = $canon_typ(typ_i)
-  -- if C.LOCAL.KIND = PARSERSTATE
-  ----
-  -- if $is_externt(typ_i') \/ $is_parsert(typ_i')
-
-rule Inst_site_ok/local-controlapplymethod:
-  LOCAL C |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- if typ_i' = $canon_typ(typ_i)
-  -- if C.LOCAL.KIND = CONTROLAPPLYMETHOD
-  ----
-  -- if $is_externt(typ_i') \/ $is_controlt(typ_i')
-
-rule Inst_ok/global-packaget:
-  GLOBAL C_0 |- (ConsT pt* typ_i) arg* : typ_i
-  -- if PackageT typ_i'* = $canon_typ(typ_i)
-  -- if C_1 = $set_blockkind(C_0, PACKAGE)
-  ----
-  -- (Arg_ok: BLOCK C_1 |- arg : typ_a)*
-  ----
-  -- if |pt*| = |arg*|
-  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
-  ----
-  -- if tidset = $bound_tid(C_1)
-  -- ConsType_wf: tidset |- (ConsT pt* typ_i)
-  ----
-  -- Inst_site_ok: BLOCK C_1 |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- (Call_convention_arg_ok: BLOCK C_1 NOACT |- pt' ~~ (arg', typ_a'))*
-
-rule Inst_ok/else:
-  p C |- (ConsT pt* typ_i) arg* : typ_i
-  -- (Arg_ok: p C |- arg : typ_a)*
-  ----
-  -- if |pt*| = |arg*|
-  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
-  ----
-  -- if tidset = $bound_tid(C)
-  -- ConsType_wf: tidset |- (ConsT pt* typ_i)
-  ----
-  -- Inst_site_ok: p C |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
-
-relation Inst_init_extern_abstract_method_decl_ok: cursor context |- id tparam* param* type block : funcdef
-
-rule Inst_init_extern_abstract_method_decl_ok:
-  BLOCK C_0 |- id tparam* param* type block : fd
-  -- if C_0.BLOCK.KIND = EXTERN
-  -- if C_1 = $add_typdefs(LOCAL, C_0, tparam*, (MonoD (VarT tparam))*)
-  -- Type_ok: LOCAL C_1 |- type : typ
-  ----
-  -- if C_1 = $set_localkind(C_0, EXTERNABSTRACTMETHOD typ)
-  -- (Param_ok: LOCAL C_1 |- param : pt)*
-  ----
-  -- if C_2 = $add_params(LOCAL, C_1, pt*)
-  ----
-  -- if BlockB stmt* = block
-  -- if C_3 = $enter(C_2)
-  -- Stmts_ok: LOCAL C_3 CONT |- stmt* : C_4 f
-  -- if C_5 = $exit(C_4)
-  ----
-  -- if flow = RET \/ type = VoidT
-  -- if fd = PolyFD tparam* (ExternMethodT pt* typ)
-  ----
-  -- if tidset = $bound_tid(C_5)
-  -- FuncDef_wf: tidset |- fd
-
-relation Inst_init_decl_ok: cursor context |- tenv fdenv decl : tenv fdenv
+relation Inst_init_decl_ok: cursor context tenv fdenv |- decl : tenv fdenv
 
 rule Inst_init_decl_ok/instd:
-  p C |- tenv fdenv (InstD id' name targ* arg* decl*) : tenv' fdenv
+  p C tenv fdenv |- (InstD id' name targ* arg* decl*) : tenv' fdenv
   -- Decl_ok: p C |- (InstD id' name targ* arg* decl*) : C'
   ----
   -- if rtyp' = $find_typ(p, C', CURRENT id')
   -- if tenv' = $update_map(id, rtyp, tenv, id', rtyp')
 
 rule Inst_init_decl_ok/funcd:
-  p C |- tenv fdenv (FuncD id type tparam* param* block) : tenv fdenv'
+  p C_0 tenv fdenv |- (FuncD id type_r tparam* param* block) : tenv fdenv'
   ----
   -- if (fid' dir' type' expr')* = param*
-  -- if C' = $set_blockkind(C, EXTERN)
+  -- if C_1 = $set_blockkind(C_0, EXTERN)
   ----
-  -- Inst_init_extern_abstract_method_decl_ok: BLOCK C' |- id tparam* param* type block : fd'
-  -- if fdenv' = $update_map(fid, funcdef, fdenv, fid', fd')
+  -- if empty_venv = $empty_map(id, val, venv)
+  -- if C_2 = $set_blockframe(C_1, empty_venv, tenv)
+  ----
+  -- if C_2.BLOCK.KIND = EXTERN
+  -- if C_3 = $add_typdefs(LOCAL, C_2, tparam*, (MonoD (VarT tparam))*)
+  ----
+  -- Type_ok: LOCAL C_3 |- type_r : typ_r
+  ----
+  -- if C_4 = $set_localkind(C_3, EXTERNABSTRACTMETHOD typ_r)
+  -- (Param_ok: LOCAL C_4 |- param : pt)*
+  ----
+  -- if C_5 = $add_params(LOCAL, C_4, pt*)
+  ----
+  -- Stmts_ok: LOCAL C_5 CONT |- BlockS block : C_6 f
+  ----
+  -- if f = RET \/ typ_r = VoidT
+  -- if fd = PolyFD tparam* (ExternMethodT pt* typ_r)
+  ----
+  -- if tidset = $bound_tid(C_2)
+  -- FuncDef_wf: tidset |- fd
+  ----
+  -- if fdenv' = $update_map(fid, funcdef, fdenv, fid', fd)
 
-relation Inst_init_decls_ok: context |- tenv fdenv decl* : fdenv
+relation Inst_init_decls_ok: context tenv fdenv |- decl* : fdenv
 
 rule Inst_init_decls_ok/nil:
-  C |- tenv fdenv eps : fdenv
+  C tenv fdenv |- eps : fdenv
 
 rule Inst_init_decls_ok/cons:
-  C |- tenv fdenv (decl_h decl_t*) : fdenv''
-  -- Inst_init_decl_ok: GLOBAL C |- tenv fdenv decl_h : tenv' fdenv'
-  -- Inst_init_decls_ok: C |- tenv' fdenv' decl_t* : fdenv''
+  C tenv fdenv |- decl_h decl_t* : fdenv''
+  -- Inst_init_decl_ok: GLOBAL C tenv fdenv |- decl_h : tenv' fdenv'
+  -- Inst_init_decls_ok: C tenv' fdenv' |- decl_t* : fdenv''
 
-def $update_fdenv_extern(fdenv, typ, fid*, funcdef*) : map(fid, funcdef)    hint(show %1#`[%3]=%4)
+def $update_fdenv_extern(fdenv, typ*, fid*, funcdef*) : map(fid, funcdef)    hint(show UPDATE_FDENV_EXTERN%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(", ")#%4#%latex(")"))
 
-def $update_fdenv_extern(fdenv_e, typ_i, eps, eps) = fdenv_e
-
-def $update_fdenv_extern(fdenv_e, typ_i, fid_h fid_t*, fda_h fda_t*) = $update_fdenv_extern(fdenv_e', typ_i, fid_t*, fda_t*)
+def $update_fdenv_extern(fdenv_e, typ_i*, eps, eps) = fdenv_e
+def $update_fdenv_extern(fdenv_e, typ_i*, fid_h fid_t*, fda_h fda_t*) = $update_fdenv_extern(fdenv_e', typ_i, fid_t*, fda_t*)
   -- if PolyFD tparam* (ExternAbstractMethodT pt* typ_r) = $find_env(fid, funcdef, fdenv_e, fid_h)
   -- if fd_e = PolyFD tparam* (ExternMethodT pt* typ_r)
   -- if theta = MAP tparam* typ_i*
@@ -220,15 +127,15 @@ def $update_fdenv_extern(fdenv_e, typ_i, fid_h fid_t*, fda_h fda_t*) = $update_f
   -- if fdenv_e' = $update_map(fid, funcdef, fdenv_e, fid_h, fd_e)
 
 rule Decl_ok/instd-none:
-  p C |- InstD id name_inst targ* arg* eps : C'
+  p C_0 |- InstD id name_inst targ* arg* eps : C_1
   ----
-  -- (Type_ok: p C |- targ : typ_a)*
+  -- (Type_ok: p C_0 |- targ : typ_a)*
   ----
-  -- if cd = $find_consdef(p, C, name_inst)
+  -- if cd = $find_consdef(p, C_0, name_inst)
   -- if ct = $specialize_consdef(cd, typ_a*)
   ----
-  -- Inst_ok: p C |- ct arg* : typ
-  -- if C' = $add_typ(p, C, id, typ NO CTK)
+  -- Inst_ok: p C_0 |- ct arg* : typ
+  -- if C_1 = $add_typ(p, C_0, id, typ NO CTK)
 
 rule Decl_ok/instd-some:
   p C_0 |- InstD id name_inst targ* arg* decl* : C_2
@@ -243,10 +150,13 @@ rule Decl_ok/instd-some:
   -- if typ = SpecT (PolyD tparam* (ExternT id' fdenv_e)) typ_i*
   -- if C_1 = $add_typ(LOCAL, C_0, "this", typ NO CTK)
   ----
-  -- Inst_init_decls_ok: C_1 |- tenv fdenv decl* : fdenv_a
+  -- if empty_tenv = $empty_map(id, rtyp, tenv)
+  -- if empty_fdenv = $empty_map(fid, funcdef, fdenv)
+  ----
+  -- Inst_init_decls_ok: C_1 empty_tenv empty_fdenv |- decl* : fdenv_a
   -- if MAP fid_a* fd_a* = fdenv_a
   ----
-  -- if fdenv_e' = $update_fdenv_extern(fdenv_e, typ_i, fid_a*, fd_a*)
+  -- if fdenv_e' = $update_fdenv_extern(fdenv_e, typ_i*, fid_a*, fd_a*)
   -- if MAP fid_e* fd_e* = fdenv_e'
   ----
   -- if (PolyFD tparam'* ft)* = fd_e*

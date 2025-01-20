@@ -62,6 +62,7 @@ def $exit(context) : context    hint(show EXIT %)
 
 def $set_blockkind(context, bkind) : context  hint(show %1.BLOCK#%latex("\\{") KIND = %2 %latex("\\}"))
 def $set_localkind(context, lkind) : context  hint(show %1.LOCAL#%latex("\\{") KIND = %2 %latex("\\}"))
+def $set_blockframe(context, venv, tenv) : context  hint(show %1.BLOCK#%latex("\\{") FRAME = (%2, %3) %latex("\\}"))
 
 def $find_returntyp(lkind) : typ
 def $find_returntyp(FUNC typ) = typ
