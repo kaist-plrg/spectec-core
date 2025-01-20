@@ -1,4 +1,0 @@
-p4/test/program/ill-typed-excluded/unsupported/annotation/key-name.p4:37:10: fatal error: '../p4_16_samples/arith-inline-skeleton.p4' file not found
-#include "../p4_16_samples/arith-inline-skeleton.p4"
-         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-1 error generated.

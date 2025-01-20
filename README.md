@@ -1,6 +1,6 @@
 # P4-SpecTec
 
-A to-be interpreter for P4, cherry-picked from the Petr4 project.
+An interpreter for P4, cherry-picked from the Petr4 project.
 Also a to-be formal specification for P4, using the SpecTec framework.
 
 ## Building
@@ -60,30 +60,55 @@ You may also need `libgmp-dev` and `pkg-config`, if the error message says so.
 
 ## p4cherry: A language implementation for P4
 
-### To Run the Parser and the Type Checker for an Example File
+### To Run p4cherry
 
 ```shell
-$ ./p4cherry parse -i test/arch [FILENAME].p4
-$ ./p4cherry typecheck -i test/arch [FILENAME].p4
+$ ./p4cherry parse -i p4/testdata/arch [FILENAME].p4
+$ ./p4cherry typecheck -i p4/testdata/arch [FILENAME].p4
+$ ./p4cherry instantiate -i p4/testdata/arch [FILENAME].p4
+$ ./p4cherry run -a v1model -i p4/testdata/arch [FILENAME].p4 [TESTNAME].stf
 ```
+
+Note that p4cherry currently only supports the V1Model architecture.
 
 ### Current Test Status
 
-You can run the tests with:
+You can run the tests against the p4c compiler test suite and petr4 custom test suite with:
 
 ```shell
 $ make test
 ```
 
+To measure the coverage of the tests, run:
+
+```shell
+$ make coverage
+```
+
+This will generate `index.html` in `p4/_coverage`.
+
 #### Parser
 
-**[Parsing, pretty-printing, and roundtripping](p4/status/parser.log)**
+Parsing, pretty-printing, and roundtripping ([p4c](p4/test/parse_p4c.expected) / [petr4](p4/test/parse_petr4.expected))
 
 #### Type checker
-* **[Positive type checker tests](p4/status/typecheck-pos.log)** (well-typed programs should be accepted)
-* [Excluded positive type checker tests](p4/status/typecheck-pos-excluded.log)
-* **[Negavie type checker tests](p4/status/typecheck-neg.log)** (ill-typed programs should be rejected)
-* [Excluded negative type checker tests](p4/status/typecheck-neg-excluded.log)
+
+* Positive type checker tests (well-typed programs should be accepted) ([p4c](p4/test/typecheck_pos_p4c.expected) / [petr4](p4/status/petr4/typecheck_pos_petr4.expected))
+* Excluded positive type checker tests ([p4c](p4/test/typecheck_pos_p4c_excluded.expected))
+* Negative type checker tests (ill-typed programs should be rejected) ([p4c](p4/test/typecheck_neg_p4c.expected) / [petr4](p4/test/typecheck_neg_petr4.expected))
+* Excluded negative type checker tests ([p4c](p4/test/typecheck_neg_p4c_excluded.expected))
+
+Analysis of test failures: [p4c-pos](p4/status/p4c/typecheck-pos.analysis.md) / [p4c-neg](p4/status/p4c/typecheck-neg.analysis.md) / [petr4-pos](p4/status/petr4/typecheck-pos.analysis.md)
+
+#### Instantiator
+
+Instantiation of stateful objects ([p4c](p4/test/instantiate_p4c.expected) / [petr4](p4/test/instantiate_petr4.expected))
+
+#### Interpreter
+
+Running STF tests against the p4c compiler test suite and petr4 custom test suite (for V1Model) ([p4c](p4/test/run_v1model_p4c.expected) / [petr4](p4/test/run_v1model_petr4.expected))
+
+Analysis of test failures: [p4c](p4/status/p4c/run-v1model.analysis.md) / [petr4](p4/status/petr4/run-v1model.analysis.md)
 
 ## P4-SpecTec: A language specification for P4
 

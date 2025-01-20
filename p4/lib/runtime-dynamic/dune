@@ -1,0 +1,5 @@
+(library
+ (name runtime_dynamic)
+ (libraries lang il domain runtime_static)
+ (modules lvalue state table func cons object envs)
+ (instrumentation (backend bisect_ppx)))

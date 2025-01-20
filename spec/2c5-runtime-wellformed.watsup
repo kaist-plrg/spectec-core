@@ -159,7 +159,7 @@ rule Type_wf/packaget:
   -- (Type_wf: tidset |- typ)*
 
 rule Type_wf/tablet:
-  tidset |- TableT typ
+  tidset |- TableT id typ
   -- if typ' = $canon_typ(typ)
   ----
   -- if $is_table_structt(typ')

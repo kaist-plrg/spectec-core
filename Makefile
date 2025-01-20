@@ -1,5 +1,4 @@
 MAIN = p4cherry
-TEST = p4cherry-test
 SPEC = watsup
 
 # Compile
@@ -13,18 +12,16 @@ EXESPEC = spectec/spectec/_build/default/src/exe-watsup/main.exe
 build: build-p4 build-spectec
 
 build-p4:
-	rm -f ./$(MAIN) ./$(TEST)
+	rm -f ./$(MAIN)
 	opam switch 4.14.0
 	cd p4 && opam exec dune build && echo
 	ln -f $(EXEMAIN) ./$(MAIN)
-	ln -f $(EXETEST) ./$(TEST)
 
 build-p4-release:
-	rm -f ./$(MAIN) ./$(TEST)
+	rm -f ./$(MAIN)
 	opam switch 4.14.0
 	cd p4 && opam exec -- dune build --profile release && echo
 	ln -f $(EXEMAIN) ./$(MAIN)
-	ln -f $(EXETEST) ./$(TEST)
 
 build-spectec:
 	rm -f ./$(SPEC)
@@ -49,26 +46,28 @@ fmt:
 
 # Tests
 
-.PHONY: test test-parser test-typecheck
+.PHONY: test promote coverage 
 
-test: test-parser test-typecheck-pos test-typecheck-neg
+test:
+	echo "#### Running (dune runtest)"
+	opam switch 4.14.0
+	cd p4 && dune clean && opam exec -- dune runtest && echo OK || (echo "####>" Failure running dune test. && echo "####>" Run \`make promote\` to accept changes in test expectations. && false)
 
-test-parser: build-p4-release
-	./$(TEST) parse -i p4/test/arch p4/test/program/well-typed > p4/status/parser.log 2> p4/status/parser.err
+promote:
+	opam switch 4.14.0
+	cd p4 && opam exec -- dune promote
 
-test-typecheck-pos: build-p4-release
-	./$(TEST) typecheck -i p4/test/arch -p p4/test/program/well-typed > p4/status/typecheck-pos.log 2> p4/status/typecheck-pos.err
-	./$(TEST) typecheck -i p4/test/arch -p p4/test/program/well-typed-excluded > p4/status/typecheck-pos-excluded.log 2> p4/status/typecheck-pos-excluded.err
-
-test-typecheck-neg: build-p4-release
-	./$(TEST) typecheck -i p4/test/arch -n p4/test/program/ill-typed > p4/status/typecheck-neg.log 2> p4/status/typecheck-neg.err
-	./$(TEST) typecheck -i p4/test/arch -n p4/test/program/ill-typed-excluded > p4/status/typecheck-neg-excluded.log 2> p4/status/typecheck-neg-excluded.err
+coverage:
+	echo "#### Running (dune runtest --instrument-with bisect_ppx --force)"
+	opam switch 4.14.0
+	cd p4 && dune clean && find . -name '*.coverage' | xargs rm -f && opam exec -- dune runtest --instrument-with bisect_ppx --force
+	cd p4 && bisect-ppx-report html && bisect-ppx-report summary
 
 # Cleanup
 
 .PHONY: clean
 
 clean:
-	rm -f ./$(MAIN) ./$(TEST) ./$(SPEC)
+	rm -f ./$(MAIN) ./$(SPEC)
 	cd p4 && dune clean
 	cd spectec/spectec && dune clean

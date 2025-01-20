@@ -1,0 +1,5 @@
+(library
+ (name instance)
+ (libraries lang il domain runtime_static runtime_dynamic)
+ (modules ctx instantiate)
+ (instrumentation (backend bisect_ppx)))

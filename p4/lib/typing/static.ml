@@ -1,12 +1,15 @@
-module Ctk = Runtime.Domain.Ctk
-module Value = Runtime.Value
-module Types = Runtime.Tdomain.Types
+module Ctk = Runtime_static.Ctk
+module Value = Runtime_static.Vdomain.Value
+module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
+module Numerics = Runtime_static.Numerics
+module Builtins = Runtime_static.Builtins
 module F = Format
 open Util.Source
 open Util.Error
 
 let check = check_checker
+let error_no_info = error_checker_no_info
 let error_pass_info = error_checker_pass_info
 
 (* (18.1) Compile-time known and local compile-time known values
@@ -92,10 +95,10 @@ let rec ctk_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
 
 and ctk_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : Il.Ast.var) : Ctk.t
     =
-  let rtype = Ctx.find_opt Ctx.find_rtype_opt cursor var ctx in
-  check (Option.is_some rtype)
+  let stype = Ctx.find_opt Ctx.find_stype_opt cursor var ctx in
+  check (Option.is_some stype)
     (Format.asprintf "(ctk_var_expr) %a a free variable\n" Il.Pp.pp_var var);
-  let _, _, ctk = Option.get rtype in
+  let _, _, ctk, _ = Option.get stype in
   ctk
 
 and ctk_seq_expr (exprs : Il.Ast.expr list) : Ctk.t =
@@ -183,7 +186,10 @@ and eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
   | ValueE { value } -> value.it
   | VarE { var } -> eval_var_expr cursor ctx var
   | SeqE { exprs } -> eval_seq_expr cursor ctx exprs
+  | SeqDefaultE { exprs } -> eval_seq_default_expr cursor ctx exprs
   | RecordE { fields } -> eval_record_expr cursor ctx fields
+  | RecordDefaultE { fields } -> eval_record_default_expr cursor ctx fields
+  | DefaultE -> Value.DefaultV
   | UnE { unop; expr } -> eval_unop_expr cursor ctx unop expr
   | BinE { binop; expr_l; expr_r } ->
       eval_binop_expr cursor ctx binop expr_l expr_r
@@ -197,7 +203,9 @@ and eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
   | CallMethodE { expr_base; member; targs; args } ->
       eval_call_method_expr cursor ctx expr_base member targs args
   | CallTypeE { typ; member } -> eval_call_type_expr cursor ctx typ member
-  | _ -> assert false
+  | _ ->
+      F.asprintf "(eval_expr) not a local compile-time known expression"
+      |> error_no_info
 
 and eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : Il.Ast.expr list) :
     Il.Ast.value list =
@@ -215,6 +223,13 @@ and eval_seq_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : Il.Ast.expr list)
   let value = Value.SeqV values in
   value
 
+and eval_seq_default_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (exprs : Il.Ast.expr list) : Value.t =
+  let values = eval_exprs cursor ctx exprs in
+  let values = List.map it values in
+  let value = Value.SeqDefaultV values in
+  value
+
 and eval_record_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (fields : (Il.Ast.member * Il.Ast.expr) list) : Value.t =
   let members, exprs = List.split fields in
@@ -225,17 +240,27 @@ and eval_record_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let value = Value.RecordV fields in
   value
 
+and eval_record_default_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (fields : (Il.Ast.member * Il.Ast.expr) list) : Value.t =
+  let members, exprs = List.split fields in
+  let members = List.map it members in
+  let values = eval_exprs cursor ctx exprs in
+  let values = List.map it values in
+  let fields = List.combine members values in
+  let value = Value.RecordDefaultV fields in
+  value
+
 and eval_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : Il.Ast.unop)
     (expr : Il.Ast.expr) : Value.t =
   let value = eval_expr cursor ctx expr in
-  let value = Runtime.Numerics.eval_unop unop value.it in
+  let value = Numerics.eval_unop unop value.it in
   value
 
 and eval_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : Il.Ast.binop)
     (expr_l : Il.Ast.expr) (expr_r : Il.Ast.expr) : Value.t =
   let value_l = eval_expr cursor ctx expr_l in
   let value_r = eval_expr cursor ctx expr_r in
-  let value = Runtime.Numerics.eval_binop binop value_l.it value_r.it in
+  let value = Numerics.eval_binop binop value_l.it value_r.it in
   value
 
 and eval_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
@@ -250,17 +275,15 @@ and eval_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
 and eval_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : Il.Ast.typ)
     (expr : Il.Ast.expr) : Value.t =
   let value = eval_expr cursor ctx expr in
-  let value = Runtime.Numerics.eval_cast typ.it value.it in
+  let value = Numerics.eval_cast typ.it value.it in
   value
 
 and eval_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : Il.Ast.expr) (value_lo : Il.Ast.value)
     (value_hi : Il.Ast.value) : Value.t =
   let value_base = eval_expr cursor ctx expr_base in
-  let value_base = value_base.it in
-  let value_lo, value_hi = (value_lo.it, value_hi.it) in
   let value =
-    Runtime.Numerics.eval_bitstring_access value_base value_hi value_lo
+    Numerics.eval_bitstring_access value_base.it value_hi.it value_lo.it
   in
   value
 
@@ -270,7 +293,11 @@ and eval_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
   let value =
     match value_base.it with
     | StackV (_, _, size) when member.it = "size" -> Value.IntV size
-    | _ -> assert false
+    | _ ->
+        Format.asprintf
+          "(eval_expr_acc_expr) %a.%a is not local compile-time known"
+          (Il.Pp.pp_expr ~level:0) expr_base Il.Pp.pp_member member
+        |> error_no_info
   in
   value
 
@@ -282,8 +309,12 @@ and eval_call_method_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t)
     | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits" | "maxSizeInBytes" ->
         assert (targs = [] && args = []);
         let typ_base = expr_base.note.typ in
-        Runtime.Builtins.size typ_base member.it
-    | _ -> assert false
+        Builtins.size typ_base member.it
+    | _ ->
+        Format.asprintf
+          "(eval_call_method_expr) %a.%a is not local compile-time known"
+          (Il.Pp.pp_expr ~level:0) expr_base Il.Pp.pp_member member
+        |> error_no_info
   in
   value
 
@@ -292,7 +323,11 @@ and eval_call_type_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t) (typ : Il.Ast.typ)
   let value =
     match member.it with
     | "minSizeInBits" | "minSizeInBytes" | "maxSizeInBits" | "maxSizeInBytes" ->
-        Runtime.Builtins.size typ.it member.it
-    | _ -> assert false
+        Builtins.size typ.it member.it
+    | _ ->
+        Format.asprintf
+          "(eval_call_type_expr) %a.%a is not local compile-time known"
+          (Il.Pp.pp_typ ~level:0) typ Il.Pp.pp_member member
+        |> error_no_info
   in
   value

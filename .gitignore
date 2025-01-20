@@ -1,5 +1,15 @@
+# spectec
+watsup
+spec-gen.include
+*.aux
+*.log
+*.tex
+!spec/spec.tex
+*.pdf
+
 # p4cherry build and executables
 _build
+_coverage
 p4cherry
 p4cherry-test
 *.opam
@@ -9,16 +19,11 @@ doc/spectec
 # p4cherry-test logs
 log
 error
-
-# spectec
-watsup
-spec-gen.include
-*.aux
-*.log
-!p4/status/*.log
-*.tex
-!spec/spec.tex
-*.pdf
+!p4/status/p4c/*.log
+!p4/status/petr4/*.log
 
 # calculus
 !calculus/*.tex
+
+# scripts
+run.sh

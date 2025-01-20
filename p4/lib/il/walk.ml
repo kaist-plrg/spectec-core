@@ -1,11 +1,18 @@
 module W = Lang.Walk
-
-(* open Runtime.Domain *)
-(* open Runtime.Types *)
 open Ast
 open Util.Source
 
-type walker = (note, typ', value', param', expr', decl') W.walker
+type walker =
+  ( note,
+    typ',
+    value',
+    param',
+    expr',
+    stmt',
+    decl',
+    table_action',
+    table_entry' )
+  W.walker
 
 (* Numbers *)
 
@@ -171,7 +178,48 @@ let walk_select_case (walker : walker) select_case =
 
 (* Statements *)
 
-let walk_stmt (walker : walker) stmt = W.walk_stmt walker stmt
+let walk_stmt (walker : walker) stmt =
+  let walk_var = walker.walk_var walker in
+  let walk_member = walker.walk_member walker in
+  let walk_typ = walker.walk_typ walker in
+  let walk_targ = walker.walk_targ walker in
+  let walk_arg = walker.walk_arg walker in
+  let walk_expr = walker.walk_expr walker in
+  let walk_stmt = walker.walk_stmt walker in
+  let walk_block = walker.walk_block walker in
+  let walk_switch_case = walker.walk_switch_case walker in
+  let walk_decl = walker.walk_decl walker in
+  match stmt.it with
+  | EmptyS -> ()
+  | AssignS { expr_l; expr_r } ->
+      walk_expr expr_l;
+      walk_expr expr_r
+  | SwitchS { expr_switch; cases } ->
+      walk_expr expr_switch;
+      W.walk_list walk_switch_case cases
+  | IfS { expr_cond; stmt_then; stmt_else } ->
+      walk_expr expr_cond;
+      walk_stmt stmt_then;
+      walk_stmt stmt_else
+  | BlockS { block } -> walk_block block
+  | ExitS -> ()
+  | RetS { expr_ret } -> W.walk_option walk_expr expr_ret
+  | CallFuncS { var_func; targs; args } ->
+      walk_var var_func;
+      W.walk_list walk_targ targs;
+      W.walk_list walk_arg args
+  | CallMethodS { expr_base; member; targs; args } ->
+      walk_expr expr_base;
+      walk_member member;
+      W.walk_list walk_targ targs;
+      W.walk_list walk_arg args
+  | CallInstS { typ; var_inst; targs; args } ->
+      walk_typ typ;
+      walk_var var_inst;
+      W.walk_list walk_targ targs;
+      W.walk_list walk_arg args
+  | TransS { expr_label } -> walk_expr expr_label
+  | DeclS { decl } -> walk_decl decl
 
 (* Blocks (sequence of statements) *)
 
@@ -190,6 +238,7 @@ let walk_switch_case (walker : walker) switch_case =
 let walk_decl (walker : walker) decl =
   let walk_id = walker.walk_id walker in
   let walk_var = walker.walk_var walker in
+  let walk_member = walker.walk_member walker in
   let walk_typ = walker.walk_typ walker in
   let walk_value = walker.walk_value walker in
   let walk_tparam = walker.walk_tparam walker in
@@ -212,16 +261,42 @@ let walk_decl (walker : walker) decl =
       walk_id id;
       walk_typ typ;
       W.walk_option walk_expr init
-  | InstD { id; var_inst; targs; args; init; annos = _annos } ->
+  | ErrD { members } | MatchKindD { members } -> W.walk_list walk_member members
+  | InstD { id; typ; var_inst; targs; args; init; annos = _annos } ->
       walk_id id;
+      walk_typ typ;
       walk_var var_inst;
       W.walk_list walk_targ targs;
       W.walk_list walk_arg args;
       W.walk_list walk_decl init
+  | StructD { id; tparams; tparams_hidden; fields; annos = _annos }
+  | HeaderD { id; tparams; tparams_hidden; fields; annos = _annos }
+  | UnionD { id; tparams; tparams_hidden; fields; annos = _annos } ->
+      walk_id id;
+      W.walk_list walk_tparam tparams;
+      W.walk_list walk_tparam tparams_hidden;
+      List.map (fun (member, typ, _) -> (member, typ)) fields
+      |> W.walk_list (W.walk_pair walk_member walk_typ)
+  | EnumD { id; members; annos = _annos } ->
+      walk_id id;
+      W.walk_list walk_member members
+  | SEnumD { id; typ; fields; annos = _annos } ->
+      walk_id id;
+      walk_typ typ;
+      W.walk_list (W.walk_pair walk_member walk_value) fields
+  | NewTypeD { id; typdef; annos = _annos }
+  | TypeDefD { id; typdef; annos = _annos } ->
+      walk_id id;
+      W.walk_alt walk_typ walk_decl typdef
   | ValueSetD { id; typ; size; annos = _annos } ->
       walk_id id;
       walk_typ typ;
       walk_expr size
+  | ParserTypeD { id; tparams; tparams_hidden; params; annos = _annos } ->
+      walk_id id;
+      W.walk_list walk_tparam tparams;
+      W.walk_list walk_tparam tparams_hidden;
+      W.walk_list walk_param params
   | ParserD { id; tparams; params; cparams; locals; states; annos = _annos } ->
       walk_id id;
       W.walk_list walk_tparam tparams;
@@ -229,9 +304,15 @@ let walk_decl (walker : walker) decl =
       W.walk_list walk_cparam cparams;
       W.walk_list walk_decl locals;
       W.walk_list walk_parser_state states
-  | TableD { id; table; annos = _annos } ->
+  | TableD { id; typ; table; annos = _annos } ->
       walk_id id;
+      walk_typ typ;
       walk_table table
+  | ControlTypeD { id; tparams; tparams_hidden; params; annos = _annos } ->
+      walk_id id;
+      W.walk_list walk_tparam tparams;
+      W.walk_list walk_tparam tparams_hidden;
+      W.walk_list walk_param params
   | ControlD { id; tparams; params; cparams; locals; body; annos = _annos } ->
       walk_id id;
       W.walk_list walk_tparam tparams;
@@ -288,7 +369,11 @@ let walk_table_keys (walker : walker) table_keys =
 (* Table action references *)
 
 let walk_table_action (walker : walker) table_action =
-  W.walk_table_action walker table_action
+  let walk_var = walker.walk_var walker in
+  let walk_arg = walker.walk_arg walker in
+  let var, args, _annos, _params_control = table_action.it in
+  walk_var var;
+  W.walk_list walk_arg args
 
 let walk_table_actions (walker : walker) table_actions =
   W.walk_table_actions walker table_actions
@@ -296,7 +381,15 @@ let walk_table_actions (walker : walker) table_actions =
 (* Table entries *)
 
 let walk_table_entry (walker : walker) table_entry =
-  W.walk_table_entry walker table_entry
+  let walk_value = walker.walk_value walker in
+  let walk_keyset = walker.walk_keyset walker in
+  let walk_table_action = walker.walk_table_action walker in
+  let keysets, table_action, table_entry_priority, _table_entry_const, _annos =
+    table_entry.it
+  in
+  W.walk_list walk_keyset keysets;
+  walk_table_action table_action;
+  W.walk_option walk_value table_entry_priority
 
 let walk_table_entries (walker : walker) table_entries =
   W.walk_table_entries walker table_entries

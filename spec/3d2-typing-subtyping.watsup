@@ -150,6 +150,13 @@ rule Sub_expl/invalidt-headert:
 rule Sub_expl/invalidt-uniont:
   InvalidT <: UnionT id fields
 
+rule Sub_expl/sett-sett:
+  SetT typ' <: SetT typ''
+  -- Sub_expl: typ' <: typ''
+
+rule Sub_expl/non-sett-sett:
+  typ' <: SetT typ''
+  -- Sub_expl: typ' <: typ''
 
 ;;
 ;; Implicit Casts

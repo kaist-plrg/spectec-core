@@ -1,5 +1,0 @@
-(include_subdirs qualified)
-
-(library
- (name runtime)
- (libraries bignum util lang el))

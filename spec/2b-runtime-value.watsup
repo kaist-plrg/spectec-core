@@ -16,17 +16,23 @@ syntax val =
   | ListV val*                      hint(show LIST#_#V %)
   | TupleV val*                     hint(show TUPLE#_#V %)
   | StackV val* int int             hint(show STACK#_#V %`[% %latex("@") %])
-  | StructV (member, val)*          hint(show STRUCT#_#V %latex("\\{")#%#%latex("\\}"))
-  | HeaderV (member, val)*          hint(show HEADER#_#V %latex("\\{")#%#%latex("\\}"))
-  | UnionV (member, val)*           hint(show UNION#_#V %latex("\\{")#%#%latex("\\}"))
+  | StructV id (member, val)*       hint(show STRUCT#_#V % %latex("\\{")#%#%latex("\\}"))
+  | HeaderV id (member, val)*       hint(show HEADER#_#V % %latex("\\{")#%#%latex("\\}"))
+  | UnionV id (member, val)*        hint(show UNION#_#V % %latex("\\{")#%#%latex("\\}"))
   | TableEnumFieldV id member       hint(show TABLE#_#ENUM#_#FIELD#_#V %.%)
-  | TableStructV (member, val)*     hint(show TABLE#_#STRUCT#_#V %latex("\\{")#%#%latex("\\}"))
+  | TableStructV id (member, val)*  hint(show TABLE#_#STRUCT#_#V % %latex("\\{")#%#%latex("\\}"))
   | SeqV val*                       hint(show SEQ#_#V %)
   | SeqDefaultV val*                hint(show SEQ#_#DEFAULT#_#V %)
   | RecordV (member, val)*          hint(show RECORD#_#V %latex("\\{")#%#%latex("\\}"))
   | RecordDefaultV (member, val)*   hint(show RECORD#_#DEFAULT#_#V %latex("\\{")#%#%latex("\\}"))
   | DefaultV                        hint(show DEFAULT#_#V)
   | InvalidV                        hint(show INVALID#_#V)
+  | SetV setval                     hint(show SET#_#V %)
+
+syntax setval =
+  | SingletonSet val                hint(show %latex("\\{") % %latex("\\}"))
+  | MaskSet val val                 hint(show %latex("\\{") % %latex("\\&\\&\\&") % %latex("\\}"))
+  | RangeSet val val                hint(show %latex("\\{") % ... % %latex("\\}"))
 
 ;;
 ;; Helpers

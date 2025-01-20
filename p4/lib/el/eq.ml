@@ -318,26 +318,84 @@ and eq_select_cases ?(dbg = false) select_cases_a select_cases_b =
 (* Statements *)
 
 and eq_stmt' ?(dbg = false) stmt_a stmt_b =
-  E.eq_stmt' ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl stmt_a
-    stmt_b
+  match (stmt_a, stmt_b) with
+  | EmptyS, EmptyS -> true
+  | ( AssignS { expr_l = expr_l_a; expr_r = expr_r_a },
+      AssignS { expr_l = expr_l_b; expr_r = expr_r_b } ) ->
+      eq_expr ~dbg expr_l_a expr_l_b && eq_expr ~dbg expr_r_a expr_r_b
+  | ( SwitchS { expr_switch = expr_switch_a; cases = cases_a },
+      SwitchS { expr_switch = expr_switch_b; cases = cases_b } ) ->
+      eq_expr ~dbg expr_switch_a expr_switch_b
+      && eq_switch_cases ~dbg cases_a cases_b
+  | ( IfS
+        {
+          expr_cond = expr_cond_a;
+          stmt_then = stmt_then_a;
+          stmt_else = stmt_else_a;
+        },
+      IfS
+        {
+          expr_cond = expr_cond_b;
+          stmt_then = stmt_then_b;
+          stmt_else = stmt_else_b;
+        } ) ->
+      eq_expr ~dbg expr_cond_a expr_cond_b
+      && eq_stmt ~dbg stmt_then_a stmt_then_b
+      && eq_stmt ~dbg stmt_else_a stmt_else_b
+  | BlockS { block = block_a }, BlockS { block = block_b } ->
+      eq_block ~dbg block_a block_b
+  | ExitS, ExitS -> true
+  | RetS { expr_ret = expr_ret_a }, RetS { expr_ret = expr_ret_b } ->
+      E.eq_option (eq_expr ~dbg) expr_ret_a expr_ret_b
+  | ( CallFuncS { var_func = var_func_a; targs = targs_a; args = args_a },
+      CallFuncS { var_func = var_func_b; targs = targs_b; args = args_b } ) ->
+      eq_var ~dbg var_func_a var_func_b
+      && eq_targs ~dbg targs_a targs_b
+      && eq_args ~dbg args_a args_b
+  | ( CallMethodS
+        {
+          expr_base = expr_base_a;
+          member = member_a;
+          targs = targs_a;
+          args = args_a;
+        },
+      CallMethodS
+        {
+          expr_base = expr_base_b;
+          member = member_b;
+          targs = targs_b;
+          args = args_b;
+        } ) ->
+      eq_expr ~dbg expr_base_a expr_base_b
+      && eq_member ~dbg member_a member_b
+      && eq_targs ~dbg targs_a targs_b
+      && eq_args ~dbg args_a args_b
+  | ( CallInstS { var_inst = var_inst_a; targs = targs_a; args = args_a },
+      CallInstS { var_inst = var_inst_b; targs = targs_b; args = args_b } ) ->
+      eq_var ~dbg var_inst_a var_inst_b
+      && eq_targs ~dbg targs_a targs_b
+      && eq_args ~dbg args_a args_b
+  | TransS { expr_label = expr_label_a }, TransS { expr_label = expr_label_b }
+    ->
+      eq_expr ~dbg expr_label_a expr_label_b
+  | DeclS { decl = decl_a }, DeclS { decl = decl_b } ->
+      eq_decl ~dbg decl_a decl_b
+  | _ -> false
 
 and eq_stmt ?(dbg = false) stmt_a stmt_b =
-  E.eq_stmt ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl stmt_a
-    stmt_b
+  eq_stmt' ~dbg stmt_a.it stmt_b.it
+  |> E.check ~dbg "stmt" Pp.pp_stmt stmt_a stmt_b
 
 and eq_stmts ?(dbg = false) stmts_a stmts_b =
-  E.eq_stmts ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl stmts_a
-    stmts_b
+  E.eq_list (eq_stmt ~dbg) stmts_a stmts_b
 
 (* Blocks (sequence of statements) *)
 
 and eq_block' ?(dbg = false) block_a block_b =
-  E.eq_block' ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl block_a
-    block_b
+  E.eq_block' ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt block_a block_b
 
 and eq_block ?(dbg = false) block_a block_b =
-  E.eq_block ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl block_a
-    block_b
+  E.eq_block ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt block_a block_b
 
 (* Match-cases for switch *)
 
@@ -348,16 +406,16 @@ and eq_switch_label ?(dbg = false) switch_label_a switch_label_b =
   E.eq_switch_label ~dbg P.pp_expr switch_label_a switch_label_b
 
 and eq_switch_case' ?(dbg = false) switch_case_a switch_case_b =
-  E.eq_switch_case' ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
-    switch_case_a switch_case_b
+  E.eq_switch_case' ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt switch_case_a
+    switch_case_b
 
 and eq_switch_case ?(dbg = false) switch_case_a switch_case_b =
-  E.eq_switch_case ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
-    switch_case_a switch_case_b
+  E.eq_switch_case ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt switch_case_a
+    switch_case_b
 
 and eq_switch_cases ?(dbg = false) switch_cases_a switch_cases_b =
-  E.eq_switch_cases ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
-    switch_cases_a switch_cases_b
+  E.eq_switch_cases ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt switch_cases_a
+    switch_cases_b
 
 (* Declarations *)
 
@@ -371,6 +429,9 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
       VarD { id = id_b; typ = typ_b; init = init_b; annos = _annos_b } ) ->
       eq_id ~dbg id_a id_b && eq_typ ~dbg typ_a typ_b
       && E.eq_option (eq_expr ~dbg) init_a init_b
+  | ErrD { members = members_a }, ErrD { members = members_b }
+  | MatchKindD { members = members_a }, MatchKindD { members = members_b } ->
+      eq_members ~dbg members_a members_b
   | ( InstD
         {
           id = id_a;
@@ -394,9 +455,6 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
       && eq_targs ~dbg targs_a targs_b
       && eq_args ~dbg args_a args_b
       && eq_decls ~dbg init_a init_b
-  | ErrD { members = members_a }, ErrD { members = members_b }
-  | MatchKindD { members = members_a }, MatchKindD { members = members_b } ->
-      eq_members ~dbg members_a members_b
   | ( StructD
         { id = id_a; tparams = tparams_a; fields = fields_a; annos = _annos_a },
       StructD
@@ -473,12 +531,6 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
       && eq_cparams ~dbg cparams_a cparams_b
       && eq_decls ~dbg locals_a locals_b
       && eq_parser_states ~dbg states_a states_b
-  | ( ActionD { id = id_a; params = params_a; body = body_a; annos = _annos_a },
-      ActionD { id = id_b; params = params_b; body = body_b; annos = _annos_b }
-    ) ->
-      eq_id ~dbg id_a id_b
-      && eq_params ~dbg params_a params_b
-      && eq_block ~dbg body_a body_b
   | ( TableD { id = id_a; table = table_a; annos = _annos_a },
       TableD { id = id_b; table = table_b; annos = _annos_b } ) ->
       eq_id ~dbg id_a id_b && eq_table ~dbg table_a table_b
@@ -515,6 +567,12 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
       && eq_params ~dbg params_a params_b
       && eq_cparams ~dbg cparams_a cparams_b
       && eq_decls ~dbg locals_a locals_b
+      && eq_block ~dbg body_a body_b
+  | ( ActionD { id = id_a; params = params_a; body = body_a; annos = _annos_a },
+      ActionD { id = id_b; params = params_b; body = body_b; annos = _annos_b }
+    ) ->
+      eq_id ~dbg id_a id_b
+      && eq_params ~dbg params_a params_b
       && eq_block ~dbg body_a body_b
   | ( FuncD
         {
@@ -594,30 +652,32 @@ and eq_decls ?(dbg = false) decls_a decls_b =
 (* Parser states *)
 
 and eq_parser_state' ?(dbg = false) parser_state_a parser_state_b =
-  E.eq_parser_state' ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
-    parser_state_a parser_state_b
+  E.eq_parser_state' ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt parser_state_a
+    parser_state_b
 
 and eq_parser_state ?(dbg = false) parser_state_a parser_state_b =
-  E.eq_parser_state ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
-    parser_state_a parser_state_b
+  E.eq_parser_state ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt parser_state_a
+    parser_state_b
 
 and eq_parser_states ?(dbg = false) parser_states_a parser_states_b =
-  E.eq_parser_states ~dbg P.pp_typ P.pp_expr P.pp_decl eq_typ eq_expr eq_decl
-    parser_states_a parser_states_b
+  E.eq_parser_states ~dbg P.pp_expr P.pp_stmt eq_expr eq_stmt parser_states_a
+    parser_states_b
 
 (* Tables *)
 
 and eq_table ?(dbg = false) table_a table_b =
-  E.eq_table ~dbg P.pp_expr eq_expr table_a table_b
+  E.eq_table ~dbg P.pp_expr P.pp_table_action P.pp_table_entry eq_expr
+    eq_table_action eq_table_entry table_a table_b
 
 (* Table properties *)
 
 and eq_table_property ?(dbg = false) table_property_a table_property_b =
-  E.eq_table_property ~dbg P.pp_expr eq_expr table_property_a table_property_b
+  E.eq_table_property ~dbg P.pp_expr P.pp_table_action P.pp_table_entry eq_expr
+    eq_table_action eq_table_entry table_property_a table_property_b
 
 and eq_table_properties ?(dbg = false) table_properties_a table_properties_b =
-  E.eq_table_properties ~dbg P.pp_expr eq_expr table_properties_a
-    table_properties_b
+  E.eq_table_properties ~dbg P.pp_expr P.pp_table_action P.pp_table_entry
+    eq_expr eq_table_action eq_table_entry table_properties_a table_properties_b
 
 (* Table keys *)
 
@@ -636,24 +696,47 @@ and eq_table_keys ?(dbg = false) table_keys_a table_keys_b =
 (* Table action references *)
 
 and eq_table_action' ?(dbg = false) table_action_a table_action_b =
-  E.eq_table_action' ~dbg P.pp_expr eq_expr table_action_a table_action_b
+  let var_a, args_a, _annos_a = table_action_a in
+  let var_b, args_b, _annos_b = table_action_b in
+  eq_var ~dbg var_a var_b && eq_args ~dbg args_a args_b
 
 and eq_table_action ?(dbg = false) table_action_a table_action_b =
-  E.eq_table_action ~dbg P.pp_expr eq_expr table_action_a table_action_b
+  eq_table_action' ~dbg table_action_a.it table_action_b.it
+  |> E.check ~dbg "table_action" P.pp_table_action table_action_a table_action_b
 
 and eq_table_actions' ?(dbg = false) table_actions_a table_actions_b =
-  E.eq_table_actions' ~dbg P.pp_expr eq_expr table_actions_a table_actions_b
+  E.eq_table_actions' ~dbg P.pp_table_action eq_table_action table_actions_a
+    table_actions_b
 
 and eq_table_actions ?(dbg = false) table_actions_a table_actions_b =
-  E.eq_table_actions ~dbg P.pp_expr eq_expr table_actions_a table_actions_b
+  E.eq_table_actions ~dbg P.pp_table_action eq_table_action table_actions_a
+    table_actions_b
 
 (* Table entries *)
 
 and eq_table_entry' ?(dbg = false) table_entry_a table_entry_b =
-  E.eq_table_entry' ~dbg P.pp_expr eq_expr table_entry_a table_entry_b
+  let ( keysets_a,
+        table_action_a,
+        table_entry_priority_a,
+        table_entry_const_a,
+        _annos_a ) =
+    table_entry_a
+  in
+  let ( keysets_b,
+        table_action_b,
+        table_entry_priority_b,
+        table_entry_const_b,
+        _annos_b ) =
+    table_entry_b
+  in
+  eq_keysets ~dbg keysets_a keysets_b
+  && eq_table_action ~dbg table_action_a table_action_b
+  && E.eq_option eq_expr table_entry_priority_a table_entry_priority_b
+  && table_entry_const_a = table_entry_const_b
 
 and eq_table_entry ?(dbg = false) table_entry_a table_entry_b =
-  E.eq_table_entry ~dbg P.pp_expr eq_expr table_entry_a table_entry_b
+  eq_table_entry' ~dbg table_entry_a.it table_entry_b.it
+  |> E.check ~dbg "table_entry" P.pp_table_entry table_entry_a table_entry_b
 
 and eq_table_entries' ?(dbg = false) table_entries_a table_entries_b =
   E.eq_table_entries' ~dbg P.pp_expr eq_expr table_entries_a table_entries_b
@@ -664,10 +747,12 @@ and eq_table_entries ?(dbg = false) table_entries_a table_entries_b =
 (* Table default properties *)
 
 and eq_table_default' ?(dbg = false) table_default_a table_default_b =
-  E.eq_table_default' ~dbg P.pp_expr eq_expr table_default_a table_default_b
+  E.eq_table_default' ~dbg P.pp_table_action eq_table_action table_default_a
+    table_default_b
 
 and eq_table_default ?(dbg = false) table_default_a table_default_b =
-  E.eq_table_default ~dbg P.pp_expr eq_expr table_default_a table_default_b
+  E.eq_table_default ~dbg P.pp_table_action eq_table_action table_default_a
+    table_default_b
 
 (* Table custorm properties *)
 

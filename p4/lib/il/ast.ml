@@ -1,7 +1,10 @@
 module L = Lang.Ast
-module Ctk = Runtime.Domain.Ctk
-module Value = Runtime.Value
-module Type = Runtime.Tdomain.Types.Type
+module Ctk = Runtime_static.Ctk
+module Value = Runtime_static.Vdomain.Value
+module Type = Runtime_static.Tdomain.Types.Type
+module Envs = Runtime_static.Envs
+module Frame = Envs.Frame
+module TDEnv = Envs.TDEnv
 open Util.Source
 
 type ('a, 'b) alt = ('a, 'b) L.alt
@@ -123,38 +126,102 @@ and select_case = (note, expr') L.select_case
 and select_case' = (note, expr') L.select_case'
 
 (* Statements *)
-and stmt = (typ', note, expr', decl') L.stmt
-and stmt' = (typ', note, expr', decl') L.stmt'
+and stmt = stmt' L.stmt
+
+and stmt' =
+  | EmptyS
+  | AssignS of { expr_l : expr; expr_r : expr }
+  | SwitchS of { expr_switch : expr; cases : switch_case list }
+  | IfS of { expr_cond : expr; stmt_then : stmt; stmt_else : stmt }
+  | BlockS of { block : block }
+  | ExitS
+  | RetS of { expr_ret : expr option }
+  | CallFuncS of { var_func : var; targs : targ list; args : arg list }
+  | CallMethodS of {
+      expr_base : expr;
+      member : member;
+      targs : targ list;
+      args : arg list;
+    }
+  | CallInstS of {
+      typ : typ;
+      var_inst : var;
+      targs : targ list;
+      args : arg list;
+    }
+  | TransS of { expr_label : expr }
+  | DeclS of { decl : decl }
 
 (* Blocks (sequence of statements) *)
-and block = (typ', note, expr', decl') L.block
-and block' = (typ', note, expr', decl') L.block'
+and block = (note, expr', stmt') L.block
+and block' = (note, expr', stmt') L.block'
 
 (* Match-cases for switch *)
 and switch_label = (note, expr') L.switch_label
 and switch_label' = (note, expr') L.switch_label'
-and switch_case = (typ', note, expr', decl') L.switch_case
-and switch_case' = (typ', note, expr', decl') L.switch_case'
+and switch_case = (note, expr', stmt') L.switch_case
+and switch_case' = (note, expr', stmt') L.switch_case'
 
 (* Declarations *)
 and decl = decl' phrase
 
 and decl' =
-  (* Constant, variable and instance declarations *)
+  (* Constant, variable, error, match_kind, and instance declarations *)
   | ConstD of { id : id; typ : typ; value : value; annos : anno list }
   | VarD of { id : id; typ : typ; init : expr option; annos : anno list }
+  | ErrD of { members : member list }
+  | MatchKindD of { members : member list }
   | InstD of {
       id : id;
+      typ : typ;
       var_inst : var;
       targs : typ list;
       args : arg list;
       init : decl list;
       annos : anno list;
     }
+  (* Type declarations *)
+  | StructD of {
+      id : id;
+      tparams : tparam list;
+      tparams_hidden : tparam list;
+      fields : (member * typ * anno list) list;
+      annos : anno list;
+    }
+  | HeaderD of {
+      id : id;
+      tparams : tparam list;
+      tparams_hidden : tparam list;
+      fields : (member * typ * anno list) list;
+      annos : anno list;
+    }
+  | UnionD of {
+      id : id;
+      tparams : tparam list;
+      tparams_hidden : tparam list;
+      fields : (member * typ * anno list) list;
+      annos : anno list;
+    }
+  | EnumD of { id : id; members : member list; annos : anno list }
+  | SEnumD of {
+      id : id;
+      typ : typ;
+      fields : (member * value) list;
+      annos : anno list;
+    }
+  | NewTypeD of { id : id; typdef : (typ, decl) alt; annos : anno list }
+  | TypeDefD of { id : id; typdef : (typ, decl) alt; annos : anno list }
   (* Object declarations *)
   (* Value Set *)
   | ValueSetD of { id : id; typ : typ; size : expr; annos : anno list }
   (* Parser *)
+  | ParserTypeD of {
+      id : id;
+      tparams : tparam list;
+      tparams_hidden : tparam list;
+      params : param list;
+      annos : anno list;
+    }
   | ParserD of {
       id : id;
       tparams : tparam list;
@@ -165,8 +232,15 @@ and decl' =
       annos : anno list;
     }
   (* Table *)
-  | TableD of { id : id; table : table; annos : anno list }
+  | TableD of { id : id; typ : typ; table : table; annos : anno list }
   (* Control *)
+  | ControlTypeD of {
+      id : id;
+      tparams : tparam list;
+      tparams_hidden : tparam list;
+      params : param list;
+      annos : anno list;
+    }
   | ControlD of {
       id : id;
       tparams : tparam list;
@@ -208,14 +282,14 @@ and decl' =
     }
 
 (* Parser state machine *)
-and parser_state = (typ', note, expr', decl') L.parser_state
-and parser_state' = (typ', note, expr', decl') L.parser_state'
+and parser_state = (note, expr', stmt') L.parser_state
+and parser_state' = (note, expr', stmt') L.parser_state'
 
 (* Table *)
-and table = (note, expr') L.table
+and table = (note, expr', table_action', table_entry') L.table
 
 (* Table properties *)
-and table_property = (note, expr') L.table_property
+and table_property = (note, expr', table_action', table_entry') L.table_property
 
 (* Table keys *)
 and table_keys = (note, expr') L.table_keys
@@ -224,22 +298,25 @@ and table_key = (note, expr') L.table_key
 and table_key' = (note, expr') L.table_key'
 
 (* Table action references *)
-and table_actions = (note, expr') L.table_actions
-and table_actions' = (note, expr') L.table_actions'
-and table_action = (note, expr') L.table_action
-and table_action' = (note, expr') L.table_action'
+and table_actions = table_action' L.table_actions
+and table_actions' = table_action' L.table_actions'
+and table_action = table_action' L.table_action
+and table_action' = var * arg list * anno list * param list
 
 (* Table entries *)
-and table_entries = (note, expr') L.table_entries
-and table_entries' = (note, expr') L.table_entries'
+and table_entries = table_entry' L.table_entries
+and table_entries' = table_entry' L.table_entries'
 and table_entries_const = L.table_entries_const
-and table_entry = (note, expr') L.table_entry
-and table_entry' = (note, expr') L.table_entry'
+and table_entry = table_entry' L.table_entry
+
+and table_entry' =
+  keyset list * table_action * value option * table_entry_const * anno list
+
 and table_entry_const = L.table_entry_const
 
 (* Table default properties *)
-and table_default = (note, expr') L.table_default
-and table_default' = (note, expr') L.table_default'
+and table_default = table_action' L.table_default
+and table_default' = table_action' L.table_default'
 and table_default_const = L.table_default_const
 
 (* Table custom properties *)

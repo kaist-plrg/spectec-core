@@ -322,42 +322,42 @@ and transform_keysets (mtchs : Match.t list) : El.keyset list =
 
 and transform_stmt (stmt : Statement.t) : El.stmt =
   match stmt with
-  | EmptyStatement { tags = at } -> L.EmptyS $ at
+  | EmptyStatement { tags = at } -> El.EmptyS $ at
   | Assignment { lhs; rhs; tags = at } ->
       let expr_l = transform_expr lhs in
       let expr_r = transform_expr rhs in
-      L.AssignS { expr_l; expr_r } $ at
+      El.AssignS { expr_l; expr_r } $ at
   | Switch { expr; cases; tags = at } ->
       let expr_switch = transform_expr expr in
       let cases = transform_switch_cases cases in
-      L.SwitchS { expr_switch; cases } $ at
+      El.SwitchS { expr_switch; cases } $ at
   | Conditional { cond; tru; fls; tags = at } ->
       let expr_cond = transform_expr cond in
       let stmt_then = transform_stmt tru in
       let stmt_else =
         match fls with
         | Some fls -> transform_stmt fls
-        | None -> L.EmptyS $ no_info
+        | None -> El.EmptyS $ no_info
       in
-      L.IfS { expr_cond; stmt_then; stmt_else } $ at
+      El.IfS { expr_cond; stmt_then; stmt_else } $ at
   | BlockStatement { block; tags = at } ->
       let block = transform_block block in
-      L.BlockS { block } $ at
-  | Exit { tags = at } -> L.ExitS $ at
+      El.BlockS { block } $ at
+  | Exit { tags = at } -> El.ExitS $ at
   | Return { expr; tags = at } ->
       let expr_ret = Option.map transform_expr expr in
-      L.RetS { expr_ret } $ at
+      El.RetS { expr_ret } $ at
   | MethodCall { func; type_args; args; tags = at } -> (
       let targs = transform_targs type_args in
       let args = transform_args args in
       match func with
       | Name { name; _ } ->
           let var_func = transform_var name in
-          L.CallFuncS { var_func; targs; args } $ at
+          El.CallFuncS { var_func; targs; args } $ at
       | ExpressionMember { expr; name; _ } ->
           let expr_base = transform_expr expr in
           let member = transform_member name in
-          L.CallMethodS { expr_base; member; targs; args } $ at
+          El.CallMethodS { expr_base; member; targs; args } $ at
       | _ -> assert false)
   | DirectApplication { typ; args; tags = at } ->
       let var_inst, targs =
@@ -369,10 +369,10 @@ and transform_stmt (stmt : Statement.t) : El.stmt =
         | _ -> assert false
       in
       let args = transform_args args in
-      L.CallInstS { var_inst; targs; args } $ at
+      El.CallInstS { var_inst; targs; args } $ at
   | DeclarationStatement { decl; tags = at } ->
       let decl = transform_decl decl in
-      L.DeclS { decl } $ at
+      El.DeclS { decl } $ at
 
 and transform_stmts (stmts : Statement.t list) : El.stmt list =
   List.map transform_stmt stmts
@@ -660,7 +660,7 @@ and transform_parser_transition (trans : Parser.transition) : El.stmt =
         let cases = transform_parser_cases cases in
         El.SelectE { exprs_select; cases } $ at
   in
-  L.TransS { expr_label } $ expr_label.at
+  El.TransS { expr_label } $ expr_label.at
 
 and transform_parser_state (state : Parser.state) : El.parser_state =
   let Parser.{ name; statements; transition; tags = at; annotations } = state in

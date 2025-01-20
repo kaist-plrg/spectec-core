@@ -666,12 +666,16 @@ def $check_table_key(matchkind, typ) = false
 rule Table_key_ok:
   p C tblctx |- (expr matchkind) : tblctx''
   -- Expr_ok: p C |- expr : typ ctk
+  ----
+  -- if tidset = $bound_tid(C)
+  -- Type_wf: tidset |- SetT typ
+  ----
   -- if (MatchKindV matchkind) = $find_val(p, C, CURRENT matchkind)
   ----
   -- if $check_table_key(matchkind, typ)
   -- if tblctx' = $update_mode(matchkind, typ, tblctx)
   ----
-  -- if tblctx'' = $add_key((SetT typ, matchkind), tblctx')
+  -- if tblctx'' = $add_key((typ, matchkind), tblctx')
 
 
 relation Table_keys_ok: cursor context tblctx |- tblkeyprop : tblctx
@@ -736,7 +740,7 @@ rule Table_actions_ok/cons:
 relation Table_entry_keyset_ok: cursor context tblctx |- key keyset : tblstate
 
 rule Table_entry_keyset_ok/exprk-maske-lpm:
-  p C tblctx |- (SetT typ_k, "lpm") (ExprK (MaskE expr_b expr_m)) : state_e
+  p C tblctx |- (typ_k, "lpm") (ExprK (MaskE expr_b expr_m)) : state_e
   -- Expr_ok: p C |- (MaskE expr_b expr_m) : (SetT typ) ctk
   -- if tblctx.MODE = NOPRILPM i
   ----
@@ -748,21 +752,21 @@ rule Table_entry_keyset_ok/exprk-maske-lpm:
   -- Sub_impl: typ << typ_k
 
 rule Table_entry_keyset_ok/exprk-maske-ternary:
-  p C tblctx |- (SetT typ_k, "ternary") (ExprK (MaskE expr_b expr_m)) : NOLPM
+  p C tblctx |- (typ_k, "ternary") (ExprK (MaskE expr_b expr_m)) : NOLPM
   -- Expr_ok: p C |- (MaskE expr_b expr_m) : (SetT typ) ctk
   -- Sub_impl: typ << typ_k
 
 rule Table_entry_keyset_ok/exprk-rangee:
-  p C tblctx |- (SetT typ_k, "range") (ExprK (RangeE expr_l expr_r)) : NOLPM
+  p C tblctx |- (typ_k, "range") (ExprK (RangeE expr_l expr_r)) : NOLPM
   -- Expr_ok: p C |- (RangeE expr_l expr_r) : (SetT typ) ctk
   -- Sub_impl: typ << typ_k
 
 rule Table_entry_keyset_ok/exprk-else:
-  p C tblctx |- (SetT typ_k, matchkind) (ExprK expr) : NOLPM
+  p C tblctx |- (typ_k, matchkind) (ExprK expr) : NOLPM
   -- if ~($is_maske(expr) \/ $is_rangee(expr))
   -- Expr_ok: LOCAL C |- expr : typ ctk
   ----
-  -- Sub_impl: (SetT typ) << typ_k
+  -- Sub_impl: typ << typ_k
 
 
 relation Table_entry_keysets_state_ok: cursor context tblctx tblstate |- key* keyset* : tblstate
@@ -1057,7 +1061,7 @@ rule Decl_ok/tabled:
   -- Table_props_ok: LOCAL C_1 $empty_tblctx() |- tblprop* : tblctx'
   ----
   -- Table_type_decl_ok: BLOCK C_1 tblctx' |- id : C_2 typ_tbl
-  -- if typ = TableT typ_tbl
+  -- if typ = TableT id typ_tbl
   ----
   -- if tidset = $bound_tid(C_2)
   -- Type_wf: tidset |- typ

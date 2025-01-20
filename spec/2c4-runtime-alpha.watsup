@@ -14,7 +14,7 @@ def $nominal(StructT id (member, typ)*) = true
 def $nominal(HeaderT id (member, typ)*) = true
 def $nominal(UnionT id (member, typ)*) = true
 def $nominal(ExternT id fmap) = true
-def $nominal(TableT typ) = true
+def $nominal(TableT id typ) = true
 def $nominal(typ) = false
   -- otherwise
 
@@ -141,7 +141,8 @@ rule Type_alpha/packaget:
   -- (Type_alpha: typ_a ~~ typ_b)*
 
 rule Type_alpha/tablet:
-  (TableT typ_a) ~~ (TableT typ_b)
+  (TableT id_a typ_a) ~~ (TableT id_b typ_b)
+  -- if id_a = id_b
   -- Type_alpha: typ_a ~~ typ_b
 
 rule Type_alpha/defaultt:

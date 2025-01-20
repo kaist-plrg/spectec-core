@@ -1,4 +1,5 @@
 (library
  (name typing)
- (libraries lang el il runtime)
- (modules ctx tblctx subtyp static wellformed flow typecheck))
+ (libraries lang el il domain runtime_static)
+ (modules ctx tblctx subtyp static wellformed flow typecheck)
+ (instrumentation (backend bisect_ppx)))
