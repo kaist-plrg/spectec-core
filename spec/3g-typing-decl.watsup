@@ -82,8 +82,7 @@ rule Inst_init_decl_ok/funcd:
   -- if (fid' dir' type' expr')* = param*
   -- if C_1 = $set_blockkind(C_0, EXTERN)
   ----
-  -- if empty_venv = $empty_map(id, val, venv)
-  -- if C_2 = $set_blockframe(C_1, empty_venv, tenv)
+  -- if C_2 = $set_blockframe(C_1, $empty_map(id, val, eps, eps), tenv)
   ----
   -- if C_2.BLOCK.KIND = EXTERN
   -- if C_3 = $add_typdefs(LOCAL, C_2, tparam*, (MonoD (VarT tparam))*)
@@ -105,6 +104,7 @@ rule Inst_init_decl_ok/funcd:
   ----
   -- if fdenv' = $update_map(fid, funcdef, fdenv, fid', fd)
 
+
 relation Inst_init_decls_ok: context tenv fdenv |- decl* : fdenv
 
 rule Inst_init_decls_ok/nil:
@@ -115,27 +115,17 @@ rule Inst_init_decls_ok/cons:
   -- Inst_init_decl_ok: GLOBAL C tenv fdenv |- decl_h : tenv' fdenv'
   -- Inst_init_decls_ok: C tenv' fdenv' |- decl_t* : fdenv''
 
+
 def $update_fdenv_extern(fdenv, typ*, fid*, funcdef*) : map(fid, funcdef)    hint(show UPDATE_FDENV_EXTERN%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(", ")#%4#%latex(")"))
 
-def $update_fdenv_extern(fdenv_e, typ_i*, eps, eps) = fdenv_e
-def $update_fdenv_extern(fdenv_e, typ_i*, fid_h fid_t*, fda_h fda_t*) = $update_fdenv_extern(fdenv_e', typ_i, fid_t*, fda_t*)
-  -- if PolyFD tparam* (ExternAbstractMethodT pt* typ_r) = $find_env(fid, funcdef, fdenv_e, fid_h)
-  -- if fd_e = PolyFD tparam* (ExternMethodT pt* typ_r)
-  -- if theta = MAP tparam* typ_i*
-  -- if fd_e' = $subst_funcdef(theta, fd_e)
-  -- FuncDef_alpha: fd_e' ~~ fda_h
-  -- if fdenv_e' = $update_map(fid, funcdef, fdenv_e, fid_h, fd_e)
-
-rule Decl_ok/instd-none:
-  p C_0 |- InstD id name_inst targ* arg* eps : C_1
-  ----
-  -- (Type_ok: p C_0 |- targ : typ_a)*
-  ----
-  -- if cd = $find_consdef(p, C_0, name_inst)
-  -- if ct = $specialize_consdef(cd, typ_a*)
-  ----
-  -- Inst_ok: p C_0 |- ct arg* : typ
-  -- if C_1 = $add_typ(p, C_0, id, typ NO CTK)
+def $update_fdenv_extern(fdenv_ext, typ_a*, eps, eps) = fdenv_ext
+def $update_fdenv_extern(fdenv_ext, typ_a*, fid_h fid_t*, fd_h fd_t*) = $update_fdenv_extern(fdenv_ext', typ_a*, fid_t*, fd_t*)
+  -- if PolyFD tparam* (ExternAbstractMethodT pt* typ_r) = $find_env(fid, funcdef, fdenv_ext, fid_h)
+  -- if fd_ext = PolyFD tparam* (ExternMethodT pt* typ_r)
+  -- if theta = MAP tparam* typ_a*
+  -- if fd_ext' = $subst_funcdef(theta, fd_ext)
+  -- FuncDef_alpha: fd_ext' ~~ fd_h
+  -- if fdenv_ext' = $update_map(fid, funcdef, fdenv_ext, fid_h, fd_ext')
 
 rule Decl_ok/instd-some:
   p C_0 |- InstD id name_inst targ* arg* decl* : C_2
@@ -147,23 +137,31 @@ rule Decl_ok/instd-some:
   ----
   -- Inst_ok: p C_0 |- ct arg* : typ
   ----
-  -- if typ = SpecT (PolyD tparam* (ExternT id' fdenv_e)) typ_i*
+  -- if typ = SpecT (PolyD tparam* (ExternT id_ext fdenv_ext)) typ_a'*
   -- if C_1 = $add_typ(LOCAL, C_0, "this", typ NO CTK)
   ----
-  -- if empty_tenv = $empty_map(id, rtyp, tenv)
-  -- if empty_fdenv = $empty_map(fid, funcdef, fdenv)
+  -- Inst_init_decls_ok: C_1 $empty_map(id, rtyp, eps, eps) $empty_map(fid, funcdef, eps, eps) |- decl* : fdenv_abs
+  -- if MAP fid_abs* fd_abs* = fdenv_abs
   ----
-  -- Inst_init_decls_ok: C_1 empty_tenv empty_fdenv |- decl* : fdenv_a
-  -- if MAP fid_a* fd_a* = fdenv_a
+  -- if fdenv_ext' = $update_fdenv_extern(fdenv_ext, typ_a'*, fid_abs*, fd_abs*)
+  -- if MAP fid_ext* fd_ext* = fdenv_ext'
   ----
-  -- if fdenv_e' = $update_fdenv_extern(fdenv_e, typ_i*, fid_a*, fd_a*)
-  -- if MAP fid_e* fd_e* = fdenv_e'
-  ----
-  -- if (PolyFD tparam'* ft)* = fd_e*
+  -- if (PolyFD tparam'* ft)* = fd_ext*
   -- (if ~$is_externabstractmethodt(ft))*
   ----
-  -- if typ' = SpecT (PolyD tparam* (ExternT id' fdenv_e')) typ_i*
+  -- if typ' = SpecT (PolyD tparam* (ExternT id_ext fdenv_ext')) typ_a'*
   -- if C_2 = $add_typ(p, C_1, id, typ' NO CTK)
+
+rule Decl_ok/instd-none:
+  p C_0 |- InstD id name_inst targ* arg* eps : C_1
+  ----
+  -- (Type_ok: p C_0 |- targ : typ_a)*
+  ----
+  -- if cd = $find_consdef(p, C_0, name_inst)
+  -- if ct = $specialize_consdef(cd, typ_a*)
+  ----
+  -- Inst_ok: p C_0 |- ct arg* : typ
+  -- if C_1 = $add_typ(p, C_0, id, typ NO CTK)
 
 ;;
 ;; Error declaration

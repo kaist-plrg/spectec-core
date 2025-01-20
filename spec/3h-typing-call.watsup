@@ -160,6 +160,9 @@ rule Call_ok/table-apply-methodt:
   ----
   -- Call_site_ok: p C |- TableApplyMethodT typ_r : CALLSITE_OK
 
+;;
+;; Constructor invocation
+;;
 
 rule Inst_site_ok/global:
   GLOBAL C |- (ConsT pt* typ_i) : INSTSITE_OK
@@ -201,6 +204,7 @@ rule Inst_site_ok/local-controlapplymethod:
   -- if C.LOCAL.KIND = CONTROLAPPLYMETHOD
   ----
   -- if $is_externt(typ_i') \/ $is_controlt(typ_i')
+
 
 rule Inst_ok/global-packaget:
   GLOBAL C_0 |- (ConsT pt* typ_i) arg* : typ_i
