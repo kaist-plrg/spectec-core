@@ -4484,6 +4484,7 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   let ctx, typ_struct = type_table_type_decl cursor ctx table_ctx id in
   let typ = Types.TableT typ_struct in
+  WF.check_valid_typ cursor ctx typ;
   let ctx = Ctx.add_rtype cursor id.it typ Lang.Ast.No Ctk.DYN ctx in
   let decl_il = Il.Ast.TableD { id; table = table_il; annos = annos_il } in
   (ctx, decl_il)
@@ -4568,7 +4569,8 @@ and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
   let value_match_kind = Ctx.find_value_opt cursor match_kind.it ctx in
   let value_match_kind =
     match value_match_kind with
-    | Some (Value.MatchKindV match_kind) -> match_kind
+    | Some (Value.MatchKindV value_match_kind) when match_kind.it = value_match_kind ->
+        value_match_kind
     | _ ->
         Format.asprintf "(type_table_key) %a is not a valid match_kind"
           El.Pp.pp_match_kind match_kind

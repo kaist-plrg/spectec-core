@@ -43,3 +43,10 @@ def $fresh_tid() : tid  hint(show FRESH#_#TID)
 ;;
 
 syntax fid = id
+
+def $string_of_name(name) : text     hint(show %)
+
+def $string_of_name(name) = $concat_texts("." id)
+  -- if TOP id = name
+def $string_of_name(name) = id
+  -- if CURRENT id = name
