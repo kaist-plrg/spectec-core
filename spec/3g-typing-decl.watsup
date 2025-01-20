@@ -834,18 +834,12 @@ rule Table_entries_fold_ok/cons:
 
 relation Table_entries_ok: cursor context tblctx |- tblentryprop : tblctx
 
-rule Table_entries_ok/nil:
-  p C tblctx |- (eps bool) : tblctx''
-  -- if tblctx' = $set_entries_size(0, tblctx)
-  -- if tblctx'' = $set_entries_const(bool, tblctx')
-
-rule Table_entries_ok/cons:
+rule Table_entries_ok:
   p C tblctx |- (tblentry* bool) : tblctx'''
   -- if $implies(|tblctx.KEYS| = 0, |tblentry*| = 0)
   -- if tblctx' = $set_entries_size(|tblentry*|, tblctx)
   ----
   -- if tblctx'' = $set_entries_const(bool, tblctx')
-  -- if tblentry_h tblentry_t* = tblentry*
   ----
   -- Table_entries_fold_ok: p C tblctx'' |- tblentry* : tblctx'''
 
@@ -943,7 +937,7 @@ rule Decl_ok/tabled:
   -- if |$keys_of_table(tblprop*)| <= 1 /\ |$actions_of_table(tblprop*)| = 1
   ----
   -- if C_1 = $set_localkind(C_0, TABLEAPPLYMETHOD)
-  -- Table_props_ok: LOCAL C_1 tblctx |- tblprop* : tblctx'
+  -- Table_props_ok: LOCAL C_1 $empty_tblctx() |- tblprop* : tblctx'
   ----
   -- Table_type_decl_ok: BLOCK C_1 tblctx' |- id : C_2 typ_tbl
   -- if typ = TableT typ_tbl

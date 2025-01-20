@@ -12,9 +12,21 @@ syntax priority =
     DELTA int,
     LARGEST_WINS bool }
 
+def $empty_pt(): priority
+def $empty_pt() =
+  { VALUES eps,
+    INIT false,
+    DELTA 1,
+    LARGEST_WINS true }
+
 syntax entry =
   { SIZE int,
     CONST bool }
+
+def $empty_et(): entry
+def $empty_et() =
+  { SIZE 0,
+    CONST true }
 
 var prt : priority
 var ent : entry
@@ -28,6 +40,16 @@ syntax tblctx =
     PRIORITIES priority,
     ENTRIES entry,
     MODE mode }
+
+def $empty_tblctx(): tblctx
+def $empty_tblctx() =
+  {
+    KEYS eps,
+    ACTIONS eps,
+    PRIORITIES $empty_pt(),
+    ENTRIES $empty_et(),
+    MODE NOPRI
+  }
 
 syntax tblstate =
   | LPM int
