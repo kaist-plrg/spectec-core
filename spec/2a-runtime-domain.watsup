@@ -22,11 +22,13 @@ syntax map(syntax K, syntax V) hint(show %latex("\\{(")#% %latex("\\mapsto") %#%
   MAP K* V* hint(show %latex("\\{(")#% %latex("\\mapsto") %#%latex(")\\}"))
   -- if |K*| = |V*|
 
+;; (TODO) had to add meaningless arguments to $empty_map, for it causes cryptic type errors
+def $empty_map(syntax K, syntax V, K*, V*) : map(K, V)                hint(show %latex("\\{") %latex("\\}"))
 def $in_map(syntax K, syntax V, K, map(K, V)) : V                     hint(show %3 <- %4)
 def $in_dom_map(syntax K, syntax V, K, map(K, V)) : bool              hint(show %3#%latex("\\in Domain(")#%4#%latex(")"))
 def $find_map(syntax K, syntax V, map(K, V), K) : V                   hint(show %3#`[%4])
 def $extends_map(syntax K, syntax V, map(K, V), K*, V*) : map(K, V)   hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
-
+def $update_map(syntax K, syntax V, map(K, V), K, V) : map(K, V)      hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
 
 ;;
 ;; Type identifiers
@@ -36,7 +38,6 @@ syntax tid = id
 syntax tidset hint(show %latex("\\mathcal{B}")) = set(tid)
 
 def $fresh_tid() : tid  hint(show FRESH#_#TID)
-
 
 ;;
 ;; Function identifiers
