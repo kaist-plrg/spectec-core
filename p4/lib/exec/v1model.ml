@@ -32,6 +32,21 @@ module Counter = struct
 
   let pp fmt _ctr = F.fprintf fmt "Counter"
 
+  (* A counter object is created by calling its constructor.  This
+     creates an array of counter states, with the number of counter
+     states specified by the size parameter.  The array indices are
+     in the range [0, size-1].
+
+     You must provide a choice of whether to maintain only a packet
+     count (CounterType.packets), only a byte count
+     (CounterType.bytes), or both (CounterType.packets_and_bytes).
+
+     Counters can be updated from your P4 program, but can only be
+     read from the control plane.  If you need something that can be
+     both read and written from the P4 program, consider using a
+     register.
+
+     counter(bit<32> size, CounterType type); *)
   let init (size : Value.t) (typ : Value.t) : t =
     let size = size |> Value.get_num |> Bigint.to_int_exn in
     match typ with
@@ -92,11 +107,90 @@ module Counter = struct
     (ctx, sign, ctr)
 end
 
+module DirectCounter = struct
+  type t =
+    | Packets of Bigint.t
+    | Bytes of Bigint.t
+    | PacketsAndBytes of (Bigint.t * Bigint.t)
+
+  let pp fmt _dctr = F.fprintf fmt "DirectCounter"
+
+  (* A direct_counter object is created by calling its constructor.
+     You must provide a choice of whether to maintain only a packet
+     count (CounterType.packets), only a byte count
+     (CounterType.bytes), or both (CounterType.packets_and_bytes).
+     After constructing the object, you can associate it with at
+     most one table, by adding the following table property to the
+     definition of that table:
+
+         counters = <object_name>;
+
+     Counters can be updated from your P4 program, but can only be
+     read from the control plane.  If you need something that can be
+     both read and written from the P4 program, consider using a
+     register.
+
+     direct_counter(CounterType type); *)
+  let init (typ : Value.t) : t =
+    match typ with
+    | EnumFieldV ("CounterType", "packets") -> Packets Bigint.zero
+    | EnumFieldV ("CounterType", "bytes") -> Bytes Bigint.zero
+    | EnumFieldV ("CounterType", "packets_and_bytes") ->
+        PacketsAndBytes (Bigint.zero, Bigint.zero)
+    | _ -> assert false
+
+  (* The count() method is actually unnecessary in the v1model
+     architecture.  This is because after a direct_counter object
+     has been associated with a table as described in the
+     documentation for the direct_counter constructor, every time
+     the table is applied and a table entry is matched, the counter
+     state associated with the matching entry is read, modified, and
+     written back, atomically relative to the processing of other
+     packets, regardless of whether the count() method is called in
+     the body of that action.
+
+     void count(); *)
+  let count (ctx : Ctx.t) (len : Bigint.t) dctr : Ctx.t * Sig.t * t =
+    let dctr =
+      match dctr with
+      | Packets count ->
+          let count = Bigint.(count + one) in
+          Packets count
+      | Bytes count ->
+          let count = Bigint.(count + len) in
+          Bytes count
+      | PacketsAndBytes (count_packets, count_bytes) ->
+          let count_packets = Bigint.(count_packets + one) in
+          let count_bytes = Bigint.(count_bytes + len) in
+          PacketsAndBytes (count_packets, count_bytes)
+    in
+    let sign = Sig.Ret None in
+    (ctx, sign, dctr)
+end
+
+module Meter = struct
+  (* (TODO) *)
+end
+
+module DirectMeter = struct
+  (* (TODO) *)
+end
+
 module Register = struct
   type t = Type.t * Value.t list
 
   let pp fmt _reg = F.fprintf fmt "Register"
 
+  (* A register object is created by calling its constructor.  This
+     creates an array of 'size' identical elements, each with type
+     T.  The array indices are in the range [0, size-1].  For
+     example, this constructor call:
+
+         register<bit<32>>(512) my_reg;
+
+     allocates storage for 512 values, each with type bit<32>.
+
+     register(bit<32> size); *)
   let init (typ : Type.t) (size : Value.t) : t =
     let value_default = Numerics.eval_default typ in
     let size = size |> Value.get_num |> Bigint.to_int_exn in
@@ -168,6 +262,14 @@ module Register = struct
     (ctx, sign, reg)
 end
 
+module ActionProfile = struct
+  (* (TODO) *)
+end
+
+module ActionSelector = struct
+  (* (TODO) *)
+end
+
 (* V1Model Pipeline *)
 
 (* (TODO) Inserts VoidT, shouldn't matter in dynamics but not a good practice either *)
@@ -204,6 +306,7 @@ module Make (Interp : INTERP) : ARCH = struct
     | PacketIn of Core.PacketIn.t
     | PacketOut of Core.PacketOut.t
     | Counter of Counter.t
+    | DirectCounter of DirectCounter.t
     | Register of Register.t
 
   let pp_extern fmt extern =
@@ -212,6 +315,8 @@ module Make (Interp : INTERP) : ARCH = struct
     | PacketOut pkt_out ->
         F.fprintf fmt "PacketOut %a" Core.PacketOut.pp pkt_out
     | Counter ctr -> F.fprintf fmt "Counter %a" Counter.pp ctr
+    | DirectCounter dctr ->
+        F.fprintf fmt "DirectCounter %a" DirectCounter.pp dctr
     | Register reg -> F.fprintf fmt "Register %a" Register.pp reg
 
   let externs = ref Externs.empty
@@ -286,6 +391,18 @@ module Make (Interp : INTERP) : ARCH = struct
         | _ -> ())
       sto
 
+  let init_direct_counters (sto : Sto.t) : unit =
+    Sto.iter
+      (fun oid obj ->
+        match obj with
+        | Obj.ExternO ("direct_counter", _, venv, _) ->
+            let typ = VEnv.find "type" venv in
+            let dctr = DirectCounter.init typ in
+            let id = String.concat "." oid in
+            externs := Externs.add id (DirectCounter dctr) !externs
+        | _ -> ())
+      sto
+
   let init_registers (sto : Sto.t) : unit =
     Sto.iter
       (fun oid obj ->
@@ -315,9 +432,7 @@ module Make (Interp : INTERP) : ARCH = struct
       | _ -> assert false
     in
     let typ_std_meta =
-      let td_std_meta =
-        Ctx.find_typdef Ctx.Global "standard_metadata_t" ctx
-      in
+      let td_std_meta = Ctx.find_typdef Ctx.Global "standard_metadata_t" ctx in
       TypeDef.specialize td_std_meta []
     in
     let ctx = init_var ctx "hdr" typ_hdr in
@@ -329,11 +444,46 @@ module Make (Interp : INTERP) : ARCH = struct
     let ctx, sto = init_instantiate_packet_in ctx sto in
     let ctx, sto = init_instantiate_packet_out ctx sto in
     init_counters sto;
+    init_direct_counters sto;
     init_registers sto;
     let ctx = init_vars ctx sto in
     (ctx, sto)
 
   (* Extern interpreter *)
+
+  (* Generate a random number in the range lo..hi, inclusive, and write
+     it to the result parameter.  The value written to result is not
+     specified if lo > hi.
+
+     @param T          Must be a type bit<W>
+
+     extern void random<T>(out T result, in T lo, in T hi); *)
+  let eval_extern_random (_ctx : Ctx.t) : Ctx.t * Sig.t = assert false
+
+  (* Calling digest causes a message containing the values specified in
+     the data parameter to be sent to the control plane software.  It is
+     similar to sending a clone of the packet to the control plane
+     software, except that it can be more efficient because the messages
+     are typically smaller than packets, and many such small digest
+     messages are typically coalesced together into a larger "batch"
+     which the control plane software processes all at once.
+
+     The value of the fields that are sent in the message to the control
+     plane is the value they have at the time the digest call occurs,
+     even if those field values are changed by later ingress control
+     code.  See Note 3.
+
+     Calling digest is only supported in the ingress control.  There is
+     no way to undo its effects once it has been called.
+
+     If the type T is a named struct, the name is used to generate the
+     control plane API.
+
+     The BMv2 implementation of the v1model architecture ignores the
+     value of the receiver parameter.
+
+     extern void digest<T>(in bit<32> receiver, in T data); *)
+  let eval_extern_digest (_ctx : Ctx.t) : Ctx.t * Sig.t = assert false
 
   (* mark_to_drop(standard_metadata) is a primitive action that modifies
      standard_metadata.egress_spec to an implementation-specific special
@@ -552,12 +702,200 @@ module Make (Interp : INTERP) : ARCH = struct
       let ctx = Ctx.update_value Ctx.Local "checksum" value_checksum ctx in
       (ctx, Sig.Ret None)
 
+  (* clone is in most ways identical to the clone_preserving_field_list
+     operation, with the only difference being that it never preserves
+     any user-defined metadata fields with the cloned packet.  It is
+     equivalent to calling clone_preserving_field_list with the same
+     type and session parameter values, with empty data.
+
+     extern void clone(in CloneType type, in bit<32> session); *)
+  let eval_extern_clone (_ctx : Ctx.t) : Ctx.t * Sig.t = assert false
+
+  (* Calling resubmit_preserving_field_list during execution of the
+     ingress control will cause the packet to be resubmitted, i.e. it
+     will begin processing again with the parser, with the contents of
+     the packet exactly as they were when it last began parsing.  The
+     only difference is in the value of the standard_metadata
+     instance_type field, and any user-defined metadata fields that the
+     resubmit_preserving_field_list operation causes to be preserved.
+
+     The user metadata fields that are tagged with @field_list(index) will
+     be sent to the parser together with the packet.
+
+     Calling resubmit_preserving_field_list is only supported in the
+     ingress control.  There is no way to undo its effects once it has
+     been called.  If resubmit_preserving_field_list is called multiple
+     times during a single execution of the ingress control, only one
+     packet is resubmitted, and only the user-defined metadata fields
+     specified by the field list index from the last such call are
+     preserved.  See the v1model architecture documentation (Note 1) for
+     more details.
+
+     For example, the user metadata fields can be annotated as follows:
+     struct UM {
+        @field_list(1)
+        bit<32> x;
+        @field_list(1, 2)
+        bit<32> y;
+        bit<32> z;
+     }
+
+     Calling resubmit_preserving_field_list(1) will resubmit the packet
+     and preserve fields x and y of the user metadata.  Calling
+     resubmit_preserving_field_list(2) will only preserve field y.
+
+     extern void resubmit_preserving_field_list(bit<8> index); *)
+  let eval_extern_resubmit_preserving_field_list (_ctx : Ctx.t) : Ctx.t * Sig.t
+      =
+    assert false
+
+  (* Calling recirculate_preserving_field_list during execution of the
+     egress control will cause the packet to be recirculated, i.e. it
+     will begin processing again with the parser, with the contents of
+     the packet as they are created by the deparser.  Recirculated
+     packets can be distinguished from new packets in ingress processing
+     by the value of the standard_metadata instance_type field.  The
+     caller may request that some user-defined metadata fields be
+     preserved with the recirculated packet.
+
+     The user metadata fields that are tagged with @field_list(index) will be
+     sent to the parser together with the packet.
+
+     Calling recirculate_preserving_field_list is only supported in the
+     egress control.  There is no way to undo its effects once it has
+     been called.  If recirculate_preserving_field_list is called
+     multiple times during a single execution of the egress control,
+     only one packet is recirculated, and only the user-defined metadata
+     fields specified by the field list index from the last such call
+     are preserved.  See the v1model architecture documentation (Note 1)
+     for more details.
+
+     extern void recirculate_preserving_field_list(bit<8> index); *)
+  let eval_extern_recirculate_preserving_field_list (_ctx : Ctx.t) :
+      Ctx.t * Sig.t =
+    assert false
+
+  (* Calling clone_preserving_field_list during execution of the ingress
+     or egress control will cause the packet to be cloned, sometimes
+     also called mirroring, i.e. zero or more copies of the packet are
+     made, and each will later begin egress processing as an independent
+     packet from the original packet.  The original packet continues
+     with its normal next steps independent of the clone(s).
+
+     The session parameter is an integer identifying a clone session id
+     (sometimes called a mirror session id).  The control plane software
+     must configure each session you wish to use, or else no clones will
+     be made using that session.  Typically this will involve the
+     control plane software specifying one output port to which the
+     cloned packet should be sent, or a list of (port, egress_rid) pairs
+     to which a separate clone should be created for each, similar to
+     multicast packets.
+
+     Cloned packets can be distinguished from others by the value of the
+     standard_metadata instance_type field.
+
+     The user metadata fields that are tagged with @field_list(index) will be
+     sent to the parser together with a clone of the packet.
+
+     If clone_preserving_field_list is called during ingress processing,
+     the first parameter must be CloneType.I2E.  If
+     clone_preserving_field_list is called during egress processing, the
+     first parameter must be CloneType.E2E.
+
+     There is no way to undo its effects once it has been called.  If
+     there are multiple calls to clone_preserving_field_list and/or
+     clone during a single execution of the same ingress (or egress)
+     control, only the last clone session and index are used.  See the
+     v1model architecture documentation (Note 1) for more details.
+
+     extern void clone_preserving_field_list(in CloneType type,
+                                             in bit<32> session, bit<8> index); *)
+  let eval_extern_clone_preserving_field_list (_ctx : Ctx.t) : Ctx.t * Sig.t =
+    assert false
+
+  let eval_extern_truncate (_ctx : Ctx.t) : Ctx.t * Sig.t = assert false
+
+  (* Calling assert when the argument is true has no effect, except any
+     effect that might occur due to evaluation of the argument (but see
+     below).  If the argument is false, the precise behavior is
+     target-specific, but the intent is to record or log which assert
+     statement failed, and optionally other information about the
+     failure.
+
+     For example, on the simple_switch target, executing an assert
+     statement with a false argument causes a log message with the file
+     name and line number of the assert statement to be printed, and
+     then the simple_switch process exits.
+
+     If you provide the --ndebug command line option to p4c when
+     compiling, the compiled program behaves as if all assert statements
+     were not present in the source code.
+
+     We strongly recommend that you avoid using expressions as an
+     argument to an assert call that can have side effects, e.g. an
+     extern method or function call that has side effects.  p4c will
+     allow you to do this with no warning given.  We recommend this
+     because, if you follow this advice, your program will behave the
+     same way when assert statements are removed.
+
+     extern void assert(in bool check); *)
+  let eval_extern_assert (_ctx : Ctx.t) : Ctx.t * Sig.t = assert false
+
+  (* For the purposes of compiling and executing P4 programs on a target
+     device, assert and assume are identical, including the use of the
+     --ndebug p4c option to elide them.  See documentation for assert.
+
+     The reason that assume exists as a separate function from assert is
+     because they are expected to be used differently by formal
+     verification tools.  For some formal tools, the goal is to try to
+     find example packets and sets of installed table entries that cause
+     an assert statement condition to be false.
+
+     Suppose you run such a tool on your program, and the example packet
+     given is an MPLS packet, i.e. hdr.ethernet.etherType == 0x8847.
+     You look at the example, and indeed it does cause an assert
+     condition to be false.  However, your plan is to deploy your P4
+     program in a network in places where no MPLS packets can occur.
+     You could add extra conditions to your P4 program to handle the
+     processing of such a packet cleanly, without assertions failing,
+     but you would prefer to tell the tool "such example packets are not
+     applicable in my scenario -- never show them to me".  By adding a
+     statement:
+
+         assume(hdr.ethernet.etherType != 0x8847);
+
+     at an appropriate place in your program, the formal tool should
+     never show you such examples -- only ones that make all such assume
+     conditions true.
+
+     The reason that assume statements behave the same as assert
+     statements when compiled to a target device is that if the
+     condition ever evaluates to false when operating in a network, it
+     is likely that your assumption was wrong, and should be reexamined.
+
+     extern void assume(in bool check); *)
+  let eval_extern_assume (_ctx : Ctx.t) : Ctx.t * Sig.t = assert false
+
+  (* Log user defined messages
+     Example: log_msg("User defined message");
+     or log_msg("Value1 = {}, Value2 = {}",{value1, value2});
+
+     extern void log_msg(string msg);
+     extern void log_msg<T>(string msg, in T data); *)
+  let eval_extern_log_msg ~(data : bool) (_ctx : Ctx.t) : Ctx.t * Sig.t =
+    data |> ignore;
+    assert false
+
   let eval_extern_func_call (ctx : Ctx.t) (fid : FId.t) : Ctx.t * Sig.t =
     let fname, args = fid in
     match (fname, args) with
     (* core.p4 *)
     | "verify", [ ("check", false); ("toSignal", false) ] -> Core.verify ctx
     (* v1model.p4 *)
+    | "random", [ ("result", false); ("lo", false); ("hi", false) ] ->
+        eval_extern_random ctx
+    | "digest", [ ("receiver", false); ("data", false) ] ->
+        eval_extern_digest ctx
     | "mark_to_drop", [ ("standard_metadata", false) ] ->
         eval_extern_mark_to_drop ctx
     | ( "hash",
@@ -587,6 +925,20 @@ module Make (Interp : INTERP) : ARCH = struct
         ] ) ->
         let payload = fname = "update_checksum_with_payload" in
         eval_extern_update_checksum ~payload ctx
+    | "clone", [ ("type", false); ("session", false) ] -> eval_extern_clone ctx
+    | "resubmit_preserving_field_list", [ ("index", false) ] ->
+        eval_extern_resubmit_preserving_field_list ctx
+    | "recirculate_preserving_field_list", [ ("index", false) ] ->
+        eval_extern_recirculate_preserving_field_list ctx
+    | ( "clone_preserving_field_list",
+        [ ("type", false); ("session", false); ("index", false) ] ) ->
+        eval_extern_clone_preserving_field_list ctx
+    | "truncate", [ ("length", false) ] -> eval_extern_truncate ctx
+    | "assert", [ ("check", false) ] -> eval_extern_assert ctx
+    | "assume", [ ("check", false) ] -> eval_extern_assume ctx
+    | "log_msg", [ ("msg", false) ] -> eval_extern_log_msg ~data:false ctx
+    | "log_msg", [ ("msg", false); ("data", false) ] ->
+        eval_extern_log_msg ~data:true ctx
     | _ ->
         Format.asprintf "(eval_extern) unknown extern: %a" FId.pp fid
         |> error_no_info
@@ -626,6 +978,12 @@ module Make (Interp : INTERP) : ARCH = struct
         let len = pkt_in.len |> Bigint.of_int in
         let ctx, sign, ctr = Counter.count ctx len ctr in
         externs := Externs.add id (Counter ctr) !externs;
+        (ctx, sign)
+    | DirectCounter dctr, ("count", []) ->
+        let pkt_in = get_pkt_in () in
+        let len = pkt_in.len |> Bigint.of_int in
+        let ctx, sign, dctr = DirectCounter.count ctx len dctr in
+        externs := Externs.add id (DirectCounter dctr) !externs;
         (ctx, sign)
     | Register reg, ("read", [ ("result", false); ("index", false) ]) ->
         let ctx, sign, reg = Register.read ctx reg in

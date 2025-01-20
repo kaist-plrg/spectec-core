@@ -2,4 +2,5 @@
  (name exec)
  (libraries lang il domain runtime_static runtime_dynamic instance stf)
  (modules sig ctx core hash driver interp v1model gen)
- (instrumentation (backend bisect_ppx)))
+ (instrumentation
+  (backend bisect_ppx)))

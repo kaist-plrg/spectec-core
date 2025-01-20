@@ -1483,11 +1483,9 @@ and type_select_case' (cursor : Ctx.cursor) (ctx : Ctx.t)
   (keysets_il, state_label)
 
 and check_select_key (typ : Type.t) : unit =
-  check
-    (check_select_key' typ)
-    (F.asprintf
-      "(check_select_key) %a is not a valid select key type"
-      (Type.pp ~level:0) typ)
+  check (check_select_key' typ)
+    (F.asprintf "(check_select_key) %a is not a valid select key type"
+       (Type.pp ~level:0) typ)
 
 and check_select_key' (typ : Type.t) : bool =
   let typ = Type.canon typ in
@@ -4531,7 +4529,10 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let typ = Types.TableT (id.it, typ_struct) in
   WF.check_valid_typ cursor ctx typ;
   let ctx = Ctx.add_type cursor id.it typ Lang.Ast.No Ctk.DYN ctx in
-  let decl_il = Il.Ast.TableD { id; typ = typ $ no_info; table = table_il; annos = annos_il } in
+  let decl_il =
+    Il.Ast.TableD
+      { id; typ = typ $ no_info; table = table_il; annos = annos_il }
+  in
   (ctx, decl_il)
 
 (* (14.2.1.1) Keys
@@ -4599,7 +4600,8 @@ and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
   let value_match_kind = Ctx.find_value_opt cursor match_kind.it ctx in
   let value_match_kind =
     match value_match_kind with
-    | Some (Value.MatchKindV value_match_kind) when match_kind.it = value_match_kind ->
+    | Some (Value.MatchKindV value_match_kind)
+      when match_kind.it = value_match_kind ->
         value_match_kind
     | _ ->
         F.asprintf "(type_table_key) %a is not a valid match_kind"
