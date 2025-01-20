@@ -548,31 +548,11 @@ rule Decl_ok/parserd:
 ;; Table declaration
 ;;
 
-def $filter_directionless_args(paramtyp*, arg*) : arg*    hint(show FILTER_OUT_ARGS_WITH_NO_DIR(%1, %2))
+;;
+;; Table key check
+;;
 
-def $filter_directionless_args(eps, eps) = eps
-def $filter_directionless_args(pt_h pt_t*, arg_h arg_t*) = $filter_directionless_args(pt_t*, arg_t*)
-  -- if id NO typ val? = pt_h
-def $filter_directionless_args(pt_h pt_t*, arg_h arg_t*) = arg_h $filter_directionless_args(pt_t*, arg_t*)
-  -- otherwise
-
-def $filter_directionless_params(paramtyp*) : paramtyp*   hint(show FILTER_OUT_PARAMS_WITH_NO_DIR(%1))
-
-def $filter_directionless_params(eps) = eps
-def $filter_directionless_params(pt_h pt_t*) = $filter_directionless_params(pt_t*)
-  -- if id NO typ val? = pt_h
-def $filter_directionless_params(pt_h pt_t*) = pt_h $filter_directionless_params(pt_t*)
-  -- otherwise
-
-relation Call_default_action_ok: cursor context |- name paramtyp* (arg*, typ*) arg*
-
-rule Call_default_action_ok:
-  p C |- name pt* (arg*, typ*) arg_a*
-  -- if |pt*| = |arg*|
-  -- if arg_data* = $filter_directionless_args(pt*, arg*)
-  ----
-  -- if (arg_a = arg_data)*
-  -- (Call_convention_arg_ok: p C ACT |- pt ~~ (arg, typ))*
+relation Table_key_ok: cursor context tblctx |- tblkey : tblctx
 
 def $check_table_key(matchkind, typ) : bool   hint(show CHECK_TABLE_KEY(%1, %2))
 
@@ -602,8 +582,6 @@ def $check_table_key(matchkind, typ) = $check_table_key(matchkind, typ'')
 def $check_table_key(matchkind, typ) = false
   -- otherwise
 
-relation Table_key_ok: cursor context tblctx |- tblkey : tblctx
-
 rule Table_key_ok:
   p C tblctx |- (expr matchkind) : tblctx''
   -- Expr_ok: p C |- expr : typ ctk
@@ -613,6 +591,7 @@ rule Table_key_ok:
   -- if tblctx' = $update_mode(matchkind, typ, tblctx)
   ----
   -- if tblctx'' = $add_key((SetT typ, matchkind), tblctx')
+
 
 relation Table_keys_ok: cursor context tblctx |- tblkeyprop : tblctx
 
@@ -624,13 +603,26 @@ rule Table_keys_ok/cons:
   -- Table_key_ok: p C tblctx |- tblkey_h : tblctx'
   -- Table_keys_ok: p C tblctx' |- tblkey_t* : tblctx''
 
+;;
+;; Table action check
+;;
+
 relation Call_action_partial_ok: cursor context |- name paramtyp* arg* typ*
+
+def $filter_directionless_params(paramtyp*) : paramtyp*   hint(show FILTER_DIRECTIONLESS_PARAMS(%1))
+
+def $filter_directionless_params(eps) = eps
+def $filter_directionless_params(pt_h pt_t*) = $filter_directionless_params(pt_t*)
+  -- if id NO typ val? = pt_h
+def $filter_directionless_params(pt_h pt_t*) = pt_h $filter_directionless_params(pt_t*)
+  -- otherwise
 
 rule Call_action_partial_ok:
   p C |- name pt* arg* typ*
   -- if pt'* = $filter_directionless_params(pt*)
   -- if |pt'*| = |arg*|
   -- (Call_convention_arg_ok: p C ACT |- pt' ~~ (arg, typ))*
+
 
 relation Table_action_ok: cursor context tblctx |- tblaction : tblctx
 
@@ -641,6 +633,7 @@ rule Table_action_ok:
   ----
   -- Call_action_partial_ok: p C |- name pt* arg* typ*
   -- if tblctx' = $add_action((name, pt*, arg*), tblctx)
+
 
 relation Table_actions_ok: cursor context tblctx |- tblactionprop : tblctx
 
@@ -655,7 +648,9 @@ rule Table_actions_ok/cons:
   -- if (name arg*)* = tblactionprop
   -- if $distinct(name, name*)
 
-def $of_two_complement(int, int) : int
+;;
+;; Table entry check
+;;
 
 relation Table_entry_keyset_ok: cursor context tblctx |- key keyset : tblstate
 
@@ -666,7 +661,7 @@ rule Table_entry_keyset_ok/exprk-maske-lpm:
   ----
   -- Eval_static: p C |- expr_m ~> val_m
   ----
-  -- if val_m = IntV m \/ val_m = FIntV w m \/ val_m = FBitV w m ;; (TODO)
+  -- if val_m = IntV m \/ val_m = FIntV w m \/ val_m = FBitV w m ;; (TODO-Jaehyun) bitstring manipulation
   ----
   -- if state_e = $get_lpm_prefix(FBitV i $of_two_complement(m, i))
   -- Sub_impl: typ << typ_k
@@ -688,6 +683,7 @@ rule Table_entry_keyset_ok/exprk-else:
   ----
   -- Sub_impl: (SetT typ) << typ_k
 
+
 relation Table_entry_keysets_state_ok: cursor context tblctx tblstate |- key* keyset* : tblstate
 
 rule Table_entry_keysets_state_ok/nil:
@@ -698,6 +694,7 @@ rule Table_entry_keysets_state_ok/cons:
   -- Table_entry_keyset_ok: p C tblctx |- key_h keyset_h : tblstate'
   -- if tblstate'' = $update_state(tblstate, tblstate')
   -- Table_entry_keysets_state_ok: p C tblctx tblstate'' |- key_t* keyset_t* : tblstate'''
+
 
 relation Table_entry_keysets_ok: cursor context tblctx |- keyset* : tblstate
 
@@ -720,6 +717,26 @@ rule Table_entry_keysets_ok/others:
   -- if |tblctx.KEYS| = |keyset*|
   -- Table_entry_keysets_state_ok: p C tblctx NOLPM |- tblctx.KEYS keyset* : tblstate
 
+
+relation Call_default_action_ok: cursor context |- name paramtyp* (arg*, typ*) arg*
+
+def $filter_directionless_args(paramtyp*, arg*) : arg*    hint(show FILTER_DIRECTIONLESS_ARGS(%1, %2))
+
+def $filter_directionless_args(eps, eps) = eps
+def $filter_directionless_args(pt_h pt_t*, arg_h arg_t*) = $filter_directionless_args(pt_t*, arg_t*)
+  -- if id NO typ val? = pt_h
+def $filter_directionless_args(pt_h pt_t*, arg_h arg_t*) = arg_h $filter_directionless_args(pt_t*, arg_t*)
+  -- otherwise
+
+rule Call_default_action_ok:
+  p C |- name pt* (arg*, typ*) arg_a*
+  -- if |pt*| = |arg*|
+  -- if arg_data* = $filter_directionless_args(pt*, arg*)
+  ----
+  -- if (arg_a = arg_data)*
+  -- (Call_convention_arg_ok: p C ACT |- pt ~~ (arg, typ))*
+
+
 relation Table_entry_action_ok: cursor context tblctx |- tblaction
 
 rule Table_entry_action_ok:
@@ -728,6 +745,7 @@ rule Table_entry_action_ok:
   -- (Arg_ok: p C |- arg : typ)*
   ----
   -- Call_default_action_ok: p C |- name pt* (arg*, typ*) arg_a*
+
 
 relation Table_entry_priority_ok: cursor context tblctx tblstate |- expr? : tblctx
 
@@ -747,7 +765,7 @@ rule Table_entry_priority_ok/priority-values-nil-somep:
   -- Expr_ok: LOCAL C |- expr : typ ctk
   -- Eval_static: LOCAL C |- expr ~> val
   ----
-  -- if val = IntV i \/ val = FIntV w i \/ val = FBitV w i ;; (TODO)
+  -- if val = IntV i \/ val = FIntV w i \/ val = FBitV w i ;; (TODO-Jaehyun) bitstring manipulation
   -- if i >= 0
   ----
   -- if tblctx' = $set_priority_init(true, tblctx)
@@ -785,7 +803,7 @@ rule Table_entry_priority_ok/else-somep:
   -- Expr_ok: LOCAL C |- expr : typ ctk
   -- Eval_static: LOCAL C |- expr ~> val
   ----
-  -- if val = IntV i \/ val = FIntV w i \/ val = FBitV w i ;; (TODO)
+  -- if val = IntV i \/ val = FIntV w i \/ val = FBitV w i ;; (TODO-Jaehyun) bitstring manipulation
   -- if i >= 0
   ----
   -- if tblctx' = $add_priority(i, tblctx)
@@ -812,6 +830,7 @@ rule Table_entry_priority_ok/else-none-no-lw:
   -- if i' >= 0
   -- if tblctx' = $add_priority(i', tblctx)
 
+
 relation Table_entry_ok: cursor context tblctx |- tblentry : tblctx
 
 rule Table_entry_ok:
@@ -824,6 +843,7 @@ rule Table_entry_ok:
 
 relation Table_entries_fold_ok: cursor context tblctx |- tblentry* : tblctx
 
+
 rule Table_entries_fold_ok/nil:
   p C tblctx |- eps : tblctx
 
@@ -831,6 +851,7 @@ rule Table_entries_fold_ok/cons:
   p C tblctx |- tblentry_h tblentry_t* : tblctx''
   -- Table_entry_ok: p C tblctx |- tblentry_h : tblctx'
   -- Table_entries_fold_ok: p C tblctx' |- tblentry_t* : tblctx''
+
 
 relation Table_entries_ok: cursor context tblctx |- tblentryprop : tblctx
 
@@ -843,6 +864,10 @@ rule Table_entries_ok:
   ----
   -- Table_entries_fold_ok: p C tblctx'' |- tblentry* : tblctx'''
 
+;;
+;; Table default action check
+;;
+
 relation Table_default_ok: cursor context tblctx |- tbldefaultprop
 
 rule Table_default_ok:
@@ -851,6 +876,10 @@ rule Table_default_ok:
   -- (Arg_ok: p C |- arg : typ)*
   ----
   -- Call_default_action_ok: p C |- name pt* (arg*, typ*) arg_a*
+
+;;
+;; Table custom property check
+;;
 
 relation Table_custom_ok: cursor context tblctx |- tblcustomprop : tblctx
 
@@ -873,10 +902,11 @@ rule Table_custom_ok/priority_delta:
   -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
   ----
   -- Eval_static: p C |- expr ~> val
-  -- if val = IntV i \/ val = FIntV w i \/ val = FBitV w i ;; (TODO)
+  -- if val = IntV i \/ val = FIntV w i \/ val = FBitV w i ;; (TODO-Jaehyun) bitstring manipulation
   ----
   -- if i > 0
   -- if tblctx' = $set_priority_delta(i, tblctx)
+
 
 relation Table_prop_ok: cursor context tblctx |- tblprop : tblctx
 
@@ -900,6 +930,7 @@ rule Table_prop_ok/customp:
   p C tblctx |- (CustomP tblcustomprop) : tblctx'
   -- Table_custom_ok: p C tblctx |- tblcustomprop : tblctx'
 
+
 relation Table_props_ok: cursor context tblctx |- tbl : tblctx
 
 rule Table_props_ok/nil:
@@ -909,6 +940,10 @@ rule Table_props_ok/cons:
   p C tblctx |- (tblprop_h tblprop_t*) : tblctx''
   -- Table_prop_ok: p C tblctx |- tblprop_h : tblctx'
   -- Table_props_ok: p C tblctx' |- tblprop_t* : tblctx''
+
+;;
+;; Table synthesized type check
+;;
 
 relation Table_type_decl_ok: cursor context tblctx |- id : context typ
 
@@ -930,6 +965,7 @@ rule Table_type_decl_ok:
   -- if id_s = $concat_texts("apply\\_result(" id ")")
   ----
   -- if typ_s = TableStructT id_s ("hit", BoolT) ("miss", BoolT) ("action\\_run", typ_e)
+
 
 rule Decl_ok/tabled:
   BLOCK C_0 |- TableD id tblprop* : C_3

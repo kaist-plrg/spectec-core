@@ -16,3 +16,7 @@ def $implies(bool, bool) : bool     hint(show % %latex("\\Rightarrow") %)
 ;; List manipulation
 
 def $partition(syntax T, T*, nat) : (T*, T*)
+
+;; Bitstring manipulation
+
+def $of_two_complement(int, int) : int
