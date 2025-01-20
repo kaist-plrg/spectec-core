@@ -567,7 +567,7 @@ h = (H) {#};
 
 # C. Need Spec Clarification
 
-## \[REPORTED\] 1. Should we add implicit cast for directionless parameter?: [directionless-implicit-cast](../test/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast)
+## \[REPORTED\] 1. Should we add implicit cast for directionless parameter?: [directionless-implicit-cast](../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast)
 
 Waiting for spec clarification, [Issue#1312](https://github.com/p4lang/p4-spec/issues/1312) and [PR#1330](https://github.com/p4lang/p4-spec/pull/1330).
 
@@ -595,7 +595,7 @@ extern BFD_Offload {
 BFD_Offload(32768) bfd_session_liveness_tracker = ...;
 ```
 
-## \[REPORTED\] 2. How to match abstract methods when initializing an instance?: [abstract-method-overload](../test/p4c/program/well-typed-excluded/spec-clarify/abstract-method-overload)
+## \[REPORTED\] 2. How to match abstract methods when initializing an instance?: [abstract-method-overload](../testdata/p4c/program/well-typed-excluded/spec-clarify/abstract-method-overload)
 
 Waiting for spec clarification, [Issue#1346](https://github.com/p4lang/p4-spec/issues/1346) and [PR#1355](https://github.com/p4lang/p4-spec/pull/1355).
 
@@ -692,7 +692,7 @@ Virtual() cntr = {
 
 This is implemented in current p4cherry, but it would be nice to have a clear spec on this.
 
-## \[REPORTED (not by me)\] 4. Is it legal to divide a fixed-width integer?: [fixed-width-div-and-mod](../test/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod)
+## \[REPORTED (not by me)\] 4. Is it legal to divide a fixed-width integer?: [fixed-width-div-and-mod](../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod)
 
 [Issue#1327](https://github.com/p4lang/p4-spec/issues/1327), seems like a PR will be made soon.
 
@@ -717,7 +717,7 @@ Note that implicit cast is allowed for arbitrary precision integer to fixed-widt
 x = 32w5 / 3;
 ```
 
-## \[REPORTED\] 6. Are accesses compile-time known?: [access-compile-time-known](../test/p4c/program/well-typed-excluded/spec-clarify/access-compile-time-known)
+## \[REPORTED\] 6. Are accesses compile-time known?: [access-compile-time-known](../testdata/p4c/program/well-typed-excluded/spec-clarify/access-compile-time-known)
 
 Waiting for spec clarification, [Issue#1323](https://github.com/p4lang/p4-spec/issues/1323) and [PR#1329](https://github.com/p4lang/p4-spec/pull/1329).
 
@@ -735,7 +735,7 @@ const T t = { 32s10, 32s20 };
 const int<32> x = t.t1;
 ```
 
-## \[REPORTED\] 7. Type aliasing allowed for externs?: [typedef-objects](../test/p4c/program/well-typed-excluded/spec-clarify/typedef-objects)
+## \[REPORTED\] 7. Type aliasing allowed for externs?: [typedef-objects](../testdata/p4c/program/well-typed-excluded/spec-clarify/typedef-objects)
 
 Waiting for spec clarification, [Issue#1314](https://github.com/p4lang/p4-spec/issues/1314) and [PR#1328](https://github.com/p4lang/p4-spec/pull/1328)
 
@@ -757,7 +757,7 @@ Waiting for spec clarification, [Issue#1347](https://github.com/p4lang/p4-spec/i
 The spec does not mention if the size given to a value set declaration should be local compile-time known, compile-time known, or neither.
 I suspect it should be at least compile-time known, and it is already reflected in the current p4cherry implementation.
 
-## \[REPORETED\] 9. A generic type that imposes (or implies) a type constraint: [generic-constrained](../test/p4c/program/well-typed-excluded/spec-clarify/generic-constrained)
+## \[REPORETED\] 9. A generic type that imposes (or implies) a type constraint: [generic-constrained](../testdata/p4c/program/well-typed-excluded/spec-clarify/generic-constrained)
 
 Waiting for spec clarification, [Issue#1353](https://github.com/p4lang/p4-spec/issues/1353).
 Also found a related compiler bug: [Issue#5041](https://github.com/p4lang/p4c/issues/5041).
@@ -779,7 +779,7 @@ package P<H, M>(C<H, M> c = nothing());
 Here, the package type is declared as a generic type that takes two type parameters, `H` and `M`.
 But, the default argument to `c` is `nothing()`, which imposes a type constraint that `H` should be `empty_t` and `M` should be `empty_t`.
 
-## \[REPORTED\] 10. Matching control type in the presence of default parameter: [matching-control-type-decl-with-default](../test/p4c/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default)
+## \[REPORTED\] 10. Matching control type in the presence of default parameter: [matching-control-type-decl-with-default](../testdata/p4c/program/well-typed-excluded/spec-clarify/matching-control-type-decl-with-default)
 
 Waiting for spec clarification, [Issue#1348](https://github.com/p4lang/p4-spec/issues/1348).
 
@@ -806,7 +806,7 @@ control MyC(inout hdr_t hdr, inout meta_t meta) {
 P(MyC()) main;
 ```
 
-## 11. Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this: [buitin-local-compile-time-known](../test/p4c/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known)
+## 11. Some extern functions seem to produce a (local) compile-time known value, but syntax does not reveal this: [buitin-local-compile-time-known](../testdata/p4c/program/well-typed-excluded/spec-clarify/builtin-local-compile-time-known)
 
 ```p4
 @pure extern HashAlgorithm_t random_hash(bool msb, bool extend);
@@ -824,7 +824,7 @@ package sw0(P p);
 sw0(p1(createWidget(16w0, 8w0))) main;
 ```
 
-## \[REPORTED\] 12. Restrictions on call sites: [call-site-restrictions](../test/p4c/program/well-typed-excluded/spec-clarify/call-site-restrictions)
+## \[REPORTED\] 12. Restrictions on call sites: [call-site-restrictions](../testdata/p4c/program/well-typed-excluded/spec-clarify/call-site-restrictions)
 
 Waiting for spec clarification, [Issue#1349](https://github.com/p4lang/p4-spec/issues/1349) and [PR#1356](https://github.com/p4lang/p4-spec/pull/1356).
 
@@ -911,7 +911,7 @@ table simple_table {
 
 # D. Need Test Clarification
 
-## \[REPORTED\] 1. Scope of abstract method when initializing an instance: [abstract-method-scoping](../test/p4c/program/well-typed-excluded/test-clarify/abstract-method-scoping)
+## \[REPORTED\] 1. Scope of abstract method when initializing an instance: [abstract-method-scoping](../testdata/p4c/program/well-typed-excluded/test-clarify/abstract-method-scoping)
 
 Reported to p4c, [Issue#5084](https://github.com/p4lang/p4c/issues/5084).
 
@@ -935,7 +935,7 @@ control ingress(inout headers hdr) {
     };
 ```
 
-## \[REPORTED\] 2. Duplicate definition of `match_kind`: [duplicate-match-kind](../test/p4c/program/well-typed-excluded/test-clarify/duplicate-match-kind)
+## \[REPORTED\] 2. Duplicate definition of `match_kind`: [duplicate-match-kind](../testdata/p4c/program/well-typed-excluded/test-clarify/duplicate-match-kind)
 
 Reported to p4c, [Issue#5085](https://github.com/p4lang/p4c/issues/5085).
 
@@ -950,7 +950,7 @@ match_kind {
 }
 ```
 
-## 3. Mask expressions for `exact` key: [mask-exact-key](../test/p4c/program/well-typed-excluded/test-clarify/mask-exact-key)
+## 3. Mask expressions for `exact` key: [mask-exact-key](../testdata/p4c/program/well-typed-excluded/test-clarify/mask-exact-key)
 
 We cannot use mask expressions for `exact` key.
 This should be a negative test.
@@ -966,7 +966,7 @@ table unit {
 }
 ```
 
-## \[REPORTED\] 4. Nesting `match_kind` or `int` inside a tuple type: [tuple-nesting](../test/p4c/program/well-typed-excluded/test-clarify/tuple-nesting)
+## \[REPORTED\] 4. Nesting `match_kind` or `int` inside a tuple type: [tuple-nesting](../testdata/p4c/program/well-typed-excluded/test-clarify/tuple-nesting)
 
 Reported to p4c, [Issue#5086](https://github.com/p4lang/p4c/issues/5086).
 
@@ -981,7 +981,7 @@ const tuple<match_kind> exact_once = { exact };
 tuple<int> t = { t1 };
 ```
 
-## 5. Implicit cast of `value_set` in `select` expression: [value-set-implicit-cast](../test/p4c/program/well-typed-excluded/test-clarify/value-set-implicit-cast)
+## 5. Implicit cast of `value_set` in `select` expression: [value-set-implicit-cast](../testdata/p4c/program/well-typed-excluded/test-clarify/value-set-implicit-cast)
 
 When a value set, of type `set<T>` is used as a select label, it can be implicitly cast to the select key type `set<T'>`.
 However, below programs expect loose type casting rules.
@@ -1013,7 +1013,7 @@ state start {
 
 Here, we *cannot* implicitly cast `value_set_t` (which a struct type) to `bit<32>`.
 
-## 6. Implicit cast of a singleton sequence to a scalar in table entry: [aggregate-to-scalar-implicit-cast](../test/p4c/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast)
+## 6. Implicit cast of a singleton sequence to a scalar in table entry: [aggregate-to-scalar-implicit-cast](../testdata/p4c/program/well-typed-excluded/test-clarify/aggregate-to-scalar-implicit-cast)
 
 Some programs expect implicit cast of a singleton sequence to a scalar in table entry, which is illegal, in a strict sense.
 
@@ -1037,7 +1037,7 @@ table ingress_tbl {
 
 Here, `{(8w0x20++8w0x02++8w0x04++8w0x20)}` is a singleton sequence, and it should not be implicitly cast to a scalar type `IPv4Address`, or `bit<32>`.
 
-## \[REPORTED\] 7. Implicit cast of newtype: [newtype-implicit-cast](../test/p4c/program/well-typed-excluded/test-clarify/newtype-implicit-cast)
+## \[REPORTED\] 7. Implicit cast of newtype: [newtype-implicit-cast](../testdata/p4c/program/well-typed-excluded/test-clarify/newtype-implicit-cast)
 
 Reported to p4c, [Issue#5087](https://github.com/p4lang/p4c/issues/5087).
 
@@ -1046,7 +1046,7 @@ However, below programs seem to violate this restriction.
 
 p4c accepts these as valid.
 
-## \[REPORTED\] 8. Coercion from a fixed width integer to an arbitrary precision integer: [fixed-to-arbitrary-implicit-cast](../test/p4c/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast)
+## \[REPORTED\] 8. Coercion from a fixed width integer to an arbitrary precision integer: [fixed-to-arbitrary-implicit-cast](../testdata/p4c/program/well-typed-excluded/test-clarify/fixed-to-arbitrary-implicit-cast)
 
 Reported to p4c, [Issue#5088](https://github.com/p4lang/p4c/issues/5088).
 
@@ -1056,7 +1056,7 @@ This is illegal, but the test case below seem to violate this.
 const int z1 = 2w1;
 ```
 
-## 9. Equality check (`==`) on a variable type: [type-variable-equality-op](../test/p4c/program/well-typed-excluded/test-clarify/type-variable-equality-op)
+## 9. Equality check (`==`) on a variable type: [type-variable-equality-op](../testdata/p4c/program/well-typed-excluded/test-clarify/type-variable-equality-op)
 
 The spec only allows assignment (`=`) for types that are type variables.
 But the test case below seems to violate this.
@@ -1070,7 +1070,7 @@ bool g<t>(in t a) {
 }
 ```
 
-## \[REPORTED\] 10. Package constructors cannot be overloaded: [package-overload](../test/p4c/program/well-typed-excluded/test-clarify/package-overload)
+## \[REPORTED\] 10. Package constructors cannot be overloaded: [package-overload](../testdata/p4c/program/well-typed-excluded/test-clarify/package-overload)
 
 Reported to p4c, [Issue#5089](https://github.com/p4lang/p4c/issues/5089).
 
@@ -1082,7 +1082,7 @@ package mypackaget<t>(mypt<t> t2);
 package mypackaget<t>(mypt<t> t1, mypt<t> t2);
 ```
 
-## 11. Function declarations should not shadow: [shadow-func](../test/p4c/program/well-typed-excluded/test-clarify/shadow-func)
+## 11. Function declarations should not shadow: [shadow-func](../testdata/p4c/program/well-typed-excluded/test-clarify/shadow-func)
 
 (Although the spec does not explicitly disallow duplicate names in general,) p4c compiler rejects such programs.
 
@@ -1094,7 +1094,7 @@ void f1(in h[(max |+| 0) == max ? 1 : -1] a){}
 void f1(in h[value1 == max ? 1 : -1] a){}
 ```
 
-## 12. Scope of a control parameter: [control-param-scope](../test/p4c/program/well-typed-excluded/test-clarify/control-param-scope)
+## 12. Scope of a control parameter: [control-param-scope](../testdata/p4c/program/well-typed-excluded/test-clarify/control-param-scope)
 
 Similar [issue](typecheck-neg.analysis.md#6.%20Scope%20of%20a%20control%20parameter) in the negative type checker test.
 
@@ -1118,7 +1118,7 @@ control MyIngress(inout H p) {
 }
 ```
 
-## 13. Accessing a header stack of size zero: [access-header-stack-zero](../test/p4c/program/well-typed-excluded/test-clarify/access-header-stack-zero)
+## 13. Accessing a header stack of size zero: [access-header-stack-zero](../testdata/p4c/program/well-typed-excluded/test-clarify/access-header-stack-zero)
 
 ```p4
 bit<32> b;
@@ -1140,7 +1140,7 @@ h.hs[-1].f1 = 5;
 h.hs[-1].f2 = 8;
 ```
 
-## 14. Equivalence of table actions: [table-action-syntactic-eq](../test/p4c/program/well-typed-excluded/test-clarify/table-action-syntactic-eq)
+## 14. Equivalence of table actions: [table-action-syntactic-eq](../testdata/p4c/program/well-typed-excluded/test-clarify/table-action-syntactic-eq)
 
 For default action, the spec mentions:
 
@@ -1163,7 +1163,7 @@ control c() {
 }
 ```
 
-## 15. Type inference should fail: [type-inference-should-fail](../test/p4c/program/well-typed-excluded/test-clarify/type-inference-should-fail)
+## 15. Type inference should fail: [type-inference-should-fail](../testdata/p4c/program/well-typed-excluded/test-clarify/type-inference-should-fail)
 
 ```p4
 control e<T>();
@@ -1178,15 +1178,15 @@ So the type inference should fail, but p4c treats this as valid.
 
 # E. Future extension
 
-## 1. For loops: [forloop](../test/p4c/program/well-typed-excluded/future/forloop)
+## 1. For loops: [forloop](../testdata/p4c/program/well-typed-excluded/future/forloop)
 
-## 2. Generic parser/control declaration: [generic-parser-control](../test/p4c/program/well-typed-excluded/future/generic-parser-control)
+## 2. Generic parser/control declaration: [generic-parser-control](../testdata/p4c/program/well-typed-excluded/future/generic-parser-control)
 
 ```p4
 parser p1<T>(in T a) { ... }
 ```
 
-## 3. Concatenation of string literals: [concat-string](../test/p4c/program/well-typed-excluded/future/concat-string)
+## 3. Concatenation of string literals: [concat-string](../testdata/p4c/program/well-typed-excluded/future/concat-string)
 
 ```p4
 log("Log message" ++ " text");
@@ -1194,7 +1194,7 @@ log("Log message" ++ " text");
 
 # F. Unsupported features
 
-## 1. Custom table element: [custom-table-element](../test/p4c/program/well-typed-excluded/unsupported/custom-table-element)
+## 1. Custom table element: [custom-table-element](../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element)
 
 ### (1) `implementation`
 
@@ -1268,7 +1268,7 @@ table tbl_idle_timeout {
 }
 ```
 
-## 2. `selector` match kind: [selector-match-kind](../test/p4c/program/well-typed-excluded/unsupported/selector-match-kind)
+## 2. `selector` match kind: [selector-match-kind](../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind)
 
 This is specific to V1Model architecture.
 
@@ -1279,7 +1279,7 @@ table indirect_ws {
 }
 ```
 
-## 3. Optional argument: [optional-param](../test/p4c/program/well-typed-excluded/unsupported/optional-param)
+## 3. Optional argument: [optional-param](../testdata/p4c/program/well-typed-excluded/unsupported/optional-param)
 
 ```p4
 extern Checksum {

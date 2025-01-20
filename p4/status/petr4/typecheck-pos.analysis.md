@@ -1,6 +1,6 @@
 # Nees Spec Clarification
 
-## \[REPORTED\] 1. Restrictions on call sites: [call-site-restrictions](../test/petr4/program/well-typed-excluded/spec-clarify/call-site-restrictions)
+## \[REPORTED\] 1. Restrictions on call sites: [call-site-restrictions](../testdata/petr4/program/well-typed-excluded/spec-clarify/call-site-restrictions)
 
 Waiting for spec clarification, [Issue#1349](https://github.com/p4lang/p4-spec/issues/1349) and [PR#1356](https://github.com/p4lang/p4-spec/pull/1356).
 
@@ -18,7 +18,7 @@ Above test expect that functions are callable from a control top level.
 
 # Need Test Clarification
 
-## 1. Petr4 is permissive, in accepting duplicate declarations: [duplicate-decl](../test/petr4/program/well-typed-excluded/test-clarify/duplicate-decl)
+## 1. Petr4 is permissive, in accepting duplicate declarations: [duplicate-decl](../testdata/petr4/program/well-typed-excluded/test-clarify/duplicate-decl)
 
 ```p4
 bit<8> x = hdr.h.x;
@@ -33,7 +33,7 @@ control C(inout h_t h, in bool x) {
 }
 ```
 
-## 2. Passing a dynamic value to a directionless parameter: [dynamic-value-to-directionless](../test/petr4/program/well-typed-excluded/test-clarify/dynamic-value-to-directionless)
+## 2. Passing a dynamic value to a directionless parameter: [dynamic-value-to-directionless](../testdata/petr4/program/well-typed-excluded/test-clarify/dynamic-value-to-directionless)
 
 ```p4
 parser MySubParser(packet_in packet,

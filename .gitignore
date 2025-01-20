@@ -9,6 +9,7 @@ spec-gen.include
 
 # p4cherry build and executables
 _build
+_coverage
 p4cherry
 p4cherry-test
 *.opam
