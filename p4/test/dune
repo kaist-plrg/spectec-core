@@ -39,7 +39,9 @@
    (ignore-outputs
     (diff run_v1model_p4c.expected run_v1model_p4c.actual))
    (ignore-outputs
-    (diff run_v1model_petr4.expected run_v1model_petr4.actual)))))
+    (diff run_v1model_petr4.expected run_v1model_petr4.actual))
+   (ignore-outputs
+    (diff run_ebpf_p4c.expected run_ebpf_p4c.actual)))))
 
 (rule
  (target parse_p4c.actual)
@@ -239,3 +241,20 @@
      ../../../testdata/petr4/stf-patch
      ../../../testdata/petr4/program/well-typed
      ../../../testdata/petr4/stf)))))
+
+(rule
+ (target run_ebpf_p4c.actual)
+ (action
+  (with-stdout-to
+   run_ebpf_p4c.actual
+   (with-stderr-to
+    run_ebpf_p4c.err
+    (run
+     ./test.exe
+     run
+     -a
+     ebpf
+     -i
+     ../../../testdata/arch
+     ../../../testdata/p4c/program/well-typed
+     ../../../testdata/p4c/stf/ebpf)))))

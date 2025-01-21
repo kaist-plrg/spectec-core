@@ -277,7 +277,7 @@ module PacketIn = struct
      bit<32> length(); *)
   let length pkt =
     let len = if pkt.len mod 8 = 0 then pkt.len / 8 else (pkt.len / 8) + 1 in
-    Value.FIntV (Bigint.of_int 32, Bigint.of_int len)
+    Value.FBitV (Bigint.of_int 32, Bigint.of_int len)
 end
 
 (* Output packet *)

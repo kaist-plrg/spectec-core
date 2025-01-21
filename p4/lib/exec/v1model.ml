@@ -272,31 +272,6 @@ end
 
 (* V1Model Pipeline *)
 
-(* (TODO) Inserts VoidT, shouldn't matter in dynamics but not a good practice either *)
-let no_info_expr = (no_info, Il.Ast.{ typ = Types.VoidT; ctk = Ctk.DYN })
-
-let make_expr_base (path : OId.t) =
-  let base, members =
-    match path with base :: members -> (base, members) | _ -> assert false
-  in
-  let var_base = Lang.Ast.Current (base $ no_info) $ no_info in
-  let expr_base = Il.Ast.VarE { var = var_base } $$ no_info_expr in
-  List.fold_left
-    (fun expr_base member ->
-      let member = member $ no_info in
-      Il.Ast.ExprAccE { expr_base; member } $$ no_info_expr)
-    expr_base members
-
-let make_arg (arg : Id.t) =
-  let var_arg = Lang.Ast.Current (arg $ no_info) $ no_info in
-  let expr_arg = Il.Ast.VarE { var = var_arg } $$ no_info_expr in
-  Lang.Ast.ExprA expr_arg $ no_info
-
-let make_call (path : OId.t) (func : Id.t) (args : Id.t list) =
-  let expr_base = make_expr_base path in
-  let args = List.map make_arg args in
-  (expr_base, func $ no_info, args)
-
 module Make (Interp : INTERP) : ARCH = struct
   (* Extern objects *)
 
@@ -939,9 +914,7 @@ module Make (Interp : INTERP) : ARCH = struct
     | "log_msg", [ ("msg", false) ] -> eval_extern_log_msg ~data:false ctx
     | "log_msg", [ ("msg", false); ("data", false) ] ->
         eval_extern_log_msg ~data:true ctx
-    | _ ->
-        Format.asprintf "(eval_extern) unknown extern: %a" FId.pp fid
-        |> error_no_info
+    | _ -> F.asprintf "(eval_extern_func_call) %a" FId.pp fid |> error_no_info
 
   let eval_extern_method_call (ctx : Ctx.t) (oid : OId.t) (fid : FId.t) :
       Ctx.t * Sig.t =
@@ -994,7 +967,7 @@ module Make (Interp : INTERP) : ARCH = struct
         externs := Externs.add id (Register reg) !externs;
         (ctx, sign)
     | _ ->
-        Format.asprintf "(TODO: eval_extern_method_call) %a.%a" pp_extern extern
+        F.asprintf "(TODO: eval_extern_method_call) %a.%a" pp_extern extern
           FId.pp fid
         |> error_no_info
 
@@ -1381,8 +1354,8 @@ module Make (Interp : INTERP) : ARCH = struct
     (* Timing *)
     | Stf.Ast.Wait -> (ctx, pass, queue_packet, queue_expect)
     | _ ->
-        Format.asprintf "(drive_stf_stmt) unknown stf stmt: %a"
-          Stf.Print.print_stmt stmt_stf
+        F.asprintf "(drive_stf_stmt) unknown stf stmt: %a" Stf.Print.print_stmt
+          stmt_stf
         |> error_no_info
 
   let drive_stf_stmts (ctx : Ctx.t) (stmts_stf : Stf.Ast.stmt list) : bool =
