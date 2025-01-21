@@ -219,7 +219,7 @@ module Make
   let add_table_entry (id_table : Stf.Ast.name) (keys : Stf.Ast.mtch list)
       (action : Stf.Ast.action) (priority : int option) : unit =
     let oid_table, obj_table = find_table id_table in
-    let id_table, table = Obj.get_table obj_table in
+    let id_table, venv_table, table = Obj.get_table obj_table in
     let keysets =
       List.map
         (fun (id_key, mtchkind) ->
@@ -298,13 +298,13 @@ module Make
         priority
     in
     let table = Table.add_entry keysets action priority table in
-    let obj_table = Obj.TableO (id_table, table) in
+    let obj_table = Obj.TableO (id_table, venv_table, table) in
     Interp.update oid_table obj_table
 
   let add_table_default (id_table : Stf.Ast.name) (action : Stf.Ast.action) :
       unit =
     let oid_table, obj_table = find_table id_table in
-    let id_table, table = Obj.get_table obj_table in
+    let id_table, venv_table, table = Obj.get_table obj_table in
     let table_action_default_const, _ = table.action_default in
     if table_action_default_const then
       F.asprintf "(add_table_default) default action is declared as constant"
@@ -345,7 +345,7 @@ module Make
       $ no_info
     in
     let table = Table.add_default action table in
-    let obj_table = Obj.TableO (id_table, table) in
+    let obj_table = Obj.TableO (id_table, venv_table, table) in
     Interp.update oid_table obj_table
 
   (* STF interpreter *)

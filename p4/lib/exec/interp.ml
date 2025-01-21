@@ -37,7 +37,8 @@ module Make (Arch : ARCH) : INTERP = struct
      (ii) InterBlock: call that inherits global context,
                       and the block context of the callee object
      (iii) IntraBlock: call that inherits global context,
-                       and the block context of the caller object *)
+                       the block context of the caller object,
+                       and the local context of the callee object *)
 
   type callkind =
     | InterGlobal of {
@@ -60,6 +61,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | IntraBlock of {
         oid : OId.t;
         fid : FId.t;
+        venv_local : VEnv.t;
         func : Func.t;
         targs : targ list;
         args : arg list;
@@ -1063,9 +1065,14 @@ module Make (Arch : ARCH) : INTERP = struct
           ~post:(fun (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) ->
             { ctx_caller with global = ctx_callee.global })
           cursor_caller ctx_caller oid fid func targs args args_default
-    | IntraBlock { oid; fid; func; targs; args; args_default } ->
+    | IntraBlock { oid; fid; venv_local; func; targs; args; args_default } ->
         eval_call'
-          ~pre:(fun (ctx_caller : Ctx.t) -> Ctx.copy Ctx.Block ctx_caller)
+          ~pre:(fun (ctx_caller : Ctx.t) ->
+            let ctx_callee = Ctx.copy Ctx.Block ctx_caller in
+            {
+              ctx_callee with
+              local = { ctx_callee.local with venvs = [ venv_local ] };
+            })
           ~post:(fun (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) ->
             { ctx_caller with block = ctx_callee.block })
           cursor_caller ctx_caller oid fid func targs args args_default
@@ -1379,7 +1386,17 @@ module Make (Arch : ARCH) : INTERP = struct
     in
     match cursor_func with
     | Ctx.Global -> InterGlobal { fid; func; targs; args; args_default }
-    | Ctx.Block -> IntraBlock { oid = []; fid; func; targs; args; args_default }
+    | Ctx.Block ->
+        IntraBlock
+          {
+            oid = [];
+            fid;
+            venv_local = VEnv.empty;
+            func;
+            targs;
+            args;
+            args_default;
+          }
     | Ctx.Local -> assert false
 
   and eval_func_call (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : var)
@@ -1472,7 +1489,7 @@ module Make (Arch : ARCH) : INTERP = struct
                   args;
                   args_default;
                 }
-          | TableO (_, table) ->
+          | TableO (_, venv_local, table) ->
               let fid, func, args_default =
                 let fid = FId.to_fid ("apply" $ no_info) [] in
                 let func = Func.TableApplyMethodF table in
@@ -1480,7 +1497,8 @@ module Make (Arch : ARCH) : INTERP = struct
                 let args = FId.to_names args in
                 FEnv.find_func (member, args) fenv
               in
-              IntraBlock { oid; fid; func; targs; args; args_default }
+              IntraBlock
+                { oid; fid; venv_local; func; targs; args; args_default }
           | _ ->
               F.asprintf "(eval_method) method %a not found for object %a"
                 Il.Pp.pp_member' member (Obj.pp ~level:0) obj

@@ -4476,7 +4476,7 @@ and type_table_property (cursor : Ctx.cursor) (ctx : Ctx.t)
       (table_ctx, Lang.Ast.CustomP table_custom_il)
 
 and type_table_properties (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_ctx : Tblctx.t) (table_properties : El.Ast.table) :
+    (table_ctx : Tblctx.t) (table_properties : El.Ast.table_property list) :
     Tblctx.t * Il.Ast.table =
   List.fold_left
     (fun (table_ctx, table_properties_il) table_property ->

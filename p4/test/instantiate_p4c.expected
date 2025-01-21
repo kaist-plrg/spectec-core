@@ -1104,13 +1104,13 @@ Instantiate success: 8 objects
 Instantiate success: 7 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/issue1937-2-bmv2.p4
-Instantiate success: 8 objects
+Instantiate success: 9 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/issue1937-3-bmv2.p4
-Instantiate success: 8 objects
+Instantiate success: 9 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/issue1937.p4
-Instantiate success: 3 objects
+Instantiate success: 4 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/issue1955.p4
 Instantiate success: 9 objects

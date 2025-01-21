@@ -56,6 +56,14 @@ let empty_bt =
 let empty_lt = { theta = Theta.empty; venvs = [] }
 let empty = { path = []; global = empty_gt; block = empty_bt; local = empty_lt }
 
+(* Inheritance *)
+
+let copy cursor ctx =
+  match cursor with
+  | Global -> { ctx with block = empty_bt; local = empty_lt }
+  | Block -> { ctx with local = empty_lt }
+  | Local -> ctx
+
 (* Path management *)
 
 let enter_path id ctx = { ctx with path = ctx.path @ [ id ] }
