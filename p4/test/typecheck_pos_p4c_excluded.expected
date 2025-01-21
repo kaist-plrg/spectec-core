@@ -1,4 +1,4 @@
-Running typecheck tests on 249 files
+Running typecheck tests on 220 files
 
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/future/concat-string/issue4932.p4
@@ -225,12 +225,17 @@ Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/calc-ebpf.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/calc-ebpf.p4, line 148, characters 18-31
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
+(check_eq_typ_alpha) Types int and bit<32> are not equal
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/constructor_cast.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/constructor_cast.p4, line 22, characters 4-12
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/dash/dash-pipeline-pna-dpdk.p4
+Typecheck success
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/dash/dash-pipeline-v1model-bmv2.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/dash/dash-pipeline-v1model-bmv2.p4, line 859, characters 65-142
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/extern-funcs-bmv2.p4
@@ -258,6 +263,14 @@ Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-
         eth_type bit<16>
       })<>
   })<> are not equal
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/hit_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/hit_ebpf.p4, line 55, characters 25-41
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/init_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/init_ebpf.p4, line 54, characters 25-39
+(check_eq_typ_alpha) Types int and bit<32> are not equal
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1001-1-bmv2.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue1001-1-bmv2.p4, line 24, characters 8-84
@@ -325,6 +338,22 @@ Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-
     a bit<8>
   })<> are not equal
 
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2791_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2791_ebpf.p4, line 45, characters 25-39
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2793_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2793_ebpf.p4, line 63, characters 25-41
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2816-1_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2816-1_ebpf.p4, line 72, characters 25-41
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2816_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2816_ebpf.p4, line 45, characters 25-39
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2844-enum.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue2844-enum.p4, line 46, characters 4-59
 (check_eq_typ_alpha) Types enum<bit<32>> sizes { COUNTER_SIZE = 32w1024 } and bit<32> are not equal
@@ -356,6 +385,10 @@ Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue754.p4, line 6, characters 4-12
 (check_eq_typ_alpha) Types int and bit<3> are not equal
 
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue870_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue870_ebpf.p4, line 63, characters 25-41
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue871.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/issue871.p4, line 9, characters 4-27
 (check_eq_typ_alpha) Types int and bit<32> are not equal
@@ -366,6 +399,14 @@ Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-
     x bit<32>
   })<> are not equal
 
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/key-issue-1020_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/key-issue-1020_ebpf.p4, line 45, characters 25-39
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/key_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/key_ebpf.p4, line 45, characters 25-39
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/list7.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/list7.p4, line 11, characters 4-22
 (check_eq_typ_alpha) Types record {
@@ -373,6 +414,10 @@ Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-
 } and (struct S {
     f bit<32>
   })<> are not equal
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/lpm_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/lpm_ebpf.p4, line 63, characters 25-41
+(check_eq_typ_alpha) Types int and bit<32> are not equal
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/named-arg1.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/named-arg1.p4, line 11, characters 4-37
@@ -384,9 +429,7 @@ Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/pr1363.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/pr1363.p4, line 12, characters 21-38
-(check_instantiation_site) extern ActionProfile {
-
-  } cannot be instantiated in TableApplyMethod
+(check_eq_typ_alpha) Types int and bit<32> are not equal
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-action-profile1.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/psa-action-profile1.p4, line 51, characters 4-27
@@ -536,13 +579,33 @@ Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/simple-firewall_ubpf.p4, line 106, characters 4-49
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/unused-counter-bmv2.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/unused-counter-bmv2.p4, line 57, characters 8-21
-(type_table_custom) custom element counters is undefined
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/stack_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/stack_ebpf.p4, line 64, characters 25-41
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/switch_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/switch_ebpf.p4, line 63, characters 25-41
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/ternary_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/ternary_ebpf.p4, line 59, characters 25-41
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/test_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/test_ebpf.p4, line 63, characters 25-41
+(check_eq_typ_alpha) Types int and bit<32> are not equal
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/two_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/two_ebpf.p4, line 54, characters 25-41
+(check_eq_typ_alpha) Types int and bit<32> are not equal
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/v1model-special-ops-bmv2.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/v1model-special-ops-bmv2.p4, line 209, characters 8-42
 (check_eq_typ_alpha) Types int and bit<8> are not equal
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/valid_ebpf.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/valid_ebpf.p4, line 43, characters 25-39
+(check_eq_typ_alpha) Types int and bit<32> are not equal
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/value-sets.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/directionless-implicit-cast/value-sets.p4, line 38, characters 4-30
@@ -854,246 +917,6 @@ Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/test-
       e00 typedef typedef bit<8>
     })<>>
 
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/action_profile-bmv2.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/action_profile-bmv2.p4, line 39, characters 37-59
-(check_instantiation_site) extern action_profile {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/action_profile_max_group_size_annotation.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/action_profile_max_group_size_annotation.p4, line 44, characters 25-47
-(check_instantiation_site) extern action_profile {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/action_profile_sum_of_members_annotation.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/action_profile_sum_of_members_annotation.p4, line 54, characters 8-43
-(type_table_custom) custom element implementation is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/dash/dash-pipeline-v1model-bmv2.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/dash/dash-pipeline-v1model-bmv2.p4, line 492, characters 8-34
-(type_table_custom) custom element counters is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/dash-pipeline-v1model-bmv2.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/dash-pipeline-v1model-bmv2.p4, line 492, characters 8-34
-(type_table_custom) custom element counters is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/fabric_20190420/fabric.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/fabric_20190420/include/control/filtering.p4, line 63, characters 8-45
-(type_table_custom) custom element counters is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/hit_ebpf.p4, line 55, characters 25-41
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/init_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/init_ebpf.p4, line 54, characters 25-39
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue2791_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue2791_ebpf.p4, line 45, characters 25-39
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue2793_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue2793_ebpf.p4, line 63, characters 25-41
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue2816-1_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue2816-1_ebpf.p4, line 72, characters 25-41
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue2816_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue2816_ebpf.p4, line 45, characters 25-39
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue297-bmv2.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue297-bmv2.p4, line 40, characters 8-28
-(type_table_custom) custom element implementation is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue364-bmv2.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue364-bmv2.p4, line 55, characters 8-21
-(type_table_custom) custom element counters is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue461-bmv2.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue461-bmv2.p4, line 114, characters 8-37
-(type_table_custom) custom element counters is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue870_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/issue870_ebpf.p4, line 63, characters 25-41
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/junk-prop-bmv2.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/junk-prop-bmv2.p4, line 32, characters 8-17
-(type_table_custom) custom element junk is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/key-issue-1020_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/key-issue-1020_ebpf.p4, line 45, characters 25-39
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/key_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/key_ebpf.p4, line 45, characters 25-39
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/lpm_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/lpm_ebpf.p4, line 63, characters 25-41
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/named_meter_1-bmv2.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/named_meter_1-bmv2.p4, line 97, characters 8-26
-(type_table_custom) custom element meters is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/named_meter_bmv2.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/named_meter_bmv2.p4, line 97, characters 8-26
-(type_table_custom) custom element meters is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-add-on-miss.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-add-on-miss.p4, line 149, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-add_on_miss_action_name.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-add_on_miss_action_name.p4, line 115, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-add_on_miss0.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-add_on_miss0.p4, line 219, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-add_on_miss1.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-add_on_miss1.p4, line 245, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-direct-counter-learner.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-direct-counter-learner.p4, line 103, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-direct-meter-learner.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-direct-meter-learner.p4, line 118, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-parser-state-err.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-parser-state-err.p4, line 167, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-1.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-1.p4, line 131, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-3.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-3.p4, line 131, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-4.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-4.p4, line 134, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-5.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-5.p4, line 135, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-6.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-6.p4, line 134, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-7.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-consolidation-learner-7.p4, line 136, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-use-annon.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-dpdk-table-key-use-annon.p4, line 149, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-example-tcp-connection-tracking.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-example-tcp-connection-tracking.p4, line 273, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-mux-dismantle.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/pna-mux-dismantle.p4, line 165, characters 8-27
-(type_table_custom) custom element add_on_miss is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/psa-counter4.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/psa-counter4.p4, line 57, characters 8-38
-(type_table_custom) custom element psa_direct_counter is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/psa-example-counters-bmv2.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/psa-example-counters-bmv2.p4, line 147, characters 8-55
-(type_table_custom) custom element psa_direct_counter is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/psa-example-dpdk-directmeter.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/psa-example-dpdk-directmeter.p4, line 69, characters 8-34
-(type_table_custom) custom element psa_direct_meter is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/psa-example-parser-checksum.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/psa-example-parser-checksum.p4, line 177, characters 8-49
-(type_table_custom) custom element psa_direct_counter is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/psa-idle-timeout.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/psa-idle-timeout.p4, line 60, characters 8-60
-(type_table_custom) custom element psa_idle_timeout is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/psa-meter4.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/psa-meter4.p4, line 58, characters 8-34
-(type_table_custom) custom element psa_direct_meter is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/psa-meter5.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/psa-meter5.p4, line 60, characters 8-34
-(type_table_custom) custom element psa_direct_meter is undefined
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/stack_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/stack_ebpf.p4, line 64, characters 25-41
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/switch_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/switch_ebpf.p4, line 63, characters 25-41
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/ternary_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/ternary_ebpf.p4, line 59, characters 25-41
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/test_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/test_ebpf.p4, line 63, characters 25-41
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/two_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/two_ebpf.p4, line 54, characters 25-41
-(check_instantiation_site) extern hash_table {
-
-  } cannot be instantiated in TableApplyMethod
-
->>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/valid_ebpf.p4
-Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/custom-table-element/valid_ebpf.p4, line 43, characters 25-39
-(check_instantiation_site) extern array_table {
-
-  } cannot be instantiated in TableApplyMethod
-
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/optional-param/gauntlet_optional-bmv2.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/optional-param/gauntlet_optional-bmv2.p4, line 45, characters 21-104
 (type_method) method update not found for ipv4_checksum
@@ -1130,13 +953,33 @@ Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsup
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/optional-param/pna-dpdk-direct-counter.p4, line 90, characters 12-41
 (type_method) method count not found for per_prefix_pkt_count
 
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/action_profile-bmv2.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/action_profile-bmv2.p4, line 43, characters 8-40
+(check_table_key) bit<32> is not a valid table key type for match kind selector
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/action_profile_max_group_size_annotation.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/action_profile_max_group_size_annotation.p4, line 48, characters 8-40
+(check_table_key) bit<32> is not a valid table key type for match kind selector
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/action_profile_sum_of_members_annotation.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/action_profile_sum_of_members_annotation.p4, line 58, characters 8-40
+(check_table_key) bit<32> is not a valid table key type for match kind selector
+
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/action_selector_shared-bmv2.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/action_selector_shared-bmv2.p4, line 38, characters 8-40
+(check_table_key) bit<32> is not a valid table key type for match kind selector
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/fabric_20190420/fabric.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/fabric_20190420/include/control/next.p4, from line 185 character 8 to line 192 character 9
 (check_table_key) bit<32> is not a valid table key type for match kind selector
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/issue1560-bmv2.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/issue1560-bmv2.p4, from line 152 character 8 to line 155 character 9
 (check_table_key) bit<16> is not a valid table key type for match kind selector
+
+>>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/issue297-bmv2.p4
+Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/issue297-bmv2.p4, line 44, characters 8-40
+(check_table_key) bit<32> is not a valid table key type for match kind selector
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/pna-action-selector-1.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/pna-action-selector-1.p4, from line 112 character 8 to line 115 character 9
@@ -1170,5 +1013,5 @@ Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsup
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsupported/selector-match-kind/psa-action-selector6.p4, line 55, characters 4-27
 (check_eq_typ_alpha) Types int and bit<32> are not equal
 
-Parser on file: [PASS] 240/249 (96.39%) [FAIL] 9/249 (3.61%)
-Typecheck: [PASS] 8/240 (3.33%) [FAIL] 232/240 (96.67%)
+Parser on file: [PASS] 211/220 (95.91%) [FAIL] 9/220 (4.09%)
+Typecheck: [PASS] 9/211 (4.27%) [FAIL] 202/211 (95.73%)

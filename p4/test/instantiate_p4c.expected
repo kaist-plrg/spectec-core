@@ -1,4 +1,4 @@
-Running instantiate tests on 1005 files
+Running instantiate tests on 1033 files
 
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/action-bind.p4
@@ -282,9 +282,6 @@ Instantiate success: 4 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/custom-type-restricted-fields.p4
 Instantiate success: 8 objects
-
->>> Running instantiate test on ../../../testdata/p4c/program/well-typed/dash/dash-pipeline-pna-dpdk.p4
-Instantiate success: 26 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/decl.p4
 Instantiate success: 0 objects
@@ -1596,6 +1593,9 @@ Instantiate success: 0 objects
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/issue3635.p4
 Instantiate success: 0 objects
 
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/issue364-bmv2.p4
+Instantiate success: 9 objects
+
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/issue3650.p4
 Instantiate success: 7 objects
 
@@ -1679,6 +1679,9 @@ Instantiate success: 3 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/issue4548.p4
 Instantiate success: 2 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/issue461-bmv2.p4
+Instantiate success: 11 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/issue4625_remove_compile_time_bool_methodcall_of_mcs.p4
 Instantiate success: 3 objects
@@ -1866,6 +1869,9 @@ Instantiate success: 8 objects
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/issue995-bmv2.p4
 Instantiate success: 7 objects
 
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/junk-prop-bmv2.p4
+Instantiate success: 8 objects
+
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/key-bmv2.p4
 Instantiate success: 9 objects
 
@@ -1967,6 +1973,12 @@ Instantiate success: 7 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/named-arg.p4
 Instantiate success: 2 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/named_meter_1-bmv2.p4
+Instantiate success: 10 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/named_meter_bmv2.p4
+Instantiate success: 10 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/names.p4
 Instantiate success: 0 objects
@@ -2139,14 +2151,32 @@ Instantiate success: 0 objects
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pkginfo_annotation.p4
 Instantiate success: 7 objects
 
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-add-on-miss.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-add_on_miss_action_name.p4
+Instantiate success: 7 objects
+
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-direction-main-parser-err.p4
 Instantiate success: 6 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-direction.p4
 Instantiate success: 6 objects
 
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-add_on_miss0.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-add_on_miss1.p4
+Instantiate success: 6 objects
+
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-bvec_union.p4
 Instantiate success: 5 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-direct-counter-learner.p4
+Instantiate success: 8 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-direct-meter-learner.p4
+Instantiate success: 8 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-flatten-local-struct-decl.p4
 Instantiate success: 7 objects
@@ -2169,11 +2199,35 @@ Instantiate success: 5 objects
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-invalid-hdr-warnings6.p4
 Instantiate success: 5 objects
 
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-parser-state-err.p4
+Instantiate success: 7 objects
+
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-parser-wrong-arith.p4
 Instantiate success: 5 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-small_sample.p4
 Instantiate success: 6 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-1.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-3.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-4.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-5.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-6.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-7.p4
+Instantiate success: 7 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-use-annon.p4
+Instantiate success: 7 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-toeplitz-hash-1.p4
 Instantiate success: 6 objects
@@ -2244,6 +2298,9 @@ Instantiate success: 5 objects
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-example-recirculate.p4
 Instantiate success: 5 objects
 
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-example-tcp-connection-tracking.p4
+Instantiate success: 7 objects
+
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-example-template.p4
 Instantiate success: 6 objects
 
@@ -2273,6 +2330,9 @@ Instantiate success: 5 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-lookahead-structure.p4
 Instantiate success: 5 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-mux-dismantle.p4
+Instantiate success: 7 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-subparser.p4
 Instantiate success: 6 objects
@@ -2328,6 +2388,9 @@ Instantiate success: 7 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-conditional_operator.p4
 Instantiate success: 12 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-counter4.p4
+Instantiate success: 13 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-dpdk-128bitCast.p4
 Instantiate success: 12 objects
@@ -2485,10 +2548,16 @@ Instantiate success: 13 objects
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-e2e-cloning-basic-bmv2.p4
 Instantiate success: 13 objects
 
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-example-counters-bmv2.p4
+Instantiate success: 19 objects
+
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-example-digest-bmv2.p4
 Instantiate success: 19 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-example-dpdk-byte-alignment_4.p4
+Instantiate success: 13 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-example-dpdk-directmeter.p4
 Instantiate success: 13 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-example-dpdk-local-variable.p4
@@ -2508,6 +2577,9 @@ Instantiate success: 12 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-example-optional-match.p4
 Instantiate success: 12 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-example-parser-checksum.p4
+Instantiate success: 15 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-example-range-match.p4
 Instantiate success: 12 objects
@@ -2569,8 +2641,17 @@ Instantiate success: 12 objects
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-i2e-cloning-basic-bmv2.p4
 Instantiate success: 13 objects
 
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-idle-timeout.p4
+Instantiate success: 14 objects
+
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-isvalid.p4
 Instantiate success: 12 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-meter4.p4
+Instantiate success: 13 objects
+
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-meter5.p4
+Instantiate success: 13 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-multicast-basic-2-bmv2.p4
 Instantiate success: 14 objects
@@ -2960,6 +3041,9 @@ Instantiate success: 3 objects
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/unreachable.p4
 Instantiate success: 2 objects
 
+>>> Running instantiate test on ../../../testdata/p4c/program/well-typed/unused-counter-bmv2.p4
+Instantiate success: 10 objects
+
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/unused.p4
 Instantiate success: 3 objects
 
@@ -3020,6 +3104,6 @@ Instantiate success: 4 objects
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/xor_test.p4
 Instantiate success: 9 objects
 
-Parser on file: [PASS] 1005/1005 (100.00%) [FAIL] 0/1005 (0.00%)
-Typecheck: [PASS] 1001/1005 (99.60%) [FAIL] 4/1005 (0.40%)
-Instantiate: [PASS] 1001/1001 (100.00%) [FAIL] 0/1001 (0.00%)
+Parser on file: [PASS] 1033/1033 (100.00%) [FAIL] 0/1033 (0.00%)
+Typecheck: [PASS] 1029/1033 (99.61%) [FAIL] 4/1033 (0.39%)
+Instantiate: [PASS] 1029/1029 (100.00%) [FAIL] 0/1029 (0.00%)

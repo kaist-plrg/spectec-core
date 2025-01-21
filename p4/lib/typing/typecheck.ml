@@ -2305,6 +2305,7 @@ and check_instantiation_site (cursor : Ctx.cursor) (ctx : Ctx.t)
       | Ctx.ParserState, (ExternT _ | ParserT _)
       | Ctx.ControlApplyMethod, (ExternT _ | ControlT _) ->
           ()
+      | Ctx.TableApplyMethod, ExternT _ -> ()
       | _ ->
           F.asprintf
             "(check_instantiation_site) %a cannot be instantiated in %a"
@@ -5342,10 +5343,8 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
              priority_delta);
         let table_ctx = Tblctx.set_priority_delta priority_delta table_ctx in
         table_ctx
-    | _ ->
-        F.asprintf "(type_table_custom) custom element %s is undefined"
-          member.it
-        |> error_no_info
+    (* (TODO) Maybe define architecture-specific custom table element typing/validation *)
+    | _ -> table_ctx
   in
   (table_ctx, (member, expr_il, custom_const, annos_il))
 
