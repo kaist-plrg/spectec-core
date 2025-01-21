@@ -628,7 +628,7 @@ module Make (Arch : ARCH) : INTERP = struct
         (false, None) cases
     in
     match block with
-    | Some block -> eval_block_stmt cursor ctx block
+    | Some block -> eval_block ~start:false cursor ctx block
     | None -> (ctx, Cont)
 
   and eval_switch_general_match_label (cursor : Ctx.cursor) (ctx : Ctx.t)
@@ -667,7 +667,7 @@ module Make (Arch : ARCH) : INTERP = struct
         (ctx, false, None) cases
     in
     match block with
-    | Some block -> eval_block_stmt cursor ctx block
+    | Some block -> eval_block ~start:false cursor ctx block
     | None -> (ctx, Cont)
 
   and eval_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_cond : expr)
@@ -677,13 +677,22 @@ module Make (Arch : ARCH) : INTERP = struct
     let stmt = if cond then stmt_then else stmt_else in
     eval_stmt cursor ctx Sig.Cont stmt
 
+  and eval_block ~(start : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (block : block) : Ctx.t * Sig.t =
+    try eval_block' ~start cursor ctx block.it
+    with InterpErr _ as err -> error_pass_info block.at err
+
+  and eval_block' ~(start : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (block : block') : Ctx.t * Sig.t =
+    let stmts, _annos = block in
+    let ctx = if start then ctx else Ctx.enter_frame ctx in
+    let ctx, sign = eval_stmts cursor ctx Sig.Cont stmts in
+    let ctx = if start then ctx else Ctx.exit_frame ctx in
+    (ctx, sign)
+
   and eval_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (block : block) :
       Ctx.t * Sig.t =
-    let stmts, _annos = block.it in
-    let ctx = Ctx.enter_frame ctx in
-    let ctx, sign = eval_stmts cursor ctx Sig.Cont stmts in
-    let ctx = Ctx.exit_frame ctx in
-    (ctx, sign)
+    eval_block ~start:false cursor ctx block
 
   and eval_return_stmt (cursor : Ctx.cursor) (ctx : Ctx.t)
       (expr_ret : expr option) : Ctx.t * Sig.t =
@@ -791,10 +800,7 @@ module Make (Arch : ARCH) : INTERP = struct
   and eval_parser_state (cursor : Ctx.cursor) (ctx : Ctx.t) (state : State.t) :
       Ctx.t * Sig.t =
     assert (cursor = Ctx.Block);
-    let ctx, sign =
-      let stmt_block = BlockS { block = state } $ no_info in
-      eval_stmt Ctx.Local ctx Sig.Cont stmt_block
-    in
+    let ctx, sign = eval_block ~start:true Ctx.Local ctx state in
     match sign with
     | Cont -> (ctx, Sig.Trans (`State "reject"))
     | Trans _ -> (ctx, sign)
@@ -1241,10 +1247,7 @@ module Make (Arch : ARCH) : INTERP = struct
     let ctx_caller, ctx_callee, lvalues =
       copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
     in
-    let ctx_callee, sign =
-      let stmt_block = BlockS { block } $ no_info in
-      eval_stmt Ctx.Local ctx_callee Sig.Cont stmt_block
-    in
+    let ctx_callee, sign = eval_block ~start:true Ctx.Local ctx_callee block in
     let ctx_caller = post ctx_caller ctx_callee in
     let ctx_caller =
       copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
@@ -1263,10 +1266,7 @@ module Make (Arch : ARCH) : INTERP = struct
     let ctx_caller, ctx_callee, lvalues =
       copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
     in
-    let ctx_callee, sign =
-      let stmt_block = BlockS { block } $ no_info in
-      eval_stmt Ctx.Local ctx_callee Sig.Cont stmt_block
-    in
+    let ctx_callee, sign = eval_block ~start:true Ctx.Local ctx_callee block in
     let ctx_caller = post ctx_caller ctx_callee in
     let ctx_caller =
       copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
@@ -1358,10 +1358,7 @@ module Make (Arch : ARCH) : INTERP = struct
     let ctx_callee =
       { ctx_callee with block = { ctx_callee.block with fenv } }
     in
-    let ctx_callee, sign =
-      let stmt_block = BlockS { block } $ no_info in
-      eval_stmt Ctx.Local ctx_callee Sig.Cont stmt_block
-    in
+    let ctx_callee, sign = eval_block ~start:true Ctx.Local ctx_callee block in
     let ctx_caller = post ctx_caller ctx_callee in
     let ctx_caller =
       copyout cursor_caller ctx_caller Ctx.Block ctx_callee params lvalues

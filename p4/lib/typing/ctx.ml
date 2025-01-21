@@ -75,7 +75,7 @@ let empty_bt =
     frame = Frame.empty;
   }
 
-let empty_lt = { kind = Empty; tdenv = TDEnv.empty; frames = [] }
+let empty_lt = { kind = Empty; tdenv = TDEnv.empty; frames = [ Frame.empty ] }
 let empty = { global = empty_gt; block = empty_bt; local = empty_lt }
 
 (* Frame management *)
@@ -186,10 +186,7 @@ let add_stype cursor id typ dir ctk value ctx =
       { ctx with block = { ctx.block with frame } }
   | Local ->
       let frames = ctx.local.frames in
-      let frame, frames =
-        if frames = [] then (Frame.empty, [])
-        else (List.hd frames, List.tl frames)
-      in
+      let frame, frames = (List.hd frames, List.tl frames) in
       let frame = Frame.add_nodup id (typ, dir, ctk, value) frame in
       let frames = frame :: frames in
       { ctx with local = { ctx.local with frames } }

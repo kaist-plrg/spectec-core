@@ -77,7 +77,7 @@ rule Inst_init_decl_ok/instd:
   -- if tenv' = $update_map(id, rtyp, tenv, id', rtyp')
 
 rule Inst_init_decl_ok/funcd:
-  p C_0 tenv fdenv |- (FuncD id type_r tparam* param* block) : tenv fdenv'
+  p C_0 tenv fdenv |- (FuncD id type_r tparam* param* (BlockB stmt*)) : tenv fdenv'
   ----
   -- if (fid' dir' type' expr')* = param*
   -- if C_1 = $set_blockkind(C_0, EXTERN)
@@ -94,7 +94,7 @@ rule Inst_init_decl_ok/funcd:
   ----
   -- if C_5 = $add_params(LOCAL, C_4, pt*)
   ----
-  -- Stmts_ok: LOCAL C_5 CONT |- BlockS block : C_6 f
+  -- Stmts_ok: LOCAL C_5 CONT |- stmt* : C_6 f
   ----
   -- if f = RET \/ typ_r = VoidT
   -- if fd = PolyFD tparam* (ExternMethodT pt* typ_r)
@@ -361,7 +361,7 @@ rule Decl_ok/typedefd:
 ;;
 
 rule Decl_ok/actiond:
-  p C_0 |- ActionD id param* block : C_4
+  p C_0 |- ActionD id param* (BlockB stmt*) : C_4
   ----
   -- if p = GLOBAL \/ (p = BLOCK /\ C_0.BLOCK.KIND = CONTROL)
   ----
@@ -372,7 +372,7 @@ rule Decl_ok/actiond:
   -- if (id_p dir_p typ_p val_p = paramtyp)*
   -- if C_2 = $add_typs(LOCAL, C_1, id_p*, (typ_p dir_p DYN)*)
   ----
-  -- Stmt_ok: LOCAL C_2 CONT |- BlockS block : C_3 CONT
+  -- Stmts_ok: LOCAL C_2 CONT |- stmt* : C_3 CONT
   ----
   -- if funcdef = MonoFD (ActionT paramtyp*)
   ----
@@ -386,7 +386,7 @@ rule Decl_ok/actiond:
 ;;
 
 rule Decl_ok/funcd:
-  GLOBAL C_0 |- FuncD id type_r tparam* param* block : C_5
+  GLOBAL C_0 |- FuncD id type_r tparam* param* (BlockB stmt*) : C_5
   ----
   -- if C_1 = $add_typdefs(LOCAL, C_0, tparam*, (MonoD (VarT tparam))*)
   -- Type_ok: LOCAL C_1 |- type_r : typ_r
@@ -398,7 +398,7 @@ rule Decl_ok/funcd:
   -- if (id_p dir_p typ_p val_p = paramtyp)*
   -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p dir_p DYN)*)
   ----
-  -- Stmt_ok: LOCAL C_3 CONT |- BlockS block : C_4 f
+  -- Stmts_ok: LOCAL C_3 CONT |- stmt* : C_4 f
   -- if f = RET \/ (f = CONT /\ typ_r = VoidT)
   ----
   -- if fd = PolyFD tparam* (FuncT paramtyp* typ_r)
@@ -566,8 +566,8 @@ relation ParserState_ok:
   context |- parserstate : context
 
 rule ParserState_ok:
-  C |- statelabel block : C'
-  -- Stmt_ok: LOCAL C CONT |- BlockS block : C' CONT
+  C |- statelabel (BlockB stmt*) : C'
+  -- Stmts_ok: LOCAL C CONT |- stmt* : C' CONT
 
 
 relation ParserStates_ok:
@@ -613,7 +613,7 @@ rule Decl_ok/parserd:
   ----
   -- if C_5 = $set_localkind(C_4, PARSERSTATE)
   ----
-  -- if C_6 = $add_typs(LOCAL, C_5, statelabel*, (StateT NO DYN)*)
+  -- if C_6 = $add_typs(BLOCK, C_5, statelabel*, (StateT NO DYN)*)
   ----
   -- ParserStates_ok: C_6 |- parserstate : C_7
   ----
@@ -1089,7 +1089,7 @@ rule Decl_ok/controltyped:
 ;;
 
 rule Decl_ok/controld:
-  GLOBAL C_0 |- ControlD id eps param* cparam* decl* block : C_7
+  GLOBAL C_0 |- ControlD id eps param* cparam* decl* (BlockB stmt*) : C_7
   ----
   -- if C_1 = $set_blockkind(C_0, CONTROL)
   ----
@@ -1112,7 +1112,7 @@ rule Decl_ok/controld:
   ----
   -- if C_5 = $set_localkind(C_4, CONTROLAPPLYMETHOD)
   ----
-  -- Stmt_ok: LOCAL C_5 CONT |- BlockS block : C_6 f
+  -- Stmts_ok: LOCAL C_5 CONT |- stmt* : C_6 f
   ----
   -- if ptd = PolyD eps (ControlT paramtyp*)
   -- if typ = SpecT ptd eps

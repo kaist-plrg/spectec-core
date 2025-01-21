@@ -2606,7 +2606,9 @@ and type_switch_table_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   match case.it with
   | MatchC (label, block) ->
       let label_il = type_switch_table_label cursor ctx id_table label in
-      let _ctx, flow, block_il = type_block cursor ctx flow block in
+      let _ctx, flow, block_il =
+        type_block ~start:false cursor ctx flow block
+      in
       let case_il = Lang.Ast.MatchC (label_il, block_il) $ case.at in
       (flow, label_il, case_il)
   | FallC label ->
@@ -2707,7 +2709,9 @@ and type_switch_general_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   match case.it with
   | MatchC (label, block) ->
       let label_il = type_switch_general_label cursor ctx typ_switch label in
-      let _ctx, flow, block_il = type_block cursor ctx flow block in
+      let _ctx, flow, block_il =
+        type_block ~start:false cursor ctx flow block
+      in
       let case_il = Lang.Ast.MatchC (label_il, block_il) $ case.at in
       (flow, label_il, case_il)
   | FallC label ->
@@ -2810,12 +2814,12 @@ and type_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
    It contains a sequence of statements and declarations, which are executed sequentially.
    The variables and constants within a block statement are only visible within the block. *)
 
-and type_block (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
-    (block : El.Ast.block) : Ctx.t * Flow.t * Il.Ast.block =
+and type_block ~(start : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (flow : Flow.t) (block : El.Ast.block) : Ctx.t * Flow.t * Il.Ast.block =
   let stmts, annos = block.it in
-  let ctx = Ctx.enter_frame ctx in
+  let ctx = if start then ctx else Ctx.enter_frame ctx in
   let ctx, flow, block_il = type_block' cursor ctx flow stmts annos in
-  let ctx = Ctx.exit_frame ctx in
+  let ctx = if start then ctx else Ctx.exit_frame ctx in
   (ctx, flow, block_il $ block.at)
 
 and type_block' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
@@ -2828,7 +2832,7 @@ and type_block' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
 
 and type_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (block : El.Ast.block) : Ctx.t * Flow.t * Il.Ast.stmt' =
-  let ctx, flow, block_il = type_block cursor ctx flow block in
+  let ctx, flow, block_il = type_block ~start:false cursor ctx flow block in
   let stmt_il = Il.Ast.BlockS { block = block_il } in
   (ctx, flow, stmt_il)
 
@@ -3269,7 +3273,7 @@ and type_instantiation_init_extern_abstract_method_decl (cursor : Ctx.cursor)
     (ctx', tparams_hidden)
   in
   (* Typecheck body *)
-  let _ctx', flow, block_il = type_block Ctx.Local ctx' Cont body in
+  let _ctx', flow, block_il = type_block ~start:true Ctx.Local ctx' Cont body in
   check
     (flow = Flow.Ret || typ_ret.it = Types.VoidT)
     "(type_instantiation_init_extern_abstract_method_decl) A function must \
@@ -3835,7 +3839,9 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   assert (tids_fresh = []);
   let ctx' = Ctx.add_params Ctx.Local params_il ctx' in
   (* Typecheck body *)
-  let _ctx', _flow, block_il = type_block Ctx.Local ctx' Cont body in
+  let _ctx', _flow, block_il =
+    type_block ~start:true Ctx.Local ctx' Cont body
+  in
   (* Create an action definition *)
   let fd =
     let params =
@@ -3886,7 +3892,7 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (ctx', tparams_hidden)
   in
   (* Typecheck body *)
-  let _ctx', flow, block_il = type_block Ctx.Local ctx' Cont body in
+  let _ctx', flow, block_il = type_block ~start:true Ctx.Local ctx' Cont body in
   check
     (flow = Flow.Ret || typ_ret.it = Types.VoidT)
     "(type_function_decl) a function must return a value on all possible \
@@ -4272,7 +4278,7 @@ and type_parser_state' (cursor : Ctx.cursor) (ctx : Ctx.t)
     && match ctx.local.kind with Ctx.ParserState -> true | _ -> false)
     "(type_parser_state) Parser state must be local";
   let annos_il = type_annos cursor ctx annos in
-  let ctx, flow, block_il = type_block Ctx.Local ctx Cont block in
+  let ctx, flow, block_il = type_block ~start:true Ctx.Local ctx Cont block in
   assert (flow = Flow.Cont);
   let state_il = (label, block_il, annos_il) in
   (ctx, state_il)
@@ -4287,19 +4293,15 @@ and type_parser_states (_cursor : Ctx.cursor) (ctx : Ctx.t)
     "(type_parser_states) \"accpet\" and \"reject\" states are reserved";
   let labels = "accept" :: "reject" :: labels in
   WF.check_distinct_names labels;
-  let ctx' = Ctx.set_localkind Ctx.ParserState ctx in
   let ctx' =
     List.fold_left
       (fun ctx' label ->
-        Ctx.add_type Ctx.Local label Types.StateT Lang.Ast.No Ctk.DYN ctx')
-      ctx' labels
+        Ctx.add_type Ctx.Block label Types.StateT Lang.Ast.No Ctk.DYN ctx')
+      ctx labels
   in
-  let _ctx', states_il =
-    List.fold_left
-      (fun (ctx', states_il) state ->
-        let ctx', state_il = type_parser_state Ctx.Local ctx' state in
-        (ctx', states_il @ [ state_il ]))
-      (ctx', []) states
+  let ctx' = Ctx.set_localkind Ctx.ParserState ctx' in
+  let states_il =
+    List.map (fun state -> type_parser_state Ctx.Local ctx' state |> snd) states
   in
   let decl_il = states_il in
   (ctx, decl_il)
@@ -5434,7 +5436,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let ctx', locals_il = type_decls Ctx.Block ctx' locals in
   (* Typecheck implicit "apply" method *)
   let ctx' = Ctx.set_localkind Ctx.ControlApplyMethod ctx' in
-  let _ctx', _flow, body_il = type_block Ctx.Local ctx' Cont body in
+  let _ctx', _flow, body_il = type_block ~start:true Ctx.Local ctx' Cont body in
   (* Create a control constructor definition *)
   let typ =
     let params =

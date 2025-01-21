@@ -53,7 +53,7 @@ let empty_bt =
     venv = VEnv.empty;
   }
 
-let empty_lt = { theta = Theta.empty; venvs = [] }
+let empty_lt = { theta = Theta.empty; venvs = [ VEnv.empty ] }
 let empty = { path = []; global = empty_gt; block = empty_bt; local = empty_lt }
 
 (* Inheritance *)
@@ -171,9 +171,7 @@ let add_value cursor id value ctx =
       { ctx with block = { ctx.block with venv } }
   | Local ->
       let venvs = ctx.local.venvs in
-      let venv, venvs =
-        if venvs = [] then (VEnv.empty, []) else (List.hd venvs, List.tl venvs)
-      in
+      let venv, venvs = (List.hd venvs, List.tl venvs) in
       let venv = VEnv.add_nodup id value venv in
       let venvs = venv :: venvs in
       { ctx with local = { ctx.local with venvs } }

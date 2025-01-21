@@ -166,7 +166,7 @@ and do_instantiate_control (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
   assert (cursor = Ctx.Block);
   let ctx_apply_locals, sto, decls = eval_decls cursor ctx sto decls in
   let _ctx_apply_block, sto, block =
-    eval_block Ctx.Local ctx_apply_locals sto block
+    eval_block ~start:true Ctx.Local ctx_apply_locals sto block
   in
   let venv = ctx.block.venv in
   let fenv = ctx_apply_locals.block.fenv in
@@ -395,18 +395,18 @@ and eval_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
       (ctx, sto, stmts @ [ stmt ]))
     (ctx, sto, []) stmts
 
-and eval_block (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (block : block)
-    : Ctx.t * Sto.t * block =
+and eval_block ~(start : bool) (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (block : block) : Ctx.t * Sto.t * block =
   let stmts, annos = block.it in
-  let ctx = Ctx.enter_frame ctx in
+  let ctx = if start then ctx else Ctx.enter_frame ctx in
   let ctx, sto, stmts = eval_stmts cursor ctx sto stmts in
-  let ctx = Ctx.exit_frame ctx in
+  let ctx = if start then ctx else Ctx.exit_frame ctx in
   let block = (stmts, annos) $ block.at in
   (ctx, sto, block)
 
 and eval_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (block : block) : Ctx.t * Sto.t * stmt' =
-  let ctx, sto, block = eval_block cursor ctx sto block in
+  let ctx, sto, block = eval_block ~start:false cursor ctx sto block in
   (ctx, sto, BlockS { block })
 
 (* (15.1) Direct type invocation
@@ -994,7 +994,7 @@ and eval_parser_state_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (state : parser_state) : Ctx.t * Sto.t =
   assert (cursor = Ctx.Block);
   let label, block, _annos = state.it in
-  let ctx, sto, block = eval_block Ctx.Local ctx sto block in
+  let ctx, sto, block = eval_block ~start:true Ctx.Local ctx sto block in
   let value_state = Value.StateV label.it in
   let state = block in
   let ctx =
