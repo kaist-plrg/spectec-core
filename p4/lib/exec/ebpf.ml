@@ -19,7 +19,7 @@ module Sto = Envs_dynamic.Sto
 open Driver
 open Util.Error
 
-let error_no_info = error_interp_no_info
+let error = error_driver
 
 (* eBPF extern objects *)
 
@@ -154,9 +154,7 @@ module Make (Interp : INTERP) : ARCH = struct
     match (fname, args) with
     (* core.p4 *)
     | "verify", [ ("check", false); ("toSignal", false) ] -> Core.verify ctx
-    | _ ->
-        F.asprintf "(TODO: eval_extern_func_call) %a" FId.pp fid
-        |> error_no_info
+    | _ -> F.asprintf "(TODO: eval_extern_func_call) %a" FId.pp fid |> error
 
   let eval_extern_method_call (ctx : Ctx.t) (oid : OId.t) (fid : FId.t) :
       Ctx.t * Sig.t =
@@ -194,7 +192,7 @@ module Make (Interp : INTERP) : ARCH = struct
         (ctx, sign)
     | _ ->
         F.asprintf "(TODO: eval_extern_method_call) %a.%a" OId.pp oid FId.pp fid
-        |> error_no_info
+        |> error
 
   (* Pipeline driver *)
 

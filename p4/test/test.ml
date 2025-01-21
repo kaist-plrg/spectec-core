@@ -39,6 +39,7 @@ exception TestCheckNegErr of stat
 exception TestInstErr of string * Util.Source.info * stat
 exception TestParseStfErr of string * stat
 exception TestInterpErr of string * Util.Source.info * stat
+exception TestDriverErr of string * stat
 exception TestStfErr of stat
 
 let log_stat name fails total : unit =
@@ -269,6 +270,7 @@ let run stat (module Driver : Exec.Driver.DRIVER) includes filename stfname =
   with
   | StfErr msg -> raise (TestParseStfErr (msg, stat))
   | InterpErr (msg, info) -> raise (TestInterpErr (msg, info, stat))
+  | DriverErr msg -> raise (TestDriverErr (msg, stat))
 
 let run_test stat (module Driver : Exec.Driver.DRIVER) includes filename stfname
     =
@@ -295,6 +297,9 @@ let run_test stat (module Driver : Exec.Driver.DRIVER) includes filename stfname
   | TestInterpErr (msg, info, stat) ->
       Format.asprintf "Error on run: %a\n%s" Util.Source.pp info msg
       |> print_endline;
+      { stat with fail_run = stat.fail_run + 1 }
+  | TestDriverErr (msg, stat) ->
+      Format.asprintf "Error on driver: %s" msg |> print_endline;
       { stat with fail_run = stat.fail_run + 1 }
   | TestStfErr stat ->
       Format.asprintf "Error on stf test" |> print_endline;

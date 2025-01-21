@@ -9,9 +9,6 @@ let error_no_info = error_inst_no_info
 
 type t = {
   keys : table_key list;
-  (* (TODO) For runtime validity check, need to record what arguments are missing,
-     i.e., intended to be filled in by the control plane
-     Post-typechecking IL should record this information in the table_actions property *)
   actions : table_action list;
   action_default : bool * table_action;
   entries : bool * table_entry list;
@@ -82,7 +79,7 @@ let init_table_default (table : table) : bool * table_action =
   |> function
   | [] ->
       let var_action = L.Top ("NoAction" $ no_info) $ no_info in
-      let table_action_default = (var_action, [], [], []) $ no_info in
+      let table_action_default = (var_action, [], [], [], []) $ no_info in
       (false, table_action_default)
   | [ (table_action, table_action_const) ] -> (table_action_const, table_action)
   | _ ->
@@ -122,3 +119,6 @@ let add_entry (keysets : keyset list) (table_action : table_action)
   let table_entries_const, table_entries = table.entries in
   let table_entries = table_entries @ [ entry ] in
   { table with entries = (table_entries_const, table_entries) }
+
+let add_default (table_action : table_action) (table : t) : t =
+  { table with action_default = (false, table_action) }

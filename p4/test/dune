@@ -256,5 +256,7 @@
      ebpf
      -i
      ../../../testdata/arch
+     -p
+     ../../../testdata/p4c/stf/ebpf-patch
      ../../../testdata/p4c/program/well-typed
      ../../../testdata/p4c/stf/ebpf)))))

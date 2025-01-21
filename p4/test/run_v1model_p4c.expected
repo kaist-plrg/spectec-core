@@ -963,8 +963,7 @@ Error on typecheck: File ../../../testdata/p4c/program/well-typed/table-entries-
 Run success
 
 >>> Running run test on ../../../testdata/p4c/program/well-typed/ternary2-bmv2.p4 with ../../../testdata/p4c/stf/v1model/ternary2-bmv2.stf
-Error on run: 
-(TODO: find_table_key) data.f1
+Error on driver: (TODO: find_table_key) data.f1
 >>>>> Rerunning run test on ../../../testdata/p4c/program/well-typed/ternary2-bmv2.p4 with ../../../testdata/p4c/stf/v1model-patch/ternary2-bmv2.stf
 [PASS] Expected: 2 00000101************7F66******** / Got: 2 000001010000020203037F6677778800
 [PASS] Expected: 3 00000202************0766******** / Got: 3 00000202000003030404076677778800

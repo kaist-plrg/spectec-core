@@ -301,7 +301,7 @@ and table_key' = (note, expr') L.table_key'
 and table_actions = table_action' L.table_actions
 and table_actions' = table_action' L.table_actions'
 and table_action = table_action' L.table_action
-and table_action' = var * arg list * anno list * param list
+and table_action' = var * arg list * anno list * param list * param list
 
 (* Table entries *)
 and table_entries = table_entry' L.table_entries

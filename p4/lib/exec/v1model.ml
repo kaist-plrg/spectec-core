@@ -19,7 +19,7 @@ module Sto = Envs_dynamic.Sto
 open Driver
 open Util.Error
 
-let error_no_info = error_interp_no_info
+let error = error_driver
 
 (* V1Model extern objects *)
 
@@ -913,7 +913,7 @@ module Make (Interp : INTERP) : ARCH = struct
     | "log_msg", [ ("msg", false) ] -> eval_extern_log_msg ~data:false ctx
     | "log_msg", [ ("msg", false); ("data", false) ] ->
         eval_extern_log_msg ~data:true ctx
-    | _ -> F.asprintf "(eval_extern_func_call) %a" FId.pp fid |> error_no_info
+    | _ -> F.asprintf "(eval_extern_func_call) %a" FId.pp fid |> error
 
   let eval_extern_method_call (ctx : Ctx.t) (oid : OId.t) (fid : FId.t) :
       Ctx.t * Sig.t =
@@ -968,7 +968,7 @@ module Make (Interp : INTERP) : ARCH = struct
     | _ ->
         F.asprintf "(TODO: eval_extern_method_call) %a.%a" pp_extern extern
           FId.pp fid
-        |> error_no_info
+        |> error
 
   (* Pipeline driver *)
 

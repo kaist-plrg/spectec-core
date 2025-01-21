@@ -4,6 +4,7 @@ exception ParseErr of string * info
 exception CheckErr of string * info
 exception InstErr of string * info
 exception InterpErr of string * info
+exception DriverErr of string
 exception StfErr of string
 
 (* Constructors *)
@@ -34,6 +35,7 @@ let error_interp_pass_info (info : info) = function
   | InterpErr (msg, M "") -> raise (InterpErr (msg, info))
   | err -> raise err
 
+let error_driver (msg : string) = raise (DriverErr msg)
 let error_stf (msg : string) = raise (StfErr msg)
 
 (* Conditionals *)
@@ -46,5 +48,8 @@ let check_inst (b : bool) (msg : string) : unit =
 
 let check_interp (b : bool) (msg : string) : unit =
   if not b then error_interp_no_info msg
+
+let check_driver (b : bool) (msg : string) : unit =
+  if not b then error_driver msg
 
 let implies (p : bool) (q : bool) : bool = (not p) || q

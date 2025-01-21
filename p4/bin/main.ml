@@ -28,7 +28,8 @@ let parse_command =
          in
          Format.printf "%a\n" El.Pp.pp_program program
        with ParseErr (msg, info) ->
-         Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
+         if Util.Source.is_no_info info then Format.printf "Error: %s\n" msg
+         else Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
 
 let typecheck_command =
   Command.basic ~summary:"typecheck a p4_16 program"
@@ -41,7 +42,8 @@ let typecheck_command =
          let program = typecheck includes filename in
          Format.printf "%a\n" Il.Pp.pp_program program
        with ParseErr (msg, info) | CheckErr (msg, info) ->
-         Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
+         if Util.Source.is_no_info info then Format.printf "Error: %s\n" msg
+         else Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
 
 let instantiate_command =
   Command.basic ~summary:"instantiate a p4_16 program"
@@ -55,7 +57,8 @@ let instantiate_command =
          Instance.Instantiate.instantiate_program program |> ignore
        with
        | ParseErr (msg, info) | CheckErr (msg, info) | InstErr (msg, info) ->
-         Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
+         if Util.Source.is_no_info info then Format.printf "Error: %s\n" msg
+         else Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
 
 let run_command =
   Command.basic ~summary:"run a p4_16 program"
@@ -79,7 +82,9 @@ let run_command =
        | CheckErr (msg, info)
        | InstErr (msg, info)
        | InterpErr (msg, info) ->
-           Format.printf "Error: %a\n%s\n" Util.Source.pp info msg
+           if Util.Source.is_no_info info then Format.printf "Error: %s\n" msg
+           else Format.printf "Error: %a\n%s\n" Util.Source.pp info msg
+       | DriverErr msg -> Format.printf "Error: %s\n" msg
        | StfErr msg -> Format.printf "Error: %s\n" msg)
 
 let command =

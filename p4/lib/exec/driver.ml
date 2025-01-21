@@ -14,7 +14,7 @@ module Sto = Envs_dynamic.Sto
 open Util.Source
 open Util.Error
 
-let error_no_info = error_interp_no_info
+let error = error_driver
 
 (* (TODO) Inserts VoidT, shouldn't matter in dynamics but not a good practice either *)
 let no_info_expr = (no_info, Il.Ast.{ typ = Types.VoidT; ctk = Ctk.DYN })
@@ -111,9 +111,14 @@ module Make
       | [] -> assert false
       | [ id_unqualified ] ->
           !Interp.sto |> Sto.bindings |> List.map fst
-          |> List.find (fun oid -> oid |> List.rev |> List.hd = id_unqualified)
-      | oid_table -> oid_table
+          |> List.find_opt (fun oid ->
+                 oid |> List.rev |> List.hd = id_unqualified)
+      | oid_table -> Some oid_table
     in
+    check (Option.is_some oid_table)
+      (F.asprintf "(find_table) table %a not found" Stf.Print.print_name
+         id_table);
+    let oid_table = Option.get oid_table in
     let obj_table = Sto.find oid_table !Interp.sto in
     (oid_table, obj_table)
 
@@ -147,7 +152,7 @@ module Make
     | [ (idx, table_key) ] -> (idx, table_key)
     | _ ->
         F.asprintf "(TODO: find_table_key) %a" Stf.Print.print_name id_key
-        |> error_no_info
+        |> error
 
   let find_table_action (id_action : Stf.Ast.name) (table : Table.t) :
       Il.Ast.table_action =
@@ -161,7 +166,7 @@ module Make
     let table_action =
       List.filter_map
         (fun table_action ->
-          let var_action, _, _, _ = table_action.it in
+          let var_action, _, _, _, _ = table_action.it in
           match var_action.it with
           | Lang.Ast.Top id | Lang.Ast.Current id ->
               if id.it = id_action then Some table_action else None)
@@ -172,7 +177,7 @@ module Make
     | _ ->
         F.asprintf "(find_table_action) no matching action found for %a"
           Stf.Print.print_name id_action
-        |> error_no_info
+        |> error_driver
 
   let make_exact_key (num_key : Stf.Ast.number) =
     let num_key = num_key |> int_of_string |> Bigint.of_int in
@@ -230,7 +235,7 @@ module Make
                 | _ ->
                     F.asprintf "(TODO: add_table_entry) %a"
                       Stf.Print.print_mtchkind mtchkind
-                    |> error_no_info
+                    |> error
               in
               let typ_key_set = Types.SetT typ_key in
               let expr_key =
@@ -243,7 +248,7 @@ module Make
           | _ ->
               F.asprintf "(TODO: add_table_entry) %a" Stf.Print.print_mtchkind
                 mtchkind
-              |> error_no_info)
+              |> error)
         keys
       |> List.sort (fun (idx_a, _) (idx_b, _) -> compare idx_a idx_b)
       |> List.map snd
@@ -251,7 +256,9 @@ module Make
     let action =
       let id_action, args_action_supplied = action in
       let table_action = find_table_action id_action table in
-      let var_action, args_action, annos, params_control = table_action.it in
+      let var_action, args_action, annos, params_data, params_control =
+        table_action.it
+      in
       let module PMap = Map.Make (String) in
       let pmap_control =
         List.map it params_control
@@ -281,7 +288,8 @@ module Make
         |> List.map snd
       in
       let args_action = args_action @ args_action_supplied in
-      (var_action, args_action, annos, []) $ no_info
+      (var_action, args_action, annos, params_data @ params_control, [])
+      $ no_info
     in
     (* (TODO) Should validate priority value *)
     let priority =
@@ -290,6 +298,53 @@ module Make
         priority
     in
     let table = Table.add_entry keysets action priority table in
+    let obj_table = Obj.TableO (id_table, table) in
+    Interp.update oid_table obj_table
+
+  let add_table_default (id_table : Stf.Ast.name) (action : Stf.Ast.action) :
+      unit =
+    let oid_table, obj_table = find_table id_table in
+    let id_table, table = Obj.get_table obj_table in
+    let table_action_default_const, _ = table.action_default in
+    if table_action_default_const then
+      F.asprintf "(add_table_default) default action is declared as constant"
+      |> error;
+    let id_action, args_action = action in
+    let table_action = find_table_action id_action table in
+    let var_action, _, annos, params_data, params_control = table_action.it in
+    let module PMap = Map.Make (String) in
+    let pmap_control =
+      List.map it (params_data @ params_control)
+      |> List.mapi (fun idx (id, _, typ, _, _) -> (idx, id.it, typ.it))
+      |> List.fold_left
+           (fun pmap (idx, id, typ) -> PMap.add id (idx, typ) pmap)
+           PMap.empty
+    in
+    let args_action =
+      args_action
+      |> List.map (fun arg_action ->
+             let id_arg, num_arg = arg_action in
+             let idx, typ = PMap.find id_arg pmap_control in
+             let num_arg = num_arg |> int_of_string |> Bigint.of_int in
+             let value_arg = Value.IntV num_arg $ no_info in
+             let expr_arg =
+               Il.Ast.ValueE { value = value_arg } $$ no_info_expr
+             in
+             let expr_arg =
+               Il.Ast.(
+                 CastE { typ = typ $ no_info; expr = expr_arg }
+                 $$ (no_info, { typ; ctk = Ctk.DYN }))
+             in
+             let arg = Lang.Ast.ExprA expr_arg $ no_info in
+             (idx, arg))
+      |> List.sort (fun (idx_a, _) (idx_b, _) -> compare idx_a idx_b)
+      |> List.map snd
+    in
+    let action =
+      (var_action, args_action, annos, params_data @ params_control, [])
+      $ no_info
+    in
+    let table = Table.add_default action table in
     let obj_table = Obj.TableO (id_table, table) in
     Interp.update oid_table obj_table
 
@@ -337,12 +392,15 @@ module Make
     | Stf.Ast.Add (id_table, priority, keys, action, _) ->
         add_table_entry id_table keys action priority;
         (ctx, pass, queue_packet, queue_expect)
+    | Stf.Ast.SetDefault (id_table, action) ->
+        add_table_default id_table action;
+        (ctx, pass, queue_packet, queue_expect)
     (* Timing *)
     | Stf.Ast.Wait -> (ctx, pass, queue_packet, queue_expect)
     | _ ->
         F.asprintf "(run_stf_stmt) unknown stf stmt: %a" Stf.Print.print_stmt
           stmt_stf
-        |> error_no_info
+        |> error
 
   let run_stf_stmts (ctx : Ctx.t) (stmts_stf : Stf.Ast.stmt list) : bool =
     let _, pass, queue_packet, queue_expect =

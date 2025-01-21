@@ -738,8 +738,8 @@ and eq_table_keys ?(dbg = false) table_keys_a table_keys_b =
 (* Table action references *)
 
 and eq_table_action' ?(dbg = false) table_action_a table_action_b =
-  let var_a, args_a, _annos_a, _params_control = table_action_a in
-  let var_b, args_b, _annos_b, _params_control = table_action_b in
+  let var_a, args_a, _annos_a, _params_data, _params_control = table_action_a in
+  let var_b, args_b, _annos_b, _params_data, _params_control = table_action_b in
   eq_var ~dbg var_a var_b && eq_args ~dbg args_a args_b
 
 and eq_table_action ?(dbg = false) table_action_a table_action_b =

@@ -371,7 +371,7 @@ let walk_table_keys (walker : walker) table_keys =
 let walk_table_action (walker : walker) table_action =
   let walk_var = walker.walk_var walker in
   let walk_arg = walker.walk_arg walker in
-  let var, args, _annos, _params_control = table_action.it in
+  let var, args, _annos, _params_data, _params_control = table_action.it in
   walk_var var;
   W.walk_list walk_arg args
 
