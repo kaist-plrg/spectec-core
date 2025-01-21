@@ -198,32 +198,6 @@ module Make (Interp : INTERP) : ARCH = struct
 
   (* Pipeline driver *)
 
-  type port = int
-  type packet = string
-  type result = port * packet
-
-  let compare_packet packet_out packet_expect : bool =
-    let to_list s = List.init (String.length s) (String.get s) in
-    let packet_out = to_list packet_out in
-    let packet_expect = to_list packet_expect in
-    List.length packet_out = List.length packet_expect
-    && List.fold_left2
-         (fun same o e -> same && (e = '*' || o = e))
-         true packet_out packet_expect
-
-  let compare_result (port_out, packet_out) (port_expect, packet_expect) : bool
-      =
-    let pass =
-      port_out = port_expect && compare_packet packet_out packet_expect
-    in
-    if pass then
-      F.printf "[PASS] Expected: %d %s / Got: %d %s\n" port_expect packet_expect
-        port_out packet_out
-    else
-      F.printf "[FAIL] Expected: %d %s / Got: %d %s\n" port_expect packet_expect
-        port_out packet_out;
-    pass
-
   let drive_prs (ctx : Ctx.t) : Ctx.t * Sig.t =
     let expr_base, func, args =
       let oid = [ "main"; "prs" ] in
@@ -259,76 +233,4 @@ module Make (Interp : INTERP) : ARCH = struct
     let accept = Ctx.find_value Ctx.Global "accept" ctx |> Value.get_bool in
     (* Extract output packet *)
     if accept then Some (port_in, packet_in) else None
-
-  let drive_stf_stmt (ctx : Ctx.t) (pass : bool) (queue_packet : result list)
-      (queue_expect : result list) (stmt_stf : Stf.Ast.stmt) :
-      Ctx.t * bool * result list * result list =
-    match stmt_stf with
-    (* Packet I/O *)
-    | Stf.Ast.Packet (port_in, packet_in) -> (
-        let port_in = int_of_string port_in in
-        let packet_in = String.uppercase_ascii packet_in in
-        let result_out = drive_pipe ctx port_in packet_in in
-        match result_out with
-        | None -> (ctx, pass, queue_packet, queue_expect)
-        | Some (port_out, packet_out) -> (
-            match queue_expect with
-            | [] ->
-                let queue_packet = queue_packet @ [ (port_out, packet_out) ] in
-                (ctx, pass, queue_packet, queue_expect)
-            | (port_expect, packet_expect) :: queue_expect ->
-                let pass =
-                  compare_result (port_out, packet_out)
-                    (port_expect, packet_expect)
-                  && pass
-                in
-                (ctx, pass, queue_packet, queue_expect)))
-    | Stf.Ast.Expect (port_expect, Some packet_expect) -> (
-        let port_expect = int_of_string port_expect in
-        let packet_expect = String.uppercase_ascii packet_expect in
-        match queue_packet with
-        | [] ->
-            ( ctx,
-              pass,
-              queue_packet,
-              queue_expect @ [ (port_expect, packet_expect) ] )
-        | (port_out, packet_out) :: queue_packet ->
-            let pass =
-              compare_result (port_out, packet_out) (port_expect, packet_expect)
-              && pass
-            in
-            (ctx, pass, queue_packet, queue_expect))
-    (* Timing *)
-    | Stf.Ast.Wait -> (ctx, pass, queue_packet, queue_expect)
-    | _ ->
-        F.asprintf "(drive_stf_stmt) unknown stf stmt: %a" Stf.Print.print_stmt
-          stmt_stf
-        |> error_no_info
-
-  let drive_stf_stmts (ctx : Ctx.t) (stmts_stf : Stf.Ast.stmt list) : bool =
-    let _, pass, queue_packet, queue_expect =
-      List.fold_left
-        (fun (ctx, pass, queue_packet, queue_expect) stmt_stf ->
-          drive_stf_stmt ctx pass queue_packet queue_expect stmt_stf)
-        (ctx, true, [], []) stmts_stf
-    in
-    let pass = pass && queue_packet = [] && queue_expect = [] in
-    if queue_packet <> [] then (
-      F.printf "[FAIL] Remaining packets to be matched:\n";
-      List.iteri
-        (fun idx (port, packet) -> F.printf "(%d) %d %s\n" idx port packet)
-        queue_packet);
-    if queue_expect <> [] then (
-      F.printf "[FAIL] Expected packets to be output:\n";
-      List.iteri
-        (fun idx (port, packet) -> F.printf "(%d) %d %s\n" idx port packet)
-        queue_expect);
-    pass
-
-  let drive (cenv : CEnv.t) (tdenv : TDEnv.t) (fenv : FEnv.t) (venv : VEnv.t)
-      (sto : Sto.t) (stmts_stf : Stf.Ast.stmt list) : bool =
-    let ctx = { Ctx.empty with global = { cenv; tdenv; fenv; venv } } in
-    let ctx, sto = init ctx sto in
-    Interp.init sto;
-    drive_stf_stmts ctx stmts_stf
 end
