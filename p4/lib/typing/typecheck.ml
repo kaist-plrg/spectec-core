@@ -1483,11 +1483,9 @@ and type_select_case' (cursor : Ctx.cursor) (ctx : Ctx.t)
   (keysets_il, state_label)
 
 and check_select_key (typ : Type.t) : unit =
-  check
-    (check_select_key' typ)
-    (F.asprintf
-      "(check_select_key) %a is not a valid select key type"
-      (Type.pp ~level:0) typ)
+  check (check_select_key' typ)
+    (F.asprintf "(check_select_key) %a is not a valid select key type"
+       (Type.pp ~level:0) typ)
 
 and check_select_key' (typ : Type.t) : bool =
   let typ = Type.canon typ in
@@ -2307,6 +2305,7 @@ and check_instantiation_site (cursor : Ctx.cursor) (ctx : Ctx.t)
       | Ctx.ParserState, (ExternT _ | ParserT _)
       | Ctx.ControlApplyMethod, (ExternT _ | ControlT _) ->
           ()
+      | Ctx.TableApplyMethod, ExternT _ -> ()
       | _ ->
           F.asprintf
             "(check_instantiation_site) %a cannot be instantiated in %a"
@@ -2607,7 +2606,9 @@ and type_switch_table_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   match case.it with
   | MatchC (label, block) ->
       let label_il = type_switch_table_label cursor ctx id_table label in
-      let _ctx, flow, block_il = type_block cursor ctx flow block in
+      let _ctx, flow, block_il =
+        type_block ~start:false cursor ctx flow block
+      in
       let case_il = Lang.Ast.MatchC (label_il, block_il) $ case.at in
       (flow, label_il, case_il)
   | FallC label ->
@@ -2708,7 +2709,9 @@ and type_switch_general_case (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
   match case.it with
   | MatchC (label, block) ->
       let label_il = type_switch_general_label cursor ctx typ_switch label in
-      let _ctx, flow, block_il = type_block cursor ctx flow block in
+      let _ctx, flow, block_il =
+        type_block ~start:false cursor ctx flow block
+      in
       let case_il = Lang.Ast.MatchC (label_il, block_il) $ case.at in
       (flow, label_il, case_il)
   | FallC label ->
@@ -2811,12 +2814,12 @@ and type_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
    It contains a sequence of statements and declarations, which are executed sequentially.
    The variables and constants within a block statement are only visible within the block. *)
 
-and type_block (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
-    (block : El.Ast.block) : Ctx.t * Flow.t * Il.Ast.block =
+and type_block ~(start : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (flow : Flow.t) (block : El.Ast.block) : Ctx.t * Flow.t * Il.Ast.block =
   let stmts, annos = block.it in
-  let ctx = Ctx.enter_frame ctx in
+  let ctx = if start then ctx else Ctx.enter_frame ctx in
   let ctx, flow, block_il = type_block' cursor ctx flow stmts annos in
-  let ctx = Ctx.exit_frame ctx in
+  let ctx = if start then ctx else Ctx.exit_frame ctx in
   (ctx, flow, block_il $ block.at)
 
 and type_block' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
@@ -2829,7 +2832,7 @@ and type_block' (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
 
 and type_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (flow : Flow.t)
     (block : El.Ast.block) : Ctx.t * Flow.t * Il.Ast.stmt' =
-  let ctx, flow, block_il = type_block cursor ctx flow block in
+  let ctx, flow, block_il = type_block ~start:false cursor ctx flow block in
   let stmt_il = Il.Ast.BlockS { block = block_il } in
   (ctx, flow, stmt_il)
 
@@ -3270,7 +3273,7 @@ and type_instantiation_init_extern_abstract_method_decl (cursor : Ctx.cursor)
     (ctx', tparams_hidden)
   in
   (* Typecheck body *)
-  let _ctx', flow, block_il = type_block Ctx.Local ctx' Cont body in
+  let _ctx', flow, block_il = type_block ~start:true Ctx.Local ctx' Cont body in
   check
     (flow = Flow.Ret || typ_ret.it = Types.VoidT)
     "(type_instantiation_init_extern_abstract_method_decl) A function must \
@@ -3836,7 +3839,9 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   assert (tids_fresh = []);
   let ctx' = Ctx.add_params Ctx.Local params_il ctx' in
   (* Typecheck body *)
-  let _ctx', _flow, block_il = type_block Ctx.Local ctx' Cont body in
+  let _ctx', _flow, block_il =
+    type_block ~start:true Ctx.Local ctx' Cont body
+  in
   (* Create an action definition *)
   let fd =
     let params =
@@ -3887,7 +3892,7 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (ctx', tparams_hidden)
   in
   (* Typecheck body *)
-  let _ctx', flow, block_il = type_block Ctx.Local ctx' Cont body in
+  let _ctx', flow, block_il = type_block ~start:true Ctx.Local ctx' Cont body in
   check
     (flow = Flow.Ret || typ_ret.it = Types.VoidT)
     "(type_function_decl) a function must return a value on all possible \
@@ -4273,7 +4278,7 @@ and type_parser_state' (cursor : Ctx.cursor) (ctx : Ctx.t)
     && match ctx.local.kind with Ctx.ParserState -> true | _ -> false)
     "(type_parser_state) Parser state must be local";
   let annos_il = type_annos cursor ctx annos in
-  let ctx, flow, block_il = type_block Ctx.Local ctx Cont block in
+  let ctx, flow, block_il = type_block ~start:true Ctx.Local ctx Cont block in
   assert (flow = Flow.Cont);
   let state_il = (label, block_il, annos_il) in
   (ctx, state_il)
@@ -4288,19 +4293,15 @@ and type_parser_states (_cursor : Ctx.cursor) (ctx : Ctx.t)
     "(type_parser_states) \"accpet\" and \"reject\" states are reserved";
   let labels = "accept" :: "reject" :: labels in
   WF.check_distinct_names labels;
-  let ctx' = Ctx.set_localkind Ctx.ParserState ctx in
   let ctx' =
     List.fold_left
       (fun ctx' label ->
-        Ctx.add_type Ctx.Local label Types.StateT Lang.Ast.No Ctk.DYN ctx')
-      ctx' labels
+        Ctx.add_type Ctx.Block label Types.StateT Lang.Ast.No Ctk.DYN ctx')
+      ctx labels
   in
-  let _ctx', states_il =
-    List.fold_left
-      (fun (ctx', states_il) state ->
-        let ctx', state_il = type_parser_state Ctx.Local ctx' state in
-        (ctx', states_il @ [ state_il ]))
-      (ctx', []) states
+  let ctx' = Ctx.set_localkind Ctx.ParserState ctx' in
+  let states_il =
+    List.map (fun state -> type_parser_state Ctx.Local ctx' state |> snd) states
   in
   let decl_il = states_il in
   (ctx, decl_il)
@@ -4477,7 +4478,7 @@ and type_table_property (cursor : Ctx.cursor) (ctx : Ctx.t)
       (table_ctx, Lang.Ast.CustomP table_custom_il)
 
 and type_table_properties (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (table_ctx : Tblctx.t) (table_properties : El.Ast.table) :
+    (table_ctx : Tblctx.t) (table_properties : El.Ast.table_property list) :
     Tblctx.t * Il.Ast.table =
   List.fold_left
     (fun (table_ctx, table_properties_il) table_property ->
@@ -4531,7 +4532,10 @@ and type_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let typ = Types.TableT (id.it, typ_struct) in
   WF.check_valid_typ cursor ctx typ;
   let ctx = Ctx.add_type cursor id.it typ Lang.Ast.No Ctk.DYN ctx in
-  let decl_il = Il.Ast.TableD { id; typ = typ $ no_info; table = table_il; annos = annos_il } in
+  let decl_il =
+    Il.Ast.TableD
+      { id; typ = typ $ no_info; table = table_il; annos = annos_il }
+  in
   (ctx, decl_il)
 
 (* (14.2.1.1) Keys
@@ -4599,7 +4603,8 @@ and type_table_key' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
   let value_match_kind = Ctx.find_value_opt cursor match_kind.it ctx in
   let value_match_kind =
     match value_match_kind with
-    | Some (Value.MatchKindV value_match_kind) when match_kind.it = value_match_kind ->
+    | Some (Value.MatchKindV value_match_kind)
+      when match_kind.it = value_match_kind ->
         value_match_kind
     | _ ->
         F.asprintf "(type_table_key) %a is not a valid match_kind"
@@ -4644,7 +4649,7 @@ and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
 and type_call_action_partial (cursor : Ctx.cursor) (ctx : Ctx.t)
     (var : El.Ast.var) (params : Types.param list)
     (args_il_typed : (Il.Ast.arg * Type.t) list) :
-    Il.Ast.arg list * Il.Ast.param list =
+    Il.Ast.arg list * Il.Ast.param list * Il.Ast.param list =
   (* Rule out directionless parameters, that will be supplied by the control plane *)
   let params_specified, params_control =
     List.partition
@@ -4663,6 +4668,18 @@ and type_call_action_partial (cursor : Ctx.cursor) (ctx : Ctx.t)
   let args_il =
     type_call_convention ~action:true cursor ctx params_specified args_il_typed
   in
+  let params_specified_il =
+    List.map
+      (fun (id, dir, typ, value_default) ->
+        let value_default =
+          Option.map
+            (fun value_default -> value_default $ no_info)
+            value_default
+        in
+        (id $ no_info, dir $ no_info, typ $ no_info, value_default, [])
+        $ no_info)
+      params_specified
+  in
   let params_control_il =
     List.map
       (fun (id, dir, typ, value_default) ->
@@ -4675,7 +4692,7 @@ and type_call_action_partial (cursor : Ctx.cursor) (ctx : Ctx.t)
         $ no_info)
       params_control
   in
-  (args_il, params_control_il)
+  (args_il, params_specified_il, params_control_il)
 
 and type_table_action (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
     (table_action : El.Ast.table_action) : Tblctx.t * Il.Ast.table_action =
@@ -4705,11 +4722,13 @@ and type_table_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let params = FuncDef.get_params fd in
   let args_il_typed = type_args cursor ctx args in
   let args_il_specified = List.map fst args_il_typed in
-  let args_il, params_control_il =
+  let args_il, params_data_il, params_control_il =
     type_call_action_partial cursor ctx var_action params args_il_typed
   in
   let annos_il = type_annos cursor ctx annos in
-  let table_action_il = (var_action, args_il, annos_il, params_control_il) in
+  let table_action_il =
+    (var_action, args_il, annos_il, params_data_il, params_control_il)
+  in
   let table_ctx =
     Tblctx.add_action (var_action.it, params, args_il_specified) table_ctx
   in
@@ -4734,7 +4753,7 @@ and type_table_actions (cursor : Ctx.cursor) (ctx : Ctx.t)
       type_table_actions' cursor ctx table_ctx table_actions.it
     in
     List.map it table_actions_il
-    |> List.map (fun (action_name, _, _, _) -> action_name)
+    |> List.map (fun (action_name, _, _, _, _) -> action_name)
     |> WF.check_distinct_vars;
     (table_ctx, table_actions_il $ table_actions.at)
   with CheckErr _ as err -> error_pass_info table_actions.at err
@@ -4803,7 +4822,19 @@ and type_table_default_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let args_il =
     type_call_default_action cursor ctx var params args_il_typed args_action
   in
-  (var, args_il, annos_il, [])
+  let params_data_il =
+    List.map
+      (fun (id, dir, typ, value_default) ->
+        let value_default =
+          Option.map
+            (fun value_default -> value_default $ no_info)
+            value_default
+        in
+        (id $ no_info, dir $ no_info, typ $ no_info, value_default, [])
+        $ no_info)
+      params
+  in
+  (var, args_il, annos_il, params_data_il, [])
 
 and type_table_default' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_default : El.Ast.table_default') :
@@ -5076,7 +5107,19 @@ and type_table_entry_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let args_il =
     type_call_entry_action cursor ctx var params args_il_typed args_action
   in
-  (var, args_il, annos_il, [])
+  let params_data_il =
+    List.map
+      (fun (id, dir, typ, value_default) ->
+        let value_default =
+          Option.map
+            (fun value_default -> value_default $ no_info)
+            value_default
+        in
+        (id $ no_info, dir $ no_info, typ $ no_info, value_default, [])
+        $ no_info)
+      params
+  in
+  (var, args_il, annos_il, params_data_il, [])
 
 and check_table_entry_priority (table_ctx : Tblctx.t) (priority_curr : int) :
     unit =
@@ -5302,10 +5345,8 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
              priority_delta);
         let table_ctx = Tblctx.set_priority_delta priority_delta table_ctx in
         table_ctx
-    | _ ->
-        F.asprintf "(type_table_custom) custom element %s is undefined"
-          member.it
-        |> error_no_info
+    (* (TODO) Maybe define architecture-specific custom table element typing/validation *)
+    | _ -> table_ctx
   in
   (table_ctx, (member, expr_il, custom_const, annos_il))
 
@@ -5395,7 +5436,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let ctx', locals_il = type_decls Ctx.Block ctx' locals in
   (* Typecheck implicit "apply" method *)
   let ctx' = Ctx.set_localkind Ctx.ControlApplyMethod ctx' in
-  let _ctx', _flow, body_il = type_block Ctx.Local ctx' Cont body in
+  let _ctx', _flow, body_il = type_block ~start:true Ctx.Local ctx' Cont body in
   (* Create a control constructor definition *)
   let typ =
     let params =

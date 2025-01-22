@@ -559,16 +559,20 @@ and pp_table_keys ?(level = 0) fmt table_keys =
 (* Table action references *)
 
 and pp_table_action' ?(level = 0) fmt table_action' =
-  let var, args, _annos, control_params = table_action' in
+  let var, args, _annos, params_data, params_control = table_action' in
   match args with
   | [] ->
-      F.fprintf fmt "%a; // %a" pp_var var
+      F.fprintf fmt "%a; /* (data) %a (control) %a */" pp_var var
         (pp_params ~level:(level + 1))
-        control_params
+        params_data
+        (pp_params ~level:(level + 1))
+        params_control
   | _ ->
-      F.fprintf fmt "%a%a; // %a" pp_var var pp_args args
+      F.fprintf fmt "%a%a; /* (data) %a (control) %a */" pp_var var pp_args args
         (pp_params ~level:(level + 1))
-        control_params
+        params_data
+        (pp_params ~level:(level + 1))
+        params_control
 
 and pp_table_action ?(level = 0) fmt table_action =
   pp_table_action' ~level fmt table_action.it

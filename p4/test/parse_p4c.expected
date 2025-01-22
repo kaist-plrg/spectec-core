@@ -1,4 +1,4 @@
-Running parser roundtrip tests on 1005 files
+Running parser roundtrip tests on 1033 files
 
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/action-bind.p4
@@ -282,9 +282,6 @@ Parser roundtrip success: ../../../testdata/p4c/program/well-typed/csum_ubpf.p4
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/custom-type-restricted-fields.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/custom-type-restricted-fields.p4
-
->>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/dash/dash-pipeline-pna-dpdk.p4
-Parser roundtrip success: ../../../testdata/p4c/program/well-typed/dash/dash-pipeline-pna-dpdk.p4
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/decl.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/decl.p4
@@ -1594,6 +1591,9 @@ Parser roundtrip success: ../../../testdata/p4c/program/well-typed/issue3623.p4
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/issue3635.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/issue3635.p4
 
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/issue364-bmv2.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/issue364-bmv2.p4
+
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/issue3650.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/issue3650.p4
 
@@ -1677,6 +1677,9 @@ Parser roundtrip success: ../../../testdata/p4c/program/well-typed/issue4507_2.p
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/issue4548.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/issue4548.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/issue461-bmv2.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/issue461-bmv2.p4
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/issue4625_remove_compile_time_bool_methodcall_of_mcs.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/issue4625_remove_compile_time_bool_methodcall_of_mcs.p4
@@ -1864,6 +1867,9 @@ Parser roundtrip success: ../../../testdata/p4c/program/well-typed/issue986-bmv2
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/issue995-bmv2.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/issue995-bmv2.p4
 
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/junk-prop-bmv2.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/junk-prop-bmv2.p4
+
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/key-bmv2.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/key-bmv2.p4
 
@@ -1965,6 +1971,12 @@ Parser roundtrip success: ../../../testdata/p4c/program/well-typed/mux-bmv2.p4
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/named-arg.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/named-arg.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/named_meter_1-bmv2.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/named_meter_1-bmv2.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/named_meter_bmv2.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/named_meter_bmv2.p4
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/names.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/names.p4
@@ -2137,14 +2149,32 @@ Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pipeline.p4
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pkginfo_annotation.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pkginfo_annotation.p4
 
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-add-on-miss.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-add-on-miss.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-add_on_miss_action_name.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-add_on_miss_action_name.p4
+
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-direction-main-parser-err.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-direction-main-parser-err.p4
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-direction.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-direction.p4
 
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-add_on_miss0.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-add_on_miss0.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-add_on_miss1.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-add_on_miss1.p4
+
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-bvec_union.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-bvec_union.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-direct-counter-learner.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-direct-counter-learner.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-direct-meter-learner.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-direct-meter-learner.p4
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-flatten-local-struct-decl.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-flatten-local-struct-decl.p4
@@ -2167,11 +2197,35 @@ Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-inva
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-invalid-hdr-warnings6.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-invalid-hdr-warnings6.p4
 
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-parser-state-err.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-parser-state-err.p4
+
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-parser-wrong-arith.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-parser-wrong-arith.p4
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-small_sample.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-small_sample.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-1.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-1.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-3.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-3.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-4.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-4.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-5.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-5.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-6.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-6.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-7.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-consolidation-learner-7.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-use-annon.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-table-key-use-annon.p4
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-dpdk-toeplitz-hash-1.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-dpdk-toeplitz-hash-1.p4
@@ -2242,6 +2296,9 @@ Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-example-p
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-example-recirculate.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-example-recirculate.p4
 
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-example-tcp-connection-tracking.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-example-tcp-connection-tracking.p4
+
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-example-template.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-example-template.p4
 
@@ -2271,6 +2328,9 @@ Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-lookahead
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-lookahead-structure.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-lookahead-structure.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-mux-dismantle.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-mux-dismantle.p4
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/pna-subparser.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/pna-subparser.p4
@@ -2325,6 +2385,9 @@ Parser roundtrip success: ../../../testdata/p4c/program/well-typed/proliferation
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-conditional_operator.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-conditional_operator.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-counter4.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-counter4.p4
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-dpdk-128bitCast.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-dpdk-128bitCast.p4
@@ -2482,11 +2545,17 @@ Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-drop-all-
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-e2e-cloning-basic-bmv2.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-e2e-cloning-basic-bmv2.p4
 
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-example-counters-bmv2.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-example-counters-bmv2.p4
+
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-example-digest-bmv2.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-example-digest-bmv2.p4
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-example-dpdk-byte-alignment_4.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-example-dpdk-byte-alignment_4.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-example-dpdk-directmeter.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-example-dpdk-directmeter.p4
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-example-dpdk-local-variable.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-example-dpdk-local-variable.p4
@@ -2505,6 +2574,9 @@ Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-example-m
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-example-optional-match.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-example-optional-match.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-example-parser-checksum.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-example-parser-checksum.p4
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-example-range-match.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-example-range-match.p4
@@ -2566,8 +2638,17 @@ Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-header-st
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-i2e-cloning-basic-bmv2.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-i2e-cloning-basic-bmv2.p4
 
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-idle-timeout.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-idle-timeout.p4
+
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-isvalid.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-isvalid.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-meter4.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-meter4.p4
+
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-meter5.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-meter5.p4
 
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/psa-multicast-basic-2-bmv2.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/psa-multicast-basic-2-bmv2.p4
@@ -2956,6 +3037,9 @@ Parser roundtrip success: ../../../testdata/p4c/program/well-typed/unreachable-a
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/unreachable.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/unreachable.p4
 
+>>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/unused-counter-bmv2.p4
+Parser roundtrip success: ../../../testdata/p4c/program/well-typed/unused-counter-bmv2.p4
+
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/unused.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/unused.p4
 
@@ -3016,6 +3100,6 @@ Parser roundtrip success: ../../../testdata/p4c/program/well-typed/xdp_vlan_push
 >>> Running parser roundtrip test on ../../../testdata/p4c/program/well-typed/xor_test.p4
 Parser roundtrip success: ../../../testdata/p4c/program/well-typed/xor_test.p4
 
-Parser on file: [PASS] 1005/1005 (100.00%) [FAIL] 0/1005 (0.00%)
-Parser on string: [PASS] 1005/1005 (100.00%) [FAIL] 0/1005 (0.00%)
-Parser roundtrip: [PASS] 1005/1005 (100.00%) [FAIL] 0/1005 (0.00%)
+Parser on file: [PASS] 1033/1033 (100.00%) [FAIL] 0/1033 (0.00%)
+Parser on string: [PASS] 1033/1033 (100.00%) [FAIL] 0/1033 (0.00%)
+Parser roundtrip: [PASS] 1033/1033 (100.00%) [FAIL] 0/1033 (0.00%)

@@ -15,4 +15,5 @@
   (re_export instance)
   (re_export exec)
   (re_export stf))
- (instrumentation (backend bisect_ppx)))
+ (instrumentation
+  (backend bisect_ppx)))

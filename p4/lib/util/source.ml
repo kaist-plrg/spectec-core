@@ -39,6 +39,7 @@ let pp fmt = function
             col_start line_end col_end)
 
 let no_info = M ""
+let is_no_info = function M "" -> true | _ -> false
 
 let start_pos = function
   | M _ -> (Int.max_int, Int.max_int)

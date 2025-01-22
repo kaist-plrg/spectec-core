@@ -24,6 +24,8 @@ open Util.Source
 open Util.Error
 
 let error_info = error_inst_info
+let error_no_info = error_inst_no_info
+let error_pass_info = error_inst_pass_info
 let check = check_inst
 
 (* Instantiation logic (recursive) *)
@@ -69,41 +71,48 @@ let rec do_instantiate (cursor : Ctx.cursor) (ctx_caller : Ctx.t) (sto : Sto.t)
     (cons : Cons.t) (targs : typ list) (args : arg list)
     (args_default : id' list) : Sto.t * Obj.t =
   (* Unpack constructor *)
-  let tparams, cparams, do_instantiate_cons =
+  let cursor_callee, tparams, cparams, do_instantiate_cons =
     match cons with
     | ExternC (id, tparams, cparams, mthds) ->
+        let cursor_callee = Ctx.Block in
         let do_instantiate_cons ctx_callee sto =
           do_instantiate_extern Ctx.Block ctx_callee sto id mthds
         in
-        (tparams, cparams, do_instantiate_cons)
+        (cursor_callee, tparams, cparams, do_instantiate_cons)
     | ParserC (tparams, cparams, params, decls, states) ->
+        let cursor_callee = Ctx.Block in
         let do_instantiate_cons ctx_callee sto =
-          do_instantiate_parser Ctx.Block ctx_callee sto params decls states
+          do_instantiate_parser cursor_callee ctx_callee sto params decls states
         in
-        (tparams, cparams, do_instantiate_cons)
+        (cursor_callee, tparams, cparams, do_instantiate_cons)
     | ControlC (tparams, cparams, params, decls, body) ->
+        let cursor_callee = Ctx.Block in
         let do_instantiate_cons ctx_callee sto =
-          do_instantiate_control Ctx.Block ctx_callee sto params decls body
+          do_instantiate_control cursor_callee ctx_callee sto params decls body
         in
-        (tparams, cparams, do_instantiate_cons)
+        (cursor_callee, tparams, cparams, do_instantiate_cons)
     | PackageC (tparams, cparams) ->
+        let cursor_callee = Ctx.Block in
         let do_instantiate_cons ctx_callee sto =
-          do_instantiate_package Ctx.Block ctx_callee sto
+          do_instantiate_package cursor_callee ctx_callee sto
         in
-        (tparams, cparams, do_instantiate_cons)
+        (cursor_callee, tparams, cparams, do_instantiate_cons)
     | TableC (id, table) ->
-        let do_instantiate_table ctx_callee sto =
-          do_instantiate_table Ctx.Block ctx_callee sto id table
+        let cursor_callee = Ctx.Local in
+        let do_instantiate_cons ctx_callee sto =
+          do_instantiate_table Ctx.Local ctx_callee sto id table
         in
-        ([], [], do_instantiate_table)
+        (cursor_callee, [], [], do_instantiate_cons)
   in
   (* Initialize callee context *)
   let ctx_callee =
-    let ctx_callee = Ctx.empty in
-    { ctx_callee with path = ctx_caller.path; global = ctx_caller.global }
+    match cursor_callee with
+    | Global -> Ctx.empty
+    | Block -> Ctx.copy Ctx.Global ctx_caller
+    | Local -> Ctx.copy Ctx.Block ctx_caller
   in
   (* Bind type arguments to the callee context *)
-  let ctx_callee = Ctx.add_tparams Ctx.Block tparams targs ctx_callee in
+  let ctx_callee = Ctx.add_tparams cursor_callee tparams targs ctx_callee in
   (* Bind constructor arguments to the callee context *)
   let cparams, args, cparams_default, args_default =
     align_cparams_with_args cparams args args_default
@@ -116,7 +125,7 @@ let rec do_instantiate (cursor : Ctx.cursor) (ctx_caller : Ctx.t) (sto : Sto.t)
           let ctx_caller = Ctx.enter_path id.it ctx_caller in
           eval_arg cursor ctx_caller sto arg
         in
-        let ctx_callee = Ctx.add_value Ctx.Block id.it value ctx_callee in
+        let ctx_callee = Ctx.add_value cursor_callee id.it value ctx_callee in
         (ctx_callee, sto))
       (ctx_callee, sto) cparams args
   in
@@ -124,7 +133,7 @@ let rec do_instantiate (cursor : Ctx.cursor) (ctx_caller : Ctx.t) (sto : Sto.t)
     List.fold_left2
       (fun ctx_callee cparam_default value_default ->
         let id, _, _, _, _ = cparam_default.it in
-        Ctx.add_value Ctx.Block id.it value_default.it ctx_callee)
+        Ctx.add_value cursor_callee id.it value_default.it ctx_callee)
       ctx_callee cparams_default args_default
   in
   (* Instantiate callee *)
@@ -159,7 +168,7 @@ and do_instantiate_control (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
   assert (cursor = Ctx.Block);
   let ctx_apply_locals, sto, decls = eval_decls cursor ctx sto decls in
   let _ctx_apply_block, sto, block =
-    eval_block Ctx.Local ctx_apply_locals sto block
+    eval_block ~start:true Ctx.Local ctx_apply_locals sto block
   in
   let venv = ctx.block.venv in
   let fenv = ctx_apply_locals.block.fenv in
@@ -173,30 +182,44 @@ and do_instantiate_package (_cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) :
   let obj = Obj.PackageO (theta, venv) in
   (sto, obj)
 
-(* (TODO) Handle custom table properties *)
-and do_instantiate_table (_cursor : Ctx.cursor) (_ctx : Ctx.t) (sto : Sto.t)
+and do_instantiate_table (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (id : id') (table : table) : Sto.t * Obj.t =
+  assert (cursor = Ctx.Local);
+  let ctx_table, sto, table =
+    let ctx = Ctx.enter_frame ctx in
+    eval_table Ctx.Local ctx sto table
+  in
+  let venv = List.hd ctx_table.local.venvs in
   let table = Table.init table in
-  let obj = Obj.TableO (id, table) in
+  let obj = Obj.TableO (id, venv, table) in
   (sto, obj)
 
 (* Argument evaluation *)
 
 and eval_arg (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (arg : arg) :
     Sto.t * Value.t =
-  match arg.it with
+  try eval_arg' cursor ctx sto arg.it
+  with InstErr _ as err -> error_pass_info arg.at err
+
+and eval_arg' (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (arg : arg') :
+    Sto.t * Value.t =
+  match arg with
   | L.ExprA expr | L.NameA (_, Some expr) -> eval_expr cursor ctx sto expr
   | _ ->
       F.asprintf "(eval_arg) instantiation arguments must not be missing"
-      |> error_info arg.at
+      |> error_no_info
 
 (* Expression evaluation *)
 
 and eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (expr : expr) :
     Sto.t * Value.t =
-  let wrap_value value = (sto, value) in
-  match expr.it with
-  | ValueE { value } -> value.it |> wrap_value
+  try eval_expr' cursor ctx sto expr.it
+  with InstErr _ as err -> error_pass_info expr.at err
+
+and eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (expr : expr')
+    : Sto.t * Value.t =
+  match expr with
+  | ValueE { value } -> (sto, value.it)
   | VarE { var } -> eval_var_expr cursor ctx sto var
   | SeqE { exprs } -> eval_seq_expr cursor ctx sto exprs
   | SeqDefaultE { exprs } -> eval_seq_default_expr cursor ctx sto exprs
@@ -219,9 +242,9 @@ and eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (expr : expr) :
   | InstE { var_inst; targs; args } ->
       eval_inst_expr cursor ctx sto var_inst targs args
   | _ ->
-      F.asprintf "(eval_expr) %a is not compile-time known"
-        (Il.Pp.pp_expr ~level:0) expr
-      |> error_info expr.at
+      F.asprintf "(eval_expr') %a is not compile-time known"
+        (Il.Pp.pp_expr' ~level:0) expr
+      |> error_no_info
 
 and eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (exprs : expr list) : Sto.t * Value.t list =
@@ -366,14 +389,25 @@ and eval_inst_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 
 and eval_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (stmt : stmt) :
     Ctx.t * Sto.t * stmt =
-  let wrap ~at (ctx, sto, stmt) = (ctx, sto, stmt $ at) in
-  match stmt.it with
-  | BlockS { block } -> eval_block_stmt cursor ctx sto block |> wrap ~at:stmt.at
+  try
+    let ctx, sto, stmt_post = eval_stmt' cursor ctx sto stmt.it in
+    (ctx, sto, stmt_post $ stmt.at)
+  with InstErr _ as err -> error_pass_info stmt.at err
+
+and eval_stmt' (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (stmt : stmt')
+    : Ctx.t * Sto.t * stmt' =
+  match stmt with
+  | EmptyS | AssignS _ -> (ctx, sto, stmt)
+  | SwitchS { expr_switch; cases } ->
+      eval_switch_stmt cursor ctx sto expr_switch cases
+  | IfS { expr_cond; stmt_then; stmt_else } ->
+      eval_if_stmt cursor ctx sto expr_cond stmt_then stmt_else
+  | BlockS { block } -> eval_block_stmt cursor ctx sto block
+  | ExitS | RetS _ | CallFuncS _ | CallMethodS _ -> (ctx, sto, stmt)
   | CallInstS { typ; var_inst; targs; args } ->
       eval_call_inst_stmt cursor ctx sto typ var_inst targs args
-      |> wrap ~at:stmt.at
-  | DeclS { decl } -> eval_decl_stmt cursor ctx sto decl |> wrap ~at:stmt.at
-  | _ -> (ctx, sto, stmt.it) |> wrap ~at:stmt.at
+  | TransS _ -> (ctx, sto, stmt)
+  | DeclS { decl } -> eval_decl_stmt cursor ctx sto decl
 
 and eval_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (stmts : stmt list) : Ctx.t * Sto.t * stmt list =
@@ -383,19 +417,59 @@ and eval_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
       (ctx, sto, stmts @ [ stmt ]))
     (ctx, sto, []) stmts
 
-and eval_block (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (block : block)
-    : Ctx.t * Sto.t * block =
+and eval_switch_case (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (case : switch_case) : Ctx.t * Sto.t * switch_case =
+  match case.it with
+  | MatchC (label, block) ->
+      let ctx, sto, block = eval_block ~start:false cursor ctx sto block in
+      let case = Lang.Ast.MatchC (label, block) $ case.at in
+      (ctx, sto, case)
+  | FallC _ -> (ctx, sto, case)
+
+and eval_switch_cases (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (cases : switch_case list) : Ctx.t * Sto.t * switch_case list =
+  List.fold_left
+    (fun (ctx, sto, cases) case ->
+      let ctx, sto, case = eval_switch_case cursor ctx sto case in
+      (ctx, sto, cases @ [ case ]))
+    (ctx, sto, []) cases
+
+and eval_switch_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (expr_switch : expr) (cases : switch_case list) : Ctx.t * Sto.t * stmt' =
+  let ctx, sto, cases = eval_switch_cases cursor ctx sto cases in
+  let stmt = SwitchS { expr_switch; cases } in
+  (ctx, sto, stmt)
+
+and eval_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (expr_cond : expr) (stmt_then : stmt) (stmt_else : stmt) :
+    Ctx.t * Sto.t * stmt' =
+  let _ctx, sto, stmt_then = eval_stmt cursor ctx sto stmt_then in
+  let _ctx, sto, stmt_else = eval_stmt cursor ctx sto stmt_else in
+  let stmt = IfS { expr_cond; stmt_then; stmt_else } in
+  (ctx, sto, stmt)
+
+and eval_block ~(start : bool) (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (block : block) : Ctx.t * Sto.t * block =
   let stmts, annos = block.it in
-  let ctx = Ctx.enter_frame ctx in
+  let ctx = if start then ctx else Ctx.enter_frame ctx in
   let ctx, sto, stmts = eval_stmts cursor ctx sto stmts in
-  let ctx = Ctx.exit_frame ctx in
+  let ctx = if start then ctx else Ctx.exit_frame ctx in
   let block = (stmts, annos) $ block.at in
   (ctx, sto, block)
 
 and eval_block_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (block : block) : Ctx.t * Sto.t * stmt' =
-  let ctx, sto, block = eval_block cursor ctx sto block in
+  let ctx, sto, block = eval_block ~start:false cursor ctx sto block in
   (ctx, sto, BlockS { block })
+
+(* (15.1) Direct type invocation
+
+   p.apply();
+
+   is translated to a block statement,
+
+   { type_of_p p_0 = ref (ctx.path @ [ "p_0" ]);
+     p_0.apply(); } *)
 
 and eval_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (typ : typ) (var_inst : var) (targs : typ list) (args : arg list) :
@@ -404,7 +478,7 @@ and eval_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     Ctx.find_overloaded Ctx.find_cons_opt cursor var_inst [] ctx
   in
   let sto, obj = do_instantiate cursor ctx sto cons targs [] [] in
-  let id = F.asprintf "%a" Il.Pp.pp_var var_inst in
+  let id = F.asprintf "%a_%d" Il.Pp.pp_var var_inst (Ctx.fresh ()) in
   let oid = ctx.path @ [ id ] in
   let sto = Sto.add oid obj sto in
   let value = Value.RefV oid in
@@ -441,13 +515,22 @@ and eval_decl_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 
 and eval_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (decl : decl) :
     Ctx.t * Sto.t * decl option =
-  let wrap ~at (ctx, sto, decl) =
-    if cursor = Ctx.Global then (ctx, sto, None)
-    else (ctx, sto, Some (decl $ at))
+  try
+    let ctx, sto, decl_post = eval_decl' cursor ctx sto decl.it in
+    let decl_post =
+      Option.map (fun decl_post -> decl_post $ decl.at) decl_post
+    in
+    (ctx, sto, decl_post)
+  with InstErr _ as err -> error_pass_info decl.at err
+
+and eval_decl' (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (decl : decl')
+    : Ctx.t * Sto.t * decl' option =
+  let wrap (ctx, sto, decl) =
+    if cursor = Ctx.Global then (ctx, sto, None) else (ctx, sto, Some decl)
   in
   let wrap_some ctx = (ctx, sto, Some decl) in
   let wrap_none ctx = (ctx, sto, None) in
-  match decl.it with
+  match decl with
   (* Constant, variable, error, match_kind, and instance declarations *)
   | ConstD { id; typ; value; annos } ->
       eval_const_decl cursor ctx id typ value annos
@@ -458,7 +541,7 @@ and eval_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (decl : decl) :
       eval_match_kind_decl cursor ctx members |> wrap_none
   | InstD { id; typ; var_inst; targs; args; init; annos } ->
       eval_inst_decl cursor ctx sto id typ var_inst targs args init annos
-      |> wrap ~at:decl.at
+      |> wrap
   (* Derived type declarations *)
   | StructD { id; tparams; tparams_hidden; fields; annos } ->
       eval_struct_decl cursor ctx id tparams tparams_hidden fields annos
@@ -499,7 +582,7 @@ and eval_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (decl : decl) :
       |> wrap_none
   (* Control *)
   | TableD { id; typ; table; annos } ->
-      eval_table_decl cursor ctx sto id typ table annos |> wrap ~at:decl.at
+      eval_table_decl cursor ctx sto id typ table annos |> wrap
   | ControlTypeD { id; tparams; tparams_hidden; params; annos } ->
       eval_control_type_decl cursor ctx id tparams tparams_hidden params annos
       |> wrap_none
@@ -548,8 +631,14 @@ and eval_match_kind_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let values = List.map (fun member -> Value.MatchKindV member) members in
   Ctx.add_values cursor members values ctx
 
-(* (8.21) Constructor invocations *)
-(* (10.3.1) Instantiating objects with abstract methods *)
+(* (8.21) Constructor invocations
+   (10.3.1) Instantiating objects with abstract methods
+
+   type_of_inst id(constructor args);
+
+   is translated to a variable declaration,
+
+   type_of_inst id = ref (ctx.path @ [ id ]); *)
 
 and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
     (typ : typ) (var_inst : var) (targs : typ list) (args : arg list)
@@ -884,7 +973,13 @@ and eval_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let cons = Cons.ParserC (tparams, cparams, params, locals, states) in
   Ctx.add_cons cursor cid cons ctx
 
-(* (14.2) Tables *)
+(* (14.2) Tables
+
+   table type_of_table id { ... }
+
+   is translated to a variable declaration,
+
+   type_of_table id = ref (ctx.path @ [ id ]); *)
 
 and eval_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
     (typ : typ) (table : table) (_annos : anno list) : Ctx.t * Sto.t * decl' =
@@ -961,7 +1056,7 @@ and eval_parser_state_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (state : parser_state) : Ctx.t * Sto.t =
   assert (cursor = Ctx.Block);
   let label, block, _annos = state.it in
-  let ctx, sto, block = eval_block Ctx.Local ctx sto block in
+  let ctx, sto, block = eval_block ~start:true Ctx.Local ctx sto block in
   let value_state = Value.StateV label.it in
   let state = block in
   let ctx =
@@ -993,6 +1088,48 @@ and eval_parser_states (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
       (ctx, sto) states
   in
   (ctx, sto)
+
+(* Table evaluation *)
+
+and eval_table_custom (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (table_custom : table_custom) : Ctx.t * Sto.t * table_custom =
+  let member, expr, custom_const, annos = table_custom.it in
+  let sto, value =
+    let ctx = Ctx.enter_path member.it ctx in
+    eval_expr cursor ctx sto expr
+  in
+  let expr =
+    Il.Ast.ValueE { value = value $ no_info }
+    $$ (no_info, { typ = expr.note.typ; ctk = expr.note.ctk })
+  in
+  let table_custom = (member, expr, custom_const, annos) $ table_custom.at in
+  (ctx, sto, table_custom)
+
+and eval_table_property (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (table_property : table_property) : Ctx.t * Sto.t * table_property =
+  match table_property with
+  | CustomP table_custom ->
+      let ctx, sto, table_custom =
+        eval_table_custom cursor ctx sto table_custom
+      in
+      (ctx, sto, Lang.Ast.CustomP table_custom)
+  | _ -> (ctx, sto, table_property)
+
+and eval_table_properties (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (table_properties : table_property list) :
+    Ctx.t * Sto.t * table_property list =
+  List.fold_left
+    (fun (ctx, sto, table_properties) table_property ->
+      let ctx, sto, table_property =
+        eval_table_property cursor ctx sto table_property
+      in
+      (ctx, sto, table_properties @ [ table_property ]))
+    (ctx, sto, []) table_properties
+
+and eval_table (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (table : table)
+    : Ctx.t * Sto.t * table =
+  assert (cursor = Ctx.Local);
+  eval_table_properties cursor ctx sto table
 
 (* Method evaluation *)
 

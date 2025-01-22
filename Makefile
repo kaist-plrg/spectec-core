@@ -14,13 +14,13 @@ build: build-p4 build-spectec
 build-p4:
 	rm -f ./$(MAIN)
 	opam switch 4.14.0
-	cd p4 && opam exec dune build && echo
+	cd p4 && opam exec -- dune build bin/main.exe && echo
 	ln -f $(EXEMAIN) ./$(MAIN)
 
 build-p4-release:
 	rm -f ./$(MAIN)
 	opam switch 4.14.0
-	cd p4 && opam exec -- dune build --profile release && echo
+	cd p4 && opam exec -- dune build --profile release bin/main.exe && echo
 	ln -f $(EXEMAIN) ./$(MAIN)
 
 build-spectec:
