@@ -8,7 +8,7 @@ Cannot find file for ../../../testdata/p4c/stf/v1model/issue1879-bmv2.stf in ../
 Cannot find file for ../../../testdata/p4c/stf/v1model/issue2287-bmv2.stf in ../../../testdata/p4c/program/well-typed
 Cannot find file for ../../../testdata/p4c/stf/v1model/issue2488-bmv2.stf in ../../../testdata/p4c/program/well-typed
 Cannot find file for ../../../testdata/p4c/stf/v1model/v1model-special-ops-bmv2.stf in ../../../testdata/p4c/program/well-typed
-Running run tests on 179 files
+Running run tests on 192 files
 
 
 >>> Running run test on ../../../testdata/p4c/program/well-typed/arith-bmv2.p4 with ../../../testdata/p4c/stf/v1model/arith-bmv2.stf
@@ -856,6 +856,149 @@ Run success
 [PASS] Expected: 3 FF01FF7DFF010000007C003EF019 / Got: 3 FF01FF7DFF010000007C003EF019
 Run success
 
+>>> Running run test on ../../../testdata/p4c/program/well-typed/parser-inline/parser-inline-test1.p4 with ../../../testdata/p4c/stf/v1model/parser-inline/parser-inline-test1.stf
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 10 2301456789 / Got: 10 2301456789
+[PASS] Expected: 10 2301456789 / Got: 10 2301456789
+[PASS] Expected: 3 01234567 / Got: 3 01234567
+[PASS] Expected: 3 01234567 / Got: 3 01234567
+[PASS] Expected: 2 0234560178 / Got: 2 0234560178
+[PASS] Expected: 2 0234560178 / Got: 2 0234560178
+Run success
+
+>>> Running run test on ../../../testdata/p4c/program/well-typed/parser-inline/parser-inline-test10.p4 with ../../../testdata/p4c/stf/v1model/parser-inline/parser-inline-test10.stf
+[PASS] Expected: 1 2A23456789 / Got: 1 2A23456789
+[PASS] Expected: 1 2A23456789 / Got: 1 2A23456789
+[PASS] Expected: 10 012A6789 / Got: 10 012A6789
+[PASS] Expected: 1 2A2A6789 / Got: 1 2A2A6789
+[PASS] Expected: 10 012A456789 / Got: 10 012A456789
+[PASS] Expected: 1 2A2A456789 / Got: 1 2A2A456789
+Run success
+
+>>> Running run test on ../../../testdata/p4c/program/well-typed/parser-inline/parser-inline-test11.p4 with ../../../testdata/p4c/stf/v1model/parser-inline/parser-inline-test11.stf
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 10 2301456789 / Got: 10 2301456789
+[PASS] Expected: 10 2301456789 / Got: 10 2301456789
+[PASS] Expected: 3 01234567 / Got: 3 01234567
+[PASS] Expected: 3 01234567 / Got: 3 01234567
+[PASS] Expected: 2 0234560178 / Got: 2 0234560178
+[PASS] Expected: 2 0234560178 / Got: 2 0234560178
+Run success
+
+>>> Running run test on ../../../testdata/p4c/program/well-typed/parser-inline/parser-inline-test12.p4 with ../../../testdata/p4c/stf/v1model/parser-inline/parser-inline-test12.stf
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 10 2301456789 / Got: 10 2301456789
+[PASS] Expected: 10 2301456789 / Got: 10 2301456789
+[PASS] Expected: 10 2301456789 / Got: 10 2301456789
+[PASS] Expected: 10 2301456789 / Got: 10 2301456789
+[PASS] Expected: 3 01234567 / Got: 3 01234567
+[PASS] Expected: 3 01234567 / Got: 3 01234567
+[PASS] Expected: 3 01234567 / Got: 3 01234567
+[PASS] Expected: 3 01234567 / Got: 3 01234567
+[PASS] Expected: 2 0234560178 / Got: 2 0234560178
+[PASS] Expected: 2 0234560178 / Got: 2 0234560178
+[PASS] Expected: 2 0234560178 / Got: 2 0234560178
+[PASS] Expected: 2 0234560178 / Got: 2 0234560178
+Run success
+
+>>> Running run test on ../../../testdata/p4c/program/well-typed/parser-inline/parser-inline-test13.p4 with ../../../testdata/p4c/stf/v1model/parser-inline/parser-inline-test13.stf
+[PASS] Expected: 10 0123456789 / Got: 10 0123456789
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 3 01236789 / Got: 3 01236789
+[PASS] Expected: 3 01236789 / Got: 3 01236789
+[PASS] Expected: 2 023456789A / Got: 2 023456789A
+[PASS] Expected: 2 023456789A / Got: 2 023456789A
+Run success
+
+>>> Running run test on ../../../testdata/p4c/program/well-typed/parser-inline/parser-inline-test2.p4 with ../../../testdata/p4c/stf/v1model/parser-inline/parser-inline-test2.stf
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 10 2301456789 / Got: 10 2301456789
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 3 01234567 / Got: 3 01234567
+[PASS] Expected: 3 012367 / Got: 3 012367
+[PASS] Expected: 2 0234560178 / Got: 2 0234560178
+[PASS] Expected: 2 02345678 / Got: 2 02345678
+Run success
+
+>>> Running run test on ../../../testdata/p4c/program/well-typed/parser-inline/parser-inline-test3.p4 with ../../../testdata/p4c/stf/v1model/parser-inline/parser-inline-test3.stf
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 10 2301456789 / Got: 10 2301456789
+[PASS] Expected: 10 2301456789 / Got: 10 2301456789
+[PASS] Expected: 3 01230167 / Got: 3 01230167
+[PASS] Expected: 3 01230167 / Got: 3 01230167
+[PASS] Expected: 3 012367 / Got: 3 012367
+[PASS] Expected: 3 012367 / Got: 3 012367
+[PASS] Expected: 2 0234560178 / Got: 2 0234560178
+[PASS] Expected: 2 0234560178 / Got: 2 0234560178
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 3 012367 / Got: 3 012367
+[PASS] Expected: 3 012367 / Got: 3 012367
+[PASS] Expected: 2 02345678 / Got: 2 02345678
+[PASS] Expected: 2 02345678 / Got: 2 02345678
+Run success
+
+>>> Running run test on ../../../testdata/p4c/program/well-typed/parser-inline/parser-inline-test4.p4 with ../../../testdata/p4c/stf/v1model/parser-inline/parser-inline-test4.stf
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 10 2301456789 / Got: 10 2301456789
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 3 01230167 / Got: 3 01230167
+[PASS] Expected: 3 012367 / Got: 3 012367
+[PASS] Expected: 3 012367 / Got: 3 012367
+[PASS] Expected: 3 012367 / Got: 3 012367
+[PASS] Expected: 2 0234560178 / Got: 2 0234560178
+[PASS] Expected: 2 02345678 / Got: 2 02345678
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 3 012367 / Got: 3 012367
+[PASS] Expected: 3 012367 / Got: 3 012367
+[PASS] Expected: 2 02345678 / Got: 2 02345678
+[PASS] Expected: 2 02345678 / Got: 2 02345678
+Run success
+
+>>> Running run test on ../../../testdata/p4c/program/well-typed/parser-inline/parser-inline-test5.p4 with ../../../testdata/p4c/stf/v1model/parser-inline/parser-inline-test5.stf
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 3 01236789 / Got: 3 01236789
+[PASS] Expected: 3 01236789 / Got: 3 01236789
+[PASS] Expected: 2 023456789A / Got: 2 023456789A
+[PASS] Expected: 2 023456789A / Got: 2 023456789A
+Run success
+
+>>> Running run test on ../../../testdata/p4c/program/well-typed/parser-inline/parser-inline-test6.p4 with ../../../testdata/p4c/stf/v1model/parser-inline/parser-inline-test6.stf
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 11 23456789 / Got: 11 23456789
+[PASS] Expected: 10 23456789 / Got: 10 23456789
+[PASS] Expected: 3 01236789 / Got: 3 01236789
+[PASS] Expected: 13 01236789 / Got: 13 01236789
+[PASS] Expected: 2 023456789A / Got: 2 023456789A
+[PASS] Expected: 12 023456789A / Got: 12 023456789A
+Run success
+
+>>> Running run test on ../../../testdata/p4c/program/well-typed/parser-inline/parser-inline-test7.p4 with ../../../testdata/p4c/stf/v1model/parser-inline/parser-inline-test7.stf
+[PASS] Expected: 1 2A23456789 / Got: 1 2A23456789
+[PASS] Expected: 10 012A456789 / Got: 10 012A456789
+[PASS] Expected: 1 2A2A456789 / Got: 1 2A2A456789
+Run success
+
+>>> Running run test on ../../../testdata/p4c/program/well-typed/parser-inline/parser-inline-test8.p4 with ../../../testdata/p4c/stf/v1model/parser-inline/parser-inline-test8.stf
+[PASS] Expected: 1 2A23456789 / Got: 1 2A23456789
+[PASS] Expected: 1 2A23456789 / Got: 1 2A23456789
+[PASS] Expected: 10 012A456789 / Got: 10 012A456789
+[PASS] Expected: 1 2A2A456789 / Got: 1 2A2A456789
+Run success
+
+>>> Running run test on ../../../testdata/p4c/program/well-typed/parser-inline/parser-inline-test9.p4 with ../../../testdata/p4c/stf/v1model/parser-inline/parser-inline-test9.stf
+[PASS] Expected: 1 2A23456789 / Got: 1 2A23456789
+[PASS] Expected: 1 2A23456789 / Got: 1 2A23456789
+[PASS] Expected: 10 012A6789 / Got: 10 012A6789
+[PASS] Expected: 1 2A2A6789 / Got: 1 2A2A6789
+[PASS] Expected: 10 012A6789 / Got: 10 012A6789
+[PASS] Expected: 1 2A2A6789 / Got: 1 2A2A6789
+Run success
+
 >>> Running run test on ../../../testdata/p4c/program/well-typed/parser_error-bmv2.p4 with ../../../testdata/p4c/stf/v1model/parser_error-bmv2.stf
 [PASS] Expected: 0 0123456789101112131415160A0B / Got: 0 0123456789101112131415160A0B
 [PASS] Expected: 0 0000000000000000000000000000012345678910 / Got: 0 0000000000000000000000000000012345678910
@@ -1013,7 +1156,7 @@ Run success
 [PASS] Expected: 1 0B01020300010000000000030000 / Got: 1 0B01020300010000000000030000
 Run success
 
-Parser on file: [PASS] 179/179 (100.00%) [FAIL] 0/179 (0.00%)
-Typecheck: [PASS] 178/179 (99.44%) [FAIL] 1/179 (0.56%)
-Instantiate: [PASS] 178/178 (100.00%) [FAIL] 0/178 (0.00%)
-Run: [PASS] 175/178 (98.31%) [FAIL] 3/178 (1.69%)
+Parser on file: [PASS] 192/192 (100.00%) [FAIL] 0/192 (0.00%)
+Typecheck: [PASS] 191/192 (99.48%) [FAIL] 1/192 (0.52%)
+Instantiate: [PASS] 191/191 (100.00%) [FAIL] 0/191 (0.00%)
+Run: [PASS] 188/191 (98.43%) [FAIL] 3/191 (1.57%)
