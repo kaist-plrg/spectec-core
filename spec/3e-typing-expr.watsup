@@ -31,7 +31,7 @@ rule Expr_ok/nume-fbitt:
 
 rule Expr_ok/namee:
   p C |- NameE name : typ ctk
-  -- if typ dir ctk = $find_typ(p, C, name)
+  -- if typ dir ctk val? = $find_styp(p, C, name)
 
 ;;
 ;; Sequence expression
@@ -384,7 +384,7 @@ relation Select_case_ok: cursor context typ* |- selectcase
 rule Select_case_ok/singleton:
   LOCAL C typ_k* |- keyset* statelabel
   -- Select_case_keysets_ok: LOCAL C |- typ_k* keyset*
-  -- if StateT dir'' ctk'' = $find_typ(LOCAL, C, CURRENT statelabel)
+  -- if StateT dir'' ctk'' eps = $find_styp(LOCAL, C, CURRENT statelabel)
 
 rule Expr_ok/selecte:
   LOCAL C |- SelectE expr_k* selectcase* : StateT DYN
@@ -604,14 +604,14 @@ def $assignable'(ParserT paramtyp*) = false
 def $assignable'(ControlT paramtyp*) = false
 def $assignable'(PackageT typ*) = false
 def $assignable'(TableT id typ) = false
-def $assignable'(styp) = false
+def $assignable'(synthtyp) = false
 def $assignable'(typ) = true
   -- otherwise
 
 
 rule Lval_ok/namee:
   p C |- NameE name
-  -- if typ dir ctk = $find_typ(p, C, name)
+  -- if typ dir ctk val? = $find_styp(p, C, name)
   -- if dir = OUT \/ dir = INOUT
   -- if $assignable(typ)
 

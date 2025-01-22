@@ -13,7 +13,7 @@ syntax glayer =
   { CDENV cdenv,
     TDENV tdenv,
     FDENV fdenv,
-    FRAME (venv, tenv) }
+    FRAME frame }
 
 ;; Block layer
 
@@ -24,7 +24,7 @@ syntax blayer =
     KIND bkind,
     TDENV tdenv,
     FDENV fdenv,
-    FRAME (venv, tenv) }
+    FRAME frame }
 
 ;; Local layer
 
@@ -43,7 +43,7 @@ syntax llayer =
   { ID id,
     KIND lkind,
     TDENV tdenv,
-    FRAMES (venv, tenv)* }
+    FRAMES frame* }
 
 ;; Typing context
 
@@ -62,7 +62,7 @@ def $exit(context) : context    hint(show EXIT %)
 
 def $set_blockkind(context, bkind) : context  hint(show %1.BLOCK#%latex("\\{") KIND = %2 %latex("\\}"))
 def $set_localkind(context, lkind) : context  hint(show %1.LOCAL#%latex("\\{") KIND = %2 %latex("\\}"))
-def $set_blockframe(context, venv, tenv) : context  hint(show %1.BLOCK#%latex("\\{") FRAME = (%2, %3) %latex("\\}"))
+def $set_blockframe(context, frame) : context  hint(show %1.BLOCK#%latex("\\{") FRAME = %2 %latex("\\}"))
 
 def $find_returntyp(lkind) : typ
 def $find_returntyp(FUNC typ) = typ
@@ -78,23 +78,23 @@ def $bound_tid(context) : tidset
 
 ;; Adders
 
-def $add_val(cursor, context, id, val) : context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
+def $add_styp(cursor, context, id, styp) : context                  hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
-def $add_vals(cursor, context, id*, val*) : context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
+def $add_styps(cursor, context, id*, styp*) : context               hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
 
-def $add_typ(cursor, context, id, rtyp): context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
+def $add_typ(cursor, context, id, (typ, dir, ctk)): context         hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
-def $add_typs(cursor, context, id*, rtyp*) : context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
+def $add_typs(cursor, context, id*, (typ, dir, ctk)*) : context     hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
 
-def $add_param(cursor, context, paramtyp) : context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
+def $add_param(cursor, context, paramtyp) : context                 hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
 def $add_param(p, C, pt) = C'
     -- if id NO typ val? = pt
-    -- if C' = $add_typ(p, C, id, typ NO CTK)
+    -- if C' = $add_typ(p, C, id, (typ, NO, CTK))
 def $add_param(p, C, pt) = C'
     -- if id dir typ val? = pt
     -- if dir = IN \/ dir = OUT \/ dir = INOUT
-    -- if C' = $add_typ(p, C, id, typ dir DYN)
+    -- if C' = $add_typ(p, C, id, (typ, dir, DYN))
 
 def $add_params(cursor, context, paramtyp*) : context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
 
@@ -103,23 +103,23 @@ def $add_params(p, C, pt_h pt_t*) = C''
     -- if C' = $add_param(p, C, pt_h)
     -- if C'' = $add_params(p, C', pt_t*)
 
-def $add_typdef(cursor, context, tid, typdef): context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
+def $add_typdef(cursor, context, tid, typdef): context      hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
 def $add_typdefs(cursor, context, tid*, typdef*): context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
 
-def $add_funcdef(cursor, context, fid, funcdef): context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
+def $add_funcdef(cursor, context, fid, funcdef): context    hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
-def $add_consdef(cursor, context, fid, consdef): context   hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
+def $add_consdef(cursor, context, fid, consdef): context    hint(show %2.%1#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
 
 ;; Finders
 
-def $find_val(cursor, context, name) : val  hint(show %2#%latex("@")#%1#`[%3])
+def $find_val(cursor, context, name) : val            hint(show %2#%latex("@")#%1#`[%3])
 
-def $find_typ(cursor, context, name) : rtyp  hint(show %2#%latex("@")#%1#`[%3])
+def $find_styp(cursor, context, name) : styp          hint(show %2#%latex("@")#%1#`[%3])
 
-def $find_typdef(cursor, context, name) : typdef  hint(show %2#%latex("@")#%1#`[%3])
+def $find_typdef(cursor, context, name) : typdef      hint(show %2#%latex("@")#%1#`[%3])
 
-def $find_funcdef(cursor, context, name) : funcdef  hint(show %2#%latex("@")#%1#`[%3])
+def $find_funcdef(cursor, context, name) : funcdef    hint(show %2#%latex("@")#%1#`[%3])
 
-def $find_consdef(cursor, context, name) : consdef  hint(show %2#%latex("@")#%1#`[%3])
+def $find_consdef(cursor, context, name) : consdef    hint(show %2#%latex("@")#%1#`[%3])

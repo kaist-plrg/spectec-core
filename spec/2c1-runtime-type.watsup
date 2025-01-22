@@ -156,17 +156,16 @@ syntax consdef hint(show %latex("\\delta_\\texttt{c}")) =
 var cd : consdef hint(show %latex("\\delta_\\texttt{c}"))
 
 ;;
-;; Runtime type
+;; Static type representation
 ;;
 
-syntax rtyp = typ dir ctk
+syntax styp = typ dir ctk val?
 
 ;;
 ;; Environments
 ;;
 
-syntax venv hint(show %latex("\\Sigma")) = map(id, val)
-syntax tenv hint(show %latex("\\Gamma")) = map(id, rtyp)
+syntax frame = map(id, styp)
 syntax tdenv hint(show %latex("\\Delta_\\texttt{t}")) = map(tid, typdef)
 syntax fdenv hint(show %latex("\\Delta_\\texttt{f}")) = map(fid, funcdef)
 syntax cdenv hint(show %latex("\\Delta_\\texttt{c}")) = map(fid, consdef)

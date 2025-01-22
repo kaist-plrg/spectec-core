@@ -37,15 +37,14 @@ rule CParam_ok/cparam-nodefault:
 ;;
 
 rule Decl_ok/constd:
-  p C |- ConstD id type expr : C''
+  p C |- ConstD id type expr : C'
   ----
   -- Type_ok: p C |- type : typ_t
   -- Expr_ok: p C |- expr : typ_e LCTK
   -- Sub_impl: typ_e << typ_t
   -- Eval_static: p C |- expr ~> val
   ----
-  -- if C' = $add_val(p, C, id, val)
-  -- if C'' = $add_typ(p, C', id, typ_t NO LCTK)
+  -- if C' = $add_styp(p, C, id, typ_t NO LCTK val)
 
 ;;
 ;; Variable declaration
@@ -54,35 +53,35 @@ rule Decl_ok/constd:
 rule Decl_ok/vard-none:
   p C |- VarD id type eps : C'
   -- Type_ok: p C |- type : typ_t
-  -- if C' = $add_typ(p, C, id, typ_t INOUT DYN)
+  -- if C' = $add_typ(p, C, id, (typ_t, INOUT, DYN))
 
 rule Decl_ok/vard-some:
   p C |- VarD id type expr? : C'
   -- Type_ok: p C |- type : typ_t
   -- Expr_ok: p C |- expr : typ_e ctk_e
   -- Sub_impl: typ_e << typ_t
-  -- if C' = $add_typ(p, C, id, typ_t INOUT DYN)
+  -- if C' = $add_typ(p, C, id, (typ_t, INOUT, DYN))
 
 ;;
 ;; Instantiation declaration
 ;;
 
-relation Inst_init_decl_ok: cursor context tenv fdenv |- decl : tenv fdenv
+relation Inst_init_decl_ok: cursor context frame fdenv |- decl : frame' fdenv
 
 rule Inst_init_decl_ok/instd:
-  p C tenv fdenv |- (InstD id' name targ* arg* decl*) : tenv' fdenv
+  p C frame fdenv |- (InstD id' name targ* arg* decl*) : frame' fdenv
   -- Decl_ok: p C |- (InstD id' name targ* arg* decl*) : C'
   ----
-  -- if rtyp' = $find_typ(p, C', CURRENT id')
-  -- if tenv' = $update_map(id, rtyp, tenv, id', rtyp')
+  -- if styp' = $find_styp(p, C', CURRENT id')
+  -- if frame' = $update_map(id, styp, frame, id', styp')
 
 rule Inst_init_decl_ok/funcd:
-  p C_0 tenv fdenv |- (FuncD id type_r tparam* param* (BlockB stmt*)) : tenv fdenv'
+  p C_0 frame fdenv |- (FuncD id type_r tparam* param* (BlockB stmt*)) : frame fdenv'
   ----
   -- if (fid' dir' type' expr')* = param*
   -- if C_1 = $set_blockkind(C_0, EXTERN)
   ----
-  -- if C_2 = $set_blockframe(C_1, $empty_map(id, val, eps, eps), tenv)
+  -- if C_2 = $set_blockframe(C_1, $empty_map(id, styp, eps, eps))
   ----
   -- if C_2.BLOCK.KIND = EXTERN
   -- if C_3 = $add_typdefs(LOCAL, C_2, tparam*, (MonoD (VarT tparam))*)
@@ -105,15 +104,15 @@ rule Inst_init_decl_ok/funcd:
   -- if fdenv' = $update_map(fid, funcdef, fdenv, fid', fd)
 
 
-relation Inst_init_decls_ok: context tenv fdenv |- decl* : fdenv
+relation Inst_init_decls_ok: context frame fdenv |- decl* : fdenv
 
 rule Inst_init_decls_ok/nil:
-  C tenv fdenv |- eps : fdenv
+  C frame fdenv |- eps : fdenv
 
 rule Inst_init_decls_ok/cons:
-  C tenv fdenv |- decl_h decl_t* : fdenv''
-  -- Inst_init_decl_ok: GLOBAL C tenv fdenv |- decl_h : tenv' fdenv'
-  -- Inst_init_decls_ok: C tenv' fdenv' |- decl_t* : fdenv''
+  C frame fdenv |- decl_h decl_t* : fdenv''
+  -- Inst_init_decl_ok: GLOBAL C frame fdenv |- decl_h : frame' fdenv'
+  -- Inst_init_decls_ok: C frame' fdenv' |- decl_t* : fdenv''
 
 
 def $update_fdenv_extern(fdenv, typ*, fid*, funcdef*) : map(fid, funcdef)    hint(show UPDATE_FDENV_EXTERN%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(", ")#%4#%latex(")"))
@@ -138,9 +137,9 @@ rule Decl_ok/instd-some:
   -- Inst_ok: p C_0 |- ct arg* : typ
   ----
   -- if typ = SpecT (PolyD tparam* (ExternT id_ext fdenv_ext)) typ_a'*
-  -- if C_1 = $add_typ(LOCAL, C_0, "this", typ NO CTK)
+  -- if C_1 = $add_typ(LOCAL, C_0, "this", (typ, NO, CTK))
   ----
-  -- Inst_init_decls_ok: C_1 $empty_map(id, rtyp, eps, eps) $empty_map(fid, funcdef, eps, eps) |- decl* : fdenv_abs
+  -- Inst_init_decls_ok: C_1 $empty_map(id, styp, eps, eps) $empty_map(fid, funcdef, eps, eps) |- decl* : fdenv_abs
   -- if MAP fid_abs* fd_abs* = fdenv_abs
   ----
   -- if fdenv_ext' = $update_fdenv_extern(fdenv_ext, typ_a'*, fid_abs*, fd_abs*)
@@ -150,7 +149,7 @@ rule Decl_ok/instd-some:
   -- (if ~$is_externabstractmethodt(ft))*
   ----
   -- if typ' = SpecT (PolyD tparam* (ExternT id_ext fdenv_ext')) typ_a'*
-  -- if C_2 = $add_typ(p, C_1, id, typ' NO CTK)
+  -- if C_2 = $add_typ(p, C_1, id, (typ', NO, CTK))
 
 rule Decl_ok/instd-none:
   p C_0 |- InstD id name_inst targ* arg* eps : C_1
@@ -161,41 +160,37 @@ rule Decl_ok/instd-none:
   -- if ct = $specialize_consdef(cd, typ_a*)
   ----
   -- Inst_ok: p C_0 |- ct arg* : typ
-  -- if C_1 = $add_typ(p, C_0, id, typ NO CTK)
+  -- if C_1 = $add_typ(p, C_0, id, (typ, NO, CTK))
 
 ;;
 ;; Error declaration
 ;;
 
 rule Decl_ok/errd:
-  GLOBAL C |- ErrD member* : C''
+  GLOBAL C |- ErrD member* : C'
   ----
   -- if $distinct(member, member*)
   ----
   -- if (id_e = $concat_texts("error." member))*
   -- if (val_e = ErrV member)*
-  -- if rtyp_e = ErrT NO LCTK
+  -- if (styp_e = ErrT NO LCTK val_e)*
   ----
-  -- if C' = $add_vals(GLOBAL, C, id_e*, val_e*)
-  ----
-  -- if C'' = $add_typs(GLOBAL, C, id_e*, rtyp_e*)
+  -- if C' = $add_styps(GLOBAL, C, id_e*, styp_e*)
 
 ;;
 ;; Match kind declaration
 ;;
 
 rule Decl_ok/matchkindd:
-  GLOBAL C |- MatchKindD member* : C''
+  GLOBAL C |- MatchKindD member* : C'
   ----
   -- if $distinct(member, member*)
   ----
   -- if (id_m = member)*
   -- if (val_m = MatchKindV member)*
-  -- if rtyp_m = MatchKindT NO LCTK
+  -- if (styp_e = MatchKindT NO LCTK val_m)*
   ----
-  -- if C' = $add_vals(GLOBAL, C, id_m*, val_m*)
-  ----
-  -- if C'' = $add_typs(GLOBAL, C, id_m*, rtyp_m*)
+  -- if C' = $add_styps(GLOBAL, C, id_m*, styp_m*)
 
 ;;
 ;; Struct declaration
@@ -250,22 +245,21 @@ rule Decl_ok/uniond:
 ;;
 
 rule Decl_ok/enumd:
-  GLOBAL C |- EnumD id member* : C'''
+  GLOBAL C |- EnumD id member* : C'
   ----
   -- if $distinct(member, member*)
   ----
   -- if (id_e = $concat_texts(id "." member))*
   -- if (val_e = EnumFieldV id member)*
   -- if typ_e = EnumT id member*
+  -- if (styp_e = typ_e NO LCTK val_e)*
   ----
-  -- if C' = $add_vals(GLOBAL, C, id_e*, val_e*)
-  ----
-  -- if C'' = $add_typs(GLOBAL, C', id_e*, (typ_e NO LCTK)*)
+  -- if C' = $add_styps(GLOBAL, C', id_e*, styp_e*)
   ----
   -- if td = MonoD typ_e
   -- if tidset = $bound_tid(C)
   -- TypeDef_wf: tidset |- td
-  -- if C''' = $add_typdef(GLOBAL, C'', id, td)
+  -- if C' = $add_typdef(GLOBAL, C', id, td)
 
 ;;
 ;; Serializable enum declaration
@@ -275,20 +269,19 @@ relation SEnum_field_ok:
   context id typ (member, val)* |- member expr : context (member, val)*
 
 rule SEnum_field_ok:
-  C id_s typ_s (member_s, val_s)* |- member expr : C'' (member_s', val_s')*
+  C id_s typ_s (member_s, val_s)* |- member expr : C' (member_s', val_s')*
   ----
   -- Expr_ok: BLOCK C |- expr : typ LCTK
   -- Sub_impl: typ << typ_s
   -- Eval_static: BLOCK C |- expr ~> val_e
   ----
   -- if val = SEnumFieldV id_s member val_e
-  -- if C' = $add_val(BLOCK, C, member, val)
   ----
   -- if member_s'* = member_s* member
   -- if val_s'* = val_s* val
   -- if typ_f = SEnumT id_s typ_s (member_s', val_s')*
   ----
-  -- if C'' = $add_typ(BLOCK, C, member, typ_f NO LCTK)
+  -- if C' = $add_styp(BLOCK, C, member, typ_f NO LCTK val)
 
 
 relation SEnum_fields_ok:
@@ -306,7 +299,7 @@ rule SEnum_fields_ok/cons:
 
 
 rule Decl_ok/senumd:
-  GLOBAL C |- SEnumD id type (member, expr)* : C''''
+  GLOBAL C |- SEnumD id type (member, expr)* : C'''
   ----
   -- if $distinct(member, member*)
   ----
@@ -316,15 +309,14 @@ rule Decl_ok/senumd:
   ----
   -- if (id_s = $concat_texts(id "." member))*
   -- if typ_s = SEnumT id typ (member, val_s)*
+  -- if (styp_s = typ_s NO LCTK val_s)*
   ----
-  -- if C'' = $add_vals(GLOBAL, C, id_s*, val_s*)
-  ----
-  -- if C''' = $add_typs(GLOBAL, C'', id_s*, (typ_s NO LCTK)*)
+  -- if C'' = $add_styps(GLOBAL, C', id_s*, styp_s*)
   ----
   -- if td = MonoD typ_s
   -- if tidset = $bound_tid(C)
   -- TypeDef_wf: tidset |- td
-  -- if C'''' = $add_typdef(GLOBAL, C''', id, td)
+  -- if C''' = $add_typdef(GLOBAL, C'', id, td)
 
 ;;
 ;; New type declaration
@@ -370,7 +362,7 @@ rule Decl_ok/actiond:
   -- (Param_ok: LOCAL C_1 |- param : paramtyp)*
   ----
   -- if (id_p dir_p typ_p val_p = paramtyp)*
-  -- if C_2 = $add_typs(LOCAL, C_1, id_p*, (typ_p dir_p DYN)*)
+  -- if C_2 = $add_typs(LOCAL, C_1, id_p*, (typ_p, dir_p, DYN)*)
   ----
   -- Stmts_ok: LOCAL C_2 CONT |- stmt* : C_3 CONT
   ----
@@ -396,7 +388,7 @@ rule Decl_ok/funcd:
   -- (Param_ok: LOCAL C_2 |- param : paramtyp)*
   ----
   -- if (id_p dir_p typ_p val_p = paramtyp)*
-  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p dir_p DYN)*)
+  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p, dir_p, DYN)*)
   ----
   -- Stmts_ok: LOCAL C_3 CONT |- stmt* : C_4 f
   -- if f = RET \/ (f = CONT /\ typ_r = VoidT)
@@ -423,7 +415,7 @@ rule Decl_ok/externfuncd:
   -- (Param_ok: LOCAL C_2 |- param : paramtyp)*
   ----
   -- if (id_p dir_p typ_p val_p = paramtyp)*
-  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p dir_p DYN)*)
+  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p, dir_p, DYN)*)
   ----
   -- if fd = PolyFD tparam* (ExternFuncT paramtyp* typ_r)
   ----
@@ -467,7 +459,7 @@ rule Method_ok/externabstractm:
   -- (Param_ok: LOCAL C_2 |- param : paramtyp)*
   ----
   -- if (id_p dir_p typ_p val_p = paramtyp)*
-  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p dir_p DYN)*)
+  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p, dir_p, DYN)*)
   ----
   -- if fd = PolyFD tparam* (ExternAbstractMethodT paramtyp* typ_r)
   ----
@@ -487,7 +479,7 @@ rule Method_ok/externm:
   -- (Param_ok: LOCAL C_2 |- param : paramtyp)*
   ----
   -- if (id_p dir_p typ_p val_p = paramtyp)*
-  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p dir_p DYN)*)
+  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p, dir_p, DYN)*)
   ----
   -- if fd = PolyFD tparam* (ExternMethodT paramtyp* typ_r)
   ----
@@ -540,7 +532,7 @@ rule Decl_ok/valuesetd:
   -- Expr_ok: p C |- expr : typ_e CTK
   -- if typ = SetT typ_t
   ----
-  -- if C' = $add_typ(p, C, id, typ NO CTK)
+  -- if C' = $add_typ(p, C, id, (typ, NO, CTK))
 
 ;;
 ;; Parser type declaration
@@ -590,7 +582,7 @@ rule Decl_ok/parserd:
   -- (Param_ok: LOCAL C_1 |- cparam : paramtyp_c)*
   ----
   -- if (id_c dir_c typ_c val_c = paramtyp_c)*
-  -- if C_2 = $add_typs(BLOCK, C_1, id_c*, (typ_c dir_c CTK)*)
+  -- if C_2 = $add_typs(BLOCK, C_1, id_c*, (typ_c, dir_c, CTK)*)
   ----
   -- (Param_ok: LOCAL C_2 |- param : paramtyp_c)*
   ----
@@ -600,7 +592,7 @@ rule Decl_ok/parserd:
   -- if tidset = $bound_tid(C_0)
   -- FuncDef_wf: tidset |- funcdef_apply
   ----
-  -- if C_3 = $add_typs(BLOCK, C_2, id_p*, (typ_p dir_p DYN)*)
+  -- if C_3 = $add_typs(BLOCK, C_2, id_p*, (typ_p, dir_p, DYN)*)
   ----
   -- Decls_ok: BLOCK C_3 |- decl* : C_4
   ----
@@ -613,7 +605,7 @@ rule Decl_ok/parserd:
   ----
   -- if C_5 = $set_localkind(C_4, PARSERSTATE)
   ----
-  -- if C_6 = $add_typs(BLOCK, C_5, statelabel*, (StateT NO DYN)*)
+  -- if C_6 = $add_typs(BLOCK, C_5, statelabel*, (StateT, NO, DYN)*)
   ----
   -- ParserStates_ok: C_6 |- parserstate : C_7
   ----
@@ -1033,7 +1025,7 @@ rule Table_props_ok/cons:
 relation Table_type_decl_ok: cursor context tblctx |- id : context typ
 
 rule Table_type_decl_ok:
-  BLOCK C tblctx |- id : C'' typ_s
+  BLOCK C tblctx |- id : C' typ_s
   -- if id_e = $concat_texts("action\\_list(" id ")")
   -- if (name, pt*, arg*)* = tblctx.ACTIONS
   ----
@@ -1043,9 +1035,7 @@ rule Table_type_decl_ok:
   -- if (val_e = TableEnumFieldV id_e member)*
   -- if (id_f = $concat_texts(id_e "." member))*
   ----
-  -- if C' = $add_vals(BLOCK, C, id_f*, val_e*)
-  ----
-  -- if C'' = $add_typs(BLOCK, C', id_f*, (typ_e NO LCTK)*)
+  -- if C' = $add_styps(BLOCK, C, id_f*, (typ_e NO LCTK val_e)*)
   ----
   -- if id_s = $concat_texts("apply\\_result(" id ")")
   ----
@@ -1066,7 +1056,7 @@ rule Decl_ok/tabled:
   -- if tidset = $bound_tid(C_2)
   -- Type_wf: tidset |- typ
   ----
-  -- if C_3 = $add_typ(BLOCK, C_2, id, typ NO DYN)
+  -- if C_3 = $add_typ(BLOCK, C_2, id, (typ, NO, DYN))
 
 ;;
 ;; Control type declaration
@@ -1096,7 +1086,7 @@ rule Decl_ok/controld:
   -- (Param_ok: LOCAL C_1 |- cparam : paramtyp_c)*
   ----
   -- if (id_c dir_c typ_c val_c = paramtyp_c)*
-  -- if C_2 = $add_typs(BLOCK, C_1, id_c*, (typ_c dir_c CTK)*)
+  -- if C_2 = $add_typs(BLOCK, C_1, id_c*, (typ_c, dir_c, CTK)*)
   ----
   -- (Param_ok: LOCAL C_2 |- param : paramtyp_c)*
   ----
@@ -1106,7 +1096,7 @@ rule Decl_ok/controld:
   -- if tidset = $bound_tid(C_0)
   -- FuncDef_wf: tidset |- funcdef_apply
   ----
-  -- if C_3 = $add_typs(BLOCK, C_2, id_p*, (typ_p dir_p DYN)*)
+  -- if C_3 = $add_typs(BLOCK, C_2, id_p*, (typ_p, dir_p, DYN)*)
   ----
   -- Decls_ok: BLOCK C_3 |- decl* : C_4
   ----

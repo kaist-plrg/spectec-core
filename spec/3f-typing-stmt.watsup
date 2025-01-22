@@ -191,7 +191,7 @@ rule Stmt_ok/callinsts:
   -- if ($canon_typ(typ) = ParserT paramtyp*) \/ ($canon_typ(typ) = ControlT paramtyp*)
   ----
   -- if (TOP id = name) \/ (CURRENT id = name)
-  -- if C' = $add_typ(p, C, id, typ NO CTK)
+  -- if C' = $add_typ(p, C, id, (typ, NO, CTK))
   ----
   -- Stmt_ok: p C' f |- CallMethodS (NameE (CURRENT id)) "apply" targ* arg* : C' f'
 
