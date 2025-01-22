@@ -1597,7 +1597,7 @@ Instantiate success: 0 objects
 Instantiate success: 9 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/issue3650.p4
-Instantiate success: 7 objects
+Instantiate success: 9 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/issue3671-1.p4
 Instantiate success: 0 objects
@@ -2167,7 +2167,7 @@ Instantiate success: 6 objects
 Instantiate success: 7 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-add_on_miss1.p4
-Instantiate success: 6 objects
+Instantiate success: 11 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-dpdk-bvec_union.p4
 Instantiate success: 5 objects
@@ -2305,7 +2305,7 @@ Instantiate success: 7 objects
 Instantiate success: 6 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-example-tunnel.p4
-Instantiate success: 5 objects
+Instantiate success: 9 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pna-example-varIndex-1.p4
 Instantiate success: 6 objects
@@ -2666,13 +2666,13 @@ Instantiate success: 13 objects
 Instantiate success: 13 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-recirculate-no-meta-bmv2.p4
-Instantiate success: 15 objects
+Instantiate success: 16 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-remove-header.p4
 Instantiate success: 12 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-resubmit-bmv2.p4
-Instantiate success: 13 objects
+Instantiate success: 14 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/psa-subtract-inst1.p4
 Instantiate success: 12 objects
@@ -3048,7 +3048,7 @@ Instantiate success: 10 objects
 Instantiate success: 3 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/use-priority-as-name.p4
-Instantiate success: 10 objects
+Instantiate success: 11 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/useless-cast.p4
 Instantiate success: 0 objects

@@ -26,6 +26,10 @@ let error_checker_pass_info (info : info) = function
 let error_inst_info (info : info) (msg : string) = raise (InstErr (msg, info))
 let error_inst_no_info (msg : string) = raise (InstErr (msg, no_info))
 
+let error_inst_pass_info (info : info) = function
+  | InstErr (msg, M "") -> raise (InstErr (msg, info))
+  | err -> raise err
+
 let error_interp_info (info : info) (msg : string) =
   raise (InterpErr (msg, info))
 

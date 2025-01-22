@@ -24,6 +24,8 @@ open Util.Source
 open Util.Error
 
 let error_info = error_inst_info
+let error_no_info = error_inst_no_info
+let error_pass_info = error_inst_pass_info
 let check = check_inst
 
 (* Instantiation logic (recursive) *)
@@ -196,19 +198,28 @@ and do_instantiate_table (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 
 and eval_arg (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (arg : arg) :
     Sto.t * Value.t =
-  match arg.it with
+  try eval_arg' cursor ctx sto arg.it
+  with InstErr _ as err -> error_pass_info arg.at err
+
+and eval_arg' (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (arg : arg') :
+    Sto.t * Value.t =
+  match arg with
   | L.ExprA expr | L.NameA (_, Some expr) -> eval_expr cursor ctx sto expr
   | _ ->
       F.asprintf "(eval_arg) instantiation arguments must not be missing"
-      |> error_info arg.at
+      |> error_no_info
 
 (* Expression evaluation *)
 
 and eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (expr : expr) :
     Sto.t * Value.t =
-  let wrap_value value = (sto, value) in
-  match expr.it with
-  | ValueE { value } -> value.it |> wrap_value
+  try eval_expr' cursor ctx sto expr.it
+  with InstErr _ as err -> error_pass_info expr.at err
+
+and eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (expr : expr')
+    : Sto.t * Value.t =
+  match expr with
+  | ValueE { value } -> (sto, value.it)
   | VarE { var } -> eval_var_expr cursor ctx sto var
   | SeqE { exprs } -> eval_seq_expr cursor ctx sto exprs
   | SeqDefaultE { exprs } -> eval_seq_default_expr cursor ctx sto exprs
@@ -231,9 +242,9 @@ and eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (expr : expr) :
   | InstE { var_inst; targs; args } ->
       eval_inst_expr cursor ctx sto var_inst targs args
   | _ ->
-      F.asprintf "(eval_expr) %a is not compile-time known"
-        (Il.Pp.pp_expr ~level:0) expr
-      |> error_info expr.at
+      F.asprintf "(eval_expr') %a is not compile-time known"
+        (Il.Pp.pp_expr' ~level:0) expr
+      |> error_no_info
 
 and eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (exprs : expr list) : Sto.t * Value.t list =
@@ -378,14 +389,25 @@ and eval_inst_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 
 and eval_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (stmt : stmt) :
     Ctx.t * Sto.t * stmt =
-  let wrap ~at (ctx, sto, stmt) = (ctx, sto, stmt $ at) in
-  match stmt.it with
-  | BlockS { block } -> eval_block_stmt cursor ctx sto block |> wrap ~at:stmt.at
+  try
+    let ctx, sto, stmt_post = eval_stmt' cursor ctx sto stmt.it in
+    (ctx, sto, stmt_post $ stmt.at)
+  with InstErr _ as err -> error_pass_info stmt.at err
+
+and eval_stmt' (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (stmt : stmt')
+    : Ctx.t * Sto.t * stmt' =
+  match stmt with
+  | EmptyS | AssignS _ -> (ctx, sto, stmt)
+  | SwitchS { expr_switch; cases } ->
+      eval_switch_stmt cursor ctx sto expr_switch cases
+  | IfS { expr_cond; stmt_then; stmt_else } ->
+      eval_if_stmt cursor ctx sto expr_cond stmt_then stmt_else
+  | BlockS { block } -> eval_block_stmt cursor ctx sto block
+  | ExitS | RetS _ | CallFuncS _ | CallMethodS _ -> (ctx, sto, stmt)
   | CallInstS { typ; var_inst; targs; args } ->
       eval_call_inst_stmt cursor ctx sto typ var_inst targs args
-      |> wrap ~at:stmt.at
-  | DeclS { decl } -> eval_decl_stmt cursor ctx sto decl |> wrap ~at:stmt.at
-  | _ -> (ctx, sto, stmt.it) |> wrap ~at:stmt.at
+  | TransS _ -> (ctx, sto, stmt)
+  | DeclS { decl } -> eval_decl_stmt cursor ctx sto decl
 
 and eval_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (stmts : stmt list) : Ctx.t * Sto.t * stmt list =
@@ -394,6 +416,37 @@ and eval_stmts (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
       let ctx, sto, stmt = eval_stmt cursor ctx sto stmt in
       (ctx, sto, stmts @ [ stmt ]))
     (ctx, sto, []) stmts
+
+and eval_switch_case (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (case : switch_case) : Ctx.t * Sto.t * switch_case =
+  match case.it with
+  | MatchC (label, block) ->
+      let ctx, sto, block = eval_block ~start:false cursor ctx sto block in
+      let case = Lang.Ast.MatchC (label, block) $ case.at in
+      (ctx, sto, case)
+  | FallC _ -> (ctx, sto, case)
+
+and eval_switch_cases (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (cases : switch_case list) : Ctx.t * Sto.t * switch_case list =
+  List.fold_left
+    (fun (ctx, sto, cases) case ->
+      let ctx, sto, case = eval_switch_case cursor ctx sto case in
+      (ctx, sto, cases @ [ case ]))
+    (ctx, sto, []) cases
+
+and eval_switch_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (expr_switch : expr) (cases : switch_case list) : Ctx.t * Sto.t * stmt' =
+  let ctx, sto, cases = eval_switch_cases cursor ctx sto cases in
+  let stmt = SwitchS { expr_switch; cases } in
+  (ctx, sto, stmt)
+
+and eval_if_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (expr_cond : expr) (stmt_then : stmt) (stmt_else : stmt) :
+    Ctx.t * Sto.t * stmt' =
+  let _ctx, sto, stmt_then = eval_stmt cursor ctx sto stmt_then in
+  let _ctx, sto, stmt_else = eval_stmt cursor ctx sto stmt_else in
+  let stmt = IfS { expr_cond; stmt_then; stmt_else } in
+  (ctx, sto, stmt)
 
 and eval_block ~(start : bool) (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (block : block) : Ctx.t * Sto.t * block =
@@ -462,13 +515,22 @@ and eval_decl_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 
 and eval_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (decl : decl) :
     Ctx.t * Sto.t * decl option =
-  let wrap ~at (ctx, sto, decl) =
-    if cursor = Ctx.Global then (ctx, sto, None)
-    else (ctx, sto, Some (decl $ at))
+  try
+    let ctx, sto, decl_post = eval_decl' cursor ctx sto decl.it in
+    let decl_post =
+      Option.map (fun decl_post -> decl_post $ decl.at) decl_post
+    in
+    (ctx, sto, decl_post)
+  with InstErr _ as err -> error_pass_info decl.at err
+
+and eval_decl' (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (decl : decl')
+    : Ctx.t * Sto.t * decl' option =
+  let wrap (ctx, sto, decl) =
+    if cursor = Ctx.Global then (ctx, sto, None) else (ctx, sto, Some decl)
   in
   let wrap_some ctx = (ctx, sto, Some decl) in
   let wrap_none ctx = (ctx, sto, None) in
-  match decl.it with
+  match decl with
   (* Constant, variable, error, match_kind, and instance declarations *)
   | ConstD { id; typ; value; annos } ->
       eval_const_decl cursor ctx id typ value annos
@@ -479,7 +541,7 @@ and eval_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (decl : decl) :
       eval_match_kind_decl cursor ctx members |> wrap_none
   | InstD { id; typ; var_inst; targs; args; init; annos } ->
       eval_inst_decl cursor ctx sto id typ var_inst targs args init annos
-      |> wrap ~at:decl.at
+      |> wrap
   (* Derived type declarations *)
   | StructD { id; tparams; tparams_hidden; fields; annos } ->
       eval_struct_decl cursor ctx id tparams tparams_hidden fields annos
@@ -520,7 +582,7 @@ and eval_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (decl : decl) :
       |> wrap_none
   (* Control *)
   | TableD { id; typ; table; annos } ->
-      eval_table_decl cursor ctx sto id typ table annos |> wrap ~at:decl.at
+      eval_table_decl cursor ctx sto id typ table annos |> wrap
   | ControlTypeD { id; tparams; tparams_hidden; params; annos } ->
       eval_control_type_decl cursor ctx id tparams tparams_hidden params annos
       |> wrap_none
