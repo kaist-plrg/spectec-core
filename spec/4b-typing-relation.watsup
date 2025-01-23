@@ -28,6 +28,7 @@ relation Decls_ok: cursor context |- decl* : context
 
 relation Arg_ok: cursor context |- arg : typ
 
+syntax actctxt = ACT | NOACT
 relation Call_site_ok: cursor context |- functyp : CALLSITE_OK
 relation Call_convention_ok: cursor context actctxt |- paramtyp ~~ (expr, typ)
 relation Call_convention_arg_ok: cursor context actctxt |- paramtyp ~~ (arg, typ)

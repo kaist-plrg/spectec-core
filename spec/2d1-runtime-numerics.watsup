@@ -2,7 +2,6 @@
 ;; Unary operation oracle
 ;;
 
-;; (???) Need to append an empty %latex() to the end, otherwise the last parentheses disappear
 def $un_op(unop, val) : val   hint(show %#(%)#%latex(""))
 
 ;;

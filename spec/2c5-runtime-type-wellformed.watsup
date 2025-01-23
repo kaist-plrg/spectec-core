@@ -7,11 +7,14 @@ relation TypeDef_wf    : tidset |- typdef
 
 relation ParamType_wf  : tidset |- paramtyp
 relation ParamTypes_wf : tidset |- paramtyp*
+
 relation FuncType_wf   : tidset |- functyp
 relation FuncDef_wf    : tidset |- funcdef
 
+syntax consctxt hint(show %latex("\\texttt{c}")) = _
 relation CParamType_wf : tidset consctxt |- paramtyp
 relation CParamTypes_wf: tidset consctxt |- paramtyp*
+
 relation ConsType_wf   : tidset |- constyp
 relation ConsDef_wf    : tidset |- consdef
 
@@ -459,7 +462,6 @@ rule ConsType_wf/packaget:
   -- if (typ' = $canon_typ(typ))*
   ----
   -- if (~$is_deft(typ') /\ ~$is_spect(typ') /\ ~$is_tablet(typ'))*
-
 
 ;;
 ;; Well-formedness of constructor definitions

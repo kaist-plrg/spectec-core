@@ -182,10 +182,9 @@ syntax expr =
   | ErrAccE member                        hint(show ERROR.%)
   | TypeAccE name member                  hint(show %.%)
   | ExprAccE expr member                  hint(show %.%)
-  ;; (???) Need to append an empty %latex() to the end, otherwise the last parentheses disappear
   | CallFuncE name targ* arg*             hint(show %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
-  | CallMethodE expr member targ* arg*    hint(show %.%#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
-  | CallTypeE name member targ* arg*      hint(show %.%#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
+  | CallMethodE expr member targ* arg*    hint(show %1#%latex("\\langle")#%3#%latex("\\rangle").%2#(%4)#%latex())
+  | CallTypeE name member targ* arg*      hint(show %1#%latex("\\langle")#%3#%latex("\\rangle").%2#(%4)#%latex())
   | InstE name targ* arg*                 hint(show %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
 
 ;;
@@ -207,8 +206,8 @@ syntax stmt =
   | ExitS                                 hint(show EXIT)
   | RetS expr?                            hint(show RETURN %)
   | CallFuncS name targ* arg*             hint(show %#%latex("\\langle")#%#%latex("\\rangle")#%#%latex())
-  | CallMethodS expr member targ* arg*    hint(show %.%#%latex("\\langle")#%#%latex("\\rangle")#%#%latex())
-  | CallInstS name targ* arg*             hint(show %#%latex("\\langle")#%#%latex("\\rangle")#%#%latex())
+  | CallMethodS expr member targ* arg*    hint(show %1#%latex("\\langle")#%3#%latex("\\rangle").%2#(%4)#%latex())
+  | CallInstS name targ* arg*             hint(show %.%latex("\\langle")#%#%latex("\\rangle").APPLY#(%)#%latex())
   | TransS expr                           hint(show TRANSITION %)
   | DeclS decl                            hint(show %)
 

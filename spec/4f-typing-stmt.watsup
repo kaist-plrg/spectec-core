@@ -9,6 +9,40 @@ rule Stmt_ok/emptys:
 ;; Assignment statement
 ;;
 
+def $assignable(typ) : bool     hint(show % IS ASSIGNABLE)
+def $assignable'(typ) : bool
+
+def $assignable(typ) = $assignable'($canon_typ(typ))
+
+def $assignable'(VoidT) = false
+def $assignable'(ParserT paramtyp*) = false
+def $assignable'(ControlT paramtyp*) = false
+def $assignable'(PackageT typ*) = false
+def $assignable'(TableT id typ) = false
+def $assignable'(synthtyp) = false
+def $assignable'(typ) = true
+  -- otherwise
+
+
+rule Lval_ok/namee:
+  p C |- NameE name
+  -- if typ dir ctk val? = $find_styp(p, C, name)
+  -- if dir = OUT \/ dir = INOUT
+  -- if $assignable(typ)
+
+rule Lval_ok/arracce:
+  p C |- ArrAccE expr_b expr_i
+  -- Lval_ok: p C |- expr_b
+
+rule Lval_ok/bitacce:
+  p C |- BitAccE expr_b expr_l expr_h
+  -- Lval_ok: p C |- expr_b
+
+rule Lval_ok/expracce:
+  p C |- ExprAccE expr_b member
+  -- Lval_ok: p C |- expr_b
+
+
 rule Stmt_ok/assigns:
   p C f |- AssignS expr_l expr_r : C f
   -- Expr_ok: p C |- expr_l : typ_l DYN
