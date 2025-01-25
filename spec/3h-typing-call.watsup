@@ -302,3 +302,33 @@ rule MethodType_ok/externt:
   ----
   -- if funcdef = $find_env(fid, funcdef, fmap_b, member)
   -- if functyp = $specialize_funcdef(funcdef, typ_a*)
+
+def $empty_cstr(tid*) : map(tid, typ?)                              hint(show EMPTY_CSTR(%1))
+def $gen_cstr(map(tid, typ?), typ, typ) : map(tid, typ?)            hint(show GEN_CSTR(%1, %2, %3))
+def $gen_cstrs(map(tid, typ?), typ*, typ*) : map(tid, typ?)         hint(show GEN_CSTRS(%1, %2, %3))
+def $merge_cstr(map(tid, typ?), map(tid, typ?)) : map(tid, typ?)    hint(show MERGE_CSTR(%1, %2))
+def $merge_cstrs(map(tid, typ?), map(tid, typ?)*) : map(tid, typ?)  hint(show MERGE_CSTRS(%1, %2))
+
+def $merge_cstrs(MAP tid* typ?*, eps) = MAP tid* typ?*
+def $merge_cstrs(cstr, cstr_h' cstr_t'*) = cstr'''
+  -- if cstr'' = $merge_cstr(cstr, cstr_h')
+  -- if cstr''' = $merge_cstrs(cstr'', cstr_t'*)
+
+def $gen_cstrs(cstr, typ_p*, typ_a*) = $merge_cstrs(cstr, cstr'*)
+  -- if |typ_p*| = |typ_a*|
+  -- if (cstr' = $gen_cstr(cstr, typ_p, typ_a))*
+
+def $resolve_cstrs(map(tid, typ?)) : map(tid, typ)                  hint(show RESOLVE_CSTRS(%1))
+
+def $resolve_cstrs(MAP eps eps) = MAP eps eps
+def $resolve_cstrs(MAP tid* typ?*) = MAP (tid_h tid_t'*) (typ_h typ_t'*)
+  -- if tid_h tid_t* = tid*
+  -- if typ_h typ_t?* = typ?*
+  -- if typ_h =/= AnyT
+  -- if MAP tid_t'* typ_t'* = $resolve_cstrs(MAP tid_t* typ_t?*)
+
+def $infer_targs(tid*, paramtyp*, typ*) : map(tid, typ)             hint(show INFER_TARGS(%1, %2, %3))
+
+def $infer_targs(tid*, (id dir typ_p val?)*, typ_a*) = $resolve_cstrs(cstr')
+  -- if cstr = $empty_cstr(tid*)
+  -- if cstr' = $gen_cstrs(cstr, typ_p*, typ_a*)
