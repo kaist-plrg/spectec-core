@@ -303,22 +303,119 @@ rule MethodType_ok/externt:
   -- if funcdef = $find_env(fid, funcdef, fmap_b, member)
   -- if functyp = $specialize_funcdef(funcdef, typ_a*)
 
-def $empty_cstr(tid*) : map(tid, typ?)                              hint(show EMPTY_CSTR(%1))
-def $gen_cstr(map(tid, typ?), typ, typ) : map(tid, typ?)            hint(show GEN_CSTR(%1, %2, %3))
-def $gen_cstrs(map(tid, typ?), typ*, typ*) : map(tid, typ?)         hint(show GEN_CSTRS(%1, %2, %3))
-def $merge_cstr(map(tid, typ?), map(tid, typ?)) : map(tid, typ?)    hint(show MERGE_CSTR(%1, %2))
-def $merge_cstrs(map(tid, typ?), map(tid, typ?)*) : map(tid, typ?)  hint(show MERGE_CSTRS(%1, %2))
+;;
+;; Type inference
+;;
+
+def $empty_cstr(tid*) : map(tid, typ?)                                                      hint(show EMPTY_CSTR(%1))
+def $gen_cstr(map(tid, typ?), typ, typ) : map(tid, typ?)                                    hint(show GEN_CSTR(%1, %2, %3))
+def $gen_cstrs(map(tid, typ?), typ*, typ*) : map(tid, typ?)                                 hint(show GEN_CSTRS(%1, %2, %3))
+def $gen_cstr_fd(map(tid, typ?), funcdef, funcdef) : map(tid, typ?)                         hint(show GEN_CSTR_FD(%1, %2, %3))
+def $gen_cstr_fd'(map(tid, typ?), fid*, fdenv, fdenv) : map(tid, typ?)                      hint(show GEN_CSTR_FD'(%1, %2, %3, %4))
+def $merge_cstr(map(tid, typ?), map(tid, typ?)) : map(tid, typ?)                            hint(show MERGE_CSTR(%1, %2))
+def $merge_cstr'(map(tid, typ?), map(tid, typ?), tid*, map(tid, typ?)) : map(tid, typ?)     hint(show MERGE_CSTR'(%1, %2, %3, %4))
+def $merge_cstrs(map(tid, typ?), map(tid, typ?)*) : map(tid, typ?)                          hint(show MERGE_CSTRS(%1, %2))
+def $resolve_cstrs(map(tid, typ?)) : map(tid, typ)                                          hint(show RESOLVE_CSTRS(%1))
+def $infer_targs(tid*, paramtyp*, typ*) : map(tid, typ)                                     hint(show INFER_TARGS(%1, %2, %3))
+
+def $empty_cstr(eps) = MAP eps eps
+def $empty_cstr(tid_h tid_t*) = cstr'
+  -- if cstr = $empty_cstr(tid_t*)
+  -- if cstr' = $update_map(tid, typ?, cstr, tid_h, eps)
+
+
+def $gen_cstr_fd(cstr, fd_p, fd_a) = cstr''
+  -- if (id_p dir_p typ_p val_p?)* = $get_params_funcdef(fd_p)
+  -- if (id_a dir_a typ_a val_a?)* = $get_params_funcdef(fd_a)
+  -- if cstr' = $gen_cstrs(cstr, typ_p*, typ_a*)
+  -- if cstr'' = $gen_cstr(cstr', $get_typ_ret_funcdef(fd_p), $get_typ_ret_funcdef(fd_a))
+
+def $gen_cstr_fd'(cstr, eps, fdenv_p, fdenv_a) = cstr
+def $gen_cstr_fd'(cstr, fid_h fid_t*, fdenv_p, fdenv_a) = $gen_cstr_fd'(cstr', fid_t*, fdenv_p, fdenv_a)
+  -- if fd_p = $find_env(fid, funcdef, fdenv_p, fid_h)
+  -- if fd_a = $find_env(fid, funcdef, fdenv_a, fid_h)
+  -- if cstr' = $gen_cstr_fd(cstr, fd_p, fd_a)
+
+
+def $gen_cstr(cstr, VarT tid, typ_a) = $update_map(tid, typ?, cstr, tid, typ_a)
+  -- if $in_dom_map(tid, typ?, tid, cstr)
+def $gen_cstr(cstr, SpecT ptd_p typ_p'*, SpecT ptd_a typ_a'*) = $gen_cstrs(cstr', typ_p'*, typ_a'*)
+  -- if typ_p'' = $specialize_typdef(ptd_p, typ_p'*)
+  -- if typ_a'' = $specialize_typdef(ptd_a, typ_a'*)
+  -- if cstr' = $gen_cstr(cstr, typ_p'', typ_a'')
+  -- if $nominal(typ_p'') /\ $nominal(typ_a'')
+def $gen_cstr(cstr, SpecT ptd_p typ_p'*, SpecT ptd_a typ_a'*) = cstr'
+  -- if typ_p'' = $specialize_typdef(ptd_p, typ_p'*)
+  -- if typ_a'' = $specialize_typdef(ptd_a, typ_a'*)
+  -- if cstr' = $gen_cstr(cstr, typ_p'', typ_a'')
+  -- if ~($nominal(typ_p'') /\ $nominal(typ_a''))
+def $gen_cstr(cstr, DefT typ_p', typ_a) = $gen_cstr(cstr, typ_p', typ_a)
+def $gen_cstr(cstr, typ_p, DefT typ_a') = $gen_cstr(cstr, typ_p, typ_a')
+def $gen_cstr(cstr, NewT id_p typ_p', NewT id_a typ_a') = $gen_cstr(cstr, typ_p', typ_a')
+  -- if id_p = id_a
+def $gen_cstr(cstr, ListT typ_p, ListT typ_a) = $gen_cstr(cstr, typ_p, typ_a)
+def $gen_cstr(cstr, TupleT typ_p*, TupleT typ_a*) = $gen_cstrs(cstr, typ_p*, typ_a*)
+def $gen_cstr(cstr, StackT typ_p' size_p, StackT typ_a' size_a) = $gen_cstr(cstr, typ_p', typ_a')
+  -- if size_p = size_a
+def $gen_cstr(cstr, StructT id_p (member_p, typ_p')*, StructT id_a (member_a, typ_a')*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
+  -- if id_p = id_a
+def $gen_cstr(cstr, HeaderT id_p (member_p, typ_p')*, HeaderT id_a (member_a, typ_a')*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
+  -- if id_p = id_a
+def $gen_cstr(cstr, UnionT id_p (member_p, typ_p')*, UnionT id_a (member_a, typ_a')*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
+  -- if id_p = id_a
+def $gen_cstr(cstr, ExternT id_p fdenv_p, ExternT id_a fdenv_a) = $gen_cstr_fd'(cstr, fid_p*, fdenv_p, fdenv_a)
+  -- if MAP fid_p* fd_p* = fdenv_p
+  -- if MAP fid_a* fd_a* = fdenv_a
+  -- if id_p = id_a
+  -- if $eq_set(fid, SET fid_p*, SET fid_a*)
+def $gen_cstr(cstr, ParserT pt_p*, ParserT pt_a*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
+  -- if (id dir typ_p' val? = pt_p)*
+  -- if (id dir typ_a' val? = pt_a)*
+def $gen_cstr(cstr, ControlT pt_p*, ControlT pt_a*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
+  -- if (id dir typ_p' val? = pt_p)*
+  -- if (id dir typ_a' val? = pt_a)*
+def $gen_cstr(cstr, PackageT typ_p*, PackageT typ_a*) = $gen_cstrs(cstr, typ_p*, typ_a*)
+def $gen_cstr(cstr, typ_p, typ_a) = cstr
+  -- otherwise
+
+
+def $merge_cstr'(cstr_o, cstr_n, eps, cstr) = cstr
+def $merge_cstr'(cstr_o, cstr_n, tid_h tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
+  -- if $find_env(tid, typ?, cstr_o, tid_h) = eps
+  -- if $find_env(tid, typ?, cstr_n, tid_h) = typ_n
+  -- if cstr' = $update_map(tid, typ?, cstr, tid_h, typ_n)
+def $merge_cstr'(cstr_o, cstr_n, tid_h tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
+  -- if $find_env(tid, typ?, cstr_o, tid_h) = typ_o
+  -- if $find_env(tid, typ?, cstr_n, tid_h) = eps
+  -- if cstr' = $update_map(tid, typ?, cstr, tid_h, typ_o)
+def $merge_cstr'(cstr_o, cstr_n, tid_h tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
+  -- if $find_env(tid, typ?, cstr_o, tid_h) = typ_o
+  -- if $find_env(tid, typ?, cstr_n, tid_h) = typ_n
+  -- Sub_impl: typ_o << typ_n
+  -- if cstr' = $update_map(tid, typ?, cstr, tid_h, typ_n)
+def $merge_cstr'(cstr_o, cstr_n, tid_h tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
+  -- if $find_env(tid, typ?, cstr_o, tid_h) = typ_o
+  -- if $find_env(tid, typ?, cstr_n, tid_h) = typ_n
+  -- Sub_impl: typ_n << typ_o
+  -- if cstr' = $update_map(tid, typ?, cstr, tid_h, typ_o)
+
+
+def $merge_cstr(cstr_o, cstr_n) = $merge_cstr'(cstr_o, cstr_n, tid_o*, MAP eps eps)
+  -- if MAP tid_o* typ_o?* = cstr_o
+  -- if MAP tid_n* typ_n?* = cstr_n
+  -- if $eq_set(tid, SET tid_o*, SET tid_n*)
+
 
 def $merge_cstrs(MAP tid* typ?*, eps) = MAP tid* typ?*
 def $merge_cstrs(cstr, cstr_h' cstr_t'*) = cstr'''
   -- if cstr'' = $merge_cstr(cstr, cstr_h')
   -- if cstr''' = $merge_cstrs(cstr'', cstr_t'*)
 
+
 def $gen_cstrs(cstr, typ_p*, typ_a*) = $merge_cstrs(cstr, cstr'*)
   -- if |typ_p*| = |typ_a*|
   -- if (cstr' = $gen_cstr(cstr, typ_p, typ_a))*
 
-def $resolve_cstrs(map(tid, typ?)) : map(tid, typ)                  hint(show RESOLVE_CSTRS(%1))
 
 def $resolve_cstrs(MAP eps eps) = MAP eps eps
 def $resolve_cstrs(MAP tid* typ?*) = MAP (tid_h tid_t'*) (typ_h typ_t'*)
@@ -327,7 +424,6 @@ def $resolve_cstrs(MAP tid* typ?*) = MAP (tid_h tid_t'*) (typ_h typ_t'*)
   -- if typ_h =/= AnyT
   -- if MAP tid_t'* typ_t'* = $resolve_cstrs(MAP tid_t* typ_t?*)
 
-def $infer_targs(tid*, paramtyp*, typ*) : map(tid, typ)             hint(show INFER_TARGS(%1, %2, %3))
 
 def $infer_targs(tid*, (id dir typ_p val?)*, typ_a*) = $resolve_cstrs(cstr')
   -- if cstr = $empty_cstr(tid*)

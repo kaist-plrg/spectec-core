@@ -137,3 +137,33 @@ def $canon_typ(SpecT ptd typ_a*) = $canon_typ(typ)
 def $canon_typ(DefT typ) = $canon_typ(typ)
 def $canon_typ(typ) = typ
   -- otherwise
+
+def $get_params_functyp(functyp) : paramtyp*                            hint(show GET_PARAMS_FUNCTYP(%1))
+def $get_params_functyp(ActionT pt*) = pt*
+def $get_params_functyp(ExternFuncT pt* typ_r) = pt*
+def $get_params_functyp(FuncT pt* typ_r) = pt*
+def $get_params_functyp(ExternMethodT pt* typ_r) = pt*
+def $get_params_functyp(ExternAbstractMethodT pt* typ_r) = pt*
+def $get_params_functyp(ParserApplyMethodT pt*) = pt*
+def $get_params_functyp(ControlApplyMethodT pt*) = pt*
+def $get_params_functyp(BuiltinMethodT pt* typ_r) = pt*
+def $get_params_functyp(TableApplyMethodT typ_r) = eps
+
+def $get_params_funcdef(funcdef): paramtyp*                             hint(show GET_PARAMS_FUNCDEF(%1))
+def $get_params_funcdef(MonoFD ft) = $get_params_functyp(ft)
+def $get_params_funcdef(PolyFD tparam* ft) = $get_params_functyp(ft)
+
+def $get_typ_ret_functyp(functyp) : typ                                 hint(show GET_TYP_RET_FUNCTYP(%1))
+def $get_typ_ret_functyp(ActionT pt*) = VoidT
+def $get_typ_ret_functyp(ExternFuncT pt* typ_r) = typ_r
+def $get_typ_ret_functyp(FuncT pt* typ_r) = typ_r
+def $get_typ_ret_functyp(ExternMethodT pt* typ_r) = typ_r
+def $get_typ_ret_functyp(ExternAbstractMethodT pt* typ_r) = typ_r
+def $get_typ_ret_functyp(ParserApplyMethodT pt*) = VoidT
+def $get_typ_ret_functyp(ControlApplyMethodT pt*) = VoidT
+def $get_typ_ret_functyp(BuiltinMethodT pt* typ_r) = typ_r
+def $get_typ_ret_functyp(TableApplyMethodT typ_r) = typ_r
+
+def $get_typ_ret_funcdef(funcdef) : typ                                  hint(show GET_TYP_RET_FUNCDEF(%1))
+def $get_typ_ret_funcdef(MonoFD ft) = $get_typ_ret_functyp(ft)
+def $get_typ_ret_funcdef(PolyFD tparam* ft) = $get_typ_ret_functyp(ft)
