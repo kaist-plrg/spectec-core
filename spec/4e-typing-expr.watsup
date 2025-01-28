@@ -3,34 +3,34 @@
 ;;
 
 rule Expr_ok/boole:
-  p C |- BoolE b : BoolT LCTK
+  p C |- BoolE b : (ValueE (BoolV b)) BoolT LCTK
 
 ;;
 ;; String expression
 ;;
 
 rule Expr_ok/stre:
-  p C |- StrE t : StrT LCTK
+  p C |- StrE t : (ValueE (StrV t)) StrT LCTK
 
 ;;
 ;; Number expression
 ;;
 
 rule Expr_ok/nume-intt:
-  p C |- NumE (INT i) : IntT LCTK
+  p C |- NumE (INT i) : (ValueE (IntV i)) IntT LCTK
 
 rule Expr_ok/nume-fintt:
-  p C |- NumE (FINT w i) : (FIntT w) LCTK
+  p C |- NumE (FINT w bs) : (ValueE (FIntV w bs)) (FIntT w) LCTK
 
 rule Expr_ok/nume-fbitt:
-  p C |- NumE (FBIT w i) : (FBitT w) LCTK
+  p C |- NumE (FBIT w bs) : (ValueE (FBitV w bs)) (FBitT w) LCTK
 
 ;;
 ;; Variable expression
 ;;
 
 rule Expr_ok/namee:
-  p C |- NameE name : typ ctk
+  p C |- NameE name : (NameE name) typ ctk
   -- if typ dir ctk val? = $find_styp(p, C, name)
 
 ;;
@@ -38,144 +38,178 @@ rule Expr_ok/namee:
 ;;
 
 rule Expr_ok/seqe:
-  p C |- SeqE expr* : (SeqT typ_e*) ctk
-  -- (Expr_ok: p C |- expr : typ_e ctk_e)*
-  -- if ctk = $joins_ctk(ctk_e*)
+  p C |- SeqE expr* : (SeqE exprIL*) (SeqT typ*) ctk_e
+  -- (Expr_ok: p C |- expr : exprIL typ ctk)*
+  -- if ctk_e = $joins_ctk(ctk*)
 
 rule Expr_ok/seqdefaulte:
-  p C |- SeqDefaultE expr* : (SeqDefaultT typ_e*) ctk
-  -- (Expr_ok: p C |- expr : typ_e ctk_e)*
-  -- if ctk = $joins_ctk(ctk_e*)
+  p C |- SeqDefaultE expr* : (SeqDefaultE exprIL*) (SeqDefaultT typ*) ctk_e
+  -- (Expr_ok: p C |- expr : exprIL typ ctk)*
+  -- if ctk_e = $joins_ctk(ctk*)
 
 ;;
 ;; Record expression
 ;;
 
 rule Expr_ok/recorde:
-  p C |- RecordE (member, expr)* : (RecordT (member, typ_e)*) ctk
-  -- (Expr_ok: p C |- expr : typ_e ctk_e)*
-  -- if ctk = $joins_ctk(ctk_e*)
+  p C |- RecordE (member, expr)* : (RecordE (member, exprIL)*) (RecordT (member, typ)*) ctk_e
+  -- (Expr_ok: p C |- expr : exprIL typ ctk)*
+  -- if ctk_e = $joins_ctk(ctk*)
 
 rule Expr_ok/recorddefaulte:
-  p C |- RecordDefaultE (member, expr)* : (RecordDefaultT (member, typ_e)*) ctk
-  -- (Expr_ok: p C |- expr : typ_e ctk_e)*
-  -- if ctk = $joins_ctk(ctk_e*)
+  p C |- RecordDefaultE (member, expr)* : (RecordE (member, exprIL_e)*) (RecordDefaultT (member, typ_e)*) ctk_e
+  -- (Expr_ok: p C |- expr : exprIL typ ctk)*
+  -- if ctk_e = $joins_ctk(ctk*)
 
 ;;
 ;; Default expression
 ;;
 
 rule Expr_ok/defaulte:
-  p C |- DefaultE : DefaultT LCTK
+  p C |- DefaultE : DefaultE DefaultT LCTK
 
 ;;
 ;; Invalid expression
 ;;
 
 rule Expr_ok/invalide:
-  p C |- InvalidE : InvalidT LCTK
+  p C |- InvalidE : (ValueE InvalidV) InvalidT LCTK
 
 ;;
 ;; Unary expression
 ;;
 
+def $compatible_bnot(typ) : bool
+def $compatible_bnot(FIntT w) = true
+def $compatible_bnot(FBitT w) = true
+def $compatible_bnot(typ) = false
+  -- otherwise
+
 rule Expr_ok/une-bnot:
-  p C |- UnE BNOT expr : typ ctk_e
-  -- Expr_ok: p C |- expr : typ_e ctk_e
-  -- Sub_impl: typ_e << typ
-  -- if $is_fintt(typ) \/ $is_fbitt(typ)
+  p C |- UnE BNOT expr : (UnE BNOT exprIL_e) typ_e ctk
+  -- Expr_ok: p C |- expr : exprIL typ ctk
+  -- if (exprIL_e, typ_e) = $coerce_unary_numeric((exprIL, typ), $compatible_bnot)
+
+def $compatible_lnot(typ) : bool
+def $compatible_lnot(BoolT) = true
+def $compatible_lnot(typ) = false
+  --otherwise
 
 rule Expr_ok/une-lnot:
-  p C |- UnE LNOT expr : BoolT ctk_e
-  -- Expr_ok: p C |- expr : typ_e ctk_e
-  -- Sub_impl: typ_e << BoolT
+  p C |- UnE LNOT expr : (UnE LNOT exprIL_e) typ_e ctk
+  -- Expr_ok: p C |- expr : exprIL typ ctk
+  -- if (exprIL_e, typ_e) = $coerce_unary_numeric((exprIL, typ), $compatible_lnot)
 
-rule Expr_ok/une-uminus-intt:
-  p C |- UnE UMINUS expr : IntT ctk_e
-  -- Expr_ok: p C |- expr : typ_e ctk_e
-  -- Sub_impl: typ_e << IntT
-
-rule Expr_ok/une-uminus:
-  p C |- UnE UMINUS expr : typ ctk_e
-  -- Expr_ok: p C |- expr : typ_e ctk_e
-  -- Sub_impl: typ_e << typ
-  -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
+def $compatible_uplus(typ) : bool
+def $compatible_uplus(IntT) = true
+def $compatible_uplus(FIntT w) = true
+def $compatible_uplus(FBitT w) = true
+def $compatible_uplus(typ) = false
+  -- otherwise
 
 rule Expr_ok/une-uplus:
-  p C |- UnE UPLUS expr : typ ctk_e
-  -- Expr_ok: p C |- expr : typ_e ctk_e
-  -- Sub_impl: typ_e << typ
-  -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
+  p C |- UnE UPLUS expr : (UnE UPLUS exprIL_e) typ_e ctk
+  -- Expr_ok: p C |- expr : exprIL typ ctk
+  -- if (exprIL_e, typ_e) = $coerce_unary_numeric((exprIL, typ), $compatible_uplus)
+
+def $compatible_uminus(typ) : bool
+def $compatible_uminus(IntT) = true
+def $compatible_uminus(FIntT w) = true
+def $compatible_uminus(FBitT w) = true
+def $compatible_uminus(typ) = false
+  -- otherwise
+
+rule Expr_ok/une-uminus:
+  p C |- UnE UMINUS expr : (UnE UPLUS exprIL_e) typ_e ctk
+  -- Expr_ok: p C |- expr : exprIL typ ctk
+  -- if (exprIL_e, typ_e) = $coerce_unary_numeric((exprIL, typ), $compatible_uminus)
 
 ;;
 ;; Binary expression
 ;;
 
+def $compatible_plusminusmult(typ, typ) : bool
+def $compatible_plusminusmult(IntT, IntT) = true
+def $compatible_plusminusmult(FIntT w, FIntT w) = true
+def $compatible_plusminusmult(FBitT w, FBitT w) = true
+def $compatible_plusminusmult(typ_l, typ_r) = false
+  -- otherwise
+
 rule Expr_ok/bine-plus-minus-mult:
-  p C |- BinE binop expr_l expr_r : typ ctk
-  ----
+  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ'' ctk
   -- if $in_set(binop, binop, SET PLUS MINUS MUL)
   ----
-  -- Expr_ok: p C |- expr_l : typ_l ctk_l
-  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : exprIL_r typ_r ctk_r
   ----
-  -- Sub_impl: typ_l << typ
-  -- Sub_impl: typ_r << typ
-  -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
+  -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
+  ----
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $coerce_binary_numeric((exprIL_l', typ'), (exprIL_r', typ'), $compatible_plusminusmult)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
+
+def $compatible_satplusminus(typ, typ) : bool
+def $compatible_satplusminus(FIntT w, FIntT w) = true
+def $compatible_satplusminus(FBitT w, FBitT w) = true
+def $compatible_satplusminus(typ_l, typ_r) = false
+  -- otherwise
 
 rule Expr_ok/bine-sat-plus-minus:
-  p C |- BinE binop expr_l expr_r : typ ctk
-  ----
+  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ'' ctk
   -- if $in_set(binop, binop, SET SPLUS SMINUS)
   ----
-  -- Expr_ok: p C |- expr_l : typ_l ctk_l
-  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : exprIL_r typ_r ctk_r
   ----
-  -- Sub_impl: typ_l << typ
-  -- Sub_impl: typ_r << typ
-  -- if $is_fintt(typ) \/ $is_fbitt(typ)
+  -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
+  ----
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $coerce_binary_numeric((exprIL_l', typ'), (exprIL_r', typ'), $compatible_satplusminus)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
+
+def $compatible_divmod(typ, typ) : bool
+def $compatible_divmod(IntT, IntT) = true
+def $compatible_divmod(typ_l, typ_r) = false
+  -- otherwise
 
 rule Expr_ok/bine-div-mod:
-  p C |- BinE binop expr_l expr_r : typ ctk
-  ----
+  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ ctk
   -- if $in_set(binop, binop, SET DIV MOD)
   ----
-  -- Expr_ok: p C |- expr_l : typ_l ctk_l
-  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : exprIL_r typ_r ctk_r
   ----
-  -- Sub_impl: typ_l << IntT
-  -- Sub_impl: typ_r << IntT
+  -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
+  ----
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $coerce_binary_numeric((exprIL_l', typ'), (exprIL_r', typ'), $compatible_divmod)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
+def $compatible_shift(typ, typ) : bool
+def $compatible_shift(IntT, IntT) = true
+def $compatible_shift(IntT, FIntT w) = true
+def $compatible_shift(IntT, FBitT w) = true
+def $compatible_shift(FIntT w, IntT) = true
+def $compatible_shift(FIntT w_l, FIntT w_r) = true
+def $compatible_shift(FIntT w_l, FBitT w_r) = true
+def $compatible_shift(FBitT w, IntT) = true
+def $compatible_shift(FBitT w_l, FIntT w_r) = true
+def $compatible_shift(FBitT w_l, FBitT w_r) = true
+def $compatible_shift(typ_l, typ_r) = false
+  -- otherwise
+
 rule Expr_ok/bine-shift:
-  p C |- BinE binop expr_l expr_r : typ ctk
-  ----
+  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l' exprIL_r') typ_l' ctk
   -- if $in_set(binop, binop, SET SHL SHR)
   ----
-  -- Expr_ok: p C |- expr_l : typ_l ctk_l
-  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : exprIL_r typ_r ctk_r
   ----
-  -- Sub_impl: typ_l << typ_l'
-  -- Sub_impl: typ_r << typ_r'
-  -- if ($is_fintt(typ_l') /\ $is_fintt(typ_r'))
-        \/ ($is_fintt(typ_l') /\ $is_fbitt(typ_r'))
-        \/ ($is_fintt(typ_l') /\ $is_intt(typ_r'))
-        \/ ($is_fbitt(typ_l') /\ $is_fintt(typ_r'))
-        \/ ($is_fbitt(typ_l') /\ $is_fbitt(typ_r'))
-        \/ ($is_fbitt(typ_l') /\ $is_intt(typ_r'))
-        \/ ($is_intt(typ_l') /\ $is_fintt(typ_r'))
-        \/ ($is_intt(typ_l') /\ $is_fbitt(typ_r'))
-        \/ ($is_intt(typ_l') /\ $is_intt(typ_r'))
+  -- if ((exprIL_l', typ_l'), (exprIL_r', typ_r')) = $coerce_binary_numeric((exprIL_l, typ_l), (exprIL_r, typ_r), $compatible_shift)
   ----
   -- if $implies($is_fintt(typ_r') \/ $is_intt(typ_r'), ctk_r = LCTK)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
-
 
 def $equalable(typ) : bool    hint(show % IS EQUALABLE)
 def $equalable'(typ) : bool
@@ -192,76 +226,94 @@ def $equalable'(TableT id typ) = false
 def $equalable'(synthtyp) = $is_seqt(synthtyp) \/ $is_recordt(synthtyp)
 def $equalable'(typ) = true
 
-
 rule Expr_ok/bine-compare-eq:
-  p C |- BinE binop expr_l expr_r : typ ctk
+  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l' exprIL_r') typ ctk
+  -- if $in_set(binop, binop, SET EQ NE)
   ----
-  -- if $in_set(binop,binop, SET EQ NE)
+  -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : exprIL_r typ_r ctk_r
   ----
-  -- Expr_ok: p C |- expr_l : typ_l ctk_l
-  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
   ----
-  -- Sub_impl: typ_l << typ
-  -- Sub_impl: typ_r << typ
-  ----
-  -- if $equalable(typ_l)
+  -- if $equalable(typ')
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
+
+def $compatible_compare(typ, typ) : bool
+def $compatible_compare(IntT, IntT) = true
+def $compatible_compare(FIntT w, FIntT w) = true
+def $compatible_compare(FBitT w, FBitT w) = true
+def $compatible_compare(typ_l, typ_r) = false
+  -- otherwise
 
 rule Expr_ok/bine-compare:
-  p C |- BinE binop expr_l expr_r : typ ctk
-  ----
+  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ'' ctk
   -- if $in_set(binop, binop, SET LE GE LT GT)
   ----
-  -- Expr_ok: p C |- expr_l : typ_l ctk_l
-  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : exprIL_r typ_r ctk_r
   ----
-  -- Sub_impl: typ_l << typ
-  -- Sub_impl: typ_r << typ
-  -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
+  -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
+  ----
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $coerce_binary_numeric((exprIL_l', typ'), (exprIL_r', typ'), $compatible_compare)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
+
+def $compatible_bitwise(typ, typ) : bool
+def $compatible_bitwise(FIntT w, FIntT w) = true
+def $compatible_bitwise(FBitT w, FBitT w) = true
+def $compatible_bitwise(typ_l, typ_r) = false
+  -- otherwise
 
 rule Expr_ok/bine-bitwise:
-  p C |- BinE binop expr_l expr_r : typ ctk
-  ----
+  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ'' ctk
   -- if $in_set(binop, binop, SET BAND BXOR BOR)
-  -- Expr_ok: p C |- expr_l : typ_l ctk_l
-  -- Expr_ok: p C |- expr_r : typ_r ctk_r
   ----
-  -- Sub_impl: typ_l << typ
-  -- Sub_impl: typ_r << typ
-  -- if $is_fintt(typ) \/ $is_fbitt(typ)
+  -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : exprIL_r typ_r ctk_r
+  ----
+  -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
+  ----
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $coerce_binary_numeric((exprIL_l', typ'), (exprIL_r', typ'), $compatible_bitwise)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
+
+def $compatible_concat(typ, typ) : bool
+def $compatible_concat(FIntT w_l, FIntT w_r) = true
+def $compatible_concat(FIntT w_l, FBitT w_r) = true
+def $compatible_concat(FBitT w_l, FIntT w_r) = true
+def $compatible_concat(FBitT w_l, FBitT w_r) = true
+def $compatible_concat(typ_l, typ_r) = false
+  -- otherwise
 
 rule Expr_ok/bine-concat:
-  p C |- BinE CONCAT expr_l expr_r : typ ctk
+  p C |- BinE CONCAT expr_l expr_r : (BinE binop exprIL_l' exprIL_r') typ'' ctk
+  -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : exprIL_r typ_r ctk_r
   ----
-  -- Expr_ok: p C |- expr_l : typ_l ctk_l
-  -- Expr_ok: p C |- expr_r : typ_r ctk_r
+  -- if ((exprIL_l', typ_l'), (exprIL_r', typ_r')) = $coerce_binary_numeric((exprIL_l, typ_l), (exprIL_r, typ_r), $compatible_concat)
   ----
-  -- Sub_impl: typ_l << typ_l'
-  -- Sub_impl: typ_r << typ_r'
-  -- if ((typ_l' = FIntT w_l' /\ typ_r' = FIntT w_r')
-          \/ (typ_l' = FIntT w_l' /\ typ_r' = FBitT w_r')
-          \/ (typ_l' = FBitT w_l' /\ typ_r' = FIntT w_r')
-          \/ (typ_l' = FBitT w_l' /\ typ_r' = FBitT w_r'))
-  ----
-  -- if $implies($is_fintt(typ_l'), typ = FIntT $(w_l' + w_r'))
-        \/ $implies($is_fbitt(typ_l'), typ = FIntT $(w_l' + w_r'))
+  -- if w = $($get_width(typ_l') + $get_width(typ_r'))
+  -- if $implies($is_fintt(typ_l'), typ'' = FIntT w)
+  -- if $implies($is_fbitt(typ_l'), typ'' = FBitT w)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
+def $compatible_logical(typ, typ) : bool
+def $compatible_logical(BoolT, BoolT) = true
+def $compatible_logical(typ_l, typ_r) = false
+  -- otherwise
+
 rule Expr_ok/bine-logical:
-  p C |- BinE binop expr_l expr_r : BoolT ctk
-  ----
+  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l exprIL_r) BoolT ctk
   -- if $in_set(binop, binop, SET LAND LOR)
-  -- Expr_ok: p C |- expr_l : typ_l ctk_l
-  -- Expr_ok: p C |- expr_r : typ_r ctk_r
   ----
-  -- Sub_impl: typ_l << BoolT
-  -- Sub_impl: typ_r << BoolT
+  -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
+  -- Expr_ok: p C |- expr_r : exprIL_r typ_r ctk_r
+  ----
+  -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
+  ----
+  -- if ((exprIL_l'', typ_l''), (exprIL_r'',typ_r'')) = $coerce_binary_numeric((exprIL_l', typ'), (exprIL_r', typ'), $compatible_logical)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
@@ -269,35 +321,16 @@ rule Expr_ok/bine-logical:
 ;; Ternary expression
 ;;
 
-rule Expr_ok/terne-nointt:
-  p C |- TernE expr_c expr_t expr_f : typ ctk
+rule Expr_ok/terne:
+  p C |- TernE expr_c expr_t expr_f : (TernE exprIL_c exprIL_t' exprIL_f') typ' ctk
+  -- Expr_ok: p C |- expr_c : exprIL_c BoolT ctk_c
   ----
-  -- Expr_ok: p C |- expr_c : typ_c ctk_c
-  -- Sub_impl: typ_c << BoolT
+  -- Expr_ok: p C |- expr_t : exprIL_t typ_t ctk_t
+  -- Expr_ok: p C |- expr_f : exprIL_f typ_f ctk_f
   ----
-  -- Expr_ok: p C |- expr_t : typ_t ctk_t
-  -- Expr_ok: p C |- expr_f : typ_f ctk_f
+  -- if (typ', exprIL_t', exprIL_r') = $coerce_binary((exprIL_t, typ_t), (exprIL_f, typ_f))
   ----
-  -- Sub_impl: typ_t << typ
-  -- Sub_impl: typ_f << typ
-  ----
-  -- if typ =/= IntT
-  ----
-  -- if ctk = $joins_ctk(ctk_c ctk_t ctk_f)
-
-rule Expr_ok/terne-intt:
-  p C |- TernE expr_c expr_t expr_f : typ ctk
-  ----
-  -- Expr_ok: p C |- expr_c : typ_c ctk_c
-  -- Sub_impl: typ_c << BoolT
-  ----
-  -- Expr_ok: p C |- expr_t : typ_t ctk_t
-  -- Expr_ok: p C |- expr_f : typ_f ctk_f
-  ----
-  -- Sub_impl: typ_t << IntT
-  -- Sub_impl: typ_f << IntT
-  ----
-  -- if ctk_t = LCTK /\ ctk_f = LCTK
+  -- if $implies($is_intt(typ'), ctk_c = CTK \/ ctk_c = LCTK) 
   ----
   -- if ctk = $joins_ctk(ctk_c ctk_t ctk_f)
 
@@ -306,122 +339,145 @@ rule Expr_ok/terne-intt:
 ;;
 
 rule Expr_ok/caste:
-  p C |- CastE type expr : typ_t ctk_e
-  -- Type_ok: p C |- type : typ_t
-  -- Expr_ok: p C |- expr : typ_e ctk_e
-  -- Sub_expl: typ_e <: typ_t
+  p C |- CastE type expr_b : (CastE typ exprIL_b) typ ctk_b
+  -- Type_ok: p C |- type : typ
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- Sub_expl: typ_b <: typ_t
 
 ;;
 ;; Mask expression
 ;;
 
+def $compatible_mask(typ, typ) : bool
+def $compatible_mask(IntT, IntT) = true
+def $compatible_mask(FIntT w, FIntT w) = true
+def $compatible_mask(FBitT w, FBitT w) = true
+def $compatible_mask(typ_l, typ_r) = false
+  -- otherwise
+
 rule Expr_ok/maske:
-  p C |- MaskE expr_b expr_m : (SetT typ) DYN
+  p C |- MaskE expr_b expr_m : (MaskE exprIL_b'' exprIL_m'') (SetT typ'') DYN
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- Expr_ok: p C |- expr_m : exprIL_m typ_m ctk_m
   ----
-  -- Expr_ok: p C |- expr_b : typ_b ctk_b
-  -- Expr_ok: p C |- expr_m : typ_m ctk_m
+  -- if (typ', exprIL_b', exprIL_m') = $coerce_binary((exprIL_b, typ_b), (exprIL_m, typ_m))
   ----
-  -- Sub_impl: typ_b << typ
-  -- Sub_impl: typ_m << typ
-  -- if typ = IntT \/ typ = FIntT w \/ typ = FBitT w
+  -- if ((exprIL_b'', typ''), (exprIL_m'', typ'')) = $coerce_binary_numeric((exprIL_b', typ'), (exprIL_m', typ'), $compatible_mask)
+  ----
+  ;; -- Type_wf: $bound_tid(C) |- SetT typ''
 
 ;;
 ;; Range expression
 ;;
 
+def $compatible_range(typ, typ) : bool
+def $compatible_range(IntT, IntT) = true
+def $compatible_range(FIntT w, FIntT w) = true
+def $compatible_range(FBitT w, FBitT w) = true
+def $compatible_range(typ_l, typ_r) = false
+  -- otherwise
+
 rule Expr_ok/rangee:
-  p C |- RangeE expr_l expr_u : (SetT typ) DYN
+  p C |- RangeE expr_lb expr_ub : (RangeE exprIL_lb'' exprIL_ub'') (SetT typ'') DYN
+  -- Expr_ok: p C |- expr_lb : exprIL_lb typ_lb ctk_lb
+  -- Expr_ok: p C |- expr_ub : exprIL_ub typ_ub ctk_ub
   ----
-  -- Expr_ok: p C |- expr_l : typ_l ctk_l
-  -- Expr_ok: p C |- expr_u : typ_u ctk_u
+  -- if (typ', exprIL_ub', exprIL_lb') = $coerce_binary((exprIL_lb, typ_lb), (exprIL_ub, typ_ub))
   ----
-  -- Sub_impl: typ_l << typ
-  -- Sub_impl: typ_u << typ
-  -- if typ = IntT \/ typ = FIntT w \/ typ = FBitT w
+  -- if ((exprIL_lb'', typ''), (exprIL_ub'', typ'')) = $coerce_binary_numeric((exprIL_lb', typ'), (exprIL_ub', typ'), $compatible_range)
+  ----
+  ;; -- Type_wf: $bound_tid(C) |- SetT typ''
 
 ;;
 ;; Select expression
 ;;
 
-relation Select_case_keyset_ok: cursor context typ |- keyset
+relation Select_case_keyset_ok: cursor context typ |- keyset : keysetIL
 
 rule Select_case_keyset_ok/exprk-sett:
-  LOCAL C typ_k |- ExprK expr
-  -- Expr_ok: LOCAL C |- expr : (SetT typ) ctk
-  -- Sub_impl: typ << typ_k
+  LOCAL C typ_k |- ExprK expr : ExprK exprIL'
+  -- Expr_ok: LOCAL C |- expr : exprIL (SetT typ) ctk
+  ----
+  -- if exprIL' = $coerce_assign((exprIL, SetT typ), SetT typ_k)
 
 rule Select_case_keyset_ok/exprk-not-sett:
-  LOCAL C typ_k |- ExprK expr 
-  -- Expr_ok: LOCAL C |- expr : typ ctk 
+  LOCAL C typ_k |- ExprK expr : ExprK exprIL'
+  -- Expr_ok: LOCAL C |- expr : exprIL typ ctk 
   -- if ~$is_sett(typ)
+  ----
   -- Sub_impl: typ << typ_k
+  -- if exprIL' = CastE (SetT typ_k) exprIL
 
 rule Select_case_keyset_ok/defaultk:
-  LOCAL C typ_k |- DefaultK
+  LOCAL C typ_k |- DefaultK : DefaultK
 
 rule Select_case_keyset_ok/anyk:
-  LOCAL C typ_k |- AnyK
+  LOCAL C typ_k |- AnyK : AnyK
 
 
-relation Select_case_keysets_ok: cursor context |- typ* keyset*
+relation Select_case_keysets_ok: cursor context |- typ* keyset* : keysetIL*
 
 rule Select_case_keysets_ok/one-to-one:
-  p C |- typ_k keyset
-  -- Select_case_keyset_ok: p C typ_k |- keyset
+  p C |- typ_k keyset : keysetIL
+  -- Select_case_keyset_ok: p C typ_k |- keyset : keysetIL
 
 rule Select_case_keysets_ok/many-to-one:
-  p C |- typ_k* keyset
-  -- Select_case_keyset_ok: p C (SeqT typ_k*) |- keyset
+  p C |- typ_k* keyset : keysetIL
+  -- Select_case_keyset_ok: p C (SeqT typ_k*) |- keyset : keysetIL
 
 rule Select_case_keysets_ok/many-to-many:
-  p C |- typ_k* keyset*
+  p C |- typ_k* keyset* : keysetIL*
   -- if |typ_k*| = |keyset*|
-  -- (Select_case_keyset_ok: p C typ_k |- keyset)*
+  -- (Select_case_keyset_ok: p C typ_k |- keyset : keysetIL)*
 
 
-relation Select_case_ok: cursor context typ* |- selectcase
+relation Select_case_ok: cursor context typ* |- selectcase : selectcaseIL
 
-rule Select_case_ok/singleton:
-  LOCAL C typ_k* |- keyset* statelabel
-  -- Select_case_keysets_ok: LOCAL C |- typ_k* keyset*
+rule Select_case_ok:
+  LOCAL C typ_k* |- keyset* statelabel : keysetIL* statelabel
+  -- Select_case_keysets_ok: LOCAL C |- typ_k* keyset* : keysetIL*
   -- if StateT dir'' ctk'' eps = $find_styp(LOCAL, C, CURRENT statelabel)
 
+
 rule Expr_ok/selecte:
-  LOCAL C |- SelectE expr_k* selectcase* : StateT DYN
+  LOCAL C |- SelectE expr_k* selectcase* : (SelectE exprIL_k* selectcaseIL*) StateT DYN
   -- if C.LOCAL.KIND = PARSERSTATE
-  -- (Expr_ok: LOCAL C |- expr_k : typ_k ctk_k)*
+  -- (Expr_ok: LOCAL C |- expr_k : exprIL_k typ_k ctk_k)*
   ----
   -- if tidset = $bound_tid(C)
   -- (Type_wf: tidset |- SetT typ_k)*
   ----
-  -- (Select_case_ok: LOCAL C typ_k* |- selectcase)*
+  -- (Select_case_ok: LOCAL C typ_k* |- selectcase : selectcaseIL)*
 
 ;;
 ;; Array access expression
 ;;
 
+def $compatible_arrayindex(typ) : bool
+def $compatible_arrayindex(IntT) = true
+def $compatible_arrayindex(FIntT w) = true
+def $compatible_arrayindex(FBitT w) = true
+def $compatible_arrayindex(typ) = false
+  -- otherwise
+
 rule Expr_ok/arracce-tuplet:
-  p C |- ArrAccE expr_b expr_i : typ DYN
+  p C |- ArrAccE expr_b expr_i : (ArrAccE exprIL_b exprIL_i') typ DYN
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- Expr_ok: p C |- expr_i : exprIL_i typ_i ctk_i
   ----
-  -- Expr_ok: p C |- expr_b : typ_b ctk_b
-  -- Expr_ok: p C |- expr_i : typ_i ctk_i
-  -- Sub_impl: typ_i << typ_i'
-  ----
-  -- if typ_i' = IntT \/ typ_i' = FIntT w \/ typ_i' = FBitT w
+  -- if (exprIL_i', typ_i') = $coerce_unary_numeric((exprIL_i, typ_i), $compatible_arrayindex)
   ----
   -- if TupleT typs_b'* = $canon_typ(typ_b)
-  -- Eval_static: p C |- expr_i ~> val_i
+  -- Eval_static: p C |- exprIL_i' ~> val_i
   -- if i = $num(val_i)
   -- if typ = typs_b'*[i]
 
 rule Expr_ok/arracce-stackt:
-  p C |- ArrAccE expr_b expr_i : typ_b' DYN
+  p C |- ArrAccE expr_b expr_i : (ArrAccE exprIL_b exprIL_i') typ_b' DYN
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- Expr_ok: p C |- expr_i : exprIL_i typ_i LCTK
   ----
-  -- Expr_ok: p C |- expr_b : typ_b ctk_b
-  -- Expr_ok: p C |- expr_i : typ_i LCTK
-  -- Sub_impl: typ_i << typ_i'
-  ----
-  -- if typ_i' = IntT \/ typ_i' = FIntT w_i' \/ typ_i' = FBitT w_i'
+  -- if (exprIL_i', typ_i') = $coerce_unary_numeric((exprIL_i, typ_i), $compatible_arrayindex)
   ----
   -- if StackT typ_b' size = $canon_typ(typ_b)
 
@@ -429,27 +485,39 @@ rule Expr_ok/arracce-stackt:
 ;; Bitstring access expression
 ;;
 
+def $compatible_bitstringbase(typ) : bool
+def $compatible_bitstringbase(IntT) = true
+def $compatible_bitstringbase(FIntT w) = $(w > 0)
+def $compatible_bitstringbase(FBitT w) = true
+def $compatible_bitstringbase(typ) = false
+  -- otherwise
+
+def $compatible_bitstringindex(typ) : bool
+def $compatible_bitstringindex(IntT) = true
+def $compatible_bitstringindex(FIntT w) = true
+def $compatible_bitstringindex(FBitT w) = true
+def $compatible_bitstringindex(typ) = false
+  -- otherwise
+
 ;; (TODO-Jaehyun) check bitstring slice range
 rule Expr_ok/bitacce:
-  p C |- BitAccE expr_b expr_l expr_h : typ ctk_b
+  p C |- BitAccE expr_b expr_l expr_h : (BitAccE exprIL_b' (ValueE val_l) (ValueE val_r)) typ ctk_b
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
   ----
-  -- Expr_ok: p C |- expr_b : typ_b ctk_b
-  -- Sub_impl: typ_b << typ_b'
+  -- if (exprIL_b', typ_b') = $coerce_unary_numeric((exprIL_b, typ_b), $compatible_bitstringbase)
   ----
-  -- if typ_b' = IntT \/ (typ_b' = FIntT w_b' /\ w_b' >= 1) \/ (typ_b' = FBitT w_b' /\ w_b' >= 0)
+  -- Expr_ok: p C |- expr_l : exprIL_l typ_l LCTK
   ----
-  -- Expr_ok: p C |- expr_l : typ_l LCTK
-  -- Sub_impl: typ_l << typ_l'
-  -- if typ_l' = IntT \/ typ_l' = FIntT w_l' \/ typ_l' = FBitT w_l'
+  -- if (exprIL_l', typ_l') = $coerce_unary_numeric((exprIL_l, typ_l), $compatible_bitstringindex)
   ----
-  -- Eval_static: p C |- expr_l ~> val_l
+  -- Eval_static: p C |- exprIL_l' ~> val_l
   -- if i_l = $num(val_l)
   ----
-  -- Expr_ok: p C |- expr_h : typ_h LCTK
-  -- Sub_impl: typ_h << typ_h'
-  -- if typ_h' = IntT \/ typ_h' = FIntT w_h' \/ typ_h' = FBitT w_h'
+  -- Expr_ok: p C |- expr_h : exprIL_h typ_h LCTK
   ----
-  -- Eval_static: p C |- expr_h ~> val_h
+  -- if (exprIL_h', typ_h') = $coerce_unary_numeric((exprIL_h, typ_h), $compatible_bitstringindex)
+  ----
+  -- Eval_static: p C |- exprIL_h' ~> val_h
   -- if i_h = $num(val_h)
   ----
   -- if typ = FBitT $(i_h - i_l + 1)
@@ -459,7 +527,7 @@ rule Expr_ok/bitacce:
 ;;
 
 rule Expr_ok/erracce:
-  p C |- ErrAccE member : ErrT LCTK
+  p C |- ErrAccE member : (ValueE (ErrV member)) ErrT LCTK
   -- if id = $concat_texts("error." member)
   -- if ErrV member = $find_val(p, C, TOP id)
 
@@ -468,87 +536,82 @@ rule Expr_ok/erracce:
 ;;
 
 rule Expr_ok/typeacce-enumt:
-  p C |- TypeAccE name member : typ LCTK
+  p C |- TypeAccE name member : (ValueE (EnumFieldV id_t member)) typ LCTK
   -- if MonoD typ = $find_typdef(p, C, name)
   -- if EnumT id_t member_t* = $canon_typ(typ)
   -- if member <- member_t*
 
 rule Expr_ok/typeacce-senumt:
-  p C |- TypeAccE name member : typ LCTK
+  p C |- TypeAccE name member : (ValueE (SEnumFieldV id_t member val)) typ LCTK
   -- if MonoD typ = $find_typdef(p, C, name)
   -- if SEnumT id_t typ_t (member_t, val_t)* = $canon_typ(typ)
-  -- if member <- member_t*
+  -- if (member, val) <- (member_t, val_t)*
 
 ;;
 ;; Expression access expression
 ;;
 
 rule Expr_ok/expracce-stackt-size:
-  p C |- ExprAccE expr_b member : (FBitT 32) LCTK
-  ----
-  -- Expr_ok: p C |- expr_b : typ_b ctk_b
-  -- if StackT typ_b' size = $canon_typ(typ_b)
-  ----
-  -- if $in_set(member, member, SET "size")
+  p C |- ExprAccE expr_b "size" : (ExprAccE exprIL_b member) (FBitT 32) LCTK
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- if StackT typ_s size_s = $canon_typ(typ_b)
 
 rule Expr_ok/expracce-stackt-lastindex:
-  p C |- ExprAccE expr_b member : (FBitT 32) DYN
+  p C |- ExprAccE expr_b "lastIndex" : (ExprAccE exprIL_b member) (FBitT 32) DYN
+  -- if (p = BLOCK /\ C.BLOCK.KIND = PARSER) \/ (p = LOCAL /\ C.LOCAL.KIND = PARSERSTATE)
   ----
-  -- Expr_ok: p C |- expr_b : typ_b ctk_b
-  -- if StackT typ_b' size = $canon_typ(typ_b)
-  ----
-  -- if $in_set(member, member, SET "lastIndex")
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- if StackT typ_s size_s = $canon_typ(typ_b)
 
-rule Expr_ok/expracce-stackt-next-last:
-  p C |- ExprAccE expr_b member : typ_b' DYN
+rule Expr_ok/expracce-stackt-last:
+  p C |- ExprAccE expr_b "last" : (ExprAccE exprIL_b member) typ_s DYN
+  -- if (p = BLOCK /\ C.BLOCK.KIND = PARSER) \/ (p = LOCAL /\ C.LOCAL.KIND = PARSERSTATE)
   ----
-  -- Expr_ok: p C |- expr_b : typ_b ctk_b
-  -- if StackT typ_b' size = $canon_typ(typ_b)
-  ----
-  -- if $in_set(member, member, SET "next" "last")
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- if StackT typ_s size_s = $canon_typ(typ_b)
+
+rule Expr_ok/expracce-stackt-next:
+  p C |- ExprAccE expr_b "next" : (ExprAccE exprIL_b member) typ_s DYN
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- if StackT typ_s size_s = $canon_typ(typ_b)
 
 rule Expr_ok/expracce-structt:
-  p C |- ExprAccE expr_b member : typ DYN
+  p C |- ExprAccE expr_b member : (ExprAccE exprIL_b member) typ DYN
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- if StructT id_s (member_s, typ_s)* = $canon_typ(typ_b)
   ----
-  -- Expr_ok: p C |- expr_b : typ_b ctk_b
-  -- if StructT id_b (member_b, typ_b')* = $canon_typ(typ_b)
-  ----
-  -- if (member, typ) <- (member_b, typ_b')*
+  -- if (member, typ) <- (member_s, typ_s)*
 
 rule Expr_ok/expracce-headert:
-  p C |- ExprAccE expr_b member : typ DYN
+  p C |- ExprAccE expr_b member : (ExprAccE exprIL_b member) typ DYN
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- if HeaderT id_h (member_h, typ_h)* = $canon_typ(typ_b)
   ----
-  -- Expr_ok: p C |- expr_b : typ_b ctk_b
-  -- if HeaderT id_b (member_b, typ_b')* = $canon_typ(typ_b)
-  ----
-  -- if (member, typ) <- (member_b, typ_b')*
+  -- if (member, typ) <- (member_h, typ_h)*
 
 rule Expr_ok/expracce-uniont:
-  p C |- ExprAccE expr_b member : typ DYN
+  p C |- ExprAccE expr_b member : (ExprAccE exprIL_b member) typ DYN
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- if UnionT id_u (member_u, typ_u)* = $canon_typ(typ_b)
   ----
-  -- Expr_ok: p C |- expr_b : typ_b ctk_b
-  -- if UnionT id_b (member_b, typ_b')* = $canon_typ(typ_b)
-  ----
-  -- if (member, typ) <- (member_b, typ_b')*
+  -- if (member, typ) <- (member_u, typ_u)*
 
 rule Expr_ok/expracce-tablestructt:
-  p C |- ExprAccE expr_b member : typ DYN
+  p C |- ExprAccE expr_b member : (ExprAccE exprIL_b member) typ DYN
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- if TableStructT id_t (member_t, typ_t)* = $canon_typ(typ_b)
   ----
-  -- Expr_ok: p C |- expr_b : typ_b ctk_b
-  -- if TableStructT id_b (member_b, typ_b')* = $canon_typ(typ_b)
-  ----
-  -- if (member, typ) <- (member_b, typ_b')*
+  -- if (member, typ) <- (member_t, typ_t)*
 
 ;;
 ;; Function call expression
 ;;
 
 rule Expr_ok/callfunce:
-  p C |- CallFuncE name targ* arg* : typ DYN
+  p C |- CallFuncE name targ* arg* : (CallFuncE name targIL'* argIL'*) typ DYN
+  -- FuncType_ok: p C |- name targ* arg* : functyp targIL* argIL*
   ----
-  -- FuncType_ok: p C |- name targ* arg* : functyp
-  ----
-  -- Call_ok: p C |- functyp arg* : typ
+  -- Call_ok: p C |- functyp targIL* argIL* : typ targIL'* argIL'*
   -- if typ =/= VoidT
 
 ;;
@@ -556,11 +619,10 @@ rule Expr_ok/callfunce:
 ;;
 
 rule Expr_ok/callmethode:
-  p C |- CallMethodE expr_b member targ* arg* : typ DYN
+  p C |- CallMethodE expr_b member targ* arg* : (CallMethodE exprIL_b member targIL'* argIL'*) typ DYN
+  -- MethodType_ok: p C |- expr_b member targ* arg* : functyp exprIL_b targIL* argIL*
   ----
-  -- MethodType_ok: p C |- expr_b member targ* arg* : functyp
-  ----
-  -- Call_ok: p C |- functyp arg* : typ
+  -- Call_ok: p C |- functyp targIL* argIL* : typ targIL'* argIL'*
   -- if typ =/= VoidT
 
 ;;
@@ -568,15 +630,14 @@ rule Expr_ok/callmethode:
 ;;
 
 rule Expr_ok/calltypee:
-  p C |- CallTypeE name member eps arg* : typ DYN
-  ----
+  p C |- CallTypeE name member eps arg* : (CallTypeE name member eps argIL'*) typ DYN
   -- if typdef = $find_typdef(p, C, name)
   ----
   -- if $in_set(member, member, SET "minSizeInBits" "minSizeInBytes" "maxSizeInBits" "maxSizeInBytes")
   ----
   -- if functyp = BuiltinMethodT eps IntT
   ----
-  -- Call_ok: p C |- functyp arg* : typ
+  -- Call_ok: p C |- functyp eps argIL* : typ eps argIL'*
   -- if typ =/= VoidT
 
 ;;
@@ -584,8 +645,26 @@ rule Expr_ok/calltypee:
 ;;
 
 rule Expr_ok/inste:
-  p C |- InstE name targ* arg* : typ CTK
-  -- (Type_ok: p C |- targ : typ_a)*
-  -- if consdef = $find_consdef(p, C, name)
-  -- if constyp = $specialize_consdef(consdef, typ_a*)
-  -- Inst_ok: p C |- constyp arg* : typ
+  p C |- InstE name targ* arg* : (InstE name targIL'* argIL'*) typ CTK
+  -- ConsType_ok: p C |- name targ* arg* : constyp targIL* argIL*
+  ----
+  -- Inst_ok: p C |- constyp targIL* argIL* : typ targIL'* argIL'*
+  ;; (TODO-Jaehyun) check that typ is not abstract
+
+;;
+;; Argument typing
+;;
+
+rule Arg_ok/expra:
+  p C |- ExprA expr : (ExprA exprIL) typ
+  -- Expr_ok: p C |- expr : exprIL typ ctk
+
+rule Arg_ok/namea-some:
+  p C |- NameA id expr : (NameA id exprIL) typ
+  -- Expr_ok: p C |- expr : exprIL typ ctk
+
+rule Arg_ok/expra-none:
+  p C |- NameA id eps : (NameA id eps) AnyT
+
+rule Arg_ok/anya:
+  p C |- AnyA : AnyA AnyT

@@ -7,158 +7,158 @@
 ;; Boolean expression
 ;;
 
-rule Eval_static/boole:
-  p C |- BoolE b ~> BoolV b
-
+;;rule Eval_static/boole:
+;;  p C |- BoolE b ~> BoolV b
 ;;
-;; String expression
+;;;;
+;;;; String expression
+;;;;
 ;;
-
-rule Eval_static/stre:
-  p C |- StrE t ~> StrV t 
-
+;;rule Eval_static/stre:
+;;  p C |- StrE t ~> StrV t 
 ;;
-;; Number expression
+;;;;
+;;;; Number expression
+;;;;
 ;;
-
-rule Eval_static/nume-intv:
-  p C |- NumE (INT i) ~> IntV i
-
-rule Eval_static/nume-fintv:
-  p C |- NumE (FINT w i) ~> FIntV w i
-
-rule Eval_static/nume-fbitv:
-  p C |- NumE (FBIT w i) ~> FBitV w i
-
+;;rule Eval_static/nume-intv:
+;;  p C |- NumE (INT i) ~> IntV i
 ;;
-;; Variable expression
+;;rule Eval_static/nume-fintv:
+;;  p C |- NumE (FINT w i) ~> FIntV w i
 ;;
-
-rule Eval_static/namee:
-  p C |- NameE name ~> val
-  -- if val = $find_val(p, C, name)
-
+;;rule Eval_static/nume-fbitv:
+;;  p C |- NumE (FBIT w i) ~> FBitV w i
 ;;
-;; Sequence expression
+;;;;
+;;;; Variable expression
+;;;;
 ;;
-
-rule Eval_static/seqe:
-  p C |- SeqE expr* ~> SeqV val*
-  -- (Eval_static: p C |- expr ~> val)*
-
+;;rule Eval_static/namee:
+;;  p C |- NameE name ~> val
+;;  -- if val = $find_val(p, C, name)
 ;;
-;; Record expression
+;;;;
+;;;; Sequence expression
+;;;;
 ;;
-
-rule Eval_static/recorde:
-  p C |- RecordE (member, expr)* ~> RecordV (member, val)*
-  -- (Eval_static: p C |- expr ~> val)*
-
+;;rule Eval_static/seqe:
+;;  p C |- SeqE expr* ~> SeqV val*
+;;  -- (Eval_static: p C |- expr ~> val)*
 ;;
-;; Unary expression
+;;;;
+;;;; Record expression
+;;;;
 ;;
-
-rule Eval_static/une:
-  p C |- UnE unop expr ~> val'
-  -- Eval_static: p C |- expr ~> val
-  -- if val' = $un_op(unop, val)
-
+;;rule Eval_static/recorde:
+;;  p C |- RecordE (member, expr)* ~> RecordV (member, val)*
+;;  -- (Eval_static: p C |- expr ~> val)*
 ;;
-;; Binary expression
+;;;;
+;;;; Unary expression
+;;;;
 ;;
-
-rule Eval_static/bine:
-  p C |- BinE binop expr_l expr_r ~> val
-  -- Eval_static: p C |- expr_l ~> val_l
-  -- Eval_static: p C |- expr_r ~> val_r
-  -- if val = $bin_op(binop, val_l, val_r)
-
+;;rule Eval_static/une:
+;;  p C |- UnE unop expr ~> val'
+;;  -- Eval_static: p C |- expr ~> val
+;;  -- if val' = $un_op(unop, val)
 ;;
-;; Ternary expression
+;;;;
+;;;; Binary expression
+;;;;
 ;;
-
-rule Eval_static/terne-true:
-  p C |- TernE expr_c expr_t expr_f ~> val
-  -- Eval_static: p C |- expr_c ~> BoolV true
-  -- Eval_static: p C |- expr_t ~> val
-
-rule Eval_static/terne-false:
-  p C |- TernE expr_c expr_t expr_f ~> val
-  -- Eval_static: p C |- expr_c ~> BoolV false
-  -- Eval_static: p C |- expr_f ~> val
-
+;;rule Eval_static/bine:
+;;  p C |- BinE binop expr_l expr_r ~> val
+;;  -- Eval_static: p C |- expr_l ~> val_l
+;;  -- Eval_static: p C |- expr_r ~> val_r
+;;  -- if val = $bin_op(binop, val_l, val_r)
 ;;
-;; Cast expression
+;;;;
+;;;; Ternary expression
+;;;;
 ;;
-
-rule Eval_static/caste:
-  p C |- CastE type expr ~> val
-  -- Type_ok: p C |- type : typ
-  -- Eval_static: p C |- expr ~> val_e
-  -- if val = $cast_op(typ, val_e)
-
+;;rule Eval_static/terne-true:
+;;  p C |- TernE expr_c expr_t expr_f ~> val
+;;  -- Eval_static: p C |- expr_c ~> BoolV true
+;;  -- Eval_static: p C |- expr_t ~> val
 ;;
-;; Bitstring access expression
+;;rule Eval_static/terne-false:
+;;  p C |- TernE expr_c expr_t expr_f ~> val
+;;  -- Eval_static: p C |- expr_c ~> BoolV false
+;;  -- Eval_static: p C |- expr_f ~> val
 ;;
-
-rule Eval_static/bitacce:
-  p C |- BitAccE expr_b expr_l expr_h ~> val
-  -- Eval_static: p C |- expr_b ~> val_b
-  -- Eval_static: p C |- expr_l ~> val_l
-  -- Eval_static: p C |- expr_h ~> val_h
-  -- if val = $bitacc_op(val_b, val_l, val_h)
-
+;;;;
+;;;; Cast expression
+;;;;
 ;;
-;; Error access expression
+;;rule Eval_static/caste:
+;;  p C |- CastE type expr ~> val
+;;  -- Type_ok: p C |- type : typ
+;;  -- Eval_static: p C |- expr ~> val_e
+;;  -- if val = $cast_op(typ, val_e)
 ;;
-
-rule Eval_static/erracce:
-  p C |- ErrAccE member ~> val
-  -- if id = $concat_texts("error." member)
-  -- if val = $find_val(p, C, TOP id)
-
+;;;;
+;;;; Bitstring access expression
+;;;;
 ;;
-;; Type access expression
+;;rule Eval_static/bitacce:
+;;  p C |- BitAccE expr_b expr_l expr_h ~> val
+;;  -- Eval_static: p C |- expr_b ~> val_b
+;;  -- Eval_static: p C |- expr_l ~> val_l
+;;  -- Eval_static: p C |- expr_h ~> val_h
+;;  -- if val = $bitacc_op(val_b, val_l, val_h)
 ;;
-
-rule Eval_static/typeacce-top:
-  p C |- TypeAccE (TOP tid) member ~> val
-  -- if id = $concat_texts(tid member)
-  -- if val = $find_val(p, C, TOP id)
-
-rule Eval_static/typeacce-current:
-  p C |- TypeAccE (CURRENT tid) member ~> val
-  -- if id = $concat_texts(tid member)
-  -- if val = $find_val(p, C, CURRENT id)
-
+;;;;
+;;;; Error access expression
+;;;;
 ;;
-;; Expression access expression
+;;rule Eval_static/erracce:
+;;  p C |- ErrAccE member ~> val
+;;  -- if id = $concat_texts("error." member)
+;;  -- if val = $find_val(p, C, TOP id)
 ;;
-
-rule Eval_static/expracce-stack:
-  p C |- ExprAccE expr_b "size" ~> IntV s
-  -- Eval_static: p C |- expr_b ~> StackV val* i s
-
+;;;;
+;;;; Type access expression
+;;;;
 ;;
-;; Method call expression
+;;rule Eval_static/typeacce-top:
+;;  p C |- TypeAccE (TOP tid) member ~> val
+;;  -- if id = $concat_texts(tid member)
+;;  -- if val = $find_val(p, C, TOP id)
 ;;
-
-rule Eval_static/callmethode:
-  p C |- CallMethodE expr_b member eps eps ~> val
-  ----
-  -- if $in_set(member, member, SET "minSizeInBits" "minSizeInBytes" "maxSizeInBits" "maxSizeInBytes")
-  ----
-  -- Expr_ok: p C |- expr_b : typ_b ctk_b
-  -- if val = $size_builtin(typ_b, member)
-
+;;rule Eval_static/typeacce-current:
+;;  p C |- TypeAccE (CURRENT tid) member ~> val
+;;  -- if id = $concat_texts(tid member)
+;;  -- if val = $find_val(p, C, CURRENT id)
 ;;
-;; Type call expression
+;;;;
+;;;; Expression access expression
+;;;;
 ;;
-
-rule Eval_static/calltypee:
-  p C |- CallTypeE name member eps eps ~> val
-  ----
-  -- if $in_set(member, member, SET "minSizeInBits" "minSizeInBytes" "maxSizeInBits" "maxSizeInBytes")
-  ----
-  -- if MonoD typ = $find_typdef(p, C, name)
-  -- if val = $size_builtin(typ, member)
+;;rule Eval_static/expracce-stack:
+;;  p C |- ExprAccE expr_b "size" ~> IntV s
+;;  -- Eval_static: p C |- expr_b ~> StackV val* i s
+;;
+;;;;
+;;;; Method call expression
+;;;;
+;;
+;;rule Eval_static/callmethode:
+;;  p C |- CallMethodE expr_b member eps eps ~> val
+;;  ----
+;;  -- if $in_set(member, member, SET "minSizeInBits" "minSizeInBytes" "maxSizeInBits" "maxSizeInBytes")
+;;  ----
+;;  -- Expr_ok: p C |- expr_b : typ_b ctk_b
+;;  -- if val = $size_builtin(typ_b, member)
+;;
+;;;;
+;;;; Type call expression
+;;;;
+;;
+;;rule Eval_static/calltypee:
+;;  p C |- CallTypeE name member eps eps ~> val
+;;  ----
+;;  -- if $in_set(member, member, SET "minSizeInBits" "minSizeInBytes" "maxSizeInBits" "maxSizeInBytes")
+;;  ----
+;;  -- if MonoD typ = $find_typdef(p, C, name)
+;;  -- if val = $size_builtin(typ, member)

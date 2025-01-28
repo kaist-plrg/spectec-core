@@ -2,10 +2,12 @@
 ;; Numbers
 ;;
 
+syntax bits = int
+
 syntax num =
-  | INT int       hint(show %)
-  | FINT int int  hint(show %#S#%)
-  | FBIT int int  hint(show %#W#%)
+  | INT int         hint(show %)
+  | FINT nat bits   hint(show %#S#%)
+  | FBIT nat bits   hint(show %#W#%)
 
 ;;
 ;; Texts
@@ -309,10 +311,10 @@ syntax decl =
   | TypeDefD id type                                          hint(show TYPEDEF % %)
   | ValueSetD id type expr                                    hint(show VALUE#_#SET % % %)
   | ParserTypeD id tparam* param*                             hint(show PARSER %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
-  | ParserD id tparam* param* cparam* decl* parserstate*      hint(show PARSER %#%latex("\\langle")#%#%latex("\\rangle")#(%)#(%)#%latex() %latex("\\{")#%%#%latex("\\}"))
+  | ParserD id param* cparam* decl* parserstate*              hint(show PARSER %#(%)#(%)#%latex() %latex("\\{")#%%#%latex("\\}"))
   | TableD id tbl                                             hint(show TABLE % %latex("\\{")#%#%latex("\\}"))
   | ControlTypeD id tparam* param*                            hint(show CONTROL %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
-  | ControlD id tparam* param* cparam* decl* block            hint(show CONTROL %#%latex("\\langle")#%#%latex("\\rangle")#(%)#(%)#%latex() %latex("\\{")#% APPLY %#%latex("\\}"))
+  | ControlD id param* cparam* decl* block                    hint(show CONTROL %#(%)#(%)#%latex() %latex("\\{")#% APPLY %#%latex("\\}"))
   | ActionD id param* block                                   hint(show ACTION %(%) %)
   | FuncD id type tparam* param* block                        hint(show %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex() %5)
   | ExternFuncD id type tparam* param*                        hint(show EXTERN %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex())

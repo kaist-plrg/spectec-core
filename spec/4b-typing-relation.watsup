@@ -2,7 +2,7 @@
 ;; Static evaluation
 ;;
 
-relation Eval_static: cursor context |- expr ~> val
+relation Eval_static: cursor context |- exprIL ~> val
 
 ;;
 ;; Type evaluation and subtyping
@@ -17,25 +17,30 @@ relation Sub_impl: typ << typ
 ;; Expression, Statement, and Declaration typing
 ;;
 
-relation Expr_ok: cursor context |- expr : typ ctk
+relation Expr_ok: cursor context |- expr : exprIL typ ctk
+relation Arg_ok: cursor context |- arg : argIL typ
 
-relation Lval_ok: cursor context |- expr
-relation Stmt_ok: cursor context flow |- stmt : context flow
-relation Stmts_ok: cursor context flow |- stmt* : context flow
+syntax blkctxt = INIT | NOINIT
+relation Lval_ok: cursor context |- exprIL
+relation Block_ok: cursor context flow blkctxt |- block : context flow blockIL
+relation Stmt_ok: cursor context flow |- stmt : context flow stmtIL
+relation Stmts_ok: cursor context flow |- stmt* : context flow stmtIL*
 
-relation Decl_ok: cursor context |- decl : context
-relation Decls_ok: cursor context |- decl* : context
-
-relation Arg_ok: cursor context |- arg : typ
+relation Param_ok: cursor context |- param : paramIL
+relation CParam_ok: cursor context |- cparam : cparamIL
+relation Decl_ok: cursor context |- decl : context declIL
+relation Decls_ok: cursor context |- decl* : context declIL*
 
 syntax actctxt = ACT | NOACT
 relation Call_site_ok: cursor context |- functyp : CALLSITE_OK
 relation Call_convention_ok: cursor context actctxt |- paramtyp ~~ (expr, typ)
 relation Call_convention_arg_ok: cursor context actctxt |- paramtyp ~~ (arg, typ)
-relation Call_ok: cursor context |- functyp arg* : typ
+relation Call_ok: cursor context |- functyp targIL* argIL* : typ targIL* argIL*
 
-relation FuncType_ok: cursor context |- name targ* arg* : functyp
-relation MethodType_ok: cursor context |- expr member targ* arg* : functyp
+relation FuncType_ok: cursor context |- name targ* arg* : functyp targIL* argIL*
+relation MethodType_ok: cursor context |- expr member targ* arg* : functyp exprIL targIL* argIL*
 
 relation Inst_site_ok: cursor context |- constyp : INSTSITE_OK
-relation Inst_ok: cursor context |- constyp arg* : typ
+relation Inst_ok: cursor context |- constyp targIL* argIL* arg* : typ targIL* argIL*
+
+relation ConsType_ok: cursor context |- name targ* arg* : constyp targIL* argIL*

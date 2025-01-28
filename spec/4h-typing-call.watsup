@@ -1,304 +1,304 @@
+;;;;
+;;;; Calling convention
+;;;;
 ;;
-;; Calling convention
+;;rule Call_convention_ok/in:
+;;  p C actctxt |- (id IN typ_p val?) ~~ (expr, typ_a)
+;;  -- Expr_ok: p C |- expr : exprIL_e typ_e ctk
+;;  -- Sub_impl: typ_e << typ_p
 ;;
-
-rule Call_convention_ok/in:
-  p C actctxt |- (id IN typ_p val?) ~~ (expr, typ_a)
-  -- Expr_ok: p C |- expr : typ_e ctk
-  -- Sub_impl: typ_e << typ_p
-
-rule Call_convention_ok/out-inout:
-  p C actctxt |- (id dir typ_p val?) ~~ (expr, typ_a)
-  -- if dir = OUT \/ dir = INOUT
-  -- Type_alpha: typ_a ~~ typ_p
-  -- Lval_ok: p C |- expr
-
-rule Call_convention_ok/no-action:
-  p C ACT |- (id NO typ_p val?) ~~ (expr, typ_a)
-  -- Expr_ok: p C |- expr : typ_e ctk
-  -- Sub_impl: typ'' << typ
-
-rule Call_convention_ok/no-not-action:
-  p C NOACT |- (id NO typ val?) ~~ (expr, typ')
-  -- Type_alpha: typ' ~~ typ
-  -- Expr_ok: p C |- expr : typ'' ctk
-  -- if ctk = CTK \/ ctk = LCTK
-
-
-rule Call_convention_arg_ok/expra:
-  p C actctxt |- pt ~~ (ExprA expr, typ)
-  -- Call_convention_ok: p C actctxt |- pt ~~ (expr, typ)
-
-rule Call_convention_arg_ok/some-namea:
-  p C actctxt |- pt ~~ (NameA id expr, typ)
-  -- Call_convention_ok: p C actctxt |- pt ~~ (expr, typ)
-
-rule Call_convention_arg_ok/none-namea-anya:
-  p C actctxt |- (id OUT typ val?) ~~ (arg, typ)
-  -- if arg = (NameA id' eps) \/ arg = AnyA
-
-
-def $is_table_apply_in_action_arg(arg) : bool   hint(show % CONTAINS TABLE.APPLY CALL)
-
-syntax pmap = map(id, paramtyp)
-
-def $align_params_with_args'(pmap, paramtyp, typ, arg): (paramtyp, typ, arg) hint(show ALIGN_PARAMS_WITH_ARGS'%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(")"))
-
-def $align_params_with_args'(pmap, paramtyp, typ, ExprA expr) = (paramtyp, typ, ExprA expr)
-def $align_params_with_args'(pmap, paramtyp, typ, NameA id expr?) = (paramtyp', typ, (NameA id expr?))
-  -- if paramtyp' = $find_map(id, paramtyp, pmap, id)
-def $align_params_with_args'(pmap, paramtyp, typ, AnyA) = (paramtyp, typ, AnyA)
-
-def $align_params_with_args(paramtyp*, typ*, arg*): (paramtyp*, typ*, arg*) hint(show ALIGN_PARAMS_WITH_ARGS%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(")"))
-
-def $align_params_with_args(paramtyp*, typ*, arg*) = (paramtyp'*, typ'*, arg'*)
-  -- if (id dir typ val?)* = paramtyp*
-  -- if pmap = MAP id* paramtyp*
-  -- (if (paramtyp', typ', arg') = $align_params_with_args'(pmap, paramtyp, typ, arg))*
-
-rule Call_ok/actiont:
-  p C |- (ActionT pt*) arg* : VoidT
-  -- (Arg_ok: p C |- arg : typ_a)*
-  -- if |pt*| = |arg*|
-  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
-  ----
-  -- if tidset = $bound_tid(C)
-  -- FuncType_wf: tidset |- ActionT pt'*
-  ----
-  -- Call_site_ok: p C |- ActionT pt'* : CALLSITE_OK
-  -- if (~$is_table_apply_in_action_arg(arg'))*
-  -- (Call_convention_arg_ok: p C ACT |- pt' ~~ (arg', typ_a'))*
-
-rule Call_ok/extern-funct:
-  p C |- (ExternFuncT pt* typ_r) arg* : typ
-  -- (Arg_ok: p C |- arg : typ_a)*
-  -- if |pt*| = |arg*|
-  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
-  ----
-  -- if tidset = $bound_tid(C)
-  -- FuncType_wf: tidset |- ExternFuncT pt'* typ_r
-  ----
-  -- Call_site_ok: p C |- ExternFuncT pt'* typ_r : CALLSITE_OK
-  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
-
-rule Call_ok/funct:
-  p C |- (FuncT pt* typ_r) arg* : typ
-  -- (Arg_ok: p C |- arg : typ_a)*
-  -- if |pt*| = |arg*|
-  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
-  ----
-  -- if tidset = $bound_tid(C)
-  -- FuncType_wf: tidset |- (FuncT pt'* typ_r)
-  ----
-  -- Call_site_ok: p C |- FuncT pt'* typ_r : CALLSITE_OK
-  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
-
-rule Call_ok/extern-methodt:
-  p C |- (ExternMethodT pt* typ_r) arg* : typ
-  -- (Arg_ok: p C |- arg : typ_a)*
-  -- if |pt*| = |arg*|
-  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
-  ----
-  -- if tidset = $bound_tid(C)
-  -- FuncType_wf: tidset |- ExternMethodT pt'* typ_r
-  ----
-  -- Call_site_ok: p C |- ExternMethodT pt'* typ_r : CALLSITE_OK
-  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
-
-rule Call_ok/extern-abstract-methodt:
-  p C |- (ExternAbstractMethodT pt* typ_r) arg* : typ
-  -- (Arg_ok: p C |- arg : typ_a)*
-  -- if |pt*| = |arg*|
-  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
-  ----
-  -- if tidset = $bound_tid(C)
-  -- FuncType_wf: tidset |- ExternAbstractMethodT pt'* typ_r
-  ----
-  -- Call_site_ok: p C |- ExternAbstractMethodT pt'* typ_r : CALLSITE_OK
-  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
-
-rule Call_ok/parser-apply-methodt:
-  p C |- (ParserApplyMethodT pt*) arg* : VoidT
-  -- (Arg_ok: p C |- arg : typ_a)*
-  -- if |pt*| = |arg*|
-  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
-  ----
-  -- if tidset = $bound_tid(C)
-  -- FuncType_wf: tidset |- (ParserApplyMethodT pt'*)
-  ----
-  -- Call_site_ok: p C |- ParserApplyMethodT pt'* : CALLSITE_OK
-  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
-
-rule Call_ok/control-apply-methodt:
-  p C |- (ControlApplyMethodT pt*) arg* : VoidT
-  -- (Arg_ok: p C |- arg : typ_a)*
-  -- if |pt*| = |arg*|
-  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
-  ----
-  -- if tidset = $bound_tid(C)
-  -- FuncType_wf: tidset |- ControlApplyMethodT pt'*
-  ----
-  -- Call_site_ok: p C |- ControlApplyMethodT pt'* : CALLSITE_OK
-  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
-
-rule Call_ok/builtin-methodt:
-  p C |- (BuiltinMethodT pt* typ_r) arg* : typ_r
-  -- (Arg_ok: p C |- arg : typ_a)*
-  -- if |pt*| = |arg*|
-  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
-  ----
-  -- if tidset = $bound_tid(C)
-  -- FuncType_wf: tidset |- BuiltinMethodT pt'* typ_r
-  ----
-  -- Call_site_ok: p C |- BuiltinMethodT pt'* typ_r : CALLSITE_OK
-  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
-
-rule Call_ok/table-apply-methodt:
-  p C |- (TableApplyMethodT typ_r) eps : typ_r
-  -- if tidset = $bound_tid(C)
-  -- FuncType_wf: tidset |- TableApplyMethodT typ_r
-  ----
-  -- Call_site_ok: p C |- TableApplyMethodT typ_r : CALLSITE_OK
-
+;;rule Call_convention_ok/out-inout:
+;;  p C actctxt |- (id dir typ_p val?) ~~ (expr, typ_a)
+;;  -- if dir = OUT \/ dir = INOUT
+;;  -- Type_alpha: typ_a ~~ typ_p
+;;  -- Lval_ok: p C |- expr
 ;;
-;; Constructor invocation
+;;rule Call_convention_ok/no-action:
+;;  p C ACT |- (id NO typ_p val?) ~~ (expr, typ_a)
+;;  -- Expr_ok: p C |- expr : exprIL_e typ_e ctk
+;;  -- Sub_impl: typ'' << typ
 ;;
-
-rule Inst_site_ok/global:
-  GLOBAL C |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- if typ_i' = $canon_typ(typ_i)
-  -- if $is_externt(typ_i') \/ $is_packaget(typ_i')
-
-rule Inst_site_ok/block-package:
-  BLOCK C |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- if typ_i' = $canon_typ(typ_i)
-  -- if C.BLOCK.KIND = PACKAGE
-  ----
-  -- if $is_externt(typ_i') \/ $is_parsert(typ_i')
-      \/ $is_controlt(typ_i') \/ $is_packaget(typ_i')
-
-rule Inst_site_ok/block-parser:
-  BLOCK C |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- if typ_i' = $canon_typ(typ_i)
-  -- if C.BLOCK.KIND = PARSER
-  ----
-  -- if $is_externt(typ_i') \/ $is_parsert(typ_i')
-
-rule Inst_site_ok/block-control:
-  BLOCK C |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- if typ_i' = $canon_typ(typ_i)
-  -- if C.BLOCK.KIND = CONTROL
-  ----
-  -- if $is_externt(typ_i') \/ $is_controlt(typ_i') \/ $is_tablet(typ_i')
-
-rule Inst_site_ok/local-parserstate:
-  LOCAL C |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- if typ_i' = $canon_typ(typ_i)
-  -- if C.LOCAL.KIND = PARSERSTATE
-  ----
-  -- if $is_externt(typ_i') \/ $is_parsert(typ_i')
-
-rule Inst_site_ok/local-controlapplymethod:
-  LOCAL C |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- if typ_i' = $canon_typ(typ_i)
-  -- if C.LOCAL.KIND = CONTROLAPPLYMETHOD
-  ----
-  -- if $is_externt(typ_i') \/ $is_controlt(typ_i')
-
-
-rule Inst_ok/global-packaget:
-  GLOBAL C_0 |- (ConsT pt* typ_i) arg* : typ_i
-  -- if PackageT typ_i'* = $canon_typ(typ_i)
-  -- if C_1 = $set_blockkind(C_0, PACKAGE)
-  ----
-  -- (Arg_ok: BLOCK C_1 |- arg : typ_a)*
-  ----
-  -- if |pt*| = |arg*|
-  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
-  ----
-  -- if tidset = $bound_tid(C_1)
-  -- ConsType_wf: tidset |- (ConsT pt* typ_i)
-  ----
-  -- Inst_site_ok: BLOCK C_1 |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- (Call_convention_arg_ok: BLOCK C_1 NOACT |- pt' ~~ (arg', typ_a'))*
-
-rule Inst_ok/else:
-  p C |- (ConsT pt* typ_i) arg* : typ_i
-  -- (Arg_ok: p C |- arg : typ_a)*
-  ----
-  -- if |pt*| = |arg*|
-  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
-  ----
-  -- if tidset = $bound_tid(C)
-  -- ConsType_wf: tidset |- (ConsT pt* typ_i)
-  ----
-  -- Inst_site_ok: p C |- (ConsT pt* typ_i) : INSTSITE_OK
-  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
-
+;;rule Call_convention_ok/no-not-action:
+;;  p C NOACT |- (id NO typ val?) ~~ (expr, typ')
+;;  -- Type_alpha: typ' ~~ typ
+;;  -- Expr_ok: p C |- expr : exprIL typ'' ctk
+;;  -- if ctk = CTK \/ ctk = LCTK
 ;;
-;; Function typing
 ;;
-
-;; (TODO-Jaehyun) should consider overload resolution and default parameters
-
-rule FuncType_ok:
-   p C |- name targ* arg* : functyp
-   ----
-   -- (Type_ok: p C |- targ: typ_a)*
-   -- if funcdef = $find_funcdef(GLOBAL, C, name)
-   ----
-   -- if functyp = $specialize_funcdef(funcdef, typ_a*)
-
+;;rule Call_convention_arg_ok/expra:
+;;  p C actctxt |- pt ~~ (ExprA expr, typ)
+;;  -- Call_convention_ok: p C actctxt |- pt ~~ (expr, typ)
 ;;
-;; Method typing
+;;rule Call_convention_arg_ok/some-namea:
+;;  p C actctxt |- pt ~~ (NameA id expr, typ)
+;;  -- Call_convention_ok: p C actctxt |- pt ~~ (expr, typ)
 ;;
-
-;; (TODO-Jaehyun) check that builtin is defined on typ_b
-rule MethodType_ok/builtin:
-  p C |- expr_b member eps eps : BuiltinMethodT eps IntT
-  -- Expr_ok: p C |- expr_b : typ_b ctk_b
-  ----
-  -- (Type_ok: p C |- targ : typ_a)*
-  ----
-  -- if $in_set(member, member, SET "minSizeInBits" "minSizeInBytes" "maxSizeInBits" "maxSizeInBytes")
-
-rule MethodType_ok/stackt:
-  p C |- expr_b member eps arg* : BuiltinMethodT paramtyp IntT
-  ----
-  -- Expr_ok: p C |- expr_b: typ_b ctk_b
-  -- if StackT typ_b_in size_b = $canon_typ(typ_b)
-  ----
-  -- if $in_set(member, member, SET "push\\_front" "pop\\_back")
-  ----
-  -- if paramtyp = "count" NO IntT eps
-
-rule MethodType_ok/headert-isvalid:
-  p C |- expr_b "isValid" eps arg* : BuiltinMethodT eps BoolT
-  ----
-  -- Expr_ok: p C |- expr_b: typ_b ctk_b
-  -- if HeaderT id_b (member, typ_b_in)* = $canon_typ(typ_b)
-
-rule MethodType_ok/headert-setvalid-setinvalid:
-  p C |- expr_b member eps arg* : BuiltinMethodT eps VoidT
-  ----
-  -- Expr_ok: p C |- expr_b: typ_b ctk_b
-  -- if HeaderT id_b (member, typ_b_in)* = $canon_typ(typ_b)
-  ----
-  -- if $in_set(member, member, SET "setValid" "setInvalid")
-
-rule MethodType_ok/uniont:
-  p C |- expr_b "isValid" eps arg* : BuiltinMethodT eps BoolT
-  ----
-  -- Expr_ok: p C |- expr_b: typ_b ctk_b
-  -- if UnionT id_b (member, typ_b_in)* = $canon_typ(typ_b)
-
-rule MethodType_ok/externt:
-  p C |- expr_b member targ* arg* : functyp
-  ----
-  -- Expr_ok: p C |- expr_b: typ_b ctk_b
-  -- if ExternT id_b fmap_b = $canon_typ(typ_b)
-  ----
-  -- (Type_ok: p C |- targ: typ_a)*
-  ----
-  -- if funcdef = $find_env(fid, funcdef, fmap_b, member)
-  -- if functyp = $specialize_funcdef(funcdef, typ_a*)
+;;rule Call_convention_arg_ok/none-namea-anya:
+;;  p C actctxt |- (id OUT typ val?) ~~ (arg, typ)
+;;  -- if arg = (NameA id' eps) \/ arg = AnyA
+;;
+;;
+;;def $is_table_apply_in_action_arg(arg) : bool   hint(show % CONTAINS TABLE.APPLY CALL)
+;;
+;;syntax pmap = map(id, paramtyp)
+;;
+;;def $align_params_with_args'(pmap, paramtyp, typ, arg): (paramtyp, typ, arg) hint(show ALIGN_PARAMS_WITH_ARGS'%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(")"))
+;;
+;;def $align_params_with_args'(pmap, paramtyp, typ, ExprA expr) = (paramtyp, typ, ExprA expr)
+;;def $align_params_with_args'(pmap, paramtyp, typ, NameA id expr?) = (paramtyp', typ, (NameA id expr?))
+;;  -- if paramtyp' = $find_map(id, paramtyp, pmap, id)
+;;def $align_params_with_args'(pmap, paramtyp, typ, AnyA) = (paramtyp, typ, AnyA)
+;;
+;;def $align_params_with_args(paramtyp*, typ*, arg*): (paramtyp*, typ*, arg*) hint(show ALIGN_PARAMS_WITH_ARGS%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(")"))
+;;
+;;def $align_params_with_args(paramtyp*, typ*, arg*) = (paramtyp'*, typ'*, arg'*)
+;;  -- if (id dir typ val?)* = paramtyp*
+;;  -- if pmap = MAP id* paramtyp*
+;;  -- (if (paramtyp', typ', arg') = $align_params_with_args'(pmap, paramtyp, typ, arg))*
+;;
+;;rule Call_ok/actiont:
+;;  p C |- (ActionT pt*) arg* : VoidT
+;;  -- (Arg_ok: p C |- arg : argIL typ_a)*
+;;  -- if |pt*| = |arg*|
+;;  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
+;;  ----
+;;  -- if tidset = $bound_tid(C)
+;;  -- FuncType_wf: tidset |- ActionT pt'*
+;;  ----
+;;  -- Call_site_ok: p C |- ActionT pt'* : CALLSITE_OK
+;;  -- if (~$is_table_apply_in_action_arg(arg'))*
+;;  -- (Call_convention_arg_ok: p C ACT |- pt' ~~ (arg', typ_a'))*
+;;
+;;rule Call_ok/extern-funct:
+;;  p C |- (ExternFuncT pt* typ_r) arg* : typ
+;;  -- (Arg_ok: p C |- arg : argIL typ_a)*
+;;  -- if |pt*| = |arg*|
+;;  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
+;;  ----
+;;  -- if tidset = $bound_tid(C)
+;;  -- FuncType_wf: tidset |- ExternFuncT pt'* typ_r
+;;  ----
+;;  -- Call_site_ok: p C |- ExternFuncT pt'* typ_r : CALLSITE_OK
+;;  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
+;;
+;;rule Call_ok/funct:
+;;  p C |- (FuncT pt* typ_r) arg* : typ
+;;  -- (Arg_ok: p C |- arg : argIL typ_a)*
+;;  -- if |pt*| = |arg*|
+;;  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
+;;  ----
+;;  -- if tidset = $bound_tid(C)
+;;  -- FuncType_wf: tidset |- (FuncT pt'* typ_r)
+;;  ----
+;;  -- Call_site_ok: p C |- FuncT pt'* typ_r : CALLSITE_OK
+;;  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
+;;
+;;rule Call_ok/extern-methodt:
+;;  p C |- (ExternMethodT pt* typ_r) arg* : typ
+;;  -- (Arg_ok: p C |- arg : argIL typ_a)*
+;;  -- if |pt*| = |arg*|
+;;  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
+;;  ----
+;;  -- if tidset = $bound_tid(C)
+;;  -- FuncType_wf: tidset |- ExternMethodT pt'* typ_r
+;;  ----
+;;  -- Call_site_ok: p C |- ExternMethodT pt'* typ_r : CALLSITE_OK
+;;  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
+;;
+;;rule Call_ok/extern-abstract-methodt:
+;;  p C |- (ExternAbstractMethodT pt* typ_r) arg* : typ
+;;  -- (Arg_ok: p C |- arg : argIL typ_a)*
+;;  -- if |pt*| = |arg*|
+;;  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
+;;  ----
+;;  -- if tidset = $bound_tid(C)
+;;  -- FuncType_wf: tidset |- ExternAbstractMethodT pt'* typ_r
+;;  ----
+;;  -- Call_site_ok: p C |- ExternAbstractMethodT pt'* typ_r : CALLSITE_OK
+;;  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
+;;
+;;rule Call_ok/parser-apply-methodt:
+;;  p C |- (ParserApplyMethodT pt*) arg* : VoidT
+;;  -- (Arg_ok: p C |- arg : argIL typ_a)*
+;;  -- if |pt*| = |arg*|
+;;  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
+;;  ----
+;;  -- if tidset = $bound_tid(C)
+;;  -- FuncType_wf: tidset |- (ParserApplyMethodT pt'*)
+;;  ----
+;;  -- Call_site_ok: p C |- ParserApplyMethodT pt'* : CALLSITE_OK
+;;  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
+;;
+;;rule Call_ok/control-apply-methodt:
+;;  p C |- (ControlApplyMethodT pt*) arg* : VoidT
+;;  -- (Arg_ok: p C |- arg : argIL typ_a)*
+;;  -- if |pt*| = |arg*|
+;;  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
+;;  ----
+;;  -- if tidset = $bound_tid(C)
+;;  -- FuncType_wf: tidset |- ControlApplyMethodT pt'*
+;;  ----
+;;  -- Call_site_ok: p C |- ControlApplyMethodT pt'* : CALLSITE_OK
+;;  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
+;;
+;;rule Call_ok/builtin-methodt:
+;;  p C |- (BuiltinMethodT pt* typ_r) arg* : typ_r
+;;  -- (Arg_ok: p C |- arg : argIL typ_a)*
+;;  -- if |pt*| = |arg*|
+;;  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
+;;  ----
+;;  -- if tidset = $bound_tid(C)
+;;  -- FuncType_wf: tidset |- BuiltinMethodT pt'* typ_r
+;;  ----
+;;  -- Call_site_ok: p C |- BuiltinMethodT pt'* typ_r : CALLSITE_OK
+;;  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
+;;
+;;rule Call_ok/table-apply-methodt:
+;;  p C |- (TableApplyMethodT typ_r) eps : typ_r
+;;  -- if tidset = $bound_tid(C)
+;;  -- FuncType_wf: tidset |- TableApplyMethodT typ_r
+;;  ----
+;;  -- Call_site_ok: p C |- TableApplyMethodT typ_r : CALLSITE_OK
+;;
+;;;;
+;;;; Constructor invocation
+;;;;
+;;
+;;rule Inst_site_ok/global:
+;;  GLOBAL C |- (ConsT pt* typ_i) : INSTSITE_OK
+;;  -- if typ_i' = $canon_typ(typ_i)
+;;  -- if $is_externt(typ_i') \/ $is_packaget(typ_i')
+;;
+;;rule Inst_site_ok/block-package:
+;;  BLOCK C |- (ConsT pt* typ_i) : INSTSITE_OK
+;;  -- if typ_i' = $canon_typ(typ_i)
+;;  -- if C.BLOCK.KIND = PACKAGE
+;;  ----
+;;  -- if $is_externt(typ_i') \/ $is_parsert(typ_i')
+;;      \/ $is_controlt(typ_i') \/ $is_packaget(typ_i')
+;;
+;;rule Inst_site_ok/block-parser:
+;;  BLOCK C |- (ConsT pt* typ_i) : INSTSITE_OK
+;;  -- if typ_i' = $canon_typ(typ_i)
+;;  -- if C.BLOCK.KIND = PARSER
+;;  ----
+;;  -- if $is_externt(typ_i') \/ $is_parsert(typ_i')
+;;
+;;rule Inst_site_ok/block-control:
+;;  BLOCK C |- (ConsT pt* typ_i) : INSTSITE_OK
+;;  -- if typ_i' = $canon_typ(typ_i)
+;;  -- if C.BLOCK.KIND = CONTROL
+;;  ----
+;;  -- if $is_externt(typ_i') \/ $is_controlt(typ_i') \/ $is_tablet(typ_i')
+;;
+;;rule Inst_site_ok/local-parserstate:
+;;  LOCAL C |- (ConsT pt* typ_i) : INSTSITE_OK
+;;  -- if typ_i' = $canon_typ(typ_i)
+;;  -- if C.LOCAL.KIND = PARSERSTATE
+;;  ----
+;;  -- if $is_externt(typ_i') \/ $is_parsert(typ_i')
+;;
+;;rule Inst_site_ok/local-controlapplymethod:
+;;  LOCAL C |- (ConsT pt* typ_i) : INSTSITE_OK
+;;  -- if typ_i' = $canon_typ(typ_i)
+;;  -- if C.LOCAL.KIND = CONTROLAPPLYMETHOD
+;;  ----
+;;  -- if $is_externt(typ_i') \/ $is_controlt(typ_i')
+;;
+;;
+;;rule Inst_ok/global-packaget:
+;;  GLOBAL C_0 |- (ConsT pt* typ_i) arg* : typ_i
+;;  -- if PackageT typ_i'* = $canon_typ(typ_i)
+;;  -- if C_1 = $set_blockkind(C_0, PACKAGE)
+;;  ----
+;;  -- (Arg_ok: BLOCK C_1 |- arg : argIL typ_a)*
+;;  ----
+;;  -- if |pt*| = |arg*|
+;;  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
+;;  ----
+;;  -- if tidset = $bound_tid(C_1)
+;;  -- ConsType_wf: tidset |- (ConsT pt* typ_i)
+;;  ----
+;;  -- Inst_site_ok: BLOCK C_1 |- (ConsT pt* typ_i) : INSTSITE_OK
+;;  -- (Call_convention_arg_ok: BLOCK C_1 NOACT |- pt' ~~ (arg', typ_a'))*
+;;
+;;rule Inst_ok/else:
+;;  p C |- (ConsT pt* typ_i) arg* : typ_i
+;;  -- (Arg_ok: p C |- arg : argIL typ_a)*
+;;  ----
+;;  -- if |pt*| = |arg*|
+;;  -- if (pt'*, typ_a'*, arg'*) = $align_params_with_args(pt*, typ_a*, arg*)
+;;  ----
+;;  -- if tidset = $bound_tid(C)
+;;  -- ConsType_wf: tidset |- (ConsT pt* typ_i)
+;;  ----
+;;  -- Inst_site_ok: p C |- (ConsT pt* typ_i) : INSTSITE_OK
+;;  -- (Call_convention_arg_ok: p C NOACT |- pt' ~~ (arg', typ_a'))*
+;;
+;;;;
+;;;; Function typing
+;;;;
+;;
+;;;; (TODO-Jaehyun) should consider overload resolution and default parameters
+;;
+;;rule FuncType_ok:
+;;   p C |- name targ* arg* : functyp
+;;   ----
+;;   -- (Type_ok: p C |- targ: typ_a)*
+;;   -- if funcdef = $find_funcdef(GLOBAL, C, name)
+;;   ----
+;;   -- if functyp = $specialize_funcdef(funcdef, typ_a*)
+;;
+;;;;
+;;;; Method typing
+;;;;
+;;
+;;;; (TODO-Jaehyun) check that builtin is defined on typ_b
+;;rule MethodType_ok/builtin:
+;;  p C |- expr_b member eps eps : BuiltinMethodT eps IntT
+;;  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+;;  ----
+;;  -- (Type_ok: p C |- targ : typ_a)*
+;;  ----
+;;  -- if $in_set(member, member, SET "minSizeInBits" "minSizeInBytes" "maxSizeInBits" "maxSizeInBytes")
+;;
+;;rule MethodType_ok/stackt:
+;;  p C |- expr_b member eps arg* : BuiltinMethodT paramtyp IntT
+;;  ----
+;;  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
+;;  -- if StackT typ_b_in size_b = $canon_typ(typ_b)
+;;  ----
+;;  -- if $in_set(member, member, SET "push\\_front" "pop\\_back")
+;;  ----
+;;  -- if paramtyp = "count" NO IntT eps
+;;
+;;rule MethodType_ok/headert-isvalid:
+;;  p C |- expr_b "isValid" eps arg* : BuiltinMethodT eps BoolT
+;;  ----
+;;  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
+;;  -- if HeaderT id_b (member, typ_b_in)* = $canon_typ(typ_b)
+;;
+;;rule MethodType_ok/headert-setvalid-setinvalid:
+;;  p C |- expr_b member eps arg* : BuiltinMethodT eps VoidT
+;;  ----
+;;  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
+;;  -- if HeaderT id_b (member, typ_b_in)* = $canon_typ(typ_b)
+;;  ----
+;;  -- if $in_set(member, member, SET "setValid" "setInvalid")
+;;
+;;rule MethodType_ok/uniont:
+;;  p C |- expr_b "isValid" eps arg* : BuiltinMethodT eps BoolT
+;;  ----
+;;  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
+;;  -- if UnionT id_b (member, typ_b_in)* = $canon_typ(typ_b)
+;;
+;;rule MethodType_ok/externt:
+;;  p C |- expr_b member targ* arg* : functyp
+;;  ----
+;;  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
+;;  -- if ExternT id_b fmap_b = $canon_typ(typ_b)
+;;  ----
+;;  -- (Type_ok: p C |- targ: typ_a)*
+;;  ----
+;;  -- if funcdef = $find_env(fid, funcdef, fmap_b, member)
+;;  -- if functyp = $specialize_funcdef(funcdef, typ_a*)

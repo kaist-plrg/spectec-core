@@ -22,9 +22,9 @@ syntax primtyp hint(show %latex("\\tau_\\texttt{prim}")) =
 
 syntax numtyp hint(show %latex("\\tau_\\texttt{num}")) =
   | IntT          hint(show INT#_#T)
-  | FIntT int     hint(show FINT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
-  | FBitT int     hint(show FBIT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
-  | VBitT int     hint(show VBIT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
+  | FIntT nat     hint(show FINT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
+  | FBitT nat     hint(show FBIT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
+  | VBitT nat     hint(show VBIT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
 
 syntax basetyp hint(show %latex("\\tau_\\texttt{base}")) =
   | primtyp | numtyp

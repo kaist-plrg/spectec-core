@@ -55,6 +55,12 @@ def $is_sett(typ) : bool                hint(show % IS SET_T)
 def $is_table_structt(typ) : bool       hint(show % IS TABLE_STRUCT_T)
 
 ;;
+;; Type helpers
+;;
+
+def $get_width(typ) : nat
+
+;;
 ;; Function type constructor checks
 ;;
 

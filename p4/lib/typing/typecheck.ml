@@ -1242,7 +1242,7 @@ and type_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : El.Ast.binop)
 
    The first sub-expression e1 must have Boolean type and the second and third sub-expressions must have the same type,
    which cannot both be arbitrary-precision integers unless the condition itself can be evaluated at compilation time.
-   Thistriction is designed to ensure that the width of theult of the conditional expression can be inferred
+   This restriction is designed to ensure that the width of theult of the conditional expression can be inferred
    statically at compile time. *)
 
 and type_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
@@ -4153,7 +4153,7 @@ and type_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   let decl_il =
     Il.Ast.ExternObjectD
-      { id; tparams; mthds = mthds_il @ cons_il; annos = annos_il }
+      { id; tparams; mthds = cons_il @ mthds_il; annos = annos_il }
   in
   (ctx, decl_il)
 

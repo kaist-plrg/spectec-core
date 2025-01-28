@@ -203,7 +203,7 @@ syntax tblactionpropIL = tblactionIL*
 ;; Table entries
 ;;
 
-syntax tblentryIL = keysetIL* tblactionIL exprIL? bool
+syntax tblentryIL = keysetIL* tblactionIL val? bool
 syntax tblentrypropIL = tblentryIL* bool
 
 ;;
@@ -252,17 +252,17 @@ syntax declIL =
   | HeaderD idIL tparamIL* tparamIL* (memberIL, typeIL)*                hint(show HEADER %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
   | UnionD idIL tparamIL* tparamIL* (memberIL, typeIL)*                 hint(show UNION %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
   | EnumD idIL memberIL*                                                hint(show ENUM % %latex("\\{")#%#%latex("\\}"))
-  | SEnumD idIL typeIL (memberIL, exprIL)*                              hint(show ENUM % % %latex("\\{")#%#%latex("\\}"))
+  | SEnumD idIL typeIL (memberIL, val)*                                 hint(show ENUM % % %latex("\\{")#%#%latex("\\}"))
   ;; TODO NewTypeD id decl is also valid
   | NewTypeD idIL typeIL                                                hint(show TYPE % %)
   ;; TODO TypeDefD id decl is also valid
   | TypeDefD idIL typeIL                                                hint(show TYPEDEF % %)
   | ValueSetD idIL typeIL exprIL                                        hint(show VALUE#_#SET % % %)
   | ParserTypeD idIL tparamIL* tparamIL* paramIL*                       hint(show PARSER %#%latex("\\langle")#%,%#%latex("\\rangle")#(%)#%latex())
-  | ParserD idIL tparamIL* paramIL* cparamIL* declIL* parserstateIL*    hint(show PARSER %#%latex("\\langle")#%#%latex("\\rangle")#(%)#(%)#%latex() %latex("\\{")#%%#%latex("\\}"))
+  | ParserD idIL paramIL* cparamIL* declIL* parserstateIL*              hint(show PARSER %#(%)#(%)#%latex() %latex("\\{")#%%#%latex("\\}"))
   | TableD idIL typeIL tblIL                                            hint(show TABLE %1 %latex("\\{")#%3#%latex("\\}") %latex("/*")%2%latex("*/"))
   | ControlTypeD idIL tparamIL* tparamIL* paramIL*                      hint(show CONTROL %#%latex("\\langle")#%,%#%latex("\\rangle")#(%)#%latex())
-  | ControlD idIL tparamIL* paramIL* cparamIL* declIL* blockIL          hint(show CONTROL %#%latex("\\langle")#%#%latex("\\rangle")#(%)#(%)#%latex() %latex("\\{")#% APPLY %#%latex("\\}"))
+  | ControlD idIL paramIL* cparamIL* declIL* blockIL                    hint(show CONTROL %#(%)#(%)#%latex() %latex("\\{")#% APPLY %#%latex("\\}"))
   | ActionD idIL paramIL* blockIL                                       hint(show ACTION %(%) %)
   | FuncD idIL typeIL tparamIL* paramIL* blockIL                        hint(show %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex() %5)
   | ExternFuncD idIL typeIL tparamIL* paramIL*                          hint(show EXTERN %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex())
