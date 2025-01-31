@@ -4881,9 +4881,9 @@ and type_table_default_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
 and type_table_default' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_default : El.Ast.table_default') :
     Il.Ast.table_default' =
-  let action, default_const = table_default in
+  let table_default_const, action = table_default in
   let action_il = type_table_default_action cursor ctx table_ctx action in
-  (action_il, default_const)
+  (table_default_const, action_il)
 
 and type_table_default (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_default : El.Ast.table_default) :
@@ -5272,7 +5272,7 @@ and type_table_entry (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
 
 and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
     (table_entry : El.Ast.table_entry') : Tblctx.t * Il.Ast.table_entry' =
-  let keysets, action, priority, table_entry_const, annos = table_entry in
+  let table_entry_const, keysets, action, priority, annos = table_entry in
   let annos_il = type_annos cursor ctx annos in
   let entry_state, keysets_il =
     type_table_entry_keysets cursor ctx table_ctx keysets
@@ -5282,14 +5282,14 @@ and type_table_entry' (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
     type_table_entry_priority cursor ctx table_ctx entry_state priority
   in
   let table_entry_il =
-    (keysets_il, action_il, priority_il, table_entry_const, annos_il)
+    (table_entry_const, keysets_il, action_il, priority_il, annos_il)
   in
   (table_ctx, table_entry_il)
 
 and type_table_entries' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_entries : El.Ast.table_entries') :
     Tblctx.t * Il.Ast.table_entries' =
-  let table_entries, table_entries_const = table_entries in
+  let table_entries_const, table_entries = table_entries in
   check
     (implies (table_ctx.keys = []) (table_entries = []))
     "(type_table_entries') entries cannot be specified for a table with no key";
@@ -5307,7 +5307,7 @@ and type_table_entries' (cursor : Ctx.cursor) (ctx : Ctx.t)
         (table_ctx, table_entries_il @ [ table_entry_il ]))
       (table_ctx, []) table_entries
   in
-  (table_ctx, (table_entries_il, table_entries_const))
+  (table_ctx, (table_entries_const, table_entries_il))
 
 and type_table_entries (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_entries : El.Ast.table_entries) :
@@ -5348,7 +5348,7 @@ and type_table_custom (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
 and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (table_ctx : Tblctx.t) (table_custom : El.Ast.table_custom') :
     Tblctx.t * Il.Ast.table_custom' =
-  let member, expr, custom_const, annos = table_custom in
+  let table_custom_const, member, expr, annos = table_custom in
   let annos_il = type_annos cursor ctx annos in
   let expr_il = type_expr cursor ctx expr in
   let typ = expr_il.note.typ in
@@ -5390,7 +5390,7 @@ and type_table_custom' (cursor : Ctx.cursor) (ctx : Ctx.t)
     (* (TODO) Maybe define architecture-specific custom table element typing/validation *)
     | _ -> table_ctx
   in
-  (table_ctx, (member, expr_il, custom_const, annos_il))
+  (table_ctx, (table_custom_const, member, expr_il, annos_il))
 
 (* (7.2.12.2) Control type declarations *)
 

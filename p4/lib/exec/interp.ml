@@ -824,7 +824,7 @@ module Make (Arch : ARCH) : INTERP = struct
   and eval_table_match_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
       (table_keys : (Value.t * match_kind) list) (table_entry : table_entry) :
       Ctx.t * (var * arg list * int option) option =
-    let keysets, table_action, priority, _, _ = table_entry.it in
+    let _, keysets, table_action, priority, _ = table_entry.it in
     let priority =
       Option.map
         (fun priority -> priority.it |> Value.get_num |> Bigint.to_int_exn)
@@ -919,7 +919,7 @@ module Make (Arch : ARCH) : INTERP = struct
     let largest_priority_wins =
       List.find_map
         (fun table_custom ->
-          let member, expr, _, _ = table_custom.it in
+          let _, member, expr, _ = table_custom.it in
           if member.it = "largest_priority_wins" then
             eval_expr cursor ctx expr |> snd |> Value.get_bool |> Option.some
           else None)

@@ -404,7 +404,7 @@ let walk_table_entry (walker : walker) table_entry =
   let walk_expr = walker.walk_expr walker in
   let walk_keyset = walker.walk_keyset walker in
   let walk_table_action = walker.walk_table_action walker in
-  let keysets, table_action, table_entry_priority, _table_entry_const, _annos =
+  let _table_entry_const, keysets, table_action, table_entry_priority, _annos =
     table_entry.it
   in
   W.walk_list walk_keyset keysets;

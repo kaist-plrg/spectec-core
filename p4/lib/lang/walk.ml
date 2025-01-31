@@ -1088,7 +1088,7 @@ let walk_table_entries
         'mthd )
       walker) table_entries =
   let walk_table_entry = walker.walk_table_entry walker in
-  let table_entries, _table_entries_const = table_entries.it in
+  let _table_entries_const, table_entries = table_entries.it in
   walk_list walk_table_entry table_entries
 
 (* Table default properties *)
@@ -1107,7 +1107,7 @@ let walk_table_default
         'mthd )
       walker) table_default =
   let walk_table_action = walker.walk_table_action walker in
-  let table_action, _table_default_const = table_default.it in
+  let _table_default_const, table_action = table_default.it in
   walk_table_action table_action
 
 (* Table custom properties *)
@@ -1127,7 +1127,7 @@ let walk_table_custom
       walker) table_custom =
   let walk_id = walker.walk_id walker in
   let walk_expr = walker.walk_expr walker in
-  let id, expr, _table_custom_const, _annos = table_custom.it in
+  let _table_custom_const, id, expr, _annos = table_custom.it in
   walk_id id;
   walk_expr expr
 

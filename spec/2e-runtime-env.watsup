@@ -1,0 +1,10 @@
+;;
+;; Environments
+;;
+
+syntax frame = map(id, styp)
+syntax tdenv hint(show %latex("\\Delta_\\texttt{t}")) = map(tid, typdef)
+syntax fdenv hint(show %latex("\\Delta_\\texttt{f}")) = map(fid, funcdef)
+syntax cdenv hint(show %latex("\\Delta_\\texttt{c}")) = map(fid, consdef)
+
+def $find_env(syntax K, syntax V, map(K, V), K) : V  hint(show %3#`[%4])

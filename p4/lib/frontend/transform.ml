@@ -728,19 +728,19 @@ and transform_table_entry (entry : Table.entry) : El.table_entry =
   let table_action = transform_table_action action in
   let table_entry_priority = Option.map transform_expr priority in
   let annos = transform_annos annotations in
-  (keysets, table_action, table_entry_priority, const, annos) $ at
+  (const, keysets, table_action, table_entry_priority, annos) $ at
 
 and transform_table_entries (entries : Table.entry list) (const : bool) :
     El.table_entries' =
   let table_entries = List.map transform_table_entry entries in
-  (table_entries, const)
+  (const, table_entries)
 
 (* Table default properties *)
 
 and transform_table_default (action : Table.action_ref) (const : bool) :
     El.table_default' =
   let table_action = transform_table_action action in
-  (table_action, const)
+  (const, table_action)
 
 (* Table custom properties *)
 
@@ -749,7 +749,7 @@ and transform_table_custom (name : Text.t) (value : Expression.t) (const : bool)
   let text_name = transform_text name in
   let expr = transform_expr value in
   let annos = transform_annos annotations in
-  (text_name, expr, const, annos)
+  (const, text_name, expr, annos)
 
 (* Program declarations *)
 

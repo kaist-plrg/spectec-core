@@ -355,7 +355,7 @@ and pp_table_actions ?(level = 0)
 
 and pp_table_entries' ?(level = 0)
     (pp_table_entry : 'table_entry pp_table_entry) fmt table_entries =
-  let table_entries, table_entries_const = table_entries in
+  let table_entries_const, table_entries = table_entries in
   F.fprintf fmt "%sentries = {\n%a\n%s}"
     (if table_entries_const then "const " else "")
     (pp_list ~level:(level + 1) pp_table_entry ~sep:Nl)
@@ -369,7 +369,7 @@ and pp_table_entries ?(level = 0) (pp_table_entry : 'table_entry pp_table_entry)
 
 and pp_table_default' (pp_table_action : 'table_action pp_table_action) fmt
     table_default' =
-  let table_action, table_default_const = table_default' in
+  let table_default_const, table_action = table_default' in
   F.fprintf fmt "%sdefault_action = %a"
     (if table_default_const then "const " else "")
     pp_table_action table_action
@@ -381,7 +381,7 @@ and pp_table_default (pp_table_action : 'table_action pp_table_action) fmt
 (* Table custom properties *)
 
 and pp_table_custom' (pp_expr : ('note, 'expr) pp_expr) fmt table_custom' =
-  let id, expr, table_custom_const, _annos = table_custom' in
+  let table_custom_const, id, expr, _annos = table_custom' in
   F.fprintf fmt "%s%a = %a;"
     (if table_custom_const then "const " else "")
     pp_id id (pp_expr ~level:0) expr

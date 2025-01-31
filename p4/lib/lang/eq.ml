@@ -469,10 +469,10 @@ and eq_table_entries' ?(dbg = false)
     (_pp_table_entry : 'table_entry Pp.pp_table_entry)
     (eq_table_entry : 'table_entry eq_table_entry) table_entries_a
     table_entries_b =
-  let table_entries_a, table_entry_const_a = table_entries_a in
-  let table_entries_b, table_entry_const_b = table_entries_b in
-  eq_list (eq_table_entry ~dbg) table_entries_a table_entries_b
-  && table_entry_const_a = table_entry_const_b
+  let table_entry_const_a, table_entries_a = table_entries_a in
+  let table_entry_const_b, table_entries_b = table_entries_b in
+  table_entry_const_a = table_entry_const_b
+  && eq_list (eq_table_entry ~dbg) table_entries_a table_entries_b
 
 and eq_table_entries ?(dbg = false)
     (pp_table_entry : 'table_entry Pp.pp_table_entry)
@@ -490,10 +490,10 @@ and eq_table_default' ?(dbg = false)
     (_pp_table_action : 'table_action Pp.pp_table_action)
     (eq_table_action : 'table_action eq_table_action) table_default_a
     table_default_b =
-  let table_action_a, table_default_const_a = table_default_a in
-  let table_action_b, table_default_const_b = table_default_b in
-  eq_table_action ~dbg table_action_a table_action_b
-  && table_default_const_a = table_default_const_b
+  let table_default_const_a, table_action_a = table_default_a in
+  let table_default_const_b, table_action_b = table_default_b in
+  table_default_const_a = table_default_const_b
+  && eq_table_action ~dbg table_action_a table_action_b
 
 and eq_table_default ?(dbg = false)
     (pp_table_action : 'table_action Pp.pp_table_action)
@@ -509,10 +509,10 @@ and eq_table_default ?(dbg = false)
 
 and eq_table_custom' ?(dbg = false) (eq_expr : ('note, 'expr) eq_expr)
     table_custom_a table_custom_b =
-  let id_a, expr_a, table_custom_const_a, _annos_a = table_custom_a in
-  let id_b, expr_b, table_custom_const_b, _annos_b = table_custom_b in
-  eq_id ~dbg id_a id_b && eq_expr ~dbg expr_a expr_b
-  && table_custom_const_a = table_custom_const_b
+  let table_custom_const_a, id_a, expr_a, _annos_a = table_custom_a in
+  let table_custom_const_b, id_b, expr_b, _annos_b = table_custom_b in
+  table_custom_const_a = table_custom_const_b
+  && eq_id ~dbg id_a id_b && eq_expr ~dbg expr_a expr_b
 
 and eq_table_custom ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
     (eq_expr : ('note, 'expr) eq_expr) table_custom_a table_custom_b =

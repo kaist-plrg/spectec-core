@@ -1,11 +1,4 @@
 ;;
-;; Bitstring manipulation
-;;
-
-def $int_to_bits(int) : bits
-def $bits_to_int(bits) : int
-
-;;
 ;; Unary operation oracle
 ;;
 

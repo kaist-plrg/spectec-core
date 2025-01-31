@@ -1,0 +1,24 @@
+;;
+;; Nominal or structural types
+;;
+
+def $nominal(typ) : bool  hint(show % $nominal)
+def $nominal'(typ) : bool
+
+def $nominal(typ) = $nominal'($canon_typ(typ))
+def $nominal'(NewT id typ) = true
+def $nominal'(EnumT id member*) = true
+def $nominal'(SEnumT id typ (member, val)*) = true
+def $nominal'(StructT id (member, typ)*) = true
+def $nominal'(HeaderT id (member, typ)*) = true
+def $nominal'(UnionT id (member, typ)*) = true
+def $nominal'(ExternT id fmap) = true
+def $nominal'(TableT id typ) = true
+def $nominal'(typ) = false
+  -- otherwise
+
+;;
+;; Getters
+;;
+
+def $get_width(typ) : nat

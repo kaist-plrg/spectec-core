@@ -1105,7 +1105,7 @@ and eval_parser_states (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 
 and eval_table_custom (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (table_custom : table_custom) : Ctx.t * Sto.t * table_custom =
-  let member, expr, custom_const, annos = table_custom.it in
+  let table_custom_const, member, expr, annos = table_custom.it in
   let sto, value =
     let ctx = Ctx.enter_path member.it ctx in
     eval_expr cursor ctx sto expr
@@ -1114,7 +1114,9 @@ and eval_table_custom (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     Il.Ast.ValueE { value = value $ no_info }
     $$ (no_info, { typ = expr.note.typ; ctk = expr.note.ctk })
   in
-  let table_custom = (member, expr, custom_const, annos) $ table_custom.at in
+  let table_custom =
+    (table_custom_const, member, expr, annos) $ table_custom.at
+  in
   (ctx, sto, table_custom)
 
 and eval_table_property (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)

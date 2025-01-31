@@ -23,3 +23,9 @@ def $string_of_name(name) = $concat_text("." id)
   -- if TOP id = name
 def $string_of_name(name) = id
   -- if CURRENT id = name
+
+;;
+;; Object identifiers
+;;
+
+syntax oid = id*

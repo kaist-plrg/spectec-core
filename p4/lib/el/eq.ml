@@ -715,24 +715,24 @@ and eq_table_actions ?(dbg = false) table_actions_a table_actions_b =
 (* Table entries *)
 
 and eq_table_entry' ?(dbg = false) table_entry_a table_entry_b =
-  let ( keysets_a,
+  let ( table_entry_const_a,
+        keysets_a,
         table_action_a,
         table_entry_priority_a,
-        table_entry_const_a,
         _annos_a ) =
     table_entry_a
   in
-  let ( keysets_b,
+  let ( table_entry_const_b,
+        keysets_b,
         table_action_b,
         table_entry_priority_b,
-        table_entry_const_b,
         _annos_b ) =
     table_entry_b
   in
-  eq_keysets ~dbg keysets_a keysets_b
+  table_entry_const_a = table_entry_const_b
+  && eq_keysets ~dbg keysets_a keysets_b
   && eq_table_action ~dbg table_action_a table_action_b
   && E.eq_option eq_expr table_entry_priority_a table_entry_priority_b
-  && table_entry_const_a = table_entry_const_b
 
 and eq_table_entry ?(dbg = false) table_entry_a table_entry_b =
   eq_table_entry' ~dbg table_entry_a.it table_entry_b.it

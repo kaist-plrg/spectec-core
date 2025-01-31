@@ -81,7 +81,7 @@ let init_table_default (table : table) : bool * table_action =
       let var_action = L.Top ("NoAction" $ no_info) $ no_info in
       let table_action_default = (var_action, [], [], [], []) $ no_info in
       (false, table_action_default)
-  | [ (table_action, table_action_const) ] -> (table_action_const, table_action)
+  | [ (table_action_const, table_action) ] -> (table_action_const, table_action)
   | _ ->
       "(init_table_default) a table should have at most one default property"
       |> error_no_info
@@ -92,7 +92,7 @@ let init_table_entries (table : table) : bool * table_entry list =
     table
   |> function
   | [] -> (false, [])
-  | [ (table_entries, table_entries_const) ] ->
+  | [ (table_entries_const, table_entries) ] ->
       (table_entries_const, table_entries)
   | _ ->
       "(init_table_entries) a table should have at most one entries property"
@@ -115,7 +115,7 @@ let init (table : table) : t =
 
 let add_entry (keysets : keyset list) (table_action : table_action)
     (priority : value option) (table : t) : t =
-  let entry = (keysets, table_action, priority, false, []) $ no_info in
+  let entry = (false, keysets, table_action, priority, []) $ no_info in
   let table_entries_const, table_entries = table.entries in
   let table_entries = table_entries @ [ entry ] in
   { table with entries = (table_entries_const, table_entries) }

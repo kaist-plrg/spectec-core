@@ -912,7 +912,7 @@ rule Table_entry_priority_ok/else-none-no-lw:
 relation Table_entry_ok: cursor context tblctx |- tblentry : tblctx tblentryIL
 
 rule Table_entry_ok:
-  p C tblctx |- (keyset* tblaction expr? bool) : tblctx' (keysetIL* tblactionIL val? bool)
+  p C tblctx |- (bool keyset* tblaction expr?) : tblctx' (bool keysetIL* tblactionIL val?)
   -- Table_entry_keysets_ok: p C tblctx |- keyset* : tblstate keysetIL*
   ----
   -- Table_entry_action_ok: p C tblctx |- tblaction : tblactionIL
@@ -934,7 +934,7 @@ rule Table_entries_fold_ok/cons:
 relation Table_entries_ok: cursor context tblctx |- tblentryprop : tblctx tblentrypropIL
 
 rule Table_entries_ok:
-  p C tblctx_0 |- (tblentry* bool) : tblctx_3 (tblentryIL* bool)
+  p C tblctx_0 |- (bool tblentry*) : tblctx_3 (bool tblentryIL*)
   -- if $implies(|tblctx_0.KEYS| = 0, |tblentry*| = 0)
   -- if tblctx_1 = $set_entries_size(|tblentry*|, tblctx_0)
   ----
@@ -949,7 +949,7 @@ rule Table_entries_ok:
 relation Table_default_ok: cursor context tblctx |- tbldefaultprop : tbldefaultpropIL
 
 rule Table_default_ok:
-  p C tblctx |- ((name arg*) bool) : tblactionIL bool
+  p C tblctx |- bool (name arg*) : bool tblactionIL
   -- if (pt*, argIL_a*) = $find_action(tblctx, name)
   -- if (id_p dir_p typ_p val_p? = pt)*
   ----
@@ -966,19 +966,19 @@ rule Table_default_ok:
 relation Table_custom_ok: cursor context tblctx |- tblcustomprop : tblctx tblcustompropIL
 
 rule Table_custom_ok/size:
-  p C tblctx |- ("size" expr bool) : tblctx ("size" exprIL bool)
+  p C tblctx |- (bool "size" expr) : tblctx (bool "size" exprIL)
   -- Expr_ok: p C |- expr : exprIL typ ctk
   -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
 
 rule Table_custom_ok/largest_priority_wins:
-  p C tblctx |- ("largest\\_priority\\_wins" expr bool) : tblctx' ("largest\\_priority\\_wins" exprIL bool)
+  p C tblctx |- (bool "largest\\_priority\\_wins" expr) : tblctx' (bool "largest\\_priority\\_wins" exprIL)
   -- Expr_ok: p C |- expr : exprIL BoolT ctk
   ----
   -- Eval_static: p C |- exprIL ~> (BoolV b)
   -- if tblctx' = $set_largest_priority_wins(b, tblctx)
 
 rule Table_custom_ok/priority_delta:
-  p C tblctx |- ("priority\\_delta" expr bool) : tblctx' ("priority\\_delta" exprIL bool)
+  p C tblctx |- (bool "priority\\_delta" expr) : tblctx' (bool "priority\\_delta" exprIL)
   -- Expr_ok: p C |- expr : exprIL typ ctk
   -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
   ----

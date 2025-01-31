@@ -313,7 +313,7 @@ and table_entries_const = L.table_entries_const
 and table_entry = table_entry' L.table_entry
 
 and table_entry' =
-  keyset list * table_action * value option * table_entry_const * anno list
+  table_entry_const * keyset list * table_action * value option * anno list
 
 and table_entry_const = L.table_entry_const
 

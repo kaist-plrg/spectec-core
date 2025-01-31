@@ -485,7 +485,7 @@ and pp_table_actions ?(level = 0) fmt table_actions =
 (* Table entries *)
 
 and pp_table_entry' fmt table_entry' =
-  let keysets, table_action, table_entry_priority, table_entry_const, _annos =
+  let table_entry_const, keysets, table_action, table_entry_priority, _annos =
     table_entry'
   in
   F.fprintf fmt "%s%s%a%s%a : %a"

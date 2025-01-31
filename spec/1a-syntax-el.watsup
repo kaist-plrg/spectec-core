@@ -210,7 +210,7 @@ syntax stmt =
   | RetS expr?                            hint(show RETURN %)
   | CallFuncS name targ* arg*             hint(show %#%latex("\\langle")#%#%latex("\\rangle")#%#%latex())
   | CallMethodS expr member targ* arg*    hint(show %1#%latex("\\langle")#%3#%latex("\\rangle").%2#(%4)#%latex())
-  | CallInstS name targ* arg*             hint(show %.%latex("\\langle")#%#%latex("\\rangle").APPLY#(%)#%latex())
+  | CallInstS name targ* arg*             hint(show %#%latex("\\langle")#%#%latex("\\rangle").APPLY#(%)#%latex())
   | TransS expr                           hint(show TRANSITION %)
   | DeclS decl                            hint(show %)
 
@@ -256,20 +256,20 @@ syntax tblactionprop = tblaction*
 ;; Table entries
 ;;
 
-syntax tblentry = keyset* tblaction expr? bool
-syntax tblentryprop = tblentry* bool
+syntax tblentry = bool keyset* tblaction expr?
+syntax tblentryprop = bool tblentry*
 
 ;;
 ;; Table default properties
 ;;
 
-syntax tbldefaultprop = tblaction bool
+syntax tbldefaultprop = bool tblaction
 
 ;;
 ;; Table custom properties
 ;;
 
-syntax tblcustomprop = member expr bool
+syntax tblcustomprop = bool member expr
 
 ;;
 ;; Table properties
@@ -310,7 +310,7 @@ syntax decl =
   | NewTypeD id type                                          hint(show TYPE % %)
   ;; TODO TypeDefD id decl is also valid
   | TypeDefD id type                                          hint(show TYPEDEF % %)
-  | ValueSetD id type expr                                    hint(show VALUE#_#SET % % %)
+  | ValueSetD id type expr                                    hint(show VALUE#_#SET#%latex("\\langle")#%2#%latex("\\rangle")#(%3)#%latex() %1)
   | ParserTypeD id tparam* param*                             hint(show PARSER %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
   | ParserD id param* cparam* decl* parserstate*              hint(show PARSER %#(%)#(%)#%latex() %latex("\\{")#%%#%latex("\\}"))
   | TableD id tbl                                             hint(show TABLE % %latex("\\{")#%#%latex("\\}"))

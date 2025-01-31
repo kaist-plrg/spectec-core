@@ -28,15 +28,12 @@ def $is_deft(typ) : bool                hint(show % IS DEF_T)
 
 def $is_data(typ) : bool                hint(show % IS DATA TYPE)
 def $is_newt(typ) : bool                hint(show % IS NEW_T)
-def $is_newt_in_senumt(typ) : bool      hint(show % IS NEW_T IN SENUM_T)
 def $is_enumt(typ) : bool               hint(show % IS ENUM_T)
 def $is_senumt(typ) : bool              hint(show % IS SENUM_T)
 def $is_listt(typ) : bool               hint(show % IS LIST_T)
 def $is_tuplet(typ) : bool              hint(show % IS TUPLE_T)
-def $is_tuplet_in_sett(typ) : bool      hint(show % IS TUPLE_T IN SEQ_T)
 def $is_stackt(typ) : bool              hint(show % IS STACK_T)
 def $is_structt(typ) : bool             hint(show % IS STRUCT_T)
-def $is_structt_in_headert(typ) : bool  hint(show % IS STRUCT_T IN HEADER_T)
 def $is_headert(typ) : bool             hint(show % IS HEADER_T)
 def $is_uniont(typ) : bool              hint(show % IS UNION_T)
 
@@ -49,16 +46,9 @@ def $is_tablet(typ) : bool              hint(show % IS TABLE_T)
 
 def $is_synth(typ) : bool               hint(show % IS SYNTHESIZED TYPE)
 def $is_seqt(typ) : bool                hint(show % IS SEQ_T)
-def $is_seqt_in_sett(typ) : bool        hint(show % IS SEQ_T IN SET_T)
 def $is_recordt(typ) : bool             hint(show % IS RECORD_T)
 def $is_sett(typ) : bool                hint(show % IS SET_T)
 def $is_table_structt(typ) : bool       hint(show % IS TABLE_STRUCT_T)
-
-;;
-;; Type helpers
-;;
-
-def $get_width(typ) : nat
 
 ;;
 ;; Function type constructor checks

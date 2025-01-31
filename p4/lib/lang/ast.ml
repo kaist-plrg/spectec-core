@@ -180,7 +180,7 @@ and 'table_action table_action' = 'table_action
 and 'table_entry table_entries = 'table_entry table_entries' phrase
 
 and 'table_entry table_entries' =
-  'table_entry table_entry list * table_entries_const
+  table_entries_const * 'table_entry table_entry list
 
 and table_entries_const = bool
 and 'table_entry table_entry = 'table_entry table_entry' phrase
@@ -191,7 +191,7 @@ and table_entry_const = bool
 and 'table_action table_default = 'table_action table_default' phrase
 
 and 'table_action table_default' =
-  'table_action table_action * table_default_const
+  table_default_const * 'table_action table_action
 
 and table_default_const = bool
 
@@ -199,7 +199,7 @@ and table_default_const = bool
 and ('note, 'expr) table_custom = ('note, 'expr) table_custom' phrase
 
 and ('note, 'expr) table_custom' =
-  member * ('note, 'expr) expr * table_custom_const * ('note, 'expr) anno list
+  table_custom_const * member * ('note, 'expr) expr * ('note, 'expr) anno list
 
 and table_custom_const = bool
 
