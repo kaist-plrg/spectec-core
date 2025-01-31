@@ -354,7 +354,7 @@ and specialize_consdef (fresh : unit -> int) (cd : consdef) (targs : typ list) :
   in
   let fresh_tid () = "__WILD_" ^ string_of_int (fresh ()) in
   let fresh_targ tid = VarT tid in
-  let tparams, tparams_hidden, cparams, typ = cd in
+  let tparams, tparams_hidden, ct = cd in
   (* Insert fresh type variables if omitted
      Otherwise, check the arity *)
   let targs, tids_fresh =
@@ -387,9 +387,7 @@ and specialize_consdef (fresh : unit -> int) (cd : consdef) (targs : typ list) :
   in
   let tparams = tparams @ tparams_hidden in
   let theta = List.combine tparams targs |> TIdMap.of_list in
-  let cparams = subst_cparams theta cparams in
-  let typ = subst_typ theta typ in
-  let ct = (cparams, typ) in
+  let ct = subst_constyp theta ct in
   (ct, tids_fresh)
 
 (* Unroll: recursive specialization *)

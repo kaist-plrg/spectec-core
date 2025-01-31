@@ -155,10 +155,15 @@ let eq_funcdef_kind fd_a fd_b =
       eq_functyp_kind ft_a ft_b
   | _ -> false
 
+let eq_constyp_kind ct_a ct_b =
+  let _, typ_a = ct_a in
+  let _, typ_b = ct_b in
+  eq_typ typ_a typ_b
+
 let eq_consdef_kind cd_a cd_b =
-  let _, _, _, typ_ret_a = cd_a in
-  let _, _, _, typ_ret_b = cd_b in
-  eq_typ typ_ret_a typ_ret_b
+  let _, _, ct_a = cd_a in
+  let _, _, ct_b = cd_b in
+  eq_constyp_kind ct_a ct_b
 
 (* Alpha-equivalence *)
 

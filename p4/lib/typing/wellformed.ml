@@ -791,7 +791,8 @@ and check_valid_consdef (cursor : Ctx.cursor) (ctx : Ctx.t) (cd : ConsDef.t) :
   check_valid_consdef' tset cd
 
 and check_valid_consdef' (tset : TIdSet.t) (cd : ConsDef.t) : unit =
-  let tparams, tparams_hidden, cparams, typ = cd in
+  let tparams, tparams_hidden, ct = cd in
+  let cparams, typ = ct in
   check
     (match Type.canon typ with
     | ExternT _ | ParserT _ | ControlT _ | PackageT _ -> true

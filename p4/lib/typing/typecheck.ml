@@ -4009,7 +4009,8 @@ and type_extern_constructor_mthd (cursor : Ctx.cursor) (ctx : Ctx.t)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    (tparams, tparams_hidden, cparams, typ)
+    let ct = (cparams, typ) in
+    (tparams, tparams_hidden, ct)
   in
   WF.check_valid_consdef cursor ctx cd;
   let ctx = Ctx.add_consdef cid cd ctx in
@@ -4401,7 +4402,8 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    ([], [], cparams, typ)
+    let ct = (cparams, typ) in
+    ([], [], ct)
   in
   WF.check_valid_consdef Ctx.Block ctx cd;
   let ctx = Ctx.add_consdef cid cd ctx in
@@ -5495,7 +5497,8 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    ([], [], cparams, typ)
+    let ct = (cparams, typ) in
+    ([], [], ct)
   in
   WF.check_valid_consdef Ctx.Block ctx cd;
   let ctx = Ctx.add_consdef cid cd ctx in
@@ -5558,7 +5561,8 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    (tparams, tparams_hidden, cparams, typ)
+    let ct = (cparams, typ) in
+    (tparams, tparams_hidden, ct)
   in
   WF.check_valid_consdef Ctx.Block ctx cd;
   (td, cd, tparams, tparams_hidden, cparams_il)

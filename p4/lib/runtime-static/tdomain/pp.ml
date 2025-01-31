@@ -247,9 +247,7 @@ let pp_constyp ?(level = 0) fmt constyp =
 (* Constructor definitions *)
 
 let pp_consdef ?(level = 0) fmt consdef =
-  let tparams, tparams_hidden, cparams, typ = consdef in
-  F.fprintf fmt "constructor%a%a -> %a" pp_tparams (tparams, tparams_hidden)
-    (pp_cparams ~level:(level + 1))
-    cparams
-    (pp_typ ~level:(level + 1))
-    typ
+  let tparams, tparams_hidden, constyp = consdef in
+  F.fprintf fmt "(%a)%a"
+    (pp_constyp ~level:(level + 1))
+    constyp pp_tparams (tparams, tparams_hidden)

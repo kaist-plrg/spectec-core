@@ -84,4 +84,4 @@ type constyp = param list * typ
 
 (* Constructor definitions *)
 
-type consdef = tparam list * tparam list * param list * typ
+type consdef = tparam list * tparam list * constyp
