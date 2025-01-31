@@ -66,11 +66,11 @@ and functyp =
   | ActionT of param list
   | ExternFunctionT of param list * typ
   | FunctionT of param list * typ
+  | BuiltinMethodT of param list * typ
   | ExternMethodT of param list * typ
   | ExternAbstractMethodT of param list * typ
   | ParserApplyMethodT of param list
   | ControlApplyMethodT of param list
-  | BuiltinMethodT of param list * typ
   | TableApplyMethodT of typ
 
 (* Function definitions *)

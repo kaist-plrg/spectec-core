@@ -597,17 +597,16 @@ and check_valid_functyp' (tset : TIdSet.t) (ft : FuncType.t) : unit =
       check_valid_functyp_nesting ft params
   | ExternFunctionT (params, typ_ret)
   | FunctionT (params, typ_ret)
-  | ExternMethodT (params, typ_ret)
-  | ExternAbstractMethodT (params, typ_ret) ->
+  | BuiltinMethodT (params, typ_ret) ->
+      check_valid_params' tset params;
+      check_valid_typ' tset typ_ret;
+      check_valid_functyp_nesting ft params
+  | ExternMethodT (params, typ_ret) | ExternAbstractMethodT (params, typ_ret) ->
       check_valid_params' tset params;
       check_valid_typ' tset typ_ret;
       check_valid_functyp_nesting ft params
   | ParserApplyMethodT params | ControlApplyMethodT params ->
       check_valid_params' tset params;
-      check_valid_functyp_nesting ft params
-  | BuiltinMethodT (params, typ_ret) ->
-      check_valid_params' tset params;
-      check_valid_typ' tset typ_ret;
       check_valid_functyp_nesting ft params
   | TableApplyMethodT typ_ret ->
       check_valid_typ' tset typ_ret;
@@ -676,8 +675,8 @@ and check_valid_funcdef' (tset : TIdSet.t) (fd : FuncDef.t) : unit =
   | MonoFD ft ->
       check
         (match ft with
-        | ActionT _ | ParserApplyMethodT _ | ControlApplyMethodT _
-        | BuiltinMethodT _ | TableApplyMethodT _ ->
+        | ActionT _ | BuiltinMethodT _ | ParserApplyMethodT _
+        | ControlApplyMethodT _ | TableApplyMethodT _ ->
             true
         | _ -> false)
         (Format.asprintf

@@ -1959,11 +1959,11 @@ and check_call_site (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) : unit
       let kind = ctx.block.kind in
       match (kind, ft) with
       | ( Parser,
-          ( ExternFunctionT _ | ExternMethodT _ | ExternAbstractMethodT _
-          | BuiltinMethodT _ ) )
+          ( ExternFunctionT _ | BuiltinMethodT _ | ExternMethodT _
+          | ExternAbstractMethodT _ ) )
       | ( Control,
-          ( ExternFunctionT _ | ExternMethodT _ | ExternAbstractMethodT _
-          | BuiltinMethodT _ ) ) ->
+          ( ExternFunctionT _ | BuiltinMethodT _ | ExternMethodT _
+          | ExternAbstractMethodT _ ) ) ->
           ()
       | _ ->
           F.asprintf "(check_call_site) %a cannot be called from %a"
@@ -1974,22 +1974,21 @@ and check_call_site (cursor : Ctx.cursor) (ctx : Ctx.t) (ft : FuncType.t) : unit
       match (kind, ft) with
       | Function _, (FunctionT _ | BuiltinMethodT _)
       | ( Action,
-          ( ActionT _ | FunctionT _ | ExternFunctionT _ | ExternMethodT _
-          | ExternAbstractMethodT _ | BuiltinMethodT _ ) )
+          ( ActionT _ | FunctionT _ | ExternFunctionT _ | BuiltinMethodT _
+          | ExternMethodT _ | ExternAbstractMethodT _ ) )
       | ( ExternAbstractMethod _,
-          ( ExternFunctionT _ | ExternMethodT _ | ExternAbstractMethodT _
-          | BuiltinMethodT _ ) )
+          ( ExternFunctionT _ | BuiltinMethodT _ | ExternMethodT _
+          | ExternAbstractMethodT _ ) )
       | ( ParserState,
-          ( ExternFunctionT _ | FunctionT _ | ExternMethodT _
-          | ExternAbstractMethodT _ | ParserApplyMethodT _ | BuiltinMethodT _ )
-        )
+          ( ExternFunctionT _ | FunctionT _ | BuiltinMethodT _ | ExternMethodT _
+          | ExternAbstractMethodT _ | ParserApplyMethodT _ ) )
       | ( ControlApplyMethod,
-          ( ActionT _ | ExternFunctionT _ | FunctionT _ | ExternMethodT _
-          | ExternAbstractMethodT _ | ControlApplyMethodT _ | BuiltinMethodT _
+          ( ActionT _ | ExternFunctionT _ | FunctionT _ | BuiltinMethodT _
+          | ExternMethodT _ | ExternAbstractMethodT _ | ControlApplyMethodT _
           | TableApplyMethodT _ ) )
       | ( TableApplyMethod,
-          ( ActionT _ | ExternFunctionT _ | FunctionT _ | ExternMethodT _
-          | ExternAbstractMethodT _ | TableApplyMethodT _ | BuiltinMethodT _ ) )
+          ( ActionT _ | ExternFunctionT _ | FunctionT _ | BuiltinMethodT _
+          | ExternMethodT _ | ExternAbstractMethodT _ | TableApplyMethodT _ ) )
         ->
           ()
       | _ ->

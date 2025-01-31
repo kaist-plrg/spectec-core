@@ -4,7 +4,6 @@
 
 syntax theta hint(show %latex("\\theta")) = map(id, typ)
 
-;; No definitions for the following declarations
 def $free_typ(typ) : set(tid)                              hint(show %latex("FV(")#%1#%latex(")"))
 def $free_functyp(functyp) : set(tid)                      hint(show %latex("FV(")#%1#%latex(")"))
 
@@ -12,6 +11,7 @@ def $subst_typ(theta, typ) : typ                           hint(show %2#%latex("
 def $subst_typdef_poly(theta, polytypdef) : polytypdef     hint(show %2#%latex("/")#%1)
 def $subst_funcdef(theta, funcdef) : funcdef               hint(show %2#%latex("/")#%1)
 def $subst_functyp(theta, functyp) : functyp               hint(show %2#%latex("/")#%1)
+def $subst_constyp(theta, constyp) : constyp               hint(show %2#%latex("/")#%1)
 
 ;;
 ;; Type substitutions
@@ -116,38 +116,48 @@ def $subst_funcdef(theta, PolyFD (tparam*, tparam_hidden*) ft) = PolyFD (tparam'
 ;;
 
 def $subst_functyp(theta, BuiltinMethodT paramtyp* typ) = BuiltinMethodT paramtyp'* ($subst_typ(theta, typ))
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
 
 def $subst_functyp(theta, ActionT paramtyp*) = ActionT paramtyp'*
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
 
 def $subst_functyp(theta, ParserApplyMethodT paramtyp*) = ParserApplyMethodT paramtyp'*
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
 
 def $subst_functyp(theta, ControlApplyMethodT paramtyp*) = ControlApplyMethodT paramtyp'*
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
 
 def $subst_functyp(theta, TableApplyMethodT typ) = TableApplyMethodT ($subst_typ(theta, typ))
 
 def $subst_functyp(theta, ExternFuncT paramtyp* typ) = ExternFuncT paramtyp'* ($subst_typ(theta, typ))
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
 
 def $subst_functyp(theta, FuncT paramtyp* typ) = FuncT paramtyp'* ($subst_typ(theta, typ))
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
 
 def $subst_functyp(theta, ExternMethodT paramtyp* typ) = ExternMethodT paramtyp'* ($subst_typ(theta, typ))
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
 
 def $subst_functyp(theta, ExternAbstractMethodT paramtyp* typ) = ExternAbstractMethodT paramtyp'* ($subst_typ(theta, typ))
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+
+;;
+;; Constructor type substitutions
+;;
+
+def $subst_constyp(theta, ConsT paramtyp* typ) = ConsT paramtyp'* typ'
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+  ----
+  -- if typ' = $subst_typ(theta, typ)
 
 ;;
 ;; Specializations
@@ -176,7 +186,6 @@ def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) ft, typ_a*) = $subst_fu
   -- if tparam'* = tparam* ++ tparam_hidden*
   -- if |tparam'*| = |typ_a*|
 
-
 ;;
 ;; Constructor definition specialization
 ;;
@@ -184,15 +193,9 @@ def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) ft, typ_a*) = $subst_fu
 ;; (TODO) consider missing type arguments
 def $specialize_consdef(consdef, typ*) : constyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
-def $specialize_consdef(ConsD tparam* tparam_hidden* (ConsT paramtyp* typ), typ_a*) = ConsT paramtyp'* typ'
+def $specialize_consdef(ConsD tparam* tparam_hidden* ct, typ_a*) = $subst_constyp(MAP (PAIR tparam' typ_a)*, ct)
   -- if tparam'* = tparam* ++ tparam_hidden*
   -- if |tparam'*| = |typ_a*|
-  ----
-  -- if (id dir typ val)* = paramtyp*
-  -- if theta = MAP (PAIR tparam' typ_a)*
-  ----
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
-  -- if typ' = $subst_typ(theta, typ)
 
 ;;
 ;; Canonicalization (recursive specialization and typedef unrolling)

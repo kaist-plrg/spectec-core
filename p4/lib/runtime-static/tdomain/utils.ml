@@ -122,11 +122,11 @@ let get_params_functyp = function
   | ActionT params
   | ExternFunctionT (params, _)
   | FunctionT (params, _)
+  | BuiltinMethodT (params, _)
   | ExternMethodT (params, _)
   | ExternAbstractMethodT (params, _)
   | ParserApplyMethodT params
-  | ControlApplyMethodT params
-  | BuiltinMethodT (params, _) ->
+  | ControlApplyMethodT params ->
       params
   | TableApplyMethodT _ -> []
 
@@ -134,12 +134,12 @@ let get_typ_ret_functyp = function
   | ActionT _ -> VoidT
   | ExternFunctionT (_, typ_ret)
   | FunctionT (_, typ_ret)
+  | BuiltinMethodT (_, typ_ret)
   | ExternMethodT (_, typ_ret)
   | ExternAbstractMethodT (_, typ_ret) ->
       typ_ret
   | ParserApplyMethodT _ | ControlApplyMethodT _ -> VoidT
   | TableApplyMethodT typ_ret -> typ_ret
-  | BuiltinMethodT (_, typ_ret) -> typ_ret
 
 (* Function definition utils *)
 

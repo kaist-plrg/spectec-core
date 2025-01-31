@@ -201,6 +201,12 @@ and pp_functyp ?(level = 0) fmt functyp =
         params
         (pp_typ ~level:(level + 1))
         typ
+  | BuiltinMethodT (params, typ) ->
+      F.fprintf fmt "builtin_method%a -> %a"
+        (pp_params ~level:(level + 1))
+        params
+        (pp_typ ~level:(level + 1))
+        typ
   | ExternMethodT (params, typ) ->
       F.fprintf fmt "extern_method%a -> %a"
         (pp_params ~level:(level + 1))
@@ -217,12 +223,6 @@ and pp_functyp ?(level = 0) fmt functyp =
       F.fprintf fmt "parser_apply%a" (pp_params ~level:(level + 1)) params
   | ControlApplyMethodT params ->
       F.fprintf fmt "control_apply%a" (pp_params ~level:(level + 1)) params
-  | BuiltinMethodT (params, typ) ->
-      F.fprintf fmt "builtin_method%a -> %a"
-        (pp_params ~level:(level + 1))
-        params
-        (pp_typ ~level:(level + 1))
-        typ
   | TableApplyMethodT _ -> F.fprintf fmt "table_apply"
 
 (* Function definitions *)
