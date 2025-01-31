@@ -200,9 +200,16 @@ rule Stmt_ok/rets-some:
 
 rule Stmt_ok/callfuncs:
   p C f |- CallFuncS name targ* arg* : C f (CallFuncS name targIL'* argIL'*)
-  -- FuncType_ok: p C |- name targ* arg* : functyp targIL* argIL*
+  -- (Arg_ok: p C |- arg : argIL typ_arg)*
   ----
-  -- Call_ok: p C |- functyp targIL* argIL* : typ targIL'* argIL'*
+  -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
+  -- if tid_fresh* = $concat_(tid, tid_fresh_a**)
+  ----
+  -- FuncType_ok: p C |- name targIL* argIL* : functyp tid_fresh_inserted*
+  ----
+  -- if tid_fresh'* = $concat_(tid, tid_fresh* tid_fresh_inserted*)
+  ----
+  -- Call_ok: p C |- functyp targIL* (argIL, typ_arg)* : typ targIL'* argIL'*
 
 ;;
 ;; Method call statement
@@ -210,9 +217,16 @@ rule Stmt_ok/callfuncs:
 
 rule Stmt_ok/callmethods:
   p C f |- CallMethodS expr_b member targ* arg* : C f (CallMethodS exprIL_b member targIL'* argIL'*)
-  -- MethodType_ok: p C |- expr_b member targ* arg* : functyp exprIL_b targIL* argIL*
+  -- (Arg_ok: p C |- arg : argIL typ_arg)*
   ----
-  -- Call_ok: p C |- functyp targIL* argIL* : typ targIL'* argIL'*
+  -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
+  -- if tid_fresh* = $concat_(tid, tid_fresh_a**)
+  ----
+  -- MethodType_ok: p C |- expr_b member targIL* argIL* : functyp exprIL_b tid_fresh_inserted*
+  ----
+  -- if tid_fresh'* = $concat_(tid, tid_fresh* tid_fresh_inserted*)
+  ----
+  -- Call_ok: p C |- functyp targIL* (argIL, typ_arg)* : typ targIL'* argIL'*
 
 ;;
 ;; Instantiation statement
@@ -220,9 +234,9 @@ rule Stmt_ok/callmethods:
 
 rule Stmt_ok/callinsts:
   p C f |- CallInstS name targ* arg* : C f (CallInstS typ name targIL'* argIL'*)
-  -- ConsType_ok: p C |- name targ* arg* : constyp targIL* argIL*
+  -- ConsType_ok: p C |- name eps eps : constyp eps
   ----
-  -- Inst_ok: p C |- constyp targIL* argIL* : typ targIL'* argIL'*
+  -- Inst_ok: p C |- constyp eps eps : typ eps eps
   ----
   -- if typ' = $canon_typ(typ)
   -- if (typ' = ParserT paramtyp*) \/ (typ' = ControlT paramtyp*)

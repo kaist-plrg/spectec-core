@@ -127,30 +127,40 @@ def $update_fdenv_extern(fdenv_ext, typ_a*, fid_h fid_t*, fd_h fd_t*) = $update_
 
 rule Decl_ok/instd-some:
   p C |- InstD id name_inst targ* arg* decl* : C (InstD id typ name_inst targIL'* argIL'* declIL*)
-  -- ConsType_ok: p C |- name targ* arg* : constyp targIL* argIL*
+  -- (Arg_ok: p C |- arg : argIL typ_arg)*
   ----
-  -- Inst_ok: p C |- constyp targIL* argIL* : typ targIL'* argIL'*
+  -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
+  -- if tid_fresh* = $concat_(tid, tid_fresh_a**)
   ----
-  -- if typ = SpecT (PolyD (tparam*, tparam_hidden*) (ExternT id_ext fdenv_ext)) typ_a'*
+  -- ConsType_ok: p C |- name targIL* argIL* : constyp tid_fresh_inserted*
+  ----
+  -- Inst_ok: p C |- constyp targIL* (argIL, typ_arg)* : typ targIL'* argIL'*
+  ----
+  -- if typ = SpecT (PolyD (tparam*, tparam_hidden*) (ExternT id_ext fdenv_ext)) typ_a*
   -- if C' = $add_typ(LOCAL, C, "this", (typ, NO, CTK))
   ----
   -- Inst_init_decls_ok: C' $empty_map(id, styp, eps, eps) $empty_map(fid, funcdef, eps, eps) |- decl* : frame_abs fdenv_abs declIL*
   -- if MAP fid_abs* fd_abs* = fdenv_abs
   ----
-  -- if fdenv_ext' = $update_fdenv_extern(fdenv_ext, typ_a'*, fid_abs*, fd_abs*)
+  -- if fdenv_ext' = $update_fdenv_extern(fdenv_ext, typ_a*, fid_abs*, fd_abs*)
   -- if MAP fid_ext* fd_ext* = fdenv_ext'
   ----
   -- if (PolyFD (tparam'*, tparam_hidden'*) ft)* = fd_ext*
   -- (if ~$is_externabstractmethodt(ft))*
   ----
-  -- if typ' = SpecT (PolyD (tparam*, tparam_hidden*) (ExternT id_ext fdenv_ext')) typ_a'*
+  -- if typ' = SpecT (PolyD (tparam*, tparam_hidden*) (ExternT id_ext fdenv_ext')) typ_a*
   -- if C'' = $add_typ(p, C', id, (typ', NO, CTK))
 
 rule Decl_ok/instd-none:
   p C |- InstD id name_inst targ* arg* eps : C' (InstD id typ name_inst targIL'* argIL'* eps)
-  -- ConsType_ok: p C |- name targ* arg* : constyp targIL* argIL*
+  -- (Arg_ok: p C |- arg : argIL typ_arg)*
   ----
-  -- Inst_ok: p C |- constyp targIL* argIL* : typ targIL'* argIL'*
+  -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
+  -- if tid_fresh* = $concat_(tid, tid_fresh_a**)
+  ----
+  -- ConsType_ok: p C |- name targIL* argIL* : constyp tid_fresh_inserted*
+  ----
+  -- Inst_ok: p C |- constyp targIL* (argIL, typ_arg)* : typ targIL'* argIL'*
   ----
   -- if C' = $add_typ(p, C, id, (typ, NO, CTK))
 
@@ -673,32 +683,30 @@ rule Table_keys_ok/cons:
 ;; Table action check
 ;;
 
-relation Call_action_partial_ok: cursor context |- name paramtyp* (argIL, typ)* : paramIL* paramIL*
+relation Call_action_partial_ok: cursor context |- name paramtyp* (argIL, typ)* : paramIL* paramIL* argIL*
 
-def $filter_directionless_params(paramtyp*) : paramtyp*   hint(show FILTER_DIRECTIONLESS_PARAMS(%1))
+def $split_directionless_params(paramIL*) : (paramIL*, paramIL*)   hint(show SPLIT_DIRECTIONLESS_PARAMS(%1))
 
-def $filter_directionless_params(eps) = eps
-def $filter_directionless_params(pt_h pt_t*) = $filter_directionless_params(pt_t*)
-  -- if id NO typ val? = pt_h
-def $filter_directionless_params(pt_h pt_t*) = pt_h $filter_directionless_params(pt_t*)
-  -- otherwise
-
-;;rule Call_action_partial_ok:
-;;  p C |- name pt* (argIL, typ)* : paramIL_d* paramIL_c*
-;;  -- if pt'* = $filter_directionless_params(pt*)
-;;  -- if |pt'*| = |arg*|
-;;  -- (Call_convention_arg_ok: p C ACT |- pt' ~~ (arg, typ))*
+rule Call_action_partial_ok:
+  p C |- name pt* (argIL, typ_a)* : paramIL_d* paramIL_c* argIL'*
+  -- if (id_p dir_p typ_p val_p? = pt)*
+  -- if (paramIL_d*, paramIL_c*) = $split_directionless_params((id_p dir_p typ_p val_p?)*)
+  ----
+  -- if |paramIL_d*| = |argIL*|
+  -- if (id_d dir_d typ_d val_d? = paramIL_d)*
+  -- (Call_convention_arg_ok: p C ACT |- (id_d dir_d typ_d val_d?) ~~ (argIL, typ_a) : argIL')*
 
 
 relation Table_action_ok: cursor context tblctx |- tblaction : tblctx tblactionIL
 
 rule Table_action_ok:
-  p C tblctx |- (name arg*) : tblctx' (name argIL* paramIL_d* paramIL_c*)
+  p C tblctx |- (name arg*) : tblctx' (name argIL'* paramIL_d* paramIL_c*)
   -- if MonoFD (ActionT pt*) = $find_funcdef(p, C, name)
-  -- (Arg_ok: p C |- arg : argIL typ)*
   ----
-  -- Call_action_partial_ok: p C |- name pt* (argIL, typ)* : paramIL_d* paramIL_c*
-  -- if tblctx' = $add_action((name, pt*, arg*), tblctx)
+  -- (Arg_ok: p C |- arg : argIL typ_arg)*
+  ----
+  -- Call_action_partial_ok: p C |- name pt* (argIL, typ_arg)* : paramIL_d* paramIL_c* argIL'*
+  -- if tblctx' = $add_action((name, pt*, argIL'*), tblctx)
 
 
 relation Table_actions_ok: cursor context tblctx |- tblactionprop : tblctx tblactionpropIL
@@ -710,9 +718,10 @@ rule Table_actions_ok/cons:
   p C tblctx |- (tblaction_h tblaction_t*) : tblctx'' (tblactionIL_h tblactionIL_t*)
   -- Table_action_ok: p C tblctx |- tblaction_h : tblctx' tblactionIL_h
   -- Table_actions_ok: p C tblctx' |- tblaction_t* : tblctx'' tblactionIL_t*
-  ;;----
-  ;;-- if (name arg* param_d* param_c*)* = (tblactionIL_h tblactionIL_t*)
-  ;;-- if $distinct(name, name*)
+  ----
+  -- if tblactionIL* = tblactionIL_h tblactionIL_t*
+  -- if (name argIL* paramIL_d* paramIL_c* = tblactionIL)*
+  -- if $distinct(name, name*)
 
 ;;
 ;; Table entry check
@@ -784,33 +793,37 @@ rule Table_entry_keysets_ok/others:
   -- Table_entry_keysets_state_ok: p C tblctx NOLPM |- tblctx.KEYS keyset* : tblstate keysetIL*
 
 
-relation Call_default_action_ok: cursor context |- name paramtyp* (arg*, typ*) arg*
+relation Call_default_action_ok: cursor context |- name paramtyp* (argIL, typ)* argIL* : argIL*
 
-def $filter_directionless_args(paramtyp*, arg*) : arg*    hint(show FILTER_DIRECTIONLESS_ARGS(%1, %2))
+def $filter_directionless_args(paramtyp*, argIL*) : argIL*    hint(show FILTER_DIRECTIONLESS_ARGS(%1, %2))
 
 def $filter_directionless_args(eps, eps) = eps
-def $filter_directionless_args(pt_h pt_t*, arg_h arg_t*) = $filter_directionless_args(pt_t*, arg_t*)
+def $filter_directionless_args(pt_h pt_t*, argIL_h argIL_t*) = $filter_directionless_args(pt_t*, argIL_t*)
   -- if id NO typ val? = pt_h
-def $filter_directionless_args(pt_h pt_t*, arg_h arg_t*) = arg_h $filter_directionless_args(pt_t*, arg_t*)
+def $filter_directionless_args(pt_h pt_t*, argIL_h argIL_t*) = argIL_h $filter_directionless_args(pt_t*, argIL_t*)
   -- otherwise
 
 rule Call_default_action_ok:
-  p C |- name pt* (arg*, typ*) arg_a*
-  -- if |pt*| = |arg*|
-  -- if arg_d* = $filter_directionless_args(pt*, arg*)
+  p C |- name pt* (argIL, typ)* argIL_a* : argIL'*
+  -- if |pt*| = |argIL*|
+  -- if argIL_d* = $filter_directionless_args(pt*, argIL*)
   ----
-  -- if (arg_a = arg_d)*
-  -- (Call_convention_arg_ok: p C ACT |- pt ~~ (arg, typ))*
+  -- if (argIL_a = argIL_d)*
+  -- (Call_convention_arg_ok: p C ACT |- pt ~~ (argIL, typ) : argIL')*
 
 
 relation Table_entry_action_ok: cursor context tblctx |- tblaction : tblactionIL
 
-;;rule Table_entry_action_ok:
-;;  p C tblctx |- (name arg*)
-;;  -- if (pt*, arg_a*) = $find_action(tblctx, name)
-;;  -- (Arg_ok: p C |- arg : argIL typ)*
-;;  ----
-;;  -- Call_default_action_ok: p C |- name pt* (arg*, typ*) arg_a*
+rule Table_entry_action_ok:
+  p C tblctx |- (name arg*) : tblactionIL
+  -- if (pt*, argIL_a*) = $find_action(tblctx, name)
+  -- if (id_p dir_p typ_p val_p? = pt)*
+  ----
+  -- (Arg_ok: p C |- arg : argIL typ)*
+  ----
+  -- Call_default_action_ok: p C |- name pt* (argIL, typ)* argIL_a* : argIL'*
+  ----
+  -- if tblactionIL = name argIL'* (id_p dir_p typ_p val_p?)* eps
 
 
 relation Table_entry_priority_ok: cursor context tblctx tblstate |- expr? : tblctx val?
@@ -938,14 +951,14 @@ relation Table_default_ok: cursor context tblctx |- tbldefaultprop : tbldefaultp
 
 rule Table_default_ok:
   p C tblctx |- ((name arg*) bool) : tblactionIL bool
-  -- if (pt*, arg_a*) = $find_action(tblctx, name)
+  -- if (pt*, argIL_a*) = $find_action(tblctx, name)
   -- if (id_p dir_p typ_p val_p? = pt)*
   ----
   -- (Arg_ok: p C |- arg : argIL typ)*
   ----
-  -- Call_default_action_ok: p C |- name pt* (arg*, typ*) arg_a*
+  -- Call_default_action_ok: p C |- name pt* (argIL, typ)* argIL_a* : argIL'*
   ----
-  -- if tblactionIL = name argIL* (id_p dir_p typ_p val_p?)* eps
+  -- if tblactionIL = name argIL'* (id_p dir_p typ_p val_p?)* eps
 
 ;;
 ;; Table custom property check
@@ -1019,7 +1032,7 @@ relation Table_type_decl_ok: cursor context tblctx |- id : context typ
 rule Table_type_decl_ok:
   BLOCK C tblctx |- id : C' typ_s
   -- if id_e = $concat_texts("action\\_list(" id ")")
-  -- if (name, pt*, arg*)* = tblctx.ACTIONS
+  -- if (name, pt*, argIL*)* = tblctx.ACTIONS
   ----
   -- if (member = $string_of_name(name))*
   -- if typ_e = TableEnumT id_e member*

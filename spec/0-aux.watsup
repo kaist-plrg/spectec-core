@@ -1,5 +1,6 @@
 ;; String manipulation
 
+def $int_to_text(int) : text      hint(show %)
 def $concat_texts(text*) : text   hint(show %)
 
 

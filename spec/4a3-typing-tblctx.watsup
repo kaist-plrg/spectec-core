@@ -22,7 +22,7 @@ var prt : priority
 var ent : entry
 
 syntax key = (typ, matchkind)
-syntax action = (name, paramtyp*, arg*)
+syntax action = (name, paramtyp*, argIL*)
 
 syntax tblctx =
   { KEYS key*,
@@ -101,7 +101,7 @@ def $update_state(NOLPM, NOLPM) = NOLPM
 ;; Finders
 ;;
 
-def $find_action(tblctx, name) : (paramtyp*, arg*)
+def $find_action(tblctx, name) : (paramtyp*, argIL*)
 def $find_last_priority(tblctx) : int
 
 ;;

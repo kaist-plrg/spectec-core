@@ -32,14 +32,14 @@ relation Decls_ok: cursor context |- decl* : context declIL*
 
 syntax actctxt = ACT | NOACT
 relation Call_site_ok: cursor context |- functyp : CALLSITE_OK
-relation Call_convention_ok: cursor context actctxt |- paramtyp ~~ (expr, typ)
-relation Call_convention_arg_ok: cursor context actctxt |- paramtyp ~~ (arg, typ)
-relation Call_ok: cursor context |- functyp targIL* argIL* : typ targIL* argIL*
+relation Call_convention_ok: cursor context actctxt |- paramtyp ~~ (exprIL, typ) : exprIL
+relation Call_convention_arg_ok: cursor context actctxt |- paramtyp ~~ (argIL, typ) : argIL
+relation Call_ok: cursor context |- functyp targIL* (argIL, typ)* : typ targIL* argIL*
 
-relation FuncType_ok: cursor context |- name targ* arg* : functyp targIL* argIL*
-relation MethodType_ok: cursor context |- expr member targ* arg* : functyp exprIL targIL* argIL*
+relation FuncType_ok: cursor context |- name targIL* argIL* : functyp tid*
+relation MethodType_ok: cursor context |- expr member targIL* argIL* : functyp exprIL tid*
+
+relation ConsType_ok: cursor context |- name targIL* argIL* : constyp tid*
 
 relation Inst_site_ok: cursor context |- constyp : INSTSITE_OK
-relation Inst_ok: cursor context |- constyp targIL* argIL* arg* : typ targIL* argIL*
-
-relation ConsType_ok: cursor context |- name targ* arg* : constyp targIL* argIL*
+relation Inst_ok: cursor context |- constyp targIL* (argIL, typ)* : typ targIL* argIL*
