@@ -58,11 +58,11 @@ rule Type_wf/newt:
 
 rule Type_wf/enumt:
   tidset |- EnumT id member*
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
 
 rule Type_wf/senumt:
   tidset |- SEnumT id typ (member, val)*
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
   ----
   -- if typ' = $canon_typ(typ)
   ----
@@ -105,7 +105,7 @@ rule Type_wf/stackt:
 
 rule Type_wf/structt:
   tidset |- StructT id (member, typ)*
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
   ----
   -- if (typ' = $canon_typ(typ))*
   ----
@@ -118,7 +118,7 @@ rule Type_wf/structt:
 
 rule Type_wf/headert:
   tidset |- HeaderT id (member, typ)*
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
   ----
   -- if (typ' = $canon_typ(typ))*
   ----
@@ -133,7 +133,7 @@ rule Type_wf/headert:
 
 rule Type_wf/uniont:
   tidset |- UnionT id (member, typ)*
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
   ----
   -- if (typ' = $canon_typ(typ))*
   ----
@@ -143,7 +143,7 @@ rule Type_wf/uniont:
 
 rule Type_wf/externt:
   tidset |- ExternT id fmap
-  -- if MAP fid* funcdef* = fmap
+  -- if MAP (PAIR fid funcdef)* = fmap
   ----
   -- (FuncDef_wf: tidset |- funcdef)*
 
@@ -182,12 +182,12 @@ rule Type_wf/seqdefaultt:
 
 rule Type_wf/recordt:
   tidset |- RecordT (member, typ)*
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
   -- (Type_wf: tidset |- typ)*
 
 rule Type_wf/recorddefaultt:
   tidset |- RecordDefaultT (member, typ)*
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
   -- (Type_wf: tidset |- typ)*
 
 rule Type_wf/invalidt:
@@ -212,7 +212,7 @@ rule Type_wf/statet:
 
 rule Type_wf/tableenumt:
   tidset |- TableEnumT id member*
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
 
 rule Type_wf/tablestructt:
   tidset |- TableStructT id (member, typ)*
@@ -252,7 +252,7 @@ rule TypeDef_wf/polyd:
         \/ $is_controlt(typ)
         \/ $is_packaget(typ)
   ----
-  -- if $distinct(tid, tparam* tparam_hidden*)
+  -- if $distinct_(tid, tparam* tparam_hidden*)
   -- if tidset' = $union_set(tid, tidset, SET (tparam* tparam_hidden*))
   -- Type_wf: tidset' |- typ
 
@@ -274,7 +274,7 @@ rule ParamType_wf/some:
 rule ParamTypes_wf:
   tidset |- paramtyp*
   -- if (id dir typ val = paramtyp)*
-  -- if $distinct(id, id*)
+  -- if $distinct_(id, id*)
   -- (ParamType_wf: tidset |- paramtyp)*
 
 ;;
@@ -390,7 +390,7 @@ rule FuncDef_wf/polyfd:
         \/ $is_externmethodt(functyp)
         \/ $is_externabstractmethodt(functyp)
   ----
-  -- if $distinct(tid, tparam* tparam_hidden*)
+  -- if $distinct_(tid, tparam* tparam_hidden*)
   -- if tidset' = $union_set(tid, tidset, SET (tparam* tparam_hidden*))
   -- FuncType_wf: tidset' |- functyp
 
@@ -409,7 +409,7 @@ rule CParamType_wf/some:
 rule CParamTypes_wf:
   tidset consctxt |- paramtyp*
   -- if (id dir typ val = paramtyp)*
-  -- if $distinct(id, id*)
+  -- if $distinct_(id, id*)
   -- (CParamType_wf: tidset consctxt |- paramtyp)*
 
 ;;
@@ -477,6 +477,6 @@ rule ConsDef_wf:
         \/ $is_controlt(typ_r')
         \/ $is_packaget(typ_r')
   ----
-  -- if $distinct(tid, tparam* tparam_hidden*)
+  -- if $distinct_(tid, tparam* tparam_hidden*)
   -- if tidset' = $union_set(tid, tidset, SET (tparam* tparam_hidden*))
   -- ConsType_wf: tidset' |- constyp

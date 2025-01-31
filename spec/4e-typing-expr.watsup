@@ -528,7 +528,7 @@ rule Expr_ok/bitacce:
 
 rule Expr_ok/erracce:
   p C |- ErrAccE member : (ValueE (ErrV member)) ErrT LCTK
-  -- if id = $concat_texts("error." member)
+  -- if id = $concat_text("error." member)
   -- if ErrV member = $find_val(p, C, TOP id)
 
 ;;

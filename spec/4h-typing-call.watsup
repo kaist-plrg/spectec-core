@@ -103,7 +103,7 @@ rule MethodType_ok/parsert:
   -- if functyp = ParserApplyMethodT paramtyp*
   -- if funcdef = MonoFD functyp
   ----
-  -- if MonoFD functyp' = $find_env(fid, funcdef, MAP "apply" funcdef, "apply")
+  -- if MonoFD functyp' = $find_env(fid, funcdef, MAP (PAIR "apply" funcdef)^1, "apply")
 
 rule MethodType_ok/controlt:
   p C |- expr_b "apply" targIL* argIL* : functyp' exprIL_b eps
@@ -114,7 +114,7 @@ rule MethodType_ok/controlt:
   -- if functyp = ControlApplyMethodT paramtyp*
   -- if funcdef = MonoFD functyp
   ----
-  -- if MonoFD functyp' = $find_env(fid, funcdef, MAP "apply" funcdef, "apply")
+  -- if MonoFD functyp' = $find_env(fid, funcdef, MAP (PAIR "apply" funcdef)^1, "apply")
 
 rule MethodType_ok/tablet:
   p C |- expr_b "apply" targIL* argIL* : functyp exprIL_b eps
@@ -137,7 +137,7 @@ def $align_params_with_args'(pmap, paramtyp, argIL, typ): (paramtyp, argIL, typ)
 
 def $align_params_with_args(paramtyp*, (argIL, typ)*) = (paramtyp'*, (argIL', typ')*)
   -- if (id dir typ val?)* = paramtyp*
-  -- if pmap = MAP id* paramtyp*
+  -- if pmap = MAP (PAIR id paramtyp)*
   -- (if (paramtyp', argIL', typ') = $align_params_with_args'(pmap, paramtyp, argIL, typ))*
 
 def $align_params_with_args'(pmap, paramtyp, ExprA exprIL, typ) = (paramtyp, ExprA exprIL, typ)

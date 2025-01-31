@@ -1,34 +1,6 @@
 ;;
-;; Set
+;; Identifiers
 ;;
-
-syntax set(syntax K) hint(show %latex("\\{") %#%latex("^* \\}")) =
-  SET K* hint(show %latex("\\{")#%#%latex("\\}"))
-
-def $in_set(syntax K, K, set(K)) : bool                hint(show %2 %latex("\\in") %3)
-def $not_in_set(syntax K, K, set(K)) : bool            hint(show %2 %latex("\\notin") %3)
-def $eq_set(syntax K, set(K), set(K)) : bool           hint(show %2 %latex("=") %3)
-def $intersect_set(syntax K, set(K), set(K)) : set(K)  hint(show %2 %latex("\\cap") %3)
-def $union_set(syntax K, set(K), set(K)) : set(K)      hint(show %2 %latex("\\cup") %3)
-def $unions_set(syntax K, set(K)*) : set(K)            hint(show %latex("\\bigcup") %2)
-def $diff_set(syntax K, set(K), set(K)) : set(K)       hint(show %2 %latex("\\setminus") %3)
-def $is_subset(syntax K, set(K), set(K)) : bool        hint(show %2 %latex("\\subset") %3)
-
-;;
-;; Map
-;;
-
-syntax map(syntax K, syntax V) hint(show %latex("\\{(")#% %latex("\\mapsto") %#%latex(")^*\\}")) =
-  MAP K* V* hint(show %latex("\\{(")#% %latex("\\mapsto") %#%latex(")\\}"))
-  -- if |K*| = |V*|
-
-;; (TODO) had to add meaningless arguments to $empty_map, for it causes cryptic type errors
-def $empty_map(syntax K, syntax V, K*, V*) : map(K, V)                hint(show %latex("\\{") %latex("\\}"))
-def $in_map(syntax K, syntax V, K, map(K, V)) : V                     hint(show %3 <- %4)
-def $in_dom_map(syntax K, syntax V, K, map(K, V)) : bool              hint(show %3#%latex("\\in Domain(")#%4#%latex(")"))
-def $find_map(syntax K, syntax V, map(K, V), K) : V                   hint(show %3#`[%4])
-def $extends_map(syntax K, syntax V, map(K, V), K*, V*) : map(K, V)   hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
-def $update_map(syntax K, syntax V, map(K, V), K, V) : map(K, V)      hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
 
 ;;
 ;; Type identifiers
@@ -47,7 +19,7 @@ syntax fid = id
 
 def $string_of_name(name) : text     hint(show %)
 
-def $string_of_name(name) = $concat_texts("." id)
+def $string_of_name(name) = $concat_text("." id)
   -- if TOP id = name
 def $string_of_name(name) = id
   -- if CURRENT id = name

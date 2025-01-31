@@ -55,7 +55,7 @@ rule Type_ok/tuplet:
   -- (Type_ok: p C |- type : typ tid_fresh_i*)*
   -- if tid_fresh* = $concat_(tid, tid_fresh_i**)
   ----
-  -- if (tid = $concat_texts("T" $int_to_text(i)))^(i < |typ*|)
+  -- if (tid = $concat_text("T" $int_to_text(i)))^(i < |typ*|)
   -- if ptd = PolyD (tid*, eps) (TupleT (VarT tid)*)
 
 rule Type_ok/namet-mono:

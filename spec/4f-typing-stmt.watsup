@@ -57,8 +57,8 @@ relation Switch_tbl_label_ok:
 
 rule Switch_tbl_label_ok/exprl:
   p C id_t |- ExprL (NameE (CURRENT id_a)) : ExprL (NameE (CURRENT id_a))
-  -- if id_e = $concat_texts("action\\_list(" id_t ")")
-  -- if id = $concat_texts(id_e "." id_a)
+  -- if id_e = $concat_text("action\\_list(" id_t ")")
+  -- if id = $concat_text(id_e "." id_a)
   -- if TableEnumFieldV id_e id_a = $find_val(p, C, CURRENT id)
 
 rule Switch_tbl_label_ok/defaultl:
@@ -93,7 +93,7 @@ rule Switch_tbl_cases_ok/seq:
 rule Stmt_ok/switchs-tbl:
   p C f |- SwitchS expr switchcase* : C f' (SwitchS exprIL switchcaseIL*)
   -- Expr_ok: p C |- expr : exprIL (TableEnumT id member) ctk
-  -- if id = $concat_texts("action\\_list(" id_t ")")
+  -- if id = $concat_text("action\\_list(" id_t ")")
   -- Switch_tbl_cases_ok: p C f id_t |- switchcase* : f' switchcaseIL*
 
 

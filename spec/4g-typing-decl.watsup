@@ -120,7 +120,7 @@ def $update_fdenv_extern(fdenv_ext, typ_a*, eps, eps) = fdenv_ext
 def $update_fdenv_extern(fdenv_ext, typ_a*, fid_h fid_t*, fd_h fd_t*) = $update_fdenv_extern(fdenv_ext', typ_a*, fid_t*, fd_t*)
   -- if PolyFD (tparam*, tparam_hidden*) (ExternAbstractMethodT pt* typ_r) = $find_env(fid, funcdef, fdenv_ext, fid_h)
   -- if fd_ext = PolyFD (tparam*, tparam_hidden*) (ExternMethodT pt* typ_r)
-  -- if theta = MAP tparam* typ_a*
+  -- if theta = MAP (PAIR tparam typ_a)*
   -- if fd_ext' = $subst_funcdef(theta, fd_ext)
   -- FuncDef_alpha: fd_ext' ~~ fd_h
   -- if fdenv_ext' = $update_map(fid, funcdef, fdenv_ext, fid_h, fd_ext')
@@ -140,10 +140,10 @@ rule Decl_ok/instd-some:
   -- if C' = $add_typ(LOCAL, C, "this", (typ, NO, CTK))
   ----
   -- Inst_init_decls_ok: C' $empty_map(id, styp, eps, eps) $empty_map(fid, funcdef, eps, eps) |- decl* : frame_abs fdenv_abs declIL*
-  -- if MAP fid_abs* fd_abs* = fdenv_abs
+  -- if MAP (PAIR fid_abs fd_abs)* = fdenv_abs
   ----
   -- if fdenv_ext' = $update_fdenv_extern(fdenv_ext, typ_a*, fid_abs*, fd_abs*)
-  -- if MAP fid_ext* fd_ext* = fdenv_ext'
+  -- if MAP (PAIR fid_ext fd_ext)* = fdenv_ext'
   ----
   -- if (PolyFD (tparam'*, tparam_hidden'*) ft)* = fd_ext*
   -- (if ~$is_externabstractmethodt(ft))*
@@ -170,9 +170,9 @@ rule Decl_ok/instd-none:
 
 rule Decl_ok/errd:
   GLOBAL C |- ErrD member* : C' (ErrD member*)
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
   ----
-  -- if (id_e = $concat_texts("error." member))*
+  -- if (id_e = $concat_text("error." member))*
   -- if (val_e = ErrV member)*
   -- if (styp_e = ErrT NO LCTK val_e)*
   ----
@@ -184,7 +184,7 @@ rule Decl_ok/errd:
 
 rule Decl_ok/matchkindd:
   GLOBAL C |- MatchKindD member* : C' (MatchKindD member*)
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
   ----
   -- if (id_m = member)*
   -- if (val_m = MatchKindV member)*
@@ -244,9 +244,9 @@ rule Decl_ok/uniond:
 rule Decl_ok/enumd:
   GLOBAL C |- EnumD id member* : C' (EnumD id member*)
   ----
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
   ----
-  -- if (id_e = $concat_texts(id "." member))*
+  -- if (id_e = $concat_text(id "." member))*
   -- if (val_e = EnumFieldV id member)*
   -- if typ_e = EnumT id member*
   -- if (styp_e = typ_e NO LCTK val_e)*
@@ -297,13 +297,13 @@ rule SEnum_fields_ok/cons:
 
 rule Decl_ok/senumd:
   GLOBAL C_0 |- SEnumD id type (member, expr)* : C_3 (SEnumD id typ (member, val_s)*)
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
   ----
   -- Type_ok: GLOBAL C_0 |- type : typ eps
   ----
   -- SEnum_fields_ok: C_0 id typ eps |- (member, expr)* : C_1 (member, val_s)*
   ----
-  -- if (id_s = $concat_texts(id "." member))*
+  -- if (id_s = $concat_text(id "." member))*
   -- if typ_s = SEnumT id typ (member, val_s)*
   -- if (styp_s = typ_s NO LCTK val_s)*
   ----
@@ -598,7 +598,7 @@ rule Decl_ok/parserd:
   ----
   -- if (statelabel block = parserstate)*
   ----
-  -- if $distinct(statelabel, statelabel*)
+  -- if $distinct_(statelabel, statelabel*)
   -- if $in_set(statelabel, "start", SET statelabel*)
   -- if ~($in_set(statelabel, "accept", SET statelabel*))
   -- if ~($in_set(statelabel, "reject", SET statelabel*))
@@ -721,7 +721,7 @@ rule Table_actions_ok/cons:
   ----
   -- if tblactionIL* = tblactionIL_h tblactionIL_t*
   -- if (name argIL* paramIL_d* paramIL_c* = tblactionIL)*
-  -- if $distinct(name, name*)
+  -- if $distinct_(name, name*)
 
 ;;
 ;; Table entry check
@@ -1031,18 +1031,18 @@ relation Table_type_decl_ok: cursor context tblctx |- id : context typ
 
 rule Table_type_decl_ok:
   BLOCK C tblctx |- id : C' typ_s
-  -- if id_e = $concat_texts("action\\_list(" id ")")
+  -- if id_e = $concat_text("action\\_list(" id ")")
   -- if (name, pt*, argIL*)* = tblctx.ACTIONS
   ----
   -- if (member = $string_of_name(name))*
   -- if typ_e = TableEnumT id_e member*
   ----
   -- if (val_e = TableEnumFieldV id_e member)*
-  -- if (id_f = $concat_texts(id_e "." member))*
+  -- if (id_f = $concat_text(id_e "." member))*
   ----
   -- if C' = $add_styps(BLOCK, C, id_f*, (typ_e NO LCTK val_e)*)
   ----
-  -- if id_s = $concat_texts("apply\\_result(" id ")")
+  -- if id_s = $concat_text("apply\\_result(" id ")")
   ----
   -- if typ_s = TableStructT id_s ("hit", BoolT) ("miss", BoolT) ("action\\_run", typ_e)
 
