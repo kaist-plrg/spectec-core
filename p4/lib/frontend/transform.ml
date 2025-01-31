@@ -619,7 +619,7 @@ and transform_method (mthd : MethodPrototype.t) : El.mthd =
       let id = transform_id name in
       let cparams = transform_params params in
       let annos = transform_annos annotations in
-      L.ExternConsM { id; cparams; annos } $ at
+      El.ExternConsM { id; cparams; annos } $ at
   | AbstractMethod { name; return; type_params; params; tags = at; annotations }
     ->
       let id = transform_id name in
@@ -627,14 +627,14 @@ and transform_method (mthd : MethodPrototype.t) : El.mthd =
       let tparams = transform_tparams type_params in
       let params = transform_params params in
       let annos = transform_annos annotations in
-      L.ExternAbstractM { id; typ_ret; tparams; params; annos } $ at
+      El.ExternAbstractM { id; typ_ret; tparams; params; annos } $ at
   | Method { name; return; type_params; params; tags = at; annotations } ->
       let id = transform_id name in
       let typ_ret = transform_type return in
       let tparams = transform_tparams type_params in
       let params = transform_params params in
       let annos = transform_annos annotations in
-      L.ExternM { id; typ_ret; tparams; params; annos } $ at
+      El.ExternM { id; typ_ret; tparams; params; annos } $ at
 
 and transform_methods (mthds : MethodPrototype.t list) : El.mthd list =
   List.map transform_method mthds

@@ -5,10 +5,9 @@
 relation Eval_static: cursor context |- exprIL ~> val
 
 ;;
-;; Type evaluation and subtyping
-;;
+;; Type evaluation and subtyping ;;
 
-relation Type_ok: cursor context |- type : typ
+relation Type_ok: cursor context |- type : typ tid*
 
 relation Sub_expl: typ <: typ
 relation Sub_impl: typ << typ
@@ -26,8 +25,8 @@ relation Block_ok: cursor context flow blkctxt |- block : context flow blockIL
 relation Stmt_ok: cursor context flow |- stmt : context flow stmtIL
 relation Stmts_ok: cursor context flow |- stmt* : context flow stmtIL*
 
-relation Param_ok: cursor context |- param : paramIL
-relation CParam_ok: cursor context |- cparam : cparamIL
+relation Param_ok: cursor context |- param : paramIL tid*
+relation CParam_ok: cursor context |- cparam : cparamIL tid*
 relation Decl_ok: cursor context |- decl : context declIL
 relation Decls_ok: cursor context |- decl* : context declIL*
 

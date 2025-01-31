@@ -33,13 +33,3 @@ syntax setval =
   | SingletonSet val                hint(show %latex("\\{") % %latex("\\}"))
   | MaskSet val val                 hint(show %latex("\\{") % %latex("\\&\\&\\&") % %latex("\\}"))
   | RangeSet val val                hint(show %latex("\\{") % ... % %latex("\\}"))
-
-;;
-;; Helpers
-;;
-
-def $num(val) : int
-
-def $num(IntV i) = i
-def $num(FIntV w i) = i
-def $num(FBitV w i) = i

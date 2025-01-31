@@ -90,9 +90,9 @@ syntax typ hint(show %latex("\\tau")) =
 ;;
 
 syntax monotypdef hint(show %latex("\\delta_\\texttt{mt}")) =
-  MonoD typ           hint(show MONO#_#D %)
+  MonoD typ                   hint(show MONO#_#D %)
 syntax polytypdef hint(show %latex("\\delta_\\texttt{pt}")) =
-  PolyD tparam* typ   hint(show POLY#_#D % %)
+  PolyD (tparam*, tparam*) typ   hint(show POLY#_#D % % %)
 
 syntax typdef hint(show %latex("\\delta")) =
   | monotypdef
@@ -124,10 +124,10 @@ var ft : functyp   hint(show %latex("\\tau_\\texttt{f}"))
 ;;
 
 syntax monofuncdef hint(show %latex("\\delta_\\texttt{mf}")) =
-  MonoFD functyp hint(show MONO#_#FD %)
+  MonoFD functyp                    hint(show MONO#_#FD %)
 
 syntax polyfuncdef hint(show %latex("\\delta_\\texttt{pf}")) =
-  PolyFD tparam* functyp    hint(show POLY#_#FD % %latex("\\rightarrow") %)
+  PolyFD (tparam*, tparam*) functyp    hint(show POLY#_#FD % % %)
 
 syntax funcdef hint(show %latex("\\delta_\\texttt{f}")) =
   | monofuncdef
@@ -151,7 +151,7 @@ var ct : constyp hint(show %latex("\\tau_\\texttt{c}"))
 ;;
 
 syntax consdef hint(show %latex("\\delta_\\texttt{c}")) =
-  ConsD tparam* constyp hint(show CONS#_#D % %latex("\\rightarrow") %)
+  ConsD tparam* tparam* constyp     hint(show CONS#_#D % % %)
 
 var cd : consdef hint(show %latex("\\delta_\\texttt{c}"))
 

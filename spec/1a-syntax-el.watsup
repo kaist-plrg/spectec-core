@@ -159,6 +159,7 @@ syntax selectcase = keyset* statelabel
 
 ;;
 ;; Expressions
+;; (TODO-Jaehyun) disambiguate CallFuncE and InstE with typename syntax
 ;;
 
 syntax expr =

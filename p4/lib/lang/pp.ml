@@ -391,26 +391,6 @@ and pp_table_custom (pp_expr : ('note, 'expr) pp_expr) fmt table_custom =
 
 (* Methods *)
 
-and pp_mthd' (pp_typ : 'typ pp_typ) (pp_param : 'param pp_param)
-    (_pp_expr : ('note, 'expr) pp_expr) fmt mthd' =
-  match mthd' with
-  | ExternConsM { id; cparams; annos = _annos } ->
-      F.fprintf fmt "%a%a;" pp_id id (pp_params pp_param) cparams
-  | ExternAbstractM { id; typ_ret; tparams; params; annos = _annos } ->
-      F.fprintf fmt "abstract %a %a%a%a;" pp_typ typ_ret pp_id id pp_tparams
-        tparams (pp_params pp_param) params
-  | ExternM { id; typ_ret; tparams; params; annos = _annos } ->
-      F.fprintf fmt "%a %a%a%a;" pp_typ typ_ret pp_id id pp_tparams tparams
-        (pp_params pp_param) params
-
-and pp_mthd (pp_typ : 'typ pp_typ) (pp_param : 'param pp_param)
-    (pp_expr : ('note, 'expr) pp_expr) fmt mthd =
-  pp_mthd' pp_typ pp_param pp_expr fmt mthd.it
-
-and pp_mthds ?(level = 0) (pp_typ : 'typ pp_typ) (pp_param : 'param pp_param)
-    (pp_expr : ('note, 'expr) pp_expr) fmt mthds =
-  pp_list ~level (pp_mthd pp_typ pp_param pp_expr) ~sep:Nl fmt mthds
-
 (* Program *)
 
 let pp_program (pp_decl : 'decl pp_decl) fmt program =

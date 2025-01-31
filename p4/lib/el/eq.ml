@@ -765,11 +765,50 @@ and eq_table_custom ?(dbg = false) table_custom_a table_custom_b =
 (* Methods *)
 
 and eq_mthd' ?(dbg = false) mthd_a mthd_b =
-  E.eq_mthd' ~dbg eq_typ eq_param eq_expr mthd_a mthd_b
+  match (mthd_a, mthd_b) with
+  | ( ExternConsM { id = id_a; cparams = cparams_a; annos = _annos_a },
+      ExternConsM { id = id_b; cparams = cparams_b; annos = _annos_b } ) ->
+      eq_id ~dbg id_a id_b && E.eq_list (eq_cparam ~dbg) cparams_a cparams_b
+  | ( ExternAbstractM
+        {
+          id = id_a;
+          typ_ret = typ_ret_a;
+          tparams = tparams_a;
+          params = params_a;
+          annos = _annos_a;
+        },
+      ExternAbstractM
+        {
+          id = id_b;
+          typ_ret = typ_ret_b;
+          tparams = tparams_b;
+          params = params_b;
+          annos = _annos_b;
+        } )
+  | ( ExternM
+        {
+          id = id_a;
+          typ_ret = typ_ret_a;
+          tparams = tparams_a;
+          params = params_a;
+          annos = _annos_a;
+        },
+      ExternM
+        {
+          id = id_b;
+          typ_ret = typ_ret_b;
+          tparams = tparams_b;
+          params = params_b;
+          annos = _annos_b;
+        } ) ->
+      eq_id ~dbg id_a id_b && eq_typ typ_ret_a typ_ret_b
+      && eq_tparams ~dbg tparams_a tparams_b
+      && E.eq_list (eq_param ~dbg) params_a params_b
+  | _ -> false
 
 and eq_mthd ?(dbg = false) mthd_a mthd_b =
-  E.eq_mthd ~dbg P.pp_typ P.pp_param P.pp_expr eq_typ eq_param eq_expr mthd_a
-    mthd_b
+  eq_mthd' ~dbg mthd_a.it mthd_b.it
+  |> E.check ~dbg "mthd" P.pp_mthd mthd_a mthd_b
 
 (* Program *)
 

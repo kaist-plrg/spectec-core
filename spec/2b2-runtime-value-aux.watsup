@@ -1,0 +1,5 @@
+def $get_num(val) : int
+
+def $get_num(IntV i) = i
+def $get_num(FIntV w i) = i
+def $get_num(FBitV w i) = i

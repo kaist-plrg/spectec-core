@@ -340,7 +340,7 @@ rule Expr_ok/terne:
 
 rule Expr_ok/caste:
   p C |- CastE type expr_b : (CastE typ exprIL_b) typ ctk_b
-  -- Type_ok: p C |- type : typ
+  -- Type_ok: p C |- type : typ eps
   -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
   -- Sub_expl: typ_b <: typ_t
 
@@ -469,7 +469,7 @@ rule Expr_ok/arracce-tuplet:
   ----
   -- if TupleT typs_b'* = $canon_typ(typ_b)
   -- Eval_static: p C |- exprIL_i' ~> val_i
-  -- if i = $num(val_i)
+  -- if i = $get_num(val_i)
   -- if typ = typs_b'*[i]
 
 rule Expr_ok/arracce-stackt:
@@ -511,14 +511,14 @@ rule Expr_ok/bitacce:
   -- if (exprIL_l', typ_l') = $coerce_unary_numeric((exprIL_l, typ_l), $compatible_bitstringindex)
   ----
   -- Eval_static: p C |- exprIL_l' ~> val_l
-  -- if i_l = $num(val_l)
+  -- if i_l = $get_num(val_l)
   ----
   -- Expr_ok: p C |- expr_h : exprIL_h typ_h LCTK
   ----
   -- if (exprIL_h', typ_h') = $coerce_unary_numeric((exprIL_h, typ_h), $compatible_bitstringindex)
   ----
   -- Eval_static: p C |- exprIL_h' ~> val_h
-  -- if i_h = $num(val_h)
+  -- if i_h = $get_num(val_h)
   ----
   -- if typ = FBitT $(i_h - i_l + 1)
 

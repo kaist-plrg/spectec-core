@@ -523,56 +523,6 @@ and eq_table_custom ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
 
 (* Methods *)
 
-and eq_mthd' ?(dbg = false) (eq_typ : 'typ eq_typ) (eq_param : 'param eq_param)
-    (_eq_expr : ('note, 'expr) eq_expr) mthd_a mthd_b =
-  match (mthd_a, mthd_b) with
-  | ( ExternConsM { id = id_a; cparams = cparams_a; annos = _annos_a },
-      ExternConsM { id = id_b; cparams = cparams_b; annos = _annos_b } ) ->
-      eq_id ~dbg id_a id_b && eq_list (eq_param ~dbg) cparams_a cparams_b
-  | ( ExternAbstractM
-        {
-          id = id_a;
-          typ_ret = typ_ret_a;
-          tparams = tparams_a;
-          params = params_a;
-          annos = _annos_a;
-        },
-      ExternAbstractM
-        {
-          id = id_b;
-          typ_ret = typ_ret_b;
-          tparams = tparams_b;
-          params = params_b;
-          annos = _annos_b;
-        } )
-  | ( ExternM
-        {
-          id = id_a;
-          typ_ret = typ_ret_a;
-          tparams = tparams_a;
-          params = params_a;
-          annos = _annos_a;
-        },
-      ExternM
-        {
-          id = id_b;
-          typ_ret = typ_ret_b;
-          tparams = tparams_b;
-          params = params_b;
-          annos = _annos_b;
-        } ) ->
-      eq_id ~dbg id_a id_b && eq_typ typ_ret_a typ_ret_b
-      && eq_tparams ~dbg tparams_a tparams_b
-      && eq_list (eq_param ~dbg) params_a params_b
-  | _ -> false
-
-and eq_mthd ?(dbg = false) (pp_typ : 'typ Pp.pp_typ)
-    (pp_param : 'param Pp.pp_param) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_typ : 'typ eq_typ) (eq_param : 'param eq_param)
-    (eq_expr : ('note, 'expr) eq_expr) mthd_a mthd_b =
-  eq_mthd' ~dbg eq_typ eq_param eq_expr mthd_a.it mthd_b.it
-  |> check ~dbg "mthd" (Pp.pp_mthd pp_typ pp_param pp_expr) mthd_a mthd_b
-
 (* Program *)
 
 let eq_program ?(dbg = false) (eq_decl : 'decl eq_decl) program_a program_b =

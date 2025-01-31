@@ -234,9 +234,9 @@ syntax tblpropIL =
 ;;
 
 syntax methodIL =
-  | ExternConsM idIL cparamIL*                            hint(show %(%))
-  | ExternAbstractM idIL typeIL tparamIL* paramIL*        hint(show ABSTRACT %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex())
-  | ExternM idIL typeIL tparamIL* paramIL*                hint(show %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex())
+  | ExternConsM idIL tparamIL* cparamIL*                        hint(show %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
+  | ExternAbstractM idIL typeIL tparamIL* tparamIL* paramIL*    hint(show ABSTRACT %2 %1#%latex("\\langle")#%3, %4#%latex("\\rangle")#(%5)#%latex())
+  | ExternM idIL typeIL tparamIL* tparamIL* paramIL*            hint(show %2 %1#%latex("\\langle")#%3, %4#%latex("\\rangle")#(%5)#%latex())
 
 ;;
 ;; Declarations
@@ -264,10 +264,10 @@ syntax declIL =
   | ControlTypeD idIL tparamIL* tparamIL* paramIL*                      hint(show CONTROL %#%latex("\\langle")#%,%#%latex("\\rangle")#(%)#%latex())
   | ControlD idIL paramIL* cparamIL* declIL* blockIL                    hint(show CONTROL %#(%)#(%)#%latex() %latex("\\{")#% APPLY %#%latex("\\}"))
   | ActionD idIL paramIL* blockIL                                       hint(show ACTION %(%) %)
-  | FuncD idIL typeIL tparamIL* paramIL* blockIL                        hint(show %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex() %5)
-  | ExternFuncD idIL typeIL tparamIL* paramIL*                          hint(show EXTERN %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex())
+  | FuncD idIL typeIL tparamIL* tparamIL* paramIL* blockIL              hint(show %2 %1#%latex("\\langle")#%3, %4#%latex("\\rangle")#(%5)#%latex() %6)
+  | ExternFuncD idIL typeIL tparamIL* tparamIL* paramIL*                hint(show EXTERN %2 %1#%latex("\\langle")#%3, %4#%latex("\\rangle")#(%5)#%latex())
   | ExternObjectD idIL tparamIL* methodIL*                              hint(show EXTERN %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
-  | PackageTypeD idIL tparamIL* cparamIL*                               hint(show PACKAGE %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
+  | PackageTypeD idIL tparamIL* tparamIL* cparamIL*                     hint(show PACKAGE %#%latex("\\langle")#%, %#%latex("\\rangle")#(%)#%latex())
 
 ;;
 ;; Program

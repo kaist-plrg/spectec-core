@@ -11,7 +11,8 @@ type walker =
     stmt',
     decl',
     table_action',
-    table_entry' )
+    table_entry',
+    mthd' )
   W.walker
 
 (* Numbers *)
@@ -425,7 +426,21 @@ let walk_table_custom (walker : walker) table_custom =
 
 (* Methods *)
 
-let walk_mthd (walker : walker) mthd = W.walk_mthd walker mthd
+let walk_mthd (walker : walker) mthd =
+  let walk_id = walker.walk_id walker in
+  let walk_tparam = walker.walk_tparam walker in
+  let walk_cparam = walker.walk_cparam walker in
+  let walk_typ = walker.walk_typ walker in
+  match mthd.it with
+  | ExternConsM { id; cparams; annos = _annos } ->
+      walk_id id;
+      W.walk_list walk_cparam cparams
+  | ExternAbstractM { id; typ_ret; tparams; params; annos = _annos }
+  | ExternM { id; typ_ret; tparams; params; annos = _annos } ->
+      walk_id id;
+      walk_typ typ_ret;
+      W.walk_list walk_tparam tparams;
+      W.walk_list walk_cparam params
 
 (* Program *)
 

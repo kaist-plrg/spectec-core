@@ -493,24 +493,26 @@ and pp_decl' ?(level = 0) fmt decl' =
       F.fprintf fmt "action %a%a %a" pp_id id
         (pp_params ~level:(level + 1))
         params (pp_block ~level) body
-  | FuncD { id; typ_ret; tparams; params; body } ->
+  | FuncD { id; typ_ret; tparams; tparams_hidden; params; body } ->
       F.fprintf fmt "%a %a%a%a %a"
         (pp_typ ~level:(level + 1))
-        typ_ret pp_id id pp_tparams tparams
+        typ_ret pp_id id pp_tparams (tparams @ tparams_hidden)
         (pp_params ~level:(level + 1))
         params (pp_block ~level) body
-  | ExternFuncD { id; typ_ret; tparams; params; annos = _annos } ->
+  | ExternFuncD { id; typ_ret; tparams; tparams_hidden; params; annos = _annos }
+    ->
       F.fprintf fmt "extern %a %a%a%a;"
         (pp_typ ~level:(level + 1))
-        typ_ret pp_id id pp_tparams tparams
+        typ_ret pp_id id pp_tparams (tparams @ tparams_hidden)
         (pp_params ~level:(level + 1))
         params
   | ExternObjectD { id; tparams; mthds; annos = _annos } ->
       F.fprintf fmt "extern %a%a {\n%a\n%s}" pp_id id pp_tparams tparams
         (pp_mthds ~level:(level + 1))
         mthds (indent level)
-  | PackageTypeD { id; tparams; cparams; annos = _annos } ->
-      F.fprintf fmt "package %a%a%a;" pp_id id pp_tparams tparams
+  | PackageTypeD { id; tparams; tparams_hidden; cparams; annos = _annos } ->
+      F.fprintf fmt "package %a%a%a;" pp_id id pp_tparams
+        (tparams @ tparams_hidden)
         (pp_cparams ~level:(level + 1))
         cparams
 
@@ -623,11 +625,28 @@ and pp_table_custom fmt table_custom =
 
 (* Methods *)
 
-and pp_mthd' fmt mthd' = P.pp_mthd' pp_typ pp_param pp_expr fmt mthd'
-and pp_mthd fmt mthd = P.pp_mthd pp_typ pp_param pp_expr fmt mthd
+and pp_mthd' ?(level = 0) fmt mthd' =
+  match mthd' with
+  | ExternConsM { id; tparams_hidden; cparams; annos = _annos } ->
+      F.fprintf fmt "%a%a%a;" pp_id id pp_tparams tparams_hidden
+        (pp_cparams ~level:(level + 1))
+        cparams
+  | ExternAbstractM
+      { id; typ_ret; tparams; tparams_hidden; params; annos = _annos } ->
+      F.fprintf fmt "abstract %a %a%a%a;"
+        (pp_typ ~level:(level + 1))
+        typ_ret pp_id id pp_tparams (tparams @ tparams_hidden)
+        (pp_params ~level:(level + 1))
+        params
+  | ExternM { id; typ_ret; tparams; tparams_hidden; params; annos = _annos } ->
+      F.fprintf fmt "%a %a%a%a;"
+        (pp_typ ~level:(level + 1))
+        typ_ret pp_id id pp_tparams (tparams @ tparams_hidden)
+        (pp_params ~level:(level + 1))
+        params
 
-and pp_mthds ?(level = 0) fmt mthds =
-  P.pp_mthds ~level pp_typ pp_param pp_expr fmt mthds
+and pp_mthd ?(level = 0) fmt mthd = pp_mthd' ~level fmt mthd.it
+and pp_mthds ?(level = 0) fmt mthds = pp_list ~level pp_mthd ~sep:Nl fmt mthds
 
 (* Program *)
 

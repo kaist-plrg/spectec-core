@@ -240,7 +240,7 @@ rule TypeDef_wf/monod:
   -- Type_wf: tidset |- typ
 
 rule TypeDef_wf/polyd:
-  tidset |- PolyD tparam* typ
+  tidset |- PolyD (tparam*, tparam_hidden*) typ
   -- if $is_listt(typ)
         \/ $is_tuplet(typ)
         \/ $is_stackt(typ)
@@ -252,8 +252,8 @@ rule TypeDef_wf/polyd:
         \/ $is_controlt(typ)
         \/ $is_packaget(typ)
   ----
-  -- if $distinct(tparam, tparam*)
-  -- if tidset' = $union_set(tid, tidset, SET tparam*)
+  -- if $distinct(tid, tparam* tparam_hidden*)
+  -- if tidset' = $union_set(tid, tidset, SET (tparam* tparam_hidden*))
   -- Type_wf: tidset' |- typ
 
 ;;
@@ -384,14 +384,14 @@ rule FuncDef_wf/monofd:
   -- FuncType_wf: tidset |- functyp
 
 rule FuncDef_wf/polyfd:
-  tidset |- PolyFD tparam* functyp
+  tidset |- PolyFD (tparam*, tparam_hidden*) functyp
   -- if $is_externfunct(functyp)
         \/ $is_funct(functyp)
         \/ $is_externmethodt(functyp)
         \/ $is_externabstractmethodt(functyp)
   ----
-  -- if $distinct(tparam, tparam*)
-  -- if tidset' = $union_set(tid, tidset, SET tparam*)
+  -- if $distinct(tid, tparam* tparam_hidden*)
+  -- if tidset' = $union_set(tid, tidset, SET (tparam* tparam_hidden*))
   -- FuncType_wf: tidset' |- functyp
 
 ;;
@@ -468,7 +468,7 @@ rule ConsType_wf/packaget:
 ;;
 
 rule ConsDef_wf:
-  tidset |- ConsD tparam* constyp
+  tidset |- ConsD tparam* tparam_hidden* constyp
   -- if ConsT paramtyp* typ_r = constyp
   -- if typ_r' = $canon_typ(typ_r)
   ----
@@ -477,6 +477,6 @@ rule ConsDef_wf:
         \/ $is_controlt(typ_r')
         \/ $is_packaget(typ_r')
   ----
-  -- if $distinct(tparam, tparam*)
-  -- if tidset' = $union_set(tid, tidset, SET tparam*)
+  -- if $distinct(tid, tparam* tparam_hidden*)
+  -- if tidset' = $union_set(tid, tidset, SET (tparam* tparam_hidden*))
   -- ConsType_wf: tidset' |- constyp

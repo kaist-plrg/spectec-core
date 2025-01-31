@@ -331,8 +331,24 @@ and table_custom' = (unit, expr') L.table_custom'
 and table_custom_const = L.table_custom_const
 
 (* Methods *)
-and mthd = (typ', param', unit, expr') L.mthd
-and mthd' = (typ', param', unit, expr') L.mthd'
+and mthd = mthd' L.mthd
+
+and mthd' =
+  | ExternConsM of { id : id; cparams : cparam list; annos : anno list }
+  | ExternAbstractM of {
+      id : id;
+      typ_ret : typ;
+      tparams : tparam list;
+      params : param list;
+      annos : anno list;
+    }
+  | ExternM of {
+      id : id;
+      typ_ret : typ;
+      tparams : tparam list;
+      params : param list;
+      annos : anno list;
+    }
 
 (* Program *)
 type program = decl' L.program
