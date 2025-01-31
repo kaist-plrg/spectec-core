@@ -15,7 +15,21 @@ def $fresh_tid() : tid  hint(show FRESH#_#TID)
 ;; Function identifiers
 ;;
 
-syntax fid = id
+syntax fid = id (id, bool)*
+
+def $to_fid'(param*) : (id, bool)*
+
+def $to_fid'(eps) = eps
+def $to_fid'(param_h param_t*) = t $to_fid'(param_t*)
+  -- if id dir type expr = param_h
+  -- if t = (id, true)
+def $to_fid'(param_h param_t*) = t $to_fid'(param_t*)
+  -- if id dir type eps = param_h
+  -- if t = (id, false)
+
+def $to_fid(id, param*) : fid
+
+def $to_fid(id, param*) = id $to_fid'(param*)
 
 def $string_of_name(name) : text     hint(show %)
 

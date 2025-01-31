@@ -76,6 +76,7 @@ rule Inst_init_decl_ok/instd:
 
 rule Inst_init_decl_ok/funcd:
   p C_0 frame fdenv |- (FuncD id type_r tparam* param* block) : frame fdenv' (FuncD id typ_r tparam* tparam_hidden* paramIL* blockIL)
+  -- if fid = $to_fid(id, param*)
   -- if C_1 = $set_blockkind(C_0, EXTERN)
   ----
   -- if C_2 = $set_blockframe(C_1, $empty_map(id, styp, eps, eps))
@@ -100,7 +101,7 @@ rule Inst_init_decl_ok/funcd:
   ----
   -- FuncDef_wf: $bound_tid(C_2) |- fd
   ----
-  -- if fdenv' = $update_map(fid, funcdef, fdenv, id, fd)
+  -- if fdenv' = $update_map(fid, funcdef, fdenv, fid, fd)
 
 
 relation Inst_init_decls_ok: context frame fdenv |- decl* : frame fdenv declIL*
@@ -348,8 +349,9 @@ rule Decl_ok/typedefd:
 
 rule Decl_ok/actiond:
   p C_0 |- ActionD id param* block : C_4 (ActionD id paramIL* blockIL)
-  ----
   -- if p = GLOBAL \/ (p = BLOCK /\ C_0.BLOCK.KIND = CONTROL)
+  ----
+  -- if fid = $to_fid(id, param*)
   ----
   -- if C_1 = $set_localkind(C_0, ACTION)
   ----
@@ -365,7 +367,7 @@ rule Decl_ok/actiond:
   -- if tidset = $bound_tid(C_0)
   -- FuncDef_wf: tidset |- funcdef
   ----
-  -- if C_4 = $add_funcdef(p, C_0, id, funcdef)
+  -- if C_4 = $add_funcdef(p, C_0, fid, funcdef)
 
 ;;
 ;; Function declaration
@@ -373,6 +375,7 @@ rule Decl_ok/actiond:
 
 rule Decl_ok/funcd:
   GLOBAL C_0 |- FuncD id type_r tparam* param* block : C_5 (FuncD id typ_r tparam* tparam_hidden* paramIL* blockIL)
+  -- if fid = $to_fid(id, param*)
   ----
   -- if C_1 = $add_typdefs(LOCAL, C_0, tparam*, (MonoD (VarT tparam))*)
   -- Type_ok: LOCAL C_1 |- type_r : typ_r eps
@@ -392,7 +395,7 @@ rule Decl_ok/funcd:
   ----
   -- FuncDef_wf: $bound_tid(C) |- fd
   ----
-  -- if C_5 = $add_funcdef(GLOBAL, C_0, id, fd)
+  -- if C_5 = $add_funcdef(GLOBAL, C_0, fid, fd)
 
 ;;
 ;; Extern function declaration
@@ -400,6 +403,7 @@ rule Decl_ok/funcd:
 
 rule Decl_ok/externfuncd:
   GLOBAL C_0 |- ExternFuncD id type_r tparam* param* : C_4 (ExternFuncD id typ_r tparam* tparam_hidden* paramIL*)
+  -- if fid = $to_fid(id, param*)
   ----
   -- if C_1 = $add_typdefs(LOCAL, C_0, tparam*, (MonoD (VarT tparam))*)
   -- Type_ok: LOCAL C_1 |- type_r : typ_r eps
@@ -414,10 +418,9 @@ rule Decl_ok/externfuncd:
   ----
   -- if fd = PolyFD (tparam*, tparam_hidden*) (ExternFuncT (id_p dir_p typ_p val_p?)* typ_r)
   ----
-  -- if tidset = $bound_tid(C_0)
-  -- FuncDef_wf: tidset |- fd
+  -- FuncDef_wf: $bound_tid(C_0) |- fd
   ----
-  -- if C_4 = $add_funcdef(GLOBAL, C_0, id, fd)
+  -- if C_4 = $add_funcdef(GLOBAL, C_0, fid, fd)
 
 ;;
 ;; Extern object declaration
@@ -431,6 +434,8 @@ relation Method_ok:
 
 rule Method_ok/externconsm:
   C id_e |- ExternConsM id_e cparam* : C' (ExternConsM id_e tparam_hidden* cparamIL*)
+  -- if cid = $to_fid(id_e, cparam*)
+  ----
   -- (CParam_ok: BLOCK C |- cparam : cparamIL tid_fresh_c*)*
   -- if (id_c dir_c typ_c val_c? = cparamIL)*
   -- if tparam_hidden* = $concat_(tid, tid_fresh_c**)
@@ -441,10 +446,12 @@ rule Method_ok/externconsm:
   ----
   -- ConsDef_wf: $bound_tid(C) |- consdef
   ----
-  -- if C' = $add_consdef(GLOBAL, C, id_e, consdef)
+  -- if C' = $add_consdef(GLOBAL, C, cid, consdef)
 
 rule Method_ok/externabstractm:
   C_0 id_e |- ExternAbstractM id type_r tparam* param* : C_4 (ExternAbstractM id typ_r tparam* tparam_hidden* paramIL*)
+  -- if fid = $to_fid(id, param*)
+  ----
   -- if C_1 = $add_typdefs(LOCAL, C_0, tparam*, (MonoD (VarT tparam))*)
   ----
   -- Type_ok: LOCAL C_1 |- type_r : typ_r eps
@@ -461,10 +468,12 @@ rule Method_ok/externabstractm:
   ----
   -- FuncDef_wf: $bound_tid(C_0) |- fd
   ----
-  -- if C_4 = $add_funcdef(BLOCK, C_0, id, fd)
+  -- if C_4 = $add_funcdef(BLOCK, C_0, fid, fd)
 
 rule Method_ok/externm:
   C_0 id_e |- ExternM id type_r tparam* param* : C_4 (ExternM id typ_r tparam* tparam_hidden* paramIL*)
+  -- if fid = $to_fid(id, param*)
+  ----
   -- if C_1 = $add_typdefs(LOCAL, C_0, tparam*, (MonoD (VarT tparam))*)
   ----
   -- Type_ok: LOCAL C_1 |- type_r : typ_r eps
@@ -481,7 +490,7 @@ rule Method_ok/externm:
   ----
   -- FuncDef_wf: $bound_tid(C_0) |- fd
   ----
-  -- if C_4 = $add_funcdef(BLOCK, C_0, id, fd)
+  -- if C_4 = $add_funcdef(BLOCK, C_0, fid, fd)
 
 
 relation Methods_ok:
@@ -577,6 +586,7 @@ rule ParserStates_ok/cons:
 
 rule Decl_ok/parserd:
   GLOBAL C_0 |- ParserD id param* cparam* decl* parserstate* : C_8 (ParserD id paramIL* cparamIL* declIL* parserstateIL*)
+  -- if cid = $to_fid(id, cparam*)
   ----
   -- if C_1 = $set_blockkind(C_0, PARSER)
   ----
@@ -615,7 +625,7 @@ rule Decl_ok/parserd:
   ----
   -- ConsDef_wf: tidset |- consdef
   ----
-  -- if C_8 = $add_consdef(GLOBAL, C_0, id, consdef)
+  -- if C_8 = $add_consdef(GLOBAL, C_0, cid, consdef)
 
 ;;
 ;; Table declaration
@@ -1086,6 +1096,8 @@ rule Decl_ok/controltyped:
 
 rule Decl_ok/controld:
   GLOBAL C_0 |- ControlD id param* cparam* decl* block : C_7 (ControlD id paramIL* cparamIL* declIL* blockIL)
+  -- if cid = $to_fid(id, cparam*)
+  ----
   -- if C_1 = $set_blockkind(C_0, CONTROL)
   ----
   -- (Param_ok: LOCAL C_1 |- cparam : cparamIL)*
@@ -1113,7 +1125,7 @@ rule Decl_ok/controld:
   ----
   -- ConsDef_wf: $bound_tid(C_0) |- consdef
   ----
-  -- if C_7 = $add_consdef(GLOBAL, C_0, id, consdef)
+  -- if C_7 = $add_consdef(GLOBAL, C_0, cid, consdef)
 
 ;;
 ;; Package declaration
@@ -1121,6 +1133,8 @@ rule Decl_ok/controld:
 
 rule Decl_ok/packagetyped:
   GLOBAL C_0 |- PackageTypeD id tparam* cparam* : C'''' (PackageTypeD id tparam* tparam_hidden* cparamIL*)
+  -- if cid = $to_fid(id, cparam*)
+  ----
   -- if C_1 = $add_typdefs(BLOCK, C_0, tparam*, (MonoD (VarT tparam))*)
   ----
   -- if C_2 = $set_blockkind(C_1, PACKAGE)
@@ -1139,7 +1153,8 @@ rule Decl_ok/packagetyped:
   -- ConsDef_wf: $bound_tid(C_1) |- cd
   ----
   -- if C_3 = $add_typdef(GLOBAL, C_0, id, ptd)
-  -- if C_4 = $add_consdef(GLOBAL, C_3, id, cd)
+  ----
+  -- if C_4 = $add_consdef(GLOBAL, C_3, cid, cd)
 
 ;;
 ;; Declaration sequence

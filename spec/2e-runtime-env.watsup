@@ -8,3 +8,119 @@ syntax fdenv hint(show %latex("\\Delta_\\texttt{f}")) = map(fid, funcdef)
 syntax cdenv hint(show %latex("\\Delta_\\texttt{c}")) = map(fid, consdef)
 
 def $find_env(syntax K, syntax V, map(K, V), K) : V  hint(show %3#`[%4])
+
+;;
+;; Function/method overload resolution
+;;
+
+def $check_func_name(id, id) : bool   hint(show CHECK_FUNC_NAME(%1, %2))
+def $check_func_name(id_f, id_f') = true
+  -- if id_f = id_f'
+def $check_func_name(id_f, id_f') = false
+  -- otherwise
+
+def $check_arity_more((id?)*, id*) : bool   hint(show CHECK_ARITY_MORE(%1, %2))
+def $check_arity_more((id_a?)*, id_p*) = true
+  -- if |(id_a?)*| > |id_p*|
+def $check_arity_more((id_a?)*, id_p*) = false
+  -- otherwise
+
+def $check_arity((id?)*, id*) : bool    hint(show CHECK_ARITY(%1, %2))
+def $check_arity((id_a?)*, id_p*) = true
+  -- if |(id_a?)*| = |id_p*|
+def $check_arity((id_a?)*, id_p*) = false
+  -- otherwise
+
+def $check_arity_less((id?)*, id*) : bool   hint(show CHECK_ARITY_LESS(%1, %2))
+def $check_arity_less((id_a?)*, id_p*) = true
+  -- if |(id_a?)*| < |id_p*|
+def $check_arity_less((id_a?)*, id_p*) = false
+  -- otherwise
+
+def $get_params_missing_names(id*, id*) : id*   hint(show GET_PARAMS_MISSING_NAMES(%1, %2))
+def $get_params_missing_names(id_ph id_pt*, id_a*) = id_ph $get_params_missing_names(id_pt*, id_a*)
+  -- if ~$in_set(id, id_ph, SET id_a*)
+def $get_params_missing_names(id_ph id_pt*, id_a*) = $get_params_missing_names(id_pt*, id_a*)
+  -- otherwise
+
+
+def $find_match_named(fid, funcdef, id*, (id, bool)*) : (fid, funcdef, id*)?    hint(show FIND_MATCH_NAMED(%1, %2, %3, %4))
+def $find_match_named(fid, fd, id_a*, (id_p, deft_p)*) = t
+  -- if $eq_set(id, SET id_a*, SET id_p*)
+  -- if t = (fid, fd, eps)
+def $find_match_named(fid, fd, id_a*, (id_p, deft_p)*) = eps
+  -- otherwise
+
+
+def $find_match_named_default(fid, funcdef, id*, (id,bool)*) : (fid, funcdef, id*)?   hint(show FIND_MATCH_NAMED_DEFAULT(%1, %2, %3, %4))
+def $find_match_named_default(fid, fd, id_a*, (id_p, deft_p)*) = t
+  -- if id_p'* = $get_params_missing_names(id_p*, id_a*)
+  -- if $find_match_named(fid, fd, id_a* id_p'*, (id_p, deft_p)*) =/= eps
+  -- if t = (fid, fd, id_p'*)
+def $find_match_named_default(fid, fd, id_a*, (id_p, deft_p)*) = eps
+  -- otherwise
+
+
+def $find_match_unnamed_default(fid, funcdef, (id?)*, (id,bool)*) : (fid, funcdef, id*)?    hint(show FIND_MATCH_UNNAMED_DEFAULT(%1, %2, %3, %4))
+def $find_match_unnamed_default(fid, fd, (id_a?)*, (id_p, deft_p)*) = t
+  -- if (prm*, prm'*) = $partition((id,bool), (id_p, deft_p)*, |(id_a?)*|)
+  -- if (prm' = (id_p', true))*
+  -- if t = (fid, fd, id_p'*)
+def $find_match_unnamed_default(fid, fd, (id_a?)*, (id_p, deft_p)*) = eps
+  -- otherwise
+
+
+def $find_matching_func(id, (id?)*, id*, fid, funcdef) : (fid, funcdef, id*)?   hint(show FIND_MATCHING_FUNC(%1, %2, %3, %4, %5))
+
+def $find_matching_func(id_f, (id_a?)*, id_a'*, id_f' (id_p, deft_p)*, fd) = eps
+  -- if ~$check_func_name(id_f, id_f')
+
+def $find_matching_func(id_f, (id_a?)*, id_a'*, id_f' (id_p, deft_p)*, fd) = eps
+  -- if $check_func_name(id_f, id_f')
+  -- if $check_arity_more((id_a?)*, id_p*)
+
+def $find_matching_func(id_f, (id_a?)*, id_a'*, id_f' (id_p, deft_p)*, fd) = $find_match_named(id_f' (id_p, deft_p)*, fd, id_a'*, (id_p, deft_p)*)
+  -- if $check_func_name(id_f, id_f')
+  -- if $check_arity((id_a?)*, id_p*)
+
+def $find_matching_func(id_f, (id_a?)*, eps, id_f' (id_p, deft_p)*, fd) = t
+  -- if $check_func_name(id_f, id_f')
+  -- if $check_arity((id_a?)*, id_p*)
+  -- if t = (id_f' (id_p, deft_p)*, fd, eps)
+
+def $find_matching_func(id_f, (id_a?)*, id_a'*, id_f' (id_p, deft_p)*, fd) = $find_match_named_default(id_f' (id_p, deft_p)*, fd, id_a'*, (id_p, deft_p)*)
+  -- if $check_func_name(id_f, id_f')
+  -- if $check_arity_less((id_a?)*, id_p*)
+
+def $find_matching_func(id_f, (id_a?)*, eps, id_f' (id_p, deft_p)*, fd) = $find_match_unnamed_default(id_f' (id_p, deft_p)*, fd, (id_a?)*, (id_p, deft_p)*)
+  -- if $check_func_name(id_f, id_f')
+  -- if $check_arity_less((id_a?)*, id_p*)
+
+
+def $find_matching_funcs(id, (id?)*, id*, fid*, funcdef*) : (fid, funcdef, id*)*    hint(show FIND_MATCHING_FUNCS(%1, %2, %3, %4, %5))
+
+def $find_matching_funcs(id_f, (id_a?)*, id_a'*, eps, eps) = eps
+def $find_matching_funcs(id_f, (id_a?)*, id_a'*, fid_h fid_t*, funcdef_h funcdef_t*) = $find_matching_funcs(id_f, (id_a?)*, id_a'*, fid_t*, funcdef_t*)
+  -- if $find_matching_func(id_f, (id_a?)*, id_a'*, fid_h, funcdef_h) = eps
+def $find_matching_funcs(id_f, (id_a?)*, id_a'*, fid_h fid_t*, funcdef_h funcdef_t*) = t $find_matching_funcs(id_f, (id_a?)*, id_a'*, fid_t*, funcdef_t*)
+  -- if (fid, fd, id_p*)? = $find_matching_func(id_f, (id_a?)*, id_a'*, fid_h, funcdef_h)
+  -- if t = (fid, fd, id_p*)
+
+
+def $find_func_opt(id, (id?)*, fdenv) : (fid, funcdef, id*)?      hint(show FIND_FUNC_OPT(%1, %2, %3))
+
+def $find_func_opt(id_f, (id_a?)*, MAP (PAIR fid fd)*) = eps
+  -- if (id_a? = id_a')*
+  -- if $find_matching_funcs(id_f, (id_a?)*, id_a'*, fid*, fd*) = eps
+
+def $find_func_opt(id_f, (id_a?)*, MAP (PAIR fid fd)*) = (fid', fd', id_p*)^1[0]
+  -- if (id_a? = id_a')*
+  -- if (fid', fd', id_p*)^1 = $find_matching_funcs(id_f, (id_a?)*, id_a'*, fid*, fd*)
+
+def $find_func_opt(id_f, (id_a?)*, MAP (PAIR fid fd)*) = eps
+  -- if (id_a? = eps)*
+  -- if $find_matching_funcs(id_f, (id_a?)*, eps, fid*, fd*) = eps
+
+def $find_func_opt(id_f, (id_a?)*, MAP (PAIR fid fd)*) = (fid', fd', id_p*)^1[0]
+  -- if (id_a? = eps)*
+  -- if (fid', fd', id_p*)^1 = $find_matching_funcs(id_f, (id_a?)*, eps, fid*, fd*)
