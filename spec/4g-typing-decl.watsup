@@ -735,8 +735,7 @@ rule Table_entry_keyset_ok/exprk-maske-lpm:
   -- if tblctx.MODE = NOPRILPM i
   ----
   -- Eval_static: p C |- exprIL_m ~> val_m
-  ----
-  -- if val_m = IntV m \/ val_m = FIntV w m \/ val_m = FBitV w m ;; (TODO-Jaehyun) bitstring manipulation
+  -- if m = $get_num(val_m)
   ----
   -- if state_e = $get_lpm_prefix(FBitV i $of_two_complement(m, i))
   -- Sub_impl: typ << typ_k
@@ -844,7 +843,7 @@ rule Table_entry_priority_ok/priority-values-nil-somep:
   -- Expr_ok: LOCAL C |- expr : exprIL typ ctk
   -- Eval_static: LOCAL C |- exprIL ~> val
   ----
-  -- if val = IntV i \/ val = FIntV w i \/ val = FBitV w i ;; (TODO-Jaehyun) bitstring manipulation
+  -- if i = $get_num(val)
   -- if $(i >= 0)
   ----
   -- if tblctx' = $set_priority_init(true, tblctx)
@@ -882,7 +881,7 @@ rule Table_entry_priority_ok/else-somep:
   -- Expr_ok: LOCAL C |- expr : exprIL typ ctk
   -- Eval_static: LOCAL C |- exprIL ~> val
   ----
-  -- if val = IntV i \/ val = FIntV w i \/ val = FBitV w i ;; (TODO-Jaehyun) bitstring manipulation
+  -- if i = $get_num(val)
   -- if $(i >= 0)
   ----
   -- if tblctx' = $add_priority(i, tblctx)
@@ -984,8 +983,8 @@ rule Table_custom_ok/priority_delta:
   -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
   ----
   -- Eval_static: p C |- exprIL ~> val
-  -- if val = IntV i \/ val = FIntV w i \/ val = FBitV w i ;; (TODO-Jaehyun) bitstring manipulation
   ----
+  -- if i = $get_num(val)
   -- if $(i > 0)
   -- if tblctx' = $set_priority_delta(i, tblctx)
 

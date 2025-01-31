@@ -31,7 +31,7 @@ def $partition(syntax T, T*, nat) : (T*, T*)
 ;;
 
 syntax set(syntax K) hint(show %latex("\\{") %#%latex("^* \\}")) =
-  SET K*             hint(show %latex("\\{") %#%latex(\\}"))
+  SET K*             hint(show %latex("\\{") %#%latex("\\}"))
 
 def $in_set(syntax K, K, set(K)) : bool                hint(show %2 %latex("\\in") %3)
 def $not_in_set(syntax K, K, set(K)) : bool            hint(show %2 %latex("\\notin") %3)
@@ -83,9 +83,3 @@ def $in_dom_map(syntax K, syntax V, K, map(K, V)) : bool              hint(show 
 def $find_map(syntax K, syntax V, map(K, V), K) : V                   hint(show %3#`[%4])
 def $extends_map(syntax K, syntax V, map(K, V), K*, V*) : map(K, V)   hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
 def $update_map(syntax K, syntax V, map(K, V), K, V) : map(K, V)      hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
-
-;;
-;; Bitstring manipulation
-;;
-
-def $of_two_complement(int, int) : int
