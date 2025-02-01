@@ -2,13 +2,17 @@
 ;; Static evaluation
 ;;
 
+;; Static evaluation of expressions that are local compile-time known
 relation Eval_static: cursor context |- exprIL ~> val
 
 ;;
-;; Type evaluation and subtyping ;;
+;; Type evaluation and subtyping
+;;
 
+;; Type evaluation
 relation Type_ok: cursor context |- type : typ tid*
 
+;; Subtyping, explicit and implicit
 relation Sub_expl: typ <: typ
 relation Sub_impl: typ << typ
 
@@ -16,30 +20,65 @@ relation Sub_impl: typ << typ
 ;; Expression, Statement, and Declaration typing
 ;;
 
+;; Expression typing,
+;; produces an IL expression (exprIL),
+;; gets the type of the expression (typ),
+;; and its compile-time known-ness (ctk)
 relation Expr_ok: cursor context |- expr : exprIL typ ctk
+
+;; Argument typing,
+;; produces an IL argument (argIL),
 relation Arg_ok: cursor context |- arg : argIL typ
 
-syntax blkctxt = INIT | NOINIT
+;; L-value typing
 relation Lval_ok: cursor context |- exprIL
+
+;; Statement typing,
+;; produces an IL statement (stmtIL / blockIL),
+;; note that block typing depends on whether it is the initial block or not
+syntax blkctxt = INIT | NOINIT
 relation Block_ok: cursor context flow blkctxt |- block : context flow blockIL
 relation Stmt_ok: cursor context flow |- stmt : context flow stmtIL
 relation Stmts_ok: cursor context flow |- stmt* : context flow stmtIL*
 
+;; Parameter typing,
+;; produces an IL parameter (paramIL),
+;; inserts fresh type variables for parameters with don't care types (tid*)
 relation Param_ok: cursor context |- param : paramIL tid*
 relation CParam_ok: cursor context |- cparam : cparamIL tid*
+
+;; Declaration typing,
+;; produces an IL declaration (declIL),
 relation Decl_ok: cursor context |- decl : context declIL
 relation Decls_ok: cursor context |- decl* : context declIL*
 
+;; Copy-in/out calling convention,
+;; note that it depends on whether an action is being called or not
 syntax actctxt = ACT | NOACT
-relation Call_site_ok: cursor context |- functyp : CALLSITE_OK
 relation Call_convention_ok: cursor context actctxt |- paramtyp ~~ (exprIL, typ) : exprIL
 relation Call_convention_arg_ok: cursor context actctxt |- paramtyp ~~ (argIL, typ) : argIL
-relation Call_ok: cursor context |- functyp targIL* (argIL, typ)* : typ targIL* argIL*
 
-relation FuncType_ok: cursor context |- name targIL* argIL* : functyp tid*
-relation MethodType_ok: cursor context |- expr member targIL* argIL* : functyp exprIL tid*
+;; Checks that an action/function/method invocation is valid,
+;; gets the return type (typ),
+;; infers the types of missing type arguments (targIL*),
+;; and inserts implicit casts for arguments, if necessary (argIL*)
+relation Call_site_ok: cursor context |- functyp : CALLSITE_OK
+relation Call_ok: cursor context |- functyp targIL* (argIL, typ)* id* : typ targIL* argIL*
 
-relation ConsType_ok: cursor context |- name targIL* argIL* : constyp tid*
+;; Finds the type of a function/method, (functyp)
+;; inserts fresh type variables for parameters with don't care types, (tid*)
+;; and also identifies the ids of default arguments (id*)
+relation FuncType_ok: cursor context |- name targIL* argIL* : functyp tid* id*
+relation MethodType_ok: cursor context |- expr member targIL* argIL* : functyp exprIL tid* id*
 
+;; Finds the type of a constructor, (constyp)
+;; inserts fresh type variables for parameters with don't care types, (tid*)
+;; and also identifies the ids of default arguments (id*)
+relation ConsType_ok: cursor context |- name targIL* argIL* : constyp tid* id*
+
+;; Checks that a constructor invocation is valid,
+;; gets the constructed object type (typ),
+;; infers the types of missing type arguments (targIL*),
+;; and inserts implicit casts for arguments, if necessary (argIL*)
 relation Inst_site_ok: cursor context |- constyp : INSTSITE_OK
-relation Inst_ok: cursor context |- constyp targIL* (argIL, typ)* : typ targIL* argIL*
+relation Inst_ok: cursor context |- constyp targIL* (argIL, typ)* id* : typ targIL* argIL*

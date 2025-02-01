@@ -133,9 +133,9 @@ rule Decl_ok/instd-some:
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
   -- if tid_fresh* = $concat_(tid, tid_fresh_a**)
   ----
-  -- ConsType_ok: p C |- name targIL* argIL* : constyp tid_fresh_inserted*
+  -- ConsType_ok: p C |- name targIL* argIL* : constyp tid_fresh_inserted* id_deft*
   ----
-  -- Inst_ok: p C |- constyp targIL* (argIL, typ_arg)* : typ targIL'* argIL'*
+  -- Inst_ok: p C |- constyp targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
   ----
   -- if typ = SpecT (PolyD (tparam*, tparam_hidden*) (ExternT id_ext fdenv_ext)) typ_a*
   -- if C' = $add_typ(LOCAL, C, "this", (typ, NO, CTK))
@@ -159,9 +159,9 @@ rule Decl_ok/instd-none:
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
   -- if tid_fresh* = $concat_(tid, tid_fresh_a**)
   ----
-  -- ConsType_ok: p C |- name targIL* argIL* : constyp tid_fresh_inserted*
+  -- ConsType_ok: p C |- name targIL* argIL* : constyp tid_fresh_inserted* id_deft*
   ----
-  -- Inst_ok: p C |- constyp targIL* (argIL, typ_arg)* : typ targIL'* argIL'*
+  -- Inst_ok: p C |- constyp targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
   ----
   -- if C' = $add_typ(p, C, id, (typ, NO, CTK))
 
@@ -711,9 +711,10 @@ relation Table_action_ok: cursor context tblctx |- tblaction : tblctx tblactionI
 
 rule Table_action_ok:
   p C tblctx |- (name arg*) : tblctx' (name argIL'* paramIL_d* paramIL_c*)
-  -- if MonoFD (ActionT pt*) = $find_funcdef(p, C, name)
-  ----
   -- (Arg_ok: p C |- arg : argIL typ_arg)*
+  ----
+  -- if (fid, fd, id_deft*) = $find_funcdef(p, C, name, argIL*)
+  -- if fd = MonoFD (ActionT pt*)
   ----
   -- Call_action_partial_ok: p C |- name pt* (argIL, typ_arg)* : paramIL_d* paramIL_c* argIL'*
   -- if tblctx' = $add_action((name, pt*, argIL'*), tblctx)

@@ -28,3 +28,14 @@ def $is_callfunce(expr) : bool            hint(show % IS CALLFUNC_E)
 def $is_callmethode(expr) : bool          hint(show % IS CALLMETHOD_E)
 def $is_calltype(expr) : bool             hint(show % IS CALLTYPE_E)
 def $is_inste(expr) : bool                hint(show % IS INST_E)
+
+;;
+;; Stringifiers
+;;
+
+def $string_of_name(name) : text     hint(show %)
+
+def $string_of_name(name) = $concat_text("." id)
+  -- if TOP id = name
+def $string_of_name(name) = id
+  -- if CURRENT id = name

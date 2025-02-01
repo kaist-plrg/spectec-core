@@ -12,13 +12,16 @@ syntax tidset hint(show %latex("\\mathcal{B}")) = set(tid)
 def $fresh_tid() : tid  hint(show FRESH#_#TID)
 
 ;;
-;; Function identifiers
+;; Function and constructor identifiers
 ;;
 
 syntax fid = id (id, bool)*
+syntax cid = fid
 
+def $to_fid(id, param*) : fid
 def $to_fid'(param*) : (id, bool)*
 
+def $to_fid(id, param*) = id $to_fid'(param*)
 def $to_fid'(eps) = eps
 def $to_fid'(param_h param_t*) = t $to_fid'(param_t*)
   -- if id dir type expr = param_h
@@ -27,16 +30,8 @@ def $to_fid'(param_h param_t*) = t $to_fid'(param_t*)
   -- if id dir type eps = param_h
   -- if t = (id, false)
 
-def $to_fid(id, param*) : fid
-
-def $to_fid(id, param*) = id $to_fid'(param*)
-
-def $string_of_name(name) : text     hint(show %)
-
-def $string_of_name(name) = $concat_text("." id)
-  -- if TOP id = name
-def $string_of_name(name) = id
-  -- if CURRENT id = name
+def $to_cid(id, param*) : cid
+def $to_cid(id, param*) = $to_fid(id, param*)
 
 ;;
 ;; Object identifiers
