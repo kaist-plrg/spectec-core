@@ -1034,6 +1034,14 @@ module Make (Arch : ARCH) : INTERP = struct
     in
     List.fold_left2 copyin' (ctx_caller, ctx_callee, []) params args
 
+  and copyin_default (cursor_callee : Ctx.cursor) (ctx_callee : Ctx.t)
+      (params_default : param list) (args_default : value list) : Ctx.t =
+    List.fold_left2
+      (fun ctx_callee param_default value_default ->
+        let id, _, _, _, _ = param_default.it in
+        Ctx.add_value cursor_callee id.it value_default.it ctx_callee)
+      ctx_callee params_default args_default
+
   and copyout (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
       (cursor_callee : Ctx.cursor) (ctx_callee : Ctx.t) (params : param list)
       (lvalues : LValue.t option list) : Ctx.t =
@@ -1124,11 +1132,14 @@ module Make (Arch : ARCH) : INTERP = struct
       Ctx.t * Sig.t =
     let value_base = eval_lvalue cursor_caller ctx_caller lvalue_base in
     let ctx_callee = pre ctx_caller in
-    let params, args, _params_default, _args_default =
+    let params, args, params_default, args_default =
       align_params_with_args params args args_default
     in
     let ctx_caller, ctx_callee, lvalues =
       copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
+    in
+    let ctx_callee =
+      copyin_default Ctx.Local ctx_callee params_default args_default
     in
     let ctx_callee, sign, value_base =
       match (value_base, fid) with
@@ -1241,11 +1252,14 @@ module Make (Arch : ARCH) : INTERP = struct
       Ctx.t * Sig.t =
     let ctx_callee = pre ctx_caller in
     check (targs = []) "(eval_action_call) action cannot have type arguments";
-    let params, args, _params_default, _args_default =
+    let params, args, params_default, args_default =
       align_params_with_args params args args_default
     in
     let ctx_caller, ctx_callee, lvalues =
       copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
+    in
+    let ctx_callee =
+      copyin_default Ctx.Local ctx_callee params_default args_default
     in
     let ctx_callee, sign = eval_block ~start:true Ctx.Local ctx_callee block in
     let ctx_caller = post ctx_caller ctx_callee in
@@ -1260,11 +1274,14 @@ module Make (Arch : ARCH) : INTERP = struct
       (block : block) : Ctx.t * Sig.t =
     let ctx_callee = pre ctx_caller in
     let ctx_callee = Ctx.add_typs Ctx.Local tparams targs ctx_callee in
-    let params, args, _params_default, _args_default =
+    let params, args, params_default, args_default =
       align_params_with_args params args args_default
     in
     let ctx_caller, ctx_callee, lvalues =
       copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
+    in
+    let ctx_callee =
+      copyin_default Ctx.Local ctx_callee params_default args_default
     in
     let ctx_callee, sign = eval_block ~start:true Ctx.Local ctx_callee block in
     let ctx_caller = post ctx_caller ctx_callee in
@@ -1298,11 +1315,14 @@ module Make (Arch : ARCH) : INTERP = struct
       (args_default : id' list) : Ctx.t * Sig.t =
     let ctx_callee = pre ctx_caller in
     let ctx_callee = Ctx.add_typs Ctx.Local tparams targs ctx_callee in
-    let params, args, _params_default, _args_default =
+    let params, args, params_default, args_default =
       align_params_with_args params args args_default
     in
     let ctx_caller, ctx_callee, lvalues =
       copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
+    in
+    let ctx_callee =
+      copyin_default Ctx.Local ctx_callee params_default args_default
     in
     let ctx_callee, sign = Arch.eval_extern_method_call ctx_callee oid fid in
     let ctx_caller = post ctx_caller ctx_callee in
@@ -1316,11 +1336,14 @@ module Make (Arch : ARCH) : INTERP = struct
       (args_default : id' list) (decls : decl list) (senv : SEnv.t) :
       Ctx.t * Sig.t =
     let ctx_callee = pre ctx_caller in
-    let params, args, _params_default, _args_default =
+    let params, args, params_default, args_default =
       align_params_with_args params args args_default
     in
     let ctx_caller, ctx_callee, lvalues =
       copyin cursor_caller ctx_caller Ctx.Block ctx_callee params args
+    in
+    let ctx_callee =
+      copyin_default Ctx.Local ctx_callee params_default args_default
     in
     let ctx_callee = eval_decls Ctx.Block ctx_callee decls in
     let ctx_callee =
@@ -1348,11 +1371,14 @@ module Make (Arch : ARCH) : INTERP = struct
       (args_default : id' list) (decls : decl list) (fenv : FEnv.t)
       (block : block) : Ctx.t * Sig.t =
     let ctx_callee = pre ctx_caller in
-    let params, args, _params_default, _args_default =
+    let params, args, params_default, args_default =
       align_params_with_args params args args_default
     in
     let ctx_caller, ctx_callee, lvalues =
       copyin cursor_caller ctx_caller Ctx.Block ctx_callee params args
+    in
+    let ctx_callee =
+      copyin_default Ctx.Local ctx_callee params_default args_default
     in
     let ctx_callee = eval_decls Ctx.Block ctx_callee decls in
     let ctx_callee =
