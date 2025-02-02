@@ -43,8 +43,8 @@ Error on stf test
 Run success
 
 >>> Running run test on ../../../testdata/petr4/program/well-typed/exit.p4 with ../../../testdata/petr4/stf/exit.stf
-Error on run: File ../../../testdata/petr4/program/well-typed/exit.p4, line 16, characters 26-54
-(eval_call_method_expr) method call as an expression must return a value
+[PASS] Expected: 0 48656C6C6F2C20576F726C6421 / Got: 0 48656C6C6F2C20576F726C6421
+Run success
 
 >>> Running run test on ../../../testdata/petr4/program/well-typed/extraction.p4 with ../../../testdata/petr4/stf/extraction.stf
 [PASS] Expected: 0 4848656C6C6F2C20576F726C6421 / Got: 0 4848656C6C6F2C20576F726C6421
@@ -186,4 +186,4 @@ Run success
 Parser on file: [PASS] 43/43 (100.00%) [FAIL] 0/43 (0.00%)
 Typecheck: [PASS] 43/43 (100.00%) [FAIL] 0/43 (0.00%)
 Instantiate: [PASS] 43/43 (100.00%) [FAIL] 0/43 (0.00%)
-Run: [PASS] 39/43 (90.70%) [FAIL] 4/43 (9.30%)
+Run: [PASS] 40/43 (93.02%) [FAIL] 3/43 (6.98%)

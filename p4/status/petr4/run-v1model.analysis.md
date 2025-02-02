@@ -29,23 +29,7 @@ control MyEgress(inout head[13] hdr,
 * table2.p4
 * table3.p4
 
-## 3. Failure in `lookahead` should result in a transition to reject
-
-```p4
-state start {
-    packet.extract(hdr[0]);
-    // lookahead should fail due to insufficient bytes
-    // but select does not expect a reject transition from its input
-    transition select(packet.lookahead< bit<8> >()) {
-        8w42 : next;
-        _ : reject;
-    }
-}
-```
-
-* exit.p4
-
-## 4. Seemingly incorrect behavior of saturating arithmetic
+## 3. Seemingly incorrect behavior of saturating arithmetic
 
 ```p4
 int<8> w = 8s117 |-| 8s75 |-| 8s128 |-| 8s128;
