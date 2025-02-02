@@ -107,8 +107,27 @@ module Make (Arch : ARCH) : INTERP = struct
         F.asprintf
           "(cont_expr_to_stmt) expected a single value, but got multiple values"
         |> error_no_info
-    | Reject value -> (ctx, Sig.Trans (`Reject value))
-    | Exit -> (ctx, Sig.Exit)
+    | Reject value -> (ctx, Trans (`Reject value))
+    | Exit -> (ctx, Exit)
+
+  let cont_expr_to_call (ctx : Ctx.t) (esign : Esig.t)
+      (continue : Value.t -> Ctx.t * Csig.t) : Ctx.t * Csig.t =
+    match esign with
+    | Cont (`Single value) -> continue value
+    | Cont (`Multiple _) ->
+        F.asprintf
+          "(cont_expr_to_call) expected a single value, but got multiple values"
+        |> error_no_info
+    | Reject value -> (ctx, Reject value)
+    | Exit -> (ctx, Exit)
+
+  let cont_call_to_stmt (ctx : Ctx.t) (csign : Csig.t)
+      (continue : Ctx.t * LValue.t option list -> Ctx.t * Sig.t) : Ctx.t * Sig.t
+      =
+    match csign with
+    | Cont (ctx_callee, lvalues) -> continue (ctx_callee, lvalues)
+    | Reject value -> (ctx, Trans (`Reject value))
+    | Exit -> (ctx, Exit)
 
   (* L-value evaluation *)
 
@@ -1079,42 +1098,51 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and copyin (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
       (cursor_callee : Ctx.cursor) (ctx_callee : Ctx.t) (params : param list)
-      (args : arg list) : Ctx.t * Ctx.t * LValue.t option list =
-    let copyin'
-        ((ctx_caller, ctx_callee, lvalues) :
-          Ctx.t * Ctx.t * LValue.t option list) (param : param) (arg : arg) :
-        Ctx.t * Ctx.t * LValue.t option list =
+      (args : arg list) : Ctx.t * Csig.t =
+    let copyin' (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
+        (lvalues : LValue.t option list) (param : param) (arg : arg) :
+        Ctx.t * Csig.t =
       let id, dir, typ, _, _ = param.it in
-      let ctx_caller, value, lvalue =
-        match dir.it with
-        | No | In ->
-            let ctx_caller, esign = eval_arg cursor_caller ctx_caller arg in
-            let value = cont_value esign in
-            (ctx_caller, value, None)
-        | InOut ->
-            let ctx_caller, lvalue =
-              eval_lvalue_of_arg cursor_caller ctx_caller arg
-            in
-            check (Option.is_some lvalue)
-              "(copyin) inout argument cannot be nameless";
-            let lvalue = Option.get lvalue in
-            let value = eval_lvalue cursor_caller ctx_caller lvalue in
-            (ctx_caller, value, Some lvalue)
-        | Out ->
-            let ctx_caller, lvalue =
-              eval_lvalue_of_arg cursor_caller ctx_caller arg
-            in
-            let value =
-              Ctx.resolve_typ cursor_callee typ.it ctx_callee
-              |> Numerics.eval_default
-            in
-            (ctx_caller, value, lvalue)
-      in
-      let ctx_callee = Ctx.add_value cursor_callee id.it value ctx_callee in
-      let lvalues = lvalues @ [ lvalue ] in
-      (ctx_caller, ctx_callee, lvalues)
+      match dir.it with
+      | No | In ->
+          let ctx_caller, esign = eval_arg cursor_caller ctx_caller arg in
+          cont_expr_to_call ctx_caller esign (fun value ->
+              let ctx_callee =
+                Ctx.add_value cursor_callee id.it value ctx_callee
+              in
+              let lvalues = lvalues @ [ None ] in
+              (ctx_caller, Cont (ctx_callee, lvalues)))
+      | InOut ->
+          let ctx_caller, lvalue =
+            eval_lvalue_of_arg cursor_caller ctx_caller arg
+          in
+          check (Option.is_some lvalue)
+            "(copyin) inout argument cannot be nameless";
+          let lvalue = Option.get lvalue in
+          let value = eval_lvalue cursor_caller ctx_caller lvalue in
+          let ctx_callee = Ctx.add_value cursor_callee id.it value ctx_callee in
+          let lvalues = lvalues @ [ Some lvalue ] in
+          (ctx_caller, Cont (ctx_callee, lvalues))
+      | Out ->
+          let ctx_caller, lvalue =
+            eval_lvalue_of_arg cursor_caller ctx_caller arg
+          in
+          let value =
+            Ctx.resolve_typ cursor_callee typ.it ctx_callee
+            |> Numerics.eval_default
+          in
+          let ctx_callee = Ctx.add_value cursor_callee id.it value ctx_callee in
+          let lvalues = lvalues @ [ lvalue ] in
+          (ctx_caller, Cont (ctx_callee, lvalues))
     in
-    List.fold_left2 copyin' (ctx_caller, ctx_callee, []) params args
+    List.fold_left2
+      (fun ((ctx_caller, csig) : Ctx.t * Csig.t) param arg ->
+        match csig with
+        | Cont (ctx_callee, lvalues) ->
+            copyin' ctx_caller ctx_callee lvalues param arg
+        | _ -> (ctx_caller, csig))
+      (ctx_caller, Cont (ctx_callee, []))
+      params args
 
   and copyin_default (cursor_callee : Ctx.cursor) (ctx_callee : Ctx.t)
       (params_default : param list) (args_default : value list) : Ctx.t =
@@ -1217,38 +1245,39 @@ module Make (Arch : ARCH) : INTERP = struct
     let params, args, params_default, args_default =
       align_params_with_args params args args_default
     in
-    let ctx_caller, ctx_callee, lvalues =
+    let ctx_caller, csign =
       copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
     in
-    let ctx_callee =
-      copyin_default Ctx.Local ctx_callee params_default args_default
-    in
-    let ctx_callee, sign, value_base =
-      match (value_base, fid) with
-      | StackV (values, idx, size), fid ->
-          eval_builtin_stack_method_call Ctx.Local ctx_callee fid values idx
-            size
-      | HeaderV (id, valid, fields), fid ->
-          eval_builtin_header_method_call Ctx.Local ctx_callee fid id valid
-            fields
-      | UnionV (id, fields), fid ->
-          eval_builtin_union_method_call Ctx.Local ctx_callee fid id fields
-      | _ ->
-          F.asprintf "(eval_builtin_method_call) %a cannot be called on %a"
-            FId.pp fid (Value.pp ~level:0) value_base
-          |> error_no_info
-    in
-    let ctx_caller = post ctx_caller ctx_callee in
-    let ctx_caller =
-      copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
-    in
-    let ctx_caller =
-      match value_base with
-      | Some value_base ->
-          eval_lvalue_write cursor_caller ctx_caller lvalue_base value_base
-      | None -> ctx_caller
-    in
-    (ctx_caller, sign)
+    cont_call_to_stmt ctx_caller csign (fun (ctx_callee, lvalues) ->
+        let ctx_callee =
+          copyin_default Ctx.Local ctx_callee params_default args_default
+        in
+        let ctx_callee, sign, value_base =
+          match (value_base, fid) with
+          | StackV (values, idx, size), fid ->
+              eval_builtin_stack_method_call Ctx.Local ctx_callee fid values idx
+                size
+          | HeaderV (id, valid, fields), fid ->
+              eval_builtin_header_method_call Ctx.Local ctx_callee fid id valid
+                fields
+          | UnionV (id, fields), fid ->
+              eval_builtin_union_method_call Ctx.Local ctx_callee fid id fields
+          | _ ->
+              F.asprintf "(eval_builtin_method_call) %a cannot be called on %a"
+                FId.pp fid (Value.pp ~level:0) value_base
+              |> error_no_info
+        in
+        let ctx_caller = post ctx_caller ctx_callee in
+        let ctx_caller =
+          copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
+        in
+        let ctx_caller =
+          match value_base with
+          | Some value_base ->
+              eval_lvalue_write cursor_caller ctx_caller lvalue_base value_base
+          | None -> ctx_caller
+        in
+        (ctx_caller, sign))
 
   and eval_builtin_stack_method_call (cursor : Ctx.cursor) (ctx : Ctx.t)
       (fid : FId.t) (values : Value.t list) (idx : Bigint.t) (size : Bigint.t) :
@@ -1337,18 +1366,21 @@ module Make (Arch : ARCH) : INTERP = struct
     let params, args, params_default, args_default =
       align_params_with_args params args args_default
     in
-    let ctx_caller, ctx_callee, lvalues =
+    let ctx_caller, csign =
       copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
     in
-    let ctx_callee =
-      copyin_default Ctx.Local ctx_callee params_default args_default
-    in
-    let ctx_callee, sign = eval_block ~start:true Ctx.Local ctx_callee block in
-    let ctx_caller = post ctx_caller ctx_callee in
-    let ctx_caller =
-      copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
-    in
-    (ctx_caller, sign)
+    cont_call_to_stmt ctx_caller csign (fun (ctx_callee, lvalues) ->
+        let ctx_callee =
+          copyin_default Ctx.Local ctx_callee params_default args_default
+        in
+        let ctx_callee, sign =
+          eval_block ~start:true Ctx.Local ctx_callee block
+        in
+        let ctx_caller = post ctx_caller ctx_callee in
+        let ctx_caller =
+          copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
+        in
+        (ctx_caller, sign))
 
   and eval_function_call ~pre ~post (cursor_caller : Ctx.cursor)
       (ctx_caller : Ctx.t) (tparams : tparam list) (params : param list)
@@ -1359,18 +1391,21 @@ module Make (Arch : ARCH) : INTERP = struct
     let params, args, params_default, args_default =
       align_params_with_args params args args_default
     in
-    let ctx_caller, ctx_callee, lvalues =
+    let ctx_caller, csign =
       copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
     in
-    let ctx_callee =
-      copyin_default Ctx.Local ctx_callee params_default args_default
-    in
-    let ctx_callee, sign = eval_block ~start:true Ctx.Local ctx_callee block in
-    let ctx_caller = post ctx_caller ctx_callee in
-    let ctx_caller =
-      copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
-    in
-    (ctx_caller, sign)
+    cont_call_to_stmt ctx_caller csign (fun (ctx_callee, lvalues) ->
+        let ctx_callee =
+          copyin_default Ctx.Local ctx_callee params_default args_default
+        in
+        let ctx_callee, sign =
+          eval_block ~start:true Ctx.Local ctx_callee block
+        in
+        let ctx_caller = post ctx_caller ctx_callee in
+        let ctx_caller =
+          copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
+        in
+        (ctx_caller, sign))
 
   and eval_extern_function_call ~pre ~post (cursor_caller : Ctx.cursor)
       (ctx_caller : Ctx.t) (fid : FId.t) (tparams : tparam list)
@@ -1378,18 +1413,22 @@ module Make (Arch : ARCH) : INTERP = struct
       (args_default : id' list) : Ctx.t * Sig.t =
     let ctx_callee = pre ctx_caller in
     let ctx_callee = Ctx.add_typs Ctx.Local tparams targs ctx_callee in
-    let params, args, _params_default, _args_default =
+    let params, args, params_default, args_default =
       align_params_with_args params args args_default
     in
-    let ctx_caller, ctx_callee, lvalues =
+    let ctx_caller, csign =
       copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
     in
-    let ctx_callee, sign = Arch.eval_extern_func_call ctx_callee fid in
-    let ctx_caller = post ctx_caller ctx_callee in
-    let ctx_caller =
-      copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
-    in
-    (ctx_caller, sign)
+    cont_call_to_stmt ctx_caller csign (fun (ctx_callee, lvalues) ->
+        let ctx_callee =
+          copyin_default Ctx.Local ctx_callee params_default args_default
+        in
+        let ctx_callee, sign = Arch.eval_extern_func_call ctx_callee fid in
+        let ctx_caller = post ctx_caller ctx_callee in
+        let ctx_caller =
+          copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
+        in
+        (ctx_caller, sign))
 
   and eval_extern_method_call ~pre ~post (cursor_caller : Ctx.cursor)
       (ctx_caller : Ctx.t) (oid : OId.t) (fid : FId.t) (tparams : tparam list)
@@ -1400,18 +1439,21 @@ module Make (Arch : ARCH) : INTERP = struct
     let params, args, params_default, args_default =
       align_params_with_args params args args_default
     in
-    let ctx_caller, ctx_callee, lvalues =
+    let ctx_caller, csign =
       copyin cursor_caller ctx_caller Ctx.Local ctx_callee params args
     in
-    let ctx_callee =
-      copyin_default Ctx.Local ctx_callee params_default args_default
-    in
-    let ctx_callee, sign = Arch.eval_extern_method_call ctx_callee oid fid in
-    let ctx_caller = post ctx_caller ctx_callee in
-    let ctx_caller =
-      copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
-    in
-    (ctx_caller, sign)
+    cont_call_to_stmt ctx_caller csign (fun (ctx_callee, lvalues) ->
+        let ctx_callee =
+          copyin_default Ctx.Local ctx_callee params_default args_default
+        in
+        let ctx_callee, sign =
+          Arch.eval_extern_method_call ctx_callee oid fid
+        in
+        let ctx_caller = post ctx_caller ctx_callee in
+        let ctx_caller =
+          copyout cursor_caller ctx_caller Ctx.Local ctx_callee params lvalues
+        in
+        (ctx_caller, sign))
 
   and eval_parser_apply_method_call ~pre ~post (cursor_caller : Ctx.cursor)
       (ctx_caller : Ctx.t) (params : param list) (args : arg list)
@@ -1421,32 +1463,33 @@ module Make (Arch : ARCH) : INTERP = struct
     let params, args, params_default, args_default =
       align_params_with_args params args args_default
     in
-    let ctx_caller, ctx_callee, lvalues =
+    let ctx_caller, csign =
       copyin cursor_caller ctx_caller Ctx.Block ctx_callee params args
     in
-    let ctx_callee =
-      copyin_default Ctx.Local ctx_callee params_default args_default
-    in
-    let ctx_callee = eval_decls Ctx.Block ctx_callee decls in
-    let ctx_callee =
-      { ctx_callee with block = { ctx_callee.block with senv } }
-    in
-    let ctx_callee =
-      ctx_callee.block.senv |> SEnv.bindings |> List.map fst
-      |> List.fold_left
-           (fun ctx_callee id ->
-             Ctx.add_value Ctx.Block id (Value.StateV id) ctx_callee)
-           ctx_callee
-    in
-    let ctx_callee, sign =
-      eval_parser_state_machine Ctx.Block ctx_callee
-        (Sig.Trans (`State "start"))
-    in
-    let ctx_caller = post ctx_caller ctx_callee in
-    let ctx_caller =
-      copyout cursor_caller ctx_caller Ctx.Block ctx_callee params lvalues
-    in
-    (ctx_caller, sign)
+    cont_call_to_stmt ctx_caller csign (fun (ctx_callee, lvalues) ->
+        let ctx_callee =
+          copyin_default Ctx.Local ctx_callee params_default args_default
+        in
+        let ctx_callee = eval_decls Ctx.Block ctx_callee decls in
+        let ctx_callee =
+          { ctx_callee with block = { ctx_callee.block with senv } }
+        in
+        let ctx_callee =
+          ctx_callee.block.senv |> SEnv.bindings |> List.map fst
+          |> List.fold_left
+               (fun ctx_callee id ->
+                 Ctx.add_value Ctx.Block id (Value.StateV id) ctx_callee)
+               ctx_callee
+        in
+        let ctx_callee, sign =
+          eval_parser_state_machine Ctx.Block ctx_callee
+            (Sig.Trans (`State "start"))
+        in
+        let ctx_caller = post ctx_caller ctx_callee in
+        let ctx_caller =
+          copyout cursor_caller ctx_caller Ctx.Block ctx_callee params lvalues
+        in
+        (ctx_caller, sign))
 
   and eval_control_apply_method_call ~pre ~post (cursor_caller : Ctx.cursor)
       (ctx_caller : Ctx.t) (params : param list) (args : arg list)
@@ -1456,22 +1499,25 @@ module Make (Arch : ARCH) : INTERP = struct
     let params, args, params_default, args_default =
       align_params_with_args params args args_default
     in
-    let ctx_caller, ctx_callee, lvalues =
+    let ctx_caller, csign =
       copyin cursor_caller ctx_caller Ctx.Block ctx_callee params args
     in
-    let ctx_callee =
-      copyin_default Ctx.Local ctx_callee params_default args_default
-    in
-    let ctx_callee = eval_decls Ctx.Block ctx_callee decls in
-    let ctx_callee =
-      { ctx_callee with block = { ctx_callee.block with fenv } }
-    in
-    let ctx_callee, sign = eval_block ~start:true Ctx.Local ctx_callee block in
-    let ctx_caller = post ctx_caller ctx_callee in
-    let ctx_caller =
-      copyout cursor_caller ctx_caller Ctx.Block ctx_callee params lvalues
-    in
-    (ctx_caller, sign)
+    cont_call_to_stmt ctx_caller csign (fun (ctx_callee, lvalues) ->
+        let ctx_callee =
+          copyin_default Ctx.Local ctx_callee params_default args_default
+        in
+        let ctx_callee = eval_decls Ctx.Block ctx_callee decls in
+        let ctx_callee =
+          { ctx_callee with block = { ctx_callee.block with fenv } }
+        in
+        let ctx_callee, sign =
+          eval_block ~start:true Ctx.Local ctx_callee block
+        in
+        let ctx_caller = post ctx_caller ctx_callee in
+        let ctx_caller =
+          copyout cursor_caller ctx_caller Ctx.Block ctx_callee params lvalues
+        in
+        (ctx_caller, sign))
 
   and eval_table_apply_method_call ~pre ~post (_cursor_caller : Ctx.cursor)
       (ctx_caller : Ctx.t) (oid : OId.t) (table : Table.t) : Ctx.t * Sig.t =
