@@ -316,7 +316,7 @@ and table_entries_const = L.table_entries_const
 and table_entry = table_entry' L.table_entry
 
 and table_entry' =
-  keyset list * table_action * expr option * table_entry_const * anno list
+  table_entry_const * keyset list * table_action * expr option * anno list
 
 and table_entry_const = L.table_entry_const
 
@@ -331,8 +331,24 @@ and table_custom' = (unit, expr') L.table_custom'
 and table_custom_const = L.table_custom_const
 
 (* Methods *)
-and mthd = (typ', param', unit, expr') L.mthd
-and mthd' = (typ', param', unit, expr') L.mthd'
+and mthd = mthd' L.mthd
+
+and mthd' =
+  | ExternConsM of { id : id; cparams : cparam list; annos : anno list }
+  | ExternAbstractM of {
+      id : id;
+      typ_ret : typ;
+      tparams : tparam list;
+      params : param list;
+      annos : anno list;
+    }
+  | ExternM of {
+      id : id;
+      typ_ret : typ;
+      tparams : tparam list;
+      params : param list;
+      annos : anno list;
+    }
 
 (* Program *)
 type program = decl' L.program

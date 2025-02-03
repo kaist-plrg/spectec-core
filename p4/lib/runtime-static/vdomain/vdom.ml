@@ -11,7 +11,7 @@ type t =
   | FIntV of Bigint.t * Bigint.t
   | FBitV of Bigint.t * Bigint.t
   | VBitV of Bigint.t * Bigint.t * Bigint.t
-  (* 2. Derived values *)
+  (* 2a. Derived values *)
   | EnumFieldV of L.id' * L.member'
   | SEnumFieldV of L.id' * L.member' * t
   | ListV of t list
@@ -20,7 +20,7 @@ type t =
   | StructV of L.id' * (L.member' * t) list
   | HeaderV of L.id' * bool * (L.member' * t) list
   | UnionV of L.id' * (L.member' * t) list
-  (* 2c. Derived object reference values *)
+  (* 2b. Derived object reference values *)
   | RefV of Domain.Dom.OId.t
   (* 3. Synthesized values *)
   | TableEnumFieldV of L.id' * L.member'

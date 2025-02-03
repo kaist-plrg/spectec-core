@@ -201,6 +201,12 @@ and pp_functyp ?(level = 0) fmt functyp =
         params
         (pp_typ ~level:(level + 1))
         typ
+  | BuiltinMethodT (params, typ) ->
+      F.fprintf fmt "builtin_method%a -> %a"
+        (pp_params ~level:(level + 1))
+        params
+        (pp_typ ~level:(level + 1))
+        typ
   | ExternMethodT (params, typ) ->
       F.fprintf fmt "extern_method%a -> %a"
         (pp_params ~level:(level + 1))
@@ -217,12 +223,6 @@ and pp_functyp ?(level = 0) fmt functyp =
       F.fprintf fmt "parser_apply%a" (pp_params ~level:(level + 1)) params
   | ControlApplyMethodT params ->
       F.fprintf fmt "control_apply%a" (pp_params ~level:(level + 1)) params
-  | BuiltinMethodT (params, typ) ->
-      F.fprintf fmt "builtin_method%a -> %a"
-        (pp_params ~level:(level + 1))
-        params
-        (pp_typ ~level:(level + 1))
-        typ
   | TableApplyMethodT _ -> F.fprintf fmt "table_apply"
 
 (* Function definitions *)
@@ -247,9 +247,7 @@ let pp_constyp ?(level = 0) fmt constyp =
 (* Constructor definitions *)
 
 let pp_consdef ?(level = 0) fmt consdef =
-  let tparams, tparams_hidden, cparams, typ = consdef in
-  F.fprintf fmt "constructor%a%a -> %a" pp_tparams (tparams, tparams_hidden)
-    (pp_cparams ~level:(level + 1))
-    cparams
-    (pp_typ ~level:(level + 1))
-    typ
+  let tparams, tparams_hidden, constyp = consdef in
+  F.fprintf fmt "(%a)%a"
+    (pp_constyp ~level:(level + 1))
+    constyp pp_tparams (tparams, tparams_hidden)

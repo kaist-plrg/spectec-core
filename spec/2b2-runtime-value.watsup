@@ -3,14 +3,16 @@
 ;;
 
 syntax val =
+  ;; Base values
   | ErrV member                     hint(show ERR#_#V %)
   | MatchKindV member               hint(show MATCH#_#KIND#_#V %)
   | StrV text                       hint(show STR#_#V %)
   | BoolV bool                      hint(show BOOL#_#V %)
   | IntV int                        hint(show INT#_#V %)
-  | FIntV int int                   hint(show FINT#_#V %#S#%)
-  | FBitV int int                   hint(show FBIT#_#V %#W#%)
-  | VBitV int int int               hint(show VBIT#_#V#%latex("\\langle")#%%latex("@")%#%latex("\\rangle") %)
+  | FIntV nat bitstr                hint(show FINT#_#V %#S#%)
+  | FBitV nat bitstr                hint(show FBIT#_#V %#W#%)
+  | VBitV nat nat bitstr            hint(show VBIT#_#V#%latex("\\langle")#%%latex("@")%#%latex("\\rangle") %)
+  ;; Derived values
   | EnumFieldV id member            hint(show ENUM#_#FIELD#_#V %.%)
   | SEnumFieldV id member val       hint(show SENUM#_#FIELD#_#V %.% (%))
   | ListV val*                      hint(show LIST#_#V %)
@@ -19,6 +21,9 @@ syntax val =
   | StructV id (member, val)*       hint(show STRUCT#_#V % %latex("\\{")#%#%latex("\\}"))
   | HeaderV id (member, val)*       hint(show HEADER#_#V % %latex("\\{")#%#%latex("\\}"))
   | UnionV id (member, val)*        hint(show UNION#_#V % %latex("\\{")#%#%latex("\\}"))
+  ;; Derived object reference values
+  | RefV oid                        hint(show REF#_#V %)
+  ;; Synthesized values
   | TableEnumFieldV id member       hint(show TABLE#_#ENUM#_#FIELD#_#V %.%)
   | TableStructV id (member, val)*  hint(show TABLE#_#STRUCT#_#V % %latex("\\{")#%#%latex("\\}"))
   | SeqV val*                       hint(show SEQ#_#V %)
@@ -33,13 +38,3 @@ syntax setval =
   | SingletonSet val                hint(show %latex("\\{") % %latex("\\}"))
   | MaskSet val val                 hint(show %latex("\\{") % %latex("\\&\\&\\&") % %latex("\\}"))
   | RangeSet val val                hint(show %latex("\\{") % ... % %latex("\\}"))
-
-;;
-;; Helpers
-;;
-
-def $num(val) : int
-
-def $num(IntV i) = i
-def $num(FIntV w i) = i
-def $num(FBitV w i) = i

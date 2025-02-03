@@ -4,7 +4,6 @@
 
 syntax theta hint(show %latex("\\theta")) = map(id, typ)
 
-;; No definitions for the following declarations
 def $free_typ(typ) : set(tid)                              hint(show %latex("FV(")#%1#%latex(")"))
 def $free_functyp(functyp) : set(tid)                      hint(show %latex("FV(")#%1#%latex(")"))
 
@@ -12,119 +11,191 @@ def $subst_typ(theta, typ) : typ                           hint(show %2#%latex("
 def $subst_typdef_poly(theta, polytypdef) : polytypdef     hint(show %2#%latex("/")#%1)
 def $subst_funcdef(theta, funcdef) : funcdef               hint(show %2#%latex("/")#%1)
 def $subst_functyp(theta, functyp) : functyp               hint(show %2#%latex("/")#%1)
+def $subst_constyp(theta, constyp) : constyp               hint(show %2#%latex("/")#%1)
 
-;; Types
+;;
+;; Type substitutions
+;;
+
 def $subst_typ(theta, VarT id) = $find_map(id, typ, theta, id)
   -- if $in_dom_map(id, typ, id, theta)
+
 def $subst_typ(theta, SpecT ptd typ*) = SpecT ptd' typ'*
   -- if ptd' = $subst_typdef_poly(theta, ptd)
   -- if typ'* = ($subst_typ(theta, typ))*
+
 def $subst_typ(theta, DefT typ) = $subst_typ(theta, typ)
+
 def $subst_typ(theta, NewT id typ) = NewT id ($subst_typ(theta, typ))
+
 def $subst_typ(theta, SEnumT id typ fields) = SEnumT id ($subst_typ(theta, typ)) fields
+
 def $subst_typ(theta, ListT typ) = ListT ($subst_typ(theta, typ))
+
 def $subst_typ(theta, TupleT typ*) = TupleT ($subst_typ(theta, typ))*
+
 def $subst_typ(theta, StackT typ int) = StackT ($subst_typ(theta, typ)) int
+
 def $subst_typ(theta, StructT id (member, typ)*) = StructT id (member, $subst_typ(theta, typ))*
+
 def $subst_typ(theta, HeaderT id (member, typ)*) = HeaderT id (member, $subst_typ(theta, typ))*
+
 def $subst_typ(theta, UnionT id (member, typ)*) = UnionT id (member, $subst_typ(theta, typ))*
+
 def $subst_typ(theta, ExternT id fmap) = ExternT id fmap'
-  -- if MAP fid* funcdef* = fmap
-  -- if fmap' = MAP fid* $subst_funcdef(theta, funcdef)*
+  -- if MAP (PAIR fid funcdef)* = fmap
+  -- if fmap' = MAP (PAIR fid $subst_funcdef(theta, funcdef))*
+
 def $subst_typ(theta, ParserT paramtyp*) = ParserT paramtyp'*
   -- if (id dir typ val)* = paramtyp*
   -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+
 def $subst_typ(theta, ControlT paramtyp*) = ControlT paramtyp'*
   -- if (id dir typ val)* = paramtyp*
   -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+
 def $subst_typ(theta, PackageT typ*) = PackageT ($subst_typ(theta, typ))*
+
 def $subst_typ(theta, TableT id typ) = TableT id ($subst_typ(theta, typ))
+
 def $subst_typ(theta, TableStructT id (member, typ)*) = TableStructT id (member, $subst_typ(theta, typ))*
+
 def $subst_typ(theta, SeqT typ*) = SeqT ($subst_typ(theta, typ))*
+
 def $subst_typ(theta, SeqDefaultT typ*) = SeqDefaultT ($subst_typ(theta, typ))*
+
 def $subst_typ(theta, RecordT (member, typ)*) = RecordT (member, $subst_typ(theta, typ))*
+
 def $subst_typ(theta, RecordDefaultT (member, typ)*) = RecordDefaultT (member, $subst_typ(theta, typ))*
+
 def $subst_typ(theta, SetT typ) = SetT ($subst_typ(theta, typ))
+
 def $subst_typ(theta, typ) = typ
   -- otherwise
 
-;; Type definitions
-def $subst_typdef_poly(theta, PolyD tparam* typ) = PolyD tparam'* ($subst_typ(theta', typ))
-  -- if SET tid_free* = $diff_set(tid, $free_typ(typ), SET tparam*)
-  -- if tidset_capture = $unions_set(tid, ($free_typ($find_map(tid, typ, theta, tid_free)))*)
-  -- if (tparam' = $fresh_tid())*
-  -- if |tparam*| = |tparam'*|
-  -- if ($not_in_set(tid, tparam', tidset_capture))*
-  -- if theta' = $extends_map(tid, typ, theta, tparam*, (VarT tparam')*)
+;;
+;; Type definition substitutions
+;;
 
-;; Function definitions
+def $subst_typdef_poly(theta, PolyD (tparam*, tparam_hidden*) typ) = PolyD (tparam''*, tparam_hidden''*) typ'
+  -- if SET tid_free* = $diff_set(tid, $free_typ(typ), SET (tparam* tparam_hidden*))
+  -- if tidset_capture = $unions_set(tid, ($free_typ($find_map(tid, typ, theta, tid_free)))*)
+  ----
+  -- if (tparam' = $fresh_tid())*
+  -- if |tparam'*| = |tparam* tparam_hidden*|
+  -- if ($not_in_set(tid, tparam', tidset_capture))*
+  ----
+  -- if tparam'* = tparam''* tparam_hidden''*
+  ----
+  -- if theta' = $extends_map(tid, typ, theta, tparam*, (VarT tparam')*)
+  ----
+  -- if typ' = $subst_typ(theta', typ)
+
+;;
+;; Function definition substitutions
+;;
+
 def $subst_funcdef(theta, MonoFD ft) = MonoFD ($subst_functyp(theta, ft))
-def $subst_funcdef(theta, PolyFD tparam* ft) = PolyFD tparam'* ($subst_functyp(theta', ft))
-  -- if SET tid_free* = $diff_set(tid, $free_functyp(ft), SET tparam*)
+
+def $subst_funcdef(theta, PolyFD (tparam*, tparam_hidden*) ft) = PolyFD (tparam''*, tparam_hidden''*) ft'
+  -- if SET tid_free* = $diff_set(tid, $free_functyp(ft), SET (tparam* tparam_hidden*))
   -- if tidset_capture = $unions_set(tid, ($free_typ($find_map(tid, typ, theta, tid_free)))*)
+  ----
   -- if (tparam' = $fresh_tid())*
-  -- if |tparam*| = |tparam'*|
+  -- if |tparam'*| = |tparam* tparam_hidden*|
   -- if ($not_in_set(tid, tparam', tidset_capture))*
+  ----
+  -- if tparam'* = tparam''* tparam_hidden''*
+  ----
   -- if theta' = $extends_map(tid, typ, theta, tparam*, (VarT tparam')*)
+  ----
+  -- if ft' = $subst_functyp(theta', ft)
 
-;; Function types
+;;
+;; Function type substitutions
+;;
+
 def $subst_functyp(theta, BuiltinMethodT paramtyp* typ) = BuiltinMethodT paramtyp'* ($subst_typ(theta, typ))
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+
 def $subst_functyp(theta, ActionT paramtyp*) = ActionT paramtyp'*
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+
 def $subst_functyp(theta, ParserApplyMethodT paramtyp*) = ParserApplyMethodT paramtyp'*
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+
 def $subst_functyp(theta, ControlApplyMethodT paramtyp*) = ControlApplyMethodT paramtyp'*
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+
 def $subst_functyp(theta, TableApplyMethodT typ) = TableApplyMethodT ($subst_typ(theta, typ))
+
 def $subst_functyp(theta, ExternFuncT paramtyp* typ) = ExternFuncT paramtyp'* ($subst_typ(theta, typ))
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+
 def $subst_functyp(theta, FuncT paramtyp* typ) = FuncT paramtyp'* ($subst_typ(theta, typ))
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+
 def $subst_functyp(theta, ExternMethodT paramtyp* typ) = ExternMethodT paramtyp'* ($subst_typ(theta, typ))
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+
 def $subst_functyp(theta, ExternAbstractMethodT paramtyp* typ) = ExternAbstractMethodT paramtyp'* ($subst_typ(theta, typ))
-  -- if (id dir typ val)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
-
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
 
 ;;
-;; Specialization
+;; Constructor type substitutions
 ;;
 
+def $subst_constyp(theta, ConsT paramtyp* typ) = ConsT paramtyp'* typ'
+  -- if (id dir typ val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+  ----
+  -- if typ' = $subst_typ(theta, typ)
+
+;;
+;; Specializations
+;;
+
+;;
 ;; Typedef specialization
+;;
+
 def $specialize_typdef(typdef, typ*) : typ  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
 def $specialize_typdef(MonoD typ, eps) = typ
-def $specialize_typdef(PolyD tparam* typ, typ_a*) = $subst_typ(MAP tparam* typ_a*, typ)
-  -- if |tparam*| = |typ_a*|
+def $specialize_typdef(PolyD (tparam*, tparam_hidden*) typ, typ_a*) = $subst_typ(MAP (PAIR tparam' typ_a)*, typ)
+  -- if tparam'* = tparam* ++ tparam_hidden*
+  -- if |tparam'*| = |typ_a*|
 
+;;
 ;; Funcdef specialization
-;; without considering missing type arguments
+;;
+
+;; (TODO) consider missing type arguments
 def $specialize_funcdef(funcdef, typ*) : functyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
 def $specialize_funcdef(MonoFD ft, eps) = ft
-def $specialize_funcdef(PolyFD tparam* ft, typ_a*) = $subst_functyp(MAP tparam* typ_a*, ft)
-  -- if |tparam*| = |typ_a*|
+def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) ft, typ_a*) = $subst_functyp(MAP (PAIR tparam' typ_a)*, ft)
+  -- if tparam'* = tparam* ++ tparam_hidden*
+  -- if |tparam'*| = |typ_a*|
 
-
+;;
 ;; Constructor definition specialization
-;; without considering missing type arguments
+;;
+
+;; (TODO) consider missing type arguments
 def $specialize_consdef(consdef, typ*) : constyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
-def $specialize_consdef(ConsD tparam* (ConsT paramtyp* typ), typ_a*) = ConsT paramtyp'* ($subst_typ(theta, typ))
-  -- if |tparam*| = |typ_a*|
-  -- if (id dir typ val)* = paramtyp*
-  -- if theta = MAP tparam* typ_a*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val)*
-
+def $specialize_consdef(ConsD tparam* tparam_hidden* ct, typ_a*) = $subst_constyp(MAP (PAIR tparam' typ_a)*, ct)
+  -- if tparam'* = tparam* ++ tparam_hidden*
+  -- if |tparam'*| = |typ_a*|
 
 ;;
 ;; Canonicalization (recursive specialization and typedef unrolling)

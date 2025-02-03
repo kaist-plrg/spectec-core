@@ -2,10 +2,12 @@
 ;; Numbers
 ;;
 
+syntax bits = int
+
 syntax num =
-  | INT int       hint(show %)
-  | FINT int int  hint(show %#S#%)
-  | FBIT int int  hint(show %#W#%)
+  | INT int         hint(show %)
+  | FINT nat bits   hint(show %#S#%)
+  | FBIT nat bits   hint(show %#W#%)
 
 ;;
 ;; Texts
@@ -157,6 +159,7 @@ syntax selectcase = keyset* statelabel
 
 ;;
 ;; Expressions
+;; (TODO-Jaehyun) disambiguate CallFuncE and InstE with typename syntax
 ;;
 
 syntax expr =
@@ -182,10 +185,9 @@ syntax expr =
   | ErrAccE member                        hint(show ERROR.%)
   | TypeAccE name member                  hint(show %.%)
   | ExprAccE expr member                  hint(show %.%)
-  ;; (???) Need to append an empty %latex() to the end, otherwise the last parentheses disappear
   | CallFuncE name targ* arg*             hint(show %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
-  | CallMethodE expr member targ* arg*    hint(show %.%#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
-  | CallTypeE name member targ* arg*      hint(show %.%#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
+  | CallMethodE expr member targ* arg*    hint(show %1#%latex("\\langle")#%3#%latex("\\rangle").%2#(%4)#%latex())
+  | CallTypeE name member targ* arg*      hint(show %1#%latex("\\langle")#%3#%latex("\\rangle").%2#(%4)#%latex())
   | InstE name targ* arg*                 hint(show %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
 
 ;;
@@ -207,8 +209,8 @@ syntax stmt =
   | ExitS                                 hint(show EXIT)
   | RetS expr?                            hint(show RETURN %)
   | CallFuncS name targ* arg*             hint(show %#%latex("\\langle")#%#%latex("\\rangle")#%#%latex())
-  | CallMethodS expr member targ* arg*    hint(show %.%#%latex("\\langle")#%#%latex("\\rangle")#%#%latex())
-  | CallInstS name targ* arg*             hint(show %#%latex("\\langle")#%#%latex("\\rangle")#%#%latex())
+  | CallMethodS expr member targ* arg*    hint(show %1#%latex("\\langle")#%3#%latex("\\rangle").%2#(%4)#%latex())
+  | CallInstS name targ* arg*             hint(show %#%latex("\\langle")#%#%latex("\\rangle").APPLY#(%)#%latex())
   | TransS expr                           hint(show TRANSITION %)
   | DeclS decl                            hint(show %)
 
@@ -254,20 +256,20 @@ syntax tblactionprop = tblaction*
 ;; Table entries
 ;;
 
-syntax tblentry = keyset* tblaction expr? bool
-syntax tblentryprop = tblentry* bool
+syntax tblentry = bool keyset* tblaction expr?
+syntax tblentryprop = bool tblentry*
 
 ;;
 ;; Table default properties
 ;;
 
-syntax tbldefaultprop = tblaction bool
+syntax tbldefaultprop = bool tblaction
 
 ;;
 ;; Table custom properties
 ;;
 
-syntax tblcustomprop = member expr bool
+syntax tblcustomprop = bool member expr
 
 ;;
 ;; Table properties
@@ -308,12 +310,12 @@ syntax decl =
   | NewTypeD id type                                          hint(show TYPE % %)
   ;; TODO TypeDefD id decl is also valid
   | TypeDefD id type                                          hint(show TYPEDEF % %)
-  | ValueSetD id type expr                                    hint(show VALUE#_#SET % % %)
+  | ValueSetD id type expr                                    hint(show VALUE#_#SET#%latex("\\langle")#%2#%latex("\\rangle")#(%3)#%latex() %1)
   | ParserTypeD id tparam* param*                             hint(show PARSER %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
-  | ParserD id tparam* param* cparam* decl* parserstate*      hint(show PARSER %#%latex("\\langle")#%#%latex("\\rangle")#(%)#(%)#%latex() %latex("\\{")#%%#%latex("\\}"))
+  | ParserD id param* cparam* decl* parserstate*              hint(show PARSER %#(%)#(%)#%latex() %latex("\\{")#%%#%latex("\\}"))
   | TableD id tbl                                             hint(show TABLE % %latex("\\{")#%#%latex("\\}"))
   | ControlTypeD id tparam* param*                            hint(show CONTROL %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
-  | ControlD id tparam* param* cparam* decl* block            hint(show CONTROL %#%latex("\\langle")#%#%latex("\\rangle")#(%)#(%)#%latex() %latex("\\{")#% APPLY %#%latex("\\}"))
+  | ControlD id param* cparam* decl* block                    hint(show CONTROL %#(%)#(%)#%latex() %latex("\\{")#% APPLY %#%latex("\\}"))
   | ActionD id param* block                                   hint(show ACTION %(%) %)
   | FuncD id type tparam* param* block                        hint(show %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex() %5)
   | ExternFuncD id type tparam* param*                        hint(show EXTERN %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex())

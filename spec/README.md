@@ -19,52 +19,55 @@ To name a few, P4 has:
 * Generic types
 * Implicit type conversions (coercions)
 * Type inference
-* Limitations reflecting the target architecture (hardware)
+* Validity checks for limitations of the target architecture (hardware)
 
 ### Auxiliary Files
 
 There are several auxiliary files that are used in the spec.
 They define library functions for reusability and readability through display hints.
 
-* [0-aux](0-aux.watsup)
-* [2c2-runtime-aux](2c2-runtime-aux.watsup)
+For example, [0-aux](0-aux.watsup) holds definitions for set and map operations.
 
-### Syntax
+### External Syntax
 
-[1-syntax](1-syntax.watsup) defines the syntax of P4 language.
-This roughly corresponds to EL in p4cherry.
+[1a-syntax-el](1a-syntax-el.watsup) defines the surface syntax of P4 language.
 
 ### Runtime
 
-[2a-runtime-domain](2a-runtime-domain.watsup) defines the runtime domain of P4 language: identifiers, sets, and maps.
+[2a-runtime-domain](2a-runtime-domain.watsup) defines the runtime domain of P4 language, particularly various identifiers.
 
-[2b-runtime-value](2b-runtime-value.watsup) defines the runtime values of P4 language.
+[2b2-runtime-value](2b2-runtime-value.watsup) defines the runtime values of P4 language.
 
 [2c1-runtime-type](2c1-runtime-type.watsup) defines the types of P4 language: types of identifiers, functions, and constructors.
 P4 has generics, so the type/function/constructor definition corresponds to the concept of type constructors, or type schemes.
 Note that the type specified in SpecTec is more refined than the one in p4cherry, yet they are essentially the same.
 
-For types, [2c3-runtime-subst](2c3-runtime-subst.watsup) defines type substitution, and [2c4-runtime-alpha](2c4-runtime-alpha.watsup) defines alpha-equivalence of types.
-[2c5-runtime-wellformed](2c5-runtime-wellformed.watsup) defines the well-formedness checks of types.
+For types, [2c3-runtime-type-subst](2c3-runtime-type-subst.watsup) defines type substitution, and [2c5-runtime-type-alpha](2c5-runtime-type-alpha.watsup) defines alpha-equivalence of types.
+[2c6-runtime-type-wellformed](2c6-runtime-type-wellformed.watsup) defines the well-formedness checks of types.
+
+### Internal Syntax
+
+[3-syntax-il](3-syntax-il.watsup) defines the internal syntax of P4 language.
+The internal syntax is an elaborated version of the surface syntax, annotated with type information that comes post type-checking.
 
 ### Typing
 
-[3a-typing-domain](3a-typing-domain.watsup) defines the typing domain of P4 language: typing contexts, control flow, and compile-time known-ness.
+[4a1-typing-domain](4a1-typing-domain.watsup) defines the typing domain of P4 language: control flow and compile-time known-ness.
+[4a2-typing-context](4a2-typing-context.watsup) defines the typing context of P4 language.
+[4a3-typing-tblctx](4a3-typing-tblctx.watsup) defines the typing context of tables, which is a special case of the typing context.
 
-[3b-typing-relation](3b-typing-relation.watsup) defines the typing relations of P4 language.
-Relations are defined beforehand because they are mutually recursive.
+[4b-typing-relation](4b-typing-relation.watsup) defines the typing relations of P4 language.
+Relations are declared beforehand because they are mutually recursive.
 
-[3c-typing-static-eval](3c-typing-static-eval.watsup) defines the static evaluation of expressions.
-Yet, this is incorrect at this stage because while p4cherry implements static evaluation on IL (an elaborated language), SpecTec does not have IL yet.
-It currently defines static evaluation on EL, which is not correct.
+[4c-typing-static-eval](4c-typing-static-eval.watsup) defines the static evaluation of IL expressions.
 
-[3d1-typing-type](3d1-typing-type.watsup) defines the typing rules of syntactic types.
-[3d2-typing-subtyping](3d2-typing-subtyping.watsup) defines the subtyping rules, implicit or explicit.
+[4d1-typing-type](4d1-typing-type.watsup) defines the typing rules of syntactic types.
+[4d2-typing-subtyping](4d2-typing-subtyping.watsup) defines the subtyping rules, implicit or explicit.
 
-[3e-typing-expr](3e-typing-expr.watsup) defines the typing rules of expressions.
-[3f-typing-stmt](3f-typing-stmt.watsup) defines the typing rules of statements.
-[3g-typing-decl](3g-typing-decl.watsup) defines the typing rules of declarations.
-[3h-typing-call](3h-typing-call.watsup) defines the typing rules of calls, i.e., the calling convention.
+[4e-typing-expr](4e-typing-expr.watsup) defines the typing rules of expressions.
+[4f-typing-stmt](4f-typing-stmt.watsup) defines the typing rules of statements.
+[4g-typing-decl](4g-typing-decl.watsup) defines the typing rules of declarations.
+[4h-typing-call](4h-typing-call.watsup) defines the typing rules of various invocations, and the calling convention.
 
 ## Omissions (for now)
 
@@ -74,8 +77,6 @@ Mainly because they intoduce complexity to the spec, and are not essential to th
 * Type inference and don't care types (e.g. `_`)
 * Function and method overloading
 * Call via argument names and default arguments
-* Compile-time evaluation
-    * Compile-time evaluation should happen on the IL level, but the current spec does not define IL yet.
 
 ## TODOs
 
@@ -89,22 +90,5 @@ They are marked with `(TODO)` in the spec.
 
 ### Runtime
 
-* Capture-avoiding type substitution ([2c3-runtime-subst](2c3-runtime-subst.watsup))
-    * Fill in the substitution function bodies.
-* Alpha-equivalence of types and function definitions ([2c4-runtime-alpha](2c4-runtime-alpha.watsup))
-    * Define alpha-equivalence of function definitions.
+* Alpha-equivalence of types and function definitions ([2c5-runtime-type-alpha](2c5-runtime-type-alpha.watsup))
     * Displaying the equivalence symbol in the output, requiring SpecTec extension.
-* Well-formnedness of types ([2c5-runtime-wellformed](2c5-runtime-wellformed.watsup))
-    * Define parameter nesting rules for function types.
-
-### Typing
-
-* Subtyping rules ([3d2-typing-subtyping](3d2-typing-subtyping.watsup))
-    * Add subtyping rules for records and sequences.
-* Expression typing rules ([3e-typing-expr](3e-typing-expr.watsup))
-    * Fill in the rules for select expression typing.
-* Declaration typing rules ([3g-typing-decl](3g-typing-decl.watsup))
-    * Specify instantiation typing, when object initializer is present.
-    * Specify table typing, which is quite complex (mainly due to detailed validity checks).
-* Call typing rules ([3h-typing-call](3h-typing-call.watsup))
-    * Specify copy-in/copy-out calling convention.

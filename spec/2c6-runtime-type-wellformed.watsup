@@ -7,11 +7,14 @@ relation TypeDef_wf    : tidset |- typdef
 
 relation ParamType_wf  : tidset |- paramtyp
 relation ParamTypes_wf : tidset |- paramtyp*
+
 relation FuncType_wf   : tidset |- functyp
 relation FuncDef_wf    : tidset |- funcdef
 
+syntax consctxt hint(show %latex("\\texttt{c}")) = _
 relation CParamType_wf : tidset consctxt |- paramtyp
 relation CParamTypes_wf: tidset consctxt |- paramtyp*
+
 relation ConsType_wf   : tidset |- constyp
 relation ConsDef_wf    : tidset |- consdef
 
@@ -31,117 +34,154 @@ rule Type_wf/spect:
   -- if typ = $specialize_typdef(ptd, typ_a*)
   -- Type_wf: tidset |- typ
 
+def $nestable_deft(typ) : bool
+def $nestable_deft'(typ) : bool
+
+def $nestable_deft(typ) = $nestable_deft'($canon_typ(typ))
+def $nestable_deft'(basetyp) = ~$is_voidt(basetyp) /\ ~$is_matchkindt(basetyp)
+def $nestable_deft'(VarT tid) = true
+def $nestable_deft'(datatyp) = true
+def $nestable_deft'(typ) = false -- otherwise
+
 rule Type_wf/deft:
   tidset |- DefT typ
-  -- if typ' = $canon_typ(typ)
-  ----
-  -- if ($is_base(typ') /\ ~$is_voidt(typ') /\ ~$is_matchkindt(typ'))
-        \/ $is_vart(typ')
-        \/ $is_data(typ')
-  ----
+  -- if $nestable_deft(typ)
   -- Type_wf: tidset |- typ
+
+def $nestable_newt(typ) : bool
+def $nestable_newt'(typ) : bool
+
+def $nestable_newt(typ) = $nestable_newt'($canon_typ(typ))
+def $nestable_newt'(BoolT) = true
+def $nestable_newt'(FIntT w) = true
+def $nestable_newt'(FBitT w) = true
+def $nestable_newt'(VarT tid) = true
+def $nestable_newt'(NewT id typ) = true
+def $nestable_newt'(typ) = false -- otherwise
 
 rule Type_wf/newt:
   tidset |- NewT id typ
-  -- if typ' = $canon_typ(typ)
-  ----
-  -- if $is_boolt(typ')
-        \/ $is_fintt(typ')
-        \/ $is_fbitt(typ')
-        \/ $is_vart(typ')
-        \/ $is_newt(typ')
-  ----
+  -- if $nestable_newt(typ)
   -- Type_wf: tidset |- typ
 
 rule Type_wf/enumt:
   tidset |- EnumT id member*
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
+
+def $nestable_senumt(typ) : bool
+def $nestable_senumt'(typ) : bool
+def $nestable_newt_in_senumt(typ) : bool
+
+def $nestable_senumt(typ) = $nestable_senumt'($canon_typ(typ))
+def $nestable_senumt'(FIntT w) = true
+def $nestable_senumt'(VarT tid) = true
+def $nestable_senumt'(NewT id typ) = $nestable_newt_in_senumt(typ)
+def $nestable_senumt'(typ) = false -- otherwise
 
 rule Type_wf/senumt:
   tidset |- SEnumT id typ (member, val)*
-  -- if $distinct(member, member*)
-  ----
-  -- if typ' = $canon_typ(typ)
-  ----
-  -- if $is_fintt(typ')
-        \/ $is_fbitt(typ')
-        \/ $is_vart(typ')
-        \/ ($is_newt(typ') /\ $is_newt_in_senumt(typ'))
-  ----
+  -- if $distinct_(member, member*)
+  -- if $nestable_senumt(typ)
   -- Type_wf: tidset |- typ
+
+def $nestable_listt(typ) : bool
+def $nestable_listt'(typ) : bool
+
+def $nestable_listt(typ) = $nestable_listt'($canon_typ(typ))
+def $nestable_listt'(basetyp) = ~$is_voidt(basetyp)
+def $nestable_listt'(VarT tid) = true
+def $nestable_listt'(datatyp) = true
+def $nestable_listt'(typ) = false -- otherwise
 
 rule Type_wf/listt:
   tidset |- ListT typ
-  -- if typ' = $canon_typ(typ)
-  ----
-  -- if ($is_base(typ') /\ ~$is_voidt(typ'))
-        \/ $is_data(typ')
-  ----
+  -- if $nestable_listt(typ)
   -- Type_wf: tidset |- typ
+
+def $nestable_tuplet(typ) : bool
+def $nestable_tuplet'(typ) : bool
+
+def $nestable_tuplet(typ) = $nestable_tuplet'($canon_typ(typ))
+def $nestable_tuplet'(ErrT) = true
+def $nestable_tuplet'(BoolT) = true
+def $nestable_tuplet'(numtyp) = ~$is_intt(numtyp)
+def $nestable_tuplet'(VarT tid) = true
+def $nestable_tuplet'(datatyp) = ~$is_listt(datatyp)
+def $nestable_tuplet'(typ) = false -- otherwise
 
 rule Type_wf/tuplet:
   tidset |- TupleT typ*
-  -- if (typ' = $canon_typ(typ))*
-  ----
-  -- if ($is_errt(typ') \/ $is_boolt(typ')
-          \/ ($is_num(typ') /\ ~$is_intt(typ'))
-          \/ $is_vart(typ')
-          \/ ($is_data(typ') /\ ~$is_listt(typ')))*
-  ----
+  -- if $nestable_tuplet(typ)*
   -- (Type_wf: tidset |- typ)*
+
+def $nestable_stackt(typ) : bool
+def $nestable_stackt'(typ) : bool
+
+def $nestable_stackt(typ) = $nestable_stackt'($canon_typ(typ))
+def $nestable_stackt'(VarT tid) = true
+def $nestable_stackt'(HeaderT id (member, typ)*) = true
+def $nestable_stackt'(UnionT id (member, typ)*) = true
+def $nestable_stackt'(typ) = false -- otherwise
 
 rule Type_wf/stackt:
   tidset |- StackT typ size
   -- if size >= 0
-  ----
-  -- if typ' = $canon_typ(typ)
-  ----
-  -- if $is_vart(typ') \/ $is_headert(typ') \/ $is_uniont(typ')
-  ----
+  -- if $nestable_stackt(typ)
   -- Type_wf: tidset |- typ
+
+def $nestable_structt(typ) : bool
+def $nestable_structt'(typ) : bool
+
+def $nestable_structt(typ) = $nestable_tuplet'($canon_typ(typ))
+def $nestable_structt'(ErrT) = true
+def $nestable_structt'(BoolT) = true
+def $nestable_structt'(numtyp) = ~$is_intt(numtyp)
+def $nestable_structt'(VarT tid) = true
+def $nestable_structt'(datatyp) = ~$is_listt(datatyp)
+def $nestable_structt'(typ) = false -- otherwise
 
 rule Type_wf/structt:
   tidset |- StructT id (member, typ)*
-  -- if $distinct(member, member*)
-  ----
-  -- if (typ' = $canon_typ(typ))*
-  ----
-  -- if ($is_errt(typ') \/ $is_boolt(typ')
-        \/ ($is_num(typ') /\ ~$is_intt(typ'))
-        \/ $is_vart(typ')
-        \/ ($is_data(typ') /\ ~$is_listt(typ')))*
-  ----
+  -- if $distinct_(member, member*)
+  -- if $nestable_structt(typ)*
   -- (Type_wf: tidset |- typ)*
+
+def $nestable_headert(typ) : bool
+def $nestable_headert'(typ) : bool
+def $nestable_structt_in_headert(typ) : bool
+
+def $nestable_headert(typ) = $nestable_tuplet'($canon_typ(typ))
+def $nestable_headert'(BoolT) = true
+def $nestable_headert'(numtyp) = ~$is_intt(numtyp)
+def $nestable_headert'(VarT tid) = true
+def $nestable_headert'(SEnumT id typ (member, val)*) = true
+def $nestable_headert'(StructT id (member, typ)*) = true -- if $nestable_structt_in_headert(typ)*
+def $nestable_headert'(typ) = false -- otherwise
 
 rule Type_wf/headert:
   tidset |- HeaderT id (member, typ)*
-  -- if $distinct(member, member*)
-  ----
-  -- if (typ' = $canon_typ(typ))*
-  ----
-  -- if ($is_boolt(typ')
-        \/ ($is_num(typ') /\ ~$is_intt(typ'))
-        \/ $is_vart(typ')
-        \/ $is_newt(typ')
-        \/ $is_senumt(typ')
-        \/ $is_structt_in_headert(typ'))*
-  ----
+  -- if $distinct_(member, member*)
+  -- if $nestable_headert(typ)*
   -- (Type_wf: tidset |- typ)*
+
+def $nestable_uniont(typ) : bool
+def $nestable_uniont'(typ) : bool
+
+def $nestable_uniont(typ) = $nestable_tuplet'($canon_typ(typ))
+def $nestable_uniont'(VarT tid) = true
+def $nestable_uniont'(NewT id typ) = true
+def $nestable_uniont'(HeaderT id (member, typ)*) = true
+def $nestable_uniont'(typ) = false -- otherwise
 
 rule Type_wf/uniont:
   tidset |- UnionT id (member, typ)*
-  -- if $distinct(member, member*)
-  ----
-  -- if (typ' = $canon_typ(typ))*
-  ----
-  -- if ($is_vart(typ') \/ $is_newt(typ') \/ $is_headert(typ'))*
-  ----
+  -- if $distinct_(member, member*)
+  -- if $nestable_uniont(typ)*
   -- (Type_wf: tidset |- typ)*
 
 rule Type_wf/externt:
   tidset |- ExternT id fmap
-  -- if MAP fid* funcdef* = fmap
-  ----
+  -- if MAP (PAIR fid funcdef)* = fmap
   -- (FuncDef_wf: tidset |- funcdef)*
 
 rule Type_wf/parsert:
@@ -161,9 +201,7 @@ rule Type_wf/packaget:
 rule Type_wf/tablet:
   tidset |- TableT id typ
   -- if typ' = $canon_typ(typ)
-  ----
   -- if $is_table_structt(typ')
-  ----
   -- Type_wf: tidset |- typ
 
 rule Type_wf/defaultt:
@@ -179,29 +217,37 @@ rule Type_wf/seqdefaultt:
 
 rule Type_wf/recordt:
   tidset |- RecordT (member, typ)*
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
   -- (Type_wf: tidset |- typ)*
 
 rule Type_wf/recorddefaultt:
   tidset |- RecordDefaultT (member, typ)*
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
   -- (Type_wf: tidset |- typ)*
 
 rule Type_wf/invalidt:
   tidset |- InvalidT
 
+def $nestable_sett(typ) : bool
+def $nestable_sett'(typ) : bool
+def $nestable_tuplet_in_sett(typ) : bool
+def $nestable_seqt_in_sett(typ) : bool
+
+def $nestable_sett(typ) = $nestable_tuplet'($canon_typ(typ))
+def $nestable_sett'(BoolT) = true
+def $nestable_sett'(FIntT w) = true
+def $nestable_sett'(FBitT w) = true
+def $nestable_sett'(VarT tid) = true
+def $nestable_sett'(EnumT id member*) = true
+def $nestable_sett'(SEnumT id typ (member, val)*) = true
+def $nestable_sett'(TupleT typ*) = true -- if $nestable_tuplet_in_sett(typ)*
+def $nestable_sett'(SeqT typ*) = true -- if $nestable_seqt_in_sett(typ)*
+def $nestable_sett'(typ) = false -- otherwise
+
 rule Type_wf/sett:
   tidset |- SetT typ
   -- if typ' = $canon_typ(typ)
-  ----
-  -- if $is_boolt(typ') \/ $is_fintt(typ') \/ $is_fbitt(typ')
-        \/ $is_vart(typ')
-        \/ $is_newt(typ')
-        \/ $is_enumt(typ')
-        \/ $is_senumt(typ')
-        \/ ($is_tuplet(typ') /\ $is_tuplet_in_sett(typ'))
-        \/ ($is_seqt(typ') /\ $is_seqt_in_sett(typ'))
-  ----
+  -- if $nestable_sett(typ)
   -- Type_wf: tidset |- typ
 
 rule Type_wf/statet:
@@ -209,13 +255,12 @@ rule Type_wf/statet:
 
 rule Type_wf/tableenumt:
   tidset |- TableEnumT id member*
-  -- if $distinct(member, member*)
+  -- if $distinct_(member, member*)
 
 rule Type_wf/tablestructt:
   tidset |- TableStructT id (member, typ)*
   -- if member* = "hit" "miss" "action\\_run"
   -- if typ* = BoolT BoolT (TableEnumT id_e member_e*)
-  ----
   -- Type_wf: tidset |- TableEnumT id_e member_e*
 
 rule Type_wf/anyt:
@@ -225,32 +270,38 @@ rule Type_wf/anyt:
 ;; Well-formedness of type definitions
 ;;
 
+def $nestable_monod(typ) : bool
+
+def $nestable_monod(VarT tid) = true
+def $nestable_monod(NewT id typ) = true
+def $nestable_monod(EnumT id member*) = true
+def $nestable_monod(SEnumT id typ (member, val)*) = true
+def $nestable_monod(TableT id typ) = true
+def $nestable_monod(typ) = false -- otherwise
+
 rule TypeDef_wf/monod:
   tidset |- MonoD typ
-  -- if $is_vart(typ)
-        \/ $is_deft(typ)
-        \/ $is_newt(typ)
-        \/ $is_enumt(typ)
-        \/ $is_senumt(typ)
-        \/ $is_tablet(typ)
-  ----
+  -- if $nestable_monod(typ)
   -- Type_wf: tidset |- typ
 
+def $nestable_polyd(typ) : bool
+
+def $nestable_polyd(TupleT typ*) = true
+def $nestable_polyd(StackT typ size) = true
+def $nestable_polyd(StructT id (member, typ)*) = true
+def $nestable_polyd(HeaderT id (member, typ)*) = true
+def $nestable_polyd(UnionT id (member, typ)*) = true
+def $nestable_polyd(ExternT id fmap) = true
+def $nestable_polyd(ParserT paramtyp*) = true
+def $nestable_polyd(ControlT paramtyp*) = true
+def $nestable_polyd(PackageT typ*) = true
+def $nestable_polyd(typ) = false -- otherwise
+
 rule TypeDef_wf/polyd:
-  tidset |- PolyD tparam* typ
-  -- if $is_listt(typ)
-        \/ $is_tuplet(typ)
-        \/ $is_stackt(typ)
-        \/ $is_structt(typ)
-        \/ $is_headert(typ)
-        \/ $is_uniont(typ)
-        \/ $is_externt(typ)
-        \/ $is_parsert(typ)
-        \/ $is_controlt(typ)
-        \/ $is_packaget(typ)
-  ----
-  -- if $distinct(tparam, tparam*)
-  -- if tidset' = $union_set(tid, tidset, SET tparam*)
+  tidset |- PolyD (tparam*, tparam_hidden*) typ
+  -- if $nestable_polyd(typ)
+  -- if $distinct_(tid, tparam* tparam_hidden*)
+  -- if tidset' = $union_set(tid, tidset, SET (tparam* tparam_hidden*))
   -- Type_wf: tidset' |- typ
 
 ;;
@@ -271,7 +322,7 @@ rule ParamType_wf/some:
 rule ParamTypes_wf:
   tidset |- paramtyp*
   -- if (id dir typ val = paramtyp)*
-  -- if $distinct(id, id*)
+  -- if $distinct_(id, id*)
   -- (ParamType_wf: tidset |- paramtyp)*
 
 ;;
@@ -381,14 +432,14 @@ rule FuncDef_wf/monofd:
   -- FuncType_wf: tidset |- functyp
 
 rule FuncDef_wf/polyfd:
-  tidset |- PolyFD tparam* functyp
+  tidset |- PolyFD (tparam*, tparam_hidden*) functyp
   -- if $is_externfunct(functyp)
         \/ $is_funct(functyp)
         \/ $is_externmethodt(functyp)
         \/ $is_externabstractmethodt(functyp)
   ----
-  -- if $distinct(tparam, tparam*)
-  -- if tidset' = $union_set(tid, tidset, SET tparam*)
+  -- if $distinct_(tid, tparam* tparam_hidden*)
+  -- if tidset' = $union_set(tid, tidset, SET (tparam* tparam_hidden*))
   -- FuncType_wf: tidset' |- functyp
 
 ;;
@@ -406,7 +457,7 @@ rule CParamType_wf/some:
 rule CParamTypes_wf:
   tidset consctxt |- paramtyp*
   -- if (id dir typ val = paramtyp)*
-  -- if $distinct(id, id*)
+  -- if $distinct_(id, id*)
   -- (CParamType_wf: tidset consctxt |- paramtyp)*
 
 ;;
@@ -460,13 +511,12 @@ rule ConsType_wf/packaget:
   ----
   -- if (~$is_deft(typ') /\ ~$is_spect(typ') /\ ~$is_tablet(typ'))*
 
-
 ;;
 ;; Well-formedness of constructor definitions
 ;;
 
 rule ConsDef_wf:
-  tidset |- ConsD tparam* constyp
+  tidset |- ConsD tparam* tparam_hidden* constyp
   -- if ConsT paramtyp* typ_r = constyp
   -- if typ_r' = $canon_typ(typ_r)
   ----
@@ -475,6 +525,6 @@ rule ConsDef_wf:
         \/ $is_controlt(typ_r')
         \/ $is_packaget(typ_r')
   ----
-  -- if $distinct(tparam, tparam*)
-  -- if tidset' = $union_set(tid, tidset, SET tparam*)
+  -- if $distinct_(tid, tparam* tparam_hidden*)
+  -- if tidset' = $union_set(tid, tidset, SET (tparam* tparam_hidden*))
   -- ConsType_wf: tidset' |- constyp

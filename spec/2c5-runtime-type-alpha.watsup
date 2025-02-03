@@ -1,24 +1,4 @@
 ;;
-;; Nominal and structural types
-;;
-
-def $nominal(typ) : bool
-
-def $nominal(SpecT ptd typ_a*) = $nominal(typ)
-  -- if typ = $specialize_typdef(ptd, typ_a*)
-def $nominal(DefT typ) = $nominal(typ)
-def $nominal(NewT id typ) = true
-def $nominal(EnumT id member*) = true
-def $nominal(SEnumT id typ (member, val)*) = true
-def $nominal(StructT id (member, typ)*) = true
-def $nominal(HeaderT id (member, typ)*) = true
-def $nominal(UnionT id (member, typ)*) = true
-def $nominal(ExternT id fmap) = true
-def $nominal(TableT id typ) = true
-def $nominal(typ) = false
-  -- otherwise
-
-;;
 ;; Alpha-equivalence of types
 ;;
 
@@ -114,8 +94,8 @@ rule Type_alpha/externt:
   (ExternT id_a fmap_a) ~~ (ExternT id_b fmap_b)
   -- if id_a = id_b
   ----
-  -- if MAP fid_a* funcdef_a* = fmap_a
-  -- if MAP fid_b* funcdef_b* = fmap_b
+  -- if MAP (PAIR fid_a funcdef_a)* = fmap_a
+  -- if MAP (PAIR fid_b funcdef_b)* = fmap_b
   ----
   -- if $eq_set(fid, SET fid_a*, SET fid_b*)
   -- (FuncDef_alpha: $find_map(fid, funcdef, fmap_a, fid_a) ~~ $find_map(fid, funcdef, fmap_b, fid_a))*
@@ -195,15 +175,18 @@ rule FuncDef_alpha/monofd:
   -- FuncType_alpha: ft_a ~~ ft_b
 
 rule FuncDef_alpha/polyfd:
-  (PolyFD tparam_a* ft_a) ~~ (PolyFD tparam_b* ft_b)
+  (PolyFD (tparam_a*, tparam_hidden_a*) ft_a) ~~ (PolyFD (tparam_b*, tparam_hidden_b*) ft_b)
   -- if |tparam_a*| = |tparam_b*|
+  -- if |tparam_hidden_a*| = |tparam_hidden_b*|
   ----
   -- if (tid_fresh = $fresh_tid())*
-  -- if |tid_fresh*| = |tparam_a*|
+  -- if |tid_fresh*| = |tparam_a* tparam_hidden_a*|
   ----
-  -- if ft_a' = $subst_functyp(MAP tparam_a* (VarT tid_fresh)*, ft_a)
+  -- if tparam_a'* = tparam_a* ++ tparam_hidden_a*
+  -- if ft_a' = $subst_functyp(MAP (PAIR tparam_a' (VarT tid_fresh))*, ft_a)
   ----
-  -- if ft_b' = $subst_functyp(MAP tparam_b* (VarT tid_fresh)*, ft_b)
+  -- if tparam_b'* = tparam_b* ++ tparam_hidden_b*
+  -- if ft_b' = $subst_functyp(MAP (PAIR tparam_b' (VarT tid_fresh))*, ft_b)
   ----
   -- FuncType_alpha: ft_a' ~~ ft_b'
 
