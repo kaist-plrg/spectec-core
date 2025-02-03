@@ -73,8 +73,8 @@ let make_call (path : OId.t) (func : Id.t) (args : Id.t list) =
 
 module type ARCH = sig
   val init : Ctx.t -> Sto.t -> Ctx.t * Sto.t
-  val eval_extern_func_call : Ctx.t -> FId.t -> Ctx.t * Sig.t
-  val eval_extern_method_call : Ctx.t -> OId.t -> FId.t -> Ctx.t * Sig.t
+  val eval_extern_func_call : Ctx.t -> FId.t -> Ctx.t * SSig.t
+  val eval_extern_method_call : Ctx.t -> OId.t -> FId.t -> Ctx.t * SSig.t
   val drive_pipe : Ctx.t -> port -> packet -> result option
 end
 
@@ -90,7 +90,7 @@ module type INTERP = sig
     member ->
     targ list ->
     arg list ->
-    Ctx.t * Sig.t
+    Ctx.t * SSig.t
 end
 
 module type DRIVER = sig

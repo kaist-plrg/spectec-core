@@ -56,9 +56,9 @@ let bits_to_int_unsigned bits =
     Bigint.zero bits
 
 let bits_to_int_signed bits =
-  let sign = bits.(0) in
+  let ssig = bits.(0) in
   let int_unsigned = bits_to_int_unsigned bits in
-  if sign then
+  if ssig then
     let int_max =
       let len = Array.length bits - 1 in
       Bigint.(one lsl len)
@@ -193,19 +193,19 @@ module PacketIn = struct
      @T must be a fixed-size header type
 
      void extract<T>(out T hdr); *)
-  let extract (ctx : Ctx.t) pkt : Ctx.t * Sig.t * t =
+  let extract (ctx : Ctx.t) pkt : Ctx.t * SSig.t * t =
     let typ = Ctx.find_typ Ctx.Local "T" ctx in
     let hdr = Ctx.find_value Ctx.Local "hdr" ctx in
     let size = sizeof ctx typ in
     if pkt.idx + size > pkt.len then
-      let sign = Sig.Trans (`Reject (Value.ErrV "PacketTooShort")) in
-      (ctx, sign, pkt)
+      let ssig = SSig.Trans (`Reject (Value.ErrV "PacketTooShort")) in
+      (ctx, ssig, pkt)
     else
       let pkt, bits = parse pkt size in
       let hdr = write bits hdr |> snd in
       let ctx = Ctx.update_value Ctx.Local "hdr" hdr ctx in
-      let sign = Sig.Ret None in
-      (ctx, sign, pkt)
+      let ssig = SSig.Ret None in
+      (ctx, ssig, pkt)
 
   (* Read bits from the packet into a variable-sized header @variableSizeHeader
      and advance the cursor.
@@ -214,7 +214,7 @@ module PacketIn = struct
 
      void extract<T>(out T variableSizeHeader,
                       in bit<32> variableFieldSizeInBits); *)
-  let extract_varsize (ctx : Ctx.t) pkt : Ctx.t * Sig.t * t =
+  let extract_varsize (ctx : Ctx.t) pkt : Ctx.t * SSig.t * t =
     let typ = Ctx.find_typ Ctx.Local "T" ctx in
     let hdr = Ctx.find_value Ctx.Local "variableSizeHeader" ctx in
     let varsize =
@@ -226,40 +226,40 @@ module PacketIn = struct
       |> Value.get_num |> Bigint.to_int_exn
     in
     if alignment <> 0 then
-      let sign = Sig.Trans (`Reject (Value.ErrV "ParserInvalidArgument")) in
-      (ctx, sign, pkt)
+      let ssig = SSig.Trans (`Reject (Value.ErrV "ParserInvalidArgument")) in
+      (ctx, ssig, pkt)
     else
       let varsize = varsize |> Bigint.to_int_exn in
       let size = sizeof ~varsize ctx typ in
       let size_max = sizeof_max ctx typ in
       if pkt.idx + size > pkt.len then
-        let sign = Sig.Trans (`Reject (Value.ErrV "PacketTooShort")) in
-        (ctx, sign, pkt)
+        let ssig = SSig.Trans (`Reject (Value.ErrV "PacketTooShort")) in
+        (ctx, ssig, pkt)
       else if size > size_max then
-        let sign = Sig.Trans (`Reject (Value.ErrV "HeaderTooShort")) in
-        (ctx, sign, pkt)
+        let ssig = SSig.Trans (`Reject (Value.ErrV "HeaderTooShort")) in
+        (ctx, ssig, pkt)
       else
         let pkt, bits = sizeof ~varsize ctx typ |> parse pkt in
         let hdr = write ~varsize bits hdr |> snd in
         let ctx = Ctx.update_value Ctx.Local "variableSizeHeader" hdr ctx in
-        let sign = Sig.Ret None in
-        (ctx, sign, pkt)
+        let ssig = SSig.Ret None in
+        (ctx, ssig, pkt)
 
   (* Read bits from the packet without advancing the cursor.
      @returns: the bits read from the packet.
      T may be an arbitrary fixed-size type.
 
      T lookahead<T>(); *)
-  let lookahead (ctx : Ctx.t) pkt : Sig.t =
+  let lookahead (ctx : Ctx.t) pkt : SSig.t =
     let typ = Ctx.find_typ Ctx.Local "T" ctx in
     let hdr = Numerics.eval_default typ in
     let size = sizeof ctx typ in
     if pkt.idx + size > pkt.len then
-      Sig.Trans (`Reject (Value.ErrV "PacketTooShort"))
+      SSig.Trans (`Reject (Value.ErrV "PacketTooShort"))
     else
       let _pkt, bits = parse pkt size in
       let hdr = write bits hdr |> snd in
-      Sig.Ret (Some hdr)
+      SSig.Ret (Some hdr)
 
   (* Advance the packet cursor by the specified number of bits.
 
@@ -331,10 +331,10 @@ end
    otherwise set the parser error to @toSignal, and transition to the `reject` state.
 
    extern void verify(in bool check, in error toSignal); *)
-let verify (ctx : Ctx.t) : Ctx.t * Sig.t =
+let verify (ctx : Ctx.t) : Ctx.t * SSig.t =
   let check = Ctx.find_value Ctx.Local "check" ctx |> Value.get_bool in
-  if check then (ctx, Sig.Ret None)
+  if check then (ctx, SSig.Ret None)
   else
     let value_error = Ctx.find_value Ctx.Local "toSignal" ctx in
-    let sign = Sig.Trans (`Reject value_error) in
-    (ctx, sign)
+    let ssig = SSig.Trans (`Reject value_error) in
+    (ctx, ssig)

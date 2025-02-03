@@ -29,7 +29,7 @@ module CounterArray = struct
 
   let pp fmt _carr = F.fprintf fmt "CounterArray"
 
-  (* A counter array is a dense or sparse array of unsigned 32-bit values, visible to the
+  (* A counter array is a dense or sparse array of unssiged 32-bit values, visible to the
      control-plane as an EBPF map (array or hash).
      Each counter is addressed by a 32-bit index.
      Counters can only be incremented by the data-plane, but they can be read or
@@ -48,7 +48,7 @@ module CounterArray = struct
   (* Increment counter with specified index.
 
      void increment(in bit<32> index); *)
-  let increment (ctx : Ctx.t) carr : Ctx.t * Sig.t * t =
+  let increment (ctx : Ctx.t) carr : Ctx.t * SSig.t * t =
     let index_target =
       Ctx.find_value Ctx.Local "index" ctx |> Value.get_num |> Bigint.to_int_exn
     in
@@ -57,12 +57,12 @@ module CounterArray = struct
         (fun idx count -> if idx = index_target then count + 1 else count)
         carr
     in
-    (ctx, Sig.Ret None, carr)
+    (ctx, SSig.Ret None, carr)
 
   (* Add value to counter with specified index.
 
      void add(in bit<32> index, in bit<32> value) *)
-  let add (ctx : Ctx.t) carr : Ctx.t * Sig.t * t =
+  let add (ctx : Ctx.t) carr : Ctx.t * SSig.t * t =
     let index_target =
       Ctx.find_value Ctx.Local "index" ctx |> Value.get_num |> Bigint.to_int_exn
     in
@@ -74,7 +74,7 @@ module CounterArray = struct
         (fun idx count -> if idx = index_target then count + value else count)
         carr
     in
-    (ctx, Sig.Ret None, carr)
+    (ctx, SSig.Ret None, carr)
 end
 
 module Make (Interp : INTERP) : ARCH = struct
@@ -150,7 +150,7 @@ module Make (Interp : INTERP) : ARCH = struct
 
   (* Extern interpreter *)
 
-  let eval_extern_func_call (ctx : Ctx.t) (fid : FId.t) : Ctx.t * Sig.t =
+  let eval_extern_func_call (ctx : Ctx.t) (fid : FId.t) : Ctx.t * SSig.t =
     let fname, args = fid in
     match (fname, args) with
     (* core.p4 *)
@@ -158,46 +158,46 @@ module Make (Interp : INTERP) : ARCH = struct
     | _ -> F.asprintf "(TODO: eval_extern_func_call) %a" FId.pp fid |> error
 
   let eval_extern_method_call (ctx : Ctx.t) (oid : OId.t) (fid : FId.t) :
-      Ctx.t * Sig.t =
+      Ctx.t * SSig.t =
     let id = String.concat "." oid in
     let extern = Externs.find id !externs in
     match (extern, fid) with
     | PacketIn pkt_in, ("extract", [ ("hdr", false) ]) ->
-        let ctx, sign, pkt_in = Core.PacketIn.extract ctx pkt_in in
+        let ctx, ssig, pkt_in = Core.PacketIn.extract ctx pkt_in in
         externs := Externs.add id (PacketIn pkt_in) !externs;
-        (ctx, sign)
+        (ctx, ssig)
     | ( PacketIn pkt_in,
         ( "extract",
           [ ("variableSizeHeader", false); ("variableFieldSizeInBits", false) ]
         ) ) ->
-        let ctx, sign, pkt_in = Core.PacketIn.extract_varsize ctx pkt_in in
+        let ctx, ssig, pkt_in = Core.PacketIn.extract_varsize ctx pkt_in in
         externs := Externs.add id (PacketIn pkt_in) !externs;
-        (ctx, sign)
+        (ctx, ssig)
     | PacketIn pkt_in, ("lookahead", []) ->
-        let sign = Core.PacketIn.lookahead ctx pkt_in in
-        (ctx, sign)
+        let ssig = Core.PacketIn.lookahead ctx pkt_in in
+        (ctx, ssig)
     | PacketIn pkt_in, ("advance", [ ("sizeInBits", false) ]) ->
         let pkt_in = Core.PacketIn.advance ctx pkt_in in
         externs := Externs.add id (PacketIn pkt_in) !externs;
-        (ctx, Sig.Ret None)
+        (ctx, SSig.Ret None)
     | PacketIn pkt_in, ("length", []) ->
         let len = Core.PacketIn.length pkt_in in
-        (ctx, Sig.Ret (Some len))
+        (ctx, SSig.Ret (Some len))
     | CounterArray carr, ("increment", [ ("index", false) ]) ->
-        let ctx, sign, carr = CounterArray.increment ctx carr in
+        let ctx, ssig, carr = CounterArray.increment ctx carr in
         externs := Externs.add id (CounterArray carr) !externs;
-        (ctx, sign)
+        (ctx, ssig)
     | CounterArray carr, ("add", [ ("index", false); ("value", false) ]) ->
-        let ctx, sign, carr = CounterArray.add ctx carr in
+        let ctx, ssig, carr = CounterArray.add ctx carr in
         externs := Externs.add id (CounterArray carr) !externs;
-        (ctx, sign)
+        (ctx, ssig)
     | _ ->
         F.asprintf "(TODO: eval_extern_method_call) %a.%a" OId.pp oid FId.pp fid
         |> error
 
   (* Pipeline driver *)
 
-  let drive_prs (ctx : Ctx.t) : Ctx.t * Sig.t =
+  let drive_prs (ctx : Ctx.t) : Ctx.t * SSig.t =
     let expr_base, func, args =
       let oid = [ "main"; "prs" ] in
       let func = "apply" in
@@ -223,9 +223,9 @@ module Make (Interp : INTERP) : ARCH = struct
     externs := Externs.add "packet_in" pkt_in !externs;
     (* Execute packet processing pipeline *)
     (* Execute the parser block *)
-    let ctx, sign = ctx |> drive_prs in
+    let ctx, ssig = ctx |> drive_prs in
     let* ctx =
-      match sign with Trans (`Reject _value) -> None | _ -> Some ctx
+      match ssig with Trans (`Reject _value) -> None | _ -> Some ctx
     in
     (* Execute the filter block *)
     let ctx = drive_filt ctx in
