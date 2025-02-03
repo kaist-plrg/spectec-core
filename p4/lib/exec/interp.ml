@@ -76,16 +76,19 @@ module Make (Arch : ARCH) : INTERP = struct
     | Cont value -> value
     | _ ->
         F.asprintf
-          "(cont_value) expected a single value, but got a different \
-           continuation"
+          "(cont_value) expected a value, but got a different continuation"
         |> error_no_info
 
-  let cont_sig_to_sig (ctx : Ctx.t) (sign : 'a Sig.t)
+  let cont_sig (ctx : Ctx.t) (sign : 'a Sig.t)
       (continue : 'a -> Ctx.t * 'b Sig.t) : Ctx.t * 'b Sig.t =
     match sign with
     | Cont cont -> continue cont
     | Reject value -> (ctx, Reject value)
     | Exit -> (ctx, Exit)
+
+  let cont_ssig (ctx : Ctx.t) (ssig : SSig.t)
+      (continue : unit -> Ctx.t * SSig.t) : Ctx.t * SSig.t =
+    match ssig with Cont -> continue () | _ -> (ctx, ssig)
 
   let cont_sig_to_ssig (ctx : Ctx.t) (sign : 'a Sig.t)
       (continue : 'a -> Ctx.t * SSig.t) : Ctx.t * SSig.t =
@@ -93,10 +96,6 @@ module Make (Arch : ARCH) : INTERP = struct
     | Cont cont -> continue cont
     | Reject value -> (ctx, Trans (`Reject value))
     | Exit -> (ctx, Exit)
-
-  let cont_ssig_to_ssig (ctx : Ctx.t) (ssig : SSig.t)
-      (continue : unit -> Ctx.t * SSig.t) : Ctx.t * SSig.t =
-    match ssig with Cont -> continue () | _ -> (ctx, ssig)
 
   (* L-value evaluation *)
 
@@ -110,7 +109,7 @@ module Make (Arch : ARCH) : INTERP = struct
     match arg with
     | L.ExprA expr | L.NameA (_, Some expr) ->
         let ctx, lsign = eval_lvalue_of_expr cursor ctx expr in
-        cont_sig_to_sig ctx lsign (fun lvalue -> (ctx, Cont (Some lvalue)))
+        cont_sig ctx lsign (fun lvalue -> (ctx, Cont (Some lvalue)))
     | L.NameA (_, None) | L.AnyA -> (ctx, Cont None)
 
   and eval_lvalue_of_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : expr) :
@@ -126,21 +125,21 @@ module Make (Arch : ARCH) : INTERP = struct
         (ctx, Cont lvalue)
     | BitAccE { expr_base; value_lo; value_hi } ->
         let ctx, lsign = eval_lvalue_of_expr cursor ctx expr_base in
-        cont_sig_to_sig ctx lsign (fun lvalue_base ->
+        cont_sig ctx lsign (fun lvalue_base ->
             let lvalue =
               LValue.BitAccLV (lvalue_base, value_lo.it, value_hi.it)
             in
             (ctx, Cont lvalue))
     | ArrAccE { expr_base; expr_idx } ->
         let ctx, lsign = eval_lvalue_of_expr cursor ctx expr_base in
-        cont_sig_to_sig ctx lsign (fun lvalue_base ->
+        cont_sig ctx lsign (fun lvalue_base ->
             let ctx, esign = eval_expr cursor ctx expr_idx in
-            cont_sig_to_sig ctx esign (fun value_idx ->
+            cont_sig ctx esign (fun value_idx ->
                 let lvalue = LValue.ArrAccLV (lvalue_base, value_idx) in
                 (ctx, Cont lvalue)))
     | ExprAccE { expr_base; member } ->
         let ctx, lsign = eval_lvalue_of_expr cursor ctx expr_base in
-        cont_sig_to_sig ctx lsign (fun lvalue_base ->
+        cont_sig ctx lsign (fun lvalue_base ->
             let lvalue = LValue.ExprAccLV (lvalue_base, member.it) in
             (ctx, Cont lvalue))
     | _ ->
@@ -356,10 +355,9 @@ module Make (Arch : ARCH) : INTERP = struct
       Ctx.t * Value.t list Sig.t =
     List.fold_left
       (fun ((ctx, esign) : Ctx.t * Value.t list Sig.t) (expr : expr) ->
-        cont_sig_to_sig ctx esign (fun values ->
+        cont_sig ctx esign (fun values ->
             let ctx, esign = eval_expr cursor ctx expr in
-            cont_sig_to_sig ctx esign (fun value ->
-                (ctx, Cont (values @ [ value ])))))
+            cont_sig ctx esign (fun value -> (ctx, Cont (values @ [ value ])))))
       (ctx, Cont []) exprs
 
   and eval_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : var) : Value.t =
@@ -369,7 +367,7 @@ module Make (Arch : ARCH) : INTERP = struct
   and eval_seq_expr ~(default : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
       (exprs : expr list) : Ctx.t * Value.t Sig.t =
     let ctx, esign = eval_exprs cursor ctx exprs in
-    cont_sig_to_sig ctx esign (fun values ->
+    cont_sig ctx esign (fun values ->
         let value =
           if default then Value.SeqDefaultV values else Value.SeqV values
         in
@@ -380,7 +378,7 @@ module Make (Arch : ARCH) : INTERP = struct
     let members, exprs = List.split fields in
     let members = List.map it members in
     let ctx, esign = eval_exprs cursor ctx exprs in
-    cont_sig_to_sig ctx esign (fun values ->
+    cont_sig ctx esign (fun values ->
         let fields = List.combine members values in
         let value =
           if default then Value.RecordDefaultV fields else Value.RecordV fields
@@ -390,7 +388,7 @@ module Make (Arch : ARCH) : INTERP = struct
   and eval_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : unop)
       (expr : expr) : Ctx.t * Value.t Sig.t =
     let ctx, esign = eval_expr cursor ctx expr in
-    cont_sig_to_sig ctx esign (fun value ->
+    cont_sig ctx esign (fun value ->
         let value = Numerics.eval_unop unop value in
         (ctx, Cont value))
 
@@ -400,27 +398,27 @@ module Make (Arch : ARCH) : INTERP = struct
     (* short-circuiting *)
     | L.LAndOp ->
         let ctx, esign = eval_expr cursor ctx expr_l in
-        cont_sig_to_sig ctx esign (fun value_l ->
+        cont_sig ctx esign (fun value_l ->
             let cond = Value.get_bool value_l in
             if cond then eval_expr cursor ctx expr_r else (ctx, esign))
     | L.LOrOp ->
         let ctx, esign = eval_expr cursor ctx expr_l in
-        cont_sig_to_sig ctx esign (fun value_l ->
+        cont_sig ctx esign (fun value_l ->
             let cond = Value.get_bool value_l in
             if cond then (ctx, esign) else eval_expr cursor ctx expr_r)
     (* normal *)
     | _ ->
         let ctx, esign = eval_expr cursor ctx expr_l in
-        cont_sig_to_sig ctx esign (fun value_l ->
+        cont_sig ctx esign (fun value_l ->
             let ctx, esign = eval_expr cursor ctx expr_r in
-            cont_sig_to_sig ctx esign (fun value_r ->
+            cont_sig ctx esign (fun value_r ->
                 let value = Numerics.eval_binop binop value_l value_r in
                 (ctx, Cont value)))
 
   and eval_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_cond : expr)
       (expr_then : expr) (expr_else : expr) : Ctx.t * Value.t Sig.t =
     let ctx, esign = eval_expr cursor ctx expr_cond in
-    cont_sig_to_sig ctx esign (fun value_cond ->
+    cont_sig ctx esign (fun value_cond ->
         let cond = Value.get_bool value_cond in
         let expr = if cond then expr_then else expr_else in
         eval_expr cursor ctx expr)
@@ -428,25 +426,25 @@ module Make (Arch : ARCH) : INTERP = struct
   and eval_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : typ)
       (expr : expr) : Ctx.t * Value.t Sig.t =
     let ctx, esign = eval_expr cursor ctx expr in
-    cont_sig_to_sig ctx esign (fun value ->
+    cont_sig ctx esign (fun value ->
         let value = Numerics.eval_cast typ.it value in
         (ctx, Cont value))
 
   and eval_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
       (expr_mask : expr) : Ctx.t * Value.t Sig.t =
     let ctx, esign = eval_expr cursor ctx expr_base in
-    cont_sig_to_sig ctx esign (fun value_base ->
+    cont_sig ctx esign (fun value_base ->
         let ctx, esign = eval_expr cursor ctx expr_mask in
-        cont_sig_to_sig ctx esign (fun value_mask ->
+        cont_sig ctx esign (fun value_mask ->
             let value = Value.SetV (`Mask (value_base, value_mask)) in
             (ctx, Cont value)))
 
   and eval_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : expr)
       (expr_ub : expr) : Ctx.t * Value.t Sig.t =
     let ctx, esign = eval_expr cursor ctx expr_lb in
-    cont_sig_to_sig ctx esign (fun value_lb ->
+    cont_sig ctx esign (fun value_lb ->
         let ctx, esign = eval_expr cursor ctx expr_ub in
-        cont_sig_to_sig ctx esign (fun value_ub ->
+        cont_sig ctx esign (fun value_ub ->
             let value = Value.SetV (`Range (value_lb, value_ub)) in
             (ctx, Cont value)))
 
@@ -455,7 +453,7 @@ module Make (Arch : ARCH) : INTERP = struct
     match keyset.it with
     | ExprK expr ->
         let ctx, esign = eval_expr cursor ctx expr in
-        cont_sig_to_sig ctx esign (fun value ->
+        cont_sig ctx esign (fun value ->
             let matched = eval_keyset_match value_key value in
             (ctx, Cont matched))
     | DefaultK | AnyK -> (ctx, Cont true)
@@ -478,28 +476,28 @@ module Make (Arch : ARCH) : INTERP = struct
              of keysets";
           List.fold_left2
             (fun (ctx, msign) value_key keyset ->
-              cont_sig_to_sig ctx msign (fun matched ->
+              cont_sig ctx msign (fun matched ->
                   if not matched then (ctx, Cont matched)
                   else eval_select_match_keyset cursor ctx value_key keyset))
             (ctx, Cont true) values_key keysets
     in
-    cont_sig_to_sig ctx msign (fun matched ->
+    cont_sig ctx msign (fun matched ->
         if matched then (ctx, Cont (Some label)) else (ctx, Cont None))
 
   and eval_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       (exprs_select : expr list) (cases : select_case list) :
       Ctx.t * Value.t Sig.t =
     let ctx, esign = eval_exprs cursor ctx exprs_select in
-    cont_sig_to_sig ctx esign (fun values_key ->
+    cont_sig ctx esign (fun values_key ->
         let ctx, lsign =
           List.fold_left
             (fun (ctx, lsign) case ->
-              cont_sig_to_sig ctx lsign (fun label ->
+              cont_sig ctx lsign (fun label ->
                   if Option.is_some label then (ctx, Cont label)
                   else eval_select_match cursor ctx values_key case))
             (ctx, Cont None) cases
         in
-        cont_sig_to_sig ctx lsign (fun label ->
+        cont_sig ctx lsign (fun label ->
             check (Option.is_some label)
               "(eval_select_expr) no matching case found";
             let label = Option.get label in
@@ -509,9 +507,9 @@ module Make (Arch : ARCH) : INTERP = struct
   and eval_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
       (expr_idx : expr) : Ctx.t * Value.t Sig.t =
     let ctx, esign = eval_expr cursor ctx expr_base in
-    cont_sig_to_sig ctx esign (fun value_base ->
+    cont_sig ctx esign (fun value_base ->
         let ctx, esign = eval_expr cursor ctx expr_idx in
-        cont_sig_to_sig ctx esign (fun value_idx ->
+        cont_sig ctx esign (fun value_idx ->
             let idx = value_idx |> Value.get_num in
             match value_base with
             | TupleV values ->
@@ -534,7 +532,7 @@ module Make (Arch : ARCH) : INTERP = struct
       (expr_base : expr) (value_lo : value) (value_hi : value) :
       Ctx.t * Value.t Sig.t =
     let ctx, esign = eval_expr cursor ctx expr_base in
-    cont_sig_to_sig ctx esign (fun value_base ->
+    cont_sig ctx esign (fun value_base ->
         let value =
           Numerics.eval_bitstring_access value_base value_hi.it value_lo.it
         in
@@ -543,7 +541,7 @@ module Make (Arch : ARCH) : INTERP = struct
   and eval_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
       (member : member) : Ctx.t * Value.t Sig.t =
     let ctx, esign = eval_expr cursor ctx expr_base in
-    cont_sig_to_sig ctx esign (fun value_base ->
+    cont_sig ctx esign (fun value_base ->
         let value =
           match value_base with
           | StackV (values, idx, size) -> (
@@ -629,7 +627,7 @@ module Make (Arch : ARCH) : INTERP = struct
       Ctx.t * SSig.t =
     List.fold_left
       (fun ((ctx, ssig) : Ctx.t * SSig.t) (stmt : stmt) ->
-        cont_ssig_to_ssig ctx ssig (fun () -> eval_stmt cursor ctx stmt))
+        cont_ssig ctx ssig (fun () -> eval_stmt cursor ctx stmt))
       (ctx, Cont) stmts
 
   and eval_assign_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_l : expr)
@@ -704,7 +702,7 @@ module Make (Arch : ARCH) : INTERP = struct
     match label.it with
     | ExprL expr ->
         let ctx, esign = eval_expr cursor ctx expr in
-        cont_sig_to_sig ctx esign (fun value ->
+        cont_sig ctx esign (fun value ->
             let matched = Numerics.eval_binop_eq value_switch value in
             (ctx, Cont matched))
     | DefaultL -> (ctx, Cont true)
@@ -718,14 +716,14 @@ module Make (Arch : ARCH) : INTERP = struct
         let ctx, msign =
           eval_switch_general_match_label cursor ctx value_switch label
         in
-        cont_sig_to_sig ctx msign (fun matched ->
+        cont_sig ctx msign (fun matched ->
             if matched then (ctx, Cont (false, Some block))
             else (ctx, Cont (false, None)))
     | FallC label ->
         let ctx, msign =
           eval_switch_general_match_label cursor ctx value_switch label
         in
-        cont_sig_to_sig ctx msign (fun matched ->
+        cont_sig ctx msign (fun matched ->
             if matched then (ctx, Cont (true, None))
             else (ctx, Cont (false, None)))
 
@@ -734,7 +732,7 @@ module Make (Arch : ARCH) : INTERP = struct
     let ctx, msign =
       List.fold_left
         (fun (ctx, msign) case ->
-          cont_sig_to_sig ctx msign (fun (fallthrough, block) ->
+          cont_sig ctx msign (fun (fallthrough, block) ->
               if Option.is_some block then (ctx, Cont (false, block))
               else
                 eval_switch_general_match cursor ctx fallthrough value_switch
@@ -845,7 +843,7 @@ module Make (Arch : ARCH) : INTERP = struct
       Ctx.t * unit Sig.t =
     List.fold_left
       (fun ((ctx, dsign) : Ctx.t * unit Sig.t) (decl : decl) ->
-        cont_sig_to_sig ctx dsign (fun _ -> eval_decl cursor ctx decl))
+        cont_sig ctx dsign (fun _ -> eval_decl cursor ctx decl))
       (ctx, Cont ()) decls
 
   and eval_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id) (_typ : typ)
@@ -858,7 +856,7 @@ module Make (Arch : ARCH) : INTERP = struct
     match init with
     | Some expr ->
         let ctx, esign = eval_expr cursor ctx expr in
-        cont_sig_to_sig ctx esign (fun value ->
+        cont_sig ctx esign (fun value ->
             let ctx = Ctx.add_value cursor id.it value ctx in
             (ctx, Cont ()))
     | None ->
@@ -903,7 +901,7 @@ module Make (Arch : ARCH) : INTERP = struct
     match keyset.it with
     | ExprK expr ->
         let ctx, esign = eval_expr cursor ctx expr in
-        cont_sig_to_sig ctx esign (fun value ->
+        cont_sig ctx esign (fun value ->
             let matched = eval_keyset_match value_key value in
             (ctx, Cont matched))
     | DefaultK | AnyK -> (ctx, Cont true)
@@ -933,12 +931,12 @@ module Make (Arch : ARCH) : INTERP = struct
           List.fold_left2
             (fun ((ctx, msign) : Ctx.t * bool Sig.t)
                  (table_key : Value.t * match_kind) (keyst : keyset) ->
-              cont_sig_to_sig ctx msign (fun matched ->
+              cont_sig ctx msign (fun matched ->
                   if not matched then (ctx, Cont matched)
                   else eval_table_match_keyset cursor ctx table_key keyst))
             (ctx, Cont true) table_keys keysets
         in
-        cont_sig_to_sig ctx msign (fun matched ->
+        cont_sig ctx msign (fun matched ->
             let action =
               if matched then
                 let var_action, args_action, _, _, _ = table_action.it in
@@ -955,16 +953,16 @@ module Make (Arch : ARCH) : INTERP = struct
       List.fold_left
         (fun ((ctx, asign) : Ctx.t * (var * arg list * int option) list Sig.t)
              (table_entry : table_entry) ->
-          cont_sig_to_sig ctx asign (fun actions ->
+          cont_sig ctx asign (fun actions ->
               let ctx, asign =
                 eval_table_match_keysets cursor ctx table_keys table_entry
               in
-              cont_sig_to_sig ctx asign (fun action ->
+              cont_sig ctx asign (fun action ->
                   let actions = actions @ Option.to_list action in
                   (ctx, Cont actions))))
         (ctx, Cont []) table_entries
     in
-    cont_sig_to_sig ctx asign (fun actions ->
+    cont_sig ctx asign (fun actions ->
         let action, matched =
           match actions with
           | [] -> (action_default, false)
@@ -994,10 +992,8 @@ module Make (Arch : ARCH) : INTERP = struct
           let miss = Value.BoolV (not matched) in
           let action_run =
             let member =
-              if matched then
-                let var_action, _ = action in
-                F.asprintf "%a" Il.Pp.pp_var var_action
-              else "NoAction"
+              let var_action, _ = action in
+              F.asprintf "%a" Il.Pp.pp_var var_action
             in
             Value.TableEnumFieldV ("action_list(" ^ id ^ ")", member)
           in
@@ -1052,8 +1048,8 @@ module Make (Arch : ARCH) : INTERP = struct
                 { var_func = var_action; targs = []; args = args_action }
               $ no_info
             in
-            let ctx, _sign = eval_stmt cursor ctx stmt_call_action in
-            (ctx, SSig.Ret (Some value))))
+            let ctx, ssign = eval_stmt cursor ctx stmt_call_action in
+            cont_ssig ctx ssign (fun () -> (ctx, SSig.Ret (Some value)))))
 
   (* Call evaluation *)
 
@@ -1106,7 +1102,7 @@ module Make (Arch : ARCH) : INTERP = struct
       match dir.it with
       | No | In ->
           let ctx_caller, esign = eval_arg cursor_caller ctx_caller arg in
-          cont_sig_to_sig ctx_caller esign (fun value ->
+          cont_sig ctx_caller esign (fun value ->
               let ctx_callee =
                 Ctx.add_value cursor_callee id.it value ctx_callee
               in
@@ -1116,7 +1112,7 @@ module Make (Arch : ARCH) : INTERP = struct
           let ctx_caller, asign =
             eval_lvalue_of_arg cursor_caller ctx_caller arg
           in
-          cont_sig_to_sig ctx_caller asign (fun lvalue ->
+          cont_sig ctx_caller asign (fun lvalue ->
               check (Option.is_some lvalue)
                 "(copyin) inout argument cannot be nameless";
               let lvalue = Option.get lvalue in
@@ -1130,7 +1126,7 @@ module Make (Arch : ARCH) : INTERP = struct
           let ctx_caller, asign =
             eval_lvalue_of_arg cursor_caller ctx_caller arg
           in
-          cont_sig_to_sig ctx_caller asign (fun lvalue ->
+          cont_sig ctx_caller asign (fun lvalue ->
               let value =
                 Ctx.resolve_typ cursor_callee typ.it ctx_callee
                 |> Numerics.eval_default

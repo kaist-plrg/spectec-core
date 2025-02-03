@@ -680,6 +680,10 @@ and eval_cast_seq (typ : Type.t) (values : Value.t list) : Value.t =
   | TupleT typs_inner ->
       let values = List.map2 eval_cast typs_inner values in
       TupleV values
+  | StackT (typ_inner, size) ->
+      let values = List.map (eval_cast typ_inner) values in
+      let idx = List.length values |> Bigint.of_int in
+      StackV (values, idx, size)
   | StructT (id, fields) ->
       let members, typs_inner = List.split fields in
       let values = List.map2 eval_cast typs_inner values in
