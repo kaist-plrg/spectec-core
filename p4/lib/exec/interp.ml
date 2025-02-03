@@ -17,6 +17,7 @@ module SEnv = Envs.SEnv
 module Theta = Envs.Theta
 module FEnv = Envs.FEnv
 module Sto = Envs.Sto
+open Sigs
 open Driver
 open Util.Source
 open Util.Error
@@ -70,7 +71,7 @@ module Make (Arch : ARCH) : INTERP = struct
 
   (* Continuations *)
 
-  let cont_value (esign : Esig.t) : Value.t =
+  let cont_value (esign : ESig.t) : Value.t =
     match esign with
     | Cont (`Single value) -> value
     | _ ->
@@ -79,8 +80,8 @@ module Make (Arch : ARCH) : INTERP = struct
            continuation"
         |> error_no_info
 
-  let cont_expr (ctx : Ctx.t) (esign : Esig.t)
-      (continue : Value.t -> Ctx.t * Esig.t) : Ctx.t * Esig.t =
+  let cont_expr (ctx : Ctx.t) (esign : ESig.t)
+      (continue : Value.t -> Ctx.t * ESig.t) : Ctx.t * ESig.t =
     match esign with
     | Cont (`Single value) -> continue value
     | Cont (`Multiple _) ->
@@ -89,8 +90,8 @@ module Make (Arch : ARCH) : INTERP = struct
         |> error_no_info
     | _ -> (ctx, esign)
 
-  let cont_exprs (ctx : Ctx.t) (esign : Esig.t)
-      (continue : Value.t list -> Ctx.t * Esig.t) : Ctx.t * Esig.t =
+  let cont_exprs (ctx : Ctx.t) (esign : ESig.t)
+      (continue : Value.t list -> Ctx.t * ESig.t) : Ctx.t * ESig.t =
     match esign with
     | Cont (`Single _) ->
         F.asprintf
@@ -99,7 +100,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | Cont (`Multiple values) -> continue values
     | _ -> (ctx, esign)
 
-  let cont_expr_to_stmt (ctx : Ctx.t) (esign : Esig.t)
+  let cont_expr_to_stmt (ctx : Ctx.t) (esign : ESig.t)
       (continue : Value.t -> Ctx.t * Sig.t) : Ctx.t * Sig.t =
     match esign with
     | Cont (`Single value) -> continue value
@@ -110,8 +111,19 @@ module Make (Arch : ARCH) : INTERP = struct
     | Reject value -> (ctx, Trans (`Reject value))
     | Exit -> (ctx, Exit)
 
-  let cont_expr_to_call (ctx : Ctx.t) (esign : Esig.t)
-      (continue : Value.t -> Ctx.t * Csig.t) : Ctx.t * Csig.t =
+  let cont_expr_to_decl (ctx : Ctx.t) (esign : ESig.t)
+      (continue : Value.t -> Ctx.t * DSig.t) : Ctx.t * DSig.t =
+    match esign with
+    | Cont (`Single value) -> continue value
+    | Cont (`Multiple _) ->
+        F.asprintf
+          "(cont_expr_to_decl) expected a single value, but got multiple values"
+        |> error_no_info
+    | Reject value -> (ctx, Reject value)
+    | Exit -> (ctx, Exit)
+
+  let cont_expr_to_call (ctx : Ctx.t) (esign : ESig.t)
+      (continue : Value.t -> Ctx.t * CSig.t) : Ctx.t * CSig.t =
     match esign with
     | Cont (`Single value) -> continue value
     | Cont (`Multiple _) ->
@@ -121,7 +133,14 @@ module Make (Arch : ARCH) : INTERP = struct
     | Reject value -> (ctx, Reject value)
     | Exit -> (ctx, Exit)
 
-  let cont_call_to_stmt (ctx : Ctx.t) (csign : Csig.t)
+  let cont_decl_to_stmt (ctx : Ctx.t) (dsign : DSig.t)
+      (continue : unit -> Ctx.t * Sig.t) : Ctx.t * Sig.t =
+    match dsign with
+    | Cont -> continue ()
+    | Reject value -> (ctx, Trans (`Reject value))
+    | Exit -> (ctx, Exit)
+
+  let cont_call_to_stmt (ctx : Ctx.t) (csign : CSig.t)
       (continue : Ctx.t * LValue.t option list -> Ctx.t * Sig.t) : Ctx.t * Sig.t
       =
     match csign with
@@ -300,13 +319,13 @@ module Make (Arch : ARCH) : INTERP = struct
 
   (* Argument evaluation *)
 
-  and eval_arg (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : arg) : Ctx.t * Esig.t
+  and eval_arg (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : arg) : Ctx.t * ESig.t
       =
     try eval_arg' cursor ctx arg.it
     with InterpErr _ as err -> error_pass_info arg.at err
 
   and eval_arg' (cursor : Ctx.cursor) (ctx : Ctx.t) (arg : arg') :
-      Ctx.t * Esig.t =
+      Ctx.t * ESig.t =
     match arg with
     | L.ExprA expr | L.NameA (_, Some expr) -> eval_expr cursor ctx expr
     | _ -> F.asprintf "(TODO: eval_arg) %a" Il.Pp.pp_arg' arg |> error_no_info
@@ -332,13 +351,13 @@ module Make (Arch : ARCH) : INTERP = struct
   (* Expression evaluation *)
 
   and eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : expr) :
-      Ctx.t * Esig.t =
+      Ctx.t * ESig.t =
     try eval_expr' cursor ctx expr.it
     with InterpErr _ as err -> error_pass_info expr.at err
 
   and eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : expr') :
-      Ctx.t * Esig.t =
-    let wrap_value value = (ctx, Esig.Cont (`Single value)) in
+      Ctx.t * ESig.t =
+    let wrap_value value = (ctx, ESig.Cont (`Single value)) in
     match expr with
     | ValueE { value } -> value.it |> wrap_value
     | VarE { var } -> eval_var_expr cursor ctx var |> wrap_value
@@ -379,9 +398,9 @@ module Make (Arch : ARCH) : INTERP = struct
         |> error_no_info
 
   and eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : expr list) :
-      Ctx.t * Esig.t =
+      Ctx.t * ESig.t =
     List.fold_left
-      (fun ((ctx, esign) : Ctx.t * Esig.t) (expr : expr) ->
+      (fun ((ctx, esign) : Ctx.t * ESig.t) (expr : expr) ->
         match esign with
         | Cont (`Multiple values) -> (
             let ctx, esign = eval_expr cursor ctx expr in
@@ -399,7 +418,7 @@ module Make (Arch : ARCH) : INTERP = struct
     value
 
   and eval_seq_expr ~(default : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
-      (exprs : expr list) : Ctx.t * Esig.t =
+      (exprs : expr list) : Ctx.t * ESig.t =
     let ctx, esign = eval_exprs cursor ctx exprs in
     cont_exprs ctx esign (fun values ->
         let value =
@@ -408,7 +427,7 @@ module Make (Arch : ARCH) : INTERP = struct
         (ctx, Cont (`Single value)))
 
   and eval_record_expr ~(default : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
-      (fields : (member * expr) list) : Ctx.t * Esig.t =
+      (fields : (member * expr) list) : Ctx.t * ESig.t =
     let members, exprs = List.split fields in
     let members = List.map it members in
     let ctx, esign = eval_exprs cursor ctx exprs in
@@ -420,14 +439,14 @@ module Make (Arch : ARCH) : INTERP = struct
         (ctx, Cont (`Single value)))
 
   and eval_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : unop)
-      (expr : expr) : Ctx.t * Esig.t =
+      (expr : expr) : Ctx.t * ESig.t =
     let ctx, esign = eval_expr cursor ctx expr in
     cont_expr ctx esign (fun value ->
         let value = Numerics.eval_unop unop value in
         (ctx, Cont (`Single value)))
 
   and eval_binop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (binop : binop)
-      (expr_l : expr) (expr_r : expr) : Ctx.t * Esig.t =
+      (expr_l : expr) (expr_r : expr) : Ctx.t * ESig.t =
     match binop.it with
     (* short-circuiting *)
     | L.LAndOp ->
@@ -450,7 +469,7 @@ module Make (Arch : ARCH) : INTERP = struct
                 (ctx, Cont (`Single value))))
 
   and eval_ternop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_cond : expr)
-      (expr_then : expr) (expr_else : expr) : Ctx.t * Esig.t =
+      (expr_then : expr) (expr_else : expr) : Ctx.t * ESig.t =
     let ctx, esign = eval_expr cursor ctx expr_cond in
     cont_expr ctx esign (fun value_cond ->
         let cond = Value.get_bool value_cond in
@@ -458,14 +477,14 @@ module Make (Arch : ARCH) : INTERP = struct
         eval_expr cursor ctx expr)
 
   and eval_cast_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (typ : typ)
-      (expr : expr) : Ctx.t * Esig.t =
+      (expr : expr) : Ctx.t * ESig.t =
     let ctx, esign = eval_expr cursor ctx expr in
     cont_expr ctx esign (fun value ->
         let value = Numerics.eval_cast typ.it value in
         (ctx, Cont (`Single value)))
 
   and eval_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
-      (expr_mask : expr) : Ctx.t * Esig.t =
+      (expr_mask : expr) : Ctx.t * ESig.t =
     let ctx, esign = eval_expr cursor ctx expr_base in
     cont_expr ctx esign (fun value_base ->
         let ctx, esign = eval_expr cursor ctx expr_mask in
@@ -474,7 +493,7 @@ module Make (Arch : ARCH) : INTERP = struct
             (ctx, Cont (`Single value))))
 
   and eval_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : expr)
-      (expr_ub : expr) : Ctx.t * Esig.t =
+      (expr_ub : expr) : Ctx.t * ESig.t =
     let ctx, esign = eval_expr cursor ctx expr_lb in
     cont_expr ctx esign (fun value_lb ->
         let ctx, esign = eval_expr cursor ctx expr_ub in
@@ -517,7 +536,7 @@ module Make (Arch : ARCH) : INTERP = struct
     if matched then (ctx, Some label) else (ctx, None)
 
   and eval_select_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-      (exprs_select : expr list) (cases : select_case list) : Ctx.t * Esig.t =
+      (exprs_select : expr list) (cases : select_case list) : Ctx.t * ESig.t =
     let ctx, esig = eval_exprs cursor ctx exprs_select in
     cont_exprs ctx esig (fun values_key ->
         let ctx, label =
@@ -533,7 +552,7 @@ module Make (Arch : ARCH) : INTERP = struct
         (ctx, Cont (`Single value)))
 
   and eval_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
-      (expr_idx : expr) : Ctx.t * Esig.t =
+      (expr_idx : expr) : Ctx.t * ESig.t =
     let ctx, esign = eval_expr cursor ctx expr_base in
     cont_expr ctx esign (fun value_base ->
         let ctx, esign = eval_expr cursor ctx expr_idx in
@@ -557,7 +576,7 @@ module Make (Arch : ARCH) : INTERP = struct
                 |> error_no_info))
 
   and eval_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
-      (expr_base : expr) (value_lo : value) (value_hi : value) : Ctx.t * Esig.t
+      (expr_base : expr) (value_lo : value) (value_hi : value) : Ctx.t * ESig.t
       =
     let ctx, esign = eval_expr cursor ctx expr_base in
     cont_expr ctx esign (fun value_base ->
@@ -567,7 +586,7 @@ module Make (Arch : ARCH) : INTERP = struct
         (ctx, Cont (`Single value)))
 
   and eval_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : expr)
-      (member : member) : Ctx.t * Esig.t =
+      (member : member) : Ctx.t * ESig.t =
     let ctx, esign = eval_expr cursor ctx expr_base in
     cont_expr ctx esign (fun value_base ->
         let value =
@@ -598,7 +617,7 @@ module Make (Arch : ARCH) : INTERP = struct
         (ctx, Cont (`Single value)))
 
   and eval_call_func_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var_func : var)
-      (targs : typ list) (args : arg list) : Ctx.t * Esig.t =
+      (targs : typ list) (args : arg list) : Ctx.t * ESig.t =
     let ctx, esign = eval_func_call cursor ctx var_func targs args in
     match esign with
     | Ret (Some value) -> (ctx, Cont (`Single value))
@@ -610,7 +629,7 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and eval_call_method_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       (expr_base : expr) (member : member) (targs : typ list) (args : arg list)
-      : Ctx.t * Esig.t =
+      : Ctx.t * ESig.t =
     let ctx, esign = eval_method_call cursor ctx expr_base member targs args in
     match esign with
     | Ret (Some value) -> (ctx, Cont (`Single value))
@@ -835,16 +854,18 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and eval_decl_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : decl) :
       Ctx.t * Sig.t =
-    let ctx = eval_decl cursor ctx decl in
-    (ctx, Cont)
+    let ctx, dsign = eval_decl cursor ctx decl in
+    cont_decl_to_stmt ctx dsign (fun _ -> (ctx, Cont))
 
   (* Declaration evaluation *)
 
-  and eval_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : decl) : Ctx.t =
+  and eval_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : decl) :
+      Ctx.t * DSig.t =
     try eval_decl' cursor ctx decl.it
     with InterpErr _ as err -> error_pass_info decl.at err
 
-  and eval_decl' (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : decl') : Ctx.t =
+  and eval_decl' (cursor : Ctx.cursor) (ctx : Ctx.t) (decl : decl') :
+      Ctx.t * DSig.t =
     match decl with
     | ConstD { id; typ; value; annos } ->
         eval_const_decl cursor ctx id typ value annos
@@ -856,29 +877,32 @@ module Make (Arch : ARCH) : INTERP = struct
           (Il.Pp.pp_decl' ~level:0) decl
         |> error_no_info
 
-  and eval_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (decls : decl list) : Ctx.t
-      =
-    List.fold_left (eval_decl cursor) ctx decls
+  and eval_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (decls : decl list) :
+      Ctx.t * DSig.t =
+    List.fold_left
+      (fun ((ctx, dsign) : Ctx.t * DSig.t) (decl : decl) ->
+        match dsign with Cont -> eval_decl cursor ctx decl | _ -> (ctx, dsign))
+      (ctx, Cont) decls
 
   and eval_const_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id) (_typ : typ)
-      (value : value) (_annos : anno list) : Ctx.t =
-    Ctx.add_value cursor id.it value.it ctx
+      (value : value) (_annos : anno list) : Ctx.t * DSig.t =
+    let ctx = Ctx.add_value cursor id.it value.it ctx in
+    (ctx, Cont)
 
   and eval_var_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id) (typ : typ)
-      (init : expr option) (_annos : anno list) : Ctx.t =
-    let ctx, value =
-      match init with
-      | Some expr ->
-          let ctx, esign = eval_expr cursor ctx expr in
-          let value = cont_value esign in
-          (ctx, value)
-      | None ->
-          let value =
-            Ctx.resolve_typ cursor typ.it ctx |> Numerics.eval_default
-          in
-          (ctx, value)
-    in
-    Ctx.add_value cursor id.it value ctx
+      (init : expr option) (_annos : anno list) : Ctx.t * DSig.t =
+    match init with
+    | Some expr ->
+        let ctx, esign = eval_expr cursor ctx expr in
+        cont_expr_to_decl ctx esign (fun value ->
+            let ctx = Ctx.add_value cursor id.it value ctx in
+            (ctx, Cont))
+    | None ->
+        let value =
+          Ctx.resolve_typ cursor typ.it ctx |> Numerics.eval_default
+        in
+        let ctx = Ctx.add_value cursor id.it value ctx in
+        (ctx, Cont)
 
   (* Parser state machine evaluation *)
 
@@ -1098,10 +1122,10 @@ module Make (Arch : ARCH) : INTERP = struct
 
   and copyin (cursor_caller : Ctx.cursor) (ctx_caller : Ctx.t)
       (cursor_callee : Ctx.cursor) (ctx_callee : Ctx.t) (params : param list)
-      (args : arg list) : Ctx.t * Csig.t =
+      (args : arg list) : Ctx.t * CSig.t =
     let copyin' (ctx_caller : Ctx.t) (ctx_callee : Ctx.t)
         (lvalues : LValue.t option list) (param : param) (arg : arg) :
-        Ctx.t * Csig.t =
+        Ctx.t * CSig.t =
       let id, dir, typ, _, _ = param.it in
       match dir.it with
       | No | In ->
@@ -1136,7 +1160,7 @@ module Make (Arch : ARCH) : INTERP = struct
           (ctx_caller, Cont (ctx_callee, lvalues))
     in
     List.fold_left2
-      (fun ((ctx_caller, csig) : Ctx.t * Csig.t) param arg ->
+      (fun ((ctx_caller, csig) : Ctx.t * CSig.t) param arg ->
         match csig with
         | Cont (ctx_callee, lvalues) ->
             copyin' ctx_caller ctx_callee lvalues param arg
@@ -1470,26 +1494,28 @@ module Make (Arch : ARCH) : INTERP = struct
         let ctx_callee =
           copyin_default Ctx.Local ctx_callee params_default args_default
         in
-        let ctx_callee = eval_decls Ctx.Block ctx_callee decls in
-        let ctx_callee =
-          { ctx_callee with block = { ctx_callee.block with senv } }
-        in
-        let ctx_callee =
-          ctx_callee.block.senv |> SEnv.bindings |> List.map fst
-          |> List.fold_left
-               (fun ctx_callee id ->
-                 Ctx.add_value Ctx.Block id (Value.StateV id) ctx_callee)
-               ctx_callee
-        in
-        let ctx_callee, sign =
-          eval_parser_state_machine Ctx.Block ctx_callee
-            (Sig.Trans (`State "start"))
-        in
-        let ctx_caller = post ctx_caller ctx_callee in
-        let ctx_caller =
-          copyout cursor_caller ctx_caller Ctx.Block ctx_callee params lvalues
-        in
-        (ctx_caller, sign))
+        let ctx_callee, dsign = eval_decls Ctx.Block ctx_callee decls in
+        cont_decl_to_stmt ctx_callee dsign (fun () ->
+            let ctx_callee =
+              { ctx_callee with block = { ctx_callee.block with senv } }
+            in
+            let ctx_callee =
+              ctx_callee.block.senv |> SEnv.bindings |> List.map fst
+              |> List.fold_left
+                   (fun ctx_callee id ->
+                     Ctx.add_value Ctx.Block id (Value.StateV id) ctx_callee)
+                   ctx_callee
+            in
+            let ctx_callee, sign =
+              eval_parser_state_machine Ctx.Block ctx_callee
+                (Sig.Trans (`State "start"))
+            in
+            let ctx_caller = post ctx_caller ctx_callee in
+            let ctx_caller =
+              copyout cursor_caller ctx_caller Ctx.Block ctx_callee params
+                lvalues
+            in
+            (ctx_caller, sign)))
 
   and eval_control_apply_method_call ~pre ~post (cursor_caller : Ctx.cursor)
       (ctx_caller : Ctx.t) (params : param list) (args : arg list)
@@ -1506,18 +1532,20 @@ module Make (Arch : ARCH) : INTERP = struct
         let ctx_callee =
           copyin_default Ctx.Local ctx_callee params_default args_default
         in
-        let ctx_callee = eval_decls Ctx.Block ctx_callee decls in
-        let ctx_callee =
-          { ctx_callee with block = { ctx_callee.block with fenv } }
-        in
-        let ctx_callee, sign =
-          eval_block ~start:true Ctx.Local ctx_callee block
-        in
-        let ctx_caller = post ctx_caller ctx_callee in
-        let ctx_caller =
-          copyout cursor_caller ctx_caller Ctx.Block ctx_callee params lvalues
-        in
-        (ctx_caller, sign))
+        let ctx_callee, dsign = eval_decls Ctx.Block ctx_callee decls in
+        cont_decl_to_stmt ctx_callee dsign (fun () ->
+            let ctx_callee =
+              { ctx_callee with block = { ctx_callee.block with fenv } }
+            in
+            let ctx_callee, sign =
+              eval_block ~start:true Ctx.Local ctx_callee block
+            in
+            let ctx_caller = post ctx_caller ctx_callee in
+            let ctx_caller =
+              copyout cursor_caller ctx_caller Ctx.Block ctx_callee params
+                lvalues
+            in
+            (ctx_caller, sign)))
 
   and eval_table_apply_method_call ~pre ~post (_cursor_caller : Ctx.cursor)
       (ctx_caller : Ctx.t) (oid : OId.t) (table : Table.t) : Ctx.t * Sig.t =

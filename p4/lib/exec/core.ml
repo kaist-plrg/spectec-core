@@ -3,6 +3,7 @@ module Value = Runtime_static.Vdomain.Value
 module Types = Runtime_static.Tdomain.Types
 module Type = Types.Type
 module Numerics = Runtime_static.Numerics
+open Sigs
 open Util.Error
 
 let error_no_info = error_interp_no_info

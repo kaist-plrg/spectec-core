@@ -11,6 +11,7 @@ module TDEnv = Envs_dynamic.TDEnv
 module FEnv = Envs_dynamic.FEnv
 module CEnv = Envs_dynamic.CEnv
 module Sto = Envs_dynamic.Sto
+open Sigs
 open Util.Source
 open Util.Error
 

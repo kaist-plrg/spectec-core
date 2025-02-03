@@ -16,6 +16,7 @@ module Theta = Envs_dynamic.Theta
 module FEnv = Envs_dynamic.FEnv
 module CEnv = Envs_dynamic.CEnv
 module Sto = Envs_dynamic.Sto
+open Sigs
 open Driver
 open Util.Error
 
