@@ -105,6 +105,9 @@ and eq_functyp ft_a ft_b =
   | ActionT params_a, ActionT params_b -> eq_params params_a params_b
   | ExternFunctionT (params_a, typ_ret_a), ExternFunctionT (params_b, typ_ret_b)
   | FunctionT (params_a, typ_ret_a), FunctionT (params_b, typ_ret_b)
+  | BuiltinMethodT (params_a, typ_ret_a), BuiltinMethodT (params_b, typ_ret_b)
+    ->
+      eq_params params_a params_b && eq_typ typ_ret_a typ_ret_b
   | ExternMethodT (params_a, typ_ret_a), ExternMethodT (params_b, typ_ret_b)
   | ( ExternAbstractMethodT (params_a, typ_ret_a),
       ExternAbstractMethodT (params_b, typ_ret_b) ) ->
@@ -112,9 +115,6 @@ and eq_functyp ft_a ft_b =
   | ParserApplyMethodT params_a, ParserApplyMethodT params_b
   | ControlApplyMethodT params_a, ControlApplyMethodT params_b ->
       eq_params params_a params_b
-  | BuiltinMethodT (params_a, typ_ret_a), BuiltinMethodT (params_b, typ_ret_b)
-    ->
-      eq_params params_a params_b && eq_typ typ_ret_a typ_ret_b
   | TableApplyMethodT typ_ret_a, TableApplyMethodT typ_ret_b ->
       eq_typ typ_ret_a typ_ret_b
   | _ -> false
@@ -138,13 +138,13 @@ let eq_functyp_kind ft_a ft_b =
   | ActionT _, ActionT _ -> true
   | ExternFunctionT _, ExternFunctionT _
   | FunctionT _, FunctionT _
+  | BuiltinMethodT _, BuiltinMethodT _
   | ExternMethodT _, ExternMethodT _
   | ExternMethodT _, ExternAbstractMethodT _
   | ExternAbstractMethodT _, ExternMethodT _
   | ExternAbstractMethodT _, ExternAbstractMethodT _
   | ParserApplyMethodT _, ParserApplyMethodT _
   | ControlApplyMethodT _, ControlApplyMethodT _
-  | BuiltinMethodT _, BuiltinMethodT _
   | TableApplyMethodT _, TableApplyMethodT _ ->
       true
   | _ -> false
@@ -155,10 +155,15 @@ let eq_funcdef_kind fd_a fd_b =
       eq_functyp_kind ft_a ft_b
   | _ -> false
 
+let eq_constyp_kind ct_a ct_b =
+  let _, typ_a = ct_a in
+  let _, typ_b = ct_b in
+  eq_typ typ_a typ_b
+
 let eq_consdef_kind cd_a cd_b =
-  let _, _, _, typ_ret_a = cd_a in
-  let _, _, _, typ_ret_b = cd_b in
-  eq_typ typ_ret_a typ_ret_b
+  let _, _, ct_a = cd_a in
+  let _, _, ct_b = cd_b in
+  eq_constyp_kind ct_a ct_b
 
 (* Alpha-equivalence *)
 
@@ -254,6 +259,9 @@ and eq_functyp_alpha (ft_a : functyp) (ft_b : functyp) : bool =
   | ActionT params_a, ActionT params_b -> eq_params_alpha params_a params_b
   | ExternFunctionT (params_a, typ_ret_a), ExternFunctionT (params_b, typ_ret_b)
   | FunctionT (params_a, typ_ret_a), FunctionT (params_b, typ_ret_b)
+  | BuiltinMethodT (params_a, typ_ret_a), BuiltinMethodT (params_b, typ_ret_b)
+    ->
+      eq_params_alpha params_a params_b && eq_typ_alpha typ_ret_a typ_ret_b
   | ExternMethodT (params_a, typ_ret_a), ExternMethodT (params_b, typ_ret_b)
   | ( ExternAbstractMethodT (params_a, typ_ret_a),
       ExternAbstractMethodT (params_b, typ_ret_b) ) ->
@@ -261,9 +269,6 @@ and eq_functyp_alpha (ft_a : functyp) (ft_b : functyp) : bool =
   | ParserApplyMethodT params_a, ParserApplyMethodT params_b
   | ControlApplyMethodT params_a, ControlApplyMethodT params_b ->
       eq_params_alpha params_a params_b
-  | BuiltinMethodT (params_a, typ_ret_a), BuiltinMethodT (params_b, typ_ret_b)
-    ->
-      eq_params_alpha params_a params_b && eq_typ_alpha typ_ret_a typ_ret_b
   | TableApplyMethodT typ_ret_a, TableApplyMethodT typ_ret_b ->
       eq_typ_alpha typ_ret_a typ_ret_b
   | _ -> false

@@ -563,10 +563,12 @@ and eval_decl' (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (decl : decl')
   (* Function declarations *)
   | ActionD { id; params; body; annos } ->
       eval_action_decl cursor ctx id params body annos |> wrap_none
-  | FuncD { id; typ_ret; tparams; params; body } ->
-      eval_func_decl cursor ctx id typ_ret tparams params body |> wrap_none
-  | ExternFuncD { id; typ_ret; tparams; params; annos } ->
-      eval_extern_func_decl cursor ctx id typ_ret tparams params annos
+  | FuncD { id; typ_ret; tparams; tparams_hidden; params; body } ->
+      eval_func_decl cursor ctx id typ_ret tparams tparams_hidden params body
+      |> wrap_none
+  | ExternFuncD { id; typ_ret; tparams; tparams_hidden; params; annos } ->
+      eval_extern_func_decl cursor ctx id typ_ret tparams tparams_hidden params
+        annos
       |> wrap_none
   (* Object declarations *)
   (* Extern *)
@@ -590,8 +592,9 @@ and eval_decl' (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (decl : decl')
       eval_control_decl cursor ctx id tparams params cparams locals body annos
       |> wrap_none
   (* Package *)
-  | PackageTypeD { id; tparams; cparams; annos } ->
-      eval_package_type_decl cursor ctx id tparams cparams annos |> wrap_none
+  | PackageTypeD { id; tparams; tparams_hidden; cparams; annos } ->
+      eval_package_type_decl cursor ctx id tparams tparams_hidden cparams annos
+      |> wrap_none
 
 and eval_decls (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (decls : decl list) : Ctx.t * Sto.t * decl list =
@@ -869,19 +872,19 @@ and eval_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
 (* (10) Function declarations *)
 
 and eval_func_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
-    (_typ_ret : typ) (tparams : tparam list) (params : param list)
-    (body : block) : Ctx.t =
+    (_typ_ret : typ) (tparams : tparam list) (tparams_hidden : tparam list)
+    (params : param list) (body : block) : Ctx.t =
   let fid = FId.to_fid id params in
-  let func = Func.FuncF (tparams, params, body) in
+  let func = Func.FuncF (tparams @ tparams_hidden, params, body) in
   Ctx.add_func_overload cursor fid func ctx
 
 (* (7.2.10.1) Extern functions *)
 
 and eval_extern_func_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
-    (_typ_ret : typ) (tparams : tparam list) (params : param list)
-    (_annos : anno list) : Ctx.t =
+    (_typ_ret : typ) (tparams : tparam list) (tparams_hidden : tparam list)
+    (params : param list) (_annos : anno list) : Ctx.t =
   let fid = FId.to_fid id params in
-  let func = Func.ExternFuncF (tparams, params) in
+  let func = Func.ExternFuncF (tparams @ tparams_hidden, params) in
   Ctx.add_func_overload cursor fid func ctx
 
 (* (7.2.10.2) Extern objects *)
@@ -890,7 +893,7 @@ and eval_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
     (tparams : tparam list) (mthds : mthd list) (_annos : anno list) : Ctx.t =
   let conss, mthds =
     List.partition
-      (fun mthd -> match mthd.it with L.ExternConsM _ -> true | _ -> false)
+      (fun mthd -> match mthd.it with ExternConsM _ -> true | _ -> false)
       mthds
   in
   let td =
@@ -898,27 +901,30 @@ and eval_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
       List.fold_left
         (fun fdenv mthd ->
           match mthd.it with
-          | L.ExternAbstractM { id; typ_ret; tparams; params; _ } ->
+          | ExternAbstractM { id; typ_ret; tparams; tparams_hidden; params; _ }
+            ->
               let fid = FId.to_fid id params in
               let tparams = List.map it tparams in
+              let tparams_hidden = List.map it tparams_hidden in
               let params =
                 List.map it params
                 |> List.map (fun (id, typ, dir, value_default, _) ->
                        (id.it, typ.it, dir.it, Option.map it value_default))
               in
               let ft = Types.ExternAbstractMethodT (params, typ_ret.it) in
-              let fd = Types.PolyFD (tparams, [], ft) in
+              let fd = Types.PolyFD (tparams, tparams_hidden, ft) in
               FDEnv.add fid fd fdenv
-          | L.ExternM { id; typ_ret; tparams; params; _ } ->
+          | ExternM { id; typ_ret; tparams; tparams_hidden; params; _ } ->
               let fid = FId.to_fid id params in
               let tparams = List.map it tparams in
+              let tparams_hidden = List.map it tparams_hidden in
               let params =
                 List.map it params
                 |> List.map (fun (id, typ, dir, value_default, _) ->
                        (id.it, typ.it, dir.it, Option.map it value_default))
               in
               let ft = Types.ExternMethodT (params, typ_ret.it) in
-              let fd = Types.PolyFD (tparams, [], ft) in
+              let fd = Types.PolyFD (tparams, tparams_hidden, ft) in
               FDEnv.add fid fd fdenv
           | _ -> assert false)
         FEnv.empty mthds
@@ -930,15 +936,20 @@ and eval_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let ctx = Ctx.add_typdef cursor id.it td ctx in
   let conss =
     if conss = [] then
-      [ L.ExternConsM { id; cparams = []; annos = [] } $ no_info ]
+      [
+        ExternConsM { id; cparams = []; tparams_hidden = []; annos = [] }
+        $ no_info;
+      ]
     else conss
   in
   List.fold_left
     (fun ctx cons ->
       match cons.it with
-      | L.ExternConsM { cparams; _ } ->
+      | ExternConsM { cparams; tparams_hidden; _ } ->
           let cid = FId.to_fid id cparams in
-          let cons = Cons.ExternC (id.it, tparams, cparams, mthds) in
+          let cons =
+            Cons.ExternC (id.it, tparams @ tparams_hidden, cparams, mthds)
+          in
           Ctx.add_cons cursor cid cons ctx
       | _ -> assert false)
     ctx conss
@@ -1033,21 +1044,22 @@ and eval_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
 (* (7.2.13) Package types *)
 
 and eval_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
-    (tparams : tparam list) (cparams : cparam list) (_annos : anno list) : Ctx.t
-    =
+    (tparams : tparam list) (tparams_hidden : tparam list)
+    (cparams : cparam list) (_annos : anno list) : Ctx.t =
   let td =
     let tparams = List.map it tparams in
+    let tparams_hidden = List.map it tparams_hidden in
     let typ_package =
       let typs_inner =
         List.map it cparams |> List.map (fun (_, _, typ, _, _) -> typ.it)
       in
       Types.PackageT typs_inner
     in
-    Types.PolyD (tparams, [], typ_package)
+    Types.PolyD (tparams, tparams_hidden, typ_package)
   in
   let ctx = Ctx.add_typdef cursor id.it td ctx in
   let cid = FId.to_fid id cparams in
-  let cons = Cons.PackageC (tparams, cparams) in
+  let cons = Cons.PackageC (tparams @ tparams_hidden, cparams) in
   Ctx.add_cons cursor cid cons ctx
 
 (* Parser state evaluation *)
@@ -1093,7 +1105,7 @@ and eval_parser_states (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 
 and eval_table_custom (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (table_custom : table_custom) : Ctx.t * Sto.t * table_custom =
-  let member, expr, custom_const, annos = table_custom.it in
+  let table_custom_const, member, expr, annos = table_custom.it in
   let sto, value =
     let ctx = Ctx.enter_path member.it ctx in
     eval_expr cursor ctx sto expr
@@ -1102,7 +1114,9 @@ and eval_table_custom (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     Il.Ast.ValueE { value = value $ no_info }
     $$ (no_info, { typ = expr.note.typ; ctk = expr.note.ctk })
   in
-  let table_custom = (member, expr, custom_const, annos) $ table_custom.at in
+  let table_custom =
+    (table_custom_const, member, expr, annos) $ table_custom.at
+  in
   (ctx, sto, table_custom)
 
 and eval_table_property (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
@@ -1136,32 +1150,33 @@ and eval_table (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (table : table)
 and eval_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (mthd : mthd) : Ctx.t =
   assert (cursor = Ctx.Block);
   match mthd.it with
-  | ExternAbstractM { id; typ_ret; tparams; params; annos } ->
-      eval_extern_abstract_mthd cursor ctx id typ_ret tparams params annos
-  | ExternM { id; typ_ret; tparams; params; annos } ->
-      eval_extern_mthd cursor ctx id typ_ret tparams params annos
+  | ExternAbstractM { id; typ_ret; tparams; tparams_hidden; params; annos } ->
+      eval_extern_abstract_mthd cursor ctx id typ_ret tparams tparams_hidden
+        params annos
+  | ExternM { id; typ_ret; tparams; tparams_hidden; params; annos } ->
+      eval_extern_mthd cursor ctx id typ_ret tparams tparams_hidden params annos
   | _ ->
       F.asprintf
         "(eval_mthd) %a is a constructor and should have been handled prior to \
          instantiation"
-        Il.Pp.pp_mthd mthd
+        (Il.Pp.pp_mthd ~level:0) mthd
       |> error_info mthd.at
 
 and eval_mthds (cursor : Ctx.cursor) (ctx : Ctx.t) (mthds : mthd list) : Ctx.t =
   List.fold_left (fun ctx mthd -> eval_mthd cursor ctx mthd) ctx mthds
 
 and eval_extern_abstract_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
-    (_typ_ret : typ) (tparams : tparam list) (params : param list)
-    (_annos : anno list) : Ctx.t =
+    (_typ_ret : typ) (tparams : tparam list) (tparams_hidden : tparam list)
+    (params : param list) (_annos : anno list) : Ctx.t =
   let fid = FId.to_fid id params in
-  let func = Func.ExternAbstractMethodF (tparams, params) in
+  let func = Func.ExternAbstractMethodF (tparams @ tparams_hidden, params) in
   Ctx.add_func_overload cursor fid func ctx
 
 and eval_extern_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
-    (_typ_ret : typ) (tparams : tparam list) (params : param list)
-    (_annos : anno list) : Ctx.t =
+    (_typ_ret : typ) (tparams : tparam list) (tparams_hidden : tparam list)
+    (params : param list) (_annos : anno list) : Ctx.t =
   let fid = FId.to_fid id params in
-  let func = Func.ExternMethodF (tparams, params, None) in
+  let func = Func.ExternMethodF (tparams @ tparams_hidden, params, None) in
   Ctx.add_func_overload cursor fid func ctx
 
 (* Program evaluation:

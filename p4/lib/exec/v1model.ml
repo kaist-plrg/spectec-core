@@ -16,6 +16,7 @@ module Theta = Envs_dynamic.Theta
 module FEnv = Envs_dynamic.FEnv
 module CEnv = Envs_dynamic.CEnv
 module Sto = Envs_dynamic.Sto
+open Sigs
 open Driver
 open Util.Error
 
@@ -69,7 +70,7 @@ module Counter = struct
                    updated.
 
      void count(in bit<32> index); *)
-  let count (ctx : Ctx.t) (len : Bigint.t) ctr : Ctx.t * Sig.t * t =
+  let count (ctx : Ctx.t) (len : Bigint.t) ctr : Ctx.t * SSig.t * t =
     let index_target =
       Ctx.find_value Ctx.Local "index" ctx |> Value.get_num |> Bigint.to_int_exn
     in
@@ -102,8 +103,8 @@ module Counter = struct
           in
           PacketsAndBytes packets_and_bytes
     in
-    let sign = Sig.Ret None in
-    (ctx, sign, ctr)
+    let ssig = SSig.Ret None in
+    (ctx, ssig, ctr)
 end
 
 module DirectCounter = struct
@@ -149,7 +150,7 @@ module DirectCounter = struct
      the body of that action.
 
      void count(); *)
-  let count (ctx : Ctx.t) (len : Bigint.t) dctr : Ctx.t * Sig.t * t =
+  let count (ctx : Ctx.t) (len : Bigint.t) dctr : Ctx.t * SSig.t * t =
     let dctr =
       match dctr with
       | Packets count ->
@@ -163,8 +164,8 @@ module DirectCounter = struct
           let count_bytes = Bigint.(count_bytes + len) in
           PacketsAndBytes (count_packets, count_bytes)
     in
-    let sign = Sig.Ret None in
-    (ctx, sign, dctr)
+    let ssig = SSig.Ret None in
+    (ctx, ssig, dctr)
 end
 
 module Meter = struct
@@ -210,7 +211,7 @@ module Register = struct
                   ignored by the caller.
 
      void read(out T result, in bit<32> index); *)
-  let read (ctx : Ctx.t) reg : Ctx.t * Sig.t * t =
+  let read (ctx : Ctx.t) reg : Ctx.t * SSig.t * t =
     let typ, values = reg in
     let index_target =
       Ctx.find_value Ctx.Local "index" ctx |> Value.get_num |> Bigint.to_int_exn
@@ -220,9 +221,9 @@ module Register = struct
       else Numerics.eval_default typ
     in
     let ctx = Ctx.update_value Ctx.Local "result" value ctx in
-    let sign = Sig.Ret None in
+    let ssig = SSig.Ret None in
     let reg = (typ, values) in
-    (ctx, sign, reg)
+    (ctx, ssig, reg)
 
   (* write() writes the state of the register array at the specified
      index, with the value provided by the value parameter.
@@ -245,7 +246,7 @@ module Register = struct
                   parameter's value is written into the register
                   array element specified by index.
      void write(in bit<32> index, in T value); *)
-  let write (ctx : Ctx.t) reg : Ctx.t * Sig.t * t =
+  let write (ctx : Ctx.t) reg : Ctx.t * SSig.t * t =
     let typ, values = reg in
     let index_target =
       Ctx.find_value Ctx.Local "index" ctx |> Value.get_num |> Bigint.to_int_exn
@@ -256,9 +257,9 @@ module Register = struct
         (fun idx value -> if idx = index_target then value_target else value)
         values
     in
-    let sign = Sig.Ret None in
+    let ssig = SSig.Ret None in
     let reg = (typ, values) in
-    (ctx, sign, reg)
+    (ctx, ssig, reg)
 end
 
 module ActionProfile = struct
@@ -432,7 +433,7 @@ module Make (Interp : INTERP) : ARCH = struct
      @param T          Must be a type bit<W>
 
      extern void random<T>(out T result, in T lo, in T hi); *)
-  let eval_extern_random (_ctx : Ctx.t) : Ctx.t * Sig.t = assert false
+  let eval_extern_random (_ctx : Ctx.t) : Ctx.t * SSig.t = assert false
 
   (* Calling digest causes a message containing the values specified in
      the data parameter to be sent to the control plane software.  It is
@@ -457,19 +458,19 @@ module Make (Interp : INTERP) : ARCH = struct
      value of the receiver parameter.
 
      extern void digest<T>(in bit<32> receiver, in T data); *)
-  let eval_extern_digest (_ctx : Ctx.t) : Ctx.t * Sig.t = assert false
+  let eval_extern_digest (_ctx : Ctx.t) : Ctx.t * SSig.t = assert false
 
   (* mark_to_drop(standard_metadata) is a primitive action that modifies
      standard_metadata.egress_spec to an implementation-specific special
      value that in some cases causes the packet to be dropped at the end
-     of ingress or egress processing.  It also assigns 0 to
+     of ingress or egress processing.  It also asssigs 0 to
      standard_metadata.mcast_grp.  Either of those metadata fields may
      be changed by executing later P4 code, after calling
      mark_to_drop(), and this can change the resulting behavior of the
      packet to do something other than drop.
 
      extern void mark_to_drop(inout standard_metadata_t standard_metadata); *)
-  let eval_extern_mark_to_drop (ctx : Ctx.t) : Ctx.t * Sig.t =
+  let eval_extern_mark_to_drop (ctx : Ctx.t) : Ctx.t * SSig.t =
     let value_std_meta = Ctx.find_value Ctx.Local "standard_metadata" ctx in
     let value_std_meta =
       Value.update_struct_field value_std_meta "egress_spec" drop_spec
@@ -481,7 +482,7 @@ module Make (Interp : INTERP) : ARCH = struct
     let ctx =
       Ctx.update_value Ctx.Local "standard_metadata" value_std_meta ctx
     in
-    (ctx, Sig.Ret None)
+    (ctx, SSig.Ret None)
 
   (* Calculate a hash function of the value specified by the data
      parameter.  The value written to the out parameter named result
@@ -501,7 +502,7 @@ module Make (Interp : INTERP) : ARCH = struct
      extern void hash<O, T, D, M>(out O result, in HashAlgorithm algo,
                                   in T base, in D data, in M max); *)
 
-  let eval_extern_hash (ctx : Ctx.t) : Ctx.t * Sig.t =
+  let eval_extern_hash (ctx : Ctx.t) : Ctx.t * SSig.t =
     let base = Ctx.find_value Ctx.Local "base" ctx |> Value.get_num in
     let max = Ctx.find_value Ctx.Local "max" ctx |> Value.get_num in
     let values =
@@ -520,7 +521,7 @@ module Make (Interp : INTERP) : ARCH = struct
       Numerics.eval_cast typ_result value_result
     in
     let ctx = Ctx.update_value Ctx.Local "result" value_result ctx in
-    (ctx, Sig.Ret None)
+    (ctx, SSig.Ret None)
 
   (* Verifies the checksum of the supplied data.  If this method detects
      that a checksum of the data is not correct, then the value of the
@@ -557,7 +558,7 @@ module Make (Interp : INTERP) : ARCH = struct
      extern void verify_checksum_with_payload<T, O>(in bool condition, in T data,
                                                     in O checksum, HashAlgorithm algo); *)
   let eval_extern_verify_checksum ~(payload : bool) (ctx : Ctx.t) :
-      Ctx.t * Sig.t =
+      Ctx.t * SSig.t =
     let condition =
       Ctx.find_value Ctx.Local "condition" ctx |> Value.get_bool
     in
@@ -581,7 +582,7 @@ module Make (Interp : INTERP) : ARCH = struct
       Ctx.find_value Ctx.Local "checksum" ctx |> Value.get_num
     in
     let algo = Ctx.find_value Ctx.Local "algo" ctx in
-    if not condition then (ctx, Sig.Ret None)
+    if not condition then (ctx, SSig.Ret None)
     else
       let checksum_compute =
         match algo with
@@ -605,7 +606,7 @@ module Make (Interp : INTERP) : ARCH = struct
           Ctx.update_value Ctx.Global "standard_metadata" value_std_meta ctx
         else ctx
       in
-      (ctx, Sig.Ret None)
+      (ctx, SSig.Ret None)
 
   (* Computes the checksum of the supplied data and writes it to the
      checksum parameter.
@@ -639,7 +640,7 @@ module Make (Interp : INTERP) : ARCH = struct
      extern void update_checksum_with_payload<T, O>(in bool condition, in T data,
                                                     inout O checksum, HashAlgorithm algo); *)
   let eval_extern_update_checksum ~(payload : bool) (ctx : Ctx.t) :
-      Ctx.t * Sig.t =
+      Ctx.t * SSig.t =
     let condition =
       Ctx.find_value Ctx.Local "condition" ctx |> Value.get_bool
     in
@@ -660,7 +661,7 @@ module Make (Interp : INTERP) : ARCH = struct
       else values
     in
     let algo = Ctx.find_value Ctx.Local "algo" ctx in
-    if not condition then (ctx, Sig.Ret None)
+    if not condition then (ctx, SSig.Ret None)
     else
       let checksum_compute =
         match algo with
@@ -674,7 +675,7 @@ module Make (Interp : INTERP) : ARCH = struct
         Numerics.eval_cast typ_checksum value_checksum
       in
       let ctx = Ctx.update_value Ctx.Local "checksum" value_checksum ctx in
-      (ctx, Sig.Ret None)
+      (ctx, SSig.Ret None)
 
   (* clone is in most ways identical to the clone_preserving_field_list
      operation, with the only difference being that it never preserves
@@ -683,7 +684,7 @@ module Make (Interp : INTERP) : ARCH = struct
      type and session parameter values, with empty data.
 
      extern void clone(in CloneType type, in bit<32> session); *)
-  let eval_extern_clone (_ctx : Ctx.t) : Ctx.t * Sig.t = assert false
+  let eval_extern_clone (_ctx : Ctx.t) : Ctx.t * SSig.t = assert false
 
   (* Calling resubmit_preserving_field_list during execution of the
      ingress control will cause the packet to be resubmitted, i.e. it
@@ -719,7 +720,7 @@ module Make (Interp : INTERP) : ARCH = struct
      resubmit_preserving_field_list(2) will only preserve field y.
 
      extern void resubmit_preserving_field_list(bit<8> index); *)
-  let eval_extern_resubmit_preserving_field_list (_ctx : Ctx.t) : Ctx.t * Sig.t
+  let eval_extern_resubmit_preserving_field_list (_ctx : Ctx.t) : Ctx.t * SSig.t
       =
     assert false
 
@@ -746,7 +747,7 @@ module Make (Interp : INTERP) : ARCH = struct
 
      extern void recirculate_preserving_field_list(bit<8> index); *)
   let eval_extern_recirculate_preserving_field_list (_ctx : Ctx.t) :
-      Ctx.t * Sig.t =
+      Ctx.t * SSig.t =
     assert false
 
   (* Calling clone_preserving_field_list during execution of the ingress
@@ -784,10 +785,10 @@ module Make (Interp : INTERP) : ARCH = struct
 
      extern void clone_preserving_field_list(in CloneType type,
                                              in bit<32> session, bit<8> index); *)
-  let eval_extern_clone_preserving_field_list (_ctx : Ctx.t) : Ctx.t * Sig.t =
+  let eval_extern_clone_preserving_field_list (_ctx : Ctx.t) : Ctx.t * SSig.t =
     assert false
 
-  let eval_extern_truncate (_ctx : Ctx.t) : Ctx.t * Sig.t = assert false
+  let eval_extern_truncate (_ctx : Ctx.t) : Ctx.t * SSig.t = assert false
 
   (* Calling assert when the argument is true has no effect, except any
      effect that might occur due to evaluation of the argument (but see
@@ -813,7 +814,7 @@ module Make (Interp : INTERP) : ARCH = struct
      same way when assert statements are removed.
 
      extern void assert(in bool check); *)
-  let eval_extern_assert (_ctx : Ctx.t) : Ctx.t * Sig.t = assert false
+  let eval_extern_assert (_ctx : Ctx.t) : Ctx.t * SSig.t = assert false
 
   (* For the purposes of compiling and executing P4 programs on a target
      device, assert and assume are identical, including the use of the
@@ -848,7 +849,7 @@ module Make (Interp : INTERP) : ARCH = struct
      is likely that your assumption was wrong, and should be reexamined.
 
      extern void assume(in bool check); *)
-  let eval_extern_assume (_ctx : Ctx.t) : Ctx.t * Sig.t = assert false
+  let eval_extern_assume (_ctx : Ctx.t) : Ctx.t * SSig.t = assert false
 
   (* Log user defined messages
      Example: log_msg("User defined message");
@@ -856,11 +857,11 @@ module Make (Interp : INTERP) : ARCH = struct
 
      extern void log_msg(string msg);
      extern void log_msg<T>(string msg, in T data); *)
-  let eval_extern_log_msg ~(data : bool) (_ctx : Ctx.t) : Ctx.t * Sig.t =
+  let eval_extern_log_msg ~(data : bool) (_ctx : Ctx.t) : Ctx.t * SSig.t =
     data |> ignore;
     assert false
 
-  let eval_extern_func_call (ctx : Ctx.t) (fid : FId.t) : Ctx.t * Sig.t =
+  let eval_extern_func_call (ctx : Ctx.t) (fid : FId.t) : Ctx.t * SSig.t =
     let fname, args = fid in
     match (fname, args) with
     (* core.p4 *)
@@ -916,55 +917,55 @@ module Make (Interp : INTERP) : ARCH = struct
     | _ -> F.asprintf "(eval_extern_func_call) %a" FId.pp fid |> error
 
   let eval_extern_method_call (ctx : Ctx.t) (oid : OId.t) (fid : FId.t) :
-      Ctx.t * Sig.t =
+      Ctx.t * SSig.t =
     let id = String.concat "." oid in
     let extern = Externs.find id !externs in
     match (extern, fid) with
     | PacketIn pkt_in, ("extract", [ ("hdr", false) ]) ->
-        let ctx, sign, pkt_in = Core.PacketIn.extract ctx pkt_in in
+        let ctx, ssig, pkt_in = Core.PacketIn.extract ctx pkt_in in
         externs := Externs.add id (PacketIn pkt_in) !externs;
-        (ctx, sign)
+        (ctx, ssig)
     | ( PacketIn pkt_in,
         ( "extract",
           [ ("variableSizeHeader", false); ("variableFieldSizeInBits", false) ]
         ) ) ->
-        let ctx, sign, pkt_in = Core.PacketIn.extract_varsize ctx pkt_in in
+        let ctx, ssig, pkt_in = Core.PacketIn.extract_varsize ctx pkt_in in
         externs := Externs.add id (PacketIn pkt_in) !externs;
-        (ctx, sign)
+        (ctx, ssig)
     | PacketIn pkt_in, ("lookahead", []) ->
-        let sign = Core.PacketIn.lookahead ctx pkt_in in
-        (ctx, sign)
+        let ssig = Core.PacketIn.lookahead ctx pkt_in in
+        (ctx, ssig)
     | PacketIn pkt_in, ("advance", [ ("sizeInBits", false) ]) ->
         let pkt_in = Core.PacketIn.advance ctx pkt_in in
         externs := Externs.add id (PacketIn pkt_in) !externs;
-        (ctx, Sig.Ret None)
+        (ctx, SSig.Ret None)
     | PacketIn pkt_in, ("length", []) ->
         let len = Core.PacketIn.length pkt_in in
-        (ctx, Sig.Ret (Some len))
+        (ctx, SSig.Ret (Some len))
     | PacketOut pkt_out, ("emit", [ ("hdr", false) ]) ->
         let ctx, pkt_out = Core.PacketOut.emit ctx pkt_out in
         externs := Externs.add id (PacketOut pkt_out) !externs;
-        (ctx, Sig.Ret None)
+        (ctx, SSig.Ret None)
     | Counter ctr, ("count", [ ("index", false) ]) ->
         let pkt_in = get_pkt_in () in
         let len = pkt_in.len |> Bigint.of_int in
-        let ctx, sign, ctr = Counter.count ctx len ctr in
+        let ctx, ssig, ctr = Counter.count ctx len ctr in
         externs := Externs.add id (Counter ctr) !externs;
-        (ctx, sign)
+        (ctx, ssig)
     | DirectCounter dctr, ("count", []) ->
         let pkt_in = get_pkt_in () in
         let len = pkt_in.len |> Bigint.of_int in
-        let ctx, sign, dctr = DirectCounter.count ctx len dctr in
+        let ctx, ssig, dctr = DirectCounter.count ctx len dctr in
         externs := Externs.add id (DirectCounter dctr) !externs;
-        (ctx, sign)
+        (ctx, ssig)
     | Register reg, ("read", [ ("result", false); ("index", false) ]) ->
-        let ctx, sign, reg = Register.read ctx reg in
+        let ctx, ssig, reg = Register.read ctx reg in
         externs := Externs.add id (Register reg) !externs;
-        (ctx, sign)
+        (ctx, ssig)
     | Register reg, ("write", [ ("index", false); ("value", false) ]) ->
-        let ctx, sign, reg = Register.write ctx reg in
+        let ctx, ssig, reg = Register.write ctx reg in
         externs := Externs.add id (Register reg) !externs;
-        (ctx, sign)
+        (ctx, ssig)
     | _ ->
         F.asprintf "(TODO: eval_extern_method_call) %a.%a" pp_extern extern
           FId.pp fid
@@ -972,7 +973,7 @@ module Make (Interp : INTERP) : ARCH = struct
 
   (* Pipeline driver *)
 
-  let drive_p (ctx : Ctx.t) : Ctx.t * Sig.t =
+  let drive_p (ctx : Ctx.t) : Ctx.t * SSig.t =
     let expr_base, func, args =
       let oid = [ "main"; "p" ] in
       let func = "apply" in
@@ -1045,12 +1046,12 @@ module Make (Interp : INTERP) : ARCH = struct
     externs := Externs.add "packet_out" pkt_out !externs;
     (* Execute packet processing pipeline *)
     (* Execute the parser block *)
-    let ctx, sign = ctx |> drive_p in
+    let ctx, ssig = ctx |> drive_p in
     let pkt_payload =
       get_pkt_in () |> F.asprintf "%a" Core.PacketIn.pp_remaining
     in
     let ctx =
-      match sign with
+      match ssig with
       | Trans (`Reject value) ->
           let value_std_meta =
             let value_std_meta =

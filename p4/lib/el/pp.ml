@@ -485,7 +485,7 @@ and pp_table_actions ?(level = 0) fmt table_actions =
 (* Table entries *)
 
 and pp_table_entry' fmt table_entry' =
-  let keysets, table_action, table_entry_priority, table_entry_const, _annos =
+  let table_entry_const, keysets, table_action, table_entry_priority, _annos =
     table_entry'
   in
   F.fprintf fmt "%s%s%a%s%a : %a"
@@ -521,11 +521,19 @@ and pp_table_custom fmt table_custom =
 
 (* Methods *)
 
-and pp_mthd' fmt mthd' = P.pp_mthd' pp_typ pp_param pp_expr fmt mthd'
-and pp_mthd fmt mthd = P.pp_mthd pp_typ pp_param pp_expr fmt mthd
+and pp_mthd' fmt mthd' =
+  match mthd' with
+  | ExternConsM { id; cparams; annos = _annos } ->
+      F.fprintf fmt "%a%a;" pp_id id pp_cparams cparams
+  | ExternAbstractM { id; typ_ret; tparams; params; annos = _annos } ->
+      F.fprintf fmt "abstract %a %a%a%a;" pp_typ typ_ret pp_id id pp_tparams
+        tparams pp_params params
+  | ExternM { id; typ_ret; tparams; params; annos = _annos } ->
+      F.fprintf fmt "%a %a%a%a;" pp_typ typ_ret pp_id id pp_tparams tparams
+        pp_params params
 
-and pp_mthds ?(level = 0) fmt mthds =
-  P.pp_mthds ~level pp_typ pp_param pp_expr fmt mthds
+and pp_mthd fmt mthd = pp_mthd' fmt mthd.it
+and pp_mthds ?(level = 0) fmt mthds = pp_list ~level pp_mthd ~sep:Nl fmt mthds
 
 (* Program *)
 

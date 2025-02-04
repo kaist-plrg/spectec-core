@@ -1,0 +1,114 @@
+;;
+;; Value expression
+;;
+
+rule Eval_static/valuee:
+  p C |- ValueE val ~> val
+
+;;
+;; Variable expression
+;;
+
+rule Eval_static/namee:
+  p C |- NameE name ~> val
+  -- if val = $find_val(p, C, name)
+
+;;
+;; Sequence expression
+;;
+
+rule Eval_static/seqe:
+  p C |- SeqE exprIL* ~> SeqV val*
+  -- (Eval_static: p C |- exprIL ~> val)*
+
+;;
+;; Record expression
+;;
+
+rule Eval_static/recorde:
+  p C |- RecordE (member, exprIL)* ~> RecordV (member, val)*
+  -- (Eval_static: p C |- exprIL ~> val)*
+
+
+;; Unary expression
+;;
+
+rule Eval_static/une:
+  p C |- UnE unop exprIL ~> val'
+  -- Eval_static: p C |- exprIL ~> val
+  -- if val' = $un_op(unop, val)
+
+;;
+;; Binary expression
+;;
+
+rule Eval_static/bine:
+  p C |- BinE binop exprIL_l exprIL_r ~> val
+  -- Eval_static: p C |- exprIL_l ~> val_l
+  -- Eval_static: p C |- exprIL_r ~> val_r
+  -- if val = $bin_op(binop, val_l, val_r)
+
+;;
+;; Ternary expression
+;;
+
+rule Eval_static/terne-true:
+  p C |- TernE exprIL_c exprIL_t exprIL_f ~> val
+  -- Eval_static: p C |- exprIL_c ~> BoolV true
+  -- Eval_static: p C |- exprIL_t ~> val
+
+rule Eval_static/terne-false:
+  p C |- TernE exprIL_c exprIL_t exprIL_f ~> val
+  -- Eval_static: p C |- exprIL_c ~> BoolV false
+  -- Eval_static: p C |- exprIL_f ~> val
+
+;;
+;; Cast expression
+;;
+
+rule Eval_static/caste:
+  p C |- CastE typ exprIL ~> val'
+  -- Eval_static: p C |- exprIL ~> val
+  -- if val' = $cast_op(typ, val)
+
+;;
+;; Bitstring access expression
+;;
+
+rule Eval_static/bitacce:
+  p C |- BitAccE exprIL_b exprIL_l exprIL_h ~> val
+  -- Eval_static: p C |- exprIL_b ~> val_b
+  -- Eval_static: p C |- exprIL_l ~> val_l
+  -- Eval_static: p C |- exprIL_h ~> val_h
+  -- if val = $bitacc_op(val_b, val_l, val_h)
+
+;;
+;; Expression access expression
+;;
+
+rule Eval_static/expracce-stack:
+  p C |- ExprAccE exprIL_b "size" ~> IntV s
+  -- Eval_static: p C |- exprIL_b ~> StackV val* i s
+
+;;
+;; Method call expression
+;;
+
+;; (TODO-Jaehyun) Without "note", how do I get the type of exprIL_b?
+;;rule Eval_static/callmethode:
+;;  p C |- CallMethodE exprIL_b member eps eps ~> val
+;;  -- if member = "minSizeInBits" \/ member = "minSizeInBytes" \/ member = "maxSizeInBits" \/ member = "maxSizeInBytes"
+;;  ----
+;;  -- Expr_ok: p C |- exprIL_b : typ_b ctk_b
+;;  -- if val = $size_builtin(typ_b, member)
+
+;;
+;; Type call expression
+;;
+
+rule Eval_static/calltypee:
+  p C |- CallTypeE name member eps eps ~> val
+  -- if member = "minSizeInBits" \/ member = "minSizeInBytes" \/ member = "maxSizeInBits" \/ member = "maxSizeInBytes"
+  ----
+  -- if MonoD typ = $find_typdef(p, C, name)
+  -- if val = $size_builtin(typ, member)

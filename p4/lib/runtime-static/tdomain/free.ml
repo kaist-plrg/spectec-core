@@ -67,12 +67,11 @@ and free_functyp (ft : functyp) : TIdSet.t =
   | ActionT params -> free_params params
   | ExternFunctionT (params, typ_ret)
   | FunctionT (params, typ_ret)
+  | BuiltinMethodT (params, typ_ret)
   | ExternMethodT (params, typ_ret)
   | ExternAbstractMethodT (params, typ_ret) ->
       free_params params |> TIdSet.union (free_typ typ_ret)
   | ParserApplyMethodT params | ControlApplyMethodT params -> free_params params
-  | BuiltinMethodT (params, typ_ret) ->
-      free_params params |> TIdSet.union (free_typ typ_ret)
   | TableApplyMethodT typ_ret -> free_typ typ_ret
 
 (* Function definitions *)

@@ -1,0 +1,6 @@
+def $get_num(val) : int
+
+def $get_num(IntV i) = i
+def $get_num(FIntV w bs) = $to_two_complement(w, bs)
+def $get_num(FBitV w bs) = bs
+def $get_num(VBitV w_max w bs) = bs 

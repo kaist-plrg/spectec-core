@@ -11,7 +11,9 @@ var pt : paramtyp hint(show %latex("\\tau_\\texttt{p}"))
 ;; Type
 ;;
 
+;;
 ;; Base type: primitive or numeric type
+;;
 
 syntax primtyp hint(show %latex("\\tau_\\texttt{prim}")) =
   | VoidT         hint(show VOID#_#T)
@@ -22,9 +24,9 @@ syntax primtyp hint(show %latex("\\tau_\\texttt{prim}")) =
 
 syntax numtyp hint(show %latex("\\tau_\\texttt{num}")) =
   | IntT          hint(show INT#_#T)
-  | FIntT int     hint(show FINT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
-  | FBitT int     hint(show FBIT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
-  | VBitT int     hint(show VBIT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
+  | FIntT nat     hint(show FINT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
+  | FBitT nat     hint(show FBIT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
+  | VBitT nat     hint(show VBIT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
 
 syntax basetyp hint(show %latex("\\tau_\\texttt{base}")) =
   | primtyp | numtyp
@@ -90,9 +92,9 @@ syntax typ hint(show %latex("\\tau")) =
 ;;
 
 syntax monotypdef hint(show %latex("\\delta_\\texttt{mt}")) =
-  MonoD typ           hint(show MONO#_#D %)
+  MonoD typ                   hint(show MONO#_#D %)
 syntax polytypdef hint(show %latex("\\delta_\\texttt{pt}")) =
-  PolyD tparam* typ   hint(show POLY#_#D % %)
+  PolyD (tparam*, tparam*) typ   hint(show POLY#_#D % % %)
 
 syntax typdef hint(show %latex("\\delta")) =
   | monotypdef
@@ -107,15 +109,15 @@ var td : typdef         hint(show %latex("\\delta_\\texttt{t}"))
 ;;
 
 syntax functyp hint(show %latex("\\tau_\\texttt{f}")) =
-  | BuiltinMethodT paramtyp* typ          hint(show BUILTIN#_#METHOD#_#T (%) %latex("\\rightarrow") %)
   | ActionT paramtyp*                     hint(show ACTION#_#T (%))
+  | ExternFuncT paramtyp* typ             hint(show EXTERN#_#FUNCTION#_#T (%) %latex("\\rightarrow") %)
+  | FuncT paramtyp* typ                   hint(show FUNCTION#_#T (%) %latex("\\rightarrow") %)
+  | BuiltinMethodT paramtyp* typ          hint(show BUILTIN#_#METHOD#_#T (%) %latex("\\rightarrow") %)
+  | ExternMethodT paramtyp* typ           hint(show EXTERN#_#METHOD#_#T (%) %latex("\\rightarrow") %)
+  | ExternAbstractMethodT paramtyp* typ   hint(show EXTERN#_#ABSTRACT#_#METHOD#_#T (%) %latex("\\rightarrow") %)
   | ParserApplyMethodT paramtyp*          hint(show PARSER#_#APPLY#_#METHOD#_#T (%))
   | ControlApplyMethodT paramtyp*         hint(show CONTROL#_#APPLY#_#METHOD#_#T (%))
   | TableApplyMethodT typ                 hint(show TABLE#_#APPLY#_#METHOD#_#T %)
-  | ExternFuncT paramtyp* typ             hint(show EXTERN#_#FUNCTION#_#T (%) %latex("\\rightarrow") %)
-  | FuncT paramtyp* typ                   hint(show FUNCTION#_#T (%) %latex("\\rightarrow") %)
-  | ExternMethodT paramtyp* typ           hint(show EXTERN#_#METHOD#_#T (%) %latex("\\rightarrow") %)
-  | ExternAbstractMethodT paramtyp* typ   hint(show EXTERN#_#ABSTRACT#_#METHOD#_#T (%) %latex("\\rightarrow") %)
 
 var ft : functyp   hint(show %latex("\\tau_\\texttt{f}"))
 
@@ -124,10 +126,10 @@ var ft : functyp   hint(show %latex("\\tau_\\texttt{f}"))
 ;;
 
 syntax monofuncdef hint(show %latex("\\delta_\\texttt{mf}")) =
-  MonoFD functyp hint(show MONO#_#FD %)
+  MonoFD functyp   hint(show MONO#_#FD %)
 
 syntax polyfuncdef hint(show %latex("\\delta_\\texttt{pf}")) =
-  PolyFD tparam* functyp    hint(show POLY#_#FD % %latex("\\rightarrow") %)
+  PolyFD (tparam*, tparam*) functyp    hint(show POLY#_#FD % % %)
 
 syntax funcdef hint(show %latex("\\delta_\\texttt{f}")) =
   | monofuncdef
@@ -151,24 +153,12 @@ var ct : constyp hint(show %latex("\\tau_\\texttt{c}"))
 ;;
 
 syntax consdef hint(show %latex("\\delta_\\texttt{c}")) =
-  ConsD tparam* constyp hint(show CONS#_#D % %latex("\\rightarrow") %)
+  ConsD tparam* tparam* constyp     hint(show CONS#_#D % % %)
 
 var cd : consdef hint(show %latex("\\delta_\\texttt{c}"))
 
 ;;
-;; Runtime type
+;; Static type representation
 ;;
 
-syntax rtyp = typ dir ctk
-
-;;
-;; Environments
-;;
-
-syntax venv hint(show %latex("\\Sigma")) = map(id, val)
-syntax tenv hint(show %latex("\\Gamma")) = map(id, rtyp)
-syntax tdenv hint(show %latex("\\Delta_\\texttt{t}")) = map(tid, typdef)
-syntax fdenv hint(show %latex("\\Delta_\\texttt{f}")) = map(fid, funcdef)
-syntax cdenv hint(show %latex("\\Delta_\\texttt{c}")) = map(fid, consdef)
-
-def $find_env(syntax K, syntax V, map(K, V), K) : V  hint(show %3#`[%4])
+syntax styp = typ dir ctk val?

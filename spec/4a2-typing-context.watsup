@@ -1,0 +1,202 @@
+;;
+;; Cursor
+;;
+
+syntax cursor = GLOBAL | BLOCK | LOCAL
+
+var p : cursor
+
+;;
+;; Layered context
+;;
+
+;; Global layer
+
+syntax glayer =
+  { CDENV cdenv,
+    TDENV tdenv,
+    FDENV fdenv,
+    FRAME frame }
+
+;; Block layer
+
+syntax bkind = EMPTY | EXTERN | PARSER | CONTROL | PACKAGE
+
+syntax blayer =
+  { ID id,
+    KIND bkind,
+    TDENV tdenv,
+    FDENV fdenv,
+    FRAME frame }
+
+;; Local layer
+
+syntax lkind =
+  | EMPTY
+  | EXTERNFUNC
+  | FUNC typ
+  | ACTION
+  | EXTERNMETHOD
+  | EXTERNABSTRACTMETHOD typ
+  | PARSERSTATE
+  | CONTROLAPPLYMETHOD
+  | TABLEAPPLYMETHOD
+
+syntax llayer =
+  { ID id,
+    KIND lkind,
+    TDENV tdenv,
+    FRAMES frame* }
+
+;;
+;; Typing context
+;;
+
+syntax context =
+  { GLOBAL glayer,
+    BLOCK blayer,
+    LOCAL llayer }
+
+var C : context
+
+;;
+;; Scope management
+;;
+
+def $enter(context) : context   hint(show ENTER %)
+def $exit(context) : context    hint(show EXIT %)
+
+def $set_blockkind(context, bkind) : context  hint(show %1.BLOCK#%latex("\\{") KIND = %2 %latex("\\}"))
+def $set_localkind(context, lkind) : context  hint(show %1.LOCAL#%latex("\\{") KIND = %2 %latex("\\}"))
+def $set_blockframe(context, frame) : context  hint(show %1.BLOCK#%latex("\\{") FRAME = %2 %latex("\\}"))
+
+def $find_returntyp(lkind) : typ
+def $find_returntyp(FUNC typ) = typ
+def $find_returntyp(ACTION) = VoidT
+def $find_returntyp(EXTERNABSTRACTMETHOD typ) = typ
+def $find_returntyp(CONTROLAPPLYMETHOD) = VoidT
+
+;;
+;; Collecting bound type identifiers
+;;
+
+def $bound_tid(context) : tidset
+
+;;
+;; Adders
+;;
+
+;; Adder for static types
+
+def $add_styp(cursor, context, id, styp) : context                  hint(show %2.%1.FRAME.%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
+
+def $add_styps(cursor, context, id*, styp*) : context               hint(show %2.%1.FRAME.%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
+
+;; Adder for types 
+
+def $add_typ(cursor, context, id, (typ, dir, ctk)): context         hint(show %2.%1.FRAME.%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
+
+def $add_typs(cursor, context, id*, (typ, dir, ctk)*) : context     hint(show %2.%1.FRAME.%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
+
+;; Adder for parameters
+
+def $add_param(cursor, context, paramtyp) : context                 hint(show %2.%1.FRAME.%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
+
+def $add_param(p, C, pt) = C'
+    -- if id NO typ val? = pt
+    -- if C' = $add_typ(p, C, id, (typ, NO, CTK))
+def $add_param(p, C, pt) = C'
+    -- if id dir typ val? = pt
+    -- if dir = IN \/ dir = OUT \/ dir = INOUT
+    -- if C' = $add_typ(p, C, id, (typ, dir, DYN))
+
+def $add_params(cursor, context, paramtyp*) : context               hint(show %2.%1.FRAME.%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
+
+def $add_params(p, C, eps) = C
+def $add_params(p, C, pt_h pt_t*) = C''
+    -- if C' = $add_param(p, C, pt_h)
+    -- if C'' = $add_params(p, C', pt_t*)
+
+;; Adder for type definitions
+
+def $add_typdef(cursor, context, tid, typdef): context              hint(show %2.%1.TDENV.%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
+
+def $add_typdefs(cursor, context, tid*, typdef*): context           hint(show %2.%1.TDENV.%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
+
+;; Adder for function definitions
+
+def $add_funcdef(cursor, context, fid, funcdef): context            hint(show %2.%1.FDENV.%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
+
+;; Adder for constructor definitions
+
+def $add_consdef(cursor, context, fid, consdef): context            hint(show %2.%1.CDENV.%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
+
+;;
+;; Finders
+;;
+
+;; Finder for static types
+
+def $find_styp(cursor, context, name) : styp                              hint(show %2#%latex("@")#%1.FRAME#(S)#%latex()`[%3])
+
+def $find_styp(p, C, TOP id) = $find_map(id, styp, C.GLOBAL.FRAME, id)
+def $find_styp(GLOBAL, C, CURRENT id) = $find_map(id, styp, C.GLOBAL.FRAME, id)
+def $find_styp(BLOCK, C, CURRENT id) = styp
+  -- if styp? = $find_map_opt(id, styp, C.GLOBAL.FRAME, id)
+def $find_styp(BLOCK, C, CURRENT id) = $find_styp(GLOBAL, C, CURRENT id)
+  -- if eps = $find_map_opt(id, styp, C.GLOBAL.FRAME, id)
+def $find_styp(LOCAL, C, CURRENT id) = styp
+  -- if styp? = $find_maps_opt(id, styp, C.LOCAL.FRAMES, id)
+def $find_styp(BLOCK, C, CURRENT id) = $find_styp(BLOCK, C, CURRENT id)
+  -- if eps = $find_maps_opt(id, styp, C.LOCAL.FRAMES, id)
+
+;; Finder for values
+
+def $find_val(cursor, context, name) : val                                hint(show %2#%latex("@")#%1.FRAME`[%3])
+
+def $find_val(p, C, name) = val
+  -- if typ dir ctk val? = $find_styp(p, C, name)
+
+;; Finder for type definitions
+
+def $find_typdef(cursor, context, name) : typdef                          hint(show %2#%latex("@")#%1.TDENV`[%3])
+
+def $find_typdef(p, C, TOP id) = $find_map(tid, typdef, C.GLOBAL.TDENV, id)
+def $find_typdef(GLOBAL, C, CURRENT id) = $find_map(tid, typdef, C.GLOBAL.TDENV, id)
+def $find_typdef(BLOCK, C, CURRENT id) = td
+  -- if td? = $find_map_opt(tid, typdef, C.GLOBAL.TDENV, id)
+def $find_typdef(BLOCK, C, CURRENT id) = $find_typdef(GLOBAL, C, CURRENT id)
+  -- if eps = $find_map_opt(tid, typdef, C.GLOBAL.TDENV, id)
+def $find_typdef(LOCAL, C, CURRENT id) = td
+  -- if td? = $find_map_opt(tid, typdef, C.LOCAL.TDENV, id)
+def $find_typdef(BLOCK, C, CURRENT id) = $find_typdef(BLOCK, C, CURRENT id)
+  -- if eps = $find_map_opt(tid, typdef, C.LOCAL.TDENV, id)
+
+;; Finder for function definitions
+
+def $to_fkey(argIL*) : (id?)*
+
+def $to_fkey(eps) = eps
+def $to_fkey(argIL_h argIL_t*) = id $to_fkey(argIL_t*)
+  -- if NameA id exprIL? = argIL_h
+def $to_fkey(argIL_h argIL_t*) = $to_fkey(argIL_t*)
+  -- otherwise
+
+def $find_funcdef(cursor, context, name, argIL*) : (fid, funcdef, id*)    hint(show %2#%latex("@")#%1.FDENV`[%3#(%4)#%latex()])
+
+def $find_funcdef(p, C, TOP id, argIL*) = $find_func(funcdef, id, $to_fkey(argIL*), C.GLOBAL.FDENV)
+def $find_funcdef(GLOBAL, C, CURRENT id, argIL*) = $find_func(funcdef, id, $to_fkey(argIL*), C.GLOBAL.FDENV)
+def $find_funcdef(BLOCK, C, CURRENT id, argIL*) = (fid, fd, id_deft*)
+  -- if (fid, fd, id_deft*)? = $find_func_opt(funcdef, id, $to_fkey(argIL*), C.BLOCK.FDENV)
+def $find_funcdef(BLOCK, C, CURRENT id, argIL*) = $find_funcdef(GLOBAL, C, CURRENT id, argIL*)
+  -- if eps = $find_func_opt(funcdef, id, $to_fkey(argIL*), C.BLOCK.FDENV)
+def $find_funcdef(LOCAL, C, CURRENT id, argIL*) = $find_funcdef(BLOCK, C, CURRENT id, argIL*)
+
+;; Finder for constructor definitions
+
+def $find_consdef(cursor, context, name, argIL*) : (cid, consdef, id*)    hint(show %2#%latex("@")#%1.CDENV`[%3#(%4)#%latex()])
+
+def $find_consdef(p, C, TOP id, argIL*) = $find_func(consdef, id, $to_fkey(argIL*), C.GLOBAL.CDENV)
+def $find_consdef(GLOBAL, C, CURRENT id, argIL*) = $find_func(consdef, id, $to_fkey(argIL*), C.GLOBAL.CDENV)
+def $find_consdef(BLOCK, C, CURRENT id, argIL*) = $find_consdef(GLOBAL, C, CURRENT id, argIL*)
+def $find_consdef(LOCAL, C, CURRENT id, argIL*) = $find_consdef(BLOCK, C, CURRENT id, argIL*)

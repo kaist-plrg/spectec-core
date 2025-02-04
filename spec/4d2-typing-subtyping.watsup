@@ -84,13 +84,13 @@ rule Sub_expl/recordt-structt:
   RecordT (member', typ')* <: StructT id (member'', typ'')*
   -- if $eq_set(member, SET member'*, SET member''*)
   ----
-  -- (Sub_expl: $find_map(member, typ, MAP member'* typ'*, member') <: $find_map(member, typ, MAP member''* typ''*, member''))*
+  -- (Sub_expl: $find_map(member, typ, MAP (PAIR member' typ')*, member') <: $find_map(member, typ, MAP (PAIR member'' typ'')*, member''))*
 
 rule Sub_expl/recordt-headert:
   RecordT (member', typ')* <: HeaderT id (member'', typ'')*
   -- if $eq_set(member, SET member'*, SET member''*)
   ----
-  -- (Sub_expl: $find_map(member, typ, MAP member'* typ'*, member') <: $find_map(member, typ, MAP member''* typ''*, member''))*
+  -- (Sub_expl: $find_map(member, typ, MAP (PAIR member' typ')*, member') <: $find_map(member, typ, MAP (PAIR member'' typ'')*, member''))*
 
 rule Sub_expl/defaultt:
   DefaultT <: typ
@@ -131,18 +131,18 @@ rule Sub_expl/recorddefaultt-structt:
   -- if $is_subset(member, SET member'*, SET member''*)
   -- if SET member'''* = $diff_set(member, SET member''*, SET member'*)
   ----
-  -- (Sub_expl: $find_map(member, typ, MAP member'* typ'*, member') <: $find_map(member, typ, MAP member''* typ''*, member'))*
+  -- (Sub_expl: $find_map(member, typ, MAP (PAIR member' typ')*, member') <: $find_map(member, typ, MAP (PAIR member'' typ'')*, member'))*
   ----
-  -- if ($is_deftable($find_map(member, typ, MAP member''* typ''*, member''')))*
+  -- if ($is_deftable($find_map(member, typ, MAP (PAIR member'' typ'')*, member''')))*
 
 rule Sub_expl/recorddefaultt-headert:
   RecordDefaultT (member', typ')* <: HeaderT id (member'', typ'')*
   -- if $is_subset(member, SET member'*, SET member''*)
   -- if SET member'''* = $diff_set(member, SET member''*, SET member'*)
   ----
-  -- (Sub_expl: $find_map(member, typ, MAP member'* typ'*, member') <: $find_map(member, typ, MAP member''* typ''*, member'))*
+  -- (Sub_expl: $find_map(member, typ, MAP (PAIR member' typ')*, member') <: $find_map(member, typ, MAP (PAIR member'' typ'')*, member'))*
   ----
-  -- if ($is_deftable($find_map(member, typ, MAP member''* typ''*, member''')))*
+  -- if ($is_deftable($find_map(member, typ, MAP (PAIR member'' typ'')*, member''')))*
 
 rule Sub_expl/invalidt-headert:
   InvalidT <: HeaderT id fields
@@ -209,13 +209,13 @@ rule Sub_impl/recordt-structt:
   RecordT (member', typ')* << StructT id (member'', typ'')*
   -- if $eq_set(member, SET member'*, SET member''*)
   ----
-  -- (Sub_impl: $find_map(member, typ, MAP member'* typ'*, member') << $find_map(member, typ, MAP member''* typ''*, member''))*
+  -- (Sub_impl: $find_map(member, typ, MAP (PAIR member' typ')*, member') << $find_map(member, typ, MAP (PAIR member'' typ'')*, member''))*
 
 rule Sub_impl/recordt-headert:
   RecordT (member', typ')* << HeaderT id (member'', typ'')*
   -- if $eq_set(member, SET member'*, SET member''*)
   ----
-  -- (Sub_impl: $find_map(member, typ, MAP member'* typ'*, member') << $find_map(member, typ, MAP member''* typ''*, member''))*
+  -- (Sub_impl: $find_map(member, typ, MAP (PAIR member' typ')*, member') << $find_map(member, typ, MAP (PAIR member'' typ'')*, member''))*
 
 rule Sub_impl/defaultt:
   DefaultT << typ
@@ -256,21 +256,33 @@ rule Sub_impl/recorddefaultt-structt:
   -- if $is_subset(member, SET member'*, SET member''*)
   -- if SET member'''* = $diff_set(member, SET member''*, SET member'*)
   ----
-  -- (Sub_impl: $find_map(member, typ, MAP member'* typ'*, member') << $find_map(member, typ, MAP member''* typ''*, member'))*
+  -- (Sub_impl: $find_map(member, typ, MAP (PAIR member' typ')*, member') << $find_map(member, typ, MAP (PAIR member'' typ'')*, member'))*
   ----
-  -- if ($is_deftable($find_map(member, typ, MAP member''* typ''*, member''')))*
+  -- if ($is_deftable($find_map(member, typ, MAP (PAIR member'' typ'')*, member''')))*
 
 rule Sub_impl/recorddefaultt-headert:
   RecordDefaultT (member', typ')* << HeaderT id (member'', typ'')*
   -- if $is_subset(member, SET member'*, SET member''*)
   -- if SET member'''* = $diff_set(member, SET member''*, SET member'*)
   ----
-  -- (Sub_impl: $find_map(member, typ, MAP member'* typ'*, member') << $find_map(member, typ, MAP member''* typ''*, member'))*
+  -- (Sub_impl: $find_map(member, typ, MAP (PAIR member' typ')*, member') << $find_map(member, typ, MAP (PAIR member'' typ'')*, member'))*
   ----
-  -- if ($is_deftable($find_map(member, typ, MAP member''* typ''*, member''')))*
+  -- if ($is_deftable($find_map(member, typ, MAP (PAIR member'' typ'')*, member''')))*
 
 rule Sub_impl/invalidt-headert:
   InvalidT << HeaderT id fields
 
 rule Sub_impl/invalidt-uniont:
   InvalidT << UnionT id fields
+
+;;
+;; Coercions
+;;
+
+def $coerce_unary_numeric((exprIL, typ), def $check_unary(typ) : bool) : (exprIL, typ)  hint(show COERCE %1 UNDER %3)
+
+def $coerce_binary_numeric((exprIL, typ), (exprIL, typ), def $check_binary(typ, typ) : bool) : ((exprIL, typ), (exprIL, typ))   hint(show COERCE %1 AND %2 UNDER %3)
+
+def $coerce_binary((exprIL, typ), (exprIL, typ)) : (typ, exprIL, exprIL)  hint(show COERCE %1 AND %2)
+
+def $coerce_assign((exprIL, typ), typ) : exprIL   hint(show COERCE %1 to %2)

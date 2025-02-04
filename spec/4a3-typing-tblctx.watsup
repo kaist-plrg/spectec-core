@@ -1,4 +1,6 @@
+;;
 ;; Table context
+;;
 
 syntax mode =
   | NOPRI
@@ -12,27 +14,15 @@ syntax priority =
     DELTA int,
     LARGEST_WINS bool }
 
-def $empty_pt(): priority
-def $empty_pt() =
-  { VALUES eps,
-    INIT false,
-    DELTA 1,
-    LARGEST_WINS true }
-
 syntax entry =
   { SIZE int,
     CONST bool }
-
-def $empty_et(): entry
-def $empty_et() =
-  { SIZE 0,
-    CONST true }
 
 var prt : priority
 var ent : entry
 
 syntax key = (typ, matchkind)
-syntax action = (name, paramtyp*, arg*)
+syntax action = (name, paramtyp*, argIL*)
 
 syntax tblctx =
   { KEYS key*,
@@ -40,6 +30,30 @@ syntax tblctx =
     PRIORITIES priority,
     ENTRIES entry,
     MODE mode }
+
+;;
+;; State per table entry
+;;
+
+syntax tblstate =
+  | LPM int
+  | NOLPM
+
+;;
+;; Constructors
+;;
+
+def $empty_pt(): priority
+def $empty_pt() =
+  { VALUES eps,
+    INIT false,
+    DELTA 1,
+    LARGEST_WINS true }
+
+def $empty_et(): entry
+def $empty_et() =
+  { SIZE 0,
+    CONST true }
 
 def $empty_tblctx(): tblctx
 def $empty_tblctx() =
@@ -51,19 +65,19 @@ def $empty_tblctx() =
     MODE NOPRI
   }
 
-syntax tblstate =
-  | LPM int
-  | NOLPM
-
 def $get_lpm_prefix(val) : tblstate
 
+;;
 ;; Adders
+;;
 
 def $add_key(key, tblctx) : tblctx
 def $add_action(action, tblctx) : tblctx
 def $add_priority(int, tblctx) : tblctx
 
+;;
 ;; Setters
+;;
 
 def $set_priority_init(bool, tblctx) : tblctx
 def $set_priority_delta(int, tblctx) : tblctx
@@ -72,7 +86,9 @@ def $set_entries_const(bool, tblctx) : tblctx
 def $set_entries_size(int, tblctx) : tblctx
 def $set_mode(mode, tblctx) : tblctx
 
+;;
 ;; Updaters
+;;
 
 def $update_mode(text, typ, tblctx) : tblctx
 def $update_state(tblstate, tblstate) : tblstate
@@ -81,12 +97,16 @@ def $update_state(NOLPM, LPM i) = LPM i
 def $update_state(LPM i, NOLPM) = LPM i
 def $update_state(NOLPM, NOLPM) = NOLPM
 
+;;
 ;; Finders
+;;
 
-def $find_action(tblctx, name) : (paramtyp*, arg*)
+def $find_action(tblctx, name) : (paramtyp*, argIL*)
 def $find_last_priority(tblctx) : int
 
+;;
 ;; Helpers
+;;
 
 def $keys_of_table(tbl) : tblkeyprop*
 

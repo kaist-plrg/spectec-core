@@ -469,10 +469,10 @@ and eq_table_entries' ?(dbg = false)
     (_pp_table_entry : 'table_entry Pp.pp_table_entry)
     (eq_table_entry : 'table_entry eq_table_entry) table_entries_a
     table_entries_b =
-  let table_entries_a, table_entry_const_a = table_entries_a in
-  let table_entries_b, table_entry_const_b = table_entries_b in
-  eq_list (eq_table_entry ~dbg) table_entries_a table_entries_b
-  && table_entry_const_a = table_entry_const_b
+  let table_entry_const_a, table_entries_a = table_entries_a in
+  let table_entry_const_b, table_entries_b = table_entries_b in
+  table_entry_const_a = table_entry_const_b
+  && eq_list (eq_table_entry ~dbg) table_entries_a table_entries_b
 
 and eq_table_entries ?(dbg = false)
     (pp_table_entry : 'table_entry Pp.pp_table_entry)
@@ -490,10 +490,10 @@ and eq_table_default' ?(dbg = false)
     (_pp_table_action : 'table_action Pp.pp_table_action)
     (eq_table_action : 'table_action eq_table_action) table_default_a
     table_default_b =
-  let table_action_a, table_default_const_a = table_default_a in
-  let table_action_b, table_default_const_b = table_default_b in
-  eq_table_action ~dbg table_action_a table_action_b
-  && table_default_const_a = table_default_const_b
+  let table_default_const_a, table_action_a = table_default_a in
+  let table_default_const_b, table_action_b = table_default_b in
+  table_default_const_a = table_default_const_b
+  && eq_table_action ~dbg table_action_a table_action_b
 
 and eq_table_default ?(dbg = false)
     (pp_table_action : 'table_action Pp.pp_table_action)
@@ -509,10 +509,10 @@ and eq_table_default ?(dbg = false)
 
 and eq_table_custom' ?(dbg = false) (eq_expr : ('note, 'expr) eq_expr)
     table_custom_a table_custom_b =
-  let id_a, expr_a, table_custom_const_a, _annos_a = table_custom_a in
-  let id_b, expr_b, table_custom_const_b, _annos_b = table_custom_b in
-  eq_id ~dbg id_a id_b && eq_expr ~dbg expr_a expr_b
-  && table_custom_const_a = table_custom_const_b
+  let table_custom_const_a, id_a, expr_a, _annos_a = table_custom_a in
+  let table_custom_const_b, id_b, expr_b, _annos_b = table_custom_b in
+  table_custom_const_a = table_custom_const_b
+  && eq_id ~dbg id_a id_b && eq_expr ~dbg expr_a expr_b
 
 and eq_table_custom ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
     (eq_expr : ('note, 'expr) eq_expr) table_custom_a table_custom_b =
@@ -522,56 +522,6 @@ and eq_table_custom ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
        table_custom_a table_custom_b
 
 (* Methods *)
-
-and eq_mthd' ?(dbg = false) (eq_typ : 'typ eq_typ) (eq_param : 'param eq_param)
-    (_eq_expr : ('note, 'expr) eq_expr) mthd_a mthd_b =
-  match (mthd_a, mthd_b) with
-  | ( ExternConsM { id = id_a; cparams = cparams_a; annos = _annos_a },
-      ExternConsM { id = id_b; cparams = cparams_b; annos = _annos_b } ) ->
-      eq_id ~dbg id_a id_b && eq_list (eq_param ~dbg) cparams_a cparams_b
-  | ( ExternAbstractM
-        {
-          id = id_a;
-          typ_ret = typ_ret_a;
-          tparams = tparams_a;
-          params = params_a;
-          annos = _annos_a;
-        },
-      ExternAbstractM
-        {
-          id = id_b;
-          typ_ret = typ_ret_b;
-          tparams = tparams_b;
-          params = params_b;
-          annos = _annos_b;
-        } )
-  | ( ExternM
-        {
-          id = id_a;
-          typ_ret = typ_ret_a;
-          tparams = tparams_a;
-          params = params_a;
-          annos = _annos_a;
-        },
-      ExternM
-        {
-          id = id_b;
-          typ_ret = typ_ret_b;
-          tparams = tparams_b;
-          params = params_b;
-          annos = _annos_b;
-        } ) ->
-      eq_id ~dbg id_a id_b && eq_typ typ_ret_a typ_ret_b
-      && eq_tparams ~dbg tparams_a tparams_b
-      && eq_list (eq_param ~dbg) params_a params_b
-  | _ -> false
-
-and eq_mthd ?(dbg = false) (pp_typ : 'typ Pp.pp_typ)
-    (pp_param : 'param Pp.pp_param) (pp_expr : ('note, 'expr) Pp.pp_expr)
-    (eq_typ : 'typ eq_typ) (eq_param : 'param eq_param)
-    (eq_expr : ('note, 'expr) eq_expr) mthd_a mthd_b =
-  eq_mthd' ~dbg eq_typ eq_param eq_expr mthd_a.it mthd_b.it
-  |> check ~dbg "mthd" (Pp.pp_mthd pp_typ pp_param pp_expr) mthd_a mthd_b
 
 (* Program *)
 

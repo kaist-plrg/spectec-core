@@ -1,6 +1,8 @@
 # P4-SpecTec
 
-An interpreter for P4, cherry-picked from the Petr4 project.
+An implementation of the P4 language.
+This reuses parts of the [Petr4](https://github.com/verified-network-toolchain/petr4) codebase, especially the parser and numerics implementation.
+
 Also a to-be formal specification for P4, using the SpecTec framework.
 
 ## Building
@@ -21,11 +23,11 @@ $ git submodule update
   ```
 
 * Create OCaml switch for version 4.14.0.
-  Install `dune` version 3.13.0 and `menhir` version 20231231 and `core` version `v0.15.0` via `opam`.
+  Install `dune` version 3.13.0 and `menhir` version 20231231, `core` version v0.15.0, and `bisect_ppx` version 2.8.3 via `opam`.
   ```shell
   $ opam switch create 4.14.0
   $ eval $(opam env)
-  $ opam install dune menhir core.v0.15.0
+  $ opam install dune menhir core.v0.15.0 bisect_ppx
   ```
 
 * Install the project.
@@ -119,3 +121,11 @@ $ make spec
 ```
 
 This creates a PDF spec in spec/spec.pdf.
+
+### Contributing
+
+p4cherry is an open-source project. Please feel free to contribute by opening issues or pull requests.
+
+### License
+
+p4cherry is released under the [Apache 2.0 license](LICENSE).

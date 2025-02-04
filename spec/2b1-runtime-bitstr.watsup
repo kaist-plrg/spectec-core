@@ -1,0 +1,10 @@
+;;
+;; Bitstring
+;;
+
+syntax bitstr = int
+
+var bs : bitstr
+
+def $to_two_complement(int, bitstr) : int
+def $of_two_complement(int, int) : bitstr
