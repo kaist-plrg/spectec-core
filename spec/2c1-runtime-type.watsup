@@ -2,10 +2,10 @@
 ;; Parameter Type
 ;;
 
-syntax paramtyp hint(show %latex("\\tau_\\texttt{p}")) =
+syntax paramtyp hint(show %latex("\\tau_\\texttt{param}")) =
   id dir typ val?
 
-var pt : paramtyp hint(show %latex("\\tau_\\texttt{p}"))
+var pt : paramtyp hint(show %latex("\\tau_\\texttt{param}"))
 
 ;;
 ;; Type
@@ -24,9 +24,9 @@ syntax primtyp hint(show %latex("\\tau_\\texttt{prim}")) =
 
 syntax numtyp hint(show %latex("\\tau_\\texttt{num}")) =
   | IntT          hint(show INT#_#T)
-  | FIntT nat     hint(show FINT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
-  | FBitT nat     hint(show FBIT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
-  | VBitT nat     hint(show VBIT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
+  | FIntT width   hint(show FINT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
+  | FBitT width   hint(show FBIT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
+  | VBitT width   hint(show VBIT#_#T#%latex("\\langle")#%#%latex("\\rangle"))
 
 syntax basetyp hint(show %latex("\\tau_\\texttt{base}")) =
   | primtyp | numtyp
@@ -91,18 +91,18 @@ syntax typ hint(show %latex("\\tau")) =
 ;; Type Definition
 ;;
 
-syntax monotypdef hint(show %latex("\\delta_\\texttt{mt}")) =
-  MonoD typ                   hint(show MONO#_#D %)
-syntax polytypdef hint(show %latex("\\delta_\\texttt{pt}")) =
-  PolyD (tparam*, tparam*) typ   hint(show POLY#_#D % % %)
+syntax monotypdef hint(show %latex("\\delta_\\texttt{monotyp}")) =
+  MonoD typ
+syntax polytypdef hint(show %latex("\\delta_\\texttt{polytyp}")) =
+  PolyD (tparam*, tparam*) -> typ
 
-syntax typdef hint(show %latex("\\delta")) =
+syntax typdef hint(show %latex("\\delta_\\texttt{typ}")) =
   | monotypdef
   | polytypdef
 
-var mtd : monotypdef    hint(show %latex("\\delta_\\texttt{mt}"))
-var ptd : polytypdef    hint(show %latex("\\delta_\\texttt{pt}"))
-var td : typdef         hint(show %latex("\\delta_\\texttt{t}"))
+var mtd : monotypdef    hint(show %latex("\\delta_\\texttt{monotyp}"))
+var ptd : polytypdef    hint(show %latex("\\delta_\\texttt{polytyp}"))
+var td : typdef         hint(show %latex("\\delta_\\texttt{typ}"))
 
 ;;
 ;; Function Type
@@ -110,11 +110,11 @@ var td : typdef         hint(show %latex("\\delta_\\texttt{t}"))
 
 syntax functyp hint(show %latex("\\tau_\\texttt{f}")) =
   | ActionT paramtyp*                     hint(show ACTION#_#T (%))
-  | ExternFuncT paramtyp* typ             hint(show EXTERN#_#FUNCTION#_#T (%) %latex("\\rightarrow") %)
-  | FuncT paramtyp* typ                   hint(show FUNCTION#_#T (%) %latex("\\rightarrow") %)
-  | BuiltinMethodT paramtyp* typ          hint(show BUILTIN#_#METHOD#_#T (%) %latex("\\rightarrow") %)
-  | ExternMethodT paramtyp* typ           hint(show EXTERN#_#METHOD#_#T (%) %latex("\\rightarrow") %)
-  | ExternAbstractMethodT paramtyp* typ   hint(show EXTERN#_#ABSTRACT#_#METHOD#_#T (%) %latex("\\rightarrow") %)
+  | ExternFuncT paramtyp* typ             hint(show EXTERN#_#FUNCTION#_#T (%) -> %)
+  | FuncT paramtyp* typ                   hint(show FUNCTION#_#T (%) -> %)
+  | BuiltinMethodT paramtyp* typ          hint(show BUILTIN#_#METHOD#_#T (%) -> %)
+  | ExternMethodT paramtyp* typ           hint(show EXTERN#_#METHOD#_#T (%) -> %)
+  | ExternAbstractMethodT paramtyp* typ   hint(show EXTERN#_#ABSTRACT#_#METHOD#_#T (%) -> %)
   | ParserApplyMethodT paramtyp*          hint(show PARSER#_#APPLY#_#METHOD#_#T (%))
   | ControlApplyMethodT paramtyp*         hint(show CONTROL#_#APPLY#_#METHOD#_#T (%))
   | TableApplyMethodT typ                 hint(show TABLE#_#APPLY#_#METHOD#_#T %)
@@ -125,37 +125,37 @@ var ft : functyp   hint(show %latex("\\tau_\\texttt{f}"))
 ;; Function Definition
 ;;
 
-syntax monofuncdef hint(show %latex("\\delta_\\texttt{mf}")) =
-  MonoFD functyp   hint(show MONO#_#FD %)
+syntax monofuncdef hint(show %latex("\\delta_\\texttt{monofunc}")) =
+  MonoFD functyp                          hint(show MONO#_#FD %)
 
-syntax polyfuncdef hint(show %latex("\\delta_\\texttt{pf}")) =
-  PolyFD (tparam*, tparam*) functyp    hint(show POLY#_#FD % % %)
+syntax polyfuncdef hint(show %latex("\\delta_\\texttt{polyfunc}")) =
+  PolyFD (tparam*, tparam*) -> functyp    hint(show POLY#_#FD % % %)
 
-syntax funcdef hint(show %latex("\\delta_\\texttt{f}")) =
+syntax funcdef hint(show %latex("\\delta_\\texttt{func}")) =
   | monofuncdef
   | polyfuncdef
 
-var mfd : monofuncdef   hint(show %latex("\\delta_\\texttt{mf}"))
-var pfd : polyfuncdef   hint(show %latex("\\delta_\\texttt{pf}"))
-var fd : funcdef        hint(show %latex("\\delta_\\texttt{f}"))
+var mfd : monofuncdef   hint(show %latex("\\delta_\\texttt{monofunc}"))
+var pfd : polyfuncdef   hint(show %latex("\\delta_\\texttt{polyfunc}"))
+var fd : funcdef        hint(show %latex("\\delta_\\texttt{func}"))
 
 ;;
 ;; Constructor Type
 ;;
 
-syntax constyp hint(show %latex("\\tau_\\texttt{c}")) =
-  ConsT paramtyp* typ  hint(show CONS#_#T (%) %latex("\\rightarrow") %)
+syntax constyp hint(show %latex("\\tau_\\texttt{cons}")) =
+  ConsT paramtyp* typ  hint(show CONS#_#T (%) -> %)
 
-var ct : constyp hint(show %latex("\\tau_\\texttt{c}"))
+var ct : constyp hint(show %latex("\\tau_\\texttt{cons}"))
 
 ;;
 ;; Constructor Definition
 ;;
 
-syntax consdef hint(show %latex("\\delta_\\texttt{c}")) =
-  ConsD tparam* tparam* constyp     hint(show CONS#_#D % % %)
+syntax consdef hint(show %latex("\\delta_\\texttt{cons}")) =
+  ConsD (tparam*, tparam*) -> constyp
 
-var cd : consdef hint(show %latex("\\delta_\\texttt{c}"))
+var cd : consdef hint(show %latex("\\delta_\\texttt{cons}"))
 
 ;;
 ;; Static type representation

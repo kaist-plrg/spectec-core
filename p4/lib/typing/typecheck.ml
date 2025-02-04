@@ -37,16 +37,16 @@ let insert_cast (expr_il : Il.Ast.expr) (typ : Type.t) : Il.Ast.expr =
 (* Coercion for unary *)
 
 (* Precondition: checker should always result in false for serializable enum case *)
-let rec coerce_type_unary_numeric (checker : Type.t -> bool)
+let rec reduce_senum_unary (checker : Type.t -> bool)
     (expr_il : Il.Ast.expr) : Il.Ast.expr =
   let typ = expr_il.note.typ |> Type.canon in
   match typ with
   | _ when checker typ -> expr_il
   | SEnumT (_, typ_inner, _) ->
       let expr_il = insert_cast expr_il typ_inner in
-      coerce_type_unary_numeric checker expr_il
+      reduce_senum_unary checker expr_il
   | _ ->
-      F.asprintf "(coerce_type_unary) cannot coerce type %a" (Type.pp ~level:0)
+      F.asprintf "(reduce_senum_unary) cannot reduce %a" (Type.pp ~level:0)
         typ
       |> error_no_info
 
@@ -64,13 +64,13 @@ let rec coerce_types_binary (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr)
     let expr_r_il = insert_cast expr_r_il typ_l in
     (expr_l_il, expr_r_il)
   else
-    F.asprintf "(coerce_types_binary) cannot coerce types %a and %a"
+    F.asprintf "(reduce_senums_binary) cannot reduce %a and %a"
       (Type.pp ~level:0) expr_l_il.note.typ (Type.pp ~level:0)
       expr_r_il.note.typ
     |> error_no_info
 
 (* Precondition: checker should alwaysult in false for serializable enum case *)
-and coerce_types_binary_numeric (checker : Type.t -> Type.t -> bool)
+and reduce_senums_binary (checker : Type.t -> Type.t -> bool)
     (expr_l_il : Il.Ast.expr) (expr_r_il : Il.Ast.expr) :
     Il.Ast.expr * Il.Ast.expr =
   let typ_l = expr_l_il.note.typ |> Type.canon in
@@ -79,12 +79,12 @@ and coerce_types_binary_numeric (checker : Type.t -> Type.t -> bool)
   | _ when checker typ_l typ_r -> (expr_l_il, expr_r_il)
   | SEnumT (_, typ_l_inner, _), _ ->
       let expr_l_il = insert_cast expr_l_il typ_l_inner in
-      coerce_types_binary_numeric checker expr_l_il expr_r_il
+      reduce_senums_binary checker expr_l_il expr_r_il
   | _, SEnumT (_, typ_r_inner, _) ->
       let expr_r_il = insert_cast expr_r_il typ_r_inner in
-      coerce_types_binary_numeric checker expr_l_il expr_r_il
+      reduce_senums_binary checker expr_l_il expr_r_il
   | _ ->
-      F.asprintf "(coerce_types_binary_numeric) cannot coerce types %a and %a"
+      F.asprintf "(reduce_senums_binary) cannot coerce types %a and %a"
         (Type.pp ~level:0) typ_l (Type.pp ~level:0) typ_r
       |> error_no_info
 
@@ -839,10 +839,10 @@ and type_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (unop : El.Ast.unop)
   let expr_il = type_expr cursor ctx expr in
   let expr_il =
     match unop.it with
-    | BNotOp -> coerce_type_unary_numeric check_unop_bnot expr_il
-    | LNotOp -> coerce_type_unary_numeric check_unop_lnot expr_il
-    | UPlusOp -> coerce_type_unary_numeric check_unop_uplus expr_il
-    | UMinusOp -> coerce_type_unary_numeric check_unop_uminus expr_il
+    | BNotOp -> reduce_senum_unary check_unop_bnot expr_il
+    | LNotOp -> reduce_senum_unary check_unop_lnot expr_il
+    | UPlusOp -> reduce_senum_unary check_unop_uplus expr_il
+    | UMinusOp -> reduce_senum_unary check_unop_uminus expr_il
   in
   let typ = expr_il.note.typ in
   let expr_il = Il.Ast.UnE { unop; expr = expr_il } in
@@ -1047,7 +1047,7 @@ and type_binop_plus_minus_mult (binop : Lang.Ast.binop)
     =
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   let expr_l_il, expr_r_il =
-    coerce_types_binary_numeric check_binop_plus_minus_mult expr_l_il expr_r_il
+    reduce_senums_binary check_binop_plus_minus_mult expr_l_il expr_r_il
   in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
   let typ = expr_l_il.note.typ in
@@ -1065,7 +1065,7 @@ and type_binop_saturating_plus_minus (binop : Lang.Ast.binop)
     =
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   let expr_l_il, expr_r_il =
-    coerce_types_binary_numeric check_binop_plus_minus_mult expr_l_il expr_r_il
+    reduce_senums_binary check_binop_plus_minus_mult expr_l_il expr_r_il
   in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
   let typ = expr_l_il.note.typ in
@@ -1080,7 +1080,7 @@ and type_binop_div_mod (cursor : Ctx.cursor) (ctx : Ctx.t)
     : Type.t * Il.Ast.expr' =
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   let expr_l_il, expr_r_il =
-    coerce_types_binary_numeric check_binop_div_mod expr_l_il expr_r_il
+    reduce_senums_binary check_binop_div_mod expr_l_il expr_r_il
   in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
   (* Non-positivity check if the right hand side is local compile-time known *)
@@ -1114,7 +1114,7 @@ and check_binop_shift (typ_l : Type.t) (typ_r : Type.t) : bool =
 and type_binop_shift (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr' =
   let expr_l_il, expr_r_il =
-    coerce_types_binary_numeric check_binop_shift expr_l_il expr_r_il
+    reduce_senums_binary check_binop_shift expr_l_il expr_r_il
   in
   let typ_l, typ_r = (expr_l_il.note.typ, expr_r_il.note.typ) in
   check
@@ -1138,7 +1138,7 @@ and type_binop_compare (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr' =
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   let expr_l_il, expr_r_il =
-    coerce_types_binary_numeric check_binop_compare expr_l_il expr_r_il
+    reduce_senums_binary check_binop_compare expr_l_il expr_r_il
   in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
   let typ = Types.BoolT in
@@ -1168,7 +1168,7 @@ and type_binop_bitwise (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr' =
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   let expr_l_il, expr_r_il =
-    coerce_types_binary_numeric check_binop_bitwise expr_l_il expr_r_il
+    reduce_senums_binary check_binop_bitwise expr_l_il expr_r_il
   in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
   let typ = expr_l_il.note.typ in
@@ -1184,7 +1184,7 @@ and check_binop_concat (typ_l : Type.t) (typ_r : Type.t) : bool =
 and type_binop_concat (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr' =
   let expr_l_il, expr_r_il =
-    coerce_types_binary_numeric check_binop_concat expr_l_il expr_r_il
+    reduce_senums_binary check_binop_concat expr_l_il expr_r_il
   in
   let typ_l, typ_r = (expr_l_il.note.typ, expr_r_il.note.typ) in
   let typ =
@@ -1205,7 +1205,7 @@ and type_binop_logical (binop : Lang.Ast.binop) (expr_l_il : Il.Ast.expr)
     (expr_r_il : Il.Ast.expr) : Type.t * Il.Ast.expr' =
   let expr_l_il, expr_r_il = coerce_types_binary expr_l_il expr_r_il in
   let expr_l_il, expr_r_il =
-    coerce_types_binary_numeric check_binop_logical expr_l_il expr_r_il
+    reduce_senums_binary check_binop_logical expr_l_il expr_r_il
   in
   assert (Type.eq_alpha expr_l_il.note.typ expr_r_il.note.typ);
   let typ = Types.BoolT in
@@ -1329,7 +1329,7 @@ and type_mask_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
     coerce_types_binary expr_base_il expr_mask_il
   in
   let expr_base_il, expr_mask_il =
-    coerce_types_binary_numeric check_mask expr_base_il expr_mask_il
+    reduce_senums_binary check_mask expr_base_il expr_mask_il
   in
   assert (Type.eq_alpha expr_base_il.note.typ expr_mask_il.note.typ);
   let typ = expr_base_il.note.typ in
@@ -1364,7 +1364,7 @@ and type_range_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_lb : El.Ast.expr)
   let expr_ub_il = type_expr cursor ctx expr_ub in
   let expr_lb_il, expr_ub_il = coerce_types_binary expr_lb_il expr_ub_il in
   let expr_lb_il, expr_ub_il =
-    coerce_types_binary_numeric check_range expr_lb_il expr_ub_il
+    reduce_senums_binary check_range expr_lb_il expr_ub_il
   in
   assert (Type.eq_alpha expr_lb_il.note.typ expr_ub_il.note.typ);
   let typ = expr_lb_il.note.typ in
@@ -1547,7 +1547,7 @@ and type_array_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     Type.t * Ctk.t * Il.Ast.expr' =
   let expr_base_il = type_expr cursor ctx expr_base in
   let expr_idx_il = type_expr cursor ctx expr_idx in
-  let expr_idx_il = coerce_type_unary_numeric Type.is_numeric expr_idx_il in
+  let expr_idx_il = reduce_senum_unary Type.is_numeric expr_idx_il in
   let typ, expr_il =
     let typ_base = expr_base_il.note.typ |> Type.canon in
     match typ_base with
@@ -1664,15 +1664,15 @@ and type_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     Type.t * Ctk.t * Il.Ast.expr' =
   let expr_base_il = type_expr cursor ctx expr_base in
   let expr_base_il =
-    coerce_type_unary_numeric check_bitstring_base expr_base_il
+    reduce_senum_unary check_bitstring_base expr_base_il
   in
   let typ_base = expr_base_il.note.typ in
   let expr_lo_il = type_expr cursor ctx expr_lo in
-  let expr_lo_il = coerce_type_unary_numeric check_bitstring_index expr_lo_il in
+  let expr_lo_il = reduce_senum_unary check_bitstring_index expr_lo_il in
   let value_lo = Static.eval_expr cursor ctx expr_lo_il in
   let idx_lo = value_lo.it |> Value.get_num in
   let expr_hi_il = type_expr cursor ctx expr_hi in
-  let expr_hi_il = coerce_type_unary_numeric check_bitstring_index expr_hi_il in
+  let expr_hi_il = reduce_senum_unary check_bitstring_index expr_hi_il in
   let value_hi = Static.eval_expr cursor ctx expr_hi_il in
   let idx_hi = value_hi.it |> Value.get_num in
   check_bitstring_slice_range typ_base idx_lo idx_hi;

@@ -175,7 +175,7 @@ rule FuncDef_alpha/monofd:
   -- FuncType_alpha: ft_a ~~ ft_b
 
 rule FuncDef_alpha/polyfd:
-  (PolyFD (tparam_a*, tparam_hidden_a*) ft_a) ~~ (PolyFD (tparam_b*, tparam_hidden_b*) ft_b)
+  (PolyFD (tparam_a*, tparam_hidden_a*) -> ft_a) ~~ (PolyFD (tparam_b*, tparam_hidden_b*) -> ft_b)
   -- if |tparam_a*| = |tparam_b*|
   -- if |tparam_hidden_a*| = |tparam_hidden_b*|
   ----

@@ -18,7 +18,7 @@ def $subst_constyp(theta, constyp) : constyp               hint(show %2#%latex("
 ;;
 
 def $subst_typ(theta, VarT id) = $find_map(id, typ, theta, id)
-  -- if $in_dom_map(id, typ, id, theta)
+  -- if $in_set(id, id, $dom_map(id, typ, theta))
 
 def $subst_typ(theta, SpecT ptd typ*) = SpecT ptd' typ'*
   -- if ptd' = $subst_typdef_poly(theta, ptd)
@@ -77,7 +77,7 @@ def $subst_typ(theta, typ) = typ
 ;; Type definition substitutions
 ;;
 
-def $subst_typdef_poly(theta, PolyD (tparam*, tparam_hidden*) typ) = PolyD (tparam''*, tparam_hidden''*) typ'
+def $subst_typdef_poly(theta, PolyD (tparam*, tparam_hidden*) -> typ) = PolyD (tparam''*, tparam''_hidden*) -> typ'
   -- if SET tid_free* = $diff_set(tid, $free_typ(typ), SET (tparam* tparam_hidden*))
   -- if tidset_capture = $unions_set(tid, ($free_typ($find_map(tid, typ, theta, tid_free)))*)
   ----
@@ -85,11 +85,12 @@ def $subst_typdef_poly(theta, PolyD (tparam*, tparam_hidden*) typ) = PolyD (tpar
   -- if |tparam'*| = |tparam* tparam_hidden*|
   -- if ($not_in_set(tid, tparam', tidset_capture))*
   ----
-  -- if tparam'* = tparam''* tparam_hidden''*
+  -- if tparam'* = tparam''* tparam''_hidden*
   ----
-  -- if theta' = $extends_map(tid, typ, theta, tparam*, (VarT tparam')*)
+  -- if theta' = $extends_map(tid, typ, theta, tparam*, (VarT tparam'')*)
+  -- if theta'' = $extends_map(tid, typ, theta', tparam_hidden*, (VarT tparam''_hidden)*)
   ----
-  -- if typ' = $subst_typ(theta', typ)
+  -- if typ' = $subst_typ(theta'', typ)
 
 ;;
 ;; Function definition substitutions
@@ -97,7 +98,7 @@ def $subst_typdef_poly(theta, PolyD (tparam*, tparam_hidden*) typ) = PolyD (tpar
 
 def $subst_funcdef(theta, MonoFD ft) = MonoFD ($subst_functyp(theta, ft))
 
-def $subst_funcdef(theta, PolyFD (tparam*, tparam_hidden*) ft) = PolyFD (tparam''*, tparam_hidden''*) ft'
+def $subst_funcdef(theta, PolyFD (tparam*, tparam_hidden*) -> ft) = PolyFD (tparam''*, tparam''_hidden*) -> ft'
   -- if SET tid_free* = $diff_set(tid, $free_functyp(ft), SET (tparam* tparam_hidden*))
   -- if tidset_capture = $unions_set(tid, ($free_typ($find_map(tid, typ, theta, tid_free)))*)
   ----
@@ -105,11 +106,12 @@ def $subst_funcdef(theta, PolyFD (tparam*, tparam_hidden*) ft) = PolyFD (tparam'
   -- if |tparam'*| = |tparam* tparam_hidden*|
   -- if ($not_in_set(tid, tparam', tidset_capture))*
   ----
-  -- if tparam'* = tparam''* tparam_hidden''*
+  -- if tparam'* = tparam''* tparam''_hidden*
   ----
   -- if theta' = $extends_map(tid, typ, theta, tparam*, (VarT tparam')*)
+  -- if theta'' = $extends_map(tid, typ, theta', tparam_hidden*, (VarT tparam''_hidden)*)
   ----
-  -- if ft' = $subst_functyp(theta', ft)
+  -- if ft' = $subst_functyp(theta'', ft)
 
 ;;
 ;; Function type substitutions
@@ -170,7 +172,7 @@ def $subst_constyp(theta, ConsT paramtyp* typ) = ConsT paramtyp'* typ'
 def $specialize_typdef(typdef, typ*) : typ  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
 def $specialize_typdef(MonoD typ, eps) = typ
-def $specialize_typdef(PolyD (tparam*, tparam_hidden*) typ, typ_a*) = $subst_typ(MAP (PAIR tparam' typ_a)*, typ)
+def $specialize_typdef(PolyD (tparam*, tparam_hidden*) -> typ, typ_a*) = $subst_typ(MAP (PAIR tparam' typ_a)*, typ)
   -- if tparam'* = tparam* ++ tparam_hidden*
   -- if |tparam'*| = |typ_a*|
 
@@ -182,7 +184,7 @@ def $specialize_typdef(PolyD (tparam*, tparam_hidden*) typ, typ_a*) = $subst_typ
 def $specialize_funcdef(funcdef, typ*) : functyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
 def $specialize_funcdef(MonoFD ft, eps) = ft
-def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) ft, typ_a*) = $subst_functyp(MAP (PAIR tparam' typ_a)*, ft)
+def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = $subst_functyp(MAP (PAIR tparam' typ_a)*, ft)
   -- if tparam'* = tparam* ++ tparam_hidden*
   -- if |tparam'*| = |typ_a*|
 
@@ -193,7 +195,7 @@ def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) ft, typ_a*) = $subst_fu
 ;; (TODO) consider missing type arguments
 def $specialize_consdef(consdef, typ*) : constyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
-def $specialize_consdef(ConsD tparam* tparam_hidden* ct, typ_a*) = $subst_constyp(MAP (PAIR tparam' typ_a)*, ct)
+def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*) = $subst_constyp(MAP (PAIR tparam' typ_a)*, ct)
   -- if tparam'* = tparam* ++ tparam_hidden*
   -- if |tparam'*| = |typ_a*|
 
@@ -201,7 +203,7 @@ def $specialize_consdef(ConsD tparam* tparam_hidden* ct, typ_a*) = $subst_consty
 ;; Canonicalization (recursive specialization and typedef unrolling)
 ;;
 
-def $canon_typ(typ) : typ  hint(show %#%latex("|_{\\mathtt{norm}}"))
+def $canon_typ(typ) : typ  hint(show %#%latex("|_{\\mathtt{canon}}"))
 
 def $canon_typ(SpecT ptd typ_a*) = $canon_typ(typ)
   -- if typ = $specialize_typdef(ptd, typ_a*)

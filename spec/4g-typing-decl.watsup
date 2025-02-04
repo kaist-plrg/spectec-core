@@ -50,7 +50,7 @@ rule Decl_ok/constd:
 rule Decl_ok/vard-none:
   p C |- VarD id type eps : C' (VarD id typ_v eps)
   -- Type_ok: p C |- type : typ_v eps
-  -- if C' = $add_typ(p, C, id, (typ_t, INOUT, DYN))
+  -- if C' = $add_styp(p, C, id, typ_t INOUT DYN eps)
 
 rule Decl_ok/vard-some:
   p C |- VarD id type expr : C' (VarD id typ_v exprIL')
@@ -59,7 +59,7 @@ rule Decl_ok/vard-some:
   -- Expr_ok: p C |- expr : exprIL typ ctk
   -- if exprIL' = $coerce_assign((exprIL, typ), typ_v)
   ----
-  -- if C' = $add_typ(p, C, id, (typ_t, INOUT, DYN))
+  -- if C' = $add_styp(p, C, id, typ_t INOUT DYN eps)
 
 ;;
 ;; Instantiation declaration
@@ -79,7 +79,7 @@ rule Inst_init_decl_ok/funcd:
   -- if fid = $to_fid(id, param*)
   -- if C_1 = $set_blockkind(C_0, EXTERN)
   ----
-  -- if C_2 = $set_blockframe(C_1, $empty_map(id, styp, eps, eps))
+  -- if C_2 = $set_blockframe(C_1, $empty_frame())
   ----
   -- if C_2.BLOCK.KIND = EXTERN
   -- if C_3 = $add_typdefs(LOCAL, C_2, tparam*, (MonoD (VarT tparam))*)
@@ -92,14 +92,14 @@ rule Inst_init_decl_ok/funcd:
   -- if (id_p dir_p typ_p val_p? = paramIL)*
   -- if tparam_hidden* = $concat_(tid, tid_fresh_p**)
   ----
-  -- if C_5 = $add_typs(LOCAL, C_4, id_p*, (typ_p, dir_p, DYN)*)
+  -- if C_5 = $add_styps(LOCAL, C_4, id_p*, (typ_p dir_p DYN eps)*)
   ----
   -- Block_ok: LOCAL C_5 CONT INIT |- block : C_6 f blockIL
   -- if f = RET \/ typ_r = VoidT
   ----
-  -- if fd = PolyFD (tparam*, tparam_hidden*) (ExternMethodT pt* typ_r)
+  -- if fd = PolyFD (tparam*, tparam_hidden*) -> (ExternMethodT pt* typ_r)
   ----
-  -- FuncDef_wf: $bound_tid(C_2) |- fd
+  -- FuncDef_wf: $bound_tid(p, C_2) |- fd
   ----
   -- if fdenv' = $update_map(fid, funcdef, fdenv, fid, fd)
 
@@ -119,8 +119,8 @@ def $update_fdenv_extern(fdenv, typ*, fid*, funcdef*) : map(fid, funcdef)    hin
 
 def $update_fdenv_extern(fdenv_ext, typ_a*, eps, eps) = fdenv_ext
 def $update_fdenv_extern(fdenv_ext, typ_a*, fid_h fid_t*, fd_h fd_t*) = $update_fdenv_extern(fdenv_ext', typ_a*, fid_t*, fd_t*)
-  -- if PolyFD (tparam*, tparam_hidden*) (ExternAbstractMethodT pt* typ_r) = $find_env(fid, funcdef, fdenv_ext, fid_h)
-  -- if fd_ext = PolyFD (tparam*, tparam_hidden*) (ExternMethodT pt* typ_r)
+  -- if PolyFD (tparam*, tparam_hidden*) -> (ExternAbstractMethodT pt* typ_r) = $find_map(fid, funcdef, fdenv_ext, fid_h)
+  -- if fd_ext = PolyFD (tparam*, tparam_hidden*) -> (ExternMethodT pt* typ_r)
   -- if theta = MAP (PAIR tparam typ_a)*
   -- if fd_ext' = $subst_funcdef(theta, fd_ext)
   -- FuncDef_alpha: fd_ext' ~~ fd_h
@@ -137,20 +137,20 @@ rule Decl_ok/instd-some:
   ----
   -- Inst_ok: p C |- constyp targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
   ----
-  -- if typ = SpecT (PolyD (tparam*, tparam_hidden*) (ExternT id_ext fdenv_ext)) typ_a*
-  -- if C' = $add_typ(LOCAL, C, "this", (typ, NO, CTK))
+  -- if typ = SpecT (PolyD (tparam*, tparam_hidden*) -> (ExternT id_ext fdenv_ext)) typ_a*
+  -- if C' = $add_styp(LOCAL, C, "this", typ NO CTK eps)
   ----
-  -- Inst_init_decls_ok: C' $empty_map(id, styp, eps, eps) $empty_map(fid, funcdef, eps, eps) |- decl* : frame_abs fdenv_abs declIL*
+  -- Inst_init_decls_ok: C' $empty_frame $empty_fdenv |- decl* : frame_abs fdenv_abs declIL*
   -- if MAP (PAIR fid_abs fd_abs)* = fdenv_abs
   ----
   -- if fdenv_ext' = $update_fdenv_extern(fdenv_ext, typ_a*, fid_abs*, fd_abs*)
   -- if MAP (PAIR fid_ext fd_ext)* = fdenv_ext'
   ----
-  -- if (PolyFD (tparam'*, tparam_hidden'*) ft)* = fd_ext*
+  -- if (PolyFD (tparam'*, tparam_hidden'*) -> ft)* = fd_ext*
   -- (if ~$is_externabstractmethodt(ft))*
   ----
-  -- if typ' = SpecT (PolyD (tparam*, tparam_hidden*) (ExternT id_ext fdenv_ext')) typ_a*
-  -- if C'' = $add_typ(p, C', id, (typ', NO, CTK))
+  -- if typ' = SpecT (PolyD (tparam*, tparam_hidden*) -> (ExternT id_ext fdenv_ext')) typ_a*
+  -- if C'' = $add_styp(p, C', id, typ' NO CTK eps)
 
 rule Decl_ok/instd-none:
   p C |- InstD id name_inst targ* arg* eps : C' (InstD id typ name_inst targIL'* argIL'* eps)
@@ -163,7 +163,7 @@ rule Decl_ok/instd-none:
   ----
   -- Inst_ok: p C |- constyp targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
   ----
-  -- if C' = $add_typ(p, C, id, (typ, NO, CTK))
+  -- if C' = $add_styp(p, C, id, typ NO CTK eps)
 
 ;;
 ;; Error declaration
@@ -203,8 +203,8 @@ rule Decl_ok/structd:
   -- if tparam_hidden* = $concat_(tid, tid_fresh_f**)
   ----
   -- if typ_s = StructT id (member_f, typ_f)*
-  -- if td = PolyD (tparam*, tparam_hidden*) typ_s
-  -- TypeDef_wf: $bound_tid(C) |- td
+  -- if td = PolyD (tparam*, tparam_hidden*) -> typ_s
+  -- TypeDef_wf: $bound_tid(GLOBAL, C) |- td
   ----
   -- if C' = $add_typdef(GLOBAL, C, id, td)
 
@@ -218,8 +218,8 @@ rule Decl_ok/headerd:
   -- if tparam_hidden* = $concat_(tid, tid_fresh_f**)
   ----
   -- if typ_s = HeaderT id (member_f, typ_f)*
-  -- if td = PolyD (tparam*, tparam_hidden*) typ_s
-  -- TypeDef_wf: $bound_tid(C) |- td
+  -- if td = PolyD (tparam*, tparam_hidden*) -> typ_s
+  -- TypeDef_wf: $bound_tid(GLOBAL, C) |- td
   ----
   -- if C' = $add_typdef(GLOBAL, C, id, td)
 
@@ -233,8 +233,8 @@ rule Decl_ok/uniond:
   -- if tparam_hidden* = $concat_(tid, tid_fresh_f**)
   ----
   -- if typ_s = UnionT id (member_f, typ_f)*
-  -- if td = PolyD (tparam*, tparam_hidden*) typ_s
-  -- TypeDef_wf: $bound_tid(C) |- td
+  -- if td = PolyD (tparam*, tparam_hidden*) -> typ_s
+  -- TypeDef_wf: $bound_tid(GLOBAL, C) |- td
   ----
   -- if C' = $add_typdef(GLOBAL, C, id, td)
 
@@ -255,7 +255,7 @@ rule Decl_ok/enumd:
   -- if C' = $add_styps(GLOBAL, C', id_e*, styp_e*)
   ----
   -- if td = MonoD typ_e
-  -- if tidset = $bound_tid(C)
+  -- if tidset = $bound_tid(GLOBAL, C)
   -- TypeDef_wf: tidset |- td
   -- if C' = $add_typdef(GLOBAL, C', id, td)
 
@@ -311,8 +311,7 @@ rule Decl_ok/senumd:
   -- if C_2 = $add_styps(GLOBAL, C_1, id_s*, styp_s*)
   ----
   -- if td = MonoD typ_s
-  -- if tidset = $bound_tid(C)
-  -- TypeDef_wf: $bound_tid(C_0) |- td
+  -- TypeDef_wf: $bound_tid(GLOBAL, C_0) |- td
   -- if C_3 = $add_typdef(GLOBAL, C_2, id, td)
 
 ;;
@@ -325,7 +324,7 @@ rule Decl_ok/newtyped:
   -- if typ_n = NewT id typ
   ----
   -- if td = MonoD typ_n
-  -- if tidset = $bound_tid(C)
+  -- if tidset = $bound_tid(GLOBAL, C)
   -- TypeDef_wf: tidset |- td
   -- if C' = $add_typdef(GLOBAL, C, id, td)
 
@@ -339,7 +338,7 @@ rule Decl_ok/typedefd:
   -- if typ_d = DefT typ
   ----
   -- if td = MonoD typ_d
-  -- if tidset = $bound_tid(C)
+  -- if tidset = $bound_tid(GLOBAL, C)
   -- TypeDef_wf: tidset |- td
   -- if C' = $add_typdef(GLOBAL, C, id, td)
 
@@ -358,13 +357,13 @@ rule Decl_ok/actiond:
   -- (Param_ok: LOCAL C_1 |- param : paramIL)*
   -- if (id_p dir_p typ_p val_p? = paramIL)*
   ----
-  -- if C_2 = $add_typs(LOCAL, C_1, id_p*, (typ_p, dir_p, DYN)*)
+  -- if C_2 = $add_styps(LOCAL, C_1, id_p*, (typ_p dir_p DYN eps)*)
   ----
   -- Block_ok: LOCAL C_2 CONT INIT |- block : C_3 CONT blockIL
   ----
   -- if funcdef = MonoFD (ActionT (id_p dir_p typ_p val_p?)*)
   ----
-  -- if tidset = $bound_tid(C_0)
+  -- if tidset = $bound_tid(p, C_0)
   -- FuncDef_wf: tidset |- funcdef
   ----
   -- if C_4 = $add_funcdef(p, C_0, fid, funcdef)
@@ -386,14 +385,14 @@ rule Decl_ok/funcd:
   -- if (id_p dir_p typ_p val_p? = paramIL)*
   -- if tparam_hidden* = $concat_(tid, tid_fresh_p**)
   ----
-  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p, dir_p, DYN)*)
+  -- if C_3 = $add_styps(LOCAL, C_2, id_p*, (typ_p dir_p DYN eps)*)
   ----
   -- Block_ok: LOCAL C_3 CONT INIT |- block : C_4 f blockIL
   -- if f = RET \/ (f = CONT /\ typ_r = VoidT)
   ----
-  -- if fd = PolyFD (tparam*, tparam_hidden*) (FuncT (id_p dir_p typ_p val_p?)* typ_r)
+  -- if fd = PolyFD (tparam*, tparam_hidden*) -> (FuncT (id_p dir_p typ_p val_p?)* typ_r)
   ----
-  -- FuncDef_wf: $bound_tid(C) |- fd
+  -- FuncDef_wf: $bound_tid(GLOBAL, C) |- fd
   ----
   -- if C_5 = $add_funcdef(GLOBAL, C_0, fid, fd)
 
@@ -414,11 +413,11 @@ rule Decl_ok/externfuncd:
   -- if (id_p dir_p typ_p val_p? = paramIL)*
   -- if tparam_hidden* = $concat_(tid, tid_fresh_p**)
   ----
-  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p, dir_p, DYN)*)
+  -- if C_3 = $add_styps(LOCAL, C_2, id_p*, (typ_p dir_p DYN eps)*)
   ----
-  -- if fd = PolyFD (tparam*, tparam_hidden*) (ExternFuncT (id_p dir_p typ_p val_p?)* typ_r)
+  -- if fd = PolyFD (tparam*, tparam_hidden*) -> (ExternFuncT (id_p dir_p typ_p val_p?)* typ_r)
   ----
-  -- FuncDef_wf: $bound_tid(C_0) |- fd
+  -- FuncDef_wf: $bound_tid(GLOBAL, C_0) |- fd
   ----
   -- if C_4 = $add_funcdef(GLOBAL, C_0, fid, fd)
 
@@ -440,11 +439,11 @@ rule Method_ok/externconsm:
   -- if (id_c dir_c typ_c val_c? = cparamIL)*
   -- if tparam_hidden* = $concat_(tid, tid_fresh_c**)
   ----
-  -- if PolyD (tparam_e*, eps) typ_e = $find_typdef(GLOBAL, C, CURRENT id_e)
-  -- if typ = SpecT (PolyD (tparam_e*, eps) typ_e) (VarT tparam_e)*
-  -- if consdef = ConsD tparam_e* tparam_hidden* (ConsT paramtyp* typ)
+  -- if PolyD (tparam_e*, eps) -> typ_e = $find_typdef(GLOBAL, C, CURRENT id_e)
+  -- if typ = SpecT (PolyD (tparam_e*, eps) -> typ_e) (VarT tparam_e)*
+  -- if consdef = ConsD (tparam_e*, tparam_hidden*) -> (ConsT paramtyp* typ)
   ----
-  -- ConsDef_wf: $bound_tid(C) |- consdef
+  -- ConsDef_wf: $bound_tid(BLOCK, C) |- consdef
   ----
   -- if C' = $add_consdef(GLOBAL, C, cid, consdef)
 
@@ -462,11 +461,11 @@ rule Method_ok/externabstractm:
   -- if (id_p dir_p typ_p val_p? = paramIL)*
   -- if tparam_hidden* = $concat_(tid, tid_fresh_p**)
   ----
-  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p, dir_p, DYN)*)
+  -- if C_3 = $add_styps(LOCAL, C_2, id_p*, (typ_p dir_p DYN eps)*)
   ----
-  -- if fd = PolyFD (tparam*, tparam_hidden*) (ExternAbstractMethodT paramtyp* typ_r)
+  -- if fd = PolyFD (tparam*, tparam_hidden*) -> (ExternAbstractMethodT paramtyp* typ_r)
   ----
-  -- FuncDef_wf: $bound_tid(C_0) |- fd
+  -- FuncDef_wf: $bound_tid(BLOCK, C_0) |- fd
   ----
   -- if C_4 = $add_funcdef(BLOCK, C_0, fid, fd)
 
@@ -484,11 +483,11 @@ rule Method_ok/externm:
   -- if (id_p dir_p typ_p val_p? = paramIL)*
   -- if tparam_hidden* = $concat_(tid, tid_fresh_p**)
   ----
-  -- if C_3 = $add_typs(LOCAL, C_2, id_p*, (typ_p, dir_p, DYN)*)
+  -- if C_3 = $add_styps(LOCAL, C_2, id_p*, (typ_p dir_p DYN eps)*)
   ----
-  -- if fd = PolyFD (tparam*, tparam_hidden*) (ExternMethodT paramtyp* typ_r)
+  -- if fd = PolyFD (tparam*, tparam_hidden*) -> (ExternMethodT paramtyp* typ_r)
   ----
-  -- FuncDef_wf: $bound_tid(C_0) |- fd
+  -- FuncDef_wf: $bound_tid(BLOCK, C_0) |- fd
   ----
   -- if C_4 = $add_funcdef(BLOCK, C_0, fid, fd)
 
@@ -515,7 +514,7 @@ rule Decl_ok/externobjectd:
   ----
   -- Methods_ok: C_2 id |- method_m* : C_3 methodIL_m*
   ----
-  -- if td = PolyD (tparam*, eps) (ExternT id C_3.BLOCK.FDENV)
+  -- if td = PolyD (tparam*, eps) -> (ExternT id C_3.BLOCK.FDENV)
   -- if C_4 = $add_typdef(GLOBAL, C_0, id, td)
   ----
   -- if C_5 = $set_blockkind(C_4, EXTERN)
@@ -535,12 +534,12 @@ rule Decl_ok/valuesetd:
   -- if p = GLOBAL \/ (p = BLOCK /\ C.BLOCK.KIND = PARSER)
   ----
   -- Type_ok: p C |- type : typ_s eps
-  -- Type_wf: $bound_tid(C) |- SetT typ_s
+  -- Type_wf: $bound_tid(p, C) |- SetT typ_s
   ----
   -- Expr_ok: p C |- expr : exprIL typ ctk
   -- if ctk = CTK \/ ctk = LCTK
   ----
-  -- if C' = $add_typ(p, C, id, (SetT typ_s, NO, CTK))
+  -- if C' = $add_styp(p, C, id, (SetT typ_s) NO CTK eps)
 
 ;;
 ;; Parser type declaration
@@ -557,7 +556,7 @@ rule Decl_ok/parsertyped:
   -- if (id_p dir_p typ_p val_p? = paramIL)*
   -- if tparam_hidden* = $concat_(tid, tid_fresh_p**)
   ----
-  -- if td = PolyD (tparam*, tparam_hidden*) (ParserT (id_p dir_p typ_p val_p?)*)
+  -- if td = PolyD (tparam*, tparam_hidden*) -> (ParserT (id_p dir_p typ_p val_p?)*)
   -- if C''' = $add_typdef(GLOBAL, C, id, td)
 
 ;;
@@ -593,16 +592,16 @@ rule Decl_ok/parserd:
   -- (Param_ok: LOCAL C_1 |- cparam : cparamIL)*
   -- if (id_c dir_c typ_c val_c? = cparamIL)*
   ----
-  -- if C_2 = $add_typs(BLOCK, C_1, id_c*, (typ_c, dir_c, CTK)*)
+  -- if C_2 = $add_styps(BLOCK, C_1, id_c*, (typ_c dir_c CTK eps)*)
   ----
   -- (Param_ok: LOCAL C_2 |- param : paramIL)*
   -- if (id_p dir_p typ_p val_p? = paramIL)*
   ----
   ----
   -- if funcdef_apply = MonoFD (ParserApplyMethodT (id_p dir_p typ_p val_p?)*)
-  -- FuncDef_wf: $bound_tid(C_0) |- funcdef_apply
+  -- FuncDef_wf: $bound_tid(GLOBAL, C_0) |- funcdef_apply
   ----
-  -- if C_3 = $add_typs(BLOCK, C_2, id_p*, (typ_p, dir_p, DYN)*)
+  -- if C_3 = $add_styps(BLOCK, C_2, id_p*, (typ_p dir_p DYN eps)*)
   ----
   -- Decls_ok: BLOCK C_3 |- decl* : C_4 declIL*
   ----
@@ -615,13 +614,13 @@ rule Decl_ok/parserd:
   ----
   -- if C_5 = $set_localkind(C_4, PARSERSTATE)
   ----
-  -- if C_6 = $add_typs(BLOCK, C_5, statelabel*, (StateT, NO, DYN)*)
+  -- if C_6 = $add_styps(BLOCK, C_5, statelabel*, (StateT NO DYN eps)*)
   ----
   -- ParserStates_ok: C_6 |- parserstate : C_7 parserstateIL*
   ----
-  -- if ptd = PolyD (eps, eps) (ParserT (id_p dir_p typ_p val_p?)*)
+  -- if ptd = PolyD (eps, eps) -> (ParserT (id_p dir_p typ_p val_p?)*)
   -- if typ = SpecT ptd eps
-  -- if consdef = ConsD eps eps (ConsT (id_c dir_c typ_c val_c?)* typ)
+  -- if consdef = ConsD (eps, eps) -> (ConsT (id_c dir_c typ_c val_c?)* typ)
   ----
   -- ConsDef_wf: tidset |- consdef
   ----
@@ -669,7 +668,7 @@ rule Table_key_ok:
   p C tblctx |- (expr matchkind) : tblctx'' (exprIL matchkind)
   -- Expr_ok: p C |- expr : exprIL typ ctk
   ----
-  -- Type_wf: $bound_tid(C) |- SetT typ
+  -- Type_wf: $bound_tid(p, C) |- SetT typ
   ----
   -- if (MatchKindV matchkind) = $find_val(p, C, CURRENT matchkind)
   ----
@@ -1070,9 +1069,9 @@ rule Decl_ok/tabled:
   -- Table_type_decl_ok: BLOCK C_1 tblctx' |- id : C_2 typ_tbl
   -- if typ = TableT id typ_tbl
   ----
-  -- Type_wf: $bound_tid(C_2) |- typ
+  -- Type_wf: $bound_tid(BLOCK, C_2) |- typ
   ----
-  -- if C_3 = $add_typ(BLOCK, C_2, id, (typ, NO, DYN))
+  -- if C_3 = $add_styp(BLOCK, C_2, id, typ NO DYN eps)
 
 ;;
 ;; Control type declaration
@@ -1088,7 +1087,7 @@ rule Decl_ok/controltyped:
   -- if (id_p dir_p typ_p val_p? = paramIL)*
   -- if tparam_hidden* = $concat_(tid, tid_fresh_p**)
   ----
-  -- if td = PolyD (tparam*, tparam_hidden*) (ControlT (id_p dir_p typ_p val_p?)*)
+  -- if td = PolyD (tparam*, tparam_hidden*) -> (ControlT (id_p dir_p typ_p val_p?)*)
   -- if C''' = $add_typdef(GLOBAL, C, id, td)
 
 ;;
@@ -1104,15 +1103,15 @@ rule Decl_ok/controld:
   -- (Param_ok: LOCAL C_1 |- cparam : cparamIL)*
   -- if (id_c dir_c typ_c val_c? = cparamIL)*
   ----
-  -- if C_2 = $add_typs(BLOCK, C_1, id_c*, (typ_c, dir_c, CTK)*)
+  -- if C_2 = $add_styps(BLOCK, C_1, id_c*, (typ_c dir_c CTK eps)*)
   ----
   -- (Param_ok: LOCAL C_2 |- param : paramIL)*
   -- if (id_p dir_p typ_p val_p? = paramIL)*
   ----
   -- if funcdef_apply = MonoFD (ControlApplyMethodT (id_p dir_p typ_p val_p?)*)
-  -- FuncDef_wf: $bound_tid(C_0) |- funcdef_apply
+  -- FuncDef_wf: $bound_tid(GLOBAL, C_0) |- funcdef_apply
   ----
-  -- if C_3 = $add_typs(BLOCK, C_2, id_p*, (typ_p, dir_p, DYN)*)
+  -- if C_3 = $add_styps(BLOCK, C_2, id_p*, (typ_p dir_p DYN eps)*)
   ----
   -- Decls_ok: BLOCK C_3 |- decl* : C_4 declIL*
   ----
@@ -1120,11 +1119,11 @@ rule Decl_ok/controld:
   ----
   -- Block_ok: LOCAL C_5 CONT INIT |- block : C_6 f blockIL
   ----
-  -- if ptd = PolyD (eps, eps) (ControlT (id_p dir_p typ_p val_p?)*)
+  -- if ptd = PolyD (eps, eps) -> (ControlT (id_p dir_p typ_p val_p?)*)
   -- if typ = SpecT ptd eps
-  -- if consdef = ConsD eps eps (ConsT (id_c dir_c typ_c val_c?)* typ)
+  -- if consdef = ConsD (eps, eps) -> (ConsT (id_c dir_c typ_c val_c?)* typ)
   ----
-  -- ConsDef_wf: $bound_tid(C_0) |- consdef
+  -- ConsDef_wf: $bound_tid(GLOBAL, C_0) |- consdef
   ----
   -- if C_7 = $add_consdef(GLOBAL, C_0, cid, consdef)
 
@@ -1144,14 +1143,14 @@ rule Decl_ok/packagetyped:
   -- if (id_c dir_c typ_c val_c? = cparamIL)*
   -- if tparam_hidden* = $concat_(tid, tid_fresh_c**)
   ----
-  -- if ptd = PolyD (tparam*, tparam_hidden*) (PackageT typ_c*)
-  -- TypeDef_wf: $bound_tid(C_0) |- ptd
+  -- if ptd = PolyD (tparam*, tparam_hidden*) -> (PackageT typ_c*)
+  -- TypeDef_wf: $bound_tid(GLOBAL, C_0) |- ptd
   ----
   -- if tparam'* = tparam* tparam_hidden*
   -- if typ = SpecT ptd (VarT tparam')*
-  -- if cd = ConsD tparam* tparam_hidden* (ConsT (id_c dir_c typ_c val_c?)* typ)
+  -- if cd = ConsD (tparam*, tparam_hidden*) -> (ConsT (id_c dir_c typ_c val_c?)* typ)
   ----
-  -- ConsDef_wf: $bound_tid(C_1) |- cd
+  -- ConsDef_wf: $bound_tid(GLOBAL, C_1) |- cd
   ----
   -- if C_3 = $add_typdef(GLOBAL, C_0, id, ptd)
   ----

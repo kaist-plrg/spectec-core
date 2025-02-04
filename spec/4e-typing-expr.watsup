@@ -90,7 +90,7 @@ def $compatible_bnot(typ) = false
 rule Expr_ok/une-bnot:
   p C |- UnE BNOT expr : (UnE BNOT exprIL_e) typ_e ctk
   -- Expr_ok: p C |- expr : exprIL typ ctk
-  -- if (exprIL_e, typ_e) = $coerce_unary_numeric((exprIL, typ), $compatible_bnot)
+  -- if (exprIL_e, typ_e) = $reduce_senum_unary((exprIL, typ), $compatible_bnot)
 
 def $compatible_lnot(typ) : bool
 def $compatible_lnot(BoolT) = true
@@ -100,7 +100,7 @@ def $compatible_lnot(typ) = false
 rule Expr_ok/une-lnot:
   p C |- UnE LNOT expr : (UnE LNOT exprIL_e) typ_e ctk
   -- Expr_ok: p C |- expr : exprIL typ ctk
-  -- if (exprIL_e, typ_e) = $coerce_unary_numeric((exprIL, typ), $compatible_lnot)
+  -- if (exprIL_e, typ_e) = $reduce_senum_unary((exprIL, typ), $compatible_lnot)
 
 def $compatible_uplus(typ) : bool
 def $compatible_uplus(IntT) = true
@@ -112,7 +112,7 @@ def $compatible_uplus(typ) = false
 rule Expr_ok/une-uplus:
   p C |- UnE UPLUS expr : (UnE UPLUS exprIL_e) typ_e ctk
   -- Expr_ok: p C |- expr : exprIL typ ctk
-  -- if (exprIL_e, typ_e) = $coerce_unary_numeric((exprIL, typ), $compatible_uplus)
+  -- if (exprIL_e, typ_e) = $reduce_senum_unary((exprIL, typ), $compatible_uplus)
 
 def $compatible_uminus(typ) : bool
 def $compatible_uminus(IntT) = true
@@ -124,7 +124,7 @@ def $compatible_uminus(typ) = false
 rule Expr_ok/une-uminus:
   p C |- UnE UMINUS expr : (UnE UPLUS exprIL_e) typ_e ctk
   -- Expr_ok: p C |- expr : exprIL typ ctk
-  -- if (exprIL_e, typ_e) = $coerce_unary_numeric((exprIL, typ), $compatible_uminus)
+  -- if (exprIL_e, typ_e) = $reduce_senum_unary((exprIL, typ), $compatible_uminus)
 
 ;;
 ;; Binary expression
@@ -146,7 +146,7 @@ rule Expr_ok/bine-plus-minus-mult:
   ----
   -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
   ----
-  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $coerce_binary_numeric((exprIL_l', typ'), (exprIL_r', typ'), $compatible_plusminusmult)
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), $compatible_plusminusmult)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
@@ -165,7 +165,7 @@ rule Expr_ok/bine-sat-plus-minus:
   ----
   -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
   ----
-  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $coerce_binary_numeric((exprIL_l', typ'), (exprIL_r', typ'), $compatible_satplusminus)
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), $compatible_satplusminus)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
@@ -183,7 +183,7 @@ rule Expr_ok/bine-div-mod:
   ----
   -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
   ----
-  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $coerce_binary_numeric((exprIL_l', typ'), (exprIL_r', typ'), $compatible_divmod)
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), $compatible_divmod)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
@@ -207,7 +207,7 @@ rule Expr_ok/bine-shift:
   -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
   -- Expr_ok: p C |- expr_r : exprIL_r typ_r ctk_r
   ----
-  -- if ((exprIL_l', typ_l'), (exprIL_r', typ_r')) = $coerce_binary_numeric((exprIL_l, typ_l), (exprIL_r, typ_r), $compatible_shift)
+  -- if ((exprIL_l', typ_l'), (exprIL_r', typ_r')) = $reduce_senums_binary((exprIL_l, typ_l), (exprIL_r, typ_r), $compatible_shift)
   ----
   -- if $implies($is_fintt(typ_r') \/ $is_intt(typ_r'), ctk_r = LCTK)
   ----
@@ -257,7 +257,7 @@ rule Expr_ok/bine-compare:
   ----
   -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
   ----
-  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $coerce_binary_numeric((exprIL_l', typ'), (exprIL_r', typ'), $compatible_compare)
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), $compatible_compare)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
@@ -276,7 +276,7 @@ rule Expr_ok/bine-bitwise:
   ----
   -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
   ----
-  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $coerce_binary_numeric((exprIL_l', typ'), (exprIL_r', typ'), $compatible_bitwise)
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), $compatible_bitwise)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
@@ -293,7 +293,7 @@ rule Expr_ok/bine-concat:
   -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
   -- Expr_ok: p C |- expr_r : exprIL_r typ_r ctk_r
   ----
-  -- if ((exprIL_l', typ_l'), (exprIL_r', typ_r')) = $coerce_binary_numeric((exprIL_l, typ_l), (exprIL_r, typ_r), $compatible_concat)
+  -- if ((exprIL_l', typ_l'), (exprIL_r', typ_r')) = $reduce_senums_binary((exprIL_l, typ_l), (exprIL_r, typ_r), $compatible_concat)
   ----
   -- if w = $($get_width(typ_l') + $get_width(typ_r'))
   -- if $implies($is_fintt(typ_l'), typ'' = FIntT w)
@@ -315,7 +315,7 @@ rule Expr_ok/bine-logical:
   ----
   -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
   ----
-  -- if ((exprIL_l'', typ_l''), (exprIL_r'',typ_r'')) = $coerce_binary_numeric((exprIL_l', typ'), (exprIL_r', typ'), $compatible_logical)
+  -- if ((exprIL_l'', typ_l''), (exprIL_r'',typ_r'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), $compatible_logical)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
@@ -364,7 +364,7 @@ rule Expr_ok/maske:
   ----
   -- if (typ', exprIL_b', exprIL_m') = $coerce_binary((exprIL_b, typ_b), (exprIL_m, typ_m))
   ----
-  -- if ((exprIL_b'', typ''), (exprIL_m'', typ'')) = $coerce_binary_numeric((exprIL_b', typ'), (exprIL_m', typ'), $compatible_mask)
+  -- if ((exprIL_b'', typ''), (exprIL_m'', typ'')) = $reduce_senums_binary((exprIL_b', typ'), (exprIL_m', typ'), $compatible_mask)
   ----
   ;; -- Type_wf: $bound_tid(C) |- SetT typ''
 
@@ -386,7 +386,7 @@ rule Expr_ok/rangee:
   ----
   -- if (typ', exprIL_ub', exprIL_lb') = $coerce_binary((exprIL_lb, typ_lb), (exprIL_ub, typ_ub))
   ----
-  -- if ((exprIL_lb'', typ''), (exprIL_ub'', typ'')) = $coerce_binary_numeric((exprIL_lb', typ'), (exprIL_ub', typ'), $compatible_range)
+  -- if ((exprIL_lb'', typ''), (exprIL_ub'', typ'')) = $reduce_senums_binary((exprIL_lb', typ'), (exprIL_ub', typ'), $compatible_range)
   ----
   ;; -- Type_wf: $bound_tid(C) |- SetT typ''
 
@@ -446,8 +446,7 @@ rule Expr_ok/selecte:
   -- if C.LOCAL.KIND = PARSERSTATE
   -- (Expr_ok: LOCAL C |- expr_k : exprIL_k typ_k ctk_k)*
   ----
-  -- if tidset = $bound_tid(C)
-  -- (Type_wf: tidset |- SetT typ_k)*
+  -- (Type_wf: $bound_tid(LOCAL, C) |- SetT typ_k)*
   ----
   -- (Select_case_ok: LOCAL C typ_k* |- selectcase : selectcaseIL)*
 
@@ -467,7 +466,7 @@ rule Expr_ok/arracce-tuplet:
   -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
   -- Expr_ok: p C |- expr_i : exprIL_i typ_i ctk_i
   ----
-  -- if (exprIL_i', typ_i') = $coerce_unary_numeric((exprIL_i, typ_i), $compatible_arrayindex)
+  -- if (exprIL_i', typ_i') = $reduce_senum_unary((exprIL_i, typ_i), $compatible_arrayindex)
   ----
   -- if TupleT typs_b'* = $canon_typ(typ_b)
   -- Eval_static: p C |- exprIL_i' ~> val_i
@@ -479,7 +478,7 @@ rule Expr_ok/arracce-stackt:
   -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
   -- Expr_ok: p C |- expr_i : exprIL_i typ_i LCTK
   ----
-  -- if (exprIL_i', typ_i') = $coerce_unary_numeric((exprIL_i, typ_i), $compatible_arrayindex)
+  -- if (exprIL_i', typ_i') = $reduce_senum_unary((exprIL_i, typ_i), $compatible_arrayindex)
   ----
   -- if StackT typ_b' size = $canon_typ(typ_b)
 
@@ -506,18 +505,18 @@ rule Expr_ok/bitacce:
   p C |- BitAccE expr_b expr_l expr_h : (BitAccE exprIL_b' (ValueE val_l) (ValueE val_r)) typ ctk_b
   -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
   ----
-  -- if (exprIL_b', typ_b') = $coerce_unary_numeric((exprIL_b, typ_b), $compatible_bitstringbase)
+  -- if (exprIL_b', typ_b') = $reduce_senum_unary((exprIL_b, typ_b), $compatible_bitstringbase)
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l typ_l LCTK
   ----
-  -- if (exprIL_l', typ_l') = $coerce_unary_numeric((exprIL_l, typ_l), $compatible_bitstringindex)
+  -- if (exprIL_l', typ_l') = $reduce_senum_unary((exprIL_l, typ_l), $compatible_bitstringindex)
   ----
   -- Eval_static: p C |- exprIL_l' ~> val_l
   -- if i_l = $get_num(val_l)
   ----
   -- Expr_ok: p C |- expr_h : exprIL_h typ_h LCTK
   ----
-  -- if (exprIL_h', typ_h') = $coerce_unary_numeric((exprIL_h, typ_h), $compatible_bitstringindex)
+  -- if (exprIL_h', typ_h') = $reduce_senum_unary((exprIL_h, typ_h), $compatible_bitstringindex)
   ----
   -- Eval_static: p C |- exprIL_h' ~> val_h
   -- if i_h = $get_num(val_h)

@@ -17,22 +17,22 @@ rule Type_ok/intt:
   p C |- IntT : IntT eps
 
 rule Type_ok/fintt:
-  p C |- FIntT expr : (FIntT w) eps
+  p C |- FIntT expr : (FIntT width) eps
   -- Expr_ok: p C |- expr : exprIL typ LCTK
   -- Eval_static: p C |- exprIL ~> val
-  -- if w = $get_num(val)
+  -- if width = $get_num(val)
 
 rule Type_ok/fbitt:
-  p C |- FBitT expr : (FBitT w) eps
+  p C |- FBitT expr : (FBitT width) eps
   -- Expr_ok: p C |- expr : exprIL typ LCTK
   -- Eval_static: p C |- exprIL ~> val
-  -- if w = $get_num(val)
+  -- if width = $get_num(val)
 
 rule Type_ok/vbitt:
-  p C |- VBitT expr : (VBitT w) eps
+  p C |- VBitT expr : (VBitT width) eps
   -- Expr_ok: p C |- expr : exprIL typ LCTK
   -- Eval_static: p C |- exprIL ~> val
-  -- if w = $get_num(val)
+  -- if width = $get_num(val)
 
 rule Type_ok/stackt:
   p C |- StackT type expr : (SpecT ptd typ) tid_fresh*
@@ -40,15 +40,15 @@ rule Type_ok/stackt:
   ----
   -- Expr_ok: p C |- expr : exprIL typ LCTK
   -- Eval_static: p C |- exprIL ~> val
-  -- if s = $get_num(val)
+  -- if size = $get_num(val)
   ----
-  -- if ptd = PolyD ("T", eps) (StackT (VarT "T") s)
+  -- if ptd = PolyD ("T", eps) -> (StackT (VarT "T") size)
 
 rule Type_ok/listt:
   p C |- ListT type : (SpecT ptd typ) tid_fresh*
   -- Type_ok: p C |- type : typ tid_fresh*
   ----
-  -- if ptd = PolyD ("T", eps) (ListT (VarT "T"))
+  -- if ptd = PolyD ("T", eps) -> (ListT (VarT "T"))
 
 rule Type_ok/tuplet:
   p C |- TupleT type* : (SpecT ptd typ*) tid_fresh*
@@ -56,7 +56,7 @@ rule Type_ok/tuplet:
   -- if tid_fresh* = $concat_(tid, tid_fresh_i**)
   ----
   -- if (tid = $concat_text("T" $int_to_text(i)))^(i < |typ*|)
-  -- if ptd = PolyD (tid*, eps) (TupleT (VarT tid)*)
+  -- if ptd = PolyD (tid*, eps) -> (TupleT (VarT tid)*)
 
 rule Type_ok/namet-mono:
   p C |- NameT name : typ eps
@@ -64,8 +64,8 @@ rule Type_ok/namet-mono:
 
 rule Type_ok/namet-poly:
   p C |- NameT name : (SpecT ptd eps) eps
-  -- if PolyD (tparam*, tparam_hidden*) typ = $find_typdef(p, C, name)
-  -- if ptd = PolyD (tparam*, tparam_hidden*) typ
+  -- if PolyD (tparam*, tparam_hidden*) -> typ = $find_typdef(p, C, name)
+  -- if ptd = PolyD (tparam*, tparam_hidden*) -> typ
 
 rule Type_ok/spect-mono:
   p C |- SpecT name eps : typ eps
@@ -73,8 +73,8 @@ rule Type_ok/spect-mono:
 
 rule Type_ok/spect-poly:
   p C |- SpecT name type* : (SpecT ptd typ*) tid_fresh*
-  -- if PolyD (tparam*, tparam_hidden*) typ = $find_typdef(p, C, name)
-  -- if ptd = PolyD (tparam*, tparam_hidden*) typ
+  -- if PolyD (tparam*, tparam_hidden*) -> typ = $find_typdef(p, C, name)
+  -- if ptd = PolyD (tparam*, tparam_hidden*) -> typ
   ----
   -- (Type_ok: p C |- type : typ_a tid_fresh_a*)*
   -- if tid_fresh* = $concat_(tid, tid_fresh_a**)

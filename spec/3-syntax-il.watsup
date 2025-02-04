@@ -247,7 +247,7 @@ syntax declIL =
   | VarD idIL typeIL exprIL?                                            hint(show %2 %1 = %3)
   | ErrD memberIL*                                                      hint(show ERROR %latex("\\{")#%#%latex("\\}"))
   | MatchKindD memberIL*                                                hint(show MATCH#_#KIND %latex("\\{")#%#%latex("\\}"))
-  | InstD idIL typeIL nameIL targIL* argIL* declIL*                     hint(show %2#%latex("\\langle")#%3#%latex("\\rangle")#(%4) %1 = %latex("\\{")#%5#%latex("\\}"))
+  | InstD idIL typeIL nameIL targIL* argIL* declIL*                     hint(show %3#%latex("\\langle")#%4#%latex("\\rangle")#(%5) %1 = %latex("\\{")#%6#%latex("\\}") %latex("/*")%2%latex("*/"))
   | StructD idIL tparamIL* tparamIL* (memberIL, typeIL)*                hint(show STRUCT %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
   | HeaderD idIL tparamIL* tparamIL* (memberIL, typeIL)*                hint(show HEADER %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
   | UnionD idIL tparamIL* tparamIL* (memberIL, typeIL)*                 hint(show UNION %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))

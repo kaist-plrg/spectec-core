@@ -9,9 +9,9 @@ syntax val =
   | StrV text                       hint(show STR#_#V %)
   | BoolV bool                      hint(show BOOL#_#V %)
   | IntV int                        hint(show INT#_#V %)
-  | FIntV nat bitstr                hint(show FINT#_#V %#S#%)
-  | FBitV nat bitstr                hint(show FBIT#_#V %#W#%)
-  | VBitV nat nat bitstr            hint(show VBIT#_#V#%latex("\\langle")#%%latex("@")%#%latex("\\rangle") %)
+  | FIntV width bitstr              hint(show FINT#_#V %#S#%)
+  | FBitV width bitstr              hint(show FBIT#_#V %#W#%)
+  | VBitV width width bitstr        hint(show VBIT#_#V#%latex("\\langle")#%%latex("@")%#%latex("\\rangle") %)
   ;; Derived values
   | EnumFieldV id member            hint(show ENUM#_#FIELD#_#V %.%)
   | SEnumFieldV id member val       hint(show SENUM#_#FIELD#_#V %.% (%))

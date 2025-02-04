@@ -145,18 +145,18 @@ def $filter_default_args(paramtyp_h paramtyp_t*, id_deft*) = paramtyp_h $filter_
 
 syntax pmap = map(id, paramtyp)
 
-def $align_params_with_args(paramtyp*, (argIL, typ)*): (paramtyp*, (argIL, typ)*) hint(show ALIGN_PARAMS_WITH_ARGS%latex("(")#%1#%latex(", ")#%2#%latex(")"))
-def $align_params_with_args'(pmap, paramtyp, argIL, typ): (paramtyp, argIL, typ)  hint(show ALIGN_PARAMS_WITH_ARGS'%latex("(")#%1#%latex(", ")#%2#%latex(")"))
+def $align_params_with_args(paramtyp*, (argIL, typ)*): (paramtyp*, (argIL, typ)*)     hint(show ALIGN_PARAMS_WITH_ARGS%latex("(")#%1#%latex(", ")#%2#%latex(")"))
+def $align_params_with_args'(pmap, paramtyp, (argIL, typ)): (paramtyp, (argIL, typ))  hint(show ALIGN_PARAMS_WITH_ARGS'%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(")"))
 
 def $align_params_with_args(paramtyp*, (argIL, typ)*) = (paramtyp'*, (argIL', typ')*)
   -- if (id dir typ val?)* = paramtyp*
   -- if pmap = MAP (PAIR id paramtyp)*
-  -- (if (paramtyp', argIL', typ') = $align_params_with_args'(pmap, paramtyp, argIL, typ))*
+  -- (if (paramtyp', (argIL', typ')) = $align_params_with_args'(pmap, paramtyp, (argIL, typ)))*
 
-def $align_params_with_args'(pmap, paramtyp, ExprA exprIL, typ) = (paramtyp, ExprA exprIL, typ)
-def $align_params_with_args'(pmap, paramtyp, NameA id exprIL?, typ) = (paramtyp', NameA id exprIL?, typ)
+def $align_params_with_args'(pmap, paramtyp, (ExprA exprIL, typ)) = (paramtyp, (ExprA exprIL, typ))
+def $align_params_with_args'(pmap, paramtyp, (NameA id exprIL?, typ)) = (paramtyp', (NameA id exprIL?, typ))
   -- if paramtyp' = $find_map(id, paramtyp, pmap, id)
-def $align_params_with_args'(pmap, paramtyp, AnyA, typ) = (paramtyp, AnyA, typ)
+def $align_params_with_args'(pmap, paramtyp, (AnyA, typ)) = (paramtyp, (AnyA, typ))
 
 ;;
 ;; Function and Method invocation
@@ -171,7 +171,7 @@ rule Call_ok/actiont:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(C) |- ActionT pt*
+  -- FuncType_wf: $bound_tid(p, C) |- ActionT pt*
   ----
   -- Call_site_ok: p C |- ActionT pt* : CALLSITE_OK
   -- if (~$is_table_apply_in_action_arg(argIL'))*
@@ -185,7 +185,7 @@ rule Call_ok/extern-funct:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(C) |- ExternFuncT pt* typ_r
+  -- FuncType_wf: $bound_tid(p, C) |- ExternFuncT pt* typ_r
   ----
   -- Call_site_ok: p C |- ExternFuncT pt* typ_r : CALLSITE_OK
   ----
@@ -198,7 +198,7 @@ rule Call_ok/funct:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(C) |- (FuncT pt* typ_r)
+  -- FuncType_wf: $bound_tid(p, C) |- (FuncT pt* typ_r)
   ----
   -- Call_site_ok: p C |- FuncT pt* typ_r : CALLSITE_OK
   ----
@@ -211,7 +211,7 @@ rule Call_ok/builtin-methodt:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(C) |- BuiltinMethodT pt* typ_r
+  -- FuncType_wf: $bound_tid(p, C) |- BuiltinMethodT pt* typ_r
   ----
   -- Call_site_ok: p C |- BuiltinMethodT pt* typ_r : CALLSITE_OK
   -- (Call_convention_arg_ok: p C NOACT |- pt'' ~~ (argIL', typ_a') : argIL'')*
@@ -223,7 +223,7 @@ rule Call_ok/extern-methodt:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(C) |- ExternMethodT pt* typ_r
+  -- FuncType_wf: $bound_tid(p, C) |- ExternMethodT pt* typ_r
   ----
   -- Call_site_ok: p C |- ExternMethodT pt* typ_r : CALLSITE_OK
   ----
@@ -236,7 +236,7 @@ rule Call_ok/extern-abstract-methodt:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(C) |- ExternAbstractMethodT pt* typ_r
+  -- FuncType_wf: $bound_tid(p, C) |- ExternAbstractMethodT pt* typ_r
   ----
   -- Call_site_ok: p C |- ExternAbstractMethodT pt* typ_r : CALLSITE_OK
   ----
@@ -249,7 +249,7 @@ rule Call_ok/parser-apply-methodt:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(C) |- (ParserApplyMethodT pt*)
+  -- FuncType_wf: $bound_tid(p, C) |- (ParserApplyMethodT pt*)
   ----
   -- Call_site_ok: p C |- ParserApplyMethodT pt* : CALLSITE_OK
   ----
@@ -262,7 +262,7 @@ rule Call_ok/control-apply-methodt:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(C) |- ControlApplyMethodT pt*
+  -- FuncType_wf: $bound_tid(p, C) |- ControlApplyMethodT pt*
   ----
   -- Call_site_ok: p C |- ControlApplyMethodT pt* : CALLSITE_OK
   ----
@@ -270,7 +270,7 @@ rule Call_ok/control-apply-methodt:
 
 rule Call_ok/table-apply-methodt:
   p C |- (TableApplyMethodT typ_r) eps eps eps : typ_r eps eps
-  -- FuncType_wf: $bound_tid(C) |- TableApplyMethodT typ_r
+  -- FuncType_wf: $bound_tid(p, C) |- TableApplyMethodT typ_r
   ----
   -- Call_site_ok: p C |- TableApplyMethodT typ_r : CALLSITE_OK
 
@@ -340,7 +340,7 @@ rule Inst_ok/global-packaget:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- ConsType_wf: $bound_tid(C_1) |- (ConsT pt* typ_i)
+  -- ConsType_wf: $bound_tid(GLOBAL, C_1) |- (ConsT pt* typ_i)
   ----
   -- Inst_site_ok: BLOCK C_1 |- (ConsT pt* typ_i) : INSTSITE_OK
   -- (Call_convention_arg_ok: BLOCK C_1 NOACT |- pt'' ~~ (argIL', typ_a') : argIL'')*
@@ -352,7 +352,7 @@ rule Inst_ok/else:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- ConsType_wf: $bound_tid(C) |- (ConsT pt* typ_i)
+  -- ConsType_wf: $bound_tid(p, C) |- (ConsT pt* typ_i)
   ----
   -- Inst_site_ok: p C |- (ConsT pt* typ_i) : INSTSITE_OK
   -- (Call_convention_arg_ok: p C NOACT |- pt'' ~~ (argIL', typ_a') : argIL'')*

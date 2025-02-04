@@ -279,9 +279,9 @@ rule Sub_impl/invalidt-uniont:
 ;; Coercions
 ;;
 
-def $coerce_unary_numeric((exprIL, typ), def $check_unary(typ) : bool) : (exprIL, typ)  hint(show COERCE %1 UNDER %3)
+def $reduce_senum_unary((exprIL, typ), def $check_unary(typ) : bool) : (exprIL, typ)  hint(show REDUCE %1 UNDER %2)
 
-def $coerce_binary_numeric((exprIL, typ), (exprIL, typ), def $check_binary(typ, typ) : bool) : ((exprIL, typ), (exprIL, typ))   hint(show COERCE %1 AND %2 UNDER %3)
+def $reduce_senums_binary((exprIL, typ), (exprIL, typ), def $check_binary(typ, typ) : bool) : ((exprIL, typ), (exprIL, typ))   hint(show REDUCE %1 AND %2 UNDER %3)
 
 def $coerce_binary((exprIL, typ), (exprIL, typ)) : (typ, exprIL, exprIL)  hint(show COERCE %1 AND %2)
 

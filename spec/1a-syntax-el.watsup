@@ -3,11 +3,12 @@
 ;;
 
 syntax bits = int
+syntax width = nat
 
 syntax num =
   | INT int         hint(show %)
-  | FINT nat bits   hint(show %#S#%)
-  | FBIT nat bits   hint(show %#W#%)
+  | FINT width bits   hint(show %#S#%)
+  | FBIT width bits   hint(show %#W#%)
 
 ;;
 ;; Texts

@@ -185,12 +185,12 @@ rule Stmt_ok/exits:
 
 rule Stmt_ok/rets-none:
   LOCAL C f |- RetS eps : C RET (RetS eps)
-  -- if VoidT = $find_returntyp(C.LOCAL.KIND)
+  -- if VoidT = $get_typ_ret(C.LOCAL.KIND)
 
 rule Stmt_ok/rets-some:
   LOCAL C f |- RetS expr : C RET (RetS exprIL')
   -- Expr_ok: p C |- expr : exprIL typ ctk
-  -- if typ_r = $find_returntyp(C.LOCAL.KIND)
+  -- if typ_r = $get_typ_ret(C.LOCAL.KIND)
   ----
   -- if exprIL' = $coerce_assign((exprIL, typ), typ_r)
 
@@ -242,7 +242,7 @@ rule Stmt_ok/callinsts:
   -- if (typ' = ParserT paramtyp*) \/ (typ' = ControlT paramtyp*)
   ----
   -- if (TOP id = name) \/ (CURRENT id = name)
-  -- if C' = $add_typ(p, C, id, (typ, NO, CTK))
+  -- if C' = $add_styp(p, C, id, typ NO CTK eps)
   ----
   -- Stmt_ok: p C' f |- CallMethodS (NameE (CURRENT id)) "apply" targ* arg* : C' f' stmtIL
 

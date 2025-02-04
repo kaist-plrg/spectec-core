@@ -2,22 +2,33 @@
 ;; Environments
 ;;
 
-syntax frame = map(id, styp)
+;; Map from variable identifiers to static types
+syntax frame hint(show %latex("\\Sigma")) = map(id, styp)
+;; Map from type identifiers to type definitions
 syntax tdenv hint(show %latex("\\Delta_\\texttt{t}")) = map(tid, typdef)
+;; Map from function identifiers to function definitions
 syntax fdenv hint(show %latex("\\Delta_\\texttt{f}")) = map(fid, funcdef)
+;; Map from constructor identifiers to constructor definitions
 syntax cdenv hint(show %latex("\\Delta_\\texttt{c}")) = map(fid, consdef)
 
-def $find_env(syntax K, syntax V, map(K, V), K) : V  hint(show %3#`[%4])
+def $empty_frame() : frame
+def $empty_frame() = $empty_map(id, styp)
+
+def $empty_tdenv() : tdenv
+def $empty_tdenv() = $empty_map(tid, typdef)
+
+def $empty_fdenv() : fdenv
+def $empty_fdenv() = $empty_map(fid, funcdef)
+
+def $empty_cdenv() : cdenv
+def $empty_cdenv() = $empty_map(cid, consdef)
 
 ;;
 ;; Function/method overload resolution
 ;;
 
 def $check_func_name(id, id) : bool   hint(show CHECK_FUNC_NAME(%1, %2))
-def $check_func_name(id_f, id_f') = true
-  -- if id_f = id_f'
-def $check_func_name(id_f, id_f') = false
-  -- otherwise
+def $check_func_name(id_f, id_f') = id_f = id_f'
 
 def $check_arity_more((id?)*, id*) : bool   hint(show CHECK_ARITY_MORE(%1, %2))
 def $check_arity_more((id_a?)*, id_p*) = true
