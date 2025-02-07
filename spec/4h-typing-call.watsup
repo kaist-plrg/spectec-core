@@ -224,11 +224,11 @@ def $gen_cstr(cstr, ExternT id_p fdenv_p, ExternT id_a fdenv_a) = $gen_cstr_fd'(
   -- if id_p = id_a
   -- if $eq_set(fid, SET fid_p*, SET fid_a*)
 def $gen_cstr(cstr, ParserT pt_p*, ParserT pt_a*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
-  -- if (id dir typ_p' val? = pt_p)*
-  -- if (id dir typ_a' val? = pt_a)*
+  -- if (id_p dir typ_p' val_p? = pt_p)*
+  -- if (id_a dir typ_a' val_a? = pt_a)*
 def $gen_cstr(cstr, ControlT pt_p*, ControlT pt_a*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
-  -- if (id dir typ_p' val? = pt_p)*
-  -- if (id dir typ_a' val? = pt_a)*
+  -- if (id_p dir typ_p' val_p? = pt_p)*
+  -- if (id_a dir typ_a' val_a? = pt_a)*
 def $gen_cstr(cstr, PackageT typ_p*, PackageT typ_a*) = $gen_cstrs(cstr, typ_p*, typ_a*)
 def $gen_cstr(cstr, typ_p, typ_a) = cstr
   -- otherwise
@@ -273,7 +273,7 @@ def $gen_cstrs(cstr, typ_p*, typ_a*) = $merge_cstrs(cstr, cstr'*)
 
 
 def $resolve_cstrs(MAP eps eps) = MAP eps eps
-def $resolve_cstrs(MAP (PAIR tid typ?)*) = $update_map(tid, typ, MAP (PAIR tid_t' typ_t')*, tid_h, typ_h')
+def $resolve_cstrs(MAP (PAIR tid typ?)+) = $update_map(tid, typ, MAP (PAIR tid_t' typ_t')*, tid_h, typ_h')
   -- if tid_h tid_t* = tid*
   -- if typ_h? typ_t?* = typ?*
   -- if typ_h? = typ_h'
@@ -319,14 +319,16 @@ rule Call_ok/extern-funct-no-targsinfer:
   -- (Call_convention_arg_ok: p C NOACT |- pt'' ~~ (argIL', typ_a') : argIL'')*
 
 rule Call_ok/extern-funct-targsinfer:
-  p C |- (ExternFuncT pt* typ_r) tid_fresh* targIL* (argIL, typ_a)* id_deft* : typ_r' targIL'* argIL''*
+  p C |- (ExternFuncT pt* typ_r) tid_fresh* targIL* (argIL, typ_a)* id_deft* : typ_r' targIL''* argIL''*
   -- if pt'* = $filter_default_args(pt*, id_deft*)
   ----
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
   -- if theta = $infer_targs(tid_fresh*, pt''*, typ_a'*)
+  ----
   -- if (targIL' = $find_map(tid, typ, theta, tid_fresh))*
+  -- if targIL''* = targIL* ++ targIL'*
   ----
   -- if ExternFuncT pt'''* typ_r' = $subst_functyp(theta, ExternFuncT pt* typ_r)
   ----
@@ -350,14 +352,16 @@ rule Call_ok/funct-no-targsinfer:
   -- (Call_convention_arg_ok: p C NOACT |- pt'' ~~ (argIL', typ_a') : argIL'')*
 
 rule Call_ok/funct-targsinfer:
-  p C |- (FuncT pt* typ_r) tid_fresh* targIL* (argIL, typ_a)* id_deft* : typ_r' targIL'* argIL''*
+  p C |- (FuncT pt* typ_r) tid_fresh* targIL* (argIL, typ_a)* id_deft* : typ_r' targIL''* argIL''*
   -- if pt'* = $filter_default_args(pt*, id_deft*)
   ----
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
   -- if theta = $infer_targs(tid_fresh*, pt''*, typ_a'*)
+  ----
   -- if (targIL' = $find_map(tid, typ, theta, tid_fresh))*
+  -- if targIL''* = targIL* ++ targIL'*
   ----
   -- if FuncT pt'''* typ_r' = $subst_functyp(theta, FuncT pt* typ_r)
   ----
@@ -393,14 +397,16 @@ rule Call_ok/extern-methodt-no-targsinfer:
   -- (Call_convention_arg_ok: p C NOACT |- pt'' ~~ (argIL', typ_a') : argIL'')*
 
 rule Call_ok/extern-methodt-targsinfer:
-  p C |- (ExternMethodT pt* typ_r) tid_fresh* targIL* (argIL, typ_a)* id_deft* : typ_r' targIL'* argIL''*
+  p C |- (ExternMethodT pt* typ_r) tid_fresh* targIL* (argIL, typ_a)* id_deft* : typ_r' targIL''* argIL''*
   -- if pt'* = $filter_default_args(pt*, id_deft*)
   ----
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
   -- if theta = $infer_targs(tid_fresh*, pt''*, typ_a'*)
+  ----
   -- if (targIL' = $find_map(tid, typ, theta, tid_fresh))*
+  -- if targIL''* = targIL* ++ targIL'*
   ----
   -- if ExternMethodT pt'''* typ_r' = $subst_functyp(theta, ExternMethodT pt* typ_r)
   ----
@@ -424,14 +430,16 @@ rule Call_ok/extern-abstract-methodt-no-targsinfer:
   -- (Call_convention_arg_ok: p C NOACT |- pt'' ~~ (argIL', typ_a') : argIL'')*
 
 rule Call_ok/extern-abstract-methodt-targsinfer:
-  p C |- (ExternAbstractMethodT pt* typ_r) tid_fresh* targIL* (argIL, typ_a)* id_deft* : typ_r' targIL'* argIL''*
+  p C |- (ExternAbstractMethodT pt* typ_r) tid_fresh* targIL* (argIL, typ_a)* id_deft* : typ_r' targIL''* argIL''*
   -- if pt'* = $filter_default_args(pt*, id_deft*)
   ----
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
   -- if theta = $infer_targs(tid_fresh*, pt''*, typ_a'*)
+  ----
   -- if (targIL' = $find_map(tid, typ, theta, tid_fresh))*
+  -- if targIL''* = targIL* ++ targIL'*
   ----
   -- if ExternAbstractMethodT pt'''* typ_r' = $subst_functyp(theta, ExternAbstractMethodT pt* typ_r)
   ----
@@ -545,7 +553,7 @@ rule Inst_ok/global-packaget-no-targsinfer:
   -- (Call_convention_arg_ok: BLOCK C_1 NOACT |- pt'' ~~ (argIL', typ_a') : argIL'')*
 
 rule Inst_ok/global-packaget-targsinfer:
-  GLOBAL C_0 |- (ConsT pt* typ_i) tid* targIL* (argIL, typ_a)* id_deft* : typ_i' targIL'* argIL''*
+  GLOBAL C_0 |- (ConsT pt* typ_i) tid_fresh* targIL* (argIL, typ_a)* id_deft* : typ_i' targIL''* argIL''*
   -- if PackageT typ_i'* = $canon_typ(typ_i)
   -- if C_1 = $set_blockkind(C_0, PACKAGE)
   ----
@@ -554,8 +562,10 @@ rule Inst_ok/global-packaget-targsinfer:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- if theta = $infer_targs(tid*, pt''*, typ_a'*)
-  -- if (targIL' = $find_map(tid, typ, theta, tid))*
+  -- if theta = $infer_targs(tid_fresh*, pt''*, typ_a'*)
+  ----
+  -- if (targIL' = $find_map(tid, typ, theta, tid_fresh))*
+  -- if targIL''* = targIL* ++ targIL'*
   ----
   -- if ConsT pt'''* typ_i' = $subst_constyp(theta, ConsT pt* typ_i)
   ----
@@ -577,14 +587,16 @@ rule Inst_ok/else-no-targsinfer:
   -- (Call_convention_arg_ok: p C NOACT |- pt'' ~~ (argIL', typ_a') : argIL'')*
 
 rule Inst_ok/else-targsinfer:
-  p C |- (ConsT pt* typ_i) tid* targIL* (argIL, typ_a)* id_deft* : typ_i' targIL'* argIL''*
+  p C |- (ConsT pt* typ_i) tid_fresh* targIL* (argIL, typ_a)* id_deft* : typ_i' targIL''* argIL''*
   -- if pt'* = $filter_default_args(pt*, id_deft*)
   ----
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- if theta = $infer_targs(tid*, pt''*, typ_a'*)
-  -- if (targIL' = $find_map(tid, typ, theta, tid))*
+  -- if theta = $infer_targs(tid_fresh*, pt''*, typ_a'*)
+  ----
+  -- if (targIL' = $find_map(tid, typ, theta, tid_fresh))*
+  -- if targIL''* = targIL* ++ targIL'*
   ----
   -- if ConsT pt'''* typ_i' = $subst_constyp(theta, ConsT pt* typ_i)
   ----
