@@ -135,7 +135,7 @@ rule Decl_ok/instd-some:
   ----
   -- ConsType_ok: p C |- name targIL* argIL* : constyp tid_fresh_inserted* id_deft*
   ----
-  -- Inst_ok: p C |- constyp targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
+  -- Inst_ok: p C |- constyp (tid_fresh* ++ tid_fresh_inserted*) targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
   ----
   -- if typ = SpecT (PolyD (tparam*, tparam_hidden*) -> (ExternT id_ext fdenv_ext)) typ_a*
   -- if C' = $add_styp(LOCAL, C, "this", typ NO CTK eps)
@@ -161,7 +161,7 @@ rule Decl_ok/instd-none:
   ----
   -- ConsType_ok: p C |- name targIL* argIL* : constyp tid_fresh_inserted* id_deft*
   ----
-  -- Inst_ok: p C |- constyp targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
+  -- Inst_ok: p C |- constyp (tid_fresh* ++ tid_fresh_inserted*) targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
   ----
   -- if C' = $add_styp(p, C, id, typ NO CTK eps)
 

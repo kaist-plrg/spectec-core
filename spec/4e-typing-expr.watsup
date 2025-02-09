@@ -332,7 +332,7 @@ rule Expr_ok/terne:
   ----
   -- if (typ', exprIL_t', exprIL_r') = $coerce_binary((exprIL_t, typ_t), (exprIL_f, typ_f))
   ----
-  -- if $implies($is_intt(typ'), ctk_c = CTK \/ ctk_c = LCTK) 
+  -- if $implies($is_intt(typ'), ctk_c = CTK \/ ctk_c = LCTK)
   ----
   -- if ctk = $joins_ctk(ctk_c ctk_t ctk_f)
 
@@ -404,7 +404,7 @@ rule Select_case_keyset_ok/exprk-sett:
 
 rule Select_case_keyset_ok/exprk-not-sett:
   LOCAL C typ_k |- ExprK expr : ExprK exprIL'
-  -- Expr_ok: LOCAL C |- expr : exprIL typ ctk 
+  -- Expr_ok: LOCAL C |- expr : exprIL typ ctk
   -- if ~$is_sett(typ)
   ----
   -- Sub_impl: typ << typ_k
@@ -619,7 +619,7 @@ rule Expr_ok/callfunce:
   ----
   -- if tid_fresh'* = $concat_(tid, tid_fresh* tid_fresh_inserted*)
   ----
-  -- Call_ok: p C |- functyp targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
+  -- Call_ok: p C |- functyp tid_fresh'* targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
   -- if typ =/= VoidT
 
 ;;
@@ -637,7 +637,7 @@ rule Expr_ok/callmethode:
   ----
   -- if tid_fresh'* = $concat_(tid, tid_fresh* tid_fresh_inserted*)
   ----
-  -- Call_ok: p C |- functyp targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
+  -- Call_ok: p C |- functyp tid_fresh'* targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
   -- if typ =/= VoidT
 
 ;;
@@ -645,15 +645,14 @@ rule Expr_ok/callmethode:
 ;;
 
 rule Expr_ok/calltypee:
-  p C |- CallTypeE name member eps arg* : (CallTypeE name member eps argIL'*) typ DYN
+  p C |- CallTypeE name member eps arg* : (CallTypeE name member eps argIL'*) IntT DYN
   -- if typdef = $find_typdef(p, C, name)
   ----
   -- if $in_set(member, member, SET "minSizeInBits" "minSizeInBytes" "maxSizeInBits" "maxSizeInBytes")
   ----
   -- if functyp = BuiltinMethodT eps IntT
   ----
-  -- Call_ok: p C |- functyp eps (argIL, typ_arg)* eps : typ eps argIL'*
-  -- if typ =/= VoidT
+  -- Call_ok: p C |- functyp eps eps (argIL, typ_arg)* eps : IntT eps argIL'*
 
 ;;
 ;; Nameless instantiation expression
@@ -670,7 +669,7 @@ rule Expr_ok/inste:
   ----
   -- if tid_fresh'* = $concat_(tid, tid_fresh* tid_fresh_inserted*)
   ----
-  -- Inst_ok: p C |- constyp targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
+  -- Inst_ok: p C |- constyp tid_fresh'* targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
   ;; (TODO-Jaehyun) check that typ is not abstract
 
 ;;

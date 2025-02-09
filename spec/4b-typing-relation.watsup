@@ -63,7 +63,7 @@ relation Call_convention_arg_ok: cursor context actctxt |- paramtyp ~~ (argIL, t
 ;; infers the types of missing type arguments (targIL*),
 ;; and inserts implicit casts for arguments, if necessary (argIL*)
 relation Call_site_ok: cursor context |- functyp : CALLSITE_OK
-relation Call_ok: cursor context |- functyp targIL* (argIL, typ)* id* : typ targIL* argIL*
+relation Call_ok: cursor context |- functyp tid* targIL* (argIL, typ)* id* : typ targIL* argIL*
 
 ;; Finds the type of a function/method, (functyp)
 ;; inserts fresh type variables for parameters with don't care types, (tid*)
@@ -81,4 +81,4 @@ relation ConsType_ok: cursor context |- name targIL* argIL* : constyp tid* id*
 ;; infers the types of missing type arguments (targIL*),
 ;; and inserts implicit casts for arguments, if necessary (argIL*)
 relation Inst_site_ok: cursor context |- constyp : INSTSITE_OK
-relation Inst_ok: cursor context |- constyp targIL* (argIL, typ)* id* : typ targIL* argIL*
+relation Inst_ok: cursor context |- constyp tid* targIL* (argIL, typ)* id* : typ targIL* argIL*
