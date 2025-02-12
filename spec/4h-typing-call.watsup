@@ -41,9 +41,9 @@ rule Call_convention_arg_ok/none-namea-anya:
 ;;
 
 rule FuncType_ok:
-   p C |- name targIL* argIL* : functyp eps id_deft*
+   p C |- name targIL* argIL* : functyp tid_fresh* id_deft*
    -- if (fid, funcdef, id_deft*) = $find_funcdef(GLOBAL, C, name, argIL*)
-   -- if functyp = $specialize_funcdef(funcdef, targIL*)
+   -- if (functyp, tid_fresh*) = $specialize_funcdef(funcdef, targIL*)
 
 ;;
 ;; Method typing
@@ -86,13 +86,13 @@ rule MethodType_ok/builtin-uniont:
   -- if UnionT id_b (member, typ_b_in)* = $canon_typ(typ_b)
 
 rule MethodType_ok/externt:
-  p C |- expr_b member targIL* argIL* : functyp exprIL_b eps id_deft*
+  p C |- expr_b member targIL* argIL* : functyp exprIL_b tid_fresh* id_deft*
   ----
   -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
   -- if ExternT id_b fmap_b = $canon_typ(typ_b)
   ----
   -- if (fid, funcdef, id_deft*) = $find_func(funcdef, member, $to_fkey(argIL*), fmap_b)
-  -- if functyp = $specialize_funcdef(funcdef, targIL*)
+  -- if (functyp, tid_fresh*) = $specialize_funcdef(funcdef, targIL*)
 
 rule MethodType_ok/parsert:
   p C |- expr_b "apply" eps argIL* : functyp' exprIL_b eps
@@ -187,13 +187,13 @@ def $gen_cstr_fd(cstr, fd_p, fd_a) = cstr''
 
 def $gen_cstr_fd'(cstr, eps, fdenv_p, fdenv_a) = cstr
 def $gen_cstr_fd'(cstr, fid_h fid_t*, fdenv_p, fdenv_a) = $gen_cstr_fd'(cstr', fid_t*, fdenv_p, fdenv_a)
-  -- if fd_p = $find_env(fid, funcdef, fdenv_p, fid_h)
-  -- if fd_a = $find_env(fid, funcdef, fdenv_a, fid_h)
+  -- if fd_p = $find_map(fid, funcdef, fdenv_p, fid_h)
+  -- if fd_a = $find_map(fid, funcdef, fdenv_a, fid_h)
   -- if cstr' = $gen_cstr_fd(cstr, fd_p, fd_a)
 
 
 def $gen_cstr(cstr, VarT tid, typ_a) = $update_map(tid, typ?, cstr, tid, typ_a)
-  -- if $in_dom_map(tid, typ?, tid, cstr)
+  -- if $in_set(tid, tid, $dom_map(tid, typ?, cstr))
 def $gen_cstr(cstr, SpecT ptd_p typ_p'*, SpecT ptd_a typ_a'*) = $gen_cstrs(cstr', typ_p'*, typ_a'*)
   -- if typ_p'' = $specialize_typdef(ptd_p, typ_p'*)
   -- if typ_a'' = $specialize_typdef(ptd_a, typ_a'*)
@@ -236,21 +236,21 @@ def $gen_cstr(cstr, typ_p, typ_a) = cstr
 
 def $merge_cstr'(cstr_o, cstr_n, eps, cstr) = cstr
 def $merge_cstr'(cstr_o, cstr_n, tid_h tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
-  -- if $find_env(tid, typ?, cstr_o, tid_h) = eps
-  -- if $find_env(tid, typ?, cstr_n, tid_h) = typ_n
+  -- if $find_map(tid, typ?, cstr_o, tid_h) = eps
+  -- if $find_map(tid, typ?, cstr_n, tid_h) = typ_n
   -- if cstr' = $update_map(tid, typ?, cstr, tid_h, typ_n)
 def $merge_cstr'(cstr_o, cstr_n, tid_h tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
-  -- if $find_env(tid, typ?, cstr_o, tid_h) = typ_o
-  -- if $find_env(tid, typ?, cstr_n, tid_h) = eps
+  -- if $find_map(tid, typ?, cstr_o, tid_h) = typ_o
+  -- if $find_map(tid, typ?, cstr_n, tid_h) = eps
   -- if cstr' = $update_map(tid, typ?, cstr, tid_h, typ_o)
 def $merge_cstr'(cstr_o, cstr_n, tid_h tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
-  -- if $find_env(tid, typ?, cstr_o, tid_h) = typ_o
-  -- if $find_env(tid, typ?, cstr_n, tid_h) = typ_n
+  -- if $find_map(tid, typ?, cstr_o, tid_h) = typ_o
+  -- if $find_map(tid, typ?, cstr_n, tid_h) = typ_n
   -- Sub_impl: typ_o << typ_n
   -- if cstr' = $update_map(tid, typ?, cstr, tid_h, typ_n)
 def $merge_cstr'(cstr_o, cstr_n, tid_h tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
-  -- if $find_env(tid, typ?, cstr_o, tid_h) = typ_o
-  -- if $find_env(tid, typ?, cstr_n, tid_h) = typ_n
+  -- if $find_map(tid, typ?, cstr_o, tid_h) = typ_o
+  -- if $find_map(tid, typ?, cstr_n, tid_h) = typ_n
   -- Sub_impl: typ_n << typ_o
   -- if cstr' = $update_map(tid, typ?, cstr, tid_h, typ_o)
 
@@ -332,7 +332,7 @@ rule Call_ok/extern-funct-targsinfer:
   ----
   -- if ExternFuncT pt'''* typ_r' = $subst_functyp(theta, ExternFuncT pt* typ_r)
   ----
-  -- FuncType_wf: $bound_tid(C) |- ExternFuncT pt'''* typ_r'
+  -- FuncType_wf: $bound_tid(p, C) |- ExternFuncT pt'''* typ_r'
   ----
   -- Call_site_ok: p C |- ExternFuncT pt'''* typ_r' : CALLSITE_OK
   ----
@@ -365,7 +365,7 @@ rule Call_ok/funct-targsinfer:
   ----
   -- if FuncT pt'''* typ_r' = $subst_functyp(theta, FuncT pt* typ_r)
   ----
-  -- FuncType_wf: $bound_tid(C) |- (FuncT pt'''* typ_r')
+  -- FuncType_wf: $bound_tid(p, C) |- (FuncT pt'''* typ_r')
   ----
   -- Call_site_ok: p C |- FuncT pt'''* typ_r' : CALLSITE_OK
   ----
@@ -410,7 +410,7 @@ rule Call_ok/extern-methodt-targsinfer:
   ----
   -- if ExternMethodT pt'''* typ_r' = $subst_functyp(theta, ExternMethodT pt* typ_r)
   ----
-  -- FuncType_wf: $bound_tid(C) |- ExternMethodT pt'''* typ_r'
+  -- FuncType_wf: $bound_tid(p, C) |- ExternMethodT pt'''* typ_r'
   ----
   -- Call_site_ok: p C |- ExternMethodT pt'''* typ_r' : CALLSITE_OK
   ----
@@ -443,7 +443,7 @@ rule Call_ok/extern-abstract-methodt-targsinfer:
   ----
   -- if ExternAbstractMethodT pt'''* typ_r' = $subst_functyp(theta, ExternAbstractMethodT pt* typ_r)
   ----
-  -- FuncType_wf: $bound_tid(C) |- ExternAbstractMethodT pt'''* typ_r'
+  -- FuncType_wf: $bound_tid(p, C) |- ExternAbstractMethodT pt'''* typ_r'
   ----
   -- Call_site_ok: p C |- ExternAbstractMethodT pt'''* typ_r' : CALLSITE_OK
   ----
@@ -487,9 +487,9 @@ rule Call_ok/table-apply-methodt:
 ;;
 
 rule ConsType_ok:
-   p C |- name targIL* argIL* : constyp eps id_deft*
+   p C |- name targIL* argIL* : constyp tid_fresh* id_deft*
    -- if (cid, consdef, id_deft*) = $find_consdef(GLOBAL, C, name, argIL*)
-   -- if constyp = $specialize_consdef(consdef, targIL*)
+   -- if (constyp, tid_fresh*) = $specialize_consdef(consdef, targIL*)
 
 ;;
 ;; Constructor invocation
@@ -569,7 +569,7 @@ rule Inst_ok/global-packaget-targsinfer:
   ----
   -- if ConsT pt'''* typ_i' = $subst_constyp(theta, ConsT pt* typ_i)
   ----
-  -- ConsType_wf: $bound_tid(C_1) |- (ConsT pt'''* typ_i')
+  -- ConsType_wf: $bound_tid(GLOBAL, C_1) |- (ConsT pt'''* typ_i')
   ----
   -- Inst_site_ok: BLOCK C_1 |- (ConsT pt'''* typ_i') : INSTSITE_OK
   -- (Call_convention_arg_ok: BLOCK C_1 NOACT |- pt''' ~~ (argIL', typ_a') : argIL'')*
@@ -600,7 +600,7 @@ rule Inst_ok/else-targsinfer:
   ----
   -- if ConsT pt'''* typ_i' = $subst_constyp(theta, ConsT pt* typ_i)
   ----
-  -- ConsType_wf: $bound_tid(C) |- (ConsT pt'''* typ_i')
+  -- ConsType_wf: $bound_tid(p, C) |- (ConsT pt'''* typ_i')
   ----
   -- Inst_site_ok: p C |- (ConsT pt'''* typ_i') : INSTSITE_OK
   -- (Call_convention_arg_ok: p C NOACT |- pt''' ~~ (argIL', typ_a') : argIL'')*

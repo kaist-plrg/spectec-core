@@ -180,24 +180,49 @@ def $specialize_typdef(PolyD (tparam*, tparam_hidden*) -> typ, typ_a*) = $subst_
 ;; Funcdef specialization
 ;;
 
-;; (TODO) consider missing type arguments
-def $specialize_funcdef(funcdef, typ*) : functyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
+def $specialize_funcdef(funcdef, typ*) : (functyp, tid*)  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
-def $specialize_funcdef(MonoFD ft, eps) = ft
-def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = $subst_functyp(MAP (PAIR tparam' typ_a)*, ft)
+def $specialize_funcdef(MonoFD ft, eps) = (ft, eps)
+def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = ($subst_functyp(MAP (PAIR tparam' typ_a)*, ft), eps)
   -- if tparam'* = tparam* ++ tparam_hidden*
   -- if |tparam'*| = |typ_a*|
-
+def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = ($subst_functyp(MAP (PAIR tparam' (VarT tid_fresh))*, ft), tid_fresh*)
+  -- if tparam'* = tparam* ++ tparam_hidden*
+  -- if |typ_a*| = 0 /\ |tparam'*| > 0
+  ----
+  -- if (tid_fresh = $concat_text("\\_\\_WILD\\_" $fresh_tid()))*
+  -- if |tid_fresh*| = |tparam'*|
+def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = ($subst_functyp(MAP (PAIR tparam' typ_a')*, ft), tid_fresh*)
+  -- if tparam'* = tparam* ++ tparam_hidden*
+  -- if |typ_a*| > 0 /\ |tparam*| = |typ_a*| /\ |tparam_hidden*| > 0
+  ----
+  -- if (tid_fresh = $concat_text("\\_\\_WILD\\_" $fresh_tid()))*
+  -- if |tid_fresh*| = |tparam_hidden*|
+  ----
+  -- if typ_a'* = typ_a* ++ (VarT tid_fresh)*
 ;;
 ;; Constructor definition specialization
 ;;
 
-;; (TODO) consider missing type arguments
-def $specialize_consdef(consdef, typ*) : constyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
+def $specialize_consdef(consdef, typ*) : (constyp, tid*) hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
-def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*) = $subst_constyp(MAP (PAIR tparam' typ_a)*, ct)
+def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*) = ($subst_constyp(MAP (PAIR tparam' typ_a)*, ct), eps)
   -- if tparam'* = tparam* ++ tparam_hidden*
   -- if |tparam'*| = |typ_a*|
+def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*) = ($subst_constyp(MAP (PAIR tparam' (VarT tid_fresh))*, ct), tid_fresh*)
+  -- if tparam'* = tparam* ++ tparam_hidden*
+  -- if |typ_a*| = 0 /\ |tparam'*| > 0
+  ----
+  -- if (tid_fresh = $concat_text("\\_\\_WILD\\_" $fresh_tid()))*
+  -- if |tid_fresh*| = |tparam'*|
+def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*) = ($subst_constyp(MAP (PAIR tparam' typ_a')*, ct), tid_fresh*)
+  -- if tparam'* = tparam* ++ tparam_hidden*
+  -- if |typ_a*| > 0 /\ |tparam*| = |typ_a*| /\ |tparam_hidden*| > 0
+  ----
+  -- if (tid_fresh = $concat_text("\\_\\_WILD\\_" $fresh_tid()))*
+  -- if |tid_fresh*| = |tparam_hidden*|
+  ----
+  -- if typ_a'* = typ_a* ++ (VarT tid_fresh)*
 
 ;;
 ;; Canonicalization (recursive specialization and typedef unrolling)
@@ -224,7 +249,7 @@ def $get_params_functyp(TableApplyMethodT typ_r) = eps
 
 def $get_params_funcdef(funcdef): paramtyp*                             hint(show GET_PARAMS_FUNCDEF(%1))
 def $get_params_funcdef(MonoFD ft) = $get_params_functyp(ft)
-def $get_params_funcdef(PolyFD (tparam*, tparam_hidden*) ft) = $get_params_functyp(ft)
+def $get_params_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft) = $get_params_functyp(ft)
 
 def $get_typ_ret_functyp(functyp) : typ                                 hint(show GET_TYP_RET_FUNCTYP(%1))
 def $get_typ_ret_functyp(ActionT pt*) = VoidT
@@ -239,4 +264,4 @@ def $get_typ_ret_functyp(TableApplyMethodT typ_r) = typ_r
 
 def $get_typ_ret_funcdef(funcdef) : typ                                  hint(show GET_TYP_RET_FUNCDEF(%1))
 def $get_typ_ret_funcdef(MonoFD ft) = $get_typ_ret_functyp(ft)
-def $get_typ_ret_funcdef(PolyFD (tparam*, tparam_hidden*) ft) = $get_typ_ret_functyp(ft)
+def $get_typ_ret_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft) = $get_typ_ret_functyp(ft)
