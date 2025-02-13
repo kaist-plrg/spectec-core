@@ -142,6 +142,7 @@ and targ' = plaintyp'
 
 and prem = prem' phrase
 and prem' =
+  | VarPr of id * plaintyp         (* id `:` plaintyp *)
   | RulePr of id * exp             (* id `:` exp *)
   | IfPr of exp                    (* `if` exp *)
   | ElsePr                         (* `otherwise` *)
@@ -159,14 +160,16 @@ type def = def' phrase
 and def' =
   (* `syntax` id `<` list(tparam, `,`) `>` *)
   | SynD of id * tparam list
-  (* `type` id `<` list(tparam, `,`) `>` `=` deftyp *)
-  | TypD of id * tparam list * deftyp
-  (* `relation` id `:` nottyp *)
-  | RelD of id * nottyp
+  (* `type` id `<` list(tparam, `,`) `>` hint* `=` deftyp *)
+  | TypD of id * tparam list * deftyp * hint list
+  (* `var` id `:` plaintyp hint* *)
+  | VarD of id * plaintyp * hint list
+  (* `relation` id `:` nottyp hint* *)
+  | RelD of id * nottyp * hint list
   (* `rule` id`/`id `:` exp list(`--` prem, nl) *)
   | RuleD of id * id * exp * prem list
-  (* `dec` id `<` list(tparam, `,`) `>` list(param, `,`) `:` plaintyp *)
-  | DecD of id * tparam list * param list * plaintyp
+  (* `dec` id `<` list(tparam, `,`) `>` list(param, `,`) `:` plaintyp hint* *)
+  | DecD of id * tparam list * param list * plaintyp * hint list
   (* `def` id `<` list(targ, `,`) `>` list(arg, `,`) `=` exp list(`--` prem, nl) *)
   | DefD of id * targ list * arg list * exp * prem list
   | SepD

@@ -539,6 +539,7 @@ prem : prem_ { $1 @@@ $sloc }
 prem_ :
   | prem_post_ { $1 }
   | relid COLON exp { RulePr ($1, $3) }
+  | VAR varid COLON plaintyp { VarPr ($2, $4) }
   | IF exp
     { 
       let rec iterate exp =
@@ -578,23 +579,25 @@ def_ :
     { SynD ($2, []) }
   | SYNTAX varid_langle comma_list(tparam) RANGLE 
     { SynD ($2, $3) }
-  | SYNTAX varid EQ deftyp
-    { TypD ($2, [], $4) }
-  | SYNTAX varid_langle comma_list(tparam) RANGLE EQ deftyp
-    { TypD ($2, $3, $6) }
-  | RELATION relid nottyp
-    { RelD ($2, $3) }
+  | SYNTAX varid hint* EQ deftyp
+    { TypD ($2, [], $5, $3) }
+  | SYNTAX varid_langle comma_list(tparam) RANGLE hint* EQ deftyp
+    { TypD ($2, $3, $7, $5) }
+  | VAR varid COLON plaintyp hint*
+    { VarD ($2, $4, $5) }
+  | RELATION relid nottyp hint*
+    { RelD ($2, $3, $4) }
   | RULE relid ruleids COLON exp prem_list
     { let id = if $3 = "" then "" else String.sub $3 1 (String.length $3 - 1) in
       RuleD ($2, id @@@ $loc($3), $5, $6) }
-  | DEC DOLLAR defid COLON plaintyp
-    { DecD ($3, [], [], $5) }
-  | DEC DOLLAR defid_lparen comma_list(param) RPAREN COLON plaintyp
-    { DecD ($3, [], $4, $7) }
-  | DEC DOLLAR defid_langle comma_list(tparam) RANGLE COLON plaintyp
-    { DecD ($3, $4, [], $7) }
-  | DEC DOLLAR defid_langle comma_list(tparam) RANGLE_LPAREN comma_list(param) RPAREN COLON plaintyp
-    { DecD ($3, $4, $6, $9) }
+  | DEC DOLLAR defid COLON plaintyp hint*
+    { DecD ($3, [], [], $5, $6) }
+  | DEC DOLLAR defid_lparen comma_list(param) RPAREN COLON plaintyp hint*
+    { DecD ($3, [], $4, $7, $8) }
+  | DEC DOLLAR defid_langle comma_list(tparam) RANGLE COLON plaintyp hint*
+    { DecD ($3, $4, [], $7, $8) }
+  | DEC DOLLAR defid_langle comma_list(tparam) RANGLE_LPAREN comma_list(param) RPAREN COLON plaintyp hint*
+    { DecD ($3, $4, $6, $9, $10) }
   | DEF DOLLAR defid EQ exp prem_list
     { DefD ($3, [], [], $5, $6) }
   | DEF DOLLAR defid_lparen comma_list(arg) RPAREN EQ exp prem_list

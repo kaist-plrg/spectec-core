@@ -213,6 +213,8 @@ and string_of_targs targs =
 
 and string_of_prem prem =
   match prem.it with
+  | VarPr (id, plaintyp) ->
+      string_of_varid id ^ " : " ^ string_of_plaintyp plaintyp
   | RulePr (id, exp) -> string_of_relid id ^ ": " ^ string_of_exp exp
   | IfPr exp -> "if " ^ string_of_exp exp
   | ElsePr -> "otherwise"
@@ -233,15 +235,17 @@ let string_of_def def =
   match def.it with
   | SynD (typid, tparams) ->
       "syntax " ^ string_of_typid typid ^ string_of_tparams tparams
-  | TypD (typid, tparams, deftyp) ->
+  | TypD (typid, tparams, deftyp, _hints) ->
       "syntax " ^ string_of_typid typid ^ string_of_tparams tparams ^ " = "
       ^ string_of_deftyp deftyp
-  | RelD (relid, nottyp) ->
+  | VarD (varid, plaintyp, _hints) ->
+      "var " ^ string_of_varid varid ^ " : " ^ string_of_plaintyp plaintyp
+  | RelD (relid, nottyp, _hints) ->
       "relation " ^ string_of_relid relid ^ ": " ^ string_of_nottyp nottyp
   | RuleD (relid, ruleid, exp, prems) ->
       "rule " ^ string_of_relid relid ^ string_of_ruleid ruleid ^ ":\n  "
       ^ string_of_exp exp ^ string_of_prems prems
-  | DecD (defid, tparams, params, plaintyp) ->
+  | DecD (defid, tparams, params, plaintyp, _hints) ->
       "dec " ^ string_of_defid defid ^ string_of_tparams tparams
       ^ string_of_params params ^ " : "
       ^ string_of_plaintyp plaintyp
