@@ -1,6 +1,7 @@
 (* Boolens *)
 
 type t = [ `BoolT ]
+type typ = [ `BoolT ]
 
 (* Operations *)
 

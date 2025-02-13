@@ -1,0 +1,8 @@
+syntax aaa<x>
+syntax bbb<x, y, z>
+
+syntax aaa<x> = x |- bbb<x, x, x>
+
+syntax ccc<t> = | GA t | NA `( t |- t ) | DA `{ t* ~> t* } | RA
+
+syntax ddd<u, v> = { UUU ddd<u, u>, VVV ccc<v> aaa<u> }

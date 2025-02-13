@@ -243,7 +243,7 @@ casetyp :
 
 deftyp : deftyp_ { $1 @@@ $sloc }
 deftyp_ :
-  | nottyp { NotT $1 }
+  | nottyp { NotationT $1 }
   | LBRACE comma_list(fieldtyp) RBRACE { StructT $2 }
   | bar bar_list(casetyp) { VariantT $2 }
 

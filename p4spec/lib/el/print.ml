@@ -4,6 +4,8 @@ open Util.Source
 
 (* Numbers *)
 
+let string_of_num num = Num.string_of_num num
+
 (* Texts *)
 
 let string_of_text text = text
@@ -56,7 +58,7 @@ and string_of_nottyps sep nottyps =
 
 and string_of_deftyp deftyp =
   match deftyp.it with
-  | NotT nottyp -> string_of_nottyp nottyp
+  | NotationT nottyp -> string_of_nottyp nottyp
   | StructT typfields -> "{" ^ string_of_typfields ", " typfields ^ "}"
   | VariantT typcases -> "| " ^ string_of_typcases " | " typcases
 
@@ -95,7 +97,7 @@ and string_of_exp exp =
   | BoolE b -> string_of_bool b
   | NumE (`DecOp, `Nat n) -> Z.to_string n
   | NumE (`HexOp, `Nat n) -> "0x" ^ Z.format "%X" n
-  | NumE (_, n) -> Num.string_of_num n
+  | NumE (_, n) -> string_of_num n
   | TextE text -> "\"" ^ String.escaped text ^ "\""
   | VarE (id, targs) -> string_of_varid id ^ string_of_targs targs
   | UnE (unop, exp) -> string_of_unop unop ^ string_of_exp exp
@@ -153,15 +155,15 @@ and string_of_exps sep es = String.concat sep (List.map string_of_exp es)
 
 (* Paths *)
 
-and string_of_path p =
-  match p.it with
+and string_of_path path =
+  match path.it with
   | RootP -> ""
-  | IdxP (p1, e) -> string_of_path p1 ^ "[" ^ string_of_exp e ^ "]"
-  | SliceP (p1, e1, e2) ->
-      string_of_path p1 ^ "[" ^ string_of_exp e1 ^ " : " ^ string_of_exp e2
-      ^ "]"
+  | IdxP (path, exp) -> string_of_path path ^ "[" ^ string_of_exp exp ^ "]"
+  | SliceP (path, exp_l, exp_h) ->
+      string_of_path path ^ "[" ^ string_of_exp exp_l ^ " : "
+      ^ string_of_exp exp_h ^ "]"
   | DotP ({ it = RootP; _ }, atom) -> string_of_atom atom
-  | DotP (p1, atom) -> string_of_path p1 ^ "." ^ string_of_atom atom
+  | DotP (path, atom) -> string_of_path path ^ "." ^ string_of_atom atom
 
 (* Parameters *)
 

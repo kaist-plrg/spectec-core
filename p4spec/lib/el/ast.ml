@@ -50,7 +50,7 @@ and nottyp' =
 
 and deftyp = deftyp' phrase
 and deftyp' =
-  | NotT of nottyp             (* nottyp *)
+  | NotationT of nottyp        (* nottyp *)
   | StructT of typfield list   (* `{` list(typfield, `,`) `}` *)
   | VariantT of typcase list   (* `|` list(typcase, `|`) *)
 
@@ -160,7 +160,7 @@ type def = def' phrase
 and def' =
   (* `syntax` id `<` list(tparam, `,`) `>` *)
   | SynD of id * tparam list
-  (* `type` id `<` list(tparam, `,`) `>` hint* `=` deftyp *)
+  (* `syntax` id `<` list(tparam, `,`) `>` hint* `=` deftyp *)
   | TypD of id * tparam list * deftyp * hint list
   (* `var` id `:` plaintyp hint* *)
   | VarD of id * plaintyp * hint list
