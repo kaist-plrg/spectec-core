@@ -1,0 +1,7 @@
+(executable
+ (public_name p4spec)
+ (name main)
+ (preprocess
+  (pps ppx_let))
+ (modules main)
+ (libraries p4spec core core_unix core_unix.command_unix))

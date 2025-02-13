@@ -37,8 +37,8 @@ let insert_cast (expr_il : Il.Ast.expr) (typ : Type.t) : Il.Ast.expr =
 (* Coercion for unary *)
 
 (* Precondition: checker should always result in false for serializable enum case *)
-let rec reduce_senum_unary (checker : Type.t -> bool)
-    (expr_il : Il.Ast.expr) : Il.Ast.expr =
+let rec reduce_senum_unary (checker : Type.t -> bool) (expr_il : Il.Ast.expr) :
+    Il.Ast.expr =
   let typ = expr_il.note.typ |> Type.canon in
   match typ with
   | _ when checker typ -> expr_il
@@ -46,8 +46,7 @@ let rec reduce_senum_unary (checker : Type.t -> bool)
       let expr_il = insert_cast expr_il typ_inner in
       reduce_senum_unary checker expr_il
   | _ ->
-      F.asprintf "(reduce_senum_unary) cannot reduce %a" (Type.pp ~level:0)
-        typ
+      F.asprintf "(reduce_senum_unary) cannot reduce %a" (Type.pp ~level:0) typ
       |> error_no_info
 
 (* Coercion for binary *)
@@ -1663,9 +1662,7 @@ and type_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (expr_base : El.Ast.expr) (expr_lo : El.Ast.expr) (expr_hi : El.Ast.expr) :
     Type.t * Ctk.t * Il.Ast.expr' =
   let expr_base_il = type_expr cursor ctx expr_base in
-  let expr_base_il =
-    reduce_senum_unary check_bitstring_base expr_base_il
-  in
+  let expr_base_il = reduce_senum_unary check_bitstring_base expr_base_il in
   let typ_base = expr_base_il.note.typ in
   let expr_lo_il = type_expr cursor ctx expr_lo in
   let expr_lo_il = reduce_senum_unary check_bitstring_index expr_lo_il in

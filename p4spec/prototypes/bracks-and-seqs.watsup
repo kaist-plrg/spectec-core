@@ -1,0 +1,5 @@
+syntax foo = AAA `(int -> int) | BBB `(nat |- nat)
+
+dec $compare(foo*) : bool
+def $compare(foo*) = true
+  -- if (AAA `(1 -> 2)) (BBB `(42 |- 3)) = foo*

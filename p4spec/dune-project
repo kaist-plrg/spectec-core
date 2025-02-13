@@ -1,0 +1,16 @@
+(lang dune 3.0)
+(using menhir 2.0)
+(using mdx 0.2)
+(name p4spec)
+
+(generate_opam_files true)
+
+(package
+  (name p4spec)
+  (version 0.0.1)
+  (synopsis "P4Spec: A language design framework for the P4 Programming Language")
+  (maintainers "99jaehyunlee@gmail.com")
+  (depends
+    zarith
+    (core (and (>= "v0.16.0") (< "v0.17.0")))
+    (core_unix (and (>= "v0.16.0") (< "v0.17.0")))))

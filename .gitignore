@@ -1,3 +1,8 @@
+# ocaml build artifacts
+_build
+_coverage
+*.opam
+
 # spectec
 watsup
 spec-gen.include
@@ -7,12 +12,11 @@ spec-gen.include
 !spec/spec.tex
 *.pdf
 
+# p4spectec build and executables
+p4spectec
+
 # p4cherry build and executables
-_build
-_coverage
 p4cherry
-p4cherry-test
-*.opam
 doc/_sphinx
 doc/spectec
 

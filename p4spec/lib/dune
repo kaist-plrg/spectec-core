@@ -1,0 +1,7 @@
+(library
+ (name p4spec)
+ (modules)
+ (libraries
+  (re_export util)
+  (re_export el)
+  (re_export frontend)))
