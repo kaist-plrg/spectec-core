@@ -65,7 +65,7 @@ and optyp = [ Bool.typ | Num.typ ]
 
 (* Expressions *)
 
-and exp = (exp', typ) note_phrase
+and exp = (exp', typ') note_phrase
 and exp' =
   | BoolE of bool                         (* bool *)
   | NumE of num                           (* num *)

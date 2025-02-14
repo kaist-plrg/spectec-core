@@ -3,6 +3,8 @@
 type t = [ `Nat of Z.t | `Int of Z.t ]
 type typ = [ `NatT | `IntT ]
 
+let to_typ = function `Nat _ -> `NatT | `Int _ -> `IntT
+
 (* Operations *)
 
 type unop = [ `PlusOp | `MinusOp ]

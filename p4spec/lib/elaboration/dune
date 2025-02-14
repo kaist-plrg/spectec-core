@@ -1,4 +1,4 @@
 (library
  (name elaboration)
  (libraries util domain el il)
- (modules type typedef ctx elab))
+ (modules type typedef rel envs ctx elab))

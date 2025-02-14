@@ -55,6 +55,12 @@ module TId = Id
 module TIdSet = IdSet
 module TIdMap = IdMap
 
+(* Relation identifiers *)
+
+module RId = Id
+module RIdSet = IdSet
+module RIdMap = IdMap
+
 (* Environment functor *)
 
 module MakeIdEnv (V : sig
@@ -80,3 +86,4 @@ struct
 end
 
 module MakeTIdEnv = MakeIdEnv
+module MakeRIdEnv = MakeIdEnv

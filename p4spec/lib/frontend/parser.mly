@@ -585,8 +585,8 @@ def_ :
     { TypD ($2, $3, $7, $5) }
   | VAR varid COLON plaintyp hint*
     { VarD ($2, $4, $5) }
-  | RELATION relid nottyp hint*
-    { RelD ($2, $3, $4) }
+  | RELATION relid COLON nottyp hint*
+    { RelD ($2, $4, $5) }
   | RULE relid ruleids COLON exp prem_list
     { let id = if $3 = "" then "" else String.sub $3 1 (String.length $3 - 1) in
       RuleD ($2, id @@@ $loc($3), $5, $6) }

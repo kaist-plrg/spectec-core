@@ -6,3 +6,11 @@ syntax aaa<x> = x |- bbb<x, x, x>
 syntax ccc<t> = | GA t | NA `( t |- t ) | DA `{ t* ~> t* } | RA
 
 syntax ddd<u, v> = { UUU ddd<u, u>, VVV ccc<v> aaa<u> }
+
+relation eee: int |- nat : bool
+rule eee/fff: 0 |- 1 : true
+
+syntax foo = | AAA int | BBB int
+syntax bar = | CCC foo | DDD nat
+relation baz: foo |- bar : bool
+rule baz/bazzle: AAA 0 |- CCC foo : true

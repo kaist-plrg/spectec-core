@@ -16,12 +16,49 @@ let distinct (eq : 'a -> 'a -> bool) (xs : 'a list) : bool =
   in
   distinct' xs
 
+(* Parentheses handling *)
+
+let rec unparen_plaintyp (plaintyp : plaintyp) : plaintyp =
+  match plaintyp.it with
+  | ParenT plaintyp -> unparen_plaintyp plaintyp
+  | _ -> plaintyp
+
+let unparen_nottyp (nottyp : nottyp) : nottyp =
+  match nottyp.it with
+  | PlainT { it = ParenT plaintyp; at; _ } ->
+      let plaintyp = unparen_plaintyp plaintyp in
+      PlainT plaintyp $ at
+  | _ -> nottyp
+
+let rec unparen_exp (exp : exp) : exp =
+  match exp.it with ParenE exp -> unparen_exp exp | _ -> exp
+
 (* Iteration *)
 
 let elab_iter (iter : iter) : Il.Ast.iter =
   match iter with Opt -> Il.Ast.Opt | List -> Il.Ast.List
 
 (* Types *)
+
+type kind =
+  [ `Plain
+  | `Notation of nottyp
+  | `Struct of typfield list
+  | `Variant of typcase list ]
+
+let kind_of_typ (ctx : Ctx.t) (typ_il : Il.Ast.typ) : kind =
+  match typ_il.it with
+  | VarT (tid, _) -> (
+      let td = Ctx.find_typdef_opt ctx tid.it |> Option.get in
+      match td with
+      | Param | Defining _ -> `Plain
+      | Defined (_, deftyp) -> (
+          match deftyp.it with
+          | NotationT { it = PlainT _; _ } -> `Plain
+          | NotationT nottyp -> `Notation nottyp
+          | StructT typfields -> `Struct typfields
+          | VariantT typcases -> `Variant typcases))
+  | _ -> `Plain
 
 (* Plain types *)
 
@@ -138,6 +175,115 @@ and elab_typ_def_variant (ctx : Ctx.t) (at : region) (typcases : typcase list) :
   let deftyp_il = Il.Ast.VariantT typcases_il in
   deftyp_il $ at
 
+(* Expressions *)
+
+and elab_exp (ctx : Ctx.t) (plaintyp : plaintyp) (exp : exp) : Il.Ast.exp =
+  let exp = unparen_exp exp in
+  let typ_il = elab_plaintyp ctx plaintyp in
+  let kind = kind_of_typ ctx typ_il in
+  match kind with
+  | `Plain -> elab_exp_plain ctx plaintyp exp
+  | `Notation nottyp ->
+      let notexp_il = elab_exp_not ctx nottyp exp in
+      Il.Ast.CaseE notexp_il $$ (exp.at, typ_il.it)
+  | `Variant typcases ->
+      let notexp_il = elab_exp_variant ctx typcases exp in
+      Il.Ast.CaseE notexp_il $$ (exp.at, typ_il.it)
+  | _ ->
+      Format.printf "todo elab_exp\n";
+      assert false
+
+(* Plain expressions *)
+
+and elab_exp_plain (ctx : Ctx.t) (plaintyp : plaintyp) (exp : exp) : Il.Ast.exp
+    =
+  match exp.it with
+  | BoolE b ->
+      let exp_il = Il.Ast.BoolE b in
+      let typ_il = Il.Ast.BoolT in
+      exp_il $$ (exp.at, typ_il)
+  | NumE (_, num) ->
+      let exp_il = Il.Ast.NumE num in
+      let typ_il = Il.Ast.NumT (Num.to_typ num) in
+      exp_il $$ (exp.at, typ_il)
+  | TextE s ->
+      let exp_il = Il.Ast.TextE s in
+      let typ_il = Il.Ast.TextT in
+      exp_il $$ (exp.at, typ_il)
+  | ParenE exp ->
+      let exp_il = elab_exp ctx plaintyp exp in
+      let typ_il = exp_il.note in
+      exp_il.it $$ (exp.at, typ_il)
+  | _ ->
+      Format.printf "todo elab_exp_plain %s\n" (El.Print.string_of_exp exp);
+      assert false
+
+(* Notation expressions *)
+
+and elab_exp_not (ctx : Ctx.t) (nottyp : nottyp) (exp : exp) : Il.Ast.notexp =
+  let exp = unparen_exp exp in
+  let nottyp = unparen_nottyp nottyp in
+  match (nottyp.it, exp.it) with
+  | PlainT plaintyp, _ ->
+      let mixop = [ []; [] ] in
+      let exp_il = elab_exp ctx plaintyp exp in
+      (mixop, [ exp_il ])
+  | AtomT atom_t, AtomE atom_e ->
+      check (atom_t.it = atom_e.it) exp.at "atoms do not match";
+      let mixop = [ [ atom_t ] ] in
+      (mixop, [])
+  | SeqT [], SeqE [] ->
+      let mixop = [ [] ] in
+      let exps_il = [] in
+      (mixop, exps_il)
+  | SeqT (nottyp :: nottyps), SeqE (exp :: exps) ->
+      let mixop_h, exps_il_h = elab_exp_not ctx nottyp exp in
+      let mixop_t, exps_il_t =
+        elab_exp_not ctx (SeqT nottyps $ nottyp.at) (SeqE exps $ exp.at)
+      in
+      let mixop = Mixop.merge mixop_h mixop_t in
+      let exps_il = exps_il_h @ exps_il_t in
+      (mixop, exps_il)
+  | SeqT (_ :: _), SeqE [] -> error exp.at "elab" "omitted sequence tail"
+  | SeqT [], SeqE (_ :: _) -> error exp.at "elab" "expression is not empty"
+  | InfixT (nottyp_l, atom_t, nottyp_r), InfixE (exp_l, atom_e, exp_r) ->
+      check (atom_t.it = atom_e.it) exp.at "atoms do not match";
+      let mixop_l, exps_il_l = elab_exp_not ctx nottyp_l exp_l in
+      let mixop_r, exps_il_r = elab_exp_not ctx nottyp_r exp_r in
+      let mixop_l = Mixop.merge mixop_l [ [ atom_t ] ] in
+      let mixop = Mixop.merge mixop_l mixop_r in
+      let exps_il = exps_il_l @ exps_il_r in
+      (mixop, exps_il)
+  | BrackT (atom_t_l, nottyp, atom_t_r), BrackE (atom_e_l, exp, atom_e_r) ->
+      check (atom_t_l.it = atom_e_l.it) exp.at "left atoms do not match";
+      check (atom_t_r.it = atom_e_r.it) exp.at "right atoms do not match";
+      let mixop, exps_il = elab_exp_not ctx nottyp exp in
+      let mixop_l = Mixop.merge [ [ atom_t_l ] ] mixop in
+      let mixop = Mixop.merge mixop_l [ [ atom_t_r ] ] in
+      (mixop, exps_il)
+  | _ ->
+      Format.printf "nottyp: %s\n" (El.Print.string_of_nottyp nottyp);
+      Format.printf "exp: %s\n" (El.Print.string_of_exp exp);
+      error exp.at "elab" "notation does not match expression"
+
+(* Variant expressions *)
+
+and elab_exp_variant (ctx : Ctx.t) (typcases : typcase list) (exp : exp) :
+    Il.Ast.notexp =
+  let notexps_il =
+    List.filter_map
+      (fun (nottyp, _) ->
+        try
+          let notexp_il = elab_exp_not ctx nottyp exp in
+          Some notexp_il
+        with _ -> None)
+      typcases
+  in
+  match notexps_il with
+  | [ notexp_il ] -> notexp_il
+  | [] -> error exp.at "elab" "expression does not match any case"
+  | _ -> error exp.at "elab" "expression matches multiple cases"
+
 (* Definitions *)
 
 let rec elab_def (ctx : Ctx.t) (def : def) : Ctx.t * Il.Ast.def option =
@@ -147,7 +293,13 @@ let rec elab_def (ctx : Ctx.t) (def : def) : Ctx.t * Il.Ast.def option =
   | SynD (id, tparams) -> elab_syn_def ctx id tparams |> wrap_none
   | TypD (id, tparams, deftyp, _hints) ->
       elab_typ_def ctx id tparams deftyp |> wrap_some
-  | _ -> failwith "todo elab_def"
+  | RelD (id, nottyp, _hints) -> elab_rel_def ctx id nottyp |> wrap_some
+  | RuleD (id_rel, id_rule, exp, prems) ->
+      elab_rule_def ctx def.at id_rel id_rule exp prems |> wrap_none
+  | SepD -> ctx |> wrap_none
+  | _ ->
+      Format.printf "todo elab_def\n";
+      assert false
 
 and elab_defs (ctx : Ctx.t) (defs : def list) : Ctx.t * Il.Ast.def list =
   List.fold_left
@@ -190,6 +342,26 @@ and elab_typ_def (ctx : Ctx.t) (id : id) (tparams : tparam list)
   let td = Typedef.Defined (tparams, deftyp) in
   let ctx = Ctx.update_typdef ctx id.it td in
   (ctx, def_il)
+
+(* Relation definitions *)
+
+and elab_rel_def (ctx : Ctx.t) (id : id) (nottyp : nottyp) : Ctx.t * Il.Ast.def
+    =
+  let nottyp_il = elab_nottyp ctx nottyp in
+  let def_il = Il.Ast.RelD (id, nottyp_il, []) $ nottyp.at in
+  let ctx = Ctx.add_rel ctx id.it nottyp in
+  (ctx, def_il)
+
+(* Rule definitions *)
+
+and elab_rule_def (ctx : Ctx.t) (at : region) (id_rel : id) (id_rule : id)
+    (exp : exp) (_prems : prem list) : Ctx.t =
+  let nottyp_opt = Ctx.find_rel_opt ctx id_rel.it in
+  check (Option.is_some nottyp_opt) id_rel.at "relation not defined";
+  let nottyp = Option.get nottyp_opt in
+  let notexp_il = elab_exp_not ctx nottyp exp in
+  let rule = (id_rule, notexp_il, []) $ at in
+  Ctx.add_rule ctx id_rel.it rule
 
 (* Spec *)
 
