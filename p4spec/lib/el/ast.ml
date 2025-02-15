@@ -93,6 +93,9 @@ and exp' =
   | TypE of exp * plaintyp              (* exp `:` typ *)
   | ArithE of exp                       (* `$(` exp `)` *)
   (* Notation expressions *)
+  (* SeqE is overloaded: either
+     - a homogeneous sequence of expressions, or
+     - a heterogeneous sequence of expressions to denote a notation *)
   | AtomE of atom                       (* atom *)
   | SeqE of exp list                    (* list(exp, ` `) *)
   | InfixE of exp * atom * exp          (* exp atom exp *)

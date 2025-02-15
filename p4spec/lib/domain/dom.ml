@@ -61,6 +61,12 @@ module RId = Id
 module RIdSet = IdSet
 module RIdMap = IdMap
 
+(* Function identifiers *)
+
+module FId = Id
+module FIdSet = IdSet
+module FIdMap = IdMap
+
 (* Environment functor *)
 
 module MakeIdEnv (V : sig
@@ -87,3 +93,4 @@ end
 
 module MakeTIdEnv = MakeIdEnv
 module MakeRIdEnv = MakeIdEnv
+module MakeFIdEnv = MakeIdEnv

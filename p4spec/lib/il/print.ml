@@ -202,7 +202,7 @@ and string_of_targs targs =
 
 and string_of_rule rule =
   let ruleid, notexp, prems = rule.it in
-  "rule " ^ string_of_ruleid ruleid ^ ":\n" ^ string_of_notexp notexp
+  "rule " ^ string_of_ruleid ruleid ^ ": " ^ string_of_notexp notexp
   ^ string_of_prems prems
 
 and string_of_rules rules =
@@ -212,7 +212,7 @@ and string_of_rules rules =
 
 and string_of_clause clause =
   let args, exp, prems = clause.it in
-  "   def" ^ string_of_args args ^ " = " ^ string_of_exp exp
+  "def" ^ string_of_args args ^ " = " ^ string_of_exp exp
   ^ string_of_prems prems
 
 and string_of_clauses clauses =
@@ -236,8 +236,9 @@ and string_of_prem prem =
       "(" ^ string_of_prem prem ^ ")" ^ string_of_iterexp iterexp
 
 and string_of_prems prems =
-  String.concat ""
-    (List.map (fun prem -> "\n    -- " ^ string_of_prem prem) prems)
+  "\n\t"
+  ^ String.concat ""
+      (List.map (fun prem -> "\n\t\t-- " ^ string_of_prem prem) prems)
 
 (* Definitions *)
 
@@ -248,7 +249,7 @@ let rec string_of_def def =
       ^ string_of_deftyp deftyp
   | RelD (relid, nottyp, rules) ->
       "relation " ^ string_of_relid relid ^ ": " ^ string_of_nottyp nottyp
-      ^ "\n" ^ string_of_rules rules
+      ^ string_of_rules rules
   | DecD (defid, tparams, params, typ, clauses) ->
       "def " ^ string_of_defid defid ^ string_of_tparams tparams
       ^ string_of_params params ^ " : " ^ string_of_typ typ ^ " =\n"

@@ -1,16 +1,30 @@
-syntax aaa<x>
-syntax bbb<x, y, z>
+;; Mutually recursive syntax
 
-syntax aaa<x> = x |- bbb<x, x, x>
+syntax a<x>
+syntax b<x, y>
 
-syntax ccc<t> = | GA t | NA `( t |- t ) | DA `{ t* ~> t* } | RA
+syntax a<x> = b<x, x>
+syntax b<x, y> = | FOO x | BAR a<y>
 
-syntax ddd<u, v> = { UUU ddd<u, u>, VVV ccc<v> aaa<u> }
+;; Complex mixfix operators
 
-relation eee: int |- nat : bool
-rule eee/fff: 0 |- 1 : true
+syntax c<z> = | BAZ z | FIE `( z |- z ) | `{ z* ~> z } | FEE
 
-syntax foo = | AAA int | BBB int
-syntax bar = | CCC foo | DDD nat
-relation baz: foo |- bar : bool
-rule baz/bazzle: AAA 0 |- CCC foo : true
+;; Recursive struct
+
+syntax d<u, v> = { FST d<u, u>, SND a<v> c<u> }
+
+;; Relation
+
+syntax foo = | ABC int DEF bool | GHI `[ text ]
+syntax bar = | bool JKL nat | MNO foo
+syntax baz = PQR foo -> bar
+
+relation fizz: foo |- baz : bar
+rule fizz/buzz:
+  ABC 0 DEF true |- (PQR (GHI `[ "fizz" ]) -> bar) : (MNO (ABC 1 DEF false))
+
+;; Definition
+
+dec $bark<x>(foo, bar, def $at(int) : bool) : baz
+def $bark<x>(ABC 1 DEF false, true JKL 0, def $at) = PQR foo -> bar
