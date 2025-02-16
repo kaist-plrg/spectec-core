@@ -34,10 +34,10 @@ let string_of_iter iter = match iter with Opt -> "?" | List -> "*"
 
 let rec string_of_typ typ =
   match typ.it with
-  | VarT (typid, targs) -> string_of_typid typid ^ string_of_targs targs
   | BoolT -> "bool"
   | NumT numtyp -> Num.string_of_typ numtyp
   | TextT -> "text"
+  | VarT (typid, targs) -> string_of_typid typid ^ string_of_targs targs
   | TupT typs -> "(" ^ string_of_typs ", " typs ^ ")"
   | IterT (typ, iter) -> string_of_typ typ ^ string_of_iter iter
 

@@ -11,6 +11,11 @@ type unop = [ `PlusOp | `MinusOp ]
 type binop = [ `AddOp | `SubOp | `MulOp | `DivOp | `ModOp | `PowOp ]
 type cmpop = [ `LtOp | `GtOp | `LeOp | `GeOp ]
 
+(* Subtyping *)
+
+let sub typ_a typ_b =
+  match (typ_a, typ_b) with `NatT, `IntT -> true | _, _ -> typ_a = typ_b
+
 (* Stringifiers *)
 
 let string_of_num = function

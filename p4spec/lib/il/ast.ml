@@ -35,10 +35,10 @@ type iter =
 
 and typ = typ' phrase
 and typ' =
-  | VarT of id * targ list  (* id (`<` list(targ, `,`) `>`)? *)
   | BoolT                   (* `bool` *)
   | NumT of Num.typ         (* numtyp *)
   | TextT                   (* `text` *)
+  | VarT of id * targ list  (* id (`<` list(targ, `,`) `>`)? *)
   | TupT of typ list        (* `(` list(typ, `,`) `)` *)
   | IterT of typ * iter     (* typ iter *)
 
