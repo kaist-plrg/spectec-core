@@ -82,8 +82,7 @@ and string_of_cmpop = function
 
 (* Expressions *)
 
-and string_of_exp e =
-  "(" ^ string_of_exp' e ^ " : " ^ string_of_typ (e.note $ e.at) ^ ")"
+and string_of_exp e = string_of_exp' e
 
 and string_of_exp' e =
   match e.it with
