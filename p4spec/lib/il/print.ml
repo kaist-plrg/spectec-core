@@ -38,7 +38,7 @@ let rec string_of_typ typ =
   | NumT numtyp -> Num.string_of_typ numtyp
   | TextT -> "text"
   | VarT (typid, targs) -> string_of_typid typid ^ string_of_targs targs
-  | TupT typs -> "(" ^ string_of_typs ", " typs ^ ")"
+  | TupleT typs -> "(" ^ string_of_typs ", " typs ^ ")"
   | IterT (typ, iter) -> string_of_typ typ ^ string_of_iter iter
 
 and string_of_typs sep typs = String.concat sep (List.map string_of_typ typs)
@@ -55,8 +55,8 @@ and string_of_deftyp deftyp =
   | VariantT typcases -> "| " ^ string_of_typcases " | " typcases
 
 and string_of_typfield typfield =
-  let atom, typs = typfield in
-  string_of_nottyp (([ [ atom ]; [] ], typs) $ no_region)
+  let atom, typ = typfield in
+  string_of_nottyp (([ [ atom ]; [] ], [ typ ]) $ no_region)
 
 and string_of_typfields sep typfields =
   String.concat sep (List.map string_of_typfield typfields)
@@ -95,7 +95,7 @@ and string_of_exp e =
   | CmpE (cmpop, _, exp_l, exp_r) ->
       "(" ^ string_of_exp exp_l ^ " " ^ string_of_cmpop cmpop ^ " "
       ^ string_of_exp exp_r ^ ")"
-  | TupE es -> "(" ^ string_of_exps ", " es ^ ")"
+  | TupleE es -> "(" ^ string_of_exps ", " es ^ ")"
   | ProjE (exp_b, idx) -> string_of_exp exp_b ^ "." ^ string_of_int idx
   | CaseE notexp -> string_of_notexp notexp
   | UncaseE (exps, mixop) ->
@@ -122,7 +122,8 @@ and string_of_exp e =
   | UpdE (exp_b, path, exp_f) ->
       string_of_exp exp_b ^ "[" ^ string_of_path path ^ " = "
       ^ string_of_exp exp_f ^ "]"
-  | CallE (defid, args) -> string_of_defid defid ^ string_of_args args
+  | CallE (defid, targs, args) ->
+      string_of_defid defid ^ string_of_targs targs ^ string_of_args args
   | IterE (exp, iterexp) -> string_of_exp exp ^ string_of_iterexp iterexp
   | CastE (exp, typ) ->
       "((" ^ string_of_typ typ ^ ") " ^ string_of_exp exp ^ ")"

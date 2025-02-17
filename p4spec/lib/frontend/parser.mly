@@ -57,7 +57,6 @@ let (@@@) it pos = it $ at pos
 %nonassoc TILESTURN
 %right SQARROW SQARROWSTAR PREC SUCC BIGAND BIGOR BIGADD BIGMUL BIGCAT
 %left COLON SUB SUP ASSIGN EQUIV APPROX
-%left COMMA COMMA_NL
 %right EQ NE LANGLE RANGLE LE GE MEM
 %right ARROW ARROWSUB
 %left SEMICOLON
@@ -183,9 +182,9 @@ plaintyp_ :
   | plaintyp_prim_ { $1 }
   | LPAREN comma_list(plaintyp) RPAREN
     { match $2 with
-      | [] -> ParenT (TupT [] @@@ $sloc)
+      | [] -> ParenT (TupleT [] @@@ $sloc)
       | [ typ ] -> ParenT typ
-      | typs -> TupT typs }
+      | typs -> TupleT typs }
   | plaintyp iter { IterT ($1, $2) }
 
 (* Notation types *)
@@ -236,7 +235,7 @@ nottyp : nottyp_rel { $1 }
 (* Type definitions *)
 
 fieldtyp :
-  | fieldid plaintyp* hint* { ($1, $2, $3) }
+  | fieldid plaintyp hint* { ($1, $2, $3) }
 
 casetyp :
   | nottyp hint* { ($1, $2) }
@@ -395,9 +394,9 @@ exp_prim_ :
   | LPAREN comma_list(exp_bin) RPAREN
     { 
       match $2 with
-      | [] -> ParenE (TupE [] @@@ $sloc)
+      | [] -> ParenE (TupleE [] @@@ $sloc)
       | [ exp ] -> ParenE exp
-      | exps -> TupE exps
+      | exps -> TupleE exps
     }
   | TICK LPAREN exp RPAREN
     { BrackE (Atom.LParen @@@ $loc($2), $3, Atom.RParen @@@ $loc($4)) }
@@ -474,9 +473,7 @@ exp_bin_ :
 exp_rel : exp_rel_ { $1 @@@ $sloc }
 exp_rel_ :
   | exp_bin_ { $1 }
-  | comma exp_rel { CommaE (SeqE [] @@@ $loc($1), $2) }
   | relop exp_rel { InfixE (SeqE [] @@@ $loc($1), $1, $2) }
-  | exp_rel comma exp_rel { CommaE ($1, $3) }
   | exp_rel relop exp_rel { InfixE ($1, $2, $3) }
 
 exp : exp_rel { $1 }

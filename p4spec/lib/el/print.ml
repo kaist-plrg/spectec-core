@@ -35,7 +35,7 @@ let rec string_of_plaintyp plaintyp =
   | TextT -> "text"
   | VarT (typid, targs) -> string_of_typid typid ^ string_of_targs targs
   | ParenT plaintyp -> "(" ^ string_of_plaintyp plaintyp ^ ")"
-  | TupT plaintyps -> "(" ^ string_of_plaintyps ", " plaintyps ^ ")"
+  | TupleT plaintyps -> "(" ^ string_of_plaintyps ", " plaintyps ^ ")"
   | IterT (plaintyp, iter) -> string_of_plaintyp plaintyp ^ string_of_iter iter
 
 and string_of_plaintyps sep plaintyps =
@@ -63,8 +63,8 @@ and string_of_deftyp deftyp =
   | VariantT typcases -> "| " ^ string_of_typcases " | " typcases
 
 and string_of_typfield typfield =
-  let atom, plaintyps, _hints = typfield in
-  string_of_atom atom ^ " " ^ string_of_plaintyps " " plaintyps
+  let atom, plaintyp, _hints = typfield in
+  string_of_atom atom ^ " " ^ string_of_plaintyp plaintyp
 
 and string_of_typfields sep typfields =
   String.concat sep (List.map string_of_typfield typfields)
@@ -124,12 +124,11 @@ and string_of_exp exp =
              fields)
       ^ "}"
   | DotE (exp, atom) -> string_of_exp exp ^ "." ^ string_of_atom atom
-  | CommaE (exp_l, exp_r) -> string_of_exp exp_l ^ ", " ^ string_of_exp exp_r
   | CatE (exp_l, exp_r) -> string_of_exp exp_l ^ " ++ " ^ string_of_exp exp_r
   | MemE (exp_e, exp_s) -> string_of_exp exp_e ^ " <- " ^ string_of_exp exp_s
   | LenE exp -> "|" ^ string_of_exp exp ^ "|"
   | ParenE exp -> "(" ^ string_of_exp exp ^ ")"
-  | TupE exps -> "(" ^ string_of_exps ", " exps ^ ")"
+  | TupleE exps -> "(" ^ string_of_exps ", " exps ^ ")"
   | CallE (id, targs, args) ->
       string_of_defid id ^ string_of_targs targs ^ string_of_args args
   | IterE (exp, iter) -> string_of_exp exp ^ string_of_iter iter

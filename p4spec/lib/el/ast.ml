@@ -35,7 +35,7 @@ and plaintyp' =
   | TextT                       (* `text` *)
   | VarT of id * targ list      (* id (`<` list(targ, `,`) `>`)? *)
   | ParenT of plaintyp          (* `(` plaintyp `)` *)
-  | TupT of plaintyp list       (* `(` list(plaintyp, `,`) `)` *)
+  | TupleT of plaintyp list       (* `(` list(plaintyp, `,`) `)` *)
   | IterT of plaintyp * iter    (* plaintyp iter *)
 
 (* What are the consequences of disallowing iterated notation types? *)
@@ -54,7 +54,7 @@ and deftyp' =
   | StructT of typfield list   (* `{` list(typfield, `,`) `}` *)
   | VariantT of typcase list   (* `|` list(typcase, `|`) *)
 
-and typfield = atom * plaintyp list * hint list
+and typfield = atom * plaintyp * hint list
 and typcase = nottyp * hint list
 
 (* Operators *)
@@ -82,18 +82,17 @@ and exp' =
   | UpdE of exp * path * exp            (* exp `[` path `=` exp `]` *)
   | StrE of (atom * exp) list           (* `{` list(atom exp, `,`) `}` *)
   | DotE of exp * atom                  (* exp `.` atom *)
-  | CommaE of exp * exp                 (* exp `,` exp *)
   | CatE of exp * exp                   (* exp `++` exp *)
   | MemE of exp * exp                   (* exp `<-` exp *)
   | LenE of exp                         (* `|` exp `|` *)
   | ParenE of exp                       (* `(` exp `)` *)
-  | TupE of exp list                    (* `(` list2(exp, `,`) `)` *)
+  | TupleE of exp list                  (* `(` list2(exp, `,`) `)` *)
   | CallE of id * targ list * arg list  (* `$` defid (`<` list(targ, `,`) `>`)? (`(` list(arg, `,`) `)`)? *)
   | IterE of exp * iter                 (* exp iter *)
   | TypE of exp * plaintyp              (* exp `:` typ *)
   | ArithE of exp                       (* `$(` exp `)` *)
   (* Notation expressions *)
-  (* SeqE is overloaded: either
+  (* The meaning of SeqE is overloaded: either
      - a homogeneous sequence of expressions, or
      - a heterogeneous sequence of expressions to denote a notation *)
   | AtomE of atom                       (* atom *)

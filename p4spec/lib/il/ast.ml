@@ -39,7 +39,7 @@ and typ' =
   | NumT of Num.typ         (* numtyp *)
   | TextT                   (* `text` *)
   | VarT of id * targ list  (* id (`<` list(targ, `,`) `>`)? *)
-  | TupT of typ list        (* `(` list(typ, `,`) `)` *)
+  | TupleT of typ list      (* `(` list(typ, `,`) `)` *)
   | IterT of typ * iter     (* typ iter *)
 
 and nottyp = nottyp' phrase
@@ -52,7 +52,7 @@ and deftyp' =
   | StructT of typfield list
   | VariantT of typcase list
 
-and typfield = atom * typ list
+and typfield = atom * typ
 and typcase = nottyp
 
 (* Operators *)
@@ -74,7 +74,7 @@ and exp' =
   | UnE of unop * optyp * exp             (* unop exp *)
   | BinE of binop * optyp * exp * exp     (* exp binop exp *)
   | CmpE of cmpop * optyp * exp * exp     (* exp cmpop exp *)
-  | TupE of exp list                      (* `(` exp* `)` *)
+  | TupleE of exp list                    (* `(` exp* `)` *)
   | ProjE of exp * int                    (* exp.i *)
   | CaseE of notexp                       (* notexp *)
   | UncaseE of exp list * mixop           (* exp* `!` mixop *)
@@ -90,7 +90,7 @@ and exp' =
   | IdxE of exp * exp                     (* exp `[` exp `]` *)
   | SliceE of exp * exp * exp             (* exp `[` exp `:` exp `]` *)
   | UpdE of exp * path * exp              (* exp `[` path `=` exp `]` *)
-  | CallE of id * arg list                (* $id`(` arg* `)` *)
+  | CallE of id * targ list * arg list    (* $id`<` targ* `>``(` arg* `)` *)
   | IterE of exp * iterexp                (* exp iterexp *)
   | CastE of exp * typ                    (* `(` typ `)` exp *)
 

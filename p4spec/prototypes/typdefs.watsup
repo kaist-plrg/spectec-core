@@ -12,7 +12,12 @@ syntax c<z> = | BAZ z | FIE `( z |- z ) | `{ z* ~> z } | FEE
 
 ;; Recursive struct
 
-syntax d<u, v> = { FST d<u, u>, SND a<v> c<u> }
+syntax d<u, v> = { FST d<u, u>, SND a<v> }
+
+syntax s = { ONE int, TWO bool, THREE text }
+
+dec $str(s) : bool
+def $str({ ONE 0, TWO bool', THREE "three" }) = true
 
 ;; Relation
 
