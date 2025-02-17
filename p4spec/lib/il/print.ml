@@ -124,6 +124,8 @@ and string_of_exp e =
       ^ string_of_exp exp_f ^ "]"
   | CallE (defid, args) -> string_of_defid defid ^ string_of_args args
   | IterE (exp, iterexp) -> string_of_exp exp ^ string_of_iterexp iterexp
+  | CastE (exp, typ) ->
+      "((" ^ string_of_typ typ ^ ") " ^ string_of_exp exp ^ ")"
 
 and string_of_exps sep exps = String.concat sep (List.map string_of_exp exps)
 

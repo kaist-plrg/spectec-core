@@ -92,6 +92,7 @@ and exp' =
   | UpdE of exp * path * exp              (* exp `[` path `=` exp `]` *)
   | CallE of id * arg list                (* $id`(` arg* `)` *)
   | IterE of exp * iterexp                (* exp iterexp *)
+  | CastE of exp * typ                    (* `(` typ `)` exp *)
 
 and notexp = mixop * exp list
 and iterexp = iter * (id * exp) list

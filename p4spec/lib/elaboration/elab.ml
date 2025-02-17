@@ -87,34 +87,60 @@ let kind_of_typ (ctx : Ctx.t) (typ : Il.Ast.typ) : kind =
       | _ -> `Plain)
   | _ -> `Plain
 
-(* Casts *)
+(* Expansion *)
 
-let fail_cast (at : region) (typ_a : Il.Ast.typ) (typ_b : Il.Ast.typ) =
-  Fail
-    ( at,
-      "cannot cast "
-      ^ Il.Print.string_of_typ typ_a
-      ^ " to "
-      ^ Il.Print.string_of_typ typ_b )
+let rec expand_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp =
+  match plaintyp.it with
+  | VarT (tid, _) -> (
+      let td = Ctx.find_typdef ctx tid in
+      match td with
+      | Defined (_, deftyp) -> (
+          match deftyp.it with
+          | NotationT { it = PlainT plaintyp; _ } ->
+              expand_plaintyp ctx plaintyp
+          | _ -> plaintyp)
+      | _ -> plaintyp)
+  | _ -> plaintyp
 
-let rec sub_typ (typ_a : Il.Ast.typ) (typ_b : Il.Ast.typ) : bool =
-  match (typ_a.it, typ_b.it) with
+(* Type equivalence and subtyping *)
+
+let rec equiv_plaintyp (ctx : Ctx.t) (plaintyp_a : plaintyp)
+    (plaintyp_b : plaintyp) : bool =
+  let plaintyp_a = expand_plaintyp ctx plaintyp_a in
+  let plaintyp_b = expand_plaintyp ctx plaintyp_b in
+  match (plaintyp_a.it, plaintyp_b.it) with
   | BoolT, BoolT -> true
-  | NumT numtyp_a, NumT numtyp_b -> Num.sub numtyp_a numtyp_b
+  | NumT numtyp_a, NumT numtyp_b -> Num.equiv numtyp_a numtyp_b
   | TextT, TextT -> true
   | VarT (tid_a, targs_a), VarT (tid_b, targs_b) ->
       tid_a.it = tid_b.it
       && List.length targs_a = List.length targs_b
-      && List.for_all2 sub_typ targs_a targs_b
-  | TupT typs_a, TupT typs_b -> List.for_all2 sub_typ typs_a typs_b
+      && List.for_all2 (equiv_plaintyp ctx) targs_a targs_b
+  | ParenT plaintyp_a, _ -> equiv_plaintyp ctx plaintyp_a plaintyp_b
+  | _, ParenT plaintyp_b -> equiv_plaintyp ctx plaintyp_a plaintyp_b
+  | TupT plaintyps_a, TupT plaintyps_b ->
+      List.for_all2 (equiv_plaintyp ctx) plaintyps_a plaintyps_b
+  | IterT (plaintyp_a, iter_a), IterT (plaintyp_b, iter_b) ->
+      equiv_plaintyp ctx plaintyp_a plaintyp_b && iter_a = iter_b
   | _ -> false
 
-let cast_exp (_ctx : Ctx.t) (typ_il_target : Il.Ast.typ) (exp_il : Il.Ast.exp) :
-    Il.Ast.exp attempt =
-  let typ_il = exp_il.note $ exp_il.at in
-  if sub_typ typ_il typ_il_target then
-    Ok { exp_il with note = typ_il_target.it }
-  else fail_cast exp_il.at typ_il typ_il_target
+let rec sub_plaintyp (ctx : Ctx.t) (plaintyp_a : plaintyp)
+    (plaintyp_b : plaintyp) : bool =
+  equiv_plaintyp ctx plaintyp_a plaintyp_b
+  || sub_plaintyp' ctx plaintyp_a plaintyp_b
+
+and sub_plaintyp' (ctx : Ctx.t) (plaintyp_a : plaintyp) (plaintyp_b : plaintyp)
+    : bool =
+  let plaintyp_a = expand_plaintyp ctx plaintyp_a in
+  let plaintyp_b = expand_plaintyp ctx plaintyp_b in
+  match (plaintyp_a.it, plaintyp_b.it) with
+  | NumT numtyp_a, NumT numtyp_b -> Num.sub numtyp_a numtyp_b
+  | ParenT plaintyp_a, _ -> sub_plaintyp ctx plaintyp_a plaintyp_b
+  | _, ParenT plaintyp_b -> sub_plaintyp ctx plaintyp_a plaintyp_b
+  | TupT typs_a, TupT typs_b -> List.for_all2 (sub_plaintyp ctx) typs_a typs_b
+  | IterT (typ_a, iter_a), IterT (typ_b, iter_b) ->
+      sub_plaintyp ctx typ_a typ_b && iter_a = iter_b
+  | _ -> false
 
 (* Plain types *)
 
@@ -231,67 +257,53 @@ and elab_typ_def_variant (ctx : Ctx.t) (at : region) (typcases : typcase list) :
 
 (* Expressions *)
 
+(* Expression type inference *)
+
+and fail_infer_as (at : region) (construct : string) =
+  Fail (at, "cannot infer type as " ^ construct)
+
+and infer_as_list (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp attempt =
+  let plaintyp = expand_plaintyp ctx plaintyp in
+  match plaintyp.it with
+  | IterT (plaintyp, _) -> Ok plaintyp
+  | _ -> fail_infer_as plaintyp.at "list"
+
 and fail_infer (at : region) (construct : string) =
   Fail (at, "cannot infer type of " ^ construct)
 
-and infer_exp (ctx : Ctx.t) (exp : exp) : Il.Ast.exp attempt =
+and infer_exp (ctx : Ctx.t) (exp : exp) : (Il.Ast.exp * plaintyp) attempt =
+  let* exp_il, plaintyp = infer_exp' ctx exp in
+  let typ_il = elab_plaintyp ctx (plaintyp $ exp.at) in
+  Ok (exp_il $$ (exp.at, typ_il.it), plaintyp $ exp.at)
+
+and infer_exp' (ctx : Ctx.t) (exp : exp) : (Il.Ast.exp' * plaintyp') attempt =
   match exp.it with
-  | BoolE b ->
-      let exp_il = Il.Ast.BoolE b in
-      let typ_il = Il.Ast.BoolT in
-      Ok (exp_il $$ (exp.at, typ_il))
-  | NumE (_, num) ->
-      let exp_il = Il.Ast.NumE num in
-      let typ_il = Il.Ast.NumT (Num.to_typ num) in
-      Ok (exp_il $$ (exp.at, typ_il))
-  | TextE text ->
-      let exp_il = Il.Ast.TextE text in
-      let typ_il = Il.Ast.TextT in
-      Ok (exp_il $$ (exp.at, typ_il))
-  | VarE (id, targs) -> (
-      let tid = strip_var_suffix id in
-      let td_opt = Ctx.find_typdef_opt ctx tid.it in
-      match td_opt with
-      | Some td ->
-          let tparams = TypeDef.get_tparams td in
-          let typs_il = List.map (elab_plaintyp ctx) targs in
-          if List.length tparams = List.length targs then
-            let exp_il = Il.Ast.VarE id in
-            let typ_il = Il.Ast.VarT (tid, typs_il) in
-            Ok (exp_il $$ (exp.at, typ_il))
-          else fail_infer exp.at "variable"
-      | None -> fail_infer exp.at "variable")
+  | BoolE b -> infer_bool_exp b
+  | NumE (_, num) -> infer_num_exp num
+  | TextE text -> infer_text_exp text
+  | VarE (id, targs) -> infer_var_exp ctx id targs
   | UnE _ -> todo "infer_exp" "UnE"
   | BinE _ -> todo "infer_exp" "BinE"
   | CmpE _ -> todo "infer_exp" "CmpE"
   | EpsE -> fail_infer exp.at "empty sequence"
-  | ListE [] -> fail_infer exp.at "empty list"
-  | ListE (_ :: _) -> todo "infer_exp" "ListE when homogeneous"
-  | IdxE _ -> todo "infer_exp" "IdxE"
-  | SliceE _ -> todo "infer_exp" "SliceE"
+  | ListE exps -> infer_list_exp ctx exp.at exps
+  | IdxE (exp_b, exp_i) -> infer_idx_exp ctx exp_b exp_i
+  | SliceE (exp_b, exp_l, exp_h) -> infer_slice_exp ctx exp_b exp_l exp_h
   | UpdE _ -> todo "infer_exp" "UpdE"
   | StrE _ -> fail_infer exp.at "record expression"
   | DotE _ -> todo "infer_exp" "DotE"
   | CommaE _ -> fail_infer exp.at "comma expression"
   | CatE _ -> todo "infer_exp" "CatE"
   | MemE _ -> todo "infer_exp" "MemE"
-  | LenE _ -> todo "infer_exp" "LenE"
-  | ParenE exp -> infer_exp ctx exp
-  | TupE exps ->
-      let* exps_il = infer_exps ctx exps in
-      let exp_il = Il.Ast.TupE exps_il in
-      let typs_il = List.map (fun exp_il -> exp_il.note $ exp_il.at) exps_il in
-      let typ_il = Il.Ast.TupT typs_il in
-      Ok (exp_il $$ (exp.at, typ_il))
+  | LenE exp -> infer_len_exp ctx exp
+  | ParenE exp -> infer_paren_exp ctx exp
+  | TupE exps -> infer_tuple_exp ctx exps
   | CallE _ -> todo "infer_exp" "CallE"
   | IterE _ -> todo "infer_exp" "IterE"
   | TypE _ -> todo "infer_exp" "TypE"
-  | ArithE _ -> todo "infer_exp" "ArithE"
+  | ArithE exp -> infer_arith_exp ctx exp
   | AtomE _ -> fail_infer exp.at "atom"
-  | SeqE [] -> fail_infer exp.at "empty sequence"
-  | SeqE (_ :: _ as exps) ->
-      let* _exps_il = infer_exps ctx exps in
-      todo "infer_exp" "SeqE when homogeneous"
+  | SeqE exps -> infer_seq_exp ctx exp.at exps
   | InfixE _ -> fail_infer exp.at "infix expression"
   | BrackE _ -> fail_infer exp.at "bracket expression"
   | HoleE _ -> error exp.at "misplaced hole"
@@ -299,13 +311,131 @@ and infer_exp (ctx : Ctx.t) (exp : exp) : Il.Ast.exp attempt =
   | UnparenE _ -> error exp.at "misplaced unparenthesize"
   | LatexE _ -> error exp.at "misplaced LaTeX literal"
 
-and infer_exps (ctx : Ctx.t) (exps : exp list) : Il.Ast.exp list attempt =
+and infer_exps (ctx : Ctx.t) (exps : exp list) :
+    (Il.Ast.exp list * plaintyp list) attempt =
   match exps with
-  | [] -> Ok []
+  | [] -> Ok ([], [])
   | exp :: exps ->
-      let* exp_il = infer_exp ctx exp in
-      let* exps_il = infer_exps ctx exps in
-      Ok (exp_il :: exps_il)
+      let* exp_il, plaintyp = infer_exp ctx exp in
+      let* exps_il, plaintyps = infer_exps ctx exps in
+      Ok (exp_il :: exps_il, plaintyp :: plaintyps)
+
+and infer_bool_exp (b : bool) : (Il.Ast.exp' * plaintyp') attempt =
+  let exp_il = Il.Ast.BoolE b in
+  let plaintyp = BoolT in
+  Ok (exp_il, plaintyp)
+
+and infer_num_exp (num : Num.t) : (Il.Ast.exp' * plaintyp') attempt =
+  let exp_il = Il.Ast.NumE num in
+  let plaintyp = NumT (Num.to_typ num) in
+  Ok (exp_il, plaintyp)
+
+and infer_text_exp (text : string) : (Il.Ast.exp' * plaintyp') attempt =
+  let exp_il = Il.Ast.TextE text in
+  let plaintyp = TextT in
+  Ok (exp_il, plaintyp)
+
+and infer_var_exp (ctx : Ctx.t) (id : id) (targs : targ list) :
+    (Il.Ast.exp' * plaintyp') attempt =
+  let tid = strip_var_suffix id in
+  let meta_opt = Ctx.find_metavar_opt ctx tid.it in
+  match meta_opt with
+  | Some _ when targs <> [] ->
+      fail_infer id.at "meta-variable with type arguments is disallowed"
+  | Some plaintyp ->
+      let exp_il = Il.Ast.VarE id in
+      Ok (exp_il, plaintyp.it)
+  | None ->
+      let exp_il = Il.Ast.VarE id in
+      let plaintyp = VarT (tid, targs) in
+      Ok (exp_il, plaintyp)
+
+and infer_list_exp (ctx : Ctx.t) (at : region) (exps : exp list) :
+    (Il.Ast.exp' * plaintyp') attempt =
+  match exps with
+  | [] -> fail_infer at "empty list"
+  | exp :: exps ->
+      let* exp_il, plaintyp = infer_exp ctx exp in
+      let* exps_il, plaintyps = infer_exps ctx exps in
+      if List.for_all (equiv_plaintyp ctx plaintyp) plaintyps then
+        let exp_il = Il.Ast.ListE (exp_il :: exps_il) in
+        let plaintyp = IterT (plaintyp, List) in
+        Ok (exp_il, plaintyp)
+      else fail_infer at "list with heterogeneous elements"
+
+and infer_idx_exp (ctx : Ctx.t) (exp_b : exp) (exp_i : exp) :
+    (Il.Ast.exp' * plaintyp') attempt =
+  let* exp_il_b, plaintyp_b = infer_exp ctx exp_b in
+  let* plaintyp = infer_as_list ctx plaintyp_b in
+  let* exp_il_i = elab_exp ctx (NumT `NatT $ exp_i.at) exp_i in
+  let exp_il = Il.Ast.IdxE (exp_il_b, exp_il_i) in
+  Ok (exp_il, plaintyp.it)
+
+and infer_slice_exp (ctx : Ctx.t) (exp_b : exp) (exp_l : exp) (exp_h : exp) :
+    (Il.Ast.exp' * plaintyp') attempt =
+  let* exp_il_b, plaintyp_b = infer_exp ctx exp_b in
+  let* plaintyp = infer_as_list ctx plaintyp_b in
+  let* exp_il_l = elab_exp ctx (NumT `NatT $ exp_l.at) exp_l in
+  let* exp_il_h = elab_exp ctx (NumT `NatT $ exp_h.at) exp_h in
+  let exp_il = Il.Ast.SliceE (exp_il_b, exp_il_l, exp_il_h) in
+  Ok (exp_il, plaintyp.it)
+
+and infer_len_exp (ctx : Ctx.t) (exp : exp) : (Il.Ast.exp' * plaintyp') attempt
+    =
+  let* exp_il, plaintyp = infer_exp ctx exp in
+  let* _plaintyp = infer_as_list ctx plaintyp in
+  let exp_il = Il.Ast.LenE exp_il in
+  let typ = NumT `NatT in
+  Ok (exp_il, typ)
+
+and infer_paren_exp (ctx : Ctx.t) (exp : exp) :
+    (Il.Ast.exp' * plaintyp') attempt =
+  infer_exp' ctx exp
+
+and infer_tuple_exp (ctx : Ctx.t) (exps : exp list) :
+    (Il.Ast.exp' * plaintyp') attempt =
+  let* exps_il, plaintyps = infer_exps ctx exps in
+  let exp_il = Il.Ast.TupE exps_il in
+  let plaintyp = TupT plaintyps in
+  Ok (exp_il, plaintyp)
+
+and infer_arith_exp (ctx : Ctx.t) (exp : exp) :
+    (Il.Ast.exp' * plaintyp') attempt =
+  infer_exp' ctx exp
+
+and infer_seq_exp (ctx : Ctx.t) (at : region) (exps : exp list) :
+    (Il.Ast.exp' * plaintyp') attempt =
+  match exps with
+  | [] -> fail_infer at "empty sequence"
+  | exp :: exps ->
+      let* exp_il, plaintyp = infer_exp ctx exp in
+      let* exps_il, plaintyps = infer_exps ctx exps in
+      if List.for_all (equiv_plaintyp ctx plaintyp) plaintyps then
+        let exp_il = Il.Ast.ListE (exp_il :: exps_il) in
+        let plaintyp = IterT (plaintyp, List) in
+        Ok (exp_il, plaintyp)
+      else fail_infer at "sequence with heterogeneous elements"
+
+(* Expression type elaboration *)
+
+and fail_cast (at : region) (plaintyp_a : plaintyp) (plaintyp_b : plaintyp) =
+  Fail
+    ( at,
+      "cannot cast "
+      ^ El.Print.string_of_plaintyp plaintyp_a
+      ^ " to "
+      ^ El.Print.string_of_plaintyp plaintyp_b )
+
+and cast_exp (ctx : Ctx.t) (plaintyp_target : plaintyp)
+    (plaintyp_infer : plaintyp) (exp_il : Il.Ast.exp) : Il.Ast.exp attempt =
+  if equiv_plaintyp ctx plaintyp_target plaintyp_infer then Ok exp_il
+  else if sub_plaintyp ctx plaintyp_infer plaintyp_target then
+    let typ_il_target = elab_plaintyp ctx plaintyp_target in
+    let exp_il =
+      Il.Ast.CastE (exp_il, typ_il_target) $$ (exp_il.at, typ_il_target.it)
+    in
+    Ok exp_il
+  else fail_cast exp_il.at plaintyp_infer plaintyp_target
 
 and fail_elab (at : region) (msg : string) =
   Fail (at, "cannot elaborate because" ^ msg)
@@ -318,11 +448,11 @@ and elab_exp (ctx : Ctx.t) (plaintyp : plaintyp) (exp : exp) :
      - this may fail for some expressions that require contextual information,
        e.g., notation expressions or expression sequences
      - for such cases, try to elaborate the expression using the expected type *)
-  let exp_il_attempt = infer_exp ctx exp in
-  let typ_il = elab_plaintyp ctx plaintyp in
-  match exp_il_attempt with
-  | Ok exp_il -> cast_exp ctx typ_il exp_il
+  let infer_attempt = infer_exp ctx exp in
+  match infer_attempt with
+  | Ok (exp_il, plaintyp_infer) -> cast_exp ctx plaintyp plaintyp_infer exp_il
   | Fail _ -> (
+      let typ_il = elab_plaintyp ctx plaintyp in
       let kind = kind_of_typ ctx typ_il in
       match kind with
       | `Plain -> elab_exp_plain ctx plaintyp exp

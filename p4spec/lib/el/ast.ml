@@ -30,10 +30,10 @@ type iter =
 
 and plaintyp = plaintyp' phrase
 and plaintyp' =
-  | VarT of id * targ list      (* id (`<` list(targ, `,`) `>`)? *)
   | BoolT                       (* `bool` *)
   | NumT of Num.typ             (* numtyp *)
   | TextT                       (* `text` *)
+  | VarT of id * targ list      (* id (`<` list(targ, `,`) `>`)? *)
   | ParenT of plaintyp          (* `(` plaintyp `)` *)
   | TupT of plaintyp list       (* `(` list(plaintyp, `,`) `)` *)
   | IterT of plaintyp * iter    (* plaintyp iter *)

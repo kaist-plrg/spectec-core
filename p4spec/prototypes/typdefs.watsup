@@ -27,4 +27,11 @@ rule fizz/buzz:
 ;; Definition
 
 dec $bark<x>(foo, bar, def $at(int) : bool) : baz
-def $bark<x>(ABC 1 DEF false, true JKL 0, def $at) = PQR foo -> bar
+def $bark<x>(ABC int' DEF bool'', true JKL 0, def $at) = PQR foo_23a45 -> bar'
+
+;; Aliasing
+
+syntax moon = int
+
+dec $yellow(int) : bool
+def $yellow(moon) = true

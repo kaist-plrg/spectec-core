@@ -13,8 +13,10 @@ type cmpop = [ `LtOp | `GtOp | `LeOp | `GeOp ]
 
 (* Subtyping *)
 
+let equiv typ_a typ_b = typ_a = typ_b
+
 let sub typ_a typ_b =
-  match (typ_a, typ_b) with `NatT, `IntT -> true | _, _ -> typ_a = typ_b
+  match (typ_a, typ_b) with `NatT, `IntT -> true | _, _ -> equiv typ_a typ_b
 
 (* Stringifiers *)
 

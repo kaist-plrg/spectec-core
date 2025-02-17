@@ -98,6 +98,9 @@ let find_typdef (ctx : t) (tid : TId.t phrase) : TypeDef.t =
   | Some td -> td
   | None -> error tid.at "undefined type"
 
+let bound_typdef (ctx : t) (tid : TId.t) : bool =
+  find_typdef_opt ctx tid |> Option.is_some
+
 (* Finders for meta-variables *)
 
 let find_metavar_opt (ctx : t) (tid : TId.t) : Type.t option =

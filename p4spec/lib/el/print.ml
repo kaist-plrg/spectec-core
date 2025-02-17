@@ -30,10 +30,10 @@ let string_of_iter iter = match iter with Opt -> "?" | List -> "*"
 
 let rec string_of_plaintyp plaintyp =
   match plaintyp.it with
-  | VarT (typid, targs) -> string_of_typid typid ^ string_of_targs targs
   | BoolT -> "bool"
   | NumT numtyp -> Num.string_of_typ numtyp
   | TextT -> "text"
+  | VarT (typid, targs) -> string_of_typid typid ^ string_of_targs targs
   | ParenT plaintyp -> "(" ^ string_of_plaintyp plaintyp ^ ")"
   | TupT plaintyps -> "(" ^ string_of_plaintyps ", " plaintyps ^ ")"
   | IterT (plaintyp, iter) -> string_of_plaintyp plaintyp ^ string_of_iter iter
