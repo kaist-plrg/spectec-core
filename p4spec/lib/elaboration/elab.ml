@@ -350,7 +350,7 @@ and infer_text_exp (text : string) : (Il.Ast.exp' * plaintyp') attempt =
 and infer_var_exp (ctx : Ctx.t) (id : id) (targs : targ list) :
     (Il.Ast.exp' * plaintyp') attempt =
   let tid = strip_var_suffix id in
-  let meta_opt = Ctx.find_metavar_opt ctx tid.it in
+  let meta_opt = Ctx.find_metavar_opt ctx tid in
   match meta_opt with
   | Some _ when targs <> [] ->
       fail_infer id.at "meta-variable with type arguments is disallowed"
@@ -688,6 +688,60 @@ and elab_arg (ctx : Ctx.t) (param : param) (arg : arg) : Il.Ast.arg =
       Il.Ast.DefA id_a $ arg.at
   | _ -> error arg.at "argument does not match parameter"
 
+(* Premises *)
+
+and elab_prem (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.Ast.prem option =
+  let ctx, prem_il_opt = elab_prem' ctx prem.it in
+  let prem_il_opt = Option.map (fun prem_il -> prem_il $ prem.at) prem_il_opt in
+  (ctx, prem_il_opt)
+
+and elab_prem' (ctx : Ctx.t) (prem : prem') : Ctx.t * Il.Ast.prem' option =
+  let wrap_ctx prem = (ctx, prem) in
+  let wrap_some (ctx, prem) = (ctx, Some prem) in
+  let wrap_none ctx = (ctx, None) in
+  match prem with
+  | VarPr (id, plaintyp) -> elab_var_prem ctx id plaintyp |> wrap_none
+  | RulePr (id, exp) -> elab_rule_prem ctx id exp |> wrap_ctx |> wrap_some
+  | IfPr exp -> elab_if_prem ctx exp |> wrap_ctx |> wrap_some
+  | ElsePr -> elab_else_prem () |> wrap_ctx |> wrap_some
+  | _ ->
+      let+ _ = todo "elab_prem" (El.Print.string_of_prem (prem $ no_region)) in
+      assert false
+
+and elab_prems (ctx : Ctx.t) (prems : prem list) : Ctx.t * Il.Ast.prem list =
+  List.fold_left
+    (fun (ctx, prems_il) prem ->
+      let ctx, prem_il_opt = elab_prem ctx prem in
+      match prem_il_opt with
+      | Some prem_il -> (ctx, prems_il @ [ prem_il ])
+      | None -> (ctx, prems_il))
+    (ctx, []) prems
+
+(* Variable premises *)
+
+and elab_var_prem (ctx : Ctx.t) (id : id) (plaintyp : plaintyp) : Ctx.t =
+  check (valid_tid id) id.at "invalid meta-variable identifier";
+  check (not (Ctx.bound_typdef ctx id)) id.at "type already defined";
+  let _typ_il = elab_plaintyp ctx plaintyp in
+  Ctx.add_metavar ctx id.it plaintyp
+
+(* Rule premises *)
+
+and elab_rule_prem (ctx : Ctx.t) (id : id) (exp : exp) : Il.Ast.prem' =
+  let nottyp = Ctx.find_rel ctx id in
+  let+ notexp_il = elab_exp_not ctx nottyp exp in
+  Il.Ast.RulePr (id, notexp_il)
+
+(* If premises *)
+
+and elab_if_prem (ctx : Ctx.t) (exp : exp) : Il.Ast.prem' =
+  let+ exp_il = elab_exp ctx (BoolT $ exp.at) exp in
+  Il.Ast.IfPr exp_il
+
+(* Else premises *)
+
+and elab_else_prem () : Il.Ast.prem' = Il.Ast.ElsePr
+
 (* Definitions *)
 
 let rec elab_def (ctx : Ctx.t) (def : def) : Ctx.t * Il.Ast.def option =
@@ -734,7 +788,7 @@ and elab_syn_def (ctx : Ctx.t) (id : id) (tparams : tparam list) : Ctx.t =
 
 and elab_typ_def (ctx : Ctx.t) (id : id) (tparams : tparam list)
     (deftyp : deftyp) : Ctx.t * Il.Ast.def =
-  let td_opt = Ctx.find_typdef_opt ctx id.it in
+  let td_opt = Ctx.find_typdef_opt ctx id in
   let ctx =
     match td_opt with
     | Some (TypeDef.Defining tparams_defining) ->
@@ -760,16 +814,14 @@ and elab_typ_def (ctx : Ctx.t) (id : id) (tparams : tparam list)
   let deftyp_il = elab_deftyp ctx_local deftyp in
   let def_il = Il.Ast.TypD (id, tparams, deftyp_il) $ deftyp.at in
   let td = TypeDef.Defined (tparams, deftyp) in
-  let ctx = Ctx.update_typdef ctx id.it td in
+  let ctx = Ctx.update_typdef ctx id td in
   (ctx, def_il)
 
 (* Variable declarations *)
 
 and elab_var_def (ctx : Ctx.t) (id : id) (plaintyp : plaintyp) : Ctx.t =
   check (valid_tid id) id.at "invalid meta-variable identifier";
-  check
-    (Ctx.find_typdef_opt ctx id.it |> Option.is_none)
-    id.at "type already defined";
+  check (not (Ctx.bound_typdef ctx id)) id.at "type already defined";
   let _typ_il = elab_plaintyp ctx plaintyp in
   Ctx.add_metavar ctx id.it plaintyp
 
@@ -785,10 +837,12 @@ and elab_rel_def (ctx : Ctx.t) (at : region) (id : id) (nottyp : nottyp) :
 (* Rule definitions *)
 
 and elab_rule_def (ctx : Ctx.t) (at : region) (id_rel : id) (id_rule : id)
-    (exp : exp) (_prems : prem list) : Ctx.t =
+    (exp : exp) (prems : prem list) : Ctx.t =
   let nottyp = Ctx.find_rel ctx id_rel in
-  let+ notexp_il = elab_exp_not ctx nottyp exp in
-  let rule = (id_rule, notexp_il, []) $ at in
+  let ctx_local = ctx in
+  let+ notexp_il = elab_exp_not ctx_local nottyp exp in
+  let _ctx_local, prems_il = elab_prems ctx_local prems in
+  let rule = (id_rule, notexp_il, prems_il) $ at in
   Ctx.add_rule ctx id_rel.it rule
 
 (* Function declarations *)
@@ -807,18 +861,22 @@ and elab_dec_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
 (* Function definitions *)
 
 and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (targs : plaintyp list)
-    (args : arg list) (exp : exp) (_prems : prem list) : Ctx.t =
+    (args : arg list) (exp : exp) (prems : prem list) : Ctx.t =
   let tparams, params, plaintyp = Ctx.find_dec ctx id in
   check
     (List.length targs = List.length tparams)
     at "type arguments do not match";
   check (List.length params = List.length args) at "arguments do not match";
-  let args_il = List.map2 (elab_arg ctx) params args in
-  let+ exp_il = elab_exp ctx plaintyp exp in
-  let clause = (args_il, exp_il, []) $ at in
+  let ctx_local = ctx in
+  let args_il = List.map2 (elab_arg ctx_local) params args in
+  let+ exp_il = elab_exp ctx_local plaintyp exp in
+  let _ctx_local, prems_il = elab_prems ctx_local prems in
+  let clause = (args_il, exp_il, prems_il) $ at in
   Ctx.add_clause ctx id.it clause
 
 (* Spec *)
+
+(* Populate rules to their respective relations *)
 
 let populate_rule (ctx : Ctx.t) (def_il : Il.Ast.def) : Il.Ast.def =
   match def_il.it with
@@ -830,6 +888,8 @@ let populate_rule (ctx : Ctx.t) (def_il : Il.Ast.def) : Il.Ast.def =
 
 let populate_rules (ctx : Ctx.t) (spec_il : Il.Ast.spec) : Il.Ast.spec =
   List.map (populate_rule ctx) spec_il
+
+(* Populate clauses to their respective function declarations *)
 
 let populate_clause (ctx : Ctx.t) (def_il : Il.Ast.def) : Il.Ast.def =
   match def_il.it with

@@ -83,6 +83,9 @@ and string_of_cmpop = function
 (* Expressions *)
 
 and string_of_exp e =
+  "(" ^ string_of_exp' e ^ " : " ^ string_of_typ (e.note $ e.at) ^ ")"
+
+and string_of_exp' e =
   match e.it with
   | BoolE b -> string_of_bool b
   | NumE n -> string_of_num n
@@ -226,7 +229,7 @@ and string_of_clauses clauses =
 
 and string_of_prem prem =
   match prem.it with
-  | RulePr (id, exp) -> string_of_relid id ^ ": " ^ string_of_exp exp
+  | RulePr (id, notexp) -> string_of_relid id ^ ": " ^ string_of_notexp notexp
   | IfPr exp -> "if " ^ string_of_exp exp
   | ElsePr -> "otherwise"
   | LetPr (exp_l, exp_r) ->
@@ -239,9 +242,8 @@ and string_of_prem prem =
       "(" ^ string_of_prem prem ^ ")" ^ string_of_iterexp iterexp
 
 and string_of_prems prems =
-  "\n\t"
-  ^ String.concat ""
-      (List.map (fun prem -> "\n\t\t-- " ^ string_of_prem prem) prems)
+  String.concat ""
+    (List.map (fun prem -> "\n      -- " ^ string_of_prem prem) prems)
 
 (* Definitions *)
 
@@ -255,7 +257,7 @@ let rec string_of_def def =
       ^ string_of_rules rules
   | DecD (defid, tparams, params, typ, clauses) ->
       "def " ^ string_of_defid defid ^ string_of_tparams tparams
-      ^ string_of_params params ^ " : " ^ string_of_typ typ ^ " =\n"
+      ^ string_of_params params ^ " : " ^ string_of_typ typ ^ " ="
       ^ string_of_clauses clauses
   | RecD defs -> "rec {\n" ^ string_of_defs defs ^ "\n}"
 

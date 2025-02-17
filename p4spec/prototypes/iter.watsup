@@ -1,0 +1,3 @@
+dec $foo(int*) : int*
+def $foo(int_h int_t*) = 0 1 int_t*
+  -- if 1 = int_h

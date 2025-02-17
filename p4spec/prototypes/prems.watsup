@@ -1,0 +1,16 @@
+syntax a = | FOO int | BAR bool | BAZ text
+
+relation Fizz:
+  a |- bool ~> int
+
+rule Fizz/buzz:
+  a' |- bool' ~> int'
+  -- if a' = FOO 1
+  -- Fizz: FOO 2 |- true ~> int'
+
+dec $foo(a, a) : text
+def $foo(a_1, a_2) = "same"
+  -- var boo : a
+  -- if boo' = BAZ "diff"
+  -- if a_1 = FOO 1
+  -- if BAR bool' = a_2
