@@ -3,10 +3,6 @@ open Xl
 open El.Ast
 open Util.Source
 
-(* Error handling *)
-
-let error at msg = Util.Error.error at "syntax" msg
-
 (* Position handling *)
 
 let position_to_pos position =
@@ -42,7 +38,7 @@ let (@@@) it pos = it $ at pos
 %token<int> HOLEN
 %token BOOL NAT INT TEXT
 %token SYNTAX RELATION RULE VAR DEC DEF
-%token IF LET IFLET OTHERWISE HINT_LPAREN
+%token IF OTHERWISE HINT_LPAREN
 %token EPS INFINITY
 %token<bool> BOOLLIT
 %token<Z.t> NATLIT HEXLIT
@@ -539,18 +535,6 @@ prem_ :
         | _ -> IfPr exp
       in
       iterate $2
-    }
-  | LET exp
-    { 
-      match $2.it with
-      | CmpE (e1, `EqOp, e2) -> LetPr (e1, e2)
-      | _ -> error $2.at "expected an assignment" 
-    }
-  | IFLET exp
-    { 
-      match $2.it with
-      | CmpE (e1, `EqOp, e2) -> IfLetPr (e1, e2)
-      | _ -> error $2.at "expected an assignment"
     }
 
 (* Hints *)

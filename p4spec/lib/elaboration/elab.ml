@@ -948,16 +948,46 @@ and elab_rule_prem (ctx : Ctx.t) (id : id) (exp : exp) : Il.Ast.prem' =
   let+ notexp_il = elab_exp_not ctx nottyp exp in
   Il.Ast.RulePr (id, notexp_il)
 
-(* If premises *)
+(* If premises :
+
+   disambiguate `=` of whether it means equality or assignment,
+   via dataflow analysis of ordered premises *)
+
+and elab_if_eq_prem (ctx : Ctx.t) (at : region) (optyp : Il.Ast.optyp)
+    (exp_il_l : Il.Ast.exp) (exp_il_r : Il.Ast.exp) : Ctx.t * Il.Ast.prem' =
+  let+ kind = Bind.binding_if_prem ctx.venv at exp_il_l exp_il_r in
+  match kind with
+  | `Equality ->
+      let exp_il =
+        Il.Ast.CmpE (`EqOp, optyp, exp_il_l, exp_il_r) $$ (at, Il.Ast.BoolT)
+      in
+      let prem_il = Il.Ast.IfPr exp_il in
+      (ctx, prem_il)
+  | `AssignL binds ->
+      let ctx = binds |> Envs.Bound.elements |> Ctx.add_vars ctx in
+      let prem_il = Il.Ast.LetPr (exp_il_l, exp_il_r) in
+      (ctx, prem_il)
+  | `AssignR binds ->
+      let ctx = binds |> Envs.Bound.elements |> Ctx.add_vars ctx in
+      let prem_il = Il.Ast.LetPr (exp_il_r, exp_il_l) in
+      (ctx, prem_il)
+
+and elab_if_cond_prem (ctx : Ctx.t) (exp_il : Il.Ast.exp) : Il.Ast.prem' =
+  let+ binds = Bind.binding_exp ctx.venv exp_il in
+  if not (Envs.Bound.is_empty binds) then
+    error exp_il.at
+      (Format.asprintf "condition has free variable(s): %s"
+         (binds |> Envs.Bound.elements |> List.map it |> String.concat ", "));
+  Il.Ast.IfPr exp_il
 
 and elab_if_prem (ctx : Ctx.t) (exp : exp) : Ctx.t * Il.Ast.prem' =
   let+ exp_il = elab_exp ctx (BoolT $ exp.at) exp in
-  let ctx =
-    let+ frees = Free.free_if_prem ctx.venv exp_il in
-    frees |> Envs.Bound.elements |> Ctx.add_vars ctx
-  in
-  let prem_il = Il.Ast.IfPr exp_il in
-  (ctx, prem_il)
+  match exp_il.it with
+  | CmpE (`EqOp, optyp, exp_il_l, exp_il_r) ->
+      elab_if_eq_prem ctx exp_il.at optyp exp_il_l exp_il_r
+  | _ ->
+      let prem_il = elab_if_cond_prem ctx exp_il in
+      (ctx, prem_il)
 
 (* Else premises *)
 
@@ -1091,14 +1121,16 @@ and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (targs : plaintyp list)
   let ctx_local = ctx in
   let args_il = List.map2 (elab_arg ctx_local) params args in
   let ctx_local =
-    let+ frees = Free.free_args ctx.venv args_il in
-    frees |> Envs.Bound.elements |> Ctx.add_vars ctx_local
+    let+ binds = Bind.binding_args ctx.venv args_il in
+    binds |> Envs.Bound.elements |> Ctx.add_vars ctx_local
   in
   let ctx_local, prems_il = elab_prems ctx_local prems in
   let+ exp_il = elab_exp ctx_local plaintyp exp in
-  let+ frees = Free.free_exp ctx_local.venv exp_il in
-  if not (Envs.Bound.is_empty frees) then
-    error at "expression has free variables";
+  let+ binds = Bind.binding_exp ctx_local.venv exp_il in
+  if not (Envs.Bound.is_empty binds) then
+    error exp_il.at
+      (Format.asprintf "expression has free variable(s): %s"
+         (binds |> Envs.Bound.elements |> List.map it |> String.concat ", "));
   let clause = (args_il, exp_il, prems_il) $ at in
   Ctx.add_clause ctx id clause
 

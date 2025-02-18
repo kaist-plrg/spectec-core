@@ -220,10 +220,6 @@ and string_of_prem prem =
   | RulePr (id, exp) -> string_of_relid id ^ ": " ^ string_of_exp exp
   | IfPr exp -> "if " ^ string_of_exp exp
   | ElsePr -> "otherwise"
-  | LetPr (exp_l, exp_r) ->
-      "let " ^ string_of_exp exp_l ^ " = " ^ string_of_exp exp_r
-  | IfLetPr (exp_l, exp_r) ->
-      "iflet " ^ string_of_exp exp_l ^ " = " ^ string_of_exp exp_r
   | IterPr (({ it = IterPr _; _ } as prem), iter) ->
       string_of_prem prem ^ string_of_iter iter
   | IterPr (prem, iter) -> "(" ^ string_of_prem prem ^ ")" ^ string_of_iter iter

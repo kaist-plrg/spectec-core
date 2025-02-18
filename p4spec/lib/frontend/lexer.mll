@@ -220,8 +220,6 @@ and token = parse
   | "dec" { DEC }
   | "def" { DEF }
   | "if" { IF }
-  | "let" { LET }
-  | "iflet" { IFLET }
   | "otherwise" { OTHERWISE }
   | "hint(" { HINT_LPAREN }
   | "eps" { EPS }

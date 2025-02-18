@@ -146,8 +146,6 @@ and prem' =
   | RulePr of id * exp             (* id `:` exp *)
   | IfPr of exp                    (* `if` exp *)
   | ElsePr                         (* `otherwise` *)
-  | LetPr of exp * exp             (* `let` exp `=` exp *)
-  | IfLetPr of exp * exp           (* `iflet` exp `=` exp *)
   | IterPr of prem * iter          (* prem iter *)
 
 (* Hints *)
