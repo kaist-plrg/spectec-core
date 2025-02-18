@@ -107,15 +107,17 @@ and string_of_exp exp =
   | CmpE (exp_l, cmpop, exp_r) ->
       string_of_exp exp_l ^ " " ^ string_of_cmpop cmpop ^ " "
       ^ string_of_exp exp_r
+  | ArithE exp -> "$(" ^ string_of_exp exp ^ ")"
   | EpsE -> "eps"
   | ListE exps -> "[" ^ string_of_exps ", " exps ^ "]"
+  | ConsE (exp_l, exp_r) -> string_of_exp exp_l ^ " :: " ^ string_of_exp exp_r
+  | CatE (exp_l, exp_r) -> string_of_exp exp_l ^ " ++ " ^ string_of_exp exp_r
   | IdxE (exp_b, exp_i) -> string_of_exp exp_b ^ "[" ^ string_of_exp exp_i ^ "]"
   | SliceE (exp_b, exp_l, exp_h) ->
       string_of_exp exp_b ^ "[" ^ string_of_exp exp_l ^ " : "
       ^ string_of_exp exp_h ^ "]"
-  | UpdE (exp_b, path, exp_f) ->
-      string_of_exp exp_b ^ "[" ^ string_of_path path ^ " = "
-      ^ string_of_exp exp_f ^ "]"
+  | LenE exp -> "|" ^ string_of_exp exp ^ "|"
+  | MemE (exp_e, exp_s) -> string_of_exp exp_e ^ " <- " ^ string_of_exp exp_s
   | StrE fields ->
       "{"
       ^ String.concat ", "
@@ -124,9 +126,9 @@ and string_of_exp exp =
              fields)
       ^ "}"
   | DotE (exp, atom) -> string_of_exp exp ^ "." ^ string_of_atom atom
-  | CatE (exp_l, exp_r) -> string_of_exp exp_l ^ " ++ " ^ string_of_exp exp_r
-  | MemE (exp_e, exp_s) -> string_of_exp exp_e ^ " <- " ^ string_of_exp exp_s
-  | LenE exp -> "|" ^ string_of_exp exp ^ "|"
+  | UpdE (exp_b, path, exp_f) ->
+      string_of_exp exp_b ^ "[" ^ string_of_path path ^ " = "
+      ^ string_of_exp exp_f ^ "]"
   | ParenE exp -> "(" ^ string_of_exp exp ^ ")"
   | TupleE exps -> "(" ^ string_of_exps ", " exps ^ ")"
   | CallE (id, targs, args) ->
@@ -134,7 +136,6 @@ and string_of_exp exp =
   | IterE (exp, iter) -> string_of_exp exp ^ string_of_iter iter
   | TypE (exp, plaintyp) ->
       string_of_exp exp ^ " : " ^ string_of_plaintyp plaintyp
-  | ArithE exp -> "$(" ^ string_of_exp exp ^ ")"
   | AtomE atom -> string_of_atom atom
   | SeqE exps -> string_of_exps " " exps
   | InfixE (exp_l, atom, exp_r) ->

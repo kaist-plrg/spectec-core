@@ -28,7 +28,7 @@ let (@@@) it pos = it $ at pos
 %}
 
 %token LPAREN RPAREN LBRACK RBRACK LBRACE RBRACE
-%token COLON SEMICOLON COMMA DOT DOTDOT DOTDOTDOT BAR DASH
+%token COLON COLONCOLON SEMICOLON COMMA DOT DOTDOT DOTDOTDOT BAR DASH
 %token BIGAND BIGOR BIGADD BIGMUL BIGCAT
 %token COMMA_NL NL_BAR NL_NL NL_NL_NL
 %token EQ NE LANGLE RANGLE RANGLE_LPAREN LE GE APPROX EQUIV ASSIGN SUB SUP
@@ -57,6 +57,7 @@ let (@@@) it pos = it $ at pos
 %nonassoc TILESTURN
 %right SQARROW SQARROWSTAR PREC SUCC BIGAND BIGOR BIGADD BIGMUL BIGCAT
 %left COLON SUB SUP ASSIGN EQUIV APPROX
+%right COLONCOLON
 %right EQ NE LANGLE RANGLE LE GE MEM
 %right ARROW ARROWSUB
 %left SEMICOLON
@@ -428,15 +429,7 @@ exp_atom_ :
 
 exp_list : exp_list_ { $1 @@@ $sloc }
 exp_list_ :
-  | LBRACK exp_seq RBRACK
-    {
-      let exps =
-        match $2.it with
-        | SeqE (_ :: _ :: _ as exps) -> exps
-        | _ -> [ $2 ]
-      in
-      ListE exps
-    }
+  | LBRACK comma_list(exp_bin) RBRACK { ListE $2 }
   | exp_list iter { IterE ($1, $2) }
 
 exp_seq : exp_seq_ { $1 @@@ $sloc }
@@ -467,6 +460,7 @@ exp_bin_ :
   | exp_bin infixop exp_bin { InfixE ($1, $2, $3) }
   | exp_bin cmpop exp_bin { CmpE ($1, $2, $3) }
   | exp_bin boolop exp_bin { BinE ($1, $2, $3) }
+  | exp_bin COLONCOLON exp_bin { ConsE ($1, $3) }
   | exp_bin CAT exp_bin { CatE ($1, $3) }
   | exp_bin MEM exp_bin { MemE ($1, $3) }
 

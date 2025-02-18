@@ -112,11 +112,11 @@ and string_of_exp' e =
              expfields)
       ^ "}"
   | DotE (exp_b, atom) -> string_of_exp exp_b ^ "." ^ string_of_atom atom
-  | CompE (exp_l, exp_r) -> string_of_exp exp_l ^ " +++ " ^ string_of_exp exp_r
   | ListE exps -> "[" ^ string_of_exps ", " exps ^ "]"
+  | ConsE (exp_l, exp_r) -> string_of_exp exp_l ^ " :: " ^ string_of_exp exp_r
+  | CatE (exp_l, exp_r) -> string_of_exp exp_l ^ " ++ " ^ string_of_exp exp_r
   | MemE (exp_e, exp_s) -> string_of_exp exp_e ^ " <- " ^ string_of_exp exp_s
   | LenE exp -> "|" ^ string_of_exp exp ^ "|"
-  | CatE (exp_l, exp_r) -> string_of_exp exp_l ^ " ++ " ^ string_of_exp exp_r
   | IdxE (exp_b, exp_i) -> string_of_exp exp_b ^ "[" ^ string_of_exp exp_i ^ "]"
   | SliceE (exp_b, exp_l, exp_h) ->
       string_of_exp exp_b ^ "[" ^ string_of_exp exp_l ^ " : "

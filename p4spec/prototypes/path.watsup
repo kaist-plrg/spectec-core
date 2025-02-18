@@ -1,0 +1,23 @@
+syntax struct = {
+  AAA int,
+  BBB bool,
+  CCC text
+}
+
+syntax struct2 = {
+  DDD struct,
+  EEE nat
+}
+
+dec $foo(struct2) : bool
+def $foo(struct2) = struct2.DDD.BBB
+
+dec $bar(struct2*) : bool
+def $bar(struct2*) = bool''''
+  -- if struct2'* = struct2*[0 : 3]
+  -- if struct2''* = struct2*[ [ 4 : 3 ] = struct2'* ]
+  -- if struct2'''* = struct2*[ [ 0 ] = struct2'*[0] ]
+  -- if struct2''' = struct2''*[1]
+  -- if struct2'''' = struct2'''[ .EEE = 0 ]
+  -- if struct''' = struct2'''.DDD
+  -- if bool'''' = struct'''.BBB

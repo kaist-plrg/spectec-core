@@ -82,11 +82,11 @@ and exp' =
   | TheE of exp                           (* exp! *)
   | StrE of (atom * exp) list             (* { expfield* } *)
   | DotE of exp * atom                    (* exp.atom *)
-  | CompE of exp * exp                    (* exp @ exp *)
   | ListE of exp list                     (* `[` exp* `]` *)
+  | ConsE of exp * exp                    (* exp `::` exp *)
+  | CatE of exp * exp                     (* exp `++` exp *)
   | MemE of exp * exp                     (* exp `<-` exp *)
   | LenE of exp                           (* `|` exp `|` *)
-  | CatE of exp * exp                     (* exp `::` exp *)
   | IdxE of exp * exp                     (* exp `[` exp `]` *)
   | SliceE of exp * exp * exp             (* exp `[` exp `:` exp `]` *)
   | UpdE of exp * path * exp              (* exp `[` path `=` exp `]` *)
@@ -99,7 +99,7 @@ and iterexp = iter * (id * exp) list
 
 (* Path *)
 
-and path = path' phrase
+and path = (path', typ') note_phrase
 and path' =
   | RootP                        (*  *)
   | IdxP of path * exp           (* path `[` exp `]` *)
