@@ -3,6 +3,10 @@ open Dom
 
 (* Environments *)
 
+(* Bound identifiers *)
+
+module Bound = IdSet
+
 (* Type environment *)
 
 module TEnv = MakeIdEnv (Type)

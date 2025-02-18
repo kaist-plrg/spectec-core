@@ -1,10 +1,12 @@
+open Util.Source
+
 (* Variable identifiers *)
 
 module Id = struct
-  type t = string
+  type t = string phrase
 
-  let to_string t = t
-  let compare = compare
+  let to_string t = t.it
+  let compare t_a t_b = compare t_a.it t_b.it
 end
 
 module IdSet = struct
@@ -83,12 +85,6 @@ struct
 
   let find id env =
     match find_opt id env with Some value -> value | None -> assert false
-
-  let add_nodup id value env =
-    if mem id env then assert false else add id value env
-
-  let extend_nodup env_a env_b =
-    List.fold_left (fun env (k, v) -> add_nodup k v env) env_a (bindings env_b)
 end
 
 module MakeTIdEnv = MakeIdEnv

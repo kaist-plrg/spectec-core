@@ -98,12 +98,8 @@ and string_of_exp' e =
       "(" ^ string_of_exp exp_l ^ " " ^ string_of_cmpop cmpop ^ " "
       ^ string_of_exp exp_r ^ ")"
   | TupleE es -> "(" ^ string_of_exps ", " es ^ ")"
-  | ProjE (exp_b, idx) -> string_of_exp exp_b ^ "." ^ string_of_int idx
   | CaseE notexp -> string_of_notexp notexp
-  | UncaseE (exps, mixop) ->
-      "(" ^ string_of_exps ", " exps ^ ")!" ^ string_of_mixop mixop
   | OptE exp_opt -> "?(" ^ string_of_exps "" (Option.to_list exp_opt) ^ ")"
-  | TheE exp -> "!(" ^ string_of_exp exp ^ ")"
   | StrE expfields ->
       "{"
       ^ String.concat ", "

@@ -1,12 +1,8 @@
 open Xl
 open El.Ast
 open Dom
-open Util.Error
+open Attempt
 open Util.Source
-
-(* Error *)
-
-let error (at : region) (msg : string) = error at "elab" msg
 
 (* Checks *)
 
@@ -20,22 +16,6 @@ let distinct (eq : 'a -> 'a -> bool) (xs : 'a list) : bool =
     | x :: xs -> if List.exists (eq x) xs then false else distinct' xs
   in
   distinct' xs
-
-(* Backtracking *)
-
-type 'a attempt = Ok of 'a | Fail of region * string
-
-let fail (at : region) (msg : string) : 'a attempt = Fail (at, msg)
-
-let ( let* ) (attempt : 'a attempt) (f : 'a -> 'b) : 'b =
-  match attempt with Ok a -> f a | Fail _ as fail -> fail
-
-let ( let+ ) (attempt : 'a attempt) (f : 'a -> 'b) : 'b =
-  match attempt with Ok a -> f a | Fail (at, msg) -> error at msg
-
-let rec choice (at : region) = function
-  | [] -> fail at "all choices failed"
-  | f :: fs -> ( match f () with Ok a -> Ok a | Fail _ -> choice at fs)
 
 (* Todo *)
 
@@ -93,7 +73,7 @@ let kind_of_typ (ctx : Ctx.t) (typ : Il.Ast.typ) : kind =
       | _ -> `Plain)
   | _ -> `Plain
 
-(* Expansion *)
+(* Expansion of aliases *)
 
 let rec expand_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp =
   match plaintyp.it with
@@ -841,41 +821,61 @@ and elab_exp_variant (ctx : Ctx.t) (typcases : typcase list) (exp : exp) :
 
 and elab_path (ctx : Ctx.t) (plaintyp_expect : plaintyp) (path : path) :
     (Il.Ast.path * plaintyp) attempt =
-  let* path_il, plaintyp = elab_path' ctx path.at plaintyp_expect path.it in
+  let* path_il, plaintyp = elab_path' ctx plaintyp_expect path.it in
   let plaintyp = plaintyp $ plaintyp_expect.at in
   let typ_il = elab_plaintyp ctx plaintyp in
   Ok (path_il $$ (path.at, typ_il.it), plaintyp)
 
-and elab_path' (ctx : Ctx.t) (at : region) (plaintyp_expect : plaintyp)
-    (path : path') : (Il.Ast.path' * plaintyp') attempt =
+and elab_path' (ctx : Ctx.t) (plaintyp_expect : plaintyp) (path : path') :
+    (Il.Ast.path' * plaintyp') attempt =
   match path with
-  | RootP ->
-      let path_il = Il.Ast.RootP in
-      Ok (path_il, plaintyp_expect.it)
-  | IdxP (path, exp) ->
-      let* path_il, plaintyp = elab_path ctx plaintyp_expect path in
-      let* exp_il = elab_exp ctx (NumT `NatT $ exp.at) exp in
-      let path_il = Il.Ast.IdxP (path_il, exp_il) in
-      let* plaintyp = elab_as_list ctx plaintyp in
-      Ok (path_il, plaintyp.it)
+  | RootP -> elab_root_path plaintyp_expect
+  | IdxP (path, exp) -> elab_idx_path ctx plaintyp_expect path exp
   | SliceP (path, exp_l, exp_h) ->
-      let* path_il, plaintyp = elab_path ctx plaintyp_expect path in
-      let* exp_il_l = elab_exp ctx (NumT `NatT $ exp_l.at) exp_l in
-      let* exp_il_h = elab_exp ctx (NumT `NatT $ exp_h.at) exp_h in
-      let path_il = Il.Ast.SliceP (path_il, exp_il_l, exp_il_h) in
-      let* _ = elab_as_list ctx plaintyp in
-      Ok (path_il, plaintyp.it)
-  | DotP (path, atom) ->
-      let* path_il, plaintyp = elab_path ctx plaintyp_expect path in
-      let* typfields = elab_as_struct ctx plaintyp in
-      let* plaintyp =
-        List.find_opt (fun (atom_t, _, _) -> atom.it = atom_t.it) typfields
-        |> fun typfield_opt ->
-        match typfield_opt with
-        | Some (_, plaintyp, _) -> Ok plaintyp
-        | None -> fail at "cannot infer type of field"
-      in
-      Ok (Il.Ast.DotP (path_il, atom), plaintyp.it)
+      elab_slice_path ctx plaintyp_expect path exp_l exp_h
+  | DotP (path, atom) -> elab_dot_path ctx plaintyp_expect path atom
+
+(* Root paths *)
+
+and elab_root_path (plaintyp_expect : plaintyp) :
+    (Il.Ast.path' * plaintyp') attempt =
+  Ok (Il.Ast.RootP, plaintyp_expect.it)
+
+(* Index paths *)
+
+and elab_idx_path (ctx : Ctx.t) (plaintyp_expect : plaintyp) (path : path)
+    (exp : exp) : (Il.Ast.path' * plaintyp') attempt =
+  let* path_il, plaintyp = elab_path ctx plaintyp_expect path in
+  let* exp_il = elab_exp ctx (NumT `NatT $ exp.at) exp in
+  let path_il = Il.Ast.IdxP (path_il, exp_il) in
+  let* plaintyp = elab_as_list ctx plaintyp in
+  Ok (path_il, plaintyp.it)
+
+(* Slice paths *)
+
+and elab_slice_path (ctx : Ctx.t) (plaintyp_expect : plaintyp) (path : path)
+    (exp_l : exp) (exp_h : exp) : (Il.Ast.path' * plaintyp') attempt =
+  let* path_il, plaintyp = elab_path ctx plaintyp_expect path in
+  let* exp_il_l = elab_exp ctx (NumT `NatT $ exp_l.at) exp_l in
+  let* exp_il_h = elab_exp ctx (NumT `NatT $ exp_h.at) exp_h in
+  let path_il = Il.Ast.SliceP (path_il, exp_il_l, exp_il_h) in
+  let* _ = elab_as_list ctx plaintyp in
+  Ok (path_il, plaintyp.it)
+
+(* Dot paths *)
+
+and elab_dot_path (ctx : Ctx.t) (plaintyp_expect : plaintyp) (path : path)
+    (atom : atom) : (Il.Ast.path' * plaintyp') attempt =
+  let* path_il, plaintyp = elab_path ctx plaintyp_expect path in
+  let* typfields = elab_as_struct ctx plaintyp in
+  let* plaintyp =
+    List.find_opt (fun (atom_t, _, _) -> atom.it = atom_t.it) typfields
+    |> fun typfield_opt ->
+    match typfield_opt with
+    | Some (_, plaintyp, _) -> Ok plaintyp
+    | None -> fail atom.at "cannot infer type of field"
+  in
+  Ok (Il.Ast.DotP (path_il, atom), plaintyp.it)
 
 (* Parameters *)
 
@@ -918,7 +918,7 @@ and elab_prem' (ctx : Ctx.t) (prem : prem') : Ctx.t * Il.Ast.prem' option =
   match prem with
   | VarPr (id, plaintyp) -> elab_var_prem ctx id plaintyp |> wrap_none
   | RulePr (id, exp) -> elab_rule_prem ctx id exp |> wrap_ctx |> wrap_some
-  | IfPr exp -> elab_if_prem ctx exp |> wrap_ctx |> wrap_some
+  | IfPr exp -> elab_if_prem ctx exp |> wrap_some
   | ElsePr -> elab_else_prem () |> wrap_ctx |> wrap_some
   | _ ->
       let+ _ = todo "elab_prem" (El.Print.string_of_prem (prem $ no_region)) in
@@ -939,7 +939,7 @@ and elab_var_prem (ctx : Ctx.t) (id : id) (plaintyp : plaintyp) : Ctx.t =
   check (valid_tid id) id.at "invalid meta-variable identifier";
   check (not (Ctx.bound_typdef ctx id)) id.at "type already defined";
   let _typ_il = elab_plaintyp ctx plaintyp in
-  Ctx.add_metavar ctx id.it plaintyp
+  Ctx.add_metavar ctx id plaintyp
 
 (* Rule premises *)
 
@@ -950,9 +950,14 @@ and elab_rule_prem (ctx : Ctx.t) (id : id) (exp : exp) : Il.Ast.prem' =
 
 (* If premises *)
 
-and elab_if_prem (ctx : Ctx.t) (exp : exp) : Il.Ast.prem' =
+and elab_if_prem (ctx : Ctx.t) (exp : exp) : Ctx.t * Il.Ast.prem' =
   let+ exp_il = elab_exp ctx (BoolT $ exp.at) exp in
-  Il.Ast.IfPr exp_il
+  let ctx =
+    let+ frees = Free.free_if_prem ctx.venv exp_il in
+    frees |> Envs.Bound.elements |> Ctx.add_vars ctx
+  in
+  let prem_il = Il.Ast.IfPr exp_il in
+  (ctx, prem_il)
 
 (* Else premises *)
 
@@ -994,10 +999,10 @@ and elab_syn_def (ctx : Ctx.t) (id : id) (tparams : tparam list) : Ctx.t =
     id.at "type parameters are not distinct";
   check (valid_tid id) id.at "invalid type identifier";
   let td = TypeDef.Defining tparams in
-  let ctx = Ctx.add_typdef ctx id.it td in
+  let ctx = Ctx.add_typdef ctx id td in
   if tparams = [] then
     let plaintyp = VarT (id, []) $ id.at in
-    Ctx.add_metavar ctx id.it plaintyp
+    Ctx.add_metavar ctx id plaintyp
   else ctx
 
 (* Type definitions *)
@@ -1018,10 +1023,10 @@ and elab_typ_def (ctx : Ctx.t) (id : id) (tparams : tparam list)
     | None ->
         check (valid_tid id) id.at "invalid type identifier";
         let td = TypeDef.Defining tparams in
-        let ctx = Ctx.add_typdef ctx id.it td in
+        let ctx = Ctx.add_typdef ctx id td in
         if tparams = [] then
           let plaintyp = VarT (id, []) $ id.at in
-          Ctx.add_metavar ctx id.it plaintyp
+          Ctx.add_metavar ctx id plaintyp
         else ctx
     | _ -> error id.at "type was already defined"
   in
@@ -1039,7 +1044,7 @@ and elab_var_def (ctx : Ctx.t) (id : id) (plaintyp : plaintyp) : Ctx.t =
   check (valid_tid id) id.at "invalid meta-variable identifier";
   check (not (Ctx.bound_typdef ctx id)) id.at "type already defined";
   let _typ_il = elab_plaintyp ctx plaintyp in
-  Ctx.add_metavar ctx id.it plaintyp
+  Ctx.add_metavar ctx id plaintyp
 
 (* Relation declarations *)
 
@@ -1047,7 +1052,7 @@ and elab_rel_def (ctx : Ctx.t) (at : region) (id : id) (nottyp : nottyp) :
     Ctx.t * Il.Ast.def =
   let nottyp_il = elab_nottyp ctx nottyp in
   let def_il = Il.Ast.RelD (id, nottyp_il, []) $ at in
-  let ctx = Ctx.add_rel ctx id.it nottyp in
+  let ctx = Ctx.add_rel ctx id nottyp in
   (ctx, def_il)
 
 (* Rule definitions *)
@@ -1059,7 +1064,7 @@ and elab_rule_def (ctx : Ctx.t) (at : region) (id_rel : id) (id_rule : id)
   let+ notexp_il = elab_exp_not ctx_local nottyp exp in
   let _ctx_local, prems_il = elab_prems ctx_local prems in
   let rule = (id_rule, notexp_il, prems_il) $ at in
-  Ctx.add_rule ctx id_rel.it rule
+  Ctx.add_rule ctx id_rel rule
 
 (* Function declarations *)
 
@@ -1071,7 +1076,7 @@ and elab_dec_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
   let params_il = List.map (elab_param ctx) params in
   let typ_il = elab_plaintyp ctx plaintyp in
   let def_il = Il.Ast.DecD (id, tparams, params_il, typ_il, []) $ at in
-  let ctx = Ctx.add_dec ctx id.it tparams params plaintyp in
+  let ctx = Ctx.add_dec ctx id tparams params plaintyp in
   (ctx, def_il)
 
 (* Function definitions *)
@@ -1085,10 +1090,17 @@ and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (targs : plaintyp list)
   check (List.length params = List.length args) at "arguments do not match";
   let ctx_local = ctx in
   let args_il = List.map2 (elab_arg ctx_local) params args in
+  let ctx_local =
+    let+ frees = Free.free_args ctx.venv args_il in
+    frees |> Envs.Bound.elements |> Ctx.add_vars ctx_local
+  in
+  let ctx_local, prems_il = elab_prems ctx_local prems in
   let+ exp_il = elab_exp ctx_local plaintyp exp in
-  let _ctx_local, prems_il = elab_prems ctx_local prems in
+  let+ frees = Free.free_exp ctx_local.venv exp_il in
+  if not (Envs.Bound.is_empty frees) then
+    error at "expression has free variables";
   let clause = (args_il, exp_il, prems_il) $ at in
-  Ctx.add_clause ctx id.it clause
+  Ctx.add_clause ctx id clause
 
 (* Spec *)
 
