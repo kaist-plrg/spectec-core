@@ -235,8 +235,6 @@ and string_of_prem prem =
   | ElsePr -> "otherwise"
   | LetPr (exp_l, exp_r) ->
       "let " ^ string_of_exp exp_l ^ " = " ^ string_of_exp exp_r
-  | IfLetPr (exp_l, exp_r) ->
-      "iflet " ^ string_of_exp exp_l ^ " = " ^ string_of_exp exp_r
   | IterPr (({ it = IterPr _; _ } as prem), iterexp) ->
       string_of_prem prem ^ string_of_iterexp iterexp
   | IterPr (prem, iterexp) ->

@@ -151,7 +151,6 @@ and prem' =
   | IfPr of exp                    (* `if` exp *)
   | ElsePr                         (* `otherwise` *)
   | LetPr of exp * exp             (* `let` exp `=` exp *)
-  | IfLetPr of exp * exp           (* `iflet` exp `=` exp *)
   | IterPr of prem * iterexp       (* prem iterexp *)
 
 (* Hints *)

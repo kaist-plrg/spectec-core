@@ -907,6 +907,18 @@ and elab_arg (ctx : Ctx.t) (param : param) (arg : arg) : Il.Ast.arg =
 
 (* Elaboration of premises *)
 
+and elab_prem_with_bind (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.Ast.prem option
+    =
+  let ctx, prem_il_opt = elab_prem ctx prem in
+  let prem_il_opt =
+    Option.map
+      (fun prem_il ->
+        let+ prem_il = Bind.bind Bind.bind_prem ctx.venv prem_il in
+        prem_il)
+      prem_il_opt
+  in
+  (ctx, prem_il_opt)
+
 and elab_prem (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.Ast.prem option =
   let ctx, prem_il_opt = elab_prem' ctx prem.it in
   let prem_il_opt = Option.map (fun prem_il -> prem_il $ prem.at) prem_il_opt in
@@ -923,10 +935,11 @@ and elab_prem' (ctx : Ctx.t) (prem : prem') : Ctx.t * Il.Ast.prem' option =
   | ElsePr -> elab_else_prem () |> wrap_ctx |> wrap_some
   | IterPr (prem, iter) -> elab_iter_prem ctx prem iter |> wrap_some
 
-and elab_prems (ctx : Ctx.t) (prems : prem list) : Ctx.t * Il.Ast.prem list =
+and elab_prems_with_bind (ctx : Ctx.t) (prems : prem list) :
+    Ctx.t * Il.Ast.prem list =
   List.fold_left
     (fun (ctx, prems_il) prem ->
-      let ctx, prem_il_opt = elab_prem ctx prem in
+      let ctx, prem_il_opt = elab_prem_with_bind ctx prem in
       match prem_il_opt with
       | Some prem_il -> (ctx, prems_il @ [ prem_il ])
       | None -> (ctx, prems_il))
@@ -1156,43 +1169,48 @@ and elab_rel_def (ctx : Ctx.t) (at : region) (id : id) (nottyp : nottyp)
 
 (* Elaboration of rule definitions *)
 
+and elab_rule_input_with_bind (ctx : Ctx.t) (exps_il : (int * Il.Ast.exp) list)
+    : Ctx.t * (int * Il.Ast.exp) list =
+  let+ frees_input = exps_il |> List.map snd |> Bind.free_exps ctx.venv in
+  let ctx = frees_input |> VEnv.bindings |> Ctx.add_vars ctx in
+  let idxs, exps_il = List.split exps_il in
+  let+ exps_il = Bind.bind Bind.bind_exps ctx.venv exps_il in
+  let exps_il = List.combine idxs exps_il in
+  (ctx, exps_il)
+
+and elab_rule_output_with_bind (ctx : Ctx.t) (at : region)
+    (exps_il : (int * Il.Ast.exp) list) : (int * Il.Ast.exp) list =
+  let+ frees_output = exps_il |> List.map snd |> Bind.free_exps ctx.venv in
+  if not (VEnv.is_empty frees_output) then
+    error at
+      (Format.asprintf "rule output has free variable(s): %s"
+         (VEnv.to_string frees_output));
+  let idxs, exps_il = List.split exps_il in
+  let+ exps_il = Bind.bind Bind.bind_exps ctx.venv exps_il in
+  List.combine idxs exps_il
+
 and elab_rule_def (ctx : Ctx.t) (at : region) (id_rel : id) (id_rule : id)
     (exp : exp) (prems : prem list) : Ctx.t =
   let nottyp, inputs = Ctx.find_rel ctx id_rel in
   let ctx_local = ctx in
   let+ notexp_il = elab_exp_not ctx_local nottyp exp in
-  let mixop, exps = notexp_il in
-  let exps_input, exps_output =
-    exps
+  let mixop, exps_il = notexp_il in
+  let exps_il_input, exps_il_output =
+    exps_il
     |> List.mapi (fun idx exp -> (idx, exp))
     |> List.partition (fun (idx, _) -> List.mem idx inputs)
   in
-  let+ frees_input =
-    exps_input |> List.map snd |> Bind.free_exps ctx_local.venv
+  let ctx_local, exps_il_input =
+    elab_rule_input_with_bind ctx_local exps_il_input
   in
-  let ctx_local = frees_input |> VEnv.bindings |> Ctx.add_vars ctx_local in
-  let+ exps_input =
-    let idxs, exps_input = List.split exps_input in
-    let+ exps_input = Bind.bind Bind.bind_exps ctx_local.venv exps_input in
-    Ok (List.combine idxs exps_input)
-  in
-  let ctx_local, prems_il = elab_prems ctx_local prems in
-  let+ frees_output =
-    exps_output |> List.map snd |> Bind.free_exps ctx_local.venv
-  in
-  if not (VEnv.is_empty frees_output) then
-    error exp.at
-      (Format.asprintf "rule output has free variable(s): %s"
-         (VEnv.to_string frees_output));
-  let+ exps_output =
-    let idxs, exps_output = List.split exps_output in
-    let+ exps_input = Bind.bind Bind.bind_exps ctx_local.venv exps_output in
-    Ok (List.combine idxs exps_input)
+  let ctx_local, prems_il = elab_prems_with_bind ctx_local prems in
+  let exps_il_output =
+    elab_rule_output_with_bind ctx_local exp.at exps_il_output
   in
   let notexp_il =
     let exps_il =
-      exps_input @ exps_output
-      |> List.sort (fun (idx_l, _) (idx_r, _) -> compare idx_l idx_r)
+      exps_il_input @ exps_il_output
+      |> List.sort (fun (idx_a, _) (idx_b, _) -> compare idx_a idx_b)
       |> List.map snd
     in
     (mixop, exps_il)
@@ -1215,6 +1233,25 @@ and elab_dec_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
 
 (* Elaboration of function definitions *)
 
+and elab_def_input_with_bind (ctx : Ctx.t) (params : param list)
+    (args : arg list) : Ctx.t * Il.Ast.arg list =
+  let args_il = List.map2 (elab_arg ctx) params args in
+  let+ frees_input = Bind.free_args ctx.venv args_il in
+  let ctx = frees_input |> VEnv.bindings |> Ctx.add_vars ctx in
+  let+ args_il = Bind.bind Bind.bind_args ctx.venv args_il in
+  (ctx, args_il)
+
+and elab_def_output_with_bind (ctx : Ctx.t) (plaintyp : plaintyp) (exp : exp) :
+    Il.Ast.exp =
+  let+ exp_il = elab_exp ctx plaintyp exp in
+  let+ frees_output = Bind.free_exp ctx.venv exp_il in
+  if not (VEnv.is_empty frees_output) then
+    error exp_il.at
+      (Format.asprintf "output expression has free variable(s): %s"
+         (VEnv.to_string frees_output));
+  let+ exp_il = Bind.bind Bind.bind_exp ctx.venv exp_il in
+  exp_il
+
 and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (targs : plaintyp list)
     (args : arg list) (exp : exp) (prems : prem list) : Ctx.t =
   let tparams, params, plaintyp = Ctx.find_dec ctx id in
@@ -1223,18 +1260,9 @@ and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (targs : plaintyp list)
     at "type arguments do not match";
   check (List.length params = List.length args) at "arguments do not match";
   let ctx_local = ctx in
-  let args_il = List.map2 (elab_arg ctx_local) params args in
-  let+ frees_input = Bind.free_args ctx_local.venv args_il in
-  let ctx_local = frees_input |> VEnv.bindings |> Ctx.add_vars ctx_local in
-  let+ args_il = Bind.bind Bind.bind_args ctx_local.venv args_il in
-  let ctx_local, prems_il = elab_prems ctx_local prems in
-  let+ exp_il = elab_exp ctx_local plaintyp exp in
-  let+ frees_output = Bind.free_exp ctx_local.venv exp_il in
-  if not (VEnv.is_empty frees_output) then
-    error exp_il.at
-      (Format.asprintf "output expression has free variable(s): %s"
-         (VEnv.to_string frees_output));
-  let+ exp_il = Bind.bind Bind.bind_exp ctx_local.venv exp_il in
+  let ctx_local, args_il = elab_def_input_with_bind ctx_local params args in
+  let ctx_local, prems_il = elab_prems_with_bind ctx_local prems in
+  let exp_il = elab_def_output_with_bind ctx_local plaintyp exp in
   let clause = (args_il, exp_il, prems_il) $ at in
   Ctx.add_clause ctx id clause
 

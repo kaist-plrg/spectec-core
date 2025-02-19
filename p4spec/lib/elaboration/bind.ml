@@ -168,7 +168,9 @@ let free_if_prem (bounds : t) (at : region) (exp_l : exp) (exp_r : exp) :
   else if VEnv.is_empty free_l then Ok (`AssignR free_r)
   else fail at "cannot bind both sides of an equality"
 
-(* Annotate iterated expressions with their bound identifiers *)
+(* Annotate iterated expressions with their bound identifiers,
+   where iterations bind from inside to outside,
+   and it is an error to have superfluous or missing iterations *)
 
 let bind (binder : t -> 'a -> ('a * t) attempt) (bounds : t) (construct : 'a) :
     'a attempt =
@@ -189,6 +191,7 @@ let bind (binder : t -> 'a -> ('a * t) attempt) (bounds : t) (construct : 'a) :
 (* Expression *)
 
 let rec bind_exp (bounds : t) (exp : exp) : (exp * t) attempt =
+  let at, note = (exp.at, exp.note) in
   match exp.it with
   | BoolE _ | NumE _ | TextE _ -> Ok (exp, empty)
   | VarE id ->
@@ -196,100 +199,102 @@ let rec bind_exp (bounds : t) (exp : exp) : (exp * t) attempt =
       else fail exp.at ("free identifier: " ^ Id.to_string id)
   | UnE (op, optyp, exp) ->
       let* exp, occurs = bind_exp bounds exp in
-      let exp = { exp with it = UnE (op, optyp, exp) } in
+      let exp = UnE (op, optyp, exp) $$ (at, note) in
       Ok (exp, occurs)
   | BinE (op, bintyp, exp_l, exp_r) ->
       let* exp_l, occurs_l = bind_exp bounds exp_l in
       let* exp_r, occurs_r = bind_exp bounds exp_r in
-      let exp = { exp with it = BinE (op, bintyp, exp_l, exp_r) } in
+      let exp = BinE (op, bintyp, exp_l, exp_r) $$ (at, note) in
       let occurs = union_occurs occurs_l occurs_r in
       Ok (exp, occurs)
   | CmpE (op, cmptyp, exp_l, exp_r) ->
       let* exp_l, occurs_l = bind_exp bounds exp_l in
       let* exp_r, occurs_r = bind_exp bounds exp_r in
-      let exp = { exp with it = CmpE (op, cmptyp, exp_l, exp_r) } in
+      let exp = CmpE (op, cmptyp, exp_l, exp_r) $$ (at, note) in
       let occurs = union_occurs occurs_l occurs_r in
       Ok (exp, occurs)
   | TupleE exps ->
       let* exps, occurs = bind_exps bounds exps in
-      let exp = { exp with it = TupleE exps } in
+      let exp = TupleE exps $$ (at, note) in
       Ok (exp, occurs)
   | CaseE notexp ->
       let mixop, exps = notexp in
       let* exps, occurs = bind_exps bounds exps in
       let notexp = (mixop, exps) in
-      let exp = { exp with it = CaseE notexp } in
+      let exp = CaseE notexp $$ (at, note) in
       Ok (exp, occurs)
   | OptE exp_opt -> (
       match exp_opt with
       | Some exp ->
           let* exp, occurs = bind_exp bounds exp in
           let exp_opt = Some exp in
-          let exp = { exp with it = OptE exp_opt } in
+          let exp = OptE exp_opt $$ (at, note) in
           Ok (exp, occurs)
       | None -> Ok (exp, empty))
   | StrE expfields ->
       let atoms, exps = List.split expfields in
       let* exps, occurs = bind_exps bounds exps in
       let expfields = List.combine atoms exps in
-      let exp = { exp with it = StrE expfields } in
+      let exp = StrE expfields $$ (at, note) in
       Ok (exp, occurs)
   | DotE (exp, atom) ->
       let* exp, occurs = bind_exp bounds exp in
-      let exp = { exp with it = DotE (exp, atom) } in
+      let exp = DotE (exp, atom) $$ (at, note) in
       Ok (exp, occurs)
   | ListE exps ->
       let* exps, occurs = bind_exps bounds exps in
-      let exp = { exp with it = ListE exps } in
+      let exp = ListE exps $$ (at, note) in
       Ok (exp, occurs)
   | ConsE (exp_l, exp_r) ->
       let* exp_l, occurs_l = bind_exp bounds exp_l in
       let* exp_r, occurs_r = bind_exp bounds exp_r in
-      let exp = { exp with it = ConsE (exp_l, exp_r) } in
+      let exp = ConsE (exp_l, exp_r) $$ (at, note) in
       let occurs = union_occurs occurs_l occurs_r in
       Ok (exp, occurs)
   | CatE (exp_l, exp_r) ->
       let* exp_l, occurs_l = bind_exp bounds exp_l in
       let* exp_r, occurs_r = bind_exp bounds exp_r in
-      let exp = { exp with it = CatE (exp_l, exp_r) } in
+      let exp = CatE (exp_l, exp_r) $$ (at, note) in
       let occurs = union_occurs occurs_l occurs_r in
       Ok (exp, occurs)
   | MemE (exp_l, exp_r) ->
       let* exp_l, occurs_l = bind_exp bounds exp_l in
       let* exp_r, occurs_r = bind_exp bounds exp_r in
-      let exp = { exp with it = MemE (exp_l, exp_r) } in
+      let exp = MemE (exp_l, exp_r) $$ (at, note) in
       let occurs = union_occurs occurs_l occurs_r in
       Ok (exp, occurs)
   | LenE exp ->
       let* exp, occurs = bind_exp bounds exp in
-      let exp = { exp with it = LenE exp } in
+      let exp = LenE exp $$ (at, note) in
       Ok (exp, occurs)
   | IdxE (exp_b, exp_i) ->
       let* exp_b, occurs_b = bind_exp bounds exp_b in
       let* exp_i, occurs_i = bind_exp bounds exp_i in
-      let exp = { exp with it = IdxE (exp_b, exp_i) } in
+      let exp = IdxE (exp_b, exp_i) $$ (at, note) in
       let occurs = union_occurs occurs_b occurs_i in
       Ok (exp, occurs)
   | SliceE (exp_b, exp_l, exp_h) ->
       let* exp_b, occurs_b = bind_exp bounds exp_b in
       let* exp_l, occurs_l = bind_exp bounds exp_l in
       let* exp_h, occurs_h = bind_exp bounds exp_h in
-      let exp = { exp with it = SliceE (exp_b, exp_l, exp_h) } in
+      let exp = SliceE (exp_b, exp_l, exp_h) $$ (at, note) in
       let occurs = union_occurs (union_occurs occurs_b occurs_l) occurs_h in
       Ok (exp, occurs)
   | UpdE (exp_b, path, exp_f) ->
       let* exp_b, occurs_b = bind_exp bounds exp_b in
       let* exp_f, occurs_f = bind_exp bounds exp_f in
       let* path, occurs_p = bind_path bounds path in
-      let exp = { exp with it = UpdE (exp_b, path, exp_f) } in
+      let exp = UpdE (exp_b, path, exp_f) $$ (at, note) in
       let occurs = union_occurs (union_occurs occurs_b occurs_f) occurs_p in
       Ok (exp, occurs)
   | CallE (id, targs, args) ->
       let* args, occurs = bind_args bounds args in
-      let exp = { exp with it = CallE (id, targs, args) } in
+      let exp = CallE (id, targs, args) $$ (at, note) in
       Ok (exp, occurs)
-  | IterE (_, (_, _ :: _)) ->
-      fail exp.at "iterated expression should initially have no annotations"
+  | IterE (_, (_, (_ :: _ as binds))) ->
+      fail at
+        ("iterated expression should initially have no annotations, but got "
+        ^ String.concat ", " (List.map Il.Print.string_of_var binds))
   | IterE (exp, (iter, [])) -> (
       let* exp, occurs = bind_exp bounds exp in
       let binds =
@@ -301,9 +306,9 @@ let rec bind_exp (bounds : t) (exp : exp) : (exp * t) attempt =
                if Dom.Dim.sub iters iters_expect then Some var else None)
       in
       match binds with
-      | [] -> fail exp.at "empty iteration"
+      | [] -> fail at "empty iteration"
       | _ ->
-          let exp = { exp with it = IterE (exp, (iter, binds)) } in
+          let exp = IterE (exp, (iter, binds)) $$ (at, note) in
           let occurs =
             List.fold_left
               (fun occurs (id, iters) -> VEnv.add id (iters @ [ iter ]) occurs)
@@ -312,7 +317,7 @@ let rec bind_exp (bounds : t) (exp : exp) : (exp * t) attempt =
           Ok (exp, occurs))
   | CastE (exp, typ) ->
       let* exp, occurs = bind_exp bounds exp in
-      let exp = { exp with it = CastE (exp, typ) } in
+      let exp = CastE (exp, typ) $$ (at, note) in
       Ok (exp, occurs)
 
 and bind_exps (bounds : t) (exps : exp list) : (exp list * t) attempt =
@@ -328,33 +333,35 @@ and bind_exps (bounds : t) (exps : exp list) : (exp list * t) attempt =
 (* Path *)
 
 and bind_path (bounds : t) (path : path) : (path * t) attempt =
+  let at, note = (path.at, path.note) in
   match path.it with
   | RootP -> Ok (path, empty)
   | IdxP (path, exp) ->
       let* path, occurs_p = bind_path bounds path in
       let* exp, occurs_e = bind_exp bounds exp in
-      let path = { path with it = IdxP (path, exp) } in
+      let path = IdxP (path, exp) $$ (at, note) in
       let occurs = union_occurs occurs_p occurs_e in
       Ok (path, occurs)
   | SliceP (path, exp_l, exp_h) ->
       let* path, occurs_p = bind_path bounds path in
       let* exp_l, occurs_l = bind_exp bounds exp_l in
       let* exp_h, occurs_h = bind_exp bounds exp_h in
-      let path = { path with it = SliceP (path, exp_l, exp_h) } in
+      let path = SliceP (path, exp_l, exp_h) $$ (at, note) in
       let occurs = union_occurs (union_occurs occurs_p occurs_l) occurs_h in
       Ok (path, occurs)
   | DotP (path, atom) ->
       let* path, occurs = bind_path bounds path in
-      let path = { path with it = DotP (path, atom) } in
+      let path = DotP (path, atom) $$ (at, note) in
       Ok (path, occurs)
 
-(* Arguments *)
+(* Argument *)
 
 and bind_arg (bounds : t) (arg : arg) : (arg * t) attempt =
+  let at = arg.at in
   match arg.it with
   | ExpA exp ->
       let* exp, occurs = bind_exp bounds exp in
-      let arg = { arg with it = ExpA exp } in
+      let arg = ExpA exp $ at in
       Ok (arg, occurs)
   | DefA _ -> Ok (arg, empty)
 
@@ -367,3 +374,48 @@ and bind_args (bounds : t) (args : arg list) : (arg list * t) attempt =
       let args = arg :: args in
       let occurs = union_occurs occurs_h occurs_t in
       Ok (args, occurs)
+
+(* Premise *)
+
+and bind_prem (bounds : t) (prem : prem) : (prem * t) attempt =
+  let at = prem.at in
+  match prem.it with
+  | RulePr (id, notexp) ->
+      let mixop, exps = notexp in
+      let* exps, occurs = bind_exps bounds exps in
+      let notexp = (mixop, exps) in
+      let prem = RulePr (id, notexp) $ at in
+      Ok (prem, occurs)
+  | IfPr exp ->
+      let* exp, occurs = bind_exp bounds exp in
+      let prem = IfPr exp $ at in
+      Ok (prem, occurs)
+  | ElsePr -> Ok (prem, empty)
+  | LetPr (exp_l, exp_r) ->
+      let* exp_l, occurs_l = bind_exp bounds exp_l in
+      let* exp_r, occurs_r = bind_exp bounds exp_r in
+      let prem = LetPr (exp_l, exp_r) $ at in
+      let occurs = union_occurs occurs_l occurs_r in
+      Ok (prem, occurs)
+  | IterPr (_, (_, _ :: _)) ->
+      fail at "iterated premise should initially have no annotations"
+  | IterPr (prem, (iter, [])) -> (
+      let* prem, occurs = bind_prem bounds prem in
+      let binds =
+        occurs |> VEnv.bindings
+        |> List.filter_map (fun var ->
+               let id, iters = var in
+               let iters = iters @ [ iter ] in
+               let iters_expect = VEnv.find id bounds in
+               if Dom.Dim.sub iters iters_expect then Some var else None)
+      in
+      match binds with
+      | [] -> fail at "empty iteration"
+      | _ ->
+          let prem = IterPr (prem, (iter, binds)) $ at in
+          let occurs =
+            List.fold_left
+              (fun occurs (id, iters) -> VEnv.add id (iters @ [ iter ]) occurs)
+              occurs binds
+          in
+          Ok (prem, occurs))
