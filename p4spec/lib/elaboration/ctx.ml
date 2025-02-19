@@ -12,8 +12,8 @@ let error (at : region) (msg : string) = error at "elab" msg
 (* Context *)
 
 type t = {
-  (* Set of bound identifiers *)
-  venv : Bound.t;
+  (* Map of variable ids to dimensions *)
+  venv : VEnv.t;
   (* Map from syntax ids to type definitions *)
   tdenv : TDEnv.t;
   (* Map from meta-variable ids to types *)
@@ -28,7 +28,7 @@ type t = {
 
 let empty : t =
   {
-    venv = Bound.empty;
+    venv = VEnv.empty;
     tdenv = TDEnv.empty;
     menv = TEnv.empty;
     renv = REnv.empty;
@@ -49,7 +49,7 @@ let init () : t =
 
 (* Finders for variables *)
 
-let bound_var (ctx : t) (id : Id.t) : bool = Bound.mem id ctx.venv
+let bound_var (ctx : t) (id : Id.t) : bool = VEnv.mem id ctx.venv
 
 (* Finders for type definitions *)
 
@@ -127,12 +127,13 @@ let find_clauses (ctx : t) (fid : FId.t) : Il.Ast.clause list =
 
 (* Adders for variables *)
 
-let add_var (ctx : t) (id : Id.t) : t =
+let add_var (ctx : t) (id : Id.t * Dim.t) : t =
+  let id, dim = id in
   if bound_var ctx id then error id.at "variable already defined";
-  let venv = Bound.add id ctx.venv in
+  let venv = VEnv.add id dim ctx.venv in
   { ctx with venv }
 
-let add_vars (ctx : t) (ids : Id.t list) : t =
+let add_vars (ctx : t) (ids : (Id.t * Dim.t) list) : t =
   List.fold_left (fun ctx id -> add_var ctx id) ctx ids
 
 (* Adders for type definitions *)

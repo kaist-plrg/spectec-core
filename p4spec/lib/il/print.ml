@@ -30,6 +30,11 @@ let string_of_mixop mixop = Mixop.string_of_mixop mixop
 
 let string_of_iter iter = match iter with Opt -> "?" | List -> "*"
 
+(* Variables *)
+
+let string_of_var (id, iters) =
+  string_of_varid id ^ String.concat "" (List.map string_of_iter iters)
+
 (* Types *)
 
 let rec string_of_typ typ =
@@ -133,13 +138,14 @@ and string_of_notexp notexp =
   string_of_mixop mixop ^ "(" ^ string_of_exps ", " exps ^ ")"
 
 and string_of_iterexp iterexp =
-  let iter, binds = iterexp in
+  let iter, vars = iterexp in
   string_of_iter iter ^ "{"
   ^ String.concat ", "
       (List.map
-         (fun (varid, exp) ->
-           string_of_varid varid ^ " <- " ^ string_of_exp exp)
-         binds)
+         (fun var ->
+           let id, iters = var in
+           string_of_var var ^ " <- " ^ string_of_var (id, iters @ [ iter ]))
+         vars)
   ^ "}"
 
 (* Paths *)

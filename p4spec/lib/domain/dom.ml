@@ -12,8 +12,9 @@ end
 module IdSet = struct
   include Set.Make (Id)
 
-  let to_string s =
-    "{ " ^ String.concat ", " (List.map Id.to_string (elements s)) ^ " }"
+  let to_string ?(with_braces = true) s =
+    let sset = String.concat ", " (List.map Id.to_string (elements s)) in
+    if with_braces then "{ " ^ sset ^ " }" else sset
 
   let eq = equal
   let of_list l = List.fold_left (fun acc x -> add x acc) empty l
@@ -27,10 +28,12 @@ module IdMap = struct
   let keys m = List.map fst (bindings m)
   let values m = List.map snd (bindings m)
 
-  let to_string (to_string_v : 'v to_string_v) m =
-    let to_string_binding (k, v) = Id.to_string k ^ " : " ^ to_string_v v in
+  let to_string ?(with_braces = true) ?(bind = " : ")
+      (to_string_v : 'v to_string_v) m =
+    let to_string_binding (k, v) = Id.to_string k ^ bind ^ to_string_v v in
     let bindings = bindings m in
-    "{ " ^ String.concat ", " (List.map to_string_binding bindings) ^ " }"
+    let smap = String.concat ", " (List.map to_string_binding bindings) in
+    if with_braces then "{ " ^ smap ^ " }" else smap
 
   let extend env_a env_b =
     List.fold_left (fun env (k, v) -> add k v env) env_a (bindings env_b)
@@ -81,7 +84,8 @@ struct
 
   type t = V.t IdMap.t
 
-  let to_string env = IdMap.to_string V.to_string env
+  let to_string ?(with_braces = true) ?(bind = " : ") env =
+    IdMap.to_string ~with_braces ~bind V.to_string env
 
   let find id env =
     match find_opt id env with Some value -> value | None -> assert false

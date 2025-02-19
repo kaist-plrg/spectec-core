@@ -1,13 +1,31 @@
-open El.Ast
+module Dim = struct
+  type t = Il.Ast.iter list
+
+  let equiv dim_a dim_b =
+    List.length dim_a = List.length dim_b && List.for_all2 ( = ) dim_a dim_b
+
+  let sub dim_a dim_b =
+    List.length dim_a <= List.length dim_b
+    && List.for_all2 ( = ) dim_a
+         (List.filteri (fun idx _ -> idx < List.length dim_a) dim_b)
+
+  let to_string t =
+    match t with
+    | [] -> "empty"
+    | _ -> t |> List.map Il.Print.string_of_iter |> String.concat ", "
+end
 
 module Type = struct
-  type t = plaintyp
+  type t = El.Ast.plaintyp
 
   let to_string t = El.Print.string_of_plaintyp t
 end
 
 module TypeDef = struct
-  type t = Param | Defining of tparam list | Defined of tparam list * deftyp
+  type t =
+    | Param
+    | Defining of El.Ast.tparam list
+    | Defined of El.Ast.tparam list * El.Ast.deftyp
 
   let to_string = function
     | Param -> "Param"
@@ -25,7 +43,7 @@ module TypeDef = struct
 end
 
 module Rel = struct
-  type t = nottyp * int list * Il.Ast.rule list
+  type t = El.Ast.nottyp * int list * Il.Ast.rule list
 
   let to_string (nottyp, inputs, rules) =
     El.Print.string_of_nottyp nottyp
@@ -36,7 +54,11 @@ module Rel = struct
 end
 
 module Func = struct
-  type t = tparam list * param list * plaintyp * Il.Ast.clause list
+  type t =
+    El.Ast.tparam list
+    * El.Ast.param list
+    * El.Ast.plaintyp
+    * Il.Ast.clause list
 
   let to_string (tparams, params, plaintyp, clauses) =
     "def "

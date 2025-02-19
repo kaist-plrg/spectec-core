@@ -8,4 +8,4 @@ def $foo([ 1, 2, 3 ]) = (1 :: [ 4, 5, 6 ]) ++ (2 :: [ 7, 8, 9 ])
 syntax into = int?
 
 dec $bar(into) : into
-def $bar(1?) = 2?
+def $bar(int?) = int?

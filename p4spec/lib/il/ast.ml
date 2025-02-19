@@ -31,6 +31,10 @@ type iter =
   | Opt       (* `?` *)
   | List      (* `*` *)
 
+(* Variables *)
+
+type var = id * iter list
+
 (* Types *)
 
 and typ = typ' phrase
@@ -92,7 +96,7 @@ and exp' =
   | CastE of exp * typ                    (* `(` typ `)` exp *)
 
 and notexp = mixop * exp list
-and iterexp = iter * (id * exp) list
+and iterexp = iter * var list
 
 (* Path *)
 

@@ -3,9 +3,13 @@ open Dom
 
 (* Environments *)
 
-(* Bound identifiers *)
+(* Identifier dimension environment *)
 
-module Bound = IdSet
+module VEnv = struct
+  include MakeIdEnv (Dim)
+
+  let to_string env = to_string ~with_braces:false ~bind:"" env
+end
 
 (* Type environment *)
 

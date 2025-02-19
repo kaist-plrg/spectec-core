@@ -1,0 +1,6 @@
+dec $foo(int*, int**) : bool
+def $foo(int_a*, int_b**) = true
+  -- if (int_a = int_b**[0][0])*
+
+dec $bar(int*) : int*
+def $bar(int_a*) = int_a*
