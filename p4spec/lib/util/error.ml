@@ -12,3 +12,6 @@ let error at category msg =
     Printexc.(get_callstack 100 |> print_raw_backtrace stderr);
     Printf.eprintf "%s\n%!" bar);
   raise (Error (at, category ^ " error: " ^ msg))
+
+let warn at category msg =
+  Printf.eprintf "%s\n%!" (string_of_error at (category ^ " warning: " ^ msg))

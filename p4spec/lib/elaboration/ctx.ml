@@ -79,19 +79,20 @@ let bound_metavar (ctx : t) (tid : TId.t) : bool =
 
 (* Finders for rules *)
 
-let find_rel_opt (ctx : t) (rid : RId.t) : nottyp option =
-  REnv.find_opt rid ctx.renv |> Option.map fst
+let find_rel_opt (ctx : t) (rid : RId.t) : (nottyp * int list) option =
+  REnv.find_opt rid ctx.renv
+  |> Option.map (fun (nottyp, inputs, _) -> (nottyp, inputs))
 
-let find_rel (ctx : t) (rid : RId.t) : nottyp =
+let find_rel (ctx : t) (rid : RId.t) : nottyp * int list =
   match find_rel_opt ctx rid with
-  | Some nottyp -> nottyp
+  | Some (nottyp, inputs) -> (nottyp, inputs)
   | None -> error rid.at "undefined relation"
 
 let bound_rel (ctx : t) (rid : RId.t) : bool =
   find_rel_opt ctx rid |> Option.is_some
 
 let find_rules_opt (ctx : t) (rid : RId.t) : Il.Ast.rule list option =
-  REnv.find_opt rid ctx.renv |> Option.map snd
+  REnv.find_opt rid ctx.renv |> Option.map (fun (_, _, rules) -> rules)
 
 let find_rules (ctx : t) (rid : RId.t) : Il.Ast.rule list =
   match find_rules_opt ctx rid with
@@ -155,16 +156,16 @@ let add_metavar (ctx : t) (tid : TId.t) (typ : Type.t) : t =
 
 (* Adders for rules *)
 
-let add_rel (ctx : t) (rid : RId.t) (nottyp : nottyp) : t =
+let add_rel (ctx : t) (rid : RId.t) (nottyp : nottyp) (inputs : int list) : t =
   if bound_rel ctx rid then error rid.at "relation already defined";
-  let rel = (nottyp, []) in
+  let rel = (nottyp, inputs, []) in
   let renv = REnv.add rid rel ctx.renv in
   { ctx with renv }
 
 let add_rule (ctx : t) (rid : RId.t) (rule : Il.Ast.rule) : t =
   if not (bound_rel ctx rid) then error rid.at "undefined relation";
-  let nottyp, rules = REnv.find rid ctx.renv in
-  let rel = (nottyp, rules @ [ rule ]) in
+  let nottyp, inputs, rules = REnv.find rid ctx.renv in
+  let rel = (nottyp, inputs, rules @ [ rule ]) in
   let renv = REnv.add rid rel ctx.renv in
   { ctx with renv }
 

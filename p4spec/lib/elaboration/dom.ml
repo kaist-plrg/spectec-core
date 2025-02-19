@@ -25,11 +25,13 @@ module TypeDef = struct
 end
 
 module Rel = struct
-  type t = nottyp * Il.Ast.rule list
+  type t = nottyp * int list * Il.Ast.rule list
 
-  let to_string (nottyp, rules) =
+  let to_string (nottyp, inputs, rules) =
     El.Print.string_of_nottyp nottyp
-    ^ " =\n"
+    ^ " hint(input "
+    ^ String.concat ", " (List.map string_of_int inputs)
+    ^ ") =\n"
     ^ String.concat "\n   " (List.map Il.Print.string_of_rule rules)
 end
 

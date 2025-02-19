@@ -25,7 +25,7 @@ syntax foo = | ABC int DEF bool | GHI `[ text ]
 syntax bar = | bool JKL nat | MNO foo
 syntax baz = PQR foo -> bar
 
-relation fizz: foo |- baz : bar  hint(input %0 %2)
+relation fizz: foo |- baz : bar  hint(input %0 %1)
 rule fizz/buzz:
   ABC 0 DEF true |- (PQR (GHI `[ "fizz" ]) -> bar) : (MNO (ABC 1 DEF false))
 

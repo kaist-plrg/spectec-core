@@ -15,3 +15,14 @@ def $bar(C 3) = true
 
 dec $baz(int*) : nat
 def $baz(int_0 :: int_1*) = 0
+
+relation Fizz:
+  nat -> nat -> bool |- foo ~> foo : text
+  hint(input %0 %1 %2 %3 %4)
+
+rule Fizz/buzz:
+  nat_0 -> nat_1 -> bool_0 |- foo_a ~> foo_b : text_0
+  -- Fizz: nat_1 -> nat_0 -> false |- (E `( 1 )) ~> foo_a : text_0
+  -- if text_0 = "fizz"
+  -- if "fuzz" =/= text_0
+  -- if $bar(foo_b)

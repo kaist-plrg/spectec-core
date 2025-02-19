@@ -917,7 +917,7 @@ and elab_prem' (ctx : Ctx.t) (prem : prem') : Ctx.t * Il.Ast.prem' option =
   let wrap_none ctx = (ctx, None) in
   match prem with
   | VarPr (id, plaintyp) -> elab_var_prem ctx id plaintyp |> wrap_none
-  | RulePr (id, exp) -> elab_rule_prem ctx id exp |> wrap_ctx |> wrap_some
+  | RulePr (id, exp) -> elab_rule_prem ctx id exp |> wrap_some
   | IfPr exp -> elab_if_prem ctx exp |> wrap_some
   | ElsePr -> elab_else_prem () |> wrap_ctx |> wrap_some
   | _ ->
@@ -943,10 +943,26 @@ and elab_var_prem (ctx : Ctx.t) (id : id) (plaintyp : plaintyp) : Ctx.t =
 
 (* Rule premises *)
 
-and elab_rule_prem (ctx : Ctx.t) (id : id) (exp : exp) : Il.Ast.prem' =
-  let nottyp = Ctx.find_rel ctx id in
+and elab_rule_prem (ctx : Ctx.t) (id : id) (exp : exp) : Ctx.t * Il.Ast.prem' =
+  let nottyp, inputs = Ctx.find_rel ctx id in
   let+ notexp_il = elab_exp_not ctx nottyp exp in
-  Il.Ast.RulePr (id, notexp_il)
+  let exps_input, exps_output =
+    let exps = notexp_il |> snd in
+    List.mapi (fun idx exp -> (idx, exp)) exps
+    |> List.partition (fun (idx, _) -> List.mem idx inputs)
+    |> fun (exps_input, exps_output) ->
+    (List.map snd exps_input, List.map snd exps_output)
+  in
+  let+ binds_input = Bind.binding_exps ctx.venv exps_input in
+  if not (Envs.Bound.is_empty binds_input) then
+    error exp.at
+      (Format.asprintf "rule input has free variable(s): %s"
+         (binds_input |> Envs.Bound.elements |> List.map it
+        |> String.concat ", "));
+  let+ binds_output = Bind.binding_exps ctx.venv exps_output in
+  let ctx_local = binds_output |> Envs.Bound.elements |> Ctx.add_vars ctx in
+  let prem_il = Il.Ast.RulePr (id, notexp_il) in
+  (ctx_local, prem_il)
 
 (* If premises :
 
@@ -1003,7 +1019,8 @@ let rec elab_def (ctx : Ctx.t) (def : def) : Ctx.t * Il.Ast.def option =
   | TypD (id, tparams, deftyp, _hints) ->
       elab_typ_def ctx id tparams deftyp |> wrap_some
   | VarD (id, plaintyp, _hints) -> elab_var_def ctx id plaintyp |> wrap_none
-  | RelD (id, nottyp, _hints) -> elab_rel_def ctx def.at id nottyp |> wrap_some
+  | RelD (id, nottyp, hints) ->
+      elab_rel_def ctx def.at id nottyp hints |> wrap_some
   | RuleD (id_rel, id_rule, exp, prems) ->
       elab_rule_def ctx def.at id_rel id_rule exp prems |> wrap_none
   | DecD (id, tparams, params, plaintyp, _hints) ->
@@ -1078,21 +1095,79 @@ and elab_var_def (ctx : Ctx.t) (id : id) (plaintyp : plaintyp) : Ctx.t =
 
 (* Relation declarations *)
 
-and elab_rel_def (ctx : Ctx.t) (at : region) (id : id) (nottyp : nottyp) :
-    Ctx.t * Il.Ast.def =
+and fetch_rel_input_hint' (len : int) (hintexp : exp) : int list option =
+  match hintexp.it with
+  | SeqE exps ->
+      List.fold_left
+        (fun inputs exp ->
+          match inputs with
+          | Some inputs -> (
+              match exp.it with
+              | HoleE (`Num input) when input < len -> Some (inputs @ [ input ])
+              | _ -> None)
+          | None -> None)
+        (Some []) exps
+  | _ -> None
+
+and fetch_rel_input_hint (at : region) (nottyp_il : Il.Ast.nottyp)
+    (hints : hint list) : int list =
+  let len = nottyp_il.it |> snd |> List.length in
+  let hint_input_default = List.init len Fun.id in
+  let hint_input =
+    List.find_map
+      (fun hint -> if hint.hintid.it = "input" then Some hint.hintexp else None)
+      hints
+  in
+  match hint_input with
+  | Some hintexp -> (
+      let inputs_opt = fetch_rel_input_hint' len hintexp in
+      match inputs_opt with
+      | Some inputs -> inputs
+      | None ->
+          warn at
+            (Format.asprintf
+               "malformed input hint: should be a sequence of indexed holes \
+                %%N (N < %d)"
+               len);
+          hint_input_default)
+  (* If no hint is provided, assume all fields are inputs *)
+  | None ->
+      warn at "no input hint provided";
+      hint_input_default
+
+and elab_rel_def (ctx : Ctx.t) (at : region) (id : id) (nottyp : nottyp)
+    (hints : hint list) : Ctx.t * Il.Ast.def =
   let nottyp_il = elab_nottyp ctx nottyp in
+  let inputs = fetch_rel_input_hint at nottyp_il hints in
+  let ctx = Ctx.add_rel ctx id nottyp inputs in
   let def_il = Il.Ast.RelD (id, nottyp_il, []) $ at in
-  let ctx = Ctx.add_rel ctx id nottyp in
   (ctx, def_il)
 
 (* Rule definitions *)
 
 and elab_rule_def (ctx : Ctx.t) (at : region) (id_rel : id) (id_rule : id)
     (exp : exp) (prems : prem list) : Ctx.t =
-  let nottyp = Ctx.find_rel ctx id_rel in
+  let nottyp, inputs = Ctx.find_rel ctx id_rel in
   let ctx_local = ctx in
   let+ notexp_il = elab_exp_not ctx_local nottyp exp in
-  let _ctx_local, prems_il = elab_prems ctx_local prems in
+  let exps_input, exps_output =
+    let exps = notexp_il |> snd in
+    List.mapi (fun idx exp -> (idx, exp)) exps
+    |> List.partition (fun (idx, _) -> List.mem idx inputs)
+    |> fun (exps_input, exps_output) ->
+    (List.map snd exps_input, List.map snd exps_output)
+  in
+  let+ binds_input = Bind.binding_exps ctx_local.venv exps_input in
+  let ctx_local =
+    binds_input |> Envs.Bound.elements |> Ctx.add_vars ctx_local
+  in
+  let ctx_local, prems_il = elab_prems ctx_local prems in
+  let+ binds_output = Bind.binding_exps ctx_local.venv exps_output in
+  if not (Envs.Bound.is_empty binds_output) then
+    error exp.at
+      (Format.asprintf "rule output has free variable(s): %s"
+         (binds_output |> Envs.Bound.elements |> List.map it
+        |> String.concat ", "));
   let rule = (id_rule, notexp_il, prems_il) $ at in
   Ctx.add_rule ctx id_rel rule
 
@@ -1120,17 +1195,18 @@ and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (targs : plaintyp list)
   check (List.length params = List.length args) at "arguments do not match";
   let ctx_local = ctx in
   let args_il = List.map2 (elab_arg ctx_local) params args in
+  let+ binds_input = Bind.binding_args ctx_local.venv args_il in
   let ctx_local =
-    let+ binds = Bind.binding_args ctx.venv args_il in
-    binds |> Envs.Bound.elements |> Ctx.add_vars ctx_local
+    binds_input |> Envs.Bound.elements |> Ctx.add_vars ctx_local
   in
   let ctx_local, prems_il = elab_prems ctx_local prems in
   let+ exp_il = elab_exp ctx_local plaintyp exp in
-  let+ binds = Bind.binding_exp ctx_local.venv exp_il in
-  if not (Envs.Bound.is_empty binds) then
+  let+ binds_output = Bind.binding_exp ctx_local.venv exp_il in
+  if not (Envs.Bound.is_empty binds_output) then
     error exp_il.at
-      (Format.asprintf "expression has free variable(s): %s"
-         (binds |> Envs.Bound.elements |> List.map it |> String.concat ", "));
+      (Format.asprintf "output expression has free variable(s): %s"
+         (binds_output |> Envs.Bound.elements |> List.map it
+        |> String.concat ", "));
   let clause = (args_il, exp_il, prems_il) $ at in
   Ctx.add_clause ctx id clause
 
