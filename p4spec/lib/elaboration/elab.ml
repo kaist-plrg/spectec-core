@@ -60,20 +60,19 @@ let elab_iter (iter : iter) : Il.Ast.iter =
 type kind =
   [ `Opaque
   | `Plain of plaintyp
-  | `Notation of nottyp
   | `Struct of typfield list
-  | `Variant of typcase list ]
+  | `Variant of nottyp list ]
 
 let kind_of_typ (ctx : Ctx.t) (typ : Il.Ast.typ) : kind =
   match typ.it with
   | VarT (tid, _) -> (
       let td = Ctx.find_typdef ctx tid in
       match td with
-      | Defined (_, deftyp) -> (
-          match deftyp.it with
-          | PlainTD plaintyp -> `Plain plaintyp
-          | StructTD typfields -> `Struct typfields
-          | VariantTD typcases -> `Variant typcases)
+      | Defined (_, typdef) -> (
+          match typdef with
+          | `Plain plaintyp -> `Plain plaintyp
+          | `Struct typfields -> `Struct typfields
+          | `Variant nottyps -> `Variant nottyps)
       | _ -> `Opaque)
   | _ -> `Opaque
 
@@ -84,9 +83,9 @@ let rec expand_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp =
   | VarT (tid, _) -> (
       let td = Ctx.find_typdef ctx tid in
       match td with
-      | Defined (_, deftyp) -> (
-          match deftyp.it with
-          | PlainTD plaintyp -> expand_plaintyp ctx plaintyp
+      | Defined (_, typdef) -> (
+          match typdef with
+          | `Plain plaintyp -> expand_plaintyp ctx plaintyp
           | _ -> plaintyp)
       | _ -> plaintyp)
   | _ -> plaintyp
@@ -208,44 +207,62 @@ and elab_nottyp (ctx : Ctx.t) (typ : typ) : Il.Ast.nottyp =
 
 (* Elaboration of definition types *)
 
-and elab_deftyp (ctx : Ctx.t) (deftyp : deftyp) : Il.Ast.deftyp =
+and elab_deftyp (ctx : Ctx.t) (tparams : tparam list) (deftyp : deftyp) :
+    TypeDef.t * Il.Ast.deftyp =
   match deftyp.it with
-  | PlainTD plaintyp -> elab_typ_def_plain ctx plaintyp
-  | StructTD typfields -> elab_typ_def_struct ctx deftyp.at typfields
-  | VariantTD typcases -> elab_typ_def_variant ctx deftyp.at typcases
+  | PlainTD plaintyp -> elab_typ_def_plain ctx tparams plaintyp
+  | StructTD typfields -> elab_typ_def_struct ctx deftyp.at tparams typfields
+  | VariantTD typcases -> elab_typ_def_variant ctx deftyp.at tparams typcases
 
 (* Elaboration of plain type definitions *)
 
-and elab_typ_def_plain (ctx : Ctx.t) (plaintyp : plaintyp) : Il.Ast.deftyp =
+and elab_typ_def_plain (ctx : Ctx.t) (tparams : tparam list)
+    (plaintyp : plaintyp) : TypeDef.t * Il.Ast.deftyp =
   let typ_il = elab_plaintyp ctx plaintyp in
-  Il.Ast.PlainT typ_il $ plaintyp.at
+  let deftyp_il = Il.Ast.PlainT typ_il $ plaintyp.at in
+  let td = TypeDef.Defined (tparams, `Plain plaintyp) in
+  (td, deftyp_il)
 
 (* Elaboration of struct type definitions *)
-
-and elab_typ_def_struct (ctx : Ctx.t) (at : region) (typfields : typfield list)
-    : Il.Ast.deftyp =
-  let typfields_il = List.map (elab_typfield ctx) typfields in
-  let deftyp_il = Il.Ast.StructT typfields_il in
-  deftyp_il $ at
 
 and elab_typfield (ctx : Ctx.t) (typfield : typfield) : Il.Ast.typfield =
   let atom, plaintyp, _hints = typfield in
   let typ_il = elab_plaintyp ctx plaintyp in
   (atom, typ_il)
 
+and elab_typ_def_struct (ctx : Ctx.t) (at : region) (tparams : tparam list)
+    (typfields : typfield list) : TypeDef.t * Il.Ast.deftyp =
+  let typfields_il = List.map (elab_typfield ctx) typfields in
+  let deftyp_il = Il.Ast.StructT typfields_il $ at in
+  let td = TypeDef.Defined (tparams, `Struct typfields) in
+  (td, deftyp_il)
+
 (* Elaboration of variant type definitions *)
 
-and elab_typcase (ctx : Ctx.t) (typcase : typcase) : Il.Ast.typcase =
-  let nottyp, _hints = typcase in
-  elab_nottyp ctx (NotationT nottyp)
+and expand_typcase (ctx : Ctx.t) (typcase : typcase) : nottyp list =
+  let typ, _hints = typcase in
+  match typ with
+  | PlainT plaintyp -> (
+      let plaintyp = expand_plaintyp ctx plaintyp in
+      let typ_il = elab_plaintyp ctx plaintyp in
+      let kind = kind_of_typ ctx typ_il in
+      match kind with
+      | `Opaque -> error plaintyp.at "cannot extend an incomplete type"
+      | `Variant nottyps -> nottyps
+      | _ -> error plaintyp.at "cannot extend a non-variant type")
+  | NotationT nottyp -> [ nottyp ]
 
-and elab_typ_def_variant (ctx : Ctx.t) (at : region) (typcases : typcase list) :
-    Il.Ast.deftyp =
-  let typcases_il = List.map (elab_typcase ctx) typcases in
+and elab_typ_def_variant (ctx : Ctx.t) (at : region) (tparams : tparam list)
+    (typcases : typcase list) : TypeDef.t * Il.Ast.deftyp =
+  let nottyps = List.concat_map (expand_typcase ctx) typcases in
+  let typcases_il =
+    List.map (fun nottyp -> elab_nottyp ctx (NotationT nottyp)) nottyps
+  in
   let mixops = typcases_il |> List.map it |> List.map fst in
   check (distinct Mixop.eq mixops) at "cases are ambiguous";
-  let deftyp_il = Il.Ast.VariantT typcases_il in
-  deftyp_il $ at
+  let deftyp_il = Il.Ast.VariantT typcases_il $ at in
+  let td = TypeDef.Defined (tparams, `Variant nottyps) in
+  (td, deftyp_il)
 
 (* Expressions *)
 
@@ -264,7 +281,7 @@ and infer_as_struct (ctx : Ctx.t) (plaintyp : plaintyp) : typfield list attempt
   | VarT (tid, _) -> (
       let td_opt = Ctx.find_typdef_opt ctx tid in
       match td_opt with
-      | Some (Defined (_, { it = StructTD typfields; _ })) -> Ok typfields
+      | Some (Defined (_, `Struct typfields)) -> Ok typfields
       | _ -> fail plaintyp.at "cannot infer type as struct")
   | _ -> fail plaintyp.at "cannot infer type as struct"
 
@@ -675,9 +692,6 @@ and elab_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
       match kind with
       | `Opaque -> elab_exp_plain ctx plaintyp_expect exp
       | `Plain plaintyp -> elab_exp_plain ctx plaintyp exp
-      | `Notation nottyp ->
-          let* nottyp_il = elab_exp_not ctx (NotationT nottyp) exp in
-          Ok (Il.Ast.CaseE nottyp_il $$ (exp.at, typ_il.it))
       | `Struct typfields ->
           let* expfields_il = elab_exp_struct ctx typfields exp in
           Ok (Il.Ast.StrE expfields_il $$ (exp.at, typ_il.it))
@@ -715,7 +729,7 @@ and elab_as_struct (ctx : Ctx.t) (plaintyp : plaintyp) : typfield list attempt =
   | VarT (tid, _) -> (
       let td_opt = Ctx.find_typdef_opt ctx tid in
       match td_opt with
-      | Some (Defined (_, { it = StructTD typfields; _ })) -> Ok typfields
+      | Some (Defined (_, `Struct typfields)) -> Ok typfields
       | _ -> fail plaintyp.at "cannot elaborate type as struct")
   | _ -> fail plaintyp.at "cannot elaborate type as struct"
 
@@ -896,16 +910,16 @@ and elab_exp_struct (ctx : Ctx.t) (typfields : typfield list) (exp : exp) :
 and fail_elab_variant (at : region) (msg : string) : Il.Ast.notexp attempt =
   fail at ("cannot elaborate variant case because" ^ msg)
 
-and elab_exp_variant (ctx : Ctx.t) (typcases : typcase list) (exp : exp) :
+and elab_exp_variant (ctx : Ctx.t) (nottyps : nottyp list) (exp : exp) :
     Il.Ast.notexp attempt =
   let notexps_il =
     List.filter_map
-      (fun (nottyp, _) ->
+      (fun nottyp ->
         let notexp_il_attempt = elab_exp_not ctx (NotationT nottyp) exp in
         match notexp_il_attempt with
         | Ok notexp_il -> Some notexp_il
         | Fail _ -> None)
-      typcases
+      nottyps
   in
   match notexps_il with
   | [ notexp_il ] -> Ok notexp_il
@@ -1202,9 +1216,8 @@ and elab_typ_def (ctx : Ctx.t) (id : id) (tparams : tparam list)
   in
   check (List.for_all valid_tid tparams) id.at "invalid type parameter";
   let ctx_local = Ctx.add_tparams ctx tparams in
-  let deftyp_il = elab_deftyp ctx_local deftyp in
+  let td, deftyp_il = elab_deftyp ctx_local tparams deftyp in
   let def_il = Il.Ast.TypD (id, tparams, deftyp_il) $ deftyp.at in
-  let td = TypeDef.Defined (tparams, deftyp) in
   let ctx = Ctx.update_typdef ctx id td in
   (ctx, def_il)
 

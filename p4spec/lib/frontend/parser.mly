@@ -291,15 +291,13 @@ deftyp_ :
             error (at $sloc) "hints not allowed in plain type definition";
           PlainTD plaintyp
       | _ ->
-          let typcases =
-            List.map
-              (fun (typ, hints) ->
-                match typ with
-                | PlainT _ -> error (at $sloc) "plain type not allowed in variant type definition"
-                | NotationT nottyp -> (nottyp, hints))
-              $2
-          in
-          VariantTD typcases
+          List.iter
+            (fun (typ, hints) ->
+              match typ with
+              | PlainT _ when hints <> [] -> error (at $sloc) "hints not allowed in plain type definition"
+              | _ -> ())
+            $2;
+          VariantTD $2
     }
   | bar_list(casetyp)
     {
@@ -310,15 +308,13 @@ deftyp_ :
             error (at $sloc) "hints not allowed in plain type definition";
           PlainTD plaintyp
       | _ ->
-          let typcases =
-            List.map
-              (fun (typ, hints) ->
-                match typ with
-                | PlainT _ -> error (at $sloc) "plain type not allowed in variant type definition"
-                | NotationT nottyp -> (nottyp, hints))
-              $1
-          in
-          VariantTD typcases
+          List.iter
+            (fun (typ, hints) ->
+              match typ with
+              | PlainT _ when hints <> [] -> error (at $sloc) "hints not allowed in plain type definition"
+              | _ -> ())
+            $1;
+          VariantTD $1
     }
 
 (* Operations *)

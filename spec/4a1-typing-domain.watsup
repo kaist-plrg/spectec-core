@@ -32,3 +32,9 @@ var f : flow
 def $join_flow(flow, flow) : flow  hint(show %1 %latex("\\sqcup_\\texttt{flow}") %2)
 def $join_flow(RET, RET) = RET
 def $join_flow(f_a, f_b) = CONT
+
+;;
+;; Static type representation
+;;
+
+syntax styp = typ dir ctk val?

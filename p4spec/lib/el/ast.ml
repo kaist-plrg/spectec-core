@@ -56,7 +56,7 @@ and deftyp' =
   | VariantTD of typcase list   (* `|` list(typcase, `|`) *)
 
 and typfield = atom * plaintyp * hint list
-and typcase = nottyp * hint list
+and typcase = typ * hint list
 
 (* Operators *)
 

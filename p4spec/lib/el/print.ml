@@ -58,6 +58,9 @@ and string_of_nottyp nottyp =
   | BrackT (atom_l, typ, atom_r) ->
       "`" ^ string_of_atom atom_l ^ string_of_typ typ ^ string_of_atom atom_r
 
+and string_of_nottyps sep nottyps =
+  String.concat sep (List.map string_of_nottyp nottyps)
+
 and string_of_deftyp deftyp =
   match deftyp.it with
   | PlainTD plaintyp -> string_of_plaintyp plaintyp
@@ -72,8 +75,8 @@ and string_of_typfields sep typfields =
   String.concat sep (List.map string_of_typfield typfields)
 
 and string_of_typcase typcase =
-  let nottyp, _hints = typcase in
-  string_of_nottyp nottyp
+  let typ, _hints = typcase in
+  string_of_typ typ
 
 and string_of_typcases sep typcases =
   String.concat sep (List.map string_of_typcase typcases)

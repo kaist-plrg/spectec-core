@@ -2,7 +2,7 @@
 ;; Forward declarations of mutually recursive syntax
 ;;
 
-syntax typ
+syntax typ, polytypdef, funcdef
 
 ;;
 ;; Parameter Type
@@ -162,9 +162,3 @@ syntax consdef hint(show %latex("\\delta_\\texttt{cons}")) =
   ConsD (tparam*, tparam*) -> constyp
 
 var cd : consdef hint(show %latex("\\delta_\\texttt{cons}"))
-
-;;
-;; Static type representation
-;;
-
-syntax styp = typ dir ctk val?

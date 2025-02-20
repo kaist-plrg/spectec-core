@@ -25,16 +25,24 @@ module TypeDef = struct
   type t =
     | Param
     | Defining of El.Ast.tparam list
-    | Defined of El.Ast.tparam list * El.Ast.deftyp
+    | Defined of
+        El.Ast.tparam list
+        * [ `Plain of El.Ast.plaintyp
+          | `Struct of El.Ast.typfield list
+          | `Variant of El.Ast.nottyp list ]
 
   let to_string = function
     | Param -> "Param"
     | Defining tparams -> "Defining" ^ El.Print.string_of_tparams tparams
-    | Defined (tparams, deftyp) ->
+    | Defined (tparams, typdef) -> (
         "Defined"
         ^ El.Print.string_of_tparams tparams
         ^ " = "
-        ^ El.Print.string_of_deftyp deftyp
+        ^
+        match typdef with
+        | `Plain plaintyp -> El.Print.string_of_plaintyp plaintyp
+        | `Struct typfields -> El.Print.string_of_typfields ", " typfields
+        | `Variant nottyps -> El.Print.string_of_nottyps " | " nottyps)
 
   let get_tparams = function
     | Param -> []
