@@ -28,7 +28,14 @@ let string_of_iter iter = match iter with Opt -> "?" | List -> "*"
 
 (* Types *)
 
-let rec string_of_plaintyp plaintyp =
+let rec string_of_typ typ =
+  match typ with
+  | PlainT plaintyp -> string_of_plaintyp plaintyp
+  | NotationT nottyp -> string_of_nottyp nottyp
+
+and string_of_typs sep typs = String.concat sep (List.map string_of_typ typs)
+
+and string_of_plaintyp plaintyp =
   match plaintyp.it with
   | BoolT -> "bool"
   | NumT numtyp -> Num.string_of_typ numtyp
@@ -43,24 +50,19 @@ and string_of_plaintyps sep plaintyps =
 
 and string_of_nottyp nottyp =
   match nottyp.it with
-  | PlainT plaintyp -> string_of_plaintyp plaintyp
   | AtomT atom -> string_of_atom atom
-  | SeqT nottyps -> "{" ^ string_of_nottyps " " nottyps ^ "}"
-  | InfixT (nottyp_l, atom, nottyp_r) ->
-      string_of_nottyp nottyp_l ^ " " ^ string_of_atom atom ^ " "
-      ^ string_of_nottyp nottyp_r
-  | BrackT (atom_l, nottyp, atom_r) ->
-      "`" ^ string_of_atom atom_l ^ string_of_nottyp nottyp
-      ^ string_of_atom atom_r
-
-and string_of_nottyps sep nottyps =
-  String.concat sep (List.map string_of_nottyp nottyps)
+  | SeqT typs -> "{" ^ string_of_typs " " typs ^ "}"
+  | InfixT (typ_l, atom, typ_r) ->
+      string_of_typ typ_l ^ " " ^ string_of_atom atom ^ " "
+      ^ string_of_typ typ_r
+  | BrackT (atom_l, typ, atom_r) ->
+      "`" ^ string_of_atom atom_l ^ string_of_typ typ ^ string_of_atom atom_r
 
 and string_of_deftyp deftyp =
   match deftyp.it with
-  | NotationT nottyp -> string_of_nottyp nottyp
-  | StructT typfields -> "{" ^ string_of_typfields ", " typfields ^ "}"
-  | VariantT typcases -> "| " ^ string_of_typcases " | " typcases
+  | PlainTD plaintyp -> string_of_plaintyp plaintyp
+  | StructTD typfields -> "{" ^ string_of_typfields ", " typfields ^ "}"
+  | VariantTD typcases -> "\n   | " ^ string_of_typcases "\n   | " typcases
 
 and string_of_typfield typfield =
   let atom, plaintyp, _hints = typfield in

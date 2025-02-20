@@ -51,8 +51,7 @@ and nottyp' = mixop * typ list
 
 and deftyp = deftyp' phrase
 and deftyp' =
-  | AliasT of typ
-  | NotationT of nottyp
+  | PlainT of typ
   | StructT of typfield list
   | VariantT of typcase list
 

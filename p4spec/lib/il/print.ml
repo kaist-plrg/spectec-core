@@ -54,10 +54,9 @@ and string_of_nottyp nottyp =
 
 and string_of_deftyp deftyp =
   match deftyp.it with
-  | AliasT typ -> string_of_typ typ
-  | NotationT nottyp -> string_of_nottyp nottyp
+  | PlainT typ -> string_of_typ typ
   | StructT typfields -> "{" ^ string_of_typfields ", " typfields ^ "}"
-  | VariantT typcases -> "| " ^ string_of_typcases " | " typcases
+  | VariantT typcases -> "\n   | " ^ string_of_typcases "\n   | " typcases
 
 and string_of_typfield typfield =
   let atom, typ = typfield in

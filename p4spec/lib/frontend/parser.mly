@@ -173,8 +173,6 @@ iter :
 
 (* Types *)
 
-(* Plain types *)
-
 plaintyp_prim_ :
   | varid { VarT ($1, []) }
   | varid_langle comma_list(targ) RANGLE { VarT ($1, $2) }
@@ -193,50 +191,80 @@ plaintyp_ :
       | typs -> TupleT typs }
   | plaintyp iter { IterT ($1, $2) }
 
-(* Notation types *)
-
-nottyp_prim : nottyp_prim_ { $1 @@@ $sloc }
-nottyp_prim_ :
-  | plaintyp { PlainT $1 }
-  | atom { AtomT $1 }
-  | TICK LPAREN nottyp RPAREN
-    { BrackT (Atom.LParen @@@ $loc($2), $3, Atom.RParen @@@ $loc($4)) }
-  | TICK LBRACK nottyp RBRACK
-    { BrackT (Atom.LBrack @@@ $loc($2), $3, Atom.RBrack @@@ $loc($4)) }
-  | TICK LBRACE nottyp RBRACE
-    { BrackT (Atom.LBrace @@@ $loc($2), $3, Atom.RBrace @@@ $loc($4)) }
-
-nottyp_seq : nottyp_seq_ { $1 @@@ $sloc }
-nottyp_seq_ :
-  | nottyp_prim_ { $1 }
-  | nottyp_prim nottyp_seq
+nottyp :
+  | typ
     {
-      let nottyp = $1 in
-      let nottyps =
-        match $2.it with
-        | SeqT (_ :: _ :: _ as nottyps) -> nottyps
-        | _ -> [ $2 ]
-      in
-      SeqT (nottyp :: nottyps)
+      match $1 with
+      | NotationT nottyp -> nottyp
+      | _ -> error (at $sloc) "expected notation type"
     }
 
-nottyp_un : nottyp_un_ { $1 @@@ $sloc }
-nottyp_un_ :
-  | nottyp_seq_ { $1 }
-  | infixop nottyp_un { InfixT (SeqT [] @@@ $loc($1), $1, $2) }
+typ_prim : typ_prim_ { $1 }
+typ_prim_ :
+  | plaintyp
+    {
+      PlainT $1
+    }
+  | atom
+    {
+      NotationT (AtomT $1 @@@ $loc($1))
+    }
+  | TICK LPAREN typ RPAREN
+    {
+      NotationT (BrackT (Atom.LParen @@@ $loc($2), $3, Atom.RParen @@@ $loc($4)) @@@ $loc($1))
+    }
+  | TICK LBRACK typ RBRACK
+    {
+      NotationT (BrackT (Atom.LBrack @@@ $loc($2), $3, Atom.RBrack @@@ $loc($4)) @@@ $loc($1))
+    }
+  | TICK LBRACE typ RBRACE
+    {
+      NotationT (BrackT (Atom.LBrace @@@ $loc($2), $3, Atom.RBrace @@@ $loc($4)) @@@ $loc($1))
+    }
 
-nottyp_bin : nottyp_bin_ { $1 @@@ $sloc }
-nottyp_bin_ :
-  | nottyp_un_ { $1 }
-  | nottyp_bin infixop nottyp_bin { InfixT ($1, $2, $3) }
+typ_seq : typ_seq_ { $1 }
+typ_seq_ :
+  | typ_prim_ { $1 }
+  | typ_prim typ_seq
+    {
+      let typ = $1 in
+      let typs =
+        match $2 with
+        | NotationT ({ it = SeqT (_ :: _ :: _ as typs); _ }) -> typs
+        | _ -> [ $2 ]
+      in
+      NotationT (SeqT (typ :: typs) @@@ $loc($1))
+    }
 
-nottyp_rel : nottyp_rel_ { $1 @@@ $sloc }
-nottyp_rel_ :
-  | nottyp_bin_ { $1 }
-  | relop nottyp_rel { InfixT (SeqT [] @@@ $loc($1), $1, $2) }
-  | nottyp_rel relop nottyp_rel { InfixT ($1, $2, $3) }
+typ_un : typ_un_ { $1 }
+typ_un_ :
+  | typ_seq_ { $1 }
+  | infixop typ_un
+    {
+      NotationT (InfixT (NotationT (SeqT [] @@@ $loc($1)), $1, $2) @@@ $loc($1))
+    }
 
-nottyp : nottyp_rel { $1 }
+typ_bin : typ_bin_ { $1 }
+typ_bin_ :
+  | typ_un_ { $1 }
+  | typ_bin infixop typ_bin
+    {
+      NotationT (InfixT ($1, $2, $3) @@@ $loc($2))
+    }
+
+typ_rel : typ_rel_ { $1 }
+typ_rel_ :
+  | typ_bin_ { $1 }
+  | relop typ_rel
+    {
+      NotationT (InfixT (NotationT (SeqT [] @@@ $loc($1)), $1, $2) @@@ $loc($1))
+    }
+  | typ_rel relop typ_rel
+    {
+      NotationT (InfixT ($1, $2, $3) @@@ $loc($2))
+    }
+
+typ : typ_rel { $1 }
 
 (* Type definitions *)
 
@@ -244,7 +272,7 @@ fieldtyp :
   | fieldid plaintyp hint* { ($1, $2, $3) }
 
 casetyp :
-  | nottyp hint* { ($1, $2) }
+  | typ hint* { ($1, $2) }
 
 deftyp : deftyp_ { $1 @@@ $sloc }
 deftyp_ :
@@ -252,20 +280,45 @@ deftyp_ :
     { 
       match $2 with
       | [] -> error (at $sloc) "empty struct type"
-      | _ -> StructT $2
+      | _ -> StructTD $2
     }
   | bar bar_list(casetyp)
     {
       match $2 with
       | [] -> error (at $sloc) "empty variant type"
-      | _ -> VariantT $2
+      | [ (PlainT plaintyp, hints) ] ->
+          if hints <> [] then
+            error (at $sloc) "hints not allowed in plain type definition";
+          PlainTD plaintyp
+      | _ ->
+          let typcases =
+            List.map
+              (fun (typ, hints) ->
+                match typ with
+                | PlainT _ -> error (at $sloc) "plain type not allowed in variant type definition"
+                | NotationT nottyp -> (nottyp, hints))
+              $2
+          in
+          VariantTD typcases
     }
   | bar_list(casetyp)
     {
       match $1 with
-      | [] -> error (at $sloc) "empty variant type"
-      | [ (nottyp, _hints) ] -> NotationT nottyp
-      | _ -> VariantT $1
+      | [] -> error (at $sloc) "empty type"
+      | [ (PlainT plaintyp, hints) ] ->
+          if hints <> [] then
+            error (at $sloc) "hints not allowed in plain type definition";
+          PlainTD plaintyp
+      | _ ->
+          let typcases =
+            List.map
+              (fun (typ, hints) ->
+                match typ with
+                | PlainT _ -> error (at $sloc) "plain type not allowed in variant type definition"
+                | NotationT nottyp -> (nottyp, hints))
+              $1
+          in
+          VariantTD typcases
     }
 
 (* Operations *)

@@ -28,6 +28,10 @@ type iter =
 
 (* Types *)
 
+and typ =
+  | PlainT of plaintyp
+  | NotationT of nottyp
+
 and plaintyp = plaintyp' phrase
 and plaintyp' =
   | BoolT                       (* `bool` *)
@@ -38,21 +42,18 @@ and plaintyp' =
   | TupleT of plaintyp list       (* `(` list(plaintyp, `,`) `)` *)
   | IterT of plaintyp * iter    (* plaintyp iter *)
 
-(* What are the consequences of disallowing iterated notation types? *)
-
 and nottyp = nottyp' phrase
 and nottyp' =
-  | PlainT of plaintyp                (* plaintyp *)
-  | AtomT of atom                     (* atom *)
-  | SeqT of nottyp list               (* list(nottyp, ` `) *)
-  | InfixT of nottyp * atom * nottyp  (* nottyp atom nottyp *)
-  | BrackT of atom * nottyp * atom    (* ``[({` nottyp `})]` *)
+  | AtomT of atom                  (* atom *)
+  | SeqT of typ list               (* list(typ, ` `) *)
+  | InfixT of typ * atom * typ     (* typ atom typ *)
+  | BrackT of atom * typ * atom    (* ``[({` typ `})]` *)
 
 and deftyp = deftyp' phrase
 and deftyp' =
-  | NotationT of nottyp        (* nottyp *)
-  | StructT of typfield list   (* `{` list(typfield, `,`) `}` *)
-  | VariantT of typcase list   (* `|` list(typcase, `|`) *)
+  | PlainTD of plaintyp         (* plaintyp *)
+  | StructTD of typfield list   (* `{` list(typfield, `,`) `}` *)
+  | VariantTD of typcase list   (* `|` list(typcase, `|`) *)
 
 and typfield = atom * plaintyp * hint list
 and typcase = nottyp * hint list
