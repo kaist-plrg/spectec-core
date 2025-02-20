@@ -38,17 +38,7 @@ let rec unparen_exp (exp : exp) : exp =
 
 (* Identifiers *)
 
-let strip_var_suffix id =
-  let rec is_sub id idx =
-    idx = String.length id || (id.[idx] = '_' && is_sub id (idx + 1))
-  in
-  match (String.index_opt id.it '_', String.index_opt id.it '\'') with
-  | None, None -> id
-  | Some idx, None when is_sub id.it idx -> id
-  | None, Some idx | Some idx, None -> String.sub id.it 0 idx $ id.at
-  | Some idx_a, Some idx_b -> String.sub id.it 0 (min idx_a idx_b) $ id.at
-
-let valid_tid (id : id) = id.it = (strip_var_suffix id).it
+let valid_tid (id : id) = id.it = (Var.strip_var_suffix id).it
 
 (* Iteration elaboration *)
 
@@ -363,7 +353,7 @@ and infer_text_exp (text : string) : (Il.Ast.exp' * plaintyp') attempt =
 
 and infer_var_exp (ctx : Ctx.t) (id : id) (targs : targ list) :
     (Il.Ast.exp' * plaintyp') attempt =
-  let tid = strip_var_suffix id in
+  let tid = Var.strip_var_suffix id in
   let meta_opt = Ctx.find_metavar_opt ctx tid in
   match meta_opt with
   | Some _ when targs <> [] ->

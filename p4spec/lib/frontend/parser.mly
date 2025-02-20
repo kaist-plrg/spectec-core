@@ -26,6 +26,19 @@ let positions_to_region position_left position_right =
 let at (position_left, position_right) = positions_to_region position_left position_right
 let (@@@) it pos = it $ at pos
 
+(* Identifiers *)
+
+module Ids = Set.Make (String)
+
+let vars = ref Ids.empty
+let scopes = ref []
+
+let is_var id = Ids.mem id !vars
+let add_var id = vars := Ids.add id !vars
+
+let enter_scope () = scopes := !vars :: !scopes
+let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
+
 %}
 
 %token LPAREN RPAREN LBRACK RBRACK LBRACE RBRACE
@@ -66,10 +79,21 @@ let (@@@) it pos = it $ at pos
 %left PLUS MINUS CAT
 %left STAR SLASH BACKSLASH
 
-%start spec
+%start spec check_atom
 %type<El.Ast.spec> spec
+%type<bool> check_atom
 
 %%
+
+(* Scopes *)
+
+enter_scope :
+  | (* empty *) { enter_scope () }
+exit_scope :
+  | (* empty *) { exit_scope () }
+
+check_atom :
+  | UPID EOF { is_var (Var.strip_var_suffix ($1 @@@ $sloc)).it }
 
 (* Lists *)
 
@@ -103,10 +127,17 @@ id_lparen : UPID_LPAREN { $1 } | LOID_LPAREN { $1 }
 id_langle : UPID_LANGLE { $1 } | LOID_LANGLE { $1 }
 
 varid : LOID { $1 @@@ $sloc }
+varid_bind :
+  | varid { add_var $1.it; $1 }
+  | atomid_ { add_var $1; $1 @@@ $sloc }
 varid_langle : LOID_LANGLE { $1 @@@ $sloc }
+varid_langle_bind :
+  | varid_langle { add_var $1.it; $1 }
+  | atomid_langle { add_var $1; $1 @@@ $sloc }
 
 atomid_ : UPID { $1 }
 atomid_lparen : UPID_LPAREN { $1 }
+atomid_langle : UPID_LANGLE { $1 }
 atomid : atomid_ { $1 } | atomid DOTID { $1 ^ "." ^ $2 }
 
 dotid : DOTID { Atom.Atom $1 @@@ $sloc }
@@ -135,7 +166,7 @@ hintid : id { $1 }
 
 synid :
   | varid { ($1, []) }
-  | varid_langle comma_list(tparam) RANGLE { ($1, $2) }
+  | varid_langle_bind enter_scope comma_list(tparam) exit_scope RANGLE { ($1, $3) }
 
 (* Atoms *)
 
@@ -558,16 +589,16 @@ param_ :
   | plaintyp { ExpP $1 }
   | DEF DOLLAR defid COLON plaintyp
     { DefP ($3, [], [], $5) }
-  | DEF DOLLAR defid_lparen comma_list(param) RPAREN COLON plaintyp
-    { DefP ($3, [], $4, $7) }
-  | DEF DOLLAR defid_langle comma_list(tparam) RANGLE COLON plaintyp
-    { DefP ($3, $4, [], $7) }
-  | DEF DOLLAR defid_langle comma_list(tparam) RANGLE_LPAREN comma_list(param) RPAREN COLON plaintyp
-    { DefP ($3, $4, $6, $9) }
+  | DEF DOLLAR defid_lparen enter_scope comma_list(param) RPAREN COLON plaintyp exit_scope
+    { DefP ($3, [], $5, $8) }
+  | DEF DOLLAR defid_langle enter_scope comma_list(tparam) RANGLE COLON plaintyp exit_scope
+    { DefP ($3, $5, [], $8) }
+  | DEF DOLLAR defid_langle enter_scope comma_list(tparam) RANGLE_LPAREN comma_list(param) RPAREN COLON plaintyp exit_scope
+    { DefP ($3, $5, $7, $10) }
 
 (* Type parameters *)
 
-tparam : varid { $1 }
+tparam : varid_bind { $1 }
 
 (* Arguments *)
 
@@ -583,7 +614,7 @@ targ : plaintyp { $1 }
 (* Premises *)
 
 prem_list :
-  | dash_list(prem) { $1 }
+  | enter_scope dash_list(prem) exit_scope { $2 }
 
 prem_post_ :
   | OTHERWISE { ElsePr }
@@ -600,7 +631,7 @@ prem : prem_ { $1 @@@ $sloc }
 prem_ :
   | prem_post_ { $1 }
   | relid COLON exp { RulePr ($1, $3) }
-  | VAR varid COLON plaintyp { VarPr ($2, $4) }
+  | VAR varid_bind COLON plaintyp { VarPr ($2, $4) }
   | IF exp
     { 
       let rec iterate exp =
@@ -630,11 +661,11 @@ def_ :
       | [] -> error (at $sloc) "empty syntax declaration"
       | _ -> SynD $2
     }
-  | SYNTAX varid hint* EQ deftyp
+  | SYNTAX varid_bind hint* EQ deftyp
     { TypD ($2, [], $5, $3) }
-  | SYNTAX varid_langle comma_list(tparam) RANGLE hint* EQ deftyp
-    { TypD ($2, $3, $7, $5) }
-  | VAR varid COLON plaintyp hint*
+  | SYNTAX varid_langle_bind enter_scope comma_list(tparam) RANGLE hint* EQ deftyp exit_scope
+    { TypD ($2, $4, $8, $6) }
+  | VAR varid_bind COLON plaintyp hint*
     { VarD ($2, $4, $5) }
   | RELATION relid COLON nottyp hint*
     { RelD ($2, $4, $5) }
@@ -643,20 +674,20 @@ def_ :
       RuleD ($2, id @@@ $loc($3), $5, $6) }
   | DEC DOLLAR defid COLON plaintyp hint*
     { DecD ($3, [], [], $5, $6) }
-  | DEC DOLLAR defid_lparen comma_list(param) RPAREN COLON plaintyp hint*
-    { DecD ($3, [], $4, $7, $8) }
-  | DEC DOLLAR defid_langle comma_list(tparam) RANGLE COLON plaintyp hint*
-    { DecD ($3, $4, [], $7, $8) }
-  | DEC DOLLAR defid_langle comma_list(tparam) RANGLE_LPAREN comma_list(param) RPAREN COLON plaintyp hint*
-    { DecD ($3, $4, $6, $9, $10) }
+  | DEC DOLLAR defid_lparen enter_scope comma_list(param) RPAREN COLON plaintyp hint* exit_scope
+    { DecD ($3, [], $5, $8, $9) }
+  | DEC DOLLAR defid_langle enter_scope comma_list(tparam) RANGLE COLON plaintyp hint* exit_scope
+    { DecD ($3, $5, [], $8, $9) }
+  | DEC DOLLAR defid_langle enter_scope comma_list(tparam) RANGLE_LPAREN comma_list(param) RPAREN COLON plaintyp hint* exit_scope
+    { DecD ($3, $5, $7, $10, $11) }
   | DEF DOLLAR defid EQ exp prem_list
     { DefD ($3, [], [], $5, $6) }
-  | DEF DOLLAR defid_lparen comma_list(arg) RPAREN EQ exp prem_list
-    { DefD ($3, [], $4, $7, $8) }
-  | DEF DOLLAR defid_langle comma_list(tparam) RANGLE EQ exp prem_list
-    { DefD ($3, $4, [], $7, $8) }
-  | DEF DOLLAR defid_langle comma_list(tparam) RANGLE_LPAREN comma_list(arg) RPAREN EQ exp prem_list
-    { DefD ($3, $4, $6, $9, $10) }
+  | DEF DOLLAR defid_lparen enter_scope comma_list(arg) RPAREN EQ exp prem_list exit_scope
+    { DefD ($3, [], $5, $8, $9) }
+  | DEF DOLLAR defid_langle enter_scope comma_list(tparam) RANGLE EQ exp prem_list exit_scope
+    { DefD ($3, $5, [], $8, $9) }
+  | DEF DOLLAR defid_langle enter_scope comma_list(tparam) RANGLE_LPAREN comma_list(arg) RPAREN EQ exp prem_list exit_scope
+    { DefD ($3, $5, $7, $10, $11) }
   | NL_NL_NL
     { SepD }
 

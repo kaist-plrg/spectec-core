@@ -58,6 +58,13 @@ let text _lexbuf s =
     incr i
   done;
   Buffer.contents b
+
+(* Identifiers : a hack to access parser state *)
+
+let is_var s =
+  let s = [| UPID s; EOF |] in
+  let i = ref (-1) in
+  Parser.check_atom (fun _ -> incr i; s.(!i)) (Lexing.from_string "")
 }
 
 (* Numbers *)
@@ -234,11 +241,11 @@ and token = parse
     { error lexbuf "illegal control character in text literal" }
   | '"'character*'\\'_
     { error_nest (Lexing.lexeme_end_p lexbuf) lexbuf "illegal escape" }
-  | upid as s { UPID s }
+  | upid as s { if is_var s then LOID s else UPID s }
   | loid as s { LOID s }
-  | (upid as s) "(" { UPID_LPAREN s }
+  | (upid as s) "(" { if is_var s then LOID_LPAREN s else UPID_LPAREN s }
   | (loid as s) "(" { LOID_LPAREN s }
-  | (upid as s) "<" { UPID_LANGLE s }
+  | (upid as s) "<" { if is_var s then LOID_LANGLE s else UPID_LANGLE s }
   | (loid as s) "<" { LOID_LANGLE s }
   | "."(id as s) { DOTID s }
   | line_comment eof { EOF }

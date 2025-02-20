@@ -1,4 +1,4 @@
 (library
  (name xl)
  (libraries util zarith)
- (modules atom bool num utf8 mixop))
+ (modules atom bool num utf8 mixop var))
