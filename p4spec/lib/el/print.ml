@@ -247,8 +247,8 @@ let string_of_def def =
       "dec " ^ string_of_defid defid ^ string_of_tparams tparams
       ^ string_of_params params ^ " : "
       ^ string_of_plaintyp plaintyp
-  | DefD (defid, targs, args, exp, prems) ->
-      "def " ^ string_of_defid defid ^ string_of_targs targs
+  | DefD (defid, tparams, args, exp, prems) ->
+      "def " ^ string_of_defid defid ^ string_of_tparams tparams
       ^ string_of_args args ^ " = " ^ string_of_exp exp ^ string_of_prems prems
   | SepD -> "\n\n"
 

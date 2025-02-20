@@ -1,7 +1,12 @@
 %{
 open Xl
 open El.Ast
+open Util.Error
 open Util.Source
+
+(* Error handling *)
+
+let error (at : region) (msg : string) = error at "parser" msg
 
 (* Position handling *)
 
@@ -239,9 +244,25 @@ casetyp :
 
 deftyp : deftyp_ { $1 @@@ $sloc }
 deftyp_ :
-  | nottyp { NotationT $1 }
-  | LBRACE comma_list(fieldtyp) RBRACE { StructT $2 }
-  | bar bar_list(casetyp) { VariantT $2 }
+  | LBRACE comma_list(fieldtyp) RBRACE
+    { 
+      match $2 with
+      | [] -> error (at $sloc) "empty struct type"
+      | _ -> StructT $2
+    }
+  | bar bar_list(casetyp)
+    {
+      match $2 with
+      | [] -> error (at $sloc) "empty variant type"
+      | _ -> VariantT $2
+    }
+  | bar_list(casetyp)
+    {
+      match $1 with
+      | [] -> error (at $sloc) "empty variant type"
+      | [ (nottyp, _hints) ] -> NotationT nottyp
+      | _ -> VariantT $1
+    }
 
 (* Operations *)
 
@@ -577,9 +598,9 @@ def_ :
     { DefD ($3, [], [], $5, $6) }
   | DEF DOLLAR defid_lparen comma_list(arg) RPAREN EQ exp prem_list
     { DefD ($3, [], $4, $7, $8) }
-  | DEF DOLLAR defid_langle comma_list(targ) RANGLE EQ exp prem_list
+  | DEF DOLLAR defid_langle comma_list(tparam) RANGLE EQ exp prem_list
     { DefD ($3, $4, [], $7, $8) }
-  | DEF DOLLAR defid_langle comma_list(targ) RANGLE_LPAREN comma_list(arg) RPAREN EQ exp prem_list
+  | DEF DOLLAR defid_langle comma_list(tparam) RANGLE_LPAREN comma_list(arg) RPAREN EQ exp prem_list
     { DefD ($3, $4, $6, $9, $10) }
   | NL_NL_NL
     { SepD }

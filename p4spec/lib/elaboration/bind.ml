@@ -175,18 +175,18 @@ let free_if_prem (bounds : t) (at : region) (exp_l : exp) (exp_r : exp) :
 let bind (binder : t -> 'a -> ('a * t) attempt) (bounds : t) (construct : 'a) :
     'a attempt =
   let* construct, occurs = binder bounds construct in
-  VEnv.iter
-    (fun id iters ->
+  VEnv.fold
+    (fun id iters construct ->
+      let* construct = construct in
       let iters_expect = VEnv.find id bounds in
       if not (Dom.Dim.equiv iters iters_expect) then
-        print_endline
+        fail id.at
           ("mismatched iteration dimensions for identifier " ^ Id.to_string id
          ^ ": expected "
           ^ Dom.Dim.to_string iters_expect
           ^ ", got " ^ Dom.Dim.to_string iters)
-      else ())
-    occurs;
-  Ok construct
+      else Ok construct)
+    occurs (Ok construct)
 
 (* Expression *)
 

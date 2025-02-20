@@ -20,8 +20,10 @@ let distinct (eq : 'a -> 'a -> bool) (xs : 'a list) : bool =
 
 (* Todo *)
 
-let todo (func : string) (msg : string) =
-  let msg = Format.asprintf "(TODO : %s) %s\n" func msg in
+let todo (at : region) (func : string) (msg : string) =
+  let msg =
+    Format.asprintf "(TODO : %s) %s: %s\n" func (string_of_region at) msg
+  in
   fail no_region msg
 
 (* Parentheses handling *)
@@ -133,6 +135,7 @@ and sub_plaintyp' (ctx : Ctx.t) (plaintyp_a : plaintyp) (plaintyp_b : plaintyp)
       sub_plaintyp ctx plaintyp_a plaintyp_b
   | IterT (plaintyp_a, Opt), IterT (plaintyp_b, List) ->
       sub_plaintyp ctx plaintyp_a plaintyp_b
+  | _, IterT (plaintyp_b, Opt) -> sub_plaintyp ctx plaintyp_a plaintyp_b
   | _, IterT (plaintyp_b, List) -> sub_plaintyp ctx plaintyp_a plaintyp_b
   | _ -> false
 
@@ -285,8 +288,8 @@ and infer_exp' (ctx : Ctx.t) (at : region) (exp : exp') :
   | NumE (_, num) -> infer_num_exp num
   | TextE text -> infer_text_exp text
   | VarE (id, targs) -> infer_var_exp ctx id targs
-  | UnE _ -> todo "infer_exp" "UnE"
-  | BinE _ -> todo "infer_exp" "BinE"
+  | UnE (unop, exp) -> infer_unop_exp ctx at unop exp
+  | BinE (exp_l, binop, exp_r) -> infer_binop_exp ctx at binop exp_l exp_r
   | CmpE (exp_l, cmpop, exp_r) -> infer_cmpop_exp ctx at cmpop exp_l exp_r
   | ArithE exp -> infer_arith_exp ctx exp
   | EpsE -> fail_infer at "empty sequence"
@@ -361,6 +364,97 @@ and infer_var_exp (ctx : Ctx.t) (id : id) (targs : targ list) :
       let plaintyp = VarT (tid, targs) in
       Ok (exp_il, plaintyp)
 
+(* Inference of unary expressions *)
+
+and infer_unop (ctx : Ctx.t) (at : region) (unop : unop) (plaintyp : plaintyp)
+    (exp_il : Il.Ast.exp) : (Il.Ast.optyp * Il.Ast.exp * plaintyp') attempt =
+  let optyp_il, plaintyps_expect =
+    match unop with
+    | #Bool.unop -> (`BoolT, [ (BoolT, BoolT) ])
+    | #Num.unop ->
+        (`NatT, [ (NumT `NatT, NumT `NatT); (NumT `IntT, NumT `IntT) ])
+  in
+  let fail =
+    fail at
+      ("unary operator `"
+      ^ El.Print.string_of_unop unop
+      ^ "` is not defined for operand type "
+      ^ El.Print.string_of_plaintyp plaintyp)
+  in
+  List.fold_left
+    (fun unop_infer (plaintyp_expect, plaintyp_res_expect) ->
+      match unop_infer with
+      | Ok _ -> unop_infer
+      | _ -> (
+          let exp_il_attempt =
+            cast_exp ctx (plaintyp_expect $ plaintyp.at) plaintyp exp_il
+          in
+          match exp_il_attempt with
+          | Ok exp_il -> Ok (optyp_il, exp_il, plaintyp_res_expect)
+          | _ -> fail))
+    fail plaintyps_expect
+
+and infer_unop_exp (ctx : Ctx.t) (at : region) (unop : unop) (exp : exp) :
+    (Il.Ast.exp' * plaintyp') attempt =
+  let* exp_il, plaintyp = infer_exp ctx exp in
+  let* optyp_il, exp_il, plaintyp_expect =
+    infer_unop ctx at unop plaintyp exp_il
+  in
+  let exp_il = Il.Ast.UnE (unop, optyp_il, exp_il) in
+  Ok (exp_il, plaintyp_expect)
+
+(* Inference of binary expressions *)
+
+and infer_binop (ctx : Ctx.t) (at : region) (binop : binop)
+    (plaintyp_l : plaintyp) (exp_il_l : Il.Ast.exp) (plaintyp_r : plaintyp)
+    (exp_il_r : Il.Ast.exp) :
+    (Il.Ast.optyp * Il.Ast.exp * Il.Ast.exp * plaintyp') attempt =
+  let optyp_il, plaintyps_expect =
+    match binop with
+    | #Bool.binop -> (`BoolT, [ (BoolT, BoolT, BoolT) ])
+    | #Num.binop ->
+        ( `NatT,
+          [
+            (NumT `NatT, NumT `NatT, NumT `NatT);
+            (NumT `IntT, NumT `IntT, NumT `IntT);
+          ] )
+  in
+  let fail =
+    fail at
+      ("binary operator `"
+      ^ El.Print.string_of_binop binop
+      ^ "` is not defined for operand types "
+      ^ El.Print.string_of_plaintyp plaintyp_l
+      ^ " and "
+      ^ El.Print.string_of_plaintyp plaintyp_r)
+  in
+  List.fold_left
+    (fun binop_infer (plaintyp_l_expect, plaintyp_r_expect, plaintyp_res_expect) ->
+      match binop_infer with
+      | Ok _ -> binop_infer
+      | _ -> (
+          let exp_il_l_attempt =
+            cast_exp ctx (plaintyp_l_expect $ plaintyp_l.at) plaintyp_l exp_il_l
+          in
+          let exp_il_r_attempt =
+            cast_exp ctx (plaintyp_r_expect $ plaintyp_r.at) plaintyp_r exp_il_r
+          in
+          match (exp_il_l_attempt, exp_il_r_attempt) with
+          | Ok exp_il_l, Ok exp_il_r ->
+              Ok (optyp_il, exp_il_l, exp_il_r, plaintyp_res_expect)
+          | _ -> fail))
+    fail plaintyps_expect
+
+and infer_binop_exp (ctx : Ctx.t) (at : region) (binop : binop) (exp_l : exp)
+    (exp_r : exp) : (Il.Ast.exp' * plaintyp') attempt =
+  let* exp_il_l, plaintyp_l_infer = infer_exp ctx exp_l in
+  let* exp_il_r, plaintyp_r_infer = infer_exp ctx exp_r in
+  let* optyp_il, exp_il_l, exp_il_r, plaintyp_expect =
+    infer_binop ctx at binop plaintyp_l_infer exp_il_l plaintyp_r_infer exp_il_r
+  in
+  let exp_il = Il.Ast.BinE (binop, optyp_il, exp_il_l, exp_il_r) in
+  Ok (exp_il, plaintyp_expect)
+
 (* Inference of comparison expressions *)
 
 and infer_cmpop_exp_poly (ctx : Ctx.t) (at : region) (cmpop : Bool.cmpop)
@@ -387,7 +481,7 @@ and infer_cmpop_exp (ctx : Ctx.t) (at : region) (cmpop : cmpop) (exp_l : exp)
     (exp_r : exp) : (Il.Ast.exp' * plaintyp') attempt =
   match cmpop with
   | #Bool.cmpop as cmpop -> infer_cmpop_exp_poly ctx at cmpop exp_l exp_r
-  | #Num.cmpop -> todo "infer_cmpop_exp" "Num.cmpop"
+  | #Num.cmpop -> todo at "infer_cmpop_exp" "Num.cmpop"
 
 (* Inference of arithmetic expressions *)
 
@@ -649,7 +743,7 @@ and elab_exp_plain' (ctx : Ctx.t) (at : region) (plaintyp_expect : plaintyp)
   | CatE (exp_l, exp_r) -> elab_cat_exp ctx plaintyp_expect exp_l exp_r
   | ParenE exp -> elab_paren_exp ctx plaintyp_expect exp
   | IterE (exp, iter) -> elab_iter_exp ctx plaintyp_expect exp iter
-  | _ -> todo "elab_exp_plain" (El.Print.string_of_exp (exp $ at))
+  | _ -> todo at "elab_exp_plain" (El.Print.string_of_exp (exp $ at))
 
 (* Elaboration of episilon expressions *)
 
@@ -889,8 +983,10 @@ and elab_param (ctx : Ctx.t) (param : param) : Il.Ast.param =
       check
         (List.map it tparams |> distinct ( = ))
         id.at "type parameters are not distinct";
-      let params_il = List.map (elab_param ctx) params in
-      let typ_il = elab_plaintyp ctx plaintyp in
+      let ctx_local = ctx in
+      let ctx_local = Ctx.add_tparams ctx_local tparams in
+      let params_il = List.map (elab_param ctx_local) params in
+      let typ_il = elab_plaintyp ctx_local plaintyp in
       Il.Ast.DefP (id, tparams, params_il, typ_il) $ param.at
 
 (* Elaboration of arguments *)
@@ -1049,8 +1145,8 @@ let rec elab_def (ctx : Ctx.t) (def : def) : Ctx.t * Il.Ast.def option =
       elab_rule_def ctx def.at id_rel id_rule exp prems |> wrap_none
   | DecD (id, tparams, params, plaintyp, _hints) ->
       elab_dec_def ctx def.at id tparams params plaintyp |> wrap_some
-  | DefD (id, targs, args, exp, prems) ->
-      elab_def_def ctx def.at id targs args exp prems |> wrap_none
+  | DefD (id, tparams, args, exp, prems) ->
+      elab_def_def ctx def.at id tparams args exp prems |> wrap_none
   | SepD -> ctx |> wrap_none
 
 and elab_defs (ctx : Ctx.t) (defs : def list) : Ctx.t * Il.Ast.def list =
@@ -1225,8 +1321,10 @@ and elab_dec_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
   check
     (List.map it tparams |> distinct ( = ))
     id.at "type parameters are not distinct";
-  let params_il = List.map (elab_param ctx) params in
-  let typ_il = elab_plaintyp ctx plaintyp in
+  let ctx_local = ctx in
+  let ctx_local = Ctx.add_tparams ctx_local tparams in
+  let params_il = List.map (elab_param ctx_local) params in
+  let typ_il = elab_plaintyp ctx_local plaintyp in
   let def_il = Il.Ast.DecD (id, tparams, params_il, typ_il, []) $ at in
   let ctx = Ctx.add_dec ctx id tparams params plaintyp in
   (ctx, def_il)
@@ -1252,19 +1350,22 @@ and elab_def_output_with_bind (ctx : Ctx.t) (plaintyp : plaintyp) (exp : exp) :
   let+ exp_il = Bind.bind Bind.bind_exp ctx.venv exp_il in
   exp_il
 
-and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (targs : plaintyp list)
+and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
     (args : arg list) (exp : exp) (prems : prem list) : Ctx.t =
-  let tparams, params, plaintyp = Ctx.find_dec ctx id in
+  let tparams_expected, params, plaintyp = Ctx.find_dec ctx id in
   check
-    (List.length targs = List.length tparams)
-    at "type arguments do not match";
+    (List.length tparams = List.length tparams_expected
+    && List.for_all2 ( = ) (List.map it tparams) (List.map it tparams_expected)
+    )
+    id.at "type arguments do not match";
   check (List.length params = List.length args) at "arguments do not match";
   let ctx_local = ctx in
+  let ctx_local = Ctx.add_tparams ctx_local tparams in
   let ctx_local, args_il = elab_def_input_with_bind ctx_local params args in
   let ctx_local, prems_il = elab_prems_with_bind ctx_local prems in
   let exp_il = elab_def_output_with_bind ctx_local plaintyp exp in
-  let clause = (args_il, exp_il, prems_il) $ at in
-  Ctx.add_clause ctx id clause
+  let clause_il = (args_il, exp_il, prems_il) $ at in
+  Ctx.add_clause ctx id clause_il
 
 (* Elaboration of spec *)
 

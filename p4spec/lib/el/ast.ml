@@ -168,8 +168,8 @@ and def' =
   | RuleD of id * id * exp * prem list
   (* `dec` id `<` list(tparam, `,`) `>` list(param, `,`) `:` plaintyp hint* *)
   | DecD of id * tparam list * param list * plaintyp * hint list
-  (* `def` id `<` list(targ, `,`) `>` list(arg, `,`) `=` exp list(`--` prem, nl) *)
-  | DefD of id * targ list * arg list * exp * prem list
+  (* `def` id `<` list(tparam, `,`) `>` list(arg, `,`) `=` exp list(`--` prem, nl) *)
+  | DefD of id * tparam list * arg list * exp * prem list
   | SepD
 
 (* Spec *)
