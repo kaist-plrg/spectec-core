@@ -1,4 +1,10 @@
 ;;
+;; Forward declarations of mutually recursive syntax
+;;
+
+syntax typ
+
+;;
 ;; Parameter Type
 ;;
 
@@ -58,7 +64,7 @@ syntax datatyp hint(show %latex("\\tau_\\texttt{data}")) =
   | UnionT id (member, typ)*        hint(show UNION#_#T % %latex("\\{")#%#%latex("\\}"))
 
 syntax objtyp hint(show %latex("\\tau_\\texttt{obj}")) =
-  | ExternT id map(fid, funcdef)    hint(show EXTERN#_#T % %)
+  | ExternT id map<fid, funcdef>    hint(show EXTERN#_#T % %)
   | ParserT paramtyp*               hint(show PARSER#_#T (%))
   | ControlT paramtyp*              hint(show CONTROL#_#T (%))
   | PackageT typ*                   hint(show PACKAGE#_#T %)

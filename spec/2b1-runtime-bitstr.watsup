@@ -6,5 +6,5 @@ syntax bitstr = int
 
 var bs : bitstr
 
-def $to_two_complement(int, bitstr) : int
-def $of_two_complement(int, int) : bitstr
+dec $to_two_complement(int, bitstr) : int
+dec $of_two_complement(int, int) : bitstr

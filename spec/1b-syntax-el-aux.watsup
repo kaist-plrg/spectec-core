@@ -2,40 +2,40 @@
 ;; Expression constructor checks
 ;;
 
-def $is_boole(expr) : bool                hint(show % IS BOOL_E)
-def $is_stre(expr) : bool                 hint(show % IS STR_E)
-def $is_nume(expr) : bool                 hint(show % IS NUM_E)
-def $is_namee(expr) : bool                hint(show % IS NAME_E)
-def $is_seqe(expr) : bool                 hint(show % IS SEQ_E)
-def $is_seq_defaulte(expr) : bool         hint(show % IS SEQ_DEFAULT_E)
-def $is_recorde(expr) : bool              hint(show % IS RECORD_E)
-def $is_record_defaulte(expr) : bool      hint(show % IS RECORD_DEFAULT_E)
-def $is_defaulte(expr) : bool             hint(show % IS DEFAULT_E)
-def $is_invalide(expr) : bool             hint(show % IS INVALID_E)
-def $is_une(expr) : bool                  hint(show % IS UN_E)
-def $is_bine(expr) : bool                 hint(show % IS BIN_E)
-def $is_terne(expr) : bool                hint(show % IS TERN_E)
-def $is_caste(expr) : bool                hint(show % IS CAST_E)
-def $is_maske(expr) : bool                hint(show % IS MASK_E)
-def $is_rangee(expr) : bool               hint(show % IS RANGE_E)
-def $is_selecte(expr) : bool              hint(show % IS SELECT_E)
-def $is_arracce(expr) : bool              hint(show % IS ARRACC_E)
-def $is_bitacce(expr) : bool              hint(show % IS BITACC_E)
-def $is_erracce(expr) : bool              hint(show % IS ERRACC_E)
-def $is_typacce(expr) : bool              hint(show % IS TYPEACC_E)
-def $is_expracce(expr) : bool             hint(show % IS EXPRACC_E)
-def $is_callfunce(expr) : bool            hint(show % IS CALLFUNC_E)
-def $is_callmethode(expr) : bool          hint(show % IS CALLMETHOD_E)
-def $is_calltype(expr) : bool             hint(show % IS CALLTYPE_E)
-def $is_inste(expr) : bool                hint(show % IS INST_E)
+dec $is_boole(expr) : bool                hint(show % IS BOOL_E)
+dec $is_stre(expr) : bool                 hint(show % IS STR_E)
+dec $is_nume(expr) : bool                 hint(show % IS NUM_E)
+dec $is_namee(expr) : bool                hint(show % IS NAME_E)
+dec $is_seqe(expr) : bool                 hint(show % IS SEQ_E)
+dec $is_seq_defaulte(expr) : bool         hint(show % IS SEQ_DEFAULT_E)
+dec $is_recorde(expr) : bool              hint(show % IS RECORD_E)
+dec $is_record_defaulte(expr) : bool      hint(show % IS RECORD_DEFAULT_E)
+dec $is_defaulte(expr) : bool             hint(show % IS DEFAULT_E)
+dec $is_invalide(expr) : bool             hint(show % IS INVALID_E)
+dec $is_une(expr) : bool                  hint(show % IS UN_E)
+dec $is_bine(expr) : bool                 hint(show % IS BIN_E)
+dec $is_terne(expr) : bool                hint(show % IS TERN_E)
+dec $is_caste(expr) : bool                hint(show % IS CAST_E)
+dec $is_maske(expr) : bool                hint(show % IS MASK_E)
+dec $is_rangee(expr) : bool               hint(show % IS RANGE_E)
+dec $is_selecte(expr) : bool              hint(show % IS SELECT_E)
+dec $is_arracce(expr) : bool              hint(show % IS ARRACC_E)
+dec $is_bitacce(expr) : bool              hint(show % IS BITACC_E)
+dec $is_erracce(expr) : bool              hint(show % IS ERRACC_E)
+dec $is_typacce(expr) : bool              hint(show % IS TYPEACC_E)
+dec $is_expracce(expr) : bool             hint(show % IS EXPRACC_E)
+dec $is_callfunce(expr) : bool            hint(show % IS CALLFUNC_E)
+dec $is_callmethode(expr) : bool          hint(show % IS CALLMETHOD_E)
+dec $is_calltype(expr) : bool             hint(show % IS CALLTYPE_E)
+dec $is_inste(expr) : bool                hint(show % IS INST_E)
 
 ;;
 ;; Stringifiers
 ;;
 
-def $string_of_name(name) : text     hint(show %)
+dec $string_of_name(name) : text     hint(show %)
 
-def $string_of_name(name) = $concat_text("." id)
+def $string_of_name(name) = $concat_text("." :: id)
   -- if TOP id = name
 def $string_of_name(name) = id
   -- if CURRENT id = name

@@ -248,7 +248,7 @@ and elab_typ_def_variant (ctx : Ctx.t) (at : region) (typcases : typcase list) :
     Il.Ast.deftyp =
   let typcases_il = List.map (elab_typcase ctx) typcases in
   let mixops = typcases_il |> List.map it |> List.map fst in
-  check (distinct Mixop.eq mixops) no_region "cases are ambiguous";
+  check (distinct Mixop.eq mixops) at "cases are ambiguous";
   let deftyp_il = Il.Ast.VariantT typcases_il in
   deftyp_il $ at
 
@@ -1135,7 +1135,7 @@ let rec elab_def (ctx : Ctx.t) (def : def) : Ctx.t * Il.Ast.def option =
   let wrap_some (ctx, def) = (ctx, Some def) in
   let wrap_none ctx = (ctx, None) in
   match def.it with
-  | SynD (id, tparams) -> elab_syn_def ctx id tparams |> wrap_none
+  | SynD syns -> elab_syn_def ctx syns |> wrap_none
   | TypD (id, tparams, deftyp, _hints) ->
       elab_typ_def ctx id tparams deftyp |> wrap_some
   | VarD (id, plaintyp, _hints) -> elab_var_def ctx id plaintyp |> wrap_none
@@ -1160,17 +1160,20 @@ and elab_defs (ctx : Ctx.t) (defs : def list) : Ctx.t * Il.Ast.def list =
 
 (* Elaboration of type declarations *)
 
-and elab_syn_def (ctx : Ctx.t) (id : id) (tparams : tparam list) : Ctx.t =
-  check
-    (List.map it tparams |> distinct ( = ))
-    id.at "type parameters are not distinct";
-  check (valid_tid id) id.at "invalid type identifier";
-  let td = TypeDef.Defining tparams in
-  let ctx = Ctx.add_typdef ctx id td in
-  if tparams = [] then
-    let plaintyp = VarT (id, []) $ id.at in
-    Ctx.add_metavar ctx id plaintyp
-  else ctx
+and elab_syn_def (ctx : Ctx.t) (syns : (id * tparam list) list) : Ctx.t =
+  List.fold_left
+    (fun ctx (id, tparams) ->
+      check
+        (List.map it tparams |> distinct ( = ))
+        id.at "type parameters are not distinct";
+      check (valid_tid id) id.at "invalid type identifier";
+      let td = TypeDef.Defining tparams in
+      let ctx = Ctx.add_typdef ctx id td in
+      if tparams = [] then
+        let plaintyp = VarT (id, []) $ id.at in
+        Ctx.add_metavar ctx id plaintyp
+      else ctx)
+    ctx syns
 
 (* Elaboration of type definitions *)
 

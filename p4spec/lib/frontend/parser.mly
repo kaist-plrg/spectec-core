@@ -133,6 +133,10 @@ defid_langle : id_langle { $1 @@@ $sloc }
 
 hintid : id { $1 }
 
+synid :
+  | varid { ($1, []) }
+  | varid_langle comma_list(tparam) RANGLE { ($1, $2) }
+
 (* Atoms *)
 
 atom :
@@ -571,10 +575,12 @@ hint :
 def :
   | def_ NL_NL* { $1 @@@ $loc($1) }
 def_ :
-  | SYNTAX varid
-    { SynD ($2, []) }
-  | SYNTAX varid_langle comma_list(tparam) RANGLE 
-    { SynD ($2, $3) }
+  | SYNTAX comma_list(synid)
+    {
+      match $2 with
+      | [] -> error (at $sloc) "empty syntax declaration"
+      | _ -> SynD $2
+    }
   | SYNTAX varid hint* EQ deftyp
     { TypD ($2, [], $5, $3) }
   | SYNTAX varid_langle comma_list(tparam) RANGLE hint* EQ deftyp

@@ -7,9 +7,9 @@
 ;;
 
 syntax tid = id
-syntax tidset hint(show %latex("\\mathcal{B}")) = set(tid)
+syntax tidset hint(show %latex("\\mathcal{B}")) = set<tid>
 
-def $fresh_tid() : tid  hint(show FRESH#_#TID)
+dec $fresh_tid() : tid  hint(show FRESH#_#TID)
 
 ;;
 ;; Function and constructor identifiers
@@ -18,19 +18,17 @@ def $fresh_tid() : tid  hint(show FRESH#_#TID)
 syntax fid = id (id, bool)*
 syntax cid = fid
 
-def $to_fid(id, param*) : fid
-def $to_fid'(param*) : (id, bool)*
+dec $to_fid(id, param*) : fid
+dec $to_fid'(param*) : (id, bool)*
 
 def $to_fid(id, param*) = id $to_fid'(param*)
 def $to_fid'(eps) = eps
-def $to_fid'(param_h param_t*) = t $to_fid'(param_t*)
+def $to_fid'(param_h :: param_t*) = (id, true) :: $to_fid'(param_t*)
   -- if id dir type expr = param_h
-  -- if t = (id, true)
-def $to_fid'(param_h param_t*) = t $to_fid'(param_t*)
+def $to_fid'(param_h :: param_t*) = (id, false) :: $to_fid'(param_t*)
   -- if id dir type eps = param_h
-  -- if t = (id, false)
 
-def $to_cid(id, param*) : cid
+dec $to_cid(id, param*) : cid
 def $to_cid(id, param*) = $to_fid(id, param*)
 
 ;;

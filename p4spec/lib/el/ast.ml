@@ -156,8 +156,8 @@ and hint = { hintid : id; hintexp : exp }
 
 type def = def' phrase
 and def' =
-  (* `syntax` id `<` list(tparam, `,`) `>` *)
-  | SynD of id * tparam list
+  (* `syntax` list(id `<` list(tparam, `,`) `>`, `,`) *)
+  | SynD of (id * tparam list) list
   (* `syntax` id `<` list(tparam, `,`) `>` hint* `=` deftyp *)
   | TypD of id * tparam list * deftyp * hint list
   (* `var` id `:` plaintyp hint* *)

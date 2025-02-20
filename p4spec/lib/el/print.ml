@@ -231,8 +231,13 @@ and string_of_prems prems =
 
 let string_of_def def =
   match def.it with
-  | SynD (typid, tparams) ->
-      "syntax " ^ string_of_typid typid ^ string_of_tparams tparams
+  | SynD syns ->
+      "syntax "
+      ^ String.concat ", "
+          (List.map
+             (fun (typid, tparams) ->
+               string_of_typid typid ^ string_of_tparams tparams)
+             syns)
   | TypD (typid, tparams, deftyp, _hints) ->
       "syntax " ^ string_of_typid typid ^ string_of_tparams tparams ^ " = "
       ^ string_of_deftyp deftyp

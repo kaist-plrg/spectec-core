@@ -2,6 +2,8 @@
 ;; Value
 ;;
 
+syntax setval
+
 syntax val =
   ;; Base values
   | ErrV member                     hint(show ERR#_#V %)
@@ -11,7 +13,7 @@ syntax val =
   | IntV int                        hint(show INT#_#V %)
   | FIntV width bitstr              hint(show FINT#_#V %#S#%)
   | FBitV width bitstr              hint(show FBIT#_#V %#W#%)
-  | VBitV width width bitstr        hint(show VBIT#_#V#%latex("\\langle")#%%latex("@")%#%latex("\\rangle") %)
+  | VBitV width width bitstr        ;;hint(show VBIT#_#V#%latex("\\langle")#%%latex("@")%#%latex("\\rangle") %)
   ;; Derived values
   | EnumFieldV id member            hint(show ENUM#_#FIELD#_#V %.%)
   | SEnumFieldV id member val       hint(show SENUM#_#FIELD#_#V %.% (%))
