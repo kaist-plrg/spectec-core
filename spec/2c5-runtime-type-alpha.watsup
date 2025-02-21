@@ -2,16 +2,26 @@
 ;; Alpha-equivalence of types
 ;;
 
-relation Type_alpha: typ ~~ typ
-relation FuncDef_alpha: funcdef ~~ funcdef
-relation FuncType_alpha: functyp ~~ functyp
+relation Type_alpha:
+  typ ~~ typ
+  hint(input %0 %1)
 
+relation FuncDef_alpha:
+  funcdef ~~ funcdef
+  hint(input %0 %1)
+
+relation FuncType_alpha:
+  functyp ~~ functyp
+  hint(input %0 %1)
+
+;; (TODO-SpecTec) Handle the case for multiple binds (basetyp ~~ basetyp) using if
 rule Type_alpha/basetyp:
-  basetyp ~~ basetyp
-  -- if basetyp = basetyp
+  basetyp_a ~~ basetyp_b
+  -- if basetyp_a = basetyp_b
 
 rule Type_alpha/vart:
-  (VarT id) ~~ (VarT id)
+  (VarT id_a) ~~ (VarT id_b)
+  -- if id_a = id_b
 
 rule Type_alpha/spect-nominal:
   (SpecT ptd_a typ_a*) ~~ (SpecT ptd_b typ_b*)
@@ -68,9 +78,9 @@ rule Type_alpha/tuplet:
   -- (Type_alpha: typ_a ~~ typ_b)*
 
 rule Type_alpha/stackt:
-  (StackT typ_a size_a) ~~ (StackT typ_b size_b)
+  (StackT typ_a int_a) ~~ (StackT typ_b int_b)
   -- Type_alpha: typ_a ~~ typ_b
-  -- if size_a = size_b
+  -- if int_a = int_b
 
 rule Type_alpha/structt:
   (StructT id_a (member_a, typ_a)*) ~~ (StructT id_b (member_b, typ_b)*)
@@ -90,15 +100,15 @@ rule Type_alpha/uniont:
   -- if (member_a = member_b)*
   -- (Type_alpha: typ_a ~~ typ_b)*
 
-rule Type_alpha/externt:
-  (ExternT id_a fmap_a) ~~ (ExternT id_b fmap_b)
-  -- if id_a = id_b
-  ----
-  -- if MAP (PAIR fid_a funcdef_a)* = fmap_a
-  -- if MAP (PAIR fid_b funcdef_b)* = fmap_b
-  ----
-  -- if $eq_set(fid, SET fid_a*, SET fid_b*)
-  -- (FuncDef_alpha: $find_map(fid, funcdef, fmap_a, fid_a) ~~ $find_map(fid, funcdef, fmap_b, fid_a))*
+;;rule Type_alpha/externt:
+;;  (ExternT id_a fmap_a) ~~ (ExternT id_b fmap_b)
+;;  -- if id_a = id_b
+;;  ----
+;;  -- if MAP (PAIR fid_a funcdef_a)* = fmap_a
+;;  -- if MAP (PAIR fid_b funcdef_b)* = fmap_b
+;;  ----
+;;  -- if $eq_set(fid, SET fid_a*, SET fid_b*)
+;;  -- (FuncDef_alpha: $find_map(fid, funcdef, fmap_a, fid_a) ~~ $find_map(fid, funcdef, fmap_b, fid_a))*
 
 rule Type_alpha/parsert:
   (ParserT paramtyp_a*) ~~ (ParserT paramtyp_b*)

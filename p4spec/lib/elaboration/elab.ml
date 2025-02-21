@@ -53,22 +53,36 @@ type kind =
   | `Struct of typfield list
   | `Variant of nottyp list ]
 
-let kind_of_typ (ctx : Ctx.t) (typ : Il.Ast.typ) : kind =
-  match typ.it with
-  | VarT (tid, _) -> (
+let rec kind_of_typ (ctx : Ctx.t) (plaintyp : plaintyp) : kind =
+  let plaintyp = expand_plaintyp ctx plaintyp in
+  match plaintyp.it with
+  | VarT (tid, targs) -> (
       let td = Ctx.find_typdef ctx tid in
       match td with
-      | Defined (_, typdef) -> (
+      | Defined (tparams, typdef) -> (
+          let theta = List.combine tparams targs |> Subst.Theta.of_list in
           match typdef with
-          | `Plain plaintyp -> `Plain plaintyp
-          | `Struct typfields -> `Struct typfields
-          | `Variant nottyps -> `Variant nottyps)
+          | `Plain plaintyp ->
+              let plaintyp = Subst.subst_plaintyp theta plaintyp in
+              `Plain plaintyp
+          | `Struct typfields ->
+              let typfields =
+                List.map
+                  (fun (atom, plaintyp, hints) ->
+                    let plaintyp = Subst.subst_plaintyp theta plaintyp in
+                    (atom, plaintyp, hints))
+                  typfields
+              in
+              `Struct typfields
+          | `Variant nottyps ->
+              let nottyps = Subst.subst_nottyps theta nottyps in
+              `Variant nottyps)
       | _ -> `Opaque)
-  | _ -> `Opaque
+  | _ -> `Plain plaintyp
 
 (* Expansion of type aliases *)
 
-let rec expand_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp =
+and expand_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp =
   match plaintyp.it with
   | VarT (tid, _) -> (
       let td = Ctx.find_typdef ctx tid in
@@ -82,8 +96,15 @@ let rec expand_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp =
 
 (* Type equivalence and subtyping *)
 
-let rec equiv_plaintyp (ctx : Ctx.t) (plaintyp_a : plaintyp)
-    (plaintyp_b : plaintyp) : bool =
+let rec equiv_typ (ctx : Ctx.t) (typ_a : typ) (typ_b : typ) : bool =
+  match (typ_a, typ_b) with
+  | PlainT plaintyp_a, PlainT plaintyp_b ->
+      equiv_plaintyp ctx plaintyp_a plaintyp_b
+  | NotationT nottyp_a, NotationT nottyp_b -> equiv_nottyp ctx nottyp_a nottyp_b
+  | _ -> false
+
+and equiv_plaintyp (ctx : Ctx.t) (plaintyp_a : plaintyp) (plaintyp_b : plaintyp)
+    : bool =
   let plaintyp_a = expand_plaintyp ctx plaintyp_a in
   let plaintyp_b = expand_plaintyp ctx plaintyp_b in
   match (plaintyp_a.it, plaintyp_b.it) with
@@ -103,6 +124,21 @@ let rec equiv_plaintyp (ctx : Ctx.t) (plaintyp_a : plaintyp)
       equiv_plaintyp ctx plaintyp_a plaintyp_b && iter_a = iter_b
   | _ -> false
 
+and equiv_nottyp (ctx : Ctx.t) (nottyp_a : nottyp) (nottyp_b : nottyp) : bool =
+  match (nottyp_a.it, nottyp_b.it) with
+  | AtomT atom_a, AtomT atom_b -> atom_a.it = atom_b.it
+  | SeqT typs_a, SeqT typs_b ->
+      List.length typs_a = List.length typs_b
+      && List.for_all2 (equiv_typ ctx) typs_a typs_b
+  | InfixT (typ_l_a, atom_a, typ_r_a), InfixT (typ_l_b, atom_b, typ_r_b) ->
+      equiv_typ ctx typ_l_a typ_l_b
+      && atom_a.it = atom_b.it
+      && equiv_typ ctx typ_r_a typ_r_b
+  | BrackT (atom_l_a, typ_a, atom_r_a), BrackT (atom_l_b, typ_b, atom_r_b) ->
+      atom_l_a.it = atom_l_b.it && equiv_typ ctx typ_a typ_b
+      && atom_r_a.it = atom_r_b.it
+  | _ -> false
+
 let rec sub_plaintyp (ctx : Ctx.t) (plaintyp_a : plaintyp)
     (plaintyp_b : plaintyp) : bool =
   equiv_plaintyp ctx plaintyp_a plaintyp_b
@@ -114,6 +150,15 @@ and sub_plaintyp' (ctx : Ctx.t) (plaintyp_a : plaintyp) (plaintyp_b : plaintyp)
   let plaintyp_b = expand_plaintyp ctx plaintyp_b in
   match (plaintyp_a.it, plaintyp_b.it) with
   | NumT numtyp_a, NumT numtyp_b -> Num.sub numtyp_a numtyp_b
+  | VarT _, VarT _ -> (
+      let kind_a = kind_of_typ ctx plaintyp_a in
+      let kind_b = kind_of_typ ctx plaintyp_b in
+      match (kind_a, kind_b) with
+      | `Variant nottyps_a, `Variant nottyps_b ->
+          List.for_all
+            (fun nottyp_a -> List.exists (equiv_nottyp ctx nottyp_a) nottyps_b)
+            nottyps_a
+      | _ -> false)
   | ParenT plaintyp_a, _ -> sub_plaintyp ctx plaintyp_a plaintyp_b
   | _, ParenT plaintyp_b -> sub_plaintyp ctx plaintyp_a plaintyp_b
   | TupleT plaintyps_a, TupleT plaintyps_b ->
@@ -141,12 +186,12 @@ and elab_plaintyp' (ctx : Ctx.t) (plaintyp : plaintyp') : Il.Ast.typ' =
   | TextT -> Il.Ast.TextT
   | VarT (tid, targs) ->
       let td = Ctx.find_typdef ctx tid in
-      let typs_il = List.map (elab_plaintyp ctx) targs in
       let tparams = TypeDef.get_tparams td in
       check
         (List.length tparams = List.length targs)
         tid.at "type arguments do not match";
-      Il.Ast.VarT (tid, typs_il)
+      let targs_il = List.map (elab_plaintyp ctx) targs in
+      Il.Ast.VarT (tid, targs_il)
   | ParenT plaintyp -> elab_plaintyp' ctx plaintyp.it
   | TupleT plaintyps ->
       let typs_il = List.map (elab_plaintyp ctx) plaintyps in
@@ -234,8 +279,7 @@ and expand_typcase (ctx : Ctx.t) (typcase : typcase) : nottyp list =
   match typ with
   | PlainT plaintyp -> (
       let plaintyp = expand_plaintyp ctx plaintyp in
-      let typ_il = elab_plaintyp ctx plaintyp in
-      let kind = kind_of_typ ctx typ_il in
+      let kind = kind_of_typ ctx plaintyp in
       match kind with
       | `Opaque -> error plaintyp.at "cannot extend an incomplete type"
       | `Variant nottyps -> nottyps
@@ -619,6 +663,9 @@ and infer_call_exp (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list)
   check
     (List.length targs = List.length tparams)
     id.at "type arguments do not match";
+  let theta = List.combine tparams targs |> Subst.Theta.of_list in
+  let params = Subst.subst_params theta params in
+  let plaintyp = Subst.subst_plaintyp theta plaintyp in
   let targs_il = List.map (elab_plaintyp ctx) targs in
   check (List.length args = List.length params) id.at "arguments do not match";
   let args_il = List.map2 (elab_arg ctx) params args in
@@ -666,6 +713,9 @@ and cast_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp)
 
 and elab_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
     Il.Ast.exp attempt =
+  (* Format.printf "=> Elaborate %s, expecting %s\n" *)
+  (*   (El.Print.string_of_exp exp) *)
+  (*   (El.Print.string_of_plaintyp plaintyp_expect); *)
   (* Expression elaboration is a two-step process:
      - if a type can be inferred without any contextual information,
        match the inferred type with the expected type
@@ -675,17 +725,26 @@ and elab_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
   let infer_attempt = infer_exp ctx exp in
   match infer_attempt with
   | Ok (exp_il, plaintyp_infer) ->
+      (* Format.printf "==> Inferred %s to have type %s\n" *)
+      (*   (Il.Print.string_of_exp exp_il) *)
+      (*   (El.Print.string_of_plaintyp plaintyp_infer); *)
       cast_exp ctx plaintyp_expect plaintyp_infer exp_il
   | Fail _ -> (
+      (* Format.printf "==> Failed to infer %s\n" *)
+      (*   (El.Print.string_of_exp exp); *)
+      let kind = kind_of_typ ctx plaintyp_expect in
       let typ_il = elab_plaintyp ctx plaintyp_expect in
-      let kind = kind_of_typ ctx typ_il in
       match kind with
       | `Opaque -> elab_exp_plain ctx plaintyp_expect exp
-      | `Plain plaintyp -> elab_exp_plain ctx plaintyp exp
+      | `Plain plaintyp ->
+          (* Format.printf "===> Elaborate plain expression %s\n" *)
+          (*   (El.Print.string_of_plaintyp plaintyp); *)
+          elab_exp_plain ctx plaintyp exp
       | `Struct typfields ->
           let* expfields_il = elab_exp_struct ctx typfields exp in
           Ok (Il.Ast.StrE expfields_il $$ (exp.at, typ_il.it))
       | `Variant typcases ->
+          (* Format.printf "====> Elaborate variant expression\n"; *)
           let* nottyp_il = elab_exp_variant ctx typcases exp in
           Ok (Il.Ast.CaseE nottyp_il $$ (exp.at, typ_il.it)))
 
@@ -724,7 +783,7 @@ and elab_as_struct (ctx : Ctx.t) (plaintyp : plaintyp) : typfield list attempt =
   | _ -> fail plaintyp.at "cannot elaborate type as struct"
 
 and fail_elab_plain (at : region) (msg : string) =
-  fail at ("cannot elaborate expression because" ^ msg)
+  fail at ("cannot elaborate expression because " ^ msg)
 
 and elab_exp_plain (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
     Il.Ast.exp attempt =
@@ -811,7 +870,7 @@ and elab_iter_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp)
 (* Elaboration of notation expressions *)
 
 and fail_elab_not (at : region) (msg : string) : Il.Ast.notexp attempt =
-  Fail (at, "cannot elaborate notation expression because" ^ msg)
+  Fail (at, "cannot elaborate notation expression because " ^ msg)
 
 and elab_exp_not (ctx : Ctx.t) (typ : typ) (exp : exp) : Il.Ast.notexp attempt =
   let exp = unparen_exp exp in
@@ -867,7 +926,7 @@ and elab_exp_not (ctx : Ctx.t) (typ : typ) (exp : exp) : Il.Ast.notexp attempt =
 
 and fail_elab_struct (at : region) (msg : string) :
     (Il.Ast.atom * Il.Ast.exp) list attempt =
-  Fail (at, "cannot elaborate struct expression because" ^ msg)
+  Fail (at, "cannot elaborate struct expression because " ^ msg)
 
 and elab_expfields (ctx : Ctx.t) (at : region)
     (typfields : (atom * plaintyp) list) (expfields : (atom * exp) list) :
@@ -898,7 +957,7 @@ and elab_exp_struct (ctx : Ctx.t) (typfields : typfield list) (exp : exp) :
 (* Elaboration of variant expressions *)
 
 and fail_elab_variant (at : region) (msg : string) : Il.Ast.notexp attempt =
-  fail at ("cannot elaborate variant case because" ^ msg)
+  fail at ("cannot elaborate variant case because " ^ msg)
 
 and elab_exp_variant (ctx : Ctx.t) (nottyps : nottyp list) (exp : exp) :
     Il.Ast.notexp attempt =
@@ -1248,6 +1307,8 @@ and fetch_rel_input_hint (at : region) (nottyp_il : Il.Ast.nottyp)
   | Some hintexp -> (
       let inputs_opt = fetch_rel_input_hint' len hintexp in
       match inputs_opt with
+      | Some [] ->
+          error at "malformed input hint: at least one input should be provided"
       | Some inputs -> inputs
       | None ->
           warn at

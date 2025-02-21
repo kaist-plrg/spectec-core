@@ -17,7 +17,7 @@ dec $subst_constyp(theta, constyp) : constyp               hint(show %2#%latex("
 ;; Type substitutions
 ;;
 
-def $subst_typ(theta, VarT id) = $find_map(id, typ, theta, id)
+def $subst_typ(theta, VarT id) = $find_map<id, typ>(theta, id)
   -- if $in_set<id>(id, $dom_map<id, typ>(theta))
 
 def $subst_typ(theta, SpecT ptd typ*) = SpecT ptd' typ'*
@@ -28,7 +28,7 @@ def $subst_typ(theta, DefT typ) = $subst_typ(theta, typ)
 
 def $subst_typ(theta, NewT id typ) = NewT id ($subst_typ(theta, typ))
 
-def $subst_typ(theta, SEnumT id typ fields) = SEnumT id ($subst_typ(theta, typ)) fields
+def $subst_typ(theta, SEnumT id typ (member, val)*) = SEnumT id ($subst_typ(theta, typ)) (member, val)*
 
 def $subst_typ(theta, ListT typ) = ListT ($subst_typ(theta, typ))
 
@@ -42,9 +42,9 @@ def $subst_typ(theta, HeaderT id (member, typ)*) = HeaderT id (member, $subst_ty
 
 def $subst_typ(theta, UnionT id (member, typ)*) = UnionT id (member, $subst_typ(theta, typ))*
 
-def $subst_typ(theta, ExternT id fmap) = ExternT id fmap'
-  -- if MAP (PAIR fid funcdef)* = fmap
-  -- if fmap' = MAP (PAIR fid $subst_funcdef(theta, funcdef))*
+;;def $subst_typ(theta, ExternT id fmap) = ExternT id fmap'
+;;  -- if MAP (PAIR fid funcdef)* = fmap
+;;  -- if fmap' = MAP (PAIR fid $subst_funcdef(theta, funcdef))*
 
 def $subst_typ(theta, ParserT paramtyp*) = ParserT paramtyp'*
   -- if (id dir typ val)* = paramtyp*
@@ -78,17 +78,17 @@ def $subst_typ(theta, typ) = typ
 ;;
 
 def $subst_typdef_poly(theta, PolyD (tparam*, tparam_hidden*) -> typ) = PolyD (tparam''*, tparam''_hidden*) -> typ'
-  -- if SET tid_free* = $diff_set(tid, $free_typ(typ), SET (tparam* tparam_hidden*))
-  -- if tidset_capture = $unions_set(tid, ($free_typ($find_map(tid, typ, theta, tid_free)))*)
+  -- if SET tid_free* = $diff_set<tid>($free_typ(typ), SET (tparam* ++ tparam_hidden*))
+  -- if tidset_capture = $unions_set<tid>(($free_typ($find_map<tid, typ>(theta, tid_free)))*)
   ----
-  -- if (tparam' = $fresh_tid())*
-  -- if |tparam'*| = |tparam* tparam_hidden*|
-  -- if ($not_in_set(tid, tparam', tidset_capture))*
+  -- if tparam'* = $fresh_tids(|tparam* ++ tparam_hidden*|)
+  -- if ($not_in_set<tid>(tparam', tidset_capture))*
   ----
-  -- if tparam'* = tparam''* tparam''_hidden*
+  -- if tparam''* = tparam'*[0 : |tparam*|]
+  -- if tparam''_hidden* = tparam'*[|tparam*| : |tparam_hidden*|]
   ----
-  -- if theta' = $extends_map(tid, typ, theta, tparam*, (VarT tparam'')*)
-  -- if theta'' = $extends_map(tid, typ, theta', tparam_hidden*, (VarT tparam''_hidden)*)
+  -- if theta' = $extends_map<tid, typ>(theta, tparam*, (VarT tparam'')*)
+  -- if theta'' = $extends_map<tid, typ>(theta', tparam_hidden*, (VarT tparam''_hidden)*)
   ----
   -- if typ' = $subst_typ(theta'', typ)
 
@@ -99,17 +99,17 @@ def $subst_typdef_poly(theta, PolyD (tparam*, tparam_hidden*) -> typ) = PolyD (t
 def $subst_funcdef(theta, MonoFD ft) = MonoFD ($subst_functyp(theta, ft))
 
 def $subst_funcdef(theta, PolyFD (tparam*, tparam_hidden*) -> ft) = PolyFD (tparam''*, tparam''_hidden*) -> ft'
-  -- if SET tid_free* = $diff_set(tid, $free_functyp(ft), SET (tparam* tparam_hidden*))
-  -- if tidset_capture = $unions_set(tid, ($free_typ($find_map(tid, typ, theta, tid_free)))*)
+  -- if SET tid_free* = $diff_set<tid>($free_functyp(ft), SET (tparam* ++ tparam_hidden*))
+  -- if tidset_capture = $unions_set<tid>(($free_typ($find_map<tid, typ>(theta, tid_free)))*)
   ----
-  -- if (tparam' = $fresh_tid())*
-  -- if |tparam'*| = |tparam* tparam_hidden*|
-  -- if ($not_in_set(tid, tparam', tidset_capture))*
+  -- if tparam'* = $fresh_tids(|tparam* ++ tparam_hidden*|)
+  -- if ($not_in_set<tid>(tparam', tidset_capture))*
   ----
-  -- if tparam'* = tparam''* tparam''_hidden*
+  -- if tparam''* = tparam'*[0 : |tparam*|]
+  -- if tparam''_hidden* = tparam'*[|tparam*| : |tparam_hidden*|]
   ----
-  -- if theta' = $extends_map(tid, typ, theta, tparam*, (VarT tparam')*)
-  -- if theta'' = $extends_map(tid, typ, theta', tparam_hidden*, (VarT tparam''_hidden)*)
+  -- if theta' = $extends_map<tid, typ>(theta, tparam*, (VarT tparam')*)
+  -- if theta'' = $extends_map<tid, typ>(theta', tparam_hidden*, (VarT tparam''_hidden)*)
   ----
   -- if ft' = $subst_functyp(theta'', ft)
 
@@ -172,9 +172,9 @@ def $subst_constyp(theta, ConsT paramtyp* typ) = ConsT paramtyp'* typ'
 dec $specialize_typdef(typdef, typ*) : typ  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
 def $specialize_typdef(MonoD typ, eps) = typ
-def $specialize_typdef(PolyD (tparam*, tparam_hidden*) -> typ, typ_a*) = $subst_typ(MAP (PAIR tparam' typ_a)*, typ)
+def $specialize_typdef(PolyD (tparam*, tparam_hidden*) -> typ, typ_a*) = $subst_typ(theta, typ)
   -- if tparam'* = tparam* ++ tparam_hidden*
-  -- if |tparam'*| = |typ_a*|
+  -- if theta = MAP (PAIR tparam' typ_a)*
 
 ;;
 ;; Funcdef specialization
@@ -184,9 +184,9 @@ def $specialize_typdef(PolyD (tparam*, tparam_hidden*) -> typ, typ_a*) = $subst_
 dec $specialize_funcdef(funcdef, typ*) : functyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
 def $specialize_funcdef(MonoFD ft, eps) = ft
-def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = $subst_functyp(MAP (PAIR tparam' typ_a)*, ft)
+def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = $subst_functyp(theta, ft)
   -- if tparam'* = tparam* ++ tparam_hidden*
-  -- if |tparam'*| = |typ_a*|
+  -- if theta = MAP (PAIR tparam' typ_a)*
 
 ;;
 ;; Constructor definition specialization
@@ -195,9 +195,9 @@ def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = $subst
 ;; (TODO) consider missing type arguments
 dec $specialize_consdef(consdef, typ*) : constyp  hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
-def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*) = $subst_constyp(MAP (PAIR tparam' typ_a)*, ct)
+def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*) = $subst_constyp(theta, ct)
   -- if tparam'* = tparam* ++ tparam_hidden*
-  -- if |tparam'*| = |typ_a*|
+  -- if theta = MAP (PAIR tparam' typ_a)*
 
 ;;
 ;; Canonicalization (recursive specialization and typedef unrolling)
@@ -224,7 +224,7 @@ def $get_params_functyp(TableApplyMethodT typ_r) = eps
 
 dec $get_params_funcdef(funcdef): paramtyp*                             hint(show GET_PARAMS_FUNCDEF(%1))
 def $get_params_funcdef(MonoFD ft) = $get_params_functyp(ft)
-def $get_params_funcdef(PolyFD (tparam*, tparam_hidden*) ft) = $get_params_functyp(ft)
+def $get_params_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft) = $get_params_functyp(ft)
 
 dec $get_typ_ret_functyp(functyp) : typ                                 hint(show GET_TYP_RET_FUNCTYP(%1))
 def $get_typ_ret_functyp(ActionT pt*) = VoidT
@@ -239,4 +239,4 @@ def $get_typ_ret_functyp(TableApplyMethodT typ_r) = typ_r
 
 dec $get_typ_ret_funcdef(funcdef) : typ                                  hint(show GET_TYP_RET_FUNCDEF(%1))
 def $get_typ_ret_funcdef(MonoFD ft) = $get_typ_ret_functyp(ft)
-def $get_typ_ret_funcdef(PolyFD (tparam*, tparam_hidden*) ft) = $get_typ_ret_functyp(ft)
+def $get_typ_ret_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft) = $get_typ_ret_functyp(ft)

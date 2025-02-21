@@ -26,3 +26,15 @@ rule Fizz/buzz:
   -- if text_0*[1] = "fizz"
   -- if "fuzz" =/= text_0*[0]
   -- if $bar(foo_b)
+
+relation Example:
+  nat |- bool : int
+  hint(input %0 %1)
+
+rule Example/ex:
+  nat_0 |- bool_0 : int_1
+  -- if nat_0 = 0
+  -- if bool_0 = false
+  -- if nat_1 = $(nat_0 + 1)
+  -- if bool_1 = ~bool_0
+  -- Example: nat_1 |- bool_1 : int_1

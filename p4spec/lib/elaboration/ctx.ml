@@ -72,7 +72,7 @@ let find_metavar_opt (ctx : t) (tid : TId.t) : Type.t option =
 let find_metavar (ctx : t) (tid : TId.t) : Type.t =
   match find_metavar_opt ctx tid with
   | Some typ -> typ
-  | None -> error tid.at "undefined type"
+  | None -> error tid.at "undefined meta-variable"
 
 let bound_metavar (ctx : t) (tid : TId.t) : bool =
   find_metavar_opt ctx tid |> Option.is_some
