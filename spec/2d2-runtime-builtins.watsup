@@ -2,4 +2,4 @@
 ;; Size
 ;;
 
-def $size_builtin(typ, member) : val  hint(show %2#(%1)#%latex(""))
+dec $size_builtin(typ, member) : val  hint(show %2#(%1)#%latex(""))

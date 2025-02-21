@@ -208,22 +208,23 @@ and string_of_targs targs =
 
 and string_of_rule rule =
   let ruleid, notexp, prems = rule.it in
-  "rule " ^ string_of_ruleid ruleid ^ ": " ^ string_of_notexp notexp
-  ^ string_of_prems prems
+  ";; " ^ string_of_region rule.at ^ "\n   rule " ^ string_of_ruleid ruleid
+  ^ ": " ^ string_of_notexp notexp ^ string_of_prems prems
 
 and string_of_rules rules =
-  String.concat "" (List.map (fun rule -> "\n   " ^ string_of_rule rule) rules)
+  String.concat ""
+    (List.map (fun rule -> "\n\n   " ^ string_of_rule rule) rules)
 
 (* Clause *)
 
 and string_of_clause clause =
   let args, exp, prems = clause.it in
-  "def" ^ string_of_args args ^ " = " ^ string_of_exp exp
-  ^ string_of_prems prems
+  ";; " ^ string_of_region clause.at ^ "\n   def" ^ string_of_args args ^ " = "
+  ^ string_of_exp exp ^ string_of_prems prems
 
 and string_of_clauses clauses =
   String.concat ""
-    (List.map (fun clause -> "\n   " ^ string_of_clause clause) clauses)
+    (List.map (fun clause -> "\n\n   " ^ string_of_clause clause) clauses)
 
 (* Premises *)
 
@@ -246,6 +247,8 @@ and string_of_prems prems =
 (* Definitions *)
 
 let rec string_of_def def =
+  ";; " ^ string_of_region def.at ^ "\n"
+  ^
   match def.it with
   | TypD (typid, tparams, deftyp) ->
       "syntax " ^ string_of_typid typid ^ string_of_tparams tparams ^ " = "
@@ -259,7 +262,7 @@ let rec string_of_def def =
       ^ string_of_clauses clauses
   | RecD defs -> "rec {\n" ^ string_of_defs defs ^ "\n}"
 
-and string_of_defs defs = String.concat "\n" (List.map string_of_def defs)
+and string_of_defs defs = String.concat "\n\n" (List.map string_of_def defs)
 
 (* Spec *)
 

@@ -11,7 +11,7 @@ module Dim = struct
 
   let to_string t =
     match t with
-    | [] -> "empty"
+    | [] -> "()"
     | _ -> t |> List.map Il.Print.string_of_iter |> String.concat ", "
 end
 

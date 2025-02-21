@@ -1066,8 +1066,6 @@ and elab_arg (ctx : Ctx.t) (param : param) (arg : arg) : Il.Ast.arg =
 
 (* Elaboration of premises *)
 
-(* (TODO) Refactor binding and dimension analysis to happen coherently *)
-
 and elab_prem (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.Ast.prem option =
   let ctx, prem_il_opt = elab_prem' ctx prem.it in
   let prem_il_opt = Option.map (fun prem_il -> prem_il $ prem.at) prem_il_opt in
@@ -1079,20 +1077,22 @@ and elab_prem' (ctx : Ctx.t) (prem : prem') : Ctx.t * Il.Ast.prem' option =
   let wrap_none ctx = (ctx, None) in
   match prem with
   | VarPr (id, plaintyp) -> elab_var_prem ctx id plaintyp |> wrap_none
-  | RulePr (id, exp) -> elab_rule_prem ctx id exp |> wrap_some
-  | IfPr exp -> elab_if_prem ctx exp |> wrap_some
+  | RulePr (id, exp) -> elab_rule_prem ctx id exp |> wrap_ctx |> wrap_some
+  | IfPr exp -> elab_if_prem ctx exp |> wrap_ctx |> wrap_some
   | ElsePr -> elab_else_prem () |> wrap_ctx |> wrap_some
-  | IterPr (prem, iter) -> elab_iter_prem ctx prem iter |> wrap_some
+  | IterPr (prem, iter) -> elab_iter_prem ctx prem iter |> wrap_ctx |> wrap_some
 
 and elab_prem_with_bind (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.Ast.prem option
     =
   let ctx, prem_il_opt = elab_prem ctx prem in
-  let prem_il_opt =
-    Option.map
-      (fun prem_il ->
-        let+ prem_il = Bind.bind Bind.bind_prem ctx.venv prem_il in
-        prem_il)
-      prem_il_opt
+  let ctx, prem_il_opt =
+    match prem_il_opt with
+    | Some prem_il ->
+        let+ prem_il, binds = Free.bind_prem ctx prem_il in
+        let ctx = binds |> VEnv.bindings |> Ctx.add_vars ctx in
+        let+ prem_il = Mult.bind (Mult.bind_prem binds) ctx.venv prem_il in
+        (ctx, Some prem_il)
+    | None -> (ctx, None)
   in
   (ctx, prem_il_opt)
 
@@ -1116,66 +1116,16 @@ and elab_var_prem (ctx : Ctx.t) (id : id) (plaintyp : plaintyp) : Ctx.t =
 
 (* Elaboration of rule premises *)
 
-and elab_rule_prem (ctx : Ctx.t) (id : id) (exp : exp) : Ctx.t * Il.Ast.prem' =
-  let nottyp, inputs = Ctx.find_rel ctx id in
+and elab_rule_prem (ctx : Ctx.t) (id : id) (exp : exp) : Il.Ast.prem' =
+  let nottyp = Ctx.find_rel ctx id |> fst in
   let+ notexp_il = elab_exp_not ctx (NotationT nottyp) exp in
-  let exps_input, exps_output =
-    let exps = notexp_il |> snd in
-    List.mapi (fun idx exp -> (idx, exp)) exps
-    |> List.partition (fun (idx, _) -> List.mem idx inputs)
-    |> fun (exps_input, exps_output) ->
-    (List.map snd exps_input, List.map snd exps_output)
-  in
-  let+ frees_input = Bind.free_exps ctx.venv exps_input in
-  if not (VEnv.is_empty frees_input) then
-    error exp.at
-      (Format.asprintf "rule input has free variable(s): %s"
-         (VEnv.to_string frees_input));
-  let+ frees_output = Bind.free_exps ctx.venv exps_output in
-  let ctx_local = frees_output |> VEnv.bindings |> Ctx.add_vars ctx in
-  let prem_il = Il.Ast.RulePr (id, notexp_il) in
-  (ctx_local, prem_il)
+  Il.Ast.RulePr (id, notexp_il)
 
-(* Elaboration of if premises :
+(* Elaboration of if premises *)
 
-   disambiguate `=` of whether it means equality or assignment,
-   via dataflow analysis of ordered premises *)
-
-and elab_if_eq_prem (ctx : Ctx.t) (at : region) (optyp : Il.Ast.optyp)
-    (exp_il_l : Il.Ast.exp) (exp_il_r : Il.Ast.exp) : Ctx.t * Il.Ast.prem' =
-  let+ kind = Bind.free_if_prem ctx.venv at exp_il_l exp_il_r in
-  match kind with
-  | `Equality ->
-      let exp_il =
-        Il.Ast.CmpE (`EqOp, optyp, exp_il_l, exp_il_r) $$ (at, Il.Ast.BoolT)
-      in
-      let prem_il = Il.Ast.IfPr exp_il in
-      (ctx, prem_il)
-  | `AssignL frees ->
-      let ctx = frees |> VEnv.bindings |> Ctx.add_vars ctx in
-      let prem_il = Il.Ast.LetPr (exp_il_l, exp_il_r) in
-      (ctx, prem_il)
-  | `AssignR frees ->
-      let ctx = frees |> VEnv.bindings |> Ctx.add_vars ctx in
-      let prem_il = Il.Ast.LetPr (exp_il_r, exp_il_l) in
-      (ctx, prem_il)
-
-and elab_if_cond_prem (ctx : Ctx.t) (exp_il : Il.Ast.exp) : Il.Ast.prem' =
-  let+ frees = Bind.free_exp ctx.venv exp_il in
-  if not (VEnv.is_empty frees) then
-    error exp_il.at
-      (Format.asprintf "condition has free variable(s): %s"
-         (VEnv.to_string frees));
-  Il.Ast.IfPr exp_il
-
-and elab_if_prem (ctx : Ctx.t) (exp : exp) : Ctx.t * Il.Ast.prem' =
+and elab_if_prem (ctx : Ctx.t) (exp : exp) : Il.Ast.prem' =
   let+ exp_il = elab_exp ctx (BoolT $ exp.at) exp in
-  match exp_il.it with
-  | CmpE (`EqOp, optyp, exp_il_l, exp_il_r) ->
-      elab_if_eq_prem ctx exp_il.at optyp exp_il_l exp_il_r
-  | _ ->
-      let prem_il = elab_if_cond_prem ctx exp_il in
-      (ctx, prem_il)
+  Il.Ast.IfPr exp_il
 
 (* Elaboration of else premises *)
 
@@ -1183,23 +1133,14 @@ and elab_else_prem () : Il.Ast.prem' = Il.Ast.ElsePr
 
 (* Elaboration of iterated premises *)
 
-and elab_iter_prem (ctx : Ctx.t) (prem : prem) (iter : iter) :
-    Ctx.t * Il.Ast.prem' =
+and elab_iter_prem (ctx : Ctx.t) (prem : prem) (iter : iter) : Il.Ast.prem' =
   check
     (match prem.it with VarPr _ | ElsePr -> false | _ -> true)
     prem.at "only rule or if premises can be iterated";
   let iter_il = elab_iter iter in
-  let ctx_pre = ctx in
-  let ctx, prem_il_opt = elab_prem ctx prem in
-  let ctx =
-    VEnv.diff ctx.venv ctx_pre.venv
-    |> VEnv.bindings
-    |> List.map (fun (id, iters_il) -> (id, iters_il @ [ iter_il ]))
-    |> Ctx.update_vars ctx
-  in
-  let prem_il = Option.get prem_il_opt in
+  let prem_il = elab_prem ctx prem |> snd |> Option.get in
   let prem_il = Il.Ast.IterPr (prem_il, (iter_il, [])) in
-  (ctx, prem_il)
+  prem_il
 
 (* Elaboration of definitions *)
 
@@ -1343,22 +1284,22 @@ and elab_rel_def (ctx : Ctx.t) (at : region) (id : id) (nottyp : nottyp)
 
 and elab_rule_input_with_bind (ctx : Ctx.t) (exps_il : (int * Il.Ast.exp) list)
     : Ctx.t * (int * Il.Ast.exp) list =
-  let+ frees_input = exps_il |> List.map snd |> Bind.free_exps ctx.venv in
-  let ctx = frees_input |> VEnv.bindings |> Ctx.add_vars ctx in
+  let+ binds_input = exps_il |> List.map snd |> Free.bind_exps ctx.venv in
+  let ctx = binds_input |> VEnv.bindings |> Ctx.add_vars ctx in
   let idxs, exps_il = List.split exps_il in
-  let+ exps_il = Bind.bind Bind.bind_exps ctx.venv exps_il in
+  let+ exps_il = Mult.bind Mult.bind_exps ctx.venv exps_il in
   let exps_il = List.combine idxs exps_il in
   (ctx, exps_il)
 
 and elab_rule_output_with_bind (ctx : Ctx.t) (at : region)
     (exps_il : (int * Il.Ast.exp) list) : (int * Il.Ast.exp) list =
-  let+ frees_output = exps_il |> List.map snd |> Bind.free_exps ctx.venv in
-  if not (VEnv.is_empty frees_output) then
+  let+ binds_output = exps_il |> List.map snd |> Free.bind_exps ctx.venv in
+  if not (VEnv.is_empty binds_output) then
     error at
       (Format.asprintf "rule output has free variable(s): %s"
-         (VEnv.to_string frees_output));
+         (VEnv.to_string binds_output));
   let idxs, exps_il = List.split exps_il in
-  let+ exps_il = Bind.bind Bind.bind_exps ctx.venv exps_il in
+  let+ exps_il = Mult.bind Mult.bind_exps ctx.venv exps_il in
   List.combine idxs exps_il
 
 and elab_rule_def (ctx : Ctx.t) (at : region) (id_rel : id) (id_rule : id)
@@ -1410,20 +1351,20 @@ and elab_dec_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
 and elab_def_input_with_bind (ctx : Ctx.t) (params : param list)
     (args : arg list) : Ctx.t * Il.Ast.arg list =
   let args_il = List.map2 (elab_arg ctx) params args in
-  let+ frees_input = Bind.free_args ctx.venv args_il in
-  let ctx = frees_input |> VEnv.bindings |> Ctx.add_vars ctx in
-  let+ args_il = Bind.bind Bind.bind_args ctx.venv args_il in
+  let+ binds_input = Free.bind_args ctx.venv args_il in
+  let ctx = binds_input |> VEnv.bindings |> Ctx.add_vars ctx in
+  let+ args_il = Mult.bind Mult.bind_args ctx.venv args_il in
   (ctx, args_il)
 
 and elab_def_output_with_bind (ctx : Ctx.t) (plaintyp : plaintyp) (exp : exp) :
     Il.Ast.exp =
   let+ exp_il = elab_exp ctx plaintyp exp in
-  let+ frees_output = Bind.free_exp ctx.venv exp_il in
-  if not (VEnv.is_empty frees_output) then
+  let+ binds_output = Free.bind_exp ctx.venv exp_il in
+  if not (VEnv.is_empty binds_output) then
     error exp_il.at
       (Format.asprintf "output expression has free variable(s): %s"
-         (VEnv.to_string frees_output));
-  let+ exp_il = Bind.bind Bind.bind_exp ctx.venv exp_il in
+         (VEnv.to_string binds_output));
+  let+ exp_il = Mult.bind Mult.bind_exp ctx.venv exp_il in
   exp_il
 
 and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)

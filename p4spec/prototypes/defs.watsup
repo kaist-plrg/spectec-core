@@ -1,7 +1,6 @@
 ;; Mutually recursive syntax
 
-syntax a<x>
-syntax b<x, y>
+syntax a<x>, b<x, y>
 
 syntax a<x> = b<x, x>
 syntax b<x, y> = | FOO x | BAR a<y>

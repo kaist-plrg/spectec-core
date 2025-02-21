@@ -2,22 +2,22 @@
 ;; Unary operation oracle
 ;;
 
-def $un_op(unop, val) : val   hint(show %#(%)#%latex(""))
+dec $un_op(unop, val) : val   hint(show %#(%)#%latex(""))
 
 ;;
 ;; Binary operation oracle
 ;;
 
-def $bin_op(binop, val, val) : val   hint(show %#(%, %))
+dec $bin_op(binop, val, val) : val   hint(show %#(%, %))
 
 ;;
 ;; Cast oracle
 ;;
 
-def $cast_op(typ, val) : val   hint(show (%) %)
+dec $cast_op(typ, val) : val   hint(show (%) %)
 
 ;;
 ;; Bitstring access oracle
 ;;
 
-def $bitacc_op(val, val, val) : val   hint(show %`[%`:%])
+dec $bitacc_op(val, val, val) : val   hint(show %`[%`:%])

@@ -189,8 +189,7 @@ rule FuncDef_alpha/polyfd:
   -- if |tparam_a*| = |tparam_b*|
   -- if |tparam_hidden_a*| = |tparam_hidden_b*|
   ----
-  -- if (tid_fresh = $fresh_tid())*
-  -- if |tid_fresh*| = |tparam_a* tparam_hidden_a*|
+  -- if tid_fresh* = $fresh_tids(|tparam_a* ++ tparam_hidden_a*|)
   ----
   -- if tparam_a'* = tparam_a* ++ tparam_hidden_a*
   -- if ft_a' = $subst_functyp(MAP (PAIR tparam_a' (VarT tid_fresh))*, ft_a)

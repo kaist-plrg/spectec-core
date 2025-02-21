@@ -1,4 +1,4 @@
 (library
  (name elaboration)
  (libraries util domain el il)
- (modules dom envs attempt bind subst ctx elab))
+ (modules dom envs attempt free mult subst ctx elab))
