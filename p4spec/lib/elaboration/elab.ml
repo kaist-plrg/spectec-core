@@ -1066,17 +1066,7 @@ and elab_arg (ctx : Ctx.t) (param : param) (arg : arg) : Il.Ast.arg =
 
 (* Elaboration of premises *)
 
-and elab_prem_with_bind (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.Ast.prem option
-    =
-  let ctx, prem_il_opt = elab_prem ctx prem in
-  let prem_il_opt =
-    Option.map
-      (fun prem_il ->
-        let+ prem_il = Bind.bind Bind.bind_prem ctx.venv prem_il in
-        prem_il)
-      prem_il_opt
-  in
-  (ctx, prem_il_opt)
+(* (TODO) Refactor binding and dimension analysis to happen coherently *)
 
 and elab_prem (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.Ast.prem option =
   let ctx, prem_il_opt = elab_prem' ctx prem.it in
@@ -1093,6 +1083,18 @@ and elab_prem' (ctx : Ctx.t) (prem : prem') : Ctx.t * Il.Ast.prem' option =
   | IfPr exp -> elab_if_prem ctx exp |> wrap_some
   | ElsePr -> elab_else_prem () |> wrap_ctx |> wrap_some
   | IterPr (prem, iter) -> elab_iter_prem ctx prem iter |> wrap_some
+
+and elab_prem_with_bind (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.Ast.prem option
+    =
+  let ctx, prem_il_opt = elab_prem ctx prem in
+  let prem_il_opt =
+    Option.map
+      (fun prem_il ->
+        let+ prem_il = Bind.bind Bind.bind_prem ctx.venv prem_il in
+        prem_il)
+      prem_il_opt
+  in
+  (ctx, prem_il_opt)
 
 and elab_prems_with_bind (ctx : Ctx.t) (prems : prem list) :
     Ctx.t * Il.Ast.prem list =
@@ -1187,7 +1189,14 @@ and elab_iter_prem (ctx : Ctx.t) (prem : prem) (iter : iter) :
     (match prem.it with VarPr _ | ElsePr -> false | _ -> true)
     prem.at "only rule or if premises can be iterated";
   let iter_il = elab_iter iter in
+  let ctx_pre = ctx in
   let ctx, prem_il_opt = elab_prem ctx prem in
+  let ctx =
+    VEnv.diff ctx.venv ctx_pre.venv
+    |> VEnv.bindings
+    |> List.map (fun (id, iters_il) -> (id, iters_il @ [ iter_il ]))
+    |> Ctx.update_vars ctx
+  in
   let prem_il = Option.get prem_il_opt in
   let prem_il = Il.Ast.IterPr (prem_il, (iter_il, [])) in
   (ctx, prem_il)

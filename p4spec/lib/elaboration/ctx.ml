@@ -188,6 +188,14 @@ let add_clause (ctx : t) (fid : FId.t) (clause : Il.Ast.clause) : t =
 
 (* Updaters *)
 
+let update_var (ctx : t) (id : Id.t) (dim : Dim.t) : t =
+  if not (bound_var ctx id) then error id.at "undefined variable";
+  let venv = VEnv.add id dim ctx.venv in
+  { ctx with venv }
+
+let update_vars (ctx : t) (ids : (Id.t * Dim.t) list) : t =
+  List.fold_left (fun ctx (id, dim) -> update_var ctx id dim) ctx ids
+
 let update_typdef (ctx : t) (tid : TId.t) (td : TypeDef.t) : t =
   if not (bound_typdef ctx tid) then error tid.at "undefined type";
   let tdenv = TDEnv.add tid td ctx.tdenv in
