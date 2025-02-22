@@ -94,6 +94,39 @@ and expand_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp =
       | _ -> plaintyp)
   | _ -> plaintyp
 
+(* Type destructuring *)
+
+and as_iter_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) :
+    (plaintyp * iter) attempt =
+  let plaintyp = expand_plaintyp ctx plaintyp in
+  match plaintyp.it with
+  | IterT (plaintyp, iter) -> Ok (plaintyp, iter)
+  | _ -> fail plaintyp.at "cannot destruct type as an iteration"
+
+and as_tuple_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) :
+    plaintyp list attempt =
+  let plaintyp = expand_plaintyp ctx plaintyp in
+  match plaintyp.it with
+  | TupleT plaintyps -> Ok plaintyps
+  | _ -> fail plaintyp.at "cannot destruct type as a tuple"
+
+and as_list_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp attempt =
+  let plaintyp = expand_plaintyp ctx plaintyp in
+  match plaintyp.it with
+  | IterT (plaintyp, List) -> Ok plaintyp
+  | _ -> fail plaintyp.at "cannot destruct type as a list"
+
+and as_struct_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) :
+    typfield list attempt =
+  let plaintyp = expand_plaintyp ctx plaintyp in
+  match plaintyp.it with
+  | VarT (tid, _) -> (
+      let td_opt = Ctx.find_typdef_opt ctx tid in
+      match td_opt with
+      | Some (Defined (_, `Struct typfields)) -> Ok typfields
+      | _ -> fail plaintyp.at "cannot destruct type as a struct")
+  | _ -> fail plaintyp.at "cannot destruct type as a struct"
+
 (* Type equivalence and subtyping *)
 
 let rec equiv_typ (ctx : Ctx.t) (typ_a : typ) (typ_b : typ) : bool =
@@ -301,23 +334,6 @@ and elab_typ_def_variant (ctx : Ctx.t) (at : region) (tparams : tparam list)
 (* Expressions *)
 
 (* Inference of expression type *)
-
-and infer_as_list (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp attempt =
-  let plaintyp = expand_plaintyp ctx plaintyp in
-  match plaintyp.it with
-  | IterT (plaintyp, List) -> Ok plaintyp
-  | _ -> fail plaintyp.at "cannot infer type as list"
-
-and infer_as_struct (ctx : Ctx.t) (plaintyp : plaintyp) : typfield list attempt
-    =
-  let plaintyp = expand_plaintyp ctx plaintyp in
-  match plaintyp.it with
-  | VarT (tid, _) -> (
-      let td_opt = Ctx.find_typdef_opt ctx tid in
-      match td_opt with
-      | Some (Defined (_, `Struct typfields)) -> Ok typfields
-      | _ -> fail plaintyp.at "cannot infer type as struct")
-  | _ -> fail plaintyp.at "cannot infer type as struct"
 
 and fail_infer (at : region) (construct : string) =
   fail at ("cannot infer type of " ^ construct)
@@ -609,7 +625,7 @@ and infer_cons_exp (ctx : Ctx.t) (exp_h : exp) (exp_t : exp) :
 and infer_cat_exp (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) :
     (Il.Ast.exp' * plaintyp') attempt =
   let* exp_il_l, plaintyp_l = infer_exp ctx exp_l in
-  let* plaintyp = infer_as_list ctx plaintyp_l in
+  let* plaintyp = as_list_plaintyp ctx plaintyp_l in
   let plaintyp = IterT (plaintyp, List) $ plaintyp.at in
   let* exp_il_r = elab_exp ctx plaintyp exp_r in
   let exp_il = Il.Ast.CatE (exp_il_l, exp_il_r) in
@@ -620,7 +636,7 @@ and infer_cat_exp (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) :
 and infer_idx_exp (ctx : Ctx.t) (exp_b : exp) (exp_i : exp) :
     (Il.Ast.exp' * plaintyp') attempt =
   let* exp_il_b, plaintyp_b = infer_exp ctx exp_b in
-  let* plaintyp = infer_as_list ctx plaintyp_b in
+  let* plaintyp = as_list_plaintyp ctx plaintyp_b in
   let* exp_il_i = elab_exp ctx (NumT `NatT $ exp_i.at) exp_i in
   let exp_il = Il.Ast.IdxE (exp_il_b, exp_il_i) in
   Ok (exp_il, plaintyp.it)
@@ -630,7 +646,7 @@ and infer_idx_exp (ctx : Ctx.t) (exp_b : exp) (exp_i : exp) :
 and infer_slice_exp (ctx : Ctx.t) (exp_b : exp) (exp_l : exp) (exp_h : exp) :
     (Il.Ast.exp' * plaintyp') attempt =
   let* exp_il_b, plaintyp_b = infer_exp ctx exp_b in
-  let* plaintyp = infer_as_list ctx plaintyp_b in
+  let* plaintyp = as_list_plaintyp ctx plaintyp_b in
   let* exp_il_l = elab_exp ctx (NumT `NatT $ exp_l.at) exp_l in
   let* exp_il_h = elab_exp ctx (NumT `NatT $ exp_h.at) exp_h in
   let exp_il = Il.Ast.SliceE (exp_il_b, exp_il_l, exp_il_h) in
@@ -653,7 +669,7 @@ and infer_mem_exp (ctx : Ctx.t) (exp_e : exp) (exp_s : exp) :
 and infer_dot_exp (ctx : Ctx.t) (exp : exp) (atom : atom) :
     (Il.Ast.exp' * plaintyp') attempt =
   let* exp_il, plaintyp = infer_exp ctx exp in
-  let* typfields = infer_as_struct ctx plaintyp in
+  let* typfields = as_struct_plaintyp ctx plaintyp in
   let* plaintyp =
     List.find_opt (fun (atom_t, _, _) -> atom.it = atom_t.it) typfields
     |> fun typfield_opt ->
@@ -679,7 +695,7 @@ and infer_upd_exp (ctx : Ctx.t) (exp_b : exp) (path : path) (exp_f : exp) :
 and infer_len_exp (ctx : Ctx.t) (exp : exp) : (Il.Ast.exp' * plaintyp') attempt
     =
   let* exp_il, plaintyp = infer_exp ctx exp in
-  let* _plaintyp = infer_as_list ctx plaintyp in
+  let* _plaintyp = as_list_plaintyp ctx plaintyp in
   let exp_il = Il.Ast.LenE exp_il in
   let plaintyp = NumT `NatT in
   Ok (exp_il, plaintyp)
@@ -734,15 +750,64 @@ and infer_typ_exp (ctx : Ctx.t) (exp : exp) (plaintyp : plaintyp) :
   let _typ_il = elab_plaintyp ctx plaintyp in
   Ok (exp_il.it, plaintyp.it)
 
-(* Elaboration of expression type *)
+(* Elaboration of expression type:
+
+   - If an iterated type is expected,
+      - first try elaborating the expression as a singleton iteration,
+      - then try usual elaboration
+   - Otherwise, directly try usual elaboration *)
+
+and elab_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
+    Il.Ast.exp attempt =
+  match as_iter_plaintyp ctx plaintyp_expect with
+  | Ok (plaintyp, iter) ->
+      choice exp.at
+        [
+          (fun () -> elab_exp_iter ctx plaintyp_expect plaintyp iter exp);
+          (fun () -> elab_exp_normal ctx plaintyp_expect exp);
+        ]
+  | _ -> elab_exp_normal ctx plaintyp_expect exp
+
+and elab_exps (ctx : Ctx.t) (plaintyps_expect : plaintyp list) (exps : exp list)
+    : Il.Ast.exp list attempt =
+  match (plaintyps_expect, exps) with
+  | [], [] -> Ok []
+  | [], _ -> fail no_region "more expressions than expected"
+  | _, [] -> fail no_region "more expected types than expressions"
+  | plaintyp_expect :: plaintyps_expect, exp :: exps ->
+      let* exp_il = elab_exp ctx plaintyp_expect exp in
+      let* exps_il = elab_exps ctx plaintyps_expect exps in
+      Ok (exp_il :: exps_il)
+
+(* Elaboration of expression as a singleton iteration *)
+
+and elab_exp_iter (ctx : Ctx.t) (plaintyp_expect : plaintyp)
+    (plaintyp : plaintyp) (iter : iter) (exp : exp) : Il.Ast.exp attempt =
+  let* exp_il = elab_exp ctx plaintyp exp in
+  let typ_il = elab_plaintyp ctx plaintyp_expect in
+  match iter with
+  | Opt ->
+      let exp_il = Il.Ast.OptE (Some exp_il) in
+      Ok (exp_il $$ (exp.at, typ_il.it))
+  | List ->
+      let exp_il = Il.Ast.ListE [ exp_il ] in
+      Ok (exp_il $$ (exp.at, typ_il.it))
+
+(* Normal elaboration of expressions: a two-phase process,
+
+   - if a type can be inferred without any contextual information,
+     match the inferred type with the expected type
+      - this may fail for some expressions that require contextual information,
+        e.g., notation expressions or expression sequences
+   - for such cases, try to elaborate the expression using the expected type *)
 
 and fail_cast (at : region) (plaintyp_a : plaintyp) (plaintyp_b : plaintyp) =
-  Fail
-    ( at,
-      "cannot cast "
-      ^ El.Print.string_of_plaintyp plaintyp_a
-      ^ " to "
-      ^ El.Print.string_of_plaintyp plaintyp_b )
+  let msg =
+    Format.asprintf "cannot cast %s to %s"
+      (El.Print.string_of_plaintyp plaintyp_a)
+      (El.Print.string_of_plaintyp plaintyp_b)
+  in
+  Fail (at, msg)
 
 and cast_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp)
     (plaintyp_infer : plaintyp) (exp_il : Il.Ast.exp) : Il.Ast.exp attempt =
@@ -755,41 +820,8 @@ and cast_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp)
     Ok exp_il
   else fail_cast exp_il.at plaintyp_infer plaintyp_expect
 
-and elab_as_iter (ctx : Ctx.t) (plaintyp : plaintyp) : (plaintyp * iter) attempt
-    =
-  let plaintyp = expand_plaintyp ctx plaintyp in
-  match plaintyp.it with
-  | IterT (plaintyp, iter) -> Ok (plaintyp, iter)
-  | _ -> fail plaintyp.at "cannot elaborate type as an iteration"
-
-and elab_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
+and elab_exp_normal (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
     Il.Ast.exp attempt =
-  match elab_as_iter ctx plaintyp_expect with
-  | Ok (plaintyp, iter) ->
-      choice exp.at
-        [
-          (fun () ->
-            let* exp_il = elab_exp ctx plaintyp exp in
-            let typ_il = elab_plaintyp ctx plaintyp_expect in
-            match iter with
-            | Opt ->
-                let exp_il = Il.Ast.OptE (Some exp_il) in
-                Ok (exp_il $$ (exp.at, typ_il.it))
-            | List ->
-                let exp_il = Il.Ast.ListE [ exp_il ] in
-                Ok (exp_il $$ (exp.at, typ_il.it)));
-          (fun () -> elab_exp' ctx plaintyp_expect exp);
-        ]
-  | Fail _ -> elab_exp' ctx plaintyp_expect exp
-
-and elab_exp' (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
-    Il.Ast.exp attempt =
-  (* Expression elaboration is a two-step process:
-     - if a type can be inferred without any contextual information,
-       match the inferred type with the expected type
-     - this may fail for some expressions that require contextual information,
-       e.g., notation expressions or expression sequences
-     - for such cases, try to elaborate the expression using the expected type *)
   let infer_attempt = infer_exp ctx exp in
   match infer_attempt with
   | Ok (exp_il, plaintyp_infer) ->
@@ -807,40 +839,7 @@ and elab_exp' (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
           let* nottyp_il = elab_exp_variant ctx typcases exp in
           Ok (Il.Ast.CaseE nottyp_il $$ (exp.at, typ_il.it)))
 
-and elab_exps (ctx : Ctx.t) (plaintyps_expect : plaintyp list) (exps : exp list)
-    : Il.Ast.exp list attempt =
-  match (plaintyps_expect, exps) with
-  | [], [] -> Ok []
-  | [], _ -> fail no_region "more expressions than expected"
-  | _, [] -> fail no_region "more expected types than expressions"
-  | plaintyp_expect :: plaintyps_expect, exp :: exps ->
-      let* exp_il = elab_exp ctx plaintyp_expect exp in
-      let* exps_il = elab_exps ctx plaintyps_expect exps in
-      Ok (exp_il :: exps_il)
-
 (* Elaboration of plain expressions *)
-
-and elab_as_tuple (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp list attempt =
-  let plaintyp = expand_plaintyp ctx plaintyp in
-  match plaintyp.it with
-  | TupleT plaintyps -> Ok plaintyps
-  | _ -> fail plaintyp.at "cannot elaborate type as a tuple"
-
-and elab_as_list (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp attempt =
-  let plaintyp = expand_plaintyp ctx plaintyp in
-  match plaintyp.it with
-  | IterT (plaintyp, List) -> Ok plaintyp
-  | _ -> fail plaintyp.at "cannot elaborate type as a list"
-
-and elab_as_struct (ctx : Ctx.t) (plaintyp : plaintyp) : typfield list attempt =
-  let plaintyp = expand_plaintyp ctx plaintyp in
-  match plaintyp.it with
-  | VarT (tid, _) -> (
-      let td_opt = Ctx.find_typdef_opt ctx tid in
-      match td_opt with
-      | Some (Defined (_, `Struct typfields)) -> Ok typfields
-      | _ -> fail plaintyp.at "cannot elaborate type as struct")
-  | _ -> fail plaintyp.at "cannot elaborate type as struct"
 
 and fail_elab_plain (at : region) (msg : string) =
   fail at ("cannot elaborate expression because " ^ msg)
@@ -855,7 +854,7 @@ and elab_exp_plain' (ctx : Ctx.t) (at : region) (plaintyp_expect : plaintyp)
     (exp : exp') : Il.Ast.exp' attempt =
   match exp with
   | BoolE _ | NumE _ | TextE _ | VarE _ ->
-      fail_elab_plain at "should have been inferred"
+      fail_elab_plain at "it should have been inferred"
   | EpsE -> elab_eps_exp ctx plaintyp_expect
   | ListE exps -> elab_list_exp ctx plaintyp_expect exps
   | ConsE (exp_h, exp_t) -> elab_cons_exp ctx plaintyp_expect exp_h exp_t
@@ -869,7 +868,7 @@ and elab_exp_plain' (ctx : Ctx.t) (at : region) (plaintyp_expect : plaintyp)
 
 and elab_eps_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) :
     Il.Ast.exp' attempt =
-  let* _plaintyp_expect, iter_expect = elab_as_iter ctx plaintyp_expect in
+  let* _plaintyp_expect, iter_expect = as_iter_plaintyp ctx plaintyp_expect in
   match iter_expect with
   | Opt -> Ok (Il.Ast.OptE None)
   | List -> Ok (Il.Ast.ListE [])
@@ -887,7 +886,7 @@ and elab_list_exp_elementwise (ctx : Ctx.t) (plaintyp_expect : plaintyp)
 
 and elab_list_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exps : exp list) :
     Il.Ast.exp' attempt =
-  let* plaintyp_expect, iter_expect = elab_as_iter ctx plaintyp_expect in
+  let* plaintyp_expect, iter_expect = as_iter_plaintyp ctx plaintyp_expect in
   match iter_expect with
   | Opt -> fail_elab_plain no_region "list expression with optional iteration"
   | List ->
@@ -898,7 +897,7 @@ and elab_list_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exps : exp list) :
 
 and elab_cons_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp_h : exp)
     (exp_t : exp) : Il.Ast.exp' attempt =
-  let* plaintyp_expect, iter_expect = elab_as_iter ctx plaintyp_expect in
+  let* plaintyp_expect, iter_expect = as_iter_plaintyp ctx plaintyp_expect in
   let* exp_il_h = elab_exp ctx plaintyp_expect exp_h in
   let* exp_il_t =
     elab_exp ctx
@@ -911,7 +910,7 @@ and elab_cons_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp_h : exp)
 
 and elab_cat_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp_l : exp)
     (exp_r : exp) : Il.Ast.exp' attempt =
-  let* plaintyp_expect, iter_expect = elab_as_iter ctx plaintyp_expect in
+  let* plaintyp_expect, iter_expect = as_iter_plaintyp ctx plaintyp_expect in
   let plaintyp_expect =
     IterT (plaintyp_expect, iter_expect) $ plaintyp_expect.at
   in
@@ -923,7 +922,7 @@ and elab_cat_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp_l : exp)
 
 and elab_tuple_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exps : exp list)
     : Il.Ast.exp' attempt =
-  let* plaintyps_expect = elab_as_tuple ctx plaintyp_expect in
+  let* plaintyps_expect = as_tuple_plaintyp ctx plaintyp_expect in
   let* exps_il = elab_exps ctx plaintyps_expect exps in
   Ok (Il.Ast.TupleE exps_il)
 
@@ -938,7 +937,7 @@ and elab_paren_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
 
 and elab_iter_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp)
     (iter : iter) : Il.Ast.exp' attempt =
-  let* plaintyp_expect, iter_expect = elab_as_iter ctx plaintyp_expect in
+  let* plaintyp_expect, iter_expect = as_iter_plaintyp ctx plaintyp_expect in
   if iter <> iter_expect then fail_elab_plain exp.at "iteration mismatch"
   else
     let* exp_il = elab_exp ctx plaintyp_expect exp in
@@ -1084,7 +1083,7 @@ and elab_idx_path (ctx : Ctx.t) (plaintyp_expect : plaintyp) (path : path)
   let* path_il, plaintyp = elab_path ctx plaintyp_expect path in
   let* exp_il = elab_exp ctx (NumT `NatT $ exp.at) exp in
   let path_il = Il.Ast.IdxP (path_il, exp_il) in
-  let* plaintyp = elab_as_list ctx plaintyp in
+  let* plaintyp = as_list_plaintyp ctx plaintyp in
   Ok (path_il, plaintyp.it)
 
 (* Elaboration of slice paths *)
@@ -1095,7 +1094,7 @@ and elab_slice_path (ctx : Ctx.t) (plaintyp_expect : plaintyp) (path : path)
   let* exp_il_l = elab_exp ctx (NumT `NatT $ exp_l.at) exp_l in
   let* exp_il_h = elab_exp ctx (NumT `NatT $ exp_h.at) exp_h in
   let path_il = Il.Ast.SliceP (path_il, exp_il_l, exp_il_h) in
-  let* _ = elab_as_list ctx plaintyp in
+  let* _ = as_list_plaintyp ctx plaintyp in
   Ok (path_il, plaintyp.it)
 
 (* Elaboration of dot paths *)
@@ -1103,7 +1102,7 @@ and elab_slice_path (ctx : Ctx.t) (plaintyp_expect : plaintyp) (path : path)
 and elab_dot_path (ctx : Ctx.t) (plaintyp_expect : plaintyp) (path : path)
     (atom : atom) : (Il.Ast.path' * plaintyp') attempt =
   let* path_il, plaintyp = elab_path ctx plaintyp_expect path in
-  let* typfields = elab_as_struct ctx plaintyp in
+  let* typfields = as_struct_plaintyp ctx plaintyp in
   let* plaintyp =
     List.find_opt (fun (atom_t, _, _) -> atom.it = atom_t.it) typfields
     |> fun typfield_opt ->

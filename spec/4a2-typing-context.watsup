@@ -69,8 +69,10 @@ def $enter(C) = C[ .LOCAL.FRAMES = $empty_map<id, styp> :: C.LOCAL.FRAMES ]
 
 dec $exit(context) : context    hint(show EXIT %)
 
+;; (TODO-Jaehyun) frame_h :: frame_t* = C.LOCAL.FRAMES is
+;; parsed as frame_h :: (frame_t* = C.LOCAL.FRAMES) without parentheses
 def $exit(C) = C[ .LOCAL.FRAMES = frame_t* ]
-  -- if frame_h :: frame_t* = C.LOCAL.FRAMES
+  -- if (frame_h :: frame_t*) = C.LOCAL.FRAMES
 
 ;;
 ;; Setters
@@ -101,9 +103,9 @@ def $get_typ_ret(CONTROLAPPLYMETHOD) = VoidT
 
 dec $bound_tid(cursor, context) : tidset
 
-def $bound_tid(GLOBAL, C) = SET eps
-def $bound_tid(BLOCK, C) = $dom_map(tid, typdef, C.BLOCK.TDENV)
-def $bound_tid(LOCAL, C) = $union_set(tid, $dom_map(tid, typdef, C.LOCAL.TDENV), $bound_tid(BLOCK, C))
+def $bound_tid(GLOBAL, C) = $empty_set<tid>
+def $bound_tid(BLOCK, C) = $dom_map<tid, typdef>(C.BLOCK.TDENV)
+def $bound_tid(LOCAL, C) = $union_set<tid>($dom_map<tid, typdef>(C.LOCAL.TDENV), $bound_tid(BLOCK, C))
 
 ;;
 ;; Adders
@@ -114,18 +116,18 @@ def $bound_tid(LOCAL, C) = $union_set(tid, $dom_map(tid, typdef, C.LOCAL.TDENV),
 dec $add_styp(cursor, context, id, styp) : context                  hint(show %2.%1.FRAME#(S)#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
 def $add_styp(GLOBAL, C, id, styp) = C[ .GLOBAL.FRAME = frame ]
-  -- if frame = $add_map(id, styp, C.GLOBAL.FRAME, id, styp)
+  -- if frame = $add_map<id, styp>(C.GLOBAL.FRAME, id, styp)
 def $add_styp(BLOCK, C, id, styp) = C[ .BLOCK.FRAME = frame ]
-  -- if frame = $add_map(id, styp, C.BLOCK.FRAME, id, styp)
+  -- if frame = $add_map<id, styp>(C.BLOCK.FRAME, id, styp)
 def $add_styp(LOCAL, C, id, styp) = C[ .LOCAL.FRAMES = frame* ]
-  -- if frame_h frame_t* = C.LOCAL.FRAMES
-  -- if frame_h' = $add_map(id, styp, frame_h, id, styp)
-  -- if frame* = frame_h' frame_t*
+  -- if (frame_h :: frame_t*) = C.LOCAL.FRAMES
+  -- if frame_h' = $add_map<id, styp>(frame_h, id, styp)
+  -- if frame* = (frame_h' :: frame_t*)
 
 dec $add_styps(cursor, context, id*, styp*) : context               hint(show %2.%1.FRAME#(S)#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
 
 def $add_styps(p, C, eps, eps) = C
-def $add_styps(p, C, id_h id_t*, styp_h styp_t*) = C''
+def $add_styps(p, C, id_h :: id_t*, styp_h :: styp_t*) = C''
   -- if C' = $add_styp(p, C, id_h, styp_h)
   -- if C'' = $add_styps(p, C', id_t*, styp_t*)
 
@@ -144,7 +146,7 @@ def $add_param(p, C, pt) = C'
 dec $add_params(cursor, context, paramtyp*) : context               hint(show %2.%1.FRAME#(S)#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
 
 def $add_params(p, C, eps) = C
-def $add_params(p, C, pt_h pt_t*) = C''
+def $add_params(p, C, pt_h :: pt_t*) = C''
     -- if C' = $add_param(p, C, pt_h)
     -- if C'' = $add_params(p, C', pt_t*)
 
@@ -153,16 +155,16 @@ def $add_params(p, C, pt_h pt_t*) = C''
 dec $add_typdef(cursor, context, tid, typdef) : context             hint(show %2.%1.TDENV#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
 def $add_typdef(GLOBAL, C, tid, td) = C[ .GLOBAL.TDENV = tdenv ]
-  -- if tdenv = $add_map(tid, typdef, C.GLOBAL.TDENV, tid, td)
+  -- if tdenv = $add_map<tid, typdef>(C.GLOBAL.TDENV, tid, td)
 def $add_typdef(BLOCK, C, tid, td) = C[ .BLOCK.TDENV = tdenv ]
-  -- if tdenv = $add_map(tid, typdef, C.BLOCK.TDENV, tid, td)
+  -- if tdenv = $add_map<tid, typdef>(C.BLOCK.TDENV, tid, td)
 def $add_typdef(LOCAL, C, tid, td) = C[ .LOCAL.TDENV = tdenv ]
-  -- if tdenv = $add_map(tid, typdef, C.LOCAL.TDENV, tid, td)
+  -- if tdenv = $add_map<tid, typdef>(C.LOCAL.TDENV, tid, td)
 
 dec $add_typdefs(cursor, context, tid*, typdef*) : context          hint(show %2.%1.TDENV#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
 
 def $add_typdefs(p, C, eps, eps) = C
-def $add_typdefs(p, C, tid_h tid_t*, td_h td_t*) = C''
+def $add_typdefs(p, C, tid_h :: tid_t*, td_h :: td_t*) = C''
   -- if C' = $add_typdef(p, C, tid_h, td_h)
   -- if C'' = $add_typdefs(p, C', tid_t*, td_t*)
 
@@ -171,16 +173,16 @@ def $add_typdefs(p, C, tid_h tid_t*, td_h td_t*) = C''
 dec $add_funcdef(cursor, context, fid, funcdef) : context           hint(show %2.%1.FDENV#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
 def $add_funcdef(GLOBAL, C, fid, fd) = C[ .GLOBAL.FDENV = fdenv ]
-  -- if fdenv = $add_map(fid, funcdef, C.GLOBAL.FDENV, fid, fd)
+  -- if fdenv = $add_map<fid, funcdef>(C.GLOBAL.FDENV, fid, fd)
 def $add_funcdef(BLOCK, C, fid, fd) = C[ .BLOCK.FDENV = fdenv ]
-  -- if fdenv = $add_map(fid, funcdef, C.BLOCK.FDENV, fid, fd)
+  -- if fdenv = $add_map<fid, funcdef>(C.BLOCK.FDENV, fid, fd)
 
 ;; Adder for constructor definitions
 
 dec $add_consdef(cursor, context, fid, consdef) : context           hint(show %2.%1.CDENV#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
 def $add_consdef(GLOBAL, C, cid, cd) = C[ .GLOBAL.CDENV = cdenv ]
-  -- if cdenv = $add_map(cid, consdef, C.GLOBAL.CDENV, cid, cd)
+  -- if cdenv = $add_map<cid, consdef>(C.GLOBAL.CDENV, cid, cd)
 
 ;;
 ;; Finders
@@ -190,64 +192,64 @@ def $add_consdef(GLOBAL, C, cid, cd) = C[ .GLOBAL.CDENV = cdenv ]
 
 dec $find_styp(cursor, context, name) : styp                              hint(show %2#%latex("@")#%1.FRAME#(S)#%latex()`[%3])
 
-def $find_styp(p, C, TOP id) = $find_map(id, styp, C.GLOBAL.FRAME, id)
-def $find_styp(GLOBAL, C, CURRENT id) = $find_map(id, styp, C.GLOBAL.FRAME, id)
+def $find_styp(p, C, TOP id) = $find_map<id, styp>(C.GLOBAL.FRAME, id)
+def $find_styp(GLOBAL, C, CURRENT id) = $find_map<id, styp>(C.GLOBAL.FRAME, id)
 def $find_styp(BLOCK, C, CURRENT id) = styp
-  -- if styp? = $find_map_opt(id, styp, C.GLOBAL.FRAME, id)
+  -- if styp = $find_map_opt<id, styp>(C.GLOBAL.FRAME, id)
 def $find_styp(BLOCK, C, CURRENT id) = $find_styp(GLOBAL, C, CURRENT id)
-  -- if eps = $find_map_opt(id, styp, C.GLOBAL.FRAME, id)
+  -- if eps = $find_map_opt<id, styp>(C.GLOBAL.FRAME, id)
 def $find_styp(LOCAL, C, CURRENT id) = styp
-  -- if styp? = $find_maps_opt(id, styp, C.LOCAL.FRAMES, id)
+  -- if styp = $find_maps_opt<id, styp>(C.LOCAL.FRAMES, id)
 def $find_styp(BLOCK, C, CURRENT id) = $find_styp(BLOCK, C, CURRENT id)
-  -- if eps = $find_maps_opt(id, styp, C.LOCAL.FRAMES, id)
+  -- if eps = $find_maps_opt<id, styp>(C.LOCAL.FRAMES, id)
 
 ;; Finder for values
 
 dec $find_val(cursor, context, name) : val                                hint(show %2#%latex("@")#%1.FRAME`[%3])
 
 def $find_val(p, C, name) = val
-  -- if typ dir ctk val? = $find_styp(p, C, name)
+  -- if typ dir ctk val = $find_styp(p, C, name)
 
 ;; Finder for type definitions
 
 dec $find_typdef(cursor, context, name) : typdef                          hint(show %2#%latex("@")#%1.TDENV`[%3])
 
-def $find_typdef(p, C, TOP id) = $find_map(tid, typdef, C.GLOBAL.TDENV, id)
-def $find_typdef(GLOBAL, C, CURRENT id) = $find_map(tid, typdef, C.GLOBAL.TDENV, id)
+def $find_typdef(p, C, TOP id) = $find_map<tid, typdef>(C.GLOBAL.TDENV, id)
+def $find_typdef(GLOBAL, C, CURRENT id) = $find_map<tid, typdef>(C.GLOBAL.TDENV, id)
 def $find_typdef(BLOCK, C, CURRENT id) = td
-  -- if td? = $find_map_opt(tid, typdef, C.GLOBAL.TDENV, id)
+  -- if td = $find_map_opt<tid, typdef>(C.GLOBAL.TDENV, id)
 def $find_typdef(BLOCK, C, CURRENT id) = $find_typdef(GLOBAL, C, CURRENT id)
-  -- if eps = $find_map_opt(tid, typdef, C.GLOBAL.TDENV, id)
+  -- if eps = $find_map_opt<tid, typdef>(C.GLOBAL.TDENV, id)
 def $find_typdef(LOCAL, C, CURRENT id) = td
-  -- if td? = $find_map_opt(tid, typdef, C.LOCAL.TDENV, id)
+  -- if td = $find_map_opt<tid, typdef>(C.LOCAL.TDENV, id)
 def $find_typdef(BLOCK, C, CURRENT id) = $find_typdef(BLOCK, C, CURRENT id)
-  -- if eps = $find_map_opt(tid, typdef, C.LOCAL.TDENV, id)
+  -- if eps = $find_map_opt<tid, typdef>(C.LOCAL.TDENV, id)
 
 ;; Finder for function definitions
 
 dec $to_fkey(argIL*) : (id?)*
 
 def $to_fkey(eps) = eps
-def $to_fkey(argIL_h argIL_t*) = id $to_fkey(argIL_t*)
+def $to_fkey(argIL_h :: argIL_t*) = id :: $to_fkey(argIL_t*)
   -- if NameA id exprIL? = argIL_h
-def $to_fkey(argIL_h argIL_t*) = $to_fkey(argIL_t*)
+def $to_fkey(argIL_h :: argIL_t*) = $to_fkey(argIL_t*)
   -- otherwise
 
 dec $find_funcdef(cursor, context, name, argIL*) : (fid, funcdef, id*)    hint(show %2#%latex("@")#%1.FDENV`[%3#(%4)#%latex()])
 
-def $find_funcdef(p, C, TOP id, argIL*) = $find_func(funcdef, id, $to_fkey(argIL*), C.GLOBAL.FDENV)
-def $find_funcdef(GLOBAL, C, CURRENT id, argIL*) = $find_func(funcdef, id, $to_fkey(argIL*), C.GLOBAL.FDENV)
+def $find_funcdef(p, C, TOP id, argIL*) = $find_func<funcdef>(id, $to_fkey(argIL*), C.GLOBAL.FDENV)
+def $find_funcdef(GLOBAL, C, CURRENT id, argIL*) = $find_func<funcdef>(id, $to_fkey(argIL*), C.GLOBAL.FDENV)
 def $find_funcdef(BLOCK, C, CURRENT id, argIL*) = (fid, fd, id_deft*)
-  -- if (fid, fd, id_deft*)? = $find_func_opt(funcdef, id, $to_fkey(argIL*), C.BLOCK.FDENV)
+  -- if (fid, fd, id_deft*) = $find_func_opt<funcdef>(id, $to_fkey(argIL*), C.BLOCK.FDENV)
 def $find_funcdef(BLOCK, C, CURRENT id, argIL*) = $find_funcdef(GLOBAL, C, CURRENT id, argIL*)
-  -- if eps = $find_func_opt(funcdef, id, $to_fkey(argIL*), C.BLOCK.FDENV)
+  -- if eps = $find_func_opt<funcdef>(id, $to_fkey(argIL*), C.BLOCK.FDENV)
 def $find_funcdef(LOCAL, C, CURRENT id, argIL*) = $find_funcdef(BLOCK, C, CURRENT id, argIL*)
 
 ;; Finder for constructor definitions
 
 dec $find_consdef(cursor, context, name, argIL*) : (cid, consdef, id*)    hint(show %2#%latex("@")#%1.CDENV`[%3#(%4)#%latex()])
 
-def $find_consdef(p, C, TOP id, argIL*) = $find_func(consdef, id, $to_fkey(argIL*), C.GLOBAL.CDENV)
-def $find_consdef(GLOBAL, C, CURRENT id, argIL*) = $find_func(consdef, id, $to_fkey(argIL*), C.GLOBAL.CDENV)
+def $find_consdef(p, C, TOP id, argIL*) = $find_func<consdef>(id, $to_fkey(argIL*), C.GLOBAL.CDENV)
+def $find_consdef(GLOBAL, C, CURRENT id, argIL*) = $find_func<consdef>(id, $to_fkey(argIL*), C.GLOBAL.CDENV)
 def $find_consdef(BLOCK, C, CURRENT id, argIL*) = $find_consdef(GLOBAL, C, CURRENT id, argIL*)
 def $find_consdef(LOCAL, C, CURRENT id, argIL*) = $find_consdef(BLOCK, C, CURRENT id, argIL*)

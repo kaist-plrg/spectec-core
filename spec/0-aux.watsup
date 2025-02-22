@@ -33,6 +33,9 @@ dec $partition<X>(X*, nat) : (X*, X*)
 syntax set<K> hint(show %latex("\\{") %#%latex("^* \\}")) =
   SET K*      hint(show %latex("\\{") %#%latex("\\}"))
 
+dec $empty_set<K> : set<K>                       hint(show %latex("\\{") %latex("\\}"))
+def $empty_set<K> = SET eps
+
 dec $in_set<K>(K, set<K>) : bool                hint(show %2 %latex("\\in") %3)
 dec $not_in_set<K>(K, set<K>) : bool            hint(show %2 %latex("\\notin") %3)
 dec $eq_set<K>(set<K>, set<K>) : bool           hint(show %2 %latex("=") %3)
