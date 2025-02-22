@@ -145,6 +145,8 @@ var mfd : monofuncdef   hint(show %latex("\\delta_\\texttt{monofunc}"))
 var pfd : polyfuncdef   hint(show %latex("\\delta_\\texttt{polyfunc}"))
 var fd : funcdef        hint(show %latex("\\delta_\\texttt{func}"))
 
+var fmap : map<fid, funcdef>
+
 ;;
 ;; Constructor Type
 ;;

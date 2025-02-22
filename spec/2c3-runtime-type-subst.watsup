@@ -42,9 +42,9 @@ def $subst_typ(theta, HeaderT id (member, typ)*) = HeaderT id (member, $subst_ty
 
 def $subst_typ(theta, UnionT id (member, typ)*) = UnionT id (member, $subst_typ(theta, typ))*
 
-;;def $subst_typ(theta, ExternT id fmap) = ExternT id fmap'
-;;  -- if MAP (PAIR fid funcdef)* = fmap
-;;  -- if fmap' = MAP (PAIR fid $subst_funcdef(theta, funcdef))*
+def $subst_typ(theta, ExternT id fmap) = ExternT id fmap'
+  -- if MAP (PAIR fid funcdef)* = fmap
+  -- if fmap' = MAP (PAIR fid $subst_funcdef(theta, funcdef))*
 
 def $subst_typ(theta, ParserT paramtyp*) = ParserT paramtyp'*
   -- if (id dir typ val)* = paramtyp*

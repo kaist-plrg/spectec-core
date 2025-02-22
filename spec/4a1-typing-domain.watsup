@@ -4,7 +4,7 @@
 
 syntax ctk = LCTK | CTK | DYN
 
-def $join_ctk(ctk, ctk) : ctk   hint(show %1 %latex("\\sqcup_\\texttt{ctk}") %2)
+dec $join_ctk(ctk, ctk) : ctk   hint(show %1 %latex("\\sqcup_\\texttt{ctk}") %2)
 
 def $join_ctk(LCTK, LCTK) = LCTK
 def $join_ctk(LCTK, CTK) = CTK
@@ -13,12 +13,12 @@ def $join_ctk(CTK, CTK) = CTK
 def $join_ctk(ctk_a, ctk_b) = DYN
   -- otherwise
 
-def $joins_ctk(ctk*) : ctk    hint(show %latex("\\sqcup_\\texttt{ctk}")#%)
+dec $joins_ctk(ctk*) : ctk    hint(show %latex("\\sqcup_\\texttt{ctk}")#%)
 
 def $joins_ctk(eps) = DYN
 def $joins_ctk(ctk) = ctk
-def $joins_ctk(ctk_a ctk_b) = $join_ctk(ctk_a, ctk_b)
-def $joins_ctk(ctk_a ctk_b ctk_c*) = $joins_ctk(ctk_d ctk_c*) 
+def $joins_ctk(ctk_a :: ctk_b) = $join_ctk(ctk_a, ctk_b)
+def $joins_ctk(ctk_a :: ctk_b :: ctk_c*) = $joins_ctk(ctk_d :: ctk_c*) 
   -- if ctk_d = $join_ctk(ctk_a, ctk_b)
 
 ;;
@@ -29,6 +29,6 @@ syntax flow = CONT | RET
 
 var f : flow
 
-def $join_flow(flow, flow) : flow  hint(show %1 %latex("\\sqcup_\\texttt{flow}") %2)
+dec $join_flow(flow, flow) : flow  hint(show %1 %latex("\\sqcup_\\texttt{flow}") %2)
 def $join_flow(RET, RET) = RET
 def $join_flow(f_a, f_b) = CONT

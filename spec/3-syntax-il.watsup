@@ -57,6 +57,12 @@ syntax binopIL = binop
 syntax dirIL = dir
 
 ;;
+;; Forward declarations of mutually recursive syntax
+;;
+
+syntax exprIL, stmtIL, switchcaseIL, declIL, tblpropIL
+
+;;
 ;; Types
 ;;
 
@@ -118,9 +124,9 @@ syntax exprIL =
   | ValueE val                                        hint(show %)
   | NameE nameIL                                      hint(show %)
   | SeqE exprIL*                                      hint(show %latex("\\{")#%#%latex("\\}"))
-  | SeqDefaultE exprIL*                               hint(show %latex("\\{")#%, ... %latex("\\}"))
+  | SeqDefaultE exprIL*                               ;;hint(show %latex("\\{")#%, ... %latex("\\}"))
   | RecordE (memberIL, exprIL)*                       hint(show %latex("\\{")#%#%latex("\\}"))
-  | RecordDefaultE (memberIL, exprIL)*                hint(show %latex("\\{")#%, ... %latex("\\}"))
+  | RecordDefaultE (memberIL, exprIL)*                ;;hint(show %latex("\\{")#%, ... %latex("\\}"))
   | DefaultE                                          hint(show ...%latex())
   | UnE unopIL exprIL                                 hint(show %#%)
   | BinE binopIL exprIL exprIL                        hint(show %2 %1 %3)
@@ -235,8 +241,8 @@ syntax tblpropIL =
 
 syntax methodIL =
   | ExternConsM idIL tparamIL* cparamIL*                        hint(show %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
-  | ExternAbstractM idIL typeIL tparamIL* tparamIL* paramIL*    hint(show ABSTRACT %2 %1#%latex("\\langle")#%3, %4#%latex("\\rangle")#(%5)#%latex())
-  | ExternM idIL typeIL tparamIL* tparamIL* paramIL*            hint(show %2 %1#%latex("\\langle")#%3, %4#%latex("\\rangle")#(%5)#%latex())
+  | ExternAbstractM idIL typeIL tparamIL* tparamIL* paramIL*    ;;hint(show ABSTRACT %2 %1#%latex("\\langle")#%3, %4#%latex("\\rangle")#(%5)#%latex())
+  | ExternM idIL typeIL tparamIL* tparamIL* paramIL*            ;;hint(show %2 %1#%latex("\\langle")#%3, %4#%latex("\\rangle")#(%5)#%latex())
 
 ;;
 ;; Declarations
@@ -248,9 +254,9 @@ syntax declIL =
   | ErrD memberIL*                                                      hint(show ERROR %latex("\\{")#%#%latex("\\}"))
   | MatchKindD memberIL*                                                hint(show MATCH#_#KIND %latex("\\{")#%#%latex("\\}"))
   | InstD idIL typeIL nameIL targIL* argIL* declIL*                     hint(show %3#%latex("\\langle")#%4#%latex("\\rangle")#(%5) %1 = %latex("\\{")#%6#%latex("\\}") %latex("/*")%2%latex("*/"))
-  | StructD idIL tparamIL* tparamIL* (memberIL, typeIL)*                hint(show STRUCT %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
-  | HeaderD idIL tparamIL* tparamIL* (memberIL, typeIL)*                hint(show HEADER %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
-  | UnionD idIL tparamIL* tparamIL* (memberIL, typeIL)*                 hint(show UNION %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
+  | StructD idIL tparamIL* tparamIL* (memberIL, typeIL)*                ;;hint(show STRUCT %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
+  | HeaderD idIL tparamIL* tparamIL* (memberIL, typeIL)*                ;;hint(show HEADER %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
+  | UnionD idIL tparamIL* tparamIL* (memberIL, typeIL)*                 ;;hint(show UNION %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
   | EnumD idIL memberIL*                                                hint(show ENUM % %latex("\\{")#%#%latex("\\}"))
   | SEnumD idIL typeIL (memberIL, val)*                                 hint(show ENUM % % %latex("\\{")#%#%latex("\\}"))
   ;; TODO NewTypeD id decl is also valid
@@ -258,16 +264,16 @@ syntax declIL =
   ;; TODO TypeDefD id decl is also valid
   | TypeDefD idIL typeIL                                                hint(show TYPEDEF % %)
   | ValueSetD idIL typeIL exprIL                                        hint(show VALUE#_#SET#%latex("\\langle")#%2#%latex("\\rangle")#(%3)#%latex() %1)
-  | ParserTypeD idIL tparamIL* tparamIL* paramIL*                       hint(show PARSER %#%latex("\\langle")#%,%#%latex("\\rangle")#(%)#%latex())
+  | ParserTypeD idIL tparamIL* tparamIL* paramIL*                       ;;hint(show PARSER %#%latex("\\langle")#%,%#%latex("\\rangle")#(%)#%latex())
   | ParserD idIL paramIL* cparamIL* declIL* parserstateIL*              hint(show PARSER %#(%)#(%)#%latex() %latex("\\{")#%%#%latex("\\}"))
   | TableD idIL typeIL tblIL                                            hint(show TABLE %1 %latex("\\{")#%3#%latex("\\}") %latex("/*")%2%latex("*/"))
-  | ControlTypeD idIL tparamIL* tparamIL* paramIL*                      hint(show CONTROL %#%latex("\\langle")#%,%#%latex("\\rangle")#(%)#%latex())
+  | ControlTypeD idIL tparamIL* tparamIL* paramIL*                      ;;hint(show CONTROL %#%latex("\\langle")#%,%#%latex("\\rangle")#(%)#%latex())
   | ControlD idIL paramIL* cparamIL* declIL* blockIL                    hint(show CONTROL %#(%)#(%)#%latex() %latex("\\{")#% APPLY %#%latex("\\}"))
   | ActionD idIL paramIL* blockIL                                       hint(show ACTION %(%) %)
-  | FuncD idIL typeIL tparamIL* tparamIL* paramIL* blockIL              hint(show %2 %1#%latex("\\langle")#%3, %4#%latex("\\rangle")#(%5)#%latex() %6)
-  | ExternFuncD idIL typeIL tparamIL* tparamIL* paramIL*                hint(show EXTERN %2 %1#%latex("\\langle")#%3, %4#%latex("\\rangle")#(%5)#%latex())
+  | FuncD idIL typeIL tparamIL* tparamIL* paramIL* blockIL              ;;hint(show %2 %1#%latex("\\langle")#%3, %4#%latex("\\rangle")#(%5)#%latex() %6)
+  | ExternFuncD idIL typeIL tparamIL* tparamIL* paramIL*                ;;hint(show EXTERN %2 %1#%latex("\\langle")#%3, %4#%latex("\\rangle")#(%5)#%latex())
   | ExternObjectD idIL tparamIL* methodIL*                              hint(show EXTERN %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
-  | PackageTypeD idIL tparamIL* tparamIL* cparamIL*                     hint(show PACKAGE %#%latex("\\langle")#%, %#%latex("\\rangle")#(%)#%latex())
+  | PackageTypeD idIL tparamIL* tparamIL* cparamIL*                     ;;hint(show PACKAGE %#%latex("\\langle")#%, %#%latex("\\rangle")#(%)#%latex())
 
 ;;
 ;; Program

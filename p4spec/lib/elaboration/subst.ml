@@ -1,6 +1,10 @@
 open El.Ast
+open Attempt
 open Envs
 open Util.Source
+
+(* Substitution of type variables *)
+
 module Theta = TEnv
 
 let rec subst_typ (theta : Theta.t) (typ : typ) : typ =
@@ -21,8 +25,8 @@ and subst_plaintyp (theta : Theta.t) (plaintyp : plaintyp) : plaintyp =
   | VarT (tid, targs) -> (
       match Theta.find_opt tid theta with
       | Some plaintyp ->
-          (* (TODO) Support higher-order substitution *)
-          assert (targs = []);
+          if targs <> [] then
+            error plaintyp.at "higher-order substitution is disallowed";
           plaintyp
       | None ->
           let targs = subst_targs theta targs in

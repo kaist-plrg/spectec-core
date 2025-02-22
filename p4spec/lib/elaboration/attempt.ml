@@ -19,5 +19,5 @@ let ( let+ ) (attempt : 'a attempt) (f : 'a -> 'b) : 'b =
   match attempt with Ok a -> f a | Fail (at, msg) -> error at msg
 
 let rec choice (at : region) = function
-  | [] -> fail at "all choices failed"
+  | [] -> fail at "all trials have failed"
   | f :: fs -> ( match f () with Ok a -> Ok a | Fail _ -> choice at fs)

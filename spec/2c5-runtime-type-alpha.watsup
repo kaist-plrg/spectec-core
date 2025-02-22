@@ -100,15 +100,15 @@ rule Type_alpha/uniont:
   -- if (member_a = member_b)*
   -- (Type_alpha: typ_a ~~ typ_b)*
 
-;;rule Type_alpha/externt:
-;;  (ExternT id_a fmap_a) ~~ (ExternT id_b fmap_b)
-;;  -- if id_a = id_b
-;;  ----
-;;  -- if MAP (PAIR fid_a funcdef_a)* = fmap_a
-;;  -- if MAP (PAIR fid_b funcdef_b)* = fmap_b
-;;  ----
-;;  -- if $eq_set(fid, SET fid_a*, SET fid_b*)
-;;  -- (FuncDef_alpha: $find_map(fid, funcdef, fmap_a, fid_a) ~~ $find_map(fid, funcdef, fmap_b, fid_a))*
+rule Type_alpha/externt:
+  (ExternT id_a fmap_a) ~~ (ExternT id_b fmap_b)
+  -- if id_a = id_b
+  ----
+  -- if MAP (PAIR fid_a funcdef_a)* = fmap_a
+  -- if MAP (PAIR fid_b funcdef_b)* = fmap_b
+  ----
+  -- if $eq_set<fid>(SET fid_a*, SET fid_b*)
+  -- (FuncDef_alpha: $find_map<fid, funcdef>(fmap_a, fid_a) ~~ $find_map<fid, funcdef>(fmap_b, fid_a))*
 
 rule Type_alpha/parsert:
   (ParserT paramtyp_a*) ~~ (ParserT paramtyp_b*)
