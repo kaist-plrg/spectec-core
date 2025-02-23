@@ -9,6 +9,16 @@ open Util.Source
 
 let error (at : region) (msg : string) = error at "elab" msg
 
+(* Global counter for unique identifiers *)
+
+let tick = ref 0
+let refresh () = tick := 0
+
+let fresh () =
+  let id = !tick in
+  tick := !tick + 1;
+  id
+
 (* Context *)
 
 type t = {

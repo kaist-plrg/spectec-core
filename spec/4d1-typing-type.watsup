@@ -40,9 +40,9 @@ rule Type_ok/stackt:
   ----
   -- Expr_ok: p C |- expr : exprIL typ LCTK
   -- Eval_static: p C |- exprIL ~> val
-  -- if size = $get_num(val)
+  -- if int_s = $get_num(val)
   ----
-  -- if ptd = PolyD ("T", eps) -> (StackT (VarT "T") size)
+  -- if ptd = PolyD ("T", eps) -> (StackT (VarT "T") int_s)
 
 rule Type_ok/listt:
   p C |- ListT type : (SpecT ptd typ) tid_fresh*
@@ -50,13 +50,14 @@ rule Type_ok/listt:
   ----
   -- if ptd = PolyD ("T", eps) -> (ListT (VarT "T"))
 
-rule Type_ok/tuplet:
-  p C |- TupleT type* : (SpecT ptd typ*) tid_fresh*
-  -- (Type_ok: p C |- type : typ tid_fresh_i*)*
-  -- if tid_fresh* = $concat_(tid, tid_fresh_i**)
-  ----
-  -- if (tid = $concat_text("T" $int_to_text(i)))^(i < |typ*|)
-  -- if ptd = PolyD (tid*, eps) -> (TupleT (VarT tid)*)
+;; (TODO) ^n iterator
+;;rule Type_ok/tuplet:
+;;  p C |- TupleT type* : (SpecT ptd typ*) tid_fresh*
+;;  -- (Type_ok: p C |- type : typ tid_fresh_i*)*
+;;  -- if tid_fresh* = $concat_(tid, tid_fresh_i**)
+;;  ----
+;;  -- if (tid = $concat_text("T" :: $int_to_text(int)))^(int < |typ*|)
+;;  -- if ptd = PolyD (tid*, eps) -> (TupleT (VarT tid)*)
 
 rule Type_ok/namet-mono:
   p C |- NameT name : typ eps
@@ -72,12 +73,12 @@ rule Type_ok/spect-mono:
   -- if MonoD typ = $find_typdef(p, C, name) 
 
 rule Type_ok/spect-poly:
-  p C |- SpecT name type* : (SpecT ptd typ*) tid_fresh*
-  -- if PolyD (tparam*, tparam_hidden*) -> typ = $find_typdef(p, C, name)
+  p C |- SpecT name type* : (SpecT ptd typ_a*) tid_fresh*
+  -- if ptd = $find_typdef(p, C, name)
   -- if ptd = PolyD (tparam*, tparam_hidden*) -> typ
   ----
   -- (Type_ok: p C |- type : typ_a tid_fresh_a*)*
-  -- if tid_fresh* = $concat_(tid, tid_fresh_a**)
+  -- if tid_fresh* = $concat_<tid>(tid_fresh_a**)
 
 rule Type_ok/anyt:
   p C |- AnyT : (VarT tid) tid

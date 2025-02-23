@@ -14,11 +14,12 @@ relation FuncType_alpha:
   functyp ~~ functyp
   hint(input %0 %1)
 
-;; (TODO-SpecTec) Handle the case for multiple binds (basetyp ~~ basetyp) using if
+;; (TODO) multiple binds
 rule Type_alpha/basetyp:
   basetyp_a ~~ basetyp_b
   -- if basetyp_a = basetyp_b
 
+;; (TODO) multiple binds
 rule Type_alpha/vart:
   (VarT id_a) ~~ (VarT id_b)
   -- if id_a = id_b

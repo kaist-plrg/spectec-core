@@ -1131,14 +1131,17 @@ and elab_param (ctx : Ctx.t) (param : param) : Il.Ast.param =
 
 (* Elaboration of arguments *)
 
-and elab_arg (ctx : Ctx.t) (param : param) (arg : arg) : Il.Ast.arg =
+and elab_arg ?(as_def = false) (ctx : Ctx.t) (param : param) (arg : arg) :
+    Il.Ast.arg =
   match (param.it, arg.it) with
   | ExpP plaintyp, ExpA exp ->
       let+ exp_il = elab_exp ctx plaintyp exp in
       Il.Ast.ExpA exp_il $ arg.at
-  | DefP (id_p, _, _, _), DefA id_a ->
+  | DefP (id_p, _, _, _), DefA id_a when as_def ->
       check (id_p.it = id_a.it) arg.at "argument does not match parameter";
       Il.Ast.DefA id_a $ arg.at
+  (* (TODO) *)
+  | DefP _, DefA id_a -> Il.Ast.DefA id_a $ arg.at
   | _ -> error arg.at "argument does not match parameter"
 
 (* Elaboration of premises *)
@@ -1427,7 +1430,7 @@ and elab_dec_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
 
 and elab_def_input_with_bind (ctx : Ctx.t) (params : param list)
     (args : arg list) : Ctx.t * Il.Ast.arg list =
-  let args_il = List.map2 (elab_arg ctx) params args in
+  let args_il = List.map2 (elab_arg ~as_def:true ctx) params args in
   let+ binds_input = Free.bind_args ctx.venv args_il in
   let ctx = binds_input |> VEnv.bindings |> Ctx.add_vars ctx in
   let+ args_il = Mult.bind Mult.bind_args ctx.venv args_il in

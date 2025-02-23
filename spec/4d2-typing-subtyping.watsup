@@ -20,28 +20,28 @@ rule Sub_expl/intt-boolt:
   IntT <: BoolT
 
 rule Sub_expl/fintt-fbitt:
-  FIntT i <: FBitT i
+  FIntT width_a <: FBitT width_b
 
 rule Sub_expl/fbitt-fintt:
-  FBitT i <: FIntT i
+  FBitT width_a <: FIntT width_b
 
 rule Sub_expl/fbitt-fbitt:
-  FBitT i <: FBitT j
+  FBitT width_a <: FBitT width_b
 
 rule Sub_expl/fintt-fintt:
-  FIntT i <: FIntT j
+  FIntT width_a <: FIntT width_b
 
 rule Sub_expl/fbitt-intt:
-  FBitT i <: IntT
+  FBitT width <: IntT
 
 rule Sub_expl/fintt-intt:
-  FIntT i <: IntT
+  FIntT width <: IntT
 
 rule Sub_expl/intt-fbitt:
-  IntT <: FBitT i
+  IntT <: FBitT width
 
 rule Sub_expl/intt-fintt:
-  IntT <: FIntT i
+  IntT <: FIntT width
 
 rule Sub_expl/newt-innert:
   NewT id typ' <: typ
@@ -52,11 +52,11 @@ rule Sub_expl/innert-newt:
   -- Sub_impl: typ << typ'
 
 rule Sub_expl/senumt-innert:
-  SEnumT id typ' fields <: typ
+  SEnumT id typ' (member, val)* <: typ
   -- Sub_impl: typ' << typ
 
 rule Sub_expl/innert-senumt:
-  typ <: SEnumT id typ' fields
+  typ <: SEnumT id typ' (member, val)*
   -- Sub_impl: typ << typ'
 
 rule Sub_expl/seqt-list:
@@ -68,8 +68,8 @@ rule Sub_expl/seqt-tuplet:
   -- (Sub_expl: typ' <: typ'')*
 
 rule Sub_expl/seqt-stackt:
-  SeqT typ'* <: StackT typ'' i
-  -- if |typ'*| <= i
+  SeqT typ'* <: StackT typ'' int_s
+  -- if |typ'*| <= int_s
   -- (Sub_expl: typ' <: typ'')*
 
 rule Sub_expl/seqt-structt:
@@ -82,15 +82,15 @@ rule Sub_expl/seqt-headert:
 
 rule Sub_expl/recordt-structt:
   RecordT (member', typ')* <: StructT id (member'', typ'')*
-  -- if $eq_set(member, SET member'*, SET member''*)
+  -- if $eq_set<member>(SET member'*, SET member''*)
   ----
-  -- (Sub_expl: $find_map(member, typ, MAP (PAIR member' typ')*, member') <: $find_map(member, typ, MAP (PAIR member'' typ'')*, member''))*
+  -- (Sub_expl: $find_map<member, typ>(MAP (PAIR member' typ')*, member') <: $find_map<member, typ>(MAP (PAIR member'' typ'')*, member''))*
 
 rule Sub_expl/recordt-headert:
   RecordT (member', typ')* <: HeaderT id (member'', typ'')*
-  -- if $eq_set(member, SET member'*, SET member''*)
+  -- if $eq_set<member>(SET member'*, SET member''*)
   ----
-  -- (Sub_expl: $find_map(member, typ, MAP (PAIR member' typ')*, member') <: $find_map(member, typ, MAP (PAIR member'' typ'')*, member''))*
+  -- (Sub_expl: $find_map<member, typ>(MAP (PAIR member' typ')*, member') <: $find_map<member, typ>(MAP (PAIR member'' typ'')*, member''))*
 
 rule Sub_expl/defaultt:
   DefaultT <: typ
@@ -99,21 +99,21 @@ rule Sub_expl/defaultt:
 rule Sub_expl/seqdefaultt-tuplet:
   SeqDefaultT typ'* <: TupleT typ''*
   -- if |typ'*| < |typ''*|
-  -- if (typ'''*, typ''''*) = $partition(typ, typ''*, |typ'*|)
+  -- if (typ'''*, typ''''*) = $partition<typ>(typ''*, |typ'*|)
   ----
   -- (Sub_expl: typ' <: typ'''')*
   -- if ($is_deftable(typ'''))*
 
 rule Sub_expl/seqdefaultt-stackt:
-  SeqDefaultT typ'* <: StackT typ'' i
-  -- if |typ'*| < i
+  SeqDefaultT typ'* <: StackT typ'' int_s
+  -- if |typ'*| < int_s
   -- (Sub_expl: typ' <: typ'')*
   -- if $is_deftable(typ'')
 
 rule Sub_expl/seqdefaultt-structt:
   SeqDefaultT typ'* <: StructT id (member, typ'')*
   -- if |typ'*| < |typ''*|
-  -- if (typ'''*, typ''''*) = $partition(typ, typ''*, |typ'*|)
+  -- if (typ'''*, typ''''*) = $partition<typ>(typ''*, |typ'*|)
   ----
   -- (Sub_expl: typ' <: typ'''')*
   -- if ($is_deftable(typ'''))*
@@ -121,34 +121,34 @@ rule Sub_expl/seqdefaultt-structt:
 rule Sub_expl/seqdefaultt-headert:
   SeqDefaultT typ'* <: HeaderT id (member, typ'')*
   -- if |typ'*| < |typ''*|
-  -- if (typ'''*, typ''''*) = $partition(typ, typ''*, |typ'*|)
+  -- if (typ'''*, typ''''*) = $partition<typ>(typ''*, |typ'*|)
   ----
   -- (Sub_expl: typ' <: typ'''')*
   -- if ($is_deftable(typ'''))*
 
 rule Sub_expl/recorddefaultt-structt:
   RecordDefaultT (member', typ')* <: StructT id (member'', typ'')*
-  -- if $is_subset(member, SET member'*, SET member''*)
-  -- if SET member'''* = $diff_set(member, SET member''*, SET member'*)
+  -- if $is_subset<member>(SET member'*, SET member''*)
+  -- if SET member'''* = $diff_set<member>(SET member''*, SET member'*)
   ----
-  -- (Sub_expl: $find_map(member, typ, MAP (PAIR member' typ')*, member') <: $find_map(member, typ, MAP (PAIR member'' typ'')*, member'))*
+  -- (Sub_expl: $find_map<member, typ>(MAP (PAIR member' typ')*, member') <: $find_map<member, typ>(MAP (PAIR member'' typ'')*, member'))*
   ----
-  -- if ($is_deftable($find_map(member, typ, MAP (PAIR member'' typ'')*, member''')))*
+  -- if ($is_deftable($find_map<member, typ>(MAP (PAIR member'' typ'')*, member''')))*
 
 rule Sub_expl/recorddefaultt-headert:
   RecordDefaultT (member', typ')* <: HeaderT id (member'', typ'')*
-  -- if $is_subset(member, SET member'*, SET member''*)
-  -- if SET member'''* = $diff_set(member, SET member''*, SET member'*)
+  -- if $is_subset<member>(SET member'*, SET member''*)
+  -- if SET member'''* = $diff_set<member>(SET member''*, SET member'*)
   ----
-  -- (Sub_expl: $find_map(member, typ, MAP (PAIR member' typ')*, member') <: $find_map(member, typ, MAP (PAIR member'' typ'')*, member'))*
+  -- (Sub_expl: $find_map<member, typ>(MAP (PAIR member' typ')*, member') <: $find_map<member, typ>(MAP (PAIR member'' typ'')*, member'))*
   ----
-  -- if ($is_deftable($find_map(member, typ, MAP (PAIR member'' typ'')*, member''')))*
+  -- if ($is_deftable($find_map<member, typ>(MAP (PAIR member'' typ'')*, member''')))*
 
 rule Sub_expl/invalidt-headert:
-  InvalidT <: HeaderT id fields
+  InvalidT <: HeaderT id (member, typ)*
 
 rule Sub_expl/invalidt-uniont:
-  InvalidT <: UnionT id fields
+  InvalidT <: UnionT id (member, typ)*
 
 rule Sub_expl/sett-sett:
   SetT typ' <: SetT typ''
@@ -171,13 +171,13 @@ rule Sub_impl/eq:
   -- Type_alpha: typ ~~ typ'
 
 rule Sub_impl/intt-fbitt:
-  IntT << FBitT i
+  IntT << FBitT width
 
 rule Sub_impl/intt-fintt:
-  IntT << FIntT i
+  IntT << FIntT width
 
 rule Sub_impl/senumt-innert:
-  SEnumT id typ' fields << typ
+  SEnumT id typ' (member, val)* << typ
   -- Sub_impl: typ' << typ
 
 rule Sub_impl/seqt-list:
@@ -189,8 +189,8 @@ rule Sub_impl/seqt-tuplet:
   -- (Sub_impl: typ' << typ'')*
 
 rule Sub_impl/seqt-stackt:
-  SeqT typ'* << StackT typ'' i
-  -- if |typ'*| <= i
+  SeqT typ'* << StackT typ'' int_s
+  -- if |typ'*| <= int_s
   -- (Sub_impl: typ' << typ'')*
 
 rule Sub_impl/seqt-structt:
@@ -207,15 +207,15 @@ rule Sub_impl/seqt-seqt:
 
 rule Sub_impl/recordt-structt:
   RecordT (member', typ')* << StructT id (member'', typ'')*
-  -- if $eq_set(member, SET member'*, SET member''*)
+  -- if $eq_set<member>(SET member'*, SET member''*)
   ----
-  -- (Sub_impl: $find_map(member, typ, MAP (PAIR member' typ')*, member') << $find_map(member, typ, MAP (PAIR member'' typ'')*, member''))*
+  -- (Sub_impl: $find_map<member, typ>(MAP (PAIR member' typ')*, member') << $find_map<member, typ>(MAP (PAIR member'' typ'')*, member''))*
 
 rule Sub_impl/recordt-headert:
   RecordT (member', typ')* << HeaderT id (member'', typ'')*
-  -- if $eq_set(member, SET member'*, SET member''*)
+  -- if $eq_set<member>(SET member'*, SET member''*)
   ----
-  -- (Sub_impl: $find_map(member, typ, MAP (PAIR member' typ')*, member') << $find_map(member, typ, MAP (PAIR member'' typ'')*, member''))*
+  -- (Sub_impl: $find_map<member, typ>(MAP (PAIR member' typ')*, member') << $find_map<member, typ>(MAP (PAIR member'' typ'')*, member''))*
 
 rule Sub_impl/defaultt:
   DefaultT << typ
@@ -224,21 +224,21 @@ rule Sub_impl/defaultt:
 rule Sub_impl/seqdefaultt-tuplet:
   SeqDefaultT typ'* << TupleT typ''*
   -- if |typ'*| < |typ''*|
-  -- if (typ'''*, typ''''*) = $partition(typ, typ''*, |typ'*|)
+  -- if (typ'''*, typ''''*) = $partition<typ>(typ''*, |typ'*|)
   ----
   -- (Sub_impl: typ' << typ'''')*
   -- if ($is_deftable(typ'''))*
 
 rule Sub_impl/seqdefaultt-stackt:
-  SeqDefaultT typ'* << StackT typ'' i
-  -- if |typ'*| < i
+  SeqDefaultT typ'* << StackT typ'' int_s
+  -- if |typ'*| < int_s
   -- (Sub_impl: typ' << typ'')*
   -- if $is_deftable(typ'')
 
 rule Sub_impl/seqdefaultt-structt:
   SeqDefaultT typ'* << StructT id (member, typ'')*
   -- if |typ'*| < |typ''*|
-  -- if (typ'''*, typ''''*) = $partition(typ, typ''*, |typ'*|)
+  -- if (typ'''*, typ''''*) = $partition<typ>(typ''*, |typ'*|)
   ----
   -- (Sub_impl: typ' << typ'''')*
   -- if ($is_deftable(typ'''))*
@@ -246,43 +246,43 @@ rule Sub_impl/seqdefaultt-structt:
 rule Sub_impl/seqdefaultt-headert:
   SeqDefaultT typ'* << HeaderT id (member, typ'')*
   -- if |typ'*| < |typ''*|
-  -- if (typ'''*, typ''''*) = $partition(typ, typ''*, |typ'*|)
+  -- if (typ'''*, typ''''*) = $partition<typ>(typ''*, |typ'*|)
   ----
   -- (Sub_impl: typ' << typ'''')*
   -- if ($is_deftable(typ'''))*
 
 rule Sub_impl/recorddefaultt-structt:
   RecordDefaultT (member', typ')* << StructT id (member'', typ'')*
-  -- if $is_subset(member, SET member'*, SET member''*)
-  -- if SET member'''* = $diff_set(member, SET member''*, SET member'*)
+  -- if $is_subset<member>(SET member'*, SET member''*)
+  -- if SET member'''* = $diff_set<member>(SET member''*, SET member'*)
   ----
-  -- (Sub_impl: $find_map(member, typ, MAP (PAIR member' typ')*, member') << $find_map(member, typ, MAP (PAIR member'' typ'')*, member'))*
+  -- (Sub_impl: $find_map<member, typ>(MAP (PAIR member' typ')*, member') << $find_map<member, typ>(MAP (PAIR member'' typ'')*, member'))*
   ----
-  -- if ($is_deftable($find_map(member, typ, MAP (PAIR member'' typ'')*, member''')))*
+  -- if ($is_deftable($find_map<member, typ>(MAP (PAIR member'' typ'')*, member''')))*
 
 rule Sub_impl/recorddefaultt-headert:
   RecordDefaultT (member', typ')* << HeaderT id (member'', typ'')*
-  -- if $is_subset(member, SET member'*, SET member''*)
-  -- if SET member'''* = $diff_set(member, SET member''*, SET member'*)
+  -- if $is_subset<member>(SET member'*, SET member''*)
+  -- if SET member'''* = $diff_set<member>(SET member''*, SET member'*)
   ----
-  -- (Sub_impl: $find_map(member, typ, MAP (PAIR member' typ')*, member') << $find_map(member, typ, MAP (PAIR member'' typ'')*, member'))*
+  -- (Sub_impl: $find_map<member, typ>(MAP (PAIR member' typ')*, member') << $find_map<member, typ>(MAP (PAIR member'' typ'')*, member'))*
   ----
-  -- if ($is_deftable($find_map(member, typ, MAP (PAIR member'' typ'')*, member''')))*
+  -- if ($is_deftable($find_map<member, typ>(MAP (PAIR member'' typ'')*, member''')))*
 
 rule Sub_impl/invalidt-headert:
-  InvalidT << HeaderT id fields
+  InvalidT << HeaderT id (member, typ)*
 
 rule Sub_impl/invalidt-uniont:
-  InvalidT << UnionT id fields
+  InvalidT << UnionT id (member, typ)*
 
 ;;
 ;; Coercions
 ;;
 
-def $reduce_senum_unary((exprIL, typ), def $check_unary(typ) : bool) : (exprIL, typ)  hint(show REDUCE %1 UNDER %2)
+dec $reduce_senum_unary((exprIL, typ), def $check_unary(typ) : bool) : (exprIL, typ)  hint(show REDUCE %1 UNDER %2)
 
-def $reduce_senums_binary((exprIL, typ), (exprIL, typ), def $check_binary(typ, typ) : bool) : ((exprIL, typ), (exprIL, typ))   hint(show REDUCE %1 AND %2 UNDER %3)
+dec $reduce_senums_binary((exprIL, typ), (exprIL, typ), def $check_binary(typ, typ) : bool) : ((exprIL, typ), (exprIL, typ))   hint(show REDUCE %1 AND %2 UNDER %3)
 
-def $coerce_binary((exprIL, typ), (exprIL, typ)) : (typ, exprIL, exprIL)  hint(show COERCE %1 AND %2)
+dec $coerce_binary((exprIL, typ), (exprIL, typ)) : (typ, exprIL, exprIL)  hint(show COERCE %1 AND %2)
 
-def $coerce_assign((exprIL, typ), typ) : exprIL   hint(show COERCE %1 to %2)
+dec $coerce_assign((exprIL, typ), typ) : exprIL   hint(show COERCE %1 to %2)

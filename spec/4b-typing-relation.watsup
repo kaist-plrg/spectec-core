@@ -3,18 +3,26 @@
 ;;
 
 ;; Static evaluation of expressions that are local compile-time known
-relation Eval_static: cursor context |- exprIL ~> val
+relation Eval_static:
+  cursor context |- exprIL ~> val
+  hint(input %0 %1 %2)
 
 ;;
 ;; Type evaluation and subtyping
 ;;
 
 ;; Type evaluation
-relation Type_ok: cursor context |- type : typ tid*
+relation Type_ok:
+  cursor context |- type : typ tid*
+  hint(input %0 %1 %2)
 
 ;; Subtyping, explicit and implicit
-relation Sub_expl: typ <: typ
-relation Sub_impl: typ << typ
+relation Sub_expl:
+  typ <: typ
+  hint(input %0 %1)
+relation Sub_impl:
+  typ << typ
+  hint(input %0 %1)
 
 ;;
 ;; Expression, Statement, and Declaration typing
@@ -24,61 +32,99 @@ relation Sub_impl: typ << typ
 ;; produces an IL expression (exprIL),
 ;; gets the type of the expression (typ),
 ;; and its compile-time known-ness (ctk)
-relation Expr_ok: cursor context |- expr : exprIL typ ctk
+relation Expr_ok:
+  cursor context |- expr : exprIL typ ctk
+  hint(input %0 %1 %2)
 
 ;; Argument typing,
 ;; produces an IL argument (argIL),
-relation Arg_ok: cursor context |- arg : argIL typ
+relation Arg_ok:
+  cursor context |- arg : argIL typ
+  hint(input %0 %1 %2)
 
 ;; L-value typing
-relation Lval_ok: cursor context |- exprIL
+relation Lval_ok:
+  cursor context |- exprIL
+  hint(input %0 %1 %2)
 
 ;; Statement typing,
 ;; produces an IL statement (stmtIL / blockIL),
 ;; note that block typing depends on whether it is the initial block or not
 syntax blkctxt = INIT | NOINIT
-relation Block_ok: cursor context flow blkctxt |- block : context flow blockIL
-relation Stmt_ok: cursor context flow |- stmt : context flow stmtIL
-relation Stmts_ok: cursor context flow |- stmt* : context flow stmtIL*
+relation Block_ok:
+  cursor context flow blkctxt |- block : context flow blockIL
+  hint(input %0 %1 %2 %3 %4)
+relation Stmt_ok:
+  cursor context flow |- stmt : context flow stmtIL
+  hint(input %0 %1 %2 %3)
+relation Stmts_ok:
+  cursor context flow |- stmt* : context flow stmtIL*
+  hint(input %0 %1 %2 %3)
 
 ;; Parameter typing,
 ;; produces an IL parameter (paramIL),
 ;; inserts fresh type variables for parameters with don't care types (tid*)
-relation Param_ok: cursor context |- param : paramIL tid*
-relation CParam_ok: cursor context |- cparam : cparamIL tid*
+relation Param_ok:
+  cursor context |- param : paramIL tid*
+  hint(input %0 %1 %2)
+relation CParam_ok:
+  cursor context |- cparam : cparamIL tid*
+  hint(input %0 %1 %2)
 
 ;; Declaration typing,
 ;; produces an IL declaration (declIL),
-relation Decl_ok: cursor context |- decl : context declIL
-relation Decls_ok: cursor context |- decl* : context declIL*
+relation Decl_ok:
+  cursor context |- decl : context declIL
+  hint(input %0 %1 %2)
+relation Decls_ok:
+  cursor context |- decl* : context declIL*
+  hint(input %0 %1 %2)
 
 ;; Copy-in/out calling convention,
 ;; note that it depends on whether an action is being called or not
 syntax actctxt = ACT | NOACT
-relation Call_convention_ok: cursor context actctxt |- paramtyp ~~ (exprIL, typ) : exprIL
-relation Call_convention_arg_ok: cursor context actctxt |- paramtyp ~~ (argIL, typ) : argIL
+relation Call_convention_ok:
+  cursor context actctxt |- paramtyp ~~ (exprIL, typ) : exprIL
+  hint(input %0 %1 %2 %3 %4)
+relation Call_convention_arg_ok:
+  cursor context actctxt |- paramtyp ~~ (argIL, typ) : argIL
+  hint(input %0 %1 %2 %3 %4)
 
 ;; Checks that an action/function/method invocation is valid,
 ;; gets the return type (typ),
 ;; infers the types of missing type arguments (targIL*),
 ;; and inserts implicit casts for arguments, if necessary (argIL*)
-relation Call_site_ok: cursor context |- functyp : CALLSITE_OK
-relation Call_ok: cursor context |- functyp tid* targIL* (argIL, typ)* id* : typ targIL* argIL*
+relation Call_site_ok:
+  cursor context |- functyp : CALLSITE_OK
+  hint(input %0 %1 %2)
+relation Call_ok:
+  cursor context |- functyp tid* targIL* (argIL, typ)* id* : typ targIL* argIL*
+  hint(input %0 %1 %2 %3 %4 %5 %6)
 
 ;; Finds the type of a function/method, (functyp)
 ;; inserts fresh type variables for parameters with don't care types, (tid*)
 ;; and also identifies the ids of default arguments (id*)
-relation FuncType_ok: cursor context |- name targIL* argIL* : functyp tid* id*
-relation MethodType_ok: cursor context |- expr member targIL* argIL* : functyp exprIL tid* id*
+relation FuncType_ok:
+  cursor context |- name targIL* argIL* : functyp tid* id*
+  hint(input %0 %1 %2 %3 %4)
+relation MethodType_ok:
+  cursor context |- expr member targIL* argIL* : functyp exprIL tid* id*
+  hint(input %0 %1 %2 %3 %4 %5)
 
 ;; Finds the type of a constructor, (constyp)
 ;; inserts fresh type variables for parameters with don't care types, (tid*)
 ;; and also identifies the ids of default arguments (id*)
-relation ConsType_ok: cursor context |- name targIL* argIL* : constyp tid* id*
+relation ConsType_ok:
+  cursor context |- name targIL* argIL* : constyp tid* id*
+  hint(input %0 %1 %2 %3 %4)
 
 ;; Checks that a constructor invocation is valid,
 ;; gets the constructed object type (typ),
 ;; infers the types of missing type arguments (targIL*),
 ;; and inserts implicit casts for arguments, if necessary (argIL*)
-relation Inst_site_ok: cursor context |- constyp : INSTSITE_OK
-relation Inst_ok: cursor context |- constyp tid* targIL* (argIL, typ)* id* : typ targIL* argIL*
+relation Inst_site_ok:
+  cursor context |- constyp : INSTSITE_OK
+  hint(input %0 %1 %2)
+relation Inst_ok:
+  cursor context |- constyp tid* targIL* (argIL, typ)* id* : typ targIL* argIL*
+  hint(input %0 %1 %2 %3 %4 %5 %6)

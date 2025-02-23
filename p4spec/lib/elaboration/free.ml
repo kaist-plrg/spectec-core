@@ -29,7 +29,11 @@ let union (at : region) (bind_a : t) (bind_b : t) : t attempt =
 
 let bind_nontrivial (at : region) (construct : string) (binds : t) : t attempt =
   if VEnv.is_empty binds then Ok empty
-  else fail at ("invalid binding position for non-invertible " ^ construct)
+  else
+    fail at
+      (Format.asprintf
+         "invalid binding position(s) for %s in non-invertible %s construct"
+         (VEnv.to_string binds) construct)
 
 (* Expressions *)
 
@@ -198,7 +202,11 @@ and bind_if_eq_prem (ctx : Ctx.t) (at : region) (note : region * typ')
   else if VEnv.is_empty bind_l then
     let prem = LetPr (exp_r, exp_l) $ at in
     Ok (prem, bind_r)
-  else fail at "cannot bind both sides of an equality"
+  else
+    fail at
+      (Format.asprintf
+         "cannot bind both sides of an equality: (left) %s, (right) %s"
+         (VEnv.to_string bind_l) (VEnv.to_string bind_r))
 
 and bind_if_cond_prem (ctx : Ctx.t) (at : region) (exp : exp) : unit attempt =
   let* binds = bind_exp ctx.venv exp in

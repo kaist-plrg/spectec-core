@@ -9,10 +9,7 @@ module Dim = struct
     && List.for_all2 ( = ) dim_a
          (List.filteri (fun idx _ -> idx < List.length dim_a) dim_b)
 
-  let to_string t =
-    match t with
-    | [] -> "()"
-    | _ -> t |> List.map Il.Print.string_of_iter |> String.concat ", "
+  let to_string t = t |> List.map Il.Print.string_of_iter |> String.concat ""
 end
 
 module Type = struct

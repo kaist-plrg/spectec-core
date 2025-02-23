@@ -87,8 +87,8 @@ rule Eval_static/bitacce:
 ;;
 
 rule Eval_static/expracce-stack:
-  p C |- ExprAccE exprIL_b "size" ~> IntV s
-  -- Eval_static: p C |- exprIL_b ~> StackV val* i s
+  p C |- ExprAccE exprIL_b "size" ~> IntV int_s
+  -- Eval_static: p C |- exprIL_b ~> StackV val* int_s int_i
 
 ;;
 ;; Method call expression
