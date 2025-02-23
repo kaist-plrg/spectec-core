@@ -71,8 +71,8 @@ let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
 %nonassoc TILESTURN
 %right SQARROW SQARROWSTAR PREC SUCC BIGAND BIGOR BIGADD BIGMUL BIGCAT
 %left COLON SUB SUP ASSIGN EQUIV APPROX
-%right COLONCOLON
 %right EQ NE LANGLE RANGLE LE GE MEM
+%right COLONCOLON
 %right ARROW ARROWSUB
 %left SEMICOLON
 %left DOT DOTDOT DOTDOTDOT
