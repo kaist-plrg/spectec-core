@@ -319,14 +319,15 @@ and expand_typcase (ctx : Ctx.t) (typcase : typcase) : nottyp list =
       | _ -> error plaintyp.at "cannot extend a non-variant type")
   | NotationT nottyp -> [ nottyp ]
 
+and elab_typcase (ctx : Ctx.t) (nottyp : nottyp) : Il.Ast.typcase =
+  elab_nottyp ctx (NotationT nottyp)
+
 and elab_typ_def_variant (ctx : Ctx.t) (at : region) (tparams : tparam list)
     (typcases : typcase list) : TypeDef.t * Il.Ast.deftyp =
   let nottyps = List.concat_map (expand_typcase ctx) typcases in
-  let typcases_il =
-    List.map (fun nottyp -> elab_nottyp ctx (NotationT nottyp)) nottyps
-  in
+  let typcases_il = List.map (elab_typcase ctx) nottyps in
   let mixops = typcases_il |> List.map it |> List.map fst in
-  check (distinct Mixop.eq mixops) at "cases are ambiguous";
+  check (distinct Mixop.eq mixops) at "variant cases are ambiguous";
   let deftyp_il = Il.Ast.VariantT typcases_il $ at in
   let td = TypeDef.Defined (tparams, `Variant nottyps) in
   (td, deftyp_il)
@@ -438,10 +439,9 @@ and infer_unop (ctx : Ctx.t) (at : region) (unop : unop) (plaintyp : plaintyp)
   in
   let fail =
     fail at
-      ("unary operator `"
-      ^ El.Print.string_of_unop unop
-      ^ "` is not defined for operand type "
-      ^ El.Print.string_of_plaintyp plaintyp)
+      (Format.asprintf "unary operator `%s` is not defined for operand type %s"
+         (El.Print.string_of_unop unop)
+         (El.Print.string_of_plaintyp plaintyp))
   in
   List.fold_left
     (fun unop_infer (optyp_il, plaintyp_expect, plaintyp_res_expect) ->
@@ -482,12 +482,11 @@ and infer_binop (ctx : Ctx.t) (at : region) (binop : binop)
   in
   let fail =
     fail at
-      ("binary operator `"
-      ^ El.Print.string_of_binop binop
-      ^ "` is not defined for operand types "
-      ^ El.Print.string_of_plaintyp plaintyp_l
-      ^ " and "
-      ^ El.Print.string_of_plaintyp plaintyp_r)
+      (Format.asprintf
+         "binary operator `%s` is not defined for operand types %s and %s"
+         (El.Print.string_of_binop binop)
+         (El.Print.string_of_plaintyp plaintyp_l)
+         (El.Print.string_of_plaintyp plaintyp_r))
   in
   List.fold_left
     (fun binop_infer
@@ -547,12 +546,11 @@ and infer_cmpop_num (ctx : Ctx.t) (at : region) (cmpop : Num.cmpop)
   in
   let fail =
     fail at
-      ("comparison operator `"
-      ^ El.Print.string_of_cmpop (cmpop :> Il.Ast.cmpop)
-      ^ "` is not defined for operand types "
-      ^ El.Print.string_of_plaintyp plaintyp_l
-      ^ " and "
-      ^ El.Print.string_of_plaintyp plaintyp_r)
+      (Format.asprintf
+         "comparison operator `%s` is not defined for operand types %s and %s"
+         (El.Print.string_of_cmpop (cmpop :> Il.Ast.cmpop))
+         (El.Print.string_of_plaintyp plaintyp_l)
+         (El.Print.string_of_plaintyp plaintyp_r))
   in
   List.fold_left
     (fun cmpop_infer (optyp_il, plaintyp_l_expect, plaintyp_r_expect) ->
@@ -760,10 +758,12 @@ and infer_typ_exp (ctx : Ctx.t) (exp : exp) (plaintyp : plaintyp) :
 and elab_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
     Il.Ast.exp attempt =
   match as_iter_plaintyp ctx plaintyp_expect with
-  | Ok (plaintyp, iter) ->
+  | Ok (plaintyp_expect_base, iter_expect) ->
       choice exp.at
         [
-          (fun () -> elab_exp_iter ctx plaintyp_expect plaintyp iter exp);
+          (fun () ->
+            elab_exp_iter ctx plaintyp_expect plaintyp_expect_base iter_expect
+              exp);
           (fun () -> elab_exp_normal ctx plaintyp_expect exp);
         ]
   | _ -> elab_exp_normal ctx plaintyp_expect exp
@@ -782,10 +782,11 @@ and elab_exps (ctx : Ctx.t) (plaintyps_expect : plaintyp list) (exps : exp list)
 (* Elaboration of expression as a singleton iteration *)
 
 and elab_exp_iter (ctx : Ctx.t) (plaintyp_expect : plaintyp)
-    (plaintyp : plaintyp) (iter : iter) (exp : exp) : Il.Ast.exp attempt =
-  let* exp_il = elab_exp ctx plaintyp exp in
+    (plaintyp_expect_base : plaintyp) (iter_expect : iter) (exp : exp) :
+    Il.Ast.exp attempt =
+  let* exp_il = elab_exp ctx plaintyp_expect_base exp in
   let typ_il = elab_plaintyp ctx plaintyp_expect in
-  match iter with
+  match iter_expect with
   | Opt ->
       let exp_il = Il.Ast.OptE (Some exp_il) in
       Ok (exp_il $$ (exp.at, typ_il.it))
@@ -1140,7 +1141,7 @@ and elab_arg ?(as_def = false) (ctx : Ctx.t) (param : param) (arg : arg) :
   | DefP (id_p, _, _, _), DefA id_a when as_def ->
       check (id_p.it = id_a.it) arg.at "argument does not match parameter";
       Il.Ast.DefA id_a $ arg.at
-  (* (TODO) *)
+  (* (TODO) Check if function parameter matches *)
   | DefP _, DefA id_a -> Il.Ast.DefA id_a $ arg.at
   | _ -> error arg.at "argument does not match parameter"
 
@@ -1162,28 +1163,25 @@ and elab_prem' (ctx : Ctx.t) (prem : prem') : Ctx.t * Il.Ast.prem' option =
   | ElsePr -> elab_else_prem () |> wrap_ctx |> wrap_some
   | IterPr (prem, iter) -> elab_iter_prem ctx prem iter |> wrap_ctx |> wrap_some
 
-and elab_prem_with_bind (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.Ast.prem option
-    =
+and elab_prem_with_bind (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.Ast.prem list =
   let ctx, prem_il_opt = elab_prem ctx prem in
-  let ctx, prem_il_opt =
-    match prem_il_opt with
-    | Some prem_il ->
-        let+ prem_il, binds = Free.bind_prem ctx prem_il in
-        let ctx = binds |> VEnv.bindings |> Ctx.add_vars ctx in
-        let+ prem_il = Mult.bind (Mult.bind_prem binds) ctx.venv prem_il in
-        (ctx, Some prem_il)
-    | None -> (ctx, None)
-  in
-  (ctx, prem_il_opt)
+  match prem_il_opt with
+  | Some prem_il ->
+      let+ prem_il, binds, sideconditions_il =
+        Free.bind ctx Free.bind_prem Free.rename_prem prem_il
+      in
+      let ctx = binds |> VEnv.bindings |> Ctx.add_vars ctx in
+      let prems_il = prem_il :: sideconditions_il in
+      let+ prems_il = Mult.bind (Mult.bind_prems binds) ctx.venv prems_il in
+      (ctx, prems_il)
+  | None -> (ctx, [])
 
 and elab_prems_with_bind (ctx : Ctx.t) (prems : prem list) :
     Ctx.t * Il.Ast.prem list =
   List.fold_left
-    (fun (ctx, prems_il) prem ->
-      let ctx, prem_il_opt = elab_prem_with_bind ctx prem in
-      match prem_il_opt with
-      | Some prem_il -> (ctx, prems_il @ [ prem_il ])
-      | None -> (ctx, prems_il))
+    (fun (ctx, prems_il_acc) prem ->
+      let ctx, prems_il = elab_prem_with_bind ctx prem in
+      (ctx, prems_il_acc @ prems_il))
     (ctx, []) prems
 
 (* Elaboration of variable premises *)
@@ -1339,6 +1337,8 @@ and fetch_rel_input_hint (at : region) (nottyp_il : Il.Ast.nottyp)
       match inputs_opt with
       | Some [] ->
           error at "malformed input hint: at least one input should be provided"
+      | Some inputs when not (distinct ( = ) inputs) ->
+          error at "malformed input hint: inputs should be distinct"
       | Some inputs -> inputs
       | None ->
           warn at
@@ -1363,22 +1363,29 @@ and elab_rel_def (ctx : Ctx.t) (at : region) (id : id) (nottyp : nottyp)
 (* Elaboration of rule definitions *)
 
 and elab_rule_input_with_bind (ctx : Ctx.t) (exps_il : (int * Il.Ast.exp) list)
-    : Ctx.t * (int * Il.Ast.exp) list =
-  let+ binds_input = exps_il |> List.map snd |> Free.bind_exps ctx.venv in
-  let ctx = binds_input |> VEnv.bindings |> Ctx.add_vars ctx in
+    : Ctx.t * (int * Il.Ast.exp) list * Il.Ast.prem list =
   let idxs, exps_il = List.split exps_il in
+  let+ exps_il, binds_input, sideconditions_il =
+    Free.bind ctx Free.bind_exps Free.rename_exps exps_il
+  in
+  let ctx = binds_input |> VEnv.bindings |> Ctx.add_vars ctx in
   let+ exps_il = Mult.bind Mult.bind_exps ctx.venv exps_il in
   let exps_il = List.combine idxs exps_il in
-  (ctx, exps_il)
+  let+ sideconditions_il =
+    Mult.bind (Mult.bind_prems binds_input) ctx.venv sideconditions_il
+  in
+  (ctx, exps_il, sideconditions_il)
 
 and elab_rule_output_with_bind (ctx : Ctx.t) (at : region)
     (exps_il : (int * Il.Ast.exp) list) : (int * Il.Ast.exp) list =
-  let+ binds_output = exps_il |> List.map snd |> Free.bind_exps ctx.venv in
+  let idxs, exps_il = List.split exps_il in
+  let+ exps_il, binds_output, _sideconditions_il =
+    Free.bind ctx Free.bind_exps Free.rename_exps exps_il
+  in
   if not (VEnv.is_empty binds_output) then
     error at
       (Format.asprintf "rule output has free variable(s): %s"
          (VEnv.to_string binds_output));
-  let idxs, exps_il = List.split exps_il in
   let+ exps_il = Mult.bind Mult.bind_exps ctx.venv exps_il in
   List.combine idxs exps_il
 
@@ -1393,10 +1400,11 @@ and elab_rule_def (ctx : Ctx.t) (at : region) (id_rel : id) (id_rule : id)
     |> List.mapi (fun idx exp -> (idx, exp))
     |> List.partition (fun (idx, _) -> List.mem idx inputs)
   in
-  let ctx_local, exps_il_input =
+  let ctx_local, exps_il_input, sideconditions_il =
     elab_rule_input_with_bind ctx_local exps_il_input
   in
   let ctx_local, prems_il = elab_prems_with_bind ctx_local prems in
+  let prems_il = sideconditions_il @ prems_il in
   let exps_il_output =
     elab_rule_output_with_bind ctx_local exp.at exps_il_output
   in
@@ -1429,17 +1437,24 @@ and elab_dec_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
 (* Elaboration of function definitions *)
 
 and elab_def_input_with_bind (ctx : Ctx.t) (params : param list)
-    (args : arg list) : Ctx.t * Il.Ast.arg list =
+    (args : arg list) : Ctx.t * Il.Ast.arg list * Il.Ast.prem list =
   let args_il = List.map2 (elab_arg ~as_def:true ctx) params args in
-  let+ binds_input = Free.bind_args ctx.venv args_il in
+  let+ args_il, binds_input, sideconditions_il =
+    Free.bind ctx Free.bind_args Free.rename_args args_il
+  in
   let ctx = binds_input |> VEnv.bindings |> Ctx.add_vars ctx in
   let+ args_il = Mult.bind Mult.bind_args ctx.venv args_il in
-  (ctx, args_il)
+  let+ sideconditions_il =
+    Mult.bind (Mult.bind_prems binds_input) ctx.venv sideconditions_il
+  in
+  (ctx, args_il, sideconditions_il)
 
 and elab_def_output_with_bind (ctx : Ctx.t) (plaintyp : plaintyp) (exp : exp) :
     Il.Ast.exp =
   let+ exp_il = elab_exp ctx plaintyp exp in
-  let+ binds_output = Free.bind_exp ctx.venv exp_il in
+  let+ exp_il, binds_output, _sideconditions =
+    Free.bind ctx Free.bind_exp Free.rename_exp exp_il
+  in
   if not (VEnv.is_empty binds_output) then
     error exp_il.at
       (Format.asprintf "output expression has free variable(s): %s"
@@ -1458,8 +1473,11 @@ and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
   check (List.length params = List.length args) at "arguments do not match";
   let ctx_local = ctx in
   let ctx_local = Ctx.add_tparams ctx_local tparams in
-  let ctx_local, args_il = elab_def_input_with_bind ctx_local params args in
+  let ctx_local, args_il, sideconditions_il =
+    elab_def_input_with_bind ctx_local params args
+  in
   let ctx_local, prems_il = elab_prems_with_bind ctx_local prems in
+  let prems_il = sideconditions_il @ prems_il in
   let exp_il = elab_def_output_with_bind ctx_local plaintyp exp in
   let clause_il = (args_il, exp_il, prems_il) $ at in
   Ctx.add_clause ctx id clause_il

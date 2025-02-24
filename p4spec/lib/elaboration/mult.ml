@@ -275,3 +275,14 @@ and bind_prem (binds : t) (bounds : t) (prem : prem) : (prem * t) attempt =
               occurs itervars
           in
           Ok (prem, occurs))
+
+and bind_prems (binds : t) (bounds : t) (prems : prem list) :
+    (prem list * t) attempt =
+  match prems with
+  | [] -> Ok ([], empty)
+  | prem :: prems ->
+      let* prem, occurs_h = bind_prem binds bounds prem in
+      let* prems, occurs_t = bind_prems binds bounds prems in
+      let prems = prem :: prems in
+      let occurs = union occurs_h occurs_t in
+      Ok (prems, occurs)

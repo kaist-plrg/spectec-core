@@ -132,15 +132,13 @@ rule Expr_ok/une-uminus:
 
 dec $compatible_plusminusmult(typ, typ) : bool
 def $compatible_plusminusmult(IntT, IntT) = true
-;; (TODO) multiple binds
-def $compatible_plusminusmult(FIntT width_a, FIntT width_b) = width_a = width_b
-;; (TODO) multiple binds
-def $compatible_plusminusmult(FBitT width_a, FBitT width_b) = width_a = width_b
+def $compatible_plusminusmult(FIntT width, FIntT width) = true
+def $compatible_plusminusmult(FBitT width, FBitT width) = true
 def $compatible_plusminusmult(typ_l, typ_r) = false
   -- otherwise
 
 rule Expr_ok/bine-plus-minus-mult:
-  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ_l'' ctk
+  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ'' ctk
   -- if $in_set<binop>(binop, SET ([ PLUS, MINUS, MUL ]))
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
@@ -148,22 +146,18 @@ rule Expr_ok/bine-plus-minus-mult:
   ----
   -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
   ----
-  -- if ((exprIL_l'', typ_l''), (exprIL_r'', typ_r'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), def $compatible_plusminusmult)
-  ;; (TODO) multiple binds
-  -- if typ_l'' = typ_r''
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), def $compatible_plusminusmult)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
 dec $compatible_satplusminus(typ, typ) : bool
-;; (TODO) multiple binds
-def $compatible_satplusminus(FIntT width_a, FIntT width_b) = width_a = width_b
-;; (TODO) multiple binds
-def $compatible_satplusminus(FBitT width_a, FBitT width_b) = width_a = width_b
+def $compatible_satplusminus(FIntT width, FIntT width) = true
+def $compatible_satplusminus(FBitT width, FBitT width) = true
 def $compatible_satplusminus(typ_l, typ_r) = false
   -- otherwise
 
 rule Expr_ok/bine-sat-plus-minus:
-  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ_l'' ctk
+  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ'' ctk
   -- if $in_set<binop>(binop, SET ([ SPLUS, SMINUS ]))
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
@@ -171,9 +165,7 @@ rule Expr_ok/bine-sat-plus-minus:
   ----
   -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
   ----
-  -- if ((exprIL_l'', typ_l''), (exprIL_r'', typ_r'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), def $compatible_satplusminus)
-  ;; (TODO) multiple binds
-  -- if typ_l'' = typ_l''
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), def $compatible_satplusminus)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
@@ -183,7 +175,7 @@ def $compatible_divmod(typ_l, typ_r) = false
   -- otherwise
 
 rule Expr_ok/bine-div-mod:
-  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ_l'' ctk
+  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ'' ctk
   -- if $in_set<binop>(binop, SET ([ DIV, MOD ]))
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
@@ -191,9 +183,7 @@ rule Expr_ok/bine-div-mod:
   ----
   -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
   ----
-  -- if ((exprIL_l'', typ_l''), (exprIL_r'', typ_r'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), def $compatible_divmod)
-  ;; (TODO) multiple binds
-  -- if typ_l'' = typ_r''
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), def $compatible_divmod)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
@@ -259,7 +249,7 @@ def $compatible_compare(typ_l, typ_r) = false
   -- otherwise
 
 rule Expr_ok/bine-compare:
-  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ_l'' ctk
+  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ'' ctk
   -- if $in_set<binop>(binop, SET ([ LE, GE, LT, GT ]))
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
@@ -267,9 +257,7 @@ rule Expr_ok/bine-compare:
   ----
   -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
   ----
-  -- if ((exprIL_l'', typ_l''), (exprIL_r'', typ_r'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), def $compatible_compare)
-  ;; (TODO) multiple binds
-  -- if typ_l'' = typ_r''
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), def $compatible_compare)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
@@ -280,7 +268,7 @@ def $compatible_bitwise(typ_l, typ_r) = false
   -- otherwise
 
 rule Expr_ok/bine-bitwise:
-  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ_l'' ctk
+  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ'' ctk
   -- if $in_set<binop>(binop, SET ([ BAND, BXOR, BOR ]))
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
@@ -288,9 +276,7 @@ rule Expr_ok/bine-bitwise:
   ----
   -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
   ----
-  -- if ((exprIL_l'', typ_l''), (exprIL_r'', typ_r'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), def $compatible_bitwise)
-  ;; (TODO) multiple binds
-  -- if typ_l'' = typ_r''
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), def $compatible_bitwise)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
@@ -385,15 +371,13 @@ def $compatible_mask(typ_l, typ_r) = false
   -- otherwise
 
 rule Expr_ok/maske:
-  p C |- MaskE expr_b expr_m : (MaskE exprIL_b'' exprIL_m'') (SetT typ_l'') DYN
+  p C |- MaskE expr_b expr_m : (MaskE exprIL_b'' exprIL_m'') (SetT typ'') DYN
   -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
   -- Expr_ok: p C |- expr_m : exprIL_m typ_m ctk_m
   ----
   -- if (typ', exprIL_b', exprIL_m') = $coerce_binary((exprIL_b, typ_b), (exprIL_m, typ_m))
   ----
-  -- if ((exprIL_b'', typ_l''), (exprIL_m'', typ_r'')) = $reduce_senums_binary((exprIL_b', typ'), (exprIL_m', typ'), def $compatible_mask)
-  ;; (TODO) multiple binds
-  -- if typ_l'' = typ_r''
+  -- if ((exprIL_b'', typ''), (exprIL_m'', typ'')) = $reduce_senums_binary((exprIL_b', typ'), (exprIL_m', typ'), def $compatible_mask)
   ----
   ;; -- Type_wf: $bound_tid(C) |- SetT typ''
 
@@ -409,15 +393,13 @@ def $compatible_range(typ_l, typ_r) = false
   -- otherwise
 
 rule Expr_ok/rangee:
-  p C |- RangeE expr_lb expr_ub : (RangeE exprIL_lb'' exprIL_ub'') (SetT typ_l'') DYN
+  p C |- RangeE expr_lb expr_ub : (RangeE exprIL_lb'' exprIL_ub'') (SetT typ'') DYN
   -- Expr_ok: p C |- expr_lb : exprIL_lb typ_lb ctk_lb
   -- Expr_ok: p C |- expr_ub : exprIL_ub typ_ub ctk_ub
   ----
   -- if (typ', exprIL_ub', exprIL_lb') = $coerce_binary((exprIL_lb, typ_lb), (exprIL_ub, typ_ub))
   ----
-  -- if ((exprIL_lb'', typ_l''), (exprIL_ub'', typ_r'')) = $reduce_senums_binary((exprIL_lb', typ'), (exprIL_ub', typ'), def $compatible_range)
-  ;; (TODO) multiple binds
-  -- if typ_l'' = typ_r''
+  -- if ((exprIL_lb'', typ''), (exprIL_ub'', typ'')) = $reduce_senums_binary((exprIL_lb', typ'), (exprIL_ub', typ'), def $compatible_range)
   ----
   ;; -- Type_wf: $bound_tid(C) |- SetT typ''
 

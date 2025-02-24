@@ -1,0 +1,6 @@
+dec $same(int, int) : bool
+def $same(int, int) = true
+
+dec $tup((int, int)) : bool
+def $tup((int_a, int_b)) = true
+  -- if (int_c, int_c) = (int_a, int_b)

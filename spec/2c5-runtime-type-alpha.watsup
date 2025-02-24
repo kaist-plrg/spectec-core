@@ -14,15 +14,11 @@ relation FuncType_alpha:
   functyp ~~ functyp
   hint(input %0 %1)
 
-;; (TODO) multiple binds
 rule Type_alpha/basetyp:
-  basetyp_a ~~ basetyp_b
-  -- if basetyp_a = basetyp_b
+  basetyp ~~ basetyp
 
-;; (TODO) multiple binds
 rule Type_alpha/vart:
-  (VarT id_a) ~~ (VarT id_b)
-  -- if id_a = id_b
+  (VarT id) ~~ (VarT id)
 
 rule Type_alpha/spect-nominal:
   (SpecT ptd_a typ_a*) ~~ (SpecT ptd_b typ_b*)
@@ -54,18 +50,15 @@ rule Type_alpha/deft-right:
   -- Type_alpha: typ_a ~~ typ_b
 
 rule Type_alpha/newt:
-  (NewT id_a typ_a) ~~ (NewT id_b typ_b)
-  -- if id_a = id_b
+  (NewT id typ_a) ~~ (NewT id typ_b)
   -- Type_alpha: typ_a ~~ typ_b
 
 rule Type_alpha/enumt:
-  (EnumT id_a member_a*) ~~ (EnumT id_b member_b*)
-  -- if id_a = id_b
+  (EnumT id member_a*) ~~ (EnumT id member_b*)
   -- if (member_a = member_b)*
 
 rule Type_alpha/senumt:
-  (SEnumT id_a typ_a (member_a, val_a)*) ~~ (SEnumT id_b typ_b (member_b, val_b)*)
-  -- if id_a = id_b
+  (SEnumT id typ_a (member_a, val_a)*) ~~ (SEnumT id typ_b (member_b, val_b)*)
   -- Type_alpha: typ_a ~~ typ_b
   -- if (member_a = member_b)*
   -- if (val_a = val_b)*
@@ -84,26 +77,22 @@ rule Type_alpha/stackt:
   -- if int_a = int_b
 
 rule Type_alpha/structt:
-  (StructT id_a (member_a, typ_a)*) ~~ (StructT id_b (member_b, typ_b)*)
-  -- if id_a = id_b
+  (StructT id (member_a, typ_a)*) ~~ (StructT id (member_b, typ_b)*)
   -- if (member_a = member_b)*
   -- (Type_alpha: typ_a ~~ typ_b)*
 
 rule Type_alpha/headert:
-  (HeaderT id_a (member_a, typ_a)*) ~~ (HeaderT id_b (member_b, typ_b)*)
-  -- if id_a = id_b
+  (HeaderT id (member_a, typ_a)*) ~~ (HeaderT id (member_b, typ_b)*)
   -- if (member_a = member_b)*
   -- (Type_alpha: typ_a ~~ typ_b)*
 
 rule Type_alpha/uniont:
-  (UnionT id_a (member_a, typ_a)*) ~~ (UnionT id_b (member_b, typ_b)*)
-  -- if id_a = id_b
+  (UnionT id (member_a, typ_a)*) ~~ (UnionT id (member_b, typ_b)*)
   -- if (member_a = member_b)*
   -- (Type_alpha: typ_a ~~ typ_b)*
 
 rule Type_alpha/externt:
-  (ExternT id_a fmap_a) ~~ (ExternT id_b fmap_b)
-  -- if id_a = id_b
+  (ExternT id fmap_a) ~~ (ExternT id fmap_b)
   ----
   -- if MAP (PAIR fid_a funcdef_a)* = fmap_a
   -- if MAP (PAIR fid_b funcdef_b)* = fmap_b
@@ -132,8 +121,7 @@ rule Type_alpha/packaget:
   -- (Type_alpha: typ_a ~~ typ_b)*
 
 rule Type_alpha/tablet:
-  (TableT id_a typ_a) ~~ (TableT id_b typ_b)
-  -- if id_a = id_b
+  (TableT id typ_a) ~~ (TableT id typ_b)
   -- Type_alpha: typ_a ~~ typ_b
 
 rule Type_alpha/defaultt:
@@ -168,13 +156,11 @@ rule Type_alpha/statet:
   StateT ~~ StateT
 
 rule Type_alpha/tableenumt:
-  (TableEnumT id_a member_a*) ~~ (TableEnumT id_b member_b*)
-  -- if id_a = id_b
+  (TableEnumT id member_a*) ~~ (TableEnumT id member_b*)
   -- if (member_a = member_b)*
 
 rule Type_alpha/tablestructt:
-  (TableStructT id_a (member_a, typ_a)*) ~~ (TableStructT id_b (member_b, typ_b)*)
-  -- if id_a = id_b
+  (TableStructT id (member_a, typ_a)*) ~~ (TableStructT id (member_b, typ_b)*)
   -- if (member_a = member_b)*
   -- (Type_alpha: typ_a ~~ typ_b)*
 
