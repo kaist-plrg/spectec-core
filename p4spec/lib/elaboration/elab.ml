@@ -1,3 +1,4 @@
+open Domain.Dom
 open Xl
 open El.Ast
 open Dom
@@ -1167,12 +1168,13 @@ and elab_prem_with_bind (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.Ast.prem list =
   let ctx, prem_il_opt = elab_prem ctx prem in
   match prem_il_opt with
   | Some prem_il ->
-      let+ prem_il, binds, sideconditions_il =
-        Free.bind ctx Free.bind_prem Free.rename_prem prem_il
+      let+ prem_il, frees, binds, sideconditions_il =
+        Analysis.Binding.analyze_prem ctx prem_il
       in
+      let ctx = frees |> Ctx.add_frees ctx in
       let ctx = binds |> VEnv.bindings |> Ctx.add_vars ctx in
       let prems_il = prem_il :: sideconditions_il in
-      let+ prems_il = Mult.bind (Mult.bind_prems binds) ctx.venv prems_il in
+      let+ prems_il = Analysis.Multiplicity.analyze_prems ctx binds prems_il in
       (ctx, prems_il)
   | None -> (ctx, [])
 
@@ -1365,34 +1367,43 @@ and elab_rel_def (ctx : Ctx.t) (at : region) (id : id) (nottyp : nottyp)
 and elab_rule_input_with_bind (ctx : Ctx.t) (exps_il : (int * Il.Ast.exp) list)
     : Ctx.t * (int * Il.Ast.exp) list * Il.Ast.prem list =
   let idxs, exps_il = List.split exps_il in
-  let+ exps_il, binds_input, sideconditions_il =
-    Free.bind ctx Free.bind_exps Free.rename_exps exps_il
+  let+ exps_il, frees_input, binds_input, sideconditions_il =
+    Analysis.Binding.analyze_exps ctx exps_il
   in
+  let ctx = frees_input |> Ctx.add_frees ctx in
   let ctx = binds_input |> VEnv.bindings |> Ctx.add_vars ctx in
-  let+ exps_il = Mult.bind Mult.bind_exps ctx.venv exps_il in
+  let+ exps_il = Analysis.Multiplicity.analyze_exps ctx exps_il in
   let exps_il = List.combine idxs exps_il in
   let+ sideconditions_il =
-    Mult.bind (Mult.bind_prems binds_input) ctx.venv sideconditions_il
+    Analysis.Multiplicity.analyze_prems ctx binds_input sideconditions_il
   in
   (ctx, exps_il, sideconditions_il)
 
 and elab_rule_output_with_bind (ctx : Ctx.t) (at : region)
     (exps_il : (int * Il.Ast.exp) list) : (int * Il.Ast.exp) list =
   let idxs, exps_il = List.split exps_il in
-  let+ exps_il, binds_output, _sideconditions_il =
-    Free.bind ctx Free.bind_exps Free.rename_exps exps_il
+  let+ exps_il, frees_output, binds_output, sideconditions_il =
+    Analysis.Binding.analyze_exps ctx exps_il
   in
-  if not (VEnv.is_empty binds_output) then
+  if
+    not
+      (IdSet.is_empty frees_output
+      && VEnv.is_empty binds_output && sideconditions_il = [])
+  then
     error at
       (Format.asprintf "rule output has free variable(s): %s"
          (VEnv.to_string binds_output));
-  let+ exps_il = Mult.bind Mult.bind_exps ctx.venv exps_il in
+  let+ exps_il = Analysis.Multiplicity.analyze_exps ctx exps_il in
   List.combine idxs exps_il
 
 and elab_rule_def (ctx : Ctx.t) (at : region) (id_rel : id) (id_rule : id)
     (exp : exp) (prems : prem list) : Ctx.t =
   let nottyp, inputs = Ctx.find_rel ctx id_rel in
   let ctx_local = ctx in
+  let ctx_local =
+    let def = RuleD (id_rel, id_rule, exp, prems) $ at in
+    Analysis.Free.free_def def |> Ctx.add_frees ctx_local
+  in
   let+ notexp_il = elab_exp_not ctx_local (NotationT nottyp) exp in
   let mixop, exps_il = notexp_il in
   let exps_il_input, exps_il_output =
@@ -1439,27 +1450,32 @@ and elab_dec_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
 and elab_def_input_with_bind (ctx : Ctx.t) (params : param list)
     (args : arg list) : Ctx.t * Il.Ast.arg list * Il.Ast.prem list =
   let args_il = List.map2 (elab_arg ~as_def:true ctx) params args in
-  let+ args_il, binds_input, sideconditions_il =
-    Free.bind ctx Free.bind_args Free.rename_args args_il
+  let+ args_il, frees_input, binds_input, sideconditions_il =
+    Analysis.Binding.analyze_args ctx args_il
   in
+  let ctx = frees_input |> Ctx.add_frees ctx in
   let ctx = binds_input |> VEnv.bindings |> Ctx.add_vars ctx in
-  let+ args_il = Mult.bind Mult.bind_args ctx.venv args_il in
+  let+ args_il = Analysis.Multiplicity.analyze_args ctx args_il in
   let+ sideconditions_il =
-    Mult.bind (Mult.bind_prems binds_input) ctx.venv sideconditions_il
+    Analysis.Multiplicity.analyze_prems ctx binds_input sideconditions_il
   in
   (ctx, args_il, sideconditions_il)
 
 and elab_def_output_with_bind (ctx : Ctx.t) (plaintyp : plaintyp) (exp : exp) :
     Il.Ast.exp =
   let+ exp_il = elab_exp ctx plaintyp exp in
-  let+ exp_il, binds_output, _sideconditions =
-    Free.bind ctx Free.bind_exp Free.rename_exp exp_il
+  let+ exp_il, frees_output, binds_output, sideconditions_il =
+    Analysis.Binding.analyze_exp ctx exp_il
   in
-  if not (VEnv.is_empty binds_output) then
+  if
+    not
+      (IdSet.is_empty frees_output
+      && VEnv.is_empty binds_output && sideconditions_il = [])
+  then
     error exp_il.at
       (Format.asprintf "output expression has free variable(s): %s"
          (VEnv.to_string binds_output));
-  let+ exp_il = Mult.bind Mult.bind_exp ctx.venv exp_il in
+  let+ exp_il = Analysis.Multiplicity.analyze_exp ctx exp_il in
   exp_il
 
 and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
@@ -1472,6 +1488,10 @@ and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
     id.at "type arguments do not match";
   check (List.length params = List.length args) at "arguments do not match";
   let ctx_local = ctx in
+  let ctx_local =
+    let def = DefD (id, tparams, args, exp, prems) $ at in
+    Analysis.Free.free_def def |> Ctx.add_frees ctx_local
+  in
   let ctx_local = Ctx.add_tparams ctx_local tparams in
   let ctx_local, args_il, sideconditions_il =
     elab_def_input_with_bind ctx_local params args

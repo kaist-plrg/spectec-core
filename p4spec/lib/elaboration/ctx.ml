@@ -9,19 +9,11 @@ open Util.Source
 
 let error (at : region) (msg : string) = error at "elab" msg
 
-(* Global counter for unique identifiers *)
-
-let tick = ref 0
-let refresh () = tick := 0
-
-let fresh () =
-  let id = !tick in
-  tick := !tick + 1;
-  id
-
 (* Context *)
 
 type t = {
+  (* Set of free ids, for unique id insertion *)
+  frees : IdSet.t;
   (* Map of variable ids to dimensions *)
   venv : VEnv.t;
   (* Map from syntax ids to type definitions *)
@@ -38,6 +30,7 @@ type t = {
 
 let empty : t =
   {
+    frees = IdSet.empty;
     venv = VEnv.empty;
     tdenv = TDEnv.empty;
     menv = TEnv.empty;
@@ -134,6 +127,15 @@ let find_clauses (ctx : t) (fid : FId.t) : Il.Ast.clause list =
   | None -> error fid.at "undefined function"
 
 (* Adders *)
+
+(* Adders for free variables *)
+
+let add_free (ctx : t) (id : Id.t) : t =
+  let frees = IdSet.add id ctx.frees in
+  { ctx with frees }
+
+let add_frees (ctx : t) (ids : IdSet.t) : t =
+  ids |> IdSet.elements |> List.fold_left (fun ctx id -> add_free ctx id) ctx
 
 (* Adders for variables *)
 

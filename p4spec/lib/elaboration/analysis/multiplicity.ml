@@ -4,13 +4,14 @@ open Attempt
 open Envs
 open Util.Source
 
+(* Variable dimension environment *)
+
 type t = VEnv.t
 
 (* Constructors *)
 
 let empty = VEnv.empty
 let singleton id = VEnv.add id [] VEnv.empty
-let ( + ) = VEnv.union
 
 let union (occurs_a : t) (occurs_b : t) : t =
   VEnv.union
@@ -31,22 +32,6 @@ let collect_itervars (bounds : t) (occurs : t) (iter : iter) :
 (* Annotate iterated expressions with their bound identifiers,
    where iterations bind from inside to outside,
    and it is an error to have superfluous or missing iterations *)
-
-let bind (binder : t -> 'a -> ('a * t) attempt) (bounds : t) (construct : 'a) :
-    'a attempt =
-  let* construct, occurs = binder bounds construct in
-  VEnv.fold
-    (fun id iters construct ->
-      let* construct = construct in
-      let iters_expect = VEnv.find id bounds in
-      if not (Dom.Dim.equiv iters iters_expect) then
-        fail id.at
-          ("mismatched iteration dimensions for identifier " ^ Id.to_string id
-         ^ ": expected "
-          ^ Dom.Dim.to_string iters_expect
-          ^ ", got " ^ Dom.Dim.to_string iters)
-      else Ok construct)
-    occurs (Ok construct)
 
 (* Expression *)
 
@@ -286,3 +271,36 @@ and bind_prems (binds : t) (bounds : t) (prems : prem list) :
       let prems = prem :: prems in
       let occurs = union occurs_h occurs_t in
       Ok (prems, occurs)
+
+(* Analysis *)
+
+let analyze (binder : t -> 'a -> ('a * t) attempt) (bounds : t) (construct : 'a)
+    : 'a attempt =
+  let* construct, occurs = binder bounds construct in
+  VEnv.fold
+    (fun id iters construct ->
+      let* construct = construct in
+      let iters_expect = VEnv.find id bounds in
+      if not (Dom.Dim.equiv iters iters_expect) then
+        fail id.at
+          (Format.asprintf
+             "mismatched iteration dimensions for identifier `%s`: expected \
+              %s, but got %s"
+             (Id.to_string id)
+             (Dom.Dim.to_string iters_expect)
+             (Dom.Dim.to_string iters))
+      else Ok construct)
+    occurs (Ok construct)
+
+let analyze_exp (ctx : Ctx.t) (exp : exp) : exp attempt =
+  analyze bind_exp ctx.venv exp
+
+let analyze_exps (ctx : Ctx.t) (exps : exp list) : exp list attempt =
+  analyze bind_exps ctx.venv exps
+
+let analyze_args (ctx : Ctx.t) (args : arg list) : arg list attempt =
+  analyze bind_args ctx.venv args
+
+let analyze_prems (ctx : Ctx.t) (binds : VEnv.t) (prems : prem list) :
+    prem list attempt =
+  analyze (bind_prems binds) ctx.venv prems
