@@ -251,7 +251,12 @@ and bind_prem (binds : t) (bounds : t) (prem : prem) : (prem * t) attempt =
                itervars ->
           fail at
             ("cannot determine dimension of binding identifier(s) only: "
-            ^ String.concat ", " (List.map Il.Print.string_of_var itervars))
+            ^ String.concat ", " (List.map Il.Print.string_of_var itervars)
+            ^ String.concat ", "
+                (itervars |> List.map fst |> List.map Util.Source.at
+               |> List.map string_of_region)
+            ^ " "
+            ^ Il.Print.string_of_prem prem)
       | _ ->
           let prem = IterPr (prem, (iter, itervars)) $ at in
           let occurs =
@@ -300,6 +305,9 @@ let analyze_exps (ctx : Ctx.t) (exps : exp list) : exp list attempt =
 
 let analyze_args (ctx : Ctx.t) (args : arg list) : arg list attempt =
   analyze bind_args ctx.venv args
+
+let analyze_prem (ctx : Ctx.t) (binds : VEnv.t) (prem : prem) : prem attempt =
+  analyze (bind_prem binds) ctx.venv prem
 
 let analyze_prems (ctx : Ctx.t) (binds : VEnv.t) (prems : prem list) :
     prem list attempt =

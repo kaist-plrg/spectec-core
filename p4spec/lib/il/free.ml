@@ -1,5 +1,5 @@
 open Domain.Dom
-open El.Ast
+open Ast
 open Util.Source
 
 (* Identifier set *)
@@ -17,37 +17,29 @@ let ( + ) = IdSet.union
 let rec free_exp (exp : exp) : t =
   match exp.it with
   | BoolE _ | NumE _ | TextE _ -> empty
-  | VarE (id, _) -> singleton id
-  | UnE (_, exp) -> free_exp exp
-  | BinE (exp_l, _, exp_r) -> free_exp exp_l + free_exp exp_r
-  | CmpE (exp_l, _, exp_r) -> free_exp exp_l + free_exp exp_r
-  | ArithE exp -> free_exp exp
-  | EpsE -> empty
+  | VarE id -> singleton id
+  | UnE (_, _, exp) -> free_exp exp
+  | BinE (_, _, exp_l, exp_r) -> free_exp exp_l + free_exp exp_r
+  | CmpE (_, _, exp_l, exp_r) -> free_exp exp_l + free_exp exp_r
+  | TupleE exps -> free_exps exps
+  | CaseE (_, exps) -> free_exps exps
+  | OptE (Some exp) -> free_exp exp
+  | OptE None -> empty
+  | StrE expfields -> expfields |> List.map snd |> free_exps
+  | DotE (exp, _) -> free_exp exp
   | ListE exps -> free_exps exps
   | ConsE (exp_h, exp_t) -> free_exp exp_h + free_exp exp_t
   | CatE (exp_l, exp_r) -> free_exp exp_l + free_exp exp_r
+  | MemE (exp_e, exp_s) -> free_exp exp_e + free_exp exp_s
+  | LenE exp -> free_exp exp
   | IdxE (exp_b, exp_i) -> free_exp exp_b + free_exp exp_i
   | SliceE (exp_b, exp_l, exp_h) ->
       free_exp exp_b + free_exp exp_l + free_exp exp_h
-  | LenE exp -> free_exp exp
-  | MemE (exp_e, exp_s) -> free_exp exp_e + free_exp exp_s
-  | StrE expfields -> expfields |> List.map snd |> free_exps
-  | DotE (exp, _) -> free_exp exp
   | UpdE (exp_b, path, exp_f) ->
       free_exp exp_b + free_path path + free_exp exp_f
-  | ParenE exp -> free_exp exp
-  | TupleE exps -> free_exps exps
   | CallE (_, _, args) -> free_args args
   | IterE (exp, _) -> free_exp exp
-  | TypE (exp, _) -> free_exp exp
-  | AtomE _ -> empty
-  | SeqE exps -> free_exps exps
-  | InfixE (exp_l, _, exp_r) -> free_exp exp_l + free_exp exp_r
-  | BrackE (_, exp, _) -> free_exp exp
-  | HoleE _ -> empty
-  | FuseE (exp_l, exp_r) -> free_exp exp_l + free_exp exp_r
-  | UnparenE exp -> free_exp exp
-  | LatexE _ -> empty
+  | CastE (exp, _) -> free_exp exp
 
 and free_exps (exps : exp list) : t =
   exps |> List.map free_exp |> List.fold_left ( + ) empty
@@ -74,9 +66,9 @@ and free_args (args : arg list) : t =
 
 let rec free_prem (prem : prem) : t =
   match prem.it with
-  | VarPr (id, _) -> singleton id
-  | RulePr (_, exp) -> free_exp exp
+  | RulePr (_, (_, exps)) -> free_exps exps
   | IfPr exp -> free_exp exp
+  | LetPr (exp_l, exp_r) -> free_exp exp_l + free_exp exp_r
   | ElsePr -> empty
   | IterPr (prem, _) -> free_prem prem
 
@@ -85,9 +77,22 @@ and free_prems (prems : prem list) : t =
 
 (* Definitions *)
 
+let free_rule (rule : rule) : t =
+  let _, (_, exps), prems = rule.it in
+  free_exps exps + free_prems prems
+
+let free_rules (rules : rule list) : t =
+  rules |> List.map free_rule |> List.fold_left ( + ) empty
+
+let free_clause (clause : clause) : t =
+  let args, exp, prems = clause.it in
+  free_args args + free_exp exp + free_prems prems
+
+let free_clauses (clauses : clause list) : t =
+  clauses |> List.map free_clause |> List.fold_left ( + ) empty
+
 let free_def (def : def) : t =
   match def.it with
-  | RuleD (_, _, exp, prems) -> free_exp exp + free_prems prems
-  | DefD (_, _, args, exp, prems) ->
-      free_args args + free_exp exp + free_prems prems
+  | RelD (_, _, _, rules) -> free_rules rules
+  | DecD (_, _, _, _, clauses) -> free_clauses clauses
   | _ -> empty

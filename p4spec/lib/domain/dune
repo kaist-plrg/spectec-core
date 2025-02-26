@@ -1,4 +1,4 @@
 (library
  (name domain)
- (libraries util el)
+ (libraries util)
  (modules dom))

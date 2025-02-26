@@ -26,6 +26,7 @@ module IdMap = struct
   type 'v to_string_v = 'v -> string
 
   let keys m = List.map fst (bindings m)
+  let dom m = m |> keys |> IdSet.of_list
   let values m = List.map snd (bindings m)
 
   let to_string ?(with_braces = true) ?(bind = " : ")

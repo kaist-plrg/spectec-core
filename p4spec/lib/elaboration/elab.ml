@@ -29,11 +29,6 @@ let todo (at : region) (func : string) (msg : string) =
 
 (* Parentheses handling *)
 
-let rec unparen_plaintyp (plaintyp : plaintyp) : plaintyp =
-  match plaintyp.it with
-  | ParenT plaintyp -> unparen_plaintyp plaintyp
-  | _ -> plaintyp
-
 let rec unparen_exp (exp : exp) : exp =
   match exp.it with ParenE exp -> unparen_exp exp | _ -> exp
 
@@ -1169,12 +1164,15 @@ and elab_prem_with_bind (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.Ast.prem list =
   match prem_il_opt with
   | Some prem_il ->
       let+ prem_il, frees, binds, sideconditions_il =
-        Analysis.Binding.analyze_prem ctx prem_il
+        Analysis.Analyze.analyze_prem ctx prem_il
       in
       let ctx = frees |> Ctx.add_frees ctx in
       let ctx = binds |> VEnv.bindings |> Ctx.add_vars ctx in
+      let+ prem_il = Analysis.Multiplicity.analyze_prem ctx binds prem_il in
+      let+ sideconditions_il =
+        Analysis.Multiplicity.analyze_prems ctx VEnv.empty sideconditions_il
+      in
       let prems_il = prem_il :: sideconditions_il in
-      let+ prems_il = Analysis.Multiplicity.analyze_prems ctx binds prems_il in
       (ctx, prems_il)
   | None -> (ctx, [])
 
@@ -1359,7 +1357,7 @@ and elab_rel_def (ctx : Ctx.t) (at : region) (id : id) (nottyp : nottyp)
   let nottyp_il = elab_nottyp ctx (NotationT nottyp) in
   let inputs = fetch_rel_input_hint at nottyp_il hints in
   let ctx = Ctx.add_rel ctx id nottyp inputs in
-  let def_il = Il.Ast.RelD (id, nottyp_il, []) $ at in
+  let def_il = Il.Ast.RelD (id, nottyp_il, inputs, []) $ at in
   (ctx, def_il)
 
 (* Elaboration of rule definitions *)
@@ -1368,14 +1366,14 @@ and elab_rule_input_with_bind (ctx : Ctx.t) (exps_il : (int * Il.Ast.exp) list)
     : Ctx.t * (int * Il.Ast.exp) list * Il.Ast.prem list =
   let idxs, exps_il = List.split exps_il in
   let+ exps_il, frees_input, binds_input, sideconditions_il =
-    Analysis.Binding.analyze_exps ctx exps_il
+    Analysis.Analyze.analyze_exps ~expect_bind:true ctx exps_il
   in
   let ctx = frees_input |> Ctx.add_frees ctx in
   let ctx = binds_input |> VEnv.bindings |> Ctx.add_vars ctx in
   let+ exps_il = Analysis.Multiplicity.analyze_exps ctx exps_il in
   let exps_il = List.combine idxs exps_il in
   let+ sideconditions_il =
-    Analysis.Multiplicity.analyze_prems ctx binds_input sideconditions_il
+    Analysis.Multiplicity.analyze_prems ctx VEnv.empty sideconditions_il
   in
   (ctx, exps_il, sideconditions_il)
 
@@ -1383,7 +1381,7 @@ and elab_rule_output_with_bind (ctx : Ctx.t) (at : region)
     (exps_il : (int * Il.Ast.exp) list) : (int * Il.Ast.exp) list =
   let idxs, exps_il = List.split exps_il in
   let+ exps_il, frees_output, binds_output, sideconditions_il =
-    Analysis.Binding.analyze_exps ctx exps_il
+    Analysis.Analyze.analyze_exps ~expect_bind:false ctx exps_il
   in
   if
     not
@@ -1402,7 +1400,7 @@ and elab_rule_def (ctx : Ctx.t) (at : region) (id_rel : id) (id_rule : id)
   let ctx_local = ctx in
   let ctx_local =
     let def = RuleD (id_rel, id_rule, exp, prems) $ at in
-    Analysis.Free.free_def def |> Ctx.add_frees ctx_local
+    El.Free.free_def def |> Ctx.add_frees ctx_local
   in
   let+ notexp_il = elab_exp_not ctx_local (NotationT nottyp) exp in
   let mixop, exps_il = notexp_il in
@@ -1451,7 +1449,7 @@ and elab_def_input_with_bind (ctx : Ctx.t) (params : param list)
     (args : arg list) : Ctx.t * Il.Ast.arg list * Il.Ast.prem list =
   let args_il = List.map2 (elab_arg ~as_def:true ctx) params args in
   let+ args_il, frees_input, binds_input, sideconditions_il =
-    Analysis.Binding.analyze_args ctx args_il
+    Analysis.Analyze.analyze_args ~expect_bind:true ctx args_il
   in
   let ctx = frees_input |> Ctx.add_frees ctx in
   let ctx = binds_input |> VEnv.bindings |> Ctx.add_vars ctx in
@@ -1465,7 +1463,7 @@ and elab_def_output_with_bind (ctx : Ctx.t) (plaintyp : plaintyp) (exp : exp) :
     Il.Ast.exp =
   let+ exp_il = elab_exp ctx plaintyp exp in
   let+ exp_il, frees_output, binds_output, sideconditions_il =
-    Analysis.Binding.analyze_exp ctx exp_il
+    Analysis.Analyze.analyze_exp ~expect_bind:false ctx exp_il
   in
   if
     not
@@ -1490,7 +1488,7 @@ and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
   let ctx_local = ctx in
   let ctx_local =
     let def = DefD (id, tparams, args, exp, prems) $ at in
-    Analysis.Free.free_def def |> Ctx.add_frees ctx_local
+    El.Free.free_def def |> Ctx.add_frees ctx_local
   in
   let ctx_local = Ctx.add_tparams ctx_local tparams in
   let ctx_local, args_il, sideconditions_il =
@@ -1508,9 +1506,9 @@ and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
 
 let populate_rule (ctx : Ctx.t) (def_il : Il.Ast.def) : Il.Ast.def =
   match def_il.it with
-  | Il.Ast.RelD (id, nottyp_il, []) ->
+  | Il.Ast.RelD (id, nottyp_il, inputs, []) ->
       let rules_il = Ctx.find_rules ctx id in
-      Il.Ast.RelD (id, nottyp_il, rules_il) $ def_il.at
+      Il.Ast.RelD (id, nottyp_il, inputs, rules_il) $ def_il.at
   | Il.Ast.RelD _ -> error def_il.at "relation was already populated"
   | _ -> def_il
 

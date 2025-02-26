@@ -1,4 +1,4 @@
 (library
  (name el)
- (libraries zarith util xl)
- (modules ast print))
+ (libraries zarith util xl domain)
+ (modules ast print free))

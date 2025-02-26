@@ -162,8 +162,8 @@ type def = def' phrase
 and def' =
   (* `syntax` id `<` list(tparam, `,`) `>` `=` deftyp *)
   | TypD of id * tparam list * deftyp
-  (* `relation` id `:` nottyp rule* *)
-  | RelD of id * nottyp * rule list
+  (* `relation` id `:` nottyp `hint(input` `%`int* `)` rule* *)
+  | RelD of id * nottyp * int list * rule list
   (* `dec` id `<` list(tparam, `,`) `>` list(param, `,`) `:` typ clause* *)
   | DecD of id * tparam list * param list * typ * clause list
   (* `rec` `{` def* `}` *)

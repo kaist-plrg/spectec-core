@@ -118,8 +118,8 @@ def $subst_funcdef(theta, PolyFD (tparam*, tparam_hidden*) -> ft) = PolyFD (tpar
 ;;
 
 def $subst_functyp(theta, BuiltinMethodT paramtyp* typ) = BuiltinMethodT paramtyp'* ($subst_typ(theta, typ))
-  -- if (id dir typ val?)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+  -- if (id dir typ_p val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ_p)) val?)*
 
 def $subst_functyp(theta, ActionT paramtyp*) = ActionT paramtyp'*
   -- if (id dir typ val?)* = paramtyp*
@@ -136,28 +136,28 @@ def $subst_functyp(theta, ControlApplyMethodT paramtyp*) = ControlApplyMethodT p
 def $subst_functyp(theta, TableApplyMethodT typ) = TableApplyMethodT ($subst_typ(theta, typ))
 
 def $subst_functyp(theta, ExternFuncT paramtyp* typ) = ExternFuncT paramtyp'* ($subst_typ(theta, typ))
-  -- if (id dir typ val?)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+  -- if (id dir typ_p val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ_p)) val?)*
 
 def $subst_functyp(theta, FuncT paramtyp* typ) = FuncT paramtyp'* ($subst_typ(theta, typ))
-  -- if (id dir typ val?)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+  -- if (id dir typ_p val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ_p)) val?)*
 
 def $subst_functyp(theta, ExternMethodT paramtyp* typ) = ExternMethodT paramtyp'* ($subst_typ(theta, typ))
-  -- if (id dir typ val?)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+  -- if (id dir typ_p val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ_p)) val?)*
 
 def $subst_functyp(theta, ExternAbstractMethodT paramtyp* typ) = ExternAbstractMethodT paramtyp'* ($subst_typ(theta, typ))
-  -- if (id dir typ val?)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+  -- if (id dir typ_p val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ_p)) val?)*
 
 ;;
 ;; Constructor type substitutions
 ;;
 
 def $subst_constyp(theta, ConsT paramtyp* typ) = ConsT paramtyp'* typ'
-  -- if (id dir typ val?)* = paramtyp*
-  -- if paramtyp'* = (id dir ($subst_typ(theta, typ)) val?)*
+  -- if (id dir typ_p val?)* = paramtyp*
+  -- if paramtyp'* = (id dir ($subst_typ(theta, typ_p)) val?)*
   ----
   -- if typ' = $subst_typ(theta, typ)
 
