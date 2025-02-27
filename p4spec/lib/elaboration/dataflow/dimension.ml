@@ -1,8 +1,16 @@
 open Domain.Lib
 open Il.Ast
-open Attempt
+open Error
 open Envs
 open Util.Source
+
+(* Dimension analysis :
+
+   Annotate iteration constructs with what variables are iterated over
+    - Check that iteration is non-empty
+    - Check that the dimension of binding variables are not ambiguous,
+      i.e., guided by at least one bound iteration variable
+    - Check that the dimension of binding variables is coherent *)
 
 (* Constructors *)
 
@@ -24,10 +32,6 @@ let collect_itervars (bounds : VEnv.t) (occurs : VEnv.t) (iter : iter) :
          let iters = iters @ [ iter ] in
          let iters_expect = VEnv.find id bounds in
          if Dom.Dim.sub iters iters_expect then Some var else None)
-
-(* Annotate iterated expressions with their bound identifiers,
-   where iterations bind from inside to outside,
-   and it is an error to have superfluous or missing iterations *)
 
 (* Expression *)
 
@@ -293,18 +297,22 @@ let analyze (annotate : VEnv.t -> 'a -> VEnv.t * 'a) (bounds : VEnv.t)
     occurs;
   construct
 
-let analyze_exp (ctx : Ctx.t) (exp : exp) : exp =
-  analyze annotate_exp ctx.venv exp
+let analyze_exp (bounds : VEnv.t) (exp : exp) : exp =
+  analyze annotate_exp bounds exp
 
-let analyze_exps (ctx : Ctx.t) (exps : exp list) : exp list =
-  analyze annotate_exps ctx.venv exps
+let analyze_exps (bounds : VEnv.t) (exps : exp list) : exp list =
+  analyze annotate_exps bounds exps
 
-let analyze_args (ctx : Ctx.t) (args : arg list) : arg list =
-  analyze annotate_args ctx.venv args
+let analyze_args (bounds : VEnv.t) (args : arg list) : arg list =
+  analyze annotate_args bounds args
 
-let analyze_prem (ctx : Ctx.t) (binds : VEnv.t) (prem : prem) : prem =
-  analyze (annotate_prem binds) ctx.venv prem
+let analyze_prem (binds : VEnv.t) (bounds : VEnv.t) (prem : prem) : prem =
+  analyze (annotate_prem binds) bounds prem
 
-let analyze_prems (ctx : Ctx.t) (binds : VEnv.t) (prems : prem list) : prem list
-    =
-  analyze (annotate_prems binds) ctx.venv prems
+let analyze_prems (binds : VEnv.t) (bounds : VEnv.t) (prems : prem list) :
+    prem list =
+  analyze (annotate_prems binds) bounds prems
+
+let analyze_sideconditions (bounds : VEnv.t) (sideconditions : prem list) :
+    prem list =
+  analyze (annotate_prems VEnv.empty) bounds sideconditions

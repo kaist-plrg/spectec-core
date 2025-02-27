@@ -2,6 +2,7 @@ open Xl
 open El.Ast
 open Dom
 open Attempt
+open Error
 open Util.Source
 
 (* Checks *)

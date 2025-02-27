@@ -1,6 +1,8 @@
 open Domain.Lib
 open Envs
 
+(* Context for dataflow analysis *)
+
 type t = {
   (* Input hints for rules *)
   hints : Hint.HEnv.t;
@@ -17,6 +19,13 @@ let init (ctx : Ctx.t) : t =
   let frees = ctx.frees in
   let bounds = ctx.venv in
   { hints; frees; bounds }
+
+(* Promoter *)
+
+let promote (ctx : Ctx.t) (dctx : t) (venv : VEnv.t) : Ctx.t =
+  let frees = dctx.frees in
+  let venv = VEnv.union (fun _ -> assert false) ctx.venv venv in
+  { ctx with frees; venv }
 
 (* Adders *)
 

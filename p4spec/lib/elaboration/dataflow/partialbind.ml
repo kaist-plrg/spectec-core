@@ -1,6 +1,6 @@
 open Domain.Lib
 open Il.Ast
-open Attempt
+open Error
 module DCtx = Dctx
 open Util.Source
 

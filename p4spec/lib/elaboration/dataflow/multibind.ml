@@ -1,8 +1,7 @@
 open Domain.Lib
 open Il.Ast
-open Attempt
+open Error
 module DCtx = Dctx
-open Bind
 open Util.Source
 
 (* Renames for an identifier *)
@@ -18,17 +17,17 @@ end
 module REnv = struct
   include MakeIdEnv (Ids)
 
-  let init (benv : BEnv.t) : t =
-    BEnv.fold
+  let init (benv : Bind.BEnv.t) : t =
+    Bind.BEnv.fold
       (fun id bind renv ->
         match bind with
-        | Bind.Multi _ -> add id Ids.empty renv
-        | Bind.Single _ -> renv)
+        | Bind.Occ.Multi _ -> add id Ids.empty renv
+        | Bind.Occ.Single _ -> renv)
       benv empty
 
-  let gen_sidecondition (benv : BEnv.t) (id : Id.t) (ids_rename : Ids.t) : prem
-      =
-    let typ = BEnv.find id benv |> Bind.get_typ in
+  let gen_sidecondition (benv : Bind.BEnv.t) (id : Id.t) (ids_rename : Ids.t) :
+      prem =
+    let typ = Bind.BEnv.find id benv |> Bind.Occ.get_typ in
     let id_rename, ids_rename =
       ids_rename |> IdSet.elements |> fun ids -> (List.hd ids, List.tl ids)
     in
@@ -49,12 +48,12 @@ module REnv = struct
         exp ids_rename
     in
     let sidecondition = IfPr exp $ no_region in
-    let iters = BEnv.find id benv |> Bind.get_dim in
+    let iters = Bind.BEnv.find id benv |> Bind.Occ.get_dim in
     List.fold_left
       (fun sidecondition iter -> IterPr (sidecondition, (iter, [])) $ no_region)
       sidecondition iters
 
-  let gen_sideconditions (benv : BEnv.t) (renv : t) : prem list =
+  let gen_sideconditions (benv : Bind.BEnv.t) (renv : t) : prem list =
     let renv = mapi Ids.remove renv in
     fold
       (fun id ids_rename sideconditions ->

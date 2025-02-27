@@ -1,5 +1,5 @@
 open El.Ast
-open Attempt
+open Error
 open Envs
 open Util.Source
 

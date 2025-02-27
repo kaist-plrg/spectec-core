@@ -1,10 +1,21 @@
 open Domain.Lib
 open Il.Ast
-open Attempt
+open Error
 module DCtx = Dctx
 open Bind
 open Envs
 open Util.Source
+
+(* Binding analysis :
+
+   1. Collect all binding occurrences of variables in IL construct
+      - Check that all binding occurrences reside in invertible constructs
+   2. Rename parallel binding occurrences
+      - e.g., -- let (int, int) = ... becomes
+                -- let (int, int') = ..., -- if int = int'
+   3. Desugar partial bindings
+      - e.g., -- let (int, 1 + 2) = ... becomes
+              -- let (int, int') = ..., -- if int' = 1 + 2 *)
 
 let update_venv_multi (venv : VEnv.t) (renv_multi : Multibind.REnv.t) : VEnv.t =
   Multibind.REnv.fold
@@ -26,7 +37,7 @@ let update_venv_partial (venv : VEnv.t) (renv_partial : Partialbind.REnv.t) :
 
 let analyze_exps_as_bind (dctx : DCtx.t) (exps : exp list) :
     DCtx.t * VEnv.t * exp list * prem list =
-  let binds = collect_exps dctx exps in
+  let binds = Collectbind.collect_exps dctx exps in
   let venv = BEnv.flatten binds in
   let dctx, renv_multi, exps =
     let renv_multi = Multibind.REnv.init binds in
@@ -47,7 +58,7 @@ let analyze_exps_as_bind (dctx : DCtx.t) (exps : exp list) :
   (dctx, venv, exps, sideconditions)
 
 let analyze_exp_as_bound (dctx : DCtx.t) (exp : exp) : unit =
-  let binds = collect_exp dctx exp in
+  let binds = Collectbind.collect_exp dctx exp in
   if not (BEnv.is_empty binds) then
     error exp.at
       (Format.asprintf "expression has free variable(s): %s"
@@ -60,7 +71,7 @@ let analyze_exps_as_bound (dctx : DCtx.t) (exps : exp list) : unit =
 
 let analyze_args_as_bind (dctx : DCtx.t) (args : arg list) :
     DCtx.t * VEnv.t * arg list * prem list =
-  let binds = collect_args dctx args in
+  let binds = Collectbind.collect_args dctx args in
   let venv = BEnv.flatten binds in
   let dctx, renv_multi, args =
     let renv_multi = Multibind.REnv.init binds in
@@ -119,8 +130,8 @@ and analyze_rule_prem (dctx : DCtx.t) (at : region) (id : id) (notexp : notexp)
 and analyze_if_eq_prem (dctx : DCtx.t) (at : region) (note : typ')
     (optyp : optyp) (exp_l : exp) (exp_r : exp) :
     DCtx.t * VEnv.t * prem' * prem list =
-  let binds_l = collect_exp dctx exp_l in
-  let binds_r = collect_exp dctx exp_r in
+  let binds_l = Collectbind.collect_exp dctx exp_l in
+  let binds_r = Collectbind.collect_exp dctx exp_r in
   match (BEnv.is_empty binds_l, BEnv.is_empty binds_r) with
   | true, true ->
       let prem = IfPr (CmpE (`EqOp, optyp, exp_l, exp_r) $$ (at, note)) in
