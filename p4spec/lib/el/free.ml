@@ -1,4 +1,4 @@
-open Domain.Dom
+open Domain.Lib
 open Ast
 open Util.Source
 

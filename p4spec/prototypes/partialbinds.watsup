@@ -1,0 +1,5 @@
+dec $foo(int) : (int, int)
+
+dec $bar(int) : int
+def $bar(int_a) = int_c
+  -- if (int_a, int_c) = $foo(int_a)

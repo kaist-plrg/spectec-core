@@ -1,8 +1,6 @@
-open Domain.Dom
 open Xl
 open El.Ast
 open Dom
-open Envs
 open Attempt
 open Util.Source
 
@@ -1163,14 +1161,8 @@ and elab_prem_with_bind (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.Ast.prem list =
   let ctx, prem_il_opt = elab_prem ctx prem in
   match prem_il_opt with
   | Some prem_il ->
-      let+ prem_il, frees, binds, sideconditions_il =
-        Analysis.Analyze.analyze_prem ctx prem_il
-      in
-      let ctx = frees |> Ctx.add_frees ctx in
-      let ctx = binds |> VEnv.bindings |> Ctx.add_vars ctx in
-      let+ prem_il = Analysis.Multiplicity.analyze_prem ctx binds prem_il in
-      let+ sideconditions_il =
-        Analysis.Multiplicity.analyze_prems ctx VEnv.empty sideconditions_il
+      let ctx, prem_il, sideconditions_il =
+        Dataflow.Analysis.analyze_prem ctx prem_il
       in
       let prems_il = prem_il :: sideconditions_il in
       (ctx, prems_il)
@@ -1365,33 +1357,16 @@ and elab_rel_def (ctx : Ctx.t) (at : region) (id : id) (nottyp : nottyp)
 and elab_rule_input_with_bind (ctx : Ctx.t) (exps_il : (int * Il.Ast.exp) list)
     : Ctx.t * (int * Il.Ast.exp) list * Il.Ast.prem list =
   let idxs, exps_il = List.split exps_il in
-  let+ exps_il, frees_input, binds_input, sideconditions_il =
-    Analysis.Analyze.analyze_exps ~expect_bind:true ctx exps_il
+  let ctx, exps_il, sideconditions_il =
+    Dataflow.Analysis.analyze_exps_as_bind ctx exps_il
   in
-  let ctx = frees_input |> Ctx.add_frees ctx in
-  let ctx = binds_input |> VEnv.bindings |> Ctx.add_vars ctx in
-  let+ exps_il = Analysis.Multiplicity.analyze_exps ctx exps_il in
   let exps_il = List.combine idxs exps_il in
-  let+ sideconditions_il =
-    Analysis.Multiplicity.analyze_prems ctx VEnv.empty sideconditions_il
-  in
   (ctx, exps_il, sideconditions_il)
 
-and elab_rule_output_with_bind (ctx : Ctx.t) (at : region)
-    (exps_il : (int * Il.Ast.exp) list) : (int * Il.Ast.exp) list =
+and elab_rule_output_with_bind (ctx : Ctx.t) (exps_il : (int * Il.Ast.exp) list)
+    : (int * Il.Ast.exp) list =
   let idxs, exps_il = List.split exps_il in
-  let+ exps_il, frees_output, binds_output, sideconditions_il =
-    Analysis.Analyze.analyze_exps ~expect_bind:false ctx exps_il
-  in
-  if
-    not
-      (IdSet.is_empty frees_output
-      && VEnv.is_empty binds_output && sideconditions_il = [])
-  then
-    error at
-      (Format.asprintf "rule output has free variable(s): %s"
-         (VEnv.to_string binds_output));
-  let+ exps_il = Analysis.Multiplicity.analyze_exps ctx exps_il in
+  let exps_il = Dataflow.Analysis.analyze_exps_as_bound ctx exps_il in
   List.combine idxs exps_il
 
 and elab_rule_def (ctx : Ctx.t) (at : region) (id_rel : id) (id_rule : id)
@@ -1414,9 +1389,7 @@ and elab_rule_def (ctx : Ctx.t) (at : region) (id_rel : id) (id_rule : id)
   in
   let ctx_local, prems_il = elab_prems_with_bind ctx_local prems in
   let prems_il = sideconditions_il @ prems_il in
-  let exps_il_output =
-    elab_rule_output_with_bind ctx_local exp.at exps_il_output
-  in
+  let exps_il_output = elab_rule_output_with_bind ctx_local exps_il_output in
   let notexp_il =
     let exps_il =
       exps_il_input @ exps_il_output
@@ -1448,32 +1421,15 @@ and elab_dec_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
 and elab_def_input_with_bind (ctx : Ctx.t) (params : param list)
     (args : arg list) : Ctx.t * Il.Ast.arg list * Il.Ast.prem list =
   let args_il = List.map2 (elab_arg ~as_def:true ctx) params args in
-  let+ args_il, frees_input, binds_input, sideconditions_il =
-    Analysis.Analyze.analyze_args ~expect_bind:true ctx args_il
-  in
-  let ctx = frees_input |> Ctx.add_frees ctx in
-  let ctx = binds_input |> VEnv.bindings |> Ctx.add_vars ctx in
-  let+ args_il = Analysis.Multiplicity.analyze_args ctx args_il in
-  let+ sideconditions_il =
-    Analysis.Multiplicity.analyze_prems ctx binds_input sideconditions_il
+  let ctx, args_il, sideconditions_il =
+    Dataflow.Analysis.analyze_args_as_bind ctx args_il
   in
   (ctx, args_il, sideconditions_il)
 
 and elab_def_output_with_bind (ctx : Ctx.t) (plaintyp : plaintyp) (exp : exp) :
     Il.Ast.exp =
   let+ exp_il = elab_exp ctx plaintyp exp in
-  let+ exp_il, frees_output, binds_output, sideconditions_il =
-    Analysis.Analyze.analyze_exp ~expect_bind:false ctx exp_il
-  in
-  if
-    not
-      (IdSet.is_empty frees_output
-      && VEnv.is_empty binds_output && sideconditions_il = [])
-  then
-    error exp_il.at
-      (Format.asprintf "output expression has free variable(s): %s"
-         (VEnv.to_string binds_output));
-  let+ exp_il = Analysis.Multiplicity.analyze_exp ctx exp_il in
+  let exp_il = Dataflow.Analysis.analyze_exp_as_bound ctx exp_il in
   exp_il
 
 and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
