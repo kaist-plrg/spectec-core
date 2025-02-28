@@ -1,7 +1,7 @@
 open Domain.Lib
 open Xl
 open El.Ast
-open Dom
+open Runtime_static
 open Attempt
 open Error
 open Util.Source
@@ -215,7 +215,7 @@ and elab_plaintyp' (ctx : Ctx.t) (plaintyp : plaintyp') : Il.Ast.typ' =
   | TextT -> Il.Ast.TextT
   | VarT (tid, targs) ->
       let td = Ctx.find_typdef ctx tid in
-      let tparams = TypeDef.get_tparams td in
+      let tparams = Typdef.get_tparams td in
       check
         (List.length tparams = List.length targs)
         tid.at "type arguments do not match";
@@ -272,7 +272,7 @@ and elab_nottyp (ctx : Ctx.t) (typ : typ) : Il.Ast.nottyp =
 (* Elaboration of definition types *)
 
 and elab_deftyp (ctx : Ctx.t) (tparams : tparam list) (deftyp : deftyp) :
-    TypeDef.t * Il.Ast.deftyp =
+    Typdef.t * Il.Ast.deftyp =
   match deftyp.it with
   | PlainTD plaintyp -> elab_typ_def_plain ctx tparams plaintyp
   | StructTD typfields -> elab_typ_def_struct ctx deftyp.at tparams typfields
@@ -281,10 +281,10 @@ and elab_deftyp (ctx : Ctx.t) (tparams : tparam list) (deftyp : deftyp) :
 (* Elaboration of plain type definitions *)
 
 and elab_typ_def_plain (ctx : Ctx.t) (tparams : tparam list)
-    (plaintyp : plaintyp) : TypeDef.t * Il.Ast.deftyp =
+    (plaintyp : plaintyp) : Typdef.t * Il.Ast.deftyp =
   let typ_il = elab_plaintyp ctx plaintyp in
   let deftyp_il = Il.Ast.PlainT typ_il $ plaintyp.at in
-  let td = TypeDef.Defined (tparams, `Plain plaintyp) in
+  let td = Typdef.Defined (tparams, `Plain plaintyp) in
   (td, deftyp_il)
 
 (* Elaboration of struct type definitions *)
@@ -295,10 +295,10 @@ and elab_typfield (ctx : Ctx.t) (typfield : typfield) : Il.Ast.typfield =
   (atom, typ_il)
 
 and elab_typ_def_struct (ctx : Ctx.t) (at : region) (tparams : tparam list)
-    (typfields : typfield list) : TypeDef.t * Il.Ast.deftyp =
+    (typfields : typfield list) : Typdef.t * Il.Ast.deftyp =
   let typfields_il = List.map (elab_typfield ctx) typfields in
   let deftyp_il = Il.Ast.StructT typfields_il $ at in
-  let td = TypeDef.Defined (tparams, `Struct typfields) in
+  let td = Typdef.Defined (tparams, `Struct typfields) in
   (td, deftyp_il)
 
 (* Elaboration of variant type definitions *)
@@ -319,13 +319,13 @@ and elab_typcase (ctx : Ctx.t) (nottyp : nottyp) : Il.Ast.typcase =
   elab_nottyp ctx (NotationT nottyp)
 
 and elab_typ_def_variant (ctx : Ctx.t) (at : region) (tparams : tparam list)
-    (typcases : typcase list) : TypeDef.t * Il.Ast.deftyp =
+    (typcases : typcase list) : Typdef.t * Il.Ast.deftyp =
   let nottyps = List.concat_map (expand_typcase ctx) typcases in
   let typcases_il = List.map (elab_typcase ctx) nottyps in
   let mixops = typcases_il |> List.map it |> List.map fst in
   check (distinct Mixop.eq mixops) at "variant cases are ambiguous";
   let deftyp_il = Il.Ast.VariantT typcases_il $ at in
-  let td = TypeDef.Defined (tparams, `Variant nottyps) in
+  let td = Typdef.Defined (tparams, `Variant nottyps) in
   (td, deftyp_il)
 
 (* Expressions *)
@@ -1307,7 +1307,7 @@ and elab_syn_def (ctx : Ctx.t) (syns : (id * tparam list) list) : Ctx.t =
         (List.map it tparams |> distinct ( = ))
         id.at "type parameters are not distinct";
       check (valid_tid id) id.at "invalid type identifier";
-      let td = TypeDef.Defining tparams in
+      let td = Typdef.Defining tparams in
       let ctx = Ctx.add_typdef ctx id td in
       if tparams = [] then
         let plaintyp = VarT (id, []) $ id.at in
@@ -1322,7 +1322,7 @@ and elab_typ_def (ctx : Ctx.t) (id : id) (tparams : tparam list)
   let td_opt = Ctx.find_typdef_opt ctx id in
   let ctx =
     match td_opt with
-    | Some (TypeDef.Defining tparams_defining) ->
+    | Some (Typdef.Defining tparams_defining) ->
         let tparams = List.map it tparams in
         let tparams_defining = List.map it tparams_defining in
         check
@@ -1332,7 +1332,7 @@ and elab_typ_def (ctx : Ctx.t) (id : id) (tparams : tparam list)
         ctx
     | None ->
         check (valid_tid id) id.at "invalid type identifier";
-        let td = TypeDef.Defining tparams in
+        let td = Typdef.Defining tparams in
         let ctx = Ctx.add_typdef ctx id td in
         if tparams = [] then
           let plaintyp = VarT (id, []) $ id.at in

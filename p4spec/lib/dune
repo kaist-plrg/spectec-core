@@ -6,4 +6,5 @@
   (re_export el)
   (re_export frontend)
   (re_export il)
+  (re_export runtime_static)
   (re_export elaboration)))

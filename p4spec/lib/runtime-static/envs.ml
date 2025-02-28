@@ -1,5 +1,4 @@
 open Domain.Lib
-open Dom
 
 (* Environments *)
 
@@ -13,14 +12,15 @@ end
 
 (* Type environment *)
 
-module TEnv = MakeIdEnv (Type)
+module TEnv = MakeIdEnv (Typ)
 
 (* Type definition environment *)
 
-module TDEnv = MakeTIdEnv (TypeDef)
+module TDEnv = MakeTIdEnv (Typdef)
 
 (* Relation environment *)
 
+module HEnv = MakeIdEnv (Rel.Hint)
 module REnv = MakeRIdEnv (Rel)
 
 (* Definition environment *)

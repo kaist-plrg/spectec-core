@@ -1,6 +1,6 @@
 open Domain.Lib
 open El.Ast
-open Dom
+open Runtime_static
 open Envs
 open Util.Error
 open Util.Source
@@ -56,10 +56,10 @@ let bound_var (ctx : t) (id : Id.t) : bool = VEnv.mem id ctx.venv
 
 (* Finders for type definitions *)
 
-let find_typdef_opt (ctx : t) (tid : TId.t) : TypeDef.t option =
+let find_typdef_opt (ctx : t) (tid : TId.t) : Typdef.t option =
   TDEnv.find_opt tid ctx.tdenv
 
-let find_typdef (ctx : t) (tid : TId.t) : TypeDef.t =
+let find_typdef (ctx : t) (tid : TId.t) : Typdef.t =
   match find_typdef_opt ctx tid with
   | Some td -> td
   | None -> error tid.at "undefined type"
@@ -69,10 +69,10 @@ let bound_typdef (ctx : t) (tid : TId.t) : bool =
 
 (* Finders for meta-variables *)
 
-let find_metavar_opt (ctx : t) (tid : TId.t) : Type.t option =
+let find_metavar_opt (ctx : t) (tid : TId.t) : Typ.t option =
   TDEnv.find_opt tid ctx.menv
 
-let find_metavar (ctx : t) (tid : TId.t) : Type.t =
+let find_metavar (ctx : t) (tid : TId.t) : Typ.t =
   match find_metavar_opt ctx tid with
   | Some typ -> typ
   | None -> error tid.at "undefined meta-variable"
@@ -150,14 +150,14 @@ let add_vars (ctx : t) (ids : (Id.t * Dim.t) list) : t =
 
 (* Adders for meta-variables *)
 
-let add_metavar (ctx : t) (tid : TId.t) (typ : Type.t) : t =
+let add_metavar (ctx : t) (tid : TId.t) (typ : Typ.t) : t =
   if bound_metavar ctx tid then error tid.at "type already defined";
   let menv = TEnv.add tid typ ctx.menv in
   { ctx with menv }
 
 (* Adders for type definitions *)
 
-let add_typdef (ctx : t) (tid : TId.t) (td : TypeDef.t) : t =
+let add_typdef (ctx : t) (tid : TId.t) (td : Typdef.t) : t =
   if bound_typdef ctx tid then error tid.at "type already defined";
   let tdenv = TDEnv.add tid td ctx.tdenv in
   { ctx with tdenv }
@@ -165,7 +165,7 @@ let add_typdef (ctx : t) (tid : TId.t) (td : TypeDef.t) : t =
 let add_tparams (ctx : t) (tparams : tparam list) : t =
   List.fold_left
     (fun ctx tparam ->
-      let ctx = add_typdef ctx tparam TypeDef.Param in
+      let ctx = add_typdef ctx tparam Typdef.Param in
       add_metavar ctx tparam (VarT (tparam, []) $ tparam.at))
     ctx tparams
 
@@ -210,7 +210,7 @@ let update_var (ctx : t) (id : Id.t) (dim : Dim.t) : t =
 let update_vars (ctx : t) (ids : (Id.t * Dim.t) list) : t =
   List.fold_left (fun ctx (id, dim) -> update_var ctx id dim) ctx ids
 
-let update_typdef (ctx : t) (tid : TId.t) (td : TypeDef.t) : t =
+let update_typdef (ctx : t) (tid : TId.t) (td : Typdef.t) : t =
   if not (bound_typdef ctx tid) then error tid.at "undefined type";
   let tdenv = TDEnv.add tid td ctx.tdenv in
   { ctx with tdenv }

@@ -1,6 +1,6 @@
 open Il.Ast
 open Error
-open Envs
+open Runtime_static.Envs
 module DCtx = Dctx
 open Util.Source
 

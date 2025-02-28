@@ -2,4 +2,4 @@
 
 (library
  (name elaboration)
- (libraries util domain el il))
+ (libraries util domain el il runtime_static))

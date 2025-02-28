@@ -1,7 +1,7 @@
 open Domain.Lib
 open Il.Ast
+open Runtime_static
 open Error
-open Dom
 open Envs
 module DCtx = Dctx
 open Util.Source

@@ -1,5 +1,6 @@
 open Domain.Lib
 open Il.Ast
+open Runtime_static
 open Error
 open Envs
 open Util.Source
@@ -25,13 +26,13 @@ let union (occurs_a : VEnv.t) (occurs_b : VEnv.t) : VEnv.t =
     occurs_a occurs_b
 
 let collect_itervars (bounds : VEnv.t) (occurs : VEnv.t) (iter : iter) :
-    (Id.t * Dom.Dim.t) list =
+    (Id.t * Dim.t) list =
   occurs |> VEnv.bindings
   |> List.filter_map (fun var ->
          let id, iters = var in
          let iters = iters @ [ iter ] in
          let iters_expect = VEnv.find id bounds in
-         if Dom.Dim.sub iters iters_expect then Some var else None)
+         if Dim.sub iters iters_expect then Some var else None)
 
 (* Expression *)
 
@@ -247,7 +248,7 @@ and annotate_prem (binds : VEnv.t) (bounds : VEnv.t) (prem : prem) :
         when List.for_all
                (fun (id, iters) ->
                  match VEnv.find_opt id binds with
-                 | Some iters_bind -> Dom.Dim.sub iters iters_bind
+                 | Some iters_bind -> Dim.sub iters iters_bind
                  | None -> false)
                itervars ->
           error at
@@ -286,14 +287,14 @@ let analyze (annotate : VEnv.t -> 'a -> VEnv.t * 'a) (bounds : VEnv.t)
   VEnv.iter
     (fun id iters ->
       let iters_expect = VEnv.find id bounds in
-      if not (Dom.Dim.equiv iters iters_expect) then
+      if not (Dim.equiv iters iters_expect) then
         error id.at
           (Format.asprintf
              "mismatched iteration dimensions for identifier `%s`: expected \
               %s, but got %s"
              (Id.to_string id)
-             (Dom.Dim.to_string iters_expect)
-             (Dom.Dim.to_string iters)))
+             (Dim.to_string iters_expect)
+             (Dim.to_string iters)))
     occurs;
   construct
 

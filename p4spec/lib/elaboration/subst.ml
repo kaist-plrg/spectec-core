@@ -1,6 +1,6 @@
 open El.Ast
 open Error
-open Envs
+open Runtime_static.Envs
 open Util.Source
 
 (* Substitution of type variables *)

@@ -1,5 +1,6 @@
 open Domain.Lib
 open Il.Ast
+open Runtime_static
 open Error
 module DCtx = Dctx
 open Util.Source
@@ -7,15 +8,15 @@ open Util.Source
 (* Rename for an expression *)
 
 module Exp = struct
-  type t = exp * Dom.Dim.t
+  type t = exp * Dim.t
 
-  let to_string (exp, dim) = Il.Print.string_of_exp exp ^ Dom.Dim.to_string dim
+  let to_string (exp, dim) = Il.Print.string_of_exp exp ^ Dim.to_string dim
 end
 
 module REnv = struct
   include MakeIdEnv (Exp)
 
-  let gen_sidecondition (id : Id.t) (exp : exp) (dim : Dom.Dim.t) =
+  let gen_sidecondition (id : Id.t) (exp : exp) (dim : Dim.t) =
     let exp =
       let exp_l = VarE id $$ (id.at, exp.note) in
       let exp_r = exp in

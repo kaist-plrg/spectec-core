@@ -1,4 +1,3 @@
-open Domain.Lib
 open Il.Ast
 
 (* Input hints for rules *)
@@ -23,6 +22,13 @@ module Hint = struct
     |> List.map snd
 end
 
-(* Environment for input hints *)
+(* Relation *)
 
-module HEnv = MakeIdEnv (Hint)
+type t = El.Ast.nottyp * Hint.t * Il.Ast.rule list
+
+let to_string (nottyp, inputs, rules) =
+  El.Print.string_of_nottyp nottyp
+  ^ " hint(input "
+  ^ String.concat ", " (List.map string_of_int inputs)
+  ^ ") =\n"
+  ^ String.concat "\n   " (List.map Il.Print.string_of_rule rules)

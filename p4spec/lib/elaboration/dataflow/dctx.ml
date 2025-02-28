@@ -1,11 +1,11 @@
 open Domain.Lib
-open Envs
+open Runtime_static.Envs
 
 (* Context for dataflow analysis *)
 
 type t = {
   (* Input hints for rules *)
-  hints : Hint.HEnv.t;
+  hints : HEnv.t;
   (* Free identifiers over the entire definition *)
   frees : IdSet.t;
   (* Bound variables so far *)
@@ -35,4 +35,4 @@ let add_free (dctx : t) (id : Id.t) =
 
 (* Finders *)
 
-let find_hint (dctx : t) (id : Id.t) = Hint.HEnv.find id dctx.hints
+let find_hint (dctx : t) (id : Id.t) = HEnv.find id dctx.hints

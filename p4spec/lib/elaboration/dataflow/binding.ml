@@ -1,9 +1,10 @@
 open Domain.Lib
 open Il.Ast
+open Runtime_static.Rel
+open Runtime_static.Envs
 open Error
 module DCtx = Dctx
 open Bind
-open Envs
 open Util.Source
 
 (* Binding analysis :
@@ -112,7 +113,7 @@ and analyze_rule_prem (dctx : DCtx.t) (at : region) (id : id) (notexp : notexp)
     : DCtx.t * VEnv.t * prem * prem list =
   let mixop, exps = notexp in
   let hint = DCtx.find_hint dctx id in
-  let exps_input, exps_output = Hint.Hint.split_exps hint exps in
+  let exps_input, exps_output = Hint.split_exps hint exps in
   List.map snd exps_input |> analyze_exps_as_bound dctx;
   let dctx, venv, exps_output, sideconditions =
     let idxs, exps_output = List.split exps_output in
@@ -122,7 +123,7 @@ and analyze_rule_prem (dctx : DCtx.t) (at : region) (id : id) (notexp : notexp)
     let exps_output = List.combine idxs exps_output in
     (dctx, venv, exps_output, sideconditions)
   in
-  let exps = Hint.Hint.combine_exps exps_input exps_output in
+  let exps = Hint.combine_exps exps_input exps_output in
   let notexp = (mixop, exps) in
   let prem = RulePr (id, notexp) $ at in
   (dctx, venv, prem, sideconditions)
