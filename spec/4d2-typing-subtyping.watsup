@@ -298,11 +298,57 @@ rule Sub_impl/invalidt-uniont:
 dec $reduce_senum_unary((exprIL, typ), def $check_unary(typ) : bool) : (exprIL, typ)
     hint(show REDUCE %1 UNDER %2)
 
+def $reduce_senum_unary((exprIL, typ), def $check_unary) = (exprIL, typ)
+  -- if $check_unary(typ)
+
+def $reduce_senum_unary((exprIL, typ), def $check_unary) = (exprIL'', typ'')
+  -- if ~$check_unary(typ)
+  -- if SEnumT _ typ' _ = typ
+  -- if exprIL' = CastE typ' exprIL
+  -- if (exprIL'', typ'') = $reduce_senum_unary((exprIL', typ'), def $check_unary)
+
+
 dec $reduce_senums_binary((exprIL, typ), (exprIL, typ), def $check_binary(typ, typ) : bool) : ((exprIL, typ), (exprIL, typ))
     hint(show REDUCE %1 AND %2 UNDER %3)
+
+def $reduce_senums_binary((exprIL_a, typ_a), (exprIL_b, typ_b), def $check_binary) = ((exprIL_a, typ_a), (exprIL_b, typ_b))
+  -- if $check_binary(typ_a, typ_b)
+
+def $reduce_senums_binary((exprIL_a, typ_a), (exprIL_b, typ_b), def $check_binary) = ((exprIL_a'', typ_a''), (exprIL_b'', typ_b''))
+  -- if ~$check_binary(typ_a, typ_b)
+  -- if SEnumT _ typ_a' _ = typ_a
+  -- if exprIL_a' = CastE typ_a' exprIL_a
+  -- if ((exprIL_a'', typ_a''), (exprIL_b'', typ_b''))
+        = $reduce_senums_binary((exprIL_a', typ_a'), (exprIL_b, typ_b), def $check_binary)
+
+def $reduce_senums_binary((exprIL_a, typ_a), (exprIL_b, typ_b), def $check_binary) = ((exprIL_a'', typ_a''), (exprIL_b'', typ_b''))
+  -- if ~$check_binary(typ_a, typ_b)
+  -- if SEnumT _ typ_b' _ = typ_b
+  -- if exprIL_b' = CastE typ_b' exprIL_b
+  -- if ((exprIL_a'', typ_a''), (exprIL_b'', typ_b''))
+        = $reduce_senums_binary((exprIL_a, typ_a), (exprIL_b', typ_b'), def $check_binary)
+
 
 dec $coerce_binary((exprIL, typ), (exprIL, typ)) : (typ, exprIL, exprIL)
     hint(show COERCE %1 AND %2)
 
+def $coerce_binary((exprIL_a, typ_a), (exprIL_b, typ_b)) = (typ_a, exprIL_a, exprIL_b)
+  -- Type_alpha: typ_a ~~ typ_b
+
+def $coerce_binary((exprIL_a, typ_a), (exprIL_b, typ_b)) = (typ_b, exprIL_a', exprIL_b)
+  -- Sub_impl: typ_a << typ_b
+  -- if exprIL_a' = CastE typ_b exprIL_a
+
+def $coerce_binary((exprIL_a, typ_a), (exprIL_b, typ_b)) = (typ_b, exprIL_a, exprIL_b')
+  -- Sub_impl: typ_b << typ_a
+  -- if exprIL_b' = CastE typ_a exprIL_b
+
+
 dec $coerce_assign((exprIL, typ), typ) : exprIL
     hint(show COERCE %1 to %2)
+
+def $coerce_assign((exprIL, typ_f), typ_t) = exprIL
+  -- Type_alpha: typ_f ~~ typ_t
+
+def $coerce_assign((exprIL, typ_f), typ_t) = CastE typ_t exprIL
+  -- Sub_impl: typ_f << typ_t

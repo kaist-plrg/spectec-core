@@ -67,7 +67,11 @@ and subst_param (theta : Theta.t) (param : param) : param =
   | ExpP plaintyp ->
       let plaintyp = subst_plaintyp theta plaintyp in
       ExpP plaintyp $ param.at
-  | DefP _ -> param
+  (* (TODO) Capture-avoiding substitution *)
+  | DefP (id, tparams, params, plaintyp) ->
+      let params = subst_params theta params in
+      let plaintyp = subst_plaintyp theta plaintyp in
+      DefP (id, tparams, params, plaintyp) $ param.at
 
 and subst_params (theta : Theta.t) (params : param list) : param list =
   List.map (subst_param theta) params

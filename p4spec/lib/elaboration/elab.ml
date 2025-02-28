@@ -202,6 +202,43 @@ and sub_plaintyp' (ctx : Ctx.t) (plaintyp_a : plaintyp) (plaintyp_b : plaintyp)
   | _, IterT (plaintyp_b, List) -> sub_plaintyp ctx plaintyp_a plaintyp_b
   | _ -> false
 
+and equiv_param (ctx : Ctx.t) (param_a : param) (param_b : param) : bool =
+  match (param_a.it, param_b.it) with
+  | ExpP plaintyp_a, ExpP plaintyp_b -> equiv_plaintyp ctx plaintyp_a plaintyp_b
+  | ( DefP (_, tparams_a, params_a, plaintyp_a),
+      DefP (_, tparams_b, params_b, plaintyp_b) ) ->
+      equiv_functyp ctx param_a.at tparams_a params_a plaintyp_a tparams_b
+        params_b plaintyp_b
+  | _ -> false
+
+and equiv_functyp (ctx : Ctx.t) (at : region) (tparams_a : tparam list)
+    (params_a : param list) (plaintyp_a : plaintyp) (tparams_b : tparam list)
+    (params_b : param list) (plaintyp_b : plaintyp) : bool =
+  check
+    (List.length tparams_a = List.length tparams_b)
+    no_region "type parameters do not match";
+  let ctx, theta_a, theta_b =
+    List.fold_left2
+      (fun (ctx, theta_a, theta_b) tparam_a tparam_b ->
+        let tid_fresh = "__FRESH" ^ string_of_int (Ctx.fresh ()) $ no_region in
+        let plaintyp_fresh = VarT (tid_fresh, []) $ no_region in
+        let ctx = Ctx.add_tparam ctx tid_fresh in
+        let theta_a = Subst.Theta.add tparam_a plaintyp_fresh theta_a in
+        let theta_b = Subst.Theta.add tparam_b plaintyp_fresh theta_b in
+        (ctx, theta_a, theta_b))
+      (ctx, Subst.Theta.empty, Subst.Theta.empty)
+      tparams_a tparams_b
+  in
+  check
+    (List.length params_a = List.length params_b)
+    at "parameters do not match";
+  let params_a = Subst.subst_params theta_a params_a in
+  let params_b = Subst.subst_params theta_b params_b in
+  let plaintyp_a = Subst.subst_plaintyp theta_a plaintyp_a in
+  let plaintyp_b = Subst.subst_plaintyp theta_b plaintyp_b in
+  List.for_all2 (equiv_param ctx) params_a params_b
+  && equiv_plaintyp ctx plaintyp_a plaintyp_b
+
 (* Elaboration of plain types *)
 
 let rec elab_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) : Il.Ast.typ =
@@ -1164,7 +1201,13 @@ and elab_param (ctx : Ctx.t) (param : param) : Il.Ast.param =
       let typ_il = elab_plaintyp ctx_local plaintyp in
       Il.Ast.DefP (id, tparams, params_il, typ_il) $ param.at
 
-(* Elaboration of arguments *)
+(* Elaboration of arguments: either as definition, or part of a call expression
+
+   Handling of function parameters differs based on whether it is intended to be a definition
+
+    - If it is a definition, the function argument must matched the name of the function parameter,
+      and it adds the function definition to the context
+    - Otherwise, the function argument must match the type of the function parameter *)
 
 and elab_arg ?(as_def = false) (ctx : Ctx.t) (param : param) (arg : arg) :
     Ctx.t * Il.Ast.arg =
@@ -1173,15 +1216,31 @@ and elab_arg ?(as_def = false) (ctx : Ctx.t) (param : param) (arg : arg) :
       let+ ctx, exp_il = elab_exp ctx plaintyp exp in
       let arg_il = Il.Ast.ExpA exp_il $ arg.at in
       (ctx, arg_il)
-  | DefP (id_p, _, _, _), DefA id_a when as_def ->
-      check (id_p.it = id_a.it) arg.at "argument does not match parameter";
+  | DefP (id_p, tparams_p, params_p, plaintyp_p), DefA id_a when as_def ->
+      check (id_p.it = id_a.it) arg.at
+        (Format.asprintf
+           "function argument does not match the declared function parameter %s"
+           (Id.to_string id_p));
+      let ctx = Ctx.add_dec ctx id_p tparams_p params_p plaintyp_p in
       let arg_il = Il.Ast.DefA id_a $ arg.at in
       (ctx, arg_il)
-  (* (TODO) Check if function parameter matches *)
-  | DefP _, DefA id_a ->
+  | DefP (id_p, tparams_p, params_p, plaintyp_p), DefA id_a ->
+      let tparams_a, params_a, plaintyp_a = Ctx.find_dec ctx id_a in
+      check
+        (equiv_functyp ctx arg.at tparams_p params_p plaintyp_p tparams_a
+           params_a plaintyp_a)
+        arg.at
+        (Format.asprintf
+           "function argument does not match the declared function parameter %s"
+           (Id.to_string id_p));
       let arg_il = Il.Ast.DefA id_a $ arg.at in
       (ctx, arg_il)
-  | _ -> error arg.at "argument does not match parameter"
+  | ExpP _, DefA _ ->
+      error arg.at
+        "expected an expression argument, but got a function argument"
+  | DefP _, ExpA _ ->
+      error arg.at
+        "expected a function argument, but got an expression argument"
 
 and elab_args ?(as_def = false) (at : region) (ctx : Ctx.t)
     (params : param list) (args : arg list) : Ctx.t * Il.Ast.arg list =
@@ -1432,7 +1491,7 @@ and elab_rule_def (ctx : Ctx.t) (at : region) (id_rel : id) (id_rule : id)
   let ctx_local = { ctx with frees = IdSet.empty } in
   let ctx_local =
     let def = RuleD (id_rel, id_rule, exp, prems) $ at in
-    El.Free.free_def def |> Ctx.add_frees ctx_local
+    El.Free.free_id_def def |> Ctx.add_frees ctx_local
   in
   let+ ctx, notexp_il = elab_exp_not ctx_local (NotationT nottyp) exp in
   let mixop, exps_il = notexp_il in
@@ -1501,7 +1560,7 @@ and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
   let ctx_local = { ctx with frees = IdSet.empty } in
   let ctx_local =
     let def = DefD (id, tparams, args, exp, prems) $ at in
-    El.Free.free_def def |> Ctx.add_frees ctx_local
+    El.Free.free_id_def def |> Ctx.add_frees ctx_local
   in
   let ctx_local = Ctx.add_tparams ctx_local tparams in
   let ctx_local, args_il, sideconditions_il =

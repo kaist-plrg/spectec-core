@@ -1,0 +1,92 @@
+;;
+;; Mixfix variant cases
+;;
+
+syntax testmixfix = | `{ nat* } | `[ nat* ] | nat -> nat
+
+dec $testmixfix(testmixfix) : nat*
+def $testmixfix(`{nat*}) = nat*
+def $testmixfix(`[nat*]) = nat*
+def $testmixfix(nat_1 -> nat_2) = [ nat_1, nat_2 ]
+
+
+;;
+;; Iterations
+;;
+
+syntax opt = int?
+syntax list = int*
+
+syntax variant =
+  | V1 opt nat
+  | V2 int? nat
+  | V3 text? nat
+  | V4 list nat
+  | V5 int* nat
+  | V6 text* nat
+
+syntax notation1 = opt nat
+syntax notation2 = int? nat
+syntax notation3 = text? nat
+syntax notation4 = list nat
+syntax notation5 = int* nat
+syntax notation6 = text* nat
+
+dec $testemptyv1(variant) : nat
+def $testemptyv1(V1 opt 0) = 0
+def $testemptyv1(V1 eps 0) = 0
+
+dec $testemptyv2(variant) : nat
+def $testemptyv2(V2 eps 0) = 0
+
+dec $testemptyv3(variant) : nat
+def $testemptyv3(V3 eps 0) = 0
+def $testemptyv3(V3 "" 0) = 0
+
+dec $testemptyv4(variant) : nat
+def $testemptyv4(V4 list 0) = 0
+def $testemptyv4(V4 eps 0) = 0
+
+dec $testemptyv5(variant) : nat
+def $testemptyv5(V5 eps 0) = 0
+
+dec $testemptyv6(variant) : nat
+def $testemptyv6(V6 eps 0) = 0
+def $testemptyv6(V6 "" 0) = 0
+
+dec $testemptyn1(notation1) : nat
+def $testemptyn1(opt 0) = 0
+def $testemptyn1(eps 0) = 0
+
+dec $testemptyn2(notation2) : nat
+def $testemptyn2(eps 0) = 0
+
+dec $testemptyn3(notation3) : nat
+def $testemptyn3(eps 0) = 0
+def $testemptyn3("" 0) = 0
+
+dec $testemptyn4(notation4) : nat
+def $testemptyn4(list 0) = 0
+def $testemptyn4(eps 0) = 0
+
+dec $testemptyn5(notation5) : nat
+def $testemptyn5(eps 0) = 0
+
+dec $testemptyn6(notation6) : nat
+def $testemptyn6(eps 0) = 0
+def $testemptyn6("" 0) = 0
+
+
+
+;;
+;; Parameterisation
+;;
+
+dec $f<X>(X) : X
+def $f<X>(X) = X
+
+dec $g<Y>(def $h<X>(X) : X, Y) : Y
+def $g<Y>(def $h, Y) = $h<Y>(Y)
+
+dec $x : nat
+def $x = $($g<nat>(def $f, 1) + $g<nat>(def $f, 2))

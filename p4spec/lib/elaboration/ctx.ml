@@ -9,6 +9,16 @@ open Util.Source
 
 let error (at : region) (msg : string) = error at "elab" msg
 
+(* Global counter for unique identifiers *)
+
+let tick = ref 0
+let refresh () = tick := 0
+
+let fresh () =
+  let id = !tick in
+  tick := !tick + 1;
+  id
+
 (* Context *)
 
 type t = {
@@ -62,7 +72,7 @@ let find_typdef_opt (ctx : t) (tid : TId.t) : Typdef.t option =
 let find_typdef (ctx : t) (tid : TId.t) : Typdef.t =
   match find_typdef_opt ctx tid with
   | Some td -> td
-  | None -> error tid.at "undefined type"
+  | None -> error tid.at ("undefined type " ^ tid.it)
 
 let bound_typdef (ctx : t) (tid : TId.t) : bool =
   find_typdef_opt ctx tid |> Option.is_some
@@ -75,7 +85,7 @@ let find_metavar_opt (ctx : t) (tid : TId.t) : Typ.t option =
 let find_metavar (ctx : t) (tid : TId.t) : Typ.t =
   match find_metavar_opt ctx tid with
   | Some typ -> typ
-  | None -> error tid.at "undefined meta-variable"
+  | None -> error tid.at ("undefined meta-variable " ^ tid.it)
 
 let bound_metavar (ctx : t) (tid : TId.t) : bool =
   find_metavar_opt ctx tid |> Option.is_some
@@ -89,7 +99,7 @@ let find_rel_opt (ctx : t) (rid : RId.t) : (nottyp * int list) option =
 let find_rel (ctx : t) (rid : RId.t) : nottyp * int list =
   match find_rel_opt ctx rid with
   | Some (nottyp, inputs) -> (nottyp, inputs)
-  | None -> error rid.at "undefined relation"
+  | None -> error rid.at ("undefined relation " ^ rid.it)
 
 let bound_rel (ctx : t) (rid : RId.t) : bool =
   find_rel_opt ctx rid |> Option.is_some
@@ -100,7 +110,7 @@ let find_rules_opt (ctx : t) (rid : RId.t) : Il.Ast.rule list option =
 let find_rules (ctx : t) (rid : RId.t) : Il.Ast.rule list =
   match find_rules_opt ctx rid with
   | Some rules -> rules
-  | None -> error rid.at "undefined relation"
+  | None -> error rid.at ("undefined relation " ^ rid.it)
 
 (* Finders for definitions *)
 
@@ -113,7 +123,7 @@ let find_dec_opt (ctx : t) (fid : FId.t) :
 let find_dec (ctx : t) (fid : FId.t) : tparam list * param list * plaintyp =
   match find_dec_opt ctx fid with
   | Some dec -> dec
-  | None -> error fid.at "undefined function"
+  | None -> error fid.at ("undefined function " ^ fid.it)
 
 let bound_dec (ctx : t) (fid : FId.t) : bool =
   find_dec_opt ctx fid |> Option.is_some
@@ -124,7 +134,7 @@ let find_clauses_opt (ctx : t) (fid : FId.t) : Il.Ast.clause list option =
 let find_clauses (ctx : t) (fid : FId.t) : Il.Ast.clause list =
   match find_clauses_opt ctx fid with
   | Some clauses -> clauses
-  | None -> error fid.at "undefined function"
+  | None -> error fid.at ("undefined function " ^ fid.it)
 
 (* Adders *)
 
@@ -162,23 +172,24 @@ let add_typdef (ctx : t) (tid : TId.t) (td : Typdef.t) : t =
   let tdenv = TDEnv.add tid td ctx.tdenv in
   { ctx with tdenv }
 
+let add_tparam (ctx : t) (tparam : tparam) : t =
+  let ctx = add_typdef ctx tparam Typdef.Param in
+  add_metavar ctx tparam (VarT (tparam, []) $ tparam.at)
+
 let add_tparams (ctx : t) (tparams : tparam list) : t =
-  List.fold_left
-    (fun ctx tparam ->
-      let ctx = add_typdef ctx tparam Typdef.Param in
-      add_metavar ctx tparam (VarT (tparam, []) $ tparam.at))
-    ctx tparams
+  List.fold_left add_tparam ctx tparams
 
 (* Adders for rules *)
 
 let add_rel (ctx : t) (rid : RId.t) (nottyp : nottyp) (inputs : int list) : t =
-  if bound_rel ctx rid then error rid.at "relation already defined";
+  if bound_rel ctx rid then
+    error rid.at ("relation " ^ rid.it ^ " already defined");
   let rel = (nottyp, inputs, []) in
   let renv = REnv.add rid rel ctx.renv in
   { ctx with renv }
 
 let add_rule (ctx : t) (rid : RId.t) (rule : Il.Ast.rule) : t =
-  if not (bound_rel ctx rid) then error rid.at "undefined relation";
+  if not (bound_rel ctx rid) then error rid.at ("undefined relation " ^ rid.it);
   let nottyp, inputs, rules = REnv.find rid ctx.renv in
   let rel = (nottyp, inputs, rules @ [ rule ]) in
   let renv = REnv.add rid rel ctx.renv in
@@ -188,13 +199,14 @@ let add_rule (ctx : t) (rid : RId.t) (rule : Il.Ast.rule) : t =
 
 let add_dec (ctx : t) (fid : FId.t) (tparams : tparam list)
     (params : param list) (plaintyp : plaintyp) : t =
-  if bound_dec ctx fid then error fid.at "function already defined";
+  if bound_dec ctx fid then
+    error fid.at ("function " ^ fid.it ^ " already defined");
   let func = (tparams, params, plaintyp, []) in
   let fenv = FEnv.add fid func ctx.fenv in
   { ctx with fenv }
 
 let add_clause (ctx : t) (fid : FId.t) (clause : Il.Ast.clause) : t =
-  if not (bound_dec ctx fid) then error fid.at "undefined function";
+  if not (bound_dec ctx fid) then error fid.at ("undefined function " ^ fid.it);
   let tparams, params, plaintyp, clauses = FEnv.find fid ctx.fenv in
   let func = (tparams, params, plaintyp, clauses @ [ clause ]) in
   let fenv = FEnv.add fid func ctx.fenv in
@@ -203,7 +215,7 @@ let add_clause (ctx : t) (fid : FId.t) (clause : Il.Ast.clause) : t =
 (* Updaters *)
 
 let update_var (ctx : t) (id : Id.t) (dim : Dim.t) : t =
-  if not (bound_var ctx id) then error id.at "undefined variable";
+  if not (bound_var ctx id) then error id.at ("undefined variable " ^ id.it);
   let venv = VEnv.add id dim ctx.venv in
   { ctx with venv }
 
@@ -211,6 +223,6 @@ let update_vars (ctx : t) (ids : (Id.t * Dim.t) list) : t =
   List.fold_left (fun ctx (id, dim) -> update_var ctx id dim) ctx ids
 
 let update_typdef (ctx : t) (tid : TId.t) (td : Typdef.t) : t =
-  if not (bound_typdef ctx tid) then error tid.at "undefined type";
+  if not (bound_typdef ctx tid) then error tid.at ("undefined type " ^ tid.it);
   let tdenv = TDEnv.add tid td ctx.tdenv in
   { ctx with tdenv }
