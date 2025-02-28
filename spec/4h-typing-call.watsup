@@ -28,18 +28,18 @@ rule Call_convention_arg_ok/expra:
   p C actctxt |- pt ~~ (ExprA exprIL, typ) : ExprA exprIL'
   -- Call_convention_ok: p C actctxt |- pt ~~ (exprIL, typ) : exprIL'
 
-rule Call_convention_arg_ok/some-namea:
+rule Call_convention_arg_ok/namea-some:
   p C actctxt |- pt ~~ (NameA id exprIL, typ) : NameA id exprIL'
   -- Call_convention_ok: p C actctxt |- pt ~~ (exprIL, typ) : exprIL'
 
-;; (TODO) check with p4cherry for type comparison
-;;rule Call_convention_arg_ok/none-namea-anya:
-;;  p C actctxt |- (id OUT typ_p val?) ~~ (argIL, typ_a) : argIL
-;;  -- if argIL = (NameA id' eps) \/ argIL = AnyA
+rule Call_convention_arg_ok/namea-none:
+  p C actctxt |- (_ OUT _ _) ~~ (NameA id eps, _) : NameA id eps
+
+rule Call_convention_arg_ok/anya:
+  p C actctxt |- (_ OUT _ _) ~~ (AnyA, _) : AnyA
 
 ;;
 ;; Function typing
-;; (TODO-Jaehyun) should consider fresh type identifier insertion
 ;;
 
 rule FuncType_ok:
@@ -49,7 +49,6 @@ rule FuncType_ok:
 
 ;;
 ;; Method typing
-;; (TODO-Jaehyun) should consider fresh type identifier insertion
 ;;
 
 ;; (TODO-Jaehyun) check that builtin is defined on typ_b
@@ -60,13 +59,13 @@ rule MethodType_ok/builtin-size:
   -- if $in_set<member>(member, SET ([ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]))
 
 rule MethodType_ok/builtin-stackt:
-  p C |- expr_b member eps argIL* : (BuiltinMethodT paramtyp IntT) exprIL_b eps eps
+  p C |- expr_b member eps argIL* : (BuiltinMethodT pt IntT) exprIL_b eps eps
   -- if member = "push\\_front" \/ member = "pop\\_back"
   ----
   -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
   -- if StackT typ_b_in int_b = $canon_typ(typ_b)
   ----
-  -- if paramtyp = "count" NO IntT eps
+  -- if pt = "count" NO IntT eps
 
 rule MethodType_ok/builtin-headert-isvalid:
   p C |- expr_b "isValid" eps argIL* : (BuiltinMethodT eps BoolT) exprIL_b eps eps
@@ -88,39 +87,43 @@ rule MethodType_ok/builtin-uniont:
   -- if UnionT id_b (member, typ_b_in)* = $canon_typ(typ_b)
 
 rule MethodType_ok/externt:
-  p C |- expr_b member targIL* argIL* : functyp exprIL_b tid_fresh* id_deft*
+  p C |- expr_b member targIL* argIL* : ft exprIL_b tid_fresh* id_deft*
   ----
   -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
   -- if ExternT id_b fmap_b = $canon_typ(typ_b)
   ----
-  -- if (fid, funcdef, id_deft*) = $find_func<funcdef>(member, $to_fkey(argIL*), fmap_b)
-  -- if (functyp, tid_fresh*) = $specialize_funcdef(funcdef, targIL*)
+  -- if (fid, fd, id_deft*) = $find_func<funcdef>(member, $to_fkey(argIL*), fmap_b)
+  -- if (ft, tid_fresh*) = $specialize_funcdef(fd, targIL*)
 
-;; (TODO) MAP (PAIR "apply" funcdef) doesn't work
-;;rule MethodType_ok/parsert:
-;;  p C |- expr_b "apply" eps argIL* : functyp' exprIL_b eps id_deft*
-;;  ----
-;;  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
-;;  -- if ParserT paramtyp* = $canon_typ(typ_b)
-;;  ----
-;;  -- if functyp = ParserApplyMethodT paramtyp*
-;;  -- if funcdef = MonoFD functyp
-;;  ----
-;;  -- if (fid, fd, id_deft*) = $find_func<funcdef>("apply", $to_fkey(argIL*), MAP (PAIR "apply" funcdef))
-;;  -- if MonoFD functyp' = fd
+rule MethodType_ok/parsert:
+  p C |- expr_b "apply" eps argIL* : ft exprIL_b eps id_deft*
+  ----
+  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
+  -- if ParserT pt* = $canon_typ(typ_b)
+  ----
+  -- if ft = ParserApplyMethodT pt*
+  -- if fd = MonoFD ft
+  ----
+  -- if (id_p _ _ val_deft? = pt)*
+  -- if (b_deft = (val_deft? =/= eps))*
+  -- if fid = "apply" (id_p, b_deft)*
+  ----
+  -- if (fid, MonoFD ft, id_deft*) = $find_func<funcdef>("apply", $to_fkey(argIL*), MAP (PAIR fid fd))
 
-;; (TODO) MAP (PAIR "apply" funcdef) doesn't work
-;;rule MethodType_ok/controlt:
-;;  p C |- expr_b "apply" eps argIL* : functyp' exprIL_b eps
-;;  ----
-;;  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
-;;  -- if ControlT paramtyp* = $canon_typ(typ_b)
-;;  ----
-;;  -- if functyp = ControlApplyMethodT paramtyp*
-;;  -- if funcdef = MonoFD functyp
-;;  ----
-;;  -- if (fid, fd, id_deft*) = $find_func<funcdef>("apply", $to_fkey(argIL*), MAP (PAIR "apply" funcdef))
-;;  -- if MonoFD functyp' = fd
+rule MethodType_ok/controlt:
+  p C |- expr_b "apply" eps argIL* : ft exprIL_b eps id_deft*
+  ----
+  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
+  -- if ControlT pt* = $canon_typ(typ_b)
+  ----
+  -- if ft = ControlApplyMethodT pt*
+  -- if fd = MonoFD ft
+  ----
+  -- if (id_p _ _ val_deft? = pt)*
+  -- if (b_deft = (val_deft? =/= eps))*
+  -- if fid = "apply" (id_p, b_deft)*
+  ----
+  -- if (fid, MonoFD ft, id_deft*) = $find_func<funcdef>("apply", $to_fkey(argIL*), MAP (PAIR fid fd))
 
 rule MethodType_ok/tablet:
   p C |- expr_b "apply" eps eps : functyp exprIL_b eps eps
@@ -140,10 +143,10 @@ dec $filter_default_args(paramtyp*, id*) : paramtyp*
     hint(show FILTER_DEFAULT_ARGS%latex("(")#%1#%latex(", ")#%2#%latex(")"))
 
 def $filter_default_args(eps, id_deft*) = eps
-def $filter_default_args(paramtyp_h :: paramtyp_t*, id_deft*) = $filter_default_args(paramtyp_t*, id_deft*)
-  -- if id_p dir_p typ_p val_p? = paramtyp_h
+def $filter_default_args(pt_h :: pt_t*, id_deft*) = $filter_default_args(pt_t*, id_deft*)
+  -- if id_p dir_p typ_p val_p? = pt_h
   -- if id_p <- id_deft*
-def $filter_default_args(paramtyp_h :: paramtyp_t*, id_deft*) = paramtyp_h :: $filter_default_args(paramtyp_t*, id_deft*)
+def $filter_default_args(pt_h :: pt_t*, id_deft*) = pt_h :: $filter_default_args(pt_t*, id_deft*)
   -- otherwise
 
 ;; If arguments are named, align parameters along with the arguments
@@ -155,15 +158,15 @@ dec $align_params_with_args(paramtyp*, (argIL, typ)*): (paramtyp*, (argIL, typ)*
 dec $align_params_with_args'(pmap, paramtyp, (argIL, typ)): (paramtyp, (argIL, typ))
     hint(show ALIGN_PARAMS_WITH_ARGS'%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(")"))
 
-def $align_params_with_args(paramtyp*, (argIL, typ)*) = (paramtyp'*, (argIL', typ')*)
-  -- if (id dir typ val?)* = paramtyp*
-  -- if pmap = MAP (PAIR id paramtyp)*
-  -- (if (paramtyp', (argIL', typ')) = $align_params_with_args'(pmap, paramtyp, (argIL, typ)))*
+def $align_params_with_args(pt*, (argIL, typ)*) = (pt'*, (argIL', typ')*)
+  -- if (id dir typ val?)* = pt*
+  -- if pmap = MAP (PAIR id pt)*
+  -- (if (pt', (argIL', typ')) = $align_params_with_args'(pmap, pt, (argIL, typ)))*
 
-def $align_params_with_args'(pmap, paramtyp, (ExprA exprIL, typ)) = (paramtyp, (ExprA exprIL, typ))
-def $align_params_with_args'(pmap, paramtyp, (NameA id exprIL?, typ)) = (paramtyp', (NameA id exprIL?, typ))
-  -- if paramtyp' = $find_map<id, paramtyp>(pmap, id)
-def $align_params_with_args'(pmap, paramtyp, (AnyA, typ)) = (paramtyp, (AnyA, typ))
+def $align_params_with_args'(pmap, pt, (ExprA exprIL, typ)) = (pt, (ExprA exprIL, typ))
+def $align_params_with_args'(pmap, pt, (NameA id exprIL?, typ)) = (pt', (NameA id exprIL?, typ))
+  -- if pt' = $find_map<id, paramtyp>(pmap, id)
+def $align_params_with_args'(pmap, pt, (AnyA, typ)) = (pt, (AnyA, typ))
 
 ;;
 ;; Type inference

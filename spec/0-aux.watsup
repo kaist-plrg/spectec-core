@@ -15,31 +15,52 @@ var t : text
 ;; General bool functions
 ;;
 
-dec $implies(bool, bool) : bool     hint(show % %latex("\\Rightarrow") %)
+dec $implies(bool, bool) : bool
+    hint(show % %latex("\\Rightarrow") %)
+
+def $implies(true, b) = b
+def $implies(false, b) = true
 
 ;;
 ;; General text functions
 ;;
 
-dec $int_to_text(int) : text      hint(show %)
+dec $int_to_text(int) : text
+    hint(show %)
 
-dec $concat_text(text*) : text    hint(show %)
+dec $concat_text(text*) : text
+    hint(show %)
+
+dec $strip_prefix(text, text) : text
+dec $strip_suffix(text, text) : text
 
 ;;
 ;; General sequence functions
 ;;
 
-dec $opt_<X>(X*) : X?  hint(show %2)
+dec $init_(nat) : nat*
+def $init_(0) = eps
+def $init_(n) = $(n - 1) :: $init_($(n - 1))
+
+dec $repeat_<X>(X, nat) : X*
+    ;;hint(show %2^%3)
+def $repeat_<X>(X, 0) = eps
+def $repeat_<X>(X, n) = X ++ $repeat_<X>(X, $(n - 1))
+
+dec $opt_<X>(X*) : X?
+    hint(show %2)
 def $opt_<X>(eps) = eps
 def $opt_<X>(X) = X
 
-dec $concat_<X>((X*)*) : X*  hint(show (++) %2)
+dec $concat_<X>((X*)*) : X*
+    hint(show (++) %2)
 def $concat_<X>(eps) = eps
 def $concat_<X>((X*) :: (X'*)*) = X* ++ $concat_<X>((X'*)*)
 
-dec $partition<X>(X*, nat) : (X*, X*)
+dec $partition_<X>(X*, nat) : (X*, X*)
 
-dec $assoc<X, Y>(X, (X, Y)*) : Y?  hint(show %2`[%1])
+dec $assoc_<X, Y>(X, (X, Y)*) : Y?
+    hint(show %2`[%1])
 
 ;;
 ;; General set functions
@@ -48,17 +69,35 @@ dec $assoc<X, Y>(X, (X, Y)*) : Y?  hint(show %2`[%1])
 syntax set<K> hint(show %latex("\\{") %#%latex("^* \\}")) =
   SET K*      hint(show %latex("\\{") %#%latex("\\}"))
 
-dec $empty_set<K> : set<K>                       hint(show %latex("\\{") %latex("\\}"))
+dec $empty_set<K> : set<K>
+    hint(show %latex("\\{") %latex("\\}"))
 def $empty_set<K> = SET eps
 
-dec $in_set<K>(K, set<K>) : bool                hint(show %2 %latex("\\in") %3)
-dec $not_in_set<K>(K, set<K>) : bool            hint(show %2 %latex("\\notin") %3)
-dec $eq_set<K>(set<K>, set<K>) : bool           hint(show %2 %latex("=") %3)
-dec $intersect_set<K>(set<K>, set<K>) : set<K>  hint(show %2 %latex("\\cap") %3)
-dec $union_set<K>(set<K>, set<K>) : set<K>      hint(show %2 %latex("\\cup") %3)
-dec $unions_set<K>(set<K>*) : set<K>            hint(show %latex("\\bigcup") %2)
-dec $diff_set<K>(set<K>, set<K>) : set<K>       hint(show %2 %latex("\\setminus") %3)
-dec $is_subset<K>(set<K>, set<K>) : bool        hint(show %2 %latex("\\subset") %3)
+dec $in_set<K>(K, set<K>) : bool
+    hint(show %2 %latex("\\in") %3)
+def $in_set<K>(K, SET K'*) = K <- K'*
+
+dec $not_in_set<K>(K, set<K>) : bool
+    hint(show %2 %latex("\\notin") %3)
+def $not_in_set<K>(K, SET K'*) = ~($in_set<K>(K, SET K'*))
+
+dec $eq_set<K>(set<K>, set<K>) : bool
+    hint(show %2 %latex("=") %3)
+
+dec $intersect_set<K>(set<K>, set<K>) : set<K>
+    hint(show %2 %latex("\\cap") %3)
+
+dec $union_set<K>(set<K>, set<K>) : set<K>
+    hint(show %2 %latex("\\cup") %3)
+
+dec $unions_set<K>(set<K>*) : set<K>
+    hint(show %latex("\\bigcup") %2)
+
+dec $diff_set<K>(set<K>, set<K>) : set<K>
+    hint(show %2 %latex("\\setminus") %3)
+
+dec $is_subset<K>(set<K>, set<K>) : bool
+    hint(show %2 %latex("\\subset") %3)
 
 dec $distinct_<K>(K*) : bool  hint(show %2 $distinct)
 def $distinct_<K>(eps) = true
@@ -90,21 +129,38 @@ def $setproduct2_<X>(X, (X_h*) :: (X_t*)*) = (X :: X_h*) ++ $setproduct2_<X>(X, 
 ;; General map functions
 ;;
 
-syntax pair<K, V> hint(show (% %latex("\\mapsto") %)) =
-    PAIR K V      hint(show % %latex("\\mapsto") %)
+syntax pair<K, V>
+       hint(show (% %latex("\\mapsto") %)) =
+    PAIR K V
+    hint(show % %latex("\\mapsto") %)
 
-syntax map<K, V>        hint(show %latex("\\{(")#% %latex("\\mapsto") %#%latex(")^*\\}")) =
-    MAP pair<K, V>*     hint(show %latex("\\{")#%#%latex("\\}"))
+syntax map<K, V>
+       hint(show %latex("\\{(")#% %latex("\\mapsto") %#%latex(")^*\\}")) =
+  MAP pair<K, V>*
+  hint(show %latex("\\{")#%#%latex("\\}"))
 
-dec $empty_map<K, V> : map<K, V>  hint(show %latex("\\{") %latex("\\}"))
+dec $empty_map<K, V> : map<K, V>
+    hint(show %latex("\\{") %latex("\\}"))
 def $empty_map<K, V> = MAP eps
 
-dec $dom_map<K, V>(map<K, V>) : set<K>                  hint(show %latex("\\texttt{Dom}(")#%3#%latex(")"))
+dec $dom_map<K, V>(map<K, V>) : set<K>
+    hint(show %latex("\\texttt{Dom}(")#%3#%latex(")"))
+def $dom_map<K, V>(MAP (PAIR K _)*) = SET K*
 
-dec $find_map_opt<K, V>(map<K, V>, K) : V?              hint(show %3#`[%4]?)
-dec $find_maps_opt<K, V>(map<K, V>*, K) : V?            hint(show %3#`[%4]?)
-dec $find_map<K, V>(map<K, V>, K) : V                   hint(show %3#`[%4])
+dec $find_map_opt<K, V>(map<K, V>, K) : V?
+    hint(show %3#`[%4]?)
 
-dec $add_map<K, V>(map<K, V>, K, V) : map<K, V>         hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
-dec $update_map<K, V>(map<K, V>, K, V) : map<K, V>      hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
-dec $extends_map<K, V>(map<K, V>, K*, V*) : map<K, V>   hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
+dec $find_maps_opt<K, V>(map<K, V>*, K) : V?
+    hint(show %3#`[%4]?)
+
+dec $find_map<K, V>(map<K, V>, K) : V
+    hint(show %3#`[%4])
+
+dec $add_map<K, V>(map<K, V>, K, V) : map<K, V>
+    hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
+
+dec $update_map<K, V>(map<K, V>, K, V) : map<K, V>
+    hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
+
+dec $extends_map<K, V>(map<K, V>, K*, V*) : map<K, V>
+    hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))

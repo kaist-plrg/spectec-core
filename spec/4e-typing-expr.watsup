@@ -551,7 +551,7 @@ rule Expr_ok/typeacce-senumt:
   p C |- TypeAccE name member : (ValueE (SEnumFieldV id_t member val)) typ LCTK
   -- if MonoD typ = $find_typdef(p, C, name)
   -- if SEnumT id_t typ_t (member_t, val_t)* = $canon_typ(typ)
-  -- if val = $assoc<member, val>(member, (member_t, val_t)*)
+  -- if val = $assoc_<member, val>(member, (member_t, val_t)*)
 
 ;;
 ;; Expression access expression
@@ -586,28 +586,28 @@ rule Expr_ok/expracce-structt:
   -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
   -- if StructT id_s (member_s, typ_s)* = $canon_typ(typ_b)
   ----
-  -- if typ = $assoc<member, typ>(member, (member_s, typ_s)*)
+  -- if typ = $assoc_<member, typ>(member, (member_s, typ_s)*)
 
 rule Expr_ok/expracce-headert:
   p C |- ExprAccE expr_b member : (ExprAccE exprIL_b member) typ DYN
   -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
   -- if HeaderT id_h (member_h, typ_h)* = $canon_typ(typ_b)
   ----
-  -- if typ = $assoc<member, typ>(member, (member_h, typ_h)*)
+  -- if typ = $assoc_<member, typ>(member, (member_h, typ_h)*)
 
 rule Expr_ok/expracce-uniont:
   p C |- ExprAccE expr_b member : (ExprAccE exprIL_b member) typ DYN
   -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
   -- if UnionT id_u (member_u, typ_u)* = $canon_typ(typ_b)
   ----
-  -- if typ = $assoc<member, typ>(member, (member_u, typ_u)*)
+  -- if typ = $assoc_<member, typ>(member, (member_u, typ_u)*)
 
 rule Expr_ok/expracce-tablestructt:
   p C |- ExprAccE expr_b member : (ExprAccE exprIL_b member) typ DYN
   -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
   -- if TableStructT id_t (member_t, typ_t)* = $canon_typ(typ_b)
   ----
-  -- if typ = $assoc<member, typ>(member, (member_t, typ_t)*)
+  -- if typ = $assoc_<member, typ>(member, (member_t, typ_t)*)
 
 ;;
 ;; Function call expression

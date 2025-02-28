@@ -82,12 +82,11 @@ rule Switch_tbl_cases_ok/seq:
   -- Switch_tbl_cases_ok: p C f' id_t |- switchcase_t* : f'' switchcaseIL_t*
 
 
-;; (TODO) inverse of concat
-;;rule Stmt_ok/switchs-tbl:
-;;  p C f |- SwitchS expr switchcase* : C f' (SwitchS exprIL switchcaseIL*)
-;;  -- Expr_ok: p C |- expr : exprIL (TableEnumT id member) ctk
-;;  -- if id = $concat_text([ "action\\_list(", id_t, ")" ])
-;;  -- Switch_tbl_cases_ok: p C f id_t |- switchcase* : f' switchcaseIL*
+rule Stmt_ok/switchs-tbl:
+  p C f |- SwitchS expr switchcase* : C f' (SwitchS exprIL switchcaseIL*)
+  -- Expr_ok: p C |- expr : exprIL (TableEnumT id member) ctk
+  -- if id_t = $strip_prefix($strip_suffix(id, ")"), "action\\_list(")
+  -- Switch_tbl_cases_ok: p C f id_t |- switchcase* : f' switchcaseIL*
 
 
 relation Switch_gen_label_ok:

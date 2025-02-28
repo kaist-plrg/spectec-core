@@ -598,50 +598,50 @@ rule ParserStates_ok/cons:
   -- ParserState_ok: C |- parserstate_h : C' parserstateIL_h
   -- ParserStates_ok: C' |- parserstate_t* : C'' parserstateIL_t*
 
-;; (TODO) ^n iterator for (StateT NO DYN eps)*
-;;rule Decl_ok/parserd:
-;;  GLOBAL C_0 |- ParserD id param* cparam* decl* parserstate* : C_8 (ParserD id paramIL* cparamIL* declIL* parserstateIL*)
-;;  -- if cid = $to_fid(id, cparam*)
-;;  ----
-;;  -- if C_1 = $set_blockkind(C_0, PARSER)
-;;  ----
-;;  -- (Param_ok: LOCAL C_1 |- cparam : cparamIL eps)*
-;;  -- if (id_c dir_c typ_c val_c? = cparamIL)*
-;;  ----
-;;  -- if C_2 = $add_styps(BLOCK, C_1, id_c*, (typ_c dir_c CTK eps)*)
-;;  ----
-;;  -- (Param_ok: LOCAL C_2 |- param : paramIL eps)*
-;;  -- if (id_p dir_p typ_p val_p? = paramIL)*
-;;  ----
-;;  ----
-;;  -- if funcdef_apply = MonoFD (ParserApplyMethodT (id_p dir_p typ_p val_p?)*)
-;;  -- FuncDef_wf: $bound_tids(GLOBAL, C_0) |- funcdef_apply
-;;  ----
-;;  -- if C_3 = $add_styps(BLOCK, C_2, id_p*, (typ_p dir_p DYN eps)*)
-;;  ----
-;;  -- Decls_ok: BLOCK C_3 |- decl* : C_4 declIL*
-;;  ----
-;;  -- if (statelabel block = parserstate)*
-;;  ----
-;;  -- if $distinct_<statelabel>(statelabel*)
-;;  -- if $in_set<statelabel>("start", SET statelabel*)
-;;  -- if $not_in_set<statelabel>("accept", SET statelabel*)
-;;  -- if $not_in_set<statelabel>("reject", SET statelabel*)
-;;  ----
-;;  -- if C_5 = $set_localkind(C_4, PARSERSTATE)
-;;  ----
-;;  ;; (TODO) Need ^n iterator
-;;  -- if C_6 = $add_styps(BLOCK, C_5, statelabel*, (StateT NO DYN eps)*)
-;;  ----
-;;  -- ParserStates_ok: C_6 |- parserstate : C_7 parserstateIL*
-;;  ----
-;;  -- if ptd = PolyD (eps, eps) -> (ParserT (id_p dir_p typ_p val_p?)*)
-;;  -- if typ = SpecT ptd eps
-;;  -- if consdef = ConsD (eps, eps) -> (ConsT (id_c dir_c typ_c val_c?)* typ)
-;;  ----
-;;  -- ConsDef_wf: tidset |- consdef
-;;  ----
-;;  -- if C_8 = $add_consdef(GLOBAL, C_0, cid, consdef)
+rule Decl_ok/parserd:
+  GLOBAL C_0 |- ParserD id param* cparam* decl* parserstate* : C_8 (ParserD id paramIL* cparamIL* declIL* parserstateIL*)
+  -- if cid = $to_fid(id, cparam*)
+  ----
+  -- if C_1 = $set_blockkind(C_0, PARSER)
+  ----
+  -- (Param_ok: LOCAL C_1 |- cparam : cparamIL eps)*
+  -- if (id_c dir_c typ_c val_c? = cparamIL)*
+  ----
+  -- if C_2 = $add_styps(BLOCK, C_1, id_c*, (typ_c dir_c CTK eps)*)
+  ----
+  -- (Param_ok: LOCAL C_2 |- param : paramIL eps)*
+  -- if (id_p dir_p typ_p val_p? = paramIL)*
+  ----
+  ----
+  -- if funcdef_apply = MonoFD (ParserApplyMethodT (id_p dir_p typ_p val_p?)*)
+  -- FuncDef_wf: $bound_tids(GLOBAL, C_0) |- funcdef_apply
+  ----
+  -- if C_3 = $add_styps(BLOCK, C_2, id_p*, (typ_p dir_p DYN eps)*)
+  ----
+  -- Decls_ok: BLOCK C_3 |- decl* : C_4 declIL*
+  ----
+  -- if (statelabel block = parserstate)*
+  ----
+  -- if $distinct_<statelabel>(statelabel*)
+  -- if $in_set<statelabel>("start", SET statelabel*)
+  -- if $not_in_set<statelabel>("accept", SET statelabel*)
+  -- if $not_in_set<statelabel>("reject", SET statelabel*)
+  ----
+  -- if C_5 = $set_localkind(C_4, PARSERSTATE)
+  ----
+  ;; (TODO) ^n iterator would be better
+  -- if styp* = $repeat_<styp>(StateT NO DYN eps, |statelabel*|)
+  -- if C_6 = $add_styps(BLOCK, C_5, statelabel*, styp*)
+  ----
+  -- ParserStates_ok: C_6 |- parserstate* : C_7 parserstateIL*
+  ----
+  -- if ptd = PolyD (eps, eps) -> (ParserT (id_p dir_p typ_p val_p?)*)
+  -- if typ = SpecT ptd eps
+  -- if consdef = ConsD (eps, eps) -> (ConsT (id_c dir_c typ_c val_c?)* typ)
+  ----
+  -- ConsDef_wf: $bound_tids(GLOBAL, C_0) |- consdef
+  ----
+  -- if C_8 = $add_consdef(GLOBAL, C_0, cid, consdef)
 
 ;;
 ;; Table declaration
