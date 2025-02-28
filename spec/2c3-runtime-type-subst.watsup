@@ -186,26 +186,53 @@ def $specialize_typdef(PolyD (tparam*, tparam_hidden*) -> typ, typ_a*) = $subst_
 ;; Funcdef specialization
 ;;
 
-;; (TODO) consider missing type arguments
-dec $specialize_funcdef(funcdef, typ*) : functyp
+dec $specialize_funcdef(funcdef, typ*) : (functyp, tid*)
     hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
-def $specialize_funcdef(MonoFD ft, eps) = ft
-def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = $subst_functyp(theta, ft)
+def $specialize_funcdef(MonoFD ft, eps) = (ft, eps)
+
+def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = ($subst_functyp(MAP (PAIR tparam' typ_a)*, ft), eps)
   -- if tparam'* = tparam* ++ tparam_hidden*
-  -- if theta = MAP (PAIR tparam' typ_a)*
+  -- if |tparam'*| = |typ_a*|
+
+def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = ($subst_functyp(MAP (PAIR tparam' (VarT tid_fresh))*, ft), tid_fresh*)
+  -- if tparam'* = tparam* ++ tparam_hidden*
+  -- if |typ_a*| = 0 /\ |tparam'*| > 0
+  ----
+  -- if tid_fresh* = $fresh_tids(|tparam'*|)
+
+def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = ($subst_functyp(MAP (PAIR tparam' typ_a')*, ft), tid_fresh*)
+  -- if tparam'* = tparam* ++ tparam_hidden*
+  -- if |typ_a*| > 0 /\ |tparam*| = |typ_a*| /\ |tparam_hidden*| > 0
+  ----
+  -- if tid_fresh* = $fresh_tids(|tparam_hidden*|)
+  ----
+  -- if typ_a'* = typ_a* ++ (VarT tid_fresh)*
 
 ;;
 ;; Constructor definition specialization
 ;;
 
-;; (TODO) consider missing type arguments
-dec $specialize_consdef(consdef, typ*) : constyp
+dec $specialize_consdef(consdef, typ*) : (constyp, tid*)
     hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
-def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*) = $subst_constyp(theta, ct)
+def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*) = ($subst_constyp(MAP (PAIR tparam' typ_a)*, ct), eps)
   -- if tparam'* = tparam* ++ tparam_hidden*
-  -- if theta = MAP (PAIR tparam' typ_a)*
+  -- if |tparam'*| = |typ_a*|
+
+def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*) = ($subst_constyp(MAP (PAIR tparam' (VarT tid_fresh))*, ct), tid_fresh*)
+  -- if tparam'* = tparam* ++ tparam_hidden*
+  -- if |typ_a*| = 0 /\ |tparam'*| > 0
+  ----
+  -- if tid_fresh* = $fresh_tids(|tparam'*|)
+
+def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*) = ($subst_constyp(MAP (PAIR tparam' typ_a')*, ct), tid_fresh*)
+  -- if tparam'* = tparam* ++ tparam_hidden*
+  -- if |typ_a*| > 0 /\ |tparam*| = |typ_a*| /\ |tparam_hidden*| > 0
+  ----
+  -- if tid_fresh* = $fresh_tids(|tparam_hidden*|)
+  ----
+  -- if typ_a'* = typ_a* ++ (VarT tid_fresh)*
 
 ;;
 ;; Canonicalization (recursive specialization and typedef unrolling)

@@ -43,9 +43,9 @@ rule Call_convention_arg_ok/some-namea:
 ;;
 
 rule FuncType_ok:
-   p C |- name targIL* argIL* : functyp eps id_deft*
+   p C |- name targIL* argIL* : functyp tid_fresh* id_deft*
    -- if (fid, funcdef, id_deft*) = $find_funcdef(GLOBAL, C, name, argIL*)
-   -- if functyp = $specialize_funcdef(funcdef, targIL*)
+   -- if (functyp, tid_fresh*) = $specialize_funcdef(funcdef, targIL*)
 
 ;;
 ;; Method typing
@@ -88,13 +88,13 @@ rule MethodType_ok/builtin-uniont:
   -- if UnionT id_b (member, typ_b_in)* = $canon_typ(typ_b)
 
 rule MethodType_ok/externt:
-  p C |- expr_b member targIL* argIL* : functyp exprIL_b eps id_deft*
+  p C |- expr_b member targIL* argIL* : functyp exprIL_b tid_fresh* id_deft*
   ----
   -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
   -- if ExternT id_b fmap_b = $canon_typ(typ_b)
   ----
   -- if (fid, funcdef, id_deft*) = $find_func<funcdef>(member, $to_fkey(argIL*), fmap_b)
-  -- if functyp = $specialize_funcdef(funcdef, targIL*)
+  -- if (functyp, tid_fresh*) = $specialize_funcdef(funcdef, targIL*)
 
 ;; (TODO) MAP (PAIR "apply" funcdef) doesn't work
 ;;rule MethodType_ok/parsert:
@@ -261,6 +261,7 @@ def $gen_cstr_fd(cstr, fd_p, fd_a) = cstr''
   -- if cstr'' = $gen_cstr(cstr', $get_typ_ret_funcdef(fd_p), $get_typ_ret_funcdef(fd_a))
 
 def $gen_cstr_fd'(cstr, eps, fdenv_p, fdenv_a) = cstr
+
 def $gen_cstr_fd'(cstr, fid_h :: fid_t*, fdenv_p, fdenv_a) = $gen_cstr_fd'(cstr', fid_t*, fdenv_p, fdenv_a)
   -- if fd_p = $find_map<fid, funcdef>(fdenv_p, fid_h)
   -- if fd_a = $find_map<fid, funcdef>(fdenv_a, fid_h)
@@ -522,9 +523,9 @@ rule Call_ok/table-apply-methodt:
 ;;
 
 rule ConsType_ok:
-   p C |- name targIL* argIL* : constyp eps id_deft*
+   p C |- name targIL* argIL* : constyp tid_fresh* id_deft*
    -- if (cid, consdef, id_deft*) = $find_consdef(GLOBAL, C, name, argIL*)
-   -- if constyp = $specialize_consdef(consdef, targIL*)
+   -- if (constyp, tid_fresh*) = $specialize_consdef(consdef, targIL*)
 
 ;;
 ;; Constructor invocation
