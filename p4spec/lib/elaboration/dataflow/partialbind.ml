@@ -61,7 +61,7 @@ and rename_exps (dctx : DCtx.t) (binds : IdSet.t) (renv : REnv.t)
 
 and rename_exp_base (dctx : DCtx.t) (renv : REnv.t) (exp : exp) :
     DCtx.t * REnv.t * exp =
-  let id_rename = Fresh.fresh_exp dctx.frees exp in
+  let id_rename = Fresh.fresh_from_exp dctx.frees exp in
   let dctx = DCtx.add_free dctx id_rename in
   let renv = REnv.add id_rename (exp, []) renv in
   let exp = VarE id_rename $$ (exp.at, exp.note) in

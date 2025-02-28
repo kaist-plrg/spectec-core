@@ -1,24 +1,83 @@
 ;;
-;; Nominal or structural types
+;; Checkers for type properties
 ;;
 
-dec $nominal(typ) : bool  hint(show % $nominal)
-dec $nominal'(typ) : bool
+;; Nominal
 
-def $nominal(typ) = $nominal'($canon_typ(typ))
-def $nominal'(NewT id typ) = true
-def $nominal'(EnumT id member*) = true
-def $nominal'(SEnumT id typ (member, val)*) = true
-def $nominal'(StructT id (member, typ)*) = true
-def $nominal'(HeaderT id (member, typ)*) = true
-def $nominal'(UnionT id (member, typ)*) = true
-def $nominal'(ExternT id fmap) = true
-def $nominal'(TableT id typ) = true
-def $nominal'(typ) = false
+dec $is_nominal(typ) : bool
+    hint(show % IS NOMINAL)
+dec $is_nominal'(typ) : bool
+
+def $is_nominal(typ) = $is_nominal'($canon_typ(typ))
+def $is_nominal'(NewT _ _) = true
+def $is_nominal'(EnumT _ _) = true
+def $is_nominal'(SEnumT _ _ _) = true
+def $is_nominal'(StructT _ _) = true
+def $is_nominal'(HeaderT _ _) = true
+def $is_nominal'(UnionT _ _) = true
+def $is_nominal'(ExternT _ _) = true
+def $is_nominal'(TableT _ _) = true
+def $is_nominal'(typ) = false
+  -- otherwise
+
+;; Defaultable
+
+dec $is_deftable(typ) : bool
+    hint(show % IS DEFAULTABLE)
+dec $is_deftable'(typ) : bool
+
+def $is_deftable(typ) = $is_deftable'($canon_typ(typ))
+def $is_deftable'(StrT) = true
+def $is_deftable'(BoolT) = true
+def $is_deftable'(IntT) = true
+def $is_deftable'(FIntT _) = true
+def $is_deftable'(FBitT _) = true
+def $is_deftable'(VBitT _) = true
+def $is_deftable'(NewT _ typ') = $is_deftable(typ')
+def $is_deftable'(EnumT _ _) = true
+def $is_deftable'(SEnumT _ typ' _) = $is_deftable(typ')
+def $is_deftable'(TupleT typ'*) = true
+  -- if $is_deftable(typ')*
+def $is_deftable'(StructT _ (_, typ')*) = true
+  -- if $is_deftable(typ')*
+def $is_deftable'(HeaderT _ (_, typ')*) = true
+  -- if $is_deftable(typ')*
+def $is_deftable'(UnionT _ (_, typ')*) = true
+  -- if $is_deftable(typ')*
+def $is_deftable'(typ) = false
+
+;; Equalable
+
+dec $is_equalable(typ) : bool
+    hint(show % IS EQUALABLE)
+dec $is_equalable'(typ) : bool
+
+def $is_equalable(typ) = $is_equalable'($canon_typ(typ))
+def $is_equalable'(VoidT) = false
+def $is_equalable'(VarT _) = false
+def $is_equalable'(ExternT _ _) = false
+def $is_equalable'(ParserT _) = false
+def $is_equalable'(ControlT _) = false
+def $is_equalable'(PackageT _) = false
+def $is_equalable'(TableT _ _) = false
+def $is_equalable'(synthtyp) = $is_seqt(synthtyp) \/ $is_recordt(synthtyp)
+def $is_equalable'(typ) = true
+
+;; Assignable
+
+dec $is_assignable(typ) : bool
+    hint(show % IS ASSIGNABLE)
+dec $is_assignable'(typ) : bool
+
+def $is_assignable(typ) = $is_assignable'($canon_typ(typ))
+def $is_assignable'(VoidT) = false
+def $is_assignable'(objtyp) = false
+def $is_assignable'(synthtyp) = false
+def $is_assignable'(typ) = true
   -- otherwise
 
 ;;
-;; Getters
+;; Getters for type properties
 ;;
 
 dec $get_width(typ) : nat

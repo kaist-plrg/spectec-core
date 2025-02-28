@@ -1,8 +1,13 @@
 ;;
-;; Static type representation
+;; Forward declarations of mutually recursive syntax
 ;;
 
 syntax ctk
+
+;;
+;; Static type representation
+;;
+
 syntax styp = typ dir ctk val?
 
 ;;
@@ -11,21 +16,24 @@ syntax styp = typ dir ctk val?
 
 ;; Map from variable identifiers to static types
 syntax frame hint(show %latex("\\Sigma")) = map<id, styp>
-;; Map from type identifiers to type definitions
-syntax tdenv hint(show %latex("\\Delta_\\texttt{t}")) = map<tid, typdef>
-;; Map from function identifiers to function definitions
-syntax fdenv hint(show %latex("\\Delta_\\texttt{f}")) = map<fid, funcdef>
-;; Map from constructor identifiers to constructor definitions
-syntax cdenv hint(show %latex("\\Delta_\\texttt{c}")) = map<fid, consdef>
 
 dec $empty_frame() : frame
 def $empty_frame() = $empty_map<id, styp>
 
+;; Map from type identifiers to type definitions
+syntax tdenv hint(show %latex("\\Delta_\\texttt{t}")) = map<tid, typdef>
+
 dec $empty_tdenv() : tdenv
 def $empty_tdenv() = $empty_map<tid, typdef>
 
+;; Map from function identifiers to function definitions
+syntax fdenv hint(show %latex("\\Delta_\\texttt{f}")) = map<fid, funcdef>
+
 dec $empty_fdenv() : fdenv
 def $empty_fdenv() = $empty_map<fid, funcdef>
+
+;; Map from constructor identifiers to constructor definitions
+syntax cdenv hint(show %latex("\\Delta_\\texttt{c}")) = map<fid, consdef>
 
 dec $empty_cdenv() : cdenv
 def $empty_cdenv() = $empty_map<cid, consdef>
@@ -35,30 +43,21 @@ def $empty_cdenv() = $empty_map<cid, consdef>
 ;;
 
 dec $check_func_name(id, id) : bool         ;;hint(show CHECK_FUNC_NAME(%1, %2))
-def $check_func_name(id_f, id_f') = id_f = id_f'
+def $check_func_name(id, id) = true
 
 dec $check_arity_more((id?)*, id*) : bool   ;;hint(show CHECK_ARITY_MORE(%1, %2))
-def $check_arity_more((id_a?)*, id_p*) = true
-  -- if |(id_a?)*| > |id_p*|
-def $check_arity_more((id_a?)*, id_p*) = false
-  -- otherwise
+def $check_arity_more((id_a?)*, id_p*) = |(id_a?)*| > |id_p*|
 
 dec $check_arity((id?)*, id*) : bool        ;;hint(show CHECK_ARITY(%1, %2))
-def $check_arity((id_a?)*, id_p*) = true
-  -- if |(id_a?)*| = |id_p*|
-def $check_arity((id_a?)*, id_p*) = false
-  -- otherwise
+def $check_arity((id_a?)*, id_p*) = |(id_a?)*| = |id_p*|
 
 dec $check_arity_less((id?)*, id*) : bool   ;;hint(show CHECK_ARITY_LESS(%1, %2))
-def $check_arity_less((id_a?)*, id_p*) = true
-  -- if |(id_a?)*| < |id_p*|
-def $check_arity_less((id_a?)*, id_p*) = false
-  -- otherwise
+def $check_arity_less((id_a?)*, id_p*) = |(id_a?)*| < |id_p*|
 
 dec $get_params_missing_names(id*, id*) : id*   ;;hint(show GET_PARAMS_MISSING_NAMES(%1, %2))
-def $get_params_missing_names(id_ph :: id_pt*, id_a*) = id_ph :: $get_params_missing_names(id_pt*, id_a*)
-  -- if ~$in_set<id>(id_ph, SET id_a*)
-def $get_params_missing_names(id_ph :: id_pt*, id_a*) = $get_params_missing_names(id_pt*, id_a*)
+def $get_params_missing_names(id_p_h :: id_p_t*, id_a*) = id_p_h :: $get_params_missing_names(id_p_t*, id_a*)
+  -- if ~$in_set<id>(id_p_h, SET id_a*)
+def $get_params_missing_names(id_p_h :: id_p_t*, id_a*) = $get_params_missing_names(id_p_t*, id_a*)
   -- otherwise
 
 ;; Check match between parameters and named arguments

@@ -148,6 +148,13 @@ let add_var (ctx : t) (id : Id.t * Dim.t) : t =
 let add_vars (ctx : t) (ids : (Id.t * Dim.t) list) : t =
   List.fold_left (fun ctx id -> add_var ctx id) ctx ids
 
+(* Adders for meta-variables *)
+
+let add_metavar (ctx : t) (tid : TId.t) (typ : Type.t) : t =
+  if bound_metavar ctx tid then error tid.at "type already defined";
+  let menv = TEnv.add tid typ ctx.menv in
+  { ctx with menv }
+
 (* Adders for type definitions *)
 
 let add_typdef (ctx : t) (tid : TId.t) (td : TypeDef.t) : t =
@@ -157,15 +164,10 @@ let add_typdef (ctx : t) (tid : TId.t) (td : TypeDef.t) : t =
 
 let add_tparams (ctx : t) (tparams : tparam list) : t =
   List.fold_left
-    (fun ctx tparam -> add_typdef ctx tparam TypeDef.Param)
+    (fun ctx tparam ->
+      let ctx = add_typdef ctx tparam TypeDef.Param in
+      add_metavar ctx tparam (VarT (tparam, []) $ tparam.at))
     ctx tparams
-
-(* Adders for meta-variables *)
-
-let add_metavar (ctx : t) (tid : TId.t) (typ : Type.t) : t =
-  if bound_metavar ctx tid then error tid.at "type already defined";
-  let menv = TEnv.add tid typ ctx.menv in
-  { ctx with menv }
 
 (* Adders for rules *)
 

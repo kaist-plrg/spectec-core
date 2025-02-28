@@ -104,7 +104,7 @@ and string_of_exp exp =
   | NumE (`HexOp, `Nat n) -> "0x" ^ Z.format "%X" n
   | NumE (_, n) -> string_of_num n
   | TextE text -> "\"" ^ String.escaped text ^ "\""
-  | VarE (id, targs) -> string_of_varid id ^ string_of_targs targs
+  | VarE id -> string_of_varid id
   | UnE (unop, exp) -> string_of_unop unop ^ string_of_exp exp
   | BinE (exp_l, binop, exp_r) ->
       string_of_exp exp_l ^ " " ^ string_of_binop binop ^ " "

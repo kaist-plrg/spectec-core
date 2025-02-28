@@ -35,7 +35,14 @@ dec $is_inste(expr) : bool                hint(show % IS INST_E)
 
 dec $string_of_name(name) : text     hint(show %)
 
-def $string_of_name(name) = $concat_text("." :: id)
-  -- if TOP id = name
-def $string_of_name(name) = id
-  -- if CURRENT id = name
+def $string_of_name(TOP id) = $concat_text("." :: id)
+def $string_of_name(CURRENT id) = id
+
+;;
+;; Unpacking name
+;;
+
+dec $id_of_name(name) : id   hint(show %)
+
+def $id_of_name(TOP id) = id
+def $id_of_name(CURRENT id) = id

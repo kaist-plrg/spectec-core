@@ -85,7 +85,7 @@ let rec rename_exp (dctx : DCtx.t) (renv : REnv.t) (exp : exp) :
           (dctx, renv, exp)
       (* Parallel binding occurrences *)
       | Some ids_rename ->
-          let id_rename = Fresh.fresh_exp dctx.frees exp in
+          let id_rename = Fresh.fresh_from_exp dctx.frees exp in
           let dctx = DCtx.add_free dctx id_rename in
           let renv =
             let ids_rename = IdSet.add id_rename ids_rename in

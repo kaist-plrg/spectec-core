@@ -17,7 +17,7 @@ let ( + ) = IdSet.union
 let rec free_exp (exp : exp) : t =
   match exp.it with
   | BoolE _ | NumE _ | TextE _ -> empty
-  | VarE (id, _) -> singleton id
+  | VarE id -> singleton id
   | UnE (_, exp) -> free_exp exp
   | BinE (exp_l, _, exp_r) -> free_exp exp_l + free_exp exp_r
   | CmpE (exp_l, _, exp_r) -> free_exp exp_l + free_exp exp_r

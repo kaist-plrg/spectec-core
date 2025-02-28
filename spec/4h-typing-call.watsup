@@ -136,7 +136,8 @@ rule MethodType_ok/tablet:
 
 ;; Filter out default arguments, leaving only the required ones
 
-dec $filter_default_args(paramtyp*, id*) : paramtyp* hint(show FILTER_DEFAULT_ARGS%latex("(")#%1#%latex(", ")#%2#%latex(")"))
+dec $filter_default_args(paramtyp*, id*) : paramtyp*
+    hint(show FILTER_DEFAULT_ARGS%latex("(")#%1#%latex(", ")#%2#%latex(")"))
 
 def $filter_default_args(eps, id_deft*) = eps
 def $filter_default_args(paramtyp_h :: paramtyp_t*, id_deft*) = $filter_default_args(paramtyp_t*, id_deft*)
@@ -149,8 +150,10 @@ def $filter_default_args(paramtyp_h :: paramtyp_t*, id_deft*) = paramtyp_h :: $f
 
 syntax pmap = map<id, paramtyp>
 
-dec $align_params_with_args(paramtyp*, (argIL, typ)*): (paramtyp*, (argIL, typ)*)     hint(show ALIGN_PARAMS_WITH_ARGS%latex("(")#%1#%latex(", ")#%2#%latex(")"))
-dec $align_params_with_args'(pmap, paramtyp, (argIL, typ)): (paramtyp, (argIL, typ))  hint(show ALIGN_PARAMS_WITH_ARGS'%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(")"))
+dec $align_params_with_args(paramtyp*, (argIL, typ)*): (paramtyp*, (argIL, typ)*)
+    hint(show ALIGN_PARAMS_WITH_ARGS%latex("(")#%1#%latex(", ")#%2#%latex(")"))
+dec $align_params_with_args'(pmap, paramtyp, (argIL, typ)): (paramtyp, (argIL, typ))
+    hint(show ALIGN_PARAMS_WITH_ARGS'%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(")"))
 
 def $align_params_with_args(paramtyp*, (argIL, typ)*) = (paramtyp'*, (argIL', typ')*)
   -- if (id dir typ val?)* = paramtyp*
@@ -168,21 +171,87 @@ def $align_params_with_args'(pmap, paramtyp, (AnyA, typ)) = (paramtyp, (AnyA, ty
 
 var cstr : map<tid, typ?>
 
-dec $empty_cstr(tid*) : map<tid, typ?>                                                      ;;hint(show EMPTY_CSTR(%1))
-dec $gen_cstr(map<tid, typ?>, typ, typ) : map<tid, typ?>                                    ;;hint(show GEN_CSTR(%1, %2, %3))
-dec $gen_cstrs(map<tid, typ?>, typ*, typ*) : map<tid, typ?>                                 ;;hint(show GEN_CSTRS(%1, %2, %3))
-dec $gen_cstr_fd(map<tid, typ?>, funcdef, funcdef) : map<tid, typ?>                         ;;hint(show GEN_CSTR_FD(%1, %2, %3))
-dec $gen_cstr_fd'(map<tid, typ?>, fid*, fdenv, fdenv) : map<tid, typ?>                      ;;hint(show GEN_CSTR_FD'(%1, %2, %3, %4))
-dec $merge_cstr(map<tid, typ?>, map<tid, typ?>) : map<tid, typ?>                            ;;hint(show MERGE_CSTR(%1, %2))
-dec $merge_cstr'(map<tid, typ?>, map<tid, typ?>, tid*, map<tid, typ?>) : map<tid, typ?>     ;;hint(show MERGE_CSTR'(%1, %2, %3, %4))
-dec $merge_cstrs(map<tid, typ?>, map<tid, typ?>*) : map<tid, typ?>                          ;;hint(show MERGE_CSTRS(%1, %2))
-dec $resolve_cstrs(map<tid, typ?>) : map<tid, typ>                                          ;;hint(show RESOLVE_CSTRS(%1))
-dec $infer_targs(tid*, paramtyp*, typ*) : map<tid, typ>                                     ;;hint(show INFER_TARGS(%1, %2, %3))
+dec $empty_cstr(tid*) : map<tid, typ?>
+    ;;hint(show EMPTY_CSTR(%1))
 
 def $empty_cstr(eps) = MAP eps
 def $empty_cstr(tid_h :: tid_t*) = cstr'
   -- if cstr = $empty_cstr(tid_t*)
   -- if cstr' = $update_map<tid, typ?>(cstr, tid_h, eps)
+
+
+dec $gen_cstr(map<tid, typ?>, typ, typ) : map<tid, typ?>
+    ;;hint(show GEN_CSTR(%1, %2, %3))
+dec $gen_cstrs(map<tid, typ?>, typ*, typ*) : map<tid, typ?>
+    ;;hint(show GEN_CSTRS(%1, %2, %3))
+dec $gen_cstr_fd(map<tid, typ?>, funcdef, funcdef) : map<tid, typ?>
+    ;;hint(show GEN_CSTR_FD(%1, %2, %3))
+dec $gen_cstr_fd'(map<tid, typ?>, fid*, fdenv, fdenv) : map<tid, typ?>
+    ;;hint(show GEN_CSTR_FD'(%1, %2, %3, %4))
+dec $merge_cstr(map<tid, typ?>, map<tid, typ?>) : map<tid, typ?>
+    ;;hint(show MERGE_CSTR(%1, %2))
+dec $merge_cstr'(map<tid, typ?>, map<tid, typ?>, tid*, map<tid, typ?>) : map<tid, typ?>
+    ;;hint(show MERGE_CSTR'(%1, %2, %3, %4))
+dec $merge_cstrs(map<tid, typ?>, map<tid, typ?>*) : map<tid, typ?>
+    ;;hint(show MERGE_CSTRS(%1, %2))
+dec $resolve_cstrs(map<tid, typ?>) : map<tid, typ>
+    ;;hint(show RESOLVE_CSTRS(%1))
+
+def $gen_cstr(cstr, VarT tid, typ_a) = $update_map<tid, typ?>(cstr, tid, typ_a)
+  -- if $in_set<tid>(tid, $dom_map<tid, typ?>(cstr))
+
+def $gen_cstr(cstr, SpecT ptd_p typ_p'*, SpecT ptd_a typ_a'*) = $gen_cstrs(cstr', typ_p'*, typ_a'*)
+  -- if typ_p'' = $specialize_typdef(ptd_p, typ_p'*)
+  -- if typ_a'' = $specialize_typdef(ptd_a, typ_a'*)
+  -- if cstr' = $gen_cstr(cstr, typ_p'', typ_a'')
+  -- if $is_nominal(typ_p'') /\ $is_nominal(typ_a'')
+
+def $gen_cstr(cstr, SpecT ptd_p typ_p'*, SpecT ptd_a typ_a'*) = cstr'
+  -- if typ_p'' = $specialize_typdef(ptd_p, typ_p'*)
+  -- if typ_a'' = $specialize_typdef(ptd_a, typ_a'*)
+  -- if cstr' = $gen_cstr(cstr, typ_p'', typ_a'')
+  -- if ~($is_nominal(typ_p'') /\ $is_nominal(typ_a''))
+
+def $gen_cstr(cstr, DefT typ_p', typ_a) = $gen_cstr(cstr, typ_p', typ_a)
+
+def $gen_cstr(cstr, typ_p, DefT typ_a') = $gen_cstr(cstr, typ_p, typ_a')
+
+def $gen_cstr(cstr, NewT id typ_p', NewT id typ_a') = $gen_cstr(cstr, typ_p', typ_a')
+
+def $gen_cstr(cstr, ListT typ_p, ListT typ_a) = $gen_cstr(cstr, typ_p, typ_a)
+
+def $gen_cstr(cstr, TupleT typ_p*, TupleT typ_a*) = $gen_cstrs(cstr, typ_p*, typ_a*)
+
+def $gen_cstr(cstr, StackT typ_p' i_p, StackT typ_a' i_a) = $gen_cstr(cstr, typ_p', typ_a')
+
+def $gen_cstr(cstr, StructT id (member_p, typ_p')*, StructT id (member_a, typ_a')*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
+
+def $gen_cstr(cstr, HeaderT id (member_p, typ_p')*, HeaderT id (member_a, typ_a')*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
+
+def $gen_cstr(cstr, UnionT id (member_p, typ_p')*, UnionT id (member_a, typ_a')*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
+
+def $gen_cstr(cstr, ExternT id fdenv_p, ExternT id fdenv_a) = $gen_cstr_fd'(cstr, fid_p*, fdenv_p, fdenv_a)
+  -- if MAP (PAIR fid_p fd_p)* = fdenv_p
+  -- if MAP (PAIR fid_a fd_a)* = fdenv_a
+  -- if $eq_set<fid>(SET fid_p*, SET fid_a*)
+
+def $gen_cstr(cstr, ParserT pt_p*, ParserT pt_a*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
+  -- if (_ dir typ_p' _ = pt_p)*
+  -- if (_ dir typ_a' _ = pt_a)*
+
+def $gen_cstr(cstr, ControlT pt_p*, ControlT pt_a*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
+  -- if (_ dir typ_p' _ = pt_p)*
+  -- if (_ dir typ_a' _ = pt_a)*
+
+def $gen_cstr(cstr, PackageT typ_p*, PackageT typ_a*) = $gen_cstrs(cstr, typ_p*, typ_a*)
+
+def $gen_cstr(cstr, typ_p, typ_a) = cstr
+  -- otherwise
+
+
+def $gen_cstrs(cstr, typ_p*, typ_a*) = $merge_cstrs(cstr, cstr'*)
+  -- if |typ_p*| = |typ_a*|
+  -- if (cstr' = $gen_cstr(cstr, typ_p, typ_a))*
 
 
 def $gen_cstr_fd(cstr, fd_p, fd_a) = cstr''
@@ -198,73 +267,35 @@ def $gen_cstr_fd'(cstr, fid_h :: fid_t*, fdenv_p, fdenv_a) = $gen_cstr_fd'(cstr'
   -- if cstr' = $gen_cstr_fd(cstr, fd_p, fd_a)
 
 
-def $gen_cstr(cstr, VarT tid, typ_a) = $update_map<tid, typ?>(cstr, tid, typ_a)
-  -- if $in_set<tid>(tid, $dom_map<tid, typ?>(cstr))
-def $gen_cstr(cstr, SpecT ptd_p typ_p'*, SpecT ptd_a typ_a'*) = $gen_cstrs(cstr', typ_p'*, typ_a'*)
-  -- if typ_p'' = $specialize_typdef(ptd_p, typ_p'*)
-  -- if typ_a'' = $specialize_typdef(ptd_a, typ_a'*)
-  -- if cstr' = $gen_cstr(cstr, typ_p'', typ_a'')
-  -- if $nominal(typ_p'') /\ $nominal(typ_a'')
-def $gen_cstr(cstr, SpecT ptd_p typ_p'*, SpecT ptd_a typ_a'*) = cstr'
-  -- if typ_p'' = $specialize_typdef(ptd_p, typ_p'*)
-  -- if typ_a'' = $specialize_typdef(ptd_a, typ_a'*)
-  -- if cstr' = $gen_cstr(cstr, typ_p'', typ_a'')
-  -- if ~($nominal(typ_p'') /\ $nominal(typ_a''))
-def $gen_cstr(cstr, DefT typ_p', typ_a) = $gen_cstr(cstr, typ_p', typ_a)
-def $gen_cstr(cstr, typ_p, DefT typ_a') = $gen_cstr(cstr, typ_p, typ_a')
-def $gen_cstr(cstr, NewT id_p typ_p', NewT id_a typ_a') = $gen_cstr(cstr, typ_p', typ_a')
-  -- if id_p = id_a
-def $gen_cstr(cstr, ListT typ_p, ListT typ_a) = $gen_cstr(cstr, typ_p, typ_a)
-def $gen_cstr(cstr, TupleT typ_p*, TupleT typ_a*) = $gen_cstrs(cstr, typ_p*, typ_a*)
-def $gen_cstr(cstr, StackT typ_p' int_p, StackT typ_a' int_a) = $gen_cstr(cstr, typ_p', typ_a')
-  -- if int_p = int_a
-def $gen_cstr(cstr, StructT id_p (member_p, typ_p')*, StructT id_a (member_a, typ_a')*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
-  -- if id_p = id_a
-def $gen_cstr(cstr, HeaderT id_p (member_p, typ_p')*, HeaderT id_a (member_a, typ_a')*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
-  -- if id_p = id_a
-def $gen_cstr(cstr, UnionT id_p (member_p, typ_p')*, UnionT id_a (member_a, typ_a')*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
-  -- if id_p = id_a
-def $gen_cstr(cstr, ExternT id_p fdenv_p, ExternT id_a fdenv_a) = $gen_cstr_fd'(cstr, fid_p*, fdenv_p, fdenv_a)
-  -- if MAP (PAIR fid_p fd_p)* = fdenv_p
-  -- if MAP (PAIR fid_a fd_a)* = fdenv_a
-  -- if id_p = id_a
-  -- if $eq_set<fid>(SET fid_p*, SET fid_a*)
-def $gen_cstr(cstr, ParserT pt_p*, ParserT pt_a*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
-  -- if (id_p dir typ_p' val_p? = pt_p)*
-  -- if (id_a dir typ_a' val_a? = pt_a)*
-def $gen_cstr(cstr, ControlT pt_p*, ControlT pt_a*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
-  -- if (id_p dir typ_p' val_p? = pt_p)*
-  -- if (id_a dir typ_a' val_a? = pt_a)*
-def $gen_cstr(cstr, PackageT typ_p*, PackageT typ_a*) = $gen_cstrs(cstr, typ_p*, typ_a*)
-def $gen_cstr(cstr, typ_p, typ_a) = cstr
-  -- otherwise
+def $merge_cstr(cstr_o, cstr_n) = $merge_cstr'(cstr_o, cstr_n, tid_o*, MAP eps)
+  -- if MAP (PAIR tid_o typ_o?)* = cstr_o
+  -- if MAP (PAIR tid_n typ_n?)* = cstr_n
+  -- if $eq_set<tid>(SET tid_o*, SET tid_n*)
 
 
 def $merge_cstr'(cstr_o, cstr_n, eps, cstr) = cstr
+
 def $merge_cstr'(cstr_o, cstr_n, tid_h :: tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
   -- if $find_map<tid, typ?>(cstr_o, tid_h) = eps
   -- if $find_map<tid, typ?>(cstr_n, tid_h) = typ_n
   -- if cstr' = $update_map<tid, typ?>(cstr, tid_h, typ_n)
+
 def $merge_cstr'(cstr_o, cstr_n, tid_h :: tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
   -- if $find_map<tid, typ?>(cstr_o, tid_h) = typ_o
   -- if $find_map<tid, typ?>(cstr_n, tid_h) = eps
   -- if cstr' = $update_map<tid, typ?>(cstr, tid_h, typ_o)
+
 def $merge_cstr'(cstr_o, cstr_n, tid_h :: tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
   -- if $find_map<tid, typ?>(cstr_o, tid_h) = typ_o
   -- if $find_map<tid, typ?>(cstr_n, tid_h) = typ_n
   -- Sub_impl: typ_o << typ_n
   -- if cstr' = $update_map<tid, typ?>(cstr, tid_h, typ_n)
+
 def $merge_cstr'(cstr_o, cstr_n, tid_h :: tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
   -- if $find_map<tid, typ?>(cstr_o, tid_h) = typ_o
   -- if $find_map<tid, typ?>(cstr_n, tid_h) = typ_n
   -- Sub_impl: typ_n << typ_o
   -- if cstr' = $update_map<tid, typ?>(cstr, tid_h, typ_o)
-
-
-def $merge_cstr(cstr_o, cstr_n) = $merge_cstr'(cstr_o, cstr_n, tid_o*, MAP eps)
-  -- if MAP (PAIR tid_o typ_o?)* = cstr_o
-  -- if MAP (PAIR tid_n typ_n?)* = cstr_n
-  -- if $eq_set<tid>(SET tid_o*, SET tid_n*)
 
 
 def $merge_cstrs(MAP (PAIR tid typ?)*, eps) = MAP (PAIR tid typ?)*
@@ -273,17 +304,16 @@ def $merge_cstrs(cstr, cstr_h :: cstr_t*) = cstr''
   -- if cstr'' = $merge_cstrs(cstr', cstr_t*)
 
 
-def $gen_cstrs(cstr, typ_p*, typ_a*) = $merge_cstrs(cstr, cstr'*)
-  -- if |typ_p*| = |typ_a*|
-  -- if (cstr' = $gen_cstr(cstr, typ_p, typ_a))*
-
-
 def $resolve_cstrs(MAP eps) = MAP eps
+
 def $resolve_cstrs(MAP ((PAIR tid_h typ_h?) :: (PAIR tid_t typ_t?)*)) = $update_map<tid, typ>(MAP (PAIR tid_t' typ_t')*, tid_h, typ_h')
   -- if typ_h? = typ_h'
   -- if typ_h' =/= AnyT
   -- if MAP (PAIR tid_t' typ_t')* = $resolve_cstrs(MAP (PAIR tid_t typ_t?)*)
 
+
+dec $infer_targs(tid*, paramtyp*, typ*) : map<tid, typ>
+    ;;hint(show INFER_TARGS(%1, %2, %3))
 
 def $infer_targs(tid*, (id dir typ_p val?)*, typ_a*) = $resolve_cstrs(cstr')
   -- if cstr = $empty_cstr(tid*)
@@ -293,7 +323,8 @@ def $infer_targs(tid*, (id dir typ_p val?)*, typ_a*) = $resolve_cstrs(cstr')
 ;; Function and Method invocation
 ;;
 
-dec $is_table_apply_in_action_arg(argIL) : bool   hint(show % CONTAINS TABLE.APPLY CALL)
+dec $is_table_apply_in_action_arg(argIL) : bool
+    hint(show % CONTAINS TABLE.APPLY CALL)
 
 rule Call_ok/actiont:
   p C |- (ActionT pt*) eps eps (argIL, typ_a)* id_deft* : VoidT eps argIL''*
@@ -302,7 +333,7 @@ rule Call_ok/actiont:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(p, C) |- ActionT pt*
+  -- FuncType_wf: $bound_tids(p, C) |- ActionT pt*
   ----
   -- Call_site_ok: p C |- ActionT pt* : CALLSITE_OK
   -- if (~$is_table_apply_in_action_arg(argIL'))*
@@ -316,7 +347,7 @@ rule Call_ok/extern-funct-no-targsinfer:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(p, C) |- ExternFuncT pt* typ_r
+  -- FuncType_wf: $bound_tids(p, C) |- ExternFuncT pt* typ_r
   ----
   -- Call_site_ok: p C |- ExternFuncT pt* typ_r : CALLSITE_OK
   ----
@@ -336,7 +367,7 @@ rule Call_ok/extern-funct-targsinfer:
   ----
   -- if ExternFuncT pt'''* typ_r' = $subst_functyp(theta, ExternFuncT pt* typ_r)
   ----
-  -- FuncType_wf: $bound_tid(p, C) |- ExternFuncT pt'''* typ_r'
+  -- FuncType_wf: $bound_tids(p, C) |- ExternFuncT pt'''* typ_r'
   ----
   -- Call_site_ok: p C |- ExternFuncT pt'''* typ_r' : CALLSITE_OK
   ----
@@ -349,7 +380,7 @@ rule Call_ok/funct-no-targsinfer:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(p, C) |- (FuncT pt* typ_r)
+  -- FuncType_wf: $bound_tids(p, C) |- (FuncT pt* typ_r)
   ----
   -- Call_site_ok: p C |- FuncT pt* typ_r : CALLSITE_OK
   ----
@@ -369,7 +400,7 @@ rule Call_ok/funct-targsinfer:
   ----
   -- if FuncT pt'''* typ_r' = $subst_functyp(theta, FuncT pt* typ_r)
   ----
-  -- FuncType_wf: $bound_tid(p, C) |- (FuncT pt'''* typ_r')
+  -- FuncType_wf: $bound_tids(p, C) |- (FuncT pt'''* typ_r')
   ----
   -- Call_site_ok: p C |- FuncT pt'''* typ_r' : CALLSITE_OK
   ----
@@ -382,7 +413,7 @@ rule Call_ok/builtin-methodt:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(p, C) |- BuiltinMethodT pt* typ_r
+  -- FuncType_wf: $bound_tids(p, C) |- BuiltinMethodT pt* typ_r
   ----
   -- Call_site_ok: p C |- BuiltinMethodT pt* typ_r : CALLSITE_OK
   -- (Call_convention_arg_ok: p C NOACT |- pt'' ~~ (argIL', typ_a') : argIL'')*
@@ -394,7 +425,7 @@ rule Call_ok/extern-methodt-no-targsinfer:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(p, C) |- ExternMethodT pt* typ_r
+  -- FuncType_wf: $bound_tids(p, C) |- ExternMethodT pt* typ_r
   ----
   -- Call_site_ok: p C |- ExternMethodT pt* typ_r : CALLSITE_OK
   ----
@@ -414,7 +445,7 @@ rule Call_ok/extern-methodt-targsinfer:
   ----
   -- if ExternMethodT pt'''* typ_r' = $subst_functyp(theta, ExternMethodT pt* typ_r)
   ----
-  -- FuncType_wf: $bound_tid(p, C) |- ExternMethodT pt'''* typ_r'
+  -- FuncType_wf: $bound_tids(p, C) |- ExternMethodT pt'''* typ_r'
   ----
   -- Call_site_ok: p C |- ExternMethodT pt'''* typ_r' : CALLSITE_OK
   ----
@@ -427,7 +458,7 @@ rule Call_ok/extern-abstract-methodt-no-targsinfer:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(p, C) |- ExternAbstractMethodT pt* typ_r
+  -- FuncType_wf: $bound_tids(p, C) |- ExternAbstractMethodT pt* typ_r
   ----
   -- Call_site_ok: p C |- ExternAbstractMethodT pt* typ_r : CALLSITE_OK
   ----
@@ -447,7 +478,7 @@ rule Call_ok/extern-abstract-methodt-targsinfer:
   ----
   -- if ExternAbstractMethodT pt'''* typ_r' = $subst_functyp(theta, ExternAbstractMethodT pt* typ_r)
   ----
-  -- FuncType_wf: $bound_tid(p, C) |- ExternAbstractMethodT pt'''* typ_r'
+  -- FuncType_wf: $bound_tids(p, C) |- ExternAbstractMethodT pt'''* typ_r'
   ----
   -- Call_site_ok: p C |- ExternAbstractMethodT pt'''* typ_r' : CALLSITE_OK
   ----
@@ -460,7 +491,7 @@ rule Call_ok/parser-apply-methodt:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(p, C) |- (ParserApplyMethodT pt*)
+  -- FuncType_wf: $bound_tids(p, C) |- (ParserApplyMethodT pt*)
   ----
   -- Call_site_ok: p C |- ParserApplyMethodT pt* : CALLSITE_OK
   ----
@@ -473,7 +504,7 @@ rule Call_ok/control-apply-methodt:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- FuncType_wf: $bound_tid(p, C) |- ControlApplyMethodT pt*
+  -- FuncType_wf: $bound_tids(p, C) |- ControlApplyMethodT pt*
   ----
   -- Call_site_ok: p C |- ControlApplyMethodT pt* : CALLSITE_OK
   ----
@@ -481,7 +512,7 @@ rule Call_ok/control-apply-methodt:
 
 rule Call_ok/table-apply-methodt:
   p C |- (TableApplyMethodT typ_r) eps eps eps eps : typ_r eps eps
-  -- FuncType_wf: $bound_tid(p, C) |- TableApplyMethodT typ_r
+  -- FuncType_wf: $bound_tids(p, C) |- TableApplyMethodT typ_r
   ----
   -- Call_site_ok: p C |- TableApplyMethodT typ_r : CALLSITE_OK
 
@@ -551,7 +582,7 @@ rule Inst_ok/global-packaget-no-targsinfer:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- ConsType_wf: $bound_tid(GLOBAL, C_1) |- (ConsT pt* typ_i)
+  -- ConsType_wf: $bound_tids(GLOBAL, C_1) |- (ConsT pt* typ_i)
   ----
   -- Inst_site_ok: BLOCK C_1 |- (ConsT pt* typ_i) : INSTSITE_OK
   -- (Call_convention_arg_ok: BLOCK C_1 NOACT |- pt'' ~~ (argIL', typ_a') : argIL'')*
@@ -573,7 +604,7 @@ rule Inst_ok/global-packaget-targsinfer:
   ----
   -- if ConsT pt'''* typ_i'' = $subst_constyp(theta, ConsT pt* typ_i)
   ----
-  -- ConsType_wf: $bound_tid(GLOBAL, C_1) |- (ConsT pt'''* typ_i'')
+  -- ConsType_wf: $bound_tids(GLOBAL, C_1) |- (ConsT pt'''* typ_i'')
   ----
   -- Inst_site_ok: BLOCK C_1 |- (ConsT pt'''* typ_i'') : INSTSITE_OK
   -- (Call_convention_arg_ok: BLOCK C_1 NOACT |- pt''' ~~ (argIL', typ_a') : argIL'')*
@@ -585,7 +616,7 @@ rule Inst_ok/else-no-targsinfer:
   -- if |pt'*| = |argIL*|
   -- if (pt''*, (argIL', typ_a')*) = $align_params_with_args(pt'*, (argIL, typ_a)*)
   ----
-  -- ConsType_wf: $bound_tid(p, C) |- (ConsT pt* typ_i)
+  -- ConsType_wf: $bound_tids(p, C) |- (ConsT pt* typ_i)
   ----
   -- Inst_site_ok: p C |- (ConsT pt* typ_i) : INSTSITE_OK
   -- (Call_convention_arg_ok: p C NOACT |- pt'' ~~ (argIL', typ_a') : argIL'')*
@@ -604,7 +635,7 @@ rule Inst_ok/else-targsinfer:
   ----
   -- if ConsT pt'''* typ_i' = $subst_constyp(theta, ConsT pt* typ_i)
   ----
-  -- ConsType_wf: $bound_tid(p, C) |- (ConsT pt'''* typ_i')
+  -- ConsType_wf: $bound_tids(p, C) |- (ConsT pt'''* typ_i')
   ----
   -- Inst_site_ok: p C |- (ConsT pt'''* typ_i') : INSTSITE_OK
   -- (Call_convention_arg_ok: p C NOACT |- pt''' ~~ (argIL', typ_a') : argIL'')*

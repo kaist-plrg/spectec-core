@@ -9,22 +9,11 @@ rule Stmt_ok/emptys:
 ;; Assignment statement
 ;;
 
-dec $assignable(typ) : bool     hint(show % IS ASSIGNABLE)
-dec $assignable'(typ) : bool
-
-def $assignable(typ) = $assignable'($canon_typ(typ))
-
-def $assignable'(VoidT) = false
-def $assignable'(objtyp) = false
-def $assignable'(synthtyp) = false
-def $assignable'(typ) = true
-  -- otherwise
-
 rule Lval_ok/namee:
   p C |- NameE name
   -- if typ dir ctk val? = $find_styp(p, C, name)
   -- if dir = OUT \/ dir = INOUT
-  -- if $assignable(typ)
+  -- if $is_assignable(typ)
 
 rule Lval_ok/arracce:
   p C |- ArrAccE exprIL_b exprIL_i
@@ -192,12 +181,12 @@ rule Stmt_ok/exits:
 
 rule Stmt_ok/rets-none:
   LOCAL C f |- RetS eps : C RET (RetS eps)
-  -- if VoidT = $get_typ_ret(C.LOCAL.KIND)
+  -- if VoidT = $get_typ_ret_lkind(C.LOCAL.KIND)
 
 rule Stmt_ok/rets-some:
   LOCAL C f |- RetS expr : C RET (RetS exprIL')
   -- Expr_ok: LOCAL C |- expr : exprIL typ ctk
-  -- if typ_r = $get_typ_ret(C.LOCAL.KIND)
+  -- if typ_r = $get_typ_ret_lkind(C.LOCAL.KIND)
   ----
   -- if exprIL' = $coerce_assign((exprIL, typ), typ_r)
 
@@ -239,20 +228,20 @@ rule Stmt_ok/callmethods:
 ;; Instantiation statement
 ;;
 
-;; (TODO) unpack id of name
-;;rule Stmt_ok/callinsts:
-;;  p C f |- CallInstS name targ* arg* : C f (CallInstS typ name targIL'* argIL'*)
-;;  -- ConsType_ok: p C |- name eps eps : constyp eps eps
-;;  ----
-;;  -- Inst_ok: p C |- constyp eps eps eps eps : typ eps eps
-;;  ----
-;;  -- if typ' = $canon_typ(typ)
-;;  -- if $is_parsert(typ') \/ $is_controlt(typ')
-;;  ----
-;;  -- if (TOP id = name) \/ (CURRENT id = name)
-;;  -- if C' = $add_styp(p, C, id, typ NO CTK eps)
-;;  ----
-;;  -- Stmt_ok: p C' f |- CallMethodS (NameE (CURRENT id)) "apply" targ* arg* : C' f' stmtIL
+rule Stmt_ok/callinsts:
+  p C f |- CallInstS name targ* arg* : C f (CallInstS typ name targIL'* argIL'*)
+  -- ConsType_ok: p C |- name eps eps : constyp eps eps
+  ----
+  -- Inst_ok: p C |- constyp eps eps eps eps : typ eps eps
+  ----
+  -- if typ' = $canon_typ(typ)
+  -- if $is_parsert(typ') \/ $is_controlt(typ')
+  ----
+  -- if id = $id_of_name(name)
+  -- if C' = $add_styp(p, C, id, typ NO CTK eps)
+  ----
+  -- Stmt_ok: p C' f |- CallMethodS (NameE (CURRENT id)) "apply" targ* arg* : C' f' stmtIL
+  -- if stmtIL = CallMethodS (NameE (CURRENT id)) "apply" targIL'* argIL'*
 
 ;;
 ;; Transition statement

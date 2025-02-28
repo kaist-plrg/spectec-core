@@ -458,12 +458,11 @@ exp_lit_ :
   | TEXTLIT { TextE $1 }
 
 exp_var_ :
-  | varid { VarE ($1, []) }
-  | varid_langle comma_list(targ) RANGLE { VarE ($1, $2) }
-  | BOOL { VarE ("bool" @@@ $sloc, []) }
-  | NAT { VarE ("nat" @@@ $sloc, []) }
-  | INT { VarE ("int" @@@ $sloc, []) }
-  | TEXT { VarE ("text" @@@ $sloc, []) }
+  | varid { VarE $1 }
+  | BOOL { VarE ("bool" @@@ $sloc) }
+  | NAT { VarE ("nat" @@@ $sloc) }
+  | INT { VarE ("int" @@@ $sloc) }
+  | TEXT { VarE ("text" @@@ $sloc) }
 
 exp_call_ :
   | DOLLAR defid { CallE ($2, [], []) }

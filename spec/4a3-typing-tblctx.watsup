@@ -4,7 +4,7 @@
 
 syntax mode =
   | NOPRI
-  | NOPRILPM int
+  | NOPRILPM nat
   | PRI
   | PRILPM
 
@@ -36,7 +36,7 @@ syntax tblctx =
 ;;
 
 syntax tblstate =
-  | LPM int
+  | LPM nat
   | NOLPM
 
 ;;
@@ -57,15 +57,11 @@ def $empty_et() =
 
 dec $empty_tblctx(): tblctx
 def $empty_tblctx() =
-  {
-    KEYS eps,
+  { KEYS eps,
     ACTIONS eps,
     PRIORITIES $empty_pt(),
     ENTRIES $empty_et(),
-    MODE NOPRI
-  }
-
-dec $get_lpm_prefix(val) : tblstate
+    MODE NOPRI }
 
 ;;
 ;; Adders
@@ -74,6 +70,12 @@ dec $get_lpm_prefix(val) : tblstate
 dec $add_key(key, tblctx) : tblctx
 dec $add_action(action, tblctx) : tblctx
 dec $add_priority(int, tblctx) : tblctx
+
+;;
+;; Getters
+;;
+
+dec $get_lpm_prefix(val) : tblstate
 
 ;;
 ;; Setters
@@ -93,8 +95,8 @@ dec $set_mode(mode, tblctx) : tblctx
 dec $update_mode(text, typ, tblctx) : tblctx
 dec $update_state(tblstate, tblstate) : tblstate
 
-def $update_state(NOLPM, LPM int) = LPM int
-def $update_state(LPM int, NOLPM) = LPM int
+def $update_state(NOLPM, LPM nat) = LPM nat
+def $update_state(LPM nat, NOLPM) = LPM nat
 def $update_state(NOLPM, NOLPM) = NOLPM
 
 ;;

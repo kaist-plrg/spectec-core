@@ -1,4 +1,17 @@
 ;;
+;; Metavariables for int, nat, bool, and text
+;;
+
+var b : bool
+
+var i : int
+
+var n : nat
+var w : nat
+
+var t : text
+
+;;
 ;; General bool functions
 ;;
 
@@ -25,6 +38,8 @@ def $concat_<X>(eps) = eps
 def $concat_<X>((X*) :: (X'*)*) = X* ++ $concat_<X>((X'*)*)
 
 dec $partition<X>(X*, nat) : (X*, X*)
+
+dec $assoc<X, Y>(X, (X, Y)*) : Y?  hint(show %2`[%1])
 
 ;;
 ;; General set functions

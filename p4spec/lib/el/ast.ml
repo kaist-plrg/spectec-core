@@ -72,7 +72,7 @@ and exp' =
   | BoolE of bool                       (* bool *)
   | NumE of numop * num                 (* num *)
   | TextE of text                       (* text *)
-  | VarE of id * targ list              (* id (`<` list(targ, `,`) `>`)? *)
+  | VarE of id                          (* id *)
   | UnE of unop * exp                   (* unop exp *)
   | BinE of exp * binop * exp           (* exp binop exp *)
   | CmpE of exp * cmpop * exp           (* exp cmpop exp *)

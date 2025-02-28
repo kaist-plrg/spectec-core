@@ -129,7 +129,7 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
           && List.for_all Type.is_defaultable typs_to_inner_default
     | SeqDefaultT typs_from_inner, StackT (typ_to_inner, size_to) ->
         let size_from = List.length typs_from_inner |> Bigint.of_int in
-        Bigint.(size_from < size_to)
+        Bigint.(size_from <= size_to)
         && List.for_all
              (fun typ_from_inner -> explicit typ_from_inner typ_to_inner)
              typs_from_inner

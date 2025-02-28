@@ -3,29 +3,29 @@
 ;;
 
 rule Expr_ok/boole:
-  p C |- BoolE bool : (ValueE (BoolV bool)) BoolT LCTK
+  p C |- BoolE b : (ValueE (BoolV b)) BoolT LCTK
 
 ;;
 ;; String expression
 ;;
 
 rule Expr_ok/stre:
-  p C |- StrE text : (ValueE (StrV text)) StrT LCTK
+  p C |- StrE t : (ValueE (StrV t)) StrT LCTK
 
 ;;
 ;; Number expression
 ;;
 
 rule Expr_ok/nume-intt:
-  p C |- NumE (INT int) : (ValueE (IntV int)) IntT LCTK
+  p C |- NumE (INT i) : (ValueE (IntV i)) IntT LCTK
 
 rule Expr_ok/nume-fintt:
-  p C |- NumE (FINT width int) : (ValueE (FIntV width bs)) (FIntT width) LCTK
-  -- if bs = $of_two_complement(width, int)
+  p C |- NumE (FINT w i) : (ValueE (FIntV w bs)) (FIntT w) LCTK
+  -- if bs = $of_two_complement(w, i)
 
 rule Expr_ok/nume-fbitt:
-  p C |- NumE (FBIT width int) : (ValueE (FBitV width bs)) (FBitT width) LCTK
-  -- if bs = $of_two_complement(width, int)
+  p C |- NumE (FBIT w i) : (ValueE (FBitV w bs)) (FBitT w) LCTK
+  -- if bs = $of_two_complement(w, i)
 
 ;;
 ;; Variable expression
@@ -33,7 +33,7 @@ rule Expr_ok/nume-fbitt:
 
 rule Expr_ok/namee:
   p C |- NameE name : (NameE name) typ ctk
-  -- if typ dir ctk val? = $find_styp(p, C, name)
+  -- if typ dir ctk _ = $find_styp(p, C, name)
 
 ;;
 ;; Sequence expression
@@ -82,8 +82,8 @@ rule Expr_ok/invalide:
 ;;
 
 dec $compatible_bnot(typ) : bool
-def $compatible_bnot(FIntT width) = true
-def $compatible_bnot(FBitT width) = true
+def $compatible_bnot(FIntT _) = true
+def $compatible_bnot(FBitT _) = true
 def $compatible_bnot(typ) = false
   -- otherwise
 
@@ -104,8 +104,8 @@ rule Expr_ok/une-lnot:
 
 dec $compatible_uplus(typ) : bool
 def $compatible_uplus(IntT) = true
-def $compatible_uplus(FIntT width) = true
-def $compatible_uplus(FBitT width) = true
+def $compatible_uplus(FIntT _) = true
+def $compatible_uplus(FBitT _) = true
 def $compatible_uplus(typ) = false
   -- otherwise
 
@@ -116,8 +116,8 @@ rule Expr_ok/une-uplus:
 
 dec $compatible_uminus(typ) : bool
 def $compatible_uminus(IntT) = true
-def $compatible_uminus(FIntT width) = true
-def $compatible_uminus(FBitT width) = true
+def $compatible_uminus(FIntT _) = true
+def $compatible_uminus(FBitT _) = true
 def $compatible_uminus(typ) = false
   -- otherwise
 
@@ -132,8 +132,8 @@ rule Expr_ok/une-uminus:
 
 dec $compatible_plusminusmult(typ, typ) : bool
 def $compatible_plusminusmult(IntT, IntT) = true
-def $compatible_plusminusmult(FIntT width, FIntT width) = true
-def $compatible_plusminusmult(FBitT width, FBitT width) = true
+def $compatible_plusminusmult(FIntT w, FIntT w) = true
+def $compatible_plusminusmult(FBitT w, FBitT w) = true
 def $compatible_plusminusmult(typ_l, typ_r) = false
   -- otherwise
 
@@ -146,13 +146,14 @@ rule Expr_ok/bine-plus-minus-mult:
   ----
   -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
   ----
-  -- if ((exprIL_l'', typ''), (exprIL_r'', typ'')) = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), def $compatible_plusminusmult)
+  -- if ((exprIL_l'', typ''), (exprIL_r'', typ''))
+        = $reduce_senums_binary((exprIL_l', typ'), (exprIL_r', typ'), def $compatible_plusminusmult)
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
 dec $compatible_satplusminus(typ, typ) : bool
-def $compatible_satplusminus(FIntT width, FIntT width) = true
-def $compatible_satplusminus(FBitT width, FBitT width) = true
+def $compatible_satplusminus(FIntT w, FIntT w) = true
+def $compatible_satplusminus(FBitT w, FBitT w) = true
 def $compatible_satplusminus(typ_l, typ_r) = false
   -- otherwise
 
@@ -189,14 +190,14 @@ rule Expr_ok/bine-div-mod:
 
 dec $compatible_shift(typ, typ) : bool
 def $compatible_shift(IntT, IntT) = true
-def $compatible_shift(IntT, FIntT width) = true
-def $compatible_shift(IntT, FBitT width) = true
-def $compatible_shift(FIntT width, IntT) = true
-def $compatible_shift(FIntT width_l, FIntT width_r) = true
-def $compatible_shift(FIntT width_l, FBitT width_r) = true
-def $compatible_shift(FBitT width, IntT) = true
-def $compatible_shift(FBitT width_l, FIntT width_r) = true
-def $compatible_shift(FBitT width_l, FBitT width_r) = true
+def $compatible_shift(IntT, FIntT _) = true
+def $compatible_shift(IntT, FBitT _) = true
+def $compatible_shift(FIntT _, IntT) = true
+def $compatible_shift(FIntT _, FIntT _) = true
+def $compatible_shift(FIntT _, FBitT _) = true
+def $compatible_shift(FBitT _, IntT) = true
+def $compatible_shift(FBitT _, FIntT _) = true
+def $compatible_shift(FBitT _, FBitT _) = true
 def $compatible_shift(typ_l, typ_r) = false
   -- otherwise
 
@@ -213,21 +214,6 @@ rule Expr_ok/bine-shift:
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
-dec $equalable(typ) : bool    hint(show % IS EQUALABLE)
-dec $equalable'(typ) : bool
-
-def $equalable(typ) = $equalable'($canon_typ(typ))
-
-def $equalable'(VoidT) = false
-def $equalable'(VarT id) = false
-def $equalable'(ExternT id fmap) = false
-def $equalable'(ParserT paramtyp*) = false
-def $equalable'(ControlT paramtyp*) = false
-def $equalable'(PackageT typ*) = false
-def $equalable'(TableT id typ) = false
-def $equalable'(synthtyp) = $is_seqt(synthtyp) \/ $is_recordt(synthtyp)
-def $equalable'(typ) = true
-
 rule Expr_ok/bine-compare-eq:
   p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l' exprIL_r') typ' ctk
   -- if $in_set<binop>(binop, SET ([ EQ, NE ]))
@@ -237,14 +223,14 @@ rule Expr_ok/bine-compare-eq:
   ----
   -- if (typ', exprIL_l', exprIL_r') = $coerce_binary((exprIL_l, typ_l), (exprIL_r, typ_r))
   ----
-  -- if $equalable(typ')
+  -- if $is_equalable(typ')
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
 dec $compatible_compare(typ, typ) : bool
 def $compatible_compare(IntT, IntT) = true
-def $compatible_compare(FIntT width_l, FIntT width_r) = width_l = width_r
-def $compatible_compare(FBitT width_l, FBitT width_r) = width_l = width_r
+def $compatible_compare(FIntT w, FIntT w) = true
+def $compatible_compare(FBitT w, FBitT w) = true
 def $compatible_compare(typ_l, typ_r) = false
   -- otherwise
 
@@ -262,8 +248,8 @@ rule Expr_ok/bine-compare:
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
 dec $compatible_bitwise(typ, typ) : bool
-def $compatible_bitwise(FIntT width_l, FIntT width_r) = width_l = width_r
-def $compatible_bitwise(FBitT width_l, FBitT width_r) = width_l = width_r
+def $compatible_bitwise(FIntT w, FIntT w) = true
+def $compatible_bitwise(FBitT w, FBitT w) = true
 def $compatible_bitwise(typ_l, typ_r) = false
   -- otherwise
 
@@ -281,10 +267,10 @@ rule Expr_ok/bine-bitwise:
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
 dec $compatible_concat(typ, typ) : bool
-def $compatible_concat(FIntT width_l, FIntT width_r) = true
-def $compatible_concat(FIntT width_l, FBitT width_r) = true
-def $compatible_concat(FBitT width_l, FIntT width_r) = true
-def $compatible_concat(FBitT width_l, FBitT width_r) = true
+def $compatible_concat(FIntT _, FIntT _) = true
+def $compatible_concat(FIntT _, FBitT _) = true
+def $compatible_concat(FBitT _, FIntT _) = true
+def $compatible_concat(FBitT _, FBitT _) = true
 def $compatible_concat(typ_l, typ_r) = false
   -- otherwise
 
@@ -295,9 +281,9 @@ rule Expr_ok/bine-concat-fint:
   ----
   -- if ((exprIL_l', typ_l'), (exprIL_r', typ_r')) = $reduce_senums_binary((exprIL_l, typ_l), (exprIL_r, typ_r), def $compatible_concat)
   ----
-  -- if width = $($get_width(typ_l') + $get_width(typ_r'))
+  -- if w = $($get_width(typ_l') + $get_width(typ_r'))
   -- if $is_fintt(typ_l')
-  -- if typ'' = FIntT width
+  -- if typ'' = FIntT w
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
@@ -308,9 +294,9 @@ rule Expr_ok/bine-concat-fbit:
   ----
   -- if ((exprIL_l', typ_l'), (exprIL_r', typ_r')) = $reduce_senums_binary((exprIL_l, typ_l), (exprIL_r, typ_r), def $compatible_concat)
   ----
-  -- if width = $($get_width(typ_l') + $get_width(typ_r'))
+  -- if w = $($get_width(typ_l') + $get_width(typ_r'))
   -- if $is_fbitt(typ_l')
-  -- if typ'' = FBitT width
+  -- if typ'' = FBitT w
   ----
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
@@ -365,8 +351,8 @@ rule Expr_ok/caste:
 
 dec $compatible_mask(typ, typ) : bool
 def $compatible_mask(IntT, IntT) = true
-def $compatible_mask(FIntT width_l, FIntT width_r) = width_l = width_r
-def $compatible_mask(FBitT width_l, FBitT width_r) = width_l = width_r
+def $compatible_mask(FIntT w, FIntT w) = true
+def $compatible_mask(FBitT w, FBitT w) = true
 def $compatible_mask(typ_l, typ_r) = false
   -- otherwise
 
@@ -379,7 +365,7 @@ rule Expr_ok/maske:
   ----
   -- if ((exprIL_b'', typ''), (exprIL_m'', typ'')) = $reduce_senums_binary((exprIL_b', typ'), (exprIL_m', typ'), def $compatible_mask)
   ----
-  ;; -- Type_wf: $bound_tid(C) |- SetT typ''
+  ;; -- Type_wf: $bound_tids(C) |- SetT typ''
 
 ;;
 ;; Range expression
@@ -387,8 +373,8 @@ rule Expr_ok/maske:
 
 dec $compatible_range(typ, typ) : bool
 def $compatible_range(IntT, IntT) = true
-def $compatible_range(FIntT width_l, FIntT width_r) = width_l = width_r
-def $compatible_range(FBitT width_l, FBitT width_r) = width_l = width_r
+def $compatible_range(FIntT w, FIntT w) = true
+def $compatible_range(FBitT w, FBitT w) = true
 def $compatible_range(typ_l, typ_r) = false
   -- otherwise
 
@@ -401,7 +387,7 @@ rule Expr_ok/rangee:
   ----
   -- if ((exprIL_lb'', typ''), (exprIL_ub'', typ'')) = $reduce_senums_binary((exprIL_lb', typ'), (exprIL_ub', typ'), def $compatible_range)
   ----
-  ;; -- Type_wf: $bound_tid(C) |- SetT typ''
+  ;; -- Type_wf: $bound_tids(C) |- SetT typ''
 
 ;;
 ;; Select expression
@@ -465,7 +451,7 @@ rule Expr_ok/selecte:
   -- if C.LOCAL.KIND = PARSERSTATE
   -- (Expr_ok: LOCAL C |- expr_k : exprIL_k typ_k ctk_k)*
   ----
-  -- (Type_wf: $bound_tid(LOCAL, C) |- SetT typ_k)*
+  -- (Type_wf: $bound_tids(LOCAL, C) |- SetT typ_k)*
   ----
   -- (Select_case_ok: LOCAL C typ_k* |- selectcase : selectcaseIL)*
 
@@ -475,8 +461,8 @@ rule Expr_ok/selecte:
 
 dec $compatible_arrayindex(typ) : bool
 def $compatible_arrayindex(IntT) = true
-def $compatible_arrayindex(FIntT width) = true
-def $compatible_arrayindex(FBitT width) = true
+def $compatible_arrayindex(FIntT _) = true
+def $compatible_arrayindex(FBitT _) = true
 def $compatible_arrayindex(typ) = false
   -- otherwise
 
@@ -507,15 +493,15 @@ rule Expr_ok/arracce-stackt:
 
 dec $compatible_bitstringbase(typ) : bool
 def $compatible_bitstringbase(IntT) = true
-def $compatible_bitstringbase(FIntT width) = $(width > 0)
-def $compatible_bitstringbase(FBitT width) = true
+def $compatible_bitstringbase(FIntT w) = w > 0
+def $compatible_bitstringbase(FBitT _) = true
 def $compatible_bitstringbase(typ) = false
   -- otherwise
 
 dec $compatible_bitstringindex(typ) : bool
 def $compatible_bitstringindex(IntT) = true
-def $compatible_bitstringindex(FIntT width) = true
-def $compatible_bitstringindex(FBitT width) = true
+def $compatible_bitstringindex(FIntT _) = true
+def $compatible_bitstringindex(FBitT _) = true
 def $compatible_bitstringindex(typ) = false
   -- otherwise
 
@@ -531,16 +517,16 @@ rule Expr_ok/bitacce:
   -- if (exprIL_l', typ_l') = $reduce_senum_unary((exprIL_l, typ_l), def $compatible_bitstringindex)
   ----
   -- Eval_static: p C |- exprIL_l' ~> val_l
-  -- if nat_l = $get_num(val_l)
+  -- if n_l = $get_num(val_l)
   ----
   -- Expr_ok: p C |- expr_h : exprIL_h typ_h LCTK
   ----
   -- if (exprIL_h', typ_h') = $reduce_senum_unary((exprIL_h, typ_h), def $compatible_bitstringindex)
   ----
   -- Eval_static: p C |- exprIL_h' ~> val_h
-  -- if nat_h = $get_num(val_h)
+  -- if n_h = $get_num(val_h)
   ----
-  -- if typ = FBitT $(nat_h - nat_l + 1)
+  -- if typ = FBitT $(n_h - n_l + 1)
 
 ;;
 ;; Error access expression
@@ -548,7 +534,7 @@ rule Expr_ok/bitacce:
 
 rule Expr_ok/erracce:
   p C |- ErrAccE member : (ValueE (ErrV member)) ErrT LCTK
-  -- if id = $concat_text("error." :: member)
+  -- if id = $concat_text([ "error.", member ])
   -- if ErrV member = $find_val(p, C, TOP id)
 
 ;;
@@ -561,11 +547,11 @@ rule Expr_ok/typeacce-enumt:
   -- if EnumT id_t member_t* = $canon_typ(typ)
   -- if member <- member_t*
 
-;;rule Expr_ok/typeacce-senumt:
-;;  p C |- TypeAccE name member : (ValueE (SEnumFieldV id_t member val)) typ LCTK
-;;  -- if MonoD typ = $find_typdef(p, C, name)
-;;  -- if SEnumT id_t typ_t (member_t, val_t)* = $canon_typ(typ)
-;;  -- if (member, val) <- (member_t, val_t)*
+rule Expr_ok/typeacce-senumt:
+  p C |- TypeAccE name member : (ValueE (SEnumFieldV id_t member val)) typ LCTK
+  -- if MonoD typ = $find_typdef(p, C, name)
+  -- if SEnumT id_t typ_t (member_t, val_t)* = $canon_typ(typ)
+  -- if val = $assoc<member, val>(member, (member_t, val_t)*)
 
 ;;
 ;; Expression access expression
@@ -595,37 +581,33 @@ rule Expr_ok/expracce-stackt-next:
   -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
   -- if StackT typ_s int_s = $canon_typ(typ_b)
 
-;; (TODO) membership + find
-;;rule Expr_ok/expracce-structt:
-;;  p C |- ExprAccE expr_b member : (ExprAccE exprIL_b member) typ DYN
-;;  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
-;;  -- if StructT id_s (member_s, typ_s)* = $canon_typ(typ_b)
-;;  ----
-;;  -- if (member, typ) <- (member_s, typ_s)*
+rule Expr_ok/expracce-structt:
+  p C |- ExprAccE expr_b member : (ExprAccE exprIL_b member) typ DYN
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- if StructT id_s (member_s, typ_s)* = $canon_typ(typ_b)
+  ----
+  -- if typ = $assoc<member, typ>(member, (member_s, typ_s)*)
 
-;; (TODO) membership + find
-;;rule Expr_ok/expracce-headert:
-;;  p C |- ExprAccE expr_b member : (ExprAccE exprIL_b member) typ DYN
-;;  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
-;;  -- if HeaderT id_h (member_h, typ_h)* = $canon_typ(typ_b)
-;;  ----
-;;  -- if (member, typ) <- (member_h, typ_h)*
+rule Expr_ok/expracce-headert:
+  p C |- ExprAccE expr_b member : (ExprAccE exprIL_b member) typ DYN
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- if HeaderT id_h (member_h, typ_h)* = $canon_typ(typ_b)
+  ----
+  -- if typ = $assoc<member, typ>(member, (member_h, typ_h)*)
 
-;; (TODO) membership + find
-;;rule Expr_ok/expracce-uniont:
-;;  p C |- ExprAccE expr_b member : (ExprAccE exprIL_b member) typ DYN
-;;  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
-;;  -- if UnionT id_u (member_u, typ_u)* = $canon_typ(typ_b)
-;;  ----
-;;  -- if (member, typ) <- (member_u, typ_u)*
+rule Expr_ok/expracce-uniont:
+  p C |- ExprAccE expr_b member : (ExprAccE exprIL_b member) typ DYN
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- if UnionT id_u (member_u, typ_u)* = $canon_typ(typ_b)
+  ----
+  -- if typ = $assoc<member, typ>(member, (member_u, typ_u)*)
 
-;; (TODO) membership + find
-;;rule Expr_ok/expracce-tablestructt:
-;;  p C |- ExprAccE expr_b member : (ExprAccE exprIL_b member) typ DYN
-;;  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
-;;  -- if TableStructT id_t (member_t, typ_t)* = $canon_typ(typ_b)
-;;  ----
-;;  -- if (member, typ) <- (member_t, typ_t)*
+rule Expr_ok/expracce-tablestructt:
+  p C |- ExprAccE expr_b member : (ExprAccE exprIL_b member) typ DYN
+  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- if TableStructT id_t (member_t, typ_t)* = $canon_typ(typ_b)
+  ----
+  -- if typ = $assoc<member, typ>(member, (member_t, typ_t)*)
 
 ;;
 ;; Function call expression

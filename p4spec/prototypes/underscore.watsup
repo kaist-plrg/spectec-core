@@ -1,0 +1,9 @@
+syntax foo = AAA int | BBB nat | CCC int int
+
+dec $bar(foo) : text
+def $bar(AAA _) = "AAA"
+def $bar(BBB _) = "BBB"
+def $bar(CCC _ _) = "CCC"
+
+dec $baz(foo*) : text
+def $baz(_) = "baz"

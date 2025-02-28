@@ -1,3 +1,7 @@
+;;
+;; Type evaluation
+;;
+
 rule Type_ok/voidt:
   p C |- VoidT : VoidT eps
 
@@ -17,22 +21,22 @@ rule Type_ok/intt:
   p C |- IntT : IntT eps
 
 rule Type_ok/fintt:
-  p C |- FIntT expr : (FIntT width) eps
+  p C |- FIntT expr : (FIntT w) eps
   -- Expr_ok: p C |- expr : exprIL typ LCTK
   -- Eval_static: p C |- exprIL ~> val
-  -- if width = $get_num(val)
+  -- if w = $get_num(val)
 
 rule Type_ok/fbitt:
-  p C |- FBitT expr : (FBitT width) eps
+  p C |- FBitT expr : (FBitT w) eps
   -- Expr_ok: p C |- expr : exprIL typ LCTK
   -- Eval_static: p C |- exprIL ~> val
-  -- if width = $get_num(val)
+  -- if w = $get_num(val)
 
 rule Type_ok/vbitt:
-  p C |- VBitT expr : (VBitT width) eps
+  p C |- VBitT expr : (VBitT w) eps
   -- Expr_ok: p C |- expr : exprIL typ LCTK
   -- Eval_static: p C |- exprIL ~> val
-  -- if width = $get_num(val)
+  -- if w = $get_num(val)
 
 rule Type_ok/stackt:
   p C |- StackT type expr : (SpecT ptd typ) tid_fresh*
@@ -40,9 +44,9 @@ rule Type_ok/stackt:
   ----
   -- Expr_ok: p C |- expr : exprIL typ LCTK
   -- Eval_static: p C |- exprIL ~> val
-  -- if int_s = $get_num(val)
+  -- if i_size = $get_num(val)
   ----
-  -- if ptd = PolyD ("T", eps) -> (StackT (VarT "T") int_s)
+  -- if ptd = PolyD ("T", eps) -> (StackT (VarT "T") i_size)
 
 rule Type_ok/listt:
   p C |- ListT type : (SpecT ptd typ) tid_fresh*
