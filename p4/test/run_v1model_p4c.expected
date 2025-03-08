@@ -1095,7 +1095,7 @@ Run success
 
 >>> Running run test on ../../../testdata/p4c/program/well-typed/table-entries-ser-enum-bmv2.p4 with ../../../testdata/p4c/stf/v1model/table-entries-ser-enum-bmv2.stf
 Error on typecheck: File ../../../testdata/p4c/program/well-typed/table-entries-ser-enum-bmv2.p4, line 74, characters 37-52
-(coerce_types_binary) cannot coerce types enum<bit<16>> MyEnum2B { MBR1 = 16w10, MBR2 = 16w43776 } and int
+(reduce_senums_binary) cannot reduce enum<bit<16>> MyEnum2B { MBR1 = 16w10, MBR2 = 16w43776 } and int
 
 >>> Running run test on ../../../testdata/p4c/program/well-typed/table-entries-ternary-bmv2.p4 with ../../../testdata/p4c/stf/v1model/table-entries-ternary-bmv2.stf
 [PASS] Expected: 1 01********** / Got: 1 0111110000B0

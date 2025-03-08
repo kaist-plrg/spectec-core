@@ -3,11 +3,11 @@ Running typecheck tests on 220 files
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/future/concat-string/issue4932.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/future/concat-string/issue4932.p4, line 25, characters 24-36
-(coerce_types_binary_numeric) cannot coerce types string and string
+(reduce_senums_binary) cannot coerce types string and string
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/future/concat-string/spec-issue1297-string-cat.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/future/concat-string/spec-issue1297-string-cat.p4, line 22, characters 33-41
-(coerce_types_binary_numeric) cannot coerce types string and string
+(reduce_senums_binary) cannot coerce types string and string
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/future/forloop/forloop1.p4
 Error on parser: File ../../../testdata/p4c/program/well-typed-excluded/future/forloop/forloop1.p4, line 23, characters 16-17
@@ -613,35 +613,35 @@ Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/constant_folding.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/constant_folding.p4, line 36, characters 12-20
-(coerce_types_binary_numeric) cannot coerce types bit<32> and bit<32>
+(reduce_senums_binary) cannot coerce types bit<32> and bit<32>
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/gauntlet_various_ops-bmv2.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/gauntlet_various_ops-bmv2.p4, line 108, characters 18-27
-(coerce_types_binary_numeric) cannot coerce types bit<4> and bit<4>
+(reduce_senums_binary) cannot coerce types bit<4> and bit<4>
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue1879-bmv2.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue1879-bmv2.p4, line 140, characters 35-52
-(coerce_types_binary_numeric) cannot coerce types bit<9> and bit<9>
+(reduce_senums_binary) cannot coerce types bit<9> and bit<9>
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue2190.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue2190.p4, line 27, characters 16-27
-(coerce_types_binary_numeric) cannot coerce types bit<8> and bit<8>
+(reduce_senums_binary) cannot coerce types bit<8> and bit<8>
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue2279_4.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue2279_4.p4, line 19, characters 22-46
-(coerce_types_binary_numeric) cannot coerce types bit<16> and bit<16>
+(reduce_senums_binary) cannot coerce types bit<16> and bit<16>
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue2287-bmv2.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/issue2287-bmv2.p4, line 68, characters 20-58
-(coerce_types_binary_numeric) cannot coerce types bit<8> and bit<8>
+(reduce_senums_binary) cannot coerce types bit<8> and bit<8>
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/precedence.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/precedence.p4, line 41, characters 12-17
-(coerce_types_binary_numeric) cannot coerce types bit<1> and bit<1>
+(reduce_senums_binary) cannot coerce types bit<1> and bit<1>
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/strength.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/fixed-width-div-and-mod/strength.p4, line 40, characters 12-17
-(coerce_types_binary_numeric) cannot coerce types bit<4> and bit<4>
+(reduce_senums_binary) cannot coerce types bit<4> and bit<4>
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/generic-constrained/default-package-argument.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/spec-clarify/generic-constrained/default-package-argument.p4, line 17, characters 17-26
@@ -781,15 +781,15 @@ Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/test-
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/test-clarify/newtype-implicit-cast/psa-dpdk-binary-operations-1.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/test-clarify/newtype-implicit-cast/psa-dpdk-binary-operations-1.p4, line 64, characters 17-41
-(coerce_types_binary_numeric) cannot coerce types bit<32> and type PortId_t (typedef bit<32>)
+(reduce_senums_binary) cannot coerce types bit<32> and type PortId_t (typedef bit<32>)
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/test-clarify/newtype-implicit-cast/psa-dpdk-binary-operations.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/test-clarify/newtype-implicit-cast/psa-dpdk-binary-operations.p4, line 64, characters 17-41
-(coerce_types_binary_numeric) cannot coerce types bit<32> and type PortId_t (typedef bit<32>)
+(reduce_senums_binary) cannot coerce types bit<32> and type PortId_t (typedef bit<32>)
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/test-clarify/newtype-implicit-cast/psa-dpdk-header-union-typedef.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/test-clarify/newtype-implicit-cast/psa-dpdk-header-union-typedef.p4, line 90, characters 17-41
-(coerce_types_binary_numeric) cannot coerce types bit<32> and type PortId_t (typedef bit<32>)
+(reduce_senums_binary) cannot coerce types bit<32> and type PortId_t (typedef bit<32>)
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/test-clarify/package-overload/issue3379-1.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/test-clarify/package-overload/issue3379-1.p4, line 13, characters 0-45

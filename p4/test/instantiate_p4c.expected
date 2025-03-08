@@ -369,7 +369,7 @@ Instantiate success: 0 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/enumCast.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed/enumCast.p4, line 39, characters 14-20
-(coerce_types_binary) cannot coerce types enum<bit<8>> E1 { e1 = 8w0, e2 = 8w1, e3 = 8w2 } and enum<bit<8>> E2 { e1 = 8w10, e2 = 8w11, e3 = 8w12 }
+(reduce_senums_binary) cannot reduce enum<bit<8>> E1 { e1 = 8w0, e2 = 8w1, e3 = 8w2 } and enum<bit<8>> E2 { e1 = 8w10, e2 = 8w11, e3 = 8w12 }
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/equality-bmv2.p4
 Instantiate success: 7 objects
@@ -2357,7 +2357,7 @@ Instantiate success: 0 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/precedence-lt.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed/precedence-lt.p4, line 13, characters 12-24
-(coerce_types_binary) cannot coerce types int and bool
+(reduce_senums_binary) cannot reduce int and bool
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/pred.p4
 Instantiate success: 2 objects
@@ -2946,7 +2946,7 @@ Instantiate success: 8 objects
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/table-entries-ser-enum-bmv2.p4
 Error on typecheck: File ../../../testdata/p4c/program/well-typed/table-entries-ser-enum-bmv2.p4, line 74, characters 37-52
-(coerce_types_binary) cannot coerce types enum<bit<16>> MyEnum2B { MBR1 = 16w10, MBR2 = 16w43776 } and int
+(reduce_senums_binary) cannot reduce enum<bit<16>> MyEnum2B { MBR1 = 16w10, MBR2 = 16w43776 } and int
 
 >>> Running instantiate test on ../../../testdata/p4c/program/well-typed/table-entries-ternary-bmv2.p4
 Instantiate success: 8 objects
