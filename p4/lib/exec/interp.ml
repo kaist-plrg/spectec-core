@@ -993,7 +993,7 @@ module Make (Arch : ARCH) : INTERP = struct
           let action_run =
             let member =
               let var_action, _ = action in
-              F.asprintf "%a" Il.Pp.pp_var var_action
+              match var_action.it with Top id -> id.it | Current id -> id.it
             in
             Value.TableEnumFieldV ("action_list(" ^ id ^ ")", member)
           in

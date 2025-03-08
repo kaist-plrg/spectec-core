@@ -35,7 +35,7 @@ Error on typecheck: File ../../../testdata/p4c/program/ill-typed/binary_e.p4, li
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/bitExtract_e.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/bitExtract_e.p4, line 25, characters 19-25
-(coerce_type_unary) cannot coerce type struct S {
+(reduce_senum_unary) cannot reduce struct S {
 
 }
 
@@ -57,7 +57,7 @@ Error on typecheck: File ../../../testdata/p4c/program/ill-typed/const.p4, line 
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/const1_e.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/const1_e.p4, line 19, characters 8-19
-(coerce_types_binary) cannot coerce types bit<32> and bit<16>
+(reduce_senums_binary) cannot reduce bit<32> and bit<16>
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/const_e.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/const_e.p4, line 18, characters 12-15
@@ -117,15 +117,15 @@ Error on typecheck: File ../../../testdata/p4c/program/ill-typed/div.p4, line 18
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/div0.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/div0.p4, line 18, characters 8-13
-(coerce_types_binary_numeric) cannot coerce types bit<8> and bit<8>
+(reduce_senums_binary) cannot coerce types bit<8> and bit<8>
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/div1.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/div1.p4, line 18, characters 8-14
-(coerce_types_binary_numeric) cannot coerce types bit<8> and bit<8>
+(reduce_senums_binary) cannot coerce types bit<8> and bit<8>
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/div3.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/div3.p4, line 19, characters 12-17
-(coerce_types_binary_numeric) cannot coerce types bit<8> and bit<8>
+(reduce_senums_binary) cannot coerce types bit<8> and bit<8>
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/dup-param.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/dup-param.p4, from line 17 character 0 to line 19 character 1
@@ -157,7 +157,7 @@ Error on typecheck: File ../../../testdata/p4c/program/ill-typed/enumCast.p4, li
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/equality-fail.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/equality-fail.p4, line 23, characters 12-19
-(coerce_types_binary) cannot coerce types varbit<32> and (header H {
+(reduce_senums_binary) cannot reduce varbit<32> and (header H {
     a bit<32>;
     b varbit<32>
   })<>
@@ -472,7 +472,7 @@ Error on typecheck: File ../../../testdata/p4c/program/ill-typed/issue306.p4, li
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/issue3153.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/issue3153.p4, line 1, characters 15-21
-(coerce_type_unary) cannot coerce type bool
+(reduce_senum_unary) cannot reduce bool
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/issue3170-1.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/issue3170-1.p4, line 11, characters 8-12
@@ -883,7 +883,7 @@ Error on typecheck: File ../../../testdata/p4c/program/ill-typed/named-fail1.p4,
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/neg.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/neg.p4, line 21, characters 8-13
-(coerce_types_binary_numeric) cannot coerce types int<8> and int<8>
+(reduce_senums_binary) cannot coerce types int<8> and int<8>
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/newtype-err.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/newtype-err.p4, line 10, characters 8-18
@@ -971,7 +971,7 @@ Error on typecheck: File ../../../testdata/p4c/program/ill-typed/push_nonconstan
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/range_e.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/range_e.p4, line 20, characters 12-22
-(coerce_types_binary) cannot coerce types bit<2> and bit<3>
+(reduce_senums_binary) cannot reduce bit<2> and bit<3>
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/scope.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/scope.p4, line 25, characters 22-23
@@ -1022,11 +1022,11 @@ Error on typecheck: File ../../../testdata/p4c/program/ill-typed/slice_out_of_bo
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-0.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-0.p4, line 4, characters 10-17
-(coerce_types_binary_numeric) cannot coerce types string and string
+(reduce_senums_binary) cannot coerce types string and string
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4, line 4, characters 10-16
-(coerce_types_binary_numeric) cannot coerce types string and int
+(reduce_senums_binary) cannot coerce types string and int
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/spec-issue563.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/spec-issue563.p4, line 12, characters 12-13
@@ -1174,7 +1174,7 @@ Error on typecheck: File ../../../testdata/p4c/program/ill-typed/type-params_e.p
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/typecheck1_e.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/typecheck1_e.p4, line 27, characters 12-14
-(coerce_type_unary) cannot coerce type bool
+(reduce_senum_unary) cannot reduce bool
 
 >>> Running typecheck test on ../../../testdata/p4c/program/ill-typed/typecheck_e.p4
 Error on typecheck: File ../../../testdata/p4c/program/ill-typed/typecheck_e.p4, from line 18 character 0 to line 23 character 1
