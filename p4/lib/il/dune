@@ -1,4 +1,4 @@
 (library
  (name il)
  (libraries util lang runtime_static)
- (modules ast pp eq walk))
+ (modules ast pp pp_to_el eq walk))
