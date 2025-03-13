@@ -39,6 +39,7 @@ exception TestParseStringErr of string * Util.Source.info * stat
 exception TestParseRoundtripErr of stat
 exception TestCheckErr of string * Util.Source.info * stat
 exception TestCheckNegErr of stat
+exception TestCheckRoundtripParseErr of string * Util.Source.info * stat
 exception TestCheckRoundtripErr of stat
 exception TestInstErr of string * Util.Source.info * stat
 exception TestParseStfErr of string * stat
@@ -153,10 +154,12 @@ let typecheck_string stat filename file =
 let typecheck_roundtrip stat includes filename =
   let stat, program' = typecheck_file stat includes Pos filename in
   let file' = 
-    try Format.asprintf "%a\n" Il.Pp_to_el.pp_program program'
-    with _ -> raise (TestCheckRoundtripErr stat);
+    Format.asprintf "%a\n" Il.Pp_to_el.pp_program program'
   in
-  let stat, program'' = typecheck_string stat filename file' in
+  let stat, program'' =
+    try typecheck_string stat filename file'
+    with ParseErr (msg, info) -> raise (TestCheckRoundtripParseErr (msg, info, stat));
+  in
   if not (Il.Eq.eq_program program' program'') then
     raise (TestCheckRoundtripErr stat);
   stat
@@ -168,7 +171,7 @@ let typecheck_test stat includes mode filename =
     match mode with
       | Pos ->
         let stat = typecheck_roundtrip stat includes filename in
-        Format.asprintf "Typecheck roundtrip success: %s" filename |> print_endline;
+        Format.asprintf "Typecheck success" |> print_endline;
         stat
       | Neg ->
         let stat, _program = typecheck_file stat includes mode filename in
@@ -186,9 +189,13 @@ let typecheck_test stat includes mode filename =
   | TestCheckNegErr stat ->
       Format.asprintf "Error: typecheck success" |> print_endline;
       { stat with fail_typecheck = stat.fail_typecheck + 1 }
+  | TestCheckRoundtripParseErr (msg, info, stat) ->
+      Format.asprintf "Error on typecheck re-parse: %a\n%s" Util.Source.pp info msg
+      |> print_endline;
+      { stat with fail_typecheck_roundtrip = stat.fail_typecheck_roundtrip + 1 }
   | TestCheckRoundtripErr stat ->
       Format.asprintf "Error: typecheck roundtrip fail" |> print_endline;
-      { stat with fail_typecheck_roundtrip = stat.fail_typecheck + 1 }
+      { stat with fail_typecheck_roundtrip = stat.fail_typecheck_roundtrip + 1 }
   | _ ->
       Format.asprintf "Error: unknown error" |> print_endline;
       { stat with fail_typecheck = stat.fail_typecheck + 1 }
