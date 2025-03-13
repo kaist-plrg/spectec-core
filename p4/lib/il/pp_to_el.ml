@@ -3,6 +3,7 @@ module L = Lang.Ast
 module P = Lang.Pp
 module Value = Runtime_static.Vdomain.Value
 module Type = Runtime_static.Tdomain.Types.Type
+module Tdom = Runtime_static.Tdomain.Tdom
 open Ast
 open Util.Pp
 open Util.Source
@@ -62,7 +63,34 @@ let pp_dir fmt dir = P.pp_dir fmt dir
 (* Types *)
 
 let rec pp_typ ?(level = 0) fmt typ = pp_typ' ~level fmt typ.it
-and pp_typ' ?(level = 0) fmt typ = Type.pp ~level fmt typ
+and pp_typ' ?(level = 0) fmt typ = 
+  match typ with
+  | Tdom.SpecT (tdp, _typs) ->
+      let tparams, tparams_hidden, typ = tdp in
+      F.fprintf fmt "%a/*typ*/%a/*SpecT*/"
+        (pp_typ' ~level:(level + 1))
+        typ pp_tparams'' (tparams, tparams_hidden)
+  | Tdom.StructT (id, _) | Tdom.ExternT (id, _)| Tdom.ParserT (id, _)
+  | Tdom.EnumT (id, _) | Tdom.HeaderT (id, _) | Tdom.PackageT (id, _) | Tdom.DefT (_, id) 
+  | Tdom.UnionT (id, _) | Tdom.ControlT (id, _) -> F.fprintf fmt "%a" P.pp_id' id
+  | Tdom.TableT (id, _) -> F.fprintf fmt "%a" P.pp_id' id
+  | Tdom.VarT id -> F.fprintf fmt "%a/*VarT*/" P.pp_id' id
+  | Tdom.StackT (typ, size) ->
+      F.fprintf fmt "%a[%a]/*StackT*/" (pp_typ' ~level:(level + 1)) typ Bigint.pp size
+  | _ -> F.fprintf fmt "%a" (Type.pp ~level) typ
+
+and pp_tparams'' fmt (tparams, tparams_hidden) =
+  match (tparams, tparams_hidden) with
+  | [], [] -> ()
+  | tparams, [] -> F.fprintf fmt "<%a>" (pp_list P.pp_tparam' ~sep:Comma) tparams
+  | [], tparams_hidden ->
+      F.fprintf fmt "<@@ %a>" (pp_list P.pp_tparam' ~sep:Comma) tparams_hidden
+  | tparams, tparams_hidden ->
+      F.fprintf fmt "<%a @@ %a>"
+        (pp_list P.pp_tparam' ~sep:Comma)
+        tparams
+        (pp_list P.pp_tparam' ~sep:Comma)
+        tparams_hidden
 
 and pp_typs ?(level = 0) fmt typs =
   pp_list ~level (pp_typ ~level) ~sep:CommaNl fmt typs
@@ -116,8 +144,8 @@ and pp_params ?(level = 0) fmt params =
   | [] -> F.pp_print_string fmt "()"
   | [ param ] -> F.fprintf fmt "(%a)" (pp_param ~level) param
   | params ->
-      F.fprintf fmt "(\n%a)"
-        (pp_list ~level (pp_param ~level) ~sep:CommaNl)
+      F.fprintf fmt "(%a)"
+        (pp_list ~level (pp_param ~level) ~sep:Comma)
         params
 
 (* Constructor parameters *)
@@ -306,12 +334,11 @@ and pp_stmt' ?(level = 0) fmt stmt' =
       F.fprintf fmt "%a%a%a;" pp_var var_func
         (pp_targs ~level:(level + 1))
         targs pp_args args
-  | CallMethodS { expr_base; member; targs; args } ->
-      F.fprintf fmt "%a.%a%a%a;"
+  | CallMethodS { expr_base; member; targs = _targs; args } ->
+      F.fprintf fmt "%a.%a%a;"
         (pp_expr ~level:(level + 1))
         expr_base pp_member member
-        (pp_targs ~level:(level + 1))
-        targs pp_args args
+        pp_args args
   | CallInstS { typ; var_inst; targs; args } ->
       F.fprintf fmt "%a %a%a%a;"
         (pp_typ ~level:(level + 1))
@@ -374,7 +401,7 @@ and pp_decl' ?(level = 0) fmt decl' =
           F.fprintf fmt "%a %a = %a;"
             (pp_typ ~level:(level + 1))
             typ pp_id id (pp_expr ~level:0) expr_init
-      | None -> F.fprintf fmt "%a %a;" (pp_typ ~level:(level + 1)) typ pp_id id)
+      | None -> F.fprintf fmt "%a %a;/*VarDNone*/" (pp_typ ~level:(level + 1)) typ pp_id id)
   | ErrD { members } ->
       F.fprintf fmt "error {\n%a\n%s}"
         (pp_members ~level:(level + 1))
@@ -386,11 +413,9 @@ and pp_decl' ?(level = 0) fmt decl' =
   | InstD { id; typ; var_inst; targs; args; init; annos = _annos } -> (
       match init with
       | [] ->
-          F.fprintf fmt "%a %a%a%a %a;"
-            (pp_typ ~level:(level + 1))
-            typ pp_var var_inst
-            (pp_targs ~level:(level + 1))
-            targs pp_args args pp_id id
+          F.fprintf fmt "//InstD\n%a%a %a;"
+            pp_var var_inst
+            pp_args args pp_id id
       | init ->
           F.fprintf fmt "%a %a%a%a %a = {\n%a\n%s};"
             (pp_typ ~level:(level + 1))
@@ -468,10 +493,8 @@ and pp_decl' ?(level = 0) fmt decl' =
         locals
         (pp_parser_states ~level:(level + 1))
         states (indent level)
-  | TableD { id; typ; table; annos = _annos } ->
-      F.fprintf fmt "%a table %a %a"
-        (pp_typ ~level:(level + 1))
-        typ pp_id id (pp_table ~level) table
+  | TableD { id; typ = _typ; table; annos = _annos } ->
+      F.fprintf fmt "table %a %a" pp_id id (pp_table ~level) table
   | ControlTypeD { id; tparams; tparams_hidden; params; annos = _annos } ->
       F.fprintf fmt "control %a%a%a;" pp_id id pp_tparams
         (tparams @ tparams_hidden)

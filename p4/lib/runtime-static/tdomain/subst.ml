@@ -74,9 +74,9 @@ and subst_typ (theta : theta) (typ : typ) : typ =
       let tdp = subst_typdef_poly theta tdp in
       let typs_inner = subst_typs theta typs_inner in
       SpecT (tdp, typs_inner)
-  | DefT typ_inner ->
+  | DefT (typ_inner, id) ->
       let typ_inner = subst_typ theta typ_inner in
-      DefT typ_inner
+      DefT (typ_inner, id)
   | NewT (id, typ_inner) ->
       let typ_inner = subst_typ theta typ_inner in
       NewT (id, typ_inner)
@@ -111,15 +111,15 @@ and subst_typ (theta : theta) (typ : typ) : typ =
   | ExternT (id, fdenv) ->
       let fdenv = FIdMap.map (fun fd -> subst_funcdef theta fd) fdenv in
       ExternT (id, fdenv)
-  | ParserT params ->
+  | ParserT (id, params) ->
       let params = subst_params theta params in
-      ParserT params
-  | ControlT params ->
+      ParserT (id, params)
+  | ControlT (id, params) ->
       let params = subst_params theta params in
-      ControlT params
-  | PackageT typs_inner ->
+      ControlT (id, params)
+  | PackageT (id, typs_inner) ->
       let typs_inner = subst_typs theta typs_inner in
-      PackageT typs_inner
+      PackageT (id, typs_inner)
   | TableT (id, typ_inner) ->
       let typ_inner = subst_typ theta typ_inner in
       TableT (id, typ_inner)
@@ -405,5 +405,5 @@ let rec canon_typ (typ : typ) : typ =
   | SpecT (tdp, typs_inner) ->
       let typ = specialize_typdef_poly tdp typs_inner in
       canon_typ typ
-  | DefT typ_inner -> canon_typ typ_inner
+  | DefT (typ_inner, _id) -> canon_typ typ_inner
   | _ -> typ
