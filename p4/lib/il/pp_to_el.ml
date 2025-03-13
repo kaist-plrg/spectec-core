@@ -75,6 +75,7 @@ and pp_typ' ?(level = 0) fmt typ =
       F.fprintf fmt "%a%a"
         (pp_typ' ~level:(level + 1))
         typ pp_tparams'' (tparams, tparams_hidden)
+  | Tdom.SetT typ -> F.fprintf fmt "%a" (pp_typ' ~level:(level + 1)) typ 
   | Tdom.StructT (id, _) | Tdom.ExternT (id, _)| Tdom.ParserT (id, _)
   | Tdom.EnumT (id, _) | Tdom.HeaderT (id, _) | Tdom.PackageT (id, _) | Tdom.DefT (_, id) 
   | Tdom.UnionT (id, _) | Tdom.ControlT (id, _) -> F.fprintf fmt "%a" P.pp_id' id
@@ -335,17 +336,16 @@ and pp_stmt' ?(level = 0) fmt stmt' =
       | Some expr_ret ->
           F.fprintf fmt "return %a;" (pp_expr ~level:(level + 1)) expr_ret
       | None -> F.fprintf fmt "return;")
-  | CallFuncS { var_func; targs; args } ->
-      F.fprintf fmt "%a%a%a;" pp_var var_func
-        (pp_targs ~level:(level + 1))
-        targs pp_args args
+  | CallFuncS { var_func; targs = _targs; args } ->
+      F.fprintf fmt "%a%a;/*CallFuncS*/" pp_var var_func
+        pp_args args
   | CallMethodS { expr_base; member; targs = _targs; args } ->
-      F.fprintf fmt "%a.%a%a;"
+      F.fprintf fmt "%a.%a%a;/*CallMethodS*/"
         (pp_expr ~level:(level + 1))
         expr_base pp_member member
         pp_args args
   | CallInstS { typ; var_inst; targs; args } ->
-      F.fprintf fmt "%a %a%a%a;"
+      F.fprintf fmt "%a %a%a%a;/*CallInstS*/"
         (pp_typ ~level:(level + 1))
         typ pp_var var_inst
         (pp_targs ~level:(level + 1))
@@ -403,7 +403,7 @@ and pp_decl' ?(level = 0) fmt decl' =
   | VarD { id; typ; init; annos = _annos } -> (
       match init with
       | Some expr_init ->
-          F.fprintf fmt "%a %a = %a;"
+          F.fprintf fmt "%a %a = %a;/*VarDSome*/"
             (pp_typ ~level:(level + 1))
             typ pp_id id (pp_expr ~level:0) expr_init
       | None -> F.fprintf fmt "%a %a;/*VarDNone*/" (pp_typ ~level:(level + 1)) typ pp_id id)
@@ -415,16 +415,15 @@ and pp_decl' ?(level = 0) fmt decl' =
       F.fprintf fmt "match_kind {\n%a\n%s}"
         (pp_members ~level:(level + 1))
         members (indent level)
-  | InstD { id; typ; var_inst; targs; args; init; annos = _annos } -> (
+  | InstD { id; typ = _typ; var_inst; targs; args; init; annos = _annos } -> (
       match init with
       | [] ->
-          F.fprintf fmt "//InstD\n%a%a %a;"
+          F.fprintf fmt "%a%a %a;"
             pp_var var_inst
             pp_args args pp_id id
       | init ->
-          F.fprintf fmt "%a %a%a%a %a = {\n%a\n%s};"
-            (pp_typ ~level:(level + 1))
-            typ pp_var var_inst
+          F.fprintf fmt "%a%a%a %a = {\n%a\n%s};/*InstDinit*/"
+            pp_var var_inst
             (pp_targs ~level:(level + 1))
             targs pp_args args pp_id id
             (pp_decls ~level:(level + 1))
