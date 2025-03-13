@@ -65,18 +65,23 @@ let pp_dir fmt dir = P.pp_dir fmt dir
 let rec pp_typ ?(level = 0) fmt typ = pp_typ' ~level fmt typ.it
 and pp_typ' ?(level = 0) fmt typ = 
   match typ with
+  | Tdom.SpecT ((_tparams, _tparams_hidden, Tdom.StackT(_typ, size)), typs) ->
+      F.fprintf fmt "%a[%a]" 
+        (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
+        typs
+        Bigint.pp size
   | Tdom.SpecT (tdp, _typs) ->
       let tparams, tparams_hidden, typ = tdp in
-      F.fprintf fmt "%a/*typ*/%a/*SpecT*/"
+      F.fprintf fmt "%a%a"
         (pp_typ' ~level:(level + 1))
         typ pp_tparams'' (tparams, tparams_hidden)
   | Tdom.StructT (id, _) | Tdom.ExternT (id, _)| Tdom.ParserT (id, _)
   | Tdom.EnumT (id, _) | Tdom.HeaderT (id, _) | Tdom.PackageT (id, _) | Tdom.DefT (_, id) 
   | Tdom.UnionT (id, _) | Tdom.ControlT (id, _) -> F.fprintf fmt "%a" P.pp_id' id
   | Tdom.TableT (id, _) -> F.fprintf fmt "%a" P.pp_id' id
-  | Tdom.VarT id -> F.fprintf fmt "%a/*VarT*/" P.pp_id' id
+  | Tdom.VarT id -> F.fprintf fmt "%a" P.pp_id' id
   | Tdom.StackT (typ, size) ->
-      F.fprintf fmt "%a[%a]/*StackT*/" (pp_typ' ~level:(level + 1)) typ Bigint.pp size
+      F.fprintf fmt "%a[%a]" (pp_typ' ~level:(level + 1)) typ Bigint.pp size
   | _ -> F.fprintf fmt "%a" (Type.pp ~level) typ
 
 and pp_tparams'' fmt (tparams, tparams_hidden) =
