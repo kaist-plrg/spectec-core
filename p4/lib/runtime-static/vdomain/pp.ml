@@ -7,7 +7,7 @@ let rec pp ?(level = 0) fmt value =
   match value with
   | ErrV member -> F.fprintf fmt "error.%a" P.pp_member' member
   | MatchKindV member -> F.fprintf fmt "%a" P.pp_member' member
-  | StrV s -> F.fprintf fmt "%s" s
+  | StrV s -> F.fprintf fmt "\"%s\"" s
   | BoolV b -> F.fprintf fmt "%b" b
   | IntV i -> F.fprintf fmt "%a" Bigint.pp i
   | FIntV (width, i) -> F.fprintf fmt "%as%a" Bigint.pp width Bigint.pp i
