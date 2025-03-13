@@ -65,6 +65,8 @@ and eq_typ typ_a typ_b =
   | ControlT (_, params_a), ControlT (_, params_b) ->
       eq_params params_a params_b
   | PackageT (_, typs_a), PackageT (_, typs_b) -> eq_typs typs_a typs_b
+  | TableT (id_a, typ_a), TableT (id_b, typ_b) ->
+    E.eq_id' id_a id_b && eq_typ typ_a typ_b
   | AnyT, AnyT -> true
   | TableEnumT (id_a, members_a), TableEnumT (id_b, members_b) ->
       E.eq_id' id_a id_b && E.eq_list E.eq_member' members_a members_b
