@@ -61,7 +61,8 @@ and eq_typ typ_a typ_b =
       E.eq_id' id_a id_b && E.eq_pairs E.eq_member' eq_typ fields_a fields_b
   | ExternT (id_a, fdenv_a), ExternT (id_b, fdenv_b) ->
       E.eq_id' id_a id_b && FIdMap.eq eq_funcdef fdenv_a fdenv_b
-  | ParserT (_, params_a), ParserT (_, params_b) | ControlT (_, params_a), ControlT (_, params_b) ->
+  | ParserT (_, params_a), ParserT (_, params_b)
+  | ControlT (_, params_a), ControlT (_, params_b) ->
       eq_params params_a params_b
   | PackageT (_, typs_a), PackageT (_, typs_b) -> eq_typs typs_a typs_b
   | AnyT, AnyT -> true
@@ -224,7 +225,8 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
       && E.eq_pairs E.eq_member' eq_typ_alpha fields_a fields_b
   | ExternT (id_a, fdenv_a), ExternT (id_b, fdenv_b) ->
       E.eq_id' id_a id_b && FIdMap.eq eq_funcdef_alpha fdenv_a fdenv_b
-  | ParserT (_, params_a), ParserT (_, params_b) | ControlT (_, params_a), ControlT (_, params_b) ->
+  | ParserT (_, params_a), ParserT (_, params_b)
+  | ControlT (_, params_a), ControlT (_, params_b) ->
       eq_params_alpha params_a params_b
   | PackageT (_, typs_inner_a), PackageT (_, typs_inner_b) ->
       eq_typs_alpha typs_inner_a typs_inner_b

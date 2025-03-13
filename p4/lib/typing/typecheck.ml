@@ -172,13 +172,14 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
         keys cstr
   | ParserT (_, params_param), ParserT (_, params_arg)
   | ControlT (_, params_param), ControlT (_, params_arg) ->
-    (* might need to use id_param and id_arg here *)
+      (* might need to use id_param and id_arg here *)
       let typs_inner_param =
         List.map (fun (_, _, typ, _) -> typ) params_param
       in
       let typs_inner_arg = List.map (fun (_, _, typ, _) -> typ) params_arg in
       gen_cstrs cstr typs_inner_param typs_inner_arg
-  | PackageT (_, typs_param), PackageT (_, typs_arg) -> gen_cstrs cstr typs_param typs_arg
+  | PackageT (_, typs_param), PackageT (_, typs_arg) ->
+      gen_cstrs cstr typs_param typs_arg
   | _ -> cstr
 
 and gen_cstr_fd (cstr : cstr_t) (fd_param : FuncDef.t) (fd_arg : FuncDef.t) :
@@ -3382,9 +3383,9 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
               match (fd_extern : FuncDef.t option) with
               | Some
                   (PolyFD
-                    ( tparams,
-                      tparams_hidden,
-                      ExternAbstractMethodT (params, typ_ret) )) ->
+                     ( tparams,
+                       tparams_hidden,
+                       ExternAbstractMethodT (params, typ_ret) )) ->
                   let ft = Types.ExternMethodT (params, typ_ret) in
                   let fd = Types.PolyFD (tparams, tparams_hidden, ft) in
                   fd
@@ -5518,8 +5519,9 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    All parameters of a package are evaluated at compilation time, and in consequence they must all be directionless
    (they cannot be in, out, or inout). Otherwise package types are very similar to parser type declarations. *)
 
-and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
-    (tparams : El.Ast.tparam list) (cparams : El.Ast.cparam list) :
+and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
+    (id : El.Ast.id) (tparams : El.Ast.tparam list)
+    (cparams : El.Ast.cparam list) :
     TypeDef.t
     * ConsDef.t
     * Il.Ast.tparam list
