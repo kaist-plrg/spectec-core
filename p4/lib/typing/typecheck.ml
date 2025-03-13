@@ -132,8 +132,8 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
       if Type.is_nominal typ_param_inner && Type.is_nominal typ_arg_inner then
         gen_cstrs cstr_inner typs_inner_param typs_inner_arg
       else cstr_inner
-  | DefT typ_inner_param, _ -> gen_cstr cstr typ_inner_param typ_arg
-  | _, DefT typ_inner_arg -> gen_cstr cstr typ_param typ_inner_arg
+  | DefT (typ_inner_param, _), _ -> gen_cstr cstr typ_inner_param typ_arg
+  | _, DefT (typ_inner_arg, _) -> gen_cstr cstr typ_param typ_inner_arg
   | NewT (id_param, typ_inner_param), NewT (id_arg, typ_inner_arg)
     when id_param = id_arg ->
       gen_cstr cstr typ_inner_param typ_inner_arg
@@ -170,14 +170,15 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
           let fd_arg = FIdMap.find key fdenv_arg in
           gen_cstr_fd cstr fd_param fd_arg)
         keys cstr
-  | ParserT params_param, ParserT params_arg
-  | ControlT params_param, ControlT params_arg ->
+  | ParserT (_, params_param), ParserT (_, params_arg)
+  | ControlT (_, params_param), ControlT (_, params_arg) ->
+    (* might need to use id_param and id_arg here *)
       let typs_inner_param =
         List.map (fun (_, _, typ, _) -> typ) params_param
       in
       let typs_inner_arg = List.map (fun (_, _, typ, _) -> typ) params_arg in
       gen_cstrs cstr typs_inner_param typs_inner_arg
-  | PackageT typs_param, PackageT typs_arg -> gen_cstrs cstr typs_param typs_arg
+  | PackageT (_, typs_param), PackageT (_, typs_arg) -> gen_cstrs cstr typs_param typs_arg
   | _ -> cstr
 
 and gen_cstr_fd (cstr : cstr_t) (fd_param : FuncDef.t) (fd_arg : FuncDef.t) :
@@ -2050,7 +2051,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
     | UnionT _, "isValid" ->
         Types.BuiltinMethodT ([], Types.BoolT) |> wrap_builtin
     | ExternT (_, fdenv), _ -> find_method fdenv
-    | ParserT params, _ ->
+    | ParserT (_, params), _ ->
         let fd =
           let ft = Types.ParserApplyMethodT params in
           Types.MonoFD ft
@@ -2066,7 +2067,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
           FDEnv.add_nodup_non_overloaded fid fd FDEnv.empty
         in
         find_method fdenv
-    | ControlT params, _ ->
+    | ControlT (_, params), _ ->
         let fd =
           let ft = Types.ControlApplyMethodT params in
           Types.MonoFD ft
@@ -3787,7 +3788,7 @@ and type_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         (typ, typdef_il)
   in
   let td =
-    let typ_def = Types.DefT typ in
+    let typ_def = Types.DefT (typ, id.it) in
     Types.MonoD typ_def
   in
   WF.check_valid_typdef cursor ctx td;
@@ -4273,7 +4274,7 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    let typ_param = Types.ParserT params in
+    let typ_param = Types.ParserT (id.it, params) in
     Types.PolyD (tparams, tparams_hidden, typ_param)
   in
   WF.check_valid_typdef cursor ctx td;
@@ -4388,7 +4389,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    let typ_parser = Types.ParserT params in
+    let typ_parser = Types.ParserT (id.it, params) in
     let tdp = ([], [], typ_parser) in
     Types.SpecT (tdp, [])
   in
@@ -5415,7 +5416,7 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    let typ_control = Types.ControlT params in
+    let typ_control = Types.ControlT (id.it, params) in
     Types.PolyD (tparams, tparams_hidden, typ_control)
   in
   WF.check_valid_typdef cursor ctx td;
@@ -5483,7 +5484,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
       |> List.map (fun (id, dir, typ, value_default, _) ->
              (id.it, dir.it, typ.it, Option.map it value_default))
     in
-    let typ_control = Types.ControlT params in
+    let typ_control = Types.ControlT (id.it, params) in
     let tdp = ([], [], typ_control) in
     Types.SpecT (tdp, [])
   in
@@ -5517,7 +5518,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
    All parameters of a package are evaluated at compilation time, and in consequence they must all be directionless
    (they cannot be in, out, or inout). Otherwise package types are very similar to parser type declarations. *)
 
-and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
+and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     (tparams : El.Ast.tparam list) (cparams : El.Ast.cparam list) :
     TypeDef.t
     * ConsDef.t
@@ -5539,7 +5540,7 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
       List.map it cparams_il
       |> List.map (fun (_, _, typ_inner, _, _) -> typ_inner.it)
     in
-    let typ_package = Types.PackageT typs_inner in
+    let typ_package = Types.PackageT (id.it, typs_inner) in
     (tparams, tparams_hidden, typ_package)
   in
   let td = Types.PolyD tdp in
@@ -5573,7 +5574,7 @@ and type_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let td, cd, tparams, tparams_hidden, cparams_il =
     let ctx = Ctx.set_blockkind Ctx.Package ctx in
     let ctx = Ctx.add_tparams Ctx.Block tparams ctx in
-    type_package_constructor_decl Ctx.Block ctx tparams cparams
+    type_package_constructor_decl Ctx.Block ctx id tparams cparams
   in
   let ctx = Ctx.add_typdef cursor id.it td ctx in
   let ctx =

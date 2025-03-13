@@ -76,7 +76,7 @@ and pp_typ ?(level = 0) fmt typ =
   | FIntT width -> F.fprintf fmt "int<%a>" Bigint.pp width
   | FBitT width -> F.fprintf fmt "bit<%a>" Bigint.pp width
   | VBitT width -> F.fprintf fmt "varbit<%a>" Bigint.pp width
-  | VarT id -> P.pp_id' fmt id
+  | VarT id -> F.fprintf fmt "%a" P.pp_id' id
   | SpecT (tdp, typs) ->
       let tparams, tparams_hidden, typ = tdp in
       F.fprintf fmt "(%a%a)<%a>"
@@ -84,7 +84,7 @@ and pp_typ ?(level = 0) fmt typ =
         typ pp_tparams (tparams, tparams_hidden)
         (pp_list (pp_typ ~level:(level + 1)) ~sep:Comma)
         typs
-  | DefT typ -> F.fprintf fmt "typedef %a" (pp_typ ~level:(level + 1)) typ
+  | DefT (typ, _) -> F.fprintf fmt "typedef %a" (pp_typ ~level:(level + 1)) typ
   | NewT (id, typ) ->
       F.fprintf fmt "type %a (%a)" P.pp_id' id (pp_typ ~level:(level + 1)) typ
   | EnumT (id, fields) ->
@@ -126,11 +126,11 @@ and pp_typ ?(level = 0) fmt typ =
       F.fprintf fmt "extern %a %a" P.pp_id' id
         (FIdMap.pp ~level:(level + 1) pp_funcdef)
         fdenv
-  | ParserT params ->
+  | ParserT (_, params) ->
       F.fprintf fmt "parser %a" (pp_params ~level:(level + 1)) params
-  | ControlT params ->
+  | ControlT (_, params) ->
       F.fprintf fmt "control %a" (pp_params ~level:(level + 1)) params
-  | PackageT typs ->
+  | PackageT (_, typs) ->
       F.fprintf fmt "package {\n%a\n%s}"
         (pp_list ~level:(level + 1) (pp_typ ~level:(level + 1)) ~sep:Comma)
         typs (indent level)

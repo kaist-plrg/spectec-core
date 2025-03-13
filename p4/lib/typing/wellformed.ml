@@ -119,7 +119,7 @@ and check_valid_typ' (tset : TIdSet.t) (typ : Type.t) : unit =
         (Format.asprintf "(check_valid_typ) %s is a free type variable" id)
   | SpecT (tdp, typs_inner) ->
       TypeDef.specialize_poly tdp typs_inner |> check_valid_typ' tset
-  | DefT typ_inner ->
+  | DefT (typ_inner, _) ->
       check_valid_typ' tset typ_inner;
       check_valid_typ_nesting typ typ_inner
   | NewT (_, typ_inner) ->
@@ -143,8 +143,8 @@ and check_valid_typ' (tset : TIdSet.t) (typ : Type.t) : unit =
       check_valid_typs' tset typ typs_inner
   | ExternT (_, fdenv) ->
       Envs.FDEnv.bindings fdenv |> List.map snd |> check_valid_funcdefs' tset
-  | ParserT params | ControlT params -> check_valid_params' tset params
-  | PackageT typs_inner -> check_valid_typs' tset typ typs_inner
+  | ParserT (_, params) | ControlT (_, params) -> check_valid_params' tset params
+  | PackageT (_, typs_inner) -> check_valid_typs' tset typ typs_inner
   | TableT (_, typ_inner) ->
       check_valid_typ' tset typ_inner;
       check_valid_typ_nesting typ typ_inner

@@ -856,7 +856,7 @@ and eval_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
         | Types.PolyD td_poly -> Types.SpecT (td_poly, []))
   in
   let td =
-    let typ_def = Types.DefT typ in
+    let typ_def = Types.DefT (typ, id.it) in
     Types.MonoD typ_def
   in
   Ctx.add_typdef cursor id.it td ctx
@@ -969,7 +969,8 @@ and eval_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
       |> List.map (fun (id, typ, dir, value_default, _) ->
              (id.it, typ.it, dir.it, Option.map it value_default))
     in
-    let typ_parser = Types.ParserT params in
+    (* unsure if the id here is id *)
+    let typ_parser = Types.ParserT (id.it, params) in
     Types.PolyD (tparams, tparams_hidden, typ_parser)
   in
   Ctx.add_typdef cursor id.it td ctx
@@ -1027,7 +1028,7 @@ and eval_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
       |> List.map (fun (id, typ, dir, value_default, _) ->
              (id.it, typ.it, dir.it, Option.map it value_default))
     in
-    let typ_parser = Types.ControlT params in
+    let typ_parser = Types.ControlT (id.it, params) in
     Types.PolyD (tparams, tparams_hidden, typ_parser)
   in
   Ctx.add_typdef cursor id.it td ctx
@@ -1053,7 +1054,7 @@ and eval_package_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
       let typs_inner =
         List.map it cparams |> List.map (fun (_, _, typ, _, _) -> typ.it)
       in
-      Types.PackageT typs_inner
+      Types.PackageT (id.it, typs_inner)
     in
     Types.PolyD (tparams, tparams_hidden, typ_package)
   in

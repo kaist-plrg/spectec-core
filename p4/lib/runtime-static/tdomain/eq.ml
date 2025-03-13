@@ -43,7 +43,7 @@ and eq_typ typ_a typ_b =
   | VarT id_a, VarT id_b -> E.eq_id' id_a id_b
   | SpecT (tdp_a, typs_a), SpecT (tdp_b, typs_b) ->
       eq_typdef_poly tdp_a tdp_b && eq_typs typs_a typs_b
-  | DefT typ_a, DefT typ_b -> eq_typ typ_a typ_b
+  | DefT (typ_a, _), DefT (typ_b, _) -> eq_typ typ_a typ_b
   | NewT (id_a, typ_a), NewT (id_b, typ_b) ->
       E.eq_id' id_a id_b && eq_typ typ_a typ_b
   | EnumT (id_a, members_a), EnumT (id_b, members_b) ->
@@ -61,9 +61,9 @@ and eq_typ typ_a typ_b =
       E.eq_id' id_a id_b && E.eq_pairs E.eq_member' eq_typ fields_a fields_b
   | ExternT (id_a, fdenv_a), ExternT (id_b, fdenv_b) ->
       E.eq_id' id_a id_b && FIdMap.eq eq_funcdef fdenv_a fdenv_b
-  | ParserT params_a, ParserT params_b | ControlT params_a, ControlT params_b ->
+  | ParserT (_, params_a), ParserT (_, params_b) | ControlT (_, params_a), ControlT (_, params_b) ->
       eq_params params_a params_b
-  | PackageT typs_a, PackageT typs_b -> eq_typs typs_a typs_b
+  | PackageT (_, typs_a), PackageT (_, typs_b) -> eq_typs typs_a typs_b
   | AnyT, AnyT -> true
   | TableEnumT (id_a, members_a), TableEnumT (id_b, members_b) ->
       E.eq_id' id_a id_b && E.eq_list E.eq_member' members_a members_b
@@ -201,8 +201,8 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
       if is_nominal_typ typ_inner_a && is_nominal_typ typ_inner_b then
         eq_typs_alpha typs_inner_a typs_inner_b
       else true
-  | DefT typ_inner_a, _ -> eq_typ_alpha typ_inner_a typ_b
-  | _, DefT typ_inner_b -> eq_typ_alpha typ_a typ_inner_b
+  | DefT (typ_inner_a, _), _ -> eq_typ_alpha typ_inner_a typ_b
+  | _, DefT (typ_inner_b, _) -> eq_typ_alpha typ_a typ_inner_b
   | NewT (id_a, typ_inner_a), NewT (id_b, typ_inner_b) ->
       E.eq_id' id_a id_b && eq_typ_alpha typ_inner_a typ_inner_b
   | EnumT (id_a, members_a), EnumT (id_b, members_b) ->
@@ -224,9 +224,9 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
       && E.eq_pairs E.eq_member' eq_typ_alpha fields_a fields_b
   | ExternT (id_a, fdenv_a), ExternT (id_b, fdenv_b) ->
       E.eq_id' id_a id_b && FIdMap.eq eq_funcdef_alpha fdenv_a fdenv_b
-  | ParserT params_a, ParserT params_b | ControlT params_a, ControlT params_b ->
+  | ParserT (_, params_a), ParserT (_, params_b) | ControlT (_, params_a), ControlT (_, params_b) ->
       eq_params_alpha params_a params_b
-  | PackageT typs_inner_a, PackageT typs_inner_b ->
+  | PackageT (_, typs_inner_a), PackageT (_, typs_inner_b) ->
       eq_typs_alpha typs_inner_a typs_inner_b
   | TableT (id_a, typ_a), TableT (id_b, typ_b) ->
       E.eq_id' id_a id_b && eq_typ_alpha typ_a typ_b

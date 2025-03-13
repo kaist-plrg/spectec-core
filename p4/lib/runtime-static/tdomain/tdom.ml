@@ -29,7 +29,7 @@ and typ =
   | SpecT of typdef_poly * typ list
   (* 3. Defined types *)
   (* 3a. Alias types *)
-  | DefT of typ
+  | DefT of typ * L.id'
   (* 3b. Data types *)
   | NewT of L.id' * typ
   | EnumT of L.id' * L.member' list
@@ -42,9 +42,9 @@ and typ =
   | UnionT of L.id' * (L.member' * typ) list
   (* 3c. Object types *)
   | ExternT of L.id' * funcdef FIdMap.t
-  | ParserT of param list
-  | ControlT of param list
-  | PackageT of typ list
+  | ParserT of L.id' * param list
+  | ControlT of L.id' * param list
+  | PackageT of L.id' * typ list
   | TableT of L.id' * typ
   (* 4. Synthesized types *)
   | AnyT
