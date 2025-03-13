@@ -117,7 +117,14 @@ and pp_typs ?(level = 0) fmt typs =
 (* Values *)
 
 let rec pp_value ?(level = 0) fmt value = pp_value' ~level fmt value.it
-and pp_value' ?(level = 0) fmt value = Value.pp ~level fmt value
+and pp_value' ?(level = 0) fmt value = 
+  match value with 
+  | Value.StructV (_, fields) ->
+    let values = List.map (fun (_, value) -> value) fields in
+    F.fprintf fmt "{%a}"
+        (pp_list (pp_value' ~level:(level + 1)) ~sep:Comma)
+        values
+  | _ -> Value.pp ~level fmt value
 
 (* Annotations *)
 
