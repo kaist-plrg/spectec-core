@@ -16,7 +16,11 @@ let roundtrip_il includes filename : Il.Ast.program =
   let program = typecheck includes filename in
   let program_str = Format.asprintf "%a\n" Il.Pp_to_el.pp_program program in
   Format.printf "%s\n" program_str;
-  let program' = Frontend.Parse.parse_string filename program_str |> Typing.Typecheck.type_program in
+  let program' = 
+    try
+      Frontend.Parse.parse_string filename program_str |> Typing.Typecheck.type_program
+    with ParseErr (msg, info) -> Format.sprintf "re-parse error: %s" msg |> error_parser_info info
+  in
   if not (Il.Eq.eq_program program program') then
     "roundtrip error" |> error_parser_no_info;
   program
