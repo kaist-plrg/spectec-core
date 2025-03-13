@@ -144,7 +144,7 @@ let typecheck_file stat includes mode filename =
     (stat, program)
   with CheckErr (msg, info) -> raise (TestCheckErr (msg, info, stat))
 
-let typecheck_string stat filename file = 
+let typecheck_string stat filename file =
   try
     let stat, program = parse_string stat filename file in
     let program = Typing.Typecheck.type_program program in
@@ -153,27 +153,25 @@ let typecheck_string stat filename file =
 
 let typecheck_roundtrip stat includes filename =
   let stat, program' = typecheck_file stat includes Pos filename in
-  let file' = 
-    Format.asprintf "%a\n" Il.Pp_to_el.pp_program program'
-  in
+  let file' = Format.asprintf "%a\n" Il.Pp_to_el.pp_program program' in
   let stat, program'' =
     try typecheck_string stat filename file'
-    with ParseErr (msg, info) -> raise (TestCheckRoundtripParseErr (msg, info, stat));
+    with ParseErr (msg, info) ->
+      raise (TestCheckRoundtripParseErr (msg, info, stat))
   in
   if not (Il.Eq.eq_program program' program'') then
     raise (TestCheckRoundtripErr stat);
   stat
 
-let typecheck_test stat includes mode filename =  
-  Format.asprintf "\n>>> Running typecheck test on %s" filename
-  |> print_endline;
+let typecheck_test stat includes mode filename =
+  Format.asprintf "\n>>> Running typecheck test on %s" filename |> print_endline;
   try
     match mode with
-      | Pos ->
+    | Pos ->
         let stat = typecheck_roundtrip stat includes filename in
         Format.asprintf "Typecheck success" |> print_endline;
         stat
-      | Neg ->
+    | Neg ->
         let stat, _program = typecheck_file stat includes mode filename in
         Format.asprintf "Typecheck success: %s" filename |> print_endline;
         stat
@@ -190,7 +188,8 @@ let typecheck_test stat includes mode filename =
       Format.asprintf "Error: typecheck success" |> print_endline;
       { stat with fail_typecheck = stat.fail_typecheck + 1 }
   | TestCheckRoundtripParseErr (msg, info, stat) ->
-      Format.asprintf "Error on typecheck re-parse: %a\n%s" Util.Source.pp info msg
+      Format.asprintf "Error on typecheck re-parse: %a\n%s" Util.Source.pp info
+        msg
       |> print_endline;
       { stat with fail_typecheck_roundtrip = stat.fail_typecheck_roundtrip + 1 }
   | TestCheckRoundtripErr stat ->
@@ -204,7 +203,8 @@ let typecheck_test_driver includes mode testdir =
   let files = collect_files ~suffix:".p4" testdir in
   let total = List.length files in
   let stat = empty_stat in
-  Format.asprintf "Running typecheck roundtrip tests on %d files\n" total |> print_endline;
+  Format.asprintf "Running typecheck roundtrip tests on %d files\n" total
+  |> print_endline;
   let stat =
     List.fold_left
       (fun stat filename -> typecheck_test stat includes mode filename)

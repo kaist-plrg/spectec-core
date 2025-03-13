@@ -143,7 +143,8 @@ and check_valid_typ' (tset : TIdSet.t) (typ : Type.t) : unit =
       check_valid_typs' tset typ typs_inner
   | ExternT (_, fdenv) ->
       Envs.FDEnv.bindings fdenv |> List.map snd |> check_valid_funcdefs' tset
-  | ParserT (_, params) | ControlT (_, params) -> check_valid_params' tset params
+  | ParserT (_, params) | ControlT (_, params) ->
+      check_valid_params' tset params
   | PackageT (_, typs_inner) -> check_valid_typs' tset typ typs_inner
   | TableT (_, typ_inner) ->
       check_valid_typ' tset typ_inner;
