@@ -80,6 +80,7 @@ and pp_typ' ?(level = 0) fmt typ =
         (pp_typ' ~level:(level + 1))
         typ pp_tparams'' (tparams, tparams_hidden)
   | Tdom.SetT typ -> F.fprintf fmt "%a/*SetT*/" (pp_typ' ~level:(level + 1)) typ
+  | Tdom.NewT (id, _)
   | Tdom.StructT (id, _)
   | Tdom.ExternT (id, _)
   | Tdom.ParserT (id, _)
@@ -291,12 +292,11 @@ and pp_expr' ?(level = 0) fmt expr' =
       F.fprintf fmt "%a%a%a" pp_var var_func
         (pp_targs ~level:(level + 1))
         targs pp_args args
-  | CallMethodE { expr_base; member; targs; args } ->
-      F.fprintf fmt "%a.%a%a%a"
+  | CallMethodE { expr_base; member; targs=_targs; args } ->
+      F.fprintf fmt "%a.%a%a/*CallMethodE*/"
         (pp_expr ~level:(level + 1))
         expr_base pp_member member
-        (pp_targs ~level:(level + 1))
-        targs pp_args args
+        pp_args args
   | CallTypeE { typ; member } ->
       F.fprintf fmt "%a.%a()" (pp_typ ~level:(level + 1)) typ pp_member member
   | InstE { var_inst; targs; args } ->
@@ -366,10 +366,9 @@ and pp_stmt' ?(level = 0) fmt stmt' =
       F.fprintf fmt "%a.%a%a;/*CallMethodS*/"
         (pp_expr ~level:(level + 1))
         expr_base pp_member member pp_args args
-  | CallInstS { typ; var_inst; targs; args } ->
-      F.fprintf fmt "%a %a%a%a;/*CallInstS*/"
-        (pp_typ ~level:(level + 1))
-        typ pp_var var_inst
+  | CallInstS { typ=_typ; var_inst; targs; args } ->
+      F.fprintf fmt "%a%a.apply%a;/*CallInstS*/"
+         pp_var var_inst
         (pp_targs ~level:(level + 1))
         targs pp_args args
   | TransS { expr_label } ->
