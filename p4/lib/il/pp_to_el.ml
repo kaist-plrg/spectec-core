@@ -70,6 +70,10 @@ and pp_typ' ?(level = 0) fmt typ =
       F.fprintf fmt "%a[%a]"
         (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs Bigint.pp size
+  | Tdom.SpecT ((_tparams, _tparams_hidden, Tdom.TupleT (_typs)), typs) ->
+      F.fprintf fmt "tuple<%a>"
+        (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
+        typs
   | Tdom.SpecT (tdp, _typs) ->
       let tparams, tparams_hidden, typ = tdp in
       F.fprintf fmt "%a%a"
@@ -80,6 +84,7 @@ and pp_typ' ?(level = 0) fmt typ =
   | Tdom.ExternT (id, _)
   | Tdom.ParserT (id, _)
   | Tdom.EnumT (id, _)
+  | Tdom.SEnumT (id, _, _)
   | Tdom.HeaderT (id, _)
   | Tdom.PackageT (id, _)
   | Tdom.DefT (_, id)
