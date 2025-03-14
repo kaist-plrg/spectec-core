@@ -1,5 +1,3 @@
-open Il.Ast
-
 (* Input hints for rules *)
 
 module Hint = struct
@@ -9,14 +7,22 @@ module Hint = struct
     Format.asprintf "hint(input %s)"
       (String.concat " " (List.map (fun idx -> "%" ^ string_of_int idx) t))
 
-  let split_exps (hint : t) (exps : exp list) :
-      (int * exp) list * (int * exp) list =
+  let split_exps (hint : t) (exps : Il.Ast.exp list) :
+      (int * Il.Ast.exp) list * (int * Il.Ast.exp) list =
     exps
     |> List.mapi (fun idx exp -> (idx, exp))
     |> List.partition (fun (idx, _) -> List.mem idx hint)
 
-  let combine_exps (exps_input : (int * exp) list)
-      (exps_output : (int * exp) list) : exp list =
+  let split_exps_without_idx (hint : t) (exps : Il.Ast.exp list) :
+      Il.Ast.exp list * Il.Ast.exp list =
+    exps
+    |> List.mapi (fun idx exp -> (idx, exp))
+    |> List.partition (fun (idx, _) -> List.mem idx hint)
+    |> fun (exps_input, exps_output) ->
+    (List.map snd exps_input, List.map snd exps_output)
+
+  let combine_exps (exps_input : (int * Il.Ast.exp) list)
+      (exps_output : (int * Il.Ast.exp) list) : Il.Ast.exp list =
     exps_input @ exps_output
     |> List.sort (fun (idx_i, _) (idx_o, _) -> compare idx_i idx_o)
     |> List.map snd
@@ -28,7 +34,5 @@ type t = El.Ast.nottyp * Hint.t * Il.Ast.rule list
 
 let to_string (nottyp, inputs, rules) =
   El.Print.string_of_nottyp nottyp
-  ^ " hint(input "
-  ^ String.concat ", " (List.map string_of_int inputs)
-  ^ ") =\n"
+  ^ " " ^ Hint.to_string inputs ^ " =\n"
   ^ String.concat "\n   " (List.map Il.Print.string_of_rule rules)

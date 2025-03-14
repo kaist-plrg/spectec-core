@@ -30,7 +30,7 @@ let fresh () =
 type t = {
   (* Set of free ids, for unique id insertion *)
   frees : IdSet.t;
-  (* Map of variable ids to dimensions *)
+  (* Map from variable ids to dimensions *)
   venv : VEnv.t;
   (* Map from syntax ids to type definitions *)
   tdenv : TDEnv.t;
@@ -210,8 +210,7 @@ let add_dec (ctx : t) (fid : FId.t) (tparams : tparam list)
   { ctx with fenv }
 
 let add_clause (ctx : t) (fid : FId.t) (clause : Il.Ast.clause) : t =
-  if not (bound_dec ctx fid) then
-    error_undef clause.at "function" fid.it;
+  if not (bound_dec ctx fid) then error_undef clause.at "function" fid.it;
   let tparams, params, plaintyp, clauses = FEnv.find fid ctx.fenv in
   let func = (tparams, params, plaintyp, clauses @ [ clause ]) in
   let fenv = FEnv.add fid func ctx.fenv in
@@ -220,8 +219,7 @@ let add_clause (ctx : t) (fid : FId.t) (clause : Il.Ast.clause) : t =
 (* Updaters *)
 
 let update_var (ctx : t) (id : Id.t) (dim : Dim.t) : t =
-  if not (bound_var ctx id) then
-    error_undef id.at "variable" id.it;
+  if not (bound_var ctx id) then error_undef id.at "variable" id.it;
   let venv = VEnv.add id dim ctx.venv in
   { ctx with venv }
 
@@ -229,7 +227,6 @@ let update_vars (ctx : t) (ids : (Id.t * Dim.t) list) : t =
   List.fold_left (fun ctx (id, dim) -> update_var ctx id dim) ctx ids
 
 let update_typdef (ctx : t) (tid : TId.t) (td : Typdef.t) : t =
-  if not (bound_typdef ctx tid) then
-    error_undef tid.at "type" tid.it;
+  if not (bound_typdef ctx tid) then error_undef tid.at "type" tid.it;
   let tdenv = TDEnv.add tid td ctx.tdenv in
   { ctx with tdenv }

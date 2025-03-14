@@ -45,6 +45,7 @@ def $is_deftable'(HeaderT _ (_, typ')*) = true
 def $is_deftable'(UnionT _ (_, typ')*) = true
   -- if $is_deftable(typ')*
 def $is_deftable'(typ) = false
+  -- otherwise
 
 ;; Equalable
 
@@ -62,6 +63,7 @@ def $is_equalable'(PackageT _) = false
 def $is_equalable'(TableT _ _) = false
 def $is_equalable'(synthtyp) = $is_seqt(synthtyp) \/ $is_recordt(synthtyp)
 def $is_equalable'(typ) = true
+  -- otherwise
 
 ;; Assignable
 
@@ -71,7 +73,8 @@ dec $is_assignable'(typ) : bool
 
 def $is_assignable(typ) = $is_assignable'($canon_typ(typ))
 def $is_assignable'(VoidT) = false
-def $is_assignable'(objtyp) = false
+def $is_assignable'(typ) = false
+  -- if $is_obj(typ)
 def $is_assignable'(synthtyp) = false
 def $is_assignable'(typ) = true
   -- otherwise

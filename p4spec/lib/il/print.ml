@@ -113,7 +113,7 @@ and string_of_exp' e =
       ^ "}"
   | DotE (exp_b, atom) -> string_of_exp exp_b ^ "." ^ string_of_atom atom
   | ListE exps -> "[" ^ string_of_exps ", " exps ^ "]"
-  | ConsE (exp_l, exp_r) -> string_of_exp exp_l ^ " :: " ^ string_of_exp exp_r
+  | ConsE (exp_h, exp_t) -> string_of_exp exp_h ^ " :: " ^ string_of_exp exp_t
   | CatE (exp_l, exp_r) -> string_of_exp exp_l ^ " ++ " ^ string_of_exp exp_r
   | MemE (exp_e, exp_s) -> string_of_exp exp_e ^ " <- " ^ string_of_exp exp_s
   | LenE exp -> "|" ^ string_of_exp exp ^ "|"
@@ -260,7 +260,6 @@ let rec string_of_def def =
       "def " ^ string_of_defid defid ^ string_of_tparams tparams
       ^ string_of_params params ^ " : " ^ string_of_typ typ ^ " ="
       ^ string_of_clauses clauses
-  | RecD defs -> "rec {\n" ^ string_of_defs defs ^ "\n}"
 
 and string_of_defs defs = String.concat "\n\n" (List.map string_of_def defs)
 

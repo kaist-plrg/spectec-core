@@ -2,9 +2,13 @@
  (name p4spec)
  (modules)
  (libraries
+  ; (TODO) A terrible hack to use p4cherry frontend
+  (re_export p4)
   (re_export util)
   (re_export el)
   (re_export frontend)
   (re_export il)
   (re_export runtime_static)
-  (re_export elaboration)))
+  (re_export elaborate)
+  (re_export runtime_dynamic)
+  (re_export interpret)))

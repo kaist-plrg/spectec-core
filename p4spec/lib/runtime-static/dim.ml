@@ -2,6 +2,8 @@
 
 type t = Il.Ast.iter list
 
+let compare = compare
+
 let equiv dim_a dim_b =
   List.length dim_a = List.length dim_b && List.for_all2 ( = ) dim_a dim_b
 

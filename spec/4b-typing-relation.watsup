@@ -72,13 +72,19 @@ relation CParam_ok:
   hint(input %0 %1 %2)
 
 ;; Declaration typing,
-;; produces an IL declaration (declIL),
+;; produces an IL declaration (declIL)
 relation Decl_ok:
   cursor context |- decl : context declIL
   hint(input %0 %1 %2)
 relation Decls_ok:
   cursor context |- decl* : context declIL*
   hint(input %0 %1 %2)
+
+;; Program typing,
+;; produces an IL program (progIL)
+relation Prog_ok:
+  |- program : context programIL
+  hint(input %0)
 
 ;; Copy-in/out calling convention,
 ;; note that it depends on whether an action is being called or not

@@ -62,6 +62,11 @@ dec $partition_<X>(X*, nat) : (X*, X*)
 dec $assoc_<X, Y>(X, (X, Y)*) : Y?
     hint(show %2`[%1])
 
+def $assoc_<X, Y>(_, eps) = eps
+def $assoc_<X, Y>(X_key, (X_key, Y_val) :: (X, Y)*) = Y_val
+def $assoc_<X, Y>(X_key, (X_h, Y_h) :: (X_t, Y_t)*)
+  = $assoc_<X, Y>(X_key, (X_t, Y_t)*)
+
 ;;
 ;; General set functions
 ;;
@@ -141,23 +146,41 @@ syntax map<K, V>
 
 dec $empty_map<K, V> : map<K, V>
     hint(show %latex("\\{") %latex("\\}"))
+
 def $empty_map<K, V> = MAP eps
 
 dec $dom_map<K, V>(map<K, V>) : set<K>
     hint(show %latex("\\texttt{Dom}(")#%3#%latex(")"))
+
 def $dom_map<K, V>(MAP (PAIR K _)*) = SET K*
 
 dec $find_map_opt<K, V>(map<K, V>, K) : V?
     hint(show %3#`[%4]?)
 
+def $find_map_opt<K, V>(MAP (PAIR K V)*, K_key) =
+  $assoc_<K, V>(K_key, (K, V)*)
+
 dec $find_maps_opt<K, V>(map<K, V>*, K) : V?
     hint(show %3#`[%4]?)
+
+def $find_maps_opt<K, V>(eps, K_key) = eps
+def $find_maps_opt<K, V>((MAP (PAIR K V)* :: (MAP (PAIR K' V'))*), K_key) = V_key
+  -- if V_key = $find_map_opt<K, V>(MAP (PAIR K V)*, K_key)
+def $find_maps_opt<K, V>((MAP (PAIR K V)* :: (MAP (PAIR K' V'))*), K_key)
+  = $find_maps_opt<K, V>((MAP (PAIR K' V')*), K_key)
+  -- if eps = $find_map_opt<K, V>(MAP (PAIR K V)*, K_key)
 
 dec $find_map<K, V>(map<K, V>, K) : V
     hint(show %3#`[%4])
 
+def $find_map<K, V>(MAP (PAIR K V)*, K_key) = V_key
+  -- if V_key = $find_map_opt<K, V>(MAP (PAIR K V)*, K_key)
+
 dec $add_map<K, V>(map<K, V>, K, V) : map<K, V>
     hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
+
+def $add_map<K, V>(MAP (PAIR K V)*, K_key, V_key) = MAP ((PAIR K_key V_key) :: (PAIR K V)*)
+  -- if $not_in_set<K>(K_key, $dom_map<K, V>(MAP (PAIR K V)*))
 
 dec $update_map<K, V>(map<K, V>, K, V) : map<K, V>
     hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))

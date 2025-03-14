@@ -1231,3 +1231,12 @@ rule Decls_ok/cons:
   p C |- decl_h :: decl_t* : C'' (declIL_h :: declIL_t*)
   -- Decl_ok: p C |- decl_h : C' declIL_h
   -- Decls_ok: p C' |- decl_t* : C'' declIL_t*
+
+;;
+;; Program
+;;
+
+rule Prog_ok:
+  |- decl* : C' declIL*
+  -- if C = $empty_context()
+  -- Decls_ok: GLOBAL C |- decl* : C' declIL*

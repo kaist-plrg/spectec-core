@@ -329,6 +329,7 @@ def $reduce_senums_binary((exprIL_a, typ_a), (exprIL_b, typ_b), def $check_binar
         = $reduce_senums_binary((exprIL_a, typ_a), (exprIL_b', typ_b'), def $check_binary)
 
 
+;; (TODO) This should better be a relation
 dec $coerce_binary((exprIL, typ), (exprIL, typ)) : (typ, exprIL, exprIL)
     hint(show COERCE %1 AND %2)
 
@@ -344,6 +345,7 @@ def $coerce_binary((exprIL_a, typ_a), (exprIL_b, typ_b)) = (typ_b, exprIL_a, exp
   -- if exprIL_b' = CastE typ_a exprIL_b
 
 
+;; (TODO) This should better be a relation
 dec $coerce_assign((exprIL, typ), typ) : exprIL
     hint(show COERCE %1 to %2)
 

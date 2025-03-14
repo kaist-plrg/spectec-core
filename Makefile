@@ -32,7 +32,7 @@ build-watsup:
 
 build-spec:
 	rm -f ./$(SPEC)
-	opam switch 5.0.0
+	opam switch 4.14.0
 	cd p4spec && opam exec -- dune build bin/main.exe && echo
 	ln -f $(EXESPEC) ./$(SPEC)
 

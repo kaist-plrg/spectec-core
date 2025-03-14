@@ -33,7 +33,7 @@ rule Expr_ok/nume-fbitt:
 
 rule Expr_ok/namee:
   p C |- NameE name : (NameE name) typ ctk
-  -- if typ dir ctk _ = $find_styp(p, C, name)
+  -- if typ _ ctk val? = $find_styp(p, C, name)
 
 ;;
 ;; Sequence expression

@@ -11,6 +11,7 @@
   (synopsis "P4Spec: A language design framework for the P4 Programming Language")
   (maintainers "99jaehyunlee@gmail.com")
   (depends
+    p4cherry
     zarith
-    (core (and (>= "v0.16.0") (< "v0.17.0")))
-    (core_unix (and (>= "v0.16.0") (< "v0.17.0")))))
+    (core (and (>= "v0.15.0") (< "v0.16.0")))
+    (core_unix (and (>= "v0.15.0") (< "v0.16.0")))))

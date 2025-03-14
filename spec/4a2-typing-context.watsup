@@ -60,6 +60,31 @@ syntax context =
 var C : context
 
 ;;
+;; Constructor
+;;
+
+dec $empty_context : context
+
+def $empty_context = C
+  -- if glayer =
+      { CDENV $empty_map<cid, consdef>,
+        TDENV $empty_map<tid, typdef>,
+        FDENV $empty_map<fid, funcdef>,
+        FRAME $empty_map<id, styp> }
+  -- if blayer =
+      { ID "",
+        KIND EMPTY,
+        TDENV $empty_map<tid, typdef>,
+        FDENV $empty_map<fid, funcdef>,
+        FRAME $empty_map<id, styp> }
+  -- if llayer =
+      { ID "",
+        KIND EMPTY,
+        TDENV $empty_map<tid, typdef>,
+        FRAMES ([ $empty_map<id, styp> ]) }
+  -- if C = { GLOBAL glayer, BLOCK blayer, LOCAL llayer }
+
+;;
 ;; Frame management
 ;;
 

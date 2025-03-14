@@ -1,0 +1,5 @@
+(include_subdirs qualified)
+
+(library
+ (name interpret)
+ (libraries util domain xl el il runtime_static runtime_dynamic p4))

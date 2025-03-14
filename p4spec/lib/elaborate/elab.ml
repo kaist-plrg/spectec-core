@@ -1428,6 +1428,7 @@ and fetch_rel_input_hint' (len : int) (hintexp : exp) : int list option =
               | _ -> None)
           | None -> None)
         (Some []) exps
+  | HoleE (`Num input) when input < len -> Some [ input ]
   | _ -> None
 
 and fetch_rel_input_hint (at : region) (nottyp_il : Il.Ast.nottyp)
