@@ -397,8 +397,6 @@ and eval_args (ctx : Ctx.t) (args : arg list) : Value.t list =
 (* Premise evaluation *)
 
 and eval_prem (ctx : Ctx.t) (prem : prem) : Ctx.t attempt =
-  Format.printf ";; %s\n" (string_of_region prem.at);
-  Format.printf "prem: %s\n" (Il.Print.string_of_prem prem);
   match prem.it with
   | RulePr (id, notexp) -> eval_rule_prem ctx id notexp
   | IfPr exp -> eval_if_prem ctx exp
@@ -433,7 +431,7 @@ and eval_if_prem (ctx : Ctx.t) (exp : exp) : Ctx.t attempt =
   if cond then Ok ctx
   else
     fail exp.at
-      (Format.asprintf "condition %s not met" (Il.Print.string_of_exp exp))
+      (Format.asprintf "condition %s was not met" (Il.Print.string_of_exp exp))
 
 (* Let premise evaluation *)
 
@@ -520,7 +518,11 @@ and match_rule (ctx : Ctx.t) (inputs : Hint.t) (rule : rule)
 
 and invoke_rel (ctx : Ctx.t) (id : id) (values_input : Value.t list) :
     Value.t list attempt =
-  Format.printf "invoke relation %s\n" id.it;
+  invoke_rel' ctx id values_input
+  |> nest id.at (Format.asprintf "invocation of relation %s failed" id.it)
+
+and invoke_rel' (ctx : Ctx.t) (id : id) (values_input : Value.t list) :
+    Value.t list attempt =
   let _, inputs, rules = Ctx.find_rel ctx id in
   guard (rules <> []) id.at "relation has no rules";
   (* Find rules that match the input values *)
@@ -528,15 +530,9 @@ and invoke_rel (ctx : Ctx.t) (id : id) (values_input : Value.t list) :
     List.map
       (fun rule ->
         let rule_match = match_rule ctx inputs rule values_input in
-        let id_rule, _, _ = rule.it in
-        Format.printf "try to match rule %s/%s\n" id.it id_rule.it;
         match rule_match with
-        | Ok (ctx, id, prems, exps_output) ->
-            Format.printf "match!\n";
-            Some (ctx, id, prems, exps_output)
-        | Fail _ ->
-            Format.printf "no match\n";
-            None)
+        | Ok (ctx, id, prems, exps_output) -> Some (ctx, id, prems, exps_output)
+        | Fail _ -> None)
       rules
     |> List.filter_map Fun.id
   in
@@ -544,35 +540,26 @@ and invoke_rel (ctx : Ctx.t) (id : id) (values_input : Value.t list) :
   let attempt_rules =
     List.map
       (fun (ctx, id_rule, prems, exps_output) ->
-        let attempt_rule () : Value.t list attempt =
-          Format.printf "... applying rule %s/%s\n" id.it id_rule.it;
-          "..... values_input:\n......."
-          ^ String.concat "\n......."
-              (List.map (Value.to_string_with_indent ~level:1) values_input)
-          |> Format.printf "%s\n";
+        let attempt_rule' () : Value.t list attempt =
           let* ctx = eval_prems ctx prems in
           let values_output = eval_exps ctx exps_output in
           Ok values_output
         in
+        let attempt_rule () : Value.t list attempt =
+          attempt_rule' ()
+          |> nest id.at
+               (Format.asprintf "application of rule %s/%s failed" id.it
+                  id_rule.it)
+        in
         attempt_rule)
       rules
   in
-  let values =
-    choice id.at (Format.asprintf "matching relation %s" id.it) attempt_rules
-  in
-  (match values with
-  | Ok values ->
-      Format.printf "... relation invocation %s succeeded\n" id.it;
-      List.iter
-        (fun value -> Format.printf "..... %s\n" (Value.to_string value))
-        values
-  | Fail _ -> Format.printf "... relation invocation %s failed\n" id.it);
-  values
+  choice attempt_rules
 
 (* Invoke a function *)
 
 and match_clause (ctx : Ctx.t) (clause : clause) (values_input : Value.t list) :
-    (Ctx.t * prem list * exp) attempt =
+    (Ctx.t * arg list * prem list * exp) attempt =
   let args_input, exp_output, prems = clause.it in
   check
     (List.length args_input = List.length values_input)
@@ -585,11 +572,15 @@ and match_clause (ctx : Ctx.t) (clause : clause) (values_input : Value.t list) :
         assign_arg ctx arg_input value_input)
       (Ok ctx) args_input values_input
   in
-  Ok (ctx, prems, exp_output)
+  Ok (ctx, args_input, prems, exp_output)
 
-and invoke_func (ctx : Ctx.t) (id : id) (_targs : targ list) (args : arg list) :
+and invoke_func (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
     Value.t attempt =
-  Format.printf "invoke function %s\n" id.it;
+  invoke_func' ctx id targs args
+  |> nest id.at (Format.asprintf "invocation of function %s failed" id.it)
+
+and invoke_func' (ctx : Ctx.t) (id : id) (_targs : targ list) (args : arg list)
+    : Value.t attempt =
   let func = Ctx.find_func ctx id in
   let _tparams, _params, _typ_ret, clauses = func in
   guard (clauses <> []) id.at "function has no clauses";
@@ -600,7 +591,8 @@ and invoke_func (ctx : Ctx.t) (id : id) (_targs : targ list) (args : arg list) :
       (fun clause ->
         let clause_match = match_clause ctx clause values_input in
         match clause_match with
-        | Ok (ctx, prems, exp_output) -> Some (ctx, prems, exp_output)
+        | Ok (ctx, args_input, prems, exp_output) ->
+            Some (ctx, args_input, prems, exp_output)
         | Fail _ -> None)
       clauses
     |> List.filter_map Fun.id
@@ -608,29 +600,22 @@ and invoke_func (ctx : Ctx.t) (id : id) (_targs : targ list) (args : arg list) :
   (* Apply the first matching clause *)
   let attempt_clauses =
     List.map
-      (fun (ctx, prems, exp_output) ->
-        let attempt_clause () : Value.t attempt =
-          Format.printf "... applying clause for %s\n" id.it;
-          "..... values_input:\n......."
-          ^ String.concat "\n......."
-              (List.map (Value.to_string_with_indent ~level:1) values_input)
-          |> Format.printf "%s\n";
+      (fun (ctx, args_input, prems, exp_output) ->
+        let attempt_clause' () : Value.t attempt =
           let* ctx = eval_prems ctx prems in
           let value_output = eval_exp ctx exp_output in
           Ok value_output
         in
+        let attempt_clause () : Value.t attempt =
+          attempt_clause' ()
+          |> nest id.at
+               (Format.asprintf "application of clause %s%s failed" id.it
+                  (Il.Print.string_of_args args_input))
+        in
         attempt_clause)
       clauses
   in
-  let value =
-    choice id.at (Format.asprintf "matching function %s" id.it) attempt_clauses
-  in
-  (match value with
-  | Ok value ->
-      Format.printf "... function invocation %s succeeded with value %s\n" id.it
-        (Value.to_string value)
-  | Fail _ -> Format.printf "... function invocation %s failed\n" id.it);
-  value
+  choice attempt_clauses
 
 (* Load definitions into a context *)
 

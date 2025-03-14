@@ -35,22 +35,22 @@ module REnv = struct
       let exp =
         let exp_l = VarE id $$ (id.at, typ) in
         let exp_r = VarE id_rename $$ (id_rename.at, typ) in
-        CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (no_region, BoolT)
+        CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (id_rename.at, BoolT)
       in
       List.fold_left
         (fun exp_l id_rename ->
           let exp_r =
             let exp_l = VarE id $$ (id.at, typ) in
             let exp_r = VarE id_rename $$ (id_rename.at, typ) in
-            CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (no_region, BoolT)
+            CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (id_rename.at, BoolT)
           in
-          BinE (`AndOp, `BoolT, exp_l, exp_r) $$ (no_region, BoolT))
+          BinE (`AndOp, `BoolT, exp_l, exp_r) $$ (id_rename.at, BoolT))
         exp ids_rename
     in
-    let sidecondition = IfPr exp $ no_region in
+    let sidecondition = IfPr exp $ id.at in
     let iters = Bind.BEnv.find id benv |> Bind.Occ.get_dim in
     List.fold_left
-      (fun sidecondition iter -> IterPr (sidecondition, (iter, [])) $ no_region)
+      (fun sidecondition iter -> IterPr (sidecondition, (iter, [])) $ id.at)
       sidecondition iters
 
   let gen_sideconditions (benv : Bind.BEnv.t) (renv : t) : prem list =

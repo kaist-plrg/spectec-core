@@ -20,11 +20,11 @@ module REnv = struct
     let exp =
       let exp_l = VarE id $$ (id.at, exp.note) in
       let exp_r = exp in
-      CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (no_region, BoolT)
+      CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (exp.at, BoolT)
     in
-    let sidecondition = IfPr exp $ no_region in
+    let sidecondition = IfPr exp $ exp.at in
     List.fold_left
-      (fun sidecondition iter -> IterPr (sidecondition, (iter, [])) $ no_region)
+      (fun sidecondition iter -> IterPr (sidecondition, (iter, [])) $ exp.at)
       sidecondition dim
 
   let gen_sideconditions (renv : t) : prem list =
