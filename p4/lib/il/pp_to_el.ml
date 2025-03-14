@@ -133,6 +133,10 @@ and pp_value' ?(level = 0) fmt value =
     F.fprintf fmt "{ %a }"
         (pp_list (pp_value' ~level:(level + 1)) ~sep:Comma)
         values
+  | Value.HeaderV (_, _, fields) ->
+      F.fprintf fmt "{\n%a\n%s}"
+        (pp_pairs ~level:(level + 1) P.pp_member' pp_value' ~rel:Eq ~sep:SemicolonNl)
+        fields (indent level)
   | _ -> Value.pp ~level fmt value
 
 (* Annotations *)
