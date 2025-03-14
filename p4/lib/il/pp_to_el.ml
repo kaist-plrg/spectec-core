@@ -74,6 +74,10 @@ and pp_typ' ?(level = 0) fmt typ =
       F.fprintf fmt "tuple<%a>"
         (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs
+  | Tdom.SpecT ((_tparams, _tparams_hidden, Tdom.ListT (_typs)), typs) ->
+      F.fprintf fmt "list<%a>"
+        (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
+        typs
   | Tdom.SpecT (tdp, _typs) ->
       let tparams, tparams_hidden, typ = tdp in
       F.fprintf fmt "%a%a"
@@ -123,6 +127,10 @@ and pp_value' ?(level = 0) fmt value =
   | Value.StructV (_, fields) ->
     let values = List.map (fun (_, value) -> value) fields in
     F.fprintf fmt "{%a}"
+        (pp_list (pp_value' ~level:(level + 1)) ~sep:Comma)
+        values
+  | Value.TupleV values ->
+    F.fprintf fmt "{ %a }"
         (pp_list (pp_value' ~level:(level + 1)) ~sep:Comma)
         values
   | _ -> Value.pp ~level fmt value
