@@ -304,11 +304,12 @@ and pp_expr' ?(level = 0) fmt expr' =
       F.fprintf fmt "%a%a%a" pp_var var_func
         (pp_targs ~level:(level + 1))
         targs pp_args args
-  | CallMethodE { expr_base; member; targs=_targs; args } ->
-      F.fprintf fmt "%a.%a%a/*CallMethodE*/"
+  | CallMethodE { expr_base; member; targs; args } ->
+      F.fprintf fmt "%a.%a%a%a/*CallMethodE*/"
         (pp_expr ~level:(level + 1))
         expr_base pp_member member
-        pp_args args
+        (pp_targs ~level:(level + 1))
+        targs pp_args args
   | CallTypeE { typ; member } ->
       F.fprintf fmt "%a.%a()" (pp_typ ~level:(level + 1)) typ pp_member member
   | InstE { var_inst; targs; args } ->
@@ -375,7 +376,7 @@ and pp_stmt' ?(level = 0) fmt stmt' =
   | CallFuncS { var_func; targs = _targs; args } ->
       F.fprintf fmt "%a%a;/*CallFuncS*/" pp_var var_func pp_args args
   | CallMethodS { expr_base; member; targs = _targs; args } ->
-      F.fprintf fmt "%a.%a%a;/*CallMethodS*/"
+      F.fprintf fmt "%a.%a%a;"
         (pp_expr ~level:(level + 1))
         expr_base pp_member member pp_args args
   | CallInstS { typ=_typ; var_inst; targs; args } ->
@@ -453,7 +454,9 @@ and pp_decl' ?(level = 0) fmt decl' =
         members (indent level)
   | InstD { id; typ = _typ; var_inst; targs; args; init; annos = _annos } -> (
       match init with
-      | [] -> F.fprintf fmt "%a%a %a;" pp_var var_inst pp_args args pp_id id
+      | [] -> F.fprintf fmt "%a%a%a %a;/*InstD*/" pp_var var_inst
+            (pp_targs ~level:(level + 1))
+            targs pp_args args pp_id id
       | init ->
           F.fprintf fmt "%a%a%a %a = {\n%a\n%s};/*InstDinit*/" pp_var var_inst
             (pp_targs ~level:(level + 1))
@@ -553,7 +556,7 @@ and pp_decl' ?(level = 0) fmt decl' =
         (pp_params ~level:(level + 1))
         params (pp_block ~level) body
   | FuncD { id; typ_ret; tparams; tparams_hidden; params; body } ->
-      F.fprintf fmt "%a %a%a%a %a"
+      F.fprintf fmt "%a %a%a%a %a/*FuncD*/"
         (pp_typ ~level:(level + 1))
         typ_ret pp_id id pp_tparams (tparams @ tparams_hidden)
         (pp_params ~level:(level + 1))
