@@ -137,6 +137,8 @@ and pp_value' ?(level = 0) fmt value =
       F.fprintf fmt "{\n%a\n%s}"
         (pp_pairs ~level:(level + 1) P.pp_member' pp_value' ~rel:Eq ~sep:SemicolonNl)
         fields (indent level)
+  | Value.SEnumFieldV (id, member, _) ->
+      F.fprintf fmt "%a.%a" P.pp_id' id P.pp_member' member
   | _ -> Value.pp ~level fmt value
 
 (* Annotations *)
