@@ -3,8 +3,8 @@ open Il.Ast
 module Hint = Runtime_static.Rel.Hint
 module Value = Runtime_dynamic.Value
 module Rel = Runtime_dynamic.Rel
-open Attempt
 open Error
+open Attempt
 open Util.Source
 
 (* Check *)

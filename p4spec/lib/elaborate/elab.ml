@@ -552,9 +552,9 @@ and infer_binop_exp (ctx : Ctx.t) (at : region) (binop : binop) (exp_l : exp)
 
 (* Inference of comparison expressions *)
 
-and infer_cmpop_exp_bool (ctx : Ctx.t) (at : region) (cmpop : Bool.cmpop)
-    (exp_l : exp) (exp_r : exp) : (Ctx.t * Il.Ast.exp' * plaintyp') attempt =
-  choice at
+and infer_cmpop_exp_bool (ctx : Ctx.t) (cmpop : Bool.cmpop) (exp_l : exp)
+    (exp_r : exp) : (Ctx.t * Il.Ast.exp' * plaintyp') attempt =
+  choice
     [
       (fun () ->
         let* ctx, exp_il_r, plaintyp_r = infer_exp ctx exp_r in
@@ -618,7 +618,7 @@ and infer_cmpop_exp_num (ctx : Ctx.t) (at : region) (cmpop : Num.cmpop)
 and infer_cmpop_exp (ctx : Ctx.t) (at : region) (cmpop : cmpop) (exp_l : exp)
     (exp_r : exp) : (Ctx.t * Il.Ast.exp' * plaintyp') attempt =
   match cmpop with
-  | #Bool.cmpop as cmpop -> infer_cmpop_exp_bool ctx at cmpop exp_l exp_r
+  | #Bool.cmpop as cmpop -> infer_cmpop_exp_bool ctx cmpop exp_l exp_r
   | #Num.cmpop as cmpop -> infer_cmpop_exp_num ctx at cmpop exp_l exp_r
 
 (* Inference of arithmetic expressions *)
@@ -792,7 +792,7 @@ and elab_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
     (Ctx.t * Il.Ast.exp) attempt =
   match as_iter_plaintyp ctx plaintyp_expect with
   | Ok (plaintyp_expect_base, iter_expect) ->
-      choice exp.at
+      choice
         [
           (fun () ->
             elab_exp_iter ctx plaintyp_expect plaintyp_expect_base iter_expect
@@ -841,7 +841,7 @@ and fail_cast (at : region) (plaintyp_a : plaintyp) (plaintyp_b : plaintyp) =
       (El.Print.string_of_plaintyp plaintyp_a)
       (El.Print.string_of_plaintyp plaintyp_b)
   in
-  Fail (at, msg)
+  fail at msg
 
 and cast_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp)
     (plaintyp_infer : plaintyp) (exp_il : Il.Ast.exp) : Il.Ast.exp attempt =
@@ -1010,7 +1010,7 @@ and elab_iter_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp)
 
 and fail_elab_not (at : region) (msg : string) : (Ctx.t * Il.Ast.notexp) attempt
     =
-  Fail (at, "cannot elaborate notation expression because " ^ msg)
+  fail at ("cannot elaborate notation expression because " ^ msg)
 
 and elab_exp_not (ctx : Ctx.t) (typ : typ) (exp : exp) :
     (Ctx.t * Il.Ast.notexp) attempt =
@@ -1073,7 +1073,7 @@ and elab_exp_not (ctx : Ctx.t) (typ : typ) (exp : exp) :
 
 and fail_elab_struct (at : region) (msg : string) :
     (Ctx.t * (Il.Ast.atom * Il.Ast.exp) list) attempt =
-  Fail (at, "cannot elaborate struct expression because " ^ msg)
+  fail at ("cannot elaborate struct expression because " ^ msg)
 
 and elab_expfields (ctx : Ctx.t) (at : region)
     (typfields : (atom * plaintyp) list) (expfields : (atom * exp) list) :

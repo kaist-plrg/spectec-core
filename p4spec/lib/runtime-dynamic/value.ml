@@ -1,4 +1,5 @@
 open Xl
+open Util.Print
 
 (* Value *)
 
@@ -13,8 +14,6 @@ type t =
   | ListV of t list
 
 (* (TODO) I should surely do something with this mess *)
-
-let indent level = String.make (level * 2) ' '
 
 let rec to_string_with_indent ?(level = 0) (value : t) =
   match value with
