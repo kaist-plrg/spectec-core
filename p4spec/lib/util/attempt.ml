@@ -10,8 +10,10 @@ type 'a attempt = Ok of 'a | Fail of trace list
 let fail (at : region) (msg : string) : 'a attempt =
   Fail [ Trace (at, msg, []) ]
 
+let fail_silent : 'a attempt = Fail []
+
 let rec choice = function
-  | [] -> Fail []
+  | [] -> fail_silent
   | f :: fs -> (
       match f () with
       | Ok a -> Ok a

@@ -334,7 +334,7 @@ rule ParamType_wf/some:
 
 rule ParamTypes_wf:
   tidset |- paramtyp*
-  -- if (id _ _ val? = paramtyp)*
+  -- if (id _ _ _ = paramtyp)*
   -- if $distinct_<id>(id*)
   -- (ParamType_wf: tidset |- paramtyp)*
 

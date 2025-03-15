@@ -785,6 +785,7 @@ and infer_typ_exp (ctx : Ctx.t) (exp : exp) (plaintyp : plaintyp) :
 
    - If an iterated type is expected,
       - first try elaborating the expression as a singleton iteration,
+        but except wildcard, epsilon, and empty list expressions
       - then try usual elaboration
    - Otherwise, directly try usual elaboration *)
 
@@ -795,8 +796,12 @@ and elab_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
       choice
         [
           (fun () ->
-            elab_exp_iter ctx plaintyp_expect plaintyp_expect_base iter_expect
-              exp);
+            match exp.it with
+            | VarE id when id.it = "_" -> fail_silent
+            | EpsE | ListE [] -> fail_silent
+            | _ ->
+                elab_exp_iter ctx plaintyp_expect plaintyp_expect_base
+                  iter_expect exp);
           (fun () -> elab_exp_normal ctx plaintyp_expect exp);
         ]
   | _ -> elab_exp_normal ctx plaintyp_expect exp
