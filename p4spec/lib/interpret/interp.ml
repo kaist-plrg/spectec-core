@@ -1,6 +1,7 @@
 open Xl
 open Il.Ast
 module Hint = Runtime_static.Rel.Hint
+module Typ = Runtime_dynamic.Typ
 module Value = Runtime_dynamic.Value
 module Rel = Runtime_dynamic.Rel
 open Error
@@ -15,7 +16,54 @@ let check (b : bool) (at : region) (msg : string) : unit =
 let guard (b : bool) (at : region) (msg : string) : unit =
   if not b then warn at msg
 
-(* Helpers *)
+(* Expansion of type aliases *)
+
+let rec expand_typ (ctx : Ctx.t) (typ : Typ.t) : Typ.t =
+  match typ.it with
+  | VarT (tid, _targs) -> (
+      let _tparams, deftyp = Ctx.find_typdef ctx tid in
+      match deftyp.it with PlainT typ -> expand_typ ctx typ | _ -> typ)
+  | _ -> typ
+
+(* Type equivalence and subtyping *)
+
+let rec equiv_typ (ctx : Ctx.t) (typ_a : Typ.t) (typ_b : Typ.t) : bool =
+  let typ_a = expand_typ ctx typ_a in
+  let typ_b = expand_typ ctx typ_b in
+  match (typ_a.it, typ_b.it) with
+  | BoolT, BoolT -> true
+  | NumT numtyp_a, NumT numtyp_b -> Num.equiv numtyp_a numtyp_b
+  | TextT, TextT -> true
+  | VarT (tid_a, targs_a), VarT (tid_b, targs_b) ->
+      tid_a.it = tid_b.it
+      && List.length targs_a = List.length targs_b
+      && List.for_all2 (equiv_typ ctx) targs_a targs_b
+  | TupleT typs_a, TupleT typs_b ->
+      List.length typs_a = List.length typs_b
+      && List.for_all2 (equiv_typ ctx) typs_a typs_b
+  | IterT (typ_a, iter_a), IterT (typ_b, iter_b) ->
+      equiv_typ ctx typ_a typ_b && iter_a = iter_b
+  | _ -> false
+
+and sub_typ (ctx : Ctx.t) (typ_a : Typ.t) (typ_b : Typ.t) : bool =
+  equiv_typ ctx typ_a typ_b || sub_typ' ctx typ_a typ_b
+
+and sub_typ' (ctx : Ctx.t) (typ_a : Typ.t) (typ_b : Typ.t) : bool =
+  let typ_a = expand_typ ctx typ_a in
+  let typ_b = expand_typ ctx typ_b in
+  match (typ_a.it, typ_b.it) with
+  | NumT numtyp_a, NumT numtyp_b -> Num.sub numtyp_a numtyp_b
+  | TupleT typs_a, TupleT typs_b ->
+      List.length typs_a = List.length typs_b
+      && List.for_all2 (sub_typ ctx) typs_a typs_b
+  | IterT (typ_a, iter_a), IterT (typ_b, iter_b) when iter_a = iter_b ->
+      sub_typ ctx typ_a typ_b
+  | IterT (typ_a, Opt), IterT (typ_b, List) -> sub_typ ctx typ_a typ_b
+  | _, IterT (typ_b, Opt) -> sub_typ ctx typ_a typ_b
+  | _, IterT (typ_b, List) -> sub_typ ctx typ_a typ_b
+  | _ -> false
+
+(* Assignments *)
 
 (* Transpose a matrix of values, as a list of value batches
    that are to be each fed into an iterated expression *)
@@ -33,8 +81,6 @@ let transpose (value_matrix : Value.t list list) : Value.t list list =
       List.init width (fun j ->
           List.init (List.length value_matrix) (fun i ->
               List.nth (List.nth value_matrix i) j))
-
-(* Assignments *)
 
 let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : Value.t) : Ctx.t attempt =
   match (exp.it, value) with
@@ -87,7 +133,8 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : Value.t) : Ctx.t attempt =
         List.fold_left
           (fun ctx (id, iters) ->
             let value = Ctx.find_value ctx (id, iters) in
-            Ctx.add_value ctx (id, iters @ [ Opt ]) (Value.OptV (Some value)))
+            let value = Value.OptV (Some value) in
+            Ctx.add_value ctx (id, iters @ [ Opt ]) value)
           ctx vars
       in
       Ok ctx
@@ -110,7 +157,8 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : Value.t) : Ctx.t attempt =
             let values =
               List.map (fun ctx -> Ctx.find_value ctx (id, iters)) ctxs
             in
-            Ctx.add_value ctx (id, iters @ [ List ]) (ListV values))
+            let value = Value.ListV values in
+            Ctx.add_value ctx (id, iters @ [ List ]) value)
           ctx vars
       in
       Ok ctx
