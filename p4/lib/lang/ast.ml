@@ -72,7 +72,7 @@ and 'typ typ = 'typ typ' phrase
 and 'typ typ' = 'typ
 
 (* Values : parameterized by 'value *)
-and 'value value = 'value value' phrase
+and ('note, 'value) value = ('value value', 'note) note_phrase
 and 'value value' = 'value
 
 (* Annotations *)

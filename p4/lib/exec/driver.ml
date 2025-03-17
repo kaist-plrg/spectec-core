@@ -182,9 +182,9 @@ module Make
 
   let make_exact_key (num_key : Stf.Ast.number) =
     let num_key = num_key |> int_of_string |> Bigint.of_int in
-    let value_key = Value.IntV num_key $ no_info in
+    let num_key =  (num_key, None) $ no_info in
     Il.Ast.(
-      ValueE { value = value_key }
+      NumE { num = num_key }
       $$ (no_info, { typ = Types.IntT; ctk = Ctk.DYN }))
 
   let make_ternary_key (num_key : Stf.Ast.number) =
@@ -196,10 +196,10 @@ module Make
           if num_key.[i] = '*' then '0' else num_key.[i])
     in
     let base = "0x" ^ base |> int_of_string |> Bigint.of_int in
-    let value_base = Value.IntV base $ no_info in
+    let num_base =  (base, None) $ no_info in
     let expr_base =
       Il.Ast.(
-        ValueE { value = value_base }
+        NumE { num = num_base }
         $$ (no_info, { typ = Types.IntT; ctk = Ctk.DYN }))
     in
     let mask =
@@ -207,10 +207,10 @@ module Make
           if num_key.[i] = '*' then '0' else 'F')
     in
     let mask = "0x" ^ mask |> int_of_string |> Bigint.of_int in
-    let value_mask = Value.IntV mask $ no_info in
+    let num_mask = (mask, None) $ no_info in
     let expr_mask =
       Il.Ast.(
-        ValueE { value = value_mask }
+        NumE { num = num_mask }
         $$ (no_info, { typ = Types.IntT; ctk = Ctk.DYN }))
     in
     Il.Ast.(
@@ -274,9 +274,9 @@ module Make
                let id_arg, num_arg = arg_action_supplied in
                let idx, typ = PMap.find id_arg pmap_control in
                let num_arg = num_arg |> int_of_string |> Bigint.of_int in
-               let value_arg = Value.IntV num_arg $ no_info in
+               let num_arg = (num_arg, None) $ no_info in
                let expr_arg =
-                 Il.Ast.ValueE { value = value_arg } $$ no_info_expr
+                 Il.Ast.NumE { num = num_arg } $$ no_info_expr
                in
                let expr_arg =
                  Il.Ast.(
@@ -295,7 +295,10 @@ module Make
     (* (TODO) Should validate priority value *)
     let priority =
       Option.map
-        (fun priority -> Value.IntV (Bigint.of_int priority) $ no_info)
+        (fun priority -> 
+           let num = (Bigint.of_int priority, None) $ no_info in
+           let expr = Il.Ast.NumE { num } in
+           Value.IntV (Bigint.of_int priority) $$ (no_info, expr))
         priority
     in
     let table = Table.add_entry keysets action priority table in
@@ -327,9 +330,9 @@ module Make
              let id_arg, num_arg = arg_action in
              let idx, typ = PMap.find id_arg pmap_control in
              let num_arg = num_arg |> int_of_string |> Bigint.of_int in
-             let value_arg = Value.IntV num_arg $ no_info in
+             let num_arg = (num_arg, None) $ no_info in
              let expr_arg =
-               Il.Ast.ValueE { value = value_arg } $$ no_info_expr
+               Il.Ast.NumE { num = num_arg } $$ no_info_expr
              in
              let expr_arg =
                Il.Ast.(

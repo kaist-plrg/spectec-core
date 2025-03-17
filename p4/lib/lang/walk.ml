@@ -3,7 +3,8 @@ open Util.Source
 
 (* Parameterized walk types *)
 
-type ('note,
+type ('note_value,
+       'note_expr,
        'typ,
        'value,
        'param,
@@ -15,7 +16,8 @@ type ('note,
        'mthd)
      walker = {
   walk_num :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -29,7 +31,8 @@ type ('note,
     num ->
     unit;
   walk_text :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -43,7 +46,8 @@ type ('note,
     text ->
     unit;
   walk_id :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -57,7 +61,8 @@ type ('note,
     id ->
     unit;
   walk_var :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -71,7 +76,8 @@ type ('note,
     var ->
     unit;
   walk_member :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -85,7 +91,8 @@ type ('note,
     member ->
     unit;
   walk_state_label :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -99,7 +106,8 @@ type ('note,
     state_label ->
     unit;
   walk_match_kind :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -113,7 +121,8 @@ type ('note,
     match_kind ->
     unit;
   walk_unop :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -127,7 +136,8 @@ type ('note,
     unop ->
     unit;
   walk_binop :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -141,7 +151,8 @@ type ('note,
     binop ->
     unit;
   walk_dir :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -155,7 +166,8 @@ type ('note,
     dir ->
     unit;
   walk_typ :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -169,7 +181,8 @@ type ('note,
     'typ typ ->
     unit;
   walk_value :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -180,10 +193,11 @@ type ('note,
       'table_entry,
       'mthd )
     walker ->
-    'value value ->
+    ('note_value, 'value) value ->
     unit;
   walk_anno :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -194,10 +208,11 @@ type ('note,
       'table_entry,
       'mthd )
     walker ->
-    ('note, 'expr) anno ->
+    ('note_expr, 'expr) anno ->
     unit;
   walk_tparam :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -211,7 +226,8 @@ type ('note,
     tparam ->
     unit;
   walk_param :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -225,7 +241,8 @@ type ('note,
     'param param ->
     unit;
   walk_cparam :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -239,7 +256,8 @@ type ('note,
     'param cparam ->
     unit;
   walk_targ :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -253,7 +271,8 @@ type ('note,
     'typ targ ->
     unit;
   walk_arg :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -264,10 +283,11 @@ type ('note,
       'table_entry,
       'mthd )
     walker ->
-    ('note, 'expr) arg ->
+    ('note_expr, 'expr) arg ->
     unit;
   walk_expr :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -278,10 +298,11 @@ type ('note,
       'table_entry,
       'mthd )
     walker ->
-    ('note, 'expr) expr ->
+    ('note_expr, 'expr) expr ->
     unit;
   walk_keyset :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -292,10 +313,11 @@ type ('note,
       'table_entry,
       'mthd )
     walker ->
-    ('note, 'expr) keyset ->
+    ('note_expr, 'expr) keyset ->
     unit;
   walk_select_case :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -306,10 +328,11 @@ type ('note,
       'table_entry,
       'mthd )
     walker ->
-    ('note, 'expr) select_case ->
+    ('note_expr, 'expr) select_case ->
     unit;
   walk_stmt :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -323,7 +346,8 @@ type ('note,
     'stmt stmt ->
     unit;
   walk_block :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -334,10 +358,11 @@ type ('note,
       'table_entry,
       'mthd )
     walker ->
-    ('note, 'expr, 'stmt) block ->
+    ('note_expr, 'expr, 'stmt) block ->
     unit;
   walk_switch_label :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -348,10 +373,11 @@ type ('note,
       'table_entry,
       'mthd )
     walker ->
-    ('note, 'expr) switch_label ->
+    ('note_expr, 'expr) switch_label ->
     unit;
   walk_switch_case :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -362,10 +388,11 @@ type ('note,
       'table_entry,
       'mthd )
     walker ->
-    ('note, 'expr, 'stmt) switch_case ->
+    ('note_expr, 'expr, 'stmt) switch_case ->
     unit;
   walk_decl :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -379,7 +406,8 @@ type ('note,
     'decl decl ->
     unit;
   walk_parser_state :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -390,10 +418,11 @@ type ('note,
       'table_entry,
       'mthd )
     walker ->
-    ('note, 'expr, 'stmt) parser_state ->
+    ('note_expr, 'expr, 'stmt) parser_state ->
     unit;
   walk_table :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -404,10 +433,11 @@ type ('note,
       'table_entry,
       'mthd )
     walker ->
-    ('note, 'expr, 'table_action, 'table_entry) table ->
+    ('note_expr, 'expr, 'table_action, 'table_entry) table ->
     unit;
   walk_table_property :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -418,10 +448,11 @@ type ('note,
       'table_entry,
       'mthd )
     walker ->
-    ('note, 'expr, 'table_action, 'table_entry) table_property ->
+    ('note_expr, 'expr, 'table_action, 'table_entry) table_property ->
     unit;
   walk_table_keys :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -432,10 +463,11 @@ type ('note,
       'table_entry,
       'mthd )
     walker ->
-    ('note, 'expr) table_keys ->
+    ('note_expr, 'expr) table_keys ->
     unit;
   walk_table_key :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -446,10 +478,11 @@ type ('note,
       'table_entry,
       'mthd )
     walker ->
-    ('note, 'expr) table_key ->
+    ('note_expr, 'expr) table_key ->
     unit;
   walk_table_actions :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -463,7 +496,8 @@ type ('note,
     'table_action table_actions ->
     unit;
   walk_table_action :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -477,7 +511,8 @@ type ('note,
     'table_action table_action ->
     unit;
   walk_table_entries :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -491,7 +526,8 @@ type ('note,
     'table_entry table_entries ->
     unit;
   walk_table_entry :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -505,7 +541,8 @@ type ('note,
     'table_entry table_entry ->
     unit;
   walk_table_default :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -519,7 +556,8 @@ type ('note,
     'table_action table_default ->
     unit;
   walk_table_custom :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -530,10 +568,11 @@ type ('note,
       'table_entry,
       'mthd )
     walker ->
-    ('note, 'expr) table_custom ->
+    ('note_expr, 'expr) table_custom ->
     unit;
   walk_mthd :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -547,7 +586,8 @@ type ('note,
     'mthd mthd ->
     unit;
   walk_program :
-    ( 'note,
+    ( 'note_value,
+      'note_expr,
       'typ,
       'value,
       'param,
@@ -580,7 +620,8 @@ let walk_pair (f_k : 'a -> unit) (f_v : 'b -> unit) (x, y) : unit =
 
 let walk_num
     (_walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -597,7 +638,8 @@ let walk_num
 
 let walk_text
     (_walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -614,7 +656,8 @@ let walk_text
 
 let walk_id
     (_walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -631,7 +674,8 @@ let walk_id
 
 let walk_var
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -649,7 +693,8 @@ let walk_var
 
 let walk_member
     (_walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -666,7 +711,8 @@ let walk_member
 
 let walk_state_label
     (_walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -683,7 +729,8 @@ let walk_state_label
 
 let walk_match_kind
     (_walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -700,7 +747,8 @@ let walk_match_kind
 
 let walk_unop
     (_walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -717,7 +765,8 @@ let walk_unop
 
 let walk_binop
     (_walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -734,7 +783,8 @@ let walk_binop
 
 let walk_dir
     (_walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -755,7 +805,8 @@ let walk_dir
 
 let walk_anno
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -789,7 +840,8 @@ let walk_anno
 
 let walk_tparam
     (_walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -810,7 +862,8 @@ let walk_tparam
 
 let walk_targ
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -828,7 +881,8 @@ let walk_targ
 
 let walk_arg
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -854,7 +908,8 @@ let walk_arg
 
 let walk_keyset
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -872,7 +927,8 @@ let walk_keyset
 
 let walk_select_case
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -895,7 +951,8 @@ let walk_select_case
 
 let walk_block
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -914,7 +971,8 @@ let walk_block
 
 let walk_switch_label
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -930,7 +988,8 @@ let walk_switch_label
 
 let walk_switch_case
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -955,7 +1014,8 @@ let walk_switch_case
 
 let walk_parser_state
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -976,7 +1036,8 @@ let walk_parser_state
 
 let walk_table
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -994,7 +1055,8 @@ let walk_table
 
 let walk_table_property
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -1021,7 +1083,8 @@ let walk_table_property
 
 let walk_table_key
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -1040,7 +1103,8 @@ let walk_table_key
 
 let walk_table_keys
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -1058,7 +1122,8 @@ let walk_table_keys
 
 let walk_table_actions
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -1076,7 +1141,8 @@ let walk_table_actions
 
 let walk_table_entries
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -1095,7 +1161,8 @@ let walk_table_entries
 
 let walk_table_default
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -1114,7 +1181,8 @@ let walk_table_default
 
 let walk_table_custom
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,
@@ -1137,7 +1205,8 @@ let walk_table_custom
 
 let walk_program
     (walker :
-      ( 'note,
+      ( 'note_value,
+        'note_expr,
         'typ,
         'value,
         'param,

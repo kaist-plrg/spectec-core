@@ -220,6 +220,9 @@ and pp_args fmt args = P.pp_args pp_expr fmt args
 and pp_expr' ?(level = 0) fmt expr' =
   match expr' with
   | ValueE { value } -> pp_value fmt value
+  | BoolE { boolean } -> F.fprintf fmt "%b" boolean
+  | StrE { text } -> F.fprintf fmt "\"%a\"" pp_text text
+  | NumE { num } -> pp_num fmt num
   | VarE { var } -> pp_var fmt var
   | SeqE { exprs } ->
       F.fprintf fmt "{ %a }"
@@ -240,6 +243,7 @@ and pp_expr' ?(level = 0) fmt expr' =
         (pp_pairs pp_member (pp_expr ~level:(level + 1)) ~rel:Eq ~sep:Comma)
         fields
   | DefaultE -> F.pp_print_string fmt "..."
+  | InvalidE -> F.pp_print_string fmt "{#}"
   | UnE { unop; expr } ->
       F.fprintf fmt "%a%a" pp_unop unop (pp_expr ~level:(level + 1)) expr
   | BinE { binop; expr_l; expr_r } ->
@@ -297,6 +301,9 @@ and pp_expr' ?(level = 0) fmt expr' =
         value_hi
         (pp_value ~level:(level + 1))
         value_lo
+  | ErrAccE { member } -> F.fprintf fmt "error.%a" pp_member member
+  | TypeAccE { var_base; member } ->
+      F.fprintf fmt "%a.%a" pp_var var_base pp_member member
   | ExprAccE { expr_base; member } ->
       F.fprintf fmt "%a.%a"
         (pp_expr ~level:(level + 1))

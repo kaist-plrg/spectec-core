@@ -57,8 +57,8 @@ type typ = typ' L.typ
 and typ' = Type.t L.typ'
 
 (* Values *)
-
-type value = value' L.value
+type value = (expr', value') L.value
+(* ??? *)
 and value' = Value.t L.value'
 
 (* Annotations *)
@@ -91,12 +91,16 @@ and expr = (note, expr') L.expr
 
 and expr' =
   | ValueE of { value : value }
+  | BoolE of { boolean : bool }
+  | StrE of { text : text }
+  | NumE of { num : num }
   | VarE of { var : var }
   | SeqE of { exprs : expr list }
   | SeqDefaultE of { exprs : expr list }
   | RecordE of { fields : (member * expr) list }
   | RecordDefaultE of { fields : (member * expr) list }
   | DefaultE
+  | InvalidE
   | UnE of { unop : unop; expr : expr }
   | BinE of { binop : binop; expr_l : expr; expr_r : expr }
   | TernE of { expr_cond : expr; expr_then : expr; expr_else : expr }
@@ -106,6 +110,8 @@ and expr' =
   | SelectE of { exprs_select : expr list; cases : select_case list }
   | ArrAccE of { expr_base : expr; expr_idx : expr }
   | BitAccE of { expr_base : expr; value_lo : value; value_hi : value }
+  | ErrAccE of { member : member }
+  | TypeAccE of { var_base : var; member : member }
   | ExprAccE of { expr_base : expr; member : member }
   | CallFuncE of { var_func : var; targs : typ list; args : arg list }
   | CallMethodE of {

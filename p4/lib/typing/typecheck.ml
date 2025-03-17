@@ -656,23 +656,21 @@ and type_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : El.Ast.expr list) :
   List.map (type_expr cursor ctx) exprs
 
 and type_bool_expr (boolean : bool) : Type.t * Ctk.t * Il.Ast.expr' =
-  let value = Value.BoolV boolean in
-  (Types.BoolT, Ctk.LCTK, Il.Ast.ValueE { value = value $ no_info })
+  (Types.BoolT, Ctk.LCTK, Il.Ast.BoolE { boolean })
 
 and type_str_expr (text : El.Ast.text) : Type.t * Ctk.t * Il.Ast.expr' =
-  let value = Value.StrV text.it in
-  (Types.StrT, Ctk.LCTK, Il.Ast.ValueE { value = value $ text.at })
+  (Types.StrT, Ctk.LCTK, Il.Ast.StrE { text })
 
 and type_num_expr (num : El.Ast.num) : Type.t * Ctk.t * Il.Ast.expr' =
-  let value, typ =
+  let typ =
     match num.it with
-    | value, Some (width, signed) ->
-        if signed then (Num.int_of_raw_int value width, Types.FIntT width)
-        else (Num.bit_of_raw_int value width, Types.FBitT width)
-    | value, None -> (Value.IntV value, Types.IntT)
+    | _, Some (width, signed) ->
+        if signed then Types.FIntT width
+        else Types.FBitT width
+    | _, None -> Types.IntT
   in
   let ctk = Ctk.LCTK in
-  let expr_il = Il.Ast.ValueE { value = value $ num.at } in
+  let expr_il = Il.Ast.NumE { num } in
   (typ, ctk, expr_il)
 
 and type_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (var : El.Ast.var) :
@@ -769,8 +767,7 @@ and type_record_expr ~(default : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
    suitable type using the syntax ... (see Section 7.3). *)
 
 and type_default_expr () : Type.t * Ctk.t * Il.Ast.expr' =
-  let value = Value.DefaultV in
-  (Types.DefaultT, Ctk.LCTK, Il.Ast.ValueE { value = value $ no_info })
+  (Types.DefaultT, Ctk.LCTK, Il.Ast.DefaultE)
 
 (* (8.17) Operations on headers
    (8.19) Operations on header unions
@@ -781,8 +778,7 @@ and type_default_expr () : Type.t * Ctk.t * Il.Ast.expr' =
    particular header or header union type from the context. *)
 
 and type_invalid_expr () : Type.t * Ctk.t * Il.Ast.expr' =
-  let value = Value.InvalidV in
-  (Types.InvalidT, Ctk.LCTK, Il.Ast.ValueE { value = value $ no_info })
+  (Types.InvalidT, Ctk.LCTK, Il.Ast.InvalidE)
 
 (* (8.6) Operations on fixed-width bit types (unsigned integers)
 
@@ -1694,9 +1690,9 @@ and type_error_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (Option.is_some value_error)
     (F.asprintf "(type_error_acc_expr) Member %s does not exist in error"
        member.it);
-  let value_error = Option.get value_error in
+  let _value_error = Option.get value_error in
   let typ = Types.ErrT in
-  let expr_il = Il.Ast.ValueE { value = value_error $ member.at } in
+  let expr_il = Il.Ast.ErrAccE { member } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
 
@@ -1713,7 +1709,7 @@ and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
     (F.asprintf "(type_type_acc_expr) %a is a free identifier" El.Pp.pp_var
        var_base);
   let td_base = Option.get td_base in
-  let typ, value =
+  let typ, _value =
     let typ_base =
       match td_base with
       | MonoD typ_base -> typ_base
@@ -1743,7 +1739,7 @@ and type_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
           (TypeDef.pp ~level:0) td_base
         |> error_no_info
   in
-  let expr_il = Il.Ast.ValueE { value = value $ member.at } in
+  let expr_il = Il.Ast.TypeAccE { var_base; member } in
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
 
