@@ -484,7 +484,7 @@ and eval_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
   let value = Value.RefV oid in
   let stmt =
     let expr_inst =
-      ValueE { value = value $ no_info }
+      ValueE { value = value $$ (no_info, InstE { var_inst; targs; args}) }
       $$ (no_info, { typ = typ.it; ctk = Ctk.CTK })
     in
     let decl_inst =
@@ -689,7 +689,7 @@ and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
   let ctx = Ctx.add_value cursor id.it value ctx in
   let decl =
     let expr_inst =
-      ValueE { value = value $ no_info }
+      ValueE { value = value $$ (no_info, InstE { var_inst; targs; args }) }
       $$ (no_info, { typ = typ.it; ctk = Ctk.CTK })
     in
     VarD { id; typ; init = Some expr_inst; annos = [] }
@@ -1006,7 +1006,8 @@ and eval_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
   let ctx = Ctx.add_value cursor id.it value ctx in
   let decl =
     let expr_inst =
-      ValueE { value = value $ no_info }
+      (* unused note *)
+      ValueE { value = value $$ (no_info, InstE { var_inst = L.Top id $ no_info; targs = []; args = []}) }
       $$ (no_info, { typ = typ.it; ctk = Ctk.CTK })
     in
     VarD { id; typ; init = Some expr_inst; annos = [] }
@@ -1112,7 +1113,7 @@ and eval_table_custom (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     eval_expr cursor ctx sto expr
   in
   let expr =
-    Il.Ast.ValueE { value = value $ no_info }
+    Il.Ast.ValueE { value = value $$ (no_info, expr.it) }
     $$ (no_info, { typ = expr.note.typ; ctk = expr.note.ctk })
   in
   let table_custom =

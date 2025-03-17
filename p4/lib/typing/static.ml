@@ -74,10 +74,11 @@ let rec ctk_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
     Ctk.t =
   match expr with
   | ValueE _ -> LCTK
+  | BoolE _ | StrE _ | NumE _ -> LCTK 
   | VarE { var } -> ctk_var_expr cursor ctx var
   | SeqE { exprs } | SeqDefaultE { exprs } -> ctk_seq_expr exprs
   | RecordE { fields } | RecordDefaultE { fields } -> ctk_record_expr fields
-  | DefaultE -> LCTK
+  | DefaultE | InvalidE -> LCTK
   | UnE { unop; expr } -> ctk_unop_expr unop expr
   | BinE { binop; expr_l; expr_r } -> ctk_binop_expr binop expr_l expr_r
   | TernE { expr_cond; expr_then; expr_else } ->
@@ -86,6 +87,7 @@ let rec ctk_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
   | MaskE _ | RangeE _ | SelectE _ | ArrAccE _ -> DYN
   | BitAccE { expr_base; value_lo; value_hi } ->
       ctk_bitstring_acc_expr expr_base value_lo value_hi
+  | ErrAccE _ | TypeAccE _ -> LCTK
   | ExprAccE { expr_base; member } -> ctk_expr_acc_expr expr_base member
   | CallFuncE _ -> DYN
   | CallMethodE { expr_base; member; targs; args } ->
@@ -177,7 +179,7 @@ let rec eval_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr) :
   try
     check_lctk expr;
     let value = eval_expr' cursor ctx expr.it in
-    value $ expr.at
+    value $$ (expr.at, expr.it)
   with CheckErr _ as err -> error_pass_info expr.at err
 
 and eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
