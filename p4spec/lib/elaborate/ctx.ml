@@ -35,7 +35,7 @@ type t = {
   (* Map from syntax ids to type definitions *)
   tdenv : TDEnv.t;
   (* Map from meta-variable ids to types *)
-  menv : TEnv.t;
+  menv : PTEnv.t;
   (* Map from relation ids to relations *)
   renv : REnv.t;
   (* Map from function ids to functions *)
@@ -49,18 +49,18 @@ let empty : t =
     frees = IdSet.empty;
     venv = VEnv.empty;
     tdenv = TDEnv.empty;
-    menv = TEnv.empty;
+    menv = PTEnv.empty;
     renv = REnv.empty;
     fenv = FEnv.empty;
   }
 
 let init () : t =
   let menv =
-    TEnv.empty
-    |> TEnv.add ("bool" $ no_region) (BoolT $ no_region)
-    |> TEnv.add ("nat" $ no_region) (NumT `NatT $ no_region)
-    |> TEnv.add ("int" $ no_region) (NumT `IntT $ no_region)
-    |> TEnv.add ("text" $ no_region) (TextT $ no_region)
+    PTEnv.empty
+    |> PTEnv.add ("bool" $ no_region) (BoolT $ no_region)
+    |> PTEnv.add ("nat" $ no_region) (NumT `NatT $ no_region)
+    |> PTEnv.add ("int" $ no_region) (NumT `IntT $ no_region)
+    |> PTEnv.add ("text" $ no_region) (TextT $ no_region)
   in
   { empty with menv }
 
@@ -85,12 +85,12 @@ let bound_typdef (ctx : t) (tid : TId.t) : bool =
 
 (* Finders for meta-variables *)
 
-let find_metavar_opt (ctx : t) (tid : TId.t) : Typ.t option =
+let find_metavar_opt (ctx : t) (tid : TId.t) : Plaintyp.t option =
   TDEnv.find_opt tid ctx.menv
 
-let find_metavar (ctx : t) (tid : TId.t) : Typ.t =
+let find_metavar (ctx : t) (tid : TId.t) : Plaintyp.t =
   match find_metavar_opt ctx tid with
-  | Some typ -> typ
+  | Some plaintyp -> plaintyp
   | None -> error_undef tid.at "meta-variable" tid.it
 
 let bound_metavar (ctx : t) (tid : TId.t) : bool =
@@ -166,9 +166,9 @@ let add_vars (ctx : t) (ids : (Id.t * Dim.t) list) : t =
 
 (* Adders for meta-variables *)
 
-let add_metavar (ctx : t) (tid : TId.t) (typ : Typ.t) : t =
+let add_metavar (ctx : t) (tid : TId.t) (plaintyp : Plaintyp.t) : t =
   if bound_metavar ctx tid then error_dup tid.at "meta-variable" tid.it;
-  let menv = TEnv.add tid typ ctx.menv in
+  let menv = PTEnv.add tid plaintyp ctx.menv in
   { ctx with menv }
 
 (* Adders for type definitions *)

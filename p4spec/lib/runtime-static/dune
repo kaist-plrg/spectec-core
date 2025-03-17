@@ -1,4 +1,4 @@
 (library
  (name runtime_static)
  (libraries util domain el il)
- (modules dim typ typdef rel func envs))
+ (modules dim plaintyp typdef rel func envs))

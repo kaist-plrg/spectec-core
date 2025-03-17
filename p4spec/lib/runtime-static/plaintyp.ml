@@ -1,13 +1,20 @@
+open Domain.Lib
 open El.Ast
-open Error
-open Runtime_static.Envs
+open El.Print
+open Util.Error
 open Util.Source
+
+(* Plain type *)
+
+type t = plaintyp
+
+let to_string t = string_of_plaintyp t
 
 (* Substitution of type variables *)
 
-module Theta = TEnv
+type theta = t TIdMap.t
 
-let rec subst_typ (theta : Theta.t) (typ : typ) : typ =
+let rec subst_typ (theta : theta) (typ : typ) : typ =
   match typ with
   | PlainT plaintyp ->
       let plaintyp = subst_plaintyp theta plaintyp in
@@ -16,17 +23,17 @@ let rec subst_typ (theta : Theta.t) (typ : typ) : typ =
       let nottyp = subst_nottyp theta nottyp in
       NotationT nottyp
 
-and subst_typs (theta : Theta.t) (typs : typ list) : typ list =
+and subst_typs (theta : theta) (typs : typ list) : typ list =
   List.map (subst_typ theta) typs
 
-and subst_plaintyp (theta : Theta.t) (plaintyp : plaintyp) : plaintyp =
+and subst_plaintyp (theta : theta) (plaintyp : plaintyp) : plaintyp =
   match plaintyp.it with
   | BoolT | NumT _ | TextT -> plaintyp
   | VarT (tid, targs) -> (
-      match Theta.find_opt tid theta with
+      match TIdMap.find_opt tid theta with
       | Some plaintyp ->
           if targs <> [] then
-            error plaintyp.at "higher-order substitution is disallowed";
+            error plaintyp.at "elab" "higher-order substitution is disallowed";
           plaintyp
       | None ->
           let targs = subst_targs theta targs in
@@ -41,11 +48,11 @@ and subst_plaintyp (theta : Theta.t) (plaintyp : plaintyp) : plaintyp =
       let plaintyp = subst_plaintyp theta plaintyp in
       IterT (plaintyp, iter) $ plaintyp.at
 
-and subst_plaintyps (theta : Theta.t) (plaintyps : plaintyp list) :
-    plaintyp list =
+and subst_plaintyps (theta : theta) (plaintyps : plaintyp list) : plaintyp list
+    =
   List.map (subst_plaintyp theta) plaintyps
 
-and subst_nottyp (theta : Theta.t) (nottyp : nottyp) : nottyp =
+and subst_nottyp (theta : theta) (nottyp : nottyp) : nottyp =
   match nottyp.it with
   | AtomT _ -> nottyp
   | SeqT typs ->
@@ -59,10 +66,10 @@ and subst_nottyp (theta : Theta.t) (nottyp : nottyp) : nottyp =
       let typ = subst_typ theta typ in
       BrackT (atom_l, typ, atom_r) $ nottyp.at
 
-and subst_nottyps (theta : Theta.t) (nottyps : nottyp list) : nottyp list =
+and subst_nottyps (theta : theta) (nottyps : nottyp list) : nottyp list =
   List.map (subst_nottyp theta) nottyps
 
-and subst_param (theta : Theta.t) (param : param) : param =
+and subst_param (theta : theta) (param : param) : param =
   match param.it with
   | ExpP plaintyp ->
       let plaintyp = subst_plaintyp theta plaintyp in
@@ -73,11 +80,10 @@ and subst_param (theta : Theta.t) (param : param) : param =
       let plaintyp = subst_plaintyp theta plaintyp in
       DefP (id, tparams, params, plaintyp) $ param.at
 
-and subst_params (theta : Theta.t) (params : param list) : param list =
+and subst_params (theta : theta) (params : param list) : param list =
   List.map (subst_param theta) params
 
-and subst_targ (theta : Theta.t) (targ : targ) : targ =
-  subst_plaintyp theta targ
+and subst_targ (theta : theta) (targ : targ) : targ = subst_plaintyp theta targ
 
-and subst_targs (theta : Theta.t) (targs : targ list) : targ list =
+and subst_targs (theta : theta) (targs : targ list) : targ list =
   List.map (subst_targ theta) targs

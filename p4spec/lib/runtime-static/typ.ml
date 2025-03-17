@@ -1,8 +1,8 @@
-open El.Ast
-open El.Print
+open Il.Ast
+open Il.Print
 
-(* Plain type *)
+(* Type *)
 
-type t = plaintyp
+type t = typ
 
-let to_string t = string_of_plaintyp t
+let to_string t = string_of_typ t

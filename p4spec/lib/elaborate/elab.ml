@@ -56,22 +56,22 @@ let rec kind_of_typ (ctx : Ctx.t) (plaintyp : plaintyp) : kind =
       let td = Ctx.find_typdef ctx tid in
       match td with
       | Defined (tparams, typdef) -> (
-          let theta = List.combine tparams targs |> Subst.Theta.of_list in
+          let theta = List.combine tparams targs |> TIdMap.of_list in
           match typdef with
           | `Plain plaintyp ->
-              let plaintyp = Subst.subst_plaintyp theta plaintyp in
+              let plaintyp = Plaintyp.subst_plaintyp theta plaintyp in
               `Plain plaintyp
           | `Struct typfields ->
               let typfields =
                 List.map
                   (fun (atom, plaintyp, hints) ->
-                    let plaintyp = Subst.subst_plaintyp theta plaintyp in
+                    let plaintyp = Plaintyp.subst_plaintyp theta plaintyp in
                     (atom, plaintyp, hints))
                   typfields
               in
               `Struct typfields
           | `Variant nottyps ->
-              let nottyps = Subst.subst_nottyps theta nottyps in
+              let nottyps = Plaintyp.subst_nottyps theta nottyps in
               `Variant nottyps)
       | _ -> `Opaque)
   | _ -> `Plain plaintyp
@@ -223,19 +223,19 @@ and equiv_functyp (ctx : Ctx.t) (at : region) (tparams_a : tparam list)
         let tid_fresh = "__FRESH" ^ string_of_int (Ctx.fresh ()) $ no_region in
         let plaintyp_fresh = VarT (tid_fresh, []) $ no_region in
         let ctx = Ctx.add_tparam ctx tid_fresh in
-        let theta_a = Subst.Theta.add tparam_a plaintyp_fresh theta_a in
-        let theta_b = Subst.Theta.add tparam_b plaintyp_fresh theta_b in
+        let theta_a = TIdMap.add tparam_a plaintyp_fresh theta_a in
+        let theta_b = TIdMap.add tparam_b plaintyp_fresh theta_b in
         (ctx, theta_a, theta_b))
-      (ctx, Subst.Theta.empty, Subst.Theta.empty)
+      (ctx, TIdMap.empty, TIdMap.empty)
       tparams_a tparams_b
   in
   check
     (List.length params_a = List.length params_b)
     at "parameters do not match";
-  let params_a = Subst.subst_params theta_a params_a in
-  let params_b = Subst.subst_params theta_b params_b in
-  let plaintyp_a = Subst.subst_plaintyp theta_a plaintyp_a in
-  let plaintyp_b = Subst.subst_plaintyp theta_b plaintyp_b in
+  let params_a = Plaintyp.subst_params theta_a params_a in
+  let params_b = Plaintyp.subst_params theta_b params_b in
+  let plaintyp_a = Plaintyp.subst_plaintyp theta_a plaintyp_a in
+  let plaintyp_b = Plaintyp.subst_plaintyp theta_b plaintyp_b in
   List.for_all2 (equiv_param ctx) params_a params_b
   && equiv_plaintyp ctx plaintyp_a plaintyp_b
 
@@ -755,9 +755,9 @@ and infer_call_exp (ctx : Ctx.t) (at : region) (id : id) (targs : targ list)
   check
     (List.length targs = List.length tparams)
     id.at "type arguments do not match";
-  let theta = List.combine tparams targs |> Subst.Theta.of_list in
-  let params = Subst.subst_params theta params in
-  let plaintyp = Subst.subst_plaintyp theta plaintyp in
+  let theta = List.combine tparams targs |> TIdMap.of_list in
+  let params = Plaintyp.subst_params theta params in
+  let plaintyp = Plaintyp.subst_plaintyp theta plaintyp in
   let targs_il = List.map (elab_plaintyp ctx) targs in
   let ctx, args_il = elab_args at ctx params args in
   let exp_il = Il.Ast.CallE (id, targs_il, args_il) in
