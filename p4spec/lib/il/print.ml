@@ -32,13 +32,15 @@ let string_of_iter iter = match iter with Opt -> "?" | List -> "*"
 
 (* Variables *)
 
-let string_of_var (id, iters) =
+let string_of_var (id, _typ, iters) =
   string_of_varid id ^ String.concat "" (List.map string_of_iter iters)
 
 (* Types *)
 
-let rec string_of_typ typ =
-  match typ.it with
+let rec string_of_typ typ = string_of_typ' typ.it
+
+and string_of_typ' typ =
+  match typ with
   | BoolT -> "bool"
   | NumT numtyp -> Num.string_of_typ numtyp
   | TextT -> "text"
@@ -142,8 +144,8 @@ and string_of_iterexp iterexp =
   ^ String.concat ", "
       (List.map
          (fun var ->
-           let id, iters = var in
-           string_of_var var ^ " <- " ^ string_of_var (id, iters @ [ iter ]))
+           let id, typ, iters = var in
+           string_of_var var ^ " <- " ^ string_of_var (id, typ, iters @ [ iter ]))
          vars)
   ^ "}"
 

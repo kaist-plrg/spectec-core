@@ -4,11 +4,13 @@ open Domain.Lib
 
 (* Identifier type and dimension environment *)
 
-module VEnv = struct
-  include MakeIdEnv (Dim)
+(* module VEnv = struct *)
+(*   include MakeIdEnv (Dim) *)
 
-  let to_string env = to_string ~with_braces:false ~bind:"" env
-end
+(*   let to_string env = to_string ~with_braces:false ~bind:"" env *)
+(* end *)
+
+module VEnv = MakeIdEnv (Typ)
 
 (* Plain type (EL type) environment *)
 

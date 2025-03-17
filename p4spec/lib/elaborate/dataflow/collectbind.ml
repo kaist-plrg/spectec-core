@@ -1,7 +1,6 @@
 open Il.Ast
 open Error
 open Runtime_static.Envs
-module DCtx = Dctx
 open Util.Source
 
 (* Collect binding identifiers,
@@ -17,7 +16,7 @@ let collect_noninvertible (at : region) (construct : string)
 
 (* Expressions *)
 
-let rec collect_exp (dctx : DCtx.t) (exp : exp) : Bind.BEnv.t =
+let rec collect_exp (dctx : Dctx.t) (exp : exp) : Bind.BEnv.t =
   match exp.it with
   | BoolE _ | NumE _ | TextE _ -> Bind.BEnv.empty
   | VarE id ->
@@ -105,11 +104,11 @@ let rec collect_exp (dctx : DCtx.t) (exp : exp) : Bind.BEnv.t =
            (Il.Print.string_of_iterexp iterexp))
   | IterE (exp, (iter, [])) ->
       let binds = collect_exp dctx exp in
-      let binds = Bind.BEnv.map (Bind.Occ.add_dim iter) binds in
+      let binds = Bind.BEnv.map (Bind.Occ.add_iter iter) binds in
       binds
   | CastE (exp, _) -> collect_exp dctx exp
 
-and collect_exps (dctx : DCtx.t) (exps : exp list) : Bind.BEnv.t =
+and collect_exps (dctx : Dctx.t) (exps : exp list) : Bind.BEnv.t =
   match exps with
   | [] -> Bind.BEnv.empty
   | exp :: exps ->
@@ -119,7 +118,7 @@ and collect_exps (dctx : DCtx.t) (exps : exp list) : Bind.BEnv.t =
 
 (* Paths *)
 
-and collect_path (dctx : DCtx.t) (path : path) : Bind.BEnv.t =
+and collect_path (dctx : Dctx.t) (path : path) : Bind.BEnv.t =
   match path.it with
   | RootP -> Bind.BEnv.empty
   | IdxP (path, exp) ->
@@ -136,12 +135,12 @@ and collect_path (dctx : DCtx.t) (path : path) : Bind.BEnv.t =
 
 (* Arguments *)
 
-and collect_arg (dctx : DCtx.t) (arg : arg) : Bind.BEnv.t =
+and collect_arg (dctx : Dctx.t) (arg : arg) : Bind.BEnv.t =
   match arg.it with
   | ExpA exp -> collect_exp dctx exp
   | DefA _ -> Bind.BEnv.empty
 
-and collect_args (dctx : DCtx.t) (args : arg list) : Bind.BEnv.t =
+and collect_args (dctx : Dctx.t) (args : arg list) : Bind.BEnv.t =
   match args with
   | [] -> Bind.BEnv.empty
   | arg :: args ->

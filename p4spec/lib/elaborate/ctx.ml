@@ -155,14 +155,14 @@ let add_frees (ctx : t) (ids : IdSet.t) : t =
 
 (* Adders for variables *)
 
-let add_var (ctx : t) (id : Id.t * Dim.t) : t =
-  let id, dim = id in
+let add_var (ctx : t) (var : Id.t * Typ.t) : t =
+  let id, typ = var in
   if bound_var ctx id then error_dup id.at "variable" id.it;
-  let venv = VEnv.add id dim ctx.venv in
+  let venv = VEnv.add id typ ctx.venv in
   { ctx with venv }
 
-let add_vars (ctx : t) (ids : (Id.t * Dim.t) list) : t =
-  List.fold_left (fun ctx id -> add_var ctx id) ctx ids
+let add_vars (ctx : t) (vars : (Id.t * Typ.t) list) : t =
+  List.fold_left add_var ctx vars
 
 (* Adders for meta-variables *)
 
@@ -217,14 +217,6 @@ let add_clause (ctx : t) (fid : FId.t) (clause : Il.Ast.clause) : t =
   { ctx with fenv }
 
 (* Updaters *)
-
-let update_var (ctx : t) (id : Id.t) (dim : Dim.t) : t =
-  if not (bound_var ctx id) then error_undef id.at "variable" id.it;
-  let venv = VEnv.add id dim ctx.venv in
-  { ctx with venv }
-
-let update_vars (ctx : t) (ids : (Id.t * Dim.t) list) : t =
-  List.fold_left (fun ctx (id, dim) -> update_var ctx id dim) ctx ids
 
 let update_typdef (ctx : t) (tid : TId.t) (td : Typdef.t) : t =
   if not (bound_typdef ctx tid) then error_undef tid.at "type" tid.it;

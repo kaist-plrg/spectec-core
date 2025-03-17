@@ -121,7 +121,8 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : Value.t) : Ctx.t attempt =
   | IterE (_, (Opt, vars)), OptV None ->
       let ctx =
         List.fold_left
-          (fun ctx (id, iters) -> Ctx.add_value ctx (id, iters @ [ Opt ]) value)
+          (fun ctx (id, _typ, iters) ->
+            Ctx.add_value ctx (id, iters @ [ Opt ]) value)
           ctx vars
       in
       Ok ctx
@@ -131,7 +132,7 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : Value.t) : Ctx.t attempt =
       (* Per iterated variable, make an option out of the value *)
       let ctx =
         List.fold_left
-          (fun ctx (id, iters) ->
+          (fun ctx (id, _typ, iters) ->
             let value = Ctx.find_value ctx (id, iters) in
             let value = Value.OptV (Some value) in
             Ctx.add_value ctx (id, iters @ [ Opt ]) value)
@@ -153,7 +154,7 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : Value.t) : Ctx.t attempt =
          then make a sequence out of them *)
       let ctx =
         List.fold_left
-          (fun ctx (id, iters) ->
+          (fun ctx (id, _typ, iters) ->
             let values =
               List.map (fun ctx -> Ctx.find_value ctx (id, iters)) ctxs
             in
@@ -378,7 +379,7 @@ and eval_iter_exp_opt (ctx : Ctx.t) (exp : exp) (vars : var list) : Value.t =
   let values =
     List.map
       (fun var ->
-        let id, iters = var in
+        let id, _typ, iters = var in
         Ctx.find_value ctx (id, iters @ [ Opt ]) |> Value.unopt)
       vars
   in
@@ -392,7 +393,7 @@ and eval_iter_exp_opt (ctx : Ctx.t) (exp : exp) (vars : var list) : Value.t =
       let ctx =
         List.fold_left2
           (fun ctx var value ->
-            let id, iters = var in
+            let id, _typ, iters = var in
             let value = Option.get value in
             Ctx.add_value ctx (id, iters @ [ Opt ]) value)
           ctx vars values
@@ -408,7 +409,7 @@ and eval_iter_exp_list (ctx : Ctx.t) (exp : exp) (vars : var list) : Value.t =
   let values_batch =
     List.map
       (fun var ->
-        let id, iters = var in
+        let id, _typ, iters = var in
         Ctx.find_value ctx (id, iters @ [ List ]) |> Value.unseq)
       vars
     |> transpose
@@ -419,7 +420,9 @@ and eval_iter_exp_list (ctx : Ctx.t) (exp : exp) (vars : var list) : Value.t =
     (fun values ->
       let ctx =
         List.fold_left2
-          (fun ctx var value -> Ctx.add_value ctx var value)
+          (fun ctx var value ->
+            let id, _typ, iters = var in
+            Ctx.add_value ctx (id, iters) value)
           ctx vars values
       in
       eval_exp ctx exp)
@@ -498,14 +501,14 @@ and eval_iter_prem (ctx : Ctx.t) (prem : prem) (iterexp : iterexp) :
       (* Discriminate between bound and binding variables *)
       let vars_bound, vars_binding =
         List.partition
-          (fun (id, iters) -> Ctx.bound_value ctx (id, iters @ [ List ]))
+          (fun (id, _typ, iters) -> Ctx.bound_value ctx (id, iters @ [ List ]))
           vars
       in
       (* First break the bound values that are to be iterated over,
          into a batch of values *)
       let values_bound_batch =
         List.map
-          (fun (id, iters) ->
+          (fun (id, _typ, iters) ->
             Ctx.find_value ctx (id, iters @ [ List ]) |> Value.unseq)
           vars_bound
         |> transpose
@@ -516,7 +519,7 @@ and eval_iter_prem (ctx : Ctx.t) (prem : prem) (iterexp : iterexp) :
            then the binding variables are also empty *)
         | [] ->
             List.fold_left
-              (fun ctx (id, iters) ->
+              (fun ctx (id, _typ, iters) ->
                 Ctx.add_value ctx (id, iters @ [ List ]) (Value.ListV []))
               ctx vars_binding
         (* Otherwise, evaluate the premise for each batch of bound values,
@@ -528,19 +531,22 @@ and eval_iter_prem (ctx : Ctx.t) (prem : prem) (iterexp : iterexp) :
                   let ctx =
                     List.fold_left2
                       (fun ctx var_bound value_bound ->
-                        Ctx.add_value ctx var_bound value_bound)
+                        let id, _typ, iters = var_bound in
+                        Ctx.add_value ctx (id, iters) value_bound)
                       ctx vars_bound values_bound
                   in
                   let+ ctx = eval_prem ctx prem in
                   List.map
-                    (fun var_binding -> Ctx.find_value ctx var_binding)
+                    (fun var_binding ->
+                      let id, _typ, iters = var_binding in
+                      Ctx.find_value ctx (id, iters))
                     vars_binding)
                 values_bound_batch
             in
             let values_binding = values_binding_batch |> transpose in
             (* Finally, bind the resulting binding batches *)
             List.fold_left2
-              (fun ctx (id, iters) values_binding ->
+              (fun ctx (id, _typ, iters) values_binding ->
                 let value_binding = Value.seq values_binding in
                 Ctx.add_value ctx (id, iters @ [ List ]) value_binding)
               ctx vars_binding values_binding

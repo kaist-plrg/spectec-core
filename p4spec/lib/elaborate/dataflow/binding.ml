@@ -1,9 +1,9 @@
 open Domain.Lib
 open Il.Ast
+module Typ = Runtime_static.Typ
 open Runtime_static.Rel
 open Runtime_static.Envs
 open Error
-module DCtx = Dctx
 open Bind
 open Util.Source
 
@@ -22,22 +22,22 @@ let update_venv_multi (venv : VEnv.t) (renv_multi : Multibind.REnv.t) : VEnv.t =
   Multibind.REnv.fold
     (fun id ids_rename venv ->
       let ids_rename = IdSet.elements ids_rename in
-      let dim = VEnv.find id venv in
+      let typ = VEnv.find id venv in
       List.fold_left
-        (fun venv id_rename -> VEnv.add id_rename dim venv)
+        (fun venv id_rename -> VEnv.add id_rename typ venv)
         venv ids_rename)
     renv_multi venv
 
 let update_venv_partial (venv : VEnv.t) (renv_partial : Partialbind.REnv.t) :
     VEnv.t =
   Partialbind.REnv.fold
-    (fun id (_, dim) venv -> VEnv.add id dim venv)
+    (fun id (exp, iters) venv -> VEnv.add id (exp.note, iters) venv)
     renv_partial venv
 
 (* Expression binding analysis *)
 
-let analyze_exps_as_bind (dctx : DCtx.t) (exps : exp list) :
-    DCtx.t * VEnv.t * exp list * prem list =
+let analyze_exps_as_bind (dctx : Dctx.t) (exps : exp list) :
+    Dctx.t * VEnv.t * exp list * prem list =
   let binds = Collectbind.collect_exps dctx exps in
   let venv = BEnv.flatten binds in
   let dctx, renv_multi, exps =
@@ -58,20 +58,20 @@ let analyze_exps_as_bind (dctx : DCtx.t) (exps : exp list) :
   let sideconditions = sideconditions_multi @ sideconditions_partial in
   (dctx, venv, exps, sideconditions)
 
-let analyze_exp_as_bound (dctx : DCtx.t) (exp : exp) : unit =
+let analyze_exp_as_bound (dctx : Dctx.t) (exp : exp) : unit =
   let binds = Collectbind.collect_exp dctx exp in
   if not (BEnv.is_empty binds) then
     error exp.at
       (Format.asprintf "expression has free variable(s): %s"
          (BEnv.to_string binds))
 
-let analyze_exps_as_bound (dctx : DCtx.t) (exps : exp list) : unit =
+let analyze_exps_as_bound (dctx : Dctx.t) (exps : exp list) : unit =
   List.iter (analyze_exp_as_bound dctx) exps
 
 (* Argument binding analysis *)
 
-let analyze_args_as_bind (dctx : DCtx.t) (args : arg list) :
-    DCtx.t * VEnv.t * arg list * prem list =
+let analyze_args_as_bind (dctx : Dctx.t) (args : arg list) :
+    Dctx.t * VEnv.t * arg list * prem list =
   let binds = Collectbind.collect_args dctx args in
   let venv = BEnv.flatten binds in
   let dctx, renv_multi, args =
@@ -94,8 +94,8 @@ let analyze_args_as_bind (dctx : DCtx.t) (args : arg list) :
 
 (* Premise binding analysis *)
 
-let rec analyze_prem (dctx : DCtx.t) (prem : prem) :
-    DCtx.t * VEnv.t * prem * prem list =
+let rec analyze_prem (dctx : Dctx.t) (prem : prem) :
+    Dctx.t * VEnv.t * prem * prem list =
   match prem.it with
   | RulePr (id, notexp) -> analyze_rule_prem dctx prem.at id notexp
   | IfPr exp -> analyze_if_prem dctx prem.at exp
@@ -109,10 +109,10 @@ let rec analyze_prem (dctx : DCtx.t) (prem : prem) :
            (Il.Print.string_of_iterexp iterexp))
   | IterPr (prem, (iter, [])) -> analyze_iter_prem dctx prem.at prem iter
 
-and analyze_rule_prem (dctx : DCtx.t) (at : region) (id : id) (notexp : notexp)
-    : DCtx.t * VEnv.t * prem * prem list =
+and analyze_rule_prem (dctx : Dctx.t) (at : region) (id : id) (notexp : notexp)
+    : Dctx.t * VEnv.t * prem * prem list =
   let mixop, exps = notexp in
-  let hint = DCtx.find_hint dctx id in
+  let hint = Dctx.find_hint dctx id in
   let exps_input, exps_output = Hint.split_exps hint exps in
   List.map snd exps_input |> analyze_exps_as_bound dctx;
   let dctx, venv, exps_output, sideconditions =
@@ -128,9 +128,9 @@ and analyze_rule_prem (dctx : DCtx.t) (at : region) (id : id) (notexp : notexp)
   let prem = RulePr (id, notexp) $ at in
   (dctx, venv, prem, sideconditions)
 
-and analyze_if_eq_prem (dctx : DCtx.t) (at : region) (note : typ')
+and analyze_if_eq_prem (dctx : Dctx.t) (at : region) (note : typ')
     (optyp : optyp) (exp_l : exp) (exp_r : exp) :
-    DCtx.t * VEnv.t * prem' * prem list =
+    Dctx.t * VEnv.t * prem' * prem list =
   let binds_l = Collectbind.collect_exp dctx exp_l in
   let binds_r = Collectbind.collect_exp dctx exp_r in
   match (BEnv.is_empty binds_l, BEnv.is_empty binds_r) with
@@ -145,8 +145,8 @@ and analyze_if_eq_prem (dctx : DCtx.t) (at : region) (note : typ')
            "cannot bind on both sides of an equality: (left) %s, (right) %s"
            (BEnv.to_string binds_l) (BEnv.to_string binds_r))
 
-and analyze_if_prem (dctx : DCtx.t) (at : region) (exp : exp) :
-    DCtx.t * VEnv.t * prem * prem list =
+and analyze_if_prem (dctx : Dctx.t) (at : region) (exp : exp) :
+    Dctx.t * VEnv.t * prem * prem list =
   match exp.it with
   | CmpE (`EqOp, optyp, exp_l, exp_r) ->
       let dctx, venv, prem, sideconditions =
@@ -159,8 +159,8 @@ and analyze_if_prem (dctx : DCtx.t) (at : region) (exp : exp) :
       let prem = IfPr exp $ at in
       (dctx, VEnv.empty, prem, [])
 
-and analyze_let_prem (dctx : DCtx.t) (exp_l : exp) (binds_l : BEnv.t)
-    (exp_r : exp) : DCtx.t * VEnv.t * prem' * prem list =
+and analyze_let_prem (dctx : Dctx.t) (exp_l : exp) (binds_l : BEnv.t)
+    (exp_r : exp) : Dctx.t * VEnv.t * prem' * prem list =
   let venv = BEnv.flatten binds_l in
   let dctx, renv_multi, exp_l =
     let renv_multi = Multibind.REnv.init binds_l in
@@ -181,10 +181,10 @@ and analyze_let_prem (dctx : DCtx.t) (exp_l : exp) (binds_l : BEnv.t)
   let prem = LetPr (exp_l, exp_r) in
   (dctx, venv, prem, sideconditions)
 
-and analyze_iter_prem (dctx : DCtx.t) (at : region) (prem : prem) (iter : iter)
-    : DCtx.t * VEnv.t * prem * prem list =
+and analyze_iter_prem (dctx : Dctx.t) (at : region) (prem : prem) (iter : iter)
+    : Dctx.t * VEnv.t * prem * prem list =
   let dctx, venv, prem, sideconditions = analyze_prem dctx prem in
-  let venv = VEnv.map (fun iters -> iters @ [ iter ]) venv in
+  let venv = VEnv.map (Typ.add_iter iter) venv in
   let sideconditions =
     List.map
       (fun sidecondition -> IterPr (sidecondition, (iter, [])) $ at)

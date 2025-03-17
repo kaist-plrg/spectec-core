@@ -1,10 +1,12 @@
-open Domain.Lib
-module Dim = Runtime_static.Dim
+open Il.Ast
+open Il.Print
+open Util.Source
 
-type t = Id.t * Dim.t
+type t = id * iter list
 
-let to_string (id, dim) = Id.to_string id ^ Dim.to_string dim
+let to_string (id, iters) =
+  string_of_varid id ^ String.concat "" (List.map string_of_iter iters)
 
-let compare (id_a, dim_a) (id_b, dim_b) =
-  let cmp_id = Id.compare id_a id_b in
-  if cmp_id = 0 then Dim.compare dim_a dim_b else cmp_id
+let compare (id_a, iters_a) (id_b, iters_b) =
+  let cmp_id = compare id_a.it id_b.it in
+  if cmp_id = 0 then compare iters_a iters_b else cmp_id

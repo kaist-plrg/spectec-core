@@ -16,23 +16,25 @@ open Util.Source
 (* Constructors *)
 
 let empty = VEnv.empty
-let singleton id = VEnv.add id [] VEnv.empty
+let singleton id typ = VEnv.add id (typ, []) VEnv.empty
 
 let union (occurs_a : VEnv.t) (occurs_b : VEnv.t) : VEnv.t =
   VEnv.union
-    (fun _ iters_a iters_b ->
-      if List.length iters_a < List.length iters_b then Some iters_a
-      else Some iters_b)
+    (fun _ (typ_a, iters_a) (typ_b, iters_b) ->
+      (* (TODO) Also check that types are equivalent *)
+      if List.length iters_a < List.length iters_b then Some (typ_a, iters_a)
+      else Some (typ_b, iters_b))
     occurs_a occurs_b
 
 let collect_itervars (bounds : VEnv.t) (occurs : VEnv.t) (iter : iter) :
-    (Id.t * Dim.t) list =
+    var list =
   occurs |> VEnv.bindings
-  |> List.filter_map (fun var ->
-         let id, iters = var in
-         let iters = iters @ [ iter ] in
-         let iters_expect = VEnv.find id bounds in
-         if Dim.sub iters iters_expect then Some var else None)
+  |> List.filter_map (fun (id, typ) ->
+         let typ_expect = VEnv.find id bounds in
+         if Typ.sub (Typ.add_iter iter typ) typ_expect then
+           let typ, iters = typ in
+           Some (id, typ $ id.at, iters)
+         else None)
 
 (* Expression *)
 
@@ -41,7 +43,7 @@ let rec annotate_exp (bounds : VEnv.t) (exp : exp) : VEnv.t * exp =
   match exp.it with
   | BoolE _ | NumE _ | TextE _ -> (empty, exp)
   | VarE id ->
-      if VEnv.mem id bounds then (singleton id, exp)
+      if VEnv.mem id bounds then (singleton id note, exp)
       else error exp.at ("free identifier: " ^ Id.to_string id)
   | UnE (op, optyp, exp) ->
       let occurs, exp = annotate_exp bounds exp in
@@ -150,7 +152,8 @@ let rec annotate_exp (bounds : VEnv.t) (exp : exp) : VEnv.t * exp =
           let exp = IterE (exp, (iter, itervars)) $$ (at, note) in
           let occurs =
             List.fold_left
-              (fun occurs (id, iters) -> VEnv.add id (iters @ [ iter ]) occurs)
+              (fun occurs (id, typ, iters) ->
+                VEnv.add id (typ.it, iters @ [ iter ]) occurs)
               occurs itervars
           in
           (occurs, exp))
@@ -246,24 +249,27 @@ and annotate_prem (binds : VEnv.t) (bounds : VEnv.t) (prem : prem) :
       | [] -> error at "empty iteration"
       | _
         when List.for_all
-               (fun (id, iters) ->
+               (fun (id, typ, iters) ->
                  match VEnv.find_opt id binds with
-                 | Some iters_bind -> Dim.sub iters iters_bind
+                 | Some (typ_bind, iters_bind) ->
+                     Typ.sub (typ.it, iters) (typ_bind, iters_bind)
                  | None -> false)
                itervars ->
           error at
             ("cannot determine dimension of binding identifier(s) only: "
             ^ String.concat ", " (List.map Il.Print.string_of_var itervars)
             ^ String.concat ", "
-                (itervars |> List.map fst |> List.map Util.Source.at
-               |> List.map string_of_region)
+                (itervars
+                |> List.map (fun (id, _, _) -> id.at)
+                |> List.map string_of_region)
             ^ " "
             ^ Il.Print.string_of_prem prem)
       | _ ->
           let prem = IterPr (prem, (iter, itervars)) $ at in
           let occurs =
             List.fold_left
-              (fun occurs (id, iters) -> VEnv.add id (iters @ [ iter ]) occurs)
+              (fun occurs (id, typ, iters) ->
+                VEnv.add id (typ.it, iters @ [ iter ]) occurs)
               occurs itervars
           in
           (occurs, prem))
@@ -285,16 +291,14 @@ let analyze (annotate : VEnv.t -> 'a -> VEnv.t * 'a) (bounds : VEnv.t)
     (construct : 'a) : 'a =
   let occurs, construct = annotate bounds construct in
   VEnv.iter
-    (fun id iters ->
-      let iters_expect = VEnv.find id bounds in
-      if not (Dim.equiv iters iters_expect) then
+    (fun id typ ->
+      let typ_expect = VEnv.find id bounds in
+      if not (Typ.equiv typ typ_expect) then
         error id.at
           (Format.asprintf
              "mismatched iteration dimensions for identifier `%s`: expected \
               %s, but got %s"
-             (Id.to_string id)
-             (Dim.to_string iters_expect)
-             (Dim.to_string iters)))
+             (Id.to_string id) (Typ.to_string typ_expect) (Typ.to_string typ)))
     occurs;
   construct
 

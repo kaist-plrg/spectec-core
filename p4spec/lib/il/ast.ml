@@ -33,7 +33,7 @@ type iter =
 
 (* Variables *)
 
-type var = id * iter list
+type var = id * typ * iter list
 
 (* Types *)
 

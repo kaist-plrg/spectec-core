@@ -19,14 +19,6 @@ let distinct (eq : 'a -> 'a -> bool) (xs : 'a list) : bool =
   in
   distinct' xs
 
-(* Todo *)
-
-let todo (at : region) (func : string) (msg : string) =
-  let msg =
-    Format.asprintf "(TODO : %s) %s: %s\n" func (string_of_region at) msg
-  in
-  fail no_region msg
-
 (* Parentheses handling *)
 
 let rec unparen_exp (exp : exp) : exp =
@@ -80,12 +72,18 @@ let rec kind_of_typ (ctx : Ctx.t) (plaintyp : plaintyp) : kind =
 
 and expand_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp =
   match plaintyp.it with
-  | VarT (tid, _) -> (
+  | VarT (tid, targs) -> (
       let td = Ctx.find_typdef ctx tid in
       match td with
-      | Defined (_, typdef) -> (
+      | Defined (tparams, typdef) -> (
           match typdef with
-          | `Plain plaintyp -> expand_plaintyp ctx plaintyp
+          | `Plain plaintyp ->
+              check
+                (List.length targs = List.length tparams)
+                tid.at "type arguments do not match";
+              let theta = List.combine tparams targs |> TIdMap.of_list in
+              let plaintyp = Plaintyp.subst_plaintyp theta plaintyp in
+              expand_plaintyp ctx plaintyp
           | _ -> plaintyp)
       | _ -> plaintyp)
   | _ -> plaintyp
@@ -923,7 +921,10 @@ and elab_exp_plain' (ctx : Ctx.t) (at : region) (plaintyp_expect : plaintyp)
   | ParenE exp -> elab_paren_exp ctx plaintyp_expect exp
   | TupleE exps -> elab_tuple_exp ctx plaintyp_expect exps
   | IterE (exp, iter) -> elab_iter_exp ctx plaintyp_expect exp iter
-  | _ -> todo at "elab_exp_plain" (El.Print.string_of_exp (exp $ at))
+  | _ ->
+      fail at
+        (Format.asprintf "(TODO elab_exp_plain) %s"
+           (El.Print.string_of_exp (exp $ at)))
 
 (* Elaboration of episilon expressions *)
 

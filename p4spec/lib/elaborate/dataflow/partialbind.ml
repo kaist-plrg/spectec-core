@@ -1,22 +1,22 @@
 open Domain.Lib
 open Il.Ast
-open Runtime_static
+open Il.Print
 open Error
-module DCtx = Dctx
 open Util.Source
 
 (* Rename for an expression *)
 
 module Exp = struct
-  type t = exp * Dim.t
+  type t = exp * iter list
 
-  let to_string (exp, dim) = Il.Print.string_of_exp exp ^ Dim.to_string dim
+  let to_string (exp, iters) =
+    string_of_exp exp ^ String.concat "" (List.map string_of_iter iters)
 end
 
 module REnv = struct
   include MakeIdEnv (Exp)
 
-  let gen_sidecondition (id : Id.t) (exp : exp) (dim : Dim.t) =
+  let gen_sidecondition (id : Id.t) (exp : exp) (iters : iter list) =
     let exp =
       let exp_l = VarE id $$ (id.at, exp.note) in
       let exp_r = exp in
@@ -25,51 +25,52 @@ module REnv = struct
     let sidecondition = IfPr exp $ exp.at in
     List.fold_left
       (fun sidecondition iter -> IterPr (sidecondition, (iter, [])) $ exp.at)
-      sidecondition dim
+      sidecondition iters
 
   let gen_sideconditions (renv : t) : prem list =
     fold
-      (fun id (exp, dim) sideconditions ->
-        let sidecondition = gen_sidecondition id exp dim in
+      (fun id (exp, iters) sideconditions ->
+        let sidecondition = gen_sidecondition id exp iters in
         sideconditions @ [ sidecondition ])
       renv []
 
   let update_dim (iter : iter) (renv_pre : t) (renv_post : t) : t =
     let ids_updated = IdSet.diff (dom renv_post) (dom renv_pre) in
     mapi
-      (fun id (exp, dim) ->
-        if IdSet.mem id ids_updated then (exp, dim @ [ iter ]) else (exp, dim))
+      (fun id (exp, iters) ->
+        if IdSet.mem id ids_updated then (exp, iters @ [ iter ])
+        else (exp, iters))
       renv_post
 end
 
 (* Expressions *)
 
-let rec rename_exp (dctx : DCtx.t) (binds : IdSet.t) (renv : REnv.t) (exp : exp)
-    : DCtx.t * REnv.t * exp =
+let rec rename_exp (dctx : Dctx.t) (binds : IdSet.t) (renv : REnv.t) (exp : exp)
+    : Dctx.t * REnv.t * exp =
   let frees = Il.Free.free_exp exp in
   (* If the expression contains no bindings, rename it *)
   if IdSet.inter binds frees |> IdSet.is_empty then
     rename_exp_base dctx renv exp
   else rename_exp_rec dctx binds renv exp
 
-and rename_exps (dctx : DCtx.t) (binds : IdSet.t) (renv : REnv.t)
-    (exps : exp list) : DCtx.t * REnv.t * exp list =
+and rename_exps (dctx : Dctx.t) (binds : IdSet.t) (renv : REnv.t)
+    (exps : exp list) : Dctx.t * REnv.t * exp list =
   List.fold_left
     (fun (dctx, renv, exps) exp ->
       let dctx, renv, exp = rename_exp dctx binds renv exp in
       (dctx, renv, exps @ [ exp ]))
     (dctx, renv, []) exps
 
-and rename_exp_base (dctx : DCtx.t) (renv : REnv.t) (exp : exp) :
-    DCtx.t * REnv.t * exp =
+and rename_exp_base (dctx : Dctx.t) (renv : REnv.t) (exp : exp) :
+    Dctx.t * REnv.t * exp =
   let id_rename = Fresh.fresh_from_exp dctx.frees exp in
-  let dctx = DCtx.add_free dctx id_rename in
+  let dctx = Dctx.add_free dctx id_rename in
   let renv = REnv.add id_rename (exp, []) renv in
   let exp = VarE id_rename $$ (exp.at, exp.note) in
   (dctx, renv, exp)
 
-and rename_exp_rec (dctx : DCtx.t) (binds : IdSet.t) (renv : REnv.t) (exp : exp)
-    : DCtx.t * REnv.t * exp =
+and rename_exp_rec (dctx : Dctx.t) (binds : IdSet.t) (renv : REnv.t) (exp : exp)
+    : Dctx.t * REnv.t * exp =
   let at, note = (exp.at, exp.note) in
   match exp.it with
   | BoolE _ | NumE _ | TextE _ | VarE _ -> (dctx, renv, exp)
@@ -121,8 +122,8 @@ and rename_exp_rec (dctx : DCtx.t) (binds : IdSet.t) (renv : REnv.t) (exp : exp)
 
 (* Arguments *)
 
-and rename_arg (dctx : DCtx.t) (binds : IdSet.t) (renv : REnv.t) (arg : arg) :
-    DCtx.t * REnv.t * arg =
+and rename_arg (dctx : Dctx.t) (binds : IdSet.t) (renv : REnv.t) (arg : arg) :
+    Dctx.t * REnv.t * arg =
   let at = arg.at in
   match arg.it with
   | ExpA exp ->
@@ -131,8 +132,8 @@ and rename_arg (dctx : DCtx.t) (binds : IdSet.t) (renv : REnv.t) (arg : arg) :
       (dctx, renv, arg)
   | _ -> (dctx, renv, arg)
 
-and rename_args (dctx : DCtx.t) (binds : IdSet.t) (renv : REnv.t)
-    (args : arg list) : DCtx.t * REnv.t * arg list =
+and rename_args (dctx : Dctx.t) (binds : IdSet.t) (renv : REnv.t)
+    (args : arg list) : Dctx.t * REnv.t * arg list =
   List.fold_left
     (fun (dctx, renv, args) arg ->
       let dctx, renv, arg = rename_arg dctx binds renv arg in

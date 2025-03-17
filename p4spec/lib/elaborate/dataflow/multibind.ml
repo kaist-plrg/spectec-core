@@ -1,7 +1,6 @@
 open Domain.Lib
 open Il.Ast
 open Error
-module DCtx = Dctx
 open Util.Source
 
 (* Renames for an identifier *)
@@ -27,7 +26,7 @@ module REnv = struct
 
   let gen_sidecondition (benv : Bind.BEnv.t) (id : Id.t) (ids_rename : Ids.t) :
       prem =
-    let typ = Bind.BEnv.find id benv |> Bind.Occ.get_typ in
+    let typ, iters = Bind.BEnv.find id benv |> Bind.Occ.strip in
     let id_rename, ids_rename =
       ids_rename |> IdSet.elements |> fun ids -> (List.hd ids, List.tl ids)
     in
@@ -48,7 +47,6 @@ module REnv = struct
         exp ids_rename
     in
     let sidecondition = IfPr exp $ id.at in
-    let iters = Bind.BEnv.find id benv |> Bind.Occ.get_dim in
     List.fold_left
       (fun sidecondition iter -> IterPr (sidecondition, (iter, [])) $ id.at)
       sidecondition iters
@@ -68,11 +66,10 @@ end
 
 (* Expressions *)
 
-let rec rename_exp (dctx : DCtx.t) (renv : REnv.t) (exp : exp) :
-    DCtx.t * REnv.t * exp =
+let rec rename_exp (dctx : Dctx.t) (renv : REnv.t) (exp : exp) :
+    Dctx.t * REnv.t * exp =
   let at, note = (exp.at, exp.note) in
   match exp.it with
-  | BoolE _ | NumE _ | TextE _ -> (dctx, renv, exp)
   | VarE id -> (
       match REnv.find_opt id renv with
       (* Leftmost binding occurrence *)
@@ -86,7 +83,7 @@ let rec rename_exp (dctx : DCtx.t) (renv : REnv.t) (exp : exp) :
       (* Parallel binding occurrences *)
       | Some ids_rename ->
           let id_rename = Fresh.fresh_from_exp dctx.frees exp in
-          let dctx = DCtx.add_free dctx id_rename in
+          let dctx = Dctx.add_free dctx id_rename in
           let renv =
             let ids_rename = IdSet.add id_rename ids_rename in
             REnv.add id ids_rename renv
@@ -139,8 +136,8 @@ let rec rename_exp (dctx : DCtx.t) (renv : REnv.t) (exp : exp) :
   (* Unnecessary to handle non-invertible constructs *)
   | _ -> (dctx, renv, exp)
 
-and rename_exps (dctx : DCtx.t) (renv : REnv.t) (exps : exp list) :
-    DCtx.t * REnv.t * exp list =
+and rename_exps (dctx : Dctx.t) (renv : REnv.t) (exps : exp list) :
+    Dctx.t * REnv.t * exp list =
   List.fold_left
     (fun (dctx, renv, exps) exp ->
       let dctx, renv, exp = rename_exp dctx renv exp in
@@ -149,8 +146,8 @@ and rename_exps (dctx : DCtx.t) (renv : REnv.t) (exps : exp list) :
 
 (* Arguments *)
 
-and rename_arg (dctx : DCtx.t) (renv : REnv.t) (arg : arg) :
-    DCtx.t * REnv.t * arg =
+and rename_arg (dctx : Dctx.t) (renv : REnv.t) (arg : arg) :
+    Dctx.t * REnv.t * arg =
   let at = arg.at in
   match arg.it with
   | ExpA exp ->
@@ -159,8 +156,8 @@ and rename_arg (dctx : DCtx.t) (renv : REnv.t) (arg : arg) :
       (dctx, renv, arg)
   | DefA _ -> (dctx, renv, arg)
 
-and rename_args (dctx : DCtx.t) (renv : REnv.t) (args : arg list) :
-    DCtx.t * REnv.t * arg list =
+and rename_args (dctx : Dctx.t) (renv : REnv.t) (args : arg list) :
+    Dctx.t * REnv.t * arg list =
   List.fold_left
     (fun (dctx, renv, args) arg ->
       let dctx, renv, arg = rename_arg dctx renv arg in
