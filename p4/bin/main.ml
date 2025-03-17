@@ -12,14 +12,16 @@ let roundtrip includes filename : El.Ast.program =
 let typecheck includes filename : Il.Ast.program =
   parse includes filename |> Typing.Typecheck.type_program
 
-let roundtrip_il includes filename : Il.Ast.program = 
+let roundtrip_il includes filename : Il.Ast.program =
   let program = typecheck includes filename in
   let program_str = Format.asprintf "%a\n" Il.Pp_to_el.pp_program program in
   Format.printf "%s\n" program_str;
-  let program' = 
+  let program' =
     try
-      Frontend.Parse.parse_string filename program_str |> Typing.Typecheck.type_program
-    with ParseErr (msg, info) -> Format.sprintf "re-parse error: %s" msg |> error_parser_info info
+      Frontend.Parse.parse_string filename program_str
+      |> Typing.Typecheck.type_program
+    with ParseErr (msg, info) ->
+      Format.sprintf "re-parse error: %s" msg |> error_parser_info info
   in
   if not (Il.Eq.eq_program program program') then
     "roundtrip error" |> error_parser_no_info;
@@ -68,7 +70,7 @@ let typecheck_command =
      and filename = anon ("file.p4" %: string) in
      fun () ->
        try
-         let program = 
+         let program =
            let func = if roundtrip_flag then roundtrip_il else typecheck in
            func includes filename
          in

@@ -70,11 +70,11 @@ and pp_typ' ?(level = 0) fmt typ =
       F.fprintf fmt "%a[%a]"
         (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs Bigint.pp size
-  | Tdom.SpecT ((_tparams, _tparams_hidden, Tdom.TupleT (_typs)), typs) ->
+  | Tdom.SpecT ((_tparams, _tparams_hidden, Tdom.TupleT _typs), typs) ->
       F.fprintf fmt "tuple<%a>"
         (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs
-  | Tdom.SpecT ((_tparams, _tparams_hidden, Tdom.ListT (_typs)), typs) ->
+  | Tdom.SpecT ((_tparams, _tparams_hidden, Tdom.ListT _typs), typs) ->
       F.fprintf fmt "list<%a>"
         (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs
@@ -122,20 +122,22 @@ and pp_typs ?(level = 0) fmt typs =
 (* Values *)
 
 let rec pp_value ?(level = 0) fmt value = pp_value' ~level fmt value.it
-and pp_value' ?(level = 0) fmt value = 
-  match value with 
+
+and pp_value' ?(level = 0) fmt value =
+  match value with
   | Value.StructV (_, fields) ->
-    let values = List.map (fun (_, value) -> value) fields in
-    F.fprintf fmt "{%a}"
+      let values = List.map (fun (_, value) -> value) fields in
+      F.fprintf fmt "{%a}"
         (pp_list (pp_value' ~level:(level + 1)) ~sep:Comma)
         values
   | Value.TupleV values ->
-    F.fprintf fmt "{ %a }"
+      F.fprintf fmt "{ %a }"
         (pp_list (pp_value' ~level:(level + 1)) ~sep:Comma)
         values
   | Value.HeaderV (_, _, fields) ->
       F.fprintf fmt "{\n%a\n%s}"
-        (pp_pairs ~level:(level + 1) P.pp_member' pp_value' ~rel:Eq ~sep:SemicolonNl)
+        (pp_pairs ~level:(level + 1) P.pp_member' pp_value' ~rel:Eq
+           ~sep:SemicolonNl)
         fields (indent level)
   | Value.SEnumFieldV (id, member, _) ->
       F.fprintf fmt "%a.%a" P.pp_id' id P.pp_member' member
@@ -255,17 +257,14 @@ and pp_expr' ?(level = 0) fmt expr' =
         (pp_expr ~level:(level + 1))
         expr_else
   | CastE { typ; expr } -> (
-    match typ.it with
-    | Tdom.SetT _ -> 
-      F.fprintf fmt "%a"
-        (pp_expr ~level:(level + 1))
-        expr
-    | _ ->
-      F.fprintf fmt "((%a) (%a))"
-        (pp_typ ~level:(level + 1))
-        typ
-        (pp_expr ~level:(level + 1))
-        expr )
+      match typ.it with
+      | Tdom.SetT _ -> F.fprintf fmt "%a" (pp_expr ~level:(level + 1)) expr
+      | _ ->
+          F.fprintf fmt "((%a) (%a))"
+            (pp_typ ~level:(level + 1))
+            typ
+            (pp_expr ~level:(level + 1))
+            expr)
   | MaskE { expr_base; expr_mask } ->
       F.fprintf fmt "%a &&& %a"
         (pp_expr ~level:(level + 1))
@@ -381,9 +380,8 @@ and pp_stmt' ?(level = 0) fmt stmt' =
       F.fprintf fmt "%a.%a%a;"
         (pp_expr ~level:(level + 1))
         expr_base pp_member member pp_args args
-  | CallInstS { typ=_typ; var_inst; targs; args } ->
-      F.fprintf fmt "%a%a.apply%a;/*CallInstS*/"
-         pp_var var_inst
+  | CallInstS { typ = _typ; var_inst; targs; args } ->
+      F.fprintf fmt "%a%a.apply%a;/*CallInstS*/" pp_var var_inst
         (pp_targs ~level:(level + 1))
         targs pp_args args
   | TransS { expr_label } ->
@@ -456,7 +454,8 @@ and pp_decl' ?(level = 0) fmt decl' =
         members (indent level)
   | InstD { id; typ = _typ; var_inst; targs; args; init; annos = _annos } -> (
       match init with
-      | [] -> F.fprintf fmt "%a%a%a %a;/*InstD*/" pp_var var_inst
+      | [] ->
+          F.fprintf fmt "%a%a%a %a;/*InstD*/" pp_var var_inst
             (pp_targs ~level:(level + 1))
             targs pp_args args pp_id id
       | init ->
