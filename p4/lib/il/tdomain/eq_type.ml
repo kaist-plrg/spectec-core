@@ -18,13 +18,12 @@ and eq_value value_a value_b = eq_value' value_a.it value_b.it
 
 (* Parameters *)
 
-and eq_param' param_a param_b =
+and eq_param param_a param_b =
   let id_a, dir_a, typ_a, value_default_a, _annos_a = param_a in
   let id_b, dir_b, typ_b, value_default_b, _annos_b = param_b in
   E.eq_id id_a id_b && E.eq_dir dir_a dir_b && eq_typ typ_a typ_b
   && E.eq_option eq_value value_default_a value_default_b
 
-and eq_param param_a param_b = eq_param' param_a.it param_b.it
 and eq_params params_a params_b = E.eq_list eq_param params_a params_b
 
 (* Constructor parameters *)
@@ -181,12 +180,12 @@ let eq_consdef_kind cd_a cd_b =
 
 (* Parameters *)
 
-let rec eq_param_alpha (param_a : param) (param_b : param) : bool =
-  let _, dir_a, typ_a, _, _ = param_a.it in
-  let _, dir_b, typ_b, _, _ = param_b.it in
+let rec eq_param_alpha (param_a : param') (param_b : param') : bool =
+  let _, dir_a, typ_a, _, _ = param_a in
+  let _, dir_b, typ_b, _, _ = param_b in
   E.eq_dir dir_a dir_b && eq_typ_alpha typ_a.it typ_b.it
 
-and eq_params_alpha (params_a : param list) (params_b : param list) : bool =
+and eq_params_alpha (params_a : param' list) (params_b : param' list) : bool =
   E.eq_list eq_param_alpha params_a params_b
 
 (* Types *)

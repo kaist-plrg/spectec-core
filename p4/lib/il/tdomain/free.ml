@@ -5,11 +5,11 @@ open Ast
 
 (* Parameters *)
 
-let rec free_param (param : param) : TIdSet.t =
-  let _, _, typ, _, _ = param.it in
+let rec free_param (param : param') : TIdSet.t =
+  let _, _, typ, _, _ = param in
   free_typ typ.it
 
-and free_params (params : param list) : TIdSet.t =
+and free_params (params : param' list) : TIdSet.t =
   List.map free_param params |> List.fold_left TIdSet.union TIdSet.empty
 
 (* Types *)

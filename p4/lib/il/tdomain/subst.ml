@@ -47,20 +47,20 @@ let subst_forall (theta : theta) (tvars : TId.t list) (frees_in : TIdSet.t) :
 
 (* Parameters *)
 
-let rec subst_param (theta : theta) (param : param) : param =
-  let id, dir, typ, value_default, annos = param.it in
+let rec subst_param (theta : theta) (param : param') : param' =
+  let id, dir, typ, value_default, annos = param in
   let typ = subst_typ theta typ.it $ no_info in
-  (id, dir, typ, value_default, annos) $ no_info
+  (id, dir, typ, value_default, annos)
 
-and subst_params (theta : theta) (params : param list) : param list =
+and subst_params (theta : theta) (params : param' list) : param' list =
   List.map (subst_param theta) params
 
 (* Constructor parameters *)
 
-and subst_cparam (theta : theta) (cparam : cparam) : cparam =
+and subst_cparam (theta : theta) (cparam : cparam') : cparam' =
   subst_param theta cparam
 
-and subst_cparams (theta : theta) (cparams : cparam list) : cparam list =
+and subst_cparams (theta : theta) (cparams : cparam' list) : cparam' list =
   subst_params theta cparams
 
 (* Types *)

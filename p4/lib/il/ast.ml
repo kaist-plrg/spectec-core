@@ -83,8 +83,8 @@ and typ' =
   | UnionT of L.id' * (L.member' * typ') list
   (* 3c. Object types *)
   | ExternT of L.id' * funcdef FIdMap.t
-  | ParserT of L.id' * param list
-  | ControlT of L.id' * param list
+  | ParserT of L.id' * param' list
+  | ControlT of L.id' * param' list
   | PackageT of L.id' * typ' list
   | TableT of L.id' * typ'
   (* 4. Synthesized types *)
@@ -107,14 +107,14 @@ and typdef_poly = tparam' list * tparam' list * typ'
 
 (* Function types *)
 and functyp =
-  | ActionT of param list
-  | ExternFunctionT of param list * typ'
-  | FunctionT of param list * typ'
-  | BuiltinMethodT of param list * typ'
-  | ExternMethodT of param list * typ'
-  | ExternAbstractMethodT of param list * typ'
-  | ParserApplyMethodT of param list
-  | ControlApplyMethodT of param list
+  | ActionT of param' list
+  | ExternFunctionT of param' list * typ'
+  | FunctionT of param' list * typ'
+  | BuiltinMethodT of param' list * typ'
+  | ExternMethodT of param' list * typ'
+  | ExternAbstractMethodT of param' list * typ'
+  | ParserApplyMethodT of param' list
+  | ControlApplyMethodT of param' list
   | TableApplyMethodT of typ'
 
 (* Function definitions *)
@@ -438,7 +438,7 @@ and mthd' =
 
 (* Constructor types *)
 
-type constyp = param list * typ'
+type constyp = param' list * typ'
 
 (* Constructor definitions *)
 

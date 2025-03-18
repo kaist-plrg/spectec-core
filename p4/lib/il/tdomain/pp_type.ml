@@ -31,8 +31,8 @@ and pp_tparams fmt (tparams, tparams_hidden) =
 
 (* Parameters *)
 
-and pp_param' ?(level = 0) fmt param' =
-  let id, dir, typ, value_default, _annos = param' in
+and pp_param ?(level = 0) fmt param =
+  let id, dir, typ, value_default, _annos = param in
   match value_default with
   | Some value_default ->
       if dir.it = L.No then
@@ -55,7 +55,6 @@ and pp_param' ?(level = 0) fmt param' =
           (pp_typ ~level:(level + 1))
           typ
 
-and pp_param ?(level = 0) fmt param = pp_param' ~level fmt param.it
 and pp_params ?(level = 0) fmt params =
   match params with
   | [] -> F.pp_print_string fmt "()"
