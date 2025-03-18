@@ -1,20 +1,20 @@
 open Domain.Dom
-open Tdom
+open Ast
 
 (* Collecting free type variables *)
 
 (* Parameters *)
 
 let rec free_param (param : param) : TIdSet.t =
-  let _, _, typ, _ = param in
-  free_typ typ
+  let _, _, typ, _, _ = param.it in
+  free_typ typ.it
 
 and free_params (params : param list) : TIdSet.t =
   List.map free_param params |> List.fold_left TIdSet.union TIdSet.empty
 
 (* Types *)
 
-and free_typ (typ : typ) : TIdSet.t =
+and free_typ (typ : typ') : TIdSet.t =
   match typ with
   | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
   | VBitT _ ->
@@ -44,7 +44,7 @@ and free_typ (typ : typ) : TIdSet.t =
   | SetT typ_inner -> free_typ typ_inner
   | StateT -> TIdSet.empty
 
-and free_typs (typs : typ list) : TIdSet.t =
+and free_typs (typs : typ' list) : TIdSet.t =
   List.map free_typ typs |> List.fold_left TIdSet.union TIdSet.empty
 
 (* Type definitions *)

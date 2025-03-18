@@ -1,7 +1,8 @@
 open Domain.Dom
-open Tdom
+open Ast
 open Utils
 module E = Lang.Eq
+open Util.Source
 
 (* Equality *)
 
@@ -10,14 +11,20 @@ module E = Lang.Eq
 let rec eq_tparam tparam_a tparam_b = E.eq_tparam' tparam_a tparam_b
 and eq_tparams tparams_a tparams_b = E.eq_list eq_tparam tparams_a tparams_b
 
+(* Values *)
+
+and eq_value' value_a value_b = Value.eq value_a value_b
+and eq_value value_a value_b = eq_value' value_a.it value_b.it
+
 (* Parameters *)
 
-and eq_param param_a param_b =
-  let id_a, dir_a, typ_a, value_default_a = param_a in
-  let id_b, dir_b, typ_b, value_default_b = param_b in
-  E.eq_id' id_a id_b && E.eq_dir' dir_a dir_b && eq_typ typ_a typ_b
-  && E.eq_option Value.eq value_default_a value_default_b
+and eq_param' param_a param_b =
+  let id_a, dir_a, typ_a, value_default_a, _annos_a = param_a in
+  let id_b, dir_b, typ_b, value_default_b, _annos_b = param_b in
+  E.eq_id id_a id_b && E.eq_dir dir_a dir_b && eq_typ typ_a typ_b
+  && E.eq_option eq_value value_default_a value_default_b
 
+and eq_param param_a param_b = eq_param' param_a.it param_b.it
 and eq_params params_a params_b = E.eq_list eq_param params_a params_b
 
 (* Constructor parameters *)
@@ -27,7 +34,7 @@ and eq_cparams cparams_a cparams_b = E.eq_list eq_cparam cparams_a cparams_b
 
 (* Types *)
 
-and eq_typ typ_a typ_b =
+and eq_typ' typ_a typ_b =
   match (typ_a, typ_b) with
   | VoidT, VoidT
   | ErrT, ErrT
@@ -43,22 +50,22 @@ and eq_typ typ_a typ_b =
   | VarT id_a, VarT id_b -> E.eq_id' id_a id_b
   | SpecT (tdp_a, typs_a), SpecT (tdp_b, typs_b) ->
       eq_typdef_poly tdp_a tdp_b && eq_typs typs_a typs_b
-  | DefT (typ_a, _), DefT (typ_b, _) -> eq_typ typ_a typ_b
+  | DefT (typ_a, _), DefT (typ_b, _) -> eq_typ' typ_a typ_b
   | NewT (id_a, typ_a), NewT (id_b, typ_b) ->
-      E.eq_id' id_a id_b && eq_typ typ_a typ_b
+      E.eq_id' id_a id_b && eq_typ' typ_a typ_b
   | EnumT (id_a, members_a), EnumT (id_b, members_b) ->
       E.eq_id' id_a id_b && E.eq_list E.eq_member' members_a members_b
   | SEnumT (id_a, typ_a, fields_a), SEnumT (id_b, typ_b, fields_b) ->
-      E.eq_id' id_a id_b && eq_typ typ_a typ_b
-      && E.eq_pairs E.eq_member' Value.eq fields_a fields_b
-  | ListT typ_a, ListT typ_b -> eq_typ typ_a typ_b
+      E.eq_id' id_a id_b && eq_typ' typ_a typ_b
+      && E.eq_pairs E.eq_member' eq_value' fields_a fields_b
+  | ListT typ_a, ListT typ_b -> eq_typ' typ_a typ_b
   | TupleT typs_a, TupleT typs_b -> eq_typs typs_a typs_b
   | StackT (typ_a, size_a), StackT (typ_b, size_b) ->
-      eq_typ typ_a typ_b && Bigint.(size_a = size_b)
+      eq_typ' typ_a typ_b && Bigint.(size_a = size_b)
   | StructT (id_a, fields_a), StructT (id_b, fields_b)
   | HeaderT (id_a, fields_a), HeaderT (id_b, fields_b)
   | UnionT (id_a, fields_a), UnionT (id_b, fields_b) ->
-      E.eq_id' id_a id_b && E.eq_pairs E.eq_member' eq_typ fields_a fields_b
+      E.eq_id' id_a id_b && E.eq_pairs E.eq_member' eq_typ' fields_a fields_b
   | ExternT (id_a, fdenv_a), ExternT (id_b, fdenv_b) ->
       E.eq_id' id_a id_b && FIdMap.eq eq_funcdef fdenv_a fdenv_b
   | ParserT (_, params_a), ParserT (_, params_b)
@@ -66,23 +73,24 @@ and eq_typ typ_a typ_b =
       eq_params params_a params_b
   | PackageT (_, typs_a), PackageT (_, typs_b) -> eq_typs typs_a typs_b
   | TableT (id_a, typ_a), TableT (id_b, typ_b) ->
-      E.eq_id' id_a id_b && eq_typ typ_a typ_b
+      E.eq_id' id_a id_b && eq_typ' typ_a typ_b
   | AnyT, AnyT -> true
   | TableEnumT (id_a, members_a), TableEnumT (id_b, members_b) ->
       E.eq_id' id_a id_b && E.eq_list E.eq_member' members_a members_b
   | TableStructT (id_a, fields_a), TableStructT (id_b, fields_b) ->
-      E.eq_id' id_a id_b && E.eq_pairs E.eq_member' eq_typ fields_a fields_b
+      E.eq_id' id_a id_b && E.eq_pairs E.eq_member' eq_typ' fields_a fields_b
   | SeqT typs_a, SeqT typs_b | SeqDefaultT typs_a, SeqDefaultT typs_b ->
       eq_typs typs_a typs_b
   | RecordT fields_a, RecordT fields_b
   | RecordDefaultT fields_a, RecordDefaultT fields_b ->
-      E.eq_pairs E.eq_member' eq_typ fields_a fields_b
+      E.eq_pairs E.eq_member' eq_typ' fields_a fields_b
   | DefaultT, DefaultT | InvalidT, InvalidT -> true
-  | SetT typ_a, SetT typ_b -> eq_typ typ_a typ_b
+  | SetT typ_a, SetT typ_b -> eq_typ' typ_a typ_b
   | StateT, StateT -> true
   | _ -> false
 
-and eq_typs typs_a typs_b = E.eq_list eq_typ typs_a typs_b
+and eq_typ typ_a typ_b = eq_typ' typ_a.it typ_b.it
+and eq_typs typs_a typs_b = E.eq_list eq_typ' typs_a typs_b
 
 (* Type definitions *)
 
@@ -92,14 +100,14 @@ and eq_typdef td_a td_b =
   | PolyD tdp_a, PolyD tdp_b -> eq_typdef_poly tdp_a tdp_b
   | _ -> false
 
-and eq_typdef_mono tdm_a tdm_b = eq_typ tdm_a tdm_b
+and eq_typdef_mono tdm_a tdm_b = eq_typ' tdm_a tdm_b
 
 and eq_typdef_poly tdp_a tdp_b =
   let tparams_a, tparams_hidden_a, typ_a = tdp_a in
   let tparams_b, tparams_hidden_b, typ_b = tdp_b in
   eq_tparams tparams_a tparams_b
   && eq_tparams tparams_hidden_a tparams_hidden_b
-  && eq_typ typ_a typ_b
+  && eq_typ' typ_a typ_b
 
 (* Function types *)
 
@@ -110,16 +118,16 @@ and eq_functyp ft_a ft_b =
   | FunctionT (params_a, typ_ret_a), FunctionT (params_b, typ_ret_b)
   | BuiltinMethodT (params_a, typ_ret_a), BuiltinMethodT (params_b, typ_ret_b)
     ->
-      eq_params params_a params_b && eq_typ typ_ret_a typ_ret_b
+      eq_params params_a params_b && eq_typ' typ_ret_a typ_ret_b
   | ExternMethodT (params_a, typ_ret_a), ExternMethodT (params_b, typ_ret_b)
   | ( ExternAbstractMethodT (params_a, typ_ret_a),
       ExternAbstractMethodT (params_b, typ_ret_b) ) ->
-      eq_params params_a params_b && eq_typ typ_ret_a typ_ret_b
+      eq_params params_a params_b && eq_typ' typ_ret_a typ_ret_b
   | ParserApplyMethodT params_a, ParserApplyMethodT params_b
   | ControlApplyMethodT params_a, ControlApplyMethodT params_b ->
       eq_params params_a params_b
   | TableApplyMethodT typ_ret_a, TableApplyMethodT typ_ret_b ->
-      eq_typ typ_ret_a typ_ret_b
+      eq_typ' typ_ret_a typ_ret_b
   | _ -> false
 
 (* Function definitions *)
@@ -133,6 +141,7 @@ and eq_funcdef fd_a fd_b =
       && eq_tparams tparams_hidden_a tparams_hidden_b
       && eq_functyp ft_a ft_b
   | _ -> false
+
 
 (* Equal kinds *)
 
@@ -161,7 +170,7 @@ let eq_funcdef_kind fd_a fd_b =
 let eq_constyp_kind ct_a ct_b =
   let _, typ_a = ct_a in
   let _, typ_b = ct_b in
-  eq_typ typ_a typ_b
+  eq_typ' typ_a typ_b
 
 let eq_consdef_kind cd_a cd_b =
   let _, _, ct_a = cd_a in
@@ -173,16 +182,16 @@ let eq_consdef_kind cd_a cd_b =
 (* Parameters *)
 
 let rec eq_param_alpha (param_a : param) (param_b : param) : bool =
-  let _, dir_a, typ_a, _ = param_a in
-  let _, dir_b, typ_b, _ = param_b in
-  E.eq_dir' dir_a dir_b && eq_typ_alpha typ_a typ_b
+  let _, dir_a, typ_a, _, _ = param_a.it in
+  let _, dir_b, typ_b, _, _ = param_b.it in
+  E.eq_dir dir_a dir_b && eq_typ_alpha typ_a.it typ_b.it
 
 and eq_params_alpha (params_a : param list) (params_b : param list) : bool =
   E.eq_list eq_param_alpha params_a params_b
 
 (* Types *)
 
-and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
+and eq_typ_alpha (typ_a : typ') (typ_b : typ') : bool =
   match (typ_a, typ_b) with
   | VoidT, VoidT
   | ErrT, ErrT
@@ -214,7 +223,7 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
     ->
       E.eq_id' id_a id_b
       && eq_typ_alpha typ_inner_a typ_inner_b
-      && E.eq_pairs E.eq_member' Value.eq fields_a fields_b
+      && E.eq_pairs E.eq_member' eq_value' fields_a fields_b
   | ListT typ_inner_a, ListT typ_inner_b -> eq_typ_alpha typ_inner_a typ_inner_b
   | TupleT typs_inner_a, TupleT typs_inner_b ->
       eq_typs_alpha typs_inner_a typs_inner_b
@@ -253,7 +262,7 @@ and eq_typ_alpha (typ_a : typ) (typ_b : typ) : bool =
   | StateT, StateT -> true
   | _ -> false
 
-and eq_typs_alpha (typs_a : typ list) (typs_b : typ list) : bool =
+and eq_typs_alpha (typs_a : typ' list) (typs_b : typ' list) : bool =
   E.eq_list eq_typ_alpha typs_a typs_b
 
 (* Function types *)

@@ -1,10 +1,16 @@
 open Domain.Dom
-open Tdom
+open Ast
 module L = Lang.Ast
 module P = Lang.Pp
 open Util.Pp
+open Util.Source
 
 (* Pretty-printers *)
+
+(* Values *)
+
+let rec pp_value ?(level = 0) fmt value = pp_value' ~level fmt value.it
+and pp_value' ?(level = 0) fmt value = Value.pp ~level fmt value
 
 (* Type parameters *)
 
@@ -25,30 +31,31 @@ and pp_tparams fmt (tparams, tparams_hidden) =
 
 (* Parameters *)
 
-and pp_param ?(level = 0) fmt param =
-  let id, dir, typ, value_default = param in
+and pp_param' ?(level = 0) fmt param' =
+  let id, dir, typ, value_default, _annos = param' in
   match value_default with
   | Some value_default ->
-      if dir = L.No then
-        F.fprintf fmt "%a %a = %a" P.pp_id' id
+      if dir.it = L.No then
+        F.fprintf fmt "%a %a = %a" P.pp_id id
           (pp_typ ~level:(level + 1))
           typ
-          (Value.pp ~level:(level + 1))
+          (pp_value ~level:(level + 1))
           value_default
       else
-        F.fprintf fmt "%a %a %a = %a" P.pp_dir' dir P.pp_id' id
+        F.fprintf fmt "%a %a %a = %a" P.pp_dir dir P.pp_id id
           (pp_typ ~level:(level + 1))
           typ
-          (Value.pp ~level:(level + 1))
+          (pp_value ~level:(level + 1))
           value_default
   | None ->
-      if dir = L.No then
-        F.fprintf fmt "%a %a" P.pp_id' id (pp_typ ~level:(level + 1)) typ
+      if dir.it = L.No then
+        F.fprintf fmt "%a %a" P.pp_id id (pp_typ ~level:(level + 1)) typ
       else
-        F.fprintf fmt "%a %a %a" P.pp_dir' dir P.pp_id' id
+        F.fprintf fmt "%a %a %a" P.pp_dir dir P.pp_id id
           (pp_typ ~level:(level + 1))
           typ
 
+and pp_param ?(level = 0) fmt param = pp_param' ~level fmt param.it
 and pp_params ?(level = 0) fmt params =
   match params with
   | [] -> F.pp_print_string fmt "()"
@@ -65,7 +72,8 @@ and pp_cparams ?(level = 0) fmt cparams = pp_params ~level fmt cparams
 
 (* Types *)
 
-and pp_typ ?(level = 0) fmt typ =
+and pp_typ ?(level = 0) fmt typ = pp_typ' ~level fmt typ.it
+and pp_typ' ?(level = 0) fmt typ =
   match typ with
   | VoidT -> F.pp_print_string fmt "void"
   | ErrT -> F.pp_print_string fmt "error"
@@ -80,46 +88,46 @@ and pp_typ ?(level = 0) fmt typ =
   | SpecT (tdp, typs) ->
       let tparams, tparams_hidden, typ = tdp in
       F.fprintf fmt "(%a%a)<%a>"
-        (pp_typ ~level:(level + 1))
+        (pp_typ' ~level:(level + 1))
         typ pp_tparams (tparams, tparams_hidden)
-        (pp_list (pp_typ ~level:(level + 1)) ~sep:Comma)
+        (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs
-  | DefT (typ, _) -> F.fprintf fmt "typedef %a" (pp_typ ~level:(level + 1)) typ
+  | DefT (typ, _) -> F.fprintf fmt "typedef %a" (pp_typ' ~level:(level + 1)) typ
   | NewT (id, typ) ->
-      F.fprintf fmt "type %a (%a)" P.pp_id' id (pp_typ ~level:(level + 1)) typ
+      F.fprintf fmt "type %a (%a)" P.pp_id' id (pp_typ' ~level:(level + 1)) typ
   | EnumT (id, fields) ->
       F.fprintf fmt "enum %a { %a }" P.pp_id' id
         (pp_list P.pp_member' ~sep:Comma)
         fields
   | SEnumT (id, typ, fields) ->
       F.fprintf fmt "enum<%a> %a { %a }"
-        (pp_typ ~level:(level + 1))
+        (pp_typ' ~level:(level + 1))
         typ P.pp_id' id
         (pp_pairs P.pp_member' Value.pp ~rel:Eq ~sep:Comma)
         fields
-  | ListT typ -> F.fprintf fmt "list<%a>" (pp_typ ~level:(level + 1)) typ
+  | ListT typ -> F.fprintf fmt "list<%a>" (pp_typ' ~level:(level + 1)) typ
   | TupleT typs ->
       F.fprintf fmt "tuple<%a>"
-        (pp_list (pp_typ ~level:(level + 1)) ~sep:Comma)
+        (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs
   | StackT (typ, size) ->
-      F.fprintf fmt "%a[%a]" (pp_typ ~level:(level + 1)) typ Bigint.pp size
+      F.fprintf fmt "%a[%a]" (pp_typ' ~level:(level + 1)) typ Bigint.pp size
   | StructT (id, fields) ->
       F.fprintf fmt "struct %a {\n%a\n%s}" P.pp_id' id
         (pp_pairs ~level:(level + 1) P.pp_member'
-           (pp_typ ~level:(level + 1))
+           (pp_typ' ~level:(level + 1))
            ~rel:Space ~sep:SemicolonNl)
         fields (indent level)
   | HeaderT (id, fields) ->
       F.fprintf fmt "header %a {\n%a\n%s}" P.pp_id' id
         (pp_pairs ~level:(level + 1) P.pp_member'
-           (pp_typ ~level:(level + 1))
+           (pp_typ' ~level:(level + 1))
            ~rel:Space ~sep:SemicolonNl)
         fields (indent level)
   | UnionT (id, fields) ->
       F.fprintf fmt "header_union %a {\n%a\n%s}" P.pp_id' id
         (pp_pairs ~level:(level + 1) P.pp_member'
-           (pp_typ ~level:(level + 1))
+           (pp_typ' ~level:(level + 1))
            ~rel:Space ~sep:SemicolonNl)
         fields (indent level)
   | ExternT (id, fdenv) ->
@@ -132,7 +140,7 @@ and pp_typ ?(level = 0) fmt typ =
       F.fprintf fmt "control %a" (pp_params ~level:(level + 1)) params
   | PackageT (_, typs) ->
       F.fprintf fmt "package {\n%a\n%s}"
-        (pp_list ~level:(level + 1) (pp_typ ~level:(level + 1)) ~sep:Comma)
+        (pp_list ~level:(level + 1) (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs (indent level)
   | TableT (id, _) -> F.fprintf fmt "table %a" P.pp_id' id
   | AnyT -> F.pp_print_string fmt "any"
@@ -140,32 +148,32 @@ and pp_typ ?(level = 0) fmt typ =
   | TableStructT (id, fields) ->
       F.fprintf fmt "struct_table %a {\n%a\n%s}" P.pp_id' id
         (pp_pairs ~level:(level + 1) P.pp_member'
-           (pp_typ ~level:(level + 1))
+           (pp_typ' ~level:(level + 1))
            ~rel:Space ~sep:SemicolonNl)
         fields (indent level)
   | SeqT typs ->
       F.fprintf fmt "seq<%a>"
-        (pp_list (pp_typ ~level:(level + 1)) ~sep:Comma)
+        (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs
   | SeqDefaultT typs ->
       F.fprintf fmt "seq<%a, ...>"
-        (pp_list (pp_typ ~level:(level + 1)) ~sep:Comma)
+        (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs
   | RecordT fields ->
       F.fprintf fmt "record {\n%a\n%s}"
         (pp_pairs ~level:(level + 1) P.pp_member'
-           (pp_typ ~level:(level + 1))
+           (pp_typ' ~level:(level + 1))
            ~rel:Space ~sep:SemicolonNl)
         fields (indent level)
   | RecordDefaultT fields ->
       F.fprintf fmt "record {\n%a...\n%s}"
         (pp_pairs ~trailing:true ~level:(level + 1) P.pp_member'
-           (pp_typ ~level:(level + 1))
+           (pp_typ' ~level:(level + 1))
            ~rel:Space ~sep:SemicolonNl)
         fields (indent level)
   | DefaultT -> F.pp_print_string fmt "default"
   | InvalidT -> F.pp_print_string fmt "{#}"
-  | SetT typ -> F.fprintf fmt "set<%a>" (pp_typ ~level:(level + 1)) typ
+  | SetT typ -> F.fprintf fmt "set<%a>" (pp_typ' ~level:(level + 1)) typ
   | StateT -> F.pp_print_string fmt "state"
 
 (* Type definitions *)
@@ -175,11 +183,11 @@ and pp_typdef ?(level = 0) fmt typdef =
   | MonoD tdm -> pp_typdef_mono ~level fmt tdm
   | PolyD tdp -> pp_typdef_poly ~level fmt tdp
 
-and pp_typdef_mono ?(level = 0) fmt tdm = pp_typ ~level fmt tdm
+and pp_typdef_mono ?(level = 0) fmt tdm = pp_typ' ~level fmt tdm
 
 and pp_typdef_poly ?(level = 0) fmt tdp =
   let tparams, tparams_hidden, typ = tdp in
-  F.fprintf fmt "%a%a" (pp_typ ~level) typ pp_tparams (tparams, tparams_hidden)
+  F.fprintf fmt "%a%a" (pp_typ' ~level) typ pp_tparams (tparams, tparams_hidden)
 
 (* Member definitions *)
 
@@ -193,31 +201,31 @@ and pp_functyp ?(level = 0) fmt functyp =
       F.fprintf fmt "extern_func%a -> %a"
         (pp_params ~level:(level + 1))
         params
-        (pp_typ ~level:(level + 1))
+        (pp_typ' ~level:(level + 1))
         typ
   | FunctionT (params, typ) ->
       F.fprintf fmt "func%a -> %a"
         (pp_params ~level:(level + 1))
         params
-        (pp_typ ~level:(level + 1))
+        (pp_typ' ~level:(level + 1))
         typ
   | BuiltinMethodT (params, typ) ->
       F.fprintf fmt "builtin_method%a -> %a"
         (pp_params ~level:(level + 1))
         params
-        (pp_typ ~level:(level + 1))
+        (pp_typ' ~level:(level + 1))
         typ
   | ExternMethodT (params, typ) ->
       F.fprintf fmt "extern_method%a -> %a"
         (pp_params ~level:(level + 1))
         params
-        (pp_typ ~level:(level + 1))
+        (pp_typ' ~level:(level + 1))
         typ
   | ExternAbstractMethodT (params, typ) ->
       F.fprintf fmt "extern_abstract_method%a -> %a"
         (pp_params ~level:(level + 1))
         params
-        (pp_typ ~level:(level + 1))
+        (pp_typ' ~level:(level + 1))
         typ
   | ParserApplyMethodT params ->
       F.fprintf fmt "parser_apply%a" (pp_params ~level:(level + 1)) params
@@ -241,7 +249,7 @@ let pp_constyp ?(level = 0) fmt constyp =
   F.fprintf fmt "constructor%a -> %a"
     (pp_cparams ~level:(level + 1))
     cparams
-    (pp_typ ~level:(level + 1))
+    (pp_typ' ~level:(level + 1))
     typ
 
 (* Constructor definitions *)
