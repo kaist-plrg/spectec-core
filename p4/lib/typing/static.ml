@@ -186,12 +186,16 @@ and eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
     Il.Ast.value' =
   match expr with
   | ValueE { value } -> value.it
+  | BoolE { boolean } -> Value.BoolV boolean
+  | StrE { text } -> Value.StrV text.it
+  | NumE _ -> failwith "TODO"
   | VarE { var } -> eval_var_expr cursor ctx var
   | SeqE { exprs } -> eval_seq_expr cursor ctx exprs
   | SeqDefaultE { exprs } -> eval_seq_default_expr cursor ctx exprs
   | RecordE { fields } -> eval_record_expr cursor ctx fields
   | RecordDefaultE { fields } -> eval_record_default_expr cursor ctx fields
   | DefaultE -> Value.DefaultV
+  | InvalidE -> Value.InvalidV
   | UnE { unop; expr } -> eval_unop_expr cursor ctx unop expr
   | BinE { binop; expr_l; expr_r } ->
       eval_binop_expr cursor ctx binop expr_l expr_r
@@ -200,6 +204,8 @@ and eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (expr : Il.Ast.expr') :
   | CastE { typ; expr } -> eval_cast_expr cursor ctx typ expr
   | BitAccE { expr_base; value_lo; value_hi } ->
       eval_bitstring_acc_expr cursor ctx expr_base value_lo value_hi
+  | ErrAccE _ -> failwith "TODO"
+  | TypeAccE _ -> failwith "TODO"
   | ExprAccE { expr_base; member } ->
       eval_expr_acc_expr cursor ctx expr_base member
   | CallMethodE { expr_base; member; targs; args } ->
