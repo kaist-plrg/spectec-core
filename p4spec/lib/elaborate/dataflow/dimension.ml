@@ -33,7 +33,7 @@ let collect_itervars (bounds : VEnv.t) (occurs : VEnv.t) (iter : iter) :
          let typ_expect = VEnv.find id bounds in
          if Typ.sub (Typ.add_iter iter typ) typ_expect then
            let typ, iters = typ in
-           Some (id, typ $ id.at, iters)
+           Some (id, typ, iters)
          else None)
 
 (* Expression *)
@@ -43,7 +43,7 @@ let rec annotate_exp (bounds : VEnv.t) (exp : exp) : VEnv.t * exp =
   match exp.it with
   | BoolE _ | NumE _ | TextE _ -> (empty, exp)
   | VarE id ->
-      if VEnv.mem id bounds then (singleton id note, exp)
+      if VEnv.mem id bounds then (singleton id (note $ at), exp)
       else error exp.at ("free identifier: " ^ Id.to_string id)
   | UnE (op, optyp, exp) ->
       let occurs, exp = annotate_exp bounds exp in
@@ -153,7 +153,7 @@ let rec annotate_exp (bounds : VEnv.t) (exp : exp) : VEnv.t * exp =
           let occurs =
             List.fold_left
               (fun occurs (id, typ, iters) ->
-                VEnv.add id (typ.it, iters @ [ iter ]) occurs)
+                VEnv.add id (typ, iters @ [ iter ]) occurs)
               occurs itervars
           in
           (occurs, exp))
@@ -269,7 +269,7 @@ and annotate_prem (binds : VEnv.t) (bounds : VEnv.t) (prem : prem) :
           let occurs =
             List.fold_left
               (fun occurs (id, typ, iters) ->
-                VEnv.add id (typ.it, iters @ [ iter ]) occurs)
+                VEnv.add id (typ, iters @ [ iter ]) occurs)
               occurs itervars
           in
           (occurs, prem))

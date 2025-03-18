@@ -109,7 +109,7 @@ let add_value (ctx : t) (var : Var.t) (value : Value.t) : t =
 (* Adders for type definitions *)
 
 let add_typdef (ctx : t) (tid : TId.t) (td : Typdef.t) : t =
-  if bound_typdef ctx tid then error_dup tid.at "type" tid.it;
+  (* if bound_typdef ctx tid then error_dup tid.at "type" tid.it; *)
   let tdenv = TDEnv.add tid td ctx.tdenv in
   { ctx with tdenv }
 

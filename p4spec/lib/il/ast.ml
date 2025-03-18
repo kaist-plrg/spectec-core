@@ -58,6 +58,22 @@ and deftyp' =
 and typfield = atom * typ
 and typcase = nottyp
 
+(* Values *)
+
+and value = (value', typ') note_phrase
+and value' =
+  | BoolV of bool
+  | NumV of Num.t
+  | TextV of string
+  | StructV of valuefield list
+  | CaseV of valuecase
+  | TupleV of value list
+  | OptV of value option
+  | ListV of value list
+
+and valuefield = atom * value
+and valuecase = mixop * value list
+
 (* Operators *)
 
 and numop = [ `DecOp | `HexOp ]

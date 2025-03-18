@@ -3,10 +3,10 @@ open Il.Print
 
 (* Type with dimension *)
 
-type t = typ' * iter list
+type t = typ * iter list
 
 let to_string (typ, iters) =
-  string_of_typ' typ ^ String.concat "" (List.map string_of_iter iters)
+  string_of_typ typ ^ String.concat "" (List.map string_of_iter iters)
 
 let compare (_typ_a, iters_a) (_typ_b, iters_b) = compare iters_a iters_b
 

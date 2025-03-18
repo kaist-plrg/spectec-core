@@ -1,5 +1,6 @@
 open Xl
 open Ast
+open Util.Print
 open Util.Source
 
 (* Numbers *)
@@ -22,6 +23,9 @@ let string_of_defid defid = "$" ^ defid.it
 
 let string_of_atom atom = Atom.string_of_atom atom.it
 
+let string_of_atoms atoms =
+  Format.asprintf "`%s`" (atoms |> List.map string_of_atom |> String.concat "")
+
 (* Mixfix operators *)
 
 let string_of_mixop mixop = Mixop.string_of_mixop mixop
@@ -37,10 +41,8 @@ let string_of_var (id, _typ, iters) =
 
 (* Types *)
 
-let rec string_of_typ typ = string_of_typ' typ.it
-
-and string_of_typ' typ =
-  match typ with
+let rec string_of_typ typ =
+  match typ.it with
   | BoolT -> "bool"
   | NumT numtyp -> Num.string_of_typ numtyp
   | TextT -> "text"
@@ -71,6 +73,48 @@ and string_of_typcase typcase = string_of_nottyp typcase
 
 and string_of_typcases sep typcases =
   String.concat sep (List.map string_of_typcase typcases)
+
+(* Values *)
+
+and string_of_value ?(level = 0) value =
+  match value.it with
+  | BoolV b -> string_of_bool b
+  | NumV n -> Num.string_of_num n
+  | TextV s -> "\"" ^ s ^ "\""
+  | StructV [] -> "{}"
+  | StructV valuefields ->
+      Format.asprintf "{ %s }"
+        (String.concat ";\n"
+           (List.mapi
+              (fun idx (atom, value) ->
+                let indent = if idx = 0 then "" else indent (level + 1) in
+                Format.asprintf "%s%s %s" indent (string_of_atom atom)
+                  (string_of_value ~level:(level + 2) value))
+              valuefields))
+  | CaseV (mixop, values) ->
+      let atoms_h, mixop_t = (List.hd mixop, List.tl mixop) in
+      Format.asprintf "(%s%s)" (string_of_atoms atoms_h)
+        (String.concat ""
+           (List.map2
+              (fun value atoms ->
+                string_of_value ~level:(level + 1) value ^ string_of_atoms atoms)
+              values mixop_t))
+  | TupleV values ->
+      Format.asprintf "(%s)"
+        (String.concat ", "
+           (List.map (string_of_value ~level:(level + 1)) values))
+  | OptV (Some value) ->
+      Format.asprintf "Some(%s)" (string_of_value ~level:(level + 1) value)
+  | OptV None -> "None"
+  | ListV [] -> "[]"
+  | ListV values ->
+      Format.asprintf "[ %s ]"
+        (String.concat ",\n"
+           (List.mapi
+              (fun idx value ->
+                let indent = if idx = 0 then "" else indent (level + 1) in
+                indent ^ string_of_value ~level:(level + 2) value)
+              values))
 
 (* Operators *)
 
@@ -104,7 +148,7 @@ and string_of_exp' e =
       "(" ^ string_of_exp exp_l ^ " " ^ string_of_cmpop cmpop ^ " "
       ^ string_of_exp exp_r ^ ")"
   | TupleE es -> "(" ^ string_of_exps ", " es ^ ")"
-  | CaseE notexp -> string_of_notexp notexp
+  | CaseE notexp -> string_of_notexp ~typ:(Some e.note) notexp
   | OptE exp_opt -> "?(" ^ string_of_exps "" (Option.to_list exp_opt) ^ ")"
   | StrE expfields ->
       "{"
@@ -134,9 +178,14 @@ and string_of_exp' e =
 
 and string_of_exps sep exps = String.concat sep (List.map string_of_exp exps)
 
-and string_of_notexp notexp =
+and string_of_notexp ?(typ = None) notexp =
   let mixop, exps = notexp in
-  string_of_mixop mixop ^ "(" ^ string_of_exps ", " exps ^ ")"
+  match typ with
+  | Some typ ->
+      string_of_mixop mixop ^ "_"
+      ^ string_of_typ (typ $ no_region)
+      ^ "(" ^ string_of_exps ", " exps ^ ")"
+  | None -> string_of_mixop mixop ^ "(" ^ string_of_exps ", " exps ^ ")"
 
 and string_of_iterexp iterexp =
   let iter, vars = iterexp in

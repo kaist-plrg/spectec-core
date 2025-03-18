@@ -347,8 +347,10 @@ rule FuncType_wf/builtinmethodt:
   -- ParamTypes_wf: tidset |- pt*
   -- Type_wf: tidset |- typ_r
 
+;; (TODO) Fill in the details
 dec $is_trailing_action(dir*) : bool
     hint(show % IS TRAILING ACTION_T)
+def $is_trailing_action(_) = true
 
 rule FuncType_wf/actiont:
   tidset |- ActionT pt*

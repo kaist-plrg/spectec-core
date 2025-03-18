@@ -31,7 +31,7 @@ let update_venv_multi (venv : VEnv.t) (renv_multi : Multibind.REnv.t) : VEnv.t =
 let update_venv_partial (venv : VEnv.t) (renv_partial : Partialbind.REnv.t) :
     VEnv.t =
   Partialbind.REnv.fold
-    (fun id (exp, iters) venv -> VEnv.add id (exp.note, iters) venv)
+    (fun id (exp, iters) venv -> VEnv.add id (exp.note $ exp.at, iters) venv)
     renv_partial venv
 
 (* Expression binding analysis *)
