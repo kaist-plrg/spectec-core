@@ -1,11 +1,13 @@
 module E = Lang.Eq
-module Ctk = Runtime_static.Ctk
-module Types = Runtime_static.Tdomain.Types
+module Ctk = Ctk
 module TypeDef = Types.TypeDef
+module Type = Types.Type
+(*
 module Envs = Runtime_static.Envs
 module SType = Envs.SType
 module Frame = Envs.Frame
 module TDEnv = Envs.TDEnv
+*)
 open Ast
 module P = Pp
 open Util.Source
