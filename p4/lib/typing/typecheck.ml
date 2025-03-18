@@ -244,6 +244,9 @@ let infer_targs (tids_fresh : TId.t list) (params : Types.param' list)
       | None | Some Types.AnyT ->
           F.asprintf "(infer_targs) type %s cannot be inferred" tid
           |> error_no_info
+      | Some Types.SeqT typs -> 
+        let typ = Types.TupleT typs in
+        TIdMap.add tid typ theta
       | Some typ -> TIdMap.add tid typ theta)
     cstr TIdMap.empty
 

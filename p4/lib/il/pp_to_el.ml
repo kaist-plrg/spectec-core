@@ -79,12 +79,22 @@ and pp_typ' ?(level = 0) fmt typ =
         typs
   | SpecT (tdp, typs) ->
       let _tparams, _tparams_hidden, typ = tdp in
-      F.fprintf fmt "%a<%a>/*SpecT*/"
+      (match typs with
+      | [] -> 
+        F.fprintf fmt "%a"
+        (pp_typ' ~level:(level + 1))
+        typ
+      | _ ->
+        F.fprintf fmt "%a<%a>"
         (pp_typ' ~level:(level + 1))
         typ
         (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
-        typs
+        typs)
   | SetT typ -> F.fprintf fmt "%a/*SetT*/" (pp_typ' ~level:(level + 1)) typ
+  | TupleT typs ->
+      F.fprintf fmt "tuple<%a>"
+        (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
+        typs
   | NewT (id, _)
   | StructT (id, _)
   | ExternT (id, _)
