@@ -906,11 +906,7 @@ and eval_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
               let fid = FId.to_fid id params in
               let tparams = List.map it tparams in
               let tparams_hidden = List.map it tparams_hidden in
-              let params =
-                List.map it params
-                |> List.map (fun (id, typ, dir, value_default, _) ->
-                       (id.it, typ.it, dir.it, Option.map it value_default))
-              in
+              let params = List.map it params in
               let ft = Types.ExternAbstractMethodT (params, typ_ret.it) in
               let fd = Types.PolyFD (tparams, tparams_hidden, ft) in
               FDEnv.add fid fd fdenv
@@ -918,11 +914,7 @@ and eval_extern_object_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
               let fid = FId.to_fid id params in
               let tparams = List.map it tparams in
               let tparams_hidden = List.map it tparams_hidden in
-              let params =
-                List.map it params
-                |> List.map (fun (id, typ, dir, value_default, _) ->
-                       (id.it, typ.it, dir.it, Option.map it value_default))
-              in
+              let params = List.map it params in
               let ft = Types.ExternMethodT (params, typ_ret.it) in
               let fd = Types.PolyFD (tparams, tparams_hidden, ft) in
               FDEnv.add fid fd fdenv
@@ -964,11 +956,7 @@ and eval_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let td =
     let tparams = List.map it tparams in
     let tparams_hidden = List.map it tparams_hidden in
-    let params =
-      List.map it params
-      |> List.map (fun (id, typ, dir, value_default, _) ->
-             (id.it, typ.it, dir.it, Option.map it value_default))
-    in
+    let params = List.map it params in
     (* unsure if the id here is id *)
     let typ_parser = Types.ParserT (id.it, params) in
     Types.PolyD (tparams, tparams_hidden, typ_parser)
@@ -1024,11 +1012,7 @@ and eval_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
   let td =
     let tparams = List.map it tparams in
     let tparams_hidden = List.map it tparams_hidden in
-    let params =
-      List.map it params
-      |> List.map (fun (id, typ, dir, value_default, _) ->
-             (id.it, typ.it, dir.it, Option.map it value_default))
-    in
+    let params = List.map it params in
     let typ_parser = Types.ControlT (id.it, params) in
     Types.PolyD (tparams, tparams_hidden, typ_parser)
   in

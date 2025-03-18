@@ -10,6 +10,7 @@ module ConsDef = Types.ConsDef
 module Envs = Runtime_static.Envs
 module F = Format
 open Util.Error
+open Util.Source
 
 let check = check_checker
 let error_no_info = error_checker_no_info
@@ -542,31 +543,31 @@ and check_valid_typdef'' (tset : TIdSet.t) (td : TypeDef.t) : unit =
    indicating that all calls must provide a compile-time known value
    as an argument for such a parameter *)
 
-and check_valid_param (cursor : Ctx.cursor) (ctx : Ctx.t) (param : Types.param)
+and check_valid_param (cursor : Ctx.cursor) (ctx : Ctx.t) (param : Types.param')
     : unit =
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
   check_valid_param' tset param
 
-and check_valid_param' (tset : TIdSet.t) (param : Types.param) : unit =
-  let _, dir, typ, value_default = param in
-  check_valid_typ' tset typ;
+and check_valid_param' (tset : TIdSet.t) (param : Types.param') : unit =
+  let _, dir, typ, value_default, _ = param in
+  check_valid_typ' tset typ.it;
   check
-    (match Type.canon typ with ExternT _ -> dir = No | _ -> true)
+    (match Type.canon typ.it with ExternT _ -> dir.it = No | _ -> true)
     (Format.asprintf
        "(check_valid_param') extern objects can only be passed as \
         directionless parameters but direction %a was given"
-       Dir.pp dir);
+       Dir.pp dir.it);
   match value_default with
-  | Some _ when not (match dir with In | No -> true | _ -> false) ->
+  | Some _ when not (match dir.it with In | No -> true | _ -> false) ->
       Format.asprintf
         "(check_valid_param') default values are only allowed for in or \
          directionless parameters but direction %a was given"
-        Dir.pp dir
+        Dir.pp dir.it
       |> error_no_info
   | _ -> ()
 
-and check_valid_params' (tset : TIdSet.t) (params : Types.param list) : unit =
-  let ids = List.map (fun (id, _, _, _) -> id) params in
+and check_valid_params' (tset : TIdSet.t) (params : Types.param' list) : unit =
+  let ids = List.map (fun (id, _, _, _, _) -> id.it) params in
   check_distinct_names ids;
   List.iter (check_valid_param' tset) params
 
@@ -582,10 +583,10 @@ and check_valid_functyp' (tset : TIdSet.t) (ft : FuncType.t) : unit =
       let check_trailing_action params =
         let rec check_trailing_action' allow_directionless = function
           | [] -> ()
-          | (_, dir, _, _) :: params ->
-              if dir = Lang.Ast.No && allow_directionless then
+          | (_, dir, _, _, _) :: params ->
+              if dir.it = Lang.Ast.No && allow_directionless then
                 check_trailing_action' allow_directionless params
-              else if dir = Lang.Ast.No then
+              else if dir.it = Lang.Ast.No then
                 Format.asprintf
                   "(check_valid_functyp') all directionless action parameters \
                    must be at the end of the parameter list"
@@ -613,15 +614,15 @@ and check_valid_functyp' (tset : TIdSet.t) (ft : FuncType.t) : unit =
       check_valid_typ' tset typ_ret;
       check_valid_functyp_nesting ft []
 
-and check_valid_functyp_nesting (ft : FuncType.t) (params : Types.param list) :
+and check_valid_functyp_nesting (ft : FuncType.t) (params : Types.param' list) :
     unit =
   List.iter
-    (fun (_, dir, typ, _) ->
+    (fun (_, dir, typ, _, _) ->
       check
-        (check_valid_functyp_nesting' ft dir typ)
+        (check_valid_functyp_nesting' ft dir.it typ.it)
         (Format.asprintf
            "(check_valid_functyp_nesting) invalid nesting of %a inside %a"
-           (Type.pp ~level:0) typ (FuncType.pp ~level:0) ft))
+           (Type.pp ~level:0) typ.it (FuncType.pp ~level:0) ft))
     params
 
 and check_valid_functyp_nesting' (ft : FuncType.t) (dir : Lang.Ast.dir')
@@ -719,21 +720,21 @@ and check_valid_funcdefs' (tset : TIdSet.t) (fds : FuncDef.t list) : unit =
    value types | yes	    | yes    | yes	   | yes *)
 
 and check_valid_cparam (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (cparam : Types.cparam) : unit =
+    (cparam : Types.cparam') : unit =
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
   check_valid_cparam' tset cparam
 
-and check_valid_cparam' (tset : TIdSet.t) (cparam : Types.cparam) : unit =
-  let _, dir, typ, _ = cparam in
+and check_valid_cparam' (tset : TIdSet.t) (cparam : Types.cparam') : unit =
+  let _, dir, typ, _, _ = cparam in
   check
-    (match (dir : Il.Ast.dir') with No -> true | _ -> false)
+    (match (dir.it : Il.Ast.dir') with No -> true | _ -> false)
     (Format.asprintf
        "(check_valid_cparam') constructor parameters must be directionless");
-  check_valid_typ' tset typ
+  check_valid_typ' tset typ.it
 
-and check_valid_cparams' (tset : TIdSet.t) (cparams : Types.cparam list) : unit
+and check_valid_cparams' (tset : TIdSet.t) (cparams : Types.cparam' list) : unit
     =
-  let ids = List.map (fun (id, _, _, _) -> id) cparams in
+    let ids = List.map (fun (id, _, _, _, _) -> id.it) cparams in
   check_distinct_names ids;
   List.iter (check_valid_cparam' tset) cparams
 
@@ -748,15 +749,15 @@ and check_valid_constyp' (tset : TIdSet.t) (ct : ConsType.t) : unit =
   check_valid_typ' tset typ;
   check_valid_constyp_nesting typ cparams
 
-and check_valid_constyp_nesting (typ : Type.t) (cparams : Types.cparam list) :
+and check_valid_constyp_nesting (typ : Type.t) (cparams : Types.cparam' list) :
     unit =
   List.iter
-    (fun (_, _, typ_inner, _) ->
+    (fun (_, _, typ_inner, _, _) ->
       check
-        (check_valid_constyp_nesting' typ typ_inner)
+        (check_valid_constyp_nesting' typ typ_inner.it)
         (Format.asprintf
            "(check_valid_constyp_nesting) invalid nesting of %a inside %a"
-           (Type.pp ~level:0) typ_inner (Type.pp ~level:0) typ))
+           (Type.pp ~level:0) typ_inner.it (Type.pp ~level:0) typ))
     cparams
 
 and check_valid_constyp_nesting' (typ : Type.t) (typ_inner : Type.t) : bool =
