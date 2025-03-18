@@ -1,6 +1,6 @@
 module F = Format
 module L = Lang.Ast
-module Value = Runtime_static.Vdomain.Value
+module Value = Vdomain.Value
 module LValue = Runtime_dynamic.Lvalue
 open Util.Pp
 

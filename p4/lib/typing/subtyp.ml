@@ -1,5 +1,5 @@
 open Domain.Dom
-module Types = Runtime_static.Tdomain.Types
+module Types = Il.Types
 module Type = Types.Type
 
 (* (8.11.1) Explicit casts

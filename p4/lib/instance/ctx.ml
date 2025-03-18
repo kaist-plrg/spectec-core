@@ -1,6 +1,6 @@
 module F = Format
 module L = Lang.Ast
-module Types = Runtime_static.Tdomain.Types
+module Types = Il.Types
 module TypeDef = Types.TypeDef
 module Envs_dynamic = Runtime_dynamic.Envs
 module VEnv = Envs_dynamic.VEnv

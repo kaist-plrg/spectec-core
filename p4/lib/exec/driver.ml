@@ -1,6 +1,6 @@
 open Domain.Dom
-module Ctk = Runtime_static.Ctk
-module Types = Runtime_static.Tdomain.Types
+module Ctk = Il.Ctk
+module Types = Il.Types
 module Envs_static = Runtime_static.Envs
 open Il.Ast
 module Table = Runtime_dynamic.Table

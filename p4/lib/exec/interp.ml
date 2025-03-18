@@ -2,9 +2,9 @@ module F = Format
 open Domain.Dom
 module L = Lang.Ast
 open Il.Ast
-module Num = Runtime_static.Vdomain.Num
-module Value = Runtime_static.Vdomain.Value
-module Types = Runtime_static.Tdomain.Types
+module Num = Vdomain.Num
+module Value = Vdomain.Value
+module Types = Il.Types
 module Type = Types.Type
 module Numerics = Runtime_static.Numerics
 module LValue = Runtime_dynamic.Lvalue

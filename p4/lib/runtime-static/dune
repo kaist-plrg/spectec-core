@@ -2,6 +2,6 @@
 
 (library
  (name runtime_static)
- (libraries bignum util lang el domain)
+ (libraries bignum util lang el il domain)
  (instrumentation
   (backend bisect_ppx)))

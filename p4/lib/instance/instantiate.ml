@@ -1,9 +1,9 @@
 module F = Format
 open Domain.Dom
 module L = Lang.Ast
-module Ctk = Runtime_static.Ctk
-module Value = Runtime_static.Vdomain.Value
-module Types = Runtime_static.Tdomain.Types
+module Ctk = Il.Ctk
+module Value = Vdomain.Value
+module Types = Il.Types
 module Type = Types.Type
 module Numerics = Runtime_static.Numerics
 module Builtins = Runtime_static.Builtins
