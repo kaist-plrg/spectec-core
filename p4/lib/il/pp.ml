@@ -1,8 +1,8 @@
 module F = Format
 module L = Lang.Ast
 module P = Lang.Pp
-module Value = Runtime_static.Vdomain.Value
-module Type = Runtime_static.Tdomain.Types.Type
+module Value = Vdomain.Value
+module Type = Types.Type
 open Ast
 open Util.Pp
 open Util.Source
