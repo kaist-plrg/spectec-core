@@ -314,6 +314,9 @@ module Make (Arch : ARCH) : INTERP = struct
     let wrap_value value = (ctx, Sig.Cont value) in
     match expr with
     | ValueE { value } -> value.it |> wrap_value
+    | BoolE { boolean } -> Value.BoolV boolean |> wrap_value
+    | StrE { text } -> Value.StrV text.it |> wrap_value
+    | NumE _ -> failwith "TODO"
     | VarE { var } -> eval_var_expr cursor ctx var |> wrap_value
     | SeqE { exprs } -> eval_seq_expr ~default:false cursor ctx exprs
     | SeqDefaultE { exprs } -> eval_seq_expr ~default:true cursor ctx exprs
@@ -321,6 +324,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | RecordDefaultE { fields } ->
         eval_record_expr ~default:true cursor ctx fields
     | DefaultE -> Value.DefaultV |> wrap_value
+    | InvalidE -> Value.InvalidV |> wrap_value
     | UnE { unop; expr } -> eval_unop_expr cursor ctx unop expr
     | BinE { binop; expr_l; expr_r } ->
         eval_binop_expr cursor ctx binop expr_l expr_r
@@ -336,6 +340,8 @@ module Make (Arch : ARCH) : INTERP = struct
         eval_array_acc_expr cursor ctx expr_base expr_idx
     | BitAccE { expr_base; value_lo; value_hi } ->
         eval_bitstring_acc_expr cursor ctx expr_base value_lo value_hi
+    | ErrAccE _ -> failwith "TODO"
+    | TypeAccE _ -> failwith "TODO"
     | ExprAccE { expr_base; member } ->
         eval_expr_acc_expr cursor ctx expr_base member
     | CallFuncE { var_func; targs; args } ->

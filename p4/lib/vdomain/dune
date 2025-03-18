@@ -1,0 +1,4 @@
+(library
+ (name vdomain)
+ (libraries lang util domain)
+ (modules vdom value pp eq utils num))
