@@ -174,9 +174,9 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
   | ControlT (_, params_param), ControlT (_, params_arg) ->
       (* might need to use id_param and id_arg here *)
       let typs_inner_param =
-        List.map (fun (_, _, typ, _) -> typ) params_param
+        List.map (fun (_, _, typ, _, _) -> typ.it) params_param
       in
-      let typs_inner_arg = List.map (fun (_, _, typ, _) -> typ) params_arg in
+      let typs_inner_arg = List.map (fun (_, _, typ, _, _) -> typ.it) params_arg in
       gen_cstrs cstr typs_inner_param typs_inner_arg
   | PackageT (_, typs_param), PackageT (_, typs_arg) ->
       gen_cstrs cstr typs_param typs_arg
@@ -186,8 +186,8 @@ and gen_cstr_fd (cstr : cstr_t) (fd_param : FuncDef.t) (fd_arg : FuncDef.t) :
     cstr_t =
   let params_param = FuncDef.get_params fd_param in
   let params_arg = FuncDef.get_params fd_arg in
-  let typs_param = List.map (fun (_, _, typ, _) -> typ) params_param in
-  let typs_arg = List.map (fun (_, _, typ, _) -> typ) params_arg in
+  let typs_param = List.map (fun (_, _, typ, _, _) -> typ.it) params_param in
+  let typs_arg = List.map (fun (_, _, typ, _, _) -> typ.it) params_arg in
   let cstr_params = gen_cstrs cstr typs_param typs_arg in
   gen_cstr cstr_params
     (FuncDef.get_typ_ret fd_param)
@@ -232,10 +232,10 @@ and gen_cstrs (cstr : cstr_t) (typ_params : Type.t list)
   in
   List.fold_left merge_cstr cstr cstrs
 
-let infer_targs (tids_fresh : TId.t list) (params : Types.param list)
+let infer_targs (tids_fresh : TId.t list) (params : Types.param' list)
     (args_il_typed : (Il.Ast.arg * Type.t) list) : Type.t TIdMap.t =
   let cstr = empty_cstr tids_fresh in
-  let typ_params = List.map (fun (_, _, typ, _) -> typ) params in
+  let typ_params = List.map (fun (_, _, typ, _, _) -> typ.it) params in
   let typ_args = List.map snd args_il_typed in
   let cstr = gen_cstrs cstr typ_params typ_args in
   TIdMap.fold
@@ -549,7 +549,7 @@ and check_table_apply_as_arg ~(action : bool) (args_il : Il.Ast.arg list) : unit
         expressions supplied as action arguments")
 
 and type_call_convention ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (params : Types.param list) (args_il_typed : (Il.Ast.arg * Type.t) list) :
+    (params : Types.param' list) (args_il_typed : (Il.Ast.arg * Type.t) list) :
     Il.Ast.arg list =
   assert (List.length params = List.length args_il_typed);
   check_table_apply_as_arg ~action (List.map fst args_il_typed);
@@ -566,19 +566,19 @@ and type_call_convention ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
   type_call_convention'' [] params args_il_typed
 
 and type_call_convention' ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (param : Types.param) (arg_il_typed : Il.Ast.arg * Type.t) : Il.Ast.arg =
+    (param : Types.param') (arg_il_typed : Il.Ast.arg * Type.t) : Il.Ast.arg =
   let arg_il, typ_arg = arg_il_typed in
-  let _, dir_param, typ_param, _ = param in
+  let _, dir_param, typ_param, _, _ = param in
   let type_expr_arg (expr_il : Il.Ast.expr) =
-    match dir_param with
-    | Lang.Ast.In -> coerce_type_assign expr_il typ_param
+    match dir_param.it with
+    | Lang.Ast.In -> coerce_type_assign expr_il typ_param.it
     | Lang.Ast.Out | Lang.Ast.InOut ->
-        check_eq_typ_alpha typ_arg typ_param;
+        check_eq_typ_alpha typ_arg typ_param.it;
         check_lvalue cursor ctx expr_il;
         expr_il
-    | Lang.Ast.No when action -> coerce_type_assign expr_il typ_param
+    | Lang.Ast.No when action -> coerce_type_assign expr_il typ_param.it
     | Lang.Ast.No ->
-        check_eq_typ_alpha typ_arg typ_param;
+        check_eq_typ_alpha typ_arg typ_param.it;
         Static.check_ctk expr_il;
         expr_il
   in
@@ -592,7 +592,7 @@ and type_call_convention' ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
       let arg_il = Lang.Ast.NameA (id, Some expr_il) $ arg_il.at in
       arg_il
   | NameA (_, None) | AnyA ->
-      if dir_param = Lang.Ast.Out then arg_il
+      if dir_param.it = Lang.Ast.Out then arg_il
       else
         F.asprintf
           "(type_call_convention') don't care argument can only be used for an \
@@ -1911,7 +1911,7 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       of the serialized representation of the data and minSizeInBits is the “best” case.
     - Every other case is undefined and will produce a compile-time error. *)
 
-and check_call_arity (ft : FuncType.t) (params : Types.param list)
+and check_call_arity (ft : FuncType.t) (params : Types.param' list)
     (args : Il.Ast.arg list) : unit =
   let arity_params = List.length params in
   let arity_args = List.length args in
@@ -1922,14 +1922,14 @@ and check_call_arity (ft : FuncType.t) (params : Types.param list)
        (FuncType.pp ~level:0) ft arity_params arity_args)
 
 (* Invariant: parameters and arguments are checked of arity and all-or-nothing named *)
-and align_params_with_args (params : Types.param list) (typ_args : Type.t list)
+and align_params_with_args (params : Types.param' list) (typ_args : Type.t list)
     (args_il : Il.Ast.arg list) =
   let module PMap = Map.Make (String) in
   let params_map =
     List.fold_left
       (fun params_map param ->
-        let id, _, _, _ = param in
-        PMap.add id param params_map)
+        let id, _, _, _, _ = param in
+        PMap.add id.it param params_map)
       PMap.empty params
   in
   let args = List.combine args_il typ_args in
@@ -2038,7 +2038,7 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
     | _, "maxSizeInBytes" ->
         Types.BuiltinMethodT ([], Types.IntT) |> wrap_builtin
     | StackT _, "push_front" | StackT _, "pop_front" ->
-        let params = [ ("count", Lang.Ast.In, Types.IntT, None) ] in
+      let params = [ ("count" $ no_info, Lang.Ast.In $ no_info, Types.IntT $ no_info, None, []) ] in
         let typ_ret = Types.VoidT in
         Types.BuiltinMethodT (params, typ_ret) |> wrap_builtin
     | HeaderT _, "isValid" ->
@@ -2056,8 +2056,8 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
         let fdenv =
           let params =
             List.map
-              (fun (id, _, _, value_default) ->
-                (id, Option.is_some value_default))
+              (fun (id, _, _, value_default, _) ->
+                (id.it, Option.is_some value_default))
               params
           in
           let fid = ("apply", params) in
@@ -2072,8 +2072,8 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
         let fdenv =
           let params =
             List.map
-              (fun (id, _, _, value_default) ->
-                (id, Option.is_some value_default))
+              (fun (id, _, _, value_default, _) ->
+                (id.it, Option.is_some value_default))
               params
           in
           let fid = ("apply", params) in
@@ -2094,7 +2094,7 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
     Il.Ast.targ list * Il.Ast.arg list * Type.t =
   let params = FuncType.get_params ft in
   let params =
-    List.filter (fun (id, _, _, _) -> not (List.mem id args_default)) params
+    List.filter (fun (id, _, _, _, _) -> not (List.mem id.it args_default)) params
   in
   let args_il_typed = type_args cursor ctx args in
   let args_il, typ_args = List.split args_il_typed in
@@ -2248,7 +2248,7 @@ and type_call_type_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
    value types | N/A       | N/A     | N/A    | N/A     | N/A    | N/A *)
 
 and check_instantiation_arity (var_inst : El.Ast.var)
-    (cparams : Types.cparam list) (args : Il.Ast.arg list) : unit =
+    (cparams : Types.cparam' list) (args : Il.Ast.arg list) : unit =
   let arity_cparams = List.length cparams in
   let arity_args = List.length args in
   check
@@ -2258,7 +2258,7 @@ and check_instantiation_arity (var_inst : El.Ast.var)
         were given"
        El.Pp.pp_var var_inst arity_cparams arity_args)
 
-and align_cparams_with_args (cparams : Types.cparam list)
+and align_cparams_with_args (cparams : Types.cparam' list)
     (typ_args : Type.t list) (args_il : Il.Ast.arg list) =
   align_params_with_args cparams typ_args args_il
 
@@ -2321,7 +2321,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
   let cparams, typ_inst = ct in
   (* Check if the arguments match the parameters *)
   let cparams =
-    List.filter (fun (id, _, _, _) -> not (List.mem id args_default)) cparams
+    List.filter (fun (id, _, _, _, _) -> not (List.mem id.it args_default)) cparams
   in
   let args_il, typ_args =
     (* Adjust the context if instantiating a package at top level
@@ -3265,11 +3265,7 @@ and type_instantiation_init_extern_abstract_method_decl (cursor : Ctx.cursor)
   let fd =
     let tparams = List.map it tparams in
     let tparams_hidden = List.map it tparams_hidden in
-    let params =
-      List.map it params_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let params = List.map it params_il in
     let ft = Types.ExternMethodT (params, typ_ret.it) in
     Types.PolyFD (tparams, tparams_hidden, ft)
   in
@@ -3835,11 +3831,7 @@ and type_action_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   in
   (* Create an action definition *)
   let fd =
-    let params =
-      List.map it params_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let params = List.map it params_il in
     let ft = Types.ActionT params in
     Types.MonoFD ft
   in
@@ -3892,11 +3884,7 @@ and type_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let fd =
     let tparams = List.map it tparams in
     let tparams_hidden = List.map it tparams_hidden in
-    let params =
-      List.map it params_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let params = List.map it params_il in
     let ft = Types.FunctionT (params, typ_ret.it) in
     Types.PolyFD (tparams, tparams_hidden, ft)
   in
@@ -3941,11 +3929,7 @@ and type_extern_function_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let fd =
     let tparams = List.map it tparams in
     let tparams_hidden = List.map it tparams_hidden in
-    let params =
-      List.map it params_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let params = List.map it params_il in
     let ft = Types.ExternFunctionT (params, typ_ret.it) in
     Types.PolyFD (tparams, tparams_hidden, ft)
   in
@@ -3998,11 +3982,7 @@ and type_extern_constructor_mthd (cursor : Ctx.cursor) (ctx : Ctx.t)
   let cd =
     let tparams = List.map it tparams in
     let tparams_hidden = List.map it tparams_hidden in
-    let cparams =
-      List.map it cparams_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let cparams = List.map it cparams_il in
     let ct = (cparams, typ) in
     (tparams, tparams_hidden, ct)
   in
@@ -4040,11 +4020,7 @@ and type_extern_abstract_method_mthd (cursor : Ctx.cursor) (ctx : Ctx.t)
   let fd =
     let tparams = List.map it tparams in
     let tparams_hidden = List.map it tparams_hidden in
-    let params =
-      List.map it params_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let params = List.map it params_il in
     let ft = Types.ExternAbstractMethodT (params, typ_ret.it) in
     Types.PolyFD (tparams, tparams_hidden, ft)
   in
@@ -4083,11 +4059,7 @@ and type_extern_method_mthd (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let fd =
     let tparams = List.map it tparams in
     let tparams_hidden = List.map it tparams_hidden in
-    let params =
-      List.map it params_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let params = List.map it params_il in
     let ft = Types.ExternMethodT (params, typ_ret.it) in
     Types.PolyFD (tparams, tparams_hidden, ft)
   in
@@ -4266,11 +4238,7 @@ and type_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let td =
     let tparams = List.map it tparams in
     let tparams_hidden = List.map it tparams_hidden in
-    let params =
-      List.map it params_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let params = List.map it params_il in
     let typ_param = Types.ParserT (id.it, params) in
     Types.PolyD (tparams, tparams_hidden, typ_param)
   in
@@ -4364,11 +4332,7 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   check (tids_fresh = [])
     "(type_parser_decl) a parser cannot have implicit type parameters";
   let fd_apply =
-    let params =
-      List.map it params_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let params = List.map it params_il in
     let ft = Types.ParserApplyMethodT params in
     Types.MonoFD ft
   in
@@ -4381,21 +4345,13 @@ and type_parser_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let _ctx', states_il = type_parser_states Ctx.Block ctx' states in
   (* Create a parser constructor definition *)
   let typ =
-    let params =
-      List.map it params_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let params = List.map it params_il in
     let typ_parser = Types.ParserT (id.it, params) in
     let tdp = ([], [], typ_parser) in
     Types.SpecT (tdp, [])
   in
   let cd =
-    let cparams =
-      List.map it cparams_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let cparams = List.map it cparams_il in
     let ct = (cparams, typ) in
     ([], [], ct)
   in
@@ -4684,15 +4640,15 @@ and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
    are forbidden in the expressions supplied as action arguments. *)
 
 and type_call_action_partial (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (var : El.Ast.var) (params : Types.param list)
+    (var : El.Ast.var) (params : Types.param' list)
     (args_il_typed : (Il.Ast.arg * Type.t) list) :
     Il.Ast.arg list * Il.Ast.param list * Il.Ast.param list =
   (* Rule out directionless parameters, that will be supplied by the control plane *)
   let params_specified, params_control =
     List.partition
       (fun param ->
-        let _, dir, _, _ = param in
-        match (dir : Lang.Ast.dir') with No -> false | _ -> true)
+        let _, dir, _, _, _ = param in
+        match (dir.it : Lang.Ast.dir') with No -> false | _ -> true)
       params
   in
   check
@@ -4706,28 +4662,10 @@ and type_call_action_partial (cursor : Ctx.cursor) (ctx : Ctx.t)
     type_call_convention ~action:true cursor ctx params_specified args_il_typed
   in
   let params_specified_il =
-    List.map
-      (fun (id, dir, typ, value_default) ->
-        let value_default =
-          Option.map
-            (fun value_default -> value_default $ no_info)
-            value_default
-        in
-        (id $ no_info, dir $ no_info, typ $ no_info, value_default, [])
-        $ no_info)
-      params_specified
+    List.map (fun param -> param $ no_info) params_specified
   in
   let params_control_il =
-    List.map
-      (fun (id, dir, typ, value_default) ->
-        let value_default =
-          Option.map
-            (fun value_default -> value_default $ no_info)
-            value_default
-        in
-        (id $ no_info, dir $ no_info, typ $ no_info, value_default, [])
-        $ no_info)
-      params_control
+    List.map (fun param -> param $ no_info) params_control
   in
   (args_il, params_specified_il, params_control_il)
 
@@ -4809,7 +4747,7 @@ and type_table_actions (cursor : Ctx.cursor) (ctx : Ctx.t)
    arguments for directionless parameters are evaluated at compile time. *)
 
 and type_call_default_action (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (var : El.Ast.var) (params : Types.param list)
+    (var : El.Ast.var) (params : Types.param' list)
     (args_il_typed : (Il.Ast.arg * Type.t) list) (args_action : Il.Ast.arg list)
     : Il.Ast.arg list =
   check
@@ -4822,8 +4760,8 @@ and type_call_default_action (cursor : Ctx.cursor) (ctx : Ctx.t)
     List.map2
       (fun param arg_il_typed ->
         let arg_il, _ = arg_il_typed in
-        let _, dir, _, _ = param in
-        match dir with Lang.Ast.No -> None | _ -> Some arg_il)
+        let _, dir, _, _, _ = param in
+        match dir.it with Lang.Ast.No -> None | _ -> Some arg_il)
       params args_il_typed
     |> List.filter_map (fun x -> x)
   in
@@ -4860,16 +4798,7 @@ and type_table_default_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
     type_call_default_action cursor ctx var params args_il_typed args_action
   in
   let params_data_il =
-    List.map
-      (fun (id, dir, typ, value_default) ->
-        let value_default =
-          Option.map
-            (fun value_default -> value_default $ no_info)
-            value_default
-        in
-        (id $ no_info, dir $ no_info, typ $ no_info, value_default, [])
-        $ no_info)
-      params
+    List.map (fun param -> param $ no_info) params
   in
   (var, args_il, annos_il, params_data_il, [])
 
@@ -5115,7 +5044,7 @@ and type_table_entry_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
         (List.combine table_ctx_keys keysets)
 
 and type_call_entry_action (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (var : El.Ast.var) (params : Types.param list)
+    (var : El.Ast.var) (params : Types.param' list)
     (args_il_typed : (Il.Ast.arg * Type.t) list) (args_action : Il.Ast.arg list)
     : Il.Ast.arg list =
   type_call_default_action cursor ctx var params args_il_typed args_action
@@ -5145,16 +5074,7 @@ and type_table_entry_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
     type_call_entry_action cursor ctx var params args_il_typed args_action
   in
   let params_data_il =
-    List.map
-      (fun (id, dir, typ, value_default) ->
-        let value_default =
-          Option.map
-            (fun value_default -> value_default $ no_info)
-            value_default
-        in
-        (id $ no_info, dir $ no_info, typ $ no_info, value_default, [])
-        $ no_info)
-      params
+    List.map (fun param -> param $ no_info) params
   in
   (var, args_il, annos_il, params_data_il, [])
 
@@ -5198,7 +5118,8 @@ and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
         | Lpm prefix -> Bigint.of_int prefix
         | _ -> assert false
       in
-      let priority_il = Value.IntV value_prefix $ no_info |> Option.some in
+      let priority_expr = Il.Ast.NumE { num = (value_prefix, None) $ no_info } in
+      let priority_il = Value.IntV value_prefix $$ no_info % priority_expr |> Option.some in
       (table_ctx, priority_il)
   (* Neglect lpm prefix when lpm is used with explicit priority for other match kinds *)
   | _ when table_ctx.priorities.values = [] ->
@@ -5219,7 +5140,8 @@ and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
             in
             priority
       in
-      let priority_il = Value.IntV value_priority $ no_info |> Option.some in
+      let priority_expr = Il.Ast.NumE { num = (value_priority, None) $ no_info } in
+      let priority_il = Value.IntV value_priority $$ no_info % priority_expr |> Option.some in
       let value_priority = value_priority |> Bigint.to_int_exn in
       check_table_entry_priority table_ctx value_priority;
       let table_ctx =
@@ -5250,7 +5172,8 @@ and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
             in
             priority
       in
-      let priority_il = Value.IntV value_priority $ no_info |> Option.some in
+      let priority_expr = Il.Ast.NumE { num = (value_priority, None) $ no_info } in
+      let priority_il = Value.IntV value_priority $$ no_info % priority_expr |> Option.some in
       let value_priority = value_priority |> Bigint.to_int_exn in
       check_table_entry_priority table_ctx value_priority;
       let table_ctx = Tblctx.add_priority value_priority table_ctx in
@@ -5408,11 +5331,7 @@ and type_control_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let td =
     let tparams = List.map it tparams in
     let tparams_hidden = List.map it tparams_hidden in
-    let params =
-      List.map it params_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let params = List.map it params_il in
     let typ_control = Types.ControlT (id.it, params) in
     Types.PolyD (tparams, tparams_hidden, typ_control)
   in
@@ -5458,11 +5377,7 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   check (tids_fresh = [])
     "(type_control_decl) a control cannot have implicit type parameters";
   let fd_apply =
-    let params =
-      List.map it params_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let params = List.map it params_il in
     let ft = Types.ControlApplyMethodT params in
     Types.MonoFD ft
   in
@@ -5476,21 +5391,13 @@ and type_control_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let _ctx', _flow, body_il = type_block ~start:true Ctx.Local ctx' Cont body in
   (* Create a control constructor definition *)
   let typ =
-    let params =
-      List.map it params_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let params = List.map it params_il in
     let typ_control = Types.ControlT (id.it, params) in
     let tdp = ([], [], typ_control) in
     Types.SpecT (tdp, [])
   in
   let cd =
-    let cparams =
-      List.map it cparams_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let cparams = List.map it cparams_il in
     let ct = (cparams, typ) in
     ([], [], ct)
   in
@@ -5551,11 +5458,7 @@ and type_package_constructor_decl (cursor : Ctx.cursor) (ctx : Ctx.t)
   let cd =
     let tparams = List.map it tparams in
     let tparams_hidden = List.map it tparams_hidden in
-    let cparams =
-      List.map it cparams_il
-      |> List.map (fun (id, dir, typ, value_default, _) ->
-             (id.it, dir.it, typ.it, Option.map it value_default))
-    in
+    let cparams = List.map it cparams_il in
     let ct = (cparams, typ) in
     (tparams, tparams_hidden, ct)
   in
