@@ -1,15 +1,15 @@
-open Tdom
+open Ast
 
 (* Type utils *)
 
-let is_numeric_typ (typ : typ) : bool =
+let is_numeric_typ (typ : typ') : bool =
   let typ = Subst.canon_typ typ in
   match typ with
   | SpecT _ | DefT _ -> assert false
   | IntT | FIntT _ | FBitT _ -> true
   | _ -> false
 
-let is_nominal_typ (typ : typ) : bool =
+let is_nominal_typ (typ : typ') : bool =
   let typ = Subst.canon_typ typ in
   match typ with
   | SpecT _ | DefT _ -> assert false
