@@ -1,7 +1,7 @@
 module F = Format
 open Domain.Dom
-module Value = Runtime_static.Vdomain.Value
-module Type = Runtime_static.Tdomain.Types.Type
+module Value = Vdomain.Value
+module Type = Il.Types.Type
 module L = Il.Ast
 module P = Il.Pp
 open Util.Pp

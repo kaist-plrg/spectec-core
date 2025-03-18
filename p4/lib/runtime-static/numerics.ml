@@ -15,7 +15,7 @@
 
 open Vdomain.Num
 module Value = Vdomain.Value
-module Type = Tdomain.Types.Type
+module Type = Il.Types.Type
 open Util.Source
 
 (* Unop evaluation *)

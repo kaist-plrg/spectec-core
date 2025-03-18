@@ -9,6 +9,7 @@
   (re_export el)
   (re_export il)
   (re_export domain)
+  (re_export vdomain)
   (re_export runtime_static)
   (re_export runtime_dynamic)
   (re_export typing)
