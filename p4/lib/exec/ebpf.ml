@@ -1,6 +1,6 @@
 module F = Format
 open Domain.Dom
-module Ctk = Runtime_static.Ctk
+module Ctk = Il.Ctk
 module Value = Vdomain.Value
 module Types = Il.Types
 module Type = Types.Type
