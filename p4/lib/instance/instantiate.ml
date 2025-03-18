@@ -5,6 +5,7 @@ module Ctk = Il.Ctk
 module Value = Vdomain.Value
 module Types = Il.Types
 module Type = Types.Type
+module TypeDef = Types.TypeDef
 module Numerics = Runtime_static.Numerics
 module Builtins = Runtime_static.Builtins
 module Envs_static = Runtime_static.Envs
@@ -220,12 +221,16 @@ and eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (expr : expr')
     : Sto.t * Value.t =
   match expr with
   | ValueE { value } -> (sto, value.it)
+  | BoolE { boolean } -> (sto, Value.BoolV boolean)
+  | StrE { text } -> (sto, Value.StrV text.it)
+  | NumE { num } -> eval_num_expr cursor ctx sto num
   | VarE { var } -> eval_var_expr cursor ctx sto var
   | SeqE { exprs } -> eval_seq_expr cursor ctx sto exprs
   | SeqDefaultE { exprs } -> eval_seq_default_expr cursor ctx sto exprs
   | RecordE { fields } -> eval_record_expr cursor ctx sto fields
   | RecordDefaultE { fields } -> eval_record_default_expr cursor ctx sto fields
-  | DefaultE -> eval_default_expr cursor ctx sto
+  | DefaultE -> (sto, Value.DefaultV)
+  | InvalidE -> (sto, Value.InvalidV)
   | UnE { unop; expr } -> eval_unop_expr cursor ctx sto unop expr
   | BinE { binop; expr_l; expr_r } ->
       eval_binop_expr cursor ctx sto binop expr_l expr_r
@@ -234,6 +239,8 @@ and eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (expr : expr')
   | CastE { typ; expr } -> eval_cast_expr cursor ctx sto typ expr
   | BitAccE { expr_base; value_lo; value_hi } ->
       eval_bitstring_acc_expr cursor ctx sto expr_base value_lo value_hi
+  | ErrAccE { member } -> eval_error_acc_expr cursor ctx sto member 
+  | TypeAccE { var_base; member } -> eval_type_acc_expr cursor ctx sto var_base member 
   | ExprAccE { expr_base; member } ->
       eval_expr_acc_expr cursor ctx sto expr_base member
   | CallMethodE { expr_base; member; targs; args } ->
@@ -253,6 +260,18 @@ and eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
       let sto, value = eval_expr cursor ctx sto expr in
       (sto, values @ [ value ]))
     (sto, []) exprs
+
+and eval_num_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t) (sto : Sto.t)
+    (num : Il.Ast.num) : Sto.t * Value.t =
+  let value = 
+    match num.it with
+    | value, Some(width, signed) ->
+      if signed then Vdomain.Num.int_of_raw_int value width
+      else Vdomain.Num.bit_of_raw_int value width
+    | value, None ->
+      Value.IntV value
+  in
+  (sto, value)
 
 and eval_var_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (var : var)
     : Sto.t * Value.t =
@@ -289,11 +308,6 @@ and eval_record_default_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
   let value = Value.RecordDefaultV fields in
   (sto, value)
 
-and eval_default_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t) (sto : Sto.t) :
-    Sto.t * Value.t =
-  let value = Value.DefaultV in
-  (sto, value)
-
 and eval_unop_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
     (unop : unop) (expr : expr) : Sto.t * Value.t =
   let sto, value = eval_expr cursor ctx sto expr in
@@ -326,6 +340,38 @@ and eval_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
   let sto, value_base = eval_expr cursor ctx sto expr_base in
   let value =
     Numerics.eval_bitstring_access value_base value_lo.it value_hi.it
+  in
+  (sto, value)
+
+and eval_error_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (member: Il.Ast.member) : Sto.t * Value.t =
+  let value_error = Ctx.find_value_opt cursor ("error." ^ member.it) ctx in
+  let value_error = Option.get value_error in
+  (sto, value_error)
+
+and eval_type_acc_expr (cursor: Ctx.cursor) (ctx: Ctx.t) (sto : Sto.t)
+    (var_base: Il.Ast.var) (member: Il.Ast.member) : Sto.t * Value.t =
+  let td_base = Ctx.find_opt Ctx.find_typdef_opt cursor var_base ctx in
+  let td_base = Option.get td_base in
+  let value =
+    let typ_base =
+      match td_base with
+      | MonoD typ_base -> typ_base
+      | _ ->
+          F.asprintf "(eval_type_acc_expr) Cannot access a generic type %a"
+            (TypeDef.pp ~level:0) td_base
+          |> error_no_info
+    in
+    match Type.canon typ_base with
+    | EnumT (id, _) ->
+        Value.EnumFieldV (id, member.it)
+    | SEnumT (id, _, fields) ->
+        let value_inner = List.assoc member.it fields in
+        Value.SEnumFieldV (id, member.it, value_inner)
+    | _ ->
+        F.asprintf "(eval_type_acc_expr) %a cannot be accessed\n"
+          (TypeDef.pp ~level:0) td_base
+        |> error_no_info
   in
   (sto, value)
 

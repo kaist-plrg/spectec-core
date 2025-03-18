@@ -165,6 +165,9 @@ and eq_expr' ?(dbg = false) expr_a expr_b =
   match (expr_a, expr_b) with
   | ValueE { value = value_a }, ValueE { value = value_b } ->
       eq_value ~dbg value_a value_b
+  | BoolE { boolean = boolean_a }, BoolE { boolean = boolean_b } -> boolean_a = boolean_b
+  | StrE { text = text_a }, StrE { text = text_b } -> eq_text ~dbg text_a text_b
+  | NumE { num = num_a }, NumE { num = num_b } -> eq_num ~dbg num_a num_b
   | VarE { var = var_a }, VarE { var = var_b } -> eq_var ~dbg var_a var_b
   | SeqE { exprs = exprs_a }, SeqE { exprs = exprs_b }
   | SeqDefaultE { exprs = exprs_a }, SeqDefaultE { exprs = exprs_b } ->
@@ -173,7 +176,7 @@ and eq_expr' ?(dbg = false) expr_a expr_b =
   | RecordDefaultE { fields = fields_a }, RecordDefaultE { fields = fields_b }
     ->
       E.eq_pairs (eq_id ~dbg) (eq_expr ~dbg) fields_a fields_b
-  | DefaultE, DefaultE -> true
+  | DefaultE, DefaultE | InvalidE, InvalidE -> true
   | UnE { unop = unop_a; expr = expr_a }, UnE { unop = unop_b; expr = expr_b }
     ->
       eq_unop ~dbg unop_a unop_b && eq_expr ~dbg expr_a expr_b
@@ -229,6 +232,11 @@ and eq_expr' ?(dbg = false) expr_a expr_b =
       eq_expr ~dbg expr_base_a expr_base_b
       && eq_value ~dbg value_lo_a value_lo_b
       && eq_value ~dbg value_hi_a value_hi_b
+  | ( TypeAccE { var_base = var_base_a; member = member_a },
+      TypeAccE { var_base = var_base_b; member = member_b } ) ->
+      eq_var ~dbg var_base_a var_base_b && eq_member ~dbg member_a member_b
+  | ErrAccE { member = member_a }, ErrAccE { member = member_b } ->
+      eq_member ~dbg member_a member_b
   | ( ExprAccE { expr_base = expr_base_a; member = member_a },
       ExprAccE { expr_base = expr_base_b; member = member_b } ) ->
       eq_expr ~dbg expr_base_a expr_base_b && eq_member ~dbg member_a member_b
