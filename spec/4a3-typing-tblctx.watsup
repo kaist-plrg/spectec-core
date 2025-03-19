@@ -68,7 +68,11 @@ def $empty_tblctx() =
 ;;
 
 dec $add_key(key, tblctx) : tblctx
+
 dec $add_action(action, tblctx) : tblctx
+
+def $add_action(action, tblctx) = tblctx[ .ACTIONS = action :: tblctx.ACTIONS ]
+
 dec $add_priority(int, tblctx) : tblctx
 
 ;;
@@ -103,7 +107,12 @@ def $update_state(NOLPM, NOLPM) = NOLPM
 ;; Finders
 ;;
 
-dec $find_action(tblctx, name) : (paramtyp*, argIL*)
+dec $find_action(tblctx, name) : (paramtyp*, argIL*)?
+
+def $find_action(tblctx, name)
+  = $assoc_<name, (paramtyp*, argIL*)>(name, (name_a, (pt_a*, argIL_a*))*)
+  -- if (name_a, pt_a*, argIL_a*)* = tblctx.ACTIONS
+
 dec $find_last_priority(tblctx) : int
 
 ;;

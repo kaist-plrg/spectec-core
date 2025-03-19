@@ -134,6 +134,7 @@ def $update_fdenv_extern(fdenv_ext, typ_a*, fid_h :: fid_t*, fd_h :: fd_t*) = $u
 
 rule Decl_ok/instd-some:
   p C |- InstD id name_inst targ* arg* decl* : C (InstD id typ name_inst targIL'* argIL'* declIL*)
+  -- if |decl*| > 0
   -- (Arg_ok: p C |- arg : argIL typ_arg)*
   ----
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
@@ -724,7 +725,15 @@ relation Call_action_partial_ok:
   cursor context |- name paramtyp* (argIL, typ)* : paramIL* paramIL* argIL*
   hint(input %0 %1 %2 %3 %4)
 
-dec $split_directionless_params(paramIL*) : (paramIL*, paramIL*)   hint(show SPLIT_DIRECTIONLESS_PARAMS(%1))
+dec $split_directionless_params(paramIL*) : (paramIL*, paramIL*)
+    hint(show SPLIT_DIRECTIONLESS_PARAMS(%1))
+
+def $split_directionless_params(eps) = (eps, eps)
+def $split_directionless_params(paramIL_h :: paramIL_t*) = (paramIL_h :: paramIL_d*, paramIL_c*)
+  -- if id_d NO _ _ = paramIL_h
+  -- if (paramIL_d*, paramIL_c*) = $split_directionless_params(paramIL_t*)
+def $split_directionless_params(_ :: paramIL_t*) = $split_directionless_params(paramIL_t*)
+  -- otherwise
 
 rule Call_action_partial_ok:
   p C |- name pt* (argIL, typ_a)* : paramIL_d* paramIL_c* argIL'*

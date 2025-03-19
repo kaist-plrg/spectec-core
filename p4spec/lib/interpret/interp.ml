@@ -296,7 +296,9 @@ and eval_exp' (ctx : Ctx.t) (exp : exp) : value' =
   | DotE (exp_b, atom) -> eval_dot_exp ctx exp_b atom
   | ListE exps -> eval_list_exp ctx exps
   | ConsE (exp_h, exp_t) -> eval_cons_exp ctx exp_h exp_t
+  | CatE (exp_l, exp_r) -> eval_cat_exp ctx exp_l exp_r
   | MemE (exp_e, exp_s) -> eval_mem_exp ctx exp_e exp_s
+  | SliceE (exp_b, exp_l, exp_h) -> eval_slice_exp ctx exp_b exp_l exp_h
   | UpdE (exp_b, path, exp_f) -> eval_upd_exp ctx exp_b path exp_f
   | CallE (id, targs, args) -> eval_call_exp ctx id targs args
   | IterE (exp, iterexp) -> eval_iter_exp ctx exp iterexp
@@ -352,18 +354,19 @@ and eval_cmp_bool (cmpop : Bool.cmpop) (value_l : value) (value_r : value) :
   let eq = Value.eq value_l value_r in
   match cmpop with `EqOp -> BoolV eq | `NeOp -> BoolV (not eq)
 
+and eval_cmp_num (cmpop : Num.cmpop) (value_l : value) (value_r : value) :
+    value' =
+  let num_l = Value.get_num value_l in
+  let num_r = Value.get_num value_r in
+  BoolV (Num.cmp cmpop num_l num_r)
+
 and eval_cmp_exp (ctx : Ctx.t) (cmpop : cmpop) (_optyp : optyp) (exp_l : exp)
     (exp_r : exp) : value' =
   let value_l = eval_exp ctx exp_l in
   let value_r = eval_exp ctx exp_r in
   match cmpop with
   | #Bool.cmpop as cmpop -> eval_cmp_bool cmpop value_l value_r
-  | #Num.cmpop ->
-      Format.asprintf "(TODO) eval_cmp_exp: %s %s %s"
-        (Il.Print.string_of_exp exp_l)
-        (Il.Print.string_of_cmpop cmpop)
-        (Il.Print.string_of_exp exp_r)
-      |> failwith
+  | #Num.cmpop as cmpop -> eval_cmp_num cmpop value_l value_r
 
 (* Tuple expression evaluation *)
 
@@ -419,12 +422,39 @@ and eval_cons_exp (ctx : Ctx.t) (exp_h : exp) (exp_t : exp) : value' =
   let values_t = eval_exp ctx exp_t |> Value.unseq in
   ListV (value_h :: values_t)
 
+(* Concatenation expression evaluation *)
+
+and eval_cat_exp (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) : value' =
+  let value_l = eval_exp ctx exp_l in
+  let value_r = eval_exp ctx exp_r in
+  match (value_l.it, value_r.it) with
+  | TextV s_l, TextV s_r -> TextV (s_l ^ s_r)
+  | ListV values_l, ListV values_r -> ListV (values_l @ values_r)
+  | _ -> error exp_l.at "mismatch in concatenation"
+
 (* Membership expression evaluation *)
 
 and eval_mem_exp (ctx : Ctx.t) (exp_e : exp) (exp_s : exp) : value' =
   let value_e = eval_exp ctx exp_e in
   let values_s = eval_exp ctx exp_s |> Value.unseq in
   BoolV (List.mem value_e values_s)
+
+(* Slice expression evaluation *)
+
+and eval_slice_exp (ctx : Ctx.t) (exp_b : exp) (exp_i : exp) (exp_n : exp) :
+    value' =
+  let values = eval_exp ctx exp_b |> Value.unseq in
+  let idx_l = eval_exp ctx exp_i |> Value.get_num |> Num.to_int |> Z.to_int in
+  let idx_n = eval_exp ctx exp_n |> Value.get_num |> Num.to_int |> Z.to_int in
+  let idx_h = idx_l + idx_n in 
+  let values_slice =
+    List.mapi
+      (fun idx value ->
+        if idx_l <= idx && idx < idx_h then Some value else None)
+      values
+    |> List.filter_map Fun.id
+  in
+  ListV values_slice
 
 (* Update expression evaluation *)
 
@@ -674,6 +704,12 @@ and match_rule (ctx : Ctx.t) (inputs : Hint.t) (rule : rule)
 
 and invoke_rel (ctx : Ctx.t) (id : id) (values_input : value list) :
     value list attempt =
+  print_endline
+    (Format.asprintf "[[[ invoke_rel %s ]]]" id.it);
+  print_endline "--- values_input ---";
+  List.iter
+    (fun value -> print_endline ("   " ^ (Il.Print.string_of_value ~level:1 value)))
+    values_input;
   invoke_rel' ctx id values_input
   |> nest id.at (Format.asprintf "invocation of relation %s failed" id.it)
 
@@ -697,6 +733,7 @@ and invoke_rel' (ctx : Ctx.t) (id : id) (values_input : value list) :
     List.map
       (fun (ctx, id_rule, prems, exps_output) ->
         let attempt_rule' () : value list attempt =
+          Format.asprintf "[ applying rule %s ]" id_rule.it |> print_endline;
           let* ctx = eval_prems ctx prems in
           let values_output = eval_exps ctx exps_output in
           Ok values_output
@@ -726,10 +763,31 @@ and match_clause (ctx : Ctx.t) (clause : clause) (values_input : value list) :
 
 and invoke_func (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
     value attempt =
+  print_endline (Format.asprintf "[[[ invoke_func %s ]]]" id.it);
   invoke_func' ctx id targs args
-  |> nest id.at (Format.asprintf "invocation of function %s failed" id.it)
+  |> nest id.at
+    (Format.asprintf "invocation of function %s%s%s failed"
+      (Il.Print.string_of_defid id)
+      (Il.Print.string_of_targs targs)
+      (Il.Print.string_of_args args))
 
 and invoke_func' (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
+    value attempt =
+  match id.it with
+  | "fresh_tid" -> invoke_func_builtin ctx id targs args
+  | _ -> invoke_func_def ctx id targs args
+
+and invoke_func_builtin (_ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
+    value attempt =
+  match id.it with
+  | "fresh_tid" ->
+      check (targs = []) id.at "arity mismatch in type arguments";
+      check (args = []) id.at "arity mismatch in arguments";
+      let tid = TextV ("FRESH__" ^ (string_of_int (Random.int 1000))) $$ (no_region, VarT ("tid" $ no_region, [])) in
+      Ok tid
+  | _ -> assert false
+
+and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
     value attempt =
   let func = Ctx.find_func ctx id in
   let tparams, _params, _typ_ret, clauses = func in
@@ -756,6 +814,10 @@ and invoke_func' (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
   in
   (* Find clauses that match the input values *)
   let values_input = eval_args ctx args in
+  print_endline "--- values_input ---";
+  List.iter
+    (fun value -> print_endline ("   " ^ (Il.Print.string_of_value ~level:1 value)))
+    values_input;
   let clauses =
     List.map
       (fun clause ->
@@ -780,6 +842,7 @@ and invoke_func' (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
             let typ_output = Typ.subst_typ theta typ_output in
             value_output.it $$ (value_output.at, typ_output.it)
           in
+          Format.asprintf "[ result of %s: %s ]" id.it (Il.Print.string_of_value value_output) |> print_endline;
           Ok value_output
         in
         let attempt_clause () : value attempt =

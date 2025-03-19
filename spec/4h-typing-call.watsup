@@ -144,7 +144,7 @@ dec $filter_default_args(paramtyp*, id*) : paramtyp*
 
 def $filter_default_args(eps, id_deft*) = eps
 def $filter_default_args(pt_h :: pt_t*, id_deft*) = $filter_default_args(pt_t*, id_deft*)
-  -- if id_p dir_p typ_p val_p? = pt_h
+  -- if id_p _ _ _ = pt_h
   -- if id_p <- id_deft*
 def $filter_default_args(pt_h :: pt_t*, id_deft*) = pt_h :: $filter_default_args(pt_t*, id_deft*)
   -- otherwise
@@ -326,6 +326,9 @@ def $infer_targs(tid*, (id dir typ_p val?)*, typ_a*) = $resolve_cstrs(cstr')
 ;;
 ;; Function and Method invocation
 ;;
+
+rule Call_site_ok:
+  p C |- ft : CALLSITE_OK
 
 dec $is_table_apply_in_action_arg(argIL) : bool
     hint(show % CONTAINS TABLE.APPLY CALL)
@@ -533,6 +536,10 @@ rule ConsType_ok:
 ;;
 ;; Constructor invocation
 ;;
+
+;; (TODO) Intentional non-determinism to disable other rules
+rule Inst_site_ok:
+  p C |- ct : INSTSITE_OK
 
 rule Inst_site_ok/global:
   GLOBAL C |- (ConsT pt* typ_i) : INSTSITE_OK

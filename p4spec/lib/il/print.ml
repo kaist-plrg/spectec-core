@@ -24,7 +24,9 @@ let string_of_defid defid = "$" ^ defid.it
 let string_of_atom atom = Atom.string_of_atom atom.it
 
 let string_of_atoms atoms =
-  Format.asprintf "`%s`" (atoms |> List.map string_of_atom |> String.concat "")
+  match atoms with
+  | [] -> ""
+  | _ -> Format.asprintf "`%s`" (atoms |> List.map string_of_atom |> String.concat "")
 
 (* Mixfix operators *)
 

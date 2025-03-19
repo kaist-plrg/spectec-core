@@ -49,4 +49,4 @@ and string_of_traces ?(level = 0) (traces : trace list) : string =
 
 let error_with_traces (category : string) (traces : trace list) =
   let strace = string_of_traces traces in
-  error no_region category ("interpretation failed with trace:\n" ^ strace)
+  error no_region category ("tracing backtrack logs:\n" ^ strace)

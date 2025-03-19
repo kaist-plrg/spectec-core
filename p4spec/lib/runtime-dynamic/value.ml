@@ -37,6 +37,11 @@ and eqs (values_l : t list) (values_r : t list) : bool =
 let get_bool (value : t) =
   match value.it with BoolV b -> b | _ -> failwith "get_bool"
 
+(* Number *)
+
+let get_num (value : t) =
+  match value.it with NumV n -> n | _ -> failwith "get_num"
+
 (* List *)
 
 let seq (values : t list) = ListV values

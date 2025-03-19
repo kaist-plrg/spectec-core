@@ -11,7 +11,12 @@ syntax tid = id
 syntax tidset hint(show %latex("\\mathcal{B}")) = set<tid>
 
 dec $fresh_tid() : tid          hint(show FRESH#_#TID)
-dec $fresh_tids(nat) : tid*     hint(show FRESH#_#TIDS)
+
+dec $fresh_tids(nat) : tid*
+    hint(show FRESH#_#TIDS)
+
+def $fresh_tids(0) = eps
+def $fresh_tids(n) = $fresh_tid() :: $fresh_tids($(n - 1))
 
 ;;
 ;; Function and constructor identifiers

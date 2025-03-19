@@ -170,9 +170,10 @@ rule Sub_expl/non-sett-sett:
 ;; Implicit Casts
 ;;
 
-rule Sub_impl/canon:
-  typ_a << typ_b
-  -- Sub_impl: $canon_typ(typ_a) << $canon_typ(typ_b)
+;; (TODO) This introduces non-determinism and also non-termination
+;;rule Sub_impl/canon:
+;;  typ_a << typ_b
+;;  -- Sub_impl: $canon_typ(typ_a) << $canon_typ(typ_b)
 
 rule Sub_impl/eq:
   typ_a << typ_b

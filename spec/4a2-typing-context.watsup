@@ -235,12 +235,12 @@ dec $find_styp(cursor, context, name) : styp
 def $find_styp(p, C, TOP id) = $find_map<id, styp>(C.GLOBAL.FRAME, id)
 def $find_styp(GLOBAL, C, CURRENT id) = $find_map<id, styp>(C.GLOBAL.FRAME, id)
 def $find_styp(BLOCK, C, CURRENT id) = styp
-  -- if styp = $find_map_opt<id, styp>(C.GLOBAL.FRAME, id)
+  -- if styp = $find_map_opt<id, styp>(C.BLOCK.FRAME, id)
 def $find_styp(BLOCK, C, CURRENT id) = $find_styp(GLOBAL, C, CURRENT id)
-  -- if eps = $find_map_opt<id, styp>(C.GLOBAL.FRAME, id)
+  -- if eps = $find_map_opt<id, styp>(C.BLOCK.FRAME, id)
 def $find_styp(LOCAL, C, CURRENT id) = styp
   -- if styp = $find_maps_opt<id, styp>(C.LOCAL.FRAMES, id)
-def $find_styp(BLOCK, C, CURRENT id) = $find_styp(BLOCK, C, CURRENT id)
+def $find_styp(LOCAL, C, CURRENT id) = $find_styp(BLOCK, C, CURRENT id)
   -- if eps = $find_maps_opt<id, styp>(C.LOCAL.FRAMES, id)
 
 ;; Finder for values

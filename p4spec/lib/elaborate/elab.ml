@@ -666,12 +666,22 @@ and infer_cons_exp (ctx : Ctx.t) (exp_h : exp) (exp_t : exp) :
 
 and infer_cat_exp (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) :
     (Ctx.t * Il.Ast.exp' * plaintyp') attempt =
-  let* ctx, exp_il_l, plaintyp_l = infer_exp ctx exp_l in
-  let* plaintyp = as_list_plaintyp ctx plaintyp_l in
-  let plaintyp = IterT (plaintyp, List) $ plaintyp.at in
-  let* ctx, exp_il_r = elab_exp ctx plaintyp exp_r in
-  let exp_il = Il.Ast.CatE (exp_il_l, exp_il_r) in
-  Ok (ctx, exp_il, plaintyp.it)
+  choice
+    [
+      (fun () ->
+        let* ctx, exp_il_l, plaintyp_l = infer_exp ctx exp_l in
+        let* plaintyp = as_list_plaintyp ctx plaintyp_l in
+        let plaintyp = IterT (plaintyp, List) $ plaintyp.at in
+        let* ctx, exp_il_r = elab_exp ctx plaintyp exp_r in
+        let exp_il = Il.Ast.CatE (exp_il_l, exp_il_r) in
+        Ok (ctx, exp_il, plaintyp.it));
+      (fun () ->
+        let* ctx, exp_il_l = elab_exp ctx (TextT $ exp_l.at) exp_l in
+        let* ctx, exp_il_r = elab_exp ctx (TextT $ exp_r.at) exp_r in
+        let exp_il = Il.Ast.CatE (exp_il_l, exp_il_r) in
+        Ok (ctx, exp_il, TextT)
+      )
+    ]
 
 (* Inference of index expressions *)
 
@@ -688,11 +698,11 @@ and infer_idx_exp (ctx : Ctx.t) (exp_b : exp) (exp_i : exp) :
 and infer_slice_exp (ctx : Ctx.t) (exp_b : exp) (exp_l : exp) (exp_h : exp) :
     (Ctx.t * Il.Ast.exp' * plaintyp') attempt =
   let* ctx, exp_il_b, plaintyp_b = infer_exp ctx exp_b in
-  let* plaintyp = as_list_plaintyp ctx plaintyp_b in
+  let* _ = as_list_plaintyp ctx plaintyp_b in
   let* ctx, exp_il_l = elab_exp ctx (NumT `NatT $ exp_l.at) exp_l in
   let* ctx, exp_il_h = elab_exp ctx (NumT `NatT $ exp_h.at) exp_h in
   let exp_il = Il.Ast.SliceE (exp_il_b, exp_il_l, exp_il_h) in
-  Ok (ctx, exp_il, plaintyp.it)
+  Ok (ctx, exp_il, plaintyp_b.it)
 
 (* Inference of member expressions *)
 
@@ -982,14 +992,23 @@ and elab_cons_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp_h : exp)
 
 and elab_cat_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp_l : exp)
     (exp_r : exp) : (Ctx.t * Il.Ast.exp') attempt =
-  let* plaintyp_expect, iter_expect = as_iter_plaintyp ctx plaintyp_expect in
-  let plaintyp_expect =
-    IterT (plaintyp_expect, iter_expect) $ plaintyp_expect.at
-  in
-  let* ctx, exp_il_l = elab_exp ctx plaintyp_expect exp_l in
-  let* ctx, exp_il_r = elab_exp ctx plaintyp_expect exp_r in
-  let exp_il = Il.Ast.CatE (exp_il_l, exp_il_r) in
-  Ok (ctx, exp_il)
+  choice
+    [
+      (fun () ->
+        let* plaintyp_expect, iter_expect = as_iter_plaintyp ctx plaintyp_expect in
+        let plaintyp_expect =
+          IterT (plaintyp_expect, iter_expect) $ plaintyp_expect.at
+        in
+        let* ctx, exp_il_l = elab_exp ctx plaintyp_expect exp_l in
+        let* ctx, exp_il_r = elab_exp ctx plaintyp_expect exp_r in
+        let exp_il = Il.Ast.CatE (exp_il_l, exp_il_r) in
+        Ok (ctx, exp_il));
+      (fun () ->
+        let* ctx, exp_il_l = elab_exp ctx (TextT $ exp_l.at) exp_l in
+        let* ctx, exp_il_r = elab_exp ctx (TextT $ exp_r.at) exp_r in
+        let exp_il = Il.Ast.CatE (exp_il_l, exp_il_r) in
+        Ok (ctx, exp_il))
+    ]
 
 (* Elaboration of tuple expressions *)
 

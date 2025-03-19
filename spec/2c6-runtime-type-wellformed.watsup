@@ -194,12 +194,12 @@ rule Type_wf/externt:
 
 rule Type_wf/parsert:
   tidset |- ParserT pt*
-  -- if (id dir typ val = pt)*
+  -- if (_ _ typ _ = pt)*
   -- (Type_wf: tidset |- typ)*
 
 rule Type_wf/controlt:
   tidset |- ControlT pt*
-  -- if (id dir typ val = pt)*
+  -- if (_ _ typ _ = pt)*
   -- (Type_wf: tidset |- typ)*
 
 rule Type_wf/packaget:
@@ -474,7 +474,7 @@ rule CParamType_wf:
 
 rule CParamTypes_wf:
   tidset consctxt |- pt*
-  -- if (id dir typ val = pt)*
+  -- if (id _ _ _ = pt)*
   -- if $distinct_<id>(id*)
   -- (CParamType_wf: tidset consctxt |- pt)*
 
@@ -488,7 +488,7 @@ rule ConsType_wf/externt:
   -- Type_wf: tidset |- typ
   -- if ExternT id fmap = $canon_typ(typ)
   ----
-  -- if (id dir typ_p val = pt)*
+  -- if (_ _ typ_p _ = pt)*
   -- if (typ' = $canon_typ(typ_p))*
   ----
   -- if (~$is_deft(typ') /\ ~$is_spect(typ')
@@ -500,7 +500,7 @@ rule ConsType_wf/parsert:
   -- Type_wf: tidset |- typ
   -- if ParserT _ = $canon_typ(typ)
   ----
-  -- if (id dir typ_p val = pt)*
+  -- if (_ _ typ_p _ = pt)*
   -- if (typ_p' = $canon_typ(typ_p))*
   ----
   -- if (~$is_deft(typ_p') /\ ~$is_spect(typ_p')
@@ -512,7 +512,7 @@ rule ConsType_wf/controlt:
   -- Type_wf: tidset |- typ
   -- if ControlT _ = $canon_typ(typ)
   ----
-  -- if (id dir typ_p val = pt)*
+  -- if (_ _ typ_p _ = pt)*
   -- if (typ_p' = $canon_typ(typ_p))*
   ----
   -- if (~$is_deft(typ_p') /\ ~$is_spect(typ_p')
@@ -524,7 +524,7 @@ rule ConsType_wf/packaget:
   -- Type_wf: tidset |- typ
   -- if PackageT _ = $canon_typ(typ)
   ----
-  -- if (id dir typ_p val = pt)*
+  -- if (_ _ typ_p _ = pt)*
   -- if (typ_p' = $canon_typ(typ_p))*
   ----
   -- if (~$is_deft(typ_p') /\ ~$is_spect(typ_p') /\ ~$is_tablet(typ_p'))*

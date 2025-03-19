@@ -4,6 +4,7 @@ type t = [ `Nat of Z.t | `Int of Z.t ]
 type typ = [ `NatT | `IntT ]
 
 let to_typ = function `Nat _ -> `NatT | `Int _ -> `IntT
+let to_int = function `Nat i | `Int i -> i
 
 (* Operations *)
 
@@ -48,3 +49,17 @@ let string_of_cmpop = function
   | `GtOp -> ">"
   | `LeOp -> "<="
   | `GeOp -> ">="
+
+(* Comparison *)
+
+let cmp (op : cmpop) num_l num_r : bool =
+	match op, num_l, num_r with
+  | `LtOp, `Nat n_l, `Nat n_r -> (n_l < n_r)
+  | `LtOp, `Int i_l, `Int i_r -> (i_l < i_r)
+  | `GtOp, `Nat n_l, `Nat n_r -> (n_l > n_r)
+  | `GtOp, `Int i_l, `Int i_r -> (i_l > i_r)
+  | `LeOp, `Nat n_l, `Nat n_r -> (n_l <= n_r)
+  | `LeOp, `Int i_l, `Int i_r -> (i_l <= i_r)
+  | `GeOp, `Nat n_l, `Nat n_r -> (n_l >= n_r)
+  | `GeOp, `Int i_l, `Int i_r -> (i_l >= i_r)
+  | _, _, _ -> assert false
