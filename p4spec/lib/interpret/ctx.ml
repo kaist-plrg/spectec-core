@@ -1,6 +1,7 @@
 open Domain.Lib
 open Runtime_dynamic
 open Envs
+open Il.Ast
 open Util.Error
 open Util.Source
 
@@ -17,6 +18,8 @@ let error_dup (at : region) (kind : string) (id : string) =
 (* Context *)
 
 type t = {
+  (* Execution trace *)
+  trace : Trace.t;
   (* Map from variables to values *)
   venv : VEnv.t;
   (* Map from syntax ids to type definitions *)
@@ -31,6 +34,7 @@ type t = {
 
 let empty : t =
   {
+    trace = Trace.Empty;
     venv = VEnv.empty;
     tdenv = TDEnv.empty;
     renv = REnv.empty;
@@ -38,6 +42,26 @@ let empty : t =
   }
 
 let localize (ctx : t) : t = { ctx with venv = VEnv.empty }
+
+(* Tracing *)
+
+let trace_open_rel (ctx : t) (id_rel : id) (id_rule : id)
+    (values_input : value list) : t =
+  let trace = Trace.open_rel id_rel id_rule values_input in
+  { ctx with trace }
+
+let trace_open_dec (ctx : t) (id_func : id) (idx_clause : int)
+    (values_input : value list) : t =
+  let trace = Trace.open_dec id_func idx_clause values_input in
+  { ctx with trace }
+
+let trace_prem (ctx : t) (prem : prem) : t =
+  let trace = Trace.extend ctx.trace prem in
+  { ctx with trace }
+
+let trace_close (ctx : t) (trace : Trace.t) : t =
+  let trace = Trace.nest ctx.trace trace in
+  { ctx with trace }
 
 (* Finders *)
 

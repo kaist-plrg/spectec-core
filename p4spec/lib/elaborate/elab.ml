@@ -811,6 +811,14 @@ and infer_typ_exp (ctx : Ctx.t) (exp : exp) (plaintyp : plaintyp) :
 
 and elab_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
     (Ctx.t * Il.Ast.exp) attempt =
+  elab_exp' ctx plaintyp_expect exp
+  |> nest exp.at
+       (Format.asprintf "elaboration of expression %s ad type %s failed"
+          (El.Print.string_of_exp exp)
+          (El.Print.string_of_plaintyp plaintyp_expect))
+
+and elab_exp' (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
+    (Ctx.t * Il.Ast.exp) attempt =
   match as_iter_plaintyp ctx plaintyp_expect with
   | Ok (plaintyp_expect_base, iter_expect) ->
       choice

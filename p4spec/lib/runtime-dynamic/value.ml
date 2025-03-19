@@ -62,10 +62,10 @@ let unseq (value : t) =
 
 let opt (value : t option) = OptV value
 
-let unopt (value : t) =
-  match value.it with OptV value -> value | _ -> failwith "unopt"
+let get_opt (value : t) =
+  match value.it with OptV value -> value | _ -> failwith "get_opt"
 
 (* Struct *)
 
-let get_str (value : t) =
-  match value.it with StructV fields -> fields | _ -> failwith "get_str"
+let get_struct (value : t) =
+  match value.it with StructV fields -> fields | _ -> failwith "get_struct"
