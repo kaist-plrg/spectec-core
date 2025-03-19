@@ -113,20 +113,6 @@ and pp_typ' ?(level = 0) fmt typ =
       F.fprintf fmt "%a[%a]" (pp_typ' ~level:(level + 1)) typ Bigint.pp size
   | _ -> F.fprintf fmt "%a" (Type.pp ~level) typ
 
-and pp_tparams'' fmt (tparams, tparams_hidden) =
-  match (tparams, tparams_hidden) with
-  | [], [] -> ()
-  | tparams, [] ->
-      F.fprintf fmt "<%a>" (pp_list P.pp_tparam' ~sep:Comma) tparams
-  | [], tparams_hidden ->
-      F.fprintf fmt "<@@ %a>" (pp_list P.pp_tparam' ~sep:Comma) tparams_hidden
-  | tparams, tparams_hidden ->
-      F.fprintf fmt "<%a @@ %a>"
-        (pp_list P.pp_tparam' ~sep:Comma)
-        tparams
-        (pp_list P.pp_tparam' ~sep:Comma)
-        tparams_hidden
-
 and pp_typs ?(level = 0) fmt typs =
   pp_list ~level (pp_typ ~level) ~sep:CommaNl fmt typs
 
@@ -392,12 +378,16 @@ and pp_stmt' ?(level = 0) fmt stmt' =
       | Some expr_ret ->
           F.fprintf fmt "return %a;" (pp_expr ~level:(level + 1)) expr_ret
       | None -> F.fprintf fmt "return;")
-  | CallFuncS { var_func; targs = _targs; args } ->
-      F.fprintf fmt "%a%a;/*CallFuncS*/" pp_var var_func pp_args args
-  | CallMethodS { expr_base; member; targs = _targs; args } ->
-      F.fprintf fmt "%a.%a%a;"
+  | CallFuncS { var_func; targs; args } ->
+      F.fprintf fmt "%a%a%a;/*CallFuncS*/" pp_var var_func
+        (pp_targs ~level:(level + 1))
+        targs pp_args args
+  | CallMethodS { expr_base; member; targs; args } ->
+      F.fprintf fmt "%a.%a%a%a;/*CallMethodS*/"
         (pp_expr ~level:(level + 1))
-        expr_base pp_member member pp_args args
+        expr_base pp_member member
+        (pp_targs ~level:(level + 1))
+        targs pp_args args
   | CallInstS { typ = _typ; var_inst; targs; args } ->
       F.fprintf fmt "%a%a.apply%a;/*CallInstS*/" pp_var var_inst
         (pp_targs ~level:(level + 1))
