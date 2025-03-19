@@ -244,8 +244,16 @@ let infer_targs (tids_fresh : TId.t list) (params : Types.param' list)
       | None | Some Types.AnyT ->
           F.asprintf "(infer_targs) type %s cannot be inferred" tid
           |> error_no_info
-      | Some Types.SeqT typs -> 
-        let typ = Types.TupleT typs in
+      | Some Types.SeqT typs_inner -> 
+        let tdp =
+          let tparams =
+            List.init (List.length typs_inner) (fun i -> "T" ^ string_of_int i)
+          in
+          let typs_inner = List.map (fun tparam -> Types.VarT tparam) tparams in
+          let typ_tuple = Types.TupleT typs_inner in
+          (tparams, [], typ_tuple)
+        in
+        let typ = Types.SpecT (tdp, typs_inner) in
         TIdMap.add tid typ theta
       | Some typ -> TIdMap.add tid typ theta)
     cstr TIdMap.empty
