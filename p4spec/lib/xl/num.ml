@@ -53,13 +53,13 @@ let string_of_cmpop = function
 (* Comparison *)
 
 let cmp (op : cmpop) num_l num_r : bool =
-	match op, num_l, num_r with
-  | `LtOp, `Nat n_l, `Nat n_r -> (n_l < n_r)
-  | `LtOp, `Int i_l, `Int i_r -> (i_l < i_r)
-  | `GtOp, `Nat n_l, `Nat n_r -> (n_l > n_r)
-  | `GtOp, `Int i_l, `Int i_r -> (i_l > i_r)
-  | `LeOp, `Nat n_l, `Nat n_r -> (n_l <= n_r)
-  | `LeOp, `Int i_l, `Int i_r -> (i_l <= i_r)
-  | `GeOp, `Nat n_l, `Nat n_r -> (n_l >= n_r)
-  | `GeOp, `Int i_l, `Int i_r -> (i_l >= i_r)
+  match (op, num_l, num_r) with
+  | `LtOp, `Nat n_l, `Nat n_r -> n_l < n_r
+  | `LtOp, `Int i_l, `Int i_r -> i_l < i_r
+  | `GtOp, `Nat n_l, `Nat n_r -> n_l > n_r
+  | `GtOp, `Int i_l, `Int i_r -> i_l > i_r
+  | `LeOp, `Nat n_l, `Nat n_r -> n_l <= n_r
+  | `LeOp, `Int i_l, `Int i_r -> i_l <= i_r
+  | `GeOp, `Nat n_l, `Nat n_r -> n_l >= n_r
+  | `GeOp, `Int i_l, `Int i_r -> i_l >= i_r
   | _, _, _ -> assert false

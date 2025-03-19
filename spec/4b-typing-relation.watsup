@@ -104,24 +104,24 @@ relation Call_site_ok:
   cursor context |- functyp : CALLSITE_OK
   hint(input %0 %1 %2)
 relation Call_ok:
-  cursor context |- functyp tid* targIL* (argIL, typ)* id* : typ targIL* argIL*
+  cursor context tid* |- functyp targIL* arg* id* : typ targIL* argIL*
   hint(input %0 %1 %2 %3 %4 %5 %6)
 
 ;; Finds the type of a function/method, (functyp)
 ;; inserts fresh type variables for parameters with don't care types, (tid*)
-;; and also identifies the ids of default arguments (id*)
+;; and also identifies the ids of default arguments (id*) relation FuncType_ok:
 relation FuncType_ok:
-  cursor context |- name targIL* argIL* : functyp tid* id*
+  cursor context |- name targIL* arg* : functyp tid* id*
   hint(input %0 %1 %2 %3 %4)
 relation MethodType_ok:
-  cursor context |- expr member targIL* argIL* : functyp exprIL tid* id*
+  cursor context |- expr member targIL* arg* : functyp exprIL tid* id*
   hint(input %0 %1 %2 %3 %4 %5)
 
 ;; Finds the type of a constructor, (constyp)
 ;; inserts fresh type variables for parameters with don't care types, (tid*)
 ;; and also identifies the ids of default arguments (id*)
 relation ConsType_ok:
-  cursor context |- name targIL* argIL* : constyp tid* id*
+  cursor context |- name targIL* arg* : constyp tid* id*
   hint(input %0 %1 %2 %3 %4)
 
 ;; Checks that a constructor invocation is valid,
@@ -132,5 +132,5 @@ relation Inst_site_ok:
   cursor context |- constyp : INSTSITE_OK
   hint(input %0 %1 %2)
 relation Inst_ok:
-  cursor context |- constyp tid* targIL* (argIL, typ)* id* : typ targIL* argIL*
+  cursor context tid* |- constyp targIL* arg* id* : typ targIL* argIL*
   hint(input %0 %1 %2 %3 %4 %5 %6)

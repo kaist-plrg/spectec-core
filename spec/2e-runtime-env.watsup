@@ -182,3 +182,31 @@ dec $find_func<V>(id, (id?)*, map<fid, V>) : (fid, V, id*)
 
 def $find_func<V>(id_f, (id_a?)*, MAP (PAIR fid V)*) = (fid', V', id_deft*)
   -- if (fid', V', id_deft*) = $find_func_opt<V>(id_f, (id_a?)*, MAP (PAIR fid V)*)
+
+;; Find all functions that match the given name
+dec $find_funcs_by_name(id, fid*, funcdef*) : funcdef*
+    ;;hint(show FIND_FUNCS_BY_NAME(%1, %2, %3))
+
+def $find_funcs_by_name(id_f, eps, eps) = eps
+def $find_funcs_by_name(id_f, (id_h _) :: fid_t*, fd_h :: fd_t*)
+    = fd_h :: $find_funcs_by_name(id_f, fid_t*, fd_t*)
+  -- if id_f = id_h
+def $find_funcs_by_name(id_f, _ :: fid_t*, _ :: fd_t*)
+    = $find_funcs_by_name(id_f, fid_t*, fd_t*)
+  -- otherwise
+  
+;; Find a matching function, given a function name only
+dec $find_func_by_name_opt(id, map<fid, funcdef>) : funcdef?
+    hint(show %2`[%1])
+
+def $find_func_by_name_opt(id_f, MAP (PAIR fid fd)*) = eps
+  -- if eps = $find_funcs_by_name(id_f, fid*, fd*)
+def $find_func_by_name_opt(id_f, MAP (PAIR fid fd)*) = fd_f
+  -- if fd_f = $find_funcs_by_name(id_f, fid*, fd*)
+
+;; Find a matching function, given a function name only
+dec $find_func_by_name(id, map<fid, funcdef>) : funcdef
+    hint(show %2`[%1])
+
+def $find_func_by_name(id_f, MAP (PAIR fid fd)*) = fd_f
+  -- if fd_f = $find_func_by_name_opt(id_f, MAP (PAIR fid fd)*)

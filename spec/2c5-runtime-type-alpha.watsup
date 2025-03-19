@@ -92,24 +92,24 @@ rule Type_alpha/uniont:
 rule Type_alpha/externt:
   (ExternT id fmap_a) ~~ (ExternT id fmap_b)
   ----
-  -- if MAP (PAIR fid_a funcdef_a)* = fmap_a
-  -- if MAP (PAIR fid_b funcdef_b)* = fmap_b
+  -- if MAP (PAIR fid_a fd_a)* = fmap_a
+  -- if MAP (PAIR fid_b fd_b)* = fmap_b
   ----
   -- if $eq_set<fid>(SET fid_a*, SET fid_b*)
   -- (FuncDef_alpha: $find_map<fid, funcdef>(fmap_a, fid_a) ~~ $find_map<fid, funcdef>(fmap_b, fid_a))*
 
 rule Type_alpha/parsert:
   (ParserT pt_a*) ~~ (ParserT pt_b*)
-  -- if (id_a dir_a typ_a val_a = pt_a)*
-  -- if (id_b dir_b typ_b val_b = pt_b)*
+  -- if (_ dir_a typ_a _ = pt_a)*
+  -- if (_ dir_b typ_b _ = pt_b)*
   ----
   -- if (dir_a = dir_b)*
   -- (Type_alpha: typ_a ~~ typ_b)*
 
 rule Type_alpha/controlt:
   (ControlT pt_a*) ~~ (ControlT pt_b*)
-  -- if (id_a dir_a typ_a val_a = pt_a)*
-  -- if (id_b dir_b typ_b val_b = pt_b)*
+  -- if (_ dir_a typ_a _ = pt_a)*
+  -- if (_ dir_b typ_b _ = pt_b)*
   ----
   -- if (dir_a = dir_b)*
   -- (Type_alpha: typ_a ~~ typ_b)*

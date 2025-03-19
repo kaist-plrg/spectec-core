@@ -11,7 +11,7 @@ rule Stmt_ok/emptys:
 
 rule Lval_ok/namee:
   p C |- NameE name
-  -- if typ dir ctk val? = $find_styp(p, C, name)
+  -- if typ dir _ _ = $find_styp(p, C, name)
   -- if dir = OUT \/ dir = INOUT
   -- if $is_assignable(typ)
 
@@ -195,16 +195,14 @@ rule Stmt_ok/rets-some:
 
 rule Stmt_ok/callfuncs:
   p C f |- CallFuncS name targ* arg* : C f (CallFuncS name targIL'* argIL'*)
-  -- (Arg_ok: p C |- arg : argIL typ_arg)*
-  ----
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
   -- if tid_fresh* = $concat_<tid>(tid_fresh_a**)
   ----
-  -- FuncType_ok: p C |- name targIL* argIL* : functyp tid_fresh_inserted* id_deft*
+  -- FuncType_ok: p C |- name targIL* arg* : ft tid_fresh_inserted* id_deft*
   ----
   -- if tid_fresh'* = $concat_<tid>(tid_fresh* ++ tid_fresh_inserted*)
   ----
-  -- Call_ok: p C |- functyp tid_fresh'* targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
+  -- Call_ok: p C tid_fresh'* |- ft targIL* arg* id_deft* : typ targIL'* argIL'*
 
 ;;
 ;; Method call statement
@@ -217,11 +215,11 @@ rule Stmt_ok/callmethods:
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
   -- if tid_fresh* = $concat_<tid>(tid_fresh_a**)
   ----
-  -- MethodType_ok: p C |- expr_b member targIL* argIL* : functyp exprIL_b tid_fresh_inserted* id_deft*
+  -- MethodType_ok: p C |- expr_b member targIL* arg* : ft exprIL_b tid_fresh_inserted* id_deft*
   ----
   -- if tid_fresh'* = $concat_<tid>(tid_fresh* ++ tid_fresh_inserted*)
   ----
-  -- Call_ok: p C |- functyp tid_fresh'* targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
+  -- Call_ok: p C tid_fresh'* |- ft targIL* arg* id_deft* : typ targIL'* argIL'*
 
 ;;
 ;; Instantiation statement
@@ -229,9 +227,9 @@ rule Stmt_ok/callmethods:
 
 rule Stmt_ok/callinsts:
   p C f |- CallInstS name targ* arg* : C f (CallInstS typ name targIL'* argIL'*)
-  -- ConsType_ok: p C |- name eps eps : constyp eps eps
+  -- ConsType_ok: p C |- name eps eps : ct eps eps
   ----
-  -- Inst_ok: p C |- constyp eps eps eps eps : typ eps eps
+  -- Inst_ok: p C eps |- ct eps eps eps : typ eps eps
   ----
   -- if typ' = $canon_typ(typ)
   -- if $is_parsert(typ') \/ $is_controlt(typ')

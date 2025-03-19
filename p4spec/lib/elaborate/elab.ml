@@ -71,7 +71,7 @@ let rec kind_of_typ (ctx : Ctx.t) (plaintyp : plaintyp) : kind =
       | _ -> Opaque)
   | _ -> Plain plaintyp
 
-(* Expansion of type aliases *)
+(* Expansion of parentheses and type aliases *)
 
 and expand_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp =
   match plaintyp.it with
@@ -89,6 +89,7 @@ and expand_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp =
               expand_plaintyp ctx plaintyp
           | _ -> plaintyp)
       | _ -> plaintyp)
+  | ParenT plaintyp -> expand_plaintyp ctx plaintyp
   | _ -> plaintyp
 
 (* Type destructuring *)
@@ -679,8 +680,7 @@ and infer_cat_exp (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) :
         let* ctx, exp_il_l = elab_exp ctx (TextT $ exp_l.at) exp_l in
         let* ctx, exp_il_r = elab_exp ctx (TextT $ exp_r.at) exp_r in
         let exp_il = Il.Ast.CatE (exp_il_l, exp_il_r) in
-        Ok (ctx, exp_il, TextT)
-      )
+        Ok (ctx, exp_il, TextT));
     ]
 
 (* Inference of index expressions *)
@@ -995,7 +995,9 @@ and elab_cat_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp_l : exp)
   choice
     [
       (fun () ->
-        let* plaintyp_expect, iter_expect = as_iter_plaintyp ctx plaintyp_expect in
+        let* plaintyp_expect, iter_expect =
+          as_iter_plaintyp ctx plaintyp_expect
+        in
         let plaintyp_expect =
           IterT (plaintyp_expect, iter_expect) $ plaintyp_expect.at
         in
@@ -1007,7 +1009,7 @@ and elab_cat_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp_l : exp)
         let* ctx, exp_il_l = elab_exp ctx (TextT $ exp_l.at) exp_l in
         let* ctx, exp_il_r = elab_exp ctx (TextT $ exp_r.at) exp_r in
         let exp_il = Il.Ast.CatE (exp_il_l, exp_il_r) in
-        Ok (ctx, exp_il))
+        Ok (ctx, exp_il));
     ]
 
 (* Elaboration of tuple expressions *)

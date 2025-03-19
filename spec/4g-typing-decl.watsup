@@ -14,7 +14,7 @@ rule Param_ok/param-nodefault:
   -- Type_ok: p C |- type : typ_p tid_fresh*
 
 ;;
-;; Constructor Parameter typing
+;; Constructor parameter typing
 ;;
 
 rule CParam_ok/cparam-default:
@@ -135,14 +135,13 @@ def $update_fdenv_extern(fdenv_ext, typ_a*, fid_h :: fid_t*, fd_h :: fd_t*) = $u
 rule Decl_ok/instd-some:
   p C |- InstD id name_inst targ* arg* decl* : C (InstD id typ name_inst targIL'* argIL'* declIL*)
   -- if |decl*| > 0
-  -- (Arg_ok: p C |- arg : argIL typ_arg)*
   ----
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
   -- if tid_fresh* = $concat_<tid>(tid_fresh_a**)
   ----
-  -- ConsType_ok: p C |- name_inst targIL* argIL* : constyp tid_fresh_inserted* id_deft*
+  -- ConsType_ok: p C |- name_inst targIL* arg* : ct tid_fresh_inserted* id_deft*
   ----
-  -- Inst_ok: p C |- constyp (tid_fresh* ++ tid_fresh_inserted*) targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
+  -- Inst_ok: p C (tid_fresh* ++ tid_fresh_inserted*) |- ct targIL* arg* id_deft* : typ targIL'* argIL'*
   ----
   -- if typ = SpecT (PolyD (tparam*, tparam_hidden*) -> (ExternT id_ext fdenv_ext)) typ_a*
   -- if C' = $add_styp(LOCAL, C, "this", typ NO CTK eps)
@@ -161,14 +160,12 @@ rule Decl_ok/instd-some:
 
 rule Decl_ok/instd-none:
   p C |- InstD id name_inst targ* arg* eps : C' (InstD id typ name_inst targIL'* argIL'* eps)
-  -- (Arg_ok: p C |- arg : argIL typ_arg)*
-  ----
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
   -- if tid_fresh* = $concat_<tid>(tid_fresh_a**)
   ----
-  -- ConsType_ok: p C |- name_inst targIL* argIL* : constyp tid_fresh_inserted* id_deft*
+  -- ConsType_ok: p C |- name_inst targIL* arg* : ct tid_fresh_inserted* id_deft*
   ----
-  -- Inst_ok: p C |- constyp (tid_fresh* ++ tid_fresh_inserted*) targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
+  -- Inst_ok: p C (tid_fresh* ++ tid_fresh_inserted*) |- ct targIL* arg* id_deft* : typ targIL'* argIL'*
   ----
   -- if C' = $add_styp(p, C, id, typ NO CTK eps)
 
@@ -436,6 +433,9 @@ dec $split_methods(method*) : (method*, method*)
 def $split_methods(eps) = (eps, eps)
 def $split_methods(method_h :: method_t*) = (method_h :: method_c*, method_m*)
   -- if method_h = ExternConsM _ _
+  -- if (method_c*, method_m*) = $split_methods(method_t*)
+def $split_methods(method_h :: method_t*) = (method_c*, method_h :: method_m*)
+  -- if method_h = ExternM _ _ _ _
   -- if (method_c*, method_m*) = $split_methods(method_t*)
 def $split_methods(method_h :: method_t*) = (method_c*, method_h :: method_m*)
   -- if method_h = ExternAbstractM _ _ _ _
@@ -722,27 +722,27 @@ rule Table_keys_ok/cons:
 ;;
 
 relation Call_action_partial_ok:
-  cursor context |- name paramtyp* (argIL, typ)* : paramIL* paramIL* argIL*
-  hint(input %0 %1 %2 %3 %4)
+  cursor context |- paramtyp* (argIL, typ)* : paramIL* paramIL* argIL*
+  hint(input %0 %1 %2 %3)
 
 dec $split_directionless_params(paramIL*) : (paramIL*, paramIL*)
     hint(show SPLIT_DIRECTIONLESS_PARAMS(%1))
 
 def $split_directionless_params(eps) = (eps, eps)
-def $split_directionless_params(paramIL_h :: paramIL_t*) = (paramIL_h :: paramIL_d*, paramIL_c*)
-  -- if id_d NO _ _ = paramIL_h
+def $split_directionless_params(paramIL_h :: paramIL_t*) = (paramIL_d*, paramIL_h :: paramIL_c*)
+  -- if _ NO _ _ = paramIL_h
   -- if (paramIL_d*, paramIL_c*) = $split_directionless_params(paramIL_t*)
-def $split_directionless_params(_ :: paramIL_t*) = $split_directionless_params(paramIL_t*)
-  -- otherwise
+def $split_directionless_params(paramIL_h :: paramIL_t*) = (paramIL_h :: paramIL_d*, paramIL_c*)
+  -- if _ dir _ _ = paramIL_h
+  -- if dir =/= NO
+  -- if (paramIL_d*, paramIL_c*) = $split_directionless_params(paramIL_t*)
 
 rule Call_action_partial_ok:
-  p C |- name pt* (argIL, typ_a)* : paramIL_d* paramIL_c* argIL'*
-  -- if (id_p dir_p typ_p val_p? = pt)*
-  -- if (paramIL_d*, paramIL_c*) = $split_directionless_params((id_p dir_p typ_p val_p?)*)
+  p C |- pt* (argIL, typ_a)* : paramIL_d* paramIL_c* argIL'*
+  -- if (paramIL_d*, paramIL_c*) = $split_directionless_params(pt*)
   ----
   -- if |paramIL_d*| = |argIL*|
-  -- if (id_d dir_d typ_d val_d? = paramIL_d)*
-  -- (Call_convention_arg_ok: p C ACT |- (id_d dir_d typ_d val_d?) ~~ (argIL, typ_a) : argIL')*
+  -- (Call_convention_arg_ok: p C ACT |- paramIL_d ~~ (argIL, typ_a) : argIL')*
 
 
 relation Table_action_ok:
@@ -753,10 +753,9 @@ rule Table_action_ok:
   p C tblctx |- (name arg*) : tblctx' (name argIL'* paramIL_d* paramIL_c*)
   -- (Arg_ok: p C |- arg : argIL typ_arg)*
   ----
-  -- if (fid, fd, id_deft*) = $find_funcdef(p, C, name, argIL*)
-  -- if fd = MonoFD (ActionT pt*)
+  -- if MonoFD (ActionT pt*) = $find_funcdef_by_name(p, C, name)
   ----
-  -- Call_action_partial_ok: p C |- name pt* (argIL, typ_arg)* : paramIL_d* paramIL_c* argIL'*
+  -- Call_action_partial_ok: p C |- pt* (argIL, typ_arg)* : paramIL_d* paramIL_c* argIL'*
   -- if tblctx' = $add_action((name, pt*, argIL'*), tblctx)
 
 
@@ -854,8 +853,8 @@ rule Table_entry_keysets_ok/others:
 
 
 relation Call_default_action_ok:
-  cursor context |- name paramtyp* (argIL, typ)* argIL* : argIL*
-  hint(input %0 %1 %2 %3 %4 %5)
+  cursor context |- paramtyp* (argIL, typ)* argIL* : argIL*
+  hint(input %0 %1 %2 %3 %4)
 
 dec $filter_directionless_args(paramtyp*, argIL*) : argIL*
     ;;hint(show FILTER_DIRECTIONLESS_ARGS(%1, %2))
@@ -867,7 +866,7 @@ def $filter_directionless_args(pt_h :: pt_t*, argIL_h :: argIL_t*) = argIL_h :: 
   -- otherwise
 
 rule Call_default_action_ok:
-  p C |- name pt* (argIL, typ)* argIL_a* : argIL'*
+  p C |- pt* (argIL, typ)* argIL_a* : argIL'*
   -- if |pt*| = |argIL*|
   -- if argIL_d* = $filter_directionless_args(pt*, argIL*)
   ----
@@ -882,13 +881,12 @@ relation Table_entry_action_ok:
 rule Table_entry_action_ok:
   p C tblctx |- (name arg*) : tblactionIL
   -- if (pt*, argIL_a*) = $find_action(tblctx, name)
-  -- if (id_p dir_p typ_p val_p? = pt)*
   ----
-  -- (Arg_ok: p C |- arg : argIL typ)*
+  -- (Arg_ok: p C |- arg : argIL typ_arg)*
   ----
-  -- Call_default_action_ok: p C |- name pt* (argIL, typ)* argIL_a* : argIL'*
+  -- Call_default_action_ok: p C |- pt* (argIL, typ_arg)* argIL_a* : argIL'*
   ----
-  -- if tblactionIL = name argIL'* (id_p dir_p typ_p val_p?)* eps
+  -- if tblactionIL = name argIL'* pt* eps
 
 
 relation Table_entry_priority_ok:
@@ -1030,7 +1028,7 @@ rule Table_default_ok:
   ----
   -- (Arg_ok: p C |- arg : argIL typ)*
   ----
-  -- Call_default_action_ok: p C |- name pt* (argIL, typ)* argIL_a* : argIL'*
+  -- Call_default_action_ok: p C |- pt* (argIL, typ)* argIL_a* : argIL'*
   ----
   -- if tblactionIL = name argIL'* (id_p dir_p typ_p val_p?)* eps
 

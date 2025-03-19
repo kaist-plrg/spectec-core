@@ -446,7 +446,7 @@ and eval_slice_exp (ctx : Ctx.t) (exp_b : exp) (exp_i : exp) (exp_n : exp) :
   let values = eval_exp ctx exp_b |> Value.unseq in
   let idx_l = eval_exp ctx exp_i |> Value.get_num |> Num.to_int |> Z.to_int in
   let idx_n = eval_exp ctx exp_n |> Value.get_num |> Num.to_int |> Z.to_int in
-  let idx_h = idx_l + idx_n in 
+  let idx_h = idx_l + idx_n in
   let values_slice =
     List.mapi
       (fun idx value ->
@@ -623,7 +623,7 @@ and eval_iter_prem (ctx : Ctx.t) (prem : prem) (iterexp : iterexp) :
   let iter, vars = iterexp in
   match iter with
   | Opt -> error prem.at "(TODO) eval_iter_prem"
-  | List ->
+  | List -> (
       (* Discriminate between bound and binding variables *)
       let vars_bound, vars_binding =
         List.partition
@@ -639,11 +639,11 @@ and eval_iter_prem (ctx : Ctx.t) (prem : prem) (iterexp : iterexp) :
           vars_bound
         |> transpose
       in
-      let ctx =
-        match values_bound_batch with
-        (* If the bound variable supposed to guide the iteration is already empty,
-           then the binding variables are also empty *)
-        | [] ->
+      match values_bound_batch with
+      (* If the bound variable supposed to guide the iteration is already empty,
+         then the binding variables are also empty *)
+      | [] ->
+          let ctx =
             List.fold_left
               (fun ctx (id, typ, iters) ->
                 let value =
@@ -652,29 +652,36 @@ and eval_iter_prem (ctx : Ctx.t) (prem : prem) (iterexp : iterexp) :
                 in
                 Ctx.add_value ctx (id, iters @ [ List ]) value)
               ctx vars_binding
-        (* Otherwise, evaluate the premise for each batch of bound values,
-           and collect the resulting binding batches *)
-        | _ ->
-            let values_binding_batch =
-              List.map
-                (fun values_bound ->
-                  let ctx =
-                    List.fold_left2
-                      (fun ctx var_bound value_bound ->
-                        let id, _typ, iters = var_bound in
-                        Ctx.add_value ctx (id, iters) value_bound)
-                      ctx vars_bound values_bound
-                  in
-                  let+ ctx = eval_prem ctx prem in
+          in
+          Ok ctx
+      (* Otherwise, evaluate the premise for each batch of bound values,
+         and collect the resulting binding batches *)
+      | _ ->
+          let* values_binding_batch =
+            List.fold_left
+              (fun values_binding_batch values_bound ->
+                let* values_binding_batch = values_binding_batch in
+                let ctx =
+                  List.fold_left2
+                    (fun ctx var_bound value_bound ->
+                      let id, _typ, iters = var_bound in
+                      Ctx.add_value ctx (id, iters) value_bound)
+                    ctx vars_bound values_bound
+                in
+                let* ctx = eval_prem ctx prem in
+                let value_binding_batch =
                   List.map
                     (fun var_binding ->
                       let id, _typ, iters = var_binding in
                       Ctx.find_value ctx (id, iters))
-                    vars_binding)
-                values_bound_batch
-            in
-            let values_binding = values_binding_batch |> transpose in
-            (* Finally, bind the resulting binding batches *)
+                    vars_binding
+                in
+                Ok (values_binding_batch @ [ value_binding_batch ]))
+              (Ok []) values_bound_batch
+          in
+          let values_binding = values_binding_batch |> transpose in
+          (* Finally, bind the resulting binding batches *)
+          let ctx =
             List.fold_left2
               (fun ctx (id, typ, iters) values_binding ->
                 let value_binding =
@@ -683,8 +690,8 @@ and eval_iter_prem (ctx : Ctx.t) (prem : prem) (iterexp : iterexp) :
                 in
                 Ctx.add_value ctx (id, iters @ [ List ]) value_binding)
               ctx vars_binding values_binding
-      in
-      Ok ctx
+          in
+          Ok ctx)
 
 (* Invoke a relation *)
 
@@ -704,11 +711,11 @@ and match_rule (ctx : Ctx.t) (inputs : Hint.t) (rule : rule)
 
 and invoke_rel (ctx : Ctx.t) (id : id) (values_input : value list) :
     value list attempt =
-  print_endline
-    (Format.asprintf "[[[ invoke_rel %s ]]]" id.it);
+  print_endline (Format.asprintf "[[[ invoke_rel %s ]]]" id.it);
   print_endline "--- values_input ---";
   List.iter
-    (fun value -> print_endline ("   " ^ (Il.Print.string_of_value ~level:1 value)))
+    (fun value ->
+      print_endline ("   " ^ Il.Print.string_of_value ~level:1 value))
     values_input;
   invoke_rel' ctx id values_input
   |> nest id.at (Format.asprintf "invocation of relation %s failed" id.it)
@@ -733,9 +740,12 @@ and invoke_rel' (ctx : Ctx.t) (id : id) (values_input : value list) :
     List.map
       (fun (ctx, id_rule, prems, exps_output) ->
         let attempt_rule' () : value list attempt =
-          Format.asprintf "[ applying rule %s ]" id_rule.it |> print_endline;
+          Format.asprintf "[ applying rule %s/%s ]" id.it id_rule.it
+          |> print_endline;
           let* ctx = eval_prems ctx prems in
           let values_output = eval_exps ctx exps_output in
+          Format.asprintf "[ result of %s/%s ]" id.it id_rule.it
+          |> print_endline;
           Ok values_output
         in
         let attempt_rule () : value list attempt =
@@ -766,10 +776,10 @@ and invoke_func (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
   print_endline (Format.asprintf "[[[ invoke_func %s ]]]" id.it);
   invoke_func' ctx id targs args
   |> nest id.at
-    (Format.asprintf "invocation of function %s%s%s failed"
-      (Il.Print.string_of_defid id)
-      (Il.Print.string_of_targs targs)
-      (Il.Print.string_of_args args))
+       (Format.asprintf "invocation of function %s%s%s failed"
+          (Il.Print.string_of_defid id)
+          (Il.Print.string_of_targs targs)
+          (Il.Print.string_of_args args))
 
 and invoke_func' (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
     value attempt =
@@ -777,18 +787,21 @@ and invoke_func' (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
   | "fresh_tid" -> invoke_func_builtin ctx id targs args
   | _ -> invoke_func_def ctx id targs args
 
-and invoke_func_builtin (_ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
-    value attempt =
+and invoke_func_builtin (_ctx : Ctx.t) (id : id) (targs : targ list)
+    (args : arg list) : value attempt =
   match id.it with
   | "fresh_tid" ->
       check (targs = []) id.at "arity mismatch in type arguments";
       check (args = []) id.at "arity mismatch in arguments";
-      let tid = TextV ("FRESH__" ^ (string_of_int (Random.int 1000))) $$ (no_region, VarT ("tid" $ no_region, [])) in
+      let tid =
+        TextV ("FRESH__" ^ string_of_int (Random.int 1000))
+        $$ (no_region, VarT ("tid" $ no_region, []))
+      in
       Ok tid
   | _ -> assert false
 
-and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
-    value attempt =
+and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
+    (args : arg list) : value attempt =
   let func = Ctx.find_func ctx id in
   let tparams, _params, _typ_ret, clauses = func in
   guard (clauses <> []) id.at "function has no clauses";
@@ -816,15 +829,18 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list
   let values_input = eval_args ctx args in
   print_endline "--- values_input ---";
   List.iter
-    (fun value -> print_endline ("   " ^ (Il.Print.string_of_value ~level:1 value)))
+    (fun value ->
+      print_endline ("   " ^ Il.Print.string_of_value ~level:1 value))
     values_input;
   let clauses =
-    List.map
-      (fun clause ->
+    List.mapi
+      (fun idx clause ->
         let clause_match = match_clause ctx clause values_input in
         match clause_match with
         | Ok (ctx, args_input, prems, exp_output) ->
-            Some (ctx, args_input, prems, exp_output)
+            Format.asprintf "[ matched clause %s/%d ]" id.it idx
+            |> print_endline;
+            Some (idx, ctx, args_input, prems, exp_output)
         | Fail _ -> None)
       clauses
     |> List.filter_map Fun.id
@@ -832,8 +848,9 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list
   (* Apply the first matching clause *)
   let attempt_clauses =
     List.map
-      (fun (ctx, args_input, prems, exp_output) ->
+      (fun (idx, ctx, args_input, prems, exp_output) ->
         let attempt_clause' () : value attempt =
+          Format.asprintf "[ applying clause %s/%d ]" id.it idx |> print_endline;
           let* ctx = eval_prems ctx prems in
           let value_output = eval_exp ctx exp_output in
           let value_output =
@@ -842,7 +859,9 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list
             let typ_output = Typ.subst_typ theta typ_output in
             value_output.it $$ (value_output.at, typ_output.it)
           in
-          Format.asprintf "[ result of %s: %s ]" id.it (Il.Print.string_of_value value_output) |> print_endline;
+          Format.asprintf "[ result of %s/%d: %s ]" id.it idx
+            (Il.Print.string_of_value value_output)
+          |> print_endline;
           Ok value_output
         in
         let attempt_clause () : value attempt =

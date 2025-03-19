@@ -615,16 +615,14 @@ rule Expr_ok/expracce-tablestructt:
 
 rule Expr_ok/callfunce:
   p C |- CallFuncE name targ* arg* : (CallFuncE name targIL'* argIL'*) typ DYN
-  -- (Arg_ok: p C |- arg : argIL typ_arg)*
-  ----
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
   -- if tid_fresh* = $concat_<tid>(tid_fresh_a**)
   ----
-  -- FuncType_ok: p C |- name targIL* argIL* : functyp tid_fresh_inserted* id_deft*
+  -- FuncType_ok: p C |- name targIL* arg* : ft tid_fresh_inserted* id_deft*
   ----
   -- if tid_fresh'* = $concat_<tid>(tid_fresh* :: tid_fresh_inserted*)
   ----
-  -- Call_ok: p C |- functyp tid_fresh'* targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
+  -- Call_ok: p C tid_fresh'* |- ft targIL* arg* id_deft* : typ targIL'* argIL'*
   -- if typ =/= VoidT
 
 ;;
@@ -633,16 +631,15 @@ rule Expr_ok/callfunce:
 
 rule Expr_ok/callmethode:
   p C |- CallMethodE expr_b member targ* arg* : (CallMethodE exprIL_b member targIL'* argIL'*) typ DYN
-  -- (Arg_ok: p C |- arg : argIL typ_arg)*
   ----
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
   -- if tid_fresh* = $concat_<tid>(tid_fresh_a**)
   ----
-  -- MethodType_ok: p C |- expr_b member targIL* argIL* : functyp exprIL_b tid_fresh_inserted* id_deft*
+  -- MethodType_ok: p C |- expr_b member targIL* arg* : ft exprIL_b tid_fresh_inserted* id_deft*
   ----
   -- if tid_fresh'* = $concat_<tid>(tid_fresh* ++ tid_fresh_inserted*)
   ----
-  -- Call_ok: p C |- functyp tid_fresh'* targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
+  -- Call_ok: p C tid_fresh'* |- ft targIL* arg* id_deft* : typ targIL'* argIL'*
   -- if typ =/= VoidT
 
 ;;
@@ -655,9 +652,9 @@ rule Expr_ok/calltypee:
   ----
   -- if $in_set<member>(member, SET ([ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]))
   ----
-  -- if functyp = BuiltinMethodT eps IntT
+  -- if ft = BuiltinMethodT eps IntT
   ----
-  -- Call_ok: p C |- functyp eps eps eps eps : IntT eps eps
+  -- Call_ok: p C eps |- ft eps eps eps : IntT eps eps
 
 ;;
 ;; Nameless instantiation expression
@@ -665,16 +662,14 @@ rule Expr_ok/calltypee:
 
 rule Expr_ok/inste:
   p C |- InstE name targ* arg* : (InstE name targIL'* argIL'*) typ CTK
-  -- (Arg_ok: p C |- arg : argIL typ_arg)*
-  ----
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
   -- if tid_fresh* = $concat_<tid>(tid_fresh_a**)
   ----
-  -- ConsType_ok: p C |- name targIL* argIL* : constyp tid_fresh_inserted* id_deft*
+  -- ConsType_ok: p C |- name targIL* arg* : ct tid_fresh_inserted* id_deft*
   ----
   -- if tid_fresh'* = $concat_<tid>(tid_fresh* ++ tid_fresh_inserted*)
   ----
-  -- Inst_ok: p C |- constyp tid_fresh'* targIL* (argIL, typ_arg)* id_deft* : typ targIL'* argIL'*
+  -- Inst_ok: p C tid_fresh'* |- ct targIL* arg* id_deft* : typ targIL'* argIL'*
   ;; (TODO-Jaehyun) check that typ is not abstract
 
 ;;
