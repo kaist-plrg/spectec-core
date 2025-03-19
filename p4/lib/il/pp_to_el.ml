@@ -260,12 +260,20 @@ and pp_expr' ?(level = 0) fmt expr' =
   | CastE { typ; expr } -> (
       match typ.it with
       | SetT _ -> F.fprintf fmt "%a" (pp_expr ~level:(level + 1)) expr
+      | SpecT ((_, _, ListT _), _typs) ->
+        F.fprintf fmt "((%a) (%a))/*SpecT*/"
+          (pp_typ ~level:(level + 1))
+          typ
+          (pp_expr ~level:(level + 1))
+          expr
       | _ ->
-          F.fprintf fmt "((%a) (%a))"
+        (match expr.it with
+        | SeqE _ -> F.fprintf fmt "%a" (pp_expr ~level:(level + 1)) expr
+        | _ -> F.fprintf fmt "((%a) (%a))"
             (pp_typ ~level:(level + 1))
             typ
             (pp_expr ~level:(level + 1))
-            expr)
+            expr))
   | MaskE { expr_base; expr_mask } ->
       F.fprintf fmt "%a &&& %a"
         (pp_expr ~level:(level + 1))
