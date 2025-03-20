@@ -48,7 +48,15 @@ let check_explicit_castable (typ : Type.t) : bool =
       true
   | _ -> false
 
+
 let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
+  let typ_from = Type.canon typ_from in
+  let typ_to = Type.canon typ_to in
+  if Type.eq_alpha typ_from typ_to then
+    if check_explicit_castable typ_to then explicit' typ_from typ_to else false
+  else explicit' typ_from typ_to
+
+and explicit' (typ_from : Type.t) (typ_to : Type.t) : bool =
   let explicit_unequal (typ_from : Type.t) (typ_to : Type.t) =
     match (typ_from, typ_to) with
     (* bit<1> ↔ bool *)
@@ -85,22 +93,22 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
     (* casts of a tuple expression to a list, tuple, stack, struct, or header type *)
     | SeqT typs_from_inner, ListT typ_to_inner ->
         List.for_all
-          (fun typ_from_inner -> explicit typ_from_inner typ_to_inner)
+          (fun typ_from_inner -> explicit' typ_from_inner typ_to_inner)
           typs_from_inner
     | SeqT typs_from_inner, TupleT typs_to_inner ->
         List.length typs_from_inner = List.length typs_to_inner
-        && List.for_all2 explicit typs_from_inner typs_to_inner
+        && List.for_all2 explicit' typs_from_inner typs_to_inner
     | SeqT typs_from_inner, StackT (typ_to_inner, size_to) ->
         let size_from = List.length typs_from_inner |> Bigint.of_int in
         Bigint.(size_from <= size_to)
         && List.for_all
-             (fun typ_from_inner -> explicit typ_from_inner typ_to_inner)
+             (fun typ_from_inner -> explicit' typ_from_inner typ_to_inner)
              typs_from_inner
     | SeqT typs_from_inner, StructT (_, fields_to)
     | SeqT typs_from_inner, HeaderT (_, fields_to) ->
         let typs_to_inner = List.map snd fields_to in
         List.length typs_from_inner = List.length typs_to_inner
-        && List.for_all2 explicit typs_from_inner typs_to_inner
+        && List.for_all2 explicit' typs_from_inner typs_to_inner
     (* casts of a key-value list to a struct type or a header type (see Section 8.13) *)
     | RecordT fields_from, StructT (_, fields_to)
     | RecordT fields_from, HeaderT (_, fields_to) ->
@@ -112,7 +120,7 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
           List.sort compare fields_to |> List.split
         in
         List.for_all2 ( = ) members_from members_to
-        && List.for_all2 explicit typs_from_inner typs_to_inner
+        && List.for_all2 explicit' typs_from_inner typs_to_inner
     (* casts of default types *)
     | DefaultT, _ when Type.is_defaultable typ_to -> true
     | SeqDefaultT typs_from_inner, TupleT typs_to_inner ->
@@ -125,13 +133,13 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
           let typs_to_inner =
             List.filteri (fun i _ -> before i) typs_to_inner
           in
-          List.for_all2 explicit typs_from_inner typs_to_inner
+          List.for_all2 explicit' typs_from_inner typs_to_inner
           && List.for_all Type.is_defaultable typs_to_inner_default
     | SeqDefaultT typs_from_inner, StackT (typ_to_inner, size_to) ->
         let size_from = List.length typs_from_inner |> Bigint.of_int in
         Bigint.(size_from <= size_to)
         && List.for_all
-             (fun typ_from_inner -> explicit typ_from_inner typ_to_inner)
+             (fun typ_from_inner -> explicit' typ_from_inner typ_to_inner)
              typs_from_inner
         && Type.is_defaultable typ_to_inner
     | SeqDefaultT typs_from_inner, StructT (_, fields_to)
@@ -145,7 +153,7 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
           let typs_to_inner =
             List.filteri (fun i _ -> before i) fields_to |> List.map snd
           in
-          List.for_all2 explicit typs_from_inner typs_to_inner
+          List.for_all2 explicit' typs_from_inner typs_to_inner
           && List.for_all Type.is_defaultable typs_to_default_inner
     | RecordDefaultT fields_from, StructT (_, fields_to)
     | RecordDefaultT fields_from, HeaderT (_, fields_to) ->
@@ -159,7 +167,7 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
             (fun member_to ->
               let typ_from_inner = List.assoc member_to fields_from in
               let typ_to_inner = List.assoc member_to fields_to in
-              explicit typ_from_inner typ_to_inner)
+              explicit' typ_from_inner typ_to_inner)
             members_to
           && IdSet.for_all
                (fun member_to_default ->
@@ -172,15 +180,15 @@ let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
     | InvalidT, HeaderT _ | InvalidT, UnionT _ -> true
     (* casts of set types *)
     | SetT typ_from_inner, SetT typ_to_inner ->
-        explicit typ_from_inner typ_to_inner
-    | typ_from, SetT typ_to_inner -> explicit typ_from typ_to_inner
+        explicit' typ_from_inner typ_to_inner
+    | typ_from, SetT typ_to_inner -> explicit' typ_from typ_to_inner
     | _ -> false
   in
   (* casts where the destination type is the same as the source type
      if the destination type appears in this list (this excludes e.g., parsers or externs). *)
   let typ_from = Type.canon typ_from in
   let typ_to = Type.canon typ_to in
-  if Type.eq_alpha typ_from typ_to then check_explicit_castable typ_to
+  if Type.eq_alpha typ_from typ_to then true
   else explicit_unequal typ_from typ_to
 
 (* (8.11.2) Implicit casts
