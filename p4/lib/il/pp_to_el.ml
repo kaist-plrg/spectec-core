@@ -658,25 +658,34 @@ and pp_table_actions ?(level = 0) fmt table_actions =
 
 (* Table entries *)
 
-and pp_table_entry' ?(level = 0) fmt table_entry' =
+and pp_table_entry' ?(level = 0) ?(table_entries_const = false) fmt table_entry'  =
   let table_entry_const, keysets, table_action, table_entry_priority, _annos =
     table_entry'
   in
-  F.fprintf fmt "%s%s%a%s%a : %a"
-    (if table_entry_const then "const " else "")
-    (if table_entry_priority |> Option.is_some then "priority = " else "")
-    (pp_option pp_value) table_entry_priority
-    (if table_entry_priority |> Option.is_some then " : " else "")
-    pp_keysets keysets (pp_table_action ~level) table_action
+  if table_entries_const then
+    F.fprintf fmt "%s%a : %a/*const: %b*/"
+      (if table_entry_const then "const " else "")
+      pp_keysets keysets (pp_table_action ~level) table_action table_entries_const
+  else 
+    F.fprintf fmt "%s%s%a%s%a : %a/*const: %b*/"
+      (if table_entry_const then "const " else "")
+      (if table_entry_priority |> Option.is_some then "priority = " else "")
+      (pp_option pp_value) table_entry_priority
+      (if table_entry_priority |> Option.is_some then " : " else "")
+      pp_keysets keysets (pp_table_action ~level) table_action table_entries_const
 
-and pp_table_entry ?(level = 0) fmt table_entry =
-  pp_table_entry' ~level fmt table_entry.it
+and pp_table_entry ?(level = 0) ?(table_entries_const = false) fmt table_entry =
+  pp_table_entry' ~level ~table_entries_const fmt table_entry.it 
 
-and pp_table_entries' ?(level = 0) fmt table_entries' =
-  P.pp_table_entries' ~level pp_table_entry fmt table_entries'
+and pp_table_entries' ?(level = 0) pp_table_entry fmt table_entries =
+  let table_entries_const, table_entries = table_entries in
+  F.fprintf fmt "%sentries = {\n%a\n%s}/*const: %b*/"
+    (if table_entries_const then "const " else "")
+    (pp_list ~level:(level + 1) (pp_table_entry ~table_entries_const:table_entries_const) ~sep:Nl)
+    table_entries (indent level) table_entries_const
 
-and pp_table_entries ?(level = 0) fmt table_entries =
-  P.pp_table_entries ~level pp_table_entry fmt table_entries
+and pp_table_entries ?(level = 0) pp_table_entry fmt table_entries =
+  pp_table_entries' ~level pp_table_entry fmt table_entries.it
 
 (* Table default properties *)
 

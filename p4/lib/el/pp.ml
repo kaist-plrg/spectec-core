@@ -484,24 +484,26 @@ and pp_table_actions ?(level = 0) fmt table_actions =
 
 (* Table entries *)
 
-and pp_table_entry' fmt table_entry' =
+and pp_table_entry' ?(table_entries_const = false) fmt table_entry' =
   let table_entry_const, keysets, table_action, table_entry_priority, _annos =
     table_entry'
   in
   F.fprintf fmt "%s%s%a%s%a : %a"
     (if table_entry_const then "const " else "")
-    (if table_entry_priority |> Option.is_some then "priority = " else "")
+    (if not table_entries_const && table_entry_priority |> Option.is_some then "priority = " else "")
     (pp_option pp_expr) table_entry_priority
     (if table_entry_priority |> Option.is_some then " : " else "")
     pp_keysets keysets pp_table_action table_action
 
-and pp_table_entry fmt table_entry = pp_table_entry' fmt table_entry.it
+and pp_table_entry ?(level = 0) ?(table_entries_const = false) fmt table_entry =
+  let _ = level in (*ignore optional value*)
+  pp_table_entry' ~table_entries_const fmt table_entry.it 
 
 and pp_table_entries' ?(level = 0) fmt table_entries' =
-  P.pp_table_entries' ~level pp_expr fmt table_entries'
+  P.pp_table_entries' ~level pp_table_entry fmt table_entries'
 
 and pp_table_entries ?(level = 0) fmt table_entries =
-  P.pp_table_entries ~level pp_expr fmt table_entries
+  P.pp_table_entries ~level pp_table_entry fmt table_entries
 
 (* Table default properties *)
 

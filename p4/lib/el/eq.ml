@@ -739,10 +739,10 @@ and eq_table_entry ?(dbg = false) table_entry_a table_entry_b =
   |> E.check ~dbg "table_entry" P.pp_table_entry table_entry_a table_entry_b
 
 and eq_table_entries' ?(dbg = false) table_entries_a table_entries_b =
-  E.eq_table_entries' ~dbg P.pp_expr eq_expr table_entries_a table_entries_b
+  E.eq_table_entries' ~dbg P.pp_table_entry eq_table_entry table_entries_a table_entries_b
 
 and eq_table_entries ?(dbg = false) table_entries_a table_entries_b =
-  E.eq_table_entries ~dbg P.pp_expr eq_expr table_entries_a table_entries_b
+  E.eq_table_entries ~dbg P.pp_table_entry eq_table_entry table_entries_a table_entries_b
 
 (* Table default properties *)
 
