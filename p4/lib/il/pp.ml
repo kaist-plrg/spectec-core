@@ -594,7 +594,7 @@ and pp_table_actions ?(level = 0) fmt table_actions =
 
 (* Table entries *)
 
-and pp_table_entry' ?(level = 0) fmt table_entry' =
+and pp_table_entry' ?(level = 0)  fmt table_entry' =
   let table_entry_const, keysets, table_action, table_entry_priority, _annos =
     table_entry'
   in
@@ -605,7 +605,8 @@ and pp_table_entry' ?(level = 0) fmt table_entry' =
     (if table_entry_priority |> Option.is_some then " : " else "")
     pp_keysets keysets (pp_table_action ~level) table_action
 
-and pp_table_entry ?(level = 0) fmt table_entry =
+and pp_table_entry ?(level = 0) ?(table_entries_const = false) fmt table_entry =
+  let _ = table_entries_const in (*ignore optional value*)
   pp_table_entry' ~level fmt table_entry.it
 
 and pp_table_entries' ?(level = 0) fmt table_entries' =
