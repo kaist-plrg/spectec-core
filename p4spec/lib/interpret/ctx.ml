@@ -18,6 +18,8 @@ let error_dup (at : region) (kind : string) (id : string) =
 (* Context *)
 
 type t = {
+  (* Debug flag *)
+  debug : bool;
   (* Execution trace *)
   trace : Trace.t;
   (* Map from variables to values *)
@@ -32,8 +34,9 @@ type t = {
 
 (* Constructors *)
 
-let empty : t =
+let empty (debug : bool) : t =
   {
+    debug;
     trace = Trace.Empty;
     venv = VEnv.empty;
     tdenv = TDEnv.empty;
@@ -48,19 +51,43 @@ let localize (ctx : t) : t = { ctx with venv = VEnv.empty }
 let trace_open_rel (ctx : t) (id_rel : id) (id_rule : id)
     (values_input : value list) : t =
   let trace = Trace.open_rel id_rel id_rule values_input in
+  if ctx.debug then
+    Format.asprintf
+      "Opening rule %s/%s\n--- with input ---\n%s\n----------------\n" id_rel.it
+      id_rule.it
+      (values_input |> List.map Value.to_string |> String.concat "\n")
+    |> print_endline;
   { ctx with trace }
 
 let trace_open_dec (ctx : t) (id_func : id) (idx_clause : int)
     (values_input : value list) : t =
   let trace = Trace.open_dec id_func idx_clause values_input in
+  if ctx.debug then
+    Format.asprintf
+      "Opening clause %s/%d\n--- with input ---\n%s\n----------------\n"
+      id_func.it idx_clause
+      (values_input |> List.map Value.to_string |> String.concat "\n")
+    |> print_endline;
   { ctx with trace }
 
 let trace_prem (ctx : t) (prem : prem) : t =
   let trace = Trace.extend ctx.trace prem in
+  if ctx.debug then
+    Format.asprintf "Premise: %s\n" (prem |> Il.Print.string_of_prem)
+    |> print_endline;
   { ctx with trace }
 
 let trace_close (ctx : t) (trace : Trace.t) : t =
   let trace = Trace.nest ctx.trace trace in
+  (if ctx.debug then
+     match trace with
+     | Rel (id_rel, id_rule, _, _) ->
+         Format.asprintf "Closing rule %s/%s\n" id_rel.it id_rule.it
+         |> print_endline
+     | Dec (id_func, idx_clause, _, _) ->
+         Format.asprintf "Closing clause %s/%d\n" id_func.it idx_clause
+         |> print_endline
+     | _ -> ());
   { ctx with trace }
 
 (* Finders *)

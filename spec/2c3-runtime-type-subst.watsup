@@ -6,7 +6,11 @@ syntax theta hint(show %latex("\\theta")) = map<id, typ>
 
 dec $free_typ(typ) : set<tid>
     hint(show %latex("FV(")#%1#%latex(")"))
+dec $free_typdef_poly(polytypdef) : set<tid>
+    hint(show %latex("FV(")#%1#%latex(")"))
 dec $free_functyp(functyp) : set<tid>
+    hint(show %latex("FV(")#%1#%latex(")"))
+dec $free_funcdef(funcdef) : set<tid>
     hint(show %latex("FV(")#%1#%latex(")"))
 
 dec $subst_typ(theta, typ) : typ
@@ -21,11 +25,135 @@ dec $subst_constyp(theta, constyp) : constyp
     hint(show %2#%latex("/")#%1)
 
 ;;
-;; Free type variables
+;; Free type variables in types
 ;;
 
-;; (TODO) Fill this in
-def $free_typ(typ) = SET eps
+def $free_typ(basetyp) = SET eps
+
+def $free_typ(VarT id) = SET id
+
+def $free_typ(SpecT ptd typ*) = $union_set<tid>(tidset_ptd, tidset_typs)
+  -- if tidset_ptd = $free_typdef_poly(ptd)
+  -- if tidset_typs = $unions_set<tid>($free_typ(typ)*)
+
+def $free_typ(DefT typ) = $free_typ(typ)
+
+def $free_typ(NewT _ typ) = $free_typ(typ)
+
+def $free_typ(EnumT _ _) = SET eps
+
+def $free_typ(SEnumT _ typ _) = $free_typ(typ)
+
+def $free_typ(ListT typ) = $free_typ(typ)
+
+def $free_typ(TupleT typ*) = $unions_set<tid>($free_typ(typ)*)
+
+def $free_typ(StackT typ _) = $free_typ(typ)
+
+def $free_typ(StructT _ (_, typ)*) = $unions_set<tid>($free_typ(typ)*)
+
+def $free_typ(HeaderT _ (_, typ)*) = $unions_set<tid>($free_typ(typ)*)
+
+def $free_typ(UnionT _ (_, typ)*) = $unions_set<tid>($free_typ(typ)*)
+
+def $free_typ(ExternT _ (MAP (PAIR _ fd)*)) = $unions_set<tid>($free_funcdef(fd)*)
+
+def $free_typ(ParserT pt*) = $unions_set<tid>(($free_typ(typ))*)
+  -- if (_ _ typ _ = pt)*
+
+def $free_typ(ControlT pt*) = $unions_set<tid>(($free_typ(typ))*)
+  -- if (_ _ typ _ = pt)*
+
+def $free_typ(PackageT typ*) = $unions_set<tid>($free_typ(typ)*)
+
+def $free_typ(TableT _ typ) = $free_typ(typ)
+
+def $free_typ(DefaultT) = SET eps
+
+def $free_typ(SeqT typ*) = $unions_set<tid>($free_typ(typ)*)
+
+def $free_typ(SeqDefaultT typ*) = $unions_set<tid>($free_typ(typ)*)
+
+def $free_typ(RecordT (_, typ)*) = $unions_set<tid>($free_typ(typ)*)
+
+def $free_typ(RecordDefaultT (_, typ)*) = $unions_set<tid>($free_typ(typ)*)
+
+def $free_typ(InvalidT) = SET eps
+
+def $free_typ(SetT typ) = $free_typ(typ)
+
+def $free_typ(StateT) = SET eps
+
+def $free_typ(TableEnumT _ _) = SET eps
+
+def $free_typ(TableStructT _ (_, typ)*) = $unions_set<tid>($free_typ(typ)*)
+
+def $free_typ(AnyT) = SET eps
+
+;;
+;; Free type variables in type definitions
+;;
+
+def $free_typdef_poly(PolyD (tparam*, tparam_hidden*) -> typ)
+    = $diff_set<tid>(tidset_typ, tidset_tparams)
+  -- if tidset_typ = $free_typ(typ)
+  -- if tidset_tparams = SET (tparam* ++ tparam_hidden*)
+
+;;
+;; Free type variables in function types
+;;
+
+def $free_functyp(ActionT pt*) = $unions_set<tid>(($free_typ(typ))*)
+  -- if (_ _ typ _ = pt)*
+
+def $free_functyp(ExternFuncT pt* typ_r)
+    = $union_set<tid>(tidset_params, tidset_return)
+  -- if (_ _ typ_p _ = pt)*
+  -- if tidset_params = $unions_set<tid>($free_typ(typ_p)*)
+  -- if tidset_return = $free_typ(typ_r)
+
+def $free_functyp(FuncT pt* typ_r)
+    = $union_set<tid>(tidset_params, tidset_return)
+  -- if (_ _ typ_p _ = pt)*
+  -- if tidset_params = $unions_set<tid>($free_typ(typ_p)*)
+  -- if tidset_return = $free_typ(typ_r)
+
+def $free_functyp(BuiltinMethodT pt* typ_r)
+    = $union_set<tid>(tidset_params, tidset_return)
+  -- if (_ _ typ_p _ = pt)*
+  -- if tidset_params = $unions_set<tid>($free_typ(typ_p)*)
+  -- if tidset_return = $free_typ(typ_r)
+
+def $free_functyp(ExternMethodT pt* typ_r)
+    = $union_set<tid>(tidset_params, tidset_return)
+  -- if (_ _ typ_p _ = pt)*
+  -- if tidset_params = $unions_set<tid>($free_typ(typ_p)*)
+  -- if tidset_return = $free_typ(typ_r)
+
+def $free_functyp(ExternAbstractMethodT pt* typ_r)
+    = $union_set<tid>(tidset_params, tidset_return)
+  -- if (_ _ typ_p _ = pt)*
+  -- if tidset_params = $unions_set<tid>($free_typ(typ_p)*)
+  -- if tidset_return = $free_typ(typ_r)
+
+def $free_functyp(ParserApplyMethodT pt*) = $unions_set<tid>(($free_typ(typ))*)
+  -- if (_ _ typ _ = pt)*
+
+def $free_functyp(ControlApplyMethodT pt*) = $unions_set<tid>(($free_typ(typ))*)
+  -- if (_ _ typ _ = pt)*
+
+def $free_functyp(TableApplyMethodT typ) = $free_typ(typ)
+
+;;
+;; Free type variables in function definitions
+;;
+
+def $free_funcdef(MonoFD ft) = $free_functyp(ft)
+
+def $free_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft)
+    = $diff_set<tid>(tidset_ft, tidset_tparams)
+  -- if tidset_ft = $free_functyp(ft)
+  -- if tidset_tparams = SET (tparam* ++ tparam_hidden*)
 
 ;;
 ;; Type substitutions

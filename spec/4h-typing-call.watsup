@@ -158,7 +158,7 @@ dec $align_params_with_args'(pmap, paramtyp, (argIL, typ)): (paramtyp, (argIL, t
     hint(show ALIGN_PARAMS_WITH_ARGS'%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(")"))
 
 def $align_params_with_args(pt*, (argIL, typ)*) = (pt'*, (argIL', typ')*)
-  -- if (id dir typ val?)* = pt*
+  -- if (id _ _ _)* = pt*
   -- if pmap = MAP (PAIR id pt)*
   -- (if (pt', (argIL', typ')) = $align_params_with_args'(pmap, pt, (argIL, typ)))*
 

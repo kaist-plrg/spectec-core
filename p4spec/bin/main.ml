@@ -3,7 +3,7 @@ open Util.Error
 
 let version = "0.1"
 
-let parse_command =
+let elab_command =
   Command.basic ~summary:"parse and elaborate a p4_16 spec"
     (let open Command.Let_syntax in
      let open Command.Param in
@@ -22,9 +22,8 @@ let run_typing_command =
      let open Command.Param in
      let%map filenames_spec = anon (sequence ("filename" %: string))
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
-     and filename_p4 =
-       flag "-p" (required string) ~doc:"p4 file to typecheck"
-     in
+     and filename_p4 = flag "-p" (required string) ~doc:"p4 file to typecheck"
+     and debug = flag "-d" no_arg ~doc:"print debug information" in
      fun () ->
        try
          let spec =
@@ -35,13 +34,13 @@ let run_typing_command =
            P4frontend.Parse.parse_file includes_p4 filename_p4
            |> Interpret.Program.In.in_program
          in
-         let _ = Interpret.Interp.run_typing spec_il program_p4 in
+         let _ = Interpret.Interp.run_typing debug spec_il program_p4 in
          ()
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let command =
   Command.group
     ~summary:"p4spec: a language design framework for the p4_16 language"
-    [ ("parse", parse_command); ("run-typing", run_typing_command) ]
+    [ ("elab", elab_command); ("run-typing", run_typing_command) ]
 
 let () = Command_unix.run ~version command

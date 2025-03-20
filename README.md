@@ -78,13 +78,13 @@ Note that p4cherry currently only supports the V1Model architecture.
 You can run the tests against the p4c compiler test suite and petr4 custom test suite with:
 
 ```shell
-$ make test
+$ make test-p4
 ```
 
 To measure the coverage of the tests, run:
 
 ```shell
-$ make coverage
+$ make coverage-p4
 ```
 
 This will generate `index.html` in `p4/_coverage`.

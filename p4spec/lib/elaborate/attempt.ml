@@ -8,4 +8,4 @@ let ( let* ) (attempt : 'a attempt) (f : 'a -> 'b) : 'b =
 let ( let+ ) (attempt : 'a attempt) (f : 'a -> 'b) : 'b =
   match attempt with
   | Ok a -> f a
-  | Fail traces -> error_with_traces "elab" traces
+  | Fail traces -> error_with_failtraces "elab" traces

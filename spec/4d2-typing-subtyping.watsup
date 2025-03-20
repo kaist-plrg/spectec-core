@@ -2,85 +2,85 @@
 ;; Explicit Casts
 ;;
 
-rule Sub_expl/canon:
+rule Sub_expl:
   typ_a <: typ_b
-  -- Sub_expl: $canon_typ(typ_a) <: $canon_typ(typ_b)
+  -- Sub_expl_canon: $canon_typ(typ_a) <: $canon_typ(typ_b)
 
-rule Sub_expl/eq:
+rule Sub_expl_canon/eq:
   typ_a <: typ_b
   -- Type_alpha: typ_a ~~ typ_b
 
-rule Sub_expl/fbitt-boolt:
+rule Sub_expl_canon/fbitt-boolt:
   FBitT 1 <: BoolT
 
-rule Sub_expl/boolt-fbitt:
+rule Sub_expl_canon/boolt-fbitt:
   BoolT <: FBitT 1
 
-rule Sub_expl/intt-boolt:
+rule Sub_expl_canon/intt-boolt:
   IntT <: BoolT
 
-rule Sub_expl/fintt-fbitt:
+rule Sub_expl_canon/fintt-fbitt:
   FIntT width_a <: FBitT width_b
 
-rule Sub_expl/fbitt-fintt:
+rule Sub_expl_canon/fbitt-fintt:
   FBitT width_a <: FIntT width_b
 
-rule Sub_expl/fbitt-fbitt:
+rule Sub_expl_canon/fbitt-fbitt:
   FBitT width_a <: FBitT width_b
 
-rule Sub_expl/fintt-fintt:
+rule Sub_expl_canon/fintt-fintt:
   FIntT width_a <: FIntT width_b
 
-rule Sub_expl/fbitt-intt:
+rule Sub_expl_canon/fbitt-intt:
   FBitT width <: IntT
 
-rule Sub_expl/fintt-intt:
+rule Sub_expl_canon/fintt-intt:
   FIntT width <: IntT
 
-rule Sub_expl/intt-fbitt:
+rule Sub_expl_canon/intt-fbitt:
   IntT <: FBitT width
 
-rule Sub_expl/intt-fintt:
+rule Sub_expl_canon/intt-fintt:
   IntT <: FIntT width
 
-rule Sub_expl/newt-innert:
+rule Sub_expl_canon/newt-innert:
   NewT _ typ_a <: typ_b
   -- Sub_impl: typ_a << typ_b
 
-rule Sub_expl/innert-newt:
+rule Sub_expl_canon/innert-newt:
   typ_a <: NewT _ typ_b
   -- Sub_impl: typ_a << typ_b
 
-rule Sub_expl/senumt-innert:
+rule Sub_expl_canon/senumt-innert:
   SEnumT _ typ_a _ <: typ_b
   -- Sub_impl: typ_a << typ_b
 
-rule Sub_expl/innert-senumt:
+rule Sub_expl_canon/innert-senumt:
   typ_a <: SEnumT _ typ_b _
   -- Sub_impl: typ_a << typ_b
 
-rule Sub_expl/seqt-list:
+rule Sub_expl_canon/seqt-list:
   SeqT typ_a* <: ListT typ_b
   -- (Sub_expl: typ_a <: typ_b)*
 
-rule Sub_expl/seqt-tuplet:
+rule Sub_expl_canon/seqt-tuplet:
   SeqT typ_a* <: TupleT typ_b*
   -- (Sub_expl: typ_a <: typ_b)*
 
-rule Sub_expl/seqt-stackt:
+rule Sub_expl_canon/seqt-stackt:
   SeqT typ_a* <: StackT typ_b i_size
   -- if |typ_a*| <= i_size
   -- (Sub_expl: typ_a <: typ_b)*
 
-rule Sub_expl/seqt-structt:
+rule Sub_expl_canon/seqt-structt:
   SeqT typ_a* <: StructT _ (_, typ_b)*
   -- (Sub_expl: typ_a <: typ_b)*
 
-rule Sub_expl/seqt-headert:
+rule Sub_expl_canon/seqt-headert:
   SeqT typ_a* <: HeaderT _ (_, typ_b)*
   -- (Sub_expl: typ_a <: typ_b)*
 
-rule Sub_expl/recordt-structt:
+rule Sub_expl_canon/recordt-structt:
   RecordT (member_a, typ_a)* <: StructT _ (member_b, typ_b)*
   -- if $eq_set<member>(SET member_a*, SET member_b*)
   ----
@@ -88,7 +88,7 @@ rule Sub_expl/recordt-structt:
        $find_map<member, typ>(MAP (PAIR member_a typ_a)*, member_a)
        <: $find_map<member, typ>(MAP (PAIR member_b typ_b)*, member_a))*
 
-rule Sub_expl/recordt-headert:
+rule Sub_expl_canon/recordt-headert:
   RecordT (member_a, typ_a)* <: HeaderT _ (member_b, typ_b)*
   -- if $eq_set<member>(SET member_a*, SET member_b*)
   ----
@@ -96,11 +96,11 @@ rule Sub_expl/recordt-headert:
        $find_map<member, typ>(MAP (PAIR member_a typ_a)*, member_a)
        <: $find_map<member, typ>(MAP (PAIR member_b typ_b)*, member_b))*
 
-rule Sub_expl/defaultt:
+rule Sub_expl_canon/defaultt:
   DefaultT <: typ
   -- if $is_deftable(typ)
 
-rule Sub_expl/seqdefaultt-tuplet:
+rule Sub_expl_canon/seqdefaultt-tuplet:
   SeqDefaultT typ_a* <: TupleT typ_b*
   -- if |typ_a*| < |typ_b*|
   -- if (typ_c*, typ_d*) = $partition_<typ>(typ_b*, |typ_a*|)
@@ -108,13 +108,13 @@ rule Sub_expl/seqdefaultt-tuplet:
   -- (Sub_expl: typ_a <: typ_c)*
   -- if ($is_deftable(typ_d))*
 
-rule Sub_expl/seqdefaultt-stackt:
+rule Sub_expl_canon/seqdefaultt-stackt:
   SeqDefaultT typ_a* <: StackT typ_b i_size
   -- if |typ_a*| < i_size
   -- (Sub_expl: typ_a <: typ_b)*
   -- if $is_deftable(typ_b)
 
-rule Sub_expl/seqdefaultt-structt:
+rule Sub_expl_canon/seqdefaultt-structt:
   SeqDefaultT typ_a* <: StructT _ (_, typ_b)*
   -- if |typ_a*| < |typ_b*|
   -- if (typ_c*, typ_d*) = $partition_<typ>(typ_b*, |typ_a*|)
@@ -122,7 +122,7 @@ rule Sub_expl/seqdefaultt-structt:
   -- (Sub_expl: typ_a <: typ_c)*
   -- if ($is_deftable(typ_d))*
 
-rule Sub_expl/seqdefaultt-headert:
+rule Sub_expl_canon/seqdefaultt-headert:
   SeqDefaultT typ_a* <: HeaderT _ (_, typ_b)*
   -- if |typ_a*| < |typ_b*|
   -- if (typ_c*, typ_d*) = $partition_<typ>(typ_b*, |typ_a*|)
@@ -130,7 +130,7 @@ rule Sub_expl/seqdefaultt-headert:
   -- (Sub_expl: typ_a <: typ_c)*
   -- if ($is_deftable(typ_d))*
 
-rule Sub_expl/recorddefaultt-structt:
+rule Sub_expl_canon/recorddefaultt-structt:
   RecordDefaultT (member_a, typ_a)* <: StructT _ (member_b, typ_b)*
   -- if $is_subset<member>(SET member_a*, SET member_b*)
   -- if SET member_c* = $diff_set<member>(SET member_b*, SET member_a*)
@@ -141,7 +141,7 @@ rule Sub_expl/recorddefaultt-structt:
   ----
   -- if ($is_deftable($find_map<member, typ>(MAP (PAIR member_b typ_b)*, member_c)))*
 
-rule Sub_expl/recorddefaultt-headert:
+rule Sub_expl_canon/recorddefaultt-headert:
   RecordDefaultT (member_a, typ_a)* <: HeaderT _ (member_b, typ_b)*
   -- if $is_subset<member>(SET member_a*, SET member_a*)
   -- if SET member_c* = $diff_set<member>(SET member_b*, SET member_a*)
@@ -152,17 +152,17 @@ rule Sub_expl/recorddefaultt-headert:
   ----
   -- if ($is_deftable($find_map<member, typ>(MAP (PAIR member_b typ_b)*, member_c)))*
 
-rule Sub_expl/invalidt-headert:
+rule Sub_expl_canon/invalidt-headert:
   InvalidT <: HeaderT _ _
 
-rule Sub_expl/invalidt-uniont:
+rule Sub_expl_canon/invalidt-uniont:
   InvalidT <: UnionT _ _
 
-rule Sub_expl/sett-sett:
+rule Sub_expl_canon/sett-sett:
   SetT typ_a <: SetT typ_b
   -- Sub_expl: typ_a <: typ_b
 
-rule Sub_expl/non-sett-sett:
+rule Sub_expl_canon/non-sett-sett:
   typ_a <: SetT typ_b
   -- Sub_expl: typ_a <: typ_b
 
@@ -170,51 +170,50 @@ rule Sub_expl/non-sett-sett:
 ;; Implicit Casts
 ;;
 
-;; (TODO) This introduces non-determinism and also non-termination
-;;rule Sub_impl/canon:
-;;  typ_a << typ_b
-;;  -- Sub_impl: $canon_typ(typ_a) << $canon_typ(typ_b)
+rule Sub_impl:
+  typ_a << typ_b
+  -- Sub_impl_canon: $canon_typ(typ_a) << $canon_typ(typ_b)
 
-rule Sub_impl/eq:
+rule Sub_impl_canon/eq:
   typ_a << typ_b
   -- Type_alpha: typ_a ~~ typ_b
 
-rule Sub_impl/intt-fbitt:
+rule Sub_impl_canon/intt-fbitt:
   IntT << FBitT _
 
-rule Sub_impl/intt-fintt:
+rule Sub_impl_canon/intt-fintt:
   IntT << FIntT _ 
 
-rule Sub_impl/senumt-innert:
+rule Sub_impl_canon/senumt-innert:
   SEnumT _ typ_a _ << typ_b
   -- Sub_impl: typ_a << typ_b
 
-rule Sub_impl/seqt-list:
+rule Sub_impl_canon/seqt-list:
   SeqT typ_a* << ListT typ_b
   -- (Sub_impl: typ_a << typ_b)*
 
-rule Sub_impl/seqt-tuplet:
+rule Sub_impl_canon/seqt-tuplet:
   SeqT typ_a* << TupleT typ_b*
   -- (Sub_impl: typ_a << typ_b)*
 
-rule Sub_impl/seqt-stackt:
+rule Sub_impl_canon/seqt-stackt:
   SeqT typ_a* << StackT typ_b i_size
   -- if |typ_a*| <= i_size
   -- (Sub_impl: typ_a << typ_b)*
 
-rule Sub_impl/seqt-structt:
+rule Sub_impl_canon/seqt-structt:
   SeqT typ_a* << StructT _ (_, typ_b)*
   -- (Sub_impl: typ_a << typ_b)*
 
-rule Sub_impl/seqt-headert:
+rule Sub_impl_canon/seqt-headert:
   SeqT typ_a* << HeaderT _ (_, typ_b)*
   -- (Sub_impl: typ_a << typ_b)*
 
-rule Sub_impl/seqt-seqt:
+rule Sub_impl_canon/seqt-seqt:
   SeqT typ_a* << SeqT typ_b*
   -- (Sub_impl: typ_a << typ_b)*
 
-rule Sub_impl/recordt-structt:
+rule Sub_impl_canon/recordt-structt:
   RecordT (member_a, typ_a)* << StructT _ (member_b, typ_b)*
   -- if $eq_set<member>(SET member_a*, SET member_b*)
   ----
@@ -222,7 +221,7 @@ rule Sub_impl/recordt-structt:
        $find_map<member, typ>(MAP (PAIR member_a typ_a)*, member_a)
        << $find_map<member, typ>(MAP (PAIR member_b typ_b)*, member_b))*
 
-rule Sub_impl/recordt-headert:
+rule Sub_impl_canon/recordt-headert:
   RecordT (member_a, typ_a)* << HeaderT _ (member_b, typ_b)*
   -- if $eq_set<member>(SET member_a*, SET member_b*)
   ----
@@ -230,11 +229,11 @@ rule Sub_impl/recordt-headert:
        $find_map<member, typ>(MAP (PAIR member_a typ_a)*, member_a)
        << $find_map<member, typ>(MAP (PAIR member_b typ_b)*, member_b))*
 
-rule Sub_impl/defaultt:
+rule Sub_impl_canon/defaultt:
   DefaultT << typ
   -- if $is_deftable(typ)
 
-rule Sub_impl/seqdefaultt-tuplet:
+rule Sub_impl_canon/seqdefaultt-tuplet:
   SeqDefaultT typ_a* << TupleT typ_b*
   -- if |typ_a*| < |typ_b*|
   -- if (typ_c*, typ_d*) = $partition_<typ>(typ_b*, |typ_a*|)
@@ -242,13 +241,13 @@ rule Sub_impl/seqdefaultt-tuplet:
   -- (Sub_impl: typ_a << typ_c)*
   -- if ($is_deftable(typ_d))*
 
-rule Sub_impl/seqdefaultt-stackt:
+rule Sub_impl_canon/seqdefaultt-stackt:
   SeqDefaultT typ_a* << StackT typ_b i_size
   -- if |typ_a*| < i_size
   -- (Sub_impl: typ_a << typ_b)*
   -- if $is_deftable(typ_b)
 
-rule Sub_impl/seqdefaultt-structt:
+rule Sub_impl_canon/seqdefaultt-structt:
   SeqDefaultT typ_a* << StructT _ (_, typ_b)*
   -- if |typ_a*| < |typ_b*|
   -- if (typ_c*, typ_d*) = $partition_<typ>(typ_b*, |typ_a*|)
@@ -256,7 +255,7 @@ rule Sub_impl/seqdefaultt-structt:
   -- (Sub_impl: typ_a << typ_c)*
   -- if ($is_deftable(typ_d))*
 
-rule Sub_impl/seqdefaultt-headert:
+rule Sub_impl_canon/seqdefaultt-headert:
   SeqDefaultT typ_a* << HeaderT _ (_, typ_b)*
   -- if |typ_a*| < |typ_b*|
   -- if (typ_c*, typ_d*) = $partition_<typ>(typ_b*, |typ_a*|)
@@ -264,7 +263,7 @@ rule Sub_impl/seqdefaultt-headert:
   -- (Sub_impl: typ_a << typ_c)*
   -- if ($is_deftable(typ_d))*
 
-rule Sub_impl/recorddefaultt-structt:
+rule Sub_impl_canon/recorddefaultt-structt:
   RecordDefaultT (member_a, typ_a)* << StructT _ (member_b, typ_b)*
   -- if $is_subset<member>(SET member_a*, SET member_b*)
   -- if SET member_c* = $diff_set<member>(SET member_b*, SET member_a*)
@@ -275,7 +274,7 @@ rule Sub_impl/recorddefaultt-structt:
   ----
   -- if ($is_deftable($find_map<member, typ>(MAP (PAIR member_b typ_b)*, member_c)))*
 
-rule Sub_impl/recorddefaultt-headert:
+rule Sub_impl_canon/recorddefaultt-headert:
   RecordDefaultT (member_a, typ_a)* << HeaderT id (member_b, typ_b)*
   -- if $is_subset<member>(SET member_a*, SET member_b*)
   -- if SET member_c* = $diff_set<member>(SET member_b*, SET member_a*)
@@ -286,10 +285,10 @@ rule Sub_impl/recorddefaultt-headert:
   ----
   -- if ($is_deftable($find_map<member, typ>(MAP (PAIR member_b typ_b)*, member_c)))*
 
-rule Sub_impl/invalidt-headert:
+rule Sub_impl_canon/invalidt-headert:
   InvalidT << HeaderT _ _
 
-rule Sub_impl/invalidt-uniont:
+rule Sub_impl_canon/invalidt-uniont:
   InvalidT << UnionT _ _
 
 ;;

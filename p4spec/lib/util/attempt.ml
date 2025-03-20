@@ -4,11 +4,11 @@ open Print
 
 (* Backtracking *)
 
-type trace = Trace of region * string * trace list
-type 'a attempt = Ok of 'a | Fail of trace list
+type failtrace = Failtrace of region * string * failtrace list
+type 'a attempt = Ok of 'a | Fail of failtrace list
 
 let fail (at : region) (msg : string) : 'a attempt =
-  Fail [ Trace (at, msg, []) ]
+  Fail [ Failtrace (at, msg, []) ]
 
 let fail_silent : 'a attempt = Fail []
 
@@ -17,36 +17,38 @@ let rec choice = function
   | f :: fs -> (
       match f () with
       | Ok a -> Ok a
-      | Fail traces_h -> (
+      | Fail failtraces_h -> (
           match choice fs with
           | Ok a -> Ok a
-          | Fail traces_t -> Fail (traces_h @ traces_t)))
+          | Fail failtraces_t -> Fail (failtraces_h @ failtraces_t)))
 
 let nest at msg attempt =
   match attempt with
   | Ok a -> Ok a
-  | Fail traces -> Fail [ Trace (at, msg, traces) ]
+  | Fail failtraces -> Fail [ Failtrace (at, msg, failtraces) ]
 
-(* Error with backtraces *)
+(* Error with backfailtraces *)
 
-let rec string_of_trace ?(level = 0) ~(bullet : string) (trace : trace) : string
-    =
-  let (Trace (region, msg, subtraces)) = trace in
+let rec string_of_failtrace ?(level = 0) ~(bullet : string)
+    (failtrace : failtrace) : string =
+  let (Failtrace (region, msg, subfailtraces)) = failtrace in
   Format.asprintf "%s%s because %s (%s)\n%s" (indent level) bullet msg
     (string_of_region region)
-    (string_of_traces ~level:(level + 1) subtraces)
+    (string_of_failtraces ~level:(level + 1) subfailtraces)
 
-and string_of_traces ?(level = 0) (traces : trace list) : string =
-  match traces with
+and string_of_failtraces ?(level = 0) (failtraces : failtrace list) : string =
+  match failtraces with
   | [] -> ""
-  | [ trace ] -> string_of_trace ~level ~bullet:"-" trace
-  | traces ->
+  | [ failtrace ] -> string_of_failtrace ~level ~bullet:"-" failtrace
+  | failtraces ->
       List.mapi
-        (fun idx trace ->
-          string_of_trace ~level ~bullet:(string_of_int (idx + 1) ^ ".") trace)
-        traces
+        (fun idx failtrace ->
+          string_of_failtrace ~level
+            ~bullet:(string_of_int (idx + 1) ^ ".")
+            failtrace)
+        failtraces
       |> String.concat ""
 
-let error_with_traces (category : string) (traces : trace list) =
-  let strace = string_of_traces traces in
-  error no_region category ("tracing backtrack logs:\n" ^ strace)
+let error_with_failtraces (category : string) (failtraces : failtrace list) =
+  let sfailtrace = string_of_failtraces failtraces in
+  error no_region category ("tracing backtrack logs:\n" ^ sfailtrace)

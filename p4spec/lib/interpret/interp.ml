@@ -500,7 +500,7 @@ and eval_mem_exp (ctx : Ctx.t) (at : region) (exp_e : exp) (exp_s : exp) :
   let ctx, value_e = eval_exp ctx exp_e in
   let ctx, value_s = eval_exp ctx exp_s in
   let values_s = Value.unseq value_s in
-  let value = BoolV (List.mem value_e values_s) $$ (at, BoolT) in
+  let value = BoolV (List.exists (Value.eq value_e) values_s) $$ (at, BoolT) in
   (ctx, value)
 
 (* Length expression evaluation *)
@@ -988,13 +988,13 @@ let load_def (ctx : Ctx.t) (def : def) : Ctx.t =
       let func = (tparams, params, typ, clauses) in
       Ctx.add_func ctx id func
 
-let load_spec (spec : spec) : Ctx.t = List.fold_left load_def Ctx.empty spec
+let load_spec (ctx : Ctx.t) (spec : spec) : Ctx.t =
+  List.fold_left load_def ctx spec
 
 (* Entry point: run typing rule from `Prog_ok` relation *)
 
-let run_typing (spec : spec) (program : value) : value list =
-  let ctx = load_spec spec in
-  let+ ctx, values = invoke_rel ctx ("Prog_ok" $ no_region) [ program ] in
-  print_endline "Success!!!";
-  Trace.log ctx.trace |> print_endline;
+let run_typing (debug : bool) (spec : spec) (program : value) : value list =
+  let ctx = Ctx.empty debug in
+  let ctx = load_spec ctx spec in
+  let+ _ctx, values = invoke_rel ctx ("Prog_ok" $ no_region) [ program ] in
   values

@@ -1,0 +1,27 @@
+(test
+ (name test)
+ (preprocess
+  (pps ppx_let))
+ (modules test)
+ (libraries p4spec core core_kernel core_unix core_unix.command_unix)
+ (action
+  (progn
+   (ignore-outputs
+    (diff run_typing_pos_p4c.expected run_typing_pos_p4c.actual)))))
+
+(rule
+ (target run_typing_pos_p4c.actual)
+ (action
+  (with-stdout-to
+   run_typing_pos_p4c.actual
+   (with-stderr-to
+    run_typing_pos_p4c.err
+    (run
+     ./test.exe
+     run-typing
+     -s
+     ../../../../spec
+     -i
+     ../../../../p4/testdata/arch
+     -d
+     ../../../../p4/testdata/p4c/program/well-typed)))))

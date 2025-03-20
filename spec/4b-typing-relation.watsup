@@ -20,7 +20,13 @@ relation Type_ok:
 relation Sub_expl:
   typ <: typ
   hint(input %0 %1)
+relation Sub_expl_canon:
+  typ <: typ
+  hint(input %0 %1)
 relation Sub_impl:
+  typ << typ
+  hint(input %0 %1)
+relation Sub_impl_canon:
   typ << typ
   hint(input %0 %1)
 
