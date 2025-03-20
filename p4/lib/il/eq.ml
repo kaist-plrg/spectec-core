@@ -503,8 +503,7 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
         List.map (fun (member, typ, _) -> (member, typ)) fields_b
       in
       eq_id ~dbg id_a id_b
-      && eq_tparams ~dbg tparams_a tparams_b
-      && eq_tparams ~dbg tparams_hidden_a tparams_hidden_b
+      && eq_tparams ~dbg (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
       && E.eq_pairs (eq_member ~dbg) (eq_typ ~dbg) fields_a fields_b
   | ( EnumD { id = id_a; members = members_a; annos = _annos_a },
       EnumD { id = id_b; members = members_b; annos = _annos_b } ) ->
@@ -541,8 +540,7 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
           annos = _annos_b;
         } ) ->
       eq_id ~dbg id_a id_b
-      && eq_tparams ~dbg tparams_a tparams_b
-      && eq_tparams ~dbg tparams_hidden_a tparams_hidden_b
+      && eq_tparams ~dbg (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
       && eq_params ~dbg params_a params_b
   | ( ParserD
         {
@@ -591,8 +589,7 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
           annos = _annos_b;
         } ) ->
       eq_id ~dbg id_a id_b
-      && eq_tparams ~dbg tparams_a tparams_b
-      && eq_tparams ~dbg tparams_hidden_a tparams_hidden_b
+      && eq_tparams ~dbg (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
       && eq_params ~dbg params_a params_b
   | ( ControlD
         {
@@ -646,8 +643,7 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
         } ) ->
       eq_id ~dbg id_a id_b
       && eq_typ ~dbg typ_ret_a typ_ret_b
-      && eq_tparams ~dbg tparams_a tparams_b
-      && eq_tparams ~dbg tparams_hidden_a tparams_hidden_b
+      && eq_tparams ~dbg (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
       && eq_params ~dbg params_a params_b
       && eq_block ~dbg body_a body_b
   | ( ExternFuncD
@@ -670,8 +666,7 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
         } ) ->
       eq_id ~dbg id_a id_b
       && eq_typ ~dbg typ_ret_a typ_ret_b
-      && eq_tparams ~dbg tparams_a tparams_b
-      && eq_tparams ~dbg tparams_hidden_a tparams_hidden_b
+      && eq_tparams ~dbg (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
       && eq_params ~dbg params_a params_b
   | ( ExternObjectD
         { id = id_a; tparams = tparams_a; mthds = mthds_a; annos = _annos_a },
@@ -698,8 +693,7 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
           annos = _annos_b;
         } ) ->
       eq_id ~dbg id_a id_b
-      && eq_tparams ~dbg tparams_a tparams_b
-      && eq_tparams ~dbg tparams_hidden_a tparams_hidden_b
+      && eq_tparams ~dbg (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
       && eq_cparams ~dbg cparams_a cparams_b
   | _ -> false
 
@@ -883,8 +877,7 @@ and eq_mthd' ?(dbg = false) mthd_a mthd_b =
           annos = _annos_b;
         } ) ->
       eq_id ~dbg id_a id_b && eq_typ typ_ret_a typ_ret_b
-      && eq_tparams ~dbg tparams_a tparams_b
-      && eq_tparams ~dbg tparams_hidden_a tparams_hidden_b
+      && eq_tparams ~dbg (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
       && E.eq_list (eq_param ~dbg) params_a params_b
   | _ -> false
 

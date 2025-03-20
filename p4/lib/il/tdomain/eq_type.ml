@@ -104,8 +104,7 @@ and eq_typdef_mono tdm_a tdm_b = eq_typ' tdm_a tdm_b
 and eq_typdef_poly tdp_a tdp_b =
   let tparams_a, tparams_hidden_a, typ_a = tdp_a in
   let tparams_b, tparams_hidden_b, typ_b = tdp_b in
-  eq_tparams tparams_a tparams_b
-  && eq_tparams tparams_hidden_a tparams_hidden_b
+  eq_tparams (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
   && eq_typ' typ_a typ_b
 
 (* Function types *)
@@ -136,8 +135,7 @@ and eq_funcdef fd_a fd_b =
   | MonoFD ft_a, MonoFD ft_b -> eq_functyp ft_a ft_b
   | ( PolyFD (tparams_a, tparams_hidden_a, ft_a),
       PolyFD (tparams_b, tparams_hidden_b, ft_b) ) ->
-      eq_tparams tparams_a tparams_b
-      && eq_tparams tparams_hidden_a tparams_hidden_b
+    eq_tparams (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
       && eq_functyp ft_a ft_b
   | _ -> false
 
@@ -323,8 +321,7 @@ and eq_funcdef_alpha (fd_a : funcdef) (fd_b : funcdef) : bool =
   in
   let eq_funcdef_alpha' tparams_a tparams_hidden_a ft_a tparams_b
       tparams_hidden_b ft_b =
-    List.length tparams_a = List.length tparams_b
-    && List.length tparams_hidden_a = List.length tparams_hidden_b
+    List.length tparams_a + List.length tparams_hidden_a = List.length tparams_b + List.length tparams_hidden_b
     && eq_funcdef_alpha'' tparams_a tparams_hidden_a ft_a tparams_b
          tparams_hidden_b ft_b
   in
