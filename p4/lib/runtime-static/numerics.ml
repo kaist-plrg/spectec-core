@@ -63,8 +63,8 @@ let eval_binop_plus (value_a : Value.t) (value_b : Value.t) : Value.t =
   | IntV value_a, IntV value_b -> IntV Bigint.(value_a + value_b)
   | FIntV (width_a, value_a), FIntV (width_b, value_b)
     when Bigint.(width_a = width_b) ->
-      let value_a = raw_int_of_bit value_a width_a in
-      let value_b = raw_int_of_bit value_b width_b in
+      let value_a = raw_int_of_int value_a width_a in
+      let value_b = raw_int_of_int value_b width_b in
       int_of_raw_int Bigint.(value_a + value_b) width_a
   | FBitV (width_a, value_a), FBitV (width_b, value_b)
     when Bigint.(width_a = width_b) ->
@@ -884,10 +884,10 @@ and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
   | RecordV fields -> eval_cast_record typ fields
   | RecordDefaultV fields -> eval_cast_record_default typ fields
   | DefaultV -> eval_cast_default typ
+  | InvalidV -> eval_cast_invalid typ
   | SetV (`Singleton value) -> eval_cast_set_singleton typ value
   | SetV (`Mask (value, mask)) -> eval_cast_set_mask typ value mask
   | SetV (`Range (value, range)) -> eval_cast_set_range typ value range
-  | InvalidV -> eval_cast_invalid typ
   | _ ->
       Format.asprintf "(TODO) Cast from %a to type %a undefined"
         (Value.pp ~level:0) value (Type.pp ~level:0) typ

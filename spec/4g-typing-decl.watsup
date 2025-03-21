@@ -793,7 +793,7 @@ rule Table_entry_keyset_ok/exprk-maske-lpm:
   -- Eval_static: p C |- exprIL_m ~> val_m
   -- if int_m = $get_num(val_m)
   ----
-  -- if tblstate_e = $get_lpm_prefix(FBitV nat_w $of_two_complement(int_m, nat_w))
+  -- if tblstate_e = $get_lpm_prefix(FBitV nat_w $to_bitstr(int_m, nat_w))
   -- Sub_impl: typ << typ_k
 
 rule Table_entry_keyset_ok/exprk-maske-ternary:

@@ -94,7 +94,7 @@ rule Sub_expl_canon/recordt-headert:
   ----
   -- (Sub_expl:
        $find_map<member, typ>(MAP (PAIR member_a typ_a)*, member_a)
-       <: $find_map<member, typ>(MAP (PAIR member_b typ_b)*, member_b))*
+       <: $find_map<member, typ>(MAP (PAIR member_b typ_b)*, member_a))*
 
 rule Sub_expl_canon/defaultt:
   DefaultT <: typ

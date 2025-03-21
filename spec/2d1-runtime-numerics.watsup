@@ -2,19 +2,564 @@
 ;; Unary operation oracle
 ;;
 
-dec $un_op(unop, val) : val   hint(show %#(%)#%latex(""))
+dec $un_op(unop, val) : val
+    hint(show %#(%)#%latex(""))
+
+;; Unary bitwise not
+
+dec $un_bnot(val) : val
+
+def $un_bnot(FBitV w bs) = FBitV w $bneg(bs)
+
+def $un_op(BNOT, val) = $un_bnot(val)
+
+;; Unary logical not
+
+dec $un_lnot(val) : val
+
+def $un_lnot(BoolV b) = BoolV (~b)
+
+def $un_op(LNOT, val) = $un_lnot(val)
+
+;; Unary plus
+
+dec $un_plus(val) : val
+
+def $un_plus(IntV i) = IntV i
+def $un_plus(FIntV w bs) = FIntV w bs
+def $un_plus(FBitV w bs) = FBitV w bs
+
+def $un_op(UPLUS, val) = $un_plus(val)
+
+;; Unary minus
+
+dec $un_minus(val) : val
+
+def $un_minus(IntV i) = IntV (-i)
+def $un_minus(FIntV w bs)
+  = FIntV w bs'
+  -- if bs' = $to_bitstr(w, $to_int(w, -bs))
+def $un_minus(FBitV w bs)
+  = FBitV w bs'
+  -- if bs' = $($pow2(w) - bs)
+
+def $un_op(UMINUS, val) = $un_minus(val)
 
 ;;
 ;; Binary operation oracle
 ;;
 
-dec $bin_op(binop, val, val) : val   hint(show %#(%, %))
+dec $bin_op(binop, val, val) : val
+    hint(show %#(%, %))
+
+;; Binary plus
+
+dec $bin_plus(val, val) : val
+
+def $bin_plus(IntV i_l, IntV i_r) = IntV $(i_l + i_r)
+def $bin_plus(FIntV w bs_l, FIntV w bs_r) = FIntV w bs
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+  -- if bs = $to_bitstr(w, $(i_l + i_r))
+def $bin_plus(FBitV w bs_l, FBitV w bs_r) = FBitV w bs
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+  -- if bs = $to_bitstr(w, $(i_l + i_r))
+
+def $bin_op(PLUS, val_l, val_r) = $bin_plus(val_l, val_r)
+
+;; Binary saturating plus
+
+;; Binary minus
+
+dec $bin_minus(val, val) : val
+
+def $bin_minus(IntV i_l, IntV i_r) = IntV $(i_l - i_r)
+def $bin_minus(FIntV w bs_l, FIntV w bs_r) = FIntV w bs
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+  -- if bs = $to_bitstr(w, $(i_l - i_r))
+def $bin_minus(FBitV w bs_l, FBitV w bs_r) = FBitV w bs
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+  -- if bs = $to_bitstr(w, $(i_l - i_r))
+
+def $bin_op(MINUS, val_l, val_r) = $bin_minus(val_l, val_r)
+
+;; Binary saturating minus
+
+;; Binary multiplication
+
+dec $bin_mul(val, val) : val
+
+def $bin_mul(IntV i_l, IntV i_r) = IntV $(i_l * i_r)
+def $bin_mul(FIntV w bs_l, FIntV w bs_r) = FIntV w bs
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+  -- if bs = $to_bitstr(w, $(i_l * i_r))
+def $bin_mul(FBitV w bs_l, FBitV w bs_r) = FBitV w bs
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+  -- if bs = $to_bitstr(w, $(i_l * i_r))
+
+def $bin_op(MUL, val_l, val_r) = $bin_mul(val_l, val_r)
+
+;; Binary division
+
+dec $bin_div(val, val) : val
+
+def $bin_div(IntV i_l, IntV i_r) = IntV $(i_l / i_r)
+
+def $bin_op(DIV, val_l, val_r) = $bin_div(val_l, val_r)
+
+;; Binary modulo
+
+;; Binary shift left
+
+dec $bin_shl(val, val) : val
+
+def $bin_shl(IntV i_l, IntV i_r) = IntV $shl(i_l, i_r)
+def $bin_shl(IntV i_l, FIntV w_r bs_r) = IntV $shl(i_l, i_r)
+  -- if i_r = $to_int(w_r, bs_r)
+def $bin_shl(IntV i_l, FBitV w_r bs_r) = IntV $shl(i_l, bs_r)
+def $bin_shl(FIntV w_l bs_l, IntV i_r)
+  = $bin_shl(FIntV w_l bs_l, val_r)
+  -- if val_r = FIntV w_l ($to_int(w_l, i_r))
+def $bin_shl(FIntV w_l bs_l, FIntV w_r bs_r)
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if i_r = $to_int(w_r, bs_r)
+  -- if i = $shl(i_l, i_r)
+def $bin_shl(FIntV w_l bs_l, FBitV w_r bs_r)
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if i = $shl(i_l, bs_r)
+def $bin_shl(FBitV w_l bs_l, IntV i_r)
+  = $bin_shl(FBitV w_l bs_l, val_r)
+  -- if val_r = FBitV w_l ($to_int(w_l, i_r))
+def $bin_shl(FBitV w_l bs_l, FIntV w_r bs_r)
+  = FBitV w_l $to_bitstr(w_l, i)
+  -- if i_r = $to_int(w_r, bs_r)
+  -- if i = $shl(bs_l, i_r)
+def $bin_shl(FBitV w_l bs_l, FBitV w_r bs_r)
+  = FBitV w_l $to_bitstr(w_l, i)
+  -- if i = $shl(bs_l, bs_r)
+
+def $bin_op(SHL, val_l, val_r) = $bin_shl(val_l, val_r)
+
+;; Binary shift right
+
+dec $bin_shr(val, val) : val
+
+def $bin_shr(IntV i_l, IntV i_r) = IntV $shr(i_l, i_r)
+def $bin_shr(IntV i_l, FIntV w_r bs_r) = IntV $shr(i_l, i_r)
+  -- if i_r = $to_int(w_r, bs_r)
+def $bin_shr(IntV i_l, FBitV w_r bs_r) = IntV $shr(i_l, bs_r)
+def $bin_shr(FIntV w_l bs_l, IntV i_r)
+  = $bin_shr(FIntV w_l bs_l, val_r)
+  -- if val_r = FIntV w_l ($to_int(w_l, i_r))
+def $bin_shr(FIntV w_l bs_l, FIntV w_r bs_r)
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if i_r = $to_int(w_r, bs_r)
+  -- if i = $shr(i_l, i_r)
+def $bin_shr(FIntV w_l bs_l, FBitV w_r bs_r)
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if i = $shr(i_l, bs_r)
+def $bin_shr(FBitV w_l bs_l, IntV i_r)
+  = $bin_shr(FBitV w_l bs_l, val_r)
+  -- if val_r = FBitV w_l ($to_int(w_l, i_r))
+def $bin_shr(FBitV w_l bs_l, FIntV w_r bs_r)
+  = FBitV w_l $to_bitstr(w_l, i)
+  -- if i_r = $to_int(w_r, bs_r)
+  -- if i = $shr(bs_l, i_r)
+def $bin_shr(FBitV w_l bs_l, FBitV w_r bs_r)
+  = FBitV w_l $to_bitstr(w_l, i)
+  -- if i = $shr(bs_l, bs_r)
+
+def $bin_op(SHR, val_l, val_r) = $bin_shr(val_l, val_r)
+
+;; Binary less than or equal
+
+dec $bin_le(val, val) : bool
+
+def $bin_le(IntV i_l, IntV i_r) = $(i_l <= i_r)
+def $bin_le(FIntV w bs_l, FIntV w bs_r) = $(i_l <= i_r)
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+def $bin_le(FBitV w bs_l, FBitV w bs_r) = $(bs_l <= bs_r)
+
+def $bin_op(LE, val_l, val_r) = BoolV $bin_le(val_l, val_r)
+
+;; Binary greater than or equal
+
+dec $bin_ge(val, val) : bool
+
+def $bin_ge(IntV i_l, IntV i_r) = $(i_l >= i_r)
+def $bin_ge(FIntV w bs_l, FIntV w bs_r) = $(i_l >= i_r)
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+def $bin_ge(FBitV w bs_l, FBitV w bs_r) = $(bs_l >= bs_r)
+
+def $bin_op(GE, val_l, val_r) = BoolV $bin_ge(val_l, val_r)
+
+;; Binary less than
+
+dec $bin_lt(val, val) : bool
+
+def $bin_lt(IntV i_l, IntV i_r) = $(i_l < i_r)
+def $bin_lt(FIntV w bs_l, FIntV w bs_r) = $(i_l < i_r)
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+def $bin_lt(FBitV w bs_l, FBitV w bs_r) = $(bs_l < bs_r)
+
+def $bin_op(LT, val_l, val_r) = BoolV $bin_lt(val_l, val_r)
+
+;; Binary greater than
+
+dec $bin_gt(val, val) : bool
+
+def $bin_gt(IntV i_l, IntV i_r) = $(i_l > i_r)
+def $bin_gt(FIntV w bs_l, FIntV w bs_r) = $(i_l > i_r)
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+def $bin_gt(FBitV w bs_l, FBitV w bs_r) = $(bs_l > bs_r)
+
+def $bin_op(GT, val_l, val_r) = BoolV $bin_gt(val_l, val_r)
+
+;; Binary equals
+
+dec $bin_eq(val, val) : bool
+dec $bin_eqs(val*, val*) : bool
+dec $bin_eqs_((member, val)*, (member, val)*) : bool
+
+def $bin_eq(ErrV member_a, ErrV member_b) = (member_a = member_b)
+def $bin_eq(MatchKindV member_a, MatchKindV member_b) = (member_a = member_b)
+def $bin_eq(StrV text_a, StrV text_b) = (text_a = text_b)
+def $bin_eq(BoolV b_a, BoolV b_b) = (b_a = b_b)
+def $bin_eq(IntV i_a, IntV i_b) = (i_a = i_b)
+def $bin_eq(FIntV w bs_a, FIntV w bs_b) = (bs_a = bs_b)
+def $bin_eq(FBitV w bs_a, FBitV w bs_b) = (bs_a = bs_b)
+def $bin_eq(VBitV w _ bs_a, VBitV w _ bs_b) = (bs_a = bs_b)
+def $bin_eq(EnumFieldV id_a member_a, EnumFieldV id_b member_b)
+    = ((id_a = id_b) /\ (member_a = member_b))
+def $bin_eq(SEnumFieldV id_a member_a val_a, SEnumFieldV id_b member_b val_b)
+    = ((id_a = id_b) /\ (member_a = member_b) /\ $bin_eq(val_a, val_b))
+def $bin_eq(ListV val_a*, ListV val_b*) = $bin_eqs(val_a*, val_b*)
+def $bin_eq(TupleV val_a*, TupleV val_b*) = $bin_eqs(val_a*, val_b*)
+def $bin_eq(StackV val_a* _ i_size_a, StackV val_b* _ i_size_b)
+    = ($bin_eqs(val_a*, val_b*) /\ (i_size_a = i_size_b))
+def $bin_eq(StructV id_a (member_a, val_a)*, StructV id_b (member_b, val_b)*)
+    = ((id_a = id_b) /\ $bin_eqs_((member_a, val_a)*, (member_b, val_b)*))
+def $bin_eq(HeaderV id_a (member_a, val_a)*, StructV id_b (member_b, val_b)*)
+    = ((id_a = id_b) /\ $bin_eqs_((member_a, val_a)*, (member_b, val_b)*))
+def $bin_eq(UnionV id_a (member_a, val_a)*, StructV id_b (member_b, val_b)*)
+    = ((id_a = id_b) /\ $bin_eqs_((member_a, val_a)*, (member_b, val_b)*))
+def $bin_eq(InvalidV, InvalidV) = true
+
+def $bin_eqs(eps, eps) = true
+def $bin_eqs(eps, _ :: _) = false
+def $bin_eqs(_ :: _, eps) = false
+def $bin_eqs(val_ah :: val_at*, val_bh :: val_bt*)
+  = ($bin_eq(val_ah, val_bh) /\ $bin_eqs(val_at*, val_bt*))
+
+def $bin_eqs_(eps, eps) = true
+def $bin_eqs_(eps, _ :: _) = false
+def $bin_eqs_(_ :: _, eps) = false
+def $bin_eqs_((member, val_a) :: (member_at, val_at)*, (member, val_b) :: (member_bt, val_bt)*)
+  = ($bin_eq(val_a, val_b) /\ $bin_eqs_((member_at, val_at)*, (member_bt, val_bt)*))
+
+def $bin_op(EQ, val_l, val_r) = BoolV $bin_eq(val_l, val_r)
+
+;; Binary not equals
+
+def $bin_op(NE, val_l, val_r) = BoolV (~$bin_eq(val_l, val_r))
+
+;; Binary bitwise and
+
+dec $bin_band(val, val) : val
+
+def $bin_band(FIntV w bs_l, FIntV w bs_r)
+  = FIntV w $to_bitstr(w, i)
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+  -- if i = $band(i_l, i_r)
+
+def $bin_band(FBitV w bs_l, FBitV w bs_r)
+  = FBitV w $to_bitstr(w, i)
+  -- if i = $band(bs_l, bs_r)
+
+def $bin_op(BAND, val_l, val_r) = $bin_band(val_l, val_r)
+
+;; Binary bitwise xor
+
+dec $bin_bxor(val, val) : val
+
+def $bin_bxor(FIntV w bs_l, FIntV w bs_r)
+  = FIntV w $to_bitstr(w, i)
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+  -- if i = $bxor(i_l, i_r)
+
+def $bin_bxor(FBitV w bs_l, FBitV w bs_r)
+  = FBitV w $to_bitstr(w, i)
+  -- if i = $bxor(bs_l, bs_r)
+
+def $bin_op(BXOR, val_l, val_r) = $bin_bxor(val_l, val_r)
+
+;; Binary bitwise or
+
+dec $bin_bor(val, val) : val
+
+def $bin_bor(FIntV w bs_l, FIntV w bs_r)
+  = FIntV w $to_bitstr(w, i)
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+  -- if i = $bor(i_l, i_r)
+
+def $bin_bor(FBitV w bs_l, FBitV w bs_r)
+  = FBitV w $to_bitstr(w, i)
+  -- if i = $bor(bs_l, bs_r)
+
+def $bin_op(BOR, val_l, val_r) = $bin_bor(val_l, val_r)
+
+;; Binary bitwise concat
+
+dec $bin_concat(val, val) : val
+
+def $bin_concat(FIntV w_l bs_l, FIntV w_r bs_r)
+  = FIntV w $to_bitstr(w, i_l'')
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if i_l' = $shl(i_l, w_r)
+  -- if i_l'' = $(i_l' + bs_r)
+  -- if w = $(w_l + w_r)
+def $bin_concat(FIntV w_l bs_l, FBitV w_r bs_r)
+  = FIntV w $to_bitstr(w, i_l'')
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if i_l' = $shl(i_l, w_r)
+  -- if i_l'' = $(i_l' + bs_r)
+  -- if w = $(w_l + w_r)
+def $bin_concat(FBitV w_l bs_l, FIntV w_r bs_r)
+  = FBitV w $to_bitstr(w, i_l')
+  -- if i_l = $shl(bs_l, w_r)
+  -- if i_l' = $(i_l + bs_r)
+  -- if w = $(w_l + w_r)
+def $bin_concat(FBitV w_l bs_l, FBitV w_r bs_r)
+  = FBitV w $to_bitstr(w, i_l')
+  -- if i_l = $shl(bs_l, w_r)
+  -- if i_l' = $(i_l + bs_r)
+  -- if w = $(w_l + w_r)
+
+def $bin_op(CONCAT, val_l, val_r) = $bin_concat(val_l, val_r)
+
+;; Binary logical and
+
+dec $bin_land(val, val) : val
+
+def $bin_land(BoolV b_l, BoolV b_r) = BoolV (b_l /\ b_r)
+
+def $bin_op(LAND, val_l, val_r) = $bin_land(val_l, val_r)
+
+;; Binary logical or
+
+dec $bin_lor(val, val) : val
+
+def $bin_lor(BoolV b_l, BoolV b_r) = BoolV (b_l \/ b_r)
+
+def $bin_op(LOR, val_l, val_r) = $bin_lor(val_l, val_r)
 
 ;;
-;; Cast oracle
+;; Type cast operations
 ;;
 
-dec $cast_op(typ, val) : val   hint(show (%) %)
+dec $cast_op(typ, val) : val
+    hint(show (%) %)
+
+;; Cast from boolean
+
+dec $cast_bool(typ, bool) : val
+dec $cast_bool'(typ, bool) : val
+
+def $cast_bool(typ, b) = $cast_bool'($canon_typ(typ), b)
+
+def $cast_bool'(BoolT, b) = BoolV b
+def $cast_bool'(FBitT w, true) = FBitV w 1
+def $cast_bool'(FBitT w, false) = FBitV w 0
+def $cast_bool'(NewT _ typ, b) = $cast_bool(typ, b)
+
+def $cast_op(typ, BoolV b) = $cast_bool(typ, b)
+
+;; Cast from integer
+
+dec $cast_int(typ, int) : val
+dec $cast_int'(typ, int) : val
+
+def $cast_int(typ, i) = $cast_int'($canon_typ(typ), i)
+
+def $cast_int'(BoolT, i) = BoolV (i = 0)
+def $cast_int'(IntT, i) = IntV i
+def $cast_int'(FIntT w, i) = FIntV w ($to_bitstr(w, i))
+def $cast_int'(FBitT w, i) = FBitV w ($to_bitstr(w, i))
+def $cast_int'(NewT _ typ, i) = $cast_int(typ, i)
+def $cast_int'(SetT typ, i) = SetV (SingletonSet val)
+  -- if val = $cast_int(typ, i)
+
+def $cast_op(typ, IntV i) = $cast_int(typ, i)
+
+;; Cast from fixed signed integer
+
+dec $cast_fint(typ, width, bitstr) : val
+dec $cast_fint'(typ, width, bitstr) : val
+
+def $cast_fint(typ, w, bs) = $cast_fint'($canon_typ(typ), w, bs)
+
+def $cast_fint'(IntT, w, bs) = IntV ($to_int(w, bs))
+def $cast_fint'(FIntT w_to, w_from, bs) = FIntV w_to bs'
+  -- if bs' = $to_bitstr(w_to, $to_int(w_from, bs))
+def $cast_fint'(FBitT w_to, w_from, bs) = FBitV w_to bs'
+  -- if bs' = $to_bitstr(w_to, $to_int(w_from, bs))
+def $cast_fint'(NewT _ typ, w, bs) = $cast_fint(typ, w, bs)
+def $cast_fint'(SetT typ, w, bs) = SetV (SingletonSet val)
+  -- if val = $cast_fint(typ, w, bs)
+
+def $cast_op(typ, FIntV w bs) = $cast_fint(typ, w, bs)
+
+;; Cast from fixed unsigned integer
+
+dec $cast_fbit(typ, width, bitstr) : val
+dec $cast_fbit'(typ, width, bitstr) : val
+
+def $cast_fbit(typ, w, bs) = $cast_fbit'($canon_typ(typ), w, bs)
+
+def $cast_fbit'(BoolT, w, bs) = BoolV (bs = 1)
+def $cast_fbit'(IntT, _, bs) = IntV bs
+def $cast_fbit'(FIntT w_to, _, bs) = FIntV w_to bs'
+  -- if bs' = $to_bitstr(w_to, bs)
+def $cast_fbit'(FBitT w_to, _, bs) = FBitV w_to bs'
+  -- if bs' = $to_bitstr(w_to, bs)
+def $cast_fbit'(NewT _ typ, w, bs) = $cast_fbit(typ, w, bs)
+def $cast_fbit'(SetT typ, w, bs) = SetV (SingletonSet val)
+  -- if val = $cast_fbit(typ, w, bs)
+
+def $cast_op(typ, FIntV w bs) = $cast_fint(typ, w, bs)
+
+;; Cast from serializable enum field
+
+def $cast_op(typ, SEnumFieldV _ _ val) = $cast_op(typ, val)
+
+;; Cast from struct
+
+dec $cast_struct(typ, id, (member, val)*) : val
+dec $cast_struct'(typ, id, (member, val)*) : val
+
+def $cast_struct(typ, id, (member, val)*)
+    = $cast_struct'($canon_typ(typ), id, (member, val)*)
+
+def $cast_struct'(StructT id _, id, (member, val)*) =
+    StructV id (member, val)*
+
+def $cast_op(typ, StructV id (member, val)*) = $cast_struct(typ, id, (member, val)*)
+
+;; Cast from header
+
+dec $cast_header(typ, id, (member, val)*) : val
+dec $cast_header'(typ, id, (member, val)*) : val
+
+def $cast_header(typ, id, (member, val)*)
+    = $cast_header'($canon_typ(typ), id, (member, val)*)
+
+def $cast_header'(HeaderT id _, id, (member, val)*) =
+    HeaderV id (member, val)*
+
+def $cast_op(typ, HeaderV id (member, val)*) = $cast_header(typ, id, (member, val)*)
+
+;; Cast from sequence
+
+dec $cast_seq(typ, val*) : val
+dec $cast_seq'(typ, val*) : val
+
+def $cast_seq(typ, val*) = $cast_seq'($canon_typ(typ), val*)
+
+def $cast_seq'(ListT typ, val*) = ListV val'*
+  -- if (val' = $cast_op(typ, val))*
+
+def $cast_seq'(TupleT typ*, val*) = TupleV val'*
+  -- if (val' = $cast_op(typ, val))*
+
+def $cast_seq'(StackT typ i_size, val*) = StackV val'* i_idx i_size
+  -- if (val' = $cast_op(typ, val))*
+  -- if i_idx = |val*|
+
+def $cast_seq'(StructT id (member, typ)*, val*) = StructV id (member, val')*
+  -- if (val' = $cast_op(typ, val))*
+
+def $cast_seq'(HeaderT id (member, typ)*, val*) = HeaderV id (member, val')*
+  -- if (val' = $cast_op(typ, val))*
+
+def $cast_op(typ, SeqV val*) = $cast_seq(typ, val*)
+
+;; Cast from default sequence
+
+;; Cast from record
+
+dec $cast_record(typ, (member, val)*) : val
+dec $cast_record'(typ, (member, val)*) : val
+
+def $cast_record(typ, (member, val)*)
+    = $cast_record'($canon_typ(typ), (member, val)*)
+
+def $cast_record'(StructT id (member_t, typ)*, (member, val)*)
+    = StructV id (member_t, val'')*
+  -- if (val' = $find_map<member, val>(MAP (PAIR member val)*, member_t))*
+  -- if (val'' = $cast_op(typ, val'))*
+
+def $cast_record'(HeaderT id (member_t, typ)*, (member, val)*)
+    = HeaderV id (member_t, val'')*
+  -- if (val' = $find_map<member, val>(MAP (PAIR member val)*, member_t))*
+  -- if (val'' = $cast_op(typ, val'))*
+
+def $cast_op(typ, RecordV (member, val)*) = $cast_record(typ, (member, val)*)
+
+;; Cast from default record
+
+;; Cast from default
+
+;; Cast from invalid
+
+;; Cast from set
+
+dec $cast_set_singleton(typ, val) : val
+dec $cast_set_singleton'(typ, val) : val
+
+def $cast_set_singleton(typ, val) = $cast_set_singleton'($canon_typ(typ), val)
+
+def $cast_set_singleton'(SetT typ, val) = SetV (SingletonSet val')
+  -- if val' = $cast_op(typ, val)
+
+dec $cast_set_mask(typ, val, val) : val
+dec $cast_set_mask'(typ, val, val) : val
+
+def $cast_set_mask(typ, val_b, val_m) = $cast_set_mask'($canon_typ(typ), val_b, val_m)
+
+def $cast_set_mask'(SetT typ, val_b, val_m) = SetV (MaskSet val_b' val_m')
+  -- if val_b' = $cast_op(typ, val_b)
+  -- if val_m' = $cast_op(typ, val_m)
+
+dec $cast_set_range(typ, val, val) : val
+dec $cast_set_range'(typ, val, val) : val
+
+def $cast_set_range(typ, val_l, val_u)
+    = $cast_set_range'($canon_typ(typ), val_l, val_u)
+
+def $cast_set_range'(SetT typ, val_l, val_u)
+    = SetV (RangeSet val_l' val_u')
+  -- if val_l' = $cast_op(typ, val_l)
+  -- if val_u' = $cast_op(typ, val_u)
+
+def $cast_op(typ, SetV (SingletonSet val)) = $cast_set_singleton(typ, val)
+def $cast_op(typ, SetV (MaskSet val_b val_m)) = $cast_set_mask(typ, val_b, val_m)
+def $cast_op(typ, SetV (RangeSet val_l val_u)) = $cast_set_range(typ, val_l, val_u)
 
 ;;
 ;; Bitstring access oracle

@@ -1,4 +1,18 @@
 ;;
+;; Operations
+;;
+
+dec $pow2(nat) : int
+
+dec $shl(int, int) : int
+dec $shr(int, int) : int
+
+dec $bneg(int) : int
+dec $band(int, int) : int
+dec $bxor(int, int) : int
+dec $bor(int, int) : int
+
+;;
 ;; Bitstring
 ;;
 
@@ -6,5 +20,9 @@ syntax bitstr = int
 
 var bs : bitstr
 
-dec $to_two_complement(int, bitstr) : int
-dec $of_two_complement(int, int) : bitstr
+;; Interpret a bitstring with width as a raw integer
+dec $to_int(int, bitstr) : int
+
+;; Convert a raw integer to a bitstring with width
+;; Ensures that the bitstring lies within the range of the width
+dec $to_bitstr(int, int) : bitstr

@@ -21,11 +21,11 @@ rule Expr_ok/nume-intt:
 
 rule Expr_ok/nume-fintt:
   p C |- NumE (FINT w i) : (ValueE (FIntV w bs)) (FIntT w) LCTK
-  -- if bs = $of_two_complement(w, i)
+  -- if bs = $to_bitstr(w, i)
 
 rule Expr_ok/nume-fbitt:
   p C |- NumE (FBIT w i) : (ValueE (FBitV w bs)) (FBitT w) LCTK
-  -- if bs = $of_two_complement(w, i)
+  -- if bs = $to_bitstr(w, i)
 
 ;;
 ;; Variable expression
