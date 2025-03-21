@@ -111,6 +111,7 @@ and pp_typ' ?(level = 0) fmt typ =
   | VarT id -> F.fprintf fmt "%a" P.pp_id' id
   | StackT (typ, size) ->
       F.fprintf fmt "%a[%a]" (pp_typ' ~level:(level + 1)) typ Bigint.pp size
+  | AnyT -> F.fprintf fmt "_"
   | _ -> F.fprintf fmt "%a" (Type.pp ~level) typ
 
 and pp_typs ?(level = 0) fmt typs =
@@ -708,9 +709,18 @@ and pp_table_custom fmt table_custom =
 and pp_mthd' ?(level = 0) fmt mthd' =
   match mthd' with
   | ExternConsM { id; tparams_hidden; cparams; annos = _annos } ->
-      F.fprintf fmt "%a%a%a;" pp_id id pp_tparams tparams_hidden
-        (pp_cparams ~level:(level + 1))
-        cparams
+    let theta =
+      tparams_hidden
+      |> List.map (fun tparam -> (tparam.it, Types.AnyT))
+      |> Domain.Dom.TIdMap.of_list
+    in
+    let cparams =
+      cparams 
+      |> List.map (fun cparam -> Subst.subst_cparam theta cparam.it $ cparam.at)
+    in
+    F.fprintf fmt "%a%a;" pp_id id
+      (pp_cparams ~level:(level + 1))
+      cparams
   | ExternAbstractM
       { id; typ_ret; tparams; tparams_hidden; params; annos = _annos } ->
       F.fprintf fmt "abstract %a %a%a%a;"
