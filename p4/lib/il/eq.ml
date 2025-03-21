@@ -266,10 +266,22 @@ and eq_expr' ?(dbg = false) expr_a expr_b =
   | ( CallTypeE { typ = typ_a; member = member_a },
       CallTypeE { typ = typ_b; member = member_b } ) ->
       eq_typ ~dbg typ_a typ_b && eq_member ~dbg member_a member_b
-  | ( InstE { var_inst = var_inst_a; targs = targs_a; args = args_a },
-      InstE { var_inst = var_inst_b; targs = targs_b; args = args_b } ) ->
+  | ( InstE 
+        { 
+          var_inst = var_inst_a; 
+          targs = targs_a; 
+          targs_hidden = targs_hidden_a; 
+          args = args_a 
+        },
+      InstE 
+        { 
+          var_inst = var_inst_b; 
+          targs = targs_b; 
+          targs_hidden = targs_hidden_b;
+          args = args_b 
+        } ) ->
       eq_var ~dbg var_inst_a var_inst_b
-      && eq_targs ~dbg targs_a targs_b
+      && eq_targs ~dbg (targs_a @ targs_hidden_a) (targs_b @ targs_hidden_b)
       && eq_args ~dbg args_a args_b
   | _ -> false
 
@@ -429,6 +441,7 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
           typ = typ_a;
           var_inst = var_inst_a;
           targs = targs_a;
+          targs_hidden = targs_hidden_a;
           args = args_a;
           init = init_a;
           annos = _annos_a;
@@ -439,13 +452,14 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
           typ = typ_b;
           var_inst = var_inst_b;
           targs = targs_b;
+          targs_hidden = targs_hidden_b;
           args = args_b;
           init = init_b;
           annos = _annos_b;
         } ) ->
       eq_id ~dbg id_a id_b && eq_typ ~dbg typ_a typ_b
       && eq_var ~dbg var_inst_a var_inst_b
-      && eq_targs ~dbg targs_a targs_b
+      && eq_targs ~dbg (targs_a @ targs_hidden_a) (targs_b @ targs_hidden_b)
       && eq_args ~dbg args_a args_b
       && eq_decls ~dbg init_a init_b
   | ( StructD

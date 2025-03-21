@@ -318,7 +318,7 @@ and pp_expr' ?(level = 0) fmt expr' =
         targs pp_args args
   | CallTypeE { typ; member } ->
       F.fprintf fmt "%a.%a()" (pp_typ ~level:(level + 1)) typ pp_member member
-  | InstE { var_inst; targs; args } ->
+  | InstE { var_inst; targs; targs_hidden = _targs_hidden; args } ->
       F.fprintf fmt "%a%a%a" pp_var var_inst
         (pp_targs ~level:(level + 1))
         targs pp_args args
@@ -461,7 +461,7 @@ and pp_decl' ?(level = 0) fmt decl' =
       F.fprintf fmt "match_kind {\n%a\n%s}"
         (pp_members ~level:(level + 1))
         members (indent level)
-  | InstD { id; typ = _typ; var_inst; targs; args; init; annos = _annos } -> (
+  | InstD { id; typ = _typ; var_inst; targs; targs_hidden = _targs_hidden; args; init; annos = _annos } -> (
       match init with
       | [] ->
           F.fprintf fmt "%a%a%a %a;/*InstD*/" pp_var var_inst
@@ -583,8 +583,16 @@ and pp_decl' ?(level = 0) fmt decl' =
         (pp_mthds ~level:(level + 1))
         mthds (indent level)
   | PackageTypeD { id; tparams; tparams_hidden; cparams; annos = _annos } ->
-      F.fprintf fmt "package %a%a%a;" pp_id id pp_tparams
-        (tparams @ tparams_hidden)
+    let theta =
+      tparams_hidden
+      |> List.map (fun tparam -> (tparam.it, Types.AnyT))
+      |> Domain.Dom.TIdMap.of_list
+    in
+    let cparams =
+      cparams 
+      |> List.map (fun cparam -> Subst.subst_cparam theta cparam.it $ cparam.at)
+    in
+    F.fprintf fmt "package %a%a%a;" pp_id id pp_tparams tparams
         (pp_cparams ~level:(level + 1))
         cparams
 

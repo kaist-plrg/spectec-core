@@ -248,7 +248,7 @@ and pp_expr' ?(level = 0) fmt expr' =
         targs pp_args args
   | CallTypeE { typ; member } ->
       F.fprintf fmt "%a.%a()" (pp_typ ~level:(level + 1)) typ pp_member member
-  | InstE { var_inst; targs; args } ->
+  | InstE { var_inst; targs; targs_hidden=_targs_hidden; args } ->
       F.fprintf fmt "%a%a%a" pp_var var_inst
         (pp_targs ~level:(level + 1))
         targs pp_args args
@@ -390,7 +390,7 @@ and pp_decl' ?(level = 0) fmt decl' =
       F.fprintf fmt "match_kind {\n%a\n%s}"
         (pp_members ~level:(level + 1))
         members (indent level)
-  | InstD { id; typ; var_inst; targs; args; init; annos = _annos } -> (
+  | InstD { id; typ; var_inst; targs; targs_hidden = _targs_hidden; args; init; annos = _annos } -> (
       match init with
       | [] ->
           F.fprintf fmt "%a %a%a%a %a;"

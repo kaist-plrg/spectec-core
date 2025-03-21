@@ -2324,7 +2324,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     (F.asprintf "(type_instantiation) instance %a not found" El.Pp.pp_var
        var_inst);
   let _, cd, args_default = Option.get cd_matched in
-  let ct, tids_fresh_inserted =
+  let ct, targs_hidden, tids_fresh_inserted =
     let targs = List.map it targs_il in
     ConsDef.specialize Ctx.fresh cd targs
   in
@@ -2356,7 +2356,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     align_cparams_with_args cparams typ_args args_il
   in
   let args_il_typed = List.combine args_il typ_args in
-  let ct, targs_il, cparams, typ_inst =
+  let ct, _targs_il, cparams, typ_inst =
     match tids_fresh with
     | [] -> (ct, targs_il, cparams, typ_inst)
     | _ ->
@@ -2379,7 +2379,17 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     type_call_convention ~action:false cursor ctx cparams args_il_typed
   in
   let typ = typ_inst in
-  let expr_il = Il.Ast.InstE { var_inst; targs = targs_il; args = args_il } in
+  let targs_hidden_il = 
+    List.map (fun targ' -> targ' $ no_info) targs_hidden in
+  let expr_il =
+    Il.Ast.InstE 
+      { 
+        var_inst; 
+        targs = targs_il; 
+        targs_hidden = targs_hidden_il;
+        args = args_il 
+      } 
+  in
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
 
@@ -3352,9 +3362,15 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
     =
   let annos_il = type_annos cursor ctx annos in
   let typ, _, expr_il = type_instantiation cursor ctx var_inst targs args in
-  let targs_il, args_il =
+  let targs_il, targs_hidden_il, args_il =
     match expr_il with
-    | Il.Ast.InstE { targs = targs_il; args = args_il; _ } -> (targs_il, args_il)
+    | Il.Ast.InstE 
+        { 
+          targs = targs_il; 
+          targs_hidden = targs_hidden_il; 
+          args = args_il; 
+          _ 
+        } -> (targs_il, targs_hidden_il, args_il)
     | _ -> assert false
   in
   (* Typecheck abstract methods defined by object initializers (for externs only) *)
@@ -3443,6 +3459,7 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         typ = typ $ no_info;
         var_inst;
         targs = targs_il;
+        targs_hidden = targs_hidden_il;
         args = args_il;
         init = init_il;
         annos = annos_il;

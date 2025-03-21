@@ -196,7 +196,12 @@ and expr' =
       args : arg list;
     }
   | CallTypeE of { typ : typ; member : member }
-  | InstE of { var_inst : var; targs : typ list; args : arg list }
+  | InstE of { 
+      var_inst : var; 
+      targs : typ list; 
+      targs_hidden: typ list; 
+      args : arg list 
+    }
 
 (* Keyset expressions *)
 and keyset = (note, expr') L.keyset
@@ -217,7 +222,10 @@ and stmt' =
   | BlockS of { block : block }
   | ExitS
   | RetS of { expr_ret : expr option }
-  | CallFuncS of { var_func : var; targs : targ list; args : arg list }
+  | CallFuncS of {
+      var_func : var;
+      targs : targ list;
+      args : arg list }
   | CallMethodS of {
       expr_base : expr;
       member : member;
@@ -257,6 +265,7 @@ and decl' =
       typ : typ;
       var_inst : var;
       targs : typ list;
+      targs_hidden : targ list;
       args : arg list;
       init : decl list;
       annos : anno list;
