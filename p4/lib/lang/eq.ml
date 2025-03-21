@@ -204,12 +204,12 @@ and eq_annos ?(dbg = false) (pp_expr : ('note, 'expr) Pp.pp_expr)
 
 and eq_tparam' = eq_id'
 
-and eq_tparam ?(dbg = false) tparam_a tparam_b =
+and eq_tparam ?(dbg = false) eq_tparam' tparam_a tparam_b =
   eq_tparam' tparam_a.it tparam_b.it
   |> check ~dbg "tparam" Pp.pp_tparam tparam_a tparam_b
 
-and eq_tparams ?(dbg = false) tparams_a tparams_b =
-  eq_list (eq_tparam ~dbg) tparams_a tparams_b
+and eq_tparams ?(dbg = false) eq_tparam' tparams_a tparams_b =
+  eq_list (eq_tparam ~dbg eq_tparam') tparams_a tparams_b
 
 (* Parameters *)
 

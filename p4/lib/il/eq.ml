@@ -106,13 +106,13 @@ and eq_annos ?(dbg = false) annos_a annos_b =
 
 (* Type parameters *)
 
-and eq_tparam' tparam_a tparam_b = E.eq_tparam' tparam_a tparam_b
+and eq_tparam' tparam_a tparam_b = Eq_type.eq_tid' tparam_a tparam_b
 
 and eq_tparam ?(dbg = false) tparam_a tparam_b =
-  E.eq_tparam ~dbg tparam_a tparam_b
+  E.eq_tparam ~dbg eq_tparam' tparam_a tparam_b
 
 and eq_tparams ?(dbg = false) tparams_a tparams_b =
-  E.eq_tparams ~dbg tparams_a tparams_b
+  E.eq_tparams ~dbg eq_tparam' tparams_a tparams_b
 
 (* Parameters *)
 

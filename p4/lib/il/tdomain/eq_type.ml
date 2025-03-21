@@ -8,7 +8,7 @@ open Util.Source
 
 (* Type parameters *)
 
-let rec eq_tparam tparam_a tparam_b = E.eq_tparam' tparam_a tparam_b
+let rec eq_tparam tparam_a tparam_b = eq_tid' tparam_a tparam_b
 and eq_tparams tparams_a tparams_b = E.eq_list eq_tparam tparams_a tparams_b
 
 (* Values *)
@@ -31,6 +31,11 @@ and eq_params params_a params_b = E.eq_list eq_param params_a params_b
 and eq_cparam cparam_a cparam_b = eq_param cparam_a cparam_b
 and eq_cparams cparams_a cparams_b = E.eq_list eq_cparam cparams_a cparams_b
 
+(* Type Ids *)
+
+and eq_tid' id_a id_b =  String.starts_with ~prefix:"__WILD_" id_a
+        && String.starts_with ~prefix:"__WILD_" id_b || id_a = id_b
+
 (* Types *)
 
 and eq_typ' typ_a typ_b =
@@ -46,7 +51,7 @@ and eq_typ' typ_a typ_b =
   | FBitT width_a, FBitT width_b
   | VBitT width_a, VBitT width_b ->
       Bigint.(width_a = width_b)
-  | VarT id_a, VarT id_b -> E.eq_id' id_a id_b
+  | VarT id_a, VarT id_b -> eq_tid' id_a id_b
   | SpecT (tdp_a, typs_a), SpecT (tdp_b, typs_b) ->
       eq_typdef_poly tdp_a tdp_b && eq_typs typs_a typs_b
   | DefT (typ_a, _), DefT (typ_b, _) -> eq_typ' typ_a typ_b
