@@ -130,6 +130,12 @@ def $bin_op(DIV, val_l, val_r) = $bin_div(val_l, val_r)
 
 ;; Binary modulo
 
+dec $bin_mod(val, val) : val
+
+def $bin_mod(IntV i_l, IntV i_r) = IntV $(i_l \ i_r)
+
+def $bin_op(MOD, val_l, val_r) = $bin_mod(val_l, val_r)
+
 ;; Binary shift left
 
 dec $bin_shl(val, val) : val

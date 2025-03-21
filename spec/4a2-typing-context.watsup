@@ -259,12 +259,12 @@ dec $find_typdef(cursor, context, name) : typdef
 def $find_typdef(p, C, TOP id) = $find_map<tid, typdef>(C.GLOBAL.TDENV, id)
 def $find_typdef(GLOBAL, C, CURRENT id) = $find_map<tid, typdef>(C.GLOBAL.TDENV, id)
 def $find_typdef(BLOCK, C, CURRENT id) = td
-  -- if td = $find_map_opt<tid, typdef>(C.GLOBAL.TDENV, id)
+  -- if td = $find_map_opt<tid, typdef>(C.BLOCK.TDENV, id)
 def $find_typdef(BLOCK, C, CURRENT id) = $find_typdef(GLOBAL, C, CURRENT id)
-  -- if eps = $find_map_opt<tid, typdef>(C.GLOBAL.TDENV, id)
+  -- if eps = $find_map_opt<tid, typdef>(C.BLOCK.TDENV, id)
 def $find_typdef(LOCAL, C, CURRENT id) = td
   -- if td = $find_map_opt<tid, typdef>(C.LOCAL.TDENV, id)
-def $find_typdef(BLOCK, C, CURRENT id) = $find_typdef(BLOCK, C, CURRENT id)
+def $find_typdef(LOCAL, C, CURRENT id) = $find_typdef(BLOCK, C, CURRENT id)
   -- if eps = $find_map_opt<tid, typdef>(C.LOCAL.TDENV, id)
 
 ;; Finder for function definitions

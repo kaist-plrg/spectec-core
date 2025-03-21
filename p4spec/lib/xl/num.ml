@@ -50,6 +50,33 @@ let string_of_cmpop = function
   | `LeOp -> "<="
   | `GeOp -> ">="
 
+(* Unary *)
+
+let un (op : unop) num : t =
+  match (op, num) with
+  | `PlusOp, `Int _ -> num
+  | `MinusOp, `Int n -> `Int (Z.neg n)
+  | _ -> assert false
+
+let bin (op : binop) num_l num_r : t =
+  match (op, num_l, num_r) with
+  | `AddOp, `Nat n_l, `Nat n_r -> `Nat Z.(n_l + n_r)
+  | `AddOp, `Int i_l, `Int i_r -> `Int Z.(i_l + i_r)
+  | `SubOp, `Nat n_l, `Nat n_r when n_l >= n_r -> `Nat Z.(n_l - n_r)
+  | `SubOp, `Int i_l, `Int i_r -> `Int Z.(i_l - i_r)
+  | `MulOp, `Nat n_l, `Nat n_r -> `Nat Z.(n_l * n_r)
+  | `MulOp, `Int i_l, `Int i_r -> `Int Z.(i_l * i_r)
+  | `DivOp, `Nat n_l, `Nat n_r when Z.(n_r <> zero && rem n_l n_r = zero) ->
+      `Nat Z.(n_l / n_r)
+  | `DivOp, `Int i_l, `Int i_r when Z.(i_r <> zero && rem i_l i_r = zero) ->
+      `Int Z.(i_l / i_r)
+  | `ModOp, `Nat n_l, `Nat n_r when Z.(n_r <> zero) -> `Nat Z.(rem n_l n_r)
+  | `ModOp, `Int i_l, `Int i_r when Z.(i_r <> zero) -> `Int Z.(rem i_l i_r)
+  | `PowOp, `Nat n_l, `Nat n_r -> `Nat Z.(n_l ** to_int n_r)
+  | `PowOp, `Int i_l, `Int i_r when Z.(i_r >= zero && fits_int i_r) ->
+      `Int Z.(i_l ** to_int i_r)
+  | _, _, _ -> assert false
+
 (* Comparison *)
 
 let cmp (op : cmpop) num_l num_r : bool =

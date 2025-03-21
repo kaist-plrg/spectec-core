@@ -320,6 +320,11 @@ and eval_var_exp (ctx : Ctx.t) (at : region) (id : id) : value =
 and eval_un_bool (at : region) (unop : Bool.unop) (value : value) : value =
   match unop with `NotOp -> BoolV (not (Value.get_bool value)) $$ (at, BoolT)
 
+and eval_un_num (at : region) (unop : Num.unop) (value : value) : value =
+  let num = Value.get_num value in
+  let num = Num.un unop num in
+  NumV num $$ (at, NumT (Num.to_typ num))
+
 and eval_un_exp (ctx : Ctx.t) (at : region) (unop : unop) (_optyp : optyp)
     (exp : exp) : Ctx.t * value =
   let ctx, value = eval_exp ctx exp in
@@ -327,7 +332,9 @@ and eval_un_exp (ctx : Ctx.t) (at : region) (unop : unop) (_optyp : optyp)
   | #Bool.unop as unop ->
       let value = eval_un_bool at unop value in
       (ctx, value)
-  | #Num.unop -> failwith "(TODO) eval_un_exp"
+  | #Num.unop as unop ->
+      let value = eval_un_num at unop value in
+      (ctx, value)
 
 (* Binary expression evaluation *)
 
@@ -344,6 +351,13 @@ and eval_bin_bool (at : region) (binop : Bool.binop) (value_l : value)
   in
   value $$ (at, BoolT)
 
+and eval_bin_num (at : region) (binop : Num.binop) (value_l : value)
+    (value_r : value) : value =
+  let num_l = Value.get_num value_l in
+  let num_r = Value.get_num value_r in
+  let num = Num.bin binop num_l num_r in
+  NumV num $$ (at, NumT (Num.to_typ num))
+
 and eval_bin_exp (ctx : Ctx.t) (at : region) (binop : binop) (_optyp : optyp)
     (exp_l : exp) (exp_r : exp) : Ctx.t * value =
   let ctx, value_l = eval_exp ctx exp_l in
@@ -352,7 +366,9 @@ and eval_bin_exp (ctx : Ctx.t) (at : region) (binop : binop) (_optyp : optyp)
   | #Bool.binop as binop ->
       let value = eval_bin_bool at binop value_l value_r in
       (ctx, value)
-  | #Num.binop -> failwith "(TODO) eval_bin_exp"
+  | #Num.binop as binop ->
+      let value = eval_bin_num at binop value_l value_r in
+      (ctx, value)
 
 (* Comparison expression evaluation *)
 
