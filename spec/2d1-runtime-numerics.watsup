@@ -1,4 +1,19 @@
 ;;
+;; Operations
+;;
+
+dec $pow2(nat) : int
+
+dec $shl(int, int) : int
+dec $shr(int, int) : int
+dec $shr_arith(int, int, int) : int
+
+dec $bneg(int) : int
+dec $band(int, int) : int
+dec $bxor(int, int) : int
+dec $bor(int, int) : int
+
+;;
 ;; Unary operation oracle
 ;;
 
@@ -9,7 +24,8 @@ dec $un_op(unop, val) : val
 
 dec $un_bnot(val) : val
 
-def $un_bnot(FBitV w bs) = FBitV w $bneg(bs)
+def $un_bnot(FBitV w bs) = FBitV w $to_bitstr(w, $bneg(bs))
+  -- if i = $bneg(bs)
 
 def $un_op(BNOT, val) = $un_bnot(val)
 
@@ -156,17 +172,37 @@ def $bin_shr(IntV i_l, FIntV w_r bs_r) = IntV $shr(i_l, i_r)
   -- if i_r = $to_int(w_r, bs_r)
 def $bin_shr(IntV i_l, FBitV w_r bs_r) = IntV $shr(i_l, bs_r)
 def $bin_shr(FIntV w_l bs_l, IntV i_r)
-  = $bin_shr(FIntV w_l bs_l, val_r)
-  -- if val_r = FIntV w_l ($to_int(w_l, i_r))
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if $(i_l < 0)
+  -- if i = $shr_arith(bs_l, i_r, $($pow2(w_l) - 1))
+def $bin_shr(FIntV w_l bs_l, IntV i_r)
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if $(i_l >= 0)
+  -- if i = $shr(bs_l, i_r)
 def $bin_shr(FIntV w_l bs_l, FIntV w_r bs_r)
   = FIntV w_l $to_bitstr(w_l, i)
   -- if i_l = $to_int(w_l, bs_l)
   -- if i_r = $to_int(w_r, bs_r)
-  -- if i = $shr(i_l, i_r)
+  -- if $(i_l < 0)
+  -- if i = $shr_arith(bs_l, i_r, $($pow2(w_l) - 1))
+def $bin_shr(FIntV w_l bs_l, FIntV w_r bs_r)
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if i_r = $to_int(w_r, bs_r)
+  -- if $(i_l >= 0)
+  -- if i = $shr(bs_l, i_r)
 def $bin_shr(FIntV w_l bs_l, FBitV w_r bs_r)
   = FIntV w_l $to_bitstr(w_l, i)
   -- if i_l = $to_int(w_l, bs_l)
-  -- if i = $shr(i_l, bs_r)
+  -- if $(i_l < 0)
+  -- if i = $shr_arith(bs_l, bs_r, $($pow2(w_l) - 1))
+def $bin_shr(FIntV w_l bs_l, FBitV w_r bs_r)
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if $(i_l >= 0)
+  -- if i = $shr(bs_l, bs_r)
 def $bin_shr(FBitV w_l bs_l, IntV i_r)
   = $bin_shr(FBitV w_l bs_l, val_r)
   -- if val_r = FBitV w_l ($to_int(w_l, i_r))
@@ -442,7 +478,7 @@ def $cast_fbit'(NewT _ typ, w, bs) = $cast_fbit(typ, w, bs)
 def $cast_fbit'(SetT typ, w, bs) = SetV (SingletonSet val)
   -- if val = $cast_fbit(typ, w, bs)
 
-def $cast_op(typ, FIntV w bs) = $cast_fint(typ, w, bs)
+def $cast_op(typ, FBitV w bs) = $cast_fint(typ, w, bs)
 
 ;; Cast from serializable enum field
 

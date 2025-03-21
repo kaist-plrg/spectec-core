@@ -247,7 +247,7 @@ rule Decl_ok/uniond:
 ;;
 
 rule Decl_ok/enumd:
-  GLOBAL C |- EnumD id member* : C' (EnumD id member*)
+  GLOBAL C |- EnumD id member* : C'' (EnumD id member*)
   -- if $distinct_<member>(member*)
   ----
   -- if (id_e = $concat_text([ id, ".", member ]))*
@@ -260,7 +260,7 @@ rule Decl_ok/enumd:
   -- if td = MonoD typ_e
   -- if tidset = $bound_tids(GLOBAL, C)
   -- TypeDef_wf: tidset |- td
-  -- if C' = $add_typdef(GLOBAL, C', id, td)
+  -- if C'' = $add_typdef(GLOBAL, C', id, td)
 
 ;;
 ;; Serializable enum declaration

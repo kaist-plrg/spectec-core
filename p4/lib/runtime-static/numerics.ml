@@ -241,10 +241,9 @@ let eval_binop_shr (value_a : Value.t) (value_b : Value.t) : Value.t =
       let value_b = raw_int_of_bit value_b width_b in
       let value = shift_bitstring_right value_a value_b in
       IntV value
-  | FIntV (width_a, value_a), FBitV (width_b, value_b) ->
+  | FIntV (width_a, value_a), IntV value_b ->
       let value_a_signed = raw_int_of_int value_a width_a in
       let value_a_unsigned = raw_int_of_bit value_a width_a in
-      let value_b = raw_int_of_bit value_b width_b in
       let arith = Bigint.(value_a_signed < zero) in
       let value =
         if arith then
@@ -265,9 +264,10 @@ let eval_binop_shr (value_a : Value.t) (value_b : Value.t) : Value.t =
         else shift_bitstring_right value_a_unsigned value_b
       in
       int_of_raw_int value width_a
-  | FIntV (width_a, value_a), IntV value_b ->
+  | FIntV (width_a, value_a), FBitV (width_b, value_b) ->
       let value_a_signed = raw_int_of_int value_a width_a in
       let value_a_unsigned = raw_int_of_bit value_a width_a in
+      let value_b = raw_int_of_bit value_b width_b in
       let arith = Bigint.(value_a_signed < zero) in
       let value =
         if arith then
@@ -276,6 +276,10 @@ let eval_binop_shr (value_a : Value.t) (value_b : Value.t) : Value.t =
         else shift_bitstring_right value_a_unsigned value_b
       in
       int_of_raw_int value width_a
+  | FBitV (width_a, value_a), IntV value_b ->
+      let value_a = raw_int_of_bit value_a width_a in
+      let value = shift_bitstring_right value_a value_b in
+      bit_of_raw_int value width_a
   | FBitV (width_a, value_a), FIntV (width_b, value_b) ->
       let value_a = raw_int_of_bit value_a width_a in
       let value_b = raw_int_of_int value_b width_b in
@@ -284,10 +288,6 @@ let eval_binop_shr (value_a : Value.t) (value_b : Value.t) : Value.t =
   | FBitV (width_a, value_a), FBitV (width_b, value_b) ->
       let value_a = raw_int_of_bit value_a width_a in
       let value_b = raw_int_of_bit value_b width_b in
-      let value = shift_bitstring_right value_a value_b in
-      bit_of_raw_int value width_a
-  | FBitV (width_a, value_a), IntV value_b ->
-      let value_a = raw_int_of_bit value_a width_a in
       let value = shift_bitstring_right value_a value_b in
       bit_of_raw_int value width_a
   | _ ->

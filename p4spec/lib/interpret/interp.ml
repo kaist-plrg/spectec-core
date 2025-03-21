@@ -11,14 +11,6 @@ open Attempt
 module F = Format
 open Util.Source
 
-(* Check *)
-
-let check (b : bool) (at : region) (msg : string) : unit =
-  if not b then error at msg
-
-let guard (b : bool) (at : region) (msg : string) : unit =
-  if not b then warn at msg
-
 (* Kind of type *)
 
 (* Expansion of type aliases *)
@@ -890,24 +882,14 @@ and invoke_func (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
 
 and invoke_func' (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
     (Ctx.t * value) attempt =
-  match id.it with
-  | "fresh_tid" ->
-      let* value = invoke_func_builtin ctx id targs args in
-      Ok (ctx, value)
-  | _ -> invoke_func_def ctx id targs args
+  if Builtins.is_builtin id then invoke_func_builtin ctx id targs args
+  else invoke_func_def ctx id targs args
 
-and invoke_func_builtin (_ctx : Ctx.t) (id : id) (targs : targ list)
-    (args : arg list) : value attempt =
-  match id.it with
-  | "fresh_tid" ->
-      check (targs = []) id.at "arity mismatch in type arguments";
-      check (args = []) id.at "arity mismatch in arguments";
-      let tid =
-        TextV ("FRESH__" ^ string_of_int (Random.int 1000))
-        $$ (no_region, VarT ("tid" $ no_region, []))
-      in
-      Ok tid
-  | _ -> assert false
+and invoke_func_builtin (ctx : Ctx.t) (id : id) (targs : targ list)
+    (args : arg list) : (Ctx.t * value) attempt =
+  let ctx, values_input = eval_args ctx args in
+  let value_output = Builtins.invoke id targs values_input in
+  Ok (ctx, value_output)
 
 and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
     (args : arg list) : (Ctx.t * value) attempt =
@@ -994,6 +976,7 @@ let load_spec (ctx : Ctx.t) (spec : spec) : Ctx.t =
 (* Entry point: run typing rule from `Prog_ok` relation *)
 
 let run_typing (debug : bool) (spec : spec) (program : value) : value list =
+  Builtins.init ();
   let ctx = Ctx.empty debug in
   let ctx = load_spec ctx spec in
   let+ _ctx, values = invoke_rel ctx ("Prog_ok" $ no_region) [ program ] in

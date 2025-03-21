@@ -1,18 +1,4 @@
 ;;
-;; Operations
-;;
-
-dec $pow2(nat) : int
-
-dec $shl(int, int) : int
-dec $shr(int, int) : int
-
-dec $bneg(int) : int
-dec $band(int, int) : int
-dec $bxor(int, int) : int
-dec $bor(int, int) : int
-
-;;
 ;; Bitstring
 ;;
 
