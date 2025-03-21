@@ -344,7 +344,7 @@ let specialize_funcdef (fresh : unit -> int) (fd : funcdef) (targs : typ' list) 
 (* Constructor definition specialization *)
 
 and specialize_consdef (fresh : unit -> int) (cd : consdef) (targs : typ' list) :
-    constyp * TId.t list =
+  constyp * targ' list * TId.t list =
   let check_arity tparams =
     check
       (List.length targs = List.length tparams)
@@ -358,7 +358,7 @@ and specialize_consdef (fresh : unit -> int) (cd : consdef) (targs : typ' list) 
   let tparams, tparams_hidden, ct = cd in
   (* Insert fresh type variables if omitted
      Otherwise, check the arity *)
-  let targs, tids_fresh =
+  let targs, targs_hidden, tids_fresh =
     (* Insert fresh type variables if omitted
        Otherwise, check the arity *)
     if
@@ -366,30 +366,33 @@ and specialize_consdef (fresh : unit -> int) (cd : consdef) (targs : typ' list) 
       && List.length tparams + List.length tparams_hidden > 0
     then
       let tids_fresh =
-        List.init
-          (List.length tparams + List.length tparams_hidden)
-          (fun _ -> fresh_tid ())
+        List.init (List.length tparams) (fun _ -> fresh_tid ())
       in
       let targs = List.map fresh_targ tids_fresh in
-      (targs, tids_fresh)
+      let tids_fresh_hidden =
+        List.init (List.length tparams_hidden) (fun _ -> fresh_tid ())
+      in
+      let targs_hidden = List.map fresh_targ tids_fresh_hidden in
+      (targs, targs_hidden, tids_fresh @ tids_fresh_hidden)
     else if
       List.length targs > 0
       && List.length tparams = List.length targs
       && List.length tparams_hidden > 0
     then
-      let tids_fresh =
+      let tids_fresh_hidden =
         List.init (List.length tparams_hidden) (fun _ -> fresh_tid ())
       in
-      let targs = targs @ List.map fresh_targ tids_fresh in
-      (targs, tids_fresh)
+      let targs_hidden = List.map fresh_targ tids_fresh_hidden in
+      (targs, targs_hidden, tids_fresh_hidden)
     else (
       check_arity tparams;
-      (targs, []))
+      (targs, [], []))
   in
   let tparams = tparams @ tparams_hidden in
+  let targs = targs @ targs_hidden in
   let theta = List.combine tparams targs |> TIdMap.of_list in
   let ct = subst_constyp theta ct in
-  (ct, tids_fresh)
+  (ct, targs_hidden, tids_fresh)
 
 (* Unroll: recursive specialization *)
 

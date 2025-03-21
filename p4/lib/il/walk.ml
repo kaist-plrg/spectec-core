@@ -173,9 +173,10 @@ let walk_expr (walker : walker) expr =
   | CallTypeE { typ; member } ->
       walk_typ typ;
       walk_member member
-  | InstE { var_inst; targs; args } ->
+  | InstE { var_inst; targs; targs_hidden; args } ->
       walk_var var_inst;
       W.walk_list walk_targ targs;
+      W.walk_list walk_targ targs_hidden;
       W.walk_list walk_arg args
 
 (* Keyset expressions *)
@@ -273,11 +274,12 @@ let walk_decl (walker : walker) decl =
       walk_typ typ;
       W.walk_option walk_expr init
   | ErrD { members } | MatchKindD { members } -> W.walk_list walk_member members
-  | InstD { id; typ; var_inst; targs; args; init; annos = _annos } ->
+  | InstD { id; typ; var_inst; targs; targs_hidden; args; init; annos = _annos } ->
       walk_id id;
       walk_typ typ;
       walk_var var_inst;
       W.walk_list walk_targ targs;
+      W.walk_list walk_targ targs_hidden;
       W.walk_list walk_arg args;
       W.walk_list walk_decl init
   | StructD { id; tparams; tparams_hidden; fields; annos = _annos }
