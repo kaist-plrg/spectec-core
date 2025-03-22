@@ -612,15 +612,15 @@ and eval_iter_exp_opt (ctx : Ctx.t) (at : region) (typ : typ') (exp : exp)
   with
   | true, true -> assert false
   | true, _ ->
-      let ctx =
+      let ctx_sub =
         List.fold_left2
-          (fun ctx var value ->
+          (fun ctx_sub var value ->
             let id, _typ, iters = var in
             let value = Option.get value in
-            Ctx.add_value ctx (id, iters @ [ Opt ]) value)
+            Ctx.add_value ctx_sub (id, iters) value)
           ctx vars values
       in
-      let ctx, value = eval_exp ctx exp in
+      let _ctx_sub, value = eval_exp ctx_sub exp in
       let typ = IterT (value.note $ value.at, Opt) in
       let value = OptV (Some value) $$ (at, typ) in
       (ctx, value)

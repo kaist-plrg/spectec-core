@@ -176,10 +176,7 @@ var cstr : map<tid, typ?>
 dec $empty_cstr(tid*) : map<tid, typ?>
     ;;hint(show EMPTY_CSTR(%1))
 
-def $empty_cstr(eps) = MAP eps
-def $empty_cstr(tid_h :: tid_t*) = cstr'
-  -- if cstr = $empty_cstr(tid_t*)
-  -- if cstr' = $update_map<tid, typ?>(cstr, tid_h, eps)
+def $empty_cstr(tid*) = MAP (PAIR tid eps)*
 
 
 dec $gen_cstr(map<tid, typ?>, typ, typ) : map<tid, typ?>
@@ -205,14 +202,14 @@ def $gen_cstr(cstr, VarT tid, typ_a) = $update_map<tid, typ?>(cstr, tid, typ_a)
 def $gen_cstr(cstr, SpecT ptd_p typ_p'*, SpecT ptd_a typ_a'*) = $gen_cstrs(cstr', typ_p'*, typ_a'*)
   -- if typ_p'' = $specialize_typdef(ptd_p, typ_p'*)
   -- if typ_a'' = $specialize_typdef(ptd_a, typ_a'*)
-  -- if cstr' = $gen_cstr(cstr, typ_p'', typ_a'')
   -- if $is_nominal(typ_p'') /\ $is_nominal(typ_a'')
+  -- if cstr' = $gen_cstr(cstr, typ_p'', typ_a'')
 
 def $gen_cstr(cstr, SpecT ptd_p typ_p'*, SpecT ptd_a typ_a'*) = cstr'
   -- if typ_p'' = $specialize_typdef(ptd_p, typ_p'*)
   -- if typ_a'' = $specialize_typdef(ptd_a, typ_a'*)
-  -- if cstr' = $gen_cstr(cstr, typ_p'', typ_a'')
   -- if ~($is_nominal(typ_p'') /\ $is_nominal(typ_a''))
+  -- if cstr' = $gen_cstr(cstr, typ_p'', typ_a'')
 
 def $gen_cstr(cstr, DefT typ_p', typ_a) = $gen_cstr(cstr, typ_p', typ_a)
 
@@ -271,12 +268,16 @@ def $gen_cstr_fd'(cstr, fid_h :: fid_t*, fdenv_p, fdenv_a) = $gen_cstr_fd'(cstr'
 
 
 def $merge_cstr(cstr_o, cstr_n) = $merge_cstr'(cstr_o, cstr_n, tid_o*, MAP eps)
-  -- if MAP (PAIR tid_o typ_o?)* = cstr_o
-  -- if MAP (PAIR tid_n typ_n?)* = cstr_n
-  -- if $eq_set<tid>(SET tid_o*, SET tid_n*)
+  -- if SET tid_o* = $dom_map<tid, typ?>(cstr_o)
+  -- if $eq_set<tid>($dom_map<tid, typ?>(cstr_o), $dom_map<tid, typ?>(cstr_n))
 
 
 def $merge_cstr'(cstr_o, cstr_n, eps, cstr) = cstr
+
+def $merge_cstr'(cstr_o, cstr_n, tid_h :: tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
+  -- if $find_map<tid, typ?>(cstr_o, tid_h) = eps
+  -- if $find_map<tid, typ?>(cstr_n, tid_h) = eps
+  -- if cstr' = $update_map<tid, typ?>(cstr, tid_h, eps)
 
 def $merge_cstr'(cstr_o, cstr_n, tid_h :: tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
   -- if $find_map<tid, typ?>(cstr_o, tid_h) = eps
@@ -301,7 +302,7 @@ def $merge_cstr'(cstr_o, cstr_n, tid_h :: tid_t*, cstr) = $merge_cstr'(cstr_o, c
   -- if cstr' = $update_map<tid, typ?>(cstr, tid_h, typ_o)
 
 
-def $merge_cstrs(MAP (PAIR tid typ?)*, eps) = MAP (PAIR tid typ?)*
+def $merge_cstrs(cstr, eps) = cstr
 def $merge_cstrs(cstr, cstr_h :: cstr_t*) = cstr''
   -- if cstr' = $merge_cstr(cstr, cstr_h)
   -- if cstr'' = $merge_cstrs(cstr', cstr_t*)
@@ -309,9 +310,9 @@ def $merge_cstrs(cstr, cstr_h :: cstr_t*) = cstr''
 
 def $resolve_cstrs(MAP eps) = MAP eps
 
-def $resolve_cstrs(MAP ((PAIR tid_h typ_h?) :: (PAIR tid_t typ_t?)*)) = $update_map<tid, typ>(MAP (PAIR tid_t' typ_t')*, tid_h, typ_h')
-  -- if typ_h? = typ_h'
-  -- if typ_h' =/= AnyT
+def $resolve_cstrs(MAP ((PAIR tid_h typ_h) :: (PAIR tid_t typ_t?)*))
+  = $add_map<tid, typ>(MAP (PAIR tid_t' typ_t')*, tid_h, typ_h)
+  -- if typ_h =/= AnyT
   -- if MAP (PAIR tid_t' typ_t')* = $resolve_cstrs(MAP (PAIR tid_t typ_t?)*)
 
 

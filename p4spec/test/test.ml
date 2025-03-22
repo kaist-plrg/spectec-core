@@ -16,6 +16,16 @@ let log_stat name fails total : unit =
     total pass_rate fails total fail_rate
   |> print_endline
 
+(* Timer *)
+
+let time driver filename_p4 inputs =
+  let time_start = Unix.gettimeofday () in
+  let stat = driver inputs in
+  let time_end = Unix.gettimeofday () in
+  let duration = time_end -. time_start in
+  Format.eprintf ">>> %s: %.6f\n" filename_p4 duration;
+  stat
+
 (* File collector *)
 
 let rec collect_files ~(suffix : string) dir =
@@ -66,7 +76,9 @@ let run_typing_test_driver specdir includes_p4 testdir_p4 =
       (fun stat filename_p4 ->
         Format.asprintf "\n>>> Running typing test on %s" filename_p4
         |> print_endline;
-        run_typing_test stat spec_il includes_p4 filename_p4)
+        time
+          (fun () -> run_typing_test stat spec_il includes_p4 filename_p4)
+          filename_p4 ())
       stat filenames_p4
   in
   log_stat "\nRunning typing" stat.fail_run_typing total

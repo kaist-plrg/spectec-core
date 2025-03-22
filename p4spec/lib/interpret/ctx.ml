@@ -44,7 +44,7 @@ let empty (debug : bool) : t =
     fenv = FEnv.empty;
   }
 
-let localize (ctx : t) : t = { ctx with venv = VEnv.empty }
+let localize (ctx : t) : t = { ctx with trace = Trace.Empty; venv = VEnv.empty }
 
 (* Tracing *)
 
@@ -153,7 +153,7 @@ let bound_func (ctx : t) (fid : FId.t) : bool =
 let add_value (ctx : t) (var : Var.t) (value : Value.t) : t =
   (if bound_value ctx var then
      let id, _ = var in
-     error_dup id.at "value" id.it);
+     error_dup id.at "value" (Var.to_string var));
   let venv = VEnv.add var value ctx.venv in
   { ctx with venv }
 
