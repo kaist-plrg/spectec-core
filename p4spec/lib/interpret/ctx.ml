@@ -77,8 +77,8 @@ let trace_prem (ctx : t) (prem : prem) : t =
     |> print_endline;
   { ctx with trace }
 
-let trace_close (ctx : t) (trace : Trace.t) : t =
-  let trace = Trace.nest ctx.trace trace in
+let trace_commit (ctx : t) (trace : Trace.t) : t =
+  let trace = Trace.commit ctx.trace trace in
   (if ctx.debug then
      match trace with
      | Rel (id_rel, id_rule, _, _) ->

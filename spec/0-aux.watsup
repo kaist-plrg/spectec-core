@@ -125,31 +125,17 @@ dec $intersect_set<K>(set<K>, set<K>) : set<K>
 dec $union_set<K>(set<K>, set<K>) : set<K>
     hint(show %2 %latex("\\cup") %3)
 
-def $union_set<K>(SET K_l*, SET K_r*) = SET (K_l* ++ K_r*)
-
 dec $unions_set<K>(set<K>*) : set<K>
     hint(show %latex("\\bigcup") %2)
-
-def $unions_set<K>(eps) = $empty_set<K>
-def $unions_set<K>(SET K* :: (SET K'*)*) = $union_set<K>(SET K*, $unions_set<K>((SET K'*)*))
 
 dec $diff_set<K>(set<K>, set<K>) : set<K>
     hint(show %2 %latex("\\setminus") %3)
 
-def $diff_set<K>(SET K_l*, SET K_r*) = SET $setminus_<K>(K_l*, K_r*)
-
-dec $is_subset<K>(set<K>, set<K>) : bool
+dec $sub_set<K>(set<K>, set<K>) : bool
     hint(show %2 %latex("\\subset") %3)
-
-def $is_subset<K>(SET K_l*, SET K_r*) = true
-  -- if (K_l <- K_r*)*
-def $is_subset<K>(SET _, SET _) = false
-  -- otherwise
 
 dec $eq_set<K>(set<K>, set<K>) : bool
     hint(show %2 %latex("=") %3)
-
-def $eq_set<K>(SET K_l*, SET K_r*) = $is_subset<K>(SET K_l*, SET K_r*) /\ $is_subset<K>(SET K_r*, SET K_l*)
 
 ;;
 ;; General map functions
@@ -178,18 +164,8 @@ def $dom_map<K, V>(MAP (PAIR K _)*) = SET K*
 dec $find_map_opt<K, V>(map<K, V>, K) : V?
     hint(show %3#`[%4]?)
 
-def $find_map_opt<K, V>(MAP (PAIR K V)*, K_key) =
-  $assoc_<K, V>(K_key, (K, V)*)
-
 dec $find_maps_opt<K, V>(map<K, V>*, K) : V?
     hint(show %3#`[%4]?)
-
-def $find_maps_opt<K, V>(eps, K_key) = eps
-def $find_maps_opt<K, V>((MAP (PAIR K V)* :: (MAP (PAIR K' V')*)*), K_key) = V_key
-  -- if V_key = $find_map_opt<K, V>(MAP (PAIR K V)*, K_key)
-def $find_maps_opt<K, V>((MAP (PAIR K V)* :: (MAP (PAIR K' V')*)*), K_key)
-  = $find_maps_opt<K, V>((MAP (PAIR K' V')*)*, K_key)
-  -- if eps = $find_map_opt<K, V>(MAP (PAIR K V)*, K_key)
 
 dec $find_map<K, V>(map<K, V>, K) : V
     hint(show %3#`[%4])
@@ -200,13 +176,8 @@ def $find_map<K, V>(MAP (PAIR K V)*, K_key) = V_key
 dec $add_map<K, V>(map<K, V>, K, V) : map<K, V>
     hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
 
-def $add_map<K, V>(MAP (PAIR K V)*, K_key, V_key) = MAP ((PAIR K_key V_key) :: (PAIR K V)*)
-  -- if $not_in_set<K>(K_key, $dom_map<K, V>(MAP (PAIR K V)*))
+dec $adds_map<K, V>(map<K, V>, K*, V*) : map<K, V>
+    hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
 
 dec $update_map<K, V>(map<K, V>, K, V) : map<K, V>
     hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
-
-dec $extends_map<K, V>(map<K, V>, K*, V*) : map<K, V>
-    hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
-
-def $extends_map<K, V>(MAP (PAIR K V)*, K'*, V'*) = MAP ((PAIR K V)* ++ (PAIR K' V')*)

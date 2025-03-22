@@ -70,6 +70,7 @@ and value' =
   | TupleV of value list
   | OptV of value option
   | ListV of value list
+  | FuncV of id
 
 and valuefield = atom * value
 and valuecase = mixop * value list

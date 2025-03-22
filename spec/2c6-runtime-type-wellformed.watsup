@@ -322,21 +322,21 @@ rule TypeDef_wf/polyd:
 ;;
 
 rule ParamType_wf/none:
-  tidset |- id dir typ eps
+  tidset |- _ dir typ eps
   -- Type_wf: tidset |- typ
-  -- if $implies($is_externt($canon_typ(typ)), dir =/= NO)
+  -- if $implies($is_externt($canon_typ(typ)), dir = NO)
 
 rule ParamType_wf/some:
-  tidset |- id dir typ val
+  tidset |- _ dir typ val
   -- Type_wf: tidset |- typ
-  -- if $implies($is_externt($canon_typ(typ)), dir =/= NO)
+  -- if $implies($is_externt($canon_typ(typ)), dir = NO)
   -- if dir = IN \/ dir = NO
 
 rule ParamTypes_wf:
-  tidset |- paramtyp*
-  -- if (id _ _ _ = paramtyp)*
+  tidset |- pt*
+  -- if (id _ _ _ = pt)*
   -- if $distinct_<id>(id*)
-  -- (ParamType_wf: tidset |- paramtyp)*
+  -- (ParamType_wf: tidset |- pt)*
 
 ;;
 ;; Well-formedness of function types

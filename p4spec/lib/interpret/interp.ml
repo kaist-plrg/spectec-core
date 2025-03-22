@@ -481,7 +481,7 @@ and eval_cons_exp (ctx : Ctx.t) (at : region) (typ : typ') (exp_h : exp)
     (exp_t : exp) : Ctx.t * value =
   let ctx, value_h = eval_exp ctx exp_h in
   let ctx, value_t = eval_exp ctx exp_t in
-  let values_t = Value.unseq value_t in
+  let values_t = Value.get_list value_t in
   let value = ListV (value_h :: values_t) $$ (at, typ) in
   (ctx, value)
 
@@ -507,7 +507,7 @@ and eval_mem_exp (ctx : Ctx.t) (at : region) (exp_e : exp) (exp_s : exp) :
     Ctx.t * value =
   let ctx, value_e = eval_exp ctx exp_e in
   let ctx, value_s = eval_exp ctx exp_s in
-  let values_s = Value.unseq value_s in
+  let values_s = Value.get_list value_s in
   let value = BoolV (List.exists (Value.eq value_e) values_s) $$ (at, BoolT) in
   (ctx, value)
 
@@ -515,7 +515,7 @@ and eval_mem_exp (ctx : Ctx.t) (at : region) (exp_e : exp) (exp_s : exp) :
 
 and eval_len_exp (ctx : Ctx.t) (at : region) (exp : exp) : Ctx.t * value =
   let ctx, value = eval_exp ctx exp in
-  let len = value |> Value.unseq |> List.length |> Z.of_int in
+  let len = value |> Value.get_list |> List.length |> Z.of_int in
   let value = NumV (`Nat len) $$ (at, NumT `NatT) in
   (ctx, value)
 
@@ -526,7 +526,7 @@ and eval_len_exp (ctx : Ctx.t) (at : region) (exp : exp) : Ctx.t * value =
 and eval_slice_exp (ctx : Ctx.t) (at : region) (typ : typ') (exp_b : exp)
     (exp_i : exp) (exp_n : exp) : Ctx.t * value =
   let ctx, value_b = eval_exp ctx exp_b in
-  let values = Value.unseq value_b in
+  let values = Value.get_list value_b in
   let ctx, value_i = eval_exp ctx exp_i in
   let idx_l = value_i |> Value.get_num |> Num.to_int |> Z.to_int in
   let ctx, value_n = eval_exp ctx exp_n in
@@ -637,7 +637,7 @@ and eval_iter_exp_list (ctx : Ctx.t) (at : region) (typ : typ') (exp : exp)
     List.map
       (fun var ->
         let id, _typ, iters = var in
-        Ctx.find_value ctx (id, iters @ [ List ]) |> Value.unseq)
+        Ctx.find_value ctx (id, iters @ [ List ]) |> Value.get_list)
       vars
     |> transpose
   in
@@ -761,7 +761,7 @@ and eval_iter_prem (ctx : Ctx.t) (prem : prem) (iterexp : iterexp) :
       let values_bound_batch =
         List.map
           (fun (id, _typ, iters) ->
-            Ctx.find_value ctx (id, iters @ [ List ]) |> Value.unseq)
+            Ctx.find_value ctx (id, iters @ [ List ]) |> Value.get_list)
           vars_bound
         |> transpose
       in
@@ -853,7 +853,7 @@ and invoke_rel' (ctx : Ctx.t) (id : id) (values_input : value list) :
             (exps_output : exp list) : (Ctx.t * value list) attempt =
           let* ctx_local = eval_prems ctx_local prems in
           let ctx_local, values_output = eval_exps ctx_local exps_output in
-          let ctx = Ctx.trace_close ctx ctx_local.trace in
+          let ctx = Ctx.trace_commit ctx ctx_local.trace in
           Ok (ctx, values_output)
         in
         let attempt_rule () : (Ctx.t * value list) attempt =
@@ -898,13 +898,16 @@ and invoke_func (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
 
 and invoke_func' (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
     (Ctx.t * value) attempt =
-  if Builtins.is_builtin id then invoke_func_builtin ctx id targs args
+  if Builtin.is_builtin id then invoke_func_builtin ctx id targs args
   else invoke_func_def ctx id targs args
 
 and invoke_func_builtin (ctx : Ctx.t) (id : id) (targs : targ list)
     (args : arg list) : (Ctx.t * value) attempt =
   let ctx, values_input = eval_args ctx args in
-  let value_output = Builtins.invoke id targs values_input in
+  let ctx_local = Ctx.localize ctx in
+  let ctx_local = Ctx.trace_open_dec ctx_local id 0 values_input in
+  let value_output = Builtin.invoke id targs values_input in
+  let ctx = Ctx.trace_commit ctx ctx_local.trace in
   Ok (ctx, value_output)
 
 and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
@@ -922,16 +925,6 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
     in
     List.map (fun targ -> Typ.subst_typ theta targ) targs
   in
-  (* Add type arguments to the context *)
-  check
-    (List.length targs = List.length tparams)
-    id.at "arity mismatch in type arguments";
-  let ctx =
-    List.fold_left2
-      (fun ctx tparam targ ->
-        Ctx.add_typdef ctx tparam ([], PlainT targ $ targ.at))
-      ctx tparams targs
-  in
   (* Evaluate arguments *)
   let ctx, values_input = eval_args ctx args in
   (* Apply the first matching clause *)
@@ -948,7 +941,7 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
             let typ_output = Typ.subst_typ theta typ_output in
             value_output.it $$ (value_output.at, typ_output.it)
           in
-          let ctx = Ctx.trace_close ctx ctx_local.trace in
+          let ctx = Ctx.trace_commit ctx ctx_local.trace in
           Ok (ctx, value_output)
         in
         let attempt_clause () : (Ctx.t * value) attempt =
@@ -956,6 +949,16 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
           let ctx_local = Ctx.localize ctx in
           let ctx_local =
             Ctx.trace_open_dec ctx_local id idx_clause values_input
+          in
+          (* Add type arguments to the context *)
+          check
+            (List.length targs = List.length tparams)
+            id.at "arity mismatch in type arguments";
+          let ctx_local =
+            List.fold_left2
+              (fun ctx_local tparam targ ->
+                Ctx.add_typdef ctx_local tparam ([], PlainT targ $ targ.at))
+              ctx_local tparams targs
           in
           (* Try to match the clause *)
           let* ctx_local, args_input, prems, exp_output =
@@ -992,7 +995,7 @@ let load_spec (ctx : Ctx.t) (spec : spec) : Ctx.t =
 (* Entry point: run typing rule from `Prog_ok` relation *)
 
 let run_typing (debug : bool) (spec : spec) (program : value) : value list =
-  Builtins.init ();
+  Builtin.init ();
   let ctx = Ctx.empty debug in
   let ctx = load_spec ctx spec in
   let+ _ctx, values = invoke_rel ctx ("Prog_ok" $ no_region) [ program ] in

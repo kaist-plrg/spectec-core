@@ -132,7 +132,7 @@ rule Sub_expl_canon/seqdefaultt-headert:
 
 rule Sub_expl_canon/recorddefaultt-structt:
   RecordDefaultT (member_a, typ_a)* <: StructT _ (member_b, typ_b)*
-  -- if $is_subset<member>(SET member_a*, SET member_b*)
+  -- if $sub_set<member>(SET member_a*, SET member_b*)
   -- if SET member_c* = $diff_set<member>(SET member_b*, SET member_a*)
   ----
   -- (Sub_expl:
@@ -143,7 +143,7 @@ rule Sub_expl_canon/recorddefaultt-structt:
 
 rule Sub_expl_canon/recorddefaultt-headert:
   RecordDefaultT (member_a, typ_a)* <: HeaderT _ (member_b, typ_b)*
-  -- if $is_subset<member>(SET member_a*, SET member_a*)
+  -- if $sub_set<member>(SET member_a*, SET member_a*)
   -- if SET member_c* = $diff_set<member>(SET member_b*, SET member_a*)
   ----
   -- (Sub_expl:
@@ -265,7 +265,7 @@ rule Sub_impl_canon/seqdefaultt-headert:
 
 rule Sub_impl_canon/recorddefaultt-structt:
   RecordDefaultT (member_a, typ_a)* << StructT _ (member_b, typ_b)*
-  -- if $is_subset<member>(SET member_a*, SET member_b*)
+  -- if $sub_set<member>(SET member_a*, SET member_b*)
   -- if SET member_c* = $diff_set<member>(SET member_b*, SET member_a*)
   ----
   -- (Sub_impl:
@@ -276,7 +276,7 @@ rule Sub_impl_canon/recorddefaultt-structt:
 
 rule Sub_impl_canon/recorddefaultt-headert:
   RecordDefaultT (member_a, typ_a)* << HeaderT id (member_b, typ_b)*
-  -- if $is_subset<member>(SET member_a*, SET member_b*)
+  -- if $sub_set<member>(SET member_a*, SET member_b*)
   -- if SET member_c* = $diff_set<member>(SET member_b*, SET member_a*)
   ----
   -- (Sub_impl:

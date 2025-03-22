@@ -119,6 +119,7 @@ and string_of_value ?(level = 0) value =
                 let indent = if idx = 0 then "" else indent (level + 1) in
                 indent ^ string_of_value ~level:(level + 2) value)
               values))
+  | FuncV id -> string_of_defid id
 
 (* Operators *)
 

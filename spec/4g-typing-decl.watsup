@@ -627,12 +627,13 @@ rule Decl_ok/parserd:
   -- if $in_set<statelabel>("start", SET statelabel*)
   -- if $not_in_set<statelabel>("accept", SET statelabel*)
   -- if $not_in_set<statelabel>("reject", SET statelabel*)
+  -- if statelabel'* = "accept" :: "reject" :: statelabel*
   ----
   -- if C_5 = $set_localkind(C_4, PARSERSTATE)
   ----
   ;; (TODO) ^n iterator would be better
-  -- if styp* = $repeat_<styp>(StateT NO DYN eps, |statelabel*|)
-  -- if C_6 = $add_styps(BLOCK, C_5, statelabel*, styp*)
+  -- if styp* = $repeat_<styp>(StateT NO DYN eps, |statelabel'*|)
+  -- if C_6 = $add_styps(BLOCK, C_5, statelabel'*, styp*)
   ----
   -- ParserStates_ok: C_6 |- parserstate* : C_7 parserstateIL*
   ----

@@ -12,13 +12,18 @@ type unop = [ `PlusOp | `MinusOp ]
 type binop = [ `AddOp | `SubOp | `MulOp | `DivOp | `ModOp | `PowOp ]
 type cmpop = [ `LtOp | `GtOp | `LeOp | `GeOp ]
 
+(* Comparison *)
+
+let compare (n_a : t) (n_b : t) : int =
+  match (n_a, n_b) with
+  | `Nat n_a, `Nat n_b -> Z.compare n_a n_b
+  | `Int i_a, `Int i_b -> Z.compare i_a i_b
+  | `Nat _, `Int _ -> -1
+  | `Int _, `Nat _ -> 1
+
 (* Equality *)
 
-let eq (n_a : t) (n_b : t) : bool =
-  match (n_a, n_b) with
-  | `Nat n_a, `Nat n_b -> Z.equal n_a n_b
-  | `Int i_a, `Int i_b -> Z.equal i_a i_b
-  | _, _ -> false
+let eq (n_a : t) (n_b : t) : bool = compare n_a n_b = 0
 
 (* Subtyping *)
 

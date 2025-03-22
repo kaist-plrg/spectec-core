@@ -10,7 +10,8 @@
 syntax tid = id
 syntax tidset hint(show %latex("\\mathcal{B}")) = set<tid>
 
-dec $fresh_tid() : tid          hint(show FRESH#_#TID)
+dec $fresh_tid() : tid
+    hint(show FRESH#_#TID)
 
 dec $fresh_tids(nat) : tid*
     hint(show FRESH#_#TIDS)

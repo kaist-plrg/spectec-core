@@ -20,7 +20,7 @@ let open_dec (id_func : id) (idx_clause : int) (values_input : value list) : t =
 
 (* Nesting *)
 
-let nest (trace : t) (trace_sub : t) : t =
+let commit (trace : t) (trace_sub : t) : t =
   match trace with
   | Rel (id_rel, id_rule, values, traces) ->
       Rel (id_rel, id_rule, values, traces @ [ trace_sub ])
