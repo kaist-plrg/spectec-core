@@ -12,30 +12,11 @@ module Funcs = Map.Make (String)
 
 let funcs =
   Funcs.empty
-  (* Fresh type id *)
-  |> Funcs.add "fresh_tid" (fun at targs values_input ->
-         Fresh.fresh_tid at targs values_input)
-  (* Numerics *)
-  |> Funcs.add "shl" (fun at targs values_input ->
-         Numerics.shl at targs values_input)
-  |> Funcs.add "shr" (fun at targs values_input ->
-         Numerics.shr at targs values_input)
-  |> Funcs.add "shr_arith" (fun at targs values_input ->
-         Numerics.shr_arith at targs values_input)
-  |> Funcs.add "pow2" (fun at targs values_input ->
-         Numerics.pow2 at targs values_input)
-  |> Funcs.add "to_int" (fun at targs values_input ->
-         Numerics.to_int at targs values_input)
-  |> Funcs.add "to_bitstr" (fun at targs values_input ->
-         Numerics.to_bitstr at targs values_input)
-  |> Funcs.add "bneg" (fun at targs values_input ->
-         Numerics.bneg at targs values_input)
-  |> Funcs.add "band" (fun at targs values_input ->
-         Numerics.band at targs values_input)
-  |> Funcs.add "bxor" (fun at targs values_input ->
-         Numerics.bxor at targs values_input)
-  |> Funcs.add "bor" (fun at targs values_input ->
-         Numerics.bor at targs values_input)
+  (* Lists *)
+  |> Funcs.add "concat_" (fun at targs values_input ->
+         Lists.concat_ at targs values_input)
+  |> Funcs.add "distinct_" (fun at targs values_input ->
+         Lists.distinct_ at targs values_input)
   (* Sets *)
   |> Funcs.add "intersect_set" (fun at targs values_input ->
          Sets.intersect_set at targs values_input)
@@ -60,6 +41,30 @@ let funcs =
          Maps.adds_map at targs values_input)
   |> Funcs.add "update_map" (fun at targs values_input ->
          Maps.update_map at targs values_input)
+  (* Fresh type id *)
+  |> Funcs.add "fresh_tid" (fun at targs values_input ->
+         Fresh.fresh_tid at targs values_input)
+  (* Numerics *)
+  |> Funcs.add "shl" (fun at targs values_input ->
+         Numerics.shl at targs values_input)
+  |> Funcs.add "shr" (fun at targs values_input ->
+         Numerics.shr at targs values_input)
+  |> Funcs.add "shr_arith" (fun at targs values_input ->
+         Numerics.shr_arith at targs values_input)
+  |> Funcs.add "pow2" (fun at targs values_input ->
+         Numerics.pow2 at targs values_input)
+  |> Funcs.add "to_int" (fun at targs values_input ->
+         Numerics.to_int at targs values_input)
+  |> Funcs.add "to_bitstr" (fun at targs values_input ->
+         Numerics.to_bitstr at targs values_input)
+  |> Funcs.add "bneg" (fun at targs values_input ->
+         Numerics.bneg at targs values_input)
+  |> Funcs.add "band" (fun at targs values_input ->
+         Numerics.band at targs values_input)
+  |> Funcs.add "bxor" (fun at targs values_input ->
+         Numerics.bxor at targs values_input)
+  |> Funcs.add "bor" (fun at targs values_input ->
+         Numerics.bor at targs values_input)
 
 let is_builtin (id : id) : bool = Funcs.mem id.it funcs
 

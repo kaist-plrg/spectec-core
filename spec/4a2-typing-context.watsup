@@ -159,10 +159,14 @@ def $add_styp(LOCAL, C, id, styp) = C[ .LOCAL.FRAMES = frame* ]
 dec $add_styps(cursor, context, id*, styp*) : context
     hint(show %2.%1.FRAME#(S)#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
 
-def $add_styps(p, C, eps, eps) = C
-def $add_styps(p, C, id_h :: id_t*, styp_h :: styp_t*) = C''
-  -- if C' = $add_styp(p, C, id_h, styp_h)
-  -- if C'' = $add_styps(p, C', id_t*, styp_t*)
+def $add_styps(GLOBAL, C, id*, styp*) = C[ .GLOBAL.FRAME = frame ]
+  -- if frame = $adds_map<id, styp>(C.GLOBAL.FRAME, id*, styp*)
+def $add_styps(BLOCK, C, id*, styp*) = C[ .BLOCK.FRAME = frame ]
+  -- if frame = $adds_map<id, styp>(C.BLOCK.FRAME, id*, styp*)
+def $add_styps(LOCAL, C, id*, styp*) = C[ .LOCAL.FRAMES = frame* ]
+  -- if frame_h :: frame_t* = C.LOCAL.FRAMES
+  -- if frame_h' = $adds_map<id, styp>(frame_h, id*, styp*)
+  -- if frame* = frame_h' :: frame_t*
 
 ;; Adder for parameters
 
@@ -200,10 +204,12 @@ def $add_typdef(LOCAL, C, tid, td) = C[ .LOCAL.TDENV = tdenv ]
 dec $add_typdefs(cursor, context, tid*, typdef*) : context
     hint(show %2.%1.TDENV#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
 
-def $add_typdefs(p, C, eps, eps) = C
-def $add_typdefs(p, C, tid_h :: tid_t*, td_h :: td_t*) = C''
-  -- if C' = $add_typdef(p, C, tid_h, td_h)
-  -- if C'' = $add_typdefs(p, C', tid_t*, td_t*)
+def $add_typdefs(GLOBAL, C, tid*, td*) = C[ .GLOBAL.TDENV = tdenv ]
+  -- if tdenv = $adds_map<tid, typdef>(C.GLOBAL.TDENV, tid*, td*)
+def $add_typdefs(BLOCK, C, tid*, td*) = C[ .BLOCK.TDENV = tdenv ]
+  -- if tdenv = $adds_map<tid, typdef>(C.BLOCK.TDENV, tid*, td*)
+def $add_typdefs(LOCAL, C, tid*, td*) = C[ .LOCAL.TDENV = tdenv ]
+  -- if tdenv = $adds_map<tid, typdef>(C.LOCAL.TDENV, tid*, td*)
 
 ;; Adder for function definitions
 

@@ -39,6 +39,45 @@ let extend (trace : t) (prem : prem) : t =
       Dec (id_func, idx_clause, values, traces @ [ Prem prem ])
   | Prem _ | Empty -> assert false
 
+(* Analysis *)
+
+module Counter = Map.Make (String)
+
+type counter = int Counter.t
+
+let update_counter (id : string) (counter : counter) : counter =
+  match Counter.find_opt id counter with
+  | None -> Counter.add id 1 counter
+  | Some count -> Counter.add id (count + 1) counter
+
+let log_counter (counter : counter) : string =
+  Counter.bindings counter
+  |> List.sort (fun (_, count_a) (_, count_b) -> count_b - count_a)
+  |> List.map (fun (id, count) -> Format.asprintf "   [ %s ]: %d" id count)
+  |> String.concat "\n"
+
+let rec analyze' (rules : counter) (funcs : counter) (trace : t) :
+    counter * counter =
+  match trace with
+  | Rel (id_rel, _, _, traces) ->
+      let rules = update_counter id_rel.it rules in
+      List.fold_left
+        (fun (rules, funcs) trace -> analyze' rules funcs trace)
+        (rules, funcs) traces
+  | Dec (id_func, _, _, traces) ->
+      let funcs = update_counter id_func.it funcs in
+      List.fold_left
+        (fun (rules, funcs) trace -> analyze' rules funcs trace)
+        (rules, funcs) traces
+  | _ -> (rules, funcs)
+
+let analyze (trace : t) : unit =
+  let rules, funcs = analyze' Counter.empty Counter.empty trace in
+  Format.printf "Rules:\n";
+  Format.printf "%s\n" (log_counter rules);
+  Format.printf "Functions:\n";
+  Format.printf "%s\n" (log_counter funcs)
+
 (* Printing *)
 
 let rec log ?(depth = 0) ?(idx = 0) ?(verbose = false) (trace : t) : string =

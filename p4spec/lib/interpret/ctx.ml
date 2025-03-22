@@ -46,6 +46,10 @@ let empty (debug : bool) : t =
 
 let localize (ctx : t) : t = { ctx with trace = Trace.Empty; venv = VEnv.empty }
 
+(* Analyzers *)
+
+let analyze (ctx : t) : unit = if ctx.debug then Trace.analyze ctx.trace
+
 (* Tracing *)
 
 let trace_open_rel (ctx : t) (id_rel : id) (id_rule : id)

@@ -998,5 +998,6 @@ let run_typing (debug : bool) (spec : spec) (program : value) : value list =
   Builtin.init ();
   let ctx = Ctx.empty debug in
   let ctx = load_spec ctx spec in
-  let+ _ctx, values = invoke_rel ctx ("Prog_ok" $ no_region) [ program ] in
+  let+ ctx, values = invoke_rel ctx ("Prog_ok" $ no_region) [ program ] in
+  Ctx.analyze ctx;
   values

@@ -57,8 +57,6 @@ def $opt_<X>(X) = X
 
 dec $concat_<X>((X*)*) : X*
     hint(show (++) %2)
-def $concat_<X>(eps) = eps
-def $concat_<X>((X*) :: (X'*)*) = X* ++ $concat_<X>((X'*)*)
 
 dec $partition_<X>(X*, nat) : (X*, X*)
 
@@ -74,6 +72,9 @@ def $assoc_<X, Y>(X_key, (X_key, Y_val) :: (X, Y)*) = Y_val
 def $assoc_<X, Y>(X_key, (X_h, Y_h) :: (X_t, Y_t)*)
   = $assoc_<X, Y>(X_key, (X_t, Y_t)*)
 
+dec $distinct_<K>(K*) : bool
+    hint(show %2 $distinct)
+
 ;;
 ;; General set functions
 ;;
@@ -84,32 +85,6 @@ syntax set<K> hint(show %latex("\\{") %#%latex("^* \\}")) =
 dec $empty_set<K> : set<K>
     hint(show %latex("\\{") %latex("\\}"))
 def $empty_set<K> = SET eps
-
-dec $distinct_<K>(K*) : bool  hint(show %2 $distinct)
-def $distinct_<K>(eps) = true
-def $distinct_<K>(K :: K'*) = ~(K <- K'*) /\ $distinct_<K>(K'*)
-
-dec $setminus_<X>(X*, X*) : X*  hint(show %2\%3)
-dec $setminus1_<X>(X, X*) : X*
-
-def $setminus_<X>(eps, X*) = eps
-def $setminus_<X>(X_h :: X_t*, X*) = $setminus1_<X>(X_h, X*) ++ $setminus_<X>(X_t*, X*)
-def $setminus1_<X>(X, eps) = X
-def $setminus1_<X>(X, X_h :: X_t*) = eps
-  -- if X = X_h
-def $setminus1_<X>(X, X_h :: X_t*) = $setminus1_<X>(X, X_t*)
-  -- otherwise
-
-dec $setproduct_<X>((X*)*) : (X*)*  hint(show %latex("\\Large\\times") %2)
-dec $setproduct1_<X>(X*, (X*)*) : (X*)*
-dec $setproduct2_<X>(X, (X*)*) : (X*)*
-
-def $setproduct_<X>(eps) = (eps)
-def $setproduct_<X>((X_h*) :: (X_t*)*) = $setproduct1_<X>(X_h*, $setproduct_<X>((X_t*)*))
-def $setproduct1_<X>(eps, (X*)*) = eps
-def $setproduct1_<X>(X_h :: X_t*, (X*)*) = $setproduct2_<X>(X_h, (X*)*) ++ $setproduct1_<X>(X_t*, (X*)*)
-def $setproduct2_<X>(X_h, eps) = eps
-def $setproduct2_<X>(X, (X_h*) :: (X_t*)*) = (X :: X_h*) ++ $setproduct2_<X>(X, (X_t*)*)
 
 dec $in_set<K>(K, set<K>) : bool
     hint(show %2 %latex("\\in") %3)
