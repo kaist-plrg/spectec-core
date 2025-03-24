@@ -67,7 +67,7 @@ and typ' =
 
 (* Values *)
 and value = (unit, expr') L.value
-and value' =  expr' L.value'
+and value' = expr' L.value'
 
 (* Annotations *)
 and anno = (unit, expr') L.anno

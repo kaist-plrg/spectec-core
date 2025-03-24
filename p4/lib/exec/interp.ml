@@ -317,7 +317,7 @@ module Make (Arch : ARCH) : INTERP = struct
     | ValueE { value } -> value.it |> wrap_value
     | BoolE { boolean } -> Value.BoolV boolean |> wrap_value
     | StrE { text } -> Value.StrV text.it |> wrap_value
-    | NumE { num } -> eval_num_expr cursor ctx num |> wrap_value 
+    | NumE { num } -> eval_num_expr cursor ctx num |> wrap_value
     | VarE { var } -> eval_var_expr cursor ctx var |> wrap_value
     | SeqE { exprs } -> eval_seq_expr ~default:false cursor ctx exprs
     | SeqDefaultE { exprs } -> eval_seq_expr ~default:true cursor ctx exprs
@@ -342,8 +342,8 @@ module Make (Arch : ARCH) : INTERP = struct
     | BitAccE { expr_base; value_lo; value_hi } ->
         eval_bitstring_acc_expr cursor ctx expr_base value_lo value_hi
     | ErrAccE { member } -> eval_error_acc_expr cursor ctx member |> wrap_value
-    | TypeAccE { var_base; member } -> eval_type_acc_expr cursor ctx var_base member 
-                                       |> wrap_value
+    | TypeAccE { var_base; member } ->
+        eval_type_acc_expr cursor ctx var_base member |> wrap_value
     | ExprAccE { expr_base; member } ->
         eval_expr_acc_expr cursor ctx expr_base member
     | CallFuncE { var_func; targs; args } ->
@@ -368,14 +368,14 @@ module Make (Arch : ARCH) : INTERP = struct
             cont_sig ctx esign (fun value -> (ctx, Cont (values @ [ value ])))))
       (ctx, Cont []) exprs
 
-  and eval_num_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t) (num : Il.Ast.num) : Value.t =
-    let value = 
+  and eval_num_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t) (num : Il.Ast.num) :
+      Value.t =
+    let value =
       match num.it with
-      | value, Some(width, signed) ->
-        if signed then Runtime_value.Num.int_of_raw_int value width
-        else Runtime_value.Num.bit_of_raw_int value width
-      | value, None ->
-        Value.IntV value
+      | value, Some (width, signed) ->
+          if signed then Runtime_value.Num.int_of_raw_int value width
+          else Runtime_value.Num.bit_of_raw_int value width
+      | value, None -> Value.IntV value
     in
     value
 
@@ -557,12 +557,13 @@ module Make (Arch : ARCH) : INTERP = struct
         in
         (ctx, Cont value))
 
-  and eval_error_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (member: Il.Ast.member) : Value.t =
+  and eval_error_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (member : Il.Ast.member) : Value.t =
     let value_error = Ctx.find_value_opt cursor ("error." ^ member.it) ctx in
     Option.get value_error
 
-  and eval_type_acc_expr (cursor: Ctx.cursor) (ctx: Ctx.t)
-      (var_base: Il.Ast.var) (member: Il.Ast.member) : Value.t =
+  and eval_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
+      (var_base : Il.Ast.var) (member : Il.Ast.member) : Value.t =
     let td_base = Ctx.find_opt Ctx.find_typdef_opt cursor var_base ctx in
     let td_base = Option.get td_base in
     let value =
@@ -570,20 +571,19 @@ module Make (Arch : ARCH) : INTERP = struct
         match td_base with
         | MonoD typ_base -> typ_base
         | _ ->
-          F.asprintf "(eval_type_acc_expr) Cannot access a generic type %a"
-            (TypeDef.pp ~level:0) td_base
-          |> error_no_info
+            F.asprintf "(eval_type_acc_expr) Cannot access a generic type %a"
+              (TypeDef.pp ~level:0) td_base
+            |> error_no_info
       in
       match Type.canon typ_base with
-      | EnumT (id, _) ->
-        Value.EnumFieldV (id, member.it)
+      | EnumT (id, _) -> Value.EnumFieldV (id, member.it)
       | SEnumT (id, _, fields) ->
-        let value_inner = List.assoc member.it fields in
-        Value.SEnumFieldV (id, member.it, value_inner)
+          let value_inner = List.assoc member.it fields in
+          Value.SEnumFieldV (id, member.it, value_inner)
       | _ ->
-        F.asprintf "(eval_type_acc_expr) %a cannot be accessed\n"
-          (TypeDef.pp ~level:0) td_base
-        |> error_no_info
+          F.asprintf "(eval_type_acc_expr) %a cannot be accessed\n"
+            (TypeDef.pp ~level:0) td_base
+          |> error_no_info
     in
     value
 

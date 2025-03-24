@@ -72,6 +72,7 @@ and pp_cparams ?(level = 0) fmt cparams = pp_params ~level fmt cparams
 (* Types *)
 
 and pp_typ ?(level = 0) fmt typ = pp_typ' ~level fmt typ.it
+
 and pp_typ' ?(level = 0) fmt typ =
   match typ with
   | VoidT -> F.pp_print_string fmt "void"

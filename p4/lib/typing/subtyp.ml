@@ -48,7 +48,6 @@ let check_explicit_castable (typ : Type.t) : bool =
       true
   | _ -> false
 
-
 let rec explicit (typ_from : Type.t) (typ_to : Type.t) : bool =
   let typ_from = Type.canon typ_from in
   let typ_to = Type.canon typ_to in

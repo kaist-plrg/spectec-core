@@ -734,7 +734,7 @@ and check_valid_cparam' (tset : TIdSet.t) (cparam : Types.cparam') : unit =
 
 and check_valid_cparams' (tset : TIdSet.t) (cparams : Types.cparam' list) : unit
     =
-    let ids = List.map (fun (id, _, _, _, _) -> id.it) cparams in
+  let ids = List.map (fun (id, _, _, _, _) -> id.it) cparams in
   check_distinct_names ids;
   List.iter (check_valid_cparam' tset) cparams
 

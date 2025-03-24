@@ -33,8 +33,10 @@ and eq_cparams cparams_a cparams_b = E.eq_list eq_cparam cparams_a cparams_b
 
 (* Type Ids *)
 
-and eq_tid' id_a id_b =  String.starts_with ~prefix:"__WILD_" id_a
-        && String.starts_with ~prefix:"__WILD_" id_b || id_a = id_b
+and eq_tid' id_a id_b =
+  String.starts_with ~prefix:"__WILD_" id_a
+  && String.starts_with ~prefix:"__WILD_" id_b
+  || id_a = id_b
 
 (* Types *)
 
@@ -140,10 +142,9 @@ and eq_funcdef fd_a fd_b =
   | MonoFD ft_a, MonoFD ft_b -> eq_functyp ft_a ft_b
   | ( PolyFD (tparams_a, tparams_hidden_a, ft_a),
       PolyFD (tparams_b, tparams_hidden_b, ft_b) ) ->
-    eq_tparams (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
+      eq_tparams (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
       && eq_functyp ft_a ft_b
   | _ -> false
-
 
 (* Equal kinds *)
 
@@ -326,7 +327,8 @@ and eq_funcdef_alpha (fd_a : funcdef) (fd_b : funcdef) : bool =
   in
   let eq_funcdef_alpha' tparams_a tparams_hidden_a ft_a tparams_b
       tparams_hidden_b ft_b =
-    List.length tparams_a + List.length tparams_hidden_a = List.length tparams_b + List.length tparams_hidden_b
+    List.length tparams_a + List.length tparams_hidden_a
+    = List.length tparams_b + List.length tparams_hidden_b
     && eq_funcdef_alpha'' tparams_a tparams_hidden_a ft_a tparams_b
          tparams_hidden_b ft_b
   in
