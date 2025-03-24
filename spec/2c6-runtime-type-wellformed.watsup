@@ -37,7 +37,7 @@ rule Type_wf/spect:
 dec $nestable_deft(typ) : bool
 dec $nestable'_deft(typ) : bool
 
-def $nestable'_deft(typ) = $nestable'_deft($canon_typ(typ))
+def $nestable_deft(typ) = $nestable'_deft($canon_typ(typ))
 def $nestable'_deft(basetyp) = ~$is_voidt(basetyp) /\ ~$is_matchkindt(basetyp)
 def $nestable'_deft(VarT _) = true
 def $nestable'_deft(datatyp) = true
@@ -73,12 +73,22 @@ rule Type_wf/enumt:
 dec $nestable_senumt(typ) : bool
 dec $nestable'_senumt(typ) : bool
 dec $nestable_newt_in_senumt(typ) : bool
+dec $nestable_newt_in_senumt'(typ) : bool
 
 def $nestable_senumt(typ) = $nestable'_senumt($canon_typ(typ))
 def $nestable'_senumt(FIntT _) = true
+def $nestable'_senumt(FBitT _) = true
 def $nestable'_senumt(VarT _) = true
 def $nestable'_senumt(NewT _ typ) = $nestable_newt_in_senumt(typ)
 def $nestable'_senumt(typ) = false
+  -- otherwise
+
+def $nestable_newt_in_senumt(typ) = $nestable_newt_in_senumt'($canon_typ(typ))
+def $nestable_newt_in_senumt'(FIntT _) = true
+def $nestable_newt_in_senumt'(FBitT _) = true
+def $nestable_newt_in_senumt'(VarT _) = true
+def $nestable_newt_in_senumt'(NewT _ _) = true
+def $nestable_newt_in_senumt'(typ) = false
   -- otherwise
 
 rule Type_wf/senumt:
@@ -154,6 +164,7 @@ rule Type_wf/structt:
 dec $nestable_headert(typ) : bool
 dec $nestable'_headert(typ) : bool
 dec $nestable_structt_in_headert(typ) : bool
+dec $nestable'_structt_in_headert(typ) : bool
 
 def $nestable_headert(typ) = $nestable'_headert($canon_typ(typ))
 def $nestable'_headert(BoolT) = true
@@ -163,6 +174,18 @@ def $nestable'_headert(SEnumT _ _ _) = true
 def $nestable'_headert(StructT _ (_, typ)*) = true
   -- if $nestable_structt_in_headert(typ)*
 def $nestable'_headert(typ) = false
+  -- otherwise
+
+def $nestable_structt_in_headert(typ) = $nestable'_structt_in_headert($canon_typ(typ))
+def $nestable'_structt_in_headert(BoolT) = true
+def $nestable'_structt_in_headert(FIntT _) = true
+def $nestable'_structt_in_headert(FBitT _) = true
+def $nestable'_structt_in_headert(VarT _) = true
+def $nestable'_structt_in_headert(NewT _ _) = true
+def $nestable'_structt_in_headert(SEnumT _ _ _) = true
+def $nestable'_structt_in_headert(StructT _ (_, typ)*) = true
+  -- if $nestable_structt_in_headert(typ)*
+def $nestable'_structt_in_headert(typ) = false
   -- otherwise
 
 rule Type_wf/headert:
@@ -239,7 +262,9 @@ rule Type_wf/invalidt:
 dec $nestable_sett(typ) : bool
 dec $nestable'_sett(typ) : bool
 dec $nestable_tuplet_in_sett(typ) : bool
+dec $nestable'_tuplet_in_sett(typ) : bool
 dec $nestable_seqt_in_sett(typ) : bool
+dec $nestable'_seqt_in_sett(typ) : bool
 
 def $nestable_sett(typ) = $nestable'_sett($canon_typ(typ))
 def $nestable'_sett(BoolT) = true
@@ -253,6 +278,34 @@ def $nestable'_sett(TupleT typ*) = true
 def $nestable'_sett(SeqT typ*) = true
   -- if $nestable_seqt_in_sett(typ)*
 def $nestable'_sett(typ) = false
+  -- otherwise
+
+def $nestable_tuplet_in_sett(typ) = $nestable'_tuplet_in_sett($canon_typ(typ))
+def $nestable'_tuplet_in_sett(BoolT) = true
+def $nestable'_tuplet_in_sett(FIntT _) = true
+def $nestable'_tuplet_in_sett(FBitT _) = true
+def $nestable'_tuplet_in_sett(VarT _) = true
+def $nestable'_tuplet_in_sett(NewT _ _) = true
+def $nestable'_tuplet_in_sett(EnumT _ _) = true
+def $nestable'_tuplet_in_sett(SEnumT _ _ _) = true
+def $nestable'_tuplet_in_sett(TupleT typ*) = true
+  -- if $nestable_tuplet_in_sett(typ)*
+def $nestable'_tuplet_in_sett(typ) = false
+  -- otherwise
+
+def $nestable_seqt_in_sett(typ) = $nestable'_seqt_in_sett($canon_typ(typ))
+def $nestable'_seqt_in_sett(BoolT) = true
+def $nestable'_seqt_in_sett(FIntT _) = true
+def $nestable'_seqt_in_sett(FBitT _) = true
+def $nestable'_seqt_in_sett(VarT _) = true
+def $nestable'_seqt_in_sett(NewT _ _) = true
+def $nestable'_seqt_in_sett(EnumT _ _) = true
+def $nestable'_seqt_in_sett(SEnumT _ _ _) = true
+def $nestable'_seqt_in_sett(TupleT typ*) = true
+  -- if $nestable_seqt_in_sett(typ)*
+def $nestable'_seqt_in_sett(SeqT typ*) = true
+  -- if $nestable_seqt_in_sett(typ)*
+def $nestable'_seqt_in_sett(typ) = false
   -- otherwise
 
 rule Type_wf/sett:
@@ -270,7 +323,7 @@ rule Type_wf/tableenumt:
 
 rule Type_wf/tablestructt:
   tidset |- TableStructT _ (member, typ)*
-  -- if member* = [ "hit", "miss", "action\\_run" ]
+  -- if member* = [ "hit", "miss", "action_run" ]
   -- if typ* = [ BoolT, BoolT, (TableEnumT id_e member_e*) ]
   -- Type_wf: tidset |- TableEnumT id_e member_e*
 
@@ -284,6 +337,7 @@ rule Type_wf/anyt:
 dec $nestable_monod(typ) : bool
 
 def $nestable_monod(VarT _) = true
+def $nestable_monod(DefT _) = true
 def $nestable_monod(NewT _ _) = true
 def $nestable_monod(EnumT _ _) = true
 def $nestable_monod(SEnumT _ _ _) = true

@@ -12,6 +12,13 @@ module Funcs = Map.Make (String)
 
 let funcs =
   Funcs.empty
+  (* Texts *)
+  |> Funcs.add "int_to_text" (fun at targs values_input ->
+         Texts.int_to_text at targs values_input)
+  |> Funcs.add "strip_prefix" (fun at targs values_input ->
+         Texts.strip_prefix at targs values_input)
+  |> Funcs.add "strip_suffix" (fun at targs values_input ->
+         Texts.strip_suffix at targs values_input)
   (* Lists *)
   |> Funcs.add "concat_" (fun at targs values_input ->
          Lists.concat_ at targs values_input)

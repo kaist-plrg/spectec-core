@@ -11,7 +11,7 @@ let before_region region = { left = region.left; right = region.left }
 let after_region region = { left = region.right; right = region.right }
 
 let over_region = function
-  | [] -> raise (Invalid_argument "Source.over")
+  | [] -> no_region
   | region :: regions ->
       List.fold_left
         (fun region_over region ->

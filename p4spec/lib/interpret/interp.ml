@@ -216,7 +216,7 @@ and assign_exps (ctx : Ctx.t) (exps : exp list) (values : value list) :
     Ctx.t attempt =
   check
     (List.length exps = List.length values)
-    no_region
+    (over_region (List.map at exps))
     (F.asprintf
        "mismatch in number of expressions and values while assigning, expected \
         %d value(s) but got %d"

@@ -362,14 +362,13 @@ rule Decl_ok/actiond:
   ----
   -- if C_2 = $add_styps(LOCAL, C_1, id_p*, (typ_p dir_p DYN eps)*)
   ----
-  -- Block_ok: LOCAL C_2 CONT INIT |- block : C_3 CONT blockIL
+  -- Block_ok: LOCAL C_2 CONT INIT |- block : _ _ blockIL
   ----
-  -- if funcdef = MonoFD (ActionT (id_p dir_p typ_p val_p?)*)
+  -- if fd = MonoFD (ActionT (id_p dir_p typ_p val_p?)*)
   ----
-  -- if tidset = $bound_tids(p, C_0)
-  -- FuncDef_wf: tidset |- funcdef
+  -- FuncDef_wf: $bound_tids(p, C_0) |- fd
   ----
-  -- if C_4 = $add_funcdef(p, C_0, fid, funcdef)
+  -- if C_4 = $add_funcdef(p, C_0, fid, fd)
 
 ;;
 ;; Function declaration
@@ -1112,7 +1111,7 @@ relation Table_type_decl_ok:
 
 rule Table_type_decl_ok:
   BLOCK C tblctx |- id : C' typ_s
-  -- if id_e = $concat_text([ "action\\_list(", id, ")" ])
+  -- if id_e = $concat_text([ "action_list(", id, ")" ])
   -- if (name, pt*, argIL*)* = tblctx.ACTIONS
   ----
   -- if (member = $string_of_name(name))*
@@ -1123,9 +1122,9 @@ rule Table_type_decl_ok:
   ----
   -- if C' = $add_styps(BLOCK, C, id_f*, (typ_e NO LCTK val_e)*)
   ----
-  -- if id_s = $concat_text([ "apply\\_result(", id, ")" ])
+  -- if id_s = $concat_text([ "apply_result(", id, ")" ])
   ----
-  -- if typ_s = TableStructT id_s ([ ("hit", BoolT), ("miss", BoolT), ("action\\_run", typ_e) ])
+  -- if typ_s = TableStructT id_s ([ ("hit", BoolT), ("miss", BoolT), ("action_run", typ_e) ])
 
 
 rule Decl_ok/tabled:

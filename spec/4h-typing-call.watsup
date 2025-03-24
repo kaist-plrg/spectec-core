@@ -333,6 +333,10 @@ rule Call_site_ok:
 dec $is_table_apply_in_action_arg(argIL) : bool
     hint(show % CONTAINS TABLE.APPLY CALL)
 
+;; (TODO) Always false for now
+def $is_table_apply_in_action_arg(argIL) = false
+
+
 rule Call_ok/actiont:
   p C eps |- (ActionT pt*) targIL* arg* id_deft* : VoidT eps argIL*
   -- if pt'* = $filter_default_args(pt*, id_deft*)

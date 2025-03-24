@@ -215,7 +215,7 @@ rule Expr_ok/bine-shift:
   -- if ctk = $join_ctk(ctk_l, ctk_r)
 
 rule Expr_ok/bine-compare-eq:
-  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l' exprIL_r') typ' ctk
+  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l' exprIL_r') BoolT ctk
   -- if $in_set<binop>(binop, SET ([ EQ, NE ]))
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l
@@ -235,7 +235,7 @@ def $compatible_compare(typ_l, typ_r) = false
   -- otherwise
 
 rule Expr_ok/bine-compare:
-  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') typ'' ctk
+  p C |- BinE binop expr_l expr_r : (BinE binop exprIL_l'' exprIL_r'') BoolT ctk
   -- if $in_set<binop>(binop, SET ([ LE, GE, LT, GT ]))
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l typ_l ctk_l

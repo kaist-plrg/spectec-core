@@ -42,7 +42,7 @@ rule Type_ok/stackt:
   p C |- StackT type expr : (SpecT ptd typ) tid_fresh*
   -- Type_ok: p C |- type : typ tid_fresh*
   ----
-  -- Expr_ok: p C |- expr : exprIL typ LCTK
+  -- Expr_ok: p C |- expr : exprIL _ LCTK
   -- Eval_static: p C |- exprIL ~> val
   -- if i_size = $get_num(val)
   ----
