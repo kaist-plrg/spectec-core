@@ -13,8 +13,8 @@
  * under the License.
  *)
 
-open Vdomain.Num
-module Value = Vdomain.Value
+open Runtime_value.Num
+module Value = Runtime_value.Value
 module Type = Il.Types.Type
 open Util.Source
 

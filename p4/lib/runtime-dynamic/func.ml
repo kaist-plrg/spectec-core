@@ -1,6 +1,6 @@
 module F = Format
 open Domain.Dom
-module Value = Vdomain.Value
+module Value = Runtime_value.Value
 open Il.Ast
 module LValue = Lvalue
 open Util.Pp

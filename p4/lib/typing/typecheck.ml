@@ -1,7 +1,7 @@
 open Domain.Dom
 module Ctk = Il.Ctk
-module Num = Vdomain.Num
-module Value = Vdomain.Value
+module Num = Runtime_value.Num
+module Value = Runtime_value.Value
 module Types = Il.Types
 module Type = Types.Type
 module TypeDef = Types.TypeDef
