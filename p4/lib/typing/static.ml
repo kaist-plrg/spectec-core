@@ -1,5 +1,5 @@
 module Ctk = Il.Ctk
-module Value = Vdomain.Value
+module Value = Runtime_value.Value
 module Types = Il.Types
 module Type = Types.Type
 module TypeDef = Types.TypeDef
@@ -223,8 +223,8 @@ and eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (exprs : Il.Ast.expr list) :
 and eval_num_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t) (num : Il.Ast.num) : Value.t =
   match num.it with
   | value, Some(width, signed) ->
-    if signed then Vdomain.Num.int_of_raw_int value width
-    else Vdomain.Num.bit_of_raw_int value width
+    if signed then Runtime_value.Num.int_of_raw_int value width
+    else Runtime_value.Num.bit_of_raw_int value width
   | value, None ->
     Value.IntV value
 

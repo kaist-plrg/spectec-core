@@ -2,7 +2,7 @@ module F = Format
 module L = Lang.Ast
 module P = Lang.Pp
 module Type = Types.Type
-open Vdomain.Value
+open Runtime_value.Value
 open Ast
 open Util.Pp
 open Util.Source

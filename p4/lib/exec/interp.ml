@@ -2,8 +2,8 @@ module F = Format
 open Domain.Dom
 module L = Lang.Ast
 open Il.Ast
-module Num = Vdomain.Num
-module Value = Vdomain.Value
+module Num = Runtime_value.Num
+module Value = Runtime_value.Value
 module Types = Il.Types
 module Type = Types.Type
 module TypeDef = Types.TypeDef
@@ -372,8 +372,8 @@ module Make (Arch : ARCH) : INTERP = struct
     let value = 
       match num.it with
       | value, Some(width, signed) ->
-        if signed then Vdomain.Num.int_of_raw_int value width
-        else Vdomain.Num.bit_of_raw_int value width
+        if signed then Runtime_value.Num.int_of_raw_int value width
+        else Runtime_value.Num.bit_of_raw_int value width
       | value, None ->
         Value.IntV value
     in

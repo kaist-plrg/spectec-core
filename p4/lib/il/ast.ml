@@ -1,7 +1,7 @@
 module L = Lang.Ast
 module F = Format
 open Domain.Dom
-module Value = Vdomain.Value
+module Value = Runtime_value.Value
 open Util.Source
 
 type ('a, 'b) alt = ('a, 'b) L.alt

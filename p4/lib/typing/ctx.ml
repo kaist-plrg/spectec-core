@@ -1,5 +1,5 @@
 module L = Lang.Ast
-module Value = Vdomain.Value
+module Value = Runtime_value.Value
 module Types = Il.Types
 module Type = Types.Type
 module Ctk = Il.Ctk
