@@ -248,7 +248,7 @@ and pp_expr' ?(level = 0) fmt expr' =
         targs pp_args args
   | CallTypeE { typ; member } ->
       F.fprintf fmt "%a.%a()" (pp_typ ~level:(level + 1)) typ pp_member member
-  | InstE { var_inst; targs; targs_hidden=_targs_hidden; args } ->
+  | InstE { var_inst; targs; targs_hidden = _targs_hidden; args } ->
       F.fprintf fmt "%a%a%a" pp_var var_inst
         (pp_targs ~level:(level + 1))
         targs pp_args args
@@ -390,7 +390,17 @@ and pp_decl' ?(level = 0) fmt decl' =
       F.fprintf fmt "match_kind {\n%a\n%s}"
         (pp_members ~level:(level + 1))
         members (indent level)
-  | InstD { id; typ; var_inst; targs; targs_hidden = _targs_hidden; args; init; annos = _annos } -> (
+  | InstD
+      {
+        id;
+        typ;
+        var_inst;
+        targs;
+        targs_hidden = _targs_hidden;
+        args;
+        init;
+        annos = _annos;
+      } -> (
       match init with
       | [] ->
           F.fprintf fmt "%a %a%a%a %a;"
@@ -594,7 +604,7 @@ and pp_table_actions ?(level = 0) fmt table_actions =
 
 (* Table entries *)
 
-and pp_table_entry' ?(level = 0)  fmt table_entry' =
+and pp_table_entry' ?(level = 0) fmt table_entry' =
   let table_entry_const, keysets, table_action, table_entry_priority, _annos =
     table_entry'
   in

@@ -122,18 +122,8 @@ and funcdef =
   | MonoFD of functyp
   | PolyFD of tparam' list * tparam' list * functyp
 
-
-
-(* Elaborated parameters *)
-(** 
-and tparam = L.tparam'
-
-and cparam = param*)
-
-
 (* Values *)
 and value = (expr', value') L.value
-(* ??? *)
 and value' = Value.t L.value'
 
 (* Annotations *)
@@ -196,11 +186,11 @@ and expr' =
       args : arg list;
     }
   | CallTypeE of { typ : typ; member : member }
-  | InstE of { 
-      var_inst : var; 
-      targs : typ list; 
-      targs_hidden: typ list; 
-      args : arg list 
+  | InstE of {
+      var_inst : var;
+      targs : typ list;
+      targs_hidden : typ list;
+      args : arg list;
     }
 
 (* Keyset expressions *)
@@ -222,10 +212,7 @@ and stmt' =
   | BlockS of { block : block }
   | ExitS
   | RetS of { expr_ret : expr option }
-  | CallFuncS of {
-      var_func : var;
-      targs : targ list;
-      args : arg list }
+  | CallFuncS of { var_func : var; targs : targ list; args : arg list }
   | CallMethodS of {
       expr_base : expr;
       member : member;
@@ -443,7 +430,6 @@ and mthd' =
       params : param list;
       annos : anno list;
     }
-
 
 (* Constructor types *)
 

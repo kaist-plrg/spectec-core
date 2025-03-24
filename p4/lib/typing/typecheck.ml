@@ -176,7 +176,9 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
       let typs_inner_param =
         List.map (fun (_, _, typ, _, _) -> typ.it) params_param
       in
-      let typs_inner_arg = List.map (fun (_, _, typ, _, _) -> typ.it) params_arg in
+      let typs_inner_arg =
+        List.map (fun (_, _, typ, _, _) -> typ.it) params_arg
+      in
       gen_cstrs cstr typs_inner_param typs_inner_arg
   | PackageT (_, typs_param), PackageT (_, typs_arg) ->
       gen_cstrs cstr typs_param typs_arg
@@ -244,17 +246,20 @@ let infer_targs (tids_fresh : TId.t list) (params : Types.param' list)
       | None | Some Types.AnyT ->
           F.asprintf "(infer_targs) type %s cannot be inferred" tid
           |> error_no_info
-      | Some Types.SeqT typs_inner -> 
-        let tdp =
-          let tparams =
-            List.init (List.length typs_inner) (fun i -> "T" ^ string_of_int i)
+      | Some (Types.SeqT typs_inner) ->
+          let tdp =
+            let tparams =
+              List.init (List.length typs_inner) (fun i ->
+                  "T" ^ string_of_int i)
+            in
+            let typs_inner =
+              List.map (fun tparam -> Types.VarT tparam) tparams
+            in
+            let typ_tuple = Types.TupleT typs_inner in
+            (tparams, [], typ_tuple)
           in
-          let typs_inner = List.map (fun tparam -> Types.VarT tparam) tparams in
-          let typ_tuple = Types.TupleT typs_inner in
-          (tparams, [], typ_tuple)
-        in
-        let typ = Types.SpecT (tdp, typs_inner) in
-        TIdMap.add tid typ theta
+          let typ = Types.SpecT (tdp, typs_inner) in
+          TIdMap.add tid typ theta
       | Some typ -> TIdMap.add tid typ theta)
     cstr TIdMap.empty
 
@@ -676,8 +681,7 @@ and type_num_expr (num : El.Ast.num) : Type.t * Ctk.t * Il.Ast.expr' =
   let typ =
     match num.it with
     | _, Some (width, signed) ->
-        if signed then Types.FIntT width
-        else Types.FBitT width
+        if signed then Types.FIntT width else Types.FBitT width
     | _, None -> Types.IntT
   in
   let ctk = Ctk.LCTK in
@@ -2049,7 +2053,15 @@ and type_method (cursor : Ctx.cursor) (ctx : Ctx.t) (expr_base : El.Ast.expr)
     | _, "maxSizeInBytes" ->
         Types.BuiltinMethodT ([], Types.IntT) |> wrap_builtin
     | StackT _, "push_front" | StackT _, "pop_front" ->
-      let params = [ ("count" $ no_info, Lang.Ast.In $ no_info, Types.IntT $ no_info, None, []) ] in
+        let params =
+          [
+            ( "count" $ no_info,
+              Lang.Ast.In $ no_info,
+              Types.IntT $ no_info,
+              None,
+              [] );
+          ]
+        in
         let typ_ret = Types.VoidT in
         Types.BuiltinMethodT (params, typ_ret) |> wrap_builtin
     | HeaderT _, "isValid" ->
@@ -2105,7 +2117,9 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
     Il.Ast.targ list * Il.Ast.arg list * Type.t =
   let params = FuncType.get_params ft in
   let params =
-    List.filter (fun (id, _, _, _, _) -> not (List.mem id.it args_default)) params
+    List.filter
+      (fun (id, _, _, _, _) -> not (List.mem id.it args_default))
+      params
   in
   let args_il_typed = type_args cursor ctx args in
   let args_il, typ_args = List.split args_il_typed in
@@ -2126,9 +2140,7 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
             |> List.map (fun typ -> typ $ no_info))
         in
         let ft = FuncType.subst theta ft in
-        let params =
-          List.map (Il.Subst.subst_param theta) params
-        in
+        let params = List.map (Il.Subst.subst_param theta) params in
         let typ_ret = Type.subst theta typ_ret in
         (ft, targs_il, params, typ_ret)
   in
@@ -2332,7 +2344,9 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
   let cparams, typ_inst = ct in
   (* Check if the arguments match the parameters *)
   let cparams =
-    List.filter (fun (id, _, _, _, _) -> not (List.mem id.it args_default)) cparams
+    List.filter
+      (fun (id, _, _, _, _) -> not (List.mem id.it args_default))
+      cparams
   in
   let args_il, typ_args =
     (* Adjust the context if instantiating a package at top level
@@ -2367,9 +2381,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
             |> List.map (fun typ -> typ $ no_info))
         in
         let ct = ConsType.subst theta ct in
-        let cparams =
-          List.map (Il.Subst.subst_cparam theta) cparams
-        in
+        let cparams = List.map (Il.Subst.subst_cparam theta) cparams in
         let typ_inst = Type.subst theta typ_inst in
         (ct, targs_il, cparams, typ_inst)
   in
@@ -2379,16 +2391,15 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     type_call_convention ~action:false cursor ctx cparams args_il_typed
   in
   let typ = typ_inst in
-  let targs_hidden_il = 
-    List.map (fun targ' -> targ' $ no_info) targs_hidden in
+  let targs_hidden_il = List.map (fun targ' -> targ' $ no_info) targs_hidden in
   let expr_il =
-    Il.Ast.InstE 
-      { 
-        var_inst; 
-        targs = targs_il; 
+    Il.Ast.InstE
+      {
+        var_inst;
+        targs = targs_il;
         targs_hidden = targs_hidden_il;
-        args = args_il 
-      } 
+        args = args_il;
+      }
   in
   let ctk = Static.ctk_expr cursor ctx expr_il in
   (typ, ctk, expr_il)
@@ -3364,13 +3375,10 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
   let typ, _, expr_il = type_instantiation cursor ctx var_inst targs args in
   let targs_il, targs_hidden_il, args_il =
     match expr_il with
-    | Il.Ast.InstE 
-        { 
-          targs = targs_il; 
-          targs_hidden = targs_hidden_il; 
-          args = args_il; 
-          _ 
-        } -> (targs_il, targs_hidden_il, args_il)
+    | Il.Ast.InstE
+        { targs = targs_il; targs_hidden = targs_hidden_il; args = args_il; _ }
+      ->
+        (targs_il, targs_hidden_il, args_il)
     | _ -> assert false
   in
   (* Typecheck abstract methods defined by object initializers (for externs only) *)
@@ -4825,9 +4833,7 @@ and type_table_default_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let args_il =
     type_call_default_action cursor ctx var params args_il_typed args_action
   in
-  let params_data_il =
-    List.map (fun param -> param $ no_info) params
-  in
+  let params_data_il = List.map (fun param -> param $ no_info) params in
   (var, args_il, annos_il, params_data_il, [])
 
 and type_table_default' (cursor : Ctx.cursor) (ctx : Ctx.t)
@@ -5101,9 +5107,7 @@ and type_table_entry_action' (cursor : Ctx.cursor) (ctx : Ctx.t)
   let args_il =
     type_call_entry_action cursor ctx var params args_il_typed args_action
   in
-  let params_data_il =
-    List.map (fun param -> param $ no_info) params
-  in
+  let params_data_il = List.map (fun param -> param $ no_info) params in
   (var, args_il, annos_il, params_data_il, [])
 
 and check_table_entry_priority (table_ctx : Tblctx.t) (priority_curr : int) :
@@ -5146,8 +5150,12 @@ and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
         | Lpm prefix -> Bigint.of_int prefix
         | _ -> assert false
       in
-      let priority_expr = Il.Ast.NumE { num = (value_prefix, None) $ no_info } in
-      let priority_il = Value.IntV value_prefix $$ no_info % priority_expr |> Option.some in
+      let priority_expr =
+        Il.Ast.NumE { num = (value_prefix, None) $ no_info }
+      in
+      let priority_il =
+        Value.IntV value_prefix $$ no_info % priority_expr |> Option.some
+      in
       (table_ctx, priority_il)
   (* Neglect lpm prefix when lpm is used with explicit priority for other match kinds *)
   | _ when table_ctx.priorities.values = [] ->
@@ -5168,8 +5176,12 @@ and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
             in
             priority
       in
-      let priority_expr = Il.Ast.NumE { num = (value_priority, None) $ no_info } in
-      let priority_il = Value.IntV value_priority $$ no_info % priority_expr |> Option.some in
+      let priority_expr =
+        Il.Ast.NumE { num = (value_priority, None) $ no_info }
+      in
+      let priority_il =
+        Value.IntV value_priority $$ no_info % priority_expr |> Option.some
+      in
       let value_priority = value_priority |> Bigint.to_int_exn in
       check_table_entry_priority table_ctx value_priority;
       let table_ctx =
@@ -5200,8 +5212,12 @@ and type_table_entry_priority (cursor : Ctx.cursor) (ctx : Ctx.t)
             in
             priority
       in
-      let priority_expr = Il.Ast.NumE { num = (value_priority, None) $ no_info } in
-      let priority_il = Value.IntV value_priority $$ no_info % priority_expr |> Option.some in
+      let priority_expr =
+        Il.Ast.NumE { num = (value_priority, None) $ no_info }
+      in
+      let priority_il =
+        Value.IntV value_priority $$ no_info % priority_expr |> Option.some
+      in
       let value_priority = value_priority |> Bigint.to_int_exn in
       check_table_entry_priority table_ctx value_priority;
       let table_ctx = Tblctx.add_priority value_priority table_ctx in

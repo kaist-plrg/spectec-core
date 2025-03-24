@@ -239,8 +239,9 @@ and eval_expr' (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (expr : expr')
   | CastE { typ; expr } -> eval_cast_expr cursor ctx sto typ expr
   | BitAccE { expr_base; value_lo; value_hi } ->
       eval_bitstring_acc_expr cursor ctx sto expr_base value_lo value_hi
-  | ErrAccE { member } -> eval_error_acc_expr cursor ctx sto member 
-  | TypeAccE { var_base; member } -> eval_type_acc_expr cursor ctx sto var_base member 
+  | ErrAccE { member } -> eval_error_acc_expr cursor ctx sto member
+  | TypeAccE { var_base; member } ->
+      eval_type_acc_expr cursor ctx sto var_base member
   | ExprAccE { expr_base; member } ->
       eval_expr_acc_expr cursor ctx sto expr_base member
   | CallMethodE { expr_base; member; targs; args } ->
@@ -263,13 +264,12 @@ and eval_exprs (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
 
 and eval_num_expr (_cursor : Ctx.cursor) (_ctx : Ctx.t) (sto : Sto.t)
     (num : Il.Ast.num) : Sto.t * Value.t =
-  let value = 
+  let value =
     match num.it with
-    | value, Some(width, signed) ->
-      if signed then Runtime_value.Num.int_of_raw_int value width
-      else Runtime_value.Num.bit_of_raw_int value width
-    | value, None ->
-      Value.IntV value
+    | value, Some (width, signed) ->
+        if signed then Runtime_value.Num.int_of_raw_int value width
+        else Runtime_value.Num.bit_of_raw_int value width
+    | value, None -> Value.IntV value
   in
   (sto, value)
 
@@ -344,13 +344,13 @@ and eval_bitstring_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
   (sto, value)
 
 and eval_error_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
-    (member: Il.Ast.member) : Sto.t * Value.t =
+    (member : Il.Ast.member) : Sto.t * Value.t =
   let value_error = Ctx.find_value_opt cursor ("error." ^ member.it) ctx in
   let value_error = Option.get value_error in
   (sto, value_error)
 
-and eval_type_acc_expr (cursor: Ctx.cursor) (ctx: Ctx.t) (sto : Sto.t)
-    (var_base: Il.Ast.var) (member: Il.Ast.member) : Sto.t * Value.t =
+and eval_type_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
+    (var_base : Il.Ast.var) (member : Il.Ast.member) : Sto.t * Value.t =
   let td_base = Ctx.find_opt Ctx.find_typdef_opt cursor var_base ctx in
   let td_base = Option.get td_base in
   let value =
@@ -363,8 +363,7 @@ and eval_type_acc_expr (cursor: Ctx.cursor) (ctx: Ctx.t) (sto : Sto.t)
           |> error_no_info
     in
     match Type.canon typ_base with
-    | EnumT (id, _) ->
-        Value.EnumFieldV (id, member.it)
+    | EnumT (id, _) -> Value.EnumFieldV (id, member.it)
     | SEnumT (id, _, fields) ->
         let value_inner = List.assoc member.it fields in
         Value.SEnumFieldV (id, member.it, value_inner)
@@ -530,7 +529,12 @@ and eval_call_inst_stmt (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t)
   let value = Value.RefV oid in
   let stmt =
     let expr_inst =
-      ValueE { value = value $$ (no_info, InstE { var_inst; targs; targs_hidden = []; args}) }
+      ValueE
+        {
+          value =
+            value
+            $$ (no_info, InstE { var_inst; targs; targs_hidden = []; args });
+        }
       $$ (no_info, { typ = typ.it; ctk = Ctk.CTK })
     in
     let decl_inst =
@@ -586,7 +590,8 @@ and eval_decl' (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (decl : decl')
   | MatchKindD { members } ->
       eval_match_kind_decl cursor ctx members |> wrap_none
   | InstD { id; typ; var_inst; targs; targs_hidden; args; init; annos } ->
-      eval_inst_decl cursor ctx sto id typ var_inst (targs @ targs_hidden) args init annos
+      eval_inst_decl cursor ctx sto id typ var_inst (targs @ targs_hidden) args
+        init annos
       |> wrap
   (* Derived type declarations *)
   | StructD { id; tparams; tparams_hidden; fields; annos } ->
@@ -735,7 +740,12 @@ and eval_inst_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
   let ctx = Ctx.add_value cursor id.it value ctx in
   let decl =
     let expr_inst =
-      ValueE { value = value $$ (no_info, InstE { var_inst; targs; targs_hidden = []; args }) }
+      ValueE
+        {
+          value =
+            value
+            $$ (no_info, InstE { var_inst; targs; targs_hidden = []; args });
+        }
       $$ (no_info, { typ = typ.it; ctk = Ctk.CTK })
     in
     VarD { id; typ; init = Some expr_inst; annos = [] }
@@ -1041,7 +1051,19 @@ and eval_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
   let decl =
     let expr_inst =
       (* unused note *)
-      ValueE { value = value $$ (no_info, InstE { var_inst = L.Top id $ no_info; targs = []; targs_hidden = []; args = []}) }
+      ValueE
+        {
+          value =
+            value
+            $$ ( no_info,
+                 InstE
+                   {
+                     var_inst = L.Top id $ no_info;
+                     targs = [];
+                     targs_hidden = [];
+                     args = [];
+                   } );
+        }
       $$ (no_info, { typ = typ.it; ctk = Ctk.CTK })
     in
     VarD { id; typ; init = Some expr_inst; annos = [] }

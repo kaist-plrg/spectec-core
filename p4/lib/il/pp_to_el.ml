@@ -46,8 +46,9 @@ let pp_dir fmt dir = P.pp_dir fmt dir
 
 let rec pp_typ' ?(level = 0) fmt typ =
   match typ with
-  | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT
-  | FIntT _ | FBitT _ | VBitT _ | VarT _ -> Type.pp ~level fmt typ
+  | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
+  | VBitT _ | VarT _ ->
+      Type.pp ~level fmt typ
   | SpecT ((_, _, ListT _), typs) ->
       F.fprintf fmt "list<%a>"
         (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
@@ -60,20 +61,18 @@ let rec pp_typ' ?(level = 0) fmt typ =
       F.fprintf fmt "%a[%a]"
         (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs Bigint.pp size
-  | SpecT (tdp, typs) ->
+  | SpecT (tdp, typs) -> (
       let _, _, typ = tdp in
-      (match typs with
-      | [] -> 
-        F.fprintf fmt "%a"
-        (pp_typ' ~level:(level + 1))
-        typ
+      match typs with
+      | [] -> F.fprintf fmt "%a" (pp_typ' ~level:(level + 1)) typ
       | _ ->
-        F.fprintf fmt "%a<%a>"
-        (pp_typ' ~level:(level + 1))
-        typ
-        (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
-        typs)
-  | DefT (_, id) | NewT (id, _) | EnumT (id, _) | SEnumT (id, _, _) -> F.fprintf fmt "%a" pp_id' id
+          F.fprintf fmt "%a<%a>"
+            (pp_typ' ~level:(level + 1))
+            typ
+            (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
+            typs)
+  | DefT (_, id) | NewT (id, _) | EnumT (id, _) | SEnumT (id, _, _) ->
+      F.fprintf fmt "%a" pp_id' id
   | ListT _ | TupleT _ -> Type.pp ~level fmt typ
   | StackT (typ, size) ->
       F.fprintf fmt "%a[%a]" (pp_typ' ~level:(level + 1)) typ Bigint.pp size
@@ -84,10 +83,12 @@ let rec pp_typ' ?(level = 0) fmt typ =
   | ParserT (id, _)
   | ControlT (id, _)
   | PackageT (id, _)
-  | TableT (id, _) -> F.fprintf fmt "%a" pp_id' id
+  | TableT (id, _) ->
+      F.fprintf fmt "%a" pp_id' id
   | AnyT -> F.fprintf fmt "_"
-  | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT
-    -> Type.pp ~level fmt typ
+  | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
+  | RecordDefaultT _ | DefaultT | InvalidT ->
+      Type.pp ~level fmt typ
   | SetT typ -> F.fprintf fmt "%a" (pp_typ' ~level:(level + 1)) typ
   | StateT -> Type.pp ~level fmt typ
 
@@ -96,6 +97,7 @@ let pp_typ ?(level = 0) fmt typ = pp_typ' ~level fmt typ.it
 (* Values *)
 
 let rec pp_value ?(level = 0) fmt value = pp_expr' ~level fmt value.note
+
 and pp_value' ?(level = 0) fmt value =
   match value with
   | SEnumFieldV (id, member, _) ->
@@ -225,11 +227,11 @@ and pp_expr' ?(level = 0) fmt expr' =
       match typ.it with
       | SetT _ -> F.fprintf fmt "%a" (pp_expr ~level:(level + 1)) expr
       | _ ->
-        F.fprintf fmt "((%a) (%a))"
-          (pp_typ ~level:(level + 1))
-          typ
-          (pp_expr ~level:(level + 1))
-          expr)
+          F.fprintf fmt "((%a) (%a))"
+            (pp_typ ~level:(level + 1))
+            typ
+            (pp_expr ~level:(level + 1))
+            expr)
   | MaskE { expr_base; expr_mask } ->
       F.fprintf fmt "%a &&& %a"
         (pp_expr ~level:(level + 1))
@@ -387,10 +389,7 @@ and pp_decl' ?(level = 0) fmt decl' =
           F.fprintf fmt "%a %a = %a;"
             (pp_typ ~level:(level + 1))
             typ pp_id id (pp_expr ~level:0) expr_init
-      | None ->
-          F.fprintf fmt "%a %a;"
-            (pp_typ ~level:(level + 1))
-            typ pp_id id)
+      | None -> F.fprintf fmt "%a %a;" (pp_typ ~level:(level + 1)) typ pp_id id)
   | ErrD { members } ->
       F.fprintf fmt "error {\n%a\n%s}"
         (pp_members ~level:(level + 1))
@@ -399,7 +398,17 @@ and pp_decl' ?(level = 0) fmt decl' =
       F.fprintf fmt "match_kind {\n%a\n%s}"
         (pp_members ~level:(level + 1))
         members (indent level)
-  | InstD { id; typ = _typ; var_inst; targs; targs_hidden = _targs_hidden; args; init; annos = _annos } -> (
+  | InstD
+      {
+        id;
+        typ = _typ;
+        var_inst;
+        targs;
+        targs_hidden = _targs_hidden;
+        args;
+        init;
+        annos = _annos;
+      } -> (
       match init with
       | [] ->
           F.fprintf fmt "%a%a%a %a;" pp_var var_inst
@@ -521,16 +530,17 @@ and pp_decl' ?(level = 0) fmt decl' =
         (pp_mthds ~level:(level + 1))
         mthds (indent level)
   | PackageTypeD { id; tparams; tparams_hidden; cparams; annos = _annos } ->
-    let theta =
-      tparams_hidden
-      |> List.map (fun tparam -> (tparam.it, Types.AnyT))
-      |> Domain.Dom.TIdMap.of_list
-    in
-    let cparams =
-      cparams 
-      |> List.map (fun cparam -> Subst.subst_cparam theta cparam.it $ cparam.at)
-    in
-    F.fprintf fmt "package %a%a%a;" pp_id id pp_tparams tparams
+      let theta =
+        tparams_hidden
+        |> List.map (fun tparam -> (tparam.it, Types.AnyT))
+        |> Domain.Dom.TIdMap.of_list
+      in
+      let cparams =
+        cparams
+        |> List.map (fun cparam ->
+               Subst.subst_cparam theta cparam.it $ cparam.at)
+      in
+      F.fprintf fmt "package %a%a%a;" pp_id id pp_tparams tparams
         (pp_cparams ~level:(level + 1))
         cparams
 
@@ -572,7 +582,8 @@ and pp_table_action ?(level = 0) fmt table_action =
 
 (* Table entries *)
 
-and pp_table_entry' ?(level = 0) ?(table_entries_const = false) fmt table_entry'  =
+and pp_table_entry' ?(level = 0) ?(table_entries_const = false) fmt table_entry'
+    =
   let table_entry_const, keysets, table_action, table_entry_priority, _annos =
     table_entry'
   in
@@ -586,25 +597,24 @@ and pp_table_entry' ?(level = 0) ?(table_entries_const = false) fmt table_entry'
     pp_keysets keysets (pp_table_action ~level) table_action
 
 and pp_table_entry ?(level = 0) ?(table_entries_const = false) fmt table_entry =
-  pp_table_entry' ~level ~table_entries_const fmt table_entry.it 
+  pp_table_entry' ~level ~table_entries_const fmt table_entry.it
 
 (* Methods *)
 
 and pp_mthd' ?(level = 0) fmt mthd' =
   match mthd' with
   | ExternConsM { id; tparams_hidden; cparams; annos = _annos } ->
-    let theta =
-      tparams_hidden
-      |> List.map (fun tparam -> (tparam.it, Types.AnyT))
-      |> Domain.Dom.TIdMap.of_list
-    in
-    let cparams =
-      cparams 
-      |> List.map (fun cparam -> Subst.subst_cparam theta cparam.it $ cparam.at)
-    in
-    F.fprintf fmt "%a%a;" pp_id id
-      (pp_cparams ~level:(level + 1))
-      cparams
+      let theta =
+        tparams_hidden
+        |> List.map (fun tparam -> (tparam.it, Types.AnyT))
+        |> Domain.Dom.TIdMap.of_list
+      in
+      let cparams =
+        cparams
+        |> List.map (fun cparam ->
+               Subst.subst_cparam theta cparam.it $ cparam.at)
+      in
+      F.fprintf fmt "%a%a;" pp_id id (pp_cparams ~level:(level + 1)) cparams
   | ExternAbstractM
       { id; typ_ret; tparams; tparams_hidden; params; annos = _annos } ->
       F.fprintf fmt "abstract %a %a%a%a;"

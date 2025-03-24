@@ -18,7 +18,11 @@ type 'table_action pp_table_action =
   F.formatter -> 'table_action table_action -> unit
 
 type 'table_entry pp_table_entry =
-   ?level:int -> ?table_entries_const:bool -> F.formatter -> 'table_entry table_entry -> unit
+  ?level:int ->
+  ?table_entries_const:bool ->
+  F.formatter ->
+  'table_entry table_entry ->
+  unit
 
 (* Numbers *)
 

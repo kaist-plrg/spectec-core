@@ -490,14 +490,16 @@ and pp_table_entry' ?(table_entries_const = false) fmt table_entry' =
   in
   F.fprintf fmt "%s%s%a%s%a : %a"
     (if table_entry_const then "const " else "")
-    (if not table_entries_const && table_entry_priority |> Option.is_some then "priority = " else "")
+    (if (not table_entries_const) && table_entry_priority |> Option.is_some then
+       "priority = "
+     else "")
     (pp_option pp_expr) table_entry_priority
     (if table_entry_priority |> Option.is_some then " : " else "")
     pp_keysets keysets pp_table_action table_action
 
 and pp_table_entry ?(level = 0) ?(table_entries_const = false) fmt table_entry =
   level |> ignore;
-  pp_table_entry' ~table_entries_const fmt table_entry.it 
+  pp_table_entry' ~table_entries_const fmt table_entry.it
 
 and pp_table_entries' ?(level = 0) fmt table_entries' =
   P.pp_table_entries' ~level pp_table_entry fmt table_entries'

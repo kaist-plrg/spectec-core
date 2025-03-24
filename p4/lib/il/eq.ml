@@ -2,6 +2,7 @@ module E = Lang.Eq
 module Ctk = Ctk
 module TypeDef = Types.TypeDef
 module Type = Types.Type
+
 (*
 module Envs = Runtime_static.Envs
 module SType = Envs.SType
@@ -165,7 +166,8 @@ and eq_expr' ?(dbg = false) expr_a expr_b =
   match (expr_a, expr_b) with
   | ValueE { value = value_a }, ValueE { value = value_b } ->
       eq_value ~dbg value_a value_b
-  | BoolE { boolean = boolean_a }, BoolE { boolean = boolean_b } -> boolean_a = boolean_b
+  | BoolE { boolean = boolean_a }, BoolE { boolean = boolean_b } ->
+      boolean_a = boolean_b
   | StrE { text = text_a }, StrE { text = text_b } -> eq_text ~dbg text_a text_b
   | NumE { num = num_a }, NumE { num = num_b } -> eq_num ~dbg num_a num_b
   | VarE { var = var_a }, VarE { var = var_b } -> eq_var ~dbg var_a var_b
@@ -266,19 +268,19 @@ and eq_expr' ?(dbg = false) expr_a expr_b =
   | ( CallTypeE { typ = typ_a; member = member_a },
       CallTypeE { typ = typ_b; member = member_b } ) ->
       eq_typ ~dbg typ_a typ_b && eq_member ~dbg member_a member_b
-  | ( InstE 
-        { 
-          var_inst = var_inst_a; 
-          targs = targs_a; 
-          targs_hidden = targs_hidden_a; 
-          args = args_a 
+  | ( InstE
+        {
+          var_inst = var_inst_a;
+          targs = targs_a;
+          targs_hidden = targs_hidden_a;
+          args = args_a;
         },
-      InstE 
-        { 
-          var_inst = var_inst_b; 
-          targs = targs_b; 
+      InstE
+        {
+          var_inst = var_inst_b;
+          targs = targs_b;
           targs_hidden = targs_hidden_b;
-          args = args_b 
+          args = args_b;
         } ) ->
       eq_var ~dbg var_inst_a var_inst_b
       && eq_targs ~dbg (targs_a @ targs_hidden_a) (targs_b @ targs_hidden_b)
@@ -517,7 +519,9 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
         List.map (fun (member, typ, _) -> (member, typ)) fields_b
       in
       eq_id ~dbg id_a id_b
-      && eq_tparams ~dbg (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
+      && eq_tparams ~dbg
+           (tparams_a @ tparams_hidden_a)
+           (tparams_b @ tparams_hidden_b)
       && E.eq_pairs (eq_member ~dbg) (eq_typ ~dbg) fields_a fields_b
   | ( EnumD { id = id_a; members = members_a; annos = _annos_a },
       EnumD { id = id_b; members = members_b; annos = _annos_b } ) ->
@@ -554,7 +558,9 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
           annos = _annos_b;
         } ) ->
       eq_id ~dbg id_a id_b
-      && eq_tparams ~dbg (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
+      && eq_tparams ~dbg
+           (tparams_a @ tparams_hidden_a)
+           (tparams_b @ tparams_hidden_b)
       && eq_params ~dbg params_a params_b
   | ( ParserD
         {
@@ -603,7 +609,9 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
           annos = _annos_b;
         } ) ->
       eq_id ~dbg id_a id_b
-      && eq_tparams ~dbg (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
+      && eq_tparams ~dbg
+           (tparams_a @ tparams_hidden_a)
+           (tparams_b @ tparams_hidden_b)
       && eq_params ~dbg params_a params_b
   | ( ControlD
         {
@@ -657,7 +665,9 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
         } ) ->
       eq_id ~dbg id_a id_b
       && eq_typ ~dbg typ_ret_a typ_ret_b
-      && eq_tparams ~dbg (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
+      && eq_tparams ~dbg
+           (tparams_a @ tparams_hidden_a)
+           (tparams_b @ tparams_hidden_b)
       && eq_params ~dbg params_a params_b
       && eq_block ~dbg body_a body_b
   | ( ExternFuncD
@@ -680,7 +690,9 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
         } ) ->
       eq_id ~dbg id_a id_b
       && eq_typ ~dbg typ_ret_a typ_ret_b
-      && eq_tparams ~dbg (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
+      && eq_tparams ~dbg
+           (tparams_a @ tparams_hidden_a)
+           (tparams_b @ tparams_hidden_b)
       && eq_params ~dbg params_a params_b
   | ( ExternObjectD
         { id = id_a; tparams = tparams_a; mthds = mthds_a; annos = _annos_a },
@@ -707,7 +719,9 @@ and eq_decl' ?(dbg = false) decl_a decl_b =
           annos = _annos_b;
         } ) ->
       eq_id ~dbg id_a id_b
-      && eq_tparams ~dbg (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
+      && eq_tparams ~dbg
+           (tparams_a @ tparams_hidden_a)
+           (tparams_b @ tparams_hidden_b)
       && eq_cparams ~dbg cparams_a cparams_b
   | _ -> false
 
@@ -891,7 +905,9 @@ and eq_mthd' ?(dbg = false) mthd_a mthd_b =
           annos = _annos_b;
         } ) ->
       eq_id ~dbg id_a id_b && eq_typ typ_ret_a typ_ret_b
-      && eq_tparams ~dbg (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
+      && eq_tparams ~dbg
+           (tparams_a @ tparams_hidden_a)
+           (tparams_b @ tparams_hidden_b)
       && E.eq_list (eq_param ~dbg) params_a params_b
   | _ -> false
 

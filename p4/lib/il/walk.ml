@@ -274,7 +274,8 @@ let walk_decl (walker : walker) decl =
       walk_typ typ;
       W.walk_option walk_expr init
   | ErrD { members } | MatchKindD { members } -> W.walk_list walk_member members
-  | InstD { id; typ; var_inst; targs; targs_hidden; args; init; annos = _annos } ->
+  | InstD { id; typ; var_inst; targs; targs_hidden; args; init; annos = _annos }
+    ->
       walk_id id;
       walk_typ typ;
       walk_var var_inst;
