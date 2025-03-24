@@ -1,8 +1,8 @@
 module F = Format
 module L = Lang.Ast
 module P = Lang.Pp
-module Value = Vdomain.Value
 module Type = Types.Type
+open Vdomain.Value
 open Ast
 open Util.Pp
 open Util.Source
@@ -43,23 +43,24 @@ let pp_dir fmt dir = P.pp_dir fmt dir
 (* Types *)
 
 let rec pp_typ ?(level = 0) fmt typ = pp_typ' ~level fmt typ.it
-
 and pp_typ' ?(level = 0) fmt typ =
   match typ with
-  | SpecT ((_tparams, _tparams_hidden, StackT (_typ, size)), typs) ->
-      F.fprintf fmt "%a[%a]"
-        (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
-        typs Bigint.pp size
-  | SpecT ((_tparams, _tparams_hidden, TupleT _typs), typs) ->
-      F.fprintf fmt "tuple<%a>"
-        (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
-        typs
-  | SpecT ((_tparams, _tparams_hidden, ListT _typs), typs) ->
+  | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT
+  | FIntT _ | FBitT _ | VBitT _ | VarT _ -> Type.pp ~level fmt typ
+  | SpecT ((_, _, ListT _), typs) ->
       F.fprintf fmt "list<%a>"
         (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs
+  | SpecT ((_, _, TupleT _), typs) ->
+      F.fprintf fmt "tuple<%a>"
+        (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
+        typs
+  | SpecT ((_, _, StackT (_, size)), typs) ->
+      F.fprintf fmt "%a[%a]"
+        (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
+        typs Bigint.pp size
   | SpecT (tdp, typs) ->
-      let _tparams, _tparams_hidden, typ = tdp in
+      let _, _, typ = tdp in
       (match typs with
       | [] -> 
         F.fprintf fmt "%a"
@@ -71,52 +72,45 @@ and pp_typ' ?(level = 0) fmt typ =
         typ
         (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs)
-  | SetT typ -> F.fprintf fmt "%a/*SetT*/" (pp_typ' ~level:(level + 1)) typ
-  | TupleT typs ->
-      F.fprintf fmt "tuple<%a>"
-        (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
-        typs
-  | NewT (id, _)
-  | StructT (id, _)
-  | ExternT (id, _)
-  | ParserT (id, _)
-  | EnumT (id, _)
-  | SEnumT (id, _, _)
-  | HeaderT (id, _)
-  | PackageT (id, _)
-  | DefT (_, id)
-  | UnionT (id, _)
-  | ControlT (id, _) ->
-      F.fprintf fmt "%a" P.pp_id' id
-  | TableT (id, _) -> F.fprintf fmt "%a" P.pp_id' id
-  | VarT id -> F.fprintf fmt "%a" P.pp_id' id
+  | DefT (_, id) | NewT (id, _) | EnumT (id, _) | SEnumT (id, _, _) -> F.fprintf fmt "%a" P.pp_id' id
+  | ListT _ | TupleT _ -> Type.pp ~level fmt typ
   | StackT (typ, size) ->
       F.fprintf fmt "%a[%a]" (pp_typ' ~level:(level + 1)) typ Bigint.pp size
+  | StructT (id, _)
+  | HeaderT (id, _)
+  | UnionT (id, _)
+  | ExternT (id, _)
+  | ParserT (id, _)
+  | ControlT (id, _)
+  | PackageT (id, _)
+  | TableT (id, _) -> F.fprintf fmt "%a" P.pp_id' id
   | AnyT -> F.fprintf fmt "_"
-  | _ -> F.fprintf fmt "%a" (Type.pp ~level) typ
+  | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT
+    -> Type.pp ~level fmt typ
+  | SetT typ -> F.fprintf fmt "%a/*SetT*/" (pp_typ' ~level:(level + 1)) typ
+  | StateT -> Type.pp ~level fmt typ
 
 (* Values *)
 
 let rec pp_value ?(level = 0) fmt value = pp_expr' ~level fmt value.note
-
 and pp_value' ?(level = 0) fmt value =
   match value with
-  | Value.StructV (_, fields) ->
+  | SEnumFieldV (id, member, _) ->
+      F.fprintf fmt "%a.%a" P.pp_id' id P.pp_member' member
+  | TupleV values ->
+      F.fprintf fmt "{ %a }"
+        (pp_list (pp_value' ~level:(level + 1)) ~sep:Comma)
+        values
+  | StructV (_, fields) ->
       let values = List.map (fun (_, value) -> value) fields in
       F.fprintf fmt "{%a}"
         (pp_list (pp_value' ~level:(level + 1)) ~sep:Comma)
         values
-  | Value.TupleV values ->
-      F.fprintf fmt "{ %a }"
-        (pp_list (pp_value' ~level:(level + 1)) ~sep:Comma)
-        values
-  | Value.HeaderV (_, _, fields) ->
+  | HeaderV (_, _, fields) ->
       F.fprintf fmt "{\n%a\n%s}"
         (pp_pairs ~level:(level + 1) P.pp_member' pp_value' ~rel:Eq
            ~sep:SemicolonNl)
         fields (indent level)
-  | Value.SEnumFieldV (id, member, _) ->
-      F.fprintf fmt "%a.%a" P.pp_id' id P.pp_member' member
   | _ -> Value.pp ~level fmt value
 
 (* Type parameters *)
