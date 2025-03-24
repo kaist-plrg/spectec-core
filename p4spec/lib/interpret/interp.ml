@@ -211,10 +211,22 @@ and assign_exps (ctx : Ctx.t) (exps : exp list) (values : value list) :
       assign_exp ctx exp value)
     (Ok ctx) exps values
 
+and assign_def (ctx : Ctx.t) (id : id) (value : value) : Ctx.t attempt =
+  match value.it with
+  | FuncV id_f ->
+      let func = Ctx.find_func ctx id_f in
+      let ctx = Ctx.add_func ctx id func in
+      Ok ctx
+  | _ ->
+      fail id.at
+        (F.asprintf "cannot assign a value %s to a definition %s"
+           (Il.Print.string_of_value value)
+           id.it)
+
 and assign_arg (ctx : Ctx.t) (arg : arg) (value : value) : Ctx.t attempt =
   match arg.it with
   | ExpA exp -> assign_exp ctx exp value
-  | DefA _ -> fail arg.at "(TODO) assign_arg"
+  | DefA id -> assign_def ctx id value
 
 and assign_args (ctx : Ctx.t) (args : arg list) (values : value list) :
     Ctx.t attempt =
@@ -655,7 +667,10 @@ and eval_cast_exp (ctx : Ctx.t) (at : region) (exp : exp) (_typ : typ) :
 and eval_arg (ctx : Ctx.t) (arg : arg) : Ctx.t * value =
   match arg.it with
   | ExpA exp -> eval_exp ctx exp
-  | DefA _ -> error arg.at "(TODO) eval_arg"
+  | DefA id ->
+      (* (TODO) Give appropriate type to the function value *)
+      let value = FuncV id $$ (arg.at, TextT) in
+      (ctx, value)
 
 and eval_args (ctx : Ctx.t) (args : arg list) : Ctx.t * value list =
   List.fold_left
@@ -892,7 +907,7 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
              match deftyp.it with PlainT typ -> Some (tid, typ) | _ -> None)
       |> TIdMap.of_list
     in
-    List.map (fun targ -> Typ.subst_typ theta targ) targs
+    List.map (Typ.subst_typ theta) targs
   in
   (* Evaluate arguments *)
   let ctx, values_input = eval_args ctx args in

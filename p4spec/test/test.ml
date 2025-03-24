@@ -1,4 +1,5 @@
 open Util.Error
+open Util.Source
 
 let version = "0.1"
 
@@ -18,13 +19,22 @@ let log_stat name fails total : unit =
 
 (* Timer *)
 
-let time driver stat spec_il includes_p4 filename_p4 =
+let timer filename_p4 test =
+  (* Set timer to 30 seconds *)
+  let handler =
+    Sys.Signal_handle (fun _ -> raise (Error (no_region, "timeout")))
+  in
+  let _ = Sys.set_signal Sys.sigalrm handler in
+  let _ = Unix.alarm 30 in
+  (* Run test *)
   let time_start = Unix.gettimeofday () in
-  let stat = driver stat spec_il includes_p4 filename_p4 in
+  let result = test () in
   let time_end = Unix.gettimeofday () in
   let duration = time_end -. time_start in
   Format.eprintf ">>> %s: %.6f\n" filename_p4 duration;
-  stat
+  (* Reset timer *)
+  let _ = Unix.alarm 0 in
+  result
 
 (* File collector *)
 
@@ -76,7 +86,8 @@ let run_typing_test_driver specdir includes_p4 testdir_p4 =
       (fun stat filename_p4 ->
         Format.asprintf "\n>>> Running typing test on %s" filename_p4
         |> print_endline;
-        time run_typing_test stat spec_il includes_p4 filename_p4)
+        timer filename_p4 (fun () ->
+            run_typing_test stat spec_il includes_p4 filename_p4))
       stat filenames_p4
   in
   log_stat "\nRunning typing" stat.fail_run_typing total

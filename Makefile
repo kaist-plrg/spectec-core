@@ -75,7 +75,7 @@ coverage-p4:
 test-spec:
 	echo "#### Running (dune runtest)"
 	opam switch 4.14.0
-	cd p4spec && dune clean && opam exec -- dune runtest && echo OK || (echo "####>" Failure running dune test. && echo "####>" Run \`make promote-spec\` to accept changes in test expectations. && false)
+	cd p4spec && dune clean && opam exec -- dune runtest --profile=release && echo OK || (echo "####>" Failure running dune test. && echo "####>" Run \`make promote-spec\` to accept changes in test expectations. && false)
 
 promote-spec:
 	opam switch 4.14.0

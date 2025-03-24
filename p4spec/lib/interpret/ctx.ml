@@ -54,7 +54,7 @@ let trace_open_dec (ctx : t) (id_func : id) (idx_clause : int)
   let trace = Trace.open_dec id_func idx_clause values_input in
   if ctx.debug then
     Format.asprintf
-      "Opening clause %s/%d\n--- with input ---\n%s\n----------------\n"
+      "Opening clause $%s/%d\n--- with input ---\n%s\n----------------\n"
       id_func.it idx_clause
       (values_input |> List.map Value.to_string |> String.concat "\n")
     |> print_endline;
@@ -72,7 +72,7 @@ let trace_close (ctx : t) : t =
          Format.asprintf "Closing rule %s/%s\n" id_rel.it id_rule.it
          |> print_endline
      | Dec { id_func; idx_clause; _ } ->
-         Format.asprintf "Closing clause %s/%d\n" id_func.it idx_clause
+         Format.asprintf "Closing clause $%s/%d\n" id_func.it idx_clause
          |> print_endline
      | Iter _ -> Format.asprintf "Closing iteration\n" |> print_endline
      | _ -> ());

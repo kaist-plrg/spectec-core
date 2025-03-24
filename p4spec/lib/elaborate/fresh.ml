@@ -24,7 +24,7 @@ let fresh_from_exp ?(wildcard = false) (ids : IdSet.t) (exp : Il.Ast.exp) : Id.t
     | NumT `NatT -> "nat" $ at
     | NumT `IntT -> "int" $ at
     | TextT -> "text" $ at
-    | VarT (id, _) -> id
+    | VarT (tid, _) -> tid
     | TupleT typs ->
         Format.asprintf "tuple(%s)"
           (String.concat ", "

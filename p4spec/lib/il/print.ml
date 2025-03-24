@@ -273,14 +273,16 @@ and string_of_rules rules =
 
 (* Clause *)
 
-and string_of_clause clause =
+and string_of_clause idx clause =
   let args, exp, prems = clause.it in
-  ";; " ^ string_of_region clause.at ^ "\n   def" ^ string_of_args args ^ " = "
-  ^ string_of_exp exp ^ string_of_prems prems
+  ";; " ^ string_of_region clause.at ^ "\n   clause " ^ string_of_int idx
+  ^ string_of_args args ^ " = " ^ string_of_exp exp ^ string_of_prems prems
 
 and string_of_clauses clauses =
   String.concat ""
-    (List.map (fun clause -> "\n\n   " ^ string_of_clause clause) clauses)
+    (List.mapi
+       (fun idx clause -> "\n\n   " ^ string_of_clause idx clause)
+       clauses)
 
 (* Premises *)
 
