@@ -196,13 +196,15 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t attempt =
 
 and assign_exps (ctx : Ctx.t) (exps : exp list) (values : value list) :
     Ctx.t attempt =
-  check
-    (List.length exps = List.length values)
-    (over_region (List.map at exps))
-    (F.asprintf
-       "mismatch in number of expressions and values while assigning, expected \
-        %d value(s) but got %d"
-       (List.length exps) (List.length values));
+  let* _ =
+    check_fail
+      (List.length exps = List.length values)
+      (over_region (List.map at exps))
+      (F.asprintf
+         "mismatch in number of expressions and values while assigning, \
+          expected %d value(s) but got %d"
+         (List.length exps) (List.length values))
+  in
   List.fold_left2
     (fun ctx exp value ->
       let* ctx = ctx in
@@ -216,13 +218,15 @@ and assign_arg (ctx : Ctx.t) (arg : arg) (value : value) : Ctx.t attempt =
 
 and assign_args (ctx : Ctx.t) (args : arg list) (values : value list) :
     Ctx.t attempt =
-  check
-    (List.length args = List.length values)
-    no_region
-    (F.asprintf
-       "mismatch in number of arguments and values while assigning, expected \
-        %d value(s) but got %d"
-       (List.length args) (List.length values));
+  let* _ =
+    check_fail
+      (List.length args = List.length values)
+      (over_region (List.map at args))
+      (F.asprintf
+         "mismatch in number of arguments and values while assigning, expected \
+          %d value(s) but got %d"
+         (List.length args) (List.length values))
+  in
   List.fold_left2
     (fun ctx arg value ->
       let* ctx = ctx in

@@ -69,11 +69,16 @@ def $empty_tblctx() =
 
 dec $add_key(key, tblctx) : tblctx
 
+def $add_key(key, tblctx) = tblctx[ .KEYS = key :: tblctx.KEYS ]
+
 dec $add_action(action, tblctx) : tblctx
 
 def $add_action(action, tblctx) = tblctx[ .ACTIONS = action :: tblctx.ACTIONS ]
 
 dec $add_priority(int, tblctx) : tblctx
+
+def $add_priority(i, tblctx)
+  = tblctx[ .PRIORITIES.VALUES = i :: tblctx.PRIORITIES.VALUES ]
 
 ;;
 ;; Getters
@@ -97,6 +102,27 @@ dec $set_mode(mode, tblctx) : tblctx
 ;;
 
 dec $update_mode(text, typ, tblctx) : tblctx
+
+def $update_mode("lpm", typ, tblctx) = tblctx[ .MODE = NOPRILPM w ]
+  -- if tblctx.MODE = NOPRI
+  -- if w = $get_width(typ)
+def $update_mode("lpm", _, tblctx) = tblctx[ .MODE = PRILPM ]
+  -- if tblctx.MODE = PRI
+def $update_mode("range", _, tblctx) = tblctx[ .MODE = PRI ]
+  -- if tblctx.MODE = NOPRI
+def $update_mode("ternary", _, tblctx) = tblctx[ .MODE = PRI ]
+  -- if tblctx.MODE = NOPRI
+def $update_mode("optional", _, tblctx) = tblctx[ .MODE = PRI ]
+  -- if tblctx.MODE = NOPRI
+def $update_mode("range", _, tblctx) = tblctx[ .MODE = PRILPM ]
+  -- if tblctx.MODE = NOPRILPM _
+def $update_mode("ternary", _, tblctx) = tblctx[ .MODE = PRILPM ]
+  -- if tblctx.MODE = NOPRILPM _
+def $update_mode("optional", _, tblctx) = tblctx[ .MODE = PRILPM ]
+  -- if tblctx.MODE = NOPRILPM _
+def $update_mode(_, _, tblctx) = tblctx
+  -- otherwise
+
 dec $update_state(tblstate, tblstate) : tblstate
 
 def $update_state(NOLPM, LPM nat) = LPM nat

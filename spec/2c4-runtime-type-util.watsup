@@ -83,3 +83,10 @@ def $is_assignable'(typ) = true
 ;;
 
 dec $get_width(typ) : nat
+dec $get_width'(typ) : nat
+
+def $get_width(typ) = $get_width'($canon_typ(typ))
+def $get_width'(FIntT w) = w
+def $get_width'(FBitT w) = w
+def $get_width'(VBitT w) = w
+def $get_width'(NewT _ typ) = $get_width(typ)
