@@ -576,19 +576,28 @@ and pp_table ?(level = 0) fmt table =
 
 and pp_table_action' ?(level = 0) fmt table_action' =
   let var, args, _annos, params_data, params_control = table_action' in
+  let comment_data_control params_data params_control =
+    if List.length params_data = 0 && List.length params_control = 0 then ""
+    else if List.length params_data = 0 then
+      F.asprintf " /* control: %a */"
+        (pp_params ~level:(level + 1))
+        params_control
+    else if List.length params_control = 0 then
+      F.asprintf " /* data: %a */" (pp_params ~level:(level + 1)) params_data
+    else
+      F.asprintf " /* data: %a, control: %a */"
+        (pp_params ~level:(level + 1))
+        params_data
+        (pp_params ~level:(level + 1))
+        params_control
+  in
   match args with
   | [] ->
-      F.fprintf fmt "%a; /* (data) %a (control) %a */" pp_var var
-        (pp_params ~level:(level + 1))
-        params_data
-        (pp_params ~level:(level + 1))
-        params_control
+      F.fprintf fmt "%a;%s" pp_var var
+        (comment_data_control params_data params_control)
   | _ ->
-      F.fprintf fmt "%a%a; /* (data) %a (control) %a */" pp_var var pp_args args
-        (pp_params ~level:(level + 1))
-        params_data
-        (pp_params ~level:(level + 1))
-        params_control
+      F.fprintf fmt "%a%a;%s" pp_var var pp_args args
+        (comment_data_control params_data params_control)
 
 and pp_table_action ?(level = 0) fmt table_action =
   pp_table_action' ~level fmt table_action.it
@@ -606,7 +615,7 @@ and pp_table_entry' ?(level = 0) ?(table_entries_const = false) fmt table_entry'
     (if table_entry_priority |> Option.is_some then "priority = " else "")
     (pp_option pp_value) table_entry_priority
     (if table_entry_priority |> Option.is_some then " : " else "")
-    (if table_entries_const then " */" else "")
+    (if table_entries_const then "*/ " else "")
     pp_keysets keysets (pp_table_action ~level) table_action
 
 and pp_table_entry ?(level = 0) ?(table_entries_const = false) fmt table_entry =
