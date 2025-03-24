@@ -88,7 +88,7 @@ let rec pp_typ' ?(level = 0) fmt typ =
   | AnyT -> F.fprintf fmt "_"
   | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT
     -> Type.pp ~level fmt typ
-  | SetT typ -> F.fprintf fmt "%a/*SetT*/" (pp_typ' ~level:(level + 1)) typ
+  | SetT typ -> F.fprintf fmt "%a" (pp_typ' ~level:(level + 1)) typ
   | StateT -> Type.pp ~level fmt typ
 
 let pp_typ ?(level = 0) fmt typ = pp_typ' ~level fmt typ.it
@@ -274,7 +274,7 @@ and pp_expr' ?(level = 0) fmt expr' =
         (pp_targs ~level:(level + 1))
         targs pp_args args
   | CallMethodE { expr_base; member; targs; args } ->
-      F.fprintf fmt "%a.%a%a%a/*CallMethodE*/"
+      F.fprintf fmt "%a.%a%a%a"
         (pp_expr ~level:(level + 1))
         expr_base pp_member member
         (pp_targs ~level:(level + 1))
@@ -336,17 +336,17 @@ and pp_stmt' ?(level = 0) fmt stmt' =
           F.fprintf fmt "return %a;" (pp_expr ~level:(level + 1)) expr_ret
       | None -> F.fprintf fmt "return;")
   | CallFuncS { var_func; targs; args } ->
-      F.fprintf fmt "%a%a%a;/*CallFuncS*/" pp_var var_func
+      F.fprintf fmt "%a%a%a;" pp_var var_func
         (pp_targs ~level:(level + 1))
         targs pp_args args
   | CallMethodS { expr_base; member; targs; args } ->
-      F.fprintf fmt "%a.%a%a%a;/*CallMethodS*/"
+      F.fprintf fmt "%a.%a%a%a;"
         (pp_expr ~level:(level + 1))
         expr_base pp_member member
         (pp_targs ~level:(level + 1))
         targs pp_args args
   | CallInstS { typ = _typ; var_inst; targs; args } ->
-      F.fprintf fmt "%a%a.apply%a;/*CallInstS*/" pp_var var_inst
+      F.fprintf fmt "%a%a.apply%a;" pp_var var_inst
         (pp_targs ~level:(level + 1))
         targs pp_args args
   | TransS { expr_label } ->
@@ -384,11 +384,11 @@ and pp_decl' ?(level = 0) fmt decl' =
   | VarD { id; typ; init; annos = _annos } -> (
       match init with
       | Some expr_init ->
-          F.fprintf fmt "%a %a = %a;/*VarDSome*/"
+          F.fprintf fmt "%a %a = %a;"
             (pp_typ ~level:(level + 1))
             typ pp_id id (pp_expr ~level:0) expr_init
       | None ->
-          F.fprintf fmt "%a %a;/*VarDNone*/"
+          F.fprintf fmt "%a %a;"
             (pp_typ ~level:(level + 1))
             typ pp_id id)
   | ErrD { members } ->
@@ -402,11 +402,11 @@ and pp_decl' ?(level = 0) fmt decl' =
   | InstD { id; typ = _typ; var_inst; targs; targs_hidden = _targs_hidden; args; init; annos = _annos } -> (
       match init with
       | [] ->
-          F.fprintf fmt "%a%a%a %a;/*InstD*/" pp_var var_inst
+          F.fprintf fmt "%a%a%a %a;" pp_var var_inst
             (pp_targs ~level:(level + 1))
             targs pp_args args pp_id id
       | init ->
-          F.fprintf fmt "%a%a%a %a = {\n%a\n%s};/*InstDinit*/" pp_var var_inst
+          F.fprintf fmt "%a%a%a %a = {\n%a\n%s};" pp_var var_inst
             (pp_targs ~level:(level + 1))
             targs pp_args args pp_id id
             (pp_decls ~level:(level + 1))
@@ -504,7 +504,7 @@ and pp_decl' ?(level = 0) fmt decl' =
         (pp_params ~level:(level + 1))
         params (pp_block ~level) body
   | FuncD { id; typ_ret; tparams; tparams_hidden; params; body } ->
-      F.fprintf fmt "%a %a%a%a %a/*FuncD*/"
+      F.fprintf fmt "%a %a%a%a %a"
         (pp_typ ~level:(level + 1))
         typ_ret pp_id id pp_tparams (tparams @ tparams_hidden)
         (pp_params ~level:(level + 1))
@@ -576,17 +576,14 @@ and pp_table_entry' ?(level = 0) ?(table_entries_const = false) fmt table_entry'
   let table_entry_const, keysets, table_action, table_entry_priority, _annos =
     table_entry'
   in
-  if table_entries_const then
-    F.fprintf fmt "%s%a : %a/*const: %b*/"
-      (if table_entry_const then "const " else "")
-      pp_keysets keysets (pp_table_action ~level) table_action table_entries_const
-  else 
-    F.fprintf fmt "%s%s%a%s%a : %a/*const: %b*/"
-      (if table_entry_const then "const " else "")
-      (if table_entry_priority |> Option.is_some then "priority = " else "")
-      (pp_option pp_value) table_entry_priority
-      (if table_entry_priority |> Option.is_some then " : " else "")
-      pp_keysets keysets (pp_table_action ~level) table_action table_entries_const
+  F.fprintf fmt "%s%s%s%a%s%s%a : %a"
+    (if table_entry_const then "const " else "")
+    (if table_entries_const then "/* " else "")
+    (if table_entry_priority |> Option.is_some then "priority = " else "")
+    (pp_option pp_value) table_entry_priority
+    (if table_entry_priority |> Option.is_some then " : " else "")
+    (if table_entries_const then " */" else "")
+    pp_keysets keysets (pp_table_action ~level) table_action
 
 and pp_table_entry ?(level = 0) ?(table_entries_const = false) fmt table_entry =
   pp_table_entry' ~level ~table_entries_const fmt table_entry.it 
