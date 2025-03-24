@@ -46,3 +46,6 @@ debug
 # reducer originals and interestingness scripts
 reductions/o*
 reductions/interesting
+
+# MacOS
+*.DS_Store
