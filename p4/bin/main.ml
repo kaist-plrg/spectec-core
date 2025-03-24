@@ -6,7 +6,7 @@ let version = "0.1"
 let parse includes filename : El.Ast.program =
   Frontend.Parse.parse_file includes filename
 
-let roundtrip includes filename : El.Ast.program =
+let roundtrip_el includes filename : El.Ast.program =
   Frontend.Parse.roundtrip_file includes filename
 
 let typecheck includes filename : Il.Ast.program =
@@ -15,7 +15,6 @@ let typecheck includes filename : Il.Ast.program =
 let roundtrip_il includes filename : Il.Ast.program =
   let program = typecheck includes filename in
   let program_str = Format.asprintf "%a\n" Il.Pp_to_el.pp_program program in
-  Format.printf "%s\n" program_str;
   let program' =
     try
       Frontend.Parse.parse_string filename program_str
@@ -25,7 +24,7 @@ let roundtrip_il includes filename : Il.Ast.program =
   in
   if not (Il.Eq.eq_program program program') then
     "roundtrip error" |> error_parser_no_info;
-  program
+  program'
 
 let parse_command =
   Command.basic ~summary:"parse a p4_16 program"
@@ -38,7 +37,7 @@ let parse_command =
      fun () ->
        try
          let program =
-           let func = if roundtrip_flag then roundtrip else parse in
+           let func = if roundtrip_flag then roundtrip_el else parse in
            func includes filename
          in
          Format.printf "%a\n" El.Pp.pp_program program
@@ -74,7 +73,7 @@ let typecheck_command =
            let func = if roundtrip_flag then roundtrip_il else typecheck in
            func includes filename
          in
-         Format.printf "%a\n" Il.Pp.pp_program program
+         Format.printf "%a\n" Il.Pp_to_el.pp_program program
        with ParseErr (msg, info) | CheckErr (msg, info) ->
          if Util.Source.is_no_info info then Format.printf "Error: %s\n" msg
          else Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
