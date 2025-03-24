@@ -168,10 +168,9 @@ and pp_targ ?(level = 0) fmt targ = pp_typ ~level fmt targ
 and pp_targs ?(level = 0) fmt targs =
   match targs with
   | [] -> ()
-  | [ targ ] -> F.fprintf fmt "<%a>" (pp_targ ~level:(level + 1)) targ
   | targs ->
-      F.fprintf fmt "<\n%a>"
-        (pp_list ~level:(level + 1) (pp_targ ~level:(level + 1)) ~sep:CommaNl)
+      F.fprintf fmt "<%a>"
+        (pp_list ~level:(level + 1) (pp_targ ~level:(level + 1)) ~sep:Comma)
         targs
 
 (* Arguments *)
