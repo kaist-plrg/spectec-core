@@ -283,10 +283,12 @@ and pp_expr' ?(level = 0) fmt expr' =
         targs pp_args args
   | CallTypeE { typ; member } ->
       F.fprintf fmt "%a.%a()" (pp_typ ~level:(level + 1)) typ pp_member member
-  | InstE { var_inst; targs; targs_hidden = _targs_hidden; args } ->
-      F.fprintf fmt "%a%a%a" pp_var var_inst
+  | InstE { var_inst; targs; targs_hidden; args } ->
+      F.fprintf fmt "%a%a%a%s" pp_var var_inst
         (pp_targs ~level:(level + 1))
         targs pp_args args
+        (if List.length targs_hidden = 0 then ""
+             else (F.asprintf " /* %n wildcards matched */" (List.length targs_hidden)))
 
 and pp_expr ?(level = 0) fmt expr = pp_expr' ~level fmt expr.it
 
@@ -404,20 +406,24 @@ and pp_decl' ?(level = 0) fmt decl' =
         typ = _typ;
         var_inst;
         targs;
-        targs_hidden = _targs_hidden;
+        targs_hidden;
         args;
         init;
         annos = _annos;
       } -> (
       match init with
       | [] ->
-          F.fprintf fmt "%a%a%a %a;" pp_var var_inst
+          F.fprintf fmt "%a%a%a %a;%s" pp_var var_inst
             (pp_targs ~level:(level + 1))
             targs pp_args args pp_id id
+            (if List.length targs_hidden = 0 then ""
+             else (F.asprintf " /* %n wildcards matched */" (List.length targs_hidden)))
       | init ->
-          F.fprintf fmt "%a%a%a %a = {\n%a\n%s};" pp_var var_inst
+          F.fprintf fmt "%a%a%a %a%s = {\n%a\n%s};" pp_var var_inst
             (pp_targs ~level:(level + 1))
             targs pp_args args pp_id id
+            (if List.length targs_hidden = 0 then ""
+             else (F.asprintf " /* %n wildcards matched */" (List.length targs_hidden)))
             (pp_decls ~level:(level + 1))
             init (indent level))
   | StructD { id; tparams; tparams_hidden; fields; annos = _annos } ->
@@ -540,9 +546,11 @@ and pp_decl' ?(level = 0) fmt decl' =
         |> List.map (fun cparam ->
                Subst.subst_cparam theta cparam.it $ cparam.at)
       in
-      F.fprintf fmt "package %a%a%a;" pp_id id pp_tparams tparams
+      F.fprintf fmt "package %a%a%a;%s" pp_id id pp_tparams tparams
         (pp_cparams ~level:(level + 1))
         cparams
+        (if List.length tparams_hidden = 0 then ""
+             else (F.asprintf " /* %n wildcards created */" (List.length tparams_hidden)))
 
 and pp_decl ?(level = 0) fmt decl = pp_decl' ~level fmt decl.it
 
@@ -614,7 +622,9 @@ and pp_mthd' ?(level = 0) fmt mthd' =
         |> List.map (fun cparam ->
                Subst.subst_cparam theta cparam.it $ cparam.at)
       in
-      F.fprintf fmt "%a%a;" pp_id id (pp_cparams ~level:(level + 1)) cparams
+      F.fprintf fmt "%a%a;%s" pp_id id (pp_cparams ~level:(level + 1)) cparams
+        (if List.length tparams_hidden = 0 then ""
+             else (F.asprintf " /* %n wildcards created */" (List.length tparams_hidden)))
   | ExternAbstractM
       { id; typ_ret; tparams; tparams_hidden; params; annos = _annos } ->
       F.fprintf fmt "abstract %a %a%a%a;"
