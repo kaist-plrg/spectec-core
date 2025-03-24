@@ -17,6 +17,7 @@ let pp_text fmt text = P.pp_text fmt text
 
 (* Identifiers *)
 
+let pp_id' fmt id = P.pp_id' fmt id
 let pp_id fmt id = P.pp_id fmt id
 
 (* Variables (scoped identifiers) *)
@@ -25,6 +26,7 @@ let pp_var fmt var = P.pp_var fmt var
 
 (* Members *)
 
+let pp_member' fmt member = P.pp_member' fmt member
 let pp_member fmt member = P.pp_member fmt member
 let pp_members ?(level = 0) fmt members = P.pp_members ~level fmt members
 
@@ -42,8 +44,7 @@ let pp_dir fmt dir = P.pp_dir fmt dir
 
 (* Types *)
 
-let rec pp_typ ?(level = 0) fmt typ = pp_typ' ~level fmt typ.it
-and pp_typ' ?(level = 0) fmt typ =
+let rec pp_typ' ?(level = 0) fmt typ =
   match typ with
   | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT
   | FIntT _ | FBitT _ | VBitT _ | VarT _ -> Type.pp ~level fmt typ
@@ -72,7 +73,7 @@ and pp_typ' ?(level = 0) fmt typ =
         typ
         (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs)
-  | DefT (_, id) | NewT (id, _) | EnumT (id, _) | SEnumT (id, _, _) -> F.fprintf fmt "%a" P.pp_id' id
+  | DefT (_, id) | NewT (id, _) | EnumT (id, _) | SEnumT (id, _, _) -> F.fprintf fmt "%a" pp_id' id
   | ListT _ | TupleT _ -> Type.pp ~level fmt typ
   | StackT (typ, size) ->
       F.fprintf fmt "%a[%a]" (pp_typ' ~level:(level + 1)) typ Bigint.pp size
@@ -83,12 +84,14 @@ and pp_typ' ?(level = 0) fmt typ =
   | ParserT (id, _)
   | ControlT (id, _)
   | PackageT (id, _)
-  | TableT (id, _) -> F.fprintf fmt "%a" P.pp_id' id
+  | TableT (id, _) -> F.fprintf fmt "%a" pp_id' id
   | AnyT -> F.fprintf fmt "_"
   | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _ | RecordDefaultT _ | DefaultT | InvalidT
     -> Type.pp ~level fmt typ
   | SetT typ -> F.fprintf fmt "%a/*SetT*/" (pp_typ' ~level:(level + 1)) typ
   | StateT -> Type.pp ~level fmt typ
+
+let pp_typ ?(level = 0) fmt typ = pp_typ' ~level fmt typ.it
 
 (* Values *)
 
@@ -96,7 +99,7 @@ let rec pp_value ?(level = 0) fmt value = pp_expr' ~level fmt value.note
 and pp_value' ?(level = 0) fmt value =
   match value with
   | SEnumFieldV (id, member, _) ->
-      F.fprintf fmt "%a.%a" P.pp_id' id P.pp_member' member
+      F.fprintf fmt "%a.%a" pp_id' id pp_member' member
   | TupleV values ->
       F.fprintf fmt "{ %a }"
         (pp_list (pp_value' ~level:(level + 1)) ~sep:Comma)
@@ -108,7 +111,7 @@ and pp_value' ?(level = 0) fmt value =
         values
   | HeaderV (_, _, fields) ->
       F.fprintf fmt "{\n%a\n%s}"
-        (pp_pairs ~level:(level + 1) P.pp_member' pp_value' ~rel:Eq
+        (pp_pairs ~level:(level + 1) pp_member' pp_value' ~rel:Eq
            ~sep:SemicolonNl)
         fields (indent level)
   | _ -> Value.pp ~level fmt value
