@@ -1,4 +1,4 @@
-Running typecheck tests on 1033 files
+Running typecheck roundtrip tests on 1033 files
 
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed/action-bind.p4
@@ -3106,3 +3106,4 @@ Typecheck success
 
 Parser on file: [PASS] 1033/1033 (100.00%) [FAIL] 0/1033 (0.00%)
 Typecheck: [PASS] 1029/1033 (99.61%) [FAIL] 4/1033 (0.39%)
+Typecheck roundtrip: [PASS] 1029/1029 (100.00%) [FAIL] 0/1029 (0.00%)

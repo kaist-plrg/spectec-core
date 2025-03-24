@@ -39,8 +39,8 @@ exception TestParseStringErr of string * Util.Source.info * stat
 exception TestParseRoundtripErr of stat
 exception TestCheckErr of string * Util.Source.info * stat
 exception TestCheckNegErr of stat
-exception TestCheckRoundtripParseErr of string * Util.Source.info * stat
-exception TestCheckRoundtripErr of stat
+exception TestCheckRoundtripCheckErr of string * Util.Source.info * stat
+exception TestCheckRoundtripMismatchErr of stat
 exception TestInstErr of string * Util.Source.info * stat
 exception TestParseStfErr of string * stat
 exception TestInterpErr of string * Util.Source.info * stat
@@ -144,23 +144,19 @@ let typecheck_file stat includes mode filename =
     (stat, program)
   with CheckErr (msg, info) -> raise (TestCheckErr (msg, info, stat))
 
-let typecheck_string stat filename file =
-  try
-    let stat, program = parse_string stat filename file in
-    let program = Typing.Typecheck.type_program program in
-    (stat, program)
-  with CheckErr (msg, info) -> raise (TestCheckErr (msg, info, stat))
-
 let typecheck_roundtrip stat includes filename =
   let stat, program' = typecheck_file stat includes Pos filename in
   let file' = Format.asprintf "%a\n" Il.Pp_to_el.pp_program program' in
   let stat, program'' =
-    try typecheck_string stat filename file'
-    with ParseErr (msg, info) ->
-      raise (TestCheckRoundtripParseErr (msg, info, stat))
+    try
+      let program'' = Frontend.Parse.parse_string filename file' 
+      |> Typing.Typecheck.type_program in
+      (stat, program'')
+    with ParseErr (msg, info) | CheckErr (msg, info) ->
+      raise (TestCheckRoundtripCheckErr (msg, info, stat))
   in
   if not (Il.Eq.eq_program program' program'') then
-    raise (TestCheckRoundtripErr stat);
+    raise (TestCheckRoundtripMismatchErr stat);
   stat
 
 let typecheck_test stat includes mode filename =
@@ -187,12 +183,12 @@ let typecheck_test stat includes mode filename =
   | TestCheckNegErr stat ->
       Format.asprintf "Error: typecheck success" |> print_endline;
       { stat with fail_typecheck = stat.fail_typecheck + 1 }
-  | TestCheckRoundtripParseErr (msg, info, stat) ->
-      Format.asprintf "Error on typecheck re-parse: %a\n%s" Util.Source.pp info
+  | TestCheckRoundtripCheckErr (msg, info, stat) ->
+      Format.asprintf "Error on roundtrip re-check: %a\n%s" Util.Source.pp info
         msg
       |> print_endline;
       { stat with fail_typecheck_roundtrip = stat.fail_typecheck_roundtrip + 1 }
-  | TestCheckRoundtripErr stat ->
+  | TestCheckRoundtripMismatchErr stat ->
       Format.asprintf "Error: typecheck roundtrip fail" |> print_endline;
       { stat with fail_typecheck_roundtrip = stat.fail_typecheck_roundtrip + 1 }
   | _ ->
