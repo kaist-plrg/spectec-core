@@ -606,7 +606,7 @@ and pp_table_entry' ?(level = 0)  fmt table_entry' =
     pp_keysets keysets (pp_table_action ~level) table_action
 
 and pp_table_entry ?(level = 0) ?(table_entries_const = false) fmt table_entry =
-  let _ = table_entries_const in (*ignore optional value*)
+  table_entries_const |> ignore;
   pp_table_entry' ~level fmt table_entry.it
 
 and pp_table_entries' ?(level = 0) fmt table_entries' =

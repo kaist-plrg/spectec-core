@@ -356,9 +356,9 @@ and pp_table_actions ?(level = 0)
 and pp_table_entries' ?(level = 0)
     (pp_table_entry : 'table_entry pp_table_entry) fmt table_entries =
   let table_entries_const, table_entries = table_entries in
-  F.fprintf fmt "%sentries = {\n%a\n%s}/*const: %b*/"
+  F.fprintf fmt "%sentries = {\n%a\n%s}"
     (if table_entries_const then "const " else "")
-    (pp_list ~level:(level + 1) (pp_table_entry ~table_entries_const:table_entries_const) ~sep:Nl)
+    (pp_list ~level:(level + 1) (pp_table_entry ~table_entries_const) ~sep:Nl)
     table_entries (indent level) table_entries_const
 
 and pp_table_entries ?(level = 0) (pp_table_entry : 'table_entry pp_table_entry)
