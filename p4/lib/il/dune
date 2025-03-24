@@ -3,6 +3,6 @@
 (library
  (name il)
  (libraries util lang runtime_value)
- (modules ast pp pp_to_el eq walk ctk types pp_type eq_type free subst utils)
+ (modules ast pp pp_to_el eq walk ctk types pp_typ eq_typ free subst utils)
  (instrumentation
   (backend bisect_ppx)))
