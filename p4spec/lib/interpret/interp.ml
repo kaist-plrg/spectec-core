@@ -86,23 +86,6 @@ and sub_typ' (ctx : Ctx.t) (typ_a : Typ.t) (typ_b : Typ.t) : bool =
 
 (* Assignments *)
 
-(* Transpose a matrix of values, as a list of value batches
-   that are to be each fed into an iterated expression *)
-
-let transpose (value_matrix : value list list) : value list list =
-  match value_matrix with
-  | [] -> []
-  | _ ->
-      let width = List.length (List.hd value_matrix) in
-      check
-        (List.for_all
-           (fun value_row -> List.length value_row = width)
-           value_matrix)
-        no_region "value matrix is not rectangular";
-      List.init width (fun j ->
-          List.init (List.length value_matrix) (fun i ->
-              List.nth (List.nth value_matrix i) j))
-
 let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t attempt =
   let typ_exp = exp.note $ exp.at in
   let typ_value = value.note $ value.at in
@@ -204,7 +187,6 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t attempt =
           ctx vars
       in
       Ok ctx
-  (* (TODO) Need runtime check for subtype relation *)
   | CastE (exp, _), _ -> assign_exp ctx exp value
   | _ ->
       fail exp.at
@@ -631,35 +613,21 @@ and eval_iter_exp_opt (ctx : Ctx.t) (at : region) (typ : typ') (exp : exp)
 
 and eval_iter_exp_list (ctx : Ctx.t) (at : region) (typ : typ') (exp : exp)
     (vars : var list) : Ctx.t * value =
-  (* First break the values that are to be iterated over,
-     into a batch of values *)
-  let values_batch =
-    List.map
-      (fun var ->
-        let id, _typ, iters = var in
-        Ctx.find_value ctx (id, iters @ [ List ]) |> Value.get_list)
-      vars
-    |> transpose
-  in
-  (* Then evaluate the expression for each batch of values,
-     followed by a sequencing operation *)
-  let ctx_sub = ctx in
+  let ctxs_sub = Ctx.sub_list ctx vars in
   let ctx, values =
     List.fold_left
-      (fun (ctx, values) value_batch ->
+      (fun (ctx, values) ctx_sub ->
         let ctx_sub =
-          List.fold_left2
-            (fun ctx_sub var value ->
-              let id, _typ, iters = var in
-              Ctx.add_value ctx_sub (id, iters) value)
-            ctx_sub vars value_batch
+          Ctx.trace_open_iter ctx_sub (Il.Print.string_of_exp exp)
         in
-        let _ctx_sub, value = eval_exp ctx_sub exp in
+        let ctx_sub, value = eval_exp ctx_sub exp in
+        let ctx_sub = Ctx.trace_close ctx_sub in
+        let ctx = Ctx.trace_commit ctx ctx_sub.trace in
         (ctx, values @ [ value ]))
-      (ctx, []) values_batch
+      (ctx, []) ctxs_sub
   in
-  let values = ListV values $$ (at, typ) in
-  (ctx, values)
+  let value = ListV values $$ (at, typ) in
+  (ctx, value)
 
 and eval_iter_exp (ctx : Ctx.t) (at : region) (typ : typ') (exp : exp)
     (iterexp : iterexp) : Ctx.t * value =
@@ -695,7 +663,7 @@ and eval_args (ctx : Ctx.t) (args : arg list) : Ctx.t * value list =
 (* Premise evaluation *)
 
 and eval_prem (ctx : Ctx.t) (prem : prem) : Ctx.t attempt =
-  let ctx = Ctx.trace_prem ctx prem in
+  let ctx = Ctx.trace_extend ctx prem in
   eval_prem' ctx prem
 
 and eval_prem' (ctx : Ctx.t) (prem : prem) : Ctx.t attempt =
@@ -744,80 +712,75 @@ and eval_let_prem (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) : Ctx.t attempt =
 
 (* Iterated premise evaluation *)
 
+and eval_iter_prem_list (ctx : Ctx.t) (prem : prem) (vars : var list) :
+    Ctx.t attempt =
+  (* Discriminate between bound and binding variables *)
+  let vars_bound, vars_binding =
+    List.partition
+      (fun (id, _typ, iters) -> Ctx.bound_value ctx (id, iters @ [ List ]))
+      vars
+  in
+  let ctxs_sub = Ctx.sub_list ctx vars_bound in
+  match ctxs_sub with
+  (* If the bound variable supposed to guide the iteration is already empty,
+     then the binding variables are also empty *)
+  | [] ->
+      let ctx =
+        List.fold_left
+          (fun ctx (id, typ, iters) ->
+            let value =
+              let typ_value = Typ.iterate typ (iters @ [ List ]) in
+              ListV [] $$ (no_region, typ_value.it)
+            in
+            Ctx.add_value ctx (id, iters @ [ List ]) value)
+          ctx vars_binding
+      in
+      Ok ctx
+  (* Otherwise, evaluate the premise for each batch of bound values,
+     and collect the resulting binding batches *)
+  | _ ->
+      let* ctx, values_binding_batch =
+        List.fold_left
+          (fun ctx_values_binding_batch ctx_sub ->
+            let* ctx, values_binding_batch = ctx_values_binding_batch in
+            let ctx_sub =
+              Ctx.trace_open_iter ctx_sub (Il.Print.string_of_prem prem)
+            in
+            let* ctx_sub = eval_prem ctx_sub prem in
+            let ctx_sub = Ctx.trace_close ctx_sub in
+            let ctx = Ctx.trace_commit ctx ctx_sub.trace in
+            let value_binding_batch =
+              List.map
+                (fun (id, _typ, iters) -> Ctx.find_value ctx_sub (id, iters))
+                vars_binding
+            in
+            let values_binding_batch =
+              values_binding_batch @ [ value_binding_batch ]
+            in
+            Ok (ctx, values_binding_batch))
+          (Ok (ctx, []))
+          ctxs_sub
+      in
+      let values_binding = values_binding_batch |> Ctx.transpose in
+      (* Finally, bind the resulting binding batches *)
+      let ctx =
+        List.fold_left2
+          (fun ctx (id, typ, iters) values_binding ->
+            let value_binding =
+              let typ_value = Typ.iterate typ (iters @ [ List ]) in
+              ListV values_binding $$ (no_region, typ_value.it)
+            in
+            Ctx.add_value ctx (id, iters @ [ List ]) value_binding)
+          ctx vars_binding values_binding
+      in
+      Ok ctx
+
 and eval_iter_prem (ctx : Ctx.t) (prem : prem) (iterexp : iterexp) :
     Ctx.t attempt =
   let iter, vars = iterexp in
   match iter with
   | Opt -> error prem.at "(TODO) eval_iter_prem"
-  | List -> (
-      (* Discriminate between bound and binding variables *)
-      let vars_bound, vars_binding =
-        List.partition
-          (fun (id, _typ, iters) -> Ctx.bound_value ctx (id, iters @ [ List ]))
-          vars
-      in
-      (* First break the bound values that are to be iterated over,
-         into a batch of values *)
-      let values_bound_batch =
-        List.map
-          (fun (id, _typ, iters) ->
-            Ctx.find_value ctx (id, iters @ [ List ]) |> Value.get_list)
-          vars_bound
-        |> transpose
-      in
-      match values_bound_batch with
-      (* If the bound variable supposed to guide the iteration is already empty,
-         then the binding variables are also empty *)
-      | [] ->
-          let ctx =
-            List.fold_left
-              (fun ctx (id, typ, iters) ->
-                let value =
-                  let typ_value = Typ.iterate typ (iters @ [ List ]) in
-                  ListV [] $$ (no_region, typ_value.it)
-                in
-                Ctx.add_value ctx (id, iters @ [ List ]) value)
-              ctx vars_binding
-          in
-          Ok ctx
-      (* Otherwise, evaluate the premise for each batch of bound values,
-         and collect the resulting binding batches *)
-      | _ ->
-          let* values_binding_batch =
-            List.fold_left
-              (fun values_binding_batch values_bound ->
-                let* values_binding_batch = values_binding_batch in
-                let ctx =
-                  List.fold_left2
-                    (fun ctx var_bound value_bound ->
-                      let id, _typ, iters = var_bound in
-                      Ctx.add_value ctx (id, iters) value_bound)
-                    ctx vars_bound values_bound
-                in
-                let* ctx = eval_prem ctx prem in
-                let value_binding_batch =
-                  List.map
-                    (fun var_binding ->
-                      let id, _typ, iters = var_binding in
-                      Ctx.find_value ctx (id, iters))
-                    vars_binding
-                in
-                Ok (values_binding_batch @ [ value_binding_batch ]))
-              (Ok []) values_bound_batch
-          in
-          let values_binding = values_binding_batch |> transpose in
-          (* Finally, bind the resulting binding batches *)
-          let ctx =
-            List.fold_left2
-              (fun ctx (id, typ, iters) values_binding ->
-                let value_binding =
-                  let typ_value = Typ.iterate typ (iters @ [ List ]) in
-                  ListV values_binding $$ (no_region, typ_value.it)
-                in
-                Ctx.add_value ctx (id, iters @ [ List ]) value_binding)
-              ctx vars_binding values_binding
-          in
-          Ok ctx)
+  | List -> eval_iter_prem_list ctx prem vars
 
 (* Invoke a relation *)
 
@@ -853,6 +816,7 @@ and invoke_rel' (ctx : Ctx.t) (id : id) (values_input : value list) :
             (exps_output : exp list) : (Ctx.t * value list) attempt =
           let* ctx_local = eval_prems ctx_local prems in
           let ctx_local, values_output = eval_exps ctx_local exps_output in
+          let ctx_local = Ctx.trace_close ctx_local in
           let ctx = Ctx.trace_commit ctx ctx_local.trace in
           Ok (ctx, values_output)
         in
@@ -907,6 +871,7 @@ and invoke_func_builtin (ctx : Ctx.t) (id : id) (targs : targ list)
   let ctx_local = Ctx.localize ctx in
   let ctx_local = Ctx.trace_open_dec ctx_local id 0 values_input in
   let value_output = Builtin.invoke id targs values_input in
+  let ctx_local = Ctx.trace_close ctx_local in
   let ctx = Ctx.trace_commit ctx ctx_local.trace in
   Ok (ctx, value_output)
 
@@ -941,6 +906,7 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
             let typ_output = Typ.subst_typ theta typ_output in
             value_output.it $$ (value_output.at, typ_output.it)
           in
+          let ctx_local = Ctx.trace_close ctx_local in
           let ctx = Ctx.trace_commit ctx ctx_local.trace in
           Ok (ctx, value_output)
         in
@@ -994,10 +960,11 @@ let load_spec (ctx : Ctx.t) (spec : spec) : Ctx.t =
 
 (* Entry point: run typing rule from `Prog_ok` relation *)
 
-let run_typing (debug : bool) (spec : spec) (program : value) : value list =
+let run_typing (debug : bool) (profile : bool) (spec : spec) (program : value) :
+    value list =
   Builtin.init ();
-  let ctx = Ctx.empty debug in
+  let ctx = Ctx.empty debug profile in
   let ctx = load_spec ctx spec in
   let+ ctx, values = invoke_rel ctx ("Prog_ok" $ no_region) [ program ] in
-  Ctx.analyze ctx;
+  Ctx.profile ctx;
   values

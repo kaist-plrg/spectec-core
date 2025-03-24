@@ -456,11 +456,11 @@ rule Method_ok/externconsm:
   ----
   -- if PolyD (tparam_e*, eps) -> typ_e = $find_typdef(GLOBAL, C, CURRENT id_e)
   -- if typ = SpecT (PolyD (tparam_e*, eps) -> typ_e) (VarT tparam_e)*
-  -- if consdef = ConsD (tparam_e*, tparam_hidden*) -> (ConsT (id_c dir_c typ_c val_c?)* typ)
+  -- if cd = ConsD (tparam_e*, tparam_hidden*) -> (ConsT (id_c dir_c typ_c val_c?)* typ)
   ----
-  -- ConsDef_wf: $bound_tids(BLOCK, C) |- consdef
+  -- ConsDef_wf: $bound_tids(BLOCK, C) |- cd
   ----
-  -- if C' = $add_consdef(GLOBAL, C, cid, consdef)
+  -- if C' = $add_consdef(GLOBAL, C, cid, cd)
 
 rule Method_ok/externabstractm:
   C_0 id_e |- ExternAbstractM id type_r tparam* param* : C_4 (ExternAbstractM id typ_r tparam* tparam_hidden* paramIL*)
@@ -638,11 +638,11 @@ rule Decl_ok/parserd:
   ----
   -- if ptd = PolyD (eps, eps) -> (ParserT (id_p dir_p typ_p val_p?)*)
   -- if typ = SpecT ptd eps
-  -- if consdef = ConsD (eps, eps) -> (ConsT (id_c dir_c typ_c val_c?)* typ)
+  -- if cd = ConsD (eps, eps) -> (ConsT (id_c dir_c typ_c val_c?)* typ)
   ----
-  -- ConsDef_wf: $bound_tids(GLOBAL, C_0) |- consdef
+  -- ConsDef_wf: $bound_tids(GLOBAL, C_0) |- cd
   ----
-  -- if C_8 = $add_consdef(GLOBAL, C_0, cid, consdef)
+  -- if C_8 = $add_consdef(GLOBAL, C_0, cid, cd)
 
 ;;
 ;; Table declaration
@@ -1192,11 +1192,11 @@ rule Decl_ok/controld:
   ----
   -- if ptd = PolyD (eps, eps) -> (ControlT (id_p dir_p typ_p val_p?)*)
   -- if typ = SpecT ptd eps
-  -- if consdef = ConsD (eps, eps) -> (ConsT (id_c dir_c typ_c val_c?)* typ)
+  -- if cd = ConsD (eps, eps) -> (ConsT (id_c dir_c typ_c val_c?)* typ)
   ----
-  -- ConsDef_wf: $bound_tids(GLOBAL, C_0) |- consdef
+  -- ConsDef_wf: $bound_tids(GLOBAL, C_0) |- cd
   ----
-  -- if C_7 = $add_consdef(GLOBAL, C_0, cid, consdef)
+  -- if C_7 = $add_consdef(GLOBAL, C_0, cid, cd)
 
 ;;
 ;; Package declaration

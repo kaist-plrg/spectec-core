@@ -153,7 +153,8 @@ def $nestable'_structt(BoolT) = true
 def $nestable'_structt(numtyp) = ~$is_intt(numtyp)
 def $nestable'_structt(VarT _) = true
 def $nestable'_structt(datatyp) = ~$is_listt(datatyp)
-def $nestable'_structt(typ) = false -- otherwise
+def $nestable'_structt(typ) = false
+  -- otherwise
 
 rule Type_wf/structt:
   tidset |- StructT _ (member, typ)*

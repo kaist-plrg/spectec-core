@@ -2,12 +2,10 @@ open Domain.Lib
 open Runtime_dynamic
 open Envs
 open Il.Ast
-open Util.Error
+open Error
 open Util.Source
 
 (* Error *)
-
-let error (at : region) (msg : string) = error at "interp" msg
 
 let error_undef (at : region) (kind : string) (id : string) =
   error at (Format.asprintf "%s `%s` is undefined" kind id)
@@ -20,6 +18,8 @@ let error_dup (at : region) (kind : string) (id : string) =
 type t = {
   (* Debug flag *)
   debug : bool;
+  (* Profiling flag *)
+  profile : bool;
   (* Execution trace *)
   trace : Trace.t;
   (* Map from variables to values *)
@@ -32,23 +32,9 @@ type t = {
   fenv : FEnv.t;
 }
 
-(* Constructors *)
+(* Profiling *)
 
-let empty (debug : bool) : t =
-  {
-    debug;
-    trace = Trace.Empty;
-    venv = VEnv.empty;
-    tdenv = TDEnv.empty;
-    renv = REnv.empty;
-    fenv = FEnv.empty;
-  }
-
-let localize (ctx : t) : t = { ctx with trace = Trace.Empty; venv = VEnv.empty }
-
-(* Analyzers *)
-
-let analyze (ctx : t) : unit = if ctx.debug then Trace.analyze ctx.trace
+let profile (ctx : t) : unit = if ctx.profile then Trace.profile ctx.trace
 
 (* Tracing *)
 
@@ -74,7 +60,25 @@ let trace_open_dec (ctx : t) (id_func : id) (idx_clause : int)
     |> print_endline;
   { ctx with trace }
 
-let trace_prem (ctx : t) (prem : prem) : t =
+let trace_open_iter (ctx : t) (inner : string) : t =
+  let trace = Trace.open_iter inner in
+  { ctx with trace }
+
+let trace_close (ctx : t) : t =
+  let trace = Trace.close ctx.trace in
+  (if ctx.debug then
+     match trace with
+     | Rel { id_rel; id_rule; _ } ->
+         Format.asprintf "Closing rule %s/%s\n" id_rel.it id_rule.it
+         |> print_endline
+     | Dec { id_func; idx_clause; _ } ->
+         Format.asprintf "Closing clause %s/%d\n" id_func.it idx_clause
+         |> print_endline
+     | Iter _ -> Format.asprintf "Closing iteration\n" |> print_endline
+     | _ -> ());
+  { ctx with trace }
+
+let trace_extend (ctx : t) (prem : prem) : t =
   let trace = Trace.extend ctx.trace prem in
   if ctx.debug then
     Format.asprintf "Premise: %s\n" (prem |> Il.Print.string_of_prem)
@@ -83,15 +87,6 @@ let trace_prem (ctx : t) (prem : prem) : t =
 
 let trace_commit (ctx : t) (trace : Trace.t) : t =
   let trace = Trace.commit ctx.trace trace in
-  (if ctx.debug then
-     match trace with
-     | Rel (id_rel, id_rule, _, _) ->
-         Format.asprintf "Closing rule %s/%s\n" id_rel.it id_rule.it
-         |> print_endline
-     | Dec (id_func, idx_clause, _, _) ->
-         Format.asprintf "Closing clause %s/%d\n" id_func.it idx_clause
-         |> print_endline
-     | _ -> ());
   { ctx with trace }
 
 (* Finders *)
@@ -181,3 +176,64 @@ let add_func (ctx : t) (fid : FId.t) (func : Func.t) : t =
   if bound_func ctx fid then error_dup fid.at "function" fid.it;
   let fenv = FEnv.add fid func ctx.fenv in
   { ctx with fenv }
+
+(* Constructors *)
+
+(* Constructing an empty context *)
+
+let empty (debug : bool) (profile : bool) : t =
+  {
+    debug;
+    profile;
+    trace = Trace.Empty;
+    venv = VEnv.empty;
+    tdenv = TDEnv.empty;
+    renv = REnv.empty;
+    fenv = FEnv.empty;
+  }
+
+(* Constructing a local context *)
+
+let localize (ctx : t) : t = { ctx with trace = Trace.Empty; venv = VEnv.empty }
+
+(* Constructing sub-contexts *)
+
+(* Transpose a matrix of values, as a list of value batches
+   that are to be each fed into an iterated expression *)
+
+let transpose (value_matrix : value list list) : value list list =
+  match value_matrix with
+  | [] -> []
+  | _ ->
+      let width = List.length (List.hd value_matrix) in
+      check
+        (List.for_all
+           (fun value_row -> List.length value_row = width)
+           value_matrix)
+        no_region "value matrix is not rectangular";
+      List.init width (fun j ->
+          List.init (List.length value_matrix) (fun i ->
+              List.nth (List.nth value_matrix i) j))
+
+let sub_list (ctx : t) (vars : var list) : t list =
+  (* First break the values that are to be iterated over,
+     into a batch of values *)
+  let values_batch =
+    List.map
+      (fun var ->
+        let id, _typ, iters = var in
+        find_value ctx (id, iters @ [ List ]) |> Value.get_list)
+      vars
+    |> transpose
+  in
+  (* For each batch of values, create a sub-context *)
+  List.fold_left
+    (fun ctxs_sub value_batch ->
+      let ctx_sub =
+        List.fold_left2
+          (fun ctx_sub (id, _typ, iters) value ->
+            add_value ctx_sub (id, iters) value)
+          ctx vars value_batch
+      in
+      ctxs_sub @ [ ctx_sub ])
+    [] values_batch

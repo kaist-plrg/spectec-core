@@ -23,7 +23,8 @@ let run_typing_command =
      let%map filenames_spec = anon (sequence ("filename" %: string))
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
      and filename_p4 = flag "-p" (required string) ~doc:"p4 file to typecheck"
-     and debug = flag "-d" no_arg ~doc:"print debug information" in
+     and debug = flag "-dbg" no_arg ~doc:"print debug traces"
+     and profile = flag "-profile" no_arg ~doc:"print execution profile" in
      fun () ->
        try
          let spec =
@@ -34,7 +35,7 @@ let run_typing_command =
            P4frontend.Parse.parse_file includes_p4 filename_p4
            |> Interpret.Program.In.in_program
          in
-         let _ = Interpret.Interp.run_typing debug spec_il program_p4 in
+         let _ = Interpret.Interp.run_typing debug profile spec_il program_p4 in
          ()
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 

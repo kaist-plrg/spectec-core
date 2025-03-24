@@ -48,7 +48,7 @@ let run_typing_test stat spec_il includes_p4 filename_p4 =
       P4frontend.Parse.parse_file includes_p4 filename_p4
       |> Interpret.Program.In.in_program
     in
-    Interpret.Interp.run_typing false spec_il program_p4 |> ignore;
+    Interpret.Interp.run_typing false false spec_il program_p4 |> ignore;
     Format.asprintf "Typing success: %s" filename_p4 |> print_endline;
     stat
   with
