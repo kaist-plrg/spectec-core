@@ -149,8 +149,10 @@ let typecheck_roundtrip stat includes filename =
   let file' = Format.asprintf "%a\n" Il.Pp_to_el.pp_program program' in
   let stat, program'' =
     try
-      let program'' = Frontend.Parse.parse_string filename file' 
-      |> Typing.Typecheck.type_program in
+      let program'' =
+        Frontend.Parse.parse_string filename file'
+        |> Typing.Typecheck.type_program
+      in
       (stat, program'')
     with ParseErr (msg, info) | CheckErr (msg, info) ->
       raise (TestCheckRoundtripCheckErr (msg, info, stat))
