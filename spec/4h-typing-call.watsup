@@ -59,7 +59,7 @@ rule MethodType_ok/builtin-size:
 
 rule MethodType_ok/builtin-stackt:
   p C |- expr_b member eps arg* : (BuiltinMethodT pt IntT) exprIL_b eps eps
-  -- if member = "push_front" \/ member = "pop_back"
+  -- if member = "push_front" \/ member = "pop_front"
   ----
   -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
   -- if StackT typ_b_in int_b = $canon_typ(typ_b)
@@ -653,7 +653,7 @@ rule Inst_ok/global-packaget-targsinfer:
 rule Inst_ok/else-no-targsinfer:
   p C eps |- ct targIL* arg* id_deft* : typ_i targIL* argIL''*
   -- if ConsT pt* typ_i = ct
-  -- if ~$is_packaget($canon_typ(typ_i))
+  -- if ~((p = GLOBAL) /\ $is_packaget($canon_typ(typ_i)))
   ----
   -- (Arg_ok: p C |- arg : argIL typ_a)*
   ----
@@ -670,7 +670,7 @@ rule Inst_ok/else-no-targsinfer:
 rule Inst_ok/else-targsinfer:
   p C tid_fresh* |- ct targIL* arg* id_deft* : typ_i' targIL* argIL''*
   -- if ConsT pt* typ_i = ct
-  -- if ~$is_packaget($canon_typ(typ_i))
+  -- if ~((p = GLOBAL) /\ $is_packaget($canon_typ(typ_i)))
   ----
   -- (Arg_ok: p C |- arg : argIL typ_a)*
   ----

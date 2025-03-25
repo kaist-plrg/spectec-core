@@ -13,6 +13,8 @@ dec $band(int, int) : int
 dec $bxor(int, int) : int
 dec $bor(int, int) : int
 
+dec $bitacc(int, int, int) : int
+
 ;;
 ;; Unary operation oracle
 ;;
@@ -484,7 +486,7 @@ def $cast_fbit'(NewT _ typ, w, bs) = $cast_fbit(typ, w, bs)
 def $cast_fbit'(SetT typ, w, bs) = SetV (SingletonSet val)
   -- if val = $cast_fbit(typ, w, bs)
 
-def $cast_op(typ, FBitV w bs) = $cast_fint(typ, w, bs)
+def $cast_op(typ, FBitV w bs) = $cast_fbit(typ, w, bs)
 
 ;; Cast from serializable enum field
 
@@ -608,3 +610,10 @@ def $cast_op(typ, SetV (RangeSet val_l val_u)) = $cast_set_range(typ, val_l, val
 ;;
 
 dec $bitacc_op(val, val, val) : val   hint(show %`[%`:%])
+
+def $bitacc_op(val_b, val_h, val_l) = FBitV w i
+  -- if i_b = $get_num(val_b)
+  -- if i_h = $get_num(val_h)
+  -- if i_l = $get_num(val_l)
+  -- if w = $(i_h + 1 - i_l)
+  -- if i = $bitacc(i_b, i_h, i_l)

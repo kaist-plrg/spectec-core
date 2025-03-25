@@ -7,6 +7,11 @@ open Print
 type failtrace = Failtrace of region * string * failtrace list
 type 'a attempt = Ok of 'a | Fail of failtrace list
 
+let rec depth (failtrace : failtrace) : int =
+  let (Failtrace (_, _, subfailtraces)) = failtrace in
+  let subdepth = List.map depth subfailtraces |> List.fold_left max 0 in
+  subdepth + 1
+
 let fail (at : region) (msg : string) : 'a attempt =
   Fail [ Failtrace (at, msg, []) ]
 
@@ -29,26 +34,50 @@ let nest at msg attempt =
 
 (* Error with backfailtraces *)
 
-let rec string_of_failtrace ?(level = 0) ~(bullet : string)
+let rec string_of_failtrace ?(level = 0) ~(depth : int) ~(bullet : string)
     (failtrace : failtrace) : string =
   let (Failtrace (region, msg, subfailtraces)) = failtrace in
-  Format.asprintf "%s%s because %s (%s)\n%s" (indent level) bullet msg
-    (string_of_region region)
-    (string_of_failtraces ~level:(level + 1) subfailtraces)
+  let smsg =
+    if level < depth then ""
+    else
+      Format.asprintf "%s%s because %s (%s)\n"
+        (indent (level - depth))
+        bullet msg (string_of_region region)
+  in
+  Format.asprintf "%s%s" smsg
+    (string_of_failtraces ~level:(level + 1) ~depth subfailtraces)
 
-and string_of_failtraces ?(level = 0) (failtraces : failtrace list) : string =
+and string_of_failtraces ?(level = 0) ~(depth : int)
+    (failtraces : failtrace list) : string =
   match failtraces with
   | [] -> ""
-  | [ failtrace ] -> string_of_failtrace ~level ~bullet:"-" failtrace
+  | [ failtrace ] -> string_of_failtrace ~level ~depth ~bullet:"-" failtrace
   | failtraces ->
       List.mapi
         (fun idx failtrace ->
-          string_of_failtrace ~level
+          string_of_failtrace ~level ~depth
             ~bullet:(string_of_int (idx + 1) ^ ".")
             failtrace)
         failtraces
       |> String.concat ""
 
 let error_with_failtraces (category : string) (failtraces : failtrace list) =
-  let sfailtrace = string_of_failtraces failtraces in
+  let sfailtrace =
+    match failtraces with
+    | [] -> ""
+    | [ failtrace ] ->
+        let depth = depth failtrace in
+        let depth = max 0 (depth - 10) in
+        string_of_failtrace ~depth ~bullet:"-" failtrace
+    | failtraces ->
+        List.mapi
+          (fun idx failtrace ->
+            let depth = depth failtrace in
+            let depth = max 0 (depth - 10) in
+            string_of_failtrace ~depth
+              ~bullet:(string_of_int (idx + 1) ^ ".")
+              failtrace)
+          failtraces
+        |> String.concat ""
+  in
   error no_region category ("tracing backtrack logs:\n" ^ sfailtrace)

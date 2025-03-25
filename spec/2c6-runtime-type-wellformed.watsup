@@ -171,6 +171,7 @@ def $nestable_headert(typ) = $nestable'_headert($canon_typ(typ))
 def $nestable'_headert(BoolT) = true
 def $nestable'_headert(numtyp) = ~$is_intt(numtyp)
 def $nestable'_headert(VarT _) = true
+def $nestable'_headert(NewT _ _) = true
 def $nestable'_headert(SEnumT _ _ _) = true
 def $nestable'_headert(StructT _ (_, typ)*) = true
   -- if $nestable_structt_in_headert(typ)*
@@ -268,10 +269,12 @@ dec $nestable_seqt_in_sett(typ) : bool
 dec $nestable'_seqt_in_sett(typ) : bool
 
 def $nestable_sett(typ) = $nestable'_sett($canon_typ(typ))
+def $nestable'_sett(ErrT) = true
 def $nestable'_sett(BoolT) = true
 def $nestable'_sett(FIntT _) = true
 def $nestable'_sett(FBitT _) = true
 def $nestable'_sett(VarT _) = true
+def $nestable'_sett(NewT _ _) = true
 def $nestable'_sett(EnumT _ _) = true
 def $nestable'_sett(SEnumT _ _ _) = true
 def $nestable'_sett(TupleT typ*) = true

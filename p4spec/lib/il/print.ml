@@ -53,6 +53,7 @@ let rec string_of_typ typ =
   | VarT (typid, targs) -> string_of_typid typid ^ string_of_targs targs
   | TupleT typs -> "(" ^ string_of_typs ", " typs ^ ")"
   | IterT (typ, iter) -> string_of_typ typ ^ string_of_iter iter
+  | FuncT -> "func"
 
 and string_of_typs sep typs = String.concat sep (List.map string_of_typ typs)
 
@@ -80,12 +81,14 @@ and string_of_typcases sep typcases =
 
 (* Values *)
 
-and string_of_value ?(level = 0) value =
+and string_of_value ?(short = false) ?(level = 0) value =
   match value.it with
   | BoolV b -> string_of_bool b
   | NumV n -> Num.string_of_num n
   | TextV s -> "\"" ^ s ^ "\""
   | StructV [] -> "{}"
+  | StructV valuefields when short ->
+      Format.asprintf "{ .../%d }" (List.length valuefields)
   | StructV valuefields ->
       Format.asprintf "{ %s }"
         (String.concat ";\n"
@@ -93,31 +96,35 @@ and string_of_value ?(level = 0) value =
               (fun idx (atom, value) ->
                 let indent = if idx = 0 then "" else indent (level + 1) in
                 Format.asprintf "%s%s %s" indent (string_of_atom atom)
-                  (string_of_value ~level:(level + 2) value))
+                  (string_of_value ~short ~level:(level + 2) value))
               valuefields))
+  | CaseV (mixop, _) when short -> string_of_mixop mixop
   | CaseV (mixop, values) ->
       let atoms_h, mixop_t = (List.hd mixop, List.tl mixop) in
       Format.asprintf "(%s%s)" (string_of_atoms atoms_h)
         (String.concat ""
            (List.map2
               (fun value atoms ->
-                string_of_value ~level:(level + 1) value ^ string_of_atoms atoms)
+                string_of_value ~short ~level:(level + 1) value
+                ^ string_of_atoms atoms)
               values mixop_t))
   | TupleV values ->
       Format.asprintf "(%s)"
         (String.concat ", "
-           (List.map (string_of_value ~level:(level + 1)) values))
+           (List.map (string_of_value ~short ~level:(level + 1)) values))
   | OptV (Some value) ->
-      Format.asprintf "Some(%s)" (string_of_value ~level:(level + 1) value)
+      Format.asprintf "Some(%s)"
+        (string_of_value ~short ~level:(level + 1) value)
   | OptV None -> "None"
   | ListV [] -> "[]"
+  | ListV values when short -> Format.asprintf "[ .../%d ]" (List.length values)
   | ListV values ->
       Format.asprintf "[ %s ]"
         (String.concat ",\n"
            (List.mapi
               (fun idx value ->
                 let indent = if idx = 0 then "" else indent (level + 1) in
-                indent ^ string_of_value ~level:(level + 2) value)
+                indent ^ string_of_value ~short ~level:(level + 2) value)
               values))
   | FuncV id -> string_of_defid id
 

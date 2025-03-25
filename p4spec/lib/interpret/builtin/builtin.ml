@@ -72,6 +72,8 @@ let funcs =
          Numerics.bxor at targs values_input)
   |> Funcs.add "bor" (fun at targs values_input ->
          Numerics.bor at targs values_input)
+  |> Funcs.add "bitacc" (fun at targs values_input ->
+         Numerics.bitacc at targs values_input)
 
 let is_builtin (id : id) : bool = Funcs.mem id.it funcs
 

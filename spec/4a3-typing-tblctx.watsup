@@ -87,17 +87,6 @@ def $add_priority(i, tblctx)
 dec $get_lpm_prefix(val) : tblstate
 
 ;;
-;; Setters
-;;
-
-dec $set_priority_init(bool, tblctx) : tblctx
-dec $set_priority_delta(int, tblctx) : tblctx
-dec $set_largest_priority_wins(bool, tblctx) : tblctx
-dec $set_entries_const(bool, tblctx) : tblctx
-dec $set_entries_size(int, tblctx) : tblctx
-dec $set_mode(mode, tblctx) : tblctx
-
-;;
 ;; Updaters
 ;;
 

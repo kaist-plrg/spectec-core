@@ -39,6 +39,7 @@ let rec subst_typ (theta : theta) (typ : t) : t =
   | IterT (typ, iter) ->
       let typ = subst_typ theta typ in
       IterT (typ, iter) $ typ.at
+  | FuncT -> typ
 
 and subst_typs (theta : theta) (typs : t list) : t list =
   List.map (subst_typ theta) typs

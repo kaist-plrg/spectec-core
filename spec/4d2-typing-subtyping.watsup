@@ -219,7 +219,7 @@ rule Sub_impl_canon/recordt-structt:
   ----
   -- (Sub_impl:
        $find_map<member, typ>(MAP (PAIR member_a typ_a)*, member_a)
-       << $find_map<member, typ>(MAP (PAIR member_b typ_b)*, member_b))*
+       << $find_map<member, typ>(MAP (PAIR member_b typ_b)*, member_a))*
 
 rule Sub_impl_canon/recordt-headert:
   RecordT (member_a, typ_a)* << HeaderT _ (member_b, typ_b)*
@@ -227,7 +227,7 @@ rule Sub_impl_canon/recordt-headert:
   ----
   -- (Sub_impl:
        $find_map<member, typ>(MAP (PAIR member_a typ_a)*, member_a)
-       << $find_map<member, typ>(MAP (PAIR member_b typ_b)*, member_b))*
+       << $find_map<member, typ>(MAP (PAIR member_b typ_b)*, member_a))*
 
 rule Sub_impl_canon/defaultt:
   DefaultT << typ
@@ -340,7 +340,7 @@ def $coerce_binary((exprIL_a, typ_a), (exprIL_b, typ_b)) = (typ_b, exprIL_a', ex
   -- Sub_impl: typ_a << typ_b
   -- if exprIL_a' = CastE typ_b exprIL_a
 
-def $coerce_binary((exprIL_a, typ_a), (exprIL_b, typ_b)) = (typ_b, exprIL_a, exprIL_b')
+def $coerce_binary((exprIL_a, typ_a), (exprIL_b, typ_b)) = (typ_a, exprIL_a, exprIL_b')
   -- Sub_impl: typ_b << typ_a
   -- if exprIL_b' = CastE typ_a exprIL_b
 

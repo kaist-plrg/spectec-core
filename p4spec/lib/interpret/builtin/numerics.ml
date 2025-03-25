@@ -140,3 +140,22 @@ let bor (at : region) (targs : targ list) (values_input : value list) : value =
   let rawint_l = bigint_of_value value_l in
   let rawint_r = bigint_of_value value_r in
   Bigint.bit_or rawint_l rawint_r |> value_of_bigint
+
+(* dec $bitacc(int, int, int) : int *)
+
+let bitacc' (n : Bigint.t) (m : Bigint.t) (l : Bigint.t) : Bigint.t =
+  let slice_width = Bigint.(m + one - l) in
+  if Bigint.(l < zero) then
+    raise (Invalid_argument "bitslice x[y:z] must have y > z > 0");
+  let shifted = Bigint.(n asr to_int_exn l) in
+  let mask = Bigint.(pow2' slice_width - one) in
+  Bigint.bit_and shifted mask
+
+let bitacc (at : region) (targs : targ list) (values_input : value list) : value
+    =
+  Extract.zero at targs;
+  let value_b, value_h, value_l = Extract.three at values_input in
+  let rawint_b = bigint_of_value value_b in
+  let rawint_h = bigint_of_value value_h in
+  let rawint_l = bigint_of_value value_l in
+  bitacc' rawint_b rawint_h rawint_l |> value_of_bigint

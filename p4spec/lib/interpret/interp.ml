@@ -11,8 +11,6 @@ open Attempt
 module F = Format
 open Util.Source
 
-(* Kind of type *)
-
 (* Expansion of type aliases *)
 
 let rec expand_typ (ctx : Ctx.t) (typ : Typ.t) : Typ.t =
@@ -86,6 +84,8 @@ and sub_typ' (ctx : Ctx.t) (typ_a : Typ.t) (typ_b : Typ.t) : bool =
 
 (* Assignments *)
 
+(* Assigning a value to an expression *)
+
 let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t attempt =
   let typ_exp = exp.note $ exp.at in
   let typ_value = value.note $ value.at in
@@ -94,7 +94,7 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t attempt =
       fail exp.at
         (F.asprintf "mismatch in type: %s expected but got %s of type %s"
            (Il.Print.string_of_typ typ_exp)
-           (Il.Print.string_of_value value)
+           (Il.Print.string_of_value ~short:true value)
            (Il.Print.string_of_typ typ_value))
   | VarE id, _ ->
       let ctx = Ctx.add_value ctx (id, []) value in
@@ -109,7 +109,7 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t attempt =
         fail exp.at
           (F.asprintf "mismatch in case expression: %s expected but got %s"
              (Il.Print.string_of_exp exp)
-             (Il.Print.string_of_value value))
+             (Il.Print.string_of_value ~short:true value))
       else assign_exps ctx exps values
   | OptE exp_opt, OptV value_opt -> (
       match (exp_opt, value_opt) with
@@ -122,7 +122,7 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t attempt =
       | None, Some _ ->
           fail exp.at
             (F.asprintf "cannot assign a value %s into a none expression"
-               (Il.Print.string_of_value value)))
+               (Il.Print.string_of_value ~short:true value)))
   | ListE exps, ListV values -> assign_exps ctx exps values
   | ConsE (exp_h, exp_t), ListV values ->
       if values = [] then
@@ -192,7 +192,7 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t attempt =
       fail exp.at
         (F.asprintf "(TODO) match failed %s <- %s"
            (Il.Print.string_of_exp exp)
-           (Il.Print.string_of_value value))
+           (Il.Print.string_of_value ~short:true value))
 
 and assign_exps (ctx : Ctx.t) (exps : exp list) (values : value list) :
     Ctx.t attempt =
@@ -211,22 +211,12 @@ and assign_exps (ctx : Ctx.t) (exps : exp list) (values : value list) :
       assign_exp ctx exp value)
     (Ok ctx) exps values
 
-and assign_def (ctx : Ctx.t) (id : id) (value : value) : Ctx.t attempt =
-  match value.it with
-  | FuncV id_f ->
-      let func = Ctx.find_func ctx id_f in
-      let ctx = Ctx.add_func ctx id func in
-      Ok ctx
-  | _ ->
-      fail id.at
-        (F.asprintf "cannot assign a value %s to a definition %s"
-           (Il.Print.string_of_value value)
-           id.it)
+(* Assigning a value to an argument *)
 
 and assign_arg (ctx : Ctx.t) (arg : arg) (value : value) : Ctx.t attempt =
   match arg.it with
-  | ExpA exp -> assign_exp ctx exp value
-  | DefA id -> assign_def ctx id value
+  | ExpA exp -> assign_arg_exp ctx exp value
+  | DefA id -> assign_arg_def ctx id value
 
 and assign_args (ctx : Ctx.t) (args : arg list) (values : value list) :
     Ctx.t attempt =
@@ -244,6 +234,21 @@ and assign_args (ctx : Ctx.t) (args : arg list) (values : value list) :
       let* ctx = ctx in
       assign_arg ctx arg value)
     (Ok ctx) args values
+
+and assign_arg_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t attempt =
+  assign_exp ctx exp value
+
+and assign_arg_def (ctx : Ctx.t) (id : id) (value : value) : Ctx.t attempt =
+  match value.it with
+  | FuncV id_f ->
+      let func = Ctx.find_func ctx id_f in
+      let ctx = Ctx.add_func ctx id func in
+      Ok ctx
+  | _ ->
+      fail id.at
+        (F.asprintf "cannot assign a value %s to a definition %s"
+           (Il.Print.string_of_value ~short:true value)
+           id.it)
 
 (* Expression evaluation:
 
@@ -283,9 +288,9 @@ let rec eval_exp (ctx : Ctx.t) (exp : exp) : Ctx.t * value =
   | UpdE (exp_b, path, exp_f) -> eval_upd_exp ctx at exp_b path exp_f
   | CallE (id, targs, args) -> eval_call_exp ctx at id targs args
   | LenE exp -> eval_len_exp ctx at exp
+  | IdxE (exp_b, exp_i) -> eval_idx_exp ctx at exp_b exp_i
   | IterE (exp, iterexp) -> eval_iter_exp ctx at note exp iterexp
   | CastE (exp, typ) -> eval_cast_exp ctx at exp typ
-  | _ -> error at (F.asprintf "(TODO) eval_exp %s" (Il.Print.string_of_exp exp))
 
 and eval_exps (ctx : Ctx.t) (exps : exp list) : Ctx.t * value list =
   List.fold_left
@@ -517,6 +522,18 @@ and eval_len_exp (ctx : Ctx.t) (at : region) (exp : exp) : Ctx.t * value =
   let value = NumV (`Nat len) $$ (at, NumT `NatT) in
   (ctx, value)
 
+(* Index expression evaluation *)
+
+and eval_idx_exp (ctx : Ctx.t) (at : region) (exp_b : exp) (exp_i : exp) :
+    Ctx.t * value =
+  let ctx, value_b = eval_exp ctx exp_b in
+  let ctx, value_i = eval_exp ctx exp_i in
+  let values = Value.get_list value_b in
+  let idx = value_i |> Value.get_num |> Num.to_int |> Z.to_int in
+  let value = List.nth values idx in
+  let value = value.it $$ (at, value.note) in
+  (ctx, value)
+
 (* Slice expression evaluation
 
    Similarly as in lists, we take the type of the expression itself for now *)
@@ -669,7 +686,7 @@ and eval_arg (ctx : Ctx.t) (arg : arg) : Ctx.t * value =
   | ExpA exp -> eval_exp ctx exp
   | DefA id ->
       (* (TODO) Give appropriate type to the function value *)
-      let value = FuncV id $$ (arg.at, TextT) in
+      let value = FuncV id $$ (arg.at, FuncT) in
       (ctx, value)
 
 and eval_args (ctx : Ctx.t) (args : arg list) : Ctx.t * value list =
@@ -740,59 +757,55 @@ and eval_iter_prem_list (ctx : Ctx.t) (prem : prem) (vars : var list) :
       vars
   in
   let ctxs_sub = Ctx.sub_list ctx vars_bound in
-  match ctxs_sub with
-  (* If the bound variable supposed to guide the iteration is already empty,
-     then the binding variables are also empty *)
-  | [] ->
-      let ctx =
-        List.fold_left
-          (fun ctx (id, typ, iters) ->
-            let value =
-              let typ_value = Typ.iterate typ (iters @ [ List ]) in
-              ListV [] $$ (no_region, typ_value.it)
-            in
-            Ctx.add_value ctx (id, iters @ [ List ]) value)
-          ctx vars_binding
-      in
-      Ok ctx
-  (* Otherwise, evaluate the premise for each batch of bound values,
-     and collect the resulting binding batches *)
-  | _ ->
-      let* ctx, values_binding_batch =
-        List.fold_left
-          (fun ctx_values_binding_batch ctx_sub ->
-            let* ctx, values_binding_batch = ctx_values_binding_batch in
-            let ctx_sub =
-              Ctx.trace_open_iter ctx_sub (Il.Print.string_of_prem prem)
-            in
-            let* ctx_sub = eval_prem ctx_sub prem in
-            let ctx_sub = Ctx.trace_close ctx_sub in
-            let ctx = Ctx.trace_commit ctx ctx_sub.trace in
-            let value_binding_batch =
-              List.map
-                (fun (id, _typ, iters) -> Ctx.find_value ctx_sub (id, iters))
-                vars_binding
-            in
-            let values_binding_batch =
-              values_binding_batch @ [ value_binding_batch ]
-            in
-            Ok (ctx, values_binding_batch))
-          (Ok (ctx, []))
-          ctxs_sub
-      in
-      let values_binding = values_binding_batch |> Ctx.transpose in
-      (* Finally, bind the resulting binding batches *)
-      let ctx =
-        List.fold_left2
-          (fun ctx (id, typ, iters) values_binding ->
-            let value_binding =
-              let typ_value = Typ.iterate typ (iters @ [ List ]) in
-              ListV values_binding $$ (no_region, typ_value.it)
-            in
-            Ctx.add_value ctx (id, iters @ [ List ]) value_binding)
-          ctx vars_binding values_binding
-      in
-      Ok ctx
+  let* ctx, values_binding =
+    match ctxs_sub with
+    (* If the bound variable supposed to guide the iteration is already empty,
+       then the binding variables are also empty *)
+    | [] ->
+        let values_binding =
+          List.init (List.length vars_binding) (fun _ -> [])
+        in
+        Ok (ctx, values_binding)
+    (* Otherwise, evaluate the premise for each batch of bound values,
+       and collect the resulting binding batches *)
+    | _ ->
+        let* ctx, values_binding_batch =
+          List.fold_left
+            (fun ctx_values_binding_batch ctx_sub ->
+              let* ctx, values_binding_batch = ctx_values_binding_batch in
+              let ctx_sub =
+                Ctx.trace_open_iter ctx_sub (Il.Print.string_of_prem prem)
+              in
+              let* ctx_sub = eval_prem ctx_sub prem in
+              let ctx_sub = Ctx.trace_close ctx_sub in
+              let ctx = Ctx.trace_commit ctx ctx_sub.trace in
+              let value_binding_batch =
+                List.map
+                  (fun (id, _typ, iters) -> Ctx.find_value ctx_sub (id, iters))
+                  vars_binding
+              in
+              let values_binding_batch =
+                values_binding_batch @ [ value_binding_batch ]
+              in
+              Ok (ctx, values_binding_batch))
+            (Ok (ctx, []))
+            ctxs_sub
+        in
+        let values_binding = values_binding_batch |> Ctx.transpose in
+        Ok (ctx, values_binding)
+  in
+  (* Finally, bind the resulting binding batches *)
+  let ctx =
+    List.fold_left2
+      (fun ctx (id, typ, iters) values_binding ->
+        let value_binding =
+          let typ_value = Typ.iterate typ (iters @ [ List ]) in
+          ListV values_binding $$ (no_region, typ_value.it)
+        in
+        Ctx.add_value ctx (id, iters @ [ List ]) value_binding)
+      ctx vars_binding values_binding
+  in
+  Ok ctx
 
 and eval_iter_prem (ctx : Ctx.t) (prem : prem) (iterexp : iterexp) :
     Ctx.t attempt =

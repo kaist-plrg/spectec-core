@@ -45,6 +45,7 @@ and typ' =
   | VarT of id * targ list  (* id (`<` list(targ, `,`) `>`)? *)
   | TupleT of typ list      (* `(` list(typ, `,`) `)` *)
   | IterT of typ * iter     (* typ iter *)
+  | FuncT                   (* `func` *)
 
 and nottyp = nottyp' phrase
 and nottyp' = mixop * typ list

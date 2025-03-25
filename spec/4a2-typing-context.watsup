@@ -171,7 +171,6 @@ def $add_styps(LOCAL, C, id*, styp*) = C[ .LOCAL.FRAMES = frame* ]
 ;; Adder for parameters
 
 dec $add_param(cursor, context, paramtyp) : context
-    hint(show %2.%1.FRAME#(S)#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
 def $add_param(p, C, pt) = C'
     -- if id NO typ val? = pt
@@ -182,7 +181,6 @@ def $add_param(p, C, pt) = C'
     -- if C' = $add_styp(p, C, id, typ dir DYN eps)
 
 dec $add_params(cursor, context, paramtyp*) : context
-    hint(show %2.%1.FRAME#(S)#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
 
 def $add_params(p, C, eps) = C
 def $add_params(p, C, pt_h :: pt_t*) = C''
@@ -210,6 +208,24 @@ def $add_typdefs(BLOCK, C, tid*, td*) = C[ .BLOCK.TDENV = tdenv ]
   -- if tdenv = $adds_map<tid, typdef>(C.BLOCK.TDENV, tid*, td*)
 def $add_typdefs(LOCAL, C, tid*, td*) = C[ .LOCAL.TDENV = tdenv ]
   -- if tdenv = $adds_map<tid, typdef>(C.LOCAL.TDENV, tid*, td*)
+
+;; Adder for type parameters
+
+dec $add_tparam(cursor, context, tparam) : context
+
+def $add_tparam(BLOCK, C, tparam) = C[ .BLOCK.TDENV = tdenv ]
+  -- if td = MonoD (VarT tparam)
+  -- if tdenv = $add_map<tid, typdef>(C.BLOCK.TDENV, tparam, td)
+def $add_tparam(LOCAL, C, tparam) = C[ .LOCAL.TDENV = tdenv ]
+  -- if td = MonoD (VarT tparam)
+  -- if tdenv = $add_map<tid, typdef>(C.LOCAL.TDENV, tparam, td)
+
+dec $add_tparams(cursor, context, tparam*) : context
+
+def $add_tparams(p, C, eps) = C
+def $add_tparams(p, C, tparam_h :: tparam_t*) = C''
+    -- if C' = $add_tparam(p, C, tparam_h)
+    -- if C'' = $add_tparams(p, C', tparam_t*)
 
 ;; Adder for function definitions
 

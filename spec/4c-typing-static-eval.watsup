@@ -77,7 +77,7 @@ rule Eval_static/caste:
 ;;
 
 rule Eval_static/bitacce:
-  p C |- BitAccE exprIL_b exprIL_l exprIL_h ~> $bitacc_op(val_b, val_l, val_h)
+  p C |- BitAccE exprIL_b exprIL_l exprIL_h ~> $bitacc_op(val_b, val_h, val_l)
   -- Eval_static: p C |- exprIL_b ~> val_b
   -- Eval_static: p C |- exprIL_l ~> val_l
   -- Eval_static: p C |- exprIL_h ~> val_h

@@ -81,28 +81,26 @@ rule Inst_init_decl_ok/funcd:
                        : frame fdenv' (FuncD id typ_r tparam* tparam_hidden* paramIL* blockIL)
   -- if fid = $to_fid(id, param*)
   -- if C_1 = $set_blockkind(C_0, EXTERN)
+  -- if C_2 = C_1[ .BLOCK.FRAME = frame ]
   ----
-  -- if C_2 = $set_blockframe(C_1, $empty_frame())
-  ----
-  -- if C_2.BLOCK.KIND = EXTERN
-  -- if C_3 = $add_typdefs(LOCAL, C_2, tparam*, (MonoD (VarT tparam))*)
+  -- if C_3 = $add_tparams(LOCAL, C_2, tparam*)
   ----
   -- Type_ok: LOCAL C_3 |- type_r : typ_r eps
   ----
   -- if C_4 = $set_localkind(C_3, EXTERNABSTRACTMETHOD typ_r)
   ----
-  -- (Param_ok: LOCAL C_4 |- param : paramIL tid_fresh_p)*
-  -- if (id_p dir_p typ_p val_p? = paramIL)*
-  -- if tparam_hidden* = tid_fresh_p*
+  -- (Param_ok: LOCAL C_4 |- param : paramIL tid_fresh_p*)*
+  -- if tparam_hidden* = $concat_<tid>(tid_fresh_p**)
   ----
-  -- if C_5 = $add_styps(LOCAL, C_4, id_p*, (typ_p dir_p DYN eps)*)
+  -- if C_5 = $add_params(LOCAL, C_4, paramIL*)
+  -- if C_6 = $add_tparams(LOCAL, C_5, tparam_hidden*)
   ----
-  -- Block_ok: LOCAL C_5 CONT INIT |- block : C_6 f blockIL
+  -- Block_ok: LOCAL C_6 CONT INIT |- block : C_7 f blockIL
   -- if f = RET \/ typ_r = VoidT
   ----
-  -- if fd = PolyFD (tparam*, tparam_hidden*) -> (ExternMethodT (id_p dir_p typ_p val_p?)* typ_r)
+  -- if fd = PolyFD (tparam*, tparam_hidden*) -> (ExternMethodT paramIL* typ_r)
   ----
-  -- FuncDef_wf: $bound_tids(p, C_2) |- fd
+  -- FuncDef_wf: $bound_tids(p, C_0) |- fd
   ----
   -- if fdenv' = $update_map<fid, funcdef>(fdenv, fid, fd)
 
@@ -133,7 +131,7 @@ def $update_fdenv_extern(fdenv_ext, typ_a*, fid_h :: fid_t*, fd_h :: fd_t*) = $u
   -- if fdenv_ext' = $update_map<fid, funcdef>(fdenv_ext, fid_h, fd_ext')
 
 rule Decl_ok/instd-some:
-  p C |- InstD id name_inst targ* arg* decl* : C (InstD id typ name_inst targIL'* argIL'* declIL*)
+  p C |- InstD id name_inst targ* arg* decl* : C'' (InstD id typ name_inst targIL'* argIL'* declIL*)
   -- if |decl*| > 0
   ----
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
@@ -156,7 +154,7 @@ rule Decl_ok/instd-some:
   -- (if ~$is_externabstractmethodt(ft))*
   ----
   -- if typ' = SpecT (PolyD (tparam*, tparam_hidden*) -> (ExternT id_ext fdenv_ext')) typ_a*
-  -- if C'' = $add_styp(p, C', id, typ' NO CTK eps)
+  -- if C'' = $add_styp(p, C, id, typ' NO CTK eps)
 
 rule Decl_ok/instd-none:
   p C |- InstD id name_inst targ* arg* eps : C' (InstD id typ name_inst targIL'* argIL'* eps)
@@ -202,45 +200,48 @@ rule Decl_ok/matchkindd:
 ;;
 
 rule Decl_ok/structd:
-  GLOBAL C |- StructD id tparam* (member_f, type_f)* : C' (StructD id tparam* tparam_hidden* (member_f, typ_f)*)
-  -- (Type_ok: GLOBAL C |- type_f : typ_f tid_fresh_f*)*
+  GLOBAL C |- StructD id tparam* (member_f, type_f)* : C'' (StructD id tparam* tparam_hidden* (member_f, typ_f)*)
+  -- if C' = $add_tparams(BLOCK, C, tparam*)
+  -- (Type_ok: BLOCK C' |- type_f : typ_f tid_fresh_f*)*
   -- if tparam_hidden* = $concat_<tid>(tid_fresh_f**)
   ----
   -- if typ_s = StructT id (member_f, typ_f)*
   -- if td = PolyD (tparam*, tparam_hidden*) -> typ_s
   -- TypeDef_wf: $bound_tids(GLOBAL, C) |- td
   ----
-  -- if C' = $add_typdef(GLOBAL, C, id, td)
+  -- if C'' = $add_typdef(GLOBAL, C, id, td)
 
 ;;
 ;; Header declaration
 ;;
 
 rule Decl_ok/headerd:
-  GLOBAL C |- HeaderD id tparam* (member_f, type_f)* : C' (HeaderD id tparam* tparam_hidden* (member_f, typ_f)*)
-  -- (Type_ok: GLOBAL C |- type_f : typ_f tid_fresh_f*)*
+  GLOBAL C |- HeaderD id tparam* (member_f, type_f)* : C'' (HeaderD id tparam* tparam_hidden* (member_f, typ_f)*)
+  -- if C' = $add_tparams(BLOCK, C, tparam*)
+  -- (Type_ok: BLOCK C' |- type_f : typ_f tid_fresh_f*)*
   -- if tparam_hidden* = $concat_<tid>(tid_fresh_f**)
   ----
   -- if typ_s = HeaderT id (member_f, typ_f)*
   -- if td = PolyD (tparam*, tparam_hidden*) -> typ_s
   -- TypeDef_wf: $bound_tids(GLOBAL, C) |- td
   ----
-  -- if C' = $add_typdef(GLOBAL, C, id, td)
+  -- if C'' = $add_typdef(GLOBAL, C, id, td)
 
 ;;
 ;; Header union declaration
 ;;
 
 rule Decl_ok/uniond:
-  GLOBAL C |- UnionD id tparam* (member_f, type_f)* : C' (UnionD id tparam* tparam_hidden* (member_f, typ_f)*)
-  -- (Type_ok: GLOBAL C |- type_f : typ_f tid_fresh_f*)*
+  GLOBAL C |- UnionD id tparam* (member_f, type_f)* : C'' (UnionD id tparam* tparam_hidden* (member_f, typ_f)*)
+  -- if C' = $add_tparams(BLOCK, C, tparam*)
+  -- (Type_ok: BLOCK C' |- type_f : typ_f tid_fresh_f*)*
   -- if tparam_hidden* = $concat_<tid>(tid_fresh_f**)
   ----
   -- if typ_s = UnionT id (member_f, typ_f)*
   -- if td = PolyD (tparam*, tparam_hidden*) -> typ_s
   -- TypeDef_wf: $bound_tids(GLOBAL, C) |- td
   ----
-  -- if C' = $add_typdef(GLOBAL, C, id, td)
+  -- if C'' = $add_typdef(GLOBAL, C, id, td)
 
 ;;
 ;; Enum declaration
@@ -358,13 +359,12 @@ rule Decl_ok/actiond:
   -- if C_1 = $set_localkind(C_0, ACTION)
   ----
   -- (Param_ok: LOCAL C_1 |- param : paramIL eps)*
-  -- if (id_p dir_p typ_p val_p? = paramIL)*
   ----
-  -- if C_2 = $add_styps(LOCAL, C_1, id_p*, (typ_p dir_p DYN eps)*)
+  -- if C_2 = $add_params(LOCAL, C_1, paramIL*)
   ----
   -- Block_ok: LOCAL C_2 CONT INIT |- block : _ _ blockIL
   ----
-  -- if fd = MonoFD (ActionT (id_p dir_p typ_p val_p?)*)
+  -- if fd = MonoFD (ActionT paramIL*)
   ----
   -- FuncDef_wf: $bound_tids(p, C_0) |- fd
   ----
@@ -384,15 +384,14 @@ rule Decl_ok/funcd:
   -- if C_2 = $set_localkind(C_1, FUNC typ_r)
   ----
   -- (Param_ok: LOCAL C_2 |- param : paramIL tid_fresh_p*)*
-  -- if (id_p dir_p typ_p val_p? = paramIL)*
   -- if tparam_hidden* = $concat_<tid>(tid_fresh_p**)
   ----
-  -- if C_3 = $add_styps(LOCAL, C_2, id_p*, (typ_p dir_p DYN eps)*)
+  -- if C_3 = $add_params(LOCAL, C_2, paramIL*)
   ----
   -- Block_ok: LOCAL C_3 CONT INIT |- block : C_4 f blockIL
   -- if f = RET \/ (f = CONT /\ typ_r = VoidT)
   ----
-  -- if fd = PolyFD (tparam*, tparam_hidden*) -> (FuncT (id_p dir_p typ_p val_p?)* typ_r)
+  -- if fd = PolyFD (tparam*, tparam_hidden*) -> (FuncT paramIL* typ_r)
   ----
   -- FuncDef_wf: $bound_tids(GLOBAL, C_0) |- fd
   ----
@@ -412,12 +411,11 @@ rule Decl_ok/externfuncd:
   -- if C_2 = $set_localkind(C_1, EXTERNFUNC)
   ----
   -- (Param_ok: LOCAL C_2 |- param : paramIL tid_fresh_p*)*
-  -- if (id_p dir_p typ_p val_p? = paramIL)*
   -- if tparam_hidden* = $concat_<tid>(tid_fresh_p**)
   ----
-  -- if C_3 = $add_styps(LOCAL, C_2, id_p*, (typ_p dir_p DYN eps)*)
+  -- if C_3 = $add_params(LOCAL, C_2, paramIL*)
   ----
-  -- if fd = PolyFD (tparam*, tparam_hidden*) -> (ExternFuncT (id_p dir_p typ_p val_p?)* typ_r)
+  -- if fd = PolyFD (tparam*, tparam_hidden*) -> (ExternFuncT paramIL* typ_r)
   ----
   -- FuncDef_wf: $bound_tids(GLOBAL, C_0) |- fd
   ----
@@ -473,12 +471,11 @@ rule Method_ok/externabstractm:
   -- if C_2 = $set_localkind(C_1, EXTERNABSTRACTMETHOD typ_r)
   ----
   -- (Param_ok: LOCAL C_2 |- param : paramIL tid_fresh_p*)*
-  -- if (id_p dir_p typ_p val_p? = paramIL)*
   -- if tparam_hidden* = $concat_<tid>(tid_fresh_p**)
   ----
-  -- if C_3 = $add_styps(LOCAL, C_2, id_p*, (typ_p dir_p DYN eps)*)
+  -- if C_3 = $add_params(LOCAL, C_2, paramIL*)
   ----
-  -- if fd = PolyFD (tparam*, tparam_hidden*) -> (ExternAbstractMethodT (id_p dir_p typ_p val_p?)* typ_r)
+  -- if fd = PolyFD (tparam*, tparam_hidden*) -> (ExternAbstractMethodT paramIL* typ_r)
   ----
   -- FuncDef_wf: $bound_tids(BLOCK, C_0) |- fd
   ----
@@ -498,9 +495,9 @@ rule Method_ok/externm:
   -- if (id_p dir_p typ_p val_p? = paramIL)*
   -- if tparam_hidden* = $concat_<tid>(tid_fresh_p**)
   ----
-  -- if C_3 = $add_styps(LOCAL, C_2, id_p*, (typ_p dir_p DYN eps)*)
+  -- if C_3 = $add_params(LOCAL, C_2, paramIL*)
   ----
-  -- if fd = PolyFD (tparam*, tparam_hidden*) -> (ExternMethodT (id_p dir_p typ_p val_p?)* typ_r)
+  -- if fd = PolyFD (tparam*, tparam_hidden*) -> (ExternMethodT paramIL* typ_r)
   ----
   -- FuncDef_wf: $bound_tids(BLOCK, C_0) |- fd
   ----
@@ -605,18 +602,16 @@ rule Decl_ok/parserd:
   -- if C_1 = $set_blockkind(C_0, PARSER)
   ----
   -- (Param_ok: LOCAL C_1 |- cparam : cparamIL eps)*
-  -- if (id_c dir_c typ_c val_c? = cparamIL)*
   ----
-  -- if C_2 = $add_styps(BLOCK, C_1, id_c*, (typ_c dir_c CTK eps)*)
+  -- if C_2 = $add_params(BLOCK, C_1, cparamIL*)
   ----
   -- (Param_ok: LOCAL C_2 |- param : paramIL eps)*
-  -- if (id_p dir_p typ_p val_p? = paramIL)*
   ----
   ----
-  -- if funcdef_apply = MonoFD (ParserApplyMethodT (id_p dir_p typ_p val_p?)*)
+  -- if funcdef_apply = MonoFD (ParserApplyMethodT paramIL*)
   -- FuncDef_wf: $bound_tids(GLOBAL, C_0) |- funcdef_apply
   ----
-  -- if C_3 = $add_styps(BLOCK, C_2, id_p*, (typ_p dir_p DYN eps)*)
+  -- if C_3 = $add_params(BLOCK, C_2, paramIL*)
   ----
   -- Decls_ok: BLOCK C_3 |- decl* : C_4 declIL*
   ----
@@ -636,9 +631,9 @@ rule Decl_ok/parserd:
   ----
   -- ParserStates_ok: C_6 |- parserstate* : C_7 parserstateIL*
   ----
-  -- if ptd = PolyD (eps, eps) -> (ParserT (id_p dir_p typ_p val_p?)*)
+  -- if ptd = PolyD (eps, eps) -> (ParserT paramIL*)
   -- if typ = SpecT ptd eps
-  -- if cd = ConsD (eps, eps) -> (ConsT (id_c dir_c typ_c val_c?)* typ)
+  -- if cd = ConsD (eps, eps) -> (ConsT cparamIL* typ)
   ----
   -- ConsDef_wf: $bound_tids(GLOBAL, C_0) |- cd
   ----
@@ -912,7 +907,7 @@ rule Table_entry_priority_ok/priority-values-nil-somep:
   -- if int = $get_num(val)
   -- if $(int >= 0)
   ----
-  -- if tblctx' = $set_priority_init(true, tblctx)
+  -- if tblctx' = tblctx[ .PRIORITIES.INIT = true ]
   -- if tblctx'' = $add_priority(int, tblctx')
 
 rule Table_entry_priority_ok/priority-values-nil-none-lw:
@@ -926,7 +921,7 @@ rule Table_entry_priority_ok/priority-values-nil-none-lw:
   -- if int = $((int_size - 1) * int_delta + 1)
   -- if $(int >= 0)
   ----
-  -- if tblctx' = $set_priority_init(true, tblctx)
+  -- if tblctx' = tblctx[ .PRIORITIES.INIT = true ]
   -- if tblctx'' = $add_priority(int, tblctx')
 
 rule Table_entry_priority_ok/priority-values-nil-none-no-lw:
@@ -934,7 +929,7 @@ rule Table_entry_priority_ok/priority-values-nil-none-no-lw:
   -- if tblctx.PRIORITIES.VALUES = eps
   -- if ~tblctx.PRIORITIES.LARGEST_WINS
   ----
-  -- if tblctx' = $set_priority_init(true, tblctx)
+  -- if tblctx' = tblctx[ .PRIORITIES.INIT = true ]
   ----
   -- if tblctx'' = $add_priority(1, tblctx')
 
@@ -1005,11 +1000,11 @@ relation Table_entries_ok:
   hint(input %0 %1 %2 %3)
 
 rule Table_entries_ok:
-  p C tblctx_0 |- (bool tblentry*) : tblctx_3 (bool tblentryIL*)
+  p C tblctx_0 |- (b tblentry*) : tblctx_3 (b tblentryIL*)
   -- if $implies(|tblctx_0.KEYS| = 0, |tblentry*| = 0)
-  -- if tblctx_1 = $set_entries_size(|tblentry*|, tblctx_0)
+  -- if tblctx_1 = tblctx_0[ .ENTRIES.SIZE = |tblentry*| ]
   ----
-  -- if tblctx_2 = $set_entries_const(bool, tblctx_1)
+  -- if tblctx_2 = tblctx_1[ .ENTRIES.CONST = b ]
   ----
   -- Table_entries_fold_ok: p C tblctx_2 |- tblentry* : tblctx_3 tblentryIL*
 
@@ -1041,27 +1036,33 @@ relation Table_custom_ok:
   hint(input %0 %1 %2 %3)
 
 rule Table_custom_ok/size:
-  p C tblctx |- (bool "size" expr) : tblctx (bool "size" exprIL)
+  p C tblctx |- (b "size" expr) : tblctx (b "size" exprIL)
   -- Expr_ok: p C |- expr : exprIL typ ctk
   -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
 
 rule Table_custom_ok/largest_priority_wins:
-  p C tblctx |- (bool "largest\\_priority\\_wins" expr) : tblctx' (bool "largest\\_priority\\_wins" exprIL)
+  p C tblctx |- (b "largest_priority_wins" expr) : tblctx' (b "largest_priority_wins" exprIL)
   -- Expr_ok: p C |- expr : exprIL BoolT ctk
   ----
-  -- Eval_static: p C |- exprIL ~> (BoolV bool)
-  -- if tblctx' = $set_largest_priority_wins(bool, tblctx)
+  -- Eval_static: p C |- exprIL ~> (BoolV b_lw)
+  -- if tblctx' = tblctx[ .PRIORITIES.LARGEST_WINS = b_lw ]
 
 rule Table_custom_ok/priority_delta:
-  p C tblctx |- (bool "priority\\_delta" expr) : tblctx' (bool "priority\\_delta" exprIL)
+  p C tblctx |- (b "priority_delta" expr) : tblctx' (b "priority_delta" exprIL)
   -- Expr_ok: p C |- expr : exprIL typ ctk
   -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
   ----
   -- Eval_static: p C |- exprIL ~> val
   ----
-  -- if int = $get_num(val)
-  -- if $(int > 0)
-  -- if tblctx' = $set_priority_delta(int, tblctx)
+  -- if i_delta = $get_num(val)
+  -- if $(i_delta > 0)
+  -- if tblctx' = tblctx[ .PRIORITIES.DELTA = i_delta ]
+
+rule Table_custom_ok/unknown:
+  p C tblctx |- (b member expr) : tblctx (b member exprIL)
+  -- if member =/= "size" \/ member =/= "largest_priority_wins" \/ member =/= "priority_delta"
+  ----
+  -- Expr_ok: p C |- expr : exprIL typ ctk
 
 
 relation Table_prop_ok:
@@ -1172,17 +1173,15 @@ rule Decl_ok/controld:
   -- if C_1 = $set_blockkind(C_0, CONTROL)
   ----
   -- (Param_ok: LOCAL C_1 |- cparam : cparamIL eps)*
-  -- if (id_c dir_c typ_c val_c? = cparamIL)*
   ----
-  -- if C_2 = $add_styps(BLOCK, C_1, id_c*, (typ_c dir_c CTK eps)*)
+  -- if C_2 = $add_params(BLOCK, C_1, cparamIL*)
   ----
   -- (Param_ok: LOCAL C_2 |- param : paramIL eps)*
-  -- if (id_p dir_p typ_p val_p? = paramIL)*
   ----
-  -- if funcdef_apply = MonoFD (ControlApplyMethodT (id_p dir_p typ_p val_p?)*)
+  -- if funcdef_apply = MonoFD (ControlApplyMethodT paramIL*)
   -- FuncDef_wf: $bound_tids(GLOBAL, C_0) |- funcdef_apply
   ----
-  -- if C_3 = $add_styps(BLOCK, C_2, id_p*, (typ_p dir_p DYN eps)*)
+  -- if C_3 = $add_params(BLOCK, C_2, paramIL*)
   ----
   -- Decls_ok: BLOCK C_3 |- decl* : C_4 declIL*
   ----
@@ -1190,9 +1189,9 @@ rule Decl_ok/controld:
   ----
   -- Block_ok: LOCAL C_5 CONT INIT |- block : C_6 f blockIL
   ----
-  -- if ptd = PolyD (eps, eps) -> (ControlT (id_p dir_p typ_p val_p?)*)
+  -- if ptd = PolyD (eps, eps) -> (ControlT paramIL*)
   -- if typ = SpecT ptd eps
-  -- if cd = ConsD (eps, eps) -> (ConsT (id_c dir_c typ_c val_c?)* typ)
+  -- if cd = ConsD (eps, eps) -> (ConsT cparamIL* typ)
   ----
   -- ConsDef_wf: $bound_tids(GLOBAL, C_0) |- cd
   ----
@@ -1211,15 +1210,15 @@ rule Decl_ok/packagetyped:
   -- if C_2 = $set_blockkind(C_1, PACKAGE)
   ----
   -- (CParam_ok: BLOCK C_2 |- cparam : cparamIL tid_fresh_c*)*
-  -- if (id_c dir_c typ_c val_c? = cparamIL)*
   -- if tparam_hidden* = $concat_<tid>(tid_fresh_c**)
   ----
+  -- if (_ _ typ_c _ = cparamIL)*
   -- if ptd = PolyD (tparam*, tparam_hidden*) -> (PackageT typ_c*)
   -- TypeDef_wf: $bound_tids(GLOBAL, C_0) |- ptd
   ----
   -- if tparam'* = tparam* ++ tparam_hidden*
   -- if typ = SpecT ptd (VarT tparam')*
-  -- if cd = ConsD (tparam*, tparam_hidden*) -> (ConsT (id_c dir_c typ_c val_c?)* typ)
+  -- if cd = ConsD (tparam*, tparam_hidden*) -> (ConsT cparamIL* typ)
   ----
   -- ConsDef_wf: $bound_tids(GLOBAL, C_1) |- cd
   ----
