@@ -87,10 +87,8 @@ let rec pp_typ' ?(level = 0) fmt typ =
       F.fprintf fmt "%a" pp_id' id
   | AnyT -> F.fprintf fmt "_"
   | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
-  | RecordDefaultT _ | DefaultT | InvalidT ->
+  | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
       Type.pp ~level fmt typ
-  | SetT typ -> F.fprintf fmt "%a" (pp_typ' ~level:(level + 1)) typ
-  | StateT -> Type.pp ~level fmt typ
 
 let pp_typ ?(level = 0) fmt typ = pp_typ' ~level fmt typ.it
 
@@ -224,7 +222,10 @@ and pp_expr' ?(level = 0) fmt expr' =
         expr_else
   | CastE { typ; expr } -> (
       match typ.it with
-      | SetT _ -> F.fprintf fmt "%a" (pp_expr ~level:(level + 1)) expr
+      | SetT _ -> 
+        F.fprintf fmt "/* %a */ %a" 
+          (pp_typ ~level:(level + 1)) typ 
+          (pp_expr ~level:(level + 1)) expr
       | _ ->
           F.fprintf fmt "((%a) (%a))"
             (pp_typ ~level:(level + 1))
