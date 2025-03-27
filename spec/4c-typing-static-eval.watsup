@@ -25,6 +25,10 @@ rule Eval_static/seqe:
   p C |- SeqE exprIL* ~> SeqV val*
   -- (Eval_static: p C |- exprIL ~> val)*
 
+rule Eval_static/seqdefaulte:
+  p C |- SeqDefaultE exprIL* ~> SeqDefaultV val*
+  -- (Eval_static: p C |- exprIL ~> val)*
+
 ;;
 ;; Record expression
 ;;
@@ -33,7 +37,18 @@ rule Eval_static/recorde:
   p C |- RecordE (member, exprIL)* ~> RecordV (member, val)*
   -- (Eval_static: p C |- exprIL ~> val)*
 
+rule Eval_static/recorddefaulte:
+  p C |- RecordDefaultE (member, exprIL)* ~> RecordDefaultV (member, val)*
+  -- (Eval_static: p C |- exprIL ~> val)*
 
+;;
+;; Default expression
+;;
+
+rule Eval_static/defaulte:
+  p C |- DefaultE ~> DefaultV 
+
+;;
 ;; Unary expression
 ;;
 

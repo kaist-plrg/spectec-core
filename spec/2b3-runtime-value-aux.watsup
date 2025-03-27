@@ -1,4 +1,4 @@
-;; Get the underlying number of a numeric value
+;; Underlying raw integer of a numeric value
 
 dec $get_num(val) : int
 

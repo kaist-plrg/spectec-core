@@ -118,14 +118,13 @@ rule Inst_init_decls_ok/cons:
   -- Inst_init_decls_ok: C frame' fdenv' |- decl_t* : frame'' fdenv'' declIL_t*
 
 
-dec $update_fdenv_extern(fdenv, typ*, fid*, funcdef*) : map<fid, funcdef>
+dec $update_fdenv_extern(fdenv, theta, fid*, funcdef*) : map<fid, funcdef>
     hint(show UPDATE_FDENV_EXTERN%latex("(")#%1#%latex(", ")#%2#%latex(", ")#%3#%latex(", ")#%4#%latex(")"))
 
-def $update_fdenv_extern(fdenv_ext, typ_a*, eps, eps) = fdenv_ext
-def $update_fdenv_extern(fdenv_ext, typ_a*, fid_h :: fid_t*, fd_h :: fd_t*) = $update_fdenv_extern(fdenv_ext', typ_a*, fid_t*, fd_t*)
+def $update_fdenv_extern(fdenv_ext, theta, eps, eps) = fdenv_ext
+def $update_fdenv_extern(fdenv_ext, theta, fid_h :: fid_t*, fd_h :: fd_t*) = $update_fdenv_extern(fdenv_ext', theta, fid_t*, fd_t*)
   -- if PolyFD (tparam*, tparam_hidden*) -> (ExternAbstractMethodT pt* typ_r) = $find_map<fid, funcdef>(fdenv_ext, fid_h)
   -- if fd_ext = PolyFD (tparam*, tparam_hidden*) -> (ExternMethodT pt* typ_r)
-  -- if theta = MAP (PAIR tparam typ_a)*
   -- if fd_ext' = $subst_funcdef(theta, fd_ext)
   -- FuncDef_alpha: fd_ext' ~~ fd_h
   -- if fdenv_ext' = $update_map<fid, funcdef>(fdenv_ext, fid_h, fd_ext')
@@ -147,10 +146,12 @@ rule Decl_ok/instd-some:
   -- Inst_init_decls_ok: C' $empty_frame $empty_fdenv |- decl* : frame_abs fdenv_abs declIL*
   -- if MAP (PAIR fid_abs fd_abs)* = fdenv_abs
   ----
-  -- if fdenv_ext' = $update_fdenv_extern(fdenv_ext, typ_a*, fid_abs*, fd_abs*)
+  -- if tparam'* = tparam* ++ tparam_hidden*
+  -- if theta = MAP (PAIR tparam' typ_a)*
+  -- if fdenv_ext' = $update_fdenv_extern(fdenv_ext, theta, fid_abs*, fd_abs*)
   -- if MAP (PAIR fid_ext fd_ext)* = fdenv_ext'
   ----
-  -- if (PolyFD (tparam'*, tparam_hidden'*) -> ft)* = fd_ext*
+  -- if (PolyFD _ -> ft)* = fd_ext*
   -- (if ~$is_externabstractmethodt(ft))*
   ----
   -- if typ' = SpecT (PolyD (tparam*, tparam_hidden*) -> (ExternT id_ext fdenv_ext')) typ_a*
@@ -746,12 +747,12 @@ relation Table_action_ok:
 
 rule Table_action_ok:
   p C tblctx |- (name arg*) : tblctx' (name argIL'* paramIL_d* paramIL_c*)
-  -- (Arg_ok: p C |- arg : argIL typ_arg)*
+  -- (Arg_ok: p C |- arg : argIL typ_a)*
   ----
   -- if MonoFD (ActionT pt*) = $find_funcdef_by_name(p, C, name)
   ----
-  -- Call_action_partial_ok: p C |- pt* (argIL, typ_arg)* : paramIL_d* paramIL_c* argIL'*
-  -- if tblctx' = $add_action((name, pt*, argIL'*), tblctx)
+  -- Call_action_partial_ok: p C |- pt* (argIL, typ_a)* : paramIL_d* paramIL_c* argIL'*
+  -- if tblctx' = $add_action((name, pt*, argIL*), tblctx)
 
 
 relation Table_actions_ok:
@@ -807,6 +808,22 @@ rule Table_entry_keyset_ok/exprk-else:
   -- Expr_ok: LOCAL C |- expr : exprIL typ ctk
   ----
   -- Sub_impl: typ << typ_k
+
+rule Table_entry_keyset_ok/defaultk-lpm:
+  p C tblctx |- (typ_k, "lpm") DefaultK : (LPM n_w) DefaultK
+  -- if tblctx.MODE = NOPRILPM n_w
+
+rule Table_entry_keyset_ok/defaultk-else:
+  p C tblctx |- (typ_k, matchkind) DefaultK : NOLPM DefaultK
+  -- if matchkind =/= "exact"
+
+rule Table_entry_keyset_ok/anyk-lpm:
+  p C tblctx |- (typ_k, "lpm") AnyK : (LPM 0) AnyK
+  -- if tblctx.MODE = NOPRILPM _ 
+
+rule Table_entry_keyset_ok/defaultk-else:
+  p C tblctx |- (typ_k, matchkind) AnyK : NOLPM AnyK
+  -- if matchkind =/= "exact"
 
 
 relation Table_entry_keysets_state_ok:
@@ -1019,13 +1036,12 @@ relation Table_default_ok:
 rule Table_default_ok:
   p C tblctx |- bool (name arg*) : bool tblactionIL
   -- if (pt*, argIL_a*) = $find_action(tblctx, name)
-  -- if (id_p dir_p typ_p val_p? = pt)*
   ----
-  -- (Arg_ok: p C |- arg : argIL typ)*
+  -- (Arg_ok: p C |- arg : argIL typ_a)*
   ----
-  -- Call_default_action_ok: p C |- pt* (argIL, typ)* argIL_a* : argIL'*
+  -- Call_default_action_ok: p C |- pt* (argIL, typ_a)* argIL_a* : argIL'*
   ----
-  -- if tblactionIL = name argIL'* (id_p dir_p typ_p val_p?)* eps
+  -- if tblactionIL = name argIL'* pt* eps
 
 ;;
 ;; Table custom property check

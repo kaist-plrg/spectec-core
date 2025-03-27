@@ -27,6 +27,7 @@ dec $is_deftable(typ) : bool
 dec $is_deftable'(typ) : bool
 
 def $is_deftable(typ) = $is_deftable'($canon_typ(typ))
+def $is_deftable'(ErrT) = true
 def $is_deftable'(StrT) = true
 def $is_deftable'(BoolT) = true
 def $is_deftable'(IntT) = true
@@ -38,6 +39,7 @@ def $is_deftable'(EnumT _ _) = true
 def $is_deftable'(SEnumT _ typ' _) = $is_deftable(typ')
 def $is_deftable'(TupleT typ'*) = true
   -- if $is_deftable(typ')*
+def $is_deftable'(StackT typ _) = $is_deftable(typ)
 def $is_deftable'(StructT _ (_, typ')*) = true
   -- if $is_deftable(typ')*
 def $is_deftable'(HeaderT _ (_, typ')*) = true

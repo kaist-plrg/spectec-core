@@ -10,7 +10,7 @@ let bigint_of_value (value : value) : Bigint.t =
 
 let value_of_bigint (i : Bigint.t) : value =
   let i = i |> Bigint.to_int_exn |> Z.of_int in
-  let n = `Int i in
+  let n = if Z.(i >= zero) then `Nat i else `Int i in
   NumV n $$ (no_region, NumT (Num.to_typ n))
 
 (* Built-in implementations *)

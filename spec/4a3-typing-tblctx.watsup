@@ -69,22 +69,36 @@ def $empty_tblctx() =
 
 dec $add_key(key, tblctx) : tblctx
 
-def $add_key(key, tblctx) = tblctx[ .KEYS = key :: tblctx.KEYS ]
+def $add_key(key, tblctx) = tblctx[ .KEYS = tblctx.KEYS ++ [ key ] ]
 
 dec $add_action(action, tblctx) : tblctx
 
-def $add_action(action, tblctx) = tblctx[ .ACTIONS = action :: tblctx.ACTIONS ]
+def $add_action(action, tblctx) = tblctx[ .ACTIONS = tblctx.ACTIONS ++ [ action ] ]
 
 dec $add_priority(int, tblctx) : tblctx
 
 def $add_priority(i, tblctx)
-  = tblctx[ .PRIORITIES.VALUES = i :: tblctx.PRIORITIES.VALUES ]
+  = tblctx[ .PRIORITIES.VALUES = tblctx.PRIORITIES.VALUES ++ [ i ] ]
 
 ;;
 ;; Getters
 ;;
 
 dec $get_lpm_prefix(val) : tblstate
+dec $get_lpm_prefix'(val, nat) : nat
+
+def $get_lpm_prefix(val) = LPM $get_lpm_prefix'(val, 0)
+def $get_lpm_prefix'(FBitV 0 _, n_prefix) = n_prefix
+def $get_lpm_prefix'(FBitV w i, n_prefix)
+  = $get_lpm_prefix'(val', $(n_prefix + 1))
+  -- if $(w > 0)
+  -- if $(i \ 2 =/= 0)
+  -- if val' = FBitV $(w - 1) $(i / 2)
+def $get_lpm_prefix'(FBitV w i, 0)
+  = $get_lpm_prefix'(val', 0)
+  -- if $(w > 0)
+  -- if $(i \ 2 = 0)
+  -- if val' = FBitV $(w - 1) $(i / 2)
 
 ;;
 ;; Updaters
@@ -129,6 +143,9 @@ def $find_action(tblctx, name)
   -- if (name_a, pt_a*, argIL_a*)* = tblctx.ACTIONS
 
 dec $find_last_priority(tblctx) : int
+
+def $find_last_priority(tblctx) = i_pri*[|i_pri*| - 1]
+  -- if i_pri* = tblctx.PRIORITIES.VALUES
 
 ;;
 ;; Helpers

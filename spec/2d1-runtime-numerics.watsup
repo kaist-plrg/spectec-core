@@ -16,7 +16,7 @@ dec $bor(int, int) : int
 dec $bitacc(int, int, int) : int
 
 ;;
-;; Unary operation oracle
+;; Unary operation
 ;;
 
 dec $un_op(unop, val) : val
@@ -64,7 +64,7 @@ def $un_minus(FBitV w bs)
 def $un_op(UMINUS, val) = $un_minus(val)
 
 ;;
-;; Binary operation oracle
+;; Binary operation
 ;;
 
 dec $bin_op(binop, val, val) : val
@@ -420,6 +420,9 @@ def $bin_op(LOR, val_l, val_r) = $bin_lor(val_l, val_r)
 dec $cast_op(typ, val) : val
     hint(show (%) %)
 
+dec $default(typ) : val
+dec $default'(typ) : val
+
 ;; Cast from boolean
 
 dec $cast_bool(typ, bool) : val
@@ -569,6 +572,8 @@ def $cast_op(typ, RecordV (member, val)*) = $cast_record(typ, (member, val)*)
 
 ;; Cast from default
 
+def $cast_op(typ, DefaultV) = $default(typ)
+
 ;; Cast from invalid
 
 ;; Cast from set
@@ -606,7 +611,40 @@ def $cast_op(typ, SetV (MaskSet val_b val_m)) = $cast_set_mask(typ, val_b, val_m
 def $cast_op(typ, SetV (RangeSet val_l val_u)) = $cast_set_range(typ, val_l, val_u)
 
 ;;
-;; Bitstring access oracle
+;; Default values for types
+;; (TODO) This should be target-specific
+;;
+
+def $default(typ) = $default'($canon_typ(typ))
+def $default'(ErrT) = ErrV "NoError"
+def $default'(StrT) = StrV ""
+def $default'(BoolT) = BoolV false
+def $default'(IntT) = IntV 0
+def $default'(FIntT w) = FIntV w 0
+def $default'(FBitT w) = FBitV w 0
+def $default'(VBitT w) = VBitV w 0 0
+def $default'(EnumT id (member_h :: _)) = EnumFieldV id member_h
+def $default'(SEnumT id typ (member, val)*)
+  = SEnumFieldV id member_zero val_zero
+  -- if val_zero = $cast_int(typ, 0)
+  -- if member_zero = $assoc_<val, member>(val_zero, (val, member)*)
+def $default'(SEnumT id typ (member, val)*)
+  = SEnumFieldV id "__UNSPECIFIED" val_zero
+  -- if val_zero = $cast_int(typ, 0)
+  -- if eps = $assoc_<val, member>(val_zero, (val, member)*)
+def $default'(TupleT typ*) = TupleV ($default(typ)*)
+def $default'(StackT typ n_s)
+  = StackV val* 0 n_s
+  -- if val* = $repeat_<val>($default(typ), n_s)
+def $default'(StructT id (member, typ)*)
+  = StructV id (member, $default(typ))*
+def $default'(HeaderT id (member, typ)*)
+  = HeaderV id (member, $default(typ))*
+def $default'(UnionT id (member, typ)*)
+  = UnionV id (member, $default(typ))*
+
+;;
+;; Bitstring access
 ;;
 
 dec $bitacc_op(val, val, val) : val   hint(show %`[%`:%])

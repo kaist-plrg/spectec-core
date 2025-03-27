@@ -550,8 +550,8 @@ rule Expr_ok/arracce-stackt-lctk:
   ----
   -- if StackT typ_b' i_s = $canon_typ(typ_b)
   -- Eval_static: p C |- exprIL_i' ~> val_i
-  -- if n = $get_num(val_i)
-  -- if $(n <= i_s)
+  -- if i = $get_num(val_i)
+  -- if $(0 <= i) /\ $(i <= i_s)
 
 rule Expr_ok/arracce-stackt-ctk-dyn:
   p C |- ArrAccE expr_b expr_i : (ArrAccE exprIL_b exprIL_i') typ_b' DYN
