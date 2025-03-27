@@ -7,14 +7,14 @@
 ;;
 
 rule Eval_static/valuee:
-  p C |- ValueE val ~> val
+  p C |- ValueE val _ ~> val
 
 ;;
 ;; Variable expression
 ;;
 
 rule Eval_static/namee:
-  p C |- NameE name ~> val
+  p C |- NameE name _ ~> val
   -- if val = $find_val(p, C, name)
 
 ;;
@@ -22,11 +22,11 @@ rule Eval_static/namee:
 ;;
 
 rule Eval_static/seqe:
-  p C |- SeqE exprIL* ~> SeqV val*
+  p C |- SeqE exprIL* _ ~> SeqV val*
   -- (Eval_static: p C |- exprIL ~> val)*
 
 rule Eval_static/seqdefaulte:
-  p C |- SeqDefaultE exprIL* ~> SeqDefaultV val*
+  p C |- SeqDefaultE exprIL* _ ~> SeqDefaultV val*
   -- (Eval_static: p C |- exprIL ~> val)*
 
 ;;
@@ -34,11 +34,11 @@ rule Eval_static/seqdefaulte:
 ;;
 
 rule Eval_static/recorde:
-  p C |- RecordE (member, exprIL)* ~> RecordV (member, val)*
+  p C |- RecordE (member, exprIL)* _ ~> RecordV (member, val)*
   -- (Eval_static: p C |- exprIL ~> val)*
 
 rule Eval_static/recorddefaulte:
-  p C |- RecordDefaultE (member, exprIL)* ~> RecordDefaultV (member, val)*
+  p C |- RecordDefaultE (member, exprIL)* _ ~> RecordDefaultV (member, val)*
   -- (Eval_static: p C |- exprIL ~> val)*
 
 ;;
@@ -46,14 +46,14 @@ rule Eval_static/recorddefaulte:
 ;;
 
 rule Eval_static/defaulte:
-  p C |- DefaultE ~> DefaultV 
+  p C |- DefaultE _ ~> DefaultV 
 
 ;;
 ;; Unary expression
 ;;
 
 rule Eval_static/une:
-  p C |- UnE unop exprIL ~> $un_op(unop, val)
+  p C |- UnE unop exprIL _ ~> $un_op(unop, val)
   -- Eval_static: p C |- exprIL ~> val
 
 ;;
@@ -61,7 +61,7 @@ rule Eval_static/une:
 ;;
 
 rule Eval_static/bine:
-  p C |- BinE binop exprIL_l exprIL_r ~> $bin_op(binop, val_l, val_r)
+  p C |- BinE binop exprIL_l exprIL_r _ ~> $bin_op(binop, val_l, val_r)
   -- Eval_static: p C |- exprIL_l ~> val_l
   -- Eval_static: p C |- exprIL_r ~> val_r
 
@@ -70,12 +70,12 @@ rule Eval_static/bine:
 ;;
 
 rule Eval_static/terne-true:
-  p C |- TernE exprIL_c exprIL_t exprIL_f ~> val
+  p C |- TernE exprIL_c exprIL_t exprIL_f _ ~> val
   -- Eval_static: p C |- exprIL_c ~> BoolV true
   -- Eval_static: p C |- exprIL_t ~> val
 
 rule Eval_static/terne-false:
-  p C |- TernE exprIL_c exprIL_t exprIL_f ~> val
+  p C |- TernE exprIL_c exprIL_t exprIL_f _ ~> val
   -- Eval_static: p C |- exprIL_c ~> BoolV false
   -- Eval_static: p C |- exprIL_f ~> val
 
@@ -84,7 +84,7 @@ rule Eval_static/terne-false:
 ;;
 
 rule Eval_static/caste:
-  p C |- CastE typ exprIL ~> $cast_op(typ, val)
+  p C |- CastE typ exprIL _ ~> $cast_op(typ, val)
   -- Eval_static: p C |- exprIL ~> val
 
 ;;
@@ -92,7 +92,7 @@ rule Eval_static/caste:
 ;;
 
 rule Eval_static/bitacce:
-  p C |- BitAccE exprIL_b exprIL_l exprIL_h ~> $bitacc_op(val_b, val_h, val_l)
+  p C |- BitAccE exprIL_b exprIL_l exprIL_h _ ~> $bitacc_op(val_b, val_h, val_l)
   -- Eval_static: p C |- exprIL_b ~> val_b
   -- Eval_static: p C |- exprIL_l ~> val_l
   -- Eval_static: p C |- exprIL_h ~> val_h
@@ -102,27 +102,26 @@ rule Eval_static/bitacce:
 ;;
 
 rule Eval_static/expracce-stack:
-  p C |- ExprAccE exprIL_b "size" ~> IntV i_size
+  p C |- ExprAccE exprIL_b "size" _ ~> IntV i_size
   -- Eval_static: p C |- exprIL_b ~> StackV val* i_size i_idx
 
 ;;
 ;; Method call expression
 ;;
 
-;; (TODO-Jaehyun) Without "note", how do I get the type of exprIL_b?
-;;rule Eval_static/callmethode:
-;;  p C |- CallMethodE exprIL_b member eps eps ~> val
-;;  -- if member = "minSizeInBits" \/ member = "minSizeInBytes" \/ member = "maxSizeInBits" \/ member = "maxSizeInBytes"
-;;  ----
-;;  -- Expr_ok: p C |- exprIL_b : typ_b ctk_b
-;;  -- if val = $size_builtin(typ_b, member)
+rule Eval_static/callmethode:
+  p C |- CallMethodE exprIL_b member eps eps _ ~> val
+  -- if member = "minSizeInBits" \/ member = "minSizeInBytes" \/ member = "maxSizeInBits" \/ member = "maxSizeInBytes"
+  ----
+  -- if `(typ_b; _) = $annot(exprIL_b)
+  -- if val = $size(typ_b, member)
 
 ;;
 ;; Type call expression
 ;;
 
 rule Eval_static/calltypee:
-  p C |- CallTypeE name member eps eps ~> $size_builtin(typ, member)
+  p C |- CallTypeE name member eps eps _ ~> $size(typ, member)
   -- if member = "minSizeInBits" \/ member = "minSizeInBytes"
         \/ member = "maxSizeInBits" \/ member = "maxSizeInBytes"
   ----

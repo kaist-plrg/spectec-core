@@ -4,7 +4,7 @@
 
 rule Call_convention_ok/in:
   p C actctxt |- (id IN typ_p val?) ~~ (exprIL, typ_a) : exprIL'
-  -- if exprIL' = $coerce_assign((exprIL, typ_a), typ_p)
+  -- if exprIL' = $coerce_assign(exprIL, typ_p)
 
 rule Call_convention_ok/out-inout:
   p C actctxt |- (id dir typ_p val?) ~~ (exprIL, typ_a) : exprIL
@@ -14,12 +14,12 @@ rule Call_convention_ok/out-inout:
 
 rule Call_convention_ok/no-action:
   p C ACT |- (id NO typ_p val?) ~~ (exprIL, typ_a) : exprIL'
-  -- if exprIL' = $coerce_assign((exprIL, typ_a), typ_p)
+  -- if exprIL' = $coerce_assign(exprIL, typ_p)
 
-;; (TODO) Should also check that it is compile-time known
-;; To do so, should track the compile-time known-ness of expressions
 rule Call_convention_ok/no-not-action:
   p C NOACT |- (id NO typ val?) ~~ (exprIL, typ') : exprIL
+  -- if `(_; ctk) = $annot(exprIL)
+  -- if ctk = LCTK \/ ctk = CTK
   -- Type_alpha: typ' ~~ typ
 
 
@@ -53,7 +53,7 @@ rule FuncType_ok:
 ;; (TODO-Jaehyun) check that builtin is defined on typ_b
 rule MethodType_ok/builtin-size:
   p C |- expr_b member eps eps : (BuiltinMethodT eps IntT) exprIL_b eps eps
-  -- Expr_ok: p C |- expr_b : exprIL_b typ_b ctk_b
+  -- Expr_ok: p C |- expr_b : exprIL_b
   ----
   -- if $in_set<member>(member, SET ([ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]))
 
@@ -61,7 +61,8 @@ rule MethodType_ok/builtin-stackt:
   p C |- expr_b member eps arg* : (BuiltinMethodT pt IntT) exprIL_b eps eps
   -- if member = "push_front" \/ member = "pop_front"
   ----
-  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
+  -- Expr_ok: p C |- expr_b: exprIL_b
+  -- if `(typ_b; _) = $annot(exprIL_b)
   -- if StackT typ_b_in int_b = $canon_typ(typ_b)
   ----
   -- if pt = "count" NO IntT eps
@@ -69,26 +70,30 @@ rule MethodType_ok/builtin-stackt:
 rule MethodType_ok/builtin-headert-isvalid:
   p C |- expr_b "isValid" eps arg* : (BuiltinMethodT eps BoolT) exprIL_b eps eps
   ----
-  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
+  -- Expr_ok: p C |- expr_b: exprIL_b
+  -- if `(typ_b; _) = $annot(exprIL_b)
   -- if HeaderT id_b (member, typ_b_in)* = $canon_typ(typ_b)
 
 rule MethodType_ok/builtin-headert-setvalid-invalid:
   p C |- expr_b member eps arg* : (BuiltinMethodT eps VoidT) exprIL_b eps eps
   -- if member = "setValid" \/ member = "setInvalid"
   ----
-  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
+  -- Expr_ok: p C |- expr_b: exprIL_b
+  -- if `(typ_b; _) = $annot(exprIL_b)
   -- if HeaderT id_b (member_b, typ_b_in)* = $canon_typ(typ_b)
 
 rule MethodType_ok/builtin-uniont:
   p C |- expr_b "isValid" eps arg* : (BuiltinMethodT eps BoolT) exprIL_b eps eps
   ----
-  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
+  -- Expr_ok: p C |- expr_b: exprIL_b
+  -- if `(typ_b; _) = $annot(exprIL_b)
   -- if UnionT id_b (member, typ_b_in)* = $canon_typ(typ_b)
 
 rule MethodType_ok/externt:
   p C |- expr_b member targIL* arg* : ft exprIL_b tid_fresh* id_deft*
   ----
-  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
+  -- Expr_ok: p C |- expr_b: exprIL_b
+  -- if `(typ_b; _) = $annot(exprIL_b)
   -- if ExternT id_b fmap_b = $canon_typ(typ_b)
   ----
   -- if (fid, fd, id_deft*) = $find_func<funcdef>(member, $to_fkey(arg*), fmap_b)
@@ -97,7 +102,8 @@ rule MethodType_ok/externt:
 rule MethodType_ok/parsert:
   p C |- expr_b "apply" eps arg* : ft exprIL_b eps id_deft*
   ----
-  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
+  -- Expr_ok: p C |- expr_b: exprIL_b
+  -- if `(typ_b; _) = $annot(exprIL_b)
   -- if ParserT pt* = $canon_typ(typ_b)
   ----
   -- if ft = ParserApplyMethodT pt*
@@ -112,7 +118,8 @@ rule MethodType_ok/parsert:
 rule MethodType_ok/controlt:
   p C |- expr_b "apply" eps arg* : ft exprIL_b eps id_deft*
   ----
-  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
+  -- Expr_ok: p C |- expr_b: exprIL_b
+  -- if `(typ_b; _) = $annot(exprIL_b)
   -- if ControlT pt* = $canon_typ(typ_b)
   ----
   -- if ft = ControlApplyMethodT pt*
@@ -127,7 +134,8 @@ rule MethodType_ok/controlt:
 rule MethodType_ok/tablet:
   p C |- expr_b "apply" eps eps : functyp exprIL_b eps eps
   ----
-  -- Expr_ok: p C |- expr_b: exprIL_b typ_b ctk_b
+  -- Expr_ok: p C |- expr_b: exprIL_b
+  -- if `(typ_b; _) = $annot(exprIL_b)
   -- if TableT id typ_t = $canon_typ(typ_b)
   ----
   -- if functyp = TableApplyMethodT typ_t

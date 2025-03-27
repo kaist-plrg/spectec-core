@@ -741,6 +741,7 @@ and eval_iter_prem_list (ctx : Ctx.t) (prem : prem) (vars : var list) :
         Ctx.bound_value Local ctx (id, iters @ [ List ]))
       vars
   in
+  (* Create a subcontext for each batch of bound values *)
   let ctxs_sub = Ctx.sub_list ctx vars_bound in
   let* ctx, values_binding =
     match ctxs_sub with

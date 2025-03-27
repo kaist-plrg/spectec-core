@@ -12,6 +12,13 @@ module Funcs = Map.Make (String)
 
 let funcs =
   Funcs.empty
+  (* Nats *)
+  |> Funcs.add "sum" (fun at targs values_input ->
+         Nats.sum at targs values_input)
+  |> Funcs.add "max" (fun at targs values_input ->
+         Nats.max at targs values_input)
+  |> Funcs.add "min" (fun at targs values_input ->
+         Nats.min at targs values_input)
   (* Texts *)
   |> Funcs.add "int_to_text" (fun at targs values_input ->
          Texts.int_to_text at targs values_input)

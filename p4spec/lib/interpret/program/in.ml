@@ -661,6 +661,20 @@ and in_switch_cases (switch_cases : P4.switch_case list) : value =
 
 (* Declarations *)
 
+and in_typdef (typdef : (P4.typ, P4.decl) P4.alt) : value =
+  in_typdef' typdef |> with_typ_var "typedef"
+
+and in_typdef' (typdef : (P4.typ, P4.decl) P4.alt) : value' =
+  match typdef with
+  | Left typ ->
+      let mixop = [ [ atom "TypeD" ]; [] ] in
+      let vtyp = in_typ typ in
+      CaseV (mixop, [ vtyp ])
+  | Right decl ->
+      let mixop = [ [ atom "DeclD" ]; [] ] in
+      let vdecl = in_decl decl in
+      CaseV (mixop, [ vdecl ])
+
 and in_decl (decl : P4.decl) : value = in_decl' decl |> with_typ_var "decl"
 
 and in_decl' (decl : P4.decl) : value' =
@@ -753,22 +767,16 @@ and in_decl' (decl : P4.decl) : value' =
         |> with_typ_var_tup_iter [ "member"; "expr" ] List
       in
       CaseV (mixop, [ vid; vtyp; vfields ])
-  | NewTypeD { id; typdef; _ } -> (
-      match typdef with
-      | Left typ ->
-          let mixop = [ [ atom "NewTypeD" ]; []; [] ] in
-          let vid = in_id id in
-          let vtyp = in_typ typ in
-          CaseV (mixop, [ vid; vtyp ])
-      | _ -> failwith "(TODO) NewTypeD")
-  | TypeDefD { id; typdef; _ } -> (
-      match typdef with
-      | Left typ ->
-          let mixop = [ [ atom "TypeDefD" ]; []; [] ] in
-          let vid = in_id id in
-          let vtyp = in_typ typ in
-          CaseV (mixop, [ vid; vtyp ])
-      | _ -> failwith "(TODO) TypeDefD")
+  | NewTypeD { id; typdef; _ } ->
+      let mixop = [ [ atom "NewTypeD" ]; []; [] ] in
+      let vid = in_id id in
+      let vtypdef = in_typdef typdef in
+      CaseV (mixop, [ vid; vtypdef ])
+  | TypeDefD { id; typdef; _ } ->
+      let mixop = [ [ atom "TypeDefD" ]; []; [] ] in
+      let vid = in_id id in
+      let vtypdef = in_typdef typdef in
+      CaseV (mixop, [ vid; vtypdef ])
   | ValueSetD { id; typ; size; _ } ->
       let mixop = [ [ atom "ValueSetD" ]; []; []; [] ] in
       let vid = in_id id in

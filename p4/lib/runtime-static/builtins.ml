@@ -31,7 +31,7 @@ let rec min_size_in_bits' (typ : Type.t) : Bigint.t =
   match typ with
   | SpecT _ | DefT _ -> assert false
   | BoolT -> Bigint.one
-  | FBitT width | FIntT width -> width
+  | FIntT width | FBitT width -> width
   | VBitT _ -> Bigint.zero
   | NewT (_, typ_inner) -> min_size_in_bits' typ_inner
   | SEnumT (_, typ_inner, _) -> min_size_in_bits' typ_inner
@@ -67,7 +67,7 @@ let rec max_size_in_bits' (typ : Type.t) : Bigint.t =
   match typ with
   | SpecT _ | DefT _ -> assert false
   | BoolT -> Bigint.one
-  | FBitT width | FIntT width | VBitT width -> width
+  | FIntT width | FBitT width | VBitT width -> width
   | NewT (_, typ_inner) -> max_size_in_bits' typ_inner
   | SEnumT (_, typ_inner, _) -> max_size_in_bits' typ_inner
   | TupleT typs_inner ->

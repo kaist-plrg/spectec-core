@@ -295,62 +295,76 @@ rule Sub_impl_canon/invalidt-uniont:
 ;; Coercions
 ;;
 
-dec $reduce_senum_unary((exprIL, typ), def $check_unary(typ) : bool) : (exprIL, typ)
+dec $reduce_senum_unary(exprIL, def $check_unary(typ) : bool) : exprIL
     hint(show REDUCE %1 UNDER %2)
 
-def $reduce_senum_unary((exprIL, typ), def $check_unary) = (exprIL, typ)
+def $reduce_senum_unary(exprIL, def $check_unary) = exprIL
+  -- if `(typ; _) = $annot(exprIL)
   -- if $check_unary(typ)
 
-def $reduce_senum_unary((exprIL, typ), def $check_unary) = (exprIL'', typ'')
+def $reduce_senum_unary(exprIL, def $check_unary) = exprIL''
+  -- if `(typ; ctk) = $annot(exprIL)
   -- if ~$check_unary(typ)
   -- if SEnumT _ typ' _ = typ
-  -- if exprIL' = CastE typ' exprIL
-  -- if (exprIL'', typ'') = $reduce_senum_unary((exprIL', typ'), def $check_unary)
+  -- if exprIL' = CastE typ' exprIL `(typ'; ctk)
+  -- if exprIL'' = $reduce_senum_unary(exprIL', def $check_unary)
 
 
-dec $reduce_senums_binary((exprIL, typ), (exprIL, typ), def $check_binary(typ, typ) : bool) : ((exprIL, typ), (exprIL, typ))
+dec $reduce_senums_binary(exprIL, exprIL, def $check_binary(typ, typ) : bool) : (exprIL, exprIL)
     hint(show REDUCE %1 AND %2 UNDER %3)
 
-def $reduce_senums_binary((exprIL_a, typ_a), (exprIL_b, typ_b), def $check_binary) = ((exprIL_a, typ_a), (exprIL_b, typ_b))
+def $reduce_senums_binary(exprIL_a, exprIL_b, def $check_binary) = (exprIL_a, exprIL_b)
+  -- if `(typ_a; _) = $annot(exprIL_a)
+  -- if `(typ_b; _) = $annot(exprIL_b)
   -- if $check_binary(typ_a, typ_b)
 
-def $reduce_senums_binary((exprIL_a, typ_a), (exprIL_b, typ_b), def $check_binary) = ((exprIL_a'', typ_a''), (exprIL_b'', typ_b''))
+def $reduce_senums_binary(exprIL_a, exprIL_b, def $check_binary) = (exprIL_a'', exprIL_b'')
+  -- if `(typ_a; ctk_a) = $annot(exprIL_a)
+  -- if `(typ_b; _) = $annot(exprIL_b)
   -- if ~$check_binary(typ_a, typ_b)
   -- if SEnumT _ typ_a' _ = typ_a
-  -- if exprIL_a' = CastE typ_a' exprIL_a
-  -- if ((exprIL_a'', typ_a''), (exprIL_b'', typ_b''))
-        = $reduce_senums_binary((exprIL_a', typ_a'), (exprIL_b, typ_b), def $check_binary)
+  -- if exprIL_a' = CastE typ_a' exprIL_a `(typ_a'; ctk_a)
+  -- if (exprIL_a'', exprIL_b'') = $reduce_senums_binary(exprIL_a', exprIL_b, def $check_binary)
 
-def $reduce_senums_binary((exprIL_a, typ_a), (exprIL_b, typ_b), def $check_binary) = ((exprIL_a'', typ_a''), (exprIL_b'', typ_b''))
+def $reduce_senums_binary(exprIL_a, exprIL_b, def $check_binary) = (exprIL_a'', exprIL_b'')
+  -- if `(typ_a; _) = $annot(exprIL_a)
+  -- if `(typ_b; ctk_b) = $annot(exprIL_b)
   -- if ~$check_binary(typ_a, typ_b)
   -- if SEnumT _ typ_b' _ = typ_b
-  -- if exprIL_b' = CastE typ_b' exprIL_b
-  -- if ((exprIL_a'', typ_a''), (exprIL_b'', typ_b''))
-        = $reduce_senums_binary((exprIL_a, typ_a), (exprIL_b', typ_b'), def $check_binary)
+  -- if exprIL_b' = CastE typ_b' exprIL_b `(typ_b'; ctk_b)
+  -- if (exprIL_a'', exprIL_b'') = $reduce_senums_binary(exprIL_a, exprIL_b', def $check_binary)
 
 
 ;; (TODO) This should better be a relation
-dec $coerce_binary((exprIL, typ), (exprIL, typ)) : (typ, exprIL, exprIL)
+dec $coerce_binary(exprIL, exprIL) : (exprIL, exprIL)
     hint(show COERCE %1 AND %2)
 
-def $coerce_binary((exprIL_a, typ_a), (exprIL_b, typ_b)) = (typ_a, exprIL_a, exprIL_b)
+def $coerce_binary(exprIL_a, exprIL_b) = (exprIL_a, exprIL_b)
+  -- if `(typ_a; _) = $annot(exprIL_a)
+  -- if `(typ_b; _) = $annot(exprIL_b)
   -- Type_alpha: typ_a ~~ typ_b
 
-def $coerce_binary((exprIL_a, typ_a), (exprIL_b, typ_b)) = (typ_b, exprIL_a', exprIL_b)
+def $coerce_binary(exprIL_a, exprIL_b) = (exprIL_a', exprIL_b)
+  -- if `(typ_a; ctk_a) = $annot(exprIL_a)
+  -- if `(typ_b; _) = $annot(exprIL_b)
   -- Sub_impl: typ_a << typ_b
-  -- if exprIL_a' = CastE typ_b exprIL_a
+  -- if exprIL_a' = CastE typ_b exprIL_a `(typ_b; ctk_a)
 
-def $coerce_binary((exprIL_a, typ_a), (exprIL_b, typ_b)) = (typ_a, exprIL_a, exprIL_b')
+def $coerce_binary(exprIL_a, exprIL_b) = (exprIL_a, exprIL_b')
+  -- if `(typ_a; _) = $annot(exprIL_a)
+  -- if `(typ_b; ctk_b) = $annot(exprIL_b)
   -- Sub_impl: typ_b << typ_a
-  -- if exprIL_b' = CastE typ_a exprIL_b
+  -- if exprIL_b' = CastE typ_a exprIL_b `(typ_a; ctk_b)
 
 
 ;; (TODO) This should better be a relation
-dec $coerce_assign((exprIL, typ), typ) : exprIL
+dec $coerce_assign(exprIL, typ) : exprIL
     hint(show COERCE %1 to %2)
 
-def $coerce_assign((exprIL, typ_f), typ_t) = exprIL
+def $coerce_assign(exprIL, typ_t) = exprIL
+  -- if `(typ_f; _) = $annot(exprIL)
   -- Type_alpha: typ_f ~~ typ_t
 
-def $coerce_assign((exprIL, typ_f), typ_t) = CastE typ_t exprIL
+def $coerce_assign(exprIL, typ_t) = CastE typ_t exprIL `(typ_t; ctk_f)
+  -- if `(typ_f; ctk_f) = $annot(exprIL)
   -- Sub_impl: typ_f << typ_t

@@ -5,7 +5,8 @@
 rule Param_ok/param-default:
   p C |- id dir type expr : (id dir typ_p val) tid_fresh*
   -- Type_ok: p C |- type : typ_p tid_fresh*
-  -- Expr_ok: p C |- expr : exprIL_e typ_e LCTK
+  -- Expr_ok: p C |- expr : exprIL_e
+  -- if `(typ_e; LCTK) = $annot(exprIL_e)
   -- Sub_impl: typ_e << typ_p
   -- Eval_static: p C |- exprIL_e ~> val
 
@@ -20,7 +21,8 @@ rule Param_ok/param-nodefault:
 rule CParam_ok/cparam-default:
   p C |- id dir type expr : (id dir typ_p val) tid_fresh*
   -- Type_ok: p C |- type : typ_p tid_fresh*
-  -- Expr_ok: p C |- expr : exprIL_e typ_e LCTK
+  -- Expr_ok: p C |- expr : exprIL_e
+  -- if `(typ_e; LCTK) = $annot(exprIL_e)
   -- Sub_impl: typ_e << typ_p
   -- Eval_static: p C |- exprIL_e ~> val
 
@@ -36,8 +38,9 @@ rule Decl_ok/constd:
   p C |- ConstD id type expr : C' (ConstD id typ_c val)
   -- Type_ok: p C |- type : typ_c eps
   ----
-  -- Expr_ok: p C |- expr : exprIL typ LCTK
-  -- if exprIL' = $coerce_assign((exprIL, typ), typ_c)
+  -- Expr_ok: p C |- expr : exprIL
+  -- if `(_; LCTK) = $annot(exprIL)
+  -- if exprIL' = $coerce_assign(exprIL, typ_c)
   ----
   -- Eval_static: p C |- exprIL' ~> val
   ----
@@ -56,8 +59,8 @@ rule Decl_ok/vard-some:
   p C |- VarD id type expr : C' (VarD id typ_v exprIL')
   -- Type_ok: p C |- type : typ_v eps
   ----
-  -- Expr_ok: p C |- expr : exprIL typ ctk
-  -- if exprIL' = $coerce_assign((exprIL, typ), typ_v)
+  -- Expr_ok: p C |- expr : exprIL
+  -- if exprIL' = $coerce_assign(exprIL, typ_v)
   ----
   -- if C' = $add_styp(p, C, id, typ_v INOUT DYN eps)
 
@@ -274,8 +277,9 @@ relation SEnum_field_ok:
 
 rule SEnum_field_ok:
   C id_s typ_s (member_s, val_s)* |- member expr : C' (member_s', val_s')*
-  -- Expr_ok: BLOCK C |- expr : exprIL typ LCTK
-  -- if exprIL' = $coerce_assign((exprIL, typ), typ_s)
+  -- Expr_ok: BLOCK C |- expr : exprIL
+  -- if `(_; LCTK) = $annot(exprIL)
+  -- if exprIL' = $coerce_assign(exprIL, typ_s)
   -- Eval_static: BLOCK C |- exprIL' ~> val_e
   ----
   -- if val = SEnumFieldV id_s member val_e
@@ -323,22 +327,45 @@ rule Decl_ok/senumd:
 ;; New type declaration
 ;;
 
-rule Decl_ok/newtyped:
-  GLOBAL C |- NewTypeD id type : C' (NewTypeD id typ)
+rule Decl_ok/newtyped-type:
+  GLOBAL C |- NewTypeD id (TypeD type) : C' (NewTypeD id (TypeD typ))
   -- Type_ok: GLOBAL C |- type : typ eps
   -- if typ_n = NewT id typ
   ----
   -- if td = MonoD typ_n
-  -- if tidset = $bound_tids(GLOBAL, C)
-  -- TypeDef_wf: tidset |- td
+  -- TypeDef_wf: $bound_tids(GLOBAL, C) |- td
   -- if C' = $add_typdef(GLOBAL, C, id, td)
+
+rule Decl_ok/newtyped-decl-mono:
+  GLOBAL C |- NewTypeD id (DeclD decl) : C'' (NewTypeD id (DeclD declIL))
+  -- Decl_ok: GLOBAL C |- decl : C' declIL
+  -- if SET tid_n = $diff_set<tid>(
+                      $dom_map<tid, typdef>(C'.GLOBAL.TDENV),
+                      $dom_map<tid, typdef>(C.GLOBAL.TDENV))
+  -- if MonoD typ_n = $find_typdef(GLOBAL, C', CURRENT tid_n)
+  ----
+  -- if td = MonoD (NewT id typ_n)
+  -- TypeDef_wf: $bound_tids(GLOBAL, C) |- td
+  -- if C'' = $add_typdef(GLOBAL, C, id, td)
+
+rule Decl_ok/newtyped-decl-poly:
+  GLOBAL C |- NewTypeD id (DeclD decl) : C'' (NewTypeD id (DeclD declIL))
+  -- Decl_ok: GLOBAL C |- decl : C' declIL
+  -- if SET tid_n = $diff_set<tid>(
+                      $dom_map<tid, typdef>(C'.GLOBAL.TDENV),
+                      $dom_map<tid, typdef>(C.GLOBAL.TDENV))
+  -- if ptd = $find_typdef(GLOBAL, C', CURRENT tid_n)
+  ----
+  -- if td = MonoD (NewT id (SpecT ptd eps))
+  -- TypeDef_wf: $bound_tids(GLOBAL, C) |- td
+  -- if C'' = $add_typdef(GLOBAL, C, id, td)
 
 ;;
 ;; Typedef declaration
 ;;
 
 rule Decl_ok/typedefd:
-  GLOBAL C |- TypeDefD id type : C' (TypeDefD id typ)
+  GLOBAL C |- TypeDefD id (TypeD type) : C' (TypeDefD id (TypeD typ))
   -- Type_ok: GLOBAL C |- type : typ eps
   -- if typ_d = DefT typ
   ----
@@ -346,6 +373,30 @@ rule Decl_ok/typedefd:
   -- if tidset = $bound_tids(GLOBAL, C)
   -- TypeDef_wf: tidset |- td
   -- if C' = $add_typdef(GLOBAL, C, id, td)
+
+rule Decl_ok/typedefd-decl-mono:
+  GLOBAL C |- TypeDefD id (DeclD decl) : C'' (TypeDefD id (DeclD declIL))
+  -- Decl_ok: GLOBAL C |- decl : C' declIL
+  -- if SET tid_d = $diff_set<tid>(
+                      $dom_map<tid, typdef>(C'.GLOBAL.TDENV),
+                      $dom_map<tid, typdef>(C.GLOBAL.TDENV))
+  -- if MonoD typ_d = $find_typdef(GLOBAL, C', CURRENT tid_d)
+  ----
+  -- if td = MonoD (DefT typ_d)
+  -- TypeDef_wf: $bound_tids(GLOBAL, C) |- td
+  -- if C'' = $add_typdef(GLOBAL, C, id, td)
+
+rule Decl_ok/newtyped-decl-poly:
+  GLOBAL C |- TypeDefD id (DeclD decl) : C'' (TypeDefD id (DeclD declIL))
+  -- Decl_ok: GLOBAL C |- decl : C' declIL
+  -- if SET tid_d = $diff_set<tid>(
+                      $dom_map<tid, typdef>(C'.GLOBAL.TDENV),
+                      $dom_map<tid, typdef>(C.GLOBAL.TDENV))
+  -- if ptd = $find_typdef(GLOBAL, C', CURRENT tid_d)
+  ----
+  -- if td = MonoD (DefT (SpecT ptd eps))
+  -- TypeDef_wf: $bound_tids(GLOBAL, C) |- td
+  -- if C'' = $add_typdef(GLOBAL, C, id, td)
 
 ;;
 ;; Action declaration
@@ -549,7 +600,8 @@ rule Decl_ok/valuesetd:
   -- Type_ok: p C |- type : typ_s eps
   -- Type_wf: $bound_tids(p, C) |- SetT typ_s
   ----
-  -- Expr_ok: p C |- expr : exprIL typ ctk
+  -- Expr_ok: p C |- expr : exprIL
+  -- if `(typ; ctk) = $annot(exprIL)
   -- if ctk = CTK \/ ctk = LCTK
   ----
   -- if C' = $add_styp(p, C, id, (SetT typ_s) NO CTK eps)
@@ -689,7 +741,8 @@ def $check_table_key(matchkind, typ) = false
 
 rule Table_key_ok:
   p C tblctx |- (expr matchkind) : tblctx'' (exprIL matchkind)
-  -- Expr_ok: p C |- expr : exprIL typ ctk
+  -- Expr_ok: p C |- expr : exprIL
+  -- if `(typ; _) = $annot(exprIL)
   ----
   -- Type_wf: $bound_tids(p, C) |- SetT typ
   ----
@@ -781,8 +834,9 @@ relation Table_entry_keyset_ok:
 
 rule Table_entry_keyset_ok/exprk-maske-lpm:
   p C tblctx |- (typ_k, "lpm") (ExprK (MaskE expr_b expr_m)) : tblstate_e (ExprK exprIL)
-  -- Expr_ok: p C |- (MaskE expr_b expr_m) : exprIL (SetT typ) ctk
-  -- if exprIL = MaskE exprIL_b exprIL_m
+  -- Expr_ok: p C |- (MaskE expr_b expr_m) : exprIL
+  -- if `(SetT typ; _) = $annot(exprIL)
+  -- if exprIL = MaskE exprIL_b exprIL_m _
   ----
   -- if tblctx.MODE = NOPRILPM nat_w
   ----
@@ -794,18 +848,21 @@ rule Table_entry_keyset_ok/exprk-maske-lpm:
 
 rule Table_entry_keyset_ok/exprk-maske-ternary:
   p C tblctx |- (typ_k, "ternary") (ExprK (MaskE expr_b expr_m)) : NOLPM (ExprK exprIL)
-  -- Expr_ok: p C |- (MaskE expr_b expr_m) : exprIL (SetT typ) ctk
+  -- Expr_ok: p C |- (MaskE expr_b expr_m) : exprIL
+  -- if `(SetT typ; _) = $annot(exprIL)
   -- Sub_impl: typ << typ_k
 
 rule Table_entry_keyset_ok/exprk-rangee:
   p C tblctx |- (typ_k, "range") (ExprK (RangeE expr_l expr_r)) : NOLPM (ExprK exprIL)
-  -- Expr_ok: p C |- (RangeE expr_l expr_r) : exprIL (SetT typ) ctk
+  -- Expr_ok: p C |- (RangeE expr_l expr_r) : exprIL
+  -- if `(SetT typ; _) = $annot(exprIL)
   -- Sub_impl: typ << typ_k
 
 rule Table_entry_keyset_ok/exprk-else:
   p C tblctx |- (typ_k, matchkind) (ExprK expr) : NOLPM (ExprK exprIL)
   -- if ~($is_maske(expr) \/ $is_rangee(expr))
-  -- Expr_ok: LOCAL C |- expr : exprIL typ ctk
+  -- Expr_ok: LOCAL C |- expr : exprIL
+  -- if `(typ; _) = $annot(exprIL)
   ----
   -- Sub_impl: typ << typ_k
 
@@ -918,7 +975,7 @@ rule Table_entry_priority_ok/priority-values-nil-somep:
   -- if ~tblctx.ENTRIES.CONST
   -- if tblctx.PRIORITIES.VALUES = eps
   ----
-  -- Expr_ok: LOCAL C |- expr : exprIL typ ctk
+  -- Expr_ok: LOCAL C |- expr : exprIL
   -- Eval_static: LOCAL C |- exprIL ~> val
   ----
   -- if int = $get_num(val)
@@ -955,7 +1012,7 @@ rule Table_entry_priority_ok/else-somep:
   -- if ~tblctx.ENTRIES.CONST
   -- if tblctx.PRIORITIES.INIT
   ----
-  -- Expr_ok: LOCAL C |- expr : exprIL typ ctk
+  -- Expr_ok: LOCAL C |- expr : exprIL
   -- Eval_static: LOCAL C |- exprIL ~> val
   ----
   -- if int = $get_num(val)
@@ -1053,19 +1110,22 @@ relation Table_custom_ok:
 
 rule Table_custom_ok/size:
   p C tblctx |- (b "size" expr) : tblctx (b "size" exprIL)
-  -- Expr_ok: p C |- expr : exprIL typ ctk
+  -- Expr_ok: p C |- expr : exprIL
+  -- if `(typ; _) = $annot(exprIL)
   -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
 
 rule Table_custom_ok/largest_priority_wins:
   p C tblctx |- (b "largest_priority_wins" expr) : tblctx' (b "largest_priority_wins" exprIL)
-  -- Expr_ok: p C |- expr : exprIL BoolT ctk
+  -- Expr_ok: p C |- expr : exprIL
+  -- if `(BoolT; _) = $annot(exprIL)
   ----
   -- Eval_static: p C |- exprIL ~> (BoolV b_lw)
   -- if tblctx' = tblctx[ .PRIORITIES.LARGEST_WINS = b_lw ]
 
 rule Table_custom_ok/priority_delta:
   p C tblctx |- (b "priority_delta" expr) : tblctx' (b "priority_delta" exprIL)
-  -- Expr_ok: p C |- expr : exprIL typ ctk
+  -- Expr_ok: p C |- expr : exprIL
+  -- if `(typ; _) = $annot(exprIL)
   -- if $is_intt(typ) \/ $is_fintt(typ) \/ $is_fbitt(typ)
   ----
   -- Eval_static: p C |- exprIL ~> val
@@ -1078,7 +1138,7 @@ rule Table_custom_ok/unknown:
   p C tblctx |- (b member expr) : tblctx (b member exprIL)
   -- if member =/= "size" \/ member =/= "largest_priority_wins" \/ member =/= "priority_delta"
   ----
-  -- Expr_ok: p C |- expr : exprIL typ ctk
+  -- Expr_ok: p C |- expr : exprIL
 
 
 relation Table_prop_ok:

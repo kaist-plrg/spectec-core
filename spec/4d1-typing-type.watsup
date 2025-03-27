@@ -22,19 +22,22 @@ rule Type_ok/intt:
 
 rule Type_ok/fintt:
   p C |- FIntT expr : (FIntT w) eps
-  -- Expr_ok: p C |- expr : exprIL typ LCTK
+  -- Expr_ok: p C |- expr : exprIL
+  -- if `(_; LCTK) = $annot(exprIL)
   -- Eval_static: p C |- exprIL ~> val
   -- if w = $get_num(val)
 
 rule Type_ok/fbitt:
   p C |- FBitT expr : (FBitT w) eps
-  -- Expr_ok: p C |- expr : exprIL typ LCTK
+  -- Expr_ok: p C |- expr : exprIL
+  -- if `(_; LCTK) = $annot(exprIL)
   -- Eval_static: p C |- exprIL ~> val
   -- if w = $get_num(val)
 
 rule Type_ok/vbitt:
   p C |- VBitT expr : (VBitT w) eps
-  -- Expr_ok: p C |- expr : exprIL typ LCTK
+  -- Expr_ok: p C |- expr : exprIL
+  -- if `(_; LCTK) = $annot(exprIL)
   -- Eval_static: p C |- exprIL ~> val
   -- if w = $get_num(val)
 
@@ -42,7 +45,8 @@ rule Type_ok/stackt:
   p C |- StackT type expr : (SpecT ptd typ) tid_fresh*
   -- Type_ok: p C |- type : typ tid_fresh*
   ----
-  -- Expr_ok: p C |- expr : exprIL _ LCTK
+  -- Expr_ok: p C |- expr : exprIL
+  -- if `(_; LCTK) = $annot(exprIL)
   -- Eval_static: p C |- exprIL ~> val
   -- if i_size = $get_num(val)
   ----

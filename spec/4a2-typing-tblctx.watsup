@@ -89,16 +89,16 @@ dec $get_lpm_prefix'(val, nat) : nat
 
 def $get_lpm_prefix(val) = LPM $get_lpm_prefix'(val, 0)
 def $get_lpm_prefix'(FBitV 0 _, n_prefix) = n_prefix
-def $get_lpm_prefix'(FBitV w i, n_prefix)
+def $get_lpm_prefix'(FBitV w n, n_prefix)
   = $get_lpm_prefix'(val', $(n_prefix + 1))
   -- if $(w > 0)
-  -- if $(i \ 2 =/= 0)
-  -- if val' = FBitV $(w - 1) $(i / 2)
-def $get_lpm_prefix'(FBitV w i, 0)
-  = $get_lpm_prefix'(val', 0)
+  -- if $(n \ 2 =/= 0)
+  -- if val' = FBitV $(w - 1) $((n - 1) / 2)
+def $get_lpm_prefix'(FBitV w n, n_prefix)
+  = $get_lpm_prefix'(val', n_prefix)
   -- if $(w > 0)
-  -- if $(i \ 2 = 0)
-  -- if val' = FBitV $(w - 1) $(i / 2)
+  -- if $(n \ 2 = 0)
+  -- if val' = FBitV $(w - 1) $(n / 2)
 
 ;;
 ;; Updaters

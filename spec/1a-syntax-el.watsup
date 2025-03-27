@@ -302,6 +302,8 @@ syntax method =
 ;; Declarations
 ;;
 
+syntax typedef
+
 syntax decl =
   | ConstD id type expr                                       hint(show CONST %2 %1 = %3)
   | VarD id type expr?                                        hint(show %2 %1 = %3)
@@ -313,10 +315,8 @@ syntax decl =
   | UnionD id tparam* (member, type)*                         hint(show UNION %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
   | EnumD id member*                                          hint(show ENUM % %latex("\\{")#%#%latex("\\}"))
   | SEnumD id type (member, expr)*                            hint(show ENUM % % %latex("\\{")#%#%latex("\\}"))
-  ;; TODO NewTypeD id decl is also valid
-  | NewTypeD id type                                          hint(show TYPE % %)
-  ;; TODO TypeDefD id decl is also valid
-  | TypeDefD id type                                          hint(show TYPEDEF % %)
+  | NewTypeD id typedef                                       hint(show TYPE % %)
+  | TypeDefD id typedef                                       hint(show TYPEDEF % %)
   | ValueSetD id type expr                                    hint(show VALUE#_#SET#%latex("\\langle")#%2#%latex("\\rangle")#(%3)#%latex() %1)
   | ParserTypeD id tparam* param*                             hint(show PARSER %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
   | ParserD id param* cparam* decl* parserstate*              hint(show PARSER %#(%)#(%)#%latex() %latex("\\{")#%%#%latex("\\}"))
@@ -328,6 +328,10 @@ syntax decl =
   | ExternFuncD id type tparam* param*                        hint(show EXTERN %2 %1#%latex("\\langle")#%3#%latex("\\rangle")#(%4)#%latex())
   | ExternObjectD id tparam* method*                          hint(show EXTERN %#%latex("\\langle")#%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
   | PackageTypeD id tparam* cparam*                           hint(show PACKAGE %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
+
+syntax typedef =
+  | TypeD type
+  | DeclD decl
 
 ;;
 ;; Program

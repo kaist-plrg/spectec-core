@@ -22,6 +22,14 @@ def $implies(true, b) = b
 def $implies(false, b) = true
 
 ;;
+;; General nat functions
+;;
+
+dec $sum(nat*) : nat
+dec $max(nat*) : nat
+dec $min(nat*) : nat
+
+;;
 ;; General text functions
 ;;
 

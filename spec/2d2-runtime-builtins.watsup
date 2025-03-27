@@ -2,4 +2,69 @@
 ;; Size
 ;;
 
-dec $size_builtin(typ, member) : val  hint(show %2#(%1)#%latex(""))
+dec $size(typ, member) : val
+    hint(show %2#(%1)#%latex(""))
+
+dec $size_minSizeInBits(typ) : val
+dec $size_minSizeInBits'(typ) : nat
+dec $size_minSizeInBits''(typ) : nat
+
+dec $size_minSizeInBytes(typ) : val
+
+dec $size_maxSizeInBits(typ) : val
+dec $size_maxSizeInBits'(typ) : nat
+dec $size_maxSizeInBits''(typ) : nat
+
+dec $size_maxSizeInBytes(typ) : val
+
+;; Minimum size in bits
+
+def $size_minSizeInBits(typ) = IntV $size_minSizeInBits'(typ)
+def $size_minSizeInBits'(typ) = $size_minSizeInBits''($canon_typ(typ))
+
+def $size_minSizeInBits''(BoolT) = 1
+def $size_minSizeInBits''(FIntT w) = w
+def $size_minSizeInBits''(FBitT w) = w
+def $size_minSizeInBits''(VBitT _) = 0
+def $size_minSizeInBits''(NewT _ typ) = $size_minSizeInBits'(typ)
+def $size_minSizeInBits''(SEnumT _ typ _) = $size_minSizeInBits'(typ)
+def $size_minSizeInBits''(TupleT typ*) = $sum($size_minSizeInBits'(typ)*)
+def $size_minSizeInBits''(StackT typ n_s) = $($size_minSizeInBits'(typ) * n_s)
+def $size_minSizeInBits''(StructT _ (_, typ)*) = $sum($size_minSizeInBits'(typ)*)
+def $size_minSizeInBits''(HeaderT _ (_, typ)*) = $sum($size_minSizeInBits'(typ)*)
+def $size_minSizeInBits''(UnionT _ (_, typ)*) = $min($size_minSizeInBits'(typ)*)
+
+def $size(typ, "minSizeInBits") = $size_minSizeInBits(typ)
+
+;; Minimum size in bytes
+
+def $size_minSizeInBytes(typ) = IntV $(n / 8)
+  -- if n = $size_minSizeInBits'(typ)
+
+def $size(typ, "minSizeInBytes") = $size_minSizeInBytes(typ)
+
+;; Maximum size in bits
+
+def $size_maxSizeInBits(typ) = IntV $size_maxSizeInBits'(typ)
+def $size_maxSizeInBits'(typ) = $size_maxSizeInBits''($canon_typ(typ))
+
+def $size_maxSizeInBits''(BoolT) = 1
+def $size_maxSizeInBits''(FIntT w) = w
+def $size_maxSizeInBits''(FBitT w) = w
+def $size_maxSizeInBits''(VBitT w) = w
+def $size_maxSizeInBits''(NewT _ typ) = $size_maxSizeInBits'(typ)
+def $size_maxSizeInBits''(SEnumT _ typ _) = $size_maxSizeInBits'(typ)
+def $size_maxSizeInBits''(TupleT typ*) = $sum($size_maxSizeInBits'(typ)*)
+def $size_maxSizeInBits''(StackT typ n_s) = $($size_maxSizeInBits'(typ) * n_s)
+def $size_maxSizeInBits''(StructT _ (_, typ)*) = $sum($size_maxSizeInBits'(typ)*)
+def $size_maxSizeInBits''(HeaderT _ (_, typ)*) = $sum($size_maxSizeInBits'(typ)*)
+def $size_maxSizeInBits''(UnionT _ (_, typ)*) = $max($size_maxSizeInBits'(typ)*)
+
+def $size(typ, "maxSizeInBits") = $size_maxSizeInBits(typ)
+
+;; Maximum size in bytes
+
+def $size_maxSizeInBytes(typ) = IntV $(n / 8)
+  -- if n = $size_maxSizeInBits'(typ)
+
+def $size(typ, "maxSizeInBytes") = $size_maxSizeInBytes(typ)
