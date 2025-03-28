@@ -59,7 +59,7 @@ let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
 %token IF OTHERWISE HINT_LPAREN
 %token EPS INFINITY
 %token<bool> BOOLLIT
-%token<Z.t> NATLIT HEXLIT
+%token<Bigint.t> NATLIT HEXLIT
 %token<string> TEXTLIT
 %token<string> UPID LOID DOTID UPID_LPAREN LOID_LPAREN UPID_LANGLE LOID_LANGLE
 %token EOF
@@ -150,7 +150,7 @@ relid : id { $1 @@@ $sloc }
 ruleid : ruleid_ { $1 }
 ruleid_ :
   | id { $1 }
-  | NATLIT { Z.to_string $1 }
+  | NATLIT { Bigint.to_string $1 }
   | BOOLLIT { Bool.string_of_bool $1 }
   | ruleid_ DOTID { $1 ^ "." ^ $2 }
 ruleids :

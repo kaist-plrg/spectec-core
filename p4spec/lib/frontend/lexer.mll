@@ -24,8 +24,8 @@ let error_nest start lexbuf msg =
 
 (* Numbers *)
 
-let nat _lexbuf s = Z.of_string s
-let hex _lexbuf s = Z.of_string s
+let nat _lexbuf s = Bigint.of_string s
+let hex _lexbuf s = Bigint.of_string s
 let int lexbuf s =
   try int_of_string s with Failure _ -> error lexbuf "hex literal out of range"
 

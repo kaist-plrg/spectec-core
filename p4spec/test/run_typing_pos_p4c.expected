@@ -221,8 +221,7 @@ Typing success: ../../../../p4/testdata/p4c/program/well-typed/concat-fold.p4
 Typing success: ../../../../p4/testdata/p4c/program/well-typed/concat.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/const.p4
-Typing failed: ../../../../p4/testdata/p4c/program/well-typed/const.p4
-timeout
+Typing success: ../../../../p4/testdata/p4c/program/well-typed/const.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/constant-fold-infint.p4
 Typing success: ../../../../p4/testdata/p4c/program/well-typed/constant-fold-infint.p4
@@ -2669,7 +2668,7 @@ Typing success: ../../../../p4/testdata/p4c/program/well-typed/key_after_exit.p4
 Typing success: ../../../../p4/testdata/p4c/program/well-typed/kvanno.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/large.p4
-Typing failed: ../../../../p4/testdata/p4c/program/well-typed/large.p4
+Typing success: ../../../../p4/testdata/p4c/program/well-typed/large.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/length_ebpf.p4
 Typing success: ../../../../p4/testdata/p4c/program/well-typed/length_ebpf.p4
@@ -4222,8 +4221,7 @@ Typing success: ../../../../p4/testdata/p4c/program/well-typed/use-priority-as-n
 Typing success: ../../../../p4/testdata/p4c/program/well-typed/useless-cast.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/v1model-const-entries-bmv2.p4
-Typing failed: ../../../../p4/testdata/p4c/program/well-typed/v1model-const-entries-bmv2.p4
-timeout
+Typing success: ../../../../p4/testdata/p4c/program/well-typed/v1model-const-entries-bmv2.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/v1model-digest-containing-ser-enum.p4
 Typing success: ../../../../p4/testdata/p4c/program/well-typed/v1model-digest-containing-ser-enum.p4
@@ -4273,4 +4271,4 @@ Typing success: ../../../../p4/testdata/p4c/program/well-typed/xdp_vlan_push_pop
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/xor_test.p4
 Typing success: ../../../../p4/testdata/p4c/program/well-typed/xor_test.p4
 
-Running typing: [PASS] 1026/1033 (99.32%) [FAIL] 7/1033 (0.68%)
+Running typing: [PASS] 1029/1033 (99.61%) [FAIL] 4/1033 (0.39%)

@@ -100,8 +100,8 @@ and string_of_cmpop = function
 and string_of_exp exp =
   match exp.it with
   | BoolE b -> string_of_bool b
-  | NumE (`DecOp, `Nat n) -> Z.to_string n
-  | NumE (`HexOp, `Nat n) -> "0x" ^ Z.format "%X" n
+  | NumE (`DecOp, `Nat n) -> Bigint.to_string n
+  | NumE (`HexOp, `Nat n) -> Format.asprintf "0x%X" (Bigint.to_int_exn n)
   | NumE (_, n) -> string_of_num n
   | TextE text -> "\"" ^ String.escaped text ^ "\""
   | VarE id -> string_of_varid id

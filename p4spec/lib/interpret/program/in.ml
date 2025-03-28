@@ -56,21 +56,18 @@ and in_num' (num : P4.num) : value' =
         if signed then [ [ atom "FINT" ]; []; [] ]
         else [ [ atom "FBIT" ]; []; [] ]
       in
-      let vwidth =
-        NumV (`Nat (width |> Bigint.to_int_exn |> Z.of_int))
-        |> with_typ_var "width"
-      in
+      let vwidth = NumV (`Nat width) |> with_typ_var "width" in
       let vbits =
-        let bits = i |> Bigint.to_int_exn |> Z.of_int in
-        if Z.(bits >= zero) then NumV (`Nat bits) |> with_typ_var "bits"
+        let bits = i in
+        if Bigint.(bits >= zero) then NumV (`Nat bits) |> with_typ_var "bits"
         else NumV (`Int bits) |> with_typ_var "bits"
       in
       CaseV (mixop, [ vwidth; vbits ])
   | i, None ->
       let mixop = [ [ atom "INT" ]; [] ] in
       let vint =
-        let i = i |> Bigint.to_int_exn |> Z.of_int in
-        if Z.(i >= zero) then NumV (`Nat i) |> with_typ (NumT `NatT)
+        let i = i in
+        if Bigint.(i >= zero) then NumV (`Nat i) |> with_typ (NumT `NatT)
         else NumV (`Int i) |> with_typ (NumT `IntT)
       in
       CaseV (mixop, [ vint ])

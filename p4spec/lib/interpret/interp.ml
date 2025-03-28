@@ -523,7 +523,7 @@ and eval_mem_exp (ctx : Ctx.t) (at : region) (exp_e : exp) (exp_s : exp) :
 
 and eval_len_exp (ctx : Ctx.t) (at : region) (exp : exp) : Ctx.t * value =
   let ctx, value = eval_exp ctx exp in
-  let len = value |> Value.get_list |> List.length |> Z.of_int in
+  let len = value |> Value.get_list |> List.length |> Bigint.of_int in
   let value = NumV (`Nat len) $$ (at, NumT `NatT) in
   (ctx, value)
 
@@ -534,7 +534,7 @@ and eval_idx_exp (ctx : Ctx.t) (at : region) (exp_b : exp) (exp_i : exp) :
   let ctx, value_b = eval_exp ctx exp_b in
   let ctx, value_i = eval_exp ctx exp_i in
   let values = Value.get_list value_b in
-  let idx = value_i |> Value.get_num |> Num.to_int |> Z.to_int in
+  let idx = value_i |> Value.get_num |> Num.to_int |> Bigint.to_int_exn in
   let value = List.nth values idx in
   let value = value.it $$ (at, value.note) in
   (ctx, value)
@@ -548,9 +548,9 @@ and eval_slice_exp (ctx : Ctx.t) (at : region) (typ : typ') (exp_b : exp)
   let ctx, value_b = eval_exp ctx exp_b in
   let values = Value.get_list value_b in
   let ctx, value_i = eval_exp ctx exp_i in
-  let idx_l = value_i |> Value.get_num |> Num.to_int |> Z.to_int in
+  let idx_l = value_i |> Value.get_num |> Num.to_int |> Bigint.to_int_exn in
   let ctx, value_n = eval_exp ctx exp_n in
-  let idx_n = value_n |> Value.get_num |> Num.to_int |> Z.to_int in
+  let idx_n = value_n |> Value.get_num |> Num.to_int |> Bigint.to_int_exn in
   let idx_h = idx_l + idx_n in
   let values_slice =
     List.mapi

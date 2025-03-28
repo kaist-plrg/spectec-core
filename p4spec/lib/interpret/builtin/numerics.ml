@@ -6,11 +6,10 @@ open Util.Source
 (* Conversion between meta-numerics and OCaml numerics *)
 
 let bigint_of_value (value : value) : Bigint.t =
-  value |> Value.get_num |> Num.to_int |> Z.to_int |> Bigint.of_int
+  value |> Value.get_num |> Num.to_int
 
 let value_of_bigint (i : Bigint.t) : value =
-  let i = i |> Bigint.to_int_exn |> Z.of_int in
-  let n = if Z.(i >= zero) then `Nat i else `Int i in
+  let n = if Bigint.(i >= zero) then `Nat i else `Int i in
   NumV n $$ (no_region, NumT (Num.to_typ n))
 
 (* Built-in implementations *)
@@ -95,7 +94,7 @@ let to_int (at : region) (targs : targ list) (values_input : value list) : value
 let rec to_bitstr' (w : Bigint.t) (n : Bigint.t) : Bigint.t =
   let w' = pow2' w in
   if Bigint.(n >= w') then Bigint.(n % w')
-  else if Bigint.(n < zero) then to_bitstr' Bigint.(n + w') w
+  else if Bigint.(n < zero) then to_bitstr' w Bigint.(n + w')
   else n
 
 let to_bitstr (at : region) (targs : targ list) (values_input : value list) :

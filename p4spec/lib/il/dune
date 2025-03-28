@@ -1,4 +1,4 @@
 (library
  (name il)
- (libraries zarith util xl el)
+ (libraries bignum util xl el)
  (modules ast print free))
