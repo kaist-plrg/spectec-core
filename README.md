@@ -7,7 +7,7 @@ Also a to-be formal specification for P4, using the SpecTec framework.
 
 ## Building
 
-This uses SpecTec as its submodule.
+This uses Wasm-SpecTec as its submodule.
 
 ```shell
 $ git submodule init
@@ -38,7 +38,7 @@ $ git submodule update
   $ cd ..
   ```
 
-### Prerequisites for SpecTec
+### Prerequisites for Wasm-SpecTec
 
 * Create OCaml switch for version 5.0.0.
   Install `dune` version 3.11.0, `menhir` version 20230608, `mdx` version 2.3.1, and `zarith` version 1.13, via `opam` (default versions).
@@ -48,13 +48,17 @@ $ git submodule update
   $ opam install dune menhir mdx zarith
   ```
 
+### Prerequisites for P4-SpecTec
+
+The dependencies are the same as for p4cherry.
+
 ### Building the Project
 
 ```shell
 $ make build
 ```
 
-This creates executables `p4cherry`, `p4cherry-test`, and `watsup` in the project root.
+This creates executables `p4cherry`, `watsup`, and `p4spectec` from p4cherry, Wasm-SpecTec, and P4-SpecTec, respectively, in the project root.
 
 ### Additional Notes
 
@@ -112,15 +116,22 @@ Running STF tests against the p4c compiler test suite and petr4 custom test suit
 
 Analysis of test failures: [p4c](p4/status/p4c/run-v1model.analysis.md) / [petr4](p4/status/petr4/run-v1model.analysis.md)
 
-## P4-SpecTec: A language specification for P4
+## P4-SpecTec: A language specification framework for P4
 
-### To Build the Spec and Output in LaTeX
+### To Elaborate the P4-SpecTec Specification
 
 ```shell
-$ make spec
+$ ./p4spectec elab spec/*.watsup
 ```
 
-This creates a PDF spec in spec/spec.pdf.
+### To Run the P4-SpecTec Specification
+
+Currently, the P4-SpecTec specification defines the static semantics of P4.
+Given a P4 program, below command runs the typing rules of the P4 language.
+
+```shell
+$ ./p4spectec run-typing spec/*.watsup -i p4/testdata/arch -p [FILENAME].p4
+```
 
 ### Contributing
 
