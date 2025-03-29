@@ -60,9 +60,10 @@ let string_of_cmpop = function
 
 let un (op : unop) num : t =
   match (op, num) with
+  | `PlusOp, `Nat _ -> num
   | `PlusOp, `Int _ -> num
+  | `MinusOp, `Nat n -> `Int (Bigint.neg n)
   | `MinusOp, `Int n -> `Int (Bigint.neg n)
-  | _ -> assert false
 
 let bin (op : binop) num_l num_r : t =
   match (op, num_l, num_r) with

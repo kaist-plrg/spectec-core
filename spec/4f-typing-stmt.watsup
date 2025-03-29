@@ -202,6 +202,8 @@ rule Stmt_ok/rets-some:
 
 rule Stmt_ok/callfuncs:
   p C f |- CallFuncS name targ* arg* : C f (CallFuncS name targIL'* argIL'*)
+  -- if $implies(name = CURRENT "verify",
+                (p = BLOCK /\ C.BLOCK.KIND = PARSER) \/ (p = LOCAL /\ C.LOCAL.KIND = PARSERSTATE))
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
   -- if tid_fresh* = $concat_<tid>(tid_fresh_a**)
   ----

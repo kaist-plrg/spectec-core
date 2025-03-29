@@ -148,25 +148,24 @@ dec $add_styp(cursor, context, id, styp) : context
     hint(show %2.%1.FRAME#(S)#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
 def $add_styp(GLOBAL, C, id, styp) = C[ .GLOBAL.FRAME = frame ]
+  -- if $not_in_set<id>(id, $dom_map<id, styp>(C.GLOBAL.FRAME))
   -- if frame = $add_map<id, styp>(C.GLOBAL.FRAME, id, styp)
 def $add_styp(BLOCK, C, id, styp) = C[ .BLOCK.FRAME = frame ]
+  -- if $not_in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME))
   -- if frame = $add_map<id, styp>(C.BLOCK.FRAME, id, styp)
 def $add_styp(LOCAL, C, id, styp) = C[ .LOCAL.FRAMES = frame* ]
   -- if frame_h :: frame_t* = C.LOCAL.FRAMES
+  -- if $not_in_set<id>(id, $dom_map<id, styp>(frame_h))
   -- if frame_h' = $add_map<id, styp>(frame_h, id, styp)
   -- if frame* = frame_h' :: frame_t*
 
 dec $add_styps(cursor, context, id*, styp*) : context
     hint(show %2.%1.FRAME#(S)#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
 
-def $add_styps(GLOBAL, C, id*, styp*) = C[ .GLOBAL.FRAME = frame ]
-  -- if frame = $adds_map<id, styp>(C.GLOBAL.FRAME, id*, styp*)
-def $add_styps(BLOCK, C, id*, styp*) = C[ .BLOCK.FRAME = frame ]
-  -- if frame = $adds_map<id, styp>(C.BLOCK.FRAME, id*, styp*)
-def $add_styps(LOCAL, C, id*, styp*) = C[ .LOCAL.FRAMES = frame* ]
-  -- if frame_h :: frame_t* = C.LOCAL.FRAMES
-  -- if frame_h' = $adds_map<id, styp>(frame_h, id*, styp*)
-  -- if frame* = frame_h' :: frame_t*
+def $add_styps(cursor, C, eps, eps) = C
+def $add_styps(cursor, C, id_h :: id_t*, styp_h :: styp_t*) = C''
+    -- if C' = $add_styp(cursor, C, id_h, styp_h)
+    -- if C'' = $add_styps(cursor, C', id_t*, styp_t*)
 
 ;; Adder for parameters
 
@@ -193,21 +192,22 @@ dec $add_typdef(cursor, context, tid, typdef) : context
     hint(show %2.%1.TDENV#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
 def $add_typdef(GLOBAL, C, tid, td) = C[ .GLOBAL.TDENV = tdenv ]
+  -- if $not_in_set<tid>(tid, $dom_map<tid, typdef>(C.GLOBAL.TDENV))
   -- if tdenv = $add_map<tid, typdef>(C.GLOBAL.TDENV, tid, td)
 def $add_typdef(BLOCK, C, tid, td) = C[ .BLOCK.TDENV = tdenv ]
+  -- if $not_in_set<tid>(tid, $dom_map<tid, typdef>(C.BLOCK.TDENV))
   -- if tdenv = $add_map<tid, typdef>(C.BLOCK.TDENV, tid, td)
 def $add_typdef(LOCAL, C, tid, td) = C[ .LOCAL.TDENV = tdenv ]
+  -- if $not_in_set<tid>(tid, $dom_map<tid, typdef>(C.LOCAL.TDENV))
   -- if tdenv = $add_map<tid, typdef>(C.LOCAL.TDENV, tid, td)
 
 dec $add_typdefs(cursor, context, tid*, typdef*) : context
     hint(show %2.%1.TDENV#%latex("\\{")#%3#%latex("\\mapsto^{*}")#%4#%latex("\\}"))
 
-def $add_typdefs(GLOBAL, C, tid*, td*) = C[ .GLOBAL.TDENV = tdenv ]
-  -- if tdenv = $adds_map<tid, typdef>(C.GLOBAL.TDENV, tid*, td*)
-def $add_typdefs(BLOCK, C, tid*, td*) = C[ .BLOCK.TDENV = tdenv ]
-  -- if tdenv = $adds_map<tid, typdef>(C.BLOCK.TDENV, tid*, td*)
-def $add_typdefs(LOCAL, C, tid*, td*) = C[ .LOCAL.TDENV = tdenv ]
-  -- if tdenv = $adds_map<tid, typdef>(C.LOCAL.TDENV, tid*, td*)
+def $add_typdefs(p, C, eps, eps) = C
+def $add_typdefs(p, C, tid_h :: tid_t*, td_h :: td_t*) = C''
+    -- if C' = $add_typdef(p, C, tid_h, td_h)
+    -- if C'' = $add_typdefs(p, C', tid_t*, td_t*)
 
 ;; Adder for type parameters
 
@@ -215,9 +215,11 @@ dec $add_tparam(cursor, context, tparam) : context
 
 def $add_tparam(BLOCK, C, tparam) = C[ .BLOCK.TDENV = tdenv ]
   -- if td = MonoD (VarT tparam)
+  -- if $not_in_set<tid>(tparam, $dom_map<tid, typdef>(C.BLOCK.TDENV))
   -- if tdenv = $add_map<tid, typdef>(C.BLOCK.TDENV, tparam, td)
 def $add_tparam(LOCAL, C, tparam) = C[ .LOCAL.TDENV = tdenv ]
   -- if td = MonoD (VarT tparam)
+  -- if $not_in_set<tid>(tparam, $dom_map<tid, typdef>(C.LOCAL.TDENV))
   -- if tdenv = $add_map<tid, typdef>(C.LOCAL.TDENV, tparam, td)
 
 dec $add_tparams(cursor, context, tparam*) : context
@@ -233,8 +235,10 @@ dec $add_funcdef(cursor, context, fid, funcdef) : context
     hint(show %2.%1.FDENV#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
 def $add_funcdef(GLOBAL, C, fid, fd) = C[ .GLOBAL.FDENV = fdenv ]
+  -- if $not_in_set<fid>(fid, $dom_map<fid, funcdef>(C.GLOBAL.FDENV))
   -- if fdenv = $add_map<fid, funcdef>(C.GLOBAL.FDENV, fid, fd)
 def $add_funcdef(BLOCK, C, fid, fd) = C[ .BLOCK.FDENV = fdenv ]
+  -- if $not_in_set<fid>(fid, $dom_map<fid, funcdef>(C.BLOCK.FDENV))
   -- if fdenv = $add_map<fid, funcdef>(C.BLOCK.FDENV, fid, fd)
 
 ;; Adder for constructor definitions
@@ -243,6 +247,7 @@ dec $add_consdef(cursor, context, fid, consdef) : context
     hint(show %2.%1.CDENV#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
 def $add_consdef(GLOBAL, C, cid, cd) = C[ .GLOBAL.CDENV = cdenv ]
+  -- if $not_in_set<cid>(cid, $dom_map<cid, consdef>(C.GLOBAL.CDENV))
   -- if cdenv = $add_map<cid, consdef>(C.GLOBAL.CDENV, cid, cd)
 
 ;;

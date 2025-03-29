@@ -335,8 +335,100 @@ def $infer_targs(tid*, (id dir typ_p val?)*, typ_a*) = $resolve_cstrs(cstr')
 ;; Function and Method invocation
 ;;
 
-rule Call_site_ok:
-  p C |- ft : CALLSITE_OK
+rule Call_site_ok/block-externfunc:
+  BLOCK C |- ExternFuncT _ _ : CALLSITE_OK
+  -- if C.BLOCK.KIND = PARSER \/ C.BLOCK.KIND = CONTROL
+
+rule Call_site_ok/block-builtinmethod:
+  BLOCK C |- BuiltinMethodT _ _ : CALLSITE_OK
+  -- if C.BLOCK.KIND = PARSER \/ C.BLOCK.KIND = CONTROL
+
+rule Call_site_ok/block-externmethod:
+  BLOCK C |- ExternMethodT _ _ : CALLSITE_OK
+  -- if C.BLOCK.KIND = PARSER \/ C.BLOCK.KIND = CONTROL
+
+rule Call_site_ok/block-externabstractmethod:
+  BLOCK C |- ExternAbstractMethodT _ _ : CALLSITE_OK
+  -- if C.BLOCK.KIND = PARSER \/ C.BLOCK.KIND = CONTROL
+
+rule Call_site_ok/local-action:
+  LOCAL C |- ActionT _ : CALLSITE_OK
+  -- if C.LOCAL.KIND = ACTION
+        \/ C.LOCAL.KIND = CONTROLAPPLYMETHOD
+        \/ C.LOCAL.KIND = TABLEAPPLYMETHOD
+
+rule Call_site_ok/local-func-func:
+  LOCAL C |- FuncT _ _ : CALLSITE_OK
+  -- if C.LOCAL.KIND = FUNC typ
+
+rule Call_site_ok/local-func-else:
+  LOCAL C |- FuncT _ _ : CALLSITE_OK
+  -- if C.LOCAL.KIND = ACTION
+        \/ C.LOCAL.KIND = PARSERSTATE
+        \/ C.LOCAL.KIND = CONTROLAPPLYMETHOD
+        \/ C.LOCAL.KIND = TABLEAPPLYMETHOD
+
+rule Call_site_ok/local-externfunc-externabstractmethod:
+  LOCAL C |- ExternFuncT _ _ : CALLSITE_OK
+  -- if C.LOCAL.KIND = EXTERNABSTRACTMETHOD typ
+
+rule Call_site_ok/local-externfunc-else:
+  LOCAL C |- ExternFuncT _ _ : CALLSITE_OK
+  -- if C.LOCAL.KIND = ACTION
+        \/ C.LOCAL.KIND = PARSERSTATE
+        \/ C.LOCAL.KIND = CONTROLAPPLYMETHOD
+        \/ C.LOCAL.KIND = TABLEAPPLYMETHOD
+
+rule Call_site_ok/local-builtinmethod-func:
+  LOCAL C |- BuiltinMethodT _ _ : CALLSITE_OK
+  -- if C.LOCAL.KIND = FUNC typ
+
+rule Call_site_ok/local-builtinmethod-externabstractmethod:
+  LOCAL C |- BuiltinMethodT _ _ : CALLSITE_OK
+  -- if C.LOCAL.KIND = EXTERNABSTRACTMETHOD typ
+
+rule Call_site_ok/local-builtinmethod-else:
+  LOCAL C |- BuiltinMethodT _ _ : CALLSITE_OK
+  -- if C.LOCAL.KIND = ACTION
+        \/ C.LOCAL.KIND = PARSERSTATE
+        \/ C.LOCAL.KIND = CONTROLAPPLYMETHOD
+        \/ C.LOCAL.KIND = TABLEAPPLYMETHOD
+
+rule Call_site_ok/local-externmethod-externabstractmethod:
+  LOCAL C |- ExternMethodT _ _ : CALLSITE_OK
+  -- if C.LOCAL.KIND = EXTERNABSTRACTMETHOD typ
+
+rule Call_site_ok/local-externmethod-else:
+  LOCAL C |- ExternMethodT _ _ : CALLSITE_OK
+  -- if C.LOCAL.KIND = ACTION
+        \/ C.LOCAL.KIND = PARSERSTATE
+        \/ C.LOCAL.KIND = CONTROLAPPLYMETHOD
+        \/ C.LOCAL.KIND = TABLEAPPLYMETHOD
+
+rule Call_site_ok/local-externabstractmethod-externabstractmethod:
+  LOCAL C |- ExternAbstractMethodT _ _ : CALLSITE_OK
+  -- if C.LOCAL.KIND = EXTERNABSTRACTMETHOD typ
+
+rule Call_site_ok/local-externabstractmethod-else:
+  LOCAL C |- ExternAbstractMethodT _ _ : CALLSITE_OK
+  -- if C.LOCAL.KIND = ACTION
+        \/ C.LOCAL.KIND = PARSERSTATE
+        \/ C.LOCAL.KIND = CONTROLAPPLYMETHOD
+        \/ C.LOCAL.KIND = TABLEAPPLYMETHOD
+
+rule Call_site_ok/local-parserapplymethod:
+  LOCAL C |- ParserApplyMethodT _ : CALLSITE_OK
+  -- if C.LOCAL.KIND = PARSERSTATE
+
+rule Call_site_ok/local-controlapplymethod:
+  LOCAL C |- ControlApplyMethodT _ : CALLSITE_OK
+  -- if C.LOCAL.KIND = CONTROLAPPLYMETHOD
+
+rule Call_site_ok/local-tableapplymethod:
+  LOCAL C |- TableApplyMethodT _ : CALLSITE_OK
+  -- if C.LOCAL.KIND = CONTROLAPPLYMETHOD
+        \/ C.LOCAL.KIND = TABLEAPPLYMETHOD
+
 
 dec $is_table_apply_in_action_arg(argIL) : bool
     hint(show % CONTAINS TABLE.APPLY CALL)

@@ -5,14 +5,20 @@
 rule Param_ok/param-default:
   p C |- id dir type expr : (id dir typ_p val) tid_fresh*
   -- Type_ok: p C |- type : typ_p tid_fresh*
+  -- if tidset = $union_set<tid>($bound_tids(p, C), SET tid_fresh*)
+  -- Type_wf: tidset |- typ_p
+  ----
   -- Expr_ok: p C |- expr : exprIL_e
   -- if `(typ_e; LCTK) = $annot(exprIL_e)
+  ----
   -- Sub_impl: typ_e << typ_p
   -- Eval_static: p C |- exprIL_e ~> val
 
 rule Param_ok/param-nodefault:
   p C |- id dir type eps : (id dir typ_p eps) tid_fresh*
   -- Type_ok: p C |- type : typ_p tid_fresh*
+  -- if tidset = $union_set<tid>($bound_tids(p, C), SET tid_fresh*)
+  -- Type_wf: tidset |- typ_p
 
 ;;
 ;; Constructor parameter typing
@@ -21,14 +27,20 @@ rule Param_ok/param-nodefault:
 rule CParam_ok/cparam-default:
   p C |- id dir type expr : (id dir typ_p val) tid_fresh*
   -- Type_ok: p C |- type : typ_p tid_fresh*
+  -- if tidset = $union_set<tid>($bound_tids(p, C), SET tid_fresh*)
+  -- Type_wf: tidset |- typ_p
+  ----
   -- Expr_ok: p C |- expr : exprIL_e
   -- if `(typ_e; LCTK) = $annot(exprIL_e)
+  ----
   -- Sub_impl: typ_e << typ_p
   -- Eval_static: p C |- exprIL_e ~> val
 
 rule CParam_ok/cparam-nodefault:
   p C |- id dir type eps : (id dir typ_p eps) tid_fresh*
   -- Type_ok: p C |- type : typ_p tid_fresh*
+  -- if tidset = $union_set<tid>($bound_tids(p, C), SET tid_fresh*)
+  -- Type_wf: tidset |- typ_p
 
 ;;
 ;; Constant declaration
@@ -37,6 +49,7 @@ rule CParam_ok/cparam-nodefault:
 rule Decl_ok/constd:
   p C |- ConstD id type expr : C' (ConstD id typ_c val)
   -- Type_ok: p C |- type : typ_c eps
+  -- Type_wf: $bound_tids(p, C) |- typ_c
   ----
   -- Expr_ok: p C |- expr : exprIL
   -- if `(_; LCTK) = $annot(exprIL)
@@ -51,18 +64,22 @@ rule Decl_ok/constd:
 ;;
 
 rule Decl_ok/vard-none:
-  p C |- VarD id type eps : C' (VarD id typ_v eps)
-  -- Type_ok: p C |- type : typ_v eps
-  -- if C' = $add_styp(p, C, id, typ_v INOUT DYN eps)
+  p C |- VarD id type eps : C' (VarD id typ eps)
+  -- Type_ok: p C |- type : typ eps
+  -- Type_wf: $bound_tids(p, C) |- typ
+  -- if $is_assignable(typ)
+  -- if C' = $add_styp(p, C, id, typ INOUT DYN eps)
 
 rule Decl_ok/vard-some:
-  p C |- VarD id type expr : C' (VarD id typ_v exprIL')
-  -- Type_ok: p C |- type : typ_v eps
+  p C |- VarD id type expr : C' (VarD id typ exprIL')
+  -- Type_ok: p C |- type : typ eps
+  -- Type_wf: $bound_tids(p, C) |- typ
+  -- if $is_assignable(typ)
   ----
   -- Expr_ok: p C |- expr : exprIL
-  -- if exprIL' = $coerce_assign(exprIL, typ_v)
+  -- if exprIL' = $coerce_assign(exprIL, typ)
   ----
-  -- if C' = $add_styp(p, C, id, typ_v INOUT DYN eps)
+  -- if C' = $add_styp(p, C, id, typ INOUT DYN eps)
 
 ;;
 ;; Instantiation declaration
@@ -310,6 +327,7 @@ rule Decl_ok/senumd:
   -- if $distinct_<member>(member*)
   ----
   -- Type_ok: GLOBAL C_0 |- type : typ eps
+  -- Type_wf: $bound_tids(GLOBAL, C_0) |- typ
   ----
   -- SEnum_fields_ok: C_0 id typ eps |- (member, expr)* : C_1 (member, val_s)*
   ----
@@ -330,6 +348,7 @@ rule Decl_ok/senumd:
 rule Decl_ok/newtyped-type:
   GLOBAL C |- NewTypeD id (TypeD type) : C' (NewTypeD id (TypeD typ))
   -- Type_ok: GLOBAL C |- type : typ eps
+  -- Type_wf: $bound_tids(GLOBAL, C) |- typ
   -- if typ_n = NewT id typ
   ----
   -- if td = MonoD typ_n
@@ -367,6 +386,7 @@ rule Decl_ok/newtyped-decl-poly:
 rule Decl_ok/typedefd:
   GLOBAL C |- TypeDefD id (TypeD type) : C' (TypeDefD id (TypeD typ))
   -- Type_ok: GLOBAL C |- type : typ eps
+  -- Type_wf: $bound_tids(GLOBAL, C) |- typ
   -- if typ_d = DefT typ
   ----
   -- if td = MonoD typ_d
@@ -496,8 +516,7 @@ relation Method_ok:
   hint(input %0 %1 %2)
 
 rule Method_ok/externconsm:
-  C id_e |- ExternConsM id_e' cparam* : C' (ExternConsM id_e tparam_hidden* cparamIL*)
-  -- if id_e = id_e'
+  C id_e |- ExternConsM id_e cparam* : C' (ExternConsM id_e tparam_hidden* cparamIL*)
   -- if cid = $to_fid(id_e, cparam*)
   ----
   -- (CParam_ok: BLOCK C |- cparam : cparamIL tid_fresh_c*)*
@@ -514,6 +533,7 @@ rule Method_ok/externconsm:
 
 rule Method_ok/externabstractm:
   C_0 id_e |- ExternAbstractM id type_r tparam* param* : C_4 (ExternAbstractM id typ_r tparam* tparam_hidden* paramIL*)
+  -- if id_e =/= id
   -- if fid = $to_fid(id, param*)
   ----
   -- if C_1 = $add_typdefs(LOCAL, C_0, tparam*, (MonoD (VarT tparam))*)
@@ -535,6 +555,7 @@ rule Method_ok/externabstractm:
 
 rule Method_ok/externm:
   C_0 id_e |- ExternM id type_r tparam* param* : C_4 (ExternM id typ_r tparam* tparam_hidden* paramIL*)
+  -- if id_e =/= id
   -- if fid = $to_fid(id, param*)
   ----
   -- if C_1 = $add_typdefs(LOCAL, C_0, tparam*, (MonoD (VarT tparam))*)
@@ -621,6 +642,7 @@ rule Decl_ok/parsertyped:
   -- if tparam_hidden* = $concat_<tid>(tid_fresh_p**)
   ----
   -- if td = PolyD (tparam*, tparam_hidden*) -> (ParserT (id_p dir_p typ_p val_p?)*)
+  -- TypeDef_wf: $bound_tids(GLOBAL, C_0) |- td
   -- if C_3 = $add_typdef(GLOBAL, C_0, id, td)
 
 ;;
@@ -628,25 +650,13 @@ rule Decl_ok/parsertyped:
 ;;
 
 relation ParserState_ok:
-  context |- parserstate : context parserstateIL
+  context |- parserstate : parserstateIL
   hint(input %0 %1)
 
 rule ParserState_ok:
-  C |- statelabel block : C' (statelabel blockIL)
+  C |- statelabel block : statelabel blockIL
   -- Block_ok: LOCAL C CONT INIT |- block : C' CONT blockIL
 
-
-relation ParserStates_ok:
-  context |- parserstate* : context parserstateIL*
-  hint(input %0 %1)
-
-rule ParserStates_ok/nil:
-  C |- eps : C eps
-
-rule ParserStates_ok/cons:
-  C |- parserstate_h :: parserstate_t* : C'' (parserstateIL_h :: parserstateIL_t*)
-  -- ParserState_ok: C |- parserstate_h : C' parserstateIL_h
-  -- ParserStates_ok: C' |- parserstate_t* : C'' parserstateIL_t*
 
 rule Decl_ok/parserd:
   GLOBAL C_0 |- ParserD id param* cparam* decl* parserstate* : C_8 (ParserD id paramIL* cparamIL* declIL* parserstateIL*)
@@ -682,7 +692,7 @@ rule Decl_ok/parserd:
   -- if styp* = $repeat_<styp>(StateT NO DYN eps, |statelabel'*|)
   -- if C_6 = $add_styps(BLOCK, C_5, statelabel'*, styp*)
   ----
-  -- ParserStates_ok: C_6 |- parserstate* : C_7 parserstateIL*
+  -- (ParserState_ok: C_6 |- parserstate : parserstateIL)*
   ----
   -- if ptd = PolyD (eps, eps) -> (ParserT paramIL*)
   -- if typ = SpecT ptd eps
@@ -1236,6 +1246,7 @@ rule Decl_ok/controltyped:
   -- if tparam_hidden* = $concat_<tid>(tid_fresh_p**)
   ----
   -- if td = PolyD (tparam*, tparam_hidden*) -> (ControlT (id_p dir_p typ_p val_p?)*)
+  -- TypeDef_wf: $bound_tids(GLOBAL, C) |- td
   -- if C''' = $add_typdef(GLOBAL, C, id, td)
 
 ;;
@@ -1290,13 +1301,13 @@ rule Decl_ok/packagetyped:
   ----
   -- if (_ _ typ_c _ = cparamIL)*
   -- if ptd = PolyD (tparam*, tparam_hidden*) -> (PackageT typ_c*)
-  -- TypeDef_wf: $bound_tids(GLOBAL, C_0) |- ptd
+  -- TypeDef_wf: $bound_tids(BLOCK, C_2) |- ptd
   ----
   -- if tparam'* = tparam* ++ tparam_hidden*
   -- if typ = SpecT ptd (VarT tparam')*
   -- if cd = ConsD (tparam*, tparam_hidden*) -> (ConsT cparamIL* typ)
   ----
-  -- ConsDef_wf: $bound_tids(GLOBAL, C_1) |- cd
+  -- ConsDef_wf: $bound_tids(BLOCK, C_2) |- cd
   ----
   -- if C_3 = $add_typdef(GLOBAL, C_0, id, ptd)
   ----

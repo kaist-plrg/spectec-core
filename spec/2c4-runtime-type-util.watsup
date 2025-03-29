@@ -75,6 +75,8 @@ dec $is_assignable'(typ) : bool
 
 def $is_assignable(typ) = $is_assignable'($canon_typ(typ))
 def $is_assignable'(VoidT) = false
+def $is_assignable'(StrT) = false
+def $is_assignable'(IntT) = false
 def $is_assignable'(objtyp) = false
 def $is_assignable'(synthtyp) = false
 def $is_assignable'(typ) = true

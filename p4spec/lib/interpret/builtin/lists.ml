@@ -2,6 +2,13 @@ open Il.Ast
 module Value = Runtime_dynamic.Value
 open Util.Source
 
+(* dec $rev_<X>(X* ) : X* *)
+
+let rev_ (at : region) (targs : targ list) (values_input : value list) : value =
+  let typ = Extract.one at targs in
+  let values = Extract.one at values_input |> Value.get_list in
+  ListV (List.rev values) $$ (no_region, IterT (typ, List))
+
 (* dec $concat_<X>((X* )* ) : X* *)
 
 let concat_ (at : region) (targs : targ list) (values_input : value list) :

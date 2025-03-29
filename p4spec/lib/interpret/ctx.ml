@@ -3,6 +3,7 @@ open Runtime_dynamic
 open Envs
 open Il.Ast
 open Error
+open Attempt
 open Util.Source
 
 (* Error *)
@@ -255,7 +256,7 @@ let localize (ctx : t) : t =
 
 (* Constructing sub-contexts *)
 
-let sub_opt (ctx : t) (vars : var list) : t option =
+let sub_opt (ctx : t) (vars : var list) : t option attempt =
   (* First collect the values that are to be iterated over *)
   let values =
     List.map
@@ -273,31 +274,36 @@ let sub_opt (ctx : t) (vars : var list) : t option =
           add_value ~shadow:true Local ctx_sub (id, iters) value)
         ctx vars values
     in
-    Some ctx_sub
-  else if List.for_all Option.is_none values then None
-  else error no_region "mismatch in optionality of iterated variables"
+    Ok (Some ctx_sub)
+  else if List.for_all Option.is_none values then Ok None
+  else fail no_region "mismatch in optionality of iterated variables"
 
 (* Transpose a matrix of values, as a list of value batches
    that are to be each fed into an iterated expression *)
 
-let transpose (value_matrix : value list list) : value list list =
+let transpose (value_matrix : value list list) : value list list attempt =
   match value_matrix with
-  | [] -> []
+  | [] -> Ok []
   | _ ->
       let width = List.length (List.hd value_matrix) in
-      check
-        (List.for_all
-           (fun value_row -> List.length value_row = width)
-           value_matrix)
-        no_region "cannot transpose a matrix of value batches";
-      List.init width (fun j ->
-          List.init (List.length value_matrix) (fun i ->
-              List.nth (List.nth value_matrix i) j))
+      let* _ =
+        check_fail
+          (List.for_all
+             (fun value_row -> List.length value_row = width)
+             value_matrix)
+          no_region "cannot transpose a matrix of value batches"
+      in
+      let value_matrix =
+        List.init width (fun j ->
+            List.init (List.length value_matrix) (fun i ->
+                List.nth (List.nth value_matrix i) j))
+      in
+      Ok value_matrix
 
-let sub_list (ctx : t) (vars : var list) : t list =
+let sub_list (ctx : t) (vars : var list) : t list attempt =
   (* First break the values that are to be iterated over,
      into a batch of values *)
-  let values_batch =
+  let* values_batch =
     List.map
       (fun var ->
         let id, _typ, iters = var in
@@ -306,13 +312,16 @@ let sub_list (ctx : t) (vars : var list) : t list =
     |> transpose
   in
   (* For each batch of values, create a sub-context *)
-  List.fold_left
-    (fun ctxs_sub value_batch ->
-      let ctx_sub =
-        List.fold_left2
-          (fun ctx_sub (id, _typ, iters) value ->
-            add_value ~shadow:true Local ctx_sub (id, iters) value)
-          ctx vars value_batch
-      in
-      ctxs_sub @ [ ctx_sub ])
-    [] values_batch
+  let ctxs_sub =
+    List.fold_left
+      (fun ctxs_sub value_batch ->
+        let ctx_sub =
+          List.fold_left2
+            (fun ctx_sub (id, _typ, iters) value ->
+              add_value ~shadow:true Local ctx_sub (id, iters) value)
+            ctx vars value_batch
+        in
+        ctxs_sub @ [ ctx_sub ])
+      [] values_batch
+  in
+  Ok ctxs_sub

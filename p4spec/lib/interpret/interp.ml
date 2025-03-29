@@ -614,7 +614,7 @@ and eval_call_exp (ctx : Ctx.t) (at : region) (id : id) (targs : targ list)
 
 and eval_iter_exp_opt (ctx : Ctx.t) (at : region) (typ : typ') (exp : exp)
     (vars : var list) : Ctx.t * value =
-  let ctx_sub_opt = Ctx.sub_opt ctx vars in
+  let+ ctx_sub_opt = Ctx.sub_opt ctx vars in
   match ctx_sub_opt with
   | Some ctx_sub ->
       let ctx_sub = Ctx.trace_open_iter ctx_sub (Il.Print.string_of_exp exp) in
@@ -630,7 +630,7 @@ and eval_iter_exp_opt (ctx : Ctx.t) (at : region) (typ : typ') (exp : exp)
 
 and eval_iter_exp_list (ctx : Ctx.t) (at : region) (typ : typ') (exp : exp)
     (vars : var list) : Ctx.t * value =
-  let ctxs_sub = Ctx.sub_list ctx vars in
+  let+ ctxs_sub = Ctx.sub_list ctx vars in
   let ctx, values =
     List.fold_left
       (fun (ctx, values) ctx_sub ->
@@ -742,7 +742,7 @@ and eval_iter_prem_list (ctx : Ctx.t) (prem : prem) (vars : var list) :
       vars
   in
   (* Create a subcontext for each batch of bound values *)
-  let ctxs_sub = Ctx.sub_list ctx vars_bound in
+  let* ctxs_sub = Ctx.sub_list ctx vars_bound in
   let* ctx, values_binding =
     match ctxs_sub with
     (* If the bound variable supposed to guide the iteration is already empty,
@@ -778,7 +778,7 @@ and eval_iter_prem_list (ctx : Ctx.t) (prem : prem) (vars : var list) :
             (Ok (ctx, []))
             ctxs_sub
         in
-        let values_binding = values_binding_batch |> Ctx.transpose in
+        let* values_binding = values_binding_batch |> Ctx.transpose in
         Ok (ctx, values_binding)
   in
   (* Finally, bind the resulting binding batches *)
@@ -889,7 +889,12 @@ and invoke_func_builtin (ctx : Ctx.t) (id : id) (targs : targ list)
   let ctx, values_input = eval_args ctx args in
   let ctx_local = Ctx.localize ctx in
   let ctx_local = Ctx.trace_open_dec ctx_local id 0 values_input in
-  let value_output = Builtin.invoke id targs values_input in
+  let* value_output =
+    try
+      let value_output = Builtin.invoke id targs values_input in
+      Ok value_output
+    with Util.Error.Error (at, msg) -> fail at msg
+  in
   let ctx_local = Ctx.trace_close ctx_local in
   let ctx = Ctx.trace_commit ctx ctx_local.trace in
   Ok (ctx, value_output)

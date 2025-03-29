@@ -219,13 +219,11 @@ rule Type_wf/externt:
 
 rule Type_wf/parsert:
   tidset |- ParserT pt*
-  -- if (_ _ typ _ = pt)*
-  -- (Type_wf: tidset |- typ)*
+  -- ParamTypes_wf: tidset |- pt*
 
 rule Type_wf/controlt:
   tidset |- ControlT pt*
-  -- if (_ _ typ _ = pt)*
-  -- (Type_wf: tidset |- typ)*
+  -- ParamTypes_wf: tidset |- pt*
 
 rule Type_wf/packaget:
   tidset |- PackageT typ*
@@ -405,10 +403,16 @@ rule FuncType_wf/builtinmethodt:
   -- ParamTypes_wf: tidset |- pt*
   -- Type_wf: tidset |- typ_r
 
-;; (TODO) Fill in the details
 dec $is_trailing_action(dir*) : bool
     hint(show % IS TRAILING ACTION_T)
-def $is_trailing_action(_) = true
+dec $is_trailing_action'(bool, dir*) : bool
+
+def $is_trailing_action(dir*) = $is_trailing_action'(true, $rev_<dir>(dir*))
+def $is_trailing_action'(_, eps) = true
+def $is_trailing_action'(true, NO :: dir_t*) = $is_trailing_action'(true, dir_t*)
+def $is_trailing_action'(false, NO :: dir_t*) = false
+def $is_trailing_action'(_, dir_h :: dir_t*) = $is_trailing_action'(false, dir_t*)
+  -- if dir_h =/= NO
 
 rule FuncType_wf/actiont:
   tidset |- ActionT pt*

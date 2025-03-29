@@ -27,6 +27,8 @@ let funcs =
   |> Funcs.add "strip_suffix" (fun at targs values_input ->
          Texts.strip_suffix at targs values_input)
   (* Lists *)
+  |> Funcs.add "rev_" (fun at targs values_input ->
+         Lists.rev_ at targs values_input)
   |> Funcs.add "concat_" (fun at targs values_input ->
          Lists.concat_ at targs values_input)
   |> Funcs.add "distinct_" (fun at targs values_input ->

@@ -141,7 +141,7 @@ def $compatible'_uminus(typ) = false
   -- otherwise
 
 rule Expr_ok/une-uminus:
-  p C |- UnE UMINUS expr : UnE UPLUS exprIL_e `(typ_e; ctk_e)
+  p C |- UnE UMINUS expr : UnE UMINUS exprIL_e `(typ_e; ctk_e)
   -- Expr_ok: p C |- expr : exprIL
   -- if exprIL_e = $reduce_senum_unary(exprIL, def $compatible_uminus)
   -- if `(typ_e; ctk_e) = $annot(exprIL_e)
@@ -210,7 +210,27 @@ def $compatible'_divmod(IntT, IntT) = true
 def $compatible'_divmod(typ_l, typ_r) = false
   -- otherwise
 
-rule Expr_ok/bine-div-mod:
+rule Expr_ok/bine-div-mod-lctk:
+  p C |- BinE binop expr_l expr_r : BinE binop exprIL_l'' exprIL_r'' `(typ''; ctk)
+  -- if $in_set<binop>(binop, SET ([ DIV, MOD ]))
+  ----
+  -- Expr_ok: p C |- expr_l : exprIL_l
+  -- Expr_ok: p C |- expr_r : exprIL_r
+  ----
+  -- if (exprIL_l', exprIL_r') = $coerce_binary(exprIL_l, exprIL_r)
+  ----
+  -- if (exprIL_l'', exprIL_r'') = $reduce_senums_binary(exprIL_l', exprIL_r', def $compatible_divmod)
+  ----
+  -- if `(typ''; ctk_l'') = $annot(exprIL_l'')
+  -- if `(_; LCTK) = $annot(exprIL_r'')
+  ----
+  -- Eval_static: p C |- exprIL_r'' ~> val_r
+  -- if n_r = $get_num(val_r)
+  -- if $(n_r > 0)
+  ----
+  -- if ctk = $join_ctk(ctk_l'', LCTK)
+
+rule Expr_ok/bine-div-mod-non-lctk:
   p C |- BinE binop expr_l expr_r : BinE binop exprIL_l'' exprIL_r'' `(typ''; ctk)
   -- if $in_set<binop>(binop, SET ([ DIV, MOD ]))
   ----
@@ -223,6 +243,7 @@ rule Expr_ok/bine-div-mod:
   ----
   -- if `(typ''; ctk_l'') = $annot(exprIL_l'')
   -- if `(_; ctk_r'') = $annot(exprIL_r'')
+  -- if ctk_r'' =/= LCTK
   -- if ctk = $join_ctk(ctk_l'', ctk_r'')
 
 dec $compatible_shift(typ, typ) : bool
@@ -418,8 +439,11 @@ rule Expr_ok/terne:
 rule Expr_ok/caste:
   p C |- CastE type expr_b : CastE typ exprIL_b `(typ; ctk_b)
   -- Type_ok: p C |- type : typ eps
+  -- Type_wf: $bound_tids(p, C) |- typ
+  ----
   -- Expr_ok: p C |- expr_b : exprIL_b
   -- if `(typ_b; ctk_b) = $annot(exprIL_b)
+  ----
   -- Sub_expl: typ_b <: typ
 
 ;;
@@ -812,6 +836,26 @@ rule Expr_ok/calltypee:
 ;; Nameless instantiation expression
 ;;
 
+dec $not_abstract_extern_object(typ) : bool
+dec $not_abstract_extern_object'(typ) : bool
+dec $not_abstract_extern_object''(funcdef) : bool
+
+def $not_abstract_extern_object(typ)
+    = $not_abstract_extern_object'($canon_typ(typ))
+
+def $not_abstract_extern_object'(typ) = true
+  -- if ~$is_externt(typ)
+def $not_abstract_extern_object'(ExternT _ fmap) = true
+  -- if SET fid* = $dom_map<fid, funcdef>(fmap)
+  -- if (fd = $find_map<fid, funcdef>(fmap, fid))*
+  -- if ($not_abstract_extern_object''(fd))*
+def $not_abstract_extern_object'(typ) = false
+  -- otherwise
+
+def $not_abstract_extern_object''(PolyFD (_, _) -> (ExternAbstractMethodT _ _)) = false
+def $not_abstract_extern_object''(_) = true
+  -- otherwise
+
 rule Expr_ok/inste:
   p C |- InstE name targ* arg* : InstE name targIL'* argIL'* `(typ; CTK)
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
@@ -822,7 +866,7 @@ rule Expr_ok/inste:
   -- if tid_fresh'* = $concat_<tid>(tid_fresh* ++ tid_fresh_inserted*)
   ----
   -- Inst_ok: p C tid_fresh'* |- ct targIL* arg* id_deft* : typ targIL'* argIL'*
-  ;; (TODO-Jaehyun) check that typ is not abstract
+  -- if $not_abstract_extern_object(typ)
 
 ;;
 ;; Argument typing
