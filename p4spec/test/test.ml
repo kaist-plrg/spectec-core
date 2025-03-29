@@ -68,8 +68,6 @@ let run_typing negative spec_il includes_p4 filename_p4 =
     in
     Interpret.Interp.run_typing false false spec_il program_p4 |> ignore;
     if negative then raise (TestCheckNegErr time_start);
-    Format.asprintf "Typing success: %s" filename_p4 |> print_endline;
-    Format.eprintf "Typing success: %s\n" filename_p4;
     (* Reset timer *)
     let _ = Unix.alarm 0 in
     time_start

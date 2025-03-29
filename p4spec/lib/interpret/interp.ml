@@ -11,92 +11,74 @@ open Attempt
 module F = Format
 open Util.Source
 
-(* Expansion of type aliases *)
+(* Assignments *)
 
-let rec expand_typ (ctx : Ctx.t) (typ : Typ.t) : Typ.t =
+(* Subtype checks that are not guaranteed by the type system,
+    because in SpecTec assignment should be able to revert the type cast expression
+
+     - Numeric subtyping:
+       - e.g., -- if (int) n = $foo() when $foo() returns a positive integer +2
+     - Variant subtyping:
+       - e.g., -- if (typ) objtyp = $foo() when $foo() returns a variant of objtyp specifically
+     - Tuple subtyping: recursive, but the type system guarantees that their lengths are equal
+     - Iteration subtyping
+
+   Note that structs are invariant in SpecTec, so we do not need to check for subtyping *)
+
+let rec downcast (ctx : Ctx.t) (typ : typ) (value : value) : value attempt =
   match typ.it with
+  | NumT `NatT -> (
+      match value.it with
+      | NumV (`Nat _) -> Ok value
+      | NumV (`Int i) ->
+          let* _ =
+            check_fail Bigint.(i >= zero) value.at "positive integer expected"
+          in
+          Ok (NumV (`Nat i) $$ (value.at, NumT `NatT))
+      | _ -> assert false)
   | VarT (tid, targs) -> (
       let tparams, deftyp = Ctx.find_typdef Local ctx tid in
-      match deftyp.it with
-      | PlainT typ ->
-          check
-            (List.length targs = List.length tparams)
-            tid.at "type arguments do not match";
-          let theta = List.combine tparams targs |> TIdMap.of_list in
+      let theta = List.combine tparams targs |> TIdMap.of_list in
+      match (deftyp.it, value.it) with
+      | PlainT typ, _ ->
           let typ = Typ.subst_typ theta typ in
-          expand_typ ctx typ
-      | _ -> typ)
-  | _ -> typ
+          downcast ctx typ value
+      | VariantT typcases, CaseV (mixop_v, _) ->
+          let* _ =
+            check_fail
+              (List.exists
+                 (fun nottyp ->
+                   let mixop_t, _ = nottyp.it in
+                   Mixop.eq mixop_t mixop_v)
+                 typcases)
+              value.at "mismatch in case expression"
+          in
+          Ok value
+      | _ -> Ok value)
+  | TupleT typs -> (
+      match value.it with
+      | TupleV values ->
+          let* values = downcasts ctx typs values in
+          Ok (TupleV values $$ (value.at, TupleT typs))
+      | _ -> assert false)
+  | _ -> Ok value
 
-(* Type equivalence and subtyping *)
-
-let rec equiv_typ (ctx : Ctx.t) (typ_a : Typ.t) (typ_b : Typ.t) : bool =
-  let typ_a = expand_typ ctx typ_a in
-  let typ_b = expand_typ ctx typ_b in
-  match (typ_a.it, typ_b.it) with
-  | BoolT, BoolT -> true
-  | NumT numtyp_a, NumT numtyp_b -> Num.equiv numtyp_a numtyp_b
-  | TextT, TextT -> true
-  | VarT (tid_a, targs_a), VarT (tid_b, targs_b) ->
-      tid_a.it = tid_b.it
-      && List.length targs_a = List.length targs_b
-      && List.for_all2 (equiv_typ ctx) targs_a targs_b
-  | TupleT typs_a, TupleT typs_b ->
-      List.length typs_a = List.length typs_b
-      && List.for_all2 (equiv_typ ctx) typs_a typs_b
-  | IterT (typ_a, iter_a), IterT (typ_b, iter_b) ->
-      equiv_typ ctx typ_a typ_b && iter_a = iter_b
-  | _ -> false
-
-and equiv_nottyp (ctx : Ctx.t) (nottyp_a : nottyp) (nottyp_b : nottyp) : bool =
-  let mixop_a, typs_a = nottyp_a.it in
-  let mixop_b, typs_b = nottyp_b.it in
-  Mixop.eq mixop_a mixop_b
-  && List.length typs_a = List.length typs_b
-  && List.for_all2 (equiv_typ ctx) typs_a typs_b
-
-and sub_typ (ctx : Ctx.t) (typ_a : Typ.t) (typ_b : Typ.t) : bool =
-  equiv_typ ctx typ_a typ_b || sub_typ' ctx typ_a typ_b
-
-and sub_typ' (ctx : Ctx.t) (typ_a : Typ.t) (typ_b : Typ.t) : bool =
-  let typ_a = expand_typ ctx typ_a in
-  let typ_b = expand_typ ctx typ_b in
-  match (typ_a.it, typ_b.it) with
-  | NumT numtyp_a, NumT numtyp_b -> Num.sub numtyp_a numtyp_b
-  | VarT (tid_a, _targs_a), VarT (tid_b, _targs_b) -> (
-      let _tparams_a, deftyp_a = Ctx.find_typdef Local ctx tid_a in
-      let _tparams_b, deftyp_b = Ctx.find_typdef Local ctx tid_b in
-      match (deftyp_a.it, deftyp_b.it) with
-      | VariantT typcases_a, VariantT typcases_b ->
-          List.for_all
-            (fun nottyp_a -> List.exists (equiv_nottyp ctx nottyp_a) typcases_b)
-            typcases_a
-      | _ -> false)
-  | TupleT typs_a, TupleT typs_b ->
-      List.length typs_a = List.length typs_b
-      && List.for_all2 (sub_typ ctx) typs_a typs_b
-  | IterT (typ_a, iter_a), IterT (typ_b, iter_b) when iter_a = iter_b ->
-      sub_typ ctx typ_a typ_b
-  | IterT (typ_a, Opt), IterT (typ_b, List) -> sub_typ ctx typ_a typ_b
-  | _, IterT (typ_b, Opt) -> sub_typ ctx typ_a typ_b
-  | _, IterT (typ_b, List) -> sub_typ ctx typ_a typ_b
-  | _ -> false
-
-(* Assignments *)
+and downcasts (ctx : Ctx.t) (typs : typ list) (values : value list) :
+    value list attempt =
+  List.fold_left2
+    (fun values typ value ->
+      let* values = values in
+      let* value = downcast ctx typ value in
+      Ok (values @ [ value ]))
+    (Ok []) typs values
 
 (* Assigning a value to an expression *)
 
 let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t attempt =
   let typ_exp = exp.note $ exp.at in
-  let typ_value = value.note $ value.at in
   match (exp.it, value.it) with
-  | VarE _, _ when not (sub_typ ctx typ_value typ_exp) ->
-      fail exp.at
-        (F.asprintf "mismatch in type: %s expected but got %s of type %s"
-           (Il.Print.string_of_typ typ_exp)
-           (Il.Print.string_of_value ~short:true value)
-           (Il.Print.string_of_typ typ_value))
   | VarE id, _ ->
+      let* value = downcast ctx typ_exp value in
       let ctx = Ctx.add_value Local ctx (id, []) value in
       Ok ctx
   | TupleE exps, TupleV values -> assign_exps ctx exps values
