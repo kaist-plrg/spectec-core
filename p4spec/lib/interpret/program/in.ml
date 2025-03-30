@@ -5,87 +5,52 @@ open Util.Source
 
 (* Helpers *)
 
-let in_opt (do_in : 'a -> value) (opt : 'a option) : value' =
+let in_opt (do_in : 'a -> value) (opt : 'a option) : value =
   let vopt = Option.map do_in opt in
   OptV vopt
 
-let in_list (do_in : 'a -> value) (lst : 'a list) : value' =
+let in_list (do_in : 'a -> value) (lst : 'a list) : value =
   let vlst = List.map do_in lst in
   ListV vlst
 
 let in_pair (do_in_a : 'a -> value) (do_in_b : 'b -> value) ((a, b) : 'a * 'b) :
-    value' =
+    value =
   TupleV [ do_in_a a; do_in_b b ]
 
 let atom (s : string) : atom = Atom s $ no_region
-let with_typ (typ : typ') (value : value') : value = value $$ (no_region, typ)
-
-let with_typ_var (tid : string) (value : value') : value =
-  with_typ (VarT (tid $ no_region, [])) value
-
-let with_typ_var_tup (tids : string list) (value : value') : value =
-  with_typ
-    (TupleT (List.map (fun tid -> VarT (tid $ no_region, []) $ no_region) tids))
-    value
-
-let with_typ_var_iter (tid : string) (iter : iter) (value : value') : value =
-  with_typ (IterT (VarT (tid $ no_region, []) $ no_region, iter)) value
-
-let with_typ_var_tup_iter (tids : string list) (iter : iter) (value : value') :
-    value =
-  with_typ
-    (IterT
-       ( TupleT
-           (List.map (fun tid -> VarT (tid $ no_region, []) $ no_region) tids)
-         $ no_region,
-         iter ))
-    value
 
 (* Booleans *)
 
-let in_bool (boolean : bool) : value = BoolV boolean |> with_typ BoolT
+let in_bool (boolean : bool) : value = BoolV boolean
 
 (* Numbers *)
 
-let rec in_num (num : P4.num) : value = in_num' num |> with_typ_var "num"
-
-and in_num' (num : P4.num) : value' =
+let in_num (num : P4.num) : value =
   match num.it with
   | i, Some (width, signed) ->
       let mixop =
         if signed then [ [ atom "FINT" ]; []; [] ]
         else [ [ atom "FBIT" ]; []; [] ]
       in
-      let vwidth = NumV (`Nat width) |> with_typ_var "width" in
-      let vbits =
-        let bits = i in
-        if Bigint.(bits >= zero) then NumV (`Nat bits) |> with_typ_var "bits"
-        else NumV (`Int bits) |> with_typ_var "bits"
-      in
-      CaseV (mixop, [ vwidth; vbits ])
+      let vwidth = NumV (`Nat width) in
+      let vint = NumV (`Int i) in
+      CaseV (mixop, [ vwidth; vint ])
   | i, None ->
       let mixop = [ [ atom "INT" ]; [] ] in
-      let vint =
-        let i = i in
-        if Bigint.(i >= zero) then NumV (`Nat i) |> with_typ (NumT `NatT)
-        else NumV (`Int i) |> with_typ (NumT `IntT)
-      in
+      let vint = NumV (`Int i) in
       CaseV (mixop, [ vint ])
 
 (* Texts *)
 
-let in_text (text : P4.text) : value = TextV text.it |> with_typ TextT
+let in_text (text : P4.text) : value = TextV text.it
 
 (* Identifiers *)
 
-let rec in_id (id : P4.id) : value = in_id' id |> with_typ_var "id"
-and in_id' (id : P4.id) : value' = TextV id.it
+let in_id (id : P4.id) : value = TextV id.it
 
 (* Variables (scoped identifiers) *)
 
-let rec in_var (var : P4.var) : value = in_var' var |> with_typ_var "name"
-
-and in_var' (var : P4.var) : value' =
+let in_var (var : P4.var) : value =
   match var.it with
   | Top id ->
       let mixop = [ [ atom "TOP" ]; [] ] in
@@ -98,34 +63,20 @@ and in_var' (var : P4.var) : value' =
 
 (* Members *)
 
-let rec in_member (member : P4.member) : value =
-  in_member' member |> with_typ_var "member"
-
-and in_member' (member : P4.member) : value' = TextV member.it
-
-and in_members (members : P4.member list) : value =
-  in_list in_member members |> with_typ_var_iter "member" List
+let rec in_member (member : P4.member) : value = TextV member.it
+and in_members (members : P4.member list) : value = in_list in_member members
 
 (* Match kinds *)
 
-let rec in_match_kind (match_kind : P4.match_kind) : value =
-  in_match_kind' match_kind |> with_typ_var "matchkind"
-
-and in_match_kind' (match_kind : P4.match_kind) : value' = TextV match_kind.it
+let in_match_kind (match_kind : P4.match_kind) : value = TextV match_kind.it
 
 (* State labels *)
 
-let rec in_state_label (state_label : P4.state_label) : value =
-  in_state_label' state_label |> with_typ_var "statelabel"
-
-and in_state_label' (state_label : P4.state_label) : value' =
-  TextV state_label.it
+let in_state_label (state_label : P4.state_label) : value = TextV state_label.it
 
 (* Unary operators *)
 
-let rec in_unop (unop : P4.unop) : value = in_unop' unop |> with_typ_var "unop"
-
-and in_unop' (unop : P4.unop) : value' =
+let in_unop (unop : P4.unop) : value =
   match unop.it with
   | BNotOp ->
       let mixop = [ [ atom "BNOT" ] ] in
@@ -142,10 +93,7 @@ and in_unop' (unop : P4.unop) : value' =
 
 (* Binary operators *)
 
-let rec in_binop (binop : P4.binop) : value =
-  in_binop' binop |> with_typ_var "binop"
-
-and in_binop' (binop : P4.binop) : value' =
+let in_binop (binop : P4.binop) : value =
   match binop.it with
   | PlusOp ->
       let mixop = [ [ atom "PLUS" ] ] in
@@ -213,9 +161,7 @@ and in_binop' (binop : P4.binop) : value' =
 
 (* Directions *)
 
-let rec in_dir (dir : P4.dir) : value = in_dir' dir |> with_typ_var "dir"
-
-and in_dir' (dir : P4.dir) : value' =
+let in_dir (dir : P4.dir) : value =
   match dir.it with
   | No ->
       let mixop = [ [ atom "NO" ] ] in
@@ -232,9 +178,7 @@ and in_dir' (dir : P4.dir) : value' =
 
 (* Types *)
 
-let rec in_typ (typ : P4.typ) : value = in_typ' typ |> with_typ_var "type"
-
-and in_typ' (typ : P4.typ) : value' =
+let rec in_typ (typ : P4.typ) : value =
   match typ.it with
   | VoidT ->
       let mixop = [ [ atom "VoidT" ] ] in
@@ -292,56 +236,39 @@ and in_typ' (typ : P4.typ) : value' =
       let mixop = [ [ atom "AnyT" ] ] in
       CaseV (mixop, [])
 
-and in_typs (typs : P4.typ list) : value =
-  in_list in_typ typs |> with_typ_var_iter "typ" List
+and in_typs (typs : P4.typ list) : value = in_list in_typ typs
 
 (* Type parameters *)
 
-and in_tparam (tparam : P4.tparam) : value =
-  in_tparam' tparam |> with_typ_var "tparam"
-
-and in_tparam' (tparam : P4.tparam) : value' = TextV tparam.it
-
-and in_tparams (tparams : P4.tparam list) : value =
-  in_list in_tparam tparams |> with_typ_var_iter "tparam" List
+and in_tparam (tparam : P4.tparam) : value = TextV tparam.it
+and in_tparams (tparams : P4.tparam list) : value = in_list in_tparam tparams
 
 (* Parameters *)
 
 and in_param (param : P4.param) : value =
-  in_param' param |> with_typ_var "param"
-
-and in_param' (param : P4.param) : value' =
   let id, dir, typ, expr_opt, _ = param.it in
   let mixop = [ []; []; []; []; [] ] in
   let vid = in_id id in
   let vdir = in_dir dir in
   let vtyp = in_typ typ in
-  let vexpr_opt = in_opt in_expr expr_opt |> with_typ_var_iter "expr" Opt in
+  let vexpr_opt = in_opt in_expr expr_opt in
   CaseV (mixop, [ vid; vdir; vtyp; vexpr_opt ])
 
-and in_params (params : P4.param list) : value =
-  in_list in_param params |> with_typ_var_iter "param" List
+and in_params (params : P4.param list) : value = in_list in_param params
 
 (* Constructor parameters *)
 
-and in_cparam (cparam : P4.cparam) : value =
-  in_param' cparam |> with_typ_var "cparam"
-
-and in_cparams (cparams : P4.cparam list) : value =
-  in_list in_cparam cparams |> with_typ_var_iter "cparam" List
+and in_cparam (cparam : P4.cparam) : value = in_param cparam
+and in_cparams (cparams : P4.cparam list) : value = in_list in_cparam cparams
 
 (* Type arguments *)
 
-and in_targ (targ : P4.targ) : value = in_typ' targ |> with_typ_var "targ"
-
-and in_targs (targs : P4.targ list) : value =
-  in_list in_targ targs |> with_typ_var_iter "targ" List
+and in_targ (targ : P4.targ) : value = in_typ targ
+and in_targs (targs : P4.targ list) : value = in_list in_targ targs
 
 (* Arguments *)
 
-and in_arg (arg : P4.arg) : value = in_arg' arg |> with_typ_var "arg"
-
-and in_arg' (arg : P4.arg) : value' =
+and in_arg (arg : P4.arg) : value =
   match arg.it with
   | ExprA expr ->
       let mixop = [ [ atom "ExprA" ]; [] ] in
@@ -350,20 +277,17 @@ and in_arg' (arg : P4.arg) : value' =
   | NameA (id, expr_opt) ->
       let mixop = [ [ atom "NameA" ]; []; [] ] in
       let vid = in_id id in
-      let vexpr_opt = in_opt in_expr expr_opt |> with_typ_var_iter "expr" Opt in
+      let vexpr_opt = in_opt in_expr expr_opt in
       CaseV (mixop, [ vid; vexpr_opt ])
   | AnyA ->
       let mixop = [ [ atom "AnyA" ] ] in
       CaseV (mixop, [])
 
-and in_args (args : P4.arg list) : value =
-  in_list in_arg args |> with_typ_var_iter "arg" List
+and in_args (args : P4.arg list) : value = in_list in_arg args
 
 (* Expressions *)
 
-and in_expr (expr : P4.expr) : value = in_expr' expr |> with_typ_var "expr"
-
-and in_expr' (expr : P4.expr) : value' =
+and in_expr (expr : P4.expr) : value =
   match expr.it with
   | BoolE { boolean } ->
       let mixop = [ [ atom "BoolE" ]; [] ] in
@@ -391,25 +315,11 @@ and in_expr' (expr : P4.expr) : value' =
       CaseV (mixop, [ vexprs ])
   | RecordE { fields } ->
       let mixop = [ [ atom "RecordE" ]; [] ] in
-      let vfields =
-        in_list
-          (fun field ->
-            in_pair in_member in_expr field
-            |> with_typ_var_tup [ "member"; "expr" ])
-          fields
-        |> with_typ_var_tup_iter [ "member"; "expr" ] List
-      in
+      let vfields = in_list (in_pair in_member in_expr) fields in
       CaseV (mixop, [ vfields ])
   | RecordDefaultE { fields } ->
       let mixop = [ [ atom "RecordDefaultE" ]; [] ] in
-      let vfields =
-        in_list
-          (fun field ->
-            in_pair in_member in_expr field
-            |> with_typ_var_tup [ "member"; "expr" ])
-          fields
-        |> with_typ_var_tup_iter [ "member"; "expr" ] List
-      in
+      let vfields = in_list (in_pair in_member in_expr) fields in
       CaseV (mixop, [ vfields ])
   | DefaultE ->
       let mixop = [ [ atom "DefaultE" ] ] in
@@ -506,15 +416,11 @@ and in_expr' (expr : P4.expr) : value' =
       let vargs = in_args args in
       CaseV (mixop, [ vvar_inst; vtargs; vargs ])
 
-and in_exprs (exprs : P4.expr list) : value =
-  in_list in_expr exprs |> with_typ_var_iter "expr" List
+and in_exprs (exprs : P4.expr list) : value = in_list in_expr exprs
 
 (* Keyset expressions *)
 
 and in_keyset (keyset : P4.keyset) : value =
-  in_keyset' keyset |> with_typ_var "keyset"
-
-and in_keyset' (keyset : P4.keyset) : value' =
   match keyset.it with
   | ExprK expr ->
       let mixop = [ [ atom "ExprK" ]; [] ] in
@@ -527,15 +433,11 @@ and in_keyset' (keyset : P4.keyset) : value' =
       let mixop = [ [ atom "AnyK" ] ] in
       CaseV (mixop, [])
 
-and in_keysets (keysets : P4.keyset list) : value =
-  in_list in_keyset keysets |> with_typ_var_iter "keyset" List
+and in_keysets (keysets : P4.keyset list) : value = in_list in_keyset keysets
 
 (* Select-cases for select *)
 
 and in_select_case (select_case : P4.select_case) : value =
-  in_select_case' select_case |> with_typ_var "selectcase"
-
-and in_select_case' (select_case : P4.select_case) : value' =
   let keysets, state_label = select_case.it in
   let mixop = [ []; []; [] ] in
   let vkeysets = in_keysets keysets in
@@ -543,13 +445,11 @@ and in_select_case' (select_case : P4.select_case) : value' =
   CaseV (mixop, [ vkeysets; vstate_label ])
 
 and in_select_cases (select_cases : P4.select_case list) : value =
-  in_list in_select_case select_cases |> with_typ_var_iter "selectcase" List
+  in_list in_select_case select_cases
 
 (* Statements *)
 
-and in_stmt (stmt : P4.stmt) : value = in_stmt' stmt |> with_typ_var "stmt"
-
-and in_stmt' (stmt : P4.stmt) : value' =
+and in_stmt (stmt : P4.stmt) : value =
   match stmt.it with
   | EmptyS ->
       let mixop = [ [ atom "EmptyS" ] ] in
@@ -579,7 +479,7 @@ and in_stmt' (stmt : P4.stmt) : value' =
       CaseV (mixop, [])
   | RetS { expr_ret } ->
       let mixop = [ [ atom "RetS" ]; [] ] in
-      let vexpr_ret = in_opt in_expr expr_ret |> with_typ_var_iter "expr" Opt in
+      let vexpr_ret = in_opt in_expr expr_ret in
       CaseV (mixop, [ vexpr_ret ])
   | CallFuncS { var_func; targs; args } ->
       let mixop = [ [ atom "CallFuncS" ]; []; []; [] ] in
@@ -609,15 +509,11 @@ and in_stmt' (stmt : P4.stmt) : value' =
       let vdecl = in_decl decl in
       CaseV (mixop, [ vdecl ])
 
-and in_stmts (stmts : P4.stmt list) : value =
-  in_list in_stmt stmts |> with_typ_var_iter "stmt" List
+and in_stmts (stmts : P4.stmt list) : value = in_list in_stmt stmts
 
 (* Blocks (sequence of statements) *)
 
 and in_block (block : P4.block) : value =
-  in_block' block |> with_typ_var "block"
-
-and in_block' (block : P4.block) : value' =
   let stmts, _ = block.it in
   let mixop = [ [ atom "BlockB" ]; [] ] in
   let vstmts = in_stmts stmts in
@@ -626,9 +522,6 @@ and in_block' (block : P4.block) : value' =
 (* Match-cases for switch *)
 
 and in_switch_label (switch_label : P4.switch_label) : value =
-  in_switch_label' switch_label |> with_typ_var "switchlabel"
-
-and in_switch_label' (switch_label : P4.switch_label) : value' =
   match switch_label.it with
   | ExprL expr ->
       let mixop = [ [ atom "ExprL" ]; [] ] in
@@ -639,9 +532,6 @@ and in_switch_label' (switch_label : P4.switch_label) : value' =
       CaseV (mixop, [])
 
 and in_switch_case (switch_case : P4.switch_case) : value =
-  in_switch_case' switch_case |> with_typ_var "switchcase"
-
-and in_switch_case' (switch_case : P4.switch_case) : value' =
   match switch_case.it with
   | MatchC (switch_label, block) ->
       let mixop = [ [ atom "MatchC" ]; []; [] ] in
@@ -654,14 +544,11 @@ and in_switch_case' (switch_case : P4.switch_case) : value' =
       CaseV (mixop, [ vswitch_label ])
 
 and in_switch_cases (switch_cases : P4.switch_case list) : value =
-  in_list in_switch_case switch_cases |> with_typ_var_iter "switchcase" List
+  in_list in_switch_case switch_cases
 
 (* Declarations *)
 
 and in_typdef (typdef : (P4.typ, P4.decl) P4.alt) : value =
-  in_typdef' typdef |> with_typ_var "typedef"
-
-and in_typdef' (typdef : (P4.typ, P4.decl) P4.alt) : value' =
   match typdef with
   | Left typ ->
       let mixop = [ [ atom "TypeD" ]; [] ] in
@@ -672,9 +559,7 @@ and in_typdef' (typdef : (P4.typ, P4.decl) P4.alt) : value' =
       let vdecl = in_decl decl in
       CaseV (mixop, [ vdecl ])
 
-and in_decl (decl : P4.decl) : value = in_decl' decl |> with_typ_var "decl"
-
-and in_decl' (decl : P4.decl) : value' =
+and in_decl (decl : P4.decl) : value =
   match decl.it with
   | ConstD { id; typ; value; _ } ->
       let mixop = [ [ atom "ConstD" ]; []; []; [] ] in
@@ -686,7 +571,7 @@ and in_decl' (decl : P4.decl) : value' =
       let mixop = [ [ atom "VarD" ]; []; []; [] ] in
       let vid = in_id id in
       let vtyp = in_typ typ in
-      let vinit = in_opt in_expr init |> with_typ_var_iter "expr" Opt in
+      let vinit = in_opt in_expr init in
       CaseV (mixop, [ vid; vtyp; vinit ])
   | ErrD { members } ->
       let mixop = [ [ atom "ErrD" ]; [] ] in
@@ -710,12 +595,7 @@ and in_decl' (decl : P4.decl) : value' =
       let vtparams = in_tparams tparams in
       let vfields =
         let fields = List.map (fun (member, typ, _) -> (member, typ)) fields in
-        in_list
-          (fun field ->
-            in_pair in_member in_typ field
-            |> with_typ_var_tup [ "member"; "type" ])
-          fields
-        |> with_typ_var_tup_iter [ "member"; "type" ] List
+        in_list (in_pair in_member in_typ) fields
       in
       CaseV (mixop, [ vid; vtparams; vfields ])
   | HeaderD { id; tparams; fields; _ } ->
@@ -724,12 +604,7 @@ and in_decl' (decl : P4.decl) : value' =
       let vtparams = in_tparams tparams in
       let vfields =
         let fields = List.map (fun (member, typ, _) -> (member, typ)) fields in
-        in_list
-          (fun field ->
-            in_pair in_member in_typ field
-            |> with_typ_var_tup [ "member"; "type" ])
-          fields
-        |> with_typ_var_tup_iter [ "member"; "type" ] List
+        in_list (in_pair in_member in_typ) fields
       in
       CaseV (mixop, [ vid; vtparams; vfields ])
   | UnionD { id; tparams; fields; _ } ->
@@ -738,12 +613,7 @@ and in_decl' (decl : P4.decl) : value' =
       let vtparams = in_tparams tparams in
       let vfields =
         let fields = List.map (fun (member, typ, _) -> (member, typ)) fields in
-        in_list
-          (fun field ->
-            in_pair in_member in_typ field
-            |> with_typ_var_tup [ "member"; "type" ])
-          fields
-        |> with_typ_var_tup_iter [ "member"; "type" ] List
+        in_list (in_pair in_member in_typ) fields
       in
       CaseV (mixop, [ vid; vtparams; vfields ])
   | EnumD { id; members; _ } ->
@@ -755,14 +625,7 @@ and in_decl' (decl : P4.decl) : value' =
       let mixop = [ [ atom "SEnumD" ]; []; []; [] ] in
       let vid = in_id id in
       let vtyp = in_typ typ in
-      let vfields =
-        in_list
-          (fun field ->
-            in_pair in_member in_expr field
-            |> with_typ_var_tup [ "member"; "expr" ])
-          fields
-        |> with_typ_var_tup_iter [ "member"; "expr" ] List
-      in
+      let vfields = in_list (in_pair in_member in_expr) fields in
       CaseV (mixop, [ vid; vtyp; vfields ])
   | NewTypeD { id; typdef; _ } ->
       let mixop = [ [ atom "NewTypeD" ]; []; [] ] in
@@ -847,15 +710,11 @@ and in_decl' (decl : P4.decl) : value' =
       let vcparams = in_cparams cparams in
       CaseV (mixop, [ vid; vtparams; vcparams ])
 
-and in_decls (decls : P4.decl list) : value =
-  in_list in_decl decls |> with_typ_var_iter "decl" List
+and in_decls (decls : P4.decl list) : value = in_list in_decl decls
 
 (* Parser state machine *)
 
 and in_parser_state (parser_state : P4.parser_state) : value =
-  in_parser_state' parser_state |> with_typ_var "parserstate"
-
-and in_parser_state' (parser_state : P4.parser_state) : value' =
   let state_label, block, _ = parser_state.it in
   let mixop = [ []; []; [] ] in
   let vstate_label = in_state_label state_label in
@@ -863,19 +722,15 @@ and in_parser_state' (parser_state : P4.parser_state) : value' =
   CaseV (mixop, [ vstate_label; vblock ])
 
 and in_parser_states (parser_states : P4.parser_state list) : value =
-  in_list in_parser_state parser_states |> with_typ_var_iter "parserstate" List
+  in_list in_parser_state parser_states
 
 (* Tables *)
 
-and in_table (table : P4.table) : value =
-  in_list in_table_property table |> with_typ_var "tbl"
+and in_table (table : P4.table) : value = in_list in_table_property table
 
 (* Table properties *)
 
 and in_table_property (table_property : P4.table_property) : value =
-  in_table_property' table_property |> with_typ_var "tblprop"
-
-and in_table_property' (table_property : P4.table_property) : value' =
   match table_property with
   | KeyP table_keys ->
       let mixop = [ [ atom "KeyP" ]; [] ] in
@@ -901,9 +756,6 @@ and in_table_property' (table_property : P4.table_property) : value' =
 (* Table keys *)
 
 and in_table_key (table_key : P4.table_key) : value =
-  in_table_key' table_key |> with_typ_var "tblkey"
-
-and in_table_key' (table_key : P4.table_key) : value' =
   let expr, match_kind, _ = table_key.it in
   let mixop = [ []; []; [] ] in
   let vexpr = in_expr expr in
@@ -911,14 +763,11 @@ and in_table_key' (table_key : P4.table_key) : value' =
   CaseV (mixop, [ vexpr; vmatch_kind ])
 
 and in_table_keys (table_keys : P4.table_keys) : value =
-  in_list in_table_key table_keys.it |> with_typ_var "tblkeyprop"
+  in_list in_table_key table_keys.it
 
 (* Table action references *)
 
 and in_table_action (table_action : P4.table_action) : value =
-  in_table_action' table_action |> with_typ_var "tblaction"
-
-and in_table_action' (table_action : P4.table_action) : value' =
   let var, args, _ = table_action.it in
   let mixop = [ []; []; [] ] in
   let vvar = in_var var in
@@ -926,40 +775,29 @@ and in_table_action' (table_action : P4.table_action) : value' =
   CaseV (mixop, [ vvar; vargs ])
 
 and in_table_actions (table_actions : P4.table_actions) : value =
-  in_list in_table_action table_actions.it |> with_typ_var "tblactionprop"
+  in_list in_table_action table_actions.it
 
 (* Table entries *)
 
 and in_table_entry (table_entry : P4.table_entry) : value =
-  in_table_entry' table_entry |> with_typ_var "tblentry"
-
-and in_table_entry' (table_entry : P4.table_entry) : value' =
   let table_entry_const, keysets, table_action, expr_opt, _ = table_entry.it in
   let mixop = [ []; []; []; []; [] ] in
   let vtable_entry_const = in_bool table_entry_const in
   let vkeysets = in_keysets keysets in
   let vtable_action = in_table_action table_action in
-  let vexpr_opt = in_opt in_expr expr_opt |> with_typ_var_iter "expr" Opt in
+  let vexpr_opt = in_opt in_expr expr_opt in
   CaseV (mixop, [ vtable_entry_const; vkeysets; vtable_action; vexpr_opt ])
 
 and in_table_entries (table_entries : P4.table_entries) : value =
-  in_table_entries' table_entries |> with_typ_var "tblentryprop"
-
-and in_table_entries' (table_entries : P4.table_entries) : value' =
   let table_entries_const, table_entries = table_entries.it in
   let mixop = [ []; []; [] ] in
   let vtable_entries_const = in_bool table_entries_const in
-  let vtable_entries =
-    in_list in_table_entry table_entries |> with_typ_var_iter "tblentry" List
-  in
+  let vtable_entries = in_list in_table_entry table_entries in
   CaseV (mixop, [ vtable_entries_const; vtable_entries ])
 
 (* Table default properties *)
 
 and in_table_default (table_default : P4.table_default) : value =
-  in_table_default' table_default |> with_typ_var "tbldefaultprop"
-
-and in_table_default' (table_default : P4.table_default) : value' =
   let table_default_const, table_action = table_default.it in
   let mixop = [ []; []; [] ] in
   let vtable_default_const = in_bool table_default_const in
@@ -969,9 +807,6 @@ and in_table_default' (table_default : P4.table_default) : value' =
 (* Table custom properties *)
 
 and in_table_custom (table_custom : P4.table_custom) : value =
-  in_table_custom' table_custom |> with_typ_var "tblcustomprop"
-
-and in_table_custom' (table_custom : P4.table_custom) : value' =
   let table_custom_const, member, expr, _ = table_custom.it in
   let mixop = [ []; []; []; [] ] in
   let vtable_custom_const = in_bool table_custom_const in
@@ -981,9 +816,7 @@ and in_table_custom' (table_custom : P4.table_custom) : value' =
 
 (* Methods *)
 
-and in_mthd (mthd : P4.mthd) : value = in_mthd' mthd |> with_typ_var "method"
-
-and in_mthd' (mthd : P4.mthd) : value' =
+and in_mthd (mthd : P4.mthd) : value =
   match mthd.it with
   | ExternConsM { id; cparams; _ } ->
       let mixop = [ [ atom "ExternConsM" ]; []; [] ] in
@@ -1005,10 +838,8 @@ and in_mthd' (mthd : P4.mthd) : value' =
       let vparams = in_params params in
       CaseV (mixop, [ vid; vtyp_ret; vtparams; vparams ])
 
-and in_mthds (mthds : P4.mthd list) : value =
-  in_list in_mthd mthds |> with_typ_var_iter "method" List
+and in_mthds (mthds : P4.mthd list) : value = in_list in_mthd mthds
 
 (* Program *)
 
-let in_program (program : P4.program) : value =
-  in_list in_decl program |> with_typ_var "program"
+let in_program (program : P4.program) : value = in_list in_decl program

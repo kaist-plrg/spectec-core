@@ -40,7 +40,7 @@ let string_of_iter iter = match iter with Opt -> "?" | List -> "*"
 
 (* Variables *)
 
-let string_of_var (id, _typ, iters) =
+let string_of_var (id, iters) =
   string_of_varid id ^ String.concat "" (List.map string_of_iter iters)
 
 (* Types *)
@@ -82,7 +82,7 @@ and string_of_typcases sep typcases =
 (* Values *)
 
 and string_of_value ?(short = false) ?(level = 0) value =
-  match value.it with
+  match value with
   | BoolV b -> string_of_bool b
   | NumV n -> Num.string_of_num n
   | TextV s -> "\"" ^ s ^ "\""
@@ -205,8 +205,8 @@ and string_of_iterexp iterexp =
   ^ String.concat ", "
       (List.map
          (fun var ->
-           let id, typ, iters = var in
-           string_of_var var ^ " <- " ^ string_of_var (id, typ, iters @ [ iter ]))
+           let id, iters = var in
+           string_of_var var ^ " <- " ^ string_of_var (id, iters @ [ iter ]))
          vars)
   ^ "}"
 

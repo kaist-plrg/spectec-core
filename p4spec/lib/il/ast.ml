@@ -33,7 +33,7 @@ type iter =
 
 (* Variables *)
 
-type var = id * typ * iter list
+type var = id * iter list
 
 (* Types *)
 
@@ -61,8 +61,7 @@ and typcase = nottyp
 
 (* Values *)
 
-and value = (value', typ') note_phrase
-and value' =
+and value =
   | BoolV of bool
   | NumV of Num.t
   | TextV of string

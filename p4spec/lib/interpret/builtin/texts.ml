@@ -9,7 +9,7 @@ let int_to_text (at : region) (targs : targ list) (values_input : value list) :
     value =
   Extract.zero at targs;
   let num = Extract.one at values_input |> Value.get_num in
-  TextV (Num.string_of_num num) $$ (no_region, TextT)
+  TextV (Num.string_of_num num)
 
 (* dec $strip_prefix(text, text) : text *)
 
@@ -24,7 +24,7 @@ let strip_prefix (at : region) (targs : targ list) (values_input : value list) :
     String.sub text (String.length prefix)
       (String.length text - String.length prefix)
   in
-  TextV text $$ (no_region, TextT)
+  TextV text
 
 (* dec $strip_suffix(text, text) : text *)
 
@@ -36,4 +36,4 @@ let strip_suffix (at : region) (targs : targ list) (values_input : value list) :
   let suffix = Value.get_text value_suffix in
   assert (String.ends_with ~suffix text);
   let text = String.sub text 0 (String.length text - String.length suffix) in
-  TextV text $$ (no_region, TextT)
+  TextV text

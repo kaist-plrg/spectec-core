@@ -28,18 +28,20 @@ open Util.Source
 let rec downcast (ctx : Ctx.t) (typ : typ) (value : value) : value attempt =
   match typ.it with
   | NumT `NatT -> (
-      match value.it with
+      match value with
       | NumV (`Nat _) -> Ok value
       | NumV (`Int i) ->
           let* _ =
-            check_fail Bigint.(i >= zero) value.at "positive integer expected"
+            check_fail
+              Bigint.(i >= zero)
+              typ.at "cannot downcast a negative integer to natural number"
           in
-          Ok (NumV (`Nat i) $$ (value.at, NumT `NatT))
+          Ok (NumV (`Nat i))
       | _ -> assert false)
   | VarT (tid, targs) -> (
       let tparams, deftyp = Ctx.find_typdef Local ctx tid in
       let theta = List.combine tparams targs |> TIdMap.of_list in
-      match (deftyp.it, value.it) with
+      match (deftyp.it, value) with
       | PlainT typ, _ ->
           let typ = Typ.subst_typ theta typ in
           downcast ctx typ value
@@ -51,15 +53,18 @@ let rec downcast (ctx : Ctx.t) (typ : typ) (value : value) : value attempt =
                    let mixop_t, _ = nottyp.it in
                    Mixop.eq mixop_t mixop_v)
                  typcases)
-              value.at "mismatch in case expression"
+              typ.at
+              (Format.asprintf "cannot downcast %s to %s"
+                 (Il.Print.string_of_value ~short:true value)
+                 (Il.Print.string_of_typ typ))
           in
           Ok value
       | _ -> Ok value)
   | TupleT typs -> (
-      match value.it with
+      match value with
       | TupleV values ->
           let* values = downcasts ctx typs values in
-          Ok (TupleV values $$ (value.at, TupleT typs))
+          Ok (TupleV values)
       | _ -> assert false)
   | _ -> Ok value
 
@@ -75,10 +80,8 @@ and downcasts (ctx : Ctx.t) (typs : typ list) (values : value list) :
 (* Assigning a value to an expression *)
 
 let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t attempt =
-  let typ_exp = exp.note $ exp.at in
-  match (exp.it, value.it) with
+  match (exp.it, value) with
   | VarE id, _ ->
-      let* value = downcast ctx typ_exp value in
       let ctx = Ctx.add_value Local ctx (id, []) value in
       Ok ctx
   | TupleE exps, TupleV values -> assign_exps ctx exps values
@@ -111,17 +114,14 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t attempt =
         fail exp.at "cannot assign an empty list into a cons expression"
       else
         let value_h = List.hd values in
-        let value_t = ListV (List.tl values) $$ (value.at, value.note) in
+        let value_t = ListV (List.tl values) in
         let* ctx = assign_exp ctx exp_h value_h in
         assign_exp ctx exp_t value_t
   | IterE (_, (Opt, vars)), OptV None ->
       let ctx =
         List.fold_left
-          (fun ctx (id, typ, iters) ->
-            let value =
-              let typ_value = Typ.iterate typ (iters @ [ Opt ]) in
-              OptV None $$ (value.at, typ_value.it)
-            in
+          (fun ctx (id, iters) ->
+            let value = OptV None in
             Ctx.add_value Local ctx (id, iters @ [ Opt ]) value)
           ctx vars
       in
@@ -132,11 +132,10 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t attempt =
       (* Per iterated variable, make an option out of the value *)
       let ctx =
         List.fold_left
-          (fun ctx (id, typ, iters) ->
+          (fun ctx (id, iters) ->
             let value =
-              let typ_value = Typ.iterate typ (iters @ [ Opt ]) in
               let value = Ctx.find_value Local ctx (id, iters) in
-              OptV (Some value) $$ (value.at, typ_value.it)
+              OptV (Some value)
             in
             Ctx.add_value Local ctx (id, iters @ [ Opt ]) value)
           ctx vars
@@ -160,19 +159,19 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t attempt =
          then make a sequence out of them *)
       let ctx =
         List.fold_left
-          (fun ctx (id, typ, iters) ->
+          (fun ctx (id, iters) ->
             let values =
               List.map (fun ctx -> Ctx.find_value Local ctx (id, iters)) ctxs
             in
-            let value =
-              let typ_value = Typ.iterate typ (iters @ [ List ]) in
-              ListV values $$ (value.at, typ_value.it)
-            in
+            let value = ListV values in
             Ctx.add_value Local ctx (id, iters @ [ List ]) value)
           ctx vars
       in
       Ok ctx
-  | CastE (exp, _), _ -> assign_exp ctx exp value
+  | CastE (exp, _), _ ->
+      let typ_exp = exp.note $ exp.at in
+      let* value = downcast ctx typ_exp value in
+      assign_exp ctx exp value
   | _ ->
       fail exp.at
         (F.asprintf "(TODO) match failed %s <- %s"
@@ -226,7 +225,7 @@ and assign_arg_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t attempt =
 
 and assign_arg_def (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (id : id)
     (value : value) : Ctx.t attempt =
-  match value.it with
+  match value with
   | FuncV id_f ->
       let func = Ctx.find_func Local ctx_caller id_f in
       let ctx_callee = Ctx.add_func Local ctx_callee id func in
@@ -237,47 +236,37 @@ and assign_arg_def (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (id : id)
            (Il.Print.string_of_value ~short:true value)
            id.it)
 
-(* Expression evaluation:
-
-   An expression evaluates to a value, which is annotated with
-   its runtime type. To maintain the smallest possible runtime type,
-   the types are first determined by the value itself,
-   and in cases where ambiguous (e.g., an empty list), it takes
-   the type of the expression.
-
-   We may add a runtime check for the subtype relation between the
-   produced value and the expected type of the expression,
-   but for now, we assume that the type system is sound. *)
+(* Expression evaluation *)
 
 let rec eval_exp (ctx : Ctx.t) (exp : exp) : Ctx.t * value =
   let wrap_ctx value = (ctx, value) in
-  let at, note = (exp.at, exp.note) in
+  let at = exp.at in
   match exp.it with
-  | BoolE b -> eval_bool_exp at b |> wrap_ctx
-  | NumE n -> eval_num_exp at n |> wrap_ctx
-  | TextE s -> eval_text_exp at s |> wrap_ctx
-  | VarE id -> eval_var_exp ctx at id |> wrap_ctx
-  | UnE (unop, optyp, exp) -> eval_un_exp ctx at unop optyp exp
+  | BoolE b -> eval_bool_exp b |> wrap_ctx
+  | NumE n -> eval_num_exp n |> wrap_ctx
+  | TextE s -> eval_text_exp s |> wrap_ctx
+  | VarE id -> eval_var_exp ctx id |> wrap_ctx
+  | UnE (unop, optyp, exp) -> eval_un_exp ctx unop optyp exp
   | BinE (binop, optyp, exp_l, exp_r) ->
-      eval_bin_exp ctx at binop optyp exp_l exp_r
+      eval_bin_exp ctx binop optyp exp_l exp_r
   | CmpE (cmpop, optyp, exp_l, exp_r) ->
-      eval_cmp_exp ctx at cmpop optyp exp_l exp_r
-  | TupleE exps -> eval_tuple_exp ctx at exps
-  | CaseE notexp -> eval_case_exp ctx at note notexp
-  | OptE exp_opt -> eval_opt_exp ctx at note exp_opt
-  | StrE fields -> eval_str_exp ctx at note fields
-  | DotE (exp_b, atom) -> eval_dot_exp ctx at exp_b atom
-  | ListE exps -> eval_list_exp ctx at note exps
-  | ConsE (exp_h, exp_t) -> eval_cons_exp ctx at note exp_h exp_t
-  | CatE (exp_l, exp_r) -> eval_cat_exp ctx at note exp_l exp_r
-  | MemE (exp_e, exp_s) -> eval_mem_exp ctx at exp_e exp_s
-  | SliceE (exp_b, exp_l, exp_h) -> eval_slice_exp ctx at note exp_b exp_l exp_h
-  | UpdE (exp_b, path, exp_f) -> eval_upd_exp ctx at exp_b path exp_f
-  | CallE (id, targs, args) -> eval_call_exp ctx at id targs args
-  | LenE exp -> eval_len_exp ctx at exp
-  | IdxE (exp_b, exp_i) -> eval_idx_exp ctx at exp_b exp_i
-  | IterE (exp, iterexp) -> eval_iter_exp ctx at note exp iterexp
-  | CastE (exp, typ) -> eval_cast_exp ctx at exp typ
+      eval_cmp_exp ctx cmpop optyp exp_l exp_r
+  | TupleE exps -> eval_tuple_exp ctx exps
+  | CaseE notexp -> eval_case_exp ctx notexp
+  | OptE exp_opt -> eval_opt_exp ctx exp_opt
+  | StrE fields -> eval_str_exp ctx fields
+  | DotE (exp_b, atom) -> eval_dot_exp ctx exp_b atom
+  | ListE exps -> eval_list_exp ctx exps
+  | ConsE (exp_h, exp_t) -> eval_cons_exp ctx exp_h exp_t
+  | CatE (exp_l, exp_r) -> eval_cat_exp ctx at exp_l exp_r
+  | MemE (exp_e, exp_s) -> eval_mem_exp ctx exp_e exp_s
+  | SliceE (exp_b, exp_l, exp_h) -> eval_slice_exp ctx exp_b exp_l exp_h
+  | UpdE (exp_b, path, exp_f) -> eval_upd_exp ctx exp_b path exp_f
+  | CallE (id, targs, args) -> eval_call_exp ctx id targs args
+  | LenE exp -> eval_len_exp ctx exp
+  | IdxE (exp_b, exp_i) -> eval_idx_exp ctx exp_b exp_i
+  | IterE (exp, iterexp) -> eval_iter_exp ctx exp iterexp
+  | CastE (exp, typ) -> eval_cast_exp ctx exp typ
 
 and eval_exps (ctx : Ctx.t) (exps : exp list) : Ctx.t * value list =
   List.fold_left
@@ -288,157 +277,135 @@ and eval_exps (ctx : Ctx.t) (exps : exp list) : Ctx.t * value list =
 
 (* Boolean expression evaluation *)
 
-and eval_bool_exp (at : region) (b : bool) : value = BoolV b $$ (at, BoolT)
+and eval_bool_exp (b : bool) : value = BoolV b
 
 (* Numeric expression evaluation *)
 
-and eval_num_exp (at : region) (n : Num.t) : value =
-  NumV n $$ (at, NumT (Num.to_typ n))
+and eval_num_exp (n : Num.t) : value = NumV n
 
 (* Text expression evaluation *)
 
-and eval_text_exp (at : region) (s : string) : value = TextV s $$ (at, TextT)
+and eval_text_exp (s : string) : value = TextV s
 
 (* Variable expression evaluation *)
 
-and eval_var_exp (ctx : Ctx.t) (at : region) (id : id) : value =
-  let value = Ctx.find_value Local ctx (id, []) in
-  value.it $$ (at, value.note)
+and eval_var_exp (ctx : Ctx.t) (id : id) : value =
+  Ctx.find_value Local ctx (id, [])
 
 (* Unary expression evaluation *)
 
-and eval_un_bool (at : region) (unop : Bool.unop) (value : value) : value =
-  match unop with `NotOp -> BoolV (not (Value.get_bool value)) $$ (at, BoolT)
+and eval_un_bool (unop : Bool.unop) (value : value) : value =
+  match unop with `NotOp -> BoolV (not (Value.get_bool value))
 
-and eval_un_num (at : region) (unop : Num.unop) (value : value) : value =
+and eval_un_num (unop : Num.unop) (value : value) : value =
   let num = Value.get_num value in
   let num = Num.un unop num in
-  NumV num $$ (at, NumT (Num.to_typ num))
+  NumV num
 
-and eval_un_exp (ctx : Ctx.t) (at : region) (unop : unop) (_optyp : optyp)
-    (exp : exp) : Ctx.t * value =
+and eval_un_exp (ctx : Ctx.t) (unop : unop) (_optyp : optyp) (exp : exp) :
+    Ctx.t * value =
   let ctx, value = eval_exp ctx exp in
   match unop with
   | #Bool.unop as unop ->
-      let value = eval_un_bool at unop value in
+      let value = eval_un_bool unop value in
       (ctx, value)
   | #Num.unop as unop ->
-      let value = eval_un_num at unop value in
+      let value = eval_un_num unop value in
       (ctx, value)
 
 (* Binary expression evaluation *)
 
-and eval_bin_bool (at : region) (binop : Bool.binop) (value_l : value)
-    (value_r : value) : value =
+and eval_bin_bool (binop : Bool.binop) (value_l : value) (value_r : value) :
+    value =
   let bool_l = Value.get_bool value_l in
   let bool_r = Value.get_bool value_r in
-  let value =
-    match binop with
-    | `AndOp -> BoolV (bool_l && bool_r)
-    | `OrOp -> BoolV (bool_l || bool_r)
-    | `ImplOp -> BoolV ((not bool_l) || bool_r)
-    | `EquivOp -> BoolV (bool_l = bool_r)
-  in
-  value $$ (at, BoolT)
+  match binop with
+  | `AndOp -> BoolV (bool_l && bool_r)
+  | `OrOp -> BoolV (bool_l || bool_r)
+  | `ImplOp -> BoolV ((not bool_l) || bool_r)
+  | `EquivOp -> BoolV (bool_l = bool_r)
 
-and eval_bin_num (at : region) (binop : Num.binop) (value_l : value)
-    (value_r : value) : value =
+and eval_bin_num (binop : Num.binop) (value_l : value) (value_r : value) : value
+    =
   let num_l = Value.get_num value_l in
   let num_r = Value.get_num value_r in
   let num = Num.bin binop num_l num_r in
-  NumV num $$ (at, NumT (Num.to_typ num))
+  NumV num
 
-and eval_bin_exp (ctx : Ctx.t) (at : region) (binop : binop) (_optyp : optyp)
-    (exp_l : exp) (exp_r : exp) : Ctx.t * value =
+and eval_bin_exp (ctx : Ctx.t) (binop : binop) (_optyp : optyp) (exp_l : exp)
+    (exp_r : exp) : Ctx.t * value =
   let ctx, value_l = eval_exp ctx exp_l in
   let ctx, value_r = eval_exp ctx exp_r in
-  match binop with
-  | #Bool.binop as binop ->
-      let value = eval_bin_bool at binop value_l value_r in
-      (ctx, value)
-  | #Num.binop as binop ->
-      let value = eval_bin_num at binop value_l value_r in
-      (ctx, value)
+  let value =
+    match binop with
+    | #Bool.binop as binop -> eval_bin_bool binop value_l value_r
+    | #Num.binop as binop -> eval_bin_num binop value_l value_r
+  in
+  (ctx, value)
 
 (* Comparison expression evaluation *)
 
-and eval_cmp_bool (at : region) (cmpop : Bool.cmpop) (value_l : value)
-    (value_r : value) : value =
+and eval_cmp_bool (cmpop : Bool.cmpop) (value_l : value) (value_r : value) :
+    value =
   let eq = Value.eq value_l value_r in
-  let value = match cmpop with `EqOp -> BoolV eq | `NeOp -> BoolV (not eq) in
-  value $$ (at, BoolT)
+  match cmpop with `EqOp -> BoolV eq | `NeOp -> BoolV (not eq)
 
-and eval_cmp_num (at : region) (cmpop : Num.cmpop) (value_l : value)
-    (value_r : value) : value =
+and eval_cmp_num (cmpop : Num.cmpop) (value_l : value) (value_r : value) : value
+    =
   let num_l = Value.get_num value_l in
   let num_r = Value.get_num value_r in
-  BoolV (Num.cmp cmpop num_l num_r) $$ (at, BoolT)
+  BoolV (Num.cmp cmpop num_l num_r)
 
-and eval_cmp_exp (ctx : Ctx.t) (at : region) (cmpop : cmpop) (_optyp : optyp)
-    (exp_l : exp) (exp_r : exp) : Ctx.t * value =
+and eval_cmp_exp (ctx : Ctx.t) (cmpop : cmpop) (_optyp : optyp) (exp_l : exp)
+    (exp_r : exp) : Ctx.t * value =
   let ctx, value_l = eval_exp ctx exp_l in
   let ctx, value_r = eval_exp ctx exp_r in
   let value =
     match cmpop with
-    | #Bool.cmpop as cmpop -> eval_cmp_bool at cmpop value_l value_r
-    | #Num.cmpop as cmpop -> eval_cmp_num at cmpop value_l value_r
+    | #Bool.cmpop as cmpop -> eval_cmp_bool cmpop value_l value_r
+    | #Num.cmpop as cmpop -> eval_cmp_num cmpop value_l value_r
   in
   (ctx, value)
 
 (* Tuple expression evaluation *)
 
-and eval_tuple_exp (ctx : Ctx.t) (at : region) (exps : exp list) : Ctx.t * value
-    =
+and eval_tuple_exp (ctx : Ctx.t) (exps : exp list) : Ctx.t * value =
   let ctx, values = eval_exps ctx exps in
-  let typs = List.map (fun value -> value.note $ value.at) values in
-  let value = TupleV values $$ (at, TupleT typs) in
+  let value = TupleV values in
   (ctx, value)
 
-(* Case expression evaluation
+(* Case expression evaluation *)
 
-   Variant typing is nominal, so we take the type of the expression itself
-   Elaboration has already found the smallest possible type for the variant expression *)
-
-and eval_case_exp (ctx : Ctx.t) (at : region) (typ : typ') (notexp : notexp) :
-    Ctx.t * value =
+and eval_case_exp (ctx : Ctx.t) (notexp : notexp) : Ctx.t * value =
   let mixop, exps = notexp in
   let ctx, values = eval_exps ctx exps in
-  let value = CaseV (mixop, values) $$ (at, typ) in
+  let value = CaseV (mixop, values) in
   (ctx, value)
 
-(* Option expression evaluation
+(* Option expression evaluation *)
 
-   To deal with none values, we take the type of the expression itself *)
-
-and eval_opt_exp (ctx : Ctx.t) (at : region) (typ : typ') (exp_opt : exp option)
-    : Ctx.t * value =
+and eval_opt_exp (ctx : Ctx.t) (exp_opt : exp option) : Ctx.t * value =
   match exp_opt with
   | Some exp ->
       let ctx, value = eval_exp ctx exp in
-      let typ = IterT (value.note $ value.at, Opt) in
-      let value = OptV (Some value) $$ (at, typ) in
+      let value = OptV (Some value) in
       (ctx, value)
   | None ->
-      let value = OptV None $$ (at, typ) in
+      let value = OptV None in
       (ctx, value)
 
-(* Struct expression evaluation
+(* Struct expression evaluation *)
 
-   Struct typing is nominal, so we take the type of the expression itself
-   For now, all structs are invariant *)
-
-and eval_str_exp (ctx : Ctx.t) (at : region) (typ : typ')
-    (fields : (atom * exp) list) : Ctx.t * value =
+and eval_str_exp (ctx : Ctx.t) (fields : (atom * exp) list) : Ctx.t * value =
   let atoms, exps = List.split fields in
   let ctx, values = eval_exps ctx exps in
   let fields = List.combine atoms values in
-  let value = StructV fields $$ (at, typ) in
+  let value = StructV fields in
   (ctx, value)
 
 (* Dot expression evaluation *)
 
-and eval_dot_exp (ctx : Ctx.t) (at : region) (exp_b : exp) (atom : atom) :
-    Ctx.t * value =
+and eval_dot_exp (ctx : Ctx.t) (exp_b : exp) (atom : atom) : Ctx.t * value =
   let ctx, value_b = eval_exp ctx exp_b in
   let fields = Value.get_struct value_b in
   let value =
@@ -446,87 +413,69 @@ and eval_dot_exp (ctx : Ctx.t) (at : region) (exp_b : exp) (atom : atom) :
     |> List.map (fun (atom, value) -> (atom.it, value))
     |> List.assoc atom.it
   in
-  let value = value.it $$ (at, value.note) in
   (ctx, value)
 
-(* List expression evaluation
+(* List expression evaluation *)
 
-   Lists are tricky, because it requires to find the smallest type within the list
-   Naive implementation would require N^2 time complexity
-   For now, to avoid this, we take the type of the expression itself
-   This may result in loss of runtime type precision, which may in turn lead to
-   failures in runtime subtype checks when it really should not *)
-
-and eval_list_exp (ctx : Ctx.t) (at : region) (typ : typ') (exps : exp list) :
-    Ctx.t * value =
+and eval_list_exp (ctx : Ctx.t) (exps : exp list) : Ctx.t * value =
   let ctx, values = eval_exps ctx exps in
-  let value = ListV values $$ (at, typ) in
+  let value = ListV values in
   (ctx, value)
 
-(* Cons expression evaluation
+(* Cons expression evaluation *)
 
-   Similarly as in lists, we take the type of the expression itself for now *)
-
-and eval_cons_exp (ctx : Ctx.t) (at : region) (typ : typ') (exp_h : exp)
-    (exp_t : exp) : Ctx.t * value =
+and eval_cons_exp (ctx : Ctx.t) (exp_h : exp) (exp_t : exp) : Ctx.t * value =
   let ctx, value_h = eval_exp ctx exp_h in
   let ctx, value_t = eval_exp ctx exp_t in
   let values_t = Value.get_list value_t in
-  let value = ListV (value_h :: values_t) $$ (at, typ) in
+  let value = ListV (value_h :: values_t) in
   (ctx, value)
 
-(* Concatenation expression evaluation
+(* Concatenation expression evaluation *)
 
-   For concatenation of lists, we take the type of the expression itself for now *)
-
-and eval_cat_exp (ctx : Ctx.t) (at : region) (typ : typ') (exp_l : exp)
-    (exp_r : exp) : Ctx.t * value =
+and eval_cat_exp (ctx : Ctx.t) (at : region) (exp_l : exp) (exp_r : exp) :
+    Ctx.t * value =
   let ctx, value_l = eval_exp ctx exp_l in
   let ctx, value_r = eval_exp ctx exp_r in
   let value =
-    match (value_l.it, value_r.it) with
-    | TextV s_l, TextV s_r -> TextV (s_l ^ s_r) $$ (at, TextT)
-    | ListV values_l, ListV values_r -> ListV (values_l @ values_r) $$ (at, typ)
+    match (value_l, value_r) with
+    | TextV s_l, TextV s_r -> TextV (s_l ^ s_r)
+    | ListV values_l, ListV values_r -> ListV (values_l @ values_r)
     | _ -> error at "concatenation expects either two texts or two lists"
   in
   (ctx, value)
 
 (* Membership expression evaluation *)
 
-and eval_mem_exp (ctx : Ctx.t) (at : region) (exp_e : exp) (exp_s : exp) :
-    Ctx.t * value =
+and eval_mem_exp (ctx : Ctx.t) (exp_e : exp) (exp_s : exp) : Ctx.t * value =
   let ctx, value_e = eval_exp ctx exp_e in
   let ctx, value_s = eval_exp ctx exp_s in
   let values_s = Value.get_list value_s in
-  let value = BoolV (List.exists (Value.eq value_e) values_s) $$ (at, BoolT) in
+  let value = BoolV (List.exists (Value.eq value_e) values_s) in
   (ctx, value)
 
 (* Length expression evaluation *)
 
-and eval_len_exp (ctx : Ctx.t) (at : region) (exp : exp) : Ctx.t * value =
+and eval_len_exp (ctx : Ctx.t) (exp : exp) : Ctx.t * value =
   let ctx, value = eval_exp ctx exp in
   let len = value |> Value.get_list |> List.length |> Bigint.of_int in
-  let value = NumV (`Nat len) $$ (at, NumT `NatT) in
+  let value = NumV (`Nat len) in
   (ctx, value)
 
 (* Index expression evaluation *)
 
-and eval_idx_exp (ctx : Ctx.t) (at : region) (exp_b : exp) (exp_i : exp) :
-    Ctx.t * value =
+and eval_idx_exp (ctx : Ctx.t) (exp_b : exp) (exp_i : exp) : Ctx.t * value =
   let ctx, value_b = eval_exp ctx exp_b in
   let ctx, value_i = eval_exp ctx exp_i in
   let values = Value.get_list value_b in
   let idx = value_i |> Value.get_num |> Num.to_int |> Bigint.to_int_exn in
   let value = List.nth values idx in
-  let value = value.it $$ (at, value.note) in
   (ctx, value)
 
-(* Slice expression evaluation
+(* Slice expression evaluation *)
 
-   Similarly as in lists, we take the type of the expression itself for now *)
-
-and eval_slice_exp (ctx : Ctx.t) (at : region) (typ : typ') (exp_b : exp)
-    (exp_i : exp) (exp_n : exp) : Ctx.t * value =
+and eval_slice_exp (ctx : Ctx.t) (exp_b : exp) (exp_i : exp) (exp_n : exp) :
+    Ctx.t * value =
   let ctx, value_b = eval_exp ctx exp_b in
   let values = Value.get_list value_b in
   let ctx, value_i = eval_exp ctx exp_i in
@@ -541,7 +490,7 @@ and eval_slice_exp (ctx : Ctx.t) (at : region) (typ : typ') (exp_b : exp)
       values
     |> List.filter_map Fun.id
   in
-  let value = ListV values_slice $$ (at, typ) in
+  let value = ListV values_slice in
   (ctx, value)
 
 (* Update expression evaluation *)
@@ -557,8 +506,7 @@ and eval_access_path (value_b : value) (path : path) : value =
       |> List.assoc atom.it
   | _ -> failwith "(TODO) access_path"
 
-and eval_update_path (at : region) (value_b : value) (path : path)
-    (value_n : value) : value =
+and eval_update_path (value_b : value) (path : path) (value_n : value) : value =
   match path.it with
   | RootP -> value_n
   | DotP (path, atom) ->
@@ -570,32 +518,28 @@ and eval_update_path (at : region) (value_b : value) (path : path)
             if atom_f.it = atom.it then (atom_f, value_n) else (atom_f, value_f))
           fields
       in
-      let value = StructV fields $$ (value_b.at, value_b.note) in
-      eval_update_path at value_b path value
+      let value = StructV fields in
+      eval_update_path value_b path value
   | _ -> failwith "(TODO) update"
 
-and eval_upd_exp (ctx : Ctx.t) (at : region) (exp_b : exp) (path : path)
-    (exp_f : exp) : Ctx.t * value =
+and eval_upd_exp (ctx : Ctx.t) (exp_b : exp) (path : path) (exp_f : exp) :
+    Ctx.t * value =
   let ctx, value_b = eval_exp ctx exp_b in
   let ctx, value_f = eval_exp ctx exp_f in
-  let value = eval_update_path at value_b path value_f in
-  let value = value.it $$ (at, value.note) in
+  let value = eval_update_path value_b path value_f in
   (ctx, value)
 
 (* Function call expression evaluation *)
 
-and eval_call_exp (ctx : Ctx.t) (at : region) (id : id) (targs : targ list)
-    (args : arg list) : Ctx.t * value =
+and eval_call_exp (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list)
+    : Ctx.t * value =
   let+ ctx, value = invoke_func ctx id targs args in
-  let value = value.it $$ (at, value.note) in
   (ctx, value)
 
-(* Iterated expression evaluation
+(* Iterated expression evaluation *)
 
-   To deal with iteration by none option or list, we take the type of the expression itself *)
-
-and eval_iter_exp_opt (ctx : Ctx.t) (at : region) (typ : typ') (exp : exp)
-    (vars : var list) : Ctx.t * value =
+and eval_iter_exp_opt (ctx : Ctx.t) (exp : exp) (vars : var list) :
+    Ctx.t * value =
   let+ ctx_sub_opt = Ctx.sub_opt ctx vars in
   match ctx_sub_opt with
   | Some ctx_sub ->
@@ -603,15 +547,14 @@ and eval_iter_exp_opt (ctx : Ctx.t) (at : region) (typ : typ') (exp : exp)
       let ctx_sub, value = eval_exp ctx_sub exp in
       let ctx_sub = Ctx.trace_close ctx_sub in
       let ctx = Ctx.trace_commit ctx ctx_sub.trace in
-      let typ = IterT (value.note $ value.at, Opt) in
-      let value = OptV (Some value) $$ (at, typ) in
+      let value = OptV (Some value) in
       (ctx, value)
   | None ->
-      let value = OptV None $$ (at, typ) in
+      let value = OptV None in
       (ctx, value)
 
-and eval_iter_exp_list (ctx : Ctx.t) (at : region) (typ : typ') (exp : exp)
-    (vars : var list) : Ctx.t * value =
+and eval_iter_exp_list (ctx : Ctx.t) (exp : exp) (vars : var list) :
+    Ctx.t * value =
   let+ ctxs_sub = Ctx.sub_list ctx vars in
   let ctx, values =
     List.fold_left
@@ -625,24 +568,44 @@ and eval_iter_exp_list (ctx : Ctx.t) (at : region) (typ : typ') (exp : exp)
         (ctx, values @ [ value ]))
       (ctx, []) ctxs_sub
   in
-  let value = ListV values $$ (at, typ) in
+  let value = ListV values in
   (ctx, value)
 
-and eval_iter_exp (ctx : Ctx.t) (at : region) (typ : typ') (exp : exp)
-    (iterexp : iterexp) : Ctx.t * value =
+and eval_iter_exp (ctx : Ctx.t) (exp : exp) (iterexp : iterexp) : Ctx.t * value
+    =
   let iter, vars = iterexp in
   match iter with
-  | Opt -> eval_iter_exp_opt ctx at typ exp vars
-  | List -> eval_iter_exp_list ctx at typ exp vars
+  | Opt -> eval_iter_exp_opt ctx exp vars
+  | List -> eval_iter_exp_list ctx exp vars
 
-(* Cast expression evaluation
+(* Cast expression evaluation *)
 
-   For now this is treated as a no-op *)
+and cast (ctx : Ctx.t) (typ : typ) (value : value) : value =
+  match typ.it with
+  | NumT `IntT -> (
+      match value with
+      | NumV (`Nat n) -> NumV (`Int n)
+      | NumV (`Int _) -> value
+      | _ -> assert false)
+  | VarT (tid, targs) -> (
+      let tparams, deftyp = Ctx.find_typdef Local ctx tid in
+      let theta = List.combine tparams targs |> TIdMap.of_list in
+      match (deftyp.it, value) with
+      | PlainT typ, _ ->
+          let typ = Typ.subst_typ theta typ in
+          cast ctx typ value
+      | _ -> value)
+  | TupleT typs -> (
+      match value with
+      | TupleV values ->
+          let values = List.map2 (cast ctx) typs values in
+          TupleV values
+      | _ -> assert false)
+  | _ -> value
 
-and eval_cast_exp (ctx : Ctx.t) (at : region) (exp : exp) (_typ : typ) :
-    Ctx.t * value =
+and eval_cast_exp (ctx : Ctx.t) (exp : exp) (typ : typ) : Ctx.t * value =
   let ctx, value = eval_exp ctx exp in
-  let value = value.it $$ (at, value.note) in
+  let value = cast ctx typ value in
   (ctx, value)
 
 (* Argument evaluation *)
@@ -651,8 +614,7 @@ and eval_arg (ctx : Ctx.t) (arg : arg) : Ctx.t * value =
   match arg.it with
   | ExpA exp -> eval_exp ctx exp
   | DefA id ->
-      (* (TODO) Give appropriate type to the function value *)
-      let value = FuncV id $$ (arg.at, FuncT) in
+      let value = FuncV id in
       (ctx, value)
 
 and eval_args (ctx : Ctx.t) (args : arg list) : Ctx.t * value list =
@@ -719,8 +681,7 @@ and eval_iter_prem_list (ctx : Ctx.t) (prem : prem) (vars : var list) :
   (* Discriminate between bound and binding variables *)
   let vars_bound, vars_binding =
     List.partition
-      (fun (id, _typ, iters) ->
-        Ctx.bound_value Local ctx (id, iters @ [ List ]))
+      (fun (id, iters) -> Ctx.bound_value Local ctx (id, iters @ [ List ]))
       vars
   in
   (* Create a subcontext for each batch of bound values *)
@@ -748,10 +709,7 @@ and eval_iter_prem_list (ctx : Ctx.t) (prem : prem) (vars : var list) :
               let ctx_sub = Ctx.trace_close ctx_sub in
               let ctx = Ctx.trace_commit ctx ctx_sub.trace in
               let value_binding_batch =
-                List.map
-                  (fun (id, _typ, iters) ->
-                    Ctx.find_value Local ctx_sub (id, iters))
-                  vars_binding
+                List.map (Ctx.find_value Local ctx_sub) vars_binding
               in
               let values_binding_batch =
                 values_binding_batch @ [ value_binding_batch ]
@@ -766,11 +724,8 @@ and eval_iter_prem_list (ctx : Ctx.t) (prem : prem) (vars : var list) :
   (* Finally, bind the resulting binding batches *)
   let ctx =
     List.fold_left2
-      (fun ctx (id, typ, iters) values_binding ->
-        let value_binding =
-          let typ_value = Typ.iterate typ (iters @ [ List ]) in
-          ListV values_binding $$ (no_region, typ_value.it)
-        in
+      (fun ctx (id, iters) values_binding ->
+        let value_binding = ListV values_binding in
         Ctx.add_value Local ctx (id, iters @ [ List ]) value_binding)
       ctx vars_binding values_binding
   in
@@ -906,12 +861,6 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
             (exp_output : exp) : (Ctx.t * value) attempt =
           let* ctx_local = eval_prems ctx_local prems in
           let ctx_local, value_output = eval_exp ctx_local exp_output in
-          let value_output =
-            let typ_output = value_output.note $ value_output.at in
-            let theta = List.combine tparams targs |> TIdMap.of_list in
-            let typ_output = Typ.subst_typ theta typ_output in
-            value_output.it $$ (value_output.at, typ_output.it)
-          in
           let ctx_local = Ctx.trace_close ctx_local in
           let ctx = Ctx.trace_commit ctx ctx_local.trace in
           Ok (ctx, value_output)

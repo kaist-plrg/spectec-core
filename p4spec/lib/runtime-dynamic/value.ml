@@ -1,7 +1,6 @@
 open Xl
 open Il.Ast
 open Il.Print
-open Util.Source
 
 (* Value *)
 
@@ -15,7 +14,7 @@ let to_string t = string_of_value t
 
 let rec compare (value_l : t) (value_r : t) =
   let tag (value : t) =
-    match value.it with
+    match value with
     | BoolV _ -> 0
     | NumV _ -> 1
     | TextV _ -> 2
@@ -26,7 +25,7 @@ let rec compare (value_l : t) (value_r : t) =
     | ListV _ -> 7
     | FuncV _ -> 8
   in
-  match (value_l.it, value_r.it) with
+  match (value_l, value_r) with
   | BoolV b_l, BoolV b_r -> Stdlib.compare b_l b_r
   | NumV n_l, NumV n_r -> Num.compare n_l n_r
   | TextV s_l, TextV s_r -> String.compare s_l s_r
@@ -60,7 +59,7 @@ and compares (values_l : t list) (values_r : t list) : int =
 (* Equality *)
 
 let rec eq (value_l : t) (value_r : t) : bool =
-  match (value_l.it, value_r.it) with
+  match (value_l, value_r) with
   | BoolV b_l, BoolV b_r -> b_l = b_r
   | NumV n_l, NumV n_r -> Num.eq n_l n_r
   | TextV s_l, TextV s_r -> s_l = s_r
@@ -90,33 +89,33 @@ and eqs (values_l : t list) (values_r : t list) : bool =
 (* Boolean *)
 
 let get_bool (value : t) =
-  match value.it with BoolV b -> b | _ -> failwith "get_bool"
+  match value with BoolV b -> b | _ -> failwith "get_bool"
 
 (* Number *)
 
 let get_num (value : t) =
-  match value.it with NumV n -> n | _ -> failwith "get_num"
+  match value with NumV n -> n | _ -> failwith "get_num"
 
 (* Text *)
 
 let get_text (value : t) =
-  match value.it with TextV s -> s | _ -> failwith "get_text"
+  match value with TextV s -> s | _ -> failwith "get_text"
 
 (* List *)
 
 let to_list (values : t list) = ListV values
 
 let get_list (value : t) =
-  match value.it with ListV values -> values | _ -> failwith "unseq"
+  match value with ListV values -> values | _ -> failwith "unseq"
 
 (* Option *)
 
 let to_opt (value : t option) = OptV value
 
 let get_opt (value : t) =
-  match value.it with OptV value -> value | _ -> failwith "get_opt"
+  match value with OptV value -> value | _ -> failwith "get_opt"
 
 (* Struct *)
 
 let get_struct (value : t) =
-  match value.it with StructV fields -> fields | _ -> failwith "get_struct"
+  match value with StructV fields -> fields | _ -> failwith "get_struct"

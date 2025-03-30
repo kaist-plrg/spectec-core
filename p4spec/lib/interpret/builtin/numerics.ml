@@ -8,9 +8,7 @@ open Util.Source
 let bigint_of_value (value : value) : Bigint.t =
   value |> Value.get_num |> Num.to_int
 
-let value_of_bigint (i : Bigint.t) : value =
-  let n = if Bigint.(i >= zero) then `Nat i else `Int i in
-  NumV n $$ (no_region, NumT (Num.to_typ n))
+let value_of_bigint (i : Bigint.t) : value = NumV (`Int i)
 
 (* Built-in implementations *)
 
