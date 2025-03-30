@@ -315,13 +315,13 @@ and elab_nottyp (ctx : Ctx.t) (typ : typ) : Il.Ast.nottyp =
 and elab_deftyp (ctx : Ctx.t) (id : id) (tparams : tparam list)
     (deftyp : deftyp) : Typdef.t * Il.Ast.deftyp =
   match deftyp.it with
-  | PlainTD plaintyp -> elab_typ_def_plain ctx tparams plaintyp
-  | StructTD typfields -> elab_typ_def_struct ctx deftyp.at tparams typfields
-  | VariantTD typcases -> elab_typ_def_variant ctx deftyp.at id tparams typcases
+  | PlainTD plaintyp -> elab_deftyp_plain ctx tparams plaintyp
+  | StructTD typfields -> elab_deftyp_struct ctx deftyp.at tparams typfields
+  | VariantTD typcases -> elab_deftyp_variant ctx deftyp.at id tparams typcases
 
 (* Elaboration of plain type definitions *)
 
-and elab_typ_def_plain (ctx : Ctx.t) (tparams : tparam list)
+and elab_deftyp_plain (ctx : Ctx.t) (tparams : tparam list)
     (plaintyp : plaintyp) : Typdef.t * Il.Ast.deftyp =
   let typ_il = elab_plaintyp ctx plaintyp in
   let deftyp_il = Il.Ast.PlainT typ_il $ plaintyp.at in
@@ -335,7 +335,7 @@ and elab_typfield (ctx : Ctx.t) (typfield : typfield) : Il.Ast.typfield =
   let typ_il = elab_plaintyp ctx plaintyp in
   (atom, typ_il)
 
-and elab_typ_def_struct (ctx : Ctx.t) (at : region) (tparams : tparam list)
+and elab_deftyp_struct (ctx : Ctx.t) (at : region) (tparams : tparam list)
     (typfields : typfield list) : Typdef.t * Il.Ast.deftyp =
   let typfields_il = List.map (elab_typfield ctx) typfields in
   let deftyp_il = Il.Ast.StructT typfields_il $ at in
@@ -359,7 +359,7 @@ and expand_typcase (ctx : Ctx.t) (plaintyp : plaintyp) (typcase : typcase) :
 and elab_typcase (ctx : Ctx.t) (nottyp : nottyp) : Il.Ast.typcase =
   elab_nottyp ctx (NotationT nottyp)
 
-and elab_typ_def_variant (ctx : Ctx.t) (at : region) (id : id)
+and elab_deftyp_variant (ctx : Ctx.t) (at : region) (id : id)
     (tparams : tparam list) (typcases : typcase list) : Typdef.t * Il.Ast.deftyp
     =
   let plaintyp =
@@ -1555,7 +1555,7 @@ and elab_rule_def (ctx : Ctx.t) (at : region) (id_rel : id) (id_rule : id)
     let def = RuleD (id_rel, id_rule, exp, prems) $ at in
     El.Free.free_id_def def |> Ctx.add_frees ctx_local
   in
-  let+ ctx, notexp_il = elab_exp_not ctx_local (NotationT nottyp) exp in
+  let+ ctx_local, notexp_il = elab_exp_not ctx_local (NotationT nottyp) exp in
   let mixop, exps_il = notexp_il in
   let exps_il_input, exps_il_output =
     exps_il
