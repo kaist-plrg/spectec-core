@@ -10,6 +10,8 @@ open Error
 open Attempt
 module F = Format
 open Util.Source
+open Cache
+module Pp = Il.Print
 
 (* Assignments *)
 
@@ -24,6 +26,11 @@ open Util.Source
      - Iteration subtyping
 
    Note that structs are invariant in SpecTec, so we do not need to check for subtyping *)
+
+let cache : cache ref = ref Cache.empty
+
+let hits = ref 0
+
 
 let rec downcast (ctx : Ctx.t) (typ : typ) (value : value) : value attempt =
   match typ.it with
@@ -828,8 +835,20 @@ and invoke_func_builtin (ctx : Ctx.t) (id : id) (targs : targ list)
   let ctx_local = Ctx.trace_open_dec ctx_local id 0 values_input in
   let* value_output =
     try
-      let value_output = Builtin.invoke id targs values_input in
-      Ok value_output
+      if Cache.cache_enabled id.it then (
+        let val_opt = Cache.find_arg_opt id.it values_input !cache in
+        match val_opt with
+        | Some value_output -> 
+          (* Printf.printf "-- hit: %s %s \n" id.it (Pp.string_of_value value_output) ; *)
+          hits := !hits + 1;
+          Ok value_output
+        | None -> 
+          (let value_output = Builtin.invoke id targs values_input in
+           cache := Cache.add_arg id.it values_input value_output !cache;
+          Ok value_output))
+      else 
+        let value_output = Builtin.invoke id targs values_input in
+        Ok value_output
     with Util.Error.Error (at, msg) -> fail at msg
   in
   let ctx_local = Ctx.trace_close ctx_local in
@@ -853,48 +872,67 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
   in
   (* Evaluate arguments *)
   let ctx, values_input = eval_args ctx args in
-  (* Apply the first matching clause *)
-  let attempt_clauses =
-    List.mapi
-      (fun idx_clause clause ->
-        let attempt_clause' (ctx_local : Ctx.t) (prems : prem list)
-            (exp_output : exp) : (Ctx.t * value) attempt =
-          let* ctx_local = eval_prems ctx_local prems in
-          let ctx_local, value_output = eval_exp ctx_local exp_output in
-          let ctx_local = Ctx.trace_close ctx_local in
-          let ctx = Ctx.trace_commit ctx ctx_local.trace in
-          Ok (ctx, value_output)
-        in
-        let attempt_clause () : (Ctx.t * value) attempt =
-          (* Create a subtrace for the clause *)
-          let ctx_local = Ctx.localize ctx in
-          let ctx_local =
-            Ctx.trace_open_dec ctx_local id idx_clause values_input
-          in
-          (* Add type arguments to the context *)
-          check
-            (List.length targs = List.length tparams)
-            id.at "arity mismatch in type arguments";
-          let ctx_local =
-            List.fold_left2
-              (fun ctx_local tparam targ ->
-                Ctx.add_typdef Local ctx_local tparam ([], PlainT targ $ targ.at))
-              ctx_local tparams targs
-          in
-          (* Try to match the clause *)
-          let* ctx_local, args_input, prems, exp_output =
-            match_clause ctx ctx_local clause values_input
-          in
-          (* Try evaluating the clause *)
-          attempt_clause' ctx_local prems exp_output
-          |> nest id.at
+  let attempt id clauses tparams targs ctx values_input= 
+    let attempt_clauses =
+      List.mapi
+        (fun idx_clause clause ->
+           let attempt_clause' (ctx_local : Ctx.t) (prems : prem list)
+               (exp_output : exp) : (Ctx.t * value) attempt =
+             let* ctx_local = eval_prems ctx_local prems in
+             let ctx_local, value_output = eval_exp ctx_local exp_output in
+             let ctx_local = Ctx.trace_close ctx_local in
+             let ctx = Ctx.trace_commit ctx ctx_local.trace in
+             Ok (ctx, value_output)
+           in
+           let attempt_clause () : (Ctx.t * value) attempt =
+             (* Create a subtrace for the clause *)
+             let ctx_local = Ctx.localize ctx in
+             let ctx_local =
+               Ctx.trace_open_dec ctx_local id idx_clause values_input
+             in
+             (* Add type arguments to the context *)
+             check
+               (List.length targs = List.length tparams)
+               id.at "arity mismatch in type arguments";
+             let ctx_local =
+               List.fold_left2
+                 (fun ctx_local tparam targ ->
+                    Ctx.add_typdef Local ctx_local tparam ([], PlainT targ $ targ.at))
+                 ctx_local tparams targs
+             in
+             (* Try to match the clause *)
+             let* ctx_local, args_input, prems, exp_output =
+               match_clause ctx ctx_local clause values_input
+             in
+             (* Try evaluating the clause *)
+             attempt_clause' ctx_local prems exp_output
+             |> nest id.at
                (F.asprintf "application of clause %s%s failed" id.it
                   (Il.Print.string_of_args args_input))
-        in
-        attempt_clause)
-      clauses
+           in
+           attempt_clause)
+        clauses
+    in
+    choice attempt_clauses
   in
-  choice attempt_clauses
+  try
+    if Cache.cache_enabled id.it then (
+      let val_opt = Cache.find_arg_opt id.it values_input !cache in
+      match val_opt with
+      | Some value_output -> 
+        (* Printf.printf "-- hit: %s %s \n" id.it (Pp.string_of_value value_output) ; *)
+        hits := !hits + 1;
+        Ok (ctx, value_output)
+      | None -> 
+        let* ctx, value_output = attempt id clauses tparams targs ctx values_input in
+        cache := Cache.add_arg id.it values_input value_output !cache;
+        Ok (ctx, value_output))
+    else 
+        let* ctx, value_output = attempt id clauses tparams targs ctx values_input
+        in
+        Ok (ctx, value_output)
+    with Util.Error.Error (at, msg) -> fail at msg
+  (* Apply the first matching clause *)
 
 (* Load definitions into a context *)
 
@@ -922,4 +960,5 @@ let run_typing (debug : bool) (profile : bool) (spec : spec) (program : value) :
   let ctx = load_spec ctx spec in
   let+ ctx, values = invoke_rel ctx ("Prog_ok" $ no_region) [ program ] in
   Ctx.profile ctx;
+  Printf.printf "caching hits: %d" !hits;
   values
