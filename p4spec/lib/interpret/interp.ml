@@ -10,7 +10,7 @@ open Error
 open Attempt
 module F = Format
 open Util.Source
-open Cache
+module Cache = Cache.Cache
 module Pp = Il.Print
 
 (* Assignments *)
@@ -27,10 +27,30 @@ module Pp = Il.Print
 
    Note that structs are invariant in SpecTec, so we do not need to check for subtyping *)
 
-let cache : cache ref = ref Cache.empty
+let cache = ref (Cache.create 101)
 let is_cache_enabled = ref false
 let hits = ref 0
 
+(* module CachedFuncs = Set.Make (String)
+let cached_funcs = CachedFuncs.of_list
+    [ "specialize_typdef";
+      "free_typ";
+      "nestable_structt";
+      "canon_typ";
+      "subst_typ";
+      "is_nominal";
+      "nestable_structt_in_headert" ] *)
+
+let is_func_cached = function
+  | "specialize_typdef" 
+  | "free_typ"
+  | "nestable_structt"
+  | "canon_typ"
+  | "subst_typ"
+  | "is_nominal"
+  | "find_map"
+  | "nestable_structt_in_headert" -> true
+  | _ -> false
 
 let rec downcast (ctx : Ctx.t) (typ : typ) (value : value) : value attempt =
   match typ.it with
@@ -835,8 +855,8 @@ and invoke_func_builtin (ctx : Ctx.t) (id : id) (targs : targ list)
   let ctx_local = Ctx.trace_open_dec ctx_local id 0 values_input in
   let* value_output =
     try
-      if !is_cache_enabled && Cache.cache_enabled id.it then (
-        let val_opt = Cache.find_arg_opt id.it values_input !cache in
+      if !is_cache_enabled && is_func_cached id.it then (
+        let val_opt = Cache.find_opt !cache (id.it, values_input)in
         match val_opt with
         | Some value_output -> 
           (* Printf.printf "-- hit: %s %s \n" id.it (Pp.string_of_value value_output) ; *)
@@ -844,7 +864,7 @@ and invoke_func_builtin (ctx : Ctx.t) (id : id) (targs : targ list)
           Ok value_output
         | None -> 
           (let value_output = Builtin.invoke id targs values_input in
-           cache := Cache.add_arg id.it values_input value_output !cache;
+           Cache.add !cache (id.it, values_input) value_output;
           Ok value_output))
       else 
         let value_output = Builtin.invoke id targs values_input in
@@ -916,8 +936,8 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
     choice attempt_clauses
   in
   try
-    if !is_cache_enabled && Cache.cache_enabled id.it then (
-      let val_opt = Cache.find_arg_opt id.it values_input !cache in
+    if !is_cache_enabled && is_func_cached id.it then (
+      let val_opt = Cache.find_opt !cache (id.it, values_input) in
       match val_opt with
       | Some value_output -> 
         (* Printf.printf "-- hit: %s %s \n" id.it (Pp.string_of_value value_output) ; *)
@@ -925,7 +945,7 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
         Ok (ctx, value_output)
       | None -> 
         let* ctx, value_output = attempt id clauses tparams targs ctx values_input in
-        cache := Cache.add_arg id.it values_input value_output !cache;
+        Cache.add !cache (id.it, values_input) value_output;
         Ok (ctx, value_output))
     else 
         let* ctx, value_output = attempt id clauses tparams targs ctx values_input in
