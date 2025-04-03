@@ -28,7 +28,7 @@ module Pp = Il.Print
    Note that structs are invariant in SpecTec, so we do not need to check for subtyping *)
 
 let cache : cache ref = ref Cache.empty
-
+let is_cache_enabled = ref false
 let hits = ref 0
 
 
@@ -835,7 +835,7 @@ and invoke_func_builtin (ctx : Ctx.t) (id : id) (targs : targ list)
   let ctx_local = Ctx.trace_open_dec ctx_local id 0 values_input in
   let* value_output =
     try
-      if Cache.cache_enabled id.it then (
+      if !is_cache_enabled && Cache.cache_enabled id.it then (
         let val_opt = Cache.find_arg_opt id.it values_input !cache in
         match val_opt with
         | Some value_output -> 
@@ -916,7 +916,7 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
     choice attempt_clauses
   in
   try
-    if Cache.cache_enabled id.it then (
+    if !is_cache_enabled && Cache.cache_enabled id.it then (
       let val_opt = Cache.find_arg_opt id.it values_input !cache in
       match val_opt with
       | Some value_output -> 
@@ -928,8 +928,7 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
         cache := Cache.add_arg id.it values_input value_output !cache;
         Ok (ctx, value_output))
     else 
-        let* ctx, value_output = attempt id clauses tparams targs ctx values_input
-        in
+        let* ctx, value_output = attempt id clauses tparams targs ctx values_input in
         Ok (ctx, value_output)
     with Util.Error.Error (at, msg) -> fail at msg
   (* Apply the first matching clause *)
@@ -953,9 +952,10 @@ let load_spec (ctx : Ctx.t) (spec : spec) : Ctx.t =
 
 (* Entry point: run typing rule from `Prog_ok` relation *)
 
-let run_typing (debug : bool) (profile : bool) (spec : spec) (program : value) :
+let run_typing (debug : bool) (profile : bool) (cache : bool) (spec : spec) (program : value) :
     value list =
   Builtin.init ();
+  is_cache_enabled := cache;
   let ctx = Ctx.empty debug profile in
   let ctx = load_spec ctx spec in
   let+ ctx, values = invoke_rel ctx ("Prog_ok" $ no_region) [ program ] in
