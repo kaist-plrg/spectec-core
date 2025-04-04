@@ -27,19 +27,7 @@ module Pp = Il.Print
 
    Note that structs are invariant in SpecTec, so we do not need to check for subtyping *)
 
-let cache = ref (Cache.create 101)
-let is_cache_enabled = ref false
-let hits = ref 0
-
-(* module CachedFuncs = Set.Make (String)
-let cached_funcs = CachedFuncs.of_list
-    [ "specialize_typdef";
-      "free_typ";
-      "nestable_structt";
-      "canon_typ";
-      "subst_typ";
-      "is_nominal";
-      "nestable_structt_in_headert" ] *)
+let cache = ref (Cache.create 1000)
 
 let is_func_cached = function
   | "specialize_typdef" 
@@ -855,12 +843,10 @@ and invoke_func_builtin (ctx : Ctx.t) (id : id) (targs : targ list)
   let ctx_local = Ctx.trace_open_dec ctx_local id 0 values_input in
   let* value_output =
     try
-      if !is_cache_enabled && is_func_cached id.it then (
+      if is_func_cached id.it then (
         let val_opt = Cache.find_opt !cache (id.it, values_input)in
         match val_opt with
         | Some value_output -> 
-          (* Printf.printf "-- hit: %s %s \n" id.it (Pp.string_of_value value_output) ; *)
-          hits := !hits + 1;
           Ok value_output
         | None -> 
           (let value_output = Builtin.invoke id targs values_input in
@@ -892,6 +878,7 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
   in
   (* Evaluate arguments *)
   let ctx, values_input = eval_args ctx args in
+  (* Apply the first matching clause *)
   let attempt id clauses tparams targs ctx values_input= 
     let attempt_clauses =
       List.mapi
@@ -935,23 +922,18 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
     in
     choice attempt_clauses
   in
-  try
-    if !is_cache_enabled && is_func_cached id.it then (
-      let val_opt = Cache.find_opt !cache (id.it, values_input) in
-      match val_opt with
-      | Some value_output -> 
-        (* Printf.printf "-- hit: %s %s \n" id.it (Pp.string_of_value value_output) ; *)
-        hits := !hits + 1;
-        Ok (ctx, value_output)
-      | None -> 
-        let* ctx, value_output = attempt id clauses tparams targs ctx values_input in
-        Cache.add !cache (id.it, values_input) value_output;
-        Ok (ctx, value_output))
-    else 
-        let* ctx, value_output = attempt id clauses tparams targs ctx values_input in
-        Ok (ctx, value_output)
-    with Util.Error.Error (at, msg) -> fail at msg
-  (* Apply the first matching clause *)
+  if is_func_cached id.it then (
+    let val_opt = Cache.find_opt !cache (id.it, values_input) in
+    match val_opt with
+    | Some value_output -> 
+      Ok (ctx, value_output)
+    | None -> 
+      let* ctx, value_output = attempt id clauses tparams targs ctx values_input in
+      Cache.add !cache (id.it, values_input) value_output;
+      Ok (ctx, value_output))
+  else 
+    let* ctx, value_output = attempt id clauses tparams targs ctx values_input in
+    Ok (ctx, value_output)
 
 (* Load definitions into a context *)
 
@@ -972,14 +954,12 @@ let load_spec (ctx : Ctx.t) (spec : spec) : Ctx.t =
 
 (* Entry point: run typing rule from `Prog_ok` relation *)
 
-let run_typing (debug : bool) (profile : bool) (cache_enabled : bool) (spec : spec) (program : value) :
+let run_typing (debug : bool) (profile : bool) (spec : spec) (program : value) :
     value list =
   Builtin.init ();
-  is_cache_enabled := cache_enabled;
   Cache.reset !cache;
   let ctx = Ctx.empty debug profile in
   let ctx = load_spec ctx spec in
   let+ ctx, values = invoke_rel ctx ("Prog_ok" $ no_region) [ program ] in
   Ctx.profile ctx;
-  (*Printf.printf "caching hits: %d" !hits;*)
   values
