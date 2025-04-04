@@ -972,13 +972,14 @@ let load_spec (ctx : Ctx.t) (spec : spec) : Ctx.t =
 
 (* Entry point: run typing rule from `Prog_ok` relation *)
 
-let run_typing (debug : bool) (profile : bool) (cache : bool) (spec : spec) (program : value) :
+let run_typing (debug : bool) (profile : bool) (cache_enabled : bool) (spec : spec) (program : value) :
     value list =
   Builtin.init ();
-  is_cache_enabled := cache;
+  is_cache_enabled := cache_enabled;
+  Cache.reset !cache;
   let ctx = Ctx.empty debug profile in
   let ctx = load_spec ctx spec in
   let+ ctx, values = invoke_rel ctx ("Prog_ok" $ no_region) [ program ] in
   Ctx.profile ctx;
-  Printf.printf "caching hits: %d" !hits;
+  (*Printf.printf "caching hits: %d" !hits;*)
   values
