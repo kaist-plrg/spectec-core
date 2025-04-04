@@ -33,6 +33,10 @@ let funcs =
          Lists.concat_ at targs values_input)
   |> Funcs.add "distinct_" (fun at targs values_input ->
          Lists.distinct_ at targs values_input)
+  |> Funcs.add "partition_" (fun at targs values_input ->
+         Lists.partition_ at targs values_input)
+  |> Funcs.add "assoc_" (fun at targs values_input ->
+         Lists.assoc_ at targs values_input)
   (* Sets *)
   |> Funcs.add "intersect_set" (fun at targs values_input ->
          Sets.intersect_set at targs values_input)

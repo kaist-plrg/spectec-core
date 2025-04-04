@@ -330,33 +330,50 @@ and eval_un_exp (ctx : Ctx.t) (unop : unop) (_optyp : optyp) (exp : exp) :
 
 (* Binary expression evaluation *)
 
-and eval_bin_bool (binop : Bool.binop) (value_l : value) (value_r : value) :
-    value =
+and eval_bin_bool (ctx : Ctx.t) (binop : Bool.binop) (exp_l : exp) (exp_r : exp)
+    : Ctx.t * value =
+  let ctx, value_l = eval_exp ctx exp_l in
   let bool_l = Value.get_bool value_l in
-  let bool_r = Value.get_bool value_r in
   match binop with
-  | `AndOp -> BoolV (bool_l && bool_r)
-  | `OrOp -> BoolV (bool_l || bool_r)
-  | `ImplOp -> BoolV ((not bool_l) || bool_r)
-  | `EquivOp -> BoolV (bool_l = bool_r)
+  | `AndOp when not bool_l -> (ctx, BoolV false)
+  | `AndOp ->
+      let ctx, value_r = eval_exp ctx exp_r in
+      let bool_r = Value.get_bool value_r in
+      let value = BoolV (bool_l && bool_r) in
+      (ctx, value)
+  | `OrOp when bool_l -> (ctx, BoolV true)
+  | `OrOp ->
+      let ctx, value_r = eval_exp ctx exp_r in
+      let bool_r = Value.get_bool value_r in
+      let value = BoolV (bool_l || bool_r) in
+      (ctx, value)
+  | `ImplOp when not bool_l -> (ctx, BoolV true)
+  | `ImplOp ->
+      let ctx, value_r = eval_exp ctx exp_r in
+      let bool_r = Value.get_bool value_r in
+      let value = BoolV ((not bool_l) || bool_r) in
+      (ctx, value)
+  | `EquivOp ->
+      let ctx, value_r = eval_exp ctx exp_r in
+      let bool_r = Value.get_bool value_r in
+      let value = BoolV (bool_l = bool_r) in
+      (ctx, value)
 
-and eval_bin_num (binop : Num.binop) (value_l : value) (value_r : value) : value
-    =
+and eval_bin_num (ctx : Ctx.t) (binop : Num.binop) (exp_l : exp) (exp_r : exp) :
+    Ctx.t * value =
+  let ctx, value_l = eval_exp ctx exp_l in
   let num_l = Value.get_num value_l in
+  let ctx, value_r = eval_exp ctx exp_r in
   let num_r = Value.get_num value_r in
   let num = Num.bin binop num_l num_r in
-  NumV num
+  let value = NumV num in
+  (ctx, value)
 
 and eval_bin_exp (ctx : Ctx.t) (binop : binop) (_optyp : optyp) (exp_l : exp)
     (exp_r : exp) : Ctx.t * value =
-  let ctx, value_l = eval_exp ctx exp_l in
-  let ctx, value_r = eval_exp ctx exp_r in
-  let value =
-    match binop with
-    | #Bool.binop as binop -> eval_bin_bool binop value_l value_r
-    | #Num.binop as binop -> eval_bin_num binop value_l value_r
-  in
-  (ctx, value)
+  match binop with
+  | #Bool.binop as binop -> eval_bin_bool ctx binop exp_l exp_r
+  | #Num.binop as binop -> eval_bin_num ctx binop exp_l exp_r
 
 (* Comparison expression evaluation *)
 

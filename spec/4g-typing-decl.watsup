@@ -440,7 +440,7 @@ rule Decl_ok/actiond:
   ----
   -- FuncDef_wf: $bound_tids(p, C_0) |- fd
   ----
-  -- if C_4 = $add_funcdef(p, C_0, fid, fd)
+  -- if C_4 = $add_funcdef_non_overload(p, C_0, fid, fd)
 
 ;;
 ;; Function declaration
@@ -682,8 +682,8 @@ rule Decl_ok/parserd:
   ----
   -- if $distinct_<statelabel>(statelabel*)
   -- if $in_set<statelabel>("start", SET statelabel*)
-  -- if $not_in_set<statelabel>("accept", SET statelabel*)
-  -- if $not_in_set<statelabel>("reject", SET statelabel*)
+  -- if ~$in_set<statelabel>("accept", SET statelabel*)
+  -- if ~$in_set<statelabel>("reject", SET statelabel*)
   -- if statelabel'* = "accept" :: "reject" :: statelabel*
   ----
   -- if C_5 = $set_localkind(C_4, PARSERSTATE)
@@ -842,39 +842,78 @@ relation Table_entry_keyset_ok:
   cursor context tblctx |- key keyset : tblstate keysetIL
   hint(input %0 %1 %2 %3 %4)
 
-rule Table_entry_keyset_ok/exprk-maske-lpm:
+rule Table_entry_keyset_ok/exprk-lpm-maske:
   p C tblctx |- (typ_k, "lpm") (ExprK (MaskE expr_b expr_m)) : tblstate_e (ExprK exprIL)
   -- Expr_ok: p C |- (MaskE expr_b expr_m) : exprIL
   -- if `(SetT typ; _) = $annot(exprIL)
   -- if exprIL = MaskE exprIL_b exprIL_m _
   ----
-  -- if tblctx.MODE = NOPRILPM nat_w
+  -- if tblctx.MODE = NOPRILPM n_w
   ----
   -- Eval_static: p C |- exprIL_m ~> val_m
-  -- if int_m = $get_num(val_m)
+  -- if i_m = $get_num(val_m)
   ----
-  -- if tblstate_e = $get_lpm_prefix(FBitV nat_w $to_bitstr(nat_w, int_m))
+  -- if tblstate_e = $get_lpm_prefix(FBitV n_w $to_bitstr(n_w, i_m))
   -- Sub_impl: typ << typ_k
 
-rule Table_entry_keyset_ok/exprk-maske-ternary:
+rule Table_entry_keyset_ok/exprk-lpm-else:
+  p C tblctx |- (typ_k, "lpm") (ExprK expr) : (LPM n_w) (ExprK exprIL')
+  -- if ~($is_maske(expr) \/ $is_rangee(expr))
+  ----
+  -- Expr_ok: p C |- expr : exprIL
+  -- if `(typ; ctk) = $annot(exprIL)
+  ----
+  -- if tblctx.MODE = NOPRILPM n_w
+  ----
+  -- Sub_impl: typ << typ_k
+  ----
+  -- if exprIL' = CastE (SetT typ_k) exprIL `(SetT typ_k; ctk)
+
+rule Table_entry_keyset_ok/exprk-ternary-maske:
   p C tblctx |- (typ_k, "ternary") (ExprK (MaskE expr_b expr_m)) : NOLPM (ExprK exprIL)
   -- Expr_ok: p C |- (MaskE expr_b expr_m) : exprIL
   -- if `(SetT typ; _) = $annot(exprIL)
   -- Sub_impl: typ << typ_k
 
-rule Table_entry_keyset_ok/exprk-rangee:
+rule Table_entry_keyset_ok/exprk-ternary-else:
+  p C tblctx |- (typ_k, "ternary") (ExprK expr) : NOLPM (ExprK exprIL')
+  -- if ~($is_maske(expr) \/ $is_rangee(expr))
+  ----
+  -- Expr_ok: p C |- expr : exprIL
+  -- if `(typ; ctk) = $annot(exprIL)
+  ----
+  -- Sub_impl: typ << typ_k
+  ----
+  -- if exprIL' = CastE (SetT typ_k) exprIL `(SetT typ_k; ctk)
+
+rule Table_entry_keyset_ok/exprk-range-rangee:
   p C tblctx |- (typ_k, "range") (ExprK (RangeE expr_l expr_r)) : NOLPM (ExprK exprIL)
   -- Expr_ok: p C |- (RangeE expr_l expr_r) : exprIL
   -- if `(SetT typ; _) = $annot(exprIL)
   -- Sub_impl: typ << typ_k
 
-rule Table_entry_keyset_ok/exprk-else:
-  p C tblctx |- (typ_k, matchkind) (ExprK expr) : NOLPM (ExprK exprIL)
+rule Table_entry_keyset_ok/exprk-range-else:
+  p C tblctx |- (typ_k, "range") (ExprK expr) : NOLPM (ExprK exprIL')
   -- if ~($is_maske(expr) \/ $is_rangee(expr))
-  -- Expr_ok: LOCAL C |- expr : exprIL
-  -- if `(typ; _) = $annot(exprIL)
+  ----
+  -- Expr_ok: p C |- expr : exprIL
+  -- if `(typ; ctk) = $annot(exprIL)
   ----
   -- Sub_impl: typ << typ_k
+  ----
+  -- if exprIL' = CastE (SetT typ_k) exprIL `(SetT typ_k; ctk)
+
+rule Table_entry_keyset_ok/exprk-else:
+  p C tblctx |- (typ_k, matchkind) (ExprK expr) : NOLPM (ExprK exprIL')
+  -- if matchkind =/= "lpm" /\ matchkind =/= "ternary" /\ matchkind =/= "range"
+  -- if ~($is_maske(expr) \/ $is_rangee(expr))
+  ----
+  -- Expr_ok: p C |- expr : exprIL
+  -- if `(typ; ctk) = $annot(exprIL)
+  ----
+  -- Sub_impl: typ << typ_k
+  ----
+  -- if exprIL' = CastE (SetT typ_k) exprIL `(SetT typ_k; ctk)
 
 rule Table_entry_keyset_ok/defaultk-lpm:
   p C tblctx |- (typ_k, "lpm") DefaultK : (LPM n_w) DefaultK
@@ -917,6 +956,7 @@ rule Table_entry_keysets_ok/noprilpm-defaultk:
 
 rule Table_entry_keysets_ok/else-defaultk:
   p C tblctx |- DefaultK : NOLPM DefaultK
+  -- if tblctx.MODE = NOPRI \/ tblctx.MODE = PRI \/ tblctx.MODE = PRILPM
 
 rule Table_entry_keysets_ok/noprilpm-anyk:
   p C tblctx |- AnyK : (LPM 0) AnyK
@@ -924,6 +964,7 @@ rule Table_entry_keysets_ok/noprilpm-anyk:
 
 rule Table_entry_keysets_ok/else-anyk:
   p C tblctx |- AnyK : NOLPM AnyK
+  -- if tblctx.MODE = NOPRI \/ tblctx.MODE = PRI \/ tblctx.MODE = PRILPM
 
 rule Table_entry_keysets_ok/others:
   p C tblctx |- keyset* : tblstate keysetIL*
@@ -981,76 +1022,84 @@ rule Table_entry_priority_ok/noprilpm:
   -- if tblctx.MODE = NOPRILPM nat
 
 rule Table_entry_priority_ok/priority-values-nil-somep:
-  LOCAL C tblctx tblstate |- expr : tblctx'' (IntV int)
+  LOCAL C tblctx tblstate |- expr : tblctx'' (IntV i)
+  -- if tblctx.MODE = PRI \/ tblctx.MODE = PRILPM
   -- if ~tblctx.ENTRIES.CONST
   -- if tblctx.PRIORITIES.VALUES = eps
   ----
   -- Expr_ok: LOCAL C |- expr : exprIL
   -- Eval_static: LOCAL C |- exprIL ~> val
   ----
-  -- if int = $get_num(val)
-  -- if $(int >= 0)
+  -- if i = $get_num(val)
+  -- if $(i >= 0)
   ----
   -- if tblctx' = tblctx[ .PRIORITIES.INIT = true ]
-  -- if tblctx'' = $add_priority(int, tblctx')
+  -- if tblctx'' = $add_priority(i, tblctx')
 
 rule Table_entry_priority_ok/priority-values-nil-none-lw:
-  LOCAL C tblctx tblstate |- eps : tblctx'' (IntV int)
+  LOCAL C tblctx tblstate |- eps : tblctx' (IntV i)
+  -- if tblctx.MODE = PRI \/ tblctx.MODE = PRILPM
   -- if tblctx.PRIORITIES.VALUES = eps
   -- if tblctx.PRIORITIES.LARGEST_WINS
   ----
-  -- if int_size = tblctx.ENTRIES.SIZE
-  -- if int_delta = tblctx.PRIORITIES.DELTA
+  -- if i_size = tblctx.ENTRIES.SIZE
+  -- if i_delta = tblctx.PRIORITIES.DELTA
   ----
-  -- if int = $((int_size - 1) * int_delta + 1)
-  -- if $(int >= 0)
+  -- if i = $((i_size - 1) * i_delta + 1)
+  -- if $(i >= 0)
   ----
-  -- if tblctx' = tblctx[ .PRIORITIES.INIT = true ]
-  -- if tblctx'' = $add_priority(int, tblctx')
+  -- if tblctx' = $add_priority(i, tblctx)
 
 rule Table_entry_priority_ok/priority-values-nil-none-no-lw:
-  LOCAL C tblctx tblstate |- eps : tblctx'' (IntV 1)
+  LOCAL C tblctx tblstate |- eps : tblctx' (IntV 1)
+  -- if tblctx.MODE = PRI \/ tblctx.MODE = PRILPM
   -- if tblctx.PRIORITIES.VALUES = eps
   -- if ~tblctx.PRIORITIES.LARGEST_WINS
   ----
-  -- if tblctx' = tblctx[ .PRIORITIES.INIT = true ]
-  ----
-  -- if tblctx'' = $add_priority(1, tblctx')
+  -- if tblctx' = $add_priority(1, tblctx)
 
 rule Table_entry_priority_ok/else-somep:
-  LOCAL C tblctx tblstate |- expr : tblctx' (IntV int)
+  LOCAL C tblctx tblstate |- expr : tblctx' (IntV i)
+  -- if tblctx.MODE = PRI \/ tblctx.MODE = PRILPM
   -- if ~tblctx.ENTRIES.CONST
+  -- if tblctx.PRIORITIES.VALUES =/= eps
   -- if tblctx.PRIORITIES.INIT
   ----
   -- Expr_ok: LOCAL C |- expr : exprIL
   -- Eval_static: LOCAL C |- exprIL ~> val
   ----
-  -- if int = $get_num(val)
-  -- if $(int >= 0)
+  -- if i = $get_num(val)
+  -- if $(i >= 0)
   ----
-  -- if tblctx' = $add_priority(int, tblctx)
+  -- if tblctx' = $add_priority(i, tblctx)
 
 rule Table_entry_priority_ok/else-none-lw:
-  LOCAL C tblctx tblstate |- eps : tblctx' (IntV int')
-  -- if int_delta = tblctx.PRIORITIES.DELTA
-  -- if int = $find_last_priority(tblctx)
+  LOCAL C tblctx tblstate |- eps : tblctx' (IntV i')
+  -- if tblctx.MODE = PRI \/ tblctx.MODE = PRILPM
+  -- if tblctx.PRIORITIES.VALUES =/= eps
+  ----
+  -- if i_delta = tblctx.PRIORITIES.DELTA
+  -- if i = $find_last_priority(tblctx)
   ----
   -- if tblctx.PRIORITIES.LARGEST_WINS
-  -- if int' = $(int - int_delta)
+  -- if i' = $(i - i_delta)
   ----
-  -- if $(int' >= 0)
-  -- if tblctx' = $add_priority(int', tblctx)
+  -- if $(i' >= 0)
+  -- if tblctx' = $add_priority(i', tblctx)
 
 rule Table_entry_priority_ok/else-none-no-lw:
-  LOCAL C tblctx tblstate |- eps : tblctx' (IntV int')
-  -- if int_delta = tblctx.PRIORITIES.DELTA
-  -- if int = $find_last_priority(tblctx)
+  LOCAL C tblctx tblstate |- eps : tblctx' (IntV i')
+  -- if tblctx.MODE = PRI \/ tblctx.MODE = PRILPM
+  -- if tblctx.PRIORITIES.VALUES =/= eps
+  ----
+  -- if i_delta = tblctx.PRIORITIES.DELTA
+  -- if i = $find_last_priority(tblctx)
   ----
   -- if ~tblctx.PRIORITIES.LARGEST_WINS
-  -- if int' = $(int + int_delta)
+  -- if i' = $(i + i_delta)
   ----
-  -- if $(int' >= 0)
-  -- if tblctx' = $add_priority(int', tblctx)
+  -- if $(i' >= 0)
+  -- if tblctx' = $add_priority(i', tblctx)
 
 
 relation Table_entry_ok:
@@ -1085,7 +1134,7 @@ relation Table_entries_ok:
 
 rule Table_entries_ok:
   p C tblctx_0 |- (b tblentry*) : tblctx_3 (b tblentryIL*)
-  -- if $implies(|tblctx_0.KEYS| = 0, |tblentry*| = 0)
+  -- if (|tblctx_0.KEYS| = 0) => (|tblentry*| = 0)
   -- if tblctx_1 = tblctx_0[ .ENTRIES.SIZE = |tblentry*| ]
   ----
   -- if tblctx_2 = tblctx_1[ .ENTRIES.CONST = b ]
@@ -1146,7 +1195,7 @@ rule Table_custom_ok/priority_delta:
 
 rule Table_custom_ok/unknown:
   p C tblctx |- (b member expr) : tblctx (b member exprIL)
-  -- if member =/= "size" \/ member =/= "largest_priority_wins" \/ member =/= "priority_delta"
+  -- if member =/= "size" /\ member =/= "largest_priority_wins" /\ member =/= "priority_delta"
   ----
   -- Expr_ok: p C |- expr : exprIL
 
