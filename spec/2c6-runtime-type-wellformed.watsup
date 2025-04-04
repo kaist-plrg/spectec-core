@@ -380,12 +380,12 @@ rule TypeDef_wf/polyd:
 rule ParamType_wf/none:
   tidset |- _ dir typ eps
   -- Type_wf: tidset |- typ
-  -- if $implies($is_externt($canon_typ(typ)), dir = NO)
+  -- if $is_externt($canon_typ(typ)) => (dir = NO)
 
 rule ParamType_wf/some:
   tidset |- _ dir typ val
   -- Type_wf: tidset |- typ
-  -- if $implies($is_externt($canon_typ(typ)), dir = NO)
+  -- if $is_externt($canon_typ(typ)) => (dir = NO)
   -- if dir = IN \/ dir = NO
 
 rule ParamTypes_wf:

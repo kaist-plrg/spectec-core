@@ -12,16 +12,6 @@ var w : nat
 var t : text
 
 ;;
-;; General bool functions
-;;
-
-dec $implies(bool, bool) : bool
-    hint(show % %latex("\\Rightarrow") %)
-
-def $implies(true, b) = b
-def $implies(false, b) = true
-
-;;
 ;; General nat functions
 ;;
 
@@ -71,17 +61,8 @@ dec $concat_<X>((X*)*) : X*
 
 dec $partition_<X>(X*, nat) : (X*, X*)
 
-def $partition_<X>(X*, 0) = (eps, X*)
-def $partition_<X>(X_h :: X_t*, n) = (X_h :: X_l*, X_r*)
-  -- if (X_l*, X_r*) = $partition_<X>(X_t*, $(n - 1))
-
 dec $assoc_<X, Y>(X, (X, Y)*) : Y?
     hint(show %2`[%1])
-
-def $assoc_<X, Y>(_, eps) = eps
-def $assoc_<X, Y>(X_key, (X_key, Y_val) :: (X, Y)*) = Y_val
-def $assoc_<X, Y>(X_key, (X_h, Y_h) :: (X_t, Y_t)*)
-  = $assoc_<X, Y>(X_key, (X_t, Y_t)*)
 
 dec $distinct_<K>(K*) : bool
     hint(show %2 $distinct)
@@ -100,10 +81,6 @@ def $empty_set<K> = SET eps
 dec $in_set<K>(K, set<K>) : bool
     hint(show %2 %latex("\\in") %3)
 def $in_set<K>(K, SET K'*) = K <- K'*
-
-dec $not_in_set<K>(K, set<K>) : bool
-    hint(show %2 %latex("\\notin") %3)
-def $not_in_set<K>(K, SET K'*) = ~($in_set<K>(K, SET K'*))
 
 dec $intersect_set<K>(set<K>, set<K>) : set<K>
     hint(show %2 %latex("\\cap") %3)

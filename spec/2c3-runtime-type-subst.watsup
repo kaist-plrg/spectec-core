@@ -224,7 +224,7 @@ def $subst_typdef_poly(theta, PolyD (tparam*, tparam_hidden*) -> typ) = PolyD (t
   -- if tidset_capture = $unions_set<tid>(($free_typ($find_map<tid, typ>(theta, tid_free)))*)
   ----
   -- if tparam'* = $fresh_tids(|tparam* ++ tparam_hidden*|)
-  -- if ($not_in_set<tid>(tparam', tidset_capture))*
+  -- if (~$in_set<tid>(tparam', tidset_capture))*
   ----
   -- if tparam''* = tparam'*[0 : |tparam*|]
   -- if tparam''_hidden* = tparam'*[|tparam*| : |tparam_hidden*|]
@@ -245,7 +245,7 @@ def $subst_funcdef(theta, PolyFD (tparam*, tparam_hidden*) -> ft) = PolyFD (tpar
   -- if tidset_capture = $unions_set<tid>(($free_typ($find_map<tid, typ>(theta, tid_free)))*)
   ----
   -- if tparam'* = $fresh_tids(|tparam* ++ tparam_hidden*|)
-  -- if ($not_in_set<tid>(tparam', tidset_capture))*
+  -- if (~$in_set<tid>(tparam', tidset_capture))*
   ----
   -- if tparam''* = tparam'*[0 : |tparam*|]
   -- if tparam''_hidden* = tparam'*[|tparam*| : |tparam_hidden*|]
