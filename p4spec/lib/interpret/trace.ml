@@ -178,6 +178,11 @@ let rec log ?(tagger = Tagger.empty) ?(depth = 0) ?(idx = 0) ?(verbose = false)
         Format.asprintf "--- input ---\n%s\n-------------\n"
           (String.concat "\n" (List.map string_of_value values))
   in
+  let log_time fmt time =
+    match time with
+    | ING _ -> assert false
+    | _ -> pp_time fmt time
+  in
   match trace with
   | Rel { id_rel; id_rule; values_input; time; subtraces } ->
       let depth = depth + 1 in
@@ -185,21 +190,21 @@ let rec log ?(tagger = Tagger.empty) ?(depth = 0) ?(idx = 0) ?(verbose = false)
       Format.asprintf "[>>> %s] Rule %s/%s\n%s%s[<<< %s] Rule %s/%s %a"
         (tag tagger depth) id_rel.it id_rule.it (log_values values_input)
         (logs ~tagger ~depth ~verbose subtraces)
-        (tag tagger depth) id_rel.it id_rule.it pp_time time
+        (tag tagger depth) id_rel.it id_rule.it log_time time
   | Dec { id_func; idx_clause; values_input; time; subtraces } ->
       let depth = depth + 1 in
       let tagger = update_tagger tagger depth in
       Format.asprintf "[>>> %s] Clause %s/%d\n%s%s[<<< %s] Clause %s/%d %a"
         (tag tagger depth) id_func.it idx_clause (log_values values_input)
         (logs ~tagger ~depth ~verbose subtraces)
-        (tag tagger depth) id_func.it idx_clause pp_time time
+        (tag tagger depth) id_func.it idx_clause log_time time
   | Iter { inner; time; subtraces } ->
       let depth = depth + 1 in
       let tagger = update_tagger tagger depth in
       Format.asprintf "[>>> %s] Iteration %s\n%s[<<< %s] Iteration %a"
         (tag tagger depth) inner
         (logs ~tagger ~depth ~verbose subtraces)
-        (tag tagger depth) pp_time time
+        (tag tagger depth) log_time time
   | Prem prem ->
       Format.asprintf "[%s-%d] %s" (tag tagger depth) idx (string_of_prem prem)
   | Empty -> ""
