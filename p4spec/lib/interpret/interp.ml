@@ -33,16 +33,29 @@ let is_func_cached = function
   | "nestable_structt"
   | "canon_typ"
   | "subst_typ"
+(*| "subst_typdef_poly"*)
   | "is_nominal"
   | "find_map"
+  | "update_map"
+  | "bound_tids"
+  | "in_set"
+  | "dom_map"
+  | "merge_cstr'"
+  | "merge_cstr"
+  | "find_matching_funcs"
   | "nestable_structt_in_headert" -> true
   | _ -> false
 
 let func_cache = ref (Cache.create 1000)
 
 let is_rule_cached = function
+  | "Sub_impl" | "Sub_expl" | "Sub_impl_canon" | "Sub_expl_canon"
+  | "Type_wf"
+(*| "Type_ok"*)
+  | "Type_alpha" -> true
   | _ -> false
 
+let rule_cache = ref (Cache.create 50)
 
 let rec downcast (ctx : Ctx.t) (typ : typ) (value : value) : value attempt =
   match typ.it with
@@ -800,7 +813,7 @@ and invoke_rel' (ctx : Ctx.t) (id : id) (values_input : value list) :
   let _, inputs, rules = Ctx.find_rel Local ctx id in
   guard (rules <> []) id.at "relation has no rules";
   (* Apply the first matching rule *)
-  let attempt_rules ctx id values_input inputs rules= 
+  let attempt_rules () = 
     let attempt_rules' =
       List.map
         (fun rule ->
@@ -832,7 +845,21 @@ and invoke_rel' (ctx : Ctx.t) (id : id) (values_input : value list) :
         rules
     in
     choice attempt_rules'
-  in attempt_rules ctx id values_input inputs rules
+  in
+  if is_rule_cached id.it then (
+    let cache_result = Cache.find_opt !rule_cache (id.it, values_input) in
+    match cache_result with
+    | Some (subtraces, values_output) -> 
+      let trace = Trace.replace_subtraces ctx.trace subtraces in
+      Ok ( { ctx with trace }, values_output)
+    | None -> 
+      let* ctx, values_output = attempt_rules () in
+      let subtraces = Trace.get_wiped_subtraces ctx.trace in
+      Cache.add !rule_cache (id.it, values_input) (subtraces, values_output);
+      Ok (ctx, values_output))
+  else 
+    let* ctx, values_output = attempt_rules () in
+    Ok (ctx, values_output)
 (* Invoke a function *)
 
 and match_clause (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (clause : clause)
@@ -972,6 +999,7 @@ let run_typing (debug : bool) (profile : bool) (spec : spec) (program : value) :
     value list =
   Builtin.init ();
   Cache.reset !func_cache;
+  Cache.reset !rule_cache;
   let ctx = Ctx.empty debug profile in
   let ctx = load_spec ctx spec in
   let+ ctx, values = invoke_rel ctx ("Prog_ok" $ no_region) [ program ] in
