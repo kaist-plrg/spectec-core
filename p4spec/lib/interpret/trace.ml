@@ -9,6 +9,7 @@ type time =
   (* start time *)
   | END of (float * float)
 (* accumulated duration, duration *)
+  | CACHED
 
 type t =
   | Rel of {
@@ -58,7 +59,11 @@ let close_time (time_start : time) (subtraces : t list) : time =
            match trace with
            | Rel { time; _ } | Dec { time; _ } | Iter { time; _ } -> (
                match time with
-               | END (duration_acc, _) -> duration_acc
+               | END (duration_acc, _) ->
+  (if duration_acc < 0.0 then
+     Format.asprintf "negative inner acc: %.6f" duration_acc |> print_endline);
+                 duration_acc
+               | CACHED -> 0.0
                | _ -> assert false)
            | _ -> 0.0)
     |> List.fold_left ( +. ) 0.0
@@ -69,15 +74,52 @@ let close_time (time_start : time) (subtraces : t list) : time =
 
 let close (trace : t) : t =
   match trace with
-  | Rel { id_rel; id_rule; values_input; time; subtraces; _ } ->
+  | Rel { id_rel; id_rule; values_input; time; subtraces } ->
       let time = close_time time subtraces in
       Rel { id_rel; id_rule; values_input; time; subtraces }
-  | Dec { id_func; idx_clause; values_input; time; subtraces; _ } ->
+  | Dec { id_func; idx_clause; values_input; time; subtraces } ->
       let time = close_time time subtraces in
       Dec { id_func; idx_clause; values_input; time; subtraces }
   | Iter { inner; time; subtraces } ->
       let time = close_time time subtraces in
       Iter { inner; time; subtraces }
+  | _ -> assert false
+
+(* Pretty Printing *)
+
+let pp_time fmt (time: time) =
+  match time with
+  | ING time_start -> Format.fprintf fmt "ING: %.6f ago" (Unix.gettimeofday () -. time_start)
+  | END (_, dur) -> Format.fprintf fmt "%.6f" dur
+  | CACHED -> Format.fprintf fmt "[cached]"
+
+(* Caching *)
+
+let rec wipe_time (trace: t) : t =
+  match trace with
+  | Rel t -> 
+    Rel { t with time = CACHED; subtraces = List.map wipe_time t.subtraces }
+  | Dec t -> 
+    Dec { t with time = CACHED; subtraces = List.map wipe_time t.subtraces }
+  | Iter t ->
+    Iter { t with time = CACHED; subtraces = List.map wipe_time t.subtraces }
+  | _ -> trace
+
+let get_wiped_subtraces (trace: t) : t list =
+  match trace with
+  | Rel t -> List.map wipe_time t.subtraces
+  | Dec t -> List.map wipe_time t.subtraces
+  | Iter t -> List.map wipe_time t.subtraces
+  | _ -> assert false
+
+let replace_subtraces (trace : t) (subtraces_new : t list) : t =
+  match trace with
+  | Rel r ->
+    Rel { r with subtraces=subtraces_new }
+  | Dec r ->
+    Dec { r with subtraces=subtraces_new }
+  | Iter r ->
+    Iter { r with subtraces=subtraces_new }
   | _ -> assert false
 
 (* Committing *)
@@ -138,35 +180,26 @@ let rec log ?(tagger = Tagger.empty) ?(depth = 0) ?(idx = 0) ?(verbose = false)
   in
   match trace with
   | Rel { id_rel; id_rule; values_input; time; subtraces } ->
-      let duration =
-        match time with END (_, duration) -> duration | _ -> assert false
-      in
       let depth = depth + 1 in
       let tagger = update_tagger tagger depth in
-      Format.asprintf "[>>> %s] Rule %s/%s\n%s%s[<<< %s] Rule %s/%s %.6f"
+      Format.asprintf "[>>> %s] Rule %s/%s\n%s%s[<<< %s] Rule %s/%s %a"
         (tag tagger depth) id_rel.it id_rule.it (log_values values_input)
         (logs ~tagger ~depth ~verbose subtraces)
-        (tag tagger depth) id_rel.it id_rule.it duration
+        (tag tagger depth) id_rel.it id_rule.it pp_time time
   | Dec { id_func; idx_clause; values_input; time; subtraces } ->
-      let duration =
-        match time with END (_, duration) -> duration | _ -> assert false
-      in
       let depth = depth + 1 in
       let tagger = update_tagger tagger depth in
-      Format.asprintf "[>>> %s] Clause %s/%d\n%s%s[<<< %s] Clause %s/%d %.6f"
+      Format.asprintf "[>>> %s] Clause %s/%d\n%s%s[<<< %s] Clause %s/%d %a"
         (tag tagger depth) id_func.it idx_clause (log_values values_input)
         (logs ~tagger ~depth ~verbose subtraces)
-        (tag tagger depth) id_func.it idx_clause duration
+        (tag tagger depth) id_func.it idx_clause pp_time time
   | Iter { inner; time; subtraces } ->
-      let duration =
-        match time with END (_, duration) -> duration | _ -> assert false
-      in
       let depth = depth + 1 in
       let tagger = update_tagger tagger depth in
-      Format.asprintf "[>>> %s] Iteration %s\n%s[<<< %s] Iteration %.6f"
+      Format.asprintf "[>>> %s] Iteration %s\n%s[<<< %s] Iteration %a"
         (tag tagger depth) inner
         (logs ~tagger ~depth ~verbose subtraces)
-        (tag tagger depth) duration
+        (tag tagger depth) pp_time time
   | Prem prem ->
       Format.asprintf "[%s-%d] %s" (tag tagger depth) idx (string_of_prem prem)
   | Empty -> ""
@@ -210,18 +243,22 @@ let rec profile' (rules : counter) (funcs : counter) (trace : t) :
     counter * counter =
   match trace with
   | Rel { id_rel; subtraces; time; _ } ->
-      let duration =
-        match time with END (_, duration) -> duration | _ -> assert false
+      let rules = 
+        match time with
+        | END (_, duration) -> update_counter id_rel.it duration rules 
+        | CACHED -> rules
+        | _ -> assert false
       in
-      let rules = update_counter id_rel.it duration rules in
       List.fold_left
         (fun (rules, funcs) trace -> profile' rules funcs trace)
         (rules, funcs) subtraces
   | Dec { id_func; subtraces; time; _ } ->
-      let duration =
-        match time with END (_, duration) -> duration | _ -> assert false
+      let funcs = 
+        match time with
+        | END (_, duration) -> update_counter id_func.it duration funcs
+        | CACHED -> funcs
+        | _ -> assert false
       in
-      let funcs = update_counter id_func.it duration funcs in
       List.fold_left
         (fun (rules, funcs) trace -> profile' rules funcs trace)
         (rules, funcs) subtraces

@@ -27,8 +27,6 @@ module Pp = Il.Print
 
    Note that structs are invariant in SpecTec, so we do not need to check for subtyping *)
 
-let cache = ref (Cache.create 1000)
-
 let is_func_cached = function
   | "specialize_typdef" 
   | "free_typ"
@@ -39,6 +37,12 @@ let is_func_cached = function
   | "find_map"
   | "nestable_structt_in_headert" -> true
   | _ -> false
+
+let func_cache = ref (Cache.create 1000)
+
+let is_rule_cached = function
+  | _ -> false
+
 
 let rec downcast (ctx : Ctx.t) (typ : typ) (value : value) : value attempt =
   match typ.it with
@@ -796,38 +800,39 @@ and invoke_rel' (ctx : Ctx.t) (id : id) (values_input : value list) :
   let _, inputs, rules = Ctx.find_rel Local ctx id in
   guard (rules <> []) id.at "relation has no rules";
   (* Apply the first matching rule *)
-  let attempt_rules =
-    List.map
-      (fun rule ->
-        let id_rule, _, _ = rule.it in
-        let attempt_rule' (ctx_local : Ctx.t) (prems : prem list)
-            (exps_output : exp list) : (Ctx.t * value list) attempt =
-          let* ctx_local = eval_prems ctx_local prems in
-          let ctx_local, values_output = eval_exps ctx_local exps_output in
-          let ctx_local = Ctx.trace_close ctx_local in
-          let ctx = Ctx.trace_commit ctx ctx_local.trace in
-          Ok (ctx, values_output)
-        in
-        let attempt_rule () : (Ctx.t * value list) attempt =
-          (* Create a subtrace for the rule *)
-          let ctx_local = Ctx.localize ctx in
-          let ctx_local =
-            Ctx.trace_open_rel ctx_local id id_rule values_input
-          in
-          (* Try to match the rule *)
-          let* ctx_local, prems, exps_output =
-            match_rule ctx_local inputs rule values_input
-          in
-          (* Try evaluating the rule *)
-          attempt_rule' ctx_local prems exps_output
-          |> nest id.at
+  let attempt_rules ctx id values_input inputs rules= 
+    let attempt_rules' =
+      List.map
+        (fun rule ->
+           let id_rule, _, _ = rule.it in
+           let attempt_rule' (ctx_local : Ctx.t) (prems : prem list)
+               (exps_output : exp list) : (Ctx.t * value list) attempt =
+             let* ctx_local = eval_prems ctx_local prems in
+             let ctx_local, values_output = eval_exps ctx_local exps_output in
+             let ctx_local = Ctx.trace_close ctx_local in
+             let ctx = Ctx.trace_commit ctx ctx_local.trace in
+             Ok (ctx, values_output)
+           in
+           let attempt_rule () : (Ctx.t * value list) attempt =
+             (* Create a subtrace for the rule *)
+             let ctx_local = Ctx.localize ctx in
+             let ctx_local =
+               Ctx.trace_open_rel ctx_local id id_rule values_input
+             in
+             (* Try to match the rule *)
+             let* ctx_local, prems, exps_output =
+               match_rule ctx_local inputs rule values_input
+             in
+             (* Try evaluating the rule *)
+             attempt_rule' ctx_local prems exps_output
+             |> nest id.at
                (F.asprintf "application of rule %s/%s failed" id.it id_rule.it)
-        in
-        attempt_rule)
-      rules
-  in
-  choice attempt_rules
-
+           in
+           attempt_rule)
+        rules
+    in
+    choice attempt_rules'
+  in attempt_rules ctx id values_input inputs rules
 (* Invoke a function *)
 
 and match_clause (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (clause : clause)
@@ -860,18 +865,8 @@ and invoke_func_builtin (ctx : Ctx.t) (id : id) (targs : targ list)
   let ctx_local = Ctx.trace_open_dec ctx_local id 0 values_input in
   let* value_output =
     try
-      if is_func_cached id.it then (
-        let val_opt = Cache.find_opt !cache (id.it, values_input)in
-        match val_opt with
-        | Some value_output -> 
-          Ok value_output
-        | None -> 
-          (let value_output = Builtin.invoke id targs values_input in
-           Cache.add !cache (id.it, values_input) value_output;
-          Ok value_output))
-      else 
-        let value_output = Builtin.invoke id targs values_input in
-        Ok value_output
+      let value_output = Builtin.invoke id targs values_input in
+      Ok value_output
     with Util.Error.Error (at, msg) -> fail at msg
   in
   let ctx_local = Ctx.trace_close ctx_local in
@@ -896,8 +891,8 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
   (* Evaluate arguments *)
   let ctx, values_input = eval_args ctx args in
   (* Apply the first matching clause *)
-  let attempt id clauses tparams targs ctx values_input= 
-    let attempt_clauses =
+  let attempt_clauses () = 
+    let attempt_clauses' =
       List.mapi
         (fun idx_clause clause ->
            let attempt_clause' (ctx_local : Ctx.t) (prems : prem list)
@@ -937,19 +932,21 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
            attempt_clause)
         clauses
     in
-    choice attempt_clauses
+    choice attempt_clauses'
   in
   if is_func_cached id.it then (
-    let val_opt = Cache.find_opt !cache (id.it, values_input) in
-    match val_opt with
-    | Some value_output -> 
-      Ok (ctx, value_output)
+    let cache_result = Cache.find_opt !func_cache (id.it, values_input) in
+    match cache_result with
+    | Some (subtraces, value_output) -> 
+      let trace = Trace.replace_subtraces ctx.trace subtraces in
+      Ok ( { ctx with trace }, value_output)
     | None -> 
-      let* ctx, value_output = attempt id clauses tparams targs ctx values_input in
-      Cache.add !cache (id.it, values_input) value_output;
+      let* ctx, value_output = attempt_clauses () in
+      let subtraces = Trace.get_wiped_subtraces ctx.trace in
+      Cache.add !func_cache (id.it, values_input) (subtraces, value_output);
       Ok (ctx, value_output))
   else 
-    let* ctx, value_output = attempt id clauses tparams targs ctx values_input in
+    let* ctx, value_output = attempt_clauses () in
     Ok (ctx, value_output)
 
 (* Load definitions into a context *)
@@ -974,7 +971,7 @@ let load_spec (ctx : Ctx.t) (spec : spec) : Ctx.t =
 let run_typing (debug : bool) (profile : bool) (spec : spec) (program : value) :
     value list =
   Builtin.init ();
-  Cache.reset !cache;
+  Cache.reset !func_cache;
   let ctx = Ctx.empty debug profile in
   let ctx = load_spec ctx spec in
   let+ ctx, values = invoke_rel ctx ("Prog_ok" $ no_region) [ program ] in
