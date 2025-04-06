@@ -21,17 +21,21 @@ let rec free_exp (exp : exp) : t =
   | UnE (_, _, exp) -> free_exp exp
   | BinE (_, _, exp_l, exp_r) -> free_exp exp_l + free_exp exp_r
   | CmpE (_, _, exp_l, exp_r) -> free_exp exp_l + free_exp exp_r
+  | UpCastE (_, exp) -> free_exp exp
+  | DownCastE (_, exp) -> free_exp exp
+  | SubE (exp, _) -> free_exp exp
+  | MatchE (exp, _) -> free_exp exp
   | TupleE exps -> free_exps exps
   | CaseE (_, exps) -> free_exps exps
+  | StrE expfields -> expfields |> List.map snd |> free_exps
   | OptE (Some exp) -> free_exp exp
   | OptE None -> empty
-  | StrE expfields -> expfields |> List.map snd |> free_exps
-  | DotE (exp, _) -> free_exp exp
   | ListE exps -> free_exps exps
   | ConsE (exp_h, exp_t) -> free_exp exp_h + free_exp exp_t
   | CatE (exp_l, exp_r) -> free_exp exp_l + free_exp exp_r
   | MemE (exp_e, exp_s) -> free_exp exp_e + free_exp exp_s
   | LenE exp -> free_exp exp
+  | DotE (exp, _) -> free_exp exp
   | IdxE (exp_b, exp_i) -> free_exp exp_b + free_exp exp_i
   | SliceE (exp_b, exp_l, exp_h) ->
       free_exp exp_b + free_exp exp_l + free_exp exp_h
@@ -39,7 +43,6 @@ let rec free_exp (exp : exp) : t =
       free_exp exp_b + free_path path + free_exp exp_f
   | CallE (_, _, args) -> free_args args
   | IterE (exp, _) -> free_exp exp
-  | CastE (exp, _) -> free_exp exp
 
 and free_exps (exps : exp list) : t =
   exps |> List.map free_exp |> List.fold_left ( + ) empty

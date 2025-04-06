@@ -91,6 +91,10 @@ let rec rename_exp (dctx : Dctx.t) (renv : REnv.t) (exp : exp) :
           let exp = VarE id_rename $$ (at, note) in
           (dctx, renv, exp)
       | None -> (dctx, renv, exp))
+  | UpCastE (typ, exp) ->
+      let dctx, renv, exp = rename_exp dctx renv exp in
+      let exp = UpCastE (typ, exp) $$ (at, note) in
+      (dctx, renv, exp)
   | TupleE exps ->
       let dctx, renv, exps = rename_exps dctx renv exps in
       let exp = TupleE exps $$ (at, note) in
@@ -99,17 +103,17 @@ let rec rename_exp (dctx : Dctx.t) (renv : REnv.t) (exp : exp) :
       let dctx, renv, exps = rename_exps dctx renv exps in
       let exp = CaseE (mixop, exps) $$ (at, note) in
       (dctx, renv, exp)
-  | OptE (Some exp) ->
-      let dctx, renv, exp = rename_exp dctx renv exp in
-      let exp = OptE (Some exp) $$ (at, note) in
-      (dctx, renv, exp)
-  | OptE None -> (dctx, renv, exp)
   | StrE expfields ->
       let atoms, exps = List.split expfields in
       let dctx, renv, exps = rename_exps dctx renv exps in
       let expfields = List.combine atoms exps in
       let exp = StrE expfields $$ (at, note) in
       (dctx, renv, exp)
+  | OptE (Some exp) ->
+      let dctx, renv, exp = rename_exp dctx renv exp in
+      let exp = OptE (Some exp) $$ (at, note) in
+      (dctx, renv, exp)
+  | OptE None -> (dctx, renv, exp)
   | ListE exps ->
       let dctx, renv, exps = rename_exps dctx renv exps in
       let exp = ListE exps $$ (at, note) in
@@ -128,10 +132,6 @@ let rec rename_exp (dctx : Dctx.t) (renv : REnv.t) (exp : exp) :
   | IterE (exp, (iter, [])) ->
       let dctx, renv, exp = rename_exp dctx renv exp in
       let exp = IterE (exp, (iter, [])) $$ (at, note) in
-      (dctx, renv, exp)
-  | CastE (exp, typ) ->
-      let dctx, renv, exp = rename_exp dctx renv exp in
-      let exp = CastE (exp, typ) $$ (at, note) in
       (dctx, renv, exp)
   (* Unnecessary to handle non-invertible constructs *)
   | _ -> (dctx, renv, exp)

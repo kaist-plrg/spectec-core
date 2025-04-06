@@ -61,6 +61,22 @@ let rec annotate_exp (bounds : VEnv.t) (exp : exp) : VEnv.t * exp =
       let exp = CmpE (op, cmptyp, exp_l, exp_r) $$ (at, note) in
       let occurs = union occurs_l occurs_r in
       (occurs, exp)
+  | UpCastE (typ, exp) ->
+      let occurs, exp = annotate_exp bounds exp in
+      let exp = UpCastE (typ, exp) $$ (at, note) in
+      (occurs, exp)
+  | DownCastE (typ, exp) ->
+      let occurs, exp = annotate_exp bounds exp in
+      let exp = DownCastE (typ, exp) $$ (at, note) in
+      (occurs, exp)
+  | MatchE (exp, pattern) ->
+      let occurs, exp = annotate_exp bounds exp in
+      let exp = MatchE (exp, pattern) $$ (at, note) in
+      (occurs, exp)
+  | SubE (exp, typ) ->
+      let occurs, exp = annotate_exp bounds exp in
+      let exp = SubE (exp, typ) $$ (at, note) in
+      (occurs, exp)
   | TupleE exps ->
       let occurs, exps = annotate_exps bounds exps in
       let exp = TupleE exps $$ (at, note) in
@@ -71,22 +87,18 @@ let rec annotate_exp (bounds : VEnv.t) (exp : exp) : VEnv.t * exp =
       let notexp = (mixop, exps) in
       let exp = CaseE notexp $$ (at, note) in
       (occurs, exp)
-  | OptE (Some exp) ->
-      let occurs, exp = annotate_exp bounds exp in
-      let exp_opt = Some exp in
-      let exp = OptE exp_opt $$ (at, note) in
-      (occurs, exp)
-  | OptE None -> (empty, exp)
   | StrE expfields ->
       let atoms, exps = List.split expfields in
       let occurs, exps = annotate_exps bounds exps in
       let expfields = List.combine atoms exps in
       let exp = StrE expfields $$ (at, note) in
       (occurs, exp)
-  | DotE (exp, atom) ->
+  | OptE (Some exp) ->
       let occurs, exp = annotate_exp bounds exp in
-      let exp = DotE (exp, atom) $$ (at, note) in
+      let exp_opt = Some exp in
+      let exp = OptE exp_opt $$ (at, note) in
       (occurs, exp)
+  | OptE None -> (empty, exp)
   | ListE exps ->
       let occurs, exps = annotate_exps bounds exps in
       let exp = ListE exps $$ (at, note) in
@@ -112,6 +124,10 @@ let rec annotate_exp (bounds : VEnv.t) (exp : exp) : VEnv.t * exp =
   | LenE exp ->
       let occurs, exp = annotate_exp bounds exp in
       let exp = LenE exp $$ (at, note) in
+      (occurs, exp)
+  | DotE (exp, atom) ->
+      let occurs, exp = annotate_exp bounds exp in
+      let exp = DotE (exp, atom) $$ (at, note) in
       (occurs, exp)
   | IdxE (exp_b, exp_i) ->
       let occurs_b, exp_b = annotate_exp bounds exp_b in
@@ -162,10 +178,6 @@ let rec annotate_exp (bounds : VEnv.t) (exp : exp) : VEnv.t * exp =
               occurs itervars
           in
           (occurs, exp))
-  | CastE (exp, typ) ->
-      let occurs, exp = annotate_exp bounds exp in
-      let exp = CastE (exp, typ) $$ (at, note) in
-      (occurs, exp)
 
 and annotate_exps (bounds : VEnv.t) (exps : exp list) : VEnv.t * exp list =
   match exps with

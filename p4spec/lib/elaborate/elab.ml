@@ -882,7 +882,7 @@ and cast_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp)
   else if sub_plaintyp ctx plaintyp_infer plaintyp_expect then
     let typ_il_expect = elab_plaintyp ctx plaintyp_expect in
     let exp_il =
-      Il.Ast.CastE (exp_il, typ_il_expect) $$ (exp_il.at, typ_il_expect.it)
+      Il.Ast.UpCastE (typ_il_expect, exp_il) $$ (exp_il.at, typ_il_expect.it)
     in
     Ok exp_il
   else fail_cast exp_il.at plaintyp_infer plaintyp_expect

@@ -94,25 +94,35 @@ and exp' =
   | UnE of unop * optyp * exp             (* unop exp *)
   | BinE of binop * optyp * exp * exp     (* exp binop exp *)
   | CmpE of cmpop * optyp * exp * exp     (* exp cmpop exp *)
+  | UpCastE of typ * exp                  (* exp as typ *)
+  | DownCastE of typ * exp                (* exp as typ *)
+  | SubE of exp * typ                     (* exp `<:` typ *)
+  | MatchE of exp * pattern               (* exp `matches` pattern *)
   | TupleE of exp list                    (* `(` exp* `)` *)
   | CaseE of notexp                       (* notexp *)
-  | OptE of exp option                    (* exp? *)
   | StrE of (atom * exp) list             (* { expfield* } *)
-  | DotE of exp * atom                    (* exp.atom *)
+  | OptE of exp option                    (* exp? *)
   | ListE of exp list                     (* `[` exp* `]` *)
   | ConsE of exp * exp                    (* exp `::` exp *)
   | CatE of exp * exp                     (* exp `++` exp *)
   | MemE of exp * exp                     (* exp `<-` exp *)
   | LenE of exp                           (* `|` exp `|` *)
+  | DotE of exp * atom                    (* exp.atom *)
   | IdxE of exp * exp                     (* exp `[` exp `]` *)
   | SliceE of exp * exp * exp             (* exp `[` exp `:` exp `]` *)
   | UpdE of exp * path * exp              (* exp `[` path `=` exp `]` *)
   | CallE of id * targ list * arg list    (* $id`<` targ* `>``(` arg* `)` *)
   | IterE of exp * iterexp                (* exp iterexp *)
-  | CastE of exp * typ                    (* `(` typ `)` exp *)
 
 and notexp = mixop * exp list
 and iterexp = iter * var list
+
+(* Patterns *)
+
+and pattern =
+  | CaseP of mixop
+  | ListP of [ `Cons | `Fixed of int | `Nil ]
+  | OptP of [ `Some | `None ]
 
 (* Path *)
 

@@ -6,7 +6,7 @@ open Util.Source
 
 (* Rename for an expression *)
 
-module Exp = struct
+module Placeholder = struct
   type t = exp * iter list
 
   let to_string (exp, iters) =
@@ -14,7 +14,7 @@ module Exp = struct
 end
 
 module REnv = struct
-  include MakeIdEnv (Exp)
+  include MakeIdEnv (Placeholder)
 
   let gen_sidecondition (id : Id.t) (exp : exp) (iters : iter list) =
     let exp =
@@ -73,7 +73,10 @@ and rename_exp_rec (dctx : Dctx.t) (binds : IdSet.t) (renv : REnv.t) (exp : exp)
     : Dctx.t * REnv.t * exp =
   let at, note = (exp.at, exp.note) in
   match exp.it with
-  | BoolE _ | NumE _ | TextE _ | VarE _ -> (dctx, renv, exp)
+  | UpCastE (typ, exp) ->
+      let dctx, renv, exp = rename_exp dctx binds renv exp in
+      let exp = UpCastE (typ, exp) $$ (at, note) in
+      (dctx, renv, exp)
   | TupleE exps ->
       let dctx, renv, exps = rename_exps dctx binds renv exps in
       let exp = TupleE exps $$ (at, note) in
@@ -82,17 +85,17 @@ and rename_exp_rec (dctx : Dctx.t) (binds : IdSet.t) (renv : REnv.t) (exp : exp)
       let dctx, renv, exps = rename_exps dctx binds renv exps in
       let exp = CaseE (mixop, exps) $$ (at, note) in
       (dctx, renv, exp)
-  | OptE (Some exp) ->
-      let dctx, renv, exp = rename_exp dctx binds renv exp in
-      let exp = OptE (Some exp) $$ (at, note) in
-      (dctx, renv, exp)
-  | OptE None -> (dctx, renv, exp)
   | StrE expfields ->
       let atoms, exps = List.split expfields in
       let dctx, renv, exps = rename_exps dctx binds renv exps in
       let expfields = List.combine atoms exps in
       let exp = StrE expfields $$ (at, note) in
       (dctx, renv, exp)
+  | OptE (Some exp) ->
+      let dctx, renv, exp = rename_exp dctx binds renv exp in
+      let exp = OptE (Some exp) $$ (at, note) in
+      (dctx, renv, exp)
+  | OptE None -> (dctx, renv, exp)
   | ListE exps ->
       let dctx, renv, exps = rename_exps dctx binds renv exps in
       let exp = ListE exps $$ (at, note) in
@@ -113,10 +116,6 @@ and rename_exp_rec (dctx : Dctx.t) (binds : IdSet.t) (renv : REnv.t) (exp : exp)
       let dctx, renv_post, exp = rename_exp dctx binds renv_pre exp in
       let renv = REnv.update_dim iter renv_pre renv_post in
       let exp = IterE (exp, (iter, [])) $$ (at, note) in
-      (dctx, renv, exp)
-  | CastE (exp, typ) ->
-      let dctx, renv, exp = rename_exp dctx binds renv exp in
-      let exp = CastE (exp, typ) $$ (at, note) in
       (dctx, renv, exp)
   | _ -> (dctx, renv, exp)
 
