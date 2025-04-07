@@ -111,6 +111,10 @@ let trace_extend (ctx : t) (prem : prem) : t =
     |> print_endline;
   { ctx with trace }
 
+let trace_replace (ctx : t) (subtraces : Trace.t list) : t =
+  let trace = Trace.replace_subtraces ctx.trace subtraces in
+  { ctx with trace }
+
 let trace_commit (ctx : t) (trace : Trace.t) : t =
   let trace = Trace.commit ctx.trace trace in
   { ctx with trace }

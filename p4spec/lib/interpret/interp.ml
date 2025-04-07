@@ -13,6 +13,28 @@ open Util.Source
 module Cache = Cache.Cache
 module Pp = Il.Print
 
+(* Caches *)
+
+let is_cached_func = function
+  | "subst_typ" | "subst_typdef_poly" | "specialize_typdef" | "canon_typ"
+  | "free_typ" | "is_nominal" | "find_map" | "update_map" | "dom_map"
+  | "bound_tids" | "in_set" | "merge_cstr'" | "merge_cstr"
+  | "find_matching_funcs" | "nestable_structt" | "nestable_structt_in_headert"
+    ->
+      true
+  | _ -> false
+
+let func_cache = ref (Cache.create 1000)
+
+let is_cached_rule = function
+  | "Sub_impl" | "Sub_expl" | "Sub_impl_canon" | "Sub_expl_canon" | "Type_wf"
+  | "Type_alpha" ->
+      true
+  | "Type_ok" -> false
+  | _ -> false
+
+let rule_cache = ref (Cache.create 50)
+
 (* Assignments *)
 
 (* Subtype checks that are not guaranteed by the type system,
@@ -26,35 +48,6 @@ module Pp = Il.Print
      - Iteration subtyping
 
    Note that structs are invariant in SpecTec, so we do not need to check for subtyping *)
-
-let is_func_cached = function
-  | "subst_typ"
-  | "subst_typdef_poly"
-  | "specialize_typdef" 
-  | "canon_typ"
-  | "free_typ"
-  | "is_nominal"
-  | "find_map"
-  | "update_map"
-  | "dom_map"
-  | "bound_tids"
-  | "in_set"
-  | "merge_cstr'"
-  | "merge_cstr"
-  | "find_matching_funcs"
-  | "nestable_structt"
-  | "nestable_structt_in_headert" -> true
-  | _ -> false
-
-let func_cache = ref (Cache.create 1000)
-
-let is_rule_cached = function
-  | "Sub_impl" | "Sub_expl" | "Sub_impl_canon" | "Sub_expl_canon"
-  | "Type_wf" | "Type_alpha" -> true
-  | "Type_ok" -> false
-  | _ -> false
-
-let rule_cache = ref (Cache.create 50)
 
 let rec downcast (ctx : Ctx.t) (typ : typ) (value : value) : value attempt =
   match typ.it with
@@ -812,51 +805,51 @@ and invoke_rel' (ctx : Ctx.t) (id : id) (values_input : value list) :
   let _, inputs, rules = Ctx.find_rel Local ctx id in
   guard (rules <> []) id.at "relation has no rules";
   (* Apply the first matching rule *)
-  let attempt_rules () = 
+  let attempt_rules () =
     let attempt_rules' =
       List.map
         (fun rule ->
-           let id_rule, _, _ = rule.it in
-           let attempt_rule' (ctx_local : Ctx.t) (prems : prem list)
-               (exps_output : exp list) : (Ctx.t * value list) attempt =
-             let* ctx_local = eval_prems ctx_local prems in
-             let ctx_local, values_output = eval_exps ctx_local exps_output in
-             let ctx_local = Ctx.trace_close ctx_local in
-             let ctx = Ctx.trace_commit ctx ctx_local.trace in
-             Ok (ctx, values_output)
-           in
-           let attempt_rule () : (Ctx.t * value list) attempt =
-             (* Create a subtrace for the rule *)
-             let ctx_local = Ctx.localize ctx in
-             let ctx_local =
-               Ctx.trace_open_rel ctx_local id id_rule values_input
-             in
-             (* Try to match the rule *)
-             let* ctx_local, prems, exps_output =
-               match_rule ctx_local inputs rule values_input
-             in
-             (* Try evaluating the rule *)
-             attempt_rule' ctx_local prems exps_output
-             |> nest id.at
-               (F.asprintf "application of rule %s/%s failed" id.it id_rule.it)
-           in
-           attempt_rule)
+          let id_rule, _, _ = rule.it in
+          let attempt_rule' (ctx_local : Ctx.t) (prems : prem list)
+              (exps_output : exp list) : (Ctx.t * value list) attempt =
+            let* ctx_local = eval_prems ctx_local prems in
+            let ctx_local, values_output = eval_exps ctx_local exps_output in
+            let ctx_local = Ctx.trace_close ctx_local in
+            let ctx = Ctx.trace_commit ctx ctx_local.trace in
+            Ok (ctx, values_output)
+          in
+          let attempt_rule () : (Ctx.t * value list) attempt =
+            (* Create a subtrace for the rule *)
+            let ctx_local = Ctx.localize ctx in
+            let ctx_local =
+              Ctx.trace_open_rel ctx_local id id_rule values_input
+            in
+            (* Try to match the rule *)
+            let* ctx_local, prems, exps_output =
+              match_rule ctx_local inputs rule values_input
+            in
+            (* Try evaluating the rule *)
+            attempt_rule' ctx_local prems exps_output
+            |> nest id.at
+                 (F.asprintf "application of rule %s/%s failed" id.it id_rule.it)
+          in
+          attempt_rule)
         rules
     in
     choice attempt_rules'
   in
-  if is_rule_cached id.it then (
+  if is_cached_rule id.it then (
     let cache_result = Cache.find_opt !rule_cache (id.it, values_input) in
     match cache_result with
-    | Some (subtraces, values_output) -> 
-      let trace = Trace.replace_subtraces ctx.trace subtraces in
-      Ok ( { ctx with trace }, values_output)
-    | None -> 
-      let* ctx, values_output = attempt_rules () in
-      let subtraces = Trace.get_wiped_subtraces ctx.trace in
-      Cache.add !rule_cache (id.it, values_input) (subtraces, values_output);
-      Ok (ctx, values_output))
-  else 
+    | Some (subtraces, values_output) ->
+        let ctx = Ctx.trace_replace ctx subtraces in
+        Ok (ctx, values_output)
+    | None ->
+        let* ctx, values_output = attempt_rules () in
+        let subtraces = Trace.wipe_subtraces ctx.trace in
+        Cache.add !rule_cache (id.it, values_input) (subtraces, values_output);
+        Ok (ctx, values_output))
+  else
     let* ctx, values_output = attempt_rules () in
     Ok (ctx, values_output)
 (* Invoke a function *)
@@ -917,65 +910,66 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
   (* Evaluate arguments *)
   let ctx, values_input = eval_args ctx args in
   (* Apply the first matching clause *)
-  let attempt_clauses () = 
+  let attempt_clauses () =
     let attempt_clauses' =
       List.mapi
         (fun idx_clause clause ->
-           let attempt_clause' (ctx_local : Ctx.t) (prems : prem list)
-               (exp_output : exp) : (Ctx.t * value) attempt =
-             let* ctx_local = eval_prems ctx_local prems in
-             let ctx_local, value_output = eval_exp ctx_local exp_output in
-             let ctx_local = Ctx.trace_close ctx_local in
-             let ctx = Ctx.trace_commit ctx ctx_local.trace in
-             Ok (ctx, value_output)
-           in
-           let attempt_clause () : (Ctx.t * value) attempt =
-             (* Create a subtrace for the clause *)
-             let ctx_local = Ctx.localize ctx in
-             let ctx_local =
-               Ctx.trace_open_dec ctx_local id idx_clause values_input
-             in
-             (* Add type arguments to the context *)
-             check
-               (List.length targs = List.length tparams)
-               id.at "arity mismatch in type arguments";
-             let ctx_local =
-               List.fold_left2
-                 (fun ctx_local tparam targ ->
-                    Ctx.add_typdef Local ctx_local tparam ([], PlainT targ $ targ.at))
-                 ctx_local tparams targs
-             in
-             (* Try to match the clause *)
-             let* ctx_local, args_input, prems, exp_output =
-               match_clause ctx ctx_local clause values_input
-             in
-             (* Try evaluating the clause *)
-             attempt_clause' ctx_local prems exp_output
-             |> nest id.at
-               (F.asprintf "application of clause %s%s failed" id.it
-                  (Il.Print.string_of_args args_input))
-           in
-           attempt_clause)
+          let attempt_clause' (ctx_local : Ctx.t) (prems : prem list)
+              (exp_output : exp) : (Ctx.t * value) attempt =
+            let* ctx_local = eval_prems ctx_local prems in
+            let ctx_local, value_output = eval_exp ctx_local exp_output in
+            let ctx_local = Ctx.trace_close ctx_local in
+            let ctx = Ctx.trace_commit ctx ctx_local.trace in
+            Ok (ctx, value_output)
+          in
+          let attempt_clause () : (Ctx.t * value) attempt =
+            (* Create a subtrace for the clause *)
+            let ctx_local = Ctx.localize ctx in
+            let ctx_local =
+              Ctx.trace_open_dec ctx_local id idx_clause values_input
+            in
+            (* Add type arguments to the context *)
+            check
+              (List.length targs = List.length tparams)
+              id.at "arity mismatch in type arguments";
+            let ctx_local =
+              List.fold_left2
+                (fun ctx_local tparam targ ->
+                  Ctx.add_typdef Local ctx_local tparam
+                    ([], PlainT targ $ targ.at))
+                ctx_local tparams targs
+            in
+            (* Try to match the clause *)
+            let* ctx_local, args_input, prems, exp_output =
+              match_clause ctx ctx_local clause values_input
+            in
+            (* Try evaluating the clause *)
+            attempt_clause' ctx_local prems exp_output
+            |> nest id.at
+                 (F.asprintf "application of clause %s%s failed" id.it
+                    (Il.Print.string_of_args args_input))
+          in
+          attempt_clause)
         clauses
     in
     choice attempt_clauses'
   in
-  if is_func_cached id.it then (
+  if is_cached_func id.it then (
     let cache_result = Cache.find_opt !func_cache (id.it, values_input) in
     match cache_result with
-    | Some (subtraces, value_output) -> 
-      let trace = Trace.replace_subtraces ctx.trace subtraces in
-      Ok ( { ctx with trace }, value_output)
-    | None -> 
-      let* ctx, value_output = attempt_clauses () in
-      let subtraces = Trace.get_wiped_subtraces ctx.trace in
-      Cache.add !func_cache (id.it, values_input) (subtraces, value_output);
-      Ok (ctx, value_output))
-  else 
+    | Some (subtraces, value_output) ->
+        let ctx = Ctx.trace_replace ctx subtraces in
+        Ok (ctx, value_output)
+    | None ->
+        let* ctx, value_output = attempt_clauses () in
+        let subtraces = Trace.wipe_subtraces ctx.trace in
+        Cache.add !func_cache (id.it, values_input) (subtraces, value_output);
+        Ok (ctx, value_output))
+  else
     let* ctx, value_output = attempt_clauses () in
     Ok (ctx, value_output)
 
-(* Load definitions into a context *)
+(* Load definitions into the context *)
 
 let load_def (ctx : Ctx.t) (def : def) : Ctx.t =
   match def.it with

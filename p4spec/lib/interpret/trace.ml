@@ -8,7 +8,7 @@ type time =
   | ING of float
   (* start time *)
   | END of (float * float)
-(* accumulated duration, duration *)
+  (* accumulated duration, duration *)
   | CACHED
 
 type t =
@@ -60,9 +60,10 @@ let close_time (time_start : time) (subtraces : t list) : time =
            | Rel { time; _ } | Dec { time; _ } | Iter { time; _ } -> (
                match time with
                | END (duration_acc, _) ->
-  (if duration_acc < 0.0 then
-     Format.asprintf "negative inner acc: %.6f" duration_acc |> print_endline);
-                 duration_acc
+                   if duration_acc < 0.0 then
+                     Format.asprintf "negative inner acc: %.6f" duration_acc
+                     |> print_endline;
+                   duration_acc
                | CACHED -> 0.0
                | _ -> assert false)
            | _ -> 0.0)
@@ -87,39 +88,44 @@ let close (trace : t) : t =
 
 (* Pretty Printing *)
 
-let pp_time fmt (time: time) =
+let pp_time fmt (time : time) =
   match time with
-  | ING time_start -> Format.fprintf fmt "ING: %.6f ago" (Unix.gettimeofday () -. time_start)
+  | ING time_start ->
+      Format.fprintf fmt "ING: %.6f ago" (Unix.gettimeofday () -. time_start)
   | END (_, dur) -> Format.fprintf fmt "%.6f" dur
   | CACHED -> Format.fprintf fmt "[cached]"
 
 (* Caching *)
 
-let rec wipe_time (trace: t) : t =
+let rec wipe_time (trace : t) : t =
   match trace with
-  | Rel t -> 
-    Rel { t with time = CACHED; subtraces = List.map wipe_time t.subtraces }
-  | Dec t -> 
-    Dec { t with time = CACHED; subtraces = List.map wipe_time t.subtraces }
-  | Iter t ->
-    Iter { t with time = CACHED; subtraces = List.map wipe_time t.subtraces }
+  | Rel { id_rel; id_rule; values_input; subtraces; _ } ->
+      let time = CACHED in
+      let subtraces = List.map wipe_time subtraces in
+      Rel { id_rel; id_rule; values_input; time; subtraces }
+  | Dec { id_func; idx_clause; values_input; subtraces; _ } ->
+      let time = CACHED in
+      let subtraces = List.map wipe_time subtraces in
+      Dec { id_func; idx_clause; values_input; time; subtraces }
+  | Iter { inner; subtraces; _ } ->
+      let time = CACHED in
+      let subtraces = List.map wipe_time subtraces in
+      Iter { inner; time; subtraces }
   | _ -> trace
 
-let get_wiped_subtraces (trace: t) : t list =
+let wipe_subtraces (trace : t) : t list =
   match trace with
-  | Rel t -> List.map wipe_time t.subtraces
-  | Dec t -> List.map wipe_time t.subtraces
-  | Iter t -> List.map wipe_time t.subtraces
+  | Rel { subtraces; _ } | Dec { subtraces; _ } | Iter { subtraces; _ } ->
+      List.map wipe_time subtraces
   | _ -> assert false
 
-let replace_subtraces (trace : t) (subtraces_new : t list) : t =
+let replace_subtraces (trace : t) (subtraces : t list) : t =
   match trace with
-  | Rel r ->
-    Rel { r with subtraces=subtraces_new }
-  | Dec r ->
-    Dec { r with subtraces=subtraces_new }
-  | Iter r ->
-    Iter { r with subtraces=subtraces_new }
+  | Rel { id_rel; id_rule; values_input; time; _ } ->
+      Rel { id_rel; id_rule; values_input; time; subtraces }
+  | Dec { id_func; idx_clause; values_input; time; _ } ->
+      Dec { id_func; idx_clause; values_input; time; subtraces }
+  | Iter { inner; time; _ } -> Iter { inner; time; subtraces }
   | _ -> assert false
 
 (* Committing *)
@@ -179,9 +185,7 @@ let rec log ?(tagger = Tagger.empty) ?(depth = 0) ?(idx = 0) ?(verbose = false)
           (String.concat "\n" (List.map string_of_value values))
   in
   let log_time fmt time =
-    match time with
-    | ING _ -> assert false
-    | _ -> pp_time fmt time
+    match time with ING _ -> assert false | _ -> pp_time fmt time
   in
   match trace with
   | Rel { id_rel; id_rule; values_input; time; subtraces } ->
@@ -248,9 +252,9 @@ let rec profile' (rules : counter) (funcs : counter) (trace : t) :
     counter * counter =
   match trace with
   | Rel { id_rel; subtraces; time; _ } ->
-      let rules = 
+      let rules =
         match time with
-        | END (_, duration) -> update_counter id_rel.it duration rules 
+        | END (_, duration) -> update_counter id_rel.it duration rules
         | CACHED -> rules
         | _ -> assert false
       in
@@ -258,7 +262,7 @@ let rec profile' (rules : counter) (funcs : counter) (trace : t) :
         (fun (rules, funcs) trace -> profile' rules funcs trace)
         (rules, funcs) subtraces
   | Dec { id_func; subtraces; time; _ } ->
-      let funcs = 
+      let funcs =
         match time with
         | END (_, duration) -> update_counter id_func.it duration funcs
         | CACHED -> funcs
