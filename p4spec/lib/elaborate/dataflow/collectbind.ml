@@ -38,17 +38,19 @@ let rec collect_exp (dctx : Dctx.t) (exp : exp) : Bind.BEnv.t =
       let binds = Bind.BEnv.union binds_l binds_r in
       collect_noninvertible exp.at "comparison operator" binds;
       Bind.BEnv.empty
+  | UpCastE (_, exp) -> collect_exp dctx exp
+  | DownCastE _ | SubE _ | MatchE _ ->
+      error exp.at
+        (Format.asprintf
+           "downcast, subtype check, and match check expressions should appear \
+            only after injection analysis")
   | TupleE exps -> collect_exps dctx exps
   | CaseE notexp -> notexp |> snd |> collect_exps dctx
+  | StrE expfields -> expfields |> List.map snd |> collect_exps dctx
   | OptE exp_opt ->
       exp_opt
       |> Option.map (collect_exp dctx)
       |> Option.value ~default:Bind.BEnv.empty
-  | StrE expfields -> expfields |> List.map snd |> collect_exps dctx
-  | DotE (exp, _) ->
-      let binds = collect_exp dctx exp in
-      collect_noninvertible exp.at "dot operator" binds;
-      Bind.BEnv.empty
   | ListE exps -> collect_exps dctx exps
   | ConsE (exp_l, exp_r) ->
       let binds_l = collect_exp dctx exp_l in
@@ -69,6 +71,10 @@ let rec collect_exp (dctx : Dctx.t) (exp : exp) : Bind.BEnv.t =
   | LenE exp ->
       let binds = collect_exp dctx exp in
       collect_noninvertible exp.at "length operator" binds;
+      Bind.BEnv.empty
+  | DotE (exp, _) ->
+      let binds = collect_exp dctx exp in
+      collect_noninvertible exp.at "dot operator" binds;
       Bind.BEnv.empty
   | IdxE (exp_b, exp_i) ->
       let binds_b = collect_exp dctx exp_b in
@@ -106,7 +112,6 @@ let rec collect_exp (dctx : Dctx.t) (exp : exp) : Bind.BEnv.t =
       let binds = collect_exp dctx exp in
       let binds = Bind.BEnv.map (Bind.Occ.add_iter iter) binds in
       binds
-  | CastE (exp, _) -> collect_exp dctx exp
 
 and collect_exps (dctx : Dctx.t) (exps : exp list) : Bind.BEnv.t =
   match exps with

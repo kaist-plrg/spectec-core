@@ -30,93 +30,31 @@ let elab_iter (iter : iter) : Il.Ast.iter =
 
 (* Types *)
 
-type kind =
-  (* Type that is not yet defined *)
-  | Opaque
-  (* Plain type *)
-  | Plain of plaintyp
-  (* Struct type *)
-  | Struct of typfield list
-  (* Variant type, with the second `plaintyp` field of each case being
-     the type of each case, for subtyping purposes *)
-  | Variant of (nottyp * plaintyp) list
-
-let rec kind_of_typ (ctx : Ctx.t) (plaintyp : plaintyp) : kind =
-  let plaintyp = expand_plaintyp ctx plaintyp in
-  match plaintyp.it with
-  | VarT (tid, targs) -> (
-      let td = Ctx.find_typdef ctx tid in
-      match td with
-      | Defined (tparams, typdef) -> (
-          let theta = List.combine tparams targs |> TIdMap.of_list in
-          match typdef with
-          | `Plain plaintyp ->
-              let plaintyp = Plaintyp.subst_plaintyp theta plaintyp in
-              Plain plaintyp
-          | `Struct typfields ->
-              let typfields =
-                List.map
-                  (fun (atom, plaintyp, hints) ->
-                    let plaintyp = Plaintyp.subst_plaintyp theta plaintyp in
-                    (atom, plaintyp, hints))
-                  typfields
-              in
-              Struct typfields
-          | `Variant typcases ->
-              let nottyps, plaintyps = List.split typcases in
-              let nottyps = Plaintyp.subst_nottyps theta nottyps in
-              let plaintyps = Plaintyp.subst_plaintyps theta plaintyps in
-              let typcases = List.combine nottyps plaintyps in
-              Variant typcases)
-      | _ -> Opaque)
-  | _ -> Plain plaintyp
-
-(* Expansion of parentheses and type aliases *)
-
-and expand_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp =
-  match plaintyp.it with
-  | VarT (tid, targs) -> (
-      let td = Ctx.find_typdef ctx tid in
-      match td with
-      | Defined (tparams, typdef) -> (
-          match typdef with
-          | `Plain plaintyp ->
-              check
-                (List.length targs = List.length tparams)
-                tid.at "type arguments do not match";
-              let theta = List.combine tparams targs |> TIdMap.of_list in
-              let plaintyp = Plaintyp.subst_plaintyp theta plaintyp in
-              expand_plaintyp ctx plaintyp
-          | _ -> plaintyp)
-      | _ -> plaintyp)
-  | ParenT plaintyp -> expand_plaintyp ctx plaintyp
-  | _ -> plaintyp
-
 (* Type destructuring *)
 
-and as_iter_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) :
+let as_iter_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) :
     (plaintyp * iter) attempt =
-  let plaintyp = expand_plaintyp ctx plaintyp in
+  let plaintyp = Plaintyp.expand_plaintyp ctx.tdenv plaintyp in
   match plaintyp.it with
   | IterT (plaintyp, iter) -> Ok (plaintyp, iter)
   | _ -> fail plaintyp.at "cannot destruct type as an iteration"
 
-and as_tuple_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) :
+let as_tuple_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) :
     plaintyp list attempt =
-  let plaintyp = expand_plaintyp ctx plaintyp in
+  let plaintyp = Plaintyp.expand_plaintyp ctx.tdenv plaintyp in
   match plaintyp.it with
   | TupleT plaintyps -> Ok plaintyps
   | _ -> fail plaintyp.at "cannot destruct type as a tuple"
 
-and as_list_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp attempt =
-  let plaintyp = expand_plaintyp ctx plaintyp in
+let as_list_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) : plaintyp attempt =
+  let plaintyp = Plaintyp.expand_plaintyp ctx.tdenv plaintyp in
   match plaintyp.it with
   | IterT (plaintyp, List) -> Ok plaintyp
   | _ -> fail plaintyp.at "cannot destruct type as a list"
 
-and as_struct_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) :
+let as_struct_plaintyp (ctx : Ctx.t) (plaintyp : plaintyp) :
     typfield list attempt =
-  let plaintyp = expand_plaintyp ctx plaintyp in
+  let plaintyp = Plaintyp.expand_plaintyp ctx.tdenv plaintyp in
   match plaintyp.it with
   | VarT (tid, _) -> (
       let td_opt = Ctx.find_typdef_opt ctx tid in
@@ -136,8 +74,8 @@ let rec equiv_typ (ctx : Ctx.t) (typ_a : typ) (typ_b : typ) : bool =
 
 and equiv_plaintyp (ctx : Ctx.t) (plaintyp_a : plaintyp) (plaintyp_b : plaintyp)
     : bool =
-  let plaintyp_a = expand_plaintyp ctx plaintyp_a in
-  let plaintyp_b = expand_plaintyp ctx plaintyp_b in
+  let plaintyp_a = Plaintyp.expand_plaintyp ctx.tdenv plaintyp_a in
+  let plaintyp_b = Plaintyp.expand_plaintyp ctx.tdenv plaintyp_b in
   match (plaintyp_a.it, plaintyp_b.it) with
   | BoolT, BoolT -> true
   | NumT numtyp_a, NumT numtyp_b -> Num.equiv numtyp_a numtyp_b
@@ -177,13 +115,13 @@ let rec sub_plaintyp (ctx : Ctx.t) (plaintyp_a : plaintyp)
 
 and sub_plaintyp' (ctx : Ctx.t) (plaintyp_a : plaintyp) (plaintyp_b : plaintyp)
     : bool =
-  let plaintyp_a = expand_plaintyp ctx plaintyp_a in
-  let plaintyp_b = expand_plaintyp ctx plaintyp_b in
+  let plaintyp_a = Plaintyp.expand_plaintyp ctx.tdenv plaintyp_a in
+  let plaintyp_b = Plaintyp.expand_plaintyp ctx.tdenv plaintyp_b in
   match (plaintyp_a.it, plaintyp_b.it) with
   | NumT numtyp_a, NumT numtyp_b -> Num.sub numtyp_a numtyp_b
   | VarT _, VarT _ -> (
-      let kind_a = kind_of_typ ctx plaintyp_a in
-      let kind_b = kind_of_typ ctx plaintyp_b in
+      let kind_a = Plaintyp.kind_plaintyp ctx.tdenv plaintyp_a in
+      let kind_b = Plaintyp.kind_plaintyp ctx.tdenv plaintyp_b in
       match (kind_a, kind_b) with
       | Variant typcases_a, Variant typcases_b ->
           let nottyps_a = List.map fst typcases_a in
@@ -349,7 +287,7 @@ and expand_typcase (ctx : Ctx.t) (plaintyp : plaintyp) (typcase : typcase) :
   let typ, _hints = typcase in
   match typ with
   | PlainT plaintyp -> (
-      let kind = kind_of_typ ctx plaintyp in
+      let kind = Plaintyp.kind_plaintyp ctx.tdenv plaintyp in
       match kind with
       | Opaque -> error plaintyp.at "cannot extend an incomplete type"
       | Variant typcases -> typcases
@@ -882,7 +820,7 @@ and cast_exp (ctx : Ctx.t) (plaintyp_expect : plaintyp)
   else if sub_plaintyp ctx plaintyp_infer plaintyp_expect then
     let typ_il_expect = elab_plaintyp ctx plaintyp_expect in
     let exp_il =
-      Il.Ast.CastE (exp_il, typ_il_expect) $$ (exp_il.at, typ_il_expect.it)
+      Il.Ast.UpCastE (typ_il_expect, exp_il) $$ (exp_il.at, typ_il_expect.it)
     in
     Ok exp_il
   else fail_cast exp_il.at plaintyp_infer plaintyp_expect
@@ -898,7 +836,7 @@ and elab_exp_normal (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
       match exp.it with
       | VarE id when id.it = "_" -> elab_exp_wildcard ctx exp.at plaintyp_expect
       | _ -> (
-          let kind = kind_of_typ ctx plaintyp_expect in
+          let kind = Plaintyp.kind_plaintyp ctx.tdenv plaintyp_expect in
           match kind with
           | Opaque -> elab_exp_plain ctx plaintyp_expect exp
           | Plain plaintyp -> elab_exp_plain ctx plaintyp exp

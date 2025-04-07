@@ -10,6 +10,27 @@ type t = plaintyp
 
 let to_string t = string_of_plaintyp t
 
+(* Conversion from IL type *)
+
+let rec of_internal_typ (typ : Il.Ast.typ) : t =
+  match typ.it with
+  | BoolT -> BoolT $ typ.at
+  | NumT numtyp -> NumT numtyp $ typ.at
+  | TextT -> TextT $ typ.at
+  | VarT (tid, targs) ->
+      let targs = List.map of_internal_typ targs in
+      VarT (tid, targs) $ typ.at
+  | TupleT typs ->
+      let typs = List.map of_internal_typ typs in
+      TupleT typs $ typ.at
+  | IterT (typ, Opt) ->
+      let typ = of_internal_typ typ in
+      IterT (typ, Opt) $ typ.at
+  | IterT (typ, List) ->
+      let typ = of_internal_typ typ in
+      IterT (typ, List) $ typ.at
+  | _ -> assert false
+
 (* Substitution of type variables *)
 
 type theta = t TIdMap.t
@@ -87,3 +108,66 @@ and subst_targ (theta : theta) (targ : targ) : targ = subst_plaintyp theta targ
 
 and subst_targs (theta : theta) (targs : targ list) : targ list =
   List.map (subst_targ theta) targs
+
+(* Expansion of parentheses and type alaiases *)
+
+type kind =
+  (* Type that is not yet defined *)
+  | Opaque
+  (* Plain type *)
+  | Plain of plaintyp
+  (* Struct type *)
+  | Struct of typfield list
+  (* Variant type, with the second `plaintyp` field of each case being
+     the type of each case, for subtyping purposes *)
+  | Variant of (nottyp * plaintyp) list
+
+type tdenv = Typdef.t TIdMap.t
+
+let rec expand_plaintyp (tdenv : tdenv) (plaintyp : plaintyp) : plaintyp =
+  match plaintyp.it with
+  | VarT (tid, targs) -> (
+      let td = TIdMap.find tid tdenv in
+      match td with
+      | Defined (tparams, typdef) -> (
+          match typdef with
+          | `Plain _ when List.length targs <> List.length tparams ->
+              error plaintyp.at "elab" "type arguments do not match"
+          | `Plain plaintyp ->
+              let theta = List.combine tparams targs |> TIdMap.of_list in
+              let plaintyp = subst_plaintyp theta plaintyp in
+              expand_plaintyp tdenv plaintyp
+          | _ -> plaintyp)
+      | _ -> plaintyp)
+  | ParenT plaintyp -> expand_plaintyp tdenv plaintyp
+  | _ -> plaintyp
+
+let kind_plaintyp (tdenv : tdenv) (plaintyp : plaintyp) : kind =
+  let plaintyp = expand_plaintyp tdenv plaintyp in
+  match plaintyp.it with
+  | VarT (tid, targs) -> (
+      let td = TIdMap.find tid tdenv in
+      match td with
+      | Defined (tparams, typdef) -> (
+          let theta = List.combine tparams targs |> TIdMap.of_list in
+          match typdef with
+          | `Plain plaintyp ->
+              let plaintyp = subst_plaintyp theta plaintyp in
+              Plain plaintyp
+          | `Struct typfields ->
+              let typfields =
+                List.map
+                  (fun (atom, plaintyp, hints) ->
+                    let plaintyp = subst_plaintyp theta plaintyp in
+                    (atom, plaintyp, hints))
+                  typfields
+              in
+              Struct typfields
+          | `Variant typcases ->
+              let nottyps, plaintyps = List.split typcases in
+              let nottyps = subst_nottyps theta nottyps in
+              let plaintyps = subst_plaintyps theta plaintyps in
+              let typcases = List.combine nottyps plaintyps in
+              Variant typcases)
+      | _ -> Opaque)
+  | _ -> Plain plaintyp

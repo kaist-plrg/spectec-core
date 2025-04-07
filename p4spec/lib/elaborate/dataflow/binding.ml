@@ -11,12 +11,18 @@ open Util.Source
 
    1. Collect all binding occurrences of variables in IL construct
       - Check that all binding occurrences reside in invertible constructs
-   2. Rename parallel binding occurrences
+   2. Rename multi/parallel binding occurrences
       - e.g., -- let (int, int) = ... becomes
                 -- let (int, int') = ..., -- if int = int'
    3. Desugar partial bindings
       - e.g., -- let (int, 1 + 2) = ... becomes
-              -- let (int, int') = ..., -- if int' = 1 + 2 *)
+              -- let (int, int') = ..., -- if int' = 1 + 2
+   Note. At this point, binder patterns contain binding identifiers only
+   4. Desugar patterned bindings (including downcasts)
+      - e.g., -- let (int, CASE int' int'') = ... becomes
+              -- let (int, case) = ..., -- if case matches CASE, -- let CASE int' int'' = case
+      - e.g., -- let ((typ) child) = ... becomes
+              -- let parent = ..., -- if parent <: child, -- let child = parent *)
 
 let update_venv_multi (venv : VEnv.t) (renv_multi : Multibind.REnv.t) : VEnv.t =
   Multibind.REnv.fold
@@ -33,6 +39,13 @@ let update_venv_partial (venv : VEnv.t) (renv_partial : Partialbind.REnv.t) :
   Partialbind.REnv.fold
     (fun id (exp, iters) venv -> VEnv.add id (exp.note $ exp.at, iters) venv)
     renv_partial venv
+
+let update_venv_inject (venv : VEnv.t) (renv_inject : Injectbind.REnv.t) :
+    VEnv.t =
+  List.fold_left
+    (fun venv (id, (exp, _, iters)) ->
+      VEnv.add id (exp.note $ exp.at, iters) venv)
+    venv renv_inject
 
 (* Expression binding analysis *)
 
@@ -55,8 +68,13 @@ let analyze_exps_as_bind (dctx : Dctx.t) (exps : exp list) :
   let sideconditions_partial =
     Partialbind.REnv.gen_sideconditions renv_partial
   in
-  let sideconditions = sideconditions_multi @ sideconditions_partial in
-  (dctx, venv, exps, sideconditions)
+  let dctx, renv_inject, exps =
+    Injectbind.rename_exps dctx Injectbind.REnv.empty exps
+  in
+  let venv = update_venv_inject venv renv_inject in
+  let prems_inject = Injectbind.REnv.gen_prems renv_inject in
+  let prems = prems_inject @ sideconditions_multi @ sideconditions_partial in
+  (dctx, venv, exps, prems)
 
 let analyze_exp_as_bound (dctx : Dctx.t) (exp : exp) : unit =
   let binds = Collectbind.collect_exp dctx exp in
@@ -89,8 +107,13 @@ let analyze_args_as_bind (dctx : Dctx.t) (args : arg list) :
   let sideconditions_partial =
     Partialbind.REnv.gen_sideconditions renv_partial
   in
-  let sideconditions = sideconditions_multi @ sideconditions_partial in
-  (dctx, venv, args, sideconditions)
+  let dctx, renv_inject, args =
+    Injectbind.rename_args dctx Injectbind.REnv.empty args
+  in
+  let venv = update_venv_inject venv renv_inject in
+  let prems_inject = Injectbind.REnv.gen_prems renv_inject in
+  let prems = prems_inject @ sideconditions_multi @ sideconditions_partial in
+  (dctx, venv, args, prems)
 
 (* Premise binding analysis *)
 
@@ -149,11 +172,11 @@ and analyze_if_prem (dctx : Dctx.t) (at : region) (exp : exp) :
     Dctx.t * VEnv.t * prem * prem list =
   match exp.it with
   | CmpE (`EqOp, optyp, exp_l, exp_r) ->
-      let dctx, venv, prem, sideconditions =
+      let dctx, venv, prem, prems =
         analyze_if_eq_prem dctx exp.at exp.note optyp exp_l exp_r
       in
       let prem = prem $ at in
-      (dctx, venv, prem, sideconditions)
+      (dctx, venv, prem, prems)
   | _ ->
       analyze_exp_as_bound dctx exp;
       let prem = IfPr exp $ at in
@@ -177,18 +200,19 @@ and analyze_let_prem (dctx : Dctx.t) (exp_l : exp) (binds_l : BEnv.t)
   let sideconditions_partial =
     Partialbind.REnv.gen_sideconditions renv_partial
   in
-  let sideconditions = sideconditions_multi @ sideconditions_partial in
+  let dctx, renv_inject, exp_l =
+    Injectbind.rename_exp dctx Injectbind.REnv.empty exp_l
+  in
+  let venv = update_venv_inject venv renv_inject in
+  let prems_inject = Injectbind.REnv.gen_prems renv_inject in
+  let prems = prems_inject @ sideconditions_multi @ sideconditions_partial in
   let prem = LetPr (exp_l, exp_r) in
-  (dctx, venv, prem, sideconditions)
+  (dctx, venv, prem, prems)
 
 and analyze_iter_prem (dctx : Dctx.t) (at : region) (prem : prem) (iter : iter)
     : Dctx.t * VEnv.t * prem * prem list =
-  let dctx, venv, prem, sideconditions = analyze_prem dctx prem in
+  let dctx, venv, prem, prems = analyze_prem dctx prem in
   let venv = VEnv.map (Typ.add_iter iter) venv in
-  let sideconditions =
-    List.map
-      (fun sidecondition -> IterPr (sidecondition, (iter, [])) $ at)
-      sideconditions
-  in
+  let prems = List.map (fun prem -> IterPr (prem, (iter, [])) $ at) prems in
   let prem = IterPr (prem, (iter, [])) $ at in
-  (dctx, venv, prem, sideconditions)
+  (dctx, venv, prem, prems)

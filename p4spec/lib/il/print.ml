@@ -159,9 +159,13 @@ and string_of_exp' e =
   | CmpE (cmpop, _, exp_l, exp_r) ->
       "(" ^ string_of_exp exp_l ^ " " ^ string_of_cmpop cmpop ^ " "
       ^ string_of_exp exp_r ^ ")"
+  | UpCastE (typ, exp) -> string_of_exp exp ^ " as " ^ string_of_typ typ
+  | DownCastE (typ, exp) -> string_of_exp exp ^ " as " ^ string_of_typ typ
+  | SubE (exp, typ) -> string_of_exp exp ^ " <: " ^ string_of_typ typ
+  | MatchE (exp, pattern) ->
+      string_of_exp exp ^ " matches " ^ string_of_pattern pattern
   | TupleE es -> "(" ^ string_of_exps ", " es ^ ")"
   | CaseE notexp -> string_of_notexp ~typ:(Some e.note) notexp
-  | OptE exp_opt -> "?(" ^ string_of_exps "" (Option.to_list exp_opt) ^ ")"
   | StrE expfields ->
       "{"
       ^ String.concat ", "
@@ -169,12 +173,13 @@ and string_of_exp' e =
              (fun (atom, exp) -> string_of_atom atom ^ " " ^ string_of_exp exp)
              expfields)
       ^ "}"
-  | DotE (exp_b, atom) -> string_of_exp exp_b ^ "." ^ string_of_atom atom
+  | OptE exp_opt -> "?(" ^ string_of_exps "" (Option.to_list exp_opt) ^ ")"
   | ListE exps -> "[" ^ string_of_exps ", " exps ^ "]"
   | ConsE (exp_h, exp_t) -> string_of_exp exp_h ^ " :: " ^ string_of_exp exp_t
   | CatE (exp_l, exp_r) -> string_of_exp exp_l ^ " ++ " ^ string_of_exp exp_r
   | MemE (exp_e, exp_s) -> string_of_exp exp_e ^ " <- " ^ string_of_exp exp_s
   | LenE exp -> "|" ^ string_of_exp exp ^ "|"
+  | DotE (exp_b, atom) -> string_of_exp exp_b ^ "." ^ string_of_atom atom
   | IdxE (exp_b, exp_i) -> string_of_exp exp_b ^ "[" ^ string_of_exp exp_i ^ "]"
   | SliceE (exp_b, exp_l, exp_h) ->
       string_of_exp exp_b ^ "[" ^ string_of_exp exp_l ^ " : "
@@ -185,8 +190,6 @@ and string_of_exp' e =
   | CallE (defid, targs, args) ->
       string_of_defid defid ^ string_of_targs targs ^ string_of_args args
   | IterE (exp, iterexp) -> string_of_exp exp ^ string_of_iterexp iterexp
-  | CastE (exp, typ) ->
-      "((" ^ string_of_typ typ ^ ") " ^ string_of_exp exp ^ ")"
 
 and string_of_exps sep exps = String.concat sep (List.map string_of_exp exps)
 
@@ -209,6 +212,17 @@ and string_of_iterexp iterexp =
            string_of_var var ^ " <- " ^ string_of_var (id, iters @ [ iter ]))
          vars)
   ^ "}"
+
+(* Patterns *)
+
+and string_of_pattern pattern =
+  match pattern with
+  | CaseP mixop -> string_of_mixop mixop
+  | ListP `Cons -> "_ :: _"
+  | ListP (`Fixed len) -> Format.asprintf "[ _/%d ]" len
+  | ListP `Nil -> "[]"
+  | OptP `Some -> "(_)"
+  | OptP `None -> "()"
 
 (* Paths *)
 

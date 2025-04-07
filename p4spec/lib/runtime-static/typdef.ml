@@ -1,7 +1,7 @@
 open El.Ast
-open El.Print
+open El.Print (* Type definitions *)
 
-(* Type definitions *)
+[@@@ocamlformat "disable"]
 
 type t =
   (* Type parameter *)
@@ -13,11 +13,10 @@ type t =
       tparam list
       * [ `Plain of plaintyp (* Plain type *)
         | `Struct of typfield list (* Struct type *)
-        | `Variant of
-          (nottyp * plaintyp) list
+        | `Variant of (nottyp * plaintyp) list
           (* Variant type that is fully expanded, with the second `plaintyp` field
-                       indicating the type of the variant for subtyping purposes *)
-        ]
+             indicating the type of the variant for subtyping purposes *) ]
+[@@@ocamlformat "enable"]
 
 let to_string = function
   | Param -> "Param"

@@ -39,7 +39,7 @@ and plaintyp' =
   | TextT                       (* `text` *)
   | VarT of id * targ list      (* id (`<` list(targ, `,`) `>`)? *)
   | ParenT of plaintyp          (* `(` plaintyp `)` *)
-  | TupleT of plaintyp list       (* `(` list(plaintyp, `,`) `)` *)
+  | TupleT of plaintyp list     (* `(` list(plaintyp, `,`) `)` *)
   | IterT of plaintyp * iter    (* plaintyp iter *)
 
 and nottyp = nottyp' phrase
