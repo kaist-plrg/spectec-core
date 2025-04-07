@@ -28,21 +28,21 @@ module Pp = Il.Print
    Note that structs are invariant in SpecTec, so we do not need to check for subtyping *)
 
 let is_func_cached = function
-  | "specialize_typdef" 
-  | "free_typ"
-  | "nestable_structt"
-  | "canon_typ"
   | "subst_typ"
-(*| "subst_typdef_poly"*)
+  | "subst_typdef_poly"
+  | "specialize_typdef" 
+  | "canon_typ"
+  | "free_typ"
   | "is_nominal"
   | "find_map"
   | "update_map"
+  | "dom_map"
   | "bound_tids"
   | "in_set"
-  | "dom_map"
   | "merge_cstr'"
   | "merge_cstr"
   | "find_matching_funcs"
+  | "nestable_structt"
   | "nestable_structt_in_headert" -> true
   | _ -> false
 
@@ -50,9 +50,8 @@ let func_cache = ref (Cache.create 1000)
 
 let is_rule_cached = function
   | "Sub_impl" | "Sub_expl" | "Sub_impl_canon" | "Sub_expl_canon"
-  | "Type_wf"
-(*| "Type_ok"*)
-  | "Type_alpha" -> true
+  | "Type_wf" | "Type_alpha" -> true
+  | "Type_ok" -> false
   | _ -> false
 
 let rule_cache = ref (Cache.create 50)
