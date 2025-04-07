@@ -1,4 +1,4 @@
-Running typecheck tests on 220 files
+Running typecheck roundtrip tests on 220 files
 
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/future/concat-string/issue4932.p4
@@ -1015,3 +1015,4 @@ Error on typecheck: File ../../../testdata/p4c/program/well-typed-excluded/unsup
 
 Parser on file: [PASS] 211/220 (95.91%) [FAIL] 9/220 (4.09%)
 Typecheck: [PASS] 9/211 (4.27%) [FAIL] 202/211 (95.73%)
+Typecheck roundtrip: [PASS] 9/9 (100.00%) [FAIL] 0/9 (0.00%)
