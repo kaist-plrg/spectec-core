@@ -221,8 +221,8 @@ and string_of_pattern pattern =
   | ListP `Cons -> "_ :: _"
   | ListP (`Fixed len) -> Format.asprintf "[ _/%d ]" len
   | ListP `Nil -> "[]"
-  | OptP `Some -> "Some"
-  | OptP `None -> "None"
+  | OptP `Some -> "(_)"
+  | OptP `None -> "()"
 
 (* Paths *)
 

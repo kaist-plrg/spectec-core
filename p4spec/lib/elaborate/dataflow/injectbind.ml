@@ -1,5 +1,6 @@
 open Domain.Lib
 open Il.Ast
+open Runtime_static
 open Error
 open Util.Source
 
@@ -68,14 +69,33 @@ end
 
 (* Invariant : Binder patterns contain binding identifiers only *)
 
-(* Expressions *)
-
 let rename (dctx : Dctx.t) (renv : REnv.t) (exp : exp) (inject : Inject.t) :
     Dctx.t * REnv.t * id =
   let id_rename = Fresh.fresh_from_exp dctx.frees exp in
   let dctx = Dctx.add_free dctx id_rename in
   let renv = REnv.add renv id_rename (exp, inject, []) in
   (dctx, renv, id_rename)
+
+(* Expressions *)
+
+let rec is_singleton_case (dctx : Dctx.t) (typ : typ) : bool =
+  typ |> Plaintyp.of_internal_typ |> is_singleton_case' dctx
+
+and is_singleton_case' (dctx : Dctx.t) (plaintyp : El.Ast.plaintyp) : bool =
+  match plaintyp.it with
+  | VarT (tid, targs) -> (
+      let td = Dctx.find_typdef dctx tid in
+      match td with
+      | Defined (tparams, typdef) -> (
+          match typdef with
+          | `Plain plaintyp ->
+              let theta = List.combine tparams targs |> TIdMap.of_list in
+              let plaintyp = Plaintyp.subst_plaintyp theta plaintyp in
+              is_singleton_case' dctx plaintyp
+          | `Struct _ -> false
+          | `Variant cases -> List.length cases = 1)
+      | _ -> false)
+  | _ -> false
 
 let rec rename_exp (dctx : Dctx.t) (renv : REnv.t) (exp : exp) :
     Dctx.t * REnv.t * exp =
@@ -92,6 +112,10 @@ let rec rename_exp (dctx : Dctx.t) (renv : REnv.t) (exp : exp) :
   | TupleE exps ->
       let dctx, renv, exps = rename_exps dctx renv exps in
       let exp = TupleE exps $$ (at, note) in
+      (dctx, renv, exp)
+  | CaseE (mixop, exps) when is_singleton_case dctx (note $ at) ->
+      let dctx, renv, exps = rename_exps dctx renv exps in
+      let exp = CaseE (mixop, exps) $$ (at, note) in
       (dctx, renv, exp)
   | CaseE (mixop, exps) ->
       let dctx, renv, exps = rename_exps dctx renv exps in

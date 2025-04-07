@@ -553,8 +553,8 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/call1_e.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_func<consdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.CDENV) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
-  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
-    - because condition (fid, V, id*)? matches Some was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
+  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
+    - because condition (fid, V, id*)? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/conditional_e.p4
@@ -1831,7 +1831,7 @@ interp error: tracing backtrack logs:
             4. because application of rule Table_prop_ok/defaultp failed (../../../../spec/4g-typing-decl.watsup:1237.6-1237.19)
               - because invocation of relation Table_default_ok failed (../../../../spec/4g-typing-decl.watsup:1221.6-1221.22)
                 - because application of rule Table_default_ok/ failed (../../../../spec/4g-typing-decl.watsup:1221.6-1221.22)
-                  - because condition (paramtyp*, argIL*)? matches Some was not met (../../../../spec/4g-typing-decl.watsup:1154.9-1154.24)
+                  - because condition (paramtyp*, argIL*)? matches (_) was not met (../../../../spec/4g-typing-decl.watsup:1154.9-1154.24)
             5. because application of rule Table_prop_ok/customp failed (../../../../spec/4g-typing-decl.watsup:1237.6-1237.19)
               - because condition tblprop matches `CustomP%` was not met ()
 27. because application of rule Decl_ok/controltyped failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
@@ -1914,7 +1914,7 @@ interp error: tracing backtrack logs:
             4. because application of rule Table_prop_ok/defaultp failed (../../../../spec/4g-typing-decl.watsup:1237.6-1237.19)
               - because invocation of relation Table_default_ok failed (../../../../spec/4g-typing-decl.watsup:1221.6-1221.22)
                 - because application of rule Table_default_ok/ failed (../../../../spec/4g-typing-decl.watsup:1221.6-1221.22)
-                  - because condition (paramtyp*, argIL*)? matches Some was not met (../../../../spec/4g-typing-decl.watsup:1154.9-1154.24)
+                  - because condition (paramtyp*, argIL*)? matches (_) was not met (../../../../spec/4g-typing-decl.watsup:1154.9-1154.24)
             5. because application of rule Table_prop_ok/customp failed (../../../../spec/4g-typing-decl.watsup:1237.6-1237.19)
               - because condition tblprop matches `CustomP%` was not met ()
 27. because application of rule Decl_ok/controltyped failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
@@ -2777,7 +2777,7 @@ interp error: tracing backtrack logs:
                 1. because application of rule ParamType_wf/none failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
                   - because condition ($is_externt($canon_typ(typ)) => (dir = `NO`_dir())) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:383.9-383.51)
                 2. because application of rule ParamType_wf/some failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
-                  - because condition val? matches Some was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
+                  - because condition val? matches (_) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
         5. because application of rule FuncType_wf/tableapplymethodt failed (../../../../spec/2c6-runtime-type-wellformed.watsup:516.6-516.17)
           - because condition functyp matches `TableApplyMethodT%` was not met ()
         6. because application of rule FuncType_wf/externfunctiont failed (../../../../spec/2c6-runtime-type-wellformed.watsup:516.6-516.17)
@@ -2798,8 +2798,8 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/factory-err2.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_map<tid, typdef>(C.GLOBAL.TDENV, id) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-  - because application of clause find_map(map<K, V>, K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-    - because condition V? matches Some was not met (../../../../spec/0-aux.watsup:137.9-137.14)
+  - because application of clause find_map(`MAP%`_map<K, V>(`PAIR%%`_pair<K, V>(K, V)*{K <- K*, V <- V*}), K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
+    - because condition V? matches (_) was not met (../../../../spec/0-aux.watsup:137.9-137.14)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/function1_e.p4
@@ -2913,8 +2913,8 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/function_e.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_func<funcdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.FDENV) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
-  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
-    - because condition (fid, V, id*)? matches Some was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
+  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
+    - because condition (fid, V, id*)? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/function_e1.p4
@@ -3096,16 +3096,16 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/functors2_e.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_func<consdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.CDENV) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
-  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
-    - because condition (fid, V, id*)? matches Some was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
+  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
+    - because condition (fid, V, id*)? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/functors3_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/functors3_e.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_func<consdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.CDENV) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
-  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
-    - because condition (fid, V, id*)? matches Some was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
+  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
+    - because condition (fid, V, id*)? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/generic1_e.p4
@@ -3566,8 +3566,8 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/incorrect-label.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_map<id, styp>(C.GLOBAL.FRAME, id) failed (../../../../spec/4a1-typing-context.watsup:277.42-277.51)
-  - because application of clause find_map(map<K, V>, K_key) failed (../../../../spec/4a1-typing-context.watsup:277.42-277.51)
-    - because condition V? matches Some was not met (../../../../spec/0-aux.watsup:137.9-137.14)
+  - because application of clause find_map(`MAP%`_map<K, V>(`PAIR%%`_pair<K, V>(K, V)*{K <- K*, V <- V*}), K_key) failed (../../../../spec/4a1-typing-context.watsup:277.42-277.51)
+    - because condition V? matches (_) was not met (../../../../spec/0-aux.watsup:137.9-137.14)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4
@@ -3666,13 +3666,13 @@ interp error: tracing backtrack logs:
                 2. because application of rule Table_entry_priority_ok/noprilpm failed (../../../../spec/4g-typing-decl.watsup:1115.6-1115.29)
                   - because condition tblstate matches `LPM%` was not met ()
                 3. because application of rule Table_entry_priority_ok/priority-values-nil-somep failed (../../../../spec/4g-typing-decl.watsup:1115.6-1115.29)
-                  - because condition expr? matches Some was not met (../../../../spec/4g-typing-decl.watsup:1025.30-1025.34)
+                  - because condition expr? matches (_) was not met (../../../../spec/4g-typing-decl.watsup:1025.30-1025.34)
                 4. because application of rule Table_entry_priority_ok/priority-values-nil-none-lw failed (../../../../spec/4g-typing-decl.watsup:1115.6-1115.29)
                   - because condition (tblctx.PRIORITIES.VALUES = []) was not met (../../../../spec/4g-typing-decl.watsup:1042.9-1042.39)
                 5. because application of rule Table_entry_priority_ok/priority-values-nil-none-no-lw failed (../../../../spec/4g-typing-decl.watsup:1115.6-1115.29)
                   - because condition (tblctx.PRIORITIES.VALUES = []) was not met (../../../../spec/4g-typing-decl.watsup:1056.9-1056.39)
                 6. because application of rule Table_entry_priority_ok/else-somep failed (../../../../spec/4g-typing-decl.watsup:1115.6-1115.29)
-                  - because condition expr? matches Some was not met (../../../../spec/4g-typing-decl.watsup:1062.30-1062.34)
+                  - because condition expr? matches (_) was not met (../../../../spec/4g-typing-decl.watsup:1062.30-1062.34)
                 7. because application of rule Table_entry_priority_ok/else-none-lw failed (../../../../spec/4g-typing-decl.watsup:1115.6-1115.29)
                   - because condition (i' >= 0 as int) was not met (../../../../spec/4g-typing-decl.watsup:1087.9-1087.19)
                 8. because application of rule Table_entry_priority_ok/else-none-no-lw failed (../../../../spec/4g-typing-decl.watsup:1115.6-1115.29)
@@ -3790,16 +3790,16 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/interface1_e.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_func<funcdef>(member, $to_fkey(arg*{arg <- arg*}), fmap_b) failed (../../../../spec/4h-typing-call.watsup:99.32-99.42)
-  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4h-typing-call.watsup:99.32-99.42)
-    - because condition (fid, V, id*)? matches Some was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
+  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4h-typing-call.watsup:99.32-99.42)
+    - because condition (fid, V, id*)? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/interface_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/interface_e.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_func<consdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.CDENV) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
-  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
-    - because condition (fid, V, id*)? matches Some was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
+  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
+    - because condition (fid, V, id*)? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/invalid-invalid.p4
@@ -4150,7 +4150,7 @@ interp error: tracing backtrack logs:
                 43. because application of rule Expr_ok/expracce-stackt-next failed (../../../../spec/4e-typing-expr.watsup:893.6-893.13)
                   - because condition (text = "next") was not met (../../../../spec/4e-typing-expr.watsup:758.26-758.32)
                 44. because application of rule Expr_ok/expracce-structt failed (../../../../spec/4e-typing-expr.watsup:893.6-893.13)
-                  - because condition typ? matches Some was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
+                  - because condition typ? matches (_) was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
                 45. because application of rule Expr_ok/expracce-headert failed (../../../../spec/4e-typing-expr.watsup:893.6-893.13)
                   - because condition datatyp matches `HeaderT%%` was not met ()
                 46. because application of rule Expr_ok/expracce-uniont failed (../../../../spec/4e-typing-expr.watsup:893.6-893.13)
@@ -4355,7 +4355,7 @@ interp error: tracing backtrack logs:
                 1. because application of rule ParamType_wf/none failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
                   - because condition ($is_externt($canon_typ(typ)) => (dir = `NO`_dir())) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:383.9-383.51)
                 2. because application of rule ParamType_wf/some failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
-                  - because condition val? matches Some was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
+                  - because condition val? matches (_) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
         9. because application of rule FuncType_wf/externabstractmethodt failed (../../../../spec/2c6-runtime-type-wellformed.watsup:527.6-527.17)
           - because condition functyp matches `ExternAbstractMethodT%%` was not met ()
 15. because application of rule Type_wf/parsert failed (../../../../spec/2c6-runtime-type-wellformed.watsup:35.6-35.13)
@@ -4441,7 +4441,7 @@ interp error: tracing backtrack logs:
                 1. because application of rule ParamType_wf/none failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
                   - because condition ($is_externt($canon_typ(typ)) => (dir = `NO`_dir())) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:383.9-383.51)
                 2. because application of rule ParamType_wf/some failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
-                  - because condition val? matches Some was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
+                  - because condition val? matches (_) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
         9. because application of rule FuncType_wf/externabstractmethodt failed (../../../../spec/2c6-runtime-type-wellformed.watsup:527.6-527.17)
           - because condition functyp matches `ExternAbstractMethodT%%` was not met ()
 15. because application of rule Type_wf/parsert failed (../../../../spec/2c6-runtime-type-wellformed.watsup:35.6-35.13)
@@ -4527,7 +4527,7 @@ interp error: tracing backtrack logs:
                 1. because application of rule ParamType_wf/none failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
                   - because condition ($is_externt($canon_typ(typ)) => (dir = `NO`_dir())) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:383.9-383.51)
                 2. because application of rule ParamType_wf/some failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
-                  - because condition val? matches Some was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
+                  - because condition val? matches (_) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
         9. because application of rule FuncType_wf/externabstractmethodt failed (../../../../spec/2c6-runtime-type-wellformed.watsup:527.6-527.17)
           - because condition functyp matches `ExternAbstractMethodT%%` was not met ()
 15. because application of rule Type_wf/parsert failed (../../../../spec/2c6-runtime-type-wellformed.watsup:35.6-35.13)
@@ -4613,7 +4613,7 @@ interp error: tracing backtrack logs:
                 1. because application of rule ParamType_wf/none failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
                   - because condition ($is_externt($canon_typ(typ)) => (dir = `NO`_dir())) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:383.9-383.51)
                 2. because application of rule ParamType_wf/some failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
-                  - because condition val? matches Some was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
+                  - because condition val? matches (_) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
         9. because application of rule FuncType_wf/externabstractmethodt failed (../../../../spec/2c6-runtime-type-wellformed.watsup:527.6-527.17)
           - because condition functyp matches `ExternAbstractMethodT%%` was not met ()
 15. because application of rule Type_wf/parsert failed (../../../../spec/2c6-runtime-type-wellformed.watsup:35.6-35.13)
@@ -4699,7 +4699,7 @@ interp error: tracing backtrack logs:
                 1. because application of rule ParamType_wf/none failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
                   - because condition ($is_externt($canon_typ(typ)) => (dir = `NO`_dir())) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:383.9-383.51)
                 2. because application of rule ParamType_wf/some failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
-                  - because condition val? matches Some was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
+                  - because condition val? matches (_) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
         9. because application of rule FuncType_wf/externabstractmethodt failed (../../../../spec/2c6-runtime-type-wellformed.watsup:527.6-527.17)
           - because condition functyp matches `ExternAbstractMethodT%%` was not met ()
 15. because application of rule Type_wf/parsert failed (../../../../spec/2c6-runtime-type-wellformed.watsup:35.6-35.13)
@@ -4785,7 +4785,7 @@ interp error: tracing backtrack logs:
                 1. because application of rule ParamType_wf/none failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
                   - because condition ($is_externt($canon_typ(typ)) => (dir = `NO`_dir())) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:383.9-383.51)
                 2. because application of rule ParamType_wf/some failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
-                  - because condition val? matches Some was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
+                  - because condition val? matches (_) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
         9. because application of rule FuncType_wf/externabstractmethodt failed (../../../../spec/2c6-runtime-type-wellformed.watsup:527.6-527.17)
           - because condition functyp matches `ExternAbstractMethodT%%` was not met ()
 15. because application of rule Type_wf/parsert failed (../../../../spec/2c6-runtime-type-wellformed.watsup:35.6-35.13)
@@ -4871,7 +4871,7 @@ interp error: tracing backtrack logs:
                 1. because application of rule ParamType_wf/none failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
                   - because condition ($is_externt($canon_typ(typ)) => (dir = `NO`_dir())) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:383.9-383.51)
                 2. because application of rule ParamType_wf/some failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
-                  - because condition val? matches Some was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
+                  - because condition val? matches (_) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
         9. because application of rule FuncType_wf/externabstractmethodt failed (../../../../spec/2c6-runtime-type-wellformed.watsup:527.6-527.17)
           - because condition functyp matches `ExternAbstractMethodT%%` was not met ()
 15. because application of rule Type_wf/parsert failed (../../../../spec/2c6-runtime-type-wellformed.watsup:35.6-35.13)
@@ -4957,7 +4957,7 @@ interp error: tracing backtrack logs:
                 1. because application of rule ParamType_wf/none failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
                   - because condition ($is_externt($canon_typ(typ)) => (dir = `NO`_dir())) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:383.9-383.51)
                 2. because application of rule ParamType_wf/some failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
-                  - because condition val? matches Some was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
+                  - because condition val? matches (_) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
         9. because application of rule FuncType_wf/externabstractmethodt failed (../../../../spec/2c6-runtime-type-wellformed.watsup:527.6-527.17)
           - because condition functyp matches `ExternAbstractMethodT%%` was not met ()
 15. because application of rule Type_wf/parsert failed (../../../../spec/2c6-runtime-type-wellformed.watsup:35.6-35.13)
@@ -5255,7 +5255,7 @@ interp error: tracing backtrack logs:
                 43. because application of rule Expr_ok/expracce-stackt-next failed (../../../../spec/4f-typing-stmt.watsup:32.6-32.13)
                   - because condition (text = "next") was not met (../../../../spec/4e-typing-expr.watsup:758.26-758.32)
                 44. because application of rule Expr_ok/expracce-structt failed (../../../../spec/4f-typing-stmt.watsup:32.6-32.13)
-                  - because condition typ? matches Some was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
+                  - because condition typ? matches (_) was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
                 45. because application of rule Expr_ok/expracce-headert failed (../../../../spec/4f-typing-stmt.watsup:32.6-32.13)
                   - because condition datatyp matches `HeaderT%%` was not met ()
                 46. because application of rule Expr_ok/expracce-uniont failed (../../../../spec/4f-typing-stmt.watsup:32.6-32.13)
@@ -6592,7 +6592,7 @@ interp error: tracing backtrack logs:
             4. because application of rule Table_prop_ok/defaultp failed (../../../../spec/4g-typing-decl.watsup:1237.6-1237.19)
               - because invocation of relation Table_default_ok failed (../../../../spec/4g-typing-decl.watsup:1221.6-1221.22)
                 - because application of rule Table_default_ok/ failed (../../../../spec/4g-typing-decl.watsup:1221.6-1221.22)
-                  - because condition (paramtyp*, argIL*)? matches Some was not met (../../../../spec/4g-typing-decl.watsup:1154.9-1154.24)
+                  - because condition (paramtyp*, argIL*)? matches (_) was not met (../../../../spec/4g-typing-decl.watsup:1154.9-1154.24)
             5. because application of rule Table_prop_ok/customp failed (../../../../spec/4g-typing-decl.watsup:1237.6-1237.19)
               - because condition tblprop matches `CustomP%` was not met ()
     27. because application of rule Decl_ok/controltyped failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
@@ -9483,16 +9483,16 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2413.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_func<funcdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.FDENV) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
-  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
-    - because condition (fid, V, id*)? matches Some was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
+  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
+    - because condition (fid, V, id*)? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2441.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2441.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_map<tid, typdef>(C.GLOBAL.TDENV, id) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-  - because application of clause find_map(map<K, V>, K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-    - because condition V? matches Some was not met (../../../../spec/0-aux.watsup:137.9-137.14)
+  - because application of clause find_map(`MAP%`_map<K, V>(`PAIR%%`_pair<K, V>(K, V)*{K <- K*, V <- V*}), K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
+    - because condition V? matches (_) was not met (../../../../spec/0-aux.watsup:137.9-137.14)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2444-1.p4
@@ -9814,8 +9814,8 @@ Error on typecheck: unknown
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2544_self_ref.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_map<tid, typdef>(C.GLOBAL.TDENV, id) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-  - because application of clause find_map(map<K, V>, K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-    - because condition V? matches Some was not met (../../../../spec/0-aux.watsup:137.9-137.14)
+  - because application of clause find_map(`MAP%`_map<K, V>(`PAIR%%`_pair<K, V>(K, V)*{K <- K*, V <- V*}), K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
+    - because condition V? matches (_) was not met (../../../../spec/0-aux.watsup:137.9-137.14)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2597.p4
@@ -10559,7 +10559,7 @@ interp error: tracing backtrack logs:
                 43. because application of rule Expr_ok/expracce-stackt-next failed (../../../../spec/4e-typing-expr.watsup:759.6-759.13)
                   - because condition (text = "next") was not met (../../../../spec/4e-typing-expr.watsup:758.26-758.32)
                 44. because application of rule Expr_ok/expracce-structt failed (../../../../spec/4e-typing-expr.watsup:759.6-759.13)
-                  - because condition typ? matches Some was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
+                  - because condition typ? matches (_) was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
                 45. because application of rule Expr_ok/expracce-headert failed (../../../../spec/4e-typing-expr.watsup:759.6-759.13)
                   - because condition datatyp matches `HeaderT%%` was not met ()
                 46. because application of rule Expr_ok/expracce-uniont failed (../../../../spec/4e-typing-expr.watsup:759.6-759.13)
@@ -10665,7 +10665,7 @@ interp error: tracing backtrack logs:
                 43. because application of rule Expr_ok/expracce-stackt-next failed (../../../../spec/4e-typing-expr.watsup:765.6-765.13)
                   - because condition (text = "next") was not met (../../../../spec/4e-typing-expr.watsup:758.26-758.32)
                 44. because application of rule Expr_ok/expracce-structt failed (../../../../spec/4e-typing-expr.watsup:765.6-765.13)
-                  - because condition typ? matches Some was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
+                  - because condition typ? matches (_) was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
                 45. because application of rule Expr_ok/expracce-headert failed (../../../../spec/4e-typing-expr.watsup:765.6-765.13)
                   - because condition datatyp matches `HeaderT%%` was not met ()
                 46. because application of rule Expr_ok/expracce-uniont failed (../../../../spec/4e-typing-expr.watsup:765.6-765.13)
@@ -10771,7 +10771,7 @@ interp error: tracing backtrack logs:
                 43. because application of rule Expr_ok/expracce-stackt-next failed (../../../../spec/4e-typing-expr.watsup:773.6-773.13)
                   - because condition (text = "next") was not met (../../../../spec/4e-typing-expr.watsup:758.26-758.32)
                 44. because application of rule Expr_ok/expracce-structt failed (../../../../spec/4e-typing-expr.watsup:773.6-773.13)
-                  - because condition typ? matches Some was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
+                  - because condition typ? matches (_) was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
                 45. because application of rule Expr_ok/expracce-headert failed (../../../../spec/4e-typing-expr.watsup:773.6-773.13)
                   - because condition datatyp matches `HeaderT%%` was not met ()
                 46. because application of rule Expr_ok/expracce-uniont failed (../../../../spec/4e-typing-expr.watsup:773.6-773.13)
@@ -10877,7 +10877,7 @@ interp error: tracing backtrack logs:
                 43. because application of rule Expr_ok/expracce-stackt-next failed (../../../../spec/4e-typing-expr.watsup:781.6-781.13)
                   - because condition (text = "next") was not met (../../../../spec/4e-typing-expr.watsup:758.26-758.32)
                 44. because application of rule Expr_ok/expracce-structt failed (../../../../spec/4e-typing-expr.watsup:781.6-781.13)
-                  - because condition typ? matches Some was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
+                  - because condition typ? matches (_) was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
                 45. because application of rule Expr_ok/expracce-headert failed (../../../../spec/4e-typing-expr.watsup:781.6-781.13)
                   - because condition datatyp matches `HeaderT%%` was not met ()
                 46. because application of rule Expr_ok/expracce-uniont failed (../../../../spec/4e-typing-expr.watsup:781.6-781.13)
@@ -10983,7 +10983,7 @@ interp error: tracing backtrack logs:
                 43. because application of rule Expr_ok/expracce-stackt-next failed (../../../../spec/4e-typing-expr.watsup:789.6-789.13)
                   - because condition (text = "next") was not met (../../../../spec/4e-typing-expr.watsup:758.26-758.32)
                 44. because application of rule Expr_ok/expracce-structt failed (../../../../spec/4e-typing-expr.watsup:789.6-789.13)
-                  - because condition typ? matches Some was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
+                  - because condition typ? matches (_) was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
                 45. because application of rule Expr_ok/expracce-headert failed (../../../../spec/4e-typing-expr.watsup:789.6-789.13)
                   - because condition datatyp matches `HeaderT%%` was not met ()
                 46. because application of rule Expr_ok/expracce-uniont failed (../../../../spec/4e-typing-expr.watsup:789.6-789.13)
@@ -11504,8 +11504,8 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3197-e.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_func<funcdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.FDENV) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
-  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
-    - because condition (fid, V, id*)? matches Some was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
+  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
+    - because condition (fid, V, id*)? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3210.p4
@@ -11961,8 +11961,8 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3264.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_map<id, styp>(C.GLOBAL.FRAME, id) failed (../../../../spec/4a1-typing-context.watsup:277.42-277.51)
-  - because application of clause find_map(map<K, V>, K_key) failed (../../../../spec/4a1-typing-context.watsup:277.42-277.51)
-    - because condition V? matches Some was not met (../../../../spec/0-aux.watsup:137.9-137.14)
+  - because application of clause find_map(`MAP%`_map<K, V>(`PAIR%%`_pair<K, V>(K, V)*{K <- K*, V <- V*}), K_key) failed (../../../../spec/4a1-typing-context.watsup:277.42-277.51)
+    - because condition V? matches (_) was not met (../../../../spec/0-aux.watsup:137.9-137.14)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3271-1.p4
@@ -13585,7 +13585,7 @@ interp error: tracing backtrack logs:
     29. because application of rule Decl_ok/packagetyped failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
       - because invocation of relation CParam_ok failed (../../../../spec/4g-typing-decl.watsup:1348.7-1348.16)
         1. because application of rule CParam_ok/cparam-default failed (../../../../spec/4g-typing-decl.watsup:1348.7-1348.16)
-          - because condition expr? matches Some was not met (../../../../spec/4g-typing-decl.watsup:28.22-28.26)
+          - because condition expr? matches (_) was not met (../../../../spec/4g-typing-decl.watsup:28.22-28.26)
         2. because application of rule CParam_ok/cparam-nodefault failed (../../../../spec/4g-typing-decl.watsup:1348.7-1348.16)
           - because invocation of relation Type_wf failed (../../../../spec/4g-typing-decl.watsup:43.6-43.13)
             1. because application of rule Type_wf/baset failed (../../../../spec/4g-typing-decl.watsup:43.6-43.13)
@@ -13739,8 +13739,8 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue345.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_map<tid, typdef>(C.GLOBAL.TDENV, id) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-  - because application of clause find_map(map<K, V>, K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-    - because condition V? matches Some was not met (../../../../spec/0-aux.watsup:137.9-137.14)
+  - because application of clause find_map(`MAP%`_map<K, V>(`PAIR%%`_pair<K, V>(K, V)*{K <- K*, V <- V*}), K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
+    - because condition V? matches (_) was not met (../../../../spec/0-aux.watsup:137.9-137.14)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3522.p4
@@ -14953,7 +14953,7 @@ interp error: tracing backtrack logs:
     20. because application of rule Decl_ok/funcd failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
       - because invocation of relation Param_ok failed (../../../../spec/4g-typing-decl.watsup:458.7-458.15)
         1. because application of rule Param_ok/param-default failed (../../../../spec/4g-typing-decl.watsup:458.7-458.15)
-          - because condition expr? matches Some was not met (../../../../spec/4g-typing-decl.watsup:6.22-6.26)
+          - because condition expr? matches (_) was not met (../../../../spec/4g-typing-decl.watsup:6.22-6.26)
         2. because application of rule Param_ok/param-nodefault failed (../../../../spec/4g-typing-decl.watsup:458.7-458.15)
           - because invocation of relation Type_wf failed (../../../../spec/4g-typing-decl.watsup:21.6-21.13)
             1. because application of rule Type_wf/baset failed (../../../../spec/4g-typing-decl.watsup:21.6-21.13)
@@ -15140,7 +15140,7 @@ interp error: tracing backtrack logs:
     20. because application of rule Decl_ok/funcd failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
       - because invocation of relation Param_ok failed (../../../../spec/4g-typing-decl.watsup:458.7-458.15)
         1. because application of rule Param_ok/param-default failed (../../../../spec/4g-typing-decl.watsup:458.7-458.15)
-          - because condition expr? matches Some was not met (../../../../spec/4g-typing-decl.watsup:6.22-6.26)
+          - because condition expr? matches (_) was not met (../../../../spec/4g-typing-decl.watsup:6.22-6.26)
         2. because application of rule Param_ok/param-nodefault failed (../../../../spec/4g-typing-decl.watsup:458.7-458.15)
           - because invocation of relation Type_wf failed (../../../../spec/4g-typing-decl.watsup:21.6-21.13)
             1. because application of rule Type_wf/baset failed (../../../../spec/4g-typing-decl.watsup:21.6-21.13)
@@ -15508,7 +15508,7 @@ interp error: tracing backtrack logs:
                 1. because application of rule ParamType_wf/none failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
                   - because condition ($is_externt($canon_typ(typ)) => (dir = `NO`_dir())) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:383.9-383.51)
                 2. because application of rule ParamType_wf/some failed (../../../../spec/2c6-runtime-type-wellformed.watsup:395.7-395.19)
-                  - because condition val? matches Some was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
+                  - because condition val? matches (_) was not met (../../../../spec/2c6-runtime-type-wellformed.watsup:386.23-386.26)
         17. because application of rule Type_wf/packaget failed (../../../../spec/2c6-runtime-type-wellformed.watsup:374.6-374.13)
           - because condition objtyp matches `PackageT%` was not met ()
         18. because application of rule Type_wf/tablet failed (../../../../spec/2c6-runtime-type-wellformed.watsup:374.6-374.13)
@@ -15707,16 +15707,16 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3813.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_func<funcdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.FDENV) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
-  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
-    - because condition (fid, V, id*)? matches Some was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
+  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
+    - because condition (fid, V, id*)? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3814.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3814.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_func<consdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.CDENV) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
-  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
-    - because condition (fid, V, id*)? matches Some was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
+  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
+    - because condition (fid, V, id*)? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3846.p4
@@ -16304,7 +16304,7 @@ interp error: tracing backtrack logs:
                 2. because application of rule Decl_ok/vard-none failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
                   - because condition $is_assignable(typ) was not met (../../../../spec/4g-typing-decl.watsup:70.9-70.28)
                 3. because application of rule Decl_ok/vard-some failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
-                  - because condition expr? matches Some was not met (../../../../spec/4g-typing-decl.watsup:74.23-74.27)
+                  - because condition expr? matches (_) was not met (../../../../spec/4g-typing-decl.watsup:74.23-74.27)
                 4. because application of rule Decl_ok/instd-some failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
                   - because condition decl' matches `InstD%%%%%` was not met ()
                 5. because application of rule Decl_ok/instd-none failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
@@ -17803,7 +17803,7 @@ interp error: tracing backtrack logs:
 - because invocation of function $resolve_cstrs(cstr') failed (../../../../spec/4h-typing-call.watsup:330.57-330.71)
   1. because application of clause resolve_cstrs(map<tid, typ?>) failed (../../../../spec/4h-typing-call.watsup:330.57-330.71)
     - because condition (map<tid, typ?> = `MAP%`_map<tid, typ?>([])) was not met ()
-  2. because application of clause resolve_cstrs(map<tid, typ?>) failed (../../../../spec/4h-typing-call.watsup:330.57-330.71)
+  2. because application of clause resolve_cstrs(`MAP%`_map<tid, typ?>(pair<tid, typ?>*)) failed (../../../../spec/4h-typing-call.watsup:330.57-330.71)
     - because condition (typ_h =/= `AnyT`_synthtyp() as typ) was not met (../../../../spec/4h-typing-call.watsup:323.9-323.23)
 
 
@@ -17811,8 +17811,8 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue803-1.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_func<consdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.CDENV) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
-  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
-    - because condition (fid, V, id*)? matches Some was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
+  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
+    - because condition (fid, V, id*)? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue807.p4
@@ -18936,8 +18936,8 @@ interp error: tracing backtrack logs:
 - because invocation of function $resolve_cstrs(cstr') failed (../../../../spec/4h-typing-call.watsup:330.57-330.71)
   1. because application of clause resolve_cstrs(map<tid, typ?>) failed (../../../../spec/4h-typing-call.watsup:330.57-330.71)
     - because condition (map<tid, typ?> = `MAP%`_map<tid, typ?>([])) was not met ()
-  2. because application of clause resolve_cstrs(map<tid, typ?>) failed (../../../../spec/4h-typing-call.watsup:330.57-330.71)
-    - because condition typ? matches Some was not met (../../../../spec/4h-typing-call.watsup:321.37-321.42)
+  2. because application of clause resolve_cstrs(`MAP%`_map<tid, typ?>(pair<tid, typ?>*)) failed (../../../../spec/4h-typing-call.watsup:330.57-330.71)
+    - because condition typ? matches (_) was not met (../../../../spec/4h-typing-call.watsup:321.37-321.42)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/minWidth.p4
@@ -19080,8 +19080,8 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/missing_match.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_map<id, styp>(C.GLOBAL.FRAME, id) failed (../../../../spec/4a1-typing-context.watsup:277.42-277.51)
-  - because application of clause find_map(map<K, V>, K_key) failed (../../../../spec/4a1-typing-context.watsup:277.42-277.51)
-    - because condition V? matches Some was not met (../../../../spec/0-aux.watsup:137.9-137.14)
+  - because application of clause find_map(`MAP%`_map<K, V>(`PAIR%%`_pair<K, V>(K, V)*{K <- K*, V <- V*}), K_key) failed (../../../../spec/4a1-typing-context.watsup:277.42-277.51)
+    - because condition V? matches (_) was not met (../../../../spec/0-aux.watsup:137.9-137.14)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/module_e.p4
@@ -19452,13 +19452,13 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/named-fail.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_func_opt<funcdef>(id, $to_fkey(arg*{arg <- arg*}), C.BLOCK.FDENV) failed (../../../../spec/4a1-typing-context.watsup:327.32-327.46)
-  1. because application of clause find_func_opt(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:327.32-327.46)
-    - because condition id? matches Some was not met (../../../../spec/2e-runtime-env.watsup:162.18-162.23)
-  2. because application of clause find_func_opt(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:327.32-327.46)
-    - because condition id? matches Some was not met (../../../../spec/2e-runtime-env.watsup:167.18-167.23)
-  3. because application of clause find_func_opt(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:327.32-327.46)
+  1. because application of clause find_func_opt(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:327.32-327.46)
+    - because condition id? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:162.18-162.23)
+  2. because application of clause find_func_opt(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:327.32-327.46)
+    - because condition id? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:167.18-167.23)
+  3. because application of clause find_func_opt(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:327.32-327.46)
     - because condition (id_a?{id_a <- id_a?} = ?()) was not met (../../../../spec/2e-runtime-env.watsup:172.9-172.22)
-  4. because application of clause find_func_opt(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:327.32-327.46)
+  4. because application of clause find_func_opt(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:327.32-327.46)
     - because condition (id_a?{id_a <- id_a?} = ?()) was not met (../../../../spec/2e-runtime-env.watsup:176.9-176.22)
 
 
@@ -19466,8 +19466,8 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/named-fail1.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_func<funcdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.FDENV) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
-  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
-    - because condition (fid, V, id*)? matches Some was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
+  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
+    - because condition (fid, V, id*)? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/neg.p4
@@ -19999,8 +19999,8 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/not_bound.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_func<funcdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.FDENV) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
-  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
-    - because condition (fid, V, id*)? matches Some was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
+  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:325.51-325.61)
+    - because condition (fid, V, id*)? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/p_e.p4
@@ -21374,8 +21374,8 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/scope.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_map<tid, typdef>(C.GLOBAL.TDENV, id) failed (../../../../spec/4a1-typing-context.watsup:300.35-300.44)
-  - because application of clause find_map(map<K, V>, K_key) failed (../../../../spec/4a1-typing-context.watsup:300.35-300.44)
-    - because condition V? matches Some was not met (../../../../spec/0-aux.watsup:137.9-137.14)
+  - because application of clause find_map(`MAP%`_map<K, V>(`PAIR%%`_pair<K, V>(K, V)*{K <- K*, V <- V*}), K_key) failed (../../../../spec/4a1-typing-context.watsup:300.35-300.44)
+    - because condition V? matches (_) was not met (../../../../spec/0-aux.watsup:137.9-137.14)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/select-struct.p4
@@ -21788,8 +21788,8 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/self-call.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_func<consdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.CDENV) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
-  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, map<fid, V>) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
-    - because condition (fid, V, id*)? matches Some was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
+  - because application of clause find_func(id_f, id_a?{id_a <- id_a?}*{id_a? <- id_a?*}, `MAP%`_map<fid, V>(`PAIR%%`_pair<fid, V>(fid, V)*{V <- V*, fid <- fid*})) failed (../../../../spec/4a1-typing-context.watsup:349.51-349.61)
+    - because condition (fid, V, id*)? matches (_) was not met (../../../../spec/2e-runtime-env.watsup:184.9-184.29)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/serEnumImplCast.p4
@@ -23047,8 +23047,8 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/spec-issue563.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_map<tid, typdef>(C.GLOBAL.TDENV, id) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-  - because application of clause find_map(map<K, V>, K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-    - because condition V? matches Some was not met (../../../../spec/0-aux.watsup:137.9-137.14)
+  - because application of clause find_map(`MAP%`_map<K, V>(`PAIR%%`_pair<K, V>(K, V)*{K <- K*, V <- V*}), K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
+    - because condition V? matches (_) was not met (../../../../spec/0-aux.watsup:137.9-137.14)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4
@@ -23500,7 +23500,7 @@ interp error: tracing backtrack logs:
                 17. because application of rule Type_ok/anyt failed (../../../../spec/4g-typing-decl.watsup:68.6-68.13)
                   - because condition (type = `AnyT`_type()) was not met ()
             3. because application of rule Decl_ok/vard-some failed (../../../../spec/4f-typing-stmt.watsup:272.6-272.13)
-              - because condition expr? matches Some was not met (../../../../spec/4g-typing-decl.watsup:74.23-74.27)
+              - because condition expr? matches (_) was not met (../../../../spec/4g-typing-decl.watsup:74.23-74.27)
             4. because application of rule Decl_ok/instd-some failed (../../../../spec/4f-typing-stmt.watsup:272.6-272.13)
               - because condition decl' matches `InstD%%%%%` was not met ()
             5. because application of rule Decl_ok/instd-none failed (../../../../spec/4f-typing-stmt.watsup:272.6-272.13)
@@ -23862,7 +23862,7 @@ Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/stack3.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_val(p, C, name) failed (../../../../spec/4c-typing-static-eval.watsup:18.16-18.25)
   - because application of clause find_val(p, C, name) failed (../../../../spec/4c-typing-static-eval.watsup:18.16-18.25)
-    - because condition val? matches Some was not met (../../../../spec/4a1-typing-context.watsup:293.21-293.24)
+    - because condition val? matches (_) was not met (../../../../spec/4a1-typing-context.watsup:293.21-293.24)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/stack_e.p4
@@ -24021,7 +24021,7 @@ interp error: tracing backtrack logs:
             29. because application of rule Type_wf/anyt failed (../../../../spec/4g-typing-decl.watsup:69.6-69.13)
               - because condition (typ = `AnyT`_synthtyp() as typ) was not met ()
         3. because application of rule Decl_ok/vard-some failed (../../../../spec/4f-typing-stmt.watsup:272.6-272.13)
-          - because condition expr? matches Some was not met (../../../../spec/4g-typing-decl.watsup:74.23-74.27)
+          - because condition expr? matches (_) was not met (../../../../spec/4g-typing-decl.watsup:74.23-74.27)
         4. because application of rule Decl_ok/instd-some failed (../../../../spec/4f-typing-stmt.watsup:272.6-272.13)
           - because condition decl' matches `InstD%%%%%` was not met ()
         5. because application of rule Decl_ok/instd-none failed (../../../../spec/4f-typing-stmt.watsup:272.6-272.13)
@@ -24489,7 +24489,7 @@ interp error: tracing backtrack logs:
                 43. because application of rule Expr_ok/expracce-stackt-next failed (../../../../spec/4f-typing-stmt.watsup:32.6-32.13)
                   - because condition (text = "next") was not met (../../../../spec/4e-typing-expr.watsup:758.26-758.32)
                 44. because application of rule Expr_ok/expracce-structt failed (../../../../spec/4f-typing-stmt.watsup:32.6-32.13)
-                  - because condition typ? matches Some was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
+                  - because condition typ? matches (_) was not met (../../../../spec/4e-typing-expr.watsup:769.9-769.12)
                 45. because application of rule Expr_ok/expracce-headert failed (../../../../spec/4f-typing-stmt.watsup:32.6-32.13)
                   - because condition datatyp matches `HeaderT%%` was not met ()
                 46. because application of rule Expr_ok/expracce-uniont failed (../../../../spec/4f-typing-stmt.watsup:32.6-32.13)
@@ -25620,16 +25620,16 @@ Error on typecheck: unknown
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/type-in-expr.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_map<tid, typdef>(C.GLOBAL.TDENV, id) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-  - because application of clause find_map(map<K, V>, K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-    - because condition V? matches Some was not met (../../../../spec/0-aux.watsup:137.9-137.14)
+  - because application of clause find_map(`MAP%`_map<K, V>(`PAIR%%`_pair<K, V>(K, V)*{K <- K*, V <- V*}), K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
+    - because condition V? matches (_) was not met (../../../../spec/0-aux.watsup:137.9-137.14)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/type-params_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/type-params_e.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_map<tid, typdef>(C.GLOBAL.TDENV, id) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-  - because application of clause find_map(map<K, V>, K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-    - because condition V? matches Some was not met (../../../../spec/0-aux.watsup:137.9-137.14)
+  - because application of clause find_map(`MAP%`_map<K, V>(`PAIR%%`_pair<K, V>(K, V)*{K <- K*, V <- V*}), K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
+    - because condition V? matches (_) was not met (../../../../spec/0-aux.watsup:137.9-137.14)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/typecheck1_e.p4
@@ -25646,8 +25646,8 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/typecheck_e.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_map<tid, typdef>(C.GLOBAL.TDENV, id) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-  - because application of clause find_map(map<K, V>, K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
-    - because condition V? matches Some was not met (../../../../spec/0-aux.watsup:137.9-137.14)
+  - because application of clause find_map(`MAP%`_map<K, V>(`PAIR%%`_pair<K, V>(K, V)*{K <- K*, V <- V*}), K_key) failed (../../../../spec/4a1-typing-context.watsup:301.44-301.53)
+    - because condition V? matches (_) was not met (../../../../spec/0-aux.watsup:137.9-137.14)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/typedef-and-type-definitions.p4
@@ -26185,7 +26185,7 @@ interp error: tracing backtrack logs:
                 8. because application of rule Stmt_ok/rets-none failed (../../../../spec/4f-typing-stmt.watsup:283.6-283.13)
                   - because condition (`VoidT`_primtyp() as typ = $get_typ_ret_lkind(C.LOCAL.KIND)) was not met (../../../../spec/4f-typing-stmt.watsup:195.9-195.49)
                 9. because application of rule Stmt_ok/rets-some failed (../../../../spec/4f-typing-stmt.watsup:283.6-283.13)
-                  - because condition expr? matches Some was not met (../../../../spec/4f-typing-stmt.watsup:198.21-198.25)
+                  - because condition expr? matches (_) was not met (../../../../spec/4f-typing-stmt.watsup:198.21-198.25)
                 10. because application of rule Stmt_ok/callfuncs failed (../../../../spec/4f-typing-stmt.watsup:283.6-283.13)
                   - because condition stmt matches `CallFuncS%%%` was not met ()
                 11. because application of rule Stmt_ok/callmethods failed (../../../../spec/4f-typing-stmt.watsup:283.6-283.13)
@@ -26204,16 +26204,16 @@ interp error: tracing backtrack logs:
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/virtual4.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_map<fid, funcdef>(fdenv_ext, fid_h) failed (../../../../spec/4g-typing-decl.watsup:146.82-146.91)
-  - because application of clause find_map(map<K, V>, K_key) failed (../../../../spec/4g-typing-decl.watsup:146.82-146.91)
-    - because condition V? matches Some was not met (../../../../spec/0-aux.watsup:137.9-137.14)
+  - because application of clause find_map(`MAP%`_map<K, V>(`PAIR%%`_pair<K, V>(K, V)*{K <- K*, V <- V*}), K_key) failed (../../../../spec/4g-typing-decl.watsup:146.82-146.91)
+    - because condition V? matches (_) was not met (../../../../spec/0-aux.watsup:137.9-137.14)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/virtual5.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/virtual5.p4
 interp error: tracing backtrack logs:
 - because invocation of function $find_map<fid, funcdef>(fdenv_ext, fid_h) failed (../../../../spec/4g-typing-decl.watsup:146.82-146.91)
-  - because application of clause find_map(map<K, V>, K_key) failed (../../../../spec/4g-typing-decl.watsup:146.82-146.91)
-    - because condition V? matches Some was not met (../../../../spec/0-aux.watsup:137.9-137.14)
+  - because application of clause find_map(`MAP%`_map<K, V>(`PAIR%%`_pair<K, V>(K, V)*{K <- K*, V <- V*}), K_key) failed (../../../../spec/4g-typing-decl.watsup:146.82-146.91)
+    - because condition V? matches (_) was not met (../../../../spec/0-aux.watsup:137.9-137.14)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/virtual6.p4
