@@ -1,4 +1,4 @@
-Running typecheck roundtrip tests on 220 files
+Running typecheck tests on 220 files
 
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed-excluded/future/concat-string/issue4932.p4

@@ -1,4 +1,4 @@
-Running typecheck roundtrip tests on 1033 files
+Running typecheck tests on 1033 files
 
 
 >>> Running typecheck test on ../../../testdata/p4c/program/well-typed/action-bind.p4

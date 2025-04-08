@@ -132,3 +132,4 @@ Typecheck success
 
 Parser on file: [PASS] 43/43 (100.00%) [FAIL] 0/43 (0.00%)
 Typecheck: [PASS] 43/43 (100.00%) [FAIL] 0/43 (0.00%)
+Typecheck roundtrip: [PASS] 43/43 (100.00%) [FAIL] 0/43 (0.00%)
