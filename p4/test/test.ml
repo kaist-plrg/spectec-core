@@ -201,8 +201,7 @@ let typecheck_test_driver includes mode testdir =
   let files = collect_files ~suffix:".p4" testdir in
   let total = List.length files in
   let stat = empty_stat in
-  Format.asprintf "Running typecheck roundtrip tests on %d files\n" total
-  |> print_endline;
+  Format.asprintf "Running typecheck tests on %d files\n" total |> print_endline;
   let stat =
     List.fold_left
       (fun stat filename -> typecheck_test stat includes mode filename)
@@ -212,7 +211,8 @@ let typecheck_test_driver includes mode testdir =
   let total = total - stat.fail_parse_file in
   log_stat "Typecheck" stat.fail_typecheck total;
   let total = total - stat.fail_typecheck in
-  log_stat "Typecheck roundtrip" stat.fail_typecheck_roundtrip total
+  if total = 0 then total |> ignore
+  else log_stat "Typecheck roundtrip" stat.fail_typecheck_roundtrip total
 
 let typecheck_command =
   Core.Command.basic ~summary:"typecheck test"
