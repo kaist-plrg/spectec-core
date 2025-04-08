@@ -567,7 +567,17 @@ let eval_bitstring_access (value : Value.t) (hvalue : Value.t)
 
 (* Type cast evaluation *)
 
-let rec eval_cast_bool (typ : Type.t) (b : bool) : Value.t =
+let rec eval_cast_err (typ : Type.t) (member : string) : Value.t =
+  let typ = Type.canon typ in
+  match typ with
+  | SpecT _ | DefT _ -> assert false
+  | ErrT -> ErrV member
+  | _ ->
+      Format.asprintf "(TODO) Cast from error to any other type (%a) undefined"
+        (Type.pp ~level:0) typ
+      |> failwith
+
+and eval_cast_bool (typ : Type.t) (b : bool) : Value.t =
   let typ = Type.canon typ in
   match typ with
   | SpecT _ | DefT _ -> assert false
@@ -641,6 +651,25 @@ and eval_cast_fbit (typ : Type.t) (width : Bigint.t) (i : Bigint.t) : Value.t =
   | _ ->
       Format.asprintf
         "(TODO) Cast from fixed-precision bit to type %a undefined"
+        (Type.pp ~level:0) typ
+      |> failwith
+
+and eval_cast_vbit (typ : Type.t) (width_max : Bigint.t) (width : Bigint.t)
+    (i : Bigint.t) : Value.t =
+  let typ = Type.canon typ in
+  match typ with
+  | SpecT _ | DefT _ -> assert false
+  | VBitT width_to ->
+      if width_to = width_max then VBitV (width_max, width, i)
+      else
+        Format.asprintf
+          "(TODO) Cast between variable-size bits with different maximum \
+           widths (%a -> %a) undefined"
+          Bigint.pp width_max Bigint.pp width_to
+        |> failwith
+  | _ ->
+      Format.asprintf
+        "(TODO) Cast from variable-size bit to any other type (%a) undefined"
         (Type.pp ~level:0) typ
       |> failwith
 
@@ -872,10 +901,12 @@ and eval_cast_set_range (typ : Type.t) (value : Value.t) (range : Value.t) :
 
 and eval_cast (typ : Type.t) (value : Value.t) : Value.t =
   match value with
+  | ErrV member -> eval_cast_err typ member
   | BoolV b -> eval_cast_bool typ b
   | IntV i -> eval_cast_int typ i
   | FIntV (width, i) -> eval_cast_fint typ width i
   | FBitV (width, i) -> eval_cast_fbit typ width i
+  | VBitV (width_max, width, i) -> eval_cast_vbit typ width_max width i
   | SEnumFieldV (id, member, value) -> eval_cast_senum_field typ id member value
   | StructV (id, fields) -> eval_cast_struct typ id fields
   | HeaderV (id, valid, fields) -> eval_cast_header typ id valid fields
