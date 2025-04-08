@@ -2336,7 +2336,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     (F.asprintf "(type_instantiation) instance %a not found" El.Pp.pp_var
        var_inst);
   let _, cd, args_default = Option.get cd_matched in
-  let ct, targs_hidden, tids_fresh_inserted =
+  let ct, tids_fresh_inserted =
     let targs = List.map it targs_il in
     ConsDef.specialize Ctx.fresh cd targs
   in
@@ -2370,20 +2370,19 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     align_cparams_with_args cparams typ_args args_il
   in
   let args_il_typed = List.combine args_il typ_args in
-  let ct, _targs_il, cparams, typ_inst =
+  let ct, targs_hidden_il, cparams, typ_inst =
     match tids_fresh with
-    | [] -> (ct, targs_il, cparams, typ_inst)
+    | [] -> (ct, [], cparams, typ_inst)
     | _ ->
         let theta = infer_targs tids_fresh cparams args_il_typed in
-        let targs_il =
-          targs_il
-          @ (List.map (fun tid_fresh -> TIdMap.find tid_fresh theta) tids_fresh
+        let targs_hidden_il =
+          (List.map (fun tid_fresh -> TIdMap.find tid_fresh theta) tids_fresh
             |> List.map (fun typ -> typ $ no_info))
         in
         let ct = ConsType.subst theta ct in
         let cparams = List.map (Il.Subst.subst_cparam theta) cparams in
         let typ_inst = Type.subst theta typ_inst in
-        (ct, targs_il, cparams, typ_inst)
+        (ct, targs_hidden_il, cparams, typ_inst)
   in
   WF.check_valid_constyp cursor ctx ct;
   check_instantiation_site cursor ctx typ_inst;
@@ -2391,7 +2390,6 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     type_call_convention ~action:false cursor ctx cparams args_il_typed
   in
   let typ = typ_inst in
-  let targs_hidden_il = List.map (fun targ' -> targ' $ no_info) targs_hidden in
   let expr_il =
     Il.Ast.InstE
       {
