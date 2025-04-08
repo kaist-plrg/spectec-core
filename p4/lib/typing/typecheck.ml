@@ -2376,8 +2376,8 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
     | _ ->
         let theta = infer_targs tids_fresh cparams args_il_typed in
         let targs_hidden_il =
-          (List.map (fun tid_fresh -> TIdMap.find tid_fresh theta) tids_fresh
-            |> List.map (fun typ -> typ $ no_info))
+          List.map (fun tid_fresh -> TIdMap.find tid_fresh theta) tids_fresh
+          |> List.map (fun typ -> typ $ no_info)
         in
         let ct = ConsType.subst theta ct in
         let cparams = List.map (Il.Subst.subst_cparam theta) cparams in
