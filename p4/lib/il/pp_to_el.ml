@@ -222,10 +222,12 @@ and pp_expr' ?(level = 0) fmt expr' =
         expr_else
   | CastE { typ; expr } -> (
       match typ.it with
-      | SetT _ -> 
-        F.fprintf fmt "/* %a */ %a" 
-          (pp_typ ~level:(level + 1)) typ 
-          (pp_expr ~level:(level + 1)) expr
+      | SetT _ ->
+          F.fprintf fmt "/* %a */ %a"
+            (pp_typ ~level:(level + 1))
+            typ
+            (pp_expr ~level:(level + 1))
+            expr
       | _ ->
           F.fprintf fmt "((%a) (%a))"
             (pp_typ ~level:(level + 1))
