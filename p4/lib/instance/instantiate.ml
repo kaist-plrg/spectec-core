@@ -912,7 +912,7 @@ and eval_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
         | Types.PolyD td_poly -> Types.SpecT (td_poly, []))
   in
   let td =
-    let typ_def = Types.DefT (typ, id.it) in
+    let typ_def = Types.DefT (id.it, typ) in
     Types.MonoD typ_def
   in
   Ctx.add_typdef cursor id.it td ctx

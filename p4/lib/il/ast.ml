@@ -70,11 +70,11 @@ and typ' =
   | SpecT of typdef_poly * typ' list
   (* 3. Defined types *)
   (* 3a. Alias types *)
-  | DefT of typ' * L.id'
+  | DefT of L.id' * typ'
   (* 3b. Data types *)
   | NewT of L.id' * typ'
   | EnumT of L.id' * L.member' list
-  | SEnumT of L.id' * typ' * (L.member' * Value.t) list
+  | SEnumT of L.id' * typ' * (L.member' * value') list
   | ListT of typ'
   | TupleT of typ' list
   | StackT of typ' * Bigint.t
