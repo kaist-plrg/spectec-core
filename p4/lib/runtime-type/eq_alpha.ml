@@ -1,10 +1,10 @@
 open Domain.Dom
-open Ast
+open Il.Ast
 open Utils
 module E = Lang.Eq
 open Util.Source
 
-(* Equal kinds *)
+(* Il.Equal kinds *)
 
 let eq_functyp_kind ft_a ft_b =
   match (ft_a, ft_b) with
@@ -31,7 +31,7 @@ let eq_funcdef_kind fd_a fd_b =
 let eq_constyp_kind ct_a ct_b =
   let _, typ_a = ct_a in
   let _, typ_b = ct_b in
-  Eq.eq_typ' typ_a typ_b
+  Il.Eq.eq_typ' typ_a typ_b
 
 let eq_consdef_kind cd_a cd_b =
   let _, _, ct_a = cd_a in
@@ -84,7 +84,7 @@ and eq_typ_alpha (typ_a : typ') (typ_b : typ') : bool =
     ->
       E.eq_id' id_a id_b
       && eq_typ_alpha typ_inner_a typ_inner_b
-      && E.eq_pairs E.eq_member' Eq.eq_value' fields_a fields_b
+      && E.eq_pairs E.eq_member' Il.Eq.eq_value' fields_a fields_b
   | ListT typ_inner_a, ListT typ_inner_b -> eq_typ_alpha typ_inner_a typ_inner_b
   | TupleT typs_inner_a, TupleT typs_inner_b ->
       eq_typs_alpha typs_inner_a typs_inner_b

@@ -1,6 +1,6 @@
 open Domain.Dom
 module Dir = Runtime_static.Dir
-module Types = Il.Tdomain.Types
+module Types = Runtime_type.Types
 module Type = Types.Type
 module TypeDef = Types.TypeDef
 module FuncType = Types.FuncType

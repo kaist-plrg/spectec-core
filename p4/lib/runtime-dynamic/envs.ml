@@ -1,6 +1,6 @@
 open Domain.Dom
 module Value = Runtime_value.Value
-module Types = Il.Tdomain.Types
+module Types = Runtime_type.Types
 module Type = Types.Type
 module TypeDef = Types.TypeDef
 
