@@ -1,14 +1,6 @@
+open Domain.Dom
 module E = Lang.Eq
 module Ctk = Ctk
-module TypeDef = Tdomain.Types.TypeDef
-module Type = Tdomain.Types.Type
-
-(*
-module Envs = Runtime_static.Envs
-module SType = Envs.SType
-module Frame = Envs.Frame
-module TDEnv = Envs.TDEnv
-*)
 open Ast
 module P = Pp
 open Util.Source
@@ -46,14 +38,6 @@ let eq_member ?(dbg = false) member_a member_b =
 let eq_members ?(dbg = false) members_a members_b =
   E.eq_members ~dbg members_a members_b
 
-(* State labels *)
-
-let eq_state_label' state_label_a state_label_b =
-  E.eq_state_label' state_label_a state_label_b
-
-let eq_state_label ?(dbg = false) state_label_a state_label_b =
-  E.eq_state_label ~dbg state_label_a state_label_b
-
 (* Match kinds *)
 
 let eq_match_kind' match_kind_a match_kind_b =
@@ -61,6 +45,14 @@ let eq_match_kind' match_kind_a match_kind_b =
 
 let eq_match_kind ?(dbg = false) match_kind_a match_kind_b =
   E.eq_match_kind ~dbg match_kind_a match_kind_b
+
+(* State labels *)
+
+let eq_state_label' state_label_a state_label_b =
+  E.eq_state_label' state_label_a state_label_b
+
+let eq_state_label ?(dbg = false) state_label_a state_label_b =
+  E.eq_state_label ~dbg state_label_a state_label_b
 
 (* Unary operators *)
 
@@ -79,12 +71,113 @@ let eq_dir ?(dbg = false) dir_a dir_b = E.eq_dir ~dbg dir_a dir_b
 
 (* Types *)
 
-let rec eq_typ' typ_a typ_b = Type.eq typ_a typ_b
+let rec eq_typ' typ_a typ_b = 
+  match (typ_a, typ_b) with
+  | VoidT, VoidT
+  | ErrT, ErrT
+  | MatchKindT, MatchKindT
+  | StrT, StrT
+  | BoolT, BoolT
+  | IntT, IntT ->
+      true
+  | FIntT width_a, FIntT width_b
+  | FBitT width_a, FBitT width_b
+  | VBitT width_a, VBitT width_b ->
+      Bigint.(width_a = width_b)
+  | VarT id_a, VarT id_b -> eq_tid' id_a id_b
+  | SpecT (tdp_a, typs_a), SpecT (tdp_b, typs_b) ->
+      eq_typdef_poly tdp_a tdp_b && eq_typs' typs_a typs_b
+  | DefT (typ_a, _), DefT (typ_b, _) -> eq_typ' typ_a typ_b
+  | NewT (id_a, typ_a), NewT (id_b, typ_b) ->
+      E.eq_id' id_a id_b && eq_typ' typ_a typ_b
+  | EnumT (id_a, members_a), EnumT (id_b, members_b) ->
+      E.eq_id' id_a id_b && E.eq_list E.eq_member' members_a members_b
+  | SEnumT (id_a, typ_a, fields_a), SEnumT (id_b, typ_b, fields_b) ->
+      E.eq_id' id_a id_b && eq_typ' typ_a typ_b
+      && E.eq_pairs E.eq_member' eq_value' fields_a fields_b
+  | ListT typ_a, ListT typ_b -> eq_typ' typ_a typ_b
+  | TupleT typs_a, TupleT typs_b -> eq_typs' typs_a typs_b
+  | StackT (typ_a, size_a), StackT (typ_b, size_b) ->
+      eq_typ' typ_a typ_b && Bigint.(size_a = size_b)
+  | StructT (id_a, fields_a), StructT (id_b, fields_b)
+  | HeaderT (id_a, fields_a), HeaderT (id_b, fields_b)
+  | UnionT (id_a, fields_a), UnionT (id_b, fields_b) ->
+      E.eq_id' id_a id_b && E.eq_pairs E.eq_member' eq_typ' fields_a fields_b
+  | ExternT (id_a, fdenv_a), ExternT (id_b, fdenv_b) ->
+      E.eq_id' id_a id_b && FIdMap.eq eq_funcdef fdenv_a fdenv_b
+  | ParserT (_, params_a), ParserT (_, params_b)
+  | ControlT (_, params_a), ControlT (_, params_b) ->
+      eq_params' params_a params_b
+  | PackageT (_, typs_a), PackageT (_, typs_b) -> eq_typs' typs_a typs_b
+  | TableT (id_a, typ_a), TableT (id_b, typ_b) ->
+      E.eq_id' id_a id_b && eq_typ' typ_a typ_b
+  | AnyT, AnyT -> true
+  | TableEnumT (id_a, members_a), TableEnumT (id_b, members_b) ->
+      E.eq_id' id_a id_b && E.eq_list E.eq_member' members_a members_b
+  | TableStructT (id_a, fields_a), TableStructT (id_b, fields_b) ->
+      E.eq_id' id_a id_b && E.eq_pairs E.eq_member' eq_typ' fields_a fields_b
+  | SeqT typs_a, SeqT typs_b | SeqDefaultT typs_a, SeqDefaultT typs_b ->
+      eq_typs' typs_a typs_b
+  | RecordT fields_a, RecordT fields_b
+  | RecordDefaultT fields_a, RecordDefaultT fields_b ->
+      E.eq_pairs E.eq_member' eq_typ' fields_a fields_b
+  | DefaultT, DefaultT | InvalidT, InvalidT -> true
+  | SetT typ_a, SetT typ_b -> eq_typ' typ_a typ_b
+  | StateT, StateT -> true
+  | _ -> false
 
 and eq_typ ?(dbg = false) typ_a typ_b =
   eq_typ' typ_a.it typ_b.it |> E.check ~dbg "typ" P.pp_typ typ_a typ_b
 
-and eq_typs ?(dbg = false) typs_a typs_b = E.eq_list (eq_typ ~dbg) typs_a typs_b
+and eq_typs' ?(_dbg = false) typs_a typs_b = E.eq_list eq_typ' typs_a typs_b
+
+(* Type definitions *)
+
+and eq_typdef td_a td_b =
+  match (td_a, td_b) with
+  | MonoD tdm_a, MonoD tdm_b -> eq_typdef_mono tdm_a tdm_b
+  | PolyD tdp_a, PolyD tdp_b -> eq_typdef_poly tdp_a tdp_b
+  | _ -> false
+
+and eq_typdef_mono tdm_a tdm_b = eq_typ' tdm_a tdm_b
+
+and eq_typdef_poly tdp_a tdp_b =
+  let tparams_a, tparams_hidden_a, typ_a = tdp_a in
+  let tparams_b, tparams_hidden_b, typ_b = tdp_b in
+  eq_tparams' (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
+  && eq_typ' typ_a typ_b
+
+(* Function types *)
+
+and eq_functyp ft_a ft_b =
+  match (ft_a, ft_b) with
+  | ActionT params_a, ActionT params_b -> eq_params' params_a params_b
+  | ExternFunctionT (params_a, typ_ret_a), ExternFunctionT (params_b, typ_ret_b)
+  | FunctionT (params_a, typ_ret_a), FunctionT (params_b, typ_ret_b)
+  | BuiltinMethodT (params_a, typ_ret_a), BuiltinMethodT (params_b, typ_ret_b)
+    ->
+      eq_params' params_a params_b && eq_typ' typ_ret_a typ_ret_b
+  | ExternMethodT (params_a, typ_ret_a), ExternMethodT (params_b, typ_ret_b)
+  | ( ExternAbstractMethodT (params_a, typ_ret_a),
+      ExternAbstractMethodT (params_b, typ_ret_b) ) ->
+      eq_params' params_a params_b && eq_typ' typ_ret_a typ_ret_b
+  | ParserApplyMethodT params_a, ParserApplyMethodT params_b
+  | ControlApplyMethodT params_a, ControlApplyMethodT params_b ->
+      eq_params' params_a params_b
+  | TableApplyMethodT typ_ret_a, TableApplyMethodT typ_ret_b ->
+      eq_typ' typ_ret_a typ_ret_b
+  | _ -> false
+
+(* Function definitions *)
+
+and eq_funcdef fd_a fd_b =
+  match (fd_a, fd_b) with
+  | MonoFD ft_a, MonoFD ft_b -> eq_functyp ft_a ft_b
+  | ( PolyFD (tparams_a, tparams_hidden_a, ft_a),
+      PolyFD (tparams_b, tparams_hidden_b, ft_b) ) ->
+      eq_tparams' (tparams_a @ tparams_hidden_a) (tparams_b @ tparams_hidden_b)
+      && eq_functyp ft_a ft_b
+  | _ -> false
 
 (* Values *)
 
@@ -105,12 +198,22 @@ and eq_anno ?(dbg = false) anno_a anno_b =
 and eq_annos ?(dbg = false) annos_a annos_b =
   E.eq_annos ~dbg P.pp_expr eq_expr annos_a annos_b
 
+(* Type Ids *)
+
+and eq_tid' id_a id_b =
+  String.starts_with ~prefix:"__WILD_" id_a
+  && String.starts_with ~prefix:"__WILD_" id_b
+  || id_a = id_b
+
 (* Type parameters *)
 
-and eq_tparam' tparam_a tparam_b = Tdomain.Eq_typ.eq_tid' tparam_a tparam_b
+and eq_tparam' tparam_a tparam_b = eq_tid' tparam_a tparam_b
 
 and eq_tparam ?(dbg = false) tparam_a tparam_b =
   E.eq_tparam ~dbg eq_tparam' tparam_a tparam_b
+
+and eq_tparams' ?(_dbg = false) tparams_a tparams_b =
+  E.eq_list eq_tparam' tparams_a tparams_b
 
 and eq_tparams ?(dbg = false) tparams_a tparams_b =
   E.eq_tparams ~dbg eq_tparam' tparams_a tparams_b
@@ -125,6 +228,9 @@ and eq_param' ?(dbg = false) param_a param_b =
 
 and eq_param ?(dbg = false) param_a param_b =
   eq_param' ~dbg param_a.it param_b.it
+
+and eq_params' ?(dbg = false) params_a params_b =
+  E.eq_list (eq_param' ~dbg) params_a params_b
 
 and eq_params ?(dbg = false) params_a params_b =
   E.eq_list (eq_param ~dbg) params_a params_b
