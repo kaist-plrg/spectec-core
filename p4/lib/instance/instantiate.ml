@@ -1013,7 +1013,6 @@ and eval_parser_type_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : id)
     let tparams = List.map it tparams in
     let tparams_hidden = List.map it tparams_hidden in
     let params = List.map it params in
-    (* unsure if the id here is id *)
     let typ_parser = Types.ParserT (id.it, params) in
     Types.PolyD (tparams, tparams_hidden, typ_parser)
   in
