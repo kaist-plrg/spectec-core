@@ -1,6 +1,7 @@
 include Ast
 open Pp
-open Eq_typ
+open Eq
+open Eq_alpha
 open Free
 open Subst
 open Utils
