@@ -69,7 +69,7 @@ let rec pp_typ' ?(level = 0) fmt typ =
             typ
             (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
             typs)
-  | DefT (_, id) | NewT (id, _) | EnumT (id, _) | SEnumT (id, _, _) ->
+  | DefT (id, _) | NewT (id, _) | EnumT (id, _) | SEnumT (id, _, _) ->
       F.fprintf fmt "%a" pp_id' id
   | ListT _ | TupleT _ -> Pp.pp_typ' ~level fmt typ
   | StackT (typ, size) ->

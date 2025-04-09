@@ -132,8 +132,8 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
       if Type.is_nominal typ_param_inner && Type.is_nominal typ_arg_inner then
         gen_cstrs cstr_inner typs_inner_param typs_inner_arg
       else cstr_inner
-  | DefT (typ_inner_param, _), _ -> gen_cstr cstr typ_inner_param typ_arg
-  | _, DefT (typ_inner_arg, _) -> gen_cstr cstr typ_param typ_inner_arg
+  | DefT (_, typ_inner_param), _ -> gen_cstr cstr typ_inner_param typ_arg
+  | _, DefT (_, typ_inner_arg) -> gen_cstr cstr typ_param typ_inner_arg
   | NewT (id_param, typ_inner_param), NewT (id_arg, typ_inner_arg)
     when id_param = id_arg ->
       gen_cstr cstr typ_inner_param typ_inner_arg
@@ -3814,7 +3814,7 @@ and type_typedef_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
         (typ, typdef_il)
   in
   let td =
-    let typ_def = Types.DefT (typ, id.it) in
+    let typ_def = Types.DefT (id.it, typ) in
     Types.MonoD typ_def
   in
   WF.check_valid_typdef cursor ctx td;

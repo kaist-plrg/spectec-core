@@ -80,7 +80,7 @@ let rec pp_typ' ?(level = 0) fmt typ =
         typ pp_tparams'' (tparams, tparams_hidden)
         (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs
-  | DefT (typ, _) -> F.fprintf fmt "typedef %a" (pp_typ' ~level:(level + 1)) typ
+  | DefT (_,typ) -> F.fprintf fmt "typedef %a" (pp_typ' ~level:(level + 1)) typ
   | NewT (id, typ) ->
       F.fprintf fmt "type %a (%a)" P.pp_id' id (pp_typ' ~level:(level + 1)) typ
   | EnumT (id, fields) ->

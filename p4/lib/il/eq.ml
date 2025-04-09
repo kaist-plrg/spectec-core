@@ -86,7 +86,7 @@ let rec eq_typ' typ_a typ_b =
   | VarT id_a, VarT id_b -> eq_tid' id_a id_b
   | SpecT (tdp_a, typs_a), SpecT (tdp_b, typs_b) ->
       eq_typdef_poly tdp_a tdp_b && eq_typs' typs_a typs_b
-  | DefT (typ_a, _), DefT (typ_b, _) -> eq_typ' typ_a typ_b
+  | DefT (_, typ_a), DefT (_, typ_b) -> eq_typ' typ_a typ_b
   | NewT (id_a, typ_a), NewT (id_b, typ_b) ->
       E.eq_id' id_a id_b && eq_typ' typ_a typ_b
   | EnumT (id_a, members_a), EnumT (id_b, members_b) ->
