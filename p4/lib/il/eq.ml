@@ -1,6 +1,5 @@
 open Domain.Dom
 module E = Lang.Eq
-module Ctk = Ctk
 open Ast
 module P = Pp
 open Util.Source

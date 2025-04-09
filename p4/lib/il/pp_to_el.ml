@@ -3,7 +3,6 @@ module L = Lang.Ast
 module P = Lang.Pp
 module Types = Tdomain.Types
 module Type = Types.Type
-open Runtime_value.Value
 open Ast
 open Util.Pp
 open Util.Source
@@ -96,26 +95,6 @@ let pp_typ ?(level = 0) fmt typ = pp_typ' ~level fmt typ.it
 (* Values *)
 
 let rec pp_value ?(level = 0) fmt value = pp_expr' ~level fmt value.note
-
-and pp_value' ?(level = 0) fmt value =
-  match value with
-  | SEnumFieldV (id, member, _) ->
-      F.fprintf fmt "%a.%a" pp_id' id pp_member' member
-  | TupleV values ->
-      F.fprintf fmt "{ %a }"
-        (pp_list (pp_value' ~level:(level + 1)) ~sep:Comma)
-        values
-  | StructV (_, fields) ->
-      let values = List.map (fun (_, value) -> value) fields in
-      F.fprintf fmt "{%a}"
-        (pp_list (pp_value' ~level:(level + 1)) ~sep:Comma)
-        values
-  | HeaderV (_, _, fields) ->
-      F.fprintf fmt "{\n%a\n%s}"
-        (pp_pairs ~level:(level + 1) pp_member' pp_value' ~rel:Eq
-           ~sep:SemicolonNl)
-        fields (indent level)
-  | _ -> Value.pp ~level fmt value
 
 (* Type parameters *)
 
