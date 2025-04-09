@@ -485,12 +485,13 @@ and pp_table_actions ?(level = 0) fmt table_actions =
 (* Table entries *)
 
 and pp_table_entry' ?(table_entries_const = false) fmt table_entry' =
+  table_entries_const |> ignore;
   let table_entry_const, keysets, table_action, table_entry_priority, _annos =
     table_entry'
   in
   F.fprintf fmt "%s%s%a%s%a : %a"
     (if table_entry_const then "const " else "")
-    (if (not table_entries_const) && table_entry_priority |> Option.is_some then
+    (if table_entry_priority |> Option.is_some then
        "priority = "
      else "")
     (pp_option pp_expr) table_entry_priority

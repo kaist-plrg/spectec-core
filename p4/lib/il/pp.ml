@@ -1,8 +1,8 @@
 module F = Format
 module L = Lang.Ast
 module P = Lang.Pp
-module Value = Runtime_value.Value
 open Domain.Dom
+module Value = Runtime_value.Value
 open Ast
 open Util.Pp
 open Util.Source

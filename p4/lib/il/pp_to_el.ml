@@ -71,9 +71,7 @@ let rec pp_typ' ?(level = 0) fmt typ =
             typs)
   | DefT (id, _) | NewT (id, _) | EnumT (id, _) | SEnumT (id, _, _) ->
       F.fprintf fmt "%a" pp_id' id
-  | ListT _ | TupleT _ -> Pp.pp_typ' ~level fmt typ
-  | StackT (typ, size) ->
-      F.fprintf fmt "%a[%a]" (pp_typ' ~level:(level + 1)) typ Bigint.pp size
+  | ListT _ | TupleT _ | StackT _ -> assert false
   | StructT (id, _)
   | HeaderT (id, _)
   | UnionT (id, _)
@@ -85,8 +83,11 @@ let rec pp_typ' ?(level = 0) fmt typ =
       F.fprintf fmt "%a" pp_id' id
   | AnyT -> F.fprintf fmt "_"
   | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
-  | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
-      Pp.pp_typ' ~level fmt typ
+  | RecordDefaultT _ | DefaultT | InvalidT ->
+    assert false
+  | SetT _ -> Pp.pp_typ' ~level fmt typ
+  | StateT -> assert false
+    
 
 let pp_typ ?(level = 0) fmt typ = pp_typ' ~level fmt typ.it
 

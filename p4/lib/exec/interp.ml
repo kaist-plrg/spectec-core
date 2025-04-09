@@ -1,9 +1,9 @@
 module F = Format
-open Domain.Dom
 module L = Lang.Ast
-open Il.Ast
+open Domain.Dom
 module Num = Runtime_value.Num
 module Value = Runtime_value.Value
+open Il.Ast
 module Types = Runtime_type.Types
 module Type = Types.Type
 module TypeDef = Types.TypeDef

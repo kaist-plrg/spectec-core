@@ -1,8 +1,9 @@
 module F = Format
-open Domain.Dom
 module L = Lang.Ast
-module Ctk = Il.Ctk
+open Domain.Dom
 module Value = Runtime_value.Value
+open Il.Ast
+module Ctk = Il.Ctk
 module Types = Runtime_type.Types
 module Type = Types.Type
 module TypeDef = Types.TypeDef
@@ -10,7 +11,6 @@ module Numerics = Runtime_static.Numerics
 module Builtins = Runtime_static.Builtins
 module Envs_static = Runtime_static.Envs
 module FDEnv = Envs_static.FDEnv
-open Il.Ast
 module Table = Runtime_dynamic.Table
 module Func = Runtime_dynamic.Func
 module Cons = Runtime_dynamic.Cons
@@ -1056,7 +1056,7 @@ and eval_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
             $$ ( no_info,
                  InstE
                    {
-                     var_inst = L.Top id $ no_info;
+                     var_inst = L.Current id $ no_info;
                      targs = [];
                      targs_hidden = [];
                      args = [];

@@ -1,5 +1,5 @@
 (library
  (name runtime_type)
- (libraries util lang runtime_value il)
+ (libraries util lang il runtime_value)
  (instrumentation
   (backend bisect_ppx)))
