@@ -1050,7 +1050,6 @@ and eval_table_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (sto : Sto.t) (id : id)
   let ctx = Ctx.add_value cursor id.it value ctx in
   let decl =
     let expr_inst =
-      (* unused note *)
       ValueE
         {
           value =

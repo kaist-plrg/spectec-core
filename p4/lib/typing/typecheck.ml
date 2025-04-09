@@ -172,7 +172,6 @@ let rec gen_cstr (cstr : cstr_t) (typ_param : Type.t) (typ_arg : Type.t) :
         keys cstr
   | ParserT (_, params_param), ParserT (_, params_arg)
   | ControlT (_, params_param), ControlT (_, params_arg) ->
-      (* might need to use id_param and id_arg here *)
       let typs_inner_param =
         List.map (fun (_, _, typ, _, _) -> typ.it) params_param
       in
