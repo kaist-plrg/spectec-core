@@ -122,6 +122,12 @@ and funcdef =
   | MonoFD of functyp
   | PolyFD of tparam' list * tparam' list * functyp
 
+(* Constructor types *)
+and constyp = param' list * typ'
+
+(* Constructor definitions *)
+and consdef = tparam' list * tparam' list * constyp
+
 (* Values *)
 and value = (expr', value') L.value
 and value' = Value.t L.value'
@@ -430,14 +436,6 @@ and mthd' =
       params : param list;
       annos : anno list;
     }
-
-(* Constructor types *)
-
-type constyp = param' list * typ'
-
-(* Constructor definitions *)
-
-type consdef = tparam' list * tparam' list * constyp
 
 (* Program *)
 type program = decl' L.program
