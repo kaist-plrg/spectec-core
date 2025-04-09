@@ -1,9 +1,9 @@
 module F = Format
 open Domain.Dom
 module Value = Runtime_value.Value
-module Type = Runtime_type.Types.Type
 module L = Il.Ast
 module P = Il.Pp
+module Type = Runtime_type.Types.Type
 open Util.Pp
 
 type t =
