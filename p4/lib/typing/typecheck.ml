@@ -2,7 +2,7 @@ open Domain.Dom
 module Ctk = Il.Ctk
 module Num = Runtime_value.Num
 module Value = Runtime_value.Value
-module Types = Il.Types
+module Types = Il.Tdomain.Types
 module Type = Types.Type
 module TypeDef = Types.TypeDef
 module FuncType = Types.FuncType
@@ -2140,7 +2140,7 @@ and type_call (cursor : Ctx.cursor) (ctx : Ctx.t) (tids_fresh : TId.t list)
             |> List.map (fun typ -> typ $ no_info))
         in
         let ft = FuncType.subst theta ft in
-        let params = List.map (Il.Subst.subst_param theta) params in
+        let params = List.map (Il.Tdomain.Subst.subst_param theta) params in
         let typ_ret = Type.subst theta typ_ret in
         (ft, targs_il, params, typ_ret)
   in
@@ -2380,7 +2380,7 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
           |> List.map (fun typ -> typ $ no_info)
         in
         let ct = ConsType.subst theta ct in
-        let cparams = List.map (Il.Subst.subst_cparam theta) cparams in
+        let cparams = List.map (Il.Tdomain.Subst.subst_cparam theta) cparams in
         let typ_inst = Type.subst theta typ_inst in
         (ct, targs_hidden_il, cparams, typ_inst)
   in

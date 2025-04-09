@@ -1,5 +1,5 @@
 module Value = Runtime_value.Value
-module Type = Il.Types.Type
+module Type = Il.Tdomain.Types.Type
 
 (* Size evaluation *)
 

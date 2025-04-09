@@ -1,6 +1,7 @@
 module F = Format
 module L = Lang.Ast
 module P = Lang.Pp
+module Types = Tdomain.Types
 module Type = Types.Type
 open Runtime_value.Value
 open Ast
@@ -551,7 +552,7 @@ and pp_decl' ?(level = 0) fmt decl' =
       let cparams =
         cparams
         |> List.map (fun cparam ->
-               Subst.subst_cparam theta cparam.it $ cparam.at)
+               Tdomain.Subst.subst_cparam theta cparam.it $ cparam.at)
       in
       F.fprintf fmt "package %a%a%a;%s" pp_id id pp_tparams tparams
         (pp_cparams ~level:(level + 1))
@@ -637,7 +638,7 @@ and pp_mthd' ?(level = 0) fmt mthd' =
       let cparams =
         cparams
         |> List.map (fun cparam ->
-               Subst.subst_cparam theta cparam.it $ cparam.at)
+               Tdomain.Subst.subst_cparam theta cparam.it $ cparam.at)
       in
       F.fprintf fmt "%a%a;%s" pp_id id
         (pp_cparams ~level:(level + 1))

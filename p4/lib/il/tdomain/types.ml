@@ -1,5 +1,5 @@
 include Ast
-open Pp_typ
+open Pp
 open Eq_typ
 open Free
 open Subst
