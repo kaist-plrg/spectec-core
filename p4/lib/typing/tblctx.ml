@@ -22,7 +22,7 @@ type mode = NoPri | NoPriLpm of int | Pri | PriLpm
 
 type t = {
   keys : (Type.t * Il.Ast.match_kind') list;
-  actions : (Il.Ast.var' * Types.param' list * Il.Ast.arg list) list;
+  actions : (Il.Ast.var' * Il.Ast.param' list * Il.Ast.arg list) list;
   priorities : pt;
   entries : et;
   mode : mode;

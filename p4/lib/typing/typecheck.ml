@@ -234,7 +234,7 @@ and gen_cstrs (cstr : cstr_t) (typ_params : Type.t list)
   in
   List.fold_left merge_cstr cstr cstrs
 
-let infer_targs (tids_fresh : TId.t list) (params : Types.param' list)
+let infer_targs (tids_fresh : TId.t list) (params : Il.Ast.param' list)
     (args_il_typed : (Il.Ast.arg * Type.t) list) : Type.t TIdMap.t =
   let cstr = empty_cstr tids_fresh in
   let typ_params = List.map (fun (_, _, typ, _, _) -> typ.it) params in
@@ -565,7 +565,7 @@ and check_table_apply_as_arg ~(action : bool) (args_il : Il.Ast.arg list) : unit
         expressions supplied as action arguments")
 
 and type_call_convention ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (params : Types.param' list) (args_il_typed : (Il.Ast.arg * Type.t) list) :
+    (params : Il.Ast.param' list) (args_il_typed : (Il.Ast.arg * Type.t) list) :
     Il.Ast.arg list =
   assert (List.length params = List.length args_il_typed);
   check_table_apply_as_arg ~action (List.map fst args_il_typed);
@@ -582,7 +582,7 @@ and type_call_convention ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
   type_call_convention'' [] params args_il_typed
 
 and type_call_convention' ~(action : bool) (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (param : Types.param') (arg_il_typed : Il.Ast.arg * Type.t) : Il.Ast.arg =
+    (param : Il.Ast.param') (arg_il_typed : Il.Ast.arg * Type.t) : Il.Ast.arg =
   let arg_il, typ_arg = arg_il_typed in
   let _, dir_param, typ_param, _, _ = param in
   let type_expr_arg (expr_il : Il.Ast.expr) =
@@ -1926,7 +1926,7 @@ and type_expr_acc_expr (cursor : Ctx.cursor) (ctx : Ctx.t)
       of the serialized representation of the data and minSizeInBits is the “best” case.
     - Every other case is undefined and will produce a compile-time error. *)
 
-and check_call_arity (ft : FuncType.t) (params : Types.param' list)
+and check_call_arity (ft : FuncType.t) (params : Il.Ast.param' list)
     (args : Il.Ast.arg list) : unit =
   let arity_params = List.length params in
   let arity_args = List.length args in
@@ -1937,7 +1937,7 @@ and check_call_arity (ft : FuncType.t) (params : Types.param' list)
        (FuncType.pp ~level:0) ft arity_params arity_args)
 
 (* Invariant: parameters and arguments are checked of arity and all-or-nothing named *)
-and align_params_with_args (params : Types.param' list) (typ_args : Type.t list)
+and align_params_with_args (params : Il.Ast.param' list) (typ_args : Type.t list)
     (args_il : Il.Ast.arg list) =
   let module PMap = Map.Make (String) in
   let params_map =
@@ -4674,7 +4674,7 @@ and type_table_keys (cursor : Ctx.cursor) (ctx : Ctx.t) (table_ctx : Tblctx.t)
    are forbidden in the expressions supplied as action arguments. *)
 
 and type_call_action_partial (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (var : El.Ast.var) (params : Types.param' list)
+    (var : El.Ast.var) (params : Il.Ast.param' list)
     (args_il_typed : (Il.Ast.arg * Type.t) list) :
     Il.Ast.arg list * Il.Ast.param list * Il.Ast.param list =
   (* Rule out directionless parameters, that will be supplied by the control plane *)
@@ -4781,7 +4781,7 @@ and type_table_actions (cursor : Ctx.cursor) (ctx : Ctx.t)
    arguments for directionless parameters are evaluated at compile time. *)
 
 and type_call_default_action (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (var : El.Ast.var) (params : Types.param' list)
+    (var : El.Ast.var) (params : Il.Ast.param' list)
     (args_il_typed : (Il.Ast.arg * Type.t) list) (args_action : Il.Ast.arg list)
     : Il.Ast.arg list =
   check
@@ -5076,7 +5076,7 @@ and type_table_entry_keysets (cursor : Ctx.cursor) (ctx : Ctx.t)
         (List.combine table_ctx_keys keysets)
 
 and type_call_entry_action (cursor : Ctx.cursor) (ctx : Ctx.t)
-    (var : El.Ast.var) (params : Types.param' list)
+    (var : El.Ast.var) (params : Il.Ast.param' list)
     (args_il_typed : (Il.Ast.arg * Type.t) list) (args_action : Il.Ast.arg list)
     : Il.Ast.arg list =
   type_call_default_action cursor ctx var params args_il_typed args_action

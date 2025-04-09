@@ -543,12 +543,12 @@ and check_valid_typdef'' (tset : TIdSet.t) (td : TypeDef.t) : unit =
    indicating that all calls must provide a compile-time known value
    as an argument for such a parameter *)
 
-and check_valid_param (cursor : Ctx.cursor) (ctx : Ctx.t) (param : Types.param')
+and check_valid_param (cursor : Ctx.cursor) (ctx : Ctx.t) (param : Il.Ast.param')
     : unit =
   let tset = Ctx.get_tparams cursor ctx |> TIdSet.of_list in
   check_valid_param' tset param
 
-and check_valid_param' (tset : TIdSet.t) (param : Types.param') : unit =
+and check_valid_param' (tset : TIdSet.t) (param : Il.Ast.param') : unit =
   let _, dir, typ, value_default, _ = param in
   check_valid_typ' tset typ.it;
   check
@@ -566,7 +566,7 @@ and check_valid_param' (tset : TIdSet.t) (param : Types.param') : unit =
       |> error_no_info
   | _ -> ()
 
-and check_valid_params' (tset : TIdSet.t) (params : Types.param' list) : unit =
+and check_valid_params' (tset : TIdSet.t) (params : Il.Ast.param' list) : unit =
   let ids = List.map (fun (id, _, _, _, _) -> id.it) params in
   check_distinct_names ids;
   List.iter (check_valid_param' tset) params
@@ -614,7 +614,7 @@ and check_valid_functyp' (tset : TIdSet.t) (ft : FuncType.t) : unit =
       check_valid_typ' tset typ_ret;
       check_valid_functyp_nesting ft []
 
-and check_valid_functyp_nesting (ft : FuncType.t) (params : Types.param' list) :
+and check_valid_functyp_nesting (ft : FuncType.t) (params : Il.Ast.param' list) :
     unit =
   List.iter
     (fun (_, dir, typ, _, _) ->
