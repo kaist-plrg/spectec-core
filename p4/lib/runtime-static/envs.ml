@@ -1,5 +1,5 @@
 open Domain.Dom
-open Il.Types
+open Il.Tdomain.Types
 module Ctk = Il.Ctk
 
 (* Environment for variable identifiers *)

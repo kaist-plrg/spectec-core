@@ -1,7 +1,7 @@
 module E = Lang.Eq
 module Ctk = Ctk
-module TypeDef = Types.TypeDef
-module Type = Types.Type
+module TypeDef = Tdomain.Types.TypeDef
+module Type = Tdomain.Types.Type
 
 (*
 module Envs = Runtime_static.Envs
@@ -107,7 +107,7 @@ and eq_annos ?(dbg = false) annos_a annos_b =
 
 (* Type parameters *)
 
-and eq_tparam' tparam_a tparam_b = Eq_typ.eq_tid' tparam_a tparam_b
+and eq_tparam' tparam_a tparam_b = Tdomain.Eq_typ.eq_tid' tparam_a tparam_b
 
 and eq_tparam ?(dbg = false) tparam_a tparam_b =
   E.eq_tparam ~dbg eq_tparam' tparam_a tparam_b

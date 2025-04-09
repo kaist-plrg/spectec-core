@@ -4,7 +4,7 @@ module L = Lang.Ast
 open Il.Ast
 module Num = Runtime_value.Num
 module Value = Runtime_value.Value
-module Types = Il.Types
+module Types = Il.Tdomain.Types
 module Type = Types.Type
 module TypeDef = Types.TypeDef
 module Numerics = Runtime_static.Numerics

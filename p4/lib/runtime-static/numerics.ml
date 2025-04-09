@@ -15,7 +15,7 @@
 
 open Runtime_value.Num
 module Value = Runtime_value.Value
-module Type = Il.Types.Type
+module Type = Il.Tdomain.Types.Type
 open Util.Source
 
 (* Unop evaluation *)

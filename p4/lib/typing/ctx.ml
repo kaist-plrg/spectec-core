@@ -1,6 +1,6 @@
 module L = Lang.Ast
 module Value = Runtime_value.Value
-module Types = Il.Types
+module Types = Il.Tdomain.Types
 module Type = Types.Type
 module Ctk = Il.Ctk
 module Envs = Runtime_static.Envs
