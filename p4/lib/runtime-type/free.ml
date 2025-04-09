@@ -1,5 +1,5 @@
 open Domain.Dom
-open Ast
+open Il.Ast
 
 (* Collecting free type variables *)
 

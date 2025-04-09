@@ -1,8 +1,6 @@
 module F = Format
 module L = Lang.Ast
 module P = Lang.Pp
-module Types = Tdomain.Types
-module Type = Types.Type
 open Ast
 open Util.Pp
 open Util.Source
@@ -48,7 +46,7 @@ let rec pp_typ' ?(level = 0) fmt typ =
   match typ with
   | VoidT | ErrT | MatchKindT | StrT | BoolT | IntT | FIntT _ | FBitT _
   | VBitT _ | VarT _ ->
-      Type.pp ~level fmt typ
+      Pp.pp_typ' ~level fmt typ
   | SpecT ((_, _, ListT _), typs) ->
       F.fprintf fmt "list<%a>"
         (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
@@ -73,7 +71,7 @@ let rec pp_typ' ?(level = 0) fmt typ =
             typs)
   | DefT (_, id) | NewT (id, _) | EnumT (id, _) | SEnumT (id, _, _) ->
       F.fprintf fmt "%a" pp_id' id
-  | ListT _ | TupleT _ -> Type.pp ~level fmt typ
+  | ListT _ | TupleT _ -> Pp.pp_typ' ~level fmt typ
   | StackT (typ, size) ->
       F.fprintf fmt "%a[%a]" (pp_typ' ~level:(level + 1)) typ Bigint.pp size
   | StructT (id, _)
@@ -88,7 +86,7 @@ let rec pp_typ' ?(level = 0) fmt typ =
   | AnyT -> F.fprintf fmt "_"
   | TableEnumT _ | TableStructT _ | SeqT _ | SeqDefaultT _ | RecordT _
   | RecordDefaultT _ | DefaultT | InvalidT | SetT _ | StateT ->
-      Type.pp ~level fmt typ
+      Pp.pp_typ' ~level fmt typ
 
 let pp_typ ?(level = 0) fmt typ = pp_typ' ~level fmt typ.it
 
@@ -523,22 +521,11 @@ and pp_decl' ?(level = 0) fmt decl' =
         (pp_mthds ~level:(level + 1))
         mthds (indent level)
   | PackageTypeD { id; tparams; tparams_hidden; cparams; annos = _annos } ->
-      let theta =
-        tparams_hidden
-        |> List.map (fun tparam -> (tparam.it, Types.AnyT))
-        |> Domain.Dom.TIdMap.of_list
-      in
-      let cparams =
-        cparams
-        |> List.map (fun cparam ->
-               Tdomain.Subst.subst_cparam theta cparam.it $ cparam.at)
-      in
-      F.fprintf fmt "package %a%a%a;%s" pp_id id pp_tparams tparams
+    if List.length tparams_hidden > 0 then assert false
+    else
+      F.fprintf fmt "package %a%a%a;" pp_id id pp_tparams tparams
         (pp_cparams ~level:(level + 1))
         cparams
-        (if List.length tparams_hidden = 0 then ""
-         else
-           F.asprintf " /* %n wildcards created */" (List.length tparams_hidden))
 
 and pp_decl ?(level = 0) fmt decl = pp_decl' ~level fmt decl.it
 
@@ -609,22 +596,11 @@ and pp_table_entry ?(level = 0) ?(table_entries_const = false) fmt table_entry =
 and pp_mthd' ?(level = 0) fmt mthd' =
   match mthd' with
   | ExternConsM { id; tparams_hidden; cparams; annos = _annos } ->
-      let theta =
-        tparams_hidden
-        |> List.map (fun tparam -> (tparam.it, Types.AnyT))
-        |> Domain.Dom.TIdMap.of_list
-      in
-      let cparams =
-        cparams
-        |> List.map (fun cparam ->
-               Tdomain.Subst.subst_cparam theta cparam.it $ cparam.at)
-      in
-      F.fprintf fmt "%a%a;%s" pp_id id
+    if List.length tparams_hidden > 0 then assert false
+    else
+      F.fprintf fmt "%a%a;" pp_id id
         (pp_cparams ~level:(level + 1))
         cparams
-        (if List.length tparams_hidden = 0 then ""
-         else
-           F.asprintf " /* %n wildcards created */" (List.length tparams_hidden))
   | ExternAbstractM
       { id; typ_ret; tparams; tparams_hidden; params; annos = _annos } ->
       F.fprintf fmt "abstract %a %a%a%a;"

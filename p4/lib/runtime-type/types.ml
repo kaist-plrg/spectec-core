@@ -1,6 +1,6 @@
-include Ast
-open Pp
-open Eq
+include Il.Ast
+open Il.Pp
+open Il.Eq
 open Eq_alpha
 open Free
 open Subst
