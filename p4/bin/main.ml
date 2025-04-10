@@ -11,6 +11,7 @@ let roundtrip_el includes filename : El.Ast.program =
 
 let typecheck includes filename : Il.Ast.program =
   parse includes filename |> Typing.Typecheck.type_program
+  |> Typing.Postprocess.postprocess_program
 
 let roundtrip_il includes filename : Il.Ast.program =
   let program = typecheck includes filename in
@@ -18,11 +19,11 @@ let roundtrip_il includes filename : Il.Ast.program =
   let program' =
     try
       Frontend.Parse.parse_string filename program_str
-      |> Typing.Typecheck.type_program
+      |> Typing.Typecheck.type_program |> Typing.Postprocess.postprocess_program
     with ParseErr (msg, info) ->
       Format.sprintf "re-parse error: %s" msg |> error_parser_info info
   in
-  if not (Il.Eq.eq_program program program') then
+  if not (Il.Eq.eq_program ~dbg:true program program') then
     "roundtrip error" |> error_parser_no_info;
   program'
 

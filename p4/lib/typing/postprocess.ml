@@ -2,8 +2,9 @@ open Il.Ast
 module Types = Runtime_type.Types
 open Util.Source
 
-let postprocess_mthd' mthd' =
-  match mthd' with
+let postprocess_mthd (walker : Il.Walk_transform.walker) mthd =
+  let walk_mthd = Il.Walk_transform.walker.walk_mthd walker in
+  match mthd.it with
   | ExternConsM { id; tparams_hidden; cparams; annos } ->
       let theta =
         tparams_hidden
@@ -15,11 +16,13 @@ let postprocess_mthd' mthd' =
         |> List.map (fun cparam ->
                Runtime_type.Subst.subst_cparam theta cparam.it $ cparam.at)
       in
-      ExternConsM { id; tparams_hidden = []; cparams; annos }
-  | _ -> mthd'
+      let it = ExternConsM { id; tparams_hidden = []; cparams; annos } in
+      { mthd with it }
+  | _ -> walk_mthd mthd
 
-let postprocess_decl' decl' =
-  match decl' with
+let postprocess_decl (walker : Il.Walk_transform.walker) decl =
+  let walk_decl = Il.Walk_transform.walker.walk_decl walker in
+  match decl.it with
   | PackageTypeD { id; tparams; tparams_hidden; cparams; annos } ->
       let theta =
         tparams_hidden
@@ -31,8 +34,18 @@ let postprocess_decl' decl' =
         |> List.map (fun cparam ->
                Runtime_type.Subst.subst_cparam theta cparam.it $ cparam.at)
       in
-      PackageTypeD { id; tparams; tparams_hidden = []; cparams; annos }
-  | _ -> decl'
+      let it =
+        PackageTypeD { id; tparams; tparams_hidden = []; cparams; annos }
+      in
+      { decl with it }
+  | _ -> walk_decl decl
 
-let postprocess_program (_program : Il.Ast.program) : Il.Ast.program =
-  failwith "Not implemented"
+let postprocess_program (program : Il.Ast.program) : Il.Ast.program =
+  let walker =
+    {
+      Il.Walk_transform.walker with
+      walk_mthd = postprocess_mthd;
+      walk_decl = postprocess_decl;
+    }
+  in
+  walker.walk_program walker program
