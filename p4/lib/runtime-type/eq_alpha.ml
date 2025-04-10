@@ -185,8 +185,9 @@ and eq_funcdef_alpha (fd_a : funcdef) (fd_b : funcdef) : bool =
   in
   let eq_funcdef_alpha' tparams_a tparams_hidden_a ft_a tparams_b
       tparams_hidden_b ft_b =
-    List.length tparams_a + List.length tparams_hidden_a
-    = List.length tparams_b + List.length tparams_hidden_b
+    let tparams_a = tparams_a @ tparams_hidden_a in
+    let tparams_b = tparams_b @ tparams_hidden_b in
+    List.length tparams_a = List.length tparams_b
     && eq_funcdef_alpha'' tparams_a tparams_hidden_a ft_a tparams_b
          tparams_hidden_b ft_b
   in
