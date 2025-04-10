@@ -1,9 +1,13 @@
+module W = Lang.Walk_transform
 open Il.Ast
 module Types = Runtime_type.Types
 open Util.Source
 
-let postprocess_mthd (walker : Il.Walk_transform.walker) mthd =
-  let walk_mthd = Il.Walk_transform.walker.walk_mthd walker in
+let base_walker = Il.Walk_transform.walker
+
+type walker = Il.Walk_transform.walker
+
+let hide_tparams_mthd (walker : walker) mthd =
   match mthd.it with
   | ExternConsM { id; tparams_hidden; cparams; annos } ->
       let theta =
@@ -18,10 +22,9 @@ let postprocess_mthd (walker : Il.Walk_transform.walker) mthd =
       in
       let it = ExternConsM { id; tparams_hidden = []; cparams; annos } in
       { mthd with it }
-  | _ -> walk_mthd mthd
+  | _ -> base_walker.walk_mthd walker mthd
 
-let postprocess_decl (walker : Il.Walk_transform.walker) decl =
-  let walk_decl = Il.Walk_transform.walker.walk_decl walker in
+let hide_tparams_decl (walker : walker) decl =
   match decl.it with
   | PackageTypeD { id; tparams; tparams_hidden; cparams; annos } ->
       let theta =
@@ -38,14 +41,33 @@ let postprocess_decl (walker : Il.Walk_transform.walker) decl =
         PackageTypeD { id; tparams; tparams_hidden = []; cparams; annos }
       in
       { decl with it }
-  | _ -> walk_decl decl
+  | _ -> base_walker.walk_decl walker decl
+
+let hide_tparams_typ (walker : walker) typ =
+  let walk_typ' = W.walk_it (walker.walk_typ walker) () in
+  match typ.it with
+  | SpecT (tdp, typs) ->
+      let tdp =
+        let tparams, tparams_hidden, typ = tdp in
+        let theta =
+          tparams_hidden
+          |> List.map (fun tparam -> (tparam, Types.AnyT))
+          |> Domain.Dom.TIdMap.of_list
+        in
+        let typ = Runtime_type.Subst.subst_typ theta typ in
+        (tparams, [], typ)
+      in
+      let it = SpecT (tdp, W.walk_list walk_typ' typs) in
+      { typ with it }
+  | _ -> base_walker.walk_typ walker typ
 
 let postprocess_program (program : Il.Ast.program) : Il.Ast.program =
-  let walker =
+  let hide_tparams =
     {
       Il.Walk_transform.walker with
-      walk_mthd = postprocess_mthd;
-      walk_decl = postprocess_decl;
+      walk_mthd = hide_tparams_mthd;
+      walk_decl = hide_tparams_decl;
+      walk_typ = hide_tparams_typ;
     }
   in
-  walker.walk_program walker program
+  hide_tparams.walk_program hide_tparams program

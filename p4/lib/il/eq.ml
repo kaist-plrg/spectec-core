@@ -199,10 +199,7 @@ and eq_annos ?(dbg = false) annos_a annos_b =
 
 (* Type Ids *)
 
-and eq_tid' id_a id_b =
-  String.starts_with ~prefix:"__WILD_" id_a
-  && String.starts_with ~prefix:"__WILD_" id_b
-  || id_a = id_b
+and eq_tid' id_a id_b = id_a = id_b
 
 (* Type parameters *)
 
