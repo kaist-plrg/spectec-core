@@ -209,7 +209,7 @@ type ('note_value,
       'mthd )
     transform_walker ->
     ('note_expr, 'expr) anno ->
-            ('note_expr, 'expr) anno;
+    ('note_expr, 'expr) anno;
   walk_tparam :
     ( 'note_value,
       'note_expr,
@@ -449,7 +449,7 @@ type ('note_value,
       'mthd )
     transform_walker ->
     ('note_expr, 'expr, 'table_action, 'table_entry) table_property ->
-            ('note_expr, 'expr, 'table_action, 'table_entry) table_property;
+    ('note_expr, 'expr, 'table_action, 'table_entry) table_property;
   walk_table_keys :
     ( 'note_value,
       'note_expr,
@@ -464,7 +464,7 @@ type ('note_value,
       'mthd )
     transform_walker ->
     ('note_expr, 'expr) table_keys ->
-            ('note_expr, 'expr) table_keys;
+    ('note_expr, 'expr) table_keys;
   walk_table_key :
     ( 'note_value,
       'note_expr,
@@ -479,7 +479,7 @@ type ('note_value,
       'mthd )
     transform_walker ->
     ('note_expr, 'expr) table_key ->
-            ('note_expr, 'expr) table_key;
+    ('note_expr, 'expr) table_key;
   walk_table_actions :
     ( 'note_value,
       'note_expr,
@@ -494,7 +494,7 @@ type ('note_value,
       'mthd )
     transform_walker ->
     'table_action table_actions ->
-            'table_action table_actions;
+    'table_action table_actions;
   walk_table_action :
     ( 'note_value,
       'note_expr,
@@ -569,7 +569,7 @@ type ('note_value,
       'mthd )
     transform_walker ->
     ('note_expr, 'expr) table_custom ->
-            ('note_expr, 'expr) table_custom;
+    ('note_expr, 'expr) table_custom;
   walk_mthd :
     ( 'note_value,
       'note_expr,
@@ -604,16 +604,12 @@ type ('note_value,
 
 (* Utility functions *)
 
-let walk_alt (f : 'a -> 'a) (g : 'b -> 'b) (alt : ('a, 'b) alt) : 'b =
-  match alt with Left x -> f x | Right y -> g y
+let walk_alt (f : 'a -> 'a) (g : 'b -> 'b) (alt : ('a, 'b) alt) : ('a, 'b) alt =
+  match alt with Left x -> Left (f x) | Right y -> Right (g y)
 
 let walk_list (f : 'a -> 'a) (l : 'a list) : 'a list = List.map f l
-
-let walk_option (f : 'a -> 'a) (o : 'a option) : 'a option =
-  Option.map f o
-
-let walk_pair (f_k : 'a -> 'a) (f_v : 'b -> 'b) (x, y) : 'a * 'b =
-  (f_k x, f_v y)
+let walk_option (f : 'a -> 'a) (o : 'a option) : 'a option = Option.map f o
+let walk_pair (f_k : 'a -> 'a) (f_v : 'b -> 'b) (x, y) : 'a * 'b = (f_k x, f_v y)
 
 (* Numbers *)
 
@@ -686,7 +682,8 @@ let walk_var
         'mthd )
       transform_walker) var =
   let walk_id = walker.walk_id walker in
-  let it = match var.it with 
+  let it =
+    match var.it with
     | Top id -> Top (walk_id id)
     | Current id -> Current (walk_id id)
   in
@@ -830,10 +827,10 @@ let walk_anno
     | TextN (text, texts) -> TextN (walk_text text, walk_list walk_text texts)
     | ExprN (id, exprs) -> ExprN (walk_id id, walk_list walk_expr exprs)
     | RecordN (id, fields) ->
-      let walk_field (member, expr) =
-        walk_pair walk_member walk_expr (member, expr)
-      in
-      RecordN (walk_id id, walk_list walk_field fields)
+        let walk_field (member, expr) =
+          walk_pair walk_member walk_expr (member, expr)
+        in
+        RecordN (walk_id id, walk_list walk_field fields)
   in
   { anno with it }
 
@@ -896,7 +893,7 @@ let walk_arg
       transform_walker) arg =
   let walk_id = walker.walk_id walker in
   let walk_expr = walker.walk_expr walker in
-  let it = 
+  let it =
     match arg.it with
     | ExprA expr -> ExprA (walk_expr expr)
     | NameA (id, expr) -> NameA (walk_id id, walk_option walk_expr expr)
@@ -924,7 +921,7 @@ let walk_keyset
       transform_walker) keyset =
   let walk_expr = walker.walk_expr walker in
   let it =
-    match keyset.it with 
+    match keyset.it with
     | ExprK expr -> ExprK (walk_expr expr)
     | DefaultK -> DefaultK
     | AnyK -> AnyK
@@ -949,10 +946,13 @@ let walk_select_case
       transform_walker) select_case =
   let walk_state_label = walker.walk_state_label walker in
   let walk_keyset = walker.walk_keyset walker in
-  let keysets, state_label = select_case.it in
-  let keysets = walk_list walk_keyset keysets in
-  let state_label = walk_state_label state_label in
-  { select_case with it = (keysets, state_label) }
+  let it =
+    let keysets, state_label = select_case.it in
+    let keysets = walk_list walk_keyset keysets in
+    let state_label = walk_state_label state_label in
+    (keysets, state_label)
+  in
+  { select_case with it }
 
 (* Statements *)
 
@@ -973,9 +973,12 @@ let walk_block
         'mthd )
       transform_walker) block =
   let walk_stmt = walker.walk_stmt walker in
-  let stmts, annos = block.it in
-  let stmts = walk_list walk_stmt stmts in
-  { block with it = (stmts, annos) }
+  let it =
+    let stmts, annos = block.it in
+    let stmts = walk_list walk_stmt stmts in
+    (stmts, annos)
+  in
+  { block with it }
 
 (* Match-cases for switch *)
 
@@ -995,7 +998,7 @@ let walk_switch_label
       transform_walker) switch_label =
   let walk_expr = walker.walk_expr walker in
   let it =
-    match switch_label.it with 
+    match switch_label.it with
     | ExprL expr -> ExprL (walk_expr expr)
     | DefaultL -> DefaultL
   in
@@ -1019,7 +1022,8 @@ let walk_switch_case
   let walk_block = walker.walk_block walker in
   let it =
     match switch_case.it with
-    | MatchC (switch_label, block) -> MatchC (walk_switch_label switch_label, walk_block block)
+    | MatchC (switch_label, block) ->
+        MatchC (walk_switch_label switch_label, walk_block block)
     | FallC switch_label -> FallC (walk_switch_label switch_label)
   in
   { switch_case with it }
@@ -1044,10 +1048,13 @@ let walk_parser_state
       transform_walker) parser_state =
   let walk_state_label = walker.walk_state_label walker in
   let walk_block = walker.walk_block walker in
-  let state_label, block, annos = parser_state.it in
-  let state_label = walk_state_label state_label in
-  let block = walk_block block in
-  { parser_state with it = (state_label, block, annos) }
+  let it =
+    let state_label, block, annos = parser_state.it in
+    let state_label = walk_state_label state_label in
+    let block = walk_block block in
+    (state_label, block, annos)
+  in
+  { parser_state with it }
 
 (* Tables *)
 
@@ -1114,10 +1121,13 @@ let walk_table_key
       transform_walker) table_key =
   let walk_match_kind = walker.walk_match_kind walker in
   let walk_expr = walker.walk_expr walker in
-  let expr, match_kind, annos = table_key.it in
-  let expr = walk_expr expr in
-  let match_kind = walk_match_kind match_kind in
-  { table_key with it = (expr, match_kind, annos) }
+  let it =
+    let expr, match_kind, annos = table_key.it in
+    let expr = walk_expr expr in
+    let match_kind = walk_match_kind match_kind in
+    (expr, match_kind, annos)
+  in
+  { table_key with it }
 
 let walk_table_keys
     (walker :
@@ -1134,9 +1144,7 @@ let walk_table_keys
         'mthd )
       transform_walker) table_keys =
   let walk_table_key = walker.walk_table_key walker in
-  let it =
-    walk_list walk_table_key table_keys.it
-  in
+  let it = walk_list walk_table_key table_keys.it in
   { table_keys with it }
 
 (* Table actions *)
@@ -1156,9 +1164,7 @@ let walk_table_actions
         'mthd )
       transform_walker) table_actions =
   let walk_table_action = walker.walk_table_action walker in
-  let it =
-    walk_list walk_table_action table_actions.it
-  in
+  let it = walk_list walk_table_action table_actions.it in
   { table_actions with it }
 
 (* Table entries *)
@@ -1178,9 +1184,12 @@ let walk_table_entries
         'mthd )
       transform_walker) table_entries =
   let walk_table_entry = walker.walk_table_entry walker in
-  let table_entries_const, table_entries_inner = table_entries.it in
-  let table_entries_inner = walk_list walk_table_entry table_entries_inner in
-  { table_entries with it = (table_entries_const, table_entries_inner) }
+  let it =
+    let table_entries_const, table_entries_inner = table_entries.it in
+    let table_entries_inner = walk_list walk_table_entry table_entries_inner in
+    (table_entries_const, table_entries_inner)
+  in
+  { table_entries with it }
 
 (* Table default properties *)
 
@@ -1199,9 +1208,12 @@ let walk_table_default
         'mthd )
       transform_walker) table_default =
   let walk_table_action = walker.walk_table_action walker in
-  let table_default_const, table_action = table_default.it in
-  let table_action = walk_table_action table_action in
-  { table_default with it = (table_default_const, table_action) }
+  let it =
+    let table_default_const, table_action = table_default.it in
+    let table_action = walk_table_action table_action in
+    (table_default_const, table_action)
+  in
+  { table_default with it }
 
 (* Table custom properties *)
 
@@ -1221,10 +1233,13 @@ let walk_table_custom
       transform_walker) table_custom =
   let walk_id = walker.walk_id walker in
   let walk_expr = walker.walk_expr walker in
-  let table_custom_const, id, expr, annos = table_custom.it in
-  let id = walk_id id in
-  let expr = walk_expr expr in
-  { table_custom with it = (table_custom_const, id, expr, annos) }
+  let it =
+    let table_custom_const, id, expr, annos = table_custom.it in
+    let id = walk_id id in
+    let expr = walk_expr expr in
+    (table_custom_const, id, expr, annos)
+  in
+  { table_custom with it }
 
 (* Methods *)
 
