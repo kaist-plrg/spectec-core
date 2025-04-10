@@ -80,7 +80,7 @@ let rec pp_typ' ?(level = 0) fmt typ =
         typ pp_tparams'' (tparams, tparams_hidden)
         (pp_list (pp_typ' ~level:(level + 1)) ~sep:Comma)
         typs
-  | DefT (_,typ) -> F.fprintf fmt "typedef %a" (pp_typ' ~level:(level + 1)) typ
+  | DefT (_, typ) -> F.fprintf fmt "typedef %a" (pp_typ' ~level:(level + 1)) typ
   | NewT (id, typ) ->
       F.fprintf fmt "type %a (%a)" P.pp_id' id (pp_typ' ~level:(level + 1)) typ
   | EnumT (id, fields) ->
@@ -180,7 +180,8 @@ and pp_typdef_mono ?(level = 0) fmt tdm = pp_typ' ~level fmt tdm
 
 and pp_typdef_poly ?(level = 0) fmt tdp =
   let tparams, tparams_hidden, typ = tdp in
-  F.fprintf fmt "%a%a" (pp_typ' ~level) typ pp_tparams'' (tparams, tparams_hidden)
+  F.fprintf fmt "%a%a" (pp_typ' ~level) typ pp_tparams''
+    (tparams, tparams_hidden)
 
 (* Function types *)
 
@@ -265,8 +266,8 @@ and pp_anno fmt anno = P.pp_anno pp_expr fmt anno
 
 and pp_tparam' fmt tparam' = P.pp_tparam' fmt tparam'
 and pp_tparam fmt tparam = P.pp_tparam fmt tparam
-
 and pp_tparams fmt tparams = P.pp_tparams fmt tparams
+
 and pp_tparams'' fmt (tparams, tparams_hidden) =
   match (tparams, tparams_hidden) with
   | [], [] -> ()

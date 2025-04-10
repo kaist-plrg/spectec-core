@@ -20,8 +20,7 @@ let postprocess_mthd' mthd' =
 
 let postprocess_decl' decl' =
   match decl' with
-  | PackageTypeD { id; tparams; tparams_hidden; cparams; annos } 
-    ->
+  | PackageTypeD { id; tparams; tparams_hidden; cparams; annos } ->
       let theta =
         tparams_hidden
         |> List.map (fun tparam -> (tparam.it, Types.AnyT))
@@ -34,7 +33,6 @@ let postprocess_decl' decl' =
       in
       PackageTypeD { id; tparams; tparams_hidden = []; cparams; annos }
   | _ -> decl'
-
 
 let postprocess_program (_program : Il.Ast.program) : Il.Ast.program =
   failwith "Not implemented"
