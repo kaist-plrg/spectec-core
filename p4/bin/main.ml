@@ -11,10 +11,11 @@ let roundtrip_el includes filename : El.Ast.program =
 
 let typecheck includes filename : Il.Ast.program =
   parse includes filename |> Typing.Typecheck.type_program
-  |> Typing.Postprocess.postprocess_program
 
 let roundtrip_il includes filename : Il.Ast.program =
-  let program = typecheck includes filename in
+  let program =
+    typecheck includes filename |> Typing.Postprocess.postprocess_program
+  in
   let program_str = Format.asprintf "%a\n" Il.Pp_to_el.pp_program program in
   let program' =
     try
@@ -74,7 +75,8 @@ let typecheck_command =
            let func = if roundtrip_flag then roundtrip_il else typecheck in
            func includes filename
          in
-         Format.printf "%a\n" Il.Pp_to_el.pp_program program
+         program |> Typing.Postprocess.postprocess_program
+         |> Format.printf "%a\n" Il.Pp_to_el.pp_program
        with ParseErr (msg, info) | CheckErr (msg, info) ->
          if Util.Source.is_no_info info then Format.printf "Error: %s\n" msg
          else Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)

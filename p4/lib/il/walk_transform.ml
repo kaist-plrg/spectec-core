@@ -60,7 +60,79 @@ let walk_dir (walker : walker) dir = W.walk_dir walker dir
 
 (* Types *)
 
-let walk_typ (_walker : walker) typ = typ
+let walk_typ (walker : walker) typ =
+  let walk_id' = W.walk_it (walker.walk_id walker) () in
+  let walk_typ' = W.walk_it (walker.walk_typ walker) () in
+  let walk_tparam' = W.walk_it (walker.walk_tparam walker) () in
+  let walk_param' = W.walk_it (walker.walk_param walker) () in
+  let walk_member' = W.walk_it (walker.walk_member walker) () in
+  let walk_value' = W.walk_it (walker.walk_value walker) InvalidE in
+  let it =
+    match typ.it with
+    | VoidT -> VoidT
+    | ErrT -> ErrT
+    | MatchKindT -> MatchKindT
+    | StrT -> StrT
+    | BoolT -> BoolT
+    | IntT -> IntT
+    | FIntT width -> FIntT width
+    | FBitT width -> FBitT width
+    | VBitT width -> VBitT width
+    | VarT id -> VarT (walk_id' id)
+    | SpecT (tdp, typs) ->
+        let tdp =
+          let tparams, tparams_hidden, typ = tdp in
+          let tparams = W.walk_list walk_tparam' tparams in
+          let tparams_hidden = W.walk_list walk_tparam' tparams_hidden in
+          let typ = walk_typ' typ in
+          (tparams, tparams_hidden, typ)
+        in
+        SpecT (tdp, W.walk_list walk_typ' typs)
+    | DefT (id, typ) -> DefT (walk_id' id, walk_typ' typ)
+    | NewT (id, typ) -> NewT (walk_id' id, walk_typ' typ)
+    | EnumT (id, fields) -> EnumT (walk_id' id, W.walk_list walk_member' fields)
+    | SEnumT (id, typ, fields) ->
+        SEnumT
+          ( walk_id' id,
+            walk_typ' typ,
+            W.walk_list (W.walk_pair walk_member' walk_value') fields )
+    | ListT typ -> ListT (walk_typ' typ)
+    | TupleT typs -> TupleT (List.map walk_typ' typs)
+    | StackT (typ, size) -> StackT (walk_typ' typ, size)
+    | StructT (id, fields) ->
+        StructT
+          (walk_id' id, W.walk_list (W.walk_pair walk_member' walk_typ') fields)
+    | HeaderT (id, fields) ->
+        HeaderT
+          (walk_id' id, W.walk_list (W.walk_pair walk_member' walk_typ') fields)
+    | UnionT (id, fields) ->
+        UnionT
+          (walk_id' id, W.walk_list (W.walk_pair walk_member' walk_typ') fields)
+    | ExternT (id, fdenv) -> ExternT (walk_id' id, fdenv)
+    | ParserT (id, params) ->
+        ParserT (walk_id' id, W.walk_list walk_param' params)
+    | ControlT (id, params) ->
+        ControlT (walk_id' id, W.walk_list walk_param' params)
+    | PackageT (id, typs) -> PackageT (walk_id' id, W.walk_list walk_typ' typs)
+    | TableT (id, typ) -> TableT (walk_id' id, walk_typ' typ)
+    | AnyT -> AnyT
+    | TableEnumT (id, fields) ->
+        TableEnumT (walk_id' id, W.walk_list walk_member' fields)
+    | TableStructT (id, fields) ->
+        TableStructT
+          (walk_id' id, W.walk_list (W.walk_pair walk_member' walk_typ') fields)
+    | SeqT typs -> SeqT (W.walk_list walk_typ' typs)
+    | SeqDefaultT typs -> SeqDefaultT (W.walk_list walk_typ' typs)
+    | RecordT fields ->
+        RecordT (W.walk_list (W.walk_pair walk_member' walk_typ') fields)
+    | RecordDefaultT fields ->
+        RecordDefaultT (W.walk_list (W.walk_pair walk_member' walk_typ') fields)
+    | DefaultT -> DefaultT
+    | InvalidT -> InvalidT
+    | SetT typ -> SetT (walk_typ' typ)
+    | StateT -> StateT
+  in
+  { typ with it }
 
 (* Values *)
 

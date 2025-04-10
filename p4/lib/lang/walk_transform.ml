@@ -611,6 +611,10 @@ let walk_list (f : 'a -> 'a) (l : 'a list) : 'a list = List.map f l
 let walk_option (f : 'a -> 'a) (o : 'a option) : 'a option = Option.map f o
 let walk_pair (f_k : 'a -> 'a) (f_v : 'b -> 'b) (x, y) : 'a * 'b = (f_k x, f_v y)
 
+let walk_it (f : ('a, 'b) note_phrase -> ('a, 'b) note_phrase) (tmp : 'b)
+    (i : 'a) : 'a =
+  i $$ no_info % tmp |> f |> it
+
 (* Numbers *)
 
 let walk_num

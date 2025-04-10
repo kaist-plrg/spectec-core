@@ -521,11 +521,10 @@ and pp_decl' ?(level = 0) fmt decl' =
         (pp_mthds ~level:(level + 1))
         mthds (indent level)
   | PackageTypeD { id; tparams; tparams_hidden; cparams; annos = _annos } ->
-      if List.length tparams_hidden > 0 then assert false
-      else
-        F.fprintf fmt "package %a%a%a;" pp_id id pp_tparams tparams
-          (pp_cparams ~level:(level + 1))
-          cparams
+      assert (List.length tparams_hidden = 0);
+      F.fprintf fmt "package %a%a%a;" pp_id id pp_tparams tparams
+        (pp_cparams ~level:(level + 1))
+        cparams
 
 and pp_decl ?(level = 0) fmt decl = pp_decl' ~level fmt decl.it
 
@@ -596,9 +595,8 @@ and pp_table_entry ?(level = 0) ?(table_entries_const = false) fmt table_entry =
 and pp_mthd' ?(level = 0) fmt mthd' =
   match mthd' with
   | ExternConsM { id; tparams_hidden; cparams; annos = _annos } ->
-      if List.length tparams_hidden > 0 then assert false
-      else
-        F.fprintf fmt "%a%a;" pp_id id (pp_cparams ~level:(level + 1)) cparams
+      assert (List.length tparams_hidden = 0);
+      F.fprintf fmt "%a%a;" pp_id id (pp_cparams ~level:(level + 1)) cparams
   | ExternAbstractM
       { id; typ_ret; tparams; tparams_hidden; params; annos = _annos } ->
       F.fprintf fmt "abstract %a %a%a%a;"
