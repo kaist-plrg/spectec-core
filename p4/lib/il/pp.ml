@@ -288,24 +288,24 @@ and pp_param' ?(level = 0) fmt param' =
   match value_default with
   | Some value_default ->
       if dir.it = L.No then
-        F.fprintf fmt "%a %a = %a"
+        F.fprintf fmt "%a %a = %a" pp_id id
           (pp_typ ~level:(level + 1))
-          typ pp_id id
+          typ
           (pp_value ~level:(level + 1))
           value_default
       else
-        F.fprintf fmt "%a %a %a = %a" pp_dir dir
+        F.fprintf fmt "%a %a %a = %a" pp_dir dir pp_id id
           (pp_typ ~level:(level + 1))
-          typ pp_id id
+          typ
           (pp_value ~level:(level + 1))
           value_default
   | None ->
       if dir.it = L.No then
-        F.fprintf fmt "%a %a" (pp_typ ~level:(level + 1)) typ pp_id id
+        F.fprintf fmt "%a %a" pp_id id (pp_typ ~level:(level + 1)) typ
       else
-        F.fprintf fmt "%a %a %a" pp_dir dir
+        F.fprintf fmt "%a %a %a" pp_dir dir pp_id id
           (pp_typ ~level:(level + 1))
-          typ pp_id id
+          typ
 
 and pp_param ?(level = 0) fmt param = pp_param' ~level fmt param.it
 

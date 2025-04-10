@@ -146,12 +146,14 @@ let typecheck_file stat includes mode filename =
 
 let typecheck_roundtrip stat includes filename =
   let stat, program' = typecheck_file stat includes Pos filename in
+  let program' = Typing.Postprocess.postprocess_program program' in
   let file' = Format.asprintf "%a\n" Il.Pp_to_el.pp_program program' in
   let stat, program'' =
     try
       let program'' =
         Frontend.Parse.parse_string filename file'
         |> Typing.Typecheck.type_program
+        |> Typing.Postprocess.postprocess_program
       in
       (stat, program'')
     with ParseErr (msg, info) | CheckErr (msg, info) ->
