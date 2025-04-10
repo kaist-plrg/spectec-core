@@ -1,4 +1,4 @@
 (library
  (name lang)
  (libraries bignum util)
- (modules ast pp eq walk))
+ (modules ast pp eq walk walk_transform))
