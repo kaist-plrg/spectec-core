@@ -491,9 +491,7 @@ and pp_table_entry' ?(table_entries_const = false) fmt table_entry' =
   in
   F.fprintf fmt "%s%s%a%s%a : %a"
     (if table_entry_const then "const " else "")
-    (if table_entry_priority |> Option.is_some then
-       "priority = "
-     else "")
+    (if table_entry_priority |> Option.is_some then "priority = " else "")
     (pp_option pp_expr) table_entry_priority
     (if table_entry_priority |> Option.is_some then " : " else "")
     pp_keysets keysets pp_table_action table_action

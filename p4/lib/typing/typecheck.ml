@@ -1936,8 +1936,8 @@ and check_call_arity (ft : FuncType.t) (params : Il.Ast.param' list)
        (FuncType.pp ~level:0) ft arity_params arity_args)
 
 (* Invariant: parameters and arguments are checked of arity and all-or-nothing named *)
-and align_params_with_args (params : Il.Ast.param' list) (typ_args : Type.t list)
-    (args_il : Il.Ast.arg list) =
+and align_params_with_args (params : Il.Ast.param' list)
+    (typ_args : Type.t list) (args_il : Il.Ast.arg list) =
   let module PMap = Map.Make (String) in
   let params_map =
     List.fold_left
@@ -2379,7 +2379,9 @@ and type_instantiation (cursor : Ctx.cursor) (ctx : Ctx.t)
           |> List.map (fun typ -> typ $ no_info)
         in
         let ct = ConsType.subst theta ct in
-        let cparams = List.map (Runtime_type.Subst.subst_cparam theta) cparams in
+        let cparams =
+          List.map (Runtime_type.Subst.subst_cparam theta) cparams
+        in
         let typ_inst = Type.subst theta typ_inst in
         (ct, targs_hidden_il, cparams, typ_inst)
   in

@@ -70,7 +70,7 @@ let eq_dir ?(dbg = false) dir_a dir_b = E.eq_dir ~dbg dir_a dir_b
 
 (* Types *)
 
-let rec eq_typ' typ_a typ_b = 
+let rec eq_typ' typ_a typ_b =
   match (typ_a, typ_b) with
   | VoidT, VoidT
   | ErrT, ErrT
