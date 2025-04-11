@@ -11,4 +11,6 @@
   (re_export runtime_static)
   (re_export elaborate)
   (re_export runtime_dynamic)
-  (re_export interpret)))
+  (re_export interpret)
+  (re_export sl)
+  (re_export structure)))

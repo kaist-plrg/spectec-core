@@ -42,11 +42,13 @@ dec $strip_suffix(text, text) : text
 dec $init_(nat) : nat*
 def $init_(0) = eps
 def $init_(n) = $(n - 1) :: $init_($(n - 1))
+  -- if n > 0
 
 dec $repeat_<X>(X, nat) : X*
     ;;hint(show %2^%3)
 def $repeat_<X>(X, 0) = eps
 def $repeat_<X>(X, n) = X ++ $repeat_<X>(X, $(n - 1))
+  -- if n > 0
 
 dec $opt_<X>(X*) : X?
     hint(show %2)

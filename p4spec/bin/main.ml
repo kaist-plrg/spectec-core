@@ -39,9 +39,27 @@ let run_typing_command =
          ()
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
+let struct_command =
+  Command.basic ~summary:"insert structured control flow to a p4_16 spec"
+    (let open Command.Let_syntax in
+     let open Command.Param in
+     let%map filenames = anon (sequence ("filename" %: string)) in
+     fun () ->
+       try
+         let spec = List.concat_map ~f:Frontend.Parse.parse_file filenames in
+         let spec_il = Elaborate.Elab.elab_spec spec in
+         let spec_sl = Structure.Struct.struct_spec spec_il in
+         Format.printf "%s\n" (Sl.Print.string_of_spec spec_sl);
+         ()
+       with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+
 let command =
   Command.group
     ~summary:"p4spec: a language design framework for the p4_16 language"
-    [ ("elab", elab_command); ("run-typing", run_typing_command) ]
+    [
+      ("elab", elab_command);
+      ("run-typing", run_typing_command);
+      ("struct", struct_command);
+    ]
 
 let () = Command_unix.run ~version command

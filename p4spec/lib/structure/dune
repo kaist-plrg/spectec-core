@@ -1,0 +1,4 @@
+(library
+ (name structure)
+ (libraries bignum util xl el il runtime_static elaborate sl)
+ (modules antiunify struct))

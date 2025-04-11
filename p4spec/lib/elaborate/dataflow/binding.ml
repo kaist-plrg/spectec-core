@@ -17,12 +17,17 @@ open Util.Source
    3. Desugar partial bindings
       - e.g., -- let (int, 1 + 2) = ... becomes
               -- let (int, int') = ..., -- if int' = 1 + 2
-   Note. At this point, binder patterns contain binding identifiers only
+   Note. At this point, binder patterns are one of:
+      - VarE, UpCastE, TupleE, CaseE, StrE, OptE, ListE, ConsE
+      - IterE of the above cases
    4. Desugar patterned bindings (including downcasts)
       - e.g., -- let (int, CASE int' int'') = ... becomes
               -- let (int, case) = ..., -- if case matches CASE, -- let CASE int' int'' = case
       - e.g., -- let ((typ) child) = ... becomes
-              -- let parent = ..., -- if parent <: child, -- let child = parent *)
+              -- let parent = ..., -- if parent <: child, -- let child = parent
+   Note. At this point, binder patterns are one of:
+      - VarE, TupleE, CaseE of a singleton case, StrE
+      - IterE of the above cases *)
 
 let update_venv_multi (venv : VEnv.t) (renv_multi : Multibind.REnv.t) : VEnv.t =
   Multibind.REnv.fold

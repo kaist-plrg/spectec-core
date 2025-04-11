@@ -144,10 +144,8 @@ and string_of_cmpop = function
 
 (* Expressions *)
 
-and string_of_exp e = string_of_exp' e
-
-and string_of_exp' e =
-  match e.it with
+and string_of_exp exp =
+  match exp.it with
   | BoolE b -> string_of_bool b
   | NumE n -> string_of_num n
   | TextE text -> "\"" ^ String.escaped text ^ "\""
@@ -165,7 +163,7 @@ and string_of_exp' e =
   | MatchE (exp, pattern) ->
       string_of_exp exp ^ " matches " ^ string_of_pattern pattern
   | TupleE es -> "(" ^ string_of_exps ", " es ^ ")"
-  | CaseE notexp -> string_of_notexp ~typ:(Some e.note) notexp
+  | CaseE notexp -> string_of_notexp ~typ:(Some exp.note) notexp
   | StrE expfields ->
       "{"
       ^ String.concat ", "

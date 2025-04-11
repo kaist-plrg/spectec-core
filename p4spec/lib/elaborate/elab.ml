@@ -1332,19 +1332,19 @@ and elab_iter_prem (ctx : Ctx.t) (prem : prem) (iter : iter) :
 let rec elab_def (ctx : Ctx.t) (def : def) : Ctx.t * Il.Ast.def option =
   let wrap_some (ctx, def) = (ctx, Some def) in
   let wrap_none ctx = (ctx, None) in
+  let at = def.at in
   match def.it with
   | SynD syns -> elab_syn_def ctx syns |> wrap_none
   | TypD (id, tparams, deftyp, _hints) ->
       elab_typ_def ctx id tparams deftyp |> wrap_some
   | VarD (id, plaintyp, _hints) -> elab_var_def ctx id plaintyp |> wrap_none
-  | RelD (id, nottyp, hints) ->
-      elab_rel_def ctx def.at id nottyp hints |> wrap_some
+  | RelD (id, nottyp, hints) -> elab_rel_def ctx at id nottyp hints |> wrap_some
   | RuleD (id_rel, id_rule, exp, prems) ->
-      elab_rule_def ctx def.at id_rel id_rule exp prems |> wrap_none
+      elab_rule_def ctx at id_rel id_rule exp prems |> wrap_none
   | DecD (id, tparams, params, plaintyp, _hints) ->
-      elab_dec_def ctx def.at id tparams params plaintyp |> wrap_some
+      elab_dec_def ctx at id tparams params plaintyp |> wrap_some
   | DefD (id, tparams, args, exp, prems) ->
-      elab_def_def ctx def.at id tparams args exp prems |> wrap_none
+      elab_def_def ctx at id tparams args exp prems |> wrap_none
   | SepD -> ctx |> wrap_none
 
 and elab_defs (ctx : Ctx.t) (defs : def list) : Ctx.t * Il.Ast.def list =
@@ -1405,7 +1405,7 @@ and elab_typ_def (ctx : Ctx.t) (id : id) (tparams : tparam list)
   let ctx = Ctx.update_typdef ctx id td in
   (ctx, def_il)
 
-(* Elaboration of variable declarations *)
+(* Elaboration of variables *)
 
 and elab_var_def (ctx : Ctx.t) (id : id) (plaintyp : plaintyp) : Ctx.t =
   check (valid_tid id) id.at "invalid meta-variable identifier";
@@ -1413,7 +1413,7 @@ and elab_var_def (ctx : Ctx.t) (id : id) (plaintyp : plaintyp) : Ctx.t =
   let _typ_il = elab_plaintyp ctx plaintyp in
   Ctx.add_metavar ctx id plaintyp
 
-(* Elaboration of relation declarations *)
+(* Elaboration of relations *)
 
 and fetch_rel_input_hint' (len : int) (hintexp : exp) : int list option =
   match hintexp.it with
@@ -1468,7 +1468,7 @@ and elab_rel_def (ctx : Ctx.t) (at : region) (id : id) (nottyp : nottyp)
   let def_il = Il.Ast.RelD (id, nottyp_il, inputs, []) $ at in
   (ctx, def_il)
 
-(* Elaboration of rule definitions *)
+(* Elaboration of rules *)
 
 and elab_rule_input_with_bind (ctx : Ctx.t) (exps_il : (int * Il.Ast.exp) list)
     : Ctx.t * (int * Il.Ast.exp) list * Il.Ast.prem list =
