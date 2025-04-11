@@ -71,6 +71,7 @@ and struct_rel_def (at : region) (id_rel : id) (inputs : int list)
     (rules : rule list) : Sl.Ast.def =
   let exps_input, paths = Antiunify.antiunify_rules inputs rules in
   let instrs = List.concat_map struct_rule_path paths in
+  let instrs = Optimize.remove_let_alias instrs in
   Sl.Ast.RelD (id_rel, exps_input, instrs) $ at
 
 (* Structuring declaration definitions *)
@@ -79,6 +80,7 @@ and struct_dec_def (at : region) (id_dec : id) (tparams : tparam list)
     (clauses : clause list) : Sl.Ast.def =
   let args_input, paths = Antiunify.antiunify_clauses clauses in
   let instrs = List.concat_map struct_clause_path paths in
+  let instrs = Optimize.remove_let_alias instrs in
   Sl.Ast.DecD (id_dec, tparams, args_input, instrs) $ at
 
 (* Structuring a spec *)
