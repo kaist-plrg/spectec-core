@@ -19,8 +19,15 @@ module REnv = struct
   let gen_sidecondition (id : Id.t) (exp : exp) (iters : iter list) =
     let exp =
       let exp_l = VarE id $$ (id.at, exp.note) in
-      let exp_r = exp in
-      CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (exp.at, BoolT)
+      match exp.it with
+      | OptE (Some _) -> MatchE (exp_l, OptP `Some) $$ (exp.at, BoolT)
+      | OptE None -> MatchE (exp_l, OptP `None) $$ (exp.at, BoolT)
+      | ListE [] -> MatchE (exp_l, ListP `Nil) $$ (exp.at, BoolT)
+      | ListE exps ->
+          MatchE (exp_l, ListP (`Fixed (List.length exps))) $$ (exp.at, BoolT)
+      | _ ->
+          let exp_r = exp in
+          CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (exp.at, BoolT)
     in
     let sidecondition = IfPr exp $ exp.at in
     List.fold_left

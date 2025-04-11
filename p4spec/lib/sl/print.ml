@@ -100,14 +100,14 @@ let string_of_targs targs = Il.Print.string_of_targs targs
 (* Instructions *)
 
 let rec string_of_instr ?(level = 0) ?(index = 0) instr =
-  let indent = String.make level ' ' in
+  let indent = String.make (level * 2) ' ' in
   let order = Format.asprintf "%s%d. " indent index in
   match instr.it with
   | RuleI (id_rel, notexp, []) ->
       Format.asprintf "%s%s: %s" order (string_of_relid id_rel)
         (string_of_notexp notexp)
   | RuleI (id_rel, notexp, iterexps) ->
-      Format.asprintf "(%s%s: %s)%s" order (string_of_relid id_rel)
+      Format.asprintf "%s(%s: %s)%s" order (string_of_relid id_rel)
         (string_of_notexp notexp)
         (String.concat "" (List.map string_of_iterexp iterexps))
   | IfI (exp_cond, [], instrs_then, []) ->
@@ -132,7 +132,7 @@ let rec string_of_instr ?(level = 0) ?(index = 0) instr =
         (string_of_instrs ~level:(level + 1) instrs_else)
   | ElseI instr ->
       Format.asprintf "%sOtherwise\n%s" order
-        (string_of_instr ~level:(level + 1) instr)
+        (string_of_instr ~level:(level + 1) ~index:1 instr)
   | LetI (exp_l, exp_r, []) ->
       Format.asprintf "%sLet %s = %s" order (string_of_exp exp_l)
         (string_of_exp exp_r)
@@ -162,11 +162,11 @@ let rec string_of_def def =
       "relation " ^ string_of_relid relid ^ ": "
       ^ string_of_exps ", " exps_input
       ^ "\n"
-      ^ string_of_instrs ~level:1 instrs
+      ^ string_of_instrs instrs
   | DecD (defid, tparams, args_input, instrs) ->
       "def " ^ string_of_defid defid ^ string_of_tparams tparams
       ^ string_of_args args_input ^ "\n"
-      ^ string_of_instrs ~level:1 instrs
+      ^ string_of_instrs instrs
 
 and string_of_defs defs = String.concat "\n\n" (List.map string_of_def defs)
 
