@@ -193,3 +193,55 @@ let rec remove_let_alias (instrs : instr list) : instr list =
       | _ ->
           let instrs_t = remove_let_alias instrs_t in
           instr_h :: instrs_t)
+
+(* Merge if statements with the same condition *)
+
+let rec merge_block (instrs_a : instr list) (instrs_b : instr list) : instr list
+    =
+  match (instrs_a, instrs_b) with
+  | instr_a :: instrs_a, instr_b :: instrs_b when Sl.Eq.eq_instr instr_a instr_b
+    ->
+      let instrs = merge_block instrs_a instrs_b in
+      instr_a :: instrs
+  | _ -> instrs_a @ instrs_b
+
+let rec find_mergeable_if ?(instrs_unmergeable : instr list = [])
+    (exp_cond_target : exp) (iterexps_target : iterexp list)
+    (instrs : instr list) : (instr list * instr list * instr list) option =
+  match instrs with
+  | { it = IfI (exp_cond, iterexps, instrs_then, instrs_else); _ } :: instrs_t
+    when Sl.Eq.eq_exp exp_cond exp_cond_target
+         && Sl.Eq.eq_iterexps iterexps iterexps_target ->
+      let instrs_unmergeable = instrs_unmergeable @ instrs_t in
+      Some (instrs_unmergeable, instrs_then, instrs_else)
+  | ({ it = IfI _; _ } as instr_h) :: instrs_t ->
+      let instrs_unmergeable = instrs_unmergeable @ [ instr_h ] in
+      find_mergeable_if ~instrs_unmergeable exp_cond_target iterexps_target
+        instrs_t
+  | _ -> None
+
+let rec merge_if (instrs : instr list) : instr list =
+  match instrs with
+  | [] -> []
+  | ({ it = IfI (exp_cond, iterexps, instrs_then, instrs_else); _ } as instr_h)
+    :: instrs_t -> (
+      match find_mergeable_if exp_cond iterexps instrs_t with
+      | Some (instrs_unmergeable, instrs_then_matched, instrs_else_matched) ->
+          let instrs_then = merge_block instrs_then instrs_then_matched in
+          let instrs_else = merge_block instrs_else instrs_else_matched in
+          let instr_h =
+            IfI (exp_cond, iterexps, instrs_then, instrs_else) $ instr_h.at
+          in
+          let instrs = instr_h :: instrs_unmergeable in
+          merge_if instrs
+      | None ->
+          let instrs_then = merge_if instrs_then in
+          let instrs_else = merge_if instrs_else in
+          let instr_h =
+            IfI (exp_cond, iterexps, instrs_then, instrs_else) $ instr_h.at
+          in
+          let instrs_t = merge_if instrs_t in
+          instr_h :: instrs_t)
+  | instr_h :: instrs_t ->
+      let instrs_t = merge_if instrs_t in
+      instr_h :: instrs_t

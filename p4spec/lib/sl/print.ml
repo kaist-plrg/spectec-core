@@ -161,12 +161,10 @@ let rec string_of_def def =
   | RelD (relid, exps_input, instrs) ->
       "relation " ^ string_of_relid relid ^ ": "
       ^ string_of_exps ", " exps_input
-      ^ "\n"
-      ^ string_of_instrs instrs
+      ^ "\n" ^ string_of_instrs instrs
   | DecD (defid, tparams, args_input, instrs) ->
       "def " ^ string_of_defid defid ^ string_of_tparams tparams
-      ^ string_of_args args_input ^ "\n"
-      ^ string_of_instrs instrs
+      ^ string_of_args args_input ^ "\n" ^ string_of_instrs instrs
 
 and string_of_defs defs = String.concat "\n\n" (List.map string_of_def defs)
 

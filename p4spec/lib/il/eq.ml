@@ -30,6 +30,24 @@ let eq_var (var_a : var) (var_b : var) : bool =
   eq_id id_a id_b && eq_iters iters_a iters_b
 
 let eq_vars (vars_a : var list) (vars_b : var list) : bool =
+  let compare_id (id_a : id) (id_b : id) : int = compare id_a.it id_b.it in
+  let compare_iters (iters_a : iter list) (iters_b : iter list) : int =
+    let compare_iter (iter_a : iter) (iter_b : iter) : int =
+      match (iter_a, iter_b) with
+      | Opt, Opt -> 0
+      | Opt, List -> -1
+      | List, Opt -> 1
+      | List, List -> 0
+    in
+    List.compare compare_iter iters_a iters_b
+  in
+  let compare_var ((id_a, iters_a) : var) ((id_b, iters_b) : var) : int =
+    match compare_id id_a id_b with
+    | 0 -> compare_iters iters_a iters_b
+    | n -> n
+  in
+  let vars_a = List.sort compare_var vars_a in
+  let vars_b = List.sort compare_var vars_b in
   List.length vars_a = List.length vars_b && List.for_all2 eq_var vars_a vars_b
 
 (* Types *)
@@ -111,27 +129,13 @@ and eq_exps (exps_a : exp list) (exps_b : exp list) : bool =
   List.length exps_a = List.length exps_b && List.for_all2 eq_exp exps_a exps_b
 
 and eq_iterexp (iterexp_a : iterexp) (iterexp_b : iterexp) : bool =
-  let compare_id (id_a : id) (id_b : id) : int = compare id_a.it id_b.it in
-  let compare_iters (iters_a : iter list) (iters_b : iter list) : int =
-    let compare_iter (iter_a : iter) (iter_b : iter) : int =
-      match (iter_a, iter_b) with
-      | Opt, Opt -> 0
-      | Opt, List -> -1
-      | List, Opt -> 1
-      | List, List -> 0
-    in
-    List.compare compare_iter iters_a iters_b
-  in
-  let compare_var ((id_a, iters_a) : var) ((id_b, iters_b) : var) : int =
-    match compare_id id_a id_b with
-    | 0 -> compare_iters iters_a iters_b
-    | n -> n
-  in
   let iter_a, vars_a = iterexp_a in
-  let vars_a = List.sort compare_var vars_a in
   let iter_b, vars_b = iterexp_b in
-  let vars_b = List.sort compare_var vars_b in
   eq_iter iter_a iter_b && eq_vars vars_a vars_b
+
+and eq_iterexps (iterexps_a : iterexp list) (iterexps_b : iterexp list) : bool =
+  List.length iterexps_a = List.length iterexps_b
+  && List.for_all2 eq_iterexp iterexps_a iterexps_b
 
 (* Patterns *)
 
