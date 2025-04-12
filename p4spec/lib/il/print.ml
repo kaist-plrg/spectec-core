@@ -211,6 +211,9 @@ and string_of_iterexp iterexp =
          vars)
   ^ "}"
 
+and string_of_iterexps iterexps =
+  iterexps |> List.map string_of_iterexp |> String.concat ""
+
 (* Patterns *)
 
 and string_of_pattern pattern =

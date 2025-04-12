@@ -194,6 +194,48 @@ let rec remove_let_alias (instrs : instr list) : instr list =
           let instrs_t = remove_let_alias instrs_t in
           instr_h :: instrs_t)
 
+(* Syntactic analysis of conditions
+
+   Note that this is best-effort analysis,
+   since even semantic analysis cannot guarantee completeness of the analysis *)
+
+type overlap = Identical | Disjoint | Mutex | Fuzzy
+
+let overlap_pattern (pattern_a : pattern) (pattern_b : pattern) : overlap =
+  match (pattern_a, pattern_b) with
+  | CaseP mixop_a, CaseP mixop_b ->
+      if Sl.Eq.eq_mixop mixop_a mixop_b then Identical else Disjoint
+  | ListP `Cons, ListP (`Fixed n) | ListP (`Fixed n), ListP `Cons ->
+      if n = 0 then Mutex else Disjoint
+  | ListP `Cons, ListP `Nil | ListP `Nil, ListP `Cons -> Mutex
+  | ListP (`Fixed n_a), ListP (`Fixed n_b) ->
+      if n_a = n_b then Identical else Disjoint
+  | ListP (`Fixed n), ListP `Nil | ListP `Nil, ListP (`Fixed n) ->
+      if n = 0 then Identical else Disjoint
+  | ListP `Nil, ListP `Nil -> Identical
+  | OptP `Some, OptP `Some -> Identical
+  | OptP `Some, OptP `None | OptP `None, OptP `Some -> Mutex
+  | OptP `None, OptP `None -> Identical
+  | _ -> assert false
+
+let overlap_exp (exp_a : exp) (exp_b : exp) : overlap =
+  match (exp_a.it, exp_b.it) with
+  | UnE (`NotOp, _, exp_a), _ when Sl.Eq.eq_exp exp_a exp_b -> Mutex
+  | _, UnE (`NotOp, _, exp_b) when Sl.Eq.eq_exp exp_a exp_b -> Mutex
+  | ( CmpE (`EqOp, optyp_a, exp_a_l, exp_a_r),
+      CmpE (`NeOp, optyp_b, exp_b_l, exp_b_r) )
+  | ( CmpE (`NeOp, optyp_a, exp_a_l, exp_a_r),
+      CmpE (`EqOp, optyp_b, exp_b_l, exp_b_r) )
+    when optyp_a = optyp_b
+         && ((Sl.Eq.eq_exp exp_a_l exp_b_l && Sl.Eq.eq_exp exp_a_r exp_b_r)
+            || (Sl.Eq.eq_exp exp_a_l exp_b_r && Sl.Eq.eq_exp exp_a_r exp_b_l))
+    ->
+      Mutex
+  | MatchE (exp_a, pattern_a), MatchE (exp_b, pattern_b)
+    when Sl.Eq.eq_exp exp_a exp_b ->
+      overlap_pattern pattern_a pattern_b
+  | _ -> Fuzzy
+
 (* Merge if statements with the same condition *)
 
 let rec merge_block (instrs_a : instr list) (instrs_b : instr list) : instr list
@@ -205,7 +247,7 @@ let rec merge_block (instrs_a : instr list) (instrs_b : instr list) : instr list
       instr_a :: instrs
   | _ -> instrs_a @ instrs_b
 
-let rec find_mergeable_if ?(instrs_unmergeable : instr list = [])
+let rec find_identical_if ?(instrs_unmergeable : instr list = [])
     (exp_cond_target : exp) (iterexps_target : iterexp list)
     (instrs : instr list) : (instr list * instr list * instr list) option =
   match instrs with
@@ -216,7 +258,7 @@ let rec find_mergeable_if ?(instrs_unmergeable : instr list = [])
       Some (instrs_unmergeable, instrs_then, instrs_else)
   | ({ it = IfI _; _ } as instr_h) :: instrs_t ->
       let instrs_unmergeable = instrs_unmergeable @ [ instr_h ] in
-      find_mergeable_if ~instrs_unmergeable exp_cond_target iterexps_target
+      find_identical_if ~instrs_unmergeable exp_cond_target iterexps_target
         instrs_t
   | _ -> None
 
@@ -225,7 +267,7 @@ let rec merge_if (instrs : instr list) : instr list =
   | [] -> []
   | ({ it = IfI (exp_cond, iterexps, instrs_then, instrs_else); _ } as instr_h)
     :: instrs_t -> (
-      match find_mergeable_if exp_cond iterexps instrs_t with
+      match find_identical_if exp_cond iterexps instrs_t with
       | Some (instrs_unmergeable, instrs_then_matched, instrs_else_matched) ->
           let instrs_then = merge_block instrs_then instrs_then_matched in
           let instrs_else = merge_block instrs_else instrs_else_matched in
@@ -244,4 +286,96 @@ let rec merge_if (instrs : instr list) : instr list =
           instr_h :: instrs_t)
   | instr_h :: instrs_t ->
       let instrs_t = merge_if instrs_t in
+      instr_h :: instrs_t
+
+(* Insert else branches for disjoint if conditions
+
+   (1) Disjoint conditions
+
+    - if (i >= 0) then (... a ...) else (... b ...)
+    - if (i = 0) then (... c ...) else (empty)
+
+    is merged into,
+
+    - if (i >= 0) then (... a ...)
+      else
+        (... b ...)
+        if (i = 0) then (... c ...)
+
+   (2) Mutex conditions
+
+    - if (i >= 0) then (... a ...) else (... b ...)
+    - if (i < 0) then (... c ...) else (... d ...)
+
+    is merged into,
+
+    - if (i >= 0) then
+        (... a ...)
+        (... d ...)
+      else
+        (... b ...)
+        (... c ...) *)
+
+type if_couple =
+  | DisjointC of instr list * instr
+  | MutexC of instr list * instr list * instr list
+
+let rec find_disjoint_if ?(instrs_unmergeable : instr list = [])
+    (exp_cond_target : exp) (iterexps_target : iterexp list)
+    (instrs : instr list) : if_couple option =
+  match instrs with
+  | ({ it = IfI (exp_cond, iterexps, instrs_then, instrs_else); _ } as instr_h)
+    :: instrs_t -> (
+      let eq_iterexps = Sl.Eq.eq_iterexps iterexps iterexps_target in
+      let overlap_exp_cond = overlap_exp exp_cond exp_cond_target in
+      match (eq_iterexps, overlap_exp_cond) with
+      | true, Disjoint when instrs_else = [] ->
+          let instrs_unmergeable = instrs_unmergeable @ instrs_t in
+          let if_couple = DisjointC (instrs_unmergeable, instr_h) in
+          Some if_couple
+      | true, Mutex ->
+          let instrs_unmergeable = instrs_unmergeable @ instrs_t in
+          let if_couple =
+            MutexC (instrs_unmergeable, instrs_then, instrs_else)
+          in
+          Some if_couple
+      | _ ->
+          let instrs_unmergeable = instrs_unmergeable @ [ instr_h ] in
+          find_disjoint_if ~instrs_unmergeable exp_cond_target iterexps_target
+            instrs_t)
+  | _ -> None
+
+let rec merge_else (instrs : instr list) : instr list =
+  match instrs with
+  | [] -> []
+  | ({ it = IfI (exp_cond, iterexps, instrs_then, instrs_else); _ } as instr_h)
+    :: instrs_t -> (
+      match find_disjoint_if exp_cond iterexps instrs_t with
+      | Some (DisjointC (instrs_unmergeable, instr_matched)) ->
+          let instrs_else = merge_block instrs_else [ instr_matched ] in
+          let instr_h =
+            IfI (exp_cond, iterexps, instrs_then, instrs_else) $ instr_h.at
+          in
+          let instrs = instr_h :: instrs_unmergeable in
+          merge_else instrs
+      | Some
+          (MutexC
+            (instrs_unmergeable, instrs_then_matched, instrs_else_matched)) ->
+          let instrs_then = merge_block instrs_then instrs_else_matched in
+          let instrs_else = merge_block instrs_else instrs_then_matched in
+          let instr_h =
+            IfI (exp_cond, iterexps, instrs_then, instrs_else) $ instr_h.at
+          in
+          let instrs = instr_h :: instrs_unmergeable in
+          merge_else instrs
+      | None ->
+          let instrs_then = merge_else instrs_then in
+          let instrs_else = merge_else instrs_else in
+          let instr_h =
+            IfI (exp_cond, iterexps, instrs_then, instrs_else) $ instr_h.at
+          in
+          let instrs_t = merge_else instrs_t in
+          instr_h :: instrs_t)
+  | instr_h :: instrs_t ->
+      let instrs_t = merge_else instrs_t in
       instr_h :: instrs_t
