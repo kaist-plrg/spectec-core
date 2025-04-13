@@ -14,17 +14,16 @@ open Util.Source
    2. Rename multi/parallel binding occurrences
       - e.g., -- let (int, int) = ... becomes
                 -- let (int, int') = ..., -- if int = int'
-   3. Desugar partial bindings
-      - e.g., -- let (int, 1 + 2) = ... becomes
-              -- let (int, int') = ..., -- if int' = 1 + 2
-   Note. At this point, binder patterns are one of:
-      - VarE, UpCastE, TupleE, CaseE, StrE, OptE, ListE, ConsE
-      - IterE of the above cases
-   4. Desugar patterned bindings (including downcasts)
-      - e.g., -- let (int, CASE int' int'') = ... becomes
-              -- let (int, case) = ..., -- if case matches CASE, -- let CASE int' int'' = case
-      - e.g., -- let ((typ) child) = ... becomes
-              -- let parent = ..., -- if parent <: child, -- let child = parent
+   3. Desugar partial bindings, occurring as either:
+      (1) Bound values occurring inside binder patterns
+          - e.g., -- let PATTERN (a, 1 + 2) = ... becomes
+                  -- let PATTERN (a, int) = ..., -- if int == 1 + 2
+      (2) Injection of a variant case
+          - e.g., -- let PATTERN (a, int) = pat becomes
+                  -- if pat matches PATTERN, -- let PATTERN (a, b) = pat
+      (3) Injection of a subtype case
+          - e.g., -- let ((typ) child) = parent becomes
+                  -- if parent <: child, -- let child = parent as child
    Note. At this point, binder patterns are one of:
       - VarE, TupleE, CaseE of a singleton case, StrE
       - IterE of the above cases *)
@@ -41,16 +40,18 @@ let update_venv_multi (venv : VEnv.t) (renv_multi : Multibind.REnv.t) : VEnv.t =
 
 let update_venv_partial (venv : VEnv.t) (renv_partial : Partialbind.REnv.t) :
     VEnv.t =
-  Partialbind.REnv.fold
-    (fun id (exp, iters) venv -> VEnv.add id (exp.note $ exp.at, iters) venv)
-    renv_partial venv
-
-let update_venv_inject (venv : VEnv.t) (renv_inject : Injectbind.REnv.t) :
-    VEnv.t =
   List.fold_left
-    (fun venv (id, (exp, _, iters)) ->
+    (fun venv (id, placeholder) ->
+      let exp, iters =
+        match placeholder with
+        | Partialbind.Placeholder.Bound { exp_orig; iters } -> (exp_orig, iters)
+        | Partialbind.Placeholder.Bindmatch { exp_orig; iters; _ } ->
+            (exp_orig, iters)
+        | Partialbind.Placeholder.Bindsub { exp_orig; iters; _ } ->
+            (exp_orig, iters)
+      in
       VEnv.add id (exp.note $ exp.at, iters) venv)
-    venv renv_inject
+    venv renv_partial
 
 (* Expression binding analysis *)
 
@@ -70,15 +71,8 @@ let analyze_exps_as_bind (dctx : Dctx.t) (exps : exp list) :
     Partialbind.rename_exps dctx (VEnv.dom venv) Partialbind.REnv.empty exps
   in
   let venv = update_venv_partial venv renv_partial in
-  let sideconditions_partial =
-    Partialbind.REnv.gen_sideconditions renv_partial
-  in
-  let dctx, renv_inject, exps =
-    Injectbind.rename_exps dctx Injectbind.REnv.empty exps
-  in
-  let venv = update_venv_inject venv renv_inject in
-  let prems_inject = Injectbind.REnv.gen_prems renv_inject in
-  let prems = prems_inject @ sideconditions_multi @ sideconditions_partial in
+  let prems_partial = Partialbind.REnv.gen_prems renv_partial in
+  let prems = prems_partial @ sideconditions_multi in
   (dctx, venv, exps, prems)
 
 let analyze_exp_as_bound (dctx : Dctx.t) (exp : exp) : unit =
@@ -109,15 +103,8 @@ let analyze_args_as_bind (dctx : Dctx.t) (args : arg list) :
     Partialbind.rename_args dctx (VEnv.dom venv) Partialbind.REnv.empty args
   in
   let venv = update_venv_partial venv renv_partial in
-  let sideconditions_partial =
-    Partialbind.REnv.gen_sideconditions renv_partial
-  in
-  let dctx, renv_inject, args =
-    Injectbind.rename_args dctx Injectbind.REnv.empty args
-  in
-  let venv = update_venv_inject venv renv_inject in
-  let prems_inject = Injectbind.REnv.gen_prems renv_inject in
-  let prems = prems_inject @ sideconditions_multi @ sideconditions_partial in
+  let prems_partial = Partialbind.REnv.gen_prems renv_partial in
+  let prems = prems_partial @ sideconditions_multi in
   (dctx, venv, args, prems)
 
 (* Premise binding analysis *)
@@ -202,15 +189,8 @@ and analyze_let_prem (dctx : Dctx.t) (exp_l : exp) (binds_l : BEnv.t)
     Partialbind.rename_exp dctx (VEnv.dom venv) Partialbind.REnv.empty exp_l
   in
   let venv = update_venv_partial venv renv_partial in
-  let sideconditions_partial =
-    Partialbind.REnv.gen_sideconditions renv_partial
-  in
-  let dctx, renv_inject, exp_l =
-    Injectbind.rename_exp dctx Injectbind.REnv.empty exp_l
-  in
-  let venv = update_venv_inject venv renv_inject in
-  let prems_inject = Injectbind.REnv.gen_prems renv_inject in
-  let prems = prems_inject @ sideconditions_multi @ sideconditions_partial in
+  let prems_partial = Partialbind.REnv.gen_prems renv_partial in
+  let prems = prems_partial @ sideconditions_multi in
   let prem = LetPr (exp_l, exp_r) in
   (dctx, venv, prem, prems)
 
