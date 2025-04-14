@@ -26,6 +26,10 @@ module Hint = struct
     exps_input @ exps_output
     |> List.sort (fun (idx_i, _) (idx_o, _) -> compare idx_i idx_o)
     |> List.map snd
+
+  let is_conditional (hint : t) (exps : Il.Ast.exp list) : bool =
+    let _, exps_output = split_exps hint exps in
+    exps_output = []
 end
 
 (* Relation *)

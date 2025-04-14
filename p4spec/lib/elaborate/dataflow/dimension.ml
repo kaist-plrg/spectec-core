@@ -153,6 +153,12 @@ let rec annotate_exp (bounds : VEnv.t) (exp : exp) : VEnv.t * exp =
       let occurs, args = annotate_args bounds args in
       let exp = CallE (id, targs, args) $$ (at, note) in
       (occurs, exp)
+  | HoldE (id, notexp) ->
+      let mixop, exps = notexp in
+      let occurs, exps = annotate_exps bounds exps in
+      let notexp = (mixop, exps) in
+      let exp = HoldE (id, notexp) $$ (at, note) in
+      (occurs, exp)
   | IterE (_, ((_, _ :: _) as iterexp)) ->
       error exp.at
         (Format.asprintf
@@ -245,12 +251,6 @@ and annotate_prem (binds : VEnv.t) (bounds : VEnv.t) (prem : prem) :
       let occurs, exps = annotate_exps bounds exps in
       let notexp = (mixop, exps) in
       let prem = RulePr (id, notexp) $ at in
-      (occurs, prem)
-  | RuleNotPr (id, notexp) ->
-      let mixop, exps = notexp in
-      let occurs, exps = annotate_exps bounds exps in
-      let notexp = (mixop, exps) in
-      let prem = RuleNotPr (id, notexp) $ at in
       (occurs, prem)
   | IfPr exp ->
       let occurs, exp = annotate_exp bounds exp in

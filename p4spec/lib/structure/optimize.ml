@@ -102,6 +102,9 @@ let rec rename_exp (rename : Rename.t) (exp : exp) : exp =
   | CallE (id, targs, args) ->
       let args = List.map (rename_arg rename) args in
       Il.Ast.CallE (id, targs, args) $$ (at, note)
+  | HoldE (id, (mixop, exps)) ->
+      let exps = List.map (rename_exp rename) exps in
+      Il.Ast.HoldE (id, (mixop, exps)) $$ (at, note)
   | IterE (exp, iterexp) ->
       let exp = rename_exp rename exp in
       let iterexp = rename_iterexp rename iterexp in

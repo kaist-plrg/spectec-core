@@ -196,6 +196,7 @@ let rec eval_exp (ctx : Ctx.t) (exp : exp) : Ctx.t * value =
   | SliceE (exp_b, exp_l, exp_h) -> eval_slice_exp ctx exp_b exp_l exp_h
   | UpdE (exp_b, path, exp_f) -> eval_upd_exp ctx exp_b path exp_f
   | CallE (id, targs, args) -> eval_call_exp ctx id targs args
+  | HoldE (id, notexp) -> eval_hold_exp ctx id notexp
   | IterE (exp, iterexp) -> eval_iter_exp ctx exp iterexp
 
 and eval_exps (ctx : Ctx.t) (exps : exp list) : Ctx.t * value list =
@@ -601,6 +602,15 @@ and eval_call_exp (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list)
   let+ ctx, value = invoke_func ctx id targs args in
   (ctx, value)
 
+(* Conditional relation holds expression evaluation *)
+
+and eval_hold_exp (ctx : Ctx.t) (id : id) (notexp : notexp) : Ctx.t * value =
+  let _, exps_input = notexp in
+  let ctx, values_input = eval_exps ctx exps_input in
+  match invoke_rel ctx id values_input with
+  | Ok _ -> (ctx, BoolV true)
+  | Fail _ -> (ctx, BoolV false)
+
 (* Iterated expression evaluation *)
 
 and eval_iter_exp_opt (ctx : Ctx.t) (exp : exp) (vars : var list) :
@@ -666,10 +676,8 @@ and eval_prem (ctx : Ctx.t) (prem : prem) : Ctx.t attempt =
   eval_prem' ctx prem
 
 and eval_prem' (ctx : Ctx.t) (prem : prem) : Ctx.t attempt =
-  let at = prem.at in
   match prem.it with
   | RulePr (id, notexp) -> eval_rule_prem ctx id notexp
-  | RuleNotPr (id, notexp) -> eval_rule_not_prem ctx at id notexp
   | IfPr exp -> eval_if_prem ctx exp
   | ElsePr -> Ok ctx
   | LetPr (exp_l, exp_r) -> eval_let_prem ctx exp_l exp_r
@@ -695,25 +703,6 @@ and eval_rule_prem (ctx : Ctx.t) (id : id) (notexp : notexp) : Ctx.t attempt =
   let* ctx, values_output = invoke_rel ctx id values_input in
   let ctx = assign_exps ctx exps_output values_output in
   Ok ctx
-
-(* Negated rule premise evaluation *)
-
-and eval_rule_not_prem (ctx : Ctx.t) (at : region) (id : id) (notexp : notexp) :
-    Ctx.t attempt =
-  let rel = Ctx.find_rel Local ctx id in
-  let exps_input, exps_output =
-    let _, inputs, _ = rel in
-    let _, exps = notexp in
-    Hint.split_exps_without_idx inputs exps
-  in
-  assert (exps_output = []);
-  let ctx, values_input = eval_exps ctx exps_input in
-  match invoke_rel ctx id values_input with
-  | Ok _ ->
-      fail at
-        (F.asprintf "relation %s was matched when it should not"
-           (Il.Print.string_of_relid id))
-  | Fail _ -> Ok ctx
 
 (* If premise evaluation *)
 

@@ -10604,7 +10604,7 @@ def $coerce_binary(exprIL, exprIL) : (exprIL, exprIL) =
    clause 1(exprIL_a, exprIL_b) = (exprIL_a', exprIL_b)
       -- let `(%;%)`_annotIL(typ_a, ctk_a) = $annot(exprIL_a)
       -- let `(%;%)`_annotIL(typ_b, _ctk) = $annot(exprIL_b)
-      -- Type_alpha:/ `%~~%`(typ_a, typ_b)
+      -- if ~ Type_alpha: `%~~%`(typ_a, typ_b) holds
       -- Sub_impl: `%<<%`(typ_a, typ_b)
       -- let exprIL_a' = `CastE%%%`_exprIL(typ_b, exprIL_a, `(%;%)`_annotIL(typ_b, ctk_a))
 
@@ -10612,8 +10612,8 @@ def $coerce_binary(exprIL, exprIL) : (exprIL, exprIL) =
    clause 2(exprIL_a, exprIL_b) = (exprIL_a, exprIL_b')
       -- let `(%;%)`_annotIL(typ_a, _ctk) = $annot(exprIL_a)
       -- let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
-      -- Type_alpha:/ `%~~%`(typ_a, typ_b)
-      -- Sub_impl:/ `%<<%`(typ_a, typ_b)
+      -- if ~ Type_alpha: `%~~%`(typ_a, typ_b) holds
+      -- if ~ Sub_impl: `%<<%`(typ_a, typ_b) holds
       -- Sub_impl: `%<<%`(typ_b, typ_a)
       -- let exprIL_b' = `CastE%%%`_exprIL(typ_a, exprIL_b, `(%;%)`_annotIL(typ_a, ctk_b))
 
@@ -10628,7 +10628,7 @@ def $coerce_assign(exprIL, typ) : exprIL =
    ;; ../../../../spec/4d2-typing-subtyping.watsup:370.1-373.30
    clause 1(exprIL, typ_t) = `CastE%%%`_exprIL(typ_t, exprIL, `(%;%)`_annotIL(typ_t, ctk_f))
       -- let `(%;%)`_annotIL(typ_f, ctk_f) = $annot(exprIL)
-      -- Type_alpha:/ `%~~%`(typ_f, typ_t)
+      -- if ~ Type_alpha: `%~~%`(typ_f, typ_t) holds
       -- Sub_impl: `%<<%`(typ_f, typ_t)
 
 ;; ../../../../spec/4e-typing-expr.watsup:88.1-88.33
@@ -11193,7 +11193,7 @@ relation Select_case_keyset_ok: `%%%|-%:%`(cursor, context, typ, keyset, keysetI
       -- let synthtyp = typ' as synthtyp
       -- if synthtyp matches `SetT%`
       -- let `SetT%`_synthtyp(typ) = synthtyp
-      -- Type_alpha:/ `%~~%`(typ, typ_k)
+      -- if ~ Type_alpha: `%~~%`(typ, typ_k) holds
       -- Sub_impl: `%<<%`(typ, typ_k)
       -- let exprIL' = `CastE%%%`_exprIL(`SetT%`_synthtyp(typ_k) as typeIL, exprIL, `(%;%)`_annotIL(`SetT%`_synthtyp(typ_k) as typ, `DYN`_ctk()))
 
@@ -12688,7 +12688,7 @@ def $merge_cstr'(map<tid, typ?>, map<tid, typ?>, tid*, map<tid, typ?>) : map<tid
       -- let typ?' = $find_map<tid, typ?>(cstr_n, tid_h)
       -- if typ?' matches (_)
       -- let ?(typ_n) = typ?'
-      -- Sub_impl:/ `%<<%`(typ_o, typ_n)
+      -- if ~ Sub_impl: `%<<%`(typ_o, typ_n) holds
       -- Sub_impl: `%<<%`(typ_n, typ_o)
       -- let cstr' = $update_map<tid, typ?>(cstr, tid_h, ?(typ_o))
 

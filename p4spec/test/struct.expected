@@ -7383,22 +7383,26 @@ def $coerce_binary(exprIL_a, exprIL_b)
 4. Return (exprIL_a, exprIL_b)
 5. Let `(%;%)`_annotIL(typ_a, ctk_a) = $annot(exprIL_a)
 6. Let `(%;%)`_annotIL(typ_b, _ctk) = $annot(exprIL_b)
-7. Sub_impl: `%<<%`(typ_a, typ_b)
-8. Let exprIL_a' = `CastE%%%`_exprIL(typ_b, exprIL_a, `(%;%)`_annotIL(typ_b, ctk_a))
-9. Return (exprIL_a', exprIL_b)
-10. Let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
-11. Sub_impl: `%<<%`(typ_b, typ_a)
-12. Let exprIL_b' = `CastE%%%`_exprIL(typ_a, exprIL_b, `(%;%)`_annotIL(typ_a, ctk_b))
-13. Return (exprIL_a, exprIL_b')
+7. If ~ Type_alpha: `%~~%`(typ_a, typ_b) holds, then
+  1. Sub_impl: `%<<%`(typ_a, typ_b)
+  2. Let exprIL_a' = `CastE%%%`_exprIL(typ_b, exprIL_a, `(%;%)`_annotIL(typ_b, ctk_a))
+  3. Return (exprIL_a', exprIL_b)
+8. Let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
+9. If ~ Type_alpha: `%~~%`(typ_a, typ_b) holds, then
+  1. If ~ Sub_impl: `%<<%`(typ_a, typ_b) holds, then
+    1. Sub_impl: `%<<%`(typ_b, typ_a)
+    2. Let exprIL_b' = `CastE%%%`_exprIL(typ_a, exprIL_b, `(%;%)`_annotIL(typ_a, ctk_b))
+    3. Return (exprIL_a, exprIL_b')
 
-;; ../../../../spec/4d2-typing-subtyping.watsup:361.1-362.31
+;; ../../../../spec/4d2-typing-subtyping.watsup:363.1-364.31
 def $coerce_assign(exprIL, typ_t)
 1. Let `(%;%)`_annotIL(typ_f, _ctk) = $annot(exprIL)
 2. Type_alpha: `%~~%`(typ_f, typ_t)
 3. Return exprIL
 4. Let `(%;%)`_annotIL(typ_f, ctk_f) = $annot(exprIL)
-5. Sub_impl: `%<<%`(typ_f, typ_t)
-6. Return `CastE%%%`_exprIL(typ_t, exprIL, `(%;%)`_annotIL(typ_t, ctk_f))
+5. If ~ Type_alpha: `%~~%`(typ_f, typ_t) holds, then
+  1. Sub_impl: `%<<%`(typ_f, typ_t)
+  2. Return `CastE%%%`_exprIL(typ_t, exprIL, `(%;%)`_annotIL(typ_t, ctk_f))
 
 ;; ../../../../spec/4e-typing-expr.watsup:88.1-88.33
 def $compatible_bnot(typ)
@@ -7754,9 +7758,10 @@ relation Select_case_keyset_ok: cursor, C, typ_k, keyset
         1. Let `SetT%`_synthtyp(typ) = synthtyp
         2. Type_alpha: `%~~%`(typ, typ_k)
         3. Result in `ExprK%`_keysetIL(exprIL)
-        4. Sub_impl: `%<<%`(typ, typ_k)
-        5. Let exprIL' = `CastE%%%`_exprIL(`SetT%`_synthtyp(typ_k) as typeIL, exprIL, `(%;%)`_annotIL(`SetT%`_synthtyp(typ_k) as typ, `DYN`_ctk()))
-        6. Result in `ExprK%`_keysetIL(exprIL')
+        4. If ~ Type_alpha: `%~~%`(typ, typ_k) holds, then
+          1. Sub_impl: `%<<%`(typ, typ_k)
+          2. Let exprIL' = `CastE%%%`_exprIL(`SetT%`_synthtyp(typ_k) as typeIL, exprIL, `(%;%)`_annotIL(`SetT%`_synthtyp(typ_k) as typ, `DYN`_ctk()))
+          3. Result in `ExprK%`_keysetIL(exprIL')
     5. Let `(%;%)`_annotIL(typ, _ctk) = $annot(exprIL)
     6. Sub_impl: `%<<%`(typ, typ_k)
     7. Let exprIL' = `CastE%%%`_exprIL(`SetT%`_synthtyp(typ_k) as typeIL, exprIL, `(%;%)`_annotIL(`SetT%`_synthtyp(typ_k) as typ, `DYN`_ctk()))
@@ -8798,9 +8803,10 @@ def $merge_cstr'(cstr_o, cstr_n, tid*, cstr)
       2. Sub_impl: `%<<%`(typ_o, typ_n)
       3. Let cstr' = $update_map<tid, typ?>(cstr, tid_h, ?(typ_n))
       4. Return $merge_cstr'(cstr_o, cstr_n, tid_t*{tid_t <- tid_t*}, cstr')
-      5. Sub_impl: `%<<%`(typ_n, typ_o)
-      6. Let cstr' = $update_map<tid, typ?>(cstr, tid_h, ?(typ_o))
-      7. Return $merge_cstr'(cstr_o, cstr_n, tid_t*{tid_t <- tid_t*}, cstr')
+      5. If ~ Sub_impl: `%<<%`(typ_o, typ_n) holds, then
+        1. Sub_impl: `%<<%`(typ_n, typ_o)
+        2. Let cstr' = $update_map<tid, typ?>(cstr, tid_h, ?(typ_o))
+        3. Return $merge_cstr'(cstr_o, cstr_n, tid_t*{tid_t <- tid_t*}, cstr')
 
 ;; ../../../../spec/4h-typing-call.watsup:202.1-202.67
 def $merge_cstrs(cstr, map<tid, typ?>*)
@@ -8825,12 +8831,12 @@ def $resolve_cstrs(map<tid, typ?>')
       1. Let `MAP%`_map<tid, typ>(`PAIR%%`_pair<tid, typ>(tid_t', typ_t')*{tid_t' <- tid_t'*, typ_t' <- typ_t'*}) = $resolve_cstrs(`MAP%`_map<tid, typ?>(`PAIR%%`_pair<tid, typ?>(tid_t, typ_t?{typ_t <- typ_t?})*{tid_t <- tid_t*, typ_t? <- typ_t?*}))
       2. Return $add_map<tid, typ>(`MAP%`_map<tid, typ>(`PAIR%%`_pair<tid, typ>(tid_t', typ_t')*{tid_t' <- tid_t'*, typ_t' <- typ_t'*}), tid_h, typ_h)
 
-;; ../../../../spec/4h-typing-call.watsup:327.1-327.56
+;; ../../../../spec/4h-typing-call.watsup:328.1-328.56
 def $infer_targs(tid*{tid <- tid*}, `%%%%`_paramtyp(id, dir, typ_p, val?{val <- val?})*{dir <- dir*, id <- id*, typ_p <- typ_p*, val? <- val?*}, typ_a*{typ_a <- typ_a*})
 1. Let cstr = $empty_cstr(tid*{tid <- tid*})
 2. Let cstr' = $gen_cstrs(cstr, typ_p*{typ_p <- typ_p*}, typ_a*{typ_a <- typ_a*})
 3. Return $resolve_cstrs(cstr')
 
-;; ../../../../spec/4h-typing-call.watsup:433.1-434.43
+;; ../../../../spec/4h-typing-call.watsup:434.1-435.43
 def $is_table_apply_in_action_arg(argIL)
 1. Return false

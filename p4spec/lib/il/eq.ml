@@ -121,6 +121,8 @@ and eq_exp (exp_a : exp) (exp_b : exp) : bool =
       eq_exp exp_b_a exp_b_b && eq_path path_a path_b && eq_exp exp_f_a exp_f_b
   | CallE (id_a, targs_a, args_a), CallE (id_b, targs_b, args_b) ->
       eq_id id_a id_b && eq_targs targs_a targs_b && eq_args args_a args_b
+  | HoldE (id_a, (mixop_a, exps_a)), HoldE (id_b, (mixop_b, exps_b)) ->
+      eq_id id_a id_b && eq_mixop mixop_a mixop_b && eq_exps exps_a exps_b
   | IterE (exp_a, iterexp_a), IterE (exp_b, iterexp_b) ->
       eq_exp exp_a exp_b && eq_iterexp iterexp_a iterexp_b
   | _ -> false

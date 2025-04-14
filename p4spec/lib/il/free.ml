@@ -42,6 +42,7 @@ let rec free_exp (exp : exp) : t =
   | UpdE (exp_b, path, exp_f) ->
       free_exp exp_b + free_path path + free_exp exp_f
   | CallE (_, _, args) -> free_args args
+  | HoldE (_, (_, exps)) -> free_exps exps
   | IterE (exp, _) -> free_exp exp
 
 and free_exps (exps : exp list) : t =
@@ -70,7 +71,6 @@ and free_args (args : arg list) : t =
 let rec free_prem (prem : prem) : t =
   match prem.it with
   | RulePr (_, (_, exps)) -> free_exps exps
-  | RuleNotPr (_, (_, exps)) -> free_exps exps
   | IfPr exp -> free_exp exp
   | LetPr (exp_l, exp_r) -> free_exp exp_l + free_exp exp_r
   | ElsePr -> empty

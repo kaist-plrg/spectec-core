@@ -102,6 +102,10 @@ let rec collect_exp (dctx : Dctx.t) (exp : exp) : Bind.BEnv.t =
       let binds = collect_args dctx args in
       collect_noninvertible exp.at "call operator" binds;
       Bind.BEnv.empty
+  | HoldE (_, notexp) ->
+      let binds = notexp |> snd |> collect_exps dctx in
+      collect_noninvertible exp.at "holds operator" binds;
+      Bind.BEnv.empty
   | IterE (_, ((_, _ :: _) as iterexp)) ->
       error exp.at
         (Format.asprintf

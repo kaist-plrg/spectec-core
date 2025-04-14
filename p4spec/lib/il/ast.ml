@@ -112,6 +112,7 @@ and exp' =
   | SliceE of exp * exp * exp             (* exp `[` exp `:` exp `]` *)
   | UpdE of exp * path * exp              (* exp `[` path `=` exp `]` *)
   | CallE of id * targ list * arg list    (* $id`<` targ* `>``(` arg* `)` *)
+  | HoldE of id * notexp                  (* id `:` notexp `holds` *)
   | IterE of exp * iterexp                (* exp iterexp *)
 
 and notexp = mixop * exp list
@@ -174,7 +175,6 @@ and clause' = arg list * exp * prem list
 and prem = prem' phrase
 and prem' =
   | RulePr of id * notexp          (* id `:` notexp *)
-  | RuleNotPr of id * notexp       (* id `:/` notexp *)
   | IfPr of exp                    (* `if` exp *)
   | ElsePr                         (* `otherwise` *)
   | LetPr of exp * exp             (* `let` exp `=` exp *)

@@ -1296,18 +1296,30 @@ and elab_var_prem (ctx : Ctx.t) (id : id) (plaintyp : plaintyp) : Ctx.t =
 (* Elaboration of rule premises *)
 
 and elab_rule_prem (ctx : Ctx.t) (id : id) (exp : exp) : Ctx.t * Il.Ast.prem' =
-  let nottyp = Ctx.find_rel ctx id |> fst in
+  let nottyp, inputs = Ctx.find_rel ctx id in
   let+ ctx, notexp_il = elab_exp_not ctx (NotationT nottyp) exp in
-  let prem_il = Il.Ast.RulePr (id, notexp_il) in
-  (ctx, prem_il)
+  match inputs with
+  | [] ->
+      let exp_il = Il.Ast.HoldE (id, notexp_il) $$ (exp.at, Il.Ast.BoolT) in
+      let prem_il = Il.Ast.IfPr exp_il in
+      (ctx, prem_il)
+  | _ ->
+      let prem_il = Il.Ast.RulePr (id, notexp_il) in
+      (ctx, prem_il)
 
 (* Elaboration of negated rule premises *)
 
 and elab_rule_not_prem (ctx : Ctx.t) (id : id) (exp : exp) :
     Ctx.t * Il.Ast.prem' =
-  let nottyp = Ctx.find_rel ctx id |> fst in
+  let nottyp, inputs = Ctx.find_rel ctx id in
   let+ ctx, notexp_il = elab_exp_not ctx (NotationT nottyp) exp in
-  let prem_il = Il.Ast.RuleNotPr (id, notexp_il) in
+  let _, exps_il = notexp_il in
+  check
+    (Rel.Hint.is_conditional inputs exps_il)
+    exp.at "negated rule premises do not take inputs";
+  let exp_il = Il.Ast.HoldE (id, notexp_il) $$ (exp.at, Il.Ast.BoolT) in
+  let exp_il = Il.Ast.UnE (`NotOp, `BoolT, exp_il) $$ (exp.at, Il.Ast.BoolT) in
+  let prem_il = Il.Ast.IfPr exp_il in
   (ctx, prem_il)
 
 (* Elaboration of if premises *)
