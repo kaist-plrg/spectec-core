@@ -160,7 +160,7 @@ and rename_instr (rename : Rename.t) (instr : instr) : instr =
       let exp = rename_exp rename exp in
       RetDecI exp $ at
 
-(* Remove redundant let bindings from the code,
+(* Remove redundant, trivial let aliases from the code,
 
    let y = x; if (y == 0) then { let z = y + y; let y = 1; let k = y + y; ... }
 
@@ -194,6 +194,43 @@ let rec remove_let_alias (instrs : instr list) : instr list =
       | _ ->
           let instrs_t = remove_let_alias instrs_t in
           instr_h :: instrs_t)
+
+(* Remove redundant let and rule bindings from the code,
+   which appears due to the concatenation of multiple rules and clauses
+   This operation is safe because IL is already in SSA form *)
+
+let rec remove_redundant_binding_instr (instrs_seen : instr list)
+    (instr : instr) : instr list * instr option =
+  match instr.it with
+  | RuleI _ | LetI _ ->
+      if List.exists (Sl.Eq.eq_instr instr) instrs_seen then (instrs_seen, None)
+      else (instrs_seen @ [ instr ], Some instr)
+  | IfI (exp_cond, iterexps, instrs_then, instrs_else) ->
+      let instrs_then =
+        remove_redundant_binding_instrs ~instrs_seen instrs_then
+      in
+      let instrs_else =
+        remove_redundant_binding_instrs ~instrs_seen instrs_else
+      in
+      let instr =
+        IfI (exp_cond, iterexps, instrs_then, instrs_else) $ instr.at
+      in
+      (instrs_seen, Some instr)
+  | _ -> (instrs_seen, Some instr)
+
+and remove_redundant_binding_instrs ?(instrs_seen : instr list = [])
+    (instrs : instr list) : instr list =
+  List.fold_left
+    (fun (instrs_seen, instrs) instr ->
+      let instrs_seen, instr_opt =
+        remove_redundant_binding_instr instrs_seen instr
+      in
+      let instrs =
+        match instr_opt with Some instr -> instrs @ [ instr ] | None -> instrs
+      in
+      (instrs_seen, instrs))
+    (instrs_seen, []) instrs
+  |> snd
 
 (* Syntactic analysis of conditions
 
@@ -405,3 +442,15 @@ let rec merge_else (instrs : instr list) : instr list =
   | instr_h :: instrs_t ->
       let instrs_t = merge_else instrs_t in
       instr_h :: instrs_t
+
+(* Apply optimizations until it reaches a fixed point *)
+
+let rec optimize' (instrs : instr list) : instr list =
+  let instrs_optimized =
+    instrs |> remove_redundant_binding_instrs |> merge_if |> merge_else
+  in
+  if Sl.Eq.eq_instrs instrs instrs_optimized then instrs
+  else optimize' instrs_optimized
+
+let optimize (instrs : instr list) : instr list =
+  instrs |> remove_let_alias |> optimize'
