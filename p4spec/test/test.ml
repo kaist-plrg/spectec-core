@@ -50,6 +50,27 @@ let rec collect_files ~(suffix : string) dir =
       else files)
     [] files
 
+(* Elaboration test *)
+
+let elab specdir =
+  specdir
+  |> collect_files ~suffix:".watsup"
+  |> List.concat_map Frontend.Parse.parse_file
+  |> Elaborate.Elab.elab_spec
+
+let elab_test specdir =
+  let spec_il = elab specdir in
+  Il.Print.string_of_spec spec_il |> print_endline
+
+let elab_command =
+  Core.Command.basic ~summary:"run elaboration test"
+    (let open Core.Command.Let_syntax in
+     let open Core.Command.Param in
+      let%map specdir = flag "-s" (required string) ~doc:"p4 spec directory" in
+     fun () ->
+       try elab_test specdir
+       with Error (at, msg) -> Format.printf "Error on elaboration: %s\n" (string_of_error at msg))
+
 (* Typing test *)
 
 let run_typing negative spec_il includes_p4 filename_p4 =
@@ -118,11 +139,7 @@ let run_typing_test negative stat spec_il includes_p4 filename_p4 =
       }
 
 let run_typing_test_driver negative specdir includes_p4 testdir_p4 =
-  let spec =
-    collect_files ~suffix:".watsup" specdir
-    |> List.concat_map Frontend.Parse.parse_file
-  in
-  let spec_il = Elaborate.Elab.elab_spec spec in
+  let spec_il = elab specdir in
   let filenames_p4 = collect_files ~suffix:".p4" testdir_p4 in
   let total = List.length filenames_p4 in
   let stat = empty_stat in
@@ -147,8 +164,29 @@ let run_typing_command =
      and negative = flag "-neg" no_arg ~doc:"use negative typing rules" in
      fun () -> run_typing_test_driver negative specdir includes_p4 testdir_p4)
 
+(* Structuring test *)
+
+let structure specdir =
+  specdir |> elab |> Structure.Struct.struct_spec
+
+let structure_test specdir =
+  let spec_sl = structure specdir in
+  Sl.Print.string_of_spec spec_sl |> print_endline
+
+let structure_command =
+  Core.Command.basic ~summary:"run structuring test"
+    (let open Core.Command.Let_syntax in
+     let open Core.Command.Param in
+     let%map specdir = flag "-s" (required string) ~doc:"p4 spec directory" in
+     fun () ->
+       try structure_test specdir
+       with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+
 let command =
   Core.Command.group ~summary:"p4spec-test"
-    [ ("run-typing", run_typing_command) ]
+    [ ("elab", elab_command);
+      ("run-typing", run_typing_command);
+      ("struct", structure_command);
+    ]
 
 let () = Command_unix.run ~version command
