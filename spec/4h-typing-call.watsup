@@ -306,6 +306,7 @@ def $merge_cstr'(cstr_o, cstr_n, tid_h :: tid_t*, cstr) = $merge_cstr'(cstr_o, c
 def $merge_cstr'(cstr_o, cstr_n, tid_h :: tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
   -- if $find_map<tid, typ?>(cstr_o, tid_h) = typ_o
   -- if $find_map<tid, typ?>(cstr_n, tid_h) = typ_n
+  -- Sub_impl:/ typ_o << typ_n
   -- Sub_impl: typ_n << typ_o
   -- if cstr' = $update_map<tid, typ?>(cstr, tid_h, typ_o)
 

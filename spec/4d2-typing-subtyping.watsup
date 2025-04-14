@@ -347,17 +347,19 @@ def $coerce_binary(exprIL_a, exprIL_b) = (exprIL_a, exprIL_b)
 def $coerce_binary(exprIL_a, exprIL_b) = (exprIL_a', exprIL_b)
   -- if `(typ_a; ctk_a) = $annot(exprIL_a)
   -- if `(typ_b; _) = $annot(exprIL_b)
+  -- Type_alpha:/ typ_a ~~ typ_b
   -- Sub_impl: typ_a << typ_b
   -- if exprIL_a' = CastE typ_b exprIL_a `(typ_b; ctk_a)
 
 def $coerce_binary(exprIL_a, exprIL_b) = (exprIL_a, exprIL_b')
   -- if `(typ_a; _) = $annot(exprIL_a)
   -- if `(typ_b; ctk_b) = $annot(exprIL_b)
+  -- Type_alpha:/ typ_a ~~ typ_b
+  -- Sub_impl:/ typ_a << typ_b
   -- Sub_impl: typ_b << typ_a
   -- if exprIL_b' = CastE typ_a exprIL_b `(typ_a; ctk_b)
 
 
-;; (TODO) This should better be a relation
 dec $coerce_assign(exprIL, typ) : exprIL
     hint(show COERCE %1 to %2)
 
@@ -367,4 +369,5 @@ def $coerce_assign(exprIL, typ_t) = exprIL
 
 def $coerce_assign(exprIL, typ_t) = CastE typ_t exprIL `(typ_t; ctk_f)
   -- if `(typ_f; ctk_f) = $annot(exprIL)
+  -- Type_alpha:/ typ_f ~~ typ_t
   -- Sub_impl: typ_f << typ_t

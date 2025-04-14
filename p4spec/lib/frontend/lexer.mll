@@ -156,6 +156,7 @@ and token = parse
   | "}" { RBRACE }
   | ":" { COLON }
   | "::" { COLONCOLON }
+  | ":/" { COLONSLASH }
   | ";" { SEMICOLON }
   | "," { COMMA }
   | "." { DOT }

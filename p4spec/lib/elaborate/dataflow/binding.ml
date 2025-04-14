@@ -113,6 +113,7 @@ let rec analyze_prem (dctx : Dctx.t) (prem : prem) :
     Dctx.t * VEnv.t * prem * prem list =
   match prem.it with
   | RulePr (id, notexp) -> analyze_rule_prem dctx prem.at id notexp
+  | RuleNotPr (id, notexp) -> analyze_rule_not_prem dctx prem.at id notexp
   | IfPr exp -> analyze_if_prem dctx prem.at exp
   | ElsePr -> (dctx, VEnv.empty, prem, [])
   | LetPr _ ->
@@ -142,6 +143,18 @@ and analyze_rule_prem (dctx : Dctx.t) (at : region) (id : id) (notexp : notexp)
   let notexp = (mixop, exps) in
   let prem = RulePr (id, notexp) $ at in
   (dctx, venv, prem, sideconditions)
+
+and analyze_rule_not_prem (dctx : Dctx.t) (at : region) (id : id)
+    (notexp : notexp) : Dctx.t * VEnv.t * prem * prem list =
+  let mixop, exps = notexp in
+  let hint = Dctx.find_hint dctx id in
+  let exps_input, exps_output = Hint.split_exps hint exps in
+  check (exps_output = []) at "negated rule premise should not produce outputs";
+  List.map snd exps_input |> analyze_exps_as_bound dctx;
+  let exps = Hint.combine_exps exps_input exps_output in
+  let notexp = (mixop, exps) in
+  let prem = RuleNotPr (id, notexp) $ at in
+  (dctx, VEnv.empty, prem, [])
 
 and analyze_if_eq_prem (dctx : Dctx.t) (at : region) (note : typ')
     (optyp : optyp) (exp_l : exp) (exp_r : exp) :

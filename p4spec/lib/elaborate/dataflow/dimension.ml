@@ -246,6 +246,12 @@ and annotate_prem (binds : VEnv.t) (bounds : VEnv.t) (prem : prem) :
       let notexp = (mixop, exps) in
       let prem = RulePr (id, notexp) $ at in
       (occurs, prem)
+  | RuleNotPr (id, notexp) ->
+      let mixop, exps = notexp in
+      let occurs, exps = annotate_exps bounds exps in
+      let notexp = (mixop, exps) in
+      let prem = RuleNotPr (id, notexp) $ at in
+      (occurs, prem)
   | IfPr exp ->
       let occurs, exp = annotate_exp bounds exp in
       let prem = IfPr exp $ at in

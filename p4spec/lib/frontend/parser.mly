@@ -42,7 +42,7 @@ let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
 %}
 
 %token LPAREN RPAREN LBRACK RBRACK LBRACE RBRACE
-%token COLON COLONCOLON SEMICOLON COMMA DOT DOTDOT DOTDOTDOT BAR DASH
+%token COLON COLONCOLON COLONSLASH SEMICOLON COMMA DOT DOTDOT DOTDOTDOT BAR DASH
 %token BIGAND BIGOR BIGADD BIGMUL BIGCAT
 %token COMMA_NL NL_BAR NL_NL NL_NL_NL
 %token EQ NE LANGLE RANGLE RANGLE_LPAREN LE GE APPROX EQUIV ASSIGN SUB SUP
@@ -630,6 +630,7 @@ prem : prem_ { $1 @@@ $sloc }
 prem_ :
   | prem_post_ { $1 }
   | relid COLON exp { RulePr ($1, $3) }
+  | relid COLONSLASH exp { RuleNotPr ($1, $3) }
   | VAR varid_bind COLON plaintyp { VarPr ($2, $4) }
   | IF exp
     { 

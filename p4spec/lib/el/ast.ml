@@ -145,6 +145,7 @@ and prem = prem' phrase
 and prem' =
   | VarPr of id * plaintyp         (* id `:` plaintyp *)
   | RulePr of id * exp             (* id `:` exp *)
+  | RuleNotPr of id * exp          (* id `:/` exp *)
   | IfPr of exp                    (* `if` exp *)
   | ElsePr                         (* `otherwise` *)
   | IterPr of prem * iter          (* prem iter *)

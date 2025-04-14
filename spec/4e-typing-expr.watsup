@@ -521,7 +521,7 @@ rule Select_case_keyset_ok/exprk-sett:
   -- Expr_ok: LOCAL C |- expr : exprIL
   -- if `(SetT typ; _) = $annot(exprIL)
   ----
-  ;; (TODO) This is a fall-through case
+  -- Type_alpha:/ typ ~~ typ_k
   -- Sub_impl: typ << typ_k
   -- if exprIL' = CastE (SetT typ_k) exprIL `(SetT typ_k; DYN)
 

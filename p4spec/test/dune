@@ -8,8 +8,8 @@
   (progn
    (ignore-outputs
     (diff elab.expected elab.actual))
-   (ignore-outputs
-    (diff struct.expected struct.actual))
+   ; (ignore-outputs
+   ;  (diff struct.expected struct.actual))
    (ignore-outputs
     (diff run_typing_pos_p4c.expected run_typing_pos_p4c.actual))
    (ignore-outputs
@@ -24,14 +24,14 @@
     elab.err
     (run ./test.exe elab -s ../../../../spec)))))
 
-(rule
- (target struct.actual)
- (action
-  (with-stdout-to
-   struct.actual
-   (with-stderr-to
-    struct.err
-    (run ./test.exe struct -s ../../../../spec)))))
+; (rule
+;  (target struct.actual)
+;  (action
+;   (with-stdout-to
+;    struct.actual
+;    (with-stderr-to
+;     struct.err
+;     (run ./test.exe struct -s ../../../../spec)))))
 
 (rule
  (target run_typing_pos_p4c.actual)

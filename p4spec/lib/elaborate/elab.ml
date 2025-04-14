@@ -8,9 +8,6 @@ open Util.Source
 
 (* Checks *)
 
-let check (b : bool) (at : region) (msg : string) : unit =
-  if not b then error at msg
-
 let distinct (eq : 'a -> 'a -> bool) (xs : 'a list) : bool =
   let rec distinct' xs =
     match xs with
@@ -1264,6 +1261,7 @@ and elab_prem' (ctx : Ctx.t) (prem : prem') : Ctx.t * Il.Ast.prem' option =
   match prem with
   | VarPr (id, plaintyp) -> elab_var_prem ctx id plaintyp |> wrap_none
   | RulePr (id, exp) -> elab_rule_prem ctx id exp |> wrap_some
+  | RuleNotPr (id, exp) -> elab_rule_not_prem ctx id exp |> wrap_some
   | IfPr exp -> elab_if_prem ctx exp |> wrap_some
   | ElsePr -> elab_else_prem () |> wrap_ctx |> wrap_some
   | IterPr (prem, iter) -> elab_iter_prem ctx prem iter |> wrap_some
@@ -1301,6 +1299,15 @@ and elab_rule_prem (ctx : Ctx.t) (id : id) (exp : exp) : Ctx.t * Il.Ast.prem' =
   let nottyp = Ctx.find_rel ctx id |> fst in
   let+ ctx, notexp_il = elab_exp_not ctx (NotationT nottyp) exp in
   let prem_il = Il.Ast.RulePr (id, notexp_il) in
+  (ctx, prem_il)
+
+(* Elaboration of negated rule premises *)
+
+and elab_rule_not_prem (ctx : Ctx.t) (id : id) (exp : exp) :
+    Ctx.t * Il.Ast.prem' =
+  let nottyp = Ctx.find_rel ctx id |> fst in
+  let+ ctx, notexp_il = elab_exp_not ctx (NotationT nottyp) exp in
+  let prem_il = Il.Ast.RuleNotPr (id, notexp_il) in
   (ctx, prem_il)
 
 (* Elaboration of if premises *)

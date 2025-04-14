@@ -223,6 +223,7 @@ and string_of_prem prem =
   | VarPr (id, plaintyp) ->
       string_of_varid id ^ " : " ^ string_of_plaintyp plaintyp
   | RulePr (id, exp) -> string_of_relid id ^ ": " ^ string_of_exp exp
+  | RuleNotPr (id, exp) -> string_of_relid id ^ ":/ " ^ string_of_exp exp
   | IfPr exp -> "if " ^ string_of_exp exp
   | ElsePr -> "otherwise"
   | IterPr (({ it = IterPr _; _ } as prem), iter) ->

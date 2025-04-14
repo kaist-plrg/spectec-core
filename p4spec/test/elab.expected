@@ -9946,42 +9946,42 @@ relation Call_convention_arg_ok: `%%%|-%~~%:%`(cursor, context, actctxt, paramty
 ;; ../../../../spec/4b-typing-relation.watsup:137.1-139.23
 relation Call_site_ok: `%%|-%:CALLSITE_OK`(cursor, context, functyp)
 
-   ;; ../../../../spec/4h-typing-call.watsup:338.1-340.56
+   ;; ../../../../spec/4h-typing-call.watsup:339.1-341.56
    rule block-externfunc: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `BLOCK`
       -- if functyp matches `ExternFuncT%%`
       -- let `ExternFuncT%%`_functyp(_paramtyp*, _typ) = functyp
       -- if ((C.BLOCK.KIND = `PARSER`_bkind()) \/ (C.BLOCK.KIND = `CONTROL`_bkind()))
 
-   ;; ../../../../spec/4h-typing-call.watsup:342.1-344.56
+   ;; ../../../../spec/4h-typing-call.watsup:343.1-345.56
    rule block-builtinmethod: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `BLOCK`
       -- if functyp matches `BuiltinMethodT%%`
       -- let `BuiltinMethodT%%`_functyp(_paramtyp*, _typ) = functyp
       -- if ((C.BLOCK.KIND = `PARSER`_bkind()) \/ (C.BLOCK.KIND = `CONTROL`_bkind()))
 
-   ;; ../../../../spec/4h-typing-call.watsup:346.1-348.56
+   ;; ../../../../spec/4h-typing-call.watsup:347.1-349.56
    rule block-externmethod: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `BLOCK`
       -- if functyp matches `ExternMethodT%%`
       -- let `ExternMethodT%%`_functyp(_paramtyp*, _typ) = functyp
       -- if ((C.BLOCK.KIND = `PARSER`_bkind()) \/ (C.BLOCK.KIND = `CONTROL`_bkind()))
 
-   ;; ../../../../spec/4h-typing-call.watsup:350.1-352.56
+   ;; ../../../../spec/4h-typing-call.watsup:351.1-353.56
    rule block-externabstractmethod: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `BLOCK`
       -- if functyp matches `ExternAbstractMethodT%%`
       -- let `ExternAbstractMethodT%%`_functyp(_paramtyp*, _typ) = functyp
       -- if ((C.BLOCK.KIND = `PARSER`_bkind()) \/ (C.BLOCK.KIND = `CONTROL`_bkind()))
 
-   ;; ../../../../spec/4h-typing-call.watsup:354.1-358.43
+   ;; ../../../../spec/4h-typing-call.watsup:355.1-359.43
    rule local-action: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `LOCAL`
       -- if functyp matches `ActionT%`
       -- let `ActionT%`_functyp(_paramtyp*) = functyp
       -- if (((C.LOCAL.KIND = `ACTION`_lkind()) \/ (C.LOCAL.KIND = `CONTROLAPPLYMETHOD`_lkind())) \/ (C.LOCAL.KIND = `TABLEAPPLYMETHOD`_lkind()))
 
-   ;; ../../../../spec/4h-typing-call.watsup:360.1-362.32
+   ;; ../../../../spec/4h-typing-call.watsup:361.1-363.32
    rule local-func-func: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `LOCAL`
       -- if functyp matches `FuncT%%`
@@ -9990,14 +9990,14 @@ relation Call_site_ok: `%%|-%:CALLSITE_OK`(cursor, context, functyp)
       -- if lkind matches `FUNC%`
       -- let `FUNC%`_lkind(typ) = lkind
 
-   ;; ../../../../spec/4h-typing-call.watsup:364.1-369.43
+   ;; ../../../../spec/4h-typing-call.watsup:365.1-370.43
    rule local-func-else: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `LOCAL`
       -- if functyp matches `FuncT%%`
       -- let `FuncT%%`_functyp(_paramtyp*, _typ) = functyp
       -- if ((((C.LOCAL.KIND = `ACTION`_lkind()) \/ (C.LOCAL.KIND = `PARSERSTATE`_lkind())) \/ (C.LOCAL.KIND = `CONTROLAPPLYMETHOD`_lkind())) \/ (C.LOCAL.KIND = `TABLEAPPLYMETHOD`_lkind()))
 
-   ;; ../../../../spec/4h-typing-call.watsup:371.1-373.48
+   ;; ../../../../spec/4h-typing-call.watsup:372.1-374.48
    rule local-externfunc-externabstractmethod: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `LOCAL`
       -- if functyp matches `ExternFuncT%%`
@@ -10006,14 +10006,14 @@ relation Call_site_ok: `%%|-%:CALLSITE_OK`(cursor, context, functyp)
       -- if lkind matches `EXTERNABSTRACTMETHOD%`
       -- let `EXTERNABSTRACTMETHOD%`_lkind(typ) = lkind
 
-   ;; ../../../../spec/4h-typing-call.watsup:375.1-380.43
+   ;; ../../../../spec/4h-typing-call.watsup:376.1-381.43
    rule local-externfunc-else: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `LOCAL`
       -- if functyp matches `ExternFuncT%%`
       -- let `ExternFuncT%%`_functyp(_paramtyp*, _typ) = functyp
       -- if ((((C.LOCAL.KIND = `ACTION`_lkind()) \/ (C.LOCAL.KIND = `PARSERSTATE`_lkind())) \/ (C.LOCAL.KIND = `CONTROLAPPLYMETHOD`_lkind())) \/ (C.LOCAL.KIND = `TABLEAPPLYMETHOD`_lkind()))
 
-   ;; ../../../../spec/4h-typing-call.watsup:382.1-384.32
+   ;; ../../../../spec/4h-typing-call.watsup:383.1-385.32
    rule local-builtinmethod-func: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `LOCAL`
       -- if functyp matches `BuiltinMethodT%%`
@@ -10022,7 +10022,7 @@ relation Call_site_ok: `%%|-%:CALLSITE_OK`(cursor, context, functyp)
       -- if lkind matches `FUNC%`
       -- let `FUNC%`_lkind(typ) = lkind
 
-   ;; ../../../../spec/4h-typing-call.watsup:386.1-388.48
+   ;; ../../../../spec/4h-typing-call.watsup:387.1-389.48
    rule local-builtinmethod-externabstractmethod: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `LOCAL`
       -- if functyp matches `BuiltinMethodT%%`
@@ -10031,14 +10031,14 @@ relation Call_site_ok: `%%|-%:CALLSITE_OK`(cursor, context, functyp)
       -- if lkind matches `EXTERNABSTRACTMETHOD%`
       -- let `EXTERNABSTRACTMETHOD%`_lkind(typ) = lkind
 
-   ;; ../../../../spec/4h-typing-call.watsup:390.1-395.43
+   ;; ../../../../spec/4h-typing-call.watsup:391.1-396.43
    rule local-builtinmethod-else: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `LOCAL`
       -- if functyp matches `BuiltinMethodT%%`
       -- let `BuiltinMethodT%%`_functyp(_paramtyp*, _typ) = functyp
       -- if ((((C.LOCAL.KIND = `ACTION`_lkind()) \/ (C.LOCAL.KIND = `PARSERSTATE`_lkind())) \/ (C.LOCAL.KIND = `CONTROLAPPLYMETHOD`_lkind())) \/ (C.LOCAL.KIND = `TABLEAPPLYMETHOD`_lkind()))
 
-   ;; ../../../../spec/4h-typing-call.watsup:397.1-399.48
+   ;; ../../../../spec/4h-typing-call.watsup:398.1-400.48
    rule local-externmethod-externabstractmethod: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `LOCAL`
       -- if functyp matches `ExternMethodT%%`
@@ -10047,14 +10047,14 @@ relation Call_site_ok: `%%|-%:CALLSITE_OK`(cursor, context, functyp)
       -- if lkind matches `EXTERNABSTRACTMETHOD%`
       -- let `EXTERNABSTRACTMETHOD%`_lkind(typ) = lkind
 
-   ;; ../../../../spec/4h-typing-call.watsup:401.1-406.43
+   ;; ../../../../spec/4h-typing-call.watsup:402.1-407.43
    rule local-externmethod-else: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `LOCAL`
       -- if functyp matches `ExternMethodT%%`
       -- let `ExternMethodT%%`_functyp(_paramtyp*, _typ) = functyp
       -- if ((((C.LOCAL.KIND = `ACTION`_lkind()) \/ (C.LOCAL.KIND = `PARSERSTATE`_lkind())) \/ (C.LOCAL.KIND = `CONTROLAPPLYMETHOD`_lkind())) \/ (C.LOCAL.KIND = `TABLEAPPLYMETHOD`_lkind()))
 
-   ;; ../../../../spec/4h-typing-call.watsup:408.1-410.48
+   ;; ../../../../spec/4h-typing-call.watsup:409.1-411.48
    rule local-externabstractmethod-externabstractmethod: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `LOCAL`
       -- if functyp matches `ExternAbstractMethodT%%`
@@ -10063,28 +10063,28 @@ relation Call_site_ok: `%%|-%:CALLSITE_OK`(cursor, context, functyp)
       -- if lkind matches `EXTERNABSTRACTMETHOD%`
       -- let `EXTERNABSTRACTMETHOD%`_lkind(typ) = lkind
 
-   ;; ../../../../spec/4h-typing-call.watsup:412.1-417.43
+   ;; ../../../../spec/4h-typing-call.watsup:413.1-418.43
    rule local-externabstractmethod-else: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `LOCAL`
       -- if functyp matches `ExternAbstractMethodT%%`
       -- let `ExternAbstractMethodT%%`_functyp(_paramtyp*, _typ) = functyp
       -- if ((((C.LOCAL.KIND = `ACTION`_lkind()) \/ (C.LOCAL.KIND = `PARSERSTATE`_lkind())) \/ (C.LOCAL.KIND = `CONTROLAPPLYMETHOD`_lkind())) \/ (C.LOCAL.KIND = `TABLEAPPLYMETHOD`_lkind()))
 
-   ;; ../../../../spec/4h-typing-call.watsup:419.1-421.35
+   ;; ../../../../spec/4h-typing-call.watsup:420.1-422.35
    rule local-parserapplymethod: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `LOCAL`
       -- if functyp matches `ParserApplyMethodT%`
       -- let `ParserApplyMethodT%`_functyp(_paramtyp*) = functyp
       -- if (C.LOCAL.KIND = `PARSERSTATE`_lkind())
 
-   ;; ../../../../spec/4h-typing-call.watsup:423.1-425.42
+   ;; ../../../../spec/4h-typing-call.watsup:424.1-426.42
    rule local-controlapplymethod: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `LOCAL`
       -- if functyp matches `ControlApplyMethodT%`
       -- let `ControlApplyMethodT%`_functyp(_paramtyp*) = functyp
       -- if (C.LOCAL.KIND = `CONTROLAPPLYMETHOD`_lkind())
 
-   ;; ../../../../spec/4h-typing-call.watsup:427.1-430.43
+   ;; ../../../../spec/4h-typing-call.watsup:428.1-431.43
    rule local-tableapplymethod: `%%|-%:CALLSITE_OK`(cursor, C, functyp)
       -- if cursor matches `LOCAL`
       -- if functyp matches `TableApplyMethodT%`
@@ -10094,7 +10094,7 @@ relation Call_site_ok: `%%|-%:CALLSITE_OK`(cursor, context, functyp)
 ;; ../../../../spec/4b-typing-relation.watsup:140.1-142.35
 relation Call_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, functyp, targIL*, arg*, id*, typ, targIL*, argIL*)
 
-   ;; ../../../../spec/4h-typing-call.watsup:440.1-453.76
+   ;; ../../../../spec/4h-typing-call.watsup:441.1-454.76
    rule actiont: `%%%|-%%%%:%%%`(p, C, tid*, functyp, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, `VoidT`_primtyp() as typ, [], argIL*{argIL <- argIL*})
       -- if tid* matches []
       -- if functyp matches `ActionT%`
@@ -10108,7 +10108,7 @@ relation Call_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, functyp, targIL*, arg*,
       -- (if ~ $is_table_apply_in_action_arg(argIL))*{argIL <- argIL*}
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(p, C, `ACT`_actctxt(), pt'', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt'' <- pt''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:455.1-468.78
+   ;; ../../../../spec/4h-typing-call.watsup:456.1-469.78
    rule extern-funct-no-targsinfer: `%%%|-%%%%:%%%`(p, C, tid*, functyp, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_r, targIL*{targIL <- targIL*}, argIL''*{argIL'' <- argIL''*})
       -- if tid* matches []
       -- if functyp matches `ExternFuncT%%`
@@ -10121,7 +10121,7 @@ relation Call_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, functyp, targIL*, arg*,
       -- Call_site_ok: `%%|-%:CALLSITE_OK`(p, C, `ExternFuncT%%`_functyp(pt*{pt <- pt*}, typ_r))
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(p, C, `NOACT`_actctxt(), pt'', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt'' <- pt''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:470.1-490.79
+   ;; ../../../../spec/4h-typing-call.watsup:471.1-491.79
    rule extern-funct-targsinfer: `%%%|-%%%%:%%%`(p, C, tid_fresh*{tid_fresh <- tid_fresh*}, functyp, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_r', targIL''*{targIL'' <- targIL''*}, argIL''*{argIL'' <- argIL''*})
       -- if functyp matches `ExternFuncT%%`
       -- let `ExternFuncT%%`_functyp(pt*{pt <- pt*}, typ_r) = functyp
@@ -10139,7 +10139,7 @@ relation Call_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, functyp, targIL*, arg*,
       -- Call_site_ok: `%%|-%:CALLSITE_OK`(p, C, `ExternFuncT%%`_functyp(pt'''*{pt''' <- pt'''*}, typ_r'))
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(p, C, `NOACT`_actctxt(), pt''', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt''' <- pt'''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:492.1-505.78
+   ;; ../../../../spec/4h-typing-call.watsup:493.1-506.78
    rule funct-no-targsinfer: `%%%|-%%%%:%%%`(p, C, tid*, functyp, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_r, targIL*{targIL <- targIL*}, argIL''*{argIL'' <- argIL''*})
       -- if tid* matches []
       -- if functyp matches `FuncT%%`
@@ -10152,7 +10152,7 @@ relation Call_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, functyp, targIL*, arg*,
       -- Call_site_ok: `%%|-%:CALLSITE_OK`(p, C, `FuncT%%`_functyp(pt*{pt <- pt*}, typ_r))
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(p, C, `NOACT`_actctxt(), pt'', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt'' <- pt''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:507.1-527.79
+   ;; ../../../../spec/4h-typing-call.watsup:508.1-528.79
    rule funct-targsinfer: `%%%|-%%%%:%%%`(p, C, tid_fresh*{tid_fresh <- tid_fresh*}, functyp, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_r', targIL''*{targIL'' <- targIL''*}, argIL''*{argIL'' <- argIL''*})
       -- if functyp matches `FuncT%%`
       -- let `FuncT%%`_functyp(pt*{pt <- pt*}, typ_r) = functyp
@@ -10170,7 +10170,7 @@ relation Call_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, functyp, targIL*, arg*,
       -- Call_site_ok: `%%|-%:CALLSITE_OK`(p, C, `FuncT%%`_functyp(pt'''*{pt''' <- pt'''*}, typ_r'))
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(p, C, `NOACT`_actctxt(), pt''', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt''' <- pt'''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:529.1-541.78
+   ;; ../../../../spec/4h-typing-call.watsup:530.1-542.78
    rule builtin-methodt: `%%%|-%%%%:%%%`(p, C, tid*, functyp, targIL*, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_r, [], argIL''*{argIL'' <- argIL''*})
       -- if tid* matches []
       -- if functyp matches `BuiltinMethodT%%`
@@ -10184,7 +10184,7 @@ relation Call_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, functyp, targIL*, arg*,
       -- Call_site_ok: `%%|-%:CALLSITE_OK`(p, C, `BuiltinMethodT%%`_functyp(pt*{pt <- pt*}, typ_r))
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(p, C, `NOACT`_actctxt(), pt'', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt'' <- pt''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:543.1-556.78
+   ;; ../../../../spec/4h-typing-call.watsup:544.1-557.78
    rule extern-methodt-no-targsinfer: `%%%|-%%%%:%%%`(p, C, tid*, functyp, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_r, targIL*{targIL <- targIL*}, argIL''*{argIL'' <- argIL''*})
       -- if tid* matches []
       -- if functyp matches `ExternMethodT%%`
@@ -10197,7 +10197,7 @@ relation Call_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, functyp, targIL*, arg*,
       -- Call_site_ok: `%%|-%:CALLSITE_OK`(p, C, `ExternMethodT%%`_functyp(pt*{pt <- pt*}, typ_r))
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(p, C, `NOACT`_actctxt(), pt'', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt'' <- pt''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:558.1-578.79
+   ;; ../../../../spec/4h-typing-call.watsup:559.1-579.79
    rule extern-methodt-targsinfer: `%%%|-%%%%:%%%`(p, C, tid_fresh*{tid_fresh <- tid_fresh*}, functyp, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_r', targIL''*{targIL'' <- targIL''*}, argIL''*{argIL'' <- argIL''*})
       -- if functyp matches `ExternMethodT%%`
       -- let `ExternMethodT%%`_functyp(pt*{pt <- pt*}, typ_r) = functyp
@@ -10215,7 +10215,7 @@ relation Call_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, functyp, targIL*, arg*,
       -- Call_site_ok: `%%|-%:CALLSITE_OK`(p, C, `ExternMethodT%%`_functyp(pt'''*{pt''' <- pt'''*}, typ_r'))
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(p, C, `NOACT`_actctxt(), pt''', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt''' <- pt'''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:580.1-593.78
+   ;; ../../../../spec/4h-typing-call.watsup:581.1-594.78
    rule extern-abstract-methodt-no-targsinfer: `%%%|-%%%%:%%%`(p, C, tid*, functyp, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_r, targIL*{targIL <- targIL*}, argIL''*{argIL'' <- argIL''*})
       -- if tid* matches []
       -- if functyp matches `ExternAbstractMethodT%%`
@@ -10228,7 +10228,7 @@ relation Call_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, functyp, targIL*, arg*,
       -- Call_site_ok: `%%|-%:CALLSITE_OK`(p, C, `ExternAbstractMethodT%%`_functyp(pt*{pt <- pt*}, typ_r))
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(p, C, `NOACT`_actctxt(), pt'', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt'' <- pt''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:595.1-615.79
+   ;; ../../../../spec/4h-typing-call.watsup:596.1-616.79
    rule extern-abstract-methodt-targsinfer: `%%%|-%%%%:%%%`(p, C, tid_fresh*{tid_fresh <- tid_fresh*}, functyp, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_r', targIL''*{targIL'' <- targIL''*}, argIL''*{argIL'' <- argIL''*})
       -- if functyp matches `ExternAbstractMethodT%%`
       -- let `ExternAbstractMethodT%%`_functyp(pt*{pt <- pt*}, typ_r) = functyp
@@ -10246,7 +10246,7 @@ relation Call_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, functyp, targIL*, arg*,
       -- Call_site_ok: `%%|-%:CALLSITE_OK`(p, C, `ExternAbstractMethodT%%`_functyp(pt'''*{pt''' <- pt'''*}, typ_r'))
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(p, C, `NOACT`_actctxt(), pt''', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt''' <- pt'''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:617.1-630.78
+   ;; ../../../../spec/4h-typing-call.watsup:618.1-631.78
    rule parser-apply-methodt: `%%%|-%%%%:%%%`(p, C, tid*, functyp, targIL*, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, `VoidT`_primtyp() as typ, [], argIL''*{argIL'' <- argIL''*})
       -- if tid* matches []
       -- if functyp matches `ParserApplyMethodT%`
@@ -10260,7 +10260,7 @@ relation Call_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, functyp, targIL*, arg*,
       -- Call_site_ok: `%%|-%:CALLSITE_OK`(p, C, `ParserApplyMethodT%`_functyp(pt*{pt <- pt*}))
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(p, C, `NOACT`_actctxt(), pt'', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt'' <- pt''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:632.1-645.78
+   ;; ../../../../spec/4h-typing-call.watsup:633.1-646.78
    rule control-apply-methodt: `%%%|-%%%%:%%%`(p, C, tid*, functyp, targIL*, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, `VoidT`_primtyp() as typ, [], argIL''*{argIL'' <- argIL''*})
       -- if tid* matches []
       -- if functyp matches `ControlApplyMethodT%`
@@ -10274,7 +10274,7 @@ relation Call_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, functyp, targIL*, arg*,
       -- Call_site_ok: `%%|-%:CALLSITE_OK`(p, C, `ControlApplyMethodT%`_functyp(pt*{pt <- pt*}))
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(p, C, `NOACT`_actctxt(), pt'', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt'' <- pt''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:647.1-651.64
+   ;; ../../../../spec/4h-typing-call.watsup:648.1-652.64
    rule table-apply-methodt: `%%%|-%%%%:%%%`(p, C, tid*, functyp, targIL*, arg*, id*, typ_r, [], [])
       -- if tid* matches []
       -- if functyp matches `TableApplyMethodT%`
@@ -10421,7 +10421,7 @@ relation MethodType_ok: `%%|-%%%%:%%%%`(cursor, context, expr, member, targIL*, 
 ;; ../../../../spec/4b-typing-relation.watsup:157.1-159.29
 relation ConsType_ok: `%%|-%%%:%%%`(cursor, context, name, targIL*, arg*, constyp, tid*, id*)
 
-   ;; ../../../../spec/4h-typing-call.watsup:657.1-660.61
+   ;; ../../../../spec/4h-typing-call.watsup:658.1-661.61
    rule : `%%|-%%%:%%%`(p, C, name, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, ct, tid_fresh*{tid_fresh <- tid_fresh*}, id_deft*{id_deft <- id_deft*})
       -- let (cid, cd, id_deft*{id_deft <- id_deft*}) = $find_consdef(`GLOBAL`_cursor(), C, name, arg*{arg <- arg*})
       -- let (ct, tid_fresh*{tid_fresh <- tid_fresh*}) = $specialize_consdef(cd, targIL*{targIL <- targIL*})
@@ -10429,41 +10429,41 @@ relation ConsType_ok: `%%|-%%%:%%%`(cursor, context, name, targIL*, arg*, consty
 ;; ../../../../spec/4b-typing-relation.watsup:165.1-167.23
 relation Inst_site_ok: `%%|-%:INSTSITE_OK`(cursor, context, constyp)
 
-   ;; ../../../../spec/4h-typing-call.watsup:666.1-669.52
+   ;; ../../../../spec/4h-typing-call.watsup:667.1-670.52
    rule global: `%%|-%:INSTSITE_OK`(cursor, C, `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i))
       -- if cursor matches `GLOBAL`
       -- let typ_i' = $canon_typ(typ_i)
       -- if ($is_externt(typ_i') \/ $is_packaget(typ_i'))
 
-   ;; ../../../../spec/4h-typing-call.watsup:671.1-677.54
+   ;; ../../../../spec/4h-typing-call.watsup:672.1-678.54
    rule block-package: `%%|-%:INSTSITE_OK`(cursor, C, `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i))
       -- if cursor matches `BLOCK`
       -- let typ_i' = $canon_typ(typ_i)
       -- if (C.BLOCK.KIND = `PACKAGE`_bkind())
       -- if ((($is_externt(typ_i') \/ $is_parsert(typ_i')) \/ $is_controlt(typ_i')) \/ $is_packaget(typ_i'))
 
-   ;; ../../../../spec/4h-typing-call.watsup:679.1-684.51
+   ;; ../../../../spec/4h-typing-call.watsup:680.1-685.51
    rule block-parser: `%%|-%:INSTSITE_OK`(cursor, C, `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i))
       -- if cursor matches `BLOCK`
       -- let typ_i' = $canon_typ(typ_i)
       -- if (C.BLOCK.KIND = `PARSER`_bkind())
       -- if ($is_externt(typ_i') \/ $is_parsert(typ_i'))
 
-   ;; ../../../../spec/4h-typing-call.watsup:686.1-691.74
+   ;; ../../../../spec/4h-typing-call.watsup:687.1-692.74
    rule block-control: `%%|-%:INSTSITE_OK`(cursor, C, `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i))
       -- if cursor matches `BLOCK`
       -- let typ_i' = $canon_typ(typ_i)
       -- if (C.BLOCK.KIND = `CONTROL`_bkind())
       -- if (($is_externt(typ_i') \/ $is_controlt(typ_i')) \/ $is_tablet(typ_i'))
 
-   ;; ../../../../spec/4h-typing-call.watsup:693.1-698.51
+   ;; ../../../../spec/4h-typing-call.watsup:694.1-699.51
    rule local-parserstate: `%%|-%:INSTSITE_OK`(cursor, C, `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i))
       -- if cursor matches `LOCAL`
       -- let typ_i' = $canon_typ(typ_i)
       -- if (C.LOCAL.KIND = `PARSERSTATE`_lkind())
       -- if ($is_externt(typ_i') \/ $is_parsert(typ_i'))
 
-   ;; ../../../../spec/4h-typing-call.watsup:700.1-705.52
+   ;; ../../../../spec/4h-typing-call.watsup:701.1-706.52
    rule local-controlapplymethod: `%%|-%:INSTSITE_OK`(cursor, C, `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i))
       -- if cursor matches `LOCAL`
       -- let typ_i' = $canon_typ(typ_i)
@@ -10473,7 +10473,7 @@ relation Inst_site_ok: `%%|-%:INSTSITE_OK`(cursor, context, constyp)
 ;; ../../../../spec/4b-typing-relation.watsup:168.1-170.35
 relation Inst_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, constyp, targIL*, arg*, id*, typ, targIL*, argIL*)
 
-   ;; ../../../../spec/4h-typing-call.watsup:708.1-724.84
+   ;; ../../../../spec/4h-typing-call.watsup:709.1-725.84
    rule global-packaget-no-targsinfer: `%%%|-%%%%:%%%`(cursor, C_0, tid*, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_i, targIL*{targIL <- targIL*}, argIL''*{argIL'' <- argIL''*})
       -- if cursor matches `GLOBAL`
       -- if tid* matches []
@@ -10488,7 +10488,7 @@ relation Inst_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, constyp, targIL*, arg*,
       -- Inst_site_ok: `%%|-%:INSTSITE_OK`(`GLOBAL`_cursor(), C_0, `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i))
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(`BLOCK`_cursor(), C_1, `NOACT`_actctxt(), pt'', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt'' <- pt''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:726.1-751.85
+   ;; ../../../../spec/4h-typing-call.watsup:727.1-752.85
    rule global-packaget-targsinfer: `%%%|-%%%%:%%%`(cursor, C_0, tid_fresh*{tid_fresh <- tid_fresh*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_i', targIL''*{targIL'' <- targIL''*}, argIL''*{argIL'' <- argIL''*})
       -- if cursor matches `GLOBAL`
       -- let `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i) = ct
@@ -10507,7 +10507,7 @@ relation Inst_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, constyp, targIL*, arg*,
       -- Inst_site_ok: `%%|-%:INSTSITE_OK`(`GLOBAL`_cursor(), C_0, `ConsT%%`_constyp(pt'''*{pt''' <- pt'''*}, typ_i'))
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(`BLOCK`_cursor(), C_1, `NOACT`_actctxt(), pt''', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt''' <- pt'''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:753.1-768.78
+   ;; ../../../../spec/4h-typing-call.watsup:754.1-769.78
    rule else-no-targsinfer: `%%%|-%%%%:%%%`(p, C, tid*, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_i, targIL*{targIL <- targIL*}, argIL''*{argIL'' <- argIL''*})
       -- if tid* matches []
       -- let `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i) = ct
@@ -10520,7 +10520,7 @@ relation Inst_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, constyp, targIL*, arg*,
       -- Inst_site_ok: `%%|-%:INSTSITE_OK`(p, C, `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i))
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(p, C, `NOACT`_actctxt(), pt'', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt'' <- pt''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:770.1-792.79
+   ;; ../../../../spec/4h-typing-call.watsup:771.1-793.79
    rule else-targsinfer: `%%%|-%%%%:%%%`(p, C, tid_fresh*{tid_fresh <- tid_fresh*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_i', targIL*{targIL <- targIL*}, argIL''*{argIL'' <- argIL''*})
       -- let `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i) = ct
       -- if ~ ((p = `GLOBAL`_cursor()) /\ $is_packaget($canon_typ(typ_i)))
@@ -10600,31 +10600,35 @@ def $coerce_binary(exprIL, exprIL) : (exprIL, exprIL) =
       -- let `(%;%)`_annotIL(typ_b, _ctk') = $annot(exprIL_b)
       -- Type_alpha: `%~~%`(typ_a, typ_b)
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:347.1-351.57
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:347.1-352.57
    clause 1(exprIL_a, exprIL_b) = (exprIL_a', exprIL_b)
       -- let `(%;%)`_annotIL(typ_a, ctk_a) = $annot(exprIL_a)
       -- let `(%;%)`_annotIL(typ_b, _ctk) = $annot(exprIL_b)
+      -- Type_alpha:/ `%~~%`(typ_a, typ_b)
       -- Sub_impl: `%<<%`(typ_a, typ_b)
       -- let exprIL_a' = `CastE%%%`_exprIL(typ_b, exprIL_a, `(%;%)`_annotIL(typ_b, ctk_a))
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:353.1-357.57
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:354.1-360.57
    clause 2(exprIL_a, exprIL_b) = (exprIL_a, exprIL_b')
       -- let `(%;%)`_annotIL(typ_a, _ctk) = $annot(exprIL_a)
       -- let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
+      -- Type_alpha:/ `%~~%`(typ_a, typ_b)
+      -- Sub_impl:/ `%<<%`(typ_a, typ_b)
       -- Sub_impl: `%<<%`(typ_b, typ_a)
       -- let exprIL_b' = `CastE%%%`_exprIL(typ_a, exprIL_b, `(%;%)`_annotIL(typ_a, ctk_b))
 
-;; ../../../../spec/4d2-typing-subtyping.watsup:361.1-362.31
+;; ../../../../spec/4d2-typing-subtyping.watsup:363.1-364.31
 def $coerce_assign(exprIL, typ) : exprIL =
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:364.1-366.32
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:366.1-368.32
    clause 0(exprIL, typ_t) = exprIL
       -- let `(%;%)`_annotIL(typ_f, _ctk) = $annot(exprIL)
       -- Type_alpha: `%~~%`(typ_f, typ_t)
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:368.1-370.30
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:370.1-373.30
    clause 1(exprIL, typ_t) = `CastE%%%`_exprIL(typ_t, exprIL, `(%;%)`_annotIL(typ_t, ctk_f))
       -- let `(%;%)`_annotIL(typ_f, ctk_f) = $annot(exprIL)
+      -- Type_alpha:/ `%~~%`(typ_f, typ_t)
       -- Sub_impl: `%<<%`(typ_f, typ_t)
 
 ;; ../../../../spec/4e-typing-expr.watsup:88.1-88.33
@@ -11189,6 +11193,7 @@ relation Select_case_keyset_ok: `%%%|-%:%`(cursor, context, typ, keyset, keysetI
       -- let synthtyp = typ' as synthtyp
       -- if synthtyp matches `SetT%`
       -- let `SetT%`_synthtyp(typ) = synthtyp
+      -- Type_alpha:/ `%~~%`(typ, typ_k)
       -- Sub_impl: `%<<%`(typ, typ_k)
       -- let exprIL' = `CastE%%%`_exprIL(`SetT%`_synthtyp(typ_k) as typeIL, exprIL, `(%;%)`_annotIL(`SetT%`_synthtyp(typ_k) as typ, `DYN`_ctk()))
 
@@ -12673,7 +12678,7 @@ def $merge_cstr'(map<tid, typ?>, map<tid, typ?>, tid*, map<tid, typ?>) : map<tid
       -- Sub_impl: `%<<%`(typ_o, typ_n)
       -- let cstr' = $update_map<tid, typ?>(cstr, tid_h, ?(typ_n))
 
-   ;; ../../../../spec/4h-typing-call.watsup:306.1-310.59
+   ;; ../../../../spec/4h-typing-call.watsup:306.1-311.59
    clause 5(cstr_o, cstr_n, tid*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*{tid_t <- tid_t*}, cstr')
       -- if tid* matches _ :: _
       -- let tid_h :: tid_t*{tid_t <- tid_t*} = tid*
@@ -12683,17 +12688,18 @@ def $merge_cstr'(map<tid, typ?>, map<tid, typ?>, tid*, map<tid, typ?>) : map<tid
       -- let typ?' = $find_map<tid, typ?>(cstr_n, tid_h)
       -- if typ?' matches (_)
       -- let ?(typ_n) = typ?'
+      -- Sub_impl:/ `%<<%`(typ_o, typ_n)
       -- Sub_impl: `%<<%`(typ_n, typ_o)
       -- let cstr' = $update_map<tid, typ?>(cstr, tid_h, ?(typ_o))
 
 ;; ../../../../spec/4h-typing-call.watsup:202.1-202.67
 def $merge_cstrs(map<tid, typ?>, map<tid, typ?>*) : map<tid, typ?> =
 
-   ;; ../../../../spec/4h-typing-call.watsup:313.1-313.35
+   ;; ../../../../spec/4h-typing-call.watsup:314.1-314.35
    clause 0(cstr, map<tid, typ?>*) = cstr
       -- if map<tid, typ?>* matches []
 
-   ;; ../../../../spec/4h-typing-call.watsup:314.1-316.46
+   ;; ../../../../spec/4h-typing-call.watsup:315.1-317.46
    clause 1(cstr, map<tid, typ?>*) = cstr''
       -- if map<tid, typ?>* matches _ :: _
       -- let cstr_h :: cstr_t*{cstr_t <- cstr_t*} = map<tid, typ?>*
@@ -12703,11 +12709,11 @@ def $merge_cstrs(map<tid, typ?>, map<tid, typ?>*) : map<tid, typ?> =
 ;; ../../../../spec/4h-typing-call.watsup:204.1-204.51
 def $resolve_cstrs(map<tid, typ?>) : map<tid, typ> =
 
-   ;; ../../../../spec/4h-typing-call.watsup:319.1-319.38
+   ;; ../../../../spec/4h-typing-call.watsup:320.1-320.38
    clause 0(map<tid, typ?>) = `MAP%`_map<tid, typ>([])
       -- if (map<tid, typ?> = `MAP%`_map<tid, typ?>([]))
 
-   ;; ../../../../spec/4h-typing-call.watsup:321.1-324.77
+   ;; ../../../../spec/4h-typing-call.watsup:322.1-325.77
    clause 1(`MAP%`_map<tid, typ?>(pair<tid, typ?>*)) = $add_map<tid, typ>(`MAP%`_map<tid, typ>(`PAIR%%`_pair<tid, typ>(tid_t', typ_t')*{tid_t' <- tid_t'*, typ_t' <- typ_t'*}), tid_h, typ_h)
       -- if pair<tid, typ?>* matches _ :: _
       -- let `PAIR%%`_pair<tid, typ?>(tid_h, typ?) :: `PAIR%%`_pair<tid, typ?>(tid_t, typ_t?{typ_t <- typ_t?})*{tid_t <- tid_t*, typ_t? <- typ_t?*} = pair<tid, typ?>*
@@ -12716,16 +12722,16 @@ def $resolve_cstrs(map<tid, typ?>) : map<tid, typ> =
       -- if (typ_h =/= `AnyT`_synthtyp() as typ)
       -- let `MAP%`_map<tid, typ>(`PAIR%%`_pair<tid, typ>(tid_t', typ_t')*{tid_t' <- tid_t'*, typ_t' <- typ_t'*}) = $resolve_cstrs(`MAP%`_map<tid, typ?>(`PAIR%%`_pair<tid, typ?>(tid_t, typ_t?{typ_t <- typ_t?})*{tid_t <- tid_t*, typ_t? <- typ_t?*}))
 
-;; ../../../../spec/4h-typing-call.watsup:327.1-327.56
+;; ../../../../spec/4h-typing-call.watsup:328.1-328.56
 def $infer_targs(tid*, paramtyp*, typ*) : map<tid, typ> =
 
-   ;; ../../../../spec/4h-typing-call.watsup:330.1-332.49
+   ;; ../../../../spec/4h-typing-call.watsup:331.1-333.49
    clause 0(tid*{tid <- tid*}, `%%%%`_paramtyp(id, dir, typ_p, val?{val <- val?})*{dir <- dir*, id <- id*, typ_p <- typ_p*, val? <- val?*}, typ_a*{typ_a <- typ_a*}) = $resolve_cstrs(cstr')
       -- let cstr = $empty_cstr(tid*{tid <- tid*})
       -- let cstr' = $gen_cstrs(cstr, typ_p*{typ_p <- typ_p*}, typ_a*{typ_a <- typ_a*})
 
-;; ../../../../spec/4h-typing-call.watsup:433.1-434.43
+;; ../../../../spec/4h-typing-call.watsup:434.1-435.43
 def $is_table_apply_in_action_arg(argIL) : bool =
 
-   ;; ../../../../spec/4h-typing-call.watsup:437.1-437.49
+   ;; ../../../../spec/4h-typing-call.watsup:438.1-438.49
    clause 0(argIL) = false

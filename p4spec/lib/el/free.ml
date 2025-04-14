@@ -104,6 +104,7 @@ let rec free_id_prem (prem : prem) : IdSet.t =
   match prem.it with
   | VarPr (id, _) -> IdSet.singleton id
   | RulePr (_, exp) -> free_id_exp exp
+  | RuleNotPr (_, exp) -> free_id_exp exp
   | IfPr exp -> free_id_exp exp
   | ElsePr -> IdSet.empty
   | IterPr (prem, _) -> free_id_prem prem

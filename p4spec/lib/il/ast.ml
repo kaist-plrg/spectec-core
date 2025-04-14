@@ -174,6 +174,7 @@ and clause' = arg list * exp * prem list
 and prem = prem' phrase
 and prem' =
   | RulePr of id * notexp          (* id `:` notexp *)
+  | RuleNotPr of id * notexp       (* id `:/` notexp *)
   | IfPr of exp                    (* `if` exp *)
   | ElsePr                         (* `otherwise` *)
   | LetPr of exp * exp             (* `let` exp `=` exp *)

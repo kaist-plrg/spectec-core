@@ -70,6 +70,7 @@ and free_args (args : arg list) : t =
 let rec free_prem (prem : prem) : t =
   match prem.it with
   | RulePr (_, (_, exps)) -> free_exps exps
+  | RuleNotPr (_, (_, exps)) -> free_exps exps
   | IfPr exp -> free_exp exp
   | LetPr (exp_l, exp_r) -> free_exp exp_l + free_exp exp_r
   | ElsePr -> empty
