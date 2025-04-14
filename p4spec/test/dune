@@ -22,11 +22,7 @@
    elab.actual
    (with-stderr-to
     elab.err
-    (run
-     ./test.exe
-     elab
-     -s
-     ../../../../spec)))))
+    (run ./test.exe elab -s ../../../../spec)))))
 
 (rule
  (target struct.actual)
@@ -35,11 +31,7 @@
    struct.actual
    (with-stderr-to
     struct.err
-    (run
-     ./test.exe
-     struct
-     -s
-     ../../../../spec)))))
+    (run ./test.exe struct -s ../../../../spec)))))
 
 (rule
  (target run_typing_pos_p4c.actual)

@@ -372,11 +372,11 @@ Error on typecheck: ../../../../p4/testdata/p4c/program/well-typed/enumCast.p4
 interp error: tracing backtrack logs:
 - because invocation of function $add_styp(`BLOCK`_cursor(), C, member, `%%%%`_styp(typ_f, `NO`_dir(), `LCTK`_ctk(), ?(val))) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
   1. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
-    - because condition (cursor = `GLOBAL`_cursor()) was not met ()
+    - because condition cursor matches `GLOBAL` was not met ()
   2. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
     - because condition ~ $in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:154.9-154.60)
   3. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
-    - because condition (cursor = `LOCAL`_cursor()) was not met ()
+    - because condition cursor matches `LOCAL` was not met ()
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/equality-bmv2.p4
@@ -1829,9 +1829,9 @@ interp error: tracing backtrack logs:
             21. because application of rule Sub_impl_canon/invalidt-uniont failed (../../../../spec/4d2-typing-subtyping.watsup:175.6-175.20)
               - because condition (typ = `InvalidT`_synthtyp() as typ) was not met ()
     4. because application of rule Select_case_keyset_ok/defaultk failed (../../../../spec/4e-typing-expr.watsup:549.6-549.27)
-      - because condition (keyset = `DefaultK`_keyset()) was not met ()
+      - because condition keyset matches `DefaultK` was not met ()
     5. because application of rule Select_case_keyset_ok/anyk failed (../../../../spec/4e-typing-expr.watsup:549.6-549.27)
-      - because condition (keyset = `AnyK`_keyset()) was not met ()
+      - because condition keyset matches `AnyK` was not met ()
 2. because application of rule Select_case_keysets_ok/many-to-one failed (../../../../spec/4e-typing-expr.watsup:567.6-567.28)
   - because invocation of relation Select_case_keyset_ok failed (../../../../spec/4e-typing-expr.watsup:553.6-553.27)
     1. because application of rule Select_case_keyset_ok/exprk-sett failed (../../../../spec/4e-typing-expr.watsup:553.6-553.27)
@@ -2115,9 +2115,9 @@ interp error: tracing backtrack logs:
             21. because application of rule Sub_impl_canon/invalidt-uniont failed (../../../../spec/4d2-typing-subtyping.watsup:175.6-175.20)
               - because condition (typ = `InvalidT`_synthtyp() as typ) was not met ()
     4. because application of rule Select_case_keyset_ok/defaultk failed (../../../../spec/4e-typing-expr.watsup:553.6-553.27)
-      - because condition (keyset = `DefaultK`_keyset()) was not met ()
+      - because condition keyset matches `DefaultK` was not met ()
     5. because application of rule Select_case_keyset_ok/anyk failed (../../../../spec/4e-typing-expr.watsup:553.6-553.27)
-      - because condition (keyset = `AnyK`_keyset()) was not met ()
+      - because condition keyset matches `AnyK` was not met ()
 3. because application of rule Select_case_keysets_ok/many-to-many failed (../../../../spec/4e-typing-expr.watsup:567.6-567.28)
   - because invocation of relation Select_case_keyset_ok failed (../../../../spec/4e-typing-expr.watsup:558.7-558.28)
     1. because application of rule Select_case_keyset_ok/exprk-sett failed (../../../../spec/4e-typing-expr.watsup:558.7-558.28)
@@ -2401,9 +2401,9 @@ interp error: tracing backtrack logs:
             21. because application of rule Sub_impl_canon/invalidt-uniont failed (../../../../spec/4d2-typing-subtyping.watsup:175.6-175.20)
               - because condition (typ = `InvalidT`_synthtyp() as typ) was not met ()
     4. because application of rule Select_case_keyset_ok/defaultk failed (../../../../spec/4e-typing-expr.watsup:558.7-558.28)
-      - because condition (keyset = `DefaultK`_keyset()) was not met ()
+      - because condition keyset matches `DefaultK` was not met ()
     5. because application of rule Select_case_keyset_ok/anyk failed (../../../../spec/4e-typing-expr.watsup:558.7-558.28)
-      - because condition (keyset = `AnyK`_keyset()) was not met ()
+      - because condition keyset matches `AnyK` was not met ()
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/issue3343.p4
@@ -4098,11 +4098,11 @@ Error on typecheck: ../../../../p4/testdata/p4c/program/well-typed/table-entries
 interp error: tracing backtrack logs:
 - because invocation of function $add_styp(`BLOCK`_cursor(), C, member, `%%%%`_styp(typ_f, `NO`_dir(), `LCTK`_ctk(), ?(val))) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
   1. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
-    - because condition (cursor = `GLOBAL`_cursor()) was not met ()
+    - because condition cursor matches `GLOBAL` was not met ()
   2. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
     - because condition ~ $in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:154.9-154.60)
   3. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
-    - because condition (cursor = `LOCAL`_cursor()) was not met ()
+    - because condition cursor matches `LOCAL` was not met ()
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/table-entries-ternary-bmv2.p4

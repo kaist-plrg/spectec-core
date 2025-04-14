@@ -71,7 +71,7 @@ let analyze_exps_as_bind (dctx : Dctx.t) (exps : exp list) :
     Partialbind.rename_exps dctx (VEnv.dom venv) Partialbind.REnv.empty exps
   in
   let venv = update_venv_partial venv renv_partial in
-  let prems_partial = Partialbind.REnv.gen_prems renv_partial in
+  let prems_partial = Partialbind.REnv.gen_prems dctx renv_partial in
   let prems = prems_partial @ sideconditions_multi in
   (dctx, venv, exps, prems)
 
@@ -103,7 +103,7 @@ let analyze_args_as_bind (dctx : Dctx.t) (args : arg list) :
     Partialbind.rename_args dctx (VEnv.dom venv) Partialbind.REnv.empty args
   in
   let venv = update_venv_partial venv renv_partial in
-  let prems_partial = Partialbind.REnv.gen_prems renv_partial in
+  let prems_partial = Partialbind.REnv.gen_prems dctx renv_partial in
   let prems = prems_partial @ sideconditions_multi in
   (dctx, venv, args, prems)
 
@@ -189,7 +189,7 @@ and analyze_let_prem (dctx : Dctx.t) (exp_l : exp) (binds_l : BEnv.t)
     Partialbind.rename_exp dctx (VEnv.dom venv) Partialbind.REnv.empty exp_l
   in
   let venv = update_venv_partial venv renv_partial in
-  let prems_partial = Partialbind.REnv.gen_prems renv_partial in
+  let prems_partial = Partialbind.REnv.gen_prems dctx renv_partial in
   let prems = prems_partial @ sideconditions_multi in
   let prem = LetPr (exp_l, exp_r) in
   (dctx, venv, prem, prems)

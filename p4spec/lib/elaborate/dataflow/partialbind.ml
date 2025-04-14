@@ -4,6 +4,27 @@ open Runtime_static
 open Error
 open Util.Source
 
+(* Helper for identifying singleton case *)
+
+let rec is_singleton_case (dctx : Dctx.t) (typ : typ) : bool =
+  typ |> Plaintyp.of_internal_typ |> is_singleton_case' dctx
+
+and is_singleton_case' (dctx : Dctx.t) (plaintyp : El.Ast.plaintyp) : bool =
+  match plaintyp.it with
+  | VarT (tid, targs) -> (
+      let td = Dctx.find_typdef dctx tid in
+      match td with
+      | Defined (tparams, typdef) -> (
+          match typdef with
+          | `Plain plaintyp ->
+              let theta = List.combine tparams targs |> TIdMap.of_list in
+              let plaintyp = Plaintyp.subst_plaintyp theta plaintyp in
+              is_singleton_case' dctx plaintyp
+          | `Struct _ -> false
+          | `Variant cases -> List.length cases = 1)
+      | _ -> false)
+  | _ -> false
+
 (* Rename for an expression *)
 
 module Placeholder = struct
@@ -54,16 +75,17 @@ module REnv = struct
 
   (* Generate premises *)
 
-  let gen_prem_bound (id : Id.t) (exp_orig : exp) (iters : iter list) : prem =
+  let gen_prem_bound (dctx : Dctx.t) (id : Id.t) (exp_orig : exp)
+      (iters : iter list) : prem =
     let exp_cond =
       let exp_l = VarE id $$ (id.at, exp_orig.note) in
       match exp_orig.it with
+      | CaseE (mixop, [])
+        when not (is_singleton_case dctx (exp_orig.note $ exp_orig.at)) ->
+          MatchE (exp_l, CaseP mixop) $$ (exp_orig.at, BoolT)
       | OptE (Some _) -> MatchE (exp_l, OptP `Some) $$ (exp_orig.at, BoolT)
       | OptE None -> MatchE (exp_l, OptP `None) $$ (exp_orig.at, BoolT)
       | ListE [] -> MatchE (exp_l, ListP `Nil) $$ (exp_orig.at, BoolT)
-      | ListE exps ->
-          MatchE (exp_l, ListP (`Fixed (List.length exps)))
-          $$ (exp_orig.at, BoolT)
       | _ ->
           let exp_r = exp_orig in
           CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (exp_orig.at, BoolT)
@@ -113,16 +135,17 @@ module REnv = struct
           prem iters)
       prems
 
-  let gen_prem (id : Id.t) (placeholder : Placeholder.t) : prem list =
+  let gen_prem (dctx : Dctx.t) (id : Id.t) (placeholder : Placeholder.t) :
+      prem list =
     match placeholder with
-    | Bound { exp_orig; iters } -> [ gen_prem_bound id exp_orig iters ]
+    | Bound { exp_orig; iters } -> [ gen_prem_bound dctx id exp_orig iters ]
     | Bindmatch { pattern; exp_orig; iters } ->
         gen_prem_bind_match id pattern exp_orig iters
     | Bindsub { typ_sub; exp_sub; exp_orig; iters } ->
         gen_prem_bind_sub id typ_sub exp_sub exp_orig iters
 
-  let gen_prems (renv : t) : prem list =
-    List.concat_map (fun (id, placeholder) -> gen_prem id placeholder) renv
+  let gen_prems (dctx : Dctx.t) (renv : t) : prem list =
+    List.concat_map (fun (id, placeholder) -> gen_prem dctx id placeholder) renv
 end
 
 (* Desugar partial bindings, occuring as either:
@@ -154,25 +177,6 @@ end
    -- let i = $foo()
    -- if i <: nat
    -- let n = i as nat *)
-
-let rec is_singleton_case (dctx : Dctx.t) (typ : typ) : bool =
-  typ |> Plaintyp.of_internal_typ |> is_singleton_case' dctx
-
-and is_singleton_case' (dctx : Dctx.t) (plaintyp : El.Ast.plaintyp) : bool =
-  match plaintyp.it with
-  | VarT (tid, targs) -> (
-      let td = Dctx.find_typdef dctx tid in
-      match td with
-      | Defined (tparams, typdef) -> (
-          match typdef with
-          | `Plain plaintyp ->
-              let theta = List.combine tparams targs |> TIdMap.of_list in
-              let plaintyp = Plaintyp.subst_plaintyp theta plaintyp in
-              is_singleton_case' dctx plaintyp
-          | `Struct _ -> false
-          | `Variant cases -> List.length cases = 1)
-      | _ -> false)
-  | _ -> false
 
 let rename_exp_bind_match (dctx : Dctx.t) (renv : REnv.t) (pattern : pattern)
     (exp_orig : exp) : Dctx.t * REnv.t * id =

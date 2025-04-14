@@ -474,14 +474,14 @@ def $is_record_defaulte(expr')
 
 ;; ../../../../spec/1b-syntax-el-aux.watsup:53.1-54.30
 def $is_defaulte(expr')
-1. If (expr' = `DefaultE`_expr()), then
+1. If expr' matches `DefaultE`, then
   1. Return true
 2. Otherwise
   1. Return false
 
 ;; ../../../../spec/1b-syntax-el-aux.watsup:59.1-60.30
 def $is_invalide(expr')
-1. If (expr' = `InvalidE`_expr()), then
+1. If expr' matches `InvalidE`, then
   1. Return true
 2. Otherwise
   1. Return false
@@ -2639,7 +2639,7 @@ syntax consctxt =
 
 ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:15.1-15.53
 relation CParamType_wf: tidset, consctxt, `%%%%`_paramtyp(id, dir, typ, val?{val <- val?})
-1. If (dir = `NO`_dir()), then
+1. If dir matches `NO`, then
   1. Type_wf: `%|-%`(tidset, typ)
   2. Result in 
 
@@ -3200,12 +3200,12 @@ def $is_trailing_action'(_bool', dir*)
 2. If (_bool' = true), then
   1. If dir* matches _ :: _, then
     1. Let dir :: dir_t*{dir_t <- dir_t*} = dir*
-    2. If (dir = `NO`_dir()), then
+    2. If dir matches `NO`, then
       1. Return $is_trailing_action'(true, dir_t*{dir_t <- dir_t*})
-3. If (_bool' = false), then
+2. Else If (_bool' = false), then
   1. If dir* matches _ :: _, then
     1. Let dir :: dir_t*{dir_t <- dir_t*} = dir*
-    2. If (dir = `NO`_dir()), then
+    2. If dir matches `NO`, then
       1. Return false
 
 ;; ../../../../spec/2d1-runtime-numerics.watsup:5.1-5.21
@@ -3246,13 +3246,13 @@ def $bitacc
 
 ;; ../../../../spec/2d1-runtime-numerics.watsup:22.1-23.32
 def $un_op(unop, val)
-1. If (unop = `BNOT`_unop()), then
+1. If unop matches `BNOT`, then
   1. Return $un_bnot(val)
-2. If (unop = `LNOT`_unop()), then
+1. Else If unop matches `LNOT`, then
   1. Return $un_lnot(val)
-3. If (unop = `UPLUS`_unop()), then
+1. Else If unop matches `UPLUS`, then
   1. Return $un_plus(val)
-4. If (unop = `UMINUS`_unop()), then
+1. Else If unop matches `UMINUS`, then
   1. Return $un_minus(val)
 
 ;; ../../../../spec/2d1-runtime-numerics.watsup:27.1-27.24
@@ -3296,43 +3296,43 @@ def $un_minus(val)
 
 ;; ../../../../spec/2d1-runtime-numerics.watsup:70.1-71.24
 def $bin_op(binop, val_l, val_r)
-1. If (binop = `PLUS`_binop()), then
+1. If binop matches `PLUS`, then
   1. Return $bin_plus(val_l, val_r)
-2. If (binop = `MINUS`_binop()), then
+1. Else If binop matches `MINUS`, then
   1. Return $bin_minus(val_l, val_r)
-3. If (binop = `MUL`_binop()), then
+1. Else If binop matches `MUL`, then
   1. Return $bin_mul(val_l, val_r)
-4. If (binop = `DIV`_binop()), then
+1. Else If binop matches `DIV`, then
   1. Return $bin_div(val_l, val_r)
-5. If (binop = `MOD`_binop()), then
+1. Else If binop matches `MOD`, then
   1. Return $bin_mod(val_l, val_r)
-6. If (binop = `SHL`_binop()), then
+1. Else If binop matches `SHL`, then
   1. Return $bin_shl(val_l, val_r)
-7. If (binop = `SHR`_binop()), then
+1. Else If binop matches `SHR`, then
   1. Return $bin_shr(val_l, val_r)
-8. If (binop = `LE`_binop()), then
+1. Else If binop matches `LE`, then
   1. Return `BoolV%`_val($bin_le(val_l, val_r))
-9. If (binop = `GE`_binop()), then
+1. Else If binop matches `GE`, then
   1. Return `BoolV%`_val($bin_ge(val_l, val_r))
-10. If (binop = `LT`_binop()), then
+1. Else If binop matches `LT`, then
   1. Return `BoolV%`_val($bin_lt(val_l, val_r))
-11. If (binop = `GT`_binop()), then
+1. Else If binop matches `GT`, then
   1. Return `BoolV%`_val($bin_gt(val_l, val_r))
-12. If (binop = `EQ`_binop()), then
+1. Else If binop matches `EQ`, then
   1. Return `BoolV%`_val($bin_eq(val_l, val_r))
-13. If (binop = `NE`_binop()), then
+1. Else If binop matches `NE`, then
   1. Return `BoolV%`_val(~ $bin_eq(val_l, val_r))
-14. If (binop = `BAND`_binop()), then
+1. Else If binop matches `BAND`, then
   1. Return $bin_band(val_l, val_r)
-15. If (binop = `BXOR`_binop()), then
+1. Else If binop matches `BXOR`, then
   1. Return $bin_bxor(val_l, val_r)
-16. If (binop = `BOR`_binop()), then
+1. Else If binop matches `BOR`, then
   1. Return $bin_bor(val_l, val_r)
-17. If (binop = `CONCAT`_binop()), then
+1. Else If binop matches `CONCAT`, then
   1. Return $bin_concat(val_l, val_r)
-18. If (binop = `LAND`_binop()), then
+1. Else If binop matches `LAND`, then
   1. Return $bin_land(val_l, val_r)
-19. If (binop = `LOR`_binop()), then
+1. Else If binop matches `LOR`, then
   1. Return $bin_lor(val_l, val_r)
 
 ;; ../../../../spec/2d1-runtime-numerics.watsup:75.1-75.30
@@ -3709,8 +3709,8 @@ def $bin_eq(val, val')
   2. If val' matches `StructV%%`, then
     1. Let `StructV%%`_val(id_b, (member_b, val_b)*{member_b <- member_b*, val_b <- val_b*}) = val'
     2. Return ((id_a = id_b) /\ $bin_eqs_((member_a, val_a)*{member_a <- member_a*, val_a <- val_a*}, (member_b, val_b)*{member_b <- member_b*, val_b <- val_b*}))
-2. If (val = `InvalidV`_val()), then
-  1. If (val' = `InvalidV`_val()), then
+1. Else If val matches `InvalidV`, then
+  1. If val' matches `InvalidV`, then
     1. Return true
 
 ;; ../../../../spec/2d1-runtime-numerics.watsup:278.1-278.32
@@ -3883,6 +3883,8 @@ def $cast_op(typ, val'')
 1. Else If val'' matches `RecordV%`, then
   1. Let `RecordV%`_val((member, val'')*{member <- member*, val'' <- val''*}) = val''
   2. Return $cast_record(typ, (member, val'')*{member <- member*, val'' <- val''*})
+1. Else If val'' matches `DefaultV`, then
+  1. Return $default(typ)
 1. Else If val'' matches `SetV%`, then
   1. Let `SetV%`_val(setval) = val''
   2. If setval matches `SingletonSet%`, then
@@ -3894,8 +3896,6 @@ def $cast_op(typ, val'')
   2. Else If setval matches `RangeSet%%`, then
     1. Let `RangeSet%%`_setval(val_l, val_u) = setval
     2. Return $cast_set_range(typ, val_l, val_u)
-2. If (val'' = `DefaultV`_val()), then
-  1. Return $default(typ)
 
 ;; ../../../../spec/2d1-runtime-numerics.watsup:423.1-423.24
 def $default(typ)
@@ -3971,7 +3971,7 @@ def $cast_bool'(typ'', b')
     1. Let `FBitT%`_numtyp(w) = numtyp
     2. If (b' = true), then
       1. Return `FBitV%%`_val(w, 1 as bitstr)
-    3. If (b' = false), then
+    2. Else If (b' = false), then
       1. Return `FBitV%%`_val(w, 0 as bitstr)
 3. If typ'' <: datatyp, then
   1. Let datatyp = typ'' as datatyp
@@ -4202,11 +4202,11 @@ def $bitacc_op(val_b, val_h, val_l)
 def $size(typ, text)
 1. If (text = "minSizeInBits"), then
   1. Return $size_minSizeInBits(typ)
-2. If (text = "minSizeInBytes"), then
+1. Else If (text = "minSizeInBytes"), then
   1. Return $size_minSizeInBytes(typ)
-3. If (text = "maxSizeInBits"), then
+1. Else If (text = "maxSizeInBits"), then
   1. Return $size_maxSizeInBits(typ)
-4. If (text = "maxSizeInBytes"), then
+1. Else If (text = "maxSizeInBytes"), then
   1. Return $size_maxSizeInBytes(typ)
 
 ;; ../../../../spec/2d2-runtime-builtins.watsup:8.1-8.35
@@ -4511,17 +4511,17 @@ syntax ctk =
 
 ;; ../../../../spec/2f-runtime-ctk.watsup:7.1-7.81
 def $join_ctk(ctk'', ctk''')
-1. If (ctk'' = `LCTK`_ctk()), then
-  1. If (ctk''' = `LCTK`_ctk()), then
+1. If ctk'' matches `LCTK`, then
+  1. If ctk''' matches `LCTK`, then
     1. Return `LCTK`_ctk()
-  2. If (ctk''' = `CTK`_ctk()), then
+  1. Else If ctk''' matches `CTK`, then
     1. Return `CTK`_ctk()
-2. If (ctk'' = `CTK`_ctk()), then
-  1. If (ctk''' = `LCTK`_ctk()), then
+1. Else If ctk'' matches `CTK`, then
+  1. If ctk''' matches `LCTK`, then
     1. Return `CTK`_ctk()
-  2. If (ctk''' = `CTK`_ctk()), then
+  1. Else If ctk''' matches `CTK`, then
     1. Return `CTK`_ctk()
-3. Otherwise
+2. Otherwise
   1. Return `DYN`_ctk()
 
 ;; ../../../../spec/2f-runtime-ctk.watsup:16.1-16.75
@@ -4548,8 +4548,8 @@ syntax flow =
 
 ;; ../../../../spec/2g-runtime-flow.watsup:9.1-9.85
 def $join_flow(flow'', flow''')
-1. If (flow'' = `RET`_flow()), then
-  1. If (flow''' = `RET`_flow()), then
+1. If flow'' matches `RET`, then
+  1. If flow''' matches `RET`, then
     1. Return `RET`_flow()
 2. Return `CONT`_flow()
 
@@ -4828,34 +4828,34 @@ def $get_typ_ret_lkind(lkind)
 1. If lkind matches `FUNC%`, then
   1. Let `FUNC%`_lkind(typ) = lkind
   2. Return typ
+1. Else If lkind matches `ACTION`, then
+  1. Return `VoidT`_primtyp() as typ
 1. Else If lkind matches `EXTERNABSTRACTMETHOD%`, then
   1. Let `EXTERNABSTRACTMETHOD%`_lkind(typ) = lkind
   2. Return typ
-2. If (lkind = `ACTION`_lkind()), then
-  1. Return `VoidT`_primtyp() as typ
-3. If (lkind = `CONTROLAPPLYMETHOD`_lkind()), then
+1. Else If lkind matches `CONTROLAPPLYMETHOD`, then
   1. Return `VoidT`_primtyp() as typ
 
 ;; ../../../../spec/4a1-typing-context.watsup:135.1-135.42
 def $bound_tids(cursor, C)
-1. If (cursor = `GLOBAL`_cursor()), then
+1. If cursor matches `GLOBAL`, then
   1. Return $empty_set<tid>
-2. If (cursor = `BLOCK`_cursor()), then
+1. Else If cursor matches `BLOCK`, then
   1. Return $dom_map<tid, typdef>(C.BLOCK.TDENV)
-3. If (cursor = `LOCAL`_cursor()), then
+1. Else If cursor matches `LOCAL`, then
   1. Return $union_set<tid>($dom_map<tid, typdef>(C.LOCAL.TDENV), $bound_tids(`BLOCK`_cursor(), C))
 
 ;; ../../../../spec/4a1-typing-context.watsup:147.1-148.84
 def $add_styp(cursor, C, id, styp)
-1. If (cursor = `GLOBAL`_cursor()), then
+1. If cursor matches `GLOBAL`, then
   1. If ~ $in_set<id>(id, $dom_map<id, styp>(C.GLOBAL.FRAME)), then
     1. Let frame = $add_map<id, styp>(C.GLOBAL.FRAME, id, styp)
     2. Return C[GLOBAL.FRAME = frame]
-2. If (cursor = `BLOCK`_cursor()), then
+1. Else If cursor matches `BLOCK`, then
   1. If ~ $in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME)), then
     1. Let frame = $add_map<id, styp>(C.BLOCK.FRAME, id, styp)
     2. Return C[BLOCK.FRAME = frame]
-3. If (cursor = `LOCAL`_cursor()), then
+1. Else If cursor matches `LOCAL`, then
   1. Let frame* = C.LOCAL.FRAMES
   2. If frame* matches _ :: _, then
     1. Let frame_h :: frame_t*{frame_t <- frame_t*} = frame*
@@ -4880,7 +4880,7 @@ def $add_styps(cursor, C, id*, styp*)
 ;; ../../../../spec/4a1-typing-context.watsup:172.1-172.52
 def $add_param(p, C, pt)
 1. Let `%%%%`_paramtyp(id, dir, typ, val?{val <- val?}) = pt
-2. If (dir = `NO`_dir()), then
+2. If dir matches `NO`, then
   1. Let C' = $add_styp(p, C, id, `%%%%`_styp(typ, `NO`_dir(), `CTK`_ctk(), ?()))
   2. Return C'
 3. Let `%%%%`_paramtyp(id, dir, typ, val?{val <- val?}) = pt
@@ -4900,15 +4900,15 @@ def $add_params(p, C, paramtyp*)
 
 ;; ../../../../spec/4a1-typing-context.watsup:191.1-192.80
 def $add_typdef(cursor, C, tid, td)
-1. If (cursor = `GLOBAL`_cursor()), then
+1. If cursor matches `GLOBAL`, then
   1. If ~ $in_set<tid>(tid, $dom_map<tid, typdef>(C.GLOBAL.TDENV)), then
     1. Let tdenv = $add_map<tid, typdef>(C.GLOBAL.TDENV, tid, td)
     2. Return C[GLOBAL.TDENV = tdenv]
-2. If (cursor = `BLOCK`_cursor()), then
+1. Else If cursor matches `BLOCK`, then
   1. If ~ $in_set<tid>(tid, $dom_map<tid, typdef>(C.BLOCK.TDENV)), then
     1. Let tdenv = $add_map<tid, typdef>(C.BLOCK.TDENV, tid, td)
     2. Return C[BLOCK.TDENV = tdenv]
-3. If (cursor = `LOCAL`_cursor()), then
+1. Else If cursor matches `LOCAL`, then
   1. If ~ $in_set<tid>(tid, $dom_map<tid, typdef>(C.LOCAL.TDENV)), then
     1. Let tdenv = $add_map<tid, typdef>(C.LOCAL.TDENV, tid, td)
     2. Return C[LOCAL.TDENV = tdenv]
@@ -4928,12 +4928,12 @@ def $add_typdefs(p, C, tid*, typdef*)
 
 ;; ../../../../spec/4a1-typing-context.watsup:214.1-214.51
 def $add_tparam(cursor, C, tparam)
-1. If (cursor = `BLOCK`_cursor()), then
+1. If cursor matches `BLOCK`, then
   1. Let td = `MonoD%`_monotypdef(`VarT%`_abstyp(tparam) as typ) as typdef
   2. If ~ $in_set<tid>(tparam, $dom_map<tid, typdef>(C.BLOCK.TDENV)), then
     1. Let tdenv = $add_map<tid, typdef>(C.BLOCK.TDENV, tparam, td)
     2. Return C[BLOCK.TDENV = tdenv]
-2. If (cursor = `LOCAL`_cursor()), then
+1. Else If cursor matches `LOCAL`, then
   1. Let td = `MonoD%`_monotypdef(`VarT%`_abstyp(tparam) as typ) as typdef
   2. If ~ $in_set<tid>(tparam, $dom_map<tid, typdef>(C.LOCAL.TDENV)), then
     1. Let tdenv = $add_map<tid, typdef>(C.LOCAL.TDENV, tparam, td)
@@ -4951,24 +4951,24 @@ def $add_tparams(p, C, tparam*)
 
 ;; ../../../../spec/4a1-typing-context.watsup:234.1-235.80
 def $add_funcdef(cursor, C, fid, fd)
-1. If (cursor = `GLOBAL`_cursor()), then
+1. If cursor matches `GLOBAL`, then
   1. If ~ $in_set<fid>(fid, $dom_map<fid, funcdef>(C.GLOBAL.FDENV)), then
     1. Let fdenv = $add_map<fid, funcdef>(C.GLOBAL.FDENV, fid, fd)
     2. Return C[GLOBAL.FDENV = fdenv]
-2. If (cursor = `BLOCK`_cursor()), then
+1. Else If cursor matches `BLOCK`, then
   1. If ~ $in_set<fid>(fid, $dom_map<fid, funcdef>(C.BLOCK.FDENV)), then
     1. Let fdenv = $add_map<fid, funcdef>(C.BLOCK.FDENV, fid, fd)
     2. Return C[BLOCK.FDENV = fdenv]
 
 ;; ../../../../spec/4a1-typing-context.watsup:244.1-245.80
 def $add_funcdef_non_overload(cursor, C, fid, fd)
-1. If (cursor = `GLOBAL`_cursor()), then
+1. If cursor matches `GLOBAL`, then
   1. Let `SET%`_set<fid>(`%%`_fid(id_k, _(id, bool)*)*{_(id, bool)* <- _(id, bool)**, id_k <- id_k*}) = $dom_map<fid, funcdef>(C.GLOBAL.FDENV)
   2. Let `%%`_fid(id, _(id, bool)*') = fid
   3. If ~ id <- id_k*{id_k <- id_k*}, then
     1. Let fdenv = $add_map<fid, funcdef>(C.GLOBAL.FDENV, fid, fd)
     2. Return C[GLOBAL.FDENV = fdenv]
-2. If (cursor = `BLOCK`_cursor()), then
+1. Else If cursor matches `BLOCK`, then
   1. Let `SET%`_set<fid>(`%%`_fid(id_k, _(id, bool)*)*{_(id, bool)* <- _(id, bool)**, id_k <- id_k*}) = $dom_map<fid, funcdef>(C.BLOCK.FDENV)
   2. Let `%%`_fid(id, _(id, bool)*') = fid
   3. If ~ id <- id_k*{id_k <- id_k*}, then
@@ -4977,7 +4977,7 @@ def $add_funcdef_non_overload(cursor, C, fid, fd)
 
 ;; ../../../../spec/4a1-typing-context.watsup:260.1-261.80
 def $add_consdef(cursor, C, cid, cd)
-1. If (cursor = `GLOBAL`_cursor()), then
+1. If cursor matches `GLOBAL`, then
   1. If ~ $in_set<cid>(cid, $dom_map<cid, consdef>(C.GLOBAL.CDENV)), then
     1. Let cdenv = $add_map<cid, consdef>(C.GLOBAL.CDENV, cid, cd)
     2. Return C[GLOBAL.CDENV = cdenv]
@@ -4987,11 +4987,11 @@ def $find_styp(p', C, name)
 1. If name matches `TOP%`, then
   1. Let `TOP%`_name(id) = name
   2. Return $find_map<id, styp>(C.GLOBAL.FRAME, id)
-2. If (p' = `GLOBAL`_cursor()), then
+2. If p' matches `GLOBAL`, then
   1. If name matches `CURRENT%`, then
     1. Let `CURRENT%`_name(id) = name
     2. Return $find_map<id, styp>(C.GLOBAL.FRAME, id)
-3. If (p' = `BLOCK`_cursor()), then
+2. Else If p' matches `BLOCK`, then
   1. If name matches `CURRENT%`, then
     1. Let `CURRENT%`_name(id) = name
     2. Let styp? = $find_map_opt<id, styp>(C.BLOCK.FRAME, id)
@@ -5000,7 +5000,7 @@ def $find_styp(p', C, name)
       2. Return styp
     4. If (?() = $find_map_opt<id, styp>(C.BLOCK.FRAME, id)), then
       1. Return $find_styp(`GLOBAL`_cursor(), C, `CURRENT%`_name(id))
-4. If (p' = `LOCAL`_cursor()), then
+2. Else If p' matches `LOCAL`, then
   1. If name matches `CURRENT%`, then
     1. Let `CURRENT%`_name(id) = name
     2. Let styp? = $find_maps_opt<id, styp>(C.LOCAL.FRAMES, id)
@@ -5022,11 +5022,11 @@ def $find_typdef(p', C, name)
 1. If name matches `TOP%`, then
   1. Let `TOP%`_name(id) = name
   2. Return $find_map<tid, typdef>(C.GLOBAL.TDENV, id)
-2. If (p' = `GLOBAL`_cursor()), then
+2. If p' matches `GLOBAL`, then
   1. If name matches `CURRENT%`, then
     1. Let `CURRENT%`_name(id) = name
     2. Return $find_map<tid, typdef>(C.GLOBAL.TDENV, id)
-3. If (p' = `BLOCK`_cursor()), then
+2. Else If p' matches `BLOCK`, then
   1. If name matches `CURRENT%`, then
     1. Let `CURRENT%`_name(id) = name
     2. Let typdef? = $find_map_opt<tid, typdef>(C.BLOCK.TDENV, id)
@@ -5035,7 +5035,7 @@ def $find_typdef(p', C, name)
       2. Return td
     4. If (?() = $find_map_opt<tid, typdef>(C.BLOCK.TDENV, id)), then
       1. Return $find_typdef(`GLOBAL`_cursor(), C, `CURRENT%`_name(id))
-4. If (p' = `LOCAL`_cursor()), then
+2. Else If p' matches `LOCAL`, then
   1. If name matches `CURRENT%`, then
     1. Let `CURRENT%`_name(id) = name
     2. Let typdef? = $find_map_opt<tid, typdef>(C.LOCAL.TDENV, id)
@@ -5063,11 +5063,11 @@ def $find_funcdef(p', C, name, arg*{arg <- arg*})
 1. If name matches `TOP%`, then
   1. Let `TOP%`_name(id) = name
   2. Return $find_func<funcdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.FDENV)
-2. If (p' = `GLOBAL`_cursor()), then
+2. If p' matches `GLOBAL`, then
   1. If name matches `CURRENT%`, then
     1. Let `CURRENT%`_name(id) = name
     2. Return $find_func<funcdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.FDENV)
-3. If (p' = `BLOCK`_cursor()), then
+2. Else If p' matches `BLOCK`, then
   1. If name matches `CURRENT%`, then
     1. Let `CURRENT%`_name(id) = name
     2. Let (fid, funcdef, id*)? = $find_func_opt<funcdef>(id, $to_fkey(arg*{arg <- arg*}), C.BLOCK.FDENV)
@@ -5076,7 +5076,7 @@ def $find_funcdef(p', C, name, arg*{arg <- arg*})
       2. Return (fid, fd, id_deft*{id_deft <- id_deft*})
     4. If (?() = $find_func_opt<funcdef>(id, $to_fkey(arg*{arg <- arg*}), C.BLOCK.FDENV)), then
       1. Return $find_funcdef(`GLOBAL`_cursor(), C, `CURRENT%`_name(id), arg*{arg <- arg*})
-4. If (p' = `LOCAL`_cursor()), then
+2. Else If p' matches `LOCAL`, then
   1. If name matches `CURRENT%`, then
     1. Let `CURRENT%`_name(id) = name
     2. Return $find_funcdef(`BLOCK`_cursor(), C, `CURRENT%`_name(id), arg*{arg <- arg*})
@@ -5086,11 +5086,11 @@ def $find_funcdef_by_name(p', C, name)
 1. If name matches `TOP%`, then
   1. Let `TOP%`_name(id) = name
   2. Return $find_func_by_name(id, C.GLOBAL.FDENV)
-2. If (p' = `GLOBAL`_cursor()), then
+2. If p' matches `GLOBAL`, then
   1. If name matches `CURRENT%`, then
     1. Let `CURRENT%`_name(id) = name
     2. Return $find_func_by_name(id, C.GLOBAL.FDENV)
-3. If (p' = `BLOCK`_cursor()), then
+2. Else If p' matches `BLOCK`, then
   1. If name matches `CURRENT%`, then
     1. Let `CURRENT%`_name(id) = name
     2. Let funcdef? = $find_func_by_name_opt(id, C.BLOCK.FDENV)
@@ -5099,7 +5099,7 @@ def $find_funcdef_by_name(p', C, name)
       2. Return fd
     4. If (?() = $find_func_by_name_opt(id, C.BLOCK.FDENV)), then
       1. Return $find_funcdef_by_name(`GLOBAL`_cursor(), C, `CURRENT%`_name(id))
-4. If (p' = `LOCAL`_cursor()), then
+2. Else If p' matches `LOCAL`, then
   1. If name matches `CURRENT%`, then
     1. Let `CURRENT%`_name(id) = name
     2. Return $find_funcdef_by_name(`BLOCK`_cursor(), C, `CURRENT%`_name(id))
@@ -5109,15 +5109,15 @@ def $find_consdef(p', C, name, arg*{arg <- arg*})
 1. If name matches `TOP%`, then
   1. Let `TOP%`_name(id) = name
   2. Return $find_func<consdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.CDENV)
-2. If (p' = `GLOBAL`_cursor()), then
+2. If p' matches `GLOBAL`, then
   1. If name matches `CURRENT%`, then
     1. Let `CURRENT%`_name(id) = name
     2. Return $find_func<consdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.CDENV)
-3. If (p' = `BLOCK`_cursor()), then
+2. Else If p' matches `BLOCK`, then
   1. If name matches `CURRENT%`, then
     1. Let `CURRENT%`_name(id) = name
     2. Return $find_consdef(`GLOBAL`_cursor(), C, `CURRENT%`_name(id), arg*{arg <- arg*})
-4. If (p' = `LOCAL`_cursor()), then
+2. Else If p' matches `LOCAL`, then
   1. If name matches `CURRENT%`, then
     1. Let `CURRENT%`_name(id) = name
     2. Return $find_consdef(`BLOCK`_cursor(), C, `CURRENT%`_name(id), arg*{arg <- arg*})
@@ -5207,41 +5207,41 @@ def $update_mode(text', typ', tblctx)
     2. Return tblctx[MODE = `NOPRILPM%`_mode(w)]
   2. If (tblctx.MODE = `PRI`_mode()), then
     1. Return tblctx[MODE = `PRILPM`_mode()]
-2. If (text' = "range"), then
+1. Else If (text' = "range"), then
   1. If (tblctx.MODE = `NOPRI`_mode()), then
     1. Return tblctx[MODE = `PRI`_mode()]
   2. Let mode = tblctx.MODE
   3. If mode matches `NOPRILPM%`, then
     1. Let `NOPRILPM%`_mode(_nat) = mode
     2. Return tblctx[MODE = `PRILPM`_mode()]
-3. If (text' = "ternary"), then
+1. Else If (text' = "ternary"), then
   1. If (tblctx.MODE = `NOPRI`_mode()), then
     1. Return tblctx[MODE = `PRI`_mode()]
   2. Let mode = tblctx.MODE
   3. If mode matches `NOPRILPM%`, then
     1. Let `NOPRILPM%`_mode(_nat) = mode
     2. Return tblctx[MODE = `PRILPM`_mode()]
-4. If (text' = "optional"), then
+1. Else If (text' = "optional"), then
   1. If (tblctx.MODE = `NOPRI`_mode()), then
     1. Return tblctx[MODE = `PRI`_mode()]
   2. Let mode = tblctx.MODE
   3. If mode matches `NOPRILPM%`, then
     1. Let `NOPRILPM%`_mode(_nat) = mode
     2. Return tblctx[MODE = `PRILPM`_mode()]
-5. Otherwise
+2. Otherwise
   1. Return tblctx
 
 ;; ../../../../spec/4a2-typing-tblctx.watsup:129.1-129.49
 def $update_state(tblstate, tblstate')
-1. If (tblstate = `NOLPM`_tblstate()), then
+1. If tblstate matches `NOLPM`, then
   1. If tblstate' matches `LPM%`, then
     1. Let `LPM%`_tblstate(nat) = tblstate'
     2. Return `LPM%`_tblstate(nat)
-  2. If (tblstate' = `NOLPM`_tblstate()), then
+  1. Else If tblstate' matches `NOLPM`, then
     1. Return `NOLPM`_tblstate()
-2. If tblstate matches `LPM%`, then
+1. Else If tblstate matches `LPM%`, then
   1. Let `LPM%`_tblstate(nat) = tblstate
-  2. If (tblstate' = `NOLPM`_tblstate()), then
+  2. If tblstate' matches `NOLPM`, then
     1. Return `LPM%`_tblstate(nat)
 
 ;; ../../../../spec/4a2-typing-tblctx.watsup:139.1-139.54
@@ -5429,64 +5429,64 @@ relation Eval_static: p, C, exprIL''
 
 ;; ../../../../spec/4b-typing-relation.watsup:43.1-45.23
 relation Type_ok: p, C, type''
-1. If (type'' = `VoidT`_type()), then
+1. If type'' matches `VoidT`, then
   1. Result in `VoidT`_primtyp() as typ, []
-2. If (type'' = `ErrT`_type()), then
+1. Else If type'' matches `ErrT`, then
   1. Result in `ErrT`_primtyp() as typ, []
-3. If (type'' = `MatchKindT`_type()), then
+1. Else If type'' matches `MatchKindT`, then
   1. Result in `MatchKindT`_primtyp() as typ, []
-4. If (type'' = `StrT`_type()), then
+1. Else If type'' matches `StrT`, then
   1. Result in `StrT`_primtyp() as typ, []
-5. If (type'' = `BoolT`_type()), then
+1. Else If type'' matches `BoolT`, then
   1. Result in `BoolT`_primtyp() as typ, []
-6. If (type'' = `IntT`_type()), then
+1. Else If type'' matches `IntT`, then
   1. Result in `IntT`_numtyp() as typ, []
-7. If type'' matches `FIntT%`, then
+1. Else If type'' matches `FIntT%`, then
   1. Let `FIntT%`_type(expr) = type''
   2. Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
   3. Let `(%;%)`_annotIL(_typ, ctk) = $annot(exprIL)
-  4. If (ctk = `LCTK`_ctk()), then
+  4. If ctk matches `LCTK`, then
     1. Eval_static: `%%|-%~>%`(p, C, exprIL, val)
     2. Let int = $get_num(val)
     3. If int <: nat, then
       1. Let w = int as nat
       2. Result in `FIntT%`_numtyp(w) as typ, []
-7. Else If type'' matches `FBitT%`, then
+1. Else If type'' matches `FBitT%`, then
   1. Let `FBitT%`_type(expr) = type''
   2. Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
   3. Let `(%;%)`_annotIL(_typ, ctk) = $annot(exprIL)
-  4. If (ctk = `LCTK`_ctk()), then
+  4. If ctk matches `LCTK`, then
     1. Eval_static: `%%|-%~>%`(p, C, exprIL, val)
     2. Let int = $get_num(val)
     3. If int <: nat, then
       1. Let w = int as nat
       2. Result in `FBitT%`_numtyp(w) as typ, []
-7. Else If type'' matches `VBitT%`, then
+1. Else If type'' matches `VBitT%`, then
   1. Let `VBitT%`_type(expr) = type''
   2. Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
   3. Let `(%;%)`_annotIL(_typ, ctk) = $annot(exprIL)
-  4. If (ctk = `LCTK`_ctk()), then
+  4. If ctk matches `LCTK`, then
     1. Eval_static: `%%|-%~>%`(p, C, exprIL, val)
     2. Let int = $get_num(val)
     3. If int <: nat, then
       1. Let w = int as nat
       2. Result in `VBitT%`_numtyp(w) as typ, []
-7. Else If type'' matches `StackT%%`, then
+1. Else If type'' matches `StackT%%`, then
   1. Let `StackT%%`_type(type'', expr) = type''
   2. Type_ok: `%%|-%:%%`(p, C, type'', typ, tid_fresh*{tid_fresh <- tid_fresh*})
   3. Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
   4. Let `(%;%)`_annotIL(_typ, ctk) = $annot(exprIL)
-  5. If (ctk = `LCTK`_ctk()), then
+  5. If ctk matches `LCTK`, then
     1. Eval_static: `%%|-%~>%`(p, C, exprIL, val)
     2. Let i_size = $get_num(val)
     3. Let ptd = `PolyD%->%`_polytypdef((["T"], []), `StackT%%`_datatyp(`VarT%`_abstyp("T") as typ, i_size) as typ)
     4. Result in `SpecT%%`_abstyp(ptd, [typ]) as typ, tid_fresh*{tid_fresh <- tid_fresh*}
-7. Else If type'' matches `ListT%`, then
+1. Else If type'' matches `ListT%`, then
   1. Let `ListT%`_type(type'') = type''
   2. Type_ok: `%%|-%:%%`(p, C, type'', typ, tid_fresh*{tid_fresh <- tid_fresh*})
   3. Let ptd = `PolyD%->%`_polytypdef((["T"], []), `ListT%`_datatyp(`VarT%`_abstyp("T") as typ) as typ)
   4. Result in `SpecT%%`_abstyp(ptd, [typ]) as typ, tid_fresh*{tid_fresh <- tid_fresh*}
-7. Else If type'' matches `TupleT%`, then
+1. Else If type'' matches `TupleT%`, then
   1. Let `TupleT%`_type(type''*{type'' <- type''*}) = type''
   2. (Type_ok: `%%|-%:%%`(p, C, type'', typ, tid_fresh_i*{tid_fresh_i <- tid_fresh_i*}))*{tid_fresh_i* <- tid_fresh_i**, typ <- typ*, type'' <- type''*}
   3. Let tid_fresh*{tid_fresh <- tid_fresh*} = $concat_<tid>(tid_fresh_i*{tid_fresh_i <- tid_fresh_i*}*{tid_fresh_i* <- tid_fresh_i**})
@@ -5494,7 +5494,7 @@ relation Type_ok: p, C, type''
   5. (Let tid = $concat_text(["T", $int_to_text(i_idx)]))*{i_idx <- i_idx*, tid <- tid*}
   6. Let ptd = `PolyD%->%`_polytypdef((tid*{tid <- tid*}, []), `TupleT%`_datatyp(`VarT%`_abstyp(tid) as typ*{tid <- tid*}) as typ)
   7. Result in `SpecT%%`_abstyp(ptd, typ*{typ <- typ*}) as typ, tid_fresh*{tid_fresh <- tid_fresh*}
-7. Else If type'' matches `NameT%`, then
+1. Else If type'' matches `NameT%`, then
   1. Let `NameT%`_type(name) = type''
   2. Let typdef = $find_typdef(p, C, name)
   3. If typdef <: monotypdef, then
@@ -5504,7 +5504,7 @@ relation Type_ok: p, C, type''
     1. Let `PolyD%->%`_polytypdef((tparam*{tparam <- tparam*}, tparam_hidden*{tparam_hidden <- tparam_hidden*}), typ) = typdef as polytypdef
     2. Let ptd = `PolyD%->%`_polytypdef((tparam*{tparam <- tparam*}, tparam_hidden*{tparam_hidden <- tparam_hidden*}), typ)
     3. Result in `SpecT%%`_abstyp(ptd, []) as typ, []
-7. Else If type'' matches `SpecT%%`, then
+1. Else If type'' matches `SpecT%%`, then
   1. Let `SpecT%%`_type(name, type*) = type''
   2. If type* matches [], then
     1. Let typdef = $find_typdef(p, C, name)
@@ -5519,7 +5519,7 @@ relation Type_ok: p, C, type''
     3. (Type_ok: `%%|-%:%%`(p, C, type'', typ_a, tid_fresh_a*{tid_fresh_a <- tid_fresh_a*}))*{tid_fresh_a* <- tid_fresh_a**, typ_a <- typ_a*, type'' <- type''*}
     4. Let tid_fresh*{tid_fresh <- tid_fresh*} = $concat_<tid>(tid_fresh_a*{tid_fresh_a <- tid_fresh_a*}*{tid_fresh_a* <- tid_fresh_a**})
     5. Result in `SpecT%%`_abstyp(ptd, typ_a*{typ_a <- typ_a*}) as typ, tid_fresh*{tid_fresh <- tid_fresh*}
-8. If (type'' = `AnyT`_type()), then
+1. Else If type'' matches `AnyT`, then
   1. Let tid = $fresh_tid
   2. Result in `VarT%`_abstyp(tid) as typ, [tid]
 
@@ -5896,24 +5896,28 @@ relation Expr_ok: p', C, expr''
   3. (Let `(%;%)`_annotIL(typ, ctk) = $annot(exprIL))*{ctk <- ctk*, exprIL <- exprIL*, typ <- typ*}
   4. Let ctk_e = $joins_ctk(ctk*{ctk <- ctk*})
   5. Result in `RecordE%%`_exprIL((member, exprIL)*{exprIL <- exprIL*, member <- member*}, `(%;%)`_annotIL(`RecordDefaultT%`_synthtyp((member, typ)*{member <- member*, typ <- typ*}) as typ, ctk_e))
+1. Else If expr'' matches `DefaultE`, then
+  1. Result in `DefaultE%`_exprIL(`(%;%)`_annotIL(`DefaultT`_synthtyp() as typ, `LCTK`_ctk()))
+1. Else If expr'' matches `InvalidE`, then
+  1. Result in `ValueE%%`_exprIL(`InvalidV`_val(), `(%;%)`_annotIL(`InvalidT`_synthtyp() as typ, `LCTK`_ctk()))
 1. Else If expr'' matches `UnE%%`, then
   1. Let `UnE%%`_expr(unop, expr'') = expr''
-  2. If (unop = `BNOT`_unop()), then
+  2. If unop matches `BNOT`, then
     1. Expr_ok: `%%|-%:%`(p', C, expr'', exprIL)
     2. Let exprIL_e = $reduce_senum_unary(exprIL, $compatible_bnot)
     3. Let `(%;%)`_annotIL(typ_e, ctk_e) = $annot(exprIL_e)
     4. Result in `UnE%%%`_exprIL(`BNOT`_unop(), exprIL_e, `(%;%)`_annotIL(typ_e, ctk_e))
-  3. If (unop = `LNOT`_unop()), then
+  2. Else If unop matches `LNOT`, then
     1. Expr_ok: `%%|-%:%`(p', C, expr'', exprIL)
     2. Let exprIL_e = $reduce_senum_unary(exprIL, $compatible_lnot)
     3. Let `(%;%)`_annotIL(typ_e, ctk_e) = $annot(exprIL_e)
     4. Result in `UnE%%%`_exprIL(`LNOT`_unop(), exprIL_e, `(%;%)`_annotIL(typ_e, ctk_e))
-  4. If (unop = `UPLUS`_unop()), then
+  2. Else If unop matches `UPLUS`, then
     1. Expr_ok: `%%|-%:%`(p', C, expr'', exprIL)
     2. Let exprIL_e = $reduce_senum_unary(exprIL, $compatible_uplus)
     3. Let `(%;%)`_annotIL(typ_e, ctk_e) = $annot(exprIL_e)
     4. Result in `UnE%%%`_exprIL(`UPLUS`_unop(), exprIL_e, `(%;%)`_annotIL(typ_e, ctk_e))
-  5. If (unop = `UMINUS`_unop()), then
+  2. Else If unop matches `UMINUS`, then
     1. Expr_ok: `%%|-%:%`(p', C, expr'', exprIL)
     2. Let exprIL_e = $reduce_senum_unary(exprIL, $compatible_uminus)
     3. Let `(%;%)`_annotIL(typ_e, ctk_e) = $annot(exprIL_e)
@@ -5945,7 +5949,7 @@ relation Expr_ok: p', C, expr''
     4. Let (exprIL_l'', exprIL_r'') = $reduce_senums_binary(exprIL_l', exprIL_r', $compatible_divmod)
     5. Let `(%;%)`_annotIL(typ'', ctk_l'') = $annot(exprIL_l'')
     6. Let `(%;%)`_annotIL(_typ, ctk') = $annot(exprIL_r'')
-    7. If (ctk' = `LCTK`_ctk()), then
+    7. If ctk' matches `LCTK`, then
       1. Eval_static: `%%|-%~>%`(p', C, exprIL_r'', val_r)
       2. Let int = $get_num(val_r)
       3. If int <: nat, then
@@ -5993,7 +5997,7 @@ relation Expr_ok: p', C, expr''
     6. Let `(%;%)`_annotIL(_typ, ctk_r'') = $annot(exprIL_r'')
     7. Let ctk = $join_ctk(ctk_l'', ctk_r'')
     8. Result in `BinE%%%%`_exprIL(binop, exprIL_l'', exprIL_r'', `(%;%)`_annotIL(typ'', ctk))
-  9. If (binop = `CONCAT`_binop()), then
+  9. If binop matches `CONCAT`, then
     1. Expr_ok: `%%|-%:%`(p', C, expr_l, exprIL_l)
     2. Expr_ok: `%%|-%:%`(p', C, expr_r, exprIL_r)
     3. Let (exprIL_l', exprIL_r') = $reduce_senums_binary(exprIL_l, exprIL_r, $compatible_concat)
@@ -6061,7 +6065,7 @@ relation Expr_ok: p', C, expr''
   3. Let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
   4. Expr_ok: `%%|-%:%`(p', C, expr_i, exprIL_i)
   5. Let `(%;%)`_annotIL(typ_i, ctk) = $annot(exprIL_i)
-  6. If (ctk = `LCTK`_ctk()), then
+  6. If ctk matches `LCTK`, then
     1. Let exprIL_i' = $reduce_senum_unary(exprIL_i, $compatible_arrayindex)
     2. Let typ' = $canon_typ(typ_b)
     3. If typ' <: datatyp, then
@@ -6077,7 +6081,7 @@ relation Expr_ok: p', C, expr''
   7. Let `(%;%)`_annotIL(typ_b, _ctk) = $annot(exprIL_b)
   8. Expr_ok: `%%|-%:%`(p', C, expr_i, exprIL_i)
   9. Let `(%;%)`_annotIL(typ_i, ctk) = $annot(exprIL_i)
-  10. If (ctk = `LCTK`_ctk()), then
+  10. If ctk matches `LCTK`, then
     1. Let exprIL_i' = $reduce_senum_unary(exprIL_i, $compatible_arrayindex)
     2. Let typ = $canon_typ(typ_b)
     3. If typ <: datatyp, then
@@ -6104,7 +6108,7 @@ relation Expr_ok: p', C, expr''
   4. Let `(%;%)`_annotIL(typ_b', ctk_b') = $annot(exprIL_b')
   5. Expr_ok: `%%|-%:%`(p', C, expr_l, exprIL_l)
   6. Let `(%;%)`_annotIL(typ_l, ctk) = $annot(exprIL_l)
-  7. If (ctk = `LCTK`_ctk()), then
+  7. If ctk matches `LCTK`, then
     1. Let exprIL_l' = $reduce_senum_unary(exprIL_l, $compatible_bitstringindex)
     2. Eval_static: `%%|-%~>%`(p', C, exprIL_l', val_l)
     3. Let int = $get_num(val_l)
@@ -6113,7 +6117,7 @@ relation Expr_ok: p', C, expr''
       2. Let exprIL_l'' = `ValueE%%`_exprIL(val_l, `(%;%)`_annotIL(typ_l, `LCTK`_ctk()))
       3. Expr_ok: `%%|-%:%`(p', C, expr_h, exprIL_h)
       4. Let `(%;%)`_annotIL(typ_h, ctk') = $annot(exprIL_h)
-      5. If (ctk' = `LCTK`_ctk()), then
+      5. If ctk' matches `LCTK`, then
         1. Let exprIL_h' = $reduce_senum_unary(exprIL_h, $compatible_bitstringindex)
         2. Eval_static: `%%|-%~>%`(p', C, exprIL_h', val_h)
         3. Let int' = $get_num(val_h)
@@ -6157,7 +6161,7 @@ relation Expr_ok: p', C, expr''
       2. If datatyp matches `StackT%%`, then
         1. Let `StackT%%`_datatyp(typ_s, int_s) = datatyp
         2. Result in `ExprAccE%%%`_exprIL(exprIL_b, "size", `(%;%)`_annotIL(`FBitT%`_numtyp(32) as typ, `LCTK`_ctk()))
-  3. If (text = "lastIndex"), then
+  2. Else If (text = "lastIndex"), then
     1. If (((p' = `BLOCK`_cursor()) /\ (C.BLOCK.KIND = `PARSER`_bkind())) \/ ((p' = `LOCAL`_cursor()) /\ (C.LOCAL.KIND = `PARSERSTATE`_lkind()))), then
       1. Expr_ok: `%%|-%:%`(p', C, expr_b, exprIL_b)
       2. Let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
@@ -6167,7 +6171,7 @@ relation Expr_ok: p', C, expr''
         2. If datatyp matches `StackT%%`, then
           1. Let `StackT%%`_datatyp(typ_s, int_s) = datatyp
           2. Result in `ExprAccE%%%`_exprIL(exprIL_b, "lastIndex", `(%;%)`_annotIL(`FBitT%`_numtyp(32) as typ, `DYN`_ctk()))
-  4. If (text = "last"), then
+  2. Else If (text = "last"), then
     1. If (((p' = `BLOCK`_cursor()) /\ (C.BLOCK.KIND = `PARSER`_bkind())) \/ ((p' = `LOCAL`_cursor()) /\ (C.LOCAL.KIND = `PARSERSTATE`_lkind()))), then
       1. Expr_ok: `%%|-%:%`(p', C, expr_b, exprIL_b)
       2. Let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
@@ -6177,7 +6181,7 @@ relation Expr_ok: p', C, expr''
         2. If datatyp matches `StackT%%`, then
           1. Let `StackT%%`_datatyp(typ_s, int_s) = datatyp
           2. Result in `ExprAccE%%%`_exprIL(exprIL_b, "last", `(%;%)`_annotIL(typ_s, `DYN`_ctk()))
-  5. If (text = "next"), then
+  2. Else If (text = "next"), then
     1. Expr_ok: `%%|-%:%`(p', C, expr_b, exprIL_b)
     2. Let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
     3. Let typ = $canon_typ(typ_b)
@@ -6186,11 +6190,11 @@ relation Expr_ok: p', C, expr''
       2. If datatyp matches `StackT%%`, then
         1. Let `StackT%%`_datatyp(typ_s, int_s) = datatyp
         2. Result in `ExprAccE%%%`_exprIL(exprIL_b, "next", `(%;%)`_annotIL(typ_s, `DYN`_ctk()))
-  6. Let `ExprAccE%%`_expr(expr_b, member) = expr''
-  7. Expr_ok: `%%|-%:%`(p', C, expr_b, exprIL_b)
-  8. Let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
-  9. Let typ' = $canon_typ(typ_b)
-  10. If typ' <: datatyp, then
+  3. Let `ExprAccE%%`_expr(expr_b, member) = expr''
+  4. Expr_ok: `%%|-%:%`(p', C, expr_b, exprIL_b)
+  5. Let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
+  6. Let typ' = $canon_typ(typ_b)
+  7. If typ' <: datatyp, then
     1. Let datatyp = typ' as datatyp
     2. If datatyp matches `StructT%%`, then
       1. Let `StructT%%`_datatyp(id_s, (member_s, typ_s)*{member_s <- member_s*, typ_s <- typ_s*}) = datatyp
@@ -6198,11 +6202,11 @@ relation Expr_ok: p', C, expr''
       3. If typ? matches (_), then
         1. Let ?(typ) = typ?
         2. Result in `ExprAccE%%%`_exprIL(exprIL_b, member, `(%;%)`_annotIL(typ, `DYN`_ctk()))
-  11. Let `ExprAccE%%`_expr(expr_b, member) = expr''
-  12. Expr_ok: `%%|-%:%`(p', C, expr_b, exprIL_b)
-  13. Let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
-  14. Let typ' = $canon_typ(typ_b)
-  15. If typ' <: datatyp, then
+  8. Let `ExprAccE%%`_expr(expr_b, member) = expr''
+  9. Expr_ok: `%%|-%:%`(p', C, expr_b, exprIL_b)
+  10. Let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
+  11. Let typ' = $canon_typ(typ_b)
+  12. If typ' <: datatyp, then
     1. Let datatyp = typ' as datatyp
     2. If datatyp matches `HeaderT%%`, then
       1. Let `HeaderT%%`_datatyp(id_h, (member_h, typ_h)*{member_h <- member_h*, typ_h <- typ_h*}) = datatyp
@@ -6210,11 +6214,11 @@ relation Expr_ok: p', C, expr''
       3. If typ? matches (_), then
         1. Let ?(typ) = typ?
         2. Result in `ExprAccE%%%`_exprIL(exprIL_b, member, `(%;%)`_annotIL(typ, `DYN`_ctk()))
-  16. Let `ExprAccE%%`_expr(expr_b, member) = expr''
-  17. Expr_ok: `%%|-%:%`(p', C, expr_b, exprIL_b)
-  18. Let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
-  19. Let typ' = $canon_typ(typ_b)
-  20. If typ' <: datatyp, then
+  13. Let `ExprAccE%%`_expr(expr_b, member) = expr''
+  14. Expr_ok: `%%|-%:%`(p', C, expr_b, exprIL_b)
+  15. Let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
+  16. Let typ' = $canon_typ(typ_b)
+  17. If typ' <: datatyp, then
     1. Let datatyp = typ' as datatyp
     2. If datatyp matches `UnionT%%`, then
       1. Let `UnionT%%`_datatyp(id_u, (member_u, typ_u)*{member_u <- member_u*, typ_u <- typ_u*}) = datatyp
@@ -6222,11 +6226,11 @@ relation Expr_ok: p', C, expr''
       3. If typ? matches (_), then
         1. Let ?(typ) = typ?
         2. Result in `ExprAccE%%%`_exprIL(exprIL_b, member, `(%;%)`_annotIL(typ, `DYN`_ctk()))
-  21. Let `ExprAccE%%`_expr(expr_b, member) = expr''
-  22. Expr_ok: `%%|-%:%`(p', C, expr_b, exprIL_b)
-  23. Let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
-  24. Let typ' = $canon_typ(typ_b)
-  25. If typ' <: synthtyp, then
+  18. Let `ExprAccE%%`_expr(expr_b, member) = expr''
+  19. Expr_ok: `%%|-%:%`(p', C, expr_b, exprIL_b)
+  20. Let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
+  21. Let typ' = $canon_typ(typ_b)
+  22. If typ' <: synthtyp, then
     1. Let synthtyp = typ' as synthtyp
     2. If synthtyp matches `TableStructT%%`, then
       1. Let `TableStructT%%`_synthtyp(id_t, (member_t, typ_t)*{member_t <- member_t*, typ_t <- typ_t*}) = synthtyp
@@ -6284,11 +6288,7 @@ relation Expr_ok: p', C, expr''
   6. Inst_ok: `%%%|-%%%%:%%%`(p', C, tid_fresh'*{tid_fresh' <- tid_fresh'*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*})
   7. If $not_abstract_extern_object(typ), then
     1. Result in `InstE%%%%`_exprIL(name, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*}, `(%;%)`_annotIL(typ, `CTK`_ctk()))
-2. If (expr'' = `DefaultE`_expr()), then
-  1. Result in `DefaultE%`_exprIL(`(%;%)`_annotIL(`DefaultT`_synthtyp() as typ, `LCTK`_ctk()))
-3. If (expr'' = `InvalidE`_expr()), then
-  1. Result in `ValueE%%`_exprIL(`InvalidV`_val(), `(%;%)`_annotIL(`InvalidT`_synthtyp() as typ, `LCTK`_ctk()))
-4. If (p' = `LOCAL`_cursor()), then
+2. If p' matches `LOCAL`, then
   1. If expr'' matches `SelectE%%`, then
     1. Let `SelectE%%`_expr(expr_k*{expr_k <- expr_k*}, selectcase*{selectcase <- selectcase*}) = expr''
     2. If (C.LOCAL.KIND = `PARSERSTATE`_lkind()), then
@@ -6314,7 +6314,7 @@ relation Arg_ok: p, C, arg
     4. Result in `NameA%%`_argIL(id, ?(exprIL)), typ
   2. Else
     1. Result in `NameA%%`_argIL(id, ?()), `AnyT`_synthtyp() as typ
-2. If (arg = `AnyA`_arg()), then
+1. Else If arg matches `AnyA`, then
   1. Result in `AnyA`_argIL(), `AnyT`_synthtyp() as typ
 
 ;; ../../../../spec/4b-typing-relation.watsup:80.1-82.23
@@ -6345,11 +6345,11 @@ syntax blkctxt =
 
 ;; ../../../../spec/4b-typing-relation.watsup:88.1-90.29
 relation Block_ok: cursor, C, f, blkctxt, `BlockB%`_block(stmt*{stmt <- stmt*})
-1. If (cursor = `LOCAL`_cursor()), then
-  1. If (blkctxt = `INIT`_blkctxt()), then
+1. If cursor matches `LOCAL`, then
+  1. If blkctxt matches `INIT`, then
     1. Stmts_ok: `%%%|-%:%%%`(`LOCAL`_cursor(), C, f, stmt*{stmt <- stmt*}, C', f', stmtIL*{stmtIL <- stmtIL*})
     2. Result in C', f', `BlockB%`_blockIL(stmtIL*{stmtIL <- stmtIL*})
-  2. If (blkctxt = `NOINIT`_blkctxt()), then
+  1. Else If blkctxt matches `NOINIT`, then
     1. Let C' = $enter(C)
     2. Stmts_ok: `%%%|-%:%%%`(`LOCAL`_cursor(), C', f, stmt*{stmt <- stmt*}, C'', f', stmtIL*{stmtIL <- stmtIL*})
     3. Let C''' = $exit(C'')
@@ -6357,19 +6357,19 @@ relation Block_ok: cursor, C, f, blkctxt, `BlockB%`_block(stmt*{stmt <- stmt*})
 
 ;; ../../../../spec/4b-typing-relation.watsup:91.1-93.26
 relation Stmt_ok: p', C, f, stmt
-1. If (stmt = `EmptyS`_stmt()), then
+1. If stmt matches `EmptyS`, then
   1. Result in C, f, `EmptyS`_stmtIL()
-2. If stmt matches `AssignS%%`, then
+1. Else If stmt matches `AssignS%%`, then
   1. Let `AssignS%%`_stmt(expr_l, expr_r) = stmt
   2. Expr_ok: `%%|-%:%`(p', C, expr_l, exprIL_l)
   3. Let `(%;%)`_annotIL(typ_l, ctk) = $annot(exprIL_l)
-  4. If (ctk = `DYN`_ctk()), then
+  4. If ctk matches `DYN`, then
     1. Lval_ok: `%%|-%`(p', C, exprIL_l)
     2. Expr_ok: `%%|-%:%`(p', C, expr_r, exprIL_r)
     3. Let `(%;%)`_annotIL(typ_r, _ctk) = $annot(exprIL_r)
     4. Let exprIL_r' = $coerce_assign(exprIL_r, typ_l)
     5. Result in C, f, `AssignS%%`_stmtIL(exprIL_l, exprIL_r')
-2. Else If stmt matches `IfS%%%`, then
+1. Else If stmt matches `IfS%%%`, then
   1. Let `IfS%%%`_stmt(expr_c, stmt_t, stmt_f) = stmt
   2. Expr_ok: `%%|-%:%`(p', C, expr_c, exprIL_c)
   3. Let `(%;%)`_annotIL(typ, _ctk) = $annot(exprIL_c)
@@ -6378,7 +6378,9 @@ relation Stmt_ok: p', C, f, stmt
     2. Stmt_ok: `%%%|-%:%%%`(p', C, f, stmt_f, C_f, f_f, stmtIL_f)
     3. Let f' = $join_flow(f_t, f_f)
     4. Result in C, f', `IfS%%%`_stmtIL(exprIL_c, stmtIL_t, stmtIL_f)
-2. Else If stmt matches `CallFuncS%%%`, then
+1. Else If stmt matches `ExitS`, then
+  1. Result in C, f, `ExitS`_stmtIL()
+1. Else If stmt matches `CallFuncS%%%`, then
   1. Let `CallFuncS%%%`_stmt(name, targ*{targ <- targ*}, arg*{arg <- arg*}) = stmt
   2. If ((name = `CURRENT%`_name("verify")) => (((p' = `BLOCK`_cursor()) /\ (C.BLOCK.KIND = `PARSER`_bkind())) \/ ((p' = `LOCAL`_cursor()) /\ (C.LOCAL.KIND = `PARSERSTATE`_lkind())))), then
     1. (Type_ok: `%%|-%:%%`(p', C, targ, targIL, tid_fresh_a*{tid_fresh_a <- tid_fresh_a*}))*{targ <- targ*, targIL <- targIL*, tid_fresh_a* <- tid_fresh_a**}
@@ -6387,7 +6389,7 @@ relation Stmt_ok: p', C, f, stmt
     4. Let tid_fresh'*{tid_fresh' <- tid_fresh'*} = $concat_<tid>([tid_fresh*{tid_fresh <- tid_fresh*} ++ tid_fresh_inserted*{tid_fresh_inserted <- tid_fresh_inserted*}])
     5. Call_ok: `%%%|-%%%%:%%%`(p', C, tid_fresh'*{tid_fresh' <- tid_fresh'*}, ft, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*})
     6. Result in C, f, `CallFuncS%%%`_stmtIL(name, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*})
-2. Else If stmt matches `CallMethodS%%%%`, then
+1. Else If stmt matches `CallMethodS%%%%`, then
   1. Let `CallMethodS%%%%`_stmt(expr_b, member, targ*{targ <- targ*}, arg*{arg <- arg*}) = stmt
   2. (Arg_ok: `%%|-%:%%`(p', C, arg, argIL, typ_arg))*{arg <- arg*, argIL <- argIL*, typ_arg <- typ_arg*}
   3. (Type_ok: `%%|-%:%%`(p', C, targ, targIL, tid_fresh_a*{tid_fresh_a <- tid_fresh_a*}))*{targ <- targ*, targIL <- targIL*, tid_fresh_a* <- tid_fresh_a**}
@@ -6396,7 +6398,7 @@ relation Stmt_ok: p', C, f, stmt
   6. Let tid_fresh'*{tid_fresh' <- tid_fresh'*} = $concat_<tid>([tid_fresh*{tid_fresh <- tid_fresh*} ++ tid_fresh_inserted*{tid_fresh_inserted <- tid_fresh_inserted*}])
   7. Call_ok: `%%%|-%%%%:%%%`(p', C, tid_fresh'*{tid_fresh' <- tid_fresh'*}, ft, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*})
   8. Result in C, f, `CallMethodS%%%%`_stmtIL(exprIL_b, member, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*})
-2. Else If stmt matches `CallInstS%%%`, then
+1. Else If stmt matches `CallInstS%%%`, then
   1. Let `CallInstS%%%`_stmt(name, targ*{targ <- targ*}, arg*{arg <- arg*}) = stmt
   2. ConsType_ok: `%%|-%%%:%%%`(p', C, name, [], [], ct, tid*, id*)
   3. If tid* matches [], then
@@ -6418,17 +6420,17 @@ relation Stmt_ok: p', C, f, stmt
                   2. If (name' = `CURRENT%`_name(id)), then
                     1. If (text = "apply"), then
                       1. Result in C, f, `CallInstS%%%%`_stmtIL(typ, name, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*})
-2. Else If stmt matches `TransS%`, then
+1. Else If stmt matches `TransS%`, then
   1. Let `TransS%`_stmt(expr) = stmt
   2. Expr_ok: `%%|-%:%`(p', C, expr, exprIL)
   3. Let `(%;%)`_annotIL(typ, _ctk) = $annot(exprIL)
   4. If (typ = `StateT`_synthtyp() as typ), then
     1. Result in C, f, `TransS%`_stmtIL(exprIL)
-2. Else If stmt matches `DeclS%`, then
+1. Else If stmt matches `DeclS%`, then
   1. Let `DeclS%`_stmt(decl) = stmt
   2. Decl_ok: `%%|-%:%%`(p', C, decl, C', declIL)
   3. Result in C', f, `DeclS%`_stmtIL(declIL)
-3. If (p' = `LOCAL`_cursor()), then
+2. If p' matches `LOCAL`, then
   1. If stmt matches `SwitchS%%`, then
     1. Let `SwitchS%%`_stmt(expr, switchcase*{switchcase <- switchcase*}) = stmt
     2. If (C.LOCAL.KIND = `CONTROLAPPLYMETHOD`_lkind()), then
@@ -6462,8 +6464,6 @@ relation Stmt_ok: p', C, f, stmt
   2. If (stmt = `RetS%`_stmt(?())), then
     1. If (`VoidT`_primtyp() as typ = $get_typ_ret_lkind(C.LOCAL.KIND)), then
       1. Result in C, `RET`_flow(), `RetS%`_stmtIL(?())
-4. If (stmt = `ExitS`_stmt()), then
-  1. Result in C, f, `ExitS`_stmtIL()
 
 ;; ../../../../spec/4b-typing-relation.watsup:94.1-96.26
 relation Stmts_ok: p, C, f, stmt*
@@ -6484,7 +6484,7 @@ relation Param_ok: p, C, `%%%%`_param(id, dir, type, expr?)
   4. Type_wf: `%|-%`(tidset, typ_p)
   5. Expr_ok: `%%|-%:%`(p, C, expr, exprIL_e)
   6. Let `(%;%)`_annotIL(typ_e, ctk) = $annot(exprIL_e)
-  7. If (ctk = `LCTK`_ctk()), then
+  7. If ctk matches `LCTK`, then
     1. Sub_impl: `%<<%`(typ_e, typ_p)
     2. Eval_static: `%%|-%~>%`(p, C, exprIL_e, val)
     3. Result in `%%%%`_paramIL(id, dir, typ_p, ?(val)), tid_fresh*{tid_fresh <- tid_fresh*}
@@ -6503,7 +6503,7 @@ relation CParam_ok: p, C, `%%%%`_param(id, dir, type, expr?)
   4. Type_wf: `%|-%`(tidset, typ_p)
   5. Expr_ok: `%%|-%:%`(p, C, expr, exprIL_e)
   6. Let `(%;%)`_annotIL(typ_e, ctk) = $annot(exprIL_e)
-  7. If (ctk = `LCTK`_ctk()), then
+  7. If ctk matches `LCTK`, then
     1. Sub_impl: `%<<%`(typ_e, typ_p)
     2. Eval_static: `%%|-%~>%`(p, C, exprIL_e, val)
     3. Result in `%%%%`_paramIL(id, dir, typ_p, ?(val)), tid_fresh*{tid_fresh <- tid_fresh*}
@@ -6522,7 +6522,7 @@ relation Decl_ok: p', C'''', decl''
     1. Type_wf: `%|-%`($bound_tids(p', C''''), typ_c)
     2. Expr_ok: `%%|-%:%`(p', C'''', expr, exprIL)
     3. Let `(%;%)`_annotIL(_typ, ctk) = $annot(exprIL)
-    4. If (ctk = `LCTK`_ctk()), then
+    4. If ctk matches `LCTK`, then
       1. Let exprIL' = $coerce_assign(exprIL, typ_c)
       2. Eval_static: `%%|-%~>%`(p', C'''', exprIL', val)
       3. Let C' = $add_styp(p', C'''', id, `%%%%`_styp(typ_c, `NO`_dir(), `LCTK`_ctk(), ?(val)))
@@ -6608,7 +6608,7 @@ relation Decl_ok: p', C'''', decl''
       4. If ((ctk = `CTK`_ctk()) \/ (ctk = `LCTK`_ctk())), then
         1. Let C' = $add_styp(p', C'''', id, `%%%%`_styp(`SetT%`_synthtyp(typ_s) as typ, `NO`_dir(), `CTK`_ctk(), ?()))
         2. Result in C', `ValueSetD%%%`_declIL(id, typ, exprIL)
-2. If (p' = `GLOBAL`_cursor()), then
+2. If p' matches `GLOBAL`, then
   1. If decl'' matches `ErrD%`, then
     1. Let `ErrD%`_decl(member*{member <- member*}) = decl''
     2. If $distinct_<member>(member*{member <- member*}), then
@@ -6879,7 +6879,7 @@ relation Decl_ok: p', C'''', decl''
     14. Let C_3 = $add_typdef(`GLOBAL`_cursor(), C'''', id, ptd as typdef)
     15. Let C_4 = $add_consdef(`GLOBAL`_cursor(), C_3, cid, cd)
     16. Result in C_4, `PackageTypeD%%%%`_declIL(id, tparam*{tparam <- tparam*}, tparam_hidden*{tparam_hidden <- tparam_hidden*}, cparamIL*{cparamIL <- cparamIL*})
-3. If (p' = `BLOCK`_cursor()), then
+2. Else If p' matches `BLOCK`, then
   1. If decl'' matches `TableD%%`, then
     1. Let `TableD%%`_decl(id, tbl) = decl''
     2. If (C''''.BLOCK.KIND = `CONTROL`_bkind()), then
@@ -6916,19 +6916,19 @@ syntax actctxt =
 
 ;; ../../../../spec/4b-typing-relation.watsup:126.1-128.29
 relation Call_convention_ok: p, C, actctxt, `%%%%`_paramtyp(id, dir, typ_p', val?{val <- val?}), (exprIL, typ_a')
-1. If (dir = `IN`_dir()), then
+1. If dir matches `IN`, then
   1. Let exprIL' = $coerce_assign(exprIL, typ_p')
   2. Result in exprIL'
 2. If ((dir = `OUT`_dir()) \/ (dir = `INOUT`_dir())), then
   1. Type_alpha: `%~~%`(typ_a', typ_p')
   2. Lval_ok: `%%|-%`(p, C, exprIL)
   3. Result in exprIL
-3. If (actctxt = `ACT`_actctxt()), then
-  1. If (dir = `NO`_dir()), then
+3. If actctxt matches `ACT`, then
+  1. If dir matches `NO`, then
     1. Let exprIL' = $coerce_assign(exprIL, typ_p')
     2. Result in exprIL'
-4. If (actctxt = `NOACT`_actctxt()), then
-  1. If (dir = `NO`_dir()), then
+3. Else If actctxt matches `NOACT`, then
+  1. If dir matches `NO`, then
     1. Let `(%;%)`_annotIL(_typ, ctk) = $annot(exprIL)
     2. If ((ctk = `LCTK`_ctk()) \/ (ctk = `CTK`_ctk())), then
       1. Type_alpha: `%~~%`(typ_a', typ_p')
@@ -6947,19 +6947,19 @@ relation Call_convention_arg_ok: p, C, actctxt, pt', (argIL, typ')
     2. Call_convention_ok: `%%%|-%~~%:%`(p, C, actctxt, pt', (exprIL, typ'), exprIL')
     3. Result in `NameA%%`_argIL(id, ?(exprIL'))
 2. Let `%%%%`_paramtyp(_id, dir, _typ, _val?) = pt'
-3. If (dir = `OUT`_dir()), then
+3. If dir matches `OUT`, then
   1. If argIL matches `NameA%%`, then
     1. Let `NameA%%`_argIL(id, exprIL?) = argIL
     2. If exprIL? matches (), then
       1. Result in `NameA%%`_argIL(id, ?())
 4. Let `%%%%`_paramtyp(_id, dir, _typ, _val?) = pt'
-5. If (dir = `OUT`_dir()), then
-  1. If (argIL = `AnyA`_argIL()), then
+5. If dir matches `OUT`, then
+  1. If argIL matches `AnyA`, then
     1. Result in `AnyA`_argIL()
 
 ;; ../../../../spec/4b-typing-relation.watsup:137.1-139.23
 relation Call_site_ok: cursor, C, functyp
-1. If (cursor = `BLOCK`_cursor()), then
+1. If cursor matches `BLOCK`, then
   1. If functyp matches `ExternFuncT%%`, then
     1. Let `ExternFuncT%%`_functyp(_paramtyp*, _typ) = functyp
     2. If ((C.BLOCK.KIND = `PARSER`_bkind()) \/ (C.BLOCK.KIND = `CONTROL`_bkind())), then
@@ -6976,7 +6976,7 @@ relation Call_site_ok: cursor, C, functyp
     1. Let `ExternAbstractMethodT%%`_functyp(_paramtyp*, _typ) = functyp
     2. If ((C.BLOCK.KIND = `PARSER`_bkind()) \/ (C.BLOCK.KIND = `CONTROL`_bkind())), then
       1. Result in 
-2. If (cursor = `LOCAL`_cursor()), then
+1. Else If cursor matches `LOCAL`, then
   1. If functyp matches `ActionT%`, then
     1. Let `ActionT%`_functyp(_paramtyp*) = functyp
     2. If (((C.LOCAL.KIND = `ACTION`_lkind()) \/ (C.LOCAL.KIND = `CONTROLAPPLYMETHOD`_lkind())) \/ (C.LOCAL.KIND = `TABLEAPPLYMETHOD`_lkind())), then
@@ -7368,11 +7368,11 @@ relation ConsType_ok: p, C, name, targIL*{targIL <- targIL*}, arg*{arg <- arg*}
 
 ;; ../../../../spec/4b-typing-relation.watsup:165.1-167.23
 relation Inst_site_ok: cursor, C, `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i)
-1. If (cursor = `GLOBAL`_cursor()), then
+1. If cursor matches `GLOBAL`, then
   1. Let typ_i' = $canon_typ(typ_i)
   2. If ($is_externt(typ_i') \/ $is_packaget(typ_i')), then
     1. Result in 
-2. If (cursor = `BLOCK`_cursor()), then
+1. Else If cursor matches `BLOCK`, then
   1. Let typ_i' = $canon_typ(typ_i)
   2. If (C.BLOCK.KIND = `PACKAGE`_bkind()), then
     1. If ((($is_externt(typ_i') \/ $is_parsert(typ_i')) \/ $is_controlt(typ_i')) \/ $is_packaget(typ_i')), then
@@ -7383,7 +7383,7 @@ relation Inst_site_ok: cursor, C, `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i)
   4. If (C.BLOCK.KIND = `CONTROL`_bkind()), then
     1. If (($is_externt(typ_i') \/ $is_controlt(typ_i')) \/ $is_tablet(typ_i')), then
       1. Result in 
-3. If (cursor = `LOCAL`_cursor()), then
+1. Else If cursor matches `LOCAL`, then
   1. Let typ_i' = $canon_typ(typ_i)
   2. If (C.LOCAL.KIND = `PARSERSTATE`_lkind()), then
     1. If ($is_externt(typ_i') \/ $is_parsert(typ_i')), then
@@ -7394,7 +7394,7 @@ relation Inst_site_ok: cursor, C, `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i)
 
 ;; ../../../../spec/4b-typing-relation.watsup:168.1-170.35
 relation Inst_ok: cursor', C_0', tid*', ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}
-1. If (cursor' = `GLOBAL`_cursor()), then
+1. If cursor' matches `GLOBAL`, then
   1. If tid*' matches [], then
     1. Let `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i) = ct
     2. If $is_packaget($canon_typ(typ_i)), then
@@ -7408,7 +7408,7 @@ relation Inst_ok: cursor', C_0', tid*', ct, targIL*{targIL <- targIL*}, arg*{arg
         4. (Call_convention_arg_ok: `%%%|-%~~%:%`(`BLOCK`_cursor(), C_1, `NOACT`_actctxt(), pt'', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt'' <- pt''*, typ_a <- typ_a*}
         5. Result in typ_i, targIL*{targIL <- targIL*}, argIL''*{argIL'' <- argIL''*}
 2. Let tid_fresh*{tid_fresh <- tid_fresh*} = tid*'
-3. If (cursor' = `GLOBAL`_cursor()), then
+3. If cursor' matches `GLOBAL`, then
   1. Let `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i) = ct
   2. If $is_packaget($canon_typ(typ_i)), then
     1. If (|tid_fresh*{tid_fresh <- tid_fresh*}| > 0), then
@@ -7866,7 +7866,7 @@ def $compatible'_range(typ'', typ''')
 
 ;; ../../../../spec/4e-typing-expr.watsup:508.1-510.26
 relation Select_case_keyset_ok: cursor, C, typ_k, keyset
-1. If (cursor = `LOCAL`_cursor()), then
+1. If cursor matches `LOCAL`, then
   1. If keyset matches `ExprK%`, then
     1. Let `ExprK%`_keyset(expr) = keyset
     2. Expr_ok: `%%|-%:%`(`LOCAL`_cursor(), C, expr, exprIL)
@@ -7884,9 +7884,9 @@ relation Select_case_keyset_ok: cursor, C, typ_k, keyset
     6. Sub_impl: `%<<%`(typ, typ_k)
     7. Let exprIL' = `CastE%%%`_exprIL(`SetT%`_synthtyp(typ_k) as typeIL, exprIL, `(%;%)`_annotIL(`SetT%`_synthtyp(typ_k) as typ, `DYN`_ctk()))
     8. Result in `ExprK%`_keysetIL(exprIL')
-  2. If (keyset = `DefaultK`_keyset()), then
+  1. Else If keyset matches `DefaultK`, then
     1. Result in `DefaultK`_keysetIL()
-  3. If (keyset = `AnyK`_keyset()), then
+  1. Else If keyset matches `AnyK`, then
     1. Result in `AnyK`_keysetIL()
 
 ;; ../../../../spec/4e-typing-expr.watsup:543.1-545.26
@@ -7910,7 +7910,7 @@ relation Select_case_keysets_ok: p, C, typ*', keyset*'
 
 ;; ../../../../spec/4e-typing-expr.watsup:561.1-563.26
 relation Select_case_ok: cursor, C, typ_k*{typ_k <- typ_k*}, `%%`_selectcase(keyset*{keyset <- keyset*}, statelabel)
-1. If (cursor = `LOCAL`_cursor()), then
+1. If cursor matches `LOCAL`, then
   1. Select_case_keysets_ok: `%%|-%%:%`(`LOCAL`_cursor(), C, typ_k*{typ_k <- typ_k*}, keyset*{keyset <- keyset*}, keysetIL*{keysetIL <- keysetIL*})
   2. Let `%%%%`_styp(typ, dir'', ctk'', val?) = $find_styp(`LOCAL`_cursor(), C, `CURRENT%`_name(statelabel))
   3. If (typ = `StateT`_synthtyp() as typ), then
@@ -8038,7 +8038,7 @@ relation Switch_tbl_label_ok: p, C, id_t, b_last', switchlabel
         1. Let `%%%%`_styp(typ_e, _dir, ctk_e, _val?) = $find_styp(p, C, `CURRENT%`_name(id))
         2. Result in `ExprL%`_switchlabelIL(`NameE%%`_exprIL(`CURRENT%`_name(id_a), `(%;%)`_annotIL(typ_e, ctk_e)))
 2. If (b_last' = true), then
-  1. If (switchlabel = `DefaultL`_switchlabel()), then
+  1. If switchlabel matches `DefaultL`, then
     1. Result in `DefaultL`_switchlabelIL()
 
 ;; ../../../../spec/4f-typing-stmt.watsup:60.1-62.32
@@ -8070,11 +8070,11 @@ relation Switch_gen_label_ok: p, C, typ_s, b_last', switchlabel
   1. Let `ExprL%`_switchlabel(expr) = switchlabel
   2. Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
   3. Let `(%;%)`_annotIL(_typ, ctk) = $annot(exprIL)
-  4. If (ctk = `LCTK`_ctk()), then
+  4. If ctk matches `LCTK`, then
     1. Let exprIL' = $coerce_assign(exprIL, typ_s)
     2. Result in `ExprL%`_switchlabelIL(exprIL')
 2. If (b_last' = true), then
-  1. If (switchlabel = `DefaultL`_switchlabel()), then
+  1. If switchlabel matches `DefaultL`, then
     1. Result in `DefaultL`_switchlabelIL()
 
 ;; ../../../../spec/4f-typing-stmt.watsup:112.1-114.32
@@ -8162,7 +8162,7 @@ def $update_fdenv_extern(fdenv_ext, theta, fid*, funcdef*)
 relation SEnum_field_ok: C, id_s, typ_s, (member_s, val_s)*{member_s <- member_s*, val_s <- val_s*}, member, expr
 1. Expr_ok: `%%|-%:%`(`BLOCK`_cursor(), C, expr, exprIL)
 2. Let `(%;%)`_annotIL(_typ, ctk) = $annot(exprIL)
-3. If (ctk = `LCTK`_ctk()), then
+3. If ctk matches `LCTK`, then
   1. Let exprIL' = $coerce_assign(exprIL, typ_s)
   2. Eval_static: `%%|-%~>%`(`BLOCK`_cursor(), C, exprIL', val_e)
   3. Let val = `SEnumFieldV%%%`_val(id_s, member, val_e)
@@ -8265,7 +8265,7 @@ relation Methods_ok: C, id_e, method*
 ;; ../../../../spec/4g-typing-decl.watsup:652.1-654.20
 relation ParserState_ok: C, `%%`_parserstate(statelabel, block)
 1. Block_ok: `%%%%|-%:%%%`(`LOCAL`_cursor(), C, `CONT`_flow(), `INIT`_blkctxt(), block, C', flow, blockIL)
-2. If (flow = `CONT`_flow()), then
+2. If flow matches `CONT`, then
   1. Result in `%%`_parserstateIL(statelabel, blockIL)
 
 ;; ../../../../spec/4g-typing-decl.watsup:713.1-715.26
@@ -8340,10 +8340,10 @@ def $split_directionless_params(paramIL*)
 1. Else
   1. Let paramIL_h :: paramIL_t*{paramIL_t <- paramIL_t*} = paramIL*
   2. Let `%%%%`_paramIL(_idIL, dir, _typeIL, _val?) = paramIL_h
-  3. If (dir = `NO`_dir()), then
+  3. If dir matches `NO`, then
     1. Let (paramIL_d*{paramIL_d <- paramIL_d*}, paramIL_c*{paramIL_c <- paramIL_c*}) = $split_directionless_params(paramIL_t*{paramIL_t <- paramIL_t*})
     2. Return (paramIL_d*{paramIL_d <- paramIL_d*}, paramIL_h :: paramIL_c*{paramIL_c <- paramIL_c*})
-  3. Else
+  4. If (dir =/= `NO`_dir()), then
     1. Let (paramIL_d*{paramIL_d <- paramIL_d*}, paramIL_c*{paramIL_c <- paramIL_c*}) = $split_directionless_params(paramIL_t*{paramIL_t <- paramIL_t*})
     2. Return (paramIL_h :: paramIL_d*{paramIL_d <- paramIL_d*}, paramIL_c*{paramIL_c <- paramIL_c*})
 
@@ -8405,17 +8405,17 @@ relation Table_entry_keyset_ok: p, C, tblctx, (typ_k, text'), keyset
         2. Sub_impl: `%<<%`(typ, typ_k)
         3. Let exprIL' = `CastE%%%`_exprIL(`SetT%`_synthtyp(typ_k) as typeIL, exprIL, `(%;%)`_annotIL(`SetT%`_synthtyp(typ_k) as typ, ctk))
         4. Result in `LPM%`_tblstate(n_w), `ExprK%`_keysetIL(exprIL')
-  2. If (keyset = `DefaultK`_keyset()), then
+  1. Else If keyset matches `DefaultK`, then
     1. Let mode = tblctx.MODE
     2. If mode matches `NOPRILPM%`, then
       1. Let `NOPRILPM%`_mode(n_w) = mode
       2. Result in `LPM%`_tblstate(n_w), `DefaultK`_keysetIL()
-  3. If (keyset = `AnyK`_keyset()), then
+  1. Else If keyset matches `AnyK`, then
     1. Let mode = tblctx.MODE
     2. If mode matches `NOPRILPM%`, then
       1. Let `NOPRILPM%`_mode(_nat) = mode
       2. Result in `LPM%`_tblstate(0), `AnyK`_keysetIL()
-2. If (text' = "ternary"), then
+1. Else If (text' = "ternary"), then
   1. If keyset matches `ExprK%`, then
     1. Let `ExprK%`_keyset(expr) = keyset
     2. If expr matches `MaskE%%`, then
@@ -8434,7 +8434,7 @@ relation Table_entry_keyset_ok: p, C, tblctx, (typ_k, text'), keyset
       3. Sub_impl: `%<<%`(typ, typ_k)
       4. Let exprIL' = `CastE%%%`_exprIL(`SetT%`_synthtyp(typ_k) as typeIL, exprIL, `(%;%)`_annotIL(`SetT%`_synthtyp(typ_k) as typ, ctk))
       5. Result in `NOLPM`_tblstate(), `ExprK%`_keysetIL(exprIL')
-3. If (text' = "range"), then
+1. Else If (text' = "range"), then
   1. If keyset matches `ExprK%`, then
     1. Let `ExprK%`_keyset(expr) = keyset
     2. If expr matches `RangeE%%`, then
@@ -8453,7 +8453,7 @@ relation Table_entry_keyset_ok: p, C, tblctx, (typ_k, text'), keyset
       3. Sub_impl: `%<<%`(typ, typ_k)
       4. Let exprIL' = `CastE%%%`_exprIL(`SetT%`_synthtyp(typ_k) as typeIL, exprIL, `(%;%)`_annotIL(`SetT%`_synthtyp(typ_k) as typ, ctk))
       5. Result in `NOLPM`_tblstate(), `ExprK%`_keysetIL(exprIL')
-4. If keyset matches `ExprK%`, then
+2. If keyset matches `ExprK%`, then
   1. Let `ExprK%`_keyset(expr) = keyset
   2. If (((text' =/= "lpm") /\ (text' =/= "ternary")) /\ (text' =/= "range")), then
     1. If ~ ($is_maske(expr) \/ $is_rangee(expr)), then
@@ -8462,10 +8462,10 @@ relation Table_entry_keyset_ok: p, C, tblctx, (typ_k, text'), keyset
       3. Sub_impl: `%<<%`(typ, typ_k)
       4. Let exprIL' = `CastE%%%`_exprIL(`SetT%`_synthtyp(typ_k) as typeIL, exprIL, `(%;%)`_annotIL(`SetT%`_synthtyp(typ_k) as typ, ctk))
       5. Result in `NOLPM`_tblstate(), `ExprK%`_keysetIL(exprIL')
-5. If (keyset = `DefaultK`_keyset()), then
+2. Else If keyset matches `DefaultK`, then
   1. If (text' =/= "exact"), then
     1. Result in `NOLPM`_tblstate(), `DefaultK`_keysetIL()
-6. If (keyset = `AnyK`_keyset()), then
+2. Else If keyset matches `AnyK`, then
   1. If (text' =/= "exact"), then
     1. Result in `NOLPM`_tblstate(), `AnyK`_keysetIL()
 
@@ -8485,17 +8485,22 @@ relation Table_entry_keysets_state_ok: p, C, tblctx, tblstate', key*, keyset*
 
 ;; ../../../../spec/4g-typing-decl.watsup:949.1-951.26
 relation Table_entry_keysets_ok: p, C, tblctx, keyset*'
-1. If keyset*' matches [ _/1 ], then
+1. If (keyset*' = [`DefaultK`_keyset()]), then
   1. Let mode = tblctx.MODE
   2. If mode matches `NOPRILPM%`, then
     1. Let `NOPRILPM%`_mode(nat) = mode
     2. Result in `LPM%`_tblstate(nat), [`DefaultK`_keysetIL()]
-    3. Result in `LPM%`_tblstate(0), [`AnyK`_keysetIL()]
   3. If (((tblctx.MODE = `NOPRI`_mode()) \/ (tblctx.MODE = `PRI`_mode())) \/ (tblctx.MODE = `PRILPM`_mode())), then
     1. Result in `NOLPM`_tblstate(), [`DefaultK`_keysetIL()]
-    2. Result in `NOLPM`_tblstate(), [`AnyK`_keysetIL()]
-2. Let keyset*{keyset <- keyset*} = keyset*'
-3. If (|tblctx.KEYS| = |keyset*{keyset <- keyset*}|), then
+2. If (keyset*' = [`AnyK`_keyset()]), then
+  1. Let mode = tblctx.MODE
+  2. If mode matches `NOPRILPM%`, then
+    1. Let `NOPRILPM%`_mode(nat) = mode
+    2. Result in `LPM%`_tblstate(0), [`AnyK`_keysetIL()]
+  3. If (((tblctx.MODE = `NOPRI`_mode()) \/ (tblctx.MODE = `PRI`_mode())) \/ (tblctx.MODE = `PRILPM`_mode())), then
+    1. Result in `NOLPM`_tblstate(), [`AnyK`_keysetIL()]
+3. Let keyset*{keyset <- keyset*} = keyset*'
+4. If (|tblctx.KEYS| = |keyset*{keyset <- keyset*}|), then
   1. Table_entry_keysets_state_ok: `%%%%|-%%:%%`(p, C, tblctx, `NOLPM`_tblstate(), tblctx.KEYS, keyset*{keyset <- keyset*}, tblstate, keysetIL*{keysetIL <- keysetIL*})
   2. Result in tblstate, keysetIL*{keysetIL <- keysetIL*}
 
@@ -8517,7 +8522,7 @@ def $filter_directionless_args(paramtyp*, argIL*)
   2. If argIL* matches _ :: _, then
     1. Let argIL_h :: argIL_t*{argIL_t <- argIL_t*} = argIL*
     2. Let `%%%%`_paramtyp(id, dir, typ, val?{val <- val?}) = pt_h
-    3. If (dir = `NO`_dir()), then
+    3. If dir matches `NO`, then
       1. Return $filter_directionless_args(pt_t*{pt_t <- pt_t*}, argIL_t*{argIL_t <- argIL_t*})
     4. Otherwise
       1. Return argIL_h :: $filter_directionless_args(pt_t*{pt_t <- pt_t*}, argIL_t*{argIL_t <- argIL_t*})
@@ -8534,7 +8539,7 @@ relation Table_entry_action_ok: p, C, tblctx, `%%`_tblaction(name, arg*{arg <- a
 
 ;; ../../../../spec/4g-typing-decl.watsup:1012.1-1014.29
 relation Table_entry_priority_ok: cursor, C, tblctx, tblstate, expr?
-1. If (cursor = `LOCAL`_cursor()), then
+1. If cursor matches `LOCAL`, then
   1. If expr? matches (), then
     1. If (tblctx.MODE = `NOPRI`_mode()), then
       1. Result in tblctx, ?()
@@ -8632,7 +8637,7 @@ relation Table_custom_ok: p, C, tblctx, `%%%`_tblcustomprop(b, text', expr)
   2. Let `(%;%)`_annotIL(typ, _ctk) = $annot(exprIL)
   3. If (($is_intt(typ) \/ $is_fintt(typ)) \/ $is_fbitt(typ)), then
     1. Result in tblctx, `%%%`_tblcustompropIL(b, "size", exprIL)
-2. If (text' = "largest_priority_wins"), then
+1. Else If (text' = "largest_priority_wins"), then
   1. Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
   2. Let `(%;%)`_annotIL(typ, _ctk) = $annot(exprIL)
   3. If (typ = `BoolT`_primtyp() as typ), then
@@ -8641,7 +8646,7 @@ relation Table_custom_ok: p, C, tblctx, `%%%`_tblcustomprop(b, text', expr)
       1. Let `BoolV%`_val(b_lw) = val
       2. Let tblctx' = tblctx[PRIORITIES.LARGEST_WINS = b_lw]
       3. Result in tblctx', `%%%`_tblcustompropIL(b, "largest_priority_wins", exprIL)
-3. If (text' = "priority_delta"), then
+1. Else If (text' = "priority_delta"), then
   1. Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
   2. Let `(%;%)`_annotIL(typ, _ctk) = $annot(exprIL)
   3. If (($is_intt(typ) \/ $is_fintt(typ)) \/ $is_fbitt(typ)), then
@@ -8650,7 +8655,7 @@ relation Table_custom_ok: p, C, tblctx, `%%%`_tblcustomprop(b, text', expr)
     3. If (i_delta > 0 as int), then
       1. Let tblctx' = tblctx[PRIORITIES.DELTA = i_delta]
       2. Result in tblctx', `%%%`_tblcustompropIL(b, "priority_delta", exprIL)
-4. If (((text' =/= "size") /\ (text' =/= "largest_priority_wins")) /\ (text' =/= "priority_delta")), then
+2. If (((text' =/= "size") /\ (text' =/= "largest_priority_wins")) /\ (text' =/= "priority_delta")), then
   1. Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
   2. Result in tblctx, `%%%`_tblcustompropIL(b, text', exprIL)
 
@@ -8689,7 +8694,7 @@ relation Table_props_ok: p, C, tblctx, tblprop*
 
 ;; ../../../../spec/4g-typing-decl.watsup:1244.1-1246.26
 relation Table_type_decl_ok: cursor, C, tblctx, id
-1. If (cursor = `BLOCK`_cursor()), then
+1. If cursor matches `BLOCK`, then
   1. Let id_e = $concat_text(["action_list(", id, ")"])
   2. Let (name, pt*{pt <- pt*}, argIL*{argIL <- argIL*})*{argIL* <- argIL**, name <- name*, pt* <- pt**} = tblctx.ACTIONS
   3. (Let member = $string_of_name(name))*{member <- member*, name <- name*}
@@ -8732,7 +8737,7 @@ def $align_params_with_args'(pmap, pt, (argIL, _typ))
   1. Let `NameA%%`_argIL(id, _exprIL?) = argIL
   2. Let pt' = $find_map<id, paramtyp>(pmap, id)
   3. Return pt'
-2. If (argIL = `AnyA`_argIL()), then
+1. Else If argIL matches `AnyA`, then
   1. Return pt
 
 ;; ../../../../spec/4h-typing-call.watsup:184.1-184.39

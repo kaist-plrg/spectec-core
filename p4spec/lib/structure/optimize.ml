@@ -1,4 +1,5 @@
 open Domain.Lib
+open Xl
 open Sl.Ast
 open Util.Source
 
@@ -218,10 +219,34 @@ let overlap_pattern (pattern_a : pattern) (pattern_b : pattern) : overlap =
   | OptP `None, OptP `None -> Identical
   | _ -> assert false
 
+let rec distinct_exp_literal (exp_a : exp) (exp_b : exp) : bool =
+  match (exp_a.it, exp_b.it) with
+  | BoolE b_a, BoolE b_b -> b_a <> b_b
+  | NumE n_a, NumE n_b -> not (Num.eq n_a n_b)
+  | TextE t_a, TextE t_b -> t_a <> t_b
+  | TupleE exps_a, TupleE exps_b ->
+      assert (List.length exps_a = List.length exps_b);
+      List.exists2 distinct_exp_literal exps_a exps_b
+  | ListE exps_a, ListE exps_b when List.length exps_a = List.length exps_b ->
+      List.exists2 distinct_exp_literal exps_a exps_b
+  | ListE _, ListE _ -> true
+  | _ -> false
+
 let overlap_exp (exp_a : exp) (exp_b : exp) : overlap =
   match (exp_a.it, exp_b.it) with
+  (* Negation *)
   | UnE (`NotOp, _, exp_a), _ when Sl.Eq.eq_exp exp_a exp_b -> Mutex
   | _, UnE (`NotOp, _, exp_b) when Sl.Eq.eq_exp exp_a exp_b -> Mutex
+  (* Equals *)
+  | ( CmpE (`EqOp, optyp_a, exp_a_l, exp_a_r),
+      CmpE (`EqOp, optyp_b, exp_b_l, exp_b_r) )
+    when optyp_a = optyp_b
+         && (Sl.Eq.eq_exp exp_a_l exp_b_l
+             && distinct_exp_literal exp_a_r exp_b_r
+            || Sl.Eq.eq_exp exp_a_l exp_b_r
+               && distinct_exp_literal exp_a_r exp_b_l) ->
+      Disjoint
+  (* Equals and Not Equals *)
   | ( CmpE (`EqOp, optyp_a, exp_a_l, exp_a_r),
       CmpE (`NeOp, optyp_b, exp_b_l, exp_b_r) )
   | ( CmpE (`NeOp, optyp_a, exp_a_l, exp_a_r),
@@ -231,6 +256,7 @@ let overlap_exp (exp_a : exp) (exp_b : exp) : overlap =
             || (Sl.Eq.eq_exp exp_a_l exp_b_r && Sl.Eq.eq_exp exp_a_r exp_b_l))
     ->
       Mutex
+  (* Match on patterns *)
   | MatchE (exp_a, pattern_a), MatchE (exp_b, pattern_b)
     when Sl.Eq.eq_exp exp_a exp_b ->
       overlap_pattern pattern_a pattern_b

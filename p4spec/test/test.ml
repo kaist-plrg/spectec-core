@@ -66,10 +66,11 @@ let elab_command =
   Core.Command.basic ~summary:"run elaboration test"
     (let open Core.Command.Let_syntax in
      let open Core.Command.Param in
-      let%map specdir = flag "-s" (required string) ~doc:"p4 spec directory" in
+     let%map specdir = flag "-s" (required string) ~doc:"p4 spec directory" in
      fun () ->
        try elab_test specdir
-       with Error (at, msg) -> Format.printf "Error on elaboration: %s\n" (string_of_error at msg))
+       with Error (at, msg) ->
+         Format.printf "Error on elaboration: %s\n" (string_of_error at msg))
 
 (* Typing test *)
 
@@ -166,8 +167,7 @@ let run_typing_command =
 
 (* Structuring test *)
 
-let structure specdir =
-  specdir |> elab |> Structure.Struct.struct_spec
+let structure specdir = specdir |> elab |> Structure.Struct.struct_spec
 
 let structure_test specdir =
   let spec_sl = structure specdir in
@@ -184,7 +184,8 @@ let structure_command =
 
 let command =
   Core.Command.group ~summary:"p4spec-test"
-    [ ("elab", elab_command);
+    [
+      ("elab", elab_command);
       ("run-typing", run_typing_command);
       ("struct", structure_command);
     ]
