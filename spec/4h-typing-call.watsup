@@ -179,33 +179,37 @@ def $align_params_with_args'(pmap, pt, (AnyA, _)) = pt
 ;; Type inference
 ;;
 
-var cstr : map<tid, typ?>
+syntax typcstr =
+  | KNOWN typ
+  | UNKNOWN
 
-dec $empty_cstr(tid*) : map<tid, typ?>
+var cstr : map<tid, typcstr>
+
+dec $empty_cstr(tid*) : map<tid, typcstr>
     ;;hint(show EMPTY_CSTR(%1))
 
-def $empty_cstr(tid*) = MAP (PAIR tid eps)*
+def $empty_cstr(tid*) = MAP (PAIR tid UNKNOWN)*
 
 
-dec $gen_cstr(map<tid, typ?>, typ, typ) : map<tid, typ?>
+dec $gen_cstr(map<tid, typcstr>, typ, typ) : map<tid, typcstr>
     ;;hint(show GEN_CSTR(%1, %2, %3))
-dec $gen_cstrs(map<tid, typ?>, typ*, typ*) : map<tid, typ?>
+dec $gen_cstrs(map<tid, typcstr>, typ*, typ*) : map<tid, typcstr>
     ;;hint(show GEN_CSTRS(%1, %2, %3))
-dec $gen_cstr_fd(map<tid, typ?>, funcdef, funcdef) : map<tid, typ?>
+dec $gen_cstr_fd(map<tid, typcstr>, funcdef, funcdef) : map<tid, typcstr>
     ;;hint(show GEN_CSTR_FD(%1, %2, %3))
-dec $gen_cstr_fd'(map<tid, typ?>, fid*, fdenv, fdenv) : map<tid, typ?>
+dec $gen_cstr_fd'(map<tid, typcstr>, fid*, fdenv, fdenv) : map<tid, typcstr>
     ;;hint(show GEN_CSTR_FD'(%1, %2, %3, %4))
-dec $merge_cstr(map<tid, typ?>, map<tid, typ?>) : map<tid, typ?>
+dec $merge_cstr(map<tid, typcstr>, map<tid, typcstr>) : map<tid, typcstr>
     ;;hint(show MERGE_CSTR(%1, %2))
-dec $merge_cstr'(map<tid, typ?>, map<tid, typ?>, tid*, map<tid, typ?>) : map<tid, typ?>
+dec $merge_cstr'(map<tid, typcstr>, map<tid, typcstr>, tid*, map<tid, typcstr>) : map<tid, typcstr>
     ;;hint(show MERGE_CSTR'(%1, %2, %3, %4))
-dec $merge_cstrs(map<tid, typ?>, map<tid, typ?>*) : map<tid, typ?>
+dec $merge_cstrs(map<tid, typcstr>, map<tid, typcstr>*) : map<tid, typcstr>
     ;;hint(show MERGE_CSTRS(%1, %2))
-dec $resolve_cstrs(map<tid, typ?>) : map<tid, typ>
+dec $resolve_cstrs(map<tid, typcstr>) : map<tid, typ>
     ;;hint(show RESOLVE_CSTRS(%1))
 
-def $gen_cstr(cstr, VarT tid, typ_a) = $update_map<tid, typ?>(cstr, tid, typ_a)
-  -- if $in_set<tid>(tid, $dom_map<tid, typ?>(cstr))
+def $gen_cstr(cstr, VarT tid, typ_a) = $update_map<tid, typcstr>(cstr, tid, KNOWN typ_a)
+  -- if $in_set<tid>(tid, $dom_map<tid, typcstr>(cstr))
 
 def $gen_cstr(cstr, SpecT ptd_p typ_p'*, SpecT ptd_a typ_a'*) = $gen_cstrs(cstr', typ_p'*, typ_a'*)
   -- if typ_p'' = $specialize_typdef(ptd_p, typ_p'*)
@@ -262,8 +266,8 @@ def $gen_cstrs(cstr, typ_p*, typ_a*) = $merge_cstrs(cstr, cstr'*)
 
 
 def $gen_cstr_fd(cstr, fd_p, fd_a) = cstr''
-  -- if (id_p dir_p typ_p val_p?)* = $get_params_funcdef(fd_p)
-  -- if (id_a dir_a typ_a val_a?)* = $get_params_funcdef(fd_a)
+  -- if (_ _ typ_p _)* = $get_params_funcdef(fd_p)
+  -- if (_ _ typ_a _)* = $get_params_funcdef(fd_a)
   -- if cstr' = $gen_cstrs(cstr, typ_p*, typ_a*)
   -- if cstr'' = $gen_cstr(cstr', $get_typ_ret_funcdef(fd_p), $get_typ_ret_funcdef(fd_a))
 
@@ -276,39 +280,39 @@ def $gen_cstr_fd'(cstr, fid_h :: fid_t*, fdenv_p, fdenv_a) = $gen_cstr_fd'(cstr'
 
 
 def $merge_cstr(cstr_o, cstr_n) = $merge_cstr'(cstr_o, cstr_n, tid_o*, MAP eps)
-  -- if SET tid_o* = $dom_map<tid, typ?>(cstr_o)
-  -- if $eq_set<tid>($dom_map<tid, typ?>(cstr_o), $dom_map<tid, typ?>(cstr_n))
+  -- if SET tid_o* = $dom_map<tid, typcstr>(cstr_o)
+  -- if $eq_set<tid>($dom_map<tid, typcstr>(cstr_o), $dom_map<tid, typcstr>(cstr_n))
 
 
 def $merge_cstr'(cstr_o, cstr_n, eps, cstr) = cstr
 
 def $merge_cstr'(cstr_o, cstr_n, tid_h :: tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
-  -- if $find_map<tid, typ?>(cstr_o, tid_h) = eps
-  -- if $find_map<tid, typ?>(cstr_n, tid_h) = eps
-  -- if cstr' = $update_map<tid, typ?>(cstr, tid_h, eps)
+  -- if $find_map<tid, typcstr>(cstr_o, tid_h) = UNKNOWN
+  -- if $find_map<tid, typcstr>(cstr_n, tid_h) = UNKNOWN
+  -- if cstr' = $update_map<tid, typcstr>(cstr, tid_h, UNKNOWN)
 
 def $merge_cstr'(cstr_o, cstr_n, tid_h :: tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
-  -- if $find_map<tid, typ?>(cstr_o, tid_h) = eps
-  -- if $find_map<tid, typ?>(cstr_n, tid_h) = typ_n
-  -- if cstr' = $update_map<tid, typ?>(cstr, tid_h, typ_n)
+  -- if $find_map<tid, typcstr>(cstr_o, tid_h) = UNKNOWN
+  -- if $find_map<tid, typcstr>(cstr_n, tid_h) = KNOWN typ_n
+  -- if cstr' = $update_map<tid, typcstr>(cstr, tid_h, KNOWN typ_n)
 
 def $merge_cstr'(cstr_o, cstr_n, tid_h :: tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
-  -- if $find_map<tid, typ?>(cstr_o, tid_h) = typ_o
-  -- if $find_map<tid, typ?>(cstr_n, tid_h) = eps
-  -- if cstr' = $update_map<tid, typ?>(cstr, tid_h, typ_o)
+  -- if $find_map<tid, typcstr>(cstr_o, tid_h) = KNOWN typ_o
+  -- if $find_map<tid, typcstr>(cstr_n, tid_h) = UNKNOWN
+  -- if cstr' = $update_map<tid, typcstr>(cstr, tid_h, KNOWN typ_o)
 
 def $merge_cstr'(cstr_o, cstr_n, tid_h :: tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
-  -- if $find_map<tid, typ?>(cstr_o, tid_h) = typ_o
-  -- if $find_map<tid, typ?>(cstr_n, tid_h) = typ_n
+  -- if $find_map<tid, typcstr>(cstr_o, tid_h) = KNOWN typ_o
+  -- if $find_map<tid, typcstr>(cstr_n, tid_h) = KNOWN typ_n
   -- Sub_impl: typ_o << typ_n
-  -- if cstr' = $update_map<tid, typ?>(cstr, tid_h, typ_n)
+  -- if cstr' = $update_map<tid, typcstr>(cstr, tid_h, KNOWN typ_n)
 
 def $merge_cstr'(cstr_o, cstr_n, tid_h :: tid_t*, cstr) = $merge_cstr'(cstr_o, cstr_n, tid_t*, cstr')
-  -- if $find_map<tid, typ?>(cstr_o, tid_h) = typ_o
-  -- if $find_map<tid, typ?>(cstr_n, tid_h) = typ_n
+  -- if $find_map<tid, typcstr>(cstr_o, tid_h) = KNOWN typ_o
+  -- if $find_map<tid, typcstr>(cstr_n, tid_h) = KNOWN typ_n
   -- Sub_impl:/ typ_o << typ_n
   -- Sub_impl: typ_n << typ_o
-  -- if cstr' = $update_map<tid, typ?>(cstr, tid_h, typ_o)
+  -- if cstr' = $update_map<tid, typcstr>(cstr, tid_h, KNOWN typ_o)
 
 
 def $merge_cstrs(cstr, eps) = cstr
@@ -319,10 +323,10 @@ def $merge_cstrs(cstr, cstr_h :: cstr_t*) = cstr''
 
 def $resolve_cstrs(MAP eps) = MAP eps
 
-def $resolve_cstrs(MAP ((PAIR tid_h typ_h) :: (PAIR tid_t typ_t?)*))
+def $resolve_cstrs(MAP ((PAIR tid_h (KNOWN typ_h)) :: (PAIR tid_t typcstr_t)*))
   = $add_map<tid, typ>(MAP (PAIR tid_t' typ_t')*, tid_h, typ_h)
   -- if typ_h =/= AnyT
-  -- if MAP (PAIR tid_t' typ_t')* = $resolve_cstrs(MAP (PAIR tid_t typ_t?)*)
+  -- if MAP (PAIR tid_t' typ_t')* = $resolve_cstrs(MAP (PAIR tid_t typcstr_t)*)
 
 
 dec $infer_targs(tid*, paramtyp*, typ*) : map<tid, typ>

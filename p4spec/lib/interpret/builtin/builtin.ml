@@ -51,10 +51,10 @@ let funcs =
   |> Funcs.add "eq_set" (fun at targs values_input ->
          Sets.eq_set at targs values_input)
   (* Maps *)
-  |> Funcs.add "find_map_opt" (fun at targs values_input ->
-         Maps.find_map_opt at targs values_input)
-  |> Funcs.add "find_maps_opt" (fun at targs values_input ->
-         Maps.find_maps_opt at targs values_input)
+  |> Funcs.add "find_map" (fun at targs values_input ->
+         Maps.find_map at targs values_input)
+  |> Funcs.add "find_maps" (fun at targs values_input ->
+         Maps.find_maps at targs values_input)
   |> Funcs.add "add_map" (fun at targs values_input ->
          Maps.add_map at targs values_input)
   |> Funcs.add "adds_map" (fun at targs values_input ->

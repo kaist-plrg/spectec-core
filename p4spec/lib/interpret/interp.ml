@@ -27,10 +27,9 @@ let is_cached_func = function
 let func_cache = ref (Cache.create 1000)
 
 let is_cached_rule = function
-  | "Sub_impl" | "Sub_expl" | "Sub_impl_canon" | "Sub_expl_canon" | "Type_wf"
-  | "Type_alpha" ->
+  | "Sub_expl" | "Sub_expl_canon" | "Sub_expl_canon_neq" | "Sub_impl"
+  | "Sub_impl_canon" | "Sub_impl_canon_neq" | "Type_wf" | "Type_alpha" ->
       true
-  | "Type_ok" -> false
   | _ -> false
 
 let rule_cache = ref (Cache.create 50)

@@ -96,7 +96,9 @@ rule Type_alpha/externt:
   -- if MAP (PAIR fid_b fd_b)* = fmap_b
   ----
   -- if $eq_set<fid>(SET fid_a*, SET fid_b*)
-  -- (FuncDef_alpha: $find_map<fid, funcdef>(fmap_a, fid_a) ~~ $find_map<fid, funcdef>(fmap_b, fid_a))*
+  -- if (fd_a' = $find_map<fid, funcdef>(fmap_a, fid_a))*
+  -- if (fd_b' = $find_map<fid, funcdef>(fmap_b, fid_a))*
+  -- (FuncDef_alpha: fd_a' ~~ fd_b')*
 
 rule Type_alpha/parsert:
   (ParserT pt_a*) ~~ (ParserT pt_b*)

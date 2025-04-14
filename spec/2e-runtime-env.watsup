@@ -153,35 +153,28 @@ def $find_matching_funcs<V>(id_f, (id_a?)*, id_a'*, fid_h :: fid_t*, V_h :: V_t*
   -- if (fid, V, id_deft*) = $find_matching_func<V>(id_f, (id_a?)*, id_a'*, fid_h, V_h)
 
 ;; Find a matching function, given a function name and arguments
-dec $find_func_opt<V>(id, (id?)*, map<fid, V>) : (fid, V, id*)?
+dec $find_func<V>(id, (id?)*, map<fid, V>) : (fid, V, id*)?
     hint(show %4`[%2#(%3)#%latex()] OPT)
 
 ;; When all arguments are named
-def $find_func_opt<V>(id_f, (id_a?)*, MAP (PAIR fid V)*) = eps
+def $find_func<V>(id_f, (id_a?)*, MAP (PAIR fid V)*) = eps
   -- if |(id_a?)*| > 0
   -- if (id_a? = id_a')*
   -- if $find_matching_funcs<V>(id_f, (id_a?)*, id_a'*, fid*, V*) = eps
 
-def $find_func_opt<V>(id_f, (id_a?)*, MAP (PAIR fid V)*) = (fid', V', id_deft*)
+def $find_func<V>(id_f, (id_a?)*, MAP (PAIR fid V)*) = (fid', V', id_deft*)
   -- if |(id_a?)*| > 0
   -- if (id_a? = id_a')*
   -- if (fid', V', id_deft*) = $find_matching_funcs<V>(id_f, (id_a?)*, id_a'*, fid*, V*)
 
 ;; When all arguments are unnamed
-def $find_func_opt<V>(id_f, (id_a?)*, MAP (PAIR fid V)*) = eps
+def $find_func<V>(id_f, (id_a?)*, MAP (PAIR fid V)*) = eps
   -- if (id_a? = eps)*
   -- if $find_matching_funcs<V>(id_f, (id_a?)*, eps, fid*, V*) = eps
 
-def $find_func_opt<V>(id_f, (id_a?)*, MAP (PAIR fid V)*) = (fid', V', id_deft*)
+def $find_func<V>(id_f, (id_a?)*, MAP (PAIR fid V)*) = (fid', V', id_deft*)
   -- if (id_a? = eps)*
   -- if (fid', V', id_deft*) = $find_matching_funcs<V>(id_f, (id_a?)*, eps, fid*, V*)
-
-;; Find a matching function, given a function name and arguments
-dec $find_func<V>(id, (id?)*, map<fid, V>) : (fid, V, id*)
-    hint(show %4`[%2#(%3)#%latex()])
-
-def $find_func<V>(id_f, (id_a?)*, MAP (PAIR fid V)*) = (fid', V', id_deft*)
-  -- if (fid', V', id_deft*) = $find_func_opt<V>(id_f, (id_a?)*, MAP (PAIR fid V)*)
 
 ;; Find all functions that match the given name
 dec $find_funcs_by_name(id, fid*, funcdef*) : funcdef*
@@ -196,17 +189,10 @@ def $find_funcs_by_name(id_f, _ :: fid_t*, _ :: fd_t*)
   -- otherwise
   
 ;; Find a matching function, given a function name only
-dec $find_func_by_name_opt(id, map<fid, funcdef>) : funcdef?
+dec $find_func_by_name(id, map<fid, funcdef>) : funcdef?
     hint(show %2`[%1])
 
-def $find_func_by_name_opt(id_f, MAP (PAIR fid fd)*) = eps
+def $find_func_by_name(id_f, MAP (PAIR fid fd)*) = eps
   -- if eps = $find_funcs_by_name(id_f, fid*, fd*)
-def $find_func_by_name_opt(id_f, MAP (PAIR fid fd)*) = fd_f
-  -- if fd_f = $find_funcs_by_name(id_f, fid*, fd*)
-
-;; Find a matching function, given a function name only
-dec $find_func_by_name(id, map<fid, funcdef>) : funcdef
-    hint(show %2`[%1])
-
 def $find_func_by_name(id_f, MAP (PAIR fid fd)*) = fd_f
-  -- if fd_f = $find_func_by_name_opt(id_f, MAP (PAIR fid fd)*)
+  -- if fd_f = $find_funcs_by_name(id_f, fid*, fd*)

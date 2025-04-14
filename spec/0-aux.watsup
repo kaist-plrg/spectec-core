@@ -50,11 +50,6 @@ def $repeat_<X>(X, 0) = eps
 def $repeat_<X>(X, n) = X ++ $repeat_<X>(X, $(n - 1))
   -- if n > 0
 
-dec $opt_<X>(X*) : X?
-    hint(show %2)
-def $opt_<X>(eps) = eps
-def $opt_<X>(X) = X
-
 dec $rev_<X>(X*) : X*
     hint(show REVERSE %2)
 
@@ -126,17 +121,11 @@ dec $dom_map<K, V>(map<K, V>) : set<K>
 
 def $dom_map<K, V>(MAP (PAIR K _)*) = SET K*
 
-dec $find_map_opt<K, V>(map<K, V>, K) : V?
+dec $find_map<K, V>(map<K, V>, K) : V?
     hint(show %3#`[%4]?)
 
-dec $find_maps_opt<K, V>(map<K, V>*, K) : V?
+dec $find_maps<K, V>(map<K, V>*, K) : V?
     hint(show %3#`[%4]?)
-
-dec $find_map<K, V>(map<K, V>, K) : V
-    hint(show %3#`[%4])
-
-def $find_map<K, V>(MAP (PAIR K V)*, K_key) = V_key
-  -- if V_key = $find_map_opt<K, V>(MAP (PAIR K V)*, K_key)
 
 dec $add_map<K, V>(map<K, V>, K, V) : map<K, V>
     hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))

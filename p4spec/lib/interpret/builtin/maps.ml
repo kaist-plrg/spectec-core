@@ -43,9 +43,9 @@ let value_of_map (map : map) : value =
 
 (* Built-in implementations *)
 
-(* dec $find_map_opt<K, V>(map<K, V>, K) : V? *)
+(* dec $find_map<K, V>(map<K, V>, K) : V? *)
 
-let find_map_opt (at : region) (targs : targ list) (values_input : value list) :
+let find_map (at : region) (targs : targ list) (values_input : value list) :
     value =
   let _typ_key, _typ_value = Extract.two at targs in
   let value_map, value_key = Extract.two at values_input in
@@ -53,10 +53,10 @@ let find_map_opt (at : region) (targs : targ list) (values_input : value list) :
   let value_opt = VMap.find_opt value_key map in
   match value_opt with Some value -> OptV (Some value) | None -> OptV None
 
-(* dec $find_maps_opt<K, V>(map<K, V>*, K) : V? *)
+(* dec $find_maps<K, V>(map<K, V>*, K) : V? *)
 
-let find_maps_opt (at : region) (targs : targ list) (values_input : value list)
-    : value =
+let find_maps (at : region) (targs : targ list) (values_input : value list) :
+    value =
   let _typ_key, _typ_value = Extract.two at targs in
   let value_maps, value_key = Extract.two at values_input in
   let maps = value_maps |> Value.get_list |> List.map map_of_value in
