@@ -45,7 +45,7 @@ and struct_prems' (prems_internalized : (prem * iterexp list) list)
 let struct_rule_path ((prems, exps_output) : prem list * exp list) :
     Sl.Ast.instr list =
   let at = exps_output |> List.map at |> over_region in
-  let instr_ret = Sl.Ast.RetRelI exps_output $ at in
+  let instr_ret = Sl.Ast.ResultI exps_output $ at in
   struct_prems prems instr_ret
 
 (* Structuring clauses *)
@@ -53,7 +53,7 @@ let struct_rule_path ((prems, exps_output) : prem list * exp list) :
 let struct_clause_path ((prems, exp_output) : prem list * exp) :
     Sl.Ast.instr list =
   let at = exp_output.at in
-  let instr_ret = Sl.Ast.RetDecI exp_output $ at in
+  let instr_ret = Sl.Ast.ReturnI exp_output $ at in
   struct_prems prems instr_ret
 
 (* Structuring definitions *)

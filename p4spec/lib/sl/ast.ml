@@ -106,8 +106,8 @@ and instr' =
   | IfI of exp * iterexp list * instr list * instr list
   | OtherwiseI of instr
   | LetI of exp * exp * iterexp list
-  | RetRelI of exp list
-  | RetDecI of exp
+  | ResultI of exp list
+  | ReturnI of exp
 
 (* Hints *)
 

@@ -89,8 +89,8 @@ let rec eq_instr (instr_a : instr) (instr_b : instr) : bool =
   | LetI (exp_l_a, exp_r_a, iterexps_a), LetI (exp_l_b, exp_r_b, iterexps_b) ->
       eq_exp exp_l_a exp_l_b && eq_exp exp_r_a exp_r_b
       && eq_iterexps iterexps_a iterexps_b
-  | RetRelI exps_a, RetRelI exps_b -> eq_exps exps_a exps_b
-  | RetDecI exp_a, RetDecI exp_b -> eq_exp exp_a exp_b
+  | ResultI exps_a, ResultI exps_b -> eq_exps exps_a exps_b
+  | ReturnI exp_a, ReturnI exp_b -> eq_exp exp_a exp_b
   | _ -> false
 
 and eq_instrs (instrs_a : instr list) (instrs_b : instr list) : bool =

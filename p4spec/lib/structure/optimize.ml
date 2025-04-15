@@ -157,12 +157,12 @@ and rename_instr (rename : Rename.t) (instr : instr) : instr =
       let exp_r = rename_exp rename exp_r in
       let iterexps = List.map (rename_iterexp rename) iterexps in
       LetI (exp_l, exp_r, iterexps) $ at
-  | RetRelI exps ->
+  | ResultI exps ->
       let exps = List.map (rename_exp rename) exps in
-      RetRelI exps $ at
-  | RetDecI exp ->
+      ResultI exps $ at
+  | ReturnI exp ->
       let exp = rename_exp rename exp in
-      RetDecI exp $ at
+      ReturnI exp $ at
 
 (* Remove redundant, trivial let aliases from the code,
 

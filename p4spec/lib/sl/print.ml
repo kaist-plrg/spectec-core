@@ -20,7 +20,7 @@ let string_of_defid defid = Il.Print.string_of_defid defid
 (* Atoms *)
 
 let string_of_atom atom = Il.Print.string_of_atom atom
-let string_of_atoms atoms = Il.Print.string_of_atoms atoms
+let string_of_atoms atoms = atoms |> List.map string_of_atom |> String.concat ""
 
 (* Mixfix operators *)
 
@@ -61,42 +61,123 @@ let string_of_cmpop cmpop = Il.Print.string_of_cmpop cmpop
 
 (* Expressions *)
 
-let string_of_exp exp = Il.Print.string_of_exp exp
-let string_of_exps sep exps = Il.Print.string_of_exps sep exps
+let rec string_of_exp exp =
+  match exp.it with
+  | Il.Ast.BoolE b -> string_of_bool b
+  | Il.Ast.NumE n -> string_of_num n
+  | Il.Ast.TextE text -> "\"" ^ String.escaped text ^ "\""
+  | Il.Ast.VarE varid -> string_of_varid varid
+  | Il.Ast.UnE (unop, _, exp) -> string_of_unop unop ^ " " ^ string_of_exp exp
+  | Il.Ast.BinE (binop, _, exp_l, exp_r) ->
+      "(" ^ string_of_exp exp_l ^ " " ^ string_of_binop binop ^ " "
+      ^ string_of_exp exp_r ^ ")"
+  | Il.Ast.CmpE (cmpop, _, exp_l, exp_r) ->
+      "(" ^ string_of_exp exp_l ^ " " ^ string_of_cmpop cmpop ^ " "
+      ^ string_of_exp exp_r ^ ")"
+  | Il.Ast.UpCastE (typ, exp) ->
+      "(" ^ string_of_exp exp ^ " as " ^ string_of_typ typ ^ ")"
+  | Il.Ast.DownCastE (typ, exp) ->
+      "(" ^ string_of_exp exp ^ " as " ^ string_of_typ typ ^ ")"
+  | Il.Ast.SubE (exp, typ) ->
+      "(" ^ string_of_exp exp ^ " has type " ^ string_of_typ typ ^ ")"
+  | Il.Ast.MatchE (exp, pattern) ->
+      string_of_exp exp ^ " matches pattern " ^ string_of_pattern pattern
+  | Il.Ast.TupleE es -> "(" ^ string_of_exps ", " es ^ ")"
+  | Il.Ast.CaseE notexp -> "(" ^ string_of_notexp notexp ^ ")"
+  | Il.Ast.StrE expfields ->
+      "{"
+      ^ String.concat ", "
+          (List.map
+             (fun (atom, exp) -> string_of_atom atom ^ " " ^ string_of_exp exp)
+             expfields)
+      ^ "}"
+  | Il.Ast.OptE (Some exp) -> "?(" ^ string_of_exp exp ^ ")"
+  | Il.Ast.OptE None -> "?()"
+  | Il.Ast.ListE exps -> "[" ^ string_of_exps ", " exps ^ "]"
+  | Il.Ast.ConsE (exp_h, exp_t) ->
+      string_of_exp exp_h ^ " :: " ^ string_of_exp exp_t
+  | Il.Ast.CatE (exp_l, exp_r) ->
+      string_of_exp exp_l ^ " ++ " ^ string_of_exp exp_r
+  | Il.Ast.MemE (exp_e, exp_s) ->
+      string_of_exp exp_e ^ " is in " ^ string_of_exp exp_s
+  | Il.Ast.LenE exp -> "|" ^ string_of_exp exp ^ "|"
+  | Il.Ast.DotE (exp_b, atom) -> string_of_exp exp_b ^ "." ^ string_of_atom atom
+  | Il.Ast.IdxE (exp_b, exp_i) ->
+      string_of_exp exp_b ^ "[" ^ string_of_exp exp_i ^ "]"
+  | Il.Ast.SliceE (exp_b, exp_l, exp_h) ->
+      string_of_exp exp_b ^ "[" ^ string_of_exp exp_l ^ " : "
+      ^ string_of_exp exp_h ^ "]"
+  | Il.Ast.UpdE (exp_b, path, exp_f) ->
+      string_of_exp exp_b ^ "[" ^ string_of_path path ^ " = "
+      ^ string_of_exp exp_f ^ "]"
+  | Il.Ast.CallE (defid, targs, args) ->
+      string_of_defid defid ^ string_of_targs targs ^ string_of_args args
+  | Il.Ast.HoldE (relid, notexp) ->
+      "(" ^ string_of_relid relid ^ ": " ^ string_of_notexp notexp ^ " holds"
+      ^ ")"
+  | Il.Ast.IterE (exp, iterexp) -> string_of_exp exp ^ string_of_iterexp iterexp
 
-let string_of_notexp ?(typ = None) notexp =
-  Il.Print.string_of_notexp ~typ notexp
+and string_of_exps sep exps = String.concat sep (List.map string_of_exp exps)
 
-let string_of_iterexp iterexp = Il.Print.string_of_iterexp iterexp
-let string_of_iterexps iterexps = Il.Print.string_of_iterexps iterexps
+and string_of_notexp notexp =
+  let mixop, exps = notexp in
+  let atoms_h, mixop_t = (List.hd mixop, List.tl mixop) in
+  string_of_atoms atoms_h
+  :: List.map2
+       (fun exp_t atoms_t -> string_of_exp exp_t ^ string_of_atoms atoms_t)
+       exps mixop_t
+  |> String.concat " "
+
+and string_of_iterexp iterexp =
+  let iter, _ = iterexp in
+  string_of_iter iter
+
+and string_of_iterexps iterexps =
+  iterexps |> List.map string_of_iterexp |> String.concat ""
 
 (* Patterns *)
 
-let string_of_pattern pattern = Il.Print.string_of_pattern pattern
+and string_of_pattern pattern = Il.Print.string_of_pattern pattern
 
 (* Paths *)
 
-let string_of_path path = Il.Print.string_of_path path
+and string_of_path path =
+  match path.it with
+  | Il.Ast.RootP -> ""
+  | Il.Ast.IdxP (path, exp) ->
+      string_of_path path ^ "[" ^ string_of_exp exp ^ "]"
+  | Il.Ast.SliceP (path, exp_l, exp_h) ->
+      string_of_path path ^ "[" ^ string_of_exp exp_l ^ " : "
+      ^ string_of_exp exp_h ^ "]"
+  | Il.Ast.DotP ({ it = Il.Ast.RootP; _ }, atom) -> string_of_atom atom
+  | Il.Ast.DotP (path, atom) -> string_of_path path ^ "." ^ string_of_atom atom
 
 (* Parameters *)
 
-let string_of_param param = Il.Print.string_of_param param
-let string_of_params params = Il.Print.string_of_params params
+and string_of_param param = Il.Print.string_of_param param
+and string_of_params params = Il.Print.string_of_params params
 
 (* Type parameters *)
 
-let string_of_tparam tparam = Il.Print.string_of_tparam tparam
-let string_of_tparams tparams = Il.Print.string_of_tparams tparams
+and string_of_tparam tparam = Il.Print.string_of_tparam tparam
+and string_of_tparams tparams = Il.Print.string_of_tparams tparams
 
 (* Arguments *)
 
-let string_of_arg arg = Il.Print.string_of_arg arg
-let string_of_args args = Il.Print.string_of_args args
+and string_of_arg arg =
+  match arg.it with
+  | Il.Ast.ExpA exp -> string_of_exp exp
+  | Il.Ast.DefA defid -> string_of_defid defid
+
+and string_of_args args =
+  match args with
+  | [] -> ""
+  | args -> "(" ^ String.concat ", " (List.map string_of_arg args) ^ ")"
 
 (* Type arguments *)
 
-let string_of_targ targ = Il.Print.string_of_targ targ
-let string_of_targs targs = Il.Print.string_of_targs targs
+and string_of_targ targ = Il.Print.string_of_targ targ
+and string_of_targs targs = Il.Print.string_of_targs targs
 
 (* Instructions *)
 
@@ -123,41 +204,42 @@ let rec string_of_instr ?(inline = false) ?(level = 0) ?(index = 0) instr =
                (string_of_notexp notexp))
            (id_rel, notexp) iterexps)
   | IfI (exp_cond, iterexps, instrs_then, []) ->
-      Format.asprintf "%sIf %s, then\n%s" order_leading
+      Format.asprintf "%sIf %s, then\n\n%s" order_leading
         (string_of_iterated string_of_exp exp_cond iterexps)
         (string_of_instrs ~level:(level + 1) instrs_then)
   | IfI (exp_cond, iterexps, instrs_then, [ ({ it = IfI _; _ } as instr_else) ])
     ->
-      Format.asprintf "%sIf %s, then\n%s\n%sElse %s" order_leading
+      Format.asprintf "%sIf %s, then\n\n%s\n\n%sElse %s" order_leading
         (string_of_iterated string_of_exp exp_cond iterexps)
         (string_of_instrs ~level:(level + 1) instrs_then)
         order_following
         (string_of_instr ~inline:true ~level ~index instr_else)
   | IfI (exp_cond, iterexps, instrs_then, instrs_else) ->
-      Format.asprintf "%sIf %s, then\n%s\n%sElse\n%s" order_leading
+      Format.asprintf "%sIf %s, then\n\n%s\n\n%sElse\n\n%s" order_leading
         (string_of_iterated string_of_exp exp_cond iterexps)
         (string_of_instrs ~level:(level + 1) instrs_then)
         order_following
         (string_of_instrs ~level:(level + 1) instrs_else)
   | OtherwiseI instr ->
-      Format.asprintf "%sOtherwise\n%s" order_leading
+      Format.asprintf "%sOtherwise\n\n%s" order_leading
         (string_of_instr ~level:(level + 1) ~index:1 instr)
   | LetI (exp_l, exp_r, iterexps) ->
       Format.asprintf "%s%s" order_leading
         (string_of_iterated
            (fun (exp_l, exp_r) ->
-             Format.asprintf "Let %s = %s" (string_of_exp exp_l)
+             Format.asprintf "Let %s be %s" (string_of_exp exp_l)
                (string_of_exp exp_r))
            (exp_l, exp_r) iterexps)
-  | RetRelI exps ->
+  | ResultI [] -> Format.asprintf "%sThe relation holds" order_leading
+  | ResultI exps ->
       Format.asprintf "%sResult in %s" order_leading (string_of_exps ", " exps)
-  | RetDecI exp ->
+  | ReturnI exp ->
       Format.asprintf "%sReturn %s" order_leading (string_of_exp exp)
 
 and string_of_instrs ?(level = 0) instrs =
   instrs
   |> List.mapi (fun idx instr -> string_of_instr ~level ~index:(idx + 1) instr)
-  |> String.concat "\n"
+  |> String.concat "\n\n"
 
 (* Definitions *)
 
@@ -171,10 +253,10 @@ let rec string_of_def def =
   | RelD (relid, exps_input, instrs) ->
       "relation " ^ string_of_relid relid ^ ": "
       ^ string_of_exps ", " exps_input
-      ^ "\n" ^ string_of_instrs instrs
+      ^ "\n\n" ^ string_of_instrs instrs
   | DecD (defid, tparams, args_input, instrs) ->
       "def " ^ string_of_defid defid ^ string_of_tparams tparams
-      ^ string_of_args args_input ^ "\n" ^ string_of_instrs instrs
+      ^ string_of_args args_input ^ "\n\n" ^ string_of_instrs instrs
 
 and string_of_defs defs = String.concat "\n\n" (List.map string_of_def defs)
 
