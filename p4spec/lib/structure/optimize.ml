@@ -260,23 +260,6 @@ and remove_redundant_binding_instrs ?(instrs_seen : instr list = [])
 
 type overlap = Identical | Disjoint | Mutex | Fuzzy
 
-let overlap_pattern (pattern_a : pattern) (pattern_b : pattern) : overlap =
-  match (pattern_a, pattern_b) with
-  | CaseP mixop_a, CaseP mixop_b ->
-      if Sl.Eq.eq_mixop mixop_a mixop_b then Identical else Disjoint
-  | ListP `Cons, ListP (`Fixed n) | ListP (`Fixed n), ListP `Cons ->
-      if n = 0 then Mutex else Disjoint
-  | ListP `Cons, ListP `Nil | ListP `Nil, ListP `Cons -> Mutex
-  | ListP (`Fixed n_a), ListP (`Fixed n_b) ->
-      if n_a = n_b then Identical else Disjoint
-  | ListP (`Fixed n), ListP `Nil | ListP `Nil, ListP (`Fixed n) ->
-      if n = 0 then Identical else Disjoint
-  | ListP `Nil, ListP `Nil -> Identical
-  | OptP `Some, OptP `Some -> Identical
-  | OptP `Some, OptP `None | OptP `None, OptP `Some -> Mutex
-  | OptP `None, OptP `None -> Identical
-  | _ -> assert false
-
 let rec distinct_exp_literal (exp_a : exp) (exp_b : exp) : bool =
   match (exp_a.it, exp_b.it) with
   | BoolE b_a, BoolE b_b -> b_a <> b_b
@@ -290,7 +273,30 @@ let rec distinct_exp_literal (exp_a : exp) (exp_b : exp) : bool =
   | ListE _, ListE _ -> true
   | _ -> false
 
-let overlap_exp (exp_a : exp) (exp_b : exp) : overlap =
+let rec typ_as_variant (tdenv : TDEnv.t) (typ : typ) : mixop list option =
+  match typ.it with
+  | VarT (tid, _) -> (
+      let _, deftyp = TDEnv.find tid tdenv in
+      match deftyp.it with
+      | PlainT typ -> typ_as_variant tdenv typ
+      | VariantT typcases ->
+          let mixops = typcases |> List.map it |> List.map fst in
+          Some mixops
+      | _ -> None)
+  | _ -> None
+
+let overlap_typ (tdenv : TDEnv.t) (typ_a : typ) (typ_b : typ) : overlap =
+  match (typ_as_variant tdenv typ_a, typ_as_variant tdenv typ_b) with
+  | Some mixops_a, Some mixops_b ->
+      let module Set = Set.Make (Mixop) in
+      let mixops_a = Set.of_list mixops_a in
+      let mixops_b = Set.of_list mixops_b in
+      if Set.equal mixops_a mixops_b then Identical
+      else if Set.inter mixops_a mixops_b |> Set.is_empty then Disjoint
+      else Fuzzy
+  | _ -> Fuzzy
+
+let rec overlap_exp (tdenv : TDEnv.t) (exp_a : exp) (exp_b : exp) : overlap =
   match (exp_a.it, exp_b.it) with
   (* Negation *)
   | UnE (`NotOp, _, exp_a), _ when Sl.Eq.eq_exp exp_a exp_b -> Mutex
@@ -314,11 +320,31 @@ let overlap_exp (exp_a : exp) (exp_b : exp) : overlap =
             || (Sl.Eq.eq_exp exp_a_l exp_b_r && Sl.Eq.eq_exp exp_a_r exp_b_l))
     ->
       Mutex
+  (* Subtyping *)
+  | SubE (exp_a, typ_a), SubE (exp_b, typ_b) when Sl.Eq.eq_exp exp_a exp_b ->
+      overlap_typ tdenv typ_a typ_b
   (* Match on patterns *)
   | MatchE (exp_a, pattern_a), MatchE (exp_b, pattern_b)
     when Sl.Eq.eq_exp exp_a exp_b ->
       overlap_pattern pattern_a pattern_b
   | _ -> Fuzzy
+
+and overlap_pattern (pattern_a : pattern) (pattern_b : pattern) : overlap =
+  match (pattern_a, pattern_b) with
+  | CaseP mixop_a, CaseP mixop_b ->
+      if Sl.Eq.eq_mixop mixop_a mixop_b then Identical else Disjoint
+  | ListP `Cons, ListP (`Fixed n) | ListP (`Fixed n), ListP `Cons ->
+      if n = 0 then Mutex else Disjoint
+  | ListP `Cons, ListP `Nil | ListP `Nil, ListP `Cons -> Mutex
+  | ListP (`Fixed n_a), ListP (`Fixed n_b) ->
+      if n_a = n_b then Identical else Disjoint
+  | ListP (`Fixed n), ListP `Nil | ListP `Nil, ListP (`Fixed n) ->
+      if n = 0 then Identical else Disjoint
+  | ListP `Nil, ListP `Nil -> Identical
+  | OptP `Some, OptP `Some -> Identical
+  | OptP `Some, OptP `None | OptP `None, OptP `Some -> Mutex
+  | OptP `None, OptP `None -> Identical
+  | _ -> assert false
 
 (* Merge if statements with the same condition *)
 
@@ -405,13 +431,13 @@ type if_couple =
   | MutexC of instr list * instr list * instr list
 
 let rec find_disjoint_if ?(instrs_unmergeable : instr list = [])
-    (exp_cond_target : exp) (iterexps_target : iterexp list)
+    (tdenv : TDEnv.t) (exp_cond_target : exp) (iterexps_target : iterexp list)
     (instrs : instr list) : if_couple option =
   match instrs with
   | ({ it = IfI (exp_cond, iterexps, instrs_then, instrs_else); _ } as instr_h)
     :: instrs_t -> (
       let eq_iterexps = Sl.Eq.eq_iterexps iterexps iterexps_target in
-      let overlap_exp_cond = overlap_exp exp_cond exp_cond_target in
+      let overlap_exp_cond = overlap_exp tdenv exp_cond exp_cond_target in
       match (eq_iterexps, overlap_exp_cond) with
       | true, Disjoint when instrs_else = [] ->
           let instrs_unmergeable = instrs_unmergeable @ instrs_t in
@@ -425,23 +451,23 @@ let rec find_disjoint_if ?(instrs_unmergeable : instr list = [])
           Some if_couple
       | _ ->
           let instrs_unmergeable = instrs_unmergeable @ [ instr_h ] in
-          find_disjoint_if ~instrs_unmergeable exp_cond_target iterexps_target
-            instrs_t)
+          find_disjoint_if ~instrs_unmergeable tdenv exp_cond_target
+            iterexps_target instrs_t)
   | _ -> None
 
-let rec merge_else (instrs : instr list) : instr list =
+let rec merge_else (tdenv : TDEnv.t) (instrs : instr list) : instr list =
   match instrs with
   | [] -> []
   | ({ it = IfI (exp_cond, iterexps, instrs_then, instrs_else); _ } as instr_h)
     :: instrs_t -> (
-      match find_disjoint_if exp_cond iterexps instrs_t with
+      match find_disjoint_if tdenv exp_cond iterexps instrs_t with
       | Some (DisjointC (instrs_unmergeable, instr_matched)) ->
           let instrs_else = merge_block instrs_else [ instr_matched ] in
           let instr_h =
             IfI (exp_cond, iterexps, instrs_then, instrs_else) $ instr_h.at
           in
           let instrs = instr_h :: instrs_unmergeable in
-          merge_else instrs
+          merge_else tdenv instrs
       | Some
           (MutexC
             (instrs_unmergeable, instrs_then_matched, instrs_else_matched)) ->
@@ -451,17 +477,17 @@ let rec merge_else (instrs : instr list) : instr list =
             IfI (exp_cond, iterexps, instrs_then, instrs_else) $ instr_h.at
           in
           let instrs = instr_h :: instrs_unmergeable in
-          merge_else instrs
+          merge_else tdenv instrs
       | None ->
-          let instrs_then = merge_else instrs_then in
-          let instrs_else = merge_else instrs_else in
+          let instrs_then = merge_else tdenv instrs_then in
+          let instrs_else = merge_else tdenv instrs_else in
           let instr_h =
             IfI (exp_cond, iterexps, instrs_then, instrs_else) $ instr_h.at
           in
-          let instrs_t = merge_else instrs_t in
+          let instrs_t = merge_else tdenv instrs_t in
           instr_h :: instrs_t)
   | instr_h :: instrs_t ->
-      let instrs_t = merge_else instrs_t in
+      let instrs_t = merge_else tdenv instrs_t in
       instr_h :: instrs_t
 
 (* Convert last else if in an if chain into an else branch
@@ -489,45 +515,46 @@ let rec find_chain_if ?(exps_cond : exp list = []) (instr : instr) : exp list =
   | IfI (exp_cond, [], _, []) -> exps_cond @ [ exp_cond ]
   | _ -> []
 
-let find_case_analysis_if (exp_cond : exp) : (exp * mixop) option =
+let find_case_analysis_if (tdenv : TDEnv.t) (exp_cond : exp) :
+    (exp * mixop list) option =
   match exp_cond.it with
-  | MatchE (exp, CaseP mixop) -> Some (exp, mixop)
+  | MatchE (exp, CaseP mixop) -> Some (exp, [ mixop ])
+  | SubE (exp, typ) -> (
+      match typ_as_variant tdenv typ with
+      | Some mixops -> Some (exp, mixops)
+      | None -> None)
   | _ -> None
 
-let find_case_analysis_chain_if (exp_cond_h : exp) (exps_cond_t : exp list) :
-    (typ * mixop list) option =
-  match find_case_analysis_if exp_cond_h with
-  | Some (exp_h, mixop_h) ->
+let find_case_analysis_chain_if (tdenv : TDEnv.t) (exp_cond_h : exp)
+    (exps_cond_t : exp list) : (typ * mixop list) option =
+  match find_case_analysis_if tdenv exp_cond_h with
+  | Some (exp_h, mixops_h) ->
       let exps_t, mixops_t =
-        List.map find_case_analysis_if exps_cond_t
-        |> List.filter_map Fun.id |> List.split
+        List.map (find_case_analysis_if tdenv) exps_cond_t
+        |> List.filter_map Fun.id
+        |> List.fold_left
+             (fun (exps_t, mixops_t) (exp, mixops) ->
+               let exps_t = exps_t @ [ exp ] in
+               let mixops_t = mixops_t @ mixops in
+               (exps_t, mixops_t))
+             ([], [])
       in
       if
         List.length exps_cond_t = List.length exps_t
         && List.for_all (Sl.Eq.eq_exp exp_h) exps_t
       then
         let typ = exp_h.note $ exp_h.at in
-        let mixops = mixop_h :: mixops_t in
+        let mixops = mixops_h @ mixops_t in
         Some (typ, mixops)
       else None
   | None -> None
 
-let rec find_case_analysis_typ (tdenv : TDEnv.t) (typ : typ) : mixop list =
-  match typ.it with
-  | VarT (tid, _) -> (
-      let _, deftyp = TDEnv.find tid tdenv in
-      match deftyp.it with
-      | PlainT typ -> find_case_analysis_typ tdenv typ
-      | VariantT typcases -> typcases |> List.map it |> List.map fst
-      | _ -> assert false)
-  | _ -> assert false
-
 let is_total_chain_if (tdenv : TDEnv.t) (exps_cond : exp list) : bool =
   assert (List.length exps_cond > 1);
   let exp_cond_h, exps_cond_t = (List.hd exps_cond, List.tl exps_cond) in
-  match find_case_analysis_chain_if exp_cond_h exps_cond_t with
+  match find_case_analysis_chain_if tdenv exp_cond_h exps_cond_t with
   | Some (typ, mixops) ->
-      let mixops_typ = find_case_analysis_typ tdenv typ in
+      let mixops_typ = typ_as_variant tdenv typ |> Option.get in
       let module Set = Set.Make (Mixop) in
       let mixops = Set.of_list mixops in
       let mixops_typ = Set.of_list mixops_typ in
@@ -576,7 +603,7 @@ let rec totalize_chain_if (tdenv : TDEnv.t) (instrs : instr list) : instr list =
 
 let rec optimize' (tdenv : TDEnv.t) (instrs : instr list) : instr list =
   let instrs_optimized =
-    instrs |> remove_redundant_binding_instrs |> merge_if |> merge_else
+    instrs |> remove_redundant_binding_instrs |> merge_if |> merge_else tdenv
     |> totalize_chain_if tdenv
   in
   if Sl.Eq.eq_instrs instrs instrs_optimized then instrs

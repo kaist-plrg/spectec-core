@@ -81,7 +81,8 @@ let rec string_of_exp exp =
   | Il.Ast.SubE (exp, typ) ->
       "(" ^ string_of_exp exp ^ " has type " ^ string_of_typ typ ^ ")"
   | Il.Ast.MatchE (exp, pattern) ->
-      string_of_exp exp ^ " matches pattern " ^ string_of_pattern pattern
+      "(" ^ string_of_exp exp ^ " matches pattern " ^ string_of_pattern pattern
+      ^ ")"
   | Il.Ast.TupleE es -> "(" ^ string_of_exps ", " es ^ ")"
   | Il.Ast.CaseE notexp -> "(" ^ string_of_notexp notexp ^ ")"
   | Il.Ast.StrE expfields ->
@@ -184,10 +185,10 @@ and string_of_targs targs = Il.Print.string_of_targs targs
 and string_of_pathcond pathcond =
   match pathcond with
   | ForallC (exp, iterexps) ->
-      Format.asprintf "(forall %s%s)" (string_of_exp exp)
+      Format.asprintf "(forall %s)%s" (string_of_exp exp)
         (string_of_iterexps iterexps)
   | ExistsC (exp, iterexps) ->
-      Format.asprintf "(exists %s%s)" (string_of_exp exp)
+      Format.asprintf "(exists %s)%s" (string_of_exp exp)
         (string_of_iterexps iterexps)
   | PlainC exp -> "(" ^ string_of_exp exp ^ ")"
 
