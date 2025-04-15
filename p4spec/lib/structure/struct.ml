@@ -1,4 +1,5 @@
 open Il.Ast
+module TDEnv = Runtime_dynamic.Envs.TDEnv
 open Util.Source
 
 (* Structuring premises *)
@@ -20,7 +21,7 @@ and struct_prems' (prems_internalized : (prem * iterexp list) list)
   match prems_internalized with
   | [] -> [ instr_ret ]
   | [ ({ it = ElsePr; at; _ }, []) ] ->
-      let instr = Sl.Ast.ElseI instr_ret $ at in
+      let instr = Sl.Ast.OtherwiseI instr_ret $ at in
       [ instr ]
   | (prem_h, iterexps_h) :: prems_internalized_t -> (
       let at = prem_h.at in
@@ -57,32 +58,46 @@ let struct_clause_path ((prems, exp_output) : prem list * exp) :
 
 (* Structuring definitions *)
 
-let rec struct_def (def : def) : Sl.Ast.def =
+let rec struct_def (tdenv : TDEnv.t) (def : def) : Sl.Ast.def =
   let at = def.at in
   match def.it with
   | TypD (id, tparams, deftyp) -> Sl.Ast.TypD (id, tparams, deftyp) $ at
-  | RelD (id, _nottyp, inputs, rules) -> struct_rel_def at id inputs rules
+  | RelD (id, _nottyp, inputs, rules) -> struct_rel_def tdenv at id inputs rules
   | DecD (id, tparams, _params, _typ, clauses) ->
-      struct_dec_def at id tparams clauses
+      struct_dec_def tdenv at id tparams clauses
 
 (* Structuring relation definitions *)
 
-and struct_rel_def (at : region) (id_rel : id) (inputs : int list)
-    (rules : rule list) : Sl.Ast.def =
+and struct_rel_def (tdenv : TDEnv.t) (at : region) (id_rel : id)
+    (inputs : int list) (rules : rule list) : Sl.Ast.def =
   let exps_input, paths = Antiunify.antiunify_rules inputs rules in
   let instrs = List.concat_map struct_rule_path paths in
-  let instrs = Optimize.optimize instrs in
+  let instrs = Optimize.optimize tdenv instrs in
   Sl.Ast.RelD (id_rel, exps_input, instrs) $ at
 
 (* Structuring declaration definitions *)
 
-and struct_dec_def (at : region) (id_dec : id) (tparams : tparam list)
-    (clauses : clause list) : Sl.Ast.def =
+and struct_dec_def (tdenv : TDEnv.t) (at : region) (id_dec : id)
+    (tparams : tparam list) (clauses : clause list) : Sl.Ast.def =
   let args_input, paths = Antiunify.antiunify_clauses clauses in
   let instrs = List.concat_map struct_clause_path paths in
-  let instrs = Optimize.optimize instrs in
+  let instrs = Optimize.optimize tdenv instrs in
   Sl.Ast.DecD (id_dec, tparams, args_input, instrs) $ at
+
+(* Load type definitions *)
+
+let load_def (tdenv : TDEnv.t) (def : def) : TDEnv.t =
+  match def.it with
+  | TypD (id, tparams, deftyp) ->
+      let typdef = (tparams, deftyp) in
+      TDEnv.add id typdef tdenv
+  | _ -> tdenv
+
+let load_spec (tdenv : TDEnv.t) (spec : spec) : TDEnv.t =
+  List.fold_left load_def tdenv spec
 
 (* Structuring a spec *)
 
-let struct_spec (spec : spec) : Sl.Ast.spec = List.map struct_def spec
+let struct_spec (spec : spec) : Sl.Ast.spec =
+  let tdenv = load_spec TDEnv.empty spec in
+  List.map (struct_def tdenv) spec

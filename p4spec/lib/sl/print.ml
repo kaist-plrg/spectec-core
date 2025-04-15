@@ -139,7 +139,7 @@ let rec string_of_instr ?(inline = false) ?(level = 0) ?(index = 0) instr =
         (string_of_instrs ~level:(level + 1) instrs_then)
         order_following
         (string_of_instrs ~level:(level + 1) instrs_else)
-  | ElseI instr ->
+  | OtherwiseI instr ->
       Format.asprintf "%sOtherwise\n%s" order_leading
         (string_of_instr ~level:(level + 1) ~index:1 instr)
   | LetI (exp_l, exp_r, iterexps) ->

@@ -104,7 +104,7 @@ and instr = instr' phrase
 and instr' =
   | RuleI of id * notexp * iterexp list
   | IfI of exp * iterexp list * instr list * instr list
-  | ElseI of instr
+  | OtherwiseI of instr
   | LetI of exp * exp * iterexp list
   | RetRelI of exp list
   | RetDecI of exp

@@ -1,6 +1,7 @@
 open Domain.Lib
 open Xl
 open Sl.Ast
+module TDEnv = Runtime_dynamic.Envs.TDEnv
 open Util.Source
 
 (* Renamer *)
@@ -148,9 +149,9 @@ and rename_instr (rename : Rename.t) (instr : instr) : instr =
       let instrs_then = List.map (rename_instr rename) instrs_then in
       let instrs_else = List.map (rename_instr rename) instrs_else in
       IfI (exp_cond, iterexps, instrs_then, instrs_else) $ at
-  | ElseI instr ->
+  | OtherwiseI instr ->
       let instr = rename_instr rename instr in
-      ElseI instr $ at
+      OtherwiseI instr $ at
   | LetI (exp_l, exp_r, iterexps) ->
       let exp_l = rename_exp rename exp_l in
       let exp_r = rename_exp rename exp_r in
@@ -446,14 +447,123 @@ let rec merge_else (instrs : instr list) : instr list =
       let instrs_t = merge_else instrs_t in
       instr_h :: instrs_t
 
+(* Convert last else if in an if chain into an else branch
+   when the branch conditions are total
+
+   For now, it only takes case matches into account
+
+   syntax foo = | AAA | BBB | CCC
+
+   if (foo matches AAA)
+   else if (foo matches BBB)
+   else if (foo matches CCC)
+
+   is converted into
+
+   if (foo matches AAA)
+   else if (foo matches BBB)
+   else *)
+
+let rec find_chain_if ?(exps_cond : exp list = []) (instr : instr) : exp list =
+  match instr.it with
+  | IfI (exp_cond, [], _, [ ({ it = IfI _; _ } as instr_else) ]) ->
+      let exps_cond = exps_cond @ [ exp_cond ] in
+      find_chain_if ~exps_cond instr_else
+  | IfI (exp_cond, [], _, []) -> exps_cond @ [ exp_cond ]
+  | _ -> []
+
+let find_case_analysis_if (exp_cond : exp) : (exp * mixop) option =
+  match exp_cond.it with
+  | MatchE (exp, CaseP mixop) -> Some (exp, mixop)
+  | _ -> None
+
+let find_case_analysis_chain_if (exp_cond_h : exp) (exps_cond_t : exp list) :
+    (typ * mixop list) option =
+  match find_case_analysis_if exp_cond_h with
+  | Some (exp_h, mixop_h) ->
+      let exps_t, mixops_t =
+        List.map find_case_analysis_if exps_cond_t
+        |> List.filter_map Fun.id |> List.split
+      in
+      if
+        List.length exps_cond_t = List.length exps_t
+        && List.for_all (Sl.Eq.eq_exp exp_h) exps_t
+      then
+        let typ = exp_h.note $ exp_h.at in
+        let mixops = mixop_h :: mixops_t in
+        Some (typ, mixops)
+      else None
+  | None -> None
+
+let rec find_case_analysis_typ (tdenv : TDEnv.t) (typ : typ) : mixop list =
+  match typ.it with
+  | VarT (tid, _) -> (
+      let _, deftyp = TDEnv.find tid tdenv in
+      match deftyp.it with
+      | PlainT typ -> find_case_analysis_typ tdenv typ
+      | VariantT typcases -> typcases |> List.map it |> List.map fst
+      | _ -> assert false)
+  | _ -> assert false
+
+let is_total_chain_if (tdenv : TDEnv.t) (exps_cond : exp list) : bool =
+  assert (List.length exps_cond > 1);
+  let exp_cond_h, exps_cond_t = (List.hd exps_cond, List.tl exps_cond) in
+  match find_case_analysis_chain_if exp_cond_h exps_cond_t with
+  | Some (typ, mixops) ->
+      let mixops_typ = find_case_analysis_typ tdenv typ in
+      let module Set = Set.Make (Mixop) in
+      let mixops = Set.of_list mixops in
+      let mixops_typ = Set.of_list mixops_typ in
+      Set.equal mixops mixops_typ
+  | None -> false
+
+let rec totalize_chain_if' (instr : instr) : instr =
+  let at = instr.at in
+  match instr.it with
+  | IfI
+      ( exp_cond,
+        [],
+        instrs_then,
+        [ { it = IfI (_, [], instrs_else_then, []); _ } ] ) ->
+      IfI (exp_cond, [], instrs_then, instrs_else_then) $ at
+  | IfI (exp_cond, [], instrs_then, [ ({ it = IfI _; _ } as instr_else) ]) ->
+      let instr_else = totalize_chain_if' instr_else in
+      IfI (exp_cond, [], instrs_then, [ instr_else ]) $ at
+  | _ -> assert false
+
+let rec totalize_chain_if (tdenv : TDEnv.t) (instrs : instr list) : instr list =
+  match instrs with
+  | [] -> []
+  | ({ it = IfI (exp_cond, iterexps, instrs_then, instrs_else); _ } as instr_h)
+    :: instrs_t -> (
+      match find_chain_if instr_h with
+      | exps_cond
+        when List.length exps_cond > 1 && is_total_chain_if tdenv exps_cond ->
+          let instr_h = totalize_chain_if' instr_h in
+          let instrs_t = totalize_chain_if tdenv instrs_t in
+          let instrs = instr_h :: instrs_t in
+          totalize_chain_if tdenv instrs
+      | _ ->
+          let instrs_then = totalize_chain_if tdenv instrs_then in
+          let instrs_else = totalize_chain_if tdenv instrs_else in
+          let instr_h =
+            IfI (exp_cond, iterexps, instrs_then, instrs_else) $ instr_h.at
+          in
+          let instrs_t = totalize_chain_if tdenv instrs_t in
+          instr_h :: instrs_t)
+  | instr_h :: instrs_t ->
+      let instrs_t = totalize_chain_if tdenv instrs_t in
+      instr_h :: instrs_t
+
 (* Apply optimizations until it reaches a fixed point *)
 
-let rec optimize' (instrs : instr list) : instr list =
+let rec optimize' (tdenv : TDEnv.t) (instrs : instr list) : instr list =
   let instrs_optimized =
     instrs |> remove_redundant_binding_instrs |> merge_if |> merge_else
+    |> totalize_chain_if tdenv
   in
   if Sl.Eq.eq_instrs instrs instrs_optimized then instrs
-  else optimize' instrs_optimized
+  else optimize' tdenv instrs_optimized
 
-let optimize (instrs : instr list) : instr list =
-  instrs |> remove_let_alias |> optimize'
+let optimize (tdenv : TDEnv.t) (instrs : instr list) : instr list =
+  instrs |> remove_let_alias |> optimize' tdenv

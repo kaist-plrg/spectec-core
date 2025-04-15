@@ -1298,14 +1298,14 @@ and elab_var_prem (ctx : Ctx.t) (id : id) (plaintyp : plaintyp) : Ctx.t =
 and elab_rule_prem (ctx : Ctx.t) (id : id) (exp : exp) : Ctx.t * Il.Ast.prem' =
   let nottyp, inputs = Ctx.find_rel ctx id in
   let+ ctx, notexp_il = elab_exp_not ctx (NotationT nottyp) exp in
-  match inputs with
-  | [] ->
-      let exp_il = Il.Ast.HoldE (id, notexp_il) $$ (exp.at, Il.Ast.BoolT) in
-      let prem_il = Il.Ast.IfPr exp_il in
-      (ctx, prem_il)
-  | _ ->
-      let prem_il = Il.Ast.RulePr (id, notexp_il) in
-      (ctx, prem_il)
+  let _, exps_il = notexp_il in
+  if Rel.Hint.is_conditional inputs exps_il then
+    let exp_il = Il.Ast.HoldE (id, notexp_il) $$ (exp.at, Il.Ast.BoolT) in
+    let prem_il = Il.Ast.IfPr exp_il in
+    (ctx, prem_il)
+  else
+    let prem_il = Il.Ast.RulePr (id, notexp_il) in
+    (ctx, prem_il)
 
 (* Elaboration of negated rule premises *)
 

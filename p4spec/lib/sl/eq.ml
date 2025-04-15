@@ -85,7 +85,7 @@ let rec eq_instr (instr_a : instr) (instr_b : instr) : bool =
       && eq_iterexps iterexps_a iterexps_b
       && eq_instrs instrs_then_a instrs_then_b
       && eq_instrs instrs_else_a instrs_else_b
-  | ElseI instr_a, ElseI instr_b -> eq_instr instr_a instr_b
+  | OtherwiseI instr_a, OtherwiseI instr_b -> eq_instr instr_a instr_b
   | LetI (exp_l_a, exp_r_a, iterexps_a), LetI (exp_l_b, exp_r_b, iterexps_b) ->
       eq_exp exp_l_a exp_l_b && eq_exp exp_r_a exp_r_b
       && eq_iterexps iterexps_a iterexps_b
