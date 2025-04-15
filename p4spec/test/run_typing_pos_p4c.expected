@@ -374,7 +374,7 @@ interp error: tracing backtrack logs:
   1. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
     - because condition cursor matches `GLOBAL` was not met ()
   2. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
-    - because condition ~ $in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:154.9-154.60)
+    - because condition ~$in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:154.9-154.60)
   3. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
     - because condition cursor matches `LOCAL` was not met ()
 
@@ -3138,7 +3138,7 @@ interp error: tracing backtrack logs:
   1. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
     - because condition cursor matches `GLOBAL` was not met ()
   2. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
-    - because condition ~ $in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:154.9-154.60)
+    - because condition ~$in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:154.9-154.60)
   3. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
     - because condition cursor matches `LOCAL` was not met ()
 

@@ -18,6 +18,7 @@ dec $fresh_tids(nat) : tid*
 
 def $fresh_tids(0) = eps
 def $fresh_tids(n) = $fresh_tid() :: $fresh_tids($(n - 1))
+  -- otherwise
 
 ;;
 ;; Function and constructor identifiers

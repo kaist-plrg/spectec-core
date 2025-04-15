@@ -1808,7 +1808,7 @@ interp error: tracing backtrack logs:
   1. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4a1-typing-context.watsup:176.17-176.26)
     - because condition cursor matches `GLOBAL` was not met ()
   2. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4a1-typing-context.watsup:176.17-176.26)
-    - because condition ~ $in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:154.9-154.60)
+    - because condition ~$in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:154.9-154.60)
   3. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4a1-typing-context.watsup:176.17-176.26)
     - because condition cursor matches `LOCAL` was not met ()
 
@@ -1826,7 +1826,7 @@ interp error: tracing backtrack logs:
   1. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4a1-typing-context.watsup:180.17-180.26)
     - because condition cursor matches `GLOBAL` was not met ()
   2. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4a1-typing-context.watsup:180.17-180.26)
-    - because condition ~ $in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:154.9-154.60)
+    - because condition ~$in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:154.9-154.60)
   3. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4a1-typing-context.watsup:180.17-180.26)
     - because condition cursor matches `LOCAL` was not met ()
 
@@ -1836,7 +1836,7 @@ Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/dupConst.p4
 interp error: tracing backtrack logs:
 - because invocation of function $add_styp(p, C, id, `%%%%`_styp(typ_c, `NO`_dir(), `LCTK`_ctk(), ?(val))) failed (../../../../spec/4g-typing-decl.watsup:60.15-60.24)
   1. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:60.15-60.24)
-    - because condition ~ $in_set<id>(id, $dom_map<id, styp>(C.GLOBAL.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:151.9-151.61)
+    - because condition ~$in_set<id>(id, $dom_map<id, styp>(C.GLOBAL.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:151.9-151.61)
   2. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:60.15-60.24)
     - because condition cursor matches `BLOCK` was not met ()
   3. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:60.15-60.24)
@@ -1953,7 +1953,7 @@ interp error: tracing backtrack logs:
   1. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
     - because condition cursor matches `GLOBAL` was not met ()
   2. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
-    - because condition ~ $in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:154.9-154.60)
+    - because condition ~$in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:154.9-154.60)
   3. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:308.15-308.24)
     - because condition cursor matches `LOCAL` was not met ()
 
@@ -3038,7 +3038,7 @@ interp error: tracing backtrack logs:
                 7. because application of rule Table_entry_priority_ok/else-none-lw failed (../../../../spec/4g-typing-decl.watsup:1115.6-1115.29)
                   - because condition (i' >= 0 as int) was not met (../../../../spec/4g-typing-decl.watsup:1087.9-1087.19)
                 8. because application of rule Table_entry_priority_ok/else-none-no-lw failed (../../../../spec/4g-typing-decl.watsup:1115.6-1115.29)
-                  - because condition ~ tblctx.PRIORITIES.LARGEST_WINS was not met (../../../../spec/4g-typing-decl.watsup:1098.9-1098.40)
+                  - because condition ~tblctx.PRIORITIES.LARGEST_WINS was not met (../../../../spec/4g-typing-decl.watsup:1098.9-1098.40)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/inro.p4
@@ -4260,7 +4260,7 @@ interp error: tracing backtrack logs:
   1. because application of clause add_funcdef_non_overload(cursor, C, fid, fd) failed (../../../../spec/4g-typing-decl.watsup:443.16-443.41)
     - because condition cursor matches `GLOBAL` was not met ()
   2. because application of clause add_funcdef_non_overload(cursor, C, fid, fd) failed (../../../../spec/4g-typing-decl.watsup:443.16-443.41)
-    - because condition ~ id <- id_k*{id_k <- id_k*} was not met (../../../../spec/4a1-typing-context.watsup:255.9-255.23)
+    - because condition ~id <- id_k*{id_k <- id_k*} was not met (../../../../spec/4a1-typing-context.watsup:255.9-255.23)
 
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue1932-2.p4
@@ -4268,7 +4268,7 @@ Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue1932-2.p4
 interp error: tracing backtrack logs:
 - because invocation of function $add_funcdef_non_overload(p, C_0, fid, fd) failed (../../../../spec/4g-typing-decl.watsup:443.16-443.41)
   1. because application of clause add_funcdef_non_overload(cursor, C, fid, fd) failed (../../../../spec/4g-typing-decl.watsup:443.16-443.41)
-    - because condition ~ id <- id_k*{id_k <- id_k*} was not met (../../../../spec/4a1-typing-context.watsup:250.9-250.23)
+    - because condition ~id <- id_k*{id_k <- id_k*} was not met (../../../../spec/4a1-typing-context.watsup:250.9-250.23)
   2. because application of clause add_funcdef_non_overload(cursor, C, fid, fd) failed (../../../../spec/4g-typing-decl.watsup:443.16-443.41)
     - because condition cursor matches `BLOCK` was not met ()
 
@@ -5030,7 +5030,7 @@ interp error: tracing backtrack logs:
   1. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:1281.16-1281.25)
     - because condition cursor matches `GLOBAL` was not met ()
   2. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:1281.16-1281.25)
-    - because condition ~ $in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:154.9-154.60)
+    - because condition ~$in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME)) was not met (../../../../spec/4a1-typing-context.watsup:154.9-154.60)
   3. because application of clause add_styp(cursor, C, id, styp) failed (../../../../spec/4g-typing-decl.watsup:1281.16-1281.25)
     - because condition cursor matches `LOCAL` was not met ()
 
@@ -8243,7 +8243,7 @@ interp error: tracing backtrack logs:
                 49. because application of rule Expr_ok/callmethode failed (../../../../spec/4f-typing-stmt.watsup:199.6-199.13)
                   - because condition targ* matches [] was not met (../../../../spec/4e-typing-expr.watsup:816.36-816.39)
                 50. because application of rule Expr_ok/callmethode failed (../../../../spec/4f-typing-stmt.watsup:199.6-199.13)
-                  - because condition ~ $in_set<member>(member, `SET%`_set<member>(["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"])) was not met (../../../../spec/4e-typing-expr.watsup:825.9-825.113)
+                  - because condition ~$in_set<member>(member, `SET%`_set<member>(["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"])) was not met (../../../../spec/4e-typing-expr.watsup:825.9-825.113)
                 51. because application of rule Expr_ok/calltypee failed (../../../../spec/4f-typing-stmt.watsup:199.6-199.13)
                   - because condition expr matches `CallTypeE%%%%` was not met ()
                 52. because application of rule Expr_ok/inste failed (../../../../spec/4f-typing-stmt.watsup:199.6-199.13)
@@ -8569,9 +8569,9 @@ interp error: tracing backtrack logs:
         2. because application of rule Inst_ok/global-packaget-targsinfer failed (../../../../spec/4g-typing-decl.watsup:187.6-187.13)
           - because condition (|tid_fresh*{tid_fresh <- tid_fresh*}| > 0) was not met (../../../../spec/4h-typing-call.watsup:736.9-736.25)
         3. because application of rule Inst_ok/else-no-targsinfer failed (../../../../spec/4g-typing-decl.watsup:187.6-187.13)
-          - because condition ~ ((p = `GLOBAL`_cursor()) /\ $is_packaget($canon_typ(typ_i))) was not met (../../../../spec/4h-typing-call.watsup:761.9-761.59)
+          - because condition ~((p = `GLOBAL`_cursor()) /\ $is_packaget($canon_typ(typ_i))) was not met (../../../../spec/4h-typing-call.watsup:761.9-761.59)
         4. because application of rule Inst_ok/else-targsinfer failed (../../../../spec/4g-typing-decl.watsup:187.6-187.13)
-          - because condition ~ ((p = `GLOBAL`_cursor()) /\ $is_packaget($canon_typ(typ_i))) was not met (../../../../spec/4h-typing-call.watsup:778.9-778.59)
+          - because condition ~((p = `GLOBAL`_cursor()) /\ $is_packaget($canon_typ(typ_i))) was not met (../../../../spec/4h-typing-call.watsup:778.9-778.59)
     6. because application of rule Decl_ok/errd failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
       - because condition decl matches `ErrD%` was not met ()
     7. because application of rule Decl_ok/matchkindd failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
@@ -13754,9 +13754,9 @@ interp error: tracing backtrack logs:
         2. because application of rule Inst_ok/global-packaget-targsinfer failed (../../../../spec/4g-typing-decl.watsup:187.6-187.13)
           - because condition (|tid_fresh*{tid_fresh <- tid_fresh*}| > 0) was not met (../../../../spec/4h-typing-call.watsup:736.9-736.25)
         3. because application of rule Inst_ok/else-no-targsinfer failed (../../../../spec/4g-typing-decl.watsup:187.6-187.13)
-          - because condition ~ ((p = `GLOBAL`_cursor()) /\ $is_packaget($canon_typ(typ_i))) was not met (../../../../spec/4h-typing-call.watsup:761.9-761.59)
+          - because condition ~((p = `GLOBAL`_cursor()) /\ $is_packaget($canon_typ(typ_i))) was not met (../../../../spec/4h-typing-call.watsup:761.9-761.59)
         4. because application of rule Inst_ok/else-targsinfer failed (../../../../spec/4g-typing-decl.watsup:187.6-187.13)
-          - because condition ~ ((p = `GLOBAL`_cursor()) /\ $is_packaget($canon_typ(typ_i))) was not met (../../../../spec/4h-typing-call.watsup:778.9-778.59)
+          - because condition ~((p = `GLOBAL`_cursor()) /\ $is_packaget($canon_typ(typ_i))) was not met (../../../../spec/4h-typing-call.watsup:778.9-778.59)
     6. because application of rule Decl_ok/errd failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
       - because condition decl matches `ErrD%` was not met ()
     7. because application of rule Decl_ok/matchkindd failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
@@ -17676,7 +17676,7 @@ interp error: tracing backtrack logs:
                 6. because application of rule Table_entry_keyset_ok/exprk-range-else failed (../../../../spec/4g-typing-decl.watsup:944.6-944.27)
                   - because condition (text = "range") was not met (../../../../spec/4g-typing-decl.watsup:896.25-896.32)
                 7. because application of rule Table_entry_keyset_ok/exprk-else failed (../../../../spec/4g-typing-decl.watsup:944.6-944.27)
-                  - because condition ~ ($is_maske(expr) \/ $is_rangee(expr)) was not met (../../../../spec/4g-typing-decl.watsup:909.9-909.47)
+                  - because condition ~($is_maske(expr) \/ $is_rangee(expr)) was not met (../../../../spec/4g-typing-decl.watsup:909.9-909.47)
                 8. because application of rule Table_entry_keyset_ok/defaultk-lpm failed (../../../../spec/4g-typing-decl.watsup:944.6-944.27)
                   - because condition (text = "lpm") was not met (../../../../spec/4g-typing-decl.watsup:919.25-919.30)
                 9. because application of rule Table_entry_keyset_ok/defaultk-else failed (../../../../spec/4g-typing-decl.watsup:944.6-944.27)
@@ -17749,7 +17749,7 @@ interp error: tracing backtrack logs:
                 3. because application of rule Table_entry_keyset_ok/exprk-ternary-maske failed (../../../../spec/4g-typing-decl.watsup:944.6-944.27)
                   - because condition expr matches `MaskE%%` was not met ()
                 4. because application of rule Table_entry_keyset_ok/exprk-ternary-else failed (../../../../spec/4g-typing-decl.watsup:944.6-944.27)
-                  - because condition ~ ($is_maske(expr) \/ $is_rangee(expr)) was not met (../../../../spec/4g-typing-decl.watsup:880.9-880.47)
+                  - because condition ~($is_maske(expr) \/ $is_rangee(expr)) was not met (../../../../spec/4g-typing-decl.watsup:880.9-880.47)
                 5. because application of rule Table_entry_keyset_ok/exprk-range-rangee failed (../../../../spec/4g-typing-decl.watsup:944.6-944.27)
                   - because condition (text = "range") was not met (../../../../spec/4g-typing-decl.watsup:890.25-890.32)
                 6. because application of rule Table_entry_keyset_ok/exprk-range-else failed (../../../../spec/4g-typing-decl.watsup:944.6-944.27)
@@ -17773,7 +17773,7 @@ interp error: tracing backtrack logs:
   1. because application of clause add_typdef(cursor, C, tid, td) failed (../../../../spec/4a1-typing-context.watsup:209.17-209.28)
     - because condition cursor matches `GLOBAL` was not met ()
   2. because application of clause add_typdef(cursor, C, tid, td) failed (../../../../spec/4a1-typing-context.watsup:209.17-209.28)
-    - because condition ~ $in_set<tid>(tid, $dom_map<tid, typdef>(C.BLOCK.TDENV)) was not met (../../../../spec/4a1-typing-context.watsup:198.9-198.65)
+    - because condition ~$in_set<tid>(tid, $dom_map<tid, typdef>(C.BLOCK.TDENV)) was not met (../../../../spec/4a1-typing-context.watsup:198.9-198.65)
   3. because application of clause add_typdef(cursor, C, tid, td) failed (../../../../spec/4a1-typing-context.watsup:209.17-209.28)
     - because condition cursor matches `LOCAL` was not met ()
 
@@ -18654,7 +18654,7 @@ interp error: tracing backtrack logs:
                 3. because application of rule Decl_ok/vard-some failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
                   - because condition decl matches `VarD%%%` was not met ()
                 4. because application of rule Decl_ok/instd-some failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
-                  - because condition ~ $is_externabstractmethodt(ft) was not met (../../../../spec/4g-typing-decl.watsup:175.10-175.40)
+                  - because condition ~$is_externabstractmethodt(ft) was not met (../../../../spec/4g-typing-decl.watsup:175.10-175.40)
                 5. because application of rule Decl_ok/instd-none failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)
                   - because condition decl* matches [] was not met (../../../../spec/4g-typing-decl.watsup:181.40-181.43)
                 6. because application of rule Decl_ok/errd failed (../../../../spec/4g-typing-decl.watsup:1374.6-1374.13)

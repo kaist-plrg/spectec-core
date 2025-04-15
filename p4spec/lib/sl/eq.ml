@@ -71,6 +71,22 @@ let eq_targ (targ_a : targ) (targ_b : targ) : bool = Il.Eq.eq_targ targ_a targ_b
 let eq_targs (targs_a : targ list) (targs_b : targ list) : bool =
   Il.Eq.eq_targs targs_a targs_b
 
+(* Path conditions *)
+
+let eq_pathcond (pathcond_a : pathcond) (pathcond_b : pathcond) : bool =
+  match (pathcond_a, pathcond_b) with
+  | ForallC (exp_a, iterexps_a), ForallC (exp_b, iterexps_b) ->
+      eq_exp exp_a exp_b && eq_iterexps iterexps_a iterexps_b
+  | ExistsC (exp_a, iterexps_a), ExistsC (exp_b, iterexps_b) ->
+      eq_exp exp_a exp_b && eq_iterexps iterexps_a iterexps_b
+  | PlainC exp_a, PlainC exp_b -> eq_exp exp_a exp_b
+  | _ -> false
+
+let eq_pathconds (pathconds_a : pathcond list) (pathconds_b : pathcond list) :
+    bool =
+  List.length pathconds_a = List.length pathconds_b
+  && List.for_all2 eq_pathcond pathconds_a pathconds_b
+
 (* Instructions *)
 
 let rec eq_instr (instr_a : instr) (instr_b : instr) : bool =
@@ -91,6 +107,8 @@ let rec eq_instr (instr_a : instr) (instr_b : instr) : bool =
       && eq_iterexps iterexps_a iterexps_b
   | ResultI exps_a, ResultI exps_b -> eq_exps exps_a exps_b
   | ReturnI exp_a, ReturnI exp_b -> eq_exp exp_a exp_b
+  | PhantomI pathconds_a, PhantomI pathconds_b ->
+      eq_pathconds pathconds_a pathconds_b
   | _ -> false
 
 and eq_instrs (instrs_a : instr list) (instrs_b : instr list) : bool =

@@ -136,6 +136,20 @@ and rename_arg (rename : Rename.t) (arg : arg) : arg =
       Il.Ast.ExpA exp $ at
   | DefA _ -> arg
 
+and rename_pathcond (rename : Rename.t) (pathcond : pathcond) : pathcond =
+  match pathcond with
+  | ForallC (exp, iterexps) ->
+      let exp = rename_exp rename exp in
+      let iterexps = List.map (rename_iterexp rename) iterexps in
+      ForallC (exp, iterexps)
+  | ExistsC (exp, iterexps) ->
+      let exp = rename_exp rename exp in
+      let iterexps = List.map (rename_iterexp rename) iterexps in
+      ExistsC (exp, iterexps)
+  | PlainC exp ->
+      let exp = rename_exp rename exp in
+      PlainC exp
+
 and rename_instr (rename : Rename.t) (instr : instr) : instr =
   let at = instr.at in
   match instr.it with
@@ -163,6 +177,9 @@ and rename_instr (rename : Rename.t) (instr : instr) : instr =
   | ReturnI exp ->
       let exp = rename_exp rename exp in
       ReturnI exp $ at
+  | PhantomI pathconds ->
+      let pathconds = List.map (rename_pathcond rename) pathconds in
+      PhantomI pathconds $ at
 
 (* Remove redundant, trivial let aliases from the code,
 

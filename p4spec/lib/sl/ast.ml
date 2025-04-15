@@ -98,6 +98,13 @@ type arg' = Il.Ast.arg'
 type targ = Il.Ast.targ
 type targ' = Il.Ast.targ'
 
+(* Path conditions *)
+
+and pathcond =
+  | ForallC of exp * iterexp list
+  | ExistsC of exp * iterexp list
+  | PlainC of exp
+
 (* Instructions *)
 
 and instr = instr' phrase
@@ -108,6 +115,7 @@ and instr' =
   | LetI of exp * exp * iterexp list
   | ResultI of exp list
   | ReturnI of exp
+  | PhantomI of pathcond list
 
 (* Hints *)
 

@@ -150,7 +150,7 @@ and string_of_exp exp =
   | NumE n -> string_of_num n
   | TextE text -> "\"" ^ String.escaped text ^ "\""
   | VarE varid -> string_of_varid varid
-  | UnE (unop, _, exp) -> string_of_unop unop ^ " " ^ string_of_exp exp
+  | UnE (unop, _, exp) -> string_of_unop unop ^ string_of_exp exp
   | BinE (binop, _, exp_l, exp_r) ->
       "(" ^ string_of_exp exp_l ^ " " ^ string_of_binop binop ^ " "
       ^ string_of_exp exp_r ^ ")"

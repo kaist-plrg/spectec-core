@@ -73,6 +73,7 @@ and struct_rel_def (tdenv : TDEnv.t) (at : region) (id_rel : id)
   let exps_input, paths = Antiunify.antiunify_rules inputs rules in
   let instrs = List.concat_map struct_rule_path paths in
   let instrs = Optimize.optimize tdenv instrs in
+  let instrs = Instrument.insert_phantom instrs in
   Sl.Ast.RelD (id_rel, exps_input, instrs) $ at
 
 (* Structuring declaration definitions *)
@@ -82,6 +83,7 @@ and struct_dec_def (tdenv : TDEnv.t) (at : region) (id_dec : id)
   let args_input, paths = Antiunify.antiunify_clauses clauses in
   let instrs = List.concat_map struct_clause_path paths in
   let instrs = Optimize.optimize tdenv instrs in
+  let instrs = Instrument.insert_phantom instrs in
   Sl.Ast.DecD (id_dec, tparams, args_input, instrs) $ at
 
 (* Load type definitions *)

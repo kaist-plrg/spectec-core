@@ -67,7 +67,7 @@ let rec string_of_exp exp =
   | Il.Ast.NumE n -> string_of_num n
   | Il.Ast.TextE text -> "\"" ^ String.escaped text ^ "\""
   | Il.Ast.VarE varid -> string_of_varid varid
-  | Il.Ast.UnE (unop, _, exp) -> string_of_unop unop ^ " " ^ string_of_exp exp
+  | Il.Ast.UnE (unop, _, exp) -> string_of_unop unop ^ string_of_exp exp
   | Il.Ast.BinE (binop, _, exp_l, exp_r) ->
       "(" ^ string_of_exp exp_l ^ " " ^ string_of_binop binop ^ " "
       ^ string_of_exp exp_r ^ ")"
@@ -179,6 +179,21 @@ and string_of_args args =
 and string_of_targ targ = Il.Print.string_of_targ targ
 and string_of_targs targs = Il.Print.string_of_targs targs
 
+(* Path conditions *)
+
+and string_of_pathcond pathcond =
+  match pathcond with
+  | ForallC (exp, iterexps) ->
+      Format.asprintf "(forall %s%s)" (string_of_exp exp)
+        (string_of_iterexps iterexps)
+  | ExistsC (exp, iterexps) ->
+      Format.asprintf "(exists %s%s)" (string_of_exp exp)
+        (string_of_iterexps iterexps)
+  | PlainC exp -> "(" ^ string_of_exp exp ^ ")"
+
+and string_of_pathconds pathconds =
+  List.map string_of_pathcond pathconds |> String.concat " /\\ "
+
 (* Instructions *)
 
 let string_of_iterated (string_of : 'a -> string) (iterated : 'a)
@@ -235,6 +250,9 @@ let rec string_of_instr ?(inline = false) ?(level = 0) ?(index = 0) instr =
       Format.asprintf "%sResult in %s" order_leading (string_of_exps ", " exps)
   | ReturnI exp ->
       Format.asprintf "%sReturn %s" order_leading (string_of_exp exp)
+  | PhantomI pathconds ->
+      Format.asprintf "%sPhantom %s" order_leading
+        (string_of_pathconds pathconds)
 
 and string_of_instrs ?(level = 0) instrs =
   instrs
