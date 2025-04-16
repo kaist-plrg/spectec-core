@@ -297,37 +297,40 @@ let overlap_typ (tdenv : TDEnv.t) (typ_a : typ) (typ_b : typ) : overlap =
   | _ -> Fuzzy
 
 let rec overlap_exp (tdenv : TDEnv.t) (exp_a : exp) (exp_b : exp) : overlap =
-  match (exp_a.it, exp_b.it) with
-  (* Negation *)
-  | UnE (`NotOp, _, exp_a), _ when Sl.Eq.eq_exp exp_a exp_b -> Mutex
-  | _, UnE (`NotOp, _, exp_b) when Sl.Eq.eq_exp exp_a exp_b -> Mutex
-  (* Equals *)
-  | ( CmpE (`EqOp, optyp_a, exp_a_l, exp_a_r),
-      CmpE (`EqOp, optyp_b, exp_b_l, exp_b_r) )
-    when optyp_a = optyp_b
-         && (Sl.Eq.eq_exp exp_a_l exp_b_l
-             && distinct_exp_literal exp_a_r exp_b_r
-            || Sl.Eq.eq_exp exp_a_l exp_b_r
-               && distinct_exp_literal exp_a_r exp_b_l) ->
-      Disjoint
-  (* Equals and Not Equals *)
-  | ( CmpE (`EqOp, optyp_a, exp_a_l, exp_a_r),
-      CmpE (`NeOp, optyp_b, exp_b_l, exp_b_r) )
-  | ( CmpE (`NeOp, optyp_a, exp_a_l, exp_a_r),
-      CmpE (`EqOp, optyp_b, exp_b_l, exp_b_r) )
-    when optyp_a = optyp_b
-         && ((Sl.Eq.eq_exp exp_a_l exp_b_l && Sl.Eq.eq_exp exp_a_r exp_b_r)
-            || (Sl.Eq.eq_exp exp_a_l exp_b_r && Sl.Eq.eq_exp exp_a_r exp_b_l))
-    ->
-      Mutex
-  (* Subtyping *)
-  | SubE (exp_a, typ_a), SubE (exp_b, typ_b) when Sl.Eq.eq_exp exp_a exp_b ->
-      overlap_typ tdenv typ_a typ_b
-  (* Match on patterns *)
-  | MatchE (exp_a, pattern_a), MatchE (exp_b, pattern_b)
-    when Sl.Eq.eq_exp exp_a exp_b ->
-      overlap_pattern pattern_a pattern_b
-  | _ -> Fuzzy
+  let overlap_exp_unequal () : overlap =
+    match (exp_a.it, exp_b.it) with
+    (* Negation *)
+    | UnE (`NotOp, _, exp_a), _ when Sl.Eq.eq_exp exp_a exp_b -> Mutex
+    | _, UnE (`NotOp, _, exp_b) when Sl.Eq.eq_exp exp_a exp_b -> Mutex
+    (* Equals *)
+    | ( CmpE (`EqOp, optyp_a, exp_a_l, exp_a_r),
+        CmpE (`EqOp, optyp_b, exp_b_l, exp_b_r) )
+      when optyp_a = optyp_b
+           && (Sl.Eq.eq_exp exp_a_l exp_b_l
+               && distinct_exp_literal exp_a_r exp_b_r
+              || Sl.Eq.eq_exp exp_a_l exp_b_r
+                 && distinct_exp_literal exp_a_r exp_b_l) ->
+        Disjoint
+    (* Equals and Not Equals *)
+    | ( CmpE (`EqOp, optyp_a, exp_a_l, exp_a_r),
+        CmpE (`NeOp, optyp_b, exp_b_l, exp_b_r) )
+    | ( CmpE (`NeOp, optyp_a, exp_a_l, exp_a_r),
+        CmpE (`EqOp, optyp_b, exp_b_l, exp_b_r) )
+      when optyp_a = optyp_b
+           && ((Sl.Eq.eq_exp exp_a_l exp_b_l && Sl.Eq.eq_exp exp_a_r exp_b_r)
+              || (Sl.Eq.eq_exp exp_a_l exp_b_r && Sl.Eq.eq_exp exp_a_r exp_b_l)
+              ) ->
+        Mutex
+    (* Subtyping *)
+    | SubE (exp_a, typ_a), SubE (exp_b, typ_b) when Sl.Eq.eq_exp exp_a exp_b ->
+        overlap_typ tdenv typ_a typ_b
+    (* Match on patterns *)
+    | MatchE (exp_a, pattern_a), MatchE (exp_b, pattern_b)
+      when Sl.Eq.eq_exp exp_a exp_b ->
+        overlap_pattern pattern_a pattern_b
+    | _ -> Fuzzy
+  in
+  if Sl.Eq.eq_exp exp_a exp_b then Identical else overlap_exp_unequal ()
 
 and overlap_pattern (pattern_a : pattern) (pattern_b : pattern) : overlap =
   match (pattern_a, pattern_b) with
@@ -335,6 +338,7 @@ and overlap_pattern (pattern_a : pattern) (pattern_b : pattern) : overlap =
       if Sl.Eq.eq_mixop mixop_a mixop_b then Identical else Disjoint
   | ListP `Cons, ListP (`Fixed n) | ListP (`Fixed n), ListP `Cons ->
       if n = 0 then Mutex else Disjoint
+  | ListP `Cons, ListP `Cons -> Identical
   | ListP `Cons, ListP `Nil | ListP `Nil, ListP `Cons -> Mutex
   | ListP (`Fixed n_a), ListP (`Fixed n_b) ->
       if n_a = n_b then Identical else Disjoint
@@ -344,7 +348,7 @@ and overlap_pattern (pattern_a : pattern) (pattern_b : pattern) : overlap =
   | OptP `Some, OptP `Some -> Identical
   | OptP `Some, OptP `None | OptP `None, OptP `Some -> Mutex
   | OptP `None, OptP `None -> Identical
-  | _ -> assert false
+  | _ -> Fuzzy
 
 (* Merge if statements with the same condition *)
 
@@ -358,26 +362,29 @@ let rec merge_block (instrs_a : instr list) (instrs_b : instr list) : instr list
   | _ -> instrs_a @ instrs_b
 
 let rec find_identical_if ?(instrs_unmergeable : instr list = [])
-    (exp_cond_target : exp) (iterexps_target : iterexp list)
+    (tdenv : TDEnv.t) (exp_cond_target : exp) (iterexps_target : iterexp list)
     (instrs : instr list) : (instr list * instr list * instr list) option =
   match instrs with
-  | { it = IfI (exp_cond, iterexps, instrs_then, instrs_else); _ } :: instrs_t
-    when Sl.Eq.eq_exp exp_cond exp_cond_target
-         && Sl.Eq.eq_iterexps iterexps iterexps_target ->
-      let instrs_unmergeable = instrs_unmergeable @ instrs_t in
-      Some (instrs_unmergeable, instrs_then, instrs_else)
-  | ({ it = IfI _; _ } as instr_h) :: instrs_t ->
-      let instrs_unmergeable = instrs_unmergeable @ [ instr_h ] in
-      find_identical_if ~instrs_unmergeable exp_cond_target iterexps_target
-        instrs_t
+  | ({ it = IfI (exp_cond, iterexps, instrs_then, instrs_else); _ } as instr_h)
+    :: instrs_t -> (
+      let eq_iterexps = Sl.Eq.eq_iterexps iterexps iterexps_target in
+      let overlap_exp_cond = overlap_exp tdenv exp_cond exp_cond_target in
+      match (eq_iterexps, overlap_exp_cond) with
+      | true, Identical ->
+          let instrs_unmergeable = instrs_unmergeable @ instrs_t in
+          Some (instrs_unmergeable, instrs_then, instrs_else)
+      | _ ->
+          let instrs_unmergeable = instrs_unmergeable @ [ instr_h ] in
+          find_identical_if ~instrs_unmergeable tdenv exp_cond_target
+            iterexps_target instrs_t)
   | _ -> None
 
-let rec merge_if (instrs : instr list) : instr list =
+let rec merge_if (tdenv : TDEnv.t) (instrs : instr list) : instr list =
   match instrs with
   | [] -> []
   | ({ it = IfI (exp_cond, iterexps, instrs_then, instrs_else); _ } as instr_h)
     :: instrs_t -> (
-      match find_identical_if exp_cond iterexps instrs_t with
+      match find_identical_if tdenv exp_cond iterexps instrs_t with
       | Some (instrs_unmergeable, instrs_then_matched, instrs_else_matched) ->
           let instrs_then = merge_block instrs_then instrs_then_matched in
           let instrs_else = merge_block instrs_else instrs_else_matched in
@@ -385,17 +392,17 @@ let rec merge_if (instrs : instr list) : instr list =
             IfI (exp_cond, iterexps, instrs_then, instrs_else) $ instr_h.at
           in
           let instrs = instr_h :: instrs_unmergeable in
-          merge_if instrs
+          merge_if tdenv instrs
       | None ->
-          let instrs_then = merge_if instrs_then in
-          let instrs_else = merge_if instrs_else in
+          let instrs_then = merge_if tdenv instrs_then in
+          let instrs_else = merge_if tdenv instrs_else in
           let instr_h =
             IfI (exp_cond, iterexps, instrs_then, instrs_else) $ instr_h.at
           in
-          let instrs_t = merge_if instrs_t in
+          let instrs_t = merge_if tdenv instrs_t in
           instr_h :: instrs_t)
   | instr_h :: instrs_t ->
-      let instrs_t = merge_if instrs_t in
+      let instrs_t = merge_if tdenv instrs_t in
       instr_h :: instrs_t
 
 (* Insert else branches for disjoint if conditions
@@ -603,8 +610,8 @@ let rec totalize_chain_if (tdenv : TDEnv.t) (instrs : instr list) : instr list =
 
 let rec optimize' (tdenv : TDEnv.t) (instrs : instr list) : instr list =
   let instrs_optimized =
-    instrs |> remove_redundant_binding_instrs |> merge_if |> merge_else tdenv
-    |> totalize_chain_if tdenv
+    instrs |> remove_redundant_binding_instrs |> merge_if tdenv
+    |> merge_else tdenv |> totalize_chain_if tdenv
   in
   if Sl.Eq.eq_instrs instrs instrs_optimized then instrs
   else optimize' tdenv instrs_optimized

@@ -72,81 +72,80 @@ module REnv = struct
         in
         (id, placeholder))
       renv_post
-
-  (* Generate premises *)
-
-  let gen_prem_bound (dctx : Dctx.t) (id : Id.t) (exp_orig : exp)
-      (iters : iter list) : prem =
-    let exp_cond =
-      let exp_l = VarE id $$ (id.at, exp_orig.note) in
-      match exp_orig.it with
-      | CaseE (mixop, [])
-        when not (is_singleton_case dctx (exp_orig.note $ exp_orig.at)) ->
-          MatchE (exp_l, CaseP mixop) $$ (exp_orig.at, BoolT)
-      | OptE (Some _) -> MatchE (exp_l, OptP `Some) $$ (exp_orig.at, BoolT)
-      | OptE None -> MatchE (exp_l, OptP `None) $$ (exp_orig.at, BoolT)
-      | ListE [] -> MatchE (exp_l, ListP `Nil) $$ (exp_orig.at, BoolT)
-      | _ ->
-          let exp_r = exp_orig in
-          CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (exp_orig.at, BoolT)
-    in
-    let sidecondition = IfPr exp_cond $ exp_orig.at in
-    List.fold_left
-      (fun sidecondition iter ->
-        IterPr (sidecondition, (iter, [])) $ exp_orig.at)
-      sidecondition iters
-
-  let gen_prem_bind_match (id : Id.t) (pattern : pattern) (exp_orig : exp)
-      (iters : iter list) : prem list =
-    let exp_placeholder = VarE id $$ (id.at, exp_orig.note) in
-    let prems =
-      let exp_guard_match =
-        MatchE (exp_placeholder, pattern) $$ (exp_orig.at, BoolT)
-      in
-      let sidecondition_guard_match = IfPr exp_guard_match $ exp_orig.at in
-      let prem_bind = LetPr (exp_orig, exp_placeholder) $ exp_orig.at in
-      [ sidecondition_guard_match; prem_bind ]
-    in
-    List.map
-      (fun prem ->
-        List.fold_left
-          (fun prem iter -> IterPr (prem, (iter, [])) $ exp_orig.at)
-          prem iters)
-      prems
-
-  let gen_prem_bind_sub (id : Id.t) (typ_sub : typ) (exp_sub : exp)
-      (exp_orig : exp) (iters : iter list) : prem list =
-    let exp_placeholder = VarE id $$ (id.at, exp_orig.note) in
-    let prems =
-      let exp_guard_sub =
-        SubE (exp_placeholder, typ_sub) $$ (exp_orig.at, BoolT)
-      in
-      let sidecondition_guard_sub = IfPr exp_guard_sub $ exp_orig.at in
-      let exp_downcast =
-        DownCastE (typ_sub, exp_placeholder) $$ (exp_orig.at, typ_sub.it)
-      in
-      let prem_bind = LetPr (exp_sub, exp_downcast) $ exp_orig.at in
-      [ sidecondition_guard_sub; prem_bind ]
-    in
-    List.map
-      (fun prem ->
-        List.fold_left
-          (fun prem iter -> IterPr (prem, (iter, [])) $ exp_orig.at)
-          prem iters)
-      prems
-
-  let gen_prem (dctx : Dctx.t) (id : Id.t) (placeholder : Placeholder.t) :
-      prem list =
-    match placeholder with
-    | Bound { exp_orig; iters } -> [ gen_prem_bound dctx id exp_orig iters ]
-    | Bindmatch { pattern; exp_orig; iters } ->
-        gen_prem_bind_match id pattern exp_orig iters
-    | Bindsub { typ_sub; exp_sub; exp_orig; iters } ->
-        gen_prem_bind_sub id typ_sub exp_sub exp_orig iters
-
-  let gen_prems (dctx : Dctx.t) (renv : t) : prem list =
-    List.concat_map (fun (id, placeholder) -> gen_prem dctx id placeholder) renv
 end
+
+(* Generate premises *)
+
+let gen_prem_bound (dctx : Dctx.t) (id : Id.t) (exp_orig : exp)
+    (iters : iter list) : prem =
+  let exp_cond =
+    let exp_l = VarE id $$ (id.at, exp_orig.note) in
+    match exp_orig.it with
+    | CaseE (mixop, [])
+      when not (is_singleton_case dctx (exp_orig.note $ exp_orig.at)) ->
+        MatchE (exp_l, CaseP mixop) $$ (exp_orig.at, BoolT)
+    | OptE (Some _) -> MatchE (exp_l, OptP `Some) $$ (exp_orig.at, BoolT)
+    | OptE None -> MatchE (exp_l, OptP `None) $$ (exp_orig.at, BoolT)
+    | ListE [] -> MatchE (exp_l, ListP `Nil) $$ (exp_orig.at, BoolT)
+    | _ ->
+        let exp_r = exp_orig in
+        CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (exp_orig.at, BoolT)
+  in
+  let sidecondition = IfPr exp_cond $ exp_orig.at in
+  List.fold_left
+    (fun sidecondition iter -> IterPr (sidecondition, (iter, [])) $ exp_orig.at)
+    sidecondition iters
+
+let gen_prem_bind_match (id : Id.t) (pattern : pattern) (exp_orig : exp)
+    (iters : iter list) : prem list =
+  let exp_placeholder = VarE id $$ (id.at, exp_orig.note) in
+  let prems =
+    let exp_guard_match =
+      MatchE (exp_placeholder, pattern) $$ (exp_orig.at, BoolT)
+    in
+    let sidecondition_guard_match = IfPr exp_guard_match $ exp_orig.at in
+    let prem_bind = LetPr (exp_orig, exp_placeholder) $ exp_orig.at in
+    [ sidecondition_guard_match; prem_bind ]
+  in
+  List.map
+    (fun prem ->
+      List.fold_left
+        (fun prem iter -> IterPr (prem, (iter, [])) $ exp_orig.at)
+        prem iters)
+    prems
+
+let gen_prem_bind_sub (id : Id.t) (typ_sub : typ) (exp_sub : exp)
+    (exp_orig : exp) (iters : iter list) : prem list =
+  let exp_placeholder = VarE id $$ (id.at, exp_orig.note) in
+  let prems =
+    let exp_guard_sub =
+      SubE (exp_placeholder, typ_sub) $$ (exp_orig.at, BoolT)
+    in
+    let sidecondition_guard_sub = IfPr exp_guard_sub $ exp_orig.at in
+    let exp_downcast =
+      DownCastE (typ_sub, exp_placeholder) $$ (exp_orig.at, typ_sub.it)
+    in
+    let prem_bind = LetPr (exp_sub, exp_downcast) $ exp_orig.at in
+    [ sidecondition_guard_sub; prem_bind ]
+  in
+  List.map
+    (fun prem ->
+      List.fold_left
+        (fun prem iter -> IterPr (prem, (iter, [])) $ exp_orig.at)
+        prem iters)
+    prems
+
+let gen_prem (dctx : Dctx.t) (id : Id.t) (placeholder : Placeholder.t) :
+    prem list =
+  match placeholder with
+  | Bound { exp_orig; iters } -> [ gen_prem_bound dctx id exp_orig iters ]
+  | Bindmatch { pattern; exp_orig; iters } ->
+      gen_prem_bind_match id pattern exp_orig iters
+  | Bindsub { typ_sub; exp_sub; exp_orig; iters } ->
+      gen_prem_bind_sub id typ_sub exp_sub exp_orig iters
+
+let gen_prems (dctx : Dctx.t) (renv : REnv.t) : prem list =
+  List.concat_map (fun (id, placeholder) -> gen_prem dctx id placeholder) renv
 
 (* Desugar partial bindings, occuring as either:
 

@@ -23,44 +23,46 @@ module REnv = struct
         | Bind.Occ.Multi _ -> add id Ids.empty renv
         | Bind.Occ.Single _ -> renv)
       benv empty
-
-  let gen_sidecondition (benv : Bind.BEnv.t) (id : Id.t) (ids_rename : Ids.t) :
-      prem =
-    let typ, iters = Bind.BEnv.find id benv |> Bind.Occ.strip in
-    let id_rename, ids_rename =
-      ids_rename |> IdSet.elements |> fun ids -> (List.hd ids, List.tl ids)
-    in
-    let exp =
-      let exp =
-        let exp_l = VarE id $$ (id.at, typ.it) in
-        let exp_r = VarE id_rename $$ (id_rename.at, typ.it) in
-        CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (id_rename.at, BoolT)
-      in
-      List.fold_left
-        (fun exp_l id_rename ->
-          let exp_r =
-            let exp_l = VarE id $$ (id.at, typ.it) in
-            let exp_r = VarE id_rename $$ (id_rename.at, typ.it) in
-            CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (id_rename.at, BoolT)
-          in
-          BinE (`AndOp, `BoolT, exp_l, exp_r) $$ (id_rename.at, BoolT))
-        exp ids_rename
-    in
-    let sidecondition = IfPr exp $ id.at in
-    List.fold_left
-      (fun sidecondition iter -> IterPr (sidecondition, (iter, [])) $ id.at)
-      sidecondition iters
-
-  let gen_sideconditions (benv : Bind.BEnv.t) (renv : t) : prem list =
-    let renv = mapi Ids.remove renv in
-    fold
-      (fun id ids_rename sideconditions ->
-        if Ids.is_empty ids_rename then sideconditions
-        else
-          let sidecondition = gen_sidecondition benv id ids_rename in
-          sideconditions @ [ sidecondition ])
-      renv []
 end
+
+(* Generate sideconditions *)
+
+let gen_sidecondition (benv : Bind.BEnv.t) (id : Id.t) (ids_rename : Ids.t) :
+    prem =
+  let typ, iters = Bind.BEnv.find id benv |> Bind.Occ.strip in
+  let id_rename, ids_rename =
+    ids_rename |> IdSet.elements |> fun ids -> (List.hd ids, List.tl ids)
+  in
+  let exp =
+    let exp =
+      let exp_l = VarE id $$ (id.at, typ.it) in
+      let exp_r = VarE id_rename $$ (id_rename.at, typ.it) in
+      CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (id_rename.at, BoolT)
+    in
+    List.fold_left
+      (fun exp_l id_rename ->
+        let exp_r =
+          let exp_l = VarE id $$ (id.at, typ.it) in
+          let exp_r = VarE id_rename $$ (id_rename.at, typ.it) in
+          CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (id_rename.at, BoolT)
+        in
+        BinE (`AndOp, `BoolT, exp_l, exp_r) $$ (id_rename.at, BoolT))
+      exp ids_rename
+  in
+  let sidecondition = IfPr exp $ id.at in
+  List.fold_left
+    (fun sidecondition iter -> IterPr (sidecondition, (iter, [])) $ id.at)
+    sidecondition iters
+
+let gen_sideconditions (benv : Bind.BEnv.t) (renv : REnv.t) : prem list =
+  let renv = REnv.mapi Ids.remove renv in
+  REnv.fold
+    (fun id ids_rename sideconditions ->
+      if Ids.is_empty ids_rename then sideconditions
+      else
+        let sidecondition = gen_sidecondition benv id ids_rename in
+        sideconditions @ [ sidecondition ])
+    renv []
 
 (* Rename multiple bindings, leaving the leftmost binding occurrence intact *)
 

@@ -1,6 +1,47 @@
 open Sl.Ast
 open Util.Source
 
+(* Insert phantom instructions at dangling else branches,
+   with the path condition necessary to reach the else branch
+
+   Note that this does not take fall-through into account,
+   so the path condition is not precise
+
+   Fall-through may happen due to the heuristic-driven syntactic optimization of SL,
+
+   (i) Good case
+
+   -- if i >= 0   and   -- if i < 0
+   -- if j >= 0         -- if j >= 0
+
+   are nicely merged into
+
+   if i >= 0 then
+     if j >= 0 then ...
+     else Phantom: i >= 0 && j < 0
+   else
+     if j >= 0 then ...
+     else Phantom: i < 0 && j < 0
+
+   (ii) Bad case
+
+   -- if j >= 0   and  -- if i < 0
+   -- if i >= 0        -- if j >= 0
+
+   are merged into
+
+   if j >= 0 then
+     if i >= 0 then ...
+     else Phantom: j >= 0 && i < 0
+   else Phantom: j < 0
+
+   ... if i = -1, j = 3 is given as input, it falls through
+
+   if i < 0 then
+      if j >= 0 then ...
+      else Phantom: i < 0 && j < 0
+   else Phantom: i >= 0 *)
+
 let negate_exp (exp : exp) : exp =
   Il.Ast.UnE (`NotOp, `BoolT, exp) $$ (exp.at, exp.note)
 
