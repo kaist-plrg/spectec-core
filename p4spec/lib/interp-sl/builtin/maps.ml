@@ -1,6 +1,6 @@
 open Xl
-open Il.Ast
-module Value = Runtime_dynamic.Value
+open Sl.Ast
+module Value = Runtime_dynamic_il.Value
 open Error
 open Util.Source
 
@@ -38,7 +38,9 @@ let value_of_map (map : map) : value =
     CaseV
       ([ [ Atom.Atom "PAIR" $ no_region ]; []; [] ], [ value_key; value_value ])
   in
-  let value_pairs = ListV (VMap.bindings map |> List.map value_of_tuple) in
+  let value_pairs =
+    Il.Ast.ListV (VMap.bindings map |> List.map value_of_tuple)
+  in
   CaseV ([ [ Atom.Atom "MAP" $ no_region ]; [] ], [ value_pairs ])
 
 (* Built-in implementations *)

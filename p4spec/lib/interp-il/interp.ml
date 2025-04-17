@@ -2,10 +2,10 @@ open Domain.Lib
 open Xl
 open Il.Ast
 module Hint = Runtime_static.Rel.Hint
-module Typ = Runtime_dynamic.Typ
-module Value = Runtime_dynamic.Value
-module Rel = Runtime_dynamic.Rel
-open Runtime_dynamic.Envs
+module Typ = Runtime_dynamic_il.Typ
+module Value = Runtime_dynamic_il.Value
+module Rel = Runtime_dynamic_il.Rel
+open Runtime_dynamic_il.Envs
 open Error
 open Attempt
 module F = Format
@@ -677,7 +677,7 @@ and eval_prem (ctx : Ctx.t) (prem : prem) : Ctx.t attempt =
 and eval_prem' (ctx : Ctx.t) (prem : prem) : Ctx.t attempt =
   match prem.it with
   | RulePr (id, notexp) -> eval_rule_prem ctx id notexp
-  | IfPr exp -> eval_if_prem ctx exp
+  | IfPr exp_cond -> eval_if_prem ctx exp_cond
   | ElsePr -> Ok ctx
   | LetPr (exp_l, exp_r) -> eval_let_prem ctx exp_l exp_r
   | IterPr (prem, iterexp) -> eval_iter_prem ctx prem iterexp
@@ -694,7 +694,7 @@ and eval_prems (ctx : Ctx.t) (prems : prem list) : Ctx.t attempt =
 and eval_rule_prem (ctx : Ctx.t) (id : id) (notexp : notexp) : Ctx.t attempt =
   let rel = Ctx.find_rel Local ctx id in
   let exps_input, exps_output =
-    let _, inputs, _ = rel in
+    let inputs, _ = rel in
     let _, exps = notexp in
     Hint.split_exps_without_idx inputs exps
   in
@@ -705,13 +705,13 @@ and eval_rule_prem (ctx : Ctx.t) (id : id) (notexp : notexp) : Ctx.t attempt =
 
 (* If premise evaluation *)
 
-and eval_if_prem (ctx : Ctx.t) (exp : exp) : Ctx.t attempt =
-  let ctx, value = eval_exp ctx exp in
-  let cond = Value.get_bool value in
+and eval_if_prem (ctx : Ctx.t) (exp_cond : exp) : Ctx.t attempt =
+  let ctx, value_cond = eval_exp ctx exp_cond in
+  let cond = Value.get_bool value_cond in
   if cond then Ok ctx
   else
-    fail exp.at
-      (F.asprintf "condition %s was not met" (Il.Print.string_of_exp exp))
+    fail exp_cond.at
+      (F.asprintf "condition %s was not met" (Il.Print.string_of_exp exp_cond))
 
 (* Let premise evaluation *)
 
@@ -807,7 +807,7 @@ and invoke_rel (ctx : Ctx.t) (id : id) (values_input : value list) :
 and invoke_rel' (ctx : Ctx.t) (id : id) (values_input : value list) :
     (Ctx.t * value list) attempt =
   (* Find the relation *)
-  let _, inputs, rules = Ctx.find_rel Local ctx id in
+  let inputs, rules = Ctx.find_rel Local ctx id in
   guard (rules <> []) id.at "relation has no rules";
   (* Apply the first matching rule *)
   let attempt_rules () =
@@ -857,6 +857,7 @@ and invoke_rel' (ctx : Ctx.t) (id : id) (values_input : value list) :
   else
     let* ctx, values_output = attempt_rules () in
     Ok (ctx, values_output)
+
 (* Invoke a function *)
 
 and match_clause (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (clause : clause)
@@ -900,7 +901,7 @@ and invoke_func_builtin (ctx : Ctx.t) (id : id) (targs : targ list)
 and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
     (args : arg list) : (Ctx.t * value) attempt =
   (* Find the function *)
-  let tparams, _params, _typ_ret, clauses = Ctx.find_func Local ctx id in
+  let tparams, clauses = Ctx.find_func Local ctx id in
   guard (clauses <> []) id.at "function has no clauses";
   (* Evaluate type arguments *)
   let targs =
@@ -981,11 +982,11 @@ let load_def (ctx : Ctx.t) (def : def) : Ctx.t =
   | TypD (id, tparams, deftyp) ->
       let typdef = (tparams, deftyp) in
       Ctx.add_typdef Global ctx id typdef
-  | RelD (id, nottyp, inputs, rules) ->
-      let rel = (nottyp, inputs, rules) in
+  | RelD (id, _, inputs, rules) ->
+      let rel = (inputs, rules) in
       Ctx.add_rel Global ctx id rel
-  | DecD (id, tparams, params, typ, clauses) ->
-      let func = (tparams, params, typ, clauses) in
+  | DecD (id, tparams, _, _, clauses) ->
+      let func = (tparams, clauses) in
       Ctx.add_func Global ctx id func
 
 let load_spec (ctx : Ctx.t) (spec : spec) : Ctx.t =
@@ -993,11 +994,12 @@ let load_spec (ctx : Ctx.t) (spec : spec) : Ctx.t =
 
 (* Entry point: run typing rule from `Prog_ok` relation *)
 
-let run_typing (debug : bool) (profile : bool) (spec : spec) (program : value) :
-    value list =
+let run_typing (debug : bool) (profile : bool) (spec : spec)
+    (includes_p4 : string list) (filename_p4 : string) : value list =
   Builtin.init ();
   Cache.reset !func_cache;
   Cache.reset !rule_cache;
+  let program = P4.In.in_program includes_p4 filename_p4 in
   let ctx = Ctx.empty debug profile in
   let ctx = load_spec ctx spec in
   let+ ctx, values = invoke_rel ctx ("Prog_ok" $ no_region) [ program ] in

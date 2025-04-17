@@ -1,6 +1,6 @@
 open Xl
-open Il.Ast
-module Value = Runtime_dynamic.Value
+open Sl.Ast
+module Value = Runtime_dynamic_il.Value
 open Error
 open Util.Source
 
@@ -23,7 +23,7 @@ let set_of_value (value : value) : set =
 
 let value_of_set (set : set) : value =
   let values_element = VSet.elements set in
-  let value_elements = ListV values_element in
+  let value_elements = Il.Ast.ListV values_element in
   CaseV ([ [ Atom.Atom "SET" $ no_region ]; [] ], [ value_elements ])
 
 (* dec $intersect_set<K>(set<K>, set<K>) : set<K> *)
@@ -65,9 +65,9 @@ let diff_set (at : region) (targs : targ list) (values_input : value list) :
   let set_b = set_of_value value_set_b in
   VSet.diff set_a set_b |> value_of_set
 
-(* dec $is_subset<K>(set<K>, set<K>) : bool *)
+(* dec $sub_set<K>(set<K>, set<K>) : bool *)
 
-let is_subset (at : region) (targs : targ list) (values_input : value list) :
+let sub_set (at : region) (targs : targ list) (values_input : value list) :
     value =
   let _typ_key = Extract.one at targs in
   let value_set_a, value_set_b = Extract.two at values_input in

@@ -1,7 +1,7 @@
 open Domain.Lib
 open Xl
 open Sl.Ast
-module TDEnv = Runtime_dynamic.Envs.TDEnv
+module TDEnv = Runtime_dynamic_il.Envs.TDEnv
 open Util.Source
 
 (* Renamer *)

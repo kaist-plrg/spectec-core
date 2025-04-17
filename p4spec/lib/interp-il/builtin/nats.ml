@@ -1,6 +1,6 @@
 open Xl
 open Il.Ast
-module Value = Runtime_dynamic.Value
+module Value = Runtime_dynamic_il.Value
 open Util.Source
 
 (* Conversion between meta-numerics and OCaml numerics *)

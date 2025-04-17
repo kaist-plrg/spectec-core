@@ -47,7 +47,7 @@ let funcs =
   |> Funcs.add "diff_set" (fun at targs values_input ->
          Sets.diff_set at targs values_input)
   |> Funcs.add "sub_set" (fun at targs values_input ->
-         Sets.is_subset at targs values_input)
+         Sets.sub_set at targs values_input)
   |> Funcs.add "eq_set" (fun at targs values_input ->
          Sets.eq_set at targs values_input)
   (* Maps *)

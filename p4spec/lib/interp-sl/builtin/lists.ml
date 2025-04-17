@@ -1,6 +1,6 @@
 open Xl
-open Il.Ast
-module Value = Runtime_dynamic.Value
+open Sl.Ast
+module Value = Runtime_dynamic_il.Value
 open Util.Source
 
 (* dec $rev_<X>(X* ) : X* *)
@@ -58,7 +58,7 @@ let assoc_ (at : region) (targs : targ list) (values_input : value list) : value
     Value.get_list value_list
     |> List.map (fun value ->
            match value with
-           | TupleV [ value_key; value_value ] -> (value_key, value_value)
+           | Il.Ast.TupleV [ value_key; value_value ] -> (value_key, value_value)
            | _ -> assert false)
   in
   let value =

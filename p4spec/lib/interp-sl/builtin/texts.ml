@@ -1,6 +1,6 @@
 open Xl
-open Il.Ast
-module Value = Runtime_dynamic.Value
+open Sl.Ast
+module Value = Runtime_dynamic_il.Value
 open Util.Source
 
 (* dec $int_to_text(int) : text *)

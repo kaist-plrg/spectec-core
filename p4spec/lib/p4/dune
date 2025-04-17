@@ -1,9 +1,4 @@
 (library
  (name p4)
- (modules)
- (libraries
-  (re_export p4surface)
-  (re_export p4frontend)
-  (re_export p4lang)
-  (re_export p4el)
-  (re_export p4util)))
+ (modules in)
+ (libraries xl il util p4surface p4frontend p4lang p4el p4util))

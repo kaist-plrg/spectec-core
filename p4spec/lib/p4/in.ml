@@ -842,4 +842,5 @@ and in_mthds (mthds : P4.mthd list) : value = in_list in_mthd mthds
 
 (* Program *)
 
-let in_program (program : P4.program) : value = in_list in_decl program
+let in_program (includes_p4 : string list) (filename_p4 : string) : value =
+  P4frontend.Parse.parse_file includes_p4 filename_p4 |> in_list in_decl

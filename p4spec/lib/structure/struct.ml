@@ -1,5 +1,5 @@
 open Il.Ast
-module TDEnv = Runtime_dynamic.Envs.TDEnv
+module TDEnv = Runtime_dynamic_il.Envs.TDEnv
 open Util.Source
 
 (* Structuring premises *)
@@ -62,19 +62,21 @@ let rec struct_def (tdenv : TDEnv.t) (def : def) : Sl.Ast.def =
   let at = def.at in
   match def.it with
   | TypD (id, tparams, deftyp) -> Sl.Ast.TypD (id, tparams, deftyp) $ at
-  | RelD (id, _nottyp, inputs, rules) -> struct_rel_def tdenv at id inputs rules
+  | RelD (id, nottyp, inputs, rules) ->
+      struct_rel_def tdenv at id nottyp inputs rules
   | DecD (id, tparams, _params, _typ, clauses) ->
       struct_dec_def tdenv at id tparams clauses
 
 (* Structuring relation definitions *)
 
 and struct_rel_def (tdenv : TDEnv.t) (at : region) (id_rel : id)
-    (inputs : int list) (rules : rule list) : Sl.Ast.def =
+    (nottyp : nottyp) (inputs : int list) (rules : rule list) : Sl.Ast.def =
+  let mixop, _ = nottyp.it in
   let exps_input, paths = Antiunify.antiunify_rules inputs rules in
   let instrs = List.concat_map struct_rule_path paths in
   let instrs = Optimize.optimize tdenv instrs in
   let instrs = Instrument.insert_phantom instrs in
-  Sl.Ast.RelD (id_rel, exps_input, instrs) $ at
+  Sl.Ast.RelD (id_rel, (mixop, inputs), exps_input, instrs) $ at
 
 (* Structuring declaration definitions *)
 

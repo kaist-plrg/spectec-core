@@ -127,8 +127,8 @@ type def = def' phrase
 and def' =
   (* `syntax` id `<` list(tparam, `,`) `>` `=` deftyp *)
   | TypD of id * tparam list * deftyp
-  (* `relation` id list(exp, `,`) `:` instr* *)
-  | RelD of id * exp list * instr list
+  (* `relation` id `:` mixop `hint(input` `%`int* `)` list(exp, `,`) `:` instr* *)
+  | RelD of id * (mixop * int list) * exp list * instr list
   (* `dec` id `<` list(tparam, `,`) `>` list(param, `,`) `:` typ instr* *)
   | DecD of id * tparam list * arg list * instr list
 

@@ -1,9 +1,8 @@
 open Domain.Lib
-open Runtime_dynamic
+open Runtime_dynamic_sl
 open Envs
-open Il.Ast
+open Sl.Ast
 open Error
-open Attempt
 open Util.Source
 
 (* Error *)
@@ -46,78 +45,7 @@ type local = {
   venv : VEnv.t;
 }
 
-type t = {
-  (* Config *)
-  config : config;
-  (* Execution trace *)
-  trace : Trace.t;
-  (* Global layer *)
-  global : global;
-  (* Local layer *)
-  local : local;
-}
-
-(* Profiling *)
-
-let profile (ctx : t) : unit =
-  if ctx.config.profile then Trace.profile ctx.trace
-
-(* Tracing *)
-
-let trace_open_rel (ctx : t) (id_rel : id) (id_rule : id)
-    (values_input : value list) : t =
-  let trace = Trace.open_rel id_rel id_rule values_input in
-  if ctx.config.debug then
-    Format.asprintf
-      "Opening rule %s/%s\n--- with input ---\n%s\n----------------\n" id_rel.it
-      id_rule.it
-      (values_input |> List.map Value.to_string |> String.concat "\n")
-    |> print_endline;
-  { ctx with trace }
-
-let trace_open_dec (ctx : t) (id_func : id) (idx_clause : int)
-    (values_input : value list) : t =
-  let trace = Trace.open_dec id_func idx_clause values_input in
-  if ctx.config.debug then
-    Format.asprintf
-      "Opening clause $%s/%d\n--- with input ---\n%s\n----------------\n"
-      id_func.it idx_clause
-      (values_input |> List.map Value.to_string |> String.concat "\n")
-    |> print_endline;
-  { ctx with trace }
-
-let trace_open_iter (ctx : t) (inner : string) : t =
-  let trace = Trace.open_iter inner in
-  { ctx with trace }
-
-let trace_close (ctx : t) : t =
-  let trace = Trace.close ctx.trace in
-  (if ctx.config.debug then
-     match trace with
-     | Rel { id_rel; id_rule; _ } ->
-         Format.asprintf "Closing rule %s/%s\n" id_rel.it id_rule.it
-         |> print_endline
-     | Dec { id_func; idx_clause; _ } ->
-         Format.asprintf "Closing clause $%s/%d\n" id_func.it idx_clause
-         |> print_endline
-     | Iter _ -> Format.asprintf "Closing iteration\n" |> print_endline
-     | _ -> ());
-  { ctx with trace }
-
-let trace_extend (ctx : t) (prem : prem) : t =
-  let trace = Trace.extend ctx.trace prem in
-  if ctx.config.debug then
-    Format.asprintf "Premise: %s\n" (prem |> Il.Print.string_of_prem)
-    |> print_endline;
-  { ctx with trace }
-
-let trace_replace (ctx : t) (subtraces : Trace.t list) : t =
-  let trace = Trace.replace_subtraces ctx.trace subtraces in
-  { ctx with trace }
-
-let trace_commit (ctx : t) (trace : Trace.t) : t =
-  let trace = Trace.commit ctx.trace trace in
-  { ctx with trace }
+type t = { global : global; local : local }
 
 (* Finders *)
 
@@ -191,14 +119,10 @@ let bound_func (cursor : cursor) (ctx : t) (fid : FId.t) : bool =
 
 (* Adders for values *)
 
-let add_value ?(shadow = false) (cursor : cursor) (ctx : t) (var : Var.t)
-    (value : Value.t) : t =
+let add_value (cursor : cursor) (ctx : t) (var : Var.t) (value : Value.t) : t =
   (if cursor = Global then
      let id, _ = var in
      error id.at "cannot add value to global context");
-  (if (not shadow) && bound_value cursor ctx var then
-     let id, _ = var in
-     error_dup id.at "value" (Var.to_string var));
   let venv = VEnv.add var value ctx.local.venv in
   { ctx with local = { ctx.local with venv } }
 
@@ -244,28 +168,25 @@ let empty_global () : global =
 let empty_local () : local =
   { tdenv = TDEnv.empty; fenv = FEnv.empty; venv = VEnv.empty }
 
-let empty (debug : bool) (profile : bool) : t =
-  let config = { debug; profile } in
-  let trace = Trace.Empty in
+let empty () : t =
   let global = empty_global () in
   let local = empty_local () in
-  { config; trace; global; local }
+  { global; local }
 
 (* Constructing a local context *)
 
 let localize (ctx : t) : t =
-  let trace = Trace.Empty in
   let local = empty_local () in
-  { ctx with trace; local }
+  { ctx with local }
 
 (* Constructing sub-contexts *)
 
-let sub_opt (ctx : t) (vars : var list) : t option attempt =
+let sub_opt (ctx : t) (vars : var list) : t option =
   (* First collect the values that are to be iterated over *)
   let values =
     List.map
       (fun (id, iters) ->
-        find_value Local ctx (id, iters @ [ Opt ]) |> Value.get_opt)
+        find_value Local ctx (id, iters @ [ Il.Ast.Opt ]) |> Value.get_opt)
       vars
   in
   (* Iteration is valid when all variables agree on their optionality *)
@@ -273,57 +194,47 @@ let sub_opt (ctx : t) (vars : var list) : t option attempt =
     let values = List.map Option.get values in
     let ctx_sub =
       List.fold_left2
-        (fun ctx_sub var value ->
-          add_value ~shadow:true Local ctx_sub var value)
+        (fun ctx_sub var value -> add_value Local ctx_sub var value)
         ctx vars values
     in
-    Ok (Some ctx_sub)
-  else if List.for_all Option.is_none values then Ok None
-  else fail no_region "mismatch in optionality of iterated variables"
+    Some ctx_sub
+  else if List.for_all Option.is_none values then None
+  else error no_region "mismatch in optionality of iterated variables"
 
 (* Transpose a matrix of values, as a list of value batches
    that are to be each fed into an iterated expression *)
 
-let transpose (value_matrix : value list list) : value list list attempt =
+let transpose (value_matrix : value list list) : value list list =
   match value_matrix with
-  | [] -> Ok []
+  | [] -> []
   | _ ->
       let width = List.length (List.hd value_matrix) in
-      let* _ =
-        check_fail
-          (List.for_all
-             (fun value_row -> List.length value_row = width)
-             value_matrix)
-          no_region "cannot transpose a matrix of value batches"
-      in
-      let value_matrix =
-        List.init width (fun j ->
-            List.init (List.length value_matrix) (fun i ->
-                List.nth (List.nth value_matrix i) j))
-      in
-      Ok value_matrix
+      check
+        (List.for_all
+           (fun value_row -> List.length value_row = width)
+           value_matrix)
+        no_region "cannot transpose a matrix of value batches";
+      List.init width (fun j ->
+          List.init (List.length value_matrix) (fun i ->
+              List.nth (List.nth value_matrix i) j))
 
-let sub_list (ctx : t) (vars : var list) : t list attempt =
+let sub_list (ctx : t) (vars : var list) : t list =
   (* First break the values that are to be iterated over,
      into a batch of values *)
-  let* values_batch =
+  let values_batch =
     List.map
       (fun (id, iters) ->
-        find_value Local ctx (id, iters @ [ List ]) |> Value.get_list)
+        find_value Local ctx (id, iters @ [ Il.Ast.List ]) |> Value.get_list)
       vars
     |> transpose
   in
   (* For each batch of values, create a sub-context *)
-  let ctxs_sub =
-    List.fold_left
-      (fun ctxs_sub value_batch ->
-        let ctx_sub =
-          List.fold_left2
-            (fun ctx_sub var value ->
-              add_value ~shadow:true Local ctx_sub var value)
-            ctx vars value_batch
-        in
-        ctxs_sub @ [ ctx_sub ])
-      [] values_batch
-  in
-  Ok ctxs_sub
+  List.fold_left
+    (fun ctxs_sub value_batch ->
+      let ctx_sub =
+        List.fold_left2
+          (fun ctx_sub var value -> add_value Local ctx_sub var value)
+          ctx vars value_batch
+      in
+      ctxs_sub @ [ ctx_sub ])
+    [] values_batch

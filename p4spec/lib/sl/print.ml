@@ -269,7 +269,7 @@ let rec string_of_def def =
   | TypD (typid, tparams, deftyp) ->
       "syntax " ^ string_of_typid typid ^ string_of_tparams tparams ^ " = "
       ^ string_of_deftyp deftyp
-  | RelD (relid, exps_input, instrs) ->
+  | RelD (relid, (_mixop, _inputs), exps_input, instrs) ->
       "relation " ^ string_of_relid relid ^ ": "
       ^ string_of_exps ", " exps_input
       ^ "\n\n" ^ string_of_instrs instrs
