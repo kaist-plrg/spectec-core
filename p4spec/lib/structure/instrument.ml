@@ -42,6 +42,13 @@ open Util.Source
       else Phantom: i < 0 && j < 0
    else Phantom: i >= 0 *)
 
+let tick = ref 0
+
+let pid () =
+  let pid = !tick in
+  tick := !tick + 1;
+  pid
+
 let negate_exp (exp : exp) : exp =
   Il.Ast.UnE (`NotOp, `BoolT, exp) $$ (exp.at, exp.note)
 
@@ -65,8 +72,9 @@ let rec insert_phantom' ?(pathconds : pathcond list = []) (instrs : instr list)
         insert_phantom' ~pathconds instrs_then
       in
       let instr_else =
+        let pid = pid () in
         let pathconds = pathconds @ [ negate_pathcond pathcond ] in
-        PhantomI pathconds $ no_region
+        PhantomI (pid, pathconds) $ no_region
       in
       let instr_h =
         IfI (exp_cond, iterexps, instrs_then, [ instr_else ]) $ instr_h.at

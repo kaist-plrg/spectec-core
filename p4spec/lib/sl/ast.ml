@@ -115,7 +115,7 @@ and instr' =
   | LetI of exp * exp * iterexp list
   | ResultI of exp list
   | ReturnI of exp
-  | PhantomI of pathcond list
+  | PhantomI of int * pathcond list
 
 (* Hints *)
 

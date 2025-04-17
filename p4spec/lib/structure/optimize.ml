@@ -177,9 +177,9 @@ and rename_instr (rename : Rename.t) (instr : instr) : instr =
   | ReturnI exp ->
       let exp = rename_exp rename exp in
       ReturnI exp $ at
-  | PhantomI pathconds ->
+  | PhantomI (pid, pathconds) ->
       let pathconds = List.map (rename_pathcond rename) pathconds in
-      PhantomI pathconds $ at
+      PhantomI (pid, pathconds) $ at
 
 (* Remove redundant, trivial let aliases from the code,
 

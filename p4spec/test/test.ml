@@ -256,6 +256,24 @@ let run_sl_command =
      and negative = flag "-neg" no_arg ~doc:"use negative typing rules" in
      fun () -> run_sl_test_driver negative specdir includes_p4 testdir_p4)
 
+(* SL coverage test *)
+
+let cover_sl_test specdir includes_p4 testdir_p4 =
+  let spec_sl = structure specdir in
+  let filenames_p4 = collect_files ~suffix:".p4" testdir_p4 in
+  Interp_sl.Interp.cover_typing spec_sl includes_p4 filenames_p4
+
+let cover_sl_command =
+  Core.Command.basic ~summary:"measure phantom coverage of SL"
+    (let open Core.Command.Let_syntax in
+     let open Core.Command.Param in
+     let%map specdir = flag "-s" (required string) ~doc:"p4 spec directory"
+     and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
+     and testdir_p4 = flag "-d" (required string) ~doc:"p4 test directory" in
+     fun () ->
+       try cover_sl_test specdir includes_p4 testdir_p4
+       with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+
 let command =
   Core.Command.group ~summary:"p4spec-test"
     [
@@ -263,6 +281,7 @@ let command =
       ("run-il", run_il_command);
       ("struct", structure_command);
       ("run-sl", run_sl_command);
+      ("cover-sl", cover_sl_command);
     ]
 
 let () = Command_unix.run ~version command

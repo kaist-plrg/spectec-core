@@ -251,8 +251,8 @@ let rec string_of_instr ?(inline = false) ?(level = 0) ?(index = 0) instr =
       Format.asprintf "%sResult in %s" order_leading (string_of_exps ", " exps)
   | ReturnI exp ->
       Format.asprintf "%sReturn %s" order_leading (string_of_exp exp)
-  | PhantomI pathconds ->
-      Format.asprintf "%sPhantom %s" order_leading
+  | PhantomI (pid, pathconds) ->
+      Format.asprintf "%sPhantom#%d %s" order_leading pid
         (string_of_pathconds pathconds)
 
 and string_of_instrs ?(level = 0) instrs =

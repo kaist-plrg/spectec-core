@@ -1,0 +1,737 @@
+----- Covered (337/1271[26.51%]) -----
+* CParamType_wf
+265 
+
+* CParamTypes_wf
+266 
+
+* CParam_ok
+866 
+
+* Call_action_partial_ok
+1174 
+
+* Call_convention_arg_ok
+955 958 
+
+* Call_convention_ok
+946 947 948 949 951 952 953 
+
+* Call_default_action_ok
+1221 1222 
+
+* Call_ok
+980 983 986 987 988 989 994 998 1008 
+1016 1022 1026 1030 1035 1036 
+
+* Call_site_ok
+964 965 967 969 971 972 975 976 977 
+978 
+
+* ConsDef_wf
+278 
+
+* ConsType_ok
+1068 
+
+* ConsType_wf
+268 269 272 274 276 277 
+
+* Decl_ok
+867 870 871 873 874 876 882 883 884 
+887 888 891 894 895 904 912 919 921 927 
+929 932 933 934 935 937 939 941 944 945 
+
+
+* Expr_ok
+738 739 740 742 744 745 747 748 749 
+750 751 752 754 755 757 758 762 763 765 
+767 771 772 775 782 783 788 791 794 795 
+798 802 806 808 810 818 819 820 822 823 
+
+
+* FuncDef_wf
+259 261 
+
+* FuncType_ok
+1037 
+
+* FuncType_wf
+239 240 242 244 247 248 249 251 254 
+255 
+
+* Inst_ok
+1083 1084 1085 1091 1092 1093 1094 1097 1098 
+1099 
+
+* Inst_site_ok
+1069 1071 1073 
+
+* Lval_ok
+825 830 
+
+* MethodType_ok
+1038 1039 1043 1046 1051 1052 1053 1061 1067 
+
+
+* Method_ok
+1159 1163 1167 1169 
+
+* ParamType_wf
+230 232 
+
+* ParamTypes_wf
+235 
+
+* Param_ok
+860 862 
+
+* Select_case_keyset_ok
+1124 1125 1126 
+
+* Stmt_ok
+832 833 834 835 847 848 850 852 853 
+854 855 856 857 
+
+* Sub_expl
+594 
+
+* Sub_expl_canon
+595 
+
+* Sub_expl_canon_neq
+597 599 600 602 603 605 606 608 609 
+610 621 665 670 672 675 
+
+* Sub_impl
+676 
+
+* Sub_impl_canon
+677 
+
+* Sub_impl_canon_neq
+679 680 682 689 692 693 732 734 737 
+
+
+* Switch_tbl_label_ok
+1139 1140 1141 1142 
+
+* Table_action_ok
+1178 
+
+* Table_custom_ok
+1243 1249 
+
+* Table_default_ok
+1242 
+
+* Table_entries_ok
+1241 
+
+* Table_entry_keyset_ok
+1186 1195 1197 1198 1206 1208 1209 
+
+* Table_entry_keysets_ok
+1216 1217 1219 1220 
+
+* Table_entry_priority_ok
+1227 1229 1231 1234 1236 1239 
+
+* TypeDef_wf
+225 227 
+
+* Type_alpha
+25 26 31 33 36 40 50 51 55 
+58 68 70 84 100 107 125 126 128 130 
+132 134 
+
+* Type_ok
+587 588 591 
+
+* Type_wf
+173 177 185 187 190 193 198 200 211 
+221 222 223 224 
+
+* actions_of_table
+566 
+
+* add_funcdef_non_overload
+516 517 
+
+* add_param
+503 
+
+* add_styp
+497 498 
+
+* add_typdef
+506 
+
+* cast_int'
+417 418 
+
+* coerce_assign
+1120 1121 
+
+* coerce_binary
+1114 1115 1117 
+
+* filter_default_args
+1251 
+
+* filter_directionless_args
+1224 
+
+* find_consdef
+552 
+
+* find_func
+480 481 482 484 
+
+* find_func_by_name
+489 
+
+* find_funcdef
+540 542 
+
+* find_funcdef_by_name
+546 548 
+
+* find_funcs_by_name
+486 
+
+* find_matching_func
+465 469 470 
+
+* find_matching_funcs
+475 
+
+* find_styp
+521 523 526 
+
+* find_typdef
+531 533 536 
+
+* find_val
+529 530 
+
+* get_lpm_prefix'
+556 557 561 
+
+* is_trailing_action'
+281 
+
+* join_flow
+493 
+
+* joins_ctk
+491 
+
+* keys_of_table
+565 
+
+* merge_cstr'
+1257 1260 1261 
+
+* reduce_senum_unary
+1103 1105 
+
+* reduce_senums_binary
+1107 1109 1112 
+
+* resolve_cstrs
+1267 1268 1269 
+
+* specialize_consdef
+19 
+
+* specialize_funcdef
+13 14 15 18 
+
+* specialize_typdef
+11 
+
+* split_directionless_params
+1175 
+
+* to_fkey
+539 
+
+* update_fdenv_extern
+1156 
+
+----- Uncovered (934/1271[73.49%]) -----
+* Block_ok
+831 
+
+* CParamType_wf
+264 
+
+* CParamTypes_wf
+267 
+
+* CParam_ok
+863 864 865 
+
+* Call_convention_arg_ok
+954 956 957 
+
+* Call_convention_ok
+950 
+
+* Call_ok
+979 981 982 984 985 990 991 992 993 
+995 996 997 999 1000 1001 1002 1003 1004 1005 
+1006 1007 1009 1010 1011 1012 1013 1014 1015 1017 
+1018 1019 1020 1021 1023 1024 1025 1027 1028 1029 
+1031 1032 1033 1034 
+
+* Call_site_ok
+959 960 961 962 963 966 968 970 973 
+974 
+
+* ConsDef_wf
+279 280 
+
+* ConsType_wf
+270 271 273 275 
+
+* Decl_ok
+868 869 872 875 877 878 879 880 881 
+885 886 889 890 892 893 896 897 898 899 
+900 901 902 903 905 906 907 908 909 910 
+911 913 914 915 916 917 918 920 922 923 
+924 925 926 928 930 931 936 938 940 942 
+943 
+
+* Eval_static
+567 568 569 570 571 572 573 574 575 
+576 577 578 579 580 
+
+* Expr_ok
+741 743 746 753 756 759 760 761 764 
+766 768 769 770 773 774 776 777 778 779 
+780 781 784 785 786 787 789 790 792 793 
+796 797 799 800 801 803 804 805 807 809 
+811 812 813 814 815 816 817 821 
+
+* FuncDef_alpha
+166 167 168 169 170 171 
+
+* FuncDef_wf
+260 262 263 
+
+* FuncType_alpha
+135 136 137 138 139 140 141 142 143 
+144 145 146 147 148 149 150 151 152 153 
+154 155 156 157 158 159 160 161 162 163 
+164 165 
+
+* FuncType_wf
+237 238 241 243 245 246 250 252 253 
+256 257 258 
+
+* Inst_init_decl_ok
+1147 1148 1149 1150 1151 
+
+* Inst_ok
+1080 1081 1082 1086 1087 1088 1089 1090 1095 
+1096 1100 1101 1102 
+
+* Inst_site_ok
+1070 1072 1074 1075 1076 1077 1078 1079 
+
+* Lval_ok
+824 826 827 828 829 
+
+* MethodType_ok
+1040 1041 1042 1044 1045 1047 1048 1049 1050 
+1054 1055 1056 1057 1058 1059 1060 1062 1063 1064 
+1065 1066 
+
+* Method_ok
+1160 1161 1162 1164 1165 1166 1168 
+
+* ParamType_wf
+231 233 234 
+
+* ParamTypes_wf
+236 
+
+* Param_ok
+859 861 
+
+* ParserState_ok
+1170 
+
+* SEnum_field_ok
+1158 
+
+* Select_case_keyset_ok
+1123 1127 
+
+* Select_case_keysets_ok
+1128 1129 1130 1131 
+
+* Select_case_ok
+1132 1133 1134 1135 
+
+* Stmt_ok
+836 837 838 839 840 841 842 843 844 
+845 846 849 851 858 
+
+* Sub_expl_canon_neq
+596 598 601 604 607 611 612 613 614 
+615 616 617 618 619 620 622 623 624 625 
+626 627 628 629 630 631 632 633 634 635 
+636 637 638 639 640 641 642 643 644 645 
+646 647 648 649 650 651 652 653 654 655 
+656 657 658 659 660 661 662 663 664 666 
+667 668 669 671 673 674 
+
+* Sub_impl_canon_neq
+678 681 683 684 685 686 687 688 690 
+691 694 695 696 697 698 699 700 701 702 
+703 704 705 706 707 708 709 710 711 712 
+713 714 715 716 717 718 719 720 721 722 
+723 724 725 726 727 728 729 730 731 733 
+735 736 
+
+* Switch_gen_label_ok
+1143 1144 1145 1146 
+
+* Switch_tbl_label_ok
+1136 1137 1138 
+
+* Table_action_ok
+1177 1179 
+
+* Table_actions_ok
+1180 
+
+* Table_custom_ok
+1244 1245 1246 1247 1248 
+
+* Table_entry_action_ok
+1226 
+
+* Table_entry_keyset_ok
+1181 1182 1183 1184 1185 1187 1188 1189 1190 
+1191 1192 1193 1194 1196 1199 1200 1201 1202 1203 
+1204 1205 1207 1210 1211 
+
+* Table_entry_keysets_ok
+1214 1215 1218 
+
+* Table_entry_keysets_state_ok
+1212 1213 
+
+* Table_entry_priority_ok
+1228 1230 1232 1233 1235 1237 1238 1240 
+
+* Table_key_ok
+1171 1172 1173 
+
+* Table_type_decl_ok
+1250 
+
+* TypeDef_wf
+226 228 229 
+
+* Type_alpha
+27 28 29 30 32 34 35 37 38 
+39 41 42 43 44 45 46 47 48 49 
+52 53 54 56 57 59 60 61 62 63 
+64 65 66 67 69 71 72 73 74 75 
+76 77 78 79 80 81 82 83 85 86 
+87 88 89 90 91 92 93 94 95 96 
+97 98 99 101 102 103 104 105 106 108 
+109 110 111 112 113 114 115 116 117 118 
+119 120 121 122 123 124 127 129 131 133 
+
+
+* Type_ok
+581 582 583 584 585 586 589 590 592 
+593 
+
+* Type_wf
+172 174 175 176 178 179 180 181 182 
+183 184 186 188 189 191 192 194 195 196 
+197 199 201 202 203 204 205 206 207 208 
+209 210 212 213 214 215 216 217 218 219 
+220 
+
+* add_consdef
+519 520 
+
+* add_funcdef
+513 514 515 
+
+* add_funcdef_non_overload
+518 
+
+* add_param
+504 
+
+* add_styp
+499 500 
+
+* add_styps
+501 502 
+
+* add_tparam
+510 511 512 
+
+* add_typdef
+505 507 
+
+* add_typdefs
+508 509 
+
+* align_params_with_args'
+1252 
+
+* bin_band
+378 379 380 381 382 
+
+* bin_bor
+388 389 390 391 392 
+
+* bin_bxor
+383 384 385 386 387 
+
+* bin_concat
+393 394 395 
+
+* bin_div
+310 311 
+
+* bin_eq
+352 353 354 355 356 357 358 359 360 
+361 362 363 364 365 366 367 368 369 370 
+371 372 
+
+* bin_eqs
+373 374 
+
+* bin_eqs_
+375 376 377 
+
+* bin_ge
+334 335 336 337 338 339 
+
+* bin_gt
+346 347 348 349 350 351 
+
+* bin_land
+396 397 
+
+* bin_le
+328 329 330 331 332 333 
+
+* bin_lor
+398 399 
+
+* bin_lt
+340 341 342 343 344 345 
+
+* bin_minus
+298 299 300 301 302 303 
+
+* bin_mod
+312 313 
+
+* bin_mul
+304 305 306 307 308 309 
+
+* bin_op
+291 
+
+* bin_plus
+292 293 294 295 296 297 
+
+* bin_shl
+314 315 316 317 
+
+* bin_shr
+318 319 320 321 322 323 324 325 326 
+327 
+
+* bitacc_op
+452 
+
+* cast_bool'
+412 413 414 415 416 
+
+* cast_fbit'
+428 429 430 431 432 433 
+
+* cast_fint'
+423 424 425 426 427 
+
+* cast_header'
+437 438 439 
+
+* cast_int'
+419 420 421 422 
+
+* cast_op
+400 
+
+* cast_record'
+442 443 444 445 
+
+* cast_seq'
+440 441 
+
+* cast_set_mask'
+448 449 
+
+* cast_set_range'
+450 451 
+
+* cast_set_singleton'
+446 447 
+
+* cast_struct'
+434 435 436 
+
+* coerce_assign
+1122 
+
+* coerce_binary
+1116 1118 1119 
+
+* default'
+401 402 403 404 405 406 407 408 409 
+410 411 
+
+* exit
+495 
+
+* filter_directionless_args
+1223 1225 
+
+* find_consdef
+553 554 555 
+
+* find_func
+478 479 483 
+
+* find_func_by_name
+490 
+
+* find_funcdef
+541 543 544 545 
+
+* find_funcdef_by_name
+547 549 550 551 
+
+* find_funcs_by_name
+485 487 488 
+
+* find_matching_func
+466 467 468 471 472 473 
+
+* find_matching_funcs
+474 476 477 
+
+* find_styp
+522 524 525 527 528 
+
+* find_typdef
+532 534 535 537 538 
+
+* free_typ
+1 2 3 4 5 
+
+* gen_cstr_fd'
+1254 1255 
+
+* gen_cstrs
+1253 
+
+* get_lpm_prefix'
+558 559 560 562 563 
+
+* get_num
+0 
+
+* get_params_missing_names
+464 
+
+* get_typ_ret_lkind
+496 
+
+* get_width'
+22 23 24 
+
+* is_trailing_action'
+282 283 284 285 286 
+
+* join_flow
+494 
+
+* joins_ctk
+492 
+
+* merge_cstr
+1256 
+
+* merge_cstr'
+1258 1259 1262 1263 1264 1265 1266 
+
+* reduce_senum_unary
+1104 1106 
+
+* reduce_senums_binary
+1108 1110 1111 1113 
+
+* resolve_cstrs
+1270 
+
+* size
+453 
+
+* size_maxSizeInBits''
+459 460 461 462 463 
+
+* size_minSizeInBits''
+454 455 456 457 458 
+
+* specialize_consdef
+20 21 
+
+* specialize_funcdef
+16 17 
+
+* specialize_typdef
+10 12 
+
+* split_directionless_params
+1176 
+
+* subst_funcdef
+8 9 
+
+* subst_typdef_poly
+6 7 
+
+* un_bnot
+287 
+
+* un_lnot
+288 
+
+* un_minus
+290 
+
+* un_plus
+289 
+
+* update_fdenv_extern
+1152 1153 1154 1155 1157 
+
+* update_state
+564 
+

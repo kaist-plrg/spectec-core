@@ -19,10 +19,6 @@ type cursor = Global | Local
 
 (* Context *)
 
-(* Config *)
-
-type config = { debug : bool; profile : bool }
-
 (* Global layer *)
 
 type global = {
@@ -45,7 +41,13 @@ type local = {
   venv : VEnv.t;
 }
 
-type t = { global : global; local : local }
+type t = { cover : Coverage.t ref; global : global; local : local }
+
+(* Cover *)
+
+let cover (ctx : t) (pid : int) : t =
+  ctx.cover := Coverage.add pid !(ctx.cover);
+  ctx
 
 (* Finders *)
 
@@ -168,10 +170,10 @@ let empty_global () : global =
 let empty_local () : local =
   { tdenv = TDEnv.empty; fenv = FEnv.empty; venv = VEnv.empty }
 
-let empty () : t =
+let empty (cover : Coverage.t ref) : t =
   let global = empty_global () in
   let local = empty_local () in
-  { global; local }
+  { cover; global; local }
 
 (* Constructing a local context *)
 
@@ -238,3 +240,7 @@ let sub_list (ctx : t) (vars : var list) : t list =
       in
       ctxs_sub @ [ ctx_sub ])
     [] values_batch
+
+(* Committing a sub-context *)
+
+let commit (ctx : t) (ctx_sub : t) : t = { ctx with cover = ctx_sub.cover }
