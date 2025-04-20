@@ -214,6 +214,64 @@ let rec remove_let_alias (instrs : instr list) : instr list =
           let instrs_t = remove_let_alias instrs_t in
           instr_h :: instrs_t)
 
+(* [2] Parallelize if conditions in logical or *)
+
+let rec parallelize_exp_disjunction (iterexps : iterexp list) (exp : exp) :
+    exp list option =
+  match iterexps with [] -> parallelize_exp_disjunction' exp | _ -> None
+
+and parallelize_exp_disjunction' (exp : exp) : exp list option =
+  match exp.it with
+  | BinE (`OrOp, _, exp_l, exp_r) -> (
+      let exps_l = parallelize_exp_disjunction' exp_l in
+      let exps_r = parallelize_exp_disjunction' exp_r in
+      match (exps_l, exps_r) with
+      | Some exps_l, Some exps_r -> Some (exps_l @ exps_r)
+      | Some exps_l, None -> Some (exps_l @ [ exp_r ])
+      | None, Some exps_r -> Some (exps_r @ [ exp_l ])
+      | None, None -> Some [ exp_l; exp_r ])
+  | _ -> None
+
+let rec parallelize_if_disjunction (instr : instr) : instr list =
+  let at = instr.at in
+  match instr.it with
+  | IfI (exp_cond, iterexps, instrs_then) -> (
+      let instrs_then = parallelize_if_disjunctions instrs_then in
+      match parallelize_exp_disjunction iterexps exp_cond with
+      | Some exps_cond ->
+          List.map
+            (fun exp_cond -> IfI (exp_cond, iterexps, instrs_then) $ at)
+            exps_cond
+      | None -> [ instr ])
+  | _ -> [ instr ]
+
+and parallelize_if_disjunctions (instrs : instr list) : instr list =
+  List.concat_map parallelize_if_disjunction instrs
+
+(* [3] Matchify equals terminal *)
+
+let matchify_exp_eq_terminal (exp : exp) : exp =
+  let at, note = (exp.at, exp.note) in
+  match exp.it with
+  | CmpE (`EqOp, _, exp_l, { it = CaseE (mixop, []); _ }) ->
+      Il.Ast.MatchE (exp_l, CaseP mixop) $$ (at, note)
+  | CmpE (`NeOp, _, exp_l, { it = CaseE (mixop, []); _ }) ->
+      let exp = Il.Ast.MatchE (exp_l, CaseP mixop) $$ (at, note) in
+      Il.Ast.UnE (`NotOp, `BoolT, exp) $$ (at, note)
+  | _ -> exp
+
+let rec matchify_if_eq_terminal (instr : instr) : instr =
+  let at = instr.at in
+  match instr.it with
+  | IfI (exp_cond, iterexps, instrs_then) ->
+      let exp_cond = matchify_exp_eq_terminal exp_cond in
+      let instrs_then = matchify_if_eq_terminals instrs_then in
+      IfI (exp_cond, iterexps, instrs_then) $ at
+  | _ -> instr
+
+and matchify_if_eq_terminals (instrs : instr list) : instr list =
+  List.map matchify_if_eq_terminal instrs
+
 (* [2] Remove redundant let and rule bindings from the code,
    which appears due to the concatenation of multiple rules and clauses
    This operation is safe because IL is already in SSA form *)
@@ -789,12 +847,19 @@ and totalize_case_analysis' (tdenv : TDEnv.t) (instr : instr) : instr =
 
 (* Apply optimizations until it reaches a fixed point *)
 
-let rec optimize' (tdenv : TDEnv.t) (instrs : instr list) : instr list =
+let optimize_pre (instrs : instr list) : instr list =
+  instrs |> remove_let_alias |> parallelize_if_disjunctions
+  |> matchify_if_eq_terminals
+
+let rec optimize_loop (tdenv : TDEnv.t) (instrs : instr list) : instr list =
   let instrs_optimized =
     instrs |> remove_redundant_binding_instrs |> merge_if tdenv |> casify tdenv
   in
   if Ol.Eq.eq_instrs instrs instrs_optimized then instrs
-  else optimize' tdenv instrs_optimized
+  else optimize_loop tdenv instrs_optimized
+
+let optimize_post (tdenv : TDEnv.t) (instrs : instr list) : instr list =
+  instrs |> totalize_case_analysis tdenv
 
 let optimize (tdenv : TDEnv.t) (instrs : instr list) : instr list =
-  instrs |> remove_let_alias |> optimize' tdenv |> totalize_case_analysis tdenv
+  instrs |> optimize_pre |> optimize_loop tdenv |> optimize_post tdenv
