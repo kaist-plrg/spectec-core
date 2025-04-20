@@ -122,11 +122,11 @@ and string_of_exps sep exps = String.concat sep (List.map string_of_exp exps)
 
 and string_of_notexp notexp =
   let mixop, exps = notexp in
-  let atoms_h, mixop_t = (List.hd mixop, List.tl mixop) in
-  string_of_atoms atoms_h
-  :: List.map2
-       (fun exp_t atoms_t -> string_of_exp exp_t ^ string_of_atoms atoms_t)
-       exps mixop_t
+  let len = List.length mixop + List.length exps in
+  List.init len (fun idx ->
+      if idx mod 2 = 0 then idx / 2 |> List.nth mixop |> string_of_atoms
+      else idx / 2 |> List.nth exps |> string_of_exp)
+  |> List.filter_map (fun str -> if str = "" then None else Some str)
   |> String.concat " "
 
 and string_of_iterexp iterexp =
@@ -183,8 +183,9 @@ and string_of_targs targs = Il.Print.string_of_targs targs
 (* Path conditions *)
 
 and string_of_phantom phantom =
-  let pid, pathconds = phantom in
-  Format.asprintf "Phantom#%d %s" pid (string_of_pathconds pathconds)
+  let pid, _pathconds = phantom in
+  Format.asprintf "Phantom#%d" pid
+(* Format.asprintf "Phantom#%d %s" pid (string_of_pathconds pathconds) *)
 
 and string_of_pathcond pathcond =
   match pathcond with
@@ -255,9 +256,8 @@ let rec string_of_instr ?(inline = false) ?(level = 0) ?(index = 0) instr =
       Format.asprintf "%sResult in %s" order_leading (string_of_exps ", " exps)
   | ReturnI exp ->
       Format.asprintf "%sReturn %s" order_leading (string_of_exp exp)
-  | PhantomI (pid, pathconds) ->
-      Format.asprintf "%sPhantom#%d %s" order_leading pid
-        (string_of_pathconds pathconds)
+  | PhantomI phantom ->
+      Format.asprintf "%s%s" order_leading (string_of_phantom phantom)
 
 and string_of_instrs ?(level = 0) instrs =
   instrs
