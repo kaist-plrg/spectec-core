@@ -163,7 +163,7 @@ def $compatible'_plusminusmult(typ_l, typ_r) = false
 
 rule Expr_ok/bine-plus-minus-mult:
   p C |- BinE binop expr_l expr_r : BinE binop exprIL_l'' exprIL_r'' `(typ''; ctk)
-  -- if $in_set<binop>(binop, SET ([ PLUS, MINUS, MUL ]))
+  -- if binop <- [ PLUS, MINUS, MUL ]
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l
   -- Expr_ok: p C |- expr_r : exprIL_r
@@ -188,7 +188,7 @@ def $compatible'_satplusminus(typ_l, typ_r) = false
 
 rule Expr_ok/bine-sat-plus-minus:
   p C |- BinE binop expr_l expr_r : BinE binop exprIL_l'' exprIL_r'' `(typ''; ctk)
-  -- if $in_set<binop>(binop, SET ([ SPLUS, SMINUS ]))
+  -- if binop <- [ SPLUS, SMINUS ]
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l
   -- Expr_ok: p C |- expr_r : exprIL_r
@@ -212,7 +212,7 @@ def $compatible'_divmod(typ_l, typ_r) = false
 
 rule Expr_ok/bine-div-mod-lctk:
   p C |- BinE binop expr_l expr_r : BinE binop exprIL_l'' exprIL_r'' `(typ''; ctk)
-  -- if $in_set<binop>(binop, SET ([ DIV, MOD ]))
+  -- if binop <- [ DIV, MOD ]
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l
   -- Expr_ok: p C |- expr_r : exprIL_r
@@ -232,7 +232,7 @@ rule Expr_ok/bine-div-mod-lctk:
 
 rule Expr_ok/bine-div-mod-non-lctk:
   p C |- BinE binop expr_l expr_r : BinE binop exprIL_l'' exprIL_r'' `(typ''; ctk)
-  -- if $in_set<binop>(binop, SET ([ DIV, MOD ]))
+  -- if binop <- [ DIV, MOD ]
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l
   -- Expr_ok: p C |- expr_r : exprIL_r
@@ -265,7 +265,7 @@ def $compatible'_shift(typ_l, typ_r) = false
 
 rule Expr_ok/bine-shift:
   p C |- BinE binop expr_l expr_r : BinE binop exprIL_l' exprIL_r' `(typ_l'; ctk)
-  -- if $in_set<binop>(binop, SET ([ SHL, SHR ]))
+  -- if binop <- [ SHL, SHR ]
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l
   -- Expr_ok: p C |- expr_r : exprIL_r
@@ -280,7 +280,7 @@ rule Expr_ok/bine-shift:
 
 rule Expr_ok/bine-compare-eq:
   p C |- BinE binop expr_l expr_r : BinE binop exprIL_l' exprIL_r' `(BoolT; ctk)
-  -- if $in_set<binop>(binop, SET ([ EQ, NE ]))
+  -- if binop <- [ EQ, NE ]
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l
   -- Expr_ok: p C |- expr_r : exprIL_r
@@ -306,7 +306,7 @@ def $compatible'_compare(typ_l, typ_r) = false
 
 rule Expr_ok/bine-compare:
   p C |- BinE binop expr_l expr_r : BinE binop exprIL_l'' exprIL_r'' `(BoolT; ctk)
-  -- if $in_set<binop>(binop, SET ([ LE, GE, LT, GT ]))
+  -- if binop <- [ LE, GE, LT, GT ]
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l
   -- Expr_ok: p C |- expr_r : exprIL_r
@@ -331,7 +331,7 @@ def $compatible'_bitwise(typ_l, typ_r) = false
 
 rule Expr_ok/bine-bitwise:
   p C |- BinE binop expr_l expr_r : BinE binop exprIL_l'' exprIL_r'' `(typ''; ctk)
-  -- if $in_set<binop>(binop, SET ([ BAND, BXOR, BOR ]))
+  -- if binop <- [ BAND, BXOR, BOR ]
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l
   -- Expr_ok: p C |- expr_r : exprIL_r
@@ -399,7 +399,7 @@ def $compatible'_logical(typ_l, typ_r) = false
 
 rule Expr_ok/bine-logical:
   p C |- BinE binop expr_l expr_r : BinE binop exprIL_l exprIL_r `(BoolT; ctk)
-  -- if $in_set<binop>(binop, SET ([ LAND, LOR ]))
+  -- if binop <- [ LAND, LOR ]
   ----
   -- Expr_ok: p C |- expr_l : exprIL_l
   -- Expr_ok: p C |- expr_r : exprIL_r
@@ -814,7 +814,7 @@ rule Expr_ok/callfunce:
 
 rule Expr_ok/callmethode:
   p C |- CallMethodE expr_b member eps eps : CallMethodE exprIL_b member eps eps `(IntT; LCTK)
-  -- if $in_set<member>(member, SET ([ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]))
+  -- if member <- [ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]
   ----
   -- MethodType_ok: p C |- expr_b member eps eps : ft exprIL_b tid_fresh_inserted* id_deft*
   ----
@@ -822,7 +822,7 @@ rule Expr_ok/callmethode:
 
 rule Expr_ok/callmethode:
   p C |- CallMethodE expr_b member targ* arg* : CallMethodE exprIL_b member targIL'* argIL'* `(typ; DYN)
-  -- if ~$in_set<member>(member, SET ([ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]))
+  -- if ~(member <- [ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ])
   ----
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
   -- if tid_fresh* = $concat_<tid>(tid_fresh_a**)
@@ -842,7 +842,7 @@ rule Expr_ok/calltypee:
   p C |- CallTypeE name member eps eps : CallTypeE name member eps eps `(IntT; LCTK)
   -- if typdef = $find_typdef(p, C, name)
   ----
-  -- if $in_set<member>(member, SET ([ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]))
+  -- if member <- [ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]
   ----
   -- if ft = BuiltinMethodT eps IntT
   ----
@@ -862,7 +862,7 @@ def $not_abstract_extern_object(typ)
 def $not_abstract_extern_object'(typ) = true
   -- if ~$is_externt(typ)
 def $not_abstract_extern_object'(ExternT _ fmap) = true
-  -- if SET fid* = $dom_map<fid, funcdef>(fmap)
+  -- if `{ fid* } = $dom_map<fid, funcdef>(fmap)
   -- if (fd = $find_map<fid, funcdef>(fmap, fid))*
   -- if ($not_abstract_extern_object''(fd))*
 def $not_abstract_extern_object'(typ) = false

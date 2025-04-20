@@ -14,7 +14,9 @@ type set = VSet.t
 
 let set_of_value (value : value) : set =
   match value with
-  | CaseV ([ [ { it = Atom "SET"; _ } ]; [] ], [ value_elements ]) ->
+  | CaseV
+      ( [ [ { it = Atom.LBrace; _ } ]; [ { it = Atom.RBrace; _ } ] ],
+        [ value_elements ] ) ->
       let values_element = Value.get_list value_elements in
       VSet.of_list values_element
   | _ ->
@@ -24,7 +26,9 @@ let set_of_value (value : value) : set =
 let value_of_set (set : set) : value =
   let values_element = VSet.elements set in
   let value_elements = ListV values_element in
-  CaseV ([ [ Atom.Atom "SET" $ no_region ]; [] ], [ value_elements ])
+  CaseV
+    ( [ [ Atom.LBrace $ no_region ]; [ Atom.RBrace $ no_region ] ],
+      [ value_elements ] )
 
 (* dec $intersect_set<K>(set<K>, set<K>) : set<K> *)
 

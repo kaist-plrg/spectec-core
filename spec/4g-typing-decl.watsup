@@ -5,7 +5,7 @@
 rule Param_ok/param-default:
   p C |- id dir type expr : (id dir typ_p val) tid_fresh*
   -- Type_ok: p C |- type : typ_p tid_fresh*
-  -- if tidset = $union_set<tid>($bound_tids(p, C), SET tid_fresh*)
+  -- if tidset = $union_set<tid>($bound_tids(p, C), `{ tid_fresh* })
   -- Type_wf: tidset |- typ_p
   ----
   -- Expr_ok: p C |- expr : exprIL_e
@@ -17,7 +17,7 @@ rule Param_ok/param-default:
 rule Param_ok/param-nodefault:
   p C |- id dir type eps : (id dir typ_p eps) tid_fresh*
   -- Type_ok: p C |- type : typ_p tid_fresh*
-  -- if tidset = $union_set<tid>($bound_tids(p, C), SET tid_fresh*)
+  -- if tidset = $union_set<tid>($bound_tids(p, C), `{ tid_fresh* })
   -- Type_wf: tidset |- typ_p
 
 ;;
@@ -27,7 +27,7 @@ rule Param_ok/param-nodefault:
 rule CParam_ok/cparam-default:
   p C |- id dir type expr : (id dir typ_p val) tid_fresh*
   -- Type_ok: p C |- type : typ_p tid_fresh*
-  -- if tidset = $union_set<tid>($bound_tids(p, C), SET tid_fresh*)
+  -- if tidset = $union_set<tid>($bound_tids(p, C), `{ tid_fresh* })
   -- Type_wf: tidset |- typ_p
   ----
   -- Expr_ok: p C |- expr : exprIL_e
@@ -39,7 +39,7 @@ rule CParam_ok/cparam-default:
 rule CParam_ok/cparam-nodefault:
   p C |- id dir type eps : (id dir typ_p eps) tid_fresh*
   -- Type_ok: p C |- type : typ_p tid_fresh*
-  -- if tidset = $union_set<tid>($bound_tids(p, C), SET tid_fresh*)
+  -- if tidset = $union_set<tid>($bound_tids(p, C), `{ tid_fresh* })
   -- Type_wf: tidset |- typ_p
 
 ;;
@@ -164,12 +164,12 @@ rule Decl_ok/instd-some:
   -- if C' = $add_styp(LOCAL, C, "this", typ NO CTK eps)
   ----
   -- Inst_init_decls_ok: C' $empty_frame $empty_fdenv |- decl* : frame_abs fdenv_abs declIL*
-  -- if MAP (PAIR fid_abs fd_abs)* = fdenv_abs
+  -- if `{ (fid_abs -> fd_abs)* } = fdenv_abs
   ----
   -- if tparam'* = tparam* ++ tparam_hidden*
-  -- if theta = MAP (PAIR tparam' typ_a)*
+  -- if theta = `{ (tparam' -> typ_a)* }
   -- if fdenv_ext' = $update_fdenv_extern(fdenv_ext, theta, fid_abs*, fd_abs*)
-  -- if MAP (PAIR fid_ext fd_ext)* = fdenv_ext'
+  -- if `{ (fid_ext -> fd_ext)* } = fdenv_ext'
   ----
   -- if (PolyFD _ -> ft)* = fd_ext*
   -- (if ~$is_externabstractmethodt(ft))*
@@ -358,7 +358,7 @@ rule Decl_ok/newtyped-type:
 rule Decl_ok/newtyped-decl-mono:
   GLOBAL C |- NewTypeD id (DeclD decl) : C'' (NewTypeD id (DeclD declIL))
   -- Decl_ok: GLOBAL C |- decl : C' declIL
-  -- if SET tid_n = $diff_set<tid>(
+  -- if `{ tid_n } = $diff_set<tid>(
                       $dom_map<tid, typdef>(C'.GLOBAL.TDENV),
                       $dom_map<tid, typdef>(C.GLOBAL.TDENV))
   -- if MonoD typ_n = $find_typdef(GLOBAL, C', CURRENT tid_n)
@@ -370,7 +370,7 @@ rule Decl_ok/newtyped-decl-mono:
 rule Decl_ok/newtyped-decl-poly:
   GLOBAL C |- NewTypeD id (DeclD decl) : C'' (NewTypeD id (DeclD declIL))
   -- Decl_ok: GLOBAL C |- decl : C' declIL
-  -- if SET tid_n = $diff_set<tid>(
+  -- if `{ tid_n } = $diff_set<tid>(
                       $dom_map<tid, typdef>(C'.GLOBAL.TDENV),
                       $dom_map<tid, typdef>(C.GLOBAL.TDENV))
   -- if ptd = $find_typdef(GLOBAL, C', CURRENT tid_n)
@@ -397,7 +397,7 @@ rule Decl_ok/typedefd:
 rule Decl_ok/typedefd-decl-mono:
   GLOBAL C |- TypeDefD id (DeclD decl) : C'' (TypeDefD id (DeclD declIL))
   -- Decl_ok: GLOBAL C |- decl : C' declIL
-  -- if SET tid_d = $diff_set<tid>(
+  -- if `{ tid_d } = $diff_set<tid>(
                       $dom_map<tid, typdef>(C'.GLOBAL.TDENV),
                       $dom_map<tid, typdef>(C.GLOBAL.TDENV))
   -- if MonoD typ_d = $find_typdef(GLOBAL, C', CURRENT tid_d)
@@ -409,7 +409,7 @@ rule Decl_ok/typedefd-decl-mono:
 rule Decl_ok/newtyped-decl-poly:
   GLOBAL C |- TypeDefD id (DeclD decl) : C'' (TypeDefD id (DeclD declIL))
   -- Decl_ok: GLOBAL C |- decl : C' declIL
-  -- if SET tid_d = $diff_set<tid>(
+  -- if `{ tid_d } = $diff_set<tid>(
                       $dom_map<tid, typdef>(C'.GLOBAL.TDENV),
                       $dom_map<tid, typdef>(C.GLOBAL.TDENV))
   -- if ptd = $find_typdef(GLOBAL, C', CURRENT tid_d)
@@ -681,9 +681,9 @@ rule Decl_ok/parserd:
   -- if (statelabel block = parserstate)*
   ----
   -- if $distinct_<statelabel>(statelabel*)
-  -- if $in_set<statelabel>("start", SET statelabel*)
-  -- if ~$in_set<statelabel>("accept", SET statelabel*)
-  -- if ~$in_set<statelabel>("reject", SET statelabel*)
+  -- if "start" <- statelabel*
+  -- if ~("accept" <- statelabel*)
+  -- if ~("reject " <- statelabel*)
   -- if statelabel'* = "accept" :: "reject" :: statelabel*
   ----
   -- if C_5 = $set_localkind(C_4, PARSERSTATE)

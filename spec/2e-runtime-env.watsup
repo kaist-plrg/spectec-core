@@ -64,7 +64,7 @@ dec $get_params_missing_names(id*, id*) : id*
 def $get_params_missing_names(eps, id_a*) = eps
 
 def $get_params_missing_names(id_p_h :: id_p_t*, id_a*) = id_p_h :: $get_params_missing_names(id_p_t*, id_a*)
-  -- if ~$in_set<id>(id_p_h, SET id_a*)
+  -- if ~$in_set<id>(id_p_h, `{ id_a* })
 
 def $get_params_missing_names(id_p_h :: id_p_t*, id_a*) = $get_params_missing_names(id_p_t*, id_a*)
   -- otherwise
@@ -74,7 +74,7 @@ dec $find_match_named<V>(fid, V, id*, (id, bool)*) : (fid, V, id*)?
     ;;hint(show FIND_MATCH_NAMED_%1(%2, %3, %4, %5))
 
 def $find_match_named<V>(fid, V, id_a*, (id_p, bool_p)*) = (fid, V, eps)
-  -- if $eq_set<id>(SET id_a*, SET id_p*)
+  -- if $eq_set<id>(`{ id_a* }, `{ id_p* })
 
 def $find_match_named<V>(fid, V, id_a*, (id_p, bool_p)*) = eps
   -- otherwise
@@ -157,22 +157,22 @@ dec $find_func<V>(id, (id?)*, map<fid, V>) : (fid, V, id*)?
     hint(show %4`[%2#(%3)#%latex()] OPT)
 
 ;; When all arguments are named
-def $find_func<V>(id_f, (id_a?)*, MAP (PAIR fid V)*) = eps
+def $find_func<V>(id_f, (id_a?)*, `{ (fid -> V)* }) = eps
   -- if |(id_a?)*| > 0
   -- if (id_a? = id_a')*
   -- if $find_matching_funcs<V>(id_f, (id_a?)*, id_a'*, fid*, V*) = eps
 
-def $find_func<V>(id_f, (id_a?)*, MAP (PAIR fid V)*) = (fid', V', id_deft*)
+def $find_func<V>(id_f, (id_a?)*, `{ (fid -> V)* }) = (fid', V', id_deft*)
   -- if |(id_a?)*| > 0
   -- if (id_a? = id_a')*
   -- if (fid', V', id_deft*) = $find_matching_funcs<V>(id_f, (id_a?)*, id_a'*, fid*, V*)
 
 ;; When all arguments are unnamed
-def $find_func<V>(id_f, (id_a?)*, MAP (PAIR fid V)*) = eps
+def $find_func<V>(id_f, (id_a?)*, `{ (fid -> V)* }) = eps
   -- if (id_a? = eps)*
   -- if $find_matching_funcs<V>(id_f, (id_a?)*, eps, fid*, V*) = eps
 
-def $find_func<V>(id_f, (id_a?)*, MAP (PAIR fid V)*) = (fid', V', id_deft*)
+def $find_func<V>(id_f, (id_a?)*, `{ (fid -> V)* }) = (fid', V', id_deft*)
   -- if (id_a? = eps)*
   -- if (fid', V', id_deft*) = $find_matching_funcs<V>(id_f, (id_a?)*, eps, fid*, V*)
 
@@ -192,7 +192,7 @@ def $find_funcs_by_name(id_f, _ :: fid_t*, _ :: fd_t*)
 dec $find_func_by_name(id, map<fid, funcdef>) : funcdef?
     hint(show %2`[%1])
 
-def $find_func_by_name(id_f, MAP (PAIR fid fd)*) = eps
+def $find_func_by_name(id_f, `{ (fid -> fd)* }) = eps
   -- if eps = $find_funcs_by_name(id_f, fid*, fd*)
-def $find_func_by_name(id_f, MAP (PAIR fid fd)*) = fd_f
+def $find_func_by_name(id_f, `{ (fid -> fd)* }) = fd_f
   -- if fd_f = $find_funcs_by_name(id_f, fid*, fd*)

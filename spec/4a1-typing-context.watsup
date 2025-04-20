@@ -245,12 +245,12 @@ dec $add_funcdef_non_overload(cursor, context, fid, funcdef) : context
     hint(show %2.%1.FDENV#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
 def $add_funcdef_non_overload(GLOBAL, C, fid, fd) = C[ .GLOBAL.FDENV = fdenv ]
-  -- if SET (id_k _)* = $dom_map<fid, funcdef>(C.GLOBAL.FDENV)
+  -- if `{ (id_k _)* } = $dom_map<fid, funcdef>(C.GLOBAL.FDENV)
   -- if id _ = fid
   -- if ~(id <- id_k*)
   -- if fdenv = $add_map<fid, funcdef>(C.GLOBAL.FDENV, fid, fd)
 def $add_funcdef_non_overload(BLOCK, C, fid, fd) = C[ .BLOCK.FDENV = fdenv ]
-  -- if SET (id_k _)* = $dom_map<fid, funcdef>(C.BLOCK.FDENV)
+  -- if `{ (id_k _)* } = $dom_map<fid, funcdef>(C.BLOCK.FDENV)
   -- if id _ = fid
   -- if ~(id <- id_k*)
   -- if fdenv = $add_map<fid, funcdef>(C.BLOCK.FDENV, fid, fd)

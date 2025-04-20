@@ -88,89 +88,88 @@ def $distinct_<K>
 
 
 
-;; ../../../../spec/0-aux.watsup:72.3-72.55
+;; ../../../../spec/0-aux.watsup:71.17-71.24
 syntax set<K> = 
-   | `SET%`(K*)
+   | `{%}`(K*)
 
-;; ../../../../spec/0-aux.watsup:74.1-75.43
+;; ../../../../spec/0-aux.watsup:73.1-74.43
 def $empty_set<K>
 
-1. Return (SET [])
+1. Return ({ []})
 
-;; ../../../../spec/0-aux.watsup:78.1-79.36
-def $in_set<K>(K, (SET K'*))
+;; ../../../../spec/0-aux.watsup:77.1-78.36
+def $in_set<K>(K, ({ K'*}))
 
 1. Return K is in K'*
 
-;; ../../../../spec/0-aux.watsup:82.1-83.37
+;; ../../../../spec/0-aux.watsup:81.1-82.37
 def $intersect_set<K>
 
 
 
-;; ../../../../spec/0-aux.watsup:85.1-86.37
+;; ../../../../spec/0-aux.watsup:84.1-85.37
 def $union_set<K>
 
 
 
-;; ../../../../spec/0-aux.watsup:88.1-89.37
+;; ../../../../spec/0-aux.watsup:87.1-88.37
 def $unions_set<K>
 
 
 
-;; ../../../../spec/0-aux.watsup:91.1-92.42
+;; ../../../../spec/0-aux.watsup:90.1-91.42
 def $diff_set<K>
 
 
 
-;; ../../../../spec/0-aux.watsup:94.1-95.40
+;; ../../../../spec/0-aux.watsup:93.1-94.40
 def $sub_set<K>
 
 
 
-;; ../../../../spec/0-aux.watsup:97.1-98.33
+;; ../../../../spec/0-aux.watsup:96.1-97.33
 def $eq_set<K>
 
 
 
-;; ../../../../spec/0-aux.watsup:106.5-107.38
+;; ../../../../spec/0-aux.watsup:103.21-103.27
 syntax pair<K, V> = 
-   | `PAIR%%`(K, V)
+   | `%->%`(K, V)
 
-;; ../../../../spec/0-aux.watsup:111.3-112.43
-syntax map<K, V> = 
-   | `MAP%`(pair<K, V>*)
+;; ../../../../spec/0-aux.watsup:106.20-106.37
+syntax map<K, V> = set<pair<K, V>>
 
-;; ../../../../spec/0-aux.watsup:114.1-115.43
+;; ../../../../spec/0-aux.watsup:108.1-109.43
 def $empty_map<K, V>
 
-1. Return (MAP [])
+1. Return ({ []})
 
-;; ../../../../spec/0-aux.watsup:119.1-120.55
-def $dom_map<K, V>((MAP (PAIR K _V)*))
+;; ../../../../spec/0-aux.watsup:113.1-114.55
+def $dom_map<K, V>(({ ( K-> V)*}))
 
-1. Return (SET K*)
+1. Return ({ K*})
 
-;; ../../../../spec/0-aux.watsup:124.1-125.25
+;; ../../../../spec/0-aux.watsup:118.1-119.25
 def $find_map<K, V>
 
 
 
-;; ../../../../spec/0-aux.watsup:127.1-128.25
+;; ../../../../spec/0-aux.watsup:121.1-122.25
 def $find_maps<K, V>
 
 
 
-;; ../../../../spec/0-aux.watsup:130.1-131.71
+;; ../../../../spec/0-aux.watsup:124.1-125.71
 def $add_map<K, V>
 
 
 
-;; ../../../../spec/0-aux.watsup:133.1-134.71
+;; ../../../../spec/0-aux.watsup:127.1-128.71
 def $adds_map<K, V>
 
 
 
-;; ../../../../spec/0-aux.watsup:136.1-137.71
+;; ../../../../spec/0-aux.watsup:130.1-131.71
 def $update_map<K, V>
 
 
@@ -1976,7 +1975,7 @@ def $free_typ(typ'')
 
   1. Let basetyp be (typ'' as basetyp)
 
-  2. Return (SET [])
+  2. Return ({ []})
 
 1. Else If (typ'' has type abstyp), then
 
@@ -1986,7 +1985,7 @@ def $free_typ(typ'')
 
     1. Let (VarT id) be abstyp
 
-    2. Return (SET [id])
+    2. Return ({ [id]})
 
   2. Else If (abstyp matches pattern `SpecT%%`), then
 
@@ -2018,7 +2017,7 @@ def $free_typ(typ'')
 
     1. Let (EnumT _id _member*) be datatyp
 
-    2. Return (SET [])
+    2. Return ({ []})
 
   2. Else If (datatyp matches pattern `SEnumT%%%`), then
 
@@ -2068,7 +2067,7 @@ def $free_typ(typ'')
 
   2. If (objtyp matches pattern `ExternT%%`), then
 
-    1. Let (ExternT _id (MAP (PAIR _fid fd)*)) be objtyp
+    1. Let (ExternT _id ({ ( _fid-> fd)*})) be objtyp
 
     2. Return $unions_set<tid>($free_funcdef(fd)*)
 
@@ -2138,7 +2137,7 @@ def $free_typ(typ'')
 
     1. Let (TableEnumT _id _member*) be synthtyp
 
-    2. Return (SET [])
+    2. Return ({ []})
 
   2. Else If (synthtyp matches pattern `TableStructT%%`), then
 
@@ -2152,7 +2151,7 @@ def $free_typ(typ'')
 
 2. If (typ'' = ((DefaultT) as typ)), then
 
-  1. Return (SET [])
+  1. Return ({ []})
 
 2. Else
 
@@ -2160,7 +2159,7 @@ def $free_typ(typ'')
 
 3. If (typ'' = ((InvalidT) as typ)), then
 
-  1. Return (SET [])
+  1. Return ({ []})
 
 3. Else
 
@@ -2168,7 +2167,7 @@ def $free_typ(typ'')
 
 4. If (typ'' = ((StateT) as typ)), then
 
-  1. Return (SET [])
+  1. Return ({ []})
 
 4. Else
 
@@ -2176,7 +2175,7 @@ def $free_typ(typ'')
 
 5. If (typ'' = ((AnyT) as typ)), then
 
-  1. Return (SET [])
+  1. Return ({ []})
 
 5. Else
 
@@ -2187,7 +2186,7 @@ def $free_typdef_poly((PolyD (tparam*, tparam_hidden*)-> typ))
 
 1. Let tidset_typ be $free_typ(typ)
 
-2. Let tidset_tparams be (SET tparam* ++ tparam_hidden*)
+2. Let tidset_tparams be ({ tparam* ++ tparam_hidden*})
 
 3. Return $diff_set<tid>(tidset_typ, tidset_tparams)
 
@@ -2299,7 +2298,7 @@ def $free_funcdef(funcdef)
 
   2. Let tidset_ft be $free_functyp(ft)
 
-  3. Let tidset_tparams be (SET tparam* ++ tparam_hidden*)
+  3. Let tidset_tparams be ({ tparam* ++ tparam_hidden*})
 
   4. Return $diff_set<tid>(tidset_ft, tidset_tparams)
 
@@ -2400,9 +2399,9 @@ def $subst_typ(theta, typ''')
 
     1. Let (ExternT id fmap) be objtyp
 
-    2. Let (MAP (PAIR fid funcdef)*) be fmap
+    2. Let ({ ( fid-> funcdef)*}) be fmap
 
-    3. Let fmap' be (MAP (PAIR fid $subst_funcdef(theta, funcdef))*)
+    3. Let fmap' be ({ ( fid-> $subst_funcdef(theta, funcdef))*})
 
     4. Return ((ExternT id fmap') as typ)
 
@@ -2485,7 +2484,7 @@ def $subst_typ(theta, typ''')
 ;; ../../../../spec/2c3-runtime-type-subst.watsup:18.1-19.33
 def $subst_typdef_poly(theta, (PolyD (tparam*, tparam_hidden*)-> typ))
 
-1. Let (SET tid_free*) be $diff_set<tid>($free_typ(typ), (SET tparam* ++ tparam_hidden*))
+1. Let ({ tid_free*}) be $diff_set<tid>($free_typ(typ), ({ tparam* ++ tparam_hidden*}))
 
 2. (Let typ? be $find_map<tid, typ>(theta, tid_free))*
 
@@ -2532,7 +2531,7 @@ def $subst_funcdef(theta, funcdef)
 
   1. Let (PolyFD (tparam*, tparam_hidden*)-> ft) be (funcdef as polyfuncdef)
 
-  2. Let (SET tid_free*) be $diff_set<tid>($free_functyp(ft), (SET tparam* ++ tparam_hidden*))
+  2. Let ({ tid_free*}) be $diff_set<tid>($free_functyp(ft), ({ tparam* ++ tparam_hidden*}))
 
   3. (Let typ? be $find_map<tid, typ>(theta, tid_free))*
 
@@ -2664,7 +2663,7 @@ def $subst_constyp(theta, (ConsT pt* typ))
 
 3. Return (ConsT pt'* $subst_typ(theta, typ))
 
-;; ../../../../spec/2c3-runtime-type-subst.watsup:315.1-316.57
+;; ../../../../spec/2c3-runtime-type-subst.watsup:317.1-318.57
 def $specialize_typdef(typdef, typ*')
 
 1. If (typdef has type monotypdef), then
@@ -2691,7 +2690,7 @@ def $specialize_typdef(typdef, typ*')
 
   2. Let tparam'* be tparam* ++ tparam_hidden*
 
-  3. Let theta be (MAP (PAIR tparam' typ_a)*)
+  3. Let theta be ({ ( tparam'-> typ_a)*})
 
   4. Return $subst_typ(theta, typ)
 
@@ -2699,7 +2698,7 @@ def $specialize_typdef(typdef, typ*')
 
   1. Phantom#12 (~(typdef has type polytypdef))
 
-;; ../../../../spec/2c3-runtime-type-subst.watsup:327.1-328.57
+;; ../../../../spec/2c3-runtime-type-subst.watsup:329.1-330.57
 def $specialize_funcdef(funcdef, typ*')
 
 1. If (funcdef has type monofuncdef), then
@@ -2728,7 +2727,7 @@ def $specialize_funcdef(funcdef, typ*')
 
   3. If (|tparam'*| = |typ_a*|), then
 
-    1. Return ($subst_functyp((MAP (PAIR tparam' typ_a)*), ft), [])
+    1. Return ($subst_functyp(({ ( tparam'-> typ_a)*}), ft), [])
 
   3. Else
 
@@ -2738,7 +2737,7 @@ def $specialize_funcdef(funcdef, typ*')
 
     1. Let tid_fresh* be $fresh_tids(|tparam'*|)
 
-    2. Return ($subst_functyp((MAP (PAIR tparam' ((VarT tid_fresh) as typ))*), ft), tid_fresh*)
+    2. Return ($subst_functyp(({ ( tparam'-> ((VarT tid_fresh) as typ))*}), ft), tid_fresh*)
 
   4. Else
 
@@ -2750,7 +2749,7 @@ def $specialize_funcdef(funcdef, typ*')
 
     2. Let typ_a'* be typ_a* ++ ((VarT tid_fresh) as typ)*
 
-    3. Return ($subst_functyp((MAP (PAIR tparam' typ_a')*), ft), tid_fresh*)
+    3. Return ($subst_functyp(({ ( tparam'-> typ_a')*}), ft), tid_fresh*)
 
   5. Else
 
@@ -2760,14 +2759,14 @@ def $specialize_funcdef(funcdef, typ*')
 
   1. Phantom#18 (~(funcdef has type polyfuncdef))
 
-;; ../../../../spec/2c3-runtime-type-subst.watsup:354.1-355.57
+;; ../../../../spec/2c3-runtime-type-subst.watsup:359.1-360.57
 def $specialize_consdef((ConsD (tparam*, tparam_hidden*)-> ct), typ_a*)
 
 1. Let tparam'* be tparam* ++ tparam_hidden*
 
 2. If (|tparam'*| = |typ_a*|), then
 
-  1. Return ($subst_constyp((MAP (PAIR tparam' typ_a)*), ct), [])
+  1. Return ($subst_constyp(({ ( tparam'-> typ_a)*}), ct), [])
 
 2. Else
 
@@ -2777,7 +2776,7 @@ def $specialize_consdef((ConsD (tparam*, tparam_hidden*)-> ct), typ_a*)
 
   1. Let tid_fresh* be $fresh_tids(|tparam'*|)
 
-  2. Return ($subst_constyp((MAP (PAIR tparam' ((VarT tid_fresh) as typ))*), ct), tid_fresh*)
+  2. Return ($subst_constyp(({ ( tparam'-> ((VarT tid_fresh) as typ))*}), ct), tid_fresh*)
 
 3. Else
 
@@ -2789,13 +2788,13 @@ def $specialize_consdef((ConsD (tparam*, tparam_hidden*)-> ct), typ_a*)
 
   2. Let typ_a'* be typ_a* ++ ((VarT tid_fresh) as typ)*
 
-  3. Return ($subst_constyp((MAP (PAIR tparam' typ_a')*), ct), tid_fresh*)
+  3. Return ($subst_constyp(({ ( tparam'-> typ_a')*}), ct), tid_fresh*)
 
 4. Else
 
   1. Phantom#21 (~(((|typ_a*| > 0) /\ (|tparam*| = |typ_a*|)) /\ (|tparam_hidden*| > 0)))
 
-;; ../../../../spec/2c3-runtime-type-subst.watsup:379.1-380.47
+;; ../../../../spec/2c3-runtime-type-subst.watsup:387.1-388.47
 def $canon_typ(typ'')
 
 1. If (typ'' has type abstyp), then
@@ -3617,11 +3616,11 @@ relation Type_alpha: typ'', typ'''
 
         2. If (id = id'), then
 
-          1. Let (MAP (PAIR fid_a fd_a)*) be fmap_a
+          1. Let ({ ( fid_a-> fd_a)*}) be fmap_a
 
-          2. Let (MAP (PAIR fid_b fd_b)*) be fmap_b
+          2. Let ({ ( fid_b-> fd_b)*}) be fmap_b
 
-          3. If $eq_set<fid>((SET fid_a*), (SET fid_b*)), then
+          3. If $eq_set<fid>(({ fid_a*}), ({ fid_b*})), then
 
             1. (Let funcdef? be $find_map<fid, funcdef>(fmap_a, fid_a))*
 
@@ -3641,19 +3640,19 @@ relation Type_alpha: typ'', typ'''
 
                 2. Else
 
-                  1. Phantom#67 ((objtyp matches pattern `ExternT%%`)) /\ ((objtyp matches pattern `ParserT%`)) /\ ((objtyp matches pattern `ControlT%`)) /\ ((objtyp matches pattern `PackageT%`)) /\ ((objtyp matches pattern `TableT%%`)) /\ ((typ''' has type objtyp)) /\ ((objtyp' matches pattern `ExternT%%`)) /\ ((id = id')) /\ ($eq_set<fid>((SET fid_a*), (SET fid_b*))) /\ (forall (funcdef? matches pattern (_)))* /\ (forall (funcdef?' matches pattern (_)))* /\ (exists ~(FuncDef_alpha:  fd_a'~~ fd_b' holds))*
+                  1. Phantom#67 ((objtyp matches pattern `ExternT%%`)) /\ ((objtyp matches pattern `ParserT%`)) /\ ((objtyp matches pattern `ControlT%`)) /\ ((objtyp matches pattern `PackageT%`)) /\ ((objtyp matches pattern `TableT%%`)) /\ ((typ''' has type objtyp)) /\ ((objtyp' matches pattern `ExternT%%`)) /\ ((id = id')) /\ ($eq_set<fid>(({ fid_a*}), ({ fid_b*}))) /\ (forall (funcdef? matches pattern (_)))* /\ (forall (funcdef?' matches pattern (_)))* /\ (exists ~(FuncDef_alpha:  fd_a'~~ fd_b' holds))*
 
               3. Else
 
-                1. Phantom#68 ((objtyp matches pattern `ExternT%%`)) /\ ((objtyp matches pattern `ParserT%`)) /\ ((objtyp matches pattern `ControlT%`)) /\ ((objtyp matches pattern `PackageT%`)) /\ ((objtyp matches pattern `TableT%%`)) /\ ((typ''' has type objtyp)) /\ ((objtyp' matches pattern `ExternT%%`)) /\ ((id = id')) /\ ($eq_set<fid>((SET fid_a*), (SET fid_b*))) /\ (forall (funcdef? matches pattern (_)))* /\ (exists ~(funcdef?' matches pattern (_)))*
+                1. Phantom#68 ((objtyp matches pattern `ExternT%%`)) /\ ((objtyp matches pattern `ParserT%`)) /\ ((objtyp matches pattern `ControlT%`)) /\ ((objtyp matches pattern `PackageT%`)) /\ ((objtyp matches pattern `TableT%%`)) /\ ((typ''' has type objtyp)) /\ ((objtyp' matches pattern `ExternT%%`)) /\ ((id = id')) /\ ($eq_set<fid>(({ fid_a*}), ({ fid_b*}))) /\ (forall (funcdef? matches pattern (_)))* /\ (exists ~(funcdef?' matches pattern (_)))*
 
             2. Else
 
-              1. Phantom#69 ((objtyp matches pattern `ExternT%%`)) /\ ((objtyp matches pattern `ParserT%`)) /\ ((objtyp matches pattern `ControlT%`)) /\ ((objtyp matches pattern `PackageT%`)) /\ ((objtyp matches pattern `TableT%%`)) /\ ((typ''' has type objtyp)) /\ ((objtyp' matches pattern `ExternT%%`)) /\ ((id = id')) /\ ($eq_set<fid>((SET fid_a*), (SET fid_b*))) /\ (exists ~(funcdef? matches pattern (_)))*
+              1. Phantom#69 ((objtyp matches pattern `ExternT%%`)) /\ ((objtyp matches pattern `ParserT%`)) /\ ((objtyp matches pattern `ControlT%`)) /\ ((objtyp matches pattern `PackageT%`)) /\ ((objtyp matches pattern `TableT%%`)) /\ ((typ''' has type objtyp)) /\ ((objtyp' matches pattern `ExternT%%`)) /\ ((id = id')) /\ ($eq_set<fid>(({ fid_a*}), ({ fid_b*}))) /\ (exists ~(funcdef? matches pattern (_)))*
 
           3. Else
 
-            1. Phantom#70 ((objtyp matches pattern `ExternT%%`)) /\ ((objtyp matches pattern `ParserT%`)) /\ ((objtyp matches pattern `ControlT%`)) /\ ((objtyp matches pattern `PackageT%`)) /\ ((objtyp matches pattern `TableT%%`)) /\ ((typ''' has type objtyp)) /\ ((objtyp' matches pattern `ExternT%%`)) /\ ((id = id')) /\ (~$eq_set<fid>((SET fid_a*), (SET fid_b*)))
+            1. Phantom#70 ((objtyp matches pattern `ExternT%%`)) /\ ((objtyp matches pattern `ParserT%`)) /\ ((objtyp matches pattern `ControlT%`)) /\ ((objtyp matches pattern `PackageT%`)) /\ ((objtyp matches pattern `TableT%%`)) /\ ((typ''' has type objtyp)) /\ ((objtyp' matches pattern `ExternT%%`)) /\ ((id = id')) /\ (~$eq_set<fid>(({ fid_a*}), ({ fid_b*})))
 
         2. Else
 
@@ -4443,11 +4442,11 @@ relation FuncDef_alpha: funcdef, funcdef'
 
         2. Let tparam_a'* be tparam_a* ++ tparam_hidden_a*
 
-        3. Let ft_a' be $subst_functyp((MAP (PAIR tparam_a' ((VarT tid_fresh) as typ))*), ft_a)
+        3. Let ft_a' be $subst_functyp(({ ( tparam_a'-> ((VarT tid_fresh) as typ))*}), ft_a)
 
         4. Let tparam_b'* be tparam_b* ++ tparam_hidden_b*
 
-        5. Let ft_b' be $subst_functyp((MAP (PAIR tparam_b' ((VarT tid_fresh) as typ))*), ft_b)
+        5. Let ft_b' be $subst_functyp(({ ( tparam_b'-> ((VarT tid_fresh) as typ))*}), ft_b)
 
         6. If (FuncType_alpha:  ft_a'~~ ft_b' holds), then
 
@@ -4724,7 +4723,7 @@ relation Type_wf: tidset, typ'''''
 
     1. Let (ExternT _id fmap) be objtyp
 
-    2. Let (MAP (PAIR fid funcdef)*) be fmap
+    2. Let ({ ( fid-> funcdef)*}) be fmap
 
     3. If ((FuncDef_wf:  tidset|- funcdef holds))*, then
 
@@ -5007,7 +5006,7 @@ relation TypeDef_wf: tidset, typdef
 
     1. If $distinct_<tid>(tparam* ++ tparam_hidden*), then
 
-      1. Let tidset' be $union_set<tid>(tidset, (SET tparam* ++ tparam_hidden*))
+      1. Let tidset' be $union_set<tid>(tidset, ({ tparam* ++ tparam_hidden*}))
 
       2. If (Type_wf:  tidset'|- typ holds), then
 
@@ -5337,7 +5336,7 @@ relation FuncDef_wf: tidset, funcdef
 
     1. If $distinct_<tid>(tparam* ++ tparam_hidden*), then
 
-      1. Let tidset' be $union_set<tid>(tidset, (SET tparam* ++ tparam_hidden*))
+      1. Let tidset' be $union_set<tid>(tidset, ({ tparam* ++ tparam_hidden*}))
 
       2. If (FuncType_wf:  tidset'|- ft holds), then
 
@@ -5513,7 +5512,7 @@ relation ConsDef_wf: tidset, (ConsD (tparam*, tparam_hidden*)-> constyp)
 
   1. If $distinct_<tid>(tparam* ++ tparam_hidden*), then
 
-    1. Let tidset' be $union_set<tid>(tidset, (SET tparam* ++ tparam_hidden*))
+    1. Let tidset' be $union_set<tid>(tidset, ({ tparam* ++ tparam_hidden*}))
 
     2. If (ConsType_wf:  tidset'|- constyp holds), then
 
@@ -5535,7 +5534,7 @@ relation ConsDef_wf: tidset, (ConsD (tparam*, tparam_hidden*)-> constyp)
 
   1. If $distinct_<tid>(tparam* ++ tparam_hidden*), then
 
-    1. Let tidset' be $union_set<tid>(tidset, (SET tparam* ++ tparam_hidden*))
+    1. Let tidset' be $union_set<tid>(tidset, ({ tparam* ++ tparam_hidden*}))
 
     2. If (ConsType_wf:  tidset'|- constyp holds), then
 
@@ -5557,7 +5556,7 @@ relation ConsDef_wf: tidset, (ConsD (tparam*, tparam_hidden*)-> constyp)
 
   1. If $distinct_<tid>(tparam* ++ tparam_hidden*), then
 
-    1. Let tidset' be $union_set<tid>(tidset, (SET tparam* ++ tparam_hidden*))
+    1. Let tidset' be $union_set<tid>(tidset, ({ tparam* ++ tparam_hidden*}))
 
     2. If (ConsType_wf:  tidset'|- constyp holds), then
 
@@ -5579,7 +5578,7 @@ relation ConsDef_wf: tidset, (ConsD (tparam*, tparam_hidden*)-> constyp)
 
   1. If $distinct_<tid>(tparam* ++ tparam_hidden*), then
 
-    1. Let tidset' be $union_set<tid>(tidset, (SET tparam* ++ tparam_hidden*))
+    1. Let tidset' be $union_set<tid>(tidset, ({ tparam* ++ tparam_hidden*}))
 
     2. If (ConsType_wf:  tidset'|- constyp holds), then
 
@@ -8845,7 +8844,7 @@ def $cast_record'(typ', (member, val)*)
 
     1. Let (StructT id (member_t, typ)*) be datatyp
 
-    2. (Let val? be $find_map<member, val>((MAP (PAIR member val)*), member_t))*
+    2. (Let val? be $find_map<member, val>(({ ( member-> val)*}), member_t))*
 
     3. If ((val? matches pattern (_)))*, then
 
@@ -8863,7 +8862,7 @@ def $cast_record'(typ', (member, val)*)
 
     1. Let (HeaderT id (member_t, typ)*) be datatyp
 
-    2. (Let val? be $find_map<member, val>((MAP (PAIR member val)*), member_t))*
+    2. (Let val? be $find_map<member, val>(({ ( member-> val)*}), member_t))*
 
     3. If ((val? matches pattern (_)))*, then
 
@@ -9318,13 +9317,13 @@ def $get_params_missing_names(id*, id_a*)
 
   1. Let id_p_h :: id_p_t* be id*
 
-  2. If ~$in_set<id>(id_p_h, (SET id_a*)), then
+  2. If ~$in_set<id>(id_p_h, ({ id_a*})), then
 
     1. Return id_p_h :: $get_params_missing_names(id_p_t*, id_a*)
 
   2. Else
 
-    1. Phantom#473 ((id* matches pattern [])) /\ ((id* matches pattern _ :: _)) /\ (~~$in_set<id>(id_p_h, (SET id_a*)))
+    1. Phantom#473 ((id* matches pattern [])) /\ ((id* matches pattern _ :: _)) /\ (~~$in_set<id>(id_p_h, ({ id_a*})))
 
   3. Otherwise
 
@@ -9333,7 +9332,7 @@ def $get_params_missing_names(id*, id_a*)
 ;; ../../../../spec/2e-runtime-env.watsup:73.1-73.68
 def $find_match_named<V>(fid, V, id_a*, (id_p, bool_p)*)
 
-1. If $eq_set<id>((SET id_a*), (SET id_p*)), then
+1. If $eq_set<id>(({ id_a*}), ({ id_p*})), then
 
   1. Return ?((fid, V, []))
 
@@ -9488,7 +9487,7 @@ def $find_matching_funcs<V>(id_f, id_a?*, id_a'*, fid*, V*)
     1. Phantom#485 ((fid* matches pattern [])) /\ ((fid* matches pattern _ :: _)) /\ (~(V* matches pattern _ :: _))
 
 ;; ../../../../spec/2e-runtime-env.watsup:156.1-157.41
-def $find_func<V>(id_f, id_a?*, (MAP (PAIR fid V)*))
+def $find_func<V>(id_f, id_a?*, ({ ( fid-> V)*}))
 
 1. If (|id_a?*| > 0), then
 
@@ -9600,7 +9599,7 @@ def $find_funcs_by_name(id_f, fid*, funcdef*)
     1. Phantom#496 ((fid* matches pattern [])) /\ ((fid* matches pattern _ :: _)) /\ (~(funcdef* matches pattern _ :: _))
 
 ;; ../../../../spec/2e-runtime-env.watsup:192.1-193.23
-def $find_func_by_name(id_f, (MAP (PAIR fid fd)*))
+def $find_func_by_name(id_f, ({ ( fid-> fd)*}))
 
 1. If ([] = $find_funcs_by_name(id_f, fid*, fd*)), then
 
@@ -10333,7 +10332,7 @@ def $add_funcdef_non_overload(cursor, C, fid, fd)
 
 1. If (cursor matches pattern `GLOBAL`), then
 
-  1. Let (SET ( id_k _(id, bool)*)*) be $dom_map<fid, funcdef>(C.GLOBAL.FDENV)
+  1. Let ({ ( id_k _(id, bool)*)*}) be $dom_map<fid, funcdef>(C.GLOBAL.FDENV)
 
   2. Let ( id _(id, bool)*') be fid
 
@@ -10349,7 +10348,7 @@ def $add_funcdef_non_overload(cursor, C, fid, fd)
 
 1. Else If (cursor matches pattern `BLOCK`), then
 
-  1. Let (SET ( id_k _(id, bool)*)*) be $dom_map<fid, funcdef>(C.BLOCK.FDENV)
+  1. Let ({ ( id_k _(id, bool)*)*}) be $dom_map<fid, funcdef>(C.BLOCK.FDENV)
 
   2. Let ( id _(id, bool)*') be fid
 
@@ -11990,15 +11989,15 @@ relation Sub_expl_canon_neq: typ'', typ'''
 
         1. Let (StructT _id (member_b, typ''')*) be datatyp
 
-        2. If $eq_set<member>((SET member_a*), (SET member_b*)), then
+        2. If $eq_set<member>(({ member_a*}), ({ member_b*})), then
 
-          1. (Let typ? be $find_map<member, typ>((MAP (PAIR member_a typ'')*), member_a))*
+          1. (Let typ? be $find_map<member, typ>(({ ( member_a-> typ'')*}), member_a))*
 
           2. If ((typ? matches pattern (_)))*, then
 
             1. (Let ?(typ_a') be typ?)*
 
-            2. (Let typ?' be $find_map<member, typ>((MAP (PAIR member_b typ''')*), member_a))*
+            2. (Let typ?' be $find_map<member, typ>(({ ( member_b-> typ''')*}), member_a))*
 
             3. If ((typ?' matches pattern (_)))*, then
 
@@ -12010,33 +12009,33 @@ relation Sub_expl_canon_neq: typ'', typ'''
 
               2. Else
 
-                1. Phantom#648 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_expl:  typ_a'<: typ_b' holds))*
+                1. Phantom#648 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_expl:  typ_a'<: typ_b' holds))*
 
             3. Else
 
-              1. Phantom#649 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
+              1. Phantom#649 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
 
           2. Else
 
-            1. Phantom#650 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>((SET member_a*), (SET member_b*))) /\ (exists ~(typ? matches pattern (_)))*
+            1. Phantom#650 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>(({ member_a*}), ({ member_b*}))) /\ (exists ~(typ? matches pattern (_)))*
 
         2. Else
 
-          1. Phantom#651 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$eq_set<member>((SET member_a*), (SET member_b*)))
+          1. Phantom#651 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$eq_set<member>(({ member_a*}), ({ member_b*})))
 
       2. Else If (datatyp matches pattern `HeaderT%%`), then
 
         1. Let (HeaderT _id (member_b, typ''')*) be datatyp
 
-        2. If $eq_set<member>((SET member_a*), (SET member_b*)), then
+        2. If $eq_set<member>(({ member_a*}), ({ member_b*})), then
 
-          1. (Let typ? be $find_map<member, typ>((MAP (PAIR member_a typ'')*), member_a))*
+          1. (Let typ? be $find_map<member, typ>(({ ( member_a-> typ'')*}), member_a))*
 
           2. If ((typ? matches pattern (_)))*, then
 
             1. (Let ?(typ_a') be typ?)*
 
-            2. (Let typ?' be $find_map<member, typ>((MAP (PAIR member_b typ''')*), member_a))*
+            2. (Let typ?' be $find_map<member, typ>(({ ( member_b-> typ''')*}), member_a))*
 
             3. If ((typ?' matches pattern (_)))*, then
 
@@ -12048,19 +12047,19 @@ relation Sub_expl_canon_neq: typ'', typ'''
 
               2. Else
 
-                1. Phantom#643 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_expl:  typ_a'<: typ_b' holds))*
+                1. Phantom#643 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_expl:  typ_a'<: typ_b' holds))*
 
             3. Else
 
-              1. Phantom#644 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
+              1. Phantom#644 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
 
           2. Else
 
-            1. Phantom#645 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>((SET member_a*), (SET member_b*))) /\ (exists ~(typ? matches pattern (_)))*
+            1. Phantom#645 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>(({ member_a*}), ({ member_b*}))) /\ (exists ~(typ? matches pattern (_)))*
 
         2. Else
 
-          1. Phantom#646 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$eq_set<member>((SET member_a*), (SET member_b*)))
+          1. Phantom#646 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$eq_set<member>(({ member_a*}), ({ member_b*})))
 
       2. Else
 
@@ -12200,17 +12199,17 @@ relation Sub_expl_canon_neq: typ'', typ'''
 
         1. Let (StructT _id (member_b, typ''')*) be datatyp
 
-        2. If $sub_set<member>((SET member_a*), (SET member_b*)), then
+        2. If $sub_set<member>(({ member_a*}), ({ member_b*})), then
 
-          1. Let (SET member_c*) be $diff_set<member>((SET member_b*), (SET member_a*))
+          1. Let ({ member_c*}) be $diff_set<member>(({ member_b*}), ({ member_a*}))
 
-          2. (Let typ? be $find_map<member, typ>((MAP (PAIR member_a typ'')*), member_a))*
+          2. (Let typ? be $find_map<member, typ>(({ ( member_a-> typ'')*}), member_a))*
 
           3. If ((typ? matches pattern (_)))*, then
 
             1. (Let ?(typ_a') be typ?)*
 
-            2. (Let typ?' be $find_map<member, typ>((MAP (PAIR member_b typ''')*), member_a))*
+            2. (Let typ?' be $find_map<member, typ>(({ ( member_b-> typ''')*}), member_a))*
 
             3. If ((typ?' matches pattern (_)))*, then
 
@@ -12218,7 +12217,7 @@ relation Sub_expl_canon_neq: typ'', typ'''
 
               2. If ((Sub_expl:  typ_a'<: typ_b' holds))*, then
 
-                1. (Let typ?'' be $find_map<member, typ>((MAP (PAIR member_b typ''')*), member_a))*
+                1. (Let typ?'' be $find_map<member, typ>(({ ( member_b-> typ''')*}), member_a))*
 
                 2. If ((typ?'' matches pattern (_)))*, then
 
@@ -12230,43 +12229,43 @@ relation Sub_expl_canon_neq: typ'', typ'''
 
                   2. Else
 
-                    1. Phantom#622 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_expl:  typ_a'<: typ_b' holds))* /\ (forall (typ?'' matches pattern (_)))* /\ (exists ~$is_deftable(typ_c'))*
+                    1. Phantom#622 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_expl:  typ_a'<: typ_b' holds))* /\ (forall (typ?'' matches pattern (_)))* /\ (exists ~$is_deftable(typ_c'))*
 
                 2. Else
 
-                  1. Phantom#623 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_expl:  typ_a'<: typ_b' holds))* /\ (exists ~(typ?'' matches pattern (_)))*
+                  1. Phantom#623 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_expl:  typ_a'<: typ_b' holds))* /\ (exists ~(typ?'' matches pattern (_)))*
 
               2. Else
 
-                1. Phantom#624 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_expl:  typ_a'<: typ_b' holds))*
+                1. Phantom#624 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_expl:  typ_a'<: typ_b' holds))*
 
             3. Else
 
-              1. Phantom#625 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
+              1. Phantom#625 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
 
           3. Else
 
-            1. Phantom#626 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_b*))) /\ (exists ~(typ? matches pattern (_)))*
+            1. Phantom#626 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_b*}))) /\ (exists ~(typ? matches pattern (_)))*
 
         2. Else
 
-          1. Phantom#627 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$sub_set<member>((SET member_a*), (SET member_b*)))
+          1. Phantom#627 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$sub_set<member>(({ member_a*}), ({ member_b*})))
 
       2. Else If (datatyp matches pattern `HeaderT%%`), then
 
         1. Let (HeaderT _id (member_b, typ''')*) be datatyp
 
-        2. If $sub_set<member>((SET member_a*), (SET member_a*)), then
+        2. If $sub_set<member>(({ member_a*}), ({ member_a*})), then
 
-          1. Let (SET member_c*) be $diff_set<member>((SET member_b*), (SET member_a*))
+          1. Let ({ member_c*}) be $diff_set<member>(({ member_b*}), ({ member_a*}))
 
-          2. (Let typ? be $find_map<member, typ>((MAP (PAIR member_a typ'')*), member_a))*
+          2. (Let typ? be $find_map<member, typ>(({ ( member_a-> typ'')*}), member_a))*
 
           3. If ((typ? matches pattern (_)))*, then
 
             1. (Let ?(typ_a') be typ?)*
 
-            2. (Let typ?' be $find_map<member, typ>((MAP (PAIR member_b typ''')*), member_a))*
+            2. (Let typ?' be $find_map<member, typ>(({ ( member_b-> typ''')*}), member_a))*
 
             3. If ((typ?' matches pattern (_)))*, then
 
@@ -12274,7 +12273,7 @@ relation Sub_expl_canon_neq: typ'', typ'''
 
               2. If ((Sub_expl:  typ_a'<: typ_b' holds))*, then
 
-                1. (Let typ?'' be $find_map<member, typ>((MAP (PAIR member_b typ''')*), member_a))*
+                1. (Let typ?'' be $find_map<member, typ>(({ ( member_b-> typ''')*}), member_a))*
 
                 2. If ((typ?'' matches pattern (_)))*, then
 
@@ -12286,27 +12285,27 @@ relation Sub_expl_canon_neq: typ'', typ'''
 
                   2. Else
 
-                    1. Phantom#615 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_a*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_expl:  typ_a'<: typ_b' holds))* /\ (forall (typ?'' matches pattern (_)))* /\ (exists ~$is_deftable(typ_c'))*
+                    1. Phantom#615 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_a*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_expl:  typ_a'<: typ_b' holds))* /\ (forall (typ?'' matches pattern (_)))* /\ (exists ~$is_deftable(typ_c'))*
 
                 2. Else
 
-                  1. Phantom#616 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_a*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_expl:  typ_a'<: typ_b' holds))* /\ (exists ~(typ?'' matches pattern (_)))*
+                  1. Phantom#616 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_a*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_expl:  typ_a'<: typ_b' holds))* /\ (exists ~(typ?'' matches pattern (_)))*
 
               2. Else
 
-                1. Phantom#617 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_a*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_expl:  typ_a'<: typ_b' holds))*
+                1. Phantom#617 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_a*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_expl:  typ_a'<: typ_b' holds))*
 
             3. Else
 
-              1. Phantom#618 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_a*))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
+              1. Phantom#618 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_a*}))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
 
           3. Else
 
-            1. Phantom#619 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_a*))) /\ (exists ~(typ? matches pattern (_)))*
+            1. Phantom#619 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_a*}))) /\ (exists ~(typ? matches pattern (_)))*
 
         2. Else
 
-          1. Phantom#620 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$sub_set<member>((SET member_a*), (SET member_a*)))
+          1. Phantom#620 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$sub_set<member>(({ member_a*}), ({ member_a*})))
 
       2. Else
 
@@ -12651,15 +12650,15 @@ relation Sub_impl_canon_neq: typ'', typ'''
 
         1. Let (StructT _id (member_b, typ''')*) be datatyp
 
-        2. If $eq_set<member>((SET member_a*), (SET member_b*)), then
+        2. If $eq_set<member>(({ member_a*}), ({ member_b*})), then
 
-          1. (Let typ? be $find_map<member, typ>((MAP (PAIR member_a typ_a)*), member_a))*
+          1. (Let typ? be $find_map<member, typ>(({ ( member_a-> typ_a)*}), member_a))*
 
           2. If ((typ? matches pattern (_)))*, then
 
             1. (Let ?(typ_a') be typ?)*
 
-            2. (Let typ?' be $find_map<member, typ>((MAP (PAIR member_b typ''')*), member_a))*
+            2. (Let typ?' be $find_map<member, typ>(({ ( member_b-> typ''')*}), member_a))*
 
             3. If ((typ?' matches pattern (_)))*, then
 
@@ -12671,33 +12670,33 @@ relation Sub_impl_canon_neq: typ'', typ'''
 
               2. Else
 
-                1. Phantom#722 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_impl:  typ_a'<< typ_b' holds))*
+                1. Phantom#722 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_impl:  typ_a'<< typ_b' holds))*
 
             3. Else
 
-              1. Phantom#723 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
+              1. Phantom#723 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
 
           2. Else
 
-            1. Phantom#724 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>((SET member_a*), (SET member_b*))) /\ (exists ~(typ? matches pattern (_)))*
+            1. Phantom#724 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>(({ member_a*}), ({ member_b*}))) /\ (exists ~(typ? matches pattern (_)))*
 
         2. Else
 
-          1. Phantom#725 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$eq_set<member>((SET member_a*), (SET member_b*)))
+          1. Phantom#725 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$eq_set<member>(({ member_a*}), ({ member_b*})))
 
       2. Else If (datatyp matches pattern `HeaderT%%`), then
 
         1. Let (HeaderT _id (member_b, typ''')*) be datatyp
 
-        2. If $eq_set<member>((SET member_a*), (SET member_b*)), then
+        2. If $eq_set<member>(({ member_a*}), ({ member_b*})), then
 
-          1. (Let typ? be $find_map<member, typ>((MAP (PAIR member_a typ_a)*), member_a))*
+          1. (Let typ? be $find_map<member, typ>(({ ( member_a-> typ_a)*}), member_a))*
 
           2. If ((typ? matches pattern (_)))*, then
 
             1. (Let ?(typ_a') be typ?)*
 
-            2. (Let typ?' be $find_map<member, typ>((MAP (PAIR member_b typ''')*), member_a))*
+            2. (Let typ?' be $find_map<member, typ>(({ ( member_b-> typ''')*}), member_a))*
 
             3. If ((typ?' matches pattern (_)))*, then
 
@@ -12709,19 +12708,19 @@ relation Sub_impl_canon_neq: typ'', typ'''
 
               2. Else
 
-                1. Phantom#717 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_impl:  typ_a'<< typ_b' holds))*
+                1. Phantom#717 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_impl:  typ_a'<< typ_b' holds))*
 
             3. Else
 
-              1. Phantom#718 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
+              1. Phantom#718 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
 
           2. Else
 
-            1. Phantom#719 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>((SET member_a*), (SET member_b*))) /\ (exists ~(typ? matches pattern (_)))*
+            1. Phantom#719 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($eq_set<member>(({ member_a*}), ({ member_b*}))) /\ (exists ~(typ? matches pattern (_)))*
 
         2. Else
 
-          1. Phantom#720 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$eq_set<member>((SET member_a*), (SET member_b*)))
+          1. Phantom#720 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$eq_set<member>(({ member_a*}), ({ member_b*})))
 
       2. Else
 
@@ -12861,17 +12860,17 @@ relation Sub_impl_canon_neq: typ'', typ'''
 
         1. Let (StructT _id (member_b, typ''')*) be datatyp
 
-        2. If $sub_set<member>((SET member_a*), (SET member_b*)), then
+        2. If $sub_set<member>(({ member_a*}), ({ member_b*})), then
 
-          1. Let (SET member_c*) be $diff_set<member>((SET member_b*), (SET member_a*))
+          1. Let ({ member_c*}) be $diff_set<member>(({ member_b*}), ({ member_a*}))
 
-          2. (Let typ? be $find_map<member, typ>((MAP (PAIR member_a typ_a)*), member_a))*
+          2. (Let typ? be $find_map<member, typ>(({ ( member_a-> typ_a)*}), member_a))*
 
           3. If ((typ? matches pattern (_)))*, then
 
             1. (Let ?(typ_a') be typ?)*
 
-            2. (Let typ?' be $find_map<member, typ>((MAP (PAIR member_b typ''')*), member_a))*
+            2. (Let typ?' be $find_map<member, typ>(({ ( member_b-> typ''')*}), member_a))*
 
             3. If ((typ?' matches pattern (_)))*, then
 
@@ -12879,7 +12878,7 @@ relation Sub_impl_canon_neq: typ'', typ'''
 
               2. If ((Sub_impl:  typ_a'<< typ_b' holds))*, then
 
-                1. (Let typ?'' be $find_map<member, typ>((MAP (PAIR member_b typ''')*), member_c))*
+                1. (Let typ?'' be $find_map<member, typ>(({ ( member_b-> typ''')*}), member_c))*
 
                 2. If ((typ?'' matches pattern (_)))*, then
 
@@ -12891,43 +12890,43 @@ relation Sub_impl_canon_neq: typ'', typ'''
 
                   2. Else
 
-                    1. Phantom#695 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_impl:  typ_a'<< typ_b' holds))* /\ (forall (typ?'' matches pattern (_)))* /\ (exists ~$is_deftable(typ_c'))*
+                    1. Phantom#695 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_impl:  typ_a'<< typ_b' holds))* /\ (forall (typ?'' matches pattern (_)))* /\ (exists ~$is_deftable(typ_c'))*
 
                 2. Else
 
-                  1. Phantom#696 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_impl:  typ_a'<< typ_b' holds))* /\ (exists ~(typ?'' matches pattern (_)))*
+                  1. Phantom#696 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_impl:  typ_a'<< typ_b' holds))* /\ (exists ~(typ?'' matches pattern (_)))*
 
               2. Else
 
-                1. Phantom#697 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_impl:  typ_a'<< typ_b' holds))*
+                1. Phantom#697 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_impl:  typ_a'<< typ_b' holds))*
 
             3. Else
 
-              1. Phantom#698 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
+              1. Phantom#698 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
 
           3. Else
 
-            1. Phantom#699 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_b*))) /\ (exists ~(typ? matches pattern (_)))*
+            1. Phantom#699 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_b*}))) /\ (exists ~(typ? matches pattern (_)))*
 
         2. Else
 
-          1. Phantom#700 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$sub_set<member>((SET member_a*), (SET member_b*)))
+          1. Phantom#700 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$sub_set<member>(({ member_a*}), ({ member_b*})))
 
       2. Else If (datatyp matches pattern `HeaderT%%`), then
 
         1. Let (HeaderT id (member_b, typ''')*) be datatyp
 
-        2. If $sub_set<member>((SET member_a*), (SET member_b*)), then
+        2. If $sub_set<member>(({ member_a*}), ({ member_b*})), then
 
-          1. Let (SET member_c*) be $diff_set<member>((SET member_b*), (SET member_a*))
+          1. Let ({ member_c*}) be $diff_set<member>(({ member_b*}), ({ member_a*}))
 
-          2. (Let typ? be $find_map<member, typ>((MAP (PAIR member_a typ_a)*), member_a))*
+          2. (Let typ? be $find_map<member, typ>(({ ( member_a-> typ_a)*}), member_a))*
 
           3. If ((typ? matches pattern (_)))*, then
 
             1. (Let ?(typ_a') be typ?)*
 
-            2. (Let typ?' be $find_map<member, typ>((MAP (PAIR member_b typ''')*), member_a))*
+            2. (Let typ?' be $find_map<member, typ>(({ ( member_b-> typ''')*}), member_a))*
 
             3. If ((typ?' matches pattern (_)))*, then
 
@@ -12935,7 +12934,7 @@ relation Sub_impl_canon_neq: typ'', typ'''
 
               2. If ((Sub_impl:  typ_a'<< typ_b' holds))*, then
 
-                1. (Let typ?'' be $find_map<member, typ>((MAP (PAIR member_b typ''')*), member_c))*
+                1. (Let typ?'' be $find_map<member, typ>(({ ( member_b-> typ''')*}), member_c))*
 
                 2. If ((typ?'' matches pattern (_)))*, then
 
@@ -12947,27 +12946,27 @@ relation Sub_impl_canon_neq: typ'', typ'''
 
                   2. Else
 
-                    1. Phantom#688 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_impl:  typ_a'<< typ_b' holds))* /\ (forall (typ?'' matches pattern (_)))* /\ (exists ~$is_deftable(typ_c'))*
+                    1. Phantom#688 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_impl:  typ_a'<< typ_b' holds))* /\ (forall (typ?'' matches pattern (_)))* /\ (exists ~$is_deftable(typ_c'))*
 
                 2. Else
 
-                  1. Phantom#689 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_impl:  typ_a'<< typ_b' holds))* /\ (exists ~(typ?'' matches pattern (_)))*
+                  1. Phantom#689 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (forall (Sub_impl:  typ_a'<< typ_b' holds))* /\ (exists ~(typ?'' matches pattern (_)))*
 
               2. Else
 
-                1. Phantom#690 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_impl:  typ_a'<< typ_b' holds))*
+                1. Phantom#690 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (forall (typ?' matches pattern (_)))* /\ (exists ~(Sub_impl:  typ_a'<< typ_b' holds))*
 
             3. Else
 
-              1. Phantom#691 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_b*))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
+              1. Phantom#691 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_b*}))) /\ (forall (typ? matches pattern (_)))* /\ (exists ~(typ?' matches pattern (_)))*
 
           3. Else
 
-            1. Phantom#692 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>((SET member_a*), (SET member_b*))) /\ (exists ~(typ? matches pattern (_)))*
+            1. Phantom#692 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ ($sub_set<member>(({ member_a*}), ({ member_b*}))) /\ (exists ~(typ? matches pattern (_)))*
 
         2. Else
 
-          1. Phantom#693 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$sub_set<member>((SET member_a*), (SET member_b*)))
+          1. Phantom#693 ((datatyp matches pattern `StructT%%`)) /\ ((datatyp matches pattern `HeaderT%%`)) /\ (~$sub_set<member>(({ member_a*}), ({ member_b*})))
 
       2. Else
 
@@ -13190,7 +13189,7 @@ relation Expr_ok: p', C, expr''
 
   1. Let (BinE binop expr_l expr_r) be expr''
 
-  2. If $in_set<binop>(binop, (SET [(PLUS), (MINUS), (MUL)])), then
+  2. If binop is in [(PLUS), (MINUS), (MUL)], then
 
     1. Expr_ok:  p' C|- expr_l: exprIL_l
 
@@ -13210,9 +13209,9 @@ relation Expr_ok: p', C, expr''
 
   2. Else
 
-    1. Phantom#809 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~$in_set<binop>(binop, (SET [(PLUS), (MINUS), (MUL)])))
+    1. Phantom#809 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~binop is in [(PLUS), (MINUS), (MUL)])
 
-  3. If $in_set<binop>(binop, (SET [(SPLUS), (SMINUS)])), then
+  3. If binop is in [(SPLUS), (SMINUS)], then
 
     1. Expr_ok:  p' C|- expr_l: exprIL_l
 
@@ -13232,9 +13231,9 @@ relation Expr_ok: p', C, expr''
 
   3. Else
 
-    1. Phantom#810 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~$in_set<binop>(binop, (SET [(SPLUS), (SMINUS)])))
+    1. Phantom#810 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~binop is in [(SPLUS), (SMINUS)])
 
-  4. If $in_set<binop>(binop, (SET [(DIV), (MOD)])), then
+  4. If binop is in [(DIV), (MOD)], then
 
     1. Expr_ok:  p' C|- expr_l: exprIL_l
 
@@ -13266,15 +13265,15 @@ relation Expr_ok: p', C, expr''
 
         2. Else
 
-          1. Phantom#811 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ($in_set<binop>(binop, (SET [(DIV), (MOD)]))) /\ ((ctk' matches pattern `LCTK`)) /\ ((int has type nat)) /\ (~(n_r > 0))
+          1. Phantom#811 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (binop is in [(DIV), (MOD)]) /\ ((ctk' matches pattern `LCTK`)) /\ ((int has type nat)) /\ (~(n_r > 0))
 
       3. Else
 
-        1. Phantom#812 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ($in_set<binop>(binop, (SET [(DIV), (MOD)]))) /\ ((ctk' matches pattern `LCTK`)) /\ (~(int has type nat))
+        1. Phantom#812 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (binop is in [(DIV), (MOD)]) /\ ((ctk' matches pattern `LCTK`)) /\ (~(int has type nat))
 
     7. Else
 
-      1. Phantom#813 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ($in_set<binop>(binop, (SET [(DIV), (MOD)]))) /\ (~(ctk' matches pattern `LCTK`))
+      1. Phantom#813 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (binop is in [(DIV), (MOD)]) /\ (~(ctk' matches pattern `LCTK`))
 
     8. Let (( _typ; ctk_r'')) be $annot(exprIL_r'')
 
@@ -13286,13 +13285,13 @@ relation Expr_ok: p', C, expr''
 
     9. Else
 
-      1. Phantom#814 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ($in_set<binop>(binop, (SET [(DIV), (MOD)]))) /\ (~~(ctk_r'' matches pattern `LCTK`))
+      1. Phantom#814 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (binop is in [(DIV), (MOD)]) /\ (~~(ctk_r'' matches pattern `LCTK`))
 
   4. Else
 
-    1. Phantom#815 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~$in_set<binop>(binop, (SET [(DIV), (MOD)])))
+    1. Phantom#815 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~binop is in [(DIV), (MOD)])
 
-  5. If $in_set<binop>(binop, (SET [(SHL), (SHR)])), then
+  5. If binop is in [(SHL), (SHR)], then
 
     1. Expr_ok:  p' C|- expr_l: exprIL_l
 
@@ -13312,13 +13311,13 @@ relation Expr_ok: p', C, expr''
 
     6. Else
 
-      1. Phantom#816 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ($in_set<binop>(binop, (SET [(SHL), (SHR)]))) /\ (~(($is_fintt(typ_r') \/ $is_intt(typ_r')) => (ctk_r' = (LCTK))))
+      1. Phantom#816 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (binop is in [(SHL), (SHR)]) /\ (~(($is_fintt(typ_r') \/ $is_intt(typ_r')) => (ctk_r' = (LCTK))))
 
   5. Else
 
-    1. Phantom#817 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~$in_set<binop>(binop, (SET [(SHL), (SHR)])))
+    1. Phantom#817 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~binop is in [(SHL), (SHR)])
 
-  6. If $in_set<binop>(binop, (SET [(EQ), (NE)])), then
+  6. If binop is in [(EQ), (NE)], then
 
     1. Expr_ok:  p' C|- expr_l: exprIL_l
 
@@ -13338,13 +13337,13 @@ relation Expr_ok: p', C, expr''
 
     6. Else
 
-      1. Phantom#818 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ($in_set<binop>(binop, (SET [(EQ), (NE)]))) /\ (~$is_equalable(typ'))
+      1. Phantom#818 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (binop is in [(EQ), (NE)]) /\ (~$is_equalable(typ'))
 
   6. Else
 
-    1. Phantom#819 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~$in_set<binop>(binop, (SET [(EQ), (NE)])))
+    1. Phantom#819 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~binop is in [(EQ), (NE)])
 
-  7. If $in_set<binop>(binop, (SET [(LE), (GE), (LT), (GT)])), then
+  7. If binop is in [(LE), (GE), (LT), (GT)], then
 
     1. Expr_ok:  p' C|- expr_l: exprIL_l
 
@@ -13364,9 +13363,9 @@ relation Expr_ok: p', C, expr''
 
   7. Else
 
-    1. Phantom#820 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~$in_set<binop>(binop, (SET [(LE), (GE), (LT), (GT)])))
+    1. Phantom#820 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~binop is in [(LE), (GE), (LT), (GT)])
 
-  8. If $in_set<binop>(binop, (SET [(BAND), (BXOR), (BOR)])), then
+  8. If binop is in [(BAND), (BXOR), (BOR)], then
 
     1. Expr_ok:  p' C|- expr_l: exprIL_l
 
@@ -13386,7 +13385,7 @@ relation Expr_ok: p', C, expr''
 
   8. Else
 
-    1. Phantom#821 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~$in_set<binop>(binop, (SET [(BAND), (BXOR), (BOR)])))
+    1. Phantom#821 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~binop is in [(BAND), (BXOR), (BOR)])
 
   9. If (binop matches pattern `CONCAT`), then
 
@@ -13430,7 +13429,7 @@ relation Expr_ok: p', C, expr''
 
     1. Phantom#824 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~(binop matches pattern `CONCAT`))
 
-  10. If $in_set<binop>(binop, (SET [(LAND), (LOR)])), then
+  10. If binop is in [(LAND), (LOR)], then
 
     1. Expr_ok:  p' C|- expr_l: exprIL_l
 
@@ -13450,7 +13449,7 @@ relation Expr_ok: p', C, expr''
 
   10. Else
 
-    1. Phantom#825 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~$in_set<binop>(binop, (SET [(LAND), (LOR)])))
+    1. Phantom#825 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~binop is in [(LAND), (LOR)])
 
 1. Else If (expr'' matches pattern `TernE%%%`), then
 
@@ -14068,7 +14067,7 @@ relation Expr_ok: p', C, expr''
 
     1. If (arg* matches pattern []), then
 
-      1. If $in_set<member>(member, (SET ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"])), then
+      1. If member is in ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"], then
 
         1. MethodType_ok:  p' C|- expr_b member [] []: ft exprIL_b tid_fresh_inserted* id_deft*
 
@@ -14084,19 +14083,19 @@ relation Expr_ok: p', C, expr''
 
             1. Else
 
-              1. Phantom#754 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ ($in_set<member>(member, (SET ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]))) /\ ((typ = ((IntT) as typ))) /\ ((targIL* matches pattern [])) /\ (~(argIL* matches pattern []))
+              1. Phantom#754 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ (member is in ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]) /\ ((typ = ((IntT) as typ))) /\ ((targIL* matches pattern [])) /\ (~(argIL* matches pattern []))
 
           1. Else
 
-            1. Phantom#755 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ ($in_set<member>(member, (SET ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]))) /\ ((typ = ((IntT) as typ))) /\ (~(targIL* matches pattern []))
+            1. Phantom#755 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ (member is in ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]) /\ ((typ = ((IntT) as typ))) /\ (~(targIL* matches pattern []))
 
         3. Else
 
-          1. Phantom#756 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ ($in_set<member>(member, (SET ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]))) /\ (~(typ = ((IntT) as typ)))
+          1. Phantom#756 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ (member is in ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]) /\ (~(typ = ((IntT) as typ)))
 
       1. Else
 
-        1. Phantom#757 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ (~$in_set<member>(member, (SET ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"])))
+        1. Phantom#757 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ (~member is in ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"])
 
     1. Else
 
@@ -14108,7 +14107,7 @@ relation Expr_ok: p', C, expr''
 
   3. Let (CallMethodE expr_b member targ* arg*) be expr''
 
-  4. If ~$in_set<member>(member, (SET ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"])), then
+  4. If ~member is in ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"], then
 
     1. (Type_ok:  p' C|- targ: targIL tid_fresh_a*)*
 
@@ -14126,11 +14125,11 @@ relation Expr_ok: p', C, expr''
 
     6. Else
 
-      1. Phantom#760 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~$in_set<member>(member, (SET ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]))) /\ (~(typ =/= ((VoidT) as typ)))
+      1. Phantom#760 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~member is in ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]) /\ (~(typ =/= ((VoidT) as typ)))
 
   4. Else
 
-    1. Phantom#761 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~~$in_set<member>(member, (SET ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"])))
+    1. Phantom#761 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ (~~member is in ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"])
 
 1. Else If (expr'' matches pattern `CallTypeE%%%%`), then
 
@@ -14146,7 +14145,7 @@ relation Expr_ok: p', C, expr''
 
         1. Let ?(typdef) be typdef?
 
-        2. If $in_set<member>(member, (SET ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"])), then
+        2. If member is in ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"], then
 
           1. Let ft be (BuiltinMethodT [] ((IntT) as typ))
 
@@ -14162,19 +14161,19 @@ relation Expr_ok: p', C, expr''
 
               1. Else
 
-                1. Phantom#747 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ ((typdef? matches pattern (_))) /\ ($in_set<member>(member, (SET ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]))) /\ ((typ = ((IntT) as typ))) /\ ((targIL* matches pattern [])) /\ (~(argIL* matches pattern []))
+                1. Phantom#747 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ ((typdef? matches pattern (_))) /\ (member is in ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]) /\ ((typ = ((IntT) as typ))) /\ ((targIL* matches pattern [])) /\ (~(argIL* matches pattern []))
 
             1. Else
 
-              1. Phantom#748 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ ((typdef? matches pattern (_))) /\ ($in_set<member>(member, (SET ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]))) /\ ((typ = ((IntT) as typ))) /\ (~(targIL* matches pattern []))
+              1. Phantom#748 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ ((typdef? matches pattern (_))) /\ (member is in ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]) /\ ((typ = ((IntT) as typ))) /\ (~(targIL* matches pattern []))
 
           3. Else
 
-            1. Phantom#749 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ ((typdef? matches pattern (_))) /\ ($in_set<member>(member, (SET ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]))) /\ (~(typ = ((IntT) as typ)))
+            1. Phantom#749 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ ((typdef? matches pattern (_))) /\ (member is in ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]) /\ (~(typ = ((IntT) as typ)))
 
         2. Else
 
-          1. Phantom#750 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ ((typdef? matches pattern (_))) /\ (~$in_set<member>(member, (SET ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"])))
+          1. Phantom#750 ((expr'' matches pattern `BoolE%`)) /\ ((expr'' matches pattern `StrE%`)) /\ ((expr'' matches pattern `NumE%`)) /\ ((expr'' matches pattern `NameE%`)) /\ ((expr'' matches pattern `SeqE%`)) /\ ((expr'' matches pattern `SeqDefaultE%`)) /\ ((expr'' matches pattern `RecordE%`)) /\ ((expr'' matches pattern `RecordDefaultE%`)) /\ ((expr'' matches pattern `DefaultE`)) /\ ((expr'' matches pattern `InvalidE`)) /\ ((expr'' matches pattern `UnE%%`)) /\ ((expr'' matches pattern `BinE%%%`)) /\ ((expr'' matches pattern `TernE%%%`)) /\ ((expr'' matches pattern `CastE%%`)) /\ ((expr'' matches pattern `MaskE%%`)) /\ ((expr'' matches pattern `RangeE%%`)) /\ ((expr'' matches pattern `ArrAccE%%`)) /\ ((expr'' matches pattern `BitAccE%%%`)) /\ ((expr'' matches pattern `ErrAccE%`)) /\ ((expr'' matches pattern `TypeAccE%%`)) /\ ((expr'' matches pattern `ExprAccE%%`)) /\ ((expr'' matches pattern `CallFuncE%%%`)) /\ ((expr'' matches pattern `CallMethodE%%%%`)) /\ ((expr'' matches pattern `CallTypeE%%%%`)) /\ ((expr'' matches pattern `InstE%%%`)) /\ ((targ* matches pattern [])) /\ ((arg* matches pattern [])) /\ ((typdef? matches pattern (_))) /\ (~member is in ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"])
 
       2. Else
 
@@ -14735,7 +14734,7 @@ relation Param_ok: p, C, ( id dir type expr?)
 
   2. Type_ok:  p C|- type: typ_p tid_fresh*
 
-  3. Let tidset be $union_set<tid>($bound_tids(p, C), (SET tid_fresh*))
+  3. Let tidset be $union_set<tid>($bound_tids(p, C), ({ tid_fresh*}))
 
   4. If (Type_wf:  tidset|- typ_p holds), then
 
@@ -14767,7 +14766,7 @@ relation Param_ok: p, C, ( id dir type expr?)
 
   1. Type_ok:  p C|- type: typ_p tid_fresh*
 
-  2. Let tidset be $union_set<tid>($bound_tids(p, C), (SET tid_fresh*))
+  2. Let tidset be $union_set<tid>($bound_tids(p, C), ({ tid_fresh*}))
 
   3. If (Type_wf:  tidset|- typ_p holds), then
 
@@ -14786,7 +14785,7 @@ relation CParam_ok: p, C, ( id dir type expr?)
 
   2. Type_ok:  p C|- type: typ_p tid_fresh*
 
-  3. Let tidset be $union_set<tid>($bound_tids(p, C), (SET tid_fresh*))
+  3. Let tidset be $union_set<tid>($bound_tids(p, C), ({ tid_fresh*}))
 
   4. If (Type_wf:  tidset|- typ_p holds), then
 
@@ -14818,7 +14817,7 @@ relation CParam_ok: p, C, ( id dir type expr?)
 
   1. Type_ok:  p C|- type: typ_p tid_fresh*
 
-  2. Let tidset be $union_set<tid>($bound_tids(p, C), (SET tid_fresh*))
+  2. Let tidset be $union_set<tid>($bound_tids(p, C), ({ tid_fresh*}))
 
   3. If (Type_wf:  tidset|- typ_p holds), then
 
@@ -14965,15 +14964,15 @@ relation Decl_ok: p', C'''', decl''
 
             3. Inst_init_decls_ok:  C' $empty_frame $empty_fdenv|- decl''*: frame_abs fdenv_abs declIL*
 
-            4. Let (MAP (PAIR fid_abs fd_abs)*) be fdenv_abs
+            4. Let ({ ( fid_abs-> fd_abs)*}) be fdenv_abs
 
             5. Let tparam'* be tparam* ++ tparam_hidden*
 
-            6. Let theta be (MAP (PAIR tparam' typ_a)*)
+            6. Let theta be ({ ( tparam'-> typ_a)*})
 
             7. Let fdenv_ext' be $update_fdenv_extern(fdenv_ext, theta, fid_abs*, fd_abs*)
 
-            8. Let (MAP (PAIR fid_ext fd_ext)*) be fdenv_ext'
+            8. Let ({ ( fid_ext-> fd_ext)*}) be fdenv_ext'
 
             9. Let funcdef* be fd_ext*
 
@@ -15359,7 +15358,7 @@ relation Decl_ok: p', C'''', decl''
 
       2. Decl_ok:  (GLOBAL) C''''|- decl'': C' declIL
 
-      3. Let (SET tid*) be $diff_set<tid>($dom_map<tid, typdef>(C'.GLOBAL.TDENV), $dom_map<tid, typdef>(C''''.GLOBAL.TDENV))
+      3. Let ({ tid*}) be $diff_set<tid>($dom_map<tid, typdef>(C'.GLOBAL.TDENV), $dom_map<tid, typdef>(C''''.GLOBAL.TDENV))
 
       4. If (tid* matches pattern [ _/1 ]), then
 
@@ -15455,7 +15454,7 @@ relation Decl_ok: p', C'''', decl''
 
       2. Decl_ok:  (GLOBAL) C''''|- decl'': C' declIL
 
-      3. Let (SET tid*) be $diff_set<tid>($dom_map<tid, typdef>(C'.GLOBAL.TDENV), $dom_map<tid, typdef>(C''''.GLOBAL.TDENV))
+      3. Let ({ tid*}) be $diff_set<tid>($dom_map<tid, typdef>(C'.GLOBAL.TDENV), $dom_map<tid, typdef>(C''''.GLOBAL.TDENV))
 
       4. If (tid* matches pattern [ _/1 ]), then
 
@@ -15669,11 +15668,11 @@ relation Decl_ok: p', C'''', decl''
 
           4. If $distinct_<statelabel>(statelabel*), then
 
-            1. If $in_set<statelabel>("start", (SET statelabel*)), then
+            1. If "start" is in statelabel*, then
 
-              1. If ~$in_set<statelabel>("accept", (SET statelabel*)), then
+              1. If ~"accept" is in statelabel*, then
 
-                1. If ~$in_set<statelabel>("reject", (SET statelabel*)), then
+                1. If ~"reject " is in statelabel*, then
 
                   1. Let statelabel'* be "accept" :: "reject" :: statelabel*
 
@@ -15699,19 +15698,19 @@ relation Decl_ok: p', C'''', decl''
 
                   9. Else
 
-                    1. Phantom#913 ((decl'' matches pattern `ErrD%`)) /\ ((decl'' matches pattern `MatchKindD%`)) /\ ((decl'' matches pattern `StructD%%%`)) /\ ((decl'' matches pattern `HeaderD%%%`)) /\ ((decl'' matches pattern `UnionD%%%`)) /\ ((decl'' matches pattern `EnumD%%`)) /\ ((decl'' matches pattern `SEnumD%%%`)) /\ ((decl'' matches pattern `NewTypeD%%`)) /\ ((decl'' matches pattern `TypeDefD%%`)) /\ ((decl'' matches pattern `FuncD%%%%%`)) /\ ((decl'' matches pattern `ExternFuncD%%%%`)) /\ ((decl'' matches pattern `ExternObjectD%%%`)) /\ ((decl'' matches pattern `ParserTypeD%%%`)) /\ ((decl'' matches pattern `ParserD%%%%%`)) /\ ((decl'' matches pattern `ControlTypeD%%%`)) /\ ((decl'' matches pattern `ControlD%%%%%`)) /\ ((decl'' matches pattern `PackageTypeD%%%`)) /\ (forall (tid* matches pattern []))* /\ (forall (tid*' matches pattern []))* /\ ((FuncDef_wf:  $bound_tids((GLOBAL), C'''')|- funcdef_apply holds)) /\ ($distinct_<statelabel>(statelabel*)) /\ ($in_set<statelabel>("start", (SET statelabel*))) /\ (~$in_set<statelabel>("accept", (SET statelabel*))) /\ (~$in_set<statelabel>("reject", (SET statelabel*))) /\ (~(ConsDef_wf:  $bound_tids((GLOBAL), C'''')|- cd holds))
+                    1. Phantom#913 ((decl'' matches pattern `ErrD%`)) /\ ((decl'' matches pattern `MatchKindD%`)) /\ ((decl'' matches pattern `StructD%%%`)) /\ ((decl'' matches pattern `HeaderD%%%`)) /\ ((decl'' matches pattern `UnionD%%%`)) /\ ((decl'' matches pattern `EnumD%%`)) /\ ((decl'' matches pattern `SEnumD%%%`)) /\ ((decl'' matches pattern `NewTypeD%%`)) /\ ((decl'' matches pattern `TypeDefD%%`)) /\ ((decl'' matches pattern `FuncD%%%%%`)) /\ ((decl'' matches pattern `ExternFuncD%%%%`)) /\ ((decl'' matches pattern `ExternObjectD%%%`)) /\ ((decl'' matches pattern `ParserTypeD%%%`)) /\ ((decl'' matches pattern `ParserD%%%%%`)) /\ ((decl'' matches pattern `ControlTypeD%%%`)) /\ ((decl'' matches pattern `ControlD%%%%%`)) /\ ((decl'' matches pattern `PackageTypeD%%%`)) /\ (forall (tid* matches pattern []))* /\ (forall (tid*' matches pattern []))* /\ ((FuncDef_wf:  $bound_tids((GLOBAL), C'''')|- funcdef_apply holds)) /\ ($distinct_<statelabel>(statelabel*)) /\ ("start" is in statelabel*) /\ (~"accept" is in statelabel*) /\ (~"reject " is in statelabel*) /\ (~(ConsDef_wf:  $bound_tids((GLOBAL), C'''')|- cd holds))
 
                 1. Else
 
-                  1. Phantom#914 ((decl'' matches pattern `ErrD%`)) /\ ((decl'' matches pattern `MatchKindD%`)) /\ ((decl'' matches pattern `StructD%%%`)) /\ ((decl'' matches pattern `HeaderD%%%`)) /\ ((decl'' matches pattern `UnionD%%%`)) /\ ((decl'' matches pattern `EnumD%%`)) /\ ((decl'' matches pattern `SEnumD%%%`)) /\ ((decl'' matches pattern `NewTypeD%%`)) /\ ((decl'' matches pattern `TypeDefD%%`)) /\ ((decl'' matches pattern `FuncD%%%%%`)) /\ ((decl'' matches pattern `ExternFuncD%%%%`)) /\ ((decl'' matches pattern `ExternObjectD%%%`)) /\ ((decl'' matches pattern `ParserTypeD%%%`)) /\ ((decl'' matches pattern `ParserD%%%%%`)) /\ ((decl'' matches pattern `ControlTypeD%%%`)) /\ ((decl'' matches pattern `ControlD%%%%%`)) /\ ((decl'' matches pattern `PackageTypeD%%%`)) /\ (forall (tid* matches pattern []))* /\ (forall (tid*' matches pattern []))* /\ ((FuncDef_wf:  $bound_tids((GLOBAL), C'''')|- funcdef_apply holds)) /\ ($distinct_<statelabel>(statelabel*)) /\ ($in_set<statelabel>("start", (SET statelabel*))) /\ (~$in_set<statelabel>("accept", (SET statelabel*))) /\ (~~$in_set<statelabel>("reject", (SET statelabel*)))
+                  1. Phantom#914 ((decl'' matches pattern `ErrD%`)) /\ ((decl'' matches pattern `MatchKindD%`)) /\ ((decl'' matches pattern `StructD%%%`)) /\ ((decl'' matches pattern `HeaderD%%%`)) /\ ((decl'' matches pattern `UnionD%%%`)) /\ ((decl'' matches pattern `EnumD%%`)) /\ ((decl'' matches pattern `SEnumD%%%`)) /\ ((decl'' matches pattern `NewTypeD%%`)) /\ ((decl'' matches pattern `TypeDefD%%`)) /\ ((decl'' matches pattern `FuncD%%%%%`)) /\ ((decl'' matches pattern `ExternFuncD%%%%`)) /\ ((decl'' matches pattern `ExternObjectD%%%`)) /\ ((decl'' matches pattern `ParserTypeD%%%`)) /\ ((decl'' matches pattern `ParserD%%%%%`)) /\ ((decl'' matches pattern `ControlTypeD%%%`)) /\ ((decl'' matches pattern `ControlD%%%%%`)) /\ ((decl'' matches pattern `PackageTypeD%%%`)) /\ (forall (tid* matches pattern []))* /\ (forall (tid*' matches pattern []))* /\ ((FuncDef_wf:  $bound_tids((GLOBAL), C'''')|- funcdef_apply holds)) /\ ($distinct_<statelabel>(statelabel*)) /\ ("start" is in statelabel*) /\ (~"accept" is in statelabel*) /\ (~~"reject " is in statelabel*)
 
               1. Else
 
-                1. Phantom#915 ((decl'' matches pattern `ErrD%`)) /\ ((decl'' matches pattern `MatchKindD%`)) /\ ((decl'' matches pattern `StructD%%%`)) /\ ((decl'' matches pattern `HeaderD%%%`)) /\ ((decl'' matches pattern `UnionD%%%`)) /\ ((decl'' matches pattern `EnumD%%`)) /\ ((decl'' matches pattern `SEnumD%%%`)) /\ ((decl'' matches pattern `NewTypeD%%`)) /\ ((decl'' matches pattern `TypeDefD%%`)) /\ ((decl'' matches pattern `FuncD%%%%%`)) /\ ((decl'' matches pattern `ExternFuncD%%%%`)) /\ ((decl'' matches pattern `ExternObjectD%%%`)) /\ ((decl'' matches pattern `ParserTypeD%%%`)) /\ ((decl'' matches pattern `ParserD%%%%%`)) /\ ((decl'' matches pattern `ControlTypeD%%%`)) /\ ((decl'' matches pattern `ControlD%%%%%`)) /\ ((decl'' matches pattern `PackageTypeD%%%`)) /\ (forall (tid* matches pattern []))* /\ (forall (tid*' matches pattern []))* /\ ((FuncDef_wf:  $bound_tids((GLOBAL), C'''')|- funcdef_apply holds)) /\ ($distinct_<statelabel>(statelabel*)) /\ ($in_set<statelabel>("start", (SET statelabel*))) /\ (~~$in_set<statelabel>("accept", (SET statelabel*)))
+                1. Phantom#915 ((decl'' matches pattern `ErrD%`)) /\ ((decl'' matches pattern `MatchKindD%`)) /\ ((decl'' matches pattern `StructD%%%`)) /\ ((decl'' matches pattern `HeaderD%%%`)) /\ ((decl'' matches pattern `UnionD%%%`)) /\ ((decl'' matches pattern `EnumD%%`)) /\ ((decl'' matches pattern `SEnumD%%%`)) /\ ((decl'' matches pattern `NewTypeD%%`)) /\ ((decl'' matches pattern `TypeDefD%%`)) /\ ((decl'' matches pattern `FuncD%%%%%`)) /\ ((decl'' matches pattern `ExternFuncD%%%%`)) /\ ((decl'' matches pattern `ExternObjectD%%%`)) /\ ((decl'' matches pattern `ParserTypeD%%%`)) /\ ((decl'' matches pattern `ParserD%%%%%`)) /\ ((decl'' matches pattern `ControlTypeD%%%`)) /\ ((decl'' matches pattern `ControlD%%%%%`)) /\ ((decl'' matches pattern `PackageTypeD%%%`)) /\ (forall (tid* matches pattern []))* /\ (forall (tid*' matches pattern []))* /\ ((FuncDef_wf:  $bound_tids((GLOBAL), C'''')|- funcdef_apply holds)) /\ ($distinct_<statelabel>(statelabel*)) /\ ("start" is in statelabel*) /\ (~~"accept" is in statelabel*)
 
             1. Else
 
-              1. Phantom#916 ((decl'' matches pattern `ErrD%`)) /\ ((decl'' matches pattern `MatchKindD%`)) /\ ((decl'' matches pattern `StructD%%%`)) /\ ((decl'' matches pattern `HeaderD%%%`)) /\ ((decl'' matches pattern `UnionD%%%`)) /\ ((decl'' matches pattern `EnumD%%`)) /\ ((decl'' matches pattern `SEnumD%%%`)) /\ ((decl'' matches pattern `NewTypeD%%`)) /\ ((decl'' matches pattern `TypeDefD%%`)) /\ ((decl'' matches pattern `FuncD%%%%%`)) /\ ((decl'' matches pattern `ExternFuncD%%%%`)) /\ ((decl'' matches pattern `ExternObjectD%%%`)) /\ ((decl'' matches pattern `ParserTypeD%%%`)) /\ ((decl'' matches pattern `ParserD%%%%%`)) /\ ((decl'' matches pattern `ControlTypeD%%%`)) /\ ((decl'' matches pattern `ControlD%%%%%`)) /\ ((decl'' matches pattern `PackageTypeD%%%`)) /\ (forall (tid* matches pattern []))* /\ (forall (tid*' matches pattern []))* /\ ((FuncDef_wf:  $bound_tids((GLOBAL), C'''')|- funcdef_apply holds)) /\ ($distinct_<statelabel>(statelabel*)) /\ (~$in_set<statelabel>("start", (SET statelabel*)))
+              1. Phantom#916 ((decl'' matches pattern `ErrD%`)) /\ ((decl'' matches pattern `MatchKindD%`)) /\ ((decl'' matches pattern `StructD%%%`)) /\ ((decl'' matches pattern `HeaderD%%%`)) /\ ((decl'' matches pattern `UnionD%%%`)) /\ ((decl'' matches pattern `EnumD%%`)) /\ ((decl'' matches pattern `SEnumD%%%`)) /\ ((decl'' matches pattern `NewTypeD%%`)) /\ ((decl'' matches pattern `TypeDefD%%`)) /\ ((decl'' matches pattern `FuncD%%%%%`)) /\ ((decl'' matches pattern `ExternFuncD%%%%`)) /\ ((decl'' matches pattern `ExternObjectD%%%`)) /\ ((decl'' matches pattern `ParserTypeD%%%`)) /\ ((decl'' matches pattern `ParserD%%%%%`)) /\ ((decl'' matches pattern `ControlTypeD%%%`)) /\ ((decl'' matches pattern `ControlD%%%%%`)) /\ ((decl'' matches pattern `PackageTypeD%%%`)) /\ (forall (tid* matches pattern []))* /\ (forall (tid*' matches pattern []))* /\ ((FuncDef_wf:  $bound_tids((GLOBAL), C'''')|- funcdef_apply holds)) /\ ($distinct_<statelabel>(statelabel*)) /\ (~"start" is in statelabel*)
 
           4. Else
 
@@ -16918,13 +16917,13 @@ relation MethodType_ok: p, C, expr_b, member', targIL*', arg*'
 
     1. Expr_ok:  p C|- expr_b: exprIL_b
 
-    2. If $in_set<member>(member', (SET ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"])), then
+    2. If member' is in ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"], then
 
       1. Result in (BuiltinMethodT [] ((IntT) as typ)), exprIL_b, [], []
 
     2. Else
 
-      1. Phantom#1046 ((targIL*' matches pattern [])) /\ ((arg*' matches pattern [])) /\ (~$in_set<member>(member', (SET ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"])))
+      1. Phantom#1046 ((targIL*' matches pattern [])) /\ ((arg*' matches pattern [])) /\ (~member' is in ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"])
 
   1. Else
 
@@ -16938,7 +16937,7 @@ relation MethodType_ok: p, C, expr_b, member', targIL*', arg*'
 
 3. If (targIL*' matches pattern []), then
 
-  1. If ((member' = "push_front") \/ (member' = "pop_front")), then
+  1. If member' is in ["push_front", "pop_front"], then
 
     1. Expr_ok:  p C|- expr_b: exprIL_b
 
@@ -16960,17 +16959,17 @@ relation MethodType_ok: p, C, expr_b, member', targIL*', arg*'
 
       2. Else
 
-        1. Phantom#1049 ((targIL*' matches pattern [])) /\ (((member' = "push_front") \/ (member' = "pop_front"))) /\ ((typ has type datatyp)) /\ (~(datatyp matches pattern `StackT%%`))
+        1. Phantom#1049 ((targIL*' matches pattern [])) /\ (member' is in ["push_front", "pop_front"]) /\ ((typ has type datatyp)) /\ (~(datatyp matches pattern `StackT%%`))
 
     4. Else
 
-      1. Phantom#1050 ((targIL*' matches pattern [])) /\ (((member' = "push_front") \/ (member' = "pop_front"))) /\ (~(typ has type datatyp))
+      1. Phantom#1050 ((targIL*' matches pattern [])) /\ (member' is in ["push_front", "pop_front"]) /\ (~(typ has type datatyp))
 
   1. Else
 
-    1. Phantom#1051 ((targIL*' matches pattern [])) /\ (~((member' = "push_front") \/ (member' = "pop_front")))
+    1. Phantom#1051 ((targIL*' matches pattern [])) /\ (~member' is in ["push_front", "pop_front"])
 
-  2. If ((member' = "setValid") \/ (member' = "setInvalid")), then
+  2. If member' is in ["setValid", "setInvalid"], then
 
     1. Expr_ok:  p C|- expr_b: exprIL_b
 
@@ -16990,15 +16989,15 @@ relation MethodType_ok: p, C, expr_b, member', targIL*', arg*'
 
       2. Else
 
-        1. Phantom#1052 ((targIL*' matches pattern [])) /\ (((member' = "setValid") \/ (member' = "setInvalid"))) /\ ((typ has type datatyp)) /\ (~(datatyp matches pattern `HeaderT%%`))
+        1. Phantom#1052 ((targIL*' matches pattern [])) /\ (member' is in ["setValid", "setInvalid"]) /\ ((typ has type datatyp)) /\ (~(datatyp matches pattern `HeaderT%%`))
 
     4. Else
 
-      1. Phantom#1053 ((targIL*' matches pattern [])) /\ (((member' = "setValid") \/ (member' = "setInvalid"))) /\ (~(typ has type datatyp))
+      1. Phantom#1053 ((targIL*' matches pattern [])) /\ (member' is in ["setValid", "setInvalid"]) /\ (~(typ has type datatyp))
 
   2. Else
 
-    1. Phantom#1054 ((targIL*' matches pattern [])) /\ (~((member' = "setValid") \/ (member' = "setInvalid")))
+    1. Phantom#1054 ((targIL*' matches pattern [])) /\ (~member' is in ["setValid", "setInvalid"])
 
 3. Else
 
@@ -17106,7 +17105,7 @@ relation MethodType_ok: p, C, expr_b, member', targIL*', arg*'
 
         6. Let fid be ( "apply" (id_p, b_deft)*)
 
-        7. Let (fid, funcdef, id*)? be $find_func<funcdef>("apply", $to_fkey(arg*), (MAP [(PAIR fid fd)]))
+        7. Let (fid, funcdef, id*)? be $find_func<funcdef>("apply", $to_fkey(arg*), ({ [( fid-> fd)]}))
 
         8. If ((fid, funcdef, id*)? matches pattern (_)), then
 
@@ -17144,7 +17143,7 @@ relation MethodType_ok: p, C, expr_b, member', targIL*', arg*'
 
         6. Let fid be ( "apply" (id_p, b_deft)*)
 
-        7. Let (fid, funcdef, id*)? be $find_func<funcdef>("apply", $to_fkey(arg*), (MAP [(PAIR fid fd)]))
+        7. Let (fid, funcdef, id*)? be $find_func<funcdef>("apply", $to_fkey(arg*), ({ [( fid-> fd)]}))
 
         8. If ((fid, funcdef, id*)? matches pattern (_)), then
 
@@ -18640,7 +18639,7 @@ def $not_abstract_extern_object'(typ)
 
     1. Let (ExternT _id fmap) be objtyp
 
-    2. Let (SET fid*) be $dom_map<fid, funcdef>(fmap)
+    2. Let ({ fid*}) be $dom_map<fid, funcdef>(fmap)
 
     3. (Let funcdef? be $find_map<fid, funcdef>(fmap, fid))*
 
@@ -20575,7 +20574,7 @@ def $align_params_with_args(pt*, (argIL, typ)*)
 
 1. (Let ( id _dir _typ _val?) be pt)*
 
-2. Let pmap be (MAP (PAIR id pt)*)
+2. Let pmap be ({ ( id-> pt)*})
 
 3. (Let pt' be $align_params_with_args'(pmap, pt, (argIL, typ)))*
 
@@ -20618,7 +20617,7 @@ syntax typcstr =
 ;; ../../../../spec/4h-typing-call.watsup:188.1-188.42
 def $empty_cstr(tid*)
 
-1. Return (MAP (PAIR tid (UNKNOWN))*)
+1. Return ({ ( tid-> (UNKNOWN))*})
 
 ;; ../../../../spec/4h-typing-call.watsup:194.1-194.63
 def $gen_cstr(cstr, typ'', typ_a''')
@@ -20797,11 +20796,11 @@ def $gen_cstr(cstr, typ'', typ_a''')
 
         2. If (id = id'), then
 
-          1. Let (MAP (PAIR fid_p fd_p)*) be fdenv_p
+          1. Let ({ ( fid_p-> fd_p)*}) be fdenv_p
 
-          2. Let (MAP (PAIR fid_a fd_a)*) be fdenv_a
+          2. Let ({ ( fid_a-> fd_a)*}) be fdenv_a
 
-          3. If $eq_set<fid>((SET fid_p*), (SET fid_a*)), then
+          3. If $eq_set<fid>(({ fid_p*}), ({ fid_a*})), then
 
             1. Return $gen_cstr_fd'(cstr, fid_p*, fdenv_p, fdenv_a)
 
@@ -20933,11 +20932,11 @@ def $gen_cstr_fd'(cstr, fid*, fdenv_p, fdenv_a)
 ;; ../../../../spec/4h-typing-call.watsup:202.1-202.74
 def $merge_cstr(cstr_o, cstr_n)
 
-1. Let (SET tid_o*) be $dom_map<tid, typcstr>(cstr_o)
+1. Let ({ tid_o*}) be $dom_map<tid, typcstr>(cstr_o)
 
 2. If $eq_set<tid>($dom_map<tid, typcstr>(cstr_o), $dom_map<tid, typcstr>(cstr_n)), then
 
-  1. Return $merge_cstr'(cstr_o, cstr_n, tid_o*, (MAP []))
+  1. Return $merge_cstr'(cstr_o, cstr_n, tid_o*, ({ []}))
 
 2. Else
 
@@ -21074,21 +21073,21 @@ def $merge_cstrs(cstr, map<tid, typcstr>*)
   4. Return cstr''
 
 ;; ../../../../spec/4h-typing-call.watsup:208.1-208.54
-def $resolve_cstrs(map<tid, typcstr>')
+def $resolve_cstrs(set<pair<tid, typcstr>>')
 
-1. If (map<tid, typcstr>' = (MAP [])), then
+1. If (set<pair<tid, typcstr>>' = ({ []})), then
 
-  1. Return (MAP [])
+  1. Return ({ []})
 
 1. Else
 
-  1. Phantom#1271 (~(map<tid, typcstr>' = (MAP [])))
+  1. Phantom#1271 (~(set<pair<tid, typcstr>>' = ({ []})))
 
-2. Let (MAP pair<tid, typcstr>*) be map<tid, typcstr>'
+2. Let ({ pair<tid, typcstr>*}) be set<pair<tid, typcstr>>'
 
 3. If (pair<tid, typcstr>* matches pattern _ :: _), then
 
-  1. Let (PAIR tid_h typcstr) :: (PAIR tid_t typcstr_t)* be pair<tid, typcstr>*
+  1. Let ( tid_h-> typcstr) :: ( tid_t-> typcstr_t)* be pair<tid, typcstr>*
 
   2. If (typcstr matches pattern `KNOWN%`), then
 
@@ -21096,9 +21095,9 @@ def $resolve_cstrs(map<tid, typcstr>')
 
     2. If (typ_h =/= ((AnyT) as typ)), then
 
-      1. Let (MAP (PAIR tid_t' typ_t')*) be $resolve_cstrs((MAP (PAIR tid_t typcstr_t)*))
+      1. Let ({ ( tid_t'-> typ_t')*}) be $resolve_cstrs(({ ( tid_t-> typcstr_t)*}))
 
-      2. Return $add_map<tid, typ>((MAP (PAIR tid_t' typ_t')*), tid_h, typ_h)
+      2. Return $add_map<tid, typ>(({ ( tid_t'-> typ_t')*}), tid_h, typ_h)
 
     2. Else
 

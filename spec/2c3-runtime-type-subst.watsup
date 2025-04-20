@@ -28,9 +28,9 @@ dec $subst_constyp(theta, constyp) : constyp
 ;; Free type variables in types
 ;;
 
-def $free_typ(basetyp) = SET eps
+def $free_typ(basetyp) = `{ eps }
 
-def $free_typ(VarT id) = SET id
+def $free_typ(VarT id) = `{ id }
 
 def $free_typ(SpecT ptd typ*) = $union_set<tid>(tidset_ptd, tidset_typs)
   -- if tidset_ptd = $free_typdef_poly(ptd)
@@ -40,7 +40,7 @@ def $free_typ(DefT typ) = $free_typ(typ)
 
 def $free_typ(NewT _ typ) = $free_typ(typ)
 
-def $free_typ(EnumT _ _) = SET eps
+def $free_typ(EnumT _ _) = `{ eps }
 
 def $free_typ(SEnumT _ typ _) = $free_typ(typ)
 
@@ -56,7 +56,9 @@ def $free_typ(HeaderT _ (_, typ)*) = $unions_set<tid>($free_typ(typ)*)
 
 def $free_typ(UnionT _ (_, typ)*) = $unions_set<tid>($free_typ(typ)*)
 
-def $free_typ(ExternT _ (MAP (PAIR _ fd)*)) = $unions_set<tid>($free_funcdef(fd)*)
+def $free_typ(ExternT _ (`{ (_ -> fd)* })) = $unions_set<tid>($free_funcdef(fd)*)
+
+def $free_typ(ExternT _ (`{ (_ -> fd)* })) = $unions_set<tid>($free_funcdef(fd)*)
 
 def $free_typ(ParserT pt*) = $unions_set<tid>(($free_typ(typ))*)
   -- if (_ _ typ _ = pt)*
@@ -68,7 +70,7 @@ def $free_typ(PackageT typ*) = $unions_set<tid>($free_typ(typ)*)
 
 def $free_typ(TableT _ typ) = $free_typ(typ)
 
-def $free_typ(DefaultT) = SET eps
+def $free_typ(DefaultT) = `{ eps }
 
 def $free_typ(SeqT typ*) = $unions_set<tid>($free_typ(typ)*)
 
@@ -78,17 +80,17 @@ def $free_typ(RecordT (_, typ)*) = $unions_set<tid>($free_typ(typ)*)
 
 def $free_typ(RecordDefaultT (_, typ)*) = $unions_set<tid>($free_typ(typ)*)
 
-def $free_typ(InvalidT) = SET eps
+def $free_typ(InvalidT) = `{ eps }
 
 def $free_typ(SetT typ) = $free_typ(typ)
 
-def $free_typ(StateT) = SET eps
+def $free_typ(StateT) = `{ eps }
 
-def $free_typ(TableEnumT _ _) = SET eps
+def $free_typ(TableEnumT _ _) = `{ eps }
 
 def $free_typ(TableStructT _ (_, typ)*) = $unions_set<tid>($free_typ(typ)*)
 
-def $free_typ(AnyT) = SET eps
+def $free_typ(AnyT) = `{ eps }
 
 ;;
 ;; Free type variables in type definitions
@@ -97,7 +99,7 @@ def $free_typ(AnyT) = SET eps
 def $free_typdef_poly(PolyD (tparam*, tparam_hidden*) -> typ)
     = $diff_set<tid>(tidset_typ, tidset_tparams)
   -- if tidset_typ = $free_typ(typ)
-  -- if tidset_tparams = SET (tparam* ++ tparam_hidden*)
+  -- if tidset_tparams = `{ tparam* ++ tparam_hidden* }
 
 ;;
 ;; Free type variables in function types
@@ -153,7 +155,7 @@ def $free_funcdef(MonoFD ft) = $free_functyp(ft)
 def $free_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft)
     = $diff_set<tid>(tidset_ft, tidset_tparams)
   -- if tidset_ft = $free_functyp(ft)
-  -- if tidset_tparams = SET (tparam* ++ tparam_hidden*)
+  -- if tidset_tparams = `{ tparam* ++ tparam_hidden* }
 
 ;;
 ;; Type substitutions
@@ -186,8 +188,8 @@ def $subst_typ(theta, HeaderT id (member, typ)*) = HeaderT id (member, $subst_ty
 def $subst_typ(theta, UnionT id (member, typ)*) = UnionT id (member, $subst_typ(theta, typ))*
 
 def $subst_typ(theta, ExternT id fmap) = ExternT id fmap'
-  -- if MAP (PAIR fid funcdef)* = fmap
-  -- if fmap' = MAP (PAIR fid $subst_funcdef(theta, funcdef))*
+  -- if `{ (fid -> funcdef)* } = fmap
+  -- if fmap' = `{ (fid -> $subst_funcdef(theta, funcdef))* }
 
 def $subst_typ(theta, ParserT pt*) = ParserT pt'*
   -- if (id dir typ val? = pt)*
@@ -221,7 +223,7 @@ def $subst_typ(theta, typ) = typ
 ;;
 
 def $subst_typdef_poly(theta, PolyD (tparam*, tparam_hidden*) -> typ) = PolyD (tparam''*, tparam''_hidden*) -> typ'
-  -- if SET tid_free* = $diff_set<tid>($free_typ(typ), SET (tparam* ++ tparam_hidden*))
+  -- if `{ tid_free* } = $diff_set<tid>($free_typ(typ), `{ tparam* ++ tparam_hidden* })
   -- if (typ_free = $find_map<tid, typ>(theta, tid_free))*
   -- if tidset_capture = $unions_set<tid>($free_typ(typ_free)*)
   ----
@@ -243,7 +245,7 @@ def $subst_typdef_poly(theta, PolyD (tparam*, tparam_hidden*) -> typ) = PolyD (t
 def $subst_funcdef(theta, MonoFD ft) = MonoFD ($subst_functyp(theta, ft))
 
 def $subst_funcdef(theta, PolyFD (tparam*, tparam_hidden*) -> ft) = PolyFD (tparam''*, tparam''_hidden*) -> ft'
-  -- if SET tid_free* = $diff_set<tid>($free_functyp(ft), SET (tparam* ++ tparam_hidden*))
+  -- if `{ tid_free* } = $diff_set<tid>($free_functyp(ft), `{ tparam* ++ tparam_hidden* })
   -- if (typ_free = $find_map<tid, typ>(theta, tid_free))*
   -- if tidset_capture = $unions_set<tid>($free_typ(typ_free)*)
   ----
@@ -318,7 +320,7 @@ dec $specialize_typdef(typdef, typ*) : typ
 def $specialize_typdef(MonoD typ, eps) = typ
 def $specialize_typdef(PolyD (tparam*, tparam_hidden*) -> typ, typ_a*) = $subst_typ(theta, typ)
   -- if tparam'* = tparam* ++ tparam_hidden*
-  -- if theta = MAP (PAIR tparam' typ_a)*
+  -- if theta = `{ (tparam' -> typ_a)* }
 
 ;;
 ;; Funcdef specialization
@@ -329,17 +331,20 @@ dec $specialize_funcdef(funcdef, typ*) : (functyp, tid*)
 
 def $specialize_funcdef(MonoFD ft, eps) = (ft, eps)
 
-def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = ($subst_functyp(MAP (PAIR tparam' typ_a)*, ft), eps)
+def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*)
+  = ($subst_functyp(`{ (tparam' -> typ_a)* }, ft), eps)
   -- if tparam'* = tparam* ++ tparam_hidden*
   -- if |tparam'*| = |typ_a*|
 
-def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = ($subst_functyp(MAP (PAIR tparam' (VarT tid_fresh))*, ft), tid_fresh*)
+def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*)
+  = ($subst_functyp(`{ (tparam' -> (VarT tid_fresh))* }, ft), tid_fresh*)
   -- if tparam'* = tparam* ++ tparam_hidden*
   -- if |typ_a*| = 0 /\ |tparam'*| > 0
   ----
   -- if tid_fresh* = $fresh_tids(|tparam'*|)
 
-def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = ($subst_functyp(MAP (PAIR tparam' typ_a')*, ft), tid_fresh*)
+def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*)
+  = ($subst_functyp(`{ (tparam' -> typ_a')* }, ft), tid_fresh*)
   -- if tparam'* = tparam* ++ tparam_hidden*
   -- if |typ_a*| > 0 /\ |tparam*| = |typ_a*| /\ |tparam_hidden*| > 0
   ----
@@ -354,17 +359,20 @@ def $specialize_funcdef(PolyFD (tparam*, tparam_hidden*) -> ft, typ_a*) = ($subs
 dec $specialize_consdef(consdef, typ*) : (constyp, tid*)
     hint(show %#%latex("\\langle")#%#%latex("\\rangle"))
 
-def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*) = ($subst_constyp(MAP (PAIR tparam' typ_a)*, ct), eps)
+def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*)
+  = ($subst_constyp(`{ (tparam' -> typ_a)* }, ct), eps)
   -- if tparam'* = tparam* ++ tparam_hidden*
   -- if |tparam'*| = |typ_a*|
 
-def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*) = ($subst_constyp(MAP (PAIR tparam' (VarT tid_fresh))*, ct), tid_fresh*)
+def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*)
+  = ($subst_constyp(`{ (tparam' -> (VarT tid_fresh))* }, ct), tid_fresh*)
   -- if tparam'* = tparam* ++ tparam_hidden*
   -- if |typ_a*| = 0 /\ |tparam'*| > 0
   ----
   -- if tid_fresh* = $fresh_tids(|tparam'*|)
 
-def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*) = ($subst_constyp(MAP (PAIR tparam' typ_a')*, ct), tid_fresh*)
+def $specialize_consdef(ConsD (tparam*, tparam_hidden*) -> ct, typ_a*)
+  = ($subst_constyp(`{ (tparam' -> typ_a')* }, ct), tid_fresh*)
   -- if tparam'* = tparam* ++ tparam_hidden*
   -- if |typ_a*| > 0 /\ |tparam*| = |typ_a*| /\ |tparam_hidden*| > 0
   ----

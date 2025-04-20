@@ -558,12 +558,12 @@ def $cast_record(typ, (member, val)*)
 
 def $cast_record'(StructT id (member_t, typ)*, (member, val)*)
     = StructV id (member_t, val'')*
-  -- if (val' = $find_map<member, val>(MAP (PAIR member val)*, member_t))*
+  -- if (val' = $find_map<member, val>(`{ (member -> val)* }, member_t))*
   -- if (val'' = $cast_op(typ, val'))*
 
 def $cast_record'(HeaderT id (member_t, typ)*, (member, val)*)
     = HeaderV id (member_t, val'')*
-  -- if (val' = $find_map<member, val>(MAP (PAIR member val)*, member_t))*
+  -- if (val' = $find_map<member, val>(`{ (member -> val)* }, member_t))*
   -- if (val'' = $cast_op(typ, val'))*
 
 def $cast_op(typ, RecordV (member, val)*) = $cast_record(typ, (member, val)*)

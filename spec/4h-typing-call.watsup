@@ -55,11 +55,11 @@ rule MethodType_ok/builtin-size:
   p C |- expr_b member eps eps : (BuiltinMethodT eps IntT) exprIL_b eps eps
   -- Expr_ok: p C |- expr_b : exprIL_b
   ----
-  -- if $in_set<member>(member, SET ([ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]))
+  -- if member <- [ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]
 
 rule MethodType_ok/builtin-stackt:
   p C |- expr_b member eps arg* : (BuiltinMethodT pt IntT) exprIL_b eps eps
-  -- if member = "push_front" \/ member = "pop_front"
+  -- if member <- [ "push_front", "pop_front" ]
   ----
   -- Expr_ok: p C |- expr_b: exprIL_b
   -- if `(typ_b; _) = $annot(exprIL_b)
@@ -76,7 +76,7 @@ rule MethodType_ok/builtin-headert-isvalid:
 
 rule MethodType_ok/builtin-headert-setvalid-invalid:
   p C |- expr_b member eps arg* : (BuiltinMethodT eps VoidT) exprIL_b eps eps
-  -- if member = "setValid" \/ member = "setInvalid"
+  -- if member <- [ "setValid", "setInvalid" ]
   ----
   -- Expr_ok: p C |- expr_b: exprIL_b
   -- if `(typ_b; _) = $annot(exprIL_b)
@@ -113,7 +113,7 @@ rule MethodType_ok/parsert:
   -- if (b_deft = (val_deft? =/= eps))*
   -- if fid = "apply" (id_p, b_deft)*
   ----
-  -- if (fid, MonoFD ft, id_deft*) = $find_func<funcdef>("apply", $to_fkey(arg*), MAP (PAIR fid fd))
+  -- if (fid, MonoFD ft, id_deft*) = $find_func<funcdef>("apply", $to_fkey(arg*), `{ (fid -> fd) })
 
 rule MethodType_ok/controlt:
   p C |- expr_b "apply" eps arg* : ft exprIL_b eps id_deft*
@@ -129,7 +129,7 @@ rule MethodType_ok/controlt:
   -- if (b_deft = (val_deft? =/= eps))*
   -- if fid = "apply" (id_p, b_deft)*
   ----
-  -- if (fid, MonoFD ft, id_deft*) = $find_func<funcdef>("apply", $to_fkey(arg*), MAP (PAIR fid fd))
+  -- if (fid, MonoFD ft, id_deft*) = $find_func<funcdef>("apply", $to_fkey(arg*), `{ (fid -> fd) })
 
 rule MethodType_ok/tablet:
   p C |- expr_b "apply" eps eps : functyp exprIL_b eps eps
@@ -167,7 +167,7 @@ dec $align_params_with_args'(pmap, paramtyp, (argIL, typ)): paramtyp
 
 def $align_params_with_args(pt*, (argIL, typ)*) = pt'*
   -- if (id _ _ _ = pt)*
-  -- if pmap = MAP (PAIR id pt)*
+  -- if pmap = `{ (id -> pt)* }
   -- (if pt' = $align_params_with_args'(pmap, pt, (argIL, typ)))*
 
 def $align_params_with_args'(pmap, pt, (ExprA _, _)) = pt
@@ -188,7 +188,7 @@ var cstr : map<tid, typcstr>
 dec $empty_cstr(tid*) : map<tid, typcstr>
     ;;hint(show EMPTY_CSTR(%1))
 
-def $empty_cstr(tid*) = MAP (PAIR tid UNKNOWN)*
+def $empty_cstr(tid*) = `{ (tid -> UNKNOWN)* }
 
 
 dec $gen_cstr(map<tid, typcstr>, typ, typ) : map<tid, typcstr>
@@ -242,9 +242,9 @@ def $gen_cstr(cstr, HeaderT id (member_p, typ_p')*, HeaderT id (member_a, typ_a'
 def $gen_cstr(cstr, UnionT id (member_p, typ_p')*, UnionT id (member_a, typ_a')*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
 
 def $gen_cstr(cstr, ExternT id fdenv_p, ExternT id fdenv_a) = $gen_cstr_fd'(cstr, fid_p*, fdenv_p, fdenv_a)
-  -- if MAP (PAIR fid_p fd_p)* = fdenv_p
-  -- if MAP (PAIR fid_a fd_a)* = fdenv_a
-  -- if $eq_set<fid>(SET fid_p*, SET fid_a*)
+  -- if `{ (fid_p -> fd_p)* } = fdenv_p
+  -- if `{ (fid_a -> fd_a)* } = fdenv_a
+  -- if $eq_set<fid>(`{ fid_p* }, `{ fid_a* })
 
 def $gen_cstr(cstr, ParserT pt_p*, ParserT pt_a*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
   -- if (_ dir typ_p' _ = pt_p)*
@@ -279,8 +279,8 @@ def $gen_cstr_fd'(cstr, fid_h :: fid_t*, fdenv_p, fdenv_a) = $gen_cstr_fd'(cstr'
   -- if cstr' = $gen_cstr_fd(cstr, fd_p, fd_a)
 
 
-def $merge_cstr(cstr_o, cstr_n) = $merge_cstr'(cstr_o, cstr_n, tid_o*, MAP eps)
-  -- if SET tid_o* = $dom_map<tid, typcstr>(cstr_o)
+def $merge_cstr(cstr_o, cstr_n) = $merge_cstr'(cstr_o, cstr_n, tid_o*, `{ eps })
+  -- if `{ tid_o* } = $dom_map<tid, typcstr>(cstr_o)
   -- if $eq_set<tid>($dom_map<tid, typcstr>(cstr_o), $dom_map<tid, typcstr>(cstr_n))
 
 
@@ -321,12 +321,12 @@ def $merge_cstrs(cstr, cstr_h :: cstr_t*) = cstr''
   -- if cstr'' = $merge_cstrs(cstr', cstr_t*)
 
 
-def $resolve_cstrs(MAP eps) = MAP eps
+def $resolve_cstrs(`{ eps }) = `{ eps }
 
-def $resolve_cstrs(MAP ((PAIR tid_h (KNOWN typ_h)) :: (PAIR tid_t typcstr_t)*))
-  = $add_map<tid, typ>(MAP (PAIR tid_t' typ_t')*, tid_h, typ_h)
+def $resolve_cstrs(`{ ((tid_h -> (KNOWN typ_h)) :: (tid_t -> typcstr_t)*) })
+  = $add_map<tid, typ>(`{ (tid_t' -> typ_t')* }, tid_h, typ_h)
   -- if typ_h =/= AnyT
-  -- if MAP (PAIR tid_t' typ_t')* = $resolve_cstrs(MAP (PAIR tid_t typcstr_t)*)
+  -- if `{ (tid_t' -> typ_t')* } = $resolve_cstrs(`{ (tid_t -> typcstr_t)* })
 
 
 dec $infer_targs(tid*, paramtyp*, typ*) : map<tid, typ>

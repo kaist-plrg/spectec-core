@@ -15,7 +15,7 @@ type map = Value.t VMap.t
 let map_of_value (value : value) : map =
   let tuple_of_value (value : value) : value * value =
     match value with
-    | CaseV ([ [ { it = Atom "PAIR"; _ } ]; []; [] ], [ value_key; value_value ])
+    | CaseV ([ []; [ { it = Atom.Arrow; _ } ]; [] ], [ value_key; value_value ])
       ->
         (value_key, value_value)
     | _ ->
@@ -23,7 +23,9 @@ let map_of_value (value : value) : map =
           (Format.asprintf "expected a pair, but got %s" (Value.to_string value))
   in
   match value with
-  | CaseV ([ [ { it = Atom "MAP"; _ } ]; [] ], [ value_pairs ]) ->
+  | CaseV
+      ( [ [ { it = Atom.LBrace; _ } ]; [ { it = Atom.RBrace; _ } ] ],
+        [ value_pairs ] ) ->
       Value.get_list value_pairs |> List.map tuple_of_value
       |> List.fold_left
            (fun map (value_key, value_value) ->
@@ -35,13 +37,14 @@ let map_of_value (value : value) : map =
 
 let value_of_map (map : map) : value =
   let value_of_tuple ((value_key, value_value) : value * value) : value =
-    CaseV
-      ([ [ Atom.Atom "PAIR" $ no_region ]; []; [] ], [ value_key; value_value ])
+    CaseV ([ []; [ Atom.Arrow $ no_region ]; [] ], [ value_key; value_value ])
   in
   let value_pairs =
     Il.Ast.ListV (VMap.bindings map |> List.map value_of_tuple)
   in
-  CaseV ([ [ Atom.Atom "MAP" $ no_region ]; [] ], [ value_pairs ])
+  CaseV
+    ( [ [ Atom.LBrace $ no_region ]; [ Atom.RBrace $ no_region ] ],
+      [ value_pairs ] )
 
 (* Built-in implementations *)
 

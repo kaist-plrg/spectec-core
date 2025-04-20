@@ -214,7 +214,7 @@ rule Type_wf/uniont:
 
 rule Type_wf/externt:
   tidset |- ExternT _ fmap
-  -- if MAP (PAIR fid funcdef)* = fmap
+  -- if `{ (fid -> funcdef)* } = fmap
   -- (FuncDef_wf: tidset |- funcdef)*
 
 rule Type_wf/parsert:
@@ -370,7 +370,7 @@ rule TypeDef_wf/polyd:
   tidset |- PolyD (tparam*, tparam_hidden*) -> typ
   -- if $nestable_polyd(typ)
   -- if $distinct_<tid>(tparam* ++ tparam_hidden*)
-  -- if tidset' = $union_set<tid>(tidset, SET (tparam* ++ tparam_hidden*))
+  -- if tidset' = $union_set<tid>(tidset, `{ tparam* ++ tparam_hidden* })
   -- Type_wf: tidset' |- typ
 
 ;;
@@ -523,7 +523,7 @@ rule FuncDef_wf/polyfd:
         \/ $is_externabstractmethodt(ft)
   ----
   -- if $distinct_<tid>(tparam* ++ tparam_hidden*)
-  -- if tidset' = $union_set<tid>(tidset, SET (tparam* ++ tparam_hidden*))
+  -- if tidset' = $union_set<tid>(tidset, `{ tparam* ++ tparam_hidden* })
   -- FuncType_wf: tidset' |- ft
 
 ;;
@@ -606,5 +606,5 @@ rule ConsDef_wf:
         \/ $is_packaget(typ_r')
   ----
   -- if $distinct_<tid>(tparam* ++ tparam_hidden*)
-  -- if tidset' = $union_set<tid>(tidset, SET (tparam* ++ tparam_hidden*))
+  -- if tidset' = $union_set<tid>(tidset, `{ tparam* ++ tparam_hidden* })
   -- ConsType_wf: tidset' |- constyp

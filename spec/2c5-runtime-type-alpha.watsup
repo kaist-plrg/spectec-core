@@ -92,10 +92,10 @@ rule Type_alpha/uniont:
 rule Type_alpha/externt:
   (ExternT id fmap_a) ~~ (ExternT id fmap_b)
   ----
-  -- if MAP (PAIR fid_a fd_a)* = fmap_a
-  -- if MAP (PAIR fid_b fd_b)* = fmap_b
+  -- if `{ (fid_a -> fd_a)* } = fmap_a
+  -- if `{ (fid_b -> fd_b)* } = fmap_b
   ----
-  -- if $eq_set<fid>(SET fid_a*, SET fid_b*)
+  -- if $eq_set<fid>(`{ fid_a* }, `{ fid_b* })
   -- if (fd_a' = $find_map<fid, funcdef>(fmap_a, fid_a))*
   -- if (fd_b' = $find_map<fid, funcdef>(fmap_b, fid_a))*
   -- (FuncDef_alpha: fd_a' ~~ fd_b')*
@@ -257,9 +257,9 @@ rule FuncDef_alpha/polyfd:
   -- if tid_fresh* = $fresh_tids(|tparam_a* ++ tparam_hidden_a*|)
   ----
   -- if tparam_a'* = tparam_a* ++ tparam_hidden_a*
-  -- if ft_a' = $subst_functyp(MAP (PAIR tparam_a' (VarT tid_fresh))*, ft_a)
+  -- if ft_a' = $subst_functyp(`{ (tparam_a' -> (VarT tid_fresh))* }, ft_a)
   ----
   -- if tparam_b'* = tparam_b* ++ tparam_hidden_b*
-  -- if ft_b' = $subst_functyp(MAP (PAIR tparam_b' (VarT tid_fresh))*, ft_b)
+  -- if ft_b' = $subst_functyp(`{ (tparam_b' -> (VarT tid_fresh))* }, ft_b)
   ----
   -- FuncType_alpha: ft_a' ~~ ft_b'
