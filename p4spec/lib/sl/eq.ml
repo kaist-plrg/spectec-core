@@ -73,7 +73,19 @@ let eq_targs (targs_a : targ list) (targs_b : targ list) : bool =
 
 (* Path conditions *)
 
-let eq_pathcond (pathcond_a : pathcond) (pathcond_b : pathcond) : bool =
+let rec eq_phantom (phantom_a : phantom) (phantom_b : phantom) : bool =
+  let pid_a, pathconds_a = phantom_a in
+  let pid_b, pathconds_b = phantom_b in
+  pid_a = pid_b && eq_pathconds pathconds_a pathconds_b
+
+and eq_phantom_opt (phantom_opt_a : phantom option)
+    (phantom_opt_b : phantom option) : bool =
+  match (phantom_opt_a, phantom_opt_b) with
+  | Some phantom_a, Some phantom_b -> eq_phantom phantom_a phantom_b
+  | None, None -> true
+  | _ -> false
+
+and eq_pathcond (pathcond_a : pathcond) (pathcond_b : pathcond) : bool =
   match (pathcond_a, pathcond_b) with
   | ForallC (exp_a, iterexps_a), ForallC (exp_b, iterexps_b) ->
       eq_exp exp_a exp_b && eq_iterexps iterexps_a iterexps_b
@@ -82,19 +94,15 @@ let eq_pathcond (pathcond_a : pathcond) (pathcond_b : pathcond) : bool =
   | PlainC exp_a, PlainC exp_b -> eq_exp exp_a exp_b
   | _ -> false
 
-let eq_pathconds (pathconds_a : pathcond list) (pathconds_b : pathcond list) :
+and eq_pathconds (pathconds_a : pathcond list) (pathconds_b : pathcond list) :
     bool =
   List.length pathconds_a = List.length pathconds_b
   && List.for_all2 eq_pathcond pathconds_a pathconds_b
 
 (* Instructions *)
 
-let rec eq_instr (instr_a : instr) (instr_b : instr) : bool =
+and eq_instr (instr_a : instr) (instr_b : instr) : bool =
   match (instr_a.it, instr_b.it) with
-  | ( RuleI (id_a, (mixop_a, exps_a), iterexps_a),
-      RuleI (id_b, (mixop_b, exps_b), iterexps_b) ) ->
-      eq_id id_a id_b && eq_mixop mixop_a mixop_b && eq_exps exps_a exps_b
-      && eq_iterexps iterexps_a iterexps_b
   | ( IfI (exp_cond_a, iterexps_a, instrs_then_a, instrs_else_a),
       IfI (exp_cond_b, iterexps_b, instrs_then_b, instrs_else_b) ) ->
       eq_exp exp_cond_a exp_cond_b
@@ -105,10 +113,13 @@ let rec eq_instr (instr_a : instr) (instr_b : instr) : bool =
   | LetI (exp_l_a, exp_r_a, iterexps_a), LetI (exp_l_b, exp_r_b, iterexps_b) ->
       eq_exp exp_l_a exp_l_b && eq_exp exp_r_a exp_r_b
       && eq_iterexps iterexps_a iterexps_b
+  | ( RuleI (id_a, (mixop_a, exps_a), iterexps_a),
+      RuleI (id_b, (mixop_b, exps_b), iterexps_b) ) ->
+      eq_id id_a id_b && eq_mixop mixop_a mixop_b && eq_exps exps_a exps_b
+      && eq_iterexps iterexps_a iterexps_b
   | ResultI exps_a, ResultI exps_b -> eq_exps exps_a exps_b
   | ReturnI exp_a, ReturnI exp_b -> eq_exp exp_a exp_b
-  | PhantomI (pid_a, pathconds_a), PhantomI (pid_b, pathconds_b) ->
-      pid_a = pid_b && eq_pathconds pathconds_a pathconds_b
+  | PhantomI phantom_a, PhantomI phantom_b -> eq_phantom phantom_a phantom_b
   | _ -> false
 
 and eq_instrs (instrs_a : instr list) (instrs_b : instr list) : bool =

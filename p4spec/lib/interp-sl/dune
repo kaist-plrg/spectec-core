@@ -2,4 +2,14 @@
 
 (library
  (name interp_sl)
- (libraries util domain xl el il sl runtime_static runtime_dynamic_sl p4))
+ (libraries
+  util
+  domain
+  xl
+  el
+  il
+  sl
+  structure
+  runtime_static
+  runtime_dynamic_sl
+  p4))

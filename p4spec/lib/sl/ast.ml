@@ -100,6 +100,8 @@ type targ' = Il.Ast.targ'
 
 (* Path conditions *)
 
+and phantom = int * pathcond list
+
 and pathcond =
   | ForallC of exp * iterexp list
   | ExistsC of exp * iterexp list
@@ -109,13 +111,13 @@ and pathcond =
 
 and instr = instr' phrase
 and instr' =
-  | RuleI of id * notexp * iterexp list
   | IfI of exp * iterexp list * instr list * instr list
   | OtherwiseI of instr
   | LetI of exp * exp * iterexp list
+  | RuleI of id * notexp * iterexp list
   | ResultI of exp list
   | ReturnI of exp
-  | PhantomI of int * pathcond list
+  | PhantomI of phantom
 
 (* Hints *)
 

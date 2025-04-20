@@ -634,14 +634,14 @@ and eval_args (ctx : Ctx.t) (args : arg list) : Ctx.t * value list =
 
 and eval_instr (ctx : Ctx.t) (instr : instr) : Ctx.t * Sign.t =
   match instr.it with
-  | RuleI (id, notexp, iterexps) -> eval_rule_instr ctx id notexp iterexps
   | IfI (exp_cond, iterexps, instrs_then, instrs_else) ->
       eval_if_instr ctx exp_cond iterexps instrs_then instrs_else
   | OtherwiseI instr -> eval_instr ctx instr
   | LetI (exp_l, exp_r, iterexps) -> eval_let_instr ctx exp_l exp_r iterexps
+  | RuleI (id, notexp, iterexps) -> eval_rule_instr ctx id notexp iterexps
   | ResultI exps -> eval_result_instr ctx exps
   | ReturnI exp -> eval_return_instr ctx exp
-  | PhantomI (pid, pathconds) -> eval_phantom_instr ctx pid pathconds
+  | PhantomI phantom -> eval_phantom_instr ctx phantom
 
 and eval_instrs (ctx : Ctx.t) (sign : Sign.t) (instrs : instr list) :
     Ctx.t * Sign.t =
@@ -649,90 +649,6 @@ and eval_instrs (ctx : Ctx.t) (sign : Sign.t) (instrs : instr list) :
     (fun (ctx, sign) instr ->
       match sign with Sign.Cont -> eval_instr ctx instr | _ -> (ctx, sign))
     (ctx, sign) instrs
-
-(* Rule instruction evaluation *)
-
-and eval_rule (ctx : Ctx.t) (id : id) (notexp : notexp) : Ctx.t =
-  let rel = Ctx.find_rel Local ctx id in
-  let exps_input, exps_output =
-    let inputs, _, _ = rel in
-    let _, exps = notexp in
-    Hint.split_exps_without_idx inputs exps
-  in
-  let ctx, values_input = eval_exps ctx exps_input in
-  let ctx, values_output = invoke_rel ctx id values_input in
-  assign_exps ctx exps_output values_output
-
-and eval_rule_opt (_ctx : Ctx.t) (_id : id) (_notexp : notexp)
-    (_vars : var list) (_iterexps : iterexp list) : Ctx.t =
-  failwith "(TODO) eval_rule_opt"
-
-and eval_rule_list (ctx : Ctx.t) (id : id) (notexp : notexp) (vars : var list)
-    (iterexps : iterexp list) : Ctx.t =
-  (* Discriminate between bound and binding variables *)
-  let vars_bound, vars_binding =
-    List.partition
-      (fun (id, iters) ->
-        Ctx.bound_value Local ctx (id, iters @ [ Il.Ast.List ]))
-      vars
-  in
-  (* Create a subcontext for each batch of bound values *)
-  let ctxs_sub = Ctx.sub_list ctx vars_bound in
-  let ctx, values_binding =
-    match ctxs_sub with
-    (* If the bound variable supposed to guide the iteration is already empty,
-       then the binding variables are also empty *)
-    | [] ->
-        let values_binding =
-          List.init (List.length vars_binding) (fun _ -> [])
-        in
-        (ctx, values_binding)
-    (* Otherwise, evaluate the premise for each batch of bound values,
-       and collect the resulting binding batches *)
-    | _ ->
-        let ctx, values_binding_batch =
-          List.fold_left
-            (fun (ctx, values_binding_batch) ctx_sub ->
-              let ctx_sub = eval_rule_iter' ctx_sub id notexp iterexps in
-              let ctx = Ctx.commit ctx ctx_sub in
-              let value_binding_batch =
-                List.map (Ctx.find_value Local ctx_sub) vars_binding
-              in
-              let values_binding_batch =
-                values_binding_batch @ [ value_binding_batch ]
-              in
-              (ctx, values_binding_batch))
-            (ctx, []) ctxs_sub
-        in
-        let values_binding = values_binding_batch |> Ctx.transpose in
-        (ctx, values_binding)
-  in
-  (* Finally, bind the resulting binding batches *)
-  List.fold_left2
-    (fun ctx (id, iters) values_binding ->
-      let value_binding = Il.Ast.ListV values_binding in
-      Ctx.add_value Local ctx (id, iters @ [ Il.Ast.List ]) value_binding)
-    ctx vars_binding values_binding
-
-and eval_rule_iter' (ctx : Ctx.t) (id : id) (notexp : notexp)
-    (iterexps : iterexp list) : Ctx.t =
-  match iterexps with
-  | [] -> eval_rule ctx id notexp
-  | iterexp_h :: iterexps_t -> (
-      let iter_h, vars_h = iterexp_h in
-      match iter_h with
-      | Opt -> eval_rule_opt ctx id notexp vars_h iterexps_t
-      | List -> eval_rule_list ctx id notexp vars_h iterexps_t)
-
-and eval_rule_iter (ctx : Ctx.t) (id : id) (notexp : notexp)
-    (iterexps : iterexp list) : Ctx.t =
-  let iterexps = List.rev iterexps in
-  eval_rule_iter' ctx id notexp iterexps
-
-and eval_rule_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
-    (iterexps : iterexp list) : Ctx.t * Sign.t =
-  let ctx = eval_rule_iter ctx id notexp iterexps in
-  (ctx, Cont)
 
 (* If instruction evaluation *)
 
@@ -851,6 +767,90 @@ and eval_let_instr (ctx : Ctx.t) (exp_l : exp) (exp_r : exp)
   let ctx = eval_let_iter ctx exp_l exp_r iterexps in
   (ctx, Cont)
 
+(* Rule instruction evaluation *)
+
+and eval_rule (ctx : Ctx.t) (id : id) (notexp : notexp) : Ctx.t =
+  let rel = Ctx.find_rel Local ctx id in
+  let exps_input, exps_output =
+    let inputs, _, _ = rel in
+    let _, exps = notexp in
+    Hint.split_exps_without_idx inputs exps
+  in
+  let ctx, values_input = eval_exps ctx exps_input in
+  let ctx, values_output = invoke_rel ctx id values_input in
+  assign_exps ctx exps_output values_output
+
+and eval_rule_opt (_ctx : Ctx.t) (_id : id) (_notexp : notexp)
+    (_vars : var list) (_iterexps : iterexp list) : Ctx.t =
+  failwith "(TODO) eval_rule_opt"
+
+and eval_rule_list (ctx : Ctx.t) (id : id) (notexp : notexp) (vars : var list)
+    (iterexps : iterexp list) : Ctx.t =
+  (* Discriminate between bound and binding variables *)
+  let vars_bound, vars_binding =
+    List.partition
+      (fun (id, iters) ->
+        Ctx.bound_value Local ctx (id, iters @ [ Il.Ast.List ]))
+      vars
+  in
+  (* Create a subcontext for each batch of bound values *)
+  let ctxs_sub = Ctx.sub_list ctx vars_bound in
+  let ctx, values_binding =
+    match ctxs_sub with
+    (* If the bound variable supposed to guide the iteration is already empty,
+       then the binding variables are also empty *)
+    | [] ->
+        let values_binding =
+          List.init (List.length vars_binding) (fun _ -> [])
+        in
+        (ctx, values_binding)
+    (* Otherwise, evaluate the premise for each batch of bound values,
+       and collect the resulting binding batches *)
+    | _ ->
+        let ctx, values_binding_batch =
+          List.fold_left
+            (fun (ctx, values_binding_batch) ctx_sub ->
+              let ctx_sub = eval_rule_iter' ctx_sub id notexp iterexps in
+              let ctx = Ctx.commit ctx ctx_sub in
+              let value_binding_batch =
+                List.map (Ctx.find_value Local ctx_sub) vars_binding
+              in
+              let values_binding_batch =
+                values_binding_batch @ [ value_binding_batch ]
+              in
+              (ctx, values_binding_batch))
+            (ctx, []) ctxs_sub
+        in
+        let values_binding = values_binding_batch |> Ctx.transpose in
+        (ctx, values_binding)
+  in
+  (* Finally, bind the resulting binding batches *)
+  List.fold_left2
+    (fun ctx (id, iters) values_binding ->
+      let value_binding = Il.Ast.ListV values_binding in
+      Ctx.add_value Local ctx (id, iters @ [ Il.Ast.List ]) value_binding)
+    ctx vars_binding values_binding
+
+and eval_rule_iter' (ctx : Ctx.t) (id : id) (notexp : notexp)
+    (iterexps : iterexp list) : Ctx.t =
+  match iterexps with
+  | [] -> eval_rule ctx id notexp
+  | iterexp_h :: iterexps_t -> (
+      let iter_h, vars_h = iterexp_h in
+      match iter_h with
+      | Opt -> eval_rule_opt ctx id notexp vars_h iterexps_t
+      | List -> eval_rule_list ctx id notexp vars_h iterexps_t)
+
+and eval_rule_iter (ctx : Ctx.t) (id : id) (notexp : notexp)
+    (iterexps : iterexp list) : Ctx.t =
+  let iterexps = List.rev iterexps in
+  eval_rule_iter' ctx id notexp iterexps
+
+and eval_rule_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
+    (iterexps : iterexp list) : Ctx.t * Sign.t =
+  let ctx = eval_rule_iter ctx id notexp iterexps in
+  (ctx, Cont)
+
 (* Result instruction evaluation *)
 
 and eval_result_instr (ctx : Ctx.t) (exps : exp list) : Ctx.t * Sign.t =
@@ -865,8 +865,8 @@ and eval_return_instr (ctx : Ctx.t) (exp : exp) : Ctx.t * Sign.t =
 
 (* Phantom instruction evaluation *)
 
-and eval_phantom_instr (ctx : Ctx.t) (pid : int) (_pathcond : pathcond list) :
-    Ctx.t * Sign.t =
+and eval_phantom_instr (ctx : Ctx.t) (phantom : phantom) : Ctx.t * Sign.t =
+  let pid, _ = phantom in
   let ctx = Ctx.cover ctx pid in
   (ctx, Cont)
 

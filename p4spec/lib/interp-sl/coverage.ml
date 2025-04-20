@@ -27,8 +27,8 @@ type origin = Id.t Origin.t
 let rec collect_instr (origin : origin) (id : id) (instr : instr) : origin =
   match instr.it with
   | IfI (_, _, instrs_then, instrs_else) ->
-      let origin = collect_instrs origin id instrs_then in
-      collect_instrs origin id instrs_else
+      let orign = collect_instrs origin id instrs_then in
+      collect_instrs orign id instrs_else
   | OtherwiseI instr -> collect_instr origin id instr
   | PhantomI (pid, _) -> Origin.add pid id origin
   | _ -> origin
