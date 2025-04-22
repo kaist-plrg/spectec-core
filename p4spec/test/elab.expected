@@ -8206,7 +8206,7 @@ relation Sub_expl_canon_neq: `%<:%`(typ, typ)
       -- let datatyp = typ' as datatyp
       -- if datatyp matches `HeaderT%%`
       -- let `HeaderT%%`_datatyp(_id, (member_b, typ_b)*{member_b <- member_b*, typ_b <- typ_b*}) = datatyp
-      -- if $sub_set<member>(`{%}`_set<member>(member_a*{member_a <- member_a*}), `{%}`_set<member>(member_a*{member_a <- member_a*}))
+      -- if $sub_set<member>(`{%}`_set<member>(member_a*{member_a <- member_a*}), `{%}`_set<member>(member_b*{member_b <- member_b*}))
       -- let `{%}`_set<member>(member_c*{member_c <- member_c*}) = $diff_set<member>(`{%}`_set<member>(member_b*{member_b <- member_b*}), `{%}`_set<member>(member_a*{member_a <- member_a*}))
       -- (let typ? = $find_map<member, typ>(`{%}`_set<pair<member, typ>>(`%->%`_pair<member, typ>(member_a, typ_a)*{member_a <- member_a*, typ_a <- typ_a*}), member_a))*{member_a <- member_a*, typ? <- typ?*}
       -- (if typ? matches (_))*{typ? <- typ?*}
@@ -9379,8 +9379,7 @@ relation Stmt_ok: `%%%|-%:%%%`(cursor, context, flow, stmt, context, flow, stmtI
       -- if ($is_parsert(typ') \/ $is_controlt(typ'))
       -- let id = $id_of_name(name)
       -- let C' = $add_styp(p, C, id, `%%%%`_styp(typ, `NO`_dir(), `CTK`_ctk(), ?()))
-      -- Stmt_ok: `%%%|-%:%%%`(p, C', f, `CallMethodS%%%%`_stmt(`NameE%`_expr(`CURRENT%`_name(id)), "apply", targ*{targ <- targ*}, arg*{arg <- arg*}), context, f', stmtIL)
-      -- if (context = C')
+      -- Stmt_ok: `%%%|-%:%%%`(p, C', f, `CallMethodS%%%%`_stmt(`NameE%`_expr(`CURRENT%`_name(id)), "apply", targ*{targ <- targ*}, arg*{arg <- arg*}), C'', f', stmtIL)
       -- let stmtIL' = stmtIL
       -- if stmtIL' matches `CallMethodS%%%%`
       -- let `CallMethodS%%%%`_stmtIL(exprIL, text, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*}) = stmtIL'

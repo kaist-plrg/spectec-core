@@ -149,7 +149,7 @@ rule Sub_expl_canon_neq/recorddefaultt-structt:
 
 rule Sub_expl_canon_neq/recorddefaultt-headert:
   RecordDefaultT (member_a, typ_a)* <: HeaderT _ (member_b, typ_b)*
-  -- if $sub_set<member>(`{ member_a* }, `{ member_a* })
+  -- if $sub_set<member>(`{ member_a* }, `{ member_b* })
   -- if `{ member_c* } = $diff_set<member>(`{ member_b* }, `{ member_a* })
   ----
   -- if (typ_a' = $find_map<member, typ>(`{ (member_a -> typ_a)* }, member_a))*

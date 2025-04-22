@@ -251,7 +251,7 @@ rule Stmt_ok/callinsts:
   -- if id = $id_of_name(name)
   -- if C' = $add_styp(p, C, id, typ NO CTK eps)
   ----
-  -- Stmt_ok: p C' f |- CallMethodS (NameE (CURRENT id)) "apply" targ* arg* : C' f' stmtIL
+  -- Stmt_ok: p C' f |- CallMethodS (NameE (CURRENT id)) "apply" targ* arg* : C'' f' stmtIL
   -- if stmtIL = CallMethodS (NameE (CURRENT id) _) "apply" targIL'* argIL'*
 
 ;;
