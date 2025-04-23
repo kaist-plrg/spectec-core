@@ -75,8 +75,7 @@ let typecheck_command =
            let func = if roundtrip_flag then roundtrip_il else typecheck in
            func includes filename
          in
-         program |> Typing.Postprocess.postprocess_program
-         |> Format.printf "%a\n" Il.Pp_to_el.pp_program
+         program |> Format.printf "%a\n" Il.Pp_to_el.pp_program
        with ParseErr (msg, info) | CheckErr (msg, info) ->
          if Util.Source.is_no_info info then Format.printf "Error: %s\n" msg
          else Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
