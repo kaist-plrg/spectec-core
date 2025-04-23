@@ -59,11 +59,11 @@ let hide_tparams_decl (walker : walker) decl =
       in
       { decl with it }
   | InstD { id; typ; var_inst; targs; targs_hidden; args; init; annos } ->
-    let typ = hide_tparams_constyp typ in
-    let it =
-      InstD { id; typ; var_inst; targs; targs_hidden; args; init; annos }
-    in
-    { decl with it }
+      let typ = hide_tparams_constyp typ in
+      let it =
+        InstD { id; typ; var_inst; targs; targs_hidden; args; init; annos }
+      in
+      { decl with it }
   | _ -> base_walker.walk_decl walker decl
 
 let hide_tparams_stmt (walker : walker) stmt =
@@ -75,7 +75,6 @@ let hide_tparams_stmt (walker : walker) stmt =
       in
       { stmt with it }
   | _ -> base_walker.walk_stmt walker stmt
-
 
 let postprocess_program (program : Il.Ast.program) : Il.Ast.program =
   let hide_tparams =
