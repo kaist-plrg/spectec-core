@@ -41,12 +41,22 @@ type local = {
   venv : VEnv.t;
 }
 
-type t = { cover : Coverage.t ref; global : global; local : local }
+type t = {
+  (* Filename of the source file *)
+  filename : string;
+  (* Branch coverage of phantoms *)
+  cover : Coverage.Cover.t ref;
+  (* Global layer *)
+  global : global;
+  (* Local layer *)
+  local : local;
+}
 
 (* Cover *)
 
-let cover (ctx : t) (pid : int) : t =
-  ctx.cover := Coverage.add pid !(ctx.cover);
+let cover (ctx : t) (hit : bool) (pid : int) : t =
+  if hit then ctx.cover := Coverage.Cover.hit pid ctx.filename !(ctx.cover)
+  else ctx.cover := Coverage.Cover.miss pid ctx.filename !(ctx.cover);
   ctx
 
 (* Finders *)
@@ -170,10 +180,10 @@ let empty_global () : global =
 let empty_local () : local =
   { tdenv = TDEnv.empty; fenv = FEnv.empty; venv = VEnv.empty }
 
-let empty (cover : Coverage.t ref) : t =
+let empty (filename : string) (cover : Coverage.Cover.t ref) : t =
   let global = empty_global () in
   let local = empty_local () in
-  { cover; global; local }
+  { filename; cover; global; local }
 
 (* Constructing a local context *)
 

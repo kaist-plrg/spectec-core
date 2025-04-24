@@ -271,7 +271,7 @@ let cover_sl_command =
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
      and testdir_p4 = flag "-d" (required string) ~doc:"p4 test directory" in
      fun () ->
-       try cover_sl_test specdir includes_p4 testdir_p4
+       try cover_sl_test specdir includes_p4 testdir_p4 None
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let command =

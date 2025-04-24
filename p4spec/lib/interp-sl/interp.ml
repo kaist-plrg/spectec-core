@@ -687,13 +687,12 @@ and eval_if_cond_iter (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list) :
 and eval_if_instr (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list)
     (instrs_then : instr list) (phantom_opt : phantom option) : Ctx.t * Sign.t =
   let ctx, cond = eval_if_cond_iter ctx exp_cond iterexps in
-  if cond then eval_instrs ctx Cont instrs_then
-  else
+  let ctx =
     match phantom_opt with
-    | Some (pid, _) ->
-        let ctx = Ctx.cover ctx pid in
-        (ctx, Cont)
-    | None -> (ctx, Cont)
+    | Some (pid, _) -> Ctx.cover ctx (not cond) pid
+    | None -> ctx
+  in
+  if cond then eval_instrs ctx Cont instrs_then else (ctx, Cont)
 
 (* Case analysis instruction evaluation *)
 
@@ -723,14 +722,14 @@ and eval_cases (ctx : Ctx.t) (exp : exp) (cases : case list) :
 and eval_case_instr (ctx : Ctx.t) (exp : exp) (cases : case list)
     (phantom_opt : phantom option) : Ctx.t * Sign.t =
   let ctx, instrs_opt = eval_cases ctx exp cases in
+  let ctx =
+    match phantom_opt with
+    | Some (pid, _) -> Ctx.cover ctx (Option.is_none instrs_opt) pid
+    | None -> ctx
+  in
   match instrs_opt with
   | Some instrs -> eval_instrs ctx Cont instrs
-  | None -> (
-      match phantom_opt with
-      | Some (pid, _) ->
-          let ctx = Ctx.cover ctx pid in
-          (ctx, Cont)
-      | None -> (ctx, Cont))
+  | None -> (ctx, Cont)
 
 (* Let instruction evaluation *)
 
@@ -1018,33 +1017,21 @@ let load_spec (ctx : Ctx.t) (spec : spec) : Ctx.t =
 
 (* Entry point: run typing rule from `Prog_ok` relation *)
 
-let run_typing ?(cover : Coverage.t ref = ref Coverage.empty) (spec : spec)
-    (includes_p4 : string list) (filename_p4 : string) : Ctx.t * value list =
+let run_typing ?(cover : Coverage.Cover.t ref = ref Coverage.Cover.empty)
+    (spec : spec) (includes_p4 : string list) (filename_p4 : string) :
+    Ctx.t * value list =
   Builtin.init ();
   let program = P4.In.in_program includes_p4 filename_p4 in
-  let ctx = Ctx.empty cover in
+  let ctx = Ctx.empty filename_p4 cover in
   let ctx = load_spec ctx spec in
   invoke_rel ctx ("Prog_ok" $ no_region) [ program ]
 
-let log_cover (cover : int list) : unit =
-  let rec log_lines cover count =
-    match cover with
-    | [] -> print_newline ()
-    | pid :: cover ->
-        F.asprintf "%d " pid |> print_string;
-        if count = 9 then (
-          print_newline ();
-          log_lines cover 0)
-        else log_lines cover (count + 1)
-  in
-  log_lines cover 0
-
 let cover_typing (spec : spec) (includes_p4 : string list)
-    (filenames_p4 : string list) : unit =
-  let cover = ref Coverage.empty in
+    (filenames_p4 : string list) (dirname_closest_miss_opt : string option) : unit =
+  let cover = ref Coverage.Cover.empty in
   List.iter
     (fun filename_p4 ->
       try run_typing ~cover spec includes_p4 filename_p4 |> ignore
       with _ -> ())
     filenames_p4;
-  Coverage.log spec !cover
+  Coverage.log spec !cover dirname_closest_miss_opt

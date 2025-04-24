@@ -93,6 +93,8 @@ let cover_sl_command =
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
      and dirname_p4 =
        flag "-d" (required string) ~doc:"p4 directory to typecheck"
+     and dirname_closest_miss_opt =
+       flag "-cm" (optional string) ~doc:"directory to output closest misses"
      in
      fun () ->
        try
@@ -101,6 +103,7 @@ let cover_sl_command =
          let spec_sl = Structure.Struct.struct_spec spec_il in
          let filenames_p4 = collect_files ~suffix:".p4" dirname_p4 in
          Interp_sl.Interp.cover_typing spec_sl includes_p4 filenames_p4
+           dirname_closest_miss_opt
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let command =
