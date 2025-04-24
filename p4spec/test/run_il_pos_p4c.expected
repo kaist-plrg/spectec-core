@@ -1926,6 +1926,7 @@ Typecheck success: ../../../../p4/testdata/p4c/program/well-typed/issue529.p4
 Typecheck success: ../../../../p4/testdata/p4c/program/well-typed/issue561-1-bmv2.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/issue561-2-bmv2.p4
+negative inner acc: -0.008028
 Typecheck success: ../../../../p4/testdata/p4c/program/well-typed/issue561-2-bmv2.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/issue561-3-bmv2.p4
