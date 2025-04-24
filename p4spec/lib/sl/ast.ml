@@ -1,3 +1,4 @@
+open Xl
 open Util.Source
 
 [@@@ocamlformat "disable"]
@@ -48,10 +49,22 @@ type typcase = Il.Ast.typcase
 
 (* Values *)
 
-type value = Il.Ast.value
+type vid = int
 
-type valuefield = Il.Ast.valuefield
-type valuecase = Il.Ast.valuecase
+and value = (value', vid) note
+and value' =
+  | BoolV of bool
+  | NumV of Num.t
+  | TextV of string
+  | StructV of valuefield list
+  | CaseV of valuecase
+  | TupleV of value list
+  | OptV of value option
+  | ListV of value list
+  | FuncV of id
+
+and valuefield = atom * value
+and valuecase = mixop * value list
 
 (* Operators *)
 

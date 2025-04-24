@@ -34,11 +34,14 @@ let string_of_region region =
 
 (* Phrases *)
 
-type ('a, 'b) note_phrase = { at : region; it : 'a; note : 'b }
-type 'a phrase = ('a, unit) note_phrase
+type ('a, 'b, 'c) info = { it : 'a; note : 'b; at : 'c }
+type ('a, 'b) note_phrase = ('a, 'b, region) info
+type ('a, 'b) note = ('a, 'b, unit) info
+type 'a phrase = ('a, unit, region) info
 
 let ( $ ) it at = { it; at; note = () }
 let ( $$ ) it (at, note) = { it; at; note }
+let ( $$$ ) it note = { it; at = (); note }
 let ( % ) at note = (at, note)
 let it { it; _ } = it
 let at { at; _ } = at

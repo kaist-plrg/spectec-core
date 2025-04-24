@@ -1,0 +1,5 @@
+(include_subdirs qualified)
+
+(library
+ (name runtime_testgen)
+ (libraries util domain xl el il sl runtime_static))

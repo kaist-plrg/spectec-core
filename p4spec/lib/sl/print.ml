@@ -1,4 +1,6 @@
+open Xl
 open Ast
+open Util.Print
 open Util.Source
 
 (* Numbers *)
@@ -50,8 +52,54 @@ let string_of_typcases sep typcases = Il.Print.string_of_typcases sep typcases
 
 (* Values *)
 
-let string_of_value ?(short = false) ?(level = 0) value =
-  Il.Print.string_of_value ~short ~level value
+let string_of_vid vid = "@" ^ string_of_int vid
+
+let rec string_of_value ?(short = false) ?(level = 0) value =
+  match value.it with
+  | BoolV b -> string_of_bool b
+  | NumV n -> Num.string_of_num n
+  | TextV s -> "\"" ^ s ^ "\""
+  | StructV [] -> "{}"
+  | StructV valuefields when short ->
+      Format.asprintf "{ .../%d }" (List.length valuefields)
+  | StructV valuefields ->
+      Format.asprintf "{ %s }"
+        (String.concat ";\n"
+           (List.mapi
+              (fun idx (atom, value) ->
+                let indent = if idx = 0 then "" else indent (level + 1) in
+                Format.asprintf "%s%s %s" indent (string_of_atom atom)
+                  (string_of_value ~short ~level:(level + 2) value))
+              valuefields))
+  | CaseV (mixop, _) when short -> string_of_mixop mixop
+  | CaseV (mixop, values) ->
+      let atoms_h, mixop_t = (List.hd mixop, List.tl mixop) in
+      Format.asprintf "(%s%s)" (string_of_atoms atoms_h)
+        (String.concat ""
+           (List.map2
+              (fun value atoms ->
+                string_of_value ~short ~level:(level + 1) value
+                ^ string_of_atoms atoms)
+              values mixop_t))
+  | TupleV values ->
+      Format.asprintf "(%s)"
+        (String.concat ", "
+           (List.map (string_of_value ~short ~level:(level + 1)) values))
+  | OptV (Some value) ->
+      Format.asprintf "Some(%s)"
+        (string_of_value ~short ~level:(level + 1) value)
+  | OptV None -> "None"
+  | ListV [] -> "[]"
+  | ListV values when short -> Format.asprintf "[ .../%d ]" (List.length values)
+  | ListV values ->
+      Format.asprintf "[ %s ]"
+        (String.concat ",\n"
+           (List.mapi
+              (fun idx value ->
+                let indent = if idx = 0 then "" else indent (level + 1) in
+                indent ^ string_of_value ~short ~level:(level + 2) value)
+              values))
+  | FuncV id -> string_of_defid id
 
 (* Operators *)
 

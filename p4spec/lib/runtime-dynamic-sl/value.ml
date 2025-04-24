@@ -1,6 +1,6 @@
 open Xl
-open Il.Ast
-open Il.Print
+open Sl.Ast
+open Sl.Print
 
 (* Value *)
 
@@ -14,7 +14,7 @@ let to_string t = string_of_value t
 
 let rec compare (value_l : t) (value_r : t) =
   let tag (value : t) =
-    match value with
+    match value.it with
     | BoolV _ -> 0
     | NumV _ -> 1
     | TextV _ -> 2
@@ -25,7 +25,7 @@ let rec compare (value_l : t) (value_r : t) =
     | ListV _ -> 7
     | FuncV _ -> 8
   in
-  match (value_l, value_r) with
+  match (value_l.it, value_r.it) with
   | BoolV b_l, BoolV b_r -> Stdlib.compare b_l b_r
   | NumV n_l, NumV n_r -> Num.compare n_l n_r
   | TextV s_l, TextV s_r -> String.compare s_l s_r
@@ -63,33 +63,33 @@ let eq (value_l : t) (value_r : t) : bool = compare value_l value_r = 0
 (* Boolean *)
 
 let get_bool (value : t) =
-  match value with BoolV b -> b | _ -> failwith "get_bool"
+  match value.it with BoolV b -> b | _ -> failwith "get_bool"
 
 (* Number *)
 
 let get_num (value : t) =
-  match value with NumV n -> n | _ -> failwith "get_num"
+  match value.it with NumV n -> n | _ -> failwith "get_num"
 
 (* Text *)
 
 let get_text (value : t) =
-  match value with TextV s -> s | _ -> failwith "get_text"
+  match value.it with TextV s -> s | _ -> failwith "get_text"
 
 (* List *)
 
 let to_list (values : t list) = ListV values
 
 let get_list (value : t) =
-  match value with ListV values -> values | _ -> failwith "unseq"
+  match value.it with ListV values -> values | _ -> failwith "unseq"
 
 (* Option *)
 
 let to_opt (value : t option) = OptV value
 
 let get_opt (value : t) =
-  match value with OptV value -> value | _ -> failwith "get_opt"
+  match value.it with OptV value -> value | _ -> failwith "get_opt"
 
 (* Struct *)
 
 let get_struct (value : t) =
-  match value with StructV fields -> fields | _ -> failwith "get_struct"
+  match value.it with StructV fields -> fields | _ -> failwith "get_struct"

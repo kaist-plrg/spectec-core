@@ -13,4 +13,5 @@
   (re_export sl)
   (re_export structure)
   (re_export runtime_dynamic_sl)
+  (re_export runtime_testgen)
   (re_export interp_sl)))

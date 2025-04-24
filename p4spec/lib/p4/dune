@@ -1,4 +1,3 @@
 (library
  (name p4)
- (modules in)
- (libraries xl il util p4surface p4frontend p4lang p4el p4util))
+ (libraries util p4surface p4frontend p4lang p4el p4util))

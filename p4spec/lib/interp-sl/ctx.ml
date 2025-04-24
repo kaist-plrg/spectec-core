@@ -1,5 +1,6 @@
 open Domain.Lib
 open Runtime_dynamic_sl
+open Runtime_testgen
 open Envs
 open Sl.Ast
 open Error
@@ -44,6 +45,8 @@ type local = {
 type t = {
   (* Filename of the source file *)
   filename : string;
+  (* Value dependency graph *)
+  graph : Dep.Graph.t option;
   (* Branch coverage of phantoms *)
   cover : Coverage.Cover.t ref;
   (* Global layer *)
@@ -51,6 +54,19 @@ type t = {
   (* Local layer *)
   local : local;
 }
+
+(* Value dependencies *)
+
+let add_node ?(taint = false) (ctx : t) (value : value) : unit =
+  match ctx.graph with
+  | Some graph -> Dep.Graph.add_node ~taint graph value
+  | None -> ()
+
+let add_edge (ctx : t) (value_from : value) (value_to : value)
+    (label : Dep.Edges.label) : unit =
+  match ctx.graph with
+  | Some graph -> Dep.Graph.add_edge graph value_from value_to label
+  | None -> ()
 
 (* Cover *)
 
@@ -180,10 +196,12 @@ let empty_global () : global =
 let empty_local () : local =
   { tdenv = TDEnv.empty; fenv = FEnv.empty; venv = VEnv.empty }
 
-let empty (filename : string) (cover : Coverage.Cover.t ref) : t =
+let empty (filename : string) (derive : bool) (cover : Coverage.Cover.t ref) : t
+    =
+  let graph = if derive then Some (Dep.Graph.init ()) else None in
   let global = empty_global () in
   let local = empty_local () in
-  { filename; cover; global; local }
+  { filename; graph; cover; global; local }
 
 (* Constructing a local context *)
 
