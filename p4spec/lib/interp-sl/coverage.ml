@@ -170,7 +170,8 @@ let log_closest_miss (cover : Cover.t) (dom_uncover : Dom.t)
         close_out oc)
     pids_uncover
 
-let log (spec : spec) (cover : Cover.t) (dirname_closest_miss_opt : string option) : unit =
+let log (spec : spec) (cover : Cover.t)
+    (dirname_closest_miss_opt : string option) : unit =
   let origin = Origin.collect_spec spec in
   let dom_all = Origin.dom origin in
   let dom_cover = Cover.dom_hit cover in

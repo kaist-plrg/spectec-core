@@ -31,27 +31,6 @@ let elab_command =
          ()
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
-let run_il_command =
-  Core.Command.basic
-    ~summary:"run static semantics of a p4_16 spec based on backtracking IL"
-    (let open Core.Command.Let_syntax in
-     let open Core.Command.Param in
-     let%map filenames_spec = anon (sequence ("filename" %: string))
-     and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
-     and filename_p4 = flag "-p" (required string) ~doc:"p4 file to typecheck"
-     and debug = flag "-dbg" no_arg ~doc:"print debug traces"
-     and profile = flag "-profile" no_arg ~doc:"print execution profile" in
-     fun () ->
-       try
-         let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
-         let spec_il = Elaborate.Elab.elab_spec spec in
-         let _ =
-           Interp_il.Interp.run_typing debug profile spec_il includes_p4
-             filename_p4
-         in
-         ()
-       with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
-
 let struct_command =
   Core.Command.basic ~summary:"insert structured control flow to a p4_16 spec"
     (let open Core.Command.Let_syntax in
@@ -111,7 +90,6 @@ let command =
     ~summary:"p4spec: a language design framework for the p4_16 language"
     [
       ("elab", elab_command);
-      ("run-il", run_il_command);
       ("struct", struct_command);
       ("run-sl", run_sl_command);
       ("cover-sl", cover_sl_command);

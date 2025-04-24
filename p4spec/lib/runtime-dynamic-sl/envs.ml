@@ -1,7 +1,4 @@
 open Domain.Lib
-module Var = Runtime_dynamic_il.Var
-module Value = Runtime_dynamic_il.Value
-module Typdef = Runtime_dynamic_il.Typdef
 
 (* Environments *)
 

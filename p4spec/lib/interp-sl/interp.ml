@@ -2,8 +2,8 @@ open Domain.Lib
 open Xl
 open Sl.Ast
 module Hint = Runtime_static.Rel.Hint
-module Typ = Runtime_dynamic_il.Typ
-module Value = Runtime_dynamic_il.Value
+module Typ = Runtime_dynamic_sl.Typ
+module Value = Runtime_dynamic_sl.Value
 module Rel = Runtime_dynamic_sl.Rel
 open Runtime_dynamic_sl.Envs
 open Error
@@ -1027,7 +1027,8 @@ let run_typing ?(cover : Coverage.Cover.t ref = ref Coverage.Cover.empty)
   invoke_rel ctx ("Prog_ok" $ no_region) [ program ]
 
 let cover_typing (spec : spec) (includes_p4 : string list)
-    (filenames_p4 : string list) (dirname_closest_miss_opt : string option) : unit =
+    (filenames_p4 : string list) (dirname_closest_miss_opt : string option) :
+    unit =
   let cover = ref Coverage.Cover.empty in
   List.iter
     (fun filename_p4 ->

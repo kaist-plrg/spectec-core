@@ -1,5 +1,5 @@
 open Il.Ast
-module TDEnv = Runtime_dynamic_il.Envs.TDEnv
+module TDEnv = Runtime_dynamic_sl.Envs.TDEnv
 open Util.Source
 
 (* Structuring premises *)

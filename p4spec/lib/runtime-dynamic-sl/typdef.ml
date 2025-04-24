@@ -1,5 +1,5 @@
-open Il.Ast
-open Il.Print
+open Sl.Ast
+open Sl.Print
 
 (* Type definition *)
 

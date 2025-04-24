@@ -1,6 +1,6 @@
 open Xl
 open Sl.Ast
-module Value = Runtime_dynamic_il.Value
+module Value = Runtime_dynamic_sl.Value
 open Util.Source
 
 (* dec $rev_<X>(X* ) : X* *)

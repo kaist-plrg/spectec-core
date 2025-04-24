@@ -11,10 +11,6 @@
    (ignore-outputs
     (diff struct.expected struct.actual))
    (ignore-outputs
-    (diff run_il_pos_p4c.expected run_il_pos_p4c.actual))
-   (ignore-outputs
-    (diff run_il_neg_p4c.expected run_il_neg_p4c.actual))
-   (ignore-outputs
     (diff run_sl_pos_p4c.expected run_sl_pos_p4c.actual))
    (ignore-outputs
     (diff run_sl_neg_p4c.expected run_sl_neg_p4c.actual))
@@ -38,41 +34,6 @@
    (with-stderr-to
     struct.err
     (run ./test.exe struct -s ../../../../spec)))))
-
-(rule
- (target run_il_pos_p4c.actual)
- (action
-  (with-stdout-to
-   run_il_pos_p4c.actual
-   (with-stderr-to
-    run_il_pos_p4c.err
-    (run
-     ./test.exe
-     run-il
-     -s
-     ../../../../spec
-     -i
-     ../../../../p4/testdata/arch
-     -d
-     ../../../../p4/testdata/p4c/program/well-typed)))))
-
-(rule
- (target run_il_neg_p4c.actual)
- (action
-  (with-stdout-to
-   run_il_neg_p4c.actual
-   (with-stderr-to
-    run_il_neg_p4c.err
-    (run
-     ./test.exe
-     run-il
-     -s
-     ../../../../spec
-     -i
-     ../../../../p4/testdata/arch
-     -d
-     ../../../../p4/testdata/p4c/program/ill-typed
-     -neg)))))
 
 (rule
  (target run_sl_pos_p4c.actual)

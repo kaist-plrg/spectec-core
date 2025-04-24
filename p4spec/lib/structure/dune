@@ -9,6 +9,6 @@
   el
   il
   runtime_static
-  runtime_dynamic_il
   elaborate
-  sl))
+  sl
+  runtime_dynamic_sl))
