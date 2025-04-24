@@ -852,6 +852,7 @@ and elab_exp_wildcard (ctx : Ctx.t) (at : region) (plaintyp_expect : plaintyp) :
       (Il.Ast.VarE ("_" $ at) $$ (at, typ_il.it))
   in
   let ctx = Ctx.add_free ctx id_fresh in
+  (* (TODO) Refactor here; this logic also exists in partialbind pass *)
   let exp_il =
     List.fold_left
       (fun exp iter ->

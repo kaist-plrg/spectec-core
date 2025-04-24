@@ -99,16 +99,39 @@ and eq_pathconds (pathconds_a : pathcond list) (pathconds_b : pathcond list) :
   List.length pathconds_a = List.length pathconds_b
   && List.for_all2 eq_pathcond pathconds_a pathconds_b
 
+(* Case analysis *)
+
+and eq_case (case_a : case) (case_b : case) : bool =
+  let guard_a, instrs_a = case_a in
+  let guard_b, instrs_b = case_b in
+  eq_guard guard_a guard_b && eq_instrs instrs_a instrs_b
+
+and eq_cases (case_a : case list) (case_b : case list) : bool =
+  List.length case_a = List.length case_b && List.for_all2 eq_case case_a case_b
+
+and eq_guard (guard_a : guard) (guard_b : guard) : bool =
+  match (guard_a, guard_b) with
+  | BoolG b_a, BoolG b_b -> b_a = b_b
+  | CmpG (cmpop_a, optyp_a, exp_a), CmpG (cmpop_b, optyp_b, exp_b) ->
+      cmpop_a = cmpop_b && optyp_a = optyp_b && eq_exp exp_a exp_b
+  | SubG typ_a, SubG typ_b -> eq_typ typ_a typ_b
+  | MatchG pattern_a, MatchG pattern_b -> eq_pattern pattern_a pattern_b
+  | _ -> false
+
 (* Instructions *)
 
 and eq_instr (instr_a : instr) (instr_b : instr) : bool =
   match (instr_a.it, instr_b.it) with
-  | ( IfI (exp_cond_a, iterexps_a, instrs_then_a, instrs_else_a),
-      IfI (exp_cond_b, iterexps_b, instrs_then_b, instrs_else_b) ) ->
+  | ( IfI (exp_cond_a, iterexps_a, instrs_then_a, phantom_opt_a),
+      IfI (exp_cond_b, iterexps_b, instrs_then_b, phantom_opt_b) ) ->
       eq_exp exp_cond_a exp_cond_b
       && eq_iterexps iterexps_a iterexps_b
       && eq_instrs instrs_then_a instrs_then_b
-      && eq_instrs instrs_else_a instrs_else_b
+      && eq_phantom_opt phantom_opt_a phantom_opt_b
+  | CaseI (exp_a, cases_a, phantom_opt_a), CaseI (exp_b, cases_b, phantom_opt_b)
+    ->
+      eq_exp exp_a exp_b && eq_cases cases_a cases_b
+      && eq_phantom_opt phantom_opt_a phantom_opt_b
   | OtherwiseI instr_a, OtherwiseI instr_b -> eq_instr instr_a instr_b
   | LetI (exp_l_a, exp_r_a, iterexps_a), LetI (exp_l_b, exp_r_b, iterexps_b) ->
       eq_exp exp_l_a exp_l_b && eq_exp exp_r_a exp_r_b
@@ -119,7 +142,6 @@ and eq_instr (instr_a : instr) (instr_b : instr) : bool =
       && eq_iterexps iterexps_a iterexps_b
   | ResultI exps_a, ResultI exps_b -> eq_exps exps_a exps_b
   | ReturnI exp_a, ReturnI exp_b -> eq_exp exp_a exp_b
-  | PhantomI phantom_a, PhantomI phantom_b -> eq_phantom phantom_a phantom_b
   | _ -> false
 
 and eq_instrs (instrs_a : instr list) (instrs_b : instr list) : bool =

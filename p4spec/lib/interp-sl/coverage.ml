@@ -26,11 +26,22 @@ type origin = Id.t Origin.t
 
 let rec collect_instr (origin : origin) (id : id) (instr : instr) : origin =
   match instr.it with
-  | IfI (_, _, instrs_then, instrs_else) ->
-      let orign = collect_instrs origin id instrs_then in
-      collect_instrs orign id instrs_else
+  | IfI (_, _, instrs_then, phantom_opt) -> (
+      let origin = collect_instrs origin id instrs_then in
+      match phantom_opt with
+      | Some (pid, _) -> Origin.add pid id origin
+      | None -> origin)
+  | CaseI (_, cases, phantom_opt) -> (
+      let blocks = cases |> List.split |> snd in
+      let origin =
+        List.fold_left
+          (fun origin instrs -> collect_instrs origin id instrs)
+          origin blocks
+      in
+      match phantom_opt with
+      | Some (pid, _) -> Origin.add pid id origin
+      | None -> origin)
   | OtherwiseI instr -> collect_instr origin id instr
-  | PhantomI (pid, _) -> Origin.add pid id origin
   | _ -> origin
 
 and collect_instrs (origin : origin) (id : id) (instrs : instr list) : origin =

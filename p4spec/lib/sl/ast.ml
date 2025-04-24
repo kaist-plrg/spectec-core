@@ -107,17 +107,27 @@ and pathcond =
   | ExistsC of exp * iterexp list
   | PlainC of exp
 
+(* Case analysis *)
+
+and case = guard * instr list
+
+and guard =
+  | BoolG of bool
+  | CmpG of cmpop * optyp * exp
+  | SubG of typ
+  | MatchG of pattern
+
 (* Instructions *)
 
 and instr = instr' phrase
 and instr' =
-  | IfI of exp * iterexp list * instr list * instr list
+  | IfI of exp * iterexp list * instr list * phantom option
+  | CaseI of exp * case list * phantom option 
   | OtherwiseI of instr
   | LetI of exp * exp * iterexp list
   | RuleI of id * notexp * iterexp list
   | ResultI of exp list
   | ReturnI of exp
-  | PhantomI of phantom
 
 (* Hints *)
 

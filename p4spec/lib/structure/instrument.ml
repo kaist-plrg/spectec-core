@@ -81,47 +81,48 @@ and insert_phantom' (tdenv : TDEnv.t) (pathconds : pathcond list)
         let pathconds = pathconds @ [ pathcond ] in
         insert_phantom tdenv pathconds instrs_then
       in
-      let instrs_else =
-        let phantom =
-          let pid = pid () in
-          let pathconds = pathconds @ [ negate_pathcond pathcond ] in
-          (pid, pathconds)
-        in
-        [ Sl.Ast.PhantomI phantom $ at ]
+      let phantom =
+        let pid = pid () in
+        let pathconds = pathconds @ [ negate_pathcond pathcond ] in
+        (pid, pathconds)
       in
-      Sl.Ast.IfI (exp_cond, iterexps, instrs_then, instrs_else) $ at
+      Sl.Ast.IfI (exp_cond, iterexps, instrs_then, Some phantom) $ at
   | CaseI (exp, cases, total) ->
-      let pathconds =
+      let pathconds_cases =
         List.map
           (fun (guard, _) ->
             let exp_cond = Optimize.guard_as_exp exp guard in
             PlainC exp_cond)
           cases
       in
-      let cases = List.rev cases in
-      let case_h, cases_t = (List.hd cases, List.tl cases) in
-      let instr_h =
-        let guard_h, instrs_then_h = case_h in
-        let exp_cond_h = Optimize.guard_as_exp exp guard_h in
-        let instrs_then_h = insert_phantom tdenv pathconds instrs_then_h in
-        let instrs_else_h =
-          if total then []
-          else
-            let phantom =
-              let pid = pid () in
-              let pathconds = pathconds @ List.map negate_pathcond pathconds in
-              (pid, pathconds)
-            in
-            [ Sl.Ast.PhantomI phantom $ at ]
+      let cases =
+        let guards, blocks = List.split cases in
+        let guards =
+          List.map
+            (function
+              | BoolG b -> Sl.Ast.BoolG b
+              | CmpG (cmpop, optyp, exp) -> Sl.Ast.CmpG (cmpop, optyp, exp)
+              | SubG typ -> Sl.Ast.SubG typ
+              | MatchG pattern -> Sl.Ast.MatchG pattern)
+            guards
         in
-        Sl.Ast.IfI (exp_cond_h, [], instrs_then_h, instrs_else_h) $ at
+        let blocks =
+          List.map2
+            (fun pathcond_case instrs ->
+              let pathconds = pathconds @ [ pathcond_case ] in
+              insert_phantom tdenv pathconds instrs)
+            pathconds_cases blocks
+        in
+        List.combine guards blocks
       in
-      List.fold_left
-        (fun instr (guard, instrs) ->
-          let exp_cond = Optimize.guard_as_exp exp guard in
-          let instrs = insert_phantom tdenv pathconds instrs in
-          Sl.Ast.IfI (exp_cond, [], instrs, [ instr ]) $ at)
-        instr_h cases_t
+      let phantom_opt =
+        if total then None
+        else
+          let pid = pid () in
+          let pathcond = pathconds @ List.map negate_pathcond pathconds_cases in
+          Some (pid, pathcond)
+      in
+      Sl.Ast.CaseI (exp, cases, phantom_opt) $ at
   | OtherwiseI instr ->
       let instr = insert_phantom' tdenv pathconds instr in
       Sl.Ast.OtherwiseI instr $ at
@@ -140,22 +141,23 @@ and insert_nothing' (instr : instr) : Sl.Ast.instr =
   match instr.it with
   | IfI (exp_cond, iterexps, instrs_then) ->
       let instrs_then = insert_nothing instrs_then in
-      Sl.Ast.IfI (exp_cond, iterexps, instrs_then, []) $ at
+      Sl.Ast.IfI (exp_cond, iterexps, instrs_then, None) $ at
   | CaseI (exp, cases, _total) ->
-      let cases = List.rev cases in
-      let case_h, cases_t = (List.hd cases, List.tl cases) in
-      let instr_h =
-        let guard_h, instrs_then_h = case_h in
-        let exp_cond_h = Optimize.guard_as_exp exp guard_h in
-        let instrs_then_h = insert_nothing instrs_then_h in
-        Sl.Ast.IfI (exp_cond_h, [], instrs_then_h, []) $ at
+      let cases =
+        let guards, blocks = List.split cases in
+        let guards =
+          List.map
+            (function
+              | BoolG b -> Sl.Ast.BoolG b
+              | CmpG (cmpop, optyp, exp) -> Sl.Ast.CmpG (cmpop, optyp, exp)
+              | SubG typ -> Sl.Ast.SubG typ
+              | MatchG pattern -> Sl.Ast.MatchG pattern)
+            guards
+        in
+        let blocks = List.map insert_nothing blocks in
+        List.combine guards blocks
       in
-      List.fold_left
-        (fun instr (guard, instrs) ->
-          let exp_cond = Optimize.guard_as_exp exp guard in
-          let instrs = insert_nothing instrs in
-          Sl.Ast.IfI (exp_cond, [], instrs, [ instr ]) $ at)
-        instr_h cases_t
+      Sl.Ast.CaseI (exp, cases, None) $ at
   | OtherwiseI instr ->
       let instr = insert_nothing' instr in
       Sl.Ast.OtherwiseI instr $ at

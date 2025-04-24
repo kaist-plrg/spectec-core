@@ -181,9 +181,8 @@ and string_of_targs targs = Il.Print.string_of_targs targs
 (* Path conditions *)
 
 and string_of_phantom phantom =
-  let pid, _pathconds = phantom in
-  Format.asprintf "Phantom#%d" pid
-(* Format.asprintf "Phantom#%d %s" pid (string_of_pathconds pathconds) *)
+  let pid, pathconds = phantom in
+  Format.asprintf "Phantom#%d %s" pid (string_of_pathconds pathconds)
 
 and string_of_pathcond pathcond =
   match pathcond with
@@ -198,64 +197,69 @@ and string_of_pathcond pathcond =
 and string_of_pathconds pathconds =
   List.map string_of_pathcond pathconds |> String.concat " /\\ "
 
+(* Case analysis *)
+
+and string_of_case ?(level = 0) ?(index = 0) case =
+  let indent = String.make (level * 2) ' ' in
+  let order = Format.asprintf "%s%d. " indent index in
+  let guard, instrs = case in
+  Format.asprintf "%sCase %s\n\n%s" order (string_of_guard guard)
+    (string_of_instrs ~level:(level + 1) instrs)
+
+and string_of_cases ?(level = 0) cases =
+  cases
+  |> List.mapi (fun idx case -> string_of_case ~level ~index:(idx + 1) case)
+  |> String.concat "\n\n"
+
+and string_of_guard guard =
+  match guard with
+  | BoolG b -> string_of_bool b
+  | CmpG (cmpop, _, exp) ->
+      "(% " ^ string_of_cmpop cmpop ^ " " ^ string_of_exp exp ^ ")"
+  | SubG typ -> "(% has type " ^ string_of_typ typ ^ ")"
+  | MatchG patten -> "(% matches pattern " ^ string_of_pattern patten ^ ")"
+
 (* Instructions *)
 
-let string_of_iterated (string_of : 'a -> string) (iterated : 'a)
-    (iterexps : iterexp list) : string =
-  match iterexps with
-  | [] -> string_of iterated
-  | _ ->
-      Format.asprintf "(%s)%s" (string_of iterated)
-        (string_of_iterexps iterexps)
-
-let rec string_of_instr ?(inline = false) ?(level = 0) ?(index = 0) instr =
+and string_of_instr ?(level = 0) ?(index = 0) instr =
   let indent = String.make (level * 2) ' ' in
-  let order_leading =
-    if inline then "" else Format.asprintf "%s%d. " indent index
-  in
-  let order_following = Format.asprintf "%s%d. " indent index in
+  let order = Format.asprintf "%s%d. " indent index in
   match instr.it with
-  | IfI (exp_cond, iterexps, instrs_then, []) ->
-      Format.asprintf "%sIf %s, then\n\n%s" order_leading
-        (string_of_iterated string_of_exp exp_cond iterexps)
+  | IfI (exp_cond, iterexps, instrs_then, None) ->
+      Format.asprintf "%sIf (%s)%s, then\n\n%s" order (string_of_exp exp_cond)
+        (string_of_iterexps iterexps)
         (string_of_instrs ~level:(level + 1) instrs_then)
-  | IfI (exp_cond, iterexps, instrs_then, [ ({ it = IfI _; _ } as instr_else) ])
-    ->
-      Format.asprintf "%sIf %s, then\n\n%s\n\n%sElse %s" order_leading
-        (string_of_iterated string_of_exp exp_cond iterexps)
+  | IfI (exp_cond, iterexps, instrs_then, Some phantom) ->
+      Format.asprintf "%sIf (%s)%s, then\n\n%s\n\n%sElse %s" order
+        (string_of_exp exp_cond)
+        (string_of_iterexps iterexps)
         (string_of_instrs ~level:(level + 1) instrs_then)
-        order_following
-        (string_of_instr ~inline:true ~level ~index instr_else)
-  | IfI (exp_cond, iterexps, instrs_then, instrs_else) ->
-      Format.asprintf "%sIf %s, then\n\n%s\n\n%sElse\n\n%s" order_leading
-        (string_of_iterated string_of_exp exp_cond iterexps)
-        (string_of_instrs ~level:(level + 1) instrs_then)
-        order_following
-        (string_of_instrs ~level:(level + 1) instrs_else)
+        order
+        (string_of_phantom phantom)
+  | CaseI (exp, cases, None) ->
+      Format.asprintf "%sCase analysis on %s\n\n%s" order (string_of_exp exp)
+        (string_of_cases ~level:(level + 1) cases)
+  | CaseI (exp, cases, Some phantom) ->
+      Format.asprintf "%sCase analysis on %s\n\n%s\n\n%sElse %s" order
+        (string_of_exp exp)
+        (string_of_cases ~level:(level + 1) cases)
+        order
+        (string_of_phantom phantom)
   | OtherwiseI instr ->
-      Format.asprintf "%sOtherwise\n\n%s" order_leading
+      Format.asprintf "%sOtherwise\n\n%s" order
         (string_of_instr ~level:(level + 1) ~index:1 instr)
   | LetI (exp_l, exp_r, iterexps) ->
-      Format.asprintf "%s%s" order_leading
-        (string_of_iterated
-           (fun (exp_l, exp_r) ->
-             Format.asprintf "Let %s be %s" (string_of_exp exp_l)
-               (string_of_exp exp_r))
-           (exp_l, exp_r) iterexps)
+      Format.asprintf "%s(Let %s be %s)%s" order (string_of_exp exp_l)
+        (string_of_exp exp_r)
+        (string_of_iterexps iterexps)
   | RuleI (id_rel, notexp, iterexps) ->
-      Format.asprintf "%s%s" order_leading
-        (string_of_iterated
-           (fun (id_rel, notexp) ->
-             Format.asprintf "%s: %s" (string_of_relid id_rel)
-               (string_of_notexp notexp))
-           (id_rel, notexp) iterexps)
-  | ResultI [] -> Format.asprintf "%sThe relation holds" order_leading
+      Format.asprintf "%s(%s: %s)%s" order (string_of_relid id_rel)
+        (string_of_notexp notexp)
+        (string_of_iterexps iterexps)
+  | ResultI [] -> Format.asprintf "%sThe relation holds" order
   | ResultI exps ->
-      Format.asprintf "%sResult in %s" order_leading (string_of_exps ", " exps)
-  | ReturnI exp ->
-      Format.asprintf "%sReturn %s" order_leading (string_of_exp exp)
-  | PhantomI phantom ->
-      Format.asprintf "%s%s" order_leading (string_of_phantom phantom)
+      Format.asprintf "%sResult in %s" order (string_of_exps ", " exps)
+  | ReturnI exp -> Format.asprintf "%sReturn %s" order (string_of_exp exp)
 
 and string_of_instrs ?(level = 0) instrs =
   instrs

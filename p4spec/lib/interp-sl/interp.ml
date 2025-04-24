@@ -634,14 +634,14 @@ and eval_args (ctx : Ctx.t) (args : arg list) : Ctx.t * value list =
 
 and eval_instr (ctx : Ctx.t) (instr : instr) : Ctx.t * Sign.t =
   match instr.it with
-  | IfI (exp_cond, iterexps, instrs_then, instrs_else) ->
-      eval_if_instr ctx exp_cond iterexps instrs_then instrs_else
+  | IfI (exp_cond, iterexps, instrs_then, phantom_opt) ->
+      eval_if_instr ctx exp_cond iterexps instrs_then phantom_opt
+  | CaseI (exp, cases, phantom_opt) -> eval_case_instr ctx exp cases phantom_opt
   | OtherwiseI instr -> eval_instr ctx instr
   | LetI (exp_l, exp_r, iterexps) -> eval_let_instr ctx exp_l exp_r iterexps
   | RuleI (id, notexp, iterexps) -> eval_rule_instr ctx id notexp iterexps
   | ResultI exps -> eval_result_instr ctx exps
   | ReturnI exp -> eval_return_instr ctx exp
-  | PhantomI phantom -> eval_phantom_instr ctx phantom
 
 and eval_instrs (ctx : Ctx.t) (sign : Sign.t) (instrs : instr list) :
     Ctx.t * Sign.t =
@@ -685,10 +685,52 @@ and eval_if_cond_iter (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list) :
   eval_if_cond_iter' ctx exp_cond iterexps
 
 and eval_if_instr (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list)
-    (instrs_then : instr list) (instrs_else : instr list) : Ctx.t * Sign.t =
+    (instrs_then : instr list) (phantom_opt : phantom option) : Ctx.t * Sign.t =
   let ctx, cond = eval_if_cond_iter ctx exp_cond iterexps in
   if cond then eval_instrs ctx Cont instrs_then
-  else eval_instrs ctx Cont instrs_else
+  else
+    match phantom_opt with
+    | Some (pid, _) ->
+        let ctx = Ctx.cover ctx pid in
+        (ctx, Cont)
+    | None -> (ctx, Cont)
+
+(* Case analysis instruction evaluation *)
+
+and eval_cases (ctx : Ctx.t) (exp : exp) (cases : case list) :
+    Ctx.t * instr list option =
+  cases
+  |> List.fold_left
+       (fun (ctx, block_match) (guard, block) ->
+         match block_match with
+         | Some _ -> (ctx, block_match)
+         | None ->
+             let exp_cond =
+               match guard with
+               | BoolG true -> exp.it
+               | BoolG false -> Il.Ast.UnE (`NotOp, `BoolT, exp)
+               | CmpG (cmpop, optyp, exp_r) ->
+                   Il.Ast.CmpE (cmpop, optyp, exp, exp_r)
+               | SubG typ -> Il.Ast.SubE (exp, typ)
+               | MatchG pattern -> Il.Ast.MatchE (exp, pattern)
+             in
+             let exp_cond = exp_cond $$ (exp.at, Il.Ast.BoolT) in
+             let ctx, value_cond = eval_exp ctx exp_cond in
+             let cond = Value.get_bool value_cond in
+             if cond then (ctx, Some block) else (ctx, None))
+       (ctx, None)
+
+and eval_case_instr (ctx : Ctx.t) (exp : exp) (cases : case list)
+    (phantom_opt : phantom option) : Ctx.t * Sign.t =
+  let ctx, instrs_opt = eval_cases ctx exp cases in
+  match instrs_opt with
+  | Some instrs -> eval_instrs ctx Cont instrs
+  | None -> (
+      match phantom_opt with
+      | Some (pid, _) ->
+          let ctx = Ctx.cover ctx pid in
+          (ctx, Cont)
+      | None -> (ctx, Cont))
 
 (* Let instruction evaluation *)
 
@@ -896,13 +938,6 @@ and eval_result_instr (ctx : Ctx.t) (exps : exp list) : Ctx.t * Sign.t =
 and eval_return_instr (ctx : Ctx.t) (exp : exp) : Ctx.t * Sign.t =
   let ctx, value = eval_exp ctx exp in
   (ctx, Ret value)
-
-(* Phantom instruction evaluation *)
-
-and eval_phantom_instr (ctx : Ctx.t) (phantom : phantom) : Ctx.t * Sign.t =
-  let pid, _ = phantom in
-  let ctx = Ctx.cover ctx pid in
-  (ctx, Cont)
 
 (* Invoke a relation *)
 
