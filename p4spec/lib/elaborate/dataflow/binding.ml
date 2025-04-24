@@ -41,16 +41,10 @@ let update_venv_multi (venv : VEnv.t) (renv_multi : Multibind.REnv.t) : VEnv.t =
 let update_venv_partial (venv : VEnv.t) (renv_partial : Partialbind.REnv.t) :
     VEnv.t =
   List.fold_left
-    (fun venv (id, placeholder) ->
-      let exp, iters =
-        match placeholder with
-        | Partialbind.Placeholder.Bound { exp_orig; iters } -> (exp_orig, iters)
-        | Partialbind.Placeholder.Bindmatch { exp_orig; iters; _ } ->
-            (exp_orig, iters)
-        | Partialbind.Placeholder.Bindsub { exp_orig; iters; _ } ->
-            (exp_orig, iters)
-      in
-      VEnv.add id (exp.note $ exp.at, iters) venv)
+    (fun venv (to_, _, iters) ->
+      let id_to, typ_to, iters_to = to_ in
+      let iters = iters_to @ iters in
+      VEnv.add id_to (typ_to, iters) venv)
     venv renv_partial
 
 (* Expression binding analysis *)

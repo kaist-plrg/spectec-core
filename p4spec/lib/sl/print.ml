@@ -129,9 +129,7 @@ and string_of_notexp notexp =
   |> List.filter_map (fun str -> if str = "" then None else Some str)
   |> String.concat " "
 
-and string_of_iterexp iterexp =
-  let iter, _ = iterexp in
-  string_of_iter iter
+and string_of_iterexp iterexp = Il.Print.string_of_iterexp iterexp
 
 and string_of_iterexps iterexps =
   iterexps |> List.map string_of_iterexp |> String.concat ""

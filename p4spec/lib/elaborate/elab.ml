@@ -847,12 +847,22 @@ and elab_exp_normal (ctx : Ctx.t) (plaintyp_expect : plaintyp) (exp : exp) :
 and elab_exp_wildcard (ctx : Ctx.t) (at : region) (plaintyp_expect : plaintyp) :
     (Ctx.t * Il.Ast.exp) attempt =
   let typ_il = elab_plaintyp ctx plaintyp_expect in
-  let id_fresh =
+  let id_fresh, typ_fresh, iters_fresh =
     Fresh.fresh_from_exp ~wildcard:true ctx.frees
       (Il.Ast.VarE ("_" $ at) $$ (at, typ_il.it))
   in
   let ctx = Ctx.add_free ctx id_fresh in
-  let exp_il = Il.Ast.VarE id_fresh $$ (at, typ_il.it) in
+  let exp_il =
+    List.fold_left
+      (fun exp iter ->
+        let typ =
+          let typ = exp.note $ exp.at in
+          Il.Ast.IterT (typ, iter)
+        in
+        Il.Ast.IterE (exp, (iter, [])) $$ (exp.at, typ))
+      (Il.Ast.VarE id_fresh $$ (id_fresh.at, typ_fresh.it))
+      iters_fresh
+  in
   Ok (ctx, exp_il)
 
 (* Elaboration of plain expressions *)

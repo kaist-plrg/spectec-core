@@ -696,9 +696,43 @@ and eval_let (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) : Ctx.t =
   let ctx, value = eval_exp ctx exp_r in
   assign_exp ctx exp_l value
 
-and eval_let_opt (_ctx : Ctx.t) (_exp_l : exp) (_exp_r : exp) (_vars : var list)
-    (_iterexps : iterexp list) : Ctx.t =
-  failwith "(TODO) eval_let_opt"
+and eval_let_opt (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
+    (iterexps : iterexp list) : Ctx.t =
+  (* Discriminate between bound and binding variables *)
+  let vars_bound, vars_binding =
+    List.partition
+      (fun (id, iters) ->
+        Ctx.bound_value Local ctx (id, iters @ [ Il.Ast.Opt ]))
+      vars
+  in
+  let ctx_sub_opt = Ctx.sub_opt ctx vars_bound in
+  let ctx, values_binding =
+    match ctx_sub_opt with
+    (* If the bound variable supposed to guide the iteration is already empty,
+       then the binding variables are also empty *)
+    | None ->
+        let values_binding =
+          List.init (List.length vars_binding) (fun _ -> Il.Ast.OptV None)
+        in
+        (ctx, values_binding)
+    (* Otherwise, evaluate the premise for the subcontext *)
+    | Some ctx_sub ->
+        let ctx_sub = eval_let_iter' ctx_sub exp_l exp_r iterexps in
+        let ctx = Ctx.commit ctx ctx_sub in
+        let values_binding =
+          List.map
+            (fun var_binding ->
+              let value_binding = Ctx.find_value Local ctx_sub var_binding in
+              Il.Ast.OptV (Some value_binding))
+            vars_binding
+        in
+        (ctx, values_binding)
+  in
+  (* Finally, bind the resulting values *)
+  List.fold_left2
+    (fun ctx (id, iters) value_binding ->
+      Ctx.add_value Local ctx (id, iters @ [ Il.Ast.Opt ]) value_binding)
+    ctx vars_binding values_binding
 
 and eval_let_list (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
     (iterexps : iterexp list) : Ctx.t =

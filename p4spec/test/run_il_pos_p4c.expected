@@ -2880,6 +2880,7 @@ Typecheck success: ../../../../p4/testdata/p4c/program/well-typed/psa-top-level-
 Typecheck success: ../../../../p4/testdata/p4c/program/well-typed/psa-unicast-or-drop-bmv2.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/psa-unicast-or-drop-corrected-bmv2.p4
+negative inner acc: -0.048961
 Typecheck success: ../../../../p4/testdata/p4c/program/well-typed/psa-unicast-or-drop-corrected-bmv2.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/psa-variable-index.p4
