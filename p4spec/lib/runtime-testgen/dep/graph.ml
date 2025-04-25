@@ -95,12 +95,7 @@ let add_node ~(taint : bool) (graph : t) (value : value) : unit =
       vids_from;
     edges
   in
-  G.add graph.edges vid edges_contains;
-  List.iter
-    (fun vid_from ->
-      let edges = G.find graph.edges vid_from in
-      Edges.E.add edges (Edges.Inside, vid) ())
-    vids_from
+  G.add graph.edges vid edges_contains
 
 (* Reassemblers *)
 

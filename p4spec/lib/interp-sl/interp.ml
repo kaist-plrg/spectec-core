@@ -20,29 +20,50 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
   | VarE id, _ ->
       let ctx = Ctx.add_value Local ctx (id, []) value in
       ctx
-  | TupleE exps, TupleV values -> assign_exps ctx exps values
-  | CaseE notexp, CaseV (_mixop_value, values) ->
-      let _mixop_exp, exps = notexp in
-      assign_exps ctx exps values
+  | TupleE exps_inner, TupleV values_inner ->
+      let ctx = assign_exps ctx exps_inner values_inner in
+      List.iter
+        (fun value_inner -> Ctx.add_edge ctx value_inner value Dep.Edges.Assign)
+        values_inner;
+      ctx
+  | CaseE notexp, CaseV (_mixop_value, values_inner) ->
+      let _mixop_exp, exps_inner = notexp in
+      let ctx = assign_exps ctx exps_inner values_inner in
+      List.iter
+        (fun value_inner -> Ctx.add_edge ctx value_inner value Dep.Edges.Assign)
+        values_inner;
+      ctx
   | OptE exp_opt, OptV value_opt -> (
       match (exp_opt, value_opt) with
-      | Some exp, Some value -> assign_exp ctx exp value
+      | Some exp_inner, Some value_inner ->
+          let ctx = assign_exp ctx exp_inner value_inner in
+          Ctx.add_edge ctx value_inner value Dep.Edges.Assign;
+          ctx
       | None, None -> ctx
       | _ -> assert false)
-  | ListE exps, ListV values -> assign_exps ctx exps values
-  | ConsE (exp_h, exp_t), ListV values ->
-      let value_h = List.hd values in
-      let value_t = ListV (List.tl values) $$$ Dep.Graph.fresh () in
+  | ListE exps_inner, ListV values_inner ->
+      let ctx = assign_exps ctx exps_inner values_inner in
+      List.iter
+        (fun value_inner -> Ctx.add_edge ctx value_inner value Dep.Edges.Assign)
+        values_inner;
+      ctx
+  | ConsE (exp_h, exp_t), ListV values_inner ->
+      let value_h = List.hd values_inner in
+      let value_t = ListV (List.tl values_inner) $$$ Dep.Graph.fresh () in
       Ctx.add_node ctx value_t;
       let ctx = assign_exp ctx exp_h value_h in
-      assign_exp ctx exp_t value_t
+      Ctx.add_edge ctx value_h value Dep.Edges.Assign;
+      let ctx = assign_exp ctx exp_t value_t in
+      Ctx.add_edge ctx value_t value Dep.Edges.Assign;
+      ctx
   | IterE (_, (Opt, vars)), OptV None ->
       (* Per iterated variable, make an option out of the value *)
       List.fold_left
         (fun ctx (id, iters) ->
-          let value = OptV None $$$ Dep.Graph.fresh () in
-          Ctx.add_node ctx value;
-          Ctx.add_value Local ctx (id, iters @ [ Il.Ast.Opt ]) value)
+          let value_sub = OptV None $$$ Dep.Graph.fresh () in
+          Ctx.add_node ctx value_sub;
+          Ctx.add_edge ctx value_sub value Dep.Edges.Assign;
+          Ctx.add_value Local ctx (id, iters @ [ Il.Ast.Opt ]) value_sub)
         ctx vars
   | IterE (exp, (Opt, vars)), OptV (Some value) ->
       (* Assign the value to the iterated expression *)
@@ -50,12 +71,13 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
       (* Per iterated variable, make an option out of the value *)
       List.fold_left
         (fun ctx (id, iters) ->
-          let value =
+          let value_sub =
             let value = Ctx.find_value Local ctx (id, iters) in
             OptV (Some value) $$$ Dep.Graph.fresh ()
           in
-          Ctx.add_node ctx value;
-          Ctx.add_value Local ctx (id, iters @ [ Il.Ast.Opt ]) value)
+          Ctx.add_node ctx value_sub;
+          Ctx.add_edge ctx value_sub value Dep.Edges.Assign;
+          Ctx.add_value Local ctx (id, iters @ [ Il.Ast.Opt ]) value_sub)
         ctx vars
   | IterE (exp, (List, vars)), ListV values ->
       (* Map over the value list elements,
@@ -77,9 +99,10 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
           let values =
             List.map (fun ctx -> Ctx.find_value Local ctx (id, iters)) ctxs
           in
-          let value = ListV values $$$ Dep.Graph.fresh () in
-          Ctx.add_node ctx value;
-          Ctx.add_value Local ctx (id, iters @ [ Il.Ast.List ]) value)
+          let value_sub = ListV values $$$ Dep.Graph.fresh () in
+          Ctx.add_node ctx value_sub;
+          Ctx.add_edge ctx value_sub value Dep.Edges.Assign;
+          Ctx.add_value Local ctx (id, iters @ [ Il.Ast.List ]) value_sub)
         ctx vars
   | _ ->
       error exp.at
