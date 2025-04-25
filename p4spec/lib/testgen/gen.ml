@@ -1,10 +1,8 @@
+open Domain.Lib
 open Sl.Ast
-open Runtime_testgen
-
-(* Modules for dependency graph derivation *)
-
-module S = Set.Make (Int)
-module D = Map.Make (Int)
+module Dep = Runtime_testgen.Dep
+module SCov = Runtime_testgen.Cov.Single
+module MCov = Runtime_testgen.Cov.Multiple
 
 (* Helper for random sampling *)
 
@@ -27,9 +25,9 @@ let random_sample (size : int) (vids : vid list) =
 
 (* Derivation from the dependency graph *)
 
-let derive_vid (graph : Dep.Graph.t) (vid : vid) : S.t * int D.t =
-  let vids_visited = ref (S.singleton vid) in
-  let depths_visited = ref (D.singleton vid 0) in
+let derive_vid (graph : Dep.Graph.t) (vid : vid) : VIdSet.t * int VIdMap.t =
+  let vids_visited = ref (VIdSet.singleton vid) in
+  let depths_visited = ref (VIdMap.singleton vid 0) in
   let vids_queue = Queue.create () in
   Queue.add (vid, 0) vids_queue;
   while not (Queue.is_empty vids_queue) do
@@ -38,10 +36,10 @@ let derive_vid (graph : Dep.Graph.t) (vid : vid) : S.t * int D.t =
     | Some edges ->
         Dep.Edges.E.iter
           (fun (_, vid_from) () ->
-            if not (S.mem vid_from !vids_visited) then (
-              vids_visited := S.add vid_from !vids_visited;
+            if not (VIdSet.mem vid_from !vids_visited) then (
+              vids_visited := VIdSet.add vid_from !vids_visited;
               depths_visited :=
-                D.add vid_from (depth_current + 1) !depths_visited;
+                VIdMap.add vid_from (depth_current + 1) !depths_visited;
               Queue.add (vid_from, depth_current + 1) vids_queue))
           edges
     | None -> ()
@@ -53,7 +51,7 @@ let derive_miss' (filename_derive : string) (graph : Dep.Graph.t) (vid : vid) :
   let vids_visited, depths_visited = derive_vid graph vid in
   (* Pick the source nodes *)
   let vids_source =
-    S.filter
+    VIdSet.filter
       (fun vid ->
         vid
         |> Dep.Graph.G.find graph.nodes
@@ -62,9 +60,9 @@ let derive_miss' (filename_derive : string) (graph : Dep.Graph.t) (vid : vid) :
   in
   (* Sort the source nodes by depth, i.e., closest to the miss derivation *)
   let vids_source =
-    vids_source |> S.elements
+    vids_source |> VIdSet.elements
     |> List.map (fun vid ->
-           let depth = D.find vid depths_visited in
+           let depth = VIdMap.find vid depths_visited in
            (vid, depth))
     |> List.sort (fun (_, depth_a) (_, depth_b) -> Int.compare depth_a depth_b)
   in
@@ -95,21 +93,22 @@ let derive_miss' (filename_derive : string) (graph : Dep.Graph.t) (vid : vid) :
     close_out oc
 
 let derive_miss (dirname_derive : string) (graph : Dep.Graph.t)
-    (miss : pid * vid list) : unit =
+    (pids_boot : PIdSet.t) (miss : pid * vid list) : unit =
   let pid, vids = miss in
-  (* Sample 10 derivations from the misses *)
-  let vids_sample = random_sample 3 vids in
-  List.iter
-    (fun vid ->
-      let filename_derive =
-        dirname_derive ^ "/phantom" ^ string_of_int pid ^ "-value"
-        ^ string_of_int vid ^ ".value"
-      in
-      derive_miss' filename_derive graph vid)
-    vids_sample
+  if not (PIdSet.mem pid pids_boot) then ()
+  else
+    let vids_sample = random_sample 3 vids in
+    List.iter
+      (fun vid ->
+        let filename_derive =
+          dirname_derive ^ "/phantom" ^ string_of_int pid ^ "-value"
+          ^ string_of_int vid ^ ".value"
+        in
+        derive_miss' filename_derive graph vid)
+      vids_sample
 
 let derive_misses (dirname_derive : string) (filename_p4 : string)
-    (graph : Dep.Graph.t) (misses : (pid * vid list) list) : unit =
+    (graph : Dep.Graph.t) (pids_boot : PIdSet.t) (misses : (pid * vid list) list) : unit =
   let filename_p4 =
     String.split_on_char '/' filename_p4 |> List.rev |> List.hd
   in
@@ -123,16 +122,67 @@ let derive_misses (dirname_derive : string) (filename_p4 : string)
     dirname_derive ^ "/derive-" ^ filename_p4 ^ "-" ^ timestamp
   in
   Unix.mkdir dirname_derive 0o755;
-  List.iter (derive_miss dirname_derive graph) misses
+  List.iter (derive_miss dirname_derive graph pids_boot) misses
+
+(* Measure initial coverage of phantoms *)
+
+let boot_cold (spec : spec) (includes_p4 : string list)
+    (filenames_p4 : string list) : PIdSet.t =
+  print_endline ">>> Booting fuzzing campaign ... measuring seed coverage";
+  let cover_multi =
+    Interp_sl.Interp.cover_typing spec includes_p4 filenames_p4
+  in
+  MCov.log ~short:true cover_multi;
+  let misses = MCov.collect_miss cover_multi in
+  misses |> List.map fst |> PIdSet.of_list
+
+let boot_warm (filename_cov : string) : PIdSet.t =
+  print_endline ">>> Booting fuzzing campaign ... loading seed coverage";
+  let oc = open_in filename_cov in
+  let rec read_lines pids =
+    try
+      let line = input_line oc in
+      let line =
+        if String.starts_with ~prefix:"Phantom#" line then
+          String.sub line 8 (String.length line - 8)
+        else line
+      in
+      match int_of_string_opt line with
+      | Some pid -> read_lines (pid :: pids)
+      | None -> read_lines pids
+    with End_of_file -> List.rev pids
+  in
+  let pids = read_lines [] in
+  close_in oc;
+  pids |> PIdSet.of_list
 
 (* Generate derivations from closest-misses *)
 
 let gen_typing (spec : spec) (dirname_derive : string)
-    (includes_p4 : string list) (filename_p4 : string) : unit =
+    (includes_p4 : string list) (filename_p4 : string) (pids_boot : PIdSet.t) : unit =
   let ctx, _ =
     Interp_sl.Interp.run_typing ~derive:true spec includes_p4 filename_p4
   in
   let cover = !(ctx.cover) in
   let graph = Option.get ctx.graph in
-  let misses = Cov.collect_miss cover in
-  derive_misses dirname_derive filename_p4 graph misses
+  let misses = SCov.collect_miss cover in
+  derive_misses dirname_derive filename_p4 graph pids_boot misses
+
+let gen_typing_cold (spec : spec) (dirname_derive : string)
+    (includes_p4 : string list) (filename_p4 : string)
+    (filenames_p4 : string list) : unit =
+  let pids_boot = boot_cold spec includes_p4 filenames_p4 in
+  gen_typing spec dirname_derive includes_p4 filename_p4 pids_boot
+
+let gen_typing_warm (spec : spec) (dirname_derive : string)
+    (includes_p4 : string list) (filename_p4 : string)
+    (filename_cov : string) : unit =
+  let pids_boot = boot_warm filename_cov in
+  gen_typing spec dirname_derive includes_p4 filename_p4 pids_boot
+
+let cover_typing (spec : spec) (includes_p4 : string list)
+    (filenames_p4 : string list) : unit =
+  let cover_multi =
+    Interp_sl.Interp.cover_typing spec includes_p4 filenames_p4
+  in
+  MCov.log cover_multi

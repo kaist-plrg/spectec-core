@@ -28,6 +28,7 @@ error
 
 # p4spec testgen artifacts
 deps
+coverage
 
 # calculus
 !calculus/*.tex

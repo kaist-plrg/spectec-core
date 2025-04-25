@@ -6,7 +6,9 @@ module Typ = Runtime_dynamic_sl.Typ
 module Value = Runtime_dynamic_sl.Value
 module Rel = Runtime_dynamic_sl.Rel
 open Runtime_dynamic_sl.Envs
-open Runtime_testgen
+module Dep = Runtime_testgen.Dep
+module SCov = Runtime_testgen.Cov.Single
+module MCov = Runtime_testgen.Cov.Multiple
 open Error
 module F = Format
 open Util.Source
@@ -1207,24 +1209,32 @@ let load_def (ctx : Ctx.t) (def : def) : Ctx.t =
 let load_spec (ctx : Ctx.t) (spec : spec) : Ctx.t =
   List.fold_left load_def ctx spec
 
-(* Entry point: run typing rule from `Prog_ok` relation *)
+(* Entry point:
 
-let run_typing ?(derive : bool = false) (spec : spec)
-    (includes_p4 : string list) (filename_p4 : string) : Ctx.t * value list =
-  Builtin.init ();
-  let cover = ref (Cov.init spec) in
-  let ctx = Ctx.empty filename_p4 derive cover in
+    (i) Run typing rule from `Prog_ok` relation
+    (ii) Measure phantom coverage of a set of P4 programs *)
+
+let do_typing (ctx : Ctx.t) (spec : spec) (includes_p4 : string list)
+    (filename_p4 : string) : Ctx.t * value list =
   let program = In.in_program ctx includes_p4 filename_p4 in
   let ctx = load_spec ctx spec in
   invoke_rel ctx ("Prog_ok" $ no_region) [ program ]
 
-(* let cover_typing (spec : spec) (includes_p4 : string list) *)
-(*     (filenames_p4 : string list) (dirname_closest_miss_opt : string option) : *)
-(*     unit = *)
-(*   let cover = ref Coverage.Cover.empty in *)
-(*   List.iter *)
-(*     (fun filename_p4 -> *)
-(*       try run_typing ~cover spec includes_p4 filename_p4 |> ignore *)
-(*       with _ -> ()) *)
-(*     filenames_p4; *)
-(*   Coverage.log spec !cover dirname_closest_miss_opt *)
+let run_typing ?(derive : bool = false) (spec : spec)
+    (includes_p4 : string list) (filename_p4 : string) : Ctx.t * value list =
+  Builtin.init ();
+  let cover = ref (SCov.init spec) in
+  let ctx = Ctx.empty filename_p4 derive cover in
+  do_typing ctx spec includes_p4 filename_p4
+
+let cover_typing (spec : spec) (includes_p4 : string list)
+    (filenames_p4 : string list) : MCov.Cover.t =
+  let cover_multi = MCov.init spec in
+  List.fold_left
+    (fun cover_multi filename_p4 ->
+      Builtin.init ();
+      let cover_single = ref (SCov.init spec) in
+      let ctx = Ctx.empty filename_p4 false cover_single in
+      (try do_typing ctx spec includes_p4 filename_p4 |> ignore with _ -> ());
+      MCov.extend cover_multi filename_p4 !cover_single)
+    cover_multi filenames_p4

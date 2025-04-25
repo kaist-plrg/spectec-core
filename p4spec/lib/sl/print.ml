@@ -228,9 +228,11 @@ and string_of_targs targs = Il.Print.string_of_targs targs
 
 (* Path conditions *)
 
+and string_of_pid pid = Format.asprintf "Phantom#%d" pid
+
 and string_of_phantom phantom =
   let pid, pathconds = phantom in
-  Format.asprintf "Phantom#%d %s" pid (string_of_pathconds pathconds)
+  Format.asprintf "%s %s" (string_of_pid pid) (string_of_pathconds pathconds)
 
 and string_of_pathcond pathcond =
   match pathcond with
