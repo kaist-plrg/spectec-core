@@ -26,6 +26,9 @@ error
 !p4/status/p4c/*.log
 !p4/status/petr4/*.log
 
+# p4spec testgen artifacts
+deps
+
 # calculus
 !calculus/*.tex
 

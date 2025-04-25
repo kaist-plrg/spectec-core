@@ -36,6 +36,21 @@ let size (graph : t) : int = graph.nodes |> G.length
 
 (* Adders *)
 
+let add_edge (graph : t) (value_from : value) (value_to : value)
+    (label : Edges.label) : unit =
+  let vid_from = value_from.note in
+  let vid_to = value_to.note in
+  (* Update the taint of the from node *)
+  let mirror_from, taint_from = G.find graph.nodes vid_from in
+  let taint_to = G.find graph.nodes vid_to |> Node.taint in
+  let taint_from = Node.update_taint taint_from taint_to in
+  let node_from = (mirror_from, taint_from) in
+  G.add graph.nodes vid_from node_from;
+  (* Add an edge from the from node to the to node *)
+  let edge = (label, vid_to) in
+  let edges = G.find graph.edges vid_from in
+  Edges.E.add edges edge ()
+
 let add_node ~(taint : bool) (graph : t) (value : value) : unit =
   let vid = value.note in
   let node, vids_from =
@@ -72,30 +87,48 @@ let add_node ~(taint : bool) (graph : t) (value : value) : unit =
     Node.init_taint ~init:taint taints_from
   in
   let node = (node, taint) in
-  let edges =
+  G.add graph.nodes vid node;
+  let edges_contains =
     let edges = Edges.E.create (List.length vids_from) in
     List.iter
-      (fun vid_from -> Edges.E.add edges (Edges.Inside, vid_from) ())
+      (fun vid_from -> Edges.E.add edges (Edges.Contains, vid_from) ())
       vids_from;
     edges
   in
-  G.add graph.nodes vid node;
-  G.add graph.edges vid edges
+  G.add graph.edges vid edges_contains;
+  List.iter
+    (fun vid_from ->
+      let edges = G.find graph.edges vid_from in
+      Edges.E.add edges (Edges.Inside, vid) ())
+    vids_from
 
-let add_edge (graph : t) (value_from : value) (value_to : value)
-    (label : Edges.label) : unit =
-  let vid_from = value_from.note in
-  let vid_to = value_to.note in
-  (* Update the taint of the from node *)
-  let mirror_from, taint_from = G.find graph.nodes vid_from in
-  let taint_to = G.find graph.nodes vid_to |> Node.taint in
-  let taint_from = Node.update_taint taint_from taint_to in
-  let node_from = (mirror_from, taint_from) in
-  G.add graph.nodes vid_from node_from;
-  (* Add an edge from the from node to the to node *)
-  let edge = (label, vid_to) in
-  let edges = G.find graph.edges vid_from in
-  Edges.E.add edges edge ()
+(* Reassemblers *)
+
+let rec reassemble_node (graph : t) (vid : vid) : value =
+  let mirror = G.find graph.nodes vid |> fst in
+  match mirror with
+  | BoolN b -> BoolV b $$$ vid
+  | NumN n -> NumV n $$$ vid
+  | TextN s -> TextV s $$$ vid
+  | StructN valuefields ->
+      let atoms, vids = List.split valuefields in
+      let values = List.map (reassemble_node graph) vids in
+      let valuefields = List.combine atoms values in
+      StructV valuefields $$$ vid
+  | CaseN (mixop, vids) ->
+      let values = List.map (reassemble_node graph) vids in
+      CaseV (mixop, values) $$$ vid
+  | TupleN vids ->
+      let values = List.map (reassemble_node graph) vids in
+      TupleV values $$$ vid
+  | OptN (Some vid) ->
+      let value = reassemble_node graph vid in
+      OptV (Some value) $$$ vid
+  | OptN None -> OptV None $$$ vid
+  | ListN vids ->
+      let values = List.map (reassemble_node graph) vids in
+      ListV values $$$ vid
+  | FuncN id -> FuncV id $$$ vid
 
 (* Dot output *)
 

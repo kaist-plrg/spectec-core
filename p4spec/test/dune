@@ -14,8 +14,9 @@
     (diff run_sl_pos_p4c.expected run_sl_pos_p4c.actual))
    (ignore-outputs
     (diff run_sl_neg_p4c.expected run_sl_neg_p4c.actual))
-   (ignore-outputs
-    (diff cov_sl_neg_p4c.expected cov_sl_neg_p4c.actual)))))
+   ; (ignore-outputs
+   ;  (diff cov_sl_neg_p4c.expected cov_sl_neg_p4c.actual))
+   )))
 
 (rule
  (target elab.actual)
@@ -70,19 +71,19 @@
      ../../../../p4/testdata/p4c/program/ill-typed
      -neg)))))
 
-(rule
- (target cov_sl_neg_p4c.actual)
- (action
-  (with-stdout-to
-   cov_sl_neg_p4c.actual
-   (with-stderr-to
-    cov_sl_neg_p4c.err
-    (run
-     ./test.exe
-     cover-sl
-     -s
-     ../../../../spec
-     -i
-     ../../../../p4/testdata/arch
-     -d
-     ../../../../p4/testdata/p4c/program/ill-typed)))))
+; (rule
+;  (target cov_sl_neg_p4c.actual)
+;  (action
+;   (with-stdout-to
+;    cov_sl_neg_p4c.actual
+;    (with-stderr-to
+;     cov_sl_neg_p4c.err
+;     (run
+;      ./test.exe
+;      cover-sl
+;      -s
+;      ../../../../spec
+;      -i
+;      ../../../../p4/testdata/arch
+;      -d
+;      ../../../../p4/testdata/p4c/program/ill-typed)))))

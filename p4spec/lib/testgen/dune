@@ -1,0 +1,13 @@
+(library
+ (name testgen)
+ (libraries
+  util
+  domain
+  xl
+  el
+  il
+  runtime_static
+  runtime_dynamic_sl
+  runtime_testgen
+  interp_sl)
+ (modules gen))

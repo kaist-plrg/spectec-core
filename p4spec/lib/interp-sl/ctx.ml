@@ -48,7 +48,7 @@ type t = {
   (* Value dependency graph *)
   graph : Dep.Graph.t option;
   (* Branch coverage of phantoms *)
-  cover : Coverage.Cover.t ref;
+  cover : Cov.Cover.t ref;
   (* Global layer *)
   global : global;
   (* Local layer *)
@@ -70,9 +70,9 @@ let add_edge (ctx : t) (value_from : value) (value_to : value)
 
 (* Cover *)
 
-let cover (ctx : t) (hit : bool) (pid : int) : t =
-  if hit then ctx.cover := Coverage.Cover.hit pid ctx.filename !(ctx.cover)
-  else ctx.cover := Coverage.Cover.miss pid ctx.filename !(ctx.cover);
+let cover (ctx : t) (hit : bool) (pid : pid) (vid : vid) : t =
+  if hit then ctx.cover := Cov.Cover.hit !(ctx.cover) pid
+  else ctx.cover := Cov.Cover.miss !(ctx.cover) pid vid;
   ctx
 
 (* Finders *)
@@ -196,8 +196,7 @@ let empty_global () : global =
 let empty_local () : local =
   { tdenv = TDEnv.empty; fenv = FEnv.empty; venv = VEnv.empty }
 
-let empty (filename : string) (derive : bool) (cover : Coverage.Cover.t ref) : t
-    =
+let empty (filename : string) (derive : bool) (cover : Cov.Cover.t ref) : t =
   let graph = if derive then Some (Dep.Graph.init ()) else None in
   let global = empty_global () in
   let local = empty_local () in

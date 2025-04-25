@@ -113,7 +113,9 @@ type targ' = Il.Ast.targ'
 
 (* Path conditions *)
 
-and phantom = int * pathcond list
+and pid = int
+
+and phantom = pid * pathcond list
 
 and pathcond =
   | ForallC of exp * iterexp list

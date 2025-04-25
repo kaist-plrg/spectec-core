@@ -6,7 +6,7 @@ module Typ = Runtime_dynamic_sl.Typ
 module Value = Runtime_dynamic_sl.Value
 module Rel = Runtime_dynamic_sl.Rel
 open Runtime_dynamic_sl.Envs
-module Dep = Runtime_testgen.Dep
+open Runtime_testgen
 open Error
 module F = Format
 open Util.Source
@@ -776,44 +776,54 @@ and eval_instrs (ctx : Ctx.t) (sign : Sign.t) (instrs : instr list) :
 
 (* If instruction evaluation *)
 
-and eval_if_cond (ctx : Ctx.t) (exp_cond : exp) : Ctx.t * bool =
+and eval_if_cond (ctx : Ctx.t) (exp_cond : exp) : Ctx.t * bool * value =
   let ctx, value_cond = eval_exp ctx exp_cond in
   let cond = Value.get_bool value_cond in
-  (ctx, cond)
+  (ctx, cond, value_cond)
 
 and eval_if_cond_list (ctx : Ctx.t) (exp_cond : exp) (vars : var list)
-    (iterexps : iterexp list) : Ctx.t * bool =
+    (iterexps : iterexp list) : Ctx.t * bool * value list =
   let ctxs_sub = Ctx.sub_list ctx vars in
   List.fold_left
-    (fun (ctx, cond) ctx_sub ->
-      if not cond then (ctx, cond)
+    (fun (ctx, cond, values_cond) ctx_sub ->
+      if not cond then (ctx, cond, values_cond)
       else
-        let ctx_sub, cond = eval_if_cond_iter' ctx_sub exp_cond iterexps in
+        let ctx_sub, cond, value_cond =
+          eval_if_cond_iter' ctx_sub exp_cond iterexps
+        in
         let ctx = Ctx.commit ctx ctx_sub in
-        (ctx, cond))
-    (ctx, true) ctxs_sub
+        let values_cond = values_cond @ [ value_cond ] in
+        (ctx, cond, values_cond))
+    (ctx, true, []) ctxs_sub
 
 and eval_if_cond_iter' (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list)
-    : Ctx.t * bool =
+    : Ctx.t * bool * value =
   match iterexps with
   | [] -> eval_if_cond ctx exp_cond
   | iterexp_h :: iterexps_t -> (
       let iter_h, vars_h = iterexp_h in
       match iter_h with
       | Opt -> error no_region "(TODO)"
-      | List -> eval_if_cond_list ctx exp_cond vars_h iterexps_t)
+      | List ->
+          let ctx, cond, values_cond =
+            eval_if_cond_list ctx exp_cond vars_h iterexps_t
+          in
+          let value_cond = ListV values_cond $$$ Dep.Graph.fresh () in
+          Ctx.add_node ctx value_cond;
+          (ctx, cond, value_cond))
 
 and eval_if_cond_iter (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list) :
-    Ctx.t * bool =
+    Ctx.t * bool * value =
   let iterexps = List.rev iterexps in
   eval_if_cond_iter' ctx exp_cond iterexps
 
 and eval_if_instr (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list)
     (instrs_then : instr list) (phantom_opt : phantom option) : Ctx.t * Sign.t =
-  let ctx, cond = eval_if_cond_iter ctx exp_cond iterexps in
+  let ctx, cond, value_cond = eval_if_cond_iter ctx exp_cond iterexps in
+  let vid = value_cond.note in
   let ctx =
     match phantom_opt with
-    | Some (pid, _) -> Ctx.cover ctx (not cond) pid
+    | Some (pid, _) -> Ctx.cover ctx (not cond) pid vid
     | None -> ctx
   in
   if cond then eval_instrs ctx Cont instrs_then else (ctx, Cont)
@@ -821,12 +831,12 @@ and eval_if_instr (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list)
 (* Case analysis instruction evaluation *)
 
 and eval_cases (ctx : Ctx.t) (exp : exp) (cases : case list) :
-    Ctx.t * instr list option =
+    Ctx.t * instr list option * value =
   cases
   |> List.fold_left
-       (fun (ctx, block_match) (guard, block) ->
+       (fun (ctx, block_match, values_cond) (guard, block) ->
          match block_match with
-         | Some _ -> (ctx, block_match)
+         | Some _ -> (ctx, block_match, values_cond)
          | None ->
              let exp_cond =
                match guard with
@@ -839,16 +849,23 @@ and eval_cases (ctx : Ctx.t) (exp : exp) (cases : case list) :
              in
              let exp_cond = exp_cond $$ (exp.at, Il.Ast.BoolT) in
              let ctx, value_cond = eval_exp ctx exp_cond in
+             let values_cond = values_cond @ [ value_cond ] in
              let cond = Value.get_bool value_cond in
-             if cond then (ctx, Some block) else (ctx, None))
-       (ctx, None)
+             if cond then (ctx, Some block, values_cond)
+             else (ctx, None, values_cond))
+       (ctx, None, [])
+  |> fun (ctx, block_match, values_cond) ->
+  let value_cond = ListV values_cond $$$ Dep.Graph.fresh () in
+  Ctx.add_node ctx value_cond;
+  (ctx, block_match, value_cond)
 
 and eval_case_instr (ctx : Ctx.t) (exp : exp) (cases : case list)
     (phantom_opt : phantom option) : Ctx.t * Sign.t =
-  let ctx, instrs_opt = eval_cases ctx exp cases in
+  let ctx, instrs_opt, value_cond = eval_cases ctx exp cases in
+  let vid = value_cond.note in
   let ctx =
     match phantom_opt with
-    | Some (pid, _) -> Ctx.cover ctx (Option.is_none instrs_opt) pid
+    | Some (pid, _) -> Ctx.cover ctx (Option.is_none instrs_opt) pid vid
     | None -> ctx
   in
   match instrs_opt with
@@ -1082,7 +1099,16 @@ and invoke_rel (ctx : Ctx.t) (id : id) (values_input : value list) :
   let ctx_local, sign = eval_instrs ctx_local Cont instrs in
   let ctx = Ctx.commit ctx ctx_local in
   match sign with
-  | Res values -> (ctx, values)
+  | Res values_output ->
+      List.iteri
+        (fun idx_arg value_input ->
+          List.iter
+            (fun value_output ->
+              Ctx.add_edge ctx value_output value_input
+                (Dep.Edges.Rel (id, idx_arg)))
+            values_output)
+        values_input;
+      (ctx, values_output)
   | _ -> error id.at "relation was not matched"
 
 (* Invoke a function *)
@@ -1095,8 +1121,12 @@ and invoke_func (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
 and invoke_func_builtin (ctx : Ctx.t) (id : id) (targs : targ list)
     (args : arg list) : Ctx.t * value =
   let ctx, values_input = eval_args ctx args in
-  let value = Builtin.invoke ctx id targs values_input in
-  (ctx, value)
+  let value_output = Builtin.invoke ctx id targs values_input in
+  List.iteri
+    (fun idx_arg value_input ->
+      Ctx.add_edge ctx value_output value_input (Dep.Edges.Func (id, idx_arg)))
+    values_input;
+  (ctx, value_output)
 
 and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
     (args : arg list) : Ctx.t * value =
@@ -1128,7 +1158,13 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
   let ctx_local, sign = eval_instrs ctx_local Cont instrs in
   let ctx = Ctx.commit ctx ctx_local in
   match sign with
-  | Ret value -> (ctx, value)
+  | Ret value_output ->
+      List.iteri
+        (fun idx_arg value_input ->
+          Ctx.add_edge ctx value_output value_input
+            (Dep.Edges.Func (id, idx_arg)))
+        values_input;
+      (ctx, value_output)
   | _ -> error id.at "function was not matched"
 
 (* Load definitions into the context *)
@@ -1150,22 +1186,22 @@ let load_spec (ctx : Ctx.t) (spec : spec) : Ctx.t =
 
 (* Entry point: run typing rule from `Prog_ok` relation *)
 
-let run_typing ?(derive : bool = false)
-    ?(cover : Coverage.Cover.t ref = ref Coverage.Cover.empty) (spec : spec)
+let run_typing ?(derive : bool = false) (spec : spec)
     (includes_p4 : string list) (filename_p4 : string) : Ctx.t * value list =
   Builtin.init ();
+  let cover = ref (Cov.init spec) in
   let ctx = Ctx.empty filename_p4 derive cover in
   let program = In.in_program ctx includes_p4 filename_p4 in
   let ctx = load_spec ctx spec in
   invoke_rel ctx ("Prog_ok" $ no_region) [ program ]
 
-let cover_typing (spec : spec) (includes_p4 : string list)
-    (filenames_p4 : string list) (dirname_closest_miss_opt : string option) :
-    unit =
-  let cover = ref Coverage.Cover.empty in
-  List.iter
-    (fun filename_p4 ->
-      try run_typing ~cover spec includes_p4 filename_p4 |> ignore
-      with _ -> ())
-    filenames_p4;
-  Coverage.log spec !cover dirname_closest_miss_opt
+(* let cover_typing (spec : spec) (includes_p4 : string list) *)
+(*     (filenames_p4 : string list) (dirname_closest_miss_opt : string option) : *)
+(*     unit = *)
+(*   let cover = ref Coverage.Cover.empty in *)
+(*   List.iter *)
+(*     (fun filename_p4 -> *)
+(*       try run_typing ~cover spec includes_p4 filename_p4 |> ignore *)
+(*       with _ -> ()) *)
+(*     filenames_p4; *)
+(*   Coverage.log spec !cover dirname_closest_miss_opt *)
