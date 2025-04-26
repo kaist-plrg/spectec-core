@@ -12,6 +12,10 @@ let fresh_tid (ctx : Ctx.t) (at : region) (targs : targ list)
   Extract.zero at values_input;
   let tid = "FRESH__" ^ string_of_int !ctr in
   ctr := !ctr + 1;
-  let value = TextV tid $$$ Dep.Graph.fresh () in
+  let value =
+    let vid = Dep.Graph.fresh () in
+    let typ = Il.Ast.VarT ("tid" $ no_region, []) in
+    TextV tid $$$ { vid; typ }
+  in
   Ctx.add_node ctx value;
   value

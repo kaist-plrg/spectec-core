@@ -10,7 +10,11 @@ let int_to_text (ctx : Ctx.t) (at : region) (targs : targ list)
     (values_input : value list) : value =
   Extract.zero at targs;
   let num = Extract.one at values_input |> Value.get_num in
-  let value = TextV (Num.string_of_num num) $$$ Dep.Graph.fresh () in
+  let value =
+    let vid = Dep.Graph.fresh () in
+    let typ = Il.Ast.TextT in
+    TextV (Num.string_of_num num) $$$ { vid; typ }
+  in
   Ctx.add_node ctx value;
   value
 
@@ -27,7 +31,11 @@ let strip_prefix (ctx : Ctx.t) (at : region) (targs : targ list)
     String.sub text (String.length prefix)
       (String.length text - String.length prefix)
   in
-  let value = TextV text $$$ Dep.Graph.fresh () in
+  let value =
+    let vid = Dep.Graph.fresh () in
+    let typ = Il.Ast.TextT in
+    TextV text $$$ { vid; typ }
+  in
   Ctx.add_node ctx value;
   value
 
@@ -41,6 +49,10 @@ let strip_suffix (ctx : Ctx.t) (at : region) (targs : targ list)
   let suffix = Value.get_text value_suffix in
   assert (String.ends_with ~suffix text);
   let text = String.sub text 0 (String.length text - String.length suffix) in
-  let value = TextV text $$$ Dep.Graph.fresh () in
+  let value =
+    let vid = Dep.Graph.fresh () in
+    let typ = Il.Ast.TextT in
+    TextV text $$$ { vid; typ }
+  in
   Ctx.add_node ctx value;
   value

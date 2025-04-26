@@ -96,26 +96,29 @@ let run_testgen_command =
      and dirname_derive =
        flag "-derive" (required string)
          ~doc:"directory for value dependency subgraphs"
-      and filename_cov = flag "-warm" (optional string) ~doc:"coverage file for warm boot"
-      and dirnames_cov = flag "-cold" (listed string) ~doc:"directories for cold boot"
+     and filename_cov =
+       flag "-warm" (optional string) ~doc:"coverage file for warm boot"
+     and dirnames_cov =
+       flag "-cold" (listed string) ~doc:"directories for cold boot"
      in
      fun () ->
-       try (
+       try
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
-         match filename_cov, dirnames_cov with
+         match (filename_cov, dirnames_cov) with
          | Some filename_cov, [] ->
-             Testgen.Gen.gen_typing_warm spec_sl dirname_derive includes_p4 filename_p4 
-               filename_cov
+             Testgen.Gen.gen_typing_warm spec_sl dirname_derive includes_p4
+               filename_p4 filename_cov
          | None, dirnames_cov ->
              let filenames_p4 =
                List.concat_map (collect_files ~suffix:".p4") dirnames_cov
              in
-             Testgen.Gen.gen_typing_cold spec_sl dirname_derive includes_p4 filename_p4 
-               filenames_p4
+             Testgen.Gen.gen_typing_cold spec_sl dirname_derive includes_p4
+               filename_p4 filenames_p4
          | _ ->
-             Format.printf "Please provide either a warm or cold boot coverage file\n")
+             Format.printf
+               "Please provide either a warm or cold boot coverage file\n"
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let command =

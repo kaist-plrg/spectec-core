@@ -1,9 +1,12 @@
 open Xl
 open Sl.Ast
+open Util.Source
 
 (* Mirror of the runtime values *)
 
-type mirror =
+type mirror = (mirror', typ') note
+
+and mirror' =
   | BoolN of bool
   | NumN of Num.t
   | TextN of string
@@ -50,7 +53,7 @@ let update_taint (taint : taint) (taint_pred : taint) : taint =
 (* Dot output *)
 
 let dot_of_mirror (mirror : mirror) : string =
-  match mirror with
+  match mirror.it with
   | BoolN b -> string_of_bool b
   | NumN n -> Num.string_of_num n
   | TextN s -> "\\\"" ^ s ^ "\\\""

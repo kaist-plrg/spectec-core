@@ -15,8 +15,7 @@
    (ignore-outputs
     (diff run_sl_neg_p4c.expected run_sl_neg_p4c.actual))
    (ignore-outputs
-    (diff cov_sl_p4c.expected cov_sl_p4c.actual))
-   )))
+    (diff cov_sl_p4c.expected cov_sl_p4c.actual)))))
 
 (rule
  (target elab.actual)

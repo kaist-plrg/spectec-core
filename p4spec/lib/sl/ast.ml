@@ -50,8 +50,9 @@ type typcase = Il.Ast.typcase
 (* Values *)
 
 type vid = int
+type vnote = { vid : vid; typ : typ' }
 
-and value = (value', vid) note
+and value = (value', vnote) note
 and value' =
   | BoolV of bool
   | NumV of Num.t

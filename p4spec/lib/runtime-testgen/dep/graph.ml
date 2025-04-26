@@ -38,8 +38,8 @@ let size (graph : t) : int = graph.nodes |> G.length
 
 let add_edge (graph : t) (value_from : value) (value_to : value)
     (label : Edges.label) : unit =
-  let vid_from = value_from.note in
-  let vid_to = value_to.note in
+  let vid_from = value_from.note.vid in
+  let vid_to = value_to.note.vid in
   (* Update the taint of the from node *)
   let mirror_from, taint_from = G.find graph.nodes vid_from in
   let taint_to = G.find graph.nodes vid_to |> Node.taint in
@@ -52,7 +52,8 @@ let add_edge (graph : t) (value_from : value) (value_to : value)
   Edges.E.add edges edge ()
 
 let add_node ~(taint : bool) (graph : t) (value : value) : unit =
-  let vid = value.note in
+  let vid = value.note.vid in
+  let typ = value.note.typ in
   let node, vids_from =
     match value.it with
     | BoolV b -> (Node.BoolN b, [])
@@ -60,24 +61,25 @@ let add_node ~(taint : bool) (graph : t) (value : value) : unit =
     | TextV s -> (Node.TextN s, [])
     | StructV valuefields ->
         let atoms, values = List.split valuefields in
-        let vids_from = List.map (fun value -> value.note) values in
+        let vids_from = List.map (fun value -> value.note.vid) values in
         let vidfields = List.combine atoms vids_from in
         (Node.StructN vidfields, vids_from)
     | CaseV (mixop, values) ->
-        let vids_from = List.map note values in
+        let vids_from = List.map (fun value -> value.note.vid) values in
         (Node.CaseN (mixop, vids_from), vids_from)
     | TupleV values ->
-        let vids_from = List.map note values in
+        let vids_from = List.map (fun value -> value.note.vid) values in
         (Node.TupleN vids_from, vids_from)
     | OptV None -> (Node.OptN None, [])
     | OptV (Some value) ->
-        let vid_from = note value in
+        let vid_from = value.note.vid in
         (Node.OptN (Some vid_from), [ vid_from ])
     | ListV values ->
-        let vids_from = List.map note values in
+        let vids_from = List.map (fun value -> value.note.vid) values in
         (Node.ListN vids_from, vids_from)
     | FuncV id -> (Node.FuncN id, [])
   in
+  let node = node $$$ typ in
   let taint =
     let taints_from =
       List.map
@@ -101,29 +103,33 @@ let add_node ~(taint : bool) (graph : t) (value : value) : unit =
 
 let rec reassemble_node (graph : t) (vid : vid) : value =
   let mirror = G.find graph.nodes vid |> fst in
-  match mirror with
-  | BoolN b -> BoolV b $$$ vid
-  | NumN n -> NumV n $$$ vid
-  | TextN s -> TextV s $$$ vid
-  | StructN valuefields ->
-      let atoms, vids = List.split valuefields in
-      let values = List.map (reassemble_node graph) vids in
-      let valuefields = List.combine atoms values in
-      StructV valuefields $$$ vid
-  | CaseN (mixop, vids) ->
-      let values = List.map (reassemble_node graph) vids in
-      CaseV (mixop, values) $$$ vid
-  | TupleN vids ->
-      let values = List.map (reassemble_node graph) vids in
-      TupleV values $$$ vid
-  | OptN (Some vid) ->
-      let value = reassemble_node graph vid in
-      OptV (Some value) $$$ vid
-  | OptN None -> OptV None $$$ vid
-  | ListN vids ->
-      let values = List.map (reassemble_node graph) vids in
-      ListV values $$$ vid
-  | FuncN id -> FuncV id $$$ vid
+  let typ = mirror.note in
+  let value =
+    match mirror.it with
+    | BoolN b -> BoolV b
+    | NumN n -> NumV n
+    | TextN s -> TextV s
+    | StructN valuefields ->
+        let atoms, vids = List.split valuefields in
+        let values = List.map (reassemble_node graph) vids in
+        let valuefields = List.combine atoms values in
+        StructV valuefields
+    | CaseN (mixop, vids) ->
+        let values = List.map (reassemble_node graph) vids in
+        CaseV (mixop, values)
+    | TupleN vids ->
+        let values = List.map (reassemble_node graph) vids in
+        TupleV values
+    | OptN (Some vid) ->
+        let value = reassemble_node graph vid in
+        OptV (Some value)
+    | OptN None -> OptV None
+    | ListN vids ->
+        let values = List.map (reassemble_node graph) vids in
+        ListV values
+    | FuncN id -> FuncV id
+  in
+  value $$$ { vid; typ }
 
 (* Dot output *)
 
