@@ -81,7 +81,7 @@ let in_num (ctx : Ctx.t) (num : P4.num) : value =
           NumV (`Int i) $$$ { vid; typ }
         in
         Ctx.add_node ~taint:true ctx value_int;
-        (mixop, [ value_int; value_width ])
+        (mixop, [ value_width; value_int ])
     | i, None ->
         let mixop = [ [ in_atom "INT" ]; [] ] in
         let value_int =

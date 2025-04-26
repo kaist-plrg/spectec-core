@@ -105,10 +105,10 @@ let rec antiunify_exp (frees : IdSet.t) (uenv : UEnv.t) (exp_template : exp)
         let vars_template =
           vars_template @ vars
           |> List.fold_left
-               (fun vars_template (id, iters) ->
+               (fun vars_template (id, typ, iters) ->
                  match UEnv.find_opt id uenv with
                  | Some id_unifier ->
-                     let var = (id_unifier, iters) in
+                     let var = (id_unifier, typ, iters) in
                      if List.exists (Il.Eq.eq_var var) vars_template then
                        vars_template
                      else vars_template @ [ var ]

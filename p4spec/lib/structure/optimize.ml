@@ -20,10 +20,10 @@ let rename_iterexp (rename : Rename.t) (iterexp : iterexp) : iterexp =
   let iter, vars = iterexp in
   let vars =
     List.map
-      (fun (id, iters) ->
+      (fun (id, typ, iters) ->
         match Rename.find_opt id rename with
-        | Some id_renamed -> (id_renamed, iters)
-        | None -> (id, iters))
+        | Some id_renamed -> (id_renamed, typ, iters)
+        | None -> (id, typ, iters))
       vars
   in
   (iter, vars)

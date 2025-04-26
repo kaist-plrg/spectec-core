@@ -171,12 +171,7 @@ let rec annotate_exp (bounds : VEnv.t) (exp : exp) : VEnv.t * exp =
       match itervars with
       | [] -> error at "empty iteration"
       | _ ->
-          let exp =
-            let itervars =
-              List.map (fun (id, _typ, iters) -> (id, iters)) itervars
-            in
-            IterE (exp, (iter, itervars)) $$ (at, note)
-          in
+          let exp = IterE (exp, (iter, itervars)) $$ (at, note) in
           let occurs =
             List.fold_left
               (fun occurs (id, typ, iters) ->
@@ -280,19 +275,11 @@ and annotate_prem (binds : VEnv.t) (bounds : VEnv.t) (prem : prem) :
                itervars ->
           error at
             ("cannot determine dimension of binding identifier(s) only: "
-            ^ String.concat ", "
-                (itervars
-                |> List.map (fun (id, _, iters) -> (id, iters))
-                |> List.map Il.Print.string_of_var)
+            ^ String.concat ", " (List.map Il.Print.string_of_var itervars)
             ^ " "
             ^ Il.Print.string_of_prem prem)
       | _ ->
-          let prem =
-            let itervars =
-              List.map (fun (id, _typ, iters) -> (id, iters)) itervars
-            in
-            IterPr (prem, (iter, itervars)) $ at
-          in
+          let prem = IterPr (prem, (iter, itervars)) $ at in
           let occurs =
             List.fold_left
               (fun occurs (id, typ, iters) ->

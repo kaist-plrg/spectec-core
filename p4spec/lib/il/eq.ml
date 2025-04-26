@@ -24,12 +24,12 @@ let eq_iters (iters_a : iter list) (iters_b : iter list) : bool =
 
 (* Variables *)
 
-let eq_var (var_a : var) (var_b : var) : bool =
-  let id_a, iters_a = var_a in
-  let id_b, iters_b = var_b in
+let rec eq_var (var_a : var) (var_b : var) : bool =
+  let id_a, _typ_a, iters_a = var_a in
+  let id_b, _typ_b, iters_b = var_b in
   eq_id id_a id_b && eq_iters iters_a iters_b
 
-let eq_vars (vars_a : var list) (vars_b : var list) : bool =
+and eq_vars (vars_a : var list) (vars_b : var list) : bool =
   let compare_id (id_a : id) (id_b : id) : int = compare id_a.it id_b.it in
   let compare_iters (iters_a : iter list) (iters_b : iter list) : int =
     let compare_iter (iter_a : iter) (iter_b : iter) : int =
@@ -41,7 +41,8 @@ let eq_vars (vars_a : var list) (vars_b : var list) : bool =
     in
     List.compare compare_iter iters_a iters_b
   in
-  let compare_var ((id_a, iters_a) : var) ((id_b, iters_b) : var) : int =
+  let compare_var ((id_a, _typ_a, iters_a) : var)
+      ((id_b, _typ_b, iters_b) : var) : int =
     match compare_id id_a id_b with
     | 0 -> compare_iters iters_a iters_b
     | n -> n
@@ -52,7 +53,7 @@ let eq_vars (vars_a : var list) (vars_b : var list) : bool =
 
 (* Types *)
 
-let rec eq_typ (typ_a : typ) (typ_b : typ) : bool =
+and eq_typ (typ_a : typ) (typ_b : typ) : bool =
   match (typ_a.it, typ_b.it) with
   | BoolT, BoolT -> true
   | NumT numtyp_a, NumT numtyp_b -> Num.equiv numtyp_a numtyp_b

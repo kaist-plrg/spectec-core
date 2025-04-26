@@ -66,12 +66,11 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
   | IterE (_, (Opt, vars)), OptV None ->
       (* Per iterated variable, make an option out of the value *)
       List.fold_left
-        (fun ctx (id, iters) ->
+        (fun ctx (id, typ, iters) ->
           let value_sub =
             let vid = Dep.Graph.fresh () in
-            (* TODO!!! *)
-            let typ = Il.Ast.BoolT in
-            OptV None $$$ { vid; typ }
+            let typ = Typ.iterate typ (iters @ [ Il.Ast.Opt ]) in
+            OptV None $$$ { vid; typ = typ.it }
           in
           Ctx.add_node ctx value_sub;
           Ctx.add_edge ctx value_sub value Dep.Edges.Assign;
@@ -82,13 +81,12 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
       let ctx = assign_exp ctx exp value in
       (* Per iterated variable, make an option out of the value *)
       List.fold_left
-        (fun ctx (id, iters) ->
+        (fun ctx (id, typ, iters) ->
           let value_sub =
             let value = Ctx.find_value Local ctx (id, iters) in
             let vid = Dep.Graph.fresh () in
-            (* TODO!!! *)
-            let typ = Il.Ast.BoolT in
-            OptV (Some value) $$$ { vid; typ }
+            let typ = Typ.iterate typ (iters @ [ Il.Ast.Opt ]) in
+            OptV (Some value) $$$ { vid; typ = typ.it }
           in
           Ctx.add_node ctx value_sub;
           Ctx.add_edge ctx value_sub value Dep.Edges.Assign;
@@ -110,15 +108,14 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
       (* Per iterated variable, collect its elementwise value,
          then make a sequence out of them *)
       List.fold_left
-        (fun ctx (id, iters) ->
+        (fun ctx (id, typ, iters) ->
           let values =
             List.map (fun ctx -> Ctx.find_value Local ctx (id, iters)) ctxs
           in
           let value_sub =
             let vid = Dep.Graph.fresh () in
-            (* TODO!!! *)
-            let typ = Il.Ast.BoolT in
-            ListV values $$$ { vid; typ }
+            let typ = Typ.iterate typ (iters @ [ Il.Ast.List ]) in
+            ListV values $$$ { vid; typ = typ.it }
           in
           Ctx.add_node ctx value_sub;
           Ctx.add_edge ctx value_sub value Dep.Edges.Assign;
@@ -827,13 +824,12 @@ and eval_update_path (ctx : Ctx.t) (value_b : value) (path : path)
       in
       let value =
         let vid = Dep.Graph.fresh () in
-        (* (TODO!!! CHECK *)
         let typ = path.note in
         StructV fields $$$ { vid; typ }
       in
       Ctx.add_node ctx value;
       eval_update_path ctx value_b path value
-  | _ -> failwith "(TODO) update"
+  | _ -> failwith "(TODO eval_update_path)"
 
 and eval_upd_exp (_note : typ') (ctx : Ctx.t) (exp_b : exp) (path : path)
     (exp_f : exp) : Ctx.t * value =
@@ -1082,7 +1078,7 @@ and eval_let_opt (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
   (* Discriminate between bound and binding variables *)
   let vars_bound, vars_binding =
     List.partition
-      (fun (id, iters) ->
+      (fun (id, _typ, iters) ->
         Ctx.bound_value Local ctx (id, iters @ [ Il.Ast.Opt ]))
       vars
   in
@@ -1093,15 +1089,18 @@ and eval_let_opt (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
        then the binding variables are also empty *)
     | None ->
         let values_binding =
-          List.init (List.length vars_binding) (fun _ ->
+          List.map
+            (fun (_id_binding, typ_binding, iters_binding) ->
               let value_binding =
                 let vid = Dep.Graph.fresh () in
-                (* (TODO!!!) *)
-                let typ = Il.Ast.BoolT in
-                OptV None $$$ { vid; typ }
+                let typ =
+                  Typ.iterate typ_binding (iters_binding @ [ Il.Ast.Opt ])
+                in
+                OptV None $$$ { vid; typ = typ.it }
               in
               Ctx.add_node ctx value_binding;
               value_binding)
+            vars_binding
         in
         (ctx, values_binding)
     (* Otherwise, evaluate the premise for the subcontext *)
@@ -1110,13 +1109,16 @@ and eval_let_opt (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
         let ctx = Ctx.commit ctx ctx_sub in
         let values_binding =
           List.map
-            (fun var_binding ->
-              let value_binding = Ctx.find_value Local ctx_sub var_binding in
+            (fun (id_binding, typ_binding, iters_binding) ->
+              let value_binding =
+                Ctx.find_value Local ctx_sub (id_binding, iters_binding)
+              in
               let value_binding =
                 let vid = Dep.Graph.fresh () in
-                (* (TODO!!!) *)
-                let typ = Il.Ast.BoolT in
-                OptV (Some value_binding) $$$ { vid; typ }
+                let typ =
+                  Typ.iterate typ_binding (iters_binding @ [ Il.Ast.Opt ])
+                in
+                OptV (Some value_binding) $$$ { vid; typ = typ.it }
               in
               Ctx.add_node ctx value_binding;
               value_binding)
@@ -1126,8 +1128,10 @@ and eval_let_opt (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
   in
   (* Finally, bind the resulting values *)
   List.fold_left2
-    (fun ctx (id, iters) value_binding ->
-      Ctx.add_value Local ctx (id, iters @ [ Il.Ast.Opt ]) value_binding)
+    (fun ctx (id_binding, _typ_binding, iters_binding) value_binding ->
+      Ctx.add_value Local ctx
+        (id_binding, iters_binding @ [ Il.Ast.Opt ])
+        value_binding)
     ctx vars_binding values_binding
 
 and eval_let_list (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
@@ -1135,7 +1139,7 @@ and eval_let_list (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
   (* Discriminate between bound and binding variables *)
   let vars_bound, vars_binding =
     List.partition
-      (fun (id, iters) ->
+      (fun (id, _typ, iters) ->
         Ctx.bound_value Local ctx (id, iters @ [ Il.Ast.List ]))
       vars
   in
@@ -1159,7 +1163,10 @@ and eval_let_list (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
               let ctx_sub = eval_let_iter' ctx_sub exp_l exp_r iterexps in
               let ctx = Ctx.commit ctx ctx_sub in
               let value_binding_batch =
-                List.map (Ctx.find_value Local ctx_sub) vars_binding
+                List.map
+                  (fun (id_binding, _typ_binding, iters_binding) ->
+                    Ctx.find_value Local ctx_sub (id_binding, iters_binding))
+                  vars_binding
               in
               let values_binding_batch =
                 values_binding_batch @ [ value_binding_batch ]
@@ -1172,15 +1179,16 @@ and eval_let_list (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
   in
   (* Finally, bind the resulting binding batches *)
   List.fold_left2
-    (fun ctx (id, iters) values_binding ->
+    (fun ctx (id_binding, typ_binding, iters_binding) values_binding ->
       let value_binding =
         let vid = Dep.Graph.fresh () in
-        (* (TODO!!!) *)
-        let typ = Il.Ast.BoolT in
-        ListV values_binding $$$ { vid; typ }
+        let typ = Typ.iterate typ_binding (iters_binding @ [ Il.Ast.List ]) in
+        ListV values_binding $$$ { vid; typ = typ.it }
       in
       Ctx.add_node ctx value_binding;
-      Ctx.add_value Local ctx (id, iters @ [ Il.Ast.List ]) value_binding)
+      Ctx.add_value Local ctx
+        (id_binding, iters_binding @ [ Il.Ast.List ])
+        value_binding)
     ctx vars_binding values_binding
 
 and eval_let_iter' (ctx : Ctx.t) (exp_l : exp) (exp_r : exp)
@@ -1225,7 +1233,7 @@ and eval_rule_list (ctx : Ctx.t) (id : id) (notexp : notexp) (vars : var list)
   (* Discriminate between bound and binding variables *)
   let vars_bound, vars_binding =
     List.partition
-      (fun (id, iters) ->
+      (fun (id, _typ, iters) ->
         Ctx.bound_value Local ctx (id, iters @ [ Il.Ast.List ]))
       vars
   in
@@ -1249,7 +1257,10 @@ and eval_rule_list (ctx : Ctx.t) (id : id) (notexp : notexp) (vars : var list)
               let ctx_sub = eval_rule_iter' ctx_sub id notexp iterexps in
               let ctx = Ctx.commit ctx ctx_sub in
               let value_binding_batch =
-                List.map (Ctx.find_value Local ctx_sub) vars_binding
+                List.map
+                  (fun (id_binding, _typ_binding, iters_binding) ->
+                    Ctx.find_value Local ctx_sub (id_binding, iters_binding))
+                  vars_binding
               in
               let values_binding_batch =
                 values_binding_batch @ [ value_binding_batch ]
@@ -1262,15 +1273,16 @@ and eval_rule_list (ctx : Ctx.t) (id : id) (notexp : notexp) (vars : var list)
   in
   (* Finally, bind the resulting binding batches *)
   List.fold_left2
-    (fun ctx (id, iters) values_binding ->
+    (fun ctx (id_binding, typ_binding, iters_binding) values_binding ->
       let value_binding =
         let vid = Dep.Graph.fresh () in
-        (* (TODO!!!) *)
-        let typ = Il.Ast.BoolT in
-        ListV values_binding $$$ { vid; typ }
+        let typ = Typ.iterate typ_binding (iters_binding @ [ Il.Ast.List ]) in
+        ListV values_binding $$$ { vid; typ = typ.it }
       in
       Ctx.add_node ctx value_binding;
-      Ctx.add_value Local ctx (id, iters @ [ Il.Ast.List ]) value_binding)
+      Ctx.add_value Local ctx
+        (id_binding, iters_binding @ [ Il.Ast.List ])
+        value_binding)
     ctx vars_binding values_binding
 
 and eval_rule_iter' (ctx : Ctx.t) (id : id) (notexp : notexp)
