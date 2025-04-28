@@ -1,3 +1,4 @@
+open Domain.Lib
 open Sl.Ast
 open Util.Source
 
@@ -101,7 +102,14 @@ let add_node ~(taint : bool) (graph : t) (value : value) : unit =
 
 (* Reassemblers *)
 
-let rec reassemble_node (graph : t) (vid : vid) : value =
+let rec reassemble_node (graph : t) (renamer : value VIdMap.t) (vid : vid) :
+    value =
+  match VIdMap.find_opt vid renamer with
+  | Some value -> value
+  | _ -> reassemble_node' graph renamer vid
+
+and reassemble_node' (graph : t) (renamer : value VIdMap.t) (vid : vid) : value
+    =
   let mirror = G.find graph.nodes vid |> fst in
   let typ = mirror.note in
   let value =
@@ -111,21 +119,20 @@ let rec reassemble_node (graph : t) (vid : vid) : value =
     | TextN s -> TextV s
     | StructN valuefields ->
         let atoms, vids = List.split valuefields in
-        let values = List.map (reassemble_node graph) vids in
+        let values = List.map (reassemble_node graph renamer) vids in
         let valuefields = List.combine atoms values in
         StructV valuefields
     | CaseN (mixop, vids) ->
-        let values = List.map (reassemble_node graph) vids in
+        let values = List.map (reassemble_node graph renamer) vids in
         CaseV (mixop, values)
     | TupleN vids ->
-        let values = List.map (reassemble_node graph) vids in
+        let values = List.map (reassemble_node graph renamer) vids in
         TupleV values
-    | OptN (Some vid) ->
-        let value = reassemble_node graph vid in
-        OptV (Some value)
-    | OptN None -> OptV None
+    | OptN vid_opt ->
+        let value_opt = Option.map (reassemble_node graph renamer) vid_opt in
+        OptV value_opt
     | ListN vids ->
-        let values = List.map (reassemble_node graph) vids in
+        let values = List.map (reassemble_node graph renamer) vids in
         ListV values
     | FuncN id -> FuncV id
   in

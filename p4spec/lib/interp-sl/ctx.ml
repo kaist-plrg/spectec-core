@@ -48,6 +48,7 @@ type t = {
   filename : string;
   (* Value dependency graph *)
   graph : Dep.Graph.t option;
+  vid_program : vid option;
   (* Branch coverage of phantoms *)
   cover : SCov.Cover.t ref;
   (* Global layer *)
@@ -68,6 +69,9 @@ let add_edge (ctx : t) (value_from : value) (value_to : value)
   match ctx.graph with
   | Some graph -> Dep.Graph.add_edge graph value_from value_to label
   | None -> ()
+
+let set_vid_program (ctx : t) (vid_program : vid) : t =
+  { ctx with vid_program = Some vid_program }
 
 (* Cover *)
 
@@ -199,9 +203,10 @@ let empty_local () : local =
 
 let empty (filename : string) (derive : bool) (cover : SCov.Cover.t ref) : t =
   let graph = if derive then Some (Dep.Graph.init ()) else None in
+  let vid_program = None in
   let global = empty_global () in
   let local = empty_local () in
-  { filename; graph; cover; global; local }
+  { filename; graph; vid_program; cover; global; local }
 
 (* Constructing a local context *)
 

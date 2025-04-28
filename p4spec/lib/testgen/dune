@@ -10,4 +10,4 @@
   runtime_dynamic_sl
   runtime_testgen
   interp_sl)
- (modules boot derive gen))
+ (modules boot mutate gen))

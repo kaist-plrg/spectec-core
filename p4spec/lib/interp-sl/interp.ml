@@ -1421,6 +1421,7 @@ let load_spec (ctx : Ctx.t) (spec : spec) : Ctx.t =
 let do_typing (ctx : Ctx.t) (spec : spec) (includes_p4 : string list)
     (filename_p4 : string) : Ctx.t * value list =
   let program = In.in_program ctx includes_p4 filename_p4 in
+  let ctx = Ctx.set_vid_program ctx program.note.vid in
   let ctx = load_spec ctx spec in
   invoke_rel ctx ("Prog_ok" $ no_region) [ program ]
 
