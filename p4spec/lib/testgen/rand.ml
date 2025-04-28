@@ -1,5 +1,9 @@
 (* Helper for random sampling *)
 
+let random_select (lst : 'a list) : 'a option =
+  if List.length lst = 0 then None
+  else Random.int (List.length lst) |> List.nth lst |> Option.some
+
 let random_sample (size : int) (lst : 'a list) : 'a list =
   let arr = Array.of_list lst in
   let len = Array.length arr in

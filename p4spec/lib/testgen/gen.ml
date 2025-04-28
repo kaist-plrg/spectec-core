@@ -19,11 +19,12 @@ let rec collect_files ~(suffix : string) dir =
       else files)
     [] files
 
-let mv (filename_src : string) (dirname_dst : string) : unit =
+let mv (filename_src : string) (dirname_dst : string)
+    (filename_dst_prefix : string) : unit =
   let filename_base =
     String.split_on_char '/' filename_src |> List.rev |> List.hd
   in
-  let filename_dst = dirname_dst ^ "/" ^ filename_base in
+  let filename_dst = dirname_dst ^ "/" ^ filename_dst_prefix ^ filename_base in
   Sys_unix.rename filename_src filename_dst
 
 let rmdir (dirname : string) : unit =
@@ -91,12 +92,18 @@ let derive_misses (graph : Dep.Graph.t) (pids_covered : PIdSet.t)
 
 (* Mutation of the closest-ASTs *)
 
-let mutate_miss (filename_gen : string) (graph : Dep.Graph.t)
-    (vid_program : vid) (vid_source : vid) : unit =
+let rec mutate_miss (config : Config.t) (filename_gen : string)
+    (graph : Dep.Graph.t) (vid_program : vid) (vid_source : vid) : unit =
   (* Retrieve the closest source AST *)
   let value_source = Dep.Graph.reassemble_node graph VIdMap.empty vid_source in
   (* Mutate the closest source AST *)
-  let value_mutated = Mutate.mutate value_source in
+  let value_mutated_opt = Mutate.mutate config.tdenv value_source in
+  Option.iter
+    (mutate_miss' filename_gen graph vid_program value_source)
+    value_mutated_opt
+
+and mutate_miss' (filename_gen : string) (graph : Dep.Graph.t)
+    (vid_program : vid) (value_source : value) (value_mutated : value) : unit =
   (* Reassemble the program with the mutated AST *)
   let renamer = VIdMap.singleton value_source.note.vid value_mutated in
   let value_program = Dep.Graph.reassemble_node graph renamer vid_program in
@@ -107,9 +114,9 @@ let mutate_miss (filename_gen : string) (graph : Dep.Graph.t)
   Format.asprintf "%a\n" P4el.Pp.pp_program program |> output_string oc;
   close_out oc
 
-let mutate_misses (fuel : int) (dirname_gen : string) (graph : Dep.Graph.t)
-    (vid_program : vid) (derivations_source : (pid * (vid * int) list) list) :
-    unit =
+let mutate_misses (fuel : int) (config : Config.t) (dirname_gen : string)
+    (graph : Dep.Graph.t) (vid_program : vid)
+    (derivations_source : (pid * (vid * int) list) list) : unit =
   (* Randomly sample the closest ASTs *)
   let derivations_source =
     List.map
@@ -138,10 +145,10 @@ let mutate_misses (fuel : int) (dirname_gen : string) (graph : Dep.Graph.t)
       List.iter
         (fun (vid_source, depth) ->
           let filename_gen =
-            Format.asprintf "%s/fuel%d-phantom%d-value%d-rank%d" dirname_gen
-              fuel pid vid_source depth
+            Format.asprintf "%s/f%dp%dv%dr%d" dirname_gen fuel pid vid_source
+              depth
           in
-          mutate_miss filename_gen graph vid_program vid_source)
+          mutate_miss config filename_gen graph vid_program vid_source)
         vids_source)
     derivations_source
 
@@ -174,8 +181,13 @@ and filter_interesting' (config : Config.t) (filename_gen_p4 : string) :
   else (
     print_endline ">>> Found an interesting test program";
     (* Copy the interesting test program to the output directory *)
-    if welltyped then mv filename_gen_p4 config.dirname_well_p4
-    else mv filename_gen_p4 config.dirname_ill_p4;
+    let filename_prefix =
+      "c"
+      ^ (pids_new |> PIdSet.elements |> List.map string_of_int
+       |> String.concat "-")
+    in
+    if welltyped then mv filename_gen_p4 config.dirname_well_p4 filename_prefix
+    else mv filename_gen_p4 config.dirname_ill_p4 filename_prefix;
     (* Update the set of covered phantoms *)
     let pids_covered = PIdSet.union config.pids_covered pids_new in
     { config with pids_covered })
@@ -204,7 +216,8 @@ let fuzz_single (fuel : int) (config : Config.t) (filename_p4 : string) : string
   (* Derive closest ASTs from the closest-miss phantoms *)
   let derivations_source = derive_misses graph config.pids_covered misses in
   (* Mutate the closest ASTs and dump to file *)
-  mutate_misses fuel dirname_gen_single graph vid_program derivations_source;
+  mutate_misses fuel config dirname_gen_single graph vid_program
+    derivations_source;
   dirname_gen_single
 
 let fuzz_multiple (fuel : int) (config : Config.t) : Config.t =

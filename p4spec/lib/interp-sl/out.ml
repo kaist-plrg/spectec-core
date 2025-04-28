@@ -40,7 +40,7 @@ let out_num (value_num : value) : P4El.num =
     ->
       let width =
         match value_width.it with
-        | NumV (`Int width) -> width
+        | NumV (`Nat width) -> width
         | _ -> assert false
       in
       let i =
@@ -51,7 +51,7 @@ let out_num (value_num : value) : P4El.num =
     ->
       let width =
         match value_width.it with
-        | NumV (`Int width) -> width
+        | NumV (`Nat width) -> width
         | _ -> assert false
       in
       let i =
@@ -342,6 +342,18 @@ and out_expr (value_expr : value) : P4El.expr =
       let member = out_member value_member in
       P4El.ErrAccE { member } $ no_info
   | CaseV
+      ( [ [ { it = Atom "TypeAccE"; _ } ]; []; [] ],
+        [ value_var_base; value_member ] ) ->
+      let var_base = out_var value_var_base in
+      let member = out_member value_member in
+      P4El.TypeAccE { var_base; member } $ no_info
+  | CaseV
+      ( [ [ { it = Atom "ExprAccE"; _ } ]; []; [] ],
+        [ value_expr_base; value_member ] ) ->
+      let expr_base = out_expr value_expr_base in
+      let member = out_member value_member in
+      P4El.ExprAccE { expr_base; member } $ no_info
+  | CaseV
       ( [ [ { it = Atom "CallFuncE"; _ } ]; []; []; [] ],
         [ value_var_func; value_targs; value_args ] ) ->
       let var_func = out_var value_var_func in
@@ -371,7 +383,9 @@ and out_expr (value_expr : value) : P4El.expr =
       let targs = out_targs value_targs in
       let args = out_args valur_args in
       P4El.InstE { var_inst; targs; args } $ no_info
-  | _ -> assert false
+  | _ ->
+      Sl.Print.string_of_value value_expr |> print_endline;
+      assert false
 
 and out_exprs (value_exprs : value) : P4El.expr list =
   out_list out_expr value_exprs
@@ -431,7 +445,7 @@ and out_stmt (value_stmt : value) : P4El.stmt =
       let block = out_block value_block in
       P4El.BlockS { block } $ no_info
   | CaseV ([ [ { it = Atom "ExitS"; _ } ] ], []) -> P4El.ExitS $ no_info
-  | CaseV ([ [ { it = Atom "Ret"; _ } ]; [] ], [ value_expr_ret ]) ->
+  | CaseV ([ [ { it = Atom "RetS"; _ } ]; [] ], [ value_expr_ret ]) ->
       let expr_ret = out_opt out_expr value_expr_ret in
       P4El.RetS { expr_ret } $ no_info
   | CaseV
