@@ -1,6 +1,9 @@
 (library
  (name testgen)
  (libraries
+  core
+  core_unix
+  core_unix.sys_unix
   util
   domain
   xl
@@ -10,4 +13,4 @@
   runtime_dynamic_sl
   runtime_testgen
   interp_sl)
- (modules boot mutate gen))
+ (modules rand config boot mutate gen))

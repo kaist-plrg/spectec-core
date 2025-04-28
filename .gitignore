@@ -27,6 +27,8 @@ error
 !p4/status/petr4/*.log
 
 # p4spec testgen artifacts
+gen
+seed
 deps
 coverage
 

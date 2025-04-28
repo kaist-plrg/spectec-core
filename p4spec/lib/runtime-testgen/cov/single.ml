@@ -87,6 +87,13 @@ let miss (cover : Cover.t) (pid : pid) (vid : vid) : Cover.t =
 
 (* Collector *)
 
+let collect_hit (cover : Cover.t) : pid list =
+  Cover.fold
+    (fun (pid : pid) (branch : Branch.t) (hits : pid list) ->
+      match branch.status with Hit -> pid :: hits | Miss _ -> hits)
+    cover []
+  |> List.rev
+
 let collect_miss (cover : Cover.t) : (pid * vid list) list =
   Cover.fold
     (fun (pid : pid) (branch : Branch.t) (misses : (pid * vid list) list) ->

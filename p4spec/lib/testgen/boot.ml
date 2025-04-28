@@ -10,7 +10,7 @@ let boot_cold (spec : spec) (includes_p4 : string list)
     (filenames_p4 : string list) : PIdSet.t =
   print_endline ">>> Booting fuzzing campaign ... measuring seed coverage";
   let cover_multi =
-    Interp_sl.Interp.cover_typing spec includes_p4 filenames_p4
+    Interp_sl.Interp.cover_typings spec includes_p4 filenames_p4
   in
   MCov.log ~short:true cover_multi;
   let misses = MCov.collect_miss cover_multi in

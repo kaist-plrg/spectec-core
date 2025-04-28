@@ -1433,13 +1433,24 @@ let run_typing ?(derive : bool = false) (spec : spec)
   do_typing ctx spec includes_p4 filename_p4
 
 let cover_typing (spec : spec) (includes_p4 : string list)
+    (filename_p4 : string) : bool * SCov.Cover.t =
+  Builtin.init ();
+  let cover_single = ref (SCov.init spec) in
+  let ctx = Ctx.empty filename_p4 false cover_single in
+  let welltyped =
+    try
+      do_typing ctx spec includes_p4 filename_p4 |> ignore;
+      true
+    with _ -> false
+  in
+  let cover_single = !cover_single in
+  (welltyped, cover_single)
+
+let cover_typings (spec : spec) (includes_p4 : string list)
     (filenames_p4 : string list) : MCov.Cover.t =
   let cover_multi = MCov.init spec in
   List.fold_left
     (fun cover_multi filename_p4 ->
-      Builtin.init ();
-      let cover_single = ref (SCov.init spec) in
-      let ctx = Ctx.empty filename_p4 false cover_single in
-      (try do_typing ctx spec includes_p4 filename_p4 |> ignore with _ -> ());
-      MCov.extend cover_multi filename_p4 !cover_single)
+      let _, cover_single = cover_typing spec includes_p4 filename_p4 in
+      MCov.extend cover_multi filename_p4 cover_single)
     cover_multi filenames_p4

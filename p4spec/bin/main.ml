@@ -82,7 +82,10 @@ let cover_sl_command =
          let filenames_p4 =
            List.concat_map (collect_files ~suffix:".p4") dirnames_p4
          in
-         Testgen.Gen.cover_typing spec_sl includes_p4 filenames_p4 |> ignore
+         let cover_multi =
+           Interp_sl.Interp.cover_typings spec_sl includes_p4 filenames_p4
+         in
+         Runtime_testgen.Cov.Multiple.log cover_multi
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let run_testgen_command =
@@ -92,13 +95,13 @@ let run_testgen_command =
      let open Core.Command.Param in
      let%map filenames_spec = anon (sequence ("filename" %: string))
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
-     and filename_p4 = flag "-p" (required string) ~doc:"seed p4 file"
-     and dirname_derive =
-       flag "-derive" (required string)
-         ~doc:"directory for value dependency subgraphs"
-     and filename_cov =
+     and dirname_seed_p4 =
+       flag "-seed" (required string) ~doc:"seed p4 directory"
+     and dirname_gen =
+       flag "-gen" (required string) ~doc:"directory for generated p4 programs"
+     and filename_boot =
        flag "-warm" (optional string) ~doc:"coverage file for warm boot"
-     and dirnames_cov =
+     and dirnames_boot =
        flag "-cold" (listed string) ~doc:"directories for cold boot"
      in
      fun () ->
@@ -106,16 +109,17 @@ let run_testgen_command =
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
-         match (filename_cov, dirnames_cov) with
-         | Some filename_cov, [] ->
-             Testgen.Gen.gen_typing_warm spec_sl dirname_derive includes_p4
-               filename_p4 filename_cov
-         | None, dirnames_cov ->
-             let filenames_p4 =
-               List.concat_map (collect_files ~suffix:".p4") dirnames_cov
+         let filenames_seed_p4 = collect_files ~suffix:".p4" dirname_seed_p4 in
+         match (filename_boot, dirnames_boot) with
+         | Some filename_boot, [] ->
+             Testgen.Gen.fuzz_typing_warm spec_sl includes_p4 filenames_seed_p4
+               dirname_gen filename_boot
+         | None, dirnames_boot ->
+             let filenames_boot_p4 =
+               List.concat_map (collect_files ~suffix:".p4") dirnames_boot
              in
-             Testgen.Gen.gen_typing_cold spec_sl dirname_derive includes_p4
-               filename_p4 filenames_p4
+             Testgen.Gen.fuzz_typing_cold spec_sl includes_p4 filenames_seed_p4
+               dirname_gen filenames_boot_p4
          | _ ->
              Format.printf
                "Please provide either a warm or cold boot coverage file\n"
