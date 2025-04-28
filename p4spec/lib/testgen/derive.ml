@@ -3,6 +3,7 @@ open Sl.Ast
 module Dep = Runtime_testgen.Dep
 module SCov = Runtime_testgen.Cov.Single
 module MCov = Runtime_testgen.Cov.Multiple
+open Util.Source
 
 (* Helper for random sampling *)
 
@@ -103,7 +104,8 @@ and derive_miss' (filename_derive : string) (graph : Dep.Graph.t) (vid : vid) :
     let oc = open_out filename_derive in
     List.iter
       (fun (value, depth) ->
-        Format.asprintf "// Rank %d\n%s\n" depth
+        Format.asprintf "// Rank %d (%s)\n%s\n" depth
+          (Sl.Print.string_of_typ (value.note.typ $ no_region))
           (Sl.Print.string_of_value value)
         |> output_string oc)
       values;
