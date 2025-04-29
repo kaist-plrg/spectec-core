@@ -51,7 +51,8 @@ ENV CAML_LD_LIBRARY_PATH=$OPAM_SWITCH_PREFIX/lib/stublibs:$OPAM_SWITCH_PREFIX/li
 # ---------------------------------------
 FROM opambase AS p4specbase
 
-RUN make build-spec
+RUN make build-spec && \
+    chmod a+x ./p4spectec
 
 # --------------------------------------
 # Stage 5: Reduce dependencies
