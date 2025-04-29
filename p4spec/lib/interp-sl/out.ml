@@ -282,7 +282,7 @@ and out_expr (value_expr : value) : P4El.expr =
       let fields = out_list (out_pair out_member out_expr) value_fields in
       P4El.RecordDefaultE { fields } $ no_info
   | CaseV ([ [ { it = Atom "DefaultE"; _ } ] ], []) -> P4El.DefaultE $ no_info
-  | CaseV ([ [ { it = Atom "InvalidE"; _ } ] ], []) -> P4El.DefaultE $ no_info
+  | CaseV ([ [ { it = Atom "InvalidE"; _ } ] ], []) -> P4El.InvalidE $ no_info
   | CaseV ([ [ { it = Atom "UnE"; _ } ]; []; [] ], [ value_unop; value_expr ])
     ->
       let unop = out_unop value_unop in

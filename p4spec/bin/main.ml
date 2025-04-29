@@ -94,6 +94,7 @@ let run_testgen_command =
     (let open Core.Command.Let_syntax in
      let open Core.Command.Param in
      let%map filenames_spec = anon (sequence ("filename" %: string))
+     and fuel = flag "-fuel" (required int) ~doc:"fuel for test generation"
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
      and dirname_seed_p4 =
        flag "-seed" (required string) ~doc:"seed p4 directory"
@@ -112,14 +113,14 @@ let run_testgen_command =
          let filenames_seed_p4 = collect_files ~suffix:".p4" dirname_seed_p4 in
          match (filename_boot, dirnames_boot) with
          | Some filename_boot, [] ->
-             Testgen.Gen.fuzz_typing_warm spec_sl includes_p4 filenames_seed_p4
-               dirname_gen filename_boot
+             Testgen.Gen.fuzz_typing_warm fuel spec_sl includes_p4
+               filenames_seed_p4 dirname_gen filename_boot
          | None, dirnames_boot ->
              let filenames_boot_p4 =
                List.concat_map (collect_files ~suffix:".p4") dirnames_boot
              in
-             Testgen.Gen.fuzz_typing_cold spec_sl includes_p4 filenames_seed_p4
-               dirname_gen filenames_boot_p4
+             Testgen.Gen.fuzz_typing_cold fuel spec_sl includes_p4
+               filenames_seed_p4 dirname_gen filenames_boot_p4
          | _ ->
              Format.printf
                "Please provide either a warm or cold boot coverage file\n"

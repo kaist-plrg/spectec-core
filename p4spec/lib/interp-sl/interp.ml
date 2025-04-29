@@ -1426,6 +1426,15 @@ type res =
   | Well of Dep.Graph.t option * vid option * SCov.Cover.t
   | Ill of SCov.Cover.t
 
+let run_typing_internal (spec : spec) (filename_p4 : string)
+    (value_program : value) : res =
+  Builtin.init ();
+  let ctx = Ctx.empty spec filename_p4 false in
+  try
+    let ctx, _values = do_typing ctx spec value_program in
+    Well (ctx.graph, ctx.vid_program, !(ctx.cover))
+  with _ -> Ill !(ctx.cover)
+
 let run_typing ?(derive : bool = false) (spec : spec)
     (includes_p4 : string list) (filename_p4 : string) : res =
   Builtin.init ();

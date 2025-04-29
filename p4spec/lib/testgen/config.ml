@@ -16,11 +16,15 @@ type outdirs = {
 
 (* Seed programs for mutation *)
 
-type seed = { filenames_seed_p4 : string list; pids_uncovered : PIdSet.t }
+type seed = {
+  mutable filenames_seed_p4 : string list;
+  mutable pids_uncovered : PIdSet.t;
+}
 
 (* Configuration for the fuzz campaign *)
 
 type t = {
+  mutable rand : int;
   logger : Logger.t;
   specenv : specenv;
   outdirs : outdirs;
@@ -38,6 +42,12 @@ let load_def (tdenv : TDEnv.t) (def : def) : TDEnv.t =
 
 let load_spec (tdenv : TDEnv.t) (spec : spec) : TDEnv.t =
   List.fold_left load_def tdenv spec
+
+(* Changing random seed *)
+
+let set_rand (config : t) : unit =
+  config.rand <- config.rand + 1;
+  Random.init config.rand
 
 (* Logging *)
 
@@ -63,7 +73,14 @@ let init_seed (filenames_seed_p4 : string list) (pids_uncovered : PIdSet.t) :
 
 let init (logger : Logger.t) (specenv : specenv) (outdirs : outdirs)
     (seed : seed) =
-  { logger; specenv; outdirs; seed }
+  let rand = 2025 in
+  Random.init rand;
+  { rand; logger; specenv; outdirs; seed }
+
+(* Updater *)
+
+let update_pids_uncovered (config : t) (pids_uncovered : PIdSet.t) : unit =
+  config.seed.pids_uncovered <- pids_uncovered
 
 (* Destructor *)
 
