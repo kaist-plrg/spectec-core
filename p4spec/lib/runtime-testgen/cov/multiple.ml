@@ -91,9 +91,10 @@ let extend (cover : Cover.t) (filename_p4 : string)
       | Miss filenames_p4 -> (
           match branch_single.status with
           | Hit -> { branch with status = Hit }
-          | Miss _ ->
+          | Miss (_ :: _) ->
               let filenames_p4 = filename_p4 :: filenames_p4 in
-              { branch with status = Miss filenames_p4 }))
+              { branch with status = Miss filenames_p4 }
+          | Miss _ -> branch))
     cover
 
 (* Logging *)
