@@ -8,6 +8,7 @@ parser = argparse.ArgumentParser(description="Reduces all seed programs.")
 parser.add_argument('coverage', type=str, help='Path to coverage data')
 parser.add_argument('dir', type=str, help='Path to working directory, where pre-processed p4 programs, interestingness tests and reduced copies are kept.')
 parser.add_argument('--workers', type=int, default=1, help='Maximum number workers to use (default: 1)')
+parser.add_argument('--cores', type=int, help='Number of cores for creduce (default: creduce finds an optimal setting)')
 parser.add_argument('--concurrent', action='store_true', help='Enable concurrency')
 args = parser.parse_args()
 
@@ -67,9 +68,13 @@ $DIR/p4spectec interesting $DIR/spec/*.watsup -pid {pid} -p ./{copy_name}
 
         # Run creduce
         print(f"Running creduce for pid={pid}, file={filename}")
-        result = subprocess.run([
+        creduce_command = [
+            "creduce", "--not-c", "--n", f"{args.cores}", "--timeout", "10", interesting_test_subpath, copy_name
+            ] if args.cores else [
             "creduce", "--not-c", "--timeout", "10", interesting_test_subpath, copy_name
-            ], cwd=WORK_DIR)
+            ]
+
+        result = subprocess.run(creduce_command, cwd=WORK_DIR)
 
         if result.returncode == 0:
             # Rename the reduced file to indicate completion
