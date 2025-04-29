@@ -46,10 +46,17 @@ ENV OPAM_SWITCH_PREFIX=/root/.opam/4.14.0
 ENV PATH=$OPAM_SWITCH_PREFIX/bin:$PATH
 ENV CAML_LD_LIBRARY_PATH=$OPAM_SWITCH_PREFIX/lib/stublibs:$OPAM_SWITCH_PREFIX/lib/ocaml/stublibs:$OPAM_SWITCH_PREFIX/lib/ocaml
 
+# ---------------------------------------
+# Stage 4: Build p4spec
+# ---------------------------------------
+FROM opambase AS p4specbase
+
+RUN make build-spec
+
 # --------------------------------------
-# Stage 4: Reduce dependencies
+# Stage 5: Reduce dependencies
 # --------------------------------------
-FROM opambase AS reducebase
+FROM p4specbase AS reducebase
 
 RUN apt-get update && \
     apt-get install -y clang creduce python3 && \
