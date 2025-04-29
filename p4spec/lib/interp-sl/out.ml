@@ -1,11 +1,18 @@
 module P4Lang = P4lang.Ast
 module P4El = P4el.Ast
 open Sl.Ast
+open Error
+module F = Format
 open Util.Source
 
 (* Conversion from IL value to p4cherry AST *)
 
 (* Helpers *)
+
+let error (category : string) (value : value) =
+  F.asprintf "expected a(an) %s, but got %s" category
+    (Sl.Print.string_of_value value)
+  |> error no_region
 
 let no_info = P4util.Source.no_info
 let ( $ ) = P4util.Source.( $ )
@@ -14,23 +21,25 @@ let out_opt (do_out : value -> 'a) (value_opt : value) : 'a option =
   match value_opt.it with
   | OptV (Some value) -> Some (do_out value)
   | OptV None -> None
-  | _ -> assert false
+  | _ -> error "option" value_opt
 
 let out_list (do_out : value -> 'a) (value_list : value) : 'a list =
   match value_list.it with
   | ListV values -> List.map do_out values
-  | _ -> assert false
+  | _ -> error "list" value_list
 
 let out_pair (do_out_a : value -> 'a) (do_out_b : value -> 'b)
     (value_pair : value) : 'a * 'b =
   match value_pair.it with
   | TupleV [ value_a; value_b ] -> (do_out_a value_a, do_out_b value_b)
-  | _ -> assert false
+  | _ -> error "tuple" value_pair
 
 (* Booleans *)
 
 let out_bool (value_boolean : value) : bool =
-  match value_boolean.it with BoolV boolean -> boolean | _ -> assert false
+  match value_boolean.it with
+  | BoolV boolean -> boolean
+  | _ -> error "bool" value_boolean
 
 (* Numbers *)
 
@@ -41,10 +50,12 @@ let out_num (value_num : value) : P4El.num =
       let width =
         match value_width.it with
         | NumV (`Nat width) -> width
-        | _ -> assert false
+        | _ -> error "nat" value_width
       in
       let i =
-        match value_int.it with NumV (`Int i) -> i | _ -> assert false
+        match value_int.it with
+        | NumV (`Int i) -> i
+        | _ -> error "int" value_int
       in
       (i, Some (width, true)) $ no_info
   | CaseV ([ [ { it = Atom "FBIT"; _ } ]; []; [] ], [ value_width; value_int ])
@@ -52,28 +63,34 @@ let out_num (value_num : value) : P4El.num =
       let width =
         match value_width.it with
         | NumV (`Nat width) -> width
-        | _ -> assert false
+        | _ -> error "nat" value_width
       in
       let i =
-        match value_int.it with NumV (`Int i) -> i | _ -> assert false
+        match value_int.it with
+        | NumV (`Int i) -> i
+        | _ -> error "int" value_int
       in
       (i, Some (width, false)) $ no_info
   | CaseV ([ [ { it = Atom "INT"; _ } ]; [] ], [ value_int ]) ->
       let i =
-        match value_int.it with NumV (`Int i) -> i | _ -> assert false
+        match value_int.it with
+        | NumV (`Int i) -> i
+        | _ -> error "int" value_int
       in
       (i, None) $ no_info
-  | _ -> assert false
+  | _ -> error "num" value_num
 
 (* Texts *)
 
 let out_text (value_text : value) : P4El.text =
-  match value_text.it with TextV s -> s $ no_info | _ -> assert false
+  match value_text.it with
+  | TextV s -> s $ no_info
+  | _ -> error "text" value_text
 
 (* Identifiers *)
 
 let out_id (value_id : value) : P4El.id =
-  match value_id.it with TextV s -> s $ no_info | _ -> assert false
+  match value_id.it with TextV s -> s $ no_info | _ -> error "id" value_id
 
 (* Variables (scoped identifiers) *)
 
@@ -85,12 +102,14 @@ let out_var (value_var : value) : P4El.var =
   | CaseV ([ [ { it = Atom "CURRENT"; _ } ]; [] ], [ value_id ]) ->
       let id = out_id value_id in
       P4Lang.Current id $ no_info
-  | _ -> assert false
+  | _ -> error "var" value_var
 
 (* Members *)
 
 let out_member (value_member : value) : P4El.member =
-  match value_member.it with TextV s -> s $ no_info | _ -> assert false
+  match value_member.it with
+  | TextV s -> s $ no_info
+  | _ -> error "member" value_member
 
 let out_members (value_members : value) : P4El.member list =
   out_list out_member value_members
@@ -98,12 +117,16 @@ let out_members (value_members : value) : P4El.member list =
 (* Match kinds *)
 
 let out_match_kind (value_match_kind : value) : P4El.match_kind =
-  match value_match_kind.it with TextV s -> s $ no_info | _ -> assert false
+  match value_match_kind.it with
+  | TextV s -> s $ no_info
+  | _ -> error "match_kind" value_match_kind
 
 (* State labels *)
 
 let out_state_label (value_state_label : value) : P4El.state_label =
-  match value_state_label.it with TextV s -> s $ no_info | _ -> assert false
+  match value_state_label.it with
+  | TextV s -> s $ no_info
+  | _ -> error "state_label" value_state_label
 
 (* Unary operators *)
 
@@ -113,7 +136,7 @@ let out_unop (value_unop : value) : P4El.unop =
   | CaseV ([ [ { it = Atom "LNOT"; _ } ] ], []) -> P4Lang.LNotOp $ no_info
   | CaseV ([ [ { it = Atom "UPLUS"; _ } ] ], []) -> P4Lang.UPlusOp $ no_info
   | CaseV ([ [ { it = Atom "UMINUS"; _ } ] ], []) -> P4Lang.UMinusOp $ no_info
-  | _ -> assert false
+  | _ -> error "unop" value_unop
 
 (* Binary operators *)
 
@@ -140,7 +163,7 @@ let out_binop (value_binop : value) : P4El.binop =
   | CaseV ([ [ { it = Atom "CONCAT"; _ } ] ], []) -> P4Lang.ConcatOp $ no_info
   | CaseV ([ [ { it = Atom "LAND"; _ } ] ], []) -> P4Lang.LAndOp $ no_info
   | CaseV ([ [ { it = Atom "LOR"; _ } ] ], []) -> P4Lang.LOrOp $ no_info
-  | _ -> assert false
+  | _ -> error "binop" value_binop
 
 (* Directions *)
 
@@ -150,7 +173,7 @@ let out_dir (value_dir : value) : P4El.dir =
   | CaseV ([ [ { it = Atom "IN"; _ } ] ], []) -> P4Lang.In $ no_info
   | CaseV ([ [ { it = Atom "OUT"; _ } ] ], []) -> P4Lang.Out $ no_info
   | CaseV ([ [ { it = Atom "INOUT"; _ } ] ], []) -> P4Lang.InOut $ no_info
-  | _ -> assert false
+  | _ -> error "dir" value_dir
 
 (* Types *)
 
@@ -192,14 +215,16 @@ let rec out_typ (value_typ : value) : P4El.typ =
       let targs = out_targs value_targs in
       P4El.SpecT (var, targs) $ no_info
   | CaseV ([ [ { it = Atom "AnyT"; _ } ] ], []) -> P4El.AnyT $ no_info
-  | _ -> assert false
+  | _ -> error "typ" value_typ
 
 and out_typs (value_typs : value) : P4El.typ list = out_list out_typ value_typs
 
 (* Type parameters *)
 
 and out_tparam (value_tparam : value) : P4El.tparam =
-  match value_tparam.it with TextV s -> s $ no_info | _ -> assert false
+  match value_tparam.it with
+  | TextV s -> s $ no_info
+  | _ -> error "tparam" value_tparam
 
 and out_tparams (value_tparams : value) : P4El.tparam list =
   out_list out_tparam value_tparams
@@ -216,7 +241,7 @@ and out_param (value_param : value) : P4El.param =
       let typ = out_typ value_typ in
       let expr_opt = out_opt out_expr value_expr_opt in
       (id, dir, typ, expr_opt, []) $ no_info
-  | _ -> assert false
+  | _ -> error "param" value_param
 
 and out_params (value_params : value) : P4El.param list =
   out_list out_param value_params
@@ -249,7 +274,7 @@ and out_arg (value_arg : value) : P4El.arg =
       let expr_opt = out_opt out_expr value_expr_opt in
       P4Lang.NameA (id, expr_opt) $ no_info
   | CaseV ([ [ { it = Atom "AnyA"; _ } ] ], []) -> P4Lang.AnyA $ no_info
-  | _ -> assert false
+  | _ -> error "arg" value_arg
 
 and out_args (value_args : value) : P4El.arg list = out_list out_arg value_args
 
@@ -383,9 +408,7 @@ and out_expr (value_expr : value) : P4El.expr =
       let targs = out_targs value_targs in
       let args = out_args valur_args in
       P4El.InstE { var_inst; targs; args } $ no_info
-  | _ ->
-      Sl.Print.string_of_value value_expr |> print_endline;
-      assert false
+  | _ -> error "expr" value_expr
 
 and out_exprs (value_exprs : value) : P4El.expr list =
   out_list out_expr value_exprs
@@ -399,7 +422,7 @@ and out_keyset (value_keyset : value) : P4El.keyset =
       P4Lang.ExprK expr $ no_info
   | CaseV ([ [ { it = Atom "DefaultK"; _ } ] ], []) -> P4Lang.DefaultK $ no_info
   | CaseV ([ [ { it = Atom "AnyK"; _ } ] ], []) -> P4Lang.AnyK $ no_info
-  | _ -> assert false
+  | _ -> error "keyset" value_keyset
 
 and out_keysets (value_keysets : value) : P4El.keyset list =
   out_list out_keyset value_keysets
@@ -412,7 +435,7 @@ and out_select_case (value_select_case : value) : P4El.select_case =
       let keysets = out_keysets value_keysets in
       let state_label = out_state_label value_state_label in
       (keysets, state_label) $ no_info
-  | _ -> assert false
+  | _ -> error "select_case" value_select_case
 
 and out_select_cases (value_select_cases : value) : P4El.select_case list =
   out_list out_select_case value_select_cases
@@ -476,7 +499,7 @@ and out_stmt (value_stmt : value) : P4El.stmt =
   | CaseV ([ [ { it = Atom "DeclS"; _ } ]; [] ], [ value_decl ]) ->
       let decl = out_decl value_decl in
       P4El.DeclS { decl } $ no_info
-  | _ -> assert false
+  | _ -> error "stmt" value_stmt
 
 and out_stmts (value_stmts : value) : P4El.stmt list =
   out_list out_stmt value_stmts
@@ -488,7 +511,7 @@ and out_block (value_block : value) : P4El.block =
   | CaseV ([ [ { it = Atom "BlockB"; _ } ]; [] ], [ value_stmts ]) ->
       let stmts = out_stmts value_stmts in
       (stmts, []) $ no_info
-  | _ -> assert false
+  | _ -> error "block" value_block
 
 (* Match-cases for switch *)
 
@@ -498,7 +521,7 @@ and out_switch_label (value_switch_label : value) : P4El.switch_label =
       let expr = out_expr value_expr in
       P4Lang.ExprL expr $ no_info
   | CaseV ([ [ { it = Atom "DefaultL"; _ } ] ], []) -> P4Lang.DefaultL $ no_info
-  | _ -> assert false
+  | _ -> error "switch_label" value_switch_label
 
 and out_switch_case (value_switch_case : value) : P4El.switch_case =
   match value_switch_case.it with
@@ -511,7 +534,7 @@ and out_switch_case (value_switch_case : value) : P4El.switch_case =
   | CaseV ([ [ { it = Atom "FallC"; _ } ]; [] ], [ value_switch_label ]) ->
       let switch_label = out_switch_label value_switch_label in
       P4Lang.FallC switch_label $ no_info
-  | _ -> assert false
+  | _ -> error "switch_case" value_switch_case
 
 and out_switch_cases (value_switch_cases : value) : P4El.switch_case list =
   out_list out_switch_case value_switch_cases
@@ -526,7 +549,7 @@ and out_typdef (value_typdef : value) : (P4El.typ, P4El.decl) P4El.alt =
   | CaseV ([ [ { it = Atom "DeclD"; _ } ]; [] ], [ value_decl ]) ->
       let decl = out_decl value_decl in
       P4Lang.Right decl
-  | _ -> assert false
+  | _ -> error "typdef" value_typdef
 
 and out_decl (value_decl : value) : P4El.decl =
   match value_decl.it with
@@ -695,7 +718,7 @@ and out_decl (value_decl : value) : P4El.decl =
       let tparams = out_tparams value_tparams in
       let cparams = out_cparams value_cparams in
       P4El.PackageTypeD { id; tparams; cparams; annos = [] } $ no_info
-  | _ -> assert false
+  | _ -> error "decl" value_decl
 
 and out_decls (value_decls : value) : P4El.decl list =
   out_list out_decl value_decls
@@ -708,7 +731,7 @@ and out_parser_state (value_parser_state : value) : P4El.parser_state =
       let state_label = out_state_label value_state_label in
       let block = out_block value_block in
       (state_label, block, []) $ no_info
-  | _ -> assert false
+  | _ -> error "parser_state" value_parser_state
 
 and out_parser_states (value_parser_states : value) : P4El.parser_state list =
   out_list out_parser_state value_parser_states
@@ -737,7 +760,7 @@ and out_table_property (value_table_property : value) : P4El.table_property =
   | CaseV ([ [ { it = Atom "CustomP"; _ } ]; [] ], [ value_table_custom ]) ->
       let table_custom = out_table_custom value_table_custom in
       P4Lang.CustomP table_custom
-  | _ -> assert false
+  | _ -> error "table_property" value_table_property
 
 (* Table keys  *)
 
@@ -747,7 +770,7 @@ and out_table_key (value_table_key : value) : P4El.table_key =
       let expr = out_expr value_expr in
       let match_kind = out_match_kind value_match_kind in
       (expr, match_kind, []) $ no_info
-  | _ -> assert false
+  | _ -> error "table_key" value_table_key
 
 and out_table_keys (value_table_keys : value) : P4El.table_keys =
   let table_keys = out_list out_table_key value_table_keys in
@@ -761,7 +784,7 @@ and out_table_action (value_table_action : value) : P4El.table_action =
       let var = out_var value_var in
       let args = out_args value_args in
       (var, args, []) $ no_info
-  | _ -> assert false
+  | _ -> error "table_action" value_table_action
 
 and out_table_actions (value_table_actions : value) : P4El.table_actions =
   let table_actions = out_list out_table_action value_table_actions in
@@ -784,7 +807,7 @@ and out_table_entry (value_table_entry : value) : P4El.table_entry =
       let table_action = out_table_action value_table_action in
       let expr_opt = out_opt out_expr value_expr_opt in
       (table_entry_const, keysets, table_action, expr_opt, []) $ no_info
-  | _ -> assert false
+  | _ -> error "table_entry" value_table_entry
 
 and out_table_entries (value_table_entries : value) : P4El.table_entries =
   match value_table_entries.it with
@@ -793,7 +816,7 @@ and out_table_entries (value_table_entries : value) : P4El.table_entries =
       let table_entries_const = out_bool value_table_entries_const in
       let table_entries = out_list out_table_entry value_table_entries in
       (table_entries_const, table_entries) $ no_info
-  | _ -> assert false
+  | _ -> error "table_entries" value_table_entries
 
 (* Table default properties *)
 
@@ -803,7 +826,7 @@ and out_table_default (value_table_default : value) : P4El.table_default =
       let table_default_const = out_bool value_table_default_const in
       let table_action = out_table_action value_table_action in
       (table_default_const, table_action) $ no_info
-  | _ -> assert false
+  | _ -> error "table_default" value_table_default
 
 (* Table custom properties *)
 
@@ -816,7 +839,7 @@ and out_table_custom (value_table_custom : value) : P4El.table_custom =
       let member = out_member value_member in
       let expr = out_expr value_expr in
       (table_custom_const, member, expr, []) $ no_info
-  | _ -> assert false
+  | _ -> error "table_custom" value_table_custom
 
 (* Methods *)
 
@@ -845,7 +868,7 @@ and out_mthd (value_mthd : value) : P4El.mthd =
       let tparams = out_tparams value_tparams in
       let params = out_params value_params in
       P4El.ExternM { id; typ_ret; tparams; params; annos = [] } $ no_info
-  | _ -> assert false
+  | _ -> error "mthd" value_mthd
 
 and out_mthds (value_mthds : value) : P4El.mthd list =
   out_list out_mthd value_mthds

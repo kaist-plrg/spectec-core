@@ -20,7 +20,21 @@ let init (logname : string) : t =
 (* Logging *)
 
 let log (logger : t) (msg : string) : unit =
-  let msg = ">>> " ^ msg in
+  let timestamp =
+    let tm = Unix.localtime (Unix.time ()) in
+    Printf.sprintf "[%02d:%02d:%02d]" tm.tm_hour tm.tm_min tm.tm_sec
+  in
+  let msg = Format.asprintf "[%s] >>> %s" timestamp msg in
+  print_endline msg;
+  msg ^ "\n" |> output_string logger;
+  flush logger
+
+let warn (logger : t) (msg : string) : unit =
+  let timestamp =
+    let tm = Unix.localtime (Unix.time ()) in
+    Printf.sprintf "[%02d:%02d:%02d]" tm.tm_hour tm.tm_min tm.tm_sec
+  in
+  let msg = Format.asprintf "[%s] !!! %s" timestamp msg in
   print_endline msg;
   msg ^ "\n" |> output_string logger;
   flush logger

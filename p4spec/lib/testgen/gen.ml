@@ -4,6 +4,7 @@ module Dep = Runtime_testgen.Dep
 module SCov = Runtime_testgen.Cov.Single
 module MCov = Runtime_testgen.Cov.Multiple
 module F = Format
+open Util.Error
 open Util.Source
 
 (* Overview of the fuzzing loop
@@ -25,7 +26,7 @@ open Util.Source
                   and copy it to the output directory
       2. Repeat the loop until the fuel is exhausted *)
 
-(* Derivation of the closest-AST from the dependency graph *)
+(* Derivation of the close-AST from the dependency graph *)
 
 let derive_vid (graph : Dep.Graph.t) (vid : vid) : VIdSet.t * int VIdMap.t =
   let vids_visited = ref (VIdSet.singleton vid) in
@@ -86,14 +87,20 @@ let derive_misses (graph : Dep.Graph.t) (pids_uncovered : PIdSet.t)
 let rec fuzz_derivation (config : Config.t) (filename_gen_p4 : string)
     (comment_gen_p4 : string) (graph : Dep.Graph.t) (vid_program : vid)
     (pid : pid) (vid_source : vid) : unit =
-  (* Retrieve the closest source AST *)
+  (* Retrieve the close-ASTs *)
   let value_source = Dep.Graph.reassemble_node graph VIdMap.empty vid_source in
-  (* Mutate the closest source AST *)
-  let value_mutated_opt = Mutate.mutate config.specenv.tdenv value_source in
+  (* Mutate the close-ASTs *)
+  let mutated_opt = Mutate.mutate config.specenv.tdenv value_source in
+  (* Generate the mutated program *)
   Option.iter
-    (fuzz_derivation' config filename_gen_p4 comment_gen_p4 graph vid_program
-       pid value_source)
-    value_mutated_opt
+    (fun (kind, value_mutated) ->
+      let comment_gen_p4 =
+        F.asprintf "%s\n// Mutation %s\n" comment_gen_p4
+          (Mutate.string_of_kind kind)
+      in
+      fuzz_derivation' config filename_gen_p4 comment_gen_p4 graph vid_program
+        pid value_source value_mutated)
+    mutated_opt
 
 and fuzz_derivation' (config : Config.t) (filename_gen_p4 : string)
     (comment_gen_p4 : string) (graph : Dep.Graph.t) (vid_program : vid)
@@ -101,28 +108,30 @@ and fuzz_derivation' (config : Config.t) (filename_gen_p4 : string)
   (* Reassemble the program with the mutated AST *)
   let renamer = VIdMap.singleton value_source.note.vid value_mutated in
   let value_program = Dep.Graph.reassemble_node graph renamer vid_program in
-  let program = Interp_sl.Out.out_program value_program in
-  (* Write the mutated program to a file *)
-  let oc = open_out filename_gen_p4 in
-  F.asprintf "%s\n/*\nFrom %s\nTo %s\n*/\n\n%a\n" comment_gen_p4
-    (Sl.Print.string_of_value value_source)
-    (Sl.Print.string_of_value value_mutated)
-    P4el.Pp.pp_program program
-  |> output_string oc;
-  close_out oc;
-  (* Evaluate the generated program to see if it is interesting *)
-  let welltyped, cover =
-    match
-      Interp_sl.Interp.run_typing_internal config.specenv.spec filename_gen_p4
-        value_program
-    with
-    | Well (_, _, cover) -> (true, cover)
-    | Ill cover -> (false, cover)
-  in
-  let pids_hit = cover |> SCov.collect_hit |> PIdSet.of_list in
-  let pids_new = PIdSet.inter pids_hit config.seed.pids_uncovered in
-  if PIdSet.is_empty pids_new then ()
-  else fuzz_derivation'' config filename_gen_p4 pid welltyped pids_new
+  try
+    let program = Interp_sl.Out.out_program value_program in
+    (* Write the mutated program to a file *)
+    let oc = open_out filename_gen_p4 in
+    F.asprintf "%s\n/*\nFrom %s\nTo %s\n*/\n\n%a\n" comment_gen_p4
+      (Sl.Print.string_of_value value_source)
+      (Sl.Print.string_of_value value_mutated)
+      P4el.Pp.pp_program program
+    |> output_string oc;
+    close_out oc;
+    (* Evaluate the generated program to see if it is interesting *)
+    let welltyped, cover =
+      match
+        Interp_sl.Interp.run_typing_internal config.specenv.spec filename_gen_p4
+          value_program
+      with
+      | Well (_, _, cover) -> (true, cover)
+      | Ill cover -> (false, cover)
+    in
+    let pids_hit = cover |> SCov.collect_hit |> PIdSet.of_list in
+    let pids_new = PIdSet.inter pids_hit config.seed.pids_uncovered in
+    if PIdSet.is_empty pids_new then ()
+    else fuzz_derivation'' config filename_gen_p4 pid welltyped pids_new
+  with Error (_, msg) -> Config.log config msg
 
 and fuzz_derivation'' (config : Config.t) (filename_gen_p4 : string) (pid : pid)
     (welltyped : bool) (pids_new : PIdSet.t) : unit =
@@ -131,8 +140,9 @@ and fuzz_derivation'' (config : Config.t) (filename_gen_p4 : string) (pid : pid)
     if welltyped then Filesys.mv filename_gen_p4 config.outdirs.dirname_well_p4
     else Filesys.mv filename_gen_p4 config.outdirs.dirname_ill_p4
   in
-  F.asprintf "%s covers %s (intended %d)" filename_covered
+  F.asprintf "%s covers %s (%s intended %d)" filename_covered
     (pids_new |> PIdSet.elements |> List.map string_of_int |> String.concat ", ")
+    (if PIdSet.mem pid pids_new then "hit" else "miss")
     pid
   |> Config.log config;
   let oc = open_out_gen [ Open_append; Open_text ] 0o666 filename_covered in
@@ -142,6 +152,7 @@ and fuzz_derivation'' (config : Config.t) (filename_gen_p4 : string) (pid : pid)
   close_out oc;
   (* Update the set of covered phantoms *)
   let pids_uncovered = PIdSet.diff config.seed.pids_uncovered pids_new in
+  (* (TODO) Also add the file to the seed *)
   Config.update_pids_uncovered config pids_uncovered
 
 let fuzz_derivations (fuel : int) (config : Config.t) (filename_p4 : string)
@@ -154,18 +165,16 @@ let fuzz_derivations (fuel : int) (config : Config.t) (filename_p4 : string)
   in
   F.asprintf "Fuzzing from %d derivations" derivations_total
   |> Config.log config;
+  F.asprintf "Total %d close-miss phantoms" (List.length derivations_source)
+  |> Config.log config;
+  derivations_source |> List.map fst |> List.map string_of_int
+  |> String.concat ", " |> Config.log config;
   let derivations_count = ref 0 in
   List.iteri
     (fun idx_a (pid, vids_source) ->
       List.iteri
         (fun idx_b (vid_source, depth) ->
           derivations_count := !derivations_count + 1;
-          if !derivations_count mod (derivations_total / 10) = 0 then
-            F.asprintf "... %.2f%%"
-              (float_of_int !derivations_count
-              /. float_of_int derivations_total
-              *. 100.0)
-            |> Config.log config;
           let filename_gen =
             F.asprintf "%s/%s_F%d_A%dB%d.p4" dirname_gen
               (Filesys.base ~suffix:".p4" filename_p4)

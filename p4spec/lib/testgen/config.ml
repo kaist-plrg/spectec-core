@@ -52,6 +52,7 @@ let set_rand (config : t) : unit =
 (* Logging *)
 
 let log (config : t) (msg : string) : unit = Logger.log config.logger msg
+let warn (config : t) (msg : string) : unit = Logger.warn config.logger msg
 
 (* Constructor *)
 

@@ -105,7 +105,7 @@ and gen_from_typs (depth : int) (tdenv : TDEnv.t) (typs : typ list) :
         Some (values @ [ value ]))
       (Some []) typs
 
-(* FBitT to FIntT conversion *)
+(* bit<expr> to int<expr> conversion *)
 
 let convert_fbit_to_fint (value : value) : value option =
   let typ = value.note.typ in
@@ -115,13 +115,69 @@ let convert_fbit_to_fint (value : value) : value option =
       |> Option.some |> wrap_value typ
   | _ -> None
 
+(* Shuffle list *)
+
+let shuffle_list (value : value) : value option =
+  let typ = value.note.typ in
+  match value.it with
+  | ListV values ->
+      let values_shuffled = Rand.shuffle values in
+      ListV values_shuffled |> Option.some |> wrap_value typ
+  | _ -> None
+
+(* Insert duplicates into a list *)
+
+let duplicate_list (value : value) : value option =
+  let typ = value.note.typ in
+  match value.it with
+  | ListV values ->
+      let* value = Rand.random_select values in
+      let values = value :: values in
+      ListV values |> Option.some |> wrap_value typ
+  | _ -> None
+
+(* Shrink a list *)
+
+let shrink_list (value : value) : value option =
+  let typ = value.note.typ in
+  match value.it with
+  | ListV [] -> None
+  | ListV values ->
+      let size = Random.int (List.length values) in
+      let values = Rand.random_sample size values in
+      ListV values |> Option.some |> wrap_value typ
+  | _ -> None
+
 (* Entry point for mutation *)
 
-let mutate (tdenv : TDEnv.t) (value : value) : value option =
+type kind =
+  | GenFromTyp
+  | ConvertFBitToFInt
+  | ShuffleList
+  | DuplicateList
+  | ShrinkList
+
+let string_of_kind = function
+  | GenFromTyp -> "GenFromTyp"
+  | ConvertFBitToFInt -> "ConvertFBitToFInt"
+  | ShuffleList -> "ShuffleList"
+  | DuplicateList -> "DuplicateList"
+  | ShrinkList -> "ShrinkList"
+
+let mutate (tdenv : TDEnv.t) (value : value) : (kind * value) option =
+  let wrap_kind (kind : kind) (value_opt : value option) : (kind * value) option
+      =
+    Option.map (fun value -> (kind, value)) value_opt
+  in
   let mutations =
     [
-      (fun () -> gen_from_typ (Random.int 5) tdenv (value.note.typ $ no_region));
-      (fun () -> convert_fbit_to_fint value);
+      (fun () ->
+        gen_from_typ (Random.int 5) tdenv (value.note.typ $ no_region)
+        |> wrap_kind GenFromTyp);
+      (fun () -> convert_fbit_to_fint value |> wrap_kind ConvertFBitToFInt);
+      (fun () -> shuffle_list value |> wrap_kind ShuffleList);
+      (fun () -> duplicate_list value |> wrap_kind DuplicateList);
+      (fun () -> shrink_list value |> wrap_kind ShrinkList);
     ]
   in
   let* mutation = Rand.random_select mutations in
