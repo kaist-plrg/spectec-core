@@ -26,6 +26,7 @@ type seed = {
 type t = {
   mutable rand : int;
   logger : Logger.t;
+  queries : Query.t;
   specenv : specenv;
   outdirs : outdirs;
   seed : seed;
@@ -53,6 +54,7 @@ let set_rand (config : t) : unit =
 
 let log (config : t) (msg : string) : unit = Logger.log config.logger msg
 let warn (config : t) (msg : string) : unit = Logger.warn config.logger msg
+let query (config : t) (msg : string) : unit = Query.query config.queries msg
 
 (* Constructor *)
 
@@ -72,11 +74,11 @@ let init_seed (filenames_seed_p4 : string list) (pids_uncovered : PIdSet.t) :
     seed =
   { filenames_seed_p4; pids_uncovered }
 
-let init (logger : Logger.t) (specenv : specenv) (outdirs : outdirs)
-    (seed : seed) =
+let init (logger : Logger.t) (queries : Query.t) (specenv : specenv)
+    (outdirs : outdirs) (seed : seed) =
   let rand = 2025 in
   Random.init rand;
-  { rand; logger; specenv; outdirs; seed }
+  { rand; logger; queries; specenv; outdirs; seed }
 
 (* Updater *)
 
