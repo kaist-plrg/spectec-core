@@ -171,7 +171,12 @@ let rec filter_interesting (config : Config.t) (filenames_gen_p4 : string list)
 and filter_interesting' (config : Config.t) (filename_gen_p4 : string) :
     Config.t =
   let welltyped, cover =
-    Interp_sl.Interp.cover_typing config.specenv.spec [] filename_gen_p4
+    match
+      Interp_sl.Interp.run_typing config.specenv.spec config.specenv.includes_p4
+        filename_gen_p4
+    with
+    | Well (_, _, cover) -> (true, cover)
+    | Ill cover -> (false, cover)
   in
   let pids_hit = cover |> SCov.collect_hit |> PIdSet.of_list in
   let pids_new = PIdSet.inter pids_hit config.seed.pids_uncovered in
@@ -206,22 +211,23 @@ let fuzz_single (fuel : int) (config : Config.t) (filename_p4 : string) : string
     config.outdirs.dirname_gen ^ "/" ^ Filesys.base ~suffix:".p4" filename_p4
   in
   Filesys.mkdir dirname_gen_single;
-  (* Run the typing rules on the seed program *)
-  let ctx, _ =
-    Interp_sl.Interp.run_typing ~derive:true config.specenv.spec
-      config.specenv.includes_p4 filename_p4
-  in
-  let cover = !(ctx.cover) in
-  let graph = Option.get ctx.graph in
-  let vid_program = Option.get ctx.vid_program in
-  let misses = SCov.collect_miss cover in
-  (* Derive closest ASTs from the closest-miss phantoms *)
-  let derivations_source =
-    derive_misses graph config.seed.pids_uncovered misses
-  in
-  (* Mutate the closest ASTs and dump to file *)
-  mutate_misses fuel config filename_p4 dirname_gen_single graph vid_program
-    derivations_source;
+  (* Run the typing rules on the seed program : assuming it is well-typed *)
+  (match
+     Interp_sl.Interp.run_typing ~derive:true config.specenv.spec
+       config.specenv.includes_p4 filename_p4
+   with
+  | Well (graph, vid_program, cover) ->
+      let graph = Option.get graph in
+      let vid_program = Option.get vid_program in
+      let misses = SCov.collect_miss cover in
+      (* Derive closest ASTs from the closest-miss phantoms *)
+      let derivations_source =
+        derive_misses graph config.seed.pids_uncovered misses
+      in
+      (* Mutate the closest ASTs and dump to file *)
+      mutate_misses fuel config filename_p4 dirname_gen_single graph vid_program
+        derivations_source
+  | Ill _ -> ());
   dirname_gen_single
 
 let fuzz_multiple (fuel : int) (config : Config.t) : Config.t =

@@ -1413,44 +1413,41 @@ let load_def (ctx : Ctx.t) (def : def) : Ctx.t =
 let load_spec (ctx : Ctx.t) (spec : spec) : Ctx.t =
   List.fold_left load_def ctx spec
 
-(* Entry point:
+(* Entry point *)
 
-    (i) Run typing rule from `Prog_ok` relation
-    (ii) Measure phantom coverage of a set of P4 programs *)
-
-let do_typing (ctx : Ctx.t) (spec : spec) (includes_p4 : string list)
-    (filename_p4 : string) : Ctx.t * value list =
-  let program = In.in_program ctx includes_p4 filename_p4 in
-  let ctx = Ctx.set_vid_program ctx program.note.vid in
+let do_typing (ctx : Ctx.t) (spec : spec) (value_program : value) :
+    Ctx.t * value list =
   let ctx = load_spec ctx spec in
-  invoke_rel ctx ("Prog_ok" $ no_region) [ program ]
+  invoke_rel ctx ("Prog_ok" $ no_region) [ value_program ]
+
+(* Entry point : Run typing rule *)
+
+type res =
+  | Well of Dep.Graph.t option * vid option * SCov.Cover.t
+  | Ill of SCov.Cover.t
 
 let run_typing ?(derive : bool = false) (spec : spec)
-    (includes_p4 : string list) (filename_p4 : string) : Ctx.t * value list =
+    (includes_p4 : string list) (filename_p4 : string) : res =
   Builtin.init ();
-  let cover = ref (SCov.init spec) in
-  let ctx = Ctx.empty filename_p4 derive cover in
-  do_typing ctx spec includes_p4 filename_p4
+  let ctx = Ctx.empty spec filename_p4 derive in
+  try
+    let value_program = In.in_program ctx includes_p4 filename_p4 in
+    let ctx = Ctx.set_vid_program ctx value_program.note.vid in
+    let ctx, _values = do_typing ctx spec value_program in
+    Well (ctx.graph, ctx.vid_program, !(ctx.cover))
+  with _ -> Ill !(ctx.cover)
 
-let cover_typing (spec : spec) (includes_p4 : string list)
-    (filename_p4 : string) : bool * SCov.Cover.t =
-  Builtin.init ();
-  let cover_single = ref (SCov.init spec) in
-  let ctx = Ctx.empty filename_p4 false cover_single in
-  let welltyped =
-    try
-      do_typing ctx spec includes_p4 filename_p4 |> ignore;
-      true
-    with _ -> false
-  in
-  let cover_single = !cover_single in
-  (welltyped, cover_single)
+(* Entry point : Measure spec coverage of phantom nodes *)
 
 let cover_typings (spec : spec) (includes_p4 : string list)
     (filenames_p4 : string list) : MCov.Cover.t =
   let cover_multi = MCov.init spec in
   List.fold_left
     (fun cover_multi filename_p4 ->
-      let _, cover_single = cover_typing spec includes_p4 filename_p4 in
+      let cover_single =
+        match run_typing spec includes_p4 filename_p4 with
+        | Well (_, _, cover_single) -> cover_single
+        | Ill cover_single -> cover_single
+      in
       MCov.extend cover_multi filename_p4 cover_single)
     cover_multi filenames_p4

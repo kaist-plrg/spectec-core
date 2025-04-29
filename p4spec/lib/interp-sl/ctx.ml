@@ -201,9 +201,10 @@ let empty_global () : global =
 let empty_local () : local =
   { tdenv = TDEnv.empty; fenv = FEnv.empty; venv = VEnv.empty }
 
-let empty (filename : string) (derive : bool) (cover : SCov.Cover.t ref) : t =
+let empty (spec : spec) (filename : string) (derive : bool) : t =
   let graph = if derive then Some (Dep.Graph.init ()) else None in
   let vid_program = None in
+  let cover = ref (SCov.init spec) in
   let global = empty_global () in
   let local = empty_local () in
   { filename; graph; vid_program; cover; global; local }
