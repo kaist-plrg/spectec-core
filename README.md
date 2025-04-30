@@ -130,7 +130,7 @@ Currently, the P4-SpecTec specification defines the static semantics of P4.
 Given a P4 program, below command runs the typing rules of the P4 language.
 
 ```shell
-$ ./p4spectec run-typing spec/*.watsup -i p4/testdata/arch -p [FILENAME].p4
+$ ./p4spectec run-sl spec/*.watsup -i p4/testdata/arch -p [FILENAME].p4
 ```
 
 ### To Initiate a Fuzz Loop for Generating P4 Programs
@@ -153,12 +153,15 @@ $ ./p4spectec testgen spec/*.watsup -i p4/testdata/arch -seed [SEED DIR] -gen [G
 
 At a high level, the fuzz loop will:
 
-(#) Pre-loop: Measure the initial coverage of the phantom nodes
+##### Pre-loop
 
-(#) Loop
+Measure the initial coverage of the phantom nodes
 
-    1. For each phantoms that were missed:
-        A. Identify close-miss filenames
+##### Loop
+
+```
+1. For each phantoms that were missed:
+2. Identify close-miss filenames
         B. Randomly sample N(=10) close-miss filenames
         C. For each close-miss filename:
             i. Run SL interpreter on the program
@@ -170,7 +173,8 @@ At a high level, the fuzz loop will:
                     a. Reassemble the program with the mutated AST
                     b. Run the SL interpreter on the mutated program
                     c. See if it has covered any new phantom or any new close-miss
-    2. Repeat the loop until the fuel is exhausted *)
+    2. Repeat the loop until the fuel is exhausted
+```
 
 ### Contributing
 
