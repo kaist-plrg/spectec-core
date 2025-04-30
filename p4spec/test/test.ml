@@ -101,13 +101,14 @@ let run_sl negative spec_sl includes_p4 filename_p4 =
     let _ = Sys.set_signal Sys.sigalrm handler in
     let _ = Unix.alarm 30 in
     (* Run test *)
-    Interp_sl.Interp.run_typing spec_sl includes_p4 filename_p4 |> ignore;
-    if negative then raise (TestCheckNegErr time_start);
+    (match Interp_sl.Interp.run_typing spec_sl includes_p4 filename_p4 with
+    | Well _ -> if negative then raise (TestCheckNegErr time_start)
+    | Ill (at, msg, _) -> raise (TestCheckErr (msg, at, time_start)));
     (* Reset timer *)
     let _ = Unix.alarm 0 in
     time_start
   with
-  | Error (at, msg) -> raise (TestCheckErr (msg, at, time_start))
+  | TestCheckErr _ as err -> raise err
   | TestCheckNegErr _ as err -> raise err
   | _ -> raise (TestUnknownErr time_start)
 
@@ -179,7 +180,8 @@ let cover_sl_test specdir includes_p4 testdirs_p4 =
   let filenames_p4 =
     List.concat_map (collect_files ~suffix:".p4") testdirs_p4
   in
-  Testgen.Gen.cover_typing spec_sl includes_p4 filenames_p4 |> ignore
+  let cover = Interp_sl.Interp.cover_typings spec_sl includes_p4 filenames_p4 in
+  Runtime_testgen.Cov.Multiple.log ~filename_cov_opt:None cover
 
 let cover_sl_command =
   Core.Command.basic ~summary:"measure phantom coverage of SL"

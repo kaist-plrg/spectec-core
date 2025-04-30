@@ -111,21 +111,23 @@ let extend (cover : Cover.t) (filename_p4 : string)
 
 (* Logging *)
 
-let log (filename_cov : string) (cover : Cover.t) : unit =
-  let oc = open_out filename_cov in
+let log ~(filename_cov_opt : string option) (cover : Cover.t) : unit =
+  let output oc_opt =
+    match oc_opt with Some oc -> output_string oc | None -> print_string
+  in
+  let oc_opt = Option.map open_out filename_cov_opt in
   Cover.iter
     (fun (pid : pid) (branch : Branch.t) ->
       let origin = branch.origin in
       match branch.status with
-      | Hit -> Format.asprintf "%d Hit %s\n" pid origin.it |> output_string oc
-      | Miss [] ->
-          Format.asprintf "%d Miss %s\n" pid origin.it |> output_string oc
+      | Hit -> Format.asprintf "%d Hit %s\n" pid origin.it |> output oc_opt
+      | Miss [] -> Format.asprintf "%d Miss %s\n" pid origin.it |> output oc_opt
       | Miss filenames ->
           let filenames = String.concat " " filenames in
           Format.asprintf "%d Miss %s %s\n" pid origin.it filenames
-          |> output_string oc)
+          |> output oc_opt)
     cover;
-  close_out oc
+  Option.iter close_out oc_opt
 
 (* Constructor *)
 

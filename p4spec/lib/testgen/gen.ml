@@ -133,7 +133,7 @@ let update_interesting (fuel : int) (pid : pid) (idx_derivation : int)
         value_program
     with
     | Well (_, _, cover) -> (true, cover)
-    | Ill cover -> (false, cover)
+    | Ill (_, _, cover) -> (false, cover)
   in
   (* Find newly hit or newly close-missing nodes *)
   let pids_hit_new, pids_close_miss_new =
@@ -347,7 +347,7 @@ let fuzz_typing_init (spec : spec) (includes_p4 : string list)
         let cover_seed = Boot.boot_cold spec includes_p4 filenames_seed_p4 in
         (* Log the initial coverage for later use in warm boot *)
         let filename_cov = dirname_gen ^ "/boot.coverage" in
-        MCov.log filename_cov cover_seed;
+        MCov.log ~filename_cov_opt:(Some filename_cov) cover_seed;
         cover_seed
     | Warm filename_boot -> Boot.boot_warm filename_boot
   in

@@ -1424,7 +1424,7 @@ let do_typing (ctx : Ctx.t) (spec : spec) (value_program : value) :
 
 type res =
   | Well of Dep.Graph.t option * vid option * SCov.Cover.t
-  | Ill of SCov.Cover.t
+  | Ill of region * string * SCov.Cover.t
 
 let run_typing_internal (spec : spec) (filename_p4 : string)
     (value_program : value) : res =
@@ -1433,7 +1433,7 @@ let run_typing_internal (spec : spec) (filename_p4 : string)
   try
     let ctx, _values = do_typing ctx spec value_program in
     Well (ctx.graph, ctx.vid_program, !(ctx.cover))
-  with _ -> Ill !(ctx.cover)
+  with Util.Error.Error (at, msg) -> Ill (at, msg, !(ctx.cover))
 
 let run_typing ?(derive : bool = false) (spec : spec)
     (includes_p4 : string list) (filename_p4 : string) : res =
@@ -1444,7 +1444,9 @@ let run_typing ?(derive : bool = false) (spec : spec)
     let ctx = Ctx.set_vid_program ctx value_program.note.vid in
     let ctx, _values = do_typing ctx spec value_program in
     Well (ctx.graph, ctx.vid_program, !(ctx.cover))
-  with _ -> Ill !(ctx.cover)
+  with
+  | P4util.Error.ParseErr (msg, _) -> Ill (no_region, msg, !(ctx.cover))
+  | Util.Error.Error (at, msg) -> Ill (at, msg, !(ctx.cover))
 
 (* Entry point : Measure spec coverage of phantom nodes *)
 
@@ -1456,7 +1458,7 @@ let cover_typings (spec : spec) (includes_p4 : string list)
       let cover_single =
         match run_typing spec includes_p4 filename_p4 with
         | Well (_, _, cover_single) -> cover_single
-        | Ill cover_single -> cover_single
+        | Ill (_, _, cover_single) -> cover_single
       in
       MCov.extend cover_multi filename_p4 cover_single)
     cover_multi filenames_p4

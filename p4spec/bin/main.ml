@@ -59,10 +59,11 @@ let run_sl_command =
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
-         let _ =
+         match
            Interp_sl.Interp.run_typing ~derive spec_sl includes_p4 filename_p4
-         in
-         ()
+         with
+         | Well _ -> Format.printf "well-typed\n"
+         | Ill _ -> Format.printf "ill-typed\n"
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let cover_sl_command =
@@ -87,7 +88,8 @@ let cover_sl_command =
          let cover =
            Interp_sl.Interp.cover_typings spec_sl includes_p4 filenames_p4
          in
-         Runtime_testgen.Cov.Multiple.log filename_cov cover
+         Runtime_testgen.Cov.Multiple.log ~filename_cov_opt:(Some filename_cov)
+           cover
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 (* TODO: Merge with cover_sl_command *)

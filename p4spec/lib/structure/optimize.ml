@@ -207,7 +207,7 @@ let rec remove_let_alias (instrs : instr list) : instr list =
   | [] -> []
   | instr_h :: instrs_t -> (
       match instr_h.it with
-      | LetI ({ it = VarE id_l; _ }, { it = VarE id_r; _ }, []) ->
+      | LetI ({ it = VarE id_l; _ }, { it = VarE id_r; _ }, _) ->
           let rename = Rename.singleton id_l id_r in
           instrs_t |> rename_let_alias rename |> remove_let_alias
       | _ ->

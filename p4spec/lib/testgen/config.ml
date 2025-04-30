@@ -136,4 +136,9 @@ let update_close_miss_cover_seed (config : t) (filename_p4 : string)
 
 (* Destructor *)
 
-let close (config : t) = Logger.close config.logger
+let close (config : t) =
+  MCov.log
+    ~filename_cov_opt:(Some (config.outdirs.dirname_gen ^ "/fin.coverage"))
+    config.seed.cover_seed;
+  Logger.close config.logger;
+  Query.close config.queries
