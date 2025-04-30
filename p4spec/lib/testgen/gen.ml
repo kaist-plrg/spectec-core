@@ -12,18 +12,17 @@ open Util.Source
    (#) Pre-loop: Measure the initial coverage of the phantom nodes
 
    (#) Loop
-      1. For each program in the seed:
-          A. Run SL interpreter on the program
-          B. Randomly sample a set of (close-miss, close-AST) pairs
-             for each close-miss phantom node
-             We call a (close-miss, close-AST) pair a derivation
-          C. For each (close-miss, close-AST) pair:
-              i. Mutate the close-AST
-              ii. Reassemble the program with the mutated AST
-              iii. Run the SL interpreter on the mutated program
-              iv. If the mutated program is interesting,
-                  update the set of uncovered phantoms,
-                  and copy it to the output directory
+      1. For each phantoms that were missed:
+          A. Identify close-miss filenames
+          B. Randomly sample N close-miss filenames
+          C. For each close-miss filename:
+              i. Run SL interpreter on the program
+              ii. Fetch derivations, i.e., a set of close-ASTs for the phantom
+              iii. For each close-AST:
+                    (1) Mutate the close-AST
+                    (2) Reassemble the program with the mutated AST
+                    (3) Run the SL interpreter on the mutated program
+                    (4) See if it has covered the phantom
       2. Repeat the loop until the fuel is exhausted *)
 
 (* Derivation of the close-AST from the dependency graph *)
@@ -49,236 +48,256 @@ let derive_vid (graph : Dep.Graph.t) (vid : vid) : VIdSet.t * int VIdMap.t =
   done;
   (!vids_visited, !depths_visited)
 
-let rec derive_miss (graph : Dep.Graph.t) (pids_uncovered : PIdSet.t)
-    (miss : pid * vid list) : (pid * (vid * int) list) list =
-  let pid, vids = miss in
-  (* Filter phantoms that were already covered *)
-  if not (PIdSet.mem pid pids_uncovered) then []
-  else
-    let vids_sample = Rand.random_sample 3 vids in
-    List.map
-      (fun vid_sample ->
-        let vids_source = derive_miss' graph vid_sample in
-        (pid, vids_source))
-      vids_sample
+let derive_phantom (pid : pid) (graph : Dep.Graph.t) (cover : SCov.Cover.t) :
+    (vid * int) list =
+  (* Find related values that contributed to the close-miss *)
+  let vids_related =
+    let branch = SCov.Cover.find pid cover in
+    match branch.status with Hit -> [] | Miss vids_related -> vids_related
+  in
+  (* Randomly sample related vids *)
+  let vids_related = Rand.random_sample 10 vids_related in
+  (* (TODO) depths are relative to the vid, should not concat_map here *)
+  (* Find close-ASTs for the related values *)
+  List.concat_map
+    (fun vid_related ->
+      let vids_visited, depths_visited = derive_vid graph vid_related in
+      vids_visited
+      |> VIdSet.filter (fun vid ->
+             vid
+             |> Dep.Graph.G.find graph.nodes
+             |> Dep.Node.taint |> Dep.Node.is_source)
+      |> VIdSet.elements
+      |> List.map (fun vid ->
+             let depth = VIdMap.find vid depths_visited in
+             (vid, depth))
+      |> List.sort (fun (_, depth_a) (_, depth_b) ->
+             Int.compare depth_a depth_b))
+    vids_related
 
-and derive_miss' (graph : Dep.Graph.t) (vid : vid) : (vid * int) list =
-  let vids_visited, depths_visited = derive_vid graph vid in
-  (* Sort the source nodes by depth, i.e., closest to the miss derivation *)
-  vids_visited
-  |> VIdSet.filter (fun vid ->
-         vid
-         |> Dep.Graph.G.find graph.nodes
-         |> Dep.Node.taint |> Dep.Node.is_source)
-  |> VIdSet.elements
-  |> List.map (fun vid ->
-         let depth = VIdMap.find vid depths_visited in
-         (vid, depth))
-  |> List.sort (fun (_, depth_a) (_, depth_b) -> Int.compare depth_a depth_b)
+(* Check if the mutated file is interesting,
+   and if so, copy it to the output directory *)
 
-let derive_misses (graph : Dep.Graph.t) (pids_uncovered : PIdSet.t)
-    (misses : (pid * vid list) list) : (pid * (vid * int) list) list =
-  List.concat_map (derive_miss graph pids_uncovered) misses
+let update_hit_new (fuel : int) (pid : pid) (idx_derivation : int)
+    (idx_mutation : int) (config : Config.t) (filename_gen_p4 : string)
+    (welltyped : bool) (pids_hit_new : PIdSet.t) : unit =
+  (* Copy the interesting test program to the output directory *)
+  let filename_hit_p4 =
+    if welltyped then Filesys.cp filename_gen_p4 config.outdirs.dirname_well_p4
+    else Filesys.cp filename_gen_p4 config.outdirs.dirname_ill_p4
+  in
+  F.asprintf
+    "[Fuel %d] [Phantom %d] [Derivation %d] [Mutation %d] %s covers %s (%s %d)"
+    fuel pid idx_derivation idx_mutation filename_hit_p4
+    (PIdSet.to_string pids_hit_new)
+    (if PIdSet.mem pid pids_hit_new then "good" else "bad")
+    pid
+  |> Config.log config;
+  let oc = open_out_gen [ Open_append; Open_text ] 0o666 filename_hit_p4 in
+  F.asprintf "\n// Covered pids %s\n" (PIdSet.to_string pids_hit_new)
+  |> output_string oc;
+  close_out oc;
+  (* Update the set of covered phantoms *)
+  Config.update_hit_cover_seed config pids_hit_new
 
-(* Fuzz loop *)
+let update_close_miss_new (fuel : int) (pid : pid) (idx_derivation : int)
+    (idx_mutation : int) (config : Config.t) (filename_gen_p4 : string)
+    (pids_close_miss_new : PIdSet.t) : unit =
+  (* Copy the interesting test program to the output directory *)
+  let filename_close_miss_p4 =
+    Filesys.cp filename_gen_p4 config.outdirs.dirname_close_miss_p4
+  in
+  F.asprintf
+    "[Fuel %d] [Phantom %d] [Derivation %d] [Mutation %d] %s close-misses %s"
+    fuel pid idx_derivation idx_mutation filename_close_miss_p4
+    (PIdSet.to_string pids_close_miss_new)
+  |> Config.log config;
+  let oc =
+    open_out_gen [ Open_append; Open_text ] 0o666 filename_close_miss_p4
+  in
+  F.asprintf "\n// Close-missed pids %s\n"
+    (PIdSet.to_string pids_close_miss_new)
+  |> output_string oc;
+  close_out oc;
+  (* Update the set of covered phantoms *)
+  Config.update_close_miss_cover_seed config filename_close_miss_p4
+    pids_close_miss_new
 
-(* Fuzzing from a single derivation *)
+let update_interesting (fuel : int) (pid : pid) (idx_derivation : int)
+    (idx_mutation : int) (config : Config.t) (filename_gen_p4 : string)
+    (value_program : value) : unit =
+  (* Evaluate the generated program to see if it is interesting *)
+  let welltyped, cover =
+    match
+      Interp_sl.Interp.run_typing_internal config.specenv.spec filename_gen_p4
+        value_program
+    with
+    | Well (_, _, cover) -> (true, cover)
+    | Ill cover -> (false, cover)
+  in
+  (* Find newly hit or newly close-missing nodes *)
+  let pids_hit_new, pids_close_miss_new =
+    Config.find_interesting_cover_seed config cover
+  in
+  (* Collect the file if it covers a new phantom, and update the running coverage *)
+  if not (PIdSet.is_empty pids_hit_new) then
+    update_hit_new fuel pid idx_derivation idx_mutation config filename_gen_p4
+      welltyped pids_hit_new;
+  (* Collect the file if it is well-typed and covers a new close-miss phantom,
+     then update the running coverage *)
+  if welltyped && not (PIdSet.is_empty pids_close_miss_new) then
+    update_close_miss_new fuel pid idx_derivation idx_mutation config
+      filename_gen_p4 pids_close_miss_new
 
-let rec fuzz_derivation (idx_derivation : string) (config : Config.t)
-    (filename_p4 : string) (filename_gen_p4 : string) (comment_gen_p4 : string)
-    (graph : Dep.Graph.t) (vid_program : vid) (pid : pid) (vid_source : vid) :
-    unit =
-  (* Retrieve the close-ASTs *)
+(* Fuzzing from derivations *)
+
+let fuzz_derivation_mutated (fuel : int) (pid : pid) (idx_derivation : int)
+    (idx_mutation : int) (config : Config.t) (dirname_gen_tmp : string)
+    (filename_p4 : string) (comment_gen_p4 : string) (graph : Dep.Graph.t)
+    (vid_program : vid) (value_source : value) (value_mutated : value) : unit =
+  (* Reassemble the program with the mutated AST *)
+  let renamer = VIdMap.singleton value_source.note.vid value_mutated in
+  let value_program = Dep.Graph.reassemble_node graph renamer vid_program in
+  (* Mutation may yield a syntactically ill-formed AST, so have a try block *)
+  try
+    let program = Interp_sl.Out.out_program value_program in
+    let filename_gen_p4 =
+      F.asprintf "%s/%s_F%d_P%d_D%d_M%d.p4" dirname_gen_tmp
+        (Filesys.base ~suffix:".p4" filename_p4)
+        fuel pid idx_derivation idx_mutation
+    in
+    let comment_gen_p4 =
+      F.asprintf "%s\n/*\nFrom %s\nTo %s\n*/\n" comment_gen_p4
+        (Sl.Print.string_of_value value_source)
+        (Sl.Print.string_of_value value_mutated)
+    in
+    (* Write the mutated program to a file *)
+    let oc = open_out filename_gen_p4 in
+    F.asprintf "%s\n%a\n" comment_gen_p4 P4el.Pp.pp_program program
+    |> output_string oc;
+    close_out oc;
+    (* Check if the mutated program is interesting, and if so, update *)
+    update_interesting fuel pid idx_derivation idx_mutation config
+      filename_gen_p4 value_program
+  with Error (_, msg) -> Config.warn config msg
+
+let fuzz_derivation (fuel : int) (pid : pid) (idx_derivation : int)
+    (config : Config.t) (dirname_gen_tmp : string) (filename_p4 : string)
+    (comment_gen_p4 : string) (graph : Dep.Graph.t) (vid_program : vid)
+    (vid_source : vid) : unit =
+  (* Reassemble the close-AST *)
   let value_source = Dep.Graph.reassemble_node graph VIdMap.empty vid_source in
-  F.asprintf "%s\n[File] %s\n[Target] %d\n[Source] %s\n" idx_derivation
-    filename_p4 pid
+  F.asprintf "[Fuel %d] [Phantom %d] [Derivation %d]\n[File] %s\n[Source] %s\n"
+    fuel pid idx_derivation filename_p4
     (Sl.Print.string_of_value value_source)
   |> Config.query config;
-  (* Mutate the close-ASTs *)
-  let mutated_opt = Mutate.mutate config.specenv.tdenv value_source in
+  (* Mutate the close-AST *)
+  let mutations = Mutate.mutates 10 config.specenv.tdenv value_source in
   (* Generate the mutated program *)
-  Option.iter
-    (fun (kind, value_mutated) ->
+  List.iteri
+    (fun idx_mutation (kind, value_mutated) ->
+      F.asprintf "[Mutated] %s\n" (Sl.Print.string_of_value value_mutated)
+      |> Config.answer config;
       let comment_gen_p4 =
         F.asprintf "%s\n// Mutation %s\n" comment_gen_p4
           (Mutate.string_of_kind kind)
       in
-      fuzz_derivation' idx_derivation config filename_gen_p4 comment_gen_p4
-        graph vid_program pid value_source value_mutated)
-    mutated_opt
+      fuzz_derivation_mutated fuel pid idx_derivation idx_mutation config
+        dirname_gen_tmp filename_p4 comment_gen_p4 graph vid_program
+        value_source value_mutated)
+    mutations
 
-and fuzz_derivation' (idx_derivation : string) (config : Config.t)
-    (filename_gen_p4 : string) (comment_gen_p4 : string) (graph : Dep.Graph.t)
-    (vid_program : vid) (pid : pid) (value_source : value)
-    (value_mutated : value) : unit =
-  (* Reassemble the program with the mutated AST *)
-  let renamer = VIdMap.singleton value_source.note.vid value_mutated in
-  let value_program = Dep.Graph.reassemble_node graph renamer vid_program in
-  try
-    let program = Interp_sl.Out.out_program value_program in
-    (* Write the mutated program to a file *)
-    let oc = open_out filename_gen_p4 in
-    F.asprintf "%s\n/*\nFrom %s\nTo %s\n*/\n\n%a\n" comment_gen_p4
-      (Sl.Print.string_of_value value_source)
-      (Sl.Print.string_of_value value_mutated)
-      P4el.Pp.pp_program program
-    |> output_string oc;
-    close_out oc;
-    (* Evaluate the generated program to see if it is interesting *)
-    let welltyped, cover =
-      match
-        Interp_sl.Interp.run_typing_internal config.specenv.spec filename_gen_p4
-          value_program
-      with
-      | Well (_, _, cover) -> (true, cover)
-      | Ill cover -> (false, cover)
-    in
-    let pids_hit = cover |> SCov.collect_hit |> PIdSet.of_list in
-    let pids_new = PIdSet.inter pids_hit config.seed.pids_uncovered in
-    if PIdSet.is_empty pids_new then ()
-    else
-      fuzz_derivation'' idx_derivation config filename_gen_p4 pid welltyped
-        pids_new
-  with Error (_, msg) -> Config.warn config msg
-
-and fuzz_derivation'' (idx_derivation : string) (config : Config.t)
-    (filename_gen_p4 : string) (pid : pid) (welltyped : bool)
-    (pids_new : PIdSet.t) : unit =
-  (* Copy the interesting test program to the output directory *)
-  let filename_covered =
-    if welltyped then Filesys.mv filename_gen_p4 config.outdirs.dirname_well_p4
-    else Filesys.mv filename_gen_p4 config.outdirs.dirname_ill_p4
-  in
-  F.asprintf "%s %s covers %s (%s intended %d)" idx_derivation filename_covered
-    (pids_new |> PIdSet.elements |> List.map string_of_int |> String.concat ", ")
-    (if PIdSet.mem pid pids_new then "hit" else "miss")
-    pid
+let fuzz_derivations (fuel : int) (pid : pid) (config : Config.t)
+    (dirname_gen_tmp : string) (filename_p4 : string) (graph : Dep.Graph.t)
+    (vid_program : vid) (derivations_source : (vid * int) list) : unit =
+  let derivations_total = List.length derivations_source in
+  F.asprintf "[Fuel %d] [Phantom %d] Fuzzing from %d derivations" fuel pid
+    derivations_total
   |> Config.log config;
-  let oc = open_out_gen [ Open_append; Open_text ] 0o666 filename_covered in
-  F.asprintf "\n// Covered pids %s\n"
-    (pids_new |> PIdSet.elements |> List.map string_of_int |> String.concat ", ")
-  |> output_string oc;
-  close_out oc;
-  (* Update the set of covered phantoms *)
-  let pids_uncovered = PIdSet.diff config.seed.pids_uncovered pids_new in
-  (* (TODO) Also add the file to the seed *)
-  Config.update_pids_uncovered config pids_uncovered
-
-let fuzz_derivations (fuel : int) (idx_seed : string) (config : Config.t)
-    (filename_p4 : string) (dirname_gen : string) (graph : Dep.Graph.t)
-    (vid_program : vid) (derivations_source : (pid * (vid * int) list) list) :
-    unit =
-  let derivations_total =
-    derivations_source
-    |> List.map (fun (_, vids_source) -> List.length vids_source)
-    |> List.fold_left ( + ) 0
-  in
-  F.asprintf "%s Fuzzing from %d derivations" idx_seed derivations_total
-  |> Config.log config;
-  F.asprintf "%s Total %d close-miss phantoms" idx_seed
-    (List.length derivations_source)
-  |> Config.log config;
-  derivations_source |> List.map fst |> List.map string_of_int
-  |> String.concat ", " |> Config.log config;
-  let derivations_count = ref 0 in
   List.iteri
-    (fun idx_a (pid, vids_source) ->
-      List.iteri
-        (fun idx_b (vid_source, depth) ->
-          derivations_count := !derivations_count + 1;
-          let idx_derivation =
-            F.asprintf "%s [Derivation %d/%d]" idx_seed !derivations_count
-              derivations_total
-          in
-          let filename_gen_p4 =
-            F.asprintf "%s/%s_F%d_A%dB%d.p4" dirname_gen
-              (Filesys.base ~suffix:".p4" filename_p4)
-              fuel idx_a idx_b
-          in
-          let comment_gen_p4 =
-            F.asprintf "// Intended pid %d\n// Source vid %d\n// Depth %d\n" pid
-              vid_source depth
-          in
-          fuzz_derivation idx_derivation config filename_p4 filename_gen_p4
-            comment_gen_p4 graph vid_program pid vid_source)
-        vids_source)
+    (fun idx_derivation (vid_source, depth) ->
+      let comment_gen_p4 =
+        F.asprintf "// Intended pid %d\n// Source vid %d\n// Depth %d\n" pid
+          vid_source depth
+      in
+      fuzz_derivation fuel pid idx_derivation config dirname_gen_tmp filename_p4
+        comment_gen_p4 graph vid_program vid_source)
     derivations_source
 
-(* Fuzzing from a single seed *)
+(* Fuzzing from a seed program *)
 
-let rec fuzz_seed (fuel : int) (idx_seed : string) (config : Config.t)
-    (filename_p4 : string) : unit =
-  (* Create a directory for the generated programs *)
-  let dirname_gen_single =
-    config.outdirs.dirname_gen ^ "/" ^ Filesys.base ~suffix:".p4" filename_p4
-  in
-  Filesys.mkdir dirname_gen_single;
-  (* Run the typing rules on the seed program
-     If it is well-typed, start fuzzing from it *)
-  F.asprintf "%s Running SL interpreter on %s" idx_seed filename_p4
+let rec fuzz_seed (fuel : int) (pid : pid) (config : Config.t)
+    (dirname_gen_tmp : string) (filename_p4 : string) : unit =
+  (* Run SL interpreter on the program,
+     and if it is well-typed, start generating tests from it *)
+  F.asprintf "[Fuel %d] [Phantom %d] Running SL interpreter on %s" fuel pid
+    filename_p4
   |> Config.log config;
-  (match
-     Interp_sl.Interp.run_typing ~derive:true config.specenv.spec
-       config.specenv.includes_p4 filename_p4
-   with
+  match
+    Interp_sl.Interp.run_typing ~derive:true config.specenv.spec
+      config.specenv.includes_p4 filename_p4
+  with
   | Well (graph, vid_program, cover) ->
       let graph = Option.get graph in
       let vid_program = Option.get vid_program in
-      fuzz_seed' fuel idx_seed config filename_p4 dirname_gen_single graph
-        vid_program cover
-  | Ill _ -> ());
-  (* Remove the directory for the generated programs *)
-  Filesys.rmdir dirname_gen_single
+      fuzz_seed' fuel pid config dirname_gen_tmp filename_p4 graph vid_program
+        cover
+  | Ill _ -> ()
 
-and fuzz_seed' (fuel : int) (idx_seed : string) (config : Config.t)
-    (filename_p4 : string) (dirname_gen_single : string) (graph : Dep.Graph.t)
+and fuzz_seed' (fuel : int) (pid : pid) (config : Config.t)
+    (dirname_gen_tmp : string) (filename_p4 : string) (graph : Dep.Graph.t)
     (vid_program : vid) (cover : SCov.Cover.t) : unit =
-  (* Collect close-miss phantoms *)
-  let misses = SCov.collect_miss cover in
-  (* Derive closest ASTs from the closest-miss phantoms *)
-  F.asprintf "%s Finding derivations from %s" idx_seed filename_p4
+  (* Derive closes-ASTs from the phantom *)
+  F.asprintf "[Fuel %d] [Phantom %d] Finding derivations from %s" fuel pid
+    filename_p4
   |> Config.log config;
+  let derivations_source = derive_phantom pid graph cover in
+  (* Take the 10 closest-ASTs *)
   let derivations_source =
-    derive_misses graph config.seed.pids_uncovered misses
+    if List.length derivations_source < 10 then derivations_source
+    else List.init 10 (fun idx -> List.nth derivations_source idx)
   in
-  (* Randomly sample the close-ASTs, yet always take the first one *)
-  let derivations_source =
-    List.map
-      (fun (pid, vids_source) ->
-        let vids_source =
-          match vids_source with
-          | [] -> vids_source
-          | vid_source :: vids_source ->
-              let depths = List.map snd vids_source in
-              let depth_max = List.fold_left Int.max 0 depths in
-              let probs =
-                List.map
-                  (fun depth ->
-                    float_of_int (depth_max - depth + 1)
-                    /. float_of_int depth_max)
-                  depths
-              in
-              let vids_source =
-                Rand.random_sample_weighted 1 probs vids_source
-              in
-              vid_source :: vids_source
-        in
-        (pid, vids_source))
-      derivations_source
-  in
-  (* Mutate the closest ASTs and dump to file *)
-  fuzz_derivations fuel idx_seed config filename_p4 dirname_gen_single graph
-    vid_program derivations_source
+  (* Mutate the close-ASTs and dump to file *)
+  fuzz_derivations fuel pid config dirname_gen_tmp filename_p4 graph vid_program
+    derivations_source
 
-let fuzz_seeds (fuel : int) (config : Config.t) : unit =
-  List.iteri
-    (fun idx_seed filename_seed_p4 ->
-      let idx_seed =
-        Format.asprintf "[Fuel %d] [Seed %d/%d]" fuel idx_seed
-          (List.length config.seed.filenames_seed_p4)
-      in
-      fuzz_seed fuel idx_seed config filename_seed_p4)
-    config.seed.filenames_seed_p4
+let fuzz_seeds (fuel : int) (pid : pid) (config : Config.t)
+    (dirname_gen_tmp : string) (filenames_p4 : string list) : unit =
+  (* Fuzz from seed programs until the target phantom node is covered *)
+  List.iter
+    (fun filename_p4 ->
+      if MCov.is_miss config.seed.cover_seed pid then
+        fuzz_seed fuel pid config dirname_gen_tmp filename_p4)
+    filenames_p4
+
+(* Fuzzing from a target phantom node *)
+
+let fuzz_phantom (fuel : int) (pid : pid) (config : Config.t)
+    (filenames_p4 : string list) : unit =
+  F.asprintf "[Fuel %d] [Phantom %d] Targeting phantom %d" fuel pid pid
+  |> Config.log config;
+  (* Create a directory for the generated programs *)
+  let dirname_gen_tmp =
+    config.outdirs.dirname_gen ^ "/fuel" ^ string_of_int fuel ^ "phantom"
+    ^ string_of_int pid
+  in
+  Filesys.mkdir dirname_gen_tmp;
+  (* Randomly sample N close-miss filenames *)
+  let filenames_p4 = Rand.random_sample 10 filenames_p4 in
+  (* Generate tests from the files *)
+  fuzz_seeds fuel pid config dirname_gen_tmp filenames_p4;
+  (* Remove the directory for the generated programs *)
+  Filesys.rmdir dirname_gen_tmp
+
+let fuzz_phantoms (fuel : int) (config : Config.t) : unit =
+  let pids = MCov.Cover.dom config.seed.cover_seed in
+  PIdSet.iter
+    (fun pid ->
+      let branch = MCov.Cover.find pid config.seed.cover_seed in
+      match branch.status with
+      | Hit -> ()
+      | Miss filenames_p4 -> fuzz_phantom fuel pid config filenames_p4)
+    pids
 
 (* Fuzzing in a loop with fuel *)
 
@@ -286,16 +305,17 @@ let rec fuzz_loop (fuel : int) (config : Config.t) : Config.t =
   if fuel = 0 then config
   else (
     F.asprintf "[Fuel %d] Start fuzzing loop" fuel |> Config.log config;
-    fuzz_seeds fuel config;
-    F.asprintf "[Fuel %d] End fuzzing loop with %d nodes uncovered" fuel
-      (PIdSet.cardinal config.seed.pids_uncovered)
+    fuzz_phantoms fuel config;
+    let total, hits, coverage = MCov.coverage config.seed.cover_seed in
+    F.asprintf "[Fuel %d] End fuzzing loop with coverage %d/%d (%.2f%%)" fuel
+      hits total coverage
     |> Config.log config;
     Config.set_rand config;
     fuzz_loop (fuel - 1) config)
 
 (* Entry point to main fuzzing loop *)
 
-type bootmode = Cold of string list | Warm of string
+type bootmode = Cold | Warm of string
 
 let fuzz_typing_init (spec : spec) (includes_p4 : string list)
     (filenames_seed_p4 : string list) (dirname_gen : string)
@@ -307,37 +327,42 @@ let fuzz_typing_init (spec : spec) (includes_p4 : string list)
       (tm.Unix.tm_mon + 1) tm.Unix.tm_mday tm.Unix.tm_hour tm.Unix.tm_min
       tm.Unix.tm_sec
   in
+  (* Create directories for generated programs *)
+  let dirname_gen = dirname_gen ^ "/fuzz-" ^ timestamp in
+  let outdirs = Config.init_outdirs dirname_gen in
   (* Create a logger *)
-  let logname = dirname_gen ^ "/fuzz-" ^ timestamp ^ ".log" in
+  let logname = dirname_gen ^ "/fuzz.log" in
   let logger = Logger.init logname in
   (* Create a query *)
-  let queryname = dirname_gen ^ "/fuzz-" ^ timestamp ^ ".query" in
+  let queryname = dirname_gen ^ "/fuzz.query" in
   let queries = Query.init queryname in
   (* Create a spec environment *)
   Logger.log logger "Loading type definitions from the spec file";
   let specenv = Config.init_specenv spec includes_p4 in
-  (* Create directories for generated programs *)
-  let dirname_gen = dirname_gen ^ "/fuzz-" ^ timestamp in
-  let outdirs = Config.init_outdirs dirname_gen in
   (* Create a seed *)
   Logger.log logger "Booting initial coverage";
-  let pids_uncovered =
+  let cover_seed =
     match bootmode with
-    | Cold filenames_boot_p4 ->
-        Boot.boot_cold spec includes_p4 filenames_boot_p4
+    | Cold ->
+        let cover_seed = Boot.boot_cold spec includes_p4 filenames_seed_p4 in
+        (* Log the initial coverage for later use in warm boot *)
+        let filename_cov = dirname_gen ^ "/boot.coverage" in
+        MCov.log filename_cov cover_seed;
+        cover_seed
     | Warm filename_boot -> Boot.boot_warm filename_boot
   in
-  Logger.log logger
-    (F.asprintf "Found %d uncovered phantoms" (PIdSet.cardinal pids_uncovered));
-  let seed = Config.init_seed filenames_seed_p4 pids_uncovered in
+  let total, hits, coverage = MCov.coverage cover_seed in
+  F.asprintf "Finished booting with initial coverage %d/%d (%.2f%%)" hits total
+    coverage
+  |> Logger.log logger;
+  let seed = Config.init_seed filenames_seed_p4 cover_seed in
   (* Create a configuration *)
   let config = Config.init logger queries specenv outdirs seed in
   config
 
 let fuzz_typing_cold (fuel : int) (spec : spec) (includes_p4 : string list)
-    (filenames_seed_p4 : string list) (dirname_gen : string)
-    (filenames_boot_p4 : string list) : unit =
-  let bootmode = Cold filenames_boot_p4 in
+    (filenames_seed_p4 : string list) (dirname_gen : string) : unit =
+  let bootmode = Cold in
   let config =
     fuzz_typing_init spec includes_p4 filenames_seed_p4 dirname_gen bootmode
   in

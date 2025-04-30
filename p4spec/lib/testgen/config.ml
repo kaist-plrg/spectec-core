@@ -1,6 +1,8 @@
 open Domain.Lib
 open Sl.Ast
 module TDEnv = Runtime_dynamic_sl.Envs.TDEnv
+module SCov = Runtime_testgen.Cov.Single
+module MCov = Runtime_testgen.Cov.Multiple
 
 (* Environment for the spec *)
 
@@ -10,6 +12,7 @@ type specenv = { spec : spec; tdenv : TDEnv.t; includes_p4 : string list }
 
 type outdirs = {
   dirname_gen : string;
+  dirname_close_miss_p4 : string;
   dirname_well_p4 : string;
   dirname_ill_p4 : string;
 }
@@ -18,7 +21,7 @@ type outdirs = {
 
 type seed = {
   mutable filenames_seed_p4 : string list;
-  mutable pids_uncovered : PIdSet.t;
+  mutable cover_seed : MCov.Cover.t;
 }
 
 (* Configuration for the fuzz campaign *)
@@ -55,6 +58,7 @@ let set_rand (config : t) : unit =
 let log (config : t) (msg : string) : unit = Logger.log config.logger msg
 let warn (config : t) (msg : string) : unit = Logger.warn config.logger msg
 let query (config : t) (msg : string) : unit = Query.query config.queries msg
+let answer (config : t) (msg : string) : unit = Query.answer config.queries msg
 
 (* Constructor *)
 
@@ -64,15 +68,17 @@ let init_specenv (spec : spec) (includes_p4 : string list) : specenv =
 
 let init_outdirs (dirname_gen : string) : outdirs =
   Filesys.mkdir dirname_gen;
+  let dirname_close_miss_p4 = dirname_gen ^ "/closemiss" in
+  Filesys.mkdir dirname_close_miss_p4;
   let dirname_well_p4 = dirname_gen ^ "/welltyped" in
   Filesys.mkdir dirname_well_p4;
   let dirname_ill_p4 = dirname_gen ^ "/illtyped" in
   Filesys.mkdir dirname_ill_p4;
-  { dirname_gen; dirname_well_p4; dirname_ill_p4 }
+  { dirname_gen; dirname_close_miss_p4; dirname_well_p4; dirname_ill_p4 }
 
-let init_seed (filenames_seed_p4 : string list) (pids_uncovered : PIdSet.t) :
+let init_seed (filenames_seed_p4 : string list) (cover_seed : MCov.Cover.t) :
     seed =
-  { filenames_seed_p4; pids_uncovered }
+  { filenames_seed_p4; cover_seed }
 
 let init (logger : Logger.t) (queries : Query.t) (specenv : specenv)
     (outdirs : outdirs) (seed : seed) =
@@ -80,10 +86,53 @@ let init (logger : Logger.t) (queries : Query.t) (specenv : specenv)
   Random.init rand;
   { rand; logger; queries; specenv; outdirs; seed }
 
-(* Updater *)
+(* Seed updater *)
 
-let update_pids_uncovered (config : t) (pids_uncovered : PIdSet.t) : unit =
-  config.seed.pids_uncovered <- pids_uncovered
+let find_interesting_cover_seed (config : t) (cover : SCov.Cover.t) :
+    PIdSet.t * PIdSet.t =
+  MCov.Cover.fold
+    (fun pid (branch_multi : MCov.Branch.t) (pids_hit_new, pids_close_miss_new) ->
+      let branch_single = SCov.Cover.find pid cover in
+      match (branch_single.status, branch_multi.status) with
+      | _, Hit -> (pids_hit_new, pids_close_miss_new)
+      | Hit, Miss _ ->
+          let pids_hit_new = PIdSet.add pid pids_hit_new in
+          (pids_hit_new, pids_close_miss_new)
+      | Miss vids, Miss filenames_p4 -> (
+          match (vids, filenames_p4) with
+          | _ :: _, [] ->
+              let pids_close_miss_new = PIdSet.add pid pids_close_miss_new in
+              (pids_hit_new, pids_close_miss_new)
+          | _ -> (pids_hit_new, pids_close_miss_new)))
+    config.seed.cover_seed
+    (PIdSet.empty, PIdSet.empty)
+
+let update_hit_cover_seed (config : t) (pids_hit : PIdSet.t) : unit =
+  let cover_seed = config.seed.cover_seed in
+  let cover_seed =
+    PIdSet.fold
+      (fun pid_hit cover_seed ->
+        let branch = MCov.Cover.find pid_hit cover_seed in
+        let branch = MCov.Branch.{ branch with status = Hit } in
+        MCov.Cover.add pid_hit branch cover_seed)
+      pids_hit cover_seed
+  in
+  config.seed.cover_seed <- cover_seed
+
+let update_close_miss_cover_seed (config : t) (filename_p4 : string)
+    (pids_close_miss : PIdSet.t) : unit =
+  let cover_seed = config.seed.cover_seed in
+  let cover_seed =
+    PIdSet.fold
+      (fun pid_close_miss cover_seed ->
+        let branch = MCov.Cover.find pid_close_miss cover_seed in
+        let branch =
+          MCov.Branch.{ branch with status = Miss [ filename_p4 ] }
+        in
+        MCov.Cover.add pid_close_miss branch cover_seed)
+      pids_close_miss cover_seed
+  in
+  config.seed.cover_seed <- cover_seed
 
 (* Destructor *)
 

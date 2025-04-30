@@ -1,37 +1,41 @@
-open Domain.Lib
 open Sl.Ast
 module MCov = Runtime_testgen.Cov.Multiple
+open Util.Source
 
 (* Measure initial coverage of phantoms *)
 
 (* On cold boot, first measure the coverage of the seed *)
 
 let boot_cold (spec : spec) (includes_p4 : string list)
-    (filenames_p4 : string list) : PIdSet.t =
-  let cover_multi =
-    Interp_sl.Interp.cover_typings spec includes_p4 filenames_p4
-  in
-  MCov.log ~short:true cover_multi;
-  let misses = MCov.collect_miss cover_multi in
-  misses |> List.map fst |> PIdSet.of_list
+    (filenames_p4 : string list) : MCov.Cover.t =
+  Interp_sl.Interp.cover_typings spec includes_p4 filenames_p4
 
 (* On warm boot, load the coverage from a file *)
 
-let boot_warm (filename_cov : string) : PIdSet.t =
-  let oc = open_in filename_cov in
-  let rec read_lines pids =
-    try
-      let line = input_line oc in
-      let line =
-        if String.starts_with ~prefix:"Phantom#" line then
-          String.sub line 8 (String.length line - 8)
-        else line
+let parse_line (line : string) : pid * MCov.Branch.t =
+  let data = String.split_on_char ' ' line in
+  match data with
+  | pid :: status :: origin :: filenames ->
+      let pid = int_of_string pid in
+      let status =
+        match status with
+        | "Hit" -> MCov.Branch.Hit
+        | "Miss" -> MCov.Branch.Miss filenames
+        | _ -> assert false
       in
-      match int_of_string_opt line with
-      | Some pid -> read_lines (pid :: pids)
-      | None -> read_lines pids
-    with End_of_file -> List.rev pids
-  in
-  let pids = read_lines [] in
-  close_in oc;
-  pids |> PIdSet.of_list
+      let origin = origin $ no_region in
+      let branch = MCov.Branch.{ origin; status } in
+      (pid, branch)
+  | _ -> assert false
+
+let rec parse_lines (cover : MCov.Cover.t) (oc : in_channel) : MCov.Cover.t =
+  try
+    let line = input_line oc in
+    let pid, branch = parse_line line in
+    let cover = MCov.Cover.add pid branch cover in
+    parse_lines cover oc
+  with End_of_file -> cover
+
+let boot_warm (filename_cov : string) : MCov.Cover.t =
+  let oc = open_in filename_cov in
+  parse_lines MCov.Cover.empty oc

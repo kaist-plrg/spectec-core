@@ -21,12 +21,21 @@ let base ~(suffix : string) (filename : string) : string =
       (String.length filename_base - String.length suffix)
   else filename_base
 
-let mv (filename_src : string) (dirname_dst : string) : string =
+let cp (filename_src : string) (dirname_dst : string) : string =
   let filename_dst =
     dirname_dst ^ "/" ^ base ~suffix:".p4" filename_src ^ ".p4"
   in
-  Sys_unix.rename filename_src filename_dst;
-  filename_dst
+  let ic = open_in filename_src in
+  let oc = open_out filename_dst in
+  try
+    while true do
+      output_string oc (input_line ic ^ "\n")
+    done;
+    raise End_of_file
+  with End_of_file ->
+    close_in ic;
+    close_out oc;
+    filename_dst
 
 let rmdir (dirname : string) : unit =
   let files = collect_files ~suffix:".p4" dirname in

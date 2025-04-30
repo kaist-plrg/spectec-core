@@ -839,7 +839,7 @@ and in_typdef (ctx : Ctx.t) (typdef : (P4.typ, P4.decl) P4.alt) : value =
   in
   let value =
     let vid = Dep.Graph.fresh () in
-    let typ = in_typ_var "typdef" in
+    let typ = in_typ_var "typedef" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
   Ctx.add_node ~taint:true ctx value;

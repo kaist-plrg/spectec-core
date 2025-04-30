@@ -133,6 +133,45 @@ Given a P4 program, below command runs the typing rules of the P4 language.
 $ ./p4spectec run-typing spec/*.watsup -i p4/testdata/arch -p [FILENAME].p4
 ```
 
+### To Initiate a Fuzz Loop for Generating P4 Programs
+
+```shell
+$ ./p4spectec testgen spec/*.watsup -i p4/testdata/arch -seed [SEED DIR] -gen [GEN DIR] -fuel [NUM]
+```
+
+This will generate P4 programs in the directory `[GEN DIR]` using the seed files in the directory `[SEED DIR]`.
+`[NUM]` is the number of fuzz cycles to run.
+
+After the fuzz loop, you may find the generated P4 programs in the directory `[GEN DIR]`, with the log file `fuzz.log`,
+query files for mutations `query.log` and an initial coverage file `boot.cov`.
+
+In later runs with the same seed directory, you can use warm boot to skip the pre-loop phase.
+
+```shell
+$ ./p4spectec testgen spec/*.watsup -i p4/testdata/arch -seed [SEED DIR] -gen [GEN DIR] -fuel [NUM] -warm [COV FILE]
+```
+
+At a high level, the fuzz loop will:
+
+(#) Pre-loop: Measure the initial coverage of the phantom nodes
+
+(#) Loop
+
+    1. For each phantoms that were missed:
+        A. Identify close-miss filenames
+        B. Randomly sample N(=10) close-miss filenames
+        C. For each close-miss filename:
+            i. Run SL interpreter on the program
+            ii. Fetch derivations, i.e., a set of close-ASTs for the phantom
+            iii. Randomly sample M(=10) close-ASTs
+            iv. For each close-AST:
+                (1) Mutate the close-AST up to K(=10)
+                (2) For each mutated close-AST:
+                    a. Reassemble the program with the mutated AST
+                    b. Run the SL interpreter on the mutated program
+                    c. See if it has covered any new phantom or any new close-miss
+    2. Repeat the loop until the fuel is exhausted *)
+
 ### Contributing
 
 p4cherry is an open-source project. Please feel free to contribute by opening issues or pull requests.

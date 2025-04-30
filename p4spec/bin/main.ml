@@ -73,6 +73,8 @@ let cover_sl_command =
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
      and dirnames_p4 =
        flag "-d" (listed string) ~doc:"p4 directories to typecheck"
+     and filename_cov =
+       flag "-cov" (required string) ~doc:"output coverage file"
      in
      fun () ->
        try
@@ -82,10 +84,10 @@ let cover_sl_command =
          let filenames_p4 =
            List.concat_map (collect_files ~suffix:".p4") dirnames_p4
          in
-         let cover_multi =
+         let cover =
            Interp_sl.Interp.cover_typings spec_sl includes_p4 filenames_p4
          in
-         Runtime_testgen.Cov.Multiple.log cover_multi
+         Runtime_testgen.Cov.Multiple.log filename_cov cover
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 (* TODO: Merge with cover_sl_command *)
@@ -137,8 +139,6 @@ let run_testgen_command =
        flag "-gen" (required string) ~doc:"directory for generated p4 programs"
      and filename_boot =
        flag "-warm" (optional string) ~doc:"coverage file for warm boot"
-     and dirnames_boot =
-       flag "-cold" (listed string) ~doc:"directories for cold boot"
      in
      fun () ->
        try
@@ -146,19 +146,13 @@ let run_testgen_command =
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
          let filenames_seed_p4 = collect_files ~suffix:".p4" dirname_seed_p4 in
-         match (filename_boot, dirnames_boot) with
-         | Some filename_boot, [] ->
+         match filename_boot with
+         | Some filename_boot ->
              Testgen.Gen.fuzz_typing_warm fuel spec_sl includes_p4
                filenames_seed_p4 dirname_gen filename_boot
-         | None, dirnames_boot ->
-             let filenames_boot_p4 =
-               List.concat_map (collect_files ~suffix:".p4") dirnames_boot
-             in
+         | None ->
              Testgen.Gen.fuzz_typing_cold fuel spec_sl includes_p4
-               filenames_seed_p4 dirname_gen filenames_boot_p4
-         | _ ->
-             Format.printf
-               "Please provide either a warm or cold boot coverage file\n"
+               filenames_seed_p4 dirname_gen
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let interesting_command =
