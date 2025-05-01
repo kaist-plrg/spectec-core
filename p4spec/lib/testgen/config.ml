@@ -4,6 +4,20 @@ module TDEnv = Runtime_dynamic_sl.Envs.TDEnv
 module SCov = Runtime_testgen.Cov.Single
 module MCov = Runtime_testgen.Cov.Multiple
 
+(* Hyperparameters for the fuzzing loop *)
+
+(* Max number of seeds per phantom *)
+let close_miss_samples = 3
+
+(* Max number of related vids to derive from per seed *)
+let related_vid_samples = 3
+
+(* Max number of close-ASTs per seed *)
+let derivation_source_samples = 5
+
+(* Max number of trials per seed *)
+let mutation_trials = 100
+
 (* Environment for the spec *)
 
 type specenv = { spec : spec; tdenv : TDEnv.t; includes_p4 : string list }
