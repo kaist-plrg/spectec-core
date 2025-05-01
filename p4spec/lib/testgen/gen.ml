@@ -263,11 +263,23 @@ and fuzz_seed' (fuel : int) (pid : pid) (config : Config.t)
 
 let fuzz_seeds (fuel : int) (pid : pid) (config : Config.t)
     (dirname_gen_tmp : string) (filenames_p4 : string list) : unit =
-  (* Fuzz from seed programs until the target phantom node is covered *)
+  (* Fuzz from seed programs until the target phantom node is covered,
+     for each trial, have a 5 second hard timeout *)
   List.iter
     (fun filename_p4 ->
       if MCov.is_miss config.seed.cover_seed pid then
-        fuzz_seed fuel pid config dirname_gen_tmp filename_p4)
+        try
+          let handler =
+            Sys.Signal_handle (fun _ -> raise (Error (no_region, "timeout")))
+          in
+          Sys.set_signal Sys.sigalrm handler;
+          let _ = Unix.alarm 5 in
+          fuzz_seed fuel pid config dirname_gen_tmp filename_p4;
+          let _ = Unix.alarm 0 in
+          ()
+        with _ ->
+          F.asprintf "[Fuel %d] [Phantom %d] Timeout on %s" fuel pid filename_p4
+          |> Config.log config)
     filenames_p4
 
 (* Fuzzing from a target phantom node *)

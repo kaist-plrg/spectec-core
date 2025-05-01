@@ -1433,7 +1433,9 @@ let run_typing_internal (spec : spec) (filename_p4 : string)
   try
     let ctx, _values = do_typing ctx spec value_program in
     Well (ctx.graph, ctx.vid_program, !(ctx.cover))
-  with Util.Error.Error (at, msg) -> Ill (at, msg, !(ctx.cover))
+  with
+  | Util.Error.Error (at, msg) -> Ill (at, msg, !(ctx.cover))
+  | _ -> Ill (no_region, "unknown error", !(ctx.cover))
 
 let run_typing ?(derive : bool = false) (spec : spec)
     (includes_p4 : string list) (filename_p4 : string) : res =
