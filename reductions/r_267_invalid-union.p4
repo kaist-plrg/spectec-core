@@ -1,0 +1,1 @@
+extern a { void b(); }
