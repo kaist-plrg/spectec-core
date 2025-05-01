@@ -328,10 +328,11 @@ let rec fuzz_loop (fuel : int) (config : Config.t) : Config.t =
 (* Entry point to main fuzzing loop *)
 
 type bootmode = Cold | Warm of string
+type targetmode = Roundrobin | Target of string
 
 let fuzz_typing_init (spec : spec) (includes_p4 : string list)
     (filenames_seed_p4 : string list) (dirname_gen : string)
-    (bootmode : bootmode) : Config.t =
+    (bootmode : bootmode) (targetmode : targetmode) : Config.t =
   (* Create a timestamp *)
   let timestamp =
     let tm = Unix.gettimeofday () |> Unix.localtime in
@@ -363,6 +364,17 @@ let fuzz_typing_init (spec : spec) (includes_p4 : string list)
         cover_seed
     | Warm filename_boot -> Boot.boot_warm filename_boot
   in
+  let cover_seed =
+    match targetmode with
+    | Roundrobin -> cover_seed
+    | Target filename_target ->
+        let targets = Target.target_phantom filename_target in
+        let cover_seed = MCov.target cover_seed targets in
+        (* Log the targeted coverage for later use in warm boot *)
+        let filename_cov_target = dirname_gen ^ "/target.coverage" in
+        MCov.log ~filename_cov_opt:(Some filename_cov_target) cover_seed;
+        cover_seed
+  in
   let total, hits, coverage = MCov.coverage cover_seed in
   F.asprintf "Finished booting with initial coverage %d/%d (%.2f%%)" hits total
     coverage
@@ -372,21 +384,12 @@ let fuzz_typing_init (spec : spec) (includes_p4 : string list)
   let config = Config.init logger queries specenv outdirs seed in
   config
 
-let fuzz_typing_cold (fuel : int) (spec : spec) (includes_p4 : string list)
-    (filenames_seed_p4 : string list) (dirname_gen : string) : unit =
-  let bootmode = Cold in
-  let config =
-    fuzz_typing_init spec includes_p4 filenames_seed_p4 dirname_gen bootmode
-  in
-  let config = fuzz_loop fuel config in
-  Config.close config
-
-let fuzz_typing_warm (fuel : int) (spec : spec) (includes_p4 : string list)
+let fuzz_typing (fuel : int) (spec : spec) (includes_p4 : string list)
     (filenames_seed_p4 : string list) (dirname_gen : string)
-    (filename_boot : string) : unit =
-  let bootmode = Warm filename_boot in
+    (bootmode : bootmode) (targetmode : targetmode) : unit =
   let config =
     fuzz_typing_init spec includes_p4 filenames_seed_p4 dirname_gen bootmode
+      targetmode
   in
   let config = fuzz_loop fuel config in
   Config.close config

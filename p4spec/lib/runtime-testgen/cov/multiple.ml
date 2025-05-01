@@ -78,6 +78,12 @@ let is_miss (cover : Cover.t) (pid : pid) : bool =
   let branch = Cover.find pid cover in
   match branch.status with Hit -> false | Miss _ -> true
 
+let is_close_miss (cover : Cover.t) (pid : pid) : bool =
+  let branch = Cover.find pid cover in
+  match branch.status with
+  | Hit -> false
+  | Miss filenames -> List.length filenames > 0
+
 let coverage (cover : Cover.t) : int * int * float =
   let total = Cover.cardinal cover in
   let hits =
@@ -91,7 +97,21 @@ let coverage (cover : Cover.t) : int * int * float =
   in
   (total, hits, coverage)
 
-(* Extension *)
+(* Targeting close-miss to a restricted set of files *)
+
+let target (cover : Cover.t) (targets : string list PIdMap.t) : Cover.t =
+  Cover.mapi
+    (fun (pid : pid) (branch : Branch.t) ->
+      match branch.status with
+      | Hit -> branch
+      | Miss _ ->
+          let filenames =
+            PIdMap.find_opt pid targets |> Option.value ~default:[]
+          in
+          { branch with status = Miss filenames })
+    cover
+
+(* Extension from single coverage *)
 
 let extend (cover : Cover.t) (filename_p4 : string)
     (cover_single : Single.Cover.t) : Cover.t =

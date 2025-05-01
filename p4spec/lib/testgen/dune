@@ -13,4 +13,4 @@
   runtime_dynamic_sl
   runtime_testgen
   interp_sl)
- (modules filesys rand logger query config boot mutate gen))
+ (modules filesys rand logger query config boot target mutate gen))

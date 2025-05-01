@@ -141,6 +141,8 @@ let run_testgen_command =
        flag "-gen" (required string) ~doc:"directory for generated p4 programs"
      and filename_boot =
        flag "-warm" (optional string) ~doc:"coverage file for warm boot"
+     and filename_target =
+       flag "-target" (optional string) ~doc:"file for target mode"
      in
      fun () ->
        try
@@ -148,13 +150,18 @@ let run_testgen_command =
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
          let filenames_seed_p4 = collect_files ~suffix:".p4" dirname_seed_p4 in
-         match filename_boot with
-         | Some filename_boot ->
-             Testgen.Gen.fuzz_typing_warm fuel spec_sl includes_p4
-               filenames_seed_p4 dirname_gen filename_boot
-         | None ->
-             Testgen.Gen.fuzz_typing_cold fuel spec_sl includes_p4
-               filenames_seed_p4 dirname_gen
+         let bootmode =
+           match filename_boot with
+           | Some filename_boot -> Testgen.Gen.Warm filename_boot
+           | None -> Testgen.Gen.Cold
+         in
+         let targetmode =
+           match filename_target with
+           | Some filename_target -> Testgen.Gen.Target filename_target
+           | None -> Testgen.Gen.Roundrobin
+         in
+         Testgen.Gen.fuzz_typing fuel spec_sl includes_p4 filenames_seed_p4
+           dirname_gen bootmode targetmode
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let interesting_command =
