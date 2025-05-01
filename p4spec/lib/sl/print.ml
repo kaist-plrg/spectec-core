@@ -178,7 +178,7 @@ and string_of_notexp notexp =
   |> List.filter_map (fun str -> if str = "" then None else Some str)
   |> String.concat " "
 
-and string_of_iterexp iterexp = Il.Print.string_of_iterexp iterexp
+and string_of_iterexp (iter, _) = Il.Print.string_of_iter iter
 
 and string_of_iterexps iterexps =
   iterexps |> List.map string_of_iterexp |> String.concat ""
@@ -232,8 +232,8 @@ and string_of_targs targs = Il.Print.string_of_targs targs
 and string_of_pid pid = Format.asprintf "Phantom#%d" pid
 
 and string_of_phantom phantom =
-  let pid, pathconds = phantom in
-  Format.asprintf "%s %s" (string_of_pid pid) (string_of_pathconds pathconds)
+  let pid, _ = phantom in
+  string_of_pid pid
 
 and string_of_pathcond pathcond =
   match pathcond with
