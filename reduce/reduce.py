@@ -43,7 +43,7 @@ def reduce_program(pid, filename):
         temp_program_path = os.path.join(WORK_DIR, copy_name)
         interesting_test_path = os.path.join(interesting_dir, f"i_{pid}_{base_name}.sh")
         interesting_test_subpath = os.path.join("interesting", f"i_{pid}_{base_name}.sh")
-        reduced_path = os.path.join(WORK_DIR, f"r_{pid}_{base_name}")
+        reduced_path = os.path.join(WORK_DIR, f"r2_{pid}_{base_name}")
 
         # Skip if already reduced
         if os.path.exists(reduced_path):
