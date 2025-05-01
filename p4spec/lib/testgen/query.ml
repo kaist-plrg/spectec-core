@@ -27,6 +27,14 @@ let query (queries : t) (msg : string) : unit =
   Format.asprintf "[%s] Query\n%s\n" timestamp msg |> output_string queries;
   flush queries
 
+let answer (queries : t) (msg : string) : unit =
+  let timestamp =
+    let tm = Unix.localtime (Unix.time ()) in
+    Printf.sprintf "[%02d:%02d:%02d]" tm.tm_hour tm.tm_min tm.tm_sec
+  in
+  Format.asprintf "[%s] Answer\n%s\n" timestamp msg |> output_string queries;
+  flush queries
+
 (* Closing *)
 
 let close (queries : t) = close_out queries

@@ -28,7 +28,7 @@ module Branch = struct
 end
 
 module Cover = struct
-  include MakeVIdEnv (Branch)
+  include MakePIdEnv (Branch)
 
   (* Constructor *)
 
@@ -68,16 +68,28 @@ module Cover = struct
   let init_spec (spec : spec) : t = List.fold_left init_def empty spec
 end
 
-(* Collector *)
+(* Measuring coverage *)
 
-let collect_miss (cover : Cover.t) : (pid * string list) list =
-  Cover.fold
-    (fun (pid : pid) (branch : Branch.t) (misses : (pid * string list) list) ->
-      match branch.status with
-      | Hit -> misses
-      | Miss filenames -> (pid, filenames) :: misses)
-    cover []
-  |> List.rev
+let is_hit (cover : Cover.t) (pid : pid) : bool =
+  let branch = Cover.find pid cover in
+  match branch.status with Hit -> true | Miss _ -> false
+
+let is_miss (cover : Cover.t) (pid : pid) : bool =
+  let branch = Cover.find pid cover in
+  match branch.status with Hit -> false | Miss _ -> true
+
+let coverage (cover : Cover.t) : int * int * float =
+  let total = Cover.cardinal cover in
+  let hits =
+    Cover.fold
+      (fun _ (branch : Branch.t) (hits : int) ->
+        match branch.status with Hit -> hits + 1 | Miss _ -> hits)
+      cover 0
+  in
+  let coverage =
+    if total = 0 then 0. else float_of_int hits /. float_of_int total *. 100.
+  in
+  (total, hits, coverage)
 
 (* Extension *)
 
@@ -99,39 +111,23 @@ let extend (cover : Cover.t) (filename_p4 : string)
 
 (* Logging *)
 
-let log_miss (cover : Cover.t) (pids_miss : PIdSet.t) : unit =
-  let module PGroup = IdMap in
-  let pid_group =
-    PIdSet.fold
-      (fun pid pid_group ->
-        let branch = Cover.find pid cover in
-        let origin = branch.origin in
-        match PGroup.find_opt origin pid_group with
-        | Some pids -> PGroup.add origin (pid :: pids) pid_group
-        | None -> PGroup.add origin [ pid ] pid_group)
-      pids_miss PGroup.empty
+let log ~(filename_cov_opt : string option) (cover : Cover.t) : unit =
+  let output oc_opt =
+    match oc_opt with Some oc -> output_string oc | None -> print_string
   in
-  PGroup.iter
-    (fun origin pids ->
-      Format.asprintf "=== %s ===" origin.it |> print_endline;
-      List.iter (fun pid -> pid |> Sl.Print.string_of_pid |> print_endline) pids)
-    pid_group
-
-let log ?(short = false) (cover : Cover.t) : unit =
-  let pids_miss =
-    Cover.fold
-      (fun (pid : pid) (branch : Branch.t) (pids_miss : PIdSet.t) ->
-        match branch.status with
-        | Hit -> pids_miss
-        | Miss _ -> PIdSet.add pid pids_miss)
-      cover PIdSet.empty
-  in
-  let total = Cover.cardinal cover in
-  let hit = total - PIdSet.cardinal pids_miss in
-  Format.asprintf "[Coverage] %d/%d (%.2f%%)" hit total
-    (float_of_int hit /. float_of_int total *. 100.)
-  |> print_endline;
-  if short then () else log_miss cover pids_miss
+  let oc_opt = Option.map open_out filename_cov_opt in
+  Cover.iter
+    (fun (pid : pid) (branch : Branch.t) ->
+      let origin = branch.origin in
+      match branch.status with
+      | Hit -> Format.asprintf "%d Hit %s\n" pid origin.it |> output oc_opt
+      | Miss [] -> Format.asprintf "%d Miss %s\n" pid origin.it |> output oc_opt
+      | Miss filenames ->
+          let filenames = String.concat " " filenames in
+          Format.asprintf "%d Miss %s %s\n" pid origin.it filenames
+          |> output oc_opt)
+    cover;
+  Option.iter close_out oc_opt
 
 (* Constructor *)
 

@@ -1,8 +1,18 @@
 open Xl
 open Sl.Ast
+module Value = Runtime_dynamic_sl.Value
 module Typ = Runtime_dynamic_sl.Typ
 module TDEnv = Runtime_dynamic_sl.Envs.TDEnv
 open Util.Source
+
+(* Kinds of mutations *)
+
+type kind = GenFromTyp | ConvertFBitToFInt | MutateList
+
+let string_of_kind = function
+  | GenFromTyp -> "GenFromTyp"
+  | ConvertFBitToFInt -> "ConvertFBitToFInt"
+  | MutateList -> "MutateList"
 
 (* Option monad *)
 
@@ -10,8 +20,11 @@ let ( let* ) x f = Option.bind x f
 
 (* Helpers for wrapping values *)
 
-let wrap_value (typ : typ') (value_opt : value' option) : value option =
-  Option.map (fun value -> value $$$ { vid = -1; typ }) value_opt
+let wrap_value (typ : typ') (value : value') : value =
+  value $$$ { vid = -1; typ }
+
+let wrap_value_opt (typ : typ') (value_opt : value' option) : value option =
+  Option.map (wrap_value typ) value_opt
 
 (* Generate random values from a type *)
 
@@ -23,7 +36,7 @@ and gen_from_typ' (depth : int) (tdenv : TDEnv.t) (typ : typ) : value option =
   let depth = depth - 1 in
   match typ.it with
   | BoolT ->
-      [ BoolV true; BoolV false ] |> Rand.random_select |> wrap_value typ.it
+      [ BoolV true; BoolV false ] |> Rand.random_select |> wrap_value_opt typ.it
   | NumT `NatT ->
       [
         NumV (`Nat (Bigint.of_int 1));
@@ -31,7 +44,7 @@ and gen_from_typ' (depth : int) (tdenv : TDEnv.t) (typ : typ) : value option =
         NumV (`Nat (Bigint.of_int 6));
         NumV (`Nat (Bigint.of_int 8));
       ]
-      |> Rand.random_select |> wrap_value typ.it
+      |> Rand.random_select |> wrap_value_opt typ.it
   | NumT `IntT ->
       [
         NumV (`Int (Bigint.of_int (-2)));
@@ -39,8 +52,9 @@ and gen_from_typ' (depth : int) (tdenv : TDEnv.t) (typ : typ) : value option =
         NumV (`Int (Bigint.of_int 2));
         NumV (`Int (Bigint.of_int 3));
       ]
-      |> Rand.random_select |> wrap_value typ.it
-  | TextT -> [ TextV "a"; TextV "b" ] |> Rand.random_select |> wrap_value typ.it
+      |> Rand.random_select |> wrap_value_opt typ.it
+  | TextT ->
+      [ TextV "a"; TextV "b" ] |> Rand.random_select |> wrap_value_opt typ.it
   | VarT (tid, targs) -> (
       let td = TDEnv.find_opt tid tdenv in
       match td with
@@ -54,7 +68,7 @@ and gen_from_typ' (depth : int) (tdenv : TDEnv.t) (typ : typ) : value option =
                 typs |> Typ.subst_typs theta |> gen_from_typs depth tdenv
               in
               let valuefields = List.combine atoms values in
-              StructV valuefields |> Option.some |> wrap_value typ.it
+              StructV valuefields |> Option.some |> wrap_value_opt typ.it
           | VariantT typcases ->
               let choices =
                 List.map
@@ -62,7 +76,8 @@ and gen_from_typ' (depth : int) (tdenv : TDEnv.t) (typ : typ) : value option =
                     let mixop, typs = typcase.it in
                     let typs = Typ.subst_typs theta typs in
                     let* values = gen_from_typs depth tdenv typs in
-                    CaseV (mixop, values) |> Option.some |> wrap_value typ.it)
+                    CaseV (mixop, values)
+                    |> Option.some |> wrap_value_opt typ.it)
                   typcases
               in
               let* choice = Rand.random_select choices in
@@ -70,28 +85,28 @@ and gen_from_typ' (depth : int) (tdenv : TDEnv.t) (typ : typ) : value option =
       | None -> None)
   | TupleT typs_inner ->
       let* values_inner = gen_from_typs depth tdenv typs_inner in
-      TupleV values_inner |> Option.some |> wrap_value typ.it
+      TupleV values_inner |> Option.some |> wrap_value_opt typ.it
   | IterT (_, Opt) when depth = 0 ->
-      OptV None |> Option.some |> wrap_value typ.it
+      OptV None |> Option.some |> wrap_value_opt typ.it
   | IterT (typ_inner, Opt) ->
       let choices =
         [
-          (fun () -> OptV None |> Option.some |> wrap_value typ.it);
+          (fun () -> OptV None |> Option.some |> wrap_value_opt typ.it);
           (fun () ->
             let* value_inner = gen_from_typ depth tdenv typ_inner in
-            OptV (Some value_inner) |> Option.some |> wrap_value typ.it);
+            OptV (Some value_inner) |> Option.some |> wrap_value_opt typ.it);
         ]
       in
       let* choice = Rand.random_select choices in
       choice ()
   | IterT (_, List) when depth = 0 ->
-      ListV [] |> Option.some |> wrap_value typ.it
+      ListV [] |> Option.some |> wrap_value_opt typ.it
   | IterT (typ_inner, List) ->
       let len = Random.int 3 in
       let* values_inner =
         List.init len (fun _ -> typ_inner) |> gen_from_typs depth tdenv
       in
-      ListV values_inner |> Option.some |> wrap_value typ.it
+      ListV values_inner |> Option.some |> wrap_value_opt typ.it
   | FuncT -> None
 
 and gen_from_typs (depth : int) (tdenv : TDEnv.t) (typs : typ list) :
@@ -105,80 +120,144 @@ and gen_from_typs (depth : int) (tdenv : TDEnv.t) (typs : typ list) :
         Some (values @ [ value ]))
       (Some []) typs
 
+let mutate_type_driven (tdenv : TDEnv.t) (value : value) : (kind * value) option
+    =
+  let typ = value.note.typ $ no_region in
+  let depth = Random.int 5 in
+  let value_opt = gen_from_typ depth tdenv typ in
+  Option.map (fun value -> (GenFromTyp, value)) value_opt
+
 (* bit<expr> to int<expr> conversion *)
 
-let convert_fbit_to_fint (value : value) : value option =
+let mutate_fbit_to_fint (value : value) : (kind * value) option =
   let typ = value.note.typ in
   match value.it with
   | CaseV ([ [ { it = Atom "FBitT"; _ } ]; [] ], [ value_expr ]) ->
-      CaseV ([ [ Atom.Atom "FIntT" $ no_region ]; [] ], [ value_expr ])
-      |> Option.some |> wrap_value typ
+      let value_opt =
+        CaseV ([ [ Atom.Atom "FIntT" $ no_region ]; [] ], [ value_expr ])
+        |> Option.some |> wrap_value_opt typ
+      in
+      Option.map (fun value -> (ConvertFBitToFInt, value)) value_opt
   | _ -> None
 
-(* Shuffle list *)
+(* List mutations *)
 
-let shuffle_list (value : value) : value option =
+let rec shuffle_list' (value : value) : value =
   let typ = value.note.typ in
   match value.it with
+  | BoolV _ | NumV _ | TextV _ -> value.it |> wrap_value typ
+  | StructV valuefields ->
+      let atoms, values = List.split valuefields in
+      let values_shuffled = List.map shuffle_list' values in
+      let valuefields_shuffled = List.combine atoms values_shuffled in
+      StructV valuefields_shuffled |> wrap_value typ
+  | CaseV (mixop, values) ->
+      let values_shuffled = List.map shuffle_list' values in
+      CaseV (mixop, values_shuffled) |> wrap_value typ
+  | TupleV values ->
+      let values_shuffled = List.map shuffle_list' values in
+      TupleV values_shuffled |> wrap_value typ
+  | OptV None -> value.it |> wrap_value typ
+  | OptV (Some value) ->
+      let value_shuffled = shuffle_list' value in
+      OptV (Some value_shuffled) |> wrap_value typ
   | ListV values ->
       let values_shuffled = Rand.shuffle values in
-      ListV values_shuffled |> Option.some |> wrap_value typ
-  | _ -> None
+      ListV values_shuffled |> wrap_value typ
+  | FuncV _ -> value.it |> wrap_value typ
 
-(* Insert duplicates into a list *)
+let shuffle_list (value : value) : value option =
+  let value_shuffled = shuffle_list' value in
+  if Value.eq value value_shuffled then None else Some value_shuffled
+
+let rec duplicate_list' (value : value) : value =
+  let typ = value.note.typ in
+  match value.it with
+  | BoolV _ | NumV _ | TextV _ -> value.it |> wrap_value typ
+  | StructV valuefields ->
+      let atoms, values = List.split valuefields in
+      let values_duplicated = List.map duplicate_list' values in
+      let valuefields_duplicated = List.combine atoms values_duplicated in
+      StructV valuefields_duplicated |> wrap_value typ
+  | CaseV (mixop, values) ->
+      let values_duplicated = List.map duplicate_list' values in
+      CaseV (mixop, values_duplicated) |> wrap_value typ
+  | TupleV values ->
+      let values_duplicated = List.map duplicate_list' values in
+      TupleV values_duplicated |> wrap_value typ
+  | OptV None -> value.it |> wrap_value typ
+  | OptV (Some value) ->
+      let value_duplicated = duplicate_list' value in
+      OptV (Some value_duplicated) |> wrap_value typ
+  | ListV values -> (
+      match Rand.random_select values with
+      | Some value ->
+          let values = value :: values in
+          ListV values |> wrap_value typ
+      | None -> value.it |> wrap_value typ)
+  | FuncV _ -> value.it |> wrap_value typ
 
 let duplicate_list (value : value) : value option =
+  let value_duplicated = duplicate_list' value in
+  if Value.eq value value_duplicated then None else Some value_duplicated
+
+let rec shrink_list' (value : value) : value =
   let typ = value.note.typ in
   match value.it with
-  | ListV values ->
-      let* value = Rand.random_select values in
-      let values = value :: values in
-      ListV values |> Option.some |> wrap_value typ
-  | _ -> None
-
-(* Shrink a list *)
-
-let shrink_list (value : value) : value option =
-  let typ = value.note.typ in
-  match value.it with
-  | ListV [] -> None
+  | BoolV _ | NumV _ | TextV _ -> value.it |> wrap_value typ
+  | StructV valuefields ->
+      let atoms, values = List.split valuefields in
+      let values_shrinked = List.map shrink_list' values in
+      let valuefields_shrinked = List.combine atoms values_shrinked in
+      StructV valuefields_shrinked |> wrap_value typ
+  | CaseV (mixop, values) ->
+      let values_shrinked = List.map shrink_list' values in
+      CaseV (mixop, values_shrinked) |> wrap_value typ
+  | TupleV values ->
+      let values_shrinked = List.map shrink_list' values in
+      TupleV values_shrinked |> wrap_value typ
+  | OptV None -> value.it |> wrap_value typ
+  | OptV (Some value) ->
+      let value_shrinked = shrink_list' value in
+      OptV (Some value_shrinked) |> wrap_value typ
+  | ListV [] -> value.it |> wrap_value typ
   | ListV values ->
       let size = Random.int (List.length values) in
       let values = Rand.random_sample size values in
-      ListV values |> Option.some |> wrap_value typ
-  | _ -> None
+      ListV values |> wrap_value typ
+  | FuncV _ -> value.it |> wrap_value typ
+
+let shrink_list (value : value) : value option =
+  let value_shrinked = shrink_list' value in
+  if Value.eq value value_shrinked then None else Some value_shrinked
+
+let mutate_list (value : value) : (kind * value) option =
+  let wrap_kind (value_opt : value option) : (kind * value) option =
+    Option.map (fun value -> (MutateList, value)) value_opt
+  in
+  let mutations_list =
+    [
+      (fun () -> shuffle_list value |> wrap_kind);
+      (fun () -> duplicate_list value |> wrap_kind);
+      (fun () -> shrink_list value |> wrap_kind);
+    ]
+  in
+  let* mutation = Rand.random_select mutations_list in
+  mutation ()
 
 (* Entry point for mutation *)
 
-type kind =
-  | GenFromTyp
-  | ConvertFBitToFInt
-  | ShuffleList
-  | DuplicateList
-  | ShrinkList
-
-let string_of_kind = function
-  | GenFromTyp -> "GenFromTyp"
-  | ConvertFBitToFInt -> "ConvertFBitToFInt"
-  | ShuffleList -> "ShuffleList"
-  | DuplicateList -> "DuplicateList"
-  | ShrinkList -> "ShrinkList"
-
 let mutate (tdenv : TDEnv.t) (value : value) : (kind * value) option =
-  let wrap_kind (kind : kind) (value_opt : value option) : (kind * value) option
-      =
-    Option.map (fun value -> (kind, value)) value_opt
-  in
   let mutations =
     [
-      (fun () ->
-        gen_from_typ (Random.int 5) tdenv (value.note.typ $ no_region)
-        |> wrap_kind GenFromTyp);
-      (fun () -> convert_fbit_to_fint value |> wrap_kind ConvertFBitToFInt);
-      (fun () -> shuffle_list value |> wrap_kind ShuffleList);
-      (fun () -> duplicate_list value |> wrap_kind DuplicateList);
-      (fun () -> shrink_list value |> wrap_kind ShrinkList);
+      (fun () -> mutate_type_driven tdenv value);
+      (fun () -> mutate_fbit_to_fint value);
+      (fun () -> mutate_list value);
     ]
   in
   let* mutation = Rand.random_select mutations in
   mutation ()
+
+let mutates (fuel_mutate : int) (tdenv : TDEnv.t) (value : value) :
+    (kind * value) list =
+  List.init fuel_mutate (fun _ -> mutate tdenv value) |> List.filter_map Fun.id

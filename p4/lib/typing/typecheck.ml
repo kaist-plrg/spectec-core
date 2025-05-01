@@ -3381,9 +3381,9 @@ and type_instantiation_decl (cursor : Ctx.cursor) (ctx : Ctx.t) (id : El.Ast.id)
               match (fd_extern : FuncDef.t option) with
               | Some
                   (PolyFD
-                     ( tparams,
-                       tparams_hidden,
-                       ExternAbstractMethodT (params, typ_ret) )) ->
+                    ( tparams,
+                      tparams_hidden,
+                      ExternAbstractMethodT (params, typ_ret) )) ->
                   let ft = Types.ExternMethodT (params, typ_ret) in
                   let fd = Types.PolyFD (tparams, tparams_hidden, ft) in
                   fd
