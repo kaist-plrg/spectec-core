@@ -63,7 +63,7 @@ let run_sl_command =
            Interp_sl.Interp.run_typing ~derive spec_sl includes_p4 filename_p4
          with
          | Well _ -> Format.printf "well-typed\n"
-         | Ill _ -> Format.printf "ill-typed\n"
+         | Ill (_, msg, _) -> Format.printf "ill-typed: %s\n" msg
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let cover_sl_command =

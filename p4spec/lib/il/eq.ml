@@ -9,6 +9,10 @@ let eq_id (id_a : id) (id_b : id) : bool = id_a.it = id_b.it
 
 let eq_atom (atom_a : atom) (atom_b : atom) : bool = Atom.eq atom_a.it atom_b.it
 
+let eq_atoms (atoms_a : atom list) (atoms_b : atom list) : bool =
+  List.length atoms_a = List.length atoms_b
+  && List.for_all2 eq_atom atoms_a atoms_b
+
 (* Mixfix operators *)
 
 let eq_mixop (mixop_a : mixop) (mixop_b : mixop) : bool =

@@ -1,4 +1,5 @@
 open Il.Ast
+module HEnv = Runtime_static.Envs.HEnv
 module TDEnv = Runtime_dynamic_sl.Envs.TDEnv
 open Util.Source
 
@@ -58,50 +59,57 @@ let struct_clause_path ((prems, exp_output) : prem list * exp) :
 
 (* Structuring definitions *)
 
-let rec struct_def (tdenv : TDEnv.t) (def : def) : Sl.Ast.def =
+let rec struct_def (henv : HEnv.t) (tdenv : TDEnv.t) (def : def) : Sl.Ast.def =
   let at = def.at in
   match def.it with
   | TypD (id, tparams, deftyp) -> Sl.Ast.TypD (id, tparams, deftyp) $ at
   | RelD (id, nottyp, inputs, rules) ->
-      struct_rel_def tdenv at id nottyp inputs rules
+      struct_rel_def henv tdenv at id nottyp inputs rules
   | DecD (id, tparams, _params, _typ, clauses) ->
-      struct_dec_def tdenv at id tparams clauses
+      struct_dec_def henv tdenv at id tparams clauses
 
 (* Structuring relation definitions *)
 
-and struct_rel_def (tdenv : TDEnv.t) (at : region) (id_rel : id)
+and struct_rel_def (henv : HEnv.t) (tdenv : TDEnv.t) (at : region) (id_rel : id)
     (nottyp : nottyp) (inputs : int list) (rules : rule list) : Sl.Ast.def =
   let mixop, _ = nottyp.it in
   let exps_input, paths = Antiunify.antiunify_rules inputs rules in
   let instrs = List.concat_map struct_rule_path paths in
-  let instrs = Optimize.optimize tdenv instrs in
+  let instrs = Optimize.optimize henv tdenv instrs in
   let instrs = Instrument.instrument tdenv instrs in
   Sl.Ast.RelD (id_rel, (mixop, inputs), exps_input, instrs) $ at
 
 (* Structuring declaration definitions *)
 
-and struct_dec_def (tdenv : TDEnv.t) (at : region) (id_dec : id)
+and struct_dec_def (henv : HEnv.t) (tdenv : TDEnv.t) (at : region) (id_dec : id)
     (tparams : tparam list) (clauses : clause list) : Sl.Ast.def =
   let args_input, paths = Antiunify.antiunify_clauses clauses in
   let instrs = List.concat_map struct_clause_path paths in
-  let instrs = Optimize.optimize tdenv instrs in
+  let instrs = Optimize.optimize henv tdenv instrs in
   let instrs = Instrument.instrument tdenv instrs in
   Sl.Ast.DecD (id_dec, tparams, args_input, instrs) $ at
 
 (* Load type definitions *)
 
-let load_def (tdenv : TDEnv.t) (def : def) : TDEnv.t =
+let load_def (henv : HEnv.t) (tdenv : TDEnv.t) (def : def) : HEnv.t * TDEnv.t =
   match def.it with
   | TypD (id, tparams, deftyp) ->
       let typdef = (tparams, deftyp) in
-      TDEnv.add id typdef tdenv
-  | _ -> tdenv
+      let tdenv = TDEnv.add id typdef tdenv in
+      (henv, tdenv)
+  | RelD (id, _, inputs, _) ->
+      let henv = HEnv.add id inputs henv in
+      (henv, tdenv)
+  | _ -> (henv, tdenv)
 
-let load_spec (tdenv : TDEnv.t) (spec : spec) : TDEnv.t =
-  List.fold_left load_def tdenv spec
+let load_spec (henv : HEnv.t) (tdenv : TDEnv.t) (spec : spec) : HEnv.t * TDEnv.t
+    =
+  List.fold_left
+    (fun (henv, tdenv) def -> load_def henv tdenv def)
+    (henv, tdenv) spec
 
 (* Structuring a spec *)
 
 let struct_spec (spec : spec) : Sl.Ast.spec =
-  let tdenv = load_spec TDEnv.empty spec in
-  List.map (struct_def tdenv) spec
+  let henv, tdenv = load_spec HEnv.empty TDEnv.empty spec in
+  List.map (struct_def henv tdenv) spec
