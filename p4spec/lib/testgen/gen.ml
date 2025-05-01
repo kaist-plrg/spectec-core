@@ -127,8 +127,9 @@ let update_interesting (fuel : int) (pid : pid) (idx_derivation : int)
     (value_program : value) : unit =
   (* Evaluate the generated program to see if it is interesting *)
   let time_start = Unix.gettimeofday () in
-  F.asprintf "[Fuel %d] [Phantom %d] [Derivation %d] Evaluating %s" fuel pid
-    idx_derivation filename_gen_p4
+  F.asprintf
+    "[Fuel %d] [Phantom %d] [Derivation %d] [Mutation %d] Evaluating %s" fuel
+    pid idx_derivation idx_mutation filename_gen_p4
   |> Config.log config;
   let welltyped, cover =
     match
@@ -139,8 +140,10 @@ let update_interesting (fuel : int) (pid : pid) (idx_derivation : int)
     | Ill (_, _, cover) -> (false, cover)
   in
   let time_end = Unix.gettimeofday () in
-  F.asprintf "[Fuel %d] [Phantom %d] [Derivation %d] Evaluated %s (took %.2f)"
-    fuel pid idx_derivation filename_gen_p4 (time_end -. time_start)
+  F.asprintf
+    "[Fuel %d] [Phantom %d] [Derivation %d] [Mutation %d] Evaluated %s (took \
+     %.2f)"
+    fuel pid idx_derivation idx_mutation filename_gen_p4 (time_end -. time_start)
   |> Config.log config;
   (* Find newly hit or newly close-missing nodes *)
   let pids_hit_new, pids_close_miss_new =
@@ -189,9 +192,9 @@ let fuzz_derivation_mutated (fuel : int) (pid : pid) (idx_derivation : int)
   with Error (_, msg) -> Config.warn config msg
 
 let fuzz_derivation (fuel : int) (pid : pid) (idx_derivation : int)
-    (config : Config.t) (dirname_gen_tmp : string) (filename_p4 : string)
-    (comment_gen_p4 : string) (graph : Dep.Graph.t) (vid_program : vid)
-    (vid_source : vid) : unit =
+    (trials_derivation : int ref) (config : Config.t) (dirname_gen_tmp : string)
+    (filename_p4 : string) (comment_gen_p4 : string) (graph : Dep.Graph.t)
+    (vid_program : vid) (vid_source : vid) : unit =
   (* Reassemble the close-AST *)
   let value_source = Dep.Graph.reassemble_node graph VIdMap.empty vid_source in
   F.asprintf "[Fuel %d] [Phantom %d] [Derivation %d]\n[File] %s\n[Source] %s\n"
@@ -205,7 +208,11 @@ let fuzz_derivation (fuel : int) (pid : pid) (idx_derivation : int)
   (* Generate the mutated program *)
   List.iteri
     (fun idx_mutation (kind, value_mutated) ->
-      if MCov.is_miss config.seed.cover_seed pid then (
+      if
+        !trials_derivation < Config.trials_derivation
+        && MCov.is_miss config.seed.cover_seed pid
+      then (
+        trials_derivation := !trials_derivation + 1;
         F.asprintf "[Mutated] %s\n" (Sl.Print.string_of_value value_mutated)
         |> Config.answer config;
         let comment_gen_p4 =
@@ -217,23 +224,48 @@ let fuzz_derivation (fuel : int) (pid : pid) (idx_derivation : int)
           value_source value_mutated))
     mutations
 
-let fuzz_derivations (fuel : int) (pid : pid) (config : Config.t)
-    (dirname_gen_tmp : string) (filename_p4 : string) (graph : Dep.Graph.t)
-    (vid_program : vid) (derivations_source : (vid * int) list) : unit =
-  let derivations_total = List.length derivations_source in
-  F.asprintf "[Fuel %d] [Phantom %d] Fuzzing from %d derivations" fuel pid
-    derivations_total
-  |> Config.log config;
+let fuzz_derivations (fuel : int) (pid : pid) (trials_derivation : int ref)
+    (config : Config.t) (dirname_gen_tmp : string) (filename_p4 : string)
+    (graph : Dep.Graph.t) (vid_program : vid)
+    (derivations_source : (vid * int) list) : unit =
   List.iteri
     (fun idx_derivation (vid_source, depth) ->
-      if MCov.is_miss config.seed.cover_seed pid then
+      if
+        !trials_derivation < Config.trials_derivation
+        && MCov.is_miss config.seed.cover_seed pid
+      then
         let comment_gen_p4 =
           F.asprintf "// Intended pid %d\n// Source vid %d\n// Depth %d\n" pid
             vid_source depth
         in
-        fuzz_derivation fuel pid idx_derivation config dirname_gen_tmp
-          filename_p4 comment_gen_p4 graph vid_program vid_source)
+        fuzz_derivation fuel pid idx_derivation trials_derivation config
+          dirname_gen_tmp filename_p4 comment_gen_p4 graph vid_program
+          vid_source)
     derivations_source
+
+let fuzz_derivations_bounded (fuel : int) (pid : pid) (config : Config.t)
+    (dirname_gen_tmp : string) (filename_p4 : string) (graph : Dep.Graph.t)
+    (vid_program : vid) (derivations_source : (vid * int) list) : unit =
+  if derivations_source = [] then
+    F.asprintf "[Fuel %d] [Phantom %d] Skipping, no derivation found" fuel pid
+    |> Config.log config
+  else
+    let derivations_total = List.length derivations_source in
+    F.asprintf
+      "[Fuel %d] [Phantom %d] Fuzzing from %d derivations, until %d trials" fuel
+      pid derivations_total Config.trials_derivation
+    |> Config.log config;
+    let trials_derivation = ref 0 in
+    while
+      !trials_derivation < Config.trials_derivation
+      && MCov.is_miss config.seed.cover_seed pid
+    do
+      fuzz_derivations fuel pid trials_derivation config dirname_gen_tmp
+        filename_p4 graph vid_program derivations_source;
+      F.asprintf "[Fuel %d] [Phantom %d] Fuzzed %d trials" fuel pid
+        !trials_derivation
+      |> Config.log config
+    done
 
 (* Fuzzing from a seed program *)
 
@@ -289,8 +321,8 @@ and fuzz_seed' (fuel : int) (pid : pid) (config : Config.t)
       List.init Config.derivation_source_samples (List.nth derivations_source)
   in
   (* Mutate the close-ASTs and dump to file *)
-  fuzz_derivations fuel pid config dirname_gen_tmp filename_p4 graph vid_program
-    derivations_source
+  fuzz_derivations_bounded fuel pid config dirname_gen_tmp filename_p4 graph
+    vid_program derivations_source
 
 let fuzz_seeds (fuel : int) (pid : pid) (config : Config.t)
     (dirname_gen_tmp : string) (filenames_p4 : string list) : unit =
