@@ -2,6 +2,7 @@ import os
 import subprocess
 import shutil
 import argparse
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 parser = argparse.ArgumentParser(description="Reduces all seed programs.")
@@ -74,8 +75,11 @@ $DIR/p4spectec interesting $DIR/spec/*.watsup -pid {pid} -p ./{copy_name}
             ] if args.cores else [
             "creduce", "--not-c", "--timeout", "10", interesting_test_subpath, copy_name
             ]
+        
+        start_time = time.time()
         try:
             result = subprocess.run(creduce_command, cwd=WORK_DIR, timeout=args.timeout)  # timeout
+            elapsed_time = time.time() - start_time
 
             if result.returncode == 0:
                 os.rename(temp_program_path, reduced_path)
@@ -83,9 +87,13 @@ $DIR/p4spectec interesting $DIR/spec/*.watsup -pid {pid} -p ./{copy_name}
                 print(f"Reduced file has been renamed to {reduced_path}")
             else:
                 print(f"creduce failed for {temp_program_path} with return code {result.returncode}")
+            
+            print(f"Elapsed time for pid={pid}, file={filename}: {elapsed_time:.2f} seconds")
 
         except subprocess.TimeoutExpired:
-            print(f"creduce timed out for {temp_program_path}. Saving current state as partially reduced file.")
+            elapsed_time = time.time() - start_time
+            print(f"creduce timed out for {temp_program_path} after {elapsed_time:.2f} seconds. Saving current state as partially reduced file.")
+
             partial_reduced_path = os.path.join(WORK_DIR, f"partial_{pid}_{base_name}")
             if os.path.exists(temp_program_path):
                 os.rename(temp_program_path, partial_reduced_path)
