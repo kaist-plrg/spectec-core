@@ -37,3 +37,7 @@ coverage
 
 # scripts
 run.sh
+
+# reducer originals and interestingness scripts
+reductions/o*
+reductions/interesting
