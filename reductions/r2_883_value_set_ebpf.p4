@@ -1,0 +1,5 @@
+control a() {
+  apply {
+    {}
+  }
+}

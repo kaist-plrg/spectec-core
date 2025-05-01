@@ -40,3 +40,7 @@ run.sh
 
 # tools
 tools
+
+# reducer originals and interestingness scripts
+reductions/o*
+reductions/interesting
