@@ -15,12 +15,12 @@ let related_vid_samples = 3
 (* Max number of close-ASTs per seed *)
 let derivation_source_samples = 5
 
-(* Max number of trials per close-AST *)
+(* Max number of mutation trials per close-AST *)
 let mutation_trials = 10
 
 (* Trials per seed *)
 
-let trials_derivation = 1000
+let trials_derivation = 100
 
 (* Environment for the spec *)
 
