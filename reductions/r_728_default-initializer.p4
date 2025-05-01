@@ -1,3 +1,4 @@
-control a() {
-  apply { tuple<int<8>> b = {...}; }
+header a { bit b; }
+control c() {
+  apply { a d = {b = 2, ...}; }
 }
