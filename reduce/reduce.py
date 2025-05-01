@@ -10,6 +10,7 @@ parser.add_argument('dir', type=str, help='Path to working directory, where pre-
 parser.add_argument('--workers', type=int, default=1, help='Maximum number workers to use (default: 1)')
 parser.add_argument('--cores', type=int, help='Number of cores for creduce (default: creduce finds an optimal setting)')
 parser.add_argument('--concurrent', action='store_true', help='Enable concurrency')
+parser.add_argument('--timeout', type=int, default=600, help='Timeout in seconds for creduce (default: 600 seconds)')
 args = parser.parse_args()
 
 if not os.path.isfile(args.coverage):
@@ -73,16 +74,24 @@ $DIR/p4spectec interesting $DIR/spec/*.watsup -pid {pid} -p ./{copy_name}
             ] if args.cores else [
             "creduce", "--not-c", "--timeout", "10", interesting_test_subpath, copy_name
             ]
+        try:
+            result = subprocess.run(creduce_command, cwd=WORK_DIR, timeout=args.timeout)  # timeout
 
-        result = subprocess.run(creduce_command, cwd=WORK_DIR)
+            if result.returncode == 0:
+                os.rename(temp_program_path, reduced_path)
+                os.rename(temp_program_path + ".orig", temp_program_path)
+                print(f"Reduced file has been renamed to {reduced_path}")
+            else:
+                print(f"creduce failed for {temp_program_path} with return code {result.returncode}")
 
-        if result.returncode == 0:
-            # Rename the reduced file to indicate completion
-            os.rename(temp_program_path, reduced_path)
-            os.rename(temp_program_path + ".orig", temp_program_path)
-            print(f"Reduced file has been renamed to {reduced_path}")
-        else:
-            print(f"creduce failed for {temp_program_path} with return code {result.returncode}")
+        except subprocess.TimeoutExpired:
+            print(f"creduce timed out for {temp_program_path}. Saving current state as partially reduced file.")
+            partial_reduced_path = os.path.join(WORK_DIR, f"partial_{pid}_{base_name}")
+            if os.path.exists(temp_program_path):
+                os.rename(temp_program_path, partial_reduced_path)
+                print(f"Partially reduced file saved as {partial_reduced_path}")
+            else:
+                print(f"Warning: no partial file found to save for {temp_program_path}")
 
         # Optionally remove the interestingness script after use
         # os.remove(interesting_test_path)
@@ -102,11 +111,15 @@ for line in lines:
 
     pid, status = parts[0], parts[1]
 
-    if status == "CM":
-        filenames = parts[2:]  # Accepting 1, 2, or 3 filenames
-
-        for filename in filenames:
-            tasks.append((pid, filename))
+    if status == "Miss":
+        filenames = parts[3:]  # Accepting 1, 2, or 3 filenames
+        if filenames:
+            existing_files = [fn for fn in filenames if os.path.isfile(fn)]
+            if not existing_files:
+                print(f"Skipping pid={pid}: no valid files found.")
+                continue
+            smallest_file = min(existing_files, key=lambda fn: os.path.getsize(fn))
+            tasks.append((pid, smallest_file))
 
 # --- Run reductions in parallel ---
 if args.concurrent:
