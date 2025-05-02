@@ -123,6 +123,7 @@ for line in lines:
         filenames = parts[3:]  # Accepting 1, 2, or 3 filenames
         if filenames:
             existing_files = [fn for fn in filenames if os.path.isfile(fn)]
+            not_reduced_files = [fn for fn in filenames if os.path.isfile(os.path.join(WORK_DIR, f"r2_{pid}_{os.path.basename(fn)}"))]
             if not existing_files:
                 print(f"Skipping pid={pid}: no valid files found.")
                 continue
