@@ -1429,6 +1429,7 @@ type res =
 let run_typing_internal (spec : spec) (filename_p4 : string)
     (value_program : value) : res =
   Builtin.init ();
+  Dep.Graph.refresh ();
   let ctx = Ctx.empty spec filename_p4 false in
   try
     let ctx, _values = do_typing ctx spec value_program in
@@ -1440,6 +1441,7 @@ let run_typing_internal (spec : spec) (filename_p4 : string)
 let run_typing ?(derive : bool = false) (spec : spec)
     (includes_p4 : string list) (filename_p4 : string) : res =
   Builtin.init ();
+  Dep.Graph.refresh ();
   let ctx = Ctx.empty spec filename_p4 derive in
   try
     let value_program = In.in_program ctx includes_p4 filename_p4 in

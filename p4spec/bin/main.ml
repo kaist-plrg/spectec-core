@@ -143,7 +143,8 @@ let run_testgen_command =
        flag "-warm" (optional string) ~doc:"coverage file for warm boot"
      and filename_target =
        flag "-target" (optional string) ~doc:"file for target mode"
-     and silent = flag "-silent" no_arg ~doc:"do not print logs to stdout" in
+     and silent = flag "-silent" no_arg ~doc:"do not print logs to stdout"
+     and random = flag "-random" no_arg ~doc:"randomize AST selection" in
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
@@ -160,7 +161,7 @@ let run_testgen_command =
            | Some filename_target -> Testgen.Gen.Target filename_target
            | None -> Testgen.Gen.Roundrobin
          in
-         Testgen.Gen.fuzz_typing ~silent fuel spec_sl includes_p4
+         Testgen.Gen.fuzz_typing ~silent ~random fuel spec_sl includes_p4
            filenames_seed_p4 dirname_gen bootmode targetmode
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 

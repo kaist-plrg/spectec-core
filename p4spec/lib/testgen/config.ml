@@ -20,7 +20,7 @@ let mutation_trials = 10
 
 (* Trials per seed *)
 
-let trials_derivation = 100
+let trials_bound = 100
 
 (* Environment for the spec *)
 
@@ -42,6 +42,10 @@ type seed = {
   mutable cover_seed : MCov.Cover.t;
 }
 
+(* Mode for identifying the AST node to be mutated *)
+
+type mutationmode = Random | Derive
+
 (* Configuration for the fuzz campaign *)
 
 type t = {
@@ -51,6 +55,7 @@ type t = {
   specenv : specenv;
   outdirs : outdirs;
   seed : seed;
+  mutationmode : mutationmode;
 }
 
 (* Load type definitions into environment *)
@@ -99,10 +104,10 @@ let init_seed (filenames_seed_p4 : string list) (cover_seed : MCov.Cover.t) :
   { filenames_seed_p4; cover_seed }
 
 let init (logger : Logger.t) (queries : Query.t) (specenv : specenv)
-    (outdirs : outdirs) (seed : seed) =
+    (outdirs : outdirs) (seed : seed) (mutationmode : mutationmode) =
   let rand = 2025 in
   Random.init rand;
-  { rand; logger; queries; specenv; outdirs; seed }
+  { rand; logger; queries; specenv; outdirs; seed; mutationmode }
 
 (* Seed updater *)
 
