@@ -1,0 +1,3 @@
+parser a() {
+  state start {}
+}
