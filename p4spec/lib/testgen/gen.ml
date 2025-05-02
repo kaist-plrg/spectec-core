@@ -28,14 +28,9 @@ open Util.Source
 (* Check if the mutated file is interesting,
    and if so, copy it to the output directory *)
 
-let update_hit_new (fuel : int) (pid : pid) (idx_method : int)
-    (idx_mutation : int) (config : Config.t) (filename_gen_p4 : string)
-    (welltyped : bool) (pids_hit_new : PIdSet.t) : unit =
-  (* Copy the interesting test program to the output directory *)
-  let filename_hit_p4 =
-    if welltyped then Filesys.cp filename_gen_p4 config.outdirs.dirname_well_p4
-    else Filesys.cp filename_gen_p4 config.outdirs.dirname_ill_p4
-  in
+let update_hit_new' (fuel : int) (pid : pid) (idx_method : int)
+    (idx_mutation : int) (config : Config.t) (filename_hit_p4 : string)
+    (pids_hit_new : PIdSet.t) : unit =
   F.asprintf
     "[Fuel %d] [Phantom %d] [Method %d] [Mutation %d] %s covers %s (%s %d)" fuel
     pid idx_method idx_mutation filename_hit_p4
@@ -50,13 +45,41 @@ let update_hit_new (fuel : int) (pid : pid) (idx_method : int)
   (* Update the set of covered phantoms *)
   Config.update_hit_cover_seed config pids_hit_new
 
-let update_close_miss_new (fuel : int) (pid : pid) (idx_method : int)
+let update_hit_new (fuel : int) (pid : pid) (idx_method : int)
     (idx_mutation : int) (config : Config.t) (filename_gen_p4 : string)
-    (pids_close_miss_new : PIdSet.t) : unit =
-  (* Copy the interesting test program to the output directory *)
-  let filename_close_miss_p4 =
-    Filesys.cp filename_gen_p4 config.outdirs.dirname_close_miss_p4
+    (welltyped : bool) (pids_hit_new : PIdSet.t) : unit =
+  (* Determine whether the generated program is syntactically valid *)
+  let wellformed =
+    try
+      P4frontend.Parse.parse_file config.specenv.includes_p4 filename_gen_p4
+      |> ignore;
+      true
+    with _ -> false
   in
+  (* Copy the interesting test program to the output directory
+     and update the running coverage *)
+  if wellformed && welltyped then
+    let filename_hit_p4 =
+      Filesys.cp filename_gen_p4 config.outdirs.dirname_welltyped_p4
+    in
+    update_hit_new' fuel pid idx_method idx_mutation config filename_hit_p4
+      pids_hit_new
+  else if wellformed && not welltyped then
+    let filename_hit_p4 =
+      Filesys.cp filename_gen_p4 config.outdirs.dirname_illtyped_p4
+    in
+    update_hit_new' fuel pid idx_method idx_mutation config filename_hit_p4
+      pids_hit_new
+  else if (not wellformed) && not welltyped then
+    let filename_hit_p4 =
+      Filesys.cp filename_gen_p4 config.outdirs.dirname_illformed_p4
+    in
+    update_hit_new' fuel pid idx_method idx_mutation config filename_hit_p4
+      pids_hit_new
+
+let update_close_miss_new' (fuel : int) (pid : pid) (idx_method : int)
+    (idx_mutation : int) (config : Config.t) (filename_close_miss_p4 : string)
+    (pids_close_miss_new : PIdSet.t) : unit =
   F.asprintf
     "[Fuel %d] [Phantom %d] [Method %d] [Mutation %d] %s close-misses %s" fuel
     pid idx_method idx_mutation filename_close_miss_p4
@@ -72,6 +95,26 @@ let update_close_miss_new (fuel : int) (pid : pid) (idx_method : int)
   (* Update the set of covered phantoms *)
   Config.update_close_miss_cover_seed config filename_close_miss_p4
     pids_close_miss_new
+
+let update_close_miss_new (fuel : int) (pid : pid) (idx_method : int)
+    (idx_mutation : int) (config : Config.t) (filename_gen_p4 : string)
+    (pids_close_miss_new : PIdSet.t) : unit =
+  (* Determine whether the generated program is syntactically valid *)
+  let wellformed =
+    try
+      P4frontend.Parse.parse_file config.specenv.includes_p4 filename_gen_p4
+      |> ignore;
+      true
+    with _ -> false
+  in
+  (* Copy the interesting test program to the output directory,
+     and update the running coverage *)
+  if wellformed then
+    let filename_close_miss_p4 =
+      Filesys.cp filename_gen_p4 config.outdirs.dirname_close_miss_p4
+    in
+    update_close_miss_new' fuel pid idx_method idx_mutation config
+      filename_close_miss_p4 pids_close_miss_new
 
 let update_interesting (fuel : int) (pid : pid) (idx_method : int)
     (idx_mutation : int) (config : Config.t) (filename_gen_p4 : string)

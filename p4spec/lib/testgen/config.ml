@@ -31,8 +31,9 @@ type specenv = { spec : spec; tdenv : TDEnv.t; includes_p4 : string list }
 type outdirs = {
   dirname_gen : string;
   dirname_close_miss_p4 : string;
-  dirname_well_p4 : string;
-  dirname_ill_p4 : string;
+  dirname_welltyped_p4 : string;
+  dirname_illtyped_p4 : string;
+  dirname_illformed_p4 : string;
 }
 
 (* Seed programs for mutation *)
@@ -93,11 +94,19 @@ let init_outdirs (dirname_gen : string) : outdirs =
   Filesys.mkdir dirname_gen;
   let dirname_close_miss_p4 = dirname_gen ^ "/closemiss" in
   Filesys.mkdir dirname_close_miss_p4;
-  let dirname_well_p4 = dirname_gen ^ "/welltyped" in
-  Filesys.mkdir dirname_well_p4;
-  let dirname_ill_p4 = dirname_gen ^ "/illtyped" in
-  Filesys.mkdir dirname_ill_p4;
-  { dirname_gen; dirname_close_miss_p4; dirname_well_p4; dirname_ill_p4 }
+  let dirname_welltyped_p4 = dirname_gen ^ "/welltyped" in
+  Filesys.mkdir dirname_welltyped_p4;
+  let dirname_illtyped_p4 = dirname_gen ^ "/illtyped" in
+  Filesys.mkdir dirname_illtyped_p4;
+  let dirname_illformed_p4 = dirname_gen ^ "/illformed" in
+  Filesys.mkdir dirname_illformed_p4;
+  {
+    dirname_gen;
+    dirname_close_miss_p4;
+    dirname_welltyped_p4;
+    dirname_illtyped_p4;
+    dirname_illformed_p4;
+  }
 
 let init_seed (filenames_seed_p4 : string list) (cover_seed : MCov.Cover.t) :
     seed =
