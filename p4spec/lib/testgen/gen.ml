@@ -25,55 +25,6 @@ open Util.Source
                     (4) See if it has covered the phantom
       2. Repeat the loop until the fuel is exhausted *)
 
-(* Derivation of the close-AST from the dependency graph *)
-
-let derive_vid (graph : Dep.Graph.t) (vid : vid) : VIdSet.t * int VIdMap.t =
-  let vids_visited = ref (VIdSet.singleton vid) in
-  let depths_visited = ref (VIdMap.singleton vid 0) in
-  let vids_queue = Queue.create () in
-  Queue.add (vid, 0) vids_queue;
-  while not (Queue.is_empty vids_queue) do
-    let vid_current, depth_current = Queue.take vids_queue in
-    match Dep.Graph.G.find_opt graph.edges vid_current with
-    | Some edges ->
-        Dep.Edges.E.iter
-          (fun (_, vid_from) () ->
-            if not (VIdSet.mem vid_from !vids_visited) then (
-              vids_visited := VIdSet.add vid_from !vids_visited;
-              depths_visited :=
-                VIdMap.add vid_from (depth_current + 1) !depths_visited;
-              Queue.add (vid_from, depth_current + 1) vids_queue))
-          edges
-    | None -> ()
-  done;
-  (!vids_visited, !depths_visited)
-
-let derive_phantom (pid : pid) (graph : Dep.Graph.t) (cover : SCov.Cover.t) :
-    (vid * int) list =
-  (* Find related values that contributed to the close-miss *)
-  let vids_related =
-    let branch = SCov.Cover.find pid cover in
-    match branch.status with Hit -> [] | Miss vids_related -> vids_related
-  in
-  (* Randomly sample related vids *)
-  let vids_related =
-    Rand.random_sample Config.related_vid_samples vids_related
-  in
-  (* Find close-ASTs for each related values *)
-  vids_related
-  |> List.concat_map (fun vid_related ->
-         let vids_visited, depths_visited = derive_vid graph vid_related in
-         vids_visited
-         |> VIdSet.filter (fun vid ->
-                vid
-                |> Dep.Graph.G.find graph.nodes
-                |> Dep.Node.taint |> Dep.Node.is_source)
-         |> VIdSet.elements
-         |> List.map (fun vid ->
-                let depth = VIdMap.find vid depths_visited in
-                (vid, depth)))
-  |> List.sort (fun (_, depth_a) (_, depth_b) -> Int.compare depth_a depth_b)
-
 (* Check if the mutated file is interesting,
    and if so, copy it to the output directory *)
 
@@ -306,7 +257,7 @@ let fuzz_seed_deriving (fuel : int) (pid : pid) (config : Config.t)
     filename_p4
   |> Config.log config;
   let time_start = Unix.gettimeofday () in
-  let derivations_source = derive_phantom pid graph cover in
+  let derivations_source = Derive.derive_phantom pid graph cover in
   let time_end = Unix.gettimeofday () in
   (* Take top ranked derivations, i.e., the ones with the smallest depth *)
   F.asprintf
