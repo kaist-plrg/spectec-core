@@ -46,7 +46,7 @@ let add_edge (graph : t) (value_from : value) (value_to : value)
   let taint_to = G.find graph.nodes vid_to |> Node.taint in
   let taint_from = Node.update_taint taint_from taint_to in
   let node_from = (mirror_from, taint_from) in
-  G.add graph.nodes vid_from node_from;
+  G.replace graph.nodes vid_from node_from;
   (* Add an edge from the from node to the to node *)
   let edge = (label, vid_to) in
   let edges = G.find graph.edges vid_from in

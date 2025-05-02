@@ -41,6 +41,9 @@ run.sh
 # tools
 tools
 
+# debugs
+debug
+
 # reducer originals and interestingness scripts
 reductions/o*
 reductions/interesting

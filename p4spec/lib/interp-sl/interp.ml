@@ -874,25 +874,32 @@ and eval_hold_exp (note : typ') (ctx : Ctx.t) (id : id) (notexp : notexp) :
 and eval_iter_exp_opt (note : typ') (ctx : Ctx.t) (exp : exp) (vars : var list)
     : Ctx.t * value =
   let ctx_sub_opt = Ctx.sub_opt ctx vars in
-  match ctx_sub_opt with
-  | Some ctx_sub ->
-      let ctx_sub, value = eval_exp ctx_sub exp in
-      let ctx = Ctx.commit ctx ctx_sub in
-      let value_res =
-        let vid = Dep.Graph.fresh () in
-        let typ = note in
-        OptV (Some value) $$$ { vid; typ }
-      in
-      Ctx.add_node ctx value_res;
-      (ctx, value_res)
-  | None ->
-      let value_res =
-        let vid = Dep.Graph.fresh () in
-        let typ = note in
-        OptV None $$$ { vid; typ }
-      in
-      Ctx.add_node ctx value_res;
-      (ctx, value_res)
+  let ctx, value_res =
+    match ctx_sub_opt with
+    | Some ctx_sub ->
+        let ctx_sub, value = eval_exp ctx_sub exp in
+        let ctx = Ctx.commit ctx ctx_sub in
+        let value_res =
+          let vid = Dep.Graph.fresh () in
+          let typ = note in
+          OptV (Some value) $$$ { vid; typ }
+        in
+        (ctx, value_res)
+    | None ->
+        let value_res =
+          let vid = Dep.Graph.fresh () in
+          let typ = note in
+          OptV None $$$ { vid; typ }
+        in
+        (ctx, value_res)
+  in
+  Ctx.add_node ctx value_res;
+  List.iter
+    (fun (id, _typ, iters) ->
+      let value_sub = Ctx.find_value Local ctx (id, iters @ [ Il.Ast.Opt ]) in
+      Ctx.add_edge ctx value_res value_sub Dep.Edges.Iter)
+    vars;
+  (ctx, value_res)
 
 and eval_iter_exp_list (note : typ') (ctx : Ctx.t) (exp : exp) (vars : var list)
     : Ctx.t * value =
@@ -911,6 +918,11 @@ and eval_iter_exp_list (note : typ') (ctx : Ctx.t) (exp : exp) (vars : var list)
     ListV values $$$ { vid; typ }
   in
   Ctx.add_node ctx value_res;
+  List.iter
+    (fun (id, _typ, iters) ->
+      let value_sub = Ctx.find_value Local ctx (id, iters @ [ Il.Ast.List ]) in
+      Ctx.add_edge ctx value_res value_sub Dep.Edges.Iter)
+    vars;
   (ctx, value_res)
 
 and eval_iter_exp (note : typ') (ctx : Ctx.t) (exp : exp) (iterexp : iterexp) :

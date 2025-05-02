@@ -165,9 +165,27 @@ let run_testgen_command =
            filenames_seed_p4 dirname_gen bootmode targetmode
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
-let interesting_command =
+let run_testgen_debug_command =
   Core.Command.basic
-    ~summary:"run static semantics of a p4_16 spec based on non-backtracking SL"
+    ~summary:"debug close-AST deriver in negative type checker generator"
+    (let open Core.Command.Let_syntax in
+     let open Core.Command.Param in
+     let%map filenames_spec = anon (sequence ("filename" %: string))
+     and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
+     and filename_p4 = flag "-p" (required string) ~doc:"p4 file to typecheck"
+     and dirname_debug =
+       flag "-debug" (required string) ~doc:"directory for debug files"
+     and pid = flag "-pid" (required int) ~doc:"phantom id to close-miss" in
+     fun () ->
+       try
+         let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
+         let spec_il = Elaborate.Elab.elab_spec spec in
+         let spec_sl = Structure.Struct.struct_spec spec_il in
+         Testgen.Derive.debug_phantom spec_sl includes_p4 filename_p4 dirname_debug pid
+       with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+
+let interesting_command =
+  Core.Command.basic ~summary:"interestingness test for reducing p4_16 programs"
     (let open Core.Command.Let_syntax in
      let open Core.Command.Param in
      let%map filenames_spec = anon (sequence ("filename" %: string))
@@ -214,6 +232,7 @@ let command =
       ("cover-sl", cover_sl_command);
       ("cover-sl-filenames", cover_sl_filenames_command);
       ("testgen", run_testgen_command);
+      ("testgen-dbg", run_testgen_debug_command);
       ("interesting", interesting_command);
     ]
 
