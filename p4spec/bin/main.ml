@@ -181,7 +181,8 @@ let run_testgen_debug_command =
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
-         Testgen.Derive.debug_phantom spec_sl includes_p4 filename_p4 dirname_debug pid
+         Testgen.Derive.debug_phantom spec_sl includes_p4 filename_p4
+           dirname_debug pid
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let interesting_command =

@@ -94,7 +94,8 @@ let debug_phantom (spec : spec) (includes_p4 : string list)
             Dep.Graph.dot_of_graph graph |> output_string oc_dot;
             close_out oc_dot;
             let filename_dot_sub =
-              F.asprintf "%s/debug_p%d_v%d_sub.dot" dirname_debug pid vid_related
+              F.asprintf "%s/debug_p%d_v%d_sub.dot" dirname_debug pid
+                vid_related
             in
             let oc_dot_sub = open_out filename_dot_sub in
             "digraph dependencies {\n" |> output_string oc_dot_sub;
