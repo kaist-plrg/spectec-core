@@ -25,10 +25,10 @@ rule Sub_expl_canon_neq/intt-boolt:
   IntT <: BoolT
 
 rule Sub_expl_canon_neq/fintt-fbitt:
-  FIntT width_a <: FBitT width_b
+  FIntT width <: FBitT width
 
 rule Sub_expl_canon_neq/fbitt-fintt:
-  FBitT width_a <: FIntT width_b
+  FBitT width <: FIntT width
 
 rule Sub_expl_canon_neq/fbitt-fbitt:
   FBitT width_a <: FBitT width_b

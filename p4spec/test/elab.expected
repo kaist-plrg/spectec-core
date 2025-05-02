@@ -7901,27 +7901,29 @@ relation Sub_expl_canon_neq: `%<:%`(typ, typ)
       -- if (typ = `IntT`_numtyp() as typ)
       -- if (typ' = `BoolT`_primtyp() as typ)
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:27.1-28.33
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:27.1-28.29
    rule fintt-fbitt: `%<:%`(typ, typ')
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
       -- if numtyp matches `FIntT%`
-      -- let `FIntT%`_numtyp(width_a) = numtyp
+      -- let `FIntT%`_numtyp(width) = numtyp
       -- if typ' <: numtyp
       -- let numtyp' = typ' as numtyp
       -- if numtyp' matches `FBitT%`
-      -- let `FBitT%`_numtyp(width_b) = numtyp'
+      -- let `FBitT%`_numtyp(width') = numtyp'
+      -- if (width = width')
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:30.1-31.33
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:30.1-31.29
    rule fbitt-fintt: `%<:%`(typ, typ')
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
       -- if numtyp matches `FBitT%`
-      -- let `FBitT%`_numtyp(width_a) = numtyp
+      -- let `FBitT%`_numtyp(width) = numtyp
       -- if typ' <: numtyp
       -- let numtyp' = typ' as numtyp
       -- if numtyp' matches `FIntT%`
-      -- let `FIntT%`_numtyp(width_b) = numtyp'
+      -- let `FIntT%`_numtyp(width') = numtyp'
+      -- if (width = width')
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:33.1-34.33
    rule fbitt-fbitt: `%<:%`(typ, typ')

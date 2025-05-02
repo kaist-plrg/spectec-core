@@ -1,6 +1,6 @@
 control a() {
   table b {
-    actions = {} priority_delta = 10;
+    actions = {} largest_priority_wins = false;
   }
   apply {}
 }

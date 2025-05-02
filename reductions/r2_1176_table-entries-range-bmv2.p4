@@ -8,7 +8,7 @@ struct h {
   }
   actions = { e;
 }
-entries = { 5 : e(4);
+entries = { 1..8 : e(1);
 }
 }
 apply {}

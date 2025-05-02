@@ -1,8 +1,12 @@
 control a() {
-  table b {
-    actions = {}
+  action b() {}
+  table c {
+    actions = { b;
   }
-  apply {
-    switch (b.apply().action_run) { default: }
+}
+apply {
+  switch (c.apply().action_run) {
+  b:
   }
+}
 }

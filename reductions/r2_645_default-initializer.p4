@@ -1,5 +1,4 @@
-struct a {
-  bit b;
-} control c() {
+header a { bit b; }
+control c() {
   apply { a d = (a){...}; }
 }

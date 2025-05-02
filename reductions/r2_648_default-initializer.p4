@@ -1,5 +1,5 @@
 struct a {
   bit b;
 } control c() {
-  apply { a d = (a){b = 2, ...}; }
+  apply { a d = (a){...}; }
 }

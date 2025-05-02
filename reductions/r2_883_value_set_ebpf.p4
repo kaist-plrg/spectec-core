@@ -1,5 +1,0 @@
-control a() {
-  apply {
-    {}
-  }
-}
