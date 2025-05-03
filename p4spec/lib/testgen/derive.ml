@@ -38,7 +38,7 @@ let derive_phantom (pid : pid) (graph : Dep.Graph.t) (cover : SCov.Cover.t) :
   in
   (* Randomly sample related vids *)
   let vids_related =
-    Rand.random_sample Config.related_vid_samples vids_related
+    Rand.random_sample Config.samples_related_vid vids_related
   in
   (* Find close-ASTs for each related values *)
   vids_related
@@ -71,7 +71,7 @@ let debug_phantom (spec : spec) (includes_p4 : string list)
       in
       (* Randomly sample related vids *)
       let vids_related =
-        Rand.random_sample Config.related_vid_samples vids_related
+        Rand.random_sample Config.samples_related_vid vids_related
       in
       (* Log if fail to derive a close-AST *)
       List.iter

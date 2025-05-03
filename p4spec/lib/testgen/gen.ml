@@ -6,6 +6,10 @@ module MCov = Runtime_testgen.Cov.Multiple
 module F = Format
 open Util.Source
 
+(* Timeout exception for the fuzzing loop *)
+
+exception Timeout
+
 (* Overview of the fuzzing loop
 
    (#) Pre-loop: Measure the initial coverage of the phantom nodes
@@ -120,7 +124,7 @@ let update_interesting (fuel : int) (pid : pid) (idx_method : int)
   (* Evaluate the generated program to see if it is interesting *)
   let time_start = Unix.gettimeofday () in
   F.asprintf "[F %d] [P %d] [D/R %d] [M %d] [%d/%d] Evaluating %s" fuel pid
-    idx_method idx_mutation !trials Config.trials_bound filename_gen_p4
+    idx_method idx_mutation !trials Config.trials_seed filename_gen_p4
   |> Logger.log config.modes.logmode log;
   let welltyped, cover =
     match
@@ -133,7 +137,7 @@ let update_interesting (fuel : int) (pid : pid) (idx_method : int)
   in
   let time_end = Unix.gettimeofday () in
   F.asprintf "[F %d] [P %d] [D/R %d] [M %d] [%d/%d] Evaluated %s (took %.2f)"
-    fuel pid idx_method idx_mutation !trials Config.trials_bound filename_gen_p4
+    fuel pid idx_method idx_mutation !trials Config.trials_seed filename_gen_p4
     (time_end -. time_start)
   |> Logger.log config.modes.logmode log;
   (* Find newly hit or newly close-missing nodes *)
@@ -152,6 +156,30 @@ let update_interesting (fuel : int) (pid : pid) (idx_method : int)
 
 (* Mutate an AST and generate a new program *)
 
+let classify_mutation' (fuel : int) (pid : pid) (idx_method : int)
+    (idx_mutation : int) (trials : int ref) (config : Config.t) (log : Logger.t)
+    (dirname_gen_tmp : string) (filename_p4 : string) (comment_gen_p4 : string)
+    (value_source : value) (value_mutated : value) (value_program : value)
+    (program : P4el.Ast.program) : unit =
+  let filename_gen_p4 =
+    F.asprintf "%s/%s_F%d_P%d_%d_M%d.p4" dirname_gen_tmp
+      (Filesys.base ~suffix:".p4" filename_p4)
+      fuel pid idx_method idx_mutation
+  in
+  let comment_gen_p4 =
+    F.asprintf "%s\n/*\nFrom %s\nTo %s\n*/\n" comment_gen_p4
+      (Sl.Print.string_of_value value_source)
+      (Sl.Print.string_of_value value_mutated)
+  in
+  (* Write the mutated program to a file *)
+  let oc = open_out filename_gen_p4 in
+  F.asprintf "%s\n%a\n" comment_gen_p4 P4el.Pp.pp_program program
+  |> output_string oc;
+  close_out oc;
+  (* Check if the mutated program is interesting, and if so, update *)
+  update_interesting fuel pid idx_method idx_mutation trials config log
+    filename_gen_p4 value_program
+
 let classify_mutation (fuel : int) (pid : pid) (idx_method : int)
     (idx_mutation : int) (trials : int ref) (config : Config.t) (log : Logger.t)
     (dirname_gen_tmp : string) (filename_p4 : string) (comment_gen_p4 : string)
@@ -163,24 +191,9 @@ let classify_mutation (fuel : int) (pid : pid) (idx_method : int)
   (* Mutation may yield a syntactically ill-formed AST, so have a try block *)
   try
     let program = Interp_sl.Convert.Out.out_program value_program in
-    let filename_gen_p4 =
-      F.asprintf "%s/%s_F%d_P%d_%d_M%d.p4" dirname_gen_tmp
-        (Filesys.base ~suffix:".p4" filename_p4)
-        fuel pid idx_method idx_mutation
-    in
-    let comment_gen_p4 =
-      F.asprintf "%s\n/*\nFrom %s\nTo %s\n*/\n" comment_gen_p4
-        (Sl.Print.string_of_value value_source)
-        (Sl.Print.string_of_value value_mutated)
-    in
-    (* Write the mutated program to a file *)
-    let oc = open_out filename_gen_p4 in
-    F.asprintf "%s\n%a\n" comment_gen_p4 P4el.Pp.pp_program program
-    |> output_string oc;
-    close_out oc;
-    (* Check if the mutated program is interesting, and if so, update *)
-    update_interesting fuel pid idx_method idx_mutation trials config log
-      filename_gen_p4 value_program
+    classify_mutation' fuel pid idx_method idx_mutation trials config log
+      dirname_gen_tmp filename_p4 comment_gen_p4 value_source value_mutated
+      value_program program
   with Util.Error.ConvertOutError msg ->
     Logger.warn config.modes.logmode log msg
 
@@ -196,13 +209,12 @@ let fuzz_mutation (fuel : int) (pid : pid) (idx_method : int) (trials : int ref)
   |> Query.query query;
   (* Mutate the AST *)
   let mutations =
-    Mutate.mutates Config.mutation_trials config.specenv.tdenv value_source
+    Mutate.mutates Config.trials_mutation config.specenv.tdenv value_source
   in
   (* Generate the mutated program *)
   List.iteri
     (fun idx_mutation (kind, value_mutated) ->
-      if
-        !trials < Config.trials_bound && MCov.is_miss config.seed.cover_seed pid
+      if !trials < Config.trials_seed && MCov.is_miss config.seed.cover_seed pid
       then (
         trials := !trials + 1;
         F.asprintf "[Mutated] %s\n" (Sl.Print.string_of_value value_mutated)
@@ -224,8 +236,7 @@ let fuzz_derivations (fuel : int) (pid : pid) (trials : int ref)
     (vid_program : vid) (derivations_source : (vid * int) list) : unit =
   List.iteri
     (fun idx_derivation (vid_source, depth) ->
-      if
-        !trials < Config.trials_bound && MCov.is_miss config.seed.cover_seed pid
+      if !trials < Config.trials_seed && MCov.is_miss config.seed.cover_seed pid
       then
         let comment_gen_p4 =
           F.asprintf "// Intended pid %d\n// Source vid %d\n// Depth %d\n" pid
@@ -246,11 +257,11 @@ let fuzz_derivations_bounded (fuel : int) (pid : pid) (config : Config.t)
   else
     let derivations_total = List.length derivations_source in
     F.asprintf "[F %d] [P %d] Fuzzing from %d derivations, until %d trials" fuel
-      pid derivations_total Config.trials_bound
+      pid derivations_total Config.trials_seed
     |> Logger.log config.modes.logmode log;
     let trials = ref 0 in
     while
-      !trials < Config.trials_bound && MCov.is_miss config.seed.cover_seed pid
+      !trials < Config.trials_seed && MCov.is_miss config.seed.cover_seed pid
     do
       fuzz_derivations fuel pid trials config log query dirname_gen_tmp
         filename_p4 graph vid_program derivations_source
@@ -264,8 +275,7 @@ let fuzz_randoms (fuel : int) (pid : pid) (trials : int ref) (config : Config.t)
     (vids_source : vid list) : unit =
   List.iteri
     (fun idx_random vid_source ->
-      if
-        !trials < Config.trials_bound && MCov.is_miss config.seed.cover_seed pid
+      if !trials < Config.trials_seed && MCov.is_miss config.seed.cover_seed pid
       then
         let comment_gen_p4 =
           F.asprintf "// Intended pid %d\n// Source vid %d\n" pid vid_source
@@ -280,11 +290,11 @@ let fuzz_randoms_bounded (fuel : int) (pid : pid) (config : Config.t)
     (filename_p4 : string) (graph : Dep.Graph.t) (vid_program : vid)
     (vids_source : vid list) : unit =
   F.asprintf "[F %d] [P %d] Fuzzing from %d random values, until %d trials" fuel
-    pid (List.length vids_source) Config.trials_bound
+    pid (List.length vids_source) Config.trials_seed
   |> Logger.log config.modes.logmode log;
   let trials = ref 0 in
   while
-    !trials < Config.trials_bound && MCov.is_miss config.seed.cover_seed pid
+    !trials < Config.trials_seed && MCov.is_miss config.seed.cover_seed pid
   do
     fuzz_randoms fuel pid trials config log query dirname_gen_tmp filename_p4
       graph vid_program vids_source
@@ -307,13 +317,13 @@ let fuzz_seed_deriving (fuel : int) (pid : pid) (config : Config.t)
     "[F %d] [P %d] Found total %d derivations, sampling top %d (took %.2f)" fuel
     pid
     (List.length derivations_source)
-    Config.derivation_source_samples (time_end -. time_start)
+    Config.samples_derivation_source (time_end -. time_start)
   |> Logger.log config.modes.logmode log;
   let derivations_source =
-    if List.length derivations_source < Config.derivation_source_samples then
+    if List.length derivations_source < Config.samples_derivation_source then
       derivations_source
     else
-      List.init Config.derivation_source_samples (List.nth derivations_source)
+      List.init Config.samples_derivation_source (List.nth derivations_source)
   in
   (* Mutate the close-ASTs and dump to file *)
   fuzz_derivations_bounded fuel pid config log query dirname_gen_tmp filename_p4
@@ -325,7 +335,7 @@ let fuzz_seed_random (fuel : int) (pid : pid) (config : Config.t)
   (* Randomly sample N vids from the program *)
   let vids_source =
     List.init vid_program Fun.id
-    |> Rand.random_sample Config.related_vid_samples
+    |> Rand.random_sample Config.samples_related_vid
   in
   (* Mutate the ASTs and dump to file *)
   fuzz_randoms_bounded fuel pid config log query dirname_gen_tmp filename_p4
@@ -364,12 +374,20 @@ let fuzz_seed (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
 let fuzz_seeds (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
     (query : Query.t) (dirname_gen_tmp : string) (filenames_p4 : string list) :
     unit =
-  (* Fuzz from seed programs until the target phantom node is covered,
-     for overall trials, have a hard timeout *)
+  (* Fuzz from seed programs until the target phantom node is covered *)
   List.iter
     (fun filename_p4 ->
-      if MCov.is_miss config.seed.cover_seed pid then
-        fuzz_seed fuel pid config log query dirname_gen_tmp filename_p4)
+      if MCov.is_miss config.seed.cover_seed pid then (
+        let _ =
+          Sys.set_signal Sys.sigalrm
+            (Sys.Signal_handle (fun _ -> raise Timeout))
+        in
+        Unix.alarm Config.timeout_seed |> ignore;
+        (try fuzz_seed fuel pid config log query dirname_gen_tmp filename_p4
+         with Timeout ->
+           F.asprintf "[F %d] [P %d] Timeout on %s" fuel pid filename_p4
+           |> Logger.log config.modes.logmode log);
+        Unix.alarm 0 |> ignore))
     filenames_p4
 
 (* Fuzzing from a target phantom node *)
@@ -386,7 +404,7 @@ let fuzz_phantom (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
   Filesys.mkdir dirname_gen_tmp;
   (* Randomly sample N close-miss filenames *)
   let filenames_p4 =
-    Rand.random_sample Config.close_miss_samples filenames_p4
+    Rand.random_sample Config.samples_close_miss filenames_p4
   in
   (* Generate tests from the files *)
   fuzz_seeds fuel pid config log query dirname_gen_tmp filenames_p4;
@@ -500,9 +518,10 @@ let fuzz_typing_init (spec : spec) (includes_p4 : string list)
   (* Close the initial log *)
   F.asprintf
     "[SAMPLE CLOSE MISS] %d [SAMPLE RELATED VID] %d [SAMPLE DERIVATION] %d \
-     [TRIALS MUTATION] %d [TRIALS TOTAL] %d"
-    Config.close_miss_samples Config.related_vid_samples
-    Config.derivation_source_samples Config.mutation_trials Config.trials_bound
+     [TRIALS MUTATION] %d [TRIALS SEED] %d [TIMEOUT SEED] %d"
+    Config.samples_close_miss Config.samples_related_vid
+    Config.samples_derivation_source Config.trials_mutation Config.trials_seed
+    Config.timeout_seed
   |> Logger.log modes.logmode log_init;
   Logger.close log_init;
   (* Create a configuration *)

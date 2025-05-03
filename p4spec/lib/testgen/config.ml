@@ -7,20 +7,22 @@ module MCov = Runtime_testgen.Cov.Multiple
 (* Hyperparameters for the fuzzing loop *)
 
 (* Max number of seeds per phantom *)
-let close_miss_samples = 3
+let samples_close_miss = 3
 
 (* Max number of related vids to derive from per seed *)
-let related_vid_samples = 3
+let samples_related_vid = 3
 
 (* Max number of close-ASTs per seed *)
-let derivation_source_samples = 5
+let samples_derivation_source = 5
 
 (* Max number of mutation trials per close-AST *)
-let mutation_trials = 10
+let trials_mutation = 10
 
 (* Trials per seed *)
+let trials_seed = 100
 
-let trials_bound = 100
+(* Timeout per seed *)
+let timeout_seed = 30
 
 (* Environment for the spec *)
 

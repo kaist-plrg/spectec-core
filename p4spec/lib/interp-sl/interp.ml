@@ -852,10 +852,9 @@ and eval_hold_exp (note : typ') (ctx : Ctx.t) (id : id) (notexp : notexp) :
   let _, exps_input = notexp in
   let ctx, values_input = eval_exps ctx exps_input in
   let ctx, hold =
-    try
-      let ctx, _ = invoke_rel ctx id values_input in
-      (ctx, true)
-    with _ -> (ctx, false)
+    match invoke_rel ctx id values_input with
+    | Some (ctx, _) -> (ctx, true)
+    | None -> (ctx, false)
   in
   let value_res =
     let vid = Dep.Graph.fresh () in
@@ -1233,7 +1232,11 @@ and eval_rule (ctx : Ctx.t) (id : id) (notexp : notexp) : Ctx.t =
     Hint.split_exps_without_idx inputs exps
   in
   let ctx, values_input = eval_exps ctx exps_input in
-  let ctx, values_output = invoke_rel ctx id values_input in
+  let ctx, values_output =
+    match invoke_rel ctx id values_input with
+    | Some (ctx, values_output) -> (ctx, values_output)
+    | None -> error id.at "relation was not matched"
+  in
   assign_exps ctx exps_output values_output
 
 and eval_rule_opt (_ctx : Ctx.t) (_id : id) (_notexp : notexp)
@@ -1332,7 +1335,7 @@ and eval_return_instr (ctx : Ctx.t) (exp : exp) : Ctx.t * Sign.t =
 (* Invoke a relation *)
 
 and invoke_rel (ctx : Ctx.t) (id : id) (values_input : value list) :
-    Ctx.t * value list =
+    (Ctx.t * value list) option =
   let _inputs, exps_input, instrs = Ctx.find_rel Local ctx id in
   check (instrs <> []) id.at "relation has no instructions";
   let ctx_local = Ctx.localize ctx in
@@ -1349,8 +1352,8 @@ and invoke_rel (ctx : Ctx.t) (id : id) (values_input : value list) :
                 (Dep.Edges.Rel (id, idx_arg)))
             values_output)
         values_input;
-      (ctx, values_output)
-  | _ -> error id.at "relation was not matched"
+      Some (ctx, values_output)
+  | _ -> None
 
 (* Invoke a function *)
 

@@ -6,6 +6,7 @@ module Rel = Runtime_dynamic_sl.Rel
 module Dep = Runtime_testgen.Dep
 module SCov = Runtime_testgen.Cov.Single
 module MCov = Runtime_testgen.Cov.Multiple
+open Error
 module F = Format
 open Util.Source
 
@@ -14,7 +15,9 @@ open Util.Source
 let do_typing (ctx : Ctx.t) (spec : spec) (value_program : value) :
     Ctx.t * value list =
   let ctx = Interp.load_spec ctx spec in
-  Interp.invoke_rel ctx ("Prog_ok" $ no_region) [ value_program ]
+  match Interp.invoke_rel ctx ("Prog_ok" $ no_region) [ value_program ] with
+  | Some (ctx, values) -> (ctx, values)
+  | None -> error no_region "relation was not matched"
 
 (* Entry point : Run typing rule *)
 
