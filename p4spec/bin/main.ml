@@ -150,19 +150,24 @@ let run_testgen_command =
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
-         let filenames_seed_p4 = collect_files ~suffix:".p4" dirname_seed_p4 in
+         let logmode =
+           if silent then Testgen.Modes.Silent else Testgen.Modes.Verbose
+         in
          let bootmode =
            match filename_boot with
-           | Some filename_boot -> Testgen.Gen.Warm filename_boot
-           | None -> Testgen.Gen.Cold
+           | Some filename_boot -> Testgen.Modes.Warm filename_boot
+           | None -> Testgen.Modes.Cold
          in
          let targetmode =
            match filename_target with
-           | Some filename_target -> Testgen.Gen.Target filename_target
-           | None -> Testgen.Gen.Roundrobin
+           | Some filename_target -> Testgen.Modes.Target filename_target
+           | None -> Testgen.Modes.Roundrobin
          in
-         Testgen.Gen.fuzz_typing ~silent ~random fuel spec_sl includes_p4
-           filenames_seed_p4 dirname_gen bootmode targetmode
+         let mutationmode =
+           if random then Testgen.Modes.Random else Testgen.Modes.Derive
+         in
+         Testgen.Gen.fuzz_typing fuel spec_sl includes_p4 dirname_seed_p4
+           dirname_gen logmode bootmode targetmode mutationmode
        with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let run_testgen_debug_command =

@@ -26,10 +26,12 @@ let trials_bound = 100
 
 type specenv = { spec : spec; tdenv : TDEnv.t; includes_p4 : string list }
 
-(* Output directories for generated P4 programs *)
+(* Storage for generated files *)
 
-type outdirs = {
+type storage = {
   dirname_gen : string;
+  dirname_log : string;
+  dirname_query : string;
   dirname_close_miss_p4 : string;
   dirname_welltyped_p4 : string;
   dirname_illtyped_p4 : string;
@@ -43,20 +45,14 @@ type seed = {
   mutable cover_seed : MCov.Cover.t;
 }
 
-(* Mode for identifying the AST node to be mutated *)
-
-type mutationmode = Random | Derive
-
 (* Configuration for the fuzz campaign *)
 
 type t = {
   mutable rand : int;
-  logger : Logger.t;
-  queries : Query.t;
+  modes : Modes.t;
   specenv : specenv;
-  outdirs : outdirs;
+  storage : storage;
   seed : seed;
-  mutationmode : mutationmode;
 }
 
 (* Load type definitions into environment *)
@@ -77,21 +73,18 @@ let set_rand (config : t) : unit =
   config.rand <- config.rand + 1;
   Random.init config.rand
 
-(* Logging *)
-
-let log (config : t) (msg : string) : unit = Logger.log config.logger msg
-let warn (config : t) (msg : string) : unit = Logger.warn config.logger msg
-let query (config : t) (msg : string) : unit = Query.query config.queries msg
-let answer (config : t) (msg : string) : unit = Query.answer config.queries msg
-
 (* Constructor *)
 
 let init_specenv (spec : spec) (includes_p4 : string list) : specenv =
   let tdenv = load_spec TDEnv.empty spec in
   { spec; tdenv; includes_p4 }
 
-let init_outdirs (dirname_gen : string) : outdirs =
+let init_storage (dirname_gen : string) : storage =
   Filesys.mkdir dirname_gen;
+  let dirname_log = dirname_gen ^ "/log" in
+  Filesys.mkdir dirname_log;
+  let dirname_query = dirname_gen ^ "/query" in
+  Filesys.mkdir dirname_query;
   let dirname_close_miss_p4 = dirname_gen ^ "/closemiss" in
   Filesys.mkdir dirname_close_miss_p4;
   let dirname_welltyped_p4 = dirname_gen ^ "/welltyped" in
@@ -102,6 +95,8 @@ let init_outdirs (dirname_gen : string) : outdirs =
   Filesys.mkdir dirname_illformed_p4;
   {
     dirname_gen;
+    dirname_log;
+    dirname_query;
     dirname_close_miss_p4;
     dirname_welltyped_p4;
     dirname_illtyped_p4;
@@ -112,11 +107,11 @@ let init_seed (filenames_seed_p4 : string list) (cover_seed : MCov.Cover.t) :
     seed =
   { filenames_seed_p4; cover_seed }
 
-let init (logger : Logger.t) (queries : Query.t) (specenv : specenv)
-    (outdirs : outdirs) (seed : seed) (mutationmode : mutationmode) =
+let init (modes : Modes.t) (specenv : specenv) (storage : storage) (seed : seed)
+    =
   let rand = 2025 in
   Random.init rand;
-  { rand; logger; queries; specenv; outdirs; seed; mutationmode }
+  { rand; modes; specenv; storage; seed }
 
 (* Seed updater *)
 
@@ -165,12 +160,3 @@ let update_close_miss_cover_seed (config : t) (filename_p4 : string)
       pids_close_miss cover_seed
   in
   config.seed.cover_seed <- cover_seed
-
-(* Destructor *)
-
-let close (config : t) =
-  MCov.log
-    ~filename_cov_opt:(Some (config.outdirs.dirname_gen ^ "/fin.coverage"))
-    config.seed.cover_seed;
-  Logger.close config.logger;
-  Query.close config.queries
