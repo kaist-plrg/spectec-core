@@ -69,7 +69,7 @@ let elab_command =
      let%map specdir = flag "-s" (required string) ~doc:"p4 spec directory" in
      fun () ->
        try elab_test specdir
-       with Error (at, msg) ->
+       with ParseError (at, msg) | ElabError (at, msg) ->
          Format.printf "Error on elaboration: %s\n" (string_of_error at msg))
 
 (* Structuring test *)
@@ -87,25 +87,19 @@ let structure_command =
      let%map specdir = flag "-s" (required string) ~doc:"p4 spec directory" in
      fun () ->
        try structure_test specdir
-       with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       with ParseError (at, msg) | ElabError (at, msg) ->
+         Format.printf "%s\n" (string_of_error at msg))
 
 (* SL test *)
 
 let run_sl negative spec_sl includes_p4 filename_p4 =
   let time_start = start () in
   try
-    (* Set timer to 30 seconds *)
-    let handler =
-      Sys.Signal_handle (fun _ -> raise (Error (no_region, "timeout")))
-    in
-    let _ = Sys.set_signal Sys.sigalrm handler in
-    let _ = Unix.alarm 30 in
     (* Run test *)
-    (match Interp_sl.Interp.run_typing spec_sl includes_p4 filename_p4 with
-    | Well _ -> if negative then raise (TestCheckNegErr time_start)
-    | Ill (at, msg, _) -> raise (TestCheckErr (msg, at, time_start)));
-    (* Reset timer *)
-    let _ = Unix.alarm 0 in
+    (match Interp_sl.Typing.run_typing spec_sl includes_p4 filename_p4 with
+    | WellTyped _ -> if negative then raise (TestCheckNegErr time_start)
+    | IllTyped (at, msg, _) -> raise (TestCheckErr (msg, at, time_start))
+    | IllFormed (msg, _) -> raise (TestCheckErr (msg, no_region, time_start)));
     time_start
   with
   | TestCheckErr _ as err -> raise err
@@ -180,7 +174,7 @@ let cover_sl_test specdir includes_p4 testdirs_p4 =
   let filenames_p4 =
     List.concat_map (collect_files ~suffix:".p4") testdirs_p4
   in
-  let cover = Interp_sl.Interp.cover_typings spec_sl includes_p4 filenames_p4 in
+  let cover = Interp_sl.Typing.cover_typings spec_sl includes_p4 filenames_p4 in
   Runtime_testgen.Cov.Multiple.log ~filename_cov_opt:None cover
 
 let cover_sl_command =
@@ -190,9 +184,7 @@ let cover_sl_command =
      let%map specdir = flag "-s" (required string) ~doc:"p4 spec directory"
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
      and testdirs_p4 = flag "-d" (listed string) ~doc:"p4 test directory" in
-     fun () ->
-       try cover_sl_test specdir includes_p4 testdirs_p4
-       with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+     fun () -> cover_sl_test specdir includes_p4 testdirs_p4)
 
 let command =
   Core.Command.group ~summary:"p4spec-test"

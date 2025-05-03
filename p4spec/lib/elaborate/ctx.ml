@@ -2,12 +2,10 @@ open Domain.Lib
 open El.Ast
 open Runtime_static
 open Envs
-open Util.Error
+open Error
 open Util.Source
 
 (* Error *)
-
-let error (at : region) (msg : string) = error at "elab" msg
 
 let error_undef (at : region) (kind : string) (id : string) =
   error at (Format.asprintf "%s `%s` is undefined" kind id)

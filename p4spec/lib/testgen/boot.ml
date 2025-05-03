@@ -8,7 +8,7 @@ open Util.Source
 
 let boot_cold (spec : spec) (includes_p4 : string list)
     (filenames_p4 : string list) : MCov.Cover.t =
-  Interp_sl.Interp.cover_typings spec includes_p4 filenames_p4
+  Interp_sl.Typing.cover_typings spec includes_p4 filenames_p4
 
 (* On warm boot, load the coverage from a file *)
 

@@ -3,8 +3,8 @@ open Util.Source
 
 (* Error *)
 
-let error (at : region) (msg : string) = error at "interp" msg
-let warn (at : region) (msg : string) = warn at "interp" msg
+let error (at : region) (msg : string) = error_interp at msg
+let warn (at : region) (msg : string) = warn_interp at msg
 
 (* Check *)
 

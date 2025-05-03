@@ -60,9 +60,9 @@ let derive_phantom (pid : pid) (graph : Dep.Graph.t) (cover : SCov.Cover.t) :
 let debug_phantom (spec : spec) (includes_p4 : string list)
     (filename_p4 : string) (dirname_debug : string) (pid : pid) : unit =
   match
-    Interp_sl.Interp.run_typing ~derive:true spec includes_p4 filename_p4
+    Interp_sl.Typing.run_typing ~derive:true spec includes_p4 filename_p4
   with
-  | Well (graph, _, cover) ->
+  | WellTyped (graph, _, cover) ->
       let graph = Option.get graph in
       (* Find related values that contributed to the close-miss *)
       let vids_related =
@@ -132,4 +132,5 @@ let debug_phantom (spec : spec) (includes_p4 : string list)
                 |> output_string oc_value)
               values_source))
         vids_related
-  | Ill _ -> print_endline "ill-typed"
+  | IllTyped _ -> print_endline "ill-typed"
+  | IllFormed _ -> print_endline "ill-formed"

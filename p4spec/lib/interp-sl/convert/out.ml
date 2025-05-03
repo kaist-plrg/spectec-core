@@ -1,18 +1,20 @@
 module P4Lang = P4lang.Ast
 module P4El = P4el.Ast
 open Sl.Ast
-open Error
 module F = Format
+open Util.Error
 open Util.Source
 
 (* Conversion from IL value to p4cherry AST *)
 
-(* Helpers *)
+(* Error handling *)
 
 let error (category : string) (value : value) =
   F.asprintf "expected a(an) %s, but got %s" category
     (Sl.Print.string_of_value value)
-  |> error no_region
+  |> error_convert_out
+
+(* Helpers *)
 
 let no_info = P4util.Source.no_info
 let ( $ ) = P4util.Source.( $ )

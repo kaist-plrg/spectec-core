@@ -1,4 +1,3 @@
-open Error
 open Source
 open Print
 
@@ -60,24 +59,3 @@ and string_of_failtraces ?(level = 0) ~(depth : int)
             failtrace)
         failtraces
       |> String.concat ""
-
-let error_with_failtraces (category : string) (failtraces : failtrace list) =
-  let sfailtrace =
-    match failtraces with
-    | [] -> ""
-    | [ failtrace ] ->
-        let depth = depth failtrace in
-        let depth = max 0 (depth - 10) in
-        string_of_failtrace ~depth ~bullet:"-" failtrace
-    | failtraces ->
-        List.mapi
-          (fun idx failtrace ->
-            let depth = depth failtrace in
-            let depth = max 0 (depth - 10) in
-            string_of_failtrace ~depth
-              ~bullet:(string_of_int (idx + 1) ^ ".")
-              failtrace)
-          failtraces
-        |> String.concat ""
-  in
-  error no_region category ("tracing backtrack logs:\n" ^ sfailtrace)

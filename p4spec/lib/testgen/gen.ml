@@ -4,7 +4,6 @@ module Dep = Runtime_testgen.Dep
 module SCov = Runtime_testgen.Cov.Single
 module MCov = Runtime_testgen.Cov.Multiple
 module F = Format
-open Util.Error
 open Util.Source
 
 (* Overview of the fuzzing loop
@@ -125,11 +124,12 @@ let update_interesting (fuel : int) (pid : pid) (idx_method : int)
   |> Logger.log config.modes.logmode log;
   let welltyped, cover =
     match
-      Interp_sl.Interp.run_typing_internal config.specenv.spec filename_gen_p4
+      Interp_sl.Typing.run_typing_internal config.specenv.spec filename_gen_p4
         value_program
     with
-    | Well (_, _, cover) -> (true, cover)
-    | Ill (_, _, cover) -> (false, cover)
+    | WellTyped (_, _, cover) -> (true, cover)
+    | IllTyped (_, _, cover) -> (false, cover)
+    | IllFormed (_, cover) -> (false, cover)
   in
   let time_end = Unix.gettimeofday () in
   F.asprintf "[F %d] [P %d] [D/R %d] [M %d] [%d/%d] Evaluated %s (took %.2f)"
@@ -162,7 +162,7 @@ let classify_mutation (fuel : int) (pid : pid) (idx_method : int)
   let value_program = Dep.Graph.reassemble_node graph renamer vid_program in
   (* Mutation may yield a syntactically ill-formed AST, so have a try block *)
   try
-    let program = Interp_sl.Out.out_program value_program in
+    let program = Interp_sl.Convert.Out.out_program value_program in
     let filename_gen_p4 =
       F.asprintf "%s/%s_F%d_P%d_%d_M%d.p4" dirname_gen_tmp
         (Filesys.base ~suffix:".p4" filename_p4)
@@ -181,7 +181,8 @@ let classify_mutation (fuel : int) (pid : pid) (idx_method : int)
     (* Check if the mutated program is interesting, and if so, update *)
     update_interesting fuel pid idx_method idx_mutation trials config log
       filename_gen_p4 value_program
-  with Error (_, msg) -> Logger.warn config.modes.logmode log msg
+  with Util.Error.ConvertOutError msg ->
+    Logger.warn config.modes.logmode log msg
 
 let fuzz_mutation (fuel : int) (pid : pid) (idx_method : int) (trials : int ref)
     (config : Config.t) (log : Logger.t) (query : Query.t)
@@ -338,10 +339,10 @@ let fuzz_seed (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
   F.asprintf "[F %d] [P %d] Running SL interpreter on %s" fuel pid filename_p4
   |> Logger.log config.modes.logmode log;
   match
-    Interp_sl.Interp.run_typing ~derive:true config.specenv.spec
+    Interp_sl.Typing.run_typing ~derive:true config.specenv.spec
       config.specenv.includes_p4 filename_p4
   with
-  | Well (graph, vid_program, cover) -> (
+  | WellTyped (graph, vid_program, cover) -> (
       let time_end = Unix.gettimeofday () in
       F.asprintf "[F %d] [P %d] SL interpreter succeeded on %s (took %.2f)" fuel
         pid filename_p4 (time_end -. time_start)
@@ -355,7 +356,7 @@ let fuzz_seed (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
       | Derive ->
           fuzz_seed_deriving fuel pid config log query dirname_gen_tmp
             filename_p4 graph vid_program cover)
-  | Ill _ ->
+  | IllTyped _ | IllFormed _ ->
       F.asprintf "[F %d] [P %d] SL interpreter failed on %s" fuel pid
         filename_p4
       |> Logger.log config.modes.logmode log

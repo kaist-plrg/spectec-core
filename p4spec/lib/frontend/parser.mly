@@ -1,12 +1,8 @@
 %{
 open Xl
 open El.Ast
-open Util.Error
+open Error
 open Util.Source
-
-(* Error handling *)
-
-let error (at : region) (msg : string) = error at "parser" msg
 
 (* Position handling *)
 

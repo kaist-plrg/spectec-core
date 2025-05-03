@@ -29,7 +29,9 @@ let elab_command =
          let spec_il = Elaborate.Elab.elab_spec spec in
          Format.printf "%s\n" (Il.Print.string_of_spec spec_il);
          ()
-       with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       with
+       | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
+       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let struct_command =
   Core.Command.basic ~summary:"insert structured control flow to a p4_16 spec"
@@ -43,7 +45,9 @@ let struct_command =
          let spec_sl = Structure.Struct.struct_spec spec_il in
          Format.printf "%s\n" (Sl.Print.string_of_spec spec_sl);
          ()
-       with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       with
+       | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
+       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let run_sl_command =
   Core.Command.basic
@@ -60,11 +64,14 @@ let run_sl_command =
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
          match
-           Interp_sl.Interp.run_typing ~derive spec_sl includes_p4 filename_p4
+           Interp_sl.Typing.run_typing ~derive spec_sl includes_p4 filename_p4
          with
-         | Well _ -> Format.printf "well-typed\n"
-         | Ill (_, msg, _) -> Format.printf "ill-typed: %s\n" msg
-       with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+         | WellTyped _ -> Format.printf "well-typed\n"
+         | IllTyped (_, msg, _) -> Format.printf "ill-typed: %s\n" msg
+         | IllFormed (msg, _) -> Format.printf "ill-formed: %s\n" msg
+       with
+       | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
+       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let cover_sl_command =
   Core.Command.basic ~summary:"measure phantom coverage of SL"
@@ -86,11 +93,13 @@ let cover_sl_command =
            List.concat_map (collect_files ~suffix:".p4") dirnames_p4
          in
          let cover =
-           Interp_sl.Interp.cover_typings spec_sl includes_p4 filenames_p4
+           Interp_sl.Typing.cover_typings spec_sl includes_p4 filenames_p4
          in
          Runtime_testgen.Cov.Multiple.log ~filename_cov_opt:(Some filename_cov)
            cover
-       with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       with
+       | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
+       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 (* TODO: Merge with cover_sl_command *)
 let cover_sl_filenames_command =
@@ -112,10 +121,10 @@ let cover_sl_filenames_command =
            List.concat_map (collect_files ~suffix:".p4") dirnames_p4
          in
          let cover_multi =
-           Interp_sl.Interp.cover_typings spec_sl includes_p4 filenames_p4
+           Interp_sl.Typing.cover_typings spec_sl includes_p4 filenames_p4
          in
-         Interp_sl.Interp.MCov.Cover.iter
-           (fun pid (branch : Interp_sl.Interp.MCov.Branch.t) ->
+         Runtime_testgen.Cov.Multiple.Cover.iter
+           (fun pid (branch : Runtime_testgen.Cov.Multiple.Branch.t) ->
              match branch.status with
              | Hit -> Format.printf "%d Hit\n" pid
              | Miss [] -> Format.printf "%d Miss\n" pid
@@ -125,7 +134,9 @@ let cover_sl_filenames_command =
                    |> Testgen.Rand.random_sample 3
                    |> List.fold_left (fun s file -> s ^ " " ^ file) "CM"))
            cover_multi
-       with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       with
+       | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
+       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let run_testgen_command =
   Core.Command.basic
@@ -168,7 +179,9 @@ let run_testgen_command =
          in
          Testgen.Gen.fuzz_typing fuel spec_sl includes_p4 dirname_seed_p4
            dirname_gen logmode bootmode targetmode mutationmode
-       with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       with
+       | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
+       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let run_testgen_debug_command =
   Core.Command.basic
@@ -188,7 +201,9 @@ let run_testgen_debug_command =
          let spec_sl = Structure.Struct.struct_spec spec_il in
          Testgen.Derive.debug_phantom spec_sl includes_p4 filename_p4
            dirname_debug pid
-       with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       with
+       | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
+       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let interesting_command =
   Core.Command.basic ~summary:"interestingness test for reducing p4_16 programs"
@@ -205,11 +220,14 @@ let interesting_command =
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
-         match Interp_sl.Interp.run_typing spec_sl includes_p4 filename_p4 with
-         | Ill _ ->
+         match Interp_sl.Typing.run_typing spec_sl includes_p4 filename_p4 with
+         | IllTyped _ ->
              Format.printf "ill-typed\n";
              exit 1
-         | Well (_, _, cover_single) -> (
+         | IllFormed _ ->
+             Format.printf "ill-formed\n";
+             exit 1
+         | WellTyped (_, _, cover_single) -> (
              Interp_sl.Interp.SCov.Cover.iter
                (fun pid (branch : Interp_sl.Interp.SCov.Branch.t) ->
                  match branch.status with
@@ -226,7 +244,9 @@ let interesting_command =
                  "miss" |> print_endline;
                  exit 2
              | Miss _ -> exit 0)
-       with Error (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       with
+       | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
+       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let command =
   Core.Command.group

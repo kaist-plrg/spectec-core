@@ -2,6 +2,7 @@ open Xl.Atom
 module P4 = P4el.Ast
 open Sl.Ast
 module Dep = Runtime_testgen.Dep
+open Util.Error
 open Util.Source
 
 (* Conversion from p4cherry AST to IL value *)
@@ -1259,5 +1260,7 @@ and in_mthds (ctx : Ctx.t) (mthds : P4.mthd list) : value =
 
 let in_program (ctx : Ctx.t) (includes_p4 : string list) (filename_p4 : string)
     : value =
-  P4frontend.Parse.parse_file includes_p4 filename_p4
-  |> in_list in_decl (in_typ_var "decl" $ no_region) ctx
+  try
+    P4frontend.Parse.parse_file includes_p4 filename_p4
+    |> in_list in_decl (in_typ_var "decl" $ no_region) ctx
+  with P4util.Error.ParseErr (msg, _) -> error_convert_in msg

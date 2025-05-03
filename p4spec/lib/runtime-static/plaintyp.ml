@@ -54,7 +54,7 @@ and subst_plaintyp (theta : theta) (plaintyp : plaintyp) : plaintyp =
       match TIdMap.find_opt tid theta with
       | Some plaintyp ->
           if targs <> [] then
-            error plaintyp.at "elab" "higher-order substitution is disallowed";
+            error_elab plaintyp.at "higher-order substitution is disallowed";
           plaintyp
       | None ->
           let targs = subst_targs theta targs in
@@ -132,7 +132,7 @@ let rec expand_plaintyp (tdenv : tdenv) (plaintyp : plaintyp) : plaintyp =
       | Defined (tparams, typdef) -> (
           match typdef with
           | `Plain _ when List.length targs <> List.length tparams ->
-              error plaintyp.at "elab" "type arguments do not match"
+              error_elab plaintyp.at "type arguments do not match"
           | `Plain plaintyp ->
               let theta = List.combine tparams targs |> TIdMap.of_list in
               let plaintyp = subst_plaintyp theta plaintyp in

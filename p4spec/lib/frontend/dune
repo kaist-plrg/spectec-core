@@ -1,7 +1,7 @@
 (library
  (name frontend)
  (libraries util el)
- (modules lexer parser parse))
+ (modules error lexer parser parse))
 
 (ocamllex
  (modules lexer))

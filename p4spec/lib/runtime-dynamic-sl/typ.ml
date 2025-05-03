@@ -28,7 +28,7 @@ let rec subst_typ (theta : theta) (typ : t) : t =
       match TIdMap.find_opt tid theta with
       | Some typ ->
           if targs <> [] then
-            error typ.at "interp" "higher-order substitution is disallowed";
+            error_interp typ.at "higher-order substitution is disallowed";
           typ
       | None ->
           let targs = subst_targs theta targs in

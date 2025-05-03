@@ -3,23 +3,23 @@ Running typing test on 258 files
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/accept_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/accept_e.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/action-bind.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/action-bind.p4
-../../../../spec/4g-typing-decl.watsup:1158.6-1158.28: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1158.6-1158.28: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/action-bind1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/action-bind1.p4
-../../../../spec/4g-typing-decl.watsup:1158.6-1158.28: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1158.6-1158.28: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/action-bind2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/action-bind2.p4
-../../../../spec/4g-typing-decl.watsup:817.6-817.28: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:817.6-817.28: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/action-bind3.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/action-bind3.p4
-../../../../spec/4g-typing-decl.watsup:817.6-817.28: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:817.6-817.28: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/action-named-default-bmv2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/action-named-default-bmv2.p4
@@ -27,39 +27,39 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/assign.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/assign.p4
-../../../../spec/4f-typing-stmt.watsup:283.6-283.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:283.6-283.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/binary_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/binary_e.p4
-../../../../spec/4f-typing-stmt.watsup:36.6-36.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:36.6-36.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/bitExtract_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/bitExtract_e.p4
-../../../../spec/4e-typing-expr.watsup:681.22-681.41: interp error: function was not matched
+../../../../spec/4e-typing-expr.watsup:681.22-681.41: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/call-table.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/call-table.p4
-../../../../spec/4f-typing-stmt.watsup:236.6-236.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:236.6-236.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/call1_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/call1_e.p4
-../../../../spec/4g-typing-decl.watsup:185.6-185.17: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:185.6-185.17: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/conditional_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/conditional_e.p4
-../../../../spec/4f-typing-stmt.watsup:283.6-283.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:283.6-283.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/const.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/const.p4
-../../../../spec/4g-typing-decl.watsup:56.20-56.34: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:56.20-56.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/const1_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/const1_e.p4
-../../../../spec/4e-typing-expr.watsup:171.35-171.49: interp error: function was not matched
+../../../../spec/4e-typing-expr.watsup:171.35-171.49: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/const_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/const_e.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/constructor1_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/constructor1_e.p4
@@ -71,11 +71,11 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/constructor3_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/constructor3_e.p4
-../../../../spec/4h-typing-call.watsup:28.6-28.24: interp error: relation was not matched
+../../../../spec/4h-typing-call.watsup:28.6-28.24: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/constructor_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/constructor_e.p4
-../../../../spec/4g-typing-decl.watsup:589.6-589.15: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:589.6-589.15: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/control-inline.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/control-inline.p4
@@ -83,7 +83,7 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/control-verify.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/control-verify.p4
-../../../../spec/4f-typing-stmt.watsup:283.6-283.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:283.6-283.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/default-initializer-err.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/default-initializer-err.p4
@@ -91,43 +91,43 @@ transform error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/default-last-switch.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/default-last-switch.p4
-../../../../spec/4f-typing-stmt.watsup:71.6-71.25: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:71.6-71.25: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/default-param.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/default-param.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/default_action.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/default_action.p4
-../../../../spec/4g-typing-decl.watsup:1221.6-1221.22: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1221.6-1221.22: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/default_action1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/default_action1.p4
-../../../../spec/4g-typing-decl.watsup:1221.6-1221.22: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1221.6-1221.22: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/directionless.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/directionless.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/div.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/div.p4
-../../../../spec/4f-typing-stmt.watsup:36.6-36.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:36.6-36.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/div0.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/div0.p4
-../../../../spec/4e-typing-expr.watsup:222.37-222.58: interp error: function was not matched
+../../../../spec/4e-typing-expr.watsup:222.37-222.58: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/div1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/div1.p4
-../../../../spec/4e-typing-expr.watsup:222.37-222.58: interp error: function was not matched
+../../../../spec/4e-typing-expr.watsup:222.37-222.58: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/div3.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/div3.p4
-../../../../spec/4e-typing-expr.watsup:222.37-222.58: interp error: function was not matched
+../../../../spec/4e-typing-expr.watsup:222.37-222.58: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/dup-param.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/dup-param.p4
-../../../../spec/4a1-typing-context.watsup:176.17-176.26: interp error: function was not matched
+../../../../spec/4a1-typing-context.watsup:176.17-176.26: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/dup-param1.p4
 Error on typecheck: should fail
@@ -137,23 +137,23 @@ Error on typecheck: should fail
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/dup-param3.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/dup-param3.p4
-../../../../spec/4a1-typing-context.watsup:180.17-180.26: interp error: function was not matched
+../../../../spec/4a1-typing-context.watsup:180.17-180.26: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/dupConst.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/dupConst.p4
-../../../../spec/4g-typing-decl.watsup:60.15-60.24: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:60.15-60.24: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/duplicate-label.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/duplicate-label.p4
-../../../../spec/4f-typing-stmt.watsup:283.6-283.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:283.6-283.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/enumCast.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/enumCast.p4
-../../../../spec/4g-typing-decl.watsup:308.15-308.24: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:308.15-308.24: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/equality-fail.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/equality-fail.p4
-../../../../spec/4e-typing-expr.watsup:288.35-288.49: interp error: function was not matched
+../../../../spec/4e-typing-expr.watsup:288.35-288.49: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/expression_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/expression_e.p4
@@ -161,39 +161,39 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/extern.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/extern.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/factory-err2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/factory-err2.p4
-../../../../spec/4d1-typing-type.watsup:89.7-89.14: interp error: relation was not matched
+../../../../spec/4d1-typing-type.watsup:89.7-89.14: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/function1_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/function1_e.p4
-../../../../spec/4h-typing-call.watsup:28.6-28.24: interp error: relation was not matched
+../../../../spec/4h-typing-call.watsup:28.6-28.24: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/function_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/function_e.p4
-../../../../spec/4f-typing-stmt.watsup:215.6-215.17: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:215.6-215.17: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/function_e1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/function_e1.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/function_e2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/function_e2.p4
-../../../../spec/4f-typing-stmt.watsup:219.6-219.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:219.6-219.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/functors2_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/functors2_e.p4
-../../../../spec/4f-typing-stmt.watsup:244.6-244.17: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:244.6-244.17: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/functors3_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/functors3_e.p4
-../../../../spec/4g-typing-decl.watsup:185.6-185.17: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:185.6-185.17: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/generic1_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/generic1_e.p4
-../../../../spec/4g-typing-decl.watsup:1315.7-1315.15: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1315.7-1315.15: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/globalVar_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/globalVar_e.p4
@@ -205,43 +205,43 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/header2_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/header2_e.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/header3.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/header3.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/implicit.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/implicit.p4
-../../../../spec/4g-typing-decl.watsup:80.20-80.34: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:80.20-80.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/incorrect-label.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/incorrect-label.p4
-../../../../spec/4f-typing-stmt.watsup:53.38-53.47: interp error: function was not matched
+../../../../spec/4f-typing-stmt.watsup:53.38-53.47: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4
-../../../../spec/4g-typing-decl.watsup:1115.6-1115.29: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1115.6-1115.29: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4
-../../../../spec/4g-typing-decl.watsup:1115.6-1115.29: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1115.6-1115.29: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4
-../../../../spec/4g-typing-decl.watsup:1115.6-1115.29: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1115.6-1115.29: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/inro.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/inro.p4
-../../../../spec/4f-typing-stmt.watsup:283.6-283.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:283.6-283.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/interface1_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/interface1_e.p4
-../../../../spec/4f-typing-stmt.watsup:232.6-232.19: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:232.6-232.19: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/interface_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/interface_e.p4
-../../../../spec/4g-typing-decl.watsup:185.6-185.17: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:185.6-185.17: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/invalid-invalid.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/invalid-invalid.p4
@@ -249,11 +249,11 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue1006-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue1006-1.p4
-../../../../spec/4h-typing-call.watsup:28.6-28.24: interp error: relation was not matched
+../../../../spec/4h-typing-call.watsup:28.6-28.24: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue1059.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue1059.p4
-../../../../spec/4e-typing-expr.watsup:893.6-893.13: interp error: relation was not matched
+../../../../spec/4e-typing-expr.watsup:893.6-893.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue1202.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue1202.p4
@@ -261,15 +261,15 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue1230.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue1230.p4
-../../../../spec/4g-typing-decl.watsup:1225.6-1225.21: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1225.6-1225.21: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue1296.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue1296.p4
-../../../../spec/4g-typing-decl.watsup:187.6-187.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:187.6-187.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue1331.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue1331.p4
-../../../../spec/4f-typing-stmt.watsup:236.6-236.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:236.6-236.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue1336.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue1336.p4
@@ -277,111 +277,111 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue1542.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue1542.p4
-../../../../spec/4g-typing-decl.watsup:1007.6-1007.28: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1007.6-1007.28: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue1557-bmv2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue1557-bmv2.p4
-../../../../spec/4f-typing-stmt.watsup:32.6-32.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:32.6-32.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4
-../../../../spec/4h-typing-call.watsup:28.6-28.24: interp error: relation was not matched
+../../../../spec/4h-typing-call.watsup:28.6-28.24: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue1932-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue1932-1.p4
-../../../../spec/4g-typing-decl.watsup:443.16-443.41: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:443.16-443.41: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue1932-2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue1932-2.p4
-../../../../spec/4g-typing-decl.watsup:443.16-443.41: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:443.16-443.41: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue1986-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue1986-1.p4
-../../../../spec/4e-typing-expr.watsup:549.6-549.27: interp error: relation was not matched
+../../../../spec/4e-typing-expr.watsup:549.6-549.27: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue1986.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue1986.p4
-../../../../spec/4e-typing-expr.watsup:549.6-549.27: interp error: relation was not matched
+../../../../spec/4e-typing-expr.watsup:549.6-549.27: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2021.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2021.p4
-../../../../spec/4f-typing-stmt.watsup:283.6-283.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:283.6-283.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2033.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2033.p4
-../../../../spec/4g-typing-decl.watsup:1221.6-1221.22: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1221.6-1221.22: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2036-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2036-1.p4
-../../../../spec/4h-typing-call.watsup:7.20-7.34: interp error: function was not matched
+../../../../spec/4h-typing-call.watsup:7.20-7.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2036-2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2036-2.p4
-../../../../spec/4h-typing-call.watsup:28.6-28.24: interp error: relation was not matched
+../../../../spec/4h-typing-call.watsup:28.6-28.24: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2036.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2036.p4
-../../../../spec/4h-typing-call.watsup:7.20-7.34: interp error: function was not matched
+../../../../spec/4h-typing-call.watsup:7.20-7.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2220.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2220.p4
-../../../../spec/4g-typing-decl.watsup:80.20-80.34: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:80.20-80.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4
-../../../../spec/4h-typing-call.watsup:28.6-28.24: interp error: relation was not matched
+../../../../spec/4h-typing-call.watsup:28.6-28.24: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2230.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2230.p4
-../../../../spec/4f-typing-stmt.watsup:39.22-39.36: interp error: function was not matched
+../../../../spec/4f-typing-stmt.watsup:39.22-39.36: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2267.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2267.p4
-../../../../spec/4g-typing-decl.watsup:1281.16-1281.25: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:1281.16-1281.25: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2290.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2290.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2317.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2317.p4
-../../../../spec/4e-typing-expr.watsup:285.6-285.13: interp error: relation was not matched
+../../../../spec/4e-typing-expr.watsup:285.6-285.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2332.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2332.p4
-../../../../spec/4g-typing-decl.watsup:56.20-56.34: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:56.20-56.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2335.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2335.p4
-../../../../spec/4f-typing-stmt.watsup:272.6-272.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:272.6-272.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2354-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2354-1.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2354.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2354.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2413.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2413.p4
-../../../../spec/4f-typing-stmt.watsup:215.6-215.17: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:215.6-215.17: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2441.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2441.p4
-../../../../spec/4g-typing-decl.watsup:19.6-19.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:19.6-19.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2444-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2444-1.p4
-../../../../spec/4g-typing-decl.watsup:56.20-56.34: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:56.20-56.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2454.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2454.p4
-../../../../spec/4f-typing-stmt.watsup:219.6-219.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:219.6-219.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2525.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2525.p4
-../../../../spec/4f-typing-stmt.watsup:66.6-66.25: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:66.6-66.25: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2544_recursive.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2544_recursive.p4
@@ -389,50 +389,50 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2544_self_ref.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2544_self_ref.p4
-../../../../spec/4g-typing-decl.watsup:19.6-19.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:19.6-19.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2597.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue2597.p4
-../../../../spec/4f-typing-stmt.watsup:236.6-236.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:236.6-236.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 Error on typecheck: should fail
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3045-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3045-1.p4
-../../../../spec/4f-typing-stmt.watsup:236.6-236.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:236.6-236.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3045-2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3045-2.p4
-../../../../spec/4f-typing-stmt.watsup:236.6-236.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:236.6-236.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3045.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3045.p4
-../../../../spec/4f-typing-stmt.watsup:236.6-236.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:236.6-236.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue306.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue306.p4
-../../../../spec/4e-typing-expr.watsup:759.6-759.13: interp error: relation was not matched
+../../../../spec/4e-typing-expr.watsup:759.6-759.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3153.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3153.p4
-../../../../spec/4e-typing-expr.watsup:130.21-130.40: interp error: function was not matched
+../../../../spec/4e-typing-expr.watsup:130.21-130.40: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3170-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3170-1.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3170.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3170.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3188.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3188.p4
-../../../../spec/4e-typing-expr.watsup:808.6-808.13: interp error: relation was not matched
+../../../../spec/4e-typing-expr.watsup:808.6-808.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3197-e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3197-e.p4
-../../../../spec/4f-typing-stmt.watsup:215.6-215.17: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:215.6-215.17: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3210.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3210.p4
@@ -440,15 +440,15 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3221.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3221.p4
-../../../../spec/4f-typing-stmt.watsup:199.6-199.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:199.6-199.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3246.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3246.p4
-../../../../spec/4f-typing-stmt.watsup:199.6-199.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:199.6-199.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3264.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3264.p4
-../../../../spec/4f-typing-stmt.watsup:36.6-36.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:36.6-36.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3271-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3271-1.p4
@@ -460,7 +460,7 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3282.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3282.p4
-../../../../spec/4e-typing-expr.watsup:893.6-893.13: interp error: relation was not matched
+../../../../spec/4e-typing-expr.watsup:893.6-893.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3285.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3285.p4
@@ -468,162 +468,162 @@ transform error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3293.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3293.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3299.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3299.p4
-../../../../spec/4f-typing-stmt.watsup:283.6-283.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:283.6-283.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3304.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3304.p4
-../../../../spec/4f-typing-stmt.watsup:272.6-272.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:272.6-272.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3305.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3305.p4
-../../../../spec/4f-typing-stmt.watsup:272.6-272.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:272.6-272.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3316.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3316.p4
-../../../../spec/4g-typing-decl.watsup:458.7-458.15: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:458.7-458.15: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3335.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3335.p4
-../../../../spec/4f-typing-stmt.watsup:263.6-263.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:263.6-263.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3338.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3338.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3345.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3345.p4
-../../../../spec/4e-typing-expr.watsup:549.6-549.27: interp error: relation was not matched
+../../../../spec/4e-typing-expr.watsup:549.6-549.27: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3346.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3346.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3359.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3359.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3363.p4
 Error on typecheck: should fail
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3378.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3378.p4
-../../../../spec/4g-typing-decl.watsup:1348.7-1348.16: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1348.7-1348.16: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3442.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3442.p4
-../../../../spec/4g-typing-decl.watsup:1217.6-1217.22: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1217.6-1217.22: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue345.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue345.p4
-../../../../spec/4g-typing-decl.watsup:75.6-75.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:75.6-75.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3522.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3522.p4
-../../../../spec/4g-typing-decl.watsup:79.6-79.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:79.6-79.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3534.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3534.p4
-../../../../spec/4f-typing-stmt.watsup:202.20-202.34: interp error: function was not matched
+../../../../spec/4f-typing-stmt.watsup:202.20-202.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3589.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3589.p4
-../../../../spec/4g-typing-decl.watsup:79.6-79.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:79.6-79.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3611.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3611.p4
-../../../../spec/4f-typing-stmt.watsup:66.6-66.25: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:66.6-66.25: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3622.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3622.p4
-../../../../spec/4f-typing-stmt.watsup:66.6-66.25: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:66.6-66.25: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3623-2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3623-2.p4
-../../../../spec/4f-typing-stmt.watsup:106.20-106.34: interp error: function was not matched
+../../../../spec/4f-typing-stmt.watsup:106.20-106.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3623-3.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3623-3.p4
-../../../../spec/4f-typing-stmt.watsup:106.20-106.34: interp error: function was not matched
+../../../../spec/4f-typing-stmt.watsup:106.20-106.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3656.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3656.p4
-../../../../spec/4h-typing-call.watsup:47.30-47.49: interp error: function was not matched
+../../../../spec/4h-typing-call.watsup:47.30-47.49: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3671-2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3671-2.p4
-../../../../spec/4g-typing-decl.watsup:1158.6-1158.28: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1158.6-1158.28: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3727.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3727.p4
-../../../../spec/4g-typing-decl.watsup:830.6-830.21: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:830.6-830.21: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3750-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3750-1.p4
-../../../../spec/4g-typing-decl.watsup:458.7-458.15: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:458.7-458.15: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3750.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3750.p4
-../../../../spec/4g-typing-decl.watsup:458.7-458.15: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:458.7-458.15: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3751.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3751.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3787.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3787.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3808-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3808-1.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3808.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3808.p4
-../../../../spec/4f-typing-stmt.watsup:219.6-219.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:219.6-219.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3813.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3813.p4
-../../../../spec/4e-typing-expr.watsup:804.6-804.17: interp error: relation was not matched
+../../../../spec/4e-typing-expr.watsup:804.6-804.17: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3814.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3814.p4
-../../../../spec/4g-typing-decl.watsup:185.6-185.17: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:185.6-185.17: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3846.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3846.p4
-../../../../spec/4f-typing-stmt.watsup:158.6-158.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:158.6-158.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3847.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3847.p4
-../../../../spec/4f-typing-stmt.watsup:158.6-158.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:158.6-158.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue388.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue388.p4
-../../../../spec/4g-typing-decl.watsup:187.6-187.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:187.6-187.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue394.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue394.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue401.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue401.p4
-../../../../spec/4g-typing-decl.watsup:79.6-79.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:79.6-79.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue407-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue407-1.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue413.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue413.p4
-../../../../spec/4f-typing-stmt.watsup:219.6-219.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:219.6-219.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue4136.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue4136.p4
-../../../../spec/4f-typing-stmt.watsup:36.6-36.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:36.6-36.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue4140.p4
 Error on typecheck: should fail
@@ -634,63 +634,63 @@ transform error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue435.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue435.p4
-../../../../spec/4g-typing-decl.watsup:589.6-589.15: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:589.6-589.15: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue561-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue561-1.p4
-../../../../spec/4g-typing-decl.watsup:80.20-80.34: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:80.20-80.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue584.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue584.p4
-../../../../spec/4f-typing-stmt.watsup:219.6-219.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:219.6-219.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue67.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue67.p4
-../../../../spec/4g-typing-decl.watsup:56.20-56.34: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:56.20-56.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue764.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue764.p4
-../../../../spec/4f-typing-stmt.watsup:219.6-219.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:219.6-219.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue774-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue774-1.p4
-../../../../spec/4h-typing-call.watsup:473.7-473.29: interp error: relation was not matched
+../../../../spec/4h-typing-call.watsup:473.7-473.29: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue774-2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue774-2.p4
-../../../../spec/4h-typing-call.watsup:335.57-335.71: interp error: function was not matched
+../../../../spec/4h-typing-call.watsup:335.57-335.71: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue803-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue803-1.p4
-../../../../spec/4g-typing-decl.watsup:185.6-185.17: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:185.6-185.17: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue807.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue807.p4
-../../../../spec/4g-typing-decl.watsup:589.6-589.15: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:589.6-589.15: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue816-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue816-1.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue816.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue816.p4
-../../../../spec/4f-typing-stmt.watsup:236.6-236.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:236.6-236.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue818.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue818.p4
-../../../../spec/4g-typing-decl.watsup:589.6-589.15: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:589.6-589.15: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue819-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue819-1.p4
-../../../../spec/4g-typing-decl.watsup:1315.7-1315.15: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1315.7-1315.15: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue819.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue819.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/list-error.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/list-error.p4
-../../../../spec/4h-typing-call.watsup:28.6-28.24: interp error: relation was not matched
+../../../../spec/4h-typing-call.watsup:28.6-28.24: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/loop1-err.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/loop1-err.p4
@@ -706,7 +706,7 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/methodArgDontcare.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/methodArgDontcare.p4
-../../../../spec/4h-typing-call.watsup:335.57-335.71: interp error: function was not matched
+../../../../spec/4h-typing-call.watsup:335.57-335.71: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/minWidth.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/minWidth.p4
@@ -714,47 +714,47 @@ transform error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/missing_actions.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/missing_actions.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/missing_match.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/missing_match.p4
-../../../../spec/4g-typing-decl.watsup:759.35-759.44: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:759.35-759.44: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/module_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/module_e.p4
-../../../../spec/4h-typing-call.watsup:28.6-28.24: interp error: relation was not matched
+../../../../spec/4h-typing-call.watsup:28.6-28.24: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/mux_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/mux_e.p4
-../../../../spec/4f-typing-stmt.watsup:36.6-36.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:36.6-36.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/named-fail.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/named-fail.p4
-../../../../spec/4a1-typing-context.watsup:327.32-327.42: interp error: function was not matched
+../../../../spec/4a1-typing-context.watsup:327.32-327.42: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/named-fail1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/named-fail1.p4
-../../../../spec/4f-typing-stmt.watsup:215.6-215.17: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:215.6-215.17: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/neg.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/neg.p4
-../../../../spec/4e-typing-expr.watsup:222.37-222.58: interp error: function was not matched
+../../../../spec/4e-typing-expr.watsup:222.37-222.58: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/newtype-err.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/newtype-err.p4
-../../../../spec/4f-typing-stmt.watsup:39.22-39.36: interp error: function was not matched
+../../../../spec/4f-typing-stmt.watsup:39.22-39.36: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/next.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/next.p4
-../../../../spec/4f-typing-stmt.watsup:32.6-32.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:32.6-32.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/nostart.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/nostart.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/not_bound.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/not_bound.p4
-../../../../spec/4f-typing-stmt.watsup:215.6-215.17: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:215.6-215.17: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/p_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/p_e.p4
@@ -762,67 +762,67 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/package.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/package.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/param.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/param.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/parser-arg.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/parser-arg.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/persistent_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/persistent_e.p4
-../../../../spec/4h-typing-call.watsup:28.6-28.24: interp error: relation was not matched
+../../../../spec/4h-typing-call.watsup:28.6-28.24: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/pr2918.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/pr2918.p4
-../../../../spec/4f-typing-stmt.watsup:263.6-263.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:263.6-263.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/psa-meter2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/psa-meter2.p4
-../../../../spec/4h-typing-call.watsup:28.6-28.24: interp error: relation was not matched
+../../../../spec/4h-typing-call.watsup:28.6-28.24: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/psa-type-hdr.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/psa-type-hdr.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/push_nonconstant.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/push_nonconstant.p4
-../../../../spec/4h-typing-call.watsup:28.6-28.24: interp error: relation was not matched
+../../../../spec/4h-typing-call.watsup:28.6-28.24: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/range_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/range_e.p4
-../../../../spec/4e-typing-expr.watsup:497.37-497.51: interp error: function was not matched
+../../../../spec/4e-typing-expr.watsup:497.37-497.51: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/scope.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/scope.p4
-../../../../spec/4h-typing-call.watsup:56.6-56.13: interp error: relation was not matched
+../../../../spec/4h-typing-call.watsup:56.6-56.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/select-struct.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/select-struct.p4
-../../../../spec/4f-typing-stmt.watsup:263.6-263.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:263.6-263.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/select-varbits.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/select-varbits.p4
-../../../../spec/4f-typing-stmt.watsup:263.6-263.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:263.6-263.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/self-call.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/self-call.p4
-../../../../spec/4g-typing-decl.watsup:185.6-185.17: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:185.6-185.17: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/serEnumImplCast.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/serEnumImplCast.p4
-../../../../spec/4h-typing-call.watsup:17.20-17.34: interp error: function was not matched
+../../../../spec/4h-typing-call.watsup:17.20-17.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/serenum-type.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/serenum-type.p4
-../../../../spec/4g-typing-decl.watsup:299.20-299.34: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:299.20-299.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/serenum-typedef.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/serenum-typedef.p4
-../../../../spec/4g-typing-decl.watsup:299.20-299.34: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:299.20-299.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/shift_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/shift_e.p4
@@ -830,67 +830,67 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/signed.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/signed.p4
-../../../../spec/4f-typing-stmt.watsup:39.22-39.36: interp error: function was not matched
+../../../../spec/4f-typing-stmt.watsup:39.22-39.36: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/signs.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/signs.p4
-../../../../spec/4g-typing-decl.watsup:80.20-80.34: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:80.20-80.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4
-../../../../spec/4f-typing-stmt.watsup:32.6-32.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:32.6-32.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-0.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-0.p4
-../../../../spec/4e-typing-expr.watsup:173.37-173.58: interp error: function was not matched
+../../../../spec/4e-typing-expr.watsup:173.37-173.58: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4
-../../../../spec/4e-typing-expr.watsup:364.35-364.56: interp error: function was not matched
+../../../../spec/4e-typing-expr.watsup:364.35-364.56: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/spec-issue563.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/spec-issue563.p4
-../../../../spec/4g-typing-decl.watsup:19.6-19.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:19.6-19.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4
-../../../../spec/4h-typing-call.watsup:56.6-56.13: interp error: relation was not matched
+../../../../spec/4h-typing-call.watsup:56.6-56.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/stack1_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/stack1_e.p4
-../../../../spec/4g-typing-decl.watsup:68.6-68.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:68.6-68.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/stack2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/stack2.p4
-../../../../spec/4f-typing-stmt.watsup:39.22-39.36: interp error: function was not matched
+../../../../spec/4f-typing-stmt.watsup:39.22-39.36: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/stack3.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/stack3.p4
-../../../../spec/4c-typing-static-eval.watsup:18.16-18.25: interp error: function was not matched
+../../../../spec/4c-typing-static-eval.watsup:18.16-18.25: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/stack_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/stack_e.p4
-../../../../spec/4f-typing-stmt.watsup:272.6-272.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:272.6-272.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/string-e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/string-e.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/string-e1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/string-e1.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/string-e2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/string-e2.p4
-../../../../spec/4f-typing-stmt.watsup:219.6-219.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:219.6-219.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/struct_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/struct_e.p4
-../../../../spec/4f-typing-stmt.watsup:32.6-32.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:32.6-32.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4
-../../../../spec/4f-typing-stmt.watsup:39.22-39.36: interp error: function was not matched
+../../../../spec/4f-typing-stmt.watsup:39.22-39.36: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-2.p4
@@ -902,27 +902,27 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4
-../../../../spec/4g-typing-decl.watsup:1217.6-1217.22: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1217.6-1217.22: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4
-../../../../spec/4g-typing-decl.watsup:1111.6-1111.28: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1111.6-1111.28: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/table-entries-exact.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/table-entries-exact.p4
-../../../../spec/4g-typing-decl.watsup:1111.6-1111.28: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1111.6-1111.28: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4
-../../../../spec/4a2-typing-tblctx.watsup:93.6-93.22: interp error: function was not matched
+../../../../spec/4a2-typing-tblctx.watsup:93.6-93.22: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4
-../../../../spec/4a2-typing-tblctx.watsup:93.6-93.22: interp error: function was not matched
+../../../../spec/4a2-typing-tblctx.watsup:93.6-93.22: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4
-../../../../spec/4g-typing-decl.watsup:944.6-944.27: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:944.6-944.27: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/table-entries-outside-table.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/table-entries-outside-table.p4
@@ -930,15 +930,15 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/table-entries-range.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/table-entries-range.p4
-../../../../spec/4g-typing-decl.watsup:1111.6-1111.28: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1111.6-1111.28: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4
-../../../../spec/4g-typing-decl.watsup:944.6-944.27: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:944.6-944.27: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/template_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/template_e.p4
-../../../../spec/4a1-typing-context.watsup:209.17-209.28: interp error: function was not matched
+../../../../spec/4a1-typing-context.watsup:209.17-209.28: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/tuple-left.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/tuple-left.p4
@@ -946,15 +946,15 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/tuple-newtype.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/tuple-newtype.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/tuple-to-header.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/tuple-to-header.p4
-../../../../spec/4f-typing-stmt.watsup:39.22-39.36: interp error: function was not matched
+../../../../spec/4f-typing-stmt.watsup:39.22-39.36: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/type-field.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/type-field.p4
-../../../../spec/4e-typing-expr.watsup:893.6-893.13: interp error: relation was not matched
+../../../../spec/4e-typing-expr.watsup:893.6-893.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/type-in-expr-lex0.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/type-in-expr-lex0.p4
@@ -966,23 +966,23 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/type-in-expr.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/type-in-expr.p4
-../../../../spec/4g-typing-decl.watsup:19.6-19.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:19.6-19.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/type-params_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/type-params_e.p4
-../../../../spec/4d1-typing-type.watsup:89.7-89.14: interp error: relation was not matched
+../../../../spec/4d1-typing-type.watsup:89.7-89.14: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/typecheck1_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/typecheck1_e.p4
-../../../../spec/4e-typing-expr.watsup:100.21-100.40: interp error: function was not matched
+../../../../spec/4e-typing-expr.watsup:100.21-100.40: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/typecheck_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/typecheck_e.p4
-../../../../spec/4g-typing-decl.watsup:19.6-19.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:19.6-19.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/typedef-and-type-definitions.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/typedef-and-type-definitions.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/underscore1_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/underscore1_e.p4
@@ -1002,30 +1002,30 @@ parser error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/virtual1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/virtual1.p4
-../../../../spec/4f-typing-stmt.watsup:202.20-202.34: interp error: function was not matched
+../../../../spec/4f-typing-stmt.watsup:202.20-202.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/virtual2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/virtual2.p4
-../../../../spec/4f-typing-stmt.watsup:202.20-202.34: interp error: function was not matched
+../../../../spec/4f-typing-stmt.watsup:202.20-202.34: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/virtual3.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/virtual3.p4
-../../../../spec/4f-typing-stmt.watsup:283.6-283.13: interp error: relation was not matched
+../../../../spec/4f-typing-stmt.watsup:283.6-283.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/virtual4.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/virtual4.p4
-../../../../spec/4g-typing-decl.watsup:171.23-171.43: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:171.23-171.43: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/virtual5.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/virtual5.p4
-../../../../spec/4g-typing-decl.watsup:145.79-145.99: interp error: function was not matched
+../../../../spec/4g-typing-decl.watsup:145.79-145.99: function was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/virtual6.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/virtual6.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/wrong-cast.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/wrong-cast.p4
-../../../../spec/4g-typing-decl.watsup:54.6-54.13: interp error: relation was not matched
+../../../../spec/4g-typing-decl.watsup:54.6-54.13: relation was not matched
 
 Running typing: [PASS] 5/258 (1.94%) [FAIL] 253/258 (98.06%)
