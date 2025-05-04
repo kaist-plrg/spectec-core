@@ -140,66 +140,54 @@ let is_leaf = function
 
 let mutate_type_driven_weighted (tdenv : TDEnv.t) (value : value) :
     (kind * value) option =
-  let max_key = ref min_float in
-  let best_path = ref [] in
-  let rng () = Random.float 1.0 in
-
-  let rec traverse path value : unit =
+  (* Compute the best path to a leaf node in the value subtree *)
+  let key_max = ref min_float in
+  let path_best = ref [] in
+  let rec traverse (path : int list) (value : value) : unit =
     let weight = if is_leaf value.it then 3.0 else 1.0 in
-    let u = rng () in
+    let u = Random.float 1.0 in
     let key = u ** (1.0 /. weight) in
-    if key > !max_key then (
-      max_key := key;
-      best_path := List.rev path);
+    if key > !key_max then (
+      key_max := key;
+      path_best := List.rev path);
     match value.it with
     | BoolV _ | NumV _ | TextV _ | OptV _ | FuncV _ -> ()
     | StructV valuefields ->
-        List.iteri (fun i (_, value) -> traverse (i :: path) value) valuefields
-    | CaseV (_, values_inner) | TupleV values_inner | ListV values_inner ->
-        List.iteri (fun i value -> traverse (i :: path) value) values_inner
+        List.iteri
+          (fun idx (_, value) -> traverse (idx :: path) value)
+          valuefields
+    | CaseV (_, values) | TupleV values | ListV values ->
+        List.iteri (fun idx value -> traverse (idx :: path) value) values
   in
   traverse [] value;
 
-  let rec rebuild path value : value option =
+  (* Rebuild the value tree with a new value at the best path *)
+  let rec rebuild (path : int list) (value : value) : value option =
+    let typ = value.note.typ in
     match (path, value) with
     | [], _ ->
-        let typ = value.note.typ $ no_region in
+        let typ = typ $ no_region in
         let depth = Random.int 4 + 1 in
-        let value = gen_from_typ depth tdenv typ in
-        value
-    | i :: rest, value ->
-        let* it : value' =
-          match value.it with
-          | BoolV _ | NumV _ | TextV _ | OptV _ | FuncV _ ->
-              value.it |> Option.some
-          | StructV valuefields ->
-              let* valuefields =
-                valuefields
-                |> List.mapi (fun j (atom, value) ->
-                       let* value =
-                         if j = i then rebuild rest value else Some value
-                       in
-                       (atom, value) |> Option.some)
-                |> List.fold_left
-                     (fun values_opt value ->
-                       let* values = values_opt in
-                       let* value = value in
-                       Some (values @ [ value ]))
-                     (Some [])
-              in
-              StructV valuefields |> Option.some
-          | CaseV (mixop, values_inner) ->
-              let* values_inner = rebuild_list rest i values_inner in
-              CaseV (mixop, values_inner) |> Option.some
-          | TupleV values_inner ->
-              let* values_inner = rebuild_list rest i values_inner in
-              TupleV values_inner |> Option.some
-          | ListV values_inner ->
-              let* values_inner = rebuild_list rest i values_inner in
-              ListV values_inner |> Option.some
-        in
-        { value with it } |> Option.some
-  and rebuild_list rest i (values_inner : value list) : value list option =
+        gen_from_typ depth tdenv typ
+    | idx :: path, value -> (
+        match value.it with
+        | BoolV _ | NumV _ | TextV _ | OptV _ | FuncV _ ->
+            value.it |> wrap_value typ |> Option.some
+        | StructV valuefields ->
+            let atoms, values = List.split valuefields in
+            let* values = rebuilds path idx values in
+            let valuefields = List.combine atoms values in
+            StructV valuefields |> wrap_value typ |> Option.some
+        | CaseV (mixop, values) ->
+            let* values = rebuilds path idx values in
+            CaseV (mixop, values) |> wrap_value typ |> Option.some
+        | TupleV values ->
+            let* values = rebuilds path idx values in
+            TupleV values |> wrap_value typ |> Option.some
+        | ListV values ->
+            let* values = rebuilds path idx values in
+            ListV values |> wrap_value typ |> Option.some)
+  and rebuilds rest i (values_inner : value list) : value list option =
     values_inner
     |> List.mapi (fun j value ->
            if j = i then rebuild rest value else Some value)
@@ -210,8 +198,8 @@ let mutate_type_driven_weighted (tdenv : TDEnv.t) (value : value) :
            Some (values @ [ value ]))
          (Some [])
   in
-  let* value = rebuild !best_path value in
-  (GenFromTyp, value) |> Option.some
+  let* value = rebuild !path_best value in
+  Some (GenFromTyp, value)
 
 (* bit<expr> to int<expr> conversion *)
 
