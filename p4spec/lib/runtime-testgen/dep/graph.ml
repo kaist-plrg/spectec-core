@@ -55,7 +55,8 @@ let add_edge (graph : t) (value_from : value) (value_to : value)
 let add_node ~(taint : bool) (graph : t) (value : value) : unit =
   let vid = value.note.vid in
   let typ = value.note.typ in
-  let node, vids_from =
+  (* Create a mirror for the value *)
+  let node, values_from =
     match value.it with
     | BoolV b -> (Node.BoolN b, [])
     | NumV n -> (Node.NumN n, [])
@@ -64,41 +65,49 @@ let add_node ~(taint : bool) (graph : t) (value : value) : unit =
         let atoms, values = List.split valuefields in
         let vids_from = List.map (fun value -> value.note.vid) values in
         let vidfields = List.combine atoms vids_from in
-        (Node.StructN vidfields, vids_from)
+        (Node.StructN vidfields, values)
     | CaseV (mixop, values) ->
         let vids_from = List.map (fun value -> value.note.vid) values in
-        (Node.CaseN (mixop, vids_from), vids_from)
+        (Node.CaseN (mixop, vids_from), values)
     | TupleV values ->
         let vids_from = List.map (fun value -> value.note.vid) values in
-        (Node.TupleN vids_from, vids_from)
+        (Node.TupleN vids_from, values)
     | OptV None -> (Node.OptN None, [])
     | OptV (Some value) ->
         let vid_from = value.note.vid in
-        (Node.OptN (Some vid_from), [ vid_from ])
+        (Node.OptN (Some vid_from), [ value ])
     | ListV values ->
         let vids_from = List.map (fun value -> value.note.vid) values in
-        (Node.ListN vids_from, vids_from)
+        (Node.ListN vids_from, values)
     | FuncV id -> (Node.FuncN id, [])
   in
-  let node = node $$$ typ in
-  let taint =
-    let taints_from =
-      List.map
-        (fun vid_from -> vid_from |> G.find graph.nodes |> Node.taint)
-        vids_from
+  (* Create a node for the value *)
+  let node =
+    let node = node $$$ typ in
+    let taint =
+      let taints_from =
+        List.map
+          (fun value_from ->
+            let vid_from = value_from.note.vid in
+            vid_from |> G.find graph.nodes |> Node.taint)
+          values_from
+      in
+      Node.init_taint ~init:taint taints_from
     in
-    Node.init_taint ~init:taint taints_from
+    (node, taint)
   in
-  let node = (node, taint) in
   G.add graph.nodes vid node;
-  let edges_contains =
-    let edges = Edges.E.create (List.length vids_from) in
+  (* Add edges, if tainted, expansion edges, otherwise narrow edges *)
+  if taint then (
+    G.add graph.edges vid (Edges.E.create 0);
     List.iter
-      (fun vid_from -> Edges.E.add edges (Edges.Contains, vid_from) ())
-      vids_from;
-    edges
-  in
-  G.add graph.edges vid edges_contains
+      (fun value_from -> add_edge graph value_from value Edges.Expand)
+      values_from)
+  else (
+    G.add graph.edges vid (Edges.E.create (List.length values_from));
+    List.iter
+      (fun value_from -> add_edge graph value value_from Edges.Narrow)
+      values_from)
 
 (* Reassemblers *)
 

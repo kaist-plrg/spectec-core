@@ -18,7 +18,14 @@ type op =
   | LenOp
   | UpdOp
 
-type label = Contains | Assign | Iter | Rel of rel | Func of func | Op of op
+type label =
+  | Narrow
+  | Expand
+  | Assign
+  | Iter
+  | Rel of rel
+  | Func of func
+  | Op of op
 
 (* Set of edges *)
 
@@ -60,7 +67,8 @@ let dot_of_op (op : op) : string =
 
 let dot_of_label (label : label) : string =
   match label with
-  | Contains -> "contains"
+  | Narrow -> "narrow"
+  | Expand -> "expand"
   | Assign -> "assign"
   | Iter -> "iteration"
   | Rel rel -> dot_of_rel rel

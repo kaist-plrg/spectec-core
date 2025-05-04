@@ -16,10 +16,10 @@ let samples_related_vid = 3
 let samples_derivation_source = 5
 
 (* Max number of mutation trials per close-AST *)
-let trials_mutation = 10
+let trials_mutation = 5
 
 (* Trials per seed *)
-let trials_seed = 100
+let trials_seed = 25
 
 (* Timeout per seed *)
 let timeout_seed = 30
