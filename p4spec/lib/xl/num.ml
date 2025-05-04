@@ -65,6 +65,8 @@ let un (op : unop) num : t =
   | `MinusOp, `Nat n -> `Int (Bigint.neg n)
   | `MinusOp, `Int n -> `Int (Bigint.neg n)
 
+(* Binary *)
+
 let bin (op : binop) num_l num_r : t =
   match (op, num_l, num_r) with
   | `AddOp, `Nat n_l, `Nat n_r -> `Nat Bigint.(n_l + n_r)

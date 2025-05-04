@@ -35,6 +35,8 @@ type global = {
 (* Local layer *)
 
 type local = {
+  (* Input values *)
+  values_input : value list;
   (* Map from syntax ids to type definitions *)
   tdenv : TDEnv.t;
   (* Map from function ids to functions *)
@@ -199,7 +201,12 @@ let empty_global () : global =
   { tdenv = TDEnv.empty; renv = REnv.empty; fenv = FEnv.empty }
 
 let empty_local () : local =
-  { tdenv = TDEnv.empty; fenv = FEnv.empty; venv = VEnv.empty }
+  {
+    values_input = [];
+    tdenv = TDEnv.empty;
+    fenv = FEnv.empty;
+    venv = VEnv.empty;
+  }
 
 let empty (spec : spec) (filename : string) (derive : bool) : t =
   let graph = if derive then Some (Dep.Graph.init ()) else None in
@@ -214,6 +221,9 @@ let empty (spec : spec) (filename : string) (derive : bool) : t =
 let localize (ctx : t) : t =
   let local = empty_local () in
   { ctx with local }
+
+let localize_inputs (ctx : t) (values_input : value list) : t =
+  { ctx with local = { ctx.local with values_input } }
 
 (* Constructing sub-contexts *)
 

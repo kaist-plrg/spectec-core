@@ -21,6 +21,7 @@ type op =
 type label =
   | Narrow
   | Expand
+  | Control
   | Assign
   | Iter
   | Rel of rel
@@ -69,6 +70,7 @@ let dot_of_label (label : label) : string =
   match label with
   | Narrow -> "narrow"
   | Expand -> "expand"
+  | Control -> "control"
   | Assign -> "assign"
   | Iter -> "iteration"
   | Rel rel -> dot_of_rel rel

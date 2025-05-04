@@ -234,6 +234,10 @@ and eval_bool_exp (note : typ') (ctx : Ctx.t) (b : bool) : Ctx.t * value =
     BoolV b $$$ { vid; typ }
   in
   Ctx.add_node ctx value_res;
+  List.iter
+    (fun value_input ->
+      Ctx.add_edge ctx value_res value_input Dep.Edges.Control)
+    ctx.local.values_input;
   (ctx, value_res)
 
 (* Numeric expression evaluation *)
@@ -245,6 +249,10 @@ and eval_num_exp (note : typ') (ctx : Ctx.t) (n : Num.t) : Ctx.t * value =
     NumV n $$$ { vid; typ }
   in
   Ctx.add_node ctx value_res;
+  List.iter
+    (fun value_input ->
+      Ctx.add_edge ctx value_res value_input Dep.Edges.Control)
+    ctx.local.values_input;
   (ctx, value_res)
 
 (* Text expression evaluation *)
@@ -256,6 +264,10 @@ and eval_text_exp (note : typ') (ctx : Ctx.t) (s : string) : Ctx.t * value =
     TextV s $$$ { vid; typ }
   in
   Ctx.add_node ctx value_res;
+  List.iter
+    (fun value_input ->
+      Ctx.add_edge ctx value_res value_input Dep.Edges.Control)
+    ctx.local.values_input;
   (ctx, value_res)
 
 (* Variable expression evaluation *)
@@ -293,109 +305,40 @@ and eval_un_exp (note : typ') (ctx : Ctx.t) (unop : unop) (_optyp : optyp)
 
 (* Binary expression evaluation *)
 
-and eval_bin_bool (note : typ') (ctx : Ctx.t) (binop : Bool.binop) (exp_l : exp)
-    (exp_r : exp) : Ctx.t * value =
-  let ctx, value_l = eval_exp ctx exp_l in
+and eval_bin_bool (binop : Bool.binop) (value_l : value) (value_r : value) :
+    value' =
   let bool_l = Value.get_bool value_l in
+  let bool_r = Value.get_bool value_r in
   match binop with
-  | `AndOp when not bool_l ->
-      let value_res =
-        let vid = Dep.Graph.fresh () in
-        let typ = note in
-        BoolV false $$$ { vid; typ }
-      in
-      Ctx.add_node ctx value_res;
-      Ctx.add_edge ctx value_res value_l (Dep.Edges.Op (BinOp (binop :> binop)));
-      (ctx, value_res)
-  | `AndOp ->
-      let ctx, value_r = eval_exp ctx exp_r in
-      let bool_r = Value.get_bool value_r in
-      let value_res =
-        let vid = Dep.Graph.fresh () in
-        let typ = note in
-        BoolV (bool_l && bool_r) $$$ { vid; typ }
-      in
-      Ctx.add_node ctx value_res;
-      Ctx.add_edge ctx value_res value_l (Dep.Edges.Op (BinOp (binop :> binop)));
-      Ctx.add_edge ctx value_res value_r (Dep.Edges.Op (BinOp (binop :> binop)));
-      (ctx, value_res)
-  | `OrOp when bool_l ->
-      let value_res =
-        let vid = Dep.Graph.fresh () in
-        let typ = note in
-        BoolV true $$$ { vid; typ }
-      in
-      Ctx.add_node ctx value_res;
-      Ctx.add_edge ctx value_res value_l (Dep.Edges.Op (BinOp (binop :> binop)));
-      (ctx, value_res)
-  | `OrOp ->
-      let ctx, value_r = eval_exp ctx exp_r in
-      let bool_r = Value.get_bool value_r in
-      let value_res =
-        let vid = Dep.Graph.fresh () in
-        let typ = note in
-        BoolV (bool_l || bool_r) $$$ { vid; typ }
-      in
-      Ctx.add_node ctx value_res;
-      Ctx.add_edge ctx value_res value_l (Dep.Edges.Op (BinOp (binop :> binop)));
-      Ctx.add_edge ctx value_res value_r (Dep.Edges.Op (BinOp (binop :> binop)));
-      (ctx, value_res)
-  | `ImplOp when not bool_l ->
-      let value_res =
-        let vid = Dep.Graph.fresh () in
-        let typ = note in
-        BoolV true $$$ { vid; typ }
-      in
-      Ctx.add_node ctx value_res;
-      Ctx.add_edge ctx value_res value_l (Dep.Edges.Op (BinOp (binop :> binop)));
-      (ctx, value_res)
-  | `ImplOp ->
-      let ctx, value_r = eval_exp ctx exp_r in
-      let bool_r = Value.get_bool value_r in
-      let value_res =
-        let vid = Dep.Graph.fresh () in
-        let typ = note in
-        BoolV ((not bool_l) || bool_r) $$$ { vid; typ }
-      in
-      Ctx.add_node ctx value_res;
-      Ctx.add_edge ctx value_res value_l (Dep.Edges.Op (BinOp (binop :> binop)));
-      Ctx.add_edge ctx value_res value_r (Dep.Edges.Op (BinOp (binop :> binop)));
-      (ctx, value_res)
-  | `EquivOp ->
-      let ctx, value_r = eval_exp ctx exp_r in
-      let bool_r = Value.get_bool value_r in
-      let value_res =
-        let vid = Dep.Graph.fresh () in
-        let typ = note in
-        BoolV (bool_l = bool_r) $$$ { vid; typ }
-      in
-      Ctx.add_node ctx value_res;
-      Ctx.add_edge ctx value_res value_l (Dep.Edges.Op (BinOp (binop :> binop)));
-      Ctx.add_edge ctx value_res value_r (Dep.Edges.Op (BinOp (binop :> binop)));
-      (ctx, value_res)
+  | `AndOp -> BoolV (bool_l && bool_r)
+  | `OrOp -> BoolV (bool_l || bool_r)
+  | `ImplOp -> BoolV ((not bool_l) || bool_r)
+  | `EquivOp -> BoolV (bool_l = bool_r)
 
-and eval_bin_num (note : typ') (ctx : Ctx.t) (binop : Num.binop) (exp_l : exp)
-    (exp_r : exp) : Ctx.t * value =
-  let ctx, value_l = eval_exp ctx exp_l in
+and eval_bin_num (binop : Num.binop) (value_l : value) (value_r : value) :
+    value' =
   let num_l = Value.get_num value_l in
-  let ctx, value_r = eval_exp ctx exp_r in
   let num_r = Value.get_num value_r in
-  let num = Num.bin binop num_l num_r in
-  let value_res =
-    let vid = Dep.Graph.fresh () in
-    let typ = note in
-    NumV num $$$ { vid; typ }
-  in
-  Ctx.add_node ctx value_res;
-  Ctx.add_edge ctx value_res value_l (Dep.Edges.Op (BinOp (binop :> binop)));
-  Ctx.add_edge ctx value_res value_r (Dep.Edges.Op (BinOp (binop :> binop)));
-  (ctx, value_res)
+  NumV (Num.bin binop num_l num_r)
 
 and eval_bin_exp (note : typ') (ctx : Ctx.t) (binop : binop) (_optyp : optyp)
     (exp_l : exp) (exp_r : exp) : Ctx.t * value =
-  match binop with
-  | #Bool.binop as binop -> eval_bin_bool note ctx binop exp_l exp_r
-  | #Num.binop as binop -> eval_bin_num note ctx binop exp_l exp_r
+  let ctx, value_l = eval_exp ctx exp_l in
+  let ctx, value_r = eval_exp ctx exp_r in
+  let value_res =
+    match binop with
+    | #Bool.binop as binop -> eval_bin_bool binop value_l value_r
+    | #Num.binop as binop -> eval_bin_num binop value_l value_r
+  in
+  let value_res =
+    let vid = Dep.Graph.fresh () in
+    let typ = note in
+    value_res $$$ { vid; typ }
+  in
+  Ctx.add_node ctx value_res;
+  Ctx.add_edge ctx value_res value_l (Dep.Edges.Op (BinOp binop));
+  Ctx.add_edge ctx value_res value_r (Dep.Edges.Op (BinOp binop));
+  (ctx, value_res)
 
 (* Comparison expression evaluation *)
 
@@ -1339,6 +1282,7 @@ and invoke_rel (ctx : Ctx.t) (id : id) (values_input : value list) :
   let _inputs, exps_input, instrs = Ctx.find_rel Local ctx id in
   check (instrs <> []) id.at "relation has no instructions";
   let ctx_local = Ctx.localize ctx in
+  let ctx_local = Ctx.localize_inputs ctx_local values_input in
   let ctx_local = assign_exps ctx_local exps_input values_input in
   let ctx_local, sign = eval_instrs ctx_local Cont instrs in
   let ctx = Ctx.commit ctx ctx_local in
@@ -1398,6 +1342,7 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
       ctx_local tparams targs
   in
   let ctx, values_input = eval_args ctx args in
+  let ctx_local = Ctx.localize_inputs ctx_local values_input in
   let ctx_local = assign_args ctx ctx_local args_input values_input in
   let ctx_local, sign = eval_instrs ctx_local Cont instrs in
   let ctx = Ctx.commit ctx ctx_local in

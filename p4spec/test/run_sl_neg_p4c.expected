@@ -193,7 +193,7 @@ Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/functors3_e.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/generic1_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/generic1_e.p4
-../../../../spec/4g-typing-decl.watsup:1315.7-1315.15: relation was not matched
+cannot transpose a matrix of value batches
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/globalVar_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/globalVar_e.p4
@@ -424,7 +424,7 @@ Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3170-1.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3170.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3170.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
+cannot transpose a matrix of value batches
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3188.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3188.p4
@@ -468,7 +468,7 @@ transform error
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3293.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3293.p4
-../../../../spec/4g-typing-decl.watsup:1374.6-1374.13: relation was not matched
+cannot transpose a matrix of value batches
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3299.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3299.p4
@@ -480,7 +480,7 @@ Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3304.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3305.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3305.p4
-../../../../spec/4f-typing-stmt.watsup:272.6-272.13: relation was not matched
+cannot transpose a matrix of value batches
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue3316.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue3316.p4
@@ -682,7 +682,7 @@ Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue818.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue819-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue819-1.p4
-../../../../spec/4g-typing-decl.watsup:1315.7-1315.15: relation was not matched
+cannot transpose a matrix of value batches
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/issue819.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/issue819.p4
@@ -890,7 +890,7 @@ Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/struct_e.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4
-../../../../spec/4f-typing-stmt.watsup:39.22-39.36: function was not matched
+cannot transpose a matrix of value batches
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-2.p4
