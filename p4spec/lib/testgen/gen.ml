@@ -144,10 +144,17 @@ let update_interesting (fuel : int) (pid : pid) (idx_method : int)
   let pids_hit_new, pids_close_miss_new =
     Config.find_interesting_cover_seed config cover
   in
-  (* Collect the file if it covers a new phantom, and update the running coverage *)
-  if not (PIdSet.is_empty pids_hit_new) then
-    update_hit_new fuel pid idx_method idx_mutation config log filename_gen_p4
-      welltyped pids_hit_new;
+  (* Collect the file if it covers a new phantom, and update the running coverage
+     If in strict mode, we only collect the file if it covers the intended phantom *)
+  (match config.modes.covermode with
+  | Relaxed ->
+      if not (PIdSet.is_empty pids_hit_new) then
+        update_hit_new fuel pid idx_method idx_mutation config log
+          filename_gen_p4 welltyped pids_hit_new
+  | Strict ->
+      if PIdSet.mem pid pids_hit_new then
+        update_hit_new fuel pid idx_method idx_mutation config log
+          filename_gen_p4 welltyped (PIdSet.singleton pid));
   (* Collect the file if it is well-typed and covers a new close-miss phantom,
      then update the running coverage *)
   if welltyped && not (PIdSet.is_empty pids_close_miss_new) then
@@ -302,6 +309,18 @@ let fuzz_randoms_bounded (fuel : int) (pid : pid) (config : Config.t)
 
 (* Fuzzing from a seed program *)
 
+let fuzz_seed_random (fuel : int) (pid : pid) (config : Config.t)
+    (log : Logger.t) (query : Query.t) (dirname_gen_tmp : string)
+    (filename_p4 : string) (graph : Dep.Graph.t) (vid_program : vid) : unit =
+  (* Randomly sample N vids from the program *)
+  let vids_source =
+    List.init vid_program Fun.id
+    |> Rand.random_sample Config.samples_related_vid
+  in
+  (* Mutate the ASTs and dump to file *)
+  fuzz_randoms_bounded fuel pid config log query dirname_gen_tmp filename_p4
+    graph vid_program vids_source
+
 let fuzz_seed_deriving (fuel : int) (pid : pid) (config : Config.t)
     (log : Logger.t) (query : Query.t) (dirname_gen_tmp : string)
     (filename_p4 : string) (graph : Dep.Graph.t) (vid_program : vid)
@@ -329,17 +348,37 @@ let fuzz_seed_deriving (fuel : int) (pid : pid) (config : Config.t)
   fuzz_derivations_bounded fuel pid config log query dirname_gen_tmp filename_p4
     graph vid_program derivations_source
 
-let fuzz_seed_random (fuel : int) (pid : pid) (config : Config.t)
+let fuzz_seed_hybrid (fuel : int) (pid : pid) (config : Config.t)
     (log : Logger.t) (query : Query.t) (dirname_gen_tmp : string)
-    (filename_p4 : string) (graph : Dep.Graph.t) (vid_program : vid) : unit =
-  (* Randomly sample N vids from the program *)
-  let vids_source =
-    List.init vid_program Fun.id
-    |> Rand.random_sample Config.samples_related_vid
+    (filename_p4 : string) (graph : Dep.Graph.t) (vid_program : vid)
+    (cover : SCov.Cover.t) : unit =
+  (* Derive closes-ASTs from the phantom *)
+  F.asprintf "[F %d] [P %d] Finding derivations from %s" fuel pid filename_p4
+  |> Logger.log config.modes.logmode log;
+  let time_start = Unix.gettimeofday () in
+  let derivations_source = Derive.derive_phantom pid graph cover in
+  let time_end = Unix.gettimeofday () in
+  (* Take top ranked derivations, i.e., the ones with the smallest depth *)
+  F.asprintf
+    "[F %d] [P %d] Found total %d derivations, sampling top %d (took %.2f)" fuel
+    pid
+    (List.length derivations_source)
+    Config.samples_derivation_source (time_end -. time_start)
+  |> Logger.log config.modes.logmode log;
+  let derivations_source =
+    if List.length derivations_source < Config.samples_derivation_source then
+      derivations_source
+    else
+      List.init Config.samples_derivation_source (List.nth derivations_source)
   in
-  (* Mutate the ASTs and dump to file *)
-  fuzz_randoms_bounded fuel pid config log query dirname_gen_tmp filename_p4
-    graph vid_program vids_source
+  (* If there are no derivations, fallback to random *)
+  match derivations_source with
+  | [] ->
+      fuzz_seed_random fuel pid config log query dirname_gen_tmp filename_p4
+        graph vid_program
+  | _ ->
+      fuzz_derivations_bounded fuel pid config log query dirname_gen_tmp
+        filename_p4 graph vid_program derivations_source
 
 let fuzz_seed (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
     (query : Query.t) (dirname_gen_tmp : string) (filename_p4 : string) : unit =
@@ -365,7 +404,10 @@ let fuzz_seed (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
             graph vid_program
       | Derive ->
           fuzz_seed_deriving fuel pid config log query dirname_gen_tmp
-            filename_p4 graph vid_program cover)
+            filename_p4 graph vid_program cover
+      | Hybrid ->
+          fuzz_seed_hybrid fuel pid config log query dirname_gen_tmp filename_p4
+            graph vid_program cover)
   | IllTyped _ | IllFormed _ ->
       F.asprintf "[F %d] [P %d] SL interpreter failed on %s" fuel pid
         filename_p4
@@ -456,7 +498,8 @@ let rec fuzz_loop (fuel : int) (config : Config.t) : Config.t =
 let fuzz_typing_init (spec : spec) (includes_p4 : string list)
     (dirname_seed_p4 : string) (dirname_gen : string) (logmode : Modes.logmode)
     (bootmode : Modes.bootmode) (targetmode : Modes.targetmode)
-    (mutationmode : Modes.mutationmode) : Config.t =
+    (mutationmode : Modes.mutationmode) (covermode : Modes.covermode) : Config.t
+    =
   (* Create a timestamp *)
   let timestamp =
     let tm = Unix.gettimeofday () |> Unix.localtime in
@@ -468,12 +511,14 @@ let fuzz_typing_init (spec : spec) (includes_p4 : string list)
   let dirname_gen = dirname_gen ^ "/fuzz-" ^ timestamp in
   let storage = Config.init_storage dirname_gen in
   (* Create a mode *)
-  let modes = Modes.{ bootmode; targetmode; logmode; mutationmode } in
+  let modes =
+    Modes.{ bootmode; targetmode; logmode; mutationmode; covermode }
+  in
   (* Create a initializer log *)
   let logname_init = storage.dirname_log ^ "/init.log" in
   let log_init = Logger.init logname_init in
   (* Log the command line arguments *)
-  F.asprintf "[COMMAND] testgen -seed %s -gen %s%s%s" dirname_seed_p4
+  F.asprintf "[COMMAND] testgen -seed %s -gen %s%s%s%s%s" dirname_seed_p4
     dirname_gen
     (match modes.bootmode with
     | Cold -> ""
@@ -481,6 +526,11 @@ let fuzz_typing_init (spec : spec) (includes_p4 : string list)
     (match modes.targetmode with
     | Roundrobin -> ""
     | Target filename_target -> " -target " ^ filename_target)
+    (match modes.mutationmode with
+    | Random -> " -random"
+    | Derive -> ""
+    | Hybrid -> " -hybrid")
+    (match modes.covermode with Strict -> " -strict" | Relaxed -> "")
   |> Logger.log modes.logmode log_init;
   (* Create a spec environment *)
   "Loading type definitions from the spec file"
@@ -531,11 +581,11 @@ let fuzz_typing_init (spec : spec) (includes_p4 : string list)
 let fuzz_typing (fuel : int) (spec : spec) (includes_p4 : string list)
     (dirname_seed_p4 : string) (dirname_gen : string) (logmode : Modes.logmode)
     (bootmode : Modes.bootmode) (targetmode : Modes.targetmode)
-    (mutationmode : Modes.mutationmode) : unit =
+    (mutationmode : Modes.mutationmode) (covermode : Modes.covermode) : unit =
   (* Initialize the fuzzing configuration *)
   let config =
     fuzz_typing_init spec includes_p4 dirname_seed_p4 dirname_gen logmode
-      bootmode targetmode mutationmode
+      bootmode targetmode mutationmode covermode
   in
   (* Call the main fuzzing loop *)
   let config = fuzz_loop fuel config in

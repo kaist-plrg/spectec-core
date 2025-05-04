@@ -155,7 +155,14 @@ let run_testgen_command =
      and filename_target =
        flag "-target" (optional string) ~doc:"file for target mode"
      and silent = flag "-silent" no_arg ~doc:"do not print logs to stdout"
-     and random = flag "-random" no_arg ~doc:"randomize AST selection" in
+     and random = flag "-random" no_arg ~doc:"randomize AST selection"
+     and hybrid =
+       flag "-hybrid" no_arg
+         ~doc:"randomize AST selection when no derivations exist"
+     and strict =
+       flag "-strict" no_arg
+         ~doc:"cover a new phantom only if it was intended by a mutation"
+     in
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
@@ -175,10 +182,15 @@ let run_testgen_command =
            | None -> Testgen.Modes.Roundrobin
          in
          let mutationmode =
-           if random then Testgen.Modes.Random else Testgen.Modes.Derive
+           if random then Testgen.Modes.Random
+           else if hybrid then Testgen.Modes.Hybrid
+           else Testgen.Modes.Derive
+         in
+         let covermode =
+           if strict then Testgen.Modes.Strict else Testgen.Modes.Relaxed
          in
          Testgen.Gen.fuzz_typing fuel spec_sl includes_p4 dirname_seed_p4
-           dirname_gen logmode bootmode targetmode mutationmode
+           dirname_gen logmode bootmode targetmode mutationmode covermode
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
        | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
