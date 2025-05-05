@@ -65,7 +65,6 @@ let debug_phantom (spec : spec) (includes_p4 : string list)
       filenames_ignore
   with
   | WellTyped (graph, _, cover) ->
-      let graph = Option.get graph in
       (* Find related values that contributed to the close-miss *)
       let vids_related =
         let branch = SCov.Cover.find pid cover in

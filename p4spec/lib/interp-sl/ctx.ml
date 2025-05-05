@@ -50,8 +50,9 @@ type t = {
   (* Filename of the source file *)
   filename : string;
   (* Value dependency graph *)
-  graph : Dep.Graph.t option;
-  vid_program : vid option;
+  derive : bool;
+  graph : Dep.Graph.t;
+  vid_program : vid;
   (* Branch coverage of phantoms *)
   cover : SCov.Cover.t ref;
   (* Global layer *)
@@ -63,18 +64,11 @@ type t = {
 (* Value dependencies *)
 
 let add_node ?(taint = false) (ctx : t) (value : value) : unit =
-  match ctx.graph with
-  | Some graph -> Dep.Graph.add_node ~taint graph value
-  | None -> ()
+  if ctx.derive then Dep.Graph.add_node ~taint ctx.graph value
 
 let add_edge (ctx : t) (value_from : value) (value_to : value)
     (label : Dep.Edges.label) : unit =
-  match ctx.graph with
-  | Some graph -> Dep.Graph.add_edge graph value_from value_to label
-  | None -> ()
-
-let set_vid_program (ctx : t) (vid_program : vid) : t =
-  { ctx with vid_program = Some vid_program }
+  if ctx.derive then Dep.Graph.add_edge ctx.graph value_from value_to label
 
 (* Cover *)
 
@@ -209,14 +203,11 @@ let empty_local () : local =
     venv = VEnv.empty;
   }
 
-let empty ~(derive : bool) (spec : spec) (filename : string) (ignores : IdSet.t)
-    : t =
-  let graph = if derive then Some (Dep.Graph.init ()) else None in
-  let vid_program = None in
-  let cover = ref (SCov.init ignores spec) in
+let empty ~(derive : bool) (filename : string) (graph : Dep.Graph.t)
+    (vid_program : vid) (cover : SCov.Cover.t ref) : t =
   let global = empty_global () in
   let local = empty_local () in
-  { filename; graph; vid_program; cover; global; local }
+  { filename; derive; graph; vid_program; cover; global; local }
 
 (* Constructing a local context *)
 

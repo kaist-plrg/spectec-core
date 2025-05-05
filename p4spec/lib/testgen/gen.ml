@@ -382,13 +382,20 @@ let fuzz_seed_hybrid (fuel : int) (pid : pid) (config : Config.t)
 
 let fuzz_seed (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
     (query : Query.t) (dirname_gen_tmp : string) (filename_p4 : string) : unit =
-  (* Run SL interpreter on the program,
-     and if it is well-typed, start generating tests from it *)
   let time_start = Unix.gettimeofday () in
   F.asprintf "[F %d] [P %d] Running SL interpreter on %s" fuel pid filename_p4
   |> Logger.log config.modes.logmode log;
+  (* Construct the value dependency graph for deriving and hybrid modes *)
+  let derive =
+    match config.modes.mutationmode with
+    | Random -> false
+    | Derive -> true
+    | Hybrid -> true
+  in
+  (* Run SL interpreter on the program,
+     and if it is well-typed, start generating tests from it *)
   match
-    Interp_sl.Typing.run_typing' ~derive:true config.specenv.spec
+    Interp_sl.Typing.run_typing' ~derive config.specenv.spec
       config.specenv.includes_p4 filename_p4 config.specenv.ignores
   with
   | WellTyped (graph, vid_program, cover) -> (
@@ -396,8 +403,6 @@ let fuzz_seed (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
       F.asprintf "[F %d] [P %d] SL interpreter succeeded on %s (took %.2f)" fuel
         pid filename_p4 (time_end -. time_start)
       |> Logger.log config.modes.logmode log;
-      let graph = Option.get graph in
-      let vid_program = Option.get vid_program in
       match config.modes.mutationmode with
       | Random ->
           fuzz_seed_random fuel pid config log query dirname_gen_tmp filename_p4
