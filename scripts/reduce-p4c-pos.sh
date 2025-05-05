@@ -26,4 +26,4 @@ if [ -d "$DIR_REDUCE" ]; then
 fi
 mkdir -p $DIR_REDUCE
 
-python3 scripts/reduce.py --concurrent --coverage $COVERAGE $DIR_REDUCE
+python3 scripts/reduce.py --cores 6 --coverage $COVERAGE $DIR_REDUCE

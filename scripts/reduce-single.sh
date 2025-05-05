@@ -29,4 +29,4 @@ if [ -d "$DIR_REDUCE" ]; then
 fi
 mkdir -p $DIR_REDUCE
 
-python3 scripts/reduce.py --concurrent --file $FILE --pid $PID $DIR_REDUCE
+python3 scripts/reduce.py --cores 8 --file $FILE --pid $PID $DIR_REDUCE
