@@ -26,8 +26,6 @@ let wrap_value (typ : typ') (value : value') : value =
 let wrap_value_opt (typ : typ') (value_opt : value' option) : value option =
   Option.map (wrap_value typ) value_opt
 
-(* Generate random values from a type *)
-
 let rec gen_from_typ (depth : int) (tdenv : TDEnv.t) (typ : typ) : value option
     =
   if depth <= 0 then None else gen_from_typ' depth tdenv typ
@@ -127,92 +125,18 @@ and gen_from_typs (depth : int) (tdenv : TDEnv.t) (typs : typ list) :
         Some (values @ [ value ]))
       (Some []) typs
 
-let mutate_type_driven (tdenv : TDEnv.t) (value : value) : (kind * value) option
-    =
-  let typ = value.note.typ $ no_region in
-  let depth = Random.int 4 + 1 in
-  let value_opt = gen_from_typ depth tdenv typ in
-  Option.map (fun value -> (GenFromTyp, value)) value_opt
-
-let is_leaf = function
-  | BoolV _ | NumV _ | TextV _ | OptV _ | FuncV _ -> true
-  | StructV _ | CaseV _ | TupleV _ | ListV _ -> false
-
-let mutate_type_driven_weighted (tdenv : TDEnv.t) (value : value) :
-    (kind * value) option =
-  (* Compute the best path to a leaf node in the value subtree *)
-  let key_max = ref min_float in
-  let path_best = ref [] in
-  let rec traverse (path : int list) (value : value) : unit =
-    let weight = if is_leaf value.it then 3.0 else 1.0 in
-    let u = Random.float 1.0 in
-    let key = u ** (1.0 /. weight) in
-    if key > !key_max then (
-      key_max := key;
-      path_best := List.rev path);
-    match value.it with
-    | BoolV _ | NumV _ | TextV _ | OptV _ | FuncV _ -> ()
-    | StructV valuefields ->
-        List.iteri
-          (fun idx (_, value) -> traverse (idx :: path) value)
-          valuefields
-    | CaseV (_, values) | TupleV values | ListV values ->
-        List.iteri (fun idx value -> traverse (idx :: path) value) values
-  in
-  traverse [] value;
-
-  (* Rebuild the value tree with a new value at the best path *)
-  let rec rebuild (path : int list) (value : value) : value option =
-    let typ = value.note.typ in
-    match (path, value) with
-    | [], _ ->
-        let typ = typ $ no_region in
-        let depth = Random.int 4 + 1 in
-        gen_from_typ depth tdenv typ
-    | idx :: path, value -> (
-        match value.it with
-        | BoolV _ | NumV _ | TextV _ | OptV _ | FuncV _ ->
-            value.it |> wrap_value typ |> Option.some
-        | StructV valuefields ->
-            let atoms, values = List.split valuefields in
-            let* values = rebuilds path idx values in
-            let valuefields = List.combine atoms values in
-            StructV valuefields |> wrap_value typ |> Option.some
-        | CaseV (mixop, values) ->
-            let* values = rebuilds path idx values in
-            CaseV (mixop, values) |> wrap_value typ |> Option.some
-        | TupleV values ->
-            let* values = rebuilds path idx values in
-            TupleV values |> wrap_value typ |> Option.some
-        | ListV values ->
-            let* values = rebuilds path idx values in
-            ListV values |> wrap_value typ |> Option.some)
-  and rebuilds rest i (values_inner : value list) : value list option =
-    values_inner
-    |> List.mapi (fun j value ->
-           if j = i then rebuild rest value else Some value)
-    |> List.fold_left
-         (fun values_opt value ->
-           let* values = values_opt in
-           let* value = value in
-           Some (values @ [ value ]))
-         (Some [])
-  in
-  let* value = rebuild !path_best value in
-  Some (GenFromTyp, value)
-
 (* bit<expr> to int<expr> conversion *)
 
-let mutate_fbit_to_fint (value : value) : (kind * value) option =
+let mutate_fbit_to_fint (value : value) : kind * value =
   let typ = value.note.typ in
   match value.it with
   | CaseV ([ [ { it = Atom "FBitT"; _ } ]; [] ], [ value_expr ]) ->
-      let value_opt =
+      let value =
         CaseV ([ [ Atom.Atom "FIntT" $ no_region ]; [] ], [ value_expr ])
-        |> Option.some |> wrap_value_opt typ
+        |> wrap_value typ
       in
-      Option.map (fun value -> (ConvertFBitToFInt, value)) value_opt
-  | _ -> None
+      (ConvertFBitToFInt, value)
+  | _ -> assert false
 
 (* List mutations *)
 
@@ -319,16 +243,110 @@ let mutate_list (value : value) : (kind * value) option =
   let* mutation = Rand.random_select mutations_list in
   mutation ()
 
+let mutate_type_driven (tdenv : TDEnv.t) (value : value) : (kind * value) option
+    =
+  let typ = value.note.typ $ no_region in
+  let depth = Random.int 4 + 1 in
+  let value_opt = gen_from_typ depth tdenv typ in
+  Option.map (fun value -> (GenFromTyp, value)) value_opt
+
+let mutate_node (tdenv : TDEnv.t) (value : value) : (kind * value) option =
+  match value.it with
+  | ListV _ ->
+      let* mutation =
+        [
+          (fun () -> mutate_list value);
+          (fun () -> mutate_type_driven tdenv value);
+        ]
+        |> Rand.random_select
+      in
+      mutation ()
+  | CaseV ([ [ { it = Atom "FBitT"; _ } ]; [] ], _) ->
+      let* mutation =
+        [
+          (fun () -> mutate_fbit_to_fint value |> Option.some);
+          (fun () -> mutate_type_driven tdenv value);
+        ]
+        |> Rand.random_select
+      in
+      mutation ()
+  | _ -> mutate_type_driven tdenv value
+
+let is_leaf = function
+  | BoolV _ | NumV _ | TextV _ | OptV _ | FuncV _ -> true
+  | StructV _ | CaseV _ | TupleV _ | ListV _ -> false
+
+let mutate_type_driven_weighted (tdenv : TDEnv.t) (value : value) :
+    (kind * value) option =
+  (* Compute the best path to a leaf node in the value subtree *)
+  let key_max = ref min_float in
+  let path_best = ref [] in
+  let rec traverse (path : int list) (value : value) (depth : int) : unit =
+    let weight = 1.0 /. (float_of_int (depth + 1) ** 3.0) in
+    let u = Random.float 1.0 in
+    let key = u ** (1.0 /. weight) in
+    if key > !key_max then (
+      key_max := key;
+      path_best := List.rev path);
+    match value.it with
+    | BoolV _ | NumV _ | TextV _ | OptV _ | FuncV _ -> ()
+    | StructV valuefields ->
+        List.iteri
+          (fun idx (_, value) -> traverse (idx :: path) value (depth + 1))
+          valuefields
+    | CaseV (_, values) | TupleV values | ListV values ->
+        List.iteri
+          (fun idx value -> traverse (idx :: path) value (depth + 1))
+          values
+  in
+  traverse [] value 0;
+  let kind_found = ref None in
+
+  (* Rebuild the value tree with a new value at the best path *)
+  let rec rebuild (path : int list) (value : value) : value option =
+    let typ = value.note.typ in
+    match (path, value) with
+    | [], value ->
+        let* kind, value = mutate_node tdenv value in
+        kind_found := kind |> Option.some;
+        value |> Option.some
+    | idx :: path, value -> (
+        match value.it with
+        | BoolV _ | NumV _ | TextV _ | OptV _ | FuncV _ ->
+            value.it |> wrap_value typ |> Option.some
+        | StructV valuefields ->
+            let atoms, values = List.split valuefields in
+            let* values = rebuilds path idx values in
+            let valuefields = List.combine atoms values in
+            StructV valuefields |> wrap_value typ |> Option.some
+        | CaseV (mixop, values) ->
+            let* values = rebuilds path idx values in
+            CaseV (mixop, values) |> wrap_value typ |> Option.some
+        | TupleV values ->
+            let* values = rebuilds path idx values in
+            TupleV values |> wrap_value typ |> Option.some
+        | ListV values ->
+            let* values = rebuilds path idx values in
+            ListV values |> wrap_value typ |> Option.some)
+  and rebuilds rest i (values_inner : value list) : value list option =
+    values_inner
+    |> List.mapi (fun j value ->
+           if j = i then rebuild rest value else Some value)
+    |> List.fold_left
+         (fun values_opt value ->
+           let* values = values_opt in
+           let* value = value in
+           Some (values @ [ value ]))
+         (Some [])
+  in
+  let* value = rebuild !path_best value in
+  let* kind = !kind_found in
+  Some (kind, value)
+
 (* Entry point for mutation *)
 
 let mutate (tdenv : TDEnv.t) (value : value) : (kind * value) option =
-  let mutations =
-    [
-      (fun () -> mutate_type_driven_weighted tdenv value);
-      (fun () -> mutate_fbit_to_fint value);
-      (fun () -> mutate_list value);
-    ]
-  in
+  let mutations = [ (fun () -> mutate_type_driven_weighted tdenv value) ] in
   let* mutation = Rand.random_select mutations in
   mutation ()
 
