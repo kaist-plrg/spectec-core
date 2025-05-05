@@ -41,12 +41,6 @@ let add_edge (graph : t) (value_from : value) (value_to : value)
     (label : Edges.label) : unit =
   let vid_from = value_from.note.vid in
   let vid_to = value_to.note.vid in
-  (* Update the taint of the from node *)
-  let mirror_from, taint_from = G.find graph.nodes vid_from in
-  let taint_to = G.find graph.nodes vid_to |> Node.taint in
-  let taint_from = Node.update_taint taint_from taint_to in
-  let node_from = (mirror_from, taint_from) in
-  G.replace graph.nodes vid_from node_from;
   (* Add an edge from the from node to the to node *)
   let edge = (label, vid_to) in
   let edges = G.find graph.edges vid_from in
@@ -84,16 +78,7 @@ let add_node ~(taint : bool) (graph : t) (value : value) : unit =
   (* Create a node for the value *)
   let node =
     let node = node $$$ typ in
-    let taint =
-      let taints_from =
-        List.map
-          (fun value_from ->
-            let vid_from = value_from.note.vid in
-            vid_from |> G.find graph.nodes |> Node.taint)
-          values_from
-      in
-      Node.init_taint ~init:taint taints_from
-    in
+    let taint = if taint then Node.Red else Node.White in
     (node, taint)
   in
   G.add graph.nodes vid node;

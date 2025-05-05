@@ -19,7 +19,7 @@ and mirror' =
 
 (* Taint represents whether they are from the source P4 program or not *)
 
-type taint = Red | Pink | White
+type taint = Red | White
 
 (* Node *)
 
@@ -33,22 +33,6 @@ let taint (_, taint) = taint
 (* Tainting *)
 
 let is_source (taint : taint) : bool = taint = Red
-let is_interesting (taint : taint) : bool = taint = Red || taint = Pink
-
-let init_taint ~(init : bool) (taints_pred : taint list) : taint =
-  if init then Red
-  else if List.length taints_pred = 0 then White
-  else if List.for_all is_source taints_pred then Red
-  else if List.exists is_interesting taints_pred then Pink
-  else White
-
-let update_taint (taint : taint) (taint_pred : taint) : taint =
-  match (taint, taint_pred) with
-  | Red, Red -> Red
-  | Red, (Pink | White) -> Pink
-  | Pink, (Red | Pink | White) -> Pink
-  | White, (Red | Pink) -> Pink
-  | White, White -> White
 
 (* Dot output *)
 
@@ -91,7 +75,7 @@ let dot_of_mirror (mirror : mirror) : string =
 
 let dot_of_taint (taint : taint) : string =
   Format.asprintf "style=filled, fillcolor=%s"
-    (match taint with Red -> "red" | Pink -> "pink" | White -> "white")
+    (match taint with Red -> "red" | White -> "white")
 
 let dot_of_node (vid : vid) ((mirror, taint) : t) : string =
   Format.asprintf "  %d [label=\"%s (%s)\", %s];" vid

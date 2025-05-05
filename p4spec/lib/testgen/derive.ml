@@ -64,6 +64,8 @@ let debug_phantom (spec : spec) (includes_p4 : string list)
     Interp_sl.Typing.run_typing ~derive:true spec includes_p4 filename_p4
       filenames_ignore
   with
+  | IllTyped _ -> print_endline "ill-typed"
+  | IllFormed _ -> print_endline "ill-formed"
   | WellTyped (graph, _, cover) ->
       (* Find related values that contributed to the close-miss *)
       let vids_related =
@@ -77,61 +79,72 @@ let debug_phantom (spec : spec) (includes_p4 : string list)
       (* Log if fail to derive a close-AST *)
       List.iter
         (fun vid_related ->
-          let vids_visited, _depths_visited = derive_vid graph vid_related in
-          let vids_source =
+          let vids_visited, depths_visited = derive_vid graph vid_related in
+          let derivations_source =
             vids_visited
             |> VIdSet.filter (fun vid ->
                    vid
                    |> Dep.Graph.G.find graph.nodes
                    |> Dep.Node.taint |> Dep.Node.is_source)
+            |> VIdSet.elements
+            |> List.map (fun vid ->
+                   let depth = VIdMap.find vid depths_visited in
+                   (vid, depth))
+            |> List.sort (fun (_, depth_a) (_, depth_b) ->
+                   Int.compare depth_a depth_b)
           in
-          if VIdSet.is_empty vids_source then (
-            F.asprintf "Failed to derive close-AST for pid %d" pid
-            |> print_endline;
-            let filename_dot =
-              F.asprintf "%s/debug_p%d_v%d.dot" dirname_debug pid vid_related
-            in
-            let oc_dot = open_out filename_dot in
-            Dep.Graph.dot_of_graph graph |> output_string oc_dot;
-            close_out oc_dot;
-            let filename_dot_sub =
-              F.asprintf "%s/debug_p%d_v%d_sub.dot" dirname_debug pid
-                vid_related
-            in
-            let oc_dot_sub = open_out filename_dot_sub in
-            "digraph dependencies {\n" |> output_string oc_dot_sub;
-            VIdSet.iter
-              (fun vid ->
-                let node = Dep.Graph.G.find graph.nodes vid in
-                let dot = Dep.Node.dot_of_node vid node in
-                dot ^ "\n" |> output_string oc_dot_sub)
-              vids_visited;
-            VIdSet.iter
-              (fun vid ->
-                let edges = Dep.Graph.G.find graph.edges vid in
-                Dep.Edges.E.iter
-                  (fun (label, vid_to) () ->
-                    let dot = Dep.Edges.dot_of_edge vid label vid_to in
-                    dot ^ "\n" |> output_string oc_dot_sub)
-                  edges)
-              vids_visited;
-            "}" |> output_string oc_dot_sub;
-            close_out oc_dot_sub)
-          else (
-            F.asprintf "Found close-AST for pid %d" pid |> print_endline;
-            let filename_value =
-              F.asprintf "%s/debug_p%d_v%d.value" dirname_debug pid vid_related
-            in
-            let oc_value = open_out filename_value in
-            let values_source =
-              vids_source |> VIdSet.elements
-              |> List.map (Dep.Graph.reassemble_node graph VIdMap.empty)
-            in
-            List.iter
-              (fun value_source ->
-                Sl.Print.string_of_value value_source ^ "\n"
-                |> output_string oc_value)
-              values_source))
+          match derivations_source with
+          | [] ->
+              F.asprintf "Failed to derive close-AST for pid %d" pid
+              |> print_endline;
+              let filename_dot =
+                F.asprintf "%s/debug_p%d_v%d.dot" dirname_debug pid vid_related
+              in
+              let oc_dot = open_out filename_dot in
+              Dep.Graph.dot_of_graph graph |> output_string oc_dot;
+              close_out oc_dot;
+              let filename_dot_sub =
+                F.asprintf "%s/debug_p%d_v%d_sub.dot" dirname_debug pid
+                  vid_related
+              in
+              let oc_dot_sub = open_out filename_dot_sub in
+              "digraph dependencies {\n" |> output_string oc_dot_sub;
+              VIdSet.iter
+                (fun vid ->
+                  let node = Dep.Graph.G.find graph.nodes vid in
+                  let dot = Dep.Node.dot_of_node vid node in
+                  dot ^ "\n" |> output_string oc_dot_sub)
+                vids_visited;
+              VIdSet.iter
+                (fun vid ->
+                  let edges = Dep.Graph.G.find graph.edges vid in
+                  Dep.Edges.E.iter
+                    (fun (label, vid_to) () ->
+                      let dot = Dep.Edges.dot_of_edge vid label vid_to in
+                      dot ^ "\n" |> output_string oc_dot_sub)
+                    edges)
+                vids_visited;
+              "}" |> output_string oc_dot_sub;
+              close_out oc_dot_sub
+          | _ ->
+              F.asprintf "Found close-AST for pid %d" pid |> print_endline;
+              let filename_value =
+                F.asprintf "%s/debug_p%d_v%d.value" dirname_debug pid
+                  vid_related
+              in
+              let oc_value = open_out filename_value in
+              let derivations_source =
+                derivations_source
+                |> List.map (fun (vid_source, depth) ->
+                       let value_source =
+                         Dep.Graph.reassemble_node graph VIdMap.empty vid_source
+                       in
+                       (vid_source, value_source, depth))
+              in
+              List.iter
+                (fun (vid_source, value_source, depth) ->
+                  F.asprintf "/* depth: %d, vid: %d */ %s\n" depth vid_source
+                    (Sl.Print.string_of_value value_source)
+                  |> output_string oc_value)
+                derivations_source)
         vids_related
-  | IllTyped _ -> print_endline "ill-typed"
-  | IllFormed _ -> print_endline "ill-formed"
